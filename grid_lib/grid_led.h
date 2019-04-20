@@ -11,9 +11,6 @@ static uint32_t led_frame_buffer_size;
 static uint8_t* led_frame_buffer; // The frame buffer is used to send data to the LEDs
 static uint32_t* led_frame_buffer_usable; // The part of the frame buffer that contains LED data
 static uint32_t led_color_code[256];
-static uint8_t led_code_z;
-static uint8_t led_code_o;
-static uint8_t led_code_r;
 
 // INITIALIZING THE GRID_LED LIBRARY
 uint8_t grid_led_init(uint8_t num);

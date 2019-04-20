@@ -21,23 +21,23 @@ drivers:
     functionality: ADC
     api: HAL:Driver:ADC_Async
     configuration:
-      adc_advanced_settings: false
+      adc_advanced_settings: true
       adc_arch_adjres: 0
-      adc_arch_corren: false
+      adc_arch_corren: true
       adc_arch_dbgrun: false
       adc_arch_event_settings: false
       adc_arch_flushei: false
       adc_arch_flushinv: false
-      adc_arch_gaincorr: 0
+      adc_arch_gaincorr: 2059
       adc_arch_leftadj: false
       adc_arch_offcomp: false
-      adc_arch_offsetcorr: 0
+      adc_arch_offsetcorr: 20
       adc_arch_ondemand: false
       adc_arch_refcomp: false
       adc_arch_resrdyeo: false
       adc_arch_runstdby: false
       adc_arch_samplen: 0
-      adc_arch_samplenum: 1 sample
+      adc_arch_samplenum: 16 samples
       adc_arch_seqen: 0
       adc_arch_startei: false
       adc_arch_startinv: false
@@ -83,7 +83,7 @@ drivers:
       adc_arch_event_settings: false
       adc_arch_flushei: false
       adc_arch_flushinv: false
-      adc_arch_gaincorr: 2060
+      adc_arch_gaincorr: 2059
       adc_arch_leftadj: false
       adc_arch_offcomp: false
       adc_arch_offsetcorr: 20
@@ -91,8 +91,8 @@ drivers:
       adc_arch_refcomp: false
       adc_arch_resrdyeo: false
       adc_arch_runstdby: false
-      adc_arch_samplen: 4
-      adc_arch_samplenum: 32 samples
+      adc_arch_samplen: 0
+      adc_arch_samplenum: 16 samples
       adc_arch_seqen: 0
       adc_arch_startei: false
       adc_arch_startinv: false

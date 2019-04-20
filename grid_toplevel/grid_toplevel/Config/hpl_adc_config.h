@@ -114,7 +114,7 @@
 // <e> Advanced Configuration
 // <id> adc_advanced_settings
 #ifndef CONF_ADC_0_ADVANCED
-#define CONF_ADC_0_ADVANCED 0
+#define CONF_ADC_0_ADVANCED 1
 #endif
 
 // <q> Run in standby
@@ -163,21 +163,21 @@
 // <i> When enabled, the ADC conversion result in the RESULT register is then corrected for gain and offset based on the values in the GAINCAL and OFFSETCAL registers. (CORREN)
 // <id> adc_arch_corren
 #ifndef CONF_ADC_0_CORREN
-#define CONF_ADC_0_CORREN 0
+#define CONF_ADC_0_CORREN 1
 #endif
 
 // <o> Offset Correction Value <0-4095>
 // <i> If the digital correction logic is enabled (CTRLB.CORREN = 1), these bits define how the ADC conversion result is compensated for offset error before being written to the Result register. (OFFSETCORR)
 // <id> adc_arch_offsetcorr
 #ifndef CONF_ADC_0_OFFSETCORR
-#define CONF_ADC_0_OFFSETCORR 0
+#define CONF_ADC_0_OFFSETCORR 20
 #endif
 
 // <o> Gain Correction Value <0-4095>
 // <i> If the digital correction logic is enabled (CTRLB.CORREN = 1), these bits define how the ADC conversion result is compensated for gain error before being written to the result register. (GAINCORR)
 // <id> adc_arch_gaincorr
 #ifndef CONF_ADC_0_GAINCORR
-#define CONF_ADC_0_GAINCORR 0
+#define CONF_ADC_0_GAINCORR 2059
 #endif
 
 // <o> Adjusting Result / Division Coefficient <0-7>
@@ -202,7 +202,7 @@
 // <i> Define how many samples should be added together.The result will be available in the Result register (SAMPLENUM)
 // <id> adc_arch_samplenum
 #ifndef CONF_ADC_0_SAMPLENUM
-#define CONF_ADC_0_SAMPLENUM 0x0
+#define CONF_ADC_0_SAMPLENUM 0x4
 #endif
 
 // <o> Sampling Time Length <0-63>
@@ -470,7 +470,7 @@
 // <i> If the digital correction logic is enabled (CTRLB.CORREN = 1), these bits define how the ADC conversion result is compensated for gain error before being written to the result register. (GAINCORR)
 // <id> adc_arch_gaincorr
 #ifndef CONF_ADC_1_GAINCORR
-#define CONF_ADC_1_GAINCORR 2060
+#define CONF_ADC_1_GAINCORR 2059
 #endif
 
 // <o> Adjusting Result / Division Coefficient <0-7>
@@ -495,14 +495,14 @@
 // <i> Define how many samples should be added together.The result will be available in the Result register (SAMPLENUM)
 // <id> adc_arch_samplenum
 #ifndef CONF_ADC_1_SAMPLENUM
-#define CONF_ADC_1_SAMPLENUM 0x5
+#define CONF_ADC_1_SAMPLENUM 0x4
 #endif
 
 // <o> Sampling Time Length <0-63>
 // <i> These bits control the ADC sampling time in number of half CLK_ADC cycles, depending of the prescaler value, thus controlling the ADC input impedance. (SAMPLEN)
 // <id> adc_arch_samplen
 #ifndef CONF_ADC_1_SAMPLEN
-#define CONF_ADC_1_SAMPLEN 4
+#define CONF_ADC_1_SAMPLEN 0
 #endif
 
 // <o> Window Monitor Mode
