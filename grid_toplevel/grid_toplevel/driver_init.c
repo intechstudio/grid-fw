@@ -47,6 +47,8 @@ static uint8_t ADC_1_buffer[ADC_1_BUFFER_SIZE];
 static uint8_t ADC_1_map[ADC_1_CH_MAX + 1];
 static uint8_t GRID_AUX_buffer[GRID_AUX_BUFFER_SIZE];
 
+struct flash_descriptor FLASH_0;
+
 struct i2c_m_async_desc SYS_I2C;
 
 struct spi_m_dma_descriptor GRID_LED;
@@ -85,6 +87,18 @@ void ADC_1_init(void)
 	gpio_set_pin_direction(PC02, GPIO_DIRECTION_OFF);
 
 	gpio_set_pin_function(PC02, PINMUX_PC02B_ADC1_AIN4);
+}
+
+void FLASH_0_CLOCK_init(void)
+{
+
+	hri_mclk_set_AHBMASK_NVMCTRL_bit(MCLK);
+}
+
+void FLASH_0_init(void)
+{
+	FLASH_0_CLOCK_init();
+	flash_init(&FLASH_0, NVMCTRL);
 }
 
 /**
@@ -302,6 +316,8 @@ void system_init(void)
 
 	ADC_0_init();
 	ADC_1_init();
+
+	FLASH_0_init();
 
 	GRID_AUX_init();
 

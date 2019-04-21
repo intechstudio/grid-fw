@@ -1,6 +1,6 @@
-atmel_start.d atmel_start.o: .././atmel_start.c ../atmel_start.h \
- ../driver_init.h ../atmel_start_pins.h ../hal/include/hal_gpio.h \
- ../hal/include/hpl_gpio.h ../hal/utils/include/compiler.h \
+hpl/nvmctrl/hpl_nvmctrl.d hpl/nvmctrl/hpl_nvmctrl.o: \
+ ../hpl/nvmctrl/hpl_nvmctrl.c ../hal/include/hpl_flash.h \
+ ../hal/utils/include/compiler.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\lib\gcc\arm-none-eabi\6.3.1\include\stddef.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\lib\gcc\arm-none-eabi\6.3.1\include\stdint.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\stdint.h \
@@ -130,34 +130,25 @@ atmel_start.d atmel_start.o: .././atmel_start.c ../atmel_start.h \
  ../hri/hri_systemcontrol_d51.h ../hri/hri_systick_d51.h \
  ../hri/hri_tc_d51.h ../hri/hri_tcc_d51.h ../hri/hri_trng_d51.h \
  ../hri/hri_usb_d51.h ../hri/hri_wdt_d51.h \
- ../hal/utils/include/err_codes.h ../hpl/port/hpl_gpio_base.h \
- ../hal/utils/include/utils_assert.h ../Config/hpl_port_config.h \
- ../hal/include/hal_delay.h ../hal/include/hpl_irq.h \
- ../hal/include/hpl_reset.h ../hal/include/hpl_sleep.h \
- ../hal/include/hal_init.h ../hal/include/hpl_init.h \
- ../hal/include/hal_io.h ../hal/include/hal_sleep.h \
- ../hal/include/hal_adc_async.h ../hal/include/hpl_adc_async.h \
- ../hal/include/hpl_adc_sync.h ../hal/include/hpl_irq.h \
- ../hal/utils/include/utils_ringbuffer.h ../hal/utils/include/compiler.h \
- ../hal/utils/include/utils_assert.h \
- ../hal/include/hpl_missing_features.h ../hal/include/hal_flash.h \
- ../hal/include/hpl_flash.h ../hal/include/hal_usart_async.h \
- ../hal/include/hal_io.h ../hal/include/hpl_usart_async.h \
- ../hal/include/hpl_usart.h ../hal/include/hal_i2c_m_async.h \
- ../hal/include/hpl_i2c_m_async.h ../hal/include/hpl_i2c_m_sync.h \
- ../hal/utils/include/utils.h ../hal/include/hal_spi_m_dma.h \
- ../hal/include/hpl_spi_m_dma.h ../hal/include/hpl_spi.h \
- ../hal/include/hpl_spi_dma.h ../hal/include/hpl_dma.h
+ ../hal/utils/include/err_codes.h ../hal/include/hpl_irq.h \
+ ../hal/include/hpl_user_area.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\_ansi.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\newlib.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\config.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\machine\ieeefp.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\reent.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\_ansi.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\_types.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\machine\_types.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\lock.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\cdefs.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\xlocale.h \
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
+ ../hal/utils/include/utils_assert.h ../hal/utils/include/utils.h \
+ ../Config/hpl_nvmctrl_config.h
 
-../atmel_start.h:
-
-../driver_init.h:
-
-../atmel_start_pins.h:
-
-../hal/include/hal_gpio.h:
-
-../hal/include/hpl_gpio.h:
+../hal/include/hpl_flash.h:
 
 ../hal/utils/include/compiler.h:
 
@@ -473,70 +464,38 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.1.96\samd51a\
 
 ../hal/utils/include/err_codes.h:
 
-../hpl/port/hpl_gpio_base.h:
-
-../hal/utils/include/utils_assert.h:
-
-../Config/hpl_port_config.h:
-
-../hal/include/hal_delay.h:
-
 ../hal/include/hpl_irq.h:
 
-../hal/include/hpl_reset.h:
+../hal/include/hpl_user_area.h:
 
-../hal/include/hpl_sleep.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h:
 
-../hal/include/hal_init.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\_ansi.h:
 
-../hal/include/hpl_init.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\newlib.h:
 
-../hal/include/hal_io.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\config.h:
 
-../hal/include/hal_sleep.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\machine\ieeefp.h:
 
-../hal/include/hal_adc_async.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\reent.h:
 
-../hal/include/hpl_adc_async.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\_ansi.h:
 
-../hal/include/hpl_adc_sync.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\_types.h:
 
-../hal/include/hpl_irq.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\machine\_types.h:
 
-../hal/utils/include/utils_ringbuffer.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\lock.h:
 
-../hal/utils/include/compiler.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\cdefs.h:
+
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\xlocale.h:
+
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h:
 
 ../hal/utils/include/utils_assert.h:
-
-../hal/include/hpl_missing_features.h:
-
-../hal/include/hal_flash.h:
-
-../hal/include/hpl_flash.h:
-
-../hal/include/hal_usart_async.h:
-
-../hal/include/hal_io.h:
-
-../hal/include/hpl_usart_async.h:
-
-../hal/include/hpl_usart.h:
-
-../hal/include/hal_i2c_m_async.h:
-
-../hal/include/hpl_i2c_m_async.h:
-
-../hal/include/hpl_i2c_m_sync.h:
 
 ../hal/utils/include/utils.h:
 
-../hal/include/hal_spi_m_dma.h:
-
-../hal/include/hpl_spi_m_dma.h:
-
-../hal/include/hpl_spi.h:
-
-../hal/include/hpl_spi_dma.h:
-
-../hal/include/hpl_dma.h:
+../Config/hpl_nvmctrl_config.h:

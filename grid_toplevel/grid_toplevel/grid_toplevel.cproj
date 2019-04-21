@@ -245,6 +245,7 @@
       <Value>../hpl/dmac</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
+      <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
       <Value>../hpl/pm</Value>
@@ -288,6 +289,7 @@
       <Value>../hpl/dmac</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
+      <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
       <Value>../hpl/pm</Value>
@@ -313,6 +315,7 @@
       <Value>../hpl/dmac</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
+      <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
       <Value>../hpl/pm</Value>
@@ -357,6 +360,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/dmac</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
+      <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
       <Value>../hpl/pm</Value>
@@ -400,6 +404,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/dmac</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
+      <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
       <Value>../hpl/pm</Value>
@@ -426,6 +431,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/dmac</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
+      <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
       <Value>../hpl/pm</Value>
@@ -466,6 +472,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Config\hpl_mclk_config.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Config\hpl_nvmctrl_config.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Config\hpl_osc32kctrl_config.h">
@@ -519,6 +528,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hal\include\hal_delay.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hal\include\hal_flash.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hal\include\hal_gpio.h">
       <SubType>compile</SubType>
     </Compile>
@@ -559,6 +571,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\include\hpl_dma.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hal\include\hpl_flash.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\include\hpl_gpio.h">
@@ -633,6 +648,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hal\include\hpl_usart_sync.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hal\include\hpl_user_area.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hal\src\hal_adc_async.c">
       <SubType>compile</SubType>
     </Compile>
@@ -643,6 +661,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\src\hal_delay.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hal\src\hal_flash.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\src\hal_gpio.c">
@@ -742,6 +763,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hpl\mclk\hpl_mclk.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hpl\nvmctrl\hpl_nvmctrl.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hpl\osc32kctrl\hpl_osc32kctrl.c">
@@ -912,6 +936,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Folder Include="hpl\dmac\" />
     <Folder Include="hpl\gclk\" />
     <Folder Include="hpl\mclk\" />
+    <Folder Include="hpl\nvmctrl\" />
     <Folder Include="hpl\osc32kctrl\" />
     <Folder Include="hpl\oscctrl\" />
     <Folder Include="hpl\pm\" />
