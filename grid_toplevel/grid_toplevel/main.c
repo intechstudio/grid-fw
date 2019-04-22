@@ -1,6 +1,7 @@
 #include <atmel_start.h>
-#include "../../grid_lib/grid_led.c"
-#include "../../grid_lib/grid_ain.c"
+#include "../../grid_lib/grid_led.c" // WS2812 LED
+#include "../../grid_lib/grid_ain.c" // Analog input filtering
+#include "../../grid_lib/grid_tel.c" // Grid Telemetry
 
 
 volatile uint8_t adc_buffer[2];
@@ -75,11 +76,45 @@ int main(void)
 	// Allocate memory for 4 leds and initialize the structure!
 	grid_led_init(4);
 	
+	// ================ LED DEFAULT CONFIG ================== //
+	grid_led_set_min(0, 0, 0x00, 0x00, 0x00);
+	grid_led_set_mid(0, 0, 0x00, 0x00, 0x60);
+	grid_led_set_max(0, 0, 0x00, 0x00, 0xE0);
+			
+			
+	grid_led_set_frequency(0, 0, 0);
+			
+	grid_led_set_min(1, 1, 0x00, 0x00, 0x30);
+	grid_led_set_mid(1, 1, 0x30, 0x00, 0x00);
+	grid_led_set_max(1, 1, 0x00, 0x00, 0x00);
+			
+	grid_led_set_frequency(1, 1, 4);
+			
+			
+	
 	// Allocate memory for 1 analog input with the filter depth of 8 samples, 14 bit format, 10bit result resolution
 	grid_ain_init(1, 3, 14, 10);
 
 
+	// UI RX EVENT fref=5, alert=50;
+	struct TEL_event_counter* console_tx = grid_tel_event_register(5, 50);
+	while(console_tx == NULL){/*TRAP*/}	
+	
+	char str[26];
+	sprintf(str, "FreqRef: %5d\n", grid_tel_event_head->frequency);
+
+	//USART
+	io_write(io, str, 26);
+
+	uint32_t faketimer = 0;
+
 	while (1) {
+		
+		if (faketimer == 10){
+			grid_tel_frequency_tick();
+			faketimer = 0;
+		}
+		faketimer++;
 		
 				
 		gpio_toggle_pin_level(LED0);
@@ -96,15 +131,20 @@ int main(void)
 		grid_ain_add_sample(0,adcresult);
 		
 		
-		if (grid_ain_get_changed(0)){
+		if (grid_ain_get_changed(0) && !grid_tel_event_alert_status(console_tx)){
+			
+			if (grid_ain_get_changed(0)){grid_tel_event_handler(console_tx);}
+				
+				
 			uint16_t average = grid_ain_get_average(0);
-		
-			// PREPARE DEBUG CONSOLE DATA
+			
 			char str[26];
-			sprintf(str, "ADC: %5d %5d %5d\n", average, average/128, average/16);
+			sprintf(str, "ADC: %5d %5d %5d\n", average, average/128, console_tx->frequency);
 
 			//USART
 			io_write(io, str, 26);	
+			
+			grid_led_set_phase(0, 0, average/8/4/4);
 			
 		}
 			
@@ -114,23 +154,10 @@ int main(void)
 		
 		// ================ WS2812B VIA DMA SPI ================== //
 					
-		uint16_t average = grid_ain_get_average(0);
 	
 		delay_ms(1);
 		
-		
-		grid_led_set_min(0, 0, 0x00, 0x00, 0x00);	
-		grid_led_set_mid(0, 0, 0x00, 0x00, 0x60);	
-		grid_led_set_max(0, 0, 0x00, 0x00, 0xE0);
-		
-		grid_led_set_phase(0, 0, average/16/4/4);
-		grid_led_set_frequency(0, 0, 0);
-		
-		grid_led_set_min(1, 1, 0x00, 0x00, 0x30);	
-		grid_led_set_mid(1, 1, 0x30, 0x00, 0x00);	
-		grid_led_set_max(1, 1, 0x00, 0x00, 0x00);
-		
-		grid_led_set_frequency(1, 1, 4);
+
 				
 		grid_led_tick();
 		
@@ -151,6 +178,7 @@ int main(void)
 		
 	
 
+		
 		
 		
 		

@@ -20,6 +20,8 @@ hal\src\hal_cache.c
 
 hal\src\hal_delay.c
 
+hal\src\hal_flash.c
+
 hal\src\hal_gpio.c
 
 hal\src\hal_i2c_m_async.c
@@ -57,6 +59,8 @@ hpl\dmac\hpl_dmac.c
 hpl\gclk\hpl_gclk.c
 
 hpl\mclk\hpl_mclk.c
+
+hpl\nvmctrl\hpl_nvmctrl.c
 
 hpl\osc32kctrl\hpl_osc32kctrl.c
 
