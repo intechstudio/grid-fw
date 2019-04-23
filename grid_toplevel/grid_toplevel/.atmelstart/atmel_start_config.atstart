@@ -49,7 +49,7 @@ drivers:
       adc_freerunning_mode: false
       adc_pinmux_negative: Internal ground
       adc_pinmux_positive: ADC AIN7 pin
-      adc_prescaler: Peripheral clock divided by 2
+      adc_prescaler: Peripheral clock divided by 4
       adc_reference: VDDANA
       adc_resolution: 16-bit (averaging must be enabled)
     optional_signals:
