@@ -3,33 +3,9 @@
 #include "../../grid_lib/grid_ain.c" // Analog input filtering
 #include "../../grid_lib/grid_tel.c" // Grid Telemetry
 
+#define GRID_MODULE_P16
 
-
-
-volatile static uint32_t dma_spi_done = 0;
-
-volatile static uint32_t transfer_ready = 1;
-
-
-volatile static uint8_t ADC_0_conversion_ready = 0;
-volatile static uint8_t ADC_1_conversion_ready = 0;
-
-static void convert_cb_ADC_0(const struct adc_async_descriptor *const descr, const uint8_t channel)
-{
-	ADC_0_conversion_ready = 1;
-}
-
-static void convert_cb_ADC_1(const struct adc_async_descriptor *const descr, const uint8_t channel)
-{
-	ADC_1_conversion_ready = 1;
-}
-
-
-// DMA SPI CALLBACK
-static void tx_complete_cb_GRID_LED(struct _dma_resource *resource)
-{
-	dma_spi_done = 1;
-}
+#include "../../grid_modules/grid_module_p16.c" // Grid Telemetry
 
 
 int main(void)
@@ -38,57 +14,10 @@ int main(void)
 	
 	atmel_start_init();
 	
+	grid_module_init();
+			
+	grid_led_init(grid_module_led_buffer_size);
 	
-	struct io_descriptor *io2;
-	spi_m_dma_get_io_descriptor(&GRID_LED, &io2);
-	spi_m_dma_register_callback(&GRID_LED, SPI_M_DMA_CB_TX_DONE, tx_complete_cb_GRID_LED);
-	
-
-	//enable pwr!
-	gpio_set_pin_level(UI_PWR_EN, true);
-
-	// ADC SETUP	
-	
-	adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, convert_cb_ADC_0);
-	adc_async_enable_channel(&ADC_0, 0);
-	adc_async_start_conversion(&ADC_0);
-				
-	adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, convert_cb_ADC_1);
-	adc_async_enable_channel(&ADC_1, 0);
-	adc_async_start_conversion(&ADC_1);
-		
-	
-
-	
-	// ===================== USART SETUP ========================= //
-	
-	struct io_descriptor *io;
-	//usart_async_register_callback(&GRID_AUX, USART_ASYNC_TXC_CB, tx_cb_GRID_AUX);
-	/*usart_async_register_callback(&GRID_AUX, USART_ASYNC_RXC_CB, rx_cb);
-	usart_async_register_callback(&GRID_AUX, USART_ASYNC_ERROR_CB, err_cb);*/
-	
-	usart_async_get_io_descriptor(&GRID_AUX, &io);
-	usart_async_enable(&GRID_AUX);
-
-
-	// GRID_LED Library NEW NEW NEW NEW
-	
-	
-
-	// Allocate memory for 4 leds and initialize the structure!
-	grid_led_init(4);
-	
-	// ================ LED DEFAULT CONFIG ================== //
-	
-	for(uint8_t i = 0; i<4; i++){
-		
-		grid_led_set_min(i, 0, 0x00, 0x00, 0x00);
-		grid_led_set_mid(i, 0, 0x00, 0x00, 0x60);
-		grid_led_set_max(i, 0, 0x00, 0x00, 0xE0);
-		
-		grid_led_set_frequency(i, 0, 0);	
-		
-	}
 	
 	
 	// FLASH EFFECT
@@ -99,10 +28,9 @@ int main(void)
 			
 	grid_led_set_frequency(3, 1, 4);
 			
-			
-	
-	// Allocate memory for 2 analog input with the filter depth of 3 samples, 14 bit format, 10bit result resolution
-	grid_ain_init(4, 3, 14, 10);
+				
+	// Allocate memory for 4 analog input with the filter depth of 3 samples, 14 bit format, 10bit result resolution
+	grid_ain_init(grid_module_ain_buffer_size, 3, 14, 10);
 
 
 	// UI RX EVENT fref=5, alert=50;
@@ -128,47 +56,12 @@ int main(void)
 		faketimer++;
 		
 		gpio_toggle_pin_level(LED0);
-		
-		
-		
+			
 		/* ========================= ANALOG READ ============================= */
-		
-		if (multiplexer == 0){
-			multiplexer = 1;
-		}else{
-			multiplexer = 0;
-		}
-		
-		
-		gpio_set_pin_level(MUX_A, !(multiplexer/1%2));
-		gpio_set_pin_level(MUX_B, multiplexer/2%2);
-		gpio_set_pin_level(MUX_C, multiplexer/4%2);
 		
 		delay_ms(1);
 
-		/* Start conversion */
-		ADC_0_conversion_ready = 0;
-		adc_async_start_conversion(&ADC_0);
-		
-		ADC_1_conversion_ready = 0;		
-		adc_async_start_conversion(&ADC_1);	
-		
-		/* Wait for conversion results */			
-		while(ADC_0_conversion_ready==0){}
-		while(ADC_1_conversion_ready==0){}	
-		
-		/* Read conversion results */	
-		uint16_t adcresult_0 = 0;	
-		adc_async_read_channel(&ADC_0, 0, &adcresult_0, 2);
-		grid_ain_add_sample(multiplexer+2,adcresult_0);
-		
-		
-		uint16_t adcresult_1 = 0;
-		adc_async_read_channel(&ADC_1, 0, &adcresult_1, 2);
-		grid_ain_add_sample(multiplexer,adcresult_1);		
 
-		
-		
 		
 		// Push out all changes
 		for (uint8_t i = 0; i<4; i++)

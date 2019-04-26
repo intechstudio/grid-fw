@@ -281,6 +281,24 @@ uint8_t grid_led_init(uint8_t num){
 	}
 
 
+
+	// READ DEFAULT SETTINGS FROM NVM 
+	
+	
+	// OR FALLBACK TO DEFAULT IF NO CONFIG FOUND 
+	for(uint8_t i = 0; i<led_number; i++){
+		
+		grid_led_set_min(i, 0, 0x00, 0x00, 0x00);
+		grid_led_set_mid(i, 0, 0x00, 0x00, 0x60);
+		grid_led_set_max(i, 0, 0x00, 0x00, 0xE0);
+		
+		grid_led_set_frequency(i, 0, 0);
+		
+	}
+
+
+
+
 	return 0;
 }
 
