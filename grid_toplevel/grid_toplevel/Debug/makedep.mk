@@ -18,6 +18,8 @@ hal\src\hal_atomic.c
 
 hal\src\hal_cache.c
 
+hal\src\hal_crc_sync.c
+
 hal\src\hal_delay.c
 
 hal\src\hal_flash.c
@@ -56,6 +58,8 @@ hpl\core\hpl_init.c
 
 hpl\dmac\hpl_dmac.c
 
+hpl\dsu\hpl_dsu.c
+
 hpl\gclk\hpl_gclk.c
 
 hpl\mclk\hpl_mclk.c
@@ -65,6 +69,8 @@ hpl\nvmctrl\hpl_nvmctrl.c
 hpl\osc32kctrl\hpl_osc32kctrl.c
 
 hpl\oscctrl\hpl_oscctrl.c
+
+hpl\pac\hpl_pac.c
 
 hpl\pm\hpl_pm.c
 

@@ -24,6 +24,8 @@ extern "C" {
 #include <hal_adc_async.h>
 #include <hal_adc_async.h>
 
+#include <hal_crc_sync.h>
+
 #include <hal_flash.h>
 
 #include <hal_usart_async.h>
@@ -36,6 +38,7 @@ extern "C" {
 
 extern struct adc_async_descriptor ADC_0;
 extern struct adc_async_descriptor ADC_1;
+extern struct crc_sync_descriptor  CRC_0;
 
 extern struct flash_descriptor       FLASH_0;
 extern struct usart_async_descriptor GRID_AUX;

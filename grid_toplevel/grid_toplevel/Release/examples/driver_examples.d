@@ -141,7 +141,8 @@ examples/driver_examples.d examples/driver_examples.o: \
  ../hal/include/hpl_adc_sync.h ../hal/include/hpl_irq.h \
  ../hal/utils/include/utils_ringbuffer.h ../hal/utils/include/compiler.h \
  ../hal/utils/include/utils_assert.h \
- ../hal/include/hpl_missing_features.h ../hal/include/hal_flash.h \
+ ../hal/include/hpl_missing_features.h ../hal/include/hal_crc_sync.h \
+ ../hal/include/hpl_crc_sync.h ../hal/include/hal_flash.h \
  ../hal/include/hpl_flash.h ../hal/include/hal_usart_async.h \
  ../hal/include/hal_io.h ../hal/include/hpl_usart_async.h \
  ../hal/include/hpl_usart.h ../hal/include/hal_i2c_m_async.h \
@@ -511,6 +512,10 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.1.96\samd51a\
 ../hal/utils/include/utils_assert.h:
 
 ../hal/include/hpl_missing_features.h:
+
+../hal/include/hal_crc_sync.h:
+
+../hal/include/hpl_crc_sync.h:
 
 ../hal/include/hal_flash.h:
 

@@ -15,8 +15,65 @@ int main(void)
 	atmel_start_init();
 	
 	grid_module_init();
-			
-	grid_led_init(grid_module_led_buffer_size);
+	
+			/* CRC Data in flash */
+		COMPILER_ALIGNED(4)
+		static const uint32_t crc_datas[] = {0x00000000,
+												0x11111111,
+												0x22222222,
+												0x33333333,
+												0x44444444,
+												0x55555555,
+												0x66666666,
+												0x77777777,
+												0x88888888,
+												0x99999999};
+
+
+		crc_sync_enable(&CRC_0);
+
+		/* The initial value used for the CRC32 calculation usually be 0xFFFFFFFF,
+		 * but can be, for example, the result of a previous CRC32 calculation if
+		 * generating a common CRC32 of separate memory blocks.
+		 */
+		uint32_t crc = 0xFFFFFFFF;
+		uint32_t crc2;
+		uint32_t ind;
+
+		
+		crc_sync_crc32(&CRC_0, (uint32_t *)crc_datas, 10, &crc);
+
+		/* The read value must be complemented to match standard CRC32
+		 * implementations or kept non-inverted if used as starting point for
+		 * subsequent CRC32 calculations.
+		 */
+		crc ^= 0xFFFFFFFF;
+
+		/* Calculate the same data with subsequent CRC32 calculations, the result
+		 * should be same as previous way.
+		 */
+		crc2 = 0xFFFFFFFF;
+		for (ind = 0; ind < 10; ind++) {
+			crc_sync_crc32(&CRC_0, (uint32_t *)&crc_datas[ind], 1, &crc2);
+		}
+		crc2 ^= 0xFFFFFFFF;
+
+		/* The calculate result should be same. */
+		while (crc != crc2);
+
+
+		char str[12];
+		sprintf(str, "CRC:%x\n", crc);
+
+		//USART
+		io_write(io, str, 12);
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -28,24 +85,16 @@ int main(void)
 			
 	grid_led_set_frequency(3, 1, 4);
 			
-				
-	// Allocate memory for 4 analog input with the filter depth of 3 samples, 14 bit format, 10bit result resolution
-	grid_ain_init(grid_module_ain_buffer_size, 3, 14, 10);
+
 
 
 	// UI RX EVENT fref=5, alert=50;
 	struct TEL_event_counter* console_tx = grid_tel_event_register(5, 50);
 	while(console_tx == NULL){/*TRAP*/}	
-	
-	char str[26];
-	sprintf(str, "FreqRef: %5d\n", grid_tel_event_head->frequency);
 
-	//USART
-	io_write(io, str, 26);
 
 	uint32_t faketimer = 0;
 
-	uint8_t multiplexer = 0;
 
 	while (1) {
 		
@@ -56,6 +105,11 @@ int main(void)
 		faketimer++;
 		
 		gpio_toggle_pin_level(LED0);
+
+
+
+
+
 			
 		/* ========================= ANALOG READ ============================= */
 		
@@ -73,10 +127,25 @@ int main(void)
 				uint16_t average = grid_ain_get_average(i);
 				
 				char str[26];
-				sprintf(str, "ADC: %5d %5d %5d\n", i, average/128, console_tx->frequency);
+				sprintf(str, "ADC: %5d %5d %5d \n", i, average, average/128);
 
 				//USART
-				io_write(io, str, 26);
+				io_write(io, str, 24);
+				
+				
+				
+				uint32_t crc = 0xFFFFFFFF;
+ 				crc_sync_crc32(&CRC_0, (uint32_t *)str, 5, &crc);
+ 				crc ^= 0xFFFFFFFF;
+							
+				delay_ms(5);
+				
+				char str2[26];
+				sprintf(str2, "CRC: %x \n", crc);
+
+				//USART
+				io_write(io, str2, 15);
+
 							
 				grid_led_set_phase(i, 0, average/8/4/4);
 				
@@ -96,6 +165,8 @@ int main(void)
 
 				
 		grid_led_tick();
+		
+		
 		
 		// RENDER ALL OF THE LEDs
 		grid_led_render_all();

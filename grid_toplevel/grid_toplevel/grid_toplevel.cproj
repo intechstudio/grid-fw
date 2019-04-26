@@ -243,11 +243,13 @@
       <Value>../hpl/cmcc</Value>
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
@@ -287,11 +289,13 @@
       <Value>../hpl/cmcc</Value>
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
@@ -313,11 +317,13 @@
       <Value>../hpl/cmcc</Value>
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
@@ -358,11 +364,13 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/cmcc</Value>
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
@@ -402,11 +410,13 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/cmcc</Value>
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
@@ -429,11 +439,13 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/cmcc</Value>
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
@@ -525,6 +537,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hal\include\hal_cache.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hal\include\hal_crc_sync.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hal\include\hal_delay.h">
       <SubType>compile</SubType>
     </Compile>
@@ -567,6 +582,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hal\include\hpl_core.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hal\include\hpl_crc_sync.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hal\include\hpl_delay.h">
       <SubType>compile</SubType>
     </Compile>
@@ -598,6 +616,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\include\hpl_missing_features.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hal\include\hpl_pac.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\include\hpl_ramecc.h">
@@ -658,6 +679,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\src\hal_cache.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hal\src\hal_crc_sync.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\src\hal_delay.c">
@@ -756,6 +780,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hpl\dmac\hpl_dmac.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hpl\dsu\hpl_dsu.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hpl\gclk\hpl_gclk.c">
       <SubType>compile</SubType>
     </Compile>
@@ -772,6 +799,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hpl\oscctrl\hpl_oscctrl.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hpl\pac\hpl_pac.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hpl\pm\hpl_pm.c">
@@ -934,11 +964,13 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Folder Include="hpl\cmcc\" />
     <Folder Include="hpl\core\" />
     <Folder Include="hpl\dmac\" />
+    <Folder Include="hpl\dsu\" />
     <Folder Include="hpl\gclk\" />
     <Folder Include="hpl\mclk\" />
     <Folder Include="hpl\nvmctrl\" />
     <Folder Include="hpl\osc32kctrl\" />
     <Folder Include="hpl\oscctrl\" />
+    <Folder Include="hpl\pac\" />
     <Folder Include="hpl\pm\" />
     <Folder Include="hpl\port\" />
     <Folder Include="hpl\ramecc\" />

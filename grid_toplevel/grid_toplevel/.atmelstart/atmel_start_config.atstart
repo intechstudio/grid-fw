@@ -677,6 +677,16 @@ drivers:
     variant: null
     clocks:
       domain_group: null
+  CRC_0:
+    user_label: CRC_0
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::DSU::driver_config_definition::CRC~28DSU~29::HAL:Driver:CRC
+    functionality: CRC
+    api: HAL:Driver:CRC
+    configuration: {}
+    optional_signals: []
+    variant: null
+    clocks:
+      domain_group: null
   GCLK:
     user_label: GCLK
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::GCLK::driver_config_definition::GCLK::HAL:HPL:GCLK

@@ -10,9 +10,10 @@
 	const uint8_t grid_module_din_buffer_size = 0; // number of digital inputs
 	
 	
-	struct io_descriptor *io2;
 		
-	struct io_descriptor *io;	
+	struct io_descriptor *io;
+	
+	struct io_descriptor *io2;
 	
 	// Define all of the peripheral interrupt callbacks
 	
@@ -59,7 +60,7 @@
 		}
 		
 		
-		gpio_set_pin_level(MUX_A, !(grid_module_mux/1%2));
+		gpio_set_pin_level(MUX_A, grid_module_mux/1%2);
 		gpio_set_pin_level(MUX_B, grid_module_mux/2%2);
 		gpio_set_pin_level(MUX_C, grid_module_mux/4%2);
 		
@@ -84,6 +85,10 @@
 
 	void grid_module_init(void){
 		
+						
+		// Allocate memory for 4 analog input with the filter depth of 3 samples, 14 bit format, 10bit result resolution
+		grid_ain_init(grid_module_ain_buffer_size, 3, 14, 10);		
+		grid_led_init(grid_module_led_buffer_size);
 
 		spi_m_dma_get_io_descriptor(&GRID_LED, &io2);
 		spi_m_dma_register_callback(&GRID_LED, SPI_M_DMA_CB_TX_DONE, tx_complete_cb_GRID_LED);

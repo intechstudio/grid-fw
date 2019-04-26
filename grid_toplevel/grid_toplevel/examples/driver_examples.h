@@ -16,6 +16,8 @@ void ADC_0_example(void);
 
 void ADC_1_example(void);
 
+void CRC_0_example(void);
+
 void FLASH_0_example(void);
 
 void GRID_AUX_example(void);

@@ -39,6 +39,7 @@ struct adc_async_descriptor         ADC_0;
 struct adc_async_channel_descriptor ADC_0_ch[ADC_0_CH_AMOUNT];
 struct adc_async_descriptor         ADC_1;
 struct adc_async_channel_descriptor ADC_1_ch[ADC_1_CH_AMOUNT];
+struct crc_sync_descriptor          CRC_0;
 struct usart_async_descriptor       GRID_AUX;
 
 static uint8_t ADC_0_buffer[ADC_0_BUFFER_SIZE];
@@ -87,6 +88,17 @@ void ADC_1_init(void)
 	gpio_set_pin_direction(PC02, GPIO_DIRECTION_OFF);
 
 	gpio_set_pin_function(PC02, PINMUX_PC02B_ADC1_AIN4);
+}
+
+/**
+ * \brief CRC initialization function
+ *
+ * Enables CRC peripheral, clocks and initializes CRC driver
+ */
+void CRC_0_init(void)
+{
+	hri_mclk_set_APBBMASK_DSU_bit(MCLK);
+	crc_sync_init(&CRC_0, DSU);
 }
 
 void FLASH_0_CLOCK_init(void)
@@ -316,6 +328,8 @@ void system_init(void)
 
 	ADC_0_init();
 	ADC_1_init();
+
+	CRC_0_init();
 
 	FLASH_0_init();
 

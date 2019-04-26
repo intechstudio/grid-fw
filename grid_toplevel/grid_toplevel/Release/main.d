@@ -140,7 +140,8 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  ../hal/include/hpl_adc_sync.h ../hal/include/hpl_irq.h \
  ../hal/utils/include/utils_ringbuffer.h ../hal/utils/include/compiler.h \
  ../hal/utils/include/utils_assert.h \
- ../hal/include/hpl_missing_features.h ../hal/include/hal_flash.h \
+ ../hal/include/hpl_missing_features.h ../hal/include/hal_crc_sync.h \
+ ../hal/include/hpl_crc_sync.h ../hal/include/hal_flash.h \
  ../hal/include/hpl_flash.h ../hal/include/hal_usart_async.h \
  ../hal/include/hal_io.h ../hal/include/hpl_usart_async.h \
  ../hal/include/hpl_usart.h ../hal/include/hal_i2c_m_async.h \
@@ -163,7 +164,8 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\machine\stdlib.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\alloca.h \
  .././../../grid_lib/grid_ain.c .././../../grid_lib/grid_ain.h \
- .././../../grid_lib/grid_tel.c .././../../grid_lib/grid_tel.h
+ .././../../grid_lib/grid_tel.c .././../../grid_lib/grid_tel.h \
+ .././../../grid_modules/grid_module_p16.c
 
 ../atmel_start.h:
 
@@ -527,6 +529,10 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.1.96\samd51a\
 
 ../hal/include/hpl_missing_features.h:
 
+../hal/include/hal_crc_sync.h:
+
+../hal/include/hpl_crc_sync.h:
+
 ../hal/include/hal_flash.h:
 
 ../hal/include/hpl_flash.h:
@@ -594,3 +600,5 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 .././../../grid_lib/grid_tel.c:
 
 .././../../grid_lib/grid_tel.h:
+
+.././../../grid_modules/grid_module_p16.c:
