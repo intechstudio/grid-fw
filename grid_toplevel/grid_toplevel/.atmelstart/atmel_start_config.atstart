@@ -4,16 +4,84 @@ versions:
   api: '1.0'
   backend: 1.5.122
   commit: 820baecf7dd115d94b0d42ee3b0b9d6ba2da7113
-  content: 1.0.1465
+  content: 1.0.1507
   content_pack_name: acme-packs-all
   format: '2'
-  frontend: 1.5.1826
+  frontend: 1.5.1877
 board:
   identifier: CustomBoard
   device: SAMD51N20A-AF
 details: null
 application: null
-middlewares: {}
+middlewares:
+  USB_CHAPTER_9:
+    user_label: USB_CHAPTER_9
+    configuration: {}
+    definition: Atmel:USB:0.0.1::USB_Chapter_9
+    functionality: USB_Chapter_9
+    api: USB:Protocol:Core
+    dependencies: {}
+  USB_CLASS_CDC:
+    user_label: USB_CLASS_CDC
+    configuration: {}
+    definition: Atmel:USB:0.0.1::USB_Class_CDC
+    functionality: USB_Class_CDC
+    api: USB:Protocol:CDC
+    dependencies:
+      USB Chapter 9: USB_CHAPTER_9
+  USB_DEVICE_CORE_0:
+    user_label: USB_DEVICE_CORE_0
+    configuration:
+      usbd_hs_sp: false
+    definition: Atmel:USB:0.0.1::USB_Device_Core
+    functionality: USB_Device_Core
+    api: USB:Device:Core
+    dependencies:
+      USB Chapter 9: USB_CHAPTER_9
+      USB Device instance: USB_0
+  USB_DEVICE_CDC_ACM_0:
+    user_label: USB_DEVICE_CDC_ACM_0
+    configuration:
+      usb_cdcd_acm_bcddevice: 256
+      usb_cdcd_acm_bcdusb: USB 2.0 version
+      usb_cdcd_acm_bconfigval: 1
+      usb_cdcd_acm_bmattri: Bus power supply, not support for remote wakeup
+      usb_cdcd_acm_bmaxpksz0: 64 bytes
+      usb_cdcd_acm_bmaxpower: 50
+      usb_cdcd_acm_bnumconfig: 1
+      usb_cdcd_acm_comm_baltset: 0
+      usb_cdcd_acm_comm_bifcnum: 0
+      usb_cdcd_acm_comm_iifc: 0
+      usb_cdcd_acm_comm_int_interval: 10
+      usb_cdcd_acm_comm_int_maxpksz: 64 bytes
+      usb_cdcd_acm_data_baltset: 0
+      usb_cdcd_acm_data_bifcnum: 1
+      usb_cdcd_acm_data_buckout_maxpksz: 64 bytes
+      usb_cdcd_acm_data_buckout_maxpksz_hs: 512 bytes
+      usb_cdcd_acm_data_builin_maxpksz: 64 bytes
+      usb_cdcd_acm_data_builin_maxpksz_hs: 512 bytes
+      usb_cdcd_acm_data_bulkin_epaddr: EndpointAddress = 0x81
+      usb_cdcd_acm_data_bulkout_epaddr: EndpointAddress = 0x01
+      usb_cdcd_acm_data_iifc: 0
+      usb_cdcd_acm_epaddr: EndpointAddress = 0x82
+      usb_cdcd_acm_iconfig_en: false
+      usb_cdcd_acm_iconfig_str: ''
+      usb_cdcd_acm_idproduct: 9220
+      usb_cdcd_acm_idvender: 1003
+      usb_cdcd_acm_imanufact_en: false
+      usb_cdcd_acm_imanufact_str: Atmel
+      usb_cdcd_acm_iproduct_en: false
+      usb_cdcd_acm_iproduct_str: CDC ACM Serial Bridge Demo
+      usb_cdcd_acm_iserialnum_en: false
+      usb_cdcd_acm_iserialnum_str: 123456789ABCDEF
+      usb_cdcd_acm_langid: '0x0409'
+      usb_cdcd_acm_str_en: false
+    definition: Atmel:USB:0.0.1::USB_Device_CDC_ACM
+    functionality: USB_Device_CDC_ACM
+    api: USB:Device:CDC_ACM
+    dependencies:
+      USB Device Stack Core Instance: USB_DEVICE_CORE_0
+      USB Class CDC: USB_CLASS_CDC
 drivers:
   ADC_0:
     user_label: ADC_0
@@ -1124,13 +1192,13 @@ drivers:
       specification: TXPO=0, RXPO=2
       required_signals:
       - name: SERCOM7/PAD/0
-        pad: PB21
+        pad: PB30
         label: MOSI
       - name: SERCOM7/PAD/1
-        pad: PB20
+        pad: PB31
         label: SCK
       - name: SERCOM7/PAD/2
-        pad: PB18
+        pad: PA30
         label: MISO
     clocks:
       domain_group:
@@ -1157,6 +1225,49 @@ drivers:
     variant: null
     clocks:
       domain_group: null
+  USB_0:
+    user_label: USB_0
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::USB::driver_config_definition::USB.Device::HAL:Driver:USB.Device
+    functionality: USB
+    api: HAL:Driver:USB_Device
+    configuration:
+      usb_arch_ep0_cache: Cached by 64 bytes buffer
+      usb_arch_ep1_cache: Cached by 64 bytes buffer
+      usb_arch_ep2_cache: Cached by 64 bytes buffer
+      usb_arch_ep3_cache: Cached by 64 bytes buffer
+      usb_arch_ep4_cache: Cached by 64 bytes buffer
+      usb_arch_ep5_cache: Cached by 64 bytes buffer
+      usb_arch_ep6_cache: Cached by 64 bytes buffer
+      usb_arch_ep7_cache: Cached by 64 bytes buffer
+      usb_ep1_I_CACHE: No cache
+      usb_ep2_I_CACHE: No cache
+      usb_ep3_I_CACHE: No cache
+      usb_ep4_I_CACHE: No cache
+      usb_ep5_I_CACHE: No cache
+      usb_ep6_I_CACHE: No cache
+      usb_ep7_I_CACHE: No cache
+      usbd_arch_max_ep_n: 2 (EP 0x82 or 0x02)
+      usbd_arch_speed: Full speed
+      usbd_num_ep_sp: Max possible (by "Max Endpoint Number" config)
+    optional_signals: []
+    variant:
+      specification: default
+      required_signals:
+      - name: USB/DM
+        pad: PA24
+        label: Data-
+      - name: USB/DP
+        pad: PA25
+        label: Data+
+    clocks:
+      domain_group:
+        nodes:
+        - name: USB
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        configuration:
+          usb_gclk_selection: Generic clock generator 0
 pads:
   PC02:
     name: PC02
@@ -1200,24 +1311,6 @@ pads:
     mode: Digital output
     user_label: MUX_C
     configuration: null
-  PB18:
-    name: PB18
-    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PB18
-    mode: Digital input
-    user_label: PB18
-    configuration: null
-  PB20:
-    name: PB20
-    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PB20
-    mode: Digital output
-    user_label: PB20
-    configuration: null
-  PB21:
-    name: PB21
-    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PB21
-    mode: Digital output
-    user_label: PB21
-    configuration: null
   PA22:
     name: PA22
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA22
@@ -1230,6 +1323,18 @@ pads:
     mode: I2C
     user_label: PA23
     configuration: null
+  PA24:
+    name: PA24
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA24
+    mode: Advanced
+    user_label: PA24
+    configuration: null
+  PA25:
+    name: PA25
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA25
+    mode: Advanced
+    user_label: PA25
+    configuration: null
   PB24:
     name: PB24
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PB24
@@ -1241,5 +1346,23 @@ pads:
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PB25
     mode: Peripheral IO
     user_label: PB25
+    configuration: null
+  PA30:
+    name: PA30
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA30
+    mode: Digital input
+    user_label: PA30
+    configuration: null
+  PB30:
+    name: PB30
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PB30
+    mode: Digital output
+    user_label: PB30
+    configuration: null
+  PB31:
+    name: PB31
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PB31
+    mode: Digital output
+    user_label: PB31
     configuration: null
 toolchain_options: []

@@ -3,7 +3,7 @@
  *
  * \brief SAM D51 HRI top-level header file
  *
- * Copyright (c) 2016-2018 Microchip Technology Inc. and its subsidiaries.
+ * Copyright (c) 2016-2019 Microchip Technology Inc. and its subsidiaries.
  *
  * \asf_license_start
  *
@@ -51,8 +51,6 @@
 #include <hri_i2s_d51.h>
 #include <hri_icm_d51.h>
 #include <hri_mclk_d51.h>
-#include <hri_mpu_d51.h>
-#include <hri_nvic_d51.h>
 #include <hri_nvmctrl_d51.h>
 #include <hri_osc32kctrl_d51.h>
 #include <hri_oscctrl_d51.h>
@@ -68,8 +66,6 @@
 #include <hri_sdhc_d51.h>
 #include <hri_sercom_d51.h>
 #include <hri_supc_d51.h>
-#include <hri_systemcontrol_d51.h>
-#include <hri_systick_d51.h>
 #include <hri_tc_d51.h>
 #include <hri_tcc_d51.h>
 #include <hri_trng_d51.h>

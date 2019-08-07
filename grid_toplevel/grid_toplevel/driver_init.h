@@ -36,6 +36,8 @@ extern "C" {
 
 #include <hal_delay.h>
 
+#include "hal_usb_device.h"
+
 extern struct adc_async_descriptor ADC_0;
 extern struct adc_async_descriptor ADC_1;
 extern struct crc_sync_descriptor  CRC_0;
@@ -67,6 +69,9 @@ void GRID_LED_CLOCK_init(void);
 void GRID_LED_init(void);
 
 void delay_driver_init(void);
+
+void USB_0_CLOCK_init(void);
+void USB_0_init(void);
 
 /**
  * \brief Perform system initialization, initialize pins and clocks for

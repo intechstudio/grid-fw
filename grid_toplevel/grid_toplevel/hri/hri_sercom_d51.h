@@ -3,7 +3,7 @@
  *
  * \brief SAM SERCOM
  *
- * Copyright (c) 2016-2018 Microchip Technology Inc. and its subsidiaries.
+ * Copyright (c) 2016-2019 Microchip Technology Inc. and its subsidiaries.
  *
  * \asf_license_start
  *
@@ -3682,7 +3682,7 @@ static inline void hri_sercomi2cm_set_CTRLB_SMEN_bit(const void *const hw)
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg |= SERCOM_I2CM_CTRLB_SMEN;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3702,7 +3702,7 @@ static inline void hri_sercomi2cm_write_CTRLB_SMEN_bit(const void *const hw, boo
 	tmp &= ~SERCOM_I2CM_CTRLB_SMEN;
 	tmp |= value << SERCOM_I2CM_CTRLB_SMEN_Pos;
 	((Sercom *)hw)->I2CM.CTRLB.reg = tmp;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3710,7 +3710,7 @@ static inline void hri_sercomi2cm_clear_CTRLB_SMEN_bit(const void *const hw)
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg &= ~SERCOM_I2CM_CTRLB_SMEN;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3718,7 +3718,7 @@ static inline void hri_sercomi2cm_toggle_CTRLB_SMEN_bit(const void *const hw)
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg ^= SERCOM_I2CM_CTRLB_SMEN;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3726,7 +3726,7 @@ static inline void hri_sercomi2cm_set_CTRLB_QCEN_bit(const void *const hw)
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg |= SERCOM_I2CM_CTRLB_QCEN;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3746,7 +3746,7 @@ static inline void hri_sercomi2cm_write_CTRLB_QCEN_bit(const void *const hw, boo
 	tmp &= ~SERCOM_I2CM_CTRLB_QCEN;
 	tmp |= value << SERCOM_I2CM_CTRLB_QCEN_Pos;
 	((Sercom *)hw)->I2CM.CTRLB.reg = tmp;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3754,7 +3754,7 @@ static inline void hri_sercomi2cm_clear_CTRLB_QCEN_bit(const void *const hw)
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg &= ~SERCOM_I2CM_CTRLB_QCEN;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3762,7 +3762,7 @@ static inline void hri_sercomi2cm_toggle_CTRLB_QCEN_bit(const void *const hw)
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg ^= SERCOM_I2CM_CTRLB_QCEN;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3770,7 +3770,7 @@ static inline void hri_sercomi2cm_set_CTRLB_ACKACT_bit(const void *const hw)
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg |= SERCOM_I2CM_CTRLB_ACKACT;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3790,7 +3790,7 @@ static inline void hri_sercomi2cm_write_CTRLB_ACKACT_bit(const void *const hw, b
 	tmp &= ~SERCOM_I2CM_CTRLB_ACKACT;
 	tmp |= value << SERCOM_I2CM_CTRLB_ACKACT_Pos;
 	((Sercom *)hw)->I2CM.CTRLB.reg = tmp;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3798,7 +3798,7 @@ static inline void hri_sercomi2cm_clear_CTRLB_ACKACT_bit(const void *const hw)
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg &= ~SERCOM_I2CM_CTRLB_ACKACT;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3806,7 +3806,7 @@ static inline void hri_sercomi2cm_toggle_CTRLB_ACKACT_bit(const void *const hw)
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg ^= SERCOM_I2CM_CTRLB_ACKACT;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3867,7 +3867,7 @@ static inline void hri_sercomi2cm_set_CTRLB_reg(const void *const hw, hri_sercom
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg |= mask;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3875,7 +3875,7 @@ static inline hri_sercomi2cm_ctrlb_reg_t hri_sercomi2cm_get_CTRLB_reg(const void
                                                                       hri_sercomi2cm_ctrlb_reg_t mask)
 {
 	uint32_t tmp;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	tmp = ((Sercom *)hw)->I2CM.CTRLB.reg;
 	tmp &= mask;
 	return tmp;
@@ -3885,7 +3885,7 @@ static inline void hri_sercomi2cm_write_CTRLB_reg(const void *const hw, hri_serc
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg = data;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3893,7 +3893,7 @@ static inline void hri_sercomi2cm_clear_CTRLB_reg(const void *const hw, hri_serc
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg &= ~mask;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
@@ -3901,13 +3901,13 @@ static inline void hri_sercomi2cm_toggle_CTRLB_reg(const void *const hw, hri_ser
 {
 	SERCOM_CRITICAL_SECTION_ENTER();
 	((Sercom *)hw)->I2CM.CTRLB.reg ^= mask;
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	SERCOM_CRITICAL_SECTION_LEAVE();
 }
 
 static inline hri_sercomi2cm_ctrlb_reg_t hri_sercomi2cm_read_CTRLB_reg(const void *const hw)
 {
-	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_MASK);
+	hri_sercomi2cm_wait_for_sync(hw, SERCOM_I2CM_SYNCBUSY_SYSOP);
 	return ((Sercom *)hw)->I2CM.CTRLB.reg;
 }
 

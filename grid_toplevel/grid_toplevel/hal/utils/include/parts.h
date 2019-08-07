@@ -3,7 +3,7 @@
  *
  * \brief Atmel part identification macros
  *
- * Copyright (c) 2015-2018 Microchip Technology Inc. and its subsidiaries.
+ * Copyright (c) 2015-2019 Microchip Technology Inc. and its subsidiaries.
  *
  * \asf_license_start
  *

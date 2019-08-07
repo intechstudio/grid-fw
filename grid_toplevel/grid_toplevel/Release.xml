@@ -21,17 +21,24 @@
       <Value>../hpl/cmcc</Value>
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
+      <Value>../hpl/usb</Value>
       <Value>../hri</Value>
+      <Value>../usb</Value>
+      <Value>../usb/class/cdc</Value>
+      <Value>../usb/class/cdc/device</Value>
+      <Value>../usb/device</Value>
       <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.1.96\samd51a\include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
@@ -65,17 +72,24 @@
       <Value>../hpl/cmcc</Value>
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
+      <Value>../hpl/usb</Value>
       <Value>../hri</Value>
+      <Value>../usb</Value>
+      <Value>../usb/class/cdc</Value>
+      <Value>../usb/class/cdc/device</Value>
+      <Value>../usb/device</Value>
       <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.1.96\samd51a\include</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
@@ -91,17 +105,24 @@
       <Value>../hpl/cmcc</Value>
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
       <Value>../hpl/osc32kctrl</Value>
       <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
+      <Value>../hpl/usb</Value>
       <Value>../hri</Value>
+      <Value>../usb</Value>
+      <Value>../usb/class/cdc</Value>
+      <Value>../usb/class/cdc/device</Value>
+      <Value>../usb/device</Value>
       <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.1.96\samd51a\include</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>

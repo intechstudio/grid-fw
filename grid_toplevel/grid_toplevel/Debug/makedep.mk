@@ -38,6 +38,8 @@ hal\src\hal_spi_m_dma.c
 
 hal\src\hal_usart_async.c
 
+hal\src\hal_usb_device.c
+
 hal\utils\src\utils_assert.c
 
 hal\utils\src\utils_event.c
@@ -80,5 +82,15 @@ hpl\sercom\hpl_sercom.c
 
 hpl\systick\hpl_systick.c
 
+hpl\usb\hpl_usb.c
+
 main.c
+
+usb\class\cdc\device\cdcdf_acm.c
+
+usb\device\usbdc.c
+
+usb\usb_protocol.c
+
+usb_start.c
 

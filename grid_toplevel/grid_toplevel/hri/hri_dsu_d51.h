@@ -3,7 +3,7 @@
  *
  * \brief SAM DSU
  *
- * Copyright (c) 2017-2018 Microchip Technology Inc. and its subsidiaries.
+ * Copyright (c) 2017-2019 Microchip Technology Inc. and its subsidiaries.
  *
  * \asf_license_start
  *
@@ -58,7 +58,6 @@ typedef uint32_t hri_dsu_cid2_reg_t;
 typedef uint32_t hri_dsu_cid3_reg_t;
 typedef uint32_t hri_dsu_data_reg_t;
 typedef uint32_t hri_dsu_dcc_reg_t;
-typedef uint32_t hri_dsu_dcfg_reg_t;
 typedef uint32_t hri_dsu_did_reg_t;
 typedef uint32_t hri_dsu_end_reg_t;
 typedef uint32_t hri_dsu_entry0_reg_t;
@@ -105,16 +104,6 @@ static inline bool hri_dsu_get_STATUSB_HPE_bit(const void *const hw)
 static inline bool hri_dsu_get_STATUSB_CELCK_bit(const void *const hw)
 {
 	return (((Dsu *)hw)->STATUSB.reg & DSU_STATUSB_CELCK) >> DSU_STATUSB_CELCK_Pos;
-}
-
-static inline bool hri_dsu_get_STATUSB_TDCCD0_bit(const void *const hw)
-{
-	return (((Dsu *)hw)->STATUSB.reg & DSU_STATUSB_TDCCD0) >> DSU_STATUSB_TDCCD0_Pos;
-}
-
-static inline bool hri_dsu_get_STATUSB_TDCCD1_bit(const void *const hw)
-{
-	return (((Dsu *)hw)->STATUSB.reg & DSU_STATUSB_TDCCD1) >> DSU_STATUSB_TDCCD1_Pos;
 }
 
 static inline hri_dsu_statusb_reg_t hri_dsu_get_STATUSB_reg(const void *const hw, hri_dsu_statusb_reg_t mask)
@@ -1170,95 +1159,6 @@ static inline void hri_dsu_toggle_CFG_reg(const void *const hw, hri_dsu_cfg_reg_
 static inline hri_dsu_cfg_reg_t hri_dsu_read_CFG_reg(const void *const hw)
 {
 	return ((Dsu *)hw)->CFG.reg;
-}
-
-static inline void hri_dsu_set_DCFG_DCFG_bf(const void *const hw, uint8_t index, hri_dsu_dcfg_reg_t mask)
-{
-	DSU_CRITICAL_SECTION_ENTER();
-	((Dsu *)hw)->DCFG[index].reg |= DSU_DCFG_DCFG(mask);
-	DSU_CRITICAL_SECTION_LEAVE();
-}
-
-static inline hri_dsu_dcfg_reg_t hri_dsu_get_DCFG_DCFG_bf(const void *const hw, uint8_t index, hri_dsu_dcfg_reg_t mask)
-{
-	uint32_t tmp;
-	tmp = ((Dsu *)hw)->DCFG[index].reg;
-	tmp = (tmp & DSU_DCFG_DCFG(mask)) >> DSU_DCFG_DCFG_Pos;
-	return tmp;
-}
-
-static inline void hri_dsu_write_DCFG_DCFG_bf(const void *const hw, uint8_t index, hri_dsu_dcfg_reg_t data)
-{
-	uint32_t tmp;
-	DSU_CRITICAL_SECTION_ENTER();
-	tmp = ((Dsu *)hw)->DCFG[index].reg;
-	tmp &= ~DSU_DCFG_DCFG_Msk;
-	tmp |= DSU_DCFG_DCFG(data);
-	((Dsu *)hw)->DCFG[index].reg = tmp;
-	DSU_CRITICAL_SECTION_LEAVE();
-}
-
-static inline void hri_dsu_clear_DCFG_DCFG_bf(const void *const hw, uint8_t index, hri_dsu_dcfg_reg_t mask)
-{
-	DSU_CRITICAL_SECTION_ENTER();
-	((Dsu *)hw)->DCFG[index].reg &= ~DSU_DCFG_DCFG(mask);
-	DSU_CRITICAL_SECTION_LEAVE();
-}
-
-static inline void hri_dsu_toggle_DCFG_DCFG_bf(const void *const hw, uint8_t index, hri_dsu_dcfg_reg_t mask)
-{
-	DSU_CRITICAL_SECTION_ENTER();
-	((Dsu *)hw)->DCFG[index].reg ^= DSU_DCFG_DCFG(mask);
-	DSU_CRITICAL_SECTION_LEAVE();
-}
-
-static inline hri_dsu_dcfg_reg_t hri_dsu_read_DCFG_DCFG_bf(const void *const hw, uint8_t index)
-{
-	uint32_t tmp;
-	tmp = ((Dsu *)hw)->DCFG[index].reg;
-	tmp = (tmp & DSU_DCFG_DCFG_Msk) >> DSU_DCFG_DCFG_Pos;
-	return tmp;
-}
-
-static inline void hri_dsu_set_DCFG_reg(const void *const hw, uint8_t index, hri_dsu_dcfg_reg_t mask)
-{
-	DSU_CRITICAL_SECTION_ENTER();
-	((Dsu *)hw)->DCFG[index].reg |= mask;
-	DSU_CRITICAL_SECTION_LEAVE();
-}
-
-static inline hri_dsu_dcfg_reg_t hri_dsu_get_DCFG_reg(const void *const hw, uint8_t index, hri_dsu_dcfg_reg_t mask)
-{
-	uint32_t tmp;
-	tmp = ((Dsu *)hw)->DCFG[index].reg;
-	tmp &= mask;
-	return tmp;
-}
-
-static inline void hri_dsu_write_DCFG_reg(const void *const hw, uint8_t index, hri_dsu_dcfg_reg_t data)
-{
-	DSU_CRITICAL_SECTION_ENTER();
-	((Dsu *)hw)->DCFG[index].reg = data;
-	DSU_CRITICAL_SECTION_LEAVE();
-}
-
-static inline void hri_dsu_clear_DCFG_reg(const void *const hw, uint8_t index, hri_dsu_dcfg_reg_t mask)
-{
-	DSU_CRITICAL_SECTION_ENTER();
-	((Dsu *)hw)->DCFG[index].reg &= ~mask;
-	DSU_CRITICAL_SECTION_LEAVE();
-}
-
-static inline void hri_dsu_toggle_DCFG_reg(const void *const hw, uint8_t index, hri_dsu_dcfg_reg_t mask)
-{
-	DSU_CRITICAL_SECTION_ENTER();
-	((Dsu *)hw)->DCFG[index].reg ^= mask;
-	DSU_CRITICAL_SECTION_LEAVE();
-}
-
-static inline hri_dsu_dcfg_reg_t hri_dsu_read_DCFG_reg(const void *const hw, uint8_t index)
-{
-	return ((Dsu *)hw)->DCFG[index].reg;
 }
 
 static inline bool hri_dsu_get_STATUSA_DONE_bit(const void *const hw)
