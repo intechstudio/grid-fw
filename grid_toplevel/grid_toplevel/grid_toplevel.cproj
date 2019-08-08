@@ -989,6 +989,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hri\hri_rstc_d51.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hri\hri_rtc_d51.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hri\hri_sdhc_d51.h">
       <SubType>compile</SubType>
     </Compile>

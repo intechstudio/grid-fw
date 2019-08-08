@@ -39,9 +39,68 @@ int main(void)
 
 	while (1) {
 		
-		if (faketimer == 10){
+		if (faketimer > 100){
 			grid_tel_frequency_tick();
 			faketimer = 0;
+			
+			gpio_set_pin_direction(HWCFG_SHIFT, GPIO_DIRECTION_OUT);
+			gpio_set_pin_direction(HWCFG_CLOCK, GPIO_DIRECTION_OUT);
+			gpio_set_pin_direction(HWCFG_DATA, GPIO_DIRECTION_IN);
+			
+			// LOAD DATA
+			gpio_set_pin_level(HWCFG_SHIFT, 0);	
+			delay_ms(1);
+			
+					
+			
+			uint8_t hwcfg_value = 0;
+			
+			
+			for(uint8_t i = 0; i<8; i++){ // now we need to shift in the remaining 7 values
+				
+				// SHIFT DATA
+				gpio_set_pin_level(HWCFG_SHIFT, 1); //This outputs the first value to HWCFG_DATA
+				delay_ms(1);
+				
+				
+				if(gpio_get_pin_level(HWCFG_DATA)){
+				
+				 	hwcfg_value |= (1<<i);
+				
+				}else{
+				
+				
+				}
+				
+				if(i!=7){
+									
+					// Clock rise
+					gpio_set_pin_level(HWCFG_CLOCK, 1);
+				
+					delay_ms(1);
+				
+					gpio_set_pin_level(HWCFG_CLOCK, 0);
+				}
+					
+					
+				
+			}
+			
+			
+			// REPORT OVER SERIAL
+			
+			struct io_descriptor *io_uart_aux;
+			
+			usart_async_get_io_descriptor(&GRID_AUX, &io_uart_aux);
+			usart_async_enable(&GRID_AUX);
+
+			char example_GRID_AUX[12];
+			
+			sprintf(example_GRID_AUX, "HWCFG:%d\n", hwcfg_value);
+
+			io_write(io_uart_aux, example_GRID_AUX, 12);
+
+			
 		}
 		faketimer++;
 		
@@ -110,20 +169,18 @@ int main(void)
 		
 		for (uint8_t i=0; i<16; i++){
 			
-			grid_led_set_color(i, 0, 0, 0);
-			grid_led_set_color(0, 255, 0, 0);
+			//grid_led_set_color(i, 0, 255, 0);
+			
+			grid_led_set_color(i, colorfade*(colorcode==0), colorfade*(colorcode==1), colorfade*(colorcode==2));
 		
 		
 		}
-	/*
-		grid_led_set_color(4, colorfade*(colorcode==0), colorfade*(colorcode==1), colorfade*(colorcode==2));
-		grid_led_set_color(0, colorfade*(colorcode==0), colorfade*(colorcode==1), colorfade*(colorcode==2));
-		
+	
 		colorfade++;
 		if (colorfade == 0) colorcode++;
 		if (colorcode>2) colorcode=0;
 		
-	*/	
+	
 		delay_ms(2);
 			
 		// SEND DATA TO LEDs 		

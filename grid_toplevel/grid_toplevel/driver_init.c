@@ -385,6 +385,64 @@ void system_init(void)
 
 	gpio_set_pin_function(LED0, GPIO_PIN_FUNCTION_OFF);
 
+	// GPIO on PB13
+
+	gpio_set_pin_level(HWCFG_SHIFT,
+	                   // <y> Initial level
+	                   // <id> pad_initial_level
+	                   // <false"> Low
+	                   // <true"> High
+	                   false);
+
+	// Set pin direction to output
+	gpio_set_pin_direction(HWCFG_SHIFT, GPIO_DIRECTION_OUT);
+
+	gpio_set_pin_function(HWCFG_SHIFT, GPIO_PIN_FUNCTION_OFF);
+
+	// GPIO on PB14
+
+	gpio_set_pin_level(HWCFG_CLOCK,
+	                   // <y> Initial level
+	                   // <id> pad_initial_level
+	                   // <false"> Low
+	                   // <true"> High
+	                   false);
+
+	// Set pin direction to output
+	gpio_set_pin_direction(HWCFG_CLOCK, GPIO_DIRECTION_OUT);
+
+	gpio_set_pin_function(HWCFG_CLOCK, GPIO_PIN_FUNCTION_OFF);
+
+	// GPIO on PB15
+
+	// Set pin direction to input
+	gpio_set_pin_direction(HWCFG_DATA, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(HWCFG_DATA,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(HWCFG_DATA, GPIO_PIN_FUNCTION_OFF);
+
+	// GPIO on PC11
+
+	// Set pin direction to input
+	gpio_set_pin_direction(MAP_MODE, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(MAP_MODE,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_UP);
+
+	gpio_set_pin_function(MAP_MODE, GPIO_PIN_FUNCTION_OFF);
+
 	// GPIO on PC14
 
 	gpio_set_pin_level(UI_PWR_EN,
