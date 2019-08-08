@@ -3,7 +3,7 @@
  *
  * \brief gcc starttup file for SAMD51
  *
- * Copyright (c) 2018 Microchip Technology Inc.
+ * Copyright (c) 2019 Microchip Technology Inc.
  *
  * \asf_license_start
  *

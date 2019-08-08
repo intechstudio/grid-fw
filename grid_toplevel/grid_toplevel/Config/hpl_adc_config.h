@@ -206,7 +206,7 @@
 #endif
 
 // <o> Sampling Time Length <0-63>
-// <i> These bits control the ADC sampling time in number of half CLK_ADC cycles, depending of the prescaler value, thus controlling the ADC input impedance. (SAMPLEN)
+// <i> These bits control the ADC sampling time in number of CLK_ADC cycles, depending of the prescaler value, thus controlling the ADC input impedance. (SAMPLEN)
 // <id> adc_arch_samplen
 #ifndef CONF_ADC_0_SAMPLEN
 #define CONF_ADC_0_SAMPLEN 0
@@ -499,7 +499,7 @@
 #endif
 
 // <o> Sampling Time Length <0-63>
-// <i> These bits control the ADC sampling time in number of half CLK_ADC cycles, depending of the prescaler value, thus controlling the ADC input impedance. (SAMPLEN)
+// <i> These bits control the ADC sampling time in number of CLK_ADC cycles, depending of the prescaler value, thus controlling the ADC input impedance. (SAMPLEN)
 // <id> adc_arch_samplen
 #ifndef CONF_ADC_1_SAMPLEN
 #define CONF_ADC_1_SAMPLEN 0

@@ -2,12 +2,12 @@ format_version: '2'
 name: My Project
 versions:
   api: '1.0'
-  backend: 1.5.122
-  commit: 820baecf7dd115d94b0d42ee3b0b9d6ba2da7113
-  content: 1.0.1507
+  backend: 1.6.148
+  commit: 605f106ab95776472e3febf2fac2471441fb1816
+  content: 1.0.1600
   content_pack_name: acme-packs-all
   format: '2'
-  frontend: 1.5.1877
+  frontend: 1.6.1881
 board:
   identifier: CustomBoard
   device: SAMD51N20A-AF
@@ -850,7 +850,7 @@ drivers:
       gclk_gen_2_oscillator: External Crystal Oscillator 8-48MHz (XOSC1)
       gclk_gen_3_div: 1
       gclk_gen_3_div_sel: false
-      gclk_gen_3_oscillator: 32kHz Ultra Low Power Internal Oscillator (OSCULP32K)
+      gclk_gen_3_oscillator: 32kHz External Crystal Oscillator (XOSC32K)
       gclk_gen_4_div: 1
       gclk_gen_4_div_sel: false
       gclk_gen_4_oscillator: Digital Phase Locked Loop (DPLL0)
@@ -917,7 +917,7 @@ drivers:
     configuration:
       enable_osculp32k: true
       enable_rtc_source: false
-      enable_xosc32k: false
+      enable_xosc32k: true
       osculp32k_calib: 0
       osculp32k_calib_enable: false
       rtc_1khz_selection: false
@@ -926,13 +926,13 @@ drivers:
       xosc32k_arch_cfdeo: false
       xosc32k_arch_cgm: Standard mode
       xosc32k_arch_en1k: false
-      xosc32k_arch_en32k: false
-      xosc32k_arch_enable: false
+      xosc32k_arch_en32k: true
+      xosc32k_arch_enable: true
       xosc32k_arch_ondemand: true
       xosc32k_arch_runstdby: false
       xosc32k_arch_startup: 62592us
       xosc32k_arch_swben: false
-      xosc32k_arch_xtalen: false
+      xosc32k_arch_xtalen: true
     optional_signals: []
     variant: null
     clocks:

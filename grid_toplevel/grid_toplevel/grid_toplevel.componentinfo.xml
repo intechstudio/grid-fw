@@ -57,7 +57,7 @@
 			<CSub></CSub>
 			<CVariant></CVariant>
 			<CVendor>Atmel</CVendor>
-			<CVersion>1.1.0</CVersion>
+			<CVersion>1.2.0</CVersion>
 			<DefaultRepoPath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs</DefaultRepoPath>
 			<DependentComponents xmlns:d4p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
 				<d4p1:anyType z:Ref="i1" />
@@ -65,7 +65,7 @@
 			<Description></Description>
 			<Files xmlns:d4p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
 				<d4p1:anyType i:type="FileInfo">
-					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.1.96\samd51a\include</AbsolutePath>
+					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\include</AbsolutePath>
 					<Attribute></Attribute>
 					<Category>include</Category>
 					<Condition>C</Condition>
@@ -76,77 +76,77 @@
 					<SourcePath></SourcePath>
 				</d4p1:anyType>
 				<d4p1:anyType i:type="FileInfo">
-					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.1.96\samd51a\include\sam.h</AbsolutePath>
+					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\include\sam.h</AbsolutePath>
 					<Attribute></Attribute>
 					<Category>header</Category>
 					<Condition>C</Condition>
-					<FileContentHash>AuB9NMG7Tkkv+m7YXxM+6Q==</FileContentHash>
+					<FileContentHash>rD3kwzrlLE7LjuVvGHbYTA==</FileContentHash>
 					<FileVersion></FileVersion>
 					<Name>samd51a/include/sam.h</Name>
 					<SelectString></SelectString>
 					<SourcePath></SourcePath>
 				</d4p1:anyType>
 				<d4p1:anyType i:type="FileInfo">
-					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.1.96\samd51a\templates\main.c</AbsolutePath>
+					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\templates\main.c</AbsolutePath>
 					<Attribute>template</Attribute>
 					<Category>source</Category>
 					<Condition>C Exe</Condition>
-					<FileContentHash>b4RFXX45TaCf3TqivTCs9w==</FileContentHash>
+					<FileContentHash>iL6w8i4CoqNKLMLOR5ZiXA==</FileContentHash>
 					<FileVersion></FileVersion>
 					<Name>samd51a/templates/main.c</Name>
 					<SelectString>Main file (.c)</SelectString>
 					<SourcePath></SourcePath>
 				</d4p1:anyType>
 				<d4p1:anyType i:type="FileInfo">
-					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.1.96\samd51a\templates\main.cpp</AbsolutePath>
+					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\templates\main.cpp</AbsolutePath>
 					<Attribute>template</Attribute>
 					<Category>source</Category>
 					<Condition>C Exe</Condition>
-					<FileContentHash>nU+WlKcYaWh0AWBBS+WVpA==</FileContentHash>
+					<FileContentHash>Wwcf/gxegRQ10+cCzYcFIw==</FileContentHash>
 					<FileVersion></FileVersion>
 					<Name>samd51a/templates/main.cpp</Name>
 					<SelectString>Main file (.cpp)</SelectString>
 					<SourcePath></SourcePath>
 				</d4p1:anyType>
 				<d4p1:anyType i:type="FileInfo">
-					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.1.96\samd51a\gcc\system_samd51.c</AbsolutePath>
+					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\gcc\system_samd51.c</AbsolutePath>
 					<Attribute>config</Attribute>
 					<Category>source</Category>
 					<Condition>GCC Exe</Condition>
-					<FileContentHash>Io+G5c7zYwO3mQ3vPfIFcw==</FileContentHash>
+					<FileContentHash>doJVlmj1zJFW6L6a8gLeVw==</FileContentHash>
 					<FileVersion></FileVersion>
 					<Name>samd51a/gcc/system_samd51.c</Name>
 					<SelectString></SelectString>
 					<SourcePath></SourcePath>
 				</d4p1:anyType>
 				<d4p1:anyType i:type="FileInfo">
-					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.1.96\samd51a\gcc\gcc\startup_samd51.c</AbsolutePath>
+					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\gcc\gcc\startup_samd51.c</AbsolutePath>
 					<Attribute>config</Attribute>
 					<Category>source</Category>
 					<Condition>GCC Exe</Condition>
-					<FileContentHash>XNk7gweT117xo/LUATdE0w==</FileContentHash>
+					<FileContentHash>LhhJYPvpcWu0vydBG4SgQw==</FileContentHash>
 					<FileVersion></FileVersion>
 					<Name>samd51a/gcc/gcc/startup_samd51.c</Name>
 					<SelectString></SelectString>
 					<SourcePath></SourcePath>
 				</d4p1:anyType>
 				<d4p1:anyType i:type="FileInfo">
-					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.1.96\samd51a\gcc\gcc\samd51n20a_flash.ld</AbsolutePath>
+					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\gcc\gcc\samd51n20a_flash.ld</AbsolutePath>
 					<Attribute>config</Attribute>
 					<Category>linkerScript</Category>
 					<Condition>GCC Exe</Condition>
-					<FileContentHash>vkB0tqPZ/v5D3+9ENXVQ/A==</FileContentHash>
+					<FileContentHash>MGxj0etxlgO93s3s15lVRw==</FileContentHash>
 					<FileVersion></FileVersion>
 					<Name>samd51a/gcc/gcc/samd51n20a_flash.ld</Name>
 					<SelectString></SelectString>
 					<SourcePath></SourcePath>
 				</d4p1:anyType>
 				<d4p1:anyType i:type="FileInfo">
-					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.1.96\samd51a\gcc\gcc\samd51n20a_sram.ld</AbsolutePath>
+					<AbsolutePath>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\gcc\gcc\samd51n20a_sram.ld</AbsolutePath>
 					<Attribute>config</Attribute>
 					<Category>other</Category>
 					<Condition>GCC Exe</Condition>
-					<FileContentHash>4LoNPhEyKDymR4kqfO9qYg==</FileContentHash>
+					<FileContentHash>4XItNTrpNOtpEeJWhugHLA==</FileContentHash>
 					<FileVersion></FileVersion>
 					<Name>samd51a/gcc/gcc/samd51n20a_sram.ld</Name>
 					<SelectString></SelectString>
@@ -154,8 +154,8 @@
 				</d4p1:anyType>
 			</Files>
 			<PackName>SAMD51_DFP</PackName>
-			<PackPath>C:/Program Files (x86)/Atmel/Studio/7.0/Packs/Atmel/SAMD51_DFP/1.1.96/Atmel.SAMD51_DFP.pdsc</PackPath>
-			<PackVersion>1.1.96</PackVersion>
+			<PackPath>C:/Program Files (x86)/Atmel/Studio/7.0/Packs/Atmel/SAMD51_DFP/1.2.139/Atmel.SAMD51_DFP.pdsc</PackPath>
+			<PackVersion>1.2.139</PackVersion>
 			<PresentInProject>true</PresentInProject>
 			<ReferenceConditionId>ATSAMD51N20A</ReferenceConditionId>
 			<RteComponents xmlns:d4p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
