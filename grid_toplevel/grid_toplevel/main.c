@@ -83,7 +83,7 @@ int main(void)
 				io_write(io, str2, 15);
 
 							
-				grid_led_set_phase(i, 0, average/8/4/4);
+				//grid_led_set_phase(i, 0, average/8/4/4);
 				
 				
 			}
@@ -100,21 +100,30 @@ int main(void)
 		
 
 				
-		grid_led_tick();
+		//grid_led_tick();
 		
 		
 		
 		// RENDER ALL OF THE LEDs
-		grid_led_render_all();
+		//grid_led_render_all();
 		
 		
+		for (uint8_t i=0; i<16; i++){
+			
+			grid_led_set_color(i, 0, 0, 0);
+			grid_led_set_color(0, 255, 0, 0);
 		
+		
+		}
+	/*
 		grid_led_set_color(4, colorfade*(colorcode==0), colorfade*(colorcode==1), colorfade*(colorcode==2));
 		grid_led_set_color(0, colorfade*(colorcode==0), colorfade*(colorcode==1), colorfade*(colorcode==2));
 		
 		colorfade++;
 		if (colorfade == 0) colorcode++;
 		if (colorcode>2) colorcode=0;
+		
+	*/	
 		delay_ms(2);
 			
 		// SEND DATA TO LEDs 		

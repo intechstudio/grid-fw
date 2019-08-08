@@ -17,7 +17,7 @@ uint8_t grid_led_init(uint8_t num);
 
 // ACCESSING THE FRAME BUFFER (READ)
 uint8_t* grid_led_frame_buffer_pointer(void);
-uint8_t grid_led_frame_buffer_size(void);
+uint32_t grid_led_frame_buffer_size(void);
 
 // RENDERING FROM SMART BUFFER TO FRAME BUFFER
 void grid_led_render(uint32_t num);
