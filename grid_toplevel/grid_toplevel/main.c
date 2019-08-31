@@ -4,6 +4,7 @@
 #include "../../grid_lib/grid_led.c" // WS2812 LED
 #include "../../grid_lib/grid_ain.c" // Analog input filtering
 #include "../../grid_lib/grid_tel.c" // Grid Telemetry
+#include "../../grid_lib/grid_sys.c" // Grid System
 
 #define GRID_MODULE_P16
 
@@ -37,55 +38,28 @@ int main(void)
 	uint8_t colorfade = 0;
 	uint8_t colorcode = 0;
 
+	uint8_t mapmode = 1;
+	uint8_t sysmode = 0;
+	
+
+
 	while (1) {
 		
-		if (faketimer > 100){
-			grid_tel_frequency_tick();
-			faketimer = 0;
+		if (mapmode != gpio_get_pin_level(MAP_MODE)){
 			
-			gpio_set_pin_direction(HWCFG_SHIFT, GPIO_DIRECTION_OUT);
-			gpio_set_pin_direction(HWCFG_CLOCK, GPIO_DIRECTION_OUT);
-			gpio_set_pin_direction(HWCFG_DATA, GPIO_DIRECTION_IN);
-			
-			// LOAD DATA
-			gpio_set_pin_level(HWCFG_SHIFT, 0);	
-			delay_ms(1);
-			
-					
-			
-			uint8_t hwcfg_value = 0;
-			
-			
-			for(uint8_t i = 0; i<8; i++){ // now we need to shift in the remaining 7 values
-				
-				// SHIFT DATA
-				gpio_set_pin_level(HWCFG_SHIFT, 1); //This outputs the first value to HWCFG_DATA
-				delay_ms(1);
-				
-				
-				if(gpio_get_pin_level(HWCFG_DATA)){
-				
-				 	hwcfg_value |= (1<<i);
-				
-				}else{
-				
-				
-				}
-				
-				if(i!=7){
-									
-					// Clock rise
-					gpio_set_pin_level(HWCFG_CLOCK, 1);
-				
-					delay_ms(1);
-				
-					gpio_set_pin_level(HWCFG_CLOCK, 0);
-				}
-					
-					
-				
+			if (mapmode==0){
+				sysmode = ! sysmode;
 			}
 			
+			mapmode = !mapmode;
+			/* ==================== Reading MCU Unique Serial Nuber ====================== */
+			
+			uint32_t id_array[4];
+			grid_sys_get_id(id_array);
+			
+			/* ========================= Reading the HWCFG ROM =========================== */
+
+			uint32_t hwcfg = grid_sys_get_hwcfg();
 			
 			// REPORT OVER SERIAL
 			
@@ -94,13 +68,16 @@ int main(void)
 			usart_async_get_io_descriptor(&GRID_AUX, &io_uart_aux);
 			usart_async_enable(&GRID_AUX);
 
-			char example_GRID_AUX[12];
-			
-			sprintf(example_GRID_AUX, "HWCFG:%d\n", hwcfg_value);
+			char example_GRID_AUX[60];
+			sprintf(example_GRID_AUX, "HWCFG: %08x\nUNIQUE: %08x %08x %08x %08x     \n", hwcfg, id_array[0], id_array[1], id_array[2], id_array[3]);
 
-			io_write(io_uart_aux, example_GRID_AUX, 12);
-
+			io_write(io_uart_aux, example_GRID_AUX, 65);
 			
+		}
+		
+		if (faketimer > 100){
+			grid_tel_frequency_tick();
+			faketimer = 0;
 		}
 		faketimer++;
 		
@@ -114,7 +91,7 @@ int main(void)
 
 		
 		// Push out all changes
-		for (uint8_t i = 0; i<4; i++)
+		for (uint8_t i = 0; i<16; i++)
 		{
 			if (grid_ain_get_changed(i)){
 				
@@ -139,62 +116,69 @@ int main(void)
 				sprintf(str2, "CRC: %x \n", crc);
 
 				//USART
-				io_write(io, str2, 15);
+			//	io_write(io, str2, 15);
 
 							
-				//grid_led_set_phase(i, 0, average/8/4/4);
+				grid_led_set_phase(i, 0, average*2/128); // 0...255
 				
 				
 			}
 			
 		}
 	
-		gpio_toggle_pin_level(LED0);
 
 		
-		// ================ WS2812B VIA DMA SPI ================== //
-					
 	
 		delay_ms(1);
 		
 
 				
-		//grid_led_tick();
-		
-		
-		
-		// RENDER ALL OF THE LEDs
-		//grid_led_render_all();
-		
-		
-		for (uint8_t i=0; i<16; i++){
+		if (sysmode == 1){
 			
-			//grid_led_set_color(i, 0, 255, 0);
+			grid_led_tick();
 			
-			grid_led_set_color(i, colorfade*(colorcode==0), colorfade*(colorcode==1), colorfade*(colorcode==2));
-		
-		
+			
+			//RENDER ALL OF THE LEDs
+			grid_led_render_all();
+			
+			io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
+			
+			while (dma_spi_done == 0)
+			{
+			}			
 		}
-	
-		colorfade++;
-		if (colorfade == 0) colorcode++;
-		if (colorcode>2) colorcode=0;
 		
-	
-		delay_ms(2);
+		if (sysmode == 0){
 			
-		// SEND DATA TO LEDs 		
-		dma_spi_done = 0;
-		spi_m_dma_enable(&GRID_LED);
+			for (uint8_t i=0; i<16; i++){
+				
+				//grid_led_set_color(i, 0, 255, 0);
+				
+				grid_led_set_color(i, colorfade*(colorcode==0), colorfade*(colorcode==1), colorfade*(colorcode==2));
+				
+				
+			}
+			
+			colorfade++;
+			if (colorfade == 0) colorcode++;
+			if (colorcode>2) colorcode=0;
+			
+			
+			delay_ms(2);
+			
+			// SEND DATA TO LEDs
+			dma_spi_done = 0;
+			spi_m_dma_enable(&GRID_LED);
+			
+			io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
+			
+			while (dma_spi_done == 0)
+			{
+			}		
+			
+			
+		}
 		
-		io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
-		
- 		while (dma_spi_done == 0)
- 		{
- 		}		
-		
-		
-
 		
 	}
 }

@@ -53,11 +53,9 @@
 		
 		
 		/* Update the multiplexer */
-		if (grid_module_mux == 0){
-			grid_module_mux = 1;
-			}else{
-			grid_module_mux = 0;
-		}
+		
+		grid_module_mux++;
+		grid_module_mux%=8;
 		
 		
 		gpio_set_pin_level(MUX_A, grid_module_mux/1%2);
