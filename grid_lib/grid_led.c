@@ -68,8 +68,6 @@ struct LED_layer
 		
 };
 
-//4 leds 2 layers
-struct LED_layer l_buffer[4][2];
 
 
 // THE LOOKUP TABLES ARE QUITE SIMPLE, MAYBE CALCULATE THEM ON THE FLY;
@@ -223,14 +221,23 @@ uint8_t grid_led_init(uint8_t num){
 	
 	led_number = num;	
 	
+	
+	
+	
+	
 	// Allocating memory for the frame buffer
 	led_frame_buffer_size = (GRID_LED_RESET_LENGTH + num*3*4);
 	led_frame_buffer = (uint8_t*) malloc(led_frame_buffer_size * sizeof(uint8_t));
 	led_frame_buffer_usable = (uint32_t*) &led_frame_buffer[GRID_LED_RESET_LENGTH];
 	
 	// Allocating memory for the smart buffer (2D array)
+	
 	#define led_smart_buffer_layer_number 2
 	led_smart_buffer = (struct LED_layer*) malloc(led_number * led_smart_buffer_layer_number * sizeof(struct LED_layer));
+	
+	
+	
+	
 	
 	// Generate the lookup table for fast rendering;
 	
@@ -292,10 +299,19 @@ uint8_t grid_led_init(uint8_t num){
 	for(uint8_t i = 0; i<led_number; i++){
 		
 		grid_led_set_min(i, 0, 0x00, 0x00, 0x00);
-		grid_led_set_mid(i, 0, 0x00, 0x00, 0x60);
-		grid_led_set_max(i, 0, 0x00, 0x00, 0xE0);
+		grid_led_set_mid(i, 0, 0x00, 0x00, 0x7F);
+		grid_led_set_max(i, 0, 0x00, 0x00, 0xFF);
 		
 		grid_led_set_frequency(i, 0, 0);
+		grid_led_set_phase(i, 0, 0);
+		
+		
+		grid_led_set_min(i, 1, 0x02, 0x02, 0x02);
+		grid_led_set_mid(i, 1, 0x00, 0x00, 0x00);
+		grid_led_set_max(i, 1, 0x00, 0x00, 0x00);
+		
+		grid_led_set_frequency(i, 1, 0);
+		grid_led_set_phase(i, 1, 0);
 		
 	}
 
@@ -317,10 +333,12 @@ void grid_led_tick(void){
 	
 
 	/** ATOMI - all phase registers must be updated  */
-	for (uint32_t j=0; j<led_number; j++){
+	for (uint8_t j=0; j<led_number; j++){
 					
+		uint8_t num = j;
 		for(uint8_t i=0; i<2; i++){
-			l_buffer[j][i].pha += l_buffer[j][i].fre; //PHASE + = FREQUENCY		
+			uint8_t layer = i;
+			led_smart_buffer[num+(led_number*layer)].pha += led_smart_buffer[num+(led_number*layer)].fre; //PHASE + = FREQUENCY		
 		}	
 	}
 	/** END */
@@ -331,33 +349,33 @@ void grid_led_tick(void){
 
 void grid_led_set_min(uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b){
 	
-	l_buffer[num][layer].color_min.r = r;
-	l_buffer[num][layer].color_min.g = g;
-	l_buffer[num][layer].color_min.b = b;	
+	led_smart_buffer[num+(led_number*layer)].color_min.r = r;
+	led_smart_buffer[num+(led_number*layer)].color_min.g = g;
+	led_smart_buffer[num+(led_number*layer)].color_min.b = b;	
 }
 
 void grid_led_set_mid(uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b){
 	
-	l_buffer[num][layer].color_mid.r = r;
-	l_buffer[num][layer].color_mid.g = g;
-	l_buffer[num][layer].color_mid.b = b;	
+	led_smart_buffer[num+(led_number*layer)].color_mid.r = r;
+	led_smart_buffer[num+(led_number*layer)].color_mid.g = g;
+	led_smart_buffer[num+(led_number*layer)].color_mid.b = b;	
 }
 
 void grid_led_set_max(uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b){
 	
-	l_buffer[num][layer].color_max.r = r;
-	l_buffer[num][layer].color_max.g = g;
-	l_buffer[num][layer].color_max.b = b;	
+	led_smart_buffer[num+(led_number*layer)].color_max.r = r;
+	led_smart_buffer[num+(led_number*layer)].color_max.g = g;
+	led_smart_buffer[num+(led_number*layer)].color_max.b = b;	
 }
 
 void grid_led_set_phase(uint8_t num, uint8_t layer, uint8_t val){
 	
-	l_buffer[num][layer].pha = val;
+	led_smart_buffer[num+(led_number*layer)].pha = val;
 }
 
 void grid_led_set_frequency(uint8_t num, uint8_t layer, uint8_t val){
 	
-	l_buffer[num][layer].fre = val;
+	led_smart_buffer[num+(led_number*layer)].fre = val;
 }
 
 
@@ -372,31 +390,37 @@ void grid_led_render(uint32_t num){
 	
 	// RENDER & SUM ALL LAYERS PER LED
 	for (uint8_t i = 0; i<2; i++){
-				
-		uint8_t min_r = l_buffer[num][i].color_min.r;
-		uint8_t min_g = l_buffer[num][i].color_min.g;
-		uint8_t min_b = l_buffer[num][i].color_min.b;
-		uint8_t min_a = min_lookup[l_buffer[num][i].pha];
-	
-		uint8_t mid_r = l_buffer[num][i].color_mid.r;
-		uint8_t mid_g = l_buffer[num][i].color_mid.g;
-		uint8_t mid_b = l_buffer[num][i].color_mid.b;
-		uint8_t mid_a = mid_lookup[l_buffer[num][i].pha];
 		
-		uint8_t max_r = l_buffer[num][i].color_max.r;
-		uint8_t max_g = l_buffer[num][i].color_max.g;
-		uint8_t max_b = l_buffer[num][i].color_max.b;
-		uint8_t max_a = max_lookup[l_buffer[num][i].pha];
+		uint8_t layer = i;
+				
+		uint8_t min_r = led_smart_buffer[num+(led_number*layer)].color_min.r;
+		uint8_t min_g = led_smart_buffer[num+(led_number*layer)].color_min.g;
+		uint8_t min_b = led_smart_buffer[num+(led_number*layer)].color_min.b;
+		uint8_t min_a = min_lookup[led_smart_buffer[num+(led_number*layer)].pha];
+	
+		uint8_t mid_r = led_smart_buffer[num+(led_number*layer)].color_mid.r;
+		uint8_t mid_g = led_smart_buffer[num+(led_number*layer)].color_mid.g;
+		uint8_t mid_b = led_smart_buffer[num+(led_number*layer)].color_mid.b;
+		uint8_t mid_a = mid_lookup[led_smart_buffer[num+(led_number*layer)].pha];
+		
+		uint8_t max_r = led_smart_buffer[num+(led_number*layer)].color_max.r;
+		uint8_t max_g = led_smart_buffer[num+(led_number*layer)].color_max.g;
+		uint8_t max_b = led_smart_buffer[num+(led_number*layer)].color_max.b;
+		uint8_t max_a = max_lookup[led_smart_buffer[num+(led_number*layer)].pha];
 				
 		mix_r += min_r*min_a + mid_r*mid_a + max_r*max_a;
 		mix_g += min_g*min_a + mid_g*mid_a + max_g*max_a;
 		mix_b += min_b*min_a + mid_b*mid_a + max_b*max_a;
 	}
 	
+// 
+// mix_r = (mix_r)/2/3/256;
+// mix_g = (mix_g)/2/3/256;
+// mix_b = (mix_b)/2/3/256;
 
-	mix_r = (mix_r)/2/3/256;
-	mix_g = (mix_g)/2/3/256;
-	mix_b = (mix_b)/2/3/256;
+mix_r = (mix_r)/2/256;
+mix_g = (mix_g)/2/256;
+mix_b = (mix_b)/2/256;
 				
 	grid_led_set_color(num, mix_r, mix_g, mix_b);
 	
