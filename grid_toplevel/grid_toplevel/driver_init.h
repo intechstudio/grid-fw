@@ -28,6 +28,7 @@ extern "C" {
 
 #include <hal_flash.h>
 
+#include <hal_timer.h>
 #include <hal_usart_async.h>
 
 #include <hal_i2c_m_async.h>
@@ -43,6 +44,7 @@ extern struct adc_async_descriptor ADC_1;
 extern struct crc_sync_descriptor  CRC_0;
 
 extern struct flash_descriptor       FLASH_0;
+extern struct timer_descriptor       TIMER_0;
 extern struct usart_async_descriptor GRID_AUX;
 
 extern struct i2c_m_async_desc SYS_I2C;

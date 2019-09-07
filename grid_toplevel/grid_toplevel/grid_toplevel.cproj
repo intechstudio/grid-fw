@@ -282,6 +282,7 @@
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
+      <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
       <Value>../hpl/usb</Value>
@@ -333,6 +334,7 @@
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
+      <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
       <Value>../hpl/usb</Value>
@@ -366,6 +368,7 @@
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
+      <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
       <Value>../hpl/usb</Value>
@@ -418,6 +421,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
+      <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
       <Value>../hpl/usb</Value>
@@ -469,6 +473,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
+      <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
       <Value>../hpl/usb</Value>
@@ -503,6 +508,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
       <Value>../hpl/ramecc</Value>
+      <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
       <Value>../hpl/usb</Value>
@@ -555,6 +561,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Config\hpl_port_config.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Config\hpl_rtc_config.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Config\hpl_sercom_config.h">
@@ -629,6 +638,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hal\include\hal_spi_m_dma.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hal\include\hal_timer.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hal\include\hal_usart_async.h">
       <SubType>compile</SubType>
     </Compile>
@@ -642,6 +654,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\include\hpl_adc_sync.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hal\include\hpl_calendar.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\include\hpl_cmcc.h">
@@ -725,6 +740,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hal\include\hpl_spi_s_sync.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hal\include\hpl_timer.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hal\include\hpl_time_measure.h">
       <SubType>compile</SubType>
     </Compile>
@@ -785,6 +803,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hal\src\hal_spi_m_dma.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hal\src\hal_timer.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hal\src\hal_usart_async.c">
       <SubType>compile</SubType>
     </Compile>
@@ -809,6 +830,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hal\utils\include\utils_assert.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hal\utils\include\utils_decrement_macro.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hal\utils\include\utils_event.h">
       <SubType>compile</SubType>
     </Compile>
@@ -816,6 +840,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\utils\include\utils_list.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hal\utils\include\utils_recursion_macro.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\utils\include\utils_repeat_macro.h">
@@ -894,6 +921,12 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hpl\ramecc\hpl_ramecc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hpl\rtc\hpl_rtc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hpl\rtc\hpl_rtc_base.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hpl\sercom\hpl_sercom.c">
@@ -1084,6 +1117,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Folder Include="hpl\pm\" />
     <Folder Include="hpl\port\" />
     <Folder Include="hpl\ramecc\" />
+    <Folder Include="hpl\rtc\" />
     <Folder Include="hpl\sercom\" />
     <Folder Include="hpl\systick\" />
     <Folder Include="hpl\usb\" />

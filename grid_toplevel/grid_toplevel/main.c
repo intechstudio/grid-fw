@@ -11,19 +11,50 @@
 #include "../../grid_modules/grid_module_p16.c" // 
 
 
+volatile uint8_t task1flag = 0;
+volatile uint8_t task2flag = 0;
+
+static struct timer_task TIMER_0_task1;
+static struct timer_task TIMER_0_task2;
+/**
+ * Example of using TIMER_0.
+ */
+static void TIMER_0_task1_cb(const struct timer_task *const timer_task)
+{
+	if (task1flag<255) task1flag++;
+}
+
+static void TIMER_0_task2_cb(const struct timer_task *const timer_task)
+{
+	if (task2flag<255) task2flag++;
+}
+
+void init_timer(void)
+{
+	TIMER_0_task1.interval = 1;
+	TIMER_0_task1.cb       = TIMER_0_task1_cb;
+	TIMER_0_task1.mode     = TIMER_TASK_REPEAT;
+	TIMER_0_task2.interval = 20;
+	TIMER_0_task2.cb       = TIMER_0_task2_cb;
+	TIMER_0_task2.mode     = TIMER_TASK_REPEAT;
+
+	timer_add_task(&TIMER_0, &TIMER_0_task1);
+	timer_add_task(&TIMER_0, &TIMER_0_task2);
+	timer_start(&TIMER_0);
+}
+
+
 int main(void)
 {
-	//atmel_start_init();
-	//cdcd_acm_example();
-	
-	
-	
-	/* Initializes MCU, drivers and middleware */
+
 	
 	atmel_start_init();
 	
+	//cdcd_acm_example();
+	
 	grid_module_init();
 	
+	init_timer();
 	
 
 	// UI RX EVENT fref=5, alert=50;
@@ -45,7 +76,38 @@ int main(void)
 
 	while (1) {
 		
+		//checktimer flags
+		if (task1flag){
+			
+			
+			char str[7];
+			sprintf(str, "TASK_1\n");
+
+			
+			cdcdf_acm_write(str, 7);
+			
+			task1flag--;
+			
+			
+		}
+		
+		if (task2flag){
+			
+			
+			char str[7];
+			sprintf(str, "TASK_2\n");
+
+			
+			cdcdf_acm_write(str, 7);
+			
+			task2flag--;
+			
+			
+		}		
+		
+		
 		if (mapmode != gpio_get_pin_level(MAP_MODE)){
+			
 			
 			if (mapmode==0){
 				sysmode = ! sysmode;
@@ -73,6 +135,8 @@ int main(void)
 
 			io_write(io_uart_aux, example_GRID_AUX, 65);
 			
+			// USB CDC SERIAL AS DEBUG PORT
+			cdcdf_acm_write(example_GRID_AUX, 65);
 		}
 		
 		

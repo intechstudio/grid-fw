@@ -13,6 +13,7 @@
 
 #include <hpl_adc_base.h>
 #include <hpl_adc_base.h>
+#include <hpl_rtc_base.h>
 
 /* The channel amount for ADC */
 #define ADC_0_CH_AMOUNT 1
@@ -40,6 +41,7 @@ struct adc_async_channel_descriptor ADC_0_ch[ADC_0_CH_AMOUNT];
 struct adc_async_descriptor         ADC_1;
 struct adc_async_channel_descriptor ADC_1_ch[ADC_1_CH_AMOUNT];
 struct crc_sync_descriptor          CRC_0;
+struct timer_descriptor             TIMER_0;
 struct usart_async_descriptor       GRID_AUX;
 
 static uint8_t ADC_0_buffer[ADC_0_BUFFER_SIZE];
@@ -111,6 +113,17 @@ void FLASH_0_init(void)
 {
 	FLASH_0_CLOCK_init();
 	flash_init(&FLASH_0, NVMCTRL);
+}
+
+/**
+ * \brief Timer initialization function
+ *
+ * Enables Timer peripheral, clocks and initializes Timer driver
+ */
+static void TIMER_0_init(void)
+{
+	hri_mclk_set_APBAMASK_RTC_bit(MCLK);
+	timer_init(&TIMER_0, RTC, _rtc_get_timer());
 }
 
 /**
@@ -506,6 +519,7 @@ void system_init(void)
 
 	FLASH_0_init();
 
+	TIMER_0_init();
 	GRID_AUX_init();
 
 	SYS_I2C_init();

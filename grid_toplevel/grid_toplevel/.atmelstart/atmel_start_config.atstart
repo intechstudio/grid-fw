@@ -1078,6 +1078,62 @@ drivers:
     variant: null
     clocks:
       domain_group: null
+  TIMER_0:
+    user_label: TIMER_0
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::RTC::driver_config_definition::Timer::HAL:Driver:Timer
+    functionality: Timer
+    api: HAL:Driver:Timer
+    configuration:
+      rtc_arch_comp_val: 32
+      rtc_arch_init_reset: true
+      rtc_arch_prescaler: Peripheral clock divided by 1024
+      rtc_cmpeo0: false
+      rtc_cmpeo1: false
+      rtc_event_control: false
+      rtc_ovfeo: false
+      rtc_pereo0: false
+      rtc_pereo1: false
+      rtc_pereo2: false
+      rtc_pereo3: false
+      rtc_pereo4: false
+      rtc_pereo5: false
+      rtc_pereo6: false
+      rtc_pereo7: false
+      rtc_tamper_active_layer_frequency_prescalar: DIV2 CLK_RTC_OUT is CLK_RTC /2
+      rtc_tamper_debounce_frequency_prescalar: DIV2 CLK_RTC_DEB is CLK_RTC /2
+      rtc_tamper_input_action_0: OFF(Disabled)
+      rtc_tamper_input_action_1: OFF(Disabled)
+      rtc_tamper_input_action_2: OFF(Disabled)
+      rtc_tamper_input_action_3: OFF(Disabled)
+      rtc_tamper_input_action_4: OFF(Disabled)
+      rtc_tampereo: false
+      rtc_tampevei: false
+      tamper_debounce_enable_0: false
+      tamper_debounce_enable_1: false
+      tamper_debounce_enable_2: false
+      tamper_debounce_enable_3: false
+      tamper_debounce_enable_4: false
+      tamper_input_0_settings: false
+      tamper_input_1_settings: false
+      tamper_input_2_settings: false
+      tamper_input_3_settings: false
+      tamper_input_4_settings: false
+      tamper_level_0: false
+      tamper_level_1: false
+      tamper_level_2: false
+      tamper_level_3: false
+      tamper_level_4: false
+    optional_signals: []
+    variant: null
+    clocks:
+      domain_group:
+        nodes:
+        - name: RTC
+          input: RTC source
+          external: false
+          external_frequency: 0
+        configuration:
+          rtc_clk_selection: RTC source
   GRID_AUX:
     user_label: GRID_AUX
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::SERCOM2::driver_config_definition::UART::HAL:Driver:USART.Async
