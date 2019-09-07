@@ -8,7 +8,7 @@
 
 #define GRID_MODULE_P16
 
-#include "../../grid_modules/grid_module_p16.c" // Grid Telemetry
+#include "../../grid_modules/grid_module_p16.c" // 
 
 
 int main(void)
@@ -74,6 +74,8 @@ int main(void)
 			io_write(io_uart_aux, example_GRID_AUX, 65);
 			
 		}
+		
+		
 		
 		if (faketimer > 100){
 			grid_tel_frequency_tick();
