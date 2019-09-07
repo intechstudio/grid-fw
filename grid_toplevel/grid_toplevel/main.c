@@ -14,6 +14,7 @@
 volatile uint8_t task1flag = 0;
 volatile uint8_t task2flag = 0;
 
+
 static struct timer_task TIMER_0_task1;
 static struct timer_task TIMER_0_task2;
 /**
@@ -43,7 +44,6 @@ void init_timer(void)
 	timer_start(&TIMER_0);
 }
 
-
 int main(void)
 {
 
@@ -72,6 +72,9 @@ int main(void)
 	uint8_t mapmode = 1;
 	uint8_t sysmode = 0;
 	
+	
+	uint32_t loopcounter = 0;
+	
 
 
 	while (1) {
@@ -80,25 +83,26 @@ int main(void)
 		if (task1flag){
 			
 			
-			char str[7];
-			sprintf(str, "TASK_1\n");
-
+			char str[20];
+			sprintf(str, "LOOPTICK %d\n\0", loopcounter);
+			cdcdf_acm_write(str, strlen(str));
 			
-			cdcdf_acm_write(str, 7);
-			
+			loopcounter = 0;
 			task1flag--;
 			
 			
 		}
 		
+		loopcounter++;
+		
 		if (task2flag){
 			
 			
-			char str[7];
-			sprintf(str, "TASK_2\n");
+			char str[11];
+			sprintf(str, "TASKTICK 2\n");
 
 			
-			cdcdf_acm_write(str, 7);
+			cdcdf_acm_write(str, 11);
 			
 			task2flag--;
 			
@@ -147,12 +151,10 @@ int main(void)
 		}
 		faketimer++;
 		
-		gpio_toggle_pin_level(LED0);
-
 			
 		/* ========================= ANALOG READ ============================= */
 		
-		delay_ms(1);
+		
 
 
 		
@@ -175,12 +177,17 @@ int main(void)
 				uint32_t crc = 0xFFFFFFFF;
  				crc_sync_crc32(&CRC_0, (uint32_t *)str, 5, &crc);
  				crc ^= 0xFFFFFFFF;
+				
 							
 				delay_ms(5);
 				
 				char str2[26];
 				sprintf(str2, "CRC: %x \n", crc);
 
+
+				char str3[50];
+				sprintf(str3, "AIN%d %d\n\0", i, average/64);	
+				cdcdf_acm_write(str3, strlen(str3));
 				//USART
 			//	io_write(io, str2, 15);
 
@@ -191,11 +198,6 @@ int main(void)
 			}
 			
 		}
-	
-
-		
-	
-		delay_ms(1);
 		
 
 				
@@ -216,6 +218,7 @@ int main(void)
 		
 		if (sysmode == 0){
 			
+			delay_ms(3);
 			for (uint8_t i=0; i<16; i++){
 				
 				//grid_led_set_color(i, 0, 255, 0);

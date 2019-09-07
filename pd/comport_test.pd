@@ -1,15 +1,43 @@
-#N canvas 1171 250 448 303 12;
-#X obj 83 88 comport 3 115200;
-#X obj 69 182 list tosymbol;
-#X obj 67 230 print;
+#N canvas 0 0 815 712 12;
 #X obj 81 28 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
-#N canvas 0 50 450 250 (subpatch) 0;
-#X coords 0 1 100 -1 200 140 1 0 0;
-#X restore 250 134 graph;
-#X obj 181 134 vsl 15 128 0 127 0 0 empty empty empty 0 -9 0 10 -262144
--1 -1 1000 1;
+#X obj 83 88 comport 25 115200;
+#X obj 87 224 send;
+#X obj 69 277 receive TASKTICK;
+#X obj 141 338 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 167 230 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 85 160 serial_print any;
+#X obj 258 318 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X floatatom 258 300 5 0 0 0 - - -;
+#X obj 57 477 receive CPU;
+#X obj 258 281 r AIN0;
+#X obj 304 318 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X floatatom 304 300 5 0 0 0 - - -;
+#X obj 350 318 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X floatatom 350 300 5 0 0 0 - - -;
+#X obj 396 318 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X floatatom 396 300 5 0 0 0 - - -;
+#X obj 304 281 r AIN1;
+#X obj 349 281 r AIN2;
+#X obj 396 281 r AIN3, f 11;
 #X connect 0 0 1 0;
-#X connect 0 0 5 0;
-#X connect 1 0 2 0;
-#X connect 3 0 0 0;
+#X connect 1 0 6 0;
+#X connect 3 0 4 0;
+#X connect 6 0 2 0;
+#X connect 6 0 5 0;
+#X connect 6 1 5 0;
+#X connect 6 1 2 1;
+#X connect 8 0 7 0;
+#X connect 10 0 8 0;
+#X connect 12 0 11 0;
+#X connect 14 0 13 0;
+#X connect 16 0 15 0;
+#X connect 17 0 12 0;
+#X connect 18 0 14 0;
+#X connect 19 0 16 0;
