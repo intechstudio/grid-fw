@@ -140,7 +140,12 @@ int main(void)
 			io_write(io_uart_aux, example_GRID_AUX, 65);
 			
 			// USB CDC SERIAL AS DEBUG PORT
-			cdcdf_acm_write(example_GRID_AUX, 65);
+			//cdcdf_acm_write(example_GRID_AUX, 65);
+			
+			char str[20];
+			sprintf(str, "HEXTEST %x\n\0", loopcounter);
+			cdcdf_acm_write(str, strlen(str));
+			
 		}
 		
 		
