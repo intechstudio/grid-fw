@@ -20,7 +20,7 @@ void CRC_0_example(void);
 
 void FLASH_0_example(void);
 
-void TIMER_0_example(void);
+void RTC_Scheduler_example(void);
 
 void GRID_AUX_example(void);
 

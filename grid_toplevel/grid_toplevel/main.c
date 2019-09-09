@@ -14,34 +14,64 @@
 volatile uint8_t task1flag = 0;
 volatile uint8_t task2flag = 0;
 
+volatile uint8_t reportflag = 0;
 
-static struct timer_task TIMER_0_task1;
-static struct timer_task TIMER_0_task2;
-/**
- * Example of using TIMER_0.
- */
-static void TIMER_0_task1_cb(const struct timer_task *const timer_task)
+
+static struct timer_task RTC_Scheduler_tick;
+static struct timer_task RTC_Scheduler_report;
+static struct timer_task RTC_Scheduler_task2;
+
+
+
+#define TASK_UNDEFINED 0
+#define TASK_IDLE	   1
+#define TASK_LED   2
+#define TASK_UIIN    3
+
+volatile uint8_t task_current = 0;
+volatile uint32_t task_counter[8] = {0, 0, 0, 0, 0, 0, 0, 0 };
+
+
+
+volatile uint32_t realtime = 0; 
+
+static void RTC_Scheduler_tick_cb(const struct timer_task *const timer_task)
 {
-	if (task1flag<255) task1flag++;
+	realtime++;
+	task_counter[task_current]++;
 }
 
-static void TIMER_0_task2_cb(const struct timer_task *const timer_task)
+ static void RTC_Scheduler_report_cb(const struct timer_task *const timer_task)
+ {
+ if (reportflag<255) reportflag++;
+ }
+
+static void RTC_Scheduler_task2_cb(const struct timer_task *const timer_task)
 {
 	if (task2flag<255) task2flag++;
 }
 
+#define RTC1SEC 16384
+
 void init_timer(void)
 {
-	TIMER_0_task1.interval = 1;
-	TIMER_0_task1.cb       = TIMER_0_task1_cb;
-	TIMER_0_task1.mode     = TIMER_TASK_REPEAT;
-	TIMER_0_task2.interval = 20;
-	TIMER_0_task2.cb       = TIMER_0_task2_cb;
-	TIMER_0_task2.mode     = TIMER_TASK_REPEAT;
+	RTC_Scheduler_tick.interval = 1;
+	RTC_Scheduler_tick.cb       = RTC_Scheduler_tick_cb;
+	RTC_Scheduler_tick.mode     = TIMER_TASK_REPEAT;
+	
+	
+	RTC_Scheduler_report.interval = 32768/2; //1sec
+	RTC_Scheduler_report.cb       = RTC_Scheduler_report_cb;
+	RTC_Scheduler_report.mode     = TIMER_TASK_REPEAT;
+	
+	RTC_Scheduler_task2.interval = 32768/2*20;
+	RTC_Scheduler_task2.cb       = RTC_Scheduler_task2_cb;
+	RTC_Scheduler_task2.mode     = TIMER_TASK_REPEAT;
 
-	timer_add_task(&TIMER_0, &TIMER_0_task1);
-	timer_add_task(&TIMER_0, &TIMER_0_task2);
-	timer_start(&TIMER_0);
+	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_tick);
+	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_report);
+	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_task2);
+	timer_start(&RTC_Scheduler);
 }
 
 int main(void)
@@ -75,22 +105,29 @@ int main(void)
 	
 	uint32_t loopcounter = 0;
 	
+	
+	uint32_t loopstart = 0;
+	
 
 
 	while (1) {
 		
 		//checktimer flags
-		if (task1flag){
+		if (reportflag){
 			
 			
-			char str[20];
-			sprintf(str, "LOOPTICK %d\n\0", loopcounter);
+			char str[70];
+			sprintf(str, "LOOPTICK %d\nREALTIME %d\nTASK0 %d\nTASK1 %d\nTASK2 %d\nTASK3 %d\n\0", loopcounter, realtime, task_counter[0], task_counter[1], task_counter[2], task_counter[3] );
 			cdcdf_acm_write(str, strlen(str));
 			
+			realtime = 0;
 			loopcounter = 0;
-			task1flag--;
+			reportflag--;
 			
-			
+			for (uint8_t i=0; i<8; i++)
+			{
+				task_counter[i] = 0;
+			}
 		}
 		
 		loopcounter++;
@@ -108,6 +145,9 @@ int main(void)
 			
 			
 		}		
+		
+			
+		loopstart = realtime;
 		
 		
 		if (mapmode != gpio_get_pin_level(MAP_MODE)){
@@ -164,6 +204,9 @@ int main(void)
 
 		
 		// Push out all changes
+		
+		task_current = TASK_UIIN;
+		
 		for (uint8_t i = 0; i<16; i++)
 		{
 			if (grid_ain_get_changed(i)){
@@ -171,6 +214,10 @@ int main(void)
 				grid_tel_event_handler(console_tx);
 				
 				uint16_t average = grid_ain_get_average(i);
+				
+				
+				/*
+				
 				
 				char str[26];
 				sprintf(str, "ADC: %5d %5d %5d \n", i, average, average/128);
@@ -184,18 +231,21 @@ int main(void)
  				crc ^= 0xFFFFFFFF;
 				
 							
-				delay_ms(5);
 				
 				char str2[26];
 				sprintf(str2, "CRC: %x \n", crc);
-
+				//USART
+				//	io_write(io, str2, 15);
+				*/	
 
 				char str3[50];
+			
 				sprintf(str3, "AIN%d %d\n\0", i, average/64);	
 				cdcdf_acm_write(str3, strlen(str3));
-				//USART
-			//	io_write(io, str2, 15);
+		
 
+					
+				
 							
 				grid_led_set_phase(i, 0, average*2/128); // 0...255
 				
@@ -204,26 +254,30 @@ int main(void)
 			
 		}
 		
+		task_current = TASK_UNDEFINED;
 
 				
 		if (sysmode == 1){
 			
-			grid_led_tick();
+			task_current = TASK_LED;
 			
-			
+			grid_led_tick();		
 			//RENDER ALL OF THE LEDs
 			grid_led_render_all();
 			
+			task_current = TASK_UNDEFINED;
+			
 			io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
+				
 			
 			while (dma_spi_done == 0)
 			{
-			}			
+			}
+			
 		}
 		
 		if (sysmode == 0){
 			
-			delay_ms(3);
 			for (uint8_t i=0; i<16; i++){
 				
 				//grid_led_set_color(i, 0, 255, 0);
@@ -253,6 +307,12 @@ int main(void)
 			
 		}
 		
+		// IDLETASK
+		task_current = TASK_IDLE;
+		while(loopstart + RTC1SEC/1000 > realtime){
+			delay_us(10);
+		}
 		
+		task_current = TASK_UNDEFINED;
 	}
 }

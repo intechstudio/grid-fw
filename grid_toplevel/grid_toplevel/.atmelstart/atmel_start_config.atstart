@@ -1078,15 +1078,15 @@ drivers:
     variant: null
     clocks:
       domain_group: null
-  TIMER_0:
-    user_label: TIMER_0
+  RTC_Scheduler:
+    user_label: RTC_Scheduler
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::RTC::driver_config_definition::Timer::HAL:Driver:Timer
     functionality: Timer
     api: HAL:Driver:Timer
     configuration:
-      rtc_arch_comp_val: 32
+      rtc_arch_comp_val: 1
       rtc_arch_init_reset: true
-      rtc_arch_prescaler: Peripheral clock divided by 1024
+      rtc_arch_prescaler: OFF(Peripheral clock divided by 1)
       rtc_cmpeo0: false
       rtc_cmpeo1: false
       rtc_event_control: false

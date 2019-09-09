@@ -34,7 +34,7 @@
 // <i> These bits define the RTC clock relative to the peripheral clock
 // <id> rtc_arch_prescaler
 #ifndef CONF_RTC_PRESCALER
-#define CONF_RTC_PRESCALER 0xb
+#define CONF_RTC_PRESCALER 0x0
 
 #endif
 
@@ -45,7 +45,7 @@
 
 #ifndef CONF_RTC_COMP_VAL
 
-#define CONF_RTC_COMP_VAL 32
+#define CONF_RTC_COMP_VAL 1
 
 #endif
 
