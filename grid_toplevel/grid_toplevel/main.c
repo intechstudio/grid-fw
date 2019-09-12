@@ -117,7 +117,7 @@ int main(void)
 			
 			
 			char str[70];
-			sprintf(str, "LOOPTICK %d\nREALTIME %d\nTASK0 %d\nTASK1 %d\nTASK2 %d\nTASK3 %d\n\0", loopcounter, realtime, task_counter[0], task_counter[1], task_counter[2], task_counter[3] );
+			sprintf(str, "LOOPTICK %x\nREALTIME %x\nTASK0 %x\nTASK1 %x\nTASK2 %x\nTASK3 %x\n\0", loopcounter, realtime, task_counter[0], task_counter[1], task_counter[2], task_counter[3] );
 			cdcdf_acm_write(str, strlen(str));
 			
 			realtime = 0;
@@ -145,6 +145,7 @@ int main(void)
 			
 			
 		}		
+		
 		
 			
 		loopstart = realtime;
@@ -183,7 +184,8 @@ int main(void)
 			//cdcdf_acm_write(example_GRID_AUX, 65);
 			
 			char str[20];
-			sprintf(str, "HEXTEST %x\n\0", loopcounter);
+			sprintf(str, "HEXTEST %x\n", loopcounter);
+			
 			cdcdf_acm_write(str, strlen(str));
 			
 		}
@@ -207,6 +209,10 @@ int main(void)
 		
 		task_current = TASK_UIIN;
 		
+		char txbuffer[100];
+		uint32_t txindex=0;
+		
+		
 		for (uint8_t i = 0; i<16; i++)
 		{
 			if (grid_ain_get_changed(i)){
@@ -216,34 +222,9 @@ int main(void)
 				uint16_t average = grid_ain_get_average(i);
 				
 				
-				/*
-				
-				
-				char str[26];
-				sprintf(str, "ADC: %5d %5d %5d \n", i, average, average/128);
+				sprintf(&txbuffer[txindex], "AIN%d %x\n", i, average/64);	
 
-				//USART
-				io_write(io, str, 24);
-				
-								
-				uint32_t crc = 0xFFFFFFFF;
- 				crc_sync_crc32(&CRC_0, (uint32_t *)str, 5, &crc);
- 				crc ^= 0xFFFFFFFF;
-				
-							
-				
-				char str2[26];
-				sprintf(str2, "CRC: %x \n", crc);
-				//USART
-				//	io_write(io, str2, 15);
-				*/	
-
-				char str3[50];
-			
-				sprintf(str3, "AIN%d %d\n\0", i, average/64);	
-				cdcdf_acm_write(str3, strlen(str3));
-		
-
+				txindex += strlen(&txbuffer[txindex]);
 					
 				
 							
@@ -253,6 +234,8 @@ int main(void)
 			}
 			
 		}
+				
+		cdcdf_acm_write(txbuffer, strlen(txbuffer));
 		
 		task_current = TASK_UNDEFINED;
 
