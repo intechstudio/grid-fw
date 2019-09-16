@@ -34,7 +34,19 @@
 #define ADC_1_CH_MAX 0
 
 /*! The buffer size for USART */
+#define USART_EAST_BUFFER_SIZE 16
+
+/*! The buffer size for USART */
+#define USART_NORTH_BUFFER_SIZE 16
+
+/*! The buffer size for USART */
 #define GRID_AUX_BUFFER_SIZE 16
+
+/*! The buffer size for USART */
+#define USART_WEST_BUFFER_SIZE 16
+
+/*! The buffer size for USART */
+#define USART_SOUTH_BUFFER_SIZE 16
 
 struct adc_async_descriptor         ADC_0;
 struct adc_async_channel_descriptor ADC_0_ch[ADC_0_CH_AMOUNT];
@@ -42,13 +54,21 @@ struct adc_async_descriptor         ADC_1;
 struct adc_async_channel_descriptor ADC_1_ch[ADC_1_CH_AMOUNT];
 struct crc_sync_descriptor          CRC_0;
 struct timer_descriptor             RTC_Scheduler;
+struct usart_async_descriptor       USART_EAST;
+struct usart_async_descriptor       USART_NORTH;
 struct usart_async_descriptor       GRID_AUX;
+struct usart_async_descriptor       USART_WEST;
+struct usart_async_descriptor       USART_SOUTH;
 
 static uint8_t ADC_0_buffer[ADC_0_BUFFER_SIZE];
 static uint8_t ADC_0_map[ADC_0_CH_MAX + 1];
 static uint8_t ADC_1_buffer[ADC_1_BUFFER_SIZE];
 static uint8_t ADC_1_map[ADC_1_CH_MAX + 1];
+static uint8_t USART_EAST_buffer[USART_EAST_BUFFER_SIZE];
+static uint8_t USART_NORTH_buffer[USART_NORTH_BUFFER_SIZE];
 static uint8_t GRID_AUX_buffer[GRID_AUX_BUFFER_SIZE];
+static uint8_t USART_WEST_buffer[USART_WEST_BUFFER_SIZE];
+static uint8_t USART_SOUTH_buffer[USART_SOUTH_BUFFER_SIZE];
 
 struct flash_descriptor FLASH_0;
 
@@ -131,6 +151,84 @@ static void RTC_Scheduler_init(void)
  *
  * Enables register interface and peripheral clock
  */
+void USART_EAST_CLOCK_init()
+{
+
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM0_GCLK_ID_CORE, CONF_GCLK_SERCOM0_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM0_GCLK_ID_SLOW, CONF_GCLK_SERCOM0_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+
+	hri_mclk_set_APBAMASK_SERCOM0_bit(MCLK);
+}
+
+/**
+ * \brief USART pinmux initialization function
+ *
+ * Set each required pin to USART functionality
+ */
+void USART_EAST_PORT_init()
+{
+
+	gpio_set_pin_function(PC17, PINMUX_PC17D_SERCOM0_PAD0);
+
+	gpio_set_pin_function(PC16, PINMUX_PC16D_SERCOM0_PAD1);
+}
+
+/**
+ * \brief USART initialization function
+ *
+ * Enables USART peripheral, clocks and initializes USART driver
+ */
+void USART_EAST_init(void)
+{
+	USART_EAST_CLOCK_init();
+	usart_async_init(&USART_EAST, SERCOM0, USART_EAST_buffer, USART_EAST_BUFFER_SIZE, (void *)NULL);
+	USART_EAST_PORT_init();
+}
+
+/**
+ * \brief USART Clock initialization function
+ *
+ * Enables register interface and peripheral clock
+ */
+void USART_NORTH_CLOCK_init()
+{
+
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM1_GCLK_ID_CORE, CONF_GCLK_SERCOM1_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM1_GCLK_ID_SLOW, CONF_GCLK_SERCOM1_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+
+	hri_mclk_set_APBAMASK_SERCOM1_bit(MCLK);
+}
+
+/**
+ * \brief USART pinmux initialization function
+ *
+ * Set each required pin to USART functionality
+ */
+void USART_NORTH_PORT_init()
+{
+
+	gpio_set_pin_function(PC27, PINMUX_PC27C_SERCOM1_PAD0);
+
+	gpio_set_pin_function(PC28, PINMUX_PC28C_SERCOM1_PAD1);
+}
+
+/**
+ * \brief USART initialization function
+ *
+ * Enables USART peripheral, clocks and initializes USART driver
+ */
+void USART_NORTH_init(void)
+{
+	USART_NORTH_CLOCK_init();
+	usart_async_init(&USART_NORTH, SERCOM1, USART_NORTH_buffer, USART_NORTH_BUFFER_SIZE, (void *)NULL);
+	USART_NORTH_PORT_init();
+}
+
+/**
+ * \brief USART Clock initialization function
+ *
+ * Enables register interface and peripheral clock
+ */
 void GRID_AUX_CLOCK_init()
 {
 
@@ -163,6 +261,45 @@ void GRID_AUX_init(void)
 	GRID_AUX_CLOCK_init();
 	usart_async_init(&GRID_AUX, SERCOM2, GRID_AUX_buffer, GRID_AUX_BUFFER_SIZE, (void *)NULL);
 	GRID_AUX_PORT_init();
+}
+
+/**
+ * \brief USART Clock initialization function
+ *
+ * Enables register interface and peripheral clock
+ */
+void USART_WEST_CLOCK_init()
+{
+
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM4_GCLK_ID_CORE, CONF_GCLK_SERCOM4_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM4_GCLK_ID_SLOW, CONF_GCLK_SERCOM4_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+
+	hri_mclk_set_APBDMASK_SERCOM4_bit(MCLK);
+}
+
+/**
+ * \brief USART pinmux initialization function
+ *
+ * Set each required pin to USART functionality
+ */
+void USART_WEST_PORT_init()
+{
+
+	gpio_set_pin_function(PB08, PINMUX_PB08D_SERCOM4_PAD0);
+
+	gpio_set_pin_function(PB09, PINMUX_PB09D_SERCOM4_PAD1);
+}
+
+/**
+ * \brief USART initialization function
+ *
+ * Enables USART peripheral, clocks and initializes USART driver
+ */
+void USART_WEST_init(void)
+{
+	USART_WEST_CLOCK_init();
+	usart_async_init(&USART_WEST, SERCOM4, USART_WEST_buffer, USART_WEST_BUFFER_SIZE, (void *)NULL);
+	USART_WEST_PORT_init();
 }
 
 void SYS_I2C_PORT_init(void)
@@ -202,6 +339,45 @@ void SYS_I2C_init(void)
 	SYS_I2C_CLOCK_init();
 	i2c_m_async_init(&SYS_I2C, SERCOM5);
 	SYS_I2C_PORT_init();
+}
+
+/**
+ * \brief USART Clock initialization function
+ *
+ * Enables register interface and peripheral clock
+ */
+void USART_SOUTH_CLOCK_init()
+{
+
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM6_GCLK_ID_CORE, CONF_GCLK_SERCOM6_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM6_GCLK_ID_SLOW, CONF_GCLK_SERCOM6_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+
+	hri_mclk_set_APBDMASK_SERCOM6_bit(MCLK);
+}
+
+/**
+ * \brief USART pinmux initialization function
+ *
+ * Set each required pin to USART functionality
+ */
+void USART_SOUTH_PORT_init()
+{
+
+	gpio_set_pin_function(PC13, PINMUX_PC13D_SERCOM6_PAD0);
+
+	gpio_set_pin_function(PC12, PINMUX_PC12D_SERCOM6_PAD1);
+}
+
+/**
+ * \brief USART initialization function
+ *
+ * Enables USART peripheral, clocks and initializes USART driver
+ */
+void USART_SOUTH_init(void)
+{
+	USART_SOUTH_CLOCK_init();
+	usart_async_init(&USART_SOUTH, SERCOM6, USART_SOUTH_buffer, USART_SOUTH_BUFFER_SIZE, (void *)NULL);
+	USART_SOUTH_PORT_init();
 }
 
 void GRID_LED_PORT_init(void)
@@ -520,9 +696,13 @@ void system_init(void)
 	FLASH_0_init();
 
 	RTC_Scheduler_init();
+	USART_EAST_init();
+	USART_NORTH_init();
 	GRID_AUX_init();
+	USART_WEST_init();
 
 	SYS_I2C_init();
+	USART_SOUTH_init();
 
 	GRID_LED_init();
 

@@ -30,8 +30,12 @@ extern "C" {
 
 #include <hal_timer.h>
 #include <hal_usart_async.h>
+#include <hal_usart_async.h>
+#include <hal_usart_async.h>
+#include <hal_usart_async.h>
 
 #include <hal_i2c_m_async.h>
+#include <hal_usart_async.h>
 
 #include <hal_spi_m_dma.h>
 
@@ -45,9 +49,13 @@ extern struct crc_sync_descriptor  CRC_0;
 
 extern struct flash_descriptor       FLASH_0;
 extern struct timer_descriptor       RTC_Scheduler;
+extern struct usart_async_descriptor USART_EAST;
+extern struct usart_async_descriptor USART_NORTH;
 extern struct usart_async_descriptor GRID_AUX;
+extern struct usart_async_descriptor USART_WEST;
 
-extern struct i2c_m_async_desc SYS_I2C;
+extern struct i2c_m_async_desc       SYS_I2C;
+extern struct usart_async_descriptor USART_SOUTH;
 
 extern struct spi_m_dma_descriptor GRID_LED;
 
@@ -58,13 +66,29 @@ void ADC_1_init(void);
 void FLASH_0_init(void);
 void FLASH_0_CLOCK_init(void);
 
+void USART_EAST_PORT_init(void);
+void USART_EAST_CLOCK_init(void);
+void USART_EAST_init(void);
+
+void USART_NORTH_PORT_init(void);
+void USART_NORTH_CLOCK_init(void);
+void USART_NORTH_init(void);
+
 void GRID_AUX_PORT_init(void);
 void GRID_AUX_CLOCK_init(void);
 void GRID_AUX_init(void);
 
+void USART_WEST_PORT_init(void);
+void USART_WEST_CLOCK_init(void);
+void USART_WEST_init(void);
+
 void SYS_I2C_PORT_init(void);
 void SYS_I2C_CLOCK_init(void);
 void SYS_I2C_init(void);
+
+void USART_SOUTH_PORT_init(void);
+void USART_SOUTH_CLOCK_init(void);
+void USART_SOUTH_init(void);
 
 void GRID_LED_PORT_init(void);
 void GRID_LED_CLOCK_init(void);

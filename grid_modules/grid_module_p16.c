@@ -91,6 +91,8 @@
 		spi_m_dma_get_io_descriptor(&GRID_LED, &io2);
 		spi_m_dma_register_callback(&GRID_LED, SPI_M_DMA_CB_TX_DONE, tx_complete_cb_GRID_LED);
 	
+		grid_sys_uart_init();
+
 
 		//enable pwr!
 		gpio_set_pin_level(UI_PWR_EN, true);

@@ -138,6 +138,65 @@ void RTC_Scheduler_example(void)
 }
 
 /**
+ * Example of using USART_EAST to write "Hello World" using the IO abstraction.
+ *
+ * Since the driver is asynchronous we need to use statically allocated memory for string
+ * because driver initiates transfer and then returns before the transmission is completed.
+ *
+ * Once transfer has been completed the tx_cb function will be called.
+ */
+
+static uint8_t example_USART_EAST[12] = "Hello World!";
+
+static void tx_cb_USART_EAST(const struct usart_async_descriptor *const io_descr)
+{
+	/* Transfer completed */
+}
+
+void USART_EAST_example(void)
+{
+	struct io_descriptor *io;
+
+	usart_async_register_callback(&USART_EAST, USART_ASYNC_TXC_CB, tx_cb_USART_EAST);
+	/*usart_async_register_callback(&USART_EAST, USART_ASYNC_RXC_CB, rx_cb);
+	usart_async_register_callback(&USART_EAST, USART_ASYNC_ERROR_CB, err_cb);*/
+	usart_async_get_io_descriptor(&USART_EAST, &io);
+	usart_async_enable(&USART_EAST);
+
+	io_write(io, example_USART_EAST, 12);
+	
+}
+
+/**
+ * Example of using USART_NORTH to write "Hello World" using the IO abstraction.
+ *
+ * Since the driver is asynchronous we need to use statically allocated memory for string
+ * because driver initiates transfer and then returns before the transmission is completed.
+ *
+ * Once transfer has been completed the tx_cb function will be called.
+ */
+
+static uint8_t example_USART_NORTH[12] = "Hello World!";
+
+static void tx_cb_USART_NORTH(const struct usart_async_descriptor *const io_descr)
+{
+	/* Transfer completed */
+}
+
+void USART_NORTH_example(void)
+{
+	struct io_descriptor *io;
+
+	usart_async_register_callback(&USART_NORTH, USART_ASYNC_TXC_CB, tx_cb_USART_NORTH);
+	/*usart_async_register_callback(&USART_NORTH, USART_ASYNC_RXC_CB, rx_cb);
+	usart_async_register_callback(&USART_NORTH, USART_ASYNC_ERROR_CB, err_cb);*/
+	usart_async_get_io_descriptor(&USART_NORTH, &io);
+	usart_async_enable(&USART_NORTH);
+
+	io_write(io, example_USART_NORTH, 12);
+}
+
+/**
  * Example of using GRID_AUX to write "Hello World" using the IO abstraction.
  *
  * Since the driver is asynchronous we need to use statically allocated memory for string
@@ -166,6 +225,35 @@ void GRID_AUX_example(void)
 	io_write(io, example_GRID_AUX, 12);
 }
 
+/**
+ * Example of using USART_WEST to write "Hello World" using the IO abstraction.
+ *
+ * Since the driver is asynchronous we need to use statically allocated memory for string
+ * because driver initiates transfer and then returns before the transmission is completed.
+ *
+ * Once transfer has been completed the tx_cb function will be called.
+ */
+
+static uint8_t example_USART_WEST[12] = "Hello World!";
+
+static void tx_cb_USART_WEST(const struct usart_async_descriptor *const io_descr)
+{
+	/* Transfer completed */
+}
+
+void USART_WEST_example(void)
+{
+	struct io_descriptor *io;
+
+	usart_async_register_callback(&USART_WEST, USART_ASYNC_TXC_CB, tx_cb_USART_WEST);
+	/*usart_async_register_callback(&USART_WEST, USART_ASYNC_RXC_CB, rx_cb);
+	usart_async_register_callback(&USART_WEST, USART_ASYNC_ERROR_CB, err_cb);*/
+	usart_async_get_io_descriptor(&USART_WEST, &io);
+	usart_async_enable(&USART_WEST);
+
+	io_write(io, example_USART_WEST, 12);
+}
+
 static uint8_t SYS_I2C_example_str[12] = "Hello World!";
 
 void SYS_I2C_tx_complete(struct i2c_m_async_desc *const i2c)
@@ -182,6 +270,35 @@ void SYS_I2C_example(void)
 	i2c_m_async_set_slaveaddr(&SYS_I2C, 0x12, I2C_M_SEVEN);
 
 	io_write(SYS_I2C_io, SYS_I2C_example_str, 12);
+}
+
+/**
+ * Example of using USART_SOUTH to write "Hello World" using the IO abstraction.
+ *
+ * Since the driver is asynchronous we need to use statically allocated memory for string
+ * because driver initiates transfer and then returns before the transmission is completed.
+ *
+ * Once transfer has been completed the tx_cb function will be called.
+ */
+
+static uint8_t example_USART_SOUTH[12] = "Hello World!";
+
+static void tx_cb_USART_SOUTH(const struct usart_async_descriptor *const io_descr)
+{
+	/* Transfer completed */
+}
+
+void USART_SOUTH_example(void)
+{
+	struct io_descriptor *io;
+
+	usart_async_register_callback(&USART_SOUTH, USART_ASYNC_TXC_CB, tx_cb_USART_SOUTH);
+	/*usart_async_register_callback(&USART_SOUTH, USART_ASYNC_RXC_CB, rx_cb);
+	usart_async_register_callback(&USART_SOUTH, USART_ASYNC_ERROR_CB, err_cb);*/
+	usart_async_get_io_descriptor(&USART_SOUTH, &io);
+	usart_async_enable(&USART_SOUTH);
+
+	io_write(io, example_USART_SOUTH, 12);
 }
 
 /**

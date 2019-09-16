@@ -1,12 +1,17 @@
 #include <atmel_start.h>
 #include "atmel_start_pins.h"
 
+#include <stdio.h>
+
+#include "../../grid_lib/grid_protocol.h"
+
 #include "../../grid_lib/grid_led.c" // WS2812 LED
 #include "../../grid_lib/grid_ain.c" // Analog input filtering
 #include "../../grid_lib/grid_tel.c" // Grid Telemetry
 #include "../../grid_lib/grid_sys.c" // Grid System
 
 #define GRID_MODULE_P16
+
 
 #include "../../grid_modules/grid_module_p16.c" // 
 
@@ -20,13 +25,15 @@ volatile uint8_t reportflag = 0;
 static struct timer_task RTC_Scheduler_tick;
 static struct timer_task RTC_Scheduler_report;
 static struct timer_task RTC_Scheduler_task2;
+static struct timer_task RTC_Scheduler_ping;
 
 
 
 #define TASK_UNDEFINED 0
 #define TASK_IDLE	   1
-#define TASK_LED   2
+#define TASK_LED	2
 #define TASK_UIIN    3
+#define TASK_GRID   4
 
 volatile uint8_t task_current = 0;
 volatile uint32_t task_counter[8] = {0, 0, 0, 0, 0, 0, 0, 0 };
@@ -51,6 +58,12 @@ static void RTC_Scheduler_task2_cb(const struct timer_task *const timer_task)
 	if (task2flag<255) task2flag++;
 }
 
+static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
+{
+	grid_sys_ping_all();
+	
+}
+
 #define RTC1SEC 16384
 
 void init_timer(void)
@@ -64,6 +77,11 @@ void init_timer(void)
 	RTC_Scheduler_report.cb       = RTC_Scheduler_report_cb;
 	RTC_Scheduler_report.mode     = TIMER_TASK_REPEAT;
 	
+		
+	RTC_Scheduler_ping.interval = 1638; //0.1sec
+	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
+	RTC_Scheduler_ping.mode     = TIMER_TASK_REPEAT;
+	
 	RTC_Scheduler_task2.interval = 32768/2*20;
 	RTC_Scheduler_task2.cb       = RTC_Scheduler_task2_cb;
 	RTC_Scheduler_task2.mode     = TIMER_TASK_REPEAT;
@@ -71,6 +89,7 @@ void init_timer(void)
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_tick);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_report);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_task2);
+	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_ping);
 	timer_start(&RTC_Scheduler);
 }
 
@@ -116,9 +135,28 @@ int main(void)
 		if (reportflag){
 			
 			
-			char str[70];
-			sprintf(str, "LOOPTICK %x\nREALTIME %x\nTASK0 %x\nTASK1 %x\nTASK2 %x\nTASK3 %x\n\0", loopcounter, realtime, task_counter[0], task_counter[1], task_counter[2], task_counter[3] );
+			char str[90];
+			sprintf(str, "LOOPTICK %x\nREALTIME %x\nTASK0 %x\nTASK1 %x\nTASK2 %x\nTASK3 %x\nTASK4 %x\nRXCE %x\nRXCW %x\nTXCE %x\nTXCW %x\n\0", loopcounter, realtime, task_counter[0], task_counter[1], task_counter[2], task_counter[3], task_counter[4],  grid_sys_rx_counter[GRID_SYS_EAST],  grid_sys_rx_counter[GRID_SYS_WEST],  grid_sys_tx_counter[GRID_SYS_EAST],  grid_sys_tx_counter[GRID_SYS_WEST]);
 			cdcdf_acm_write(str, strlen(str));
+			
+			
+			
+			grid_sys_rx_counter[GRID_SYS_NORTH]=0;
+			grid_sys_rx_counter[GRID_SYS_EAST]=0;
+			grid_sys_rx_counter[GRID_SYS_SOUTH]=0;
+			grid_sys_rx_counter[GRID_SYS_WEST]=0;
+			
+			grid_sys_tx_counter[GRID_SYS_NORTH]=0;
+			grid_sys_tx_counter[GRID_SYS_EAST]=0;
+			grid_sys_tx_counter[GRID_SYS_SOUTH]=0;
+			grid_sys_tx_counter[GRID_SYS_WEST]=0;
+			
+			grid_sys_ping_counter[GRID_SYS_NORTH]=0;
+			grid_sys_ping_counter[GRID_SYS_EAST]=0;
+			grid_sys_ping_counter[GRID_SYS_SOUTH]=0;
+			grid_sys_ping_counter[GRID_SYS_WEST]=0;
+			
+			
 			
 			realtime = 0;
 			loopcounter = 0;
@@ -198,6 +236,11 @@ int main(void)
 		}
 		faketimer++;
 		
+		task_current = TASK_GRID;
+		
+		grid_msg_process_all();
+		
+		task_current = TASK_UNDEFINED;
 			
 		/* ========================= ANALOG READ ============================= */
 		

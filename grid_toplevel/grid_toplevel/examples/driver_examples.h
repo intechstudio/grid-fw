@@ -22,9 +22,17 @@ void FLASH_0_example(void);
 
 void RTC_Scheduler_example(void);
 
+void USART_EAST_example(void);
+
+void USART_NORTH_example(void);
+
 void GRID_AUX_example(void);
 
+void USART_WEST_example(void);
+
 void SYS_I2C_example(void);
+
+void USART_SOUTH_example(void);
 
 void GRID_LED_example(void);
 

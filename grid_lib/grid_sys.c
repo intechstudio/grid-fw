@@ -74,3 +74,124 @@ uint32_t grid_sys_get_hwcfg(){
 	return grid_sys_hwfcg;
 
 }
+
+
+
+
+#define GRID_SYS_NORTH	0
+#define GRID_SYS_EAST	1
+#define GRID_SYS_SOUTH	2
+#define GRID_SYS_WEST	3
+
+struct io_descriptor *grid_sys_north_io;
+struct io_descriptor *grid_sys_east_io;
+struct io_descriptor *grid_sys_south_io;
+struct io_descriptor *grid_sys_west_io;
+
+static uint8_t grid_sys_pingmessage[2] = "P";
+
+volatile uint8_t grid_sys_ping_counter[4] = {0, 0, 0, 0};
+
+volatile uint32_t grid_sys_rx_counter[4] = {0, 0, 0, 0};
+volatile uint32_t grid_sys_tx_counter[4] = {0, 0, 0, 0};
+
+
+
+
+static void tx_cb_USART_GRID(const struct usart_async_descriptor *const descr)
+{
+	/* Transfer completed */
+		
+	if (descr == &USART_EAST){
+		grid_sys_tx_counter[GRID_SYS_EAST]++;
+	}
+	if (descr == &USART_WEST){
+		grid_sys_tx_counter[GRID_SYS_WEST]++;
+	}
+	
+}
+
+static void rx_cb_USART_GRID(const struct usart_async_descriptor *const descr)
+{
+	/* Transfer completed */
+	
+	if (descr == &USART_EAST){
+		grid_sys_rx_counter[GRID_SYS_EAST]++;
+	}
+	if (descr == &USART_WEST){
+		grid_sys_rx_counter[GRID_SYS_WEST]++;
+	}
+	
+}
+
+void grid_sys_uart_init(){
+
+	usart_async_register_callback(&USART_EAST, USART_ASYNC_TXC_CB, tx_cb_USART_GRID);
+	usart_async_register_callback(&USART_EAST, USART_ASYNC_RXC_CB, rx_cb_USART_GRID);	
+	
+	usart_async_get_io_descriptor(&USART_EAST, grid_sys_east_io);
+	
+	usart_async_enable(&USART_EAST);
+	
+	
+	usart_async_register_callback(&USART_WEST, USART_ASYNC_TXC_CB, tx_cb_USART_GRID);
+	usart_async_register_callback(&USART_WEST, USART_ASYNC_RXC_CB, rx_cb_USART_GRID);
+	
+	usart_async_get_io_descriptor(&USART_WEST, grid_sys_west_io);
+	
+	usart_async_enable(&USART_WEST);
+
+}
+
+	
+void grid_msg_process_all(){
+	
+	grid_msg_process(&USART_EAST, GRID_SYS_EAST);
+	grid_msg_process(&USART_WEST, GRID_SYS_WEST);
+		
+}	
+
+void grid_msg_process(const struct usart_async_descriptor *const descr, uint8_t offset){
+	
+	uint8_t character;
+	
+	
+	if (usart_async_is_rx_not_empty(descr)){
+		
+		while(io_read(&(*descr).io, &character, 1) == 1){
+			
+			if (character == GRID_MSG_PING){
+				
+				grid_sys_ping_counter[offset] += 1;
+				
+				
+			}
+			
+		}	
+		
+	}
+	
+
+	
+	
+}
+
+void grid_sys_ping_all(){
+	
+	grid_sys_ping(&USART_EAST);
+	grid_sys_ping(&USART_WEST);
+
+}
+
+void grid_sys_ping(const struct usart_async_descriptor *const descr){
+	
+		
+	io_write(&(*descr).io, grid_sys_pingmessage ,1);
+	
+}
+
+
+	
+	
+	
+	

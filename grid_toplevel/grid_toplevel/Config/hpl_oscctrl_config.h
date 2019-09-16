@@ -207,7 +207,7 @@
 // <i> Indicates whether the connections between the I/O pads and the external clock or crystal oscillator is enabled or not
 // <id> xosc1_arch_xtalen
 #ifndef CONF_XOSC1_XTALEN
-#define CONF_XOSC1_XTALEN 0
+#define CONF_XOSC1_XTALEN 1
 #endif
 //</h>
 //</e>
@@ -426,7 +426,7 @@
 // <i> Indicates whether Run in Standby is enabled or not
 // <id> fdpll0_arch_runstdby
 #ifndef CONF_FDPLL0_RUNSTDBY
-#define CONF_FDPLL0_RUNSTDBY 1
+#define CONF_FDPLL0_RUNSTDBY 0
 #endif
 
 // <o> Loop Divider Ratio Fractional Part <0x0-0x1F>
@@ -447,14 +447,14 @@
 // <i> This Clock divider is only for XOSC clock input to DPLL
 // <id> fdpll0_clock_div
 #ifndef CONF_FDPLL0_DIV
-#define CONF_FDPLL0_DIV 0x2
+#define CONF_FDPLL0_DIV 0x0
 #endif
 
 // <q> DCO Filter Enable
 // <i> Indicates whether DCO Filter Enable is enabled or not
 // <id> fdpll0_arch_dcoen
 #ifndef CONF_FDPLL0_DCOEN
-#define CONF_FDPLL0_DCOEN 1
+#define CONF_FDPLL0_DCOEN 0
 #endif
 
 // <o> Sigma-Delta DCO Filter Selection <0x0-0x7>
