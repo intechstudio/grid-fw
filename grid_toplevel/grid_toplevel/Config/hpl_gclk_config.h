@@ -25,7 +25,7 @@
 // <i> This defines the clock source for generic clock generator 0
 // <id> gclk_gen_0_oscillator
 #ifndef CONF_GCLK_GEN_0_SOURCE
-#define CONF_GCLK_GEN_0_SOURCE GCLK_GENCTRL_SRC_DFLL
+#define CONF_GCLK_GEN_0_SOURCE GCLK_GENCTRL_SRC_DPLL0
 #endif
 
 // <q> Run in Standby
@@ -60,7 +60,7 @@
 // <i> Indicates whether Improve Duty Cycle is enabled or not
 // <id> gclk_arch_gen_0_idc
 #ifndef CONF_GCLK_GEN_0_IDC
-#define CONF_GCLK_GEN_0_IDC 1
+#define CONF_GCLK_GEN_0_IDC 0
 #endif
 
 // <q> Generic Clock Generator Enable

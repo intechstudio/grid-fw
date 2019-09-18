@@ -43,11 +43,10 @@
 
 /* Referenced GCLKs (out of 0~11), should be initialized firstly
  * - GCLK 3 for DFLL
- * - GCLK 2 for FDPLL0
  */
-#define _GCLK_INIT_1ST 0x0000000C
+#define _GCLK_INIT_1ST 0x00000008
 /* Not referenced GCLKs, initialized last */
-#define _GCLK_INIT_LAST 0x00000FF3
+#define _GCLK_INIT_LAST 0x00000FF7
 
 /**
  * \brief Initialize the hardware abstraction layer

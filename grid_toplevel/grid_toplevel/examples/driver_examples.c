@@ -164,7 +164,6 @@ void USART_EAST_example(void)
 	usart_async_enable(&USART_EAST);
 
 	io_write(io, example_USART_EAST, 12);
-	
 }
 
 /**
