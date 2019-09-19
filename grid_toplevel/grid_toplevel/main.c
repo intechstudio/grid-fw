@@ -99,7 +99,6 @@ int main(void)
 	
 	atmel_start_init();
 	
-	//cdcd_acm_example();
 	
 	grid_module_init();
 	
@@ -174,7 +173,7 @@ int main(void)
 			
 			
 			char str[11];
-			sprintf(str, "TASKTICK 2\n");
+			sprintf(str, "HWCFG %x\n", grid_sys_get_hwcfg());
 
 			
 			cdcdf_acm_write(str, 11);
@@ -260,7 +259,6 @@ int main(void)
 		{
 			if (grid_ain_get_changed(i)){
 				
-				grid_tel_event_handler(console_tx);
 				
 				uint16_t average = grid_ain_get_average(i);
 				
@@ -270,8 +268,14 @@ int main(void)
 				txindex += strlen(&txbuffer[txindex]);
 					
 				
-							
-				grid_led_set_phase(i, 0, average*2/128); // 0...255
+				if (grid_sys_get_hwcfg()==64 && i>11){
+					grid_led_set_phase(i-4, 0, average*2/128); // 0...255
+				}
+				else{
+					grid_led_set_phase(i, 0, average*2/128); // 0...255	
+				}
+				
+				
 				
 				
 			}

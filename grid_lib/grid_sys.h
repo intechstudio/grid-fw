@@ -14,4 +14,61 @@
 uint32_t grid_sys_hwfcg = -1;
 
 
+
+#define  GRID_MODULE_P16_RevB		0
+#define  GRID_MODULE_B16_RevB		128
+#define  GRID_MODULE_PBF4_RevA		64
+
+
+
+
+
+
+
+
+typedef struct grid_buffer{
+	
+	uint16_t buffer_length;
+	uint8_t* buffer_storage;
+	
+	uint16_t read_start;
+	uint16_t read_stop;
+	uint16_t read_active;
+	
+	uint16_t read_length;
+	
+	uint16_t write_start;
+	uint16_t write_stop;
+	uint16_t write_active;
+	
+} GRID_BUFFER_t;
+
+
+// Recent messages buffer allows detection and termination of duplicate messages
+// Store: dX, dY, ID, ID
+
+uint32_t grid_com_recent_messages[250];
+
+
+
+
+uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length);
+
+
+uint16_t grid_buffer_read_next_length();
+uint8_t grid_buffer_read_character(struct grid_buffer* buf);
+uint8_t grid_buffer_read_acknowledge();		// OK, delete
+uint8_t grid_buffer_read_nacknowledge();	// Restart packet
+uint8_t grid_buffer_read_cancel();			// Discard packet
+
+
+
+uint16_t grid_buffer_write_init(struct grid_buffer* buf, uint16_t length);
+uint8_t  grid_buffer_write_character(struct grid_buffer* buf, uint8_t character);
+
+uint8_t grid_buffer_write_acknowledge(struct grid_buffer* buf);
+uint8_t grid_buffer_write_cancel(struct grid_buffer* buf);	
+
+
+
 #endif /* GRID_TEL_H_INCLUDED */
