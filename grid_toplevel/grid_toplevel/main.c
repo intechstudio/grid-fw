@@ -136,11 +136,11 @@ int main(void)
 		//checktimer flags
 		if (reportflag){
 			
-			/*
+			
 			char str[90];
 			sprintf(str, "LOOPTICK %x\nREALTIME %x\nTASK0 %x\nTASK1 %x\nTASK2 %x\nTASK3 %x\nTASK4 %x\nRXCE %x\nRXCW %x\nTXCE %x\nTXCW %x\n\0", loopcounter, realtime, task_counter[0], task_counter[1], task_counter[2], task_counter[3], task_counter[4],  grid_sys_rx_counter[GRID_SYS_EAST],  grid_sys_rx_counter[GRID_SYS_WEST],  grid_sys_tx_counter[GRID_SYS_EAST],  grid_sys_tx_counter[GRID_SYS_WEST]);
 			cdcdf_acm_write(str, strlen(str));
-			*/
+			
 
 /*
 			char str[90];

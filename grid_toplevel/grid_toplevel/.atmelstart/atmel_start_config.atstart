@@ -921,7 +921,7 @@ drivers:
       osculp32k_calib: 0
       osculp32k_calib_enable: false
       rtc_1khz_selection: false
-      rtc_source_oscillator: 32kHz Ultra Low Power Internal Oscillator (OSCULP32K)
+      rtc_source_oscillator: 32kHz External Crystal Oscillator (XOSC32K)
       xosc32k_arch_cfden: false
       xosc32k_arch_cfdeo: false
       xosc32k_arch_cgm: Standard mode
