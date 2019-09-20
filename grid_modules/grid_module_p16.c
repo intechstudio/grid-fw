@@ -151,7 +151,8 @@
 	
 		grid_sys_uart_init();
 		
-		grid_buffer_init_all();
+		
+		grid_port_init_all();
 
 
 		//enable pwr!

@@ -8,34 +8,22 @@
 #include "grid_buf.h"
 
 
+// PORTS
 
-// NORTH
-GRID_BUFFER_t GRID_BUFFER_N_TX;
-GRID_BUFFER_t GRID_BUFFER_N_RX;
+GRID_PORT_t GRID_PORT_N;
+GRID_PORT_t GRID_PORT_E;
+GRID_PORT_t GRID_PORT_S;
+GRID_PORT_t GRID_PORT_W;
 
-// EAST
-GRID_BUFFER_t GRID_BUFFER_E_TX;
-GRID_BUFFER_t GRID_BUFFER_E_RX;
+GRID_PORT_t GRID_PORT_U;
+GRID_PORT_t GRID_PORT_H;
 
-// SOUTH
-GRID_BUFFER_t GRID_BUFFER_S_TX;
-GRID_BUFFER_t GRID_BUFFER_S_RX;
-
-// WEST
-GRID_BUFFER_t GRID_BUFFER_W_TX;
-GRID_BUFFER_t GRID_BUFFER_W_RX;
-
-// USER INTERFACE
-GRID_BUFFER_t GRID_BUFFER_U_TX;
-GRID_BUFFER_t GRID_BUFFER_U_RX;
-
-// HOST (PC)
-GRID_BUFFER_t GRID_BUFFER_H_TX;
-GRID_BUFFER_t GRID_BUFFER_H_RX;
 
 #define GRID_BUFFER_TX_SIZE	200 
 #define GRID_BUFFER_RX_SIZE	200
 
+uint8_t usb_tx_double_buffer[GRID_BUFFER_TX_SIZE];
+uint8_t usb_rx_double_buffer[GRID_BUFFER_RX_SIZE];
 
 
 uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length){
@@ -68,28 +56,22 @@ uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length){
 }
 
 
-uint8_t grid_buffer_init_all(){
+uint16_t grid_buffer_write_size(GRID_BUFFER_t* buf){
 	
 	
-	grid_buffer_init(&GRID_BUFFER_N_TX, GRID_BUFFER_TX_SIZE*4);
-	grid_buffer_init(&GRID_BUFFER_N_RX, GRID_BUFFER_RX_SIZE*4);
 	
-	grid_buffer_init(&GRID_BUFFER_E_TX, GRID_BUFFER_TX_SIZE*4);
-	grid_buffer_init(&GRID_BUFFER_E_RX, GRID_BUFFER_RX_SIZE*4);
+	uint16_t space = 0;
 	
-	grid_buffer_init(&GRID_BUFFER_S_TX, GRID_BUFFER_TX_SIZE*4);
-	grid_buffer_init(&GRID_BUFFER_S_RX, GRID_BUFFER_RX_SIZE*4);
+	if (buf->read_start > buf->write_start){
+		space = buf->read_start - buf->write_start;
+	}
+	else{
+		space = buf->buffer_length - buf->write_start + buf->read_start;
+	}
+
+	return space;
+
 	
-	grid_buffer_init(&GRID_BUFFER_W_TX, GRID_BUFFER_TX_SIZE*4);
-	grid_buffer_init(&GRID_BUFFER_W_RX, GRID_BUFFER_RX_SIZE*4);
-	
-	grid_buffer_init(&GRID_BUFFER_U_TX, GRID_BUFFER_TX_SIZE*1);
-	grid_buffer_init(&GRID_BUFFER_U_RX, GRID_BUFFER_RX_SIZE*4);
-	
-	grid_buffer_init(&GRID_BUFFER_H_TX, GRID_BUFFER_TX_SIZE*8);
-	grid_buffer_init(&GRID_BUFFER_H_RX, GRID_BUFFER_RX_SIZE*8);
-	
-	return 1;
 	
 }
 
@@ -161,6 +143,52 @@ uint8_t grid_buffer_write_cancel(GRID_BUFFER_t* buf){
 	buf->write_stop   = buf->write_start;
 	
 	return 1;
+}
+
+
+uint16_t grid_buffer_read_size(GRID_BUFFER_t* buf){
+	
+	if (buf->read_active != buf->read_stop) {
+		while(1){
+			// TRAP: TRANSMISSION WAS NOT OVER YET
+		}
+	}
+	
+	
+	if (buf->read_start	 != buf->read_stop) {
+		while(1){
+			// TRAP: TRANSMISSION WAS NOT OVER YET
+		}
+	}
+	
+	if (buf->read_start == buf->write_start) {
+		return 0;
+	}
+	
+	
+	
+	// Seek message end character
+	for (uint16_t i=0; i<buf->buffer_length; i++){
+		
+		uint16_t index = (buf->read_start + i)%buf->buffer_length;
+		
+		// Hit the write pointer, no message
+		if (index == buf->write_start) return 0;
+		
+		if (buf->buffer_storage[index] == '\n'){
+						
+			return i+1; // packet length
+			
+		}
+		
+		
+	}
+	
+	while(1){
+		// TRAP: TRANSMISSION WAS NOT OVER YET
+	}
+	
+	
 }
 
 
@@ -272,3 +300,148 @@ uint8_t grid_buffer_read_cancel(GRID_BUFFER_t* buf){
 	
 	return 1;
 }
+
+
+
+void grid_port_init(GRID_PORT_t* por, uint16_t tx_buf_size, uint16_t rx_buf_size){
+	
+	grid_buffer_init(&por->tx_buffer, tx_buf_size);
+	grid_buffer_init(&por->rx_buffer, rx_buf_size);
+	
+	por->partner_dx = 0;
+	por->partner_dy = 0;
+	por->partner_fi = 0;
+	
+	por->partner_hwcfg = 0;
+	por->partner_status = 0;
+	
+}
+
+
+
+
+void grid_port_init_all(){
+	
+	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4);
+	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4);
+	grid_port_init(&GRID_PORT_S, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4);
+	grid_port_init(&GRID_PORT_W, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4);
+	
+	grid_port_init(&GRID_PORT_U, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4);
+	grid_port_init(&GRID_PORT_H, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4);	
+	
+	GRID_PORT_U.partner_status = 1; // UI IS ALWAYS CONNECTED
+	GRID_PORT_H.partner_status = 1; // HOST IS ALWAYS CONNECTED (Not really!)
+	
+	
+}
+
+uint8_t grid_port_process_inbound(GRID_PORT_t* por){
+	
+	uint8_t port_count = 1;
+	GRID_PORT_t* port_array[port_count];
+	
+	port_array[0] = &GRID_PORT_H;
+	
+	
+	uint16_t packet_size = grid_buffer_read_size(&por->rx_buffer);
+	
+	if (!packet_size){
+		
+		// NO PACKET IN RX BUFFER
+		return 0;
+		 
+	}else{
+			
+		
+
+			
+		// Check all of the tx buffers for sufficient storage space
+		
+		for (uint8_t i=0; i<port_count; i++)
+		{
+			if (packet_size > grid_buffer_write_size(&port_array[i]->tx_buffer)){				
+				// sorry one of the buffers cannot store the packet, we will try later
+				return 0;				
+			}			
+		}
+			
+		// Let's init all of the buffers for transaction
+		
+		if (packet_size != grid_buffer_read_init(&por->rx_buffer)){
+			while(1){			
+				// TRAP: WTF
+			}
+		}
+		
+		
+		 
+		
+		for (uint8_t i=0; i<port_count; i++)
+		{
+			grid_buffer_write_init(&port_array[i]->tx_buffer, packet_size);
+		}
+		
+		// Let's do the transaction
+												
+		for (uint16_t i=0; i<packet_size; i++)
+		{
+			uint8_t character = grid_buffer_read_character(&por->rx_buffer);
+			
+			for (uint8_t j=0; j<port_count; j++){
+				
+				grid_buffer_write_character(&port_array[j]->tx_buffer, character);
+				
+			}
+								
+		}
+			
+								
+		// Let's acknowledge all of the transactions
+					
+		grid_buffer_read_acknowledge(&por->rx_buffer);
+					
+		for (uint8_t i=0; i<port_count; i++)
+		{
+			grid_buffer_write_acknowledge(&port_array[i]->tx_buffer);
+		}	
+
+		
+	}
+		
+}
+
+uint8_t grid_port_process_outbound_usb(GRID_PORT_t* por){
+	
+	uint16_t packet_size = grid_buffer_read_size(&por->tx_buffer);
+		
+	if (!packet_size){
+			
+		// NO PACKET IN RX BUFFER
+		return 0;
+	}else{
+				
+		// Let's transfer the packet to local memory
+		grid_buffer_read_init(&por->tx_buffer);		
+		
+		for (uint8_t i = 0; i<packet_size; i++){
+			
+			uint8_t character = grid_buffer_read_character(&por->tx_buffer);
+			usb_tx_double_buffer[i] = character;
+			
+		}
+		
+		// Let's send the packet through USB
+				
+		cdcdf_acm_write(usb_tx_double_buffer, packet_size);
+
+			
+		// Let's acknowledge the transactions	(should wait for partner to send ack)	
+		grid_buffer_read_acknowledge(&por->tx_buffer);		
+		
+	}
+	
+	
+}
+
+

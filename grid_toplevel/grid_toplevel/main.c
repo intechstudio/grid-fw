@@ -138,8 +138,8 @@ int main(void)
 			
 			
 			char str[90];
-			sprintf(str, "LOOPTICK %x\nREALTIME %x\nTASK0 %x\nTASK1 %x\nTASK2 %x\nTASK3 %x\nTASK4 %x\nRXCE %x\nRXCW %x\nTXCE %x\nTXCW %x\n\0", loopcounter, realtime, task_counter[0], task_counter[1], task_counter[2], task_counter[3], task_counter[4],  grid_sys_rx_counter[GRID_SYS_EAST],  grid_sys_rx_counter[GRID_SYS_WEST],  grid_sys_tx_counter[GRID_SYS_EAST],  grid_sys_tx_counter[GRID_SYS_WEST]);
-			cdcdf_acm_write(str, strlen(str));
+			sprintf(str, "LOOPTICK %x\nREALTIME %x\nTASK0 %x\nTASK1 %x\nTASK2 %x\nTASK3 %x\nTASK4 %x\nSTART %x\nSTOP %x\n\0", loopcounter, realtime, task_counter[0], task_counter[1], task_counter[2], task_counter[3], task_counter[4],  GRID_PORT_U.tx_buffer.write_start, GRID_PORT_U.tx_buffer.write_stop);
+			//cdcdf_acm_write(str, strlen(str));
 			
 
 /*
@@ -214,11 +214,10 @@ int main(void)
 		
 		task_current = TASK_UNDEFINED;
 			
+			
+		
+			
 		/* ========================= ANALOG READ ============================= */
-		
-		
-
-
 		
 		// Push out all changes
 		
@@ -260,16 +259,17 @@ int main(void)
 		
 		
 		if (txindex){
+						
 			len = txindex;
 			
-			if (grid_buffer_write_init(&GRID_BUFFER_U_RX, len)){
+			if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, len)){
 			
 				for(uint16_t i = 0; i<len; i++){
 			
-					grid_buffer_write_character(&GRID_BUFFER_U_RX, txbuffer[i]);
+					grid_buffer_write_character(&GRID_PORT_U.rx_buffer, txbuffer[i]);
 				}
 		
-				grid_buffer_write_acknowledge(&GRID_BUFFER_U_RX);			
+				grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);			
 			}
 			
 			
@@ -281,10 +281,17 @@ int main(void)
 		
 		//cdcdf_acm_write(txbuffer, len);
 		
-		
+
 		
 		
 		uint16_t length = 0;
+		
+		
+		grid_port_process_inbound(&GRID_PORT_U); // Copy data from LED_RX to HOST_TX
+		
+		grid_port_process_outbound_usb(&GRID_PORT_H); // Send data from HOST_TX through USB
+		
+		/*
 		
 		while (grid_buffer_read_init(&GRID_BUFFER_U_RX)){
 			
@@ -294,17 +301,7 @@ int main(void)
 			if (length){
 						
 				uint8_t content[length+1];
-			
-				/*
-			
-				char str[length];
-			
-				sprintf(str, "Before... Length: %d, Start: %d\n", length, GRID_BUFFER_U_RX.read_start);
-			
-				cdcdf_acm_write(&GRID_BUFFER_U_RX.buffer_storage[GRID_BUFFER_U_RX.read_start], 10);
-			
-				//cdcdf_acm_write(str, strlen(str));
-				*/
+
 			
 				for (uint16_t i = 0; i<length; i++){
 				
@@ -328,7 +325,7 @@ int main(void)
 			
 		}
 		
-		
+		*/
 		
 		
 		
