@@ -143,13 +143,15 @@
 		
 						
 		// Allocate memory for 4 analog input with the filter depth of 3 samples, 14 bit format, 10bit result resolution
-		grid_ain_init(grid_module_ain_buffer_size, 3, 14, 10);		
+		grid_ain_init(grid_module_ain_buffer_size, 5, 14, 8);		
 		grid_led_init(grid_module_led_buffer_size);
 
 		spi_m_dma_get_io_descriptor(&GRID_LED, &io2);
 		spi_m_dma_register_callback(&GRID_LED, SPI_M_DMA_CB_TX_DONE, tx_complete_cb_GRID_LED);
 	
 		grid_sys_uart_init();
+		
+		grid_buffer_init_all();
 
 
 		//enable pwr!

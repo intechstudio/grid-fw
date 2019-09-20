@@ -10,6 +10,9 @@
 #include "../../grid_lib/grid_tel.c" // Grid Telemetry
 #include "../../grid_lib/grid_sys.c" // Grid System
 
+
+#include "../../grid_lib/grid_buf.c" // Grid Buffer Abstraction
+
 #define GRID_MODULE_P16
 
 
@@ -98,7 +101,7 @@ int main(void)
 
 	
 	atmel_start_init();
-	
+
 	
 	grid_module_init();
 	
@@ -133,12 +136,17 @@ int main(void)
 		//checktimer flags
 		if (reportflag){
 			
-			
+			/*
 			char str[90];
 			sprintf(str, "LOOPTICK %x\nREALTIME %x\nTASK0 %x\nTASK1 %x\nTASK2 %x\nTASK3 %x\nTASK4 %x\nRXCE %x\nRXCW %x\nTXCE %x\nTXCW %x\n\0", loopcounter, realtime, task_counter[0], task_counter[1], task_counter[2], task_counter[3], task_counter[4],  grid_sys_rx_counter[GRID_SYS_EAST],  grid_sys_rx_counter[GRID_SYS_WEST],  grid_sys_tx_counter[GRID_SYS_EAST],  grid_sys_tx_counter[GRID_SYS_WEST]);
 			cdcdf_acm_write(str, strlen(str));
-			
-			
+			*/
+
+/*
+			char str[90];
+			sprintf(str, "RSTART %x\nRSTOP %x\nWSTART %x\nWSTOP %x\n\0", GRID_BUFFER_U_RX.read_start, GRID_BUFFER_U_RX.read_stop, GRID_BUFFER_U_RX.write_start, GRID_BUFFER_U_RX.write_stop);
+			cdcdf_acm_write(str, strlen(str));
+*/			
 			
 			grid_sys_rx_counter[GRID_SYS_NORTH]=0;
 			grid_sys_rx_counter[GRID_SYS_EAST]=0;
@@ -170,14 +178,7 @@ int main(void)
 		loopcounter++;
 		
 		if (task2flag){
-			
-			
-			char str[11];
-			sprintf(str, "HWCFG %x\n", grid_sys_get_hwcfg());
-
-			
-			cdcdf_acm_write(str, 11);
-			
+						
 			task2flag--;
 			
 			
@@ -196,35 +197,7 @@ int main(void)
 			}
 			
 			mapmode = !mapmode;
-			/* ==================== Reading MCU Unique Serial Nuber ====================== */
-			
-			uint32_t id_array[4];
-			grid_sys_get_id(id_array);
-			
-			/* ========================= Reading the HWCFG ROM =========================== */
-
-			uint32_t hwcfg = grid_sys_get_hwcfg();
-			
-			// REPORT OVER SERIAL
-			
-			struct io_descriptor *io_uart_aux;
-			
-			usart_async_get_io_descriptor(&GRID_AUX, &io_uart_aux);
-			usart_async_enable(&GRID_AUX);
-
-			char example_GRID_AUX[60];
-			sprintf(example_GRID_AUX, "HWCFG: %08x\nUNIQUE: %08x %08x %08x %08x     \n", hwcfg, id_array[0], id_array[1], id_array[2], id_array[3]);
-
-			io_write(io_uart_aux, example_GRID_AUX, 65);
-			
-			// USB CDC SERIAL AS DEBUG PORT
-			//cdcdf_acm_write(example_GRID_AUX, 65);
-			
-			char str[20];
-			sprintf(str, "HEXTEST %x\n", loopcounter);
-			
-			cdcdf_acm_write(str, strlen(str));
-			
+					
 		}
 		
 		
@@ -263,7 +236,7 @@ int main(void)
 				uint16_t average = grid_ain_get_average(i);
 				
 				
-				sprintf(&txbuffer[txindex], "AIN%d %x\n", i, average/64);	
+				sprintf(&txbuffer[txindex], "AIN%d %02x\n", i, average/64);	
 
 				txindex += strlen(&txbuffer[txindex]);
 					
@@ -282,7 +255,82 @@ int main(void)
 			
 		}
 				
-		cdcdf_acm_write(txbuffer, strlen(txbuffer));
+		
+		uint16_t len = 0;
+		
+		
+		if (txindex){
+			len = txindex;
+			
+			if (grid_buffer_write_init(&GRID_BUFFER_U_RX, len)){
+			
+				for(uint16_t i = 0; i<len; i++){
+			
+					grid_buffer_write_character(&GRID_BUFFER_U_RX, txbuffer[i]);
+				}
+		
+				grid_buffer_write_acknowledge(&GRID_BUFFER_U_RX);			
+			}
+			
+			
+		}
+		else{
+			
+			//NO NEW INPUT
+		}
+		
+		//cdcdf_acm_write(txbuffer, len);
+		
+		
+		
+		
+		uint16_t length = 0;
+		
+		while (grid_buffer_read_init(&GRID_BUFFER_U_RX)){
+			
+			
+			length = GRID_BUFFER_U_RX.read_length;
+			
+			if (length){
+						
+				uint8_t content[length+1];
+			
+				/*
+			
+				char str[length];
+			
+				sprintf(str, "Before... Length: %d, Start: %d\n", length, GRID_BUFFER_U_RX.read_start);
+			
+				cdcdf_acm_write(&GRID_BUFFER_U_RX.buffer_storage[GRID_BUFFER_U_RX.read_start], 10);
+			
+				//cdcdf_acm_write(str, strlen(str));
+				*/
+			
+				for (uint16_t i = 0; i<length; i++){
+				
+					uint8_t character = grid_buffer_read_character(&GRID_BUFFER_U_RX);
+				
+					content[i] = character;			
+				}
+					
+				char str2[100];
+				//sprintf(str2, "After... 0:%c 1:%c 2:%c 3:%c 4:%c 5:%c \n", content[0], content[1], content[2], content[3], content[4], content[5]);
+			
+				content[length] = '\0';
+			
+				sprintf(str2, "After... %s", content);
+			
+				cdcdf_acm_write(str2, strlen(str2));	
+				
+				grid_buffer_read_acknowledge(&GRID_BUFFER_U_RX);
+					
+			}
+			
+		}
+		
+		
+		
+		
 		
 		task_current = TASK_UNDEFINED;
 

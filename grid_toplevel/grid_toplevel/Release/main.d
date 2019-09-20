@@ -190,6 +190,7 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  .././../../grid_lib/grid_ain.c .././../../grid_lib/grid_ain.h \
  .././../../grid_lib/grid_tel.c .././../../grid_lib/grid_tel.h \
  .././../../grid_lib/grid_sys.c .././../../grid_lib/grid_sys.h \
+ .././../../grid_lib/grid_buf.c .././../../grid_lib/grid_buf.h \
  .././../../grid_modules/grid_module_p16.c ../../../grid_lib/grid_sys.h
 
 ../atmel_start.h:
@@ -689,6 +690,10 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 .././../../grid_lib/grid_sys.c:
 
 .././../../grid_lib/grid_sys.h:
+
+.././../../grid_lib/grid_buf.c:
+
+.././../../grid_lib/grid_buf.h:
 
 .././../../grid_modules/grid_module_p16.c:
 
