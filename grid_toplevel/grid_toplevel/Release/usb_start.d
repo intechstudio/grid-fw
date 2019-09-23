@@ -144,13 +144,14 @@ usb_start.d usb_start.o: .././usb_start.c .././atmel_start.h \
  ../hal/utils/include/utils_list.h ../hal/include/hpl_timer.h \
  ../hal/include/hal_usart_async.h ../hal/include/hal_io.h \
  ../hal/include/hpl_usart_async.h ../hal/include/hpl_usart.h \
- ../hal/include/hal_i2c_m_async.h ../hal/include/hpl_i2c_m_async.h \
- ../hal/include/hpl_i2c_m_sync.h ../hal/utils/include/utils.h \
+ ../hal/include/hal_spi_m_sync.h ../hal/include/hpl_spi_m_sync.h \
+ ../hal/include/hpl_spi.h ../hal/utils/include/utils.h \
+ ../hal/include/hpl_spi_sync.h ../hal/include/hal_i2c_m_async.h \
+ ../hal/include/hpl_i2c_m_async.h ../hal/include/hpl_i2c_m_sync.h \
  ../hal/include/hal_spi_m_dma.h ../hal/include/hpl_spi_m_dma.h \
- ../hal/include/hpl_spi.h ../hal/include/hpl_spi_dma.h \
- ../hal/include/hpl_dma.h ../hal/include/hal_usb_device.h \
- ../hal/include/hpl_usb_device.h ../hal/include/hpl_usb.h \
- ../Config/hpl_usb_config.h .././usb_start.h \
+ ../hal/include/hpl_spi_dma.h ../hal/include/hpl_dma.h \
+ ../hal/include/hal_usb_device.h ../hal/include/hpl_usb_device.h \
+ ../hal/include/hpl_usb.h ../Config/hpl_usb_config.h .././usb_start.h \
  ../usb/class/cdc/device/cdcdf_acm.h ../usb/device/usbdc.h \
  ../usb/usb_includes.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
@@ -546,19 +547,25 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 
 ../hal/include/hpl_usart.h:
 
+../hal/include/hal_spi_m_sync.h:
+
+../hal/include/hpl_spi_m_sync.h:
+
+../hal/include/hpl_spi.h:
+
+../hal/utils/include/utils.h:
+
+../hal/include/hpl_spi_sync.h:
+
 ../hal/include/hal_i2c_m_async.h:
 
 ../hal/include/hpl_i2c_m_async.h:
 
 ../hal/include/hpl_i2c_m_sync.h:
 
-../hal/utils/include/utils.h:
-
 ../hal/include/hal_spi_m_dma.h:
 
 ../hal/include/hpl_spi_m_dma.h:
-
-../hal/include/hpl_spi.h:
 
 ../hal/include/hpl_spi_dma.h:
 

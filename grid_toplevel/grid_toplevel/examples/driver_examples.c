@@ -225,6 +225,20 @@ void GRID_AUX_example(void)
 }
 
 /**
+ * Example of using UI_SPI to write "Hello World" using the IO abstraction.
+ */
+static uint8_t example_UI_SPI[12] = "Hello World!";
+
+void UI_SPI_example(void)
+{
+	struct io_descriptor *io;
+	spi_m_sync_get_io_descriptor(&UI_SPI, &io);
+
+	spi_m_sync_enable(&UI_SPI);
+	io_write(io, example_UI_SPI, 12);
+}
+
+/**
  * Example of using USART_WEST to write "Hello World" using the IO abstraction.
  *
  * Since the driver is asynchronous we need to use statically allocated memory for string

@@ -57,6 +57,7 @@ struct timer_descriptor             RTC_Scheduler;
 struct usart_async_descriptor       USART_EAST;
 struct usart_async_descriptor       USART_NORTH;
 struct usart_async_descriptor       GRID_AUX;
+struct spi_m_sync_descriptor        UI_SPI;
 struct usart_async_descriptor       USART_WEST;
 struct usart_async_descriptor       USART_SOUTH;
 
@@ -261,6 +262,62 @@ void GRID_AUX_init(void)
 	GRID_AUX_CLOCK_init();
 	usart_async_init(&GRID_AUX, SERCOM2, GRID_AUX_buffer, GRID_AUX_BUFFER_SIZE, (void *)NULL);
 	GRID_AUX_PORT_init();
+}
+
+void UI_SPI_PORT_init(void)
+{
+
+	gpio_set_pin_level(PB20,
+	                   // <y> Initial level
+	                   // <id> pad_initial_level
+	                   // <false"> Low
+	                   // <true"> High
+	                   false);
+
+	// Set pin direction to output
+	gpio_set_pin_direction(PB20, GPIO_DIRECTION_OUT);
+
+	gpio_set_pin_function(PB20, PINMUX_PB20C_SERCOM3_PAD0);
+
+	gpio_set_pin_level(PB21,
+	                   // <y> Initial level
+	                   // <id> pad_initial_level
+	                   // <false"> Low
+	                   // <true"> High
+	                   false);
+
+	// Set pin direction to output
+	gpio_set_pin_direction(PB21, GPIO_DIRECTION_OUT);
+
+	gpio_set_pin_function(PB21, PINMUX_PB21C_SERCOM3_PAD1);
+
+	// Set pin direction to input
+	gpio_set_pin_direction(PA20, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(PA20,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(PA20, PINMUX_PA20D_SERCOM3_PAD2);
+}
+
+void UI_SPI_CLOCK_init(void)
+{
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM3_GCLK_ID_CORE, CONF_GCLK_SERCOM3_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM3_GCLK_ID_SLOW, CONF_GCLK_SERCOM3_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+
+	hri_mclk_set_APBBMASK_SERCOM3_bit(MCLK);
+}
+
+void UI_SPI_init(void)
+{
+	UI_SPI_CLOCK_init();
+	spi_m_sync_init(&UI_SPI, SERCOM3);
+	UI_SPI_PORT_init();
 }
 
 /**
@@ -699,6 +756,8 @@ void system_init(void)
 	USART_EAST_init();
 	USART_NORTH_init();
 	GRID_AUX_init();
+
+	UI_SPI_init();
 	USART_WEST_init();
 
 	SYS_I2C_init();

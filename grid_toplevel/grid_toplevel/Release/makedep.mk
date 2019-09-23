@@ -36,6 +36,8 @@ hal\src\hal_sleep.c
 
 hal\src\hal_spi_m_dma.c
 
+hal\src\hal_spi_m_sync.c
+
 hal\src\hal_timer.c
 
 hal\src\hal_usart_async.c

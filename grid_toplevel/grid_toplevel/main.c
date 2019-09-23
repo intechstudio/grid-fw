@@ -193,7 +193,48 @@ int main(void)
 			
 			
 			if (mapmode==0){
+				
+				uint8_t r[4] = {255*(random()%2), 255*(random()%2), 255*(random()%2), 255*(random()%2)};
+				uint8_t g[4] = {255*(random()%2), 255*(random()%2), 255*(random()%2), 255*(random()%2)};
+				uint8_t b[4] = {255*(random()%2), 255*(random()%2), 255*(random()%2), 255*(random()%2)};
+				
+				for (uint8_t i = 0; i<4; i++){
+					
+					if (r[i] == 0 && g[i] == 0 && b[i]==0){
+						
+						uint8_t ra = random()%3;
+						
+						if (ra == 0){
+							r[i] = 255;
+						}
+						else if (ra == 1){
+							g[i] = 255;
+						}
+						else{
+							b[i] = 255;
+						}
+						
+						
+						
+					}
+					
+				}
+				
+				
+				
+				for (uint8_t i = 0; i<16; i++){
+					
+					grid_led_set_max(i, 0, r[i%4], g[i%4], b[i%4]);
+					grid_led_set_mid(i, 0, r[i%4]/2, g[i%4]/2, b[i%4]/2);
+					
+				}
+				
+				
+				
 				sysmode = ! sysmode;
+				
+				
+				
 			}
 			
 			mapmode = !mapmode;

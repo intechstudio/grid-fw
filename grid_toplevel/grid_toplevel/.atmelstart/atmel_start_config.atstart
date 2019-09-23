@@ -1281,6 +1281,50 @@ drivers:
         configuration:
           core_gclk_selection: Generic clock generator 1
           slow_gclk_selection: Generic clock generator 2
+  UI_SPI:
+    user_label: UI_SPI
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::SERCOM3::driver_config_definition::SPI.Master::HAL:Driver:SPI.Master.Sync
+    functionality: SPI
+    api: HAL:Driver:SPI_Master_Sync
+    configuration:
+      spi_master_advanced: false
+      spi_master_arch_cpha: Sample input on leading edge
+      spi_master_arch_cpol: SCK is low when idle
+      spi_master_arch_dbgstop: Keep running
+      spi_master_arch_dord: MSB first
+      spi_master_arch_ibon: In data stream
+      spi_master_arch_runstdby: false
+      spi_master_baud_rate: 50000
+      spi_master_character_size: 8 bits
+      spi_master_dummybyte: 511
+      spi_master_rx_enable: true
+    optional_signals: []
+    variant:
+      specification: TXPO=0, RXPO=2
+      required_signals:
+      - name: SERCOM3/PAD/0
+        pad: PB20
+        label: MOSI
+      - name: SERCOM3/PAD/1
+        pad: PB21
+        label: SCK
+      - name: SERCOM3/PAD/2
+        pad: PA20
+        label: MISO
+    clocks:
+      domain_group:
+        nodes:
+        - name: Core
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Slow
+          input: Generic clock generator 3
+          external: false
+          external_frequency: 0
+        configuration:
+          core_gclk_selection: Generic clock generator 0
+          slow_gclk_selection: Generic clock generator 3
   USART_WEST:
     user_label: USART_WEST
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::SERCOM4::driver_config_definition::UART::HAL:Driver:USART.Async
@@ -1623,6 +1667,24 @@ pads:
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PC21
     mode: Digital output
     user_label: MUX_C
+    configuration: null
+  PB20:
+    name: PB20
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PB20
+    mode: Digital output
+    user_label: PB20
+    configuration: null
+  PB21:
+    name: PB21
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PB21
+    mode: Digital output
+    user_label: PB21
+    configuration: null
+  PA20:
+    name: PA20
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA20
+    mode: Digital input
+    user_label: PA20
     configuration: null
   PA22:
     name: PA22

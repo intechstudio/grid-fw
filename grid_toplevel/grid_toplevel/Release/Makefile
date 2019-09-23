@@ -88,6 +88,7 @@ C_SRCS +=  \
 ../hal/src/hal_io.c \
 ../hal/src/hal_sleep.c \
 ../hal/src/hal_spi_m_dma.c \
+../hal/src/hal_spi_m_sync.c \
 ../hal/src/hal_timer.c \
 ../hal/src/hal_usart_async.c \
 ../hal/src/hal_usb_device.c \
@@ -145,6 +146,7 @@ hal/src/hal_init.o \
 hal/src/hal_io.o \
 hal/src/hal_sleep.o \
 hal/src/hal_spi_m_dma.o \
+hal/src/hal_spi_m_sync.o \
 hal/src/hal_timer.o \
 hal/src/hal_usart_async.o \
 hal/src/hal_usb_device.o \
@@ -195,6 +197,7 @@ hal/src/hal_init.o \
 hal/src/hal_io.o \
 hal/src/hal_sleep.o \
 hal/src/hal_spi_m_dma.o \
+hal/src/hal_spi_m_sync.o \
 hal/src/hal_timer.o \
 hal/src/hal_usart_async.o \
 hal/src/hal_usb_device.o \
@@ -245,6 +248,7 @@ hal/src/hal_init.d \
 hal/src/hal_io.d \
 hal/src/hal_sleep.d \
 hal/src/hal_spi_m_dma.d \
+hal/src/hal_spi_m_sync.d \
 hal/src/hal_timer.d \
 hal/src/hal_usart_async.d \
 hal/src/hal_usb_device.d \
@@ -295,6 +299,7 @@ hal/src/hal_init.d \
 hal/src/hal_io.d \
 hal/src/hal_sleep.d \
 hal/src/hal_spi_m_dma.d \
+hal/src/hal_spi_m_sync.d \
 hal/src/hal_timer.d \
 hal/src/hal_usart_async.d \
 hal/src/hal_usb_device.d \
@@ -457,6 +462,13 @@ hal/src/hal_sleep.o: ../hal/src/hal_sleep.c
 	
 
 hal/src/hal_spi_m_dma.o: ../hal/src/hal_spi_m_dma.c
+	@echo Building file: $<
+	@echo Invoking: ARM/GNU C Compiler : 6.3.1
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAMD51N20A__ -DNDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\ARM\CMSIS\5.4.0\CMSIS\Core\Include" -I"../Config" -I".." -I"../examples" -I"../hal/include" -I"../hal/utils/include" -I"../hpl/adc" -I"../hpl/cmcc" -I"../hpl/core" -I"../hpl/dmac" -I"../hpl/dsu" -I"../hpl/gclk" -I"../hpl/mclk" -I"../hpl/nvmctrl" -I"../hpl/osc32kctrl" -I"../hpl/oscctrl" -I"../hpl/pac" -I"../hpl/pm" -I"../hpl/port" -I"../hpl/ramecc" -I"../hpl/rtc" -I"../hpl/sercom" -I"../hpl/systick" -I"../hpl/usb" -I"../hri" -I"../usb" -I"../usb/class/cdc" -I"../usb/class/cdc/device" -I"../usb/device" -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\include"  -Os -ffunction-sections -mlong-calls -Wall -mcpu=cortex-m4 -c -std=gnu99 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+hal/src/hal_spi_m_sync.o: ../hal/src/hal_spi_m_sync.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 6.3.1
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAMD51N20A__ -DNDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\ARM\CMSIS\5.4.0\CMSIS\Core\Include" -I"../Config" -I".." -I"../examples" -I"../hal/include" -I"../hal/utils/include" -I"../hpl/adc" -I"../hpl/cmcc" -I"../hpl/core" -I"../hpl/dmac" -I"../hpl/dsu" -I"../hpl/gclk" -I"../hpl/mclk" -I"../hpl/nvmctrl" -I"../hpl/osc32kctrl" -I"../hpl/oscctrl" -I"../hpl/pac" -I"../hpl/pm" -I"../hpl/port" -I"../hpl/ramecc" -I"../hpl/rtc" -I"../hpl/sercom" -I"../hpl/systick" -I"../hpl/usb" -I"../hri" -I"../usb" -I"../usb/class/cdc" -I"../usb/class/cdc/device" -I"../usb/device" -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\include"  -Os -ffunction-sections -mlong-calls -Wall -mcpu=cortex-m4 -c -std=gnu99 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

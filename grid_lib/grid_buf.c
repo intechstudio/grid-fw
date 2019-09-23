@@ -432,7 +432,7 @@ uint8_t grid_port_process_outbound_usb(GRID_PORT_t* por){
 		}
 		
 		// Let's send the packet through USB
-				
+
 		cdcdf_acm_write(usb_tx_double_buffer, packet_size);
 
 			
