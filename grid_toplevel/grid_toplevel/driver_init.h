@@ -26,6 +26,8 @@ extern "C" {
 
 #include <hal_crc_sync.h>
 
+#include <hal_evsys.h>
+
 #include <hal_flash.h>
 
 #include <hal_timer.h>
@@ -41,6 +43,14 @@ extern "C" {
 #include <hal_spi_m_dma.h>
 
 #include <hal_delay.h>
+#include <hal_timer.h>
+#include <hpl_tc_base.h>
+#include <hal_timer.h>
+#include <hpl_tc_base.h>
+#include <hal_timer.h>
+#include <hpl_tc_base.h>
+#include <hal_timer.h>
+#include <hpl_tc_base.h>
 
 #include "hal_usb_device.h"
 
@@ -60,6 +70,11 @@ extern struct i2c_m_async_desc       SYS_I2C;
 extern struct usart_async_descriptor USART_SOUTH;
 
 extern struct spi_m_dma_descriptor GRID_LED;
+
+extern struct timer_descriptor TIMER_1;
+extern struct timer_descriptor TIMER_0;
+extern struct timer_descriptor TIMER_2;
+extern struct timer_descriptor TIMER_3;
 
 void ADC_0_init(void);
 
@@ -102,8 +117,8 @@ void GRID_LED_init(void);
 
 void delay_driver_init(void);
 
-void USB_0_CLOCK_init(void);
-void USB_0_init(void);
+void USB_DEVICE_INSTANCE_CLOCK_init(void);
+void USB_DEVICE_INSTANCE_init(void);
 
 /**
  * \brief Perform system initialization, initialize pins and clocks for

@@ -1654,7 +1654,7 @@
 //<i> This defines DMA channel to be used
 //<id> spi_master_dma_tx_channel
 #ifndef CONF_SERCOM_7_SPI_M_DMA_TX_CHANNEL
-#define CONF_SERCOM_7_SPI_M_DMA_TX_CHANNEL 0
+#define CONF_SERCOM_7_SPI_M_DMA_TX_CHANNEL 8
 #endif
 
 // <e> SPI RX Channel Enable

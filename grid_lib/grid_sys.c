@@ -6,8 +6,9 @@
 */
 
 #include "grid_sys.h"
-
-
+#include "grid_buf.h"
+#include "stdio.h"
+#include "string.h"
 
 
 
@@ -87,8 +88,6 @@ uint32_t grid_sys_get_hwcfg(){
 #define GRID_SYS_SOUTH	2
 #define GRID_SYS_WEST	3
 
-static uint8_t grid_sys_pingmessage[2] = "P";
-
 volatile uint8_t grid_sys_ping_counter[4] = {0, 0, 0, 0};
 
 volatile uint32_t grid_sys_rx_counter[4] = {0, 0, 0, 0};
@@ -96,96 +95,147 @@ volatile uint32_t grid_sys_tx_counter[4] = {0, 0, 0, 0};
 
 
 
+//=============================== USART TX COMPLETE ==============================//
 
-static void tx_cb_USART_GRID(const struct usart_async_descriptor *const descr)
+static void tx_cb_USART_GRID_N(const struct usart_async_descriptor *const descr)
 {
-	/* Transfer completed */
-		
-	if (descr == &USART_EAST){
-		grid_sys_tx_counter[GRID_SYS_EAST]++;
-	}
-	if (descr == &USART_WEST){
-		grid_sys_tx_counter[GRID_SYS_WEST]++;
-	}
-	
+	tx_cb_USART_GRID(&GRID_PORT_N);
 }
 
-static void rx_cb_USART_GRID(const struct usart_async_descriptor *const descr)
+static void tx_cb_USART_GRID_E(const struct usart_async_descriptor *const descr)
 {
-	/* Transfer completed */
-	
-	if (descr == &USART_EAST){
-		grid_sys_rx_counter[GRID_SYS_EAST]++;
-	}
-	if (descr == &USART_WEST){
-		grid_sys_rx_counter[GRID_SYS_WEST]++;
-	}
-	
+	tx_cb_USART_GRID(&GRID_PORT_E);
 }
 
-void grid_sys_uart_init(){
-
-	usart_async_register_callback(&USART_EAST, USART_ASYNC_TXC_CB, tx_cb_USART_GRID);
-	usart_async_register_callback(&USART_EAST, USART_ASYNC_RXC_CB, rx_cb_USART_GRID);	
-	
-	usart_async_get_io_descriptor(&USART_EAST, &grid_sys_east_io);
-	
-	usart_async_enable(&USART_EAST);
-	
-	
-	usart_async_register_callback(&USART_WEST, USART_ASYNC_TXC_CB, tx_cb_USART_GRID);
-	usart_async_register_callback(&USART_WEST, USART_ASYNC_RXC_CB, rx_cb_USART_GRID);
-	
-	usart_async_get_io_descriptor(&USART_WEST, &grid_sys_west_io);
-	
-	usart_async_enable(&USART_WEST);
-
+static void tx_cb_USART_GRID_S(const struct usart_async_descriptor *const descr)
+{
+	tx_cb_USART_GRID(&GRID_PORT_S);
 }
 
-	
-void grid_msg_process_all(){
-	
-	grid_msg_process(&USART_EAST, GRID_SYS_EAST);
-	grid_msg_process(&USART_WEST, GRID_SYS_WEST);
-		
-}	
+static void tx_cb_USART_GRID_W(const struct usart_async_descriptor *const descr)
+{
+	tx_cb_USART_GRID(&GRID_PORT_W);
+}
 
-void grid_msg_process(const struct usart_async_descriptor *const descr, uint8_t offset){
+void tx_cb_USART_GRID(GRID_PORT_t* const por){
+	
+	grid_sys_tx_counter[por->direction - 0x11]++;
+	por->tx_double_buffer_status = 0;
+}
+
+
+//=============================== USART RX COMPLETE ==============================//
+
+static void rx_cb_USART_GRID_N(const struct usart_async_descriptor *const descr)
+{
+	rx_cb_USART_GRID(&GRID_PORT_N);
+}
+
+static void rx_cb_USART_GRID_E(const struct usart_async_descriptor *const descr)
+{
+	rx_cb_USART_GRID(&GRID_PORT_E);
+}
+
+static void rx_cb_USART_GRID_S(const struct usart_async_descriptor *const descr)
+{
+	rx_cb_USART_GRID(&GRID_PORT_S);
+}
+
+static void rx_cb_USART_GRID_W(const struct usart_async_descriptor *const descr)
+{
+	rx_cb_USART_GRID(&GRID_PORT_W);
+}
+
+void rx_cb_USART_GRID(GRID_PORT_t* const por){
 	
 	uint8_t character;
 	
+	io_read(&(*por->usart).io, &character, 1);
 	
-	if (usart_async_is_rx_not_empty(descr)){
+	
+	if (por->rx_double_buffer_status){
+		while(1){
+			//TRAP
+		}
+		return;
+	}// this should not happen
 		
-		while(io_read(&(*descr).io, &character, 1) == 1){
+
+
+	while(io_read(&(*por->usart).io, &character, 1) == 1){
 			
-			if (character == GRID_MSG_PING){
-				
-				grid_sys_ping_counter[offset] += 1;
-				
-				
-			}
+		por->rx_double_buffer[por->rx_double_buffer_index] = character;
+		por->rx_double_buffer_index++;
 			
-		}	
-		
+		if (character == '\n'){
+			por->rx_double_buffer_status = 1;
+		}
+						
 	}
 	
+}
+
+
 
 	
+void grid_port_process_inbound_all(){
 	
-}
+// 	grid_port_process_inbound(&GRID_PORT_N);
+// 	grid_port_process_inbound(&GRID_PORT_E);
+// 	grid_port_process_inbound(&GRID_PORT_S);
+// 	grid_port_process_inbound(&GRID_PORT_W);
+		
+}	
 
 void grid_sys_ping_all(){
+		
+	grid_sys_ping(&GRID_PORT_N);
+	grid_sys_ping(&GRID_PORT_E);
+	grid_sys_ping(&GRID_PORT_S);
+	grid_sys_ping(&GRID_PORT_W);
 	
-	grid_sys_ping(&USART_EAST);
-	grid_sys_ping(&USART_WEST);
-
 }
 
-void grid_sys_ping(const struct usart_async_descriptor *const descr){
+uint8_t grid_sys_calculate_checksum(char* str, uint32_t len){
 	
+	uint8_t checksum = 0;
+	for (uint32_t i=0; i<len; i++){
+		checksum ^= str[i]; 
+	}
+	
+	return checksum;
+	
+}
+
+
+void grid_sys_ping(GRID_PORT_t* por){
+	
+	char str[20];
+	uint8_t len = 0;
+	
+	// Create the packet
+	sprintf(str, "%c%c%c%08x%c", GRID_MSG_START_OF_HEADING, GRID_MSG_BELL, por->direction ,grid_sys_get_hwcfg(), GRID_MSG_END_OF_TRANSMISSION);
+	
+	// Calculate packet length
+	len = strlen(str);
+	
+	// Concatonate the calculated CHECKSUM + \n
+	sprintf(&str[len], "%02x\n", grid_sys_calculate_checksum(str, len));
+	
+	// Calculate the new packet length
+	len += strlen(&str[len]);
+	
+	// Put the packet into the tx_buffer
+	if (grid_buffer_write_init(&por->tx_buffer, len)){
 		
-	io_write(&(*descr).io, grid_sys_pingmessage ,1);
+		for(uint16_t i = 0; i<len; i++){
+			
+			grid_buffer_write_character(&por->tx_buffer, str[i]);
+		}
+		
+		grid_buffer_write_acknowledge(&por->tx_buffer);
+	}
+				
 	
 }
 

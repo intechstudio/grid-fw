@@ -22,6 +22,8 @@ hal\src\hal_crc_sync.c
 
 hal\src\hal_delay.c
 
+hal\src\hal_evsys.c
+
 hal\src\hal_flash.c
 
 hal\src\hal_gpio.c
@@ -35,6 +37,8 @@ hal\src\hal_io.c
 hal\src\hal_sleep.c
 
 hal\src\hal_spi_m_dma.c
+
+hal\src\hal_spi_m_sync.c
 
 hal\src\hal_timer.c
 
@@ -64,6 +68,8 @@ hpl\dmac\hpl_dmac.c
 
 hpl\dsu\hpl_dsu.c
 
+hpl\evsys\hpl_evsys.c
+
 hpl\gclk\hpl_gclk.c
 
 hpl\mclk\hpl_mclk.c
@@ -86,11 +92,25 @@ hpl\sercom\hpl_sercom.c
 
 hpl\systick\hpl_systick.c
 
+hpl\tc\hpl_tc.c
+
 hpl\usb\hpl_usb.c
 
 main.c
 
 usb\class\cdc\device\cdcdf_acm.c
+
+usb\class\hid\device\hiddf_generic.c
+
+usb\class\hid\device\hiddf_keyboard.c
+
+usb\class\hid\device\hiddf_mouse.c
+
+usb\class\midi\device\audiodf_midi.c
+
+usb\class\midi\usb_protocol_midi.c
+
+usb\class\msc\device\mscdf.c
 
 usb\device\usbdc.c
 

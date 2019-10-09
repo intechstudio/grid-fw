@@ -43,7 +43,7 @@ static struct _timer_device *_rtc_dev = NULL;
 /**
  * \brief Initialize Timer
  */
-int32_t _timer_init(struct _timer_device *const dev, void *const hw)
+int32_t _rtc_timer_init(struct _timer_device *const dev, void *const hw)
 {
 	ASSERT(dev);
 
@@ -77,7 +77,7 @@ int32_t _timer_init(struct _timer_device *const dev, void *const hw)
 /**
  * \brief De-initialize Timer
  */
-void _timer_deinit(struct _timer_device *const dev)
+void _rtc_timer_deinit(struct _timer_device *const dev)
 {
 	ASSERT(dev && dev->hw);
 
@@ -89,7 +89,7 @@ void _timer_deinit(struct _timer_device *const dev)
 /**
  * \brief Start hardware timer
  */
-void _timer_start(struct _timer_device *const dev)
+void _rtc_timer_start(struct _timer_device *const dev)
 {
 	ASSERT(dev && dev->hw);
 
@@ -102,7 +102,7 @@ void _timer_start(struct _timer_device *const dev)
 /**
  * \brief Stop hardware timer
  */
-void _timer_stop(struct _timer_device *const dev)
+void _rtc_timer_stop(struct _timer_device *const dev)
 {
 	ASSERT(dev && dev->hw);
 
@@ -112,7 +112,7 @@ void _timer_stop(struct _timer_device *const dev)
 /**
  * \brief Set timer period
  */
-void _timer_set_period(struct _timer_device *const dev, const uint32_t clock_cycles)
+void _rtc_timer_set_period(struct _timer_device *const dev, const uint32_t clock_cycles)
 {
 	hri_rtcmode0_write_COMP_reg(dev->hw, 0, clock_cycles);
 }
@@ -120,7 +120,7 @@ void _timer_set_period(struct _timer_device *const dev, const uint32_t clock_cyc
 /**
  * \brief Retrieve timer period
  */
-uint32_t _timer_get_period(const struct _timer_device *const dev)
+uint32_t _rtc_timer_get_period(const struct _timer_device *const dev)
 {
 	return hri_rtcmode0_read_COMP_reg(dev->hw, 0);
 }
@@ -128,7 +128,7 @@ uint32_t _timer_get_period(const struct _timer_device *const dev)
 /**
  * \brief Check if timer is running
  */
-bool _timer_is_started(const struct _timer_device *const dev)
+bool _rtc_timer_is_started(const struct _timer_device *const dev)
 {
 	return hri_rtcmode0_get_CTRLA_ENABLE_bit(dev->hw);
 }
@@ -136,7 +136,7 @@ bool _timer_is_started(const struct _timer_device *const dev)
 /**
  * \brief Set timer IRQ
  */
-void _timer_set_irq(struct _timer_device *const dev)
+void _rtc_timer_set_irq(struct _timer_device *const dev)
 {
 	(void)dev;
 }
@@ -159,13 +159,24 @@ static void _rtc_timer_interrupt_handler(struct _timer_device *dev)
 		hri_rtcmode0_clear_interrupt_CMP0_bit(dev->hw);
 	}
 }
+/**
+ * \brief Set of pointer to hal_timer helper functions
+ */
+static struct _timer_hpl_interface _rtc_timer_functions = {_rtc_timer_init,
+                                                           _rtc_timer_deinit,
+                                                           _rtc_timer_start,
+                                                           _rtc_timer_stop,
+                                                           _rtc_timer_set_period,
+                                                           _rtc_timer_get_period,
+                                                           _rtc_timer_is_started,
+                                                           _rtc_timer_set_irq};
 
 /**
  * \brief Retrieve timer helper functions
  */
 struct _timer_hpl_interface *_rtc_get_timer(void)
 {
-	return NULL;
+	return &_rtc_timer_functions;
 }
 
 /**

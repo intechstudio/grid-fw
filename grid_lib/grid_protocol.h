@@ -16,8 +16,22 @@
 #define GRID_MSG_NACKNOWLEDGE			0x15	
 #define GRID_MSG_CANCEL					0x18	// discard and send next
 
+#define GRID_MSG_NORTH					0x11	// Device Control 1
+#define GRID_MSG_EAST					0x12	// Device Control 2
+#define GRID_MSG_SOUTH					0x13	// Device Control 3
+#define GRID_MSG_WEST					0x14	// Device Control 4
+
 #define GRID_MSG_BELL					0x07
 
+
+#define GRID_MSG_PROTOCOL				160
+
+#define GRID_MSG_PROTOCOL_MIDI			0
+#define GRID_MSG_PROTOCOL_KEYBOARD		1
+#define GRID_MSG_PROTOCOL_MOUSE			2
+
+#define GRID_MSG_COMMAND_MIDI_CONTROLCHANGE 176
+				
 
 
 #define GRID_MSG_BOOT 'B'

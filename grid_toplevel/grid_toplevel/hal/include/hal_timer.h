@@ -80,10 +80,11 @@ struct timer_task {
  * \brief Timer structure
  */
 struct timer_descriptor {
-	struct _timer_device   device;
-	uint32_t               time;
-	struct list_descriptor tasks; /*! Timer tasks list. */
-	volatile uint8_t       flags;
+	struct _timer_hpl_interface *func;
+	struct _timer_device         device;
+	uint32_t                     time;
+	struct list_descriptor       tasks; /*! Timer tasks list. */
+	volatile uint8_t             flags;
 };
 
 /**

@@ -99,7 +99,7 @@
 // <i> Indicates whether Debug Run is enabled or not
 // <id> dmac_dbgrun
 #ifndef CONF_DMAC_DBGRUN
-#define CONF_DMAC_DBGRUN 0
+#define CONF_DMAC_DBGRUN 1
 #endif
 
 // <e> Channel 0 settings
@@ -214,7 +214,7 @@
 // <i> Defines the peripheral trigger which is source of the transfer
 // <id> dmac_trifsrc_0
 #ifndef CONF_DMAC_TRIGSRC_0
-#define CONF_DMAC_TRIGSRC_0 19
+#define CONF_DMAC_TRIGSRC_0 6
 #endif
 
 // <o> Channel Arbitration Level
@@ -232,7 +232,7 @@
 // <i> Indicates whether channel event generation is enabled or not
 // <id> dmac_evoe_0
 #ifndef CONF_DMAC_EVOE_0
-#define CONF_DMAC_EVOE_0 0
+#define CONF_DMAC_EVOE_0 1
 #endif
 
 // <q> Channel Event Input
@@ -277,21 +277,21 @@
 // <i> Defines whether source or destination addresses are using the step size settings
 // <id> dmac_stepsel_0
 #ifndef CONF_DMAC_STEPSEL_0
-#define CONF_DMAC_STEPSEL_0 1
+#define CONF_DMAC_STEPSEL_0 0
 #endif
 
 // <q> Source Address Increment
 // <i> Indicates whether the source address incrementation is enabled or not
 // <id> dmac_srcinc_0
 #ifndef CONF_DMAC_SRCINC_0
-#define CONF_DMAC_SRCINC_0 1
+#define CONF_DMAC_SRCINC_0 0
 #endif
 
 // <q> Destination Address Increment
 // <i> Indicates whether the destination address incrementation is enabled or not
 // <id> dmac_dstinc_0
 #ifndef CONF_DMAC_DSTINC_0
-#define CONF_DMAC_DSTINC_0 0
+#define CONF_DMAC_DSTINC_0 1
 #endif
 
 // <o> Beat Size
@@ -322,14 +322,14 @@
 // <i> Defines the event output selection
 // <id> dmac_evosel_0
 #ifndef CONF_DMAC_EVOSEL_0
-#define CONF_DMAC_EVOSEL_0 0
+#define CONF_DMAC_EVOSEL_0 3
 #endif
 // </e>
 
 // <e> Channel 1 settings
 // <id> dmac_channel_1_settings
 #ifndef CONF_DMAC_CHANNEL_1_SETTINGS
-#define CONF_DMAC_CHANNEL_1_SETTINGS 0
+#define CONF_DMAC_CHANNEL_1_SETTINGS 1
 #endif
 
 // <q> Channel Run in Standby
@@ -346,7 +346,7 @@
 // <i> Defines the trigger action used for a transfer
 // <id> dmac_trigact_1
 #ifndef CONF_DMAC_TRIGACT_1
-#define CONF_DMAC_TRIGACT_1 0
+#define CONF_DMAC_TRIGACT_1 2
 #endif
 
 // <o> Trigger source
@@ -438,7 +438,7 @@
 // <i> Defines the peripheral trigger which is source of the transfer
 // <id> dmac_trifsrc_1
 #ifndef CONF_DMAC_TRIGSRC_1
-#define CONF_DMAC_TRIGSRC_1 0
+#define CONF_DMAC_TRIGSRC_1 4
 #endif
 
 // <o> Channel Arbitration Level
@@ -456,7 +456,7 @@
 // <i> Indicates whether channel event generation is enabled or not
 // <id> dmac_evoe_1
 #ifndef CONF_DMAC_EVOE_1
-#define CONF_DMAC_EVOE_1 0
+#define CONF_DMAC_EVOE_1 1
 #endif
 
 // <q> Channel Event Input
@@ -515,7 +515,7 @@
 // <i> Indicates whether the destination address incrementation is enabled or not
 // <id> dmac_dstinc_1
 #ifndef CONF_DMAC_DSTINC_1
-#define CONF_DMAC_DSTINC_1 0
+#define CONF_DMAC_DSTINC_1 1
 #endif
 
 // <o> Beat Size
@@ -546,14 +546,14 @@
 // <i> Defines the event output selection
 // <id> dmac_evosel_1
 #ifndef CONF_DMAC_EVOSEL_1
-#define CONF_DMAC_EVOSEL_1 0
+#define CONF_DMAC_EVOSEL_1 3
 #endif
 // </e>
 
 // <e> Channel 2 settings
 // <id> dmac_channel_2_settings
 #ifndef CONF_DMAC_CHANNEL_2_SETTINGS
-#define CONF_DMAC_CHANNEL_2_SETTINGS 0
+#define CONF_DMAC_CHANNEL_2_SETTINGS 1
 #endif
 
 // <q> Channel Run in Standby
@@ -570,7 +570,7 @@
 // <i> Defines the trigger action used for a transfer
 // <id> dmac_trigact_2
 #ifndef CONF_DMAC_TRIGACT_2
-#define CONF_DMAC_TRIGACT_2 0
+#define CONF_DMAC_TRIGACT_2 2
 #endif
 
 // <o> Trigger source
@@ -662,7 +662,7 @@
 // <i> Defines the peripheral trigger which is source of the transfer
 // <id> dmac_trifsrc_2
 #ifndef CONF_DMAC_TRIGSRC_2
-#define CONF_DMAC_TRIGSRC_2 0
+#define CONF_DMAC_TRIGSRC_2 16
 #endif
 
 // <o> Channel Arbitration Level
@@ -680,7 +680,7 @@
 // <i> Indicates whether channel event generation is enabled or not
 // <id> dmac_evoe_2
 #ifndef CONF_DMAC_EVOE_2
-#define CONF_DMAC_EVOE_2 0
+#define CONF_DMAC_EVOE_2 1
 #endif
 
 // <q> Channel Event Input
@@ -739,7 +739,7 @@
 // <i> Indicates whether the destination address incrementation is enabled or not
 // <id> dmac_dstinc_2
 #ifndef CONF_DMAC_DSTINC_2
-#define CONF_DMAC_DSTINC_2 0
+#define CONF_DMAC_DSTINC_2 1
 #endif
 
 // <o> Beat Size
@@ -770,14 +770,14 @@
 // <i> Defines the event output selection
 // <id> dmac_evosel_2
 #ifndef CONF_DMAC_EVOSEL_2
-#define CONF_DMAC_EVOSEL_2 0
+#define CONF_DMAC_EVOSEL_2 3
 #endif
 // </e>
 
 // <e> Channel 3 settings
 // <id> dmac_channel_3_settings
 #ifndef CONF_DMAC_CHANNEL_3_SETTINGS
-#define CONF_DMAC_CHANNEL_3_SETTINGS 0
+#define CONF_DMAC_CHANNEL_3_SETTINGS 1
 #endif
 
 // <q> Channel Run in Standby
@@ -794,7 +794,7 @@
 // <i> Defines the trigger action used for a transfer
 // <id> dmac_trigact_3
 #ifndef CONF_DMAC_TRIGACT_3
-#define CONF_DMAC_TRIGACT_3 0
+#define CONF_DMAC_TRIGACT_3 2
 #endif
 
 // <o> Trigger source
@@ -886,7 +886,7 @@
 // <i> Defines the peripheral trigger which is source of the transfer
 // <id> dmac_trifsrc_3
 #ifndef CONF_DMAC_TRIGSRC_3
-#define CONF_DMAC_TRIGSRC_3 0
+#define CONF_DMAC_TRIGSRC_3 12
 #endif
 
 // <o> Channel Arbitration Level
@@ -904,7 +904,7 @@
 // <i> Indicates whether channel event generation is enabled or not
 // <id> dmac_evoe_3
 #ifndef CONF_DMAC_EVOE_3
-#define CONF_DMAC_EVOE_3 0
+#define CONF_DMAC_EVOE_3 1
 #endif
 
 // <q> Channel Event Input
@@ -963,7 +963,7 @@
 // <i> Indicates whether the destination address incrementation is enabled or not
 // <id> dmac_dstinc_3
 #ifndef CONF_DMAC_DSTINC_3
-#define CONF_DMAC_DSTINC_3 0
+#define CONF_DMAC_DSTINC_3 1
 #endif
 
 // <o> Beat Size
@@ -994,7 +994,7 @@
 // <i> Defines the event output selection
 // <id> dmac_evosel_3
 #ifndef CONF_DMAC_EVOSEL_3
-#define CONF_DMAC_EVOSEL_3 0
+#define CONF_DMAC_EVOSEL_3 3
 #endif
 // </e>
 
@@ -1897,7 +1897,7 @@
 // <e> Channel 8 settings
 // <id> dmac_channel_8_settings
 #ifndef CONF_DMAC_CHANNEL_8_SETTINGS
-#define CONF_DMAC_CHANNEL_8_SETTINGS 0
+#define CONF_DMAC_CHANNEL_8_SETTINGS 1
 #endif
 
 // <q> Channel Run in Standby
@@ -1914,7 +1914,7 @@
 // <i> Defines the trigger action used for a transfer
 // <id> dmac_trigact_8
 #ifndef CONF_DMAC_TRIGACT_8
-#define CONF_DMAC_TRIGACT_8 0
+#define CONF_DMAC_TRIGACT_8 2
 #endif
 
 // <o> Trigger source
@@ -2006,7 +2006,7 @@
 // <i> Defines the peripheral trigger which is source of the transfer
 // <id> dmac_trifsrc_8
 #ifndef CONF_DMAC_TRIGSRC_8
-#define CONF_DMAC_TRIGSRC_8 0
+#define CONF_DMAC_TRIGSRC_8 19
 #endif
 
 // <o> Channel Arbitration Level
@@ -2069,14 +2069,14 @@
 // <i> Defines whether source or destination addresses are using the step size settings
 // <id> dmac_stepsel_8
 #ifndef CONF_DMAC_STEPSEL_8
-#define CONF_DMAC_STEPSEL_8 0
+#define CONF_DMAC_STEPSEL_8 1
 #endif
 
 // <q> Source Address Increment
 // <i> Indicates whether the source address incrementation is enabled or not
 // <id> dmac_srcinc_8
 #ifndef CONF_DMAC_SRCINC_8
-#define CONF_DMAC_SRCINC_8 0
+#define CONF_DMAC_SRCINC_8 1
 #endif
 
 // <q> Destination Address Increment

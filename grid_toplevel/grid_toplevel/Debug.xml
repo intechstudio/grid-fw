@@ -22,6 +22,7 @@
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
       <Value>../hpl/dsu</Value>
+      <Value>../hpl/evsys</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
@@ -34,11 +35,19 @@
       <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
+      <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
       <Value>../usb/class/cdc/device</Value>
+      <Value>../usb/class/composite/device</Value>
+      <Value>../usb/class/hid</Value>
+      <Value>../usb/class/hid/device</Value>
+      <Value>../usb/class/hub</Value>
+      <Value>../usb/class/msc</Value>
+      <Value>../usb/class/msc/device</Value>
+      <Value>../usb/class/vendor</Value>
       <Value>../usb/device</Value>
       <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.2.139\samd51a\include</Value>
     </ListValues>
@@ -74,6 +83,7 @@
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
       <Value>../hpl/dsu</Value>
+      <Value>../hpl/evsys</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
@@ -86,11 +96,19 @@
       <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
+      <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
       <Value>../usb/class/cdc/device</Value>
+      <Value>../usb/class/composite/device</Value>
+      <Value>../usb/class/hid</Value>
+      <Value>../usb/class/hid/device</Value>
+      <Value>../usb/class/hub</Value>
+      <Value>../usb/class/msc</Value>
+      <Value>../usb/class/msc/device</Value>
+      <Value>../usb/class/vendor</Value>
       <Value>../usb/device</Value>
       <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.2.139\samd51a\include</Value>
     </ListValues>
@@ -109,6 +127,7 @@
       <Value>../hpl/core</Value>
       <Value>../hpl/dmac</Value>
       <Value>../hpl/dsu</Value>
+      <Value>../hpl/evsys</Value>
       <Value>../hpl/gclk</Value>
       <Value>../hpl/mclk</Value>
       <Value>../hpl/nvmctrl</Value>
@@ -121,11 +140,19 @@
       <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
+      <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
       <Value>../usb/class/cdc/device</Value>
+      <Value>../usb/class/composite/device</Value>
+      <Value>../usb/class/hid</Value>
+      <Value>../usb/class/hid/device</Value>
+      <Value>../usb/class/hub</Value>
+      <Value>../usb/class/msc</Value>
+      <Value>../usb/class/msc/device</Value>
+      <Value>../usb/class/vendor</Value>
       <Value>../usb/device</Value>
       <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.2.139\samd51a\include</Value>
     </ListValues>

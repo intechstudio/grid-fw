@@ -38,6 +38,14 @@ void GRID_LED_example(void);
 
 void delay_example(void);
 
+void TIMER_1_example(void);
+
+void TIMER_0_example(void);
+
+void TIMER_2_example(void);
+
+void TIMER_3_example(void);
+
 #ifdef __cplusplus
 }
 #endif

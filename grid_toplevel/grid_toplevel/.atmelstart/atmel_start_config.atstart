@@ -4,10 +4,10 @@ versions:
   api: '1.0'
   backend: 1.6.148
   commit: 605f106ab95776472e3febf2fac2471441fb1816
-  content: 1.0.1600
+  content: 1.0.1635
   content_pack_name: acme-packs-all
   format: '2'
-  frontend: 1.6.1881
+  frontend: 1.6.1884
 board:
   identifier: CustomBoard
   device: SAMD51N20A-AF
@@ -21,6 +21,22 @@ middlewares:
     functionality: USB_Chapter_9
     api: USB:Protocol:Core
     dependencies: {}
+  USB_CLASS_HUB:
+    user_label: USB_CLASS_HUB
+    configuration: {}
+    definition: Atmel:USB:0.0.1::USB_Class_HUB
+    functionality: USB_Class_HUB
+    api: USB:Protocol:HUB
+    dependencies:
+      USB Chapter 9: USB_CHAPTER_9
+  USB_CLASS_HID:
+    user_label: USB_CLASS_HID
+    configuration: {}
+    definition: Atmel:USB:0.0.1::USB_Class_HID
+    functionality: USB_Class_HID
+    api: USB:Protocol:HID
+    dependencies:
+      USB Chapter 9: USB_CHAPTER_9
   USB_CLASS_CDC:
     user_label: USB_CLASS_CDC
     configuration: {}
@@ -29,8 +45,24 @@ middlewares:
     api: USB:Protocol:CDC
     dependencies:
       USB Chapter 9: USB_CHAPTER_9
-  USB_DEVICE_CORE_0:
-    user_label: USB_DEVICE_CORE_0
+  USB_CLASS_MSC:
+    user_label: USB_CLASS_MSC
+    configuration: {}
+    definition: Atmel:USB:0.0.1::USB_Class_MSC
+    functionality: USB_Class_Mass_Storage_(MSC)
+    api: USB:Protocol:MSC
+    dependencies:
+      USB Chapter 9: USB_CHAPTER_9
+  USB_CLASS_VENDOR:
+    user_label: USB_CLASS_VENDOR
+    configuration: {}
+    definition: Atmel:USB:0.0.1::USB_Class_VENDOR
+    functionality: USB_Class_VENDOR
+    api: USB:Protocol:VENDOR
+    dependencies:
+      USB Chapter 9: USB_CHAPTER_9
+  USB_DEVICE_STACK_CORE_INSTANCE:
+    user_label: USB_DEVICE_STACK_CORE_INSTANCE
     configuration:
       usbd_hs_sp: false
     definition: Atmel:USB:0.0.1::USB_Device_Core
@@ -38,50 +70,82 @@ middlewares:
     api: USB:Device:Core
     dependencies:
       USB Chapter 9: USB_CHAPTER_9
-      USB Device instance: USB_0
-  USB_DEVICE_CDC_ACM_0:
-    user_label: USB_DEVICE_CDC_ACM_0
+      USB Device instance: USB_DEVICE_INSTANCE
+  USB_DEVICE_COMPOSITE_0:
+    user_label: USB_DEVICE_COMPOSITE_0
     configuration:
-      usb_cdcd_acm_bcddevice: 256
-      usb_cdcd_acm_bcdusb: USB 2.0 version
-      usb_cdcd_acm_bconfigval: 1
-      usb_cdcd_acm_bmattri: Bus power supply, not support for remote wakeup
-      usb_cdcd_acm_bmaxpksz0: 64 bytes
-      usb_cdcd_acm_bmaxpower: 50
-      usb_cdcd_acm_bnumconfig: 1
-      usb_cdcd_acm_comm_baltset: 0
-      usb_cdcd_acm_comm_bifcnum: 0
-      usb_cdcd_acm_comm_iifc: 0
-      usb_cdcd_acm_comm_int_interval: 10
-      usb_cdcd_acm_comm_int_maxpksz: 64 bytes
-      usb_cdcd_acm_data_baltset: 0
-      usb_cdcd_acm_data_bifcnum: 1
-      usb_cdcd_acm_data_buckout_maxpksz: 64 bytes
-      usb_cdcd_acm_data_buckout_maxpksz_hs: 512 bytes
-      usb_cdcd_acm_data_builin_maxpksz: 64 bytes
-      usb_cdcd_acm_data_builin_maxpksz_hs: 512 bytes
-      usb_cdcd_acm_data_bulkin_epaddr: EndpointAddress = 0x81
-      usb_cdcd_acm_data_bulkout_epaddr: EndpointAddress = 0x01
-      usb_cdcd_acm_data_iifc: 0
-      usb_cdcd_acm_epaddr: EndpointAddress = 0x82
-      usb_cdcd_acm_iconfig_en: false
-      usb_cdcd_acm_iconfig_str: ''
-      usb_cdcd_acm_idproduct: 9220
-      usb_cdcd_acm_idvender: 1003
-      usb_cdcd_acm_imanufact_en: false
-      usb_cdcd_acm_imanufact_str: Atmel
-      usb_cdcd_acm_iproduct_en: false
-      usb_cdcd_acm_iproduct_str: CDC ACM Serial Bridge Demo
-      usb_cdcd_acm_iserialnum_en: false
-      usb_cdcd_acm_iserialnum_str: 123456789ABCDEF
-      usb_cdcd_acm_langid: '0x0409'
-      usb_cdcd_acm_str_en: false
-    definition: Atmel:USB:0.0.1::USB_Device_CDC_ACM
-    functionality: USB_Device_CDC_ACM
-    api: USB:Device:CDC_ACM
+      conf_usb_composite_cdc_echo_demo: true
+      conf_usb_composite_hid_keyboard_demo: true
+      conf_usb_composite_hid_mouse_demo: true
+      conf_usb_msc_lun0_capacity: 22
+      conf_usb_msc_lun0_enable: true
+      conf_usb_msc_lun0_rmb: true
+      conf_usb_msc_lun1_enable: false
+      conf_usb_msc_lun1_rmb: true
+      conf_usb_msc_lun2_capacity: 22
+      conf_usb_msc_lun2_enable: false
+      conf_usb_msc_lun2_rmb: true
+      conf_usb_msc_lun3_capacity: 22
+      conf_usb_msc_lun3_enable: false
+      conf_usb_msc_lun3_rmb: true
+      conf_usb_msc_lun_buf_sectors: 4
+      usb_composite_bcddevice: 256
+      usb_composite_bcdusb: USB 2.0 version
+      usb_composite_bconfigval: 1
+      usb_composite_bmattri: Bus power supply, not support for remote wakeup
+      usb_composite_bmaxpksz0: 64 bytes
+      usb_composite_bmaxpower: 250
+      usb_composite_bnumconfig: 1
+      usb_composite_cdc_acm_comm_int_maxpksz: 64 bytes
+      usb_composite_cdc_acm_data_buckout_maxpksz: 64 bytes
+      usb_composite_cdc_acm_data_buckout_maxpksz_hs: 512 bytes
+      usb_composite_cdc_acm_data_builin_maxpksz: 64 bytes
+      usb_composite_cdc_acm_data_builin_maxpksz_hs: 512 bytes
+      usb_composite_cdc_acm_data_bulkin_epaddr: EndpointAddress = 0x81
+      usb_composite_cdc_acm_data_bulkout_epaddr: EndpointAddress = 0x01
+      usb_composite_cdc_acm_epaddr: EndpointAddress = 0x82
+      usb_composite_cdc_acm_support: true
+      usb_composite_hid_generic_intin_epaddr: EndpointAddress = 0x85
+      usb_composite_hid_generic_intin_maxpksz: 64 bytes
+      usb_composite_hid_generic_intout_epaddr: EndpointAddress = 0x03
+      usb_composite_hid_generic_intout_maxpksz: 64 bytes
+      usb_composite_hid_generic_support: false
+      usb_composite_hid_keyboard_intin_epaddr: EndpointAddress = 0x84
+      usb_composite_hid_keyboard_intin_maxpksz: 8 bytes
+      usb_composite_hid_keyboard_intout_epaddr: EndpointAddress = 0x02
+      usb_composite_hid_keyboard_intout_maxpksz: 8 bytes
+      usb_composite_hid_keyboard_support: true
+      usb_composite_hid_mouse_intin_epaddr: EndpointAddress = 0x83
+      usb_composite_hid_mouse_intin_maxpksz: 8 bytes
+      usb_composite_hid_mouse_support: true
+      usb_composite_iconfig_en: false
+      usb_composite_iconfig_str: ''
+      usb_composite_idproduct: 9249
+      usb_composite_idvender: 1003
+      usb_composite_imanufact_en: true
+      usb_composite_imanufact_str: Intech Studio
+      usb_composite_iproduct_en: true
+      usb_composite_iproduct_str: 'Intech Studio: Grid'
+      usb_composite_iserialnum_en: false
+      usb_composite_iserialnum_str: 123456789ABCDEF
+      usb_composite_langid: '0x0409'
+      usb_composite_msc_bulk_maxpksz: 64 bytes
+      usb_composite_msc_bulk_maxpksz_hs: 512 bytes
+      usb_composite_msc_bulkin_epaddr: EndpointAddress = 0x86
+      usb_composite_msc_bulkout_epaddr: EndpointAddress = 0x04
+      usb_composite_msc_demo_en: true
+      usb_composite_msc_support: false
+      usb_composite_str_en: true
+    definition: Atmel:USB:0.0.1::USB_Device_Composite
+    functionality: USB_Device_COMPOSITE
+    api: USB:Device:COMPOSITE
     dependencies:
-      USB Device Stack Core Instance: USB_DEVICE_CORE_0
+      USB Class MSC: USB_CLASS_MSC
       USB Class CDC: USB_CLASS_CDC
+      USB Device Stack Core Instance: USB_DEVICE_STACK_CORE_INSTANCE
+      USB Class VENDOR: USB_CLASS_VENDOR
+      USB Class HID: USB_CLASS_HID
+      USB Class HUB: USB_CLASS_HUB
 drivers:
   ADC_0:
     user_label: ADC_0
@@ -322,7 +386,7 @@ drivers:
       dmac_channel_17_settings: false
       dmac_channel_18_settings: false
       dmac_channel_19_settings: false
-      dmac_channel_1_settings: false
+      dmac_channel_1_settings: true
       dmac_channel_20_settings: false
       dmac_channel_21_settings: false
       dmac_channel_22_settings: false
@@ -333,19 +397,19 @@ drivers:
       dmac_channel_27_settings: false
       dmac_channel_28_settings: false
       dmac_channel_29_settings: false
-      dmac_channel_2_settings: false
+      dmac_channel_2_settings: true
       dmac_channel_30_settings: false
       dmac_channel_31_settings: false
-      dmac_channel_3_settings: false
+      dmac_channel_3_settings: true
       dmac_channel_4_settings: false
       dmac_channel_5_settings: false
       dmac_channel_6_settings: false
       dmac_channel_7_settings: false
-      dmac_channel_8_settings: false
+      dmac_channel_8_settings: true
       dmac_channel_9_settings: false
-      dmac_dbgrun: false
-      dmac_dstinc_0: false
-      dmac_dstinc_1: false
+      dmac_dbgrun: true
+      dmac_dstinc_0: true
+      dmac_dstinc_1: true
       dmac_dstinc_10: false
       dmac_dstinc_11: false
       dmac_dstinc_12: false
@@ -356,7 +420,7 @@ drivers:
       dmac_dstinc_17: false
       dmac_dstinc_18: false
       dmac_dstinc_19: false
-      dmac_dstinc_2: false
+      dmac_dstinc_2: true
       dmac_dstinc_20: false
       dmac_dstinc_21: false
       dmac_dstinc_22: false
@@ -367,7 +431,7 @@ drivers:
       dmac_dstinc_27: false
       dmac_dstinc_28: false
       dmac_dstinc_29: false
-      dmac_dstinc_3: false
+      dmac_dstinc_3: true
       dmac_dstinc_30: false
       dmac_dstinc_31: false
       dmac_dstinc_4: false
@@ -441,8 +505,8 @@ drivers:
       dmac_evie_7: false
       dmac_evie_8: false
       dmac_evie_9: false
-      dmac_evoe_0: false
-      dmac_evoe_1: false
+      dmac_evoe_0: true
+      dmac_evoe_1: true
       dmac_evoe_10: false
       dmac_evoe_11: false
       dmac_evoe_12: false
@@ -453,7 +517,7 @@ drivers:
       dmac_evoe_17: false
       dmac_evoe_18: false
       dmac_evoe_19: false
-      dmac_evoe_2: false
+      dmac_evoe_2: true
       dmac_evoe_20: false
       dmac_evoe_21: false
       dmac_evoe_22: false
@@ -464,7 +528,7 @@ drivers:
       dmac_evoe_27: false
       dmac_evoe_28: false
       dmac_evoe_29: false
-      dmac_evoe_3: false
+      dmac_evoe_3: true
       dmac_evoe_30: false
       dmac_evoe_31: false
       dmac_evoe_4: false
@@ -473,8 +537,8 @@ drivers:
       dmac_evoe_7: false
       dmac_evoe_8: false
       dmac_evoe_9: false
-      dmac_evosel_0: Event generation disabled
-      dmac_evosel_1: Event generation disabled
+      dmac_evosel_0: Event strobe when beat transfer complete
+      dmac_evosel_1: Event strobe when beat transfer complete
       dmac_evosel_10: Event generation disabled
       dmac_evosel_11: Event generation disabled
       dmac_evosel_12: Event generation disabled
@@ -485,7 +549,7 @@ drivers:
       dmac_evosel_17: Event generation disabled
       dmac_evosel_18: Event generation disabled
       dmac_evosel_19: Event generation disabled
-      dmac_evosel_2: Event generation disabled
+      dmac_evosel_2: Event strobe when beat transfer complete
       dmac_evosel_20: Event generation disabled
       dmac_evosel_21: Event generation disabled
       dmac_evosel_22: Event generation disabled
@@ -496,7 +560,7 @@ drivers:
       dmac_evosel_27: Event generation disabled
       dmac_evosel_28: Event generation disabled
       dmac_evosel_29: Event generation disabled
-      dmac_evosel_3: Event generation disabled
+      dmac_evosel_3: Event strobe when beat transfer complete
       dmac_evosel_30: Event generation disabled
       dmac_evosel_31: Event generation disabled
       dmac_evosel_4: Event generation disabled
@@ -581,7 +645,7 @@ drivers:
       dmac_runstdby_7: false
       dmac_runstdby_8: false
       dmac_runstdby_9: false
-      dmac_srcinc_0: true
+      dmac_srcinc_0: false
       dmac_srcinc_1: false
       dmac_srcinc_10: false
       dmac_srcinc_11: false
@@ -611,9 +675,9 @@ drivers:
       dmac_srcinc_5: false
       dmac_srcinc_6: false
       dmac_srcinc_7: false
-      dmac_srcinc_8: false
+      dmac_srcinc_8: true
       dmac_srcinc_9: false
-      dmac_stepsel_0: Step size settings apply to the source address
+      dmac_stepsel_0: Step size settings apply to the destination address
       dmac_stepsel_1: Step size settings apply to the destination address
       dmac_stepsel_10: Step size settings apply to the destination address
       dmac_stepsel_11: Step size settings apply to the destination address
@@ -643,7 +707,7 @@ drivers:
       dmac_stepsel_5: Step size settings apply to the destination address
       dmac_stepsel_6: Step size settings apply to the destination address
       dmac_stepsel_7: Step size settings apply to the destination address
-      dmac_stepsel_8: Step size settings apply to the destination address
+      dmac_stepsel_8: Step size settings apply to the source address
       dmac_stepsel_9: Step size settings apply to the destination address
       dmac_stepsize_0: Next ADDR = ADDR + (BEATSIZE + 1) * 1
       dmac_stepsize_1: Next ADDR = ADDR + (BEATSIZE + 1) * 1
@@ -677,8 +741,8 @@ drivers:
       dmac_stepsize_7: Next ADDR = ADDR + (BEATSIZE + 1) * 1
       dmac_stepsize_8: Next ADDR = ADDR + (BEATSIZE + 1) * 1
       dmac_stepsize_9: Next ADDR = ADDR + (BEATSIZE + 1) * 1
-      dmac_trifsrc_0: SERCOM7 TX Trigger
-      dmac_trifsrc_1: Only software/event triggers
+      dmac_trifsrc_0: SERCOM1 RX Trigger
+      dmac_trifsrc_1: SERCOM0 RX Trigger
       dmac_trifsrc_10: Only software/event triggers
       dmac_trifsrc_11: Only software/event triggers
       dmac_trifsrc_12: Only software/event triggers
@@ -689,7 +753,7 @@ drivers:
       dmac_trifsrc_17: Only software/event triggers
       dmac_trifsrc_18: Only software/event triggers
       dmac_trifsrc_19: Only software/event triggers
-      dmac_trifsrc_2: Only software/event triggers
+      dmac_trifsrc_2: SERCOM6 RX Trigger
       dmac_trifsrc_20: Only software/event triggers
       dmac_trifsrc_21: Only software/event triggers
       dmac_trifsrc_22: Only software/event triggers
@@ -700,17 +764,17 @@ drivers:
       dmac_trifsrc_27: Only software/event triggers
       dmac_trifsrc_28: Only software/event triggers
       dmac_trifsrc_29: Only software/event triggers
-      dmac_trifsrc_3: Only software/event triggers
+      dmac_trifsrc_3: SERCOM4 RX Trigger
       dmac_trifsrc_30: Only software/event triggers
       dmac_trifsrc_31: Only software/event triggers
       dmac_trifsrc_4: Only software/event triggers
       dmac_trifsrc_5: Only software/event triggers
       dmac_trifsrc_6: Only software/event triggers
       dmac_trifsrc_7: Only software/event triggers
-      dmac_trifsrc_8: Only software/event triggers
+      dmac_trifsrc_8: SERCOM7 TX Trigger
       dmac_trifsrc_9: Only software/event triggers
       dmac_trigact_0: One trigger required for each beat transfer
-      dmac_trigact_1: One trigger required for each block transfer
+      dmac_trigact_1: One trigger required for each beat transfer
       dmac_trigact_10: One trigger required for each block transfer
       dmac_trigact_11: One trigger required for each block transfer
       dmac_trigact_12: One trigger required for each block transfer
@@ -721,7 +785,7 @@ drivers:
       dmac_trigact_17: One trigger required for each block transfer
       dmac_trigact_18: One trigger required for each block transfer
       dmac_trigact_19: One trigger required for each block transfer
-      dmac_trigact_2: One trigger required for each block transfer
+      dmac_trigact_2: One trigger required for each beat transfer
       dmac_trigact_20: One trigger required for each block transfer
       dmac_trigact_21: One trigger required for each block transfer
       dmac_trigact_22: One trigger required for each block transfer
@@ -732,14 +796,14 @@ drivers:
       dmac_trigact_27: One trigger required for each block transfer
       dmac_trigact_28: One trigger required for each block transfer
       dmac_trigact_29: One trigger required for each block transfer
-      dmac_trigact_3: One trigger required for each block transfer
+      dmac_trigact_3: One trigger required for each beat transfer
       dmac_trigact_30: One trigger required for each block transfer
       dmac_trigact_31: One trigger required for each block transfer
       dmac_trigact_4: One trigger required for each block transfer
       dmac_trigact_5: One trigger required for each block transfer
       dmac_trigact_6: One trigger required for each block transfer
       dmac_trigact_7: One trigger required for each block transfer
-      dmac_trigact_8: One trigger required for each block transfer
+      dmac_trigact_8: One trigger required for each beat transfer
       dmac_trigact_9: One trigger required for each block transfer
     optional_signals: []
     variant: null
@@ -755,6 +819,429 @@ drivers:
     variant: null
     clocks:
       domain_group: null
+  EVENT_SYSTEM_0:
+    user_label: EVENT_SYSTEM_0
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::EVSYS::driver_config_definition::Event.System::HAL:Driver:Event.system
+    functionality: Event_System
+    api: HAL:Driver:Event_system
+    configuration:
+      evsys_channel_0: No channel output selected
+      evsys_channel_1: No channel output selected
+      evsys_channel_10: No channel output selected
+      evsys_channel_11: No channel output selected
+      evsys_channel_12: No channel output selected
+      evsys_channel_17: No channel output selected
+      evsys_channel_18: No channel output selected
+      evsys_channel_19: No channel output selected
+      evsys_channel_2: No channel output selected
+      evsys_channel_20: No channel output selected
+      evsys_channel_21: No channel output selected
+      evsys_channel_22: No channel output selected
+      evsys_channel_23: No channel output selected
+      evsys_channel_24: No channel output selected
+      evsys_channel_25: No channel output selected
+      evsys_channel_26: No channel output selected
+      evsys_channel_27: No channel output selected
+      evsys_channel_28: No channel output selected
+      evsys_channel_29: No channel output selected
+      evsys_channel_3: No channel output selected
+      evsys_channel_30: No channel output selected
+      evsys_channel_31: No channel output selected
+      evsys_channel_32: No channel output selected
+      evsys_channel_33: No channel output selected
+      evsys_channel_34: No channel output selected
+      evsys_channel_35: No channel output selected
+      evsys_channel_36: No channel output selected
+      evsys_channel_37: No channel output selected
+      evsys_channel_38: No channel output selected
+      evsys_channel_39: No channel output selected
+      evsys_channel_4: No channel output selected
+      evsys_channel_40: No channel output selected
+      evsys_channel_41: No channel output selected
+      evsys_channel_42: No channel output selected
+      evsys_channel_43: No channel output selected
+      evsys_channel_44: Channel 0
+      evsys_channel_45: Channel 1
+      evsys_channel_46: Channel 2
+      evsys_channel_47: Channel 3
+      evsys_channel_48: Channel 0
+      evsys_channel_49: Channel 1
+      evsys_channel_5: No channel output selected
+      evsys_channel_50: Channel 2
+      evsys_channel_51: Channel 3
+      evsys_channel_52: No channel output selected
+      evsys_channel_53: No channel output selected
+      evsys_channel_54: No channel output selected
+      evsys_channel_55: No channel output selected
+      evsys_channel_56: No channel output selected
+      evsys_channel_57: No channel output selected
+      evsys_channel_58: No channel output selected
+      evsys_channel_59: No channel output selected
+      evsys_channel_6: No channel output selected
+      evsys_channel_60: No channel output selected
+      evsys_channel_61: No channel output selected
+      evsys_channel_62: No channel output selected
+      evsys_channel_63: No channel output selected
+      evsys_channel_64: No channel output selected
+      evsys_channel_65: No channel output selected
+      evsys_channel_66: No channel output selected
+      evsys_channel_7: No channel output selected
+      evsys_channel_8: No channel output selected
+      evsys_channel_9: No channel output selected
+      evsys_channel_setting_0: true
+      evsys_channel_setting_1: true
+      evsys_channel_setting_10: false
+      evsys_channel_setting_11: false
+      evsys_channel_setting_12: false
+      evsys_channel_setting_13: false
+      evsys_channel_setting_14: false
+      evsys_channel_setting_15: false
+      evsys_channel_setting_16: false
+      evsys_channel_setting_17: false
+      evsys_channel_setting_18: false
+      evsys_channel_setting_19: false
+      evsys_channel_setting_2: true
+      evsys_channel_setting_20: false
+      evsys_channel_setting_21: false
+      evsys_channel_setting_22: false
+      evsys_channel_setting_23: false
+      evsys_channel_setting_24: false
+      evsys_channel_setting_25: false
+      evsys_channel_setting_26: false
+      evsys_channel_setting_27: false
+      evsys_channel_setting_28: false
+      evsys_channel_setting_29: false
+      evsys_channel_setting_3: true
+      evsys_channel_setting_30: false
+      evsys_channel_setting_31: false
+      evsys_channel_setting_4: false
+      evsys_channel_setting_5: false
+      evsys_channel_setting_6: false
+      evsys_channel_setting_7: false
+      evsys_channel_setting_8: false
+      evsys_channel_setting_9: false
+      evsys_edgsel_0: Event is detected on the rising edge of the signal from event
+        generator
+      evsys_edgsel_1: Event is detected on the rising edge of the signal from event
+        generator
+      evsys_edgsel_10: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_11: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_12: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_13: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_14: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_15: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_16: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_17: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_18: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_19: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_2: Event is detected on the rising edge of the signal from event
+        generator
+      evsys_edgsel_20: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_21: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_22: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_23: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_24: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_25: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_26: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_27: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_28: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_29: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_3: Event is detected on the rising edge of the signal from event
+        generator
+      evsys_edgsel_30: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_31: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_4: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_5: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_6: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_7: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_8: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_9: No event output when using the resynchronized or synchronous
+        path
+      evsys_evd_0: false
+      evsys_evd_1: false
+      evsys_evd_10: false
+      evsys_evd_11: false
+      evsys_evd_12: false
+      evsys_evd_13: false
+      evsys_evd_14: false
+      evsys_evd_15: false
+      evsys_evd_16: false
+      evsys_evd_17: false
+      evsys_evd_18: false
+      evsys_evd_19: false
+      evsys_evd_2: false
+      evsys_evd_20: false
+      evsys_evd_21: false
+      evsys_evd_22: false
+      evsys_evd_23: false
+      evsys_evd_24: false
+      evsys_evd_25: false
+      evsys_evd_26: false
+      evsys_evd_27: false
+      evsys_evd_28: false
+      evsys_evd_29: false
+      evsys_evd_3: false
+      evsys_evd_30: false
+      evsys_evd_31: false
+      evsys_evd_4: false
+      evsys_evd_5: false
+      evsys_evd_6: false
+      evsys_evd_7: false
+      evsys_evd_8: false
+      evsys_evd_9: false
+      evsys_evgen_0: DMAC channel 0
+      evsys_evgen_1: DMAC channel 1
+      evsys_evgen_10: No event generator
+      evsys_evgen_11: No event generator
+      evsys_evgen_12: No event generator
+      evsys_evgen_13: No event generator
+      evsys_evgen_14: No event generator
+      evsys_evgen_15: No event generator
+      evsys_evgen_16: No event generator
+      evsys_evgen_17: No event generator
+      evsys_evgen_18: No event generator
+      evsys_evgen_19: No event generator
+      evsys_evgen_2: DMAC channel 2
+      evsys_evgen_20: No event generator
+      evsys_evgen_21: No event generator
+      evsys_evgen_22: No event generator
+      evsys_evgen_23: No event generator
+      evsys_evgen_24: No event generator
+      evsys_evgen_25: No event generator
+      evsys_evgen_26: No event generator
+      evsys_evgen_27: No event generator
+      evsys_evgen_28: No event generator
+      evsys_evgen_29: No event generator
+      evsys_evgen_3: DMAC channel 3
+      evsys_evgen_30: No event generator
+      evsys_evgen_31: No event generator
+      evsys_evgen_4: No event generator
+      evsys_evgen_5: No event generator
+      evsys_evgen_6: No event generator
+      evsys_evgen_7: No event generator
+      evsys_evgen_8: No event generator
+      evsys_evgen_9: No event generator
+      evsys_ondemand_0: false
+      evsys_ondemand_1: false
+      evsys_ondemand_10: false
+      evsys_ondemand_11: false
+      evsys_ondemand_12: false
+      evsys_ondemand_13: false
+      evsys_ondemand_14: false
+      evsys_ondemand_15: false
+      evsys_ondemand_16: false
+      evsys_ondemand_17: false
+      evsys_ondemand_18: false
+      evsys_ondemand_19: false
+      evsys_ondemand_2: false
+      evsys_ondemand_20: false
+      evsys_ondemand_21: false
+      evsys_ondemand_22: false
+      evsys_ondemand_23: false
+      evsys_ondemand_24: false
+      evsys_ondemand_25: false
+      evsys_ondemand_26: false
+      evsys_ondemand_27: false
+      evsys_ondemand_28: false
+      evsys_ondemand_29: false
+      evsys_ondemand_3: false
+      evsys_ondemand_30: false
+      evsys_ondemand_31: false
+      evsys_ondemand_4: false
+      evsys_ondemand_5: false
+      evsys_ondemand_6: false
+      evsys_ondemand_7: false
+      evsys_ondemand_8: false
+      evsys_ondemand_9: false
+      evsys_ovr_0: false
+      evsys_ovr_1: false
+      evsys_ovr_10: false
+      evsys_ovr_11: false
+      evsys_ovr_12: false
+      evsys_ovr_13: false
+      evsys_ovr_14: false
+      evsys_ovr_15: false
+      evsys_ovr_16: false
+      evsys_ovr_17: false
+      evsys_ovr_18: false
+      evsys_ovr_19: false
+      evsys_ovr_2: false
+      evsys_ovr_20: false
+      evsys_ovr_21: false
+      evsys_ovr_22: false
+      evsys_ovr_23: false
+      evsys_ovr_24: false
+      evsys_ovr_25: false
+      evsys_ovr_26: false
+      evsys_ovr_27: false
+      evsys_ovr_28: false
+      evsys_ovr_29: false
+      evsys_ovr_3: false
+      evsys_ovr_30: false
+      evsys_ovr_31: false
+      evsys_ovr_4: false
+      evsys_ovr_5: false
+      evsys_ovr_6: false
+      evsys_ovr_7: false
+      evsys_ovr_8: false
+      evsys_ovr_9: false
+      evsys_path_0: Asynchronous path
+      evsys_path_1: Asynchronous path
+      evsys_path_10: Synchronous path
+      evsys_path_11: Synchronous path
+      evsys_path_12: Synchronous path
+      evsys_path_13: Synchronous path
+      evsys_path_14: Synchronous path
+      evsys_path_15: Synchronous path
+      evsys_path_16: Synchronous path
+      evsys_path_17: Synchronous path
+      evsys_path_18: Synchronous path
+      evsys_path_19: Synchronous path
+      evsys_path_2: Asynchronous path
+      evsys_path_20: Synchronous path
+      evsys_path_21: Synchronous path
+      evsys_path_22: Synchronous path
+      evsys_path_23: Synchronous path
+      evsys_path_24: Synchronous path
+      evsys_path_25: Synchronous path
+      evsys_path_26: Synchronous path
+      evsys_path_27: Synchronous path
+      evsys_path_28: Synchronous path
+      evsys_path_29: Synchronous path
+      evsys_path_3: Asynchronous path
+      evsys_path_30: Synchronous path
+      evsys_path_31: Synchronous path
+      evsys_path_4: Synchronous path
+      evsys_path_5: Synchronous path
+      evsys_path_6: Synchronous path
+      evsys_path_7: Synchronous path
+      evsys_path_8: Synchronous path
+      evsys_path_9: Synchronous path
+      evsys_runstdby_0: false
+      evsys_runstdby_1: false
+      evsys_runstdby_10: false
+      evsys_runstdby_11: false
+      evsys_runstdby_12: false
+      evsys_runstdby_13: false
+      evsys_runstdby_14: false
+      evsys_runstdby_15: false
+      evsys_runstdby_16: false
+      evsys_runstdby_17: false
+      evsys_runstdby_18: false
+      evsys_runstdby_19: false
+      evsys_runstdby_2: false
+      evsys_runstdby_20: false
+      evsys_runstdby_21: false
+      evsys_runstdby_22: false
+      evsys_runstdby_23: false
+      evsys_runstdby_24: false
+      evsys_runstdby_25: false
+      evsys_runstdby_26: false
+      evsys_runstdby_27: false
+      evsys_runstdby_28: false
+      evsys_runstdby_29: false
+      evsys_runstdby_3: false
+      evsys_runstdby_30: false
+      evsys_runstdby_31: false
+      evsys_runstdby_4: false
+      evsys_runstdby_5: false
+      evsys_runstdby_6: false
+      evsys_runstdby_7: false
+      evsys_runstdby_8: false
+      evsys_runstdby_9: false
+    optional_signals: []
+    variant: null
+    clocks:
+      domain_group:
+        nodes:
+        - name: Channel 0
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Channel 1
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Channel 2
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Channel 3
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Channel 4
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Channel 5
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Channel 6
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Channel 7
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Channel 8
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Channel 9
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Channel 10
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Channel 11
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        configuration:
+          evsys_clk_selection_0: Generic clock generator 0
+          evsys_clk_selection_1: Generic clock generator 0
+          evsys_clk_selection_10: Generic clock generator 0
+          evsys_clk_selection_11: Generic clock generator 0
+          evsys_clk_selection_2: Generic clock generator 0
+          evsys_clk_selection_3: Generic clock generator 0
+          evsys_clk_selection_4: Generic clock generator 0
+          evsys_clk_selection_5: Generic clock generator 0
+          evsys_clk_selection_6: Generic clock generator 0
+          evsys_clk_selection_7: Generic clock generator 0
+          evsys_clk_selection_8: Generic clock generator 0
+          evsys_clk_selection_9: Generic clock generator 0
   GCLK:
     user_label: GCLK
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::GCLK::driver_config_definition::GCLK::HAL:HPL:GCLK
@@ -1479,7 +1966,7 @@ drivers:
       spi_master_baud_rate: 3200000
       spi_master_character_size: 8 bits
       spi_master_dma_rx_channel: 1
-      spi_master_dma_tx_channel: 0
+      spi_master_dma_tx_channel: 8
       spi_master_dummybyte: 511
       spi_master_rx_channel: false
       spi_master_rx_enable: false
@@ -1521,20 +2008,144 @@ drivers:
     variant: null
     clocks:
       domain_group: null
-  USB_0:
-    user_label: USB_0
+  TIMER_1:
+    user_label: TIMER_1
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TC1::driver_config_definition::Timer::HAL:Driver:Timer
+    functionality: Timer
+    api: HAL:Driver:Timer
+    configuration:
+      tc_arch_dbgrun: false
+      tc_arch_evact: Start, restart or re-trigger TC on event
+      tc_arch_mceo0: false
+      tc_arch_mceo1: false
+      tc_arch_ondemand: false
+      tc_arch_ovfeo: false
+      tc_arch_presync: Reload or reset counter on next GCLK
+      tc_arch_runstdby: false
+      tc_arch_tcei: true
+      tc_arch_tcinv: false
+      timer_advanced_configuration: false
+      timer_event_control: true
+      timer_prescaler: Divide by 8
+      timer_tick: 1000
+    optional_signals: []
+    variant: null
+    clocks:
+      domain_group:
+        nodes:
+        - name: TC
+          input: Generic clock generator 3
+          external: false
+          external_frequency: 0
+        configuration:
+          tc_gclk_selection: Generic clock generator 3
+  TIMER_0:
+    user_label: TIMER_0
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TC4::driver_config_definition::Timer::HAL:Driver:Timer
+    functionality: Timer
+    api: HAL:Driver:Timer
+    configuration:
+      tc_arch_dbgrun: false
+      tc_arch_evact: Start, restart or re-trigger TC on event
+      tc_arch_mceo0: false
+      tc_arch_mceo1: false
+      tc_arch_ondemand: false
+      tc_arch_ovfeo: false
+      tc_arch_presync: Reload or reset counter on next GCLK
+      tc_arch_runstdby: false
+      tc_arch_tcei: true
+      tc_arch_tcinv: false
+      timer_advanced_configuration: false
+      timer_event_control: true
+      timer_prescaler: Divide by 8
+      timer_tick: 1000
+    optional_signals: []
+    variant: null
+    clocks:
+      domain_group:
+        nodes:
+        - name: TC
+          input: Generic clock generator 3
+          external: false
+          external_frequency: 0
+        configuration:
+          tc_gclk_selection: Generic clock generator 3
+  TIMER_2:
+    user_label: TIMER_2
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TC6::driver_config_definition::Timer::HAL:Driver:Timer
+    functionality: Timer
+    api: HAL:Driver:Timer
+    configuration:
+      tc_arch_dbgrun: false
+      tc_arch_evact: Start, restart or re-trigger TC on event
+      tc_arch_mceo0: false
+      tc_arch_mceo1: false
+      tc_arch_ondemand: false
+      tc_arch_ovfeo: false
+      tc_arch_presync: Reload or reset counter on next GCLK
+      tc_arch_runstdby: false
+      tc_arch_tcei: true
+      tc_arch_tcinv: false
+      timer_advanced_configuration: false
+      timer_event_control: true
+      timer_prescaler: Divide by 8
+      timer_tick: 1000
+    optional_signals: []
+    variant: null
+    clocks:
+      domain_group:
+        nodes:
+        - name: TC
+          input: Generic clock generator 3
+          external: false
+          external_frequency: 0
+        configuration:
+          tc_gclk_selection: Generic clock generator 3
+  TIMER_3:
+    user_label: TIMER_3
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TC7::driver_config_definition::Timer::HAL:Driver:Timer
+    functionality: Timer
+    api: HAL:Driver:Timer
+    configuration:
+      tc_arch_dbgrun: false
+      tc_arch_evact: Start, restart or re-trigger TC on event
+      tc_arch_mceo0: false
+      tc_arch_mceo1: false
+      tc_arch_ondemand: false
+      tc_arch_ovfeo: false
+      tc_arch_presync: Reload or reset counter on next GCLK
+      tc_arch_runstdby: false
+      tc_arch_tcei: true
+      tc_arch_tcinv: false
+      timer_advanced_configuration: false
+      timer_event_control: true
+      timer_prescaler: Divide by 8
+      timer_tick: 1000
+    optional_signals: []
+    variant: null
+    clocks:
+      domain_group:
+        nodes:
+        - name: TC
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        configuration:
+          tc_gclk_selection: Generic clock generator 0
+  USB_DEVICE_INSTANCE:
+    user_label: USB_DEVICE_INSTANCE
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::USB::driver_config_definition::USB.Device::HAL:Driver:USB.Device
     functionality: USB
     api: HAL:Driver:USB_Device
     configuration:
       usb_arch_ep0_cache: Cached by 64 bytes buffer
-      usb_arch_ep1_cache: Cached by 64 bytes buffer
-      usb_arch_ep2_cache: Cached by 64 bytes buffer
+      usb_arch_ep1_cache: No cache
+      usb_arch_ep2_cache: Cached by 8 bytes buffer
       usb_arch_ep3_cache: Cached by 64 bytes buffer
-      usb_arch_ep4_cache: Cached by 64 bytes buffer
-      usb_arch_ep5_cache: Cached by 64 bytes buffer
-      usb_arch_ep6_cache: Cached by 64 bytes buffer
-      usb_arch_ep7_cache: Cached by 64 bytes buffer
+      usb_arch_ep4_cache: No cache
+      usb_arch_ep5_cache: No cache
+      usb_arch_ep6_cache: No cache
+      usb_arch_ep7_cache: No cache
       usb_ep1_I_CACHE: No cache
       usb_ep2_I_CACHE: No cache
       usb_ep3_I_CACHE: No cache
@@ -1542,7 +2153,7 @@ drivers:
       usb_ep5_I_CACHE: No cache
       usb_ep6_I_CACHE: No cache
       usb_ep7_I_CACHE: No cache
-      usbd_arch_max_ep_n: 2 (EP 0x82 or 0x02)
+      usbd_arch_max_ep_n: 5 (EP 0x85 or 0x05)
       usbd_arch_speed: Full speed
       usbd_num_ep_sp: Max possible (by "Max Endpoint Number" config)
     optional_signals: []

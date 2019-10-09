@@ -94,6 +94,18 @@ main.c
 
 usb\class\cdc\device\cdcdf_acm.c
 
+usb\class\hid\device\hiddf_generic.c
+
+usb\class\hid\device\hiddf_keyboard.c
+
+usb\class\hid\device\hiddf_mouse.c
+
+usb\class\midi\device\audiodf_midi.c
+
+usb\class\midi\usb_protocol_midi.c
+
+usb\class\msc\device\mscdf.c
+
 usb\device\usbdc.c
 
 usb\usb_protocol.c

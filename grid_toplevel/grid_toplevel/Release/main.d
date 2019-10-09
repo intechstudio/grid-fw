@@ -169,7 +169,13 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
  ../usb/usb_protocol.h ../usb/usb_includes.h ../Config/usbd_config.h \
  ../usb/class/cdc/usb_protocol_cdc.h \
- ../usb/class/cdc/device/cdcdf_acm_desc.h .././atmel_start_pins.h \
+ ../usb/class/hid/device/hiddf_mouse.h \
+ ../usb/class/hid/usb_protocol_hid.h \
+ ../usb/class/hid/device/hiddf_keyboard.h \
+ ../usb/class/hid/device/hiddf_generic.h ../usb/class/msc/device/mscdf.h \
+ ../usb/class/msc/usb_protocol_msc.h ../usb/class/msc/spc_protocol.h \
+ ../usb/class/msc/sbc_protocol.h \
+ ../usb/class/composite/device/composite_desc.h .././atmel_start_pins.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\stdio.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\lib\gcc\arm-none-eabi\6.3.1\include\stdarg.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\types.h \
@@ -192,7 +198,8 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  .././../../grid_lib/grid_tel.c .././../../grid_lib/grid_tel.h \
  .././../../grid_lib/grid_sys.c .././../../grid_lib/grid_sys.h \
  .././../../grid_lib/grid_buf.c .././../../grid_lib/grid_buf.h \
- .././../../grid_modules/grid_module_p16.c ../../../grid_lib/grid_sys.h
+ .././../../grid_modules/grid_module_p16.c ../../../grid_lib/grid_sys.h \
+ .././usb/class/midi/device/audiodf_midi.h
 
 ../atmel_start.h:
 
@@ -644,7 +651,23 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../usb/class/cdc/usb_protocol_cdc.h:
 
-../usb/class/cdc/device/cdcdf_acm_desc.h:
+../usb/class/hid/device/hiddf_mouse.h:
+
+../usb/class/hid/usb_protocol_hid.h:
+
+../usb/class/hid/device/hiddf_keyboard.h:
+
+../usb/class/hid/device/hiddf_generic.h:
+
+../usb/class/msc/device/mscdf.h:
+
+../usb/class/msc/usb_protocol_msc.h:
+
+../usb/class/msc/spc_protocol.h:
+
+../usb/class/msc/sbc_protocol.h:
+
+../usb/class/composite/device/composite_desc.h:
 
 .././atmel_start_pins.h:
 
@@ -705,3 +728,5 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 .././../../grid_modules/grid_module_p16.c:
 
 ../../../grid_lib/grid_sys.h:
+
+.././usb/class/midi/device/audiodf_midi.h:

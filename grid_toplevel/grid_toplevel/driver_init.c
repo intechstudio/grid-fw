@@ -60,6 +60,10 @@ struct usart_async_descriptor       GRID_AUX;
 struct spi_m_sync_descriptor        UI_SPI;
 struct usart_async_descriptor       USART_WEST;
 struct usart_async_descriptor       USART_SOUTH;
+struct timer_descriptor             TIMER_1;
+struct timer_descriptor             TIMER_0;
+struct timer_descriptor             TIMER_2;
+struct timer_descriptor             TIMER_3;
 
 static uint8_t ADC_0_buffer[ADC_0_BUFFER_SIZE];
 static uint8_t ADC_0_map[ADC_0_CH_MAX + 1];
@@ -122,6 +126,18 @@ void CRC_0_init(void)
 {
 	hri_mclk_set_APBBMASK_DSU_bit(MCLK);
 	crc_sync_init(&CRC_0, DSU);
+}
+
+void EVENT_SYSTEM_0_init(void)
+{
+	hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_0, CONF_GCLK_EVSYS_CHANNEL_0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+	hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_1, CONF_GCLK_EVSYS_CHANNEL_1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+	hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_2, CONF_GCLK_EVSYS_CHANNEL_2_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+	hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_3, CONF_GCLK_EVSYS_CHANNEL_3_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+
+	hri_mclk_set_APBBMASK_EVSYS_bit(MCLK);
+
+	event_system_init();
 }
 
 void FLASH_0_CLOCK_init(void)
@@ -498,7 +514,59 @@ void delay_driver_init(void)
 	delay_init(SysTick);
 }
 
-void USB_0_PORT_init(void)
+/**
+ * \brief Timer initialization function
+ *
+ * Enables Timer peripheral, clocks and initializes Timer driver
+ */
+static void TIMER_1_init(void)
+{
+	hri_mclk_set_APBAMASK_TC1_bit(MCLK);
+	hri_gclk_write_PCHCTRL_reg(GCLK, TC1_GCLK_ID, CONF_GCLK_TC1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+
+	timer_init(&TIMER_1, TC1, _tc_get_timer());
+}
+
+/**
+ * \brief Timer initialization function
+ *
+ * Enables Timer peripheral, clocks and initializes Timer driver
+ */
+static void TIMER_0_init(void)
+{
+	hri_mclk_set_APBCMASK_TC4_bit(MCLK);
+	hri_gclk_write_PCHCTRL_reg(GCLK, TC4_GCLK_ID, CONF_GCLK_TC4_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+
+	timer_init(&TIMER_0, TC4, _tc_get_timer());
+}
+
+/**
+ * \brief Timer initialization function
+ *
+ * Enables Timer peripheral, clocks and initializes Timer driver
+ */
+static void TIMER_2_init(void)
+{
+	hri_mclk_set_APBDMASK_TC6_bit(MCLK);
+	hri_gclk_write_PCHCTRL_reg(GCLK, TC6_GCLK_ID, CONF_GCLK_TC6_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+
+	timer_init(&TIMER_2, TC6, _tc_get_timer());
+}
+
+/**
+ * \brief Timer initialization function
+ *
+ * Enables Timer peripheral, clocks and initializes Timer driver
+ */
+static void TIMER_3_init(void)
+{
+	hri_mclk_set_APBDMASK_TC7_bit(MCLK);
+	hri_gclk_write_PCHCTRL_reg(GCLK, TC7_GCLK_ID, CONF_GCLK_TC7_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+
+	timer_init(&TIMER_3, TC7, _tc_get_timer());
+}
+
+void USB_DEVICE_INSTANCE_PORT_init(void)
 {
 
 	gpio_set_pin_direction(PA24,
@@ -598,7 +666,7 @@ void USB_0_PORT_init(void)
 #warning USB clock should be 48MHz ~ 0.25% clock, check your configuration!
 #endif
 
-void USB_0_CLOCK_init(void)
+void USB_DEVICE_INSTANCE_CLOCK_init(void)
 {
 
 	hri_gclk_write_PCHCTRL_reg(GCLK, USB_GCLK_ID, CONF_GCLK_USB_SRC | GCLK_PCHCTRL_CHEN);
@@ -606,11 +674,11 @@ void USB_0_CLOCK_init(void)
 	hri_mclk_set_APBBMASK_USB_bit(MCLK);
 }
 
-void USB_0_init(void)
+void USB_DEVICE_INSTANCE_init(void)
 {
-	USB_0_CLOCK_init();
+	USB_DEVICE_INSTANCE_CLOCK_init();
 	usb_d_init();
-	USB_0_PORT_init();
+	USB_DEVICE_INSTANCE_PORT_init();
 }
 
 void system_init(void)
@@ -750,6 +818,8 @@ void system_init(void)
 
 	CRC_0_init();
 
+	EVENT_SYSTEM_0_init();
+
 	FLASH_0_init();
 
 	RTC_Scheduler_init();
@@ -767,5 +837,9 @@ void system_init(void)
 
 	delay_driver_init();
 
-	USB_0_init();
+	TIMER_1_init();
+	TIMER_0_init();
+	TIMER_2_init();
+	TIMER_3_init();
+	USB_DEVICE_INSTANCE_init();
 }
