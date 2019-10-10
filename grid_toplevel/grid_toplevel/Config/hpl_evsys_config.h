@@ -18,7 +18,7 @@
 // <EVSYS_CHANNEL_EDGSEL_BOTH_EDGES_Val"> Event is detected on the rising and falling edge of the signal from event generator
 // <id> evsys_edgsel_0
 #ifndef CONF_EDGSEL_0
-#define CONF_EDGSEL_0 EVSYS_CHANNEL_EDGSEL_RISING_EDGE_Val
+#define CONF_EDGSEL_0 EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val
 #endif
 
 // <y> Path selection
@@ -199,7 +199,7 @@
 // <EVSYS_CHANNEL_EDGSEL_BOTH_EDGES_Val"> Event is detected on the rising and falling edge of the signal from event generator
 // <id> evsys_edgsel_1
 #ifndef CONF_EDGSEL_1
-#define CONF_EDGSEL_1 EVSYS_CHANNEL_EDGSEL_RISING_EDGE_Val
+#define CONF_EDGSEL_1 EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val
 #endif
 
 // <y> Path selection
@@ -380,7 +380,7 @@
 // <EVSYS_CHANNEL_EDGSEL_BOTH_EDGES_Val"> Event is detected on the rising and falling edge of the signal from event generator
 // <id> evsys_edgsel_2
 #ifndef CONF_EDGSEL_2
-#define CONF_EDGSEL_2 EVSYS_CHANNEL_EDGSEL_RISING_EDGE_Val
+#define CONF_EDGSEL_2 EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val
 #endif
 
 // <y> Path selection
@@ -561,7 +561,7 @@
 // <EVSYS_CHANNEL_EDGSEL_BOTH_EDGES_Val"> Event is detected on the rising and falling edge of the signal from event generator
 // <id> evsys_edgsel_3
 #ifndef CONF_EDGSEL_3
-#define CONF_EDGSEL_3 EVSYS_CHANNEL_EDGSEL_RISING_EDGE_Val
+#define CONF_EDGSEL_3 EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val
 #endif
 
 // <y> Path selection

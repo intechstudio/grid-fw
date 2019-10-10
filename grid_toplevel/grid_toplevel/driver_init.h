@@ -71,8 +71,8 @@ extern struct usart_async_descriptor USART_SOUTH;
 
 extern struct spi_m_dma_descriptor GRID_LED;
 
-extern struct timer_descriptor TIMER_1;
 extern struct timer_descriptor TIMER_0;
+extern struct timer_descriptor TIMER_1;
 extern struct timer_descriptor TIMER_2;
 extern struct timer_descriptor TIMER_3;
 

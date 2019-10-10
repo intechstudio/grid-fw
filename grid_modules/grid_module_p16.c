@@ -7,6 +7,16 @@
 //====================== USART GRID INIT ===================================//
 
 void grid_sys_uart_init(){
+		
+		
+	// RX PULLUP
+	gpio_set_pin_pull_mode(PC28, GPIO_PULL_UP);
+	gpio_set_pin_pull_mode(PC16, GPIO_PULL_UP);
+	gpio_set_pin_pull_mode(PC12, GPIO_PULL_UP);
+	gpio_set_pin_pull_mode(PB09, GPIO_PULL_UP);
+		
+	
+
 
  	usart_async_register_callback(&USART_NORTH, USART_ASYNC_TXC_CB, tx_cb_USART_GRID_N);
  	usart_async_register_callback(&USART_EAST,  USART_ASYNC_TXC_CB, tx_cb_USART_GRID_E);
@@ -93,28 +103,43 @@ void TIMER_RX_TIMEOUT_cb(GRID_PORT_t* por, struct timer_descriptor* timer, uint8
 			
 	}
 	
-	
+		
 	uint8_t str[] = "k\n";
+	str[0] = GRID_MSG_NACKNOWLEDGE; //Default
+	
+	
+	uint8_t error_flag = 0;
+	uint8_t checksum_calculated = 0;
+	uint8_t checksum_received = 0;
 	
 	
 	// IMPLEMENT CHECKSUM VALIDATOR HERE
 	if (endcommand>4){
-		str[0] = GRID_MSG_ACKNOWLEDGE;
-	}
-	else{
-		str[0] = GRID_MSG_NACKNOWLEDGE;
+		
+		checksum_received = grid_sys_read_hex_string_value(&temp[endcommand-2], 2, &error_flag);
+		
+		checksum_calculated = grid_sys_calculate_checksum(temp, endcommand-2);
+				
+		if (checksum_calculated == checksum_received && error_flag == 0){
+								
+			str[0] = GRID_MSG_ACKNOWLEDGE;		
+			
+		}
+
 	}
 	
-	if(grid_buffer_write_init(&por->tx_buffer, 2)){
-		
-		for (uint8_t i=0; i<2; i++)
-		{
-			grid_buffer_write_character(&por->tx_buffer, str[i]);
-		}
-		
-		grid_buffer_write_acknowledge(&por->tx_buffer);
-		
+	
+	if(grid_buffer_write_init(&por->tx_buffer, strlen(str))){
+					
+	for (uint8_t i=0; i<strlen(str); i++)
+	{
+		grid_buffer_write_character(&por->tx_buffer, str[i]);
 	}
+					
+		grid_buffer_write_acknowledge(&por->tx_buffer);
+					
+	}
+	
 
 	timer_stop(timer);	
 		
@@ -172,7 +197,7 @@ static struct timer_task TIMER_WEST_RX_TIMEOUT;
 void grid_rx_timout_init_one(struct timer_descriptor* timer, struct timer_task* task, void (*function_cb)()){
 	
 	task->interval = 10;
-	task->cb       = TIMER_EAST_RX_TIMEOUT_cb; //DEWBUFGASDASD
+	task->cb       = function_cb; //DEWBUFGASDASD
 	task->mode     = TIMER_TASK_REPEAT;
 
 	timer_add_task(timer, task);
@@ -183,10 +208,10 @@ void grid_rx_timout_init_one(struct timer_descriptor* timer, struct timer_task* 
 
 void grid_rx_timout_init(){
 			
-//	grid_rx_timout_init_one(&TIMER_0, &TIMER_NORTH_RX_TIMEOUT, TIMER_NORTH_RX_TIMEOUT_cb);
+	grid_rx_timout_init_one(&TIMER_0, &TIMER_NORTH_RX_TIMEOUT, TIMER_NORTH_RX_TIMEOUT_cb);
 	grid_rx_timout_init_one(&TIMER_1,  &TIMER_EAST_RX_TIMEOUT,  TIMER_EAST_RX_TIMEOUT_cb);
-//	grid_rx_timout_init_one(&TIMER_2, &TIMER_SOUTH_RX_TIMEOUT, TIMER_SOUTH_RX_TIMEOUT_cb);
-//	grid_rx_timout_init_one(&TIMER_3,  &TIMER_WEST_RX_TIMEOUT,  TIMER_WEST_RX_TIMEOUT_cb);
+	grid_rx_timout_init_one(&TIMER_2, &TIMER_SOUTH_RX_TIMEOUT, TIMER_SOUTH_RX_TIMEOUT_cb);
+	grid_rx_timout_init_one(&TIMER_3,  &TIMER_WEST_RX_TIMEOUT,  TIMER_WEST_RX_TIMEOUT_cb);
 				
 }
 
@@ -208,10 +233,10 @@ void grid_rx_dma_init_one(uint8_t dma_rx_channel, GRID_PORT_t* por, uint32_t buf
 
 void grid_rx_dma_init(){
 			
-	grid_rx_dma_init_one(DMA_NORTH_RX_CHANNEL, &GRID_PORT_N, 15, DMA_NORTH_RX_cb);
-	grid_rx_dma_init_one(DMA_EAST_RX_CHANNEL,  &GRID_PORT_E, 15, DMA_EAST_RX_cb);
-	grid_rx_dma_init_one(DMA_SOUTH_RX_CHANNEL, &GRID_PORT_S, 15, DMA_SOUTH_RX_cb);
-	grid_rx_dma_init_one(DMA_WEST_RX_CHANNEL,  &GRID_PORT_W, 15, DMA_WEST_RX_cb);
+	grid_rx_dma_init_one(DMA_NORTH_RX_CHANNEL, &GRID_PORT_N, 20, DMA_NORTH_RX_cb);
+	grid_rx_dma_init_one(DMA_EAST_RX_CHANNEL,  &GRID_PORT_E, 20, DMA_EAST_RX_cb);
+	grid_rx_dma_init_one(DMA_SOUTH_RX_CHANNEL, &GRID_PORT_S, 20, DMA_SOUTH_RX_cb);
+	grid_rx_dma_init_one(DMA_WEST_RX_CHANNEL,  &GRID_PORT_W, 20, DMA_WEST_RX_cb);
 		
 }
 

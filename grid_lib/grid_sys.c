@@ -12,6 +12,43 @@
 
 
 
+uint8_t grid_sys_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
+		
+	uint8_t result = 0;
+	
+	if (ascii>47 && ascii<58){
+		result = ascii-48;
+	}
+	else if(ascii>96 && ascii<103){
+		result = ascii - 96 + 10;
+	}
+	else{
+		// wrong input
+		if (error_flag != NULL){
+			*error_flag = ascii;
+		}
+	}
+	
+	return result;	
+}
+
+
+uint32_t grid_sys_read_hex_string_value(uint8_t* start_location, uint8_t length, uint8_t* error_flag){
+	
+	uint32_t result  = 0;
+	
+	for(uint8_t i=0; i<length; i++){
+		
+		result += grid_sys_read_hex_char_value(start_location[i], error_flag) << (length-i-1)*4;
+		
+	}
+		
+	return result;
+}
+
+
+
+
 uint32_t grid_sys_get_id(uint32_t* return_array){
 			
 	return_array[0] = *(uint32_t*)(GRID_SYS_UNIQUE_ID_ADDRESS_0);

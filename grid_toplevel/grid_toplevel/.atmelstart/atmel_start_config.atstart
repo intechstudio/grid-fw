@@ -920,10 +920,10 @@ drivers:
       evsys_channel_setting_7: false
       evsys_channel_setting_8: false
       evsys_channel_setting_9: false
-      evsys_edgsel_0: Event is detected on the rising edge of the signal from event
-        generator
-      evsys_edgsel_1: Event is detected on the rising edge of the signal from event
-        generator
+      evsys_edgsel_0: No event output when using the resynchronized or synchronous
+        path
+      evsys_edgsel_1: No event output when using the resynchronized or synchronous
+        path
       evsys_edgsel_10: No event output when using the resynchronized or synchronous
         path
       evsys_edgsel_11: No event output when using the resynchronized or synchronous
@@ -944,8 +944,8 @@ drivers:
         path
       evsys_edgsel_19: No event output when using the resynchronized or synchronous
         path
-      evsys_edgsel_2: Event is detected on the rising edge of the signal from event
-        generator
+      evsys_edgsel_2: No event output when using the resynchronized or synchronous
+        path
       evsys_edgsel_20: No event output when using the resynchronized or synchronous
         path
       evsys_edgsel_21: No event output when using the resynchronized or synchronous
@@ -966,8 +966,8 @@ drivers:
         path
       evsys_edgsel_29: No event output when using the resynchronized or synchronous
         path
-      evsys_edgsel_3: Event is detected on the rising edge of the signal from event
-        generator
+      evsys_edgsel_3: No event output when using the resynchronized or synchronous
+        path
       evsys_edgsel_30: No event output when using the resynchronized or synchronous
         path
       evsys_edgsel_31: No event output when using the resynchronized or synchronous
@@ -2008,6 +2008,37 @@ drivers:
     variant: null
     clocks:
       domain_group: null
+  TIMER_0:
+    user_label: TIMER_0
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TC0::driver_config_definition::Timer::HAL:Driver:Timer
+    functionality: Timer
+    api: HAL:Driver:Timer
+    configuration:
+      tc_arch_dbgrun: false
+      tc_arch_evact: Start, restart or re-trigger TC on event
+      tc_arch_mceo0: false
+      tc_arch_mceo1: false
+      tc_arch_ondemand: false
+      tc_arch_ovfeo: false
+      tc_arch_presync: Reload or reset counter on next GCLK
+      tc_arch_runstdby: false
+      tc_arch_tcei: true
+      tc_arch_tcinv: false
+      timer_advanced_configuration: false
+      timer_event_control: true
+      timer_prescaler: Divide by 8
+      timer_tick: 1000
+    optional_signals: []
+    variant: null
+    clocks:
+      domain_group:
+        nodes:
+        - name: TC
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        configuration:
+          tc_gclk_selection: Generic clock generator 0
   TIMER_1:
     user_label: TIMER_1
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TC1::driver_config_definition::Timer::HAL:Driver:Timer
@@ -2034,45 +2065,14 @@ drivers:
       domain_group:
         nodes:
         - name: TC
-          input: Generic clock generator 3
+          input: Generic clock generator 0
           external: false
           external_frequency: 0
         configuration:
-          tc_gclk_selection: Generic clock generator 3
-  TIMER_0:
-    user_label: TIMER_0
-    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TC4::driver_config_definition::Timer::HAL:Driver:Timer
-    functionality: Timer
-    api: HAL:Driver:Timer
-    configuration:
-      tc_arch_dbgrun: false
-      tc_arch_evact: Start, restart or re-trigger TC on event
-      tc_arch_mceo0: false
-      tc_arch_mceo1: false
-      tc_arch_ondemand: false
-      tc_arch_ovfeo: false
-      tc_arch_presync: Reload or reset counter on next GCLK
-      tc_arch_runstdby: false
-      tc_arch_tcei: true
-      tc_arch_tcinv: false
-      timer_advanced_configuration: false
-      timer_event_control: true
-      timer_prescaler: Divide by 8
-      timer_tick: 1000
-    optional_signals: []
-    variant: null
-    clocks:
-      domain_group:
-        nodes:
-        - name: TC
-          input: Generic clock generator 3
-          external: false
-          external_frequency: 0
-        configuration:
-          tc_gclk_selection: Generic clock generator 3
+          tc_gclk_selection: Generic clock generator 0
   TIMER_2:
     user_label: TIMER_2
-    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TC6::driver_config_definition::Timer::HAL:Driver:Timer
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TC2::driver_config_definition::Timer::HAL:Driver:Timer
     functionality: Timer
     api: HAL:Driver:Timer
     configuration:
@@ -2096,14 +2096,14 @@ drivers:
       domain_group:
         nodes:
         - name: TC
-          input: Generic clock generator 3
+          input: Generic clock generator 0
           external: false
           external_frequency: 0
         configuration:
-          tc_gclk_selection: Generic clock generator 3
+          tc_gclk_selection: Generic clock generator 0
   TIMER_3:
     user_label: TIMER_3
-    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TC7::driver_config_definition::Timer::HAL:Driver:Timer
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TC3::driver_config_definition::Timer::HAL:Driver:Timer
     functionality: Timer
     api: HAL:Driver:Timer
     configuration:
