@@ -32,6 +32,41 @@ uint8_t grid_sys_error_intensity(struct grid_sys_model* mod){
 }
 
 
+void grid_sys_error_set_color(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue){
+	
+	mod->color_red = red;
+	mod->color_green = green;
+	mod->color_blue = blue;
+		
+}
+
+void grid_sys_error_set_alert(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue, uint8_t style, uint8_t duration){
+	
+	mod->color_red = red;
+	mod->color_green = green;
+	mod->color_blue = blue;
+	
+	mod->error_state = duration;
+	mod->error_style = style;
+	
+}
+
+uint8_t grid_sys_error_get_color_r(struct grid_sys_model* mod){
+	
+	return mod->color_red;
+}
+
+uint8_t grid_sys_error_get_color_g(struct grid_sys_model* mod){
+	
+	return mod->color_green;
+}
+
+uint8_t grid_sys_error_get_color_b(struct grid_sys_model* mod){
+	
+	return mod->color_blue;
+}
+
+
 uint8_t grid_sys_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
 		
 	uint8_t result = 0;

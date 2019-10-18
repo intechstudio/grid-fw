@@ -29,7 +29,13 @@ uint32_t grid_sys_hwfcg = -1;
 
 
 struct grid_sys_model 
-{	
+{
+	
+	
+	uint8_t color_red;
+	uint8_t color_green;
+	uint8_t color_blue;
+		
 	uint32_t recent_messages[250];
 	
 	uint8_t next_broadcast_message_id;

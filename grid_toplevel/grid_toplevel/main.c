@@ -88,9 +88,11 @@ void grid_port_receive_task(GRID_PORT_t* por){
 			por->rx_double_buffer_timeout =0;
 			grid_sys_port_reset_dma(por);
 			
-			grid_sys_state.error_code = 7; // WHITE
-			grid_sys_state.error_style = 2; // CONST
-			grid_sys_state.error_state = 200; // CONST
+// 			grid_sys_state.error_code = 7; // WHITE
+// 			grid_sys_state.error_style = 2; // CONST
+// 			grid_sys_state.error_state = 200; // CONST
+			
+			grid_sys_error_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
 		}
 		else{
 		
@@ -211,9 +213,10 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 							
 				if (message[2] == GRID_MSG_ACKNOWLEDGE){
 					
-					grid_sys_state.error_code = 5; // Purple
-					grid_sys_state.error_style = 2; // CONST
-					grid_sys_state.error_state = 200; // CONST
+// 					grid_sys_state.error_code = 5; // Purple
+// 					grid_sys_state.error_style = 2; // CONST
+// 					grid_sys_state.error_state = 200; // CONST
+					grid_sys_error_set_alert(&grid_sys_state, 255, 0, 255, 2, 200);
 				}
 				else if (message[2] == GRID_MSG_NACKNOWLEDGE){
 					// RESEND PREVIOUS
@@ -230,9 +233,13 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 						por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-12], 8, error_flag);
 						por->partner_status = 1;
 									
-						grid_sys_state.error_code = 2; // GREEN
-						grid_sys_state.error_style = 2; // CONST
-						grid_sys_state.error_state = 200; // CONST
+// 						grid_sys_state.error_code = 2; // GREEN
+// 						grid_sys_state.error_style = 2; // CONST
+// 						grid_sys_state.error_state = 200; // CONST
+						
+						grid_sys_error_set_alert(&grid_sys_state, 0, 255, 0, 2, 200);
+						
+								
 									
 					}
 					else{
@@ -252,16 +259,23 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 						if (validator == 0){
 							//FAILED, DISCONNECT
 							por->partner_status = 0;
-							grid_sys_state.error_code = 7; // WHITE
-							grid_sys_state.error_style = 2; // CONST
-							grid_sys_state.error_state = 200; // CONST
+							
+// 							grid_sys_state.error_code = 7; // WHITE
+// 							grid_sys_state.error_style = 2; // CONST
+// 							grid_sys_state.error_state = 200; // CONST
+													
+							grid_sys_error_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
 										
 						}
 						else{
 							//OK
-							grid_sys_state.error_code = 1; // BLUE
-							grid_sys_state.error_style = 2; // CONST
-							grid_sys_state.error_state = 200; // CONST
+							
+// 							grid_sys_state.error_code = 1; // BLUE
+// 							grid_sys_state.error_style = 2; // CONST
+// 							grid_sys_state.error_state = 200; // CONST
+							
+							grid_sys_error_set_alert(&grid_sys_state, 0, 0, 4, 2, 200);
+							
 						}
 									
 									
@@ -278,11 +292,11 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 			}
 			else{ // Invalid
 							
-				grid_sys_state.error_code = 4; // RED
-				grid_sys_state.error_style = 2; // CONST
-				grid_sys_state.error_state = 200; // CONST
-							
-
+// 				grid_sys_state.error_code = 4; // RED
+// 				grid_sys_state.error_style = 2; // CONST
+// 				grid_sys_state.error_state = 200; // CONST						
+				
+				grid_sys_error_set_alert(&grid_sys_state, 255, 0, 0, 2, 200);
 							
 			}
 						
@@ -292,11 +306,11 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 		else{
 			// INVALID CHECKSUM
 
-			grid_sys_state.error_state = 2000;
-			grid_sys_state.error_style = 1;
-			grid_sys_state.error_code = 4; //RED
+// 			grid_sys_state.error_state = 2000;
+// 			grid_sys_state.error_style = 1;
+// 			grid_sys_state.error_code = 4; //RED
 			
-
+			grid_sys_error_set_alert(&grid_sys_state, 255, 0, 255, 1, 2000);
 						
 		}
 				
@@ -755,16 +769,18 @@ int main(void)
 		if (grid_sys_state.error_state){
 			
 			grid_sys_state.error_state--;
-			
+
+
 			uint8_t intensity = grid_sys_error_intensity(&grid_sys_state);
-			uint8_t color_r   = ((grid_sys_state.error_code>>2)&1);
-			uint8_t color_g   = ((grid_sys_state.error_code>>1)&1);
-			uint8_t color_b   = ((grid_sys_state.error_code>>0)&1);
+			
+			uint8_t color_r   = grid_sys_error_get_color_r(&grid_sys_state) * (intensity/256.0);
+			uint8_t color_g   = grid_sys_error_get_color_g(&grid_sys_state) * (intensity/256.0);
+			uint8_t color_b   = grid_sys_error_get_color_b(&grid_sys_state) * (intensity/256.0);
 			
 			
 			for (uint8_t i=0; i<16; i++){	
 				//grid_led_set_color(i, 0, 255, 0);		
-				grid_led_set_color(i, intensity*color_r, intensity*color_g, intensity*color_b);
+				grid_led_set_color(i, color_r, color_g, color_b);
 					
 			}
 			
