@@ -184,9 +184,9 @@
           <AcmeProjectActionInfo Action="File" Source="usb/usb_protocol.c" IsConfig="false" Hash="506QsMNqKwMw3St/nEXa8Q" />
           <AcmeProjectActionInfo Action="File" Source="usb/usb_protocol.h" IsConfig="false" Hash="IjsDWsLIdSQj3pFlkAX0UA" />
           <AcmeProjectActionInfo Action="File" Source="main.c" IsConfig="false" Hash="k0AH7j+BrmdFhBPzCCMptA" />
-          <AcmeProjectActionInfo Action="File" Source="driver_init.c" IsConfig="false" Hash="0Maex8GOqePAcgnOiXv2/Q" />
+          <AcmeProjectActionInfo Action="File" Source="driver_init.c" IsConfig="false" Hash="Q1W3cBtS9Fcsh7oPfdoJZQ" />
           <AcmeProjectActionInfo Action="File" Source="driver_init.h" IsConfig="false" Hash="9JCPE2yRXnX3hFLFjc48gQ" />
-          <AcmeProjectActionInfo Action="File" Source="atmel_start_pins.h" IsConfig="false" Hash="ChFeubjr3oihKdbqLxSpng" />
+          <AcmeProjectActionInfo Action="File" Source="atmel_start_pins.h" IsConfig="false" Hash="tX9wEinGtMH63hEy3MEsZw" />
           <AcmeProjectActionInfo Action="File" Source="examples/driver_examples.h" IsConfig="false" Hash="I0ZwdRowt322b9ju0J7YYw" />
           <AcmeProjectActionInfo Action="File" Source="examples/driver_examples.c" IsConfig="false" Hash="i3EUkNi52/fl63wmKaLFFw" />
           <AcmeProjectActionInfo Action="File" Source="hal/include/hal_adc_async.h" IsConfig="false" Hash="kQUwcVcp1XAP9GQn0S34sw" />
@@ -246,7 +246,7 @@
           <AcmeProjectActionInfo Action="File" Source="config/hpl_adc_config.h" IsConfig="true" Hash="1U2PWV9ay9gRlJI8A1+frQ" />
           <AcmeProjectActionInfo Action="File" Source="config/hpl_cmcc_config.h" IsConfig="true" Hash="bmtxQ8rLloaRtAo2HeXZRQ" />
           <AcmeProjectActionInfo Action="File" Source="config/hpl_dmac_config.h" IsConfig="true" Hash="HEQzQksO/YvT3CZDhpCSsg" />
-          <AcmeProjectActionInfo Action="File" Source="config/hpl_evsys_config.h" IsConfig="true" Hash="rVjWc4h+tx8khttqPBG1Dg" />
+          <AcmeProjectActionInfo Action="File" Source="config/hpl_evsys_config.h" IsConfig="true" Hash="cHg/khTxP88+dFBMu7o1LQ" />
           <AcmeProjectActionInfo Action="File" Source="config/hpl_gclk_config.h" IsConfig="true" Hash="/rLr37CVeNX1gLyr5FtLOg" />
           <AcmeProjectActionInfo Action="File" Source="config/hpl_mclk_config.h" IsConfig="true" Hash="kEAK14nFZ98/sWdh1vmz1g" />
           <AcmeProjectActionInfo Action="File" Source="config/hpl_nvmctrl_config.h" IsConfig="true" Hash="D4QzCBNwfuDqZiPVu7Xk/g" />
@@ -266,12 +266,12 @@
     </AcmeProjectConfig>
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800091545</avrtoolserialnumber>
-    <avrdeviceexpectedsignature>0x60060202</avrdeviceexpectedsignature>
+    <avrdeviceexpectedsignature>0x60060302</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_atmelice>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>8000000</SwdClock>
+          <SwdClock>2000000</SwdClock>
         </InterfaceProperties>
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
@@ -279,7 +279,7 @@
       <ToolNumber>J41800091545</ToolNumber>
       <ToolName>Atmel-ICE</ToolName>
     </com_atmel_avrdbg_tool_atmelice>
-    <avrtoolinterfaceclock>8000000</avrtoolinterfaceclock>
+    <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>

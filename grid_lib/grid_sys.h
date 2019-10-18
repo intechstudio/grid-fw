@@ -25,7 +25,23 @@ uint32_t grid_sys_hwfcg = -1;
 // Recent messages buffer allows detection and termination of duplicate messages
 // Store: dX, dY, ID, ID
 
-uint32_t grid_com_recent_messages[250];
+
+
+
+struct grid_sys_model 
+{	
+	uint32_t recent_messages[250];
+	
+	uint8_t next_broadcast_message_id;
+	
+	uint16_t error_state;
+	uint8_t error_style;
+	uint8_t error_code;	
+	
+};
+
+
+struct grid_sys_model grid_sys_state;
 
 
 

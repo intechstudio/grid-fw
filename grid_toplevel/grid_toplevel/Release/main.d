@@ -139,7 +139,8 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  ../hal/utils/include/utils_ringbuffer.h ../hal/utils/include/compiler.h \
  ../hal/utils/include/utils_assert.h \
  ../hal/include/hpl_missing_features.h ../hal/include/hal_crc_sync.h \
- ../hal/include/hpl_crc_sync.h ../hal/include/hal_flash.h \
+ ../hal/include/hpl_crc_sync.h ../hal/include/hal_evsys.h \
+ ../hal/include/hpl_evsys.h ../hal/include/hal_flash.h \
  ../hal/include/hpl_flash.h ../hal/include/hal_timer.h \
  ../hal/utils/include/utils_list.h ../hal/include/hpl_timer.h \
  ../hal/include/hal_usart_async.h ../hal/include/hal_io.h \
@@ -150,6 +151,7 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  ../hal/include/hpl_i2c_m_async.h ../hal/include/hpl_i2c_m_sync.h \
  ../hal/include/hal_spi_m_dma.h ../hal/include/hpl_spi_m_dma.h \
  ../hal/include/hpl_spi_dma.h ../hal/include/hpl_dma.h \
+ ../hpl/tc/hpl_tc_base.h ../hal/include/hpl_pwm.h \
  ../hal/include/hal_usb_device.h ../hal/include/hpl_usb_device.h \
  ../hal/include/hpl_usb.h ../Config/hpl_usb_config.h ../usb_start.h \
  ../usb/class/cdc/device/cdcdf_acm.h ../usb/device/usbdc.h \
@@ -197,7 +199,7 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  .././../../grid_lib/grid_ain.c .././../../grid_lib/grid_ain.h \
  .././../../grid_lib/grid_tel.c .././../../grid_lib/grid_tel.h \
  .././../../grid_lib/grid_sys.c .././../../grid_lib/grid_sys.h \
- .././../../grid_lib/grid_buf.c .././../../grid_lib/grid_buf.h \
+ .././../../grid_lib/grid_buf.h .././../../grid_lib/grid_buf.c \
  .././../../grid_modules/grid_module_p16.c ../../../grid_lib/grid_sys.h \
  .././usb/class/midi/device/audiodf_midi.h
 
@@ -559,6 +561,10 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 
 ../hal/include/hpl_crc_sync.h:
 
+../hal/include/hal_evsys.h:
+
+../hal/include/hpl_evsys.h:
+
 ../hal/include/hal_flash.h:
 
 ../hal/include/hpl_flash.h:
@@ -600,6 +606,10 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 ../hal/include/hpl_spi_dma.h:
 
 ../hal/include/hpl_dma.h:
+
+../hpl/tc/hpl_tc_base.h:
+
+../hal/include/hpl_pwm.h:
 
 ../hal/include/hal_usb_device.h:
 
@@ -721,9 +731,9 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 .././../../grid_lib/grid_sys.h:
 
-.././../../grid_lib/grid_buf.c:
-
 .././../../grid_lib/grid_buf.h:
+
+.././../../grid_lib/grid_buf.c:
 
 .././../../grid_modules/grid_module_p16.c:
 

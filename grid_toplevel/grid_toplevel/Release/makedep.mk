@@ -22,6 +22,8 @@ hal\src\hal_crc_sync.c
 
 hal\src\hal_delay.c
 
+hal\src\hal_evsys.c
+
 hal\src\hal_flash.c
 
 hal\src\hal_gpio.c
@@ -66,6 +68,8 @@ hpl\dmac\hpl_dmac.c
 
 hpl\dsu\hpl_dsu.c
 
+hpl\evsys\hpl_evsys.c
+
 hpl\gclk\hpl_gclk.c
 
 hpl\mclk\hpl_mclk.c
@@ -87,6 +91,8 @@ hpl\rtc\hpl_rtc.c
 hpl\sercom\hpl_sercom.c
 
 hpl\systick\hpl_systick.c
+
+hpl\tc\hpl_tc.c
 
 hpl\usb\hpl_usb.c
 

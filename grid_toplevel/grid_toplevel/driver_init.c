@@ -699,6 +699,21 @@ void system_init(void)
 
 	gpio_set_pin_function(LED0, GPIO_PIN_FUNCTION_OFF);
 
+	// GPIO on PB07
+
+	// Set pin direction to input
+	gpio_set_pin_direction(PIN_GRID_SYNC_2, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(PIN_GRID_SYNC_2,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(PIN_GRID_SYNC_2, GPIO_PIN_FUNCTION_OFF);
+
 	// GPIO on PB13
 
 	gpio_set_pin_level(HWCFG_SHIFT,
@@ -770,6 +785,21 @@ void system_init(void)
 	gpio_set_pin_direction(UI_PWR_EN, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_function(UI_PWR_EN, GPIO_PIN_FUNCTION_OFF);
+
+	// GPIO on PC18
+
+	// Set pin direction to input
+	gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(PIN_GRID_SYNC_1,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(PIN_GRID_SYNC_1, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PC19
 

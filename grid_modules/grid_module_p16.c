@@ -3,19 +3,102 @@
 #include "../../grid_lib/grid_sys.h"
 
 
+uint8_t grid_sync_mode_register[2] = {0, 0};
+
+
+//====================== GRID SYNC ===================================//
+enum grid_sync_selector { GRID_SYNC_UNDEFINED, GRID_SYNC_1, GRID_SYNC_2};
+enum grid_sync_mode { GRID_SYNC_INITIAL, GRID_SYNC_MASTER, GRID_SYNC_SLAVE};
+	
+	
+void grid_sync_set_mode(enum grid_sync_selector sync_select, enum grid_sync_mode sync_mode){
+	
+	grid_sync_mode_register[sync_select - 1]  = sync_mode;
+	
+	if (sync_select == GRID_SYNC_1){		
+		
+		if (sync_mode == GRID_SYNC_MASTER){
+			
+			gpio_set_pin_level(PIN_GRID_SYNC_1, true);
+			gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
+		}
+		else if (sync_mode == GRID_SYNC_SLAVE){
+			gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_IN);
+			gpio_set_pin_level(PIN_GRID_SYNC_1, true);
+		}
+		
+	}
+	else if (sync_select == GRID_SYNC_2){	
+			
+		if (sync_mode == GRID_SYNC_MASTER){
+			
+			gpio_set_pin_level(PIN_GRID_SYNC_2, true);
+			gpio_set_pin_direction(PIN_GRID_SYNC_2, GPIO_DIRECTION_OUT);
+		}
+		else if (sync_mode == GRID_SYNC_SLAVE){
+			gpio_set_pin_direction(PIN_GRID_SYNC_2, GPIO_DIRECTION_IN);
+			gpio_set_pin_level(PIN_GRID_SYNC_1, true);
+		}
+		
+	}
+	
+}
+
+enum grid_sync_mode grid_sync_get_mode(enum grid_sync_selector sync_select){
+	
+	if (grid_sync_mode_register[sync_select - 1] == GRID_SYNC_MASTER){
+		return GRID_SYNC_MASTER;
+	}
+	else if (grid_sync_mode_register[sync_select - 1] == GRID_SYNC_SLAVE){
+		return GRID_SYNC_SLAVE;
+	}
+	else{
+		return GRID_SYNC_INITIAL;	
+	}	
+}
+
+
+void grid_sync_set_level(enum grid_sync_selector sync_select, uint8_t sync_level){
+	
+	if (sync_select == GRID_SYNC_1){
+		
+		if (grid_sync_get_mode(sync_select) == GRID_SYNC_MASTER){
+			
+			gpio_set_pin_level(PIN_GRID_SYNC_1, sync_level);
+		}
+		
+	}
+	else if (sync_select == GRID_SYNC_2){
+		
+		if (grid_sync_get_mode(sync_select) == GRID_SYNC_MASTER){
+			
+			gpio_set_pin_level(PIN_GRID_SYNC_2, sync_level);
+		}
+		
+	}
+		
+}
+
+
+
 
 //====================== USART GRID INIT ===================================//
+
+void grid_sys_port_reset_dma(GRID_PORT_t* por){
+	
+	hri_dmac_clear_CHCTRLA_ENABLE_bit(DMAC, por->dma_channel);
+	_dma_enable_transaction(por->dma_channel, false);
+}
 
 void grid_sys_uart_init(){
 		
 		
 	// RX PULLUP
-	gpio_set_pin_pull_mode(PC28, GPIO_PULL_UP);
-	gpio_set_pin_pull_mode(PC16, GPIO_PULL_UP);
-	gpio_set_pin_pull_mode(PC12, GPIO_PULL_UP);
-	gpio_set_pin_pull_mode(PB09, GPIO_PULL_UP);
+ 	gpio_set_pin_pull_mode(PC28, GPIO_PULL_UP);
+ 	gpio_set_pin_pull_mode(PC16, GPIO_PULL_UP);
+ 	gpio_set_pin_pull_mode(PC12, GPIO_PULL_UP);
+ 	gpio_set_pin_pull_mode(PB09, GPIO_PULL_UP);
 		
-	
 
 
  	usart_async_register_callback(&USART_NORTH, USART_ASYNC_TXC_CB, tx_cb_USART_GRID_N);
@@ -23,10 +106,10 @@ void grid_sys_uart_init(){
  	usart_async_register_callback(&USART_SOUTH, USART_ASYNC_TXC_CB, tx_cb_USART_GRID_S);
  	usart_async_register_callback(&USART_WEST,  USART_ASYNC_TXC_CB, tx_cb_USART_GRID_W);
 // 
-// 	usart_async_register_callback(&USART_NORTH, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_N);
-// 	usart_async_register_callback(&USART_EAST,  USART_ASYNC_RXC_CB, rx_cb_USART_GRID_E);
-// 	usart_async_register_callback(&USART_SOUTH, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_S);
-// 	usart_async_register_callback(&USART_WEST,  USART_ASYNC_RXC_CB, rx_cb_USART_GRID_W);
+//  	usart_async_register_callback(&USART_NORTH, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_N);
+//  	usart_async_register_callback(&USART_EAST,  USART_ASYNC_RXC_CB, rx_cb_USART_GRID_E);
+//  	usart_async_register_callback(&USART_SOUTH, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_S);
+//  	usart_async_register_callback(&USART_WEST,  USART_ASYNC_RXC_CB, rx_cb_USART_GRID_W);
 	
 	usart_async_get_io_descriptor(&USART_NORTH, &grid_sys_north_io);
 	usart_async_get_io_descriptor(&USART_EAST,  &grid_sys_east_io);
@@ -37,10 +120,35 @@ void grid_sys_uart_init(){
 	usart_async_enable(&USART_EAST);
 	usart_async_enable(&USART_SOUTH);
 	usart_async_enable(&USART_WEST);
-	
-	
+
+
 
 }
+
+
+void dma_transfer_complete_n_cb(struct _dma_resource *resource){
+	
+	dma_transfer_complete(&GRID_PORT_N);
+}
+void dma_transfer_complete_e_cb(struct _dma_resource *resource){
+	
+	dma_transfer_complete(&GRID_PORT_E);
+}
+void dma_transfer_complete_s_cb(struct _dma_resource *resource){
+	
+	dma_transfer_complete(&GRID_PORT_S);
+}
+void dma_transfer_complete_w_cb(struct _dma_resource *resource){
+	
+	dma_transfer_complete(&GRID_PORT_W);
+}
+
+void dma_transfer_complete(GRID_PORT_t* por){
+
+	grid_sys_port_reset_dma(por);
+
+}
+
 
 
 
@@ -58,164 +166,11 @@ void grid_sys_uart_init(){
 static uint8_t string[20];
 static uint8_t string2[20];
 	
-// RX TIMEOUT CALLBACKS
 
-static void TIMER_NORTH_RX_TIMEOUT_cb(const struct timer_task *const timer_task)
-{
-	TIMER_RX_TIMEOUT_cb(&GRID_PORT_N, &TIMER_0, DMA_NORTH_RX_CHANNEL);
-}
-
-static void TIMER_EAST_RX_TIMEOUT_cb(const struct timer_task *const timer_task)
-{
-
-		
-	TIMER_RX_TIMEOUT_cb(&GRID_PORT_E, &TIMER_1, DMA_EAST_RX_CHANNEL);
-}
-	
-static void TIMER_SOUTH_RX_TIMEOUT_cb(const struct timer_task *const timer_task)
-{
-	TIMER_RX_TIMEOUT_cb(&GRID_PORT_S, &TIMER_2, DMA_SOUTH_RX_CHANNEL);
-}
-	
-static void TIMER_WEST_RX_TIMEOUT_cb(const struct timer_task *const timer_task)
-{
-	TIMER_RX_TIMEOUT_cb(&GRID_PORT_W, &TIMER_3, DMA_WEST_RX_CHANNEL);
-}
-
-void TIMER_RX_TIMEOUT_cb(GRID_PORT_t* por, struct timer_descriptor* timer, uint8_t dma_channel)
-{
-	//process rx data
-		
-	volatile uint8_t temp[100];
-	volatile uint8_t endcommand = 0;
-		
-		
-	for(uint8_t i = 0; i<100; i++){
-			
-		temp[i] = por->rx_double_buffer[i];
-			
-		por->rx_double_buffer[i] = 0;
-			
-		if (temp[i] == '\n'){
-			endcommand = i;
-		}
-			
-			
-	}
-	
-		
-	uint8_t str[] = "k\n";
-	str[0] = GRID_MSG_NACKNOWLEDGE; //Default
+void grid_rx_dma_init_one(GRID_PORT_t* por, uint32_t buffer_length, void* transfer_done_cb() ){
 	
 	
-	uint8_t error_flag = 0;
-	uint8_t checksum_calculated = 0;
-	uint8_t checksum_received = 0;
-	
-	
-	// IMPLEMENT CHECKSUM VALIDATOR HERE
-	if (endcommand>4){
-		
-		checksum_received = grid_sys_read_hex_string_value(&temp[endcommand-2], 2, &error_flag);
-		
-		checksum_calculated = grid_sys_calculate_checksum(temp, endcommand-2);
-				
-		if (checksum_calculated == checksum_received && error_flag == 0){
-								
-			str[0] = GRID_MSG_ACKNOWLEDGE;		
-			
-		}
-
-	}
-	
-	
-	if(grid_buffer_write_init(&por->tx_buffer, strlen(str))){
-					
-	for (uint8_t i=0; i<strlen(str); i++)
-	{
-		grid_buffer_write_character(&por->tx_buffer, str[i]);
-	}
-					
-		grid_buffer_write_acknowledge(&por->tx_buffer);
-					
-	}
-	
-
-	timer_stop(timer);	
-		
-	hri_dmac_clear_CHCTRLA_ENABLE_bit(DMAC, dma_channel);
-	_dma_enable_transaction(dma_channel, false);
-		
-	timer_start(timer);		
-}
-
-// RX DMA CALLBACKS
-
-void DMA_NORTH_RX_cb(struct _dma_resource *resource)
-{
-	DMA_RX_cb(DMA_NORTH_RX_CHANNEL, &GRID_PORT_N);
-}
-
-void DMA_EAST_RX_cb(struct _dma_resource *resource)
-{
-	DMA_RX_cb(DMA_EAST_RX_CHANNEL, &GRID_PORT_E);
-}
-
-void DMA_SOUTH_RX_cb(struct _dma_resource *resource)
-{
-	DMA_RX_cb(DMA_SOUTH_RX_CHANNEL, &GRID_PORT_S);
-}
-
-void DMA_WEST_RX_cb(struct _dma_resource *resource)
-{
-	DMA_RX_cb(DMA_WEST_RX_CHANNEL, &GRID_PORT_W);
-}
-
-void DMA_RX_cb(uint8_t dma_channel, GRID_PORT_t* por)
-{
-	
-	string2[0]++;
-	por->rx_double_buffer[0];
-	
-	
-	if (string2[0] !=0){
-		
-		while(1){
-	
-		}
-		
-	}
-
-}
-	
-static struct timer_task TIMER_NORTH_RX_TIMEOUT;	
-static struct timer_task TIMER_EAST_RX_TIMEOUT;
-static struct timer_task TIMER_SOUTH_RX_TIMEOUT;
-static struct timer_task TIMER_WEST_RX_TIMEOUT;
-
-
-void grid_rx_timout_init_one(struct timer_descriptor* timer, struct timer_task* task, void (*function_cb)()){
-	
-	task->interval = 10;
-	task->cb       = function_cb; //DEWBUFGASDASD
-	task->mode     = TIMER_TASK_REPEAT;
-
-	timer_add_task(timer, task);
-	timer_start(timer);
-
-	
-}
-
-void grid_rx_timout_init(){
-			
-	grid_rx_timout_init_one(&TIMER_0, &TIMER_NORTH_RX_TIMEOUT, TIMER_NORTH_RX_TIMEOUT_cb);
-	grid_rx_timout_init_one(&TIMER_1,  &TIMER_EAST_RX_TIMEOUT,  TIMER_EAST_RX_TIMEOUT_cb);
-	grid_rx_timout_init_one(&TIMER_2, &TIMER_SOUTH_RX_TIMEOUT, TIMER_SOUTH_RX_TIMEOUT_cb);
-	grid_rx_timout_init_one(&TIMER_3,  &TIMER_WEST_RX_TIMEOUT,  TIMER_WEST_RX_TIMEOUT_cb);
-				
-}
-
-void grid_rx_dma_init_one(uint8_t dma_rx_channel, GRID_PORT_t* por, uint32_t buffer_length, void (*function_cb)()){
+	uint8_t dma_rx_channel = por->dma_channel;	
 	
 	_dma_set_source_address(dma_rx_channel, (uint32_t) & (((Sercom *)((*por->usart).device.hw))->USART.DATA.reg));
 	_dma_set_destination_address(dma_rx_channel, (uint32_t *)por->rx_double_buffer);
@@ -223,20 +178,21 @@ void grid_rx_dma_init_one(uint8_t dma_rx_channel, GRID_PORT_t* por, uint32_t buf
 	
 	struct _dma_resource *resource_rx;
 	_dma_get_channel_resource(&resource_rx, dma_rx_channel);
-	resource_rx->dma_cb.transfer_done = function_cb;
-	resource_rx->dma_cb.error         = function_cb;
 	
+	resource_rx->dma_cb.transfer_done = transfer_done_cb;	
 	_dma_set_irq_state(dma_rx_channel, DMA_TRANSFER_COMPLETE_CB, true);
+	
+	//resource_rx->dma_cb.error         = function_cb;	
 	_dma_enable_transaction(dma_rx_channel, false);
 	
 }
 
 void grid_rx_dma_init(){
 			
-	grid_rx_dma_init_one(DMA_NORTH_RX_CHANNEL, &GRID_PORT_N, 20, DMA_NORTH_RX_cb);
-	grid_rx_dma_init_one(DMA_EAST_RX_CHANNEL,  &GRID_PORT_E, 20, DMA_EAST_RX_cb);
-	grid_rx_dma_init_one(DMA_SOUTH_RX_CHANNEL, &GRID_PORT_S, 20, DMA_SOUTH_RX_cb);
-	grid_rx_dma_init_one(DMA_WEST_RX_CHANNEL,  &GRID_PORT_W, 20, DMA_WEST_RX_cb);
+	grid_rx_dma_init_one(&GRID_PORT_N, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_n_cb);
+	grid_rx_dma_init_one(&GRID_PORT_E, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_e_cb);
+	grid_rx_dma_init_one(&GRID_PORT_S, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_s_cb);
+	grid_rx_dma_init_one(&GRID_PORT_W, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_w_cb);
 		
 }
 
@@ -322,6 +278,17 @@ static void convert_cb_ADC_1(const struct adc_async_descriptor *const descr, con
 		
 	uint8_t adc_index_0 = grid_module_mux_lookup[grid_module_mux+8];
 	uint8_t adc_index_1 = grid_module_mux_lookup[grid_module_mux+0];
+	
+	/* Update the multiplexer */
+		
+	grid_module_mux++;
+	grid_module_mux%=8;
+			
+	gpio_set_pin_level(MUX_A, grid_module_mux/1%2);
+	gpio_set_pin_level(MUX_B, grid_module_mux/2%2);
+	gpio_set_pin_level(MUX_C, grid_module_mux/4%2);
+		
+	
 		
 	adc_async_read_channel(&ADC_0, 0, &adcresult_0, 2);
 	adc_async_read_channel(&ADC_1, 0, &adcresult_1, 2);
@@ -349,16 +316,7 @@ static void convert_cb_ADC_1(const struct adc_async_descriptor *const descr, con
 	grid_ain_add_sample(adc_index_1, adcresult_1);
 		
 		
-	/* Update the multiplexer */
-		
-	grid_module_mux++;
-	grid_module_mux%=8;
-		
-		
-		
-	gpio_set_pin_level(MUX_A, grid_module_mux/1%2);
-	gpio_set_pin_level(MUX_B, grid_module_mux/2%2);
-	gpio_set_pin_level(MUX_C, grid_module_mux/4%2);
+	
 		
 	/* Start conversion new conversion*/
 	ADC_0_conversion_ready = 0;	
@@ -368,6 +326,112 @@ static void convert_cb_ADC_1(const struct adc_async_descriptor *const descr, con
 	adc_async_start_conversion(&ADC_1);
 		
 }
+
+
+void grid_port_process_ui(GRID_PORT_t* por){
+	
+	char txbuffer[256];
+			
+			
+	uint32_t txindex=0;
+			
+	uint8_t packet_length = 0;
+			
+	uint8_t len = 0;
+	uint8_t id = grid_sys_state.next_broadcast_message_id;
+	int8_t dx = 0;
+	int8_t dy = 0;
+			
+	uint8_t packetvalid = 0;
+			
+	sprintf(&txbuffer[txindex],
+	"%c%c%02x%02x%02x%02x%c",
+	GRID_MSG_START_OF_HEADING,
+	GRID_MSG_BROADCAST,
+	len, id, dx, dy,
+	GRID_MSG_END_OF_BLOCK
+	);
+			
+	txindex += strlen(&txbuffer[txindex]);
+			
+			
+	for (uint8_t i = 0; i<16; i++)
+	{
+				
+				
+		if (grid_ain_get_changed(i)){
+					
+			packetvalid++;
+					
+			uint16_t average = grid_ain_get_average(i);
+					
+					
+			sprintf(&txbuffer[txindex], "%c%x%02x%02x%02x%02x%c",
+					
+			GRID_MSG_START_OF_TEXT,
+			GRID_MSG_PROTOCOL_MIDI,
+			0, // (cable<<4) + channel
+			GRID_MSG_COMMAND_MIDI_CONTROLCHANGE,
+			i,
+			average/64,
+			GRID_MSG_END_OF_TEXT
+			);
+					
+
+			txindex += strlen(&txbuffer[txindex]);
+					
+			// UPDATE LEDS (SHOULD USE UI_TX but whatever)
+					
+			if (grid_sys_get_hwcfg()==64 && i>11){
+				grid_led_set_phase(i-4, 0, average*2/128); // 0...255
+			}
+			else{
+				grid_led_set_phase(i, 0, average*2/128); // 0...255
+			}
+					
+		}
+				
+	}
+			
+	if (packetvalid){
+				
+		grid_sys_state.next_broadcast_message_id++;
+				
+		// Close the packet
+		sprintf(&txbuffer[txindex], "%c", GRID_MSG_END_OF_TRANSMISSION); // CALCULATE AND ADD CRC HERE
+		txindex += strlen(&txbuffer[txindex]);
+				
+		// Calculate packet length and insert it into the header
+		char length_string[8];
+		sprintf(length_string, "%02x", txindex);
+				
+		txbuffer[2] = length_string[0];
+		txbuffer[3] = length_string[1];
+				
+				
+		// Add checksum and linebreak
+		sprintf(&txbuffer[txindex], "%02x\n", grid_sys_calculate_checksum(txbuffer, txindex)); // CALCULATE AND ADD CRC HERE
+		txindex += strlen(&txbuffer[txindex]);
+				
+		// Put the packet into the UI_RX buffer
+		if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, txindex)){
+					
+			for(uint16_t i = 0; i<txindex; i++){
+						
+				grid_buffer_write_character(&GRID_PORT_U.rx_buffer, txbuffer[i]);
+			}
+					
+			grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
+		}
+				
+				
+	}
+			
+	
+}
+
+
+
 
 
 // DMA SPI CALLBACK
@@ -399,7 +463,7 @@ void grid_module_init(void){
 		
 
 
-	grid_rx_timout_init();
+//	grid_rx_timout_init();
 	
 		
 	grid_sys_uart_init();
@@ -499,6 +563,9 @@ void grid_module_init(void){
 
 	// GRID_LED Library NEW NEW NEW NEW
 	
+	grid_sys_state.error_style = 0;
+	grid_sys_state.error_state = 500;
+	grid_sys_state.error_code = 7;
 		
 		
 }

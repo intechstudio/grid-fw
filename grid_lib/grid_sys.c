@@ -12,6 +12,26 @@
 
 
 
+
+uint8_t grid_sys_error_intensity(struct grid_sys_model* mod){
+	
+	if (mod->error_style == 0){ // TRIANGLE
+		
+		return (125-abs(mod->error_state/2-125))/2;
+	}
+	else if (mod->error_style == 1){ // SQUARE
+		
+		return 255*(mod->error_state/250%2);
+	}
+	else if (mod->error_style == 2){ // CONST
+		
+		return 255*(mod->error_state>100);
+	}
+	
+	
+}
+
+
 uint8_t grid_sys_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
 		
 	uint8_t result = 0;
@@ -20,7 +40,7 @@ uint8_t grid_sys_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
 		result = ascii-48;
 	}
 	else if(ascii>96 && ascii<103){
-		result = ascii - 96 + 10;
+		result = ascii - 97 + 10;
 	}
 	else{
 		// wrong input
@@ -40,9 +60,13 @@ uint32_t grid_sys_read_hex_string_value(uint8_t* start_location, uint8_t length,
 	for(uint8_t i=0; i<length; i++){
 		
 		result += grid_sys_read_hex_char_value(start_location[i], error_flag) << (length-i-1)*4;
+
 		
 	}
 		
+
+	
+
 	return result;
 }
 
@@ -157,11 +181,40 @@ static void tx_cb_USART_GRID_W(const struct usart_async_descriptor *const descr)
 void tx_cb_USART_GRID(GRID_PORT_t* const por){
 	
 	grid_sys_tx_counter[por->direction - 0x11]++;
-	por->tx_double_buffer_status = 0;
+
+	
+	if(por->tx_double_buffer[1] == GRID_MSG_BROADCAST){
+		// SHOULD WAIT FOR ACKNOWLEDGE
+		
+		// BUT WE DON'T
+		for(uint8_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
+			por->tx_double_buffer[i] = 0;
+		}
+		
+		por->tx_double_buffer_status = 0;
+	}
+	else if (por->tx_double_buffer[1] == GRID_MSG_DIRECT){
+		// NO NEED TO WAIT FOR ACKNOWLEDGE
+		for(uint8_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
+			por->tx_double_buffer[i] = 0;
+		}
+		
+		por->tx_double_buffer_status = 0;
+	}
+	else{
+		//TRAP
+		for(uint8_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
+			por->tx_double_buffer[i] = 0;
+		}
+		
+		por->tx_double_buffer_status = 0;
+	}
+	
 }
 
 
-//=============================== USART RX COMPLETE ==============================//
+
+
 
 static void rx_cb_USART_GRID_N(const struct usart_async_descriptor *const descr)
 {
@@ -184,37 +237,13 @@ static void rx_cb_USART_GRID_W(const struct usart_async_descriptor *const descr)
 }
 
 void rx_cb_USART_GRID(GRID_PORT_t* const por){
-	
-	uint8_t character;
-	
-	io_read(&(*por->usart).io, &character, 1);
-	
-	
-	if (por->rx_double_buffer_status){
-		while(1){
-			//TRAP
-		}
-		return;
-	}// this should not happen
-		
-
-
-	while(io_read(&(*por->usart).io, &character, 1) == 1){
 			
-		por->rx_double_buffer[por->rx_double_buffer_index] = character;
-		por->rx_double_buffer_index++;
-			
-		if (character == '\n'){
-			por->rx_double_buffer_status = 1;
-		}
-						
-	}
-	
 }
 
 
 
-	
+
+
 void grid_port_process_inbound_all(){
 	
 // 	grid_port_process_inbound(&GRID_PORT_N);
@@ -251,7 +280,7 @@ void grid_sys_ping(GRID_PORT_t* por){
 	uint8_t len = 0;
 	
 	// Create the packet
-	sprintf(str, "%c%c%c%08x%c", GRID_MSG_START_OF_HEADING, GRID_MSG_BELL, por->direction ,grid_sys_get_hwcfg(), GRID_MSG_END_OF_TRANSMISSION);
+	sprintf(str, "%c%c%c%c%08x%c", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, por->direction ,grid_sys_get_hwcfg(), GRID_MSG_END_OF_TRANSMISSION);
 	
 	// Calculate packet length
 	len = strlen(str);

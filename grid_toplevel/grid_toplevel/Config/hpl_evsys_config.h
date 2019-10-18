@@ -18,7 +18,7 @@
 // <EVSYS_CHANNEL_EDGSEL_BOTH_EDGES_Val"> Event is detected on the rising and falling edge of the signal from event generator
 // <id> evsys_edgsel_0
 #ifndef CONF_EDGSEL_0
-#define CONF_EDGSEL_0 EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val
+#define CONF_EDGSEL_0 EVSYS_CHANNEL_EDGSEL_RISING_EDGE_Val
 #endif
 
 // <y> Path selection
@@ -28,7 +28,7 @@
 // <EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val"> Asynchronous path
 // <id> evsys_path_0
 #ifndef CONF_PATH_0
-#define CONF_PATH_0 EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val
+#define CONF_PATH_0 EVSYS_CHANNEL_PATH_RESYNCHRONIZED_Val
 #endif
 
 // <o> Event generator
@@ -166,7 +166,7 @@
 // <i> Indicates whether event detected interrupt is enabled or not
 // <id> evsys_evd_0
 #ifndef CONF_EVD_0
-#define CONF_EVD_0 0
+#define CONF_EVD_0 1
 #endif
 
 // <q> On demand clock
@@ -199,7 +199,7 @@
 // <EVSYS_CHANNEL_EDGSEL_BOTH_EDGES_Val"> Event is detected on the rising and falling edge of the signal from event generator
 // <id> evsys_edgsel_1
 #ifndef CONF_EDGSEL_1
-#define CONF_EDGSEL_1 EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val
+#define CONF_EDGSEL_1 EVSYS_CHANNEL_EDGSEL_RISING_EDGE_Val
 #endif
 
 // <y> Path selection
@@ -209,7 +209,7 @@
 // <EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val"> Asynchronous path
 // <id> evsys_path_1
 #ifndef CONF_PATH_1
-#define CONF_PATH_1 EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val
+#define CONF_PATH_1 EVSYS_CHANNEL_PATH_RESYNCHRONIZED_Val
 #endif
 
 // <o> Event generator
@@ -347,7 +347,7 @@
 // <i> Indicates whether event detected interrupt is enabled or not
 // <id> evsys_evd_1
 #ifndef CONF_EVD_1
-#define CONF_EVD_1 0
+#define CONF_EVD_1 1
 #endif
 
 // <q> On demand clock
@@ -380,7 +380,7 @@
 // <EVSYS_CHANNEL_EDGSEL_BOTH_EDGES_Val"> Event is detected on the rising and falling edge of the signal from event generator
 // <id> evsys_edgsel_2
 #ifndef CONF_EDGSEL_2
-#define CONF_EDGSEL_2 EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val
+#define CONF_EDGSEL_2 EVSYS_CHANNEL_EDGSEL_RISING_EDGE_Val
 #endif
 
 // <y> Path selection
@@ -390,7 +390,7 @@
 // <EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val"> Asynchronous path
 // <id> evsys_path_2
 #ifndef CONF_PATH_2
-#define CONF_PATH_2 EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val
+#define CONF_PATH_2 EVSYS_CHANNEL_PATH_RESYNCHRONIZED_Val
 #endif
 
 // <o> Event generator
@@ -528,7 +528,7 @@
 // <i> Indicates whether event detected interrupt is enabled or not
 // <id> evsys_evd_2
 #ifndef CONF_EVD_2
-#define CONF_EVD_2 0
+#define CONF_EVD_2 1
 #endif
 
 // <q> On demand clock
@@ -561,7 +561,7 @@
 // <EVSYS_CHANNEL_EDGSEL_BOTH_EDGES_Val"> Event is detected on the rising and falling edge of the signal from event generator
 // <id> evsys_edgsel_3
 #ifndef CONF_EDGSEL_3
-#define CONF_EDGSEL_3 EVSYS_CHANNEL_EDGSEL_NO_EVT_OUTPUT_Val
+#define CONF_EDGSEL_3 EVSYS_CHANNEL_EDGSEL_RISING_EDGE_Val
 #endif
 
 // <y> Path selection
@@ -571,7 +571,7 @@
 // <EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val"> Asynchronous path
 // <id> evsys_path_3
 #ifndef CONF_PATH_3
-#define CONF_PATH_3 EVSYS_CHANNEL_PATH_ASYNCHRONOUS_Val
+#define CONF_PATH_3 EVSYS_CHANNEL_PATH_RESYNCHRONIZED_Val
 #endif
 
 // <o> Event generator
@@ -709,7 +709,7 @@
 // <i> Indicates whether event detected interrupt is enabled or not
 // <id> evsys_evd_3
 #ifndef CONF_EVD_3
-#define CONF_EVD_3 0
+#define CONF_EVD_3 1
 #endif
 
 // <q> On demand clock

@@ -21,6 +21,11 @@
 #define GRID_MSG_SOUTH					0x13	// Device Control 3
 #define GRID_MSG_WEST					0x14	// Device Control 4
 
+#define GRID_MSG_DIRECT					0x0E	// Shift In
+#define GRID_MSG_BROADCAST				0x0F	// Shift Out
+
+
+
 #define GRID_MSG_BELL					0x07
 
 

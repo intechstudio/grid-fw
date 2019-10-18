@@ -497,6 +497,7 @@ const DeviceVectors exception_table = {
  * To initialize the device, and call the main() routine.
  */
 void Reset_Handler(void)
+
 {
         uint32_t *pSrc, *pDest;
 

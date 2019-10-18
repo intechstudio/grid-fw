@@ -22,16 +22,18 @@
 
 
 volatile uint8_t task1flag = 0;
-volatile uint8_t task2flag = 0;
 
 volatile uint8_t reportflag = 0;
 
 
 
 
+
+
+
 static struct timer_task RTC_Scheduler_tick;
 static struct timer_task RTC_Scheduler_report;
-static struct timer_task RTC_Scheduler_task2;
+static struct timer_task RTC_Scheduler_rx_task;
 static struct timer_task RTC_Scheduler_ping;
 
 
@@ -60,9 +62,335 @@ static void RTC_Scheduler_tick_cb(const struct timer_task *const timer_task)
  if (reportflag<255) reportflag++;
  }
 
-static void RTC_Scheduler_task2_cb(const struct timer_task *const timer_task)
+
+
+
+
+
+void grid_port_receive_task(GRID_PORT_t* por){
+		
+
+	// THERE IS ALREADY DATA, PROCESS THAT FIRST
+	if	(por->rx_double_buffer_status == 1){
+		return;
+	}
+	
+	
+
+		
+	if (por->rx_double_buffer_timeout > 20000){
+		
+		if (por->partner_status == 1){
+			
+			por->rx_double_buffer_seek_start_index = 0;
+			por->rx_double_buffer_read_start_index = 0;
+			por->partner_status = 0;
+			por->rx_double_buffer_timeout =0;
+			grid_sys_port_reset_dma(por);
+			
+			grid_sys_state.error_code = 7; // WHITE
+			grid_sys_state.error_style = 2; // CONST
+			grid_sys_state.error_state = 200; // CONST
+		}
+		else{
+		
+			por->rx_double_buffer_seek_start_index = 0;
+			por->rx_double_buffer_read_start_index = 0;
+			grid_sys_port_reset_dma(por);
+		
+		}
+			
+			
+			
+			
+	}
+	else{
+		
+		por->rx_double_buffer_timeout++;
+	}		
+		
+		
+
+	
+	
+			
+
+	
+
+	for(uint16_t i = 0; i<10; i++){
+		
+		if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] != '\n' && por->rx_double_buffer[por->rx_double_buffer_seek_start_index] != 0)
+		{
+			por->rx_double_buffer_seek_start_index++;			
+			por->rx_double_buffer_seek_start_index%=GRID_DOUBLE_BUFFER_RX_SIZE;
+		}	
+		else{			
+			i = GRID_DOUBLE_BUFFER_RX_SIZE;
+		}
+		
+// 		if (i == 9){
+// 			por->rx_double_buffer_seek_start_index = 0;
+//			por->rx_double_buffer_read_start_index = 0;
+//			grid_sys_port_reset_dma(por);
+// 		}
+	}
+		
+					
+
+	if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == '\n'){
+		por->rx_double_buffer_timeout = 0;
+		por->rx_double_buffer_status = 1;
+	}
+	
+	if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 0){
+
+	}
+		
+}
+
+
+void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t length){
+	
+	
+	uint8_t response[10];
+	
+	response[0] = GRID_MSG_START_OF_HEADING;
+	response[1] = GRID_MSG_DIRECT;
+	response[2] = GRID_MSG_NACKNOWLEDGE;
+	response[3] = GRID_MSG_END_OF_TRANSMISSION;
+	response[4] = '0'; //checksum
+	response[5] = '0'; //checksum
+	response[6] = '\n';
+	response[7] = 0;
+	response[8] = 0;
+	response[9] = 0;
+
+	uint8_t error_flag = 0;
+	uint8_t checksum_calculated = 0;
+	uint8_t checksum_received = 0;
+				
+	// Copy data from cyrcular buffer to te3mporary linear array;
+	uint8_t message[length];
+				
+	for (uint8_t i = 0; i<length; i++){
+		message[i] = por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE];
+	}
+				
+	// IMPLEMENT CHECKSUM VALIDATOR HERE
+	if (length>5){
+					
+		checksum_received = grid_sys_read_hex_string_value(&message[length-3], 2, &error_flag);
+					
+		checksum_calculated = grid_sys_calculate_checksum(message, length-3);
+					
+		// IF CHECKSUM IS VALID
+		if (checksum_calculated == checksum_received && error_flag == 0){
+						
+			if (message[1] == GRID_MSG_BROADCAST){ // Broadcast message
+							
+				// IF WE CAN STORE THE MESSAGE IN THE RX BUFFER
+				if (grid_buffer_write_init(&por->rx_buffer, length)){
+					for (uint8_t i=0; i<length; i++){
+									
+						grid_buffer_write_character(&por->rx_buffer, message[i]);
+									
+					}
+								
+					grid_buffer_write_acknowledge(&por->rx_buffer);
+								
+					grid_port_process_inbound(por);
+																
+					response[2] = GRID_MSG_ACKNOWLEDGE;
+				}
+							
+			}
+			else if (message[1] == GRID_MSG_DIRECT){ // Direct Message
+							
+							
+				//process direct message
+							
+				if (message[2] == GRID_MSG_ACKNOWLEDGE){
+					
+					grid_sys_state.error_code = 5; // Purple
+					grid_sys_state.error_style = 2; // CONST
+					grid_sys_state.error_state = 200; // CONST
+				}
+				else if (message[2] == GRID_MSG_NACKNOWLEDGE){
+					// RESEND PREVIOUS
+				}
+				else if (message[2] == GRID_MSG_CANCEL){
+					// RESEND PREVIOUS
+				}
+				else if (message[2] == GRID_MSG_BELL){
+								
+								
+					if (por->partner_status == 0){
+						// CONNECT
+						por->partner_fi = (message[3] - por->direction + 6)%4;
+						por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-12], 8, error_flag);
+						por->partner_status = 1;
+									
+						grid_sys_state.error_code = 2; // GREEN
+						grid_sys_state.error_style = 2; // CONST
+						grid_sys_state.error_state = 200; // CONST
+									
+					}
+					else{
+						// VALIDATE
+						uint8_t validator = 1;
+						validator &= (por->partner_fi == ((message[3] - por->direction + 6)%4));
+						volatile uint32_t debug = grid_sys_read_hex_string_value(&message[length-12], 8, error_flag);
+						volatile uint32_t debug2 = por->partner_hwcfg;
+									
+									
+									
+									
+						validator &= (por->partner_hwcfg == debug);
+									
+									
+									
+						if (validator == 0){
+							//FAILED, DISCONNECT
+							por->partner_status = 0;
+							grid_sys_state.error_code = 7; // WHITE
+							grid_sys_state.error_style = 2; // CONST
+							grid_sys_state.error_state = 200; // CONST
+										
+						}
+						else{
+							//OK
+							grid_sys_state.error_code = 1; // BLUE
+							grid_sys_state.error_style = 2; // CONST
+							grid_sys_state.error_state = 200; // CONST
+						}
+									
+									
+					}
+								
+								
+				}
+							
+							
+							
+							
+							
+							
+			}
+			else{ // Invalid
+							
+				grid_sys_state.error_code = 4; // RED
+				grid_sys_state.error_style = 2; // CONST
+				grid_sys_state.error_state = 200; // CONST
+							
+
+							
+			}
+						
+
+						
+		}
+		else{
+			// INVALID CHECKSUM
+
+			grid_sys_state.error_state = 2000;
+			grid_sys_state.error_style = 1;
+			grid_sys_state.error_code = 4; //RED
+			
+
+						
+		}
+				
+
+	}
+	else{
+
+	}
+				
+	if (message[1] == GRID_MSG_BROADCAST){
+					
+		// RESPOND WITH ACK OR NACK
+		
+		uint8_t response_length = strlen(response);
+		
+		if(grid_buffer_write_init(&por->tx_buffer, response_length)){
+						
+			
+			uint8_t checksum[4];
+			
+			sprintf(checksum, "%02x", grid_sys_calculate_checksum(response, response_length-3));
+			
+			response[4] = checksum[0];
+			response[5] = checksum[1];
+
+						
+			for (uint8_t i=0; i<response_length; i++)
+			{
+				grid_buffer_write_character(&por->tx_buffer, response[i]);
+			}
+						
+			grid_buffer_write_acknowledge(&por->tx_buffer);
+						
+		}
+					
+	}
+	
+	for (uint8_t i = 0; i<length; i++){
+		por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE] = 0;
+	}
+		
+	por->rx_double_buffer_read_start_index = (por->rx_double_buffer_read_start_index + length)%GRID_DOUBLE_BUFFER_RX_SIZE;
+	por->rx_double_buffer_seek_start_index =  por->rx_double_buffer_read_start_index;
+	
+	
+	por->rx_double_buffer_status = 0;
+
+
+	
+
+	return;
+	
+}
+
+
+void grid_port_receive_complete_task(GRID_PORT_t* por){
+	
+	if (por->rx_double_buffer_status != 1){
+		return;
+	}
+
+	
+	uint8_t length = 0;
+	
+	if (por->rx_double_buffer_read_start_index < por->rx_double_buffer_seek_start_index){
+		length = por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
+	}
+	else{
+		length = GRID_DOUBLE_BUFFER_RX_SIZE + por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
+	}
+	
+		
+	grid_port_receive_decode(por, por->rx_double_buffer_read_start_index, length);
+			
+
+	
+	por->rx_double_buffer_status = 0;
+	
+					
+	//grid_port_process_outbound_usart(por);
+	
+	
+}
+
+
+static void RTC_Scheduler_rx_task_cb(const struct timer_task *const timer_task)
 {
-	if (task2flag<255) task2flag++;
+
+	grid_port_receive_task(&GRID_PORT_N);
+	grid_port_receive_task(&GRID_PORT_E);
+	grid_port_receive_task(&GRID_PORT_S);
+	grid_port_receive_task(&GRID_PORT_W);
+	
+	
 }
 
 static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
@@ -88,17 +416,17 @@ void init_timer(void)
 	RTC_Scheduler_report.mode     = TIMER_TASK_REPEAT;
 	
 		
-	RTC_Scheduler_ping.interval = 16380; //1sec
+	RTC_Scheduler_ping.interval = 16380/5; //1sec
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
 	RTC_Scheduler_ping.mode     = TIMER_TASK_REPEAT;
 	
-	RTC_Scheduler_task2.interval = 32768/2*20;
-	RTC_Scheduler_task2.cb       = RTC_Scheduler_task2_cb;
-	RTC_Scheduler_task2.mode     = TIMER_TASK_REPEAT;
+	RTC_Scheduler_rx_task.interval = RTC1SEC/10000; // 100us
+	RTC_Scheduler_rx_task.cb       = RTC_Scheduler_rx_task_cb;
+	RTC_Scheduler_rx_task.mode     = TIMER_TASK_REPEAT;
 
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_tick);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_report);
-	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_task2);
+	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_rx_task);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_ping);
 	timer_start(&RTC_Scheduler);
 	
@@ -106,41 +434,15 @@ void init_timer(void)
 
 }
 
-static struct timer_task TIMER_0_task1, TIMER_0_task2;
 
-/**
- * Example of using TIMER_0.
- */
-static void TIMER_0_task1_cb2(const struct timer_task *const timer_task)
-{
-	while (1)
-	{
-		;
-	}
-}
 
-static void TIMER_0_task2_cb2(const struct timer_task *const timer_task)
-{
-}
 
-void TIMER_0_example2(void)
-{
-	TIMER_0_task1.interval = 100;
-	TIMER_0_task1.cb       = TIMER_0_task1_cb2;
-	TIMER_0_task1.mode     = TIMER_TASK_REPEAT;
-	TIMER_0_task2.interval = 200;
-	TIMER_0_task2.cb       = TIMER_0_task2_cb2;
-	TIMER_0_task2.mode     = TIMER_TASK_REPEAT;
-
-	timer_add_task(&TIMER_1, &TIMER_0_task1);
-	timer_add_task(&TIMER_1, &TIMER_0_task2);
-	timer_start(&TIMER_1);
-}
 
 
 
 int main(void)
 {
+	
 	
 	#include "usb/class/midi/device/audiodf_midi.h"
 	
@@ -159,28 +461,15 @@ int main(void)
 	
 	init_timer();
 	
-	
-	
-	
-
-
-
-
-
-	// UI RX EVENT fref=5, alert=50;
-	
-	struct TEL_event_counter* console_tx = grid_tel_event_register(5, 50);
-	
-	while(console_tx == NULL){/*TRAP*/}	
 
 
 	uint32_t faketimer = 0;
 
-	uint8_t colorfade = 0;
+	uint16_t colorfade = 0;
 	uint8_t colorcode = 0;
 
 	uint8_t mapmode = 1;
-	uint8_t sysmode = 0;
+	uint8_t sysmode = 1;
 	
 	
 	uint32_t loopcounter = 0;
@@ -192,9 +481,16 @@ int main(void)
 	char system_report_buffers[200];
 	char system_report_grid[200];
 	
-	uint8_t current_message_id = 0;
 
 	while (1) {
+		
+		
+		// CHECK RX BUFFERS
+		grid_port_receive_complete_task(&GRID_PORT_N);
+		grid_port_receive_complete_task(&GRID_PORT_E);
+		grid_port_receive_complete_task(&GRID_PORT_S);
+		grid_port_receive_complete_task(&GRID_PORT_W);
+		
 				
 				
 		if (pingflag){
@@ -268,15 +564,7 @@ int main(void)
 		}
 		
 		loopcounter++;
-		
-		if (task2flag){
-						
-			task2flag--;
 			
-			
-		}		
-		
-		
 			
 		loopstart = realtime;
 		
@@ -286,6 +574,7 @@ int main(void)
 			//hiddf_mouse_move(-5, HID_MOUSE_X_AXIS_MV);
 		
 			if (mapmode == 1){
+				
 								
 				static struct hiddf_kb_key_descriptors key_array[]      = {
 					{HID_CAPS_LOCK, false, HID_KB_KEY_DOWN},
@@ -354,6 +643,13 @@ int main(void)
 				
 				sysmode = ! sysmode;
 				
+				if (sysmode){					
+					grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_MASTER);
+					
+				}
+				else{
+					grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_SLAVE);
+				}
 				
 				
 			}
@@ -371,7 +667,14 @@ int main(void)
 		faketimer++;
 
 			
+		// SYNC TEST
+		if (sysmode){
 			
+			grid_sync_set_level(GRID_SYNC_1, loopcounter%2);
+			
+		}
+		
+		
 		
 			
 		/* ========================= UI_PROCESS_INBOUND ============================= */
@@ -380,110 +683,22 @@ int main(void)
 		
 		task_current = TASK_UIIN;
 		
-		char txbuffer[256];
-		
-		
-		uint32_t txindex=0;
-				
-		uint8_t packet_length = 0;
-		
-		uint8_t len = 0;
-		uint8_t id = current_message_id;
-		int8_t dx = 0;
-		int8_t dy = 0;
-				
-		uint8_t packetvalid = 0;
-				
-		sprintf(&txbuffer[txindex],
-			"%c%02x%02x%02x%02x",
-			GRID_MSG_START_OF_HEADING,
-			len, id, dx, dy,
-			GRID_MSG_END_OF_BLOCK
-		);
-		
-		txindex += strlen(&txbuffer[txindex]);
-		
-				
-		for (uint8_t i = 0; i<16; i++)
-		{
-			
-			
-			if (grid_ain_get_changed(i)){
-				
-				packetvalid++;
-				
-				uint16_t average = grid_ain_get_average(i);
-				
-				
-				sprintf(&txbuffer[txindex], "%c%x%02x%02x%02x%02x%c", 
-				
-					GRID_MSG_START_OF_TEXT, 
-					GRID_MSG_PROTOCOL_MIDI, 
-					0, // (cable<<4) + channel
-					GRID_MSG_COMMAND_MIDI_CONTROLCHANGE,
-					i, 
-					average/64,
-					GRID_MSG_END_OF_TEXT
-				);
-					
+		task_current = TASK_UNDEFINED;
 
-				txindex += strlen(&txbuffer[txindex]);
-					
-				// UPDATE LEDS (SHOULD USE UI_TX but whatever)
-				
-				if (grid_sys_get_hwcfg()==64 && i>11){
-					grid_led_set_phase(i-4, 0, average*2/128); // 0...255
-				}
-				else{
-					grid_led_set_phase(i, 0, average*2/128); // 0...255	
-				}				
-				
-			}
 			
-		}
-		
-		if (packetvalid){
-			
-			current_message_id++;
-						
-			// Close the packet
-			sprintf(&txbuffer[txindex], "%c", GRID_MSG_END_OF_TRANSMISSION); // CALCULATE AND ADD CRC HERE					
-			txindex += strlen(&txbuffer[txindex]);
-						
-			// Calculate packet length and insert it into the header		
-			char length_string[8];
-			sprintf(length_string, "%02x", txindex);
-			
-			txbuffer[1] = length_string[0];
-			txbuffer[2] = length_string[1];
-			
-			
-			// Add checksum and linebreak
-			sprintf(&txbuffer[txindex], "%02x\n", grid_sys_calculate_checksum(txbuffer, txindex)); // CALCULATE AND ADD CRC HERE
-			txindex += strlen(&txbuffer[txindex]);		
-			
-			// Put the packet into the UI_RX buffer
-			if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, txindex)){
-				
-				for(uint16_t i = 0; i<txindex; i++){
-					
-					grid_buffer_write_character(&GRID_PORT_U.rx_buffer, txbuffer[i]);
-				}
-				
-				grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
-			}
-			
-			
-		}		
 		
 		/* ========================= GRID MOVE TASK ============================= */		
 		
 		uint16_t length = 0;
 		
+		grid_port_process_ui(&GRID_PORT_U);		
 		
 		grid_port_process_inbound(&GRID_PORT_U); // Copy data from UI_RX to HOST_TX & north TX AND STUFF
 
-		grid_port_process_inbound_usart(&GRID_PORT_E);		
+		grid_port_process_inbound(&GRID_PORT_N);		
+		grid_port_process_inbound(&GRID_PORT_E);		
+		grid_port_process_inbound(&GRID_PORT_S);		
+		grid_port_process_inbound(&GRID_PORT_W);		
 		
 		grid_port_process_outbound_usart(&GRID_PORT_N);
 		grid_port_process_outbound_usart(&GRID_PORT_E);
@@ -494,8 +709,12 @@ int main(void)
 		grid_port_process_outbound_ui(&GRID_PORT_U);
 		
 	
-		task_current = TASK_UNDEFINED;
 
+				
+				
+				
+				
+				
 				
 		if (sysmode == 1){
 			
@@ -507,13 +726,6 @@ int main(void)
 			
 			task_current = TASK_UNDEFINED;
 			
-			io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
-				
-			
-			while (dma_spi_done == 0)
-			{
-			}
-			
 		}
 		
 		if (sysmode == 0){
@@ -522,30 +734,56 @@ int main(void)
 				
 				//grid_led_set_color(i, 0, 255, 0);
 				
-				grid_led_set_color(i, colorfade*(colorcode==0), colorfade*(colorcode==1), colorfade*(colorcode==2));
+				grid_led_set_color(i, colorfade*(colorcode==0)/4, colorfade*(colorcode==1)/4, colorfade*(colorcode==2)/4);
 				
 				
 			}
 			
 			colorfade++;
+			
+			if (colorfade == 4*256){
+				colorfade = 0;
+			}
+			
 			if (colorfade == 0) colorcode++;
-			if (colorcode>2) colorcode=0;
+			if (colorcode>2) colorcode=0;	
+			
+		}
+		
+		
+		
+		if (grid_sys_state.error_state){
+			
+			grid_sys_state.error_state--;
+			
+			uint8_t intensity = grid_sys_error_intensity(&grid_sys_state);
+			uint8_t color_r   = ((grid_sys_state.error_code>>2)&1);
+			uint8_t color_g   = ((grid_sys_state.error_code>>1)&1);
+			uint8_t color_b   = ((grid_sys_state.error_code>>0)&1);
 			
 			
-			delay_ms(2);
-			
-			// SEND DATA TO LEDs
-			dma_spi_done = 0;
-			spi_m_dma_enable(&GRID_LED);
-			
-			io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
-			
-			while (dma_spi_done == 0)
-			{
-			}		
+			for (uint8_t i=0; i<16; i++){	
+				//grid_led_set_color(i, 0, 255, 0);		
+				grid_led_set_color(i, intensity*color_r, intensity*color_g, intensity*color_b);
+					
+			}
 			
 			
 		}
+		
+		
+		
+		// SEND DATA TO LEDs
+		dma_spi_done = 0;
+		spi_m_dma_enable(&GRID_LED);
+			
+		io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
+			
+		while (dma_spi_done == 0)
+		{
+		}	
+		
+		
 		
 		// IDLETASK
 		task_current = TASK_IDLE;
@@ -554,5 +792,9 @@ int main(void)
 		}
 		
 		task_current = TASK_UNDEFINED;
+		
+		
+		
+		
 	}
 }

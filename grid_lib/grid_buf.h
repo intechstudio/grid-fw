@@ -7,6 +7,9 @@
 #define GRID_BUFFER_TX_SIZE	200
 #define GRID_BUFFER_RX_SIZE	200
 
+#define GRID_DOUBLE_BUFFER_TX_SIZE	200
+#define GRID_DOUBLE_BUFFER_RX_SIZE	200
+
 typedef struct grid_buffer{
 	
 	uint16_t buffer_length;
@@ -37,12 +40,22 @@ typedef struct grid_port{
 	uint8_t type;     // 0 undefined, 1 usart, 2 usb, 3 ui, 4 telemetry
 	uint8_t direction;
 	
-	uint16_t tx_double_buffer_status;
-	uint16_t rx_double_buffer_status; // is packet ready for verification 
-	uint16_t rx_double_buffer_index; // offset of next received byte in buffer
+	uint8_t dma_channel;
 	
-	uint8_t tx_double_buffer[GRID_BUFFER_TX_SIZE];
-	uint8_t rx_double_buffer[GRID_BUFFER_RX_SIZE];
+	uint16_t tx_double_buffer_status;
+	
+	
+	uint16_t rx_double_buffer_timeout; // is packet ready for verification
+	
+	uint16_t rx_double_buffer_status; // is packet ready for verification
+	uint16_t rx_double_buffer_seek_start_index; // offset of next received byte in buffer
+	uint16_t rx_double_buffer_read_start_index;
+	
+	uint8_t tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE];
+	uint8_t rx_double_buffer[GRID_DOUBLE_BUFFER_RX_SIZE];
+	
+	
+	
 	
 	
 	
