@@ -273,8 +273,8 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 // 							grid_sys_state.error_code = 1; // BLUE
 // 							grid_sys_state.error_style = 2; // CONST
 // 							grid_sys_state.error_state = 200; // CONST
-							
-							grid_sys_error_set_alert(&grid_sys_state, 0, 0, 4, 2, 200);
+
+							grid_sys_error_set_alert(&grid_sys_state, 0, 0, 10, 2, 200);
 							
 						}
 									
@@ -457,6 +457,9 @@ void init_timer(void)
 int main(void)
 {
 	
+			
+
+	
 	
 	#include "usb/class/midi/device/audiodf_midi.h"
 	
@@ -473,8 +476,41 @@ int main(void)
 	
 	grid_module_init();
 	
-	init_timer();
+
+
+	for (uint8_t i = 0; i<255; i++){
+		
+		// SEND DATA TO LEDs
+		
+					
+		uint8_t color_r   = i;
+		uint8_t color_g   = i;
+		uint8_t color_b   = i;
+					
+					
+		for (uint8_t i=0; i<16; i++){
+			//grid_led_set_color(i, 0, 255, 0);
+			grid_led_set_color(i, color_r, color_g, color_b);
+						
+		}
+		
+		
+		dma_spi_done = 0;
+		spi_m_dma_enable(&GRID_LED);
 	
+		io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
+	
+		while (dma_spi_done == 0)
+		{
+			
+		}
+		
+		delay_ms(1);
+						
+	}
+	
+	init_timer();
+
 
 
 	uint32_t faketimer = 0;
@@ -594,9 +630,11 @@ int main(void)
 					{HID_CAPS_LOCK, false, HID_KB_KEY_DOWN},
 				};
 				
-				hiddf_keyboard_keys_state_change(key_array, 1);
-				//audiodf_midi_xfer_packet(0x09, 0x90, 0x64, 0x64); // cable 0 channel 0 note on 
-				hiddf_mouse_move(-20, HID_MOUSE_X_AXIS_MV);
+				//hiddf_keyboard_keys_state_change(key_array, 1);
+				//hiddf_mouse_move(-20, HID_MOUSE_X_AXIS_MV);
+				
+				
+				audiodf_midi_xfer_packet(0x09, 0x90, 0x64, 0x64); // cable 0 channel 0 note on 
 								
 			}
 			else{
@@ -606,8 +644,8 @@ int main(void)
 				};
 				
 				
-				hiddf_keyboard_keys_state_change(key_array, 1);
-				//audiodf_midi_xfer_packet(0x08, 0x80, 0x64, 0x0); // cable 0 channel 0 note off
+				//hiddf_keyboard_keys_state_change(key_array, 1);
+				audiodf_midi_xfer_packet(0x08, 0x80, 0x64, 0x0); // cable 0 channel 0 note off
 			
 			}
 			
@@ -786,6 +824,8 @@ int main(void)
 			
 			
 		}
+		
+		
 		
 		
 		

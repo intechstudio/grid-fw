@@ -27,6 +27,44 @@ static struct usbdf_driver _audiodf_midi;
 static struct audiodf_midi_func_data _audiodf_midi_funcd;
 
 
+/**
+ * \brief Callback invoked when bulk IN data received
+ * \param[in] ep Endpoint number
+ * \param[in] rc transfer return status
+ * \param[in] count the amount of bytes has been transferred
+ * \return Operation status.
+ */
+static bool midi_cb_ep_bulk_in(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
+{
+	(void)ep;
+	(void)rc;
+	
+	while(1){
+		
+		
+	}
+
+}
+
+/**
+ * \brief Callback invoked when bulk OUT data received
+ * \param[in] ep Endpoint number
+ * \param[in] rc transfer return status
+ * \param[in] count the amount of bytes has been transferred
+ * \return Operation status.
+ */
+static bool midi_cb_ep_bulk_out(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
+{
+	uint8_t *           pbuf = NULL;
+	int32_t             ret;
+	
+		while(1){
+			
+			
+		}
+}
+
+
 
 /**
  * \brief Enable Audio Midi Function
@@ -44,23 +82,24 @@ static int32_t audio_midi_enable(struct usbdf_driver *drv, struct usbd_descripto
 	uint8_t          i;
 
 	ifc = desc->sod;
+	
+	#define AUDIO_CLASS 0x01		// Audio Class
+	#define AUDIO_AC_SUBCLASS 0x01	// Audio Control Subclass
+	#define AUDIO_MS_SUBCLASS 0x03	// MidiStreaming Subclass	
+	
 	for (i=0; i<2; i++){
-		
+			
 		if (NULL == ifc) {
 			return ERR_NOT_FOUND;
 		}
 
 		ifc_desc.bInterfaceNumber = ifc[2];
 		ifc_desc.bInterfaceClass  = ifc[5];
-			
-		#define AUDIO_CLASS 0x01		// Audio Class
-		#define AUDIO_AC_SUBCLASS 0x01	// Audio Control Subclass
-		#define AUDIO_MS_SUBCLASS 0x03	// MidiStreaming Subclass
-			
+				
 		if (AUDIO_AC_SUBCLASS == ifc_desc.bInterfaceClass || AUDIO_MS_SUBCLASS == ifc_desc.bInterfaceClass) {			
-			if (func_data->func_iface == ifc_desc.bInterfaceNumber) { // Initialized
+			if (func_data->func_iface[i] == ifc_desc.bInterfaceNumber) { // Initialized
 				return ERR_ALREADY_INITIALIZED;
-			} else if (func_data->func_iface != 0xFF) { // Occupied
+			} else if (func_data->func_iface[i] != 0xFF) { // Occupied
 				return ERR_NO_RESOURCE;
 			} else {
 				func_data->func_iface[i] = ifc_desc.bInterfaceNumber;
@@ -68,34 +107,37 @@ static int32_t audio_midi_enable(struct usbdf_driver *drv, struct usbd_descripto
 		} else { // Not supported by this function driver
 			return ERR_NOT_FOUND;
 		}
-			
-		#define USB_DT_AUDIO 0x24
-			
+
+		//#define USB_DT_AUDIO 0x24	
 		// Install AUDIO descriptor
-		_audiodf_midi_funcd.audio_desc = usb_find_desc(usb_desc_next(desc->sod), desc->eod, USB_DT_AUDIO);
+		//_audiodf_midi_funcd.audio_desc = usb_find_desc(usb_desc_next(desc->sod), desc->eod, USB_DT_AUDIO);
 
 		// Install endpoints
-		ep = usb_find_desc(ifc, desc->eod, USB_DT_ENDPOINT);
-		while (NULL != ep) {
-			ep_desc.bEndpointAddress = ep[2];
-			ep_desc.bmAttributes     = ep[3];
-			ep_desc.wMaxPacketSize   = usb_get_u16(ep + 4);
-			if (usb_d_ep_init(ep_desc.bEndpointAddress, ep_desc.bmAttributes, ep_desc.wMaxPacketSize)) {			
-				return ERR_NOT_INITIALIZED;
+		if (i == 1){ // i==1 because only the second interface has endpoint descriptors
+			ep = usb_find_desc(ifc, desc->eod, USB_DT_ENDPOINT);
+			while (NULL != ep) {
+				ep_desc.bEndpointAddress = ep[2];
+				ep_desc.bmAttributes     = ep[3];
+				ep_desc.wMaxPacketSize   = usb_get_u16(ep + 4);
+				if (usb_d_ep_init(ep_desc.bEndpointAddress, ep_desc.bmAttributes, ep_desc.wMaxPacketSize)) {
+					return ERR_NOT_INITIALIZED;
+				}
+				if (ep_desc.bEndpointAddress & USB_EP_DIR_IN) {
+					func_data->func_ep_in = ep_desc.bEndpointAddress;
+					usb_d_ep_enable(func_data->func_ep_in);
+					usb_d_ep_register_callback(func_data->func_ep_in, USB_D_EP_CB_XFER, (FUNC_PTR)midi_cb_ep_bulk_in);
+					} else {
+					func_data->func_ep_out = ep_desc.bEndpointAddress;
+					usb_d_ep_enable(func_data->func_ep_out);
+					usb_d_ep_register_callback(func_data->func_ep_out, USB_D_EP_CB_XFER, (FUNC_PTR)midi_cb_ep_bulk_out);
+				}
+				desc->sod = ep;
+				ep        = usb_find_ep_desc(usb_desc_next(desc->sod), desc->eod);
 			}
-			if (ep_desc.bEndpointAddress & USB_EP_DIR_IN) {
-				func_data->func_ep_in = ep_desc.bEndpointAddress;
-				usb_d_ep_enable(func_data->func_ep_in);
-				//usb_d_ep_register_callback(func_data->func_ep_in, USB_D_EP_CB_XFER, (FUNC_PTR)mscdf_cb_ep_bulk_in);
-			} else {
-				func_data->func_ep_out = ep_desc.bEndpointAddress;
-				usb_d_ep_enable(func_data->func_ep_out);
-				//usb_d_ep_register_callback(func_data->func_ep_out, USB_D_EP_CB_XFER, (FUNC_PTR)mscdf_cb_ep_bulk_out);
-			}
-			desc->sod = ep;
-			ep        = usb_find_ep_desc(usb_desc_next(desc->sod), desc->eod);
-		}		
+		}
+		
 		ifc = usb_find_desc(usb_desc_next(desc->sod), desc->eod, USB_DT_INTERFACE);		
+		
 	}
 	
 	_audiodf_midi_funcd.enabled = true;
@@ -123,6 +165,17 @@ static int32_t audio_midi_disable(struct usbdf_driver *drv, struct usbd_descript
 			return ERR_NOT_FOUND;
 		}
 	}
+	
+	
+	if (func_data->func_iface[0] != 0xFF) {
+		func_data->func_iface[0] = 0xFF;
+	}
+	
+	
+	if (func_data->func_iface[1] != 0xFF) {
+		func_data->func_iface[1] = 0xFF;
+	}
+
 
 	if (func_data->func_ep_in != 0xFF) {
 		usb_d_ep_deinit(func_data->func_ep_in);
@@ -267,7 +320,7 @@ int32_t audiodf_midi_xfer_packet(uint8_t byte0, uint8_t byte1, uint8_t byte2, ui
 	_audiodf_midi_funcd.midi_report[2] = byte2;
 	_audiodf_midi_funcd.midi_report[3] = byte3;
 
-	return usbdc_xfer(_audiodf_midi_funcd.func_ep_in, &_audiodf_midi_funcd.midi_report, 4, false);
+	return usbdc_xfer(_audiodf_midi_funcd.func_ep_in, _audiodf_midi_funcd.midi_report, 4, false);
 	
 	
 }

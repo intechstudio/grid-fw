@@ -168,7 +168,7 @@
 
 // =================================  SUKUCODE =======================================================
 
-#define CONF_USB_COMPOSITE_AUDIO_MIDI_EN 0
+#define CONF_USB_COMPOSITE_AUDIO_MIDI_EN 1
 
 #define CONF_USB_COMPOSITE_AUDIO_MIDI_BULKOUT_EPADDR	CONF_USB_COMPOSITE_HID_GENERIC_INTOUT_EPADDR
 #define CONF_USB_COMPOSITE_AUDIO_MIDI_BULKIN_EPADDR		CONF_USB_COMPOSITE_HID_GENERIC_INTIN_EPADDR
@@ -181,10 +181,10 @@
 #define CONF_USB_COMPOSITE_AUDIO_MS_BIFCNUM (CONF_USB_COMPOSITE_MSC_BIFCNUM + 2)
 
 #define CONF_AUDIO_MIDI_IFC_DESC								                                                        \
-	USB_IFACE_DESC_BYTES(CONF_USB_COMPOSITE_AUDIO_AC_BIFCNUM, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00), 					    \
-	0x09, 0x24, 0x01, 0x00 ,0x10, 0x09, 0x00, 0x01, CONF_USB_COMPOSITE_AUDIO_MS_BIFCNUM,								\
+	USB_IFACE_DESC_BYTES(CONF_USB_COMPOSITE_AUDIO_AC_BIFCNUM, 0x00, 0x00, 0x01, 0x01, 0x00, CONF_USB_COMPOSITE_IPRODUCT + 1), 					    \
+	0x09, 0x24, 0x01, 0x00 ,0x01, 0x09, 0x00, 0x01, CONF_USB_COMPOSITE_AUDIO_MS_BIFCNUM,  /*CONF_USB_COMPOSITE_AUDIO_MS_BIFCNUM*/						\
 																														\
-	USB_IFACE_DESC_BYTES(CONF_USB_COMPOSITE_AUDIO_MS_BIFCNUM, 0x00, 0x02, 0x01, 0x03, 0x00, 0x00),						\
+	USB_IFACE_DESC_BYTES(CONF_USB_COMPOSITE_AUDIO_MS_BIFCNUM, 0x00, 0x02, 0x01, 0x03, 0x00, CONF_USB_COMPOSITE_IPRODUCT + 2),						\
 	0x07, 0x24, 0x01, 0x00, 0x01, 0x41, 0x00,																			\
 																														\
 	0x06, 0x24, 0x02, 0x01, 0x01, 0x00, 	/* IN Jack Embedded */														\ 	
@@ -267,12 +267,26 @@
 	CONF_MSC_IFC_DESC_HS																							   \
 	CONF_AUDIO_MIDI_IFC_DESC // SUKU: Midi descriptor added
 	
+	
+// SUKU: Custom string descriptors
+
+
+#define CONF_USB_COMPOSITE_AUDIOCONTROL_STR_DESC                                                                           \
+	40, 0x03, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00, 'c', 0x00, 'h', 0x00, ' ', 0x00, 'S', 0x00, 't', 0x00, 'u',  \
+	    0x00, 'd', 0x00, 'i', 0x00, 'o', 0x00, ':', 0x00, ' ', 0x00, 'A', 0x00, 'C', 0x00, ' ', 0x00, ' ', 0x00,
+#define CONF_USB_COMPOSITE_MIDISTREAMING_STR_DESC                                                                           \
+	40, 0x03, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00, 'c', 0x00, 'h', 0x00, ' ', 0x00, 'S', 0x00, 't', 0x00, 'u',  \
+	    0x00, 'd', 0x00, 'i', 0x00, 'o', 0x00, ':', 0x00, ' ', 0x00, 'M', 0x00, 'S', 0x00, ' ', 0x00, ' ', 0x00,
+
+	
 #define COMPOSITE_STR_DESCESS                                                                                          \
 	CONF_USB_COMPOSITE_LANGID_DESC                                                                                     \
 	CONF_USB_COMPOSITE_IMANUFACT_STR_DESC                                                                              \
 	CONF_USB_COMPOSITE_IPRODUCT_STR_DESC                                                                               \
 	CONF_USB_COMPOSITE_ISERIALNUM_STR_DESC                                                                             \
-	CONF_USB_COMPOSITE_ICONFIG_STR_DESC
+	CONF_USB_COMPOSITE_ICONFIG_STR_DESC																				   \
+	CONF_USB_COMPOSITE_AUDIOCONTROL_STR_DESC																		   \
+	CONF_USB_COMPOSITE_MIDISTREAMING_STR_DESC
 
 /** USB Device descriptors and configuration descriptors */
 #define COMPOSITE_DESCES_LS_FS COMPOSITE_DEV_DESC, COMPOSITE_CFG_DESC, COMPOSITE_IFACE_DESCES COMPOSITE_STR_DESCESS
