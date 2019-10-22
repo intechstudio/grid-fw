@@ -13,7 +13,7 @@
 
 uint32_t grid_sys_hwfcg = -1;
 
-
+#define GRID_SYS_DEFAULT_POSITION 127
 
 #define  GRID_MODULE_P16_RevB		0
 #define  GRID_MODULE_B16_RevB		128
@@ -27,6 +27,8 @@ uint32_t grid_sys_hwfcg = -1;
 
 
 
+#define GRID_SYS_RECENT_MESSAGES_LENGTH			128
+#define GRID_SYS_RECENT_MESSAGES_INDEX_T		uint8_t
 
 struct grid_sys_model 
 {
@@ -36,7 +38,8 @@ struct grid_sys_model
 	uint8_t color_green;
 	uint8_t color_blue;
 		
-	uint32_t recent_messages[250];
+	uint32_t recent_messages[GRID_SYS_RECENT_MESSAGES_LENGTH];
+	GRID_SYS_RECENT_MESSAGES_INDEX_T recent_messages_index;	
 	
 	uint8_t next_broadcast_message_id;
 	

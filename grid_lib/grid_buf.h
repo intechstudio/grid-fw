@@ -44,6 +44,9 @@ typedef struct grid_port{
 	
 	uint16_t tx_double_buffer_status;
 	
+	uint32_t tx_double_buffer_ack_fingerprint;
+	uint32_t tx_double_buffer_ack_timeout;
+	
 	
 	uint16_t rx_double_buffer_timeout; // is packet ready for verification
 	
@@ -64,8 +67,9 @@ typedef struct grid_port{
 	
 	uint32_t partner_hwcfg;
 	uint8_t partner_fi;
-	uint8_t partner_dx;
-	uint8_t partner_dy;
+	
+	int8_t dx;
+	int8_t dy;
 	
 	uint8_t partner_status;
 	

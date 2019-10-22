@@ -19,21 +19,21 @@ DriverVer   = 01/08/2013,6.0.0.0
 
 [DeviceList] 
 
-%INTECH_STUDIO_GRID%=DriverInstall, USB\VID_03EB&PID_2421&MI_00
+%INTECH_STUDIO_GRID%=DriverInstall, USB\VID_03EB&PID_ECAD&MI_00
 
 [DeviceList.NTAMD64]
 
-%INTECH_STUDIO_GRID%=DriverInstall.NTamd64, USB\VID_03EB&PID_2421&MI_00
+%INTECH_STUDIO_GRID%=DriverInstall.NTamd64, USB\VID_03EB&PID_ECAD&MI_00
 
 
 [DeviceList.NTIA64]
 
-%INTECH_STUDIO_GRID%=DriverInstall.NTamd64, USB\VID_03EB&PID_2421&MI_00
+%INTECH_STUDIO_GRID%=DriverInstall.NTamd64, USB\VID_03EB&PID_ECAD&MI_00
 
 
 [DeviceList.NT]
 
-%INTECH_STUDIO_GRID%=DriverInstall.NT, USB\VID_03EB&PID_2421&MI_00
+%INTECH_STUDIO_GRID%=DriverInstall.NT, USB\VID_03EB&PID_ECAD&MI_00
 
 
 ;----------------------------------------------------------

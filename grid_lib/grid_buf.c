@@ -310,22 +310,41 @@ void grid_port_init(GRID_PORT_t* por, uint16_t tx_buf_size, uint16_t rx_buf_size
 	por->tx_double_buffer_status	= 0;
 	por->rx_double_buffer_status	= 0;
 	
-	por->partner_dx = 0;
-	por->partner_dy = 0;
+	
 	por->partner_fi = 0;
 	
 	por->partner_hwcfg = 0;
 	por->partner_status = 1;
 	
+	
+	
 	if (type == GRID_PORT_TYPE_USART){	
+		
 		por->partner_status = 0;
+		por->partner_fi = 0;
+		
+		
+		if (por->direction == GRID_MSG_NORTH){
+			por->dx = 0;
+			por->dy = 1;
+		}
+		else if (por->direction == GRID_MSG_EAST){
+			por->dx = 1;
+			por->dy = 0;
+		}
+		else if (por->direction == GRID_MSG_SOUTH){
+			por->dx = 0;
+			por->dy = -1;
+		}
+		else if (por->direction == GRID_MSG_WEST){
+			por->dx = -1;
+			por->dy = 0;
+		}
+		
 	}
 	else{
 		por->partner_status = 1; //UI AND USB are considered to be connected by default
 	}
-	
-	
-	
 	
 }
 
@@ -449,33 +468,142 @@ uint8_t grid_port_process_inbound(GRID_PORT_t* por){
 
 //=============================== PROCESS OUTBOUND ==============================//
 
+volatile uint8_t temp[500];
+
 uint8_t grid_port_process_outbound_usb(GRID_PORT_t* por){
 	
-	uint16_t packet_size = grid_buffer_read_size(&por->tx_buffer);
+	uint16_t length = grid_buffer_read_size(&por->tx_buffer);
 	
-	if (!packet_size){
-		
+	if (!length){		
 		// NO PACKET IN RX BUFFER
-		return 0;
-		}else{
+		return 0;	
+	}
+	
+	
+
+
+	if (length){
+		
+		//uint8_t temp[length];
 		
 		// Let's transfer the packet to local memory
 		grid_buffer_read_init(&por->tx_buffer);
 		
-		for (uint8_t i = 0; i<packet_size; i++){
+		for (uint8_t i = 0; i<length; i++){
 			
-			uint8_t character = grid_buffer_read_character(&por->tx_buffer);
-			usb_tx_double_buffer[i] = character;
+			temp[i] = grid_buffer_read_character(&por->tx_buffer);
 			
 		}
-		
-		// Let's send the packet through USB
-
-		cdcdf_acm_write(usb_tx_double_buffer, packet_size);
-
-		
+				
 		// Let's acknowledge the transactions	(should wait for partner to send ack)
 		grid_buffer_read_acknowledge(&por->tx_buffer);
+		
+		
+		
+		// GRID-2-HOST TRANSLATOR
+		uint8_t id = grid_msg_get_id(temp);		
+		int8_t dx = grid_msg_get_dx(temp) - GRID_SYS_DEFAULT_POSITION;
+		int8_t dy = grid_msg_get_dy(temp) - GRID_SYS_DEFAULT_POSITION;		
+		uint8_t age = grid_msg_get_age(temp);
+		
+				
+		uint8_t current_protocol	= 0;
+		uint8_t current_start		= 0;
+		uint8_t current_stop		= 0;
+		
+		uint8_t output_cursor = 0;
+		
+		uint8_t error_flag = 0;
+							
+		for (uint16_t i=0; i<length; i++){
+			
+			if (temp[i] == GRID_MSG_START_OF_TEXT){
+				current_start = i;
+			}
+			else if (temp[i] == GRID_MSG_END_OF_TEXT && current_start!=0){
+				current_stop = i;
+				uint8_t msg_protocol = grid_sys_read_hex_string_value(&temp[current_start+1], 2, &error_flag);			
+				
+				if (msg_protocol == GRID_MSG_PROTOCOL_MIDI){
+					
+				
+					uint8_t midi_channel = grid_sys_read_hex_string_value(&temp[current_start+3], 2, &error_flag);
+					uint8_t midi_command = grid_sys_read_hex_string_value(&temp[current_start+5], 2, &error_flag);
+					uint8_t midi_param1  = grid_sys_read_hex_string_value(&temp[current_start+7], 2, &error_flag);
+					uint8_t midi_param2  = grid_sys_read_hex_string_value(&temp[current_start+9], 2, &error_flag);
+					
+										
+					sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [MIDI] Ch: %d  Cmd: %d  Param1: %d  Param2: %d\n",					
+						id,dx,dy,age,
+						midi_channel,
+						midi_command,
+						midi_param1,
+						midi_param2
+					);
+					
+					output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
+							
+												
+					//audiodf_midi_xfer_packet(0x08, 0x80, 0x64, 0x0);	
+									
+				}
+				else if (msg_protocol == GRID_MSG_PROTOCOL_KEYBOARD){
+		
+					uint8_t key_array_length = (current_stop-current_start-3)/6;
+		
+ 					struct hiddf_kb_key_descriptors key_array[key_array_length];
+		
+					for(uint8_t j=0; j<key_array_length; j++){
+						
+						uint8_t keyboard_command	= grid_sys_read_hex_string_value(&temp[current_start+3+6*j], 2, &error_flag);
+						uint8_t keyboard_modifier	= grid_sys_read_hex_string_value(&temp[current_start+5+6*j], 2, &error_flag);
+						uint8_t keyboard_key		= grid_sys_read_hex_string_value(&temp[current_start+7+6*j], 2, &error_flag);
+						
+						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [KEYBOARD] Key: %d Mod: %d Cmd: %d\n", 
+							id,dx,dy,age,
+							keyboard_key, keyboard_modifier, keyboard_command
+						);	
+										
+						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);
+						
+						struct hiddf_kb_key_descriptors current_key = {keyboard_key, keyboard_modifier == GRID_MSG_PROTOCOL_KEYBOARD_PARAMETER_MODIFIER, keyboard_command == GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN};
+								
+						key_array[j] = current_key;
+						
+					}
+										
+					hiddf_keyboard_keys_state_change(key_array, key_array_length);
+		
+					
+				
+				}
+				else if (msg_protocol == GRID_MSG_PROTOCOL_MOUSE){
+					
+					//hiddf_mouse_move(-20, HID_MOUSE_X_AXIS_MV);
+					
+				}	
+				else{
+					sprintf(&por->tx_double_buffer[output_cursor], "[UNKNOWN] -> Protocol: %d\n", msg_protocol);
+					
+					output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
+				}
+				
+				current_start = 0;
+				current_stop = 0;
+			}
+// 			else if (temp[i] == 0 || temp[i] == '\n'){
+// 				break;
+// 			}
+			
+						
+		}		
+		
+		
+					
+		
+		// Let's send the packet through USB
+		cdcdf_acm_write(por->tx_double_buffer, output_cursor);
+				
 		
 	}
 	

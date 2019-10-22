@@ -120,7 +120,7 @@ middlewares:
       usb_composite_hid_mouse_support: true
       usb_composite_iconfig_en: false
       usb_composite_iconfig_str: ''
-      usb_composite_idproduct: 9249
+      usb_composite_idproduct: 60589
       usb_composite_idvender: 1003
       usb_composite_imanufact_en: true
       usb_composite_imanufact_str: Intech Studio
@@ -2148,9 +2148,9 @@ drivers:
       usb_arch_ep7_cache: No cache
       usb_ep1_I_CACHE: No cache
       usb_ep2_I_CACHE: No cache
-      usb_ep3_I_CACHE: No cache
+      usb_ep3_I_CACHE: Cached by 8 bytes buffer
       usb_ep4_I_CACHE: No cache
-      usb_ep5_I_CACHE: No cache
+      usb_ep5_I_CACHE: Cached by 8 bytes buffer
       usb_ep6_I_CACHE: No cache
       usb_ep7_I_CACHE: No cache
       usbd_arch_max_ep_n: 5 (EP 0x85 or 0x05)

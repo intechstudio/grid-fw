@@ -31,7 +31,6 @@ uint8_t grid_sys_error_intensity(struct grid_sys_model* mod){
 	
 }
 
-
 void grid_sys_error_set_color(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue){
 	
 	mod->color_red = red;
@@ -66,7 +65,6 @@ uint8_t grid_sys_error_get_color_b(struct grid_sys_model* mod){
 	return mod->color_blue;
 }
 
-
 uint8_t grid_sys_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
 		
 	uint8_t result = 0;
@@ -87,7 +85,6 @@ uint8_t grid_sys_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
 	return result;	
 }
 
-
 uint32_t grid_sys_read_hex_string_value(uint8_t* start_location, uint8_t length, uint8_t* error_flag){
 	
 	uint32_t result  = 0;
@@ -98,11 +95,20 @@ uint32_t grid_sys_read_hex_string_value(uint8_t* start_location, uint8_t length,
 
 		
 	}
-		
-
-	
 
 	return result;
+}
+
+void grid_sys_write_hex_string_value(uint8_t* start_location, uint8_t size, uint32_t value){
+	
+	uint8_t str[10];
+	
+	sprintf(str, "%08x", value);
+		
+	for(uint8_t i=0; i<size; i++){	
+		start_location[i] = str[8-size+i];	
+	}
+
 }
 
 
@@ -118,7 +124,6 @@ uint32_t grid_sys_get_id(uint32_t* return_array){
 	return 1;
 	
 }
-
 
 uint32_t grid_sys_get_hwcfg(){
 	
@@ -175,8 +180,6 @@ uint32_t grid_sys_get_hwcfg(){
 	return grid_sys_hwfcg;
 
 }
-
-
 
 
 #define GRID_SYS_NORTH	0
@@ -297,41 +300,125 @@ void grid_sys_ping_all(){
 	
 }
 
-uint8_t grid_sys_calculate_checksum(char* str, uint32_t len){
+uint8_t grid_msg_get_checksum(uint8_t* str, uint32_t length){
 	
 	uint8_t checksum = 0;
-	for (uint32_t i=0; i<len; i++){
-		checksum ^= str[i]; 
+	for (uint32_t i=0; i<length-3; i++){
+		checksum ^= str[i];
 	}
 	
 	return checksum;
 	
 }
 
+uint8_t grid_msg_set_checksum(uint8_t* message, uint32_t length, uint8_t checksum){
+	
+	uint8_t checksum_string[4];
+
+	sprintf(checksum_string, "%02x", checksum);
+
+	message[length-3] = checksum_string[0];
+	message[length-2] = checksum_string[1];
+	
+}
+
+
+// MESSAGE PARAMETER FUNCTIONS
+
+uint8_t grid_msg_get_id(uint8_t* message){
+	
+	uint8_t error = 0;
+	return grid_sys_read_hex_string_value(&message[4], 2, &error);
+	
+}
+uint8_t grid_msg_get_dx(uint8_t* message){
+	
+	uint8_t error = 0;
+	return grid_sys_read_hex_string_value(&message[6], 2, &error);	
+	
+}
+uint8_t grid_msg_get_dy(uint8_t* message){
+	
+	uint8_t error = 0;
+	return grid_sys_read_hex_string_value(&message[8], 2, &error);	
+
+}
+uint8_t grid_msg_get_age(uint8_t* message){
+	
+	uint8_t error = 0;
+	return grid_sys_read_hex_string_value(&message[10], 2, &error);	
+	
+}
+
+void grid_msg_set_id(uint8_t* message, uint8_t param){
+	
+	grid_sys_write_hex_string_value(&message[4], 2, param);
+	
+}
+void grid_msg_set_dx(uint8_t* message, uint8_t param){
+	
+	grid_sys_write_hex_string_value(&message[6], 2, param);
+	
+}
+void grid_msg_set_dy(uint8_t* message, uint8_t param){
+
+	grid_sys_write_hex_string_value(&message[8], 2, param);
+
+}
+void grid_msg_set_age(uint8_t* message, uint8_t param){
+	
+	grid_sys_write_hex_string_value(&message[10], 2, param);
+	
+}
+
+// RECENT MESSAGES
+
+uint8_t grid_msg_find_recent(struct grid_sys_model* model, uint32_t fingerprint){
+	
+	for(GRID_SYS_RECENT_MESSAGES_INDEX_T i = 0; i<GRID_SYS_RECENT_MESSAGES_LENGTH; i++){
+		
+		if (model->recent_messages[i%GRID_SYS_RECENT_MESSAGES_LENGTH] == fingerprint){
+			
+			return 1;
+			
+		}
+		
+	}
+	
+	return 0;
+}
+
+void grid_msg_push_recent(struct grid_sys_model* model, uint32_t fingerprint){
+	
+	model->recent_messages_index+=1;
+	model->recent_messages_index%=GRID_SYS_RECENT_MESSAGES_LENGTH;
+	
+	model->recent_messages[model->recent_messages_index] = fingerprint;
+	
+}
+
+
+
 
 void grid_sys_ping(GRID_PORT_t* por){
-	
-	char str[20];
-	uint8_t len = 0;
+		
+	char message[20];
+	uint8_t length = 0;
 	
 	// Create the packet
-	sprintf(str, "%c%c%c%c%08x%c", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, por->direction ,grid_sys_get_hwcfg(), GRID_MSG_END_OF_TRANSMISSION);
+	sprintf(message, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, por->direction ,grid_sys_get_hwcfg(), GRID_MSG_END_OF_TRANSMISSION);
 	
 	// Calculate packet length
-	len = strlen(str);
-	
-	// Concatonate the calculated CHECKSUM + \n
-	sprintf(&str[len], "%02x\n", grid_sys_calculate_checksum(str, len));
-	
-	// Calculate the new packet length
-	len += strlen(&str[len]);
-	
-	// Put the packet into the tx_buffer
-	if (grid_buffer_write_init(&por->tx_buffer, len)){
+	length = strlen(message);
+
+	grid_msg_set_checksum(message, length, grid_msg_get_checksum(message, length));
 		
-		for(uint16_t i = 0; i<len; i++){
+	// Put the packet into the tx_buffer
+	if (grid_buffer_write_init(&por->tx_buffer, length)){
+		
+		for(uint16_t i = 0; i<length; i++){
 			
-			grid_buffer_write_character(&por->tx_buffer, str[i]);
+			grid_buffer_write_character(&por->tx_buffer, message[i]);
 		}
 		
 		grid_buffer_write_acknowledge(&por->tx_buffer);

@@ -2,6 +2,9 @@
 
 #include "../../grid_lib/grid_sys.h"
 
+uint8_t grid_module_mapmode_state  = 1;
+uint8_t grid_module_mapmode_change = 0;
+
 
 uint8_t grid_sync_mode_register[2] = {0, 0};
 
@@ -330,31 +333,80 @@ static void convert_cb_ADC_1(const struct adc_async_descriptor *const descr, con
 
 void grid_port_process_ui(GRID_PORT_t* por){
 	
-	char txbuffer[256];
+	uint8_t message[256];			
+	uint32_t length=0;
 			
-			
-	uint32_t txindex=0;
-			
-	uint8_t packet_length = 0;
 			
 	uint8_t len = 0;
 	uint8_t id = grid_sys_state.next_broadcast_message_id;
-	int8_t dx = 0;
-	int8_t dy = 0;
+	uint8_t dx = GRID_SYS_DEFAULT_POSITION;
+	uint8_t dy = GRID_SYS_DEFAULT_POSITION;	
+	uint8_t age = 0;
 			
 	uint8_t packetvalid = 0;
 			
-	sprintf(&txbuffer[txindex],
-	"%c%c%02x%02x%02x%02x%c",
+	sprintf(&message[length],
+	"%c%c%02x%02x%02x%02x%02x%c",
 	GRID_MSG_START_OF_HEADING,
 	GRID_MSG_BROADCAST,
-	len, id, dx, dy,
+	len, id, dx, dy, age,
 	GRID_MSG_END_OF_BLOCK
 	);
 			
-	txindex += strlen(&txbuffer[txindex]);
+	length += strlen(&message[length]);
+	
+	if (grid_module_mapmode_state != gpio_get_pin_level(MAP_MODE)){
+	
+		if (grid_module_mapmode_state == 1){
+			
+// 			static struct hiddf_kb_key_descriptors key_array[]      = {
+// 				{HID_CAPS_LOCK, false, HID_KB_KEY_DOWN},
+// 				{HID_A, false, HID_KB_KEY_DOWN},
+// 			};	
+// 			hiddf_keyboard_keys_state_change(key_array, 2);
 			
 			
+			grid_module_mapmode_state = 0;
+
+			sprintf(&message[length], "%c%02x%02x%02x%02x%c",			
+				GRID_MSG_START_OF_TEXT,
+				GRID_MSG_PROTOCOL_KEYBOARD,
+				GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN,
+				GRID_MSG_PROTOCOL_KEYBOARD_PARAMETER_NOT_MODIFIER,
+				HID_CAPS_LOCK,
+				GRID_MSG_END_OF_TEXT
+			);
+			length += strlen(&message[length]);
+			packetvalid++;
+						
+		}	
+		else{
+				
+// 			static struct hiddf_kb_key_descriptors key_array[]      = {
+// 				{HID_CAPS_LOCK, false, HID_KB_KEY_UP},
+// 				{HID_A, false, HID_KB_KEY_UP},
+// 			};
+// 			hiddf_keyboard_keys_state_change(key_array, 2);
+			
+			grid_module_mapmode_state = 1;		
+			
+			sprintf(&message[length], "%c%02x%02x%02x%02x%c",			
+				GRID_MSG_START_OF_TEXT,
+				GRID_MSG_PROTOCOL_KEYBOARD,
+				GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYUP,
+				GRID_MSG_PROTOCOL_KEYBOARD_PARAMETER_NOT_MODIFIER,
+				HID_CAPS_LOCK,
+				GRID_MSG_END_OF_TEXT
+			);
+			length += strlen(&message[length]);
+			packetvalid++;
+		
+		}
+					
+	}
+		
+		
+	// PORENTIOMETER/BUTTON READINGS FOR THE UI	
 	for (uint8_t i = 0; i<16; i++)
 	{
 				
@@ -366,7 +418,7 @@ void grid_port_process_ui(GRID_PORT_t* por){
 			uint16_t average = grid_ain_get_average(i);
 					
 					
-			sprintf(&txbuffer[txindex], "%c%x%02x%02x%02x%02x%c",
+			sprintf(&message[length], "%c%02x%02x%02x%02x%02x%c",
 					
 			GRID_MSG_START_OF_TEXT,
 			GRID_MSG_PROTOCOL_MIDI,
@@ -378,7 +430,7 @@ void grid_port_process_ui(GRID_PORT_t* por){
 			);
 					
 
-			txindex += strlen(&txbuffer[txindex]);
+			length += strlen(&message[length]);
 					
 			// UPDATE LEDS (SHOULD USE UI_TX but whatever)
 					
@@ -394,31 +446,35 @@ void grid_port_process_ui(GRID_PORT_t* por){
 	}
 			
 	if (packetvalid){
+			
+			
 				
 		grid_sys_state.next_broadcast_message_id++;
 				
 		// Close the packet
-		sprintf(&txbuffer[txindex], "%c", GRID_MSG_END_OF_TRANSMISSION); // CALCULATE AND ADD CRC HERE
-		txindex += strlen(&txbuffer[txindex]);
+		sprintf(&message[length], "%c", GRID_MSG_END_OF_TRANSMISSION); // CALCULATE AND ADD CRC HERE
+		length += strlen(&message[length]);
 				
 		// Calculate packet length and insert it into the header
 		char length_string[8];
-		sprintf(length_string, "%02x", txindex);
+		sprintf(length_string, "%02x", length);
 				
-		txbuffer[2] = length_string[0];
-		txbuffer[3] = length_string[1];
+		message[2] = length_string[0];
+		message[3] = length_string[1];
 				
 				
-		// Add checksum and linebreak
-		sprintf(&txbuffer[txindex], "%02x\n", grid_sys_calculate_checksum(txbuffer, txindex)); // CALCULATE AND ADD CRC HERE
-		txindex += strlen(&txbuffer[txindex]);
-				
+		// Add placeholder checksum and linebreak
+		sprintf(&message[length], "00\n");
+		length += strlen(&message[length]);
+			
+		grid_msg_set_checksum(message, length, grid_msg_get_checksum(message, length));
+		
 		// Put the packet into the UI_RX buffer
-		if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, txindex)){
+		if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, length)){
 					
-			for(uint16_t i = 0; i<txindex; i++){
+			for(uint16_t i = 0; i<length; i++){
 						
-				grid_buffer_write_character(&GRID_PORT_U.rx_buffer, txbuffer[i]);
+				grid_buffer_write_character(&GRID_PORT_U.rx_buffer, message[i]);
 			}
 					
 			grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);

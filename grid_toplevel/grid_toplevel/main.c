@@ -183,40 +183,119 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 					
 		checksum_received = grid_sys_read_hex_string_value(&message[length-3], 2, &error_flag);
 					
-		checksum_calculated = grid_sys_calculate_checksum(message, length-3);
+		checksum_calculated = grid_msg_get_checksum(message, length);
 					
 		// IF CHECKSUM IS VALID
 		if (checksum_calculated == checksum_received && error_flag == 0){
 						
 			if (message[1] == GRID_MSG_BROADCAST){ // Broadcast message
-							
-				// IF WE CAN STORE THE MESSAGE IN THE RX BUFFER
-				if (grid_buffer_write_init(&por->rx_buffer, length)){
-					for (uint8_t i=0; i<length; i++){
-									
-						grid_buffer_write_character(&por->rx_buffer, message[i]);
-									
-					}
-								
-					grid_buffer_write_acknowledge(&por->rx_buffer);
-								
-					grid_port_process_inbound(por);
-																
-					response[2] = GRID_MSG_ACKNOWLEDGE;
+						
+				
+				
+				
+				// Read the received id age values	
+				uint8_t received_id  = grid_msg_get_id(message);;			
+				uint8_t received_age = grid_msg_get_age(message);
+				
+				// Read the received X Y values (SIGNED INT)				
+				int8_t received_dx  = grid_msg_get_dx(message) - GRID_SYS_DEFAULT_POSITION;
+				int8_t received_dy  = grid_msg_get_dy(message) - GRID_SYS_DEFAULT_POSITION;
+
+				// DO THE DX DY AGE calculations
+				
+				uint8_t updated_id  = received_id;
+					
+				int8_t rotated_dx = 0;
+				int8_t rotated_dy = 0;
+
+				// APPLY THE 2D ROTATION MATRIX
+				
+				if (por->partner_fi == 0){ // 0 deg		
+					rotated_dx  += received_dx;
+					rotated_dy  += received_dy;
 				}
+				else if(por->partner_fi == 1){ // 90 deg
+					rotated_dx  -= received_dy;
+					rotated_dy  += received_dx;
+				}
+				else if(por->partner_fi == 2){ // 180 deg
+					rotated_dx  -= received_dx;
+					rotated_dy  -= received_dy;
+				}
+				else if(por->partner_fi == 3){ // 270 deg
+					rotated_dx  += received_dy;
+					rotated_dy  -= received_dx;
+				}
+				else{				
+					// TRAP INVALID MESSAGE			
+				}
+								
+				uint8_t updated_dx = rotated_dx + GRID_SYS_DEFAULT_POSITION + por->dx;
+				uint8_t updated_dy = rotated_dy + GRID_SYS_DEFAULT_POSITION + por->dy;
+				
+				
 							
+				uint8_t updated_age = received_age + 1;
+								
+				
+				// Update message with the new values
+
+				grid_msg_set_id(message, updated_id);
+				grid_msg_set_dx(message, updated_dx);
+				grid_msg_set_dy(message, updated_dy);
+				grid_msg_set_age(message, updated_age);		
+				
+				uint32_t fingerprint = updated_id*256*256*256 + updated_dx*256*256 + updated_dy*256 + updated_age;
+																				
+				if (0 == grid_msg_find_recent(&grid_sys_state, fingerprint)){
+					// WE HAVE NOT HEARD THIS MESSAGE BEFORE
+										
+					// Recalculate and update the checksum
+														
+					grid_msg_set_checksum(message, length, grid_msg_get_checksum(message, length));
+					
+
+					// IF WE CAN STORE THE MESSAGE IN THE RX BUFFER
+					if (grid_buffer_write_init(&por->rx_buffer, length)){
+										
+										
+										
+						for (uint8_t i=0; i<length; i++){
+											
+							grid_buffer_write_character(&por->rx_buffer, message[i]);
+											
+						}
+										
+						grid_buffer_write_acknowledge(&por->rx_buffer);
+										
+						grid_port_process_inbound(por);
+										
+										
+						grid_msg_push_recent(&grid_sys_state, fingerprint);
+																	
+						response[2] = GRID_MSG_ACKNOWLEDGE;
+										
+										
+					}
+					
+					
+					
+				}
+				else{
+					// WE ALREADY HEARD THIS MESSAGE					
+					response[2] = GRID_MSG_ACKNOWLEDGE;							
+					grid_sys_error_set_alert(&grid_sys_state, 50, 50, 50, 2, 200); // WHITE
+								
+				}
+					
 			}
 			else if (message[1] == GRID_MSG_DIRECT){ // Direct Message
-							
-							
+												
 				//process direct message
 							
-				if (message[2] == GRID_MSG_ACKNOWLEDGE){
-					
-// 					grid_sys_state.error_code = 5; // Purple
-// 					grid_sys_state.error_style = 2; // CONST
-// 					grid_sys_state.error_state = 200; // CONST
-					grid_sys_error_set_alert(&grid_sys_state, 255, 0, 255, 2, 200);
+				if (message[2] == GRID_MSG_ACKNOWLEDGE){				
+
+					grid_sys_error_set_alert(&grid_sys_state, 255, 0, 255, 2, 200); // PURPLE
 				}
 				else if (message[2] == GRID_MSG_NACKNOWLEDGE){
 					// RESEND PREVIOUS
@@ -232,15 +311,9 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 						por->partner_fi = (message[3] - por->direction + 6)%4;
 						por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-12], 8, error_flag);
 						por->partner_status = 1;
-									
-// 						grid_sys_state.error_code = 2; // GREEN
-// 						grid_sys_state.error_style = 2; // CONST
-// 						grid_sys_state.error_state = 200; // CONST
 						
-						grid_sys_error_set_alert(&grid_sys_state, 0, 255, 0, 2, 200);
-						
-								
-									
+						grid_sys_error_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // GREEN
+															
 					}
 					else{
 						// VALIDATE
@@ -248,33 +321,18 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 						validator &= (por->partner_fi == ((message[3] - por->direction + 6)%4));
 						volatile uint32_t debug = grid_sys_read_hex_string_value(&message[length-12], 8, error_flag);
 						volatile uint32_t debug2 = por->partner_hwcfg;
-									
-									
-									
-									
-						validator &= (por->partner_hwcfg == debug);
-									
-									
+												
+						validator &= (por->partner_hwcfg == debug);									
 									
 						if (validator == 0){
 							//FAILED, DISCONNECT
-							por->partner_status = 0;
-							
-// 							grid_sys_state.error_code = 7; // WHITE
-// 							grid_sys_state.error_style = 2; // CONST
-// 							grid_sys_state.error_state = 200; // CONST
-													
-							grid_sys_error_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
+							por->partner_status = 0;	
+							grid_sys_error_set_alert(&grid_sys_state, 255, 255, 255, 2, 200); // WHITE
 										
 						}
 						else{
 							//OK
-							
-// 							grid_sys_state.error_code = 1; // BLUE
-// 							grid_sys_state.error_style = 2; // CONST
-// 							grid_sys_state.error_state = 200; // CONST
-
-							grid_sys_error_set_alert(&grid_sys_state, 0, 0, 10, 2, 200);
+							grid_sys_error_set_alert(&grid_sys_state, 0, 0, 10, 2, 200); // BLUE
 							
 						}
 									
@@ -283,20 +341,11 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 								
 								
 				}
-							
-							
-							
-							
-							
-							
+																		
 			}
 			else{ // Invalid
-							
-// 				grid_sys_state.error_code = 4; // RED
-// 				grid_sys_state.error_style = 2; // CONST
-// 				grid_sys_state.error_state = 200; // CONST						
-				
-				grid_sys_error_set_alert(&grid_sys_state, 255, 0, 0, 2, 200);
+					
+				grid_sys_error_set_alert(&grid_sys_state, 255, 0, 0, 2, 200); // RED SHORT
 							
 			}
 						
@@ -305,12 +354,8 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 		}
 		else{
 			// INVALID CHECKSUM
-
-// 			grid_sys_state.error_state = 2000;
-// 			grid_sys_state.error_style = 1;
-// 			grid_sys_state.error_code = 4; //RED
-			
-			grid_sys_error_set_alert(&grid_sys_state, 255, 0, 255, 1, 2000);
+						
+			grid_sys_error_set_alert(&grid_sys_state, 255, 0, 255, 1, 2000); // RED BLINKY
 						
 		}
 				
@@ -320,8 +365,7 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 
 	}
 				
-	if (message[1] == GRID_MSG_BROADCAST){
-					
+	if (message[1] == GRID_MSG_BROADCAST){				
 		// RESPOND WITH ACK OR NACK
 		
 		uint8_t response_length = strlen(response);
@@ -331,7 +375,7 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 			
 			uint8_t checksum[4];
 			
-			sprintf(checksum, "%02x", grid_sys_calculate_checksum(response, response_length-3));
+			sprintf(checksum, "%02x", grid_msg_get_checksum(response, response_length));
 			
 			response[4] = checksum[0];
 			response[5] = checksum[1];
@@ -518,7 +562,6 @@ int main(void)
 	uint16_t colorfade = 0;
 	uint8_t colorcode = 0;
 
-	uint8_t mapmode = 1;
 	uint8_t sysmode = 1;
 	
 	
@@ -531,32 +574,17 @@ int main(void)
 	char system_report_buffers[200];
 	char system_report_grid[200];
 	
-
+	volatile uint8_t debugvar = 0;
+	
+	
 	while (1) {
-		
-		
-		// CHECK RX BUFFERS
-		grid_port_receive_complete_task(&GRID_PORT_N);
-		grid_port_receive_complete_task(&GRID_PORT_E);
-		grid_port_receive_complete_task(&GRID_PORT_S);
-		grid_port_receive_complete_task(&GRID_PORT_W);
-		
-				
-				
-		if (pingflag){
-			
-			grid_sys_ping_all();
-			pingflag = 0;
-		}
-		
+	
 		
 		// REPORT OVER CDC SERIAL FOR DEBUGING
-		if (loopcounter == 100){
-			
-			
-			cdcdf_acm_write(system_report_tasks, strlen(system_report_tasks));		
+		if (loopcounter == 100){		
+			//cdcdf_acm_write(system_report_tasks, strlen(system_report_tasks));		
 		}else if (loopcounter == 200){
-			cdcdf_acm_write(system_report_grid, strlen(system_report_grid));		
+				
 		}else if (loopcounter == 300){
 	
 		}else if (loopcounter == 400){
@@ -569,39 +597,9 @@ int main(void)
 		if (reportflag){
 			
 			sprintf(system_report_tasks, "LOOPTICK %02x\nREALTIME %02x\nTASK0 %02x\nTASK1 %02x\nTASK2 %02x\nTASK3 %02x\nTASK4 %02x\n\0", loopcounter, realtime, task_counter[0], task_counter[1], task_counter[2], task_counter[3], task_counter[4]);
-
-			sprintf(system_report_grid, "N_RX_C %02x\nE_RX_C %02x\nS_RX_C %02x\nW_RX_C %02x\nN_TX_C %02x\nE_TX_C %02x\nS_TX_C %02x\nW_TX_C %02x\nN_BELL_C %02x\nE_BELL_C %02x\nS_BELL_C %02x\nW_BELL_C %02x\n\0", 
-				grid_sys_rx_counter[GRID_SYS_NORTH],	
-				grid_sys_rx_counter[GRID_SYS_EAST],	
-				grid_sys_rx_counter[GRID_SYS_SOUTH], 
-				grid_sys_rx_counter[GRID_SYS_WEST], 
-				grid_sys_tx_counter[GRID_SYS_NORTH], 
-				grid_sys_tx_counter[GRID_SYS_EAST], 
-				grid_sys_tx_counter[GRID_SYS_SOUTH], 
-				grid_sys_tx_counter[GRID_SYS_WEST],
-				grid_sys_ping_counter[GRID_SYS_NORTH],
-				grid_sys_ping_counter[GRID_SYS_EAST],
-				grid_sys_ping_counter[GRID_SYS_SOUTH],
-				grid_sys_ping_counter[GRID_SYS_WEST]
-			);
-
-			
-			grid_sys_rx_counter[GRID_SYS_NORTH]=0;
-			grid_sys_rx_counter[GRID_SYS_EAST]=0;
-			grid_sys_rx_counter[GRID_SYS_SOUTH]=0;
-			grid_sys_rx_counter[GRID_SYS_WEST]=0;
-			
-			grid_sys_tx_counter[GRID_SYS_NORTH]=0;
-			grid_sys_tx_counter[GRID_SYS_EAST]=0;
-			grid_sys_tx_counter[GRID_SYS_SOUTH]=0;
-			grid_sys_tx_counter[GRID_SYS_WEST]=0;
-			
-			grid_sys_ping_counter[GRID_SYS_NORTH]=0;
-			grid_sys_ping_counter[GRID_SYS_EAST]=0;
-			grid_sys_ping_counter[GRID_SYS_SOUTH]=0;
-			grid_sys_ping_counter[GRID_SYS_WEST]=0;
 			
 			
+						
 			
 			realtime = 0;
 			loopcounter = 0;
@@ -619,106 +617,8 @@ int main(void)
 		loopstart = realtime;
 		
 		
-		if (mapmode != gpio_get_pin_level(MAP_MODE)){
-			
-			//hiddf_mouse_move(-5, HID_MOUSE_X_AXIS_MV);
 		
-			if (mapmode == 1){
 				
-								
-				static struct hiddf_kb_key_descriptors key_array[]      = {
-					{HID_CAPS_LOCK, false, HID_KB_KEY_DOWN},
-				};
-				
-				//hiddf_keyboard_keys_state_change(key_array, 1);
-				//hiddf_mouse_move(-20, HID_MOUSE_X_AXIS_MV);
-				
-				
-				audiodf_midi_xfer_packet(0x09, 0x90, 0x64, 0x64); // cable 0 channel 0 note on 
-								
-			}
-			else{
-								
-				static struct hiddf_kb_key_descriptors key_array[]      = {
-					{HID_CAPS_LOCK, false, HID_KB_KEY_UP},
-				};
-				
-				
-				//hiddf_keyboard_keys_state_change(key_array, 1);
-				audiodf_midi_xfer_packet(0x08, 0x80, 0x64, 0x0); // cable 0 channel 0 note off
-			
-			}
-			
-			
-			
-
-			
-			if (mapmode==0){
-
-				
-				uint8_t r[4] = {255*(random()%2), 255*(random()%2), 255*(random()%2), 255*(random()%2)};
-				uint8_t g[4] = {255*(random()%2), 255*(random()%2), 255*(random()%2), 255*(random()%2)};
-				uint8_t b[4] = {255*(random()%2), 255*(random()%2), 255*(random()%2), 255*(random()%2)};
-				
-				for (uint8_t i = 0; i<4; i++){
-					
-					if (r[i] == 0 && g[i] == 0 && b[i]==0){
-						
-						uint8_t ra = random()%3;
-						
-						if (ra == 0){
-							r[i] = 255;
-						}
-						else if (ra == 1){
-							g[i] = 255;
-						}
-						else{
-							b[i] = 255;
-						}
-						
-						
-						
-					}
-					
-				}
-				
-				
-				
-				for (uint8_t i = 0; i<16; i++){
-					
-					grid_led_set_max(i, 0, r[i%4], g[i%4], b[i%4]);
-					grid_led_set_mid(i, 0, r[i%4]/2, g[i%4]/2, b[i%4]/2);
-					
-				}
-				
-				
-				
-				sysmode = ! sysmode;
-				
-				if (sysmode){					
-					grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_MASTER);
-					
-				}
-				else{
-					grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_SLAVE);
-				}
-				
-				
-			}
-			
-			mapmode = !mapmode;
-					
-		}
-		
-		
-		
-		if (faketimer > 100){
-			grid_tel_frequency_tick();
-			faketimer = 0;
-		}
-		faketimer++;
-
-			
 		// SYNC TEST
 		if (sysmode){
 			
@@ -728,21 +628,29 @@ int main(void)
 		
 		
 		
+		
+		/* ========================= PING ============================= */
+						
+		if (pingflag){
+			
+			grid_sys_ping(&GRID_PORT_N);
+			grid_sys_ping(&GRID_PORT_E);
+			grid_sys_ping(&GRID_PORT_S);
+			grid_sys_ping(&GRID_PORT_W);
+			
+			pingflag = 0;
+		}
+		
+		
+		// CHECK RX BUFFERS
+		grid_port_receive_complete_task(&GRID_PORT_N);
+		grid_port_receive_complete_task(&GRID_PORT_E);
+		grid_port_receive_complete_task(&GRID_PORT_S);
+		grid_port_receive_complete_task(&GRID_PORT_W);
+		
+		
 			
 		/* ========================= UI_PROCESS_INBOUND ============================= */
-		
-		// Push out all changes
-		
-		task_current = TASK_UIIN;
-		
-		task_current = TASK_UNDEFINED;
-
-			
-		
-		/* ========================= GRID MOVE TASK ============================= */		
-		
-		uint16_t length = 0;
-		
 		grid_port_process_ui(&GRID_PORT_U);		
 		
 		grid_port_process_inbound(&GRID_PORT_U); // Copy data from UI_RX to HOST_TX & north TX AND STUFF
@@ -750,7 +658,11 @@ int main(void)
 		grid_port_process_inbound(&GRID_PORT_N);		
 		grid_port_process_inbound(&GRID_PORT_E);		
 		grid_port_process_inbound(&GRID_PORT_S);		
-		grid_port_process_inbound(&GRID_PORT_W);		
+		grid_port_process_inbound(&GRID_PORT_W);	
+		
+		/* ========================= GRID MOVE TASK ============================= */		
+
+	
 		
 		grid_port_process_outbound_usart(&GRID_PORT_N);
 		grid_port_process_outbound_usart(&GRID_PORT_E);
@@ -766,7 +678,9 @@ int main(void)
 				
 				
 				
-				
+			
+		uint16_t length = 0;
+					
 				
 		if (sysmode == 1){
 			
