@@ -559,9 +559,9 @@ uint8_t grid_port_process_outbound_usb(GRID_PORT_t* por){
 						uint8_t keyboard_modifier	= grid_sys_read_hex_string_value(&temp[current_start+5+6*j], 2, &error_flag);
 						uint8_t keyboard_key		= grid_sys_read_hex_string_value(&temp[current_start+7+6*j], 2, &error_flag);
 						
-						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [KEYBOARD] Key: %d Mod: %d Cmd: %d\n", 
+						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [KEYBOARD] Key: %d Mod: %d Cmd: %d\nHWCFG: %08x\n", 
 							id,dx,dy,age,
-							keyboard_key, keyboard_modifier, keyboard_command
+							keyboard_key, keyboard_modifier, keyboard_command, grid_sys_get_hwcfg()
 						);	
 										
 						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);

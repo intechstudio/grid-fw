@@ -57,7 +57,6 @@ struct timer_descriptor             RTC_Scheduler;
 struct usart_async_descriptor       USART_EAST;
 struct usart_async_descriptor       USART_NORTH;
 struct usart_async_descriptor       GRID_AUX;
-struct spi_m_sync_descriptor        UI_SPI;
 struct usart_async_descriptor       USART_WEST;
 struct usart_async_descriptor       USART_SOUTH;
 struct timer_descriptor             TIMER_0;
@@ -76,6 +75,8 @@ static uint8_t USART_WEST_buffer[USART_WEST_BUFFER_SIZE];
 static uint8_t USART_SOUTH_buffer[USART_SOUTH_BUFFER_SIZE];
 
 struct flash_descriptor FLASH_0;
+
+struct spi_m_async_descriptor UI_SPI;
 
 struct i2c_m_async_desc SYS_I2C;
 
@@ -332,7 +333,7 @@ void UI_SPI_CLOCK_init(void)
 void UI_SPI_init(void)
 {
 	UI_SPI_CLOCK_init();
-	spi_m_sync_init(&UI_SPI, SERCOM3);
+	spi_m_async_init(&UI_SPI, SERCOM3);
 	UI_SPI_PORT_init();
 }
 
@@ -698,6 +699,21 @@ void system_init(void)
 	gpio_set_pin_direction(LED0, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_function(LED0, GPIO_PIN_FUNCTION_OFF);
+
+	// GPIO on PA21
+
+	// Set pin direction to input
+	gpio_set_pin_direction(PIN_UI_SPI_CS0, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(PIN_UI_SPI_CS0,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(PIN_UI_SPI_CS0, GPIO_PIN_FUNCTION_OFF);
 
 	// GPIO on PB07
 

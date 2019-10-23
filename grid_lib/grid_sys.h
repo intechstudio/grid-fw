@@ -19,6 +19,8 @@ uint32_t grid_sys_hwfcg = -1;
 #define  GRID_MODULE_B16_RevB		128
 #define  GRID_MODULE_PBF4_RevA		64
 
+#define  GRID_MODULE_EN16_RevA		0xC0
+
 
 
 

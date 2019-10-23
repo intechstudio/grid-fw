@@ -170,6 +170,8 @@ static struct _usart_async_device *_sercom1_dev = NULL;
 
 static struct _usart_async_device *_sercom2_dev = NULL;
 
+static struct _spi_async_dev *_sercom3_dev = NULL;
+
 static struct _usart_async_device *_sercom4_dev = NULL;
 
 static struct _i2c_m_async_device *_sercom5_dev = NULL;
@@ -647,6 +649,10 @@ static void _sercom_init_irq_param(const void *const hw, void *dev)
 
 	if (hw == SERCOM2) {
 		_sercom2_dev = (struct _usart_async_device *)dev;
+	}
+
+	if (hw == SERCOM3) {
+		_sercom3_dev = (struct _spi_async_dev *)dev;
 	}
 
 	if (hw == SERCOM4) {
@@ -2464,6 +2470,32 @@ static inline const struct sercomspi_regs_cfg *_spi_get_regs(const uint32_t hw_a
 }
 
 /**
+ *  \brief IRQ handler used
+ *  \param[in, out] p Pointer to SPI device instance.
+ */
+static void _spi_handler(struct _spi_async_dev *dev)
+{
+	void *                      hw = dev->prvt;
+	hri_sercomspi_intflag_reg_t st;
+
+	st = hri_sercomspi_read_INTFLAG_reg(hw);
+	st &= hri_sercomspi_read_INTEN_reg(hw);
+
+	if (st & SERCOM_SPI_INTFLAG_DRE) {
+		dev->callbacks.tx(dev);
+	} else if (st & SERCOM_SPI_INTFLAG_RXC) {
+		dev->callbacks.rx(dev);
+	} else if (st & SERCOM_SPI_INTFLAG_TXC) {
+		hri_sercomspi_clear_INTFLAG_reg(hw, SERCOM_SPI_INTFLAG_TXC);
+		dev->callbacks.complete(dev);
+	} else if (st & SERCOM_SPI_INTFLAG_ERROR) {
+		hri_sercomspi_clear_STATUS_reg(hw, SERCOM_SPI_STATUS_BUFOVF);
+		hri_sercomspi_clear_INTFLAG_reg(hw, SERCOM_SPI_INTFLAG_ERROR);
+		dev->callbacks.err(dev, ERR_OVERFLOW);
+	}
+}
+
+/**
  * \internal Sercom interrupt handler
  */
 void SERCOM0_0_Handler(void)
@@ -2548,6 +2580,35 @@ void SERCOM2_2_Handler(void)
 void SERCOM2_3_Handler(void)
 {
 	_sercom_usart_interrupt_handler(_sercom2_dev);
+}
+
+/**
+ * \internal Sercom interrupt handler
+ */
+void SERCOM3_0_Handler(void)
+{
+	_spi_handler(_sercom3_dev);
+}
+/**
+ * \internal Sercom interrupt handler
+ */
+void SERCOM3_1_Handler(void)
+{
+	_spi_handler(_sercom3_dev);
+}
+/**
+ * \internal Sercom interrupt handler
+ */
+void SERCOM3_2_Handler(void)
+{
+	_spi_handler(_sercom3_dev);
+}
+/**
+ * \internal Sercom interrupt handler
+ */
+void SERCOM3_3_Handler(void)
+{
+	_spi_handler(_sercom3_dev);
 }
 
 /**

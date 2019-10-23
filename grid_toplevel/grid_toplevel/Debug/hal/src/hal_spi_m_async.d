@@ -1,6 +1,6 @@
-hal/src/hal_spi_m_sync.d hal/src/hal_spi_m_sync.o: \
- ../hal/src/hal_spi_m_sync.c ../hal/include/hal_spi_m_sync.h \
- ../hal/include/hal_io.h ../hal/utils/include/compiler.h \
+hal/src/hal_spi_m_async.d hal/src/hal_spi_m_async.o: \
+ ../hal/src/hal_spi_m_async.c ../hal/include/hal_atomic.h \
+ ../hal/utils/include/compiler.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\lib\gcc\arm-none-eabi\6.3.1\include\stddef.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\lib\gcc\arm-none-eabi\6.3.1\include\stdint.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\stdint.h \
@@ -115,12 +115,12 @@ hal/src/hal_spi_m_sync.d hal/src/hal_spi_m_sync.o: \
  C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\include/pio/samd51n20a.h \
  ../hri/hri_d51.h \
  C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\include/sam.h \
- ../hri/hri_ac_d51.h ../hal/include/hal_atomic.h ../hri/hri_adc_d51.h \
- ../hri/hri_aes_d51.h ../hri/hri_ccl_d51.h ../hri/hri_cmcc_d51.h \
- ../hri/hri_dac_d51.h ../hri/hri_dmac_d51.h ../hri/hri_dsu_d51.h \
- ../hri/hri_eic_d51.h ../hri/hri_evsys_d51.h ../hri/hri_freqm_d51.h \
- ../hri/hri_gclk_d51.h ../hri/hri_hmatrixb_d51.h ../hri/hri_i2s_d51.h \
- ../hri/hri_icm_d51.h ../hri/hri_mclk_d51.h ../hri/hri_nvmctrl_d51.h \
+ ../hri/hri_ac_d51.h ../hri/hri_adc_d51.h ../hri/hri_aes_d51.h \
+ ../hri/hri_ccl_d51.h ../hri/hri_cmcc_d51.h ../hri/hri_dac_d51.h \
+ ../hri/hri_dmac_d51.h ../hri/hri_dsu_d51.h ../hri/hri_eic_d51.h \
+ ../hri/hri_evsys_d51.h ../hri/hri_freqm_d51.h ../hri/hri_gclk_d51.h \
+ ../hri/hri_hmatrixb_d51.h ../hri/hri_i2s_d51.h ../hri/hri_icm_d51.h \
+ ../hri/hri_mclk_d51.h ../hri/hri_nvmctrl_d51.h \
  ../hri/hri_osc32kctrl_d51.h ../hri/hri_oscctrl_d51.h \
  ../hri/hri_pac_d51.h ../hri/hri_pcc_d51.h ../hri/hri_pdec_d51.h \
  ../hri/hri_pm_d51.h ../hri/hri_port_d51.h ../hri/hri_qspi_d51.h \
@@ -128,13 +128,13 @@ hal/src/hal_spi_m_sync.d hal/src/hal_spi_m_sync.o: \
  ../hri/hri_sdhc_d51.h ../hri/hri_sercom_d51.h ../hri/hri_supc_d51.h \
  ../hri/hri_tc_d51.h ../hri/hri_tcc_d51.h ../hri/hri_trng_d51.h \
  ../hri/hri_usb_d51.h ../hri/hri_wdt_d51.h \
- ../hal/utils/include/err_codes.h ../hal/include/hpl_spi_m_sync.h \
+ ../hal/utils/include/err_codes.h ../hal/include/hal_spi_m_async.h \
+ ../hal/include/hal_io.h ../hal/include/hpl_spi_m_async.h \
  ../hal/include/hpl_spi.h ../hal/utils/include/utils.h \
- ../hal/include/hpl_spi_sync.h ../hal/utils/include/utils_assert.h
+ ../hal/include/hpl_spi_async.h ../hal/include/hpl_irq.h \
+ ../hal/utils/include/utils_assert.h
 
-../hal/include/hal_spi_m_sync.h:
-
-../hal/include/hal_io.h:
+../hal/include/hal_atomic.h:
 
 ../hal/utils/include/compiler.h:
 
@@ -368,8 +368,6 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 
 ../hri/hri_ac_d51.h:
 
-../hal/include/hal_atomic.h:
-
 ../hri/hri_adc_d51.h:
 
 ../hri/hri_aes_d51.h:
@@ -442,12 +440,18 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 
 ../hal/utils/include/err_codes.h:
 
-../hal/include/hpl_spi_m_sync.h:
+../hal/include/hal_spi_m_async.h:
+
+../hal/include/hal_io.h:
+
+../hal/include/hpl_spi_m_async.h:
 
 ../hal/include/hpl_spi.h:
 
 ../hal/utils/include/utils.h:
 
-../hal/include/hpl_spi_sync.h:
+../hal/include/hpl_spi_async.h:
+
+../hal/include/hpl_irq.h:
 
 ../hal/utils/include/utils_assert.h:

@@ -1449,7 +1449,7 @@
 // <e> Channel 6 settings
 // <id> dmac_channel_6_settings
 #ifndef CONF_DMAC_CHANNEL_6_SETTINGS
-#define CONF_DMAC_CHANNEL_6_SETTINGS 0
+#define CONF_DMAC_CHANNEL_6_SETTINGS 1
 #endif
 
 // <q> Channel Run in Standby
@@ -1466,7 +1466,7 @@
 // <i> Defines the trigger action used for a transfer
 // <id> dmac_trigact_6
 #ifndef CONF_DMAC_TRIGACT_6
-#define CONF_DMAC_TRIGACT_6 0
+#define CONF_DMAC_TRIGACT_6 2
 #endif
 
 // <o> Trigger source
@@ -1558,7 +1558,7 @@
 // <i> Defines the peripheral trigger which is source of the transfer
 // <id> dmac_trifsrc_6
 #ifndef CONF_DMAC_TRIGSRC_6
-#define CONF_DMAC_TRIGSRC_6 0
+#define CONF_DMAC_TRIGSRC_6 11
 #endif
 
 // <o> Channel Arbitration Level
@@ -1569,7 +1569,7 @@
 // <i> Defines the arbitration level for this channel
 // <id> dmac_lvl_6
 #ifndef CONF_DMAC_LVL_6
-#define CONF_DMAC_LVL_6 0
+#define CONF_DMAC_LVL_6 3
 #endif
 
 // <q> Channel Event Output
@@ -1621,14 +1621,14 @@
 // <i> Defines whether source or destination addresses are using the step size settings
 // <id> dmac_stepsel_6
 #ifndef CONF_DMAC_STEPSEL_6
-#define CONF_DMAC_STEPSEL_6 0
+#define CONF_DMAC_STEPSEL_6 1
 #endif
 
 // <q> Source Address Increment
 // <i> Indicates whether the source address incrementation is enabled or not
 // <id> dmac_srcinc_6
 #ifndef CONF_DMAC_SRCINC_6
-#define CONF_DMAC_SRCINC_6 0
+#define CONF_DMAC_SRCINC_6 1
 #endif
 
 // <q> Destination Address Increment
@@ -1673,7 +1673,7 @@
 // <e> Channel 7 settings
 // <id> dmac_channel_7_settings
 #ifndef CONF_DMAC_CHANNEL_7_SETTINGS
-#define CONF_DMAC_CHANNEL_7_SETTINGS 0
+#define CONF_DMAC_CHANNEL_7_SETTINGS 1
 #endif
 
 // <q> Channel Run in Standby
@@ -1690,7 +1690,7 @@
 // <i> Defines the trigger action used for a transfer
 // <id> dmac_trigact_7
 #ifndef CONF_DMAC_TRIGACT_7
-#define CONF_DMAC_TRIGACT_7 0
+#define CONF_DMAC_TRIGACT_7 2
 #endif
 
 // <o> Trigger source
@@ -1782,7 +1782,7 @@
 // <i> Defines the peripheral trigger which is source of the transfer
 // <id> dmac_trifsrc_7
 #ifndef CONF_DMAC_TRIGSRC_7
-#define CONF_DMAC_TRIGSRC_7 0
+#define CONF_DMAC_TRIGSRC_7 10
 #endif
 
 // <o> Channel Arbitration Level
@@ -1793,7 +1793,7 @@
 // <i> Defines the arbitration level for this channel
 // <id> dmac_lvl_7
 #ifndef CONF_DMAC_LVL_7
-#define CONF_DMAC_LVL_7 0
+#define CONF_DMAC_LVL_7 2
 #endif
 
 // <q> Channel Event Output
@@ -1859,7 +1859,7 @@
 // <i> Indicates whether the destination address incrementation is enabled or not
 // <id> dmac_dstinc_7
 #ifndef CONF_DMAC_DSTINC_7
-#define CONF_DMAC_DSTINC_7 0
+#define CONF_DMAC_DSTINC_7 1
 #endif
 
 // <o> Beat Size
@@ -2017,7 +2017,7 @@
 // <i> Defines the arbitration level for this channel
 // <id> dmac_lvl_8
 #ifndef CONF_DMAC_LVL_8
-#define CONF_DMAC_LVL_8 0
+#define CONF_DMAC_LVL_8 3
 #endif
 
 // <q> Channel Event Output

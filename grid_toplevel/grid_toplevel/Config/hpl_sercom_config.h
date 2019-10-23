@@ -844,7 +844,7 @@
 // <i> The SPI data transfer rate
 // <id> spi_master_baud_rate
 #ifndef CONF_SERCOM_3_SPI_BAUD
-#define CONF_SERCOM_3_SPI_BAUD 50000
+#define CONF_SERCOM_3_SPI_BAUD 4000000
 #endif
 
 // </h>
@@ -877,7 +877,7 @@
 // <i> Determines if the leading edge is rising or falling with a corresponding opposite edge at the trailing edge. (CPOL)
 // <id> spi_master_arch_cpol
 #ifndef CONF_SERCOM_3_SPI_CPOL
-#define CONF_SERCOM_3_SPI_CPOL 0x0
+#define CONF_SERCOM_3_SPI_CPOL 0x1
 #endif
 
 // <o> Clock Phase
@@ -886,7 +886,7 @@
 // <i> Determines if input data is sampled on leading or trailing SCK edge. (CPHA)
 // <id> spi_master_arch_cpha
 #ifndef CONF_SERCOM_3_SPI_CPHA
-#define CONF_SERCOM_3_SPI_CPHA 0x0
+#define CONF_SERCOM_3_SPI_CPHA 0x1
 #endif
 
 // <o> Immediate Buffer Overflow Notification

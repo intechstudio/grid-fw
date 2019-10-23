@@ -403,8 +403,8 @@ drivers:
       dmac_channel_3_settings: true
       dmac_channel_4_settings: false
       dmac_channel_5_settings: false
-      dmac_channel_6_settings: false
-      dmac_channel_7_settings: false
+      dmac_channel_6_settings: true
+      dmac_channel_7_settings: true
       dmac_channel_8_settings: true
       dmac_channel_9_settings: false
       dmac_dbgrun: true
@@ -437,7 +437,7 @@ drivers:
       dmac_dstinc_4: false
       dmac_dstinc_5: false
       dmac_dstinc_6: false
-      dmac_dstinc_7: false
+      dmac_dstinc_7: true
       dmac_dstinc_8: false
       dmac_dstinc_9: false
       dmac_enable: true
@@ -597,9 +597,9 @@ drivers:
       dmac_lvl_31: Channel priority 0
       dmac_lvl_4: Channel priority 0
       dmac_lvl_5: Channel priority 0
-      dmac_lvl_6: Channel priority 0
-      dmac_lvl_7: Channel priority 0
-      dmac_lvl_8: Channel priority 0
+      dmac_lvl_6: Channel priority 3
+      dmac_lvl_7: Channel priority 2
+      dmac_lvl_8: Channel priority 3
       dmac_lvl_9: Channel priority 0
       dmac_lvlen0: true
       dmac_lvlen1: true
@@ -673,7 +673,7 @@ drivers:
       dmac_srcinc_31: false
       dmac_srcinc_4: false
       dmac_srcinc_5: false
-      dmac_srcinc_6: false
+      dmac_srcinc_6: true
       dmac_srcinc_7: false
       dmac_srcinc_8: true
       dmac_srcinc_9: false
@@ -705,7 +705,7 @@ drivers:
       dmac_stepsel_31: Step size settings apply to the destination address
       dmac_stepsel_4: Step size settings apply to the destination address
       dmac_stepsel_5: Step size settings apply to the destination address
-      dmac_stepsel_6: Step size settings apply to the destination address
+      dmac_stepsel_6: Step size settings apply to the source address
       dmac_stepsel_7: Step size settings apply to the destination address
       dmac_stepsel_8: Step size settings apply to the source address
       dmac_stepsel_9: Step size settings apply to the destination address
@@ -769,8 +769,8 @@ drivers:
       dmac_trifsrc_31: Only software/event triggers
       dmac_trifsrc_4: Only software/event triggers
       dmac_trifsrc_5: Only software/event triggers
-      dmac_trifsrc_6: Only software/event triggers
-      dmac_trifsrc_7: Only software/event triggers
+      dmac_trifsrc_6: SERCOM3 TX Trigger
+      dmac_trifsrc_7: SERCOM3 RX Trigger
       dmac_trifsrc_8: SERCOM7 TX Trigger
       dmac_trifsrc_9: Only software/event triggers
       dmac_trigact_0: One trigger required for each beat transfer
@@ -801,8 +801,8 @@ drivers:
       dmac_trigact_31: One trigger required for each block transfer
       dmac_trigact_4: One trigger required for each block transfer
       dmac_trigact_5: One trigger required for each block transfer
-      dmac_trigact_6: One trigger required for each block transfer
-      dmac_trigact_7: One trigger required for each block transfer
+      dmac_trigact_6: One trigger required for each beat transfer
+      dmac_trigact_7: One trigger required for each beat transfer
       dmac_trigact_8: One trigger required for each beat transfer
       dmac_trigact_9: One trigger required for each block transfer
     optional_signals: []
@@ -1770,18 +1770,18 @@ drivers:
           slow_gclk_selection: Generic clock generator 2
   UI_SPI:
     user_label: UI_SPI
-    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::SERCOM3::driver_config_definition::SPI.Master::HAL:Driver:SPI.Master.Sync
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::SERCOM3::driver_config_definition::SPI.Master::HAL:Driver:SPI.Master.Async
     functionality: SPI
-    api: HAL:Driver:SPI_Master_Sync
+    api: HAL:Driver:SPI_Master_Async
     configuration:
       spi_master_advanced: false
-      spi_master_arch_cpha: Sample input on leading edge
-      spi_master_arch_cpol: SCK is low when idle
+      spi_master_arch_cpha: Sample input on trailing edge
+      spi_master_arch_cpol: SCK is high when idle
       spi_master_arch_dbgstop: Keep running
       spi_master_arch_dord: MSB first
       spi_master_arch_ibon: In data stream
       spi_master_arch_runstdby: false
-      spi_master_baud_rate: 50000
+      spi_master_baud_rate: 4000000
       spi_master_character_size: 8 bits
       spi_master_dummybyte: 511
       spi_master_rx_enable: true
@@ -1802,7 +1802,7 @@ drivers:
       domain_group:
         nodes:
         - name: Core
-          input: Generic clock generator 0
+          input: Generic clock generator 1
           external: false
           external_frequency: 0
         - name: Slow
@@ -1810,7 +1810,7 @@ drivers:
           external: false
           external_frequency: 0
         configuration:
-          core_gclk_selection: Generic clock generator 0
+          core_gclk_selection: Generic clock generator 1
           slow_gclk_selection: Generic clock generator 3
   USART_WEST:
     user_label: USART_WEST
@@ -2308,6 +2308,12 @@ pads:
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA20
     mode: Digital input
     user_label: PA20
+    configuration: null
+  PIN_UI_SPI_CS0:
+    name: PA21
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA21
+    mode: Digital input
+    user_label: PIN_UI_SPI_CS0
     configuration: null
   PA22:
     name: PA22

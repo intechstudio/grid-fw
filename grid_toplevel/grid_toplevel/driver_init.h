@@ -34,7 +34,8 @@ extern "C" {
 #include <hal_usart_async.h>
 #include <hal_usart_async.h>
 #include <hal_usart_async.h>
-#include <hal_spi_m_sync.h>
+
+#include <hal_spi_m_async.h>
 #include <hal_usart_async.h>
 
 #include <hal_i2c_m_async.h>
@@ -63,7 +64,8 @@ extern struct timer_descriptor       RTC_Scheduler;
 extern struct usart_async_descriptor USART_EAST;
 extern struct usart_async_descriptor USART_NORTH;
 extern struct usart_async_descriptor GRID_AUX;
-extern struct spi_m_sync_descriptor  UI_SPI;
+
+extern struct spi_m_async_descriptor UI_SPI;
 extern struct usart_async_descriptor USART_WEST;
 
 extern struct i2c_m_async_desc       SYS_I2C;

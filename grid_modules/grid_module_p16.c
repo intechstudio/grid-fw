@@ -9,6 +9,48 @@ uint8_t grid_module_mapmode_change = 0;
 uint8_t grid_sync_mode_register[2] = {0, 0};
 
 
+
+//====================== GRID ENCODER K+F ===================================//
+
+struct grid_ui_encoder{
+	
+	uint8_t button_value;
+	uint8_t button_changed;
+	
+	uint8_t rotation_value;
+	uint8_t rotation_changed;
+	
+	uint8_t rotation_direction;
+	
+	uint8_t phase_a_previous;
+	uint8_t phase_b_previous;
+	
+};
+
+struct grid_ui_encoder grid_ui_encoder_array[16];
+
+static uint8_t UI_SPI_TX_BUFFER[14] = "aaaaaaaaaaaaaa";
+static uint8_t UI_SPI_RX_BUFFER[14];
+static uint8_t UI_SPI_TRANSFER_LENGTH = 10;
+
+static uint8_t UI_SPI_DEBUG = 8;
+
+volatile uint8_t UI_SPI_DONE = 0;
+
+
+volatile uint8_t UI_SPI_RX_BUFFER_LAST[16];
+
+static uint8_t UI_ENCODER_BUTTON_STATE[16];
+static uint8_t UI_ENCODER_BUTTON_STATE_CHANGED[16];
+
+static uint8_t UI_ENCODER_ROTATION_STATE[16];
+static uint8_t UI_ENCODER_ROTATION_STATE_CHANGED[16];
+
+
+static uint8_t UI_ENCODER_LOOKUP[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1} ;
+
+
+
 //====================== GRID SYNC ===================================//
 enum grid_sync_selector { GRID_SYNC_UNDEFINED, GRID_SYNC_1, GRID_SYNC_2};
 enum grid_sync_mode { GRID_SYNC_INITIAL, GRID_SYNC_MASTER, GRID_SYNC_SLAVE};
@@ -357,14 +399,7 @@ void grid_port_process_ui(GRID_PORT_t* por){
 	
 	if (grid_module_mapmode_state != gpio_get_pin_level(MAP_MODE)){
 	
-		if (grid_module_mapmode_state == 1){
-			
-// 			static struct hiddf_kb_key_descriptors key_array[]      = {
-// 				{HID_CAPS_LOCK, false, HID_KB_KEY_DOWN},
-// 				{HID_A, false, HID_KB_KEY_DOWN},
-// 			};	
-// 			hiddf_keyboard_keys_state_change(key_array, 2);
-			
+		if (grid_module_mapmode_state == 1){		
 			
 			grid_module_mapmode_state = 0;
 
@@ -381,13 +416,7 @@ void grid_port_process_ui(GRID_PORT_t* por){
 						
 		}	
 		else{
-				
-// 			static struct hiddf_kb_key_descriptors key_array[]      = {
-// 				{HID_CAPS_LOCK, false, HID_KB_KEY_UP},
-// 				{HID_A, false, HID_KB_KEY_UP},
-// 			};
-// 			hiddf_keyboard_keys_state_change(key_array, 2);
-			
+						
 			grid_module_mapmode_state = 1;		
 			
 			sprintf(&message[length], "%c%02x%02x%02x%02x%c",			
@@ -404,7 +433,73 @@ void grid_port_process_ui(GRID_PORT_t* por){
 		}
 					
 	}
+	
+	
+	// ENCODER ROTATION READINGS FOR THE UI		
+	for (uint8_t i = 0; i<16; i++)
+	{
+				
+		if (grid_ui_encoder_array[i].rotation_changed == 1){
+				
+			packetvalid++;			
+				
+			sprintf(&message[length], "%c%02x%02x%02x%02x%02x%c",
+				
+			GRID_MSG_START_OF_TEXT,
+			GRID_MSG_PROTOCOL_MIDI,
+			0, // (cable<<4) + channel
+			GRID_MSG_COMMAND_MIDI_ENCODERCHANGE,
+			i,
+			grid_ui_encoder_array[i].rotation_value,
+			GRID_MSG_END_OF_TEXT
+			);
+				
+			length += strlen(&message[length]);
+				
+			// UPDATE LEDS (SHOULD USE UI_TX but whatever)
+
+			grid_led_set_phase(i, 0, grid_ui_encoder_array[i].rotation_value*4); // 0...255
+			
+			grid_ui_encoder_array[i].rotation_changed = 0; 
+			
+			break;
+				
+		}
+
+			
+	}	
+
+	// ENCODER BUTTON READINGS FOR THE UI
+	for (uint8_t i = 0; i<16; i++)
+	{
 		
+		if (grid_ui_encoder_array[i].button_changed == 1){
+						
+			
+			sprintf(&message[length], "%c%02x%02x%02x%02x%02x%c",
+			
+			GRID_MSG_START_OF_TEXT,
+			GRID_MSG_PROTOCOL_MIDI,
+			0, // (cable<<4) + channel
+			GRID_MSG_COMMAND_MIDI_CONTROLCHANGE,
+			i,
+			grid_ui_encoder_array[i].button_value,
+			GRID_MSG_END_OF_TEXT
+			);
+			
+			length += strlen(&message[length]);
+			
+			packetvalid++;
+			
+			// UPDATE LEDS (SHOULD USE UI_TX but whatever)
+
+			grid_led_set_phase(i, 0, (!grid_ui_encoder_array[i].button_value)*255); // 0...255
+			
+			grid_ui_encoder_array[i].button_changed = 0;
+			
+		}
+		
+	}	
 		
 	// PORENTIOMETER/BUTTON READINGS FOR THE UI	
 	for (uint8_t i = 0; i<16; i++)
@@ -498,6 +593,23 @@ static void tx_complete_cb_GRID_LED(struct _dma_resource *resource)
 
 
 
+void grid_module_adc_init(void){
+	
+	adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, convert_cb_ADC_0);
+	adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, convert_cb_ADC_1);
+
+}
+
+void grid_module_adc_start(void){
+	
+	adc_async_enable_channel(&ADC_0, 0);
+	adc_async_start_conversion(&ADC_0);
+	
+	adc_async_enable_channel(&ADC_1, 0);
+	adc_async_start_conversion(&ADC_1);
+	
+}
+
 
 
 	
@@ -535,6 +647,8 @@ void grid_module_init(void){
 		
 	if (grid_sys_get_hwcfg() == GRID_MODULE_P16_RevB){
 						
+		grid_module_adc_init();
+		grid_module_adc_start();
 	}
 		
 	if (grid_sys_get_hwcfg() == GRID_MODULE_B16_RevB){
@@ -572,6 +686,9 @@ void grid_module_init(void){
 		grid_adc_set_config(13, GRID_ADC_CFG_BINARY, 1);
 		grid_adc_set_config(14, GRID_ADC_CFG_BINARY, 1);
 		grid_adc_set_config(15, GRID_ADC_CFG_BINARY, 1);
+				
+		grid_module_adc_init();
+		grid_module_adc_start();
 			
 	}
 		
@@ -591,18 +708,19 @@ void grid_module_init(void){
 		grid_adc_set_config(13, GRID_ADC_CFG_BINARY, 1);
 		grid_adc_set_config(14, GRID_ADC_CFG_BINARY, 1);
 		grid_adc_set_config(15, GRID_ADC_CFG_BINARY, 1);
+			
+		grid_module_adc_init();
+		grid_module_adc_start();
 					
 	}
-				
+	
+	if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevA){
+	
 		
 	
-	adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, convert_cb_ADC_0);
-	adc_async_enable_channel(&ADC_0, 0);
-	adc_async_start_conversion(&ADC_0);
-				
-	adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, convert_cb_ADC_1);
-	adc_async_enable_channel(&ADC_1, 0);
-	adc_async_start_conversion(&ADC_1);
+	}	
+	
+
 		
 	
 

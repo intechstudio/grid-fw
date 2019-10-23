@@ -494,6 +494,132 @@ void init_timer(void)
 
 
 
+	
+static void tx_complete_cb_UI_SPI(struct _dma_resource *resource)
+{
+	/* Transfer completed */
+
+
+	grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_MASTER);
+	grid_sync_set_level(GRID_SYNC_1, 1);
+	
+	grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_MASTER);
+
+	// Set the shift registers to continuously load data until new transaction is issued
+	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
+
+	
+	// Buffer is only 8 bytes but we check all 16 encoders separately
+	for (uint8_t i=0; i<16; i++){
+
+		uint8_t new_value = (UI_SPI_RX_BUFFER[i/2]>>(4*(i%2)))&0x0F;
+		uint8_t old_value = UI_SPI_RX_BUFFER_LAST[i];
+		
+		if (old_value != new_value){
+
+			
+			UI_SPI_DEBUG = i;	
+			
+			uint8_t button_value = new_value>>2;	
+			uint8_t phase_a = (new_value>>1)&1;
+			uint8_t phase_b = (new_value)&1;
+			
+			if (button_value != grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].button_value){
+				// BUTTON CHANGE			
+				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].button_changed = 1;
+				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].button_value = new_value>>2;
+			}
+			
+			
+			if (phase_a != grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_a_previous){
+					
+				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_a_previous = phase_a;
+				
+				if (phase_b == 0){
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = phase_a;
+				}
+				else{
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = !phase_a;
+				}
+				
+				if (phase_a && phase_b){
+											
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value += grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction*2 -1;
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_changed = 1;
+				}
+			}
+			
+			if (phase_b != grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_b_previous){
+				
+				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_b_previous = phase_b;
+				
+				if (phase_a == 0){
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = !phase_b;
+				}
+				else{
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = phase_b;
+				}
+				
+				if (phase_a && phase_b){
+
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value += grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction*2 -1;
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_changed = 1;
+				}
+			}	
+			
+
+			
+		}
+		else{
+			
+		}
+		
+	}
+	
+	UI_SPI_DONE = 1;
+		
+	for (uint8_t i=0; i<8; i++){
+
+		UI_SPI_RX_BUFFER[i] = 0;
+		
+	}
+	
+
+	grid_sync_set_level(GRID_SYNC_1, 0);
+	
+	grid_modue_UI_SPI_start();
+}
+
+struct io_descriptor *io;
+
+void grid_modue_UI_SPI_init(void)
+{
+	
+	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
+	gpio_set_pin_direction(PIN_UI_SPI_CS0, GPIO_DIRECTION_OUT);
+	
+	
+	spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
+	
+	spi_m_async_get_io_descriptor(&UI_SPI, &io);
+
+
+	spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, tx_complete_cb_UI_SPI);
+
+}
+
+void grid_modue_UI_SPI_start(void)
+{
+	
+
+	gpio_set_pin_level(PIN_UI_SPI_CS0, true);
+	
+	spi_m_async_enable(&UI_SPI);
+	
+	//io_write(io, UI_SPI_TX_BUFFER, 8);
+	spi_m_async_transfer(&UI_SPI, UI_SPI_TX_BUFFER, UI_SPI_RX_BUFFER, 8);
+}
+
 
 
 
@@ -507,8 +633,9 @@ int main(void)
 	
 	#include "usb/class/midi/device/audiodf_midi.h"
 	
-	atmel_start_init();
+
 	
+	atmel_start_init();	
 	
 	//TIMER_0_example2();
 
@@ -543,12 +670,10 @@ int main(void)
 		spi_m_dma_enable(&GRID_LED);
 	
 		io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
-	
-		while (dma_spi_done == 0)
-		{
+		while(dma_spi_done!=1){
 			
 		}
-		
+			
 		delay_ms(1);
 						
 	}
@@ -577,8 +702,14 @@ int main(void)
 	volatile uint8_t debugvar = 0;
 	
 	
+	grid_modue_UI_SPI_init();
+	
+	grid_modue_UI_SPI_start();
+	
 	while (1) {
 	
+		
+				
 		
 		// REPORT OVER CDC SERIAL FOR DEBUGING
 		if (loopcounter == 100){		
@@ -740,6 +871,9 @@ int main(void)
 		}
 		
 		
+	
+		
+		
 		
 		
 		
@@ -748,11 +882,9 @@ int main(void)
 		spi_m_dma_enable(&GRID_LED);
 			
 		io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
+		while(dma_spi_done!=1){
 			
-		while (dma_spi_done == 0)
-		{
-		}	
-		
+		}
 		
 		
 		// IDLETASK

@@ -226,15 +226,27 @@ void GRID_AUX_example(void)
 
 /**
  * Example of using UI_SPI to write "Hello World" using the IO abstraction.
+ *
+ * Since the driver is asynchronous we need to use statically allocated memory for string
+ * because driver initiates transfer and then returns before the transmission is completed.
+ *
+ * Once transfer has been completed the tx_cb function will be called.
  */
+
 static uint8_t example_UI_SPI[12] = "Hello World!";
+
+static void complete_cb_UI_SPI(const struct spi_m_async_descriptor *const io_descr)
+{
+	/* Transfer completed */
+}
 
 void UI_SPI_example(void)
 {
 	struct io_descriptor *io;
-	spi_m_sync_get_io_descriptor(&UI_SPI, &io);
+	spi_m_async_get_io_descriptor(&UI_SPI, &io);
 
-	spi_m_sync_enable(&UI_SPI);
+	spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)complete_cb_UI_SPI);
+	spi_m_async_enable(&UI_SPI);
 	io_write(io, example_UI_SPI, 12);
 }
 

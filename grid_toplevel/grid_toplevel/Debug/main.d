@@ -145,9 +145,9 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  ../hal/utils/include/utils_list.h ../hal/include/hpl_timer.h \
  ../hal/include/hal_usart_async.h ../hal/include/hal_io.h \
  ../hal/include/hpl_usart_async.h ../hal/include/hpl_usart.h \
- ../hal/include/hal_spi_m_sync.h ../hal/include/hpl_spi_m_sync.h \
+ ../hal/include/hal_spi_m_async.h ../hal/include/hpl_spi_m_async.h \
  ../hal/include/hpl_spi.h ../hal/utils/include/utils.h \
- ../hal/include/hpl_spi_sync.h ../hal/include/hal_i2c_m_async.h \
+ ../hal/include/hpl_spi_async.h ../hal/include/hal_i2c_m_async.h \
  ../hal/include/hpl_i2c_m_async.h ../hal/include/hpl_i2c_m_sync.h \
  ../hal/include/hal_spi_m_dma.h ../hal/include/hpl_spi_m_dma.h \
  ../hal/include/hpl_spi_dma.h ../hal/include/hpl_dma.h \
@@ -583,15 +583,15 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 
 ../hal/include/hpl_usart.h:
 
-../hal/include/hal_spi_m_sync.h:
+../hal/include/hal_spi_m_async.h:
 
-../hal/include/hpl_spi_m_sync.h:
+../hal/include/hpl_spi_m_async.h:
 
 ../hal/include/hpl_spi.h:
 
 ../hal/utils/include/utils.h:
 
-../hal/include/hpl_spi_sync.h:
+../hal/include/hpl_spi_async.h:
 
 ../hal/include/hal_i2c_m_async.h:
 

@@ -28,6 +28,8 @@ void USART_NORTH_example(void);
 
 void GRID_AUX_example(void);
 
+void UI_SPI_example(void);
+
 void USART_WEST_example(void);
 
 void SYS_I2C_example(void);
