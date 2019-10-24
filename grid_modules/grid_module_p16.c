@@ -289,11 +289,10 @@ uint8_t grid_adc_get_config(uint8_t register_offset, uint8_t bit_offest){
 		
 struct io_descriptor *io;
 	
-struct io_descriptor *io2;
-	
+
 // Define all of the peripheral interrupt callbacks
 	
-volatile static uint32_t dma_spi_done = 0;
+
 
 volatile static uint32_t transfer_ready = 1;
 
@@ -458,7 +457,7 @@ void grid_port_process_ui(GRID_PORT_t* por){
 				
 			// UPDATE LEDS (SHOULD USE UI_TX but whatever)
 
-			grid_led_set_phase(i, 0, grid_ui_encoder_array[i].rotation_value*4); // 0...255
+			grid_led_set_phase(&grid_led_state, i, 0, grid_ui_encoder_array[i].rotation_value*4); // 0...255
 			
 			grid_ui_encoder_array[i].rotation_changed = 0; 
 			
@@ -493,7 +492,7 @@ void grid_port_process_ui(GRID_PORT_t* por){
 			
 			// UPDATE LEDS (SHOULD USE UI_TX but whatever)
 
-			grid_led_set_phase(i, 0, (!grid_ui_encoder_array[i].button_value)*255); // 0...255
+			grid_led_set_phase(&grid_led_state, i, 0, (!grid_ui_encoder_array[i].button_value)*255); // 0...255
 			
 			grid_ui_encoder_array[i].button_changed = 0;
 			
@@ -530,10 +529,10 @@ void grid_port_process_ui(GRID_PORT_t* por){
 			// UPDATE LEDS (SHOULD USE UI_TX but whatever)
 					
 			if (grid_sys_get_hwcfg()==64 && i>11){
-				grid_led_set_phase(i-4, 0, average*2/128); // 0...255
+				grid_led_set_phase(&grid_led_state, i-4, 0, average*2/128); // 0...255
 			}
 			else{
-				grid_led_set_phase(i, 0, average*2/128); // 0...255
+				grid_led_set_phase(&grid_led_state, i, 0, average*2/128); // 0...255
 			}
 					
 		}
@@ -585,11 +584,7 @@ void grid_port_process_ui(GRID_PORT_t* por){
 
 
 
-// DMA SPI CALLBACK
-static void tx_complete_cb_GRID_LED(struct _dma_resource *resource)
-{
-	dma_spi_done = 1;
-}
+
 
 
 
@@ -612,6 +607,34 @@ void grid_module_adc_start(void){
 
 
 
+void grid_module_init_animation(){
+	
+	
+	for (uint8_t i = 0; i<255; i++){
+			
+		// SEND DATA TO LEDs
+			
+			
+		uint8_t color_r   = i;
+		uint8_t color_g   = i;
+		uint8_t color_b   = i;
+			
+			
+		for (uint8_t i=0; i<16; i++){
+			//grid_led_set_color(i, 0, 255, 0);
+			grid_led_set_color(&grid_led_state, i, color_r, color_g, color_b);
+				
+		}
+			
+			
+		grid_led_hardware_start_transfer_blocking(&grid_led_state);
+			
+		delay_ms(1);
+			
+	}
+	
+}
+
 	
 /* ============================== GRID_MODULE_INIT() ================================ */
 void grid_module_init(void){
@@ -624,10 +647,9 @@ void grid_module_init(void){
 						
 	// Allocate memory for 4 analog input with the filter depth of 3 samples, 14 bit format, 10bit result resolution
 	grid_ain_init(grid_module_ain_buffer_size, 5, 14, 8);		
-	grid_led_init(grid_module_led_buffer_size);
+	grid_led_init(&grid_led_state, grid_module_led_buffer_size);
 
-	spi_m_dma_get_io_descriptor(&GRID_LED, &io2);
-	spi_m_dma_register_callback(&GRID_LED, SPI_M_DMA_CB_TX_DONE, tx_complete_cb_GRID_LED);
+
 		
 
 
@@ -642,6 +664,9 @@ void grid_module_init(void){
 
 	//enable pwr!
 	gpio_set_pin_level(UI_PWR_EN, true);
+
+	grid_module_init_animation();
+
 
 	// ADC SETUP	
 		
@@ -716,7 +741,8 @@ void grid_module_init(void){
 	
 	if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevA){
 	
-		
+		grid_modue_UI_SPI_init();
+		grid_modue_UI_SPI_start();
 	
 	}	
 	
@@ -733,14 +759,7 @@ void grid_module_init(void){
 	
 	usart_async_get_io_descriptor(&GRID_AUX, &io);
 	usart_async_enable(&GRID_AUX);
-
-
-	// GRID_LED Library NEW NEW NEW NEW
 	
-	grid_sys_state.error_style = 0;
-	grid_sys_state.error_state = 500;
-	grid_sys_state.error_code = 7;
-		
 		
 }
 

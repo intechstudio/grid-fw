@@ -36,18 +36,22 @@ struct grid_sys_model
 {
 	
 	
-	uint8_t color_red;
-	uint8_t color_green;
-	uint8_t color_blue;
+	uint8_t alert_color_red;
+	uint8_t alert_color_green;
+	uint8_t alert_color_blue;
+	
+	uint16_t alert_state;
+	uint8_t alert_style;
+	uint8_t alert_code;
+	
+	uint8_t alert_color_changed;
 		
 	uint32_t recent_messages[GRID_SYS_RECENT_MESSAGES_LENGTH];
 	GRID_SYS_RECENT_MESSAGES_INDEX_T recent_messages_index;	
 	
 	uint8_t next_broadcast_message_id;
 	
-	uint16_t error_state;
-	uint8_t error_style;
-	uint8_t error_code;	
+
 	
 };
 

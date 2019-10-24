@@ -649,34 +649,7 @@ int main(void)
 	
 
 
-	for (uint8_t i = 0; i<255; i++){
-		
-		// SEND DATA TO LEDs
-		
-					
-		uint8_t color_r   = i;
-		uint8_t color_g   = i;
-		uint8_t color_b   = i;
-					
-					
-		for (uint8_t i=0; i<16; i++){
-			//grid_led_set_color(i, 0, 255, 0);
-			grid_led_set_color(i, color_r, color_g, color_b);
-						
-		}
-		
-		
-		dma_spi_done = 0;
-		spi_m_dma_enable(&GRID_LED);
-	
-		io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
-		while(dma_spi_done!=1){
-			
-		}
-			
-		delay_ms(1);
-						
-	}
+
 	
 	init_timer();
 
@@ -701,10 +674,7 @@ int main(void)
 	
 	volatile uint8_t debugvar = 0;
 	
-	
-	grid_modue_UI_SPI_init();
-	
-	grid_modue_UI_SPI_start();
+
 	
 	while (1) {
 	
@@ -817,9 +787,9 @@ int main(void)
 			
 			task_current = TASK_LED;
 			
-			grid_led_tick();		
+			grid_led_tick(&grid_led_state);		
 			//RENDER ALL OF THE LEDs
-			grid_led_render_all();
+			grid_led_render_all(&grid_led_state);
 			
 			task_current = TASK_UNDEFINED;
 			
@@ -831,7 +801,7 @@ int main(void)
 				
 				//grid_led_set_color(i, 0, 255, 0);
 				
-				grid_led_set_color(i, colorfade*(colorcode==0)/4, colorfade*(colorcode==1)/4, colorfade*(colorcode==2)/4);
+				grid_led_set_color(&grid_led_state, i, colorfade*(colorcode==0)/4, colorfade*(colorcode==1)/4, colorfade*(colorcode==2)/4);
 				
 				
 			}
@@ -849,42 +819,49 @@ int main(void)
 		
 		
 		
-		if (grid_sys_state.error_state){
+		if (grid_sys_state.alert_state){
 			
-			grid_sys_state.error_state--;
-
-
-			uint8_t intensity = grid_sys_error_intensity(&grid_sys_state);
-			
-			uint8_t color_r   = grid_sys_error_get_color_r(&grid_sys_state) * (intensity/256.0);
-			uint8_t color_g   = grid_sys_error_get_color_g(&grid_sys_state) * (intensity/256.0);
-			uint8_t color_b   = grid_sys_error_get_color_b(&grid_sys_state) * (intensity/256.0);
-			
-			
-			for (uint8_t i=0; i<16; i++){	
-				//grid_led_set_color(i, 0, 255, 0);		
-				grid_led_set_color(i, color_r, color_g, color_b);
+			grid_sys_state.alert_state--;
+	
+			if (grid_sys_alert_read_color_changed_flag(&grid_sys_state)){
+				
+				grid_sys_alert_clear_color_changed_flag(&grid_sys_state);			
+				
+				uint8_t color_r   = grid_sys_error_get_color_r(&grid_sys_state);
+				uint8_t color_g   = grid_sys_error_get_color_g(&grid_sys_state);
+				uint8_t color_b   = grid_sys_error_get_color_b(&grid_sys_state);
+				
+				for (uint8_t i=0; i<16; i++){
+				
+					grid_led_set_min(&grid_led_state, i, 1, color_r*0   , color_g*0   , color_b*0);
+					grid_led_set_mid(&grid_led_state, i, 1, color_r*0.5 , color_g*0.5 , color_b*0.5);
+					grid_led_set_max(&grid_led_state, i, 1, color_r*1   , color_g*1   , color_b*1);
 					
+				}
+		
+			}
+			
+			uint8_t intensity = grid_sys_error_intensity(&grid_sys_state);
+	
+			for (uint8_t i=0; i<16; i++){	
+				//grid_led_set_color(i, 0, 255, 0);	
+		
+				grid_led_set_phase(&grid_led_state, i, 1, intensity);
+								
 			}
 			
 			
 		}
 		
 		
+		grid_led_hardware_start_transfer_blocking(&grid_led_state);
 	
 		
 		
 		
 		
 		
-		// SEND DATA TO LEDs
-		dma_spi_done = 0;
-		spi_m_dma_enable(&GRID_LED);
-			
-		io_write(io2, grid_led_frame_buffer_pointer(), grid_led_frame_buffer_size());
-		while(dma_spi_done!=1){
-			
-		}
+
 		
 		
 		// IDLETASK

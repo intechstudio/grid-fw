@@ -12,20 +12,37 @@
 
 
 
+uint8_t grid_sys_alert_read_color_changed_flag(struct grid_sys_model* mod){
+		
+	return mod->alert_color_changed;
+	
+}
+
+void grid_sys_alert_set_color_changed_flag(struct grid_sys_model* mod){
+	
+	mod->alert_color_changed = 1;
+	
+}
+
+void grid_sys_alert_clear_color_changed_flag(struct grid_sys_model* mod){
+	
+	mod->alert_color_changed = 0;
+	
+}
 
 uint8_t grid_sys_error_intensity(struct grid_sys_model* mod){
 	
-	if (mod->error_style == 0){ // TRIANGLE
+	if (mod->alert_style == 0){ // TRIANGLE
 		
-		return (125-abs(mod->error_state/2-125))/2;
+		return (125-abs(mod->alert_state/2-125))/2;
 	}
-	else if (mod->error_style == 1){ // SQUARE
+	else if (mod->alert_style == 1){ // SQUARE
 		
-		return 255*(mod->error_state/250%2);
+		return 255*(mod->alert_state/250%2);
 	}
-	else if (mod->error_style == 2){ // CONST
+	else if (mod->alert_style == 2){ // CONST
 		
-		return 255*(mod->error_state>100);
+		return 255*(mod->alert_state>100);
 	}
 	
 	
@@ -33,36 +50,38 @@ uint8_t grid_sys_error_intensity(struct grid_sys_model* mod){
 
 void grid_sys_error_set_color(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue){
 	
-	mod->color_red = red;
-	mod->color_green = green;
-	mod->color_blue = blue;
+	mod->alert_color_red = red;
+	mod->alert_color_green = green;
+	mod->alert_color_blue = blue;
 		
 }
 
 void grid_sys_error_set_alert(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue, uint8_t style, uint8_t duration){
 	
-	mod->color_red = red;
-	mod->color_green = green;
-	mod->color_blue = blue;
+	grid_sys_alert_set_color_changed_flag(mod);
 	
-	mod->error_state = duration;
-	mod->error_style = style;
+	mod->alert_color_red = red;
+	mod->alert_color_green = green;
+	mod->alert_color_blue = blue;
+	
+	mod->alert_state = duration;
+	mod->alert_style = style;
 	
 }
 
 uint8_t grid_sys_error_get_color_r(struct grid_sys_model* mod){
 	
-	return mod->color_red;
+	return mod->alert_color_red;
 }
 
 uint8_t grid_sys_error_get_color_g(struct grid_sys_model* mod){
 	
-	return mod->color_green;
+	return mod->alert_color_green;
 }
 
 uint8_t grid_sys_error_get_color_b(struct grid_sys_model* mod){
 	
-	return mod->color_blue;
+	return mod->alert_color_blue;
 }
 
 uint8_t grid_sys_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
