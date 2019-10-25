@@ -270,7 +270,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_ep5_I_CACHE
 #ifndef CONF_USB_EP5_I_CACHE
-#define CONF_USB_EP5_I_CACHE 8
+#define CONF_USB_EP5_I_CACHE 64
 #endif
 // </h>
 

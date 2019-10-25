@@ -113,7 +113,7 @@
 #define CONF_HID_KEYBOARD_IFC_NUM 1
 #define CONF_USB_COMPOSITE_HID_KEYBOARD_BIFCNUM (CONF_USB_COMPOSITE_HID_MOUSE_BIFCNUM + 1)
 #define CONF_HID_KEYBOARD_IFC_DESC                                                                                     \
-	USB_IFACE_DESC_BYTES(CONF_USB_COMPOSITE_HID_KEYBOARD_BIFCNUM, 0x00, 0x02, 0x03, 0x01, 0x01, 0x00),                 \
+	USB_IFACE_DESC_BYTES(CONF_USB_COMPOSITE_HID_KEYBOARD_BIFCNUM, 0x00, 0x02, 0x03, 0x01, 0x01, 0x00),               \
 	    USB_HID_DESC_BYTES(0x09, 0x21, 0x01, 0x22, 59),                                                                \
 	    USB_ENDP_DESC_BYTES(                                                                                           \
 	        CONF_USB_COMPOSITE_HID_KEYBOARD_INTIN_EPADDR, 0x03, CONF_USB_COMPOSITE_HID_KEYBOARD_INTIN_MAXPKSZ, 10),    \
@@ -274,9 +274,11 @@
 #define CONF_USB_COMPOSITE_AUDIOCONTROL_STR_DESC                                                                           \
 	40, 0x03, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00, 'c', 0x00, 'h', 0x00, ' ', 0x00, 'S', 0x00, 't', 0x00, 'u',  \
 	    0x00, 'd', 0x00, 'i', 0x00, 'o', 0x00, ':', 0x00, ' ', 0x00, 'A', 0x00, 'C', 0x00, ' ', 0x00, ' ', 0x00,
+		
 #define CONF_USB_COMPOSITE_MIDISTREAMING_STR_DESC                                                                           \
 	40, 0x03, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00, 'c', 0x00, 'h', 0x00, ' ', 0x00, 'S', 0x00, 't', 0x00, 'u',  \
 	    0x00, 'd', 0x00, 'i', 0x00, 'o', 0x00, ':', 0x00, ' ', 0x00, 'M', 0x00, 'S', 0x00, ' ', 0x00, ' ', 0x00,
+		
 
 	
 #define COMPOSITE_STR_DESCESS                                                                                          \
@@ -287,6 +289,7 @@
 	CONF_USB_COMPOSITE_ICONFIG_STR_DESC																				   \
 	CONF_USB_COMPOSITE_AUDIOCONTROL_STR_DESC																		   \
 	CONF_USB_COMPOSITE_MIDISTREAMING_STR_DESC
+
 
 /** USB Device descriptors and configuration descriptors */
 #define COMPOSITE_DESCES_LS_FS COMPOSITE_DEV_DESC, COMPOSITE_CFG_DESC, COMPOSITE_IFACE_DESCES COMPOSITE_STR_DESCESS

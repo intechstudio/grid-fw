@@ -72,6 +72,8 @@ void grid_led_set_max(struct grid_led_model* mod, uint8_t num, uint8_t layer, ui
 void grid_led_set_phase(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_frequency(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
 
+uint32_t grid_led_get_led_number(struct grid_led_model* mod);
+
 /** ======================== SMART BUFFER  ========================== */
 
 

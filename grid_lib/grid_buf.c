@@ -470,6 +470,8 @@ uint8_t grid_port_process_inbound(GRID_PORT_t* por){
 
 volatile uint8_t temp[500];
 
+volatile uint8_t usb_debug[10];
+
 uint8_t grid_port_process_outbound_usb(GRID_PORT_t* por){
 	
 	uint16_t length = grid_buffer_read_size(&por->tx_buffer);
@@ -532,6 +534,8 @@ uint8_t grid_port_process_outbound_usb(GRID_PORT_t* por){
 					uint8_t midi_param1  = grid_sys_read_hex_string_value(&temp[current_start+7], 2, &error_flag);
 					uint8_t midi_param2  = grid_sys_read_hex_string_value(&temp[current_start+9], 2, &error_flag);
 					
+					midi_channel = (256-dy)%16;
+					midi_param1  = (64+midi_param1 + 16*dx)%128;
 										
 					sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [MIDI] Ch: %d  Cmd: %d  Param1: %d  Param2: %d\n",					
 						id,dx,dy,age,
@@ -542,9 +546,9 @@ uint8_t grid_port_process_outbound_usb(GRID_PORT_t* por){
 					);
 					
 					output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
-							
-												
-					//audiodf_midi_xfer_packet(0x08, 0x80, 0x64, 0x0);	
+								
+					audiodf_midi_xfer_packet(midi_command>>4, midi_command|midi_channel, midi_param1, midi_param2);	
+					
 									
 				}
 				else if (msg_protocol == GRID_MSG_PROTOCOL_KEYBOARD){
@@ -572,7 +576,8 @@ uint8_t grid_port_process_outbound_usb(GRID_PORT_t* por){
 						
 					}
 										
-					hiddf_keyboard_keys_state_change(key_array, key_array_length);
+					usb_debug[1] = hiddf_keyboard_keys_state_change(key_array, key_array_length);
+					usb_debug[2] = hiddf_keyboard_keys_state_change(key_array, key_array_length);
 		
 					
 				

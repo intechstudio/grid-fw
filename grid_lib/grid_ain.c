@@ -155,9 +155,17 @@ uint8_t grid_ain_get_changed(uint8_t channel){
 	return instance->result_changed;
 }
 	
-uint16_t grid_ain_get_average(uint8_t channel){
+uint16_t grid_ain_get_average(uint8_t channel, uint8_t resolution){
 	
 	struct AIN_Channel* instance = &ain_channel_buffer[channel];	
 	instance->result_changed = 0;
-	return instance->result_value;
+	
+	if (resolution>6 && resolution<15){
+		
+		return instance->result_value/(1<<(14-resolution));
+		
+	}
+	else{
+		return 0;
+	}
 }

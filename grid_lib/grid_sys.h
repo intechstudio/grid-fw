@@ -35,7 +35,6 @@ uint32_t grid_sys_hwfcg = -1;
 struct grid_sys_model 
 {
 	
-	
 	uint8_t alert_color_red;
 	uint8_t alert_color_green;
 	uint8_t alert_color_blue;
@@ -51,10 +50,7 @@ struct grid_sys_model
 	
 	uint8_t next_broadcast_message_id;
 	
-
-	
 };
-
 
 struct grid_sys_model grid_sys_state;
 

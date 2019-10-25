@@ -324,7 +324,12 @@ uint8_t grid_led_init(struct grid_led_model* mod, uint8_t num){
 }
 
 
+uint32_t grid_led_get_led_number(struct grid_led_model* mod){
 
+	return mod->led_number;
+
+
+}
 
 /** ================== ANIMATION ==================  */
 

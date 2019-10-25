@@ -1,3 +1,6 @@
+
+
+
 #include <atmel_start.h>
 #include "atmel_start_pins.h"
 
@@ -9,62 +12,23 @@
 
 #include "../../grid_lib/grid_led.c" // WS2812 LED
 #include "../../grid_lib/grid_ain.c" // Analog input filtering
-#include "../../grid_lib/grid_tel.c" // Grid Telemetry
 #include "../../grid_lib/grid_sys.c" // Grid System
 
 
 #include "../../grid_lib/grid_buf.c" // Grid Buffer Abstraction
 
-#define GRID_MODULE_P16
+
+#include "../../grid_modules/grid_module.c" // 
 
 
-#include "../../grid_modules/grid_module_p16.c" // 
-
-
-volatile uint8_t task1flag = 0;
-
-volatile uint8_t reportflag = 0;
-
-
-
-
-
-
-
-static struct timer_task RTC_Scheduler_tick;
-static struct timer_task RTC_Scheduler_report;
 static struct timer_task RTC_Scheduler_rx_task;
 static struct timer_task RTC_Scheduler_ping;
+static struct timer_task RTC_Scheduler_realtime;
 
-
-
-#define TASK_UNDEFINED 0
-#define TASK_IDLE	   1
-#define TASK_LED	2
-#define TASK_UIIN    3
-#define TASK_GRID   4
-
-volatile uint8_t task_current = 0;
-volatile uint32_t task_counter[8] = {0, 0, 0, 0, 0, 0, 0, 0 };
 
 volatile uint8_t pingflag = 0;
 
 volatile uint32_t realtime = 0; 
-
-static void RTC_Scheduler_tick_cb(const struct timer_task *const timer_task)
-{
-	realtime++;
-	task_counter[task_current]++;
-}
-
- static void RTC_Scheduler_report_cb(const struct timer_task *const timer_task)
- {
- if (reportflag<255) reportflag++;
- }
-
-
-
-
 
 
 void grid_port_receive_task(GRID_PORT_t* por){
@@ -92,7 +56,7 @@ void grid_port_receive_task(GRID_PORT_t* por){
 // 			grid_sys_state.error_style = 2; // CONST
 // 			grid_sys_state.error_state = 200; // CONST
 			
-			grid_sys_error_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
+			grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
 		}
 		else{
 		
@@ -149,7 +113,6 @@ void grid_port_receive_task(GRID_PORT_t* por){
 	}
 		
 }
-
 
 void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t length){
 	
@@ -284,7 +247,7 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 				else{
 					// WE ALREADY HEARD THIS MESSAGE					
 					response[2] = GRID_MSG_ACKNOWLEDGE;							
-					grid_sys_error_set_alert(&grid_sys_state, 50, 50, 50, 2, 200); // WHITE
+					grid_sys_alert_set_alert(&grid_sys_state, 50, 50, 50, 2, 200); // WHITE
 								
 				}
 					
@@ -295,7 +258,7 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 							
 				if (message[2] == GRID_MSG_ACKNOWLEDGE){				
 
-					grid_sys_error_set_alert(&grid_sys_state, 255, 0, 255, 2, 200); // PURPLE
+					grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 2, 200); // PURPLE
 				}
 				else if (message[2] == GRID_MSG_NACKNOWLEDGE){
 					// RESEND PREVIOUS
@@ -312,7 +275,7 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 						por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-12], 8, error_flag);
 						por->partner_status = 1;
 						
-						grid_sys_error_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // GREEN
+						grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // GREEN
 															
 					}
 					else{
@@ -327,12 +290,12 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 						if (validator == 0){
 							//FAILED, DISCONNECT
 							por->partner_status = 0;	
-							grid_sys_error_set_alert(&grid_sys_state, 255, 255, 255, 2, 200); // WHITE
+							grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200); // WHITE
 										
 						}
 						else{
 							//OK
-							grid_sys_error_set_alert(&grid_sys_state, 0, 0, 10, 2, 200); // BLUE
+							grid_sys_alert_set_alert(&grid_sys_state, 0, 0, 10, 2, 200); // BLUE
 							
 						}
 									
@@ -345,7 +308,7 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 			}
 			else{ // Invalid
 					
-				grid_sys_error_set_alert(&grid_sys_state, 255, 0, 0, 2, 200); // RED SHORT
+				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200); // RED SHORT
 							
 			}
 						
@@ -355,7 +318,7 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 		else{
 			// INVALID CHECKSUM
 						
-			grid_sys_error_set_alert(&grid_sys_state, 255, 0, 255, 1, 2000); // RED BLINKY
+			grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 1, 2000); // RED BLINKY
 						
 		}
 				
@@ -409,7 +372,6 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 	
 }
 
-
 void grid_port_receive_complete_task(GRID_PORT_t* por){
 	
 	if (por->rx_double_buffer_status != 1){
@@ -451,6 +413,14 @@ static void RTC_Scheduler_rx_task_cb(const struct timer_task *const timer_task)
 	
 }
 
+static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
+{
+
+	realtime++;
+	
+	
+}
+
 static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 {
 	pingflag = 1;
@@ -461,18 +431,6 @@ static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 void init_timer(void)
 {
 	
-	
-	
-	
-	RTC_Scheduler_tick.interval = 1;
-	RTC_Scheduler_tick.cb       = RTC_Scheduler_tick_cb;
-	RTC_Scheduler_tick.mode     = TIMER_TASK_REPEAT;
-	
-	
-	RTC_Scheduler_report.interval = 32768/2; //1sec
-	RTC_Scheduler_report.cb       = RTC_Scheduler_report_cb;
-	RTC_Scheduler_report.mode     = TIMER_TASK_REPEAT;
-	
 		
 	RTC_Scheduler_ping.interval = 16380/5; //1sec
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
@@ -481,144 +439,20 @@ void init_timer(void)
 	RTC_Scheduler_rx_task.interval = RTC1SEC/10000; // 100us
 	RTC_Scheduler_rx_task.cb       = RTC_Scheduler_rx_task_cb;
 	RTC_Scheduler_rx_task.mode     = TIMER_TASK_REPEAT;
+	
+	RTC_Scheduler_realtime.interval = 1; // 1us
+	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
+	RTC_Scheduler_realtime.mode     = TIMER_TASK_REPEAT;
 
-	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_tick);
-	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_report);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_rx_task);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_ping);
+	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime);
+	
 	timer_start(&RTC_Scheduler);
 	
-	
-
-}
-
-
-
-	
-static void tx_complete_cb_UI_SPI(struct _dma_resource *resource)
-{
-	/* Transfer completed */
-
-
-	grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_MASTER);
-	grid_sync_set_level(GRID_SYNC_1, 1);
-	
-	grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_MASTER);
-
-	// Set the shift registers to continuously load data until new transaction is issued
-	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
-
-	
-	// Buffer is only 8 bytes but we check all 16 encoders separately
-	for (uint8_t i=0; i<16; i++){
-
-		uint8_t new_value = (UI_SPI_RX_BUFFER[i/2]>>(4*(i%2)))&0x0F;
-		uint8_t old_value = UI_SPI_RX_BUFFER_LAST[i];
-		
-		if (old_value != new_value){
-
-			
-			UI_SPI_DEBUG = i;	
-			
-			uint8_t button_value = new_value>>2;	
-			uint8_t phase_a = (new_value>>1)&1;
-			uint8_t phase_b = (new_value)&1;
-			
-			if (button_value != grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].button_value){
-				// BUTTON CHANGE			
-				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].button_changed = 1;
-				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].button_value = new_value>>2;
-			}
-			
-			
-			if (phase_a != grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_a_previous){
-					
-				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_a_previous = phase_a;
-				
-				if (phase_b == 0){
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = phase_a;
-				}
-				else{
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = !phase_a;
-				}
-				
-				if (phase_a && phase_b){
-											
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value += grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction*2 -1;
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_changed = 1;
-				}
-			}
-			
-			if (phase_b != grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_b_previous){
-				
-				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_b_previous = phase_b;
-				
-				if (phase_a == 0){
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = !phase_b;
-				}
-				else{
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = phase_b;
-				}
-				
-				if (phase_a && phase_b){
-
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value += grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction*2 -1;
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_changed = 1;
-				}
-			}	
-			
-
-			
-		}
-		else{
-			
-		}
-		
-	}
-	
-	UI_SPI_DONE = 1;
-		
-	for (uint8_t i=0; i<8; i++){
-
-		UI_SPI_RX_BUFFER[i] = 0;
-		
-	}
-	
-
-	grid_sync_set_level(GRID_SYNC_1, 0);
-	
-	grid_modue_UI_SPI_start();
 }
 
 struct io_descriptor *io;
-
-void grid_modue_UI_SPI_init(void)
-{
-	
-	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
-	gpio_set_pin_direction(PIN_UI_SPI_CS0, GPIO_DIRECTION_OUT);
-	
-	
-	spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
-	
-	spi_m_async_get_io_descriptor(&UI_SPI, &io);
-
-
-	spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, tx_complete_cb_UI_SPI);
-
-}
-
-void grid_modue_UI_SPI_start(void)
-{
-	
-
-	gpio_set_pin_level(PIN_UI_SPI_CS0, true);
-	
-	spi_m_async_enable(&UI_SPI);
-	
-	//io_write(io, UI_SPI_TX_BUFFER, 8);
-	spi_m_async_transfer(&UI_SPI, UI_SPI_TX_BUFFER, UI_SPI_RX_BUFFER, 8);
-}
 
 
 
@@ -651,81 +485,15 @@ int main(void)
 
 
 	
-	init_timer();
-
-
-
-	uint32_t faketimer = 0;
-
-	uint16_t colorfade = 0;
-	uint8_t colorcode = 0;
-
-	uint8_t sysmode = 1;
-	
-	
-	uint32_t loopcounter = 0;
-	
+	init_timer();	
 	
 	uint32_t loopstart = 0;
-	
-	char system_report_tasks[200];
-	char system_report_buffers[200];
-	char system_report_grid[200];
-	
-	volatile uint8_t debugvar = 0;
-	
-
-	
+		
 	while (1) {
-	
-		
-				
-		
-		// REPORT OVER CDC SERIAL FOR DEBUGING
-		if (loopcounter == 100){		
-			//cdcdf_acm_write(system_report_tasks, strlen(system_report_tasks));		
-		}else if (loopcounter == 200){
-				
-		}else if (loopcounter == 300){
-	
-		}else if (loopcounter == 400){
-	
-		}else if (loopcounter == 500){
-	
-		}
-	
-		//checktimer flags
-		if (reportflag){
-			
-			sprintf(system_report_tasks, "LOOPTICK %02x\nREALTIME %02x\nTASK0 %02x\nTASK1 %02x\nTASK2 %02x\nTASK3 %02x\nTASK4 %02x\n\0", loopcounter, realtime, task_counter[0], task_counter[1], task_counter[2], task_counter[3], task_counter[4]);
-			
-			
-						
-			
-			realtime = 0;
-			loopcounter = 0;
-			reportflag--;
-			
-			for (uint8_t i=0; i<8; i++)
-			{
-				task_counter[i] = 0;
-			}
-		}
-		
-		loopcounter++;
-			
-			
+					
 		loopstart = realtime;
 		
-		
-		
-				
-		// SYNC TEST
-		if (sysmode){
-			
-			grid_sync_set_level(GRID_SYNC_1, loopcounter%2);
-			
-		}
+
 		
 		
 		
@@ -749,8 +517,7 @@ int main(void)
 		grid_port_receive_complete_task(&GRID_PORT_S);
 		grid_port_receive_complete_task(&GRID_PORT_W);
 		
-		
-			
+				
 		/* ========================= UI_PROCESS_INBOUND ============================= */
 		grid_port_process_ui(&GRID_PORT_U);		
 		
@@ -762,8 +529,6 @@ int main(void)
 		grid_port_process_inbound(&GRID_PORT_W);	
 		
 		/* ========================= GRID MOVE TASK ============================= */		
-
-	
 		
 		grid_port_process_outbound_usart(&GRID_PORT_N);
 		grid_port_process_outbound_usart(&GRID_PORT_E);
@@ -772,52 +537,10 @@ int main(void)
 		
 		grid_port_process_outbound_usb(&GRID_PORT_H); // Send data from HOST_TX through USB
 		grid_port_process_outbound_ui(&GRID_PORT_U);
-		
-	
-
-				
-				
 				
 				
 			
 		uint16_t length = 0;
-					
-				
-		if (sysmode == 1){
-			
-			task_current = TASK_LED;
-			
-			grid_led_tick(&grid_led_state);		
-			//RENDER ALL OF THE LEDs
-			grid_led_render_all(&grid_led_state);
-			
-			task_current = TASK_UNDEFINED;
-			
-		}
-		
-		if (sysmode == 0){
-			
-			for (uint8_t i=0; i<16; i++){
-				
-				//grid_led_set_color(i, 0, 255, 0);
-				
-				grid_led_set_color(&grid_led_state, i, colorfade*(colorcode==0)/4, colorfade*(colorcode==1)/4, colorfade*(colorcode==2)/4);
-				
-				
-			}
-			
-			colorfade++;
-			
-			if (colorfade == 4*256){
-				colorfade = 0;
-			}
-			
-			if (colorfade == 0) colorcode++;
-			if (colorcode>2) colorcode=0;	
-			
-		}
-		
-		
 		
 		if (grid_sys_state.alert_state){
 			
@@ -827,11 +550,11 @@ int main(void)
 				
 				grid_sys_alert_clear_color_changed_flag(&grid_sys_state);			
 				
-				uint8_t color_r   = grid_sys_error_get_color_r(&grid_sys_state);
-				uint8_t color_g   = grid_sys_error_get_color_g(&grid_sys_state);
-				uint8_t color_b   = grid_sys_error_get_color_b(&grid_sys_state);
+				uint8_t color_r   = grid_sys_alert_get_color_r(&grid_sys_state);
+				uint8_t color_g   = grid_sys_alert_get_color_g(&grid_sys_state);
+				uint8_t color_b   = grid_sys_alert_get_color_b(&grid_sys_state);
 				
-				for (uint8_t i=0; i<16; i++){
+				for (uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
 				
 					grid_led_set_min(&grid_led_state, i, 1, color_r*0   , color_g*0   , color_b*0);
 					grid_led_set_mid(&grid_led_state, i, 1, color_r*0.5 , color_g*0.5 , color_b*0.5);
@@ -841,7 +564,7 @@ int main(void)
 		
 			}
 			
-			uint8_t intensity = grid_sys_error_intensity(&grid_sys_state);
+			uint8_t intensity = grid_sys_alert_get_color_intensity(&grid_sys_state);
 	
 			for (uint8_t i=0; i<16; i++){	
 				//grid_led_set_color(i, 0, 255, 0);	
@@ -853,26 +576,21 @@ int main(void)
 			
 		}
 		
-		
+				
+		grid_led_tick(&grid_led_state);
+		grid_led_render_all(&grid_led_state);
+				
+				
 		grid_led_hardware_start_transfer_blocking(&grid_led_state);
 	
+			
 		
-		
-		
-		
-		
-
 		
 		
 		// IDLETASK
-		task_current = TASK_IDLE;
 		while(loopstart + RTC1SEC/1000 > realtime){
 			delay_us(10);
-		}
-		
-		task_current = TASK_UNDEFINED;
-		
-		
+		}	
 		
 		
 	}

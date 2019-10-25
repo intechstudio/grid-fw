@@ -1,5 +1,3 @@
-#ifdef GRID_MODULE_P16
-
 #include "../../grid_lib/grid_sys.h"
 
 uint8_t grid_module_mapmode_state  = 1;
@@ -249,10 +247,7 @@ const uint8_t grid_module_mux_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7
 		
 uint8_t		  grid_module_mux = 0;
 
-const uint8_t grid_module_led_buffer_size = 16; // number of ws2812 leds
-	
-const uint8_t grid_module_ain_buffer_size = 16; // number of analog inputs
-const uint8_t grid_module_din_buffer_size = 0; // number of digital inputs
+
 	
 	
 	
@@ -509,8 +504,9 @@ void grid_port_process_ui(GRID_PORT_t* por){
 					
 			packetvalid++;
 					
-			uint16_t average = grid_ain_get_average(i);
-					
+			uint8_t ana_value = grid_ain_get_average(i, 7);
+			
+			uint8_t led_value = grid_ain_get_average(i, 8);
 					
 			sprintf(&message[length], "%c%02x%02x%02x%02x%02x%c",
 					
@@ -519,7 +515,7 @@ void grid_port_process_ui(GRID_PORT_t* por){
 			0, // (cable<<4) + channel
 			GRID_MSG_COMMAND_MIDI_CONTROLCHANGE,
 			i,
-			average/64,
+			ana_value,
 			GRID_MSG_END_OF_TEXT
 			);
 					
@@ -529,10 +525,10 @@ void grid_port_process_ui(GRID_PORT_t* por){
 			// UPDATE LEDS (SHOULD USE UI_TX but whatever)
 					
 			if (grid_sys_get_hwcfg()==64 && i>11){
-				grid_led_set_phase(&grid_led_state, i-4, 0, average*2/128); // 0...255
+				grid_led_set_phase(&grid_led_state, i-4, 0, led_value); // 0...255
 			}
 			else{
-				grid_led_set_phase(&grid_led_state, i, 0, average*2/128); // 0...255
+				grid_led_set_phase(&grid_led_state, i, 0, led_value); // 0...255
 			}
 					
 		}
@@ -582,12 +578,6 @@ void grid_port_process_ui(GRID_PORT_t* por){
 
 
 
-
-
-
-
-
-
 void grid_module_adc_init(void){
 	
 	adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, convert_cb_ADC_0);
@@ -605,9 +595,7 @@ void grid_module_adc_start(void){
 	
 }
 
-
-
-void grid_module_init_animation(){
+void grid_module_init_animation(struct grid_led_model* mod){
 	
 	
 	for (uint8_t i = 0; i<255; i++){
@@ -620,7 +608,7 @@ void grid_module_init_animation(){
 		uint8_t color_b   = i;
 			
 			
-		for (uint8_t i=0; i<16; i++){
+		for (uint8_t i=0; i<mod->led_number; i++){
 			//grid_led_set_color(i, 0, 255, 0);
 			grid_led_set_color(&grid_led_state, i, color_r, color_g, color_b);
 				
@@ -636,20 +624,138 @@ void grid_module_init_animation(){
 }
 
 	
+static void grid_ui_encoder_hardware_transfer_complete_cb(struct _dma_resource *resource)
+{
+	/* Transfer completed */
+
+
+	grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_MASTER);
+	grid_sync_set_level(GRID_SYNC_1, 1);
+		
+	grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_MASTER);
+
+	// Set the shift registers to continuously load data until new transaction is issued
+	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
+
+		
+	// Buffer is only 8 bytes but we check all 16 encoders separately
+	for (uint8_t i=0; i<16; i++){
+
+		uint8_t new_value = (UI_SPI_RX_BUFFER[i/2]>>(4*(i%2)))&0x0F;
+		uint8_t old_value = UI_SPI_RX_BUFFER_LAST[i];
+			
+		if (old_value != new_value){
+
+				
+			UI_SPI_DEBUG = i;
+				
+			uint8_t button_value = new_value>>2;
+			uint8_t phase_a = (new_value>>1)&1;
+			uint8_t phase_b = (new_value)&1;
+				
+			if (button_value != grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].button_value){
+				// BUTTON CHANGE
+				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].button_changed = 1;
+				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].button_value = new_value>>2;
+			}
+				
+				
+			if (phase_a != grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_a_previous){
+					
+				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_a_previous = phase_a;
+					
+				if (phase_b == 0){
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = phase_a;
+				}
+				else{
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = !phase_a;
+				}
+					
+				if (phase_a && phase_b){
+						
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value += grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction*2 -1;
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_changed = 1;
+				}
+			}
+				
+			if (phase_b != grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_b_previous){
+					
+				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_b_previous = phase_b;
+					
+				if (phase_a == 0){
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = !phase_b;
+				}
+				else{
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = phase_b;
+				}
+					
+				if (phase_a && phase_b){
+
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value += grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction*2 -1;
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_changed = 1;
+				}
+			}
+				
+
+				
+		}
+		else{
+				
+		}
+			
+	}
+		
+	UI_SPI_DONE = 1;
+		
+	for (uint8_t i=0; i<8; i++){
+
+		UI_SPI_RX_BUFFER[i] = 0;
+			
+	}
+		
+
+	grid_sync_set_level(GRID_SYNC_1, 0);
+		
+	grid_ui_encoder_hardware_start_transfer();
+}
+
+void grid_ui_encoder_hardware_init(void)
+{
+		
+	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
+	gpio_set_pin_direction(PIN_UI_SPI_CS0, GPIO_DIRECTION_OUT);
+		
+		
+	spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
+		
+	spi_m_async_get_io_descriptor(&UI_SPI, &io);
+
+
+	spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, grid_ui_encoder_hardware_transfer_complete_cb);
+
+}
+
+void grid_ui_encoder_hardware_start_transfer(void)
+{
+		
+
+	gpio_set_pin_level(PIN_UI_SPI_CS0, true);
+		
+	spi_m_async_enable(&UI_SPI);
+		
+	//io_write(io, UI_SPI_TX_BUFFER, 8);
+	spi_m_async_transfer(&UI_SPI, UI_SPI_TX_BUFFER, UI_SPI_RX_BUFFER, 8);
+}
+
+
+
+	
 /* ============================== GRID_MODULE_INIT() ================================ */
 void grid_module_init(void){
 		
 					
 
 	grid_port_init_all();	
-		
-		
-						
-	// Allocate memory for 4 analog input with the filter depth of 3 samples, 14 bit format, 10bit result resolution
-	grid_ain_init(grid_module_ain_buffer_size, 5, 14, 8);		
-	grid_led_init(&grid_led_state, grid_module_led_buffer_size);
-
-
 		
 
 
@@ -665,15 +771,20 @@ void grid_module_init(void){
 	//enable pwr!
 	gpio_set_pin_level(UI_PWR_EN, true);
 
-	grid_module_init_animation();
-
 
 	// ADC SETUP	
 		
 	if (grid_sys_get_hwcfg() == GRID_MODULE_P16_RevB){
+		
+		// Allocate memory for 16 analog input with the filter depth of 5 samples, 14 bit format, 7bit result resolution
+		grid_ain_init(16, 5, 14, 7);
+		
+		grid_led_init(&grid_led_state, 16);			
+		grid_module_init_animation(&grid_led_state);	
 						
 		grid_module_adc_init();
 		grid_module_adc_start();
+		
 	}
 		
 	if (grid_sys_get_hwcfg() == GRID_MODULE_B16_RevB){
@@ -711,6 +822,12 @@ void grid_module_init(void){
 		grid_adc_set_config(13, GRID_ADC_CFG_BINARY, 1);
 		grid_adc_set_config(14, GRID_ADC_CFG_BINARY, 1);
 		grid_adc_set_config(15, GRID_ADC_CFG_BINARY, 1);
+		
+		// Allocate memory for 16 analog input with the filter depth of 5 samples, 14 bit format, 7bit result resolution
+		grid_ain_init(16, 5, 14, 7);
+		
+		grid_led_init(&grid_led_state, 16);		
+		grid_module_init_animation(&grid_led_state);
 				
 		grid_module_adc_init();
 		grid_module_adc_start();
@@ -733,6 +850,12 @@ void grid_module_init(void){
 		grid_adc_set_config(13, GRID_ADC_CFG_BINARY, 1);
 		grid_adc_set_config(14, GRID_ADC_CFG_BINARY, 1);
 		grid_adc_set_config(15, GRID_ADC_CFG_BINARY, 1);
+		
+		// Allocate memory for 4 analog input with the filter depth of 5 samples, 14 bit format, 10bit result resolution
+		grid_ain_init(16, 5, 14, 7);
+		
+		grid_led_init(&grid_led_state, 16);		
+		grid_module_init_animation(&grid_led_state);
 			
 		grid_module_adc_init();
 		grid_module_adc_start();
@@ -740,9 +863,12 @@ void grid_module_init(void){
 	}
 	
 	if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevA){
+		
+		grid_led_init(&grid_led_state, 16);
+		grid_module_init_animation(&grid_led_state);
 	
-		grid_modue_UI_SPI_init();
-		grid_modue_UI_SPI_start();
+		grid_ui_encoder_hardware_init();
+		grid_ui_encoder_hardware_start_transfer();
 	
 	}	
 	
@@ -762,6 +888,3 @@ void grid_module_init(void){
 	
 		
 }
-
-
-#endif

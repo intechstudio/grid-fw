@@ -12,6 +12,8 @@
 
 
 
+// =========================== GRID SYS ALERT ============================== //
+
 uint8_t grid_sys_alert_read_color_changed_flag(struct grid_sys_model* mod){
 		
 	return mod->alert_color_changed;
@@ -30,7 +32,7 @@ void grid_sys_alert_clear_color_changed_flag(struct grid_sys_model* mod){
 	
 }
 
-uint8_t grid_sys_error_intensity(struct grid_sys_model* mod){
+uint8_t grid_sys_alert_get_color_intensity(struct grid_sys_model* mod){
 	
 	if (mod->alert_style == 0){ // TRIANGLE
 		
@@ -48,7 +50,9 @@ uint8_t grid_sys_error_intensity(struct grid_sys_model* mod){
 	
 }
 
-void grid_sys_error_set_color(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue){
+void grid_sys_alert_set_color(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue){
+	
+	grid_sys_alert_set_color_changed_flag(mod);
 	
 	mod->alert_color_red = red;
 	mod->alert_color_green = green;
@@ -56,33 +60,33 @@ void grid_sys_error_set_color(struct grid_sys_model* mod, uint8_t red, uint8_t g
 		
 }
 
-void grid_sys_error_set_alert(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue, uint8_t style, uint8_t duration){
+void grid_sys_alert_set_alert(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue, uint8_t style, uint8_t duration){
 	
-	grid_sys_alert_set_color_changed_flag(mod);
-	
-	mod->alert_color_red = red;
-	mod->alert_color_green = green;
-	mod->alert_color_blue = blue;
+	grid_sys_alert_set_color(mod, red, green, blue);
+
 	
 	mod->alert_state = duration;
 	mod->alert_style = style;
 	
 }
 
-uint8_t grid_sys_error_get_color_r(struct grid_sys_model* mod){
+uint8_t grid_sys_alert_get_color_r(struct grid_sys_model* mod){
 	
 	return mod->alert_color_red;
 }
 
-uint8_t grid_sys_error_get_color_g(struct grid_sys_model* mod){
+uint8_t grid_sys_alert_get_color_g(struct grid_sys_model* mod){
 	
 	return mod->alert_color_green;
 }
 
-uint8_t grid_sys_error_get_color_b(struct grid_sys_model* mod){
+uint8_t grid_sys_alert_get_color_b(struct grid_sys_model* mod){
 	
 	return mod->alert_color_blue;
 }
+
+
+
 
 uint8_t grid_sys_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
 		

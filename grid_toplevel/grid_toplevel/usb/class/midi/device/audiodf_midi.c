@@ -39,10 +39,10 @@ static bool midi_cb_ep_bulk_in(const uint8_t ep, const enum usb_xfer_code rc, co
 	(void)ep;
 	(void)rc;
 	
-	while(1){
-		
-		
-	}
+// 	while(1){
+// 		
+// 		
+// 	}
 
 }
 
@@ -65,6 +65,8 @@ static bool midi_cb_ep_bulk_out(const uint8_t ep, const enum usb_xfer_code rc, c
 }
 
 
+volatile uint8_t usb_debug2[10];
+
 
 /**
  * \brief Enable Audio Midi Function
@@ -77,7 +79,7 @@ static int32_t audio_midi_enable(struct usbdf_driver *drv, struct usbd_descripto
 	struct audiodf_midi_func_data *func_data = (struct audiodf_midi_func_data *)(drv->func_data);
 	
 	usb_iface_desc_t ifc_desc;
-	usb_ep_desc_t    ep_desc;	
+	volatile usb_ep_desc_t    ep_desc;	
 	uint8_t *        ifc, *ep;
 	uint8_t          i;
 
@@ -119,14 +121,20 @@ static int32_t audio_midi_enable(struct usbdf_driver *drv, struct usbd_descripto
 				ep_desc.bEndpointAddress = ep[2];
 				ep_desc.bmAttributes     = ep[3];
 				ep_desc.wMaxPacketSize   = usb_get_u16(ep + 4);
-				if (usb_d_ep_init(ep_desc.bEndpointAddress, ep_desc.bmAttributes, ep_desc.wMaxPacketSize)) {
+				
+				usb_debug2[4] = ep_desc.wMaxPacketSize;
+				
+				usb_debug2[0] = i;
+				
+				if (usb_debug2[5] = usb_d_ep_init(ep_desc.bEndpointAddress, ep_desc.bmAttributes, ep_desc.wMaxPacketSize)) {
+					usb_debug2[6] = - usb_debug2[5];
 					return ERR_NOT_INITIALIZED;
 				}
 				if (ep_desc.bEndpointAddress & USB_EP_DIR_IN) {
 					func_data->func_ep_in = ep_desc.bEndpointAddress;
 					usb_d_ep_enable(func_data->func_ep_in);
 					usb_d_ep_register_callback(func_data->func_ep_in, USB_D_EP_CB_XFER, (FUNC_PTR)midi_cb_ep_bulk_in);
-					} else {
+				} else {
 					func_data->func_ep_out = ep_desc.bEndpointAddress;
 					usb_d_ep_enable(func_data->func_ep_out);
 					usb_d_ep_register_callback(func_data->func_ep_out, USB_D_EP_CB_XFER, (FUNC_PTR)midi_cb_ep_bulk_out);
@@ -229,6 +237,8 @@ static int32_t audio_midi_get_desc(uint8_t ep, struct usb_req *req)
 
 static int32_t audio_midi_req(uint8_t ep, struct usb_req *req, enum usb_ctrl_stage stage)
 {
+		
+	//return ERR_NOT_FOUND;	
 		
 	if ((0x81 == req->bmRequestType) && (req->wIndex == _audiodf_midi_funcd.func_iface[0] || req->wIndex == _audiodf_midi_funcd.func_iface[1])) {
 		return audio_midi_get_desc(ep, req); // Never hit breakpoint here
