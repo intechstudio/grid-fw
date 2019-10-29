@@ -473,6 +473,14 @@ int main(void)
 	
 	uint32_t loopstart = 0;
 		
+	for (uint8_t i = 0; i<grid_led_get_led_number(&grid_led_state); i++)
+	{
+		grid_led_set_min(&grid_led_state, i, 0, 10,0,0);
+		grid_led_set_mid(&grid_led_state, i, 0, 100,0,0);
+		grid_led_set_max(&grid_led_state, i, 0, 255,0,0);
+	}
+		
+		
 	while (1) {
 					
 		loopstart = realtime;

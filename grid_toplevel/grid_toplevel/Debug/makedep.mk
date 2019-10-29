@@ -12,6 +12,8 @@ driver_init.c
 
 examples\driver_examples.c
 
+grid\grid_module_en16_reva.c
+
 grid\grid_ain.c
 
 grid\grid_buf.c
@@ -23,6 +25,8 @@ grid\grid_led.c
 grid\grid_module.c
 
 grid\grid_module_bu16_revb.c
+
+grid\grid_module_pbf4_reva.c
 
 grid\grid_module_po16_revb.c
 

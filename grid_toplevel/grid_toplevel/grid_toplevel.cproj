@@ -696,6 +696,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="examples\driver_examples.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="grid\grid_module_en16_reva.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="grid\grid_ain.c">
       <SubType>compile</SubType>
     </Compile>
@@ -732,6 +735,12 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="grid\grid_module_bu16_revb.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="grid\grid_module_pbf4_reva.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_module_pbf4_reva.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="grid\grid_module_po16_revb.c">
       <SubType>compile</SubType>
     </Compile>
@@ -751,6 +760,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="grid\grid_ui.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_module_en16_reva.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\include\hal_adc_async.h">

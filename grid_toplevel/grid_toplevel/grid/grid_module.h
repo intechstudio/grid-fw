@@ -27,10 +27,14 @@
 
 #include "grid_module_bu16_revb.h"
 #include "grid_module_po16_revb.h"
+#include "grid_module_en16_reva.h"
 
 
 
 
+//====================== GRID SYNC ===================================//
+enum grid_sync_selector { GRID_SYNC_UNDEFINED, GRID_SYNC_1, GRID_SYNC_2};
+enum grid_sync_mode { GRID_SYNC_INITIAL, GRID_SYNC_MASTER, GRID_SYNC_SLAVE};
 
 
 

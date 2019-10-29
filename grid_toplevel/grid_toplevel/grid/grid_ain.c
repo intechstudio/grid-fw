@@ -82,6 +82,8 @@ uint8_t grid_ain_init(uint8_t length, uint8_t depth, uint8_t  format, uint8_t re
 uint8_t grid_ain_add_sample(uint8_t channel, uint16_t value){
 	
 	struct AIN_Channel* instance = &ain_channel_buffer[channel];
+	
+
 
 	uint32_t sum = 0;
 	uint16_t minimum = -1; // -1 trick to get the largest possible number
@@ -162,7 +164,9 @@ uint16_t grid_ain_get_average(uint8_t channel, uint8_t resolution){
 	
 	if (resolution>6 && resolution<15){
 		
-		return instance->result_value/(1<<(14-resolution));
+
+		
+		return (instance->result_value)/(1<<(instance->result_format-resolution));
 		
 	}
 	else{

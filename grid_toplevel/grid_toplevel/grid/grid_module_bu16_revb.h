@@ -4,7 +4,7 @@
 #include "grid_module.h"
 
 
-volatile static uint8_t grid_ui_button_hardware_transfer_complete;
+volatile static uint8_t grid_module_hardware_transfer_complete;
 
 static const uint8_t grid_module_mux_lookup[];
 

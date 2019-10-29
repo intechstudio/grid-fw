@@ -1,4 +1,5 @@
-grid/grid_led.d grid/grid_led.o: ../grid/grid_led.c ../grid/grid_led.h \
+grid/grid_module_pbf4_reva.d grid/grid_module_pbf4_reva.o: \
+ ../grid/grid_module_pbf4_reva.c ../grid/grid_module_pbf4_reva.h \
  ../grid/grid_module.h \
  C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\include/sam.h \
  C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\include/samd51n20a.h \
@@ -182,11 +183,11 @@ grid/grid_led.d grid/grid_led.o: ../grid/grid_led.c ../grid/grid_led.h \
  ../usb/class/msc/usb_protocol_msc.h ../usb/class/msc/spc_protocol.h \
  ../usb/class/msc/sbc_protocol.h \
  ../usb/class/composite/device/composite_desc.h ../atmel_start_pins.h \
- ../grid/grid_protocol.h ../grid/grid_sys.h ../grid/grid_buf.h \
- ../grid/grid_ui.h ../grid/grid_module_bu16_revb.h \
+ ../grid/grid_protocol.h ../grid/grid_led.h ../grid/grid_sys.h \
+ ../grid/grid_buf.h ../grid/grid_ui.h ../grid/grid_module_bu16_revb.h \
  ../grid/grid_module_po16_revb.h ../grid/grid_module_en16_reva.h
 
-../grid/grid_led.h:
+../grid/grid_module_pbf4_reva.h:
 
 ../grid/grid_module.h:
 
@@ -675,6 +676,8 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../atmel_start_pins.h:
 
 ../grid/grid_protocol.h:
+
+../grid/grid_led.h:
 
 ../grid/grid_sys.h:
 

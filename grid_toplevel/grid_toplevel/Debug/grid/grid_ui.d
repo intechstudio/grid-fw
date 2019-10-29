@@ -184,7 +184,7 @@ grid/grid_ui.d grid/grid_ui.o: ../grid/grid_ui.c ../grid/grid_ui.h \
  ../usb/class/composite/device/composite_desc.h ../atmel_start_pins.h \
  ../grid/grid_protocol.h ../grid/grid_led.h ../grid/grid_sys.h \
  ../grid/grid_buf.h ../grid/grid_module_bu16_revb.h \
- ../grid/grid_module_po16_revb.h
+ ../grid/grid_module_po16_revb.h ../grid/grid_module_en16_reva.h
 
 ../grid/grid_ui.h:
 
@@ -685,3 +685,5 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../grid/grid_module_bu16_revb.h:
 
 ../grid/grid_module_po16_revb.h:
+
+../grid/grid_module_en16_reva.h:

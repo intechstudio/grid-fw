@@ -1,5 +1,5 @@
-#ifndef GRID_MODULE_PO16_REVB_H_INCLUDED
-#define GRID_MODULE_PO16_REVB_H_INCLUDED
+#ifndef GRID_MODULE_PBF4_REVA_H_INCLUDED
+#define GRID_MODULE_PBF4_REVA_H_INCLUDED
 
 #include "grid_module.h"
 
@@ -19,7 +19,7 @@ static void grid_module_hardware_start_transfer(void);
 static void grid_module_hardware_transfer_complete_cb(void);
 static void grid_module_hardware_init(void);
 
-void grid_module_po16_revb_init(struct grid_ui_model* mod);
+void grid_module_pbf4_revb_init(struct grid_ui_model* mod);
 
 
 

@@ -12,8 +12,8 @@ static void grid_module_hardware_start_transfer(void){
 
 static void grid_module_hardware_transfer_complete_cb(void){
 	
-	if (grid_ui_button_hardware_transfer_complete == 0){
-		grid_ui_button_hardware_transfer_complete++;
+	if (grid_module_hardware_transfer_complete == 0){
+		grid_module_hardware_transfer_complete++;
 		return;
 	}
 	
@@ -160,7 +160,7 @@ static void grid_module_hardware_transfer_complete_cb(void){
 	CRITICAL_SECTION_LEAVE()
 	
 	
-	grid_ui_button_hardware_transfer_complete = 0;
+	grid_module_hardware_transfer_complete = 0;
 	grid_module_hardware_start_transfer();
 }
 
@@ -238,6 +238,9 @@ void grid_module_bu16_revb_init(struct grid_ui_model* mod){
 		
 	}
 
+
+	
+	
 	grid_led_init(&grid_led_state, 16);
 	grid_module_init_animation(&grid_led_state);
 	
