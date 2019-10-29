@@ -4,21 +4,8 @@
 #include <atmel_start.h>
 #include "atmel_start_pins.h"
 
-
-
 #include <stdio.h>
-
-#include "../../grid_lib/grid_protocol.h"
-
-#include "../../grid_lib/grid_led.c" // WS2812 LED
-#include "../../grid_lib/grid_ain.c" // Analog input filtering
-#include "../../grid_lib/grid_sys.c" // Grid System
-
-
-#include "../../grid_lib/grid_buf.c" // Grid Buffer Abstraction
-
-
-#include "../../grid_modules/grid_module.c" // 
+#include "grid/grid_module.h" //
 
 
 static struct timer_task RTC_Scheduler_rx_task;
@@ -31,7 +18,7 @@ volatile uint8_t pingflag = 0;
 volatile uint32_t realtime = 0; 
 
 
-void grid_port_receive_task(GRID_PORT_t* por){
+void grid_port_receive_task(struct grid_port* por){
 		
 
 	// THERE IS ALREADY DATA, PROCESS THAT FIRST
@@ -114,7 +101,7 @@ void grid_port_receive_task(GRID_PORT_t* por){
 		
 }
 
-void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t length){
+void grid_port_receive_decode(struct grid_port* por, uint8_t startcommand, uint8_t length){
 	
 	
 	uint8_t response[10];
@@ -372,7 +359,7 @@ void grid_port_receive_decode(GRID_PORT_t* por, uint8_t startcommand, uint8_t le
 	
 }
 
-void grid_port_receive_complete_task(GRID_PORT_t* por){
+void grid_port_receive_complete_task(struct grid_port* por){
 	
 	if (por->rx_double_buffer_status != 1){
 		return;
@@ -455,18 +442,16 @@ void init_timer(void)
 struct io_descriptor *io;
 
 
-
-
+volatile uint8_t reset_cause;
 
 int main(void)
 {
 	
-			
-
+	reset_cause = *((uint8_t*)0);
+	
 	
 	
 	#include "usb/class/midi/device/audiodf_midi.h"
-	
 
 	
 	atmel_start_init();	
@@ -474,7 +459,6 @@ int main(void)
 	//TIMER_0_example2();
 
 	audiodf_midi_init();
-
 
 
 	composite_device_start();

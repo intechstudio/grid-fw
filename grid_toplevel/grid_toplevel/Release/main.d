@@ -145,9 +145,9 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  ../hal/utils/include/utils_list.h ../hal/include/hpl_timer.h \
  ../hal/include/hal_usart_async.h ../hal/include/hal_io.h \
  ../hal/include/hpl_usart_async.h ../hal/include/hpl_usart.h \
- ../hal/include/hal_spi_m_sync.h ../hal/include/hpl_spi_m_sync.h \
+ ../hal/include/hal_spi_m_async.h ../hal/include/hpl_spi_m_async.h \
  ../hal/include/hpl_spi.h ../hal/utils/include/utils.h \
- ../hal/include/hpl_spi_sync.h ../hal/include/hal_i2c_m_async.h \
+ ../hal/include/hpl_spi_async.h ../hal/include/hal_i2c_m_async.h \
  ../hal/include/hpl_i2c_m_async.h ../hal/include/hpl_i2c_m_sync.h \
  ../hal/include/hal_spi_m_dma.h ../hal/include/hpl_spi_m_dma.h \
  ../hal/include/hpl_spi_dma.h ../hal/include/hpl_dma.h \
@@ -197,10 +197,9 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\machine\stdlib.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\alloca.h \
  .././../../grid_lib/grid_ain.c .././../../grid_lib/grid_ain.h \
- .././../../grid_lib/grid_tel.c .././../../grid_lib/grid_tel.h \
  .././../../grid_lib/grid_sys.c .././../../grid_lib/grid_sys.h \
  .././../../grid_lib/grid_buf.h .././../../grid_lib/grid_buf.c \
- .././../../grid_modules/grid_module_p16.c ../../../grid_lib/grid_sys.h \
+ .././../../grid_modules/grid_module.c ../../../grid_lib/grid_sys.h \
  .././usb/class/midi/device/audiodf_midi.h
 
 ../atmel_start.h:
@@ -583,15 +582,15 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 
 ../hal/include/hpl_usart.h:
 
-../hal/include/hal_spi_m_sync.h:
+../hal/include/hal_spi_m_async.h:
 
-../hal/include/hpl_spi_m_sync.h:
+../hal/include/hpl_spi_m_async.h:
 
 ../hal/include/hpl_spi.h:
 
 ../hal/utils/include/utils.h:
 
-../hal/include/hpl_spi_sync.h:
+../hal/include/hpl_spi_async.h:
 
 ../hal/include/hal_i2c_m_async.h:
 
@@ -723,10 +722,6 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 .././../../grid_lib/grid_ain.h:
 
-.././../../grid_lib/grid_tel.c:
-
-.././../../grid_lib/grid_tel.h:
-
 .././../../grid_lib/grid_sys.c:
 
 .././../../grid_lib/grid_sys.h:
@@ -735,7 +730,7 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 .././../../grid_lib/grid_buf.c:
 
-.././../../grid_modules/grid_module_p16.c:
+.././../../grid_modules/grid_module.c:
 
 ../../../grid_lib/grid_sys.h:
 

@@ -354,7 +354,7 @@
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
   <armgcc.linker.memorysettings.ExternalRAM />
-  <armgcc.linker.miscellaneous.LinkerFlags>-Tsamd51n20a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.linker.miscellaneous.LinkerFlags>-Tsamd51n20a_flash_release.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\ARM\CMSIS\5.4.0\CMSIS\Core\Include\</Value>
@@ -694,6 +694,63 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="examples\driver_examples.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_ain.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_ain.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_buf.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_buf.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_default.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_default.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_led.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_led.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_module.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_module.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_module_bu16_revb.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_module_bu16_revb.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_module_po16_revb.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_module_po16_revb.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_protocol.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_sys.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_sys.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_ui.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_ui.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\include\hal_adc_async.h">
@@ -1296,6 +1353,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Folder Include="hpl\tc\" />
     <Folder Include="hpl\usb\" />
     <Folder Include="hri\" />
+    <Folder Include="grid" />
     <Folder Include="usb\" />
     <Folder Include="usb\class\" />
     <Folder Include="usb\class\cdc\" />

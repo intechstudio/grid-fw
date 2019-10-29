@@ -191,15 +191,14 @@ main.d main.o: .././main.c ../atmel_start.h ../driver_init.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\_pthreadtypes.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\machine\types.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\stdio.h \
- .././../../grid_lib/grid_protocol.h .././../../grid_lib/grid_led.c \
- .././../../grid_lib/grid_led.h \
+ .././grid/grid_module.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\stdlib.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\machine\stdlib.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\alloca.h \
- .././../../grid_lib/grid_ain.c .././../../grid_lib/grid_ain.h \
- .././../../grid_lib/grid_sys.c .././../../grid_lib/grid_sys.h \
- .././../../grid_lib/grid_buf.h .././../../grid_lib/grid_buf.c \
- .././../../grid_modules/grid_module.c ../../../grid_lib/grid_sys.h \
+ ../atmel_start_pins.h .././grid/grid_protocol.h .././grid/grid_led.h \
+ .././grid/grid_module.h .././grid/grid_sys.h .././grid/grid_buf.h \
+ .././grid/grid_ui.h .././grid/grid_module_bu16_revb.h \
+ .././grid/grid_module_po16_revb.h \
  .././usb/class/midi/device/audiodf_midi.h
 
 ../atmel_start.h:
@@ -706,11 +705,7 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\stdio.h:
 
-.././../../grid_lib/grid_protocol.h:
-
-.././../../grid_lib/grid_led.c:
-
-.././../../grid_lib/grid_led.h:
+.././grid/grid_module.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\stdlib.h:
 
@@ -718,20 +713,22 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\alloca.h:
 
-.././../../grid_lib/grid_ain.c:
+../atmel_start_pins.h:
 
-.././../../grid_lib/grid_ain.h:
+.././grid/grid_protocol.h:
 
-.././../../grid_lib/grid_sys.c:
+.././grid/grid_led.h:
 
-.././../../grid_lib/grid_sys.h:
+.././grid/grid_module.h:
 
-.././../../grid_lib/grid_buf.h:
+.././grid/grid_sys.h:
 
-.././../../grid_lib/grid_buf.c:
+.././grid/grid_buf.h:
 
-.././../../grid_modules/grid_module.c:
+.././grid/grid_ui.h:
 
-../../../grid_lib/grid_sys.h:
+.././grid/grid_module_bu16_revb.h:
+
+.././grid/grid_module_po16_revb.h:
 
 .././usb/class/midi/device/audiodf_midi.h:
