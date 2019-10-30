@@ -58,6 +58,66 @@ struct io_descriptor *grid_sys_south_io;
 struct io_descriptor *grid_sys_west_io;
 
 
+//====================== SYS ALERT ==========================//
+uint8_t grid_sys_alert_read_color_changed_flag(struct grid_sys_model* mod);
+
+void grid_sys_alert_set_color_changed_flag(struct grid_sys_model* mod);
+void grid_sys_alert_clear_color_changed_flag(struct grid_sys_model* mod);
+uint8_t grid_sys_alert_get_color_intensity(struct grid_sys_model* mod);
+
+void grid_sys_alert_set_color(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue);
+
+void grid_sys_alert_set_alert(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue, uint8_t style, uint16_t duration);
+
+uint8_t grid_sys_alert_get_color_r(struct grid_sys_model* mod);
+uint8_t grid_sys_alert_get_color_g(struct grid_sys_model* mod);
+
+uint8_t grid_sys_alert_get_color_b(struct grid_sys_model* mod);
+
+//=========================== SYS MSG ============================//
+
+uint8_t grid_msg_get_id(uint8_t* message);
+uint8_t grid_msg_get_dx(uint8_t* message);
+uint8_t grid_msg_get_dy(uint8_t* message);
+uint8_t grid_msg_get_age(uint8_t* message);
+
+void grid_msg_set_id(uint8_t* message, uint8_t param);
+void grid_msg_set_dx(uint8_t* message, uint8_t param);
+void grid_msg_set_dy(uint8_t* message, uint8_t param);
+void grid_msg_set_age(uint8_t* message, uint8_t param);
+
+//=========================== SYS CB ============================//
+
+static void tx_cb_USART_GRID_N(const struct usart_async_descriptor *const descr);
+
+static void tx_cb_USART_GRID_E(const struct usart_async_descriptor *const descr);
+
+static void tx_cb_USART_GRID_S(const struct usart_async_descriptor *const descr);
+
+static void tx_cb_USART_GRID_W(const struct usart_async_descriptor *const descr);
+
+void tx_cb_USART_GRID(struct grid_port* const por);
+
+
+static void rx_cb_USART_GRID_N(const struct usart_async_descriptor *const descr);
+
+static void rx_cb_USART_GRID_E(const struct usart_async_descriptor *const descr);
+
+static void rx_cb_USART_GRID_S(const struct usart_async_descriptor *const descr);
+
+static void rx_cb_USART_GRID_W(const struct usart_async_descriptor *const descr);
+
+void rx_cb_USART_GRID(struct grid_port* const por);
+
+
+
+void dma_transfer_complete_n_cb(struct _dma_resource *resource);
+void dma_transfer_complete_e_cb(struct _dma_resource *resource);
+void dma_transfer_complete_s_cb(struct _dma_resource *resource);
+void dma_transfer_complete_w_cb(struct _dma_resource *resource);
+void dma_transfer_complete(struct grid_port* por);
+
+
 
 
 

@@ -4,27 +4,23 @@
 
 struct grid_ui_encoder grid_ui_encoder_array[16];
 
-static uint8_t UI_SPI_TX_BUFFER[14] = "aaaaaaaaaaaaaa";
-static uint8_t UI_SPI_RX_BUFFER[14];
-static uint8_t UI_SPI_TRANSFER_LENGTH = 10;
-
-static uint8_t UI_SPI_DEBUG = 8;
+uint8_t UI_SPI_TX_BUFFER[14] = "aaaaaaaaaaaaaa";
+uint8_t UI_SPI_RX_BUFFER[14];
+uint8_t UI_SPI_TRANSFER_LENGTH = 10;
 
 volatile uint8_t UI_SPI_DONE = 0;
 
 
 volatile uint8_t UI_SPI_RX_BUFFER_LAST[16];
 
-static uint8_t UI_ENCODER_BUTTON_STATE[16];
-static uint8_t UI_ENCODER_BUTTON_STATE_CHANGED[16];
+uint8_t UI_ENCODER_BUTTON_STATE[16];
+uint8_t UI_ENCODER_BUTTON_STATE_CHANGED[16];
 
-static uint8_t UI_ENCODER_ROTATION_STATE[16];
-static uint8_t UI_ENCODER_ROTATION_STATE_CHANGED[16];
-
-
-static uint8_t UI_ENCODER_LOOKUP[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1} ;
+uint8_t UI_ENCODER_ROTATION_STATE[16];
+uint8_t UI_ENCODER_ROTATION_STATE_CHANGED[16];
 
 
+uint8_t UI_ENCODER_LOOKUP[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1} ;
 
 
 
@@ -33,7 +29,9 @@ static uint8_t UI_ENCODER_LOOKUP[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9
 
 
 
-static void grid_module_hardware_start_transfer(void){
+
+
+void grid_module_en16_reva_hardware_start_transfer(void){
 	
 
 	gpio_set_pin_level(PIN_UI_SPI_CS0, true);
@@ -45,18 +43,12 @@ static void grid_module_hardware_start_transfer(void){
 
 }
 
-static void grid_module_hardware_transfer_complete_cb(void){
+void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 	
 	/* Transfer completed */
 
 	struct grid_ui_model* mod = &grid_ui_state;
 	
-	
-
-	grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_MASTER);
-	grid_sync_set_level(GRID_SYNC_1, 1);
-		
-	grid_sync_set_mode(GRID_SYNC_1, GRID_SYNC_MASTER);
 
 	// Set the shift registers to continuously load data until new transaction is issued
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
@@ -122,15 +114,15 @@ static void grid_module_hardware_transfer_complete_cb(void){
 				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_a_previous = phase_a;
 					
 				if (phase_b == 0){
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = phase_a;
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = !phase_a;
 				}
 				else{
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = !phase_a;
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = phase_a;
 				}
 					
 				if (phase_a && phase_b){
 						
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value += grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction*2 -1;
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value += grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction*8 -4;
 					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value %= 128;
 					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_changed = 1;
 					
@@ -163,15 +155,15 @@ static void grid_module_hardware_transfer_complete_cb(void){
 				grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].phase_b_previous = phase_b;
 					
 				if (phase_a == 0){
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = !phase_b;
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = phase_b;
 				}
 				else{
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = phase_b;
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction = !phase_b;
 				}
 					
 				if (phase_a && phase_b){
 
-					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value += grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction*2 -1;
+					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value += grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_direction*8 -4;
 					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value %= 128;
 					grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_changed = 1;
 					
@@ -241,13 +233,13 @@ static void grid_module_hardware_transfer_complete_cb(void){
 
 		
 	
-	grid_sync_set_level(GRID_SYNC_1, 0);
 
-	grid_module_hardware_transfer_complete = 0;
-	grid_module_hardware_start_transfer();
+
+	grid_module_en16_reva_hardware_transfer_complete = 0;
+	grid_module_en16_reva_hardware_start_transfer();
 }
 
-static void grid_module_hardware_init(void){
+void grid_module_en16_reva_hardware_init(void){
 	
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 	gpio_set_pin_direction(PIN_UI_SPI_CS0, GPIO_DIRECTION_OUT);
@@ -258,15 +250,13 @@ static void grid_module_hardware_init(void){
 	
 	spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
 	
-	spi_m_async_get_io_descriptor(&UI_SPI, &grid_hardware_io);
+	spi_m_async_get_io_descriptor(&UI_SPI, &grid_module_en16_reva_hardware_io);
 
 
-	spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, grid_module_hardware_transfer_complete_cb);
-	
+	spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, grid_module_en16_reva_hardware_transfer_complete_cb);
+
 
 }
-
-
 
 void grid_module_en16_reva_init(struct grid_ui_model* mod){
 	
@@ -362,7 +352,9 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 	grid_led_init(&grid_led_state, 16);
 	grid_module_init_animation(&grid_led_state);
 	
-	grid_module_hardware_init();
-	grid_module_hardware_start_transfer();
+		
+	grid_module_en16_reva_hardware_init();	
+	grid_module_en16_reva_hardware_start_transfer();
+
 	
 }

@@ -286,7 +286,7 @@ uint8_t grid_buffer_read_cancel(struct grid_buffer* buf){
 	return 1;
 }
 
-void grid_port_init(struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf_size, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma){
+void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf_size, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma){
 	
 	grid_buffer_init(&por->tx_buffer, tx_buf_size);
 	grid_buffer_init(&por->rx_buffer, rx_buf_size);
@@ -339,7 +339,7 @@ void grid_port_init(struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf
 	
 }
 
-void grid_port_init_all(){
+void grid_port_init_all(void){
 	
 	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_MSG_NORTH ,0);
 	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_MSG_EAST  ,1);
@@ -517,6 +517,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				
 				if (msg_protocol == GRID_MSG_PROTOCOL_MIDI){
 					
+
 				
 					uint8_t midi_channel = grid_sys_read_hex_string_value(&temp[current_start+3], 2, &error_flag);
 					uint8_t midi_command = grid_sys_read_hex_string_value(&temp[current_start+5], 2, &error_flag);
@@ -649,7 +650,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			
 		}
 		
-		grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
+		//grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
 		//cdcdf_acm_write(usb_tx_double_buffer, packet_size);
 
 		

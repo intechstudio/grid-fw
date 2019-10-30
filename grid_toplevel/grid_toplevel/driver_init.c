@@ -686,6 +686,9 @@ void system_init(void)
 {
 	init_mcu();
 
+
+
+
 	// GPIO on PA05
 
 	gpio_set_pin_level(LED0,
@@ -858,6 +861,9 @@ void system_init(void)
 	gpio_set_pin_direction(MUX_C, GPIO_DIRECTION_OUT);
 
 	gpio_set_pin_function(MUX_C, GPIO_PIN_FUNCTION_OFF);
+
+
+
 
 	ADC_0_init();
 	ADC_1_init();

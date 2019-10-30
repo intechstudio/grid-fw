@@ -108,6 +108,8 @@ uint8_t grid_buffer_write_acknowledge(struct grid_buffer* buf);
 uint8_t grid_buffer_write_cancel(struct grid_buffer* buf);
 
 
+void grid_port_init_all(void);
 
+void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf_size, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma);
 
 #endif

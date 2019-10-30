@@ -1,11 +1,11 @@
 
 
+#include "grid/grid_module.h"
 
 #include <atmel_start.h>
 #include "atmel_start_pins.h"
 
 #include <stdio.h>
-#include "grid/grid_module.h" //
 
 
 static struct timer_task RTC_Scheduler_rx_task;
@@ -14,6 +14,7 @@ static struct timer_task RTC_Scheduler_realtime;
 
 
 volatile uint8_t pingflag = 0;
+volatile uint8_t pingflag_active = 0;
 
 volatile uint32_t realtime = 0; 
 
@@ -245,9 +246,10 @@ void grid_port_receive_decode(struct grid_port* por, uint8_t startcommand, uint8
 							
 				if (message[2] == GRID_MSG_ACKNOWLEDGE){				
 
-					grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 2, 200); // PURPLE
+					grid_sys_alert_set_alert(&grid_sys_state, 30, 30, 30, 0, 250); // LIGHT WHITE PULSE
 				}
 				else if (message[2] == GRID_MSG_NACKNOWLEDGE){
+					grid_sys_alert_set_alert(&grid_sys_state, 50, 0, 0, 0, 250); // LIGHT RED PULSE
 					// RESEND PREVIOUS
 				}
 				else if (message[2] == GRID_MSG_CANCEL){
@@ -282,7 +284,7 @@ void grid_port_receive_decode(struct grid_port* por, uint8_t startcommand, uint8
 						}
 						else{
 							//OK
-							grid_sys_alert_set_alert(&grid_sys_state, 0, 0, 10, 2, 200); // BLUE
+							//grid_sys_alert_set_alert(&grid_sys_state, 6, 6, 6, 0, 200); // LIGHT WHITE
 							
 						}
 									
@@ -305,7 +307,7 @@ void grid_port_receive_decode(struct grid_port* por, uint8_t startcommand, uint8
 		else{
 			// INVALID CHECKSUM
 						
-			grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 1, 2000); // RED BLINKY
+			grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 1, 2000); // PURPLE BLINKY
 						
 		}
 				
@@ -402,15 +404,16 @@ static void RTC_Scheduler_rx_task_cb(const struct timer_task *const timer_task)
 
 static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
-
+	//gpio_set_pin_level(PIN_GRID_SYNC_1, true);	
 	realtime++;
-	
+	//gpio_set_pin_level(PIN_GRID_SYNC_1, false);		
 	
 }
 
 static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 {
-	pingflag = 1;
+	pingflag++;
+	pingflag_active++;
 }
 
 #define RTC1SEC 16384
@@ -419,7 +422,7 @@ void init_timer(void)
 {
 	
 		
-	RTC_Scheduler_ping.interval = 16380/5; //1sec
+	RTC_Scheduler_ping.interval = RTC1SEC/20; //50ms
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
 	RTC_Scheduler_ping.mode     = TIMER_TASK_REPEAT;
 	
@@ -442,19 +445,21 @@ void init_timer(void)
 struct io_descriptor *io;
 
 
-volatile uint8_t reset_cause;
 
 int main(void)
 {
-	
-	reset_cause = *((uint8_t*)0);
 	
 	
 	
 	#include "usb/class/midi/device/audiodf_midi.h"
 
-	
+
+
 	atmel_start_init();	
+	
+
+
+
 	
 	//TIMER_0_example2();
 
@@ -463,46 +468,64 @@ int main(void)
 
 	composite_device_start();
 	
-	grid_module_init();
-	
+	grid_module_common_init();
 
-
-
-	
 	init_timer();	
 	
 	uint32_t loopstart = 0;
-		
+
+	
+	rand();rand();
+	
+	uint8_t r[4] = {rand()%3, rand()%3, rand()%3, rand()%3};	
+	uint8_t g[4] = {rand()%3, rand()%3, rand()%3, rand()%3};
+	uint8_t b[4] = {rand()%3, rand()%3, rand()%3, rand()%3};
+	
 	for (uint8_t i = 0; i<grid_led_get_led_number(&grid_led_state); i++)
 	{
-		grid_led_set_min(&grid_led_state, i, 0, 10,0,0);
-		grid_led_set_mid(&grid_led_state, i, 0, 100,0,0);
-		grid_led_set_max(&grid_led_state, i, 0, 255,0,0);
+			
+		grid_led_set_min(&grid_led_state, i, 0, r[i%4]*3, g[i%4]*3, b[i%4]*3);
+		grid_led_set_mid(&grid_led_state, i, 0, r[i%4]*40, g[i%4]*40, b[i%4]*40);
+		grid_led_set_max(&grid_led_state, i, 0, r[i%4]*127, g[i%4]*127, b[i%4]*127);
 	}
 		
 		
+		
+	gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
+	gpio_set_pin_level(PIN_GRID_SYNC_1, false);	
+	
+	
 	while (1) {
-					
-		loopstart = realtime;
+		
+		
 		
 
+			
+		loopstart = realtime;
 		
-		
-		
+						
 		
 		/* ========================= PING ============================= */
-						
-		if (pingflag){
+		if (pingflag_active){
 			
-			grid_sys_ping(&GRID_PORT_N);
-			grid_sys_ping(&GRID_PORT_E);
-			grid_sys_ping(&GRID_PORT_S);
-			grid_sys_ping(&GRID_PORT_W);
+			if (pingflag%4 == 0){
+				grid_sys_ping(&GRID_PORT_N);
+			}
+			if (pingflag%4 == 1){
+				grid_sys_ping(&GRID_PORT_E);
+			}
+			if (pingflag%4 == 2){
+				grid_sys_ping(&GRID_PORT_S);
+			}
+			if (pingflag%4 == 3){
+				grid_sys_ping(&GRID_PORT_W);
+			}
+			pingflag_active = 0;
 			
-			pingflag = 0;
-		}
+		}			
+
 		
-		
+
 		// CHECK RX BUFFERS
 		grid_port_receive_complete_task(&GRID_PORT_N);
 		grid_port_receive_complete_task(&GRID_PORT_E);
@@ -529,8 +552,7 @@ int main(void)
 		
 		grid_port_process_outbound_usb(&GRID_PORT_H); // Send data from HOST_TX through USB
 		grid_port_process_outbound_ui(&GRID_PORT_U);
-				
-				
+
 			
 		uint16_t length = 0;
 		
@@ -568,22 +590,39 @@ int main(void)
 			
 		}
 		
-				
+						
+
+
+
+		
 		grid_led_tick(&grid_led_state);
+		
+		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
+			
+		}
+		
 		grid_led_render_all(&grid_led_state);
 				
-				
-		grid_led_hardware_start_transfer_blocking(&grid_led_state);
+
+					
+		grid_led_hardware_start_transfer(&grid_led_state);
 	
-			
+	
+	
 		
-		
-		
+
+
 		// IDLETASK
+		if (realtime>loopstart + RTC1SEC/250){
+			loopstart+=1;
+			gpio_set_pin_level(PIN_GRID_SYNC_2, true);	
+		}
+		
+		gpio_set_pin_level(PIN_GRID_SYNC_1, true);
 		while(loopstart + RTC1SEC/1000 > realtime){
 			delay_us(10);
-		}	
-		
-		
+		}
+		gpio_set_pin_level(PIN_GRID_SYNC_1, false);
+
 	}
 }

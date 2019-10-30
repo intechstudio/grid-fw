@@ -79,9 +79,6 @@ void grid_sync_set_level(enum grid_sync_selector sync_select, uint8_t sync_level
 
 
 
-
-static uint8_t string[20];
-static uint8_t string2[20];
 	
 
 
@@ -118,18 +115,16 @@ uint8_t grid_adc_get_config(uint8_t register_offset, uint8_t bit_offest){
 }	
 		
 		
-		
-
 	
 
 // Define all of the peripheral interrupt callbacks
 	
 
-volatile static uint32_t transfer_ready = 1;
 
 
 void grid_module_init_animation(struct grid_led_model* mod){
 	
+
 	
 	for (uint8_t i = 0; i<255; i++){
 			
@@ -140,19 +135,28 @@ void grid_module_init_animation(struct grid_led_model* mod){
 		uint8_t color_g   = i;
 		uint8_t color_b   = i;
 			
-			
+				
 		for (uint8_t i=0; i<mod->led_number; i++){
 			//grid_led_set_color(i, 0, 255, 0);
 			grid_led_set_color(&grid_led_state, i, color_r, color_g, color_b);
+				
 				
 		}
 			
 			
 		grid_led_hardware_start_transfer_blocking(&grid_led_state);
 			
+			
+
+				
 		delay_ms(1);
+		
 			
 	}
+	
+
+	
+
 	
 }
 
@@ -161,25 +165,23 @@ void grid_module_init_animation(struct grid_led_model* mod){
 /* ============================== GRID_MODULE_INIT() ================================ */
 
 
-void grid_module_init(void){
+void grid_module_common_init(void){
 				
-	grid_port_init_all();		
-	grid_sys_uart_init();	
-	grid_rx_dma_init();	
+
 	
 	
 	//enable pwr!
 	gpio_set_pin_level(UI_PWR_EN, true);
 
-
 	// ADC SETUP	
-		
+	
 	if (grid_sys_get_hwcfg() == GRID_MODULE_P16_RevB){					
 		grid_module_po16_revb_init(&grid_ui_state);	
 	}	
 	
-	if (grid_sys_get_hwcfg() == GRID_MODULE_B16_RevB){			
-		grid_module_bu16_revb_init(&grid_ui_state);			
+	if (grid_sys_get_hwcfg() == GRID_MODULE_B16_RevB){	
+		grid_module_bu16_revb_init(&grid_ui_state);
+	
 	}	
 	
 	if (grid_sys_get_hwcfg() == GRID_MODULE_PBF4_RevA){						
@@ -188,18 +190,16 @@ void grid_module_init(void){
 	
 	if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevA){	
 		grid_module_en16_reva_init(&grid_ui_state);
+		
 	}	
 	
 
-	
-	// ===================== USART SETUP ========================= //
-	
-	//usart_async_register_callback(&GRID_AUX, USART_ASYNC_TXC_CB, tx_cb_GRID_AUX);
-	/*usart_async_register_callback(&GRID_AUX, USART_ASYNC_RXC_CB, rx_cb);
-	usart_async_register_callback(&GRID_AUX, USART_ASYNC_ERROR_CB, err_cb);*/
-	
-// 	usart_async_get_io_descriptor(&GRID_AUX, &io);
-// 	usart_async_enable(&GRID_AUX);
+
+
+	grid_port_init_all();
+	grid_sys_uart_init();
+	grid_rx_dma_init();
+
 	
 		
 }

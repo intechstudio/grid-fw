@@ -89,17 +89,25 @@ void grid_port_process_ui(struct grid_port* por){
 	
 }
 
-uint8_t grid_ui_report_init(struct grid_ui_model* mod, uint8_t index, uint8_t* p, uint8_t p_len, uint8_t* h, uint8_t h_len){
+uint8_t grid_ui_model_init(struct grid_ui_model* mod, uint8_t len){
 	
+	mod->report_array = malloc(len*sizeof(struct grid_ui_report));
+	mod->report_length = len;
+	
+}
+
+uint8_t grid_ui_report_init(struct grid_ui_model* mod, uint8_t index, uint8_t* p, uint8_t p_len, uint8_t* h, uint8_t h_len){
+
 	mod->report_array[index].changed = 0;
 	mod->report_array[index].payload_length = p_len;
 	mod->report_array[index].helper_length = h_len;
 	
-	mod->report_array[index].payload = malloc(mod->report_array[index].payload_length*sizeof(uint8_t));
-	mod->report_array[index].helper = malloc(mod->report_array[index].helper_length*sizeof(uint8_t));
+	mod->report_array[index].payload = malloc(p_len*sizeof(uint8_t));
+	mod->report_array[index].helper = malloc(h_len*sizeof(uint8_t));
+	
 	
 	if (mod->report_array[index].payload == NULL || mod->report_array[index].helper == NULL){
-		return -1; // MALLOC FAILED
+		return -1;
 	}
 	
 	for (uint8_t i=0; i<mod->report_array[index].payload_length; i++){

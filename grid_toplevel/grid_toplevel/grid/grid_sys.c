@@ -242,7 +242,7 @@ void grid_sys_alert_set_color(struct grid_sys_model* mod, uint8_t red, uint8_t g
 		
 }
 
-void grid_sys_alert_set_alert(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue, uint8_t style, uint8_t duration){
+void grid_sys_alert_set_alert(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue, uint8_t style, uint16_t duration){
 	
 	grid_sys_alert_set_color(mod, red, green, blue);
 
@@ -431,14 +431,16 @@ uint8_t grid_msg_get_checksum(uint8_t* str, uint32_t length){
 	
 }
 
-uint8_t grid_msg_set_checksum(uint8_t* message, uint32_t length, uint8_t checksum){
+void grid_msg_set_checksum(uint8_t* message, uint32_t length, uint8_t checksum){
 	
-	uint8_t checksum_string[4];
-
-	sprintf(checksum_string, "%02x", checksum);
-
-	message[length-3] = checksum_string[0];
-	message[length-2] = checksum_string[1];
+// 	uint8_t checksum_string[4];
+// 
+// 	sprintf(checksum_string, "%02x", checksum);
+// 
+// 	message[length-3] = checksum_string[0];
+// 	message[length-2] = checksum_string[1];
+	
+	grid_sys_write_hex_string_value(&message[length-3], 2, checksum);
 	
 }
 
@@ -522,16 +524,23 @@ void grid_msg_push_recent(struct grid_sys_model* model, uint32_t fingerprint){
 
 void grid_sys_ping(struct grid_port* por){
 		
-	char message[20];
-	uint8_t length = 0;
+		
+	uint8_t length = 16;
+	uint32_t hwcfg = grid_sys_get_hwcfg();
+	char message[16] = {GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, por->direction, '0','0','0','0','0','0','0','0',GRID_MSG_END_OF_TRANSMISSION,'0','0','\n'};
 	
+	
+	//char message[20];	
 	// Create the packet
-	sprintf(message, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, por->direction ,grid_sys_get_hwcfg(), GRID_MSG_END_OF_TRANSMISSION);
+	//sprintf(message, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, por->direction ,hwcfg, GRID_MSG_END_OF_TRANSMISSION);
+	//length = strlen(message);
 	
-	// Calculate packet length
-	length = strlen(message);
 
-	grid_msg_set_checksum(message, length, grid_msg_get_checksum(message, length));
+	grid_sys_write_hex_string_value(&message[4], 8, hwcfg);
+	
+
+	
+ 	grid_msg_set_checksum(message, length, grid_msg_get_checksum(message, length));
 		
 	// Put the packet into the tx_buffer
 	if (grid_buffer_write_init(&por->tx_buffer, length)){
@@ -544,6 +553,5 @@ void grid_sys_ping(struct grid_port* por){
 		grid_buffer_write_acknowledge(&por->tx_buffer);
 	}
 				
-	
 }
 

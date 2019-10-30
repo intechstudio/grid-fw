@@ -8,26 +8,8 @@
 #include "grid_ain.h"
 
 
-struct AIN_Channel
-{
+struct AIN_Channel* ain_channel_buffer;
 
-	uint16_t* buffer;
-	uint8_t buffer_depth;
-	
-	
-	
-	uint8_t  result_format;
-	uint8_t  result_resolution;
-	uint16_t result_value;
-	uint16_t result_average;
-	uint16_t result_changed;
-	
-};
-
-
-static struct AIN_Channel* ain_channel_buffer;
-static uint8_t ain_channel_buffer_length;
-static uint8_t ain_channel_buffer_depth;
 
 
 uint8_t grid_ain_channel_init(struct AIN_Channel* instance , uint8_t buffer_depth, uint8_t result_format, uint8_t result_resolution){
@@ -63,17 +45,15 @@ uint8_t grid_ain_channel_deinit(struct AIN_Channel* instance){
 /** Initialize ain buffer for a given number of analog channels */
 uint8_t grid_ain_init(uint8_t length, uint8_t depth, uint8_t  format, uint8_t resolution){
 	
-	ain_channel_buffer_length = length;
-	ain_channel_buffer_depth = depth;
 	
 	// ain_channel_result_resolution = resolution
 	
 	
 	// 2D buffer, example: 16 potentiometers, last 32 samples stored for each
-	ain_channel_buffer = (struct AIN_Channel*) malloc(ain_channel_buffer_length * sizeof(struct AIN_Channel));
+	ain_channel_buffer = (struct AIN_Channel*) malloc(length * sizeof(struct AIN_Channel));
 
-	for (uint8_t i=0; i<ain_channel_buffer_length; i++){
-		grid_ain_channel_init(&ain_channel_buffer[i], ain_channel_buffer_depth, format, resolution);
+	for (uint8_t i=0; i<length; i++){
+		grid_ain_channel_init(&ain_channel_buffer[i], depth, format, resolution);
 	}
 
 	return 0;

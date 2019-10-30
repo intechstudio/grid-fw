@@ -3,7 +3,6 @@
 
 #include "grid_module.h"
 
-
 struct LED_color{
 	uint8_t r;
 	uint8_t g;
@@ -44,7 +43,17 @@ struct grid_led_model{
 
 struct grid_led_model grid_led_state;
 
-static uint32_t grid_led_color_code[256];
+uint32_t grid_led_color_code[256];
+volatile uint8_t grid_led_hardware_transfer_done;
+
+static void grid_led_hardware_transfer_complete_cb(struct _dma_resource *resource);
+
+void grid_led_hardware_start_transfer_blocking(struct grid_led_model* mod);
+
+void grid_led_hardware_start_transfer(struct grid_led_model* mod);
+
+uint8_t grid_led_hardware_is_transfer_completed(struct grid_led_model* mod);
+
 
 // INITIALIZING THE GRID_LED LIBRARY
 uint8_t grid_led_init(struct grid_led_model* mod, uint8_t num);

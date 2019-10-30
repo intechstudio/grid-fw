@@ -4,17 +4,21 @@
 #include "grid_module.h"
 
 
-volatile static uint8_t grid_module_hardware_transfer_complete;
+volatile uint8_t grid_module_bu16_revb_hardware_transfer_complete;
 
-static const uint8_t grid_module_mux_lookup[];
+volatile uint8_t grid_module_bu16_revb_mux_lookup[16];
 
-static uint8_t		  grid_module_mux = 0;
+volatile uint8_t	grid_module_bu16_revb_mux;
 
-static void grid_module_hardware_start_transfer(void);
-static void grid_module_hardware_transfer_complete_cb(void);
-static void grid_module_hardware_init(void);
+void grid_module_bu16_revb_hardware_start_transfer(void);
+//static void grid_module_bu16_revb_hardware_transfer_complete_cb(void);
+void grid_module_bu16_revb_hardware_init(void);
 
 void grid_module_bu16_revb_init(struct grid_ui_model* mod);
+
+
+
+/*void test_init(struct grid_ui_model* mod);*/
 
 
 

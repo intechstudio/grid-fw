@@ -198,9 +198,9 @@ uint8_t grid_led_set_color(struct grid_led_model* mod, uint32_t led_index, uint8
 }
 
 
-volatile static uint8_t grid_led_hardware_transfer_done = 0;
 
-void grid_led_hardware_transfer_complete_cb(struct _dma_resource *resource){
+
+static void grid_led_hardware_transfer_complete_cb(struct _dma_resource *resource){
 	
 
 	grid_led_hardware_transfer_done = 1;
@@ -224,6 +224,14 @@ void grid_led_buffer_init(struct grid_led_model* mod, uint32_t length){
 		
 	#define led_smart_buffer_layer_number 2
 	mod->led_smart_buffer = (struct LED_layer*) malloc(mod->led_number * led_smart_buffer_layer_number * sizeof(struct LED_layer));
+	
+	if(mod->led_frame_buffer==NULL || mod->led_smart_buffer==NULL){
+		while(1){
+			
+			
+		}		
+		
+	}
 		
 	// Fill the first 24 bytes with the rr_code (reset)
 	// This memory is essentially wasted but allows the entire frame to be sent out using DMA
@@ -447,5 +455,22 @@ void grid_led_hardware_start_transfer_blocking(struct grid_led_model* mod){
 	while(grid_led_hardware_transfer_done!=1){
 			
 	}
+	
+}
+
+void grid_led_hardware_start_transfer (struct grid_led_model* mod){
+	
+	// SEND DATA TO LEDs
+	grid_led_hardware_transfer_done = 0;
+	spi_m_dma_enable(&GRID_LED);
+			
+	io_write(mod->hardware_io_descriptor, grid_led_get_frame_buffer_pointer(mod), grid_led_get_frame_buffer_size(mod));
+
+}
+
+uint8_t grid_led_hardware_is_transfer_completed(struct grid_led_model* mod){
+	
+
+	return grid_led_hardware_transfer_done;
 	
 }

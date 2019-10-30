@@ -353,6 +353,7 @@
     </ListValues>
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.optimization.GeneratePositionIndependentCode>True</armgcc.linker.optimization.GeneratePositionIndependentCode>
   <armgcc.linker.memorysettings.ExternalRAM />
   <armgcc.linker.miscellaneous.LinkerFlags>-Tsamd51n20a_flash_release.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.general.IncludePaths>
@@ -696,9 +697,6 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="examples\driver_examples.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="grid\grid_module_en16_reva.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="grid\grid_ain.c">
       <SubType>compile</SubType>
     </Compile>
@@ -709,12 +707,6 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="grid\grid_buf.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="grid\grid_default.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="grid\grid_default.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="grid\grid_led.c">
@@ -733,6 +725,12 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="grid\grid_module_bu16_revb.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_module_en16_reva.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_module_en16_reva.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="grid\grid_module_pbf4_reva.c">
@@ -760,9 +758,6 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="grid\grid_ui.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="grid\grid_module_en16_reva.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\include\hal_adc_async.h">
