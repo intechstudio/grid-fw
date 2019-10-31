@@ -8,6 +8,9 @@
 #include <stdio.h>
 
 
+#include <hpl_reset.h>
+
+
 static struct timer_task RTC_Scheduler_rx_task;
 static struct timer_task RTC_Scheduler_ping;
 static struct timer_task RTC_Scheduler_realtime;
@@ -366,6 +369,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 
 void grid_port_receive_complete_task(struct grid_port* por){
 	
+
 	///////////////////// PART 1
 	
 	grid_port_receive_task(por);	
@@ -394,38 +398,10 @@ void grid_port_receive_complete_task(struct grid_port* por){
 	
 	por->rx_double_buffer_status = 0;
 	
-
 	
 	
 }
 
-
-static void RTC_Scheduler_rx_task_cb(const struct timer_task *const timer_task)
-{
-	
-// 	rxtimeoutselector++;
-// 	if (rxtimeoutselector%4==0){
-// 		grid_port_receive_task(&GRID_PORT_N);	
-// 	}
-// 	if (rxtimeoutselector%4==0){
-// 		grid_port_receive_task(&GRID_PORT_E);	
-// 	}
-// 	if (rxtimeoutselector%4==0){
-// 		grid_port_receive_task(&GRID_PORT_S);	
-// 	}
-// 	if (rxtimeoutselector%4==0){
-// 		grid_port_receive_task(&GRID_PORT_W);	
-// 	}
-	
-}
-
-static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
-{
-	//gpio_set_pin_level(PIN_GRID_SYNC_1, true);	
-	grid_sys_rtc_tick_time(&grid_sys_state);
-	//gpio_set_pin_level(PIN_GRID_SYNC_1, false);		
-	
-}
 
 static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 {
@@ -444,17 +420,12 @@ void init_timer(void)
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
 	RTC_Scheduler_ping.mode     = TIMER_TASK_REPEAT;
 	
-	RTC_Scheduler_rx_task.interval = RTC1SEC/10000; // 100us
-	RTC_Scheduler_rx_task.cb       = RTC_Scheduler_rx_task_cb;
-	RTC_Scheduler_rx_task.mode     = TIMER_TASK_REPEAT;
-	
-	RTC_Scheduler_realtime.interval = 1;
-	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
+	RTC_Scheduler_realtime.interval = 10;
+//	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
 	RTC_Scheduler_realtime.mode     = TIMER_TASK_REPEAT;
 
-	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_rx_task);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_ping);
-	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime);
+//	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime);
 	
 	timer_start(&RTC_Scheduler);
 	
@@ -464,28 +435,28 @@ struct io_descriptor *io;
 
 
 
+
+
 int main(void)
 {
-	
-	
-	
-	#include "usb/class/midi/device/audiodf_midi.h"
-
-
-
 	atmel_start_init();	
 	
-
+// 	wdt_set_timeout_period(&WDT_0, 1000, 4096);
+// 	wdt_enable(&WDT_0);
+// 	wdt_feed(&WDT_0);
+		
+	wdt_disable(&WDT_0);
+	
 
 
 	
 	//TIMER_0_example2();
-
+	#include "usb/class/midi/device/audiodf_midi.h"
 	audiodf_midi_init();
 
 
 	composite_device_start();
-	
+
 	grid_module_common_init();
 
 	
@@ -515,11 +486,23 @@ int main(void)
 	
 	uint8_t loopcounter = 0;
 	
+
+	
 	while (1) {
+		
+		
+		//gpio_set_pin_level(PIN_GRID_SYNC_1, true);
+		//wdt_feed(&WDT_0);
+		//gpio_set_pin_level(PIN_GRID_SYNC_1, false);
+
+
 		loopcounter++;
 	
 		loopstart = grid_sys_rtc_get_time(&grid_sys_state);
 		
+		
+		
+
 						
 		
 		/* ========================= PING ============================= */
@@ -541,18 +524,28 @@ int main(void)
 			
 		}			
 
-		
+	
+
 
 		// CHECK RX BUFFERS
 		grid_port_receive_complete_task(&GRID_PORT_N);
 		grid_port_receive_complete_task(&GRID_PORT_E);
 		grid_port_receive_complete_task(&GRID_PORT_S);
 		grid_port_receive_complete_task(&GRID_PORT_W);
+				// CHECK RX BUFFERS
+		grid_port_receive_complete_task(&GRID_PORT_N);
+		grid_port_receive_complete_task(&GRID_PORT_E);
+		grid_port_receive_complete_task(&GRID_PORT_S);
+		grid_port_receive_complete_task(&GRID_PORT_W);
+
 					
 		/* ========================= UI_PROCESS_INBOUND ============================= */
-		
+			
+
 		// COOLDOWN DELAY IMPLEMENTED INSIDE
 		grid_port_process_ui(&GRID_PORT_U);
+
+
 		
 		grid_port_process_inbound(&GRID_PORT_U); // Copy data from UI_RX to HOST_TX & north TX AND STUFF
 
@@ -561,7 +554,13 @@ int main(void)
 		grid_port_process_inbound(&GRID_PORT_S);		
 		grid_port_process_inbound(&GRID_PORT_W);	
 		
+		grid_port_process_inbound(&GRID_PORT_N);
+		grid_port_process_inbound(&GRID_PORT_E);
+		grid_port_process_inbound(&GRID_PORT_S);
+		grid_port_process_inbound(&GRID_PORT_W);						
+		
 		/* ========================= GRID MOVE TASK ============================= */		
+
 		
 		grid_port_process_outbound_usart(&GRID_PORT_N);
 		grid_port_process_outbound_usart(&GRID_PORT_E);
@@ -571,7 +570,12 @@ int main(void)
 		grid_port_process_outbound_usb(&GRID_PORT_H); // Send data from HOST_TX through USB
 		grid_port_process_outbound_ui(&GRID_PORT_U);
 			
-		uint16_t length = 0;
+	
+		
+		
+
+		
+		
 		
 		if (grid_sys_state.alert_state){
 			
@@ -597,7 +601,7 @@ int main(void)
 			
 			uint8_t intensity = grid_sys_alert_get_color_intensity(&grid_sys_state);
 	
-			for (uint8_t i=0; i<16; i++){	
+			for (uint8_t i=0; i<grid_led_state.led_number; i++){	
 				//grid_led_set_color(i, 0, 255, 0);	
 		
 				grid_led_set_phase(&grid_led_state, i, 1, intensity);
@@ -609,11 +613,13 @@ int main(void)
 		
 						
 
-
-
+		gpio_set_pin_level(PIN_GRID_SYNC_1, true);
 		
+	
 		grid_led_tick(&grid_led_state);
-		
+		gpio_set_pin_level(PIN_GRID_SYNC_1, false);
+			
+			
 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
 			
 		}
@@ -626,14 +632,19 @@ int main(void)
 	
 	
 	
+	
+
+		// IDLETASK
+// 		while(grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){
+// 			delay_us(1);
+// 		}
+// 		
 		
 
-
-		// IDLETASK	
 		
-		while(grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){
-			delay_us(10);
-		}
 
-	}
-}
+	}//WHILE
+	
+	
+	
+}//MAIN

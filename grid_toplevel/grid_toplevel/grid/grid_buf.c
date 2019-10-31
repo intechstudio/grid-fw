@@ -345,13 +345,13 @@ void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16
 
 void grid_port_init_all(void){
 	
-	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_MSG_NORTH ,0);
-	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_MSG_EAST  ,1);
-	grid_port_init(&GRID_PORT_S, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4, &USART_SOUTH, GRID_PORT_TYPE_USART, GRID_MSG_SOUTH ,2);
-	grid_port_init(&GRID_PORT_W, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4, &USART_WEST,  GRID_PORT_TYPE_USART, GRID_MSG_WEST  ,3);
+	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_MSG_NORTH ,0);
+	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_MSG_EAST  ,1);
+	grid_port_init(&GRID_PORT_S, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_SOUTH, GRID_PORT_TYPE_USART, GRID_MSG_SOUTH ,2);
+	grid_port_init(&GRID_PORT_W, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_WEST,  GRID_PORT_TYPE_USART, GRID_MSG_WEST  ,3);
 	
-	grid_port_init(&GRID_PORT_U, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4, NULL, GRID_PORT_TYPE_UI, 0, -1);
-	grid_port_init(&GRID_PORT_H, GRID_BUFFER_TX_SIZE*4, GRID_BUFFER_RX_SIZE*4, NULL, GRID_PORT_TYPE_USB, 0, -1);	
+	grid_port_init(&GRID_PORT_U, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_UI, 0, -1);
+	grid_port_init(&GRID_PORT_H, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_USB, 0, -1);	
 	
 	GRID_PORT_U.partner_status = 1; // UI IS ALWAYS CONNECTED
 	GRID_PORT_H.partner_status = 1; // HOST IS ALWAYS CONNECTED (Not really!)
@@ -406,6 +406,9 @@ uint8_t grid_port_process_inbound(struct grid_port* por){
 			if (port_array[i] != por){
 			
 				if (packet_size > grid_buffer_write_size(&port_array[i]->tx_buffer)){
+					
+					grid_sys_alert_set_alert(&grid_sys_state, 100,100,0,2,200);
+					
 					// sorry one of the buffers cannot store the packet, we will try later
 					return 0;
 				}	
@@ -670,7 +673,7 @@ uint8_t grid_port_process_outbound_usart(struct grid_port* por){
 	
 	if (por->tx_double_buffer_status == 0){ // READY TO SEND MESSAGE, NO TRANSMISSION IS IN PROGRESS
 		
-		uint16_t packet_size = grid_buffer_read_size(&por->tx_buffer);
+		uint32_t packet_size = grid_buffer_read_size(&por->tx_buffer);
 		
 		if (!packet_size){
 			

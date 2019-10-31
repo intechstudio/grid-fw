@@ -66,6 +66,8 @@ hal\src\hal_usart_async.c
 
 hal\src\hal_usb_device.c
 
+hal\src\hal_wdt.c
+
 hal\utils\src\utils_assert.c
 
 hal\utils\src\utils_event.c
@@ -115,6 +117,8 @@ hpl\systick\hpl_systick.c
 hpl\tc\hpl_tc.c
 
 hpl\usb\hpl_usb.c
+
+hpl\wdt\hpl_wdt.c
 
 main.c
 

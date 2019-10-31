@@ -3,11 +3,11 @@
 
 #include "grid_module.h"
 
-#define GRID_BUFFER_TX_SIZE	200
-#define GRID_BUFFER_RX_SIZE	200
+#define GRID_BUFFER_TX_SIZE	1000
+#define GRID_BUFFER_RX_SIZE	1000
 
-#define GRID_DOUBLE_BUFFER_TX_SIZE	200
-#define GRID_DOUBLE_BUFFER_RX_SIZE	500
+#define GRID_DOUBLE_BUFFER_TX_SIZE	600
+#define GRID_DOUBLE_BUFFER_RX_SIZE	600
 
 struct grid_buffer{
 	

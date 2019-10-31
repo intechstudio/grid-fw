@@ -4,7 +4,7 @@
 
 void grid_port_process_ui(struct grid_port* por){
 	
-	por->cooldown = 0;
+	//por->cooldown = 0;
 	if (por->cooldown > 0){
 		por->cooldown--;
 		return;
@@ -54,7 +54,7 @@ void grid_port_process_ui(struct grid_port* por){
 	
 	if (packetvalid){
 		
-		por->cooldown = packetvalid*5;
+		por->cooldown = packetvalid;
 		
 		grid_sys_state.next_broadcast_message_id++;
 		

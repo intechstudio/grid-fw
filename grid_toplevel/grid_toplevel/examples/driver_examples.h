@@ -48,6 +48,8 @@ void TIMER_2_example(void);
 
 void TIMER_3_example(void);
 
+void WDT_0_example(void);
+
 #ifdef __cplusplus
 }
 #endif

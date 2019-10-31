@@ -464,3 +464,11 @@ void TIMER_3_example(void)
 	timer_add_task(&TIMER_3, &TIMER_3_task2);
 	timer_start(&TIMER_3);
 }
+
+/**
+ * Example of using WDT_0.
+ */
+void WDT_0_example(void)
+{
+	
+}

@@ -281,6 +281,56 @@ void grid_led_hardware_init(struct grid_led_model* mod){
 		
 }
 
+void grid_led_startup_animation(struct grid_led_model* mod){
+
+	uint8_t grid_module_reset_cause = hri_rstc_read_RCAUSE_reg(RSTC);
+	
+	uint8_t color_r   = 1;
+	uint8_t color_g   = 1;
+	uint8_t color_b   = 1;
+	uint8_t s		  = 1;
+	
+	if (grid_module_reset_cause == RESET_REASON_WDT){
+		
+		color_r = 1;
+		color_g = 0;
+		color_b = 0;
+		s= 2;
+
+		}else if (grid_module_reset_cause == RESET_REASON_SYST){
+		
+		
+	}
+	
+	
+	
+	for (uint8_t i = 0; i<255; i++){
+	
+		// SEND DATA TO LEDs
+		
+
+		for (uint8_t j=0; j<mod->led_number; j++){
+			//grid_led_set_color(i, 0, 255, 0);
+			grid_led_set_color(mod, j, color_r*i*s%256, color_g*i*s%256, color_b*i*s%256);
+			
+			
+		}
+		
+		grid_led_hardware_start_transfer_blocking(mod);
+
+		
+		delay_ms(1);
+		
+	}
+	
+
+	
+
+	
+}
+
+
+
 /** Initialize led buffer for a given number of LEDs */
 uint8_t grid_led_init(struct grid_led_model* mod, uint8_t num){
 	
@@ -325,7 +375,8 @@ uint8_t grid_led_init(struct grid_led_model* mod, uint8_t num){
 	
 	grid_led_buffer_init(mod, num);		
 	grid_led_hardware_init(mod);
-
+	
+	grid_led_startup_animation(mod);
 
 
 	return 0;

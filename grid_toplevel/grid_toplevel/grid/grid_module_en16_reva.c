@@ -246,6 +246,7 @@ void grid_module_en16_reva_hardware_init(void){
 	
 	
 	spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
+	spi_m_async_set_baudrate(&UI_SPI, 400000);
 	
 	spi_m_async_get_io_descriptor(&UI_SPI, &grid_module_en16_reva_hardware_io);
 
@@ -347,7 +348,6 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 	
 	
 	grid_led_init(&grid_led_state, 16);
-	grid_module_init_animation(&grid_led_state);
 	
 		
 	grid_module_en16_reva_hardware_init();	

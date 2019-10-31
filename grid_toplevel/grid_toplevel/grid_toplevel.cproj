@@ -64,6 +64,7 @@
           <AcmeProjectActionInfo Action="File" Source="hal/include/hal_spi_m_async.h" IsConfig="false" Hash="kNWiys4SwzwGn2qCqzFQlA" />
           <AcmeProjectActionInfo Action="File" Source="hal/include/hal_spi_m_dma.h" IsConfig="false" Hash="MRP9iaBaY97VrZIf+yI+nQ" />
           <AcmeProjectActionInfo Action="File" Source="hal/include/hal_usb_device.h" IsConfig="false" Hash="nvejrPlc1H5xowRDNbRXjA" />
+          <AcmeProjectActionInfo Action="File" Source="hal/include/hal_wdt.h" IsConfig="false" Hash="K9VDtDsc19dB+eR0olpSjg" />
           <AcmeProjectActionInfo Action="File" Source="hal/include/hpl_adc_dma.h" IsConfig="false" Hash="ZNWJ5APLfPqPLqI7LDqlMA" />
           <AcmeProjectActionInfo Action="File" Source="hal/include/hpl_cmcc.h" IsConfig="false" Hash="mDAHEzTxsniAe2HtqO43oA" />
           <AcmeProjectActionInfo Action="File" Source="hal/include/hpl_core.h" IsConfig="false" Hash="XeEtUlBSwXUmLA41hFYYWg" />
@@ -92,6 +93,7 @@
           <AcmeProjectActionInfo Action="File" Source="hal/include/hpl_usb_device.h" IsConfig="false" Hash="Brcw6qMuGfbXlXmpCecQGw" />
           <AcmeProjectActionInfo Action="File" Source="hal/include/hpl_usb_host.h" IsConfig="false" Hash="VpIeGyIJOEC57wtrrVEpjw" />
           <AcmeProjectActionInfo Action="File" Source="hal/include/hpl_user_area.h" IsConfig="false" Hash="66YDS0l7ibOrJGOru9ZKVw" />
+          <AcmeProjectActionInfo Action="File" Source="hal/include/hpl_wdt.h" IsConfig="false" Hash="J2BXxJGoxlx3Bi9pfKE/Cw" />
           <AcmeProjectActionInfo Action="File" Source="hal/src/hal_atomic.c" IsConfig="false" Hash="jOsfB5ZnunjCPnUQXuXi9g" />
           <AcmeProjectActionInfo Action="File" Source="hal/src/hal_cache.c" IsConfig="false" Hash="edUfxCb3WSV4Uu3oKUakCg" />
           <AcmeProjectActionInfo Action="File" Source="hal/src/hal_crc_sync.c" IsConfig="false" Hash="dYpkPXmCpfsisIcsid+0NQ" />
@@ -104,6 +106,7 @@
           <AcmeProjectActionInfo Action="File" Source="hal/src/hal_io.c" IsConfig="false" Hash="FYpavzYSxhFzVrBQtcH2ZA" />
           <AcmeProjectActionInfo Action="File" Source="hal/src/hal_sleep.c" IsConfig="false" Hash="3ebghfB3jYLpnqoi3fhq3g" />
           <AcmeProjectActionInfo Action="File" Source="hal/src/hal_usb_device.c" IsConfig="false" Hash="kjTCQ0tLOU711sB984mqnQ" />
+          <AcmeProjectActionInfo Action="File" Source="hal/src/hal_wdt.c" IsConfig="false" Hash="DjTaO6vv+J4rQ6HxmL1nxA" />
           <AcmeProjectActionInfo Action="File" Source="hal/utils/include/compiler.h" IsConfig="false" Hash="8BnWsmkWteo58vaF6VHKHA" />
           <AcmeProjectActionInfo Action="File" Source="hal/utils/include/err_codes.h" IsConfig="false" Hash="csatJsZ0ym9p7PojjaFNeQ" />
           <AcmeProjectActionInfo Action="File" Source="hal/utils/include/events.h" IsConfig="false" Hash="hUr+KA59XIxyEvCEHvqMfQ" />
@@ -184,11 +187,11 @@
           <AcmeProjectActionInfo Action="File" Source="usb/usb_protocol.c" IsConfig="false" Hash="506QsMNqKwMw3St/nEXa8Q" />
           <AcmeProjectActionInfo Action="File" Source="usb/usb_protocol.h" IsConfig="false" Hash="IjsDWsLIdSQj3pFlkAX0UA" />
           <AcmeProjectActionInfo Action="File" Source="main.c" IsConfig="false" Hash="k0AH7j+BrmdFhBPzCCMptA" />
-          <AcmeProjectActionInfo Action="File" Source="driver_init.c" IsConfig="false" Hash="bd2z7XnNfQntpFZSXrYMMA" />
-          <AcmeProjectActionInfo Action="File" Source="driver_init.h" IsConfig="false" Hash="x0nW3fYhY2cdKa2PDz7VXg" />
+          <AcmeProjectActionInfo Action="File" Source="driver_init.c" IsConfig="false" Hash="t1jAKNPJvG/6wwLEMHIV7w" />
+          <AcmeProjectActionInfo Action="File" Source="driver_init.h" IsConfig="false" Hash="jRZQ9TKzFWfmmozdU8NKLA" />
           <AcmeProjectActionInfo Action="File" Source="atmel_start_pins.h" IsConfig="false" Hash="T/+rROiygi803Ul7mALySw" />
-          <AcmeProjectActionInfo Action="File" Source="examples/driver_examples.h" IsConfig="false" Hash="BENyGH95+l9VhbSPndu9jw" />
-          <AcmeProjectActionInfo Action="File" Source="examples/driver_examples.c" IsConfig="false" Hash="pcEF/bNLQm8ENjh9r82nxA" />
+          <AcmeProjectActionInfo Action="File" Source="examples/driver_examples.h" IsConfig="false" Hash="SYuB0lgFKBA4/lYSwatwpQ" />
+          <AcmeProjectActionInfo Action="File" Source="examples/driver_examples.c" IsConfig="false" Hash="e7vb+HXBtKVcKkMY8TEmsQ" />
           <AcmeProjectActionInfo Action="File" Source="hal/include/hal_adc_async.h" IsConfig="false" Hash="kQUwcVcp1XAP9GQn0S34sw" />
           <AcmeProjectActionInfo Action="File" Source="hal/include/hal_timer.h" IsConfig="false" Hash="K2YzTAjvQcI6vN6u/xP3HQ" />
           <AcmeProjectActionInfo Action="File" Source="hal/include/hal_usart_async.h" IsConfig="false" Hash="km9RyrLcCSavva/oZ2rcOQ" />
@@ -239,6 +242,8 @@
           <AcmeProjectActionInfo Action="File" Source="hpl/tc/hpl_tc.c" IsConfig="false" Hash="G5t2o3hOG5gthqhBuFYRdA" />
           <AcmeProjectActionInfo Action="File" Source="hpl/tc/hpl_tc_base.h" IsConfig="false" Hash="K+Ux2afXIm6bzn8yeh2c7A" />
           <AcmeProjectActionInfo Action="File" Source="hpl/usb/hpl_usb.c" IsConfig="false" Hash="8jKTv+a5DCKb7wyk44rsaQ" />
+          <AcmeProjectActionInfo Action="File" Source="hpl/wdt/hpl_wdt.c" IsConfig="false" Hash="DeiT4ao0T8kHM9Uy3eNIeA" />
+          <AcmeProjectActionInfo Action="File" Source="hpl/wdt/hpl_wdt_base.h" IsConfig="false" Hash="cYf18KazRj6YPAIVDHemBQ" />
           <AcmeProjectActionInfo Action="File" Source="usb_start.c" IsConfig="false" Hash="s+U6eXJf248fl25oHp6o2A" />
           <AcmeProjectActionInfo Action="File" Source="usb_start.h" IsConfig="false" Hash="qvAKCze6EJt7J4arHeRxeg" />
           <AcmeProjectActionInfo Action="File" Source="atmel_start.h" IsConfig="false" Hash="RMqb5tXF0KJJUa8pwHEMHQ" />
@@ -258,6 +263,7 @@
           <AcmeProjectActionInfo Action="File" Source="config/hpl_systick_config.h" IsConfig="true" Hash="tlT3lNDKWFe82MiGWfQzcA" />
           <AcmeProjectActionInfo Action="File" Source="config/hpl_tc_config.h" IsConfig="true" Hash="hYvRwbxmOpbghVCBuO8l0w" />
           <AcmeProjectActionInfo Action="File" Source="config/hpl_usb_config.h" IsConfig="true" Hash="kRmlXX95XRHKLHIoJBJkHg" />
+          <AcmeProjectActionInfo Action="File" Source="config/hpl_wdt_config.h" IsConfig="true" Hash="iw0Cp/dOS9UQgxO8iEHfXg" />
           <AcmeProjectActionInfo Action="File" Source="config/peripheral_clk_config.h" IsConfig="true" Hash="KhNpA+VuPEYp1JBW6z69VQ" />
           <AcmeProjectActionInfo Action="File" Source="config/usbd_config.h" IsConfig="true" Hash="c6cUJn3Q7cj0qNEw8Yqb6g" />
         </AcmeActionInfos>
@@ -322,6 +328,7 @@
       <Value>../hpl/systick</Value>
       <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
@@ -384,6 +391,7 @@
       <Value>../hpl/systick</Value>
       <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
@@ -427,6 +435,7 @@
       <Value>../hpl/systick</Value>
       <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
@@ -489,6 +498,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/systick</Value>
       <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
@@ -550,6 +560,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/systick</Value>
       <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
@@ -594,6 +605,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <Value>../hpl/systick</Value>
       <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
@@ -668,6 +680,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Config\hpl_usb_config.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Config\hpl_wdt_config.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Config\peripheral_clk_config.h">
@@ -811,6 +826,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hal\include\hal_usb_device.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hal\include\hal_wdt.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hal\include\hpl_adc_async.h">
       <SubType>compile</SubType>
     </Compile>
@@ -937,6 +955,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Compile Include="hal\include\hpl_user_area.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="hal\include\hpl_wdt.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hal\src\hal_adc_async.c">
       <SubType>compile</SubType>
     </Compile>
@@ -986,6 +1007,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\src\hal_usb_device.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hal\src\hal_wdt.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hal\utils\include\compiler.h">
@@ -1121,6 +1145,12 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hpl\usb\hpl_usb.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hpl\wdt\hpl_wdt.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hpl\wdt\hpl_wdt_base.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hri\hri_ac_d51.h">
@@ -1332,6 +1362,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Folder Include="Config\" />
     <Folder Include="Device_Startup\" />
     <Folder Include="examples\" />
+    <Folder Include="grid" />
     <Folder Include="hal\" />
     <Folder Include="hal\include\" />
     <Folder Include="hal\src\" />
@@ -1359,8 +1390,8 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
     <Folder Include="hpl\systick\" />
     <Folder Include="hpl\tc\" />
     <Folder Include="hpl\usb\" />
+    <Folder Include="hpl\wdt\" />
     <Folder Include="hri\" />
-    <Folder Include="grid" />
     <Folder Include="usb\" />
     <Folder Include="usb\class\" />
     <Folder Include="usb\class\cdc\" />

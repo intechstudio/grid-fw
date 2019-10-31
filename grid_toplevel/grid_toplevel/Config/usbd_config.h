@@ -62,7 +62,7 @@
 // <o> idProduct <0x0000-0xFFFF>
 // <id> usb_composite_idproduct
 #ifndef CONF_USB_COMPOSITE_IDPRODUCT
-#define CONF_USB_COMPOSITE_IDPRODUCT 0xec01
+#define CONF_USB_COMPOSITE_IDPRODUCT 0xecad
 #endif
 
 // <o> bcdDevice <0x0000-0xFFFF>

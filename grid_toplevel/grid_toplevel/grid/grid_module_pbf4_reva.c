@@ -18,7 +18,6 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 		return;
 	}
 	
-	
 	/* Read mapmode state*/
 	
 	
@@ -241,7 +240,6 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 	
 	
 	
-	
 	grid_module_pbf4_reva_hardware_transfer_complete = 0;
 	grid_module_pbf4_reva_hardware_start_transfer();
 }
@@ -347,7 +345,6 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 	grid_ain_init(16, 5, 14, 7);
 
 	grid_led_init(&grid_led_state, 12);
-	grid_module_init_animation(&grid_led_state);
 	
 	grid_module_pbf4_reva_hardware_init();
 	grid_module_pbf4_reva_hardware_start_transfer();

@@ -82,6 +82,8 @@ struct i2c_m_async_desc SYS_I2C;
 
 struct spi_m_dma_descriptor GRID_LED;
 
+struct wdt_descriptor WDT_0;
+
 /**
  * \brief ADC initialization function
  *
@@ -682,12 +684,20 @@ void USB_DEVICE_INSTANCE_init(void)
 	USB_DEVICE_INSTANCE_PORT_init();
 }
 
+void WDT_0_CLOCK_init(void)
+{
+	hri_mclk_set_APBAMASK_WDT_bit(MCLK);
+}
+
+void WDT_0_init(void)
+{
+	WDT_0_CLOCK_init();
+	wdt_init(&WDT_0, WDT);
+}
+
 void system_init(void)
 {
 	init_mcu();
-
-
-
 
 	// GPIO on PA05
 
@@ -862,9 +872,6 @@ void system_init(void)
 
 	gpio_set_pin_function(MUX_C, GPIO_PIN_FUNCTION_OFF);
 
-
-
-
 	ADC_0_init();
 	ADC_1_init();
 
@@ -894,4 +901,6 @@ void system_init(void)
 	TIMER_2_init();
 	TIMER_3_init();
 	USB_DEVICE_INSTANCE_init();
+
+	WDT_0_init();
 }

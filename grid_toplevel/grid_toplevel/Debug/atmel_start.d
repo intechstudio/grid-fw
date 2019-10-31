@@ -153,7 +153,8 @@ atmel_start.d atmel_start.o: .././atmel_start.c ../atmel_start.h \
  ../hal/include/hpl_spi_dma.h ../hal/include/hpl_dma.h \
  ../hpl/tc/hpl_tc_base.h ../hal/include/hpl_pwm.h \
  ../hal/include/hal_usb_device.h ../hal/include/hpl_usb_device.h \
- ../hal/include/hpl_usb.h ../Config/hpl_usb_config.h ../usb_start.h \
+ ../hal/include/hpl_usb.h ../Config/hpl_usb_config.h \
+ ../hal/include/hal_wdt.h ../hal/include/hpl_wdt.h ../usb_start.h \
  ../usb/class/cdc/device/cdcdf_acm.h ../usb/device/usbdc.h \
  ../usb/usb_includes.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
@@ -594,6 +595,10 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 ../hal/include/hpl_usb.h:
 
 ../Config/hpl_usb_config.h:
+
+../hal/include/hal_wdt.h:
+
+../hal/include/hpl_wdt.h:
 
 ../usb_start.h:
 

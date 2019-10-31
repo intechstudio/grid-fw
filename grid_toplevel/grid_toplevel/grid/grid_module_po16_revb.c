@@ -12,6 +12,7 @@ void grid_module_po16_revb_hardware_start_transfer(void){
 }
 
 static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
+
 	
 	if (grid_module_po16_revb_hardware_transfer_complete == 0){
 		grid_module_po16_revb_hardware_transfer_complete++;
@@ -25,7 +26,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 	
 	struct grid_ui_model* mod = &grid_ui_state;
 	
-	CRITICAL_SECTION_ENTER()
+	//CRITICAL_SECTION_ENTER()
 
 	uint8_t report_index = 0;
 
@@ -53,7 +54,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		grid_ui_report_set_changed_flag(mod, report_index);
 	}
 
-	CRITICAL_SECTION_LEAVE()
+	//CRITICAL_SECTION_LEAVE()
 
 
 	
@@ -98,7 +99,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 	grid_ain_add_sample(adc_index_1, adcresult_1);
 
 	
-	CRITICAL_SECTION_ENTER()
+	//CRITICAL_SECTION_ENTER()
 
 	if (grid_ain_get_changed(adc_index_0)){
 		uint8_t value = grid_ain_get_average(adc_index_0, 7);	
@@ -115,10 +116,10 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		mod->report_array[adc_index_0+1].helper[0] = value;
 	}
 	
-	CRITICAL_SECTION_LEAVE()
+	//CRITICAL_SECTION_LEAVE()
 	
 	
-	CRITICAL_SECTION_ENTER()
+	//CRITICAL_SECTION_ENTER()
 
 	if (grid_ain_get_changed(adc_index_1)){
 		uint8_t value = grid_ain_get_average(adc_index_1, 7);
@@ -133,7 +134,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		mod->report_array[adc_index_1+1].helper[0] = value;
 	}
 	
-	CRITICAL_SECTION_LEAVE()
+	//CRITICAL_SECTION_LEAVE()
 	
 	
 	grid_module_po16_revb_hardware_transfer_complete = 0;
@@ -144,7 +145,7 @@ void grid_module_po16_revb_hardware_init(void){
 	
 	adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, grid_module_po16_revb_hardware_transfer_complete_cb);
 	adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, grid_module_po16_revb_hardware_transfer_complete_cb);
-	
+		
 	adc_async_enable_channel(&ADC_0, 0);
 	adc_async_enable_channel(&ADC_1, 0);
 
@@ -221,14 +222,6 @@ void grid_module_po16_revb_init(struct grid_ui_model* mod){
 	grid_ain_init(16, 5, 14, 7);
 
 	grid_led_init(&grid_led_state, 16);
-
-	
-
-	
-	
-	grid_module_init_animation(&grid_led_state);
-	
-	
 	
 	grid_module_po16_revb_hardware_init();
 	grid_module_po16_revb_hardware_start_transfer();

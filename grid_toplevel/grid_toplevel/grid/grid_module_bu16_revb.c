@@ -257,8 +257,4 @@ void grid_module_bu16_revb_init(struct grid_ui_model* mod){
 	grid_module_bu16_revb_hardware_init();
 	grid_module_bu16_revb_hardware_start_transfer();
 
-
-	grid_module_init_animation(&grid_led_state);
-	
-	
 };

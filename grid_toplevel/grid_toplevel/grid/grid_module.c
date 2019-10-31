@@ -122,45 +122,6 @@ uint8_t grid_adc_get_config(uint8_t register_offset, uint8_t bit_offest){
 
 
 
-void grid_module_init_animation(struct grid_led_model* mod){
-	
-
-	
-	for (uint8_t i = 0; i<255; i++){
-			
-		// SEND DATA TO LEDs
-			
-			
-		uint8_t color_r   = i;
-		uint8_t color_g   = i;
-		uint8_t color_b   = i;
-			
-				
-		for (uint8_t i=0; i<mod->led_number; i++){
-			//grid_led_set_color(i, 0, 255, 0);
-			grid_led_set_color(&grid_led_state, i, color_r, color_g, color_b);
-				
-				
-		}
-			
-			
-		grid_led_hardware_start_transfer_blocking(&grid_led_state);
-			
-			
-
-				
-		delay_ms(1);
-		
-			
-	}
-	
-
-	
-
-	
-}
-
-
 	
 /* ============================== GRID_MODULE_INIT() ================================ */
 
@@ -192,8 +153,6 @@ void grid_module_common_init(void){
 		grid_module_en16_reva_init(&grid_ui_state);
 		
 	}	
-	
-
 	
 
 	grid_port_init_all();

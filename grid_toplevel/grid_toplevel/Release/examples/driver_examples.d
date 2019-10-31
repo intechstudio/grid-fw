@@ -154,7 +154,8 @@ examples/driver_examples.d examples/driver_examples.o: \
  ../hal/include/hpl_spi_dma.h ../hal/include/hpl_dma.h \
  ../hpl/tc/hpl_tc_base.h ../hal/include/hpl_pwm.h \
  ../hal/include/hal_usb_device.h ../hal/include/hpl_usb_device.h \
- ../hal/include/hpl_usb.h ../Config/hpl_usb_config.h
+ ../hal/include/hpl_usb.h ../Config/hpl_usb_config.h \
+ ../hal/include/hal_wdt.h ../hal/include/hpl_wdt.h
 
 ../examples/driver_examples.h:
 
@@ -571,3 +572,7 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 ../hal/include/hpl_usb.h:
 
 ../Config/hpl_usb_config.h:
+
+../hal/include/hal_wdt.h:
+
+../hal/include/hpl_wdt.h:

@@ -34,35 +34,11 @@ static void tx_cb_USART_GRID_W(const struct usart_async_descriptor *const descr)
 
 void tx_cb_USART_GRID(struct grid_port* const por){
 	
-
 	
-	if(por->tx_double_buffer[1] == GRID_MSG_BROADCAST){
-		// SHOULD WAIT FOR ACKNOWLEDGE
-		
-		// BUT WE DON'T
-		for(uint8_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
-			por->tx_double_buffer[i] = 0;
-		}
-		
-		por->tx_double_buffer_status = 0;
+	for(uint32_t i=0; i<por->tx_double_buffer_status; i++){
+		por->tx_double_buffer[i] = 0;
 	}
-	else if (por->tx_double_buffer[1] == GRID_MSG_DIRECT){
-		// NO NEED TO WAIT FOR ACKNOWLEDGE
-		for(uint8_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
-			por->tx_double_buffer[i] = 0;
-		}
-		
-		por->tx_double_buffer_status = 0;
-	}
-	else{
-		//TRAP
-		for(uint8_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
-			por->tx_double_buffer[i] = 0;
-		}
-		
-		por->tx_double_buffer_status = 0;
-	}
-	
+	por->tx_double_buffer_status = 0;	
 }
 
 
