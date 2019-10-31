@@ -7,7 +7,7 @@
 #define GRID_BUFFER_RX_SIZE	200
 
 #define GRID_DOUBLE_BUFFER_TX_SIZE	200
-#define GRID_DOUBLE_BUFFER_RX_SIZE	200
+#define GRID_DOUBLE_BUFFER_RX_SIZE	500
 
 struct grid_buffer{
 	
@@ -34,6 +34,8 @@ struct grid_buffer{
 #define GRID_PORT_TYPE_TELEMETRY	4
 
 struct grid_port{
+	
+	uint8_t cooldown;
 
 	struct usart_async_descriptor*    usart;	
 	uint8_t type;     // 0 undefined, 1 usart, 2 usb, 3 ui, 4 telemetry
@@ -47,11 +49,11 @@ struct grid_port{
 	uint32_t tx_double_buffer_ack_timeout;
 	
 	
-	uint16_t rx_double_buffer_timeout; // is packet ready for verification
+	uint32_t rx_double_buffer_timeout; // is packet ready for verification
 	
-	uint16_t rx_double_buffer_status; // is packet ready for verification
-	uint16_t rx_double_buffer_seek_start_index; // offset of next received byte in buffer
-	uint16_t rx_double_buffer_read_start_index;
+	uint32_t rx_double_buffer_status; // is packet ready for verification
+	uint32_t rx_double_buffer_seek_start_index; // offset of next received byte in buffer
+	uint32_t rx_double_buffer_read_start_index;
 	
 	uint8_t tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE];
 	uint8_t rx_double_buffer[GRID_DOUBLE_BUFFER_RX_SIZE];

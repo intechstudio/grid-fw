@@ -20,6 +20,10 @@ struct grid_ui_encoder{
 	
 	uint8_t rotation_direction;
 	
+	uint32_t last_real_time;
+	
+	uint8_t velocity;
+	
 	uint8_t phase_a_previous;
 	uint8_t phase_b_previous;
 	

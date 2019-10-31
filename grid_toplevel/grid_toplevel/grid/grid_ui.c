@@ -4,6 +4,11 @@
 
 void grid_port_process_ui(struct grid_port* por){
 	
+	por->cooldown = 0;
+	if (por->cooldown > 0){
+		por->cooldown--;
+		return;
+	}
 	
 	uint8_t message[256];
 	uint32_t length=0;
@@ -42,15 +47,14 @@ void grid_port_process_ui(struct grid_port* por){
 			grid_ui_report_render(&grid_ui_state, i, &message[length]);
 			grid_ui_report_clear_changed_flag(&grid_ui_state, i);
 			length += strlen(&message[length]);
-			
-			
+					
 		}
 		CRITICAL_SECTION_LEAVE()
 	}
 	
 	if (packetvalid){
 		
-		
+		por->cooldown = packetvalid*5;
 		
 		grid_sys_state.next_broadcast_message_id++;
 		
@@ -70,12 +74,13 @@ void grid_port_process_ui(struct grid_port* por){
 		sprintf(&message[length], "00\n");
 		length += strlen(&message[length]);
 		
-		grid_msg_set_checksum(message, length, grid_msg_get_checksum(message, length));
+		uint8_t checksum = grid_msg_get_checksum(message, length);
+		grid_msg_set_checksum(message, length, checksum);
 		
 		// Put the packet into the UI_RX buffer
 		if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, length)){
 			
-			for(uint16_t i = 0; i<length; i++){
+			for(uint32_t i = 0; i<length; i++){
 				
 				grid_buffer_write_character(&GRID_PORT_U.rx_buffer, message[i]);
 			}

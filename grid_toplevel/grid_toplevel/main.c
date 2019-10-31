@@ -13,24 +13,29 @@ static struct timer_task RTC_Scheduler_ping;
 static struct timer_task RTC_Scheduler_realtime;
 
 
+volatile uint8_t rxtimeoutselector = 0;
+
 volatile uint8_t pingflag = 0;
 volatile uint8_t pingflag_active = 0;
 
-volatile uint32_t realtime = 0; 
+
+
+
+
+
 
 
 void grid_port_receive_task(struct grid_port* por){
 		
 
 	// THERE IS ALREADY DATA, PROCESS THAT FIRST
-	if	(por->rx_double_buffer_status == 1){
+	if	(por->rx_double_buffer_status != 0){
 		return;
 	}
 	
 	
-
 		
-	if (por->rx_double_buffer_timeout > 20000){
+	if (por->rx_double_buffer_timeout > 2000){
 		
 		if (por->partner_status == 1){
 			
@@ -52,10 +57,7 @@ void grid_port_receive_task(struct grid_port* por){
 			por->rx_double_buffer_read_start_index = 0;
 			grid_sys_port_reset_dma(por);
 		
-		}
-			
-			
-			
+		}		
 			
 	}
 	else{
@@ -63,47 +65,41 @@ void grid_port_receive_task(struct grid_port* por){
 		por->rx_double_buffer_timeout++;
 	}		
 		
-		
 
+	for(uint32_t i = 0; i<490; i++){
+		
+		if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 10){ // \n
 	
-	
+			por->rx_double_buffer_status = 1;
+			por->rx_double_buffer_timeout = 0;
 			
+			return;
+		}
+		else if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 0){
 
-	
 
-	for(uint16_t i = 0; i<10; i++){
-		
-		if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] != '\n' && por->rx_double_buffer[por->rx_double_buffer_seek_start_index] != 0)
-		{
-			por->rx_double_buffer_seek_start_index++;			
-			por->rx_double_buffer_seek_start_index%=GRID_DOUBLE_BUFFER_RX_SIZE;
-		}	
-		else{			
-			i = GRID_DOUBLE_BUFFER_RX_SIZE;
+			return;
 		}
 		
-// 		if (i == 9){
-// 			por->rx_double_buffer_seek_start_index = 0;
-//			por->rx_double_buffer_read_start_index = 0;
-//			grid_sys_port_reset_dma(por);
-// 		}
+		
+
+
+		if (por->rx_double_buffer_seek_start_index < GRID_DOUBLE_BUFFER_RX_SIZE-1){
+			por->rx_double_buffer_seek_start_index++;			
+		}
+		else{
+			por->rx_double_buffer_seek_start_index=0;
+		}
+		
 	}
 		
-					
-
-	if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == '\n'){
-		por->rx_double_buffer_timeout = 0;
-		por->rx_double_buffer_status = 1;
-	}
 	
-	if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 0){
-
-	}
-		
+	
 }
 
-void grid_port_receive_decode(struct grid_port* por, uint8_t startcommand, uint8_t length){
+void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint32_t length){
 	
+
 	
 	uint8_t response[10];
 	
@@ -125,25 +121,23 @@ void grid_port_receive_decode(struct grid_port* por, uint8_t startcommand, uint8
 	// Copy data from cyrcular buffer to te3mporary linear array;
 	uint8_t message[length];
 				
-	for (uint8_t i = 0; i<length; i++){
+	// MAXMSGLEN = 250 character
+	for (uint32_t i = 0; i<length; i++){
 		message[i] = por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE];
 	}
 				
-	// IMPLEMENT CHECKSUM VALIDATOR HERE
-	if (length>5){
+	// frame validator
+	if (message[0] == 1 && message [length-1] == 10){
 					
 		checksum_received = grid_sys_read_hex_string_value(&message[length-3], 2, &error_flag);
 					
 		checksum_calculated = grid_msg_get_checksum(message, length);
 					
-		// IF CHECKSUM IS VALID
+		// checksum validator
 		if (checksum_calculated == checksum_received && error_flag == 0){
 						
 			if (message[1] == GRID_MSG_BROADCAST){ // Broadcast message
-						
-				
-				
-				
+								
 				// Read the received id age values	
 				uint8_t received_id  = grid_msg_get_id(message);;			
 				uint8_t received_age = grid_msg_get_age(message);
@@ -238,6 +232,26 @@ void grid_port_receive_decode(struct grid_port* por, uint8_t startcommand, uint8
 					grid_sys_alert_set_alert(&grid_sys_state, 50, 50, 50, 2, 200); // WHITE
 								
 				}
+				
+				
+
+		
+				uint32_t response_length = strlen(response);
+		
+				if(grid_buffer_write_init(&por->tx_buffer, response_length)){
+						
+			
+					uint8_t checksum = grid_msg_get_checksum(response, response_length);
+					grid_msg_set_checksum(response, response_length, checksum);
+						
+					for (uint32_t i=0; i<response_length; i++)
+					{
+						grid_buffer_write_character(&por->tx_buffer, response[i]);
+					}
+						
+					grid_buffer_write_acknowledge(&por->tx_buffer);
+													
+				}
 					
 			}
 			else if (message[1] == GRID_MSG_DIRECT){ // Direct Message
@@ -306,45 +320,35 @@ void grid_port_receive_decode(struct grid_port* por, uint8_t startcommand, uint8
 		}
 		else{
 			// INVALID CHECKSUM
-						
-			grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 1, 2000); // PURPLE BLINKY
-						
+
+			if (error_flag != 0){		
+				//usart_async_disable(&USART_EAST);
+				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 1, 2000); // PURPLE BLINKY
+				//usart_async_enable(&USART_EAST);
+			}	
+			else{
+				
+				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 1, 2000); // PURPLE BLINKY
+				
+				
+			}
+		
+	
 		}
 				
 
 	}
 	else{
+		// frame error
+		grid_sys_alert_set_alert(&grid_sys_state, 0, 0, 255, 1, 2000); // BLUE BLINKY	
 
 	}
-				
-	if (message[1] == GRID_MSG_BROADCAST){				
-		// RESPOND WITH ACK OR NACK
 		
-		uint8_t response_length = strlen(response);
 		
-		if(grid_buffer_write_init(&por->tx_buffer, response_length)){
-						
-			
-			uint8_t checksum[4];
-			
-			sprintf(checksum, "%02x", grid_msg_get_checksum(response, response_length));
-			
-			response[4] = checksum[0];
-			response[5] = checksum[1];
+		
 
-						
-			for (uint8_t i=0; i<response_length; i++)
-			{
-				grid_buffer_write_character(&por->tx_buffer, response[i]);
-			}
-						
-			grid_buffer_write_acknowledge(&por->tx_buffer);
-						
-		}
-					
-	}
 	
-	for (uint8_t i = 0; i<length; i++){
+	for (uint32_t i = 0; i<length; i++){
 		por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE] = 0;
 	}
 		
@@ -356,19 +360,25 @@ void grid_port_receive_decode(struct grid_port* por, uint8_t startcommand, uint8
 
 
 	
-
 	return;
 	
 }
 
 void grid_port_receive_complete_task(struct grid_port* por){
 	
-	if (por->rx_double_buffer_status != 1){
+	///////////////////// PART 1
+	
+	grid_port_receive_task(por);	
+	
+	
+	////////////////// PART 2
+	
+	if (por->rx_double_buffer_status == 0){
 		return;
 	}
 
 	
-	uint8_t length = 0;
+	uint32_t length = 0;
 	
 	if (por->rx_double_buffer_read_start_index < por->rx_double_buffer_seek_start_index){
 		length = por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
@@ -384,8 +394,7 @@ void grid_port_receive_complete_task(struct grid_port* por){
 	
 	por->rx_double_buffer_status = 0;
 	
-					
-	//grid_port_process_outbound_usart(por);
+
 	
 	
 }
@@ -393,19 +402,27 @@ void grid_port_receive_complete_task(struct grid_port* por){
 
 static void RTC_Scheduler_rx_task_cb(const struct timer_task *const timer_task)
 {
-
-	grid_port_receive_task(&GRID_PORT_N);
-	grid_port_receive_task(&GRID_PORT_E);
-	grid_port_receive_task(&GRID_PORT_S);
-	grid_port_receive_task(&GRID_PORT_W);
 	
+// 	rxtimeoutselector++;
+// 	if (rxtimeoutselector%4==0){
+// 		grid_port_receive_task(&GRID_PORT_N);	
+// 	}
+// 	if (rxtimeoutselector%4==0){
+// 		grid_port_receive_task(&GRID_PORT_E);	
+// 	}
+// 	if (rxtimeoutselector%4==0){
+// 		grid_port_receive_task(&GRID_PORT_S);	
+// 	}
+// 	if (rxtimeoutselector%4==0){
+// 		grid_port_receive_task(&GRID_PORT_W);	
+// 	}
 	
 }
 
 static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
 	//gpio_set_pin_level(PIN_GRID_SYNC_1, true);	
-	realtime++;
+	grid_sys_rtc_tick_time(&grid_sys_state);
 	//gpio_set_pin_level(PIN_GRID_SYNC_1, false);		
 	
 }
@@ -422,7 +439,8 @@ void init_timer(void)
 {
 	
 		
-	RTC_Scheduler_ping.interval = RTC1SEC/20; //50ms
+	//RTC_Scheduler_ping.interval = RTC1SEC/20; //50ms
+	RTC_Scheduler_ping.interval = RTC1SEC/5; //200ms
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
 	RTC_Scheduler_ping.mode     = TIMER_TASK_REPEAT;
 	
@@ -430,7 +448,7 @@ void init_timer(void)
 	RTC_Scheduler_rx_task.cb       = RTC_Scheduler_rx_task_cb;
 	RTC_Scheduler_rx_task.mode     = TIMER_TASK_REPEAT;
 	
-	RTC_Scheduler_realtime.interval = 1; // 1us
+	RTC_Scheduler_realtime.interval = 1;
 	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
 	RTC_Scheduler_realtime.mode     = TIMER_TASK_REPEAT;
 
@@ -470,7 +488,6 @@ int main(void)
 	
 	grid_module_common_init();
 
-	init_timer();	
 	
 	uint32_t loopstart = 0;
 
@@ -494,14 +511,14 @@ int main(void)
 	gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
 	gpio_set_pin_level(PIN_GRID_SYNC_1, false);	
 	
+	init_timer();
+	
+	uint8_t loopcounter = 0;
 	
 	while (1) {
-		
-		
-		
-
-			
-		loopstart = realtime;
+		loopcounter++;
+	
+		loopstart = grid_sys_rtc_get_time(&grid_sys_state);
 		
 						
 		
@@ -531,10 +548,11 @@ int main(void)
 		grid_port_receive_complete_task(&GRID_PORT_E);
 		grid_port_receive_complete_task(&GRID_PORT_S);
 		grid_port_receive_complete_task(&GRID_PORT_W);
-		
-				
+					
 		/* ========================= UI_PROCESS_INBOUND ============================= */
-		grid_port_process_ui(&GRID_PORT_U);		
+		
+		// COOLDOWN DELAY IMPLEMENTED INSIDE
+		grid_port_process_ui(&GRID_PORT_U);
 		
 		grid_port_process_inbound(&GRID_PORT_U); // Copy data from UI_RX to HOST_TX & north TX AND STUFF
 
@@ -552,7 +570,6 @@ int main(void)
 		
 		grid_port_process_outbound_usb(&GRID_PORT_H); // Send data from HOST_TX through USB
 		grid_port_process_outbound_ui(&GRID_PORT_U);
-
 			
 		uint16_t length = 0;
 		
@@ -612,17 +629,11 @@ int main(void)
 		
 
 
-		// IDLETASK
-		if (realtime>loopstart + RTC1SEC/250){
-			loopstart+=1;
-			gpio_set_pin_level(PIN_GRID_SYNC_2, true);	
-		}
+		// IDLETASK	
 		
-		gpio_set_pin_level(PIN_GRID_SYNC_1, true);
-		while(loopstart + RTC1SEC/1000 > realtime){
+		while(grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){
 			delay_us(10);
 		}
-		gpio_set_pin_level(PIN_GRID_SYNC_1, false);
 
 	}
 }

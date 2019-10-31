@@ -24,7 +24,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 	
 	struct grid_ui_model* mod = &grid_ui_state;
 	
-	CRITICAL_SECTION_ENTER()
+	//CRITICAL_SECTION_ENTER()
 
 	uint8_t report_index = 0;
 
@@ -52,7 +52,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 		grid_ui_report_set_changed_flag(mod, report_index);
 	}
 
-	CRITICAL_SECTION_LEAVE()
+	//CRITICAL_SECTION_LEAVE()
 
 
 	
@@ -115,7 +115,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 		}
 		
 		
-		CRITICAL_SECTION_ENTER()
+		//CRITICAL_SECTION_ENTER()
 
 		if (adcresult_0 != mod->report_array[adc_index_0+1-4].helper[0]){
 			
@@ -145,9 +145,9 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			grid_ui_report_set_changed_flag(mod, adc_index_0+1-4);
 		}
 		
-		CRITICAL_SECTION_LEAVE()
+		//CRITICAL_SECTION_LEAVE()
 		
-		CRITICAL_SECTION_ENTER()
+		//CRITICAL_SECTION_ENTER()
 
 		if (adcresult_1 != mod->report_array[adc_index_1+1-4].helper[0]){
 			
@@ -177,7 +177,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			grid_ui_report_set_changed_flag(mod, adc_index_1+1-4);
 		}
 		
-		CRITICAL_SECTION_LEAVE()
+		//CRITICAL_SECTION_LEAVE()
 
 	}
 	else{ // POTENTIOMETER OR FADER
@@ -198,7 +198,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			
 		
 		
-		CRITICAL_SECTION_ENTER()
+		//CRITICAL_SECTION_ENTER()
 
 		if (grid_ain_get_changed(adc_index_0)){
 
@@ -213,10 +213,10 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			grid_ui_report_set_changed_flag(mod, adc_index_0+1);
 		}
 	
-		CRITICAL_SECTION_LEAVE()
+		//CRITICAL_SECTION_LEAVE()
 	
 	
-		CRITICAL_SECTION_ENTER()
+		//CRITICAL_SECTION_ENTER()
 
 		if (grid_ain_get_changed(adc_index_1)){
 
@@ -231,7 +231,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			grid_ui_report_set_changed_flag(mod, adc_index_1+1);
 		}
 	
-		CRITICAL_SECTION_LEAVE()
+		//CRITICAL_SECTION_LEAVE()
 	}
 
 	

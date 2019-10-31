@@ -90,7 +90,7 @@ void rx_cb_USART_GRID(struct grid_port* const por){
 	
 }
 
-
+volatile dmatest = 0;
 
 void dma_transfer_complete_n_cb(struct _dma_resource *resource){
 	
@@ -128,6 +128,7 @@ void grid_sys_port_reset_dma(struct grid_port* por){
 	
 	hri_dmac_clear_CHCTRLA_ENABLE_bit(DMAC, por->dma_channel);
 	_dma_enable_transaction(por->dma_channel, false);
+
 }
 
 void grid_sys_uart_init(){
@@ -183,6 +184,7 @@ void grid_rx_dma_init_one(struct grid_port* por, uint32_t buffer_length, void* t
 	//resource_rx->dma_cb.error         = function_cb;
 	_dma_enable_transaction(dma_rx_channel, false);
 	
+
 }
 
 void grid_rx_dma_init(){
@@ -191,8 +193,43 @@ void grid_rx_dma_init(){
 	grid_rx_dma_init_one(&GRID_PORT_E, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_e_cb);
 	grid_rx_dma_init_one(&GRID_PORT_S, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_s_cb);
 	grid_rx_dma_init_one(&GRID_PORT_W, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_w_cb);
+
+	NVIC_SetPriority(DMAC_0_IRQn, 0);
+	NVIC_SetPriority(DMAC_1_IRQn, 0);
+	NVIC_SetPriority(DMAC_2_IRQn, 0);
+	NVIC_SetPriority(DMAC_3_IRQn, 0);
 	
 }
+
+
+// REALTIME
+
+uint32_t grid_sys_rtc_get_time(struct grid_sys_model* mod){
+	return mod->realtime;
+}
+
+
+void grid_sys_rtc_set_time(struct grid_sys_model* mod, uint32_t tvalue){
+	
+	mod->realtime = tvalue;
+}
+
+uint32_t grid_sys_rtc_get_elapsed_time(struct grid_sys_model* mod, uint32_t told){
+	
+	if (mod->realtime>told){
+		return mod->realtime-told;
+	}
+	else{
+		return (1<<32)-1 - told + mod->realtime;
+	}
+	
+
+}
+
+void grid_sys_rtc_tick_time(struct grid_sys_model* mod){
+	mod->realtime++;
+}
+
 
 // =========================== GRID SYS ALERT ============================== //
 
@@ -402,14 +439,7 @@ volatile uint32_t grid_sys_tx_counter[4] = {0, 0, 0, 0};
 
 
 
-void grid_port_process_inbound_all(){
 	
-// 	grid_port_process_inbound(&GRID_PORT_N);
-// 	grid_port_process_inbound(&GRID_PORT_E);
-// 	grid_port_process_inbound(&GRID_PORT_S);
-// 	grid_port_process_inbound(&GRID_PORT_W);
-		
-}	
 
 void grid_sys_ping_all(){
 		

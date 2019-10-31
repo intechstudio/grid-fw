@@ -40,6 +40,9 @@ struct grid_sys_model
 	uint8_t alert_code;
 	
 	uint8_t alert_color_changed;
+	
+	
+	uint32_t realtime;
 		
 	uint32_t recent_messages[GRID_SYS_RECENT_MESSAGES_LENGTH];
 	GRID_SYS_RECENT_MESSAGES_INDEX_T recent_messages_index;	
@@ -52,10 +55,23 @@ struct grid_sys_model grid_sys_state;
 
 
 
+
+
 struct io_descriptor *grid_sys_north_io;
 struct io_descriptor *grid_sys_east_io;
 struct io_descriptor *grid_sys_south_io;
 struct io_descriptor *grid_sys_west_io;
+
+
+uint32_t grid_sys_rtc_get_time(struct grid_sys_model* mod);
+
+
+void grid_sys_rtc_set_time(struct grid_sys_model* mod, uint32_t tvalue);
+
+uint32_t grid_sys_rtc_get_elapsed_time(struct grid_sys_model* mod, uint32_t told);
+
+void grid_sys_rtc_tick_time(struct grid_sys_model* mod);
+
 
 
 //====================== SYS ALERT ==========================//

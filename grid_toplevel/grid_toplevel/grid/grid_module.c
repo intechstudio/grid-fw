@@ -194,7 +194,7 @@ void grid_module_common_init(void){
 	}	
 	
 
-
+	
 
 	grid_port_init_all();
 	grid_sys_uart_init();

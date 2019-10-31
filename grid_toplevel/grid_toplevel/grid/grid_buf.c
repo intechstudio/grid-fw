@@ -12,11 +12,6 @@
 
 
 
-uint8_t usb_tx_double_buffer[GRID_BUFFER_TX_SIZE];
-uint8_t usb_rx_double_buffer[GRID_BUFFER_RX_SIZE];
-
-
-
 uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length){
 	
 	buf->buffer_length = length;
@@ -291,6 +286,8 @@ void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16
 	grid_buffer_init(&por->tx_buffer, tx_buf_size);
 	grid_buffer_init(&por->rx_buffer, rx_buf_size);
 	
+	por->cooldown = 0;
+	
 	por->dma_channel = dma;
 	
 	por->direction = dir;
@@ -301,6 +298,13 @@ void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16
 	por->tx_double_buffer_status	= 0;
 	por->rx_double_buffer_status	= 0;
 	
+	
+	for (uint32_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
+		por->tx_double_buffer[i] = 0;		
+	}
+	for (uint32_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
+		por->rx_double_buffer[i] = 0;
+	}
 	
 	por->partner_fi = 0;
 	
@@ -589,7 +593,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					}
 										
 					usb_debug[1] = hiddf_keyboard_keys_state_change(key_array, key_array_length);
-					usb_debug[2] = hiddf_keyboard_keys_state_change(key_array, key_array_length);
+					//usb_debug[2] = hiddf_keyboard_keys_state_change(key_array, key_array_length);
 		
 					
 				
