@@ -151,9 +151,9 @@ void grid_module_common_init(void){
 	
 	if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevA){	
 		grid_module_en16_reva_init(&grid_ui_state);
+		//grid_module_bu16_revb_init(&grid_ui_state);
 		
 	}	
-	
 
 	grid_port_init_all();
 	grid_sys_uart_init();

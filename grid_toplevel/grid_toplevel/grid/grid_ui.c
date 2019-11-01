@@ -5,11 +5,16 @@
 void grid_port_process_ui(struct grid_port* por){
 	
 	//por->cooldown = 0;
-	if (por->cooldown > 0){
+	if (por->cooldown > 15){
 		por->cooldown--;
 		return;
 	}
-	
+	else if (por->cooldown>0){
+		
+		por->cooldown--;
+	}	
+
+																
 	uint8_t message[256];
 	uint32_t length=0;
 	
@@ -54,7 +59,7 @@ void grid_port_process_ui(struct grid_port* por){
 	
 	if (packetvalid){
 		
-		por->cooldown = packetvalid;
+		por->cooldown += (10+por->cooldown);
 		
 		grid_sys_state.next_broadcast_message_id++;
 		
@@ -101,7 +106,7 @@ uint8_t grid_ui_model_init(struct grid_ui_model* mod, uint8_t len){
 	
 }
 
-uint8_t grid_ui_report_init(struct grid_ui_model* mod, uint8_t index, uint8_t* p, uint8_t p_len, uint8_t* h, uint8_t h_len){
+uint8_t grid_ui_report_init(struct grid_ui_model* mod, uint8_t index, uint8_t* p, uint32_t p_len, uint8_t* h, uint32_t h_len){
 
 	mod->report_array[index].changed = 0;
 	mod->report_array[index].payload_length = p_len;

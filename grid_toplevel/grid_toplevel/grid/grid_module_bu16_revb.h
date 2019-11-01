@@ -11,7 +11,7 @@ volatile uint8_t grid_module_bu16_revb_mux_lookup[16];
 volatile uint8_t	grid_module_bu16_revb_mux;
 
 void grid_module_bu16_revb_hardware_start_transfer(void);
-//static void grid_module_bu16_revb_hardware_transfer_complete_cb(void);
+static void grid_module_bu16_revb_hardware_transfer_complete_cb(void);
 void grid_module_bu16_revb_hardware_init(void);
 
 void grid_module_bu16_revb_init(struct grid_ui_model* mod);

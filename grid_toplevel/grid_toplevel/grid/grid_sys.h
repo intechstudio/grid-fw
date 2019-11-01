@@ -51,7 +51,7 @@ struct grid_sys_model
 	
 };
 
-struct grid_sys_model grid_sys_state;
+volatile struct grid_sys_model grid_sys_state;
 
 
 

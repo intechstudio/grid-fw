@@ -180,6 +180,8 @@ void grid_rx_dma_init(){
 
 // REALTIME
 
+
+
 uint32_t grid_sys_rtc_get_time(struct grid_sys_model* mod){
 	return mod->realtime;
 }

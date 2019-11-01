@@ -35,7 +35,7 @@ struct grid_buffer{
 
 struct grid_port{
 	
-	uint8_t cooldown;
+	uint32_t cooldown;
 
 	struct usart_async_descriptor*    usart;	
 	uint8_t type;     // 0 undefined, 1 usart, 2 usb, 3 ui, 4 telemetry

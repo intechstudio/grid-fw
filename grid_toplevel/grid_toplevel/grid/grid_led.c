@@ -200,6 +200,7 @@ uint8_t grid_led_set_color(struct grid_led_model* mod, uint32_t led_index, uint8
 
 
 
+
 static void grid_led_hardware_transfer_complete_cb(struct _dma_resource *resource){
 	
 
@@ -432,6 +433,11 @@ void grid_led_set_max(struct grid_led_model* mod, uint8_t num, uint8_t layer, ui
 void grid_led_set_phase(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val){
 	
 	mod->led_smart_buffer[num+(mod->led_number*layer)].pha = val;
+}
+
+uint8_t grid_led_get_phase(struct grid_led_model* mod, uint8_t num, uint8_t layer){
+	
+	return mod->led_smart_buffer[num+(mod->led_number*layer)].pha;
 }
 
 void grid_led_set_frequency(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val){

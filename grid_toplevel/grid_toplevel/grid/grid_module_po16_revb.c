@@ -38,12 +38,12 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		
 		if (mod->report_array[report_index].helper[0] == 0){
 			
-			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN;
+			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYUP;
 			mod->report_array[report_index].helper[0] = 1;
 		}
 		else{
 			
-			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYUP;
+			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN;
 			mod->report_array[report_index].helper[0] = 0;
 		}
 		

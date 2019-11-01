@@ -2,7 +2,10 @@
 
 volatile uint8_t grid_module_bu16_revb_hardware_transfer_complete = 0;
 volatile uint8_t grid_module_bu16_revb_mux = 0;
-volatile uint8_t grid_module_bu16_revb_mux_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15};
+//volatile uint8_t grid_module_bu16_revb_mux_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15};
+	
+volatile uint8_t grid_module_bu16_revb_mux_lookup[16] =       {12, 13, 8, 9, 4, 5, 0, 1, 14, 15, 10, 11, 6, 7, 2, 3};
+
 
 void grid_module_bu16_revb_hardware_start_transfer(void){
 	
@@ -24,7 +27,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 	
 	struct grid_ui_model* mod = &grid_ui_state;
 	
-	CRITICAL_SECTION_ENTER()
+	//CRITICAL_SECTION_ENTER()
 
 	uint8_t report_index = 0;
 
@@ -36,12 +39,12 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		
 		if (mod->report_array[report_index].helper[0] == 0){
 			
-			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN;
+			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYUP;
 			mod->report_array[report_index].helper[0] = 1;
 		}
 		else{
 			
-			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYUP;
+			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN;
 			mod->report_array[report_index].helper[0] = 0;
 		}
 		
@@ -52,7 +55,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		grid_ui_report_set_changed_flag(mod, report_index);
 	}
 
-	CRITICAL_SECTION_LEAVE()
+	//CRITICAL_SECTION_LEAVE()
 
 
 	
@@ -94,7 +97,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		adcresult_1 = 127;
 	}
 	
-	CRITICAL_SECTION_ENTER()
+	//CRITICAL_SECTION_ENTER()
 
 	if (adcresult_0 != mod->report_array[adc_index_0+1].helper[0]){
 		
@@ -124,10 +127,10 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		grid_ui_report_set_changed_flag(mod, adc_index_0+1);
 	}
 	
-	CRITICAL_SECTION_LEAVE()
+	//CRITICAL_SECTION_LEAVE()
 	
 	
-	CRITICAL_SECTION_ENTER()
+	//CRITICAL_SECTION_ENTER()
 
 	if (adcresult_1 != mod->report_array[adc_index_1+1].helper[0]){
 		
@@ -158,7 +161,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		grid_ui_report_set_changed_flag(mod, adc_index_1+1);
 	}
 	
-	CRITICAL_SECTION_LEAVE()
+	//CRITICAL_SECTION_LEAVE()
 	
 	
 	grid_module_bu16_revb_hardware_transfer_complete = 0;
@@ -207,14 +210,14 @@ void grid_module_bu16_revb_init(struct grid_ui_model* mod){
 			GRID_MSG_PROTOCOL_KEYBOARD,
 			GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN,
 			GRID_MSG_PROTOCOL_KEYBOARD_PARAMETER_NOT_MODIFIER,
-			HID_P,
+			HID_TAB,
 			GRID_MSG_END_OF_TEXT
 
 			);
 			
 		}
 		else{
-			
+			uint8_t grid_module_bu16_revb_mux_lookup_led[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c%c%02x%02x%02x%02x%02x%c",
 			
 			GRID_MSG_START_OF_TEXT,
@@ -229,7 +232,7 @@ void grid_module_bu16_revb_init(struct grid_ui_model* mod){
 			GRID_MSG_PROTOCOL_LED,
 			0, // layer
 			GRID_MSG_COMMAND_LED_SET_PHASE,
-			i-1,
+			grid_module_bu16_revb_mux_lookup_led[i-1],
 			0,
 			GRID_MSG_END_OF_TEXT
 
