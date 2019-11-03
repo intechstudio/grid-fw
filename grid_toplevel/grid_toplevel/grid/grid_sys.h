@@ -25,11 +25,13 @@ uint32_t grid_sys_hwfcg;
 
 
 
-#define GRID_SYS_RECENT_MESSAGES_LENGTH			128
+#define GRID_SYS_RECENT_MESSAGES_LENGTH			32
 #define GRID_SYS_RECENT_MESSAGES_INDEX_T		uint8_t
 
 struct grid_sys_model 
 {
+	
+	uint8_t age;
 	
 	uint8_t alert_color_red;
 	uint8_t alert_color_green;

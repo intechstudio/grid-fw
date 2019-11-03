@@ -23,7 +23,7 @@ void grid_port_process_ui(struct grid_port* por){
 	uint8_t id = grid_sys_state.next_broadcast_message_id;
 	uint8_t dx = GRID_SYS_DEFAULT_POSITION;
 	uint8_t dy = GRID_SYS_DEFAULT_POSITION;
-	uint8_t age = 0;
+	uint8_t age = grid_sys_state.age;
 	
 	uint8_t packetvalid = 0;
 	

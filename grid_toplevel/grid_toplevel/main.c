@@ -183,7 +183,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 				
 				
 							
-				uint8_t updated_age = received_age + 1;
+				uint8_t updated_age = received_age;
 								
 				
 				// Update message with the new values
@@ -193,7 +193,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 				grid_msg_set_dy(message, updated_dy);
 				grid_msg_set_age(message, updated_age);
 				
-				uint32_t fingerprint = updated_id*256*256*256 + updated_dx*256*256 + updated_dy*256;// no age here + updated_age;
+				uint32_t fingerprint = updated_id*256*256*256 + updated_dx*256*256 + updated_dy*256 + updated_age;
 																				
 				if (0 == grid_msg_find_recent(&grid_sys_state, fingerprint)){
 					// WE HAVE NOT HEARD THIS MESSAGE BEFORE
@@ -280,6 +280,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 						por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-12], 8, error_flag);
 						por->partner_status = 1;
 						
+						grid_sys_state.age = grid_sys_rtc_get_time(&grid_sys_state);
 						grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // GREEN
 															
 					}
@@ -325,12 +326,12 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 
 			if (error_flag != 0){		
 				//usart_async_disable(&USART_EAST);
-				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 1, 2000); // PURPLE BLINKY
+				grid_sys_alert_set_alert(&grid_sys_state, 20, 0, 0, 1, 200); // PURPLE BLINKY
 				//usart_async_enable(&USART_EAST);
 			}	
 			else{
 				
-				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 1, 2000); // PURPLE BLINKY
+				grid_sys_alert_set_alert(&grid_sys_state, 20, 0, 255, 1, 200); // PURPLE BLINKY
 				
 				
 			}
@@ -342,7 +343,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 	}
 	else{
 		// frame error
-		grid_sys_alert_set_alert(&grid_sys_state, 0, 0, 255, 1, 2000); // BLUE BLINKY	
+		grid_sys_alert_set_alert(&grid_sys_state, 0, 0, 20, 2, 200); // BLUE BLINKY	
 
 	}
 		
@@ -500,6 +501,8 @@ int main(void)
 	
 	uint8_t loopcounter = 0;
 
+	
+	
 	
 	while (1) {
 		
