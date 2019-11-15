@@ -34,24 +34,25 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 
 	if (mapmode_value != mod->report_array[report_index].helper[0]){
 		
-		uint8_t command;
+		uint8_t value;
 		
 		if (mod->report_array[report_index].helper[0] == 0){
 			
-			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYUP;
 			mod->report_array[report_index].helper[0] = 1;
+			
+			grid_sys_state.bank_select = (grid_sys_state.bank_select+1)%4;
+			value = grid_sys_state.bank_select;
+			grid_sys_write_hex_string_value(&mod->report_array[report_index].payload[7], 2, grid_sys_state.bank_select);
+			grid_ui_report_set_changed_flag(mod, report_index);
 		}
 		else{
 			
-			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN;
 			mod->report_array[report_index].helper[0] = 0;
 		}
 		
 		
 		
-		grid_sys_write_hex_string_value(&mod->report_array[report_index].payload[3], 2, command);
-		
-		grid_ui_report_set_changed_flag(mod, report_index);
+
 	}
 
 	//CRITICAL_SECTION_LEAVE()
@@ -170,10 +171,10 @@ void grid_module_po16_revb_init(struct grid_ui_model* mod){
 			sprintf(payload_template, "%c%02x%02x%02x%02x%c",
 			
 			GRID_MSG_START_OF_TEXT,
-			GRID_MSG_PROTOCOL_KEYBOARD,
-			GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN,
-			GRID_MSG_PROTOCOL_KEYBOARD_PARAMETER_NOT_MODIFIER,
-			HID_CAPS_LOCK,
+			GRID_MSG_PROTOCOL_SYS,
+			GRID_MSG_COMMAND_SYS_BANK,
+			GRID_MSG_COMMAND_SYS_BANK_SELECT,
+			0,
 			GRID_MSG_END_OF_TEXT
 
 			);

@@ -142,7 +142,7 @@ void grid_sys_uart_init(){
 
 }
 
-void grid_rx_dma_init_one(struct grid_port* por, uint32_t buffer_length, void* transfer_done_cb() ){
+void grid_sys_dma_rx_init_one(struct grid_port* por, uint32_t buffer_length, void* transfer_done_cb() ){
 	
 	
 	uint8_t dma_rx_channel = por->dma_channel;
@@ -163,12 +163,12 @@ void grid_rx_dma_init_one(struct grid_port* por, uint32_t buffer_length, void* t
 
 }
 
-void grid_rx_dma_init(){
+void grid_sys_dma_rx_init(){
 	
-	grid_rx_dma_init_one(&GRID_PORT_N, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_n_cb);
-	grid_rx_dma_init_one(&GRID_PORT_E, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_e_cb);
-	grid_rx_dma_init_one(&GRID_PORT_S, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_s_cb);
-	grid_rx_dma_init_one(&GRID_PORT_W, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_w_cb);
+	grid_sys_dma_rx_init_one(&GRID_PORT_N, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_n_cb);
+	grid_sys_dma_rx_init_one(&GRID_PORT_E, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_e_cb);
+	grid_sys_dma_rx_init_one(&GRID_PORT_S, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_s_cb);
+	grid_sys_dma_rx_init_one(&GRID_PORT_W, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_w_cb);
 
 	NVIC_SetPriority(DMAC_0_IRQn, 0);
 	NVIC_SetPriority(DMAC_1_IRQn, 0);
@@ -177,10 +177,75 @@ void grid_rx_dma_init(){
 	
 }
 
+void grid_sys_init(struct grid_sys_model* mod){
+	
+	mod->bank_select = 0;
+	
+	mod->bank_color_r[0] = 200;
+	mod->bank_color_g[0] = 100;
+	mod->bank_color_b[0] = 0;
+	
+	mod->bank_color_r[1] = 50;
+	mod->bank_color_g[1] = 100;
+	mod->bank_color_b[1] = 150;
+	
+	mod->bank_color_r[2] = 50;
+	mod->bank_color_g[2] = 200;
+	mod->bank_color_b[2] = 50;
+	
+	mod->bank_color_r[3] = 150;
+	mod->bank_color_g[3] = 0;
+	mod->bank_color_b[3] = 150;
+	
+	
+	grid_port_init_all();
+	
+	grid_sys_uart_init();
+	grid_sys_dma_rx_init();
+	
+}
+
+void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
+	
+	mod->bank_select = banknumber%4;
+	
+	uint32_t hwtype = grid_sys_get_hwcfg();
+	
+	for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
+		
+		if (hwtype == GRID_MODULE_EN16_RevA){
+			grid_led_set_min(&grid_led_state, i, 0, 0, 0, 255);
+			grid_led_set_mid(&grid_led_state, i, 0, 0, 5, 0);
+			grid_led_set_max(&grid_led_state, i, 0, 255, 0, 0);
+		}
+		else{
+			
+			uint8_t r = mod->bank_color_r[mod->bank_select];
+			uint8_t g = mod->bank_color_g[mod->bank_select];
+			uint8_t b = mod->bank_color_b[mod->bank_select];
+
+			
+			grid_led_set_min(&grid_led_state, i, 0, r/64, g/64, b/64);
+			grid_led_set_mid(&grid_led_state, i, 0, r/2, g/2, b/2);
+			grid_led_set_max(&grid_led_state, i, 0, r, g, b);
+		}
+	
+		
+	}
+	
+
+	
+	
+}
+
+void grid_sys_bank_select_next(struct grid_sys_model* mod){
+	
+	grid_sys_bank_select(mod, (mod->bank_select+1)%4);
+
+}
+
 
 // REALTIME
-
-
 
 uint32_t grid_sys_rtc_get_time(struct grid_sys_model* mod){
 	return mod->realtime;
@@ -407,17 +472,7 @@ uint32_t grid_sys_get_hwcfg(){
 #define GRID_SYS_SOUTH	2
 #define GRID_SYS_WEST	3
 
-volatile uint8_t grid_sys_ping_counter[4] = {0, 0, 0, 0};
 
-volatile uint32_t grid_sys_rx_counter[4] = {0, 0, 0, 0};
-volatile uint32_t grid_sys_tx_counter[4] = {0, 0, 0, 0};
-
-
-
-
-
-
-	
 
 void grid_sys_ping_all(){
 		
@@ -526,8 +581,6 @@ void grid_msg_push_recent(struct grid_sys_model* model, uint32_t fingerprint){
 	model->recent_messages[model->recent_messages_index] = fingerprint;
 	
 }
-
-
 
 
 void grid_sys_ping(struct grid_port* por){

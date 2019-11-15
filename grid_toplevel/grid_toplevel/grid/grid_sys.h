@@ -44,6 +44,14 @@ struct grid_sys_model
 	uint8_t alert_color_changed;
 	
 	
+	uint8_t bank_select;
+	
+	uint8_t bank_color_r[4];
+	uint8_t bank_color_g[4];
+	uint8_t bank_color_b[4];
+	
+		
+	
 	uint32_t realtime;
 		
 	uint32_t recent_messages[GRID_SYS_RECENT_MESSAGES_LENGTH];
@@ -74,7 +82,7 @@ uint32_t grid_sys_rtc_get_elapsed_time(struct grid_sys_model* mod, uint32_t told
 
 void grid_sys_rtc_tick_time(struct grid_sys_model* mod);
 
-
+uint32_t grid_sys_get_hwcfg();
 
 //====================== SYS ALERT ==========================//
 uint8_t grid_sys_alert_read_color_changed_flag(struct grid_sys_model* mod);

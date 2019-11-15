@@ -445,7 +445,13 @@ struct io_descriptor *io;
 
 int main(void)
 {
+
 	atmel_start_init();	
+	
+	uint32_t flash_length = flash_get_total_pages(&FLASH_0);
+	
+	flash_lock(&FLASH_0, 0x00000000, flash_length);
+	
 	
 // 	wdt_set_timeout_period(&WDT_0, 1000, 4096);
 // 	wdt_enable(&WDT_0);
@@ -469,22 +475,13 @@ int main(void)
 	uint32_t loopstart = 0;
 
 	
-	rand();rand();
-	
-	uint8_t r[4] = {rand()%3, rand()%3, rand()%3, rand()%3};	
-	uint8_t g[4] = {rand()%3, rand()%3, rand()%3, rand()%3};
-	uint8_t b[4] = {rand()%3, rand()%3, rand()%3, rand()%3};
-	
-	
+
 					
-	uint32_t hwtype = grid_sys_get_hwcfg(&grid_sys_state);
+	uint32_t hwtype = grid_sys_get_hwcfg();
 	
 	for (uint8_t i = 0; i<grid_led_get_led_number(&grid_led_state); i++)
 	{
-		grid_led_set_min(&grid_led_state, i, 0, r[i%4]*3, g[i%4]*3, b[i%4]*3);
-		grid_led_set_mid(&grid_led_state, i, 0, r[i%4]*40, g[i%4]*40, b[i%4]*40);
-		grid_led_set_max(&grid_led_state, i, 0, r[i%4]*127, g[i%4]*127, b[i%4]*127);
-			
+
 		if (hwtype == GRID_MODULE_EN16_RevA){	
 			grid_led_set_min(&grid_led_state, i, 0, 0, 0, 255);
 			grid_led_set_mid(&grid_led_state, i, 0, 0, 5, 0);
@@ -503,7 +500,7 @@ int main(void)
 
 	
 	
-	
+	grid_sys_bank_select(&grid_sys_state, 0);
 	while (1) {
 		
 		

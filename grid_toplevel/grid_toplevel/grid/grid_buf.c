@@ -532,8 +532,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					uint8_t midi_param2  = grid_sys_read_hex_string_value(&temp[current_start+9], 2, &error_flag);
 					
 					
-					midi_channel = (256-dy)%16;
-					midi_param1  = (64+midi_param1 + 16*dx)%128;
+					midi_channel = (256-dy*4+grid_sys_state.bank_select)%16;
+					midi_param1  = (0+midi_param1 + 32*dx)%128;
 										
 					sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [MIDI] Ch: %d  Cmd: %d  Param1: %d  Param2: %d\n",					
 						id,dx,dy,age,
@@ -600,6 +600,28 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 		
 					
 				
+				}
+				else if (msg_protocol == GRID_MSG_PROTOCOL_SYS){
+
+						
+					uint8_t sys_bank		= grid_sys_read_hex_string_value(&temp[current_start+3], 2, &error_flag);
+					uint8_t sys_bank_select = grid_sys_read_hex_string_value(&temp[current_start+5], 2, &error_flag);
+					uint8_t sys_bank_value  = grid_sys_read_hex_string_value(&temp[current_start+7], 2, &error_flag);
+						
+						
+					if (sys_bank == GRID_MSG_COMMAND_SYS_BANK && sys_bank_select == GRID_MSG_COMMAND_SYS_BANK_SELECT){
+				
+						grid_sys_bank_select(&grid_sys_state, sys_bank_value);		
+
+					}
+						
+						
+						
+										
+					
+					
+
+					
 				}
 				else if (msg_protocol == GRID_MSG_PROTOCOL_MOUSE){
 					

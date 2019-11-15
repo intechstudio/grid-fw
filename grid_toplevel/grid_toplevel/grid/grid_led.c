@@ -286,8 +286,8 @@ void grid_led_startup_animation(struct grid_led_model* mod){
 
 	uint8_t grid_module_reset_cause = hri_rstc_read_RCAUSE_reg(RSTC);
 	
-	uint8_t color_r   = 1;
-	uint8_t color_g   = 1;
+	uint8_t color_r   = 0;
+	uint8_t color_g   = 0;
 	uint8_t color_b   = 1;
 	uint8_t s		  = 1;
 	
