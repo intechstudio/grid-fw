@@ -207,34 +207,68 @@ void grid_sys_init(struct grid_sys_model* mod){
 
 void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
 	
-	mod->bank_select = banknumber%4;
-	
 	uint32_t hwtype = grid_sys_get_hwcfg();
 	
-	for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
+	if (banknumber == 255){
 		
-		if (hwtype == GRID_MODULE_EN16_RevA){
-			grid_led_set_min(&grid_led_state, i, 0, 0, 0, 255);
-			grid_led_set_mid(&grid_led_state, i, 0, 0, 5, 0);
-			grid_led_set_max(&grid_led_state, i, 0, 255, 0, 0);
-		}
-		else{
-			
-			uint8_t r = mod->bank_color_r[mod->bank_select];
-			uint8_t g = mod->bank_color_g[mod->bank_select];
-			uint8_t b = mod->bank_color_b[mod->bank_select];
+		
 
+		
+		mod->bank_select = 255;
+		
+		for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
 			
-			grid_led_set_min(&grid_led_state, i, 0, r/64, g/64, b/64);
-			grid_led_set_mid(&grid_led_state, i, 0, r/2, g/2, b/2);
-			grid_led_set_max(&grid_led_state, i, 0, r, g, b);
-		}
-	
+			if (hwtype == GRID_MODULE_EN16_RevA){
+				grid_led_set_min(&grid_led_state, i, 0, 0, 0, 255);
+				grid_led_set_mid(&grid_led_state, i, 0, 0, 5, 0);
+				grid_led_set_max(&grid_led_state, i, 0, 255, 0, 0);
+			}
+			else{			
+				
+				uint8_t r = 127;
+				uint8_t g = 127;
+				uint8_t b = 127;
+
+				
+				grid_led_set_min(&grid_led_state, i, 0, r/32, g/32, b/32);
+				grid_led_set_mid(&grid_led_state, i, 0, r/2, g/2, b/2);
+				grid_led_set_max(&grid_led_state, i, 0, r, g, b);
+			}
+			
+			
+		}	
+		
+
+	}
+	else{
+		
+		mod->bank_select = banknumber%4;
+
+		
+		for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
+			
+			if (hwtype == GRID_MODULE_EN16_RevA){
+				grid_led_set_min(&grid_led_state, i, 0, 0, 0, 255);
+				grid_led_set_mid(&grid_led_state, i, 0, 0, 5, 0);
+				grid_led_set_max(&grid_led_state, i, 0, 255, 0, 0);
+			}
+			else{
+				
+				uint8_t r = mod->bank_color_r[mod->bank_select];
+				uint8_t g = mod->bank_color_g[mod->bank_select];
+				uint8_t b = mod->bank_color_b[mod->bank_select];
+
+				
+				grid_led_set_min(&grid_led_state, i, 0, r/32, g/32, b/32);
+				grid_led_set_mid(&grid_led_state, i, 0, r/2, g/2, b/2);
+				grid_led_set_max(&grid_led_state, i, 0, r, g, b);
+			}
+			
+			
+		}	
 		
 	}
-	
 
-	
 	
 }
 

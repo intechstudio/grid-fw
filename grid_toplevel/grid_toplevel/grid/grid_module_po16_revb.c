@@ -30,7 +30,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 
 	uint8_t report_index = 0;
 
-	uint8_t mapmode_value = gpio_get_pin_level(MAP_MODE);
+	uint8_t mapmode_value = !gpio_get_pin_level(MAP_MODE);
 
 	if (mapmode_value != mod->report_array[report_index].helper[0]){
 		
@@ -40,14 +40,15 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 			
 			mod->report_array[report_index].helper[0] = 1;
 			
+		}
+		else{
+			
+			mod->report_array[report_index].helper[0] = 0;			
+			
 			grid_sys_state.bank_select = (grid_sys_state.bank_select+1)%4;
 			value = grid_sys_state.bank_select;
 			grid_sys_write_hex_string_value(&mod->report_array[report_index].payload[7], 2, grid_sys_state.bank_select);
 			grid_ui_report_set_changed_flag(mod, report_index);
-		}
-		else{
-			
-			mod->report_array[report_index].helper[0] = 0;
 		}
 		
 		
@@ -207,11 +208,13 @@ void grid_module_po16_revb_init(struct grid_ui_model* mod){
 		
 		uint8_t payload_length = strlen(payload_template);
 
-		uint8_t helper_template[20];
-		sprintf(helper_template, "00"); // LASTVALUE
+		uint8_t helper_template[2];
 		
-		uint8_t helper_length = strlen(helper_template);
-
+		helper_template[0] = 0;
+		helper_template[1] = 0;
+		
+		uint8_t helper_length = 2;
+		
 		grid_ui_report_init(mod, i, payload_template, payload_length, helper_template, helper_length);
 		
 	}

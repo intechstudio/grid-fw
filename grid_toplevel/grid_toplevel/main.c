@@ -22,12 +22,6 @@ volatile uint8_t pingflag = 0;
 volatile uint8_t pingflag_active = 0;
 
 
-
-
-
-
-
-
 void grid_port_receive_task(struct grid_port* por){
 		
 
@@ -282,6 +276,14 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 						
 						grid_sys_state.age = grid_sys_rtc_get_time(&grid_sys_state);
 						grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // GREEN
+						
+						// SEND OUT CURRENT BANK NUMBER IF IT IS INITIALIZED
+						if (grid_sys_state.bank_select!=255){
+							struct grid_ui_model* mod = &grid_ui_state;
+							grid_sys_write_hex_string_value(&mod->report_array[0].payload[7], 2, grid_sys_state.bank_select);
+							grid_ui_report_set_changed_flag(mod, 0);												
+						}
+
 															
 					}
 					else{
@@ -448,20 +450,18 @@ int main(void)
 
 	atmel_start_init();	
 	
-	uint32_t flash_length = flash_get_total_pages(&FLASH_0);
+// 	uint32_t flash_length = flash_get_total_pages(&FLASH_0);
+// 	
+// 	flash_lock(&FLASH_0, 0x00000000, flash_length);
 	
-	flash_lock(&FLASH_0, 0x00000000, flash_length);
 	
-	
-// 	wdt_set_timeout_period(&WDT_0, 1000, 4096);
-// 	wdt_enable(&WDT_0);
-// 	wdt_feed(&WDT_0);
+//  	wdt_set_timeout_period(&WDT_0, 1000, 4096);
+//  	wdt_enable(&WDT_0);
+//  	wdt_feed(&WDT_0
 		
-	wdt_disable(&WDT_0);
+//	wdt_disable(&WDT_0);
 	
 
-
-	
 	//TIMER_0_example2();
 	#include "usb/class/midi/device/audiodf_midi.h"
 	audiodf_midi_init();
@@ -473,8 +473,6 @@ int main(void)
 
 	
 	uint32_t loopstart = 0;
-
-	
 
 					
 	uint32_t hwtype = grid_sys_get_hwcfg();
@@ -500,48 +498,15 @@ int main(void)
 
 	
 	
-	grid_sys_bank_select(&grid_sys_state, 0);
+	grid_sys_bank_select(&grid_sys_state, 255);
+	
+	
 	while (1) {
-		
-		
-		//gpio_set_pin_level(PIN_GRID_SYNC_1, true);
-		//wdt_feed(&WDT_0);
-		//gpio_set_pin_level(PIN_GRID_SYNC_1, false);
-
 
 		loopcounter++;
 	
 		loopstart = grid_sys_rtc_get_time(&grid_sys_state);
-		
-		
-// 		if (loopcounter%16==0 && hwtype == GRID_MODULE_EN16_RevA){
-// 			// ENCODER HOUSE KEEPING
-// 			for (uint8_t i=0; i<16; i++){
-// 			
-// 	
-// 					uint8_t current = grid_led_get_phase(&grid_led_state, i, 0);
-// 					if (current>128){
-// 						current--;
-// 						grid_led_get_phase(&grid_led_state, i, 0, current);
-// 						
-// 					}
-// 					if (current<128){
-// 						current++;
-// 						grid_led_get_phase(&grid_led_state, i, 0, current);
-// 
-// 					}
-// 			
-// 			
-// 			}
-// 			
-// 			
-// 			
-// 		}
-
-
-
-
-						
+							
 		
 		/* ========================= PING ============================= */
 		if (pingflag_active){
