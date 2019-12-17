@@ -185,17 +185,17 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->bank_color_g[0] = 100;
 	mod->bank_color_b[0] = 0;
 	
-	mod->bank_color_r[1] = 50;
+	mod->bank_color_r[1] = 0;
 	mod->bank_color_g[1] = 100;
-	mod->bank_color_b[1] = 150;
+	mod->bank_color_b[1] = 200;
 	
 	mod->bank_color_r[2] = 50;
 	mod->bank_color_g[2] = 200;
 	mod->bank_color_b[2] = 50;
 	
-	mod->bank_color_r[3] = 150;
+	mod->bank_color_r[3] = 100;
 	mod->bank_color_g[3] = 0;
-	mod->bank_color_b[3] = 150;
+	mod->bank_color_b[3] = 200;
 	
 	
 	grid_port_init_all();
@@ -219,6 +219,7 @@ void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
 		for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
 			
 			if (hwtype == GRID_MODULE_EN16_RevA){
+				
 				grid_led_set_min(&grid_led_state, i, 0, 0, 0, 255);
 				grid_led_set_mid(&grid_led_state, i, 0, 0, 5, 0);
 				grid_led_set_max(&grid_led_state, i, 0, 255, 0, 0);
@@ -230,7 +231,7 @@ void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
 				uint8_t b = 127;
 
 				
-				grid_led_set_min(&grid_led_state, i, 0, r/32, g/32, b/32);
+				grid_led_set_min(&grid_led_state, i, 0, r/20, g/20, b/20);
 				grid_led_set_mid(&grid_led_state, i, 0, r/2, g/2, b/2);
 				grid_led_set_max(&grid_led_state, i, 0, r, g, b);
 			}

@@ -287,16 +287,20 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 	if (mapmode_value != mod->report_array[report_index].helper[0]){
 		
 		uint8_t command;
+		uint8_t value;
 		
 		if (mod->report_array[report_index].helper[0] == 0){
 			
-			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYUP;
 			mod->report_array[report_index].helper[0] = 1;
 		}
 		else{
 			
-			command = GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN;
 			mod->report_array[report_index].helper[0] = 0;
+			
+			grid_sys_state.bank_select = (grid_sys_state.bank_select+1)%4;
+			value = grid_sys_state.bank_select;
+			grid_sys_write_hex_string_value(&mod->report_array[report_index].payload[7], 2, grid_sys_state.bank_select);
+			grid_ui_report_set_changed_flag(mod, report_index);
 		}
 		
 		
@@ -349,13 +353,13 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 		
 		if (i == 0){
 			
-			sprintf(payload_template, "%c%02x%02x%02x%02x%c%",
+			sprintf(payload_template, "%c%02x%02x%02x%02x%c",
 			
 			GRID_MSG_START_OF_TEXT,
-			GRID_MSG_PROTOCOL_KEYBOARD,
-			GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN,
-			GRID_MSG_PROTOCOL_KEYBOARD_PARAMETER_NOT_MODIFIER,
-			HID_TAB,
+			GRID_MSG_PROTOCOL_SYS,
+			GRID_MSG_COMMAND_SYS_BANK,
+			GRID_MSG_COMMAND_SYS_BANK_SELECT,
+			0,
 			GRID_MSG_END_OF_TEXT
 
 			);
@@ -410,10 +414,12 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 		
 		uint32_t payload_length = strlen(payload_template);
 
-		uint8_t helper_template[20];
-		sprintf(helper_template, "00"); // LASTVALUE
+		uint8_t helper_template[2];
 		
-		uint8_t helper_length = strlen(helper_template);
+		helper_template[0] = 0;
+		helper_template[1] = 0;
+		
+		uint8_t helper_length = 2;
 
 		grid_ui_report_init(mod, i, payload_template, payload_length, helper_template, helper_length);
 		
