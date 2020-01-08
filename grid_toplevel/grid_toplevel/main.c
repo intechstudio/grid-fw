@@ -22,6 +22,131 @@ volatile uint8_t pingflag = 0;
 volatile uint8_t pingflag_active = 0;
 
 
+void grid_selftest(uint32_t loop){
+	
+	// SELFTEST()
+	if (1){
+		
+		//INIT PORTS
+		if (1){
+			
+			// SYNC
+			gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
+			gpio_set_pin_function(PIN_GRID_SYNC_1, GPIO_PIN_FUNCTION_OFF);
+			
+			gpio_set_pin_direction(PIN_GRID_SYNC_2, GPIO_DIRECTION_OUT);
+			gpio_set_pin_function(PIN_GRID_SYNC_2, GPIO_PIN_FUNCTION_OFF);
+			
+			//NORTH
+			gpio_set_pin_direction(PC27, GPIO_DIRECTION_OUT);
+			gpio_set_pin_function(PC27, GPIO_PIN_FUNCTION_OFF);
+			
+			gpio_set_pin_direction(PC28, GPIO_DIRECTION_OUT);
+			gpio_set_pin_function(PC28, GPIO_PIN_FUNCTION_OFF);
+			
+			//EAST
+			gpio_set_pin_direction(PC17, GPIO_DIRECTION_OUT);
+			gpio_set_pin_function(PC17, GPIO_PIN_FUNCTION_OFF);
+			
+			gpio_set_pin_direction(PC16, GPIO_DIRECTION_OUT);
+			gpio_set_pin_function(PC16, GPIO_PIN_FUNCTION_OFF);
+			
+			//SOUTH
+			gpio_set_pin_direction(PC13, GPIO_DIRECTION_OUT);
+			gpio_set_pin_function(PC13, GPIO_PIN_FUNCTION_OFF);
+			
+			gpio_set_pin_direction(PC12, GPIO_DIRECTION_OUT);
+			gpio_set_pin_function(PC12, GPIO_PIN_FUNCTION_OFF);
+			
+			//WEST
+			gpio_set_pin_direction(PB08, GPIO_DIRECTION_OUT);
+			gpio_set_pin_function(PB08, GPIO_PIN_FUNCTION_OFF);
+			
+			gpio_set_pin_direction(PB09, GPIO_DIRECTION_OUT);
+			gpio_set_pin_function(PB09, GPIO_PIN_FUNCTION_OFF);
+			
+		}
+		
+		
+		if (loop%1024 == 0){
+			
+			gpio_set_pin_level(PIN_GRID_SYNC_1, false);
+			gpio_set_pin_level(PIN_GRID_SYNC_2, false);
+			
+			gpio_set_pin_level(PC27, false);
+			gpio_set_pin_level(PC28, false);
+			
+			gpio_set_pin_level(PC17, false);
+			gpio_set_pin_level(PC16, false);
+			
+			gpio_set_pin_level(PC13, false);
+			gpio_set_pin_level(PC12, false);
+			
+			gpio_set_pin_level(PB08, false);
+			gpio_set_pin_level(PB09, false);
+			
+		}
+		if (loop%1024 == 512-100){
+			
+			gpio_set_pin_level(PIN_GRID_SYNC_1, false);
+			gpio_set_pin_level(PIN_GRID_SYNC_2, false);
+			
+			gpio_set_pin_level(PC27, true);
+			gpio_set_pin_level(PC28, true);
+			
+			gpio_set_pin_level(PC17, true);
+			gpio_set_pin_level(PC16, true);
+			
+			gpio_set_pin_level(PC13, true);
+			gpio_set_pin_level(PC12, true);
+			
+			gpio_set_pin_level(PB08, true);
+			gpio_set_pin_level(PB09, true);
+			
+		}
+		if (loop%1024 == 512){
+			
+			gpio_set_pin_level(PIN_GRID_SYNC_1, true);
+			gpio_set_pin_level(PIN_GRID_SYNC_2, true);
+			
+			gpio_set_pin_level(PC27, true);
+			gpio_set_pin_level(PC28, true);
+			
+			gpio_set_pin_level(PC17, true);
+			gpio_set_pin_level(PC16, true);
+			
+			gpio_set_pin_level(PC13, true);
+			gpio_set_pin_level(PC12, true);
+			
+			gpio_set_pin_level(PB08, true);
+			gpio_set_pin_level(PB09, true);
+			
+		}
+		if (loop%1024 == 1024-100){
+			
+			gpio_set_pin_level(PIN_GRID_SYNC_1, true);
+			gpio_set_pin_level(PIN_GRID_SYNC_2, true);
+			
+			gpio_set_pin_level(PC27, false);
+			gpio_set_pin_level(PC28, false);
+			
+			gpio_set_pin_level(PC17, false);
+			gpio_set_pin_level(PC16, false);
+			
+			gpio_set_pin_level(PC13, false);
+			gpio_set_pin_level(PC12, false);
+			
+			gpio_set_pin_level(PB08, false);
+			gpio_set_pin_level(PB09, false);
+			
+		}
+		
+	} // END OF SELFTEST
+	
+	
+}
+
+
 void grid_port_receive_task(struct grid_port* por){
 		
 
@@ -494,7 +619,7 @@ int main(void)
 	
 	init_timer();
 	
-	uint8_t loopcounter = 0;
+	uint32_t loopcounter = 0;
 
 	
 	
@@ -502,6 +627,10 @@ int main(void)
 	
 	
 	while (1) {
+		
+				
+		//grid_selftest(loopcounter);
+		
 
 		loopcounter++;
 	
@@ -603,13 +732,9 @@ int main(void)
 			
 		}
 		
-						
-
-		gpio_set_pin_level(PIN_GRID_SYNC_1, true);
 		
 	
 		grid_led_tick(&grid_led_state);
-		gpio_set_pin_level(PIN_GRID_SYNC_1, false);
 			
 			
 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
