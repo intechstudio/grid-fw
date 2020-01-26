@@ -30,10 +30,13 @@ extern "C" {
 
 #include <hal_flash.h>
 
+#include <hal_qspi_dma.h>
+
 #include <hal_timer.h>
 #include <hal_usart_async.h>
 #include <hal_usart_async.h>
-#include <hal_usart_async.h>
+
+#include <hal_usart_sync.h>
 
 #include <hal_spi_m_async.h>
 #include <hal_usart_async.h>
@@ -61,11 +64,14 @@ extern struct adc_async_descriptor ADC_0;
 extern struct adc_async_descriptor ADC_1;
 extern struct crc_sync_descriptor  CRC_0;
 
-extern struct flash_descriptor       FLASH_0;
+extern struct flash_descriptor FLASH_0;
+
+extern struct qspi_dma_descriptor    QSPI_INSTANCE;
 extern struct timer_descriptor       RTC_Scheduler;
 extern struct usart_async_descriptor USART_EAST;
 extern struct usart_async_descriptor USART_NORTH;
-extern struct usart_async_descriptor GRID_AUX;
+
+extern struct usart_sync_descriptor GRID_AUX;
 
 extern struct spi_m_async_descriptor UI_SPI;
 extern struct usart_async_descriptor USART_WEST;
@@ -88,6 +94,10 @@ void ADC_1_init(void);
 
 void FLASH_0_init(void);
 void FLASH_0_CLOCK_init(void);
+
+void QSPI_INSTANCE_PORT_init(void);
+void QSPI_INSTANCE_CLOCK_init(void);
+void QSPI_INSTANCE_init(void);
 
 void USART_EAST_PORT_init(void);
 void USART_EAST_CLOCK_init(void);

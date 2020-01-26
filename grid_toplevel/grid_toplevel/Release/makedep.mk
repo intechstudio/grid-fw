@@ -12,6 +12,10 @@ driver_init.c
 
 examples\driver_examples.c
 
+flash\n25q256a.c
+
+flash\spi_nor_flash.c
+
 grid\grid_ain.c
 
 grid\grid_buf.c
@@ -54,6 +58,8 @@ hal\src\hal_init.c
 
 hal\src\hal_io.c
 
+hal\src\hal_qspi_dma.c
+
 hal\src\hal_sleep.c
 
 hal\src\hal_spi_m_async.c
@@ -63,6 +69,8 @@ hal\src\hal_spi_m_dma.c
 hal\src\hal_timer.c
 
 hal\src\hal_usart_async.c
+
+hal\src\hal_usart_sync.c
 
 hal\src\hal_usb_device.c
 
@@ -106,6 +114,8 @@ hpl\pac\hpl_pac.c
 
 hpl\pm\hpl_pm.c
 
+hpl\qspi\hpl_qspi.c
+
 hpl\ramecc\hpl_ramecc.c
 
 hpl\rtc\hpl_rtc.c
@@ -121,6 +131,14 @@ hpl\usb\hpl_usb.c
 hpl\wdt\hpl_wdt.c
 
 main.c
+
+stdio_redirect\gcc\read.c
+
+stdio_redirect\gcc\write.c
+
+stdio_redirect\stdio_io.c
+
+stdio_start.c
 
 usb\class\cdc\device\cdcdf_acm.c
 

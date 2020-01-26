@@ -6825,7 +6825,7 @@
 // <e> Channel 30 settings
 // <id> dmac_channel_30_settings
 #ifndef CONF_DMAC_CHANNEL_30_SETTINGS
-#define CONF_DMAC_CHANNEL_30_SETTINGS 0
+#define CONF_DMAC_CHANNEL_30_SETTINGS 1
 #endif
 
 // <q> Channel Run in Standby
@@ -6934,7 +6934,7 @@
 // <i> Defines the peripheral trigger which is source of the transfer
 // <id> dmac_trifsrc_30
 #ifndef CONF_DMAC_TRIGSRC_30
-#define CONF_DMAC_TRIGSRC_30 0
+#define CONF_DMAC_TRIGSRC_30 84
 #endif
 
 // <o> Channel Arbitration Level
@@ -6997,21 +6997,21 @@
 // <i> Defines whether source or destination addresses are using the step size settings
 // <id> dmac_stepsel_30
 #ifndef CONF_DMAC_STEPSEL_30
-#define CONF_DMAC_STEPSEL_30 0
+#define CONF_DMAC_STEPSEL_30 1
 #endif
 
 // <q> Source Address Increment
 // <i> Indicates whether the source address incrementation is enabled or not
 // <id> dmac_srcinc_30
 #ifndef CONF_DMAC_SRCINC_30
-#define CONF_DMAC_SRCINC_30 0
+#define CONF_DMAC_SRCINC_30 1
 #endif
 
 // <q> Destination Address Increment
 // <i> Indicates whether the destination address incrementation is enabled or not
 // <id> dmac_dstinc_30
 #ifndef CONF_DMAC_DSTINC_30
-#define CONF_DMAC_DSTINC_30 0
+#define CONF_DMAC_DSTINC_30 1
 #endif
 
 // <o> Beat Size
@@ -7049,7 +7049,7 @@
 // <e> Channel 31 settings
 // <id> dmac_channel_31_settings
 #ifndef CONF_DMAC_CHANNEL_31_SETTINGS
-#define CONF_DMAC_CHANNEL_31_SETTINGS 0
+#define CONF_DMAC_CHANNEL_31_SETTINGS 1
 #endif
 
 // <q> Channel Run in Standby
@@ -7158,7 +7158,7 @@
 // <i> Defines the peripheral trigger which is source of the transfer
 // <id> dmac_trifsrc_31
 #ifndef CONF_DMAC_TRIGSRC_31
-#define CONF_DMAC_TRIGSRC_31 0
+#define CONF_DMAC_TRIGSRC_31 83
 #endif
 
 // <o> Channel Arbitration Level
@@ -7228,14 +7228,14 @@
 // <i> Indicates whether the source address incrementation is enabled or not
 // <id> dmac_srcinc_31
 #ifndef CONF_DMAC_SRCINC_31
-#define CONF_DMAC_SRCINC_31 0
+#define CONF_DMAC_SRCINC_31 1
 #endif
 
 // <q> Destination Address Increment
 // <i> Indicates whether the destination address incrementation is enabled or not
 // <id> dmac_dstinc_31
 #ifndef CONF_DMAC_DSTINC_31
-#define CONF_DMAC_DSTINC_31 0
+#define CONF_DMAC_DSTINC_31 1
 #endif
 
 // <o> Beat Size

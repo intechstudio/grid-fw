@@ -2,12 +2,17 @@ format_version: '2'
 name: My Project
 versions:
   api: '1.0'
-  backend: 1.6.148
-  commit: 605f106ab95776472e3febf2fac2471441fb1816
-  content: 1.0.1635
-  content_pack_name: acme-packs-all
+  backend: 1.7.279
+  commit: 1e07622763d149970fd8808a8f12ff3b1e84e0d7
+  content: unknown
+  content_pack_name: unknown
   format: '2'
-  frontend: 1.6.1884
+  frontend: 1.7.279
+  packs_version_avr8: 1.0.1401
+  packs_version_qtouch: unknown
+  packs_version_sam: 1.0.1373
+  version_backend: 1.7.279
+  version_frontend: ''
 board:
   identifier: CustomBoard
   device: SAMD51N20A-AF
@@ -146,6 +151,14 @@ middlewares:
       USB Class VENDOR: USB_CLASS_VENDOR
       USB Class HID: USB_CLASS_HID
       USB Class HUB: USB_CLASS_HUB
+  STDIO_REDIRECT_0:
+    user_label: STDIO_REDIRECT_0
+    configuration: {}
+    definition: Atmel:STDIO_redirect:0.0.1::STDIO_Redirect
+    functionality: STDIO_Redirect
+    api: STDIO:Redirect:IO
+    dependencies:
+      Target IO: GRID_AUX
 drivers:
   ADC_0:
     user_label: ADC_0
@@ -398,8 +411,8 @@ drivers:
       dmac_channel_28_settings: false
       dmac_channel_29_settings: false
       dmac_channel_2_settings: true
-      dmac_channel_30_settings: false
-      dmac_channel_31_settings: false
+      dmac_channel_30_settings: true
+      dmac_channel_31_settings: true
       dmac_channel_3_settings: true
       dmac_channel_4_settings: false
       dmac_channel_5_settings: false
@@ -432,8 +445,8 @@ drivers:
       dmac_dstinc_28: false
       dmac_dstinc_29: false
       dmac_dstinc_3: true
-      dmac_dstinc_30: false
-      dmac_dstinc_31: false
+      dmac_dstinc_30: true
+      dmac_dstinc_31: true
       dmac_dstinc_4: false
       dmac_dstinc_5: false
       dmac_dstinc_6: false
@@ -669,8 +682,8 @@ drivers:
       dmac_srcinc_28: false
       dmac_srcinc_29: false
       dmac_srcinc_3: false
-      dmac_srcinc_30: false
-      dmac_srcinc_31: false
+      dmac_srcinc_30: true
+      dmac_srcinc_31: true
       dmac_srcinc_4: false
       dmac_srcinc_5: false
       dmac_srcinc_6: true
@@ -701,7 +714,7 @@ drivers:
       dmac_stepsel_28: Step size settings apply to the destination address
       dmac_stepsel_29: Step size settings apply to the destination address
       dmac_stepsel_3: Step size settings apply to the destination address
-      dmac_stepsel_30: Step size settings apply to the destination address
+      dmac_stepsel_30: Step size settings apply to the source address
       dmac_stepsel_31: Step size settings apply to the destination address
       dmac_stepsel_4: Step size settings apply to the destination address
       dmac_stepsel_5: Step size settings apply to the destination address
@@ -765,8 +778,8 @@ drivers:
       dmac_trifsrc_28: Only software/event triggers
       dmac_trifsrc_29: Only software/event triggers
       dmac_trifsrc_3: SERCOM4 RX Trigger
-      dmac_trifsrc_30: Only software/event triggers
-      dmac_trifsrc_31: Only software/event triggers
+      dmac_trifsrc_30: QSPI Tx Trigger
+      dmac_trifsrc_31: QSPI Rx Trigger
       dmac_trifsrc_4: Only software/event triggers
       dmac_trifsrc_5: Only software/event triggers
       dmac_trifsrc_6: SERCOM3 TX Trigger
@@ -1249,17 +1262,29 @@ drivers:
     api: HAL:HPL:GCLK
     configuration:
       enable_gclk_gen_0: true
+      enable_gclk_gen_0__externalclock: 1000000
       enable_gclk_gen_1: true
       enable_gclk_gen_10: false
+      enable_gclk_gen_10__externalclock: 1000000
       enable_gclk_gen_11: false
+      enable_gclk_gen_11__externalclock: 1000000
+      enable_gclk_gen_1__externalclock: 1000000
       enable_gclk_gen_2: true
+      enable_gclk_gen_2__externalclock: 1000000
       enable_gclk_gen_3: true
+      enable_gclk_gen_3__externalclock: 1000000
       enable_gclk_gen_4: false
+      enable_gclk_gen_4__externalclock: 1000000
       enable_gclk_gen_5: false
+      enable_gclk_gen_5__externalclock: 1000000
       enable_gclk_gen_6: false
+      enable_gclk_gen_6__externalclock: 1000000
       enable_gclk_gen_7: false
+      enable_gclk_gen_7__externalclock: 1000000
       enable_gclk_gen_8: false
+      enable_gclk_gen_8__externalclock: 1000000
       enable_gclk_gen_9: false
+      enable_gclk_gen_9__externalclock: 1000000
       gclk_arch_gen_0_enable: true
       gclk_arch_gen_0_idc: false
       gclk_arch_gen_0_oe: false
@@ -1555,6 +1580,67 @@ drivers:
     variant: null
     clocks:
       domain_group: null
+  QSPI_INSTANCE:
+    user_label: QSPI_INSTANCE
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::QSPI::driver_config_definition::QSPI.Master::HAL:Driver:QSPI.DMA
+    functionality: Quad_SPI
+    api: HAL:Driver:QSPI_DMA
+    configuration:
+      qspi_advanced: true
+      qspi_baud_rate: 2000000
+      qspi_cpha: Data is changed on the leading edge of SPCK and captured on the following
+        edge of SPCK.
+      qspi_cpol: The inactive state value of SPCK is logic level zero.
+      qspi_dlybs: 300
+      qspi_dlycs: 50
+      qspi_dma_rx_channel: 31
+      qspi_dma_tx_channel: 30
+    optional_signals:
+    - identifier: QSPI_INSTANCE:CS
+      pad: PB11
+      mode: Enabled
+      configuration: null
+      definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::optional_signal_definition::QSPI.CS
+      name: QSPI/CS
+      label: CS
+    - identifier: QSPI_INSTANCE:DATA/0
+      pad: PA08
+      mode: Enabled
+      configuration: null
+      definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::optional_signal_definition::QSPI.DATA.0
+      name: QSPI/DATA/0
+      label: DATA/0
+    - identifier: QSPI_INSTANCE:DATA/1
+      pad: PA09
+      mode: Enabled
+      configuration: null
+      definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::optional_signal_definition::QSPI.DATA.1
+      name: QSPI/DATA/1
+      label: DATA/1
+    - identifier: QSPI_INSTANCE:DATA/2
+      pad: PA10
+      mode: Enabled
+      configuration: null
+      definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::optional_signal_definition::QSPI.DATA.2
+      name: QSPI/DATA/2
+      label: DATA/2
+    - identifier: QSPI_INSTANCE:DATA/3
+      pad: PA11
+      mode: Enabled
+      configuration: null
+      definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::optional_signal_definition::QSPI.DATA.3
+      name: QSPI/DATA/3
+      label: DATA/3
+    - identifier: QSPI_INSTANCE:SCK
+      pad: PB10
+      mode: Enabled
+      configuration: null
+      definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::optional_signal_definition::QSPI.SCK
+      name: QSPI/SCK
+      label: SCK
+    variant: null
+    clocks:
+      domain_group: null
   RAMECC:
     user_label: RAMECC
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::RAMECC::driver_config_definition::RAMECC::HAL:HPL:RAMECC
@@ -1721,9 +1807,9 @@ drivers:
           slow_gclk_selection: Generic clock generator 2
   GRID_AUX:
     user_label: GRID_AUX
-    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::SERCOM2::driver_config_definition::UART::HAL:Driver:USART.Async
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::SERCOM2::driver_config_definition::UART::HAL:Driver:USART.Sync
     functionality: USART
-    api: HAL:Driver:USART_Async
+    api: HAL:Driver:USART_Sync
     configuration:
       usart_advanced: false
       usart_arch_clock_mode: USART with internal clock
@@ -1738,7 +1824,7 @@ drivers:
       usart_arch_sampa: 7-8-9 (3-4-5 8-bit over-sampling)
       usart_arch_sampr: 16x arithmetic
       usart_arch_sfde: false
-      usart_baud_rate: 115200
+      usart_baud_rate: 2000000
       usart_character_size: 8 bits
       usart_parity: No parity
       usart_rx_enable: true
@@ -2224,6 +2310,42 @@ pads:
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA07
     mode: Analog
     user_label: PA07
+    configuration: null
+  PA08:
+    name: PA08
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA08
+    mode: Advanced
+    user_label: PA08
+    configuration: null
+  PA09:
+    name: PA09
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA09
+    mode: Advanced
+    user_label: PA09
+    configuration: null
+  PA10:
+    name: PA10
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA10
+    mode: Advanced
+    user_label: PA10
+    configuration: null
+  PA11:
+    name: PA11
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PA11
+    mode: Advanced
+    user_label: PA11
+    configuration: null
+  PB10:
+    name: PB10
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PB10
+    mode: Digital input
+    user_label: PB10
+    configuration: null
+  PB11:
+    name: PB11
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::pad::PB11
+    mode: Digital input
+    user_label: PB11
     configuration: null
   HWCFG_SHIFT:
     name: PB13

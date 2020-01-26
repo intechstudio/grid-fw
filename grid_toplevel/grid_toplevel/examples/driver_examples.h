@@ -20,6 +20,8 @@ void CRC_0_example(void);
 
 void FLASH_0_example(void);
 
+void QSPI_INSTANCE_example(void);
+
 void RTC_Scheduler_example(void);
 
 void USART_EAST_example(void);

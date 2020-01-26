@@ -31,12 +31,14 @@
       <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
+      <Value>../hpl/qspi</Value>
       <Value>../hpl/ramecc</Value>
       <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
       <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
@@ -49,6 +51,7 @@
       <Value>../usb/class/msc/device</Value>
       <Value>../usb/class/vendor</Value>
       <Value>../usb/device</Value>
+      <Value>../stdio_redirect</Value>
       <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.2.139\samd51a\include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
@@ -92,12 +95,14 @@
       <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
+      <Value>../hpl/qspi</Value>
       <Value>../hpl/ramecc</Value>
       <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
       <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
@@ -110,6 +115,7 @@
       <Value>../usb/class/msc/device</Value>
       <Value>../usb/class/vendor</Value>
       <Value>../usb/device</Value>
+      <Value>../stdio_redirect</Value>
       <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.2.139\samd51a\include</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
@@ -136,12 +142,14 @@
       <Value>../hpl/pac</Value>
       <Value>../hpl/pm</Value>
       <Value>../hpl/port</Value>
+      <Value>../hpl/qspi</Value>
       <Value>../hpl/ramecc</Value>
       <Value>../hpl/rtc</Value>
       <Value>../hpl/sercom</Value>
       <Value>../hpl/systick</Value>
       <Value>../hpl/tc</Value>
       <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
       <Value>../hri</Value>
       <Value>../usb</Value>
       <Value>../usb/class/cdc</Value>
@@ -154,6 +162,7 @@
       <Value>../usb/class/msc/device</Value>
       <Value>../usb/class/vendor</Value>
       <Value>../usb/device</Value>
+      <Value>../stdio_redirect</Value>
       <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.2.139\samd51a\include</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>

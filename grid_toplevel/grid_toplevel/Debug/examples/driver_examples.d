@@ -142,20 +142,24 @@ examples/driver_examples.d examples/driver_examples.o: \
  ../hal/include/hpl_missing_features.h ../hal/include/hal_crc_sync.h \
  ../hal/include/hpl_crc_sync.h ../hal/include/hal_evsys.h \
  ../hal/include/hpl_evsys.h ../hal/include/hal_flash.h \
- ../hal/include/hpl_flash.h ../hal/include/hal_timer.h \
+ ../hal/include/hpl_flash.h ../hal/include/hal_qspi_dma.h \
+ ../hal/include/hpl_qspi_dma.h ../hal/include/hpl_qspi.h \
+ ../hal/include/hpl_dma.h ../hal/include/hal_timer.h \
  ../hal/utils/include/utils_list.h ../hal/include/hpl_timer.h \
  ../hal/include/hal_usart_async.h ../hal/include/hal_io.h \
  ../hal/include/hpl_usart_async.h ../hal/include/hpl_usart.h \
- ../hal/include/hal_spi_m_async.h ../hal/include/hpl_spi_m_async.h \
- ../hal/include/hpl_spi.h ../hal/utils/include/utils.h \
- ../hal/include/hpl_spi_async.h ../hal/include/hal_i2c_m_async.h \
- ../hal/include/hpl_i2c_m_async.h ../hal/include/hpl_i2c_m_sync.h \
- ../hal/include/hal_spi_m_dma.h ../hal/include/hpl_spi_m_dma.h \
- ../hal/include/hpl_spi_dma.h ../hal/include/hpl_dma.h \
- ../hpl/tc/hpl_tc_base.h ../hal/include/hpl_pwm.h \
- ../hal/include/hal_usb_device.h ../hal/include/hpl_usb_device.h \
- ../hal/include/hpl_usb.h ../Config/hpl_usb_config.h \
- ../hal/include/hal_wdt.h ../hal/include/hpl_wdt.h
+ ../hal/include/hal_usart_sync.h ../hal/include/hpl_usart_sync.h \
+ ../hal/include/hpl_usart.h ../hal/include/hal_spi_m_async.h \
+ ../hal/include/hpl_spi_m_async.h ../hal/include/hpl_spi.h \
+ ../hal/utils/include/utils.h ../hal/include/hpl_spi_async.h \
+ ../hal/include/hal_i2c_m_async.h ../hal/include/hpl_i2c_m_async.h \
+ ../hal/include/hpl_i2c_m_sync.h ../hal/include/hal_spi_m_dma.h \
+ ../hal/include/hpl_spi_m_dma.h ../hal/include/hpl_spi_dma.h \
+ ../hal/include/hpl_dma.h ../hpl/tc/hpl_tc_base.h \
+ ../hal/include/hpl_pwm.h ../hal/include/hal_usb_device.h \
+ ../hal/include/hpl_usb_device.h ../hal/include/hpl_usb.h \
+ ../Config/hpl_usb_config.h ../hal/include/hal_wdt.h \
+ ../hal/include/hpl_wdt.h
 
 ../examples/driver_examples.h:
 
@@ -523,6 +527,14 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 
 ../hal/include/hpl_flash.h:
 
+../hal/include/hal_qspi_dma.h:
+
+../hal/include/hpl_qspi_dma.h:
+
+../hal/include/hpl_qspi.h:
+
+../hal/include/hpl_dma.h:
+
 ../hal/include/hal_timer.h:
 
 ../hal/utils/include/utils_list.h:
@@ -534,6 +546,12 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 ../hal/include/hal_io.h:
 
 ../hal/include/hpl_usart_async.h:
+
+../hal/include/hpl_usart.h:
+
+../hal/include/hal_usart_sync.h:
+
+../hal/include/hpl_usart_sync.h:
 
 ../hal/include/hpl_usart.h:
 

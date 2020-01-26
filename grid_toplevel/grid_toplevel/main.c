@@ -5,6 +5,14 @@
 #include <atmel_start.h>
 #include "atmel_start_pins.h"
 
+
+
+
+#include <hal_qspi_dma.h>
+#include "flash/spi_nor_flash.h"
+#include "flash/n25q256a.h"
+
+
 #include <stdio.h>
 
 
@@ -220,8 +228,6 @@ void grid_port_receive_task(struct grid_port* por){
 }
 
 void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint32_t length){
-	
-
 	
 	uint8_t response[10];
 	
@@ -567,6 +573,121 @@ void init_timer(void)
 struct io_descriptor *io;
 
 
+//  ========================== NOR FLASH =================================  //
+
+#define BUFFER_SIZE 64
+/** Size of minimum erase block */
+#define QSPI_ERBLK (4 * 1024)
+/** Size of data to erase (blocks to cover writing area) */
+#define QSPI_ERSIZE ((BUFFER_SIZE + QSPI_ERBLK - 1) & ~(QSPI_ERBLK - 1))
+
+/* Declare  Tx and Rx buffer and initialize to 0 */
+volatile uint8_t tx_buffer[BUFFER_SIZE] = {0};
+volatile uint8_t rx_buffer[BUFFER_SIZE] = {0};
+
+static struct n25q256a SPI_NOR_FLASH_0_descr;
+
+struct spi_nor_flash *SPI_NOR_FLASH_0;
+
+volatile bool is_corrupted = false;		
+
+#define CONF_SPI_NOR_FLASH_0_QUAD_MODE 1
+
+#define FLASH_IO0 PA08
+#define FLASH_IO1 PA09
+#define FLASH_IO2 PA10
+#define FLASH_IO3 PA11
+
+#define FLASH_CLK PB10
+#define FLASH_CS  PB11
+
+void QSPI_INSTANCE_exit_xip(void)
+{
+	gpio_set_pin_function(FLASH_IO0, 0);
+	gpio_set_pin_function(FLASH_CS, 0);
+	gpio_set_pin_function(FLASH_CLK, 0);
+
+	gpio_set_pin_direction(FLASH_IO0, GPIO_DIRECTION_OUT);
+	gpio_set_pin_direction(FLASH_CS, GPIO_DIRECTION_OUT);
+	gpio_set_pin_direction(FLASH_CLK, GPIO_DIRECTION_OUT);
+
+	gpio_set_pin_level(FLASH_IO0, true);
+	gpio_set_pin_level(FLASH_CS, false);
+	gpio_set_pin_level(FLASH_CLK, false);
+
+	delay_us(1);
+
+	for (int i = 0; i < 7; i++) {
+		gpio_set_pin_level(FLASH_CLK, true);
+		delay_us(1);
+		gpio_set_pin_level(FLASH_CLK, false);
+		delay_us(1);
+	}
+
+	gpio_set_pin_level(FLASH_CS, true);
+	delay_us(1);
+	QSPI_INSTANCE_PORT_init();
+}
+
+
+/**
+ * \brief Initialize NOR Flash memory
+ */
+void spi_nor_flash_init(void)
+{
+
+	qspi_dma_enable(&QSPI_INSTANCE);
+	SPI_NOR_FLASH_0 = n25q256a_construct(
+	    &SPI_NOR_FLASH_0_descr.parent, &QSPI_INSTANCE, QSPI_INSTANCE_exit_xip, CONF_SPI_NOR_FLASH_0_QUAD_MODE);
+}
+
+void spi_nor_flash_test(void){
+	
+	printf("QSPI Program Started\n\r");
+	/* Initialize Tx buffer */
+	for (int i = 0; i < BUFFER_SIZE; i++) {
+		tx_buffer[i] = (uint8_t)i;
+	}
+
+	/* Erase flash memory */
+	if (ERR_NONE == SPI_NOR_FLASH_0->interface->erase(SPI_NOR_FLASH_0, 0, QSPI_ERSIZE)) {
+		printf("Flash erase successful\n\r");
+	}
+
+	/* Write data to flash memory */
+	if (ERR_NONE == SPI_NOR_FLASH_0->interface->write(SPI_NOR_FLASH_0, (uint8_t *)tx_buffer, 0, BUFFER_SIZE)) {
+		printf("Flash write successful\n\r");
+	}
+
+	/* Read data from flash memory */
+	if (ERR_NONE == SPI_NOR_FLASH_0->interface->read(SPI_NOR_FLASH_0, (uint8_t *)rx_buffer, 0, BUFFER_SIZE)) {
+		printf("Flash read successful\n\r");
+	}
+		
+	/* Data verification */
+	for (int i = 0; i < BUFFER_SIZE; i++) {
+		if (tx_buffer[i] != rx_buffer[i]) {
+			is_corrupted = true;
+			printf("Flash data verification failed.\n\r");
+		}
+	}
+
+	if (!is_corrupted) {
+		printf("Write - Read is successful in QSPI Flash memory.\n\r");
+	}
+	
+}
+
+
+/* DMA Transfer complete callback */
+static void qspi_xfer_complete_cb(struct _dma_resource *resource)
+{
+	/* Pull Up Chip select line*/
+	hri_qspi_write_CTRLA_reg(QSPI, QSPI_CTRLA_ENABLE | QSPI_CTRLA_LASTXFER);
+	
+
+}
+
 
 
 
@@ -596,7 +717,7 @@ int main(void)
 
 	grid_module_common_init();
 
-	
+
 	uint32_t loopstart = 0;
 
 					
@@ -622,16 +743,42 @@ int main(void)
 	uint32_t loopcounter = 0;
 
 	
-	
 	grid_sys_bank_select(&grid_sys_state, 255);
+
 	
+
+
+	/* Register DMA complete Callback and initialize NOR flash */
+ 	//qspi_dma_register_callback(&QSPI_INSTANCE, QSPI_DMA_CB_XFER_DONE, qspi_xfer_complete_cb);	
+ 	//spi_nor_flash_init();	
+	 
+	 
+	 
+ 	//spi_nor_flash_test();
 	
+
+	printf("Entering Main Loop\r\n");
+	
+	uint8_t usb_init_variable = 0;
+
 	while (1) {
 		
+		if (usb_init_variable == 0){
+			
+			if (usb_d_get_frame_num() == 0){
 				
+			}
+			else{
+				
+				grid_sys_bank_select(&grid_sys_state, 0);
+				usb_init_variable = 1;
+			}
+			
+		}
+	
+		
 		//grid_selftest(loopcounter);
 		
-
 		loopcounter++;
 	
 		loopstart = grid_sys_rtc_get_time(&grid_sys_state);

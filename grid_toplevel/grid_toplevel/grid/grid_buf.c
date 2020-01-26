@@ -533,7 +533,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 					
 					midi_channel = (256-dy*4+grid_sys_state.bank_select)%16;
-					midi_param1  = (0+midi_param1 + 32*dx)%128;
+					midi_param1  = (256+midi_param1 + 32*dx)%128;
 										
 					sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [MIDI] Ch: %d  Cmd: %d  Param1: %d  Param2: %d\n",					
 						id,dx,dy,age,

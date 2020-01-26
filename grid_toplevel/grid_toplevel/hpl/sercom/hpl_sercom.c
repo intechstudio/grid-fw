@@ -168,8 +168,6 @@ static struct _usart_async_device *_sercom0_dev = NULL;
 
 static struct _usart_async_device *_sercom1_dev = NULL;
 
-static struct _usart_async_device *_sercom2_dev = NULL;
-
 static struct _spi_async_dev *_sercom3_dev = NULL;
 
 static struct _usart_async_device *_sercom4_dev = NULL;
@@ -645,10 +643,6 @@ static void _sercom_init_irq_param(const void *const hw, void *dev)
 
 	if (hw == SERCOM1) {
 		_sercom1_dev = (struct _usart_async_device *)dev;
-	}
-
-	if (hw == SERCOM2) {
-		_sercom2_dev = (struct _usart_async_device *)dev;
 	}
 
 	if (hw == SERCOM3) {
@@ -2551,35 +2545,6 @@ void SERCOM1_2_Handler(void)
 void SERCOM1_3_Handler(void)
 {
 	_sercom_usart_interrupt_handler(_sercom1_dev);
-}
-
-/**
- * \internal Sercom interrupt handler
- */
-void SERCOM2_0_Handler(void)
-{
-	_sercom_usart_interrupt_handler(_sercom2_dev);
-}
-/**
- * \internal Sercom interrupt handler
- */
-void SERCOM2_1_Handler(void)
-{
-	_sercom_usart_interrupt_handler(_sercom2_dev);
-}
-/**
- * \internal Sercom interrupt handler
- */
-void SERCOM2_2_Handler(void)
-{
-	_sercom_usart_interrupt_handler(_sercom2_dev);
-}
-/**
- * \internal Sercom interrupt handler
- */
-void SERCOM2_3_Handler(void)
-{
-	_sercom_usart_interrupt_handler(_sercom2_dev);
 }
 
 /**

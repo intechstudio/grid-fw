@@ -232,6 +232,8 @@ void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
 
 				
 				grid_led_set_min(&grid_led_state, i, 0, r/20, g/20, b/20);
+				//grid_led_set_min(&grid_led_state, i, 0, 0, 0, 0);
+				
 				grid_led_set_mid(&grid_led_state, i, 0, r/2, g/2, b/2);
 				grid_led_set_max(&grid_led_state, i, 0, r, g, b);
 			}

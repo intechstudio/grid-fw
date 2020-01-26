@@ -111,6 +111,36 @@ void FLASH_0_example(void)
 	flash_read(&FLASH_0, 0x3200, chk_data, page_size);
 }
 
+static uint8_t buf[16] = {0x0};
+
+static void xfer_complete_cb_QSPI_INSTANCE(struct _dma_resource *resource)
+{
+	/* Transfer completed */
+}
+
+/**
+ * Example of using QSPI_INSTANCE to get N25Q256A status value,
+ * and check bit 0 which indicate embedded operation is busy or not.
+ */
+void QSPI_INSTANCE_example(void)
+{
+	struct _qspi_command cmd = {
+	    .inst_frame.bits.inst_en      = 1,
+	    .inst_frame.bits.data_en      = 1,
+	    .inst_frame.bits.addr_en      = 1,
+	    .inst_frame.bits.dummy_cycles = 8,
+	    .inst_frame.bits.tfr_type     = QSPI_READMEM_ACCESS,
+	    .instruction                  = 0x0B,
+	    .address                      = 0,
+	    .buf_len                      = 14,
+	    .rx_buf                       = buf,
+	};
+
+	qspi_dma_register_callback(&QSPI_INSTANCE, QSPI_DMA_CB_XFER_DONE, xfer_complete_cb_QSPI_INSTANCE);
+	qspi_dma_enable(&QSPI_INSTANCE);
+	qspi_dma_serial_run_command(&QSPI_INSTANCE, &cmd);
+}
+
 static struct timer_task RTC_Scheduler_task1, RTC_Scheduler_task2;
 /**
  * Example of using RTC_Scheduler.
@@ -197,31 +227,14 @@ void USART_NORTH_example(void)
 
 /**
  * Example of using GRID_AUX to write "Hello World" using the IO abstraction.
- *
- * Since the driver is asynchronous we need to use statically allocated memory for string
- * because driver initiates transfer and then returns before the transmission is completed.
- *
- * Once transfer has been completed the tx_cb function will be called.
  */
-
-static uint8_t example_GRID_AUX[12] = "Hello World!";
-
-static void tx_cb_GRID_AUX(const struct usart_async_descriptor *const io_descr)
-{
-	/* Transfer completed */
-}
-
 void GRID_AUX_example(void)
 {
 	struct io_descriptor *io;
+	usart_sync_get_io_descriptor(&GRID_AUX, &io);
+	usart_sync_enable(&GRID_AUX);
 
-	usart_async_register_callback(&GRID_AUX, USART_ASYNC_TXC_CB, tx_cb_GRID_AUX);
-	/*usart_async_register_callback(&GRID_AUX, USART_ASYNC_RXC_CB, rx_cb);
-	usart_async_register_callback(&GRID_AUX, USART_ASYNC_ERROR_CB, err_cb);*/
-	usart_async_get_io_descriptor(&GRID_AUX, &io);
-	usart_async_enable(&GRID_AUX);
-
-	io_write(io, example_GRID_AUX, 12);
+	io_write(io, (uint8_t *)"Hello World!", 12);
 }
 
 /**
@@ -470,5 +483,11 @@ void TIMER_3_example(void)
  */
 void WDT_0_example(void)
 {
-	
+	uint32_t clk_rate;
+	uint16_t timeout_period;
+
+	clk_rate       = 1000;
+	timeout_period = 4096;
+	wdt_set_timeout_period(&WDT_0, clk_rate, timeout_period);
+	wdt_enable(&WDT_0);
 }

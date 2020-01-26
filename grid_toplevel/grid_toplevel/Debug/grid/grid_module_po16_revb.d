@@ -143,20 +143,24 @@ grid/grid_module_po16_revb.d grid/grid_module_po16_revb.o: \
  ../hal/include/hpl_missing_features.h ../hal/include/hal_crc_sync.h \
  ../hal/include/hpl_crc_sync.h ../hal/include/hal_evsys.h \
  ../hal/include/hpl_evsys.h ../hal/include/hal_flash.h \
- ../hal/include/hpl_flash.h ../hal/include/hal_timer.h \
+ ../hal/include/hpl_flash.h ../hal/include/hal_qspi_dma.h \
+ ../hal/include/hpl_qspi_dma.h ../hal/include/hpl_qspi.h \
+ ../hal/include/hpl_dma.h ../hal/include/hal_timer.h \
  ../hal/utils/include/utils_list.h ../hal/include/hpl_timer.h \
  ../hal/include/hal_usart_async.h ../hal/include/hal_io.h \
  ../hal/include/hpl_usart_async.h ../hal/include/hpl_usart.h \
- ../hal/include/hal_spi_m_async.h ../hal/include/hpl_spi_m_async.h \
- ../hal/include/hpl_spi.h ../hal/utils/include/utils.h \
- ../hal/include/hpl_spi_async.h ../hal/include/hal_i2c_m_async.h \
- ../hal/include/hpl_i2c_m_async.h ../hal/include/hpl_i2c_m_sync.h \
- ../hal/include/hal_spi_m_dma.h ../hal/include/hpl_spi_m_dma.h \
- ../hal/include/hpl_spi_dma.h ../hal/include/hpl_dma.h \
- ../hpl/tc/hpl_tc_base.h ../hal/include/hpl_pwm.h \
- ../hal/include/hal_usb_device.h ../hal/include/hpl_usb_device.h \
- ../hal/include/hpl_usb.h ../Config/hpl_usb_config.h \
- ../hal/include/hal_wdt.h ../hal/include/hpl_wdt.h ../usb_start.h \
+ ../hal/include/hal_usart_sync.h ../hal/include/hpl_usart_sync.h \
+ ../hal/include/hpl_usart.h ../hal/include/hal_spi_m_async.h \
+ ../hal/include/hpl_spi_m_async.h ../hal/include/hpl_spi.h \
+ ../hal/utils/include/utils.h ../hal/include/hpl_spi_async.h \
+ ../hal/include/hal_i2c_m_async.h ../hal/include/hpl_i2c_m_async.h \
+ ../hal/include/hpl_i2c_m_sync.h ../hal/include/hal_spi_m_dma.h \
+ ../hal/include/hpl_spi_m_dma.h ../hal/include/hpl_spi_dma.h \
+ ../hal/include/hpl_dma.h ../hpl/tc/hpl_tc_base.h \
+ ../hal/include/hpl_pwm.h ../hal/include/hal_usb_device.h \
+ ../hal/include/hpl_usb_device.h ../hal/include/hpl_usb.h \
+ ../Config/hpl_usb_config.h ../hal/include/hal_wdt.h \
+ ../hal/include/hpl_wdt.h ../usb_start.h \
  ../usb/class/cdc/device/cdcdf_acm.h ../usb/device/usbdc.h \
  ../usb/usb_includes.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
@@ -180,7 +184,7 @@ grid/grid_module_po16_revb.d grid/grid_module_po16_revb.o: \
  ../usb/class/hid/device/hiddf_generic.h ../usb/class/msc/device/mscdf.h \
  ../usb/class/msc/usb_protocol_msc.h ../usb/class/msc/spc_protocol.h \
  ../usb/class/msc/sbc_protocol.h \
- ../usb/class/composite/device/composite_desc.h \
+ ../usb/class/composite/device/composite_desc.h ../stdio_start.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\stdio.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\lib\gcc\arm-none-eabi\6.3.1\include\stdarg.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\types.h \
@@ -194,6 +198,7 @@ grid/grid_module_po16_revb.d grid/grid_module_po16_revb.o: \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\_pthreadtypes.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\machine\types.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\stdio.h \
+ ../stdio_redirect/stdio_io.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\stdlib.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\machine\stdlib.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\alloca.h \
@@ -572,6 +577,14 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 
 ../hal/include/hpl_flash.h:
 
+../hal/include/hal_qspi_dma.h:
+
+../hal/include/hpl_qspi_dma.h:
+
+../hal/include/hpl_qspi.h:
+
+../hal/include/hpl_dma.h:
+
 ../hal/include/hal_timer.h:
 
 ../hal/utils/include/utils_list.h:
@@ -583,6 +596,12 @@ C:\Program\ Files\ (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a
 ../hal/include/hal_io.h:
 
 ../hal/include/hpl_usart_async.h:
+
+../hal/include/hpl_usart.h:
+
+../hal/include/hal_usart_sync.h:
+
+../hal/include/hpl_usart_sync.h:
 
 ../hal/include/hpl_usart.h:
 
@@ -686,6 +705,8 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../usb/class/composite/device/composite_desc.h:
 
+../stdio_start.h:
+
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\stdio.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\lib\gcc\arm-none-eabi\6.3.1\include\stdarg.h:
@@ -711,6 +732,8 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\machine\types.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\stdio.h:
+
+../stdio_redirect/stdio_io.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\stdlib.h:
 
