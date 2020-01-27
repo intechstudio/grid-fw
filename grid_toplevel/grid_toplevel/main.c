@@ -19,9 +19,8 @@
 #include <hpl_reset.h>
 
 
-static struct timer_task RTC_Scheduler_rx_task;
-static struct timer_task RTC_Scheduler_ping;
-static struct timer_task RTC_Scheduler_realtime;
+
+
 
 
 volatile uint8_t rxtimeoutselector = 0;
@@ -175,9 +174,6 @@ void grid_port_receive_task(struct grid_port* por){
 			por->rx_double_buffer_timeout =0;
 			grid_sys_port_reset_dma(por);
 			
-// 			grid_sys_state.error_code = 7; // WHITE
-// 			grid_sys_state.error_style = 2; // CONST
-// 			grid_sys_state.error_state = 200; // CONST
 			
 			grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
 		}
@@ -211,6 +207,18 @@ void grid_port_receive_task(struct grid_port* por){
 			return;
 		}
 		
+		
+// 		// Buffer overrun error
+// 		if (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1){
+// 			gpio_set_pin_level(UI_PWR_EN, false);
+// 			while(1){}
+// 		}
+// 		
+// 		// Buffer overrun error
+// 		if (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0){			
+// 			gpio_set_pin_level(UI_PWR_EN, false);
+// 			while(1){}
+// 		}
 		
 
 
@@ -246,7 +254,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 	uint8_t checksum_calculated = 0;
 	uint8_t checksum_received = 0;
 				
-	// Copy data from cyrcular buffer to te3mporary linear array;
+	// Copy data from cyrcular buffer to temporary linear array;
 	uint8_t message[length];
 				
 	// MAXMSGLEN = 250 character
@@ -356,7 +364,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 				else{
 					// WE ALREADY HEARD THIS MESSAGE					
 					response[2] = GRID_MSG_ACKNOWLEDGE;							
-					grid_sys_alert_set_alert(&grid_sys_state, 50, 50, 50, 2, 200); // WHITE
+					//grid_sys_alert_set_alert(&grid_sys_state, 50, 50, 50, 2, 200); // WHITE
 								
 				}
 				
@@ -387,7 +395,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 							
 				if (message[2] == GRID_MSG_ACKNOWLEDGE){				
 
-					grid_sys_alert_set_alert(&grid_sys_state, 30, 30, 30, 0, 250); // LIGHT WHITE PULSE
+					//grid_sys_alert_set_alert(&grid_sys_state, 30, 30, 30, 0, 250); // LIGHT WHITE PULSE
 				}
 				else if (message[2] == GRID_MSG_NACKNOWLEDGE){
 					grid_sys_alert_set_alert(&grid_sys_state, 50, 0, 0, 0, 250); // LIGHT RED PULSE
@@ -536,6 +544,13 @@ void grid_port_receive_complete_task(struct grid_port* por){
 }
 
 
+
+
+static struct timer_task RTC_Scheduler_rx_task;
+static struct timer_task RTC_Scheduler_ping;
+static struct timer_task RTC_Scheduler_realtime;
+static struct timer_task RTC_Scheduler_heartbeat;
+
 static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 {
 	pingflag++;
@@ -582,6 +597,17 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 
 }
 
+static void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
+{
+	
+	struct grid_ui_model* mod = &grid_ui_state;
+	uint8_t report_index = 1;
+						
+	grid_sys_write_hex_string_value(&mod->report_array[report_index].payload[7], 2, grid_sys_get_hwcfg());
+	grid_report_sys_set_changed_flag(mod, report_index);
+}
+
+
 #define RTC1SEC 16384
 
 void init_timer(void)
@@ -593,11 +619,16 @@ void init_timer(void)
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
 	RTC_Scheduler_ping.mode     = TIMER_TASK_REPEAT;
 	
+	RTC_Scheduler_heartbeat.interval = RTC1SEC*2;
+	RTC_Scheduler_heartbeat.cb       = RTC_Scheduler_heartbeat_cb;
+	RTC_Scheduler_heartbeat.mode     = TIMER_TASK_REPEAT;
+	
 	RTC_Scheduler_realtime.interval = 1;
 	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
 	RTC_Scheduler_realtime.mode     = TIMER_TASK_REPEAT;
 
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_ping);
+	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_heartbeat);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime);
 	
 	timer_start(&RTC_Scheduler);
@@ -777,7 +808,7 @@ int main(void)
 	uint32_t loopcounter = 0;
 
 	
-	//grid_sys_bank_select(&grid_sys_state, 255);
+	grid_sys_bank_select(&grid_sys_state, 255);
 
 	
 
@@ -918,9 +949,9 @@ int main(void)
 		grid_led_tick(&grid_led_state);
 			
 			
-		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
-			
-		}
+// 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
+// 			
+// 		}
 		
 		grid_led_render_all(&grid_led_state);
 				
