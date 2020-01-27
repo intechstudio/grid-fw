@@ -18,44 +18,10 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 		return;
 	}
 	
-	/* Read mapmode state*/
 	
 	
 	struct grid_ui_model* mod = &grid_ui_state;
 	
-	//CRITICAL_SECTION_ENTER()
-
-	uint8_t report_index = 0;
-
-	uint8_t mapmode_value = !gpio_get_pin_level(MAP_MODE);
-
-	if (mapmode_value != mod->report_array[report_index].helper[0]){
-		
-		uint8_t value;
-		
-		if (mod->report_array[report_index].helper[0] == 0){
-			
-			mod->report_array[report_index].helper[0] = 1;
-		
-		}
-		else{
-			
-			mod->report_array[report_index].helper[0] = 0;			
-			
-			grid_sys_state.bank_select = (grid_sys_state.bank_select+1)%4;
-			value = grid_sys_state.bank_select;
-			grid_sys_write_hex_string_value(&mod->report_array[report_index].payload[7], 2, grid_sys_state.bank_select);
-			grid_ui_report_set_changed_flag(mod, report_index);
-		}
-		
-		
-		
-
-	}
-
-	//CRITICAL_SECTION_LEAVE()
-
-
 	
 	/* Read conversion results */
 	
@@ -118,12 +84,12 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 		
 		//CRITICAL_SECTION_ENTER()
 
-		if (adcresult_0 != mod->report_array[adc_index_0+1-4].helper[0]){
+		if (adcresult_0 != mod->report_ui_array[adc_index_0-4].helper[0]){
 			
 			uint8_t command;
 			uint8_t velocity;
 			
-			if (mod->report_array[adc_index_0+1-4].helper[0] == 0){
+			if (mod->report_ui_array[adc_index_0-4].helper[0] == 0){
 				
 				command = GRID_MSG_COMMAND_MIDI_NOTEON;
 				velocity = 127;
@@ -136,26 +102,26 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			
 			uint8_t actuator = 2*velocity;
 			
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_0+1-4].payload[5], 2, command);
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_0+1-4].payload[7], 2, adc_index_0);
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_0+1-4].payload[9], 2, velocity);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0-4].payload[5], 2, command);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0-4].payload[7], 2, adc_index_0);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0-4].payload[9], 2, velocity);
 			
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_0+1-4].payload[21], 2, actuator);
-			mod->report_array[adc_index_0+1-4].helper[0] = velocity;
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0-4].payload[21], 2, actuator);
+			mod->report_ui_array[adc_index_0-4].helper[0] = velocity;
 			
-			grid_ui_report_set_changed_flag(mod, adc_index_0+1-4);
+			grid_report_ui_set_changed_flag(mod, adc_index_0-4);
 		}
 		
 		//CRITICAL_SECTION_LEAVE()
 		
 		//CRITICAL_SECTION_ENTER()
 
-		if (adcresult_1 != mod->report_array[adc_index_1+1-4].helper[0]){
+		if (adcresult_1 != mod->report_ui_array[adc_index_1-4].helper[0]){
 			
 			uint8_t command;
 			uint8_t velocity;
 			
-			if (mod->report_array[adc_index_1+1-4].helper[0] == 0){
+			if (mod->report_ui_array[adc_index_1-4].helper[0] == 0){
 				
 				command = GRID_MSG_COMMAND_MIDI_NOTEON;
 				velocity = 127;
@@ -168,14 +134,14 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			
 			uint8_t actuator = 2*velocity;
 			
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_1+1-4].payload[5], 2, command);
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_1+1-4].payload[7], 2, adc_index_0);
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_1+1-4].payload[9], 2, velocity);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[5], 2, command);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[7], 2, adc_index_0);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[9], 2, velocity);
 			
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_1+1-4].payload[21], 2, actuator);
-			mod->report_array[adc_index_1+1-4].helper[0] = velocity;
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[21], 2, actuator);
+			mod->report_ui_array[adc_index_1-4].helper[0] = velocity;
 			
-			grid_ui_report_set_changed_flag(mod, adc_index_1+1-4);
+			grid_report_ui_set_changed_flag(mod, adc_index_1-4);
 		}
 		
 		//CRITICAL_SECTION_LEAVE()
@@ -206,12 +172,11 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			uint8_t value = grid_ain_get_average(adc_index_0, 7);
 			uint8_t actuator = 2*value;
 		
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_0+1].payload[7], 2, adc_index_0);
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_0+1].payload[9], 2, value);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[7], 2, adc_index_0);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[9], 2, value);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[21], 2, actuator);
 		
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_0+1].payload[21], 2, actuator);
-		
-			grid_ui_report_set_changed_flag(mod, adc_index_0+1);
+			grid_report_ui_set_changed_flag(mod, adc_index_0);
 		}
 	
 		//CRITICAL_SECTION_LEAVE()
@@ -224,12 +189,11 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			uint8_t value = grid_ain_get_average(adc_index_1, 7);
 			uint8_t actuator = 2*value;
 		
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_1+1].payload[7], 2, adc_index_1);
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_1+1].payload[9], 2, value);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[7], 2, adc_index_1);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[9], 2, value);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[21], 2, actuator);
 		
-			grid_sys_write_hex_string_value(&mod->report_array[adc_index_1+1].payload[21], 2, actuator);
-		
-			grid_ui_report_set_changed_flag(mod, adc_index_1+1);
+			grid_report_ui_set_changed_flag(mod, adc_index_1);
 		}
 	
 		//CRITICAL_SECTION_LEAVE()
@@ -261,30 +225,19 @@ void grid_module_pbf4_reva_hardware_init(void){
 
 void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 	
-	grid_ui_model_init(mod, 13);
 	
+	// 16 pot, depth of 5, 14bit internal, 7bit result;
+	grid_ain_init(16, 5, 14, 7);
+
+	grid_led_init(&grid_led_state, 12);
 	
-	// 0 is for mapmode_button
-	// 1...16 is for ui_buttons
-	for(uint8_t i=0; i<mod->report_length; i++){
+	grid_ui_model_init(mod, 12);
+	
+	for(uint8_t i=0; i<12; i++){
 		
 		uint8_t payload_template[30];
 		
-		if (i == 0){
-			
-			sprintf(payload_template, "%c%02x%02x%02x%02x%c",
-			
-			GRID_MSG_START_OF_TEXT,
-			GRID_MSG_PROTOCOL_SYS,
-			GRID_MSG_COMMAND_SYS_BANK,
-			GRID_MSG_COMMAND_SYS_BANK_SELECT,
-			0,
-			GRID_MSG_END_OF_TEXT
-
-			);
-			
-		}
-		else if (i<9){ // PORENTIOMETERS & FADERS
+		if (i<8){ // PORENTIOMETERS & FADERS
 			
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c%c%02x%02x%02x%02x%02x%c",
 			
@@ -292,7 +245,7 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 			GRID_MSG_PROTOCOL_MIDI,
 			0, // (cable<<4) + channel
 			GRID_MSG_COMMAND_MIDI_CONTROLCHANGE,
-			i-1,
+			i,
 			0,
 			GRID_MSG_END_OF_TEXT,
 			
@@ -300,7 +253,7 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 			GRID_MSG_PROTOCOL_LED,
 			0, // layer
 			GRID_MSG_COMMAND_LED_SET_PHASE,
-			i-1,
+			i,
 			0,
 			GRID_MSG_END_OF_TEXT
 
@@ -315,7 +268,7 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 			GRID_MSG_PROTOCOL_MIDI,
 			0, // (cable<<4) + channel
 			GRID_MSG_COMMAND_MIDI_NOTEON,
-			i-1,
+			i,
 			0,
 			GRID_MSG_END_OF_TEXT,
 						
@@ -323,7 +276,7 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 			GRID_MSG_PROTOCOL_LED,
 			0, // layer
 			GRID_MSG_COMMAND_LED_SET_PHASE,
-			i-1,
+			i,
 			0,
 			GRID_MSG_END_OF_TEXT
 
@@ -341,15 +294,12 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 		
 		uint8_t helper_length = 2;
 			
-		grid_ui_report_init(mod, i, payload_template, payload_length, helper_template, helper_length);
+		grid_report_ui_init(mod, i, payload_template, payload_length, helper_template, helper_length);
 		
 	}
 	
-	// 16 pot, depth of 5, 14bit internal, 7bit result;
-	grid_ain_init(16, 5, 14, 7);
-
-	grid_led_init(&grid_led_state, 12);
-	
+	grid_report_sys_init(mod);
+		
 	grid_module_pbf4_reva_hardware_init();
 	grid_module_pbf4_reva_hardware_start_transfer();
 	

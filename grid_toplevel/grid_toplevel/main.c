@@ -412,7 +412,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 						if (grid_sys_state.bank_select!=255){
 							struct grid_ui_model* mod = &grid_ui_state;
 							grid_sys_write_hex_string_value(&mod->report_array[0].payload[7], 2, grid_sys_state.bank_select);
-							grid_ui_report_set_changed_flag(mod, 0);												
+							grid_report_sys_set_changed_flag(mod, 0);												
 						}
 
 															
@@ -546,6 +546,40 @@ static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
 	grid_sys_rtc_tick_time(&grid_sys_state);
+	
+		// HANDLE MAPMODE CHANGES
+	struct grid_ui_model* mod = &grid_ui_state;
+		
+	//CRITICAL_SECTION_ENTER()
+
+	uint8_t report_index = 0;
+
+	uint8_t mapmode_value = gpio_get_pin_level(MAP_MODE);
+
+	if (mapmode_value != mod->report_array[report_index].helper[0]){
+			
+		uint8_t value;
+			
+		if (mod->report_array[report_index].helper[0] == 0){
+				
+			mod->report_array[report_index].helper[0] = 1;
+				
+		}
+		else{
+				
+			mod->report_array[report_index].helper[0] = 0;
+				
+			grid_sys_state.bank_select = (grid_sys_state.bank_select+1)%4;
+			value = grid_sys_state.bank_select;
+ 			grid_sys_write_hex_string_value(&mod->report_array[report_index].payload[7], 2, grid_sys_state.bank_select);
+ 			grid_report_sys_set_changed_flag(mod, report_index);
+		}
+			
+			
+			
+
+	}
+
 }
 
 #define RTC1SEC 16384
@@ -743,7 +777,7 @@ int main(void)
 	uint32_t loopcounter = 0;
 
 	
-	grid_sys_bank_select(&grid_sys_state, 255);
+	//grid_sys_bank_select(&grid_sys_state, 255);
 
 	
 

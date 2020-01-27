@@ -612,8 +612,16 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					if (sys_bank == GRID_MSG_COMMAND_SYS_BANK && sys_bank_select == GRID_MSG_COMMAND_SYS_BANK_SELECT){
 				
 						grid_sys_bank_select(&grid_sys_state, sys_bank_value);		
+						
+						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [SYS] %3d %3d %3d\n",
+						id,dx,dy,age,
+						sys_bank, sys_bank_select, sys_bank_value
+						);
+						
+						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
 
 					}
+					
 						
 						
 						

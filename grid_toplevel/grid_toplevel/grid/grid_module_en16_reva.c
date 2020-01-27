@@ -97,14 +97,14 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				
 				uint8_t actuator = 2*velocity;
 				
-				grid_sys_write_hex_string_value(&mod->report_array[UI_ENCODER_LOOKUP[i]+1].payload[5], 2, command);
-				grid_sys_write_hex_string_value(&mod->report_array[UI_ENCODER_LOOKUP[i]+1].payload[7], 2, UI_ENCODER_LOOKUP[i]);
-				grid_sys_write_hex_string_value(&mod->report_array[UI_ENCODER_LOOKUP[i]+1].payload[9], 2, velocity);
+				grid_sys_write_hex_string_value(&mod->report_ui_array[UI_ENCODER_LOOKUP[i]].payload[5], 2, command);
+				grid_sys_write_hex_string_value(&mod->report_ui_array[UI_ENCODER_LOOKUP[i]].payload[7], 2, UI_ENCODER_LOOKUP[i]);
+				grid_sys_write_hex_string_value(&mod->report_ui_array[UI_ENCODER_LOOKUP[i]].payload[9], 2, velocity);
 				
-				//grid_sys_write_hex_string_value(&mod->report_array[UI_ENCODER_LOOKUP[i]+1].payload[21], 2, actuator);
-				mod->report_array[UI_ENCODER_LOOKUP[i]+1].helper[0] = velocity;
+				//grid_sys_write_hex_string_value(&mod->report_ui_array[UI_ENCODER_LOOKUP[i]].payload[21], 2, actuator);
+				mod->report_ui_array[UI_ENCODER_LOOKUP[i]].helper[0] = velocity;
 				
-				grid_ui_report_set_changed_flag(mod, UI_ENCODER_LOOKUP[i]+1);
+				grid_report_ui_set_changed_flag(mod, UI_ENCODER_LOOKUP[i]);
 				
 				
 				//CRITICAL_SECTION_LEAVE()
@@ -181,32 +181,32 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				
 				
 				uint8_t value = 0;
-				if (0 == grid_ui_report_get_changed_flag(mod, UI_ENCODER_LOOKUP[i]+1+16)){
+				if (0 == grid_report_ui_get_changed_flag(mod, UI_ENCODER_LOOKUP[i]+16)){
 					value = 64; //CENTER
-					mod->report_array[UI_ENCODER_LOOKUP[i]+1+16].helper[0] = 0;
+					mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16].helper[0] = 0;
 				}
 				else{
-					value = mod->report_array[UI_ENCODER_LOOKUP[i]+1+16].helper[0];
+					value = mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16].helper[0];
 				}
 				
 				value +=  delta*velocityfactor;
 				
 				uint8_t actuator = 2*grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value;
 				
-				if (value != mod->report_array[UI_ENCODER_LOOKUP[i]+1+16].helper[0]){
+				if (value != mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16].helper[0]){
 					
-					grid_sys_write_hex_string_value(&mod->report_array[UI_ENCODER_LOOKUP[i]+1+16].payload[5], 2, command);
-					grid_sys_write_hex_string_value(&mod->report_array[UI_ENCODER_LOOKUP[i]+1+16].payload[7], 2, UI_ENCODER_LOOKUP[i]);
-					grid_sys_write_hex_string_value(&mod->report_array[UI_ENCODER_LOOKUP[i]+1+16].payload[9], 2, value);
+					grid_sys_write_hex_string_value(&mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16].payload[5], 2, command);
+					grid_sys_write_hex_string_value(&mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16].payload[7], 2, UI_ENCODER_LOOKUP[i]);
+					grid_sys_write_hex_string_value(&mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16].payload[9], 2, value);
 					
-					mod->report_array[UI_ENCODER_LOOKUP[i]+1+16].helper[0] = value;
-					grid_ui_report_set_changed_flag(mod, UI_ENCODER_LOOKUP[i]+1+16);
+					mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16].helper[0] = value;
+					grid_report_ui_set_changed_flag(mod, UI_ENCODER_LOOKUP[i]+16);
 					
 					
 					
-					grid_sys_write_hex_string_value(&mod->report_array[UI_ENCODER_LOOKUP[i]+1+16+16].payload[9], 2, actuator); // LED
-					mod->report_array[UI_ENCODER_LOOKUP[i]+1+16+16].helper[0] = actuator;
-					grid_ui_report_set_changed_flag(mod, UI_ENCODER_LOOKUP[i]+1+16+16);
+					grid_sys_write_hex_string_value(&mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16+16].payload[9], 2, actuator); // LED
+					mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16+16].helper[0] = actuator;
+					grid_report_ui_set_changed_flag(mod, UI_ENCODER_LOOKUP[i]+16+16);
 					
 				}
 				
@@ -219,9 +219,9 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 						grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value--;
 						uint8_t v = 2 * grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value;
 
-						grid_sys_write_hex_string_value(&mod->report_array[UI_ENCODER_LOOKUP[i]+1+16+16].payload[9], 2, v); // LED
-						mod->report_array[UI_ENCODER_LOOKUP[i]+1+16+16].helper[0] = v;
-						grid_ui_report_set_changed_flag(mod, UI_ENCODER_LOOKUP[i]+1+16+16);
+						grid_sys_write_hex_string_value(&mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16+16].payload[9], 2, v); // LED
+						mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16+16].helper[0] = v;
+						grid_report_ui_set_changed_flag(mod, UI_ENCODER_LOOKUP[i]+16+16);
 
 					}
 					if (grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value < 64){
@@ -229,9 +229,9 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 						grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value++;
 						uint8_t v = 2 * grid_ui_encoder_array[UI_ENCODER_LOOKUP[i]].rotation_value;
 
-						grid_sys_write_hex_string_value(&mod->report_array[UI_ENCODER_LOOKUP[i]+1+16+16].payload[9], 2, v); // LED
-						mod->report_array[UI_ENCODER_LOOKUP[i]+1+16+16].helper[0] = v;
-						grid_ui_report_set_changed_flag(mod, UI_ENCODER_LOOKUP[i]+1+16+16);
+						grid_sys_write_hex_string_value(&mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16+16].payload[9], 2, v); // LED
+						mod->report_ui_array[UI_ENCODER_LOOKUP[i]+16+16].helper[0] = v;
+						grid_report_ui_set_changed_flag(mod, UI_ENCODER_LOOKUP[i]+16+16);
 
 					}
 				
@@ -277,43 +277,6 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 			
 	}
 		
-	
-	//CRITICAL_SECTION_ENTER()
-
-	uint8_t report_index = 0;
-
-	uint8_t mapmode_value = gpio_get_pin_level(MAP_MODE);
-
-	if (mapmode_value != mod->report_array[report_index].helper[0]){
-		
-		uint8_t command;
-		uint8_t value;
-		
-		if (mod->report_array[report_index].helper[0] == 0){
-			
-			mod->report_array[report_index].helper[0] = 1;
-		}
-		else{
-			
-			mod->report_array[report_index].helper[0] = 0;
-			
-			grid_sys_state.bank_select = (grid_sys_state.bank_select+1)%4;
-			value = grid_sys_state.bank_select;
-			grid_sys_write_hex_string_value(&mod->report_array[report_index].payload[7], 2, grid_sys_state.bank_select);
-			grid_ui_report_set_changed_flag(mod, report_index);
-		}
-		
-		
-		
-		grid_sys_write_hex_string_value(&mod->report_array[report_index].payload[3], 2, command);
-		
-		grid_ui_report_set_changed_flag(mod, report_index);
-	}
-
-	//CRITICAL_SECTION_LEAVE()
-
-
-
 
 	grid_module_en16_reva_hardware_transfer_complete = 0;
 	grid_module_en16_reva_hardware_start_transfer();
@@ -341,31 +304,21 @@ void grid_module_en16_reva_hardware_init(void){
 
 void grid_module_en16_reva_init(struct grid_ui_model* mod){
 	
-	mod->report_length = 1+16+16+16;
-	mod->report_array = malloc(mod->report_length*sizeof(struct grid_ui_report));
+	
+	grid_led_init(&grid_led_state, 16);
+	
+	grid_ui_model_init(mod, 16+16+16);
+	
 	
 	
 	// 0 is for mapmode_button
 	// 1...16 is for ui_buttons
-	for(uint8_t i=0; i<1+16+16+16; i++){
+	for(uint8_t i=0; i<16+16+16; i++){
 		
 		uint8_t payload_template[30];
 		
-		if (i == 0){
-			
-			sprintf(payload_template, "%c%02x%02x%02x%02x%c",
-			
-			GRID_MSG_START_OF_TEXT,
-			GRID_MSG_PROTOCOL_SYS,
-			GRID_MSG_COMMAND_SYS_BANK,
-			GRID_MSG_COMMAND_SYS_BANK_SELECT,
-			0,
-			GRID_MSG_END_OF_TEXT
 
-			);
-			
-		}
-		else if (i<1+16){ // ROTATION
+		if (i<16){ // ROTATION
 			
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 			
@@ -373,14 +326,14 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 			GRID_MSG_PROTOCOL_MIDI,
 			0, // (cable<<4) + channel
 			GRID_MSG_COMMAND_MIDI_NOTEON,
-			i-1,
+			i,
 			0,
 			GRID_MSG_END_OF_TEXT
 
 			);
 			
 		}		
-		else if (i<1+16+16){ // BUTTON
+		else if (i<16+16){ // BUTTON
 		
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 		
@@ -388,7 +341,7 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 				GRID_MSG_PROTOCOL_MIDI,
 				0, // (cable<<4) + channel
 				GRID_MSG_COMMAND_MIDI_NOTEON,
-				i-1,
+				i,
 				0,
 				GRID_MSG_END_OF_TEXT
 
@@ -403,7 +356,7 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 			GRID_MSG_PROTOCOL_LED,
 			0, // layer
 			GRID_MSG_COMMAND_LED_SET_PHASE,
-			i-1-16-16,
+			i-16-16,
 			0,
 			GRID_MSG_END_OF_TEXT
 
@@ -421,17 +374,17 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 		
 		uint8_t helper_length = 2;
 
-		grid_ui_report_init(mod, i, payload_template, payload_length, helper_template, helper_length);
+		grid_report_ui_init(mod, i, payload_template, payload_length, helper_template, helper_length);
 		
 	}
+	
+	grid_report_sys_init(mod);
 
 	for (uint8_t i = 0; i<16; i++)
 	{
 		grid_ui_encoder_array[i].controller_number = i;
 	}
 	
-	
-	grid_led_init(&grid_led_state, 16);
 	
 	grid_module_en16_reva_hardware_init();
 	
