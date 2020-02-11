@@ -293,8 +293,8 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 		helper_template[1] = 0;
 		
 		uint8_t helper_length = 2;
-			
-		grid_report_ui_init(mod, i, payload_template, payload_length, helper_template, helper_length);
+		
+		grid_report_ui_init(mod, i, GRID_REPORT_TYPE_BROADCAST, payload_template, payload_length, helper_template, helper_length);
 		
 	}
 	

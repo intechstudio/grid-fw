@@ -26,7 +26,6 @@
 volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
-volatile uint8_t pingflag_active = 0;
 
 
 void grid_selftest(uint32_t loop){
@@ -553,8 +552,9 @@ static struct timer_task RTC_Scheduler_heartbeat;
 
 static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 {
+	// [2...5] is ping report descriptor
 	pingflag++;
-	pingflag_active++;
+	grid_report_sys_set_changed_flag(&grid_ui_state, 2+pingflag%4);
 }
 
 
@@ -760,6 +760,10 @@ int main(void)
 {
 
 	atmel_start_init();	
+
+	
+	printf("Initialization\r\n");
+
 	
 // 	uint32_t flash_length = flash_get_total_pages(&FLASH_0);
 // 	
@@ -802,13 +806,15 @@ int main(void)
 		
 	gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
 	gpio_set_pin_level(PIN_GRID_SYNC_1, false);	
+
+	grid_sys_bank_select(&grid_sys_state, 255);
 	
 	init_timer();
 	
 	uint32_t loopcounter = 0;
 
 	
-	grid_sys_bank_select(&grid_sys_state, 255);
+
 
 	
 
@@ -834,7 +840,7 @@ int main(void)
 				
 			}
 			else{
-				
+				printf("USB Connected\r\n");
 				grid_sys_bank_select(&grid_sys_state, 0);
 				usb_init_variable = 1;
 			}
@@ -848,28 +854,6 @@ int main(void)
 	
 		loopstart = grid_sys_rtc_get_time(&grid_sys_state);
 							
-		
-		/* ========================= PING ============================= */
-		if (pingflag_active){
-			
-			if (pingflag%4 == 0){
-				grid_sys_ping(&GRID_PORT_N);
-			}
-			if (pingflag%4 == 1){
-				grid_sys_ping(&GRID_PORT_E);
-			}
-			if (pingflag%4 == 2){
-				grid_sys_ping(&GRID_PORT_S);
-			}
-			if (pingflag%4 == 3){
-				grid_sys_ping(&GRID_PORT_W);
-			}
-			pingflag_active = 0;
-			
-		}			
-
-	
-
 
 		// CHECK RX BUFFERS
 		grid_port_receive_complete_task(&GRID_PORT_N);

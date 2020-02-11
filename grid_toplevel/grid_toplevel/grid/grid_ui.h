@@ -3,12 +3,24 @@
 
 #include "grid_module.h"
 
+enum grid_report_type_t {
+	GRID_REPORT_TYPE_UNDEFINED,
+	GRID_REPORT_TYPE_LOCAL,
+	GRID_REPORT_TYPE_BROADCAST,
+	GRID_REPORT_TYPE_DIRECT_ALL,
+	GRID_REPORT_TYPE_DIRECT_NORTH,
+	GRID_REPORT_TYPE_DIRECT_EAST,
+	GRID_REPORT_TYPE_DIRECT_SOUTH,
+	GRID_REPORT_TYPE_DIRECT_WEST
+};
 
 
 
 struct grid_ui_report
 {
 	uint8_t changed;
+	
+	enum grid_report_type_t type;
 	
 	uint8_t payload_length;
 	uint8_t* payload;
@@ -37,9 +49,9 @@ void grid_port_process_ui(struct grid_port* por);
 uint8_t grid_ui_model_init(struct grid_ui_model* mod, uint8_t len);
 
 
-uint8_t grid_report_init(struct grid_ui_model* mod, uint8_t index, uint8_t* p, uint32_t p_len, uint8_t* h, uint32_t h_len);
+uint8_t grid_report_init(struct grid_ui_model* mod, uint8_t index, enum grid_report_type_t type, uint8_t* p, uint32_t p_len, uint8_t* h, uint32_t h_len);
 
-uint8_t grid_report_ui_init(struct grid_ui_model* mod, uint8_t index, uint8_t* p, uint32_t p_len, uint8_t* h, uint32_t h_len);
+uint8_t grid_report_ui_init(struct grid_ui_model* mod, uint8_t index, enum grid_report_type_t type, uint8_t* p, uint32_t p_len, uint8_t* h, uint32_t h_len);
 
 uint8_t grid_report_sys_init(struct grid_ui_model* mod);
 
@@ -47,9 +59,12 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod);
 
 
 
-
 uint8_t grid_report_render(struct grid_ui_model* mod, uint8_t index, uint8_t* target);
 
+
+
+
+enum grid_report_type_t grid_report_get_type(struct grid_ui_model* mod, uint8_t index);
 
 
 uint8_t grid_report_ui_get_changed_flag(struct grid_ui_model* mod, uint8_t index);

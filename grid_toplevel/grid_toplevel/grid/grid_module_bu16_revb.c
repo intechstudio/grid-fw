@@ -189,7 +189,7 @@ void grid_module_bu16_revb_init(struct grid_ui_model* mod){
 		
 		uint8_t helper_length = 2;
 		
-		uint8_t error = grid_report_ui_init(mod, i, payload_template, payload_length, helper_template, helper_length);
+		uint8_t error = grid_report_ui_init(mod, i, GRID_REPORT_TYPE_BROADCAST, payload_template, payload_length, helper_template, helper_length);
 		
 
 	}
