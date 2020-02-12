@@ -15,6 +15,22 @@ enum grid_report_type_t {
 };
 
 
+#define  GRID_REPORT_OFFSET 6
+
+enum grid_report_index_t {
+	
+		
+	
+	GRID_REPORT_INDEX_HEARTBEAT,
+	
+	GRID_REPORT_INDEX_PING_NORTH,
+	GRID_REPORT_INDEX_PING_EAST,
+	GRID_REPORT_INDEX_PING_SOUTH,
+	GRID_REPORT_INDEX_PING_WEST,
+	
+	GRID_REPORT_INDEX_MAPMODE,
+};
+
 
 struct grid_ui_report
 {
