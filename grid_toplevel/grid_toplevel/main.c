@@ -26,7 +26,6 @@
 volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
-volatile uint8_t pingflag_active = 0;
 
 
 void grid_selftest(uint32_t loop){
@@ -152,6 +151,79 @@ void grid_selftest(uint32_t loop){
 	
 	
 }
+
+
+/// TASK SWITCHER
+
+#define GRID_TASK_NUMBER 8
+
+enum grid_task{
+	
+	GRID_TASK_UNDEFINED,
+	GRID_TASK_IDLE,
+	GRID_TASK_LED,
+	GRID_TASK_RECEIVE,
+	GRID_TASK_MOVE
+	
+};
+
+struct grid_task_model{
+	
+	uint8_t status;
+	enum grid_task current_task;
+	
+	uint32_t timer[GRID_TASK_NUMBER];
+	
+};
+
+
+struct grid_task_model grid_task_state;
+
+enum grid_task grid_task_enter_task(struct grid_task_model* mod, enum grid_task next_task){
+	
+	
+	enum grid_task previous_task = mod->current_task;
+	mod->current_task = next_task;
+	return previous_task;
+	
+}
+
+grid_task_leave_task(struct grid_task_model* mod, enum grid_task previous_task){
+	
+	mod->current_task = previous_task;
+	
+}
+
+void grid_task_timer_tick(struct grid_task_model* mod){
+	
+	mod->timer[mod->current_task]++;
+	
+}
+
+void grid_task_timer_reset(struct grid_task_model* mod){
+	
+	for (uint8_t i=0; i<GRID_TASK_NUMBER; i++){
+		mod->timer[i] = 0;
+	}
+	
+}
+
+
+uint32_t grid_task_timer_read(struct grid_task_model* mod, enum grid_task task){
+
+	return 	mod->timer[task];
+	
+}
+
+
+
+
+
+
+
+
+
+
 
 
 void grid_port_receive_task(struct grid_port* por){
@@ -553,14 +625,16 @@ static struct timer_task RTC_Scheduler_heartbeat;
 
 static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 {
+	// [2...5] is ping report descriptor
 	pingflag++;
-	pingflag_active++;
+	grid_report_sys_set_changed_flag(&grid_ui_state, 2+pingflag%4);
 }
 
 
 static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
-	grid_sys_rtc_tick_time(&grid_sys_state);
+	grid_sys_rtc_tick_time(&grid_sys_state);	
+	grid_task_timer_tick(&grid_task_state);
 	
 		// HANDLE MAPMODE CHANGES
 	struct grid_ui_model* mod = &grid_ui_state;
@@ -760,6 +834,10 @@ int main(void)
 {
 
 	atmel_start_init();	
+
+	
+	printf("Initialization\r\n");
+
 	
 // 	uint32_t flash_length = flash_get_total_pages(&FLASH_0);
 // 	
@@ -802,13 +880,15 @@ int main(void)
 		
 	gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
 	gpio_set_pin_level(PIN_GRID_SYNC_1, false);	
+
+	grid_sys_bank_select(&grid_sys_state, 255);
 	
 	init_timer();
 	
 	uint32_t loopcounter = 0;
 
 	
-	grid_sys_bank_select(&grid_sys_state, 255);
+
 
 	
 
@@ -828,13 +908,17 @@ int main(void)
 
 	while (1) {
 		
+		
+		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
+		
+		
 		if (usb_init_variable == 0){
 			
 			if (usb_d_get_frame_num() == 0){
 				
 			}
 			else{
-				
+				printf("USB Connected\r\n");
 				grid_sys_bank_select(&grid_sys_state, 0);
 				usb_init_variable = 1;
 			}
@@ -847,51 +931,55 @@ int main(void)
 		loopcounter++;
 	
 		loopstart = grid_sys_rtc_get_time(&grid_sys_state);
-							
 		
-		/* ========================= PING ============================= */
-		if (pingflag_active){
+		if (loopcounter%100 == 0){
+		
+			uint32_t undef = grid_task_timer_read(&grid_task_state, GRID_TASK_UNDEFINED);
+			uint32_t idle = grid_task_timer_read(&grid_task_state, GRID_TASK_IDLE);
+			uint32_t led = grid_task_timer_read(&grid_task_state, GRID_TASK_LED);
+			uint32_t rece = grid_task_timer_read(&grid_task_state, GRID_TASK_RECEIVE);
+			uint32_t move = grid_task_timer_read(&grid_task_state, GRID_TASK_MOVE);
+			grid_task_timer_reset(&grid_task_state);
+		
+	//		printf("UNDEF: %d, IDLE: %d, LED: %d, RECE: %d, MOVE: %d\r\n", undef*100/RTC1SEC, idle*100/RTC1SEC, led*100/RTC1SEC, rece*100/RTC1SEC, move*100/RTC1SEC);
 			
-			if (pingflag%4 == 0){
-				grid_sys_ping(&GRID_PORT_N);
-			}
-			if (pingflag%4 == 1){
-				grid_sys_ping(&GRID_PORT_E);
-			}
-			if (pingflag%4 == 2){
-				grid_sys_ping(&GRID_PORT_S);
-			}
-			if (pingflag%4 == 3){
-				grid_sys_ping(&GRID_PORT_W);
-			}
-			pingflag_active = 0;
+			printf("{\"type\":\"TASK\", \"data\": [\"%d\", \"%d\", \"%d\", \"%d\"]}\r\n", undef*10, idle*10, led*10, move*10);
 			
-		}			
-
-	
-
+		}
+		
+		
+		
+							
+		grid_task_enter_task(&grid_task_state, GRID_TASK_RECEIVE);
 
 		// CHECK RX BUFFERS
 		grid_port_receive_complete_task(&GRID_PORT_N);
 		grid_port_receive_complete_task(&GRID_PORT_E);
 		grid_port_receive_complete_task(&GRID_PORT_S);
 		grid_port_receive_complete_task(&GRID_PORT_W);
-
 					
 		/* ========================= UI_PROCESS_INBOUND ============================= */
+		
+		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
+
 			
 
 		// COOLDOWN DELAY IMPLEMENTED INSIDE
 		grid_port_process_ui(&GRID_PORT_U);
 
 
-		
+		grid_task_enter_task(&grid_task_state, GRID_TASK_MOVE);
+				
+				
 		grid_port_process_inbound(&GRID_PORT_U); // Copy data from UI_RX to HOST_TX & north TX AND STUFF
 
 		grid_port_process_inbound(&GRID_PORT_N);		
 		grid_port_process_inbound(&GRID_PORT_E);		
 		grid_port_process_inbound(&GRID_PORT_S);		
 		grid_port_process_inbound(&GRID_PORT_W);						
+		
+		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
+		
 		
 		/* ========================= GRID MOVE TASK ============================= */		
 
@@ -945,8 +1033,15 @@ int main(void)
 		}
 		
 		
+		
+
+
+		grid_task_enter_task(&grid_task_state, GRID_TASK_LED);
+
 	
 		grid_led_tick(&grid_led_state);
+		
+		
 			
 			
 // 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
@@ -962,6 +1057,7 @@ int main(void)
 	
 	
 	
+		grid_task_enter_task(&grid_task_state, GRID_TASK_IDLE);
 
 		// IDLETASK
 		while(grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){

@@ -620,36 +620,36 @@ void grid_msg_push_recent(struct grid_sys_model* model, uint32_t fingerprint){
 }
 
 
-void grid_sys_ping(struct grid_port* por){
-		
-		
-	uint8_t length = 16;
-	uint32_t hwcfg = grid_sys_get_hwcfg();
-	char message[16] = {GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, por->direction, '0','0','0','0','0','0','0','0',GRID_MSG_END_OF_TRANSMISSION,'0','0','\n'};
-	
-	
-	//char message[20];	
-	// Create the packet
-	//sprintf(message, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, por->direction ,hwcfg, GRID_MSG_END_OF_TRANSMISSION);
-	//length = strlen(message);
-	
-
-	grid_sys_write_hex_string_value(&message[4], 8, hwcfg);
-	
-
-	
- 	grid_msg_set_checksum(message, length, grid_msg_get_checksum(message, length));
-		
-	// Put the packet into the tx_buffer
-	if (grid_buffer_write_init(&por->tx_buffer, length)){
-		
-		for(uint16_t i = 0; i<length; i++){
-			
-			grid_buffer_write_character(&por->tx_buffer, message[i]);
-		}
-		
-		grid_buffer_write_acknowledge(&por->tx_buffer);
-	}
-				
-}
-
+// void grid_sys_ping(struct grid_port* por){
+// 		
+// 		
+// 	uint8_t length = 16;
+// 	uint32_t hwcfg = grid_sys_get_hwcfg();
+// 	char message[16] = {GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, por->direction, '0','0','0','0','0','0','0','0',GRID_MSG_END_OF_TRANSMISSION,'0','0','\n'};
+// 	
+// 	
+// 	//char message[20];	
+// 	// Create the packet
+// 	//sprintf(message, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, por->direction ,hwcfg, GRID_MSG_END_OF_TRANSMISSION);
+// 	//length = strlen(message);
+// 	
+// 
+// 	grid_sys_write_hex_string_value(&message[4], 8, hwcfg);
+// 	
+// 
+// 	
+//  	grid_msg_set_checksum(message, length, grid_msg_get_checksum(message, length));
+// 		
+// 	// Put the packet into the tx_buffer
+// 	if (grid_buffer_write_init(&por->tx_buffer, length)){
+// 		
+// 		for(uint16_t i = 0; i<length; i++){
+// 			
+// 			grid_buffer_write_character(&por->tx_buffer, message[i]);
+// 		}
+// 		
+// 		grid_buffer_write_acknowledge(&por->tx_buffer);
+// 	}
+// 				
+// }
+// 
