@@ -159,11 +159,15 @@ void grid_selftest(uint32_t loop){
 
 enum grid_task{
 	
-	GRID_TASK_UNDEFINED,
 	GRID_TASK_IDLE,
-	GRID_TASK_LED,
+	GRID_TASK_UNDEFINED,
 	GRID_TASK_RECEIVE,
-	GRID_TASK_MOVE
+	GRID_TASK_REPORT,
+	GRID_TASK_INBOUND,
+	GRID_TASK_OUTBOUND,
+	GRID_TASK_LED,
+	GRID_TASK_ALERT,
+	
 	
 };
 
@@ -229,6 +233,7 @@ uint32_t grid_task_timer_read(struct grid_task_model* mod, enum grid_task task){
 void grid_port_receive_task(struct grid_port* por){
 		
 
+		
 	// THERE IS ALREADY DATA, PROCESS THAT FIRST
 	if	(por->rx_double_buffer_status != 0){
 		return;
@@ -240,11 +245,16 @@ void grid_port_receive_task(struct grid_port* por){
 		
 		if (por->partner_status == 1){
 			
+			
+			printf("{\"type\":\"PORT\", \"data\": [\"Timeout: Disconnect\"]}\r\n");
 			por->rx_double_buffer_seek_start_index = 0;
 			por->rx_double_buffer_read_start_index = 0;
 			por->partner_status = 0;
-			por->rx_double_buffer_timeout =0;
+			por->rx_double_buffer_timeout = 0;
 			grid_sys_port_reset_dma(por);
+			for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
+				por->rx_double_buffer[por->rx_double_buffer_seek_start_index] = 0;
+			}
 			
 			
 			grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
@@ -280,59 +290,124 @@ void grid_port_receive_task(struct grid_port* por){
 		}
 		
 		
-// 		// Buffer overrun error
-// 		if (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1){
-// 			gpio_set_pin_level(UI_PWR_EN, false);
-// 			while(1){}
-// 		}
-// 		
-// 		// Buffer overrun error
-// 		if (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0){			
-// 			gpio_set_pin_level(UI_PWR_EN, false);
-// 			while(1){}
-// 		}
+		// Buffer overrun error
+		if (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1){
+			gpio_set_pin_level(UI_PWR_EN, false);
+			printf("{\"type\":\"TRAP\", \"data\": [\"TRAP1\"]}\r\n");
+			while(1){}
+		}
 		
-
+		// Buffer overrun error
+		if (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0){			
+			gpio_set_pin_level(UI_PWR_EN, false);
+			printf("{\"type\":\"TRAP\", \"data\": [\"TRAP2\"]}\r\n");
+			while(1){}
+		}
+		
+		
+		if (por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE -1)%GRID_DOUBLE_BUFFER_RX_SIZE] !=0){	
+				
+			printf("{\"type\":\"ERROR\", \"data\": [\"Buffer Overrun\"]}\r\n");
+			
+			por->rx_double_buffer_timeout = 0;
+			grid_sys_port_reset_dma(por);
+			for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
+				por->rx_double_buffer[por->rx_double_buffer_seek_start_index] = 0;
+			}
+			
+	
+		}
+		
+		
+		grid_sys_alert_set_alert(&grid_sys_state, 50, 0, 0, 2, 200); // red
 
 		if (por->rx_double_buffer_seek_start_index < GRID_DOUBLE_BUFFER_RX_SIZE-1){
+			
+			por->rx_double_buffer_timeout = 0;
 			por->rx_double_buffer_seek_start_index++;			
 		}
 		else{
+			
+			por->rx_double_buffer_timeout = 0;
 			por->rx_double_buffer_seek_start_index=0;
 		}
 		
 	}
-		
-	
+			
 	
 }
 
-void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint32_t length){
+void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint32_t len){
 	
-	uint8_t response[10];
 	
-	response[0] = GRID_MSG_START_OF_HEADING;
-	response[1] = GRID_MSG_DIRECT;
-	response[2] = GRID_MSG_NACKNOWLEDGE;
-	response[3] = GRID_MSG_END_OF_TRANSMISSION;
-	response[4] = '0'; //checksum
-	response[5] = '0'; //checksum
-	response[6] = '\n';
-	response[7] = 0;
-	response[8] = 0;
-	response[9] = 0;
+	printf("{\"type\":\"PORT\", \"data\": [\"Decode\"]}\r\n");
+	
+
 
 	uint8_t error_flag = 0;
 	uint8_t checksum_calculated = 0;
 	uint8_t checksum_received = 0;
 				
 	// Copy data from cyrcular buffer to temporary linear array;
-	uint8_t message[length];
+	uint8_t* message;
+	
+	uint32_t length = len;
+	uint8_t buffer[length];			
+
 				
-	// MAXMSGLEN = 250 character
+	// Store message in temporary buffer (MAXMSGLEN = 250 character)
 	for (uint32_t i = 0; i<length; i++){
-		message[i] = por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE];
+		buffer[i] = por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE];
+		por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE]=0;
 	}
+	
+	message = &buffer[0];
+	
+	// Clear data from rx double buffer	
+	for (uint32_t i = 0; i<length; i++){
+		por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE] = 0;
+	}
+		
+	uint32_t readstartindex = por->rx_double_buffer_read_start_index; 
+		
+	por->rx_double_buffer_read_start_index = (por->rx_double_buffer_read_start_index + length)%GRID_DOUBLE_BUFFER_RX_SIZE;
+	por->rx_double_buffer_seek_start_index =  por->rx_double_buffer_read_start_index;
+		
+	por->rx_double_buffer_status = 0;
+		
+	// Correct the incorrect frame start location
+ 	for (uint32_t i = 1; i<length; i++){
+				
+ 		if (buffer[i] == GRID_MSG_START_OF_HEADING){
+			 
+// 			printf("{\"type\":\"FRAMEERROR\", \"location\":\"%d\" , \"data\": [", readstartindex);
+// 				
+// 			for(uint8_t j = 0; j<length; j++){
+// 			
+// 			
+// 				printf("\"%d\"", message[j]);
+// 			
+// 				if (j != length-1){
+// 					printf(", ");
+// 				}
+// 			
+// 			}
+// 			
+// 			printf("]}\r\n");
+			 
+			 
+			 
+ 			length -= i;
+ 			message = &buffer[i];
+			 
+			printf("{\"type\": \"WARNING\", \"data\": [\"Frame Start Offset\"]}\r\n");		
+				
+
+	
+			
+ 		}
+ 		
+ 	}				
 				
 	// frame validator
 	if (message[0] == 1 && message [length-1] == 10){
@@ -421,12 +496,9 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 										
 						grid_buffer_write_acknowledge(&por->rx_buffer);
 										
-						grid_port_process_inbound(por);
+						//grid_port_process_inbound(por);
 																		
-						grid_msg_push_recent(&grid_sys_state, fingerprint);
-																	
-						response[2] = GRID_MSG_ACKNOWLEDGE;
-										
+						grid_msg_push_recent(&grid_sys_state, fingerprint);										
 										
 					}
 					
@@ -434,8 +506,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 					
 				}
 				else{
-					// WE ALREADY HEARD THIS MESSAGE					
-					response[2] = GRID_MSG_ACKNOWLEDGE;							
+					// WE ALREADY HEARD THIS MESSAGE							
 					//grid_sys_alert_set_alert(&grid_sys_state, 50, 50, 50, 2, 200); // WHITE
 								
 				}
@@ -443,22 +514,22 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 				
 
 		
-				uint32_t response_length = strlen(response);
-		
-				if(grid_buffer_write_init(&por->tx_buffer, response_length)){
-						
-			
-					uint8_t checksum = grid_msg_get_checksum(response, response_length);
-					grid_msg_set_checksum(response, response_length, checksum);
-						
-					for (uint32_t i=0; i<response_length; i++)
-					{
-						grid_buffer_write_character(&por->tx_buffer, response[i]);
-					}
-						
-					grid_buffer_write_acknowledge(&por->tx_buffer);
-													
-				}
+// 				uint32_t response_length = strlen(response);
+// 		
+// 				if(grid_buffer_write_init(&por->tx_buffer, response_length)){
+// 						
+// 			
+// 					uint8_t checksum = grid_msg_get_checksum(response, response_length);
+// 					grid_msg_set_checksum(response, response_length, checksum);
+// 						
+// 					for (uint32_t i=0; i<response_length; i++)
+// 					{
+// 						grid_buffer_write_character(&por->tx_buffer, response[i]);
+// 					}
+// 						
+// 					grid_buffer_write_acknowledge(&por->tx_buffer);
+// 													
+// 				}
 					
 			}
 			else if (message[1] == GRID_MSG_DIRECT){ // Direct Message
@@ -480,6 +551,9 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 								
 								
 					if (por->partner_status == 0){
+						
+			
+						printf("{\"type\":\"PORT\", \"data\": [\"Connect: Connect\"]}\r\n");
 						// CONNECT
 						por->partner_fi = (message[3] - por->direction + 6)%4;
 						por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-12], 8, error_flag);
@@ -491,7 +565,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 						// SEND OUT CURRENT BANK NUMBER IF IT IS INITIALIZED
 						if (grid_sys_state.bank_select!=255){
 							struct grid_ui_model* mod = &grid_ui_state;
-							grid_sys_write_hex_string_value(&mod->report_array[0].payload[7], 2, grid_sys_state.bank_select);
+							grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, grid_sys_state.bank_select);
 							grid_report_sys_set_changed_flag(mod, 0);												
 						}
 
@@ -510,9 +584,14 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 							//FAILED, DISCONNECT
 							por->partner_status = 0;	
 							grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200); // WHITE
+							
+							printf("{\"type\":\"PORT\", \"data\": [\"Connect: Disconnect\"]}\r\n");
 										
 						}
 						else{
+							
+							
+							printf("{\"type\":\"PORT\", \"data\": [\"Connect: Validate\"]}\r\n");
 							//OK
 							//grid_sys_alert_set_alert(&grid_sys_state, 6, 6, 6, 0, 200); // LIGHT WHITE
 							
@@ -525,7 +604,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 				}
 																		
 			}
-			else{ // Invalid
+			else{ // Unknown Message Type
 					
 				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200); // RED SHORT
 							
@@ -544,7 +623,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 			}	
 			else{
 				
-				grid_sys_alert_set_alert(&grid_sys_state, 20, 0, 255, 1, 200); // PURPLE BLINKY
+				grid_sys_alert_set_alert(&grid_sys_state, 20, 0, 255, 1, 200); // BLUE BLINKY
 				
 				
 			}
@@ -556,23 +635,32 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 	}
 	else{
 		// frame error
+		
 		grid_sys_alert_set_alert(&grid_sys_state, 0, 0, 20, 2, 200); // BLUE BLINKY	
+	
+// 		printf("{\"type\":\"FRAMEERROR\", \"data\": [");
+// 				
+// 		for(uint8_t i = 0; i<length; i++){
+// 			
+// 			
+// 			printf("\"%d\"", message[i]);
+// 			
+// 			if (i != length-1){
+// 				printf(", ");
+// 			}
+// 			
+// 		}
+// 			
+// 		printf("]}\r\n");
 
+
+		printf("{\"type\": \"ERROR\", \"data\": [\"Frame Error\"]}\r\n");
 	}
 		
 		
 		
 
-	
-	for (uint32_t i = 0; i<length; i++){
-		por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE] = 0;
-	}
-		
-	por->rx_double_buffer_read_start_index = (por->rx_double_buffer_read_start_index + length)%GRID_DOUBLE_BUFFER_RX_SIZE;
-	por->rx_double_buffer_seek_start_index =  por->rx_double_buffer_read_start_index;
-	
-	
-	por->rx_double_buffer_status = 0;
+
 
 
 	
@@ -621,15 +709,31 @@ void grid_port_receive_complete_task(struct grid_port* por){
 static struct timer_task RTC_Scheduler_rx_task;
 static struct timer_task RTC_Scheduler_ping;
 static struct timer_task RTC_Scheduler_realtime;
+static struct timer_task RTC_Scheduler_report;
 static struct timer_task RTC_Scheduler_heartbeat;
 
 static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 {
 	// [2...5] is ping report descriptor
 	pingflag++;
-	grid_report_sys_set_changed_flag(&grid_ui_state, 2+pingflag%4);
+	
+	switch (pingflag%4)
+	{
+		case 0:
+			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_NORTH);
+			break;
+		case 1:
+			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_EAST);
+			break;
+		case 2:
+			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_SOUTH);
+			break;
+		case 3:
+			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_WEST);
+			break;
+	}
+	
 }
-
 
 static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
@@ -641,27 +745,25 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 		
 	//CRITICAL_SECTION_ENTER()
 
-	uint8_t report_index = 0;
-
 	uint8_t mapmode_value = gpio_get_pin_level(MAP_MODE);
 
-	if (mapmode_value != mod->report_array[report_index].helper[0]){
+	if (mapmode_value != mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0]){
 			
 		uint8_t value;
 			
-		if (mod->report_array[report_index].helper[0] == 0){
+		if (mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0] == 0){
 				
-			mod->report_array[report_index].helper[0] = 1;
+			mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0] = 1;
 				
 		}
 		else{
 				
-			mod->report_array[report_index].helper[0] = 0;
+			mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0] = 0;
 				
 			grid_sys_state.bank_select = (grid_sys_state.bank_select+1)%4;
 			value = grid_sys_state.bank_select;
- 			grid_sys_write_hex_string_value(&mod->report_array[report_index].payload[7], 2, grid_sys_state.bank_select);
- 			grid_report_sys_set_changed_flag(mod, report_index);
+ 			grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, grid_sys_state.bank_select);
+ 			grid_report_sys_set_changed_flag(mod, GRID_REPORT_INDEX_MAPMODE);
 		}
 			
 			
@@ -673,12 +775,14 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 
 static void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 {
+	grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_HEARTBEAT);
+}
+
+volatile uint8_t scheduler_report_flag = 0;
+static void RTC_Scheduler_report_cb(const struct timer_task *const timer_task)
+{
+	scheduler_report_flag = 1;
 	
-	struct grid_ui_model* mod = &grid_ui_state;
-	uint8_t report_index = 1;
-						
-	grid_sys_write_hex_string_value(&mod->report_array[report_index].payload[7], 2, grid_sys_get_hwcfg());
-	grid_report_sys_set_changed_flag(mod, report_index);
 }
 
 
@@ -689,13 +793,17 @@ void init_timer(void)
 	
 		
 	//RTC_Scheduler_ping.interval = RTC1SEC/20; //50ms
-	RTC_Scheduler_ping.interval = RTC1SEC/20; //was /5: 200ms
+	RTC_Scheduler_ping.interval = RTC1SEC/20;
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
 	RTC_Scheduler_ping.mode     = TIMER_TASK_REPEAT;
 	
-	RTC_Scheduler_heartbeat.interval = RTC1SEC*2;
+	RTC_Scheduler_heartbeat.interval = RTC1SEC;
 	RTC_Scheduler_heartbeat.cb       = RTC_Scheduler_heartbeat_cb;
 	RTC_Scheduler_heartbeat.mode     = TIMER_TASK_REPEAT;
+	
+	RTC_Scheduler_report.interval = RTC1SEC/10;
+	RTC_Scheduler_report.cb       = RTC_Scheduler_report_cb;
+	RTC_Scheduler_report.mode     = TIMER_TASK_REPEAT;
 	
 	RTC_Scheduler_realtime.interval = 1;
 	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
@@ -703,6 +811,7 @@ void init_timer(void)
 
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_ping);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_heartbeat);
+	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_report);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime);
 	
 	timer_start(&RTC_Scheduler);
@@ -833,6 +942,8 @@ static void qspi_xfer_complete_cb(struct _dma_resource *resource)
 int main(void)
 {
 
+
+
 	atmel_start_init();	
 
 	
@@ -878,8 +989,6 @@ int main(void)
 		
 		
 		
-	gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
-	gpio_set_pin_level(PIN_GRID_SYNC_1, false);	
 
 	grid_sys_bank_select(&grid_sys_state, 255);
 	
@@ -909,6 +1018,8 @@ int main(void)
 	while (1) {
 		
 		
+		
+		
 		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
 		
 		
@@ -932,18 +1043,38 @@ int main(void)
 	
 		loopstart = grid_sys_rtc_get_time(&grid_sys_state);
 		
-		if (loopcounter%100 == 0){
-		
-			uint32_t undef = grid_task_timer_read(&grid_task_state, GRID_TASK_UNDEFINED);
-			uint32_t idle = grid_task_timer_read(&grid_task_state, GRID_TASK_IDLE);
-			uint32_t led = grid_task_timer_read(&grid_task_state, GRID_TASK_LED);
-			uint32_t rece = grid_task_timer_read(&grid_task_state, GRID_TASK_RECEIVE);
-			uint32_t move = grid_task_timer_read(&grid_task_state, GRID_TASK_MOVE);
-			grid_task_timer_reset(&grid_task_state);
-		
-	//		printf("UNDEF: %d, IDLE: %d, LED: %d, RECE: %d, MOVE: %d\r\n", undef*100/RTC1SEC, idle*100/RTC1SEC, led*100/RTC1SEC, rece*100/RTC1SEC, move*100/RTC1SEC);
+		if (scheduler_report_flag){
 			
-			printf("{\"type\":\"TASK\", \"data\": [\"%d\", \"%d\", \"%d\", \"%d\"]}\r\n", undef*10, idle*10, led*10, move*10);
+			scheduler_report_flag=0;
+		
+			uint32_t task_val[GRID_TASK_NUMBER] = {0};
+				
+			for(uint8_t i = 0; i<GRID_TASK_NUMBER; i++){
+	
+				task_val[i] = grid_task_timer_read(&grid_task_state, i);
+			
+			}
+			grid_task_timer_reset(&grid_task_state);
+			
+				
+			printf("{\"type\":\"TASK\", \"data\": [");
+				
+			for(uint8_t i = 0; i<GRID_TASK_NUMBER; i++){
+			
+			
+				printf("\"%d\"", task_val[i]);
+			
+				if (i != GRID_TASK_NUMBER-1){
+					printf(", ");
+				}
+			
+			}
+			
+			printf("]}\r\n");
+			
+			printf("{\"type\":\"LOOP\", \"data\": [\"%d\"]}\r\n", loopcounter);
+			loopcounter = 0;
+		
 			
 		}
 		
@@ -958,9 +1089,10 @@ int main(void)
 		grid_port_receive_complete_task(&GRID_PORT_S);
 		grid_port_receive_complete_task(&GRID_PORT_W);
 					
-		/* ========================= UI_PROCESS_INBOUND ============================= */
-		
-		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
+					
+					
+		/* ========================= GRID REPORT TASK ============================= */
+		grid_task_enter_task(&grid_task_state, GRID_TASK_REPORT);
 
 			
 
@@ -968,31 +1100,40 @@ int main(void)
 		grid_port_process_ui(&GRID_PORT_U);
 
 
-		grid_task_enter_task(&grid_task_state, GRID_TASK_MOVE);
-				
-				
-		grid_port_process_inbound(&GRID_PORT_U); // Copy data from UI_RX to HOST_TX & north TX AND STUFF
 
-		grid_port_process_inbound(&GRID_PORT_N);		
-		grid_port_process_inbound(&GRID_PORT_E);		
-		grid_port_process_inbound(&GRID_PORT_S);		
-		grid_port_process_inbound(&GRID_PORT_W);						
+		/* ========================= GRID INBOUND TASK ============================= */						
+		grid_task_enter_task(&grid_task_state, GRID_TASK_INBOUND);	
 		
-		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
+		// Copy data from UI_RX to HOST_TX & north TX AND STUFF
+		grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback
+		
+		grid_port_process_inbound(&GRID_PORT_N, 0);		
+		grid_port_process_inbound(&GRID_PORT_E, 0);		
+		grid_port_process_inbound(&GRID_PORT_S, 0);		
+		grid_port_process_inbound(&GRID_PORT_W, 0);						
 		
 		
-		/* ========================= GRID MOVE TASK ============================= */		
-
 		
+		/* ========================= GRID OUTBOUND TASK ============================= */		
+		grid_task_enter_task(&grid_task_state, GRID_TASK_OUTBOUND);
+		
+		// If previous xfer is completed and new data is available then move data from txbuffer to txdoublebuffer and start new xfer.
 		grid_port_process_outbound_usart(&GRID_PORT_N);
 		grid_port_process_outbound_usart(&GRID_PORT_E);
 		grid_port_process_outbound_usart(&GRID_PORT_S);
 		grid_port_process_outbound_usart(&GRID_PORT_W);
 		
-		grid_port_process_outbound_usb(&GRID_PORT_H); // Send data from HOST_TX through USB
+		// Translate grid messages to usb messages and xfer them to the host
+		grid_port_process_outbound_usb(&GRID_PORT_H);
+		
+		// Translate grid messages to ui commands (LED)
 		grid_port_process_outbound_ui(&GRID_PORT_U);
 
+
+		/* ========================= GRID ALERT TASK ============================= */		
+		grid_task_enter_task(&grid_task_state, GRID_TASK_ALERT);	
 		
+			
 		if (grid_sys_state.alert_state){
 			
 			grid_sys_state.alert_state--;
@@ -1032,41 +1173,48 @@ int main(void)
 			
 		}
 		
-		
-		
-
-
 		grid_task_enter_task(&grid_task_state, GRID_TASK_LED);
-
 	
 		grid_led_tick(&grid_led_state);
-		
-		
-			
-			
-// 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
-// 			
-// 		}
-		
-		grid_led_render_all(&grid_led_state);
-				
+	
 
-					
-		grid_led_hardware_start_transfer(&grid_led_state);
+		
+		if (loopcounter%1 == 0){
+			
+			grid_led_render_all(&grid_led_state);	
+			
+						
+	 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
+	
+	 		}
+			grid_led_hardware_start_transfer(&grid_led_state);
+		}		
+		
+		
 	
 	
 	
 	
 		grid_task_enter_task(&grid_task_state, GRID_TASK_IDLE);
 
+
+
+
+		gpio_set_pin_function(PIN_GRID_SYNC_2, 0);
+		gpio_set_pin_direction(PIN_GRID_SYNC_2, GPIO_DIRECTION_OUT);
+		//gpio_set_pin_level(PIN_GRID_SYNC_1, !gpio_get_pin_level(PIN_GRID_SYNC_1));
+		gpio_set_pin_level(PIN_GRID_SYNC_2, true);
+
 		// IDLETASK
 		while(grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){
 			
-			delay_us(10);
+			delay_us(1);
 			
 		}
 				
-				
+		gpio_set_pin_level(PIN_GRID_SYNC_2, false);
+		
+		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);		
 
 		
 

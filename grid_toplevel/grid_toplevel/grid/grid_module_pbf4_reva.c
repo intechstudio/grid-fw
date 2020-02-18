@@ -235,7 +235,7 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 	
 	for(uint8_t i=0; i<12; i++){
 		
-		uint8_t payload_template[30];
+		uint8_t payload_template[30] = {0};
 		
 		if (i<8){ // PORENTIOMETERS & FADERS
 			

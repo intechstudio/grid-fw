@@ -239,33 +239,6 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 					grid_ui_encoder_array[i].last_real_time = grid_sys_rtc_get_time(&grid_sys_state);
 				}
 				
-
-				
-				
-				
-// 				grid_sys_write_hex_string_value(&mod->report_array[i+1+16+16].payload[9], 2, 0); // LED
-// 				mod->report_array[i+1+16+16].helper[0] = 0;
-// 				grid_ui_report_set_changed_flag(mod, i+1+16+16);
-// 
-// 				if (grid_ui_encoder_array[i].rotation_value>64){
-// 					grid_ui_encoder_array[i].rotation_value--;
-// 								
-// 					grid_sys_write_hex_string_value(&mod->report_array[i+1+16+16].payload[9], 2, 0); // LED
-// 					mod->report_array[i+1+16+16].helper[0] = 0;
-// 					grid_ui_report_set_changed_flag(mod, i+1+16+16);
-// 								
-// 				}
-// 				else if (grid_ui_encoder_array[i].rotation_value<64){
-// 								
-// 					grid_ui_encoder_array[i].rotation_value++;
-// 								
-// 				}
-
-
-				
-
-
-
 						
 						
 			}
@@ -315,7 +288,7 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 	// 1...16 is for ui_buttons
 	for(uint8_t i=0; i<16+16+16; i++){
 		
-		uint8_t payload_template[30];
+		uint8_t payload_template[30] = {0};
 		
 
 		if (i<16){ // ROTATION

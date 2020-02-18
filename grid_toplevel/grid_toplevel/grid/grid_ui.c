@@ -71,10 +71,8 @@ void grid_port_process_ui(struct grid_port* por){
 				
 			if (changed && (type == GRID_REPORT_TYPE_DIRECT_ALL || type == GRID_REPORT_TYPE_DIRECT_NORTH || type == GRID_REPORT_TYPE_DIRECT_EAST || type == GRID_REPORT_TYPE_DIRECT_SOUTH || type == GRID_REPORT_TYPE_DIRECT_WEST)){
 					
-				uint8_t message[256];
+				uint8_t message[256] = {0};
 				uint32_t length=0;
-						
-				length += strlen(&message[length]);
 			
 				CRITICAL_SECTION_ENTER()			
 				
@@ -139,7 +137,7 @@ void grid_port_process_ui(struct grid_port* por){
 
 				
 		// Prepare packet header
-		uint8_t message[256];
+		uint8_t message[256] = {0};
 		uint32_t length=0;
 	
 	
@@ -293,7 +291,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 		
 	for(uint8_t i=0; i<mod->report_offset; i++){
 			
-		uint8_t payload_template[30];
+		uint8_t payload_template[30] = {0};
 		enum grid_report_type_t type = GRID_REPORT_TYPE_UNDEFINED;
 			
 		if (i == GRID_REPORT_INDEX_MAPMODE){ // MAPMODE
@@ -305,7 +303,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 		else if (i == GRID_REPORT_INDEX_HEARTBEAT){ // HEARTBEAT
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
-			sprintf(payload_template, "%c%02x%02x%02x%02x%c", GRID_MSG_START_OF_TEXT, GRID_MSG_PROTOCOL_SYS, GRID_MSG_COMMAND_SYS_HEARTBEAT, GRID_MSG_COMMAND_SYS_HEARTBEAT_ALIVE, 0,	GRID_MSG_END_OF_TEXT);
+			sprintf(payload_template, "%c%02x%02x%02x%02x%c", GRID_MSG_START_OF_TEXT, GRID_MSG_PROTOCOL_SYS, GRID_MSG_COMMAND_SYS_HEARTBEAT, GRID_MSG_COMMAND_SYS_HEARTBEAT_ALIVE, grid_sys_get_hwcfg(), GRID_MSG_END_OF_TEXT);
 			
 		}
 		else if (i == GRID_REPORT_INDEX_PING_NORTH){ // PING NORTH

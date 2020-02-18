@@ -131,7 +131,7 @@ void grid_module_po16_revb_init(struct grid_ui_model* mod){
 	
 	for(uint8_t i=0; i<16; i++){
 		
-		uint8_t payload_template[30];
+		uint8_t payload_template[30] = {0};
 		
 
 		sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c%c%02x%02x%02x%02x%02x%c",

@@ -128,30 +128,60 @@ $(document).ready(function(){
           var obj = JSON.parse(result[i]);
 
           if (obj.type == "TASK"){
-            drawGraph(graphList[0], Math.floor(obj.data[0]/16384*100));
-            drawGraph(graphList[1], Math.floor(obj.data[1]/16384*100));
-            drawGraph(graphList[2], Math.floor(obj.data[2]/16384*100));
-            drawGraph(graphList[3], Math.floor(obj.data[3]/16384*100));
+            drawGraph(graphList[0], Math.floor(obj.data[0]/16384*10*100));
+            drawGraph(graphList[1], Math.floor(obj.data[1]/16384*10*100));
+            drawGraph(graphList[2], Math.floor(obj.data[2]/16384*10*100));
+            drawGraph(graphList[3], Math.floor(obj.data[3]/16384*10*100));
+            drawGraph(graphList[4], Math.floor(obj.data[4]/16384*10*100));
+            drawGraph(graphList[5], Math.floor(obj.data[5]/16384*10*100));
+            drawGraph(graphList[6], Math.floor(obj.data[6]/16384*10*100));
+            drawGraph(graphList[7], Math.floor(obj.data[7]/16384*10*100));
 
 
-            $("input#UI_TASK_0").val(Math.floor(obj.data[0]/16384*100));
-            $("input#UI_TASK_1").val(Math.floor(obj.data[1]/16384*100));
-            $("input#UI_TASK_2").val(Math.floor(obj.data[2]/16384*100));
-            $("input#UI_TASK_3").val(Math.floor(obj.data[3]/16384*100));
-            $("input#UI_TASK_4").val(Math.floor(obj.data[4]/16384*100));
-            $("input#UI_TASK_5").val(Math.floor(obj.data[5]/16384*100));
-            $("input#UI_TASK_6").val(Math.floor(obj.data[6]/16384*100));
-            $("input#UI_TASK_7").val(Math.floor(obj.data[7]/16384*100));
+            $("#UI_TASK_0_value").html(Math.floor(obj.data[0]/16384*10*100) + "%");
+            $("#UI_TASK_1_value").html(Math.floor(obj.data[1]/16384*10*100) + "%");
+            $("#UI_TASK_2_value").html(Math.floor(obj.data[2]/16384*10*100) + "%");
+            $("#UI_TASK_3_value").html(Math.floor(obj.data[3]/16384*10*100) + "%");
+            $("#UI_TASK_4_value").html(Math.floor(obj.data[4]/16384*10*100) + "%");
+            $("#UI_TASK_5_value").html(Math.floor(obj.data[5]/16384*10*100) + "%");
+            $("#UI_TASK_6_value").html(Math.floor(obj.data[6]/16384*10*100) + "%");
+            $("#UI_TASK_7_value").html(Math.floor(obj.data[7]/16384*10*100) + "%");
 
-            $("#UI_TASK_0_value").html(Math.floor(obj.data[0]/16384*100) + "%");
-            $("#UI_TASK_1_value").html(Math.floor(obj.data[1]/16384*100) + "%");
-            $("#UI_TASK_2_value").html(Math.floor(obj.data[2]/16384*100) + "%");
-            $("#UI_TASK_3_value").html(Math.floor(obj.data[3]/16384*100) + "%");
-            $("#UI_TASK_4_value").html(Math.floor(obj.data[4]/16384*100) + "%");
-            $("#UI_TASK_5_value").html(Math.floor(obj.data[5]/16384*100) + "%");
-            $("#UI_TASK_6_value").html(Math.floor(obj.data[6]/16384*100) + "%");
-            $("#UI_TASK_7_value").html(Math.floor(obj.data[7]/16384*100) + "%");
+          }
+          else if (obj.type == "LOOP"){
+            
+            $("#UI_LOOP_value").html(obj.data[0]);
+          }    
+          else if (obj.type == "HEARTBEAT"){
+            //var pos_x = (parseInt(obj.data[0])+4)%4;
+            //var pos_y = (parseInt(obj.data[1])+4)%4;
 
+
+            var pos_x = obj.data[0];
+            var pos_y = obj.data[1];
+            var hwcfg = obj.data[2];
+
+            //console.log("#MINIMAP_X"+pos_x+"_Y"+pos_y+"_HW"+hwcfg);
+
+            $("#MINIMAP_X"+pos_x+"_Y"+pos_y).html("HWCFG: "+hwcfg);
+            
+          }  
+          else if (obj.type == "PORT"){
+
+
+           // console.log(obj.data);
+
+            
+          }
+          else if (obj.type == "WARNING" || obj.type == "ERROR" || obj.type == "TRAP"){
+
+            console.log(JSON.stringify(obj.type) + JSON.stringify(obj.data));
+
+            
+          }
+          else if (obj.type == "FRAMEERROR"){
+            
+            $("#UI_FRAMEERROR_value").html(JSON.stringify(obj));
           }
 
           $("div#console").append("<div>"+result[i]+"</div>");

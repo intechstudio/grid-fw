@@ -363,7 +363,7 @@ void grid_port_init_all(void){
 //=============================== PROCESS INBOUND ==============================//
 
 
-uint8_t grid_port_process_inbound(struct grid_port* por){
+uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 	
 	uint16_t packet_size = grid_buffer_read_size(&por->rx_buffer);
 	
@@ -403,7 +403,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por){
 		
 		for (uint8_t i=0; i<port_count; i++)
 		{
-			if (port_array[i] != por){
+			if (port_array[i] != por || loopback){
 			
 				if (packet_size > grid_buffer_write_size(&port_array[i]->tx_buffer)){
 					
@@ -425,7 +425,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por){
 		
 		for (uint8_t i=0; i<port_count; i++)
 		{
-			if (port_array[i] != por){
+			if (port_array[i] != por || loopback){
 				grid_buffer_write_init(&port_array[i]->tx_buffer, packet_size);
 			}
 		}
@@ -438,7 +438,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por){
 			uint8_t character = grid_buffer_read_character(&por->rx_buffer);
 				
 			for (uint8_t i=0; i<port_count; i++){
-				if (port_array[i] != por){
+				if (port_array[i] != por || loopback){
 					grid_buffer_write_character(&port_array[i]->tx_buffer, character);
 					
 				}
@@ -451,7 +451,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por){
 					
 		for (uint8_t i=0; i<port_count; i++)
 		{
-			if (port_array[i] != por){
+			if (port_array[i] != por || loopback){
 				grid_buffer_write_acknowledge(&port_array[i]->tx_buffer);
 			}
 		}	
@@ -462,11 +462,8 @@ uint8_t grid_port_process_inbound(struct grid_port* por){
 }
 
 
+
 //=============================== PROCESS OUTBOUND ==============================//
-
-volatile uint8_t temp[500];
-
-volatile uint8_t usb_debug[10];
 
 uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 	
@@ -482,6 +479,15 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 
 	if (length){
 		
+		for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
+			por->tx_double_buffer[i] = 0;
+		}
+		
+		
+		
+		uint8_t temp[500] = {0};
+			
+		
 		//uint8_t temp[length];
 		
 		// Let's transfer the packet to local memory
@@ -496,8 +502,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 		// Let's acknowledge the transactions	(should wait for partner to send ack)
 		grid_buffer_read_acknowledge(&por->tx_buffer);
 		
-		
-		
+
 		// GRID-2-HOST TRANSLATOR
 		uint8_t id = grid_msg_get_id(temp);		
 		int8_t dx = grid_msg_get_dx(temp) - GRID_SYS_DEFAULT_POSITION;
@@ -549,27 +554,6 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 									
 				}
-				else if (msg_protocol == GRID_MSG_PROTOCOL_LED){
-					
-					if (dx == 0 && dy == 0){
-										
-						
-						uint8_t led_layer = grid_sys_read_hex_string_value(&temp[current_start+3], 2, &error_flag);
-						uint8_t led_command = grid_sys_read_hex_string_value(&temp[current_start+5], 2, &error_flag);
-						uint8_t led_number  = grid_sys_read_hex_string_value(&temp[current_start+7], 2, &error_flag);
-						uint8_t led_value  = grid_sys_read_hex_string_value(&temp[current_start+9], 2, &error_flag);
-						
-						
-						if (led_command == GRID_MSG_COMMAND_LED_SET_PHASE){
-							
-							grid_led_set_phase(&grid_led_state, led_number, led_layer, led_value);
-						}
-						
-						
-						
-					}
-								
-				}
 				else if (msg_protocol == GRID_MSG_PROTOCOL_KEYBOARD){
 		
 					uint8_t key_array_length = (current_stop-current_start-3)/6;
@@ -595,7 +579,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 						
 					}
 										
-					usb_debug[1] = hiddf_keyboard_keys_state_change(key_array, key_array_length);
+					//usb_debug[1] = hiddf_keyboard_keys_state_change(key_array, key_array_length);
 					//usb_debug[2] = hiddf_keyboard_keys_state_change(key_array, key_array_length);
 		
 					
@@ -622,6 +606,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 
 					}
 					else if (sys_command == GRID_MSG_COMMAND_SYS_HEARTBEAT && sys_subcommand == GRID_MSG_COMMAND_SYS_HEARTBEAT_ALIVE){
+								
+						printf("{\"type\":\"HEARTBEAT\", \"data\": [\"%d\", \"%d\", \"%d\"]}\r\n", dx, dy, sys_value);		
 												
 						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [SYS] %3d %3d %3d\n",
 						id,dx,dy,age,
@@ -632,14 +618,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 
 					}
 					
-						
-						
-						
-										
-					
-					
-
-					
+				
 				}
 				else if (msg_protocol == GRID_MSG_PROTOCOL_MOUSE){
 					
@@ -655,9 +634,6 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				current_start = 0;
 				current_stop = 0;
 			}
-// 			else if (temp[i] == 0 || temp[i] == '\n'){
-// 				break;
-// 			}
 			
 						
 		}		
@@ -678,31 +654,89 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 	
 	// DUMMY HANDLER, DOES NOT DO ANYTHING  !!!!!!!!!!!!!!
 	
-	uint16_t packet_size = grid_buffer_read_size(&por->tx_buffer);
+	uint16_t length = grid_buffer_read_size(&por->tx_buffer);
 	
-	if (!packet_size){
-		
+	if (!length){
+				
 		// NO PACKET IN RX BUFFER
 		return 0;
 	}
 	else{
 		
+		uint8_t temp[500];
+		
 		// Let's transfer the packet to local memory
 		grid_buffer_read_init(&por->tx_buffer);
 		
-		for (uint8_t i = 0; i<packet_size; i++){
-			
-			uint8_t character = grid_buffer_read_character(&por->tx_buffer);
+		for (uint8_t i = 0; i<length; i++){
+					
+			temp[i] = grid_buffer_read_character(&por->tx_buffer);
 			//usb_tx_double_buffer[i] = character;
-			
+					
 		}
-		
-		//grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
-		//cdcdf_acm_write(usb_tx_double_buffer, packet_size);
 
-		
-		// Let's acknowledge the transactions	(should wait for partner to send ack)
 		grid_buffer_read_acknowledge(&por->tx_buffer);
+		
+		// GRID-2-UI TRANSLATOR
+		uint8_t id = grid_msg_get_id(temp);
+		int8_t dx = grid_msg_get_dx(temp) - GRID_SYS_DEFAULT_POSITION;
+		int8_t dy = grid_msg_get_dy(temp) - GRID_SYS_DEFAULT_POSITION;
+		uint8_t age = grid_msg_get_age(temp);
+			
+			
+		uint8_t current_protocol	= 0;
+		uint8_t current_start		= 0;
+		uint8_t current_stop		= 0;
+			
+		uint8_t output_cursor = 0;
+			
+		uint8_t error_flag = 0;	
+		
+		//grid_sys_alert_set_alert(&grid_sys_state, 100,0,0,1,300);
+		
+		for (uint16_t i=0; i<length; i++){
+	
+			if (temp[i] == GRID_MSG_START_OF_TEXT){
+				current_start = i;
+			}
+			else if (temp[i] == GRID_MSG_END_OF_TEXT && current_start!=0){
+				current_stop = i;
+				uint8_t msg_protocol = grid_sys_read_hex_string_value(&temp[current_start+1], 2, &error_flag);
+		
+				if (msg_protocol == GRID_MSG_PROTOCOL_LED){
+					
+					if (dx == 0 && dy == 0){
+						
+						
+						uint8_t led_layer = grid_sys_read_hex_string_value(&temp[current_start+3], 2, &error_flag);
+						uint8_t led_command = grid_sys_read_hex_string_value(&temp[current_start+5], 2, &error_flag);
+						uint8_t led_number  = grid_sys_read_hex_string_value(&temp[current_start+7], 2, &error_flag);
+						uint8_t led_value  = grid_sys_read_hex_string_value(&temp[current_start+9], 2, &error_flag);
+						
+						
+						if (led_command == GRID_MSG_COMMAND_LED_SET_PHASE){
+							
+							grid_led_set_phase(&grid_led_state, led_number, led_layer, led_value);
+						}
+						
+						
+						
+					}
+					
+				}
+				else{
+					//SORRY
+				}
+		
+				current_start = 0;
+				current_stop = 0;
+			}
+	
+	
+		}
+	
+		
+
 		
 	}
 	

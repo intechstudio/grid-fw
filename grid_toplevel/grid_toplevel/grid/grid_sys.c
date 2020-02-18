@@ -140,6 +140,7 @@ void grid_sys_uart_init(){
 
 
 
+
 }
 
 void grid_sys_dma_rx_init_one(struct grid_port* por, uint32_t buffer_length, void* transfer_done_cb() ){
@@ -294,14 +295,10 @@ void grid_sys_rtc_set_time(struct grid_sys_model* mod, uint32_t tvalue){
 	mod->realtime = tvalue;
 }
 
-uint32_t grid_sys_rtc_get_elapsed_time(struct grid_sys_model* mod, uint32_t told){
+uint32_t grid_sys_rtc_get_elapsed_time(struct grid_sys_model* mod, uint32_t t_old){
 	
-	if (mod->realtime>told){
-		return mod->realtime-told;
-	}
-	else{
-		return (1<<32)-1 - told + mod->realtime;
-	}
+	return mod->realtime-t_old;
+	
 	
 
 }

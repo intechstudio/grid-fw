@@ -155,7 +155,7 @@ void grid_module_bu16_revb_init(struct grid_ui_model* mod){
 		
 	for(uint8_t i=0; i<16; i++){
 		
-		uint8_t payload_template[30];
+		uint8_t payload_template[30] = {0};
 			
 		uint8_t grid_module_bu16_revb_mux_lookup_led[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
 		sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c%c%02x%02x%02x%02x%02x%c",
