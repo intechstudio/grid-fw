@@ -48,6 +48,7 @@ struct grid_port{
 	uint32_t tx_double_buffer_ack_fingerprint;
 	uint32_t tx_double_buffer_ack_timeout;
 	
+	uint8_t usart_error_flag;
 	
 	uint32_t rx_double_buffer_timeout; // is packet ready for verification
 	

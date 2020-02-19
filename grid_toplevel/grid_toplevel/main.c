@@ -22,7 +22,6 @@
 
 
 
-
 volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
@@ -228,6 +227,23 @@ uint32_t grid_task_timer_read(struct grid_task_model* mod, enum grid_task task){
 
 
 
+void grid_port_reset_receiver(struct grid_port* por){
+	
+	usart_async_disable(por->usart);
+	
+	por->rx_double_buffer_seek_start_index = 0;
+	por->rx_double_buffer_read_start_index = 0;
+	por->partner_status = 0;
+	por->rx_double_buffer_timeout = 0;
+	grid_sys_port_reset_dma(por);
+	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
+		por->rx_double_buffer[por->rx_double_buffer_seek_start_index] = 0;
+	}
+	
+	usart_async_enable(por->usart);
+	
+}
+
 
 
 void grid_port_receive_task(struct grid_port* por){
@@ -241,30 +257,28 @@ void grid_port_receive_task(struct grid_port* por){
 	
 	
 		
-	if (por->rx_double_buffer_timeout > 2000){
+	if (por->rx_double_buffer_timeout > 1000){
 		
 		if (por->partner_status == 1){
 			
 			
 			printf("{\"type\":\"PORT\", \"data\": [\"Timeout: Disconnect\"]}\r\n");
-			por->rx_double_buffer_seek_start_index = 0;
-			por->rx_double_buffer_read_start_index = 0;
-			por->partner_status = 0;
-			por->rx_double_buffer_timeout = 0;
-			grid_sys_port_reset_dma(por);
-			for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
-				por->rx_double_buffer[por->rx_double_buffer_seek_start_index] = 0;
-			}
 			
+			
+			printf("{\"type\":\"ERROR\", \"data\": [\"Buffer Overrun\"]}\r\n");
+			grid_port_reset_receiver(por);	
 			
 			grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
 		}
 		else{
 		
-			por->rx_double_buffer_seek_start_index = 0;
-			por->rx_double_buffer_read_start_index = 0;
-			grid_sys_port_reset_dma(por);
-		
+			if (por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0){
+				// Ready to receive
+			}
+			else{
+				grid_port_reset_receiver(por);
+			}
+			
 		}		
 			
 	}
@@ -308,13 +322,8 @@ void grid_port_receive_task(struct grid_port* por){
 		if (por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE -1)%GRID_DOUBLE_BUFFER_RX_SIZE] !=0){	
 				
 			printf("{\"type\":\"ERROR\", \"data\": [\"Buffer Overrun\"]}\r\n");
-			
-			por->rx_double_buffer_timeout = 0;
-			grid_sys_port_reset_dma(por);
-			for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
-				por->rx_double_buffer[por->rx_double_buffer_seek_start_index] = 0;
-			}
-			
+			grid_port_reset_receiver(por);	
+			break;
 	
 		}
 		
@@ -412,9 +421,9 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 	// frame validator
 	if (message[0] == 1 && message [length-1] == 10){
 					
-		checksum_received = grid_sys_read_hex_string_value(&message[length-3], 2, &error_flag);
+		checksum_received = grid_msg_checksum_read(message, length);
 					
-		checksum_calculated = grid_msg_get_checksum(message, length);
+		checksum_calculated = grid_msg_checksum_calculate(message, length);
 					
 		// checksum validator
 		if (checksum_calculated == checksum_received && error_flag == 0){
@@ -480,7 +489,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 										
 					// Recalculate and update the checksum
 														
-					grid_msg_set_checksum(message, length, grid_msg_get_checksum(message, length));
+					grid_msg_checksum_write(message, length, grid_msg_checksum_calculate(message, length));
 					
 
 					// IF WE CAN STORE THE MESSAGE IN THE RX BUFFER
@@ -669,6 +678,16 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 }
 
 void grid_port_receive_complete_task(struct grid_port* por){
+	
+	if (por->usart_error_flag == 1){
+		
+		por->usart_error_flag = 0;
+		
+		grid_port_reset_receiver(por);			
+		
+		printf("{\"type\": \"ERROR\", \"data\": [\"Parity Error\"]}\r\n");
+		
+	}
 	
 
 	///////////////////// PART 1
@@ -948,6 +967,23 @@ int main(void)
 
 	
 	printf("Initialization\r\n");
+	
+	#define UNITTEST
+	
+	#ifdef UNITTEST	
+		#include "grid/grid_unittest.h"
+		grid_unittest_start();	
+		
+		grid_sys_unittest();	
+		grid_sys_unittest();	
+	
+		printf(" Unit Test Finished\r\n");
+		
+		while (1)
+		{
+		}
+		
+	#endif
 
 	
 // 	uint32_t flash_length = flash_get_total_pages(&FLASH_0);
@@ -1017,9 +1053,7 @@ int main(void)
 
 	while (1) {
 		
-		
-		
-		
+				
 		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
 		
 		

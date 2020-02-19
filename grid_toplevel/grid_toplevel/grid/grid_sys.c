@@ -8,7 +8,79 @@
 #include "grid_sys.h"
 
 
-//====================== USART GRID INIT ===================================//
+//====================== grid sys unittest ===================================//
+
+uint32_t grid_sys_unittest(void){
+
+
+	if(grid_unittest_group_init(&grid_unittest_state, "grid_sys::checksum"))
+	{
+		if(grid_unittest_case_init(&grid_unittest_state, "Checksum Read/Calculate"))
+		{ // Read/Calculate
+			
+			uint8_t length = 8;
+			uint8_t packet[8] = {1, 0, 2, 2, 4, 0, 0, 10};
+		
+			uint8_t checksum_calc = grid_msg_checksum_calculate(packet, length);
+			uint8_t checksum_read = grid_msg_checksum_read(packet, length);
+				
+			char str[100] = {0};
+			sprintf(str, "packet{%d, %d, %d, %d, %d, %d, %d, %d} Read: %d, Calculate: %d", packet[0], packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7], checksum_read, checksum_calc);	
+		
+			if (checksum_calc != checksum_read){		
+				grid_unittest_case_pass(&grid_unittest_state,str);
+			}
+			else{
+				grid_unittest_case_fail(&grid_unittest_state,str);
+			}
+				
+		}
+		if (grid_unittest_case_init(&grid_unittest_state, "Checksum Write/Calculate")) // Write/Calculate	
+		{	
+		
+		
+			uint8_t length = 8;
+			uint8_t packet[8] = {1, 0, 2, 2, 4, 0, 0, 10};
+					
+			uint8_t checksum_calc = grid_msg_checksum_calculate(packet, length);
+		
+			grid_msg_checksum_write(packet, length, checksum_calc);
+		
+			uint8_t checksum_read = grid_msg_checksum_read(packet, length);
+				
+			char str[100] = {0};
+			sprintf(str, "packet{%d, %d, %d, %d, %d, %d, %d, %d} Read: %d, Calculate: %d", packet[0], packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7], checksum_read, checksum_calc);	
+		
+		
+			if (checksum_calc == checksum_read){		
+				grid_unittest_case_pass(&grid_unittest_state,str);
+			}
+			else{
+				grid_unittest_case_fail(&grid_unittest_state,str);
+			}
+				
+		}	
+		
+		
+	}
+	
+	grid_unittest_case_init(&grid_unittest_state, "Checksum Overwrite");
+	grid_unittest_case_fail(&grid_unittest_state, "Parapaprikas");
+		
+	grid_unittest_group_done(&grid_unittest_state);
+		
+
+	//grid_unittest_case_init(&grid_unittest_state, );
+
+	return 1;
+}
+
+
+
+
+
+
+
 
 //=============================== USART TX COMPLETE ==============================//
 
@@ -93,6 +165,37 @@ void dma_transfer_complete(struct grid_port* por){
 
 uint32_t grid_sys_hwfcg = -1;
 
+
+
+static void err_cb_USART_GRID_N(const struct usart_async_descriptor *const descr)
+{
+	err_cb_USART_GRID(&GRID_PORT_N);
+}
+
+static void err_cb_USART_GRID_E(const struct usart_async_descriptor *const descr)
+{
+	err_cb_USART_GRID(&GRID_PORT_E);
+}
+
+static void err_cb_USART_GRID_S(const struct usart_async_descriptor *const descr)
+{
+	err_cb_USART_GRID(&GRID_PORT_S);
+}
+
+static void err_cb_USART_GRID_W(const struct usart_async_descriptor *const descr)
+{
+	err_cb_USART_GRID(&GRID_PORT_W);
+}
+
+
+void err_cb_USART_GRID(struct grid_port* const por){
+	por->usart_error_flag = 1;	
+	
+	usart_async_disable(por->usart);
+}
+
+
+
 //====================== DMA CONFIGURATION FOR GRID USART RX C ===================================//
 
 #define DMA_NORTH_RX_CHANNEL	0
@@ -107,26 +210,44 @@ void grid_sys_port_reset_dma(struct grid_port* por){
 
 }
 
+
 void grid_sys_uart_init(){
 	
 	
-	// RX PULLUP
+	// RX PULLUP 
 	gpio_set_pin_pull_mode(PC28, GPIO_PULL_UP);
 	gpio_set_pin_pull_mode(PC16, GPIO_PULL_UP);
 	gpio_set_pin_pull_mode(PC12, GPIO_PULL_UP);
 	gpio_set_pin_pull_mode(PB09, GPIO_PULL_UP);
 	
-
-
 	usart_async_register_callback(&USART_NORTH, USART_ASYNC_TXC_CB, tx_cb_USART_GRID_N);
 	usart_async_register_callback(&USART_EAST,  USART_ASYNC_TXC_CB, tx_cb_USART_GRID_E);
 	usart_async_register_callback(&USART_SOUTH, USART_ASYNC_TXC_CB, tx_cb_USART_GRID_S);
 	usart_async_register_callback(&USART_WEST,  USART_ASYNC_TXC_CB, tx_cb_USART_GRID_W);
+			
+	// Set parity for grid uart communication
+	usart_async_set_parity(&USART_NORTH, USART_PARITY_ODD);
+	usart_async_set_parity(&USART_EAST, USART_PARITY_ODD);	
+	usart_async_set_parity(&USART_SOUTH, USART_PARITY_ODD);
+	usart_async_set_parity(&USART_WEST, USART_PARITY_ODD);
+	
+	// Set callback function for parity error
+	usart_async_register_callback(&USART_NORTH, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_N);
+	usart_async_register_callback(&USART_EAST, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_E);
+	usart_async_register_callback(&USART_SOUTH, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_S);
+	usart_async_register_callback(&USART_WEST, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_W);
+	
+	
+	
+	
+	
+	
 	
 // 	usart_async_register_callback(&USART_NORTH, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_N);
 // 	usart_async_register_callback(&USART_EAST,  USART_ASYNC_RXC_CB, rx_cb_USART_GRID_E);
 // 	usart_async_register_callback(&USART_SOUTH, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_S);
 // 	usart_async_register_callback(&USART_WEST,  USART_ASYNC_RXC_CB, rx_cb_USART_GRID_W);
+
 	
 	usart_async_get_io_descriptor(&USART_NORTH, &grid_sys_north_io);
 	usart_async_get_io_descriptor(&USART_EAST,  &grid_sys_east_io);
@@ -142,6 +263,8 @@ void grid_sys_uart_init(){
 
 
 }
+
+
 
 void grid_sys_dma_rx_init_one(struct grid_port* por, uint32_t buffer_length, void* transfer_done_cb() ){
 	
@@ -517,7 +640,7 @@ void grid_sys_ping_all(){
 	
 }
 
-uint8_t grid_msg_get_checksum(uint8_t* str, uint32_t length){
+uint8_t grid_msg_checksum_calculate(uint8_t* str, uint32_t length){
 	
 	uint8_t checksum = 0;
 	for (uint32_t i=0; i<length-3; i++){
@@ -528,7 +651,12 @@ uint8_t grid_msg_get_checksum(uint8_t* str, uint32_t length){
 	
 }
 
-void grid_msg_set_checksum(uint8_t* message, uint32_t length, uint8_t checksum){
+uint8_t grid_msg_checksum_read(uint8_t* str, uint32_t length){
+	uint8_t error_flag;
+	return grid_sys_read_hex_string_value(&str[length-3], 2, &error_flag);
+}
+
+void grid_msg_checksum_write(uint8_t* message, uint32_t length, uint8_t checksum){
 	
 // 	uint8_t checksum_string[4];
 // 

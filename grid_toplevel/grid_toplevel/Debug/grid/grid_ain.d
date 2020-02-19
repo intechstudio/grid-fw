@@ -203,9 +203,9 @@ grid/grid_ain.d grid/grid_ain.o: ../grid/grid_ain.c ../grid/grid_ain.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\alloca.h \
  ../grid/grid_module_bu16_revb.h ../grid/grid_module.h \
  ../grid/grid_module_po16_revb.h ../grid/grid_module_pbf4_reva.h \
- ../grid/grid_module_en16_reva.h ../atmel_start_pins.h ../grid/grid_buf.h \
- ../grid/grid_led.h ../grid/grid_protocol.h ../grid/grid_sys.h \
- ../grid/grid_ui.h
+ ../grid/grid_module_en16_reva.h ../atmel_start_pins.h \
+ ../grid/grid_unittest.h ../grid/grid_buf.h ../grid/grid_led.h \
+ ../grid/grid_protocol.h ../grid/grid_sys.h ../grid/grid_ui.h
 
 ../grid/grid_ain.h:
 
@@ -752,6 +752,8 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../grid/grid_module_en16_reva.h:
 
 ../atmel_start_pins.h:
+
+../grid/grid_unittest.h:
 
 ../grid/grid_buf.h:
 

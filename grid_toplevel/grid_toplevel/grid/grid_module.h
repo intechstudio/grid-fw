@@ -14,6 +14,7 @@
 #include "atmel_start_pins.h"
 
 
+#include "grid_unittest.h"
 
 #include "grid_ain.h"
 #include "grid_buf.h"

@@ -205,8 +205,8 @@ void grid_port_process_ui(struct grid_port* por){
 			sprintf(&message[length], "00\n");
 			length += strlen(&message[length]);
 		
-			uint8_t checksum = grid_msg_get_checksum(message, length);
-			grid_msg_set_checksum(message, length, checksum);
+			uint8_t checksum = grid_msg_checksum_calculate(message, length);
+			grid_msg_checksum_write(message, length, checksum);
 		
 			// Put the packet into the UI_RX buffer
 			if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, length)){
@@ -314,7 +314,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			sprintf(payload_template, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(),	GRID_MSG_END_OF_TRANSMISSION);
 			
-			grid_msg_set_checksum(payload_template, strlen(payload_template), grid_msg_get_checksum(payload_template, strlen(payload_template)));
+			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 		
 		}
 		else if (i == GRID_REPORT_INDEX_PING_EAST){ // PING EAST 
@@ -325,7 +325,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			sprintf(payload_template, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(),	GRID_MSG_END_OF_TRANSMISSION);
 			
-			grid_msg_set_checksum(payload_template, strlen(payload_template), grid_msg_get_checksum(payload_template, strlen(payload_template)));
+			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
 			
 		}
@@ -337,7 +337,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			sprintf(payload_template, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(),	GRID_MSG_END_OF_TRANSMISSION);
 			
-			grid_msg_set_checksum(payload_template, strlen(payload_template), grid_msg_get_checksum(payload_template, strlen(payload_template)));
+			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
 			
 		}
@@ -349,7 +349,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			sprintf(payload_template, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(),	GRID_MSG_END_OF_TRANSMISSION);
 			
-			grid_msg_set_checksum(payload_template, strlen(payload_template), grid_msg_get_checksum(payload_template, strlen(payload_template)));
+			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
 		}
 		

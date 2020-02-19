@@ -18,6 +18,8 @@ uint32_t grid_sys_hwfcg;
 
 
 
+uint32_t grid_sys_unittest(void);
+
 
 
 // Recent messages buffer allows detection and termination of duplicate messages
@@ -145,6 +147,8 @@ void dma_transfer_complete(struct grid_port* por);
 
 
 
-
+uint8_t grid_msg_checksum_calculate(uint8_t* str, uint32_t length);
+uint8_t grid_msg_checksum_read(uint8_t* str, uint32_t length);
+void grid_msg_checksum_write(uint8_t* message, uint32_t length, uint8_t checksum);
 
 #endif
