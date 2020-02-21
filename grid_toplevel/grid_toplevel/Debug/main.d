@@ -207,8 +207,7 @@ main.d main.o: .././main.c .././grid/grid_module.h ../atmel_start.h \
  .././grid/grid_buf.h .././grid/grid_led.h .././grid/grid_protocol.h \
  .././grid/grid_sys.h .././grid/grid_ui.h .././atmel_start_pins.h \
  .././flash/spi_nor_flash.h .././flash/n25q256a.h \
- .././flash/spi_nor_flash.h .././grid/grid_unittest.h \
- .././usb/class/midi/device/audiodf_midi.h
+ .././flash/spi_nor_flash.h .././usb/class/midi/device/audiodf_midi.h
 
 .././grid/grid_module.h:
 
@@ -777,7 +776,5 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 .././flash/n25q256a.h:
 
 .././flash/spi_nor_flash.h:
-
-.././grid/grid_unittest.h:
 
 .././usb/class/midi/device/audiodf_midi.h:

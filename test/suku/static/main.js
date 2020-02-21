@@ -121,6 +121,27 @@ $(document).ready(function(){
     function refresh(){
       $.ajax({type: "POST", url: "/get_data", success: function(result){
 
+        $(".MINIMAP_MODULE").each(function(index, value){
+
+          if ($(this).attr("data-timeout") > 3){
+
+            $(this).attr("data-timeout", $(this).attr("data-timeout")-1)
+          }
+          else if($(this).attr("data-timeout")>0){
+
+            $(this).attr("data-timeout", $(this).attr("data-timeout")-1)
+            $(this).html("TIMEOUT");
+            
+
+          }
+          else{
+            $(this).html("");
+          }
+          
+
+        });
+
+
         if (result.length){$("div#console").html("");}
 
         for(var i=0; i<result.length; i++){
@@ -161,9 +182,12 @@ $(document).ready(function(){
             var pos_y = obj.data[1];
             var hwcfg = obj.data[2];
 
+            
+
             //console.log("#MINIMAP_X"+pos_x+"_Y"+pos_y+"_HW"+hwcfg);
 
             $("#MINIMAP_X"+pos_x+"_Y"+pos_y).html("HWCFG: "+hwcfg);
+            $("#MINIMAP_X"+pos_x+"_Y"+pos_y).attr("data-timeout", 20);
             
           }  
           else if (obj.type == "PORT"){

@@ -27,131 +27,6 @@ volatile uint8_t rxtimeoutselector = 0;
 volatile uint8_t pingflag = 0;
 
 
-void grid_selftest(uint32_t loop){
-	
-	// SELFTEST()
-	if (1){
-		
-		//INIT PORTS
-		if (1){
-			
-			// SYNC
-			gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
-			gpio_set_pin_function(PIN_GRID_SYNC_1, GPIO_PIN_FUNCTION_OFF);
-			
-			gpio_set_pin_direction(PIN_GRID_SYNC_2, GPIO_DIRECTION_OUT);
-			gpio_set_pin_function(PIN_GRID_SYNC_2, GPIO_PIN_FUNCTION_OFF);
-			
-			//NORTH
-			gpio_set_pin_direction(PC27, GPIO_DIRECTION_OUT);
-			gpio_set_pin_function(PC27, GPIO_PIN_FUNCTION_OFF);
-			
-			gpio_set_pin_direction(PC28, GPIO_DIRECTION_OUT);
-			gpio_set_pin_function(PC28, GPIO_PIN_FUNCTION_OFF);
-			
-			//EAST
-			gpio_set_pin_direction(PC17, GPIO_DIRECTION_OUT);
-			gpio_set_pin_function(PC17, GPIO_PIN_FUNCTION_OFF);
-			
-			gpio_set_pin_direction(PC16, GPIO_DIRECTION_OUT);
-			gpio_set_pin_function(PC16, GPIO_PIN_FUNCTION_OFF);
-			
-			//SOUTH
-			gpio_set_pin_direction(PC13, GPIO_DIRECTION_OUT);
-			gpio_set_pin_function(PC13, GPIO_PIN_FUNCTION_OFF);
-			
-			gpio_set_pin_direction(PC12, GPIO_DIRECTION_OUT);
-			gpio_set_pin_function(PC12, GPIO_PIN_FUNCTION_OFF);
-			
-			//WEST
-			gpio_set_pin_direction(PB08, GPIO_DIRECTION_OUT);
-			gpio_set_pin_function(PB08, GPIO_PIN_FUNCTION_OFF);
-			
-			gpio_set_pin_direction(PB09, GPIO_DIRECTION_OUT);
-			gpio_set_pin_function(PB09, GPIO_PIN_FUNCTION_OFF);
-			
-		}
-		
-		
-		if (loop%1024 == 0){
-			
-			gpio_set_pin_level(PIN_GRID_SYNC_1, false);
-			gpio_set_pin_level(PIN_GRID_SYNC_2, false);
-			
-			gpio_set_pin_level(PC27, false);
-			gpio_set_pin_level(PC28, false);
-			
-			gpio_set_pin_level(PC17, false);
-			gpio_set_pin_level(PC16, false);
-			
-			gpio_set_pin_level(PC13, false);
-			gpio_set_pin_level(PC12, false);
-			
-			gpio_set_pin_level(PB08, false);
-			gpio_set_pin_level(PB09, false);
-			
-		}
-		if (loop%1024 == 512-100){
-			
-			gpio_set_pin_level(PIN_GRID_SYNC_1, false);
-			gpio_set_pin_level(PIN_GRID_SYNC_2, false);
-			
-			gpio_set_pin_level(PC27, true);
-			gpio_set_pin_level(PC28, true);
-			
-			gpio_set_pin_level(PC17, true);
-			gpio_set_pin_level(PC16, true);
-			
-			gpio_set_pin_level(PC13, true);
-			gpio_set_pin_level(PC12, true);
-			
-			gpio_set_pin_level(PB08, true);
-			gpio_set_pin_level(PB09, true);
-			
-		}
-		if (loop%1024 == 512){
-			
-			gpio_set_pin_level(PIN_GRID_SYNC_1, true);
-			gpio_set_pin_level(PIN_GRID_SYNC_2, true);
-			
-			gpio_set_pin_level(PC27, true);
-			gpio_set_pin_level(PC28, true);
-			
-			gpio_set_pin_level(PC17, true);
-			gpio_set_pin_level(PC16, true);
-			
-			gpio_set_pin_level(PC13, true);
-			gpio_set_pin_level(PC12, true);
-			
-			gpio_set_pin_level(PB08, true);
-			gpio_set_pin_level(PB09, true);
-			
-		}
-		if (loop%1024 == 1024-100){
-			
-			gpio_set_pin_level(PIN_GRID_SYNC_1, true);
-			gpio_set_pin_level(PIN_GRID_SYNC_2, true);
-			
-			gpio_set_pin_level(PC27, false);
-			gpio_set_pin_level(PC28, false);
-			
-			gpio_set_pin_level(PC17, false);
-			gpio_set_pin_level(PC16, false);
-			
-			gpio_set_pin_level(PC13, false);
-			gpio_set_pin_level(PC12, false);
-			
-			gpio_set_pin_level(PB08, false);
-			gpio_set_pin_level(PB09, false);
-			
-		}
-		
-	} // END OF SELFTEST
-	
-	
-}
-
-
 /// TASK SWITCHER
 
 #define GRID_TASK_NUMBER 8
@@ -967,9 +842,7 @@ int main(void)
 
 	
 	printf("Initialization\r\n");
-	
-	#define UNITTEST
-	
+		
 	#ifdef UNITTEST	
 		#include "grid/grid_unittest.h"
 		grid_unittest_start();	
@@ -978,6 +851,18 @@ int main(void)
 		grid_sys_unittest();	
 	
 		printf(" Unit Test Finished\r\n");
+		
+		while (1)
+		{
+		}
+		
+	#endif
+	
+	#ifdef HARDWARETEST
+	
+		#include "grid/grid_hardwaretest.h"
+		
+		grid_hardwaretest_main();
 		
 		while (1)
 		{
@@ -1232,21 +1117,12 @@ int main(void)
 		grid_task_enter_task(&grid_task_state, GRID_TASK_IDLE);
 
 
-
-
-		gpio_set_pin_function(PIN_GRID_SYNC_2, 0);
-		gpio_set_pin_direction(PIN_GRID_SYNC_2, GPIO_DIRECTION_OUT);
-		//gpio_set_pin_level(PIN_GRID_SYNC_1, !gpio_get_pin_level(PIN_GRID_SYNC_1));
-		gpio_set_pin_level(PIN_GRID_SYNC_2, true);
-
 		// IDLETASK
 		while(grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){
 			
 			delay_us(1);
 			
-		}
-				
-		gpio_set_pin_level(PIN_GRID_SYNC_2, false);
+		}	
 		
 		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);		
 
