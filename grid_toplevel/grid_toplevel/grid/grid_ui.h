@@ -15,7 +15,7 @@ enum grid_report_type_t {
 };
 
 
-#define  GRID_REPORT_OFFSET 6
+#define  GRID_REPORT_OFFSET 7
 
 enum grid_report_index_t {
 	
@@ -29,6 +29,8 @@ enum grid_report_index_t {
 	GRID_REPORT_INDEX_PING_WEST,
 	
 	GRID_REPORT_INDEX_MAPMODE,
+	
+	GRID_REPORT_INDEX_CFG_REQUEST
 };
 
 

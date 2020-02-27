@@ -289,9 +289,11 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 	for(uint8_t i=0; i<16+16+16; i++){
 		
 		uint8_t payload_template[30] = {0};
+		enum grid_report_type_t type;
 		
 
 		if (i<16){ // ROTATION
+			type = GRID_REPORT_TYPE_BROADCAST;
 			
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 			
@@ -307,6 +309,7 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 			
 		}		
 		else if (i<16+16){ // BUTTON
+			type = GRID_REPORT_TYPE_BROADCAST;
 		
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 		
@@ -322,6 +325,7 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 		
 		}
 		else{ // LED
+			type = GRID_REPORT_TYPE_LOCAL;
 			
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 			
@@ -347,7 +351,7 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 		
 		uint8_t helper_length = 2;
 
-		grid_report_ui_init(mod, i, GRID_REPORT_TYPE_BROADCAST, payload_template, payload_length, helper_template, helper_length);
+		grid_report_ui_init(mod, i, type, payload_template, payload_length, helper_template, helper_length);
 		
 	}
 	

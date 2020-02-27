@@ -106,6 +106,18 @@ $(document).ready(function(){
     });
 
     
+    function init_minimap(){
+
+      $(".MINIMAP_MODULE").append('<div class="MINIMAP_TEXT"></div>');
+      $(".MINIMAP_MODULE").append('<div class="MINIMAP_DEBUG"></div>');
+      
+
+    }
+
+
+    init_minimap();
+
+
 
     function open(param_port, param_baud){
 
@@ -130,12 +142,12 @@ $(document).ready(function(){
           else if($(this).attr("data-timeout")>0){
 
             $(this).attr("data-timeout", $(this).attr("data-timeout")-1)
-            $(this).html("TIMEOUT");
+            $(this).children(".MINIMAP_TEXT").html("TIMEOUT");
             
 
           }
           else{
-            $(this).html("");
+            $(this).children(".MINIMAP_TEXT").html("");
           }
           
 
@@ -172,6 +184,7 @@ $(document).ready(function(){
           else if (obj.type == "LOOP"){
             
             $("#UI_LOOP_value").html(obj.data[0]);
+
           }    
           else if (obj.type == "HEARTBEAT"){
             //var pos_x = (parseInt(obj.data[0])+4)%4;
@@ -186,8 +199,25 @@ $(document).ready(function(){
 
             //console.log("#MINIMAP_X"+pos_x+"_Y"+pos_y+"_HW"+hwcfg);
 
-            $("#MINIMAP_X"+pos_x+"_Y"+pos_y).html("HWCFG: "+hwcfg);
+            $("#MINIMAP_X"+pos_x+"_Y"+pos_y).children(".MINIMAP_TEXT").html("HWCFG: "+hwcfg);
             $("#MINIMAP_X"+pos_x+"_Y"+pos_y).attr("data-timeout", 20);
+            
+          }     
+          else if (obj.type == "MIDI"){
+            //var pos_x = (parseInt(obj.data[0])+4)%4;
+            //var pos_y = (parseInt(obj.data[1])+4)%4;
+
+
+            var pos_x = obj.data[0];
+            var pos_y = obj.data[1];
+            var hwcfg = obj.data[2];
+
+            
+
+            //console.log("#MINIMAP_X"+pos_x+"_Y"+pos_y+"_HW"+hwcfg);
+
+            $("#MINIMAP_X"+pos_x+"_Y"+pos_y).children(".MINIMAP_DEBUG").html("MIDI").stop(1,0).fadeIn(0);
+            $("#MINIMAP_X"+pos_x+"_Y"+pos_y).children(".MINIMAP_DEBUG").html("MIDI").fadeOut(500);
             
           }  
           else if (obj.type == "PORT"){

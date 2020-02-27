@@ -32,30 +32,21 @@ void grid_port_process_ui(struct grid_port* por){
 			enum grid_report_type_t type = grid_report_get_type(mod, i);
 			
 			
-			if (type == GRID_REPORT_TYPE_BROADCAST){
+			
+			
+			(type == GRID_REPORT_TYPE_BROADCAST)?message_broadcast_available++:1;	
+			
+			(type == GRID_REPORT_TYPE_DIRECT_ALL)?message_direct_available++:1;
+			
+			(type == GRID_REPORT_TYPE_DIRECT_NORTH)?message_direct_available++:1;
+			(type == GRID_REPORT_TYPE_DIRECT_EAST)?message_direct_available++:1;
+			(type == GRID_REPORT_TYPE_DIRECT_SOUTH)?message_direct_available++:1;
+			(type == GRID_REPORT_TYPE_DIRECT_WEST)?message_direct_available++:1;
+			
+			(type == GRID_REPORT_TYPE_LOCAL)?message_local_available++:1;
 				
-				
-				message_broadcast_available++;	
-			}
-			else if (type == GRID_REPORT_TYPE_DIRECT_ALL){	
-				message_direct_available++;	
-			}
-			else if (type == GRID_REPORT_TYPE_DIRECT_NORTH){
-				
-				message_direct_available++;
-			}
-			else if (type == GRID_REPORT_TYPE_DIRECT_EAST){
-				
-				message_direct_available++;
-			}
-			else if (type == GRID_REPORT_TYPE_DIRECT_SOUTH){
-				
-				message_direct_available++;
-			}
-			else if (type == GRID_REPORT_TYPE_DIRECT_WEST){
-				
-				message_direct_available++;
-			}
+			
+
 						
 		}
 			
@@ -125,10 +116,11 @@ void grid_port_process_ui(struct grid_port* por){
 									
 		}	
 				
-		return;	
+		return;	 // Return After Direct
 	}
-	else{		
-	}
+	
+
+	
 	
 	//BROADCAST MESSAGES		
 	if (message_broadcast_available){
@@ -171,7 +163,7 @@ void grid_port_process_ui(struct grid_port* por){
 		
 		
 			CRITICAL_SECTION_ENTER()
-			if (grid_report_sys_get_changed_flag(mod, i)){
+			if (grid_report_sys_get_changed_flag(mod, i) && grid_report_get_type(mod, i) == GRID_REPORT_TYPE_BROADCAST){
 				
 				packetvalid++;
 				grid_report_render(mod, i, &message[length]);
@@ -229,6 +221,103 @@ void grid_port_process_ui(struct grid_port* por){
 
 		
 		
+	}
+	
+		//LOCAL MESSAGES		
+	if (message_local_available){
+
+		
+
+				
+		// Prepare packet header
+		uint8_t message[256] = {0};
+		uint32_t length=0;
+	
+	
+		uint8_t len = 0;
+		uint8_t id = grid_sys_state.next_broadcast_message_id;
+		uint8_t dx = GRID_SYS_DEFAULT_POSITION;
+		uint8_t dy = GRID_SYS_DEFAULT_POSITION;
+		uint8_t age = grid_sys_state.age;
+	
+		uint8_t packetvalid = 0;
+	
+		sprintf(&message[length],
+		"%c%c%02x%02x%02x%02x%02x%c",
+		GRID_MSG_START_OF_HEADING,
+		GRID_MSG_BROADCAST,
+		len, id, dx, dy, age,
+		GRID_MSG_END_OF_BLOCK
+		);
+	
+		length += strlen(&message[length]);
+	
+
+	
+		// Append the UI change descriptors
+		for (uint8_t i = 0; i<grid_ui_state.report_length; i++)
+		{
+				
+			if (length>200){
+				continue;
+			}
+		
+		
+			CRITICAL_SECTION_ENTER()
+			if (grid_report_sys_get_changed_flag(mod, i) && grid_report_get_type(mod, i) == GRID_REPORT_TYPE_LOCAL){
+				
+				packetvalid++;
+				grid_report_render(mod, i, &message[length]);
+				grid_report_sys_clear_changed_flag(mod, i);
+				length += strlen(&message[length]);
+					
+			}
+			CRITICAL_SECTION_LEAVE()
+		}
+	
+		// Got messages
+		if (packetvalid){
+		
+			por->cooldown += (10+por->cooldown);
+		
+			grid_sys_state.next_broadcast_message_id++;
+		
+			// Close the packet
+			sprintf(&message[length], "%c", GRID_MSG_END_OF_TRANSMISSION); // CALCULATE AND ADD CRC HERE
+			length += strlen(&message[length]);
+		
+			// Calculate packet length and insert it into the header
+			char length_string[8];
+			sprintf(length_string, "%02x", length);
+		
+			message[2] = length_string[0];
+			message[3] = length_string[1];
+		
+		
+			// Add placeholder checksum and linebreak
+			sprintf(&message[length], "00\n");
+			length += strlen(&message[length]);
+		
+			uint8_t checksum = grid_msg_checksum_calculate(message, length);
+			grid_msg_checksum_write(message, length, checksum);
+		
+			// Put the packet into the UI_RX buffer
+			if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, length)){
+			
+				for(uint32_t i = 0; i<length; i++){
+				
+					grid_buffer_write_character(&GRID_PORT_U.tx_buffer, message[i]);
+				}
+			
+				grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
+			}
+			else{
+			}
+		
+		
+		}
+		
+		return; // Return after local
 	}
 	
 	
@@ -300,6 +389,12 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			sprintf(payload_template, "%c%02x%02x%02x%02x%c", GRID_MSG_START_OF_TEXT, GRID_MSG_PROTOCOL_SYS, GRID_MSG_COMMAND_SYS_BANK,	GRID_MSG_COMMAND_SYS_BANK_SELECT, 0, GRID_MSG_END_OF_TEXT);
 
 		}
+		else if (i == GRID_REPORT_INDEX_CFG_REQUEST){ // CONFIGURATION REQUEST
+			
+			type = GRID_REPORT_TYPE_DIRECT_ALL;
+			sprintf(payload_template, "%c%02x%02x%02x%c", GRID_MSG_START_OF_TEXT, GRID_MSG_PROTOCOL_SYS, GRID_MSG_COMMAND_SYS_CFG, GRID_MSG_COMMAND_SYS_CFG_REQUEST, GRID_MSG_END_OF_TEXT);
+			
+		}
 		else if (i == GRID_REPORT_INDEX_HEARTBEAT){ // HEARTBEAT
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
@@ -312,7 +407,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			type = GRID_REPORT_TYPE_DIRECT_NORTH;
 			
-			sprintf(payload_template, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(),	GRID_MSG_END_OF_TRANSMISSION);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_MSG_END_OF_TRANSMISSION);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 		
@@ -323,7 +418,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			type = GRID_REPORT_TYPE_DIRECT_EAST;
 			
-			sprintf(payload_template, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(),	GRID_MSG_END_OF_TRANSMISSION);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_MSG_END_OF_TRANSMISSION);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
@@ -335,7 +430,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			type = GRID_REPORT_TYPE_DIRECT_SOUTH;
 			
-			sprintf(payload_template, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(),	GRID_MSG_END_OF_TRANSMISSION);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_MSG_END_OF_TRANSMISSION);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
@@ -347,7 +442,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			type = GRID_REPORT_TYPE_DIRECT_WEST;
 			
-			sprintf(payload_template, "%c%c%c%c%08x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(),	GRID_MSG_END_OF_TRANSMISSION);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_MSG_END_OF_TRANSMISSION);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			

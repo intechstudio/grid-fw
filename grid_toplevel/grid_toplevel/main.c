@@ -109,6 +109,13 @@ void grid_port_reset_receiver(struct grid_port* por){
 	por->rx_double_buffer_seek_start_index = 0;
 	por->rx_double_buffer_read_start_index = 0;
 	por->partner_status = 0;
+	
+	struct grid_ui_report* stored_report = por->ping_report;
+	grid_sys_write_hex_string_value(&stored_report->payload[8], 2, 255);
+	grid_sys_write_hex_string_value(&stored_report->payload[6], 2, 255);
+	grid_msg_checksum_write(stored_report->payload, stored_report->payload_length, grid_msg_checksum_calculate(stored_report->payload, stored_report->payload_length));
+	
+	
 	por->rx_double_buffer_timeout = 0;
 	grid_sys_port_reset_dma(por);
 	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
@@ -137,10 +144,8 @@ void grid_port_receive_task(struct grid_port* por){
 		if (por->partner_status == 1){
 			
 			
-			printf("{\"type\":\"PORT\", \"data\": [\"Timeout: Disconnect\"]}\r\n");
+			printf("{\"type\":\"ERROR\", \"data\": [\"Timeout: Disconnect\"]}\r\n");
 			
-			
-			printf("{\"type\":\"ERROR\", \"data\": [\"Buffer Overrun\"]}\r\n");
 			grid_port_reset_receiver(por);	
 			
 			grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
@@ -152,6 +157,8 @@ void grid_port_receive_task(struct grid_port* por){
 			}
 			else{
 				grid_port_reset_receiver(por);
+				
+				grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
 			}
 			
 		}		
@@ -198,13 +205,12 @@ void grid_port_receive_task(struct grid_port* por){
 				
 			printf("{\"type\":\"ERROR\", \"data\": [\"Buffer Overrun\"]}\r\n");
 			grid_port_reset_receiver(por);	
+			
+			grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
 			break;
 	
 		}
 		
-		
-		grid_sys_alert_set_alert(&grid_sys_state, 50, 0, 0, 2, 200); // red
-
 		if (por->rx_double_buffer_seek_start_index < GRID_DOUBLE_BUFFER_RX_SIZE-1){
 			
 			por->rx_double_buffer_timeout = 0;
@@ -224,7 +230,7 @@ void grid_port_receive_task(struct grid_port* por){
 void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint32_t len){
 	
 	
-	printf("{\"type\":\"PORT\", \"data\": [\"Decode\"]}\r\n");
+	//printf("{\"type\":\"PORT\", \"data\": [\"Decode\"]}\r\n");
 	
 
 
@@ -263,24 +269,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
  	for (uint32_t i = 1; i<length; i++){
 				
  		if (buffer[i] == GRID_MSG_START_OF_HEADING){
-			 
-// 			printf("{\"type\":\"FRAMEERROR\", \"location\":\"%d\" , \"data\": [", readstartindex);
-// 				
-// 			for(uint8_t j = 0; j<length; j++){
-// 			
-// 			
-// 				printf("\"%d\"", message[j]);
-// 			
-// 				if (j != length-1){
-// 					printf(", ");
-// 				}
-// 			
-// 			}
-// 			
-// 			printf("]}\r\n");
-			 
-			 
-			 
+			 			 		 
  			length -= i;
  			message = &buffer[i];
 			 
@@ -425,63 +414,148 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 					//grid_sys_alert_set_alert(&grid_sys_state, 30, 30, 30, 0, 250); // LIGHT WHITE PULSE
 				}
 				else if (message[2] == GRID_MSG_NACKNOWLEDGE){
-					grid_sys_alert_set_alert(&grid_sys_state, 50, 0, 0, 0, 250); // LIGHT RED PULSE
+					//grid_sys_alert_set_alert(&grid_sys_state, 50, 0, 0, 0, 250); // LIGHT RED PULSE
 					// RESEND PREVIOUS
 				}
 				else if (message[2] == GRID_MSG_CANCEL){
 					// RESEND PREVIOUS
 				}
 				else if (message[2] == GRID_MSG_BELL){
-								
-								
+						
+					// Handshake logic	
+													
+					uint8_t local_stored = 255; // I think this is my id
+					uint8_t remote_stored = 255; // I think this is my neighbor's id
+					uint8_t local_received = 255; // My neighbor thinks this is my id
+					uint8_t remote_received = 255; // My neighbor thinks this is their id
+					
+					uint8_t* local_stored_location = NULL;
+					uint8_t* remote_stored_location = NULL;
+					
+					struct grid_ui_model* mod = &grid_ui_state;
+					
+					struct grid_ui_report* stored_report = por->ping_report;
+										
+					
+					local_stored = grid_sys_read_hex_string_value(&stored_report->payload[6], 2, error_flag);
+					remote_stored = grid_sys_read_hex_string_value(&stored_report->payload[8], 2, error_flag);
+					
+					
+					local_received = grid_sys_read_hex_string_value(&message[8], 2, error_flag);
+					remote_received = grid_sys_read_hex_string_value(&message[6], 2, error_flag);
+					
+//					printf("LS: %d RS: %d LR: %d RR: %d\r\n",local_stored,remote_stored,local_received,remote_received);
+					
+					
 					if (por->partner_status == 0){
 						
-			
-						printf("{\"type\":\"PORT\", \"data\": [\"Connect: Connect\"]}\r\n");
-						// CONNECT
-						por->partner_fi = (message[3] - por->direction + 6)%4;
-						por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-12], 8, error_flag);
-						por->partner_status = 1;
-						
-						grid_sys_state.age = grid_sys_rtc_get_time(&grid_sys_state);
-						grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // GREEN
-						
-						// SEND OUT CURRENT BANK NUMBER IF IT IS INITIALIZED
-						if (grid_sys_state.bank_select!=255){
-							struct grid_ui_model* mod = &grid_ui_state;
-							grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, grid_sys_state.bank_select);
-							grid_report_sys_set_changed_flag(mod, 0);												
-						}
-
-															
-					}
-					else{
-						// VALIDATE
-						uint8_t validator = 1;
-						validator &= (por->partner_fi == ((message[3] - por->direction + 6)%4));
-						volatile uint32_t debug = grid_sys_read_hex_string_value(&message[length-12], 8, error_flag);
-						volatile uint32_t debug2 = por->partner_hwcfg;
-												
-						validator &= (por->partner_hwcfg == debug);									
-									
-						if (validator == 0){
-							//FAILED, DISCONNECT
-							por->partner_status = 0;	
-							grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200); // WHITE
+						if (local_stored == 255){ // I have no clue				
 							
-							printf("{\"type\":\"PORT\", \"data\": [\"Connect: Disconnect\"]}\r\n");
-										
+							// Generate new local		
+								
+							uint8_t new_local = grid_sys_rtc_get_time(&grid_sys_state)%128;
+							local_stored = new_local;
+							grid_sys_write_hex_string_value(&stored_report->payload[6], 2, new_local);
+						
+							//printf("LS: %d RS: %d LR: %d RR: %d  (Local Updated)\r\n",local_stored,remote_stored,local_received,remote_received);		
+							
+							grid_msg_checksum_write(stored_report->payload, stored_report->payload_length, grid_msg_checksum_calculate(stored_report->payload, stored_report->payload_length));
+							
+							// No chance to connect now
+							
+																			
+						}
+						else if (remote_received == 255){
+												
+							// Remote is clueless
+							// No chance to connect now
+							
+						}
+						if (remote_received != remote_stored){
+							
+							
+							grid_sys_write_hex_string_value(&stored_report->payload[8], 2, remote_received);
+							
+							remote_stored = remote_received;
+							
+							//printf("LS: %d RS: %d LR: %d RR: %d  (Remote Updated)\r\n",local_stored,remote_stored,local_received,remote_received);		
+							
+							grid_msg_checksum_write(stored_report->payload, stored_report->payload_length, grid_msg_checksum_calculate(stored_report->payload, stored_report->payload_length));
+														
+							// Store remote								
+							// No chance to connect now
+						}
+						if (local_stored != local_received){
+									
+							// Remote is clueless
+							// No chance to connect now
+							
 						}
 						else{
 							
+							// CONNECT
 							
-							printf("{\"type\":\"PORT\", \"data\": [\"Connect: Validate\"]}\r\n");
-							//OK
-							//grid_sys_alert_set_alert(&grid_sys_state, 6, 6, 6, 0, 200); // LIGHT WHITE
+							//printf("LS: %d RS: %d LR: %d RR: %d  (Connect)\r\n",local_stored,remote_stored,local_received,remote_received);
+														
+							// CONNECT
+							por->partner_fi = (message[3] - por->direction + 6)%4;
+							por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-10], 2, error_flag);
+							por->partner_status = 1;
+							
+							grid_sys_state.age = grid_sys_rtc_get_time(&grid_sys_state);
+							grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // GREEN
+							
+							// SEND OUT CURRENT BANK NUMBER IF IT IS INITIALIZED
+							if (grid_sys_state.bank_select!=255){
+								struct grid_ui_model* mod = &grid_ui_state;
+								grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, grid_sys_state.bank_select);
+								grid_report_sys_set_changed_flag(mod, 0);
+							}
 							
 						}
-									
-									
+						
+						
+													
+													
+					}
+					else{
+													
+						// VALIDATE CONNECTION
+						uint8_t validator = 1;
+						
+						validator &= local_received == local_stored;
+						validator &= remote_received == remote_stored;	
+												
+						validator &= por->partner_fi == (message[3] - por->direction + 6)%4;
+						validator &= por->partner_hwcfg == grid_sys_read_hex_string_value(&message[length-10], 2, error_flag);
+						
+													
+						if (validator == 1){
+							
+							// OK nice job!
+							
+							//printf("LS: %d RS: %d LR: %d RR: %d  (Validate)\r\n",local_stored,remote_stored,local_received,remote_received);
+														
+							//OK
+							//grid_sys_alert_set_alert(&grid_sys_state, 6, 6, 6, 0, 200); // LIGHT WHITE							
+														
+						}
+						else{
+															
+							//FAILED, DISCONNECT
+							por->partner_status = 0;
+							
+							grid_sys_write_hex_string_value(&stored_report->payload[8], 2, 255);
+							grid_sys_write_hex_string_value(&stored_report->payload[6], 2, 255);
+							grid_msg_checksum_write(stored_report->payload, stored_report->payload_length, grid_msg_checksum_calculate(stored_report->payload, stored_report->payload_length));														
+							
+							//printf("LS: %d RS: %d LR: %d RR: %d  (Invalid)\r\n",local_stored,remote_stored,local_received,remote_received);
+														
+							
+							grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200); // WHITE
+														
+								
+						}
 					}
 								
 								
@@ -491,6 +565,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 			else{ // Unknown Message Type
 					
 				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200); // RED SHORT
+				printf("{\"type\": \"WARNING\", \"data\": [\"Unknow Message Type\"]}\r\n");
 							
 			}
 						
@@ -499,7 +574,9 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 		}
 		else{
 			// INVALID CHECKSUM
-
+			
+			printf("{\"type\": \"WARNING\", \"data\": [\"Invalid Checksum\"]}\r\n");
+	
 			if (error_flag != 0){		
 				//usart_async_disable(&USART_EAST);
 				grid_sys_alert_set_alert(&grid_sys_state, 20, 0, 0, 1, 200); // PURPLE BLINKY
@@ -559,7 +636,8 @@ void grid_port_receive_complete_task(struct grid_port* por){
 		por->usart_error_flag = 0;
 		
 		grid_port_reset_receiver(por);			
-		
+			
+		grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
 		printf("{\"type\": \"ERROR\", \"data\": [\"Parity Error\"]}\r\n");
 		
 	}
@@ -654,10 +732,11 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 				
 			mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0] = 0;
 				
-			grid_sys_state.bank_select = (grid_sys_state.bank_select+1)%4;
-			value = grid_sys_state.bank_select;
- 			grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, grid_sys_state.bank_select);
+// 			grid_sys_state.bank_select = (grid_sys_state.bank_select+1)%4;
+// 			value = grid_sys_state.bank_select;
+ 			grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, (grid_sys_state.bank_select + 1)%4);
  			grid_report_sys_set_changed_flag(mod, GRID_REPORT_INDEX_MAPMODE);
+			 
 		}
 			
 			
@@ -995,6 +1074,7 @@ int main(void)
 			loopcounter = 0;
 		
 			
+			
 		}
 		
 		
@@ -1118,11 +1198,17 @@ int main(void)
 
 
 		// IDLETASK
-		while(grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){
+		
+		if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){
 			
-			delay_us(1);
-			
-		}	
+			while(grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){			
+				delay_us(1);			
+			}	
+					
+		}
+		else{
+			//printf("{\"type\":\"WARNING\", \"data\": [\"Slow Loop\", \"%d\", \"%d\"]}\r\n", loopcounter , grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart));
+		}
 		
 		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);		
 

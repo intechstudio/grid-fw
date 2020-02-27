@@ -281,10 +281,12 @@ uint8_t grid_buffer_read_cancel(struct grid_buffer* buf){
 	return 1;
 }
 
-void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf_size, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma){
+void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf_size, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma, struct grid_ui_report* p_report){
 	
 	grid_buffer_init(&por->tx_buffer, tx_buf_size);
 	grid_buffer_init(&por->rx_buffer, rx_buf_size);
+	
+	por->ping_report = p_report;
 	
 	por->cooldown = 0;
 	
@@ -345,13 +347,15 @@ void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16
 
 void grid_port_init_all(void){
 	
-	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_MSG_NORTH ,0);
-	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_MSG_EAST  ,1);
-	grid_port_init(&GRID_PORT_S, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_SOUTH, GRID_PORT_TYPE_USART, GRID_MSG_SOUTH ,2);
-	grid_port_init(&GRID_PORT_W, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_WEST,  GRID_PORT_TYPE_USART, GRID_MSG_WEST  ,3);
+	struct grid_ui_model* mod = &grid_ui_state;
 	
-	grid_port_init(&GRID_PORT_U, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_UI, 0, -1);
-	grid_port_init(&GRID_PORT_H, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_USB, 0, -1);	
+	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_MSG_NORTH ,0, &mod->report_array[GRID_REPORT_INDEX_PING_NORTH]);
+	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_MSG_EAST  ,1, &mod->report_array[GRID_REPORT_INDEX_PING_EAST]);
+	grid_port_init(&GRID_PORT_S, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_SOUTH, GRID_PORT_TYPE_USART, GRID_MSG_SOUTH ,2, &mod->report_array[GRID_REPORT_INDEX_PING_SOUTH]);
+	grid_port_init(&GRID_PORT_W, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_WEST,  GRID_PORT_TYPE_USART, GRID_MSG_WEST  ,3, &mod->report_array[GRID_REPORT_INDEX_PING_WEST]);
+	
+	grid_port_init(&GRID_PORT_U, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_UI, 0, -1, NULL);
+	grid_port_init(&GRID_PORT_H, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_USB, 0, -1, NULL);	
 	
 	GRID_PORT_U.partner_status = 1; // UI IS ALWAYS CONNECTED
 	GRID_PORT_H.partner_status = 1; // HOST IS ALWAYS CONNECTED (Not really!)
@@ -539,6 +543,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 					midi_channel = (256-dy*4+grid_sys_state.bank_select)%16;
 					midi_param1  = (256+midi_param1 + 32*dx)%128;
+							
+					printf("{\"type\":\"MIDI\", \"data\": [\"%d\", \"%d\", \"%d\", \"%d\", \"%d\", \"%d\"]}\r\n", dx, dy, midi_channel,	midi_command, midi_param1, midi_param2);
 										
 					sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [MIDI] Ch: %d  Cmd: %d  Param1: %d  Param2: %d\n",					
 						id,dx,dy,age,
@@ -652,7 +658,6 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 
 uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 	
-	// DUMMY HANDLER, DOES NOT DO ANYTHING  !!!!!!!!!!!!!!
 	
 	uint16_t length = grid_buffer_read_size(&por->tx_buffer);
 	
