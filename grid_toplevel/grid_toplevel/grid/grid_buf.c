@@ -541,8 +541,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					uint8_t midi_param2  = grid_sys_read_hex_string_value(&temp[current_start+9], 2, &error_flag);
 					
 					
-					midi_channel = (256-dy*4+grid_sys_state.bank_select)%16;
-					midi_param1  = (256+midi_param1 + 32*dx)%128;
+					midi_channel = ((256-dy*2)%8+grid_sys_state.bank_select*8)%16;
+					midi_param1  = (256-32+midi_param1 + 16*dx)%96; // 96-128 reserved
 							
 					printf("{\"type\":\"MIDI\", \"data\": [\"%d\", \"%d\", \"%d\", \"%d\", \"%d\", \"%d\"]}\r\n", dx, dy, midi_channel,	midi_command, midi_param1, midi_param2);
 										
@@ -668,7 +668,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 	}
 	else{
 		
-		uint8_t temp[500];
+		uint8_t temp[500] = {0};
 		
 		// Let's transfer the packet to local memory
 		grid_buffer_read_init(&por->tx_buffer);

@@ -345,7 +345,7 @@ void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
 			if (hwtype == GRID_MODULE_EN16_RevA){
 				
 				grid_led_set_min(&grid_led_state, i, 0, 0, 0, 255);
-				grid_led_set_mid(&grid_led_state, i, 0, 0, 5, 0);
+				grid_led_set_mid(&grid_led_state, i, 0, 5, 5, 5);
 				grid_led_set_max(&grid_led_state, i, 0, 255, 0, 0);
 			}
 			else{			
@@ -375,9 +375,13 @@ void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
 		for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
 			
 			if (hwtype == GRID_MODULE_EN16_RevA){
-				grid_led_set_min(&grid_led_state, i, 0, 0, 0, 255);
-				grid_led_set_mid(&grid_led_state, i, 0, 0, 5, 0);
-				grid_led_set_max(&grid_led_state, i, 0, 255, 0, 0);
+				
+				
+				uint8_t r = mod->bank_color_r[mod->bank_select];
+				uint8_t g = mod->bank_color_g[mod->bank_select];
+				uint8_t b = mod->bank_color_b[mod->bank_select];
+				
+				grid_led_set_mid(&grid_led_state, i, 0, r/32, g/32, b/32);
 			}
 			else{
 				

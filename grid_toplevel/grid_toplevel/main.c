@@ -509,7 +509,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 							if (grid_sys_state.bank_select!=255){
 								struct grid_ui_model* mod = &grid_ui_state;
 								grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, grid_sys_state.bank_select);
-								grid_report_sys_set_changed_flag(mod, 0);
+								grid_report_sys_set_changed_flag(mod, GRID_REPORT_INDEX_MAPMODE);
 							}
 							
 						}
@@ -734,7 +734,7 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 				
 // 			grid_sys_state.bank_select = (grid_sys_state.bank_select+1)%4;
 // 			value = grid_sys_state.bank_select;
- 			grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, (grid_sys_state.bank_select + 1)%4);
+ 			grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, (grid_sys_state.bank_select + 1)%2);
  			grid_report_sys_set_changed_flag(mod, GRID_REPORT_INDEX_MAPMODE);
 			 
 		}
@@ -982,7 +982,7 @@ int main(void)
 
 		if (hwtype == GRID_MODULE_EN16_RevA){	
 			grid_led_set_min(&grid_led_state, i, 0, 0, 0, 255);
-			grid_led_set_mid(&grid_led_state, i, 0, 0, 5, 0);
+			grid_led_set_mid(&grid_led_state, i, 0, 5, 5, 5);
 			grid_led_set_max(&grid_led_state, i, 0, 255, 0, 0);
 		}
 	}

@@ -3752,16 +3752,16 @@ Discarded input sections
  .text.grid_port_process_inbound
                 0x00000000      0x1cc grid/grid_buf.o
  .text.grid_port_process_outbound_usb
-                0x00000000      0x488 grid/grid_buf.o
+                0x00000000      0x4a4 grid/grid_buf.o
  .text.grid_port_process_outbound_ui
-                0x00000000      0x150 grid/grid_buf.o
+                0x00000000      0x160 grid/grid_buf.o
  .text.grid_port_process_outbound_usart
                 0x00000000       0x6c grid/grid_buf.o
  .rodata.str1.4
                 0x00000000      0x14b grid/grid_buf.o
- .debug_info    0x00000000     0x37fd grid/grid_buf.o
+ .debug_info    0x00000000     0x381e grid/grid_buf.o
  .debug_abbrev  0x00000000      0x3d0 grid/grid_buf.o
- .debug_loc     0x00000000     0x1279 grid/grid_buf.o
+ .debug_loc     0x00000000     0x1286 grid/grid_buf.o
  .debug_aranges
                 0x00000000       0xa8 grid/grid_buf.o
  .debug_ranges  0x00000000      0x270 grid/grid_buf.o
@@ -3966,7 +3966,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x10 grid/grid_buf.o
  .debug_macro   0x00000000       0x1c grid/grid_buf.o
  .debug_macro   0x00000000       0x3a grid/grid_buf.o
- .debug_line    0x00000000     0x1793 grid/grid_buf.o
+ .debug_line    0x00000000     0x1794 grid/grid_buf.o
  .debug_str     0x00000000    0xf638b grid/grid_buf.o
  .comment       0x00000000       0x5a grid/grid_buf.o
  .debug_frame   0x00000000      0x228 grid/grid_buf.o
@@ -6807,7 +6807,7 @@ Discarded input sections
  .text.grid_sys_get_hwcfg
                 0x00000000       0xf0 grid/grid_sys.o
  .text.grid_sys_bank_select
-                0x00000000      0x170 grid/grid_sys.o
+                0x00000000      0x158 grid/grid_sys.o
  .text.grid_sys_bank_select_next
                 0x00000000       0x20 grid/grid_sys.o
  .text.grid_sys_ping_all
@@ -6843,12 +6843,12 @@ Discarded input sections
  .rodata        0x00000000        0x8 grid/grid_sys.o
  .rodata.str1.4
                 0x00000000       0xb1 grid/grid_sys.o
- .debug_info    0x00000000     0x936c grid/grid_sys.o
- .debug_abbrev  0x00000000      0x6d8 grid/grid_sys.o
- .debug_loc     0x00000000     0x1cc9 grid/grid_sys.o
+ .debug_info    0x00000000     0x931e grid/grid_sys.o
+ .debug_abbrev  0x00000000      0x6e4 grid/grid_sys.o
+ .debug_loc     0x00000000     0x1d61 grid/grid_sys.o
  .debug_aranges
                 0x00000000      0x1d8 grid/grid_sys.o
- .debug_ranges  0x00000000      0x240 grid/grid_sys.o
+ .debug_ranges  0x00000000      0x228 grid/grid_sys.o
  .debug_macro   0x00000000      0xc52 grid/grid_sys.o
  .debug_macro   0x00000000      0x8b0 grid/grid_sys.o
  .debug_macro   0x00000000      0x16d grid/grid_sys.o
@@ -7050,7 +7050,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x10 grid/grid_sys.o
  .debug_macro   0x00000000       0x1c grid/grid_sys.o
  .debug_macro   0x00000000       0x2e grid/grid_sys.o
- .debug_line    0x00000000     0x194a grid/grid_sys.o
+ .debug_line    0x00000000     0x1948 grid/grid_sys.o
  .debug_str     0x00000000    0xf8427 grid/grid_sys.o
  .comment       0x00000000       0x5a grid/grid_sys.o
  .debug_frame   0x00000000      0x53c grid/grid_sys.o
@@ -22885,7 +22885,7 @@ Discarded input sections
  .text.grid_task_timer_tick
                 0x00000000        0xe main.o
  .text.RTC_Scheduler_realtime_cb
-                0x00000000       0xa4 main.o
+                0x00000000       0x9c main.o
  .text.grid_task_timer_reset
                 0x00000000       0x10 main.o
  .text.grid_task_timer_read
@@ -30712,7 +30712,7 @@ OUTPUT(grid_toplevel.elf elf32-littlearm)
  .debug_macro   0x0003f7db      0x745 usb/usb_protocol.o
  .debug_macro   0x0003ff20      0xb4e usb_start.o
 
-.debug_line     0x00000000    0x31946
+.debug_line     0x00000000    0x31945
  .debug_line    0x00000000     0x12a7 atmel_start.o
  .debug_line    0x000012a7      0x88c Device_Startup/startup_samd51.o
  .debug_line    0x00001b33     0x16f5 driver_init.o
@@ -30755,17 +30755,17 @@ OUTPUT(grid_toplevel.elf elf32-littlearm)
  .debug_line    0x0002379f      0xf29 hpl/tc/hpl_tc.o
  .debug_line    0x000246c8     0x1779 hpl/usb/hpl_usb.o
  .debug_line    0x00025e41      0xd54 hpl/wdt/hpl_wdt.o
- .debug_line    0x00026b95     0x17e3 main.o
- .debug_line    0x00028378      0xcb2 stdio_redirect/gcc/read.o
- .debug_line    0x0002902a      0xcb3 stdio_redirect/gcc/write.o
- .debug_line    0x00029cdd      0xcd6 stdio_redirect/stdio_io.o
- .debug_line    0x0002a9b3     0x12b7 stdio_start.o
- .debug_line    0x0002bc6a      0xeac usb/class/cdc/device/cdcdf_acm.o
- .debug_line    0x0002cb16      0xe52 usb/class/hid/device/hiddf_keyboard.o
- .debug_line    0x0002d968      0xe39 usb/class/hid/device/hiddf_mouse.o
- .debug_line    0x0002e7a1     0x1018 usb/device/usbdc.o
- .debug_line    0x0002f7b9      0xdc5 usb/usb_protocol.o
- .debug_line    0x0003057e     0x13c8 usb_start.o
+ .debug_line    0x00026b95     0x17e2 main.o
+ .debug_line    0x00028377      0xcb2 stdio_redirect/gcc/read.o
+ .debug_line    0x00029029      0xcb3 stdio_redirect/gcc/write.o
+ .debug_line    0x00029cdc      0xcd6 stdio_redirect/stdio_io.o
+ .debug_line    0x0002a9b2     0x12b7 stdio_start.o
+ .debug_line    0x0002bc69      0xeac usb/class/cdc/device/cdcdf_acm.o
+ .debug_line    0x0002cb15      0xe52 usb/class/hid/device/hiddf_keyboard.o
+ .debug_line    0x0002d967      0xe39 usb/class/hid/device/hiddf_mouse.o
+ .debug_line    0x0002e7a0     0x1018 usb/device/usbdc.o
+ .debug_line    0x0002f7b8      0xdc5 usb/usb_protocol.o
+ .debug_line    0x0003057d     0x13c8 usb_start.o
 
 .debug_str      0x00000000   0x1197fa
  .debug_str     0x00000000    0xf41f3 atmel_start.o
