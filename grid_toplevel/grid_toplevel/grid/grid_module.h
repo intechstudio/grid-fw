@@ -15,6 +15,9 @@
 
 
 #include "grid_unittest.h"
+#include "grid_debug.h"
+
+
 
 #include "grid_ain.h"
 #include "grid_buf.h"

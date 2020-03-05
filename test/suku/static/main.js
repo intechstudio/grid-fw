@@ -128,7 +128,7 @@ $(document).ready(function(){
 
     }
 
-    open("COM5", "2000000");
+    open("COM18", "2000000");
 
     function refresh(){
       $.ajax({type: "POST", url: "/get_data", success: function(result){
@@ -184,6 +184,9 @@ $(document).ready(function(){
           else if (obj.type == "LOOP"){
             
             $("#UI_LOOP_value").html(obj.data[0]);
+            $("#UI_SLOW_value").html(obj.data[1]);
+            $("#UI_FAST_value").html(obj.data[2]);
+            $("#UI_WARP_value").html(obj.data[3]);
 
           }    
           else if (obj.type == "HEARTBEAT"){
@@ -227,9 +230,24 @@ $(document).ready(function(){
 
             
           }
-          else if (obj.type == "WARNING" || obj.type == "ERROR" || obj.type == "TRAP"){
+          else if (obj.type == "LOG" || obj.type == "WARNING" || obj.type == "ERROR" || obj.type == "TRAP"){
 
             console.log(JSON.stringify(obj.type) + JSON.stringify(obj.data));
+
+            if (obj.type == "LOG"){
+              $("#UI_CONSOLE").append('<div style="color: green">'+obj.data+'</div>');
+            }
+            else if (obj.type == "WARNING"){
+              $("#UI_CONSOLE").append('<div style="color: orange">'+obj.data+'</div>');
+            }
+            else if (obj.type == "ERROR"){
+              $("#UI_CONSOLE").append('<div style="color: red">'+obj.data+'</div>');
+            }
+            else if (obj.type == "TRAP"){
+              $("#UI_CONSOLE").append('<div style="color: black;">'+obj.data+'</div>');
+            }
+
+            $('#UI_CONSOLE').animate({scrollTop: $('#UI_CONSOLE').prop("scrollHeight")}, 500);
 
             
           }
@@ -237,8 +255,12 @@ $(document).ready(function(){
             
             $("#UI_FRAMEERROR_value").html(JSON.stringify(obj));
           }
+          else{
 
-          $("div#console").append("<div>"+result[i]+"</div>");
+
+            $("div#console").append("<div>"+result[i]+"</div>");
+          }
+
         }
      
         //$("div#console").html(JSON.stringify(result.length));

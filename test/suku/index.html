@@ -40,16 +40,37 @@
 
     <div id="console" style="background: lightsteelblue; width: 100%; height: 100px;"></div>
 
-    <div id="cpu" style="padding: 20px; background: lightgreen; height: 220px;">
+    <div id="cpu" style="padding: 20px; background: lightgreen; height: 300px;">
     
         
+
+      <table border="1">
+        <tr>
+
+          
+          <td>loop</td>
+          <td>slow</td>
+          <td>fast</td>
+          <td>warp</td>
+
+          
+        </tr>       
+        <tr>
+
+          <td id ="UI_LOOP_value">0</td>
+          <td id ="UI_SLOW_value">0</td>
+          <td id ="UI_FAST_value">0</td>
+          <td id ="UI_WARP_value">0</td>
+
+          
+        </tr>
+      </table>
+      <br>
 
         <table border="1">
           <tr>
 
-            <td colspan="6">CPU Utilization</td>
-            <td>loop/report:</td>
-            <td id ="UI_LOOP_value">0</td>
+            <td colspan="8">CPU Utilization</td>
             
           </tr>
           <tr>
@@ -111,7 +132,7 @@
     </div>
 
 
-    <div id="UI_FRAMEERROR_value" style="background: lightsteelblue; width: 100%; height: 100px;"></div>
+    <div id="UI_CONSOLE" style="background: lightsteelblue; width: 100%; height: 250px; overflow-y: auto;"></div>
 
     <div id="minimap" style="padding: 20px; background: lightgreen; height: 430px;">
     

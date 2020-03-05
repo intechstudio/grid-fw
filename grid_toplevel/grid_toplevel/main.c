@@ -144,7 +144,7 @@ void grid_port_receive_task(struct grid_port* por){
 		if (por->partner_status == 1){
 			
 			
-			printf("{\"type\":\"ERROR\", \"data\": [\"Timeout: Disconnect\"]}\r\n");
+			GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Timeout Disconnect & Reset Receiver");
 			
 			grid_port_reset_receiver(por);	
 			
@@ -156,6 +156,8 @@ void grid_port_receive_task(struct grid_port* por){
 				// Ready to receive
 			}
 			else{
+							
+				GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Timeout & Reset Receiver");
 				grid_port_reset_receiver(por);
 				
 				grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
@@ -188,22 +190,23 @@ void grid_port_receive_task(struct grid_port* por){
 		
 		// Buffer overrun error
 		if (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1){
+			
 			gpio_set_pin_level(UI_PWR_EN, false);
-			printf("{\"type\":\"TRAP\", \"data\": [\"TRAP1\"]}\r\n");
-			while(1){}
+			GRID_DEBUG_TRAP(GRID_DEBUG_CONTEXT_TRAP, "{\"type\":\"TRAP\", \"data\": [\"rx_double_buffer overrun\"]}\r\n");
+				
 		}
 		
 		// Buffer overrun error
 		if (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0){			
 			gpio_set_pin_level(UI_PWR_EN, false);
-			printf("{\"type\":\"TRAP\", \"data\": [\"TRAP2\"]}\r\n");
-			while(1){}
+			GRID_DEBUG_TRAP(GRID_DEBUG_CONTEXT_TRAP, "{\"type\":\"TRAP\", \"data\": [\"rx_double_buffer overrun\"]}\r\n");
 		}
 		
 		
 		if (por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE -1)%GRID_DOUBLE_BUFFER_RX_SIZE] !=0){	
 				
-			printf("{\"type\":\"ERROR\", \"data\": [\"Buffer Overrun\"]}\r\n");
+			GRID_DEBUG_TRAP(GRID_DEBUG_CONTEXT_WARNING, "{\"type\":\"WARNING\", \"data\": [\"rx_double_buffer overrun\"]}\r\n");
+			
 			grid_port_reset_receiver(por);	
 			
 			grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
@@ -228,11 +231,7 @@ void grid_port_receive_task(struct grid_port* por){
 }
 
 void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint32_t len){
-	
-	
-	//printf("{\"type\":\"PORT\", \"data\": [\"Decode\"]}\r\n");
-	
-
+		
 
 	uint8_t error_flag = 0;
 	uint8_t checksum_calculated = 0;
@@ -273,10 +272,9 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
  			length -= i;
  			message = &buffer[i];
 			 
-			printf("{\"type\": \"WARNING\", \"data\": [\"Frame Start Offset\"]}\r\n");		
-				
-
-	
+			
+			GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Frame Start Offset");
+			
 			
  		}
  		
@@ -443,9 +441,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 					
 					local_received = grid_sys_read_hex_string_value(&message[8], 2, error_flag);
 					remote_received = grid_sys_read_hex_string_value(&message[6], 2, error_flag);
-					
-//					printf("LS: %d RS: %d LR: %d RR: %d\r\n",local_stored,remote_stored,local_received,remote_received);
-					
+										
 					
 					if (por->partner_status == 0){
 						
@@ -457,8 +453,6 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 							local_stored = new_local;
 							grid_sys_write_hex_string_value(&stored_report->payload[6], 2, new_local);
 						
-							//printf("LS: %d RS: %d LR: %d RR: %d  (Local Updated)\r\n",local_stored,remote_stored,local_received,remote_received);		
-							
 							grid_msg_checksum_write(stored_report->payload, stored_report->payload_length, grid_msg_checksum_calculate(stored_report->payload, stored_report->payload_length));
 							
 							// No chance to connect now
@@ -477,9 +471,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 							grid_sys_write_hex_string_value(&stored_report->payload[8], 2, remote_received);
 							
 							remote_stored = remote_received;
-							
-							//printf("LS: %d RS: %d LR: %d RR: %d  (Remote Updated)\r\n",local_stored,remote_stored,local_received,remote_received);		
-							
+
 							grid_msg_checksum_write(stored_report->payload, stored_report->payload_length, grid_msg_checksum_calculate(stored_report->payload, stored_report->payload_length));
 														
 							// Store remote								
@@ -492,17 +484,17 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 							
 						}
 						else{
-							
-							// CONNECT
-							
-							//printf("LS: %d RS: %d LR: %d RR: %d  (Connect)\r\n",local_stored,remote_stored,local_received,remote_received);
-														
+																			
 							// CONNECT
 							por->partner_fi = (message[3] - por->direction + 6)%4;
 							por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-10], 2, error_flag);
 							por->partner_status = 1;
 							
 							grid_sys_state.age = grid_sys_rtc_get_time(&grid_sys_state);
+							
+								
+							GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Connect");
+							
 							grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // GREEN
 							
 							// SEND OUT CURRENT BANK NUMBER IF IT IS INITIALIZED
@@ -761,6 +753,8 @@ static void RTC_Scheduler_report_cb(const struct timer_task *const timer_task)
 
 #define RTC1SEC 16384
 
+#define RTC1MS (RTC1SEC/1000)
+
 void init_timer(void)
 {
 	
@@ -915,12 +909,11 @@ static void qspi_xfer_complete_cb(struct _dma_resource *resource)
 int main(void)
 {
 
-
-
 	atmel_start_init();	
-
-	
-	printf("Initialization\r\n");
+		
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Unknow Reset Source");
+				
 		
 	#ifdef UNITTEST	
 		#include "grid/grid_unittest.h"
@@ -935,7 +928,11 @@ int main(void)
 		{
 		}
 		
+	#else	
+	
+		GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "No Unit Test");
 	#endif
+	
 	
 	#ifdef HARDWARETEST
 	
@@ -946,8 +943,11 @@ int main(void)
 		while (1)
 		{
 		}
-		
+	#else
+	
+		GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "No Hardware Test");
 	#endif
+
 
 	
 // 	uint32_t flash_length = flash_get_total_pages(&FLASH_0);
@@ -969,8 +969,12 @@ int main(void)
 
 	composite_device_start();
 
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
+		
 	grid_module_common_init();
-
+		
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
+		
 
 	uint32_t loopstart = 0;
 
@@ -995,6 +999,14 @@ int main(void)
 	init_timer();
 	
 	uint32_t loopcounter = 0;
+	
+	
+	uint32_t loopslow = 0;
+	uint32_t loopfast = 0;
+	
+	uint32_t loopwarp = 0;
+	
+	
 
 	
 
@@ -1011,7 +1023,7 @@ int main(void)
  	//spi_nor_flash_test();
 	
 
-	printf("Entering Main Loop\r\n");
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 	
 	uint8_t usb_init_variable = 0;
 
@@ -1026,8 +1038,8 @@ int main(void)
 			if (usb_d_get_frame_num() == 0){
 				
 			}
-			else{
-				printf("USB Connected\r\n");
+			else{				
+				GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Connected");
 				grid_sys_bank_select(&grid_sys_state, 0);
 				usb_init_variable = 1;
 			}
@@ -1070,11 +1082,12 @@ int main(void)
 			
 			printf("]}\r\n");
 			
-			printf("{\"type\":\"LOOP\", \"data\": [\"%d\"]}\r\n", loopcounter);
-			loopcounter = 0;
+			printf("{\"type\":\"LOOP\", \"data\": [\"%d\", \"%d\", \"%d\", \"%d\"]}\r\n", loopcounter, loopslow, loopfast, loopwarp);
 		
-			
-			
+			loopcounter = 0;
+			loopslow = 0;
+			loopfast = 0;
+			loopwarp = 0;
 		}
 		
 		
@@ -1183,9 +1196,9 @@ int main(void)
 			grid_led_render_all(&grid_led_state);	
 			
 						
-	 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
-	
-	 		}
+// 	 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
+// 	
+// 	 		}
 			grid_led_hardware_start_transfer(&grid_led_state);
 		}		
 		
@@ -1199,15 +1212,38 @@ int main(void)
 
 		// IDLETASK
 		
-		if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){
+		
+		uint32_t elapsed = grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart);
+		
+		if (elapsed < RTC1MS){
 			
-			while(grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){			
+			if (loopwarp>5){
+				
+				if (RTC1MS - elapsed > 0){
+					
+					if ((RTC1MS - elapsed)<loopwarp){				
+						loopwarp-=(RTC1MS - elapsed);
+						loopstart-=(RTC1MS - elapsed);
+					}
+					else{
+						loopwarp-=loopwarp;
+						loopstart-=loopwarp;
+					}
+					
+					loopfast++;
+				}
+			}
+			
+			while(grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){	
+					
 				delay_us(1);			
 			}	
 					
 		}
 		else{
-			//printf("{\"type\":\"WARNING\", \"data\": [\"Slow Loop\", \"%d\", \"%d\"]}\r\n", loopcounter , grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart));
+			loopwarp+= elapsed - RTC1MS;
+			
+			loopslow++;
 		}
 		
 		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);		

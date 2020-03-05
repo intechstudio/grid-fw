@@ -135,7 +135,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			uint8_t actuator = 2*velocity;
 			
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[5], 2, command);
-			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[7], 2, adc_index_0);
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[7], 2, adc_index_1);
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[9], 2, velocity);
 			
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[21], 2, actuator);
@@ -268,7 +268,7 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 			GRID_MSG_PROTOCOL_MIDI,
 			0, // (cable<<4) + channel
 			GRID_MSG_COMMAND_MIDI_NOTEON,
-			i,
+			i+4,
 			0,
 			GRID_MSG_END_OF_TEXT,
 						
