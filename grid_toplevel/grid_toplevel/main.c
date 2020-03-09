@@ -1040,7 +1040,12 @@ int main(void)
 			}
 			else{				
 				GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Connected");
-				grid_sys_bank_select(&grid_sys_state, 0);
+				
+				struct grid_ui_model* mod = &grid_ui_state;
+				
+				grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, (grid_sys_state.bank_select + 1)%2);
+				grid_report_sys_set_changed_flag(mod, GRID_REPORT_INDEX_MAPMODE);
+				
 				usb_init_variable = 1;
 			}
 			

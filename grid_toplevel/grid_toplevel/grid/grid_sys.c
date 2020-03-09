@@ -305,14 +305,15 @@ void grid_sys_init(struct grid_sys_model* mod){
 	
 	mod->bank_select = 0;
 	
-	mod->bank_color_r[0] = 200;
+	
+	mod->bank_color_r[0] = 0;
 	mod->bank_color_g[0] = 100;
-	mod->bank_color_b[0] = 0;
+	mod->bank_color_b[0] = 200;
 	
-	mod->bank_color_r[1] = 0;
+	mod->bank_color_r[1] = 200;
 	mod->bank_color_g[1] = 100;
-	mod->bank_color_b[1] = 200;
-	
+	mod->bank_color_b[1] = 0;
+		
 	mod->bank_color_r[2] = 50;
 	mod->bank_color_g[2] = 200;
 	mod->bank_color_b[2] = 50;
