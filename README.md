@@ -38,9 +38,10 @@ Board-ID: SAMD51N20A-GRID
 ## Updating the bootloader
 Please verify the Bootloader version before before uploading a new firmware image to your controller. The bootloader is maintained in a separate repository:
 [grid-uf2](https://github.com/intechstudio/grid-uf2/releases/tag/v4.3.3-8)
+Download the bootloader image from the repository and unzip the archive. The bootloader binary is contained in a single update-bootloader***.uf2 file. Once the controller is enumerated in bootloader mode, copy the .uf2 image to the removable storage device called GRID. After a successful update, the controller will disconnect from USB turn off. Unplug the usb cable and repeat this step for all of your Grid modules.
 
 ## Updating the firmware
-Download the firmware image from the repository and unzip the archive. The firmware binary is contained in a single .uf2 file. Once the bootloader is enumerated copy the firmware image to the removable storage device called GRID. After a successful update, the controller will reset and boot the newly installed firmware. Make sure to repeat this process for all of your Grid modules, making sure that they are all running the latest firmware.
+Download the firmware image from the repository and unzip the archive. The firmware binary is contained in the  grid_toplevel_release.uf2 file. Once the bootloader is enumerated copy the new firmware image to the removable storage device called GRID. After a successful update, the controller will reset and boot the newly installed firmware, ready to use. Make sure to repeat this process for all of your Grid modules, to ensure that they are all running the latest firmware.
 
 ## Stable Build
 Grid firmware v1.0.0 is the latest stable relese. Plese visit the [releases](https://github.com/intechstudio/grid-fw/releases)
