@@ -46,5 +46,5 @@ Nightly builds of the Grid firmware are available for those who wish to experime
 Please check the related commit messages to learn more about the current build.
 
 [![GitHub version](https://badge.fury.io/gh/intechstudio%2Fgrid-fw.svg)](https://github.com/intechstudio/grid-fw)
-[![Only 32 Kb](https://badge-size.herokuapp.com/intechstudio/grid-fw/master/grid_toplevel/grid_toplevel.uf2)](https://github.com/intechstudio/grid-fw/tree/master/grid_toplevel/grid_toplevel.uf2)
+[![Only 32 Kb](https://badge-size.herokuapp.com/intechstudio/grid-fw/master/grid_toplevel/grid_toplevel.uf2)](https://github.com/intechstudio/grid-fw/tree/master/grid_toplevel/grid_toplevel_release.uf2)
 
