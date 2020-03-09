@@ -47,25 +47,31 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 	adc_async_read_channel(&ADC_0, 0, &adcresult_0, 2);
 	adc_async_read_channel(&ADC_1, 0, &adcresult_1, 2);
 	
-
+	uint8_t adcresult_0_valid = 0;
 	
-	if (adcresult_0>10000){
+	if (adcresult_0>60000){
 		adcresult_0 = 0;
+		adcresult_0_valid = 1;
 	}
-	else{
+	else if (adcresult_0<200){
 		adcresult_0 = 127;
+		adcresult_0_valid = 1;
 	}
+		
+	uint8_t adcresult_1_valid = 0;
 	
-	if (adcresult_1>10000){
+	if (adcresult_1>60000){
 		adcresult_1 = 0;
+		adcresult_1_valid = 1;
 	}
-	else{
+	else if (adcresult_1<200){
 		adcresult_1 = 127;
+		adcresult_1_valid = 1;
 	}
 	
 	//CRITICAL_SECTION_ENTER()
 
-	if (adcresult_0 != mod->report_ui_array[adc_index_0].helper[0]){
+	if (adcresult_0 != mod->report_ui_array[adc_index_0].helper[0] && adcresult_0_valid){
 		
 		uint8_t command;
 		uint8_t velocity;
@@ -98,7 +104,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 	
 	//CRITICAL_SECTION_ENTER()
 
-	if (adcresult_1 != mod->report_ui_array[adc_index_1].helper[0]){
+	if (adcresult_1 != mod->report_ui_array[adc_index_1].helper[0] && adcresult_1_valid){
 		
 		uint8_t command;
 		uint8_t velocity;

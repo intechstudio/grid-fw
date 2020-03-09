@@ -67,24 +67,32 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 	}
 	else if (adc_index_0 > 13){ // BUTTON
 		
-		if (adcresult_0>10000){
+		uint8_t adcresult_0_valid = 0;
+	
+		if (adcresult_0>60000){
 			adcresult_0 = 0;
+			adcresult_0_valid = 1;
 		}
-		else{
+		else if (adcresult_0<200){
 			adcresult_0 = 127;
+			adcresult_0_valid = 1;
 		}
-			
-		if (adcresult_1>10000){
+		
+		uint8_t adcresult_1_valid = 0;
+	
+		if (adcresult_1>60000){
 			adcresult_1 = 0;
+			adcresult_1_valid = 1;
 		}
-		else{
+		else if (adcresult_1<200){
 			adcresult_1 = 127;
+			adcresult_1_valid = 1;
 		}
 		
 		
 		//CRITICAL_SECTION_ENTER()
 
-		if (adcresult_0 != mod->report_ui_array[adc_index_0-4].helper[0]){
+		if (adcresult_0 != mod->report_ui_array[adc_index_0-4].helper[0] && adcresult_0_valid){
 			
 			uint8_t command;
 			uint8_t velocity;
@@ -116,7 +124,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 		
 		//CRITICAL_SECTION_ENTER()
 
-		if (adcresult_1 != mod->report_ui_array[adc_index_1-4].helper[0]){
+		if (adcresult_1 != mod->report_ui_array[adc_index_1-4].helper[0] && adcresult_1_valid){
 			
 			uint8_t command;
 			uint8_t velocity;
