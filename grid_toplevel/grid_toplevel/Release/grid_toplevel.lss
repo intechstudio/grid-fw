@@ -6085,13 +6085,13 @@ Disassembly of section .text:
     7b90:	6003      	str	r3, [r0, #0]
     7b92:	4e43      	ldr	r6, [pc, #268]	; (7ca0 <grid_port_process_ui+0x12c>)
     7b94:	2200      	movs	r2, #0
-    7b96:	6870      	ldr	r0, [r6, #4]
+    7b96:	6877      	ldr	r7, [r6, #4]
     7b98:	9207      	str	r2, [sp, #28]
-    7b9a:	4611      	mov	r1, r2
-    7b9c:	4614      	mov	r4, r2
-    7b9e:	7837      	ldrb	r7, [r6, #0]
+    7b9a:	4614      	mov	r4, r2
+    7b9c:	4611      	mov	r1, r2
+    7b9e:	7830      	ldrb	r0, [r6, #0]
     7ba0:	b2d3      	uxtb	r3, r2
-    7ba2:	42bb      	cmp	r3, r7
+    7ba2:	4283      	cmp	r3, r0
     7ba4:	d350      	bcc.n	7c48 <grid_port_process_ui+0xd4>
     7ba6:	2c00      	cmp	r4, #0
     7ba8:	f000 8098 	beq.w	7cdc <grid_port_process_ui+0x168>
@@ -6165,36 +6165,36 @@ Disassembly of section .text:
     7c42:	f108 0801 	add.w	r8, r8, #1
     7c46:	e7b5      	b.n	7bb4 <grid_port_process_ui+0x40>
     7c48:	011b      	lsls	r3, r3, #4
-    7c4a:	18c7      	adds	r7, r0, r3
-    7c4c:	5cc3      	ldrb	r3, [r0, r3]
-    7c4e:	b123      	cbz	r3, 7c5a <grid_port_process_ui+0xe6>
-    7c50:	787b      	ldrb	r3, [r7, #1]
+    7c4a:	18f8      	adds	r0, r7, r3
+    7c4c:	5cfb      	ldrb	r3, [r7, r3]
+    7c4e:	b133      	cbz	r3, 7c5e <grid_port_process_ui+0xea>
+    7c50:	7843      	ldrb	r3, [r0, #1]
     7c52:	2b02      	cmp	r3, #2
-    7c54:	d103      	bne.n	7c5e <grid_port_process_ui+0xea>
-    7c56:	3101      	adds	r1, #1
-    7c58:	b2c9      	uxtb	r1, r1
-    7c5a:	3201      	adds	r2, #1
-    7c5c:	e79f      	b.n	7b9e <grid_port_process_ui+0x2a>
-    7c5e:	2b03      	cmp	r3, #3
-    7c60:	d102      	bne.n	7c68 <grid_port_process_ui+0xf4>
-    7c62:	3401      	adds	r4, #1
-    7c64:	b2e4      	uxtb	r4, r4
-    7c66:	e7f8      	b.n	7c5a <grid_port_process_ui+0xe6>
-    7c68:	2b04      	cmp	r3, #4
-    7c6a:	d0fa      	beq.n	7c62 <grid_port_process_ui+0xee>
-    7c6c:	2b05      	cmp	r3, #5
-    7c6e:	d0f8      	beq.n	7c62 <grid_port_process_ui+0xee>
-    7c70:	2b06      	cmp	r3, #6
-    7c72:	d0f6      	beq.n	7c62 <grid_port_process_ui+0xee>
-    7c74:	2b07      	cmp	r3, #7
-    7c76:	d0f4      	beq.n	7c62 <grid_port_process_ui+0xee>
-    7c78:	2b01      	cmp	r3, #1
-    7c7a:	bf01      	itttt	eq
-    7c7c:	9b07      	ldreq	r3, [sp, #28]
-    7c7e:	3301      	addeq	r3, #1
-    7c80:	b2db      	uxtbeq	r3, r3
-    7c82:	9307      	streq	r3, [sp, #28]
-    7c84:	e7e9      	b.n	7c5a <grid_port_process_ui+0xe6>
+    7c54:	d105      	bne.n	7c62 <grid_port_process_ui+0xee>
+    7c56:	9b07      	ldr	r3, [sp, #28]
+    7c58:	3301      	adds	r3, #1
+    7c5a:	b2db      	uxtb	r3, r3
+    7c5c:	9307      	str	r3, [sp, #28]
+    7c5e:	3201      	adds	r2, #1
+    7c60:	e79d      	b.n	7b9e <grid_port_process_ui+0x2a>
+    7c62:	2b03      	cmp	r3, #3
+    7c64:	d102      	bne.n	7c6c <grid_port_process_ui+0xf8>
+    7c66:	3401      	adds	r4, #1
+    7c68:	b2e4      	uxtb	r4, r4
+    7c6a:	e7f8      	b.n	7c5e <grid_port_process_ui+0xea>
+    7c6c:	2b04      	cmp	r3, #4
+    7c6e:	d0fa      	beq.n	7c66 <grid_port_process_ui+0xf2>
+    7c70:	2b05      	cmp	r3, #5
+    7c72:	d0f8      	beq.n	7c66 <grid_port_process_ui+0xf2>
+    7c74:	2b06      	cmp	r3, #6
+    7c76:	d0f6      	beq.n	7c66 <grid_port_process_ui+0xf2>
+    7c78:	2b07      	cmp	r3, #7
+    7c7a:	d0f4      	beq.n	7c66 <grid_port_process_ui+0xf2>
+    7c7c:	2b01      	cmp	r3, #1
+    7c7e:	bf04      	itt	eq
+    7c80:	3101      	addeq	r1, #1
+    7c82:	b2c9      	uxtbeq	r1, r1
+    7c84:	e7eb      	b.n	7c5e <grid_port_process_ui+0xea>
     7c86:	4d10      	ldr	r5, [pc, #64]	; (7cc8 <grid_port_process_ui+0x154>)
     7c88:	e7cb      	b.n	7c22 <grid_port_process_ui+0xae>
     7c8a:	4d10      	ldr	r5, [pc, #64]	; (7ccc <grid_port_process_ui+0x158>)
@@ -6430,7 +6430,7 @@ Disassembly of section .text:
     7ec4:	5cd3      	ldrb	r3, [r2, r3]
     7ec6:	b19b      	cbz	r3, 7ef0 <grid_port_process_ui+0x37c>
     7ec8:	784b      	ldrb	r3, [r1, #1]
-    7eca:	2b02      	cmp	r3, #2
+    7eca:	2b01      	cmp	r3, #1
     7ecc:	d110      	bne.n	7ef0 <grid_port_process_ui+0x37c>
     7ece:	f10b 0301 	add.w	r3, fp, #1
     7ed2:	197a      	adds	r2, r7, r5
@@ -6468,7 +6468,7 @@ Disassembly of section .text:
     7f1c:	5cd3      	ldrb	r3, [r2, r3]
     7f1e:	b19b      	cbz	r3, 7f48 <grid_port_process_ui+0x3d4>
     7f20:	784b      	ldrb	r3, [r1, #1]
-    7f22:	2b01      	cmp	r3, #1
+    7f22:	2b02      	cmp	r3, #2
     7f24:	d110      	bne.n	7f48 <grid_port_process_ui+0x3d4>
     7f26:	eb07 0b05 	add.w	fp, r7, r5
     7f2a:	465a      	mov	r2, fp
@@ -6507,11 +6507,11 @@ Disassembly of section .text:
     7f7c:	0000f89d 	.word	0x0000f89d
     7f80:	00007771 	.word	0x00007771
     7f84:	000077a9 	.word	0x000077a9
-    7f88:	200032d4 	.word	0x200032d4
+    7f88:	200032bc 	.word	0x200032bc
     7f8c:	000050cd 	.word	0x000050cd
     7f90:	00005115 	.word	0x00005115
     7f94:	0000e635 	.word	0x0000e635
-    7f98:	200032bc 	.word	0x200032bc
+    7f98:	200032d4 	.word	0x200032d4
     7f9c:	000081b5 	.word	0x000081b5
     7fa0:	200032f4 	.word	0x200032f4
     7fa4:	00007b25 	.word	0x00007b25

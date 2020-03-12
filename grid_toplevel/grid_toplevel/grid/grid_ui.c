@@ -4,16 +4,6 @@
 
 void grid_port_process_ui(struct grid_port* por){
 	
-	// Bandwidth Limiter for Broadcast messages
-	if (por->cooldown > 15){
-		por->cooldown--;
-		return;
-	}
-	else if (por->cooldown>0){
-		
-		por->cooldown--;
-	}	
-	
 	
 	struct grid_ui_model* mod = &grid_ui_state;
 	
@@ -26,6 +16,8 @@ void grid_port_process_ui(struct grid_port* por){
 	
 	
 	for (uint8_t i=0; i<grid_ui_state.report_length; i++){
+		
+
 		
 		if (grid_report_sys_get_changed_flag(mod, i)){
 			
@@ -115,12 +107,114 @@ void grid_port_process_ui(struct grid_port* por){
 			
 									
 		}	
-				
-		return;	 // Return After Direct
+		
+
 	}
 	
+	//LOCAL MESSAGES
+	if (message_local_available && por->cooldown<20){
 
-	
+			
+
+			
+		// Prepare packet header
+		uint8_t message[256] = {0};
+		uint32_t length=0;
+			
+			
+		uint8_t len = 0;
+		uint8_t id = grid_sys_state.next_broadcast_message_id;
+		uint8_t dx = GRID_SYS_DEFAULT_POSITION;
+		uint8_t dy = GRID_SYS_DEFAULT_POSITION;
+		uint8_t age = grid_sys_state.age;
+			
+		uint8_t packetvalid = 0;
+			
+		sprintf(&message[length],
+		"%c%c%02x%02x%02x%02x%02x%c",
+		GRID_MSG_START_OF_HEADING,
+		GRID_MSG_BROADCAST,
+		len, id, dx, dy, age,
+		GRID_MSG_END_OF_BLOCK
+		);
+			
+		length += strlen(&message[length]);
+			
+
+			
+		// Append the UI change descriptors
+		for (uint8_t i = 0; i<grid_ui_state.report_length; i++)
+		{
+				
+			if (length>200){
+				continue;
+			}
+				
+				
+			CRITICAL_SECTION_ENTER()
+			if (grid_report_sys_get_changed_flag(mod, i) && grid_report_get_type(mod, i) == GRID_REPORT_TYPE_LOCAL){
+					
+				packetvalid++;
+				grid_report_render(mod, i, &message[length]);
+				grid_report_sys_clear_changed_flag(mod, i);
+				length += strlen(&message[length]);
+					
+			}
+			CRITICAL_SECTION_LEAVE()
+		}
+			
+		// Got messages
+		if (packetvalid){
+				
+			grid_sys_state.next_broadcast_message_id++;
+				
+			// Close the packet
+			sprintf(&message[length], "%c", GRID_MSG_END_OF_TRANSMISSION); // CALCULATE AND ADD CRC HERE
+			length += strlen(&message[length]);
+				
+			// Calculate packet length and insert it into the header
+			char length_string[8];
+			sprintf(length_string, "%02x", length);
+				
+			message[2] = length_string[0];
+			message[3] = length_string[1];
+				
+				
+			// Add placeholder checksum and linebreak
+			sprintf(&message[length], "00\n");
+			length += strlen(&message[length]);
+				
+			uint8_t checksum = grid_msg_checksum_calculate(message, length);
+			grid_msg_checksum_write(message, length, checksum);
+				
+			// Put the packet into the UI_RX buffer
+			if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, length)){
+					
+				for(uint32_t i = 0; i<length; i++){
+						
+					grid_buffer_write_character(&GRID_PORT_U.tx_buffer, message[i]);
+				}
+					
+				grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
+			}
+			else{
+			}
+				
+				
+		}
+			
+	}
+		
+	// Bandwidth Limiter for Broadcast messages
+	if (por->cooldown > 15){
+		
+		por->cooldown--;
+		return;
+	}
+	else if (por->cooldown>0){
+		
+		por->cooldown--;
+	}	
 	
 	//BROADCAST MESSAGES		
 	if (message_broadcast_available){
@@ -177,6 +271,7 @@ void grid_port_process_ui(struct grid_port* por){
 		// Got messages
 		if (packetvalid){
 		
+			//por->cooldown += (2+por->cooldown/2);
 			por->cooldown += (10+por->cooldown);
 		
 			grid_sys_state.next_broadcast_message_id++;
@@ -223,103 +318,7 @@ void grid_port_process_ui(struct grid_port* por){
 		
 	}
 	
-		//LOCAL MESSAGES		
-	if (message_local_available){
 
-		
-
-				
-		// Prepare packet header
-		uint8_t message[256] = {0};
-		uint32_t length=0;
-	
-	
-		uint8_t len = 0;
-		uint8_t id = grid_sys_state.next_broadcast_message_id;
-		uint8_t dx = GRID_SYS_DEFAULT_POSITION;
-		uint8_t dy = GRID_SYS_DEFAULT_POSITION;
-		uint8_t age = grid_sys_state.age;
-	
-		uint8_t packetvalid = 0;
-	
-		sprintf(&message[length],
-		"%c%c%02x%02x%02x%02x%02x%c",
-		GRID_MSG_START_OF_HEADING,
-		GRID_MSG_BROADCAST,
-		len, id, dx, dy, age,
-		GRID_MSG_END_OF_BLOCK
-		);
-	
-		length += strlen(&message[length]);
-	
-
-	
-		// Append the UI change descriptors
-		for (uint8_t i = 0; i<grid_ui_state.report_length; i++)
-		{
-				
-			if (length>200){
-				continue;
-			}
-		
-		
-			CRITICAL_SECTION_ENTER()
-			if (grid_report_sys_get_changed_flag(mod, i) && grid_report_get_type(mod, i) == GRID_REPORT_TYPE_LOCAL){
-				
-				packetvalid++;
-				grid_report_render(mod, i, &message[length]);
-				grid_report_sys_clear_changed_flag(mod, i);
-				length += strlen(&message[length]);
-					
-			}
-			CRITICAL_SECTION_LEAVE()
-		}
-	
-		// Got messages
-		if (packetvalid){
-		
-			por->cooldown += (10+por->cooldown);
-		
-			grid_sys_state.next_broadcast_message_id++;
-		
-			// Close the packet
-			sprintf(&message[length], "%c", GRID_MSG_END_OF_TRANSMISSION); // CALCULATE AND ADD CRC HERE
-			length += strlen(&message[length]);
-		
-			// Calculate packet length and insert it into the header
-			char length_string[8];
-			sprintf(length_string, "%02x", length);
-		
-			message[2] = length_string[0];
-			message[3] = length_string[1];
-		
-		
-			// Add placeholder checksum and linebreak
-			sprintf(&message[length], "00\n");
-			length += strlen(&message[length]);
-		
-			uint8_t checksum = grid_msg_checksum_calculate(message, length);
-			grid_msg_checksum_write(message, length, checksum);
-		
-			// Put the packet into the UI_RX buffer
-			if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, length)){
-			
-				for(uint32_t i = 0; i<length; i++){
-				
-					grid_buffer_write_character(&GRID_PORT_U.tx_buffer, message[i]);
-				}
-			
-				grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
-			}
-			else{
-			}
-		
-		
-		}
-		
-		return; // Return after local
-	}
-	
 	
 	
 }
