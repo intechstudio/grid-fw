@@ -5,9 +5,6 @@
 #include <atmel_start.h>
 #include "atmel_start_pins.h"
 
-
-
-
 #include <hal_qspi_dma.h>
 #include "flash/spi_nor_flash.h"
 #include "flash/n25q256a.h"
@@ -19,13 +16,9 @@
 #include <hpl_reset.h>
 
 
-
-
-
 volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
-
 
 /// TASK SWITCHER
 
@@ -40,8 +33,7 @@ enum grid_task{
 	GRID_TASK_INBOUND,
 	GRID_TASK_OUTBOUND,
 	GRID_TASK_LED,
-	GRID_TASK_ALERT,
-	
+	GRID_TASK_ALERT,	
 	
 };
 
@@ -191,26 +183,34 @@ void grid_port_receive_task(struct grid_port* por){
 		// Buffer overrun error
 		if (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1){
 			
-			gpio_set_pin_level(UI_PWR_EN, false);
-			GRID_DEBUG_TRAP(GRID_DEBUG_CONTEXT_TRAP, "{\"type\":\"TRAP\", \"data\": [\"rx_double_buffer overrun\"]}\r\n");
-				
+			GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "rx_double_buffer overrun 1");
+			
+			grid_port_reset_receiver(por);
+			
+			grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200);
+			return;	
 		}
 		
 		// Buffer overrun error
 		if (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0){			
-			gpio_set_pin_level(UI_PWR_EN, false);
-			GRID_DEBUG_TRAP(GRID_DEBUG_CONTEXT_TRAP, "{\"type\":\"TRAP\", \"data\": [\"rx_double_buffer overrun\"]}\r\n");
+			
+			GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "rx_double_buffer overrun 2");
+			
+			grid_port_reset_receiver(por);
+			
+			grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200);
+			return;
 		}
 		
 		
 		if (por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE -1)%GRID_DOUBLE_BUFFER_RX_SIZE] !=0){	
 				
-			GRID_DEBUG_TRAP(GRID_DEBUG_CONTEXT_WARNING, "{\"type\":\"WARNING\", \"data\": [\"rx_double_buffer overrun\"]}\r\n");
+			GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "rx_double_buffer overrun 3");
 			
 			grid_port_reset_receiver(por);	
 			
-			grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
-			break;
+			grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200);
+			return;
 	
 		}
 		

@@ -113,11 +113,11 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0-4].payload[5], 2, command);
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0-4].payload[7], 2, adc_index_0);
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0-4].payload[9], 2, velocity);
-			
-			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0-4].payload[21], 2, actuator);
 			mod->report_ui_array[adc_index_0-4].helper[0] = velocity;
-			
 			grid_report_ui_set_changed_flag(mod, adc_index_0-4);
+				
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0-4+12].payload[9], 2, actuator);
+			grid_report_ui_set_changed_flag(mod, adc_index_0-4+12);
 		}
 		
 		//CRITICAL_SECTION_LEAVE()
@@ -144,12 +144,13 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[5], 2, command);
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[7], 2, adc_index_1);
-			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[9], 2, velocity);
-			
-			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[21], 2, actuator);
-			mod->report_ui_array[adc_index_1-4].helper[0] = velocity;
-			
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4].payload[9], 2, velocity);		
+			mod->report_ui_array[adc_index_1-4].helper[0] = velocity;		
 			grid_report_ui_set_changed_flag(mod, adc_index_1-4);
+				
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1-4+12].payload[9], 2, actuator);		
+			grid_report_ui_set_changed_flag(mod, adc_index_1-4+12);
+			
 		}
 		
 		//CRITICAL_SECTION_LEAVE()
@@ -182,9 +183,10 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 		
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[7], 2, adc_index_0);
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[9], 2, value);
-			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[21], 2, actuator);
-		
-			grid_report_ui_set_changed_flag(mod, adc_index_0);
+			grid_report_ui_set_changed_flag(mod, adc_index_0);	
+			
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0 + 12].payload[9], 2, actuator);			
+			grid_report_ui_set_changed_flag(mod, adc_index_0 + 12);
 		}
 	
 		//CRITICAL_SECTION_LEAVE()
@@ -199,9 +201,10 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 		
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[7], 2, adc_index_1);
 			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[9], 2, value);
-			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[21], 2, actuator);
-		
 			grid_report_ui_set_changed_flag(mod, adc_index_1);
+			
+			grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1 + 12].payload[9], 2, actuator);		
+			grid_report_ui_set_changed_flag(mod, adc_index_1 + 12);
 		}
 	
 		//CRITICAL_SECTION_LEAVE()
@@ -239,15 +242,18 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 
 	grid_led_init(&grid_led_state, 12);
 	
-	grid_ui_model_init(mod, 12);
+	grid_ui_model_init(mod, 24);
 	
-	for(uint8_t i=0; i<12; i++){
+	for(uint8_t i=0; i<24; i++){
 		
 		uint8_t payload_template[30] = {0};
+		enum grid_report_type_t type;
 		
-		if (i<8){ // PORENTIOMETERS & FADERS
+		if (i<8){ // PORENTIOMETERS & FADERS -> MIDI Control Change
 			
-			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c%c%02x%02x%02x%02x%02x%c",
+			type = GRID_REPORT_TYPE_BROADCAST;
+			
+			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 			
 			GRID_MSG_START_OF_TEXT,
 			GRID_MSG_PROTOCOL_MIDI,
@@ -255,22 +261,16 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 			GRID_MSG_COMMAND_MIDI_CONTROLCHANGE,
 			i,
 			0,
-			GRID_MSG_END_OF_TEXT,
-			
-			GRID_MSG_START_OF_TEXT,
-			GRID_MSG_PROTOCOL_LED,
-			0, // layer
-			GRID_MSG_COMMAND_LED_SET_PHASE,
-			i,
-			0,
 			GRID_MSG_END_OF_TEXT
 
 			);
 			
 		}
-		else{ // BUTTONS
+		else if (i<12){ // BUTTONS -> MIDI Note On/Off
 			
-			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c%c%02x%02x%02x%02x%02x%c",
+			type = GRID_REPORT_TYPE_BROADCAST;
+			
+			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 						
 			GRID_MSG_START_OF_TEXT,
 			GRID_MSG_PROTOCOL_MIDI,
@@ -278,18 +278,26 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 			GRID_MSG_COMMAND_MIDI_NOTEON,
 			i+4,
 			0,
-			GRID_MSG_END_OF_TEXT,
-						
+			
+			GRID_MSG_END_OF_TEXT
+			);
+									
+		}
+		else{ // LED -> Grid LED
+			
+			type = GRID_REPORT_TYPE_LOCAL;
+			
+			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
+			
 			GRID_MSG_START_OF_TEXT,
 			GRID_MSG_PROTOCOL_LED,
 			0, // layer
 			GRID_MSG_COMMAND_LED_SET_PHASE,
-			i,
+			i-12,
 			0,
 			GRID_MSG_END_OF_TEXT
 
-			);
-			
+			);			
 		}
 
 		
@@ -302,7 +310,7 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 		
 		uint8_t helper_length = 2;
 		
-		grid_report_ui_init(mod, i, GRID_REPORT_TYPE_BROADCAST, payload_template, payload_length, helper_template, helper_length);
+		grid_report_ui_init(mod, i, type, payload_template, payload_length, helper_template, helper_length);
 		
 	}
 	

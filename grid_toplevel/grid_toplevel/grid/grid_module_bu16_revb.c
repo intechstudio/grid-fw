@@ -92,11 +92,18 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[5], 2, command);
 		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[7], 2, adc_index_0);
 		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[9], 2, velocity);
-		
-		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[21], 2, actuator);
+
 		mod->report_ui_array[adc_index_0].helper[0] = velocity;
 		
 		grid_report_ui_set_changed_flag(mod, adc_index_0);
+		
+		
+				
+		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0 + 16].payload[9], 2, actuator); // LED
+
+		grid_report_ui_set_changed_flag(mod, adc_index_0 + 16);
+		
+		
 	}
 	
 	//CRITICAL_SECTION_LEAVE()
@@ -125,12 +132,16 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[5], 2, command);
 		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[7], 2, adc_index_1);
 		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[9], 2, velocity);
-		
-		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[21], 2, actuator);
-		
+			
 		mod->report_ui_array[adc_index_1].helper[0] = velocity;
 		
 		grid_report_ui_set_changed_flag(mod, adc_index_1);
+		
+		
+		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1 + 16].payload[9], 2, actuator); // LED
+
+		grid_report_ui_set_changed_flag(mod, adc_index_1 + 16);
+		
 	}
 	
 	//CRITICAL_SECTION_LEAVE()
@@ -157,34 +168,52 @@ void grid_module_bu16_revb_hardware_init(void){
 void grid_module_bu16_revb_init(struct grid_ui_model* mod){
 
 	grid_led_init(&grid_led_state, 16);
-	grid_ui_model_init(mod, 16);
+	grid_ui_model_init(mod, 32);
 		
-	for(uint8_t i=0; i<16; i++){
-		
+	for(uint8_t i=0; i<32; i++){
+				
 		uint8_t payload_template[30] = {0};
-			
-		uint8_t grid_module_bu16_revb_mux_lookup_led[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
-		sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c%c%02x%02x%02x%02x%02x%c",
-			
-		GRID_MSG_START_OF_TEXT,
-		GRID_MSG_PROTOCOL_MIDI,
-		0, // (cable<<4) + channel
-		GRID_MSG_COMMAND_MIDI_NOTEON,
-		i,
-		0,
-		GRID_MSG_END_OF_TEXT,
-			
-		GRID_MSG_START_OF_TEXT,
-		GRID_MSG_PROTOCOL_LED,
-		0, // layer
-		GRID_MSG_COMMAND_LED_SET_PHASE,
-		grid_module_bu16_revb_mux_lookup_led[i],
-		0,
-		GRID_MSG_END_OF_TEXT
-
-		);
-			
+		enum grid_report_type_t type;
 		
+		uint8_t grid_module_bu16_revb_mux_lookup_led[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
+		
+		if (i<16){ //BUTTON
+			
+			type = GRID_REPORT_TYPE_BROADCAST;
+		
+			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
+			
+			GRID_MSG_START_OF_TEXT,
+			GRID_MSG_PROTOCOL_MIDI,
+			0, // (cable<<4) + channel
+			GRID_MSG_COMMAND_MIDI_NOTEON,
+			i,
+			0,
+			GRID_MSG_END_OF_TEXT
+				
+			);			
+			
+			
+		}
+		else{ // LED
+	
+			type = GRID_REPORT_TYPE_LOCAL;
+
+			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
+			
+			GRID_MSG_START_OF_TEXT,
+			GRID_MSG_PROTOCOL_LED,
+			0, // layer
+			GRID_MSG_COMMAND_LED_SET_PHASE,
+			grid_module_bu16_revb_mux_lookup_led[i-16],
+			0,
+			GRID_MSG_END_OF_TEXT
+			
+			);
+			
+			
+			
+		}
 		
 		uint8_t payload_length = strlen(payload_template);
 
@@ -195,7 +224,7 @@ void grid_module_bu16_revb_init(struct grid_ui_model* mod){
 		
 		uint8_t helper_length = 2;
 		
-		uint8_t error = grid_report_ui_init(mod, i, GRID_REPORT_TYPE_BROADCAST, payload_template, payload_length, helper_template, helper_length);
+		uint8_t error = grid_report_ui_init(mod, i, type, payload_template, payload_length, helper_template, helper_length);
 		
 
 	}
