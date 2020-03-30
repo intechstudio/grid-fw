@@ -291,7 +291,7 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 			
 			GRID_MSG_START_OF_TEXT,
 			GRID_MSG_PROTOCOL_LED,
-			0, // layer
+			GRID_LED_LAYER_UI_A, // layer
 			GRID_MSG_COMMAND_LED_SET_PHASE,
 			i-12,
 			0,

@@ -3,6 +3,13 @@
 
 #include "grid_module.h"
 
+#define GRID_LED_LAYER_ALERT	0
+#define GRID_LED_LAYER_UI_A		1
+#define GRID_LED_LAYER_UI_B		2
+
+#define GRID_LED_LAYER_NUMBER 3
+
+
 struct LED_color{
 	uint8_t r;
 	uint8_t g;
@@ -67,7 +74,7 @@ void grid_led_render(struct grid_led_model* mod, uint32_t num);
 void grid_led_render_all(struct grid_led_model* mod);
 
 // ACCESSING THE FRAME BUFFER (WRITE)
-uint8_t grid_led_set_color(struct grid_led_model* mod, uint32_t led_index, uint8_t led_r, uint8_t led_g, uint8_t led_b);
+uint8_t grid_led_set_color(struct grid_led_model* mod, uint32_t led_index, uint16_t led_r, uint16_t led_g, uint16_t led_b);
 
 // TIME TICK FOR ANIMATIONS
 void grid_led_tick(struct grid_led_model* mod);

@@ -106,6 +106,12 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				
 				grid_report_ui_set_changed_flag(mod, i);
 				
+				grid_sys_write_hex_string_value(&mod->report_ui_array[i+16+16+16].payload[9], 2, actuator); // BUTTONLED
+				mod->report_ui_array[i+16+16+16].helper[0] = actuator;
+				grid_report_ui_set_changed_flag(mod, i+16+16+16);
+				
+				
+				
 				
 				//CRITICAL_SECTION_LEAVE()
 				
@@ -280,13 +286,13 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 	
 	grid_led_init(&grid_led_state, 16);
 	
-	grid_ui_model_init(mod, 16+16+16);
+	grid_ui_model_init(mod, 16+16+16+16);
 	
 	
 	
 	// 0 is for mapmode_button
 	// 1...16 is for ui_buttons
-	for(uint8_t i=0; i<16+16+16; i++){
+	for(uint8_t i=0; i<16+16+16+16; i++){
 		
 		uint8_t payload_template[30] = {0};
 		enum grid_report_type_t type;
@@ -324,21 +330,37 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 			);
 		
 		}
-		else{ // LED
+		else if(i<16+16+16){ // LED (Rotation)
 			type = GRID_REPORT_TYPE_LOCAL;
-			
+		
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
-			
+		
 			GRID_MSG_START_OF_TEXT,
 			GRID_MSG_PROTOCOL_LED,
-			0, // layer
+			GRID_LED_LAYER_UI_A, // layer
 			GRID_MSG_COMMAND_LED_SET_PHASE,
 			i-16-16,
 			0,
 			GRID_MSG_END_OF_TEXT
 
 			);
-				
+		
+		}
+		else{ // LED (Button)
+			type = GRID_REPORT_TYPE_LOCAL;
+	
+			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
+	
+			GRID_MSG_START_OF_TEXT,
+			GRID_MSG_PROTOCOL_LED,
+			GRID_LED_LAYER_UI_B, // layer
+			GRID_MSG_COMMAND_LED_SET_PHASE,
+			i-16-16-16,
+			0,
+			GRID_MSG_END_OF_TEXT
+
+			);
+	
 		}
 
 		

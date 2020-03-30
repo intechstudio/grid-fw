@@ -203,7 +203,7 @@ void grid_module_bu16_revb_init(struct grid_ui_model* mod){
 			
 			GRID_MSG_START_OF_TEXT,
 			GRID_MSG_PROTOCOL_LED,
-			0, // layer
+			GRID_LED_LAYER_UI_A, // layer
 			GRID_MSG_COMMAND_LED_SET_PHASE,
 			grid_module_bu16_revb_mux_lookup_led[i-16],
 			0,

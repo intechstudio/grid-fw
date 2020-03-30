@@ -976,39 +976,7 @@ int main(void)
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
 		
 
-	uint32_t loopstart = 0;
 
-					
-	uint32_t hwtype = grid_sys_get_hwcfg();
-	
-	for (uint8_t i = 0; i<grid_led_get_led_number(&grid_led_state); i++)
-	{
-
-		if (hwtype == GRID_MODULE_EN16_RevA){	
-			grid_led_set_min(&grid_led_state, i, 0, 0, 0, 255);
-			grid_led_set_mid(&grid_led_state, i, 0, 5, 5, 5);
-			grid_led_set_max(&grid_led_state, i, 0, 255, 0, 0);
-		}
-	}
-		
-		
-		
-
-	grid_sys_bank_select(&grid_sys_state, 255);
-	
-	init_timer();
-	
-	uint32_t loopcounter = 0;
-	
-	
-	uint32_t loopslow = 0;
-	uint32_t loopfast = 0;
-	
-	uint32_t loopwarp = 0;
-	
-	
-
-	
 
 
 	
@@ -1016,14 +984,21 @@ int main(void)
 
 	/* Register DMA complete Callback and initialize NOR flash */
  	//qspi_dma_register_callback(&QSPI_INSTANCE, QSPI_DMA_CB_XFER_DONE, qspi_xfer_complete_cb);	
- 	//spi_nor_flash_init();	
-	 
-	 
-	 
+ 	//spi_nor_flash_init();
  	//spi_nor_flash_test();
 	
 
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
+
+	init_timer();
+	
+	uint32_t loopcounter = 0;
+	
+	uint32_t loopstart = 0;
+	
+	uint32_t loopslow = 0;
+	uint32_t loopfast = 0;
+	uint32_t loopwarp = 0;
 	
 	uint8_t usb_init_variable = 0;
 
@@ -1164,15 +1139,11 @@ int main(void)
 				uint8_t color_b   = grid_sys_alert_get_color_b(&grid_sys_state);
 				
 				for (uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
-				
 
-				
-						grid_led_set_min(&grid_led_state, i, 1, color_r*0   , color_g*0   , color_b*0);
-						grid_led_set_mid(&grid_led_state, i, 1, color_r*0.5 , color_g*0.5 , color_b*0.5);
-						grid_led_set_max(&grid_led_state, i, 1, color_r*1   , color_g*1   , color_b*1);
+					grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*0   , color_g*0   , color_b*0);
+					grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*0.5 , color_g*0.5 , color_b*0.5);
+					grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*1   , color_g*1   , color_b*1);
 						
-		
-
 					
 				}
 		
@@ -1183,7 +1154,7 @@ int main(void)
 			for (uint8_t i=0; i<grid_led_state.led_number; i++){	
 				//grid_led_set_color(i, 0, 255, 0);	
 		
-				grid_led_set_phase(&grid_led_state, i, 1, intensity);
+				grid_led_set_phase(&grid_led_state, i, GRID_LED_LAYER_ALERT, intensity);
 								
 			}
 			

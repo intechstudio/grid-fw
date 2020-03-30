@@ -178,7 +178,18 @@ uint32_t grid_led_get_frame_buffer_size(struct grid_led_model* mod){
 }
 
 /** Set color of a particular LED in the frame buffer */
-uint8_t grid_led_set_color(struct grid_led_model* mod, uint32_t led_index, uint8_t led_r, uint8_t led_g, uint8_t led_b){
+uint8_t grid_led_set_color(struct grid_led_model* mod, uint32_t led_index, uint16_t led_r, uint16_t led_g, uint16_t led_b){
+	
+	if (led_r>255){
+		led_r = 255;
+	}
+	if (led_g>255){
+		led_g = 255;
+	}
+	if (led_b>255){
+		led_b = 255;
+	}
+
 	
 	//if index is valid
 	if (led_index<mod->led_number){
@@ -223,13 +234,12 @@ void grid_led_buffer_init(struct grid_led_model* mod, uint32_t length){
 		
 	// Allocating memory for the smart buffer (2D array)
 		
-	#define led_smart_buffer_layer_number 2
-	mod->led_smart_buffer = (struct LED_layer*) malloc(mod->led_number * led_smart_buffer_layer_number * sizeof(struct LED_layer));
+	
+	mod->led_smart_buffer = (struct LED_layer*) malloc(mod->led_number * GRID_LED_LAYER_NUMBER * sizeof(struct LED_layer));
 	
 	if(mod->led_frame_buffer==NULL || mod->led_smart_buffer==NULL){
 		while(1){
-			
-			
+			//MALLOC FAILED			
 		}		
 		
 	}
@@ -251,21 +261,29 @@ void grid_led_buffer_init(struct grid_led_model* mod, uint32_t length){
 	// DEFAULT CONFIG 
 	for(uint8_t i = 0; i<mod->led_number; i++){
 			
-		// ACTUATOR
-		grid_led_set_min(mod,i, 0, 0x00, 0x00, 0x00);
-		grid_led_set_mid(mod,i, 0, 0x00, 0x7F, 0x00);
-		grid_led_set_max(mod,i, 0, 0x00, 0xFF, 0x00);
+		// ACTUATOR_A
+		grid_led_set_min(mod,i, GRID_LED_LAYER_UI_A, 0x00, 0x00, 0x00);
+		grid_led_set_mid(mod,i, GRID_LED_LAYER_UI_A, 0x00, 0x7F, 0x00);
+		grid_led_set_max(mod,i, GRID_LED_LAYER_UI_A, 0x00, 0xFF, 0x00);
 			
-		grid_led_set_frequency(mod,i, 0, 0);
-		grid_led_set_phase(mod,i, 0, 0);
+		grid_led_set_frequency(mod,i, GRID_LED_LAYER_UI_A, 0);
+		grid_led_set_phase(mod,i, GRID_LED_LAYER_UI_A, 0);
+		
+		// ACTUATOR_B		
+		grid_led_set_min(mod,i, GRID_LED_LAYER_UI_B, 0x00, 0x00, 0x00);
+		grid_led_set_mid(mod,i, GRID_LED_LAYER_UI_B, 0x00, 0x7F, 0x00);
+		grid_led_set_max(mod,i, GRID_LED_LAYER_UI_B, 0x00, 0xFF, 0x00);
+		
+		grid_led_set_frequency(mod,i, GRID_LED_LAYER_UI_B, 0);
+		grid_led_set_phase(mod,i, GRID_LED_LAYER_UI_B, 0);
 			
 		// ALERT
-		grid_led_set_min(mod,i, 1, 0x00, 0x00, 0x00);
-		grid_led_set_mid(mod,i, 1, 0x00, 0x00, 0x00);
-		grid_led_set_max(mod,i, 1, 0x00, 0x00, 0x00);
+		grid_led_set_min(mod,i, GRID_LED_LAYER_ALERT, 0x00, 0x00, 0x00);
+		grid_led_set_mid(mod,i, GRID_LED_LAYER_ALERT, 0x00, 0x00, 0x00);
+		grid_led_set_max(mod,i, GRID_LED_LAYER_ALERT, 0x00, 0x00, 0x00);
 			
-		grid_led_set_frequency(mod,i, 1, 0);
-		grid_led_set_phase(mod, i, 1, 0);
+		grid_led_set_frequency(mod,i, GRID_LED_LAYER_ALERT, 0);
+		grid_led_set_phase(mod, i, GRID_LED_LAYER_ALERT, 0);
 			
 	}
 
@@ -312,7 +330,7 @@ void grid_led_startup_animation(struct grid_led_model* mod){
 
 		for (uint8_t j=0; j<mod->led_number; j++){
 			//grid_led_set_color(i, 0, 255, 0);
-			grid_led_set_color(mod, j, color_r*i*s%256, color_g*i*s%256, color_b*i*s%256);
+			grid_led_set_color(mod, j, color_r*i*s%256, color_g*i*s%256, color_b*i*s%256); // This is not an alert, this is low level shit
 			
 			
 		}
@@ -399,7 +417,7 @@ void grid_led_tick(struct grid_led_model* mod){
 	/** ATOMI - all phase registers must be updated  */
 	for (uint8_t j=0; j<mod->led_number; j++){
 					
-		for(uint8_t i=0; i<2; i++){
+		for(uint8_t i=0; i<GRID_LED_LAYER_NUMBER; i++){
 			uint8_t layer = i;
 			mod->led_smart_buffer[j+(mod->led_number*layer)].pha += mod->led_smart_buffer[j+(mod->led_number*layer)].fre; //PHASE + = FREQUENCY		
 		}	
@@ -454,7 +472,7 @@ void grid_led_render(struct grid_led_model* mod, uint32_t num){
 	uint32_t mix_b = 0;
 	
 	// RENDER & SUM ALL LAYERS PER LED
-	for (uint8_t i = 0; i<2; i++){
+	for (uint8_t i = 0; i<GRID_LED_LAYER_NUMBER; i++){
 		
 		uint8_t layer = i;
 				
@@ -483,9 +501,9 @@ void grid_led_render(struct grid_led_model* mod, uint32_t num){
 // mix_g = (mix_g)/2/3/256;
 // mix_b = (mix_b)/2/3/256;
 
-mix_r = (mix_r)/2/256;
-mix_g = (mix_g)/2/256;
-mix_b = (mix_b)/2/256;
+	mix_r = (mix_r)/2/256;
+	mix_g = (mix_g)/2/256;
+	mix_b = (mix_b)/2/256;
 				
 	grid_led_set_color(mod, num, mix_r, mix_g, mix_b);
 	
