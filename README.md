@@ -44,8 +44,9 @@ Download the bootloader image from the repository and unzip the archive. The boo
 Download the firmware image from the repository and unzip the archive. The firmware binary is contained in the  grid_toplevel_release.uf2 file. Once the bootloader is enumerated copy the new firmware image to the removable storage device called GRID. After a successful update, the controller will reset and boot the newly installed firmware, ready to use. Make sure to repeat this process for all of your Grid modules, to ensure that they are all running the latest firmware.
 
 ## Stable Build
-Grid firmware v1.0.0 is the latest stable relese. Plese visit the [releases](https://github.com/intechstudio/grid-fw/releases)
+Here you can download the latest stable relese. Plese visit the [releases](https://github.com/intechstudio/grid-fw/releases)
 page for more information.
+
 [![GitHub version](https://badge.fury.io/gh/intechstudio%2Fgrid-fw.svg)](https://github.com/intechstudio/grid-fw/releases/latest)
 
 ## Latest Build
