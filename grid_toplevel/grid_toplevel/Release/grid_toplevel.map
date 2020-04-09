@@ -456,6 +456,8 @@ Discarded input sections
  .bss           0x00000000        0x0 grid/grid_ui.o
  .text.grid_report_get_type
                 0x00000000        0xa grid/grid_ui.o
+ .text.grid_report_ui_get_changed_flag
+                0x00000000        0xc grid/grid_ui.o
  .text.grid_report_ui_clear_changed_flag
                 0x00000000        0xe grid/grid_ui.o
  .text.grid_report_sys_get_changed_flag
@@ -1916,7 +1918,7 @@ LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin
 LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtn.o
                 0x00010000                STACK_SIZE = DEFINED (STACK_SIZE)?STACK_SIZE:DEFINED (__stack_size__)?__stack_size__:0x10000
 
-.text           0x00004000     0xc1dc
+.text           0x00004000     0xc14c
                 0x00004000                . = ALIGN (0x4)
                 0x00004000                _sfixed = .
  *(.vectors .vectors.*)
@@ -2282,1475 +2284,1473 @@ LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin
                 0x000063f0                grid_module_en16_reva_hardware_start_transfer
  *fill*         0x0000642c        0x4 
  .text.grid_module_en16_reva_hardware_transfer_complete_cb
-                0x00006430      0x38c grid/grid_module_en16_reva.o
+                0x00006430      0x310 grid/grid_module_en16_reva.o
                 0x00006430                grid_module_en16_reva_hardware_transfer_complete_cb
  .text.grid_module_en16_reva_hardware_init
-                0x000067bc       0x68 grid/grid_module_en16_reva.o
-                0x000067bc                grid_module_en16_reva_hardware_init
+                0x00006740       0x68 grid/grid_module_en16_reva.o
+                0x00006740                grid_module_en16_reva_hardware_init
  .text.grid_module_en16_reva_init
-                0x00006824      0x10c grid/grid_module_en16_reva.o
-                0x00006824                grid_module_en16_reva_init
+                0x000067a8      0x128 grid/grid_module_en16_reva.o
+                0x000067a8                grid_module_en16_reva_init
  .text.grid_module_pbf4_reva_hardware_start_transfer
-                0x00006930       0x20 grid/grid_module_pbf4_reva.o
-                0x00006930                grid_module_pbf4_reva_hardware_start_transfer
+                0x000068d0       0x20 grid/grid_module_pbf4_reva.o
+                0x000068d0                grid_module_pbf4_reva_hardware_start_transfer
  .text.grid_module_pbf4_reva_hardware_transfer_complete_cb
-                0x00006950      0x3b4 grid/grid_module_pbf4_reva.o
-                0x00006950                grid_module_pbf4_reva_hardware_transfer_complete_cb
+                0x000068f0      0x3b4 grid/grid_module_pbf4_reva.o
+                0x000068f0                grid_module_pbf4_reva_hardware_transfer_complete_cb
  .text.grid_module_pbf4_reva_hardware_init
-                0x00006d04       0x48 grid/grid_module_pbf4_reva.o
-                0x00006d04                grid_module_pbf4_reva_hardware_init
+                0x00006ca4       0x48 grid/grid_module_pbf4_reva.o
+                0x00006ca4                grid_module_pbf4_reva_hardware_init
  .text.grid_module_pbf4_reva_init
-                0x00006d4c       0xf0 grid/grid_module_pbf4_reva.o
-                0x00006d4c                grid_module_pbf4_reva_init
+                0x00006cec       0xf0 grid/grid_module_pbf4_reva.o
+                0x00006cec                grid_module_pbf4_reva_init
  .text.grid_module_po16_revb_hardware_start_transfer
-                0x00006e3c       0x20 grid/grid_module_po16_revb.o
-                0x00006e3c                grid_module_po16_revb_hardware_start_transfer
- *fill*         0x00006e5c        0x4 
+                0x00006ddc       0x20 grid/grid_module_po16_revb.o
+                0x00006ddc                grid_module_po16_revb_hardware_start_transfer
+ *fill*         0x00006dfc        0x4 
  .text.grid_module_po16_revb_hardware_transfer_complete_cb
-                0x00006e60      0x228 grid/grid_module_po16_revb.o
+                0x00006e00      0x228 grid/grid_module_po16_revb.o
  .text.grid_module_po16_revb_hardware_init
-                0x00007088       0x48 grid/grid_module_po16_revb.o
-                0x00007088                grid_module_po16_revb_hardware_init
+                0x00007028       0x48 grid/grid_module_po16_revb.o
+                0x00007028                grid_module_po16_revb_hardware_init
  .text.grid_module_po16_revb_init
-                0x000070d0       0xe4 grid/grid_module_po16_revb.o
-                0x000070d0                grid_module_po16_revb_init
+                0x00007070       0xe4 grid/grid_module_po16_revb.o
+                0x00007070                grid_module_po16_revb_init
  .text.gpio_set_pin_pull_mode.constprop.2
-                0x000071b4       0x28 grid/grid_sys.o
+                0x00007154       0x28 grid/grid_sys.o
  .text.tx_cb_USART_GRID
-                0x000071dc       0x1a grid/grid_sys.o
-                0x000071dc                tx_cb_USART_GRID
- *fill*         0x000071f6        0x2 
+                0x0000717c       0x1a grid/grid_sys.o
+                0x0000717c                tx_cb_USART_GRID
+ *fill*         0x00007196        0x2 
  .text.tx_cb_USART_GRID_W
-                0x000071f8       0x10 grid/grid_sys.o
+                0x00007198       0x10 grid/grid_sys.o
  .text.tx_cb_USART_GRID_S
-                0x00007208       0x10 grid/grid_sys.o
+                0x000071a8       0x10 grid/grid_sys.o
  .text.tx_cb_USART_GRID_E
-                0x00007218       0x10 grid/grid_sys.o
+                0x000071b8       0x10 grid/grid_sys.o
  .text.tx_cb_USART_GRID_N
-                0x00007228       0x10 grid/grid_sys.o
+                0x000071c8       0x10 grid/grid_sys.o
  .text.err_cb_USART_GRID
-                0x00007238       0x10 grid/grid_sys.o
-                0x00007238                err_cb_USART_GRID
+                0x000071d8       0x10 grid/grid_sys.o
+                0x000071d8                err_cb_USART_GRID
  .text.err_cb_USART_GRID_W
-                0x00007248       0x10 grid/grid_sys.o
+                0x000071e8       0x10 grid/grid_sys.o
  .text.err_cb_USART_GRID_S
-                0x00007258       0x10 grid/grid_sys.o
+                0x000071f8       0x10 grid/grid_sys.o
  .text.err_cb_USART_GRID_E
-                0x00007268       0x10 grid/grid_sys.o
+                0x00007208       0x10 grid/grid_sys.o
  .text.err_cb_USART_GRID_N
-                0x00007278       0x10 grid/grid_sys.o
+                0x00007218       0x10 grid/grid_sys.o
  .text.grid_sys_port_reset_dma
-                0x00007288       0x20 grid/grid_sys.o
-                0x00007288                grid_sys_port_reset_dma
+                0x00007228       0x20 grid/grid_sys.o
+                0x00007228                grid_sys_port_reset_dma
  .text.dma_transfer_complete_n_cb
-                0x000072a8       0x10 grid/grid_sys.o
-                0x000072a8                dma_transfer_complete_n_cb
+                0x00007248       0x10 grid/grid_sys.o
+                0x00007248                dma_transfer_complete_n_cb
  .text.dma_transfer_complete_e_cb
-                0x000072b8       0x10 grid/grid_sys.o
-                0x000072b8                dma_transfer_complete_e_cb
+                0x00007258       0x10 grid/grid_sys.o
+                0x00007258                dma_transfer_complete_e_cb
  .text.dma_transfer_complete_s_cb
-                0x000072c8       0x10 grid/grid_sys.o
-                0x000072c8                dma_transfer_complete_s_cb
+                0x00007268       0x10 grid/grid_sys.o
+                0x00007268                dma_transfer_complete_s_cb
  .text.dma_transfer_complete_w_cb
-                0x000072d8       0x10 grid/grid_sys.o
-                0x000072d8                dma_transfer_complete_w_cb
+                0x00007278       0x10 grid/grid_sys.o
+                0x00007278                dma_transfer_complete_w_cb
  .text.grid_sys_uart_init
-                0x000072e8      0x104 grid/grid_sys.o
-                0x000072e8                grid_sys_uart_init
+                0x00007288      0x104 grid/grid_sys.o
+                0x00007288                grid_sys_uart_init
  .text.grid_sys_dma_rx_init_one
-                0x000073ec       0x64 grid/grid_sys.o
-                0x000073ec                grid_sys_dma_rx_init_one
+                0x0000738c       0x64 grid/grid_sys.o
+                0x0000738c                grid_sys_dma_rx_init_one
  .text.grid_sys_dma_rx_init
-                0x00007450       0x6c grid/grid_sys.o
-                0x00007450                grid_sys_dma_rx_init
+                0x000073f0       0x6c grid/grid_sys.o
+                0x000073f0                grid_sys_dma_rx_init
  .text.grid_sys_rtc_get_time
-                0x000074bc        0x4 grid/grid_sys.o
-                0x000074bc                grid_sys_rtc_get_time
+                0x0000745c        0x4 grid/grid_sys.o
+                0x0000745c                grid_sys_rtc_get_time
  .text.grid_sys_rtc_get_elapsed_time
-                0x000074c0        0x6 grid/grid_sys.o
-                0x000074c0                grid_sys_rtc_get_elapsed_time
+                0x00007460        0x6 grid/grid_sys.o
+                0x00007460                grid_sys_rtc_get_elapsed_time
  .text.grid_sys_rtc_tick_time
-                0x000074c6        0x8 grid/grid_sys.o
-                0x000074c6                grid_sys_rtc_tick_time
+                0x00007466        0x8 grid/grid_sys.o
+                0x00007466                grid_sys_rtc_tick_time
  .text.grid_sys_alert_read_color_changed_flag
-                0x000074ce        0x4 grid/grid_sys.o
-                0x000074ce                grid_sys_alert_read_color_changed_flag
+                0x0000746e        0x4 grid/grid_sys.o
+                0x0000746e                grid_sys_alert_read_color_changed_flag
  .text.grid_sys_alert_clear_color_changed_flag
-                0x000074d2        0x6 grid/grid_sys.o
-                0x000074d2                grid_sys_alert_clear_color_changed_flag
+                0x00007472        0x6 grid/grid_sys.o
+                0x00007472                grid_sys_alert_clear_color_changed_flag
  .text.grid_sys_alert_get_color_intensity
-                0x000074d8       0x42 grid/grid_sys.o
-                0x000074d8                grid_sys_alert_get_color_intensity
+                0x00007478       0x42 grid/grid_sys.o
+                0x00007478                grid_sys_alert_get_color_intensity
  .text.grid_sys_alert_set_alert
-                0x0000751a       0x1a grid/grid_sys.o
-                0x0000751a                grid_sys_alert_set_alert
+                0x000074ba       0x1a grid/grid_sys.o
+                0x000074ba                grid_sys_alert_set_alert
  .text.grid_sys_alert_get_color_r
-                0x00007534        0x4 grid/grid_sys.o
-                0x00007534                grid_sys_alert_get_color_r
+                0x000074d4        0x4 grid/grid_sys.o
+                0x000074d4                grid_sys_alert_get_color_r
  .text.grid_sys_alert_get_color_g
-                0x00007538        0x4 grid/grid_sys.o
-                0x00007538                grid_sys_alert_get_color_g
+                0x000074d8        0x4 grid/grid_sys.o
+                0x000074d8                grid_sys_alert_get_color_g
  .text.grid_sys_alert_get_color_b
-                0x0000753c        0x4 grid/grid_sys.o
-                0x0000753c                grid_sys_alert_get_color_b
+                0x000074dc        0x4 grid/grid_sys.o
+                0x000074dc                grid_sys_alert_get_color_b
  .text.grid_sys_read_hex_char_value
-                0x00007540       0x28 grid/grid_sys.o
-                0x00007540                grid_sys_read_hex_char_value
+                0x000074e0       0x28 grid/grid_sys.o
+                0x000074e0                grid_sys_read_hex_char_value
  .text.grid_sys_read_hex_string_value
-                0x00007568       0x30 grid/grid_sys.o
-                0x00007568                grid_sys_read_hex_string_value
+                0x00007508       0x30 grid/grid_sys.o
+                0x00007508                grid_sys_read_hex_string_value
  .text.grid_sys_write_hex_string_value
-                0x00007598       0x34 grid/grid_sys.o
-                0x00007598                grid_sys_write_hex_string_value
+                0x00007538       0x34 grid/grid_sys.o
+                0x00007538                grid_sys_write_hex_string_value
  .text.grid_sys_get_hwcfg
-                0x000075cc       0xe4 grid/grid_sys.o
-                0x000075cc                grid_sys_get_hwcfg
+                0x0000756c       0xe4 grid/grid_sys.o
+                0x0000756c                grid_sys_get_hwcfg
  .text.grid_sys_bank_select
-                0x000076b0      0x19c grid/grid_sys.o
-                0x000076b0                grid_sys_bank_select
+                0x00007650      0x16c grid/grid_sys.o
+                0x00007650                grid_sys_bank_select
  .text.grid_sys_init
-                0x0000784c       0x50 grid/grid_sys.o
-                0x0000784c                grid_sys_init
+                0x000077bc       0x50 grid/grid_sys.o
+                0x000077bc                grid_sys_init
  .text.grid_msg_checksum_calculate
-                0x0000789c       0x1a grid/grid_sys.o
-                0x0000789c                grid_msg_checksum_calculate
- *fill*         0x000078b6        0x2 
+                0x0000780c       0x1a grid/grid_sys.o
+                0x0000780c                grid_msg_checksum_calculate
+ *fill*         0x00007826        0x2 
  .text.grid_msg_checksum_read
-                0x000078b8       0x1c grid/grid_sys.o
-                0x000078b8                grid_msg_checksum_read
+                0x00007828       0x1c grid/grid_sys.o
+                0x00007828                grid_msg_checksum_read
  .text.grid_msg_checksum_write
-                0x000078d4       0x10 grid/grid_sys.o
-                0x000078d4                grid_msg_checksum_write
+                0x00007844       0x10 grid/grid_sys.o
+                0x00007844                grid_msg_checksum_write
  .text.grid_msg_get_id
-                0x000078e4       0x20 grid/grid_sys.o
-                0x000078e4                grid_msg_get_id
+                0x00007854       0x20 grid/grid_sys.o
+                0x00007854                grid_msg_get_id
  .text.grid_msg_get_dx
-                0x00007904       0x20 grid/grid_sys.o
-                0x00007904                grid_msg_get_dx
+                0x00007874       0x20 grid/grid_sys.o
+                0x00007874                grid_msg_get_dx
  .text.grid_msg_get_dy
-                0x00007924       0x20 grid/grid_sys.o
-                0x00007924                grid_msg_get_dy
+                0x00007894       0x20 grid/grid_sys.o
+                0x00007894                grid_msg_get_dy
  .text.grid_msg_get_age
-                0x00007944       0x20 grid/grid_sys.o
-                0x00007944                grid_msg_get_age
+                0x000078b4       0x20 grid/grid_sys.o
+                0x000078b4                grid_msg_get_age
  .text.grid_msg_set_id
-                0x00007964       0x10 grid/grid_sys.o
-                0x00007964                grid_msg_set_id
+                0x000078d4       0x10 grid/grid_sys.o
+                0x000078d4                grid_msg_set_id
  .text.grid_msg_set_dx
-                0x00007974       0x10 grid/grid_sys.o
-                0x00007974                grid_msg_set_dx
+                0x000078e4       0x10 grid/grid_sys.o
+                0x000078e4                grid_msg_set_dx
  .text.grid_msg_set_dy
-                0x00007984       0x10 grid/grid_sys.o
-                0x00007984                grid_msg_set_dy
+                0x000078f4       0x10 grid/grid_sys.o
+                0x000078f4                grid_msg_set_dy
  .text.grid_msg_set_age
-                0x00007994       0x10 grid/grid_sys.o
-                0x00007994                grid_msg_set_age
+                0x00007904       0x10 grid/grid_sys.o
+                0x00007904                grid_msg_set_age
  .text.grid_msg_find_recent
-                0x000079a4       0x1a grid/grid_sys.o
-                0x000079a4                grid_msg_find_recent
+                0x00007914       0x1a grid/grid_sys.o
+                0x00007914                grid_msg_find_recent
  .text.grid_msg_push_recent
-                0x000079be       0x16 grid/grid_sys.o
-                0x000079be                grid_msg_push_recent
+                0x0000792e       0x16 grid/grid_sys.o
+                0x0000792e                grid_msg_push_recent
  .text.grid_ui_model_init
-                0x000079d4       0x20 grid/grid_ui.o
-                0x000079d4                grid_ui_model_init
+                0x00007944       0x20 grid/grid_ui.o
+                0x00007944                grid_ui_model_init
  .text.grid_report_init
-                0x000079f4       0x84 grid/grid_ui.o
-                0x000079f4                grid_report_init
+                0x00007964       0x84 grid/grid_ui.o
+                0x00007964                grid_report_init
  .text.grid_report_ui_init
-                0x00007a78       0x18 grid/grid_ui.o
-                0x00007a78                grid_report_ui_init
+                0x000079e8       0x18 grid/grid_ui.o
+                0x000079e8                grid_report_ui_init
  .text.grid_report_sys_init
-                0x00007a90      0x1c0 grid/grid_ui.o
-                0x00007a90                grid_report_sys_init
+                0x00007a00      0x1c0 grid/grid_ui.o
+                0x00007a00                grid_report_sys_init
  .text.grid_report_render
-                0x00007c50       0x20 grid/grid_ui.o
-                0x00007c50                grid_report_render
- .text.grid_report_ui_get_changed_flag
-                0x00007c70        0xc grid/grid_ui.o
-                0x00007c70                grid_report_ui_get_changed_flag
+                0x00007bc0       0x20 grid/grid_ui.o
+                0x00007bc0                grid_report_render
  .text.grid_report_ui_set_changed_flag
-                0x00007c7c        0xe grid/grid_ui.o
-                0x00007c7c                grid_report_ui_set_changed_flag
+                0x00007be0        0xe grid/grid_ui.o
+                0x00007be0                grid_report_ui_set_changed_flag
  .text.grid_report_sys_set_changed_flag
-                0x00007c8a        0xa grid/grid_ui.o
-                0x00007c8a                grid_report_sys_set_changed_flag
+                0x00007bee        0xa grid/grid_ui.o
+                0x00007bee                grid_report_sys_set_changed_flag
  .text.grid_report_sys_clear_changed_flag
-                0x00007c94        0xa grid/grid_ui.o
-                0x00007c94                grid_report_sys_clear_changed_flag
- *fill*         0x00007c9e        0x2 
+                0x00007bf8        0xa grid/grid_ui.o
+                0x00007bf8                grid_report_sys_clear_changed_flag
+ *fill*         0x00007c02        0x2 
  .text.grid_port_process_ui
-                0x00007ca0      0x470 grid/grid_ui.o
-                0x00007ca0                grid_port_process_ui
+                0x00007c04      0x470 grid/grid_ui.o
+                0x00007c04                grid_port_process_ui
  .text.adc_async_window_threshold_reached
-                0x00008110        0x8 hal/src/hal_adc_async.o
+                0x00008074        0x8 hal/src/hal_adc_async.o
  .text.adc_async_error_occured
-                0x00008118        0x8 hal/src/hal_adc_async.o
+                0x0000807c        0x8 hal/src/hal_adc_async.o
  .text.adc_async_channel_conversion_done
-                0x00008120       0x68 hal/src/hal_adc_async.o
+                0x00008084       0x68 hal/src/hal_adc_async.o
  .text.adc_async_init
-                0x00008188       0x4c hal/src/hal_adc_async.o
-                0x00008188                adc_async_init
+                0x000080ec       0x4c hal/src/hal_adc_async.o
+                0x000080ec                adc_async_init
  .text.adc_async_register_channel_buffer
-                0x000081d4       0x6c hal/src/hal_adc_async.o
-                0x000081d4                adc_async_register_channel_buffer
+                0x00008138       0x6c hal/src/hal_adc_async.o
+                0x00008138                adc_async_register_channel_buffer
  .text.adc_async_enable_channel
-                0x00008240       0x10 hal/src/hal_adc_async.o
-                0x00008240                adc_async_enable_channel
+                0x000081a4       0x10 hal/src/hal_adc_async.o
+                0x000081a4                adc_async_enable_channel
  .text.adc_async_register_callback
-                0x00008250       0x3c hal/src/hal_adc_async.o
-                0x00008250                adc_async_register_callback
+                0x000081b4       0x3c hal/src/hal_adc_async.o
+                0x000081b4                adc_async_register_callback
  .text.adc_async_read_channel
-                0x0000828c       0x74 hal/src/hal_adc_async.o
-                0x0000828c                adc_async_read_channel
+                0x000081f0       0x74 hal/src/hal_adc_async.o
+                0x000081f0                adc_async_read_channel
  .text.adc_async_start_conversion
-                0x00008300       0x10 hal/src/hal_adc_async.o
-                0x00008300                adc_async_start_conversion
+                0x00008264       0x10 hal/src/hal_adc_async.o
+                0x00008264                adc_async_start_conversion
  .text.atomic_enter_critical
-                0x00008310        0xe hal/src/hal_atomic.o
-                0x00008310                atomic_enter_critical
+                0x00008274        0xe hal/src/hal_atomic.o
+                0x00008274                atomic_enter_critical
  .text.atomic_leave_critical
-                0x0000831e        0xc hal/src/hal_atomic.o
-                0x0000831e                atomic_leave_critical
- *fill*         0x0000832a        0x2 
+                0x00008282        0xc hal/src/hal_atomic.o
+                0x00008282                atomic_leave_critical
+ *fill*         0x0000828e        0x2 
  .text.crc_sync_init
-                0x0000832c        0x8 hal/src/hal_crc_sync.o
-                0x0000832c                crc_sync_init
+                0x00008290        0x8 hal/src/hal_crc_sync.o
+                0x00008290                crc_sync_init
  .text.delay_init
-                0x00008334       0x10 hal/src/hal_delay.o
-                0x00008334                delay_init
+                0x00008298       0x10 hal/src/hal_delay.o
+                0x00008298                delay_init
  .text.delay_us
-                0x00008344       0x24 hal/src/hal_delay.o
-                0x00008344                delay_us
+                0x000082a8       0x24 hal/src/hal_delay.o
+                0x000082a8                delay_us
  .text.delay_ms
-                0x00008368       0x24 hal/src/hal_delay.o
-                0x00008368                delay_ms
+                0x000082cc       0x24 hal/src/hal_delay.o
+                0x000082cc                delay_ms
  .text.event_system_init
-                0x0000838c        0x8 hal/src/hal_evsys.o
-                0x0000838c                event_system_init
+                0x000082f0        0x8 hal/src/hal_evsys.o
+                0x000082f0                event_system_init
  .text.flash_ready
-                0x00008394        0x8 hal/src/hal_flash.o
+                0x000082f8        0x8 hal/src/hal_flash.o
  .text.flash_error
-                0x0000839c        0x8 hal/src/hal_flash.o
+                0x00008300        0x8 hal/src/hal_flash.o
  .text.flash_init
-                0x000083a4       0x20 hal/src/hal_flash.o
-                0x000083a4                flash_init
+                0x00008308       0x20 hal/src/hal_flash.o
+                0x00008308                flash_init
  .text.i2c_m_async_write
-                0x000083c4       0x2c hal/src/hal_i2c_m_async.o
+                0x00008328       0x2c hal/src/hal_i2c_m_async.o
  .text.i2c_m_async_read
-                0x000083f0       0x2c hal/src/hal_i2c_m_async.o
+                0x00008354       0x2c hal/src/hal_i2c_m_async.o
  .text.i2c_tx_complete
-                0x0000841c        0xe hal/src/hal_i2c_m_async.o
+                0x00008380        0xe hal/src/hal_i2c_m_async.o
  .text.i2c_rx_complete
-                0x0000842a        0xe hal/src/hal_i2c_m_async.o
+                0x0000838e        0xe hal/src/hal_i2c_m_async.o
  .text.i2c_error
-                0x00008438        0xe hal/src/hal_i2c_m_async.o
- *fill*         0x00008446        0x2 
+                0x0000839c        0xe hal/src/hal_i2c_m_async.o
+ *fill*         0x000083aa        0x2 
  .text.i2c_m_async_init
-                0x00008448       0x50 hal/src/hal_i2c_m_async.o
-                0x00008448                i2c_m_async_init
+                0x000083ac       0x50 hal/src/hal_i2c_m_async.o
+                0x000083ac                i2c_m_async_init
  .text.io_write
-                0x00008498        0x4 hal/src/hal_io.o
-                0x00008498                io_write
- .text.io_read  0x0000849c        0x4 hal/src/hal_io.o
-                0x0000849c                io_read
+                0x000083fc        0x4 hal/src/hal_io.o
+                0x000083fc                io_write
+ .text.io_read  0x00008400        0x4 hal/src/hal_io.o
+                0x00008400                io_read
  .text.qspi_dma_init
-                0x000084a0        0x8 hal/src/hal_qspi_dma.o
-                0x000084a0                qspi_dma_init
+                0x00008404        0x8 hal/src/hal_qspi_dma.o
+                0x00008404                qspi_dma_init
  .text._spi_m_async_io_write
-                0x000084a8       0x20 hal/src/hal_spi_m_async.o
+                0x0000840c       0x20 hal/src/hal_spi_m_async.o
  .text._spi_m_async_io_read
-                0x000084c8       0x34 hal/src/hal_spi_m_async.o
+                0x0000842c       0x34 hal/src/hal_spi_m_async.o
  .text._spi_dev_error
-                0x000084fc       0x40 hal/src/hal_spi_m_async.o
+                0x00008460       0x40 hal/src/hal_spi_m_async.o
  .text._spi_dev_complete
-                0x0000853c       0x2c hal/src/hal_spi_m_async.o
+                0x000084a0       0x2c hal/src/hal_spi_m_async.o
  .text._spi_dev_rx
-                0x00008568       0x7c hal/src/hal_spi_m_async.o
+                0x000084cc       0x7c hal/src/hal_spi_m_async.o
  .text._spi_dev_tx
-                0x000085e4       0x48 hal/src/hal_spi_m_async.o
+                0x00008548       0x48 hal/src/hal_spi_m_async.o
  .text.spi_m_async_init
-                0x0000862c       0x64 hal/src/hal_spi_m_async.o
-                0x0000862c                spi_m_async_init
+                0x00008590       0x64 hal/src/hal_spi_m_async.o
+                0x00008590                spi_m_async_init
  .text.spi_m_async_enable
-                0x00008690        0xc hal/src/hal_spi_m_async.o
-                0x00008690                spi_m_async_enable
+                0x000085f4        0xc hal/src/hal_spi_m_async.o
+                0x000085f4                spi_m_async_enable
  .text.spi_m_async_set_baudrate
-                0x0000869c       0x18 hal/src/hal_spi_m_async.o
-                0x0000869c                spi_m_async_set_baudrate
+                0x00008600       0x18 hal/src/hal_spi_m_async.o
+                0x00008600                spi_m_async_set_baudrate
  .text.spi_m_async_set_mode
-                0x000086b4       0x18 hal/src/hal_spi_m_async.o
-                0x000086b4                spi_m_async_set_mode
+                0x00008618       0x18 hal/src/hal_spi_m_async.o
+                0x00008618                spi_m_async_set_mode
  .text.spi_m_async_transfer
-                0x000086cc       0x48 hal/src/hal_spi_m_async.o
-                0x000086cc                spi_m_async_transfer
+                0x00008630       0x48 hal/src/hal_spi_m_async.o
+                0x00008630                spi_m_async_transfer
  .text.spi_m_async_register_callback
-                0x00008714       0x1c hal/src/hal_spi_m_async.o
-                0x00008714                spi_m_async_register_callback
+                0x00008678       0x1c hal/src/hal_spi_m_async.o
+                0x00008678                spi_m_async_register_callback
  .text.spi_m_async_get_io_descriptor
-                0x00008730        0x8 hal/src/hal_spi_m_async.o
-                0x00008730                spi_m_async_get_io_descriptor
+                0x00008694        0x8 hal/src/hal_spi_m_async.o
+                0x00008694                spi_m_async_get_io_descriptor
  .text._spi_m_dma_io_write
-                0x00008738       0x18 hal/src/hal_spi_m_dma.o
+                0x0000869c       0x18 hal/src/hal_spi_m_dma.o
  .text._spi_m_dma_io_read
-                0x00008750       0x18 hal/src/hal_spi_m_dma.o
+                0x000086b4       0x18 hal/src/hal_spi_m_dma.o
  .text.spi_m_dma_init
-                0x00008768       0x24 hal/src/hal_spi_m_dma.o
-                0x00008768                spi_m_dma_init
+                0x000086cc       0x24 hal/src/hal_spi_m_dma.o
+                0x000086cc                spi_m_dma_init
  .text.spi_m_dma_enable
-                0x0000878c        0xc hal/src/hal_spi_m_dma.o
-                0x0000878c                spi_m_dma_enable
+                0x000086f0        0xc hal/src/hal_spi_m_dma.o
+                0x000086f0                spi_m_dma_enable
  .text.spi_m_dma_register_callback
-                0x00008798        0xc hal/src/hal_spi_m_dma.o
-                0x00008798                spi_m_dma_register_callback
+                0x000086fc        0xc hal/src/hal_spi_m_dma.o
+                0x000086fc                spi_m_dma_register_callback
  .text.spi_m_dma_get_io_descriptor
-                0x000087a4        0x8 hal/src/hal_spi_m_dma.o
-                0x000087a4                spi_m_dma_get_io_descriptor
+                0x00008708        0x8 hal/src/hal_spi_m_dma.o
+                0x00008708                spi_m_dma_get_io_descriptor
  .text.timer_add_timer_task
-                0x000087ac       0x4c hal/src/hal_timer.o
+                0x00008710       0x4c hal/src/hal_timer.o
  .text.timer_process_counted
-                0x000087f8       0x6c hal/src/hal_timer.o
+                0x0000875c       0x6c hal/src/hal_timer.o
  .text.timer_init
-                0x00008864       0x1c hal/src/hal_timer.o
-                0x00008864                timer_init
+                0x000087c8       0x1c hal/src/hal_timer.o
+                0x000087c8                timer_init
  .text.timer_start
-                0x00008880       0x24 hal/src/hal_timer.o
-                0x00008880                timer_start
+                0x000087e4       0x24 hal/src/hal_timer.o
+                0x000087e4                timer_start
  .text.timer_add_task
-                0x000088a4       0x78 hal/src/hal_timer.o
-                0x000088a4                timer_add_task
+                0x00008808       0x78 hal/src/hal_timer.o
+                0x00008808                timer_add_task
  .text.usart_transmission_complete
-                0x0000891c       0x10 hal/src/hal_usart_async.o
+                0x00008880       0x10 hal/src/hal_usart_async.o
  .text.usart_error
-                0x0000892c       0x10 hal/src/hal_usart_async.o
+                0x00008890       0x10 hal/src/hal_usart_async.o
  .text.usart_fill_rx_buffer
-                0x0000893c       0x20 hal/src/hal_usart_async.o
+                0x000088a0       0x20 hal/src/hal_usart_async.o
  .text.usart_async_write
-                0x0000895c       0x34 hal/src/hal_usart_async.o
+                0x000088c0       0x34 hal/src/hal_usart_async.o
  .text.usart_process_byte_sent
-                0x00008990       0x34 hal/src/hal_usart_async.o
+                0x000088f4       0x34 hal/src/hal_usart_async.o
  .text.usart_async_read
-                0x000089c4       0x54 hal/src/hal_usart_async.o
+                0x00008928       0x54 hal/src/hal_usart_async.o
  .text.usart_async_init
-                0x00008a18       0x60 hal/src/hal_usart_async.o
-                0x00008a18                usart_async_init
+                0x0000897c       0x60 hal/src/hal_usart_async.o
+                0x0000897c                usart_async_init
  .text.usart_async_enable
-                0x00008a78       0x10 hal/src/hal_usart_async.o
-                0x00008a78                usart_async_enable
+                0x000089dc       0x10 hal/src/hal_usart_async.o
+                0x000089dc                usart_async_enable
  .text.usart_async_disable
-                0x00008a88       0x10 hal/src/hal_usart_async.o
-                0x00008a88                usart_async_disable
+                0x000089ec       0x10 hal/src/hal_usart_async.o
+                0x000089ec                usart_async_disable
  .text.usart_async_get_io_descriptor
-                0x00008a98        0x6 hal/src/hal_usart_async.o
-                0x00008a98                usart_async_get_io_descriptor
- *fill*         0x00008a9e        0x2 
+                0x000089fc        0x6 hal/src/hal_usart_async.o
+                0x000089fc                usart_async_get_io_descriptor
+ *fill*         0x00008a02        0x2 
  .text.usart_async_register_callback
-                0x00008aa0       0x44 hal/src/hal_usart_async.o
-                0x00008aa0                usart_async_register_callback
+                0x00008a04       0x44 hal/src/hal_usart_async.o
+                0x00008a04                usart_async_register_callback
  .text.usart_async_set_parity
-                0x00008ae4       0x10 hal/src/hal_usart_async.o
-                0x00008ae4                usart_async_set_parity
+                0x00008a48       0x10 hal/src/hal_usart_async.o
+                0x00008a48                usart_async_set_parity
  .text.usart_sync_write
-                0x00008af4       0x50 hal/src/hal_usart_sync.o
+                0x00008a58       0x50 hal/src/hal_usart_sync.o
  .text.usart_sync_read
-                0x00008b44       0x38 hal/src/hal_usart_sync.o
+                0x00008aa8       0x38 hal/src/hal_usart_sync.o
  .text.usart_sync_init
-                0x00008b7c       0x24 hal/src/hal_usart_sync.o
-                0x00008b7c                usart_sync_init
+                0x00008ae0       0x24 hal/src/hal_usart_sync.o
+                0x00008ae0                usart_sync_init
  .text.usart_sync_enable
-                0x00008ba0       0x10 hal/src/hal_usart_sync.o
-                0x00008ba0                usart_sync_enable
+                0x00008b04       0x10 hal/src/hal_usart_sync.o
+                0x00008b04                usart_sync_enable
  .text._usb_d_find_ep
-                0x00008bb0       0x30 hal/src/hal_usb_device.o
+                0x00008b14       0x30 hal/src/hal_usb_device.o
  .text.usb_d_dummy_cb_false
-                0x00008be0        0x4 hal/src/hal_usb_device.o
+                0x00008b44        0x4 hal/src/hal_usb_device.o
  .text.usb_d_cb_trans_more
-                0x00008be4       0x30 hal/src/hal_usb_device.o
+                0x00008b48       0x30 hal/src/hal_usb_device.o
  .text._usb_d_cb_trans_done
-                0x00008c14      0x108 hal/src/hal_usb_device.o
+                0x00008b78      0x108 hal/src/hal_usb_device.o
  .text.usb_d_cb_trans_setup
-                0x00008d1c       0x8c hal/src/hal_usb_device.o
+                0x00008c80       0x8c hal/src/hal_usb_device.o
  .text.usb_d_init
-                0x00008da8       0x68 hal/src/hal_usb_device.o
-                0x00008da8                usb_d_init
+                0x00008d0c       0x68 hal/src/hal_usb_device.o
+                0x00008d0c                usb_d_init
  .text.usb_d_register_callback
-                0x00008e10        0x8 hal/src/hal_usb_device.o
-                0x00008e10                usb_d_register_callback
+                0x00008d74        0x8 hal/src/hal_usb_device.o
+                0x00008d74                usb_d_register_callback
  .text.usb_d_enable
-                0x00008e18        0x8 hal/src/hal_usb_device.o
-                0x00008e18                usb_d_enable
+                0x00008d7c        0x8 hal/src/hal_usb_device.o
+                0x00008d7c                usb_d_enable
  .text.usb_d_attach
-                0x00008e20        0x8 hal/src/hal_usb_device.o
-                0x00008e20                usb_d_attach
+                0x00008d84        0x8 hal/src/hal_usb_device.o
+                0x00008d84                usb_d_attach
  .text.usb_d_get_frame_num
-                0x00008e28        0x8 hal/src/hal_usb_device.o
-                0x00008e28                usb_d_get_frame_num
+                0x00008d8c        0x8 hal/src/hal_usb_device.o
+                0x00008d8c                usb_d_get_frame_num
  .text.usb_d_set_address
-                0x00008e30        0x8 hal/src/hal_usb_device.o
-                0x00008e30                usb_d_set_address
+                0x00008d94        0x8 hal/src/hal_usb_device.o
+                0x00008d94                usb_d_set_address
  .text.usb_d_ep_init
-                0x00008e38       0x50 hal/src/hal_usb_device.o
-                0x00008e38                usb_d_ep_init
+                0x00008d9c       0x50 hal/src/hal_usb_device.o
+                0x00008d9c                usb_d_ep_init
  .text.usb_d_ep0_init
-                0x00008e88       0x10 hal/src/hal_usb_device.o
-                0x00008e88                usb_d_ep0_init
+                0x00008dec       0x10 hal/src/hal_usb_device.o
+                0x00008dec                usb_d_ep0_init
  .text.usb_d_ep_deinit
-                0x00008e98       0x2c hal/src/hal_usb_device.o
-                0x00008e98                usb_d_ep_deinit
+                0x00008dfc       0x2c hal/src/hal_usb_device.o
+                0x00008dfc                usb_d_ep_deinit
  .text.usb_d_ep_enable
-                0x00008ec4       0x40 hal/src/hal_usb_device.o
-                0x00008ec4                usb_d_ep_enable
+                0x00008e28       0x40 hal/src/hal_usb_device.o
+                0x00008e28                usb_d_ep_enable
  .text.usb_d_ep_transfer
-                0x00008f04       0xf8 hal/src/hal_usb_device.o
-                0x00008f04                usb_d_ep_transfer
+                0x00008e68       0xf8 hal/src/hal_usb_device.o
+                0x00008e68                usb_d_ep_transfer
  .text.usb_d_ep_halt
-                0x00008ffc       0x64 hal/src/hal_usb_device.o
-                0x00008ffc                usb_d_ep_halt
+                0x00008f60       0x64 hal/src/hal_usb_device.o
+                0x00008f60                usb_d_ep_halt
  .text.usb_d_ep_register_callback
-                0x00009060       0x4c hal/src/hal_usb_device.o
-                0x00009060                usb_d_ep_register_callback
+                0x00008fc4       0x4c hal/src/hal_usb_device.o
+                0x00008fc4                usb_d_ep_register_callback
  .text.is_list_element
-                0x000090ac        0xe hal/utils/src/utils_list.o
-                0x000090ac                is_list_element
+                0x00009010        0xe hal/utils/src/utils_list.o
+                0x00009010                is_list_element
  .text.list_insert_as_head
-                0x000090ba        0x8 hal/utils/src/utils_list.o
-                0x000090ba                list_insert_as_head
+                0x0000901e        0x8 hal/utils/src/utils_list.o
+                0x0000901e                list_insert_as_head
  .text.list_insert_after
-                0x000090c2        0x8 hal/utils/src/utils_list.o
-                0x000090c2                list_insert_after
+                0x00009026        0x8 hal/utils/src/utils_list.o
+                0x00009026                list_insert_after
  .text.list_insert_at_end
-                0x000090ca       0x18 hal/utils/src/utils_list.o
-                0x000090ca                list_insert_at_end
+                0x0000902e       0x18 hal/utils/src/utils_list.o
+                0x0000902e                list_insert_at_end
  .text.list_remove_head
-                0x000090e2        0xc hal/utils/src/utils_list.o
-                0x000090e2                list_remove_head
+                0x00009046        0xc hal/utils/src/utils_list.o
+                0x00009046                list_remove_head
  .text.ringbuffer_init
-                0x000090ee       0x18 hal/utils/src/utils_ringbuffer.o
-                0x000090ee                ringbuffer_init
+                0x00009052       0x18 hal/utils/src/utils_ringbuffer.o
+                0x00009052                ringbuffer_init
  .text.ringbuffer_get
-                0x00009106       0x22 hal/utils/src/utils_ringbuffer.o
-                0x00009106                ringbuffer_get
+                0x0000906a       0x22 hal/utils/src/utils_ringbuffer.o
+                0x0000906a                ringbuffer_get
  .text.ringbuffer_put
-                0x00009128       0x26 hal/utils/src/utils_ringbuffer.o
-                0x00009128                ringbuffer_put
+                0x0000908c       0x26 hal/utils/src/utils_ringbuffer.o
+                0x0000908c                ringbuffer_put
  .text.ringbuffer_num
-                0x0000914e        0x8 hal/utils/src/utils_ringbuffer.o
-                0x0000914e                ringbuffer_num
- *fill*         0x00009156        0x2 
- .text._sbrk    0x00009158       0x1c hal/utils/src/utils_syscalls.o
-                0x00009158                _sbrk
- .text._close   0x00009174        0x6 hal/utils/src/utils_syscalls.o
-                0x00009174                _close
- .text._fstat   0x0000917a        0xa hal/utils/src/utils_syscalls.o
-                0x0000917a                _fstat
- .text._isatty  0x00009184        0x4 hal/utils/src/utils_syscalls.o
-                0x00009184                _isatty
- .text._lseek   0x00009188        0x4 hal/utils/src/utils_syscalls.o
-                0x00009188                _lseek
+                0x000090b2        0x8 hal/utils/src/utils_ringbuffer.o
+                0x000090b2                ringbuffer_num
+ *fill*         0x000090ba        0x2 
+ .text._sbrk    0x000090bc       0x1c hal/utils/src/utils_syscalls.o
+                0x000090bc                _sbrk
+ .text._close   0x000090d8        0x6 hal/utils/src/utils_syscalls.o
+                0x000090d8                _close
+ .text._fstat   0x000090de        0xa hal/utils/src/utils_syscalls.o
+                0x000090de                _fstat
+ .text._isatty  0x000090e8        0x4 hal/utils/src/utils_syscalls.o
+                0x000090e8                _isatty
+ .text._lseek   0x000090ec        0x4 hal/utils/src/utils_syscalls.o
+                0x000090ec                _lseek
  .text.__NVIC_DisableIRQ
-                0x0000918c       0x28 hpl/adc/hpl_adc.o
+                0x000090f0       0x28 hpl/adc/hpl_adc.o
  .text.__NVIC_ClearPendingIRQ
-                0x000091b4       0x20 hpl/adc/hpl_adc.o
+                0x00009118       0x20 hpl/adc/hpl_adc.o
  .text.hri_adc_wait_for_sync
-                0x000091d4        0x8 hpl/adc/hpl_adc.o
+                0x00009138        0x8 hpl/adc/hpl_adc.o
  .text.hri_adc_set_CTRLA_ENABLE_bit
-                0x000091dc       0x14 hpl/adc/hpl_adc.o
+                0x00009140       0x14 hpl/adc/hpl_adc.o
  .text.hri_adc_clear_CTRLA_ENABLE_bit
-                0x000091f0       0x18 hpl/adc/hpl_adc.o
+                0x00009154       0x18 hpl/adc/hpl_adc.o
  .text._adc_get_regs
-                0x00009208       0x14 hpl/adc/hpl_adc.o
+                0x0000916c       0x14 hpl/adc/hpl_adc.o
  .text._adc_interrupt_handler
-                0x0000921c       0x4e hpl/adc/hpl_adc.o
+                0x00009180       0x4e hpl/adc/hpl_adc.o
  .text._adc_get_irq_num.isra.0
-                0x0000926a       0x14 hpl/adc/hpl_adc.o
- *fill*         0x0000927e        0x2 
+                0x000091ce       0x14 hpl/adc/hpl_adc.o
+ *fill*         0x000091e2        0x2 
  .text._adc_init
-                0x00009280       0xc8 hpl/adc/hpl_adc.o
+                0x000091e4       0xc8 hpl/adc/hpl_adc.o
  .text._adc_async_init
-                0x00009348       0xb4 hpl/adc/hpl_adc.o
-                0x00009348                _adc_async_init
+                0x000092ac       0xb4 hpl/adc/hpl_adc.o
+                0x000092ac                _adc_async_init
  .text._adc_async_enable_channel
-                0x000093fc        0xc hpl/adc/hpl_adc.o
-                0x000093fc                _adc_async_enable_channel
+                0x00009360        0xc hpl/adc/hpl_adc.o
+                0x00009360                _adc_async_enable_channel
  .text._adc_async_get_data_size
-                0x00009408       0x12 hpl/adc/hpl_adc.o
-                0x00009408                _adc_async_get_data_size
- *fill*         0x0000941a        0x2 
+                0x0000936c       0x12 hpl/adc/hpl_adc.o
+                0x0000936c                _adc_async_get_data_size
+ *fill*         0x0000937e        0x2 
  .text._adc_async_convert
-                0x0000941c       0x18 hpl/adc/hpl_adc.o
-                0x0000941c                _adc_async_convert
+                0x00009380       0x18 hpl/adc/hpl_adc.o
+                0x00009380                _adc_async_convert
  .text._adc_async_set_irq_state
-                0x00009434       0x20 hpl/adc/hpl_adc.o
-                0x00009434                _adc_async_set_irq_state
+                0x00009398       0x20 hpl/adc/hpl_adc.o
+                0x00009398                _adc_async_set_irq_state
  .text.ADC0_1_Handler
-                0x00009454       0x10 hpl/adc/hpl_adc.o
-                0x00009454                ADC0_1_Handler
+                0x000093b8       0x10 hpl/adc/hpl_adc.o
+                0x000093b8                ADC0_1_Handler
  .text.ADC0_0_Handler
-                0x00009464        0x8 hpl/adc/hpl_adc.o
-                0x00009464                ADC0_0_Handler
+                0x000093c8        0x8 hpl/adc/hpl_adc.o
+                0x000093c8                ADC0_0_Handler
  .text.ADC1_1_Handler
-                0x0000946c       0x10 hpl/adc/hpl_adc.o
-                0x0000946c                ADC1_1_Handler
+                0x000093d0       0x10 hpl/adc/hpl_adc.o
+                0x000093d0                ADC1_1_Handler
  .text.ADC1_0_Handler
-                0x0000947c        0x8 hpl/adc/hpl_adc.o
-                0x0000947c                ADC1_0_Handler
+                0x000093e0        0x8 hpl/adc/hpl_adc.o
+                0x000093e0                ADC1_0_Handler
  .text._irq_set
-                0x00009484       0x1c hpl/core/hpl_core_m4.o
-                0x00009484                _irq_set
+                0x000093e8       0x1c hpl/core/hpl_core_m4.o
+                0x000093e8                _irq_set
  .text._get_cycles_for_us
-                0x000094a0        0x6 hpl/core/hpl_core_m4.o
-                0x000094a0                _get_cycles_for_us
- *fill*         0x000094a6        0x2 
+                0x00009404        0x6 hpl/core/hpl_core_m4.o
+                0x00009404                _get_cycles_for_us
+ *fill*         0x0000940a        0x2 
  .text._get_cycles_for_ms
-                0x000094a8        0xc hpl/core/hpl_core_m4.o
-                0x000094a8                _get_cycles_for_ms
+                0x0000940c        0xc hpl/core/hpl_core_m4.o
+                0x0000940c                _get_cycles_for_ms
  .text._init_chip
-                0x000094b4       0x5c hpl/core/hpl_init.o
-                0x000094b4                _init_chip
+                0x00009418       0x5c hpl/core/hpl_init.o
+                0x00009418                _init_chip
  .text._dmac_handler
-                0x00009510       0x50 hpl/dmac/hpl_dmac.o
+                0x00009474       0x50 hpl/dmac/hpl_dmac.o
  .text._dma_init
-                0x00009560       0xd0 hpl/dmac/hpl_dmac.o
-                0x00009560                _dma_init
+                0x000094c4       0xd0 hpl/dmac/hpl_dmac.o
+                0x000094c4                _dma_init
  .text._dma_set_irq_state
-                0x00009630       0x28 hpl/dmac/hpl_dmac.o
-                0x00009630                _dma_set_irq_state
+                0x00009594       0x28 hpl/dmac/hpl_dmac.o
+                0x00009594                _dma_set_irq_state
  .text._dma_set_destination_address
-                0x00009658       0x10 hpl/dmac/hpl_dmac.o
-                0x00009658                _dma_set_destination_address
+                0x000095bc       0x10 hpl/dmac/hpl_dmac.o
+                0x000095bc                _dma_set_destination_address
  .text._dma_set_source_address
-                0x00009668       0x10 hpl/dmac/hpl_dmac.o
-                0x00009668                _dma_set_source_address
+                0x000095cc       0x10 hpl/dmac/hpl_dmac.o
+                0x000095cc                _dma_set_source_address
  .text._dma_srcinc_enable
-                0x00009678       0x1c hpl/dmac/hpl_dmac.o
-                0x00009678                _dma_srcinc_enable
+                0x000095dc       0x1c hpl/dmac/hpl_dmac.o
+                0x000095dc                _dma_srcinc_enable
  .text._dma_set_data_amount
-                0x00009694       0x44 hpl/dmac/hpl_dmac.o
-                0x00009694                _dma_set_data_amount
+                0x000095f8       0x44 hpl/dmac/hpl_dmac.o
+                0x000095f8                _dma_set_data_amount
  .text._dma_enable_transaction
-                0x000096d8       0x3c hpl/dmac/hpl_dmac.o
-                0x000096d8                _dma_enable_transaction
+                0x0000963c       0x3c hpl/dmac/hpl_dmac.o
+                0x0000963c                _dma_enable_transaction
  .text._dma_get_channel_resource
-                0x00009714       0x14 hpl/dmac/hpl_dmac.o
-                0x00009714                _dma_get_channel_resource
+                0x00009678       0x14 hpl/dmac/hpl_dmac.o
+                0x00009678                _dma_get_channel_resource
  .text.DMAC_0_Handler
-                0x00009728        0x8 hpl/dmac/hpl_dmac.o
-                0x00009728                DMAC_0_Handler
+                0x0000968c        0x8 hpl/dmac/hpl_dmac.o
+                0x0000968c                DMAC_0_Handler
  .text.DMAC_1_Handler
-                0x00009730        0x8 hpl/dmac/hpl_dmac.o
-                0x00009730                DMAC_1_Handler
+                0x00009694        0x8 hpl/dmac/hpl_dmac.o
+                0x00009694                DMAC_1_Handler
  .text.DMAC_2_Handler
-                0x00009738        0x8 hpl/dmac/hpl_dmac.o
-                0x00009738                DMAC_2_Handler
+                0x0000969c        0x8 hpl/dmac/hpl_dmac.o
+                0x0000969c                DMAC_2_Handler
  .text.DMAC_3_Handler
-                0x00009740        0x8 hpl/dmac/hpl_dmac.o
-                0x00009740                DMAC_3_Handler
+                0x000096a4        0x8 hpl/dmac/hpl_dmac.o
+                0x000096a4                DMAC_3_Handler
  .text.DMAC_4_Handler
-                0x00009748        0x8 hpl/dmac/hpl_dmac.o
-                0x00009748                DMAC_4_Handler
+                0x000096ac        0x8 hpl/dmac/hpl_dmac.o
+                0x000096ac                DMAC_4_Handler
  .text._crc_sync_init
-                0x00009750        0x6 hpl/dsu/hpl_dsu.o
-                0x00009750                _crc_sync_init
- *fill*         0x00009756        0x2 
+                0x000096b4        0x6 hpl/dsu/hpl_dsu.o
+                0x000096b4                _crc_sync_init
+ *fill*         0x000096ba        0x2 
  .text._event_system_init
-                0x00009758       0x58 hpl/evsys/hpl_evsys.o
-                0x00009758                _event_system_init
+                0x000096bc       0x58 hpl/evsys/hpl_evsys.o
+                0x000096bc                _event_system_init
  .text.hri_gclk_wait_for_sync.constprop.0
-                0x000097b0       0x14 hpl/gclk/hpl_gclk.o
+                0x00009714       0x14 hpl/gclk/hpl_gclk.o
  .text._gclk_init_generators_by_fref
-                0x000097c4       0x58 hpl/gclk/hpl_gclk.o
-                0x000097c4                _gclk_init_generators_by_fref
+                0x00009728       0x58 hpl/gclk/hpl_gclk.o
+                0x00009728                _gclk_init_generators_by_fref
  .text._mclk_init
-                0x0000981c        0xc hpl/mclk/hpl_mclk.o
-                0x0000981c                _mclk_init
+                0x00009780        0xc hpl/mclk/hpl_mclk.o
+                0x00009780                _mclk_init
  .text._flash_init
-                0x00009828       0x4c hpl/nvmctrl/hpl_nvmctrl.o
-                0x00009828                _flash_init
+                0x0000978c       0x4c hpl/nvmctrl/hpl_nvmctrl.o
+                0x0000978c                _flash_init
  .text.NVMCTRL_1_Handler
-                0x00009874       0x2c hpl/nvmctrl/hpl_nvmctrl.o
-                0x00009874                NVMCTRL_1_Handler
+                0x000097d8       0x2c hpl/nvmctrl/hpl_nvmctrl.o
+                0x000097d8                NVMCTRL_1_Handler
  .text.NVMCTRL_0_Handler
-                0x000098a0        0x8 hpl/nvmctrl/hpl_nvmctrl.o
-                0x000098a0                NVMCTRL_0_Handler
+                0x00009804        0x8 hpl/nvmctrl/hpl_nvmctrl.o
+                0x00009804                NVMCTRL_0_Handler
  .text._osc32kctrl_init_sources
-                0x000098a8       0x14 hpl/osc32kctrl/hpl_osc32kctrl.o
-                0x000098a8                _osc32kctrl_init_sources
+                0x0000980c       0x14 hpl/osc32kctrl/hpl_osc32kctrl.o
+                0x0000980c                _osc32kctrl_init_sources
  .text._oscctrl_init_sources
-                0x000098bc        0x2 hpl/oscctrl/hpl_oscctrl.o
-                0x000098bc                _oscctrl_init_sources
- *fill*         0x000098be        0x2 
+                0x00009820        0x2 hpl/oscctrl/hpl_oscctrl.o
+                0x00009820                _oscctrl_init_sources
+ *fill*         0x00009822        0x2 
  .text._oscctrl_init_referenced_generators
-                0x000098c0       0xfc hpl/oscctrl/hpl_oscctrl.o
-                0x000098c0                _oscctrl_init_referenced_generators
+                0x00009824       0xfc hpl/oscctrl/hpl_oscctrl.o
+                0x00009824                _oscctrl_init_referenced_generators
  .text._qspi_dma_tx_complete
-                0x000099bc       0x14 hpl/qspi/hpl_qspi.o
+                0x00009920       0x14 hpl/qspi/hpl_qspi.o
  .text._qspi_dma_rx_complete
-                0x000099d0        0x8 hpl/qspi/hpl_qspi.o
+                0x00009934        0x8 hpl/qspi/hpl_qspi.o
  .text._qspi_dma_error_occured
-                0x000099d8        0xa hpl/qspi/hpl_qspi.o
- *fill*         0x000099e2        0x2 
+                0x0000993c        0xa hpl/qspi/hpl_qspi.o
+ *fill*         0x00009946        0x2 
  .text._qspi_dma_init
-                0x000099e4       0x58 hpl/qspi/hpl_qspi.o
-                0x000099e4                _qspi_dma_init
+                0x00009948       0x58 hpl/qspi/hpl_qspi.o
+                0x00009948                _qspi_dma_init
  .text.RAMECC_Handler
-                0x00009a3c       0x3c hpl/ramecc/hpl_ramecc.o
-                0x00009a3c                RAMECC_Handler
+                0x000099a0       0x3c hpl/ramecc/hpl_ramecc.o
+                0x000099a0                RAMECC_Handler
  .text.hri_rtcmode0_wait_for_sync
-                0x00009a78        0x8 hpl/rtc/hpl_rtc.o
+                0x000099dc        0x8 hpl/rtc/hpl_rtc.o
  .text._rtc_timer_stop
-                0x00009a80       0x1c hpl/rtc/hpl_rtc.o
-                0x00009a80                _rtc_timer_stop
+                0x000099e4       0x1c hpl/rtc/hpl_rtc.o
+                0x000099e4                _rtc_timer_stop
  .text._rtc_timer_set_period
-                0x00009a9c       0x10 hpl/rtc/hpl_rtc.o
-                0x00009a9c                _rtc_timer_set_period
+                0x00009a00       0x10 hpl/rtc/hpl_rtc.o
+                0x00009a00                _rtc_timer_set_period
  .text._rtc_timer_get_period
-                0x00009aac       0x14 hpl/rtc/hpl_rtc.o
-                0x00009aac                _rtc_timer_get_period
+                0x00009a10       0x14 hpl/rtc/hpl_rtc.o
+                0x00009a10                _rtc_timer_get_period
  .text._rtc_timer_is_started
-                0x00009ac0       0x1c hpl/rtc/hpl_rtc.o
-                0x00009ac0                _rtc_timer_is_started
+                0x00009a24       0x1c hpl/rtc/hpl_rtc.o
+                0x00009a24                _rtc_timer_is_started
  .text._rtc_timer_set_irq
-                0x00009adc        0x2 hpl/rtc/hpl_rtc.o
-                0x00009adc                _rtc_timer_set_irq
- *fill*         0x00009ade        0x2 
+                0x00009a40        0x2 hpl/rtc/hpl_rtc.o
+                0x00009a40                _rtc_timer_set_irq
+ *fill*         0x00009a42        0x2 
  .text._rtc_timer_start
-                0x00009ae0       0x3c hpl/rtc/hpl_rtc.o
-                0x00009ae0                _rtc_timer_start
+                0x00009a44       0x3c hpl/rtc/hpl_rtc.o
+                0x00009a44                _rtc_timer_start
  .text._rtc_timer_deinit
-                0x00009b1c       0x28 hpl/rtc/hpl_rtc.o
-                0x00009b1c                _rtc_timer_deinit
+                0x00009a80       0x28 hpl/rtc/hpl_rtc.o
+                0x00009a80                _rtc_timer_deinit
  .text._rtc_timer_init
-                0x00009b44       0x48 hpl/rtc/hpl_rtc.o
-                0x00009b44                _rtc_timer_init
+                0x00009aa8       0x48 hpl/rtc/hpl_rtc.o
+                0x00009aa8                _rtc_timer_init
  .text._rtc_get_timer
-                0x00009b8c        0x8 hpl/rtc/hpl_rtc.o
-                0x00009b8c                _rtc_get_timer
+                0x00009af0        0x8 hpl/rtc/hpl_rtc.o
+                0x00009af0                _rtc_get_timer
  .text.RTC_Handler
-                0x00009b94       0x24 hpl/rtc/hpl_rtc.o
-                0x00009b94                RTC_Handler
+                0x00009af8       0x24 hpl/rtc/hpl_rtc.o
+                0x00009af8                RTC_Handler
  .text.__NVIC_EnableIRQ
-                0x00009bb8       0x1c hpl/sercom/hpl_sercom.o
+                0x00009b1c       0x1c hpl/sercom/hpl_sercom.o
  .text.__NVIC_DisableIRQ
-                0x00009bd4       0x28 hpl/sercom/hpl_sercom.o
+                0x00009b38       0x28 hpl/sercom/hpl_sercom.o
  .text.__NVIC_ClearPendingIRQ
-                0x00009bfc       0x20 hpl/sercom/hpl_sercom.o
+                0x00009b60       0x20 hpl/sercom/hpl_sercom.o
  .text.hri_sercomi2cm_wait_for_sync
-                0x00009c1c        0x8 hpl/sercom/hpl_sercom.o
+                0x00009b80        0x8 hpl/sercom/hpl_sercom.o
  .text.hri_sercomspi_wait_for_sync
-                0x00009c24        0x8 hpl/sercom/hpl_sercom.o
+                0x00009b88        0x8 hpl/sercom/hpl_sercom.o
  .text.hri_sercomusart_wait_for_sync
-                0x00009c2c        0x8 hpl/sercom/hpl_sercom.o
+                0x00009b90        0x8 hpl/sercom/hpl_sercom.o
  .text.hri_sercomi2cm_clear_CTRLA_ENABLE_bit
-                0x00009c34       0x14 hpl/sercom/hpl_sercom.o
+                0x00009b98       0x14 hpl/sercom/hpl_sercom.o
  .text.hri_sercomspi_clear_CTRLA_ENABLE_bit
-                0x00009c48       0x14 hpl/sercom/hpl_sercom.o
+                0x00009bac       0x14 hpl/sercom/hpl_sercom.o
  .text.hri_sercomusart_get_CTRLA_ENABLE_bit
-                0x00009c5c       0x14 hpl/sercom/hpl_sercom.o
+                0x00009bc0       0x14 hpl/sercom/hpl_sercom.o
  .text.hri_sercomusart_write_CTRLA_ENABLE_bit
-                0x00009c70       0x18 hpl/sercom/hpl_sercom.o
+                0x00009bd4       0x18 hpl/sercom/hpl_sercom.o
  .text.hri_sercomusart_clear_CTRLA_ENABLE_bit
-                0x00009c88       0x14 hpl/sercom/hpl_sercom.o
+                0x00009bec       0x14 hpl/sercom/hpl_sercom.o
  .text._sercom_get_hardware_index
-                0x00009c9c       0x34 hpl/sercom/hpl_sercom.o
+                0x00009c00       0x34 hpl/sercom/hpl_sercom.o
  .text._sercom_usart_interrupt_handler
-                0x00009cd0       0x70 hpl/sercom/hpl_sercom.o
+                0x00009c34       0x70 hpl/sercom/hpl_sercom.o
  .text._sercom_init_irq_param
-                0x00009d40       0x60 hpl/sercom/hpl_sercom.o
+                0x00009ca4       0x60 hpl/sercom/hpl_sercom.o
  .text._get_i2cm_index
-                0x00009da0       0x14 hpl/sercom/hpl_sercom.o
+                0x00009d04       0x14 hpl/sercom/hpl_sercom.o
  .text._sercom_get_irq_num
-                0x00009db4       0x14 hpl/sercom/hpl_sercom.o
+                0x00009d18       0x14 hpl/sercom/hpl_sercom.o
  .text._spi_sync_enable
-                0x00009dc8       0x28 hpl/sercom/hpl_sercom.o
+                0x00009d2c       0x28 hpl/sercom/hpl_sercom.o
  .text._spi_get_regs
-                0x00009df0       0x2c hpl/sercom/hpl_sercom.o
+                0x00009d54       0x2c hpl/sercom/hpl_sercom.o
  .text._spi_get_tx_dma_channel
-                0x00009e1c       0x14 hpl/sercom/hpl_sercom.o
+                0x00009d80       0x14 hpl/sercom/hpl_sercom.o
  .text._spi_get_rx_dma_channel
-                0x00009e30       0x14 hpl/sercom/hpl_sercom.o
+                0x00009d94       0x14 hpl/sercom/hpl_sercom.o
  .text._spi_dma_rx_complete
-                0x00009e44        0xa hpl/sercom/hpl_sercom.o
+                0x00009da8        0xa hpl/sercom/hpl_sercom.o
  .text._spi_dma_tx_complete
-                0x00009e4e        0xa hpl/sercom/hpl_sercom.o
+                0x00009db2        0xa hpl/sercom/hpl_sercom.o
  .text._spi_dma_error_occured
-                0x00009e58        0xa hpl/sercom/hpl_sercom.o
- *fill*         0x00009e62        0x2 
+                0x00009dbc        0xa hpl/sercom/hpl_sercom.o
+ *fill*         0x00009dc6        0x2 
  .text._usart_set_parity
-                0x00009e64       0x78 hpl/sercom/hpl_sercom.o
+                0x00009dc8       0x78 hpl/sercom/hpl_sercom.o
  .text._sercom_i2c_send_stop
-                0x00009edc       0x14 hpl/sercom/hpl_sercom.o
+                0x00009e40       0x14 hpl/sercom/hpl_sercom.o
  .text._sercom_i2c_sync_analyse_flags
-                0x00009ef0      0x16c hpl/sercom/hpl_sercom.o
+                0x00009e54      0x16c hpl/sercom/hpl_sercom.o
  .text._spi_load_regs_master
-                0x0000a05c       0x3c hpl/sercom/hpl_sercom.o
+                0x00009fc0       0x3c hpl/sercom/hpl_sercom.o
  .text._spi_set_mode
-                0x0000a098       0x34 hpl/sercom/hpl_sercom.o
+                0x00009ffc       0x34 hpl/sercom/hpl_sercom.o
  .text._i2c_m_sync_init_impl
-                0x0000a0cc       0xb0 hpl/sercom/hpl_sercom.o
+                0x0000a030       0xb0 hpl/sercom/hpl_sercom.o
  .text._usart_init
-                0x0000a17c       0xdc hpl/sercom/hpl_sercom.o
+                0x0000a0e0       0xdc hpl/sercom/hpl_sercom.o
  .text._usart_sync_init
-                0x0000a258        0xc hpl/sercom/hpl_sercom.o
-                0x0000a258                _usart_sync_init
+                0x0000a1bc        0xc hpl/sercom/hpl_sercom.o
+                0x0000a1bc                _usart_sync_init
  .text._usart_async_init
-                0x0000a264       0x64 hpl/sercom/hpl_sercom.o
-                0x0000a264                _usart_async_init
+                0x0000a1c8       0x64 hpl/sercom/hpl_sercom.o
+                0x0000a1c8                _usart_async_init
  .text._usart_sync_enable
-                0x0000a2c8       0x14 hpl/sercom/hpl_sercom.o
-                0x0000a2c8                _usart_sync_enable
+                0x0000a22c       0x14 hpl/sercom/hpl_sercom.o
+                0x0000a22c                _usart_sync_enable
  .text._usart_async_enable
-                0x0000a2dc       0x14 hpl/sercom/hpl_sercom.o
-                0x0000a2dc                _usart_async_enable
+                0x0000a240       0x14 hpl/sercom/hpl_sercom.o
+                0x0000a240                _usart_async_enable
  .text._usart_async_disable
-                0x0000a2f0        0xc hpl/sercom/hpl_sercom.o
-                0x0000a2f0                _usart_async_disable
+                0x0000a254        0xc hpl/sercom/hpl_sercom.o
+                0x0000a254                _usart_async_disable
  .text._usart_async_set_parity
-                0x0000a2fc        0xc hpl/sercom/hpl_sercom.o
-                0x0000a2fc                _usart_async_set_parity
+                0x0000a260        0xc hpl/sercom/hpl_sercom.o
+                0x0000a260                _usart_async_set_parity
  .text._usart_sync_write_byte
-                0x0000a308        0x6 hpl/sercom/hpl_sercom.o
-                0x0000a308                _usart_sync_write_byte
+                0x0000a26c        0x6 hpl/sercom/hpl_sercom.o
+                0x0000a26c                _usart_sync_write_byte
  .text._usart_async_write_byte
-                0x0000a30e        0x6 hpl/sercom/hpl_sercom.o
-                0x0000a30e                _usart_async_write_byte
+                0x0000a272        0x6 hpl/sercom/hpl_sercom.o
+                0x0000a272                _usart_async_write_byte
  .text._usart_sync_read_byte
-                0x0000a314        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a314                _usart_sync_read_byte
+                0x0000a278        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a278                _usart_sync_read_byte
  .text._usart_sync_is_ready_to_send
-                0x0000a31c        0xa hpl/sercom/hpl_sercom.o
-                0x0000a31c                _usart_sync_is_ready_to_send
+                0x0000a280        0xa hpl/sercom/hpl_sercom.o
+                0x0000a280                _usart_sync_is_ready_to_send
  .text._usart_sync_is_transmit_done
-                0x0000a326        0xa hpl/sercom/hpl_sercom.o
-                0x0000a326                _usart_sync_is_transmit_done
+                0x0000a28a        0xa hpl/sercom/hpl_sercom.o
+                0x0000a28a                _usart_sync_is_transmit_done
  .text._usart_sync_is_byte_received
-                0x0000a330        0xa hpl/sercom/hpl_sercom.o
-                0x0000a330                _usart_sync_is_byte_received
+                0x0000a294        0xa hpl/sercom/hpl_sercom.o
+                0x0000a294                _usart_sync_is_byte_received
  .text._usart_async_enable_byte_sent_irq
-                0x0000a33a        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a33a                _usart_async_enable_byte_sent_irq
+                0x0000a29e        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a29e                _usart_async_enable_byte_sent_irq
  .text._usart_async_enable_tx_done_irq
-                0x0000a342        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a342                _usart_async_enable_tx_done_irq
+                0x0000a2a6        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a2a6                _usart_async_enable_tx_done_irq
  .text._usart_async_set_irq_state
-                0x0000a34a       0x32 hpl/sercom/hpl_sercom.o
-                0x0000a34a                _usart_async_set_irq_state
+                0x0000a2ae       0x32 hpl/sercom/hpl_sercom.o
+                0x0000a2ae                _usart_async_set_irq_state
  .text._i2c_m_async_init
-                0x0000a37c       0x64 hpl/sercom/hpl_sercom.o
-                0x0000a37c                _i2c_m_async_init
+                0x0000a2e0       0x64 hpl/sercom/hpl_sercom.o
+                0x0000a2e0                _i2c_m_async_init
  .text._i2c_m_async_transfer
-                0x0000a3e0       0xc0 hpl/sercom/hpl_sercom.o
-                0x0000a3e0                _i2c_m_async_transfer
+                0x0000a344       0xc0 hpl/sercom/hpl_sercom.o
+                0x0000a344                _i2c_m_async_transfer
  .text._i2c_m_async_register_callback
-                0x0000a4a0       0x1a hpl/sercom/hpl_sercom.o
-                0x0000a4a0                _i2c_m_async_register_callback
- *fill*         0x0000a4ba        0x2 
+                0x0000a404       0x1a hpl/sercom/hpl_sercom.o
+                0x0000a404                _i2c_m_async_register_callback
+ *fill*         0x0000a41e        0x2 
  .text.SERCOM0_3_Handler
-                0x0000a4bc       0x10 hpl/sercom/hpl_sercom.o
-                0x0000a4bc                SERCOM0_3_Handler
+                0x0000a420       0x10 hpl/sercom/hpl_sercom.o
+                0x0000a420                SERCOM0_3_Handler
  .text.SERCOM0_2_Handler
-                0x0000a4cc        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a4cc                SERCOM0_2_Handler
+                0x0000a430        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a430                SERCOM0_2_Handler
  .text.SERCOM0_1_Handler
-                0x0000a4d4        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a4d4                SERCOM0_1_Handler
+                0x0000a438        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a438                SERCOM0_1_Handler
  .text.SERCOM0_0_Handler
-                0x0000a4dc        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a4dc                SERCOM0_0_Handler
+                0x0000a440        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a440                SERCOM0_0_Handler
  .text.SERCOM1_3_Handler
-                0x0000a4e4       0x10 hpl/sercom/hpl_sercom.o
-                0x0000a4e4                SERCOM1_3_Handler
+                0x0000a448       0x10 hpl/sercom/hpl_sercom.o
+                0x0000a448                SERCOM1_3_Handler
  .text.SERCOM1_2_Handler
-                0x0000a4f4        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a4f4                SERCOM1_2_Handler
+                0x0000a458        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a458                SERCOM1_2_Handler
  .text.SERCOM1_1_Handler
-                0x0000a4fc        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a4fc                SERCOM1_1_Handler
+                0x0000a460        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a460                SERCOM1_1_Handler
  .text.SERCOM1_0_Handler
-                0x0000a504        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a504                SERCOM1_0_Handler
+                0x0000a468        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a468                SERCOM1_0_Handler
  .text.SERCOM3_3_Handler
-                0x0000a50c       0x44 hpl/sercom/hpl_sercom.o
-                0x0000a50c                SERCOM3_3_Handler
+                0x0000a470       0x44 hpl/sercom/hpl_sercom.o
+                0x0000a470                SERCOM3_3_Handler
  .text.SERCOM3_2_Handler
-                0x0000a550        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a550                SERCOM3_2_Handler
+                0x0000a4b4        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a4b4                SERCOM3_2_Handler
  .text.SERCOM3_1_Handler
-                0x0000a558        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a558                SERCOM3_1_Handler
+                0x0000a4bc        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a4bc                SERCOM3_1_Handler
  .text.SERCOM3_0_Handler
-                0x0000a560        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a560                SERCOM3_0_Handler
+                0x0000a4c4        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a4c4                SERCOM3_0_Handler
  .text.SERCOM4_3_Handler
-                0x0000a568       0x10 hpl/sercom/hpl_sercom.o
-                0x0000a568                SERCOM4_3_Handler
+                0x0000a4cc       0x10 hpl/sercom/hpl_sercom.o
+                0x0000a4cc                SERCOM4_3_Handler
  .text.SERCOM4_2_Handler
-                0x0000a578        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a578                SERCOM4_2_Handler
+                0x0000a4dc        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a4dc                SERCOM4_2_Handler
  .text.SERCOM4_1_Handler
-                0x0000a580        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a580                SERCOM4_1_Handler
+                0x0000a4e4        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a4e4                SERCOM4_1_Handler
  .text.SERCOM4_0_Handler
-                0x0000a588        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a588                SERCOM4_0_Handler
+                0x0000a4ec        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a4ec                SERCOM4_0_Handler
  .text.SERCOM5_3_Handler
-                0x0000a590       0x64 hpl/sercom/hpl_sercom.o
-                0x0000a590                SERCOM5_3_Handler
+                0x0000a4f4       0x64 hpl/sercom/hpl_sercom.o
+                0x0000a4f4                SERCOM5_3_Handler
  .text.SERCOM5_2_Handler
-                0x0000a5f4        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a5f4                SERCOM5_2_Handler
+                0x0000a558        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a558                SERCOM5_2_Handler
  .text.SERCOM5_1_Handler
-                0x0000a5fc        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a5fc                SERCOM5_1_Handler
+                0x0000a560        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a560                SERCOM5_1_Handler
  .text.SERCOM5_0_Handler
-                0x0000a604        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a604                SERCOM5_0_Handler
+                0x0000a568        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a568                SERCOM5_0_Handler
  .text.SERCOM6_3_Handler
-                0x0000a60c       0x10 hpl/sercom/hpl_sercom.o
-                0x0000a60c                SERCOM6_3_Handler
+                0x0000a570       0x10 hpl/sercom/hpl_sercom.o
+                0x0000a570                SERCOM6_3_Handler
  .text.SERCOM6_2_Handler
-                0x0000a61c        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a61c                SERCOM6_2_Handler
+                0x0000a580        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a580                SERCOM6_2_Handler
  .text.SERCOM6_1_Handler
-                0x0000a624        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a624                SERCOM6_1_Handler
+                0x0000a588        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a588                SERCOM6_1_Handler
  .text.SERCOM6_0_Handler
-                0x0000a62c        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a62c                SERCOM6_0_Handler
+                0x0000a590        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a590                SERCOM6_0_Handler
  .text._spi_m_sync_init
-                0x0000a634       0xd0 hpl/sercom/hpl_sercom.o
-                0x0000a634                _spi_m_sync_init
+                0x0000a598       0xd0 hpl/sercom/hpl_sercom.o
+                0x0000a598                _spi_m_sync_init
  .text._spi_m_async_init
-                0x0000a704       0x58 hpl/sercom/hpl_sercom.o
-                0x0000a704                _spi_m_async_init
+                0x0000a668       0x58 hpl/sercom/hpl_sercom.o
+                0x0000a668                _spi_m_async_init
  .text._spi_s_async_enable
-                0x0000a75c       0x34 hpl/sercom/hpl_sercom.o
-                0x0000a75c                _spi_s_async_enable
+                0x0000a6c0       0x34 hpl/sercom/hpl_sercom.o
+                0x0000a6c0                _spi_s_async_enable
  .text._spi_m_async_enable
-                0x0000a790        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a790                _spi_m_async_enable
+                0x0000a6f4        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a6f4                _spi_m_async_enable
  .text._spi_s_async_set_mode
-                0x0000a798        0xc hpl/sercom/hpl_sercom.o
-                0x0000a798                _spi_s_async_set_mode
+                0x0000a6fc        0xc hpl/sercom/hpl_sercom.o
+                0x0000a6fc                _spi_s_async_set_mode
  .text._spi_m_async_set_mode
-                0x0000a7a4        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a7a4                _spi_m_async_set_mode
+                0x0000a708        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a708                _spi_m_async_set_mode
  .text._spi_m_async_set_baudrate
-                0x0000a7ac       0x14 hpl/sercom/hpl_sercom.o
-                0x0000a7ac                _spi_m_async_set_baudrate
+                0x0000a710       0x14 hpl/sercom/hpl_sercom.o
+                0x0000a710                _spi_m_async_set_baudrate
  .text._spi_m_async_enable_tx
-                0x0000a7c0       0x10 hpl/sercom/hpl_sercom.o
-                0x0000a7c0                _spi_m_async_enable_tx
+                0x0000a724       0x10 hpl/sercom/hpl_sercom.o
+                0x0000a724                _spi_m_async_enable_tx
  .text._spi_m_async_enable_rx
-                0x0000a7d0       0x10 hpl/sercom/hpl_sercom.o
-                0x0000a7d0                _spi_m_async_enable_rx
+                0x0000a734       0x10 hpl/sercom/hpl_sercom.o
+                0x0000a734                _spi_m_async_enable_rx
  .text._spi_m_async_enable_tx_complete
-                0x0000a7e0       0x10 hpl/sercom/hpl_sercom.o
-                0x0000a7e0                _spi_m_async_enable_tx_complete
+                0x0000a744       0x10 hpl/sercom/hpl_sercom.o
+                0x0000a744                _spi_m_async_enable_tx_complete
  .text._spi_m_async_write_one
-                0x0000a7f0        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a7f0                _spi_m_async_write_one
+                0x0000a754        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a754                _spi_m_async_write_one
  .text._spi_m_async_read_one
-                0x0000a7f8        0x8 hpl/sercom/hpl_sercom.o
-                0x0000a7f8                _spi_m_async_read_one
+                0x0000a75c        0x8 hpl/sercom/hpl_sercom.o
+                0x0000a75c                _spi_m_async_read_one
  .text._spi_m_async_register_callback
-                0x0000a800        0xa hpl/sercom/hpl_sercom.o
-                0x0000a800                _spi_m_async_register_callback
+                0x0000a764        0xa hpl/sercom/hpl_sercom.o
+                0x0000a764                _spi_m_async_register_callback
  .text._spi_m_async_set_irq_state
-                0x0000a80a       0x12 hpl/sercom/hpl_sercom.o
-                0x0000a80a                _spi_m_async_set_irq_state
+                0x0000a76e       0x12 hpl/sercom/hpl_sercom.o
+                0x0000a76e                _spi_m_async_set_irq_state
  .text._spi_m_dma_init
-                0x0000a81c       0xc4 hpl/sercom/hpl_sercom.o
-                0x0000a81c                _spi_m_dma_init
+                0x0000a780       0xc4 hpl/sercom/hpl_sercom.o
+                0x0000a780                _spi_m_dma_init
  .text._spi_m_dma_enable
-                0x0000a8e0        0xc hpl/sercom/hpl_sercom.o
-                0x0000a8e0                _spi_m_dma_enable
+                0x0000a844        0xc hpl/sercom/hpl_sercom.o
+                0x0000a844                _spi_m_dma_enable
  .text._spi_m_dma_register_callback
-                0x0000a8ec       0x64 hpl/sercom/hpl_sercom.o
-                0x0000a8ec                _spi_m_dma_register_callback
+                0x0000a850       0x64 hpl/sercom/hpl_sercom.o
+                0x0000a850                _spi_m_dma_register_callback
  .text._spi_m_dma_transfer
-                0x0000a950       0xf8 hpl/sercom/hpl_sercom.o
-                0x0000a950                _spi_m_dma_transfer
+                0x0000a8b4       0xf8 hpl/sercom/hpl_sercom.o
+                0x0000a8b4                _spi_m_dma_transfer
  .text._delay_init
-                0x0000aa48       0x14 hpl/systick/hpl_systick.o
-                0x0000aa48                _delay_init
+                0x0000a9ac       0x14 hpl/systick/hpl_systick.o
+                0x0000a9ac                _delay_init
  .text._delay_cycles
-                0x0000aa5c       0x38 hpl/systick/hpl_systick.o
-                0x0000aa5c                _delay_cycles
+                0x0000a9c0       0x38 hpl/systick/hpl_systick.o
+                0x0000a9c0                _delay_cycles
  .text.__NVIC_DisableIRQ
-                0x0000aa94       0x28 hpl/tc/hpl_tc.o
+                0x0000a9f8       0x28 hpl/tc/hpl_tc.o
  .text.hri_tc_wait_for_sync
-                0x0000aabc        0x8 hpl/tc/hpl_tc.o
+                0x0000aa20        0x8 hpl/tc/hpl_tc.o
  .text._tc_timer_start
-                0x0000aac4       0x14 hpl/tc/hpl_tc.o
-                0x0000aac4                _tc_timer_start
+                0x0000aa28       0x14 hpl/tc/hpl_tc.o
+                0x0000aa28                _tc_timer_start
  .text._tc_timer_get_period
-                0x0000aad8       0x50 hpl/tc/hpl_tc.o
-                0x0000aad8                _tc_timer_get_period
+                0x0000aa3c       0x50 hpl/tc/hpl_tc.o
+                0x0000aa3c                _tc_timer_get_period
  .text._tc_timer_is_started
-                0x0000ab28       0x18 hpl/tc/hpl_tc.o
-                0x0000ab28                _tc_timer_is_started
+                0x0000aa8c       0x18 hpl/tc/hpl_tc.o
+                0x0000aa8c                _tc_timer_is_started
  .text.tc_interrupt_handler
-                0x0000ab40       0x12 hpl/tc/hpl_tc.o
- *fill*         0x0000ab52        0x2 
+                0x0000aaa4       0x12 hpl/tc/hpl_tc.o
+ *fill*         0x0000aab6        0x2 
  .text.get_tc_index
-                0x0000ab54       0x50 hpl/tc/hpl_tc.o
+                0x0000aab8       0x50 hpl/tc/hpl_tc.o
  .text._tc_timer_set_irq
-                0x0000aba4       0x28 hpl/tc/hpl_tc.o
-                0x0000aba4                _tc_timer_set_irq
+                0x0000ab08       0x28 hpl/tc/hpl_tc.o
+                0x0000ab08                _tc_timer_set_irq
  .text._tc_timer_stop
-                0x0000abcc       0x14 hpl/tc/hpl_tc.o
-                0x0000abcc                _tc_timer_stop
+                0x0000ab30       0x14 hpl/tc/hpl_tc.o
+                0x0000ab30                _tc_timer_stop
  .text._tc_timer_deinit
-                0x0000abe0       0x4c hpl/tc/hpl_tc.o
-                0x0000abe0                _tc_timer_deinit
+                0x0000ab44       0x4c hpl/tc/hpl_tc.o
+                0x0000ab44                _tc_timer_deinit
  .text._tc_timer_init
-                0x0000ac2c      0x150 hpl/tc/hpl_tc.o
-                0x0000ac2c                _tc_timer_init
+                0x0000ab90      0x150 hpl/tc/hpl_tc.o
+                0x0000ab90                _tc_timer_init
  .text._tc_timer_set_period
-                0x0000ad7c       0x3c hpl/tc/hpl_tc.o
-                0x0000ad7c                _tc_timer_set_period
+                0x0000ace0       0x3c hpl/tc/hpl_tc.o
+                0x0000ace0                _tc_timer_set_period
  .text._tc_get_timer
-                0x0000adb8        0x8 hpl/tc/hpl_tc.o
-                0x0000adb8                _tc_get_timer
+                0x0000ad1c        0x8 hpl/tc/hpl_tc.o
+                0x0000ad1c                _tc_get_timer
  .text.TC0_Handler
-                0x0000adc0       0x10 hpl/tc/hpl_tc.o
-                0x0000adc0                TC0_Handler
+                0x0000ad24       0x10 hpl/tc/hpl_tc.o
+                0x0000ad24                TC0_Handler
  .text.TC1_Handler
-                0x0000add0       0x10 hpl/tc/hpl_tc.o
-                0x0000add0                TC1_Handler
+                0x0000ad34       0x10 hpl/tc/hpl_tc.o
+                0x0000ad34                TC1_Handler
  .text.TC2_Handler
-                0x0000ade0       0x10 hpl/tc/hpl_tc.o
-                0x0000ade0                TC2_Handler
+                0x0000ad44       0x10 hpl/tc/hpl_tc.o
+                0x0000ad44                TC2_Handler
  .text.TC3_Handler
-                0x0000adf0       0x10 hpl/tc/hpl_tc.o
-                0x0000adf0                TC3_Handler
+                0x0000ad54       0x10 hpl/tc/hpl_tc.o
+                0x0000ad54                TC3_Handler
  .text._dummy_func_no_return
-                0x0000ae00        0x4 hpl/usb/hpl_usb.o
+                0x0000ad64        0x4 hpl/usb/hpl_usb.o
  .text._usb_d_dev_wait_dfll_rdy
-                0x0000ae04       0x24 hpl/usb/hpl_usb.o
+                0x0000ad68       0x24 hpl/usb/hpl_usb.o
  .text._usb_d_dev_ept
-                0x0000ae28       0x18 hpl/usb/hpl_usb.o
+                0x0000ad8c       0x18 hpl/usb/hpl_usb.o
  .text._usb_d_dev_handle_setup
-                0x0000ae40       0x84 hpl/usb/hpl_usb.o
+                0x0000ada4       0x84 hpl/usb/hpl_usb.o
  .text._usb_d_dev_handle_stall
-                0x0000aec4       0x28 hpl/usb/hpl_usb.o
+                0x0000ae28       0x28 hpl/usb/hpl_usb.o
  .text._usb_d_dev_trans_done
-                0x0000aeec       0x24 hpl/usb/hpl_usb.o
+                0x0000ae50       0x24 hpl/usb/hpl_usb.o
  .text._usb_d_dev_trans_stop
-                0x0000af10       0x64 hpl/usb/hpl_usb.o
+                0x0000ae74       0x64 hpl/usb/hpl_usb.o
  .text._usb_d_dev_handle_trfail
-                0x0000af74       0xec hpl/usb/hpl_usb.o
+                0x0000aed8       0xec hpl/usb/hpl_usb.o
  .text._usb_d_dev_reset_epts
-                0x0000b060       0x3c hpl/usb/hpl_usb.o
+                0x0000afc4       0x3c hpl/usb/hpl_usb.o
  .text._usb_d_dev_in_next
-                0x0000b09c      0x158 hpl/usb/hpl_usb.o
+                0x0000b000      0x158 hpl/usb/hpl_usb.o
  .text._usb_d_dev_out_next
-                0x0000b1f4      0x1ac hpl/usb/hpl_usb.o
+                0x0000b158      0x1ac hpl/usb/hpl_usb.o
  .text._usb_d_dev_handler
-                0x0000b3a0      0x1dc hpl/usb/hpl_usb.o
+                0x0000b304      0x1dc hpl/usb/hpl_usb.o
  .text._usbd_ep_pcksize_size
-                0x0000b57c       0x3e hpl/usb/hpl_usb.o
- *fill*         0x0000b5ba        0x2 
+                0x0000b4e0       0x3e hpl/usb/hpl_usb.o
+ *fill*         0x0000b51e        0x2 
  .text._usb_d_dev_init
-                0x0000b5bc       0xe8 hpl/usb/hpl_usb.o
-                0x0000b5bc                _usb_d_dev_init
+                0x0000b520       0xe8 hpl/usb/hpl_usb.o
+                0x0000b520                _usb_d_dev_init
  .text._usb_d_dev_enable
-                0x0000b6a4       0x5c hpl/usb/hpl_usb.o
-                0x0000b6a4                _usb_d_dev_enable
+                0x0000b608       0x5c hpl/usb/hpl_usb.o
+                0x0000b608                _usb_d_dev_enable
  .text._usb_d_dev_attach
-                0x0000b700       0x12 hpl/usb/hpl_usb.o
-                0x0000b700                _usb_d_dev_attach
+                0x0000b664       0x12 hpl/usb/hpl_usb.o
+                0x0000b664                _usb_d_dev_attach
  .text._usb_d_dev_set_address
-                0x0000b712        0xc hpl/usb/hpl_usb.o
-                0x0000b712                _usb_d_dev_set_address
+                0x0000b676        0xc hpl/usb/hpl_usb.o
+                0x0000b676                _usb_d_dev_set_address
  .text._usb_d_dev_get_frame_n
-                0x0000b71e        0xc hpl/usb/hpl_usb.o
-                0x0000b71e                _usb_d_dev_get_frame_n
- *fill*         0x0000b72a        0x2 
+                0x0000b682        0xc hpl/usb/hpl_usb.o
+                0x0000b682                _usb_d_dev_get_frame_n
+ *fill*         0x0000b68e        0x2 
  .text._usb_d_dev_ep_init
-                0x0000b72c       0xc0 hpl/usb/hpl_usb.o
-                0x0000b72c                _usb_d_dev_ep_init
+                0x0000b690       0xc0 hpl/usb/hpl_usb.o
+                0x0000b690                _usb_d_dev_ep_init
  .text._usb_d_dev_ep_deinit
-                0x0000b7ec       0x84 hpl/usb/hpl_usb.o
-                0x0000b7ec                _usb_d_dev_ep_deinit
+                0x0000b750       0x84 hpl/usb/hpl_usb.o
+                0x0000b750                _usb_d_dev_ep_deinit
  .text._usb_d_dev_ep_enable
-                0x0000b870      0x17c hpl/usb/hpl_usb.o
-                0x0000b870                _usb_d_dev_ep_enable
+                0x0000b7d4      0x17c hpl/usb/hpl_usb.o
+                0x0000b7d4                _usb_d_dev_ep_enable
  .text._usb_d_dev_ep_stall
-                0x0000b9ec       0xe4 hpl/usb/hpl_usb.o
-                0x0000b9ec                _usb_d_dev_ep_stall
+                0x0000b950       0xe4 hpl/usb/hpl_usb.o
+                0x0000b950                _usb_d_dev_ep_stall
  .text._usb_d_dev_ep_read_req
-                0x0000bad0       0x54 hpl/usb/hpl_usb.o
-                0x0000bad0                _usb_d_dev_ep_read_req
+                0x0000ba34       0x54 hpl/usb/hpl_usb.o
+                0x0000ba34                _usb_d_dev_ep_read_req
  .text._usb_d_dev_ep_trans
-                0x0000bb24      0x108 hpl/usb/hpl_usb.o
-                0x0000bb24                _usb_d_dev_ep_trans
+                0x0000ba88      0x108 hpl/usb/hpl_usb.o
+                0x0000ba88                _usb_d_dev_ep_trans
  .text._usb_d_dev_register_callback
-                0x0000bc2c       0x24 hpl/usb/hpl_usb.o
-                0x0000bc2c                _usb_d_dev_register_callback
+                0x0000bb90       0x24 hpl/usb/hpl_usb.o
+                0x0000bb90                _usb_d_dev_register_callback
  .text._usb_d_dev_register_ep_callback
-                0x0000bc50       0x2c hpl/usb/hpl_usb.o
-                0x0000bc50                _usb_d_dev_register_ep_callback
+                0x0000bbb4       0x2c hpl/usb/hpl_usb.o
+                0x0000bbb4                _usb_d_dev_register_ep_callback
  .text.USB_0_Handler
-                0x0000bc7c        0x8 hpl/usb/hpl_usb.o
-                0x0000bc7c                USB_0_Handler
+                0x0000bbe0        0x8 hpl/usb/hpl_usb.o
+                0x0000bbe0                USB_0_Handler
  .text.USB_1_Handler
-                0x0000bc84        0x8 hpl/usb/hpl_usb.o
-                0x0000bc84                USB_1_Handler
+                0x0000bbe8        0x8 hpl/usb/hpl_usb.o
+                0x0000bbe8                USB_1_Handler
  .text.USB_2_Handler
-                0x0000bc8c        0x8 hpl/usb/hpl_usb.o
-                0x0000bc8c                USB_2_Handler
+                0x0000bbf0        0x8 hpl/usb/hpl_usb.o
+                0x0000bbf0                USB_2_Handler
  .text.USB_3_Handler
-                0x0000bc94        0x8 hpl/usb/hpl_usb.o
-                0x0000bc94                USB_3_Handler
+                0x0000bbf8        0x8 hpl/usb/hpl_usb.o
+                0x0000bbf8                USB_3_Handler
  .text._wdt_init
-                0x0000bc9c       0x42 hpl/wdt/hpl_wdt.o
-                0x0000bc9c                _wdt_init
- *fill*         0x0000bcde        0x2 
+                0x0000bc00       0x42 hpl/wdt/hpl_wdt.o
+                0x0000bc00                _wdt_init
+ *fill*         0x0000bc42        0x2 
  .text.RTC_Scheduler_report_cb
-                0x0000bce0        0xc main.o
+                0x0000bc44        0xc main.o
  .text.RTC_Scheduler_heartbeat_cb
-                0x0000bcec       0x10 main.o
+                0x0000bc50       0x10 main.o
  .text.RTC_Scheduler_ping_cb
-                0x0000bcfc       0x3c main.o
+                0x0000bc60       0x3c main.o
  .text.grid_task_timer_tick
-                0x0000bd38        0xe main.o
-                0x0000bd38                grid_task_timer_tick
- *fill*         0x0000bd46        0x2 
+                0x0000bc9c        0xe main.o
+                0x0000bc9c                grid_task_timer_tick
+ *fill*         0x0000bcaa        0x2 
  .text.RTC_Scheduler_realtime_cb
-                0x0000bd48       0x94 main.o
+                0x0000bcac       0x94 main.o
  .text.grid_task_timer_reset
-                0x0000bddc       0x10 main.o
-                0x0000bddc                grid_task_timer_reset
+                0x0000bd40       0x10 main.o
+                0x0000bd40                grid_task_timer_reset
  .text.grid_port_reset_receiver
-                0x0000bdec       0x78 main.o
-                0x0000bdec                grid_port_reset_receiver
+                0x0000bd50       0x78 main.o
+                0x0000bd50                grid_port_reset_receiver
  .text.grid_port_receive_task
-                0x0000be64      0x104 main.o
-                0x0000be64                grid_port_receive_task
+                0x0000bdc8      0x104 main.o
+                0x0000bdc8                grid_port_receive_task
  .text.grid_port_receive_decode
-                0x0000bf68      0x4c8 main.o
-                0x0000bf68                grid_port_receive_decode
+                0x0000becc      0x4c8 main.o
+                0x0000becc                grid_port_receive_decode
  .text.grid_port_receive_complete_task
-                0x0000c430       0x70 main.o
-                0x0000c430                grid_port_receive_complete_task
+                0x0000c394       0x70 main.o
+                0x0000c394                grid_port_receive_complete_task
  .text.init_timer
-                0x0000c4a0       0x84 main.o
-                0x0000c4a0                init_timer
+                0x0000c404       0x84 main.o
+                0x0000c404                init_timer
  .text.startup.main
-                0x0000c524      0x3e8 main.o
-                0x0000c524                main
- .text._read    0x0000c90c       0x20 stdio_redirect/gcc/read.o
-                0x0000c90c                _read
- .text._write   0x0000c92c       0x24 stdio_redirect/gcc/write.o
-                0x0000c92c                _write
+                0x0000c488      0x3e8 main.o
+                0x0000c488                main
+ .text._read    0x0000c870       0x20 stdio_redirect/gcc/read.o
+                0x0000c870                _read
+ .text._write   0x0000c890       0x24 stdio_redirect/gcc/write.o
+                0x0000c890                _write
  .text.stdio_io_init
-                0x0000c950       0x2c stdio_redirect/stdio_io.o
-                0x0000c950                stdio_io_init
+                0x0000c8b4       0x2c stdio_redirect/stdio_io.o
+                0x0000c8b4                stdio_io_init
  .text.stdio_io_read
-                0x0000c97c       0x1c stdio_redirect/stdio_io.o
-                0x0000c97c                stdio_io_read
+                0x0000c8e0       0x1c stdio_redirect/stdio_io.o
+                0x0000c8e0                stdio_io_read
  .text.stdio_io_write
-                0x0000c998       0x1c stdio_redirect/stdio_io.o
-                0x0000c998                stdio_io_write
+                0x0000c8fc       0x1c stdio_redirect/stdio_io.o
+                0x0000c8fc                stdio_io_write
  .text.stdio_redirect_init
-                0x0000c9b4       0x20 stdio_start.o
-                0x0000c9b4                stdio_redirect_init
+                0x0000c918       0x20 stdio_start.o
+                0x0000c918                stdio_redirect_init
  .text.cdcdf_acm_req
-                0x0000c9d4       0xdc usb/class/cdc/device/cdcdf_acm.o
+                0x0000c938       0xdc usb/class/cdc/device/cdcdf_acm.o
  .text.cdcdf_acm_ctrl
-                0x0000cab0      0x138 usb/class/cdc/device/cdcdf_acm.o
+                0x0000ca14      0x138 usb/class/cdc/device/cdcdf_acm.o
  .text.cdcdf_acm_init
-                0x0000cbe8       0x44 usb/class/cdc/device/cdcdf_acm.o
-                0x0000cbe8                cdcdf_acm_init
+                0x0000cb4c       0x44 usb/class/cdc/device/cdcdf_acm.o
+                0x0000cb4c                cdcdf_acm_init
  .text.cdcdf_acm_write
-                0x0000cc2c       0x2c usb/class/cdc/device/cdcdf_acm.o
-                0x0000cc2c                cdcdf_acm_write
+                0x0000cb90       0x2c usb/class/cdc/device/cdcdf_acm.o
+                0x0000cb90                cdcdf_acm_write
  .text.hid_keyboard_req
-                0x0000cc58       0x88 usb/class/hid/device/hiddf_keyboard.o
+                0x0000cbbc       0x88 usb/class/hid/device/hiddf_keyboard.o
  .text.hid_keyboard_ctrl
-                0x0000cce0      0x110 usb/class/hid/device/hiddf_keyboard.o
+                0x0000cc44      0x110 usb/class/hid/device/hiddf_keyboard.o
  .text.hiddf_keyboard_init
-                0x0000cdf0       0x44 usb/class/hid/device/hiddf_keyboard.o
-                0x0000cdf0                hiddf_keyboard_init
+                0x0000cd54       0x44 usb/class/hid/device/hiddf_keyboard.o
+                0x0000cd54                hiddf_keyboard_init
  .text.hiddf_keyboard_keys_state_change
-                0x0000ce34       0x8c usb/class/hid/device/hiddf_keyboard.o
-                0x0000ce34                hiddf_keyboard_keys_state_change
+                0x0000cd98       0x8c usb/class/hid/device/hiddf_keyboard.o
+                0x0000cd98                hiddf_keyboard_keys_state_change
  .text.hid_mouse_req
-                0x0000cec0       0x88 usb/class/hid/device/hiddf_mouse.o
+                0x0000ce24       0x88 usb/class/hid/device/hiddf_mouse.o
  .text.hid_mouse_ctrl
-                0x0000cf48       0xe4 usb/class/hid/device/hiddf_mouse.o
+                0x0000ceac       0xe4 usb/class/hid/device/hiddf_mouse.o
  .text.hiddf_mouse_init
-                0x0000d02c       0x44 usb/class/hid/device/hiddf_mouse.o
-                0x0000d02c                hiddf_mouse_init
+                0x0000cf90       0x44 usb/class/hid/device/hiddf_mouse.o
+                0x0000cf90                hiddf_mouse_init
  .text.hiddf_mouse_move
-                0x0000d070       0x48 usb/class/hid/device/hiddf_mouse.o
-                0x0000d070                hiddf_mouse_move
+                0x0000cfd4       0x48 usb/class/hid/device/hiddf_mouse.o
+                0x0000cfd4                hiddf_mouse_move
  .text.midi_cb_ep_bulk_in
-                0x0000d0b8        0x2 usb/class/midi/device/audiodf_midi.o
+                0x0000d01c        0x2 usb/class/midi/device/audiodf_midi.o
  .text.midi_cb_ep_bulk_out
-                0x0000d0ba        0x2 usb/class/midi/device/audiodf_midi.o
+                0x0000d01e        0x2 usb/class/midi/device/audiodf_midi.o
  .text.audio_midi_req
-                0x0000d0bc       0x78 usb/class/midi/device/audiodf_midi.o
+                0x0000d020       0x78 usb/class/midi/device/audiodf_midi.o
  .text.audio_midi_ctrl
-                0x0000d134      0x1a8 usb/class/midi/device/audiodf_midi.o
+                0x0000d098      0x1a8 usb/class/midi/device/audiodf_midi.o
  .text.audiodf_midi_init
-                0x0000d2dc       0x44 usb/class/midi/device/audiodf_midi.o
-                0x0000d2dc                audiodf_midi_init
+                0x0000d240       0x44 usb/class/midi/device/audiodf_midi.o
+                0x0000d240                audiodf_midi_init
  .text.audiodf_midi_xfer_packet
-                0x0000d320       0x28 usb/class/midi/device/audiodf_midi.o
-                0x0000d320                audiodf_midi_xfer_packet
+                0x0000d284       0x28 usb/class/midi/device/audiodf_midi.o
+                0x0000d284                audiodf_midi_xfer_packet
  .text.usbdc_unconfig
-                0x0000d348       0x1c usb/device/usbdc.o
+                0x0000d2ac       0x1c usb/device/usbdc.o
  .text.usbdc_change_notify
-                0x0000d364       0x20 usb/device/usbdc.o
+                0x0000d2c8       0x20 usb/device/usbdc.o
  .text.usbdc_request_handler
-                0x0000d384       0x38 usb/device/usbdc.o
+                0x0000d2e8       0x38 usb/device/usbdc.o
  .text.usbd_sof_cb
-                0x0000d3bc       0x18 usb/device/usbdc.o
+                0x0000d320       0x18 usb/device/usbdc.o
  .text.usbdc_cb_ctl_done
-                0x0000d3d4       0x68 usb/device/usbdc.o
+                0x0000d338       0x68 usb/device/usbdc.o
  .text.usbdc_reset
-                0x0000d43c       0x5c usb/device/usbdc.o
-                0x0000d43c                usbdc_reset
+                0x0000d3a0       0x5c usb/device/usbdc.o
+                0x0000d3a0                usbdc_reset
  .text.usbd_event_cb
-                0x0000d498       0x18 usb/device/usbdc.o
+                0x0000d3fc       0x18 usb/device/usbdc.o
  .text.usbdc_xfer
-                0x0000d4b0       0x20 usb/device/usbdc.o
-                0x0000d4b0                usbdc_xfer
+                0x0000d414       0x20 usb/device/usbdc.o
+                0x0000d414                usbdc_xfer
  .text.usbdc_cb_ctl_req
-                0x0000d4d0      0x328 usb/device/usbdc.o
+                0x0000d434      0x328 usb/device/usbdc.o
  .text.usbdc_register_handler
-                0x0000d7f8       0x2c usb/device/usbdc.o
-                0x0000d7f8                usbdc_register_handler
+                0x0000d75c       0x2c usb/device/usbdc.o
+                0x0000d75c                usbdc_register_handler
  .text.usbdc_init
-                0x0000d824       0x44 usb/device/usbdc.o
-                0x0000d824                usbdc_init
+                0x0000d788       0x44 usb/device/usbdc.o
+                0x0000d788                usbdc_init
  .text.usbdc_register_function
-                0x0000d868       0x10 usb/device/usbdc.o
-                0x0000d868                usbdc_register_function
+                0x0000d7cc       0x10 usb/device/usbdc.o
+                0x0000d7cc                usbdc_register_function
  .text.usbdc_start
-                0x0000d878       0x34 usb/device/usbdc.o
-                0x0000d878                usbdc_start
+                0x0000d7dc       0x34 usb/device/usbdc.o
+                0x0000d7dc                usbdc_start
  .text.usbdc_attach
-                0x0000d8ac        0x8 usb/device/usbdc.o
-                0x0000d8ac                usbdc_attach
+                0x0000d810        0x8 usb/device/usbdc.o
+                0x0000d810                usbdc_attach
  .text.usbdc_get_ctrl_buffer
-                0x0000d8b4        0xc usb/device/usbdc.o
-                0x0000d8b4                usbdc_get_ctrl_buffer
+                0x0000d818        0xc usb/device/usbdc.o
+                0x0000d818                usbdc_get_ctrl_buffer
  .text.usbdc_get_state
-                0x0000d8c0       0x14 usb/device/usbdc.o
-                0x0000d8c0                usbdc_get_state
+                0x0000d824       0x14 usb/device/usbdc.o
+                0x0000d824                usbdc_get_state
  .text.usb_find_desc
-                0x0000d8d4       0x1a usb/usb_protocol.o
-                0x0000d8d4                usb_find_desc
+                0x0000d838       0x1a usb/usb_protocol.o
+                0x0000d838                usb_find_desc
  .text.usb_find_ep_desc
-                0x0000d8ee       0x1c usb/usb_protocol.o
-                0x0000d8ee                usb_find_ep_desc
- *fill*         0x0000d90a        0x2 
+                0x0000d852       0x1c usb/usb_protocol.o
+                0x0000d852                usb_find_ep_desc
+ *fill*         0x0000d86e        0x2 
  .text.usb_find_cfg_desc
-                0x0000d90c       0x3c usb/usb_protocol.o
-                0x0000d90c                usb_find_cfg_desc
+                0x0000d870       0x3c usb/usb_protocol.o
+                0x0000d870                usb_find_cfg_desc
  .text.usb_find_str_desc
-                0x0000d948       0x30 usb/usb_protocol.o
-                0x0000d948                usb_find_str_desc
+                0x0000d8ac       0x30 usb/usb_protocol.o
+                0x0000d8ac                usb_find_str_desc
  .text.gpio_get_pin_level
-                0x0000d978       0x48 usb_start.o
+                0x0000d8dc       0x48 usb_start.o
  .text.hiddf_demo_sof_event
-                0x0000d9c0       0x78 usb_start.o
+                0x0000d924       0x78 usb_start.o
  .text.composite_device_init
-                0x0000da38       0x2c usb_start.o
-                0x0000da38                composite_device_init
+                0x0000d99c       0x2c usb_start.o
+                0x0000d99c                composite_device_init
  .text.composite_device_start
-                0x0000da64       0x1c usb_start.o
-                0x0000da64                composite_device_start
+                0x0000d9c8       0x1c usb_start.o
+                0x0000d9c8                composite_device_start
  .text.usb_init
-                0x0000da80        0x8 usb_start.o
-                0x0000da80                usb_init
- .text          0x0000da88      0x370 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m\libgcc.a(_arm_addsubdf3.o)
-                0x0000da88                __aeabi_drsub
-                0x0000da90                __aeabi_dsub
-                0x0000da90                __subdf3
-                0x0000da94                __aeabi_dadd
-                0x0000da94                __adddf3
-                0x0000dd0c                __floatunsidf
-                0x0000dd0c                __aeabi_ui2d
-                0x0000dd2c                __floatsidf
-                0x0000dd2c                __aeabi_i2d
-                0x0000dd50                __aeabi_f2d
-                0x0000dd50                __extendsfdf2
-                0x0000dd8c                __floatundidf
-                0x0000dd8c                __aeabi_ul2d
-                0x0000dd9c                __floatdidf
-                0x0000dd9c                __aeabi_l2d
- .text          0x0000ddf8      0x424 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m\libgcc.a(_arm_muldivdf3.o)
-                0x0000ddf8                __aeabi_dmul
-                0x0000ddf8                __muldf3
-                0x0000e04c                __divdf3
-                0x0000e04c                __aeabi_ddiv
- .text          0x0000e21c       0x40 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m\libgcc.a(_arm_fixunsdfsi.o)
-                0x0000e21c                __aeabi_d2uiz
-                0x0000e21c                __fixunsdfsi
+                0x0000d9e4        0x8 usb_start.o
+                0x0000d9e4                usb_init
+ .text          0x0000d9ec      0x370 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m\libgcc.a(_arm_addsubdf3.o)
+                0x0000d9ec                __aeabi_drsub
+                0x0000d9f4                __aeabi_dsub
+                0x0000d9f4                __subdf3
+                0x0000d9f8                __aeabi_dadd
+                0x0000d9f8                __adddf3
+                0x0000dc70                __floatunsidf
+                0x0000dc70                __aeabi_ui2d
+                0x0000dc90                __floatsidf
+                0x0000dc90                __aeabi_i2d
+                0x0000dcb4                __aeabi_f2d
+                0x0000dcb4                __extendsfdf2
+                0x0000dcf0                __floatundidf
+                0x0000dcf0                __aeabi_ul2d
+                0x0000dd00                __floatdidf
+                0x0000dd00                __aeabi_l2d
+ .text          0x0000dd5c      0x424 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m\libgcc.a(_arm_muldivdf3.o)
+                0x0000dd5c                __aeabi_dmul
+                0x0000dd5c                __muldf3
+                0x0000dfb0                __divdf3
+                0x0000dfb0                __aeabi_ddiv
+ .text          0x0000e180       0x40 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m\libgcc.a(_arm_fixunsdfsi.o)
+                0x0000e180                __aeabi_d2uiz
+                0x0000e180                __fixunsdfsi
  .text.__libc_init_array
-                0x0000e25c       0x48 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-init.o)
-                0x0000e25c                __libc_init_array
- .text.malloc   0x0000e2a4       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-malloc.o)
-                0x0000e2a4                malloc
- .text.memcpy   0x0000e2b4       0x16 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-memcpy-stub.o)
-                0x0000e2b4                memcpy
- .text.memset   0x0000e2ca       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-memset.o)
-                0x0000e2ca                memset
- *fill*         0x0000e2da        0x2 
- .text._free_r  0x0000e2dc       0x9c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-freer.o)
-                0x0000e2dc                _free_r
+                0x0000e1c0       0x48 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-init.o)
+                0x0000e1c0                __libc_init_array
+ .text.malloc   0x0000e208       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-malloc.o)
+                0x0000e208                malloc
+ .text.memcpy   0x0000e218       0x16 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-memcpy-stub.o)
+                0x0000e218                memcpy
+ .text.memset   0x0000e22e       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-memset.o)
+                0x0000e22e                memset
+ *fill*         0x0000e23e        0x2 
+ .text._free_r  0x0000e240       0x9c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-freer.o)
+                0x0000e240                _free_r
  .text._malloc_r
-                0x0000e378       0xbc c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-mallocr.o)
-                0x0000e378                _malloc_r
- .text.printf   0x0000e434       0x30 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-printf.o)
-                0x0000e434                iprintf
-                0x0000e434                printf
- .text._puts_r  0x0000e464       0xb8 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-puts.o)
-                0x0000e464                _puts_r
- .text.puts     0x0000e51c       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-puts.o)
-                0x0000e51c                puts
- .text._sbrk_r  0x0000e52c       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-sbrkr.o)
-                0x0000e52c                _sbrk_r
- .text.setbuf   0x0000e54c       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-setbuf.o)
-                0x0000e54c                setbuf
- .text.setvbuf  0x0000e55c      0x15c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-setvbuf.o)
-                0x0000e55c                setvbuf
- .text.sprintf  0x0000e6b8       0x48 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-sprintf.o)
-                0x0000e6b8                siprintf
-                0x0000e6b8                sprintf
- .text.strcpy   0x0000e700       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-strcpy.o)
-                0x0000e700                strcpy
- .text          0x0000e710       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-strlen.o)
-                0x0000e710                strlen
+                0x0000e2dc       0xbc c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-mallocr.o)
+                0x0000e2dc                _malloc_r
+ .text.printf   0x0000e398       0x30 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-printf.o)
+                0x0000e398                iprintf
+                0x0000e398                printf
+ .text._puts_r  0x0000e3c8       0xb8 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-puts.o)
+                0x0000e3c8                _puts_r
+ .text.puts     0x0000e480       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-puts.o)
+                0x0000e480                puts
+ .text._sbrk_r  0x0000e490       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-sbrkr.o)
+                0x0000e490                _sbrk_r
+ .text.setbuf   0x0000e4b0       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-setbuf.o)
+                0x0000e4b0                setbuf
+ .text.setvbuf  0x0000e4c0      0x15c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-setvbuf.o)
+                0x0000e4c0                setvbuf
+ .text.sprintf  0x0000e61c       0x48 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-sprintf.o)
+                0x0000e61c                siprintf
+                0x0000e61c                sprintf
+ .text.strcpy   0x0000e664       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-strcpy.o)
+                0x0000e664                strcpy
+ .text          0x0000e674       0x10 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-strlen.o)
+                0x0000e674                strlen
  .text.__swbuf_r
-                0x0000e720       0xa4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-wbuf.o)
-                0x0000e720                __swbuf_r
+                0x0000e684       0xa4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-wbuf.o)
+                0x0000e684                __swbuf_r
  .text.__swsetup_r
-                0x0000e7c4       0xdc c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-wsetup.o)
-                0x0000e7c4                __swsetup_r
+                0x0000e728       0xdc c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-wsetup.o)
+                0x0000e728                __swsetup_r
  .text.__sflush_r
-                0x0000e8a0      0x110 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-fflush.o)
-                0x0000e8a0                __sflush_r
+                0x0000e804      0x110 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-fflush.o)
+                0x0000e804                __sflush_r
  .text._fflush_r
-                0x0000e9b0       0x54 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-fflush.o)
-                0x0000e9b0                _fflush_r
+                0x0000e914       0x54 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-fflush.o)
+                0x0000e914                _fflush_r
  .text._cleanup_r
-                0x0000ea04        0xc c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
-                0x0000ea04                _cleanup_r
+                0x0000e968        0xc c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
+                0x0000e968                _cleanup_r
  .text.std.isra.0
-                0x0000ea10       0x48 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
+                0x0000e974       0x48 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
  .text.__sfmoreglue
-                0x0000ea58       0x2c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
-                0x0000ea58                __sfmoreglue
- .text.__sinit  0x0000ea84       0x60 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
-                0x0000ea84                __sinit
- .text.__sfp    0x0000eae4       0x78 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
-                0x0000eae4                __sfp
+                0x0000e9bc       0x2c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
+                0x0000e9bc                __sfmoreglue
+ .text.__sinit  0x0000e9e8       0x60 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
+                0x0000e9e8                __sinit
+ .text.__sfp    0x0000ea48       0x78 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
+                0x0000ea48                __sfp
  .text._fwalk_reent
-                0x0000eb5c       0x3c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-fwalk.o)
-                0x0000eb5c                _fwalk_reent
+                0x0000eac0       0x3c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-fwalk.o)
+                0x0000eac0                _fwalk_reent
  .text.__swhatbuf_r
-                0x0000eb98       0x48 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-makebuf.o)
-                0x0000eb98                __swhatbuf_r
+                0x0000eafc       0x48 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-makebuf.o)
+                0x0000eafc                __swhatbuf_r
  .text.__smakebuf_r
-                0x0000ebe0       0x80 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-makebuf.o)
-                0x0000ebe0                __smakebuf_r
+                0x0000eb44       0x80 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-makebuf.o)
+                0x0000eb44                __smakebuf_r
  .text.__malloc_lock
-                0x0000ec60        0x2 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-mlock.o)
-                0x0000ec60                __malloc_lock
+                0x0000ebc4        0x2 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-mlock.o)
+                0x0000ebc4                __malloc_lock
  .text.__malloc_unlock
-                0x0000ec62        0x2 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-mlock.o)
-                0x0000ec62                __malloc_unlock
+                0x0000ebc6        0x2 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-mlock.o)
+                0x0000ebc6                __malloc_unlock
  .text.__ssputs_r
-                0x0000ec64       0xb6 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-svfprintf.o)
-                0x0000ec64                __ssputs_r
- *fill*         0x0000ed1a        0x2 
+                0x0000ebc8       0xb6 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-svfprintf.o)
+                0x0000ebc8                __ssputs_r
+ *fill*         0x0000ec7e        0x2 
  .text._svfprintf_r
-                0x0000ed1c      0x1e8 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-svfprintf.o)
-                0x0000ed1c                _svfiprintf_r
-                0x0000ed1c                _svfprintf_r
+                0x0000ec80      0x1e8 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-svfprintf.o)
+                0x0000ec80                _svfiprintf_r
+                0x0000ec80                _svfprintf_r
  .text.__sfputc_r
-                0x0000ef04       0x2c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf.o)
+                0x0000ee68       0x2c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf.o)
  .text.__sfputs_r
-                0x0000ef30       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf.o)
-                0x0000ef30                __sfputs_r
+                0x0000ee94       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf.o)
+                0x0000ee94                __sfputs_r
  .text._vfprintf_r
-                0x0000ef54      0x22c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf.o)
-                0x0000ef54                _vfprintf_r
-                0x0000ef54                _vfiprintf_r
+                0x0000eeb8      0x22c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf.o)
+                0x0000eeb8                _vfprintf_r
+                0x0000eeb8                _vfiprintf_r
  .text._printf_common
-                0x0000f180       0xec c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf_i.o)
-                0x0000f180                _printf_common
+                0x0000f0e4       0xec c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf_i.o)
+                0x0000f0e4                _printf_common
  .text._printf_i
-                0x0000f26c      0x240 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf_i.o)
-                0x0000f26c                _printf_i
- .text.__sread  0x0000f4ac       0x22 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-stdio.o)
-                0x0000f4ac                __sread
+                0x0000f1d0      0x240 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf_i.o)
+                0x0000f1d0                _printf_i
+ .text.__sread  0x0000f410       0x22 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-stdio.o)
+                0x0000f410                __sread
  .text.__swrite
-                0x0000f4ce       0x38 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-stdio.o)
-                0x0000f4ce                __swrite
- .text.__sseek  0x0000f506       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-stdio.o)
-                0x0000f506                __sseek
+                0x0000f432       0x38 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-stdio.o)
+                0x0000f432                __swrite
+ .text.__sseek  0x0000f46a       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-stdio.o)
+                0x0000f46a                __sseek
  .text.__sclose
-                0x0000f52a        0x8 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-stdio.o)
-                0x0000f52a                __sclose
- *fill*         0x0000f532        0x2 
+                0x0000f48e        0x8 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-stdio.o)
+                0x0000f48e                __sclose
+ *fill*         0x0000f496        0x2 
  .text._write_r
-                0x0000f534       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-writer.o)
-                0x0000f534                _write_r
+                0x0000f498       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-writer.o)
+                0x0000f498                _write_r
  .text._close_r
-                0x0000f558       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-closer.o)
-                0x0000f558                _close_r
+                0x0000f4bc       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-closer.o)
+                0x0000f4bc                _close_r
  .text._fstat_r
-                0x0000f578       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-fstatr.o)
-                0x0000f578                _fstat_r
+                0x0000f4dc       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-fstatr.o)
+                0x0000f4dc                _fstat_r
  .text._isatty_r
-                0x0000f59c       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-isattyr.o)
-                0x0000f59c                _isatty_r
+                0x0000f500       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-isattyr.o)
+                0x0000f500                _isatty_r
  .text._lseek_r
-                0x0000f5bc       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-lseekr.o)
-                0x0000f5bc                _lseek_r
- .text          0x0000f5e0       0xa0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-memchr.o)
-                0x0000f5e0                memchr
- .text.memmove  0x0000f680       0x34 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-memmove.o)
-                0x0000f680                memmove
+                0x0000f520       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-lseekr.o)
+                0x0000f520                _lseek_r
+ *fill*         0x0000f544        0xc 
+ .text          0x0000f550       0xa0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-memchr.o)
+                0x0000f550                memchr
+ .text.memmove  0x0000f5f0       0x34 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-memmove.o)
+                0x0000f5f0                memmove
  .text._realloc_r
-                0x0000f6b4       0x4c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-reallocr.o)
-                0x0000f6b4                _realloc_r
- .text._read_r  0x0000f700       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-readr.o)
-                0x0000f700                _read_r
+                0x0000f624       0x4c c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-reallocr.o)
+                0x0000f624                _realloc_r
+ .text._read_r  0x0000f670       0x24 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-readr.o)
+                0x0000f670                _read_r
  .text._malloc_usable_size_r
-                0x0000f724       0x12 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-msizer.o)
-                0x0000f724                _malloc_usable_size_r
+                0x0000f694       0x12 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-msizer.o)
+                0x0000f694                _malloc_usable_size_r
  *(.glue_7t)
- .glue_7t       0x0000f736        0x0 linker stubs
+ .glue_7t       0x0000f6a6        0x0 linker stubs
  *(.glue_7)
- .glue_7        0x0000f736        0x0 linker stubs
+ .glue_7        0x0000f6a6        0x0 linker stubs
  *(.rodata .rodata* .gnu.linkonce.r.*)
  .rodata.str1.1
-                0x0000f736      0x143 grid/grid_buf.o
- .rodata        0x0000f879       0x10 grid/grid_module_bu16_revb.o
+                0x0000f6a6      0x143 grid/grid_buf.o
+ .rodata        0x0000f7e9       0x10 grid/grid_module_bu16_revb.o
  .rodata.str1.1
-                0x0000f889      0x143 grid/grid_module_bu16_revb.o
+                0x0000f7f9      0x143 grid/grid_module_bu16_revb.o
                                  0x19 (size before relaxing)
  .rodata.str1.1
-                0x0000f889       0x19 grid/grid_module_en16_reva.o
+                0x0000f7f9       0x19 grid/grid_module_en16_reva.o
  .rodata.str1.1
-                0x0000f889       0x19 grid/grid_module_pbf4_reva.o
+                0x0000f7f9       0x19 grid/grid_module_pbf4_reva.o
  .rodata.str1.1
-                0x0000f889       0x19 grid/grid_module_po16_revb.o
+                0x0000f7f9       0x19 grid/grid_module_po16_revb.o
  .rodata.str1.1
-                0x0000f889       0xa8 grid/grid_sys.o
+                0x0000f7f9       0xa8 grid/grid_sys.o
  .rodata.str1.1
-                0x0000f931       0x60 grid/grid_ui.o
+                0x0000f8a1       0x60 grid/grid_ui.o
                                  0x67 (size before relaxing)
- *fill*         0x0000f991        0x1 
- .rodata        0x0000f992       0x2c hpl/adc/hpl_adc.o
- *fill*         0x0000f9be        0x2 
- .rodata        0x0000f9c0      0x100 hpl/dmac/hpl_dmac.o
- .rodata        0x0000fac0      0x104 hpl/evsys/hpl_evsys.o
- .rodata        0x0000fbc4       0xd4 hpl/sercom/hpl_sercom.o
- .rodata        0x0000fc98       0x70 hpl/tc/hpl_tc.o
- .rodata        0x0000fd08       0x48 hpl/usb/hpl_usb.o
+ *fill*         0x0000f901        0x1 
+ .rodata        0x0000f902       0x2c hpl/adc/hpl_adc.o
+ *fill*         0x0000f92e        0x2 
+ .rodata        0x0000f930      0x100 hpl/dmac/hpl_dmac.o
+ .rodata        0x0000fa30      0x104 hpl/evsys/hpl_evsys.o
+ .rodata        0x0000fb34       0xd4 hpl/sercom/hpl_sercom.o
+ .rodata        0x0000fc08       0x70 hpl/tc/hpl_tc.o
+ .rodata        0x0000fc78       0x48 hpl/usb/hpl_usb.o
  .rodata.str1.1
-                0x0000fd50      0x364 main.o
+                0x0000fcc0      0x364 main.o
                                 0x368 (size before relaxing)
- .rodata        0x000100b4       0x3b usb/class/hid/device/hiddf_keyboard.o
-                0x000100b4                keyboard_report_desc
- .rodata        0x000100ef       0x34 usb/class/hid/device/hiddf_mouse.o
-                0x000100ef                mouse_report_desc
- *fill*         0x00010123        0x1 
+ .rodata        0x00010024       0x3b usb/class/hid/device/hiddf_keyboard.o
+                0x00010024                keyboard_report_desc
+ .rodata        0x0001005f       0x34 usb/class/hid/device/hiddf_mouse.o
+                0x0001005f                mouse_report_desc
+ *fill*         0x00010093        0x1 
  .rodata._global_impure_ptr
-                0x00010124        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-impure.o)
-                0x00010124                _global_impure_ptr
+                0x00010094        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-impure.o)
+                0x00010094                _global_impure_ptr
  .rodata.__sf_fake_stderr
-                0x00010128       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
-                0x00010128                __sf_fake_stderr
+                0x00010098       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
+                0x00010098                __sf_fake_stderr
  .rodata.__sf_fake_stdin
-                0x00010148       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
-                0x00010148                __sf_fake_stdin
+                0x000100b8       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
+                0x000100b8                __sf_fake_stdin
  .rodata.__sf_fake_stdout
-                0x00010168       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
-                0x00010168                __sf_fake_stdout
+                0x000100d8       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-findfp.o)
+                0x000100d8                __sf_fake_stdout
  .rodata._svfprintf_r.str1.1
-                0x00010188       0x11 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-svfprintf.o)
+                0x000100f8       0x11 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-svfprintf.o)
  .rodata._vfprintf_r.str1.1
-                0x00010199       0x11 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf.o)
+                0x00010109       0x11 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf.o)
  .rodata._printf_i.str1.1
-                0x00010199       0x22 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf_i.o)
+                0x00010109       0x22 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc_nano.a(lib_a-nano-vfprintf_i.o)
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x000101bc                . = ALIGN (0x4)
- *fill*         0x000101bb        0x1 
+                0x0001012c                . = ALIGN (0x4)
+ *fill*         0x0001012b        0x1 
  *(.init)
- .init          0x000101bc        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crti.o
-                0x000101bc                _init
- .init          0x000101c0        0x8 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtn.o
-                0x000101c8                . = ALIGN (0x4)
-                0x000101c8                __preinit_array_start = .
+ .init          0x0001012c        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crti.o
+                0x0001012c                _init
+ .init          0x00010130        0x8 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtn.o
+                0x00010138                . = ALIGN (0x4)
+                0x00010138                __preinit_array_start = .
  *(.preinit_array)
-                0x000101c8                __preinit_array_end = .
-                0x000101c8                . = ALIGN (0x4)
-                0x000101c8                __init_array_start = .
+                0x00010138                __preinit_array_end = .
+                0x00010138                . = ALIGN (0x4)
+                0x00010138                __init_array_start = .
  *(SORT(.init_array.*))
  *(.init_array)
- .init_array    0x000101c8        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
-                0x000101cc                __init_array_end = .
-                0x000101cc                . = ALIGN (0x4)
+ .init_array    0x00010138        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
+                0x0001013c                __init_array_end = .
+                0x0001013c                . = ALIGN (0x4)
  *crtbegin.o(.ctors)
  *(EXCLUDE_FILE(*crtend.o) .ctors)
  *(SORT(.ctors.*))
  *crtend.o(.ctors)
-                0x000101cc                . = ALIGN (0x4)
+                0x0001013c                . = ALIGN (0x4)
  *(.fini)
- .fini          0x000101cc        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crti.o
-                0x000101cc                _fini
- .fini          0x000101d0        0x8 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtn.o
-                0x000101d8                . = ALIGN (0x4)
-                0x000101d8                __fini_array_start = .
+ .fini          0x0001013c        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crti.o
+                0x0001013c                _fini
+ .fini          0x00010140        0x8 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtn.o
+                0x00010148                . = ALIGN (0x4)
+                0x00010148                __fini_array_start = .
  *(.fini_array)
- .fini_array    0x000101d8        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
+ .fini_array    0x00010148        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
  *(SORT(.fini_array.*))
-                0x000101dc                __fini_array_end = .
+                0x0001014c                __fini_array_end = .
  *crtbegin.o(.dtors)
  *(EXCLUDE_FILE(*crtend.o) .dtors)
  *(SORT(.dtors.*))
  *crtend.o(.dtors)
-                0x000101dc                . = ALIGN (0x4)
-                0x000101dc                _efixed = .
+                0x0001014c                . = ALIGN (0x4)
+                0x0001014c                _efixed = .
                 [!provide]                PROVIDE (__exidx_start, .)
 
-.vfp11_veneer   0x000101dc        0x0
- .vfp11_veneer  0x000101dc        0x0 linker stubs
+.vfp11_veneer   0x0001014c        0x0
+ .vfp11_veneer  0x0001014c        0x0 linker stubs
 
-.v4_bx          0x000101dc        0x0
- .v4_bx         0x000101dc        0x0 linker stubs
+.v4_bx          0x0001014c        0x0
+ .v4_bx         0x0001014c        0x0 linker stubs
 
-.iplt           0x000101dc        0x0
- .iplt          0x000101dc        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
+.iplt           0x0001014c        0x0
+ .iplt          0x0001014c        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
 
-.eh_frame       0x000101dc        0x0
- .eh_frame      0x000101dc        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
+.eh_frame       0x0001014c        0x0
+ .eh_frame      0x0001014c        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
 
-.rel.dyn        0x000101dc        0x0
- .rel.iplt      0x000101dc        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
+.rel.dyn        0x0001014c        0x0
+ .rel.iplt      0x0001014c        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
 
-.jcr            0x000101dc        0x0
- .jcr           0x000101dc        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
+.jcr            0x0001014c        0x0
+ .jcr           0x0001014c        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
 
-.igot.plt       0x000101dc        0x0
- .igot.plt      0x000101dc        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
+.igot.plt       0x0001014c        0x0
+ .igot.plt      0x0001014c        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/crtbegin.o
 
 .ARM.exidx
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
                 [!provide]                PROVIDE (__exidx_end, .)
-                0x000101dc                . = ALIGN (0x4)
-                0x000101dc                _etext = .
+                0x0001014c                . = ALIGN (0x4)
+                0x0001014c                _etext = .
 
-.relocate       0x20000000      0x5b8 load address 0x000101dc
+.relocate       0x20000000      0x5b8 load address 0x0001014c
                 0x20000000                . = ALIGN (0x4)
                 0x20000000                _srelocate = .
  *(.ramfunc .ramfunc.*)
@@ -3802,7 +3802,7 @@ LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin
                 0x04000000                . = ALIGN (0x8)
                 0x04000000                _eqspi = .
 
-.bss            0x200005c0     0x781c load address 0x000107a0
+.bss            0x200005c0     0x781c load address 0x00010710
                 0x200005c0                . = ALIGN (0x4)
                 0x200005c0                _sbss = .
                 0x200005c0                _szero = .
@@ -3924,7 +3924,7 @@ LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin
                 0x20007ddc                _ebss = .
                 0x20007ddc                _ezero = .
 
-.stack          0x20007ddc    0x10004 load address 0x00017fbc
+.stack          0x20007ddc    0x10004 load address 0x00017f2c
                 0x20007de0                . = ALIGN (0x8)
  *fill*         0x20007ddc        0x4 
                 0x20007de0                _sstack = .

@@ -333,13 +333,12 @@ void grid_sys_init(struct grid_sys_model* mod){
 
 void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
 	
+	mod->bank_changed = 1;
+	
 	uint32_t hwtype = grid_sys_get_hwcfg();
 	
 	if (banknumber == 255){
-		
-		
-
-		
+			
 		mod->bank_select = 255;
 		
 		for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
@@ -348,29 +347,23 @@ void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
 			uint8_t g = 127;
 			uint8_t b = 127;			
 							
-			if (hwtype == GRID_MODULE_EN16_RevA){
+			// Rotation	
+			grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/20, g/20, b/20);
+			//grid_led_set_min(&grid_led_state, i, 0, 0, 0, 0);
 				
-				// Rotation
-				grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_A, 0, 0, 255);
-				grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_A, 5, 5, 5);
-				grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_A, 255, 0, 0);
+			grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/2, g/2, b/2);
+			grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_A, r, g, b);
+			
+			
+			// old relative encoder mode				
+			//grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_A, 0, 0, 255);
+			//grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_A, 5, 5, 5);
+			//grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_A, 255, 0, 0);
 				
-				// Buttonpress
-				grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_B, 0, 0, 0);
-				grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_B, r/2, g/2, b/2);
-				grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_B, r, g, b);
-			}
-			else{			
-				
-
-
-				
-				grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/20, g/20, b/20);
-				//grid_led_set_min(&grid_led_state, i, 0, 0, 0, 0);
-				
-				grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/2, g/2, b/2);
-				grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_A, r, g, b);
-			}
+			// Encoder Buttonpress
+			grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_B, 0, 0, 0);
+			grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_B, r/2, g/2, b/2);
+			grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_B, r, g, b);
 			
 			
 		}	
@@ -387,26 +380,17 @@ void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
 			uint8_t r = mod->bank_color_r[mod->bank_select];
 			uint8_t g = mod->bank_color_g[mod->bank_select];
 			uint8_t b = mod->bank_color_b[mod->bank_select];
+					
+			//Rotation				
+			grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/32, g/32, b/32);
+			grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/2, g/2, b/2);
+			grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_A, r, g, b);
 			
-			if (hwtype == GRID_MODULE_EN16_RevA){
-				
-				
-				uint8_t r = mod->bank_color_r[mod->bank_select];
-				uint8_t g = mod->bank_color_g[mod->bank_select];
-				uint8_t b = mod->bank_color_b[mod->bank_select];
-				
-				grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/32, g/32, b/32);
-							
-				grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_B, 0, 0, 0);
-				grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_B, r/2, g/2, b/2);
-				grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_B, r, g, b);
-			}
-			else{
-							
-				grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/32, g/32, b/32);
-				grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/2, g/2, b/2);
-				grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_A, r, g, b);
-			}
+			// Button
+			grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_B, 0, 0, 0);
+			grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_B, r/2, g/2, b/2);
+			grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_B, r, g, b);
+			
 			
 			
 		}	

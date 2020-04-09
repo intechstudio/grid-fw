@@ -47,6 +47,7 @@ struct grid_sys_model
 	
 	
 	uint8_t bank_select;
+	uint8_t bank_changed;
 	
 	uint8_t bank_color_r[4];
 	uint8_t bank_color_g[4];

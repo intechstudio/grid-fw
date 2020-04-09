@@ -53,6 +53,28 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 	// Set the shift registers to continuously load data until new transaction is issued
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 
+
+	uint8_t bank = 0;
+	if (grid_sys_state.bank_select == 1){
+		bank = 1;
+	}
+
+	uint8_t bank_changed = 0;
+	
+	grid_sys_state.bank_changed;
+	
+	if (grid_sys_state.bank_changed){
+		grid_sys_state.bank_changed = 0;
+		bank_changed = 1;			
+		
+		for (uint8_t i = 0; i<16; i++)
+		{
+			grid_sys_write_hex_string_value(&mod->report_ui_array[i+16+16].payload[9], 2, mod->report_ui_array[i+16+16].helper[bank]); // LED
+			grid_report_ui_set_changed_flag(mod, i+16+16);
+		}
+	}
+
+
 		
 	// Buffer is only 8 bytes but we check all 16 encoders separately
 	for (uint8_t j=0; j<16; j++){
@@ -124,7 +146,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 			uint8_t a_prev = grid_ui_encoder_array[i].phase_a_previous;
 			uint8_t b_prev = grid_ui_encoder_array[i].phase_b_previous;
 			
-			int8_t delta = 0;
+			int16_t delta = 0;
 			
 			if (a_now != a_prev){
 				
@@ -145,7 +167,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 						
 			if (delta != 0){
 				
-				volatile uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_ui_encoder_array[i+1].last_real_time);
+				volatile uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_ui_encoder_array[i].last_real_time);
 				
 				if (elapsed_time>400){
 					elapsed_time = 400;
@@ -156,7 +178,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				}
 			
 				
-				uint8_t velocityfactor = (160000-elapsed_time*elapsed_time)/40000.0 + 1;
+				uint16_t velocityfactor = (160000-elapsed_time*elapsed_time)/60000.0 + 1;
 				
 				
 				grid_ui_encoder_array[i].last_real_time = grid_sys_rtc_get_time(&grid_sys_state);
@@ -186,39 +208,43 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				uint8_t command = GRID_MSG_COMMAND_MIDI_CONTROLCHANGE;
 				
 				
-				uint8_t value = 0;
-				if (0 == grid_report_ui_get_changed_flag(mod, i+16)){
-					value = 64; //CENTER
-					mod->report_ui_array[i+16].helper[0] = 0;
+				uint8_t value = 0;	
+								
+					
+				value = mod->report_ui_array[i+16].helper[bank];
+				
+				if (value + delta*velocityfactor < 0){
+					value = 0;
+				}
+				else if (value + delta*velocityfactor > 127){
+					value = 127;
 				}
 				else{
-					value = mod->report_ui_array[i+16].helper[0];
+					value += delta*velocityfactor;
 				}
-				
-				value +=  delta*velocityfactor;
-				
-				uint8_t actuator = 2*grid_ui_encoder_array[i].rotation_value;
-				
-				if (value != mod->report_ui_array[i+16].helper[0]){
+								
+
+				if (value != mod->report_ui_array[i+16].helper[bank]){
 					
 					grid_sys_write_hex_string_value(&mod->report_ui_array[i+16].payload[5], 2, command);
 					grid_sys_write_hex_string_value(&mod->report_ui_array[i+16].payload[7], 2, i);
 					grid_sys_write_hex_string_value(&mod->report_ui_array[i+16].payload[9], 2, value);
 					
-					mod->report_ui_array[i+16].helper[0] = value;
+					mod->report_ui_array[i+16].helper[bank] = value;
 					grid_report_ui_set_changed_flag(mod, i+16);
 					
 					
 					
-					grid_sys_write_hex_string_value(&mod->report_ui_array[i+16+16].payload[9], 2, actuator); // LED
-					mod->report_ui_array[i+16+16].helper[0] = actuator;
+					grid_sys_write_hex_string_value(&mod->report_ui_array[i+16+16].payload[9], 2, value*2); // LED
+					mod->report_ui_array[i+16+16].helper[bank] = value*2;
 					grid_report_ui_set_changed_flag(mod, i+16+16);
 					
 				}
 				
 			}			
-			else{ //DELTA==0
+			else if (0){ //DELTA==0
 
+				// old relative encoder output
 				if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_ui_encoder_array[i].last_real_time)>200){
 					if (grid_ui_encoder_array[i].rotation_value > 64){
 
@@ -382,6 +408,17 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 	for (uint8_t i = 0; i<16; i++)
 	{
 		grid_ui_encoder_array[i].controller_number = i;
+		
+		grid_ui_encoder_array[i].button_value = 0;
+		grid_ui_encoder_array[i].button_changed = 0; 
+		grid_ui_encoder_array[i].rotation_value = 0;
+		grid_ui_encoder_array[i].rotation_changed = 1;
+		grid_ui_encoder_array[i].rotation_direction = 0;
+		grid_ui_encoder_array[i].last_real_time = -1;
+		grid_ui_encoder_array[i].velocity = 0;
+		grid_ui_encoder_array[i].phase_a_previous = 1;
+		grid_ui_encoder_array[i].phase_b_previous = 1;	
+		
 	}
 	
 	
