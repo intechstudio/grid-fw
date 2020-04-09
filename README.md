@@ -46,11 +46,11 @@ Download the firmware image from the repository and unzip the archive. The firmw
 ## Stable Build
 Grid firmware v1.0.0 is the latest stable relese. Plese visit the [releases](https://github.com/intechstudio/grid-fw/releases)
 page for more information.
+[![GitHub version](https://badge.fury.io/gh/intechstudio%2Fgrid-fw.svg)](https://github.com/intechstudio/grid-fw/releases/latest)
 
 ## Latest Build
 Nightly builds of the Grid firmware are available for those who wish to experiment with the latest features.
 Please check the related commit messages to learn more about the current build.
 
-[![GitHub version](https://badge.fury.io/gh/intechstudio%2Fgrid-fw.svg)](https://github.com/intechstudio/grid-fw)
 [![Only 32 Kb](https://badge-size.herokuapp.com/intechstudio/grid-fw/master/grid_toplevel/grid_toplevel_release.uf2)](https://github.com/intechstudio/grid-fw/tree/master/grid_toplevel/grid_toplevel_release.uf2)
 
