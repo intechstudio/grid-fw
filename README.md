@@ -43,6 +43,15 @@ Download the bootloader image from the repository and unzip the archive. The boo
 ## Updating the firmware
 Download the firmware image from the repository and unzip the archive. The firmware binary is contained in the  grid_toplevel_release.uf2 file. Once the bootloader is enumerated copy the new firmware image to the removable storage device called GRID. After a successful update, the controller will reset and boot the newly installed firmware, ready to use. Make sure to repeat this process for all of your Grid modules, to ensure that they are all running the latest firmware.
 
+# The firmware updating in steps...
+- Download & unzip the latest release.
+- Hold down the utility button on the side of the module while plugging in the module to your computer.
+- You should see Grid booting up as a removable device.
+- Drag and drop the new firmware on the device.
+- Wait a few seconds, you should see the module rebooting.
+- Disconnect the module.
+- Reconnect the module, it should work fine now.
+
 ## Stable Build
 Here you can download the latest stable relese. Plese visit the [releases](https://github.com/intechstudio/grid-fw/releases)
 page for more information.
