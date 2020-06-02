@@ -21,6 +21,8 @@ void grid_hardwaretest_led_test_init(struct grid_led_model* mod, uint8_t num);
 
 void grid_hardwaretest_led_test(struct grid_led_model* mod, uint32_t loop);
 
+void grid_hardwaretest_led_test_photo(struct grid_led_model* mod, uint32_t loop);
+
 
 void grid_hardwaretest_port_test(uint32_t loop);
 

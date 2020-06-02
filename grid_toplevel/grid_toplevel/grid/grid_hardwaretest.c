@@ -15,14 +15,55 @@ void grid_hardwaretest_main(){
 	
 	uint32_t counter = 0;
 	
+	uint8_t testmode = 1;
+	uint8_t button_last = 1;
+	uint8_t button_now = 1;
+	uint8_t mode_changed = 1;
+	
 	while(1){
 	
+		if (gpio_get_pin_level(MAP_MODE) == 0){
+			if (button_last == 1){
+				testmode++;
+				testmode%=2;
+				mode_changed = 1;
+				button_last=0;
+			}			
+		}
+		else{
+			button_last = 1;
+		}
 		
-		grid_hardwaretest_port_test(counter);
-		grid_hardwaretest_led_test(&grid_led_state, counter);
+
+	
+		if (testmode == 0){
+			
+			if (mode_changed){
+				grid_hardwaretest_led_test_photo(&grid_led_state, counter);
+				grid_hardwaretest_led_test_photo(&grid_led_state, counter);
+				
+				for (uint8_t i=0; i<grid_sys_get_hwcfg()/4; i++){
+					
+					grid_hardwaretest_led_test_photo(&grid_led_state, counter);
+					grid_hardwaretest_led_test_photo(&grid_led_state, counter);
+					
+				}		
+				
+			}
+			
+			
+		}
+		else if (testmode == 1){
+		
+			grid_hardwaretest_port_test(counter);
+			grid_hardwaretest_led_test(&grid_led_state, counter);	
+			
+		}
 		
 		
-		delay_ms(1);	
+		delay_ms(1);
+		
+		mode_changed = 0;	
 		counter++;			
 		
 	}
@@ -60,6 +101,42 @@ void grid_hardwaretest_led_test(struct grid_led_model* mod, uint32_t loop){
 		
 	while(grid_led_hardware_is_transfer_completed(mod) != 1){
 			
+	}
+	grid_led_hardware_start_transfer(mod);
+	
+}
+
+void grid_hardwaretest_led_test_photo(struct grid_led_model* mod, uint32_t loop){
+
+	uint8_t color_r[4] = {255, 127, 255, 0};
+	uint8_t color_g[4] = {0, 255, 127, 127};
+	uint8_t color_b[4] = {127, 127, 0, 255};
+	
+	
+	for(uint8_t i=0; i<mod->led_number; i++){
+		
+		uint8_t intensity = (rand()%255)*(rand()%255)/256.0/2;
+		//uint8_t intensity = (rand()%255)/2;
+		
+		if (intensity<5){
+			intensity = 5;
+		}
+		if (intensity>250){
+			intensity = 250;
+		}
+		
+		uint8_t group = (i+4)%4;
+		
+		grid_led_set_color(mod, i, intensity/256.0*color_r[group], intensity/256.0*color_g[group], intensity/256.0*color_b[group]);
+
+	}
+	
+	
+	//grid_led_render_all(mod);
+	
+	
+	while(grid_led_hardware_is_transfer_completed(mod) != 1){
+		
 	}
 	grid_led_hardware_start_transfer(mod);
 	
