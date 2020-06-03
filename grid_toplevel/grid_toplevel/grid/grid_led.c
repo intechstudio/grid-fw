@@ -316,8 +316,12 @@ void grid_led_startup_animation(struct grid_led_model* mod){
 		color_b = 0;
 		s= 2;
 
-		}else if (grid_module_reset_cause == RESET_REASON_SYST){
+	}else if (grid_module_reset_cause == RESET_REASON_SYST){
 		
+		color_r = 0;
+		color_g = 0;
+		color_b = 1;
+		s= 2;
 		
 	}
 	

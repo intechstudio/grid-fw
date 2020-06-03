@@ -904,15 +904,126 @@ static void qspi_xfer_complete_cb(struct _dma_resource *resource)
 }
 
 
+void grid_sys_userpage_set_bit(uint8_t* buffer, uint8_t offset, uint8_t value, uint8_t* changed){
+	
+	uint8_t index = offset/8;
+	uint8_t bit = offset%8;
+	
+	if (value){ // SET BIT
+
+		if ((buffer[index] & (1<<bit)) == 0){
+			
+			buffer[index] |= (1<<bit);
+			*changed = 1;
+		}
+		else{
+			
+			// no change needed
+		}		
+		
+		
+	}else{ // CLEAR BIT
+						
+		if ((buffer[index] & (1<<bit)) == (1<<bit)){
+			
+			buffer[index] &= ~(1<<bit);
+			*changed = 1;
+		}
+		else{
+		
+			// no change needed
+		}
+		
+		
+				
+	}
+	
+	
+}
 
 
 int main(void)
 {
 
 	atmel_start_init();	
+	
+
+	
+	// READ USER SPACE
+	
+	#include <hpl_user_area.h>
+	
+	volatile uint8_t user_area_buffer[512];
+	volatile uint8_t user_area_changed_flag = 0;
+	
+	#define  USER_ROW_BASE 0x804000
+		
+	_user_area_read(USER_ROW_BASE, 0, user_area_buffer, 512);	
+	
+
+
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Reading User Row");
+	_user_area_read(USER_ROW_BASE, 0, user_area_buffer, 512);	
+
+
+//BOD33 characteristics datasheet page 1796
+
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Verifying User Row");	
+	
+	// BOD33 Disable Bit => Set 0
+	grid_sys_userpage_set_bit(user_area_buffer, 0, 0, &user_area_changed_flag);
+	
+	// BOD33 Level => Set 225 = b11100001
+	grid_sys_userpage_set_bit(user_area_buffer, 1, 1, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 2, 0, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 3, 0, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 4, 0, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 5, 0, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 6, 1, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 7, 1, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 8, 1, &user_area_changed_flag);
+	
+	// BOD33 Action => Reset = b01
+	grid_sys_userpage_set_bit(user_area_buffer, 9, 1, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 10, 0, &user_area_changed_flag);
+
+	// BOD33 Hysteresis => Set 15 = b1111
+	grid_sys_userpage_set_bit(user_area_buffer, 11, 1, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 12, 1, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 13, 1, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 14, 1, &user_area_changed_flag);
+	
+	// BOOTPROTECT 16kB
+	grid_sys_userpage_set_bit(user_area_buffer, 26, 1, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 27, 0, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 28, 1, &user_area_changed_flag);
+	grid_sys_userpage_set_bit(user_area_buffer, 29, 1, &user_area_changed_flag);	
+	
+		
+		
+	if (user_area_changed_flag == 1){
+			
+		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Updating User Row");	
+		_user_area_write(USER_ROW_BASE, 0, user_area_buffer, 512);
+		
+		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "System Reset");
+		NVIC_SystemReset();
+		
+		
+		
+	}else{
+	
+		
+		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Unchanged User Row");
+	
+	}
+		
+			
+		
 		
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Unknow Reset Source");
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Unknown Reset Source");
+	
 				
 		
 	#ifdef UNITTEST	
@@ -939,6 +1050,7 @@ int main(void)
 		#include "grid/grid_hardwaretest.h"
 		
 		grid_hardwaretest_main();
+		
 		
 		while (1)
 		{
