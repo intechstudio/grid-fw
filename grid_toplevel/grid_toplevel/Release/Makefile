@@ -96,6 +96,7 @@ C_SRCS +=  \
 ../examples/driver_examples.c \
 ../flash/n25q256a.c \
 ../flash/spi_nor_flash.c \
+../grid/grid_d51.c \
 ../grid/grid_debug.c \
 ../grid/grid_hardwaretest.c \
 ../grid/grid_unittest.c \
@@ -187,6 +188,7 @@ driver_init.o \
 examples/driver_examples.o \
 flash/n25q256a.o \
 flash/spi_nor_flash.o \
+grid/grid_d51.o \
 grid/grid_debug.o \
 grid/grid_hardwaretest.o \
 grid/grid_unittest.o \
@@ -271,6 +273,7 @@ driver_init.o \
 examples/driver_examples.o \
 flash/n25q256a.o \
 flash/spi_nor_flash.o \
+grid/grid_d51.o \
 grid/grid_debug.o \
 grid/grid_hardwaretest.o \
 grid/grid_unittest.o \
@@ -355,6 +358,7 @@ driver_init.d \
 examples/driver_examples.d \
 flash/n25q256a.d \
 flash/spi_nor_flash.d \
+grid/grid_d51.d \
 grid/grid_debug.d \
 grid/grid_hardwaretest.d \
 grid/grid_unittest.d \
@@ -439,6 +443,7 @@ driver_init.d \
 examples/driver_examples.d \
 flash/n25q256a.d \
 flash/spi_nor_flash.d \
+grid/grid_d51.d \
 grid/grid_debug.d \
 grid/grid_hardwaretest.d \
 grid/grid_unittest.d \
@@ -575,6 +580,13 @@ flash/n25q256a.o: ../flash/n25q256a.c
 	
 
 flash/spi_nor_flash.o: ../flash/spi_nor_flash.c
+	@echo Building file: $<
+	@echo Invoking: ARM/GNU C Compiler : 6.3.1
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAMD51N20A__ -DNDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\ARM\CMSIS\5.4.0\CMSIS\Core\Include" -I"../Config" -I".." -I"../examples" -I"../hal/include" -I"../hal/utils/include" -I"../hpl/adc" -I"../hpl/cmcc" -I"../hpl/core" -I"../hpl/dmac" -I"../hpl/dsu" -I"../hpl/evsys" -I"../hpl/gclk" -I"../hpl/mclk" -I"../hpl/nvmctrl" -I"../hpl/osc32kctrl" -I"../hpl/oscctrl" -I"../hpl/pac" -I"../hpl/pm" -I"../hpl/port" -I"../hpl/qspi" -I"../hpl/ramecc" -I"../hpl/rtc" -I"../hpl/sercom" -I"../hpl/systick" -I"../hpl/tc" -I"../hpl/usb" -I"../hpl/wdt" -I"../hri" -I"../usb" -I"../usb/class/cdc" -I"../usb/class/cdc/device" -I"../usb/class/composite/device" -I"../usb/class/hid" -I"../usb/class/hid/device" -I"../usb/class/hub" -I"../usb/class/msc" -I"../usb/class/msc/device" -I"../usb/class/vendor" -I"../usb/device" -I"../stdio_redirect" -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\include"  -Os -ffunction-sections -mlong-calls -Wall -mcpu=cortex-m4 -c -std=gnu99 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+grid/grid_d51.o: ../grid/grid_d51.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 6.3.1
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAMD51N20A__ -DNDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\ARM\CMSIS\5.4.0\CMSIS\Core\Include" -I"../Config" -I".." -I"../examples" -I"../hal/include" -I"../hal/utils/include" -I"../hpl/adc" -I"../hpl/cmcc" -I"../hpl/core" -I"../hpl/dmac" -I"../hpl/dsu" -I"../hpl/evsys" -I"../hpl/gclk" -I"../hpl/mclk" -I"../hpl/nvmctrl" -I"../hpl/osc32kctrl" -I"../hpl/oscctrl" -I"../hpl/pac" -I"../hpl/pm" -I"../hpl/port" -I"../hpl/qspi" -I"../hpl/ramecc" -I"../hpl/rtc" -I"../hpl/sercom" -I"../hpl/systick" -I"../hpl/tc" -I"../hpl/usb" -I"../hpl/wdt" -I"../hri" -I"../usb" -I"../usb/class/cdc" -I"../usb/class/cdc/device" -I"../usb/class/composite/device" -I"../usb/class/hid" -I"../usb/class/hid/device" -I"../usb/class/hub" -I"../usb/class/msc" -I"../usb/class/msc/device" -I"../usb/class/vendor" -I"../usb/device" -I"../stdio_redirect" -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\Atmel\SAMD51_DFP\1.2.139\samd51a\include"  -Os -ffunction-sections -mlong-calls -Wall -mcpu=cortex-m4 -c -std=gnu99 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

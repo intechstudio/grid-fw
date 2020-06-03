@@ -1293,6 +1293,12 @@ copy "$(OutputDirectory)\$(OutputFileName).uf2" "$(OutputDirectory)\..\..\$(Outp
     <Compile Include="flash\spi_nor_flash.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="grid\grid_d51.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_d51.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="grid\grid_debug.c">
       <SubType>compile</SubType>
     </Compile>

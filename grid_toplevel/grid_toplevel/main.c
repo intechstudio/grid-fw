@@ -609,14 +609,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 
 		printf("{\"type\": \"ERROR\", \"data\": [\"Frame Error\"]}\r\n");
 	}
-		
-		
-		
-
-
-
-
-	
+			
 	return;
 	
 }
@@ -666,8 +659,6 @@ void grid_port_receive_complete_task(struct grid_port* por){
 	
 	
 }
-
-
 
 
 static struct timer_task RTC_Scheduler_rx_task;
@@ -785,299 +776,20 @@ void init_timer(void)
 	
 }
 
-struct io_descriptor *io;
-
-
-//  ========================== NOR FLASH =================================  //
-
-#define BUFFER_SIZE 64
-/** Size of minimum erase block */
-#define QSPI_ERBLK (4 * 1024)
-/** Size of data to erase (blocks to cover writing area) */
-#define QSPI_ERSIZE ((BUFFER_SIZE + QSPI_ERBLK - 1) & ~(QSPI_ERBLK - 1))
-
-/* Declare  Tx and Rx buffer and initialize to 0 */
-volatile uint8_t tx_buffer[BUFFER_SIZE] = {0};
-volatile uint8_t rx_buffer[BUFFER_SIZE] = {0};
-
-static struct n25q256a SPI_NOR_FLASH_0_descr;
-
-struct spi_nor_flash *SPI_NOR_FLASH_0;
-
-volatile bool is_corrupted = false;		
-
-#define CONF_SPI_NOR_FLASH_0_QUAD_MODE 1
-
-#define FLASH_IO0 PA08
-#define FLASH_IO1 PA09
-#define FLASH_IO2 PA10
-#define FLASH_IO3 PA11
-
-#define FLASH_CLK PB10
-#define FLASH_CS  PB11
-
-void QSPI_INSTANCE_exit_xip(void)
-{
-	gpio_set_pin_function(FLASH_IO0, 0);
-	gpio_set_pin_function(FLASH_CS, 0);
-	gpio_set_pin_function(FLASH_CLK, 0);
-
-	gpio_set_pin_direction(FLASH_IO0, GPIO_DIRECTION_OUT);
-	gpio_set_pin_direction(FLASH_CS, GPIO_DIRECTION_OUT);
-	gpio_set_pin_direction(FLASH_CLK, GPIO_DIRECTION_OUT);
-
-	gpio_set_pin_level(FLASH_IO0, true);
-	gpio_set_pin_level(FLASH_CS, false);
-	gpio_set_pin_level(FLASH_CLK, false);
-
-	delay_us(1);
-
-	for (int i = 0; i < 7; i++) {
-		gpio_set_pin_level(FLASH_CLK, true);
-		delay_us(1);
-		gpio_set_pin_level(FLASH_CLK, false);
-		delay_us(1);
-	}
-
-	gpio_set_pin_level(FLASH_CS, true);
-	delay_us(1);
-	QSPI_INSTANCE_PORT_init();
-}
-
-
-/**
- * \brief Initialize NOR Flash memory
- */
-void spi_nor_flash_init(void)
-{
-
-	qspi_dma_enable(&QSPI_INSTANCE);
-	SPI_NOR_FLASH_0 = n25q256a_construct(
-	    &SPI_NOR_FLASH_0_descr.parent, &QSPI_INSTANCE, QSPI_INSTANCE_exit_xip, CONF_SPI_NOR_FLASH_0_QUAD_MODE);
-}
-
-void spi_nor_flash_test(void){
-	
-	printf("QSPI Program Started\n\r");
-	/* Initialize Tx buffer */
-	for (int i = 0; i < BUFFER_SIZE; i++) {
-		tx_buffer[i] = (uint8_t)i;
-	}
-
-	/* Erase flash memory */
-	if (ERR_NONE == SPI_NOR_FLASH_0->interface->erase(SPI_NOR_FLASH_0, 0, QSPI_ERSIZE)) {
-		printf("Flash erase successful\n\r");
-	}
-
-	/* Write data to flash memory */
-	if (ERR_NONE == SPI_NOR_FLASH_0->interface->write(SPI_NOR_FLASH_0, (uint8_t *)tx_buffer, 0, BUFFER_SIZE)) {
-		printf("Flash write successful\n\r");
-	}
-
-	/* Read data from flash memory */
-	if (ERR_NONE == SPI_NOR_FLASH_0->interface->read(SPI_NOR_FLASH_0, (uint8_t *)rx_buffer, 0, BUFFER_SIZE)) {
-		printf("Flash read successful\n\r");
-	}
-		
-	/* Data verification */
-	for (int i = 0; i < BUFFER_SIZE; i++) {
-		if (tx_buffer[i] != rx_buffer[i]) {
-			is_corrupted = true;
-			printf("Flash data verification failed.\n\r");
-		}
-	}
-
-	if (!is_corrupted) {
-		printf("Write - Read is successful in QSPI Flash memory.\n\r");
-	}
-	
-}
-
-
-/* DMA Transfer complete callback */
-static void qspi_xfer_complete_cb(struct _dma_resource *resource)
-{
-	/* Pull Up Chip select line*/
-	hri_qspi_write_CTRLA_reg(QSPI, QSPI_CTRLA_ENABLE | QSPI_CTRLA_LASTXFER);
-	
-
-}
-
-
-void grid_sys_userpage_set_bit(uint8_t* buffer, uint8_t offset, uint8_t value, uint8_t* changed){
-	
-	uint8_t index = offset/8;
-	uint8_t bit = offset%8;
-	
-	if (value){ // SET BIT
-
-		if ((buffer[index] & (1<<bit)) == 0){
-			
-			buffer[index] |= (1<<bit);
-			*changed = 1;
-		}
-		else{
-			
-			// no change needed
-		}		
-		
-		
-	}else{ // CLEAR BIT
-						
-		if ((buffer[index] & (1<<bit)) == (1<<bit)){
-			
-			buffer[index] &= ~(1<<bit);
-			*changed = 1;
-		}
-		else{
-		
-			// no change needed
-		}
-		
-		
-				
-	}
-	
-	
-}
 
 
 int main(void)
 {
 
 	atmel_start_init();	
-	
-
-	
-	// READ USER SPACE
-	
-	#include <hpl_user_area.h>
-	
-	volatile uint8_t user_area_buffer[512];
-	volatile uint8_t user_area_changed_flag = 0;
-	
-	#define  USER_ROW_BASE 0x804000
-		
-	_user_area_read(USER_ROW_BASE, 0, user_area_buffer, 512);	
-	
-
-
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Reading User Row");
-	_user_area_read(USER_ROW_BASE, 0, user_area_buffer, 512);	
-
-
-//BOD33 characteristics datasheet page 1796
-
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Verifying User Row");	
-	
-	// BOD33 Disable Bit => Set 0
-	grid_sys_userpage_set_bit(user_area_buffer, 0, 0, &user_area_changed_flag);
-	
-	// BOD33 Level => Set 225 = b11100001
-	grid_sys_userpage_set_bit(user_area_buffer, 1, 1, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 2, 0, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 3, 0, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 4, 0, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 5, 0, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 6, 1, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 7, 1, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 8, 1, &user_area_changed_flag);
-	
-	// BOD33 Action => Reset = b01
-	grid_sys_userpage_set_bit(user_area_buffer, 9, 1, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 10, 0, &user_area_changed_flag);
-
-	// BOD33 Hysteresis => Set 15 = b1111
-	grid_sys_userpage_set_bit(user_area_buffer, 11, 1, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 12, 1, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 13, 1, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 14, 1, &user_area_changed_flag);
-	
-	// BOOTPROTECT 16kB
-	grid_sys_userpage_set_bit(user_area_buffer, 26, 1, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 27, 0, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 28, 1, &user_area_changed_flag);
-	grid_sys_userpage_set_bit(user_area_buffer, 29, 1, &user_area_changed_flag);	
-	
-		
-		
-	if (user_area_changed_flag == 1){
-			
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Updating User Row");	
-		_user_area_write(USER_ROW_BASE, 0, user_area_buffer, 512);
-		
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "System Reset");
-		NVIC_SystemReset();
-		
-		
-		
-	}else{
-	
-		
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Unchanged User Row");
-	
-	}
-		
-			
-		
-		
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Unknown Reset Source");
-	
-				
-		
-	#ifdef UNITTEST	
-		#include "grid/grid_unittest.h"
-		grid_unittest_start();	
-		
-		grid_sys_unittest();	
-		grid_sys_unittest();	
-	
-		printf(" Unit Test Finished\r\n");
-		
-		while (1)
-		{
-		}
-		
-	#else	
-	
-		GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "No Unit Test");
-	#endif
-	
-	
-	#ifdef HARDWARETEST
-	
-		#include "grid/grid_hardwaretest.h"
-		
-		grid_hardwaretest_main();
-		
-		
-		while (1)
-		{
-		}
-	#else
-	
-		GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "No Hardware Test");
-	#endif
+
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "D51 Init");
+	grid_d51_init(); // Check User Row
 
 
-	
-// 	uint32_t flash_length = flash_get_total_pages(&FLASH_0);
-// 	
-// 	flash_lock(&FLASH_0, 0x00000000, flash_length);
-	
-	
-//  	wdt_set_timeout_period(&WDT_0, 1000, 4096);
-//  	wdt_enable(&WDT_0);
-//  	wdt_feed(&WDT_0
-		
-//	wdt_disable(&WDT_0);
-	
-
-	//TIMER_0_example2();
 	#include "usb/class/midi/device/audiodf_midi.h"
 	audiodf_midi_init();
-
 
 	composite_device_start();
 
@@ -1086,21 +798,6 @@ int main(void)
 	grid_module_common_init();
 		
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
-		
-
-
-
-
-	
-
-
-	/* Register DMA complete Callback and initialize NOR flash */
- 	//qspi_dma_register_callback(&QSPI_INSTANCE, QSPI_DMA_CB_XFER_DONE, qspi_xfer_complete_cb);	
- 	//spi_nor_flash_init();
- 	//spi_nor_flash_test();
-	
-
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 
 	init_timer();
 	
@@ -1113,7 +810,9 @@ int main(void)
 	uint32_t loopwarp = 0;
 	
 	uint8_t usb_init_variable = 0;
-
+	
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
+	
 	while (1) {
 		
 				
