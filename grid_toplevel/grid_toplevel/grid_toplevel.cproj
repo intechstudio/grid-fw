@@ -478,7 +478,9 @@
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
     </ToolchainSettings>
-    <PostBuildEvent>$(OutputDirectory)\uf2conv.py -c -b 0x4000 -o $(OutputFileName).uf2 $(OutputFileName).bin
+    <PostBuildEvent>$(SolutionDir)\build_scripts\macro2json.py $(SolutionDir)/grid_toplevel/grid/grid_protocol.h $(SolutionDir)/../../grid-protocol/grid_protocol.json
+
+$(SolutionDir)\build_scripts\uf2conv.py -c -b 0x4000 -o $(OutputFileName).uf2 $(OutputFileName).bin
 
 copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputFileName)_release.uf2</PostBuildEvent>
   </PropertyGroup>
@@ -655,8 +657,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
 </ArmGcc>
     </ToolchainSettings>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>$(SolutionDir)\build_scripts\macro2json.py $(SolutionDir)/grid_toplevel/grid/grid_protocol.h $(SolutionDir)/../../grid-protocol/grid_protocol.json</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Unittest' ">
     <ToolchainSettings>
