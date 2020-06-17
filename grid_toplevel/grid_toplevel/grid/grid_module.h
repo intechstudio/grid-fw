@@ -32,10 +32,6 @@
 
 
 
-#define  GRID_MODULE_P16_RevB		0
-#define  GRID_MODULE_B16_RevB		128
-#define  GRID_MODULE_PBF4_RevA		64
-#define  GRID_MODULE_EN16_RevA		0xC0
 
 
 

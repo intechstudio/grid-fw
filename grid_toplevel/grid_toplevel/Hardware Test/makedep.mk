@@ -16,6 +16,8 @@ flash\n25q256a.c
 
 flash\spi_nor_flash.c
 
+grid\grid_d51.c
+
 grid\grid_debug.c
 
 grid\grid_hardwaretest.c

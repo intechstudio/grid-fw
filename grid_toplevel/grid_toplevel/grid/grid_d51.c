@@ -49,8 +49,18 @@ void grid_d51_bitmap_write_bit(uint8_t* buffer, uint8_t offset, uint8_t value, u
 
 void grid_d51_init(){
 	
+	uint32_t hwid = grid_sys_get_hwcfg();
 	
+	printf("{\"type\":\"HWCFG\", \"data\": \"%d\"}\r\n", hwid);
+	
+	
+	#ifdef NDEBUG		
+	GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "USER ROW CHECK!");
 	grid_d51_verify_user_row();
+	#else
+	GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "NO USER ROW CHECK!");
+	#endif
+	
 	
 			
 	#ifdef UNITTEST
