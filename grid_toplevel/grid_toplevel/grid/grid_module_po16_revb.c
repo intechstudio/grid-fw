@@ -63,6 +63,15 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 	adcresult_1 = input_1;
 
 
+	// POT POLARITY IS REVERSED ON PO16_RevC
+	if (grid_sys_get_hwcfg() == GRID_MODULE_PO16_RevC){
+		
+		// Reverse the 16bit result
+		adcresult_0	= 65535 - adcresult_0;
+		adcresult_1 = 65535 - adcresult_1;
+	}
+
+
 	grid_ain_add_sample(adc_index_0, adcresult_0);
 	grid_ain_add_sample(adc_index_1, adcresult_1);
 
