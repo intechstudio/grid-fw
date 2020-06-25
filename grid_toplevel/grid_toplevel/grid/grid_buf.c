@@ -471,6 +471,11 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 
 uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 	
+			
+
+	// OLD DEBUG IMPLEMENTATION
+	
+	
 	uint16_t length = grid_buffer_read_size(&por->tx_buffer);
 	
 	if (!length){		
@@ -501,11 +506,16 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 			
 			temp[i] = grid_buffer_read_character(&por->tx_buffer);
 			
+			por->tx_double_buffer[i] = temp[i];
+			
 		}
 				
 		// Let's acknowledge the transactions	(should wait for partner to send ack)
 		grid_buffer_read_acknowledge(&por->tx_buffer);
 		
+// 		cdcdf_acm_write(por->tx_double_buffer, length);
+// 
+// 		return;
 
 		// GRID-2-HOST TRANSLATOR
 		uint8_t id = grid_msg_get_id(temp);		
@@ -544,17 +554,17 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					midi_channel = ((256-dy*2)%8+grid_sys_state.bank_select*8)%16;
 					midi_param1  = (256-32+midi_param1 + 16*dx)%96; // 96-128 reserved
 							
-					printf("{\"type\":\"MIDI\", \"data\": [\"%d\", \"%d\", \"%d\", \"%d\", \"%d\", \"%d\"]}\r\n", dx, dy, midi_channel,	midi_command, midi_param1, midi_param2);
-										
-					sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [MIDI] Ch: %d  Cmd: %d  Param1: %d  Param2: %d\n",					
-						id,dx,dy,age,
-						midi_channel,
-						midi_command,
-						midi_param1,
-						midi_param2
-					);
-					
-					output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
+// 					printf("{\"type\":\"MIDI\", \"data\": [\"%d\", \"%d\", \"%d\", \"%d\", \"%d\", \"%d\"]}\r\n", dx, dy, midi_channel,	midi_command, midi_param1, midi_param2);
+// 										
+// 					sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [MIDI] Ch: %d  Cmd: %d  Param1: %d  Param2: %d\n",					
+// 						id,dx,dy,age,
+// 						midi_channel,
+// 						midi_command,
+// 						midi_param1,
+// 						midi_param2
+// 					);
+// 					
+// 					output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
 								
 					audiodf_midi_xfer_packet(midi_command>>4, midi_command|midi_channel, midi_param1, midi_param2);	
 					
@@ -572,12 +582,12 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 						uint8_t keyboard_modifier	= grid_sys_read_hex_string_value(&temp[current_start+5+6*j], 2, &error_flag);
 						uint8_t keyboard_key		= grid_sys_read_hex_string_value(&temp[current_start+7+6*j], 2, &error_flag);
 						
-						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [KEYBOARD] Key: %d Mod: %d Cmd: %d\nHWCFG: %08x\n", 
-							id,dx,dy,age,
-							keyboard_key, keyboard_modifier, keyboard_command, grid_sys_get_hwcfg()
-						);	
-										
-						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);
+// 						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [KEYBOARD] Key: %d Mod: %d Cmd: %d\nHWCFG: %08x\n",
+// 						id,dx,dy,age,
+// 						keyboard_key, keyboard_modifier, keyboard_command, grid_sys_get_hwcfg()
+// 						);
+// 										
+// 						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);
 						
 						struct hiddf_kb_key_descriptors current_key = {keyboard_key, keyboard_modifier == GRID_MSG_PROTOCOL_KEYBOARD_PARAMETER_MODIFIER, keyboard_command == GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN};
 								
@@ -603,24 +613,24 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				
 						grid_sys_bank_select(&grid_sys_state, sys_value);		
 						
-						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [SYS] %3d %3d %3d\n",
-						id,dx,dy,age,
-						sys_command, sys_subcommand, sys_value
-						);
-						
-						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
+// 						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [SYS] %3d %3d %3d\n",
+// 						id,dx,dy,age,
+// 						sys_command, sys_subcommand, sys_value
+// 						);
+// 						
+// 						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
 
 					}
 					else if (sys_command == GRID_MSG_COMMAND_SYS_HEARTBEAT && sys_subcommand == GRID_MSG_COMMAND_SYS_HEARTBEAT_ALIVE){
 								
-						printf("{\"type\":\"HEARTBEAT\", \"data\": [\"%d\", \"%d\", \"%d\"]}\r\n", dx, dy, sys_value);		
-												
-						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [SYS] %3d %3d %3d\n",
-						id,dx,dy,age,
-						sys_command, sys_subcommand, sys_value
-						);
-						
-						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);
+// 						printf("{\"type\":\"HEARTBEAT\", \"data\": [\"%d\", \"%d\", \"%d\"]}\r\n", dx, dy, sys_value);		
+// 												
+// 						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [SYS] %3d %3d %3d\n",
+// 						id,dx,dy,age,
+// 						sys_command, sys_subcommand, sys_value
+// 						);
+// 						
+// 						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);
 
 					}
 					
@@ -632,9 +642,9 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 				}	
 				else{
-					sprintf(&por->tx_double_buffer[output_cursor], "[UNKNOWN] -> Protocol: %d\n", msg_protocol);
-					
-					output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
+// 					sprintf(&por->tx_double_buffer[output_cursor], "[UNKNOWN] -> Protocol: %d\n", msg_protocol);
+// 					
+// 					output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
 				}
 				
 				current_start = 0;
@@ -648,7 +658,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 		
 		// Let's send the packet through USB
-		cdcdf_acm_write(por->tx_double_buffer, output_cursor);
+		cdcdf_acm_write(por->tx_double_buffer, length);
 				
 		
 	}
