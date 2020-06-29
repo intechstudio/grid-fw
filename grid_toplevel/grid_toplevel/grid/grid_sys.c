@@ -694,7 +694,31 @@ uint8_t grid_msg_get_dy(uint8_t* message){
 uint8_t grid_msg_get_age(uint8_t* message){
 	
 	uint8_t error = 0;
-	return grid_sys_read_hex_string_value(&message[10], 2, &error);	
+	return grid_sys_read_hex_string_value(&message[10], 2, &error);
+	
+}
+uint8_t grid_msg_get_rot(uint8_t* message){
+	
+	uint8_t error = 0;
+	return grid_sys_read_hex_string_value(&message[12], 2, &error);
+	
+}
+uint8_t grid_msg_get_vmajor(uint8_t* message){
+	
+	uint8_t error = 0;
+	return grid_sys_read_hex_string_value(&message[14], 2, &error);
+	
+}
+uint8_t grid_msg_get_vminor(uint8_t* message){
+	
+	uint8_t error = 0;
+	return grid_sys_read_hex_string_value(&message[16], 2, &error);
+	
+}
+uint8_t grid_msg_get_vpatch(uint8_t* message){
+	
+	uint8_t error = 0;
+	return grid_sys_read_hex_string_value(&message[18], 2, &error);
 	
 }
 
@@ -716,6 +740,26 @@ void grid_msg_set_dy(uint8_t* message, uint8_t param){
 void grid_msg_set_age(uint8_t* message, uint8_t param){
 	
 	grid_sys_write_hex_string_value(&message[10], 2, param);
+	
+}
+void grid_msg_set_rot(uint8_t* message, uint8_t param){
+	
+	grid_sys_write_hex_string_value(&message[12], 2, param);
+	
+}
+void grid_msg_set_vmajor(uint8_t* message, uint8_t param){
+	
+	grid_sys_write_hex_string_value(&message[14], 2, param);
+	
+}
+void grid_msg_set_vminor(uint8_t* message, uint8_t param){
+	
+	grid_sys_write_hex_string_value(&message[16], 2, param);
+	
+}
+void grid_msg_set_vpatch(uint8_t* message, uint8_t param){
+	
+	grid_sys_write_hex_string_value(&message[18], 2, param);
 	
 }
 

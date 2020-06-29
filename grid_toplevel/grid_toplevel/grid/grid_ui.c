@@ -127,15 +127,18 @@ void grid_port_process_ui(struct grid_port* por){
 		uint8_t dx = GRID_SYS_DEFAULT_POSITION;
 		uint8_t dy = GRID_SYS_DEFAULT_POSITION;
 		uint8_t age = grid_sys_state.age;
+		
+		uint8_t rot = 0;
 			
 		uint8_t packetvalid = 0;
 			
 		sprintf(&message[length],
-		"%c%c%02x%02x%02x%02x%02x%c",
-		GRID_MSG_START_OF_HEADING,
-		GRID_MSG_BROADCAST,
-		len, id, dx, dy, age,
-		GRID_MSG_END_OF_BLOCK
+		"%c%c%02x%02x%02x%02x%02x%02x%02x%02x%02x%c",
+		GRID_CONST_SOH,
+		GRID_CONST_BROADCAST,
+		len, id, dx, dy, age, rot,
+		GRID_PROTOCOL_VERSION_MAJOR, GRID_PROTOCOL_VERSION_MINOR, GRID_PROTOCOL_VERSION_PATCH,
+		GRID_CONST_EOB
 		);
 			
 		length += strlen(&message[length]);
@@ -169,7 +172,7 @@ void grid_port_process_ui(struct grid_port* por){
 			grid_sys_state.next_broadcast_message_id++;
 				
 			// Close the packet
-			sprintf(&message[length], "%c", GRID_MSG_END_OF_TRANSMISSION); // CALCULATE AND ADD CRC HERE
+			sprintf(&message[length], "%c", GRID_CONST_EOT); // CALCULATE AND ADD CRC HERE
 			length += strlen(&message[length]);
 				
 			// Calculate packet length and insert it into the header
@@ -232,15 +235,18 @@ void grid_port_process_ui(struct grid_port* por){
 		uint8_t dx = GRID_SYS_DEFAULT_POSITION;
 		uint8_t dy = GRID_SYS_DEFAULT_POSITION;
 		uint8_t age = grid_sys_state.age;
+		
+		uint8_t rot = 0;
 	
 		uint8_t packetvalid = 0;
 	
 		sprintf(&message[length],
-		"%c%c%02x%02x%02x%02x%02x%c",
-		GRID_MSG_START_OF_HEADING,
-		GRID_MSG_BROADCAST,
-		len, id, dx, dy, age,
-		GRID_MSG_END_OF_BLOCK
+		"%c%c%02x%02x%02x%02x%02x%02x%02x%02x%02x%c",
+		GRID_CONST_SOH,
+		GRID_CONST_BROADCAST,
+		len, id, dx, dy, age, rot,
+		GRID_PROTOCOL_VERSION_MAJOR, GRID_PROTOCOL_VERSION_MINOR, GRID_PROTOCOL_VERSION_PATCH,
+		GRID_CONST_EOB
 		);
 	
 		length += strlen(&message[length]);
@@ -277,7 +283,7 @@ void grid_port_process_ui(struct grid_port* por){
 			grid_sys_state.next_broadcast_message_id++;
 		
 			// Close the packet
-			sprintf(&message[length], "%c", GRID_MSG_END_OF_TRANSMISSION); // CALCULATE AND ADD CRC HERE
+			sprintf(&message[length], "%c", GRID_CONST_EOT); // CALCULATE AND ADD CRC HERE
 			length += strlen(&message[length]);
 		
 			// Calculate packet length and insert it into the header
@@ -385,39 +391,39 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 		if (i == GRID_REPORT_INDEX_MAPMODE){ // MAPMODE
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
-			sprintf(payload_template, "%c%02x%02x%02x%02x%c", GRID_MSG_START_OF_TEXT, GRID_MSG_PROTOCOL_SYS, GRID_MSG_COMMAND_SYS_BANK,	GRID_MSG_COMMAND_SYS_BANK_SELECT, 0, GRID_MSG_END_OF_TEXT);
+			sprintf(payload_template, "%c%02x%02x%02x%02x%c", GRID_CONST_STX, GRID_CLASS_SYS, GRID_COMMAND_SYS_BANK,	GRID_PARAMETER_SYS_BANKSELECT, 0, GRID_CONST_ETX);
 
 		}
 		else if (i == GRID_REPORT_INDEX_CFG_REQUEST){ // CONFIGURATION REQUEST
 			
 			type = GRID_REPORT_TYPE_DIRECT_ALL;
-			sprintf(payload_template, "%c%02x%02x%02x%c", GRID_MSG_START_OF_TEXT, GRID_MSG_PROTOCOL_SYS, GRID_MSG_COMMAND_SYS_CFG, GRID_MSG_COMMAND_SYS_CFG_REQUEST, GRID_MSG_END_OF_TEXT);
+			sprintf(payload_template, "%c%02x%02x%02x%c", GRID_CONST_STX, GRID_CLASS_SYS, GRID_COMMAND_SYS_CFG, GRID_PARAMETER_SYS_CFGREQUEST, GRID_CONST_ETX);
 			
 		}
 		else if (i == GRID_REPORT_INDEX_HEARTBEAT){ // HEARTBEAT
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
-			sprintf(payload_template, "%c%02x%02x%02x%02x%c", GRID_MSG_START_OF_TEXT, GRID_MSG_PROTOCOL_SYS, GRID_MSG_COMMAND_SYS_HEARTBEAT, GRID_MSG_COMMAND_SYS_HEARTBEAT_ALIVE, grid_sys_get_hwcfg(), GRID_MSG_END_OF_TEXT);
+			sprintf(payload_template, "%c%02x%02x%02x%02x%c", GRID_CONST_STX, GRID_CLASS_SYS, GRID_COMMAND_SYS_HEARTBEAT, GRID_PARAMETER_SYS_HEARTBEATALIVE, grid_sys_get_hwcfg(), GRID_CONST_ETX);
 			
 		}
 		else if (i == GRID_REPORT_INDEX_PING_NORTH){ // PING NORTH
 		
-			uint8_t direction = GRID_MSG_NORTH;
+			uint8_t direction = GRID_CONST_NORTH;
 			
 			type = GRID_REPORT_TYPE_DIRECT_NORTH;
 			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_MSG_END_OF_TRANSMISSION);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DIRECT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 		
 		}
 		else if (i == GRID_REPORT_INDEX_PING_EAST){ // PING EAST 
 			
-			uint8_t direction = GRID_MSG_EAST;
+			uint8_t direction = GRID_CONST_EAST;
 			
 			type = GRID_REPORT_TYPE_DIRECT_EAST;
 			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_MSG_END_OF_TRANSMISSION);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DIRECT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
@@ -425,11 +431,11 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 		}
 		else if (i == GRID_REPORT_INDEX_PING_SOUTH){ // PING SOUTH
 			
-			uint8_t direction = GRID_MSG_SOUTH;
+			uint8_t direction = GRID_CONST_SOUTH;
 			
 			type = GRID_REPORT_TYPE_DIRECT_SOUTH;
 			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_MSG_END_OF_TRANSMISSION);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DIRECT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
@@ -437,11 +443,11 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 		}
 		else if (i == GRID_REPORT_INDEX_PING_WEST){ // PING WEST
 			
-			uint8_t direction = GRID_MSG_WEST;
+			uint8_t direction = GRID_CONST_WEST;
 			
 			type = GRID_REPORT_TYPE_DIRECT_WEST;
 			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_MSG_START_OF_HEADING, GRID_MSG_DIRECT, GRID_MSG_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_MSG_END_OF_TRANSMISSION);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DIRECT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			

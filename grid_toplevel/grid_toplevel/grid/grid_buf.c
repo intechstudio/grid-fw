@@ -321,19 +321,19 @@ void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16
 		por->partner_fi = 0;
 		
 		
-		if (por->direction == GRID_MSG_NORTH){
+		if (por->direction == GRID_CONST_NORTH){
 			por->dx = 0;
 			por->dy = 1;
 		}
-		else if (por->direction == GRID_MSG_EAST){
+		else if (por->direction == GRID_CONST_EAST){
 			por->dx = 1;
 			por->dy = 0;
 		}
-		else if (por->direction == GRID_MSG_SOUTH){
+		else if (por->direction == GRID_CONST_SOUTH){
 			por->dx = 0;
 			por->dy = -1;
 		}
-		else if (por->direction == GRID_MSG_WEST){
+		else if (por->direction == GRID_CONST_WEST){
 			por->dx = -1;
 			por->dy = 0;
 		}
@@ -349,10 +349,10 @@ void grid_port_init_all(void){
 	
 	struct grid_ui_model* mod = &grid_ui_state;
 	
-	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_MSG_NORTH ,0, &mod->report_array[GRID_REPORT_INDEX_PING_NORTH]);
-	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_MSG_EAST  ,1, &mod->report_array[GRID_REPORT_INDEX_PING_EAST]);
-	grid_port_init(&GRID_PORT_S, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_SOUTH, GRID_PORT_TYPE_USART, GRID_MSG_SOUTH ,2, &mod->report_array[GRID_REPORT_INDEX_PING_SOUTH]);
-	grid_port_init(&GRID_PORT_W, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_WEST,  GRID_PORT_TYPE_USART, GRID_MSG_WEST  ,3, &mod->report_array[GRID_REPORT_INDEX_PING_WEST]);
+	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_CONST_NORTH ,0, &mod->report_array[GRID_REPORT_INDEX_PING_NORTH]);
+	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_CONST_EAST  ,1, &mod->report_array[GRID_REPORT_INDEX_PING_EAST]);
+	grid_port_init(&GRID_PORT_S, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_SOUTH, GRID_PORT_TYPE_USART, GRID_CONST_SOUTH ,2, &mod->report_array[GRID_REPORT_INDEX_PING_SOUTH]);
+	grid_port_init(&GRID_PORT_W, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_WEST,  GRID_PORT_TYPE_USART, GRID_CONST_WEST  ,3, &mod->report_array[GRID_REPORT_INDEX_PING_WEST]);
 	
 	grid_port_init(&GRID_PORT_U, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_UI, 0, -1, NULL);
 	grid_port_init(&GRID_PORT_H, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_USB, 0, -1, NULL);	
@@ -534,14 +534,14 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 							
 		for (uint16_t i=0; i<length; i++){
 			
-			if (temp[i] == GRID_MSG_START_OF_TEXT){
+			if (temp[i] == GRID_CONST_STX){
 				current_start = i;
 			}
-			else if (temp[i] == GRID_MSG_END_OF_TEXT && current_start!=0){
+			else if (temp[i] == GRID_CONST_ETX && current_start!=0){
 				current_stop = i;
 				uint8_t msg_protocol = grid_sys_read_hex_string_value(&temp[current_start+1], 2, &error_flag);			
 				
-				if (msg_protocol == GRID_MSG_PROTOCOL_MIDI){
+				if (msg_protocol == GRID_CLASS_MIDI){
 					
 
 				
@@ -570,7 +570,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 									
 				}
-				else if (msg_protocol == GRID_MSG_PROTOCOL_KEYBOARD){
+				else if (msg_protocol == GRID_CLASS_KEYBOARD){
 		
 					uint8_t key_array_length = (current_stop-current_start-3)/6;
 		
@@ -589,7 +589,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 // 										
 // 						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);
 						
-						struct hiddf_kb_key_descriptors current_key = {keyboard_key, keyboard_modifier == GRID_MSG_PROTOCOL_KEYBOARD_PARAMETER_MODIFIER, keyboard_command == GRID_MSG_PROTOCOL_KEYBOARD_COMMAND_KEYDOWN};
+						struct hiddf_kb_key_descriptors current_key = {keyboard_key, keyboard_modifier == GRID_PARAMETER_KEYBOARD_MODIFIER, keyboard_command == GRID_COMMAND_KEYBOARD_KEYDOWN};
 								
 						key_array[j] = current_key;
 						
@@ -601,7 +601,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 				
 				}
-				else if (msg_protocol == GRID_MSG_PROTOCOL_SYS){
+				else if (msg_protocol == GRID_CLASS_SYS){
 
 						
 					uint8_t sys_command		= grid_sys_read_hex_string_value(&temp[current_start+3], 2, &error_flag);
@@ -609,7 +609,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					uint8_t sys_value	    = grid_sys_read_hex_string_value(&temp[current_start+7], 2, &error_flag);
 						
 						
-					if (sys_command == GRID_MSG_COMMAND_SYS_BANK && sys_subcommand == GRID_MSG_COMMAND_SYS_BANK_SELECT){
+					if (sys_command == GRID_COMMAND_SYS_BANK && sys_subcommand == GRID_PARAMETER_SYS_BANKSELECT){
 				
 						grid_sys_bank_select(&grid_sys_state, sys_value);		
 						
@@ -621,7 +621,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 // 						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
 
 					}
-					else if (sys_command == GRID_MSG_COMMAND_SYS_HEARTBEAT && sys_subcommand == GRID_MSG_COMMAND_SYS_HEARTBEAT_ALIVE){
+					else if (sys_command == GRID_COMMAND_SYS_HEARTBEAT && sys_subcommand == GRID_PARAMETER_SYS_HEARTBEATALIVE){
 								
 // 						printf("{\"type\":\"HEARTBEAT\", \"data\": [\"%d\", \"%d\", \"%d\"]}\r\n", dx, dy, sys_value);		
 // 												
@@ -636,7 +636,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 				
 				}
-				else if (msg_protocol == GRID_MSG_PROTOCOL_MOUSE){
+				else if (msg_protocol == GRID_CLASS_MOUSE){
 					
 					//hiddf_mouse_move(-20, HID_MOUSE_X_AXIS_MV);
 					
@@ -711,14 +711,14 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		
 		for (uint16_t i=0; i<length; i++){
 	
-			if (temp[i] == GRID_MSG_START_OF_TEXT){
+			if (temp[i] == GRID_CONST_STX){
 				current_start = i;
 			}
-			else if (temp[i] == GRID_MSG_END_OF_TEXT && current_start!=0){
+			else if (temp[i] == GRID_CONST_ETX && current_start!=0){
 				current_stop = i;
 				uint8_t msg_protocol = grid_sys_read_hex_string_value(&temp[current_start+1], 2, &error_flag);
 		
-				if (msg_protocol == GRID_MSG_PROTOCOL_LED){
+				if (msg_protocol == GRID_CLASS_LED){
 					
 					if (dx == 0 && dy == 0){
 						
@@ -729,7 +729,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						uint8_t led_value  = grid_sys_read_hex_string_value(&temp[current_start+9], 2, &error_flag);
 						
 						
-						if (led_command == GRID_MSG_COMMAND_LED_SET_PHASE){
+						if (led_command == GRID_COMMAND_LED_SETPHASE){
 							
 							grid_led_set_phase(&grid_led_state, led_number, led_layer, led_value);
 						}

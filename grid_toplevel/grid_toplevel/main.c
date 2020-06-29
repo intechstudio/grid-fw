@@ -267,7 +267,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 	// Correct the incorrect frame start location
  	for (uint32_t i = 1; i<length; i++){
 				
- 		if (buffer[i] == GRID_MSG_START_OF_HEADING){
+ 		if (buffer[i] == GRID_CONST_SOH){
 			 			 		 
  			length -= i;
  			message = &buffer[i];
@@ -281,7 +281,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
  	}				
 				
 	// frame validator
-	if (message[0] == 1 && message [length-1] == 10){
+	if (message[0] == GRID_CONST_SOH && message [length-1] == GRID_CONST_LF){
 					
 		checksum_received = grid_msg_checksum_read(message, length);
 					
@@ -290,7 +290,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 		// checksum validator
 		if (checksum_calculated == checksum_received && error_flag == 0){
 						
-			if (message[1] == GRID_MSG_BROADCAST){ // Broadcast message
+			if (message[1] == GRID_CONST_BROADCAST){ // Broadcast message
 								
 				// Read the received id age values	
 				uint8_t received_id  = grid_msg_get_id(message);;			
@@ -299,6 +299,9 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 				// Read the received X Y values (SIGNED INT)				
 				int8_t received_dx  = grid_msg_get_dx(message) - GRID_SYS_DEFAULT_POSITION;
 				int8_t received_dy  = grid_msg_get_dy(message) - GRID_SYS_DEFAULT_POSITION;
+				
+				uint8_t received_rot = grid_msg_get_rot(message);
+				
 
 				// DO THE DX DY AGE calculations
 				
@@ -306,6 +309,8 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 					
 				int8_t rotated_dx = 0;
 				int8_t rotated_dy = 0;
+				
+				uint8_t updated_rot = (received_rot + por->partner_fi)%4;
 
 				// APPLY THE 2D ROTATION MATRIX
 				
@@ -343,6 +348,8 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 				grid_msg_set_dx(message, updated_dx);
 				grid_msg_set_dy(message, updated_dy);
 				grid_msg_set_age(message, updated_age);
+				
+				grid_msg_set_rot(message, updated_rot);
 				
 				uint32_t fingerprint = updated_id*256*256*256 + updated_dx*256*256 + updated_dy*256 + updated_age;
 																				
@@ -403,22 +410,22 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 // 				}
 					
 			}
-			else if (message[1] == GRID_MSG_DIRECT){ // Direct Message
+			else if (message[1] == GRID_CONST_DIRECT){ // Direct Message
 												
 				//process direct message
 							
-				if (message[2] == GRID_MSG_ACKNOWLEDGE){				
+				if (message[2] == GRID_CONST_ACK){				
 
 					//grid_sys_alert_set_alert(&grid_sys_state, 30, 30, 30, 0, 250); // LIGHT WHITE PULSE
 				}
-				else if (message[2] == GRID_MSG_NACKNOWLEDGE){
+				else if (message[2] == GRID_CONST_NAK){
 					//grid_sys_alert_set_alert(&grid_sys_state, 50, 0, 0, 0, 250); // LIGHT RED PULSE
 					// RESEND PREVIOUS
 				}
-				else if (message[2] == GRID_MSG_CANCEL){
+				else if (message[2] == GRID_CONST_CAN){
 					// RESEND PREVIOUS
 				}
-				else if (message[2] == GRID_MSG_BELL){
+				else if (message[2] == GRID_CONST_BELL){
 						
 					// Handshake logic	
 													
@@ -541,8 +548,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 							grid_sys_write_hex_string_value(&stored_report->payload[6], 2, 255);
 							grid_msg_checksum_write(stored_report->payload, stored_report->payload_length, grid_msg_checksum_calculate(stored_report->payload, stored_report->payload_length));														
 							
-							//printf("LS: %d RS: %d LR: %d RR: %d  (Invalid)\r\n",local_stored,remote_stored,local_received,remote_received);
-														
+							//printf("LS: %d RS: %d LR: %d RR: %d  (Invalid)\r\n",local_stored,remote_stored,local_received,remote_received);										
 							
 							grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200); // WHITE
 														

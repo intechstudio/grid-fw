@@ -78,12 +78,12 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		
 		if (mod->report_ui_array[adc_index_0].helper[0] == 0){
 			
-			command = GRID_MSG_COMMAND_MIDI_NOTEON;
+			command = GRID_COMMAND_MIDI_NOTEON;
 			velocity = 127;
 		}
 		else{
 			
-			command = GRID_MSG_COMMAND_MIDI_NOTEOFF;
+			command = GRID_COMMAND_MIDI_NOTEOFF;
 			velocity = 0;
 		}
 		
@@ -118,12 +118,12 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		
 		if (mod->report_ui_array[adc_index_1].helper[0] == 0){
 			
-			command = GRID_MSG_COMMAND_MIDI_NOTEON;
+			command = GRID_COMMAND_MIDI_NOTEON;
 			velocity = 127;
 		}
 		else{
 			
-			command = GRID_MSG_COMMAND_MIDI_NOTEOFF;
+			command = GRID_COMMAND_MIDI_NOTEOFF;
 			velocity = 0;
 		}
 		
@@ -183,13 +183,13 @@ void grid_module_bu16_revb_init(struct grid_ui_model* mod){
 		
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 			
-			GRID_MSG_START_OF_TEXT,
-			GRID_MSG_PROTOCOL_MIDI,
+			GRID_CONST_STX,
+			GRID_CLASS_MIDI,
 			0, // (cable<<4) + channel
-			GRID_MSG_COMMAND_MIDI_NOTEON,
+			GRID_COMMAND_MIDI_NOTEON,
 			i,
 			0,
-			GRID_MSG_END_OF_TEXT
+			GRID_CONST_ETX
 				
 			);			
 			
@@ -201,13 +201,13 @@ void grid_module_bu16_revb_init(struct grid_ui_model* mod){
 
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 			
-			GRID_MSG_START_OF_TEXT,
-			GRID_MSG_PROTOCOL_LED,
+			GRID_CONST_STX,
+			GRID_CLASS_LED,
 			GRID_LED_LAYER_UI_A, // layer
-			GRID_MSG_COMMAND_LED_SET_PHASE,
+			GRID_COMMAND_LED_SETPHASE,
 			grid_module_bu16_revb_mux_lookup_led[i-16],
 			0,
-			GRID_MSG_END_OF_TEXT
+			GRID_CONST_ETX
 			
 			);
 			

@@ -99,12 +99,12 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			
 			if (mod->report_ui_array[adc_index_0-4].helper[0] == 0){
 				
-				command = GRID_MSG_COMMAND_MIDI_NOTEON;
+				command = GRID_COMMAND_MIDI_NOTEON;
 				velocity = 127;
 			}
 			else{
 				
-				command = GRID_MSG_COMMAND_MIDI_NOTEOFF;
+				command = GRID_COMMAND_MIDI_NOTEOFF;
 				velocity = 0;
 			}
 			
@@ -131,12 +131,12 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			
 			if (mod->report_ui_array[adc_index_1-4].helper[0] == 0){
 				
-				command = GRID_MSG_COMMAND_MIDI_NOTEON;
+				command = GRID_COMMAND_MIDI_NOTEON;
 				velocity = 127;
 			}
 			else{
 				
-				command = GRID_MSG_COMMAND_MIDI_NOTEOFF;
+				command = GRID_COMMAND_MIDI_NOTEOFF;
 				velocity = 0;
 			}
 			
@@ -255,13 +255,13 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 			
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 			
-			GRID_MSG_START_OF_TEXT,
-			GRID_MSG_PROTOCOL_MIDI,
+			GRID_CONST_STX,
+			GRID_CLASS_MIDI,
 			0, // (cable<<4) + channel
-			GRID_MSG_COMMAND_MIDI_CONTROLCHANGE,
+			GRID_COMMAND_MIDI_CONTROLCHANGE,
 			i,
 			0,
-			GRID_MSG_END_OF_TEXT
+			GRID_CONST_ETX
 
 			);
 			
@@ -272,14 +272,14 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 			
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 						
-			GRID_MSG_START_OF_TEXT,
-			GRID_MSG_PROTOCOL_MIDI,
+			GRID_CONST_STX,
+			GRID_CLASS_MIDI,
 			0, // (cable<<4) + channel
-			GRID_MSG_COMMAND_MIDI_NOTEON,
+			GRID_COMMAND_MIDI_NOTEON,
 			i+4,
 			0,
 			
-			GRID_MSG_END_OF_TEXT
+			GRID_CONST_ETX
 			);
 									
 		}
@@ -289,13 +289,13 @@ void grid_module_pbf4_reva_init(struct grid_ui_model* mod){
 			
 			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
 			
-			GRID_MSG_START_OF_TEXT,
-			GRID_MSG_PROTOCOL_LED,
+			GRID_CONST_STX,
+			GRID_CLASS_LED,
 			GRID_LED_LAYER_UI_A, // layer
-			GRID_MSG_COMMAND_LED_SET_PHASE,
+			GRID_COMMAND_LED_SETPHASE,
 			i-12,
 			0,
-			GRID_MSG_END_OF_TEXT
+			GRID_CONST_ETX
 
 			);			
 		}
