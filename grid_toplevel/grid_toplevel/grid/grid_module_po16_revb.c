@@ -79,17 +79,23 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 	//CRITICAL_SECTION_ENTER()
 
 	if (grid_ain_get_changed(adc_index_0)){
-		
+			
+		uint8_t command = GRID_PARAMETER_MIDI_CONTROLCHANGE;
+		uint8_t controlnumber = adc_index_0;
 		uint8_t value = grid_ain_get_average(adc_index_0, 7);	
 		
-		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[7], 2, adc_index_0);
-		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0].payload[9], 2, value);	
-		mod->report_ui_array[adc_index_0].helper[0] = value;
+		uint8_t* message = mod->report_ui_array[adc_index_0].payload;
+		uint8_t error = 0;
+
+		grid_msg_set_parameter(message, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_CABLECHANNEL, GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_CABLECHANNEL, 0, &error);
+		grid_msg_set_parameter(message, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDICOMMAND , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDICOMMAND , command, &error);
+		grid_msg_set_parameter(message, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDIPARAM1  , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDIPARAM1  , controlnumber, &error);
+		grid_msg_set_parameter(message, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDIPARAM2  , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDIPARAM2  , value, &error);
 		
+		mod->report_ui_array[adc_index_0].helper[0] = value;
 		grid_report_ui_set_changed_flag(mod, adc_index_0);
 			
-		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0+16].payload[9], 2, value*2);
-				
+		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_0+16].payload[9], 2, value*2);		
 		grid_report_ui_set_changed_flag(mod, adc_index_0+16);
 	}
 	
@@ -100,16 +106,22 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 
 	if (grid_ain_get_changed(adc_index_1)){
 		
+		uint8_t command = GRID_PARAMETER_MIDI_CONTROLCHANGE;
+		uint8_t controlnumber = adc_index_1;
 		uint8_t value = grid_ain_get_average(adc_index_1, 7);
 		
-		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[7], 2, adc_index_1);
-		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1].payload[9], 2, value);		
-		mod->report_ui_array[adc_index_1].helper[0] = value;
+		uint8_t* message = mod->report_ui_array[adc_index_1].payload;
+		uint8_t error = 0;
+
+		grid_msg_set_parameter(message, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_CABLECHANNEL, GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_CABLECHANNEL, 0, &error);
+		grid_msg_set_parameter(message, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDICOMMAND , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDICOMMAND , command, &error);
+		grid_msg_set_parameter(message, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDIPARAM1  , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDIPARAM1  , controlnumber, &error);
+		grid_msg_set_parameter(message, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDIPARAM2  , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDIPARAM2  , value, &error);
 		
+		mod->report_ui_array[adc_index_1].helper[0] = value;
 		grid_report_ui_set_changed_flag(mod, adc_index_1);
-				
-		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1+16].payload[9], 2, value*2);
-				
+		
+		grid_sys_write_hex_string_value(&mod->report_ui_array[adc_index_1+16].payload[9], 2, value*2);		
 		grid_report_ui_set_changed_flag(mod, adc_index_1+16);
 	}
 	
@@ -147,21 +159,17 @@ void grid_module_po16_revb_init(struct grid_ui_model* mod){
 		uint8_t payload_template[30] = {0};
 		enum grid_report_type_t type;
 		
-		if (i<16){ // Control Change
+		if (i<16){ // MIDI EVENTPACKET CONTROLCHANGE
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
 			
-			sprintf(payload_template, "%c%02x%02x%02x%02x%02x%c",
-
-			GRID_CONST_STX,
-			GRID_CLASS_MIDI,
-			0, // (cable<<4) + channel
-			GRID_COMMAND_MIDI_CONTROLCHANGE,
-			i,
-			0,
-			GRID_CONST_ETX
-
-			);			
+			sprintf(payload_template, GRID_STX_MIDI_EVENTPACKET_FORMAT, GRID_STX_MIDI_EVENTPACKET_PARAMETERS);
+			
+			uint8_t error = 0;
+			grid_msg_set_parameter(payload_template, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_CABLECHANNEL, GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_CABLECHANNEL, 0, &error);
+			grid_msg_set_parameter(payload_template, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDICOMMAND , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDICOMMAND , 0, &error);
+			grid_msg_set_parameter(payload_template, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDIPARAM1  , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDIPARAM1  , 0, &error);
+			grid_msg_set_parameter(payload_template, GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDIPARAM2  , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDIPARAM2  , 0, &error);
 			
 		}
 		else{ // LED

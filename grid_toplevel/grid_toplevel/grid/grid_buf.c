@@ -543,29 +543,15 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				
 				if (msg_protocol == GRID_CLASS_MIDI){
 					
-
-				
-					uint8_t midi_channel = grid_sys_read_hex_string_value(&message[current_start+3], 2, &error_flag);
-					uint8_t midi_command = grid_sys_read_hex_string_value(&message[current_start+5], 2, &error_flag);
-					uint8_t midi_param1  = grid_sys_read_hex_string_value(&message[current_start+7], 2, &error_flag);
-					uint8_t midi_param2  = grid_sys_read_hex_string_value(&message[current_start+9], 2, &error_flag);
 					
-					
+					uint8_t midi_channel = grid_msg_get_parameter(&message[current_start], GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_CABLECHANNEL, GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_CABLECHANNEL, &error);
+					uint8_t midi_command = grid_msg_get_parameter(&message[current_start], GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDICOMMAND , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDICOMMAND,  &error);
+					uint8_t midi_param1  = grid_msg_get_parameter(&message[current_start], GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDIPARAM1  , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDIPARAM1,   &error);
+					uint8_t midi_param2  = grid_msg_get_parameter(&message[current_start], GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDIPARAM2  , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDIPARAM2,   &error);
+											
 					midi_channel = ((256-dy*2)%8+grid_sys_state.bank_select*8)%16;
 					midi_param1  = (256-32+midi_param1 + 16*dx)%96; // 96-128 reserved
-							
-// 					printf("{\"type\":\"MIDI\", \"data\": [\"%d\", \"%d\", \"%d\", \"%d\", \"%d\", \"%d\"]}\r\n", dx, dy, midi_channel,	midi_command, midi_param1, midi_param2);
-// 										
-// 					sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [MIDI] Ch: %d  Cmd: %d  Param1: %d  Param2: %d\n",					
-// 						id,dx,dy,age,
-// 						midi_channel,
-// 						midi_command,
-// 						midi_param1,
-// 						midi_param2
-// 					);
-// 					
-// 					output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
-								
+												
 					audiodf_midi_xfer_packet(midi_command>>4, midi_command|midi_channel, midi_param1, midi_param2);	
 					
 									

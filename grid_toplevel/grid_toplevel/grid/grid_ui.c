@@ -403,8 +403,9 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 		else if (i == GRID_REPORT_INDEX_HEARTBEAT){ // HEARTBEAT
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
-			sprintf(payload_template, "%c%02x%02x%02x%c", GRID_CONST_STX, GRID_CLASS_SYS, GRID_COMMAND_SYS_HEARTBEAT, grid_sys_get_hwcfg(), GRID_CONST_ETX);
-			
+			sprintf(payload_template, GRID_STX_SYS_HEARTBEAT_FORMAT, GRID_STX_SYS_HEARTBEAT_PARAMETERS);
+			uint8_t error = 0;
+			grid_msg_set_parameter(payload_template, GRID_STX_SYS_HEARTBEAT_PARAMETER_OFFSET_HWCFG, GRID_STX_SYS_HEARTBEAT_PARAMETER_LENGTH_HWCFG, grid_sys_get_hwcfg(), &error);			
 		}
 		else if (i == GRID_REPORT_INDEX_PING_NORTH){ // PING NORTH
 		
