@@ -2,6 +2,8 @@
 #define GRID_SYS_H_INCLUDED
 
 #include "grid_module.h"
+#include "grid_buf.h"
+
 
 /* ==================== Reading MCU Unique Serial Nuber ====================== */
 // Word 0: 0x008061FC	Word 1: 0x00806010	Word 2: 0x00806014	Word 3: 0x00806018
@@ -105,27 +107,11 @@ uint8_t grid_sys_alert_get_color_b(struct grid_sys_model* mod);
 
 //=========================== SYS MSG ============================//
 
-uint8_t grid_msg_get_id(uint8_t* message);
-uint8_t grid_msg_get_dx(uint8_t* message);
-uint8_t grid_msg_get_dy(uint8_t* message);
-uint8_t grid_msg_get_age(uint8_t* message);
 
-uint8_t grid_msg_get_rot(uint8_t* message);
+uint32_t grid_msg_get_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint8_t* error);
+uint32_t grid_msg_set_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error);
 
-uint8_t grid_msg_get_vmajor(uint8_t* message);
-uint8_t grid_msg_get_vminor(uint8_t* message);
-uint8_t grid_msg_get_vpatch(uint8_t* message);
 
-void grid_msg_set_id(uint8_t* message, uint8_t param);
-void grid_msg_set_dx(uint8_t* message, uint8_t param);
-void grid_msg_set_dy(uint8_t* message, uint8_t param);
-void grid_msg_set_age(uint8_t* message, uint8_t param);
-
-void grid_msg_set_rot(uint8_t* message, uint8_t param);
-
-void grid_msg_set_vmajor(uint8_t* message, uint8_t param);
-void grid_msg_set_vminor(uint8_t* message, uint8_t param);
-void grid_msg_set_vpatch(uint8_t* message, uint8_t param);
 
 //=========================== SYS CB ============================//
 

@@ -29,7 +29,7 @@ struct grid_ui_encoder{
 	
 };
 
-struct grid_ui_encoder grid_ui_encoder_array[];
+struct grid_ui_encoder grid_ui_encoder_array[16];
 
 
 uint8_t UI_SPI_TX_BUFFER[14];

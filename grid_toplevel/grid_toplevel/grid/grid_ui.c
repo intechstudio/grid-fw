@@ -135,7 +135,7 @@ void grid_port_process_ui(struct grid_port* por){
 		sprintf(&message[length],
 		"%c%c%02x%02x%02x%02x%02x%02x%02x%02x%02x%c",
 		GRID_CONST_SOH,
-		GRID_CONST_BROADCAST,
+		GRID_CONST_BRC,
 		len, id, dx, dy, age, rot,
 		GRID_PROTOCOL_VERSION_MAJOR, GRID_PROTOCOL_VERSION_MINOR, GRID_PROTOCOL_VERSION_PATCH,
 		GRID_CONST_EOB
@@ -243,7 +243,7 @@ void grid_port_process_ui(struct grid_port* por){
 		sprintf(&message[length],
 		"%c%c%02x%02x%02x%02x%02x%02x%02x%02x%02x%c",
 		GRID_CONST_SOH,
-		GRID_CONST_BROADCAST,
+		GRID_CONST_BRC,
 		len, id, dx, dy, age, rot,
 		GRID_PROTOCOL_VERSION_MAJOR, GRID_PROTOCOL_VERSION_MINOR, GRID_PROTOCOL_VERSION_PATCH,
 		GRID_CONST_EOB
@@ -403,7 +403,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 		else if (i == GRID_REPORT_INDEX_HEARTBEAT){ // HEARTBEAT
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
-			sprintf(payload_template, "%c%02x%02x%02x%02x%c", GRID_CONST_STX, GRID_CLASS_SYS, GRID_COMMAND_SYS_HEARTBEAT, GRID_PARAMETER_SYS_HEARTBEATALIVE, grid_sys_get_hwcfg(), GRID_CONST_ETX);
+			sprintf(payload_template, "%c%02x%02x%02x%c", GRID_CONST_STX, GRID_CLASS_SYS, GRID_COMMAND_SYS_HEARTBEAT, grid_sys_get_hwcfg(), GRID_CONST_ETX);
 			
 		}
 		else if (i == GRID_REPORT_INDEX_PING_NORTH){ // PING NORTH
@@ -412,7 +412,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			type = GRID_REPORT_TYPE_DIRECT_NORTH;
 			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DIRECT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 		
@@ -423,7 +423,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			type = GRID_REPORT_TYPE_DIRECT_EAST;
 			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DIRECT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
@@ -435,7 +435,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			type = GRID_REPORT_TYPE_DIRECT_SOUTH;
 			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DIRECT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
@@ -447,7 +447,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			type = GRID_REPORT_TYPE_DIRECT_WEST;
 			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DIRECT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
+			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			

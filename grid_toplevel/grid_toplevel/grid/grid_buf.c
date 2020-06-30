@@ -460,7 +460,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 			}
 		}	
 
-		
+		return 1;
 	}
 		
 }
@@ -494,19 +494,19 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 		
 		
 		
-		uint8_t temp[500] = {0};
+		uint8_t message[500] = {0};
 			
 		
-		//uint8_t temp[length];
+		//uint8_t message[length];
 		
 		// Let's transfer the packet to local memory
 		grid_buffer_read_init(&por->tx_buffer);
 		
 		for (uint8_t i = 0; i<length; i++){
 			
-			temp[i] = grid_buffer_read_character(&por->tx_buffer);
+			message[i] = grid_buffer_read_character(&por->tx_buffer);
 			
-			por->tx_double_buffer[i] = temp[i];
+			por->tx_double_buffer[i] = message[i];
 			
 		}
 				
@@ -517,38 +517,38 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 // 
 // 		return;
 
+
 		// GRID-2-HOST TRANSLATOR
-		uint8_t id = grid_msg_get_id(temp);		
-		int8_t dx = grid_msg_get_dx(temp) - GRID_SYS_DEFAULT_POSITION;
-		int8_t dy = grid_msg_get_dy(temp) - GRID_SYS_DEFAULT_POSITION;		
-		uint8_t age = grid_msg_get_age(temp);
+		
+		uint8_t error=0;
+			
+		int8_t dx = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DX, GRID_SOH_BRC_PARAMETER_LENGTH_DX, &error) - GRID_SYS_DEFAULT_POSITION;
+		int8_t dy = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DY, GRID_SOH_BRC_PARAMETER_LENGTH_DY, &error) - GRID_SYS_DEFAULT_POSITION;	
 		
 				
-		uint8_t current_protocol	= 0;
 		uint8_t current_start		= 0;
 		uint8_t current_stop		= 0;
 		
-		uint8_t output_cursor = 0;
 		
 		uint8_t error_flag = 0;
 							
 		for (uint16_t i=0; i<length; i++){
 			
-			if (temp[i] == GRID_CONST_STX){
+			if (message[i] == GRID_CONST_STX){
 				current_start = i;
 			}
-			else if (temp[i] == GRID_CONST_ETX && current_start!=0){
+			else if (message[i] == GRID_CONST_ETX && current_start!=0){
 				current_stop = i;
-				uint8_t msg_protocol = grid_sys_read_hex_string_value(&temp[current_start+1], 2, &error_flag);			
+				uint8_t msg_protocol = grid_sys_read_hex_string_value(&message[current_start+1], 2, &error_flag);			
 				
 				if (msg_protocol == GRID_CLASS_MIDI){
 					
 
 				
-					uint8_t midi_channel = grid_sys_read_hex_string_value(&temp[current_start+3], 2, &error_flag);
-					uint8_t midi_command = grid_sys_read_hex_string_value(&temp[current_start+5], 2, &error_flag);
-					uint8_t midi_param1  = grid_sys_read_hex_string_value(&temp[current_start+7], 2, &error_flag);
-					uint8_t midi_param2  = grid_sys_read_hex_string_value(&temp[current_start+9], 2, &error_flag);
+					uint8_t midi_channel = grid_sys_read_hex_string_value(&message[current_start+3], 2, &error_flag);
+					uint8_t midi_command = grid_sys_read_hex_string_value(&message[current_start+5], 2, &error_flag);
+					uint8_t midi_param1  = grid_sys_read_hex_string_value(&message[current_start+7], 2, &error_flag);
+					uint8_t midi_param2  = grid_sys_read_hex_string_value(&message[current_start+9], 2, &error_flag);
 					
 					
 					midi_channel = ((256-dy*2)%8+grid_sys_state.bank_select*8)%16;
@@ -578,9 +578,9 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 		
 					for(uint8_t j=0; j<key_array_length; j++){
 						
-						uint8_t keyboard_command	= grid_sys_read_hex_string_value(&temp[current_start+3+6*j], 2, &error_flag);
-						uint8_t keyboard_modifier	= grid_sys_read_hex_string_value(&temp[current_start+5+6*j], 2, &error_flag);
-						uint8_t keyboard_key		= grid_sys_read_hex_string_value(&temp[current_start+7+6*j], 2, &error_flag);
+						uint8_t keyboard_command	= grid_sys_read_hex_string_value(&message[current_start+3+6*j], 2, &error_flag);
+						uint8_t keyboard_modifier	= grid_sys_read_hex_string_value(&message[current_start+5+6*j], 2, &error_flag);
+						uint8_t keyboard_key		= grid_sys_read_hex_string_value(&message[current_start+7+6*j], 2, &error_flag);
 						
 // 						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [KEYBOARD] Key: %d Mod: %d Cmd: %d\nHWCFG: %08x\n",
 // 						id,dx,dy,age,
@@ -604,9 +604,9 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				else if (msg_protocol == GRID_CLASS_SYS){
 
 						
-					uint8_t sys_command		= grid_sys_read_hex_string_value(&temp[current_start+3], 2, &error_flag);
-					uint8_t sys_subcommand  = grid_sys_read_hex_string_value(&temp[current_start+5], 2, &error_flag);
-					uint8_t sys_value	    = grid_sys_read_hex_string_value(&temp[current_start+7], 2, &error_flag);
+					uint8_t sys_command		= grid_sys_read_hex_string_value(&message[current_start+3], 2, &error_flag);
+					uint8_t sys_subcommand  = grid_sys_read_hex_string_value(&message[current_start+5], 2, &error_flag);
+					uint8_t sys_value	    = grid_sys_read_hex_string_value(&message[current_start+7], 2, &error_flag);
 						
 						
 					if (sys_command == GRID_COMMAND_SYS_BANK && sys_subcommand == GRID_PARAMETER_SYS_BANKSELECT){
@@ -678,14 +678,14 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 	}
 	else{
 		
-		uint8_t temp[500] = {0};
+		uint8_t message[500] = {0};
 		
 		// Let's transfer the packet to local memory
 		grid_buffer_read_init(&por->tx_buffer);
 		
 		for (uint8_t i = 0; i<length; i++){
 					
-			temp[i] = grid_buffer_read_character(&por->tx_buffer);
+			message[i] = grid_buffer_read_character(&por->tx_buffer);
 			//usb_tx_double_buffer[i] = character;
 					
 		}
@@ -693,17 +693,16 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		grid_buffer_read_acknowledge(&por->tx_buffer);
 		
 		// GRID-2-UI TRANSLATOR
-		uint8_t id = grid_msg_get_id(temp);
-		int8_t dx = grid_msg_get_dx(temp) - GRID_SYS_DEFAULT_POSITION;
-		int8_t dy = grid_msg_get_dy(temp) - GRID_SYS_DEFAULT_POSITION;
-		uint8_t age = grid_msg_get_age(temp);
+		
+		uint8_t error=0;
+		
+		int8_t dx = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DX, GRID_SOH_BRC_PARAMETER_LENGTH_DX, &error) - GRID_SYS_DEFAULT_POSITION;
+		int8_t dy = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DY, GRID_SOH_BRC_PARAMETER_LENGTH_DY, &error) - GRID_SYS_DEFAULT_POSITION;
 			
 			
-		uint8_t current_protocol	= 0;
 		uint8_t current_start		= 0;
 		uint8_t current_stop		= 0;
 			
-		uint8_t output_cursor = 0;
 			
 		uint8_t error_flag = 0;	
 		
@@ -711,22 +710,22 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		
 		for (uint16_t i=0; i<length; i++){
 	
-			if (temp[i] == GRID_CONST_STX){
+			if (message[i] == GRID_CONST_STX){
 				current_start = i;
 			}
-			else if (temp[i] == GRID_CONST_ETX && current_start!=0){
+			else if (message[i] == GRID_CONST_ETX && current_start!=0){
 				current_stop = i;
-				uint8_t msg_protocol = grid_sys_read_hex_string_value(&temp[current_start+1], 2, &error_flag);
+				uint8_t msg_protocol = grid_sys_read_hex_string_value(&message[current_start+1], 2, &error_flag);
 		
 				if (msg_protocol == GRID_CLASS_LED){
 					
 					if (dx == 0 && dy == 0){
 						
 						
-						uint8_t led_layer = grid_sys_read_hex_string_value(&temp[current_start+3], 2, &error_flag);
-						uint8_t led_command = grid_sys_read_hex_string_value(&temp[current_start+5], 2, &error_flag);
-						uint8_t led_number  = grid_sys_read_hex_string_value(&temp[current_start+7], 2, &error_flag);
-						uint8_t led_value  = grid_sys_read_hex_string_value(&temp[current_start+9], 2, &error_flag);
+						uint8_t led_layer = grid_sys_read_hex_string_value(&message[current_start+3], 2, &error_flag);
+						uint8_t led_command = grid_sys_read_hex_string_value(&message[current_start+5], 2, &error_flag);
+						uint8_t led_number  = grid_sys_read_hex_string_value(&message[current_start+7], 2, &error_flag);
+						uint8_t led_value  = grid_sys_read_hex_string_value(&message[current_start+9], 2, &error_flag);
 						
 						
 						if (led_command == GRID_COMMAND_LED_SETPHASE){
@@ -788,8 +787,10 @@ uint8_t grid_port_process_outbound_usart(struct grid_port* por){
 			// Let's send the packet through USART
 			io_write(&por->usart->io, por->tx_double_buffer, por->tx_double_buffer_status);		
 			
+			return 1;
 		}
 		
 	}
 	
+	return 0;
 }

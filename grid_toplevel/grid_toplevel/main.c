@@ -290,17 +290,19 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 		// checksum validator
 		if (checksum_calculated == checksum_received && error_flag == 0){
 						
-			if (message[1] == GRID_CONST_BROADCAST){ // Broadcast message
+			if (message[1] == GRID_CONST_BRC){ // Broadcast message
+								
+				uint8_t error=0;
 								
 				// Read the received id age values	
-				uint8_t received_id  = grid_msg_get_id(message);;			
-				uint8_t received_age = grid_msg_get_age(message);
+				uint8_t received_id  = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_ID, GRID_SOH_BRC_PARAMETER_LENGTH_ID, &error);			
+				uint8_t received_age = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_AGE, GRID_SOH_BRC_PARAMETER_LENGTH_AGE, &error);
 				
 				// Read the received X Y values (SIGNED INT)				
-				int8_t received_dx  = grid_msg_get_dx(message) - GRID_SYS_DEFAULT_POSITION;
-				int8_t received_dy  = grid_msg_get_dy(message) - GRID_SYS_DEFAULT_POSITION;
+				int8_t received_dx  = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DX, GRID_SOH_BRC_PARAMETER_LENGTH_DX, &error) - GRID_SYS_DEFAULT_POSITION;
+				int8_t received_dy  = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DY, GRID_SOH_BRC_PARAMETER_LENGTH_DY, &error) - GRID_SYS_DEFAULT_POSITION;
 				
-				uint8_t received_rot = grid_msg_get_rot(message);
+				uint8_t received_rot = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_ROT, GRID_SOH_BRC_PARAMETER_LENGTH_ROT, &error);
 				
 
 				// DO THE DX DY AGE calculations
@@ -343,13 +345,12 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 								
 				
 				// Update message with the new values
+				grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_ID, GRID_SOH_BRC_PARAMETER_LENGTH_ID, updated_id, &error);
+				grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DX, GRID_SOH_BRC_PARAMETER_LENGTH_DX, updated_dx, &error);
+				grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DY, GRID_SOH_BRC_PARAMETER_LENGTH_DY, updated_dy, &error);
+				grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_AGE, GRID_SOH_BRC_PARAMETER_LENGTH_AGE, updated_age, &error);
+				grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_ROT, GRID_SOH_BRC_PARAMETER_LENGTH_ROT, updated_rot, &error);	
 
-				grid_msg_set_id(message, updated_id);
-				grid_msg_set_dx(message, updated_dx);
-				grid_msg_set_dy(message, updated_dy);
-				grid_msg_set_age(message, updated_age);
-				
-				grid_msg_set_rot(message, updated_rot);
 				
 				uint32_t fingerprint = updated_id*256*256*256 + updated_dx*256*256 + updated_dy*256 + updated_age;
 																				
@@ -410,7 +411,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 // 				}
 					
 			}
-			else if (message[1] == GRID_CONST_DIRECT){ // Direct Message
+			else if (message[1] == GRID_CONST_DCT){ // Direct Message
 												
 				//process direct message
 							
