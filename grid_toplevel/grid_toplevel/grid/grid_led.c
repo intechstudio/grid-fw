@@ -302,6 +302,8 @@ void grid_led_hardware_init(struct grid_led_model* mod){
 
 void grid_led_startup_animation(struct grid_led_model* mod){
 
+	return;
+
 	uint8_t grid_module_reset_cause = hri_rstc_read_RCAUSE_reg(RSTC);
 	
 	uint8_t color_r   = 1;
@@ -334,7 +336,7 @@ void grid_led_startup_animation(struct grid_led_model* mod){
 
 		for (uint8_t j=0; j<mod->led_number; j++){
 			//grid_led_set_color(i, 0, 255, 0);
-			grid_led_set_color(mod, j, color_r*i*s%256, color_g*i*s%256, color_b*i*s%256); // This is not an alert, this is low level shit
+			grid_led_set_color(mod, j, (color_r*i*s%256)/2, (color_g*i*s%256)/2, (color_b*i*s%256)/2); // This is not an alert, this is low level shit
 			
 			
 		}
@@ -342,7 +344,7 @@ void grid_led_startup_animation(struct grid_led_model* mod){
 		grid_led_hardware_start_transfer_blocking(mod);
 
 		
-		delay_ms(1);
+		delay_us(500);
 		
 	}
 	
@@ -400,8 +402,7 @@ uint8_t grid_led_init(struct grid_led_model* mod, uint8_t num){
 	grid_led_hardware_init(mod);
 	
 	grid_led_startup_animation(mod);
-
-
+	
 	return 0;
 }
 

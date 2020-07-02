@@ -322,7 +322,7 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->bank_color_g[3] = 0;
 	mod->bank_color_b[3] = 200;
 	
-	grid_sys_bank_select(&grid_sys_state, 255);
+	grid_sys_set_bank(&grid_sys_state, 255);
 	
 	grid_port_init_all();
 	
@@ -331,7 +331,15 @@ void grid_sys_init(struct grid_sys_model* mod){
 	
 }
 
-void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
+
+uint8_t grid_sys_get_bank(struct grid_sys_model* mod){
+	
+	return mod->bank_select;
+}
+
+
+
+void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 	
 	mod->bank_changed = 1;
 	
@@ -402,7 +410,7 @@ void grid_sys_bank_select(struct grid_sys_model* mod, uint8_t banknumber){
 
 void grid_sys_bank_select_next(struct grid_sys_model* mod){
 	
-	grid_sys_bank_select(mod, (mod->bank_select+1)%4);
+	grid_sys_set_bank(mod, (mod->bank_select+1)%4);
 
 }
 
@@ -456,7 +464,7 @@ uint8_t grid_sys_alert_get_color_intensity(struct grid_sys_model* mod){
 	
 	if (mod->alert_style == 0){ // TRIANGLE
 		
-		return (125-abs(mod->alert_state/2-125))/2;
+		return (250-abs(mod->alert_state/2-250))/2;
 	}
 	else if (mod->alert_style == 1){ // SQUARE
 		

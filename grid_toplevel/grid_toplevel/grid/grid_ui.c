@@ -14,16 +14,13 @@ void grid_port_process_ui(struct grid_port* por){
 	uint8_t message_direct_available = 0;
 	uint8_t message_broadcast_available = 0;
 	
-	
-	for (uint8_t i=0; i<grid_ui_state.report_length; i++){
-		
 
-		
+	// COUNT THE NUMBER OF CHANGED REPORT DESCRIPTORS	
+	for (uint8_t i=0; i<grid_ui_state.report_length; i++){
+			
 		if (grid_report_sys_get_changed_flag(mod, i)){
 			
 			enum grid_report_type_t type = grid_report_get_type(mod, i);
-			
-			
 			
 			
 			(type == GRID_REPORT_TYPE_BROADCAST)?message_broadcast_available++:1;	
@@ -36,14 +33,12 @@ void grid_port_process_ui(struct grid_port* por){
 			(type == GRID_REPORT_TYPE_DIRECT_WEST)?message_direct_available++:1;
 			
 			(type == GRID_REPORT_TYPE_LOCAL)?message_local_available++:1;
-				
-			
-
-						
-		}
-			
+									
+		}			
 	}
 	
+
+
 	//DIRECT MESSAGES	
 	if (message_direct_available){
 		
@@ -111,49 +106,38 @@ void grid_port_process_ui(struct grid_port* por){
 
 	}
 	
+
 	//LOCAL MESSAGES
 	if (message_local_available && por->cooldown<20){
-
-			
-
 			
 		// Prepare packet header
 		uint8_t message[256] = {0};
 		uint32_t length=0;
-			
-			
-		uint8_t len = 0;
-		uint8_t id = grid_sys_state.next_broadcast_message_id;
-		uint8_t dx = GRID_SYS_DEFAULT_POSITION;
-		uint8_t dy = GRID_SYS_DEFAULT_POSITION;
-		uint8_t age = grid_sys_state.age;
-		
-		uint8_t rot = 0;
-			
+									
 		uint8_t packetvalid = 0;
-			
-		sprintf(&message[length],
-		"%c%c%02x%02x%02x%02x%02x%02x%02x%02x%02x%c",
-		GRID_CONST_SOH,
-		GRID_CONST_BRC,
-		len, id, dx, dy, age, rot,
-		GRID_PROTOCOL_VERSION_MAJOR, GRID_PROTOCOL_VERSION_MINOR, GRID_PROTOCOL_VERSION_PATCH,
-		GRID_CONST_EOB
-		);
-			
+		
+
+		sprintf(&message[length], GRID_SOH_BRC_FORMAT, GRID_SOH_BRC_PARAMETERS);	
+		
+		uint8_t error = 0;		
+
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_LEN, GRID_SOH_BRC_PARAMETER_LENGTH_LEN, 0, &error);
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_ID , GRID_SOH_BRC_PARAMETER_LENGTH_ID , grid_sys_state.next_broadcast_message_id,  &error);
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_DX , GRID_SOH_BRC_PARAMETER_LENGTH_DX , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_DY , GRID_SOH_BRC_PARAMETER_LENGTH_DY , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_AGE, GRID_SOH_BRC_PARAMETER_LENGTH_AGE, grid_sys_state.age, &error);
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_ROT, GRID_SOH_BRC_PARAMETER_LENGTH_ROT, GRID_SYS_DEFAULT_ROTATION, &error);
+
 		length += strlen(&message[length]);
 			
-
 			
 		// Append the UI change descriptors
 		for (uint8_t i = 0; i<grid_ui_state.report_length; i++)
-		{
-				
+		{				
 			if (length>200){
 				continue;
 			}
-				
-				
+							
 			CRITICAL_SECTION_ENTER()
 			if (grid_report_sys_get_changed_flag(mod, i) && grid_report_get_type(mod, i) == GRID_REPORT_TYPE_LOCAL){
 					
@@ -170,26 +154,22 @@ void grid_port_process_ui(struct grid_port* por){
 		if (packetvalid){
 				
 			grid_sys_state.next_broadcast_message_id++;
+
 				
+			// Calculate packet length and insert it into the header! +1 is the EOT character
+			uint8_t error = 0;
+			grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_LEN, GRID_SOH_BRC_PARAMETER_LENGTH_LEN, length+1, &error);
+
 			// Close the packet
-			sprintf(&message[length], "%c", GRID_CONST_EOT); // CALCULATE AND ADD CRC HERE
+			sprintf(&message[length], "%c..\n", GRID_CONST_EOT);
 			length += strlen(&message[length]);
-				
-			// Calculate packet length and insert it into the header
-			char length_string[8];
-			sprintf(length_string, "%02x", length);
-				
-			message[2] = length_string[0];
-			message[3] = length_string[1];
-				
-				
-			// Add placeholder checksum and linebreak
-			sprintf(&message[length], "00\n");
-			length += strlen(&message[length]);
-				
+
+			// Calculate checksum!
 			uint8_t checksum = grid_msg_checksum_calculate(message, length);
 			grid_msg_checksum_write(message, length, checksum);
-				
+
+
+			
 			// Put the packet into the UI_RX buffer
 			if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, length)){
 					
@@ -221,34 +201,23 @@ void grid_port_process_ui(struct grid_port* por){
 	
 	//BROADCAST MESSAGES		
 	if (message_broadcast_available){
-
-		
-
-				
+			
 		// Prepare packet header
 		uint8_t message[256] = {0};
-		uint32_t length=0;
-	
-	
-		uint8_t len = 0;
-		uint8_t id = grid_sys_state.next_broadcast_message_id;
-		uint8_t dx = GRID_SYS_DEFAULT_POSITION;
-		uint8_t dy = GRID_SYS_DEFAULT_POSITION;
-		uint8_t age = grid_sys_state.age;
-		
-		uint8_t rot = 0;
-	
+		uint32_t length=0;	
 		uint8_t packetvalid = 0;
 	
-		sprintf(&message[length],
-		"%c%c%02x%02x%02x%02x%02x%02x%02x%02x%02x%c",
-		GRID_CONST_SOH,
-		GRID_CONST_BRC,
-		len, id, dx, dy, age, rot,
-		GRID_PROTOCOL_VERSION_MAJOR, GRID_PROTOCOL_VERSION_MINOR, GRID_PROTOCOL_VERSION_PATCH,
-		GRID_CONST_EOB
-		);
-	
+		sprintf(&message[length], GRID_SOH_BRC_FORMAT, GRID_SOH_BRC_PARAMETERS);
+		
+		uint8_t error = 0;
+
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_LEN, GRID_SOH_BRC_PARAMETER_LENGTH_LEN, 0, &error);
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_ID , GRID_SOH_BRC_PARAMETER_LENGTH_ID , grid_sys_state.next_broadcast_message_id,  &error);
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_DX , GRID_SOH_BRC_PARAMETER_LENGTH_DX , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_DY , GRID_SOH_BRC_PARAMETER_LENGTH_DY , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_AGE, GRID_SOH_BRC_PARAMETER_LENGTH_AGE, grid_sys_state.age, &error);
+		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_ROT, GRID_SOH_BRC_PARAMETER_LENGTH_ROT, GRID_SYS_DEFAULT_ROTATION, &error);
+
 		length += strlen(&message[length]);
 	
 
@@ -282,36 +251,34 @@ void grid_port_process_ui(struct grid_port* por){
 		
 			grid_sys_state.next_broadcast_message_id++;
 		
+
+			// Calculate packet length and insert it into the header! +1 is the EOT character
+			uint8_t error = 0;
+			grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_LEN, GRID_SOH_BRC_PARAMETER_LENGTH_LEN, length+1, &error);
+
 			// Close the packet
-			sprintf(&message[length], "%c", GRID_CONST_EOT); // CALCULATE AND ADD CRC HERE
+			sprintf(&message[length], "%c..\n", GRID_CONST_EOT);
 			length += strlen(&message[length]);
-		
-			// Calculate packet length and insert it into the header
-			char length_string[8];
-			sprintf(length_string, "%02x", length);
-		
-			message[2] = length_string[0];
-			message[3] = length_string[1];
-		
-		
-			// Add placeholder checksum and linebreak
-			sprintf(&message[length], "00\n");
-			length += strlen(&message[length]);
-		
+
+			// Calculate checksum!
 			uint8_t checksum = grid_msg_checksum_calculate(message, length);
 			grid_msg_checksum_write(message, length, checksum);
+
 		
+
 			// Put the packet into the UI_RX buffer
 			if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, length)){
-			
+	
 				for(uint32_t i = 0; i<length; i++){
 				
 					grid_buffer_write_character(&GRID_PORT_U.rx_buffer, message[i]);
 				}
 			
 				grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
+
 			}
 			else{
+				// LOG UNABLE TO WRITE EVENT
 			}
 		
 		
@@ -388,17 +355,25 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 		uint8_t payload_template[30] = {0};
 		enum grid_report_type_t type = GRID_REPORT_TYPE_UNDEFINED;
 			
-		if (i == GRID_REPORT_INDEX_MAPMODE){ // MAPMODE
+		if (i == GRID_REPORT_INDEX_MAPMODE){ // MAPMODE: SYS CFG BANK SET
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
-			sprintf(payload_template, "%c%02x%02x%02x%02x%c", GRID_CONST_STX, GRID_CLASS_SYS, GRID_COMMAND_SYS_BANK,	GRID_PARAMETER_SYS_BANKSELECT, 0, GRID_CONST_ETX);
+			sprintf(payload_template, GRID_STX_SYS_CFG_FORMAT, GRID_STX_SYS_CFG_PARAMETERS);
+			uint8_t error = 0;
+			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCONTEXT, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCONTEXT, GRID_CONTEXT_SYS_BANK, &error);
+			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCOMMAND, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCOMMAND, GRID_PARAMETER_SET, &error);
+			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGPARAM1 , GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGPARAM1, 0, &error);
 
 		}
-		else if (i == GRID_REPORT_INDEX_CFG_REQUEST){ // CONFIGURATION REQUEST
+		else if (i == GRID_REPORT_INDEX_CFG_REQUEST){ // CONFIGURATION REQUEST:  SYS CFG BANK GET
 			
-			type = GRID_REPORT_TYPE_DIRECT_ALL;
-			sprintf(payload_template, "%c%02x%02x%02x%c", GRID_CONST_STX, GRID_CLASS_SYS, GRID_COMMAND_SYS_CFG, GRID_PARAMETER_SYS_CFGREQUEST, GRID_CONST_ETX);
-			
+			type = GRID_REPORT_TYPE_BROADCAST;
+			sprintf(payload_template, GRID_STX_SYS_CFG_FORMAT, GRID_STX_SYS_CFG_PARAMETERS);
+			uint8_t error = 0;
+			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCONTEXT, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCONTEXT, GRID_CONTEXT_SYS_BANK, &error);
+			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCOMMAND, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCOMMAND, GRID_PARAMETER_GET, &error);
+			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGPARAM1 , GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGPARAM1, 0, &error);
+
 		}
 		else if (i == GRID_REPORT_INDEX_HEARTBEAT){ // HEARTBEAT
 			

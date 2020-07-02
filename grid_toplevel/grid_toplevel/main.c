@@ -140,7 +140,7 @@ void grid_port_receive_task(struct grid_port* por){
 			
 			grid_port_reset_receiver(por);	
 			
-			grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
+			grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 500);
 		}
 		else{
 		
@@ -152,7 +152,7 @@ void grid_port_receive_task(struct grid_port* por){
 				GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Timeout & Reset Receiver");
 				grid_port_reset_receiver(por);
 				
-				grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
+				grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 500);
 			}
 			
 		}		
@@ -428,6 +428,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 				}
 				else if (message[2] == GRID_CONST_BELL){
 						
+											
 					// Handshake logic	
 													
 					uint8_t local_stored = 255; // I think this is my id
@@ -452,6 +453,17 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 										
 					
 					if (por->partner_status == 0){
+						
+						if (por->direction == GRID_CONST_NORTH){
+							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_NORTH);
+						}else if (por->direction == GRID_CONST_EAST){
+							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_EAST);
+						}else if (por->direction == GRID_CONST_SOUTH){
+							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_SOUTH);
+						}else if (por->direction == GRID_CONST_WEST){
+							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_WEST);
+						}
+						
 						
 						if (local_stored == 255){ // I have no clue				
 							
@@ -503,14 +515,9 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 								
 							GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Connect");
 							
-							grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // GREEN
+							grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN
 							
-							// SEND OUT CURRENT BANK NUMBER IF IT IS INITIALIZED
-							if (grid_sys_state.bank_select!=255){
-								struct grid_ui_model* mod = &grid_ui_state;
-								grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, grid_sys_state.bank_select);
-								grid_report_sys_set_changed_flag(mod, GRID_REPORT_INDEX_MAPMODE);
-							}
+
 							
 						}
 						
@@ -551,7 +558,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 							
 							//printf("LS: %d RS: %d LR: %d RR: %d  (Invalid)\r\n",local_stored,remote_stored,local_received,remote_received);										
 							
-							grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200); // WHITE
+							grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 2, 200); // Purple
 														
 								
 						}
@@ -627,9 +634,9 @@ void grid_port_receive_complete_task(struct grid_port* por){
 		
 		por->usart_error_flag = 0;
 		
-		grid_port_reset_receiver(por);			
-			
-		grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 2, 200);
+		grid_port_reset_receiver(por);	
+				
+		grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 500); // White triangle
 		printf("{\"type\": \"ERROR\", \"data\": [\"Parity Error\"]}\r\n");
 		
 	}
@@ -711,21 +718,30 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 
 	if (mapmode_value != mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0]){
 			
-		uint8_t value;
-			
 		if (mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0] == 0){
 				
 			mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0] = 1;
 				
 		}
 		else{
+
 				
 			mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0] = 0;
 				
-// 			grid_sys_state.bank_select = (grid_sys_state.bank_select+1)%4;
-// 			value = grid_sys_state.bank_select;
- 			grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, (grid_sys_state.bank_select + 1)%2);
- 			grid_report_sys_set_changed_flag(mod, GRID_REPORT_INDEX_MAPMODE);
+			uint8_t current_bank = grid_sys_get_bank(&grid_sys_state);
+			uint8_t new_bank = (current_bank + 1)%2;
+			
+				
+			uint8_t error = 0;
+			uint8_t* message = mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload;
+			grid_msg_set_parameter(message, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGPARAM1, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGPARAM1,new_bank,&error);
+				
+				
+			grid_report_sys_set_changed_flag(mod, GRID_REPORT_INDEX_MAPMODE);
+				
+				
+				
+
 			 
 		}
 			
@@ -738,6 +754,7 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 
 static void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 {
+
 	grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_HEARTBEAT);
 }
 
@@ -787,6 +804,8 @@ void init_timer(void)
 
 int main(void)
 {
+	
+	
 
 	atmel_start_init();	
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
@@ -820,13 +839,38 @@ int main(void)
 	
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 	
+
+	
 	while (1) {
 		
 				
 		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
 		
 		
+// 		if (loopcounter%5 == 0){
+// 			
+// 			if (GRID_PORT_N.partner_status == 0){
+// 				grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_NORTH);
+// 			}
+// 			
+// 			if (GRID_PORT_E.partner_status == 0){
+// 				grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_EAST);
+// 			}
+// 			
+// 			if (GRID_PORT_S.partner_status == 0){
+// 				grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_SOUTH);
+// 			}
+// 			
+// 			if (GRID_PORT_W.partner_status == 0){
+// 				grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_WEST);
+// 			}
+// 			
+// 		}
+				
+		
 		if (usb_init_variable == 0){
+			
+	
 			
 			if (usb_d_get_frame_num() == 0){
 				
@@ -834,15 +878,28 @@ int main(void)
 			else{				
 				GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Connected");
 				
-				struct grid_ui_model* mod = &grid_ui_state;
-				
-				grid_sys_write_hex_string_value(&mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload[7], 2, (grid_sys_state.bank_select + 1)%2);
-				grid_report_sys_set_changed_flag(mod, GRID_REPORT_INDEX_MAPMODE);
+				uint8_t new_bank = 0;
+
+				uint8_t error = 0;
+				uint8_t* message = grid_ui_state.report_array[GRID_REPORT_INDEX_MAPMODE].payload;
+				grid_msg_set_parameter(message, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGPARAM1, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGPARAM1,new_bank,&error);
+
+
+				grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
 				
 				usb_init_variable = 1;
 			}
 			
 		}
+		
+		
+		
+		// Request neighbour bank settings if we don't have it initialized
+		
+ 		if (grid_sys_get_bank(&grid_sys_state) == 255){
+ 										
+ 			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_CFG_REQUEST);
+ 		}
 	
 		
 		//grid_selftest(loopcounter);

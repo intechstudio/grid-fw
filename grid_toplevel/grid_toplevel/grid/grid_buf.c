@@ -539,9 +539,9 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 			}
 			else if (message[i] == GRID_CONST_ETX && current_start!=0){
 				current_stop = i;
-				uint8_t msg_protocol = grid_sys_read_hex_string_value(&message[current_start+1], 2, &error_flag);			
+				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+1], 2, &error_flag);			
 				
-				if (msg_protocol == GRID_CLASS_MIDI){
+				if (msg_class == GRID_CLASS_MIDI){
 					
 					
 					uint8_t midi_channel = grid_msg_get_parameter(&message[current_start], GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_CABLECHANNEL, GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_CABLECHANNEL, &error);
@@ -556,7 +556,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 									
 				}
-				else if (msg_protocol == GRID_CLASS_KEYBOARD){
+				else if (msg_class == GRID_CLASS_KEYBOARD){
 		
 					uint8_t key_array_length = (current_stop-current_start-3)/6;
 		
@@ -587,42 +587,44 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 				
 				}
-				else if (msg_protocol == GRID_CLASS_SYS){
+				else if (msg_class == GRID_CLASS_SYS){
 
-						
 					uint8_t sys_command		= grid_sys_read_hex_string_value(&message[current_start+3], 2, &error_flag);
-					uint8_t sys_subcommand  = grid_sys_read_hex_string_value(&message[current_start+5], 2, &error_flag);
-					uint8_t sys_value	    = grid_sys_read_hex_string_value(&message[current_start+7], 2, &error_flag);
-						
-						
-					if (sys_command == GRID_COMMAND_SYS_BANK && sys_subcommand == GRID_PARAMETER_SYS_BANKSELECT){
-				
-						grid_sys_bank_select(&grid_sys_state, sys_value);		
-						
-// 						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [SYS] %3d %3d %3d\n",
-// 						id,dx,dy,age,
-// 						sys_command, sys_subcommand, sys_value
-// 						);
-// 						
-// 						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
-
-					}
-					else if (sys_command == GRID_COMMAND_SYS_HEARTBEAT && sys_subcommand == GRID_PARAMETER_SYS_HEARTBEATALIVE){
-								
-// 						printf("{\"type\":\"HEARTBEAT\", \"data\": [\"%d\", \"%d\", \"%d\"]}\r\n", dx, dy, sys_value);		
-// 												
-// 						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [SYS] %3d %3d %3d\n",
-// 						id,dx,dy,age,
-// 						sys_command, sys_subcommand, sys_value
-// 						);
-// 						
-// 						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);
-
-					}
 					
+					if (sys_command == GRID_COMMAND_SYS_CFG){
+												
+						uint8_t sys_cfg_cfgcontext  = grid_sys_read_hex_string_value(&message[current_start+5], 2, &error_flag);
+						
+						if (sys_cfg_cfgcontext == GRID_CONTEXT_SYS_BANK){
+							
+							uint8_t sys_cfg_cfgcommand  = grid_sys_read_hex_string_value(&message[current_start+7], 2, &error_flag);
+							uint8_t sys_cfg_cfgparam1   = grid_sys_read_hex_string_value(&message[current_start+9], 2, &error_flag);
+							
+	
+							if (sys_cfg_cfgcommand == GRID_PARAMETER_GET){
+							
+								if (grid_sys_get_bank(&grid_sys_state) != 255){
+									
+									grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
+								}
+													
+							}
+							else if(sys_cfg_cfgcommand == GRID_PARAMETER_SET){	
+								
+								// After boot quickly send heartbeat for discovery
+								if (grid_sys_get_bank(&grid_sys_state) == 255){	
+									grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_HEARTBEAT);
+								}					
+								grid_sys_set_bank(&grid_sys_state, sys_cfg_cfgparam1);	
+								grid_report_sys_clear_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_CFG_REQUEST);
+							}
+							
+						}
+						
+					}	
 				
 				}
-				else if (msg_protocol == GRID_CLASS_MOUSE){
+				else if (msg_class == GRID_CLASS_MOUSE){
 					
 					//hiddf_mouse_move(-20, HID_MOUSE_X_AXIS_MV);
 					
