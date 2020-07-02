@@ -151,8 +151,6 @@ void grid_port_receive_task(struct grid_port* por){
 							
 				GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Timeout & Reset Receiver");
 				grid_port_reset_receiver(por);
-				
-				grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 500);
 			}
 			
 		}		
