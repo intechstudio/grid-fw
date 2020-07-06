@@ -1381,6 +1381,12 @@ copy "$(OutputDirectory)\$(OutputFileName).uf2" "$(OutputDirectory)\..\..\$(Outp
     <Compile Include="grid\grid_unittest.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="grid\grid_usb.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_usb.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="hal\include\hal_adc_async.h">
       <SubType>compile</SubType>
     </Compile>

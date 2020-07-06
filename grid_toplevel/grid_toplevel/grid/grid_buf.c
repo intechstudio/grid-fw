@@ -377,6 +377,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 		return 0;
 		 
 	}else{
+		
 			
 		uint8_t port_count = 6;
 		struct grid_port* port_array_default[port_count];
@@ -589,39 +590,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				}
 				else if (msg_class == GRID_CLASS_SYS){
 
-					uint8_t sys_command		= grid_sys_read_hex_string_value(&message[current_start+3], 2, &error_flag);
-					
-					if (sys_command == GRID_COMMAND_SYS_CFG){
-												
-						uint8_t sys_cfg_cfgcontext  = grid_sys_read_hex_string_value(&message[current_start+5], 2, &error_flag);
-						
-						if (sys_cfg_cfgcontext == GRID_CONTEXT_SYS_BANK){
-							
-							uint8_t sys_cfg_cfgcommand  = grid_sys_read_hex_string_value(&message[current_start+7], 2, &error_flag);
-							uint8_t sys_cfg_cfgparam1   = grid_sys_read_hex_string_value(&message[current_start+9], 2, &error_flag);
-							
-	
-							if (sys_cfg_cfgcommand == GRID_PARAMETER_GET){
-							
-								if (grid_sys_get_bank(&grid_sys_state) != 255){
-									
-									grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
-								}
-													
-							}
-							else if(sys_cfg_cfgcommand == GRID_PARAMETER_SET){	
-								
-								// After boot quickly send heartbeat for discovery
-								if (grid_sys_get_bank(&grid_sys_state) == 255){	
-									grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_HEARTBEAT);
-								}					
-								grid_sys_set_bank(&grid_sys_state, sys_cfg_cfgparam1);	
-								grid_report_sys_clear_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_CFG_REQUEST);
-							}
-							
-						}
-						
-					}	
+
 				
 				}
 				else if (msg_class == GRID_CLASS_MOUSE){
@@ -703,9 +672,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			}
 			else if (message[i] == GRID_CONST_ETX && current_start!=0){
 				current_stop = i;
-				uint8_t msg_protocol = grid_sys_read_hex_string_value(&message[current_start+1], 2, &error_flag);
+				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+1], 2, &error_flag);
 		
-				if (msg_protocol == GRID_CLASS_LED){
+				if (msg_class == GRID_CLASS_LED){
 					
 					if (dx == 0 && dy == 0){
 						
@@ -724,6 +693,44 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						
 						
 					}
+					
+				}
+				else if (msg_class == GRID_CLASS_SYS){
+					
+					uint8_t sys_command		= grid_sys_read_hex_string_value(&message[current_start+3], 2, &error_flag);
+										
+					if (sys_command == GRID_COMMAND_SYS_CFG){
+											
+						uint8_t sys_cfg_cfgcontext  = grid_sys_read_hex_string_value(&message[current_start+5], 2, &error_flag);
+											
+						if (sys_cfg_cfgcontext == GRID_CONTEXT_SYS_BANK){
+												
+							uint8_t sys_cfg_cfgcommand  = grid_sys_read_hex_string_value(&message[current_start+7], 2, &error_flag);
+							uint8_t sys_cfg_cfgparam1   = grid_sys_read_hex_string_value(&message[current_start+9], 2, &error_flag);
+												
+												
+							if (sys_cfg_cfgcommand == GRID_PARAMETER_GET){
+													
+								if (grid_sys_get_bank(&grid_sys_state) != 255){
+														
+									grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
+								}
+													
+							}
+							else if(sys_cfg_cfgcommand == GRID_PARAMETER_SET){
+													
+								// After boot quickly send heartbeat for discovery
+								if (grid_sys_get_bank(&grid_sys_state) == 255){
+									grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_HEARTBEAT);
+								}
+								grid_sys_set_bank(&grid_sys_state, sys_cfg_cfgparam1);
+								grid_report_sys_clear_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_CFG_REQUEST);
+							}
+												
+						}
+											
+					}
+					
 					
 				}
 				else{

@@ -351,7 +351,8 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 
 				
 				uint32_t fingerprint = updated_id*256*256*256 + updated_dx*256*256 + updated_dy*256 + updated_age;
-																				
+										
+													
 				if (0 == grid_msg_find_recent(&grid_sys_state, fingerprint)){
 					// WE HAVE NOT HEARD THIS MESSAGE BEFORE
 										
@@ -383,7 +384,8 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 					
 				}
 				else{
-					// WE ALREADY HEARD THIS MESSAGE							
+					// WE ALREADY HEARD THIS MESSAGE		
+									
 					//grid_sys_alert_set_alert(&grid_sys_state, 50, 50, 50, 2, 200); // WHITE
 								
 				}
@@ -601,23 +603,6 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 	else{
 		// frame error
 		
-		grid_sys_alert_set_alert(&grid_sys_state, 0, 0, 20, 2, 200); // BLUE BLINKY	
-	
-// 		printf("{\"type\":\"FRAMEERROR\", \"data\": [");
-// 				
-// 		for(uint8_t i = 0; i<length; i++){
-// 			
-// 			
-// 			printf("\"%d\"", message[i]);
-// 			
-// 			if (i != length-1){
-// 				printf(", ");
-// 			}
-// 			
-// 		}
-// 			
-// 		printf("]}\r\n");
-
 
 		printf("{\"type\": \"ERROR\", \"data\": [\"Frame Error\"]}\r\n");
 	}
@@ -773,11 +758,11 @@ void init_timer(void)
 	
 		
 	//RTC_Scheduler_ping.interval = RTC1SEC/20; //50ms
-	RTC_Scheduler_ping.interval = RTC1SEC/20;
+	RTC_Scheduler_ping.interval = RTC1MS*GRID_PARAMETER_SYS_PING_INTERVAL;
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
 	RTC_Scheduler_ping.mode     = TIMER_TASK_REPEAT;
 	
-	RTC_Scheduler_heartbeat.interval = RTC1SEC;
+	RTC_Scheduler_heartbeat.interval = RTC1MS*GRID_PARAMETER_SYS_HEARTBEAT_INTERVAL;
 	RTC_Scheduler_heartbeat.cb       = RTC_Scheduler_heartbeat_cb;
 	RTC_Scheduler_heartbeat.mode     = TIMER_TASK_REPEAT;
 	
@@ -798,7 +783,7 @@ void init_timer(void)
 	
 }
 
-
+//====================== USB TEST =====================//
 
 int main(void)
 {
@@ -816,6 +801,10 @@ int main(void)
 	audiodf_midi_init();
 
 	composite_device_start();
+
+	uint8_t usb_testbuffer_ptr = 0;
+	uint8_t* usb_testbuffer;
+	grid_usb_serial_init(usb_testbuffer);
 
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
 		
@@ -873,7 +862,8 @@ int main(void)
 			if (usb_d_get_frame_num() == 0){
 				
 			}
-			else{				
+			else{		
+				grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN		
 				GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Connected");
 				
 				uint8_t new_bank = 0;
@@ -953,9 +943,46 @@ int main(void)
 		grid_port_receive_complete_task(&GRID_PORT_E);
 		grid_port_receive_complete_task(&GRID_PORT_S);
 		grid_port_receive_complete_task(&GRID_PORT_W);
+			
+	
+		cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
+		
+		usb_testbuffer = GRID_PORT_H.rx_double_buffer;
+
+		
+		usb_testbuffer_ptr = strlen(usb_testbuffer);
+		
+		if (usb_testbuffer_ptr){
+			
+			for (uint8_t i=0; i<GRID_STX_DEBUG_TEXT_MEXLENGTH; i++){
+				
+				grid_ui_state.report_array[GRID_REPORT_INDEX_DEBUG_TEXT].payload[i] = 0;
+			}
+			
+			uint8_t message[100] = {0};
+			sprintf(message, " ## RX: %02x %02x %02x %02x %02x ## ", usb_testbuffer[usb_testbuffer_ptr-5], usb_testbuffer[usb_testbuffer_ptr-4], usb_testbuffer[usb_testbuffer_ptr-3], usb_testbuffer[usb_testbuffer_ptr-2], usb_testbuffer[usb_testbuffer_ptr-1]);
+			grid_report_debug_text_append(&grid_ui_state, GRID_REPORT_INDEX_DEBUG_TEXT, message);
 					
+
+
+			GRID_PORT_H.rx_double_buffer_read_start_index = 0;
+
+			grid_port_receive_decode(&GRID_PORT_H, 0, usb_testbuffer_ptr-2);
+			
+						
+			for (uint8_t i = 0; i<100; i++){
+				
+				usb_testbuffer[i] = 0;
+				usb_testbuffer_ptr = 0;
+			}
+			
+			
+			
+		}
+				
 					
-					
+	
+	
 		/* ========================= GRID REPORT TASK ============================= */
 		grid_task_enter_task(&grid_task_state, GRID_TASK_REPORT);
 
@@ -974,8 +1001,10 @@ int main(void)
 		
 		grid_port_process_inbound(&GRID_PORT_N, 0);		
 		grid_port_process_inbound(&GRID_PORT_E, 0);		
-		grid_port_process_inbound(&GRID_PORT_S, 0);		
-		grid_port_process_inbound(&GRID_PORT_W, 0);						
+		grid_port_process_inbound(&GRID_PORT_S, 0);
+		grid_port_process_inbound(&GRID_PORT_W, 0);
+		
+		grid_port_process_inbound(&GRID_PORT_H, 0);				
 		
 		
 		

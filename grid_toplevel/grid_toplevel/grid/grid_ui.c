@@ -199,6 +199,7 @@ void grid_port_process_ui(struct grid_port* por){
 		por->cooldown--;
 	}	
 	
+	
 	//BROADCAST MESSAGES		
 	if (message_broadcast_available){
 			
@@ -314,6 +315,8 @@ uint8_t grid_ui_model_init(struct grid_ui_model* mod, uint8_t len){
 
 
 
+
+
 uint8_t grid_report_init(struct grid_ui_model* mod, uint8_t index, enum grid_report_type_t type, uint8_t* p, uint32_t p_len, uint8_t* h, uint32_t h_len){
 
 	mod->report_array[index].changed = 0;
@@ -352,9 +355,10 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 		
 	for(uint8_t i=0; i<mod->report_offset; i++){
 			
-		uint8_t payload_template[30] = {0};
-		enum grid_report_type_t type = GRID_REPORT_TYPE_UNDEFINED;
-			
+		uint8_t payload_template[200] = {0};
+		uint8_t payload_length = strlen(payload_template);
+		
+		enum grid_report_type_t type = GRID_REPORT_TYPE_UNDEFINED;	
 		if (i == GRID_REPORT_INDEX_MAPMODE){ // MAPMODE: SYS CFG BANK SET
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
@@ -364,6 +368,8 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCOMMAND, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCOMMAND, GRID_PARAMETER_SET, &error);
 			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGPARAM1 , GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGPARAM1, 0, &error);
 
+			
+			payload_length = strlen(payload_template);
 		}
 		else if (i == GRID_REPORT_INDEX_CFG_REQUEST){ // CONFIGURATION REQUEST:  SYS CFG BANK GET
 			
@@ -373,7 +379,8 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCONTEXT, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCONTEXT, GRID_CONTEXT_SYS_BANK, &error);
 			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCOMMAND, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCOMMAND, GRID_PARAMETER_GET, &error);
 			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGPARAM1 , GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGPARAM1, 0, &error);
-
+			
+			payload_length = strlen(payload_template);
 		}
 		else if (i == GRID_REPORT_INDEX_HEARTBEAT){ // HEARTBEAT
 			
@@ -381,6 +388,8 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			sprintf(payload_template, GRID_STX_SYS_HEARTBEAT_FORMAT, GRID_STX_SYS_HEARTBEAT_PARAMETERS);
 			uint8_t error = 0;
 			grid_msg_set_parameter(payload_template, GRID_STX_SYS_HEARTBEAT_PARAMETER_OFFSET_HWCFG, GRID_STX_SYS_HEARTBEAT_PARAMETER_LENGTH_HWCFG, grid_sys_get_hwcfg(), &error);			
+			
+			payload_length = strlen(payload_template);
 		}
 		else if (i == GRID_REPORT_INDEX_PING_NORTH){ // PING NORTH
 		
@@ -391,7 +400,8 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
-		
+			
+			payload_length = strlen(payload_template);		
 		}
 		else if (i == GRID_REPORT_INDEX_PING_EAST){ // PING EAST 
 			
@@ -404,6 +414,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
 			
+			payload_length = strlen(payload_template);			
 		}
 		else if (i == GRID_REPORT_INDEX_PING_SOUTH){ // PING SOUTH
 			
@@ -416,6 +427,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
 			
+			payload_length = strlen(payload_template);			
 		}
 		else if (i == GRID_REPORT_INDEX_PING_WEST){ // PING WEST
 			
@@ -427,12 +439,20 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
 			
+			payload_length = strlen(payload_template);			
 		}
+		else if (i == GRID_REPORT_INDEX_DEBUG_TEXT){ 
+		
+			type = GRID_REPORT_TYPE_BROADCAST;
+	
+			sprintf(payload_template, GRID_STX_DEBUG_TEXT_FORMAT, GRID_STX_DEBUG_TEXT_PARAMETERS);
+			uint8_t error = 0;
+			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCONTEXT, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCONTEXT, GRID_CONTEXT_SYS_BANK, &error);
+			
+			payload_length = GRID_STX_DEBUG_TEXT_MEXLENGTH;			
+		}		
 		
 		
-		
-				
-		uint8_t payload_length = strlen(payload_template);
 
 		uint8_t helper_template[2];
 		
@@ -475,6 +495,42 @@ enum grid_report_type_t grid_report_get_type(struct grid_ui_model* mod, uint8_t 
 	return mod->report_array[index].type;
 		
 };
+
+uint8_t grid_report_debug_text_append(struct grid_ui_model* mod, uint8_t index, uint8_t* message){
+	
+	
+	uint8_t cursor = 0;
+	
+	if (grid_report_sys_get_changed_flag(mod,index) == 0){
+		// pervious was sent, let's clear the buffer
+		
+		for (uint8_t i=0; i<GRID_STX_DEBUG_TEXT_MEXLENGTH; i++)
+		{
+			mod->report_array[index].payload[i] = 0;	
+		}
+		
+		mod->report_array[index].payload_length = 0;
+		cursor = 0;
+				
+		sprintf(mod->report_array[index].payload, GRID_STX_DEBUG_TEXT_FORMAT, GRID_STX_DEBUG_TEXT_PARAMETERS);
+		cursor = strlen(mod->report_array[index].payload);
+					
+	}
+	else{
+		cursor = mod->report_array[index].payload_length-1;
+	}
+	
+	sprintf(&mod->report_array[index].payload[cursor], "%s%c", message, GRID_CONST_ETX);
+	
+	mod->report_array[index].payload_length = strlen(mod->report_array[index].payload);
+	
+	
+	
+	grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_DEBUG_TEXT);
+	
+	
+	
+}
 
 
 // UI REPORT FLAGS

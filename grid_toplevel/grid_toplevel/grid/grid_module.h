@@ -21,6 +21,9 @@
 #include "grid_debug.h"
 
 
+#include "grid_usb.h"
+
+
 
 #include "grid_ain.h"
 #include "grid_buf.h"

@@ -30,7 +30,8 @@ enum grid_report_index_t {
 	
 	GRID_REPORT_INDEX_MAPMODE,
 	
-	GRID_REPORT_INDEX_CFG_REQUEST
+	GRID_REPORT_INDEX_CFG_REQUEST,
+	GRID_REPORT_INDEX_DEBUG_TEXT
 };
 
 
@@ -84,6 +85,7 @@ uint8_t grid_report_render(struct grid_ui_model* mod, uint8_t index, uint8_t* ta
 
 enum grid_report_type_t grid_report_get_type(struct grid_ui_model* mod, uint8_t index);
 
+uint8_t grid_report_debug_text_append(struct grid_ui_model* mod, uint8_t index, uint8_t* message);
 
 uint8_t grid_report_ui_get_changed_flag(struct grid_ui_model* mod, uint8_t index);
 
