@@ -73,7 +73,7 @@
 #define GRID_BRC_LEN_length			2
 
 #define GRID_BRC_ID_offset			4
-#define GRID_BRC_ID_offset			2
+#define GRID_BRC_ID_length			2
 
 #define GRID_BRC_DX_offset			6
 #define GRID_BRC_DX_length			2

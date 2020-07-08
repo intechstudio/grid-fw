@@ -293,7 +293,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 				uint8_t error=0;
 								
 				// Read the received id age values	
-				uint8_t received_id  = grid_msg_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_offset, &error);			
+				uint8_t received_id  = grid_msg_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);			
 				uint8_t received_age = grid_msg_get_parameter(message, GRID_BRC_AGE_offset, GRID_BRC_AGE_length, &error);
 				
 				// Read the received X Y values (SIGNED INT)				
@@ -343,7 +343,7 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 								
 				
 				// Update message with the new values
-				grid_msg_set_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_offset, updated_id, &error);
+				grid_msg_set_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, updated_id, &error);
 				grid_msg_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
 				grid_msg_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
 				grid_msg_set_parameter(message, GRID_BRC_AGE_offset, GRID_BRC_AGE_length, updated_age, &error);

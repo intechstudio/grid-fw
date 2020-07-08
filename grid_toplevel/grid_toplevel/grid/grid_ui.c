@@ -122,7 +122,7 @@ void grid_port_process_ui(struct grid_port* por){
 		uint8_t error = 0;		
 
 		grid_msg_set_parameter(&message[length], GRID_BRC_LEN_offset, GRID_BRC_LEN_length, 0, &error);
-		grid_msg_set_parameter(&message[length], GRID_BRC_ID_offset , GRID_BRC_ID_offset , grid_sys_state.next_broadcast_message_id,  &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_ID_offset , GRID_BRC_ID_length , grid_sys_state.next_broadcast_message_id,  &error);
 		grid_msg_set_parameter(&message[length], GRID_BRC_DX_offset , GRID_BRC_DX_length , GRID_SYS_DEFAULT_POSITION,  &error);
 		grid_msg_set_parameter(&message[length], GRID_BRC_DY_offset , GRID_BRC_DY_length , GRID_SYS_DEFAULT_POSITION,  &error);
 		grid_msg_set_parameter(&message[length], GRID_BRC_AGE_offset, GRID_BRC_AGE_length, grid_sys_state.age, &error);
@@ -213,7 +213,7 @@ void grid_port_process_ui(struct grid_port* por){
 		uint8_t error = 0;
 
 		grid_msg_set_parameter(&message[length], GRID_BRC_LEN_offset, GRID_BRC_LEN_length, 0, &error);
-		grid_msg_set_parameter(&message[length], GRID_BRC_ID_offset , GRID_BRC_ID_offset , grid_sys_state.next_broadcast_message_id,  &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_ID_offset , GRID_BRC_ID_length , grid_sys_state.next_broadcast_message_id,  &error);
 		grid_msg_set_parameter(&message[length], GRID_BRC_DX_offset , GRID_BRC_DX_length , GRID_SYS_DEFAULT_POSITION,  &error);
 		grid_msg_set_parameter(&message[length], GRID_BRC_DY_offset , GRID_BRC_DY_length , GRID_SYS_DEFAULT_POSITION,  &error);
 		grid_msg_set_parameter(&message[length], GRID_BRC_AGE_offset, GRID_BRC_AGE_length, grid_sys_state.age, &error);

@@ -103,6 +103,8 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 
 		mod->report_ui_array[adc_index_0].helper[0] = velocity;
 		
+		grid_report_ui_set_changed_flag(mod, adc_index_0);	
+			
 		message = mod->report_ui_array[adc_index_0 + 16].payload;
 		grid_msg_set_parameter(message, GRID_CLASS_LEDPHASE_PHASE_offset  , GRID_CLASS_LEDPHASE_PHASE_length  , actuator, &error);
 		grid_report_ui_set_changed_flag(mod, adc_index_0 + 16);
