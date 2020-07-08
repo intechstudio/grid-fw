@@ -523,8 +523,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 		
 		uint8_t error=0;
 			
-		int8_t dx = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DX, GRID_SOH_BRC_PARAMETER_LENGTH_DX, &error) - GRID_SYS_DEFAULT_POSITION;
-		int8_t dy = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DY, GRID_SOH_BRC_PARAMETER_LENGTH_DY, &error) - GRID_SYS_DEFAULT_POSITION;	
+		int8_t dx = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_SYS_DEFAULT_POSITION;
+		int8_t dy = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_SYS_DEFAULT_POSITION;	
 		
 				
 		uint8_t current_start		= 0;
@@ -540,15 +540,16 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 			}
 			else if (message[i] == GRID_CONST_ETX && current_start!=0){
 				current_stop = i;
-				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+1], 2, &error_flag);			
-				
-				if (msg_class == GRID_CLASS_MIDI){
+				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_offset], GRID_CLASS_length, &error_flag);
+				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
+											
+				if (msg_class == GRID_CLASS_MIDIRELATIVE_code && msg_instr == GRID_INSTR_REP_code){
 					
-					
-					uint8_t midi_channel = grid_msg_get_parameter(&message[current_start], GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_CABLECHANNEL, GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_CABLECHANNEL, &error);
-					uint8_t midi_command = grid_msg_get_parameter(&message[current_start], GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDICOMMAND , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDICOMMAND,  &error);
-					uint8_t midi_param1  = grid_msg_get_parameter(&message[current_start], GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDIPARAM1  , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDIPARAM1,   &error);
-					uint8_t midi_param2  = grid_msg_get_parameter(&message[current_start], GRID_STX_MIDI_EVENTPACKET_PARAMETER_OFFSET_MIDIPARAM2  , GRID_STX_MIDI_EVENTPACKET_PARAMETER_LENGTH_MIDIPARAM2,   &error);
+										
+					uint8_t midi_channel = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_CABLECHANNEL_offset, GRID_CLASS_MIDIRELATIVE_CABLECHANNEL_length, &error);
+					uint8_t midi_command = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_CHANNELCOMMAND_offset , GRID_CLASS_MIDIRELATIVE_CHANNELCOMMAND_length,  &error);
+					uint8_t midi_param1  = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_PARAM1_offset  , GRID_CLASS_MIDIRELATIVE_PARAM1_length,   &error);
+					uint8_t midi_param2  = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_PARAM2_offset  , GRID_CLASS_MIDIRELATIVE_PARAM2_length,   &error);
 											
 					midi_channel = ((256-dy*2)%8+grid_sys_state.bank_select*8)%16;
 					midi_param1  = (256-32+midi_param1 + 16*dx)%96; // 96-128 reserved
@@ -557,47 +558,6 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 									
 				}
-				else if (msg_class == GRID_CLASS_KEYBOARD){
-		
-					uint8_t key_array_length = (current_stop-current_start-3)/6;
-		
- 					struct hiddf_kb_key_descriptors key_array[key_array_length];
-		
-					for(uint8_t j=0; j<key_array_length; j++){
-						
-						uint8_t keyboard_command	= grid_sys_read_hex_string_value(&message[current_start+3+6*j], 2, &error_flag);
-						uint8_t keyboard_modifier	= grid_sys_read_hex_string_value(&message[current_start+5+6*j], 2, &error_flag);
-						uint8_t keyboard_key		= grid_sys_read_hex_string_value(&message[current_start+7+6*j], 2, &error_flag);
-						
-// 						sprintf(&por->tx_double_buffer[output_cursor], "[GRID] %3d %4d %4d %d [KEYBOARD] Key: %d Mod: %d Cmd: %d\nHWCFG: %08x\n",
-// 						id,dx,dy,age,
-// 						keyboard_key, keyboard_modifier, keyboard_command, grid_sys_get_hwcfg()
-// 						);
-// 										
-// 						output_cursor += strlen(&por->tx_double_buffer[output_cursor]);
-						
-						struct hiddf_kb_key_descriptors current_key = {keyboard_key, keyboard_modifier == GRID_PARAMETER_KEYBOARD_MODIFIER, keyboard_command == GRID_COMMAND_KEYBOARD_KEYDOWN};
-								
-						key_array[j] = current_key;
-						
-					}
-										
-					//usb_debug[1] = hiddf_keyboard_keys_state_change(key_array, key_array_length);
-					//usb_debug[2] = hiddf_keyboard_keys_state_change(key_array, key_array_length);
-		
-					
-				
-				}
-				else if (msg_class == GRID_CLASS_SYS){
-
-
-				
-				}
-				else if (msg_class == GRID_CLASS_MOUSE){
-					
-					//hiddf_mouse_move(-20, HID_MOUSE_X_AXIS_MV);
-					
-				}	
 				else{
 // 					sprintf(&por->tx_double_buffer[output_cursor], "[UNKNOWN] -> Protocol: %d\n", msg_protocol);
 // 					
@@ -653,8 +613,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		
 		uint8_t error=0;
 		
-		int8_t dx = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DX, GRID_SOH_BRC_PARAMETER_LENGTH_DX, &error) - GRID_SYS_DEFAULT_POSITION;
-		int8_t dy = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DY, GRID_SOH_BRC_PARAMETER_LENGTH_DY, &error) - GRID_SYS_DEFAULT_POSITION;
+		int8_t dx = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_SYS_DEFAULT_POSITION;
+		int8_t dy = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_SYS_DEFAULT_POSITION;
 			
 			
 		uint8_t current_start		= 0;
@@ -672,66 +632,46 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			}
 			else if (message[i] == GRID_CONST_ETX && current_start!=0){
 				current_stop = i;
-				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+1], 2, &error_flag);
+				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_offset], GRID_CLASS_length, &error_flag);
+				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
 		
-				if (msg_class == GRID_CLASS_LED){
+				if (msg_class == GRID_CLASS_BANKACTIVE_code){
 					
-					if (dx == 0 && dy == 0){
-						
-						
-						uint8_t led_layer = grid_sys_read_hex_string_value(&message[current_start+3], 2, &error_flag);
-						uint8_t led_command = grid_sys_read_hex_string_value(&message[current_start+5], 2, &error_flag);
-						uint8_t led_number  = grid_sys_read_hex_string_value(&message[current_start+7], 2, &error_flag);
-						uint8_t led_value  = grid_sys_read_hex_string_value(&message[current_start+9], 2, &error_flag);
-						
-						
-						if (led_command == GRID_COMMAND_LED_SETPHASE){
-							
-							grid_led_set_phase(&grid_led_state, led_number, led_layer, led_value);
+					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKACTIVE_BANKNUMBER_offset], GRID_CLASS_BANKACTIVE_BANKNUMBER_length, &error_flag);
+									
+					if (msg_instr == GRID_INSTR_REP_code){ //SET BANK
+									
+						if (grid_sys_get_bank(&grid_sys_state) == 255){
+							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_HEARTBEAT);
 						}
+																		
+						grid_sys_set_bank(&grid_sys_state, banknumber);
+						grid_report_sys_set_payload_parameter(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, banknumber);
+												
+						grid_report_sys_clear_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_CFG_REQUEST);
+													
+					}
+					else if (msg_instr == GRID_INSTR_REQ_code){ //GET BANK
 						
-						
+						if (grid_sys_get_bank(&grid_sys_state) != 255){
+									
+							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
+						}						
 						
 					}
+					
 					
 				}
-				else if (msg_class == GRID_CLASS_SYS){
-					
-					uint8_t sys_command		= grid_sys_read_hex_string_value(&message[current_start+3], 2, &error_flag);
-										
-					if (sys_command == GRID_COMMAND_SYS_CFG){
-											
-						uint8_t sys_cfg_cfgcontext  = grid_sys_read_hex_string_value(&message[current_start+5], 2, &error_flag);
-											
-						if (sys_cfg_cfgcontext == GRID_CONTEXT_SYS_BANK){
-												
-							uint8_t sys_cfg_cfgcommand  = grid_sys_read_hex_string_value(&message[current_start+7], 2, &error_flag);
-							uint8_t sys_cfg_cfgparam1   = grid_sys_read_hex_string_value(&message[current_start+9], 2, &error_flag);
-												
-												
-							if (sys_cfg_cfgcommand == GRID_PARAMETER_GET){
+				if (msg_class == GRID_CLASS_LEDPHASE_code && msg_instr == GRID_INSTR_REP_code){
+						
+					if (dx == 0 && dy == 0){
+									
+						uint8_t led_layer = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_LAYERNUMBER_offset], GRID_CLASS_LEDPHASE_LAYERNUMBER_length, &error_flag);
+						uint8_t led_number  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_LEDNUMBER_offset], GRID_CLASS_LEDPHASE_LEDNUMBER_length, &error_flag);
+						uint8_t led_value  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_PHASE_offset], GRID_CLASS_LEDPHASE_PHASE_length, &error_flag);						
+						grid_led_set_phase(&grid_led_state, led_number, led_layer, led_value);		
 													
-								if (grid_sys_get_bank(&grid_sys_state) != 255){
-														
-									grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
-								}
-													
-							}
-							else if(sys_cfg_cfgcommand == GRID_PARAMETER_SET){
-													
-								// After boot quickly send heartbeat for discovery
-								if (grid_sys_get_bank(&grid_sys_state) == 255){
-									grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_HEARTBEAT);
-								}
-								grid_sys_set_bank(&grid_sys_state, sys_cfg_cfgparam1);
-								grid_report_sys_clear_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_CFG_REQUEST);
-							}
-												
-						}
-											
 					}
-					
-					
 				}
 				else{
 					//SORRY

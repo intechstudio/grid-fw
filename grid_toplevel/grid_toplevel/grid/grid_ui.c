@@ -117,16 +117,16 @@ void grid_port_process_ui(struct grid_port* por){
 		uint8_t packetvalid = 0;
 		
 
-		sprintf(&message[length], GRID_SOH_BRC_FORMAT, GRID_SOH_BRC_PARAMETERS);	
+		sprintf(&message[length], GRID_BRC_frame);	
 		
 		uint8_t error = 0;		
 
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_LEN, GRID_SOH_BRC_PARAMETER_LENGTH_LEN, 0, &error);
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_ID , GRID_SOH_BRC_PARAMETER_LENGTH_ID , grid_sys_state.next_broadcast_message_id,  &error);
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_DX , GRID_SOH_BRC_PARAMETER_LENGTH_DX , GRID_SYS_DEFAULT_POSITION,  &error);
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_DY , GRID_SOH_BRC_PARAMETER_LENGTH_DY , GRID_SYS_DEFAULT_POSITION,  &error);
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_AGE, GRID_SOH_BRC_PARAMETER_LENGTH_AGE, grid_sys_state.age, &error);
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_ROT, GRID_SOH_BRC_PARAMETER_LENGTH_ROT, GRID_SYS_DEFAULT_ROTATION, &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_LEN_offset, GRID_BRC_LEN_length, 0, &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_ID_offset , GRID_BRC_ID_offset , grid_sys_state.next_broadcast_message_id,  &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_DX_offset , GRID_BRC_DX_length , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_DY_offset , GRID_BRC_DY_length , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_AGE_offset, GRID_BRC_AGE_length, grid_sys_state.age, &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_ROT_offset, GRID_BRC_ROT_length, GRID_SYS_DEFAULT_ROTATION, &error);
 
 		length += strlen(&message[length]);
 			
@@ -158,7 +158,7 @@ void grid_port_process_ui(struct grid_port* por){
 				
 			// Calculate packet length and insert it into the header! +1 is the EOT character
 			uint8_t error = 0;
-			grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_LEN, GRID_SOH_BRC_PARAMETER_LENGTH_LEN, length+1, &error);
+			grid_msg_set_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, length+1, &error);
 
 			// Close the packet
 			sprintf(&message[length], "%c..\n", GRID_CONST_EOT);
@@ -208,16 +208,16 @@ void grid_port_process_ui(struct grid_port* por){
 		uint32_t length=0;	
 		uint8_t packetvalid = 0;
 	
-		sprintf(&message[length], GRID_SOH_BRC_FORMAT, GRID_SOH_BRC_PARAMETERS);
+		sprintf(&message[length], GRID_BRC_frame);
 		
 		uint8_t error = 0;
 
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_LEN, GRID_SOH_BRC_PARAMETER_LENGTH_LEN, 0, &error);
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_ID , GRID_SOH_BRC_PARAMETER_LENGTH_ID , grid_sys_state.next_broadcast_message_id,  &error);
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_DX , GRID_SOH_BRC_PARAMETER_LENGTH_DX , GRID_SYS_DEFAULT_POSITION,  &error);
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_DY , GRID_SOH_BRC_PARAMETER_LENGTH_DY , GRID_SYS_DEFAULT_POSITION,  &error);
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_AGE, GRID_SOH_BRC_PARAMETER_LENGTH_AGE, grid_sys_state.age, &error);
-		grid_msg_set_parameter(&message[length], GRID_SOH_BRC_PARAMETER_OFFSET_ROT, GRID_SOH_BRC_PARAMETER_LENGTH_ROT, GRID_SYS_DEFAULT_ROTATION, &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_LEN_offset, GRID_BRC_LEN_length, 0, &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_ID_offset , GRID_BRC_ID_offset , grid_sys_state.next_broadcast_message_id,  &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_DX_offset , GRID_BRC_DX_length , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_DY_offset , GRID_BRC_DY_length , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_AGE_offset, GRID_BRC_AGE_length, grid_sys_state.age, &error);
+		grid_msg_set_parameter(&message[length], GRID_BRC_ROT_offset, GRID_BRC_ROT_length, GRID_SYS_DEFAULT_ROTATION, &error);
 
 		length += strlen(&message[length]);
 	
@@ -255,7 +255,7 @@ void grid_port_process_ui(struct grid_port* por){
 
 			// Calculate packet length and insert it into the header! +1 is the EOT character
 			uint8_t error = 0;
-			grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_LEN, GRID_SOH_BRC_PARAMETER_LENGTH_LEN, length+1, &error);
+			grid_msg_set_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, length+1, &error);
 
 			// Close the packet
 			sprintf(&message[length], "%c..\n", GRID_CONST_EOT);
@@ -359,36 +359,53 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 		uint8_t payload_length = strlen(payload_template);
 		
 		enum grid_report_type_t type = GRID_REPORT_TYPE_UNDEFINED;	
-		if (i == GRID_REPORT_INDEX_MAPMODE){ // MAPMODE: SYS CFG BANK SET
+		if (i == GRID_REPORT_INDEX_MAPMODE){ // MAPMODE: BANKACTIVE REP
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
-			sprintf(payload_template, GRID_STX_SYS_CFG_FORMAT, GRID_STX_SYS_CFG_PARAMETERS);
-			uint8_t error = 0;
-			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCONTEXT, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCONTEXT, GRID_CONTEXT_SYS_BANK, &error);
-			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCOMMAND, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCOMMAND, GRID_PARAMETER_SET, &error);
-			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGPARAM1 , GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGPARAM1, 0, &error);
 
+
+			sprintf(payload_template, GRID_CLASS_BANKACTIVE_frame);
 			
+			uint8_t error = 0;	
+					
+			grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
+			
+			grid_msg_set_parameter(payload_template, GRID_CLASS_BANKACTIVE_BANKNUMBER_offset, GRID_CLASS_BANKACTIVE_BANKNUMBER_length, 0, &error);
+						
+			
+						
 			payload_length = strlen(payload_template);
 		}
-		else if (i == GRID_REPORT_INDEX_CFG_REQUEST){ // CONFIGURATION REQUEST:  SYS CFG BANK GET
+		else if (i == GRID_REPORT_INDEX_CFG_REQUEST){ // CONFIGURATION REQUEST:  BANKACTIVE REQ
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
-			sprintf(payload_template, GRID_STX_SYS_CFG_FORMAT, GRID_STX_SYS_CFG_PARAMETERS);
-			uint8_t error = 0;
-			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCONTEXT, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCONTEXT, GRID_CONTEXT_SYS_BANK, &error);
-			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCOMMAND, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCOMMAND, GRID_PARAMETER_GET, &error);
-			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGPARAM1 , GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGPARAM1, 0, &error);
+
+			sprintf(payload_template, GRID_CLASS_BANKACTIVE_frame);
 			
+			uint8_t error = 0;
+			
+			grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REQ_code, &error);
+			
+			grid_msg_set_parameter(payload_template, GRID_CLASS_BANKACTIVE_BANKNUMBER_offset, GRID_CLASS_BANKACTIVE_BANKNUMBER_length, 0, &error);
+			
+
 			payload_length = strlen(payload_template);
 		}
 		else if (i == GRID_REPORT_INDEX_HEARTBEAT){ // HEARTBEAT
 			
 			type = GRID_REPORT_TYPE_BROADCAST;
-			sprintf(payload_template, GRID_STX_SYS_HEARTBEAT_FORMAT, GRID_STX_SYS_HEARTBEAT_PARAMETERS);
+
+			sprintf(payload_template, GRID_CLASS_HEARTBEAT_frame);
+							
 			uint8_t error = 0;
-			grid_msg_set_parameter(payload_template, GRID_STX_SYS_HEARTBEAT_PARAMETER_OFFSET_HWCFG, GRID_STX_SYS_HEARTBEAT_PARAMETER_LENGTH_HWCFG, grid_sys_get_hwcfg(), &error);			
 			
+			grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
+			
+			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_HWCFG_offset, GRID_CLASS_MIDIRELATIVE_HWCFG_length, grid_sys_get_hwcfg(), &error);
+			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_VMAJOR_offset, GRID_CLASS_MIDIRELATIVE_VMAJOR_length , GRID_PROTOCOL_VERSION_MAJOR, &error);
+			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_VMINOR_offset, GRID_CLASS_MIDIRELATIVE_VMINOR_length  , GRID_PROTOCOL_VERSION_MINOR, &error);
+			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_VPATCH_offset, GRID_CLASS_MIDIRELATIVE_VPATCH_length  , GRID_PROTOCOL_VERSION_PATCH, &error);
+							
 			payload_length = strlen(payload_template);
 		}
 		else if (i == GRID_REPORT_INDEX_PING_NORTH){ // PING NORTH
@@ -441,16 +458,7 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			payload_length = strlen(payload_template);			
 		}
-		else if (i == GRID_REPORT_INDEX_DEBUG_TEXT){ 
-		
-			type = GRID_REPORT_TYPE_BROADCAST;
 	
-			sprintf(payload_template, GRID_STX_DEBUG_TEXT_FORMAT, GRID_STX_DEBUG_TEXT_PARAMETERS);
-			uint8_t error = 0;
-			grid_msg_set_parameter(payload_template, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGCONTEXT, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGCONTEXT, GRID_CONTEXT_SYS_BANK, &error);
-			
-			payload_length = GRID_STX_DEBUG_TEXT_MEXLENGTH;			
-		}		
 		
 		
 
@@ -494,42 +502,6 @@ enum grid_report_type_t grid_report_get_type(struct grid_ui_model* mod, uint8_t 
 		
 	return mod->report_array[index].type;
 		
-};
-
-uint8_t grid_report_debug_text_append(struct grid_ui_model* mod, uint8_t index, uint8_t* message){
-	
-	
-	uint8_t cursor = 0;
-	
-	if (grid_report_sys_get_changed_flag(mod,index) == 0){
-		// pervious was sent, let's clear the buffer
-		
-		for (uint8_t i=0; i<GRID_STX_DEBUG_TEXT_MEXLENGTH; i++)
-		{
-			mod->report_array[index].payload[i] = 0;	
-		}
-		
-		mod->report_array[index].payload_length = 0;
-		cursor = 0;
-				
-		sprintf(mod->report_array[index].payload, GRID_STX_DEBUG_TEXT_FORMAT, GRID_STX_DEBUG_TEXT_PARAMETERS);
-		cursor = strlen(mod->report_array[index].payload);
-					
-	}
-	else{
-		cursor = mod->report_array[index].payload_length-1;
-	}
-	
-	sprintf(&mod->report_array[index].payload[cursor], "%s%c", message, GRID_CONST_ETX);
-	
-	mod->report_array[index].payload_length = strlen(mod->report_array[index].payload);
-	
-	
-	
-	grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_DEBUG_TEXT);
-	
-	
-	
 }
 
 
@@ -560,6 +532,13 @@ uint8_t grid_report_sys_get_changed_flag(struct grid_ui_model* mod, uint8_t inde
 void grid_report_sys_set_changed_flag(struct grid_ui_model* mod, uint8_t index){
 	
 	mod->report_array[index].changed = 1;
+}
+
+void grid_report_sys_set_payload_parameter(struct grid_ui_model* mod, uint8_t index, uint8_t offset, uint8_t length, uint8_t value){
+	
+	grid_sys_write_hex_string_value(&mod->report_array[index].payload[offset],length,value);
+	
+	
 }
 
 void grid_report_sys_clear_changed_flag(struct grid_ui_model* mod, uint8_t index){

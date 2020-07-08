@@ -293,14 +293,14 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 				uint8_t error=0;
 								
 				// Read the received id age values	
-				uint8_t received_id  = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_ID, GRID_SOH_BRC_PARAMETER_LENGTH_ID, &error);			
-				uint8_t received_age = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_AGE, GRID_SOH_BRC_PARAMETER_LENGTH_AGE, &error);
+				uint8_t received_id  = grid_msg_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_offset, &error);			
+				uint8_t received_age = grid_msg_get_parameter(message, GRID_BRC_AGE_offset, GRID_BRC_AGE_length, &error);
 				
 				// Read the received X Y values (SIGNED INT)				
-				int8_t received_dx  = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DX, GRID_SOH_BRC_PARAMETER_LENGTH_DX, &error) - GRID_SYS_DEFAULT_POSITION;
-				int8_t received_dy  = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DY, GRID_SOH_BRC_PARAMETER_LENGTH_DY, &error) - GRID_SYS_DEFAULT_POSITION;
+				int8_t received_dx  = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_SYS_DEFAULT_POSITION;
+				int8_t received_dy  = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_SYS_DEFAULT_POSITION;
 				
-				uint8_t received_rot = grid_msg_get_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_ROT, GRID_SOH_BRC_PARAMETER_LENGTH_ROT, &error);
+				uint8_t received_rot = grid_msg_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
 				
 
 				// DO THE DX DY AGE calculations
@@ -343,11 +343,11 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 								
 				
 				// Update message with the new values
-				grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_ID, GRID_SOH_BRC_PARAMETER_LENGTH_ID, updated_id, &error);
-				grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DX, GRID_SOH_BRC_PARAMETER_LENGTH_DX, updated_dx, &error);
-				grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_DY, GRID_SOH_BRC_PARAMETER_LENGTH_DY, updated_dy, &error);
-				grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_AGE, GRID_SOH_BRC_PARAMETER_LENGTH_AGE, updated_age, &error);
-				grid_msg_set_parameter(message, GRID_SOH_BRC_PARAMETER_OFFSET_ROT, GRID_SOH_BRC_PARAMETER_LENGTH_ROT, updated_rot, &error);	
+				grid_msg_set_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_offset, updated_id, &error);
+				grid_msg_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
+				grid_msg_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
+				grid_msg_set_parameter(message, GRID_BRC_AGE_offset, GRID_BRC_AGE_length, updated_age, &error);
+				grid_msg_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);	
 
 				
 				uint32_t fingerprint = updated_id*256*256*256 + updated_dx*256*256 + updated_dy*256 + updated_age;
@@ -713,17 +713,12 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 				
 			uint8_t current_bank = grid_sys_get_bank(&grid_sys_state);
 			uint8_t new_bank = (current_bank + 1)%2;
+						
+			grid_report_sys_set_payload_parameter(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, new_bank);
+		
+			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
 			
-				
-			uint8_t error = 0;
-			uint8_t* message = mod->report_array[GRID_REPORT_INDEX_MAPMODE].payload;
-			grid_msg_set_parameter(message, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGPARAM1, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGPARAM1,new_bank,&error);
-				
-				
-			grid_report_sys_set_changed_flag(mod, GRID_REPORT_INDEX_MAPMODE);
-				
-				
-				
+			
 
 			 
 		}
@@ -758,11 +753,11 @@ void init_timer(void)
 	
 		
 	//RTC_Scheduler_ping.interval = RTC1SEC/20; //50ms
-	RTC_Scheduler_ping.interval = RTC1MS*GRID_PARAMETER_SYS_PING_INTERVAL;
+	RTC_Scheduler_ping.interval = RTC1MS*GRID_PARAMETER_PING_INTERVAL;
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
 	RTC_Scheduler_ping.mode     = TIMER_TASK_REPEAT;
 	
-	RTC_Scheduler_heartbeat.interval = RTC1MS*GRID_PARAMETER_SYS_HEARTBEAT_INTERVAL;
+	RTC_Scheduler_heartbeat.interval = RTC1MS*GRID_PARAMETER_HEARTBEAT_INTERVAL;
 	RTC_Scheduler_heartbeat.cb       = RTC_Scheduler_heartbeat_cb;
 	RTC_Scheduler_heartbeat.mode     = TIMER_TASK_REPEAT;
 	
@@ -863,16 +858,14 @@ int main(void)
 				
 			}
 			else{		
+				
 				grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN		
 				GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Connected");
 				
 				uint8_t new_bank = 0;
-
-				uint8_t error = 0;
-				uint8_t* message = grid_ui_state.report_array[GRID_REPORT_INDEX_MAPMODE].payload;
-				grid_msg_set_parameter(message, GRID_STX_SYS_CFG_PARAMETER_OFFSET_CFGPARAM1, GRID_STX_SYS_CFG_PARAMETER_LENGTH_CFGPARAM1,new_bank,&error);
-
-
+				
+				grid_report_sys_set_payload_parameter(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, new_bank);
+	
 				grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
 				
 				usb_init_variable = 1;
@@ -947,37 +940,20 @@ int main(void)
 	
 		cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
 		
-		usb_testbuffer = GRID_PORT_H.rx_double_buffer;
-
+		uint8_t usblength = strlen(usb_testbuffer);
 		
-		usb_testbuffer_ptr = strlen(usb_testbuffer);
-		
-		if (usb_testbuffer_ptr){
-			
-			for (uint8_t i=0; i<GRID_STX_DEBUG_TEXT_MEXLENGTH; i++){
-				
-				grid_ui_state.report_array[GRID_REPORT_INDEX_DEBUG_TEXT].payload[i] = 0;
-			}
-			
-			uint8_t message[100] = {0};
-			sprintf(message, " ## RX: %02x %02x %02x %02x %02x ## ", usb_testbuffer[usb_testbuffer_ptr-5], usb_testbuffer[usb_testbuffer_ptr-4], usb_testbuffer[usb_testbuffer_ptr-3], usb_testbuffer[usb_testbuffer_ptr-2], usb_testbuffer[usb_testbuffer_ptr-1]);
-			grid_report_debug_text_append(&grid_ui_state, GRID_REPORT_INDEX_DEBUG_TEXT, message);
-					
-
-
+		if (usblength){	
+						
 			GRID_PORT_H.rx_double_buffer_read_start_index = 0;
 
-			grid_port_receive_decode(&GRID_PORT_H, 0, usb_testbuffer_ptr-2);
-			
-						
+			grid_port_receive_decode(&GRID_PORT_H, 0, usblength-2);
+								
 			for (uint8_t i = 0; i<100; i++){
 				
-				usb_testbuffer[i] = 0;
-				usb_testbuffer_ptr = 0;
+				GRID_PORT_H.rx_double_buffer[i] = 0;
+			
 			}
-			
-			
-			
+				
 		}
 				
 					
