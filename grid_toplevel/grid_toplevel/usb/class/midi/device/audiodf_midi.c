@@ -27,44 +27,6 @@ static struct usbdf_driver _audiodf_midi;
 static struct audiodf_midi_func_data _audiodf_midi_funcd;
 
 
-/**
- * \brief Callback invoked when bulk IN data received
- * \param[in] ep Endpoint number
- * \param[in] rc transfer return status
- * \param[in] count the amount of bytes has been transferred
- * \return Operation status.
- */
-static bool midi_cb_ep_bulk_in(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
-{
-	(void)ep;
-	(void)rc;
-	
-// 	while(1){
-// 		
-// 		
-// 	}
-
-}
-
-/**
- * \brief Callback invoked when bulk OUT data received
- * \param[in] ep Endpoint number
- * \param[in] rc transfer return status
- * \param[in] count the amount of bytes has been transferred
- * \return Operation status.
- */
-static bool midi_cb_ep_bulk_out(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
-{
-	uint8_t *           pbuf = NULL;
-	int32_t             ret;
-	
-		while(1){
-			
-			
-		}
-}
-
-
 volatile uint8_t usb_debug2[10];
 
 
@@ -133,11 +95,11 @@ static int32_t audio_midi_enable(struct usbdf_driver *drv, struct usbd_descripto
 				if (ep_desc.bEndpointAddress & USB_EP_DIR_IN) {
 					func_data->func_ep_in = ep_desc.bEndpointAddress;
 					usb_d_ep_enable(func_data->func_ep_in);
-					usb_d_ep_register_callback(func_data->func_ep_in, USB_D_EP_CB_XFER, (FUNC_PTR)midi_cb_ep_bulk_in);
+					//usb_d_ep_register_callback(func_data->func_ep_in, USB_D_EP_CB_XFER, (FUNC_PTR)midi_cb_ep_bulk_in);
 				} else {
 					func_data->func_ep_out = ep_desc.bEndpointAddress;
 					usb_d_ep_enable(func_data->func_ep_out);
-					usb_d_ep_register_callback(func_data->func_ep_out, USB_D_EP_CB_XFER, (FUNC_PTR)midi_cb_ep_bulk_out);
+					//usb_d_ep_register_callback(func_data->func_ep_out, USB_D_EP_CB_XFER, (FUNC_PTR)midi_cb_ep_bulk_out);
 				}
 				desc->sod = ep;
 				ep        = usb_find_ep_desc(usb_desc_next(desc->sod), desc->eod);
@@ -321,8 +283,11 @@ bool audiodf_midi_is_enabled(void)
 
 
 
-int32_t audiodf_midi_xfer_packet(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3)
+int32_t audiodf_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3)
 {
+	if (!audiodf_midi_is_enabled()) {
+		return ERR_DENIED;
+	}
 	
 	// if previous xfer is completed
 	_audiodf_midi_funcd.midi_report[0] = byte0;
@@ -334,6 +299,36 @@ int32_t audiodf_midi_xfer_packet(uint8_t byte0, uint8_t byte1, uint8_t byte2, ui
 	
 	
 }
+
+
+
+
+int32_t audiodf_midi_read(uint8_t *buf, uint32_t size)
+{
+	if (!audiodf_midi_is_enabled()) {
+		return ERR_DENIED;
+	}
+		
+	return usbdc_xfer(_audiodf_midi_funcd.func_ep_out, buf, size, false);
+}
+
+
+int32_t audiodf_midi_register_callback(enum audiodf_midi_cb_type cb_type, FUNC_PTR func)
+{
+	switch (cb_type) {
+		case AUDIODF_MIDI_CB_READ:
+		usb_d_ep_register_callback(_audiodf_midi_funcd.func_ep_out, USB_D_EP_CB_XFER, func);
+		break;
+		case AUDIODF_MIDI_CB_WRITE:
+		usb_d_ep_register_callback(_audiodf_midi_funcd.func_ep_in, USB_D_EP_CB_XFER, func);
+		break;
+		default:
+		return ERR_INVALID_ARG;
+	}
+	return ERR_NONE;
+}
+
+
 
 /**
  * \brief Return version

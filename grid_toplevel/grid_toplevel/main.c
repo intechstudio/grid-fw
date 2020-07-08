@@ -341,13 +341,27 @@ void grid_port_receive_decode(struct grid_port* por, uint32_t startcommand, uint
 							
 				uint8_t updated_age = received_age;
 								
+				if (received_dx + GRID_SYS_DEFAULT_POSITION == 0 && received_dy + GRID_SYS_DEFAULT_POSITION == 0)
+				{
+					// EDITOR GENERATED GLOBAL MESSAGE
+					
+				}
+				else if (received_dx + GRID_SYS_DEFAULT_POSITION == 255 && received_dy + GRID_SYS_DEFAULT_POSITION == 255){
+					
+					// GRID GENERATED GLOBAL MESSAGE
+					
+				}
+				else{
+					
+					// Update message with the new values
+					grid_msg_set_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, updated_id, &error);
+					grid_msg_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
+					grid_msg_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
+					grid_msg_set_parameter(message, GRID_BRC_AGE_offset, GRID_BRC_AGE_length, updated_age, &error);
+					grid_msg_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);
+				}
 				
-				// Update message with the new values
-				grid_msg_set_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, updated_id, &error);
-				grid_msg_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
-				grid_msg_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
-				grid_msg_set_parameter(message, GRID_BRC_AGE_offset, GRID_BRC_AGE_length, updated_age, &error);
-				grid_msg_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);	
+				
 
 				
 				uint32_t fingerprint = updated_id*256*256*256 + updated_dx*256*256 + updated_dy*256 + updated_age;
@@ -797,9 +811,11 @@ int main(void)
 
 	composite_device_start();
 
-	uint8_t usb_testbuffer_ptr = 0;
-	uint8_t* usb_testbuffer;
-	grid_usb_serial_init(usb_testbuffer);
+
+	grid_usb_serial_init();
+	grid_usb_midi_init();
+	
+	
 
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
 		
@@ -869,6 +885,7 @@ int main(void)
 				grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
 				
 				usb_init_variable = 1;
+				
 			}
 			
 		}
@@ -937,10 +954,31 @@ int main(void)
 		grid_port_receive_complete_task(&GRID_PORT_S);
 		grid_port_receive_complete_task(&GRID_PORT_W);
 			
+			
+		uint8_t midi_rx_buffer[10] = {0};	
+		uint8_t midi_rx_length = 0;
+			
+		audiodf_midi_read(midi_rx_buffer,4);
+		
+		midi_rx_length = strlen(midi_rx_buffer);
+		
+		if (midi_rx_buffer[0]!=0 || midi_rx_buffer[1]!=0 || midi_rx_buffer[2]!=0 || midi_rx_buffer[3]!=0){
+			grid_sys_alert_set_alert(&grid_sys_state, 50,0,0,2,500); // SOFT RED
+			
+			uint8_t message[30] = {0};
+				
+			sprintf(message, "MIDI: %02x %02x %02x %02x\n", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
+			
+			cdcdf_acm_write(message, strlen(message));
+			delay_us(100);
+		}	
+		
+		
+		
 	
 		cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
 		
-		uint8_t usblength = strlen(usb_testbuffer);
+		uint8_t usblength = strlen(GRID_PORT_H.rx_double_buffer);
 		
 		if (usblength){	
 						
