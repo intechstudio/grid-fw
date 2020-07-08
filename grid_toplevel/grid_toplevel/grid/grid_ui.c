@@ -401,10 +401,10 @@ uint8_t grid_report_sys_init(struct grid_ui_model* mod){
 			
 			grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
 			
-			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_HWCFG_offset, GRID_CLASS_MIDIRELATIVE_HWCFG_length, grid_sys_get_hwcfg(), &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_VMAJOR_offset, GRID_CLASS_MIDIRELATIVE_VMAJOR_length , GRID_PROTOCOL_VERSION_MAJOR, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_VMINOR_offset, GRID_CLASS_MIDIRELATIVE_VMINOR_length  , GRID_PROTOCOL_VERSION_MINOR, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_VPATCH_offset, GRID_CLASS_MIDIRELATIVE_VPATCH_length  , GRID_PROTOCOL_VERSION_PATCH, &error);
+			grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(), &error);
+			grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length , GRID_PROTOCOL_VERSION_MAJOR, &error);
+			grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length  , GRID_PROTOCOL_VERSION_MINOR, &error);
+			grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length  , GRID_PROTOCOL_VERSION_PATCH, &error);
 							
 			payload_length = strlen(payload_template);
 		}
