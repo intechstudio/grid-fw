@@ -24,9 +24,7 @@ void grid_port_process_ui(struct grid_port* por){
 			
 			
 			(type == GRID_REPORT_TYPE_BROADCAST)?message_broadcast_available++:1;	
-			
-			(type == GRID_REPORT_TYPE_DIRECT_ALL)?message_direct_available++:1;
-			
+						
 			(type == GRID_REPORT_TYPE_DIRECT_NORTH)?message_direct_available++:1;
 			(type == GRID_REPORT_TYPE_DIRECT_EAST)?message_direct_available++:1;
 			(type == GRID_REPORT_TYPE_DIRECT_SOUTH)?message_direct_available++:1;
@@ -47,7 +45,7 @@ void grid_port_process_ui(struct grid_port* por){
 			uint8_t changed = grid_report_sys_get_changed_flag(mod, i);
 			enum grid_report_type_t type = grid_report_get_type(mod, i);
 				
-			if (changed && (type == GRID_REPORT_TYPE_DIRECT_ALL || type == GRID_REPORT_TYPE_DIRECT_NORTH || type == GRID_REPORT_TYPE_DIRECT_EAST || type == GRID_REPORT_TYPE_DIRECT_SOUTH || type == GRID_REPORT_TYPE_DIRECT_WEST)){
+			if (changed && (type == GRID_REPORT_TYPE_DIRECT_NORTH || type == GRID_REPORT_TYPE_DIRECT_EAST || type == GRID_REPORT_TYPE_DIRECT_SOUTH || type == GRID_REPORT_TYPE_DIRECT_WEST)){
 					
 				uint8_t message[256] = {0};
 				uint32_t length=0;
@@ -63,10 +61,7 @@ void grid_port_process_ui(struct grid_port* por){
 				struct grid_buffer* target_buffer;
 				enum grid_report_type_t type = grid_report_get_type(mod, i);
 
-				if (type == GRID_REPORT_TYPE_DIRECT_ALL){
-					target_buffer = &GRID_PORT_U.rx_buffer;
-				}
-				else if (type == GRID_REPORT_TYPE_DIRECT_NORTH){
+				if (type == GRID_REPORT_TYPE_DIRECT_NORTH){
 					target_buffer = &GRID_PORT_N.tx_buffer;
 				}
 				else if (type == GRID_REPORT_TYPE_DIRECT_EAST){
@@ -111,8 +106,8 @@ void grid_port_process_ui(struct grid_port* por){
 	if (message_local_available && por->cooldown<20){
 			
 		// Prepare packet header
-		uint8_t message[256] = {0};
-		uint32_t length=0;
+		uint8_t message[GRID_PARAMETER_PACKET_maxlength] = {0};
+		uint16_t length=0;
 									
 		uint8_t packetvalid = 0;
 		
@@ -130,11 +125,10 @@ void grid_port_process_ui(struct grid_port* por){
 
 		length += strlen(&message[length]);
 			
-			
 		// Append the UI change descriptors
-		for (uint8_t i = 0; i<grid_ui_state.report_length; i++)
+		for (uint16_t i = 0; i<grid_ui_state.report_length; i++)
 		{				
-			if (length>200){
+			if (length>GRID_PARAMETER_PACKET_marign){
 				continue;
 			}
 							
@@ -167,13 +161,11 @@ void grid_port_process_ui(struct grid_port* por){
 			// Calculate checksum!
 			uint8_t checksum = grid_msg_checksum_calculate(message, length);
 			grid_msg_checksum_write(message, length, checksum);
-
-
 			
 			// Put the packet into the UI_RX buffer
 			if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, length)){
 					
-				for(uint32_t i = 0; i<length; i++){
+				for(uint16_t i = 0; i<length; i++){
 						
 					grid_buffer_write_character(&GRID_PORT_U.tx_buffer, message[i]);
 				}
@@ -204,8 +196,8 @@ void grid_port_process_ui(struct grid_port* por){
 	if (message_broadcast_available){
 			
 		// Prepare packet header
-		uint8_t message[256] = {0};
-		uint32_t length=0;	
+		uint8_t message[GRID_PARAMETER_PACKET_maxlength] = {0};
+		uint16_t length=0;	
 		uint8_t packetvalid = 0;
 	
 		sprintf(&message[length], GRID_BRC_frame);
@@ -224,10 +216,10 @@ void grid_port_process_ui(struct grid_port* por){
 
 	
 		// Append the UI change descriptors
-		for (uint8_t i = 0; i<grid_ui_state.report_length; i++)
+		for (uint16_t i = 0; i<grid_ui_state.report_length; i++)
 		{
 				
-			if (length>200){
+			if (length>GRID_PARAMETER_PACKET_marign){
 				continue;
 			}
 		
@@ -270,7 +262,7 @@ void grid_port_process_ui(struct grid_port* por){
 			// Put the packet into the UI_RX buffer
 			if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, length)){
 	
-				for(uint32_t i = 0; i<length; i++){
+				for(uint16_t i = 0; i<length; i++){
 				
 					grid_buffer_write_character(&GRID_PORT_U.rx_buffer, message[i]);
 				}

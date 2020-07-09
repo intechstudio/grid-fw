@@ -5,6 +5,48 @@
 #include "grid_buf.h"
 
 
+
+/// TASK SWITCHER
+
+#define GRID_TASK_NUMBER 8
+
+enum grid_task{
+	
+	GRID_TASK_IDLE,
+	GRID_TASK_UNDEFINED,
+	GRID_TASK_RECEIVE,
+	GRID_TASK_REPORT,
+	GRID_TASK_INBOUND,
+	GRID_TASK_OUTBOUND,
+	GRID_TASK_LED,
+	GRID_TASK_ALERT,
+	
+};
+
+struct grid_task_model{
+	
+	uint8_t status;
+	enum grid_task current_task;
+	
+	uint32_t timer[GRID_TASK_NUMBER];
+	
+};
+
+struct grid_task_model grid_task_state;
+
+enum grid_task grid_task_enter_task(struct grid_task_model* mod, enum grid_task next_task);
+
+grid_task_leave_task(struct grid_task_model* mod, enum grid_task previous_task);
+
+void grid_task_timer_tick(struct grid_task_model* mod);
+
+void grid_task_timer_reset(struct grid_task_model* mod);
+
+uint32_t grid_task_timer_read(struct grid_task_model* mod, enum grid_task task);
+
+
+
+
 /* ==================== Reading MCU Unique Serial Nuber ====================== */
 // Word 0: 0x008061FC	Word 1: 0x00806010	Word 2: 0x00806014	Word 3: 0x00806018
 

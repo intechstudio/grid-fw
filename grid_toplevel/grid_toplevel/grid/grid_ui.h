@@ -7,7 +7,6 @@ enum grid_report_type_t {
 	GRID_REPORT_TYPE_UNDEFINED,
 	GRID_REPORT_TYPE_LOCAL,
 	GRID_REPORT_TYPE_BROADCAST,
-	GRID_REPORT_TYPE_DIRECT_ALL,
 	GRID_REPORT_TYPE_DIRECT_NORTH,
 	GRID_REPORT_TYPE_DIRECT_EAST,
 	GRID_REPORT_TYPE_DIRECT_SOUTH,
@@ -49,11 +48,11 @@ struct grid_ui_report
 
 struct grid_ui_model
 {
-	uint8_t report_length;
-	uint8_t report_offset;
-	struct grid_ui_report* report_array;	
-	
+	uint16_t report_length;
+	uint16_t report_offset;
+	struct grid_ui_report* report_array;		
 	struct grid_ui_report* report_ui_array;
+	
 };
 
 

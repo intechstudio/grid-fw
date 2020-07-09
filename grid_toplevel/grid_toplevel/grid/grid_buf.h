@@ -9,6 +9,9 @@
 #define GRID_DOUBLE_BUFFER_TX_SIZE	2000 //600
 #define GRID_DOUBLE_BUFFER_RX_SIZE	2000 //600
 
+
+
+
 struct grid_buffer{
 	
 	uint16_t buffer_length;
@@ -27,18 +30,12 @@ struct grid_buffer{
 };
 
 
-#define GRID_PORT_TYPE_UNDEFINED	0
-#define GRID_PORT_TYPE_USART		1
-#define GRID_PORT_TYPE_USB			2
-#define GRID_PORT_TYPE_UI			3
-#define GRID_PORT_TYPE_TELEMETRY	4
-
 struct grid_port{
 	
 	uint32_t cooldown;
 
 	struct grid_ui_report* ping_report;
-	struct usart_async_descriptor*    usart;	
+	struct usart_async_descriptor*    usart;
 	uint8_t type;     // 0 undefined, 1 usart, 2 usb, 3 ui, 4 telemetry
 	uint8_t direction;
 	
@@ -86,6 +83,26 @@ volatile struct grid_port GRID_PORT_W;
 
 volatile struct grid_port GRID_PORT_U;
 volatile struct grid_port GRID_PORT_H;
+
+
+void grid_port_reset_receiver(struct grid_port* por);
+
+void grid_port_receive_task(struct grid_port* por);
+
+void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint16_t len);
+
+void grid_port_receive_complete_task(struct grid_port* por);
+
+
+
+
+
+#define GRID_PORT_TYPE_UNDEFINED	0
+#define GRID_PORT_TYPE_USART		1
+#define GRID_PORT_TYPE_USB			2
+#define GRID_PORT_TYPE_UI			3
+#define GRID_PORT_TYPE_TELEMETRY	4
+
 
 
 uint8_t grid_port_packet_length(struct grid_buffer* por);
