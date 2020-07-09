@@ -1248,6 +1248,10 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					if (isenabled == 1){
 						grid_sys_bank_enable(&grid_sys_state, banknumber);
 					}else if (isenabled == 0){	
+						
+						if (grid_sys_get_bank(&grid_sys_state) == banknumber){
+							grid_sys_set_bank(&grid_sys_state, 255);
+						}	
 						grid_sys_bank_disable(&grid_sys_state, banknumber);
 					}
 					else{
