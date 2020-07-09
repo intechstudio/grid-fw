@@ -1264,7 +1264,11 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					uint8_t blue	   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_BLUE_offset], GRID_CLASS_BANKCOLOR_BLUE_length, &error_flag);
 					
 					grid_sys_bank_set_color(&grid_sys_state, banknumber, (red<<16) + (green<<8) + (blue<<0) );
-										
+					
+					if (grid_sys_get_bank(&grid_sys_state) == banknumber){
+						grid_sys_set_bank(&grid_sys_state, banknumber);
+					}
+				
 					
 				}
 				else if (msg_class == GRID_CLASS_LEDPHASE_code && msg_instr == GRID_INSTR_REP_code){
