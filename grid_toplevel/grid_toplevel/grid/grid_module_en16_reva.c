@@ -54,22 +54,27 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 
 
-	uint8_t bank = 0;
-	if (grid_sys_state.bank_active == 1){
-		bank = 1;
+	uint8_t bank = grid_sys_get_bank(&grid_sys_state);
+	
+	if (bank == 255){
+		bank=0;
 	}
 
-	uint8_t bank_changed = 0;
-	
-	grid_sys_state.bank_changed;
-	
-	if (grid_sys_state.bank_changed){
-		grid_sys_state.bank_changed = 0;
-		bank_changed = 1;			
+
+	uint8_t bank_changed = grid_sys_state.bank_changed;
 		
+	if (bank_changed){
+		grid_sys_state.bank_changed = 0;
+				
 		for (uint8_t i = 0; i<16; i++)
 		{
-			grid_sys_write_hex_string_value(&mod->report_ui_array[i+16+16].payload[9], 2, mod->report_ui_array[i+16+16].helper[bank]); // LED
+			
+			uint8_t error = 0;
+			
+			uint8_t* message = mod->report_ui_array[i+16+16].payload;
+			uint8_t actuator = mod->report_ui_array[i+16+16].helper[bank];
+			
+			grid_msg_set_parameter(message, GRID_CLASS_LEDPHASE_PHASE_offset  , GRID_CLASS_LEDPHASE_PHASE_length  , actuator, &error);
 			grid_report_ui_set_changed_flag(mod, i+16+16);
 		}
 	}
@@ -219,7 +224,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				uint8_t controlnumber = i;
 				uint8_t value = 0;	
 								
-				uint8_t actuator = value*2;
+				
 					
 				value = mod->report_ui_array[i+16].helper[bank];
 				
@@ -233,7 +238,8 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 					value += delta*velocityfactor;
 				}
 								
-
+				uint8_t actuator = value*2;
+				
 				if (value != mod->report_ui_array[i+16].helper[bank]){
 															
 					uint8_t* message = mod->report_ui_array[i+16].payload;
@@ -246,10 +252,11 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 							
 					mod->report_ui_array[i+16].helper[bank] = value;
 					grid_report_ui_set_changed_flag(mod, i+16);
-					
-						
+			
 					message = mod->report_ui_array[i+16+16].payload;
 					grid_msg_set_parameter(message, GRID_CLASS_LEDPHASE_PHASE_offset  , GRID_CLASS_LEDPHASE_PHASE_length  , actuator, &error);
+					
+					mod->report_ui_array[i+16+16].helper[bank] = actuator;
 					grid_report_ui_set_changed_flag(mod, i+16+16);
 					
 				}
@@ -407,12 +414,8 @@ void grid_module_en16_reva_init(struct grid_ui_model* mod){
 		
 		uint32_t payload_length = strlen(payload_template);
 
-		uint8_t helper_template[2];
-		
-		helper_template[0] = 0;
-		helper_template[1] = 0;
-		
-		uint8_t helper_length = 2;
+		uint8_t helper_template[GRID_SYS_BANK_MAXNUMBER] = {0};
+		uint8_t helper_length = GRID_SYS_BANK_MAXNUMBER;
 
 		grid_report_ui_init(mod, i, type, payload_template, payload_length, helper_template, helper_length);
 		
