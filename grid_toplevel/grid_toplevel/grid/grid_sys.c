@@ -340,8 +340,6 @@ void grid_sys_dma_rx_init(){
 
 void grid_sys_init(struct grid_sys_model* mod){
 	
-	mod->bank_select = 0;
-	
 	
 	mod->bank_color_r[0] = 0;
 	mod->bank_color_g[0] = 100;
@@ -359,6 +357,13 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->bank_color_g[3] = 0;
 	mod->bank_color_b[3] = 200;
 	
+	
+	mod->bank_enabled[0] = 1;
+	mod->bank_enabled[1] = 1;
+	mod->bank_enabled[2] = 1;
+	mod->bank_enabled[3] = 1;
+	
+	
 	grid_sys_set_bank(&grid_sys_state, 255);
 	
 	grid_port_init_all();
@@ -369,11 +374,73 @@ void grid_sys_init(struct grid_sys_model* mod){
 }
 
 
-uint8_t grid_sys_get_bank(struct grid_sys_model* mod){
+uint8_t grid_sys_bank_enable(struct grid_sys_model* mod, uint8_t banknumber){
 	
-	return mod->bank_select;
+	if (banknumber>GRID_SYS_BANK_MAXNUMBER){
+		return false;
+	}
+	
+	mod->bank_enabled[banknumber] = 1;
 }
 
+uint8_t grid_sys_bank_disable(struct grid_sys_model* mod, uint8_t banknumber){
+	
+	if (banknumber>GRID_SYS_BANK_MAXNUMBER){
+		return false;
+	}
+	
+	mod->bank_enabled[banknumber] = 0;
+	
+}
+
+uint8_t grid_sys_bank_set_color(struct grid_sys_model* mod, uint8_t banknumber, uint32_t rgb){
+	
+	if (banknumber>GRID_SYS_BANK_MAXNUMBER){
+		return false;
+	}
+	
+	// 0x00RRGGBB
+	
+	mod->bank_color_r[banknumber] = ((rgb&0x00FF0000)>>16);
+	mod->bank_color_g[banknumber] = ((rgb&0x0000FF00)>>8);
+	mod->bank_color_b[banknumber] = ((rgb&0x000000FF)>>0);
+	
+}
+
+uint32_t grid_sys_bank_get_color(struct grid_sys_model* mod, uint8_t banknumber){
+	
+	if (banknumber>GRID_SYS_BANK_MAXNUMBER){
+		return false;
+	}
+	
+		
+}
+
+
+uint8_t grid_sys_get_bank(struct grid_sys_model* mod){
+	
+	return mod->bank_active;
+}
+
+
+uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod){
+		
+	uint8_t current_active = grid_sys_get_bank(mod);
+		
+	for (uint8_t i=0; i<GRID_SYS_BANK_MAXNUMBER; i++){
+		
+		uint8_t bank_check = (current_active+i+1)%GRID_SYS_BANK_MAXNUMBER;
+		
+		if (mod->bank_enabled[bank_check] == 1){
+			
+			return bank_check;
+		}
+		
+	}
+	
+	return current_active;
+	
+}
 
 
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
@@ -384,7 +451,7 @@ void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 	
 	if (banknumber == 255){
 			
-		mod->bank_select = 255;
+		mod->bank_active = 255;
 		
 		for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
 			
@@ -417,39 +484,40 @@ void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 	}
 	else{
 		
-		mod->bank_select = banknumber%4;
+		if (mod->bank_enabled[banknumber%GRID_SYS_BANK_MAXNUMBER] == 1){
+			
+			mod->bank_active = banknumber%GRID_SYS_BANK_MAXNUMBER;
 
-		
-		for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
-			
-			uint8_t r = mod->bank_color_r[mod->bank_select];
-			uint8_t g = mod->bank_color_g[mod->bank_select];
-			uint8_t b = mod->bank_color_b[mod->bank_select];
 					
-			//Rotation				
-			grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/32, g/32, b/32);
-			grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/2, g/2, b/2);
-			grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_A, r, g, b);
+			for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
+						
+				uint8_t r = mod->bank_color_r[mod->bank_active];
+				uint8_t g = mod->bank_color_g[mod->bank_active];
+				uint8_t b = mod->bank_color_b[mod->bank_active];
+						
+				//Rotation
+				grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/32, g/32, b/32);
+				grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_A, r/2, g/2, b/2);
+				grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_A, r, g, b);
+						
+				// Button
+				grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_B, 0, 0, 0);
+				grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_B, r/2, g/2, b/2);
+				grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_B, r, g, b);
+						
+						
+						
+			}
 			
-			// Button
-			grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_UI_B, 0, 0, 0);
-			grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_UI_B, r/2, g/2, b/2);
-			grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_UI_B, r, g, b);
-			
-			
-			
-		}	
+		}
+		
+
 		
 	}
 
 	
 }
 
-void grid_sys_bank_select_next(struct grid_sys_model* mod){
-	
-	grid_sys_set_bank(mod, (mod->bank_select+1)%4);
-
-}
 
 
 // REALTIME

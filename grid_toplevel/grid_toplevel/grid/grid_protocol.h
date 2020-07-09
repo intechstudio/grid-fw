@@ -159,11 +159,33 @@
 
 
 
-//#define GRID_CLASS_BANKENABLED_code		0x031
-//#define GRID_CLASS_BANKENABLED_format		"%c%03x%01x%02x%02x%c",GRID_CONST_STX,GRID_CLASS_BANKACTIVE_code,instruction,banknumber,isenabled,GRID_CONST_ETX	
+#define GRID_CLASS_BANKENABLED_code			0x031
+#define GRID_CLASS_BANKENABLED_format		"%c%03x%01x%02x%02x%c",GRID_CONST_STX,GRID_CLASS_BANKACTIVE_code,instruction,banknumber,isenabled,GRID_CONST_ETX	
+#define GRID_CLASS_BANKENABLED_frame		"%c%03x_....%c",GRID_CONST_STX,GRID_CLASS_BANKACTIVE_code,GRID_CONST_ETX	
 
-//#define GRID_CLASS_BANKCOLOR_code			0x032
-//#define GRID_CLASS_BANKCOLOR_format		"%c%03x%01x%02x%02x%02x%02x%c",GRID_CONST_STX,GRID_CLASS_BANKACTIVE_code,instruction,banknumber,red,green,blue,GRID_CONST_ETX
+#define GRID_CLASS_BANKENABLED_BANKNUMBER_offset		5
+#define GRID_CLASS_BANKENABLED_BANKNUMBER_length		2
+
+#define GRID_CLASS_BANKENABLED_ISENABLED_offset			7
+#define GRID_CLASS_BANKENABLED_ISENABLED_length			2
+
+#define GRID_CLASS_BANKCOLOR_code			0x032
+#define GRID_CLASS_BANKCOLOR_format			"%c%03x%01x%02x%02x%02x%02x%c",GRID_CONST_STX,GRID_CLASS_BANKACTIVE_code,instruction,banknumber,red,green,blue,GRID_CONST_ETX
+#define GRID_CLASS_BANKCOLOR_format			"%c%03x_........%c",GRID_CONST_STX,GRID_CLASS_BANKACTIVE_code,GRID_CONST_ETX
+
+#define GRID_CLASS_BANKCOLOR_BANKNUMBER_offset			5
+#define GRID_CLASS_BANKCOLOR_BANKNUMBER_length			2
+
+#define GRID_CLASS_BANKCOLOR_RED_offset					7
+#define GRID_CLASS_BANKCOLOR_RED_length					2
+
+#define GRID_CLASS_BANKCOLOR_GREEN_offset				9
+#define GRID_CLASS_BANKCOLOR_GREEN_length				2
+
+#define GRID_CLASS_BANKCOLOR_BLUE_offset				11
+#define GRID_CLASS_BANKCOLOR_BLUE_length				2
+
+
 
 #define GRID_CLASS_LEDPHASE_code			0x040
 #define GRID_CLASS_LEDPHASE_format			"%c%03x%01x%02x%02x%02x%c",GRID_CONST_STX,GRID_CLASS_LEDPHASE_code,instruction,layernumber,lednumber,phase,GRID_CONST_ETX

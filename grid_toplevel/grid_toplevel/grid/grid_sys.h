@@ -75,6 +75,8 @@ uint32_t grid_sys_unittest(void);
 #define GRID_SYS_RECENT_MESSAGES_LENGTH			32
 #define GRID_SYS_RECENT_MESSAGES_INDEX_T		uint8_t
 
+#define GRID_SYS_BANK_MAXNUMBER					4
+
 struct grid_sys_model 
 {
 	
@@ -91,12 +93,14 @@ struct grid_sys_model
 	uint8_t alert_color_changed;
 	
 	
-	uint8_t bank_select;
+	uint8_t bank_active;
 	uint8_t bank_changed;
 	
-	uint8_t bank_color_r[4];
-	uint8_t bank_color_g[4];
-	uint8_t bank_color_b[4];
+	uint8_t bank_enabled[GRID_SYS_BANK_MAXNUMBER];
+	
+	uint8_t bank_color_r[GRID_SYS_BANK_MAXNUMBER];
+	uint8_t bank_color_g[GRID_SYS_BANK_MAXNUMBER];
+	uint8_t bank_color_b[GRID_SYS_BANK_MAXNUMBER];
 	
 		
 	
@@ -133,7 +137,18 @@ void grid_sys_rtc_tick_time(struct grid_sys_model* mod);
 uint32_t grid_sys_get_hwcfg();
 
 
+
+uint8_t grid_sys_bank_enable(struct grid_sys_model* mod, uint8_t banknumber);
+uint8_t grid_sys_bank_disable(struct grid_sys_model* mod, uint8_t banknumber);
+
+uint8_t grid_sys_bank_set_color(struct grid_sys_model* mod, uint8_t banknumber, uint32_t rgb);
+uint32_t grid_sys_bank_get_color(struct grid_sys_model* mod, uint8_t banknumber);
+
+
+
 uint8_t grid_sys_get_bank(struct grid_sys_model* mod);
+uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod);
+
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t value);
 
 //====================== SYS ALERT ==========================//

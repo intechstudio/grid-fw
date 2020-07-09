@@ -55,7 +55,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 
 
 	uint8_t bank = 0;
-	if (grid_sys_state.bank_select == 1){
+	if (grid_sys_state.bank_active == 1){
 		bank = 1;
 	}
 

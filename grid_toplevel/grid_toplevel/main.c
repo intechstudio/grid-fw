@@ -75,8 +75,8 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 				
 			mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0] = 0;
 				
-			uint8_t current_bank = grid_sys_get_bank(&grid_sys_state);
-			uint8_t new_bank = (current_bank + 1)%2;
+			uint8_t new_bank = grid_sys_get_bank_next(&grid_sys_state);
+			
 						
 			grid_report_sys_set_payload_parameter(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, new_bank);
 		
@@ -228,7 +228,7 @@ int main(void)
 				grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN		
 				GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Connected");
 				
-				uint8_t new_bank = 0;
+				uint8_t new_bank = grid_sys_get_bank_next(&grid_sys_state);
 				
 				grid_report_sys_set_payload_parameter(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, new_bank);
 	
