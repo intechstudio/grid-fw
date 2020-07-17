@@ -36,16 +36,16 @@ static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 	switch (pingflag%4)
 	{
 		case 0:
-			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_NORTH);
+			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_NORTH);
 			break;
 		case 1:
-			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_EAST);
+			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_EAST);
 			break;
 		case 2:
-			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_SOUTH);
+			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_SOUTH);
 			break;
 		case 3:
-			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_WEST);
+			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_WEST);
 			break;
 	}
 	
@@ -57,7 +57,7 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 	grid_task_timer_tick(&grid_task_state);
 	
 		// HANDLE MAPMODE CHANGES
-	struct grid_ui_model* mod = &grid_ui_state;
+	struct grid_report_model* mod = &grid_report_state;
 		
 	//CRITICAL_SECTION_ENTER()
 
@@ -78,9 +78,9 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 			uint8_t new_bank = grid_sys_get_bank_next(&grid_sys_state);
 			
 						
-			grid_report_sys_set_payload_parameter(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, new_bank);
+			grid_report_sys_set_payload_parameter(&grid_report_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, new_bank);
 		
-			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
+			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_MAPMODE);
 			
 			
 
@@ -97,7 +97,10 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 static void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 {
 
-	grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_HEARTBEAT);
+	uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT);
+	grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
+
+	//grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_HEARTBEAT);
 }
 
 volatile uint8_t scheduler_report_flag = 0;
@@ -207,7 +210,7 @@ int main(void)
 				
 			}
 			else{		
-				
+						
 
 				FLASH_0_init();
 					
@@ -250,9 +253,9 @@ int main(void)
 				
 				uint8_t new_bank = grid_sys_get_bank_next(&grid_sys_state);
 				
-				grid_report_sys_set_payload_parameter(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, new_bank);
+				grid_report_sys_set_payload_parameter(&grid_report_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, new_bank);
 	
-				grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
+				grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_MAPMODE);
 				
 				usb_init_variable = 1;
 				
@@ -266,7 +269,7 @@ int main(void)
 		
  		if (grid_sys_get_bank(&grid_sys_state) == 255){
  										
- 			grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_CFG_REQUEST);
+ 			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_CFG_REQUEST);
  		}
 	
 		
@@ -369,6 +372,7 @@ int main(void)
 	
 		/* ========================= GRID REPORT TASK ============================= */
 		grid_task_enter_task(&grid_task_state, GRID_TASK_REPORT);
+
 
 		grid_port_process_ui(&GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
 

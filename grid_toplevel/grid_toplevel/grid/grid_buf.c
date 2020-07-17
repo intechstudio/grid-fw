@@ -367,7 +367,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 					uint8_t* local_stored_location = NULL;
 					uint8_t* remote_stored_location = NULL;
 					
-					struct grid_ui_model* mod = &grid_ui_state;
+					struct grid_report_model* mod = &grid_report_state;
 					
 					struct grid_ui_report* stored_report = por->ping_report;
 					
@@ -383,13 +383,13 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 					if (por->partner_status == 0){
 						
 						if (por->direction == GRID_CONST_NORTH){
-							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_NORTH);
+							grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_NORTH);
 							}else if (por->direction == GRID_CONST_EAST){
-							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_EAST);
+							grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_EAST);
 							}else if (por->direction == GRID_CONST_SOUTH){
-							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_SOUTH);
+							grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_SOUTH);
 							}else if (por->direction == GRID_CONST_WEST){
-							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_PING_WEST);
+							grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_WEST);
 						}
 						
 						
@@ -925,7 +925,7 @@ void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16
 
 void grid_port_init_all(void){
 	
-	struct grid_ui_model* mod = &grid_ui_state;
+	struct grid_report_model* mod = &grid_report_state;
 	
 	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_CONST_NORTH ,0, &mod->report_array[GRID_REPORT_INDEX_PING_NORTH]);
 	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_CONST_EAST  ,1, &mod->report_array[GRID_REPORT_INDEX_PING_EAST]);
@@ -1220,20 +1220,23 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					if (msg_instr == GRID_INSTR_REP_code){ //SET BANK
 									
 						if (grid_sys_get_bank(&grid_sys_state) == 255){
-							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_HEARTBEAT);
+							
+							uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT);
+							grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
+
 						}
 																		
 						grid_sys_set_bank(&grid_sys_state, banknumber);
-						grid_report_sys_set_payload_parameter(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, banknumber);
+						grid_report_sys_set_payload_parameter(&grid_report_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, banknumber);
 												
-						grid_report_sys_clear_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_CFG_REQUEST);
+						grid_report_sys_clear_changed_flag(&grid_report_state, GRID_REPORT_INDEX_CFG_REQUEST);
 													
 					}
 					else if (msg_instr == GRID_INSTR_REQ_code){ //GET BANK
 						
 						if (grid_sys_get_bank(&grid_sys_state) != 255){
 									
-							grid_report_sys_set_changed_flag(&grid_ui_state, GRID_REPORT_INDEX_MAPMODE);
+							grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_MAPMODE);
 						}						
 						
 					}

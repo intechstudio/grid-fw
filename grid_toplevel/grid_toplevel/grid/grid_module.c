@@ -129,6 +129,28 @@ uint8_t grid_adc_get_config(uint8_t register_offset, uint8_t bit_offest){
 void grid_module_common_init(void){
 				
 
+	grid_ui_model_init(&grid_core_state, 1);
+	grid_ui_element_init(&grid_core_state.element[0], GRID_UI_ELEMENT_SYSTEM);
+	
+	uint8_t payload_template[100] = {0};
+	uint8_t payload_length = 0;
+
+	struct grid_ui_action_parameter parameter_list[3];
+	uint8_t parameter_list_length = 0;
+	
+	sprintf(payload_template, GRID_CLASS_HEARTBEAT_frame);
+	uint8_t error = 0;
+	grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
+	
+	grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(), &error);
+	grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length , GRID_PROTOCOL_VERSION_MAJOR, &error);
+	grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length  , GRID_PROTOCOL_VERSION_MINOR, &error);
+	grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length  , GRID_PROTOCOL_VERSION_PATCH, &error);
+	
+	payload_length = strlen(payload_template);
+	
+	grid_ui_event_register_action(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT, payload_template, payload_length, parameter_list, parameter_list_length);
+	
 	
 	
 	//enable pwr!
@@ -140,20 +162,20 @@ void grid_module_common_init(void){
 	
 	if (grid_sys_get_hwcfg() == GRID_MODULE_PO16_RevB || grid_sys_get_hwcfg() == GRID_MODULE_PO16_RevC){	
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: PO16");				
-		grid_module_po16_revb_init(&grid_ui_state);	
+		grid_module_po16_revb_init(&grid_report_state);	
 	}	
 	else if (grid_sys_get_hwcfg() == GRID_MODULE_BU16_RevB || grid_sys_get_hwcfg() == GRID_MODULE_BU16_RevC ){
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: BU16");
-		grid_module_bu16_revb_init(&grid_ui_state);
+		grid_module_bu16_revb_init(&grid_report_state);
 	
 	}	
 	else if (grid_sys_get_hwcfg() == GRID_MODULE_PBF4_RevA){
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: PBF4");					
-		grid_module_pbf4_reva_init(&grid_ui_state);			
+		grid_module_pbf4_reva_init(&grid_report_state);			
 	}
 	else if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevA){
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: EN16");
-		grid_module_en16_reva_init(&grid_ui_state);
+		grid_module_en16_reva_init(&grid_report_state);
 		//grid_module_bu16_revb_init(&grid_ui_state);		
 	}	
 	else{

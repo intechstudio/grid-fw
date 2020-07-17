@@ -2,22 +2,19 @@
 
 
 
-struct grid_ui_encoder grid_ui_encoder_array[16];
 
-uint8_t UI_SPI_TX_BUFFER[14] = "aaaaaaaaaaaaaa";
-uint8_t UI_SPI_RX_BUFFER[14];
+
+uint8_t UI_SPI_TX_BUFFER[14] = {0};
+uint8_t UI_SPI_RX_BUFFER[14] = {0};
 uint8_t UI_SPI_TRANSFER_LENGTH = 10;
 
 volatile uint8_t UI_SPI_DONE = 0;
 
 
-volatile uint8_t UI_SPI_RX_BUFFER_LAST[16];
+uint8_t helper[GRID_SYS_BANK_MAXNUMBER][16] = {0};
 
-uint8_t UI_ENCODER_BUTTON_STATE[16];
-uint8_t UI_ENCODER_BUTTON_STATE_CHANGED[16];
+volatile uint8_t UI_SPI_RX_BUFFER_LAST[16] = {0};
 
-uint8_t UI_ENCODER_ROTATION_STATE[16];
-uint8_t UI_ENCODER_ROTATION_STATE_CHANGED[16];
 
 
 uint8_t UI_ENCODER_LOOKUP[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1} ;
@@ -47,8 +44,6 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 
 	/* Transfer completed */
 
-	struct grid_ui_model* mod = &grid_ui_state;
-	
 	
 	// Set the shift registers to continuously load data until new transaction is issued
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
@@ -69,13 +64,34 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 		for (uint8_t i = 0; i<16; i++)
 		{
 			
-			uint8_t error = 0;
+// 			uint8_t error = 0;
+// 			
+// 			uint8_t* message = mod->report_ui_array[i+16+16].payload;
+// 			uint8_t actuator = mod->report_ui_array[i+16+16].helper[bank];
+// 			
+// 			grid_msg_set_parameter(message, GRID_CLASS_LEDPHASE_PHASE_offset  , GRID_CLASS_LEDPHASE_PHASE_length  , actuator, &error);
+// 			grid_report_ui_set_changed_flag(mod, i+16+16);
+
+
+			uint8_t value = helper[bank][i];
+			uint8_t res_index = i;
+			uint32_t* template_parameter_list = grid_ui_state.element[res_index].template_parameter_list;
+			uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
 			
-			uint8_t* message = mod->report_ui_array[i+16+16].payload;
-			uint8_t actuator = mod->report_ui_array[i+16+16].helper[bank];
+			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER] = res_index;
+			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
+
+			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV7] = value;
+			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV8] = value*2;
+			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14U] = 0;
+			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14L] = 0;
 			
-			grid_msg_set_parameter(message, GRID_CLASS_LEDPHASE_PHASE_offset  , GRID_CLASS_LEDPHASE_PHASE_length  , actuator, &error);
-			grid_report_ui_set_changed_flag(mod, i+16+16);
+			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_AVC7);
+
+			grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
+			
+			grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
+			
 		}
 	}
 
@@ -105,52 +121,54 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				grid_ui_encoder_array[i].button_changed = 1;
 				grid_ui_encoder_array[i].button_value = new_value>>2;
 				
-				
-				//CRITICAL_SECTION_ENTER()
-					
-				uint8_t command;
-				uint8_t note;
-				uint8_t velocity;
-				
-				if (grid_ui_encoder_array[i].button_value == 0){
-					
-					command = GRID_PARAMETER_MIDI_NOTEON;
-					note = i;
-					velocity = 127;
-				}
-				else{
-					
-					command = GRID_PARAMETER_MIDI_NOTEOFF;
-					note = i;
-					velocity = 0;
-				}
-				
-				uint8_t actuator = 2*velocity;
-				
-				
-				uint8_t* message = mod->report_ui_array[i].payload;
-				uint8_t error = 0;
 
+				uint8_t res_index = i;
+				uint32_t* template_parameter_list = grid_ui_state.element[res_index].template_parameter_list;						
+				uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
+					
+				if (grid_ui_encoder_array[i].button_value == 0){ // Button Press Event
+				
+					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER] = res_index;
+					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
+				
+					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_DV7] = 127;
+					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_DV8] = 255;
+				
+					uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_DP);
+
+					
+				
+					grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
+					grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
 		
-				grid_msg_set_parameter(message, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length, 0, &error);
-				grid_msg_set_parameter(message, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset , GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length , command, &error);
-				grid_msg_set_parameter(message, GRID_CLASS_MIDIRELATIVE_PARAM1_offset  , GRID_CLASS_MIDIRELATIVE_PARAM1_length  , note, &error);
-				grid_msg_set_parameter(message, GRID_CLASS_MIDIRELATIVE_PARAM2_offset  , GRID_CLASS_MIDIRELATIVE_PARAM2_length  , velocity, &error);
-						
+					
+					
+					
 				
-				//grid_sys_write_hex_string_value(&mod->report_ui_array[i].payload[21], 2, actuator);
-				mod->report_ui_array[i].helper[0] = velocity;
+				}
+				else{  // Button Release Event
 				
-				grid_report_ui_set_changed_flag(mod, i);
+ 					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER] = res_index;
+ 					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
+ 
+ 					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_DV7] = 0;
+ 					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_DV8] = 0;
+
 				
-				mod->report_ui_array[i+16+16+16].helper[0] = actuator;
+ 					uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_DR);
+					  				
+ 				
 				
-				message = mod->report_ui_array[i+16+16+16].payload;
-				grid_msg_set_parameter(message, GRID_CLASS_LEDPHASE_PHASE_offset  , GRID_CLASS_LEDPHASE_PHASE_length  , actuator, &error);
-				grid_report_ui_set_changed_flag(mod, i+16+16+16);			
+					grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
+					grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
+			
+					
+
+				}
+			
+			
+
 				
-				
-				//CRITICAL_SECTION_LEAVE()
 				
 				
 			}
@@ -226,7 +244,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 								
 				
 					
-				value = mod->report_ui_array[i+16].helper[bank];
+				value = helper[bank][i];
 				
 				if (value + delta*velocityfactor < 0){
 					value = 0;
@@ -240,59 +258,30 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 								
 				uint8_t actuator = value*2;
 				
-				if (value != mod->report_ui_array[i+16].helper[bank]){
+				if (value != helper[bank][i]){
+						
+					helper[bank][i] = value;
+					uint8_t res_index = i;
+					uint32_t* template_parameter_list = grid_ui_state.element[res_index].template_parameter_list;
+					uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};				
 															
-					uint8_t* message = mod->report_ui_array[i+16].payload;
-					uint8_t error = 0;
-				
-					grid_msg_set_parameter(message, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length, 0, &error);
-					grid_msg_set_parameter(message, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset , GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length , command, &error);
-					grid_msg_set_parameter(message, GRID_CLASS_MIDIRELATIVE_PARAM1_offset  , GRID_CLASS_MIDIRELATIVE_PARAM1_length  , controlnumber, &error);
-					grid_msg_set_parameter(message, GRID_CLASS_MIDIRELATIVE_PARAM2_offset  , GRID_CLASS_MIDIRELATIVE_PARAM2_length  , value, &error);
-							
-					mod->report_ui_array[i+16].helper[bank] = value;
-					grid_report_ui_set_changed_flag(mod, i+16);
-			
-					message = mod->report_ui_array[i+16+16].payload;
-					grid_msg_set_parameter(message, GRID_CLASS_LEDPHASE_PHASE_offset  , GRID_CLASS_LEDPHASE_PHASE_length  , actuator, &error);
+					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER] = res_index;
+					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
+
+					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV7] = value;
+					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV8] = value*2;
+					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14U] = 0;
+					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14L] = 0;
 					
-					mod->report_ui_array[i+16+16].helper[bank] = actuator;
-					grid_report_ui_set_changed_flag(mod, i+16+16);
+					uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_AVC7);
+
+					grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
+					
+					grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
+					
 					
 				}
 				
-			}			
-			else if (0){ //DELTA==0
-
-				// old relative encoder output
-				if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_ui_encoder_array[i].last_real_time)>200){
-					if (grid_ui_encoder_array[i].rotation_value > 64){
-
-						grid_ui_encoder_array[i].rotation_value--;
-						uint8_t v = 2 * grid_ui_encoder_array[i].rotation_value;
-
-						grid_sys_write_hex_string_value(&mod->report_ui_array[i+16+16].payload[9], 2, v); // LED
-						mod->report_ui_array[i+16+16].helper[0] = v;
-						grid_report_ui_set_changed_flag(mod, i+16+16);
-
-					}
-					if (grid_ui_encoder_array[i].rotation_value < 64){
-
-						grid_ui_encoder_array[i].rotation_value++;
-						uint8_t v = 2 * grid_ui_encoder_array[i].rotation_value;
-
-						grid_sys_write_hex_string_value(&mod->report_ui_array[i+16+16].payload[9], 2, v); // LED
-						mod->report_ui_array[i+16+16].helper[0] = v;
-						grid_report_ui_set_changed_flag(mod, i+16+16);
-
-					}
-				
-				
-					grid_ui_encoder_array[i].last_real_time = grid_sys_rtc_get_time(&grid_sys_state);
-				}
-				
-						
-						
 			}
 
 				
@@ -327,107 +316,152 @@ void grid_module_en16_reva_hardware_init(void){
 
 }
 
-void grid_module_en16_reva_init(struct grid_ui_model* mod){
+void grid_module_en16_reva_init(struct grid_report_model* mod){
 	
 	
 	grid_led_init(&grid_led_state, 16);
+	grid_report_model_init(mod, 0);
 	
-	grid_ui_model_init(mod, 16+16+16+16);
+	grid_ui_model_init(&grid_ui_state, 16);	
 	
 	
+	for(uint8_t i=0; i<16; i++){
 	
-	// 0 is for mapmode_button
-	// 1...16 is for ui_buttons
-	for(uint8_t i=0; i<16+16+16+16; i++){
+		grid_ui_element_init(&grid_ui_state.element[i], GRID_UI_ELEMENT_ENCODER);
 		
-		uint8_t payload_template[30] = {0};
-		enum grid_report_type_t type;
-		
+		if (1){ // REGISTER BUTTON ACTION
 
-		if (i<16){ // ROTATION
+			uint8_t payload_template[100] = {0};
+			uint8_t payload_length = 0;
 
+			sprintf(payload_template, GRID_CLASS_MIDIRELATIVE_frame);
+
+			uint8_t error = 0;
+
+			grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
+
+			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length, 0, &error);
+			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset , GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length , GRID_PARAMETER_MIDI_NOTEON, &error);
+
+			payload_length = strlen(payload_template);
+
+			uint8_t payload_length0 = payload_length;
+
+
+			sprintf(&payload_template[payload_length], GRID_CLASS_LEDPHASE_frame);
+
+			grid_msg_set_parameter(&payload_template[payload_length], GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
+
+			grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_LEDPHASE_LAYERNUMBER_offset, GRID_CLASS_LEDPHASE_LAYERNUMBER_length, GRID_LED_LAYER_UI_B, &error);
+
+
+			payload_length += strlen(&payload_template[payload_length]);
+
+			uint8_t parameter_list_length = 4;
+			struct grid_ui_action_parameter parameter_list[4];
+
+			// MIDI NOTE NUMBER
+			parameter_list[0].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER;
+			parameter_list[0].offset  = GRID_CLASS_MIDIRELATIVE_PARAM1_offset;
+			parameter_list[0].length  = GRID_CLASS_MIDIRELATIVE_PARAM1_length;
+
+			// MIDI NOTE VELOCITY
+			parameter_list[1].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_DV7;
+			parameter_list[1].offset  = GRID_CLASS_MIDIRELATIVE_PARAM2_offset;
+			parameter_list[1].length  = GRID_CLASS_MIDIRELATIVE_PARAM2_length;
+
+			// LED NUMBER
+			parameter_list[2].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER;
+			parameter_list[2].offset  = payload_length0 + GRID_CLASS_LEDPHASE_LEDNUMBER_offset;
+			parameter_list[2].length  = GRID_CLASS_LEDPHASE_LEDNUMBER_length;
+
+			// LED PHASE VALUE
+			parameter_list[3].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_DV8;
+			parameter_list[3].offset  = payload_length0 + GRID_CLASS_LEDPHASE_PHASE_offset;
+			parameter_list[3].length  = GRID_CLASS_LEDPHASE_PHASE_length;
+
+
+			// Register Digital Press Action
+			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DP, payload_template, payload_length, parameter_list, parameter_list_length);
+
+			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset , GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length , GRID_PARAMETER_MIDI_NOTEOFF, &error);
+
+			// Register Digital Release Action
+			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DR, payload_template, payload_length, parameter_list, parameter_list_length);
 			
-			type = GRID_REPORT_TYPE_BROADCAST;
+			
+		}
+						
+		if (1){ // Register rotation action
+			
+			uint8_t payload_template[100] = {0};
+			uint8_t payload_length = 0;			
 			
 			sprintf(payload_template, GRID_CLASS_MIDIRELATIVE_frame);
-			
 			uint8_t error = 0;
-			
+
 			grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
-			
+
 			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length, 0, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset , GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length , 0, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_PARAM1_offset  , GRID_CLASS_MIDIRELATIVE_PARAM1_length  , 0, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_PARAM2_offset  , GRID_CLASS_MIDIRELATIVE_PARAM2_length  , 0, &error);
-				
+			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset , GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length , GRID_PARAMETER_MIDI_CONTROLCHANGE, &error);
+
+			payload_length = strlen(payload_template);
+
+			uint8_t payload_length0 = payload_length;
+
+
+			sprintf(&payload_template[payload_length], GRID_CLASS_LEDPHASE_frame);
+
+			grid_msg_set_parameter(&payload_template[payload_length], GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
+
+			grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_LEDPHASE_LAYERNUMBER_offset, GRID_CLASS_LEDPHASE_LAYERNUMBER_length, GRID_LED_LAYER_UI_A, &error);
+
+
+			payload_length += strlen(&payload_template[payload_length]);
+
+
+			uint8_t parameter_list_length = 4;
+			struct grid_ui_action_parameter parameter_list[4];
+
+			// MIDI NOTE NUMBER
+			parameter_list[0].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER;
+			parameter_list[0].offset  = GRID_CLASS_MIDIRELATIVE_PARAM1_offset;
+			parameter_list[0].length  = GRID_CLASS_MIDIRELATIVE_PARAM1_length;
+
+			// MIDI NOTE VELOCITY
+			parameter_list[1].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_AV7;
+			parameter_list[1].offset  = GRID_CLASS_MIDIRELATIVE_PARAM2_offset;
+			parameter_list[1].length  = GRID_CLASS_MIDIRELATIVE_PARAM2_length;
+
+			// LED NUMBER
+			parameter_list[2].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER;
+			parameter_list[2].offset  = payload_length0 + GRID_CLASS_LEDPHASE_LEDNUMBER_offset;
+			parameter_list[2].length  = GRID_CLASS_LEDPHASE_LEDNUMBER_length;
+
+			// LED PHASE VALUE
+			parameter_list[3].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_AV8;
+			parameter_list[3].offset  = payload_length0 + GRID_CLASS_LEDPHASE_PHASE_offset;
+			parameter_list[3].length  = GRID_CLASS_LEDPHASE_PHASE_length;
+
+
+			// Register Absolute Value Change
+			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_AVC7, payload_template, payload_length, parameter_list, parameter_list_length);
+	
+			
 			
 		}		
-		else if (i<16+16){ // BUTTON
-
-			
-			type = GRID_REPORT_TYPE_BROADCAST;
-			
-			sprintf(payload_template, GRID_CLASS_MIDIRELATIVE_frame);
-			
-			uint8_t error = 0;
-			
-			grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
-			
-			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length, 0, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset , GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length , 0, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_PARAM1_offset  , GRID_CLASS_MIDIRELATIVE_PARAM1_length  , 0, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_PARAM2_offset  , GRID_CLASS_MIDIRELATIVE_PARAM2_length  , 0, &error);
-				
-		
-		}
-		else if(i<16+16+16){ // LED (Rotation)
-			type = GRID_REPORT_TYPE_LOCAL;
-					
-			sprintf(payload_template, GRID_CLASS_LEDPHASE_frame);
-			
-			uint8_t error = 0;
-			
-			grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
-			
-			grid_msg_set_parameter(payload_template, GRID_CLASS_LEDPHASE_LAYERNUMBER_offset, GRID_CLASS_LEDPHASE_LAYERNUMBER_length, GRID_LED_LAYER_UI_A, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_LEDPHASE_LEDNUMBER_offset , GRID_CLASS_LEDPHASE_LEDNUMBER_length , i-16-16, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_LEDPHASE_PHASE_offset  , GRID_CLASS_LEDPHASE_PHASE_length  , 0, &error);
-					
-		
-		}
-		else{ // LED (Button)
-			type = GRID_REPORT_TYPE_LOCAL;
-	
-	
-			sprintf(payload_template, GRID_CLASS_LEDPHASE_frame);
-			
-			uint8_t error = 0;
-			
-			grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
-			
-			grid_msg_set_parameter(payload_template, GRID_CLASS_LEDPHASE_LAYERNUMBER_offset, GRID_CLASS_LEDPHASE_LAYERNUMBER_length, GRID_LED_LAYER_UI_B, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_LEDPHASE_LEDNUMBER_offset , GRID_CLASS_LEDPHASE_LEDNUMBER_length , i-16-16-16, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_LEDPHASE_PHASE_offset  , GRID_CLASS_LEDPHASE_PHASE_length  , 0, &error);
-	
-		}
-
-		
-		uint32_t payload_length = strlen(payload_template);
-
-		uint8_t helper_template[GRID_SYS_BANK_MAXNUMBER] = {0};
-		uint8_t helper_length = GRID_SYS_BANK_MAXNUMBER;
-
-		grid_report_ui_init(mod, i, type, payload_template, payload_length, helper_template, helper_length);
-		
+						
 	}
 	
 	grid_report_sys_init(mod);
 
+
+	// initialize local encoder helper struct
 	for (uint8_t i = 0; i<16; i++)
 	{
 		grid_ui_encoder_array[i].controller_number = i;
 		
-		grid_ui_encoder_array[i].button_value = 0;
+		grid_ui_encoder_array[i].button_value = 1;
 		grid_ui_encoder_array[i].button_changed = 0; 
 		grid_ui_encoder_array[i].rotation_value = 0;
 		grid_ui_encoder_array[i].rotation_changed = 1;

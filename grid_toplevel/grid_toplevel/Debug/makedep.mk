@@ -44,6 +44,8 @@ grid\grid_sys.c
 
 grid\grid_ui.c
 
+grid\grid_usb.c
+
 hal\src\hal_adc_async.c
 
 hal\src\hal_atomic.c

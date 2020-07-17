@@ -31,7 +31,6 @@ struct grid_ui_encoder{
 
 struct grid_ui_encoder grid_ui_encoder_array[16];
 
-
 uint8_t UI_SPI_TX_BUFFER[14];
 uint8_t UI_SPI_RX_BUFFER[14];
 uint8_t UI_SPI_TRANSFER_LENGTH;
@@ -42,12 +41,6 @@ volatile uint8_t UI_SPI_DONE;
 
 
 volatile uint8_t UI_SPI_RX_BUFFER_LAST[16];
-
-uint8_t UI_ENCODER_BUTTON_STATE[16];
-uint8_t UI_ENCODER_BUTTON_STATE_CHANGED[16];
-
-uint8_t UI_ENCODER_ROTATION_STATE[16];
-uint8_t UI_ENCODER_ROTATION_STATE_CHANGED[16];
 
 
 uint8_t UI_ENCODER_LOOKUP[16];
@@ -64,7 +57,7 @@ void grid_module_en16_reva_hardware_start_transfer(void);
 void grid_module_en16_reva_hardware_transfer_complete_cb(void);
 void grid_module_en16_reva_hardware_init(void);
 
-void grid_module_en16_reva_init(struct grid_ui_model* mod);
+void grid_module_en16_reva_init(struct grid_report_model* mod);
 
 
 
