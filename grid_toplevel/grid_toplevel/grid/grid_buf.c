@@ -1128,8 +1128,13 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					uint8_t midi_command = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset , GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length,  &error);
 					uint8_t midi_param1  = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_PARAM1_offset  , GRID_CLASS_MIDIRELATIVE_PARAM1_length,   &error);
 					uint8_t midi_param2  = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_PARAM2_offset  , GRID_CLASS_MIDIRELATIVE_PARAM2_length,   &error);
-											
-					midi_channel = ((256-dy*2)%8+grid_sys_state.bank_active*8)%16;
+						
+					// Relative midi translation magic
+				//	midi_channel = ((256-dy*2)%8+grid_sys_state.bank_active*8)%16;		  2bank			
+						
+					midi_channel = ((256-dy*1)%4+grid_sys_state.bank_active*4)%16;
+					
+					
 					midi_param1  = (256-32+midi_param1 + 16*dx)%96; // 96-128 reserved
 												
 					audiodf_midi_write(midi_command>>4, midi_command|midi_channel, midi_param1, midi_param2);	

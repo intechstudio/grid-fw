@@ -183,6 +183,11 @@ struct grid_ui_model
 void grid_ui_event_register_action(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length, struct grid_ui_action_parameter* parameter_list, uint8_t parameter_list_length);
 
 
+void grid_ui_event_register_action_smart(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length);
+
+
+
+
 uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
 
 void grid_ui_event_trigger(struct grid_ui_event* eve);

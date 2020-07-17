@@ -140,58 +140,14 @@ void grid_module_po16_revb_init(struct grid_report_model* mod){
 			
 		grid_ui_element_init(&grid_ui_state.element[i], GRID_UI_ELEMENT_POTENTIOMETER);
 
+		#define POT_DEFAULT_ACTION_AVC7   "\x02""000f00b0A0A2\x03\x02""040f01A0A3\x03"
+
 		uint8_t payload_template[100] = {0};
-		uint8_t payload_length = 0;
-
-		sprintf(payload_template, GRID_CLASS_MIDIRELATIVE_frame);
-
-		uint8_t error = 0;
-
-		grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
-
-		grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length, 0, &error);
-		grid_msg_set_parameter(payload_template, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset , GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length , GRID_PARAMETER_MIDI_CONTROLCHANGE, &error);
-
-		payload_length = strlen(payload_template);
-
-		uint8_t payload_length0 = payload_length;
-
-
-		sprintf(&payload_template[payload_length], GRID_CLASS_LEDPHASE_frame);
-
-		grid_msg_set_parameter(&payload_template[payload_length], GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
-
-		grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_LEDPHASE_LAYERNUMBER_offset, GRID_CLASS_LEDPHASE_LAYERNUMBER_length, GRID_LED_LAYER_UI_A, &error);
-
-
-		payload_length += strlen(&payload_template[payload_length]);
-
-		uint8_t parameter_list_length = 4;
-		struct grid_ui_action_parameter parameter_list[4];
-
-		// MIDI NOTE NUMBER
-		parameter_list[0].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER;
-		parameter_list[0].offset  = GRID_CLASS_MIDIRELATIVE_PARAM1_offset;
-		parameter_list[0].length  = GRID_CLASS_MIDIRELATIVE_PARAM1_length;
-
-		// MIDI NOTE VELOCITY
-		parameter_list[1].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_AV7;
-		parameter_list[1].offset  = GRID_CLASS_MIDIRELATIVE_PARAM2_offset;
-		parameter_list[1].length  = GRID_CLASS_MIDIRELATIVE_PARAM2_length;
-
-		// LED NUMBER
-		parameter_list[2].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER;
-		parameter_list[2].offset  = payload_length0 + GRID_CLASS_LEDPHASE_LEDNUMBER_offset;
-		parameter_list[2].length  = GRID_CLASS_LEDPHASE_LEDNUMBER_length;
-
-		// LED PHASE VALUE
-		parameter_list[3].address = GRID_TEMPLATE_PARAMETER_CONTROLLER_AV8;
-		parameter_list[3].offset  = payload_length0 + GRID_CLASS_LEDPHASE_PHASE_offset;
-		parameter_list[3].length  = GRID_CLASS_LEDPHASE_PHASE_length;
-
+		sprintf(payload_template, POT_DEFAULT_ACTION_AVC7);
+		uint8_t payload_length = strlen(payload_template);
 
 		// Register Absolute Value Change
-		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_AVC7, payload_template, payload_length, parameter_list, parameter_list_length);
+		grid_ui_event_register_action_smart(&grid_ui_state.element[i], GRID_UI_EVENT_AVC7, payload_template, payload_length);
 		
 	}
 	
