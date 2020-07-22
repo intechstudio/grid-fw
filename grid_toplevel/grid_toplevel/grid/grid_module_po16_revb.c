@@ -140,14 +140,13 @@ void grid_module_po16_revb_init(struct grid_report_model* mod){
 			
 		grid_ui_element_init(&grid_ui_state.element[i], GRID_UI_ELEMENT_POTENTIOMETER);
 
-		#define POT_DEFAULT_ACTION_AVC7   "\x02""000f00b0A0A2\x03\x02""040f01A0A3\x03"
 
 		uint8_t payload_template[100] = {0};
-		sprintf(payload_template, POT_DEFAULT_ACTION_AVC7);
+		sprintf(payload_template, GRID_EVENT_AVC7_POT GRID_DEFAULT_ACTION_AVC7);
 		uint8_t payload_length = strlen(payload_template);
 
 		// Register Absolute Value Change
-		grid_ui_event_register_action_smart(&grid_ui_state.element[i], GRID_UI_EVENT_AVC7, payload_template, payload_length);
+		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_AVC7, payload_template, payload_length);
 		
 	}
 	

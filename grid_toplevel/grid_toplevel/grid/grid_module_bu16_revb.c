@@ -168,21 +168,17 @@ void grid_module_bu16_revb_init(struct grid_report_model* mod){
 
 		grid_ui_element_init(&grid_ui_state.element[i], GRID_UI_ELEMENT_BUTTON);
 			
-		#define BTN_DEFAULT_ACTION_DP     "\x02""000f0090A0A6\x03\x02""040f01A0A7\x03"
-		#define BTN_DEFAULT_ACTION_DR     "\x02""000f0080A0A6\x03\x02""040f01A0A7\x03"
-		
-		
 		uint8_t payload_template[100] = {0};
 			
-		sprintf(payload_template, BTN_DEFAULT_ACTION_DP);
+		sprintf(payload_template, GRID_EVENT_DP_BUT GRID_DEFAULT_ACTION_DP);
 		uint8_t payload_length = strlen(payload_template);
 		
 		// Register Digital Press Action		
-		grid_ui_event_register_action_smart(&grid_ui_state.element[i], GRID_UI_EVENT_DP, payload_template, payload_length);
+		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DP, payload_template, payload_length);
 		
-		sprintf(payload_template, BTN_DEFAULT_ACTION_DR);
+		sprintf(payload_template, GRID_EVENT_DR_BUT GRID_DEFAULT_ACTION_DR);
 		
- 		grid_ui_event_register_action_smart(&grid_ui_state.element[i], GRID_UI_EVENT_DR, payload_template, payload_length);
+ 		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DR, payload_template, payload_length);
 				
 			
 	}

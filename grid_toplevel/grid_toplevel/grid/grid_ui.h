@@ -58,20 +58,6 @@ struct grid_report_model
 };
 
 
-enum grid_ui_event_t {
-	
-	GRID_UI_EVENT_INIT,
-	
-	GRID_UI_EVENT_HEARTBEAT,
-		
-	GRID_UI_EVENT_AVC7,
-	GRID_UI_EVENT_RVC,
-	GRID_UI_EVENT_DVC,
-	GRID_UI_EVENT_DP,
-	GRID_UI_EVENT_DR,
-	GRID_UI_EVENT_DD,
-		
-};
 
 enum grid_ui_trigger{
 	
@@ -125,31 +111,6 @@ struct grid_ui_event
 };
 
 
-enum grid_ui_element_t {
-	
-	GRID_UI_ELEMENT_SYSTEM,
-	GRID_UI_ELEMENT_POTENTIOMETER,
-	GRID_UI_ELEMENT_BUTTON,
-	GRID_UI_ELEMENT_ENCODER,
-	
-};
-
-#define GRID_TEMPLATE_PARAMETER_LIST_LENGTH     8
-
-enum grid_template_parameter_index_t {
-	
-	GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER,
-	GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER_REVERSED,
-	GRID_TEMPLATE_PARAMETER_CONTROLLER_AV7,
-	GRID_TEMPLATE_PARAMETER_CONTROLLER_AV8,
-	GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14U,
-	GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14L,
-	GRID_TEMPLATE_PARAMETER_CONTROLLER_DV7,
-	GRID_TEMPLATE_PARAMETER_CONTROLLER_DV8
-	
-};
-
-
 struct grid_ui_element
 {
 	enum grid_ui_status status;
@@ -178,12 +139,7 @@ struct grid_ui_model
 
 
 
-
-
-void grid_ui_event_register_action(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length, struct grid_ui_action_parameter* parameter_list, uint8_t parameter_list_length);
-
-
-void grid_ui_event_register_action_smart(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length);
+void grid_ui_event_register_action(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length);
 
 
 

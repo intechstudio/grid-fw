@@ -331,33 +331,30 @@ void grid_module_en16_reva_init(struct grid_report_model* mod){
 		
 		if (1){ // ROTATION -> MIDI Control Change
 		
-			#define POT_DEFAULT_ACTION_AVC7   "\x02""000f00b0A0A2\x03\x02""040f01A0A3\x03"
 		
 			uint8_t payload_template[100] = {0};
-			sprintf(payload_template, POT_DEFAULT_ACTION_AVC7);
+			sprintf(payload_template, GRID_EVENT_AVC7_ENC GRID_DEFAULT_ACTION_AVC7);
 			uint8_t payload_length = strlen(payload_template);
 
 			// Register Absolute Value Change
-			grid_ui_event_register_action_smart(&grid_ui_state.element[i], GRID_UI_EVENT_AVC7, payload_template, payload_length);
+			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_AVC7, payload_template, payload_length);
 		
 		}
 		
 		if (1){ // BUTTONS -> MIDI Note On/Off
 		
-			#define BTN_DEFAULT_ACTION_DP     "\x02""000f0090A0A6\x03\x02""040f01A0A7\x03"
-			#define BTN_DEFAULT_ACTION_DR     "\x02""000f0080A0A6\x03\x02""040f01A0A7\x03"
 		
 			uint8_t payload_template[100] = {0};
 		
-			sprintf(payload_template, BTN_DEFAULT_ACTION_DP);
+			sprintf(payload_template, GRID_EVENT_DP_ENC GRID_DEFAULT_ACTION_DP);
 			uint8_t payload_length = strlen(payload_template);
 		
 			// Register Digital Press Action
-			grid_ui_event_register_action_smart(&grid_ui_state.element[i], GRID_UI_EVENT_DP, payload_template, payload_length);
+			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DP, payload_template, payload_length);
 		
-			sprintf(payload_template, BTN_DEFAULT_ACTION_DR);
+			sprintf(payload_template, GRID_EVENT_DR_ENC GRID_DEFAULT_ACTION_DR);
 		
-			grid_ui_event_register_action_smart(&grid_ui_state.element[i], GRID_UI_EVENT_DR, payload_template, payload_length);
+			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DR, payload_template, payload_length);
 		
 		}	
 						

@@ -411,41 +411,9 @@ void grid_ui_element_init(struct grid_ui_element* ele, enum grid_ui_element_t el
 		
 }
 
-void grid_ui_event_register_action(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length, struct grid_ui_action_parameter* parameter_list, uint8_t parameter_list_length){
-	
-	uint8_t event_index = 255;
-	
-	for(uint8_t i=0; i<ele->event_list_length; i++){
-		if (ele->event_list[i].type == event_type){	
-			event_index = i;
-		}
-	}
-	
-	if (event_index == 255){
-		return; // EVENT NOT FOUND	
-	}
-	
-	// COPY THE ACTION STRING
-	for(uint32_t i=0; i<event_string_length; i++){
-		ele->event_list[event_index].action_string[i] = event_string[i];
-	}
-	ele->event_list[event_index].action_length = event_string_length;
-	
-	
-
-	// COPY THE PARAMETER DESCRIPTORS
-	for(uint8_t i=0; i<parameter_list_length; i++){
-		
-		ele->event_list[event_index].action_parameter_list[i] = parameter_list[i];	
-	}
-	ele->event_list[event_index].action_parameter_count = parameter_list_length;
-	
-		
-	
-}
 
 
-void grid_ui_event_register_action_smart(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length){
+void grid_ui_event_register_action(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length){
 		
 	
 	uint8_t event_index = 255;

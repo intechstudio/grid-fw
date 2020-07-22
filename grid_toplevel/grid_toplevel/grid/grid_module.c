@@ -134,22 +134,22 @@ void grid_module_common_init(void){
 	
 	uint8_t payload_template[100] = {0};
 	uint8_t payload_length = 0;
-
-	struct grid_ui_action_parameter parameter_list[3];
-	uint8_t parameter_list_length = 0;
 	
-	sprintf(payload_template, GRID_CLASS_HEARTBEAT_frame);
+	sprintf(payload_template, GRID_EVENT_HEARTBEAT );
+	payload_length = strlen(payload_template);
+	
+	sprintf(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_frame);
 	uint8_t error = 0;
-	grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
+	grid_msg_set_parameter(&payload_template[payload_length], GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
 	
-	grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(), &error);
-	grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length , GRID_PROTOCOL_VERSION_MAJOR, &error);
-	grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length  , GRID_PROTOCOL_VERSION_MINOR, &error);
-	grid_msg_set_parameter(payload_template, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length  , GRID_PROTOCOL_VERSION_PATCH, &error);
+	grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(), &error);
+	grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length , GRID_PROTOCOL_VERSION_MAJOR, &error);
+	grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length  , GRID_PROTOCOL_VERSION_MINOR, &error);
+	grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length  , GRID_PROTOCOL_VERSION_PATCH, &error);
 	
 	payload_length = strlen(payload_template);
 	
-	grid_ui_event_register_action(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT, payload_template, payload_length, parameter_list, parameter_list_length);
+	grid_ui_event_register_action(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT, payload_template, payload_length);
 	
 	
 	
