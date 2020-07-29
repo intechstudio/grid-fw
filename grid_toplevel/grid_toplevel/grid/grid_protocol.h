@@ -216,6 +216,15 @@ enum grid_template_parameter_index_t {
 	
 };
 
+#define GRID_PARAMETER_TEMPLATEINDEX_CNUMBER_code		"A0"
+#define GRID_PARAMETER_TEMPLATEINDEX_CNUMBERREV_code	"A1"
+#define GRID_PARAMETER_TEMPLATEINDEX_AV7_code			"A2"
+#define GRID_PARAMETER_TEMPLATEINDEX_AV8_code			"A3"
+#define GRID_PARAMETER_TEMPLATEINDEX_AV14U_code			"A4"
+#define GRID_PARAMETER_TEMPLATEINDEX_AV14L_code			"A5"
+#define GRID_PARAMETER_TEMPLATEINDEX_DV7_code			"A6"
+#define GRID_PARAMETER_TEMPLATEINDEX_DV8_code			"A7"
+
 
 enum grid_ui_element_t {
 	
@@ -225,6 +234,11 @@ enum grid_ui_element_t {
 	GRID_UI_ELEMENT_ENCODER,
 	
 };
+
+#define GRID_PARAMETER_ELEMENTTYPE_SYSTEM_code			"00"
+#define GRID_PARAMETER_ELEMENTTYPE_POTENTIOMETER_code	"01"
+#define GRID_PARAMETER_ELEMENTTYPE_BUTTON_code			"02"
+#define GRID_PARAMETER_ELEMENTTYPE_ENCODER_code			"03"
 
 
 enum grid_ui_event_t {

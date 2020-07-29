@@ -20671,7 +20671,7 @@ Disassembly of section .text:
 
 00010000 <_read_r>:
    10000:	b538      	push	{r3, r4, r5, lr}
-   10002:	4c07      	ldr	r4, [pc, #28]	; (10020 <STACK_SIZE+0x20>)
+   10002:	4c07      	ldr	r4, [pc, #28]	; (10020 <_read_r+0x20>)
    10004:	4605      	mov	r5, r0
    10006:	4608      	mov	r0, r1
    10008:	4611      	mov	r1, r2
