@@ -346,13 +346,13 @@ void grid_module_en16_reva_init(struct grid_report_model* mod){
 		
 			uint8_t payload_template[100] = {0};
 		
-			sprintf(payload_template, GRID_EVENT_DP_ENC GRID_DEFAULT_ACTION_DP);
+			sprintf(payload_template, GRID_EVENT_DP_ENC GRID_DEFAULT_ACTION_DP_ENC);
 			uint8_t payload_length = strlen(payload_template);
 		
 			// Register Digital Press Action
 			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DP, payload_template, payload_length);
 		
-			sprintf(payload_template, GRID_EVENT_DR_ENC GRID_DEFAULT_ACTION_DR);
+			sprintf(payload_template, GRID_EVENT_DR_ENC GRID_DEFAULT_ACTION_DR_ENC);
 		
 			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DR, payload_template, payload_length);
 		
