@@ -319,7 +319,7 @@ void grid_module_en16_reva_hardware_init(void){
 void grid_module_en16_reva_init(struct grid_report_model* mod){
 	
 	
-	grid_led_init(&grid_led_state, 16);
+	grid_led_lowlevel_init(&grid_led_state, 16);
 	grid_report_model_init(mod, 0);
 	
 	grid_ui_model_init(&grid_ui_state, 16);	

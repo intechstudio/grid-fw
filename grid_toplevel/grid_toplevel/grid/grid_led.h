@@ -53,34 +53,37 @@ struct grid_led_model grid_led_state;
 uint32_t grid_led_color_code[256];
 volatile uint8_t grid_led_hardware_transfer_done;
 
-static void grid_led_hardware_transfer_complete_cb(struct _dma_resource *resource);
+static void grid_led_lowlevel_hardware_transfer_complete_cb(struct _dma_resource *resource);
 
-void grid_led_hardware_start_transfer_blocking(struct grid_led_model* mod);
+void grid_led_lowlevel_hardware_start_transfer_blocking(struct grid_led_model* mod);
 
-void grid_led_hardware_start_transfer(struct grid_led_model* mod);
+void grid_led_lowlevel_hardware_start_transfer(struct grid_led_model* mod);
 
-uint8_t grid_led_hardware_is_transfer_completed(struct grid_led_model* mod);
+uint8_t grid_led_lowlevel_hardware_is_transfer_completed(struct grid_led_model* mod);
 
 
 // INITIALIZING THE GRID_LED LIBRARY
-uint8_t grid_led_init(struct grid_led_model* mod, uint8_t num);
+uint8_t grid_led_lowlevel_init(struct grid_led_model* mod, uint8_t num);
 
 // ACCESSING THE FRAME BUFFER (READ)
-uint8_t* grid_led_get_frame_buffer_pointer(struct grid_led_model* mod);
-uint32_t grid_led_get_frame_buffer_size(struct grid_led_model* mod);
+uint8_t* grid_led_lowlevel_get_frame_buffer_pointer(struct grid_led_model* mod);
+uint32_t grid_led_lowlevel_get_frame_buffer_size(struct grid_led_model* mod);
 
 // RENDERING FROM SMART BUFFER TO FRAME BUFFER
-void grid_led_render(struct grid_led_model* mod, uint32_t num);
-void grid_led_render_all(struct grid_led_model* mod);
+void grid_led_lowlevel_render(struct grid_led_model* mod, uint32_t num);
+void grid_led_lowlevel_render_all(struct grid_led_model* mod);
 
 // ACCESSING THE FRAME BUFFER (WRITE)
-uint8_t grid_led_set_color(struct grid_led_model* mod, uint32_t led_index, uint16_t led_r, uint16_t led_g, uint16_t led_b);
+uint8_t grid_led_lowlevel_set_color(struct grid_led_model* mod, uint32_t led_index, uint16_t led_r, uint16_t led_g, uint16_t led_b);
 
 // TIME TICK FOR ANIMATIONS
 void grid_led_tick(struct grid_led_model* mod);
 
 
 // WRITING THE SMART BUFFER
+
+void grid_led_set_color(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
+
 void grid_led_set_min(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
 void grid_led_set_mid(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
 void grid_led_set_max(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);

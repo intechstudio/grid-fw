@@ -93,7 +93,7 @@ struct grid_sys_model
 	uint8_t alert_color_changed;
 	
 	
-	uint8_t bank_active;
+	uint8_t bank_activebank_number;
 	uint8_t bank_changed;
 	
 	uint8_t bank_enabled[GRID_SYS_BANK_MAXNUMBER];
@@ -101,6 +101,10 @@ struct grid_sys_model
 	uint8_t bank_color_r[GRID_SYS_BANK_MAXNUMBER];
 	uint8_t bank_color_g[GRID_SYS_BANK_MAXNUMBER];
 	uint8_t bank_color_b[GRID_SYS_BANK_MAXNUMBER];
+	
+	uint8_t bank_activebank_color_r;
+	uint8_t bank_activebank_color_g;
+	uint8_t bank_activebank_color_b;
 	
 		
 	

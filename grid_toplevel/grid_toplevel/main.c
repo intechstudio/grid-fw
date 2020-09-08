@@ -328,13 +328,18 @@ int main(void)
 		grid_port_receive_complete_task(&GRID_PORT_W);
 			
 			
-		uint8_t midi_rx_buffer[10] = {0};	
+		
+		
+		// MIDI READ TEST CODE
+		
+		uint8_t midi_rx_buffer[10] = {0};
 		uint8_t midi_rx_length = 0;
-			
+		
 		audiodf_midi_read(midi_rx_buffer,4);
 		
-		midi_rx_length = strlen(midi_rx_buffer);
+		midi_rx_length = strlen(midi_rx_buffer);		
 		
+		/*		
 		if (midi_rx_buffer[0]!=0 || midi_rx_buffer[1]!=0 || midi_rx_buffer[2]!=0 || midi_rx_buffer[3]!=0){
 			grid_sys_alert_set_alert(&grid_sys_state, 50,0,0,2,500); // SOFT RED
 			
@@ -345,21 +350,23 @@ int main(void)
 			cdcdf_acm_write(message, strlen(message));
 			delay_us(100);
 		}	
+		*/
 		
 		
-		
+		// SERIAL READ	
 	
 		cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
 		
-		uint8_t usblength = strlen(GRID_PORT_H.rx_double_buffer);
+		uint16_t usblength = strlen(GRID_PORT_H.rx_double_buffer);
 		
 		if (usblength){	
 						
 			GRID_PORT_H.rx_double_buffer_read_start_index = 0;
 
 			grid_port_receive_decode(&GRID_PORT_H, 0, usblength-2);
-								
-			for (uint8_t i = 0; i<100; i++){
+			
+			// THIS IS ABSOLUTELY CRAZY!!!			
+			for (uint16_t i = 0; i<100; i++){
 				
 				GRID_PORT_H.rx_double_buffer[i] = 0;
 			
@@ -388,7 +395,7 @@ int main(void)
 		grid_port_process_inbound(&GRID_PORT_S, 0);
 		grid_port_process_inbound(&GRID_PORT_W, 0);
 		
-		grid_port_process_inbound(&GRID_PORT_H, 0);				
+		grid_port_process_inbound(&GRID_PORT_H, 0);	// USB	
 		
 		
 		
@@ -455,13 +462,13 @@ int main(void)
 		
 		if (loopcounter%1 == 0){
 			
-			grid_led_render_all(&grid_led_state);	
+			grid_led_lowlevel_render_all(&grid_led_state);	
 			
 						
 // 	 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
 // 	
 // 	 		}
-			grid_led_hardware_start_transfer(&grid_led_state);
+			grid_led_lowlevel_hardware_start_transfer(&grid_led_state);
 		}		
 		
 		

@@ -74,11 +74,11 @@ void grid_hardwaretest_led_test_init(struct grid_led_model* mod, uint8_t num){
 	
 	gpio_set_pin_level(UI_PWR_EN, true);
 	
-	grid_led_init(mod, num);
+	grid_led_lowlevel_init(mod, num);
 	
 	for(uint8_t i=0; i<num; i++){
 		
-		grid_led_set_color(mod, i, 0, 0, 0);
+		grid_led_lowlevel_set_color(mod, i, 0, 0, 0);
 		
 	}
 
@@ -91,7 +91,7 @@ void grid_hardwaretest_led_test(struct grid_led_model* mod, uint32_t loop){
 		
 	for(uint8_t i=0; i<mod->led_number; i++){
 	
-		grid_led_set_color(mod, i, loop/10%128*(loop/1280%3==0), loop/10%128*(loop/1280%3==1), loop/10%128*(loop/1280%3==2));
+		grid_led_lowlevel_set_color(mod, i, loop/10%128*(loop/1280%3==0), loop/10%128*(loop/1280%3==1), loop/10%128*(loop/1280%3==2));
 	
 	}
 		
@@ -99,10 +99,10 @@ void grid_hardwaretest_led_test(struct grid_led_model* mod, uint32_t loop){
 	//grid_led_render_all(mod);
 		
 		
-	while(grid_led_hardware_is_transfer_completed(mod) != 1){
+	while(grid_led_lowlevel_hardware_is_transfer_completed(mod) != 1){
 			
 	}
-	grid_led_hardware_start_transfer(mod);
+	grid_led_lowlevel_hardware_start_transfer(mod);
 	
 }
 
@@ -127,7 +127,7 @@ void grid_hardwaretest_led_test_photo(struct grid_led_model* mod, uint32_t loop)
 		
 		uint8_t group = (i+4)%4;
 		
-		grid_led_set_color(mod, i, intensity/256.0*color_r[group], intensity/256.0*color_g[group], intensity/256.0*color_b[group]);
+		grid_led_lowlevel_set_color(mod, i, intensity/256.0*color_r[group], intensity/256.0*color_g[group], intensity/256.0*color_b[group]);
 
 	}
 	
@@ -135,10 +135,10 @@ void grid_hardwaretest_led_test_photo(struct grid_led_model* mod, uint32_t loop)
 	//grid_led_render_all(mod);
 	
 	
-	while(grid_led_hardware_is_transfer_completed(mod) != 1){
+	while(grid_led_lowlevel_hardware_is_transfer_completed(mod) != 1){
 		
 	}
-	grid_led_hardware_start_transfer(mod);
+	grid_led_lowlevel_hardware_start_transfer(mod);
 	
 }
 

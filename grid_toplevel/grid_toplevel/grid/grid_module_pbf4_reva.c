@@ -247,7 +247,7 @@ void grid_module_pbf4_reva_init(struct grid_report_model* mod){
 	
 	// 16 pot, depth of 5, 14bit internal, 7bit result;
 	grid_ain_init(16, 5, 14, 7);
-	grid_led_init(&grid_led_state, 12);	
+	grid_led_lowlevel_init(&grid_led_state, 12);	
 	grid_report_model_init(mod, 0);
 	
 	grid_ui_model_init(&grid_ui_state, 12);

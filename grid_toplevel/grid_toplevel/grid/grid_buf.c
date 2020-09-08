@@ -1132,7 +1132,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					// Relative midi translation magic
 				//	midi_channel = ((256-dy*2)%8+grid_sys_state.bank_active*8)%16;		  2bank			
 						
-					midi_channel = ((256-dy*1)%4+grid_sys_state.bank_active*4)%16;
+					midi_channel = ((256-dy*1)%4+grid_sys_state.bank_activebank_number*4)%16;
 					
 					
 					midi_param1  = (256-32+midi_param1 + 16*dx)%96; // 96-128 reserved
@@ -1270,13 +1270,14 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				}	
 				else if (msg_class == GRID_CLASS_BANKCOLOR_code && msg_instr == GRID_INSTR_REP_code){
 					
-					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_BANKNUMBER_offset], GRID_CLASS_BANKCOLOR_BANKNUMBER_length, &error_flag);
+					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_NUM_offset], GRID_CLASS_BANKCOLOR_NUM_length, &error_flag);
 					uint8_t red		   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_RED_offset], GRID_CLASS_BANKCOLOR_RED_length, &error_flag);
-					uint8_t green	   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_GREEN_offset], GRID_CLASS_BANKCOLOR_GREEN_length, &error_flag);
-					uint8_t blue	   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_BLUE_offset], GRID_CLASS_BANKCOLOR_BLUE_length, &error_flag);
+					uint8_t green	   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_GRE_offset], GRID_CLASS_BANKCOLOR_GRE_length, &error_flag);
+					uint8_t blue	   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_BLU_offset], GRID_CLASS_BANKCOLOR_BLU_length, &error_flag);
 					
 					grid_sys_bank_set_color(&grid_sys_state, banknumber, (red<<16) + (green<<8) + (blue<<0) );
 					
+					// If the currently active bank was changed, then we must reinitialize the bank so the color can be updated properly!
 					if (grid_sys_get_bank(&grid_sys_state) == banknumber){
 						grid_sys_set_bank(&grid_sys_state, banknumber);
 					}
@@ -1284,16 +1285,30 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 				}
 				else if (msg_class == GRID_CLASS_LEDPHASE_code && msg_instr == GRID_INSTR_REP_code){
-						
+				
 					if (dx == 0 && dy == 0){
-									
-						uint8_t led_layer = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_LAYERNUMBER_offset], GRID_CLASS_LEDPHASE_LAYERNUMBER_length, &error_flag);
-						uint8_t led_number  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_LEDNUMBER_offset], GRID_CLASS_LEDPHASE_LEDNUMBER_length, &error_flag);
-						uint8_t led_value  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_PHASE_offset], GRID_CLASS_LEDPHASE_PHASE_length, &error_flag);						
-						grid_led_set_phase(&grid_led_state, led_number, led_layer, led_value);		
-													
+					
+						uint8_t led_num  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_NUM_offset], GRID_CLASS_LEDPHASE_NUM_length, &error_flag);
+						uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_LAY_offset], GRID_CLASS_LEDPHASE_LAY_length, &error_flag);
+						uint8_t led_pha  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_PHA_offset], GRID_CLASS_LEDPHASE_PHA_length, &error_flag);
+						grid_led_set_phase(&grid_led_state, led_num, led_lay, led_pha);
+					
 					}
 				}
+				else if (msg_class == GRID_CLASS_LEDCOLOR_code && msg_instr == GRID_INSTR_REP_code){
+					
+					if (dx == 0 && dy == 0){
+						
+						uint8_t led_num = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_NUM_offset], GRID_CLASS_LEDCOLOR_NUM_length, &error_flag);
+						uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_LAY_offset], GRID_CLASS_LEDCOLOR_LAY_length, &error_flag);
+						uint8_t led_red	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_RED_offset], GRID_CLASS_LEDCOLOR_RED_length, &error_flag);
+						uint8_t led_gre	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_GRE_offset], GRID_CLASS_LEDCOLOR_GRE_length, &error_flag);
+						uint8_t led_blu	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_BLU_offset], GRID_CLASS_LEDCOLOR_BLU_length, &error_flag);
+																							
+						grid_led_set_color(&grid_led_state, led_num, led_lay, led_red, led_gre, led_blu);
+						
+					}
+				}		
 				else{
 					//SORRY
 				}
