@@ -57,7 +57,7 @@ void grid_module_en16_reva_hardware_start_transfer(void);
 void grid_module_en16_reva_hardware_transfer_complete_cb(void);
 void grid_module_en16_reva_hardware_init(void);
 
-void grid_module_en16_reva_init(struct grid_report_model* mod);
+void grid_module_en16_reva_init(void);
 
 
 

@@ -25,9 +25,6 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		return;
 	}
 	
-		
-	struct grid_report_model* mod = &grid_report_state;
-	
 
 	/* Read conversion results */
 	
@@ -157,10 +154,9 @@ void grid_module_bu16_revb_hardware_init(void){
 
 
 
-void grid_module_bu16_revb_init(struct grid_report_model* mod){
+void grid_module_bu16_revb_init(){
 
 	grid_led_lowlevel_init(&grid_led_state, 16);
-	grid_report_model_init(mod, 0); // 0 ui reports
 	
 	grid_ui_model_init(&grid_ui_state, 16);
 	
@@ -182,9 +178,7 @@ void grid_module_bu16_revb_init(struct grid_report_model* mod){
 				
 			
 	}
-	
-	grid_report_sys_init(mod);
-			
+				
 	grid_module_bu16_revb_hardware_init();
 	grid_module_bu16_revb_hardware_start_transfer();
 

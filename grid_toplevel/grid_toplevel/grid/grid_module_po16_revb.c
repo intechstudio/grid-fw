@@ -19,12 +19,6 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		return;
 	}
 	
-
-	
-	/* Read mapmode state*/
-	
-	
-	struct grid_report_model* mod = &grid_report_state;
 		
 	/* Read conversion results */
 	
@@ -128,12 +122,12 @@ void grid_module_po16_revb_hardware_init(void){
 
 
 
-void grid_module_po16_revb_init(struct grid_report_model* mod){
+void grid_module_po16_revb_init(){
 	
 	// 16 pot, depth of 5, 14bit internal, 7bit result;
 	grid_ain_init(16, 5, 14, 7);
 	grid_led_lowlevel_init(&grid_led_state, 16);
-	grid_report_model_init(mod, 0);
+
 	
 	grid_ui_model_init(&grid_ui_state, 16);
 	
@@ -151,8 +145,6 @@ void grid_module_po16_revb_init(struct grid_report_model* mod){
 		
 	}
 	
-	grid_report_sys_init(mod);
-
 	grid_module_po16_revb_hardware_init();
 	grid_module_po16_revb_hardware_start_transfer();
 	

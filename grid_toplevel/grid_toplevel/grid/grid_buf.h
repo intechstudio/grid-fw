@@ -34,7 +34,7 @@ struct grid_port{
 	
 	uint32_t cooldown;
 
-	struct grid_ui_report* ping_report;
+
 	struct usart_async_descriptor*    usart;
 	uint8_t type;     // 0 undefined, 1 usart, 2 usb, 3 ui, 4 telemetry
 	uint8_t direction;
@@ -56,17 +56,23 @@ struct grid_port{
 	
 	uint8_t tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE];
 	uint8_t rx_double_buffer[GRID_DOUBLE_BUFFER_RX_SIZE];
-	
-	
-	
-	
-	
+		
 	
 	struct grid_buffer tx_buffer;
 	struct grid_buffer rx_buffer;
 	
 	uint32_t partner_hwcfg;
 	uint8_t partner_fi;
+	
+	uint8_t ping_local_token;
+	uint8_t ping_partner_token;
+	
+	uint8_t ping_packet[20];
+	uint8_t ping_packet_length;
+	
+	uint8_t ping_flag;
+		
+	
 	
 	int8_t dx;
 	int8_t dy;
@@ -105,9 +111,6 @@ void grid_port_receive_complete_task(struct grid_port* por);
 
 
 
-uint8_t grid_port_packet_length(struct grid_buffer* por);
-
-uint8_t grid_port_packet_start(struct grid_buffer* por);
 
 
 
@@ -131,6 +134,6 @@ uint8_t grid_buffer_write_cancel(struct grid_buffer* buf);
 
 void grid_port_init_all(void);
 
-void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf_size, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma, struct grid_ui_report* p_report);
+void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf_size, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma);
 
 #endif

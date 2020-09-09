@@ -22,8 +22,6 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 	
 	
 	
-	struct grid_report_model* mod = &grid_report_state;
-	
 	
 	/* Read conversion results */
 	
@@ -242,13 +240,12 @@ void grid_module_pbf4_reva_hardware_init(void){
 
 
 
-void grid_module_pbf4_reva_init(struct grid_report_model* mod){
+void grid_module_pbf4_reva_init(){
 	
 	
 	// 16 pot, depth of 5, 14bit internal, 7bit result;
 	grid_ain_init(16, 5, 14, 7);
 	grid_led_lowlevel_init(&grid_led_state, 12);	
-	grid_report_model_init(mod, 0);
 	
 	grid_ui_model_init(&grid_ui_state, 12);
 	
@@ -257,7 +254,6 @@ void grid_module_pbf4_reva_init(struct grid_report_model* mod){
 	for(uint8_t i=0; i<12; i++){
 		
 		uint8_t payload_template[30] = {0};
-		enum grid_report_type_t type;
 		
 		if (i<8){ // PORENTIOMETERS & FADERS -> MIDI Control Change
 			
@@ -291,9 +287,7 @@ void grid_module_pbf4_reva_init(struct grid_report_model* mod){
 		}
 		
 	}
-	
-	grid_report_sys_init(mod);
-		
+			
 	grid_module_pbf4_reva_hardware_init();
 	grid_module_pbf4_reva_hardware_start_transfer();
 	

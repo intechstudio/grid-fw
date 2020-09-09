@@ -30,22 +30,22 @@ static struct timer_task RTC_Scheduler_heartbeat;
 
 static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 {
-	// [2...5] is ping report descriptor
+
 	pingflag++;
 	
 	switch (pingflag%4)
 	{
 		case 0:
-			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_NORTH);
+			GRID_PORT_N.ping_flag = 1;
 			break;
 		case 1:
-			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_EAST);
+			GRID_PORT_E.ping_flag = 1;
 			break;
 		case 2:
-			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_SOUTH);
+			GRID_PORT_S.ping_flag = 1;
 			break;
 		case 3:
-			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_WEST);
+			GRID_PORT_W.ping_flag = 1;
 			break;
 	}
 	

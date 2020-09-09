@@ -3,17 +3,9 @@
 
 
 void grid_port_process_ui(struct grid_port* por){
-
-	
-	
-	struct grid_report_model* mod = &grid_report_state;
-	
 	
 	// Priorities: Always process local, try to process direct, broadcast messages are last. 
 	
-	uint8_t message_local_available = 0;
-	uint8_t message_direct_available = 0;
-	uint8_t message_broadcast_available = 0;
 	
 	uint8_t message_broadcast_action_available = 0;
 
@@ -48,92 +40,27 @@ void grid_port_process_ui(struct grid_port* por){
 	}	
 	
 	
-
-	// COUNT THE NUMBER OF CHANGED REPORT DESCRIPTORS	
-	for (uint8_t i=0; i<grid_report_state.report_length; i++){
-			
-		if (grid_report_sys_get_changed_flag(mod, i)){
-			
-			enum grid_report_type_t type = grid_report_get_type(mod, i);
-			
-			
-			(type == GRID_REPORT_TYPE_BROADCAST)?message_broadcast_available++:1;	
-						
-			(type == GRID_REPORT_TYPE_DIRECT_NORTH)?message_direct_available++:1;
-			(type == GRID_REPORT_TYPE_DIRECT_EAST)?message_direct_available++:1;
-			(type == GRID_REPORT_TYPE_DIRECT_SOUTH)?message_direct_available++:1;
-			(type == GRID_REPORT_TYPE_DIRECT_WEST)?message_direct_available++:1;
-			
-			(type == GRID_REPORT_TYPE_LOCAL)?message_local_available++:1;
-									
-		}			
-	}
 	
-
-
-	//DIRECT MESSAGES	
-	if (message_direct_available){
+	//NEW
+	struct grid_port* port[4] = {&GRID_PORT_N, &GRID_PORT_E, &GRID_PORT_S, &GRID_PORT_W};
+	
+	for (uint8_t k = 0; k<4; k++){
 		
-		for (uint8_t i=0; i<grid_report_state.report_length; i++){
-			
-			uint8_t changed = grid_report_sys_get_changed_flag(mod, i);
-			enum grid_report_type_t type = grid_report_get_type(mod, i);
-				
-			if (changed && (type == GRID_REPORT_TYPE_DIRECT_NORTH || type == GRID_REPORT_TYPE_DIRECT_EAST || type == GRID_REPORT_TYPE_DIRECT_SOUTH || type == GRID_REPORT_TYPE_DIRECT_WEST)){
-					
-				uint8_t message[256] = {0};
-				uint32_t length=0;
-			
-				CRITICAL_SECTION_ENTER()			
-				
-				grid_report_render(mod, i, &message[length]);
-				length += strlen(&message[length]);
-				
-				CRITICAL_SECTION_LEAVE()			
-			
-				// FIND TARGET BUFFER
-				struct grid_buffer* target_buffer;
-				enum grid_report_type_t type = grid_report_get_type(mod, i);
-
-				if (type == GRID_REPORT_TYPE_DIRECT_NORTH){
-					target_buffer = &GRID_PORT_N.tx_buffer;
+		if (port[k]->ping_flag == 1){
+		
+			if (grid_buffer_write_init(&port[k]->tx_buffer, port[k]->ping_packet_length)){
+				//Success
+				for(uint32_t i = 0; i<port[k]->ping_packet_length; i++){
+					grid_buffer_write_character(&port[k]->tx_buffer, port[k]->ping_packet[i]);
 				}
-				else if (type == GRID_REPORT_TYPE_DIRECT_EAST){
-					target_buffer = &GRID_PORT_E.tx_buffer;
-				}
-				else if (type == GRID_REPORT_TYPE_DIRECT_SOUTH){
-					target_buffer = &GRID_PORT_S.tx_buffer;
-				}
-				else if (type == GRID_REPORT_TYPE_DIRECT_WEST){
-					target_buffer = &GRID_PORT_W.tx_buffer;
-				}
-			
-
-				// TRY TO WRITE TO TARGET BUFFER
-			
-				if (grid_buffer_write_init(target_buffer, length)){
-					//Success	
-					grid_report_sys_clear_changed_flag(mod, i);
-				
-					for(uint32_t i = 0; i<length; i++){
-					
-						grid_buffer_write_character(target_buffer, message[i]);
-					}
-				
-					grid_buffer_write_acknowledge(target_buffer);
-				}
-				else{
-					//Fail
-					
-				}
-			
+				grid_buffer_write_acknowledge(&port[k]->tx_buffer);
 			}
+			port[k]->ping_flag = 0;
+		}		
 			
-									
-		}	
-		
+	}			
 
-	}
+	
 	
 		
 	// Bandwidth Limiter for Broadcast messages
@@ -149,7 +76,7 @@ void grid_port_process_ui(struct grid_port* por){
 	
 	
 	//BROADCAST MESSAGES		
-	if (message_broadcast_available || message_broadcast_action_available){
+	if (message_broadcast_action_available){
 			
 		// Prepare packet header
 		uint8_t message[GRID_PARAMETER_PACKET_maxlength] = {0};
@@ -168,7 +95,6 @@ void grid_port_process_ui(struct grid_port* por){
 		grid_msg_set_parameter(&message[length], GRID_BRC_ROT_offset, GRID_BRC_ROT_length, GRID_SYS_DEFAULT_ROTATION, &error);
 
 		length += strlen(&message[length]);
-	
 	
 		// CORE SYSTEM
 		for (uint8_t i=0; i<grid_core_state.element_list_length; i++){
@@ -194,7 +120,6 @@ void grid_port_process_ui(struct grid_port* por){
 			
 		}
 		
-		
 		// UI STATE
 		for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
 			
@@ -218,29 +143,6 @@ void grid_port_process_ui(struct grid_port* por){
 			}
 			
 		}
-
-	
-		// THIS IS FOR CFG REQUEST & REPORT
-		for (uint16_t i = 0; i<grid_report_state.report_length; i++)
-		{
-				
-			if (length>GRID_PARAMETER_PACKET_marign){
-				continue;
-			}
-		
-		
-			CRITICAL_SECTION_ENTER()
-			if (grid_report_sys_get_changed_flag(mod, i) && grid_report_get_type(mod, i) == GRID_REPORT_TYPE_BROADCAST){
-				
-				packetvalid++;
-				grid_report_render(mod, i, &message[length]);
-				grid_report_sys_clear_changed_flag(mod, i);
-				length += strlen(&message[length]);
-					
-			}
-			CRITICAL_SECTION_LEAVE()
-		}
-		
 			
 		// Got messages
 		if (packetvalid){
@@ -287,18 +189,6 @@ void grid_port_process_ui(struct grid_port* por){
 	
 }
 
-uint8_t grid_report_model_init(struct grid_report_model* mod, uint8_t len){
-	
-	
-	mod->report_offset = GRID_REPORT_OFFSET; // System Reserved Report Elements
-	
-	mod->report_length = len + mod->report_offset;
-	
-	mod->report_array = malloc(mod->report_length*sizeof(struct grid_ui_report));
-	
-	mod->report_ui_array = &mod->report_array[mod->report_offset];
-		
-}
 
 void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
 	
@@ -611,184 +501,3 @@ uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event
 	
 }
 
-
-
-uint8_t grid_report_init(struct grid_report_model* mod, uint8_t index, enum grid_report_type_t type, uint8_t* p, uint32_t p_len, uint8_t* h, uint32_t h_len){
-
-	mod->report_array[index].changed = 0;
-	mod->report_array[index].type = type;
-	
-	mod->report_array[index].payload_length = p_len;
-	mod->report_array[index].helper_length = h_len;
-	
-	mod->report_array[index].payload = malloc(p_len*sizeof(uint8_t));
-	mod->report_array[index].helper = malloc(h_len*sizeof(uint8_t));
-	
-	
-	if (mod->report_array[index].payload == NULL || mod->report_array[index].helper == NULL){
-		return -1;
-	}
-	else{
-	}
-	
-	for (uint8_t i=0; i<mod->report_array[index].payload_length; i++){
-		mod->report_array[index].payload[i] = p[i];
-	}
-	for (uint8_t i=0; i<mod->report_array[index].helper_length; i++){
-		mod->report_array[index].helper[i] = h[i];
-	}
-	
-	return 0;
-	
-}
-
-uint8_t grid_report_ui_init(struct grid_report_model* mod, uint8_t index, enum grid_report_type_t type, uint8_t* p, uint32_t p_len, uint8_t* h, uint32_t h_len){
-	
-	grid_report_init(mod, index+mod->report_offset, type, p, p_len, h, h_len);
-}
-
-uint8_t grid_report_sys_init(struct grid_report_model* mod){
-		
-	for(uint8_t i=0; i<mod->report_offset; i++){
-			
-		uint8_t payload_template[200] = {0};
-		uint8_t payload_length = strlen(payload_template);
-		
-		enum grid_report_type_t type = GRID_REPORT_TYPE_UNDEFINED;	
-		if (i == GRID_REPORT_INDEX_PING_NORTH){ // PING NORTH
-		
-			uint8_t direction = GRID_CONST_NORTH;
-			
-			type = GRID_REPORT_TYPE_DIRECT_NORTH;
-			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
-			
-			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
-			
-			payload_length = strlen(payload_template);		
-		}
-		else if (i == GRID_REPORT_INDEX_PING_EAST){ // PING EAST 
-			
-			uint8_t direction = GRID_CONST_EAST;
-			
-			type = GRID_REPORT_TYPE_DIRECT_EAST;
-			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
-			
-			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
-			
-			
-			payload_length = strlen(payload_template);			
-		}
-		else if (i == GRID_REPORT_INDEX_PING_SOUTH){ // PING SOUTH
-			
-			uint8_t direction = GRID_CONST_SOUTH;
-			
-			type = GRID_REPORT_TYPE_DIRECT_SOUTH;
-			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
-			
-			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
-			
-			
-			payload_length = strlen(payload_template);			
-		}
-		else if (i == GRID_REPORT_INDEX_PING_WEST){ // PING WEST
-			
-			uint8_t direction = GRID_CONST_WEST;
-			
-			type = GRID_REPORT_TYPE_DIRECT_WEST;
-			
-			sprintf(payload_template, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
-			
-			grid_msg_checksum_write(payload_template, strlen(payload_template), grid_msg_checksum_calculate(payload_template, strlen(payload_template)));
-			
-			payload_length = strlen(payload_template);			
-		}
-	
-		
-		
-
-		uint8_t helper_template[2];
-		
-		helper_template[0] = 0;
-		helper_template[1] = 0;
-		
-		uint8_t helper_length = 2;
-		
-	
-		
-		uint8_t error = grid_report_init(mod, i, type, payload_template, payload_length, helper_template, helper_length);
-		
-		if (error != 0){
-			while(1){
-				return;
-			}
-			
-		}
-	
-	}
-}
-
-
-
-
-uint8_t grid_report_render(struct grid_report_model* mod, uint8_t index, uint8_t* target){
-	
-	struct grid_ui_report* rep = &mod->report_array[index];
-	
-	for(uint8_t i=0; i<rep->payload_length; i++){
-		target[i] = rep->payload[i];
-	}
-	
-	return rep->payload_length;
-}
-
-
-enum grid_report_type_t grid_report_get_type(struct grid_report_model* mod, uint8_t index){
-		
-	return mod->report_array[index].type;
-		
-}
-
-
-// UI REPORT FLAGS
-
-uint8_t grid_report_ui_get_changed_flag(struct grid_report_model* mod, uint8_t index){
-	
-	return mod->report_array[index+mod->report_offset].changed;
-}
-
-void grid_report_ui_set_changed_flag(struct grid_report_model* mod, uint8_t index){
-	
-	mod->report_array[index+mod->report_offset].changed = 1;
-}
-
-void grid_report_ui_clear_changed_flag(struct grid_report_model* mod, uint8_t index){
-	
-	mod->report_array[index+mod->report_offset].changed = 0;
-}
-
-// SYS REPORT FLAGS
-
-uint8_t grid_report_sys_get_changed_flag(struct grid_report_model* mod, uint8_t index){
-	
-	return mod->report_array[index].changed;
-}
-
-void grid_report_sys_set_changed_flag(struct grid_report_model* mod, uint8_t index){
-	
-	mod->report_array[index].changed = 1;
-}
-
-void grid_report_sys_set_payload_parameter(struct grid_report_model* mod, uint8_t index, uint8_t offset, uint8_t length, uint8_t value){
-	
-	grid_sys_write_hex_string_value(&mod->report_array[index].payload[offset],length,value);
-	
-	
-}
-
-void grid_report_sys_clear_changed_flag(struct grid_report_model* mod, uint8_t index){
-	
-	mod->report_array[index].changed = 0;
-}

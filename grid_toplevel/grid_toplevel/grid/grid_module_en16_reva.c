@@ -64,13 +64,6 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 		for (uint8_t i = 0; i<16; i++)
 		{
 			
-// 			uint8_t error = 0;
-// 			
-// 			uint8_t* message = mod->report_ui_array[i+16+16].payload;
-// 			uint8_t actuator = mod->report_ui_array[i+16+16].helper[bank];
-// 			
-// 			grid_msg_set_parameter(message, GRID_CLASS_LEDPHASE_PHASE_offset  , GRID_CLASS_LEDPHASE_PHASE_length  , actuator, &error);
-// 			grid_report_ui_set_changed_flag(mod, i+16+16);
 
 
 			uint8_t value = helper[bank][i];
@@ -316,11 +309,10 @@ void grid_module_en16_reva_hardware_init(void){
 
 }
 
-void grid_module_en16_reva_init(struct grid_report_model* mod){
+void grid_module_en16_reva_init(){
 	
 	
 	grid_led_lowlevel_init(&grid_led_state, 16);
-	grid_report_model_init(mod, 0);
 	
 	grid_ui_model_init(&grid_ui_state, 16);	
 	
@@ -359,9 +351,6 @@ void grid_module_en16_reva_init(struct grid_report_model* mod){
 		}	
 						
 	}
-	
-	grid_report_sys_init(mod);
-
 
 	// initialize local encoder helper struct
 	for (uint8_t i = 0; i<16; i++)

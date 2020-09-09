@@ -18,11 +18,15 @@ void grid_port_reset_receiver(struct grid_port* por){
 	por->rx_double_buffer_read_start_index = 0;
 	por->partner_status = 0;
 	
-	struct grid_ui_report* stored_report = por->ping_report;
-	grid_sys_write_hex_string_value(&stored_report->payload[8], 2, 255);
-	grid_sys_write_hex_string_value(&stored_report->payload[6], 2, 255);
-	grid_msg_checksum_write(stored_report->payload, stored_report->payload_length, grid_msg_checksum_calculate(stored_report->payload, stored_report->payload_length));
 	
+	por->ping_partner_token = 255;
+	por->ping_local_token = 255;
+	
+	grid_sys_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
+	grid_sys_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
+	grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_checksum_calculate(por->ping_packet, por->ping_packet_length));
+
+
 	
 	por->rx_double_buffer_timeout = 0;
 	grid_sys_port_reset_dma(por);
@@ -358,74 +362,46 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 					
 					
 					// Handshake logic
+				
 					
-					uint8_t local_stored = 255; // I think this is my id
-					uint8_t remote_stored = 255; // I think this is my neighbor's id
-					uint8_t local_received = 255; // My neighbor thinks this is my id
-					uint8_t remote_received = 255; // My neighbor thinks this is their id
-					
-					uint8_t* local_stored_location = NULL;
-					uint8_t* remote_stored_location = NULL;
-					
-					struct grid_report_model* mod = &grid_report_state;
-					
-					struct grid_ui_report* stored_report = por->ping_report;
-					
-					
-					local_stored = grid_sys_read_hex_string_value(&stored_report->payload[6], 2, error_flag);
-					remote_stored = grid_sys_read_hex_string_value(&stored_report->payload[8], 2, error_flag);
-					
-					
-					local_received = grid_sys_read_hex_string_value(&message[8], 2, error_flag);
-					remote_received = grid_sys_read_hex_string_value(&message[6], 2, error_flag);
-					
-					
+					uint8_t local_token_received = grid_sys_read_hex_string_value(&message[8], 2, error_flag);
+					uint8_t partner_token_received = grid_sys_read_hex_string_value(&message[6], 2, error_flag);
+							
 					if (por->partner_status == 0){
-						
-						if (por->direction == GRID_CONST_NORTH){
-							grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_NORTH);
-							}else if (por->direction == GRID_CONST_EAST){
-							grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_EAST);
-							}else if (por->direction == GRID_CONST_SOUTH){
-							grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_SOUTH);
-							}else if (por->direction == GRID_CONST_WEST){
-							grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_PING_WEST);
-						}
-						
-						
-						if (local_stored == 255){ // I have no clue
+												
+						if (por->ping_local_token == 255){ // I have no clue
 							
 							// Generate new local
 							
-							uint8_t new_local = grid_sys_rtc_get_time(&grid_sys_state)%128;
-							local_stored = new_local;
-							grid_sys_write_hex_string_value(&stored_report->payload[6], 2, new_local);
+							por->ping_local_token  = grid_sys_rtc_get_time(&grid_sys_state)%128;
 							
-							grid_msg_checksum_write(stored_report->payload, stored_report->payload_length, grid_msg_checksum_calculate(stored_report->payload, stored_report->payload_length));
-							
+							//NEW
+							grid_sys_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
+							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_checksum_calculate(por->ping_packet, por->ping_packet_length));
+								
 							// No chance to connect now
-							
-							
+			
 						}
-						else if (remote_received == 255){
+						else if (partner_token_received == 255){
 							
 							// Remote is clueless
 							// No chance to connect now
 							
 						}
-						if (remote_received != remote_stored){
+						if (partner_token_received != por->ping_partner_token){
 							
+							por->ping_partner_token = partner_token_received;							
 							
-							grid_sys_write_hex_string_value(&stored_report->payload[8], 2, remote_received);
-							
-							remote_stored = remote_received;
+							//NEW
+							grid_sys_write_hex_string_value(&por->ping_packet[8], 2, partner_token_received);
+							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_checksum_calculate(por->ping_packet, por->ping_packet_length));
+								
 
-							grid_msg_checksum_write(stored_report->payload, stored_report->payload_length, grid_msg_checksum_calculate(stored_report->payload, stored_report->payload_length));
 							
 							// Store remote
 							// No chance to connect now
 						}
-						if (local_stored != local_received){
+						if (por->ping_local_token != local_token_received){
 							
 							// Remote is clueless
 							// No chance to connect now
@@ -448,18 +424,21 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 
 							
 						}
+				
 						
+						// PUT DIRECT MESSAGE INTO TXBUFFER
+						por->ping_flag = 1;
 						
-						
-						
+											
+					
 					}
 					else{
 						
 						// VALIDATE CONNECTION
 						uint8_t validator = 1;
 						
-						validator &= local_received == local_stored;
-						validator &= remote_received == remote_stored;
+						validator &= local_token_received == por->ping_local_token;
+						validator &= partner_token_received == por->ping_partner_token;
 						
 						validator &= por->partner_fi == (message[3] - por->direction + 6)%4;
 						validator &= por->partner_hwcfg == grid_sys_read_hex_string_value(&message[length-10], 2, error_flag);
@@ -480,9 +459,13 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							//FAILED, DISCONNECT
 							por->partner_status = 0;
 							
-							grid_sys_write_hex_string_value(&stored_report->payload[8], 2, 255);
-							grid_sys_write_hex_string_value(&stored_report->payload[6], 2, 255);
-							grid_msg_checksum_write(stored_report->payload, stored_report->payload_length, grid_msg_checksum_calculate(stored_report->payload, stored_report->payload_length));
+							por->ping_partner_token = 255;
+							por->ping_local_token = 255;
+							
+							grid_sys_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
+							grid_sys_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
+							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_checksum_calculate(por->ping_packet, por->ping_packet_length));
+							
 							
 							//printf("LS: %d RS: %d LR: %d RR: %d  (Invalid)\r\n",local_stored,remote_stored,local_received,remote_received);
 							
@@ -859,12 +842,11 @@ uint8_t grid_buffer_read_cancel(struct grid_buffer* buf){
 	return 1;
 }
 
-void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf_size, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma, struct grid_ui_report* p_report){
+void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf_size, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma){
 	
 	grid_buffer_init(&por->tx_buffer, tx_buf_size);
 	grid_buffer_init(&por->rx_buffer, rx_buf_size);
 	
-	por->ping_report = p_report;
 	
 	por->cooldown = 0;
 	
@@ -891,13 +873,24 @@ void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16
 	por->partner_hwcfg = 0;
 	por->partner_status = 1;
 	
+	por->ping_local_token = 255;
+	por->ping_partner_token = 255;
 	
+	por->ping_flag = 0;
 	
 	if (type == GRID_PORT_TYPE_USART){	
 		
 		por->partner_status = 0;
 		por->partner_fi = 0;
 		
+		
+		sprintf(por->ping_packet, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, por->direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
+		
+		por->ping_packet_length = strlen(por->ping_packet);	
+			
+		grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_checksum_calculate(por->ping_packet, por->ping_packet_length));
+		
+
 		
 		if (por->direction == GRID_CONST_NORTH){
 			por->dx = 0;
@@ -925,15 +918,13 @@ void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16
 
 void grid_port_init_all(void){
 	
-	struct grid_report_model* mod = &grid_report_state;
+	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_CONST_NORTH ,0);
+	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_CONST_EAST  ,1);
+	grid_port_init(&GRID_PORT_S, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_SOUTH, GRID_PORT_TYPE_USART, GRID_CONST_SOUTH ,2);
+	grid_port_init(&GRID_PORT_W, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_WEST,  GRID_PORT_TYPE_USART, GRID_CONST_WEST  ,3);
 	
-	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_CONST_NORTH ,0, &mod->report_array[GRID_REPORT_INDEX_PING_NORTH]);
-	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_CONST_EAST  ,1, &mod->report_array[GRID_REPORT_INDEX_PING_EAST]);
-	grid_port_init(&GRID_PORT_S, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_SOUTH, GRID_PORT_TYPE_USART, GRID_CONST_SOUTH ,2, &mod->report_array[GRID_REPORT_INDEX_PING_SOUTH]);
-	grid_port_init(&GRID_PORT_W, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_WEST,  GRID_PORT_TYPE_USART, GRID_CONST_WEST  ,3, &mod->report_array[GRID_REPORT_INDEX_PING_WEST]);
-	
-	grid_port_init(&GRID_PORT_U, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_UI, 0, -1, NULL);
-	grid_port_init(&GRID_PORT_H, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_USB, 0, -1, NULL);	
+	grid_port_init(&GRID_PORT_U, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_UI, 0, -1);
+	grid_port_init(&GRID_PORT_H, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_USB, 0, -1);	
 	
 	GRID_PORT_U.partner_status = 1; // UI IS ALWAYS CONNECTED
 	GRID_PORT_H.partner_status = 1; // HOST IS ALWAYS CONNECTED (Not really!)

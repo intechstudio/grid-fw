@@ -13,7 +13,7 @@ void grid_module_po16_revb_hardware_start_transfer(void);
 static void grid_module_po16_revb_hardware_transfer_complete_cb(void);
 void grid_module_po16_revb_hardware_init(void);
 
-void grid_module_po16_revb_init(struct grid_report_model* mod);
+void grid_module_po16_revb_init(void);
 
 
 
