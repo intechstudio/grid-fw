@@ -55,40 +55,28 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
 	grid_sys_rtc_tick_time(&grid_sys_state);	
 	grid_task_timer_tick(&grid_task_state);
-	
-		// HANDLE MAPMODE CHANGES
-	struct grid_report_model* mod = &grid_report_state;
-		
-	//CRITICAL_SECTION_ENTER()
-
-	uint8_t mapmode_value = gpio_get_pin_level(MAP_MODE);
-
-	if (mapmode_value != mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0]){
 			
-		if (mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0] == 0){
-				
-			mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0] = 1;
-				
+	uint8_t mapmode_value = !gpio_get_pin_level(MAP_MODE);
+
+	if (mapmode_value != grid_sys_state.mapmodestate){
+		
+		grid_sys_state.mapmodestate = mapmode_value;
+			
+		if (grid_sys_state.mapmodestate == 0){
+			
+			uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_MAPMODE_RELEASE);
+			grid_ui_event_template_action(&grid_core_state.element[0], event_index);
+			grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);		
+					
 		}
 		else{
-
-				
-			mod->report_array[GRID_REPORT_INDEX_MAPMODE].helper[0] = 0;
-				
-			uint8_t new_bank = grid_sys_get_bank_next(&grid_sys_state);
-			
-						
-			grid_report_sys_set_payload_parameter(&grid_report_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, new_bank);
 		
-			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_MAPMODE);
 			
-			
-
-			 
+			uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_MAPMODE_PRESS);
+			grid_ui_event_template_action(&grid_core_state.element[0], event_index);
+			grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);		
+									 
 		}
-			
-			
-			
 
 	}
 
@@ -97,10 +85,10 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 static void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 {
 
-	uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT);
+	uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT);				
+	grid_ui_event_template_action(&grid_core_state.element[0], event_index);	
 	grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
 
-	//grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_HEARTBEAT);
 }
 
 volatile uint8_t scheduler_report_flag = 0;
@@ -211,51 +199,56 @@ int main(void)
 			}
 			else{		
 						
-
-				FLASH_0_init();
+				if (false){ // FLASHTEST
 					
-				uint8_t src_data[512];
-				uint8_t chk_data[512];
-
-				uint32_t page_size;
-				uint16_t i;
-
-				/* Init source data */
-				page_size = flash_get_page_size(&FLASH_0);
-
-				for (i = 0; i < page_size; i++) {
-					src_data[i] = i;
-				}
-
-				/* Write data to flash */
-				//flash_write(&FLASH_0, 0x83200, src_data, page_size);
-
-				/* Read data from flash */
-				flash_read(&FLASH_0, 0x83200, chk_data, page_size);
+					FLASH_0_init();
 					
-				
+					uint8_t src_data[512];
+					uint8_t chk_data[512];
 
-				/* Check if the read address not aligned to the start of a page */
-				if (chk_data[5] != 5) {
-					// bad address
-					grid_sys_alert_set_alert(&grid_sys_state, 100,0,0,2,350);
+					uint32_t page_size;
+					uint16_t i;
+
+					/* Init source data */
+					page_size = flash_get_page_size(&FLASH_0);
+
+					for (i = 0; i < page_size; i++) {
+						src_data[i] = i;
+					}
+
+					/* Write data to flash */
+					//flash_write(&FLASH_0, 0x83200, src_data, page_size);
+
+					/* Read data from flash */
+					flash_read(&FLASH_0, 0x83200, chk_data, page_size);
+					
+					
+
+					/* Check if the read address not aligned to the start of a page */
+					if (chk_data[5] != 5) {
+						// bad address
+						grid_sys_alert_set_alert(&grid_sys_state, 100,0,0,2,350);
+					}
+					else{
+						// good address
+						grid_sys_alert_set_alert(&grid_sys_state, 0,100,0,2,350);
+						
+					}
+					
+					
 				}
 				else{
-					// good address
-					grid_sys_alert_set_alert(&grid_sys_state, 0,100,0,2,350);
 					
+					grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN	
 				}
 				
-				
-				
-				//grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN		
 				GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Connected");
 				
-				uint8_t new_bank = grid_sys_get_bank_next(&grid_sys_state);
+				grid_sys_set_bank(&grid_sys_state, grid_sys_get_bank_next(&grid_sys_state));
 				
-				grid_report_sys_set_payload_parameter(&grid_report_state, GRID_REPORT_INDEX_MAPMODE,GRID_CLASS_BANKACTIVE_BANKNUMBER_offset,GRID_CLASS_BANKACTIVE_BANKNUMBER_length, new_bank);
-	
-				grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_MAPMODE);
+				uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_CFG_RESPONSE);
+				grid_ui_event_template_action(&grid_core_state.element[0], event_index);
+				grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
 				
 				usb_init_variable = 1;
 				
@@ -267,9 +260,12 @@ int main(void)
 		
 		// Request neighbour bank settings if we don't have it initialized
 		
- 		if (grid_sys_get_bank(&grid_sys_state) == 255){
+ 		if (grid_sys_get_bank_num(&grid_sys_state) == 255){
  										
- 			grid_report_sys_set_changed_flag(&grid_report_state, GRID_REPORT_INDEX_CFG_REQUEST);
+ 			uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_CFG_REQUEST);
+ 			grid_ui_event_template_action(&grid_core_state.element[0], event_index);
+ 			grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
+			 
  		}
 	
 		

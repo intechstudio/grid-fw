@@ -94,6 +94,11 @@ struct grid_sys_model
 	
 	
 	uint8_t bank_activebank_number;
+
+	uint8_t mapmodestate;
+	
+	
+	
 	uint8_t bank_changed;
 	
 	uint8_t bank_enabled[GRID_SYS_BANK_MAXNUMBER];
@@ -150,8 +155,13 @@ uint32_t grid_sys_bank_get_color(struct grid_sys_model* mod, uint8_t banknumber)
 
 
 
-uint8_t grid_sys_get_bank(struct grid_sys_model* mod);
+uint8_t grid_sys_get_bank_num(struct grid_sys_model* mod);
 uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod);
+
+uint8_t grid_sys_get_bank_red(struct grid_sys_model* mod);
+uint8_t grid_sys_get_bank_gre(struct grid_sys_model* mod);
+uint8_t grid_sys_get_bank_blu(struct grid_sys_model* mod);
+
 
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t value);
 

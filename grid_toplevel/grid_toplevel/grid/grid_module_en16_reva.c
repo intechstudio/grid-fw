@@ -49,7 +49,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 
 
-	uint8_t bank = grid_sys_get_bank(&grid_sys_state);
+	uint8_t bank = grid_sys_get_bank_num(&grid_sys_state);
 	
 	if (bank == 255){
 		bank=0;
@@ -78,13 +78,13 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 			uint32_t* template_parameter_list = grid_ui_state.element[res_index].template_parameter_list;
 			uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
 			
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER] = res_index;
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = res_index;
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
 
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV7] = value;
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV8] = value*2;
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14U] = 0;
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14L] = 0;
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV7] = value;
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV8] = value*2;
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14U] = 0;
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14L] = 0;
 			
 			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_AVC7);
 
@@ -128,11 +128,11 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 					
 				if (grid_ui_encoder_array[i].button_value == 0){ // Button Press Event
 				
-					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER] = res_index;
-					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
+					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = res_index;
+					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
 				
-					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_DV7] = 127;
-					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_DV8] = 255;
+					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV7] = 127;
+					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV8] = 255;
 				
 					uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_DP);
 
@@ -148,11 +148,11 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				}
 				else{  // Button Release Event
 				
- 					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER] = res_index;
- 					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
+ 					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = res_index;
+ 					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
  
- 					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_DV7] = 0;
- 					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_DV8] = 0;
+ 					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV7] = 0;
+ 					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV8] = 0;
 
 				
  					uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_DR);
@@ -265,13 +265,13 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 					uint32_t* template_parameter_list = grid_ui_state.element[res_index].template_parameter_list;
 					uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};				
 															
-					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER] = res_index;
-					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
+					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = res_index;
+					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
 
-					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV7] = value;
-					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV8] = value*2;
-					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14U] = 0;
-					template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14L] = 0;
+					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV7] = value;
+					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV8] = value*2;
+					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14U] = 0;
+					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14L] = 0;
 					
 					uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_AVC7);
 

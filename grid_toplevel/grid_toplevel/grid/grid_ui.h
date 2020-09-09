@@ -29,9 +29,7 @@ enum grid_report_index_t {
 	GRID_REPORT_INDEX_PING_NORTH,
 	GRID_REPORT_INDEX_PING_EAST,
 	GRID_REPORT_INDEX_PING_SOUTH,
-	GRID_REPORT_INDEX_PING_WEST,	
-	GRID_REPORT_INDEX_MAPMODE,
-	GRID_REPORT_INDEX_CFG_REQUEST
+	GRID_REPORT_INDEX_PING_WEST
 };
 
 
@@ -87,6 +85,7 @@ struct grid_ui_action_parameter{
 	
 	enum grid_ui_status status;
 	
+	uint8_t group;
 	uint8_t address;
 	uint8_t length;
 	uint8_t offset;

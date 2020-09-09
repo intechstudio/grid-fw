@@ -423,15 +423,30 @@ uint32_t grid_sys_bank_get_color(struct grid_sys_model* mod, uint8_t banknumber)
 }
 
 
-uint8_t grid_sys_get_bank(struct grid_sys_model* mod){
+uint8_t grid_sys_get_bank_num(struct grid_sys_model* mod){
 	
 	return mod->bank_activebank_number;
+}
+
+uint8_t grid_sys_get_bank_red(struct grid_sys_model* mod){
+	
+	return mod->bank_activebank_color_r;
+}
+
+uint8_t grid_sys_get_bank_gre(struct grid_sys_model* mod){
+	
+	return mod->bank_activebank_color_g;
+}
+
+uint8_t grid_sys_get_bank_blu(struct grid_sys_model* mod){
+
+	return mod->bank_activebank_color_b;
 }
 
 
 uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod){
 		
-	uint8_t current_active = grid_sys_get_bank(mod);
+	uint8_t current_active = grid_sys_get_bank_num(mod);
 		
 	for (uint8_t i=0; i<GRID_SYS_BANK_MAXNUMBER; i++){
 		

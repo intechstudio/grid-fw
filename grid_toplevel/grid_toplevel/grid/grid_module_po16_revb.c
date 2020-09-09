@@ -91,13 +91,14 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 	
 		if (grid_ain_get_changed(res_index)){
 		
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER] = res_index;
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_po16_mux_reversed_lookup[res_index];
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = res_index;
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_po16_mux_reversed_lookup[res_index];
 
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV7] = grid_ain_get_average(res_index, 7);
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV8] = grid_ain_get_average(res_index, 8);
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14U] = 0;
-			template_parameter_list[GRID_TEMPLATE_PARAMETER_CONTROLLER_AV14L] = 0;
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV7] = grid_ain_get_average(res_index, 7);
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV8] = grid_ain_get_average(res_index, 8);
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14U] = 0;
+			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14L] = 0;
+			
 			
 			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_AVC7);
 

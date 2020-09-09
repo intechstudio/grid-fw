@@ -354,21 +354,25 @@ void grid_ui_element_init(struct grid_ui_element* ele, enum grid_ui_element_t el
 	ele->type = element_type;
 	
 	
-	ele->template_parameter_list = malloc(GRID_TEMPLATE_PARAMETER_LIST_LENGTH*sizeof(uint32_t));
+	ele->template_parameter_list = malloc(GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH*sizeof(uint32_t));
 	
 	// initialize all of the template parameter values
-	for(uint8_t i=0; i<GRID_TEMPLATE_PARAMETER_LIST_LENGTH; i++){
+	for(uint8_t i=0; i<GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH; i++){
 		ele->template_parameter_list[i] = 0;
 	}
 	
 	
 	if (element_type == GRID_UI_ELEMENT_SYSTEM){
 		
-		ele->event_list_length = 2;
+		ele->event_list_length = 6;
 		
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));	
 		grid_ui_event_init(&ele->event_list[0], GRID_UI_EVENT_INIT); // Element Initialization Event
 		grid_ui_event_init(&ele->event_list[1], GRID_UI_EVENT_HEARTBEAT); // Heartbeat
+		grid_ui_event_init(&ele->event_list[2], GRID_UI_EVENT_MAPMODE_PRESS); // Mapmode press
+		grid_ui_event_init(&ele->event_list[3], GRID_UI_EVENT_MAPMODE_RELEASE); // Mapmode release
+		grid_ui_event_init(&ele->event_list[4], GRID_UI_EVENT_CFG_RESPONSE); //
+		grid_ui_event_init(&ele->event_list[5], GRID_UI_EVENT_CFG_REQUEST); //
 		
 	}
 	else if (element_type == GRID_UI_ELEMENT_POTENTIOMETER){
@@ -436,22 +440,31 @@ void grid_ui_event_register_action(struct grid_ui_element* ele, enum grid_ui_eve
 	
 	for (uint32_t i=0; i<event_string_length; i++){
 		
-		// if current character is A
-		if (event_string[i] == 'A'){
+		// if current character is A and the next character is a number from 0 to 9
+		if (event_string[i] == 'A' && (event_string[i+1]-'0') < GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH){
+						
+			parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;
 			
-			// and the next character is a number from 0 to 9
-			if ((event_string[i+1]-'0') < 10){
-				
-				parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;
-				parameter_list[parameter_list_length].address = (event_string[i+1]-'0');
-				parameter_list[parameter_list_length].offset = i;
-				parameter_list[parameter_list_length].length = 2;		
-					
-				parameter_list_length++;
-				
-			}
+			parameter_list[parameter_list_length].group = event_string[i];
+			
+			parameter_list[parameter_list_length].address = (event_string[i+1]-'0');
+			parameter_list[parameter_list_length].offset = i;
+			parameter_list[parameter_list_length].length = 2;
+			parameter_list_length++;
 	
 		}
+		else if (event_string[i] == 'B' && (event_string[i+1]-'0') < GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH){
+			
+			parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;		
+			
+			parameter_list[parameter_list_length].group = event_string[i];
+			
+			parameter_list[parameter_list_length].address = (event_string[i+1]-'0');
+			parameter_list[parameter_list_length].offset = i;
+			parameter_list[parameter_list_length].length = 2;
+			parameter_list_length++;
+			
+		}		
 		
 	}
 	
@@ -547,14 +560,48 @@ uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event
 		
 		uint8_t* message = ele->event_list[event_index].action_string;
 		
-		uint32_t parameter_value =  ele->template_parameter_list[ele->event_list[event_index].action_parameter_list[i].address];
-		uint8_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
-		uint8_t parameter_length = ele->event_list[event_index].action_parameter_list[i].length;
+		if (ele->event_list[event_index].action_parameter_list[i].group == 'A'){
+			
+			uint32_t parameter_value =  ele->template_parameter_list[ele->event_list[event_index].action_parameter_list[i].address];
+			uint8_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
+			uint8_t parameter_length = ele->event_list[event_index].action_parameter_list[i].length;
+					
+			uint8_t error = 0;
+			grid_msg_set_parameter(message, parameter_offset, parameter_length, parameter_value, &error);
+					
+			//ele->event[event_index].action_string		
+		}
+		else if (ele->event_list[event_index].action_parameter_list[i].group == 'B'){
+
+			uint32_t parameter_value = 0;
+			uint8_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
+			uint8_t parameter_length = ele->event_list[event_index].action_parameter_list[i].length;
+
+			if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_NUMBER_ACTIVE){
+				parameter_value = grid_sys_get_bank_num(&grid_sys_state);
+			}
+			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_COLOR_RED){
+				parameter_value = grid_sys_get_bank_red(&grid_sys_state);
+			}
+			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_COLOR_GRE){
+				parameter_value = grid_sys_get_bank_gre(&grid_sys_state);
+			}
+			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_COLOR_BLU){
+				parameter_value = grid_sys_get_bank_blu(&grid_sys_state);
+			}
+			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_MAPMODE_STATE){
+				parameter_value = grid_sys_state.mapmodestate;
+			}
+			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_NEXT){
+				parameter_value = grid_sys_get_bank_next(&grid_sys_state);
+			}
+			
+			uint8_t error = 0;
+			grid_msg_set_parameter(message, parameter_offset, parameter_length, parameter_value, &error);
+
+		}
 		
-		uint8_t error = 0;
-		grid_msg_set_parameter(message, parameter_offset, parameter_length, parameter_value, &error);
-		
-		//ele->event[event_index].action_string
+
 		
 	}
 	
@@ -608,34 +655,7 @@ uint8_t grid_report_sys_init(struct grid_report_model* mod){
 		uint8_t payload_length = strlen(payload_template);
 		
 		enum grid_report_type_t type = GRID_REPORT_TYPE_UNDEFINED;	
-		if (i == GRID_REPORT_INDEX_MAPMODE){ // MAPMODE: BANKACTIVE REP
-			
-			type = GRID_REPORT_TYPE_BROADCAST;
-
-
-			sprintf(payload_template, GRID_CLASS_BANKACTIVE_frame);
-			
-			uint8_t error = 0;	
-					
-			grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);			
-			grid_msg_set_parameter(payload_template, GRID_CLASS_BANKACTIVE_BANKNUMBER_offset, GRID_CLASS_BANKACTIVE_BANKNUMBER_length, 0, &error);
-				
-			payload_length = strlen(payload_template);
-		}
-		else if (i == GRID_REPORT_INDEX_CFG_REQUEST){ // CONFIGURATION REQUEST:  BANKACTIVE REQ
-			
-			type = GRID_REPORT_TYPE_BROADCAST;
-
-			sprintf(payload_template, GRID_CLASS_BANKACTIVE_frame);
-			
-			uint8_t error = 0;
-			
-			grid_msg_set_parameter(payload_template, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REQ_code, &error);
-			grid_msg_set_parameter(payload_template, GRID_CLASS_BANKACTIVE_BANKNUMBER_offset, GRID_CLASS_BANKACTIVE_BANKNUMBER_length, 0, &error);
-			
-			payload_length = strlen(payload_template);
-		}
-		else if (i == GRID_REPORT_INDEX_PING_NORTH){ // PING NORTH
+		if (i == GRID_REPORT_INDEX_PING_NORTH){ // PING NORTH
 		
 			uint8_t direction = GRID_CONST_NORTH;
 			
