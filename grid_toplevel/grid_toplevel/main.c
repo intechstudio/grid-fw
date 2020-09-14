@@ -220,7 +220,7 @@ int main(void)
 					//flash_write(&FLASH_0, 0x83200, src_data, page_size);
 
 					/* Read data from flash */
-					flash_read(&FLASH_0, 0x83200, chk_data, page_size);
+					flash_read(&FLASH_0, 0x80000, chk_data, page_size);
 					
 					
 
