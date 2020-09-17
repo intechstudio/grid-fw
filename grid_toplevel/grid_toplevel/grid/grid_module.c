@@ -142,7 +142,7 @@ void grid_module_common_init(void){
 	
 		sprintf(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_frame);
 		uint8_t error = 0;
-		grid_msg_set_parameter(&payload_template[payload_length], GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REP_code, &error);
+		grid_msg_set_parameter(&payload_template[payload_length], GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, &error);
 	
 		grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(), &error);
 		grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length , GRID_PROTOCOL_VERSION_MAJOR, &error);
@@ -238,7 +238,7 @@ void grid_module_common_init(void){
 	grid_sys_init(&grid_sys_state);
 
 
-
+	grid_nvm_init(&grid_nvm_state, &FLASH_0);
 	
 		
 }

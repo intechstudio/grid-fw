@@ -56,10 +56,10 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 	}
 
 
-	uint8_t bank_changed = grid_sys_state.bank_changed;
+	uint8_t bank_changed = grid_sys_state.bank_active_changed;
 		
 	if (bank_changed){
-		grid_sys_state.bank_changed = 0;
+		grid_sys_state.bank_active_changed = 0;
 				
 		for (uint8_t i = 0; i<16; i++)
 		{

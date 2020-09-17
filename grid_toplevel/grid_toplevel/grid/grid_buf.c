@@ -196,8 +196,16 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		
 	}
 	
+	
+
+	
+	
+	
+	
 	// frame validator
-	if (message[0] == GRID_CONST_SOH && message [length-1] == GRID_CONST_LF){
+	if (message[0] == GRID_CONST_SOH && message[length-1] == GRID_CONST_LF){
+		
+				
 		
 		checksum_received = grid_msg_checksum_read(message, length);
 		
@@ -205,6 +213,20 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		
 		// checksum validator
 		if (checksum_calculated == checksum_received && error_flag == 0){
+			
+			
+// 						if (por == &GRID_PORT_U && message[0] == GRID_CONST_SOH ){//NVM TEST
+// 							grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN
+// 							volatile uint8_t debug[200] = {0};
+// 							
+// 							sprintf(debug, "\nLoading %d bytes %d !\n", length, message[length]);
+// 							
+// 							cdcdf_acm_write(debug, strlen(debug));
+// 							
+// 							delay_ms(5);
+// 							
+// 							
+// 						}
 			
 			if (message[1] == GRID_CONST_BRC){ // Broadcast message
 				
@@ -513,6 +535,9 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 	}
 	else{
 		// frame error
+		
+		
+
 		
 
 		printf("{\"type\": \"ERROR\", \"data\": [\"Frame Error\"]}\r\n");
@@ -946,7 +971,6 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 		return 0;
 		 
 	}else{
-		
 			
 		uint8_t port_count = 6;
 		struct grid_port* port_array_default[port_count];
@@ -1112,7 +1136,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_offset], GRID_CLASS_length, &error_flag);
 				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
 											
-				if (msg_class == GRID_CLASS_MIDIRELATIVE_code && msg_instr == GRID_INSTR_REP_code){
+				if (msg_class == GRID_CLASS_MIDIRELATIVE_code && msg_instr == GRID_INSTR_EXECUTE_code){
 					
 										
 					uint8_t midi_channel = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length, &error);
@@ -1187,9 +1211,22 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		
 		uint8_t error=0;
 		
-		int8_t dx = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_SYS_DEFAULT_POSITION;
-		int8_t dy = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_SYS_DEFAULT_POSITION;
+		uint8_t dx = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
+		uint8_t dy = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
 			
+		uint8_t position_is_me = 0;
+		uint8_t position_is_global = 0;
+			
+		if (dx - GRID_SYS_DEFAULT_POSITION == 0 && dy - GRID_SYS_DEFAULT_POSITION == 0){
+			position_is_me = 1;
+		}
+		else if (dx == 255 && dy==255){
+			position_is_global = 1;
+		}
+		else if (dx == 0 && dy==0){
+			position_is_global = 1;
+		}
+		
 			
 		uint8_t current_start		= 0;
 		uint8_t current_stop		= 0;
@@ -1213,7 +1250,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKACTIVE_BANKNUMBER_offset], GRID_CLASS_BANKACTIVE_BANKNUMBER_length, &error_flag);
 									
-					if (msg_instr == GRID_INSTR_REP_code){ //SET BANK
+					if (msg_instr == GRID_INSTR_EXECUTE_code){ //SET BANK
 									
 						if (grid_sys_get_bank_num(&grid_sys_state) == 255){
 							
@@ -1229,7 +1266,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						//grid_ui_event_reset(&grid_core_state.element[0].event_list[event_index]);
 													
 					}
-					else if (msg_instr == GRID_INSTR_REQ_code){ //GET BANK
+					else if (msg_instr == GRID_INSTR_FETCH_code){ //GET BANK
 						
 						if (grid_sys_get_bank_num(&grid_sys_state) != 255){
 									
@@ -1242,8 +1279,10 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					
 				}
-				else if (msg_class == GRID_CLASS_BANKENABLED_code && msg_instr == GRID_INSTR_REP_code){
+				else if (msg_class == GRID_CLASS_BANKENABLED_code && msg_instr == GRID_INSTR_EXECUTE_code){
 					
+					//grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 0, 500); // RED
+										
 					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKENABLED_BANKNUMBER_offset], GRID_CLASS_BANKENABLED_BANKNUMBER_length, &error_flag);
 					uint8_t isenabled  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKENABLED_ISENABLED_offset], GRID_CLASS_BANKENABLED_ISENABLED_length, &error_flag);
 					
@@ -1262,7 +1301,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					
 				}	
-				else if (msg_class == GRID_CLASS_BANKCOLOR_code && msg_instr == GRID_INSTR_REP_code){
+				else if (msg_class == GRID_CLASS_BANKCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code){
+					
+
 					
 					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_NUM_offset], GRID_CLASS_BANKCOLOR_NUM_length, &error_flag);
 					uint8_t red		   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_RED_offset], GRID_CLASS_BANKCOLOR_RED_length, &error_flag);
@@ -1275,34 +1316,46 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					if (grid_sys_get_bank_num(&grid_sys_state) == banknumber){
 						grid_sys_set_bank(&grid_sys_state, banknumber);
 					}
-				
-					
+									
 				}
-				else if (msg_class == GRID_CLASS_LEDPHASE_code && msg_instr == GRID_INSTR_REP_code){
-				
-					if (dx == 0 && dy == 0){
+				else if (msg_class == GRID_CLASS_LEDPHASE_code && msg_instr == GRID_INSTR_EXECUTE_code && position_is_me){
 					
-						uint8_t led_num  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_NUM_offset], GRID_CLASS_LEDPHASE_NUM_length, &error_flag);
-						uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_LAY_offset], GRID_CLASS_LEDPHASE_LAY_length, &error_flag);
-						uint8_t led_pha  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_PHA_offset], GRID_CLASS_LEDPHASE_PHA_length, &error_flag);
-						grid_led_set_phase(&grid_led_state, led_num, led_lay, led_pha);
-					
-					}
+					uint8_t led_num  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_NUM_offset], GRID_CLASS_LEDPHASE_NUM_length, &error_flag);
+					uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_LAY_offset], GRID_CLASS_LEDPHASE_LAY_length, &error_flag);
+					uint8_t led_pha  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_PHA_offset], GRID_CLASS_LEDPHASE_PHA_length, &error_flag);
+					grid_led_set_phase(&grid_led_state, led_num, led_lay, led_pha);
+							
 				}
-				else if (msg_class == GRID_CLASS_LEDCOLOR_code && msg_instr == GRID_INSTR_REP_code){
-					
-					if (dx == 0 && dy == 0){
+				else if (msg_class == GRID_CLASS_LEDCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code && position_is_me){
 						
-						uint8_t led_num = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_NUM_offset], GRID_CLASS_LEDCOLOR_NUM_length, &error_flag);
-						uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_LAY_offset], GRID_CLASS_LEDCOLOR_LAY_length, &error_flag);
-						uint8_t led_red	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_RED_offset], GRID_CLASS_LEDCOLOR_RED_length, &error_flag);
-						uint8_t led_gre	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_GRE_offset], GRID_CLASS_LEDCOLOR_GRE_length, &error_flag);
-						uint8_t led_blu	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_BLU_offset], GRID_CLASS_LEDCOLOR_BLU_length, &error_flag);
+					uint8_t led_num = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_NUM_offset], GRID_CLASS_LEDCOLOR_NUM_length, &error_flag);
+					uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_LAY_offset], GRID_CLASS_LEDCOLOR_LAY_length, &error_flag);
+					uint8_t led_red	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_RED_offset], GRID_CLASS_LEDCOLOR_RED_length, &error_flag);
+					uint8_t led_gre	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_GRE_offset], GRID_CLASS_LEDCOLOR_GRE_length, &error_flag);
+					uint8_t led_blu	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_BLU_offset], GRID_CLASS_LEDCOLOR_BLU_length, &error_flag);
 																							
-						grid_led_set_color(&grid_led_state, led_num, led_lay, led_red, led_gre, led_blu);
-						
-					}
-				}		
+					grid_led_set_color(&grid_led_state, led_num, led_lay, led_red, led_gre, led_blu);
+				
+				}
+				else if (msg_class == GRID_CLASS_LOADGLOBAL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				
+					grid_sys_load_bank_settings(&grid_sys_state, &grid_nvm_state);
+				
+				}
+				else if (msg_class == GRID_CLASS_STOREGLOBAL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+			
+					grid_sys_store_bank_settings(&grid_sys_state, &grid_nvm_state);
+			
+				}
+				else if (msg_class == GRID_CLASS_CLEARGLOBAL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				
+					volatile uint8_t temp[] = "ClearGlobal\n";
+					cdcdf_acm_write(temp, strlen(temp));
+					delay_ms(1);
+					
+					grid_sys_clear_bank_settings(&grid_sys_state, &grid_nvm_state);
+				
+				}
 				else{
 					//SORRY
 				}

@@ -51,6 +51,10 @@ static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 	
 }
 
+// volatile uint8_t debug[500] = {0};
+// volatile uint16_t debug_offset = 0;
+// volatile uint8_t debug_flag = 0;
+
 static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
 	grid_sys_rtc_tick_time(&grid_sys_state);	
@@ -62,19 +66,23 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 		
 		grid_sys_state.mapmodestate = mapmode_value;
 			
-		if (grid_sys_state.mapmodestate == 0){
+		if (grid_sys_state.mapmodestate == 0){ // RELEASE
 			
 			uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_MAPMODE_RELEASE);
 			grid_ui_event_template_action(&grid_core_state.element[0], event_index);
 			grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);		
-					
+								
 		}
-		else{
+		else{ // PRESS
+		
+		
+
 		
 			
 			uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_MAPMODE_PRESS);
 			grid_ui_event_template_action(&grid_core_state.element[0], event_index);
 			grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);		
+						
 									 
 		}
 
@@ -87,7 +95,7 @@ static void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task
 
 	uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT);				
 	grid_ui_event_template_action(&grid_core_state.element[0], event_index);	
-	grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
+	//grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
 
 }
 
@@ -137,8 +145,8 @@ void init_timer(void)
 
 int main(void)
 {
-	
-	
+
+
 
 	atmel_start_init();	
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
@@ -178,13 +186,60 @@ int main(void)
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 	
 	
+	uint8_t debug_flag = 0;	
+	uint16_t debug_offset = 0;
+	uint8_t debug[500] = {0};
 
 
+	grid_sys_load_bank_settings(&grid_sys_state, &grid_nvm_state);
 	
 	while (1) {
 		
+		if (usb_init_variable == 1 && grid_sys_rtc_get_time(&grid_sys_state)>RTC1SEC*4){
+			
+			if (debug_flag == 0 && 0){
+				
+				grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 500); // WHITE	
+				
+				debug_flag = 1;
+			}
+		
+		}
 		
 		
+		if (debug_flag == 1){
+			
+			debug_offset = 0;
+			
+			uint8_t element = 3;
+
+
+			sprintf(&debug[debug_offset], "Start of debug\n");
+			debug_offset+=strlen(&debug[debug_offset]);
+
+
+			for(uint8_t i=0; i<grid_ui_state.element[element].event_list_length; i++){
+
+				sprintf(&debug[debug_offset], "Event %d.action :\n", i);
+				debug_offset+=strlen(&debug[debug_offset]);
+
+				for (uint8_t j=0; j<grid_ui_state.element[element].event_list[i].action_length; j++)
+				{
+					debug[debug_offset+j] = grid_ui_state.element[element].event_list[i].action_string[j];
+				}
+
+				debug_offset+=strlen(&debug[debug_offset]);
+
+				sprintf(&debug[debug_offset], "\n");
+				debug_offset+=strlen(&debug[debug_offset]);
+
+
+			}
+			
+			debug_flag = 2;
+			
+			cdcdf_acm_write(debug, debug_offset);
+		}	
 				
 		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
 		
@@ -201,7 +256,7 @@ int main(void)
 						
 				if (false){ // FLASHTEST
 					
-					FLASH_0_init();
+					
 					
 					uint8_t src_data[512];
 					uint8_t chk_data[512];
@@ -317,11 +372,7 @@ int main(void)
 							
 		grid_task_enter_task(&grid_task_state, GRID_TASK_RECEIVE);
 
-		// CHECK RX BUFFERS
-		grid_port_receive_complete_task(&GRID_PORT_N);
-		grid_port_receive_complete_task(&GRID_PORT_E);
-		grid_port_receive_complete_task(&GRID_PORT_S);
-		grid_port_receive_complete_task(&GRID_PORT_W);
+
 			
 			
 		
@@ -349,28 +400,56 @@ int main(void)
 		*/
 		
 		
-		// SERIAL READ	
+		// SERIAL READ 
 	
 		cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
 		
 		uint16_t usblength = strlen(GRID_PORT_H.rx_double_buffer);
 		
 		if (usblength){	
+
 						
 			GRID_PORT_H.rx_double_buffer_read_start_index = 0;
 
 			grid_port_receive_decode(&GRID_PORT_H, 0, usblength-2);
-			
-			// THIS IS ABSOLUTELY CRAZY!!!			
-			for (uint16_t i = 0; i<100; i++){
-				
-				GRID_PORT_H.rx_double_buffer[i] = 0;
-			
-			}
+	
 				
 		}
 				
-					
+		// CHECK RX BUFFERS
+		
+		
+		grid_port_receive_complete_task(&GRID_PORT_N);
+		grid_port_receive_complete_task(&GRID_PORT_E);
+		grid_port_receive_complete_task(&GRID_PORT_S);
+		grid_port_receive_complete_task(&GRID_PORT_W);
+		
+		
+		// NVM READ
+		if (GRID_PORT_U.rx_double_buffer_status != 0){	
+			
+			uint32_t length = GRID_PORT_U.rx_double_buffer_status;
+							
+			if (length !=0){
+				
+				// GETS HERE
+							
+
+				
+				grid_port_receive_decode(&GRID_PORT_U, 0, length);		
+				
+			}	
+			else{
+				
+				//clear buffer
+				for (uint32_t i=0; i<GRID_NVM_PAGE_SIZE; i++)
+				{
+					GRID_PORT_U.rx_double_buffer[i] = 0;
+				}
+			}
+		}
+		
+							
 	
 	
 		/* ========================= GRID REPORT TASK ============================= */

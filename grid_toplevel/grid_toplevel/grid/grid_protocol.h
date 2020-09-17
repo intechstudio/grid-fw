@@ -70,7 +70,6 @@
 
 // HEADER BROADCAST
 
-#define GRID_BRC_format				"%c%c%02x%02x%02x%02x%02x%02x%c",GRID_CONST_SOH,GRID_CONST_BRC,len,id,dx,dy,age,rot,GRID_CONST_EOB
 #define GRID_BRC_frame				"%c%c............%c",GRID_CONST_SOH,GRID_CONST_BRC,GRID_CONST_EOB
 
 
@@ -99,8 +98,15 @@
 #define GRID_INSTR_length					1
 #define GRID_INSTR_offset					4
 
-#define GRID_INSTR_REQ_code					0xE
-#define GRID_INSTR_REP_code					0xF
+
+// Save the following action to the given event & change instruction to execute
+#define GRID_INSTR_CONFIGURE_code			0xC
+
+// Respond with executable please!
+#define GRID_INSTR_FETCH_code				0xE
+
+// Execute The Action if possible!
+#define GRID_INSTR_EXECUTE_code				0xF
 
 
 #define GRID_CLASS_length					3
@@ -158,8 +164,7 @@
 #define GRID_CLASS_BANKACTIVE_BANKNUMBER_length		2
 
 #define GRID_CLASS_BANKENABLED_code			0x031
-#define GRID_CLASS_BANKENABLED_format		"%c%03x%01x%02x%02x%c",GRID_CONST_STX,GRID_CLASS_BANKACTIVE_code,instruction,banknumber,isenabled,GRID_CONST_ETX	
-#define GRID_CLASS_BANKENABLED_frame		"%c%03x_....%c",GRID_CONST_STX,GRID_CLASS_BANKACTIVE_code,GRID_CONST_ETX	
+#define GRID_CLASS_BANKENABLED_frame		"%c%03x_....%c",GRID_CONST_STX,GRID_CLASS_BANKENABLED_code,GRID_CONST_ETX	
 
 #define GRID_CLASS_BANKENABLED_BANKNUMBER_offset		5
 #define GRID_CLASS_BANKENABLED_BANKNUMBER_length		2
@@ -168,8 +173,7 @@
 #define GRID_CLASS_BANKENABLED_ISENABLED_length			2
 
 #define GRID_CLASS_BANKCOLOR_code			0x032
-#define GRID_CLASS_BANKCOLOR_format			"%c%03x%01x%02x%02x%02x%02x%c",GRID_CONST_STX,GRID_CLASS_BANKACTIVE_code,instruction,banknumber,red,green,blue,GRID_CONST_ETX
-#define GRID_CLASS_BANKCOLOR_frame			"%c%03x_........%c",GRID_CONST_STX,GRID_CLASS_BANKACTIVE_code,GRID_CONST_ETX
+#define GRID_CLASS_BANKCOLOR_frame			"%c%03x_........%c",GRID_CONST_STX,GRID_CLASS_BANKCOLOR_code,GRID_CONST_ETX
 
 #define GRID_CLASS_BANKCOLOR_NUM_offset		5
 #define GRID_CLASS_BANKCOLOR_NUM_length		2
@@ -327,6 +331,7 @@ enum grid_ui_event_t {
 
 // BANK + ELEMENT TYPE + ELEMENT NUMBER + EVENT TYPE + PARAMETER
 
+
 #define GRID_EVENT_HEARTBEAT	"\x02""050fB000000100\x03"
 
 #define GRID_EVENT_AVC7_POT		"\x02""050fB001A002A2\x03"
@@ -339,6 +344,9 @@ enum grid_ui_event_t {
 #define GRID_EVENT_DR_ENC		"\x02""050fB003A006A6\x03"
 
 
+
+
+
 #define GRID_EVENT_MAPMODE_PRESS	"\x02""050fB0000008B4\x03"
 #define GRID_EVENT_MAPMODE_RELEASE	"\x02""050fB0000009B4\x03"
 
@@ -347,6 +355,8 @@ enum grid_ui_event_t {
 
 
 // DEFAULT ACTION:                     FIRST MIDI then LED_SET_PHASE
+
+#define GRID_DEFAULT_ACTION_INIT   "\x02""041fA001B1B2B3\x03\x02""041fA002B1B2B3\x03"
 
 #define GRID_DEFAULT_ACTION_AVC7   "\x02""000f00b0A0A2\x03\x02""040fA001A3\x03"
 #define GRID_DEFAULT_ACTION_DP     "\x02""000f0090A0A6\x03\x02""040fA001A7\x03"
@@ -382,6 +392,33 @@ enum grid_ui_event_t {
 
 #define GRID_CLASS_EVENT_EVENTPARAM_offset				13
 #define GRID_CLASS_EVENT_EVENTPARAM_length				2
+
+
+#define GRID_CLASS_STOREGLOBAL_code					0x060
+#define GRID_CLASS_STOREGLOBAL_frame				"%c%03xf%c",GRID_CONST_STX,GRID_CLASS_STOREGLOBAL_code,GRID_CONST_ETX
+
+#define GRID_CLASS_STORELOCAL_code					0x061
+#define GRID_CLASS_STORELOCAL_frame					"%c%03xf%c",GRID_CONST_STX,GRID_CLASS_STORELOCAL_code,GRID_CONST_ETX
+
+
+
+
+#define GRID_CLASS_LOADGLOBAL_code					0x070
+#define GRID_CLASS_LOADGLOBAL_frame					"%c%03xf%c",GRID_CONST_STX,GRID_CLASS_LOADGLOBAL_code,GRID_CONST_ETX
+
+#define GRID_CLASS_LOADLOCAL_code					0x071
+#define GRID_CLASS_LOADLOCAL_frame					"%c%03xf%c",GRID_CONST_STX,GRID_CLASS_LOADLOCAL_code,GRID_CONST_ETX
+
+
+
+
+
+#define GRID_CLASS_CLEARGLOBAL_code					0x080
+#define GRID_CLASS_CLEARGLOBAL_frame				"%c%03xf%c",GRID_CONST_STX,GRID_CLASS_CLEARGLOBAL_code,GRID_CONST_ETX
+
+#define GRID_CLASS_CLEARLOCAL_code					0x081
+#define GRID_CLASS_CLEARLOCAL_frame					"%c%03xf%c",GRID_CONST_STX,GRID_CLASS_CLEARLOCAL_code,GRID_CONST_ETX
+
 
 
 

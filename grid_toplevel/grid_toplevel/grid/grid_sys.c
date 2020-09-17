@@ -16,7 +16,7 @@ enum grid_task grid_task_enter_task(struct grid_task_model* mod, enum grid_task 
 	
 }
 
-grid_task_leave_task(struct grid_task_model* mod, enum grid_task previous_task){
+void grid_task_leave_task(struct grid_task_model* mod, enum grid_task previous_task){
 	
 	mod->current_task = previous_task;
 	
@@ -43,6 +43,151 @@ uint32_t grid_task_timer_read(struct grid_task_model* mod, enum grid_task task){
 }
 
 
+
+
+
+
+void grid_sys_store_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
+	
+	grid_nvm_clear_write_buffer(nvm);
+	
+	
+	uint8_t* message = nvm->write_buffer;
+	
+	nvm->write_buffer_status = GRID_NVM_BUFFER_STATUS_DIRTY;
+	
+	uint32_t offset = 0;
+	
+	uint8_t error = 0;
+	
+		
+	// draw the broadcast frame
+	sprintf(&message[offset], GRID_BRC_frame);
+	grid_msg_set_parameter(&message[offset], GRID_BRC_LEN_offset, GRID_BRC_LEN_length, 0, &error); // calculate later
+	grid_msg_set_parameter(&message[offset], GRID_BRC_ID_offset,  GRID_BRC_ID_length, 0, &error); // don't know
+	
+	grid_msg_set_parameter(&message[offset], GRID_BRC_DX_offset,  GRID_BRC_DX_length, GRID_SYS_LOCAL_POSITION, &error);
+	grid_msg_set_parameter(&message[offset], GRID_BRC_DY_offset,  GRID_BRC_DY_length, GRID_SYS_LOCAL_POSITION, &error);
+	grid_msg_set_parameter(&message[offset], GRID_BRC_AGE_offset,  GRID_BRC_AGE_length, 0, &error);
+	grid_msg_set_parameter(&message[offset], GRID_BRC_ROT_offset,  GRID_BRC_ROT_length, GRID_SYS_DEFAULT_ROTATION, &error);
+	
+	offset += strlen(&message[offset]);	
+	
+	for(uint8_t i=0; i<4; i++){
+	
+		sprintf(&message[offset], GRID_CLASS_BANKENABLED_frame);
+		grid_msg_set_parameter(&message[offset], GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, &error);
+		grid_msg_set_parameter(&message[offset], GRID_CLASS_BANKENABLED_BANKNUMBER_offset, GRID_CLASS_BANKENABLED_BANKNUMBER_length, i, &error);		
+		grid_msg_set_parameter(&message[offset], GRID_CLASS_BANKENABLED_ISENABLED_offset, GRID_CLASS_BANKENABLED_ISENABLED_length, sys->bank_enabled[i], &error);
+		offset += strlen(&message[offset]);
+		
+		sprintf(&message[offset], GRID_CLASS_BANKCOLOR_frame);
+		grid_msg_set_parameter(&message[offset], GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, &error);
+		grid_msg_set_parameter(&message[offset], GRID_CLASS_BANKCOLOR_NUM_offset, GRID_CLASS_BANKCOLOR_NUM_length, i, &error);
+		grid_msg_set_parameter(&message[offset], GRID_CLASS_BANKCOLOR_RED_offset, GRID_CLASS_BANKCOLOR_RED_length, sys->bank_color_r[i], &error);
+		grid_msg_set_parameter(&message[offset], GRID_CLASS_BANKCOLOR_GRE_offset, GRID_CLASS_BANKCOLOR_GRE_length, sys->bank_color_g[i], &error);
+		grid_msg_set_parameter(&message[offset], GRID_CLASS_BANKCOLOR_BLU_offset, GRID_CLASS_BANKCOLOR_BLU_length, sys->bank_color_b[i], &error);
+		offset += strlen(&message[offset]);
+		
+	}
+	
+	// Calculate packet length and insert it into the header! +1 is the EOT character
+
+	grid_msg_set_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, offset+1, &error);
+
+	// Close the packet
+	sprintf(&message[offset], "%c..\n", GRID_CONST_EOT);
+	offset += strlen(&message[offset]);
+
+	// Calculate checksum!
+	uint8_t checksum = grid_msg_checksum_calculate(message, offset);
+	grid_msg_checksum_write(message, offset, checksum);
+
+
+//	cdcdf_acm_write(message, offset);
+
+	nvm->write_target_address = GRID_NVM_GLOBAL_BASE_ADDRESS;
+		
+	nvm->write_buffer_length = offset;
+	
+	nvm->write_buffer_status = GRID_NVM_BUFFER_STATUS_DONE;
+
+	flash_write(nvm->flash, nvm->write_target_address, nvm->write_buffer, nvm->write_buffer_length);
+	
+	/*
+		
+	*/
+		
+}
+
+void grid_sys_load_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
+	
+	uint8_t temp[GRID_NVM_PAGE_SIZE] = {0};
+	uint16_t length = 0;
+	nvm->read_source_address = GRID_NVM_GLOBAL_BASE_ADDRESS;
+	
+	flash_read(nvm->flash, nvm->read_source_address, temp, GRID_NVM_PAGE_SIZE);
+	
+	//...Check if valid
+	length = GRID_NVM_PAGE_SIZE;
+		
+	uint8_t copydone = 0;
+		
+	for (uint16_t i=0; i<GRID_NVM_PAGE_SIZE; i++){		
+		GRID_PORT_H.tx_double_buffer[i] = temp[i];		
+		
+		if (copydone == 0){
+				
+			if (temp[i] == '\n'){ // END OF PACKET, copy newline character
+				GRID_PORT_U.rx_double_buffer[i] = temp[i];
+				GRID_PORT_U.rx_double_buffer_status = i+1;
+				GRID_PORT_U.rx_double_buffer_read_start_index = 0;
+				copydone = 1;
+				
+			}
+			else if (temp[i] == 255){ // UNPROGRAMMED MEMORY, lets get out of here
+				copydone = 1;
+			}
+			else{ // NORMAL CHARACTER, can be copied
+				GRID_PORT_U.rx_double_buffer[i] = temp[i];
+			}
+			
+			
+		}
+		
+	}
+	
+
+	
+	
+
+// 	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, nvm->write_buffer_length)){
+// 
+// 		for(uint16_t i = 0; i<nvm->write_buffer_length; i++){
+// 
+// 			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, nvm->write_buffer[i]);
+// 		}
+// 
+// 		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
+// 
+// 	}
+	
+		
+	
+}
+
+void grid_sys_clear_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
+	
+	uint8_t temp[GRID_NVM_PAGE_SIZE] = {0};
+	uint16_t length = 0;
+	nvm->read_source_address = GRID_NVM_GLOBAL_BASE_ADDRESS;
+	
+	flash_erase(nvm->flash, GRID_NVM_GLOBAL_BASE_ADDRESS, 1);
+
+	
+	
+	
+}
 
 
 //====================== grid sys unittest ===================================//
@@ -369,6 +514,8 @@ void grid_sys_init(struct grid_sys_model* mod){
 	
 	mod->bank_activebank_number = 255;
 	
+	mod->bank_active_changed = 0;
+	mod->bank_setting_changed_flag = 0;
 	
 	grid_sys_set_bank(&grid_sys_state, 255);
 	
@@ -466,54 +613,49 @@ uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod){
 
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 	
-	mod->bank_changed = 1;
+	mod->bank_active_changed = 1;
 	
-	uint32_t hwtype = grid_sys_get_hwcfg();
+
 	
 	if (banknumber == 255){
 			
 		mod->bank_activebank_number = 255;
 		
-		for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
 				
-			mod->bank_activebank_color_r = 127;
-			mod->bank_activebank_color_g = 127;
-			mod->bank_activebank_color_b = 127;			
-			
-			uint8_t r = mod->bank_activebank_color_r;
-			uint8_t g = mod->bank_activebank_color_g;
-			uint8_t b = mod->bank_activebank_color_b;
-					
-			grid_led_set_color(&grid_led_state, i, GRID_LED_LAYER_UI_A, r, g, b);
-			grid_led_set_color(&grid_led_state, i, GRID_LED_LAYER_UI_B, r, g, b);
-			
-		}	
+		mod->bank_activebank_color_r = 127;
+		mod->bank_activebank_color_g = 127;
+		mod->bank_activebank_color_b = 127;
+		
+		uint8_t r = mod->bank_activebank_color_r;
+		uint8_t g = mod->bank_activebank_color_g;
+		uint8_t b = mod->bank_activebank_color_b;
+
+
 		
 	}
-	else{
+	else if (mod->bank_enabled[banknumber%GRID_SYS_BANK_MAXNUMBER] == 1){
+			
+		mod->bank_activebank_number = banknumber%GRID_SYS_BANK_MAXNUMBER;
 		
-		if (mod->bank_enabled[banknumber%GRID_SYS_BANK_MAXNUMBER] == 1){
-			
-			mod->bank_activebank_number = banknumber%GRID_SYS_BANK_MAXNUMBER;
-				
-			for(uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
-				
-				mod->bank_activebank_color_r = mod->bank_color_r[mod->bank_activebank_number];
-				mod->bank_activebank_color_g = mod->bank_color_g[mod->bank_activebank_number];
-				mod->bank_activebank_color_b = mod->bank_color_b[mod->bank_activebank_number];
-				
-				uint8_t r = mod->bank_activebank_color_r;
-				uint8_t g = mod->bank_activebank_color_g;
-				uint8_t b = mod->bank_activebank_color_b;
-								
-				grid_led_set_color(&grid_led_state, i, GRID_LED_LAYER_UI_A, r, g, b);
-				grid_led_set_color(&grid_led_state, i, GRID_LED_LAYER_UI_B, r, g, b);						
-						
-			}
-			
-		}
+		mod->bank_activebank_color_r = mod->bank_color_r[mod->bank_activebank_number];
+		mod->bank_activebank_color_g = mod->bank_color_g[mod->bank_activebank_number];
+		mod->bank_activebank_color_b = mod->bank_color_b[mod->bank_activebank_number];
+		
+		uint8_t r = mod->bank_activebank_color_r;
+		uint8_t g = mod->bank_activebank_color_g;
+		uint8_t b = mod->bank_activebank_color_b;
+	
+	}
+
+
+	for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
+		
+		uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[i], GRID_UI_EVENT_INIT);
+		grid_ui_event_template_action(&grid_ui_state.element[i], event_index);
+		grid_ui_event_trigger(&grid_ui_state.element[i].event_list[event_index]);
 		
 	}
+	
 
 	
 }

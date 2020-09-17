@@ -4,6 +4,64 @@
 #include "grid_module.h"
 #include "grid_buf.h"
 
+// Recent messages buffer allows detection and termination of duplicate messages
+// Store: dX, dY, ID, ID
+
+
+
+#define GRID_SYS_RECENT_MESSAGES_LENGTH			32
+#define GRID_SYS_RECENT_MESSAGES_INDEX_T		uint8_t
+
+#define GRID_SYS_BANK_MAXNUMBER					4
+
+struct grid_sys_model
+{
+	
+	uint8_t age;
+	
+	uint8_t alert_color_red;
+	uint8_t alert_color_green;
+	uint8_t alert_color_blue;
+	
+	uint16_t alert_state;
+	uint8_t alert_style;
+	uint8_t alert_code;
+	
+	uint8_t alert_color_changed;
+	
+	
+	uint8_t bank_activebank_number;
+
+	uint8_t mapmodestate;
+	
+	
+	
+	uint8_t bank_active_changed;
+	
+	uint8_t bank_setting_changed_flag;
+	
+	uint8_t bank_enabled[GRID_SYS_BANK_MAXNUMBER];
+	
+	uint8_t bank_color_r[GRID_SYS_BANK_MAXNUMBER];
+	uint8_t bank_color_g[GRID_SYS_BANK_MAXNUMBER];
+	uint8_t bank_color_b[GRID_SYS_BANK_MAXNUMBER];
+	
+	uint8_t bank_activebank_color_r;
+	uint8_t bank_activebank_color_g;
+	uint8_t bank_activebank_color_b;
+	
+	
+	
+	uint32_t realtime;
+	
+	uint32_t recent_messages[GRID_SYS_RECENT_MESSAGES_LENGTH];
+	GRID_SYS_RECENT_MESSAGES_INDEX_T recent_messages_index;
+	
+	uint8_t next_broadcast_message_id;
+	
+};
+
+volatile struct grid_sys_model grid_sys_state;
 
 
 /// TASK SWITCHER
@@ -36,7 +94,7 @@ struct grid_task_model grid_task_state;
 
 enum grid_task grid_task_enter_task(struct grid_task_model* mod, enum grid_task next_task);
 
-grid_task_leave_task(struct grid_task_model* mod, enum grid_task previous_task);
+void grid_task_leave_task(struct grid_task_model* mod, enum grid_task previous_task);
 
 void grid_task_timer_tick(struct grid_task_model* mod);
 
@@ -59,6 +117,7 @@ uint32_t grid_task_timer_read(struct grid_task_model* mod, enum grid_task task);
 uint32_t grid_sys_hwfcg;
 
 #define GRID_SYS_DEFAULT_POSITION 127
+#define GRID_SYS_LOCAL_POSITION 255
 #define GRID_SYS_DEFAULT_ROTATION 0
 
 
@@ -67,62 +126,11 @@ uint32_t grid_sys_unittest(void);
 
 
 
-// Recent messages buffer allows detection and termination of duplicate messages
-// Store: dX, dY, ID, ID
+void grid_sys_store_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm);
 
+void grid_sys_load_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm);
 
-
-#define GRID_SYS_RECENT_MESSAGES_LENGTH			32
-#define GRID_SYS_RECENT_MESSAGES_INDEX_T		uint8_t
-
-#define GRID_SYS_BANK_MAXNUMBER					4
-
-struct grid_sys_model 
-{
-	
-	uint8_t age;
-	
-	uint8_t alert_color_red;
-	uint8_t alert_color_green;
-	uint8_t alert_color_blue;
-	
-	uint16_t alert_state;
-	uint8_t alert_style;
-	uint8_t alert_code;
-	
-	uint8_t alert_color_changed;
-	
-	
-	uint8_t bank_activebank_number;
-
-	uint8_t mapmodestate;
-	
-	
-	
-	uint8_t bank_changed;
-	
-	uint8_t bank_enabled[GRID_SYS_BANK_MAXNUMBER];
-	
-	uint8_t bank_color_r[GRID_SYS_BANK_MAXNUMBER];
-	uint8_t bank_color_g[GRID_SYS_BANK_MAXNUMBER];
-	uint8_t bank_color_b[GRID_SYS_BANK_MAXNUMBER];
-	
-	uint8_t bank_activebank_color_r;
-	uint8_t bank_activebank_color_g;
-	uint8_t bank_activebank_color_b;
-	
-		
-	
-	uint32_t realtime;
-		
-	uint32_t recent_messages[GRID_SYS_RECENT_MESSAGES_LENGTH];
-	GRID_SYS_RECENT_MESSAGES_INDEX_T recent_messages_index;	
-	
-	uint8_t next_broadcast_message_id;
-	
-};
-
-volatile struct grid_sys_model grid_sys_state;
+void grid_sys_clear_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm);
 
 
 

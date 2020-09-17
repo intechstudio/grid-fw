@@ -250,7 +250,7 @@ void grid_ui_element_init(struct grid_ui_element* ele, enum grid_ui_element_t el
 	for(uint8_t i=0; i<GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH; i++){
 		ele->template_parameter_list[i] = 0;
 	}
-	
+
 	
 	if (element_type == GRID_UI_ELEMENT_SYSTEM){
 		
@@ -261,7 +261,7 @@ void grid_ui_element_init(struct grid_ui_element* ele, enum grid_ui_element_t el
 		grid_ui_event_init(&ele->event_list[1], GRID_UI_EVENT_HEARTBEAT); // Heartbeat
 		grid_ui_event_init(&ele->event_list[2], GRID_UI_EVENT_MAPMODE_PRESS); // Mapmode press
 		grid_ui_event_init(&ele->event_list[3], GRID_UI_EVENT_MAPMODE_RELEASE); // Mapmode release
-		grid_ui_event_init(&ele->event_list[4], GRID_UI_EVENT_CFG_RESPONSE); //
+		grid_ui_event_init(&ele->event_list[4], GRID_UI_EVENT_CFG_RESPONSE); // 
 		grid_ui_event_init(&ele->event_list[5], GRID_UI_EVENT_CFG_REQUEST); //
 		
 	}

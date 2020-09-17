@@ -30,9 +30,9 @@ enum grid_ui_action_status{
 
 
 
-#define GRID_UI_ACTION_STRING_LENGTH	100
+#define GRID_UI_ACTION_STRING_LENGTH	120
 
-#define GRID_UI_ACTION_PARAMETER_COUNT	 10
+#define GRID_UI_ACTION_PARAMETER_COUNT	 14
 
 
 struct grid_ui_action_parameter{
