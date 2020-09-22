@@ -391,6 +391,8 @@ uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t eve
 			event_index = i;
 		}
 	}
+
+		
 		
 	return event_index;
 	
@@ -443,6 +445,7 @@ uint8_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_s
 uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event_index){
 	
 	if (event_index == 255){
+				
 		return;
 	}
 	

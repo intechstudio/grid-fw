@@ -134,7 +134,7 @@ void grid_module_common_init(void){
 		
 	if (1){	// INIT CORE_STATE->hearbeat	
 		
-		uint8_t payload_template[100] = {0};
+		uint8_t payload_template[GRID_UI_ACTION_STRING_LENGTH] = {0};
 		uint8_t payload_length = 0;
 	
 		sprintf(payload_template, GRID_EVENT_HEARTBEAT );
@@ -157,7 +157,7 @@ void grid_module_common_init(void){
 
 	if (1){	// INIT CORE_STATE->mapmode press
 		
-		uint8_t payload_template[100] = {0};
+		uint8_t payload_template[GRID_UI_ACTION_STRING_LENGTH] = {0};
 		uint8_t payload_length = 0;
 	
 		sprintf(payload_template, GRID_EVENT_MAPMODE_PRESS GRID_DEFAULT_ACTION_MAPMODE_PRESS);
@@ -169,7 +169,7 @@ void grid_module_common_init(void){
 
 	if (1){ // INIT CORE_STATE->mapmode release
 			
-		uint8_t payload_template[100] = {0};
+		uint8_t payload_template[GRID_UI_ACTION_STRING_LENGTH] = {0};
 		uint8_t payload_length = 0;
 		
 		sprintf(payload_template, GRID_EVENT_MAPMODE_RELEASE GRID_DEFAULT_ACTION_MAPMODE_RELEASE);
@@ -181,7 +181,7 @@ void grid_module_common_init(void){
 	
 	if (1){ // INIT CORE_STATE->cfgresponse
 		
-		uint8_t payload_template[100] = {0};
+		uint8_t payload_template[GRID_UI_ACTION_STRING_LENGTH] = {0};
 		uint8_t payload_length = 0;
 		
 		sprintf(payload_template, GRID_EVENT_CFG_RESPONES GRID_DEFAULT_ACTION_CFG_RESPONSE);
@@ -193,7 +193,7 @@ void grid_module_common_init(void){
 	
 	if (1){ // INIT CORE_STATE->cfgrequest
 		
-		uint8_t payload_template[100] = {0};
+		uint8_t payload_template[GRID_UI_ACTION_STRING_LENGTH] = {0};
 		uint8_t payload_length = 0;
 		
 		sprintf(payload_template, GRID_EVENT_CFG_REQUEST GRID_DEFAULT_ACTION_CFG_REQUEST);

@@ -207,7 +207,7 @@ grid/grid_buf.d grid/grid_buf.o: ../grid/grid_buf.c ../grid/grid_buf.h \
  ../atmel_start_pins.h ../grid/grid_unittest.h ../grid/grid_debug.h \
  ../grid/grid_usb.h ../grid/grid_ain.h ../grid/grid_module.h \
  ../grid/grid_led.h ../grid/grid_protocol.h ../grid/grid_sys.h \
- ../grid/grid_ui.h
+ ../grid/grid_ui.h ../grid/grid_nvm.h
 
 ../grid/grid_buf.h:
 
@@ -774,3 +774,5 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../grid/grid_sys.h:
 
 ../grid/grid_ui.h:
+
+../grid/grid_nvm.h:

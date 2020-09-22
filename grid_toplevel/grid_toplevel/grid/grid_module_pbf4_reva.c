@@ -253,7 +253,7 @@ void grid_module_pbf4_reva_init(){
 	
 	for(uint8_t i=0; i<12; i++){
 		
-		uint8_t payload_template[30] = {0};
+		uint8_t payload_template[GRID_UI_ACTION_STRING_LENGTH] = {0};
 		
 		if (i<8){ // PORENTIOMETERS & FADERS -> MIDI Control Change
 			
@@ -285,6 +285,12 @@ void grid_module_pbf4_reva_init(){
 			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DR, payload_template, payload_length);		
 									
 		}
+		
+		uint8_t init_action[GRID_UI_ACTION_STRING_LENGTH] = {0};
+		sprintf(init_action, GRID_DEFAULT_ACTION_INIT);
+		uint8_t init_length = strlen(init_action);
+				
+		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_INIT, init_action, init_length);
 		
 	}
 			

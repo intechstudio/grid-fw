@@ -100,13 +100,13 @@
 
 
 // Save the following action to the given event & change instruction to execute
-#define GRID_INSTR_CONFIGURE_code			0xC
+#define GRID_INSTR_CONFIGURE_code			0xC//0x63 //c
 
 // Respond with executable please!
-#define GRID_INSTR_FETCH_code				0xE
+#define GRID_INSTR_FETCH_code				0xE//0x65 //e
 
 // Execute The Action if possible!
-#define GRID_INSTR_EXECUTE_code				0xF
+#define GRID_INSTR_EXECUTE_code				0xF//0x66 //f
 
 
 #define GRID_CLASS_length					3

@@ -512,11 +512,14 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->bank_activebank_color_g = 255;
 	mod->bank_activebank_color_b = 255;
 	
-	mod->bank_activebank_number = 255;
+
 	
 	mod->bank_active_changed = 0;
 	mod->bank_setting_changed_flag = 0;
 	
+
+
+	mod->bank_activebank_number = 255;
 	grid_sys_set_bank(&grid_sys_state, 255);
 	
 	grid_port_init_all();
@@ -650,9 +653,17 @@ void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 
 	for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
 		
+		
+		
 		uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[i], GRID_UI_EVENT_INIT);
-		grid_ui_event_template_action(&grid_ui_state.element[i], event_index);
-		grid_ui_event_trigger(&grid_ui_state.element[i].event_list[event_index]);
+		
+		if(event_index != 255){		
+			grid_ui_event_template_action(&grid_ui_state.element[i], event_index);	
+			grid_ui_event_trigger(&grid_ui_state.element[i].event_list[event_index]);		
+		}
+		else{
+			//PROBLEM
+		}
 		
 	}
 	

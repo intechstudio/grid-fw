@@ -22,6 +22,8 @@ grid\grid_debug.c
 
 grid\grid_hardwaretest.c
 
+grid\grid_nvm.c
+
 grid\grid_unittest.c
 
 grid\grid_ain.c

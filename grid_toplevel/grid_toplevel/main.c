@@ -95,7 +95,7 @@ static void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task
 
 	uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT);				
 	grid_ui_event_template_action(&grid_core_state.element[0], event_index);	
-	//grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
+	grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
 
 }
 

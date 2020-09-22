@@ -136,12 +136,19 @@ void grid_module_po16_revb_init(){
 		grid_ui_element_init(&grid_ui_state.element[i], GRID_UI_ELEMENT_POTENTIOMETER);
 
 
-		uint8_t payload_template[100] = {0};
+		uint8_t payload_template[GRID_UI_ACTION_STRING_LENGTH] = {0};
 		sprintf(payload_template, GRID_EVENT_AVC7_POT GRID_DEFAULT_ACTION_AVC7);
 		uint8_t payload_length = strlen(payload_template);
 
 		// Register Absolute Value Change
 		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_AVC7, payload_template, payload_length);
+		
+		
+		uint8_t init_action[GRID_UI_ACTION_STRING_LENGTH] = {0};
+		sprintf(init_action, GRID_DEFAULT_ACTION_INIT);
+		uint8_t init_length = strlen(init_action);
+		
+		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_INIT, init_action, init_length);
 		
 	}
 	
