@@ -132,7 +132,7 @@ void grid_sys_load_bank_settings(struct grid_sys_model* sys, struct grid_nvm_mod
 
 void grid_sys_clear_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm);
 
-
+void grid_debug_print_text(uint8_t* str);
 
 
 

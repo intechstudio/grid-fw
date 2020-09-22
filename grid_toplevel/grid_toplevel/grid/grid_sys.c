@@ -190,6 +190,85 @@ void grid_sys_clear_bank_settings(struct grid_sys_model* sys, struct grid_nvm_mo
 }
 
 
+
+void grid_debug_print_text(uint8_t* str){
+	
+	uint32_t len = strlen(str);
+	
+	uint8_t message[GRID_PARAMETER_PACKET_maxlength] = {0};
+	
+	uint32_t offset = 0;
+	
+	uint8_t error = 0;
+	
+	
+	// draw the broadcast frame
+	sprintf(&message[offset], GRID_BRC_frame);
+	grid_msg_set_parameter(&message[offset], GRID_BRC_LEN_offset, GRID_BRC_LEN_length, 0, &error); // calculate later
+	grid_msg_set_parameter(&message[offset], GRID_BRC_ID_offset,  GRID_BRC_ID_length, grid_sys_state.next_broadcast_message_id, &error); // don't know
+	
+	grid_msg_set_parameter(&message[offset], GRID_BRC_DX_offset,  GRID_BRC_DX_length, GRID_SYS_DEFAULT_POSITION, &error);
+	grid_msg_set_parameter(&message[offset], GRID_BRC_DY_offset,  GRID_BRC_DY_length, GRID_SYS_DEFAULT_POSITION, &error);
+	grid_msg_set_parameter(&message[offset], GRID_BRC_AGE_offset,  GRID_BRC_AGE_length, 0, &error);
+	grid_msg_set_parameter(&message[offset], GRID_BRC_ROT_offset,  GRID_BRC_ROT_length, GRID_SYS_DEFAULT_ROTATION, &error);
+	
+	offset += strlen(&message[offset]);
+	
+	grid_sys_state.next_broadcast_message_id++;
+
+		
+	sprintf(&message[offset], GRID_CLASS_DEBUGTEXT_frame_start);
+	offset += strlen(&message[offset]);
+	
+	sprintf(&message[offset], "# ");
+	offset += strlen(&message[offset]);
+	
+	for(uint8_t i=0; i<len; i++){
+		
+		message[offset+i] = str[i];
+		
+		if (offset + i > GRID_PARAMETER_PACKET_marign)
+		{
+			break;
+		}
+	}
+	offset += strlen(&message[offset]);
+	
+	
+	sprintf(&message[offset], " #");
+	offset += strlen(&message[offset]);
+	
+	sprintf(&message[offset], GRID_CLASS_DEBUGTEXT_frame_end);
+	offset += strlen(&message[offset]);
+	
+	// Calculate packet length and insert it into the header! +1 is the EOT character
+
+	grid_msg_set_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, offset+1, &error);
+
+	// Close the packet
+	sprintf(&message[offset], "%c..\n", GRID_CONST_EOT);
+	offset += strlen(&message[offset]);
+
+	// Calculate checksum!
+	uint8_t checksum = grid_msg_checksum_calculate(message, offset);
+	grid_msg_checksum_write(message, offset, checksum);
+	
+	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, offset)){
+
+		for(uint16_t i = 0; i<offset; i++){
+
+			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, message[i]);
+		}
+
+		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
+
+	}	
+	
+	
+	
+}
+
+
 //====================== grid sys unittest ===================================//
 
 uint32_t grid_sys_unittest(void){
@@ -651,21 +730,7 @@ void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 	}
 
 
-	for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
-		
-		
-		
-		uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[i], GRID_UI_EVENT_INIT);
-		
-		if(event_index != 255){		
-			grid_ui_event_template_action(&grid_ui_state.element[i], event_index);	
-			grid_ui_event_trigger(&grid_ui_state.element[i].event_list[event_index]);		
-		}
-		else{
-			//PROBLEM
-		}
-		
-	}
+
 	
 
 	

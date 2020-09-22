@@ -79,11 +79,23 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14U] = 0;
 			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14L] = 0;
 			
-			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_AVC7);
-
-			grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
+// 			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_AVC7);
+// 
+// 			grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
+// 			
+// 			grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
 			
-			grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
+			
+			// action template bug fix try
+			grid_ui_state.element[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
+					
+			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[i], GRID_UI_EVENT_INIT);
+					
+			grid_ui_event_template_action(&grid_ui_state.element[i], event_index);
+			grid_ui_event_trigger(&grid_ui_state.element[i].event_list[event_index]);
+					
+
+
 			
 		}
 	}
@@ -351,10 +363,12 @@ void grid_module_en16_reva_init(){
 		}	
 		
 		uint8_t init_action[GRID_UI_ACTION_STRING_LENGTH] = {0};
-		sprintf(init_action, GRID_DEFAULT_ACTION_INIT);
+		sprintf(init_action, GRID_DEFAULT_ACTION_INIT_ENC);
 		uint8_t init_length = strlen(init_action);
 				
 		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_INIT, init_action, init_length);
+						
+		
 						
 	}
 

@@ -8,7 +8,7 @@ void grid_port_process_ui(struct grid_port* por){
 	
 	
 	uint8_t message_broadcast_action_available = 0;
-
+	uint8_t message_local_action_available = 0;
 
 	
 	// UI STATE
@@ -18,7 +18,16 @@ void grid_port_process_ui(struct grid_port* por){
 			
 			if (grid_ui_event_istriggered(&grid_ui_state.element[i].event_list[j])){
 				
-				message_broadcast_action_available++;
+				if (j==0){
+					
+					message_local_action_available++;
+					
+				}else{
+					
+					
+					message_broadcast_action_available++;
+				}
+				
 			}
 			
 		}
@@ -64,44 +73,134 @@ void grid_port_process_ui(struct grid_port* por){
 	
 		
 	// Bandwidth Limiter for Broadcast messages
-	if (por->cooldown > 15){
+	if (por->cooldown > 0){
 		
 		por->cooldown--;
 		return;
 	}
-	else if (por->cooldown>0){
-		
-		por->cooldown--;
-	}	
 	
+	
+	//LOCAL MESSAGES
+	if (message_local_action_available){
+		
+		// Prepare packet header
+		uint8_t message[GRID_PARAMETER_PACKET_maxlength+100] = {0};
+		uint16_t offset=0;
+		uint8_t packetvalid = 0;
+		
+		sprintf(&message[offset], GRID_BRC_frame);
+		
+		uint8_t error = 0;
+
+		grid_msg_set_parameter(&message[offset], GRID_BRC_LEN_offset, GRID_BRC_LEN_length, 0, &error);
+		grid_msg_set_parameter(&message[offset], GRID_BRC_ID_offset , GRID_BRC_ID_length , grid_sys_state.next_broadcast_message_id,  &error);
+		grid_msg_set_parameter(&message[offset], GRID_BRC_DX_offset , GRID_BRC_DX_length , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[offset], GRID_BRC_DY_offset , GRID_BRC_DY_length , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[offset], GRID_BRC_AGE_offset, GRID_BRC_AGE_length, grid_sys_state.age, &error);
+		grid_msg_set_parameter(&message[offset], GRID_BRC_ROT_offset, GRID_BRC_ROT_length, GRID_SYS_DEFAULT_ROTATION, &error);
+
+		offset += strlen(&message[offset]);
+		
+
+		
+		
+		// UI STATE
+		for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
+			
+			uint8_t event = GRID_UI_EVENT_INIT;
+				
+			if (offset>GRID_PARAMETER_PACKET_marign){
+				continue;
+			}
+				
+			CRITICAL_SECTION_ENTER()
+			if (grid_ui_event_istriggered(&grid_ui_state.element[i].event_list[event])){
+					
+					
+				packetvalid++;
+				grid_ui_event_render_action(&grid_ui_state.element[i].event_list[event], &message[offset]);
+				offset += strlen(&message[offset]);
+				grid_ui_event_reset(&grid_ui_state.element[i].event_list[event]);
+					
+			}
+			CRITICAL_SECTION_LEAVE()
+				
+			
+			
+		}
+		
+		// Got messages
+		if (packetvalid){
+			
+			//por->cooldown += (2+por->cooldown/2);
+// 			por->cooldown += (10+por->cooldown);
+// 			por->cooldown = 3;
+			
+			grid_sys_state.next_broadcast_message_id++;
+			
+
+			// Calculate packet length and insert it into the header! +1 is the EOT character
+			uint8_t error = 0;
+			grid_msg_set_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, offset+1, &error);
+
+			// Close the packet
+			sprintf(&message[offset], "%c..\n", GRID_CONST_EOT);
+			offset += strlen(&message[offset]);
+
+			// Calculate checksum!
+			uint8_t checksum = grid_msg_checksum_calculate(message, offset);
+			grid_msg_checksum_write(message, offset, checksum);
+
+			//printf(message);
+
+			// Put the packet into the UI_RX buffer
+			if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, offset)){
+				
+				for(uint16_t i = 0; i<offset; i++){
+					
+					grid_buffer_write_character(&GRID_PORT_U.tx_buffer, message[i]);
+				}
+				
+				grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
+
+			}
+			else{
+				// LOG UNABLE TO WRITE EVENT
+			}
+			
+			
+		}
+	}
 	
 	//BROADCAST MESSAGES		
 	if (message_broadcast_action_available){
 			
 		// Prepare packet header
-		uint8_t message[GRID_PARAMETER_PACKET_maxlength] = {0};
-		uint16_t length=0;	
+		uint8_t message[GRID_PARAMETER_PACKET_maxlength+100] = {0};
+		uint16_t offset=0;	
 		uint8_t packetvalid = 0;
 	
-		sprintf(&message[length], GRID_BRC_frame);
+		sprintf(&message[offset], GRID_BRC_frame);
 		
 		uint8_t error = 0;
 
-		grid_msg_set_parameter(&message[length], GRID_BRC_LEN_offset, GRID_BRC_LEN_length, 0, &error);
-		grid_msg_set_parameter(&message[length], GRID_BRC_ID_offset , GRID_BRC_ID_length , grid_sys_state.next_broadcast_message_id,  &error);
-		grid_msg_set_parameter(&message[length], GRID_BRC_DX_offset , GRID_BRC_DX_length , GRID_SYS_DEFAULT_POSITION,  &error);
-		grid_msg_set_parameter(&message[length], GRID_BRC_DY_offset , GRID_BRC_DY_length , GRID_SYS_DEFAULT_POSITION,  &error);
-		grid_msg_set_parameter(&message[length], GRID_BRC_AGE_offset, GRID_BRC_AGE_length, grid_sys_state.age, &error);
-		grid_msg_set_parameter(&message[length], GRID_BRC_ROT_offset, GRID_BRC_ROT_length, GRID_SYS_DEFAULT_ROTATION, &error);
+		grid_msg_set_parameter(&message[offset], GRID_BRC_LEN_offset, GRID_BRC_LEN_length, 0, &error);
+		grid_msg_set_parameter(&message[offset], GRID_BRC_ID_offset , GRID_BRC_ID_length , grid_sys_state.next_broadcast_message_id,  &error);
+		grid_msg_set_parameter(&message[offset], GRID_BRC_DX_offset , GRID_BRC_DX_length , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[offset], GRID_BRC_DY_offset , GRID_BRC_DY_length , GRID_SYS_DEFAULT_POSITION,  &error);
+		grid_msg_set_parameter(&message[offset], GRID_BRC_AGE_offset, GRID_BRC_AGE_length, grid_sys_state.age, &error);
+		grid_msg_set_parameter(&message[offset], GRID_BRC_ROT_offset, GRID_BRC_ROT_length, GRID_SYS_DEFAULT_ROTATION, &error);
 
-		length += strlen(&message[length]);
+		offset += strlen(&message[offset]);
+		
+
 	
 		// CORE SYSTEM
 		for (uint8_t i=0; i<grid_core_state.element_list_length; i++){
 			
 			for (uint8_t j=0; j<grid_core_state.element[i].event_list_length; j++){
 				
-				if (length>GRID_PARAMETER_PACKET_marign){
+				if (offset>GRID_PARAMETER_PACKET_marign){
 					continue;
 				}						
 				
@@ -109,8 +208,8 @@ void grid_port_process_ui(struct grid_port* por){
 				if (grid_ui_event_istriggered(&grid_core_state.element[i].event_list[j])){
 					
 					packetvalid++;
-					grid_ui_event_render_action(&grid_core_state.element[i].event_list[j], &message[length]);
-					length += strlen(&message[length]);
+					grid_ui_event_render_action(&grid_core_state.element[i].event_list[j], &message[offset]);
+					offset += strlen(&message[offset]);
 					grid_ui_event_reset(&grid_core_state.element[i].event_list[j]);
 					
 				}
@@ -123,18 +222,19 @@ void grid_port_process_ui(struct grid_port* por){
 		// UI STATE
 		for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
 			
-			for (uint8_t j=0; j<grid_ui_state.element[i].event_list_length; j++){
+			for (uint8_t j=1; j<grid_ui_state.element[i].event_list_length; j++){ //j=1 because init is local
 				
-				if (length>GRID_PARAMETER_PACKET_marign){
+				if (offset>GRID_PARAMETER_PACKET_marign){
 					continue;
 				}		
 						
 				CRITICAL_SECTION_ENTER()
 				if (grid_ui_event_istriggered(&grid_ui_state.element[i].event_list[j])){
 					
+										
 					packetvalid++;				
-					grid_ui_event_render_action(&grid_ui_state.element[i].event_list[j], &message[length]);
-					length += strlen(&message[length]);
+					grid_ui_event_render_action(&grid_ui_state.element[i].event_list[j], &message[offset]);
+					offset += strlen(&message[offset]);
 					grid_ui_event_reset(&grid_ui_state.element[i].event_list[j]);
 					
 				}
@@ -149,28 +249,29 @@ void grid_port_process_ui(struct grid_port* por){
 		
 			//por->cooldown += (2+por->cooldown/2);
 			por->cooldown += (10+por->cooldown);
+			por->cooldown = 3;
 		
 			grid_sys_state.next_broadcast_message_id++;
 		
 
 			// Calculate packet length and insert it into the header! +1 is the EOT character
 			uint8_t error = 0;
-			grid_msg_set_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, length+1, &error);
+			grid_msg_set_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, offset+1, &error);
 
 			// Close the packet
-			sprintf(&message[length], "%c..\n", GRID_CONST_EOT);
-			length += strlen(&message[length]);
+			sprintf(&message[offset], "%c..\n", GRID_CONST_EOT);
+			offset += strlen(&message[offset]);
 
 			// Calculate checksum!
-			uint8_t checksum = grid_msg_checksum_calculate(message, length);
-			grid_msg_checksum_write(message, length, checksum);
+			uint8_t checksum = grid_msg_checksum_calculate(message, offset);
+			grid_msg_checksum_write(message, offset, checksum);
 
-		
+			//printf(message);
 
 			// Put the packet into the UI_RX buffer
-			if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, length)){
+			if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, offset)){
 	
-				for(uint16_t i = 0; i<length; i++){
+				for(uint16_t i = 0; i<offset; i++){
 				
 					grid_buffer_write_character(&GRID_PORT_U.rx_buffer, message[i]);
 				}
@@ -243,10 +344,7 @@ void grid_ui_element_init(struct grid_ui_element* ele, enum grid_ui_element_t el
 	
 	ele->type = element_type;
 	
-	
-	ele->template_parameter_list = malloc(GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH*sizeof(uint32_t));
-	
-	// initialize all of the template parameter values
+	// initialize all of the A template parameter values
 	for(uint8_t i=0; i<GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH; i++){
 		ele->template_parameter_list[i] = 0;
 	}
@@ -261,7 +359,7 @@ void grid_ui_element_init(struct grid_ui_element* ele, enum grid_ui_element_t el
 		grid_ui_event_init(&ele->event_list[1], GRID_UI_EVENT_HEARTBEAT); // Heartbeat
 		grid_ui_event_init(&ele->event_list[2], GRID_UI_EVENT_MAPMODE_PRESS); // Mapmode press
 		grid_ui_event_init(&ele->event_list[3], GRID_UI_EVENT_MAPMODE_RELEASE); // Mapmode release
-		grid_ui_event_init(&ele->event_list[4], GRID_UI_EVENT_CFG_RESPONSE); // 
+		grid_ui_event_init(&ele->event_list[4], GRID_UI_EVENT_CFG_RESPONSE); //
 		grid_ui_event_init(&ele->event_list[5], GRID_UI_EVENT_CFG_REQUEST); //
 		
 	}
@@ -399,10 +497,16 @@ uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t eve
 }
 
 void grid_ui_event_trigger(struct grid_ui_event* eve){
-		
-	if (eve->action_status == GRID_UI_STATUS_UNDEFINED){
-		return;
-	}	
+
+	
+			
+// 	if (eve->action_status == GRID_UI_STATUS_UNDEFINED){
+// 		return;
+// 	}	
+	
+
+	
+	
 		
 	eve->trigger = GRID_UI_EVENT_STATUS_TRIGGERED;
 	
@@ -433,10 +537,15 @@ uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve){
 }
 
 uint8_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_string){
+
 	
-	for(uint8_t i=0; i<eve->action_length; i++){
+	for(uint32_t i=0; i<eve->action_length; i++){
 		target_string[i] = eve->action_string[i];
+		
 	}
+	
+	
+	
 	
 	return eve->action_length;
 		
@@ -445,29 +554,34 @@ uint8_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_s
 uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event_index){
 	
 	if (event_index == 255){
-				
+		
 		return;
 	}
 	
 	for (uint8_t i=0; i<ele->event_list[event_index].action_parameter_count; i++){
 		
-		uint8_t* message = ele->event_list[event_index].action_string;
 		
 		if (ele->event_list[event_index].action_parameter_list[i].group == 'A'){
 			
+			if(ele->event_list[event_index].action_parameter_list[i].address > GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH){
+				printf("Error\n");
+			}
+			
 			uint32_t parameter_value =  ele->template_parameter_list[ele->event_list[event_index].action_parameter_list[i].address];
-			uint8_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
+			uint32_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
 			uint8_t parameter_length = ele->event_list[event_index].action_parameter_list[i].length;
-					
+			
 			uint8_t error = 0;
-			grid_msg_set_parameter(message, parameter_offset, parameter_length, parameter_value, &error);
-					
-			//ele->event[event_index].action_string		
+			grid_msg_set_parameter(ele->event_list[event_index].action_string, parameter_offset, parameter_length, parameter_value, &error);
+			//printf("Value: %d Offset: %d Error: %d\n", error, error, error);
+			//printf("%d\n",error);
+			//delay_us(50);
+			//ele->event[event_index].action_string
 		}
 		else if (ele->event_list[event_index].action_parameter_list[i].group == 'B'){
 
 			uint32_t parameter_value = 0;
-			uint8_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
+			uint32_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
 			uint8_t parameter_length = ele->event_list[event_index].action_parameter_list[i].length;
 
 			if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_NUMBER_ACTIVE){
@@ -490,7 +604,7 @@ uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event
 			}
 			
 			uint8_t error = 0;
-			grid_msg_set_parameter(message, parameter_offset, parameter_length, parameter_value, &error);
+			grid_msg_set_parameter(ele->event_list[event_index].action_string, parameter_offset, parameter_length, parameter_value, &error);
 
 		}
 		

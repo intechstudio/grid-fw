@@ -25,6 +25,28 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		return;
 	}
 	
+	
+	uint8_t bank_changed = grid_sys_state.bank_active_changed;
+	
+	if (bank_changed){
+		grid_sys_state.bank_active_changed = 0;
+
+		
+		for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
+				
+			// action template bug fix try
+			grid_ui_state.element[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
+				
+			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[i], GRID_UI_EVENT_INIT);
+				
+			grid_ui_event_template_action(&grid_ui_state.element[i], event_index);
+			grid_ui_event_trigger(&grid_ui_state.element[i].event_list[event_index]);
+				
+
+		}
+		
+	}
+	
 
 	/* Read conversion results */
 	

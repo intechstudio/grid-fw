@@ -51,9 +51,6 @@ static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 	
 }
 
-// volatile uint8_t debug[500] = {0};
-// volatile uint16_t debug_offset = 0;
-// volatile uint8_t debug_flag = 0;
 
 static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
@@ -68,6 +65,8 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 			
 		if (grid_sys_state.mapmodestate == 0){ // RELEASE
 			
+			grid_debug_print_text("MAPMODE_RELEASE");
+			
 			uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_MAPMODE_RELEASE);
 			grid_ui_event_template_action(&grid_core_state.element[0], event_index);
 			grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);		
@@ -77,7 +76,7 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 		
 		
 
-		
+			grid_debug_print_text("MAPMODE_PRESS");
 			
 			uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_MAPMODE_PRESS);
 			grid_ui_event_template_action(&grid_core_state.element[0], event_index);
@@ -195,6 +194,17 @@ int main(void)
 	
 	while (1) {
 		
+		
+// 		if (loopcounter%50 == 0){
+// 			
+// 			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[13], GRID_UI_EVENT_INIT);
+// 			//grid_ui_event_template_action(&grid_ui_state.element[13], event_index);
+// 			grid_ui_event_trigger(&grid_ui_state.element[13].event_list[event_index]);
+// 			
+// 		}
+		
+		
+		
 		if (usb_init_variable == 1 && grid_sys_rtc_get_time(&grid_sys_state)>RTC1SEC*4){
 			
 			if (debug_flag == 0 && 0){
@@ -252,50 +262,9 @@ int main(void)
 			if (usb_d_get_frame_num() == 0){
 				
 			}
-			else{		
-						
-				if (false){ // FLASHTEST
-					
-					
-					
-					uint8_t src_data[512];
-					uint8_t chk_data[512];
-
-					uint32_t page_size;
-					uint16_t i;
-
-					/* Init source data */
-					page_size = flash_get_page_size(&FLASH_0);
-
-					for (i = 0; i < page_size; i++) {
-						src_data[i] = i;
-					}
-
-					/* Write data to flash */
-					//flash_write(&FLASH_0, 0x83200, src_data, page_size);
-
-					/* Read data from flash */
-					flash_read(&FLASH_0, 0x80000, chk_data, page_size);
-					
-					
-
-					/* Check if the read address not aligned to the start of a page */
-					if (chk_data[5] != 5) {
-						// bad address
-						grid_sys_alert_set_alert(&grid_sys_state, 100,0,0,2,350);
-					}
-					else{
-						// good address
-						grid_sys_alert_set_alert(&grid_sys_state, 0,100,0,2,350);
-						
-					}
-					
-					
-				}
-				else{
-					
-					grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN	
-				}
+			else{			
+			
+				grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN	
 				
 				GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Connected");
 				
@@ -313,9 +282,9 @@ int main(void)
 		
 		
 		
-		// Request neighbour bank settings if we don't have it initialized
+		// Request neighbor bank settings if we don't have it initialized
 		
- 		if (grid_sys_get_bank_num(&grid_sys_state) == 255){
+ 		if (grid_sys_get_bank_num(&grid_sys_state) == 255 && loopcounter%80 == 0){
  										
  			uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_CFG_REQUEST);
  			grid_ui_event_template_action(&grid_core_state.element[0], event_index);
@@ -332,6 +301,19 @@ int main(void)
 		
 		if (scheduler_report_flag){
 			
+			
+		
+			
+// 			printf("Initlist: ");
+// 			
+// 			for (uint8_t i=0; i<16; i++)
+// 			{	
+// 				printf("%d", grid_ui_state.element[i].event_list[0].status);
+// 			}
+// 			
+// 			
+// 			printf("\n");
+			
 			scheduler_report_flag=0;
 		
 			uint32_t task_val[GRID_TASK_NUMBER] = {0};
@@ -344,23 +326,23 @@ int main(void)
 			grid_task_timer_reset(&grid_task_state);
 			
 				
-			printf("{\"type\":\"TASK\", \"data\": [");
-				
-			for(uint8_t i = 0; i<GRID_TASK_NUMBER; i++){
-			
-			
-				printf("\"%d\"", task_val[i]);
-			
-				if (i != GRID_TASK_NUMBER-1){
-					printf(", ");
-				}
-			
-			}
-			
-			printf("]}\r\n");
-			
-			printf("{\"type\":\"LOOP\", \"data\": [\"%d\", \"%d\", \"%d\", \"%d\"]}\r\n", loopcounter, loopslow, loopfast, loopwarp);
-		
+// 			printf("{\"type\":\"TASK\", \"data\": [");
+// 				
+// 			for(uint8_t i = 0; i<GRID_TASK_NUMBER; i++){
+// 			
+// 			
+// 				printf("\"%d\"", task_val[i]);
+// 			
+// 				if (i != GRID_TASK_NUMBER-1){
+// 					printf(", ");
+// 				}
+// 			
+// 			}
+// 			
+// 			printf("]}\r\n");
+// 			
+// 			printf("{\"type\":\"LOOP\", \"data\": [\"%d\", \"%d\", \"%d\", \"%d\"]}\r\n", loopcounter, loopslow, loopfast, loopwarp);
+// 		
 			loopcounter = 0;
 			loopslow = 0;
 			loopfast = 0;

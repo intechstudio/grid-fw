@@ -70,7 +70,7 @@ struct grid_ui_element
 	
 	enum grid_ui_element_t type;
 	
-	uint32_t* template_parameter_list;
+	uint32_t template_parameter_list[GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH];
 	
 	uint8_t						event_list_length;
 	struct grid_ui_event*		event_list;
