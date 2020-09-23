@@ -100,7 +100,7 @@ void grid_sys_store_bank_settings(struct grid_sys_model* sys, struct grid_nvm_mo
 	offset += strlen(&message[offset]);
 
 	// Calculate checksum!
-	uint8_t checksum = grid_msg_checksum_calculate(message, offset);
+	uint8_t checksum = grid_msg_calculate_checksum_of_packet_string(message, offset);
 	grid_msg_checksum_write(message, offset, checksum);
 
 
@@ -191,73 +191,53 @@ void grid_sys_clear_bank_settings(struct grid_sys_model* sys, struct grid_nvm_mo
 
 
 
-void grid_debug_print_text(uint8_t* str){
+void grid_debug_print_text(uint8_t* debug_string){
 	
-	uint32_t len = strlen(str);
+	uint32_t debug_string_length = strlen(debug_string);
 	
-	uint8_t message[GRID_PARAMETER_PACKET_maxlength] = {0};
+	struct grid_msg message;
 	
+	grid_msg_init(&message);
+	grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+	
+	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
 	uint32_t offset = 0;
 	
-	uint8_t error = 0;
-	
-	
-	// draw the broadcast frame
-	sprintf(&message[offset], GRID_BRC_frame);
-	grid_msg_set_parameter(&message[offset], GRID_BRC_LEN_offset, GRID_BRC_LEN_length, 0, &error); // calculate later
-	grid_msg_set_parameter(&message[offset], GRID_BRC_ID_offset,  GRID_BRC_ID_length, grid_sys_state.next_broadcast_message_id, &error); // don't know
-	
-	grid_msg_set_parameter(&message[offset], GRID_BRC_DX_offset,  GRID_BRC_DX_length, GRID_SYS_DEFAULT_POSITION, &error);
-	grid_msg_set_parameter(&message[offset], GRID_BRC_DY_offset,  GRID_BRC_DY_length, GRID_SYS_DEFAULT_POSITION, &error);
-	grid_msg_set_parameter(&message[offset], GRID_BRC_AGE_offset,  GRID_BRC_AGE_length, 0, &error);
-	grid_msg_set_parameter(&message[offset], GRID_BRC_ROT_offset,  GRID_BRC_ROT_length, GRID_SYS_DEFAULT_ROTATION, &error);
-	
-	offset += strlen(&message[offset]);
-	
-	grid_sys_state.next_broadcast_message_id++;
+	sprintf(&payload[offset], GRID_CLASS_DEBUGTEXT_frame_start);
+	offset += strlen(&payload[offset]);
+		
+	sprintf(&payload[offset], "# ");
+	offset += strlen(&payload[offset]);
 
+	for(uint32_t i=0; i<debug_string_length; i++){
 		
-	sprintf(&message[offset], GRID_CLASS_DEBUGTEXT_frame_start);
-	offset += strlen(&message[offset]);
-	
-	sprintf(&message[offset], "# ");
-	offset += strlen(&message[offset]);
-	
-	for(uint8_t i=0; i<len; i++){
-		
-		message[offset+i] = str[i];
+		payload[offset+i] = debug_string[i];
 		
 		if (offset + i > GRID_PARAMETER_PACKET_marign)
 		{
 			break;
 		}
 	}
-	offset += strlen(&message[offset]);
+	offset += strlen(&payload[offset]);
 	
 	
-	sprintf(&message[offset], " #");
-	offset += strlen(&message[offset]);
+	sprintf(&payload[offset], " #");
+	offset += strlen(&payload[offset]);
 	
-	sprintf(&message[offset], GRID_CLASS_DEBUGTEXT_frame_end);
-	offset += strlen(&message[offset]);
+	sprintf(&payload[offset], GRID_CLASS_DEBUGTEXT_frame_end);
+	offset += strlen(&payload[offset]);	
 	
-	// Calculate packet length and insert it into the header! +1 is the EOT character
-
-	grid_msg_set_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, offset+1, &error);
-
-	// Close the packet
-	sprintf(&message[offset], "%c..\n", GRID_CONST_EOT);
-	offset += strlen(&message[offset]);
-
-	// Calculate checksum!
-	uint8_t checksum = grid_msg_checksum_calculate(message, offset);
-	grid_msg_checksum_write(message, offset, checksum);
+	grid_msg_body_append_text(&message, payload, offset);
+	grid_msg_packet_close(&message);
 	
-	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, offset)){
+	
+	uint32_t message_length = grid_msg_packet_get_length(&message);
+	
+	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, message_length)){
 
-		for(uint16_t i = 0; i<offset; i++){
+		for(uint32_t i = 0; i<message_length; i++){
 
-			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, message[i]);
+			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char(&message, i));
 		}
 
 		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
@@ -282,7 +262,7 @@ uint32_t grid_sys_unittest(void){
 			uint8_t length = 8;
 			uint8_t packet[8] = {1, 0, 2, 2, 4, 0, 0, 10};
 		
-			uint8_t checksum_calc = grid_msg_checksum_calculate(packet, length);
+			uint8_t checksum_calc = grid_msg_calculate_checksum_of_packet_string(packet, length);
 			uint8_t checksum_read = grid_msg_checksum_read(packet, length);
 				
 			char str[100] = {0};
@@ -303,7 +283,7 @@ uint32_t grid_sys_unittest(void){
 			uint8_t length = 8;
 			uint8_t packet[8] = {1, 0, 2, 2, 4, 0, 0, 10};
 					
-			uint8_t checksum_calc = grid_msg_checksum_calculate(packet, length);
+			uint8_t checksum_calc = grid_msg_calculate_checksum_of_packet_string(packet, length);
 		
 			grid_msg_checksum_write(packet, length, checksum_calc);
 		
@@ -972,7 +952,7 @@ void grid_sys_ping_all(){
 	
 }
 
-uint8_t grid_msg_checksum_calculate(uint8_t* str, uint32_t length){
+uint8_t grid_msg_calculate_checksum_of_packet_string(uint8_t* str, uint32_t length){
 	
 	uint8_t checksum = 0;
 	for (uint32_t i=0; i<length-3; i++){
@@ -982,6 +962,18 @@ uint8_t grid_msg_checksum_calculate(uint8_t* str, uint32_t length){
 	return checksum;
 	
 }
+
+uint8_t grid_msg_calculate_checksum_of_string(uint8_t* str, uint32_t length){
+	
+	uint8_t checksum = 0;
+	for (uint32_t i=0; i<length; i++){
+		checksum ^= str[i];
+	}
+	
+	return checksum;
+	
+}
+
 
 uint8_t grid_msg_checksum_read(uint8_t* str, uint32_t length){
 	uint8_t error_flag;

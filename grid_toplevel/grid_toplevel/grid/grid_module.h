@@ -34,7 +34,7 @@
 #include "grid_ui.h"
 
 #include "grid_nvm.h"
-
+#include "grid_msg.h"
 
 
 

@@ -119,7 +119,7 @@ uint32_t grid_sys_hwfcg;
 #define GRID_SYS_DEFAULT_POSITION 127
 #define GRID_SYS_LOCAL_POSITION 255
 #define GRID_SYS_DEFAULT_ROTATION 0
-
+#define GRID_SYS_DEFAULT_AGE 0
 
 
 uint32_t grid_sys_unittest(void);
@@ -196,7 +196,9 @@ uint32_t grid_msg_get_parameter(uint8_t* message, uint8_t offset, uint8_t length
 uint32_t grid_msg_set_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error);
 
 
-uint8_t grid_msg_checksum_calculate(uint8_t* str, uint32_t length);
+uint8_t grid_msg_calculate_checksum_of_packet_string(uint8_t* str, uint32_t length);
+uint8_t grid_msg_calculate_checksum_of_string(uint8_t* str, uint32_t length);
+
 uint8_t grid_msg_checksum_read(uint8_t* str, uint32_t length);
 void grid_msg_checksum_write(uint8_t* message, uint32_t length, uint8_t checksum);
 

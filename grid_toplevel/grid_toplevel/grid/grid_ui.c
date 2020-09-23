@@ -73,7 +73,7 @@ void grid_port_process_ui(struct grid_port* por){
 	
 		
 	// Bandwidth Limiter for Broadcast messages
-	if (por->cooldown > 0){
+	if (por->cooldown > 15){
 		
 		por->cooldown--;
 		return;
@@ -83,25 +83,15 @@ void grid_port_process_ui(struct grid_port* por){
 	//LOCAL MESSAGES
 	if (message_local_action_available){
 		
+	
+		struct grid_msg message;
+		grid_msg_init(&message);
+		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+			
+			
 		// Prepare packet header
-		uint8_t message[GRID_PARAMETER_PACKET_maxlength+100] = {0};
-		uint16_t offset=0;
-		uint8_t packetvalid = 0;
-		
-		sprintf(&message[offset], GRID_BRC_frame);
-		
-		uint8_t error = 0;
-
-		grid_msg_set_parameter(&message[offset], GRID_BRC_LEN_offset, GRID_BRC_LEN_length, 0, &error);
-		grid_msg_set_parameter(&message[offset], GRID_BRC_ID_offset , GRID_BRC_ID_length , grid_sys_state.next_broadcast_message_id,  &error);
-		grid_msg_set_parameter(&message[offset], GRID_BRC_DX_offset , GRID_BRC_DX_length , GRID_SYS_DEFAULT_POSITION,  &error);
-		grid_msg_set_parameter(&message[offset], GRID_BRC_DY_offset , GRID_BRC_DY_length , GRID_SYS_DEFAULT_POSITION,  &error);
-		grid_msg_set_parameter(&message[offset], GRID_BRC_AGE_offset, GRID_BRC_AGE_length, grid_sys_state.age, &error);
-		grid_msg_set_parameter(&message[offset], GRID_BRC_ROT_offset, GRID_BRC_ROT_length, GRID_SYS_DEFAULT_ROTATION, &error);
-
-		offset += strlen(&message[offset]);
-		
-
+		uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};				
+		uint32_t offset=0;
 		
 		
 		// UI STATE
@@ -115,61 +105,36 @@ void grid_port_process_ui(struct grid_port* por){
 				
 			CRITICAL_SECTION_ENTER()
 			if (grid_ui_event_istriggered(&grid_ui_state.element[i].event_list[event])){
-					
-					
-				packetvalid++;
-				grid_ui_event_render_action(&grid_ui_state.element[i].event_list[event], &message[offset]);
-				offset += strlen(&message[offset]);
+							
+				grid_ui_event_render_action(&grid_ui_state.element[i].event_list[event], &payload[offset]);
+				offset += strlen(&payload[offset]);
 				grid_ui_event_reset(&grid_ui_state.element[i].event_list[event]);
 					
 			}
 			CRITICAL_SECTION_LEAVE()
-				
-			
-			
+	
 		}
 		
-		// Got messages
-		if (packetvalid){
+		grid_msg_body_append_text(&message, payload, offset);
+		grid_msg_packet_close(&message);
 			
-			//por->cooldown += (2+por->cooldown/2);
-// 			por->cooldown += (10+por->cooldown);
-// 			por->cooldown = 3;
+		uint32_t message_length = grid_msg_packet_get_length(&message);
 			
-			grid_sys_state.next_broadcast_message_id++;
-			
-
-			// Calculate packet length and insert it into the header! +1 is the EOT character
-			uint8_t error = 0;
-			grid_msg_set_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, offset+1, &error);
-
-			// Close the packet
-			sprintf(&message[offset], "%c..\n", GRID_CONST_EOT);
-			offset += strlen(&message[offset]);
-
-			// Calculate checksum!
-			uint8_t checksum = grid_msg_checksum_calculate(message, offset);
-			grid_msg_checksum_write(message, offset, checksum);
-
-			//printf(message);
-
-			// Put the packet into the UI_RX buffer
-			if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, offset)){
+		// Put the packet into the UI_RX buffer
+		if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, message_length)){
 				
-				for(uint16_t i = 0; i<offset; i++){
+			for(uint32_t i = 0; i<message_length; i++){
 					
-					grid_buffer_write_character(&GRID_PORT_U.tx_buffer, message[i]);
-				}
+				grid_buffer_write_character(&GRID_PORT_U.tx_buffer, grid_msg_packet_send_char(&message, i));
+			}
 				
-				grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
+			grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
 
-			}
-			else{
-				// LOG UNABLE TO WRITE EVENT
-			}
-			
-			
 		}
+		else{
+			// LOG UNABLE TO WRITE EVENT
+		}
+			
 	}
 	
 	//BROADCAST MESSAGES		
@@ -249,7 +214,7 @@ void grid_port_process_ui(struct grid_port* por){
 		
 			//por->cooldown += (2+por->cooldown/2);
 			por->cooldown += (10+por->cooldown);
-			por->cooldown = 3;
+			//por->cooldown = 3;
 		
 			grid_sys_state.next_broadcast_message_id++;
 		
@@ -263,7 +228,7 @@ void grid_port_process_ui(struct grid_port* por){
 			offset += strlen(&message[offset]);
 
 			// Calculate checksum!
-			uint8_t checksum = grid_msg_checksum_calculate(message, offset);
+			uint8_t checksum = grid_msg_calculate_checksum_of_packet_string(message, offset);
 			grid_msg_checksum_write(message, offset, checksum);
 
 			//printf(message);

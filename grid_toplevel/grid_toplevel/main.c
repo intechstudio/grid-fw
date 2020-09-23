@@ -193,63 +193,7 @@ int main(void)
 	grid_sys_load_bank_settings(&grid_sys_state, &grid_nvm_state);
 	
 	while (1) {
-		
-		
-// 		if (loopcounter%50 == 0){
-// 			
-// 			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[13], GRID_UI_EVENT_INIT);
-// 			//grid_ui_event_template_action(&grid_ui_state.element[13], event_index);
-// 			grid_ui_event_trigger(&grid_ui_state.element[13].event_list[event_index]);
-// 			
-// 		}
-		
-		
-		
-		if (usb_init_variable == 1 && grid_sys_rtc_get_time(&grid_sys_state)>RTC1SEC*4){
-			
-			if (debug_flag == 0 && 0){
-				
-				grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 500); // WHITE	
-				
-				debug_flag = 1;
-			}
-		
-		}
-		
-		
-		if (debug_flag == 1){
-			
-			debug_offset = 0;
-			
-			uint8_t element = 3;
-
-
-			sprintf(&debug[debug_offset], "Start of debug\n");
-			debug_offset+=strlen(&debug[debug_offset]);
-
-
-			for(uint8_t i=0; i<grid_ui_state.element[element].event_list_length; i++){
-
-				sprintf(&debug[debug_offset], "Event %d.action :\n", i);
-				debug_offset+=strlen(&debug[debug_offset]);
-
-				for (uint8_t j=0; j<grid_ui_state.element[element].event_list[i].action_length; j++)
-				{
-					debug[debug_offset+j] = grid_ui_state.element[element].event_list[i].action_string[j];
-				}
-
-				debug_offset+=strlen(&debug[debug_offset]);
-
-				sprintf(&debug[debug_offset], "\n");
-				debug_offset+=strlen(&debug[debug_offset]);
-
-
-			}
-			
-			debug_flag = 2;
-			
-			cdcdf_acm_write(debug, debug_offset);
-		}	
+	
 				
 		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
 		
@@ -291,9 +235,7 @@ int main(void)
  			grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
 			 
  		}
-	
-		
-		//grid_selftest(loopcounter);
+
 		
 		loopcounter++;
 	
@@ -302,17 +244,6 @@ int main(void)
 		if (scheduler_report_flag){
 			
 			
-		
-			
-// 			printf("Initlist: ");
-// 			
-// 			for (uint8_t i=0; i<16; i++)
-// 			{	
-// 				printf("%d", grid_ui_state.element[i].event_list[0].status);
-// 			}
-// 			
-// 			
-// 			printf("\n");
 			
 			scheduler_report_flag=0;
 		
@@ -325,24 +256,6 @@ int main(void)
 			}
 			grid_task_timer_reset(&grid_task_state);
 			
-				
-// 			printf("{\"type\":\"TASK\", \"data\": [");
-// 				
-// 			for(uint8_t i = 0; i<GRID_TASK_NUMBER; i++){
-// 			
-// 			
-// 				printf("\"%d\"", task_val[i]);
-// 			
-// 				if (i != GRID_TASK_NUMBER-1){
-// 					printf(", ");
-// 				}
-// 			
-// 			}
-// 			
-// 			printf("]}\r\n");
-// 			
-// 			printf("{\"type\":\"LOOP\", \"data\": [\"%d\", \"%d\", \"%d\", \"%d\"]}\r\n", loopcounter, loopslow, loopfast, loopwarp);
-// 		
 			loopcounter = 0;
 			loopslow = 0;
 			loopfast = 0;
@@ -354,10 +267,6 @@ int main(void)
 							
 		grid_task_enter_task(&grid_task_state, GRID_TASK_RECEIVE);
 
-
-			
-			
-		
 		
 		// MIDI READ TEST CODE
 		

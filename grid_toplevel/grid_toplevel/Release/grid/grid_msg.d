@@ -1,4 +1,4 @@
-grid/grid_led.d grid/grid_led.o: ../grid/grid_led.c ../grid/grid_led.h \
+grid/grid_msg.d grid/grid_msg.o: ../grid/grid_msg.c ../grid/grid_msg.h \
  ../grid/grid_module.h ../atmel_start.h ../driver_init.h \
  ../atmel_start_pins.h ../hal/include/hal_gpio.h \
  ../hal/include/hpl_gpio.h ../hal/utils/include/compiler.h \
@@ -206,10 +206,10 @@ grid/grid_led.d grid/grid_led.o: ../grid/grid_led.c ../grid/grid_led.h \
  ../grid/grid_module_pbf4_reva.h ../grid/grid_module_en16_reva.h \
  ../atmel_start_pins.h ../grid/grid_unittest.h ../grid/grid_debug.h \
  ../grid/grid_usb.h ../grid/grid_ain.h ../grid/grid_module.h \
- ../grid/grid_buf.h ../grid/grid_protocol.h ../grid/grid_sys.h \
- ../grid/grid_ui.h ../grid/grid_nvm.h ../grid/grid_msg.h
+ ../grid/grid_buf.h ../grid/grid_led.h ../grid/grid_protocol.h \
+ ../grid/grid_sys.h ../grid/grid_ui.h ../grid/grid_nvm.h
 
-../grid/grid_led.h:
+../grid/grid_msg.h:
 
 ../grid/grid_module.h:
 
@@ -769,6 +769,8 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../grid/grid_buf.h:
 
+../grid/grid_led.h:
+
 ../grid/grid_protocol.h:
 
 ../grid/grid_sys.h:
@@ -776,5 +778,3 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../grid/grid_ui.h:
 
 ../grid/grid_nvm.h:
-
-../grid/grid_msg.h:

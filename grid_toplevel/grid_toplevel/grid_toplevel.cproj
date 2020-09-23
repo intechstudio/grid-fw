@@ -1324,6 +1324,12 @@ copy "$(OutputDirectory)\$(OutputFileName).uf2" "$(OutputDirectory)\..\..\$(Outp
     <Compile Include="grid\grid_hardwaretest.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="grid\grid_msg.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="grid\grid_msg.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="grid\grid_nvm.c">
       <SubType>compile</SubType>
     </Compile>

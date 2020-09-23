@@ -24,7 +24,7 @@ void grid_port_reset_receiver(struct grid_port* por){
 	
 	grid_sys_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
 	grid_sys_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
-	grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_checksum_calculate(por->ping_packet, por->ping_packet_length));
+	grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 
 
 	
@@ -209,7 +209,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		
 		checksum_received = grid_msg_checksum_read(message, length);
 		
-		checksum_calculated = grid_msg_checksum_calculate(message, length);
+		checksum_calculated = grid_msg_calculate_checksum_of_packet_string(message, length);
 		
 		// checksum validator
 		if (checksum_calculated == checksum_received && error_flag == 0){
@@ -312,7 +312,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 					
 					// Recalculate and update the checksum
 					
-					grid_msg_checksum_write(message, length, grid_msg_checksum_calculate(message, length));
+					grid_msg_checksum_write(message, length, grid_msg_calculate_checksum_of_packet_string(message, length));
 					
 
 					// IF WE CAN STORE THE MESSAGE IN THE RX BUFFER
@@ -399,7 +399,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							
 							//NEW
 							grid_sys_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
-							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_checksum_calculate(por->ping_packet, por->ping_packet_length));
+							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 								
 							// No chance to connect now
 			
@@ -416,7 +416,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							
 							//NEW
 							grid_sys_write_hex_string_value(&por->ping_packet[8], 2, partner_token_received);
-							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_checksum_calculate(por->ping_packet, por->ping_packet_length));
+							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 								
 
 							
@@ -486,7 +486,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							
 							grid_sys_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
 							grid_sys_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
-							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_checksum_calculate(por->ping_packet, por->ping_packet_length));
+							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 							
 							
 							//printf("LS: %d RS: %d LR: %d RR: %d  (Invalid)\r\n",local_stored,remote_stored,local_received,remote_received);
@@ -913,7 +913,7 @@ void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16
 		
 		por->ping_packet_length = strlen(por->ping_packet);	
 			
-		grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_checksum_calculate(por->ping_packet, por->ping_packet_length));
+		grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 		
 
 		
@@ -1078,117 +1078,111 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 	}
 	
 	
+	// Clear the tx double buffer	
+	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
+		por->tx_double_buffer[i] = 0;
+	}
+		
+	struct grid_msg message;
+	grid_msg_init(&message);
+		
 
-
-	if (length){
+	// Let's transfer the packet to local memory
+	grid_buffer_read_init(&por->tx_buffer);
 		
-		for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
-			por->tx_double_buffer[i] = 0;
-		}
-		
-		
-		
-		uint8_t message[GRID_PARAMETER_PACKET_maxlength] = {0};
+	for (uint16_t i = 0; i<length; i++){
 			
+		uint8_t nextchar = grid_buffer_read_character(&por->tx_buffer);
 		
-		//uint8_t message[length];
-		
-		// Let's transfer the packet to local memory
-		grid_buffer_read_init(&por->tx_buffer);
-		
-		for (uint16_t i = 0; i<length; i++){
+		grid_msg_packet_receive_char(&message, nextchar);
+		por->tx_double_buffer[i] = nextchar;	
 			
-			message[i] = grid_buffer_read_character(&por->tx_buffer);
-			
-			por->tx_double_buffer[i] = message[i];
-			
-		}
+	}
 				
-		// Let's acknowledge the transactions	(should wait for partner to send ack)
-		grid_buffer_read_acknowledge(&por->tx_buffer);
+	// Let's acknowledge the transactions	(should wait for partner to send ack)
+	grid_buffer_read_acknowledge(&por->tx_buffer);
 		
-// 		cdcdf_acm_write(por->tx_double_buffer, length);
-// 
-// 		return;
 
-
-		// GRID-2-HOST TRANSLATOR
+	// GRID-2-HOST TRANSLATOR
 		
-		uint8_t error=0;
+	uint8_t error=0;
 			
-		int8_t dx = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_SYS_DEFAULT_POSITION;
-		int8_t dy = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_SYS_DEFAULT_POSITION;	
+	int8_t dx = grid_msg_header_get_dx(&message) - GRID_SYS_DEFAULT_POSITION;
+	int8_t dy = grid_msg_header_get_dy(&message) - GRID_SYS_DEFAULT_POSITION;	
 		
 				
-		uint8_t current_start		= 0;
-		uint8_t current_stop		= 0;
+	uint8_t current_start		= 0;
+	uint8_t current_stop		= 0;
 		
 		
-		uint8_t error_flag = 0;
+	uint8_t error_flag = 0;
 							
-		for (uint16_t i=0; i<length; i++){
+	for (uint16_t i=0; i<message.body_length; i++){
 			
-			if (message[i] == GRID_CONST_STX){
-				current_start = i;
-			}
-			else if (message[i] == GRID_CONST_ETX && current_start!=0){
-				current_stop = i;
-				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_offset], GRID_CLASS_length, &error_flag);
-				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
+		if (message.body[i] == GRID_CONST_STX){
+			current_start = i;
+		}
+		else if (message.body[i] == GRID_CONST_ETX && current_start!=0){
+			current_stop = i;
+			uint8_t msg_class = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_offset, GRID_CLASS_length);
+			uint8_t msg_instr = grid_msg_text_get_parameter(&message, current_start, GRID_INSTR_offset, GRID_INSTR_length);
 											
-				if (msg_class == GRID_CLASS_MIDIRELATIVE_code && msg_instr == GRID_INSTR_EXECUTE_code){
+			if (msg_class == GRID_CLASS_MIDIRELATIVE_code && msg_instr == GRID_INSTR_EXECUTE_code){
 					
 										
-					uint8_t midi_channel = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length, &error);
-					uint8_t midi_command = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset , GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length,  &error);
-					uint8_t midi_param1  = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_PARAM1_offset  , GRID_CLASS_MIDIRELATIVE_PARAM1_length,   &error);
-					uint8_t midi_param2  = grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIRELATIVE_PARAM2_offset  , GRID_CLASS_MIDIRELATIVE_PARAM2_length,   &error);
+				uint8_t midi_channel = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset,		GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length);
+				uint8_t midi_command = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset ,		GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length);
+				uint8_t midi_param1  = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_PARAM1_offset  ,			GRID_CLASS_MIDIRELATIVE_PARAM1_length);
+				uint8_t midi_param2  = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_PARAM2_offset  ,			GRID_CLASS_MIDIRELATIVE_PARAM2_length);
 						
-					// Relative midi translation magic
-				//	midi_channel = ((256-dy*2)%8+grid_sys_state.bank_active*8)%16;		  2bank			
+				// Relative midi translation magic
+			//	midi_channel = ((256-dy*2)%8+grid_sys_state.bank_active*8)%16;		  2bank			
 						
-					midi_channel = ((256-dy*1)%4+grid_sys_state.bank_activebank_number*4)%16;
+				midi_channel = ((256-dy*1)%4+grid_sys_state.bank_activebank_number*4)%16;
 					
 					
-					midi_param1  = (256-32+midi_param1 + 16*dx)%96; // 96-128 reserved
+				midi_param1  = (256-32+midi_param1 + 16*dx)%96; // 96-128 reserved
 												
-					audiodf_midi_write(midi_command>>4, midi_command|midi_channel, midi_param1, midi_param2);	
+				audiodf_midi_write(midi_command>>4, midi_command|midi_channel, midi_param1, midi_param2);	
 					
 									
-				}
-				else if (msg_class == GRID_CLASS_MIDIABSOLUTE_code && msg_instr == GRID_INSTR_EXECUTE_code){
+			}
+			else if (msg_class == GRID_CLASS_MIDIABSOLUTE_code && msg_instr == GRID_INSTR_EXECUTE_code){
 					
 					
-					uint8_t midi_cablecommand =		grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIABSOLUTE_CABLECOMMAND_offset,	GRID_CLASS_MIDIABSOLUTE_CABLECOMMAND_length, &error);
-					uint8_t midi_commandchannel =	grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIABSOLUTE_COMMANDCHANNEL_offset,	GRID_CLASS_MIDIABSOLUTE_COMMANDCHANNEL_length,  &error);
-					uint8_t midi_param1  =			grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIABSOLUTE_PARAM1_offset  ,		GRID_CLASS_MIDIABSOLUTE_PARAM1_length,   &error);
-					uint8_t midi_param2  =			grid_msg_get_parameter(&message[current_start], GRID_CLASS_MIDIABSOLUTE_PARAM2_offset  ,		GRID_CLASS_MIDIABSOLUTE_PARAM2_length,   &error);
+				uint8_t midi_cablecommand =		grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIABSOLUTE_CABLECOMMAND_offset,		GRID_CLASS_MIDIABSOLUTE_CABLECOMMAND_length);
+				uint8_t midi_commandchannel =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIABSOLUTE_COMMANDCHANNEL_offset,		GRID_CLASS_MIDIABSOLUTE_COMMANDCHANNEL_length);
+				uint8_t midi_param1  =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIABSOLUTE_PARAM1_offset  ,			GRID_CLASS_MIDIABSOLUTE_PARAM1_length);
+				uint8_t midi_param2  =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIABSOLUTE_PARAM2_offset  ,			GRID_CLASS_MIDIABSOLUTE_PARAM2_length);
 							
-					audiodf_midi_write(midi_cablecommand, midi_commandchannel, midi_param1, midi_param2);
+				audiodf_midi_write(midi_cablecommand, midi_commandchannel, midi_param1, midi_param2);
 					
 					
-				}
-				else{
+			}
+			else{
 // 					sprintf(&por->tx_double_buffer[output_cursor], "[UNKNOWN] -> Protocol: %d\n", msg_protocol);
 // 					
 // 					output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
-				}
-				
-				current_start = 0;
-				current_stop = 0;
 			}
+				
+			current_start = 0;
+			current_stop = 0;
+		}
 			
 						
-		}		
+	}		
 		
 		
-					
+	uint32_t packet_length = grid_msg_packet_get_length(&message);
+	
+	for (uint32_t i=0; i<packet_length; i++){
 		
-		// Let's send the packet through USB
-		cdcdf_acm_write(por->tx_double_buffer, length);
-				
-		
+		por->tx_double_buffer[i] = grid_msg_packet_send_char(&message, i);
+
 	}
+			
+	// Let's send the packet through USB
+	cdcdf_acm_write(por->tx_double_buffer, packet_length);
 	
 	
 }
@@ -1352,19 +1346,16 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				else if (msg_class == GRID_CLASS_LOADGLOBAL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_sys_load_bank_settings(&grid_sys_state, &grid_nvm_state);
-				
+					grid_debug_print_text("NVM LOAD GLOBAL");
 				}
 				else if (msg_class == GRID_CLASS_STOREGLOBAL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 			
 					grid_sys_store_bank_settings(&grid_sys_state, &grid_nvm_state);
-			
+					grid_debug_print_text("NVM STORE GLOBAL");
 				}
 				else if (msg_class == GRID_CLASS_CLEARGLOBAL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					volatile uint8_t temp[] = "ClearGlobal\n";
-					cdcdf_acm_write(temp, strlen(temp));
-					delay_ms(1);
-					
+					grid_debug_print_text("NVM CLEAR GLOBAL");
 					grid_sys_clear_bank_settings(&grid_sys_state, &grid_nvm_state);
 				
 				}
@@ -1378,8 +1369,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 	
 	
 		}
-	
-		
 
 		
 	}
