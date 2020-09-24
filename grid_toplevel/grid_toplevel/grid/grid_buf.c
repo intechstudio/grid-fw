@@ -38,113 +38,7 @@ void grid_port_reset_receiver(struct grid_port* por){
 	
 }
 
-void grid_port_receive_task(struct grid_port* por){
-	
 
-	
-	// THERE IS ALREADY DATA, PROCESS THAT FIRST
-	if	(por->rx_double_buffer_status != 0){
-		return;
-	}
-	
-	
-	
-	if (por->rx_double_buffer_timeout > 1000){
-		
-		if (por->partner_status == 1){
-			
-			
-			GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Timeout Disconnect & Reset Receiver");
-			
-			grid_port_reset_receiver(por);
-			
-			grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 500);
-		}
-		else{
-			
-			if (por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0){
-				// Ready to receive
-			}
-			else{
-				
-				GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Timeout & Reset Receiver");
-				grid_port_reset_receiver(por);
-			}
-			
-		}
-		
-	}
-	else{
-		
-		por->rx_double_buffer_timeout++;
-	}
-	
-
-	for(uint16_t i = 0; i<490; i++){
-		
-		if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 10){ // \n
-			
-			por->rx_double_buffer_status = 1;
-			por->rx_double_buffer_timeout = 0;
-			
-			return;
-		}
-		else if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 0){
-
-
-			return;
-		}
-		
-		
-		// Buffer overrun error
-		if (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1){
-			
-			GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "rx_double_buffer overrun 1");
-			
-			grid_port_reset_receiver(por);
-			
-			grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200);
-			return;
-		}
-		
-		// Buffer overrun error
-		if (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0){
-			
-			GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "rx_double_buffer overrun 2");
-			
-			grid_port_reset_receiver(por);
-			
-			grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200);
-			return;
-		}
-		
-		
-		if (por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE -1)%GRID_DOUBLE_BUFFER_RX_SIZE] !=0){
-			
-			GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "rx_double_buffer overrun 3");
-			
-			grid_port_reset_receiver(por);
-			
-			grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200);
-			return;
-			
-		}
-		
-		if (por->rx_double_buffer_seek_start_index < GRID_DOUBLE_BUFFER_RX_SIZE-1){
-			
-			por->rx_double_buffer_timeout = 0;
-			por->rx_double_buffer_seek_start_index++;
-		}
-		else{
-			
-			por->rx_double_buffer_timeout = 0;
-			por->rx_double_buffer_seek_start_index=0;
-		}
-		
-	}
-	
-	
-}
 
 void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint16_t len){
 	
@@ -547,7 +441,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 	
 }
 
-void grid_port_receive_complete_task(struct grid_port* por){
+void grid_port_receive_task(struct grid_port* por){
 	
 	if (por->usart_error_flag == 1){
 		
@@ -561,18 +455,97 @@ void grid_port_receive_complete_task(struct grid_port* por){
 	}
 	
 
-	///////////////////// PART 1
-	
-	grid_port_receive_task(por);
-	
+	///////////////////// PART 1 Old receive task
+
+	if	(por->rx_double_buffer_status == 0){
+		
+		if (por->usart!=NULL){ // His is GRID usart port
+
+			if (por->rx_double_buffer_timeout > 1000){
+			
+				if (por->partner_status == 1){
+				
+				
+					GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Timeout Disconnect & Reset Receiver");
+				
+					grid_port_reset_receiver(por);
+				
+					grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 500);
+				}
+				else{
+				
+					if (por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0){
+						// Ready to receive
+					}
+					else{
+					
+						GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Timeout & Reset Receiver");
+						grid_port_reset_receiver(por);
+					}
+				
+				}
+			
+			}
+			else{
+			
+				por->rx_double_buffer_timeout++;
+			}			
+					
+		}
+		
+		for(uint16_t i = 0; i<490; i++){
+				
+			if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 10){ // \n
+					
+				por->rx_double_buffer_status = 1;
+				por->rx_double_buffer_timeout = 0;
+					
+				return;
+			}
+			else if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 0){
+
+
+				return;
+			}
+				
+				
+			// Buffer overrun error 1, 2, 3
+			if (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1 ||
+			(por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0) ||
+			(por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE -1)%GRID_DOUBLE_BUFFER_RX_SIZE] !=0)
+			){
+					
+				GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "rx_double_buffer overrun");
+					
+				grid_port_reset_receiver(por);
+					
+				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200);
+				return;
+			}
+				
+				
+			if (por->rx_double_buffer_seek_start_index < GRID_DOUBLE_BUFFER_RX_SIZE-1){
+					
+				por->rx_double_buffer_timeout = 0;
+				por->rx_double_buffer_seek_start_index++;
+			}
+			else{
+					
+				por->rx_double_buffer_timeout = 0;
+				por->rx_double_buffer_seek_start_index=0;
+			}
+				
+		}
+	}
 	
 	////////////////// PART 2
 	
+	// No complete message in buffer
 	if (por->rx_double_buffer_status == 0){
 		return;
 	}
 
-	
+
 	uint32_t length = 0;
 	
 	if (por->rx_double_buffer_read_start_index < por->rx_double_buffer_seek_start_index){
@@ -1343,20 +1316,38 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					grid_led_set_color(&grid_led_state, led_num, led_lay, led_red, led_gre, led_blu);
 				
 				}
-				else if (msg_class == GRID_CLASS_LOADGLOBAL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				else if (msg_class == GRID_CLASS_GLOBALLOAD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_sys_load_bank_settings(&grid_sys_state, &grid_nvm_state);
 					grid_debug_print_text("NVM LOAD GLOBAL");
 				}
-				else if (msg_class == GRID_CLASS_STOREGLOBAL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				else if (msg_class == GRID_CLASS_GLOBALSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 			
 					grid_sys_store_bank_settings(&grid_sys_state, &grid_nvm_state);
 					grid_debug_print_text("NVM STORE GLOBAL");
 				}
-				else if (msg_class == GRID_CLASS_CLEARGLOBAL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				else if (msg_class == GRID_CLASS_GLOBALCLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_debug_print_text("NVM CLEAR GLOBAL");
 					grid_sys_clear_bank_settings(&grid_sys_state, &grid_nvm_state);
+					grid_debug_print_text("NVM CLEAR GLOBAL");
+				
+				}
+				else if (msg_class == GRID_CLASS_LOCALLOAD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				
+					grid_debug_print_text("NVM LOAD LOCAL");
+				}
+				else if (msg_class == GRID_CLASS_LOCALSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				
+					grid_debug_print_text("NVM STORE LOCAL");
+				}
+				else if (msg_class == GRID_CLASS_LOCALCLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				
+					grid_debug_print_text("NVM CLEAR LOCAL");
+				
+				}
+				else if (msg_class == GRID_CLASS_CONFIGURATION_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				
+					grid_debug_print_text("CFG Received");
 				
 				}
 				else{

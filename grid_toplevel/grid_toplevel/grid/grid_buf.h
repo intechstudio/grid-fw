@@ -93,13 +93,9 @@ volatile struct grid_port GRID_PORT_H;
 
 void grid_port_reset_receiver(struct grid_port* por);
 
-void grid_port_receive_task(struct grid_port* por);
-
 void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint16_t len);
 
-void grid_port_receive_complete_task(struct grid_port* por);
-
-
+void grid_port_receive_task(struct grid_port* por);
 
 
 

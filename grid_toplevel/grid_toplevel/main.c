@@ -299,48 +299,45 @@ int main(void)
 		
 		if (usblength){	
 
-						
+			GRID_PORT_H.rx_double_buffer_status = 1;			
 			GRID_PORT_H.rx_double_buffer_read_start_index = 0;
+			GRID_PORT_H.rx_double_buffer_seek_start_index = usblength-3; //-3
 
-			grid_port_receive_decode(&GRID_PORT_H, 0, usblength-2);
-	
+			//grid_port_receive_decode(&GRID_PORT_H, 0, usblength-2);
+			grid_port_receive_task(&GRID_PORT_H);
 				
 		}
-				
-		// CHECK RX BUFFERS
-		
-		
-		grid_port_receive_complete_task(&GRID_PORT_N);
-		grid_port_receive_complete_task(&GRID_PORT_E);
-		grid_port_receive_complete_task(&GRID_PORT_S);
-		grid_port_receive_complete_task(&GRID_PORT_W);
-		
+
 		
 		// NVM READ
-		if (GRID_PORT_U.rx_double_buffer_status != 0){	
+	
+		uint32_t nvmlength = GRID_PORT_U.rx_double_buffer_status;
+							
+		if (nvmlength){
+				
+			GRID_PORT_U.rx_double_buffer_status = 1;
+			GRID_PORT_U.rx_double_buffer_read_start_index = 0;
+			GRID_PORT_U.rx_double_buffer_seek_start_index = nvmlength-1; //-3
+				
+			// GETS HERE	
+			//grid_port_receive_decode(&GRID_PORT_U, 0, nvmlength-1);		
+			grid_port_receive_task(&GRID_PORT_U);	
+		}	
 			
-			uint32_t length = GRID_PORT_U.rx_double_buffer_status;
-							
-			if (length !=0){
-				
-				// GETS HERE
-							
-
-				
-				grid_port_receive_decode(&GRID_PORT_U, 0, length);		
-				
-			}	
-			else{
-				
-				//clear buffer
-				for (uint32_t i=0; i<GRID_NVM_PAGE_SIZE; i++)
-				{
-					GRID_PORT_U.rx_double_buffer[i] = 0;
-				}
-			}
+		//clear buffer
+		for (uint32_t i=0; i<GRID_NVM_PAGE_SIZE; i++)
+		{
+			GRID_PORT_U.rx_double_buffer[i] = 0;
 		}
 		
-							
+					
+		// CHECK RX BUFFERS
+				
+				
+		grid_port_receive_task(&GRID_PORT_N);
+		grid_port_receive_task(&GRID_PORT_E);
+		grid_port_receive_task(&GRID_PORT_S);
+		grid_port_receive_task(&GRID_PORT_W);							
 	
 	
 		/* ========================= GRID REPORT TASK ============================= */
