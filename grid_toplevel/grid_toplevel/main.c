@@ -295,6 +295,7 @@ int main(void)
 	
 		cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
 		
+		// itt lesz a baj: circ buffer kéne
 		uint16_t usblength = strlen(GRID_PORT_H.rx_double_buffer);
 		
 		if (usblength){	
@@ -305,6 +306,12 @@ int main(void)
 
 			//grid_port_receive_decode(&GRID_PORT_H, 0, usblength-2);
 			grid_port_receive_task(&GRID_PORT_H);
+			
+			//clear buffer otherwise strlen might fail
+			for(uint32_t i=0; i<usblength; i++){
+				
+				GRID_PORT_H.rx_double_buffer[i] = 0;
+			}
 				
 		}
 

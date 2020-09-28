@@ -279,9 +279,9 @@ void grid_ui_event_init(struct grid_ui_event* eve, enum grid_ui_event_t event_ty
 	eve->type   = event_type;	
 	eve->status = GRID_UI_EVENT_STATUS_READY;
 
-	eve->action_string = malloc(GRID_UI_ACTION_STRING_LENGTH*sizeof(uint8_t));
+	eve->action_string = malloc(GRID_UI_ACTION_STRING_maxlength*sizeof(uint8_t));
 	
-	for (uint32_t i=0; i<GRID_UI_ACTION_STRING_LENGTH; i++){
+	for (uint32_t i=0; i<GRID_UI_ACTION_STRING_maxlength; i++){
 		eve->action_string[i] = 0;
 	}	
 	
@@ -289,9 +289,9 @@ void grid_ui_event_init(struct grid_ui_event* eve, enum grid_ui_event_t event_ty
 	
 	eve->action_parameter_count = 0;
 	
-	eve->action_parameter_list = malloc(GRID_UI_ACTION_PARAMETER_COUNT*sizeof(struct grid_ui_action_parameter));
+	eve->action_parameter_list = malloc(GRID_UI_ACTION_PARAMETER_maxcount*sizeof(struct grid_ui_action_parameter));
 
-	for (uint32_t i=0; i<GRID_UI_ACTION_PARAMETER_COUNT; i++){
+	for (uint32_t i=0; i<GRID_UI_ACTION_PARAMETER_maxcount; i++){
 		eve->action_parameter_list[i].status = GRID_UI_STATUS_UNDEFINED;
 		eve->action_parameter_list[i].address = 0;
 		eve->action_parameter_list[i].offset = 0;
@@ -370,9 +370,9 @@ void grid_ui_element_init(struct grid_ui_element* ele, enum grid_ui_element_t el
 
 
 
-void grid_ui_event_register_action(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length){
+void grid_ui_event_register_action(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string, uint32_t action_string_length){
 		
-	
+	grid_debug_print_text("Register Action");
 	uint8_t event_index = 255;
 	
 	for(uint8_t i=0; i<ele->event_list_length; i++){
@@ -382,64 +382,89 @@ void grid_ui_event_register_action(struct grid_ui_element* ele, enum grid_ui_eve
 	}
 	
 	if (event_index == 255){
+		grid_debug_print_text("Event Not Found");
 		return; // EVENT NOT FOUND
 	}
+	
+	
+	
+	// Clear Action String
+	for(uint32_t i=0; i<GRID_UI_ACTION_STRING_maxlength; i++){
+		ele->event_list[event_index].action_string[i] = 0;
+	}
+	ele->event_list[event_index].action_length = 0;
+	
+	// Clear Action Parameter List
+	for(uint8_t i=0; i<GRID_UI_ACTION_PARAMETER_maxcount; i++){
+		
+		ele->event_list[event_index].action_parameter_list[i].status = GRID_UI_STATUS_UNDEFINED;
+		ele->event_list[event_index].action_parameter_list[i].address = 0;
+		ele->event_list[event_index].action_parameter_list[i].group = 0;
+		ele->event_list[event_index].action_parameter_list[i].length = 0;
+		ele->event_list[event_index].action_parameter_list[i].offset = 0;
+	}
+	ele->event_list[event_index].action_parameter_count = 0;
+	
+	
 	
 	
 	// TEMPLATE MAGIC COMING UP!
 	
 	uint8_t parameter_list_length = 0;
-	struct grid_ui_action_parameter parameter_list[GRID_UI_ACTION_PARAMETER_COUNT];
+
 	
-	for (uint32_t i=0; i<event_string_length; i++){
+	for (uint32_t i=0; i<action_string_length; i++){
+		
+		// Copy Action
+		ele->event_list[event_index].action_string[i] = action_string[i];
+		
+		// Check if STX or ETX was escaped, if so fix it!
+		if (ele->event_list[event_index].action_string[i] > 127){
+			
+			grid_debug_print_text(" Escaped Char Found ");
+			ele->event_list[event_index].action_string[i] -= 128;
+			
+			if (ele->event_list[event_index].action_string[i] == 'B'){
+				
+				ele->event_list[event_index].action_string[i] = GRID_CONST_ETX;
+				grid_debug_print_text(" Balek ");
+
+			}
+		}
+		
 		
 		// if current character is A and the next character is a number from 0 to 9
-		if (event_string[i] == 'A' && (event_string[i+1]-'0') < GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH){
+		if (action_string[i-1] == 'A' && (action_string[i]-'0') < GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH){
 						
-			parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;
+			ele->event_list[event_index].action_parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;
 			
-			parameter_list[parameter_list_length].group = event_string[i];
+			ele->event_list[event_index].action_parameter_list[parameter_list_length].group = action_string[i-1];
 			
-			parameter_list[parameter_list_length].address = (event_string[i+1]-'0');
-			parameter_list[parameter_list_length].offset = i;
-			parameter_list[parameter_list_length].length = 2;
+			ele->event_list[event_index].action_parameter_list[parameter_list_length].address = (action_string[i]-'0');
+			ele->event_list[event_index].action_parameter_list[parameter_list_length].offset = i-1;
+			ele->event_list[event_index].action_parameter_list[parameter_list_length].length = 2;
 			parameter_list_length++;
 	
 		}
-		else if (event_string[i] == 'B' && (event_string[i+1]-'0') < GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH){
+		else if (action_string[i-1] == 'B' && (action_string[i]-'0') < GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH){
 			
-			parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;		
+			ele->event_list[event_index].action_parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;		
 			
-			parameter_list[parameter_list_length].group = event_string[i];
+			ele->event_list[event_index].action_parameter_list[parameter_list_length].group = action_string[i-1];
 			
-			parameter_list[parameter_list_length].address = (event_string[i+1]-'0');
-			parameter_list[parameter_list_length].offset = i;
-			parameter_list[parameter_list_length].length = 2;
+			ele->event_list[event_index].action_parameter_list[parameter_list_length].address = (action_string[i]-'0');
+			ele->event_list[event_index].action_parameter_list[parameter_list_length].offset = i-1;
+			ele->event_list[event_index].action_parameter_list[parameter_list_length].length = 2;
+			
 			parameter_list_length++;
 			
 		}		
 		
 	}
 	
-	
-	
-	
-	// COPY THE ACTION STRING
-	for(uint32_t i=0; i<event_string_length; i++){
-		ele->event_list[event_index].action_string[i] = event_string[i];
-	}
-	ele->event_list[event_index].action_length = event_string_length;
-	
-	
 
-	// COPY THE PARAMETER DESCRIPTORS
-	for(uint8_t i=0; i<parameter_list_length; i++){
-		
-		ele->event_list[event_index].action_parameter_list[i] = parameter_list[i];
-	}
+	ele->event_list[event_index].action_length = action_string_length;
 	ele->event_list[event_index].action_parameter_count = parameter_list_length;
-	
-	
 	
 }
 

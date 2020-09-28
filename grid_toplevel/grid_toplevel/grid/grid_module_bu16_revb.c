@@ -187,7 +187,7 @@ void grid_module_bu16_revb_init(){
 		grid_ui_element_init(&grid_ui_state.element[i], GRID_UI_ELEMENT_BUTTON);
 		grid_ui_state.element[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
 			
-		uint8_t payload_template[GRID_UI_ACTION_STRING_LENGTH] = {0};
+		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 			
 		sprintf(payload_template, GRID_EVENT_DP_BUT GRID_DEFAULT_ACTION_DP);
 		uint8_t payload_length = strlen(payload_template);
@@ -200,7 +200,7 @@ void grid_module_bu16_revb_init(){
  		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DR, payload_template, payload_length);
 		 
 		 
-		uint8_t init_action[GRID_UI_ACTION_STRING_LENGTH] = {0};
+		uint8_t init_action[GRID_UI_ACTION_STRING_maxlength] = {0};
 		sprintf(init_action, GRID_DEFAULT_ACTION_INIT);
 		uint8_t init_length = strlen(init_action);
 		

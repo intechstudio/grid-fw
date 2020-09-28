@@ -336,7 +336,7 @@ void grid_module_en16_reva_init(){
 		if (1){ // ROTATION -> MIDI Control Change
 		
 		
-			uint8_t payload_template[GRID_UI_ACTION_STRING_LENGTH] = {0};
+			uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 			sprintf(payload_template, GRID_EVENT_AVC7_ENC GRID_DEFAULT_ACTION_AVC7);
 			uint8_t payload_length = strlen(payload_template);
 
@@ -348,7 +348,7 @@ void grid_module_en16_reva_init(){
 		if (1){ // BUTTONS -> MIDI Note On/Off
 		
 		
-			uint8_t payload_template[GRID_UI_ACTION_STRING_LENGTH] = {0};
+			uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 		
 			sprintf(payload_template, GRID_EVENT_DP_ENC GRID_DEFAULT_ACTION_DP_ENC);
 			uint8_t payload_length = strlen(payload_template);
@@ -362,7 +362,7 @@ void grid_module_en16_reva_init(){
 		
 		}	
 		
-		uint8_t init_action[GRID_UI_ACTION_STRING_LENGTH] = {0};
+		uint8_t init_action[GRID_UI_ACTION_STRING_maxlength] = {0};
 		sprintf(init_action, GRID_DEFAULT_ACTION_INIT_ENC);
 		uint8_t init_length = strlen(init_action);
 				

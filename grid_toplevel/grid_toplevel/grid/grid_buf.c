@@ -108,19 +108,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		// checksum validator
 		if (checksum_calculated == checksum_received && error_flag == 0){
 			
-			
-// 						if (por == &GRID_PORT_U && message[0] == GRID_CONST_SOH ){//NVM TEST
-// 							grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN
-// 							volatile uint8_t debug[200] = {0};
-// 							
-// 							sprintf(debug, "\nLoading %d bytes %d !\n", length, message[length]);
-// 							
-// 							cdcdf_acm_write(debug, strlen(debug));
-// 							
-// 							delay_ms(5);
-// 							
-// 							
-// 						}
+
 			
 			if (message[1] == GRID_CONST_BRC){ // Broadcast message
 				
@@ -212,7 +200,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 					// IF WE CAN STORE THE MESSAGE IN THE RX BUFFER
 					if (grid_buffer_write_init(&por->rx_buffer, length)){
 						
-						
+		
 						
 						for (uint16_t i=0; i<length; i++){
 							
@@ -1225,6 +1213,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_offset], GRID_CLASS_length, &error_flag);
 				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
 		
+		
+			
 				if (msg_class == GRID_CLASS_BANKACTIVE_code){
 					
 					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKACTIVE_BANKNUMBER_offset], GRID_CLASS_BANKACTIVE_BANKNUMBER_length, &error_flag);
@@ -1241,8 +1231,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 																		
 						grid_sys_set_bank(&grid_sys_state, banknumber);
 						
-						//uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_MAPMODE_PRESS);
-						//grid_ui_event_reset(&grid_core_state.element[0].event_list[event_index]);
 													
 					}
 					else if (msg_instr == GRID_INSTR_FETCH_code){ //GET BANK
@@ -1272,6 +1260,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						if (grid_sys_get_bank_num(&grid_sys_state) == banknumber){
 							grid_sys_set_bank(&grid_sys_state, 255);
 						}	
+						
 						grid_sys_bank_disable(&grid_sys_state, banknumber);
 					}
 					else{
@@ -1281,8 +1270,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 				}	
 				else if (msg_class == GRID_CLASS_BANKCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code){
-					
-
 					
 					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_NUM_offset], GRID_CLASS_BANKCOLOR_NUM_length, &error_flag);
 					uint8_t red		   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_RED_offset], GRID_CLASS_BANKCOLOR_RED_length, &error_flag);
@@ -1346,8 +1333,33 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				
 				}
 				else if (msg_class == GRID_CLASS_CONFIGURATION_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+
+					uint8_t banknumber		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_BANKNUMBER_offset]		, GRID_CLASS_CONFIGURATION_BANKNUMBER_length	, &error_flag);
+					uint8_t elementnumber	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset]	, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length	, &error_flag);
+					uint8_t eventtype		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_EVENTTYPE_offset]		, GRID_CLASS_CONFIGURATION_EVENTTYPE_length		, &error_flag);
+					
+					uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength]	= {0};
+					uint32_t actionstring_length = current_stop-current_start-GRID_CLASS_CONFIGURATION_ACTIONSTRING_offset -2;
+													
+					uint8_t debugtext[100] = {0};
+					
+					for(uint32_t j = 0; j<actionstring_length; j++){
+					
+						actionstring[j] = message[current_start+GRID_CLASS_CONFIGURATION_ACTIONSTRING_offset + j + 1];
+						
+					}
+					
+						
+										
+					sprintf(debugtext, "CFG Execute: Bank %d, Element %d, EventType %d, ActionLength: %d Action: %s  ", banknumber, elementnumber, eventtype, actionstring_length, actionstring);
 				
-					grid_debug_print_text("CFG Received");
+				
+					grid_debug_print_text(debugtext);
+				
+					grid_ui_event_register_action(&grid_ui_state.element[elementnumber], eventtype, actionstring, actionstring_length);
+					
+				
+				
 				
 				}
 				else{

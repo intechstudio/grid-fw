@@ -47,7 +47,7 @@ uint32_t grid_task_timer_read(struct grid_task_model* mod, enum grid_task task){
 
 
 
-void grid_sys_store_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
+void grid_sys_store_bank_settings_old(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
 	
 	grid_nvm_clear_write_buffer(nvm);
 	
@@ -118,6 +118,72 @@ void grid_sys_store_bank_settings(struct grid_sys_model* sys, struct grid_nvm_mo
 		
 	*/
 		
+}
+
+
+void grid_sys_store_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
+
+	struct grid_msg message;
+	
+	grid_msg_init(&message);
+	grid_msg_init_header(&message, GRID_SYS_LOCAL_POSITION, GRID_SYS_LOCAL_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+
+	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
+	uint8_t payload_length = 0;
+	uint32_t offset = 0;
+	
+	for(uint8_t i=0; i<4; i++){
+		
+		// BANK ENABLED	
+		offset = grid_msg_body_get_length(&message);
+			
+		sprintf(payload, GRID_CLASS_BANKENABLED_frame);
+		payload_length = strlen(payload);
+			
+		grid_msg_body_append_text(&message, payload, payload_length);
+			
+		grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKENABLED_BANKNUMBER_offset, GRID_CLASS_BANKENABLED_BANKNUMBER_length, i);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKENABLED_ISENABLED_offset, GRID_CLASS_BANKENABLED_ISENABLED_length, sys->bank_enabled[i]);		
+			
+		// BANK COLOR	
+		offset = grid_msg_body_get_length(&message);
+		
+		sprintf(payload, GRID_CLASS_BANKCOLOR_frame);
+		payload_length = strlen(payload);
+		
+		grid_msg_body_append_text(&message, payload, payload_length);
+
+		grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKCOLOR_NUM_offset, GRID_CLASS_BANKCOLOR_NUM_length, i);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKCOLOR_RED_offset, GRID_CLASS_BANKCOLOR_RED_length, sys->bank_color_r[i]);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKCOLOR_GRE_offset, GRID_CLASS_BANKCOLOR_GRE_length, sys->bank_color_g[i]);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKCOLOR_BLU_offset, GRID_CLASS_BANKCOLOR_BLU_length, sys->bank_color_b[i]);
+		
+		
+	}
+	
+	grid_msg_packet_close(&message);
+
+	grid_nvm_clear_write_buffer(nvm);
+	
+	uint32_t message_length = grid_msg_packet_get_length(&message);
+	
+	if (message_length){
+
+		nvm->write_buffer_length = message_length;
+		
+		for(uint32_t i = 0; i<message_length; i++){
+			
+			nvm->write_buffer[i] = grid_msg_packet_send_char(&message, i);
+		}
+
+	}
+	
+	nvm->write_target_address = GRID_NVM_GLOBAL_BASE_ADDRESS;
+	flash_write(nvm->flash, nvm->write_target_address, nvm->write_buffer, nvm->write_buffer_length);
+	
 }
 
 void grid_sys_load_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
@@ -591,20 +657,20 @@ void grid_sys_init(struct grid_sys_model* mod){
 
 uint8_t grid_sys_bank_enable(struct grid_sys_model* mod, uint8_t banknumber){
 	
-	if (banknumber>GRID_SYS_BANK_MAXNUMBER){
-		return false;
+	if (banknumber<GRID_SYS_BANK_MAXNUMBER){
+		mod->bank_enabled[banknumber] = 1;
 	}
 	
-	mod->bank_enabled[banknumber] = 1;
+
 }
 
 uint8_t grid_sys_bank_disable(struct grid_sys_model* mod, uint8_t banknumber){
 	
-	if (banknumber>GRID_SYS_BANK_MAXNUMBER){
-		return false;
+	if (banknumber<GRID_SYS_BANK_MAXNUMBER){
+		mod->bank_enabled[banknumber] = 0;
 	}
 	
-	mod->bank_enabled[banknumber] = 0;
+	
 	
 }
 
@@ -675,43 +741,43 @@ uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod){
 
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 	
-	mod->bank_active_changed = 1;
-	
-
 	
 	if (banknumber == 255){
 			
-		mod->bank_activebank_number = 255;
-		
+		mod->bank_activebank_number = 255;	
+		mod->bank_active_changed = 1;
 				
 		mod->bank_activebank_color_r = 127;
 		mod->bank_activebank_color_g = 127;
 		mod->bank_activebank_color_b = 127;
-		
-		uint8_t r = mod->bank_activebank_color_r;
-		uint8_t g = mod->bank_activebank_color_g;
-		uint8_t b = mod->bank_activebank_color_b;
-
 
 		
 	}
-	else if (mod->bank_enabled[banknumber%GRID_SYS_BANK_MAXNUMBER] == 1){
+	else if (banknumber<GRID_SYS_BANK_MAXNUMBER){
 			
-		mod->bank_activebank_number = banknumber%GRID_SYS_BANK_MAXNUMBER;
-		
-		mod->bank_activebank_color_r = mod->bank_color_r[mod->bank_activebank_number];
-		mod->bank_activebank_color_g = mod->bank_color_g[mod->bank_activebank_number];
-		mod->bank_activebank_color_b = mod->bank_color_b[mod->bank_activebank_number];
-		
-		uint8_t r = mod->bank_activebank_color_r;
-		uint8_t g = mod->bank_activebank_color_g;
-		uint8_t b = mod->bank_activebank_color_b;
+		if (mod->bank_enabled[banknumber] == 1){
+			
+			mod->bank_activebank_number = banknumber;
+			mod->bank_active_changed = 1;
+			
+			mod->bank_activebank_color_r = mod->bank_color_r[mod->bank_activebank_number];
+			mod->bank_activebank_color_g = mod->bank_color_g[mod->bank_activebank_number];
+			mod->bank_activebank_color_b = mod->bank_color_b[mod->bank_activebank_number];	
+					
+		}
+		else{
+			
+			//grid_debug_print_text("NOT ENABLED");
+			
+		}
+
 	
 	}
-
-
-
-	
+	else{
+		
+		//grid_debug_print_text("Invalid Bank Number");	
+				
+	}
 
 	
 }
