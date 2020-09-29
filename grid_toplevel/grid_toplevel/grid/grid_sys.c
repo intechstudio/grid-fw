@@ -200,7 +200,7 @@ void grid_sys_load_bank_settings(struct grid_sys_model* sys, struct grid_nvm_mod
 	uint8_t copydone = 0;
 		
 	for (uint16_t i=0; i<GRID_NVM_PAGE_SIZE; i++){		
-		GRID_PORT_H.tx_double_buffer[i] = temp[i];		
+	
 		
 		if (copydone == 0){
 				
@@ -220,6 +220,7 @@ void grid_sys_load_bank_settings(struct grid_sys_model* sys, struct grid_nvm_mod
 			
 			
 		}
+		
 		
 	}
 	
@@ -633,18 +634,18 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->bank_enabled[2] = 1;
 	mod->bank_enabled[3] = 1;
 	
-	mod->bank_activebank_color_r = 255;
-	mod->bank_activebank_color_g = 255;
-	mod->bank_activebank_color_b = 255;
+	mod->bank_activebank_color_r = 0;
+	mod->bank_activebank_color_g = 0;
+	mod->bank_activebank_color_b = 0;
 	
-
+	mod->mapmodestate = 1;
 	
 	mod->bank_active_changed = 0;
 	mod->bank_setting_changed_flag = 0;
 	
 
 
-	mod->bank_activebank_number = 255;
+	mod->bank_activebank_number = 0;
 	grid_sys_set_bank(&grid_sys_state, 255);
 	
 	grid_port_init_all();
@@ -703,6 +704,11 @@ uint8_t grid_sys_get_bank_num(struct grid_sys_model* mod){
 	return mod->bank_activebank_number;
 }
 
+uint8_t grid_sys_get_bank_valid(struct grid_sys_model* mod){
+	
+	return mod->bank_activebank_valid;
+}
+
 uint8_t grid_sys_get_bank_red(struct grid_sys_model* mod){
 	
 	return mod->bank_activebank_color_r;
@@ -738,13 +744,33 @@ uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod){
 	
 }
 
+uint8_t grid_sys_get_bank_number_of_first_valid(struct grid_sys_model* mod){
+	
+	uint8_t current_active = grid_sys_get_bank_num(mod);
+	
+	for (uint8_t i=0; i<GRID_SYS_BANK_MAXNUMBER; i++){
+		
+		if (mod->bank_enabled[i] == 1){
+			
+			return i;
+		}
+		
+	}
+	
+	return 255;
+	
+}
+
 
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 	
+
 	
 	if (banknumber == 255){
 			
-		mod->bank_activebank_number = 255;	
+		mod->bank_activebank_number = 0;
+		mod->bank_activebank_valid = 0;
+		
 		mod->bank_active_changed = 1;
 				
 		mod->bank_activebank_color_r = 127;
@@ -758,6 +784,8 @@ void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 		if (mod->bank_enabled[banknumber] == 1){
 			
 			mod->bank_activebank_number = banknumber;
+			mod->bank_activebank_valid = 1;
+			
 			mod->bank_active_changed = 1;
 			
 			mod->bank_activebank_color_r = mod->bank_color_r[mod->bank_activebank_number];

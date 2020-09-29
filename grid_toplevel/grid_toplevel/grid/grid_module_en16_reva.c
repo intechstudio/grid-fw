@@ -65,10 +65,9 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 		{
 			
 
-
 			uint8_t value = helper[bank][i];
 			uint8_t res_index = i;
-			uint32_t* template_parameter_list = grid_ui_state.element[res_index].template_parameter_list;
+			uint32_t* template_parameter_list = grid_ui_state.bank_list[bank].element_list[res_index].template_parameter_list;
 			uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
 			
 			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = res_index;
@@ -79,20 +78,11 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14U] = 0;
 			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14L] = 0;
 			
-// 			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_AVC7);
-// 
-// 			grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
-// 			
-// 			grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
-			
 			
 			// action template bug fix try
-			grid_ui_state.element[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
+			grid_ui_state.bank_list[bank].element_list[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
 					
-			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[i], GRID_UI_EVENT_INIT);
-					
-			grid_ui_event_template_action(&grid_ui_state.element[i], event_index);
-			grid_ui_event_trigger(&grid_ui_state.element[i].event_list[event_index]);
+			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
 					
 
 
@@ -128,7 +118,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				
 
 				uint8_t res_index = i;
-				uint32_t* template_parameter_list = grid_ui_state.element[res_index].template_parameter_list;						
+				uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;						
 				uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
 					
 				if (grid_ui_encoder_array[i].button_value == 0){ // Button Press Event
@@ -138,14 +128,8 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				
 					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV7] = 127;
 					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV8] = 255;
-				
-					uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_DP);
-
-					
-				
-					grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
-					grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
 		
+					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_DP);
 					
 					
 					
@@ -160,13 +144,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
  					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV8] = 0;
 
 				
- 					uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_DR);
-					  				
- 				
-				
-					grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
-					grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
-			
+					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_DR);
 					
 
 				}
@@ -267,7 +245,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 						
 					helper[bank][i] = value;
 					uint8_t res_index = i;
-					uint32_t* template_parameter_list = grid_ui_state.element[res_index].template_parameter_list;
+					uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
 					uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};				
 															
 					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = res_index;
@@ -278,12 +256,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14U] = 0;
 					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14L] = 0;
 					
-					uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_AVC7);
-
-					grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
-					
-					grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
-					
+					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_AVC7);
 					
 				}
 				
@@ -326,66 +299,80 @@ void grid_module_en16_reva_init(){
 	
 	grid_led_lowlevel_init(&grid_led_state, 16);
 	
-	grid_ui_model_init(&grid_ui_state, 16);	
-	
-	
-	for(uint8_t i=0; i<16; i++){
-	
-		grid_ui_element_init(&grid_ui_state.element[i], GRID_UI_ELEMENT_ENCODER);
-		
-		if (1){ // ROTATION -> MIDI Control Change
-		
-		
-			uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
-			sprintf(payload_template, GRID_EVENT_AVC7_ENC GRID_DEFAULT_ACTION_AVC7);
-			uint8_t payload_length = strlen(payload_template);
+	grid_ui_model_init(&grid_ui_state, GRID_SYS_BANK_MAXNUMBER);	
 
-			// Register Absolute Value Change
-			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_AVC7, payload_template, payload_length);
+
+	
+	for (uint8_t i=0; i<GRID_SYS_BANK_MAXNUMBER; i++)
+	{
 		
-		}
+		grid_ui_bank_init(&grid_ui_state, i, 16);	
 		
-		if (1){ // BUTTONS -> MIDI Note On/Off
+		for(uint8_t j=0; j<16; j++){
 		
+			grid_ui_element_init(&grid_ui_state.bank_list[i], j, GRID_UI_ELEMENT_ENCODER);
 		
-			uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
-		
-			sprintf(payload_template, GRID_EVENT_DP_ENC GRID_DEFAULT_ACTION_DP_ENC);
-			uint8_t payload_length = strlen(payload_template);
-		
-			// Register Digital Press Action
-			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DP, payload_template, payload_length);
-		
-			sprintf(payload_template, GRID_EVENT_DR_ENC GRID_DEFAULT_ACTION_DR_ENC);
-		
-			grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DR, payload_template, payload_length);
-		
-		}	
-		
-		uint8_t init_action[GRID_UI_ACTION_STRING_maxlength] = {0};
-		sprintf(init_action, GRID_DEFAULT_ACTION_INIT_ENC);
-		uint8_t init_length = strlen(init_action);
+			if (1){ // ROTATION -> MIDI Control Change
+			
+				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
+				sprintf(action_string, GRID_ACTIONSTRING_AVC7);
+
+				// Register Absolute Value Change
+				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_AVC7, action_string, strlen(action_string));
+				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_AVC7);
+			}
+			
+			if (1){		// Register Digital Press Event and Action
 				
-		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_INIT, init_action, init_length);
-						
+				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
+				sprintf(action_string, GRID_ACTIONSTRING_DP_ENC);
+				
+				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DP, action_string, strlen(action_string));
+				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DP);
+			}
+
+			if (1){		// Register Digital Release Event and Action
+				
+				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
+				sprintf(action_string, GRID_ACTIONSTRING_DR_ENC);
+				
+				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DR, action_string, strlen(action_string));
+				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DR);
+			}
 		
-						
+			if (1) { //INIT
+				
+				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
+				sprintf(action_string, GRID_ACTIONSTRING_INIT_ENC);
+				
+				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT, action_string, strlen(action_string));
+				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT);				
+
+			}
+		
+		
+		
+		}		
+		
+		
 	}
+	
+
 
 	// initialize local encoder helper struct
-	for (uint8_t i = 0; i<16; i++)
+	for (uint8_t j = 0; j<16; j++)
 	{
-		grid_ui_encoder_array[i].controller_number = i;
+		grid_ui_encoder_array[j].controller_number = j;
 		
-		grid_ui_encoder_array[i].button_value = 1;
-		grid_ui_encoder_array[i].button_changed = 0; 
-		grid_ui_encoder_array[i].rotation_value = 0;
-		grid_ui_encoder_array[i].rotation_changed = 1;
-		grid_ui_encoder_array[i].rotation_direction = 0;
-		grid_ui_encoder_array[i].last_real_time = -1;
-		grid_ui_encoder_array[i].velocity = 0;
-		grid_ui_encoder_array[i].phase_a_previous = 1;
-		grid_ui_encoder_array[i].phase_b_previous = 1;	
+		grid_ui_encoder_array[j].button_value = 1;
+		grid_ui_encoder_array[j].button_changed = 0; 
+		grid_ui_encoder_array[j].rotation_value = 0;
+		grid_ui_encoder_array[j].rotation_changed = 1;
+		grid_ui_encoder_array[j].rotation_direction = 0;
+		grid_ui_encoder_array[j].last_real_time = -1;
+		grid_ui_encoder_array[j].velocity = 0;
+		grid_ui_encoder_array[j].phase_a_previous = 1;
+		grid_ui_encoder_array[j].phase_b_previous = 1;	
 		
 	}
 	

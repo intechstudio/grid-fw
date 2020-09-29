@@ -1091,20 +1091,26 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 			if (msg_class == GRID_CLASS_MIDIRELATIVE_code && msg_instr == GRID_INSTR_EXECUTE_code){
 					
 										
-				uint8_t midi_channel = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset,		GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length);
-				uint8_t midi_command = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset ,		GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length);
+				uint8_t midi_cablecommand = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset,		GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length);
+				uint8_t midi_commandchannel = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset ,		GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length);
 				uint8_t midi_param1  = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_PARAM1_offset  ,			GRID_CLASS_MIDIRELATIVE_PARAM1_length);
 				uint8_t midi_param2  = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_PARAM2_offset  ,			GRID_CLASS_MIDIRELATIVE_PARAM2_length);
 						
 				// Relative midi translation magic
 			//	midi_channel = ((256-dy*2)%8+grid_sys_state.bank_active*8)%16;		  2bank			
 						
-				midi_channel = ((256-dy*1)%4+grid_sys_state.bank_activebank_number*4)%16;
+						
+				uint8_t midi_command = 	(midi_commandchannel&0xF0)>>4;
+				uint8_t midi_channel = ((256-dy*1)%4+grid_sys_state.bank_activebank_number*4)%16;
 					
 					
 				midi_param1  = (256-32+midi_param1 + 16*dx)%96; // 96-128 reserved
 												
-				audiodf_midi_write(midi_command>>4, midi_command|midi_channel, midi_param1, midi_param2);	
+				uint8_t debug[30] = {0};
+				sprintf(debug, "MIDI: %02x %02x %02x %02x", 0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);
+													
+				grid_debug_print_text(debug);								
+				audiodf_midi_write(0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);	
 					
 									
 			}
@@ -1221,11 +1227,11 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 									
 					if (msg_instr == GRID_INSTR_EXECUTE_code){ //SET BANK
 									
-						if (grid_sys_get_bank_num(&grid_sys_state) == 255){
+						if (grid_sys_get_bank_valid(&grid_sys_state) == 0){
 							
-							uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT);
-							grid_ui_event_template_action(&grid_core_state.element[0], event_index);	
-							grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
+							uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT);
+							grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);	
+							grid_ui_event_trigger(&grid_core_state.bank_list[0].element_list[0].event_list[event_index]);
 
 						}
 																		
@@ -1235,11 +1241,11 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}
 					else if (msg_instr == GRID_INSTR_FETCH_code){ //GET BANK
 						
-						if (grid_sys_get_bank_num(&grid_sys_state) != 255){
+						if (grid_sys_get_bank_valid(&grid_sys_state) != 0){
 									
-							uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_CFG_RESPONSE);
-							grid_ui_event_template_action(&grid_core_state.element[0], event_index);
-							grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
+							uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_CFG_RESPONSE);
+							grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);
+							grid_ui_event_trigger(&grid_core_state.bank_list[0].element_list[0].event_list[event_index]);
 						}						
 						
 					}
@@ -1339,13 +1345,13 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					uint8_t eventtype		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_EVENTTYPE_offset]		, GRID_CLASS_CONFIGURATION_EVENTTYPE_length		, &error_flag);
 					
 					uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength]	= {0};
-					uint32_t actionstring_length = current_stop-current_start-GRID_CLASS_CONFIGURATION_ACTIONSTRING_offset -2;
+					uint32_t actionstring_length = current_stop-current_start-GRID_CLASS_CONFIGURATION_ACTIONSTRING_offset;
 													
 					uint8_t debugtext[100] = {0};
 					
 					for(uint32_t j = 0; j<actionstring_length; j++){
 					
-						actionstring[j] = message[current_start+GRID_CLASS_CONFIGURATION_ACTIONSTRING_offset + j + 1];
+						actionstring[j] = message[current_start+GRID_CLASS_CONFIGURATION_ACTIONSTRING_offset + j];
 						
 					}
 					
@@ -1356,11 +1362,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				
 					grid_debug_print_text(debugtext);
 				
-					grid_ui_event_register_action(&grid_ui_state.element[elementnumber], eventtype, actionstring, actionstring_length);
+					grid_ui_event_register_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype, actionstring, actionstring_length);
 					
-				
-				
-				
+
 				}
 				else{
 					//SORRY

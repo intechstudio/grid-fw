@@ -20,23 +20,20 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 	}
 	
 	
-	uint8_t bank_changed = grid_sys_state.bank_active_changed;
-	
-	if (bank_changed){
+	if (grid_sys_state.bank_active_changed){
 		grid_sys_state.bank_active_changed = 0;
 
 		
-		for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
+		for (uint8_t i=0; i<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length; i++){
 			
 			// action template bug fix try
-			grid_ui_state.element[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
+			grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
 			
-			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[i], GRID_UI_EVENT_INIT);
+			uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i], GRID_UI_EVENT_INIT);
 			
-			grid_ui_event_template_action(&grid_ui_state.element[i], event_index);
-			grid_ui_event_trigger(&grid_ui_state.element[i].event_list[event_index]);
+			grid_ui_event_template_action(&grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i], event_index);
+			grid_ui_event_trigger(&grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i].event_list[event_index]);
 			
-
 		}
 		
 	}	
@@ -102,7 +99,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		// Helper variable for readability
 		uint8_t res_index = result_index[i];
 
-		uint32_t* template_parameter_list = grid_ui_state.element[res_index].template_parameter_list;
+		uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
 	
 		if (grid_ain_get_changed(res_index)){
 		
@@ -115,11 +112,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14L] = 0;
 			
 			
-			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_AVC7);
-
-			grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
-			
-			grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);			
+			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_AVC7);		
 			
 		}
 
@@ -150,27 +143,36 @@ void grid_module_po16_revb_init(){
 	grid_led_lowlevel_init(&grid_led_state, 16);
 
 	
-	grid_ui_model_init(&grid_ui_state, 16);
+	grid_ui_model_init(&grid_ui_state, GRID_SYS_BANK_MAXNUMBER);
 	
-	for(uint8_t i=0; i<16; i++){
+	for(uint8_t i=0; i<GRID_SYS_BANK_MAXNUMBER; i++){	
+		
+		grid_ui_bank_init(&grid_ui_state, i, 16);
+		
+		for(uint8_t j=0; j<16; j++){
 			
-		grid_ui_element_init(&grid_ui_state.element[i], GRID_UI_ELEMENT_POTENTIOMETER);
+			grid_ui_element_init(&grid_ui_state.bank_list[i], j, GRID_UI_ELEMENT_POTENTIOMETER);
 
+			if (1){		// Register Absolute Value Change
+				
+				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};		
+				sprintf(action_string, GRID_ACTIONSTRING_AVC7);
+				
+				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_AVC7, action_string, strlen(action_string));
+				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_AVC7);			
+				
+			}
 
-		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
-		sprintf(payload_template, GRID_EVENT_AVC7_POT GRID_DEFAULT_ACTION_AVC7);
-		uint8_t payload_length = strlen(payload_template);
-
-		// Register Absolute Value Change
-		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_AVC7, payload_template, payload_length);
+			if (1){ 	// Register Init Event and Action	
 		
+				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};				
+				sprintf(action_string, GRID_ACTIONSTRING_INIT);
 		
-		uint8_t init_action[GRID_UI_ACTION_STRING_maxlength] = {0};
-		sprintf(init_action, GRID_DEFAULT_ACTION_INIT);
-		uint8_t init_length = strlen(init_action);
+				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT, action_string, strlen(action_string));
+				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT);
 		
-		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_INIT, init_action, init_length);
-		
+			}
+		}
 	}
 	
 	grid_module_po16_revb_hardware_init();

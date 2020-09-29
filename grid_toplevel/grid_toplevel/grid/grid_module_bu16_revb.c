@@ -6,7 +6,7 @@ volatile uint8_t grid_module_bu16_revb_mux = 0;
 
 volatile uint8_t grid_module_bu16_revb_mux_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15};
 	
-//volatile uint8_t grid_module_bu16_revb_mux_lookup[16] =       {12, 13, 8, 9, 4, 5, 0, 1, 14, 15, 10, 11, 6, 7, 2, 3};
+//volatile uint8_t grid_module_bu16_revb_mux_lookup[16] = {12, 13, 8, 9, 4, 5, 0, 1, 14, 15, 10, 11, 6, 7, 2, 3};
 
 
 static uint8_t helper[16] = {0};
@@ -32,16 +32,13 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		grid_sys_state.bank_active_changed = 0;
 
 		
-		for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
+		for (uint8_t i=0; i<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length; i++){
 				
 			// action template bug fix try
-			grid_ui_state.element[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
+			grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
 				
-			uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[i], GRID_UI_EVENT_INIT);
-				
-			grid_ui_event_template_action(&grid_ui_state.element[i], event_index);
-			grid_ui_event_trigger(&grid_ui_state.element[i].event_list[event_index]);
-				
+			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
+
 
 		}
 		
@@ -113,7 +110,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		uint8_t res_valid = result_valid[i];
 		uint8_t res_value = result_value[i];
 		
-		uint32_t* template_parameter_list = grid_ui_state.element[res_index].template_parameter_list;		
+		uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;		
 		
 		if (res_value != helper[res_index] && res_valid == 1){
 			
@@ -126,11 +123,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 				template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV7] = 127;
 				template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV8] = 255;
 							
-				uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_DP);
-
-				grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
-				
-				grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
+				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_DP);
 				
 				helper[result_index[i]] = res_value;
 				
@@ -144,11 +137,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 				template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV8] = 0;
 
 				
-				uint8_t event_index = grid_ui_event_find(&grid_ui_state.element[res_index], GRID_UI_EVENT_DR);		
-				
-				grid_ui_event_template_action(&grid_ui_state.element[res_index], event_index);
-				
-				grid_ui_event_trigger(&grid_ui_state.element[res_index].event_list[event_index]);
+				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_DR);
 
 				helper[result_index[i]] = res_value;
 			}
@@ -180,34 +169,52 @@ void grid_module_bu16_revb_init(){
 
 	grid_led_lowlevel_init(&grid_led_state, 16);
 	
-	grid_ui_model_init(&grid_ui_state, 16);
+	grid_ui_model_init(&grid_ui_state, GRID_SYS_BANK_MAXNUMBER);
 	
-	for (uint8_t i=0; i<16; i++){
+	for (uint8_t i=0; i<GRID_SYS_BANK_MAXNUMBER; i++){
+		
+		grid_ui_bank_init(&grid_ui_state, i, 16);
+		
+		for (uint8_t j=0; j<16; j++){
 
-		grid_ui_element_init(&grid_ui_state.element[i], GRID_UI_ELEMENT_BUTTON);
-		grid_ui_state.element[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
+			grid_ui_element_init(&grid_ui_state.bank_list[i], j, GRID_UI_ELEMENT_BUTTON);
 			
-		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
-			
-		sprintf(payload_template, GRID_EVENT_DP_BUT GRID_DEFAULT_ACTION_DP);
-		uint8_t payload_length = strlen(payload_template);
-		
-		// Register Digital Press Action		
-		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DP, payload_template, payload_length);
-		
-		sprintf(payload_template, GRID_EVENT_DR_BUT GRID_DEFAULT_ACTION_DR);
-		
- 		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_DR, payload_template, payload_length);
-		 
-		 
-		uint8_t init_action[GRID_UI_ACTION_STRING_maxlength] = {0};
-		sprintf(init_action, GRID_DEFAULT_ACTION_INIT);
-		uint8_t init_length = strlen(init_action);
-		
- 		grid_ui_event_register_action(&grid_ui_state.element[i], GRID_UI_EVENT_INIT, init_action, init_length);		
-		
+			grid_ui_state.bank_list[i].element_list[j].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = j;
+				
+				
+			if (1){		// Register Digital Press Event and Action
+				
+				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};	
+				sprintf(action_string, GRID_ACTIONSTRING_DP);
+				
+				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DP, action_string, strlen(action_string));
+				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DP);				
+			}	
 
+			if (1){		// Register Digital Release Event and Action
+						
+				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
+				sprintf(action_string, GRID_ACTIONSTRING_DR);		
+			
+				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DR, action_string, strlen(action_string));
+				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DR);
+			}
+				
+				
+			if (1){		// Register Init Event and Action			
+					
+				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};					
+				sprintf(action_string, GRID_ACTIONSTRING_INIT);
+								
+				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT, action_string, strlen(action_string));	
+				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT);
+			}
+
+		}		
+		
 	}
+	
+
 				
 	grid_module_bu16_revb_hardware_init();
 	grid_module_bu16_revb_hardware_start_transfer();

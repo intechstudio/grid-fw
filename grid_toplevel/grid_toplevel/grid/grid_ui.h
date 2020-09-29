@@ -8,34 +8,27 @@
 enum grid_ui_status {
 	GRID_UI_STATUS_UNDEFINED,
 	GRID_UI_STATUS_INITIALIZED,
-	GRID_UI_STATUS_TRAP
-};
-
-
-
-enum grid_ui_trigger{
+	GRID_UI_STATUS_TRAP,
 	
-	GRID_UI_EVENT_STATUS_UNDEFINED,
-	GRID_UI_EVENT_STATUS_READY,
-	GRID_UI_EVENT_STATUS_TRIGGERED
+	GRID_UI_STATUS_OK,
 	
-};
-
-enum grid_ui_action_status{
-	
-	GRID_UI_ACTION_STATUS_UNDEFINED,
-	GRID_UI_ACTION_STATUS_OK
+	GRID_UI_STATUS_READY,
+	GRID_UI_STATUS_TRIGGERED
 	
 };
 
 
 
-#define GRID_UI_ACTION_STRING_maxlength	120
 
-#define GRID_UI_ACTION_PARAMETER_maxcount	 14
+#define GRID_UI_EVENT_STRING_maxlength		30
+#define GRID_UI_EVENT_PARAMETER_maxcount	4
 
 
-struct grid_ui_action_parameter{
+#define GRID_UI_ACTION_STRING_maxlength		120
+#define GRID_UI_ACTION_PARAMETER_maxcount	14
+
+
+struct grid_ui_template_parameter{
 	
 	enum grid_ui_status status;
 	
@@ -51,22 +44,35 @@ struct grid_ui_event
 {
 
 	enum grid_ui_status status;	
+	
+	struct grid_ui_element* parent;
+	uint8_t index;
+	
 	enum grid_ui_event_t trigger;
 	
 	enum grid_ui_event_t type;
 	
-	uint32_t action_length;
-	enum grid_ui_action_status action_status;
-	uint8_t* action_string;
+	uint32_t							event_string_length;
+	uint8_t*							event_string;
 	
-	uint8_t action_parameter_count;
-	struct grid_ui_action_parameter* action_parameter_list;
+	uint8_t								event_parameter_count;
+	struct grid_ui_template_parameter*	event_parameter_list;
+	
+	uint32_t							action_string_length;
+	uint8_t*							action_string;
+	
+	uint8_t								action_parameter_count;
+	struct grid_ui_template_parameter*	action_parameter_list;
+	
 };
 
 
 struct grid_ui_element
 {
 	enum grid_ui_status status;
+	
+	struct grid_ui_bank* parent;
+	uint8_t index;
 	
 	enum grid_ui_element_t type;
 	
@@ -77,13 +83,25 @@ struct grid_ui_element
 	
 };
 
+struct grid_ui_bank
+{
+	enum grid_ui_status status;
+	
+	struct grid_ui_model* parent;
+	uint8_t index;
+	
+	uint8_t						element_list_length;
+	struct	grid_ui_element*	element_list;
+	
+};
+
 
 struct grid_ui_model
 {
 	enum grid_ui_status status;
 	
-	uint8_t   element_list_length;
-	struct grid_ui_element*		element;
+	uint8_t						bank_list_length;
+	struct	grid_ui_bank*		bank_list;
 	
 };
 
@@ -94,11 +112,18 @@ volatile struct grid_ui_model grid_ui_state;
 volatile struct grid_ui_model grid_core_state;
 
 
-void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length);
-void grid_ui_element_init(struct grid_ui_element* ele, enum grid_ui_element_t element_type);
-void grid_ui_event_init(struct grid_ui_event* eve, enum grid_ui_event_t event_type);
+void grid_ui_model_init(struct grid_ui_model* mod, uint8_t bank_list_length);
+void grid_ui_bank_init(struct grid_ui_model* parent, uint8_t index, uint8_t element_list_length);
+void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_ui_element_t element_type);
+void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid_ui_event_t event_type);
 
-void grid_ui_event_register_action(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string, uint32_t action_string_length);
+
+void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length);
+void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
+
+
+
+void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string, uint32_t action_string_length);
 
 uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
 uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event_index);

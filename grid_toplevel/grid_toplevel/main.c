@@ -67,9 +67,9 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 			
 			grid_debug_print_text("MAPMODE_RELEASE");
 			
-			uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_MAPMODE_RELEASE);
-			grid_ui_event_template_action(&grid_core_state.element[0], event_index);
-			grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);		
+			uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE);
+			grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);
+			grid_ui_event_trigger(&grid_core_state.bank_list[0].element_list[0].event_list[event_index]);		
 								
 		}
 		else{ // PRESS
@@ -78,9 +78,9 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 
 			grid_debug_print_text("MAPMODE_PRESS");
 			
-			uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_MAPMODE_PRESS);
-			grid_ui_event_template_action(&grid_core_state.element[0], event_index);
-			grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);		
+			uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_MAPMODE_PRESS);
+			grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);
+			grid_ui_event_trigger(&grid_core_state.bank_list[0].element_list[0].event_list[event_index]);		
 						
 									 
 		}
@@ -92,9 +92,9 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 static void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 {
 
-	uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT);				
-	grid_ui_event_template_action(&grid_core_state.element[0], event_index);	
-	grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
+	uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT);				
+	grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);	
+	grid_ui_event_trigger(&grid_core_state.bank_list[0].element_list[0].event_list[event_index]);
 
 }
 
@@ -184,17 +184,14 @@ int main(void)
 	
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 	
-	
-	uint8_t debug_flag = 0;	
-	uint16_t debug_offset = 0;
-	uint8_t debug[500] = {0};
 
-
+	// Init Bank Color Bug when config was previously saved
 	grid_sys_load_bank_settings(&grid_sys_state, &grid_nvm_state);
+		
 	
 	while (1) {
 	
-				
+			
 		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
 		
 		
@@ -212,11 +209,10 @@ int main(void)
 				
 				GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Connected");
 				
-				grid_sys_set_bank(&grid_sys_state, grid_sys_get_bank_next(&grid_sys_state));
+				grid_sys_set_bank(&grid_sys_state, grid_sys_get_bank_number_of_first_valid(&grid_sys_state));
 				
-				uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_CFG_RESPONSE);
-				grid_ui_event_template_action(&grid_core_state.element[0], event_index);
-				grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
+				grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_CFG_RESPONSE);
+				
 				
 				usb_init_variable = 1;
 				
@@ -228,11 +224,9 @@ int main(void)
 		
 		// Request neighbor bank settings if we don't have it initialized
 		
- 		if (grid_sys_get_bank_num(&grid_sys_state) == 255 && loopcounter%80 == 0){
+ 		if (grid_sys_get_bank_valid(&grid_sys_state) == 0 && loopcounter%80 == 0){
  										
- 			uint8_t event_index = grid_ui_event_find(&grid_core_state.element[0], GRID_UI_EVENT_CFG_REQUEST);
- 			grid_ui_event_template_action(&grid_core_state.element[0], event_index);
- 			grid_ui_event_trigger(&grid_core_state.element[0].event_list[event_index]);
+			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_CFG_REQUEST);
 			 
  		}
 

@@ -129,7 +129,8 @@ uint8_t grid_adc_get_config(uint8_t register_offset, uint8_t bit_offest){
 void grid_module_common_init(void){
 
 	grid_ui_model_init(&grid_core_state, 1);
-	grid_ui_element_init(&grid_core_state.element[0], GRID_UI_ELEMENT_SYSTEM);
+	grid_ui_bank_init(&grid_core_state, 0, 1);
+	grid_ui_element_init(&grid_core_state.bank_list[0], 0, GRID_UI_ELEMENT_SYSTEM);
 	
 		
 	if (1){	// INIT CORE_STATE->hearbeat	
@@ -137,7 +138,7 @@ void grid_module_common_init(void){
 		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 		uint8_t payload_length = 0;
 	
-		sprintf(payload_template, GRID_EVENT_HEARTBEAT );
+		sprintf(payload_template, GRID_EVENTSTRING_HEARTBEAT );
 		payload_length = strlen(payload_template);
 	
 		sprintf(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_frame);
@@ -151,7 +152,7 @@ void grid_module_common_init(void){
 	
 		payload_length = strlen(payload_template);
 	
-		grid_ui_event_register_action(&grid_core_state.element[0], GRID_UI_EVENT_HEARTBEAT, payload_template, payload_length);		
+		grid_ui_event_register_actionstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT, payload_template, payload_length);		
 		
 	}
 
@@ -160,10 +161,10 @@ void grid_module_common_init(void){
 		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 		uint8_t payload_length = 0;
 	
-		sprintf(payload_template, GRID_EVENT_MAPMODE_PRESS GRID_DEFAULT_ACTION_MAPMODE_PRESS);
+		sprintf(payload_template, GRID_EVENTSTRING_MAPMODE_PRESS GRID_ACTIONSTRING_MAPMODE_PRESS);
 		payload_length = strlen(payload_template);
 	
-		grid_ui_event_register_action(&grid_core_state.element[0], GRID_UI_EVENT_MAPMODE_PRESS, payload_template, payload_length);			
+		grid_ui_event_register_actionstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_MAPMODE_PRESS, payload_template, payload_length);			
 		
 	}	
 
@@ -172,10 +173,10 @@ void grid_module_common_init(void){
 		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 		uint8_t payload_length = 0;
 		
-		sprintf(payload_template, GRID_EVENT_MAPMODE_RELEASE GRID_DEFAULT_ACTION_MAPMODE_RELEASE);
+		sprintf(payload_template, GRID_EVENTSTRING_MAPMODE_RELEASE GRID_ACTIONSTRING_MAPMODE_RELEASE);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_action(&grid_core_state.element[0], GRID_UI_EVENT_MAPMODE_RELEASE, payload_template, payload_length);
+		grid_ui_event_register_actionstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE, payload_template, payload_length);
 		
 	}	
 	
@@ -184,10 +185,10 @@ void grid_module_common_init(void){
 		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 		uint8_t payload_length = 0;
 		
-		sprintf(payload_template, GRID_EVENT_CFG_RESPONES GRID_DEFAULT_ACTION_CFG_RESPONSE);
+		sprintf(payload_template, GRID_EVENTSTRING_CFG_RESPONES GRID_ACTIONSTRING_CFG_RESPONSE);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_action(&grid_core_state.element[0], GRID_UI_EVENT_CFG_RESPONSE, payload_template, payload_length);
+		grid_ui_event_register_actionstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_CFG_RESPONSE, payload_template, payload_length);
 		
 	}	
 	
@@ -196,10 +197,10 @@ void grid_module_common_init(void){
 		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 		uint8_t payload_length = 0;
 		
-		sprintf(payload_template, GRID_EVENT_CFG_REQUEST GRID_DEFAULT_ACTION_CFG_REQUEST);
+		sprintf(payload_template, GRID_EVENTSTRING_CFG_REQUEST GRID_ACTIONSTRING_CFG_REQUEST);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_action(&grid_core_state.element[0], GRID_UI_EVENT_CFG_REQUEST, payload_template, payload_length);
+		grid_ui_event_register_actionstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_CFG_REQUEST, payload_template, payload_length);
 		
 	}	
 	
@@ -208,13 +209,14 @@ void grid_module_common_init(void){
 	
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "UI Power Enable");
 	gpio_set_pin_level(UI_PWR_EN, true);
+	delay_ms(10);
 
 	// ADC SETUP	
 	
-	if (grid_sys_get_hwcfg() == GRID_MODULE_PO16_RevB || grid_sys_get_hwcfg() == GRID_MODULE_PO16_RevC){	
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: PO16");				
-		grid_module_po16_revb_init();	
-	}	
+	if (grid_sys_get_hwcfg() == GRID_MODULE_PO16_RevB || grid_sys_get_hwcfg() == GRID_MODULE_PO16_RevC){
+		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: PO16");
+		grid_module_po16_revb_init();
+	}
 	else if (grid_sys_get_hwcfg() == GRID_MODULE_BU16_RevB || grid_sys_get_hwcfg() == GRID_MODULE_BU16_RevC ){
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: BU16");
 		grid_module_bu16_revb_init();
@@ -226,8 +228,7 @@ void grid_module_common_init(void){
 	}
 	else if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevA){
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: EN16");
-		grid_module_en16_reva_init();
-		//grid_module_bu16_revb_init(&grid_ui_state);		
+		grid_module_en16_reva_init();	
 	}	
 	else{
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: Unknown Module");
