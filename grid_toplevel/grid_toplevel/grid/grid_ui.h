@@ -127,7 +127,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 
 uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
 uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event_index);
-void grid_ui_event_trigger(struct grid_ui_event* eve);
+void grid_ui_event_trigger(struct grid_ui_element* ele, uint8_t event_index);
 
 void grid_ui_smart_trigger(struct grid_ui_model* mod, uint8_t bank, uint8_t element, enum grid_ui_event_t event);
 

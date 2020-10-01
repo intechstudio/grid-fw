@@ -75,13 +75,7 @@ void grid_port_process_ui(struct grid_port* por){
 	
 	
 		
-	// Bandwidth Limiter for Broadcast messages
-	if (por->cooldown > 15){
-		
-		por->cooldown--;
-		return;
-	}
-	
+
 	
 	//LOCAL MESSAGES
 	if (message_local_action_available){
@@ -108,16 +102,21 @@ void grid_port_process_ui(struct grid_port* por){
 				if (offset>GRID_PARAMETER_PACKET_marign){
 					continue;
 				}
-				
-				CRITICAL_SECTION_ENTER()
-				if (grid_ui_event_istriggered(&grid_ui_state.bank_list[i].element_list[j].event_list[event])){
+				else{
 					
-					grid_ui_event_render_action(&grid_ui_state.bank_list[i].element_list[j].event_list[event], &payload[offset]);
-					offset += strlen(&payload[offset]);
-					grid_ui_event_reset(&grid_ui_state.bank_list[i].element_list[j].event_list[event]);
+					CRITICAL_SECTION_ENTER()
+					if (grid_ui_event_istriggered(&grid_ui_state.bank_list[i].element_list[j].event_list[event])){
+						
+						grid_ui_event_render_action(&grid_ui_state.bank_list[i].element_list[j].event_list[event], &payload[offset]);
+						offset += strlen(&payload[offset]);
+						grid_ui_event_reset(&grid_ui_state.bank_list[i].element_list[j].event_list[event]);
+						
+					}
+					CRITICAL_SECTION_LEAVE()
 					
 				}
-				CRITICAL_SECTION_LEAVE()
+				
+
 				
 			}
 		}
@@ -144,6 +143,14 @@ void grid_port_process_ui(struct grid_port* por){
 		}
 			
 	}
+	
+	// Bandwidth Limiter for Broadcast messages
+	if (por->cooldown > 15){
+			
+		por->cooldown--;
+		return;
+	}
+		
 	
 	//BROADCAST MESSAGES		
 	if (message_broadcast_action_available){
@@ -175,18 +182,24 @@ void grid_port_process_ui(struct grid_port* por){
 				
 				if (offset>GRID_PARAMETER_PACKET_marign){
 					continue;
+				}
+				else{
+					
+					CRITICAL_SECTION_ENTER()
+					if (grid_ui_event_istriggered(&grid_core_state.bank_list[0].element_list[i].event_list[j])){
+						
+						packetvalid++;
+						grid_ui_event_render_action(&grid_core_state.bank_list[0].element_list[i].event_list[j], &message[offset]);
+						offset += strlen(&message[offset]);
+						grid_ui_event_reset(&grid_core_state.bank_list[0].element_list[i].event_list[j]);
+						
+					}
+					CRITICAL_SECTION_LEAVE()
+									
+					
 				}						
 				
-				CRITICAL_SECTION_ENTER()
-				if (grid_ui_event_istriggered(&grid_core_state.bank_list[0].element_list[i].event_list[j])){
-					
-					packetvalid++;
-					grid_ui_event_render_action(&grid_core_state.bank_list[0].element_list[i].event_list[j], &message[offset]);
-					offset += strlen(&message[offset]);
-					grid_ui_event_reset(&grid_core_state.bank_list[0].element_list[i].event_list[j]);
-					
-				}
-				CRITICAL_SECTION_LEAVE()
+
 				
 			}
 			
@@ -201,18 +214,21 @@ void grid_port_process_ui(struct grid_port* por){
 					if (offset>GRID_PARAMETER_PACKET_marign){
 						continue;
 					}		
+					else{
 						
-					CRITICAL_SECTION_ENTER()
-					if (grid_ui_event_istriggered(&grid_ui_state.bank_list[i].element_list[j].event_list[k])){
-					
-										
-						packetvalid++;				
-						grid_ui_event_render_action(&grid_ui_state.bank_list[i].element_list[j].event_list[k], &message[offset]);
-						offset += strlen(&message[offset]);
-						grid_ui_event_reset(&grid_ui_state.bank_list[i].element_list[j].event_list[k]);
-					
+						CRITICAL_SECTION_ENTER()
+						if (grid_ui_event_istriggered(&grid_ui_state.bank_list[i].element_list[j].event_list[k])){
+							
+							
+							packetvalid++;
+							grid_ui_event_render_action(&grid_ui_state.bank_list[i].element_list[j].event_list[k], &message[offset]);
+							offset += strlen(&message[offset]);
+							grid_ui_event_reset(&grid_ui_state.bank_list[i].element_list[j].event_list[k]);
+							
+						}
+						CRITICAL_SECTION_LEAVE()
+						
 					}
-					CRITICAL_SECTION_LEAVE()
 				
 				}
 			
@@ -754,17 +770,16 @@ uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t eve
 	
 }
 
-void grid_ui_event_trigger(struct grid_ui_event* eve){
+void grid_ui_event_trigger(struct grid_ui_element* ele, uint8_t event_index){
 
+	if (event_index == 255){
+		
+		return;
+	}
 	
-			
-// 	if (eve->action_status == GRID_UI_STATUS_UNDEFINED){
-// 		return;
-// 	}	
-	
+	struct grid_ui_event* eve = &ele->event_list[event_index];
 
-	
-	
+
 		
 	eve->trigger = GRID_UI_STATUS_TRIGGERED;
 	
@@ -774,11 +789,15 @@ void grid_ui_event_trigger(struct grid_ui_event* eve){
 
 void grid_ui_smart_trigger(struct grid_ui_model* mod, uint8_t bank, uint8_t element, enum grid_ui_event_t event){
 
-	
 	uint8_t event_index = grid_ui_event_find(&mod->bank_list[bank].element_list[element], event);
 	
+	if (event_index == 255){
+		
+		return;
+	}
+	
 	grid_ui_event_template_action(&mod->bank_list[bank].element_list[element], event_index);
-	grid_ui_event_trigger(&mod->bank_list[bank].element_list[element].event_list[event_index]);
+	grid_ui_event_trigger(&mod->bank_list[bank].element_list[element], event_index);
 
 }
 

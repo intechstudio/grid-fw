@@ -20,8 +20,8 @@
 #define  GRID_PARAMETER_HEARTBEAT_interval	250
 #define  GRID_PARAMETER_PING_interval		100
 
-#define  GRID_PARAMETER_TEXT_maxlength		120
-#define  GRID_PARAMETER_PACKET_maxlength	320
+#define  GRID_PARAMETER_TEXT_maxlength		150
+#define  GRID_PARAMETER_PACKET_maxlength	400
 #define  GRID_PARAMETER_PACKET_marign		200
 
 

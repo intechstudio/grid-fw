@@ -65,23 +65,12 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 			
 		if (grid_sys_state.mapmodestate == 0){ // RELEASE
 			
-			
-			
-			uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE);
-			grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);
-			grid_ui_event_trigger(&grid_core_state.bank_list[0].element_list[0].event_list[event_index]);		
+			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_MAPMODE_RELEASE);
 								
 		}
 		else{ // PRESS
-		
-		
-
 			
-			
-			uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_MAPMODE_PRESS);
-			grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);
-			grid_ui_event_trigger(&grid_core_state.bank_list[0].element_list[0].event_list[event_index]);		
-						
+			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_MAPMODE_PRESS);					
 									 
 		}
 
@@ -91,10 +80,8 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 
 static void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 {
-
-	uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT);				
-	grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);	
-	grid_ui_event_trigger(&grid_core_state.bank_list[0].element_list[0].event_list[event_index]);
+	
+	grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_HEARTBEAT);
 
 }
 
@@ -187,9 +174,8 @@ int main(void)
 	
 
 	// Init Bank Color Bug when config was previously saved
-	grid_sys_load_bank_settings(&grid_sys_state, &grid_nvm_state);
 	
-	grid_sys_set_bank(&grid_sys_state,255);
+	grid_sys_load_bank_settings(&grid_sys_state, &grid_nvm_state);
 		
 	
 	while (1) {

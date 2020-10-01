@@ -29,10 +29,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 			// action template bug fix try
 			grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
 			
-			uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i], GRID_UI_EVENT_INIT);
-			
-			grid_ui_event_template_action(&grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i], event_index);
-			grid_ui_event_trigger(&grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i].event_list[event_index]);
+			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
 			
 		}
 		
