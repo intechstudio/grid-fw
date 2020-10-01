@@ -768,8 +768,6 @@ void grid_ui_event_trigger(struct grid_ui_element* ele, uint8_t event_index){
 
 		
 	eve->trigger = GRID_UI_STATUS_TRIGGERED;
-	
-	//grid_sys_alert_set_alert(&grid_sys_state, 50,50,50,2,350);
 
 }
 

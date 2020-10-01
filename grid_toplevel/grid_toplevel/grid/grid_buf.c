@@ -222,8 +222,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				else{
 					// WE ALREADY HEARD THIS MESSAGE
 					
-					//grid_sys_alert_set_alert(&grid_sys_state, 50, 50, 50, 2, 200); // WHITE
-					
 				}
 				
 				
@@ -418,11 +416,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 	else{
 		// frame error
 		
-		
-
-		
-
-		printf("{\"type\": \"ERROR\", \"data\": [\"Frame Error\"]}\r\n");
 	}
 	
 	return;
