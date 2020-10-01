@@ -180,7 +180,8 @@ int main(void)
 	uint32_t loopfast = 0;
 	uint32_t loopwarp = 0;
 	
-	uint8_t usb_init_variable = 0;
+	uint8_t usb_init_flag = 0;	
+
 	
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 	
@@ -196,7 +197,7 @@ int main(void)
 		
 		
 		
-		if (usb_init_variable == 0){
+		if (usb_init_flag == 0){
 			
 	
 			
@@ -214,7 +215,7 @@ int main(void)
 				grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_CFG_RESPONSE);
 				
 				
-				usb_init_variable = 1;
+				usb_init_flag = 1;
 				
 			}
 			
@@ -225,8 +226,11 @@ int main(void)
 		// Request neighbor bank settings if we don't have it initialized
 		
  		if (grid_sys_get_bank_valid(&grid_sys_state) == 0 && loopcounter%80 == 0){
- 										
-			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_CFG_REQUEST);
+ 								
+			if (grid_sys_state.bank_init_flag == 0)	{
+				
+				grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_CFG_REQUEST);
+			}				 		
 			 
  		}
 

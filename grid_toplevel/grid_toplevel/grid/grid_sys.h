@@ -52,7 +52,7 @@ struct grid_sys_model
 	uint8_t bank_activebank_color_g;
 	uint8_t bank_activebank_color_b;
 	
-	
+	uint8_t bank_init_flag;
 	
 	uint32_t realtime;
 	

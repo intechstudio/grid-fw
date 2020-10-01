@@ -1106,10 +1106,11 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 				midi_param1  = (256-32+midi_param1 + 16*dx)%96; // 96-128 reserved
 												
-				uint8_t debug[30] = {0};
-				sprintf(debug, "MIDI: %02x %02x %02x %02x", 0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);
-													
-				grid_debug_print_text(debug);								
+// 				uint8_t debug[30] = {0};
+// 				sprintf(debug, "MIDI: %02x %02x %02x %02x", 0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);
+// 				grid_debug_print_text(debug);	
+				
+											
 				audiodf_midi_write(0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);	
 					
 									
@@ -1229,9 +1230,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 									
 						if (grid_sys_get_bank_valid(&grid_sys_state) == 0){
 							
-							uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT);
-							grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);	
-							grid_ui_event_trigger(&grid_core_state.bank_list[0].element_list[0].event_list[event_index]);
+							
+							grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_HEARTBEAT);
 
 						}
 																		
@@ -1242,10 +1242,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					else if (msg_instr == GRID_INSTR_FETCH_code){ //GET BANK
 						
 						if (grid_sys_get_bank_valid(&grid_sys_state) != 0){
-									
-							uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_CFG_RESPONSE);
-							grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);
-							grid_ui_event_trigger(&grid_core_state.bank_list[0].element_list[0].event_list[event_index]);
+							
+							grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_CFG_RESPONSE);
+							
 						}						
 						
 					}
@@ -1260,7 +1259,15 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					uint8_t isenabled  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKENABLED_ISENABLED_offset], GRID_CLASS_BANKENABLED_ISENABLED_length, &error_flag);
 					
 					if (isenabled == 1){
+						
+						
 						grid_sys_bank_enable(&grid_sys_state, banknumber);
+						
+						if (grid_sys_get_bank_num(&grid_sys_state) == banknumber){
+							grid_sys_set_bank(&grid_sys_state, banknumber);
+						}
+						
+						
 					}else if (isenabled == 0){	
 						
 						if (grid_sys_get_bank_num(&grid_sys_state) == banknumber){
@@ -1299,6 +1306,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							
 				}
 				else if (msg_class == GRID_CLASS_LEDCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code && position_is_me){
+					
+					grid_debug_print_text("LED_SET_COLOR received");
 						
 					uint8_t led_num = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_NUM_offset], GRID_CLASS_LEDCOLOR_NUM_length, &error_flag);
 					uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_LAY_offset], GRID_CLASS_LEDCOLOR_LAY_length, &error_flag);

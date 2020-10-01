@@ -643,6 +643,7 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->bank_active_changed = 0;
 	mod->bank_setting_changed_flag = 0;
 	
+	mod->bank_init_flag = 0;
 
 
 	mod->bank_activebank_number = 0;
@@ -768,7 +769,7 @@ void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 	
 	if (banknumber == 255){
 			
-		mod->bank_activebank_number = 0;
+		//mod->bank_activebank_number = 0;
 		mod->bank_activebank_valid = 0;
 		
 		mod->bank_active_changed = 1;
@@ -780,7 +781,11 @@ void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 		
 	}
 	else if (banknumber<GRID_SYS_BANK_MAXNUMBER){
-			
+							
+							
+		mod->bank_init_flag = 1;
+		
+		
 		if (mod->bank_enabled[banknumber] == 1){
 			
 			mod->bank_activebank_number = banknumber;

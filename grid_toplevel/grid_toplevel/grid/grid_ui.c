@@ -626,7 +626,6 @@ void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_u
 
 void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string, uint32_t action_string_length){
 		
-	grid_debug_print_text("Register Action");
 	uint8_t event_index = 255;
 	
 	for(uint8_t i=0; i<ele->event_list_length; i++){
@@ -636,7 +635,6 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 	}
 	
 	if (event_index == 255){
-		grid_debug_print_text("Event Not Found");
 		return; // EVENT NOT FOUND
 	}
 	
@@ -666,6 +664,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 	
 	uint8_t parameter_list_length = 0;
 
+	uint8_t escaped_characters = 0;
 	
 	for (uint32_t i=0; i<action_string_length; i++){
 		
@@ -675,15 +674,9 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 		// Check if STX or ETX was escaped, if so fix it!
 		if (ele->event_list[event_index].action_string[i] > 127){
 			
-			grid_debug_print_text(" Escaped Char Found ");
+			escaped_characters++;
 			ele->event_list[event_index].action_string[i] -= 128;
 			
-			if (ele->event_list[event_index].action_string[i] == 'B'){
-				
-				ele->event_list[event_index].action_string[i] = GRID_CONST_ETX;
-				grid_debug_print_text(" Balek ");
-
-			}
 		}
 		
 		
@@ -719,6 +712,16 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 
 	ele->event_list[event_index].action_string_length = action_string_length;
 	ele->event_list[event_index].action_parameter_count = parameter_list_length;
+	
+	uint8_t debug[30] = {0};
+	sprintf(debug, "Escaped characters: %d", escaped_characters);
+	grid_debug_print_text(debug);
+	
+	if(event_type == GRID_UI_EVENT_INIT){
+		
+		grid_ui_smart_trigger(ele->parent->parent, ele->parent->index, ele->index, event_type);
+		
+	}
 	
 }
 
