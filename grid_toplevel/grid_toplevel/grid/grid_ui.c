@@ -97,6 +97,7 @@ void grid_port_process_ui(struct grid_port* por){
 		uint32_t offset=0;
 		
 		
+		
 		// UI STATE
 		for (uint8_t i=0; i<grid_ui_state.bank_list_length; i++)
 		{
@@ -713,13 +714,23 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 	ele->event_list[event_index].action_string_length = action_string_length;
 	ele->event_list[event_index].action_parameter_count = parameter_list_length;
 	
-	uint8_t debug[30] = {0};
-	sprintf(debug, "Escaped characters: %d", escaped_characters);
-	grid_debug_print_text(debug);
+				
+		
+		
+	uint8_t debugtext[GRID_UI_ACTION_STRING_maxlength+50] = {0};
+	sprintf(debugtext, "CFG Execute: B %d, E %d, Ev %d, Len: %d Ac: %s Esc: %d", ele->parent->index, ele->index, event_type, action_string_length, action_string, escaped_characters);
 	
+	
+	grid_debug_print_text(debugtext);
+
 	if(event_type == GRID_UI_EVENT_INIT){
 		
 		grid_ui_smart_trigger(ele->parent->parent, ele->parent->index, ele->index, event_type);
+		
+	}
+	else{
+		grid_ui_smart_trigger(ele->parent->parent, ele->parent->index, ele->index, event_type);
+				
 		
 	}
 	

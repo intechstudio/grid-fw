@@ -11,6 +11,7 @@
 
 
 
+volatile uint8_t  grid_buffer_error_count;
 
 struct grid_buffer{
 	

@@ -561,6 +561,8 @@ void grid_port_receive_task(struct grid_port* por){
 
 uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length){
 	
+	grid_buffer_error_count = 0;
+	
 	buf->buffer_length = length;
 	
 	buf->read_length   = 0;
@@ -631,8 +633,13 @@ uint16_t grid_buffer_write_init(struct grid_buffer* buf, uint16_t length){
 		return length;
 	}
 	else{
+		
+		grid_buffer_error_count++;
 		return 0; // failed
+		
 	}
+	
+	
 	
 	
 }
@@ -661,10 +668,8 @@ uint8_t grid_buffer_write_acknowledge(struct grid_buffer* buf){
 	}
 	else{
 		
-		while(1){
-			
-			//TRAP xx
-		}
+		grid_buffer_error_count++;
+		return 0;
 	}
 	
 	
@@ -1224,6 +1229,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			
 				if (msg_class == GRID_CLASS_BANKACTIVE_code){
 					
+					
 					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKACTIVE_BANKNUMBER_offset], GRID_CLASS_BANKACTIVE_BANKNUMBER_length, &error_flag);
 									
 					if (msg_instr == GRID_INSTR_EXECUTE_code){ //SET BANK
@@ -1307,7 +1313,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				}
 				else if (msg_class == GRID_CLASS_LEDCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code && position_is_me){
 					
-					grid_debug_print_text("LED_SET_COLOR received");
 						
 					uint8_t led_num = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_NUM_offset], GRID_CLASS_LEDCOLOR_NUM_length, &error_flag);
 					uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_LAY_offset], GRID_CLASS_LEDCOLOR_LAY_length, &error_flag);
@@ -1356,7 +1361,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength]	= {0};
 					uint32_t actionstring_length = current_stop-current_start-GRID_CLASS_CONFIGURATION_ACTIONSTRING_offset;
 													
-					uint8_t debugtext[100] = {0};
+				
 					
 					for(uint32_t j = 0; j<actionstring_length; j++){
 					
@@ -1365,12 +1370,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}
 					
 						
-										
-					sprintf(debugtext, "CFG Execute: Bank %d, Element %d, EventType %d, ActionLength: %d Action: %s  ", banknumber, elementnumber, eventtype, actionstring_length, actionstring);
-				
-				
-					grid_debug_print_text(debugtext);
-				
+
 					grid_ui_event_register_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype, actionstring, actionstring_length);
 					
 

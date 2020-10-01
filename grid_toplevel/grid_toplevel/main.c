@@ -65,7 +65,7 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 			
 		if (grid_sys_state.mapmodestate == 0){ // RELEASE
 			
-			grid_debug_print_text("MAPMODE_RELEASE");
+			
 			
 			uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE);
 			grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);
@@ -76,7 +76,7 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 		
 		
 
-			grid_debug_print_text("MAPMODE_PRESS");
+			
 			
 			uint8_t event_index = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_MAPMODE_PRESS);
 			grid_ui_event_template_action(&grid_core_state.bank_list[0].element_list[0], event_index);
@@ -188,6 +188,8 @@ int main(void)
 
 	// Init Bank Color Bug when config was previously saved
 	grid_sys_load_bank_settings(&grid_sys_state, &grid_nvm_state);
+	
+	grid_sys_set_bank(&grid_sys_state,255);
 		
 	
 	while (1) {
