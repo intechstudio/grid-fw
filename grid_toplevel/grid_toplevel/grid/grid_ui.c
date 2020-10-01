@@ -505,12 +505,6 @@ void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_u
 			grid_debug_print_text(" Escaped Char Found ");
 			ele->event_list[event_index].event_string[i] -= 128;
 			
-			if (ele->event_list[event_index].event_string[i] == 'B'){
-				
-				ele->event_list[event_index].event_string[i] = GRID_CONST_ETX;
-				grid_debug_print_text(" Balek ");
-
-			}
 		}
 		
 		
@@ -546,6 +540,9 @@ void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_u
 
 	ele->event_list[event_index].event_string_length = event_string_length;
 	ele->event_list[event_index].event_parameter_count = parameter_list_length;
+	
+	grid_ui_smart_trigger(ele->parent->parent, ele->parent->index, ele->index, event_type);
+	
 	
 }
 
@@ -731,24 +728,13 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 	ele->event_list[event_index].action_parameter_count = parameter_list_length;
 	
 				
+	grid_ui_smart_trigger(ele->parent->parent, ele->parent->index, ele->index, event_type);
 		
-		
-	uint8_t debugtext[GRID_UI_ACTION_STRING_maxlength+50] = {0};
-	sprintf(debugtext, "CFG Execute: B %d, E %d, Ev %d, Len: %d Ac: %s Esc: %d", ele->parent->index, ele->index, event_type, action_string_length, action_string, escaped_characters);
-	
-	
-	grid_debug_print_text(debugtext);
+// 	uint8_t debugtext[GRID_UI_ACTION_STRING_maxlength+50] = {0};
+// 	sprintf(debugtext, "CFG Execute: B %d, E %d, Ev %d, Len: %d Ac: %s Esc: %d", ele->parent->index, ele->index, event_type, action_string_length, action_string, escaped_characters);
+// 	grid_debug_print_text(debugtext);
 
-	if(event_type == GRID_UI_EVENT_INIT){
-		
-		grid_ui_smart_trigger(ele->parent->parent, ele->parent->index, ele->index, event_type);
-		
-	}
-	else{
-		grid_ui_smart_trigger(ele->parent->parent, ele->parent->index, ele->index, event_type);
-				
-		
-	}
+
 	
 }
 
