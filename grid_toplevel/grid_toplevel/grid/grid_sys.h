@@ -128,11 +128,11 @@ uint32_t grid_sys_unittest(void);
 
 
 
-void grid_sys_store_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm);
+void grid_sys_nvm_store_configuration(struct grid_sys_model* sys, struct grid_nvm_model* nvm);
 
-void grid_sys_load_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm);
+void grid_sys_nvm_load_configuration(struct grid_sys_model* sys, struct grid_nvm_model* nvm);
 
-void grid_sys_clear_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm);
+void grid_sys_nvm_clear_configuration(struct grid_sys_model* sys, struct grid_nvm_model* nvm);
 
 void grid_debug_print_text(uint8_t* str);
 

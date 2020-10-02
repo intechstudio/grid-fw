@@ -150,25 +150,6 @@ void grid_module_po16_revb_init(){
 			
 			grid_ui_element_init(&grid_ui_state.bank_list[i], j, GRID_UI_ELEMENT_POTENTIOMETER);
 
-			if (1){		// Register Absolute Value Change
-				
-				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};		
-				sprintf(action_string, GRID_ACTIONSTRING_AVC7);
-				
-				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_AVC7, action_string, strlen(action_string));
-				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_AVC7);			
-				
-			}
-
-			if (1){ 	// Register Init Event and Action	
-		
-				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};				
-				sprintf(action_string, GRID_ACTIONSTRING_INIT);
-		
-				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT, action_string, strlen(action_string));
-				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT);
-		
-			}
 		}
 	}
 	

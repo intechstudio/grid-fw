@@ -45,7 +45,7 @@ uint32_t grid_task_timer_read(struct grid_task_model* mod, enum grid_task task){
 
 
 
-void grid_sys_store_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
+void grid_sys_nvm_store_configuration(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
 
 	struct grid_msg message;
 	
@@ -110,7 +110,7 @@ void grid_sys_store_bank_settings(struct grid_sys_model* sys, struct grid_nvm_mo
 	
 }
 
-void grid_sys_load_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
+void grid_sys_nvm_load_configuration(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
 	
 	uint8_t temp[GRID_NVM_PAGE_SIZE] = {0};
 	uint16_t length = 0;
@@ -167,7 +167,7 @@ void grid_sys_load_bank_settings(struct grid_sys_model* sys, struct grid_nvm_mod
 	
 }
 
-void grid_sys_clear_bank_settings(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
+void grid_sys_nvm_clear_configuration(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
 	
 	uint8_t temp[GRID_NVM_PAGE_SIZE] = {0};
 	uint16_t length = 0;

@@ -310,47 +310,7 @@ void grid_module_en16_reva_init(){
 		
 		for(uint8_t j=0; j<16; j++){
 		
-			grid_ui_element_init(&grid_ui_state.bank_list[i], j, GRID_UI_ELEMENT_ENCODER);
-		
-			if (1){ // ROTATION -> MIDI Control Change
-			
-				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
-				sprintf(action_string, GRID_ACTIONSTRING_AVC7);
-
-				// Register Absolute Value Change
-				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_AVC7, action_string, strlen(action_string));
-				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_AVC7);
-			}
-			
-			if (1){		// Register Digital Press Event and Action
-				
-				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
-				sprintf(action_string, GRID_ACTIONSTRING_DP_ENC);
-				
-				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DP, action_string, strlen(action_string));
-				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DP);
-			}
-
-			if (1){		// Register Digital Release Event and Action
-				
-				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
-				sprintf(action_string, GRID_ACTIONSTRING_DR_ENC);
-				
-				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DR, action_string, strlen(action_string));
-				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DR);
-			}
-		
-			if (1) { //INIT
-				
-				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
-				sprintf(action_string, GRID_ACTIONSTRING_INIT_ENC);
-				
-				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT, action_string, strlen(action_string));
-				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT);				
-
-			}
-		
-		
+			grid_ui_element_init(&grid_ui_state.bank_list[i], j, GRID_UI_ELEMENT_ENCODER);	
 		
 		}		
 		

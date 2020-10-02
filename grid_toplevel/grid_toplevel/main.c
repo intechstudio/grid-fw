@@ -175,7 +175,7 @@ int main(void)
 
 	// Init Bank Color Bug when config was previously saved
 	
-	grid_sys_load_bank_settings(&grid_sys_state, &grid_nvm_state);
+	grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
 		
 	
 	while (1) {

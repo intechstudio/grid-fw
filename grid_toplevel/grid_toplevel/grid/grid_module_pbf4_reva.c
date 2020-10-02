@@ -258,53 +258,19 @@ void grid_module_pbf4_reva_init(){
 		grid_ui_bank_init(&grid_ui_state, i, 12);
 		
 		for(uint8_t j=0; j<12; j++){
-		
 			
-		
+				
 			if (j<8){ // PORENTIOMETERS & FADERS -> MIDI Control Change
 				
 				grid_ui_element_init(&grid_ui_state.bank_list[i], j, GRID_UI_ELEMENT_POTENTIOMETER);
-				
-				uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
-				sprintf(action_string, GRID_ACTIONSTRING_AVC7);
-
-				// Register Absolute Value Change
-				grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_AVC7, action_string, strlen(action_string));		
-				grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_AVC7);
-				
+			
 			}
 			else{ // BUTTONS -> MIDI Note On/Off
 				
 				grid_ui_element_init(&grid_ui_state.bank_list[i], j, GRID_UI_ELEMENT_BUTTON);
-				
-				if (1){ // Register Digital Press Action
-					
-					uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
-					sprintf(action_string, GRID_ACTIONSTRING_DP);
-
-					grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DP, action_string, strlen(action_string));
-					grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DP);
-			
-				}
-				
-				if (1){ // Register Digital Release Action
-					
-					uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
-					sprintf(action_string, GRID_ACTIONSTRING_DR);
-
-					grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DR, action_string, strlen(action_string));
-					grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_DR);
-					
-				}		
-									
+										
 			}
 			
-		
-			uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
-			sprintf(action_string, GRID_ACTIONSTRING_INIT);
-				
-			grid_ui_event_register_actionstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT, action_string, strlen(action_string));
-			grid_ui_event_generate_eventstring(&grid_ui_state.bank_list[i].element_list[j], GRID_UI_EVENT_INIT);
 		}	
 	}
 			

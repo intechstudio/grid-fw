@@ -433,7 +433,9 @@ enum grid_ui_event_t {
 
 // CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)
 #define GRID_CLASS_CONFIGURATION_code						0x080
-#define GRID_CLASS_CONFIGURATION_frame						"%c%03x_......%c",GRID_CONST_STX,GRID_CLASS_CONFIGCLEAR_code,GRID_CONST_ETX
+#define GRID_CLASS_CONFIGURATION_frame						"%c%03x_......%c",GRID_CONST_STX,GRID_CLASS_CONFIGURATION_code,GRID_CONST_ETX
+#define GRID_CLASS_CONFIGURATION_frame_start				"%c%03x_......",GRID_CONST_STX,GRID_CLASS_CONFIGURATION_code
+#define GRID_CLASS_CONFIGURATION_frame_end					"%c",GRID_CONST_ETX
 
 #define GRID_CLASS_CONFIGURATION_BANKNUMBER_offset			5
 #define GRID_CLASS_CONFIGURATION_BANKNUMBER_length			2

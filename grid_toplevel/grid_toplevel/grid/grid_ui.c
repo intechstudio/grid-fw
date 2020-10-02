@@ -396,6 +396,8 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	struct grid_ui_event* eve = &parent->event_list[index];
 	eve->parent = parent;
 	eve->index = index;
+
+	eve->cfg_changed_flag = 0;
 	
 	eve->status = GRID_UI_STATUS_INITIALIZED;
 	
@@ -403,18 +405,15 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	eve->status = GRID_UI_STATUS_READY;
 
 
-	// Initializing Event String
-	eve->event_string = malloc(GRID_UI_EVENT_STRING_maxlength*sizeof(uint8_t));
-	
+	// Initializing Event String	
 	for (uint32_t i=0; i<GRID_UI_EVENT_STRING_maxlength; i++){
 		eve->event_string[i] = 0;
 	}
 	
 	eve->event_string_length = 0;
+	
 
 	// Initializing Action String
-	eve->action_string = malloc(GRID_UI_ACTION_STRING_maxlength*sizeof(uint8_t));
-	
 	for (uint32_t i=0; i<GRID_UI_ACTION_STRING_maxlength; i++){
 		eve->action_string[i] = 0;
 	}	
@@ -425,7 +424,6 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	// Initializing Event Parameters
 	eve->event_parameter_count = 0;
 	
-	eve->event_parameter_list = malloc(GRID_UI_EVENT_PARAMETER_maxcount*sizeof(struct grid_ui_template_parameter));
 
 	for (uint32_t i=0; i<GRID_UI_EVENT_PARAMETER_maxcount; i++){
 		eve->event_parameter_list[i].status = GRID_UI_STATUS_UNDEFINED;
@@ -437,7 +435,6 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	// Initializing Action Parameters
 	eve->action_parameter_count = 0;
 	
-	eve->action_parameter_list = malloc(GRID_UI_ACTION_PARAMETER_maxcount*sizeof(struct grid_ui_template_parameter));
 
 	for (uint32_t i=0; i<GRID_UI_ACTION_PARAMETER_maxcount; i++){
 		eve->action_parameter_list[i].status = GRID_UI_STATUS_UNDEFINED;
@@ -446,8 +443,237 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 		eve->action_parameter_list[i].length = 0;
 	}	
 			
+			
+	grid_ui_event_generate_eventstring(eve->parent, event_type);
+	grid_ui_event_generate_actionstring(eve->parent, event_type);	
+	
+	eve->cfg_changed_flag = 0;
 }
 
+void grid_ui_nvm_store_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
+	
+	for(uint8_t i = 0; i<ui->bank_list_length; i++){
+		
+		struct grid_ui_bank* bank = &ui->bank_list[i];
+		
+		for (uint8_t j=0; j<bank->element_list_length; j++){
+			
+			struct grid_ui_element* ele = &bank->element_list[j];
+			
+			for (uint8_t k=0; k<ele->event_list_length; k++){
+			
+				struct grid_ui_event* eve = &ele->event_list[k];
+				
+				if (eve->cfg_changed_flag == 1){
+					
+					
+					grid_ui_nvm_store_event_configuration(ui, nvm, eve);
+
+		
+				}
+			
+			
+			}	
+					
+		}
+		
+	}
+
+}
+
+void grid_ui_nvm_load_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
+	
+	uint8_t cfgfound = 0;
+	
+	for(uint8_t i = 0; i<ui->bank_list_length; i++){
+		
+		struct grid_ui_bank* bank = &ui->bank_list[i];
+		
+		for (uint8_t j=0; j<bank->element_list_length; j++){
+			
+			struct grid_ui_element* ele = &bank->element_list[j];
+			
+			for (uint8_t k=0; k<ele->event_list_length; k++){
+				
+				struct grid_ui_event* eve = &ele->event_list[k];
+				
+				if (grid_ui_nvm_load_event_configuration(ui, nvm, eve)){
+					cfgfound++;
+				}
+				
+				
+			}
+			
+		}
+		
+	}
+
+	uint8_t debugtext[200] = {0};
+	sprintf(debugtext, "Cfg found: %d", cfgfound);
+	grid_debug_print_text(debugtext);
+	
+
+		
+	
+}
+
+void grid_ui_nvm_clear_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
+	
+	
+}
+
+
+
+void grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
+	
+
+	struct grid_msg message;
+
+	grid_msg_init(&message);
+	grid_msg_init_header(&message, GRID_SYS_LOCAL_POSITION, GRID_SYS_LOCAL_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+
+	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
+	uint8_t payload_length = 0;
+	uint32_t offset = 0;
+
+
+
+	// BANK ENABLED
+	offset = grid_msg_body_get_length(&message);
+
+	sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
+	payload_length = strlen(payload);
+
+	grid_msg_body_append_text(&message, payload, payload_length);
+
+	grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, eve->parent->parent->index);
+	grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, eve->parent->index);
+	grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, eve->type);
+
+	offset = grid_msg_body_get_length(&message);
+	grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
+
+	for(uint8_t t=0; t<eve->action_parameter_count; t++){
+	
+		uint32_t parameter_offset  = eve->action_parameter_list[t].offset;
+		uint8_t	 parameter_lenght  = eve->action_parameter_list[t].length;
+	
+		uint8_t	 parameter_group   = eve->action_parameter_list[t].group;
+		uint8_t	 parameter_address = eve->action_parameter_list[t].address;
+	
+	
+		message.body[offset + parameter_offset] = parameter_group;
+		grid_msg_text_set_parameter(&message, offset, parameter_offset+1, parameter_lenght-1, parameter_address);
+
+	
+	}
+
+
+
+
+	sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
+	payload_length = strlen(payload);
+
+	grid_msg_body_append_text(&message, payload, payload_length);
+
+	// do the escaping here
+	// restor the template codes
+
+
+	grid_msg_packet_close(&message);
+
+	grid_nvm_clear_write_buffer(nvm);
+
+	uint32_t message_length = grid_msg_packet_get_length(&message);
+
+	if (message_length){
+
+		nvm->write_buffer_length = message_length;
+	
+		for(uint32_t i = 0; i<message_length; i++){
+		
+			nvm->write_buffer[i] = grid_msg_packet_send_char(&message, i);
+		}
+
+	}
+
+	uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(&grid_nvm_state, eve->parent->parent->index, eve->parent->index, eve->index);
+	nvm->write_target_address = GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset;
+
+	flash_write(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS, nvm->write_buffer, GRID_NVM_PAGE_SIZE);
+
+
+	uint8_t debugtext[200] = {0};
+
+	sprintf(debugtext, "Cfg: detect B:%d E:%d Ev:%d => Page: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset);
+	grid_debug_print_text(debugtext);
+
+	eve->cfg_changed_flag = 0;
+	
+}
+
+
+
+uint8_t grid_ui_nvm_load_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
+	
+	
+	uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(&grid_nvm_state, eve->parent->parent->index, eve->parent->index, eve->index);	
+	nvm->read_source_address = GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset;	
+	
+	
+	grid_nvm_clear_read_buffer(nvm);
+	flash_read(nvm->flash, nvm->read_source_address, nvm->read_buffer, GRID_NVM_PAGE_SIZE);
+		
+		
+	uint8_t copydone = 0;
+	
+	uint8_t cfgfound = 0;
+		
+	for (uint16_t i=0; i<GRID_NVM_PAGE_SIZE; i++){
+			
+			
+		if (copydone == 0){
+				
+			if (nvm->read_buffer[i] == '\n'){ // END OF PACKET, copy newline character
+				GRID_PORT_U.rx_double_buffer[i] = nvm->read_buffer[i];
+				GRID_PORT_U.rx_double_buffer_status = i+1;
+				GRID_PORT_U.rx_double_buffer_read_start_index = 0;
+				copydone = 1;
+				
+				cfgfound=1;
+					
+			}
+			else if (nvm->read_buffer[i] == 255){ // UNPROGRAMMED MEMORY, lets get out of here
+				copydone = 1;
+			}
+			else{ // NORMAL CHARACTER, can be copied
+				GRID_PORT_U.rx_double_buffer[i] = nvm->read_buffer[i];
+			}
+				
+				
+		}
+		
+		
+		
+// 		grid_port_receive_task(&GRID_PORT_U);
+// 		grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback
+// 		grid_port_process_ui(&GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
+			
+			
+	}
+	
+	return cfgfound;
+	
+	
+}
+void grid_ui_nvm_clear_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
+	
+	
+	
+	
+}
 
 
 
@@ -638,6 +864,66 @@ void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_u
 }
 
 
+
+
+void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type){
+	
+	uint8_t event_index = 255;
+	
+	for(uint8_t i=0; i<ele->event_list_length; i++){
+		if (ele->event_list[i].type == event_type){
+			event_index = i;
+		}
+	}
+	
+	if (event_index == 255){
+		return; // EVENT NOT FOUND
+	}
+	
+	
+	
+	uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
+	
+	if (ele->type == GRID_UI_ELEMENT_BUTTON){
+				
+		switch(event_type){
+			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT);		break;
+			case GRID_UI_EVENT_DP:		sprintf(action_string, GRID_ACTIONSTRING_DP);		break;
+			case GRID_UI_EVENT_DR:		sprintf(action_string, GRID_ACTIONSTRING_DR);		break;
+		}
+		
+	}
+	else if (ele->type == GRID_UI_ELEMENT_POTENTIOMETER){
+		
+		switch(event_type){
+			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT);		break;
+			case GRID_UI_EVENT_AVC7:	sprintf(action_string, GRID_ACTIONSTRING_AVC7);		break;
+		}
+		
+	}
+	else if (ele->type == GRID_UI_ELEMENT_ENCODER){
+		
+		switch(event_type){
+			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT);		break;
+			case GRID_UI_EVENT_AVC7:	sprintf(action_string, GRID_ACTIONSTRING_AVC7);		break;
+			case GRID_UI_EVENT_DP:		sprintf(action_string, GRID_ACTIONSTRING_DP);		break;
+			case GRID_UI_EVENT_DR:		sprintf(action_string, GRID_ACTIONSTRING_DR);		break;
+		}
+			
+	}
+	
+	if (strlen(action_string)){
+		
+		grid_ui_event_register_actionstring(ele, event_type, action_string, strlen(action_string));
+		
+	}
+	
+	ele->event_list[event_index].cfg_changed_flag = 0;
+	
+	
+}
+
+
 void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string, uint32_t action_string_length){
 		
 	uint8_t event_index = 255;
@@ -727,9 +1013,13 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 	ele->event_list[event_index].action_string_length = action_string_length;
 	ele->event_list[event_index].action_parameter_count = parameter_list_length;
 	
-				
+
+					
 	grid_ui_smart_trigger(ele->parent->parent, ele->parent->index, ele->index, event_type);
 		
+		
+	ele->event_list[event_index].cfg_changed_flag = 1;	
+	
 // 	uint8_t debugtext[GRID_UI_ACTION_STRING_maxlength+50] = {0};
 // 	sprintf(debugtext, "CFG Execute: B %d, E %d, Ev %d, Len: %d Ac: %s Esc: %d", ele->parent->index, ele->index, event_type, action_string_length, action_string, escaped_characters);
 // 	grid_debug_print_text(debugtext);

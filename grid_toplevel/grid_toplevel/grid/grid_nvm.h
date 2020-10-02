@@ -14,16 +14,29 @@
 
 #define GRID_NVM_GLOBAL_BASE_ADDRESS		0x7F000
 
-#define GRID_NVM_ELEMENT_BASE_ADDRESS		0x80000
+#define GRID_NVM_LOCAL_BASE_ADDRESS		0x80000
 
 #define GRID_NVM_PAGE_SIZE					512
 #define GRID_NVM_PAGE_OFFSET				0x200
 
+// Every event is stored in one page
+#define GRID_NVM_STRATEGY_EVENT_maxcount	10
 
-#define GRID_NVM_STRATEGY_BANK_OFFSET
-#define GRID_NVM_STRATEGY_ELEMENT_OFFSET
-#define GRID_NVM_STRATEGY_EVENT_OFFSET
-#define GRID_NVM_STRATEGY_BANK_OFFSET
+// Max 10 event in each element
+#define GRID_NVM_STRATEGY_ELEMENT_maxcount	16
+
+// Max 16 element in each bank
+#define GRID_NVM_STRATEGY_BANK_maxcount		4
+
+
+// Next event is 1 page away
+#define GRID_NVM_STRATEGY_EVENT_size		1
+
+// Next element is 10 page away
+#define GRID_NVM_STRATEGY_ELEMENT_size		GRID_NVM_STRATEGY_EVENT_size * GRID_NVM_STRATEGY_EVENT_maxcount
+
+// Next bank is 160 page away
+#define GRID_NVM_STRATEGY_BANK_size			GRID_NVM_STRATEGY_ELEMENT_size * GRID_NVM_STRATEGY_ELEMENT_maxcount
 
 
 
@@ -55,7 +68,11 @@ struct grid_nvm_model{
 	uint32_t write_buffer_length;
 	enum grid_nvm_buffer_status_t write_buffer_status;
 	uint32_t write_target_address;
-
+	
+	uint8_t read_bulk_bank_index;
+	uint8_t read_bulk_element_index;
+	uint8_t read_bulk_event_index;
+	uint8_t read_bulk_status;
 
 
 };
@@ -65,10 +82,13 @@ struct grid_nvm_model grid_nvm_state;
 
 void grid_nvm_init(struct grid_nvm_model* mod, struct flash_descriptor* flash_instance);
 
-void grid_nvm_read_uicfg(struct grid_nvm_model* mod, uint8_t bank_number, uint8_t element_number, uint8_t event_number);
+void grid_nvm_read_ui_bulk_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 
 void grid_nvm_clear_read_buffer(struct grid_nvm_model* mod);
 void grid_nvm_clear_write_buffer(struct grid_nvm_model* mod);
+
+
+uint32_t grid_nvm_calculate_event_page_offset(struct grid_nvm_model* nvm, uint8_t bank_number, uint8_t element_number, uint8_t event_number);
 
 
 #endif /* GRID_NVM_H_ */
