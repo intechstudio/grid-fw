@@ -130,7 +130,7 @@ uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct g
 uint8_t grid_ui_nvm_load_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve);
 uint8_t grid_ui_nvm_clear_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve);
 
-
+void grid_ui_reinit(struct grid_ui_model* ui);
 
 void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length);
 void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type);

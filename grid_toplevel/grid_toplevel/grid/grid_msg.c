@@ -309,3 +309,27 @@ uint8_t	grid_msg_packet_close(struct grid_msg* msg){
 	
 	
 }
+
+uint8_t	grid_msg_packet_send_everywhere(struct grid_msg* msg){
+	
+	uint32_t message_length = grid_msg_packet_get_length(msg);
+	
+	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, message_length)){
+
+		for(uint32_t i = 0; i<message_length; i++){
+
+			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char(msg, i));
+		}
+
+		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
+
+		return 1;
+	}
+	else{
+		
+		return 0;
+	}
+	
+	
+}
+

@@ -100,6 +100,12 @@
 
 
 // Save the following action to the given event & change instruction to execute
+#define GRID_INSTR_ACKNOWLEDGE_code			0xA//a
+
+#define GRID_INSTR_NACKNOWLEDGE_code		0xB//b
+
+
+
 #define GRID_INSTR_CONFIGURE_code			0xC//c
 
 // Respond with executable please!
@@ -421,11 +427,12 @@ enum grid_ui_event_t {
 #define GRID_CLASS_GLOBALCLEAR_frame				"%c%03xe%c",GRID_CONST_STX,GRID_CLASS_GLOBALCLEAR_code,GRID_CONST_ETX
 
 
+
 #define GRID_CLASS_LOCALSTORE_code					0x070
 #define GRID_CLASS_LOCALSTORE_frame					"%c%03xe%c",GRID_CONST_STX,GRID_CLASS_LOCALSTORE_code,GRID_CONST_ETX
 
 #define GRID_CLASS_LOCALLOAD_code					0x071
-#define GRID_CLASS_LOCALCLEAR_frame					"%c%03xe%c",GRID_CONST_STX,GRID_CLASS_LOCALLOAD_code,GRID_CONST_ETX
+#define GRID_CLASS_LOCALLOAD_frame					"%c%03xe%c",GRID_CONST_STX,GRID_CLASS_LOCALLOAD_code,GRID_CONST_ETX
 
 #define GRID_CLASS_LOCALCLEAR_code					0x072
 #define GRID_CLASS_LOCALCLEAR_frame					"%c%03xe%c",GRID_CONST_STX,GRID_CLASS_LOCALCLEAR_code,GRID_CONST_ETX

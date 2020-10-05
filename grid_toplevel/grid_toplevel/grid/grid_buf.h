@@ -3,8 +3,7 @@
 
 #include "grid_module.h"
 
-#define GRID_BUFFER_TX_SIZE	4000 //1000
-#define GRID_BUFFER_RX_SIZE	4000 //1000
+#define GRID_BUFFER_SIZE	4000 //1000
 
 #define GRID_DOUBLE_BUFFER_TX_SIZE	2000 //600
 #define GRID_DOUBLE_BUFFER_RX_SIZE	2000 //600
@@ -16,7 +15,7 @@ volatile uint8_t  grid_buffer_error_count;
 struct grid_buffer{
 	
 	uint16_t buffer_length;
-	uint8_t* buffer_storage;
+	uint8_t buffer_storage[GRID_BUFFER_SIZE];
 	
 	uint16_t read_start;
 	uint16_t read_stop;
@@ -131,6 +130,6 @@ uint8_t grid_buffer_write_cancel(struct grid_buffer* buf);
 
 void grid_port_init_all(void);
 
-void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf_size, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma);
+void grid_port_init(volatile struct grid_port* por, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma);
 
 #endif

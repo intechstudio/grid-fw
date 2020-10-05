@@ -70,10 +70,10 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 							
 					
 							
-					uint8_t debugtext[200] = {0};
-					sprintf(debugtext, "Bulk Read Valid:: Status: %d, Index: %d => Bank: %d, Ele: %d, Eve: %d", status, nvm->read_bulk_page_index, bank, element, event);
-					grid_debug_print_text(debugtext);
-						
+// 					uint8_t debugtext[200] = {0};
+// 					sprintf(debugtext, "Bulk Read Valid:: Status: %d, Index: %d => Bank: %d, Ele: %d, Eve: %d", status, nvm->read_bulk_page_index, bank, element, event);
+// 					grid_debug_print_text(debugtext);
+// 						
 						
 						
 					
@@ -94,6 +94,32 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 			
 			nvm->read_bulk_page_index = 0;
 			nvm->read_bulk_status = 0;
+			
+			
+			uint8_t acknowledge = 1;
+
+			// Generate ACKNOWLEDGE RESPONSE
+			struct grid_msg response;
+				
+			grid_msg_init(&response);
+			grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+			uint8_t response_payload[10] = {0};
+			sprintf(response_payload, GRID_CLASS_LOCALLOAD_frame);
+
+			grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+				
+			if (acknowledge == 1){
+				grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+			}
+			else{
+				grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+			}
+
+				
+			grid_msg_packet_close(&response);
+			grid_msg_packet_send_everywhere(&response);
+				
 			
 		}
 		
@@ -154,6 +180,33 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 			
 			nvm->clear_bulk_page_index = 0;
 			nvm->clear_bulk_status = 0;
+			
+			
+			uint8_t acknowledge = 1;
+
+			// Generate ACKNOWLEDGE RESPONSE
+			struct grid_msg response;
+				
+			grid_msg_init(&response);
+			grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+			uint8_t response_payload[10] = {0};
+			sprintf(response_payload, GRID_CLASS_LOCALCLEAR_frame);
+
+			grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+				
+			if (acknowledge == 1){
+				grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+			}
+			else{
+				grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+			}
+
+				
+			grid_msg_packet_close(&response);
+			grid_msg_packet_send_everywhere(&response);
+				
+			
 			
 		}
 		

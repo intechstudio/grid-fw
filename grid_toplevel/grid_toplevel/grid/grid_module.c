@@ -209,7 +209,6 @@ void grid_module_common_init(void){
 	
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "UI Power Enable");
 	gpio_set_pin_level(UI_PWR_EN, true);
-	delay_ms(10);
 
 	// ADC SETUP	
 	

@@ -155,7 +155,9 @@ int main(void)
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
 		
 	grid_module_common_init();
-		
+	//grid_ui_reinit(&grid_ui_state);
+	
+			
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
 
 	init_timer();
@@ -178,7 +180,11 @@ int main(void)
 	
 	grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
 		
-	grid_nvm_ui_bulk_read_init(&grid_nvm_state, &grid_ui_state);	
+
+	
+	grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
+	
+	
 		
 	
 	while (1) {
@@ -307,12 +313,18 @@ int main(void)
 
 		// NVM BULK READ
 		
-		if (grid_nvm_ui_bulk_read_is_in_progress(&grid_nvm_state, &grid_ui_state)){
-						
-			grid_nvm_ui_bulk_read_next(&grid_nvm_state, &grid_ui_state);
+		if (GRID_PORT_U.rx_double_buffer_status == 0){
 			
+			if (grid_nvm_ui_bulk_read_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+				
+				grid_nvm_ui_bulk_read_next(&grid_nvm_state, &grid_ui_state);
+				
+				
+			}	
 			
 		}
+		
+
 		
 		if (grid_nvm_ui_bulk_clear_is_in_progress(&grid_nvm_state, &grid_ui_state)){
 			

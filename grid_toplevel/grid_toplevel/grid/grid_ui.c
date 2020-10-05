@@ -453,8 +453,40 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	
 }
 
+
+void grid_ui_reinit(struct grid_ui_model* ui){
+	
+	for(uint8_t i = 0; i<ui->bank_list_length; i++){
+		
+		struct grid_ui_bank* bank = &ui->bank_list[i];
+		
+		for (uint8_t j=0; j<bank->element_list_length; j++){
+			
+			struct grid_ui_element* ele = &bank->element_list[j];
+			
+			for (uint8_t k=0; k<ele->event_list_length; k++){
+				
+				struct grid_ui_event* eve = &ele->event_list[k];
+				
+				grid_ui_event_generate_actionstring(ele, eve->type);
+				
+				
+			}
+			
+		}
+		
+	}
+	
+	
+	
+}
+
+
 void grid_ui_nvm_store_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
 	
+	uint8_t acknowledge = 0;
+	
+		
 	for(uint8_t i = 0; i<ui->bank_list_length; i++){
 		
 		struct grid_ui_bank* bank = &ui->bank_list[i];
@@ -470,7 +502,13 @@ void grid_ui_nvm_store_all_configuration(struct grid_ui_model* ui, struct grid_n
 				if (eve->cfg_changed_flag == 1){
 					
 					
-					grid_ui_nvm_store_event_configuration(ui, nvm, eve);
+					if (grid_ui_nvm_store_event_configuration(ui, nvm, eve)){
+					
+						acknowledge = 1;
+					
+					
+					}
+					
 
 		
 				}
@@ -481,40 +519,37 @@ void grid_ui_nvm_store_all_configuration(struct grid_ui_model* ui, struct grid_n
 		}
 		
 	}
+	
+	
+
+	// Generate ACKNOWLEDGE RESPONSE
+	struct grid_msg response;
+		
+	grid_msg_init(&response);
+	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+	uint8_t response_payload[10] = {0};
+	sprintf(response_payload, GRID_CLASS_LOCALSTORE_frame);
+
+	grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+		
+	if (acknowledge == 1){
+		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	}
+	else{
+		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+	}
+
+		
+	grid_msg_packet_close(&response);
+	grid_msg_packet_send_everywhere(&response);
+		
 
 }
 
 void grid_ui_nvm_load_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
 	
-	uint8_t cfgfound = 0;
-	
-	for(uint8_t i = 0; i<ui->bank_list_length; i++){
-		
-		struct grid_ui_bank* bank = &ui->bank_list[i];
-		
-		for (uint8_t j=0; j<bank->element_list_length; j++){
-			
-			struct grid_ui_element* ele = &bank->element_list[j];
-			
-			for (uint8_t k=0; k<ele->event_list_length; k++){
-				
-				struct grid_ui_event* eve = &ele->event_list[k];
-				
-				if (grid_ui_nvm_load_event_configuration(ui, nvm, eve)){
-					cfgfound++;
-				}
-				
-				
-			}
-			
-		}
-		
-	}
-
-	uint8_t debugtext[200] = {0};
-	sprintf(debugtext, "Cfg found: %d", cfgfound);
-	grid_debug_print_text(debugtext);
-	
+	grid_nvm_ui_bulk_read_init(nvm, ui);
 
 		
 	
@@ -522,8 +557,7 @@ void grid_ui_nvm_load_all_configuration(struct grid_ui_model* ui, struct grid_nv
 
 void grid_ui_nvm_clear_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
 	
-	flash_erase(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS, GRID_NVM_STRATEGY_EVENT_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_BANK_maxcount);
-	
+	grid_nvm_ui_bulk_clear_init(nvm, ui);
 
 }
 
@@ -614,25 +648,26 @@ uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct g
 
 	if (eve->cfg_default_flag == 1 && eve->cfg_flashempty_flag == 0){
 		
-		sprintf(debugtext, "Cfg: Default B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);
-		status = flash_erase(nvm->flash, nvm->write_target_address, 1);
-		 eve->cfg_flashempty_flag = 1;
+		//sprintf(debugtext, "Cfg: Default B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);
+		flash_erase(nvm->flash, nvm->write_target_address, 1);
+		eve->cfg_flashempty_flag = 1;
+		status = 1;
 	}
 	
 	
 	if (eve->cfg_default_flag == 0 && eve->cfg_changed_flag == 1){
 		
-		sprintf(debugtext, "Cfg: Store B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);		
-		status = flash_write(nvm->flash, nvm->write_target_address, nvm->write_buffer, GRID_NVM_PAGE_SIZE);
-		
+		//sprintf(debugtext, "Cfg: Store B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);		
+		flash_write(nvm->flash, nvm->write_target_address, nvm->write_buffer, GRID_NVM_PAGE_SIZE);
+		status = 1;
 	}
 
 
-
-
-	grid_debug_print_text(debugtext);
+	//grid_debug_print_text(debugtext);
 
 	eve->cfg_changed_flag = 0;
+	
+	return status;
 	
 }
 

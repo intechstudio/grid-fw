@@ -92,21 +92,48 @@ void grid_sys_nvm_store_configuration(struct grid_sys_model* sys, struct grid_nv
 
 	grid_nvm_clear_write_buffer(nvm);
 	
-	uint32_t message_length = grid_msg_packet_get_length(&message);
+	uint8_t acknowledge = 0;
 	
-	if (message_length){
+	if (grid_msg_packet_get_length(&message)){
 
-		nvm->write_buffer_length = message_length;
+		nvm->write_buffer_length = grid_msg_packet_get_length(&message);
 		
-		for(uint32_t i = 0; i<message_length; i++){
+		for(uint32_t i = 0; i<nvm->write_buffer_length; i++){
 			
 			nvm->write_buffer[i] = grid_msg_packet_send_char(&message, i);
 		}
+		
+		nvm->write_target_address = GRID_NVM_GLOBAL_BASE_ADDRESS;
+		flash_write(nvm->flash, nvm->write_target_address, nvm->write_buffer, nvm->write_buffer_length);
+		
+		acknowledge = 1;
 
 	}
 	
-	nvm->write_target_address = GRID_NVM_GLOBAL_BASE_ADDRESS;
-	flash_write(nvm->flash, nvm->write_target_address, nvm->write_buffer, nvm->write_buffer_length);
+
+	
+	// Generate ACKNOWLEDGE RESPONSE
+	struct grid_msg response;
+	
+	grid_msg_init(&response);
+	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+	uint8_t response_payload[10] = {0};
+	sprintf(response_payload, GRID_CLASS_GLOBALSTORE_frame);	
+
+	grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+	
+	if (acknowledge == 1){
+		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);	
+	}
+	else{
+		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);	
+	}
+
+	
+	grid_msg_packet_close(&response);
+	grid_msg_packet_send_everywhere(&response);
+		
 	
 }
 
@@ -123,6 +150,8 @@ void grid_sys_nvm_load_configuration(struct grid_sys_model* sys, struct grid_nvm
 		
 	uint8_t copydone = 0;
 		
+	uint8_t acknowledge = 0;	
+		
 	for (uint16_t i=0; i<GRID_NVM_PAGE_SIZE; i++){		
 	
 		
@@ -133,6 +162,7 @@ void grid_sys_nvm_load_configuration(struct grid_sys_model* sys, struct grid_nvm
 				GRID_PORT_U.rx_double_buffer_status = i+1;
 				GRID_PORT_U.rx_double_buffer_read_start_index = 0;
 				copydone = 1;
+				acknowledge = 1;
 				
 			}
 			else if (temp[i] == 255){ // UNPROGRAMMED MEMORY, lets get out of here
@@ -151,19 +181,27 @@ void grid_sys_nvm_load_configuration(struct grid_sys_model* sys, struct grid_nvm
 
 	
 	
-
-// 	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, nvm->write_buffer_length)){
-// 
-// 		for(uint16_t i = 0; i<nvm->write_buffer_length; i++){
-// 
-// 			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, nvm->write_buffer[i]);
-// 		}
-// 
-// 		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
-// 
-// 	}
+	// Generate ACKNOWLEDGE RESPONSE
+	struct grid_msg response;
 	
-		
+	grid_msg_init(&response);
+	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+	uint8_t response_payload[10] = {0};
+	sprintf(response_payload, GRID_CLASS_GLOBALLOAD_frame);
+
+	grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+	
+	if (acknowledge == 1){
+		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	}
+	else{
+		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+	}
+
+	
+	grid_msg_packet_close(&response);
+	grid_msg_packet_send_everywhere(&response);
 	
 }
 
@@ -175,7 +213,29 @@ void grid_sys_nvm_clear_configuration(struct grid_sys_model* sys, struct grid_nv
 	
 	flash_erase(nvm->flash, GRID_NVM_GLOBAL_BASE_ADDRESS, 1);
 
-	
+	uint8_t acknowledge = 1;
+
+	// Generate ACKNOWLEDGE RESPONSE
+	struct grid_msg response;
+		
+	grid_msg_init(&response);
+	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+	uint8_t response_payload[10] = {0};
+	sprintf(response_payload, GRID_CLASS_GLOBALCLEAR_frame);
+
+	grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+		
+	if (acknowledge == 1){
+		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	}
+	else{
+		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+	}
+
+		
+	grid_msg_packet_close(&response);
+	grid_msg_packet_send_everywhere(&response);
 	
 	
 }
@@ -221,20 +281,9 @@ void grid_debug_print_text(uint8_t* debug_string){
 	grid_msg_body_append_text(&message, payload, offset);
 	grid_msg_packet_close(&message);
 	
+	grid_msg_packet_send_everywhere(&message);
 	
-	uint32_t message_length = grid_msg_packet_get_length(&message);
-	
-	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, message_length)){
 
-		for(uint32_t i = 0; i<message_length; i++){
-
-			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char(&message, i));
-		}
-
-		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
-
-	}	
-	
 	
 	
 }

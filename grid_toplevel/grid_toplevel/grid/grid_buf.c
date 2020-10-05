@@ -569,12 +569,6 @@ uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length){
 	buf->write_active   = 0;
 	
 
-	buf->buffer_storage = (uint8_t*) malloc(sizeof(uint8_t)*buf->buffer_length);
-	
-	while (buf->buffer_storage == NULL){
-		// TRAP: MALLOC FAILED
-	}
-
 	for (uint16_t i=0; i<buf->buffer_length; i++){
 		buf->buffer_storage[i] = 0;
 	}
@@ -826,10 +820,10 @@ uint8_t grid_buffer_read_cancel(struct grid_buffer* buf){
 	return 1;
 }
 
-void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16_t rx_buf_size, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma){
+void grid_port_init(volatile struct grid_port* por, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma){
 	
-	grid_buffer_init(&por->tx_buffer, tx_buf_size);
-	grid_buffer_init(&por->rx_buffer, rx_buf_size);
+	grid_buffer_init(&por->tx_buffer, GRID_BUFFER_SIZE);
+	grid_buffer_init(&por->rx_buffer, GRID_BUFFER_SIZE);
 	
 	
 	por->cooldown = 0;
@@ -902,13 +896,13 @@ void grid_port_init(volatile struct grid_port* por, uint16_t tx_buf_size, uint16
 
 void grid_port_init_all(void){
 	
-	grid_port_init(&GRID_PORT_N, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_CONST_NORTH ,0);
-	grid_port_init(&GRID_PORT_E, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_CONST_EAST  ,1);
-	grid_port_init(&GRID_PORT_S, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_SOUTH, GRID_PORT_TYPE_USART, GRID_CONST_SOUTH ,2);
-	grid_port_init(&GRID_PORT_W, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, &USART_WEST,  GRID_PORT_TYPE_USART, GRID_CONST_WEST  ,3);
+	grid_port_init(&GRID_PORT_N, &USART_NORTH, GRID_PORT_TYPE_USART, GRID_CONST_NORTH ,0);
+	grid_port_init(&GRID_PORT_E, &USART_EAST,  GRID_PORT_TYPE_USART, GRID_CONST_EAST  ,1);
+	grid_port_init(&GRID_PORT_S, &USART_SOUTH, GRID_PORT_TYPE_USART, GRID_CONST_SOUTH ,2);
+	grid_port_init(&GRID_PORT_W, &USART_WEST,  GRID_PORT_TYPE_USART, GRID_CONST_WEST  ,3);
 	
-	grid_port_init(&GRID_PORT_U, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_UI, 0, -1);
-	grid_port_init(&GRID_PORT_H, GRID_BUFFER_TX_SIZE, GRID_BUFFER_RX_SIZE, NULL, GRID_PORT_TYPE_USB, 0, -1);	
+	grid_port_init(&GRID_PORT_U, NULL, GRID_PORT_TYPE_UI, 0, -1);
+	grid_port_init(&GRID_PORT_H, NULL, GRID_PORT_TYPE_USB, 0, -1);	
 	
 	GRID_PORT_U.partner_status = 1; // UI IS ALWAYS CONNECTED
 	GRID_PORT_H.partner_status = 1; // HOST IS ALWAYS CONNECTED (Not really!)
@@ -1321,37 +1315,26 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				else if (msg_class == GRID_CLASS_GLOBALLOAD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
-					grid_debug_print_text("NVM LOAD GLOBAL");
 				}
 				else if (msg_class == GRID_CLASS_GLOBALSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 			
 					grid_sys_nvm_store_configuration(&grid_sys_state, &grid_nvm_state);
-					grid_debug_print_text("NVM STORE GLOBAL");
 				}
 				else if (msg_class == GRID_CLASS_GLOBALCLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_sys_nvm_clear_configuration(&grid_ui_state, &grid_nvm_state);
-					grid_debug_print_text("NVM CLEAR GLOBAL");
-				
 				}
 				else if (msg_class == GRID_CLASS_LOCALLOAD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					//grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);
-					
-		
-					grid_nvm_ui_bulk_read_init(&grid_nvm_state, &grid_ui_state);
-					grid_debug_print_text("NVM: Bulk Read Init");
-						
+					grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);						
 						
 				}
 				else if (msg_class == GRID_CLASS_LOCALSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_ui_nvm_store_all_configuration(&grid_ui_state, &grid_nvm_state);
-					grid_debug_print_text("NVM STORE LOCAL");
 				}
 				else if (msg_class == GRID_CLASS_LOCALCLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_debug_print_text("NVM CLEAR LOCAL");
 					grid_ui_nvm_clear_all_configuration(&grid_ui_state, &grid_nvm_state);
 				
 				}
@@ -1372,11 +1355,13 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						
 					}
 					
+					uint8_t acknowledge = 0;
+					
 					if (actionstring_length){
-						grid_debug_print_text("Cfg: Received");
+						//grid_debug_print_text("Cfg: Received");
 						grid_ui_event_register_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype, actionstring, actionstring_length);
 					
-						
+						acknowledge = 1;
 							
 						uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
 						if (event_index != 255){
@@ -1397,7 +1382,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}
 					else{
 						
-						grid_debug_print_text("Cfg: Default");
+						acknowledge = 0;
+						
+						//grid_debug_print_text("Cfg: Default");
 						grid_ui_event_generate_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
 						
 						uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
@@ -1411,7 +1398,36 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 										
 					}
 					
-						
+					
+
+					// Generate ACKNOWLEDGE RESPONSE
+					struct grid_msg response;
+								
+					grid_msg_init(&response);
+					grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+					uint8_t response_payload[10] = {0};
+					sprintf(response_payload, GRID_CLASS_CONFIGURATION_frame);
+					
+					
+
+					grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+					
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, banknumber);
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, elementnumber);
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, eventtype);
+					
+								
+					if (acknowledge == 1){
+						grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+					}
+					else{
+						grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+					}
+
+								
+					grid_msg_packet_close(&response);
+					grid_msg_packet_send_everywhere(&response);	
 
 					
 

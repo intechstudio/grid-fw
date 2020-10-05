@@ -81,5 +81,6 @@ uint8_t	grid_msg_packet_send_char(struct grid_msg* msg, uint32_t charindex);
 uint8_t	grid_msg_packet_close(struct grid_msg* msg);
 
 
+uint8_t	grid_msg_packet_send_everywhere(struct grid_msg* msg);
 
 #endif /* GRID_MSG_H_ */
