@@ -1188,16 +1188,18 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			
 		uint8_t position_is_me = 0;
 		uint8_t position_is_global = 0;
+		uint8_t position_is_local = 0;
 			
-		if (dx - GRID_SYS_DEFAULT_POSITION == 0 && dy - GRID_SYS_DEFAULT_POSITION == 0){
+		if (dx == GRID_SYS_DEFAULT_POSITION && dy == GRID_SYS_DEFAULT_POSITION){
 			position_is_me = 1;
 		}
-		else if (dx == 255 && dy==255){
+		else if (dx == GRID_SYS_GLOBAL_POSITION && dy==GRID_SYS_GLOBAL_POSITION){
 			position_is_global = 1;
 		}
-		else if (dx == 0 && dy==0){
-			position_is_global = 1;
+		else if (dx == GRID_SYS_LOCAL_POSITION && dy==GRID_SYS_LOCAL_POSITION){
+			position_is_local = 1;
 		}
+		
 		
 			
 		uint8_t current_start		= 0;
@@ -1220,7 +1222,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		
 		
 			
-				if (msg_class == GRID_CLASS_BANKACTIVE_code){
+				if (msg_class == GRID_CLASS_BANKACTIVE_code && (position_is_global || position_is_me || position_is_local)){
 					
 					
 					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKACTIVE_BANKNUMBER_offset], GRID_CLASS_BANKACTIVE_BANKNUMBER_length, &error_flag);
@@ -1250,7 +1252,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					
 				}
-				else if (msg_class == GRID_CLASS_BANKENABLED_code && msg_instr == GRID_INSTR_EXECUTE_code){
+				else if (msg_class == GRID_CLASS_BANKENABLED_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_global || position_is_me || position_is_local)){
 					
 					//grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 0, 500); // RED
 										
@@ -1281,7 +1283,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					
 				}	
-				else if (msg_class == GRID_CLASS_BANKCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code){
+				else if (msg_class == GRID_CLASS_BANKCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_global || position_is_me || position_is_local)){
 					
 					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_NUM_offset], GRID_CLASS_BANKCOLOR_NUM_length, &error_flag);
 					uint8_t red		   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_RED_offset], GRID_CLASS_BANKCOLOR_RED_length, &error_flag);
@@ -1296,7 +1298,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}
 									
 				}
-				else if (msg_class == GRID_CLASS_LEDPHASE_code && msg_instr == GRID_INSTR_EXECUTE_code && position_is_me){
+				else if (msg_class == GRID_CLASS_LEDPHASE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_local || position_is_me)){
 					
 					uint8_t led_num  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_NUM_offset], GRID_CLASS_LEDPHASE_NUM_length, &error_flag);
 					uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_LAY_offset], GRID_CLASS_LEDPHASE_LAY_length, &error_flag);
@@ -1304,7 +1306,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					grid_led_set_phase(&grid_led_state, led_num, led_lay, led_pha);
 							
 				}
-				else if (msg_class == GRID_CLASS_LEDCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code && position_is_me){
+				else if (msg_class == GRID_CLASS_LEDCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_local || position_is_me)){
 					
 						
 					uint8_t led_num = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_NUM_offset], GRID_CLASS_LEDCOLOR_NUM_length, &error_flag);
@@ -1336,56 +1338,11 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				
 					//grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);
 					
-
-						
-					struct grid_nvm_model* nvm = &grid_nvm_state;
-					
-
-					uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(&grid_nvm_state, 0, 4, 0);
-					nvm->read_source_address = GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset;
-					
-					grid_nvm_clear_read_buffer(nvm);
-					flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS, nvm->read_buffer, GRID_NVM_PAGE_SIZE);
-					
-					uint8_t copydone = 0;
-						
-					uint8_t cfgfound = 0;
-						
-					for (uint16_t i=0; i<GRID_NVM_PAGE_SIZE; i++){
-							
-							
-						if (copydone == 0){
-								
-							if (nvm->read_buffer[i] == '\n'){ // END OF PACKET, copy newline character
-								GRID_PORT_U.rx_double_buffer[i] = nvm->read_buffer[i];
-								GRID_PORT_U.rx_double_buffer_status = i+1;
-								GRID_PORT_U.rx_double_buffer_read_start_index = 0;
-								copydone = 1;
-									
-								cfgfound=1;
-									
-							}
-							else if (nvm->read_buffer[i] == 255){ // UNPROGRAMMED MEMORY, lets get out of here
-								copydone = 1;
-							}
-							else{ // NORMAL CHARACTER, can be copied
-								GRID_PORT_U.rx_double_buffer[i] = nvm->read_buffer[i];
-							}
-								
-								
-						}
-							
-							
-					}
-						
 		
+					grid_nvm_ui_bulk_read_init(&grid_nvm_state, &grid_ui_state);
+					grid_debug_print_text("NVM: Bulk Read Init");
 						
-					uint8_t debugtext[100] = {0};
 						
-					sprintf(debugtext, "Cfg Length: %d", GRID_PORT_U.rx_double_buffer_status);
-					
-						
-					grid_debug_print_text(debugtext);
 				}
 				else if (msg_class == GRID_CLASS_LOCALSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
@@ -1398,7 +1355,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					grid_ui_nvm_clear_all_configuration(&grid_ui_state, &grid_nvm_state);
 				
 				}
-				else if (msg_class == GRID_CLASS_CONFIGURATION_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				else if (msg_class == GRID_CLASS_CONFIGURATION_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_local)){
 
 					uint8_t banknumber		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_BANKNUMBER_offset]		, GRID_CLASS_CONFIGURATION_BANKNUMBER_length	, &error_flag);
 					uint8_t elementnumber	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset]	, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length	, &error_flag);
@@ -1418,11 +1375,40 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					if (actionstring_length){
 						grid_debug_print_text("Cfg: Received");
 						grid_ui_event_register_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype, actionstring, actionstring_length);
+					
+						
+							
+						uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
+						if (event_index != 255){
+							if (position_is_local){
+								// Clear changed flag because confguration came from nvm
+								grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_flashempty_flag=0;
+								
+								grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_changed_flag = 0;
+								grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
+							}
+							if (position_is_me){
+								// Clear changed flag because confguration came from nvm
+								grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_changed_flag = 1;
+								grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
+							}
+						}
+					
 					}
 					else{
 						
 						grid_debug_print_text("Cfg: Default");
 						grid_ui_event_generate_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
+						
+						uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
+						if (event_index != 255){
+								
+							// Clear changed flag because confguration came from nvm
+							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_changed_flag = 1;
+							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 1;
+						}
+						
+										
 					}
 					
 						

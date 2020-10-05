@@ -69,10 +69,16 @@ struct grid_nvm_model{
 	enum grid_nvm_buffer_status_t write_buffer_status;
 	uint32_t write_target_address;
 	
-	uint8_t read_bulk_bank_index;
-	uint8_t read_bulk_element_index;
-	uint8_t read_bulk_event_index;
+	
+	
+	uint32_t read_bulk_page_index;
 	uint8_t read_bulk_status;
+	
+	uint32_t clear_bulk_page_index;
+	uint8_t clear_bulk_status;
+	
+	uint32_t write_bulk_page_index;
+	uint8_t write_bulk_status;
 
 
 };
@@ -82,7 +88,17 @@ struct grid_nvm_model grid_nvm_state;
 
 void grid_nvm_init(struct grid_nvm_model* mod, struct flash_descriptor* flash_instance);
 
-void grid_nvm_read_ui_bulk_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+
+
+void	grid_nvm_ui_bulk_read_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+uint8_t grid_nvm_ui_bulk_read_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+void	grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+
+void	grid_nvm_ui_bulk_clear_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+uint8_t grid_nvm_ui_bulk_clear_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+void	grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+
+
 
 void grid_nvm_clear_read_buffer(struct grid_nvm_model* mod);
 void grid_nvm_clear_write_buffer(struct grid_nvm_model* mod);

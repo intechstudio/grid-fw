@@ -448,6 +448,9 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	grid_ui_event_generate_actionstring(eve->parent, event_type);	
 	
 	eve->cfg_changed_flag = 0;
+	eve->cfg_default_flag = 1;
+	eve->cfg_flashempty_flag = 1;
+	
 }
 
 void grid_ui_nvm_store_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
@@ -519,12 +522,14 @@ void grid_ui_nvm_load_all_configuration(struct grid_ui_model* ui, struct grid_nv
 
 void grid_ui_nvm_clear_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
 	
+	flash_erase(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS, GRID_NVM_STRATEGY_EVENT_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_BANK_maxcount);
 	
+
 }
 
 
 
-void grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
+uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
 	
 
 	struct grid_msg message;
@@ -602,12 +607,29 @@ void grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct grid
 	uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(&grid_nvm_state, eve->parent->parent->index, eve->parent->index, eve->index);
 	nvm->write_target_address = GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset;
 
-	flash_write(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS, nvm->write_buffer, GRID_NVM_PAGE_SIZE);
-
-
+	int status = 0;
+	
+	
 	uint8_t debugtext[200] = {0};
 
-	sprintf(debugtext, "Cfg: detect B:%d E:%d Ev:%d => Page: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset);
+	if (eve->cfg_default_flag == 1 && eve->cfg_flashempty_flag == 0){
+		
+		sprintf(debugtext, "Cfg: Default B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);
+		status = flash_erase(nvm->flash, nvm->write_target_address, 1);
+		 eve->cfg_flashempty_flag = 1;
+	}
+	
+	
+	if (eve->cfg_default_flag == 0 && eve->cfg_changed_flag == 1){
+		
+		sprintf(debugtext, "Cfg: Store B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);		
+		status = flash_write(nvm->flash, nvm->write_target_address, nvm->write_buffer, GRID_NVM_PAGE_SIZE);
+		
+	}
+
+
+
+
 	grid_debug_print_text(debugtext);
 
 	eve->cfg_changed_flag = 0;
@@ -618,14 +640,14 @@ void grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct grid
 
 uint8_t grid_ui_nvm_load_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
 	
+		
+	grid_nvm_clear_read_buffer(nvm);
 	
 	uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(&grid_nvm_state, eve->parent->parent->index, eve->parent->index, eve->index);	
 	nvm->read_source_address = GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset;	
 	
-	
-	grid_nvm_clear_read_buffer(nvm);
-	flash_read(nvm->flash, nvm->read_source_address, nvm->read_buffer, GRID_NVM_PAGE_SIZE);
-		
+
+	int status = flash_read(nvm->flash, nvm->read_source_address, nvm->read_buffer, GRID_NVM_PAGE_SIZE);	
 		
 	uint8_t copydone = 0;
 	
@@ -642,7 +664,7 @@ uint8_t grid_ui_nvm_load_event_configuration(struct grid_ui_model* ui, struct gr
 				GRID_PORT_U.rx_double_buffer_read_start_index = 0;
 				copydone = 1;
 				
-				cfgfound=1;
+				cfgfound=2;
 					
 			}
 			else if (nvm->read_buffer[i] == 255){ // UNPROGRAMMED MEMORY, lets get out of here
@@ -650,16 +672,12 @@ uint8_t grid_ui_nvm_load_event_configuration(struct grid_ui_model* ui, struct gr
 			}
 			else{ // NORMAL CHARACTER, can be copied
 				GRID_PORT_U.rx_double_buffer[i] = nvm->read_buffer[i];
+				
+				cfgfound=1;
 			}
 				
 				
 		}
-		
-		
-		
-// 		grid_port_receive_task(&GRID_PORT_U);
-// 		grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback
-// 		grid_port_process_ui(&GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
 			
 			
 	}
@@ -668,11 +686,12 @@ uint8_t grid_ui_nvm_load_event_configuration(struct grid_ui_model* ui, struct gr
 	
 	
 }
-void grid_ui_nvm_clear_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
-	
-	
-	
-	
+uint8_t grid_ui_nvm_clear_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
+		
+		uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(&grid_nvm_state, eve->parent->parent->index, eve->parent->index, eve->index);
+		
+		return flash_erase(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset, 1);
+		
 }
 
 
@@ -919,7 +938,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_
 	}
 	
 	ele->event_list[event_index].cfg_changed_flag = 0;
-	
+	ele->event_list[event_index].cfg_default_flag = 1;	
 	
 }
 
@@ -1018,7 +1037,8 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 	grid_ui_smart_trigger(ele->parent->parent, ele->parent->index, ele->index, event_type);
 		
 		
-	ele->event_list[event_index].cfg_changed_flag = 1;	
+	ele->event_list[event_index].cfg_changed_flag = 1;
+	
 	
 // 	uint8_t debugtext[GRID_UI_ACTION_STRING_maxlength+50] = {0};
 // 	sprintf(debugtext, "CFG Execute: B %d, E %d, Ev %d, Len: %d Ac: %s Esc: %d", ele->parent->index, ele->index, event_type, action_string_length, action_string, escaped_characters);

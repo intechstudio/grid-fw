@@ -9,33 +9,94 @@
 #include "grid_nvm.h"
 
 
-void grid_nvm_init(struct grid_nvm_model* mod, struct flash_descriptor* flash_instance){
+void grid_nvm_init(struct grid_nvm_model* nvm, struct flash_descriptor* flash_instance){
 	
-	mod->bank_settings_page_address = GRID_NVM_GLOBAL_BASE_ADDRESS;
+	nvm->bank_settings_page_address = GRID_NVM_GLOBAL_BASE_ADDRESS;
 	
-	mod->flash = flash_instance;
+	nvm->flash = flash_instance;
 	
-	mod->status = 1;
-	mod->read_buffer_status = GRID_NVM_BUFFER_STATUS_UNINITIALIZED;
-	mod->write_buffer_status = GRID_NVM_BUFFER_STATUS_UNINITIALIZED;
-	
-	
-	mod->read_bulk_bank_index = 0;
-	mod->read_bulk_element_index = 0;
-	mod->read_bulk_event_index = 0;
-	mod->read_bulk_status = 0;
+	nvm->status = 1;
+	nvm->read_buffer_status = GRID_NVM_BUFFER_STATUS_UNINITIALIZED;
+	nvm->write_buffer_status = GRID_NVM_BUFFER_STATUS_UNINITIALIZED;
 	
 	
-	grid_nvm_clear_read_buffer(mod);
-	grid_nvm_clear_write_buffer(mod);
+	nvm->read_bulk_page_index = 0;
+	nvm->read_bulk_status = 0;
+	
+	nvm->clear_bulk_page_index = 0;
+	nvm->clear_bulk_status = 0;	
+	
+	nvm->write_bulk_page_index = 0;
+	nvm->write_bulk_status = 0;
+	
+	
+	grid_nvm_clear_read_buffer(nvm);
+	grid_nvm_clear_write_buffer(nvm);
 
 }
 
-void grid_nvm_read_ui_bulk_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+
+void grid_nvm_ui_bulk_read_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+
+	nvm->read_bulk_page_index = 0;
+	nvm->read_bulk_status = 1;
+			
+}
+
+uint8_t grid_nvm_ui_bulk_read_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+
+	return nvm->read_bulk_status;
+	
+}
+
+void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 	
 	if (nvm->read_bulk_status == 1){
+		
+		
+		uint8_t bank    = (nvm->read_bulk_page_index/GRID_NVM_STRATEGY_EVENT_maxcount/GRID_NVM_STRATEGY_ELEMENT_maxcount)%GRID_NVM_STRATEGY_BANK_maxcount;
+		uint8_t element = (nvm->read_bulk_page_index/GRID_NVM_STRATEGY_EVENT_maxcount)%GRID_NVM_STRATEGY_ELEMENT_maxcount;
+		uint8_t event   = nvm->read_bulk_page_index%GRID_NVM_STRATEGY_EVENT_maxcount;
+		
+		
+		if (bank < ui->bank_list_length){
+			
+			if (element < ui->bank_list[bank].element_list_length){
+				
+				if (event < ui->bank_list[bank].element_list[element].event_list_length){
+					// Valid memory location
+					
+					int status = grid_ui_nvm_load_event_configuration(ui, nvm, &ui->bank_list[bank].element_list[element].event_list[event]);
+							
+					
+							
+					uint8_t debugtext[200] = {0};
+					sprintf(debugtext, "Bulk Read Valid:: Status: %d, Index: %d => Bank: %d, Ele: %d, Eve: %d", status, nvm->read_bulk_page_index, bank, element, event);
+					grid_debug_print_text(debugtext);
+						
+						
+						
+					
+					
+				}
+				
+			}
 	
-		//if(ui->bank_list[nvm->read_bulk_bank_index].element_list[nvm->read_bulk_element_index].event_list_length<)	
+		}
+		
+		
+		if (nvm->read_bulk_page_index < GRID_NVM_STRATEGY_EVENT_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_BANK_maxcount-1){ // multiply with bankcount
+			
+			nvm->read_bulk_page_index++;
+			
+		}
+		else{
+			
+			nvm->read_bulk_page_index = 0;
+			nvm->read_bulk_status = 0;
+			
+		}
+		
 		
 		
 	}
@@ -44,6 +105,69 @@ void grid_nvm_read_ui_bulk_next(struct grid_nvm_model* nvm, struct grid_ui_model
 	
 	
 }
+
+void grid_nvm_ui_bulk_clear_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+
+	nvm->clear_bulk_page_index = 0;
+	nvm->clear_bulk_status = 1;
+	
+}
+
+uint8_t grid_nvm_ui_bulk_clear_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+
+	return nvm->clear_bulk_status;
+	
+}
+
+void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+	
+	if (nvm->clear_bulk_status == 1){
+		
+		
+		uint8_t bank    = (nvm->clear_bulk_page_index/GRID_NVM_STRATEGY_EVENT_maxcount/GRID_NVM_STRATEGY_ELEMENT_maxcount)%GRID_NVM_STRATEGY_BANK_maxcount;
+		uint8_t element = (nvm->clear_bulk_page_index/GRID_NVM_STRATEGY_EVENT_maxcount)%GRID_NVM_STRATEGY_ELEMENT_maxcount;
+		uint8_t event   = nvm->clear_bulk_page_index%GRID_NVM_STRATEGY_EVENT_maxcount;
+		
+		grid_ui_nvm_clear_event_configuration(ui, nvm, &ui->bank_list[bank].element_list[element].event_list[event]);
+	
+	
+// 		if (bank < ui->bank_list_length){
+// 			
+// 			if (element < ui->bank_list[bank].element_list_length){
+// 				
+// 				if (event < ui->bank_list[bank].element_list[element].event_list_length){
+// 					// Valid memory location
+// 					
+// 				}
+// 				
+// 			}
+// 			
+// 		}
+		
+		
+		if (nvm->clear_bulk_page_index < GRID_NVM_STRATEGY_EVENT_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_BANK_maxcount-1){ // multiply with bankcount
+			
+			nvm->clear_bulk_page_index++;
+			
+		}
+		else{
+			
+			nvm->clear_bulk_page_index = 0;
+			nvm->clear_bulk_status = 0;
+			
+		}
+		
+		
+		
+	}
+	
+	
+	
+	
+}
+
+
+
 
 
 void grid_nvm_clear_read_buffer(struct grid_nvm_model* mod){
@@ -56,7 +180,6 @@ void grid_nvm_clear_read_buffer(struct grid_nvm_model* mod){
 
 	mod->read_buffer_status = GRID_NVM_BUFFER_STATUS_EMPTY;
 	mod->read_buffer_length = 0;
-	mod->read_source_address = -1;
 	
 }
 

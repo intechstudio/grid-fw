@@ -132,6 +132,7 @@ void init_timer(void)
 int main(void)
 {
 
+	
 
 
 	atmel_start_init();	
@@ -176,6 +177,8 @@ int main(void)
 	// Init Bank Color Bug when config was previously saved
 	
 	grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
+		
+	grid_nvm_ui_bulk_read_init(&grid_nvm_state, &grid_ui_state);	
 		
 	
 	while (1) {
@@ -301,6 +304,24 @@ int main(void)
 				
 		}
 
+
+		// NVM BULK READ
+		
+		if (grid_nvm_ui_bulk_read_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+						
+			grid_nvm_ui_bulk_read_next(&grid_nvm_state, &grid_ui_state);
+			
+			
+		}
+		
+		if (grid_nvm_ui_bulk_clear_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+			
+			grid_nvm_ui_bulk_clear_next(&grid_nvm_state, &grid_ui_state);
+			
+			
+		}
+		
+		
 		
 		// NVM READ
 	
