@@ -59,7 +59,7 @@ page for more information.
 
 [![GitHub version](https://badge.fury.io/gh/intechstudio%2Fgrid-fw.svg)](https://github.com/intechstudio/grid-fw/releases/latest)
 
-## Latest Build
+## Nightly Build
 Nightly builds of the Grid firmware are available for those who wish to experiment with the latest features.
 Please check the related commit messages to learn more about the current build.
 
