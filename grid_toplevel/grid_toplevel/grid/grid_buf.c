@@ -597,13 +597,10 @@ uint16_t grid_buffer_write_size(struct grid_buffer* buf){
 	
 }
 
-
-uint16_t grid_buffer_write_init(struct grid_buffer* buf, uint16_t length){
-	
-	
+uint16_t grid_buffer_get_space(struct grid_buffer* buf){
 	
 	uint16_t space = 0;
-	
+		
 	if (buf->read_start > buf->write_start){
 		space = buf->read_start - buf->write_start;
 	}
@@ -611,7 +608,19 @@ uint16_t grid_buffer_write_init(struct grid_buffer* buf, uint16_t length){
 		space = buf->buffer_length - buf->write_start + buf->read_start;
 	}
 	
+	return space;
+}
+
+
+
+
+
+uint16_t grid_buffer_write_init(struct grid_buffer* buf, uint16_t length){
 	
+	
+	
+	uint16_t space = grid_buffer_get_space(buf);
+
 	
 	if (space>length){
 		
@@ -1216,7 +1225,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		
 		
 			
-				if (msg_class == GRID_CLASS_BANKACTIVE_code && (position_is_global || position_is_me || position_is_local)){
+				if (msg_class == GRID_CLASS_BANKACTIVE_code){
 					
 					
 					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKACTIVE_BANKNUMBER_offset], GRID_CLASS_BANKACTIVE_BANKNUMBER_length, &error_flag);
@@ -1229,6 +1238,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_HEARTBEAT);
 
 						}
+							
+						
 																		
 						grid_sys_set_bank(&grid_sys_state, banknumber);
 						
@@ -1259,14 +1270,24 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						grid_sys_bank_enable(&grid_sys_state, banknumber);
 						
 						if (grid_sys_get_bank_num(&grid_sys_state) == banknumber){
-							grid_sys_set_bank(&grid_sys_state, banknumber);
+							
+							if (grid_sys_state.bank_activebank_valid == 1){
+														
+								grid_sys_set_bank(&grid_sys_state, banknumber);
+														
+							}
 						}
 						
 						
 					}else if (isenabled == 0){	
 						
 						if (grid_sys_get_bank_num(&grid_sys_state) == banknumber){
-							grid_sys_set_bank(&grid_sys_state, 255);
+			
+							if (grid_sys_state.bank_activebank_valid == 1){
+								
+								grid_sys_set_bank(&grid_sys_state, 255);
+								
+							}
 						}	
 						
 						grid_sys_bank_disable(&grid_sys_state, banknumber);
@@ -1288,7 +1309,12 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					// If the currently active bank was changed, then we must reinitialize the bank so the color can be updated properly!
 					if (grid_sys_get_bank_num(&grid_sys_state) == banknumber){
-						grid_sys_set_bank(&grid_sys_state, banknumber);
+						
+						if (grid_sys_state.bank_activebank_valid == 1){
+							
+							grid_sys_set_bank(&grid_sys_state, banknumber);
+							
+						}
 					}
 									
 				}
@@ -1360,7 +1386,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					if (actionstring_length){
 						//grid_debug_print_text("Cfg: Received");
 						grid_ui_event_register_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype, actionstring, actionstring_length);
-					
+						grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
+
 						acknowledge = 1;
 							
 						uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
@@ -1386,6 +1413,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						
 						//grid_debug_print_text("Cfg: Default");
 						grid_ui_event_generate_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
+						grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
 						
 						uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
 						if (event_index != 255){

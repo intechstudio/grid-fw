@@ -149,7 +149,7 @@ void grid_ui_event_reset(struct grid_ui_event* eve);
 
 uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve);
 
-uint8_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_string);
+uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_string);
 
 
 

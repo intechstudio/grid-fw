@@ -3,7 +3,7 @@
 
 #include "grid_module.h"
 
-#define GRID_BUFFER_SIZE	4000 //1000
+#define GRID_BUFFER_SIZE	1000 //1000
 
 #define GRID_DOUBLE_BUFFER_TX_SIZE	2000 //600
 #define GRID_DOUBLE_BUFFER_RX_SIZE	2000 //600
@@ -119,7 +119,7 @@ uint8_t grid_buffer_read_acknowledge();		// OK, delete
 uint8_t grid_buffer_read_nacknowledge();	// Restart packet
 uint8_t grid_buffer_read_cancel();			// Discard packet
 
-
+uint16_t grid_buffer_get_space(struct grid_buffer* buf);
 
 uint16_t grid_buffer_write_init(struct grid_buffer* buf, uint16_t length);
 uint8_t  grid_buffer_write_character(struct grid_buffer* buf, uint8_t character);

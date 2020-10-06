@@ -104,7 +104,7 @@ void grid_nvm_clear_read_buffer(struct grid_nvm_model* mod);
 void grid_nvm_clear_write_buffer(struct grid_nvm_model* mod);
 
 
-uint32_t grid_nvm_calculate_event_page_offset(struct grid_nvm_model* nvm, uint8_t bank_number, uint8_t element_number, uint8_t event_number);
+uint32_t grid_nvm_calculate_event_page_offset(struct grid_nvm_model* nvm, struct grid_ui_event* eve);
 
 
 #endif /* GRID_NVM_H_ */

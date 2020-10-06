@@ -155,7 +155,7 @@ int main(void)
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
 		
 	grid_module_common_init();
-	//grid_ui_reinit(&grid_ui_state);
+	grid_ui_reinit(&grid_ui_state);
 	
 			
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
@@ -179,9 +179,6 @@ int main(void)
 	// Init Bank Color Bug when config was previously saved
 	
 	grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
-		
-
-	
 	grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
 	
 	
@@ -388,6 +385,10 @@ int main(void)
 		
 		
 		
+		
+		
+		
+		
 		/* ========================= GRID OUTBOUND TASK ============================= */		
 		grid_task_enter_task(&grid_task_state, GRID_TASK_OUTBOUND);
 		
@@ -452,7 +453,6 @@ int main(void)
 		if (loopcounter%1 == 0){
 			
 			grid_led_lowlevel_render_all(&grid_led_state);	
-			
 						
 // 	 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
 // 	

@@ -154,21 +154,22 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 		uint8_t element = (nvm->clear_bulk_page_index/GRID_NVM_STRATEGY_EVENT_maxcount)%GRID_NVM_STRATEGY_ELEMENT_maxcount;
 		uint8_t event   = nvm->clear_bulk_page_index%GRID_NVM_STRATEGY_EVENT_maxcount;
 		
-		grid_ui_nvm_clear_event_configuration(ui, nvm, &ui->bank_list[bank].element_list[element].event_list[event]);
+		
+		if (bank < ui->bank_list_length){
+			
+			if (element < ui->bank_list[bank].element_list_length){
+				
+				if (event < ui->bank_list[bank].element_list[element].event_list_length){
+					// Valid memory location
+					
+					grid_ui_nvm_clear_event_configuration(ui, nvm, &ui->bank_list[bank].element_list[element].event_list[event]);		
+				
+				}
+				
+			}
 	
-	
-// 		if (bank < ui->bank_list_length){
-// 			
-// 			if (element < ui->bank_list[bank].element_list_length){
-// 				
-// 				if (event < ui->bank_list[bank].element_list[element].event_list_length){
-// 					// Valid memory location
-// 					
-// 				}
-// 				
-// 			}
-// 			
-// 		}
+		}
+		
 		
 		
 		if (nvm->clear_bulk_page_index < GRID_NVM_STRATEGY_EVENT_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_BANK_maxcount-1){ // multiply with bankcount
@@ -205,9 +206,7 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 				
 			grid_msg_packet_close(&response);
 			grid_msg_packet_send_everywhere(&response);
-				
-			
-			
+						
 		}
 		
 		
@@ -250,11 +249,14 @@ void grid_nvm_clear_write_buffer(struct grid_nvm_model* mod){
 }
 
 
-uint32_t grid_nvm_calculate_event_page_offset(struct grid_nvm_model* nvm, uint8_t bank_number, uint8_t element_number, uint8_t event_number){
+uint32_t grid_nvm_calculate_event_page_offset(struct grid_nvm_model* nvm, struct grid_ui_event* eve){
 	
 	
 	
-	
+	uint8_t bank_number		= eve->parent->parent->index;
+	uint8_t element_number	= eve->parent->index;
+	uint8_t event_number	= eve->index;
+
 	return GRID_NVM_STRATEGY_BANK_size * bank_number + GRID_NVM_STRATEGY_ELEMENT_size * element_number + GRID_NVM_STRATEGY_EVENT_size * event_number;
 	
 }
