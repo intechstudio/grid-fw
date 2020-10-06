@@ -136,9 +136,9 @@ void grid_port_process_ui(struct grid_port* por){
 				
 			grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
 			
-			uint8_t debug_string[200] = {0};
-			sprintf(debug_string, "Space: RX: %d/%d  TX: %d/%d", grid_buffer_get_space(&GRID_PORT_U.rx_buffer), GRID_BUFFER_SIZE, grid_buffer_get_space(&GRID_PORT_U.tx_buffer), GRID_BUFFER_SIZE);
-			grid_debug_print_text(debug_string);
+// 			uint8_t debug_string[200] = {0};
+// 			sprintf(debug_string, "Space: RX: %d/%d  TX: %d/%d", grid_buffer_get_space(&GRID_PORT_U.rx_buffer), GRID_BUFFER_SIZE, grid_buffer_get_space(&GRID_PORT_U.tx_buffer), GRID_BUFFER_SIZE);
+// 			grid_debug_print_text(debug_string);
 
 
 		}
@@ -942,10 +942,10 @@ void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_
 	else if (ele->type == GRID_UI_ELEMENT_ENCODER){
 		
 		switch(event_type){
-			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT);		break;
-			case GRID_UI_EVENT_AVC7:	sprintf(action_string, GRID_ACTIONSTRING_AVC7);		break;
-			case GRID_UI_EVENT_DP:		sprintf(action_string, GRID_ACTIONSTRING_DP);		break;
-			case GRID_UI_EVENT_DR:		sprintf(action_string, GRID_ACTIONSTRING_DR);		break;
+			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT_ENC);	break;
+			case GRID_UI_EVENT_AVC7:	sprintf(action_string, GRID_ACTIONSTRING_AVC7_ENC);	break;
+			case GRID_UI_EVENT_DP:		sprintf(action_string, GRID_ACTIONSTRING_DP_ENC);	break;
+			case GRID_UI_EVENT_DR:		sprintf(action_string, GRID_ACTIONSTRING_DR_ENC);	break;
 		}
 			
 	}
