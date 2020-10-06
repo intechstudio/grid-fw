@@ -1386,7 +1386,12 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					if (actionstring_length){
 						//grid_debug_print_text("Cfg: Received");
 						grid_ui_event_register_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype, actionstring, actionstring_length);
-						grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
+
+						if (banknumber == grid_sys_state.bank_activebank_number){
+							
+							grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
+							
+						}
 
 						acknowledge = 1;
 							
@@ -1413,7 +1418,12 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						
 						//grid_debug_print_text("Cfg: Default");
 						grid_ui_event_generate_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
-						grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
+						
+						if (banknumber == grid_sys_state.bank_activebank_number){
+							
+							grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
+							
+						}
 						
 						uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
 						if (event_index != 255){
