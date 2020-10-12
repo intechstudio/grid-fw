@@ -1338,6 +1338,36 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					grid_led_set_color(&grid_led_state, led_num, led_lay, led_red, led_gre, led_blu);
 				
 				}
+				else if(msg_class == GRID_CLASS_SERIALNUMBER_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
+					
+					uint32_t uniqueid[4] = {0};
+					grid_sys_get_id(uniqueid);					
+					// Generate RESPONSE
+					struct grid_msg response;
+											
+					grid_msg_init(&response);
+					grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+					uint8_t response_payload[50] = {0};
+					snprintf(response_payload, 49, GRID_CLASS_SERIALNUMBER_frame);
+
+					grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+						
+					grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);					
+											
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_SERIALNUMBER_WORD0_offset, GRID_CLASS_SERIALNUMBER_WORD0_length, uniqueid[0]);
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_SERIALNUMBER_WORD1_offset, GRID_CLASS_SERIALNUMBER_WORD1_length, uniqueid[1]);
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_SERIALNUMBER_WORD2_offset, GRID_CLASS_SERIALNUMBER_WORD2_length, uniqueid[2]);
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_SERIALNUMBER_WORD3_offset, GRID_CLASS_SERIALNUMBER_WORD3_length, uniqueid[3]);
+
+
+											
+					grid_msg_packet_close(&response);
+					grid_msg_packet_send_everywhere(&response);
+						
+	
+				}
+				
 				else if (msg_class == GRID_CLASS_GLOBALLOAD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
