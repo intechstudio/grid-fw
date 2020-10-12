@@ -135,6 +135,8 @@ void grid_sys_nvm_load_configuration(struct grid_sys_model* sys, struct grid_nvm
 
 void grid_sys_nvm_clear_configuration(struct grid_sys_model* sys, struct grid_nvm_model* nvm);
 
+void grid_sys_recall_configuration(struct grid_sys_model* sys, uint8_t bank);
+
 void grid_debug_print_text(uint8_t* str);
 
 

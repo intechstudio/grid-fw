@@ -137,6 +137,86 @@ void grid_sys_nvm_store_configuration(struct grid_sys_model* sys, struct grid_nv
 	
 }
 
+
+void grid_sys_recall_configuration(struct grid_sys_model* sys, uint8_t bank){
+
+	struct grid_msg message;
+	
+	grid_msg_init(&message);
+	grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+
+	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
+	uint8_t payload_length = 0;
+	uint32_t offset = 0;
+	
+	for(uint8_t i=0; i<GRID_SYS_BANK_MAXNUMBER; i++){
+		
+		if (bank > GRID_SYS_BANK_MAXNUMBER || bank == i){
+			
+			// BANK ENABLED
+			offset = grid_msg_body_get_length(&message);
+		
+			sprintf(payload, GRID_CLASS_BANKENABLED_frame);
+			payload_length = strlen(payload);
+		
+			grid_msg_body_append_text(&message, payload, payload_length);
+		
+			grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+			grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKENABLED_BANKNUMBER_offset, GRID_CLASS_BANKENABLED_BANKNUMBER_length, i);
+			grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKENABLED_ISENABLED_offset, GRID_CLASS_BANKENABLED_ISENABLED_length, sys->bank_enabled[i]);
+		
+			// BANK COLOR
+			offset = grid_msg_body_get_length(&message);
+		
+			sprintf(payload, GRID_CLASS_BANKCOLOR_frame);
+			payload_length = strlen(payload);
+		
+			grid_msg_body_append_text(&message, payload, payload_length);
+
+			grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+			grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKCOLOR_NUM_offset, GRID_CLASS_BANKCOLOR_NUM_length, i);
+			grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKCOLOR_RED_offset, GRID_CLASS_BANKCOLOR_RED_length, sys->bank_color_r[i]);
+			grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKCOLOR_GRE_offset, GRID_CLASS_BANKCOLOR_GRE_length, sys->bank_color_g[i]);
+			grid_msg_text_set_parameter(&message, offset, GRID_CLASS_BANKCOLOR_BLU_offset, GRID_CLASS_BANKCOLOR_BLU_length, sys->bank_color_b[i]);
+					
+		}
+
+		
+	}
+	
+	grid_msg_packet_close(&message);
+
+	grid_msg_packet_send_everywhere(&message);
+	
+
+	
+// 	// Generate ACKNOWLEDGE RESPONSE
+// 	struct grid_msg response;
+// 	
+// 	grid_msg_init(&response);
+// 	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+// 
+// 	uint8_t response_payload[10] = {0};
+// 	sprintf(response_payload, GRID_CLASS_GLOBALSTORE_frame);
+// 
+// 	grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+// 	
+// 	if (acknowledge == 1){
+// 		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+// 	}
+// 	else{
+// 		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+// 	}
+// 
+// 	
+// 	grid_msg_packet_close(&response);
+// 	grid_msg_packet_send_everywhere(&response);
+	
+	
+}
+
+
 void grid_sys_nvm_load_configuration(struct grid_sys_model* sys, struct grid_nvm_model* nvm){
 	
 	uint8_t temp[GRID_NVM_PAGE_SIZE] = {0};
@@ -307,14 +387,14 @@ uint32_t grid_sys_unittest(void){
 				
 			char str[100] = {0};
 			sprintf(str, "packet{%d, %d, %d, %d, %d, %d, %d, %d} Read: %d, Calculate: %d", packet[0], packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7], checksum_read, checksum_calc);	
-		
+				
 			if (checksum_calc != checksum_read){		
 				grid_unittest_case_pass(&grid_unittest_state,str);
 			}
 			else{
 				grid_unittest_case_fail(&grid_unittest_state,str);
 			}
-				
+			
 		}
 		if (grid_unittest_case_init(&grid_unittest_state, "Checksum Write/Calculate")) // Write/Calculate	
 		{	

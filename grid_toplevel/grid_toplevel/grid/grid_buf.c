@@ -1350,6 +1350,13 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				
 					grid_sys_nvm_clear_configuration(&grid_ui_state, &grid_nvm_state);
 				}
+				else if (msg_class == GRID_CLASS_GLOBALRECALL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+					
+					uint8_t banknumber		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_GLOBALRECALL_BANKNUMBER_offset], GRID_CLASS_GLOBALRECALL_BANKNUMBER_length	, &error_flag);
+					grid_sys_recall_configuration(&grid_sys_state, banknumber);
+				}
+			
+				
 				else if (msg_class == GRID_CLASS_LOCALLOAD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);						
@@ -1359,6 +1366,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				
 					grid_ui_nvm_store_all_configuration(&grid_ui_state, &grid_nvm_state);
 				}
+
 				else if (msg_class == GRID_CLASS_LOCALCLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_ui_nvm_clear_all_configuration(&grid_ui_state, &grid_nvm_state);

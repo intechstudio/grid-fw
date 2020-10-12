@@ -108,6 +108,8 @@
 
 #define GRID_INSTR_CONFIGURE_code			0xC//c
 
+#define GRID_INSTR_REPORT_code				0xD//c
+
 // Respond with executable please!
 #define GRID_INSTR_FETCH_code				0xF//e
 
@@ -427,6 +429,12 @@ enum grid_ui_event_t {
 
 #define GRID_CLASS_GLOBALCLEAR_code					0x062
 #define GRID_CLASS_GLOBALCLEAR_frame				"%c%03xe%c",GRID_CONST_STX,GRID_CLASS_GLOBALCLEAR_code,GRID_CONST_ETX
+
+#define GRID_CLASS_GLOBALRECALL_code				0x063
+#define GRID_CLASS_GLOBALRECALL_frame				"%c%03xe..%c",GRID_CONST_STX,GRID_CLASS_GLOBALRECALL_code,GRID_CONST_ETX
+
+#define GRID_CLASS_GLOBALRECALL_BANKNUMBER_offset	5
+#define GRID_CLASS_GLOBALRECALL_BANKNUMBER_length	2
 
 
 
