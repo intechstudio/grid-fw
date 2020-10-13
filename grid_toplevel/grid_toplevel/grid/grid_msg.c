@@ -135,20 +135,20 @@ void	grid_msg_body_append_text(struct grid_msg* msg, uint8_t* str, uint32_t len)
 }
 
 void	grid_msg_body_append_text_escaped(struct grid_msg* msg, uint8_t* str, uint32_t len){
-
 	
 	for(uint32_t i=0; i<len; i++){
 		
-		msg->body[msg->body_length + i] = str[i];
-		
-		if (msg->body[msg->body_length + i] == GRID_CONST_STX){
-			
-			msg->body[msg->body_length + i] = GRID_CONST_STX + 128;
+		if (str[i] == GRID_CONST_STX){
+			msg->body[msg->body_length + i] = GRID_CONST_STX+128;
 		}
-		else if (msg->body[msg->body_length + i] == GRID_CONST_ETX){
-			
-			msg->body[msg->body_length + i] = GRID_CONST_ETX + 128;
+		else if (str[i] == GRID_CONST_ETX){
+			msg->body[msg->body_length + i] = GRID_CONST_ETX+128;
 		}		
+		else{
+			
+			msg->body[msg->body_length + i] = str[i];
+		}
+		
 	}
 	
 	msg->body_length += len;

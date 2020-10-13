@@ -540,6 +540,131 @@ void grid_ui_nvm_clear_all_configuration(struct grid_ui_model* ui, struct grid_n
 }
 
 
+uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t bank, uint8_t element, enum grid_ui_event_t event_type){
+	
+	struct grid_ui_element* ele = NULL;
+	struct grid_ui_event* eve = NULL;
+	uint8_t event_index = 255;
+	
+	if (bank < ui->bank_list_length){
+		
+		if (element < ui->bank_list[bank].element_list_length){
+			
+			ele = &ui->bank_list[bank].element_list[element];
+			
+			for(uint8_t i=0; i<ele->event_list_length; i++){
+				if (ele->event_list[i].type == event_type){
+					event_index = i;
+					eve = &ele->event_list[event_index];
+				}
+			}	
+			
+		}
+		
+		
+	}
+	
+	
+	if (event_index != 255){ // OK
+		
+		struct grid_msg message;
+
+		grid_msg_init(&message);
+		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+
+		uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
+		uint8_t payload_length = 0;
+		uint32_t offset = 0;
+
+
+
+		// BANK ENABLED
+		offset = grid_msg_body_get_length(&message);
+
+		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
+		payload_length = strlen(payload);
+
+		grid_msg_body_append_text(&message, payload, payload_length);
+
+		grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, eve->parent->parent->index);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, eve->parent->index);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, eve->type);
+
+		offset = grid_msg_body_get_length(&message);
+		grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
+
+		for(uint8_t t=0; t<eve->action_parameter_count; t++){
+				
+			uint32_t parameter_offset  = eve->action_parameter_list[t].offset;
+			uint8_t	 parameter_lenght  = eve->action_parameter_list[t].length;
+				
+			uint8_t	 parameter_group   = eve->action_parameter_list[t].group;
+			uint8_t	 parameter_address = eve->action_parameter_list[t].address;
+				
+				
+			message.body[offset + parameter_offset] = parameter_group;
+			grid_msg_text_set_parameter(&message, offset, parameter_offset+1, parameter_lenght-1, parameter_address);
+
+				
+		}
+
+
+
+
+		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
+		payload_length = strlen(payload);
+
+		grid_msg_body_append_text(&message, payload, payload_length);
+
+
+		grid_msg_packet_close(&message);
+		grid_msg_packet_send_everywhere(&message);
+		
+	}
+	else{ // INVALID REQUEST
+		
+		struct grid_msg message;
+
+		grid_msg_init(&message);
+		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+
+		uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
+		uint8_t payload_length = 0;
+		uint32_t offset = 0;
+
+		// BANK ENABLED
+		offset = grid_msg_body_get_length(&message);
+
+		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
+		payload_length = strlen(payload);
+
+		grid_msg_body_append_text(&message, payload, payload_length);
+
+		grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, bank);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, element);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, event_type);
+
+
+		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
+		payload_length = strlen(payload);
+
+		grid_msg_body_append_text(&message, payload, payload_length);
+
+
+		grid_msg_packet_close(&message);
+		grid_msg_packet_send_everywhere(&message);		
+		
+		
+	}
+
+	
+}
+
+
 
 uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
 	
@@ -594,9 +719,6 @@ uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct g
 	payload_length = strlen(payload);
 
 	grid_msg_body_append_text(&message, payload, payload_length);
-
-	// do the escaping here
-	// restor the template codes
 
 
 	grid_msg_packet_close(&message);
