@@ -52,6 +52,7 @@ static void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 }
 
 
+
 static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
 	grid_sys_rtc_tick_time(&grid_sys_state);	
@@ -66,11 +67,17 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 		if (grid_sys_state.mapmodestate == 0){ // RELEASE
 			
 			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_MAPMODE_RELEASE);
-								
+			
+
+				
 		}
 		else{ // PRESS
 			
-			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_MAPMODE_PRESS);					
+			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_MAPMODE_PRESS);		
+			
+			
+
+
 									 
 		}
 
@@ -148,7 +155,8 @@ int main(void)
 	grid_usb_serial_init();
 	grid_usb_midi_init();
 		
-
+	grid_keyboard_init(&grid_keyboard_state);
+		
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
 		
 	grid_module_common_init();

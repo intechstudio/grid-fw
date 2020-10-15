@@ -1111,6 +1111,20 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 // 				sprintf(debug, "MIDI: %02x %02x %02x %02x", 0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);
 // 				grid_debug_print_text(debug);	
 				
+				struct grid_keyboard_key_desc key;
+				
+				key.ismodifier = 0;
+				
+				key.keycode = midi_param1;
+				
+				if (midi_param2){
+					key.ispressed = 1;
+				}
+				else{
+					key.ispressed = 0;
+				}
+				
+				grid_keyboard_keychange(&grid_keyboard_state, &key);
 											
 				audiodf_midi_write(0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);	
 					

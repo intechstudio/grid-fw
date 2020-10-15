@@ -68,3 +68,156 @@ void grid_usb_midi_init()
 
 
 }
+
+void grid_keyboard_init(struct grid_keyboard_model* kb){
+	
+	for (uint8_t i=0; i<GRID_KEYBOARD_KEY_maxcount; i++)
+	{
+		kb->hid_key_array[i].b_modifier = false;
+		kb->hid_key_array[i].key_id = 255;
+		kb->hid_key_array[i].state = HID_KB_KEY_UP;
+		
+		
+		kb->key_list[i].ismodifier = 0;
+		kb->key_list[i].ispressed = 0;
+		kb->key_list[i].keycode = 255;
+		
+	}
+	
+	kb->key_active_count = 0;
+	
+}
+
+uint8_t grid_keyboard_cleanup(struct grid_keyboard_model* kb){
+	
+	uint8_t changed_flag = 0;
+	
+	// Remove all inactive (released) keys
+	for(uint8_t i=0; i<kb->key_active_count; i++){
+		
+		if (kb->key_list[i].ispressed == false){
+			
+			changed_flag = 1;
+			
+			kb->key_list[i].ismodifier = 0;
+			kb->key_list[i].ispressed = 0;
+			kb->key_list[i].keycode = 255;	
+					
+			// Pop item, move each remaining after this forvard one index
+			for (uint8_t j=i+1; j<kb->key_active_count; j++){
+				
+				kb->key_list[j-1] = kb->key_list[j];
+				
+				kb->key_list[j].ismodifier = 0;
+				kb->key_list[j].ispressed = 0;
+				kb->key_list[j].keycode = 255;
+				
+			}
+			
+			kb->key_active_count--;
+			i--; // Retest this index, because it now points to a new item
+		}
+		
+	}
+	
+	if (changed_flag == 1){
+			
+		uint8_t debugtext[100] = {0};
+		snprintf(debugtext, 99, "cound: %d | activekeys: %d, %d, %d, %d, %d, %d", kb->key_active_count, kb->key_list[0].keycode, kb->key_list[1].keycode, kb->key_list[2].keycode, kb->key_list[3].keycode, kb->key_list[4].keycode, kb->key_list[5].keycode);
+		grid_debug_print_text(debugtext);
+			
+			
+		// USB SEND
+	}
+	
+	return changed_flag;
+	
+}
+
+
+uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyboard_key_desc* key){
+	
+	uint8_t item_index = 255;
+	uint8_t remove_flag = 0;
+	uint8_t changed_flag = 0;
+	
+
+	grid_keyboard_cleanup(kb);
+	
+
+	for(uint8_t i=0; i<kb->key_active_count; i++){
+		
+		if (kb->key_list[i].keycode == key->keycode && kb->key_list[i].ismodifier == key->ismodifier){
+			// key is already in the list
+			item_index = i;
+			
+			if (kb->key_list[i].ispressed == true){
+				
+				if (key->ispressed == true){
+					// OK nothing to do here
+				}
+				else{
+					// Release the damn key
+					kb->key_list[i].ispressed = false;
+					changed_flag = 1;
+				}
+				
+			}
+			
+		}
+		
+	}
+	
+	
+	uint8_t print_happened = grid_keyboard_cleanup(kb);
+	
+	
+	if (item_index == 255){
+		
+		// item not in list
+		
+		if (kb->key_active_count< GRID_KEYBOARD_KEY_maxcount){
+			
+			if (key->ispressed == true){
+				
+				kb->key_list[kb->key_active_count] = *key;
+				kb->key_active_count++;
+				changed_flag = 1;
+				
+			}
+		
+		}
+		else{
+			grid_debug_print_text("activekeys limit hit!");
+		}
+		
+	}
+	
+	
+	if (changed_flag == 1){
+		
+		uint8_t debugtext[100] = {0};
+		snprintf(debugtext, 99, "cound: %d | activekeys: %d, %d, %d, %d, %d, %d", kb->key_active_count, kb->key_list[0].keycode, kb->key_list[1].keycode, kb->key_list[2].keycode, kb->key_list[3].keycode, kb->key_list[4].keycode, kb->key_list[5].keycode);	
+		
+		if (!print_happened){
+			
+			
+			grid_debug_print_text(debugtext);
+		}
+			
+		
+		for(uint8_t i=0; i<GRID_KEYBOARD_KEY_maxcount; i++){
+		
+			kb->hid_key_array[i].b_modifier = false;
+			kb->hid_key_array[i].key_id = kb->key_list[i].keycode;
+			kb->hid_key_array[i].state = kb->key_list[i].ispressed;
+		
+		}
+		
+		hiddf_keyboard_keys_state_change(kb->hid_key_array, kb->key_active_count);
+		
+		
+		// USB SEND
+	}
+	
+}

@@ -23,4 +23,39 @@ static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code r
 
 void grid_usb_midi_init();
 
+
+
+
+
+struct grid_keyboard_key_desc {
+	
+	uint8_t keycode;
+	uint8_t ismodifier;
+	uint8_t ispressed;
+
+};
+
+#define GRID_KEYBOARD_KEY_maxcount 6
+
+struct grid_keyboard_model{
+	
+	struct hiddf_kb_key_descriptors hid_key_array[GRID_KEYBOARD_KEY_maxcount]; 
+	struct  grid_keyboard_key_desc key_list[GRID_KEYBOARD_KEY_maxcount];
+	uint8_t key_active_count;
+	
+};
+
+struct grid_keyboard_model grid_keyboard_state;
+
+void grid_keyboard_init(struct grid_keyboard_model* kb);
+
+uint8_t grid_keyboard_cleanup(struct grid_keyboard_model* kb);
+
+uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyboard_key_desc* key);
+
+
+
+
+
+
 #endif /* GRID_USB_H_ */
