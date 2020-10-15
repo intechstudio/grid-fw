@@ -93,9 +93,6 @@ static void RTC_Scheduler_report_cb(const struct timer_task *const timer_task)
 }
 
 
-#define RTC1SEC 16384
-
-#define RTC1MS (RTC1SEC/1000)
 
 void init_timer(void)
 {

@@ -664,6 +664,9 @@ void grid_sys_dma_rx_init(){
 
 void grid_sys_init(struct grid_sys_model* mod){
 	
+	mod->uptime = 0;
+	mod->reset_cause = hri_rstc_read_RCAUSE_reg(RSTC);
+	
 	
 	mod->bank_color_r[0] = 0;
 	mod->bank_color_g[0] = 100;
@@ -680,7 +683,6 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->bank_color_r[3] = 100;
 	mod->bank_color_g[3] = 0;
 	mod->bank_color_b[3] = 200;
-	
 	
 	mod->bank_enabled[0] = 1;
 	mod->bank_enabled[1] = 1;
@@ -891,8 +893,14 @@ uint32_t grid_sys_rtc_get_elapsed_time(struct grid_sys_model* mod, uint32_t t_ol
 }
 
 void grid_sys_rtc_tick_time(struct grid_sys_model* mod){
+	
 	mod->realtime++;
+	if (mod->uptime != -1){
+		mod->uptime++;
+	}
+	
 }
+
 
 
 // =========================== GRID SYS ALERT ============================== //

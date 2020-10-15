@@ -1367,7 +1367,66 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						
 	
 				}
+				else if(msg_class == GRID_CLASS_UPTIME_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
+
+					// Generate RESPONSE
+					struct grid_msg response;
 				
+					grid_msg_init(&response);
+					grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+					uint8_t response_payload[50] = {0};
+					snprintf(response_payload, 49, GRID_CLASS_UPTIME_frame);
+
+					grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+				
+					grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+				
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_UPTIME_UPTIME_offset, GRID_CLASS_UPTIME_UPTIME_length, grid_sys_state.uptime);
+					
+					
+					uint32_t milliseconds = grid_sys_state.uptime/RTC1MS%1000;
+					uint32_t seconds =		grid_sys_state.uptime/RTC1MS/1000%60;
+					uint32_t minutes =		grid_sys_state.uptime/RTC1MS/1000/60%60;
+					uint32_t hours =		grid_sys_state.uptime/RTC1MS/1000/60/60%60;
+					
+					
+					uint8_t debugtext[100] = {};
+					snprintf(debugtext, 99, "UPTIME: %d hours %d minutes %d seconds" , hours, minutes, seconds);
+					grid_debug_print_text(debugtext);
+				
+					grid_msg_packet_close(&response);
+					grid_msg_packet_send_everywhere(&response);
+				
+				
+				}
+				else if(msg_class == GRID_CLASS_RESETCAUSE_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
+
+					// Generate RESPONSE
+					struct grid_msg response;
+					
+					grid_msg_init(&response);
+					grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+					uint8_t response_payload[50] = {0};
+					snprintf(response_payload, 49, GRID_CLASS_RESETCAUSE_frame);
+
+					grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+					
+					grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+					
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_RESETCAUSE_CAUSE_offset, GRID_CLASS_RESETCAUSE_CAUSE_length,grid_sys_state.reset_cause);
+			
+					grid_msg_packet_close(&response);
+					grid_msg_packet_send_everywhere(&response);
+					
+					
+				}
+				else if(msg_class == GRID_CLASS_RESET_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me)){
+
+					NVIC_SystemReset();
+				
+				}				
 				else if (msg_class == GRID_CLASS_GLOBALLOAD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);

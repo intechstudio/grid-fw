@@ -17,6 +17,9 @@
 struct grid_sys_model
 {
 	
+	uint32_t uptime;
+	uint8_t reset_cause;
+	
 	uint8_t age;
 	
 	uint8_t alert_color_red;
