@@ -148,10 +148,18 @@ void grid_port_process_ui(struct grid_port* por){
 			
 	}
 	
+	
+	
+	
 	// Bandwidth Limiter for Broadcast messages
-	if (por->cooldown > 15){
-			
+	
+	if (por->cooldown > 0){
 		por->cooldown--;
+	}
+	
+	
+	if (por->cooldown > 10){
+				
 		return;
 	}
 		
@@ -224,7 +232,7 @@ void grid_port_process_ui(struct grid_port* por){
 
 		
 		//por->cooldown += (2+por->cooldown/2);
-		por->cooldown += (10+por->cooldown);
+		por->cooldown += 20;
 		//por->cooldown = 3;
 		
 		
@@ -448,6 +456,8 @@ void grid_ui_reinit(struct grid_ui_model* ui){
 				
 				grid_ui_event_generate_actionstring(ele, eve->type);
 				
+				
+				grid_ui_event_reset(eve);
 				
 			}
 			

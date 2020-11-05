@@ -371,7 +371,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							
 							//printf("LS: %d RS: %d LR: %d RR: %d  (Invalid)\r\n",local_stored,remote_stored,local_received,remote_received);
 							
-							grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 2, 200); // Purple
+							//grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 2, 200); // Purple
 							
 							
 						}
@@ -383,7 +383,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 			}
 			else{ // Unknown Message Type
 				
-				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200); // RED SHORT
+				//grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // RED SHORT now GREEN
 				printf("{\"type\": \"WARNING\", \"data\": [\"Unknow Message Type\"]}\r\n");
 				
 			}
@@ -398,12 +398,12 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 			
 			if (error_flag != 0){
 				//usart_async_disable(&USART_EAST);
-				grid_sys_alert_set_alert(&grid_sys_state, 20, 0, 0, 1, 200); // PURPLE BLINKY
+				//grid_sys_alert_set_alert(&grid_sys_state, 20, 0, 0, 1, 200); // SOFT RED
 				//usart_async_enable(&USART_EAST);
 			}
 			else{
 				
-				grid_sys_alert_set_alert(&grid_sys_state, 20, 0, 255, 1, 200); // BLUE BLINKY
+				//grid_sys_alert_set_alert(&grid_sys_state, 20, 0, 255, 1, 200); // BLUE BLINKY
 				
 				
 			}
@@ -424,6 +424,8 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 
 void grid_port_receive_task(struct grid_port* por){
 	
+	//parity error
+	
 	if (por->usart_error_flag == 1){
 		
 		por->usart_error_flag = 0;
@@ -431,7 +433,7 @@ void grid_port_receive_task(struct grid_port* por){
 		grid_port_reset_receiver(por);
 		
 		grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 500); // White triangle
-		printf("{\"type\": \"ERROR\", \"data\": [\"Parity Error\"]}\r\n");
+
 		
 	}
 	
@@ -500,7 +502,7 @@ void grid_port_receive_task(struct grid_port* por){
 					
 				grid_port_reset_receiver(por);
 					
-				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200);
+				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200); // RED
 				return;
 			}
 				
@@ -1115,7 +1117,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				
 				key.ismodifier = 0;
 				
-				key.keycode = midi_param1;
+				key.keycode = midi_param1 +  0x20;
 				
 				if (midi_param2){
 					key.ispressed = 1;
@@ -1124,7 +1126,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					key.ispressed = 0;
 				}
 				
-				grid_keyboard_keychange(&grid_keyboard_state, &key);
+				//grid_keyboard_keychange(&grid_keyboard_state, &key);
 											
 				audiodf_midi_write(0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);	
 					
