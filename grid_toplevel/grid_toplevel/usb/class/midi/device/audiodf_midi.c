@@ -290,6 +290,7 @@ int32_t audiodf_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t 
 	}
 	
 	// if previous xfer is completed
+	
 	_audiodf_midi_funcd.midi_report[0] = byte0;
 	_audiodf_midi_funcd.midi_report[1] = byte1;
 	_audiodf_midi_funcd.midi_report[2] = byte2;
@@ -297,9 +298,15 @@ int32_t audiodf_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t 
 
 	return usbdc_xfer(_audiodf_midi_funcd.func_ep_in, _audiodf_midi_funcd.midi_report, 4, false);
 	
-	
 }
 
+int32_t audiodf_midi_write_status(){
+	
+	
+	struct usb_d_ep_status epstat;
+	return usb_d_ep_get_status(_audiodf_midi_funcd.func_ep_in, &epstat);
+	
+}
 
 
 

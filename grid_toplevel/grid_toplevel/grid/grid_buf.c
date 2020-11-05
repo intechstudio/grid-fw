@@ -1127,10 +1127,24 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				}
 				
 				//grid_keyboard_keychange(&grid_keyboard_state, &key);
-											
-				audiodf_midi_write(0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);	
-					
-									
+				
+				struct grid_midi_event_desc midievent;
+								
+				midievent.byte0 = 0<<4|midi_command;
+				midievent.byte1 = midi_command<<4|midi_channel;
+				midievent.byte2 = midi_param1;
+				midievent.byte3 = midi_param2;
+				
+				grid_midi_tx_push(midievent);
+				grid_midi_tx_pop(midievent);				
+// 				while(audiodf_midi_write_status() == USB_BUSY){
+// 					delay_us(20);
+// 					grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 0, 2, 250);
+// 				}
+// 				
+// 				audiodf_midi_write(0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);	
+				
+													
 			}
 			else if (msg_class == GRID_CLASS_MIDIABSOLUTE_code && msg_instr == GRID_INSTR_EXECUTE_code){
 					
@@ -1139,8 +1153,23 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				uint8_t midi_commandchannel =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIABSOLUTE_COMMANDCHANNEL_offset,		GRID_CLASS_MIDIABSOLUTE_COMMANDCHANNEL_length);
 				uint8_t midi_param1  =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIABSOLUTE_PARAM1_offset  ,			GRID_CLASS_MIDIABSOLUTE_PARAM1_length);
 				uint8_t midi_param2  =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIABSOLUTE_PARAM2_offset  ,			GRID_CLASS_MIDIABSOLUTE_PARAM2_length);
-							
-				audiodf_midi_write(midi_cablecommand, midi_commandchannel, midi_param1, midi_param2);
+					
+				struct grid_midi_event_desc midievent;
+				
+				midievent.byte0 = midi_cablecommand;
+				midievent.byte1 = midi_commandchannel;
+				midievent.byte2 = midi_param1;
+				midievent.byte3 = midi_param2;
+					
+				grid_midi_tx_push(midievent);
+				grid_midi_tx_pop(midievent);	
+					
+// 				while(audiodf_midi_write_status() == USB_BUSY){
+// 					delay_us(20);
+// 					grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 0, 2, 250);
+// 				}
+// 						
+// 				audiodf_midi_write(midi_cablecommand, midi_commandchannel, midi_param1, midi_param2);
 					
 					
 			}
@@ -1168,7 +1197,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 			
 	// Let's send the packet through USB
 	cdcdf_acm_write(por->tx_double_buffer, packet_length);
-	
+
 	
 }
 
@@ -1406,10 +1435,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					uint32_t minutes =		grid_sys_state.uptime/RTC1MS/1000/60%60;
 					uint32_t hours =		grid_sys_state.uptime/RTC1MS/1000/60/60%60;
 					
-					
-					uint8_t debugtext[100] = {};
-					snprintf(debugtext, 99, "UPTIME: %d hours %d minutes %d seconds" , hours, minutes, seconds);
-					grid_debug_print_text(debugtext);
 				
 					grid_msg_packet_close(&response);
 					grid_msg_packet_send_everywhere(&response);
@@ -1483,9 +1508,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					uint8_t elementnumber	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset]	, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length	, &error_flag);
 					uint8_t eventtype		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_EVENTTYPE_offset]		, GRID_CLASS_CONFIGURATION_EVENTTYPE_length		, &error_flag);
 					
-					uint8_t debugtext[100] = {0};
-					snprintf(debugtext, 99, "Return cfg for bank %d / element %d / eventtype %d", banknumber, elementnumber, eventtype);
-					grid_debug_print_text(debugtext);
 					
 					grid_ui_recall_event_configuration(&grid_ui_state, banknumber, elementnumber, eventtype);
 					

@@ -232,7 +232,7 @@ void grid_port_process_ui(struct grid_port* por){
 
 		
 		//por->cooldown += (2+por->cooldown/2);
-		por->cooldown += 20;
+		por->cooldown += 10;
 		//por->cooldown = 3;
 		
 		
@@ -252,9 +252,6 @@ void grid_port_process_ui(struct grid_port* por){
 			grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
 
 			
-// 			uint8_t debug_string[200] = {0};
-// 			sprintf(debug_string, "Space: RX: %d/%d  TX: %d/%d", grid_buffer_get_space(&GRID_PORT_U.rx_buffer), GRID_BUFFER_SIZE, grid_buffer_get_space(&GRID_PORT_U.tx_buffer), GRID_BUFFER_SIZE);	
-// 			grid_debug_print_text(debug_string);
 		}
 		else{
 			// LOG UNABLE TO WRITE EVENT

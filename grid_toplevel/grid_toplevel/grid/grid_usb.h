@@ -26,6 +26,32 @@ void grid_usb_midi_init();
 
 
 
+struct grid_midi_event_desc {
+	
+	uint8_t byte0;
+	uint8_t byte1;
+	uint8_t byte2;
+	uint8_t byte3;
+
+};
+
+
+uint16_t grid_midi_tx_write_index;
+uint16_t grid_midi_tx_read_index;
+
+
+#define GRID_MIDI_TX_BUFFER_length 300
+
+struct grid_midi_event_desc grid_midi_tx_buffer[GRID_MIDI_TX_BUFFER_length];
+
+void grid_midi_buffer_init(struct grid_midi_event_desc* buf, uint16_t length);
+
+uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event);
+uint8_t grid_midi_tx_pop();
+
+
+
+
 
 struct grid_keyboard_key_desc {
 	

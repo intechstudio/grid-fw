@@ -62,7 +62,11 @@ static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code r
 
 void grid_usb_midi_init()
 {
-	
+	grid_midi_tx_write_index = 0;
+	grid_midi_tx_read_index = 0;
+	grid_midi_buffer_init(grid_midi_tx_buffer, GRID_MIDI_TX_BUFFER_length);
+		
+		
 	audiodf_midi_register_callback(AUDIODF_MIDI_CB_READ, (FUNC_PTR)grid_usb_midi_bulkout_cb);
 	audiodf_midi_register_callback(AUDIODF_MIDI_CB_WRITE, (FUNC_PTR)grid_usb_midi_bulkin_cb);
 
@@ -221,3 +225,52 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
 	}
 	
 }
+
+
+
+void grid_midi_buffer_init(struct grid_midi_event_desc* buf, uint16_t length){
+	
+	
+	for (uint16_t i=0; i<length; i++)
+	{
+		buf[i].byte0 = 0;
+		buf[i].byte1 = 0;
+		buf[i].byte2 = 0;
+		buf[i].byte3 = 0;
+	}
+	
+}
+
+uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event){
+
+
+	grid_midi_tx_buffer[grid_midi_tx_write_index] = midi_event;
+
+	grid_midi_tx_write_index = (grid_midi_tx_write_index+1)%GRID_MIDI_TX_BUFFER_length;
+
+
+
+
+}
+
+uint8_t grid_midi_tx_pop(){
+
+	if (grid_midi_tx_read_index != grid_midi_tx_write_index){
+		
+		if (audiodf_midi_write_status() != USB_BUSY){
+
+			uint8_t byte0 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte0;
+			uint8_t byte1 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte1;
+			uint8_t byte2 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte2;
+			uint8_t byte3 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte3;
+			
+			audiodf_midi_write(byte0, byte1, byte2, byte3);
+
+			grid_midi_tx_read_index = (grid_midi_tx_read_index+1)%GRID_MIDI_TX_BUFFER_length;
+
+		}
+		
+	}
+
+}
+

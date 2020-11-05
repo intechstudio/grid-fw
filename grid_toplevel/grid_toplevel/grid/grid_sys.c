@@ -615,6 +615,7 @@ void grid_sys_uart_init(){
 	usart_async_get_io_descriptor(&USART_SOUTH, &grid_sys_south_io);
 	usart_async_get_io_descriptor(&USART_WEST,  &grid_sys_west_io);
 	
+	
 	usart_async_enable(&USART_NORTH);
 	usart_async_enable(&USART_EAST);
 	usart_async_enable(&USART_SOUTH);

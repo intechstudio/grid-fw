@@ -270,6 +270,8 @@ int main(void)
 		uint8_t midi_rx_buffer[10] = {0};
 		uint8_t midi_rx_length = 0;
 		
+		grid_midi_tx_pop();
+		
 		audiodf_midi_read(midi_rx_buffer,4);
 		
 		midi_rx_length = strlen(midi_rx_buffer);		
