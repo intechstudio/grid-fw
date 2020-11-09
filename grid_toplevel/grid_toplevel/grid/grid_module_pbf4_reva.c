@@ -29,7 +29,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 		for (uint8_t i=0; i<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length; i++){
 			
 			// action template bug fix try
-			grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
+			grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i].template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_NUMBER] = i;
 			
 			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
 			
@@ -132,12 +132,27 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			
 				if (helper[res_index] == 0){ // Button Press Event
 				
-					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = res_index;
-					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_pbf4_mux_reversed_lookup[res_index];
-
-					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV7] = 127;
-					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV8] = 255;
-
+					// Button ABS
+					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_ABS] = 127;
+					
+					// Button TGL2
+					if (template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL2] == 0){
+						template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL2] = 127;
+					}
+					else{
+						template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL2] = 0;
+					}
+					
+					// Button TGL3
+					if (template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL3] == 0){
+						template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL3] = 63;
+					}
+					else if (template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL3] == 63){
+						template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL3] = 127;
+					}
+					else{
+						template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL3] = 0;
+					}
 				
 					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_DP);
 					
@@ -146,11 +161,10 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 				}
 				else{  // Button Release Event
 				
-					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = res_index;
-					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_pbf4_mux_reversed_lookup[res_index];
+					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_NUMBER] = res_index;
+					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_pbf4_mux_reversed_lookup[res_index];
 
-					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV7] = 0;
-					template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_DV8] = 0;
+					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_ABS] = 0;
 
 				
 					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_DR);
@@ -202,14 +216,14 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			
 				uint8_t res_value = grid_ain_get_average(res_index, 7);
 			
+				//
 			
-				template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = res_index;
-				template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_pbf4_mux_reversed_lookup[res_index];
+				template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_NUMBER] = res_index;
+				template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_pbf4_mux_reversed_lookup[res_index];
 
-				template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV7] = grid_ain_get_average(res_index, 7);
-				template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV8] = grid_ain_get_average(res_index, 8);
-				template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14U] = 0;
-				template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14L] = 0;
+				template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_ABS] = grid_ain_get_average(res_index, 7);
+				template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_ABS14U] = grid_ain_get_average(res_index, 7);
+				template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_ABS14L] = 0;
 			
 				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_AVC7);
 			

@@ -27,7 +27,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		for (uint8_t i=0; i<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length; i++){
 			
 			// action template bug fix try
-			grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i].template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = i;
+			grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i].template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_NUMBER] = i;
 			
 			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
 			
@@ -100,13 +100,12 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 	
 		if (grid_ain_get_changed(res_index)){
 		
-			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER] = res_index;
-			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_po16_mux_reversed_lookup[res_index];
+			template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_NUMBER] = res_index;
+			template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_po16_mux_reversed_lookup[res_index];
 
-			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV7] = grid_ain_get_average(res_index, 7);
-			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV8] = grid_ain_get_average(res_index, 8);
-			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14U] = 0;
-			template_parameter_list[GRID_TEMPLATE_A_PARAMETER_CONTROLLER_AV14L] = 0;
+			template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_ABS] = grid_ain_get_average(res_index, 7);
+			template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_ABS14U] = grid_ain_get_average(res_index, 7);
+			template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_ABS14L] = 0;
 			
 			
 			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_AVC7);		

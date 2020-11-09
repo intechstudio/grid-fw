@@ -316,7 +316,7 @@ void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_
 	ele->type = element_type;
 	
 	// initialize all of the A template parameter values
-	for(uint8_t i=0; i<GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH; i++){
+	for(uint8_t i=0; i<GRID_TEMPLATE_UI_PARAMETER_LIST_LENGTH; i++){
 		ele->template_parameter_list[i] = 0;
 	}
 
@@ -901,8 +901,8 @@ void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_u
 		}
 		
 		
-		// if current character is A and the next character is a number from 0 to 9
-		if (event_string[i-1] == 'A' && (event_string[i]-'0') < GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH){
+		// if current character is P or B and the next character is a number from 0 to 9
+		if ((event_string[i-1] == 'P' || event_string[i-1] == 'B' || event_string[i-1] == 'E') && (event_string[i]-'0') < 10){
 			
 			ele->event_list[event_index].event_parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;
 			
@@ -914,7 +914,7 @@ void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_u
 			parameter_list_length++;
 			
 		}
-		else if (event_string[i-1] == 'B' && (event_string[i]-'0') < GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH){
+		else if (event_string[i-1] == 'Z' && (event_string[i]-'0') < GRID_TEMPLATE_Z_PARAMETER_LIST_LENGTH){
 			
 			ele->event_list[event_index].event_parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;
 			
@@ -963,7 +963,7 @@ void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_u
 		
 		if (event_type == GRID_UI_EVENT_INIT){
 			
-			sprintf(event_string, GRID_EVENTSTRING_INIT); // !!
+			sprintf(event_string, GRID_EVENTSTRING_INIT_BUT); // !!
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 						
 		}
@@ -985,7 +985,7 @@ void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_u
 		
 		if (event_type == GRID_UI_EVENT_INIT){
 			
-			sprintf(event_string, GRID_EVENTSTRING_INIT); // !!
+			sprintf(event_string, GRID_EVENTSTRING_INIT_POT); // !!
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 			
 		}
@@ -999,9 +999,9 @@ void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_u
 	}
 	else if (ele->type == GRID_UI_ELEMENT_ENCODER){
 			
-		if (event_type == GRID_EVENTSTRING_INIT){
+		if (event_type == GRID_UI_EVENT_INIT){
 				
-			sprintf(event_string, GRID_EVENTSTRING_INIT); // !!
+			sprintf(event_string, GRID_EVENTSTRING_INIT_ENC); // !!
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 				
 		}
@@ -1054,17 +1054,17 @@ void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_
 	if (ele->type == GRID_UI_ELEMENT_BUTTON){
 				
 		switch(event_type){
-			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT);		break;
-			case GRID_UI_EVENT_DP:		sprintf(action_string, GRID_ACTIONSTRING_DP);		break;
-			case GRID_UI_EVENT_DR:		sprintf(action_string, GRID_ACTIONSTRING_DR);		break;
+			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT_BUT);		break;
+			case GRID_UI_EVENT_DP:		sprintf(action_string, GRID_ACTIONSTRING_DP_BUT);		break;
+			case GRID_UI_EVENT_DR:		sprintf(action_string, GRID_ACTIONSTRING_DR_BUT);		break;
 		}
 		
 	}
 	else if (ele->type == GRID_UI_ELEMENT_POTENTIOMETER){
 		
 		switch(event_type){
-			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT);		break;
-			case GRID_UI_EVENT_AVC7:	sprintf(action_string, GRID_ACTIONSTRING_AVC7);		break;
+			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT_BUT);		break;
+			case GRID_UI_EVENT_AVC7:	sprintf(action_string, GRID_ACTIONSTRING_AVC7_POT);		break;
 		}
 		
 	}
@@ -1147,8 +1147,8 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 		}
 		
 		
-		// if current character is A and the next character is a number from 0 to 9
-		if (action_string[i-1] == 'A' && (action_string[i]-'0') < GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH){
+		// if current character is P or B and the next character is a number from 0 to 9
+		if ((action_string[i-1] == 'P' || action_string[i-1] == 'B' || action_string[i-1] == 'E') && (action_string[i]-'0') < 10){
 						
 			ele->event_list[event_index].action_parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;
 			
@@ -1160,7 +1160,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 			parameter_list_length++;
 	
 		}
-		else if (action_string[i-1] == 'B' && (action_string[i]-'0') < GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH){
+		else if (action_string[i-1] == 'Z' && (action_string[i]-'0') < GRID_TEMPLATE_Z_PARAMETER_LIST_LENGTH){
 			
 			ele->event_list[event_index].action_parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;		
 			
@@ -1300,9 +1300,7 @@ uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event
 			
 		if (ele->event_list[event_index].event_parameter_list[i].group == 'A'){
 				
-			if(ele->event_list[event_index].event_parameter_list[i].address > GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH){
-				printf("Error\n");
-			}
+
 				
 			uint32_t parameter_value =  ele->template_parameter_list[ele->event_list[event_index].event_parameter_list[i].address];
 			uint32_t parameter_offset = ele->event_list[event_index].event_parameter_list[i].offset;
@@ -1321,22 +1319,22 @@ uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event
 			uint32_t parameter_offset = ele->event_list[event_index].event_parameter_list[i].offset;
 			uint8_t parameter_length = ele->event_list[event_index].event_parameter_list[i].length;
 
-			if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_NUMBER_ACTIVE){
+			if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_NUMBER_ACTIVE){
 				parameter_value = grid_sys_get_bank_num(&grid_sys_state);
 			}
-			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_COLOR_RED){
+			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_RED){
 				parameter_value = grid_sys_get_bank_red(&grid_sys_state);
 			}
-			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_COLOR_GRE){
+			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_GRE){
 				parameter_value = grid_sys_get_bank_gre(&grid_sys_state);
 			}
-			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_COLOR_BLU){
+			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_BLU){
 				parameter_value = grid_sys_get_bank_blu(&grid_sys_state);
 			}
-			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_MAPMODE_STATE){
+			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_MAPMODE_STATE){
 				parameter_value = grid_sys_state.mapmodestate;
 			}
-			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_NEXT){
+			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_NEXT){
 				parameter_value = grid_sys_get_bank_next(&grid_sys_state);
 			}
 				
@@ -1352,12 +1350,8 @@ uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event
 	for (uint8_t i=0; i<ele->event_list[event_index].action_parameter_count; i++){
 		
 		
-		if (ele->event_list[event_index].action_parameter_list[i].group == 'A'){
-			
-			if(ele->event_list[event_index].action_parameter_list[i].address > GRID_TEMPLATE_A_PARAMETER_LIST_LENGTH){
-				printf("Error\n");
-			}
-			
+		if (ele->event_list[event_index].action_parameter_list[i].group == 'P' || ele->event_list[event_index].action_parameter_list[i].group == 'B'){
+		
 			uint32_t parameter_value =  ele->template_parameter_list[ele->event_list[event_index].action_parameter_list[i].address];
 			uint32_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
 			uint8_t parameter_length = ele->event_list[event_index].action_parameter_list[i].length;
@@ -1369,28 +1363,41 @@ uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event
 			//delay_us(50);
 			//ele->event[event_index].action_string
 		}
-		else if (ele->event_list[event_index].action_parameter_list[i].group == 'B'){
+		if (ele->event_list[event_index].action_parameter_list[i].group == 'E'){
+					
+			uint32_t parameter_value =  ele->template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + ele->event_list[event_index].action_parameter_list[i].address];
+			uint32_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
+			uint8_t parameter_length = ele->event_list[event_index].action_parameter_list[i].length;
+					
+			uint8_t error = 0;
+			grid_msg_set_parameter(ele->event_list[event_index].action_string, parameter_offset, parameter_length, parameter_value, &error);
+			//printf("Value: %d Offset: %d Error: %d\n", error, error, error);
+			//printf("%d\n",error);
+			//delay_us(50);
+			//ele->event[event_index].action_string
+		}
+		else if (ele->event_list[event_index].action_parameter_list[i].group == 'Z'){
 
 			uint32_t parameter_value = 0;
 			uint32_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
 			uint8_t parameter_length = ele->event_list[event_index].action_parameter_list[i].length;
 
-			if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_NUMBER_ACTIVE){
+			if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_NUMBER_ACTIVE){
 				parameter_value = grid_sys_get_bank_num(&grid_sys_state);
 			}
-			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_COLOR_RED){
+			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_RED){
 				parameter_value = grid_sys_get_bank_red(&grid_sys_state);
 			}
-			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_COLOR_GRE){
+			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_GRE){
 				parameter_value = grid_sys_get_bank_gre(&grid_sys_state);
 			}
-			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_COLOR_BLU){
+			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_BLU){
 				parameter_value = grid_sys_get_bank_blu(&grid_sys_state);
 			}
-			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_MAPMODE_STATE){
+			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_MAPMODE_STATE){
 				parameter_value = grid_sys_state.mapmodestate;
 			}
-			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_B_PARAMETER_BANK_NEXT){
+			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_NEXT){
 				parameter_value = grid_sys_get_bank_next(&grid_sys_state);
 			}
 			
