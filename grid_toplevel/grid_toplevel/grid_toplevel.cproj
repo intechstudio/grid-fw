@@ -292,7 +292,8 @@
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800091545</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x60060302</avrdeviceexpectedsignature>
-    <avrtoolinterface>SWD</avrtoolinterface>
+    <avrtoolinterface>
+    </avrtoolinterface>
     <com_atmel_avrdbg_tool_atmelice>
       <ToolOptions>
         <InterfaceProperties>
@@ -395,7 +396,7 @@
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
   <armgcc.linker.optimization.GeneratePositionIndependentCode>True</armgcc.linker.optimization.GeneratePositionIndependentCode>
   <armgcc.linker.memorysettings.ExternalRAM />
-  <armgcc.linker.miscellaneous.LinkerFlags>-Tsamd51n20a_flash_release.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.linker.miscellaneous.LinkerFlags>-Tsamd51n20a_flash_bootloader.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\ARM\CMSIS\5.4.0\CMSIS\Core\Include\</Value>
@@ -490,7 +491,7 @@
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
     </ToolchainSettings>
-    <PostBuildEvent>$(SolutionDir)\build_scripts\macro2json.py $(SolutionDir)/grid_toplevel/grid/grid_protocol.h $(SolutionDir)/../../grid-protocol/grid_protocol.json
+    <PostBuildEvent>$(SolutionDir)\build_scripts\macro2json.py $(SolutionDir)/grid_toplevel/grid/grid_protocol.h $(SolutionDir)/../../grid-protocol/grid_protocol_release.json
 
 $(SolutionDir)\build_scripts\uf2conv.py -c -b 0x4000 -o $(OutputFileName).uf2 $(OutputFileName).bin
 
@@ -669,7 +670,8 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
 </ArmGcc>
     </ToolchainSettings>
-    <PostBuildEvent>$(SolutionDir)\build_scripts\macro2json.py $(SolutionDir)/grid_toplevel/grid/grid_protocol.h $(SolutionDir)/../../grid-protocol/grid_protocol.json</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Unittest' ">
     <ToolchainSettings>
@@ -1101,7 +1103,7 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
   <armgcc.linker.memorysettings.ExternalRAM />
-  <armgcc.linker.miscellaneous.LinkerFlags>-Tsamd51n20a_flash_release.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.linker.miscellaneous.LinkerFlags>-Tsamd51n20a_flash_bootloader.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\ARM\CMSIS\5.4.0\CMSIS\Core\Include\</Value>
@@ -1202,6 +1204,187 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
 
 copy "$(OutputDirectory)\$(OutputFileName).uf2" "$(OutputDirectory)\..\..\$(OutputFileName)_hardware_test.uf2"</PostBuildEvent>
     <OutputPath>bin\Hardware Test\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Nightly' ">
+    <ToolchainSettings>
+      <ArmGcc>
+  <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
+  <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
+  <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
+  <armgcc.common.outputfiles.bin>True</armgcc.common.outputfiles.bin>
+  <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
+  <armgcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>NDEBUG</Value>
+    </ListValues>
+  </armgcc.compiler.symbols.DefSymbols>
+  <armgcc.compiler.directories.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\ARM\CMSIS\5.4.0\CMSIS\Core\Include\</Value>
+      <Value>../Config</Value>
+      <Value>../</Value>
+      <Value>../examples</Value>
+      <Value>../hal/include</Value>
+      <Value>../hal/utils/include</Value>
+      <Value>../hpl/adc</Value>
+      <Value>../hpl/cmcc</Value>
+      <Value>../hpl/core</Value>
+      <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
+      <Value>../hpl/evsys</Value>
+      <Value>../hpl/gclk</Value>
+      <Value>../hpl/mclk</Value>
+      <Value>../hpl/nvmctrl</Value>
+      <Value>../hpl/osc32kctrl</Value>
+      <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
+      <Value>../hpl/pm</Value>
+      <Value>../hpl/port</Value>
+      <Value>../hpl/qspi</Value>
+      <Value>../hpl/ramecc</Value>
+      <Value>../hpl/rtc</Value>
+      <Value>../hpl/sercom</Value>
+      <Value>../hpl/systick</Value>
+      <Value>../hpl/tc</Value>
+      <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
+      <Value>../hri</Value>
+      <Value>../usb</Value>
+      <Value>../usb/class/cdc</Value>
+      <Value>../usb/class/cdc/device</Value>
+      <Value>../usb/class/composite/device</Value>
+      <Value>../usb/class/hid</Value>
+      <Value>../usb/class/hid/device</Value>
+      <Value>../usb/class/hub</Value>
+      <Value>../usb/class/msc</Value>
+      <Value>../usb/class/msc/device</Value>
+      <Value>../usb/class/vendor</Value>
+      <Value>../usb/device</Value>
+      <Value>../stdio_redirect</Value>
+      <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.2.139\samd51a\include</Value>
+    </ListValues>
+  </armgcc.compiler.directories.IncludePaths>
+  <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
+  <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
+  <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+  <armgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -mfloat-abi=softfp -mfpu=fpv4-sp-d16</armgcc.compiler.miscellaneous.OtherFlags>
+  <armgcc.linker.general.UseNewlibNano>True</armgcc.linker.general.UseNewlibNano>
+  <armgcc.linker.libraries.Libraries>
+    <ListValues>
+      <Value>libm</Value>
+    </ListValues>
+  </armgcc.linker.libraries.Libraries>
+  <armgcc.linker.libraries.LibrarySearchPaths>
+    <ListValues>
+      <Value>%24(ProjectDir)\Device_Startup</Value>
+    </ListValues>
+  </armgcc.linker.libraries.LibrarySearchPaths>
+  <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.optimization.GeneratePositionIndependentCode>True</armgcc.linker.optimization.GeneratePositionIndependentCode>
+  <armgcc.linker.memorysettings.ExternalRAM />
+  <armgcc.linker.miscellaneous.LinkerFlags>-Tsamd51n20a_flash_bootloader.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.assembler.general.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\ARM\CMSIS\5.4.0\CMSIS\Core\Include\</Value>
+      <Value>../Config</Value>
+      <Value>../</Value>
+      <Value>../examples</Value>
+      <Value>../hal/include</Value>
+      <Value>../hal/utils/include</Value>
+      <Value>../hpl/adc</Value>
+      <Value>../hpl/cmcc</Value>
+      <Value>../hpl/core</Value>
+      <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
+      <Value>../hpl/evsys</Value>
+      <Value>../hpl/gclk</Value>
+      <Value>../hpl/mclk</Value>
+      <Value>../hpl/nvmctrl</Value>
+      <Value>../hpl/osc32kctrl</Value>
+      <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
+      <Value>../hpl/pm</Value>
+      <Value>../hpl/port</Value>
+      <Value>../hpl/qspi</Value>
+      <Value>../hpl/ramecc</Value>
+      <Value>../hpl/rtc</Value>
+      <Value>../hpl/sercom</Value>
+      <Value>../hpl/systick</Value>
+      <Value>../hpl/tc</Value>
+      <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
+      <Value>../hri</Value>
+      <Value>../usb</Value>
+      <Value>../usb/class/cdc</Value>
+      <Value>../usb/class/cdc/device</Value>
+      <Value>../usb/class/composite/device</Value>
+      <Value>../usb/class/hid</Value>
+      <Value>../usb/class/hid/device</Value>
+      <Value>../usb/class/hub</Value>
+      <Value>../usb/class/msc</Value>
+      <Value>../usb/class/msc/device</Value>
+      <Value>../usb/class/vendor</Value>
+      <Value>../usb/device</Value>
+      <Value>../stdio_redirect</Value>
+      <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.2.139\samd51a\include</Value>
+    </ListValues>
+  </armgcc.assembler.general.IncludePaths>
+  <armgcc.preprocessingassembler.general.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\ARM\CMSIS\5.4.0\CMSIS\Core\Include\</Value>
+      <Value>../Config</Value>
+      <Value>../</Value>
+      <Value>../examples</Value>
+      <Value>../hal/include</Value>
+      <Value>../hal/utils/include</Value>
+      <Value>../hpl/adc</Value>
+      <Value>../hpl/cmcc</Value>
+      <Value>../hpl/core</Value>
+      <Value>../hpl/dmac</Value>
+      <Value>../hpl/dsu</Value>
+      <Value>../hpl/evsys</Value>
+      <Value>../hpl/gclk</Value>
+      <Value>../hpl/mclk</Value>
+      <Value>../hpl/nvmctrl</Value>
+      <Value>../hpl/osc32kctrl</Value>
+      <Value>../hpl/oscctrl</Value>
+      <Value>../hpl/pac</Value>
+      <Value>../hpl/pm</Value>
+      <Value>../hpl/port</Value>
+      <Value>../hpl/qspi</Value>
+      <Value>../hpl/ramecc</Value>
+      <Value>../hpl/rtc</Value>
+      <Value>../hpl/sercom</Value>
+      <Value>../hpl/systick</Value>
+      <Value>../hpl/tc</Value>
+      <Value>../hpl/usb</Value>
+      <Value>../hpl/wdt</Value>
+      <Value>../hri</Value>
+      <Value>../usb</Value>
+      <Value>../usb/class/cdc</Value>
+      <Value>../usb/class/cdc/device</Value>
+      <Value>../usb/class/composite/device</Value>
+      <Value>../usb/class/hid</Value>
+      <Value>../usb/class/hid/device</Value>
+      <Value>../usb/class/hub</Value>
+      <Value>../usb/class/msc</Value>
+      <Value>../usb/class/msc/device</Value>
+      <Value>../usb/class/vendor</Value>
+      <Value>../usb/device</Value>
+      <Value>../stdio_redirect</Value>
+      <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.2.139\samd51a\include</Value>
+    </ListValues>
+  </armgcc.preprocessingassembler.general.IncludePaths>
+</ArmGcc>
+    </ToolchainSettings>
+    <PostBuildEvent>$(SolutionDir)\build_scripts\macro2json.py $(SolutionDir)/grid_toplevel/grid/grid_protocol.h $(SolutionDir)/../../grid-protocol/grid_protocol_nightly.json
+
+$(SolutionDir)\build_scripts\uf2conv.py -c -b 0x4000 -o $(OutputFileName).uf2 $(OutputFileName).bin
+
+copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputFileName)_nightly.uf2</PostBuildEvent>
+    <OutputPath>bin\Nightly\</OutputPath>
+    <OutputFileName>grid_toplevel_nightly</OutputFileName>
+    <OutputFileExtension>.elf</OutputFileExtension>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="atmel_start.c">
@@ -2094,7 +2277,7 @@ copy "$(OutputDirectory)\$(OutputFileName).uf2" "$(OutputDirectory)\..\..\$(Outp
     <None Include="Device_Startup\samd51n20a_flash.ld">
       <SubType>compile</SubType>
     </None>
-    <None Include="Device_Startup\samd51n20a_flash_release.ld">
+    <None Include="Device_Startup\samd51n20a_flash_bootloader.ld">
       <SubType>compile</SubType>
     </None>
     <None Include="Device_Startup\samd51n20a_sram.ld">

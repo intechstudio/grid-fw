@@ -1302,7 +1302,7 @@ uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event
 	for (uint8_t i=0; i<ele->event_list[event_index].event_parameter_count; i++){
 			
 			
-		if (ele->event_list[event_index].event_parameter_list[i].group == 'A'){
+		if (ele->event_list[event_index].event_parameter_list[i].group == 'P' || ele->event_list[event_index].event_parameter_list[i].group == 'B'){
 				
 
 				
@@ -1317,7 +1317,20 @@ uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event
 			//delay_us(50);
 			//ele->event[event_index].action_string
 		}
-		else if (ele->event_list[event_index].event_parameter_list[i].group == 'B'){
+		if (ele->event_list[event_index].event_parameter_list[i].group == 'E'){
+					
+			uint32_t parameter_value =  ele->template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + ele->event_list[event_index].event_parameter_list[i].address];
+			uint32_t parameter_offset = ele->event_list[event_index].event_parameter_list[i].offset;
+			uint8_t parameter_length = ele->event_list[event_index].event_parameter_list[i].length;
+					
+			uint8_t error = 0;
+			grid_msg_set_parameter(ele->event_list[event_index].event_string, parameter_offset, parameter_length, parameter_value, &error);
+			//printf("Value: %d Offset: %d Error: %d\n", error, error, error);
+			//printf("%d\n",error);
+			//delay_us(50);
+			//ele->event[event_index].action_string
+		}
+		else if (ele->event_list[event_index].event_parameter_list[i].group == 'Z'){
 
 			uint32_t parameter_value = 0;
 			uint32_t parameter_offset = ele->event_list[event_index].event_parameter_list[i].offset;
