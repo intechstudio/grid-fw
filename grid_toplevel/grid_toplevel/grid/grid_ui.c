@@ -1281,6 +1281,10 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 	}
 	
 	
+	// RESET ENCODER RELATIVE TEMPLATE PARAMETER VALUES
+	if(eve->parent->type == GRID_UI_ELEMENT_ENCODER){	
+		eve->parent->template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL] = 255;	
+	}
 	
 	
 	return eve->event_string_length + eve->action_string_length;

@@ -11,7 +11,10 @@ uint8_t UI_SPI_TRANSFER_LENGTH = 10;
 volatile uint8_t UI_SPI_DONE = 0;
 
 
-uint8_t helper[GRID_SYS_BANK_MAXNUMBER][16] = {0};
+static uint8_t grid_en16_helper_template_e_abs[GRID_SYS_BANK_MAXNUMBER][16] = {0};
+	
+static uint8_t grid_en16_helper_template_b_tgl2[GRID_SYS_BANK_MAXNUMBER][16] = {0};
+static uint8_t grid_en16_helper_template_b_tgl3[GRID_SYS_BANK_MAXNUMBER][16] = {0};
 
 volatile uint8_t UI_SPI_RX_BUFFER_LAST[16] = {0};
 
@@ -65,7 +68,6 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 		{
 			
 
-			uint8_t value = helper[bank][i];
 			uint8_t res_index = i;
 			uint32_t* template_parameter_list = grid_ui_state.bank_list[bank].element_list[res_index].template_parameter_list;
 			uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
@@ -73,12 +75,16 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 			//BUTTON
 			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_NUMBER] = res_index;
 			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
+		
+			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL2] = grid_en16_helper_template_b_tgl2[bank][i];
+			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL3] = grid_en16_helper_template_b_tgl3[bank][i];
+					
 			
 			//ENCODER
 			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER] = res_index;
 			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
 
-			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS] = value;
+			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS] = grid_en16_helper_template_e_abs[bank][i];
 			
 					
 			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
@@ -146,6 +152,10 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 					else{
 						template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL3] = 0;
 					}
+					
+					grid_en16_helper_template_b_tgl2[grid_sys_state.bank_activebank_number][i] = template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL2];
+					grid_en16_helper_template_b_tgl3[grid_sys_state.bank_activebank_number][i] = template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL3];
+					
 					
 		
 					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_DP);
@@ -240,27 +250,26 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				
 				uint8_t command = GRID_PARAMETER_MIDI_CONTROLCHANGE;
 				uint8_t controlnumber = i;
-				uint8_t value = 0;	
+				uint8_t new_abs_value = grid_en16_helper_template_e_abs[bank][i];
+				uint8_t new_rel_value = 0;
 								
 				
-					
-				value = helper[bank][i];
-				
-				if (value + delta*velocityfactor < 0){
-					value = 0;
-				}
-				else if (value + delta*velocityfactor > 127){
-					value = 127;
-				}
-				else{
-					value += delta*velocityfactor;
-				}
 								
-				uint8_t actuator = value*2;
+				uint8_t actuator = new_abs_value*2;
 				
-				if (value != helper[bank][i]){
+				if (delta != 0){
 						
-					helper[bank][i] = value;
+					if (new_abs_value + delta < 0){
+						new_abs_value = 0;
+					}
+					else if (new_abs_value + delta > 127){
+						new_abs_value = 127;
+					}
+					else{
+						new_abs_value += delta;
+					}	
+						
+					grid_en16_helper_template_e_abs[bank][i] = new_abs_value;
 					uint8_t res_index = i;
 					uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
 					uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};				
@@ -268,8 +277,27 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER] = res_index;
 					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
 
-					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS] = value;
+					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS] = new_abs_value;
 					
+					new_rel_value = template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL];
+					
+
+		
+					if (new_rel_value == 255){
+						if (delta>0){
+							new_rel_value = 65;
+						}
+						else{
+							new_rel_value = 63;
+						}
+					}
+					else{
+						new_rel_value += delta;
+					}
+	
+					
+					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL] = new_rel_value;
+				
 					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_AVC7);
 					
 				}
