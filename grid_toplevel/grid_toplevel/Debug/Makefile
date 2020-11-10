@@ -547,7 +547,7 @@ LIB_DEP+=
 
 LINKER_SCRIPT_DEP+=  \
 ../Device_Startup/samd51n20a_flash.ld \
-../Device_Startup/samd51n20a_flash_release.ld \
+../Device_Startup/samd51n20a_flash_bootloader.ld \
 ../Device_Startup/samd51n20a_sram.ld
 
 

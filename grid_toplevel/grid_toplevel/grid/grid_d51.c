@@ -61,7 +61,7 @@ void grid_d51_init(){
 	GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "NO USER ROW CHECK!");
 	#endif
 	
-	
+
 			
 	#ifdef UNITTEST
 	#include "grid/grid_unittest.h"

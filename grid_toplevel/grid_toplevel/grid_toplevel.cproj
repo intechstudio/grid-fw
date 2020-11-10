@@ -292,8 +292,7 @@
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800091545</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x60060302</avrdeviceexpectedsignature>
-    <avrtoolinterface>
-    </avrtoolinterface>
+    <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_atmelice>
       <ToolOptions>
         <InterfaceProperties>
@@ -491,9 +490,10 @@
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
     </ToolchainSettings>
-    <PostBuildEvent>$(SolutionDir)\build_scripts\macro2json.py $(SolutionDir)/grid_toplevel/grid/grid_protocol.h $(SolutionDir)/../../grid-protocol/grid_protocol_release.json
+    <PostBuildEvent>$(SolutionDir)build_scripts\macro2json.py $(SolutionDir)grid_toplevel\grid\grid_protocol.h $(SolutionDir)..\..\grid-protocol\grid_protocol_release.json
 
-$(SolutionDir)\build_scripts\uf2conv.py -c -b 0x4000 -o $(OutputFileName).uf2 $(OutputFileName).bin
+
+$(SolutionDir)build_scripts\uf2conv.py -c -b 0x4000 -o $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\$(OutputFileName).bin
 
 copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputFileName)_release.uf2</PostBuildEvent>
   </PropertyGroup>
@@ -1200,7 +1200,9 @@ copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputF
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
 </ArmGcc>
     </ToolchainSettings>
-    <PostBuildEvent>"$(OutputDirectory)\uf2conv.py" -c -b 0x4000 -o $(OutputFileName).uf2 $(OutputFileName).bin
+    <PostBuildEvent>
+
+$(SolutionDir)build_scripts\uf2conv.py -c -b 0x4000 -o "$(OutputDirectory)\$(OutputFileName).uf2" "$(OutputDirectory)\$(OutputFileName).bin"
 
 copy "$(OutputDirectory)\$(OutputFileName).uf2" "$(OutputDirectory)\..\..\$(OutputFileName)_hardware_test.uf2"</PostBuildEvent>
     <OutputPath>bin\Hardware Test\</OutputPath>
@@ -1377,13 +1379,14 @@ copy "$(OutputDirectory)\$(OutputFileName).uf2" "$(OutputDirectory)\..\..\$(Outp
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
     </ToolchainSettings>
-    <PostBuildEvent>$(SolutionDir)\build_scripts\macro2json.py $(SolutionDir)/grid_toplevel/grid/grid_protocol.h $(SolutionDir)/../../grid-protocol/grid_protocol_nightly.json
+    <PostBuildEvent>$(SolutionDir)build_scripts\macro2json.py $(SolutionDir)grid_toplevel\grid\grid_protocol.h $(SolutionDir)..\..\grid-protocol\grid_protocol_nightly.json
 
-$(SolutionDir)\build_scripts\uf2conv.py -c -b 0x4000 -o $(OutputFileName).uf2 $(OutputFileName).bin
+
+$(SolutionDir)build_scripts\uf2conv.py -c -b 0x4000 -o $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\$(OutputFileName).bin
 
 copy $(OutputDirectory)\$(OutputFileName).uf2 $(OutputDirectory)\..\..\$(OutputFileName)_nightly.uf2</PostBuildEvent>
     <OutputPath>bin\Nightly\</OutputPath>
-    <OutputFileName>grid_toplevel_nightly</OutputFileName>
+    <OutputFileName>grid_toplevel</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
   </PropertyGroup>
   <ItemGroup>

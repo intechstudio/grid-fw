@@ -82,7 +82,7 @@ void grid_hardwaretest_led_test_init(struct grid_led_model* mod, uint8_t num){
 		
 	}
 
-	
+	grid_led_hardware_transfer_done = 1;
 }
 
 

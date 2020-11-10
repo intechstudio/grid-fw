@@ -360,7 +360,7 @@ Discarded input sections
  .text.gpio_set_pin_direction.constprop.1
                 0x00000000       0x28 grid/grid_hardwaretest.o
  .text.grid_hardwaretest_led_test_init
-                0x00000000       0x44 grid/grid_hardwaretest.o
+                0x00000000       0x50 grid/grid_hardwaretest.o
  .text.grid_hardwaretest_led_test
                 0x00000000       0x84 grid/grid_hardwaretest.o
  .text.grid_hardwaretest_led_test_photo
