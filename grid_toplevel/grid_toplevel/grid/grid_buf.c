@@ -1382,8 +1382,17 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					uint8_t led_num  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_NUM_offset], GRID_CLASS_LEDPHASE_NUM_length, &error_flag);
 					uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_LAY_offset], GRID_CLASS_LEDPHASE_LAY_length, &error_flag);
-					uint8_t led_pha  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_PHA_offset], GRID_CLASS_LEDPHASE_PHA_length, &error_flag);
-					grid_led_set_phase(&grid_led_state, led_num, led_lay, led_pha);
+					uint16_t led_pha  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_PHA_offset], GRID_CLASS_LEDPHASE_PHA_length, &error_flag);
+					
+					if (led_pha*2 > 255){
+						grid_led_set_phase(&grid_led_state, led_num, led_lay, 255);
+					}
+					else{
+						grid_led_set_phase(&grid_led_state, led_num, led_lay, led_pha*2);
+					}
+					
+					
+					
 							
 				}
 				else if (msg_class == GRID_CLASS_LEDCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_local || position_is_me)){
