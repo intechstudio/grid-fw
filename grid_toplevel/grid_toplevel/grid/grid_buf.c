@@ -1546,58 +1546,35 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					uint8_t acknowledge = 0;
 					
-					if (actionstring_length){
-						//grid_debug_print_text("Cfg: Received");
-						grid_ui_event_register_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype, actionstring, actionstring_length);
-
-						if (banknumber == grid_sys_state.bank_activebank_number){
-							
-							grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
-							
-						}
-
-						acknowledge = 1;
-							
-						uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
-						if (event_index != 255){
-							if (position_is_local){
-								// Clear changed flag because confguration came from nvm
-								grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_flashempty_flag=0;
-								
-								grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_changed_flag = 0;
-								grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
-							}
-							if (position_is_me){
-								// Clear changed flag because confguration came from nvm
-								grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_changed_flag = 1;
-								grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
-							}
-						}
 					
+					//grid_debug_print_text("Cfg: Received");
+					grid_ui_event_register_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype, actionstring, actionstring_length);
+
+					if (banknumber == grid_sys_state.bank_activebank_number){
+							
+						grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
+							
 					}
-					else{
-						
-						acknowledge = 0;
-						
-						//grid_debug_print_text("Cfg: Default");
-						grid_ui_event_generate_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
-						
-						if (banknumber == grid_sys_state.bank_activebank_number){
+
+					acknowledge = 1;
 							
-							grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
-							
-						}
-						
-						uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
-						if (event_index != 255){
+					uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
+					if (event_index != 255){
+						if (position_is_local){
+							// Clear changed flag because confguration came from nvm
+							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_flashempty_flag=0;
 								
+							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_changed_flag = 0;
+							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
+						}
+						if (position_is_me){
 							// Clear changed flag because confguration came from nvm
 							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_changed_flag = 1;
-							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 1;
+							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
 						}
-						
-										
 					}
+					
+					
 					
 					
 
@@ -1629,6 +1606,69 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 								
 					grid_msg_packet_close(&response);
 					grid_msg_packet_send_everywhere(&response);	
+
+					
+
+				}
+				else if (msg_class == GRID_CLASS_CONFIGDEFAULT_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_local)){
+
+					uint8_t banknumber		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGDEFAULT_BANKNUMBER_offset]		, GRID_CLASS_CONFIGURATION_BANKNUMBER_length	, &error_flag);
+					uint8_t elementnumber	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGDEFAULT_ELEMENTNUMBER_offset]	, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length	, &error_flag);
+					uint8_t eventtype		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGDEFAULT_EVENTTYPE_offset]		, GRID_CLASS_CONFIGURATION_EVENTTYPE_length		, &error_flag);
+					
+
+								
+					uint8_t acknowledge = 1;
+					
+						
+					//grid_debug_print_text("Cfg: Default");
+					grid_ui_event_generate_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
+						
+					if (banknumber == grid_sys_state.bank_activebank_number){
+							
+						grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
+							
+					}
+						
+					uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
+					if (event_index != 255){
+							
+						// Clear changed flag because confguration came from nvm
+						grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_changed_flag = 1;
+						grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 1;
+					}
+
+					
+					
+
+					// Generate ACKNOWLEDGE RESPONSE
+					struct grid_msg response;
+					
+					grid_msg_init(&response);
+					grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+					uint8_t response_payload[10] = {0};
+					sprintf(response_payload, GRID_CLASS_CONFIGURATION_frame);
+					
+					
+
+					grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+					
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, banknumber);
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, elementnumber);
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, eventtype);
+					
+					
+					if (acknowledge == 1){
+						grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+					}
+					else{
+						grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+					}
+
+					
+					grid_msg_packet_close(&response);
+					grid_msg_packet_send_everywhere(&response);
 
 					
 
