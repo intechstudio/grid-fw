@@ -499,7 +499,7 @@ Discarded input sections
  .text.grid_keyboard_cleanup
                 0x00000000       0xc4 grid/grid_usb.o
  .text.grid_keyboard_keychange
-                0x00000000      0x114 grid/grid_usb.o
+                0x00000000      0x11c grid/grid_usb.o
  .rodata.str1.1
                 0x00000000       0x45 grid/grid_usb.o
  .text          0x00000000        0x0 hal/src/hal_adc_async.o

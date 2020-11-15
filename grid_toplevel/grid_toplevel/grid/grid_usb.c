@@ -212,7 +212,7 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
 		
 		for(uint8_t i=0; i<GRID_KEYBOARD_KEY_maxcount; i++){
 		
-			kb->hid_key_array[i].b_modifier = false;
+			kb->hid_key_array[i].b_modifier = kb->key_list[i].ismodifier;
 			kb->hid_key_array[i].key_id = kb->key_list[i].keycode;
 			kb->hid_key_array[i].state = kb->key_list[i].ispressed;
 		

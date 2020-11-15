@@ -1129,19 +1129,29 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 // 				grid_debug_print_text(debug);	
 				
 				struct grid_keyboard_key_desc key;
+				struct grid_keyboard_key_desc keymod;
 				
 				key.ismodifier = 0;
+				keymod.ismodifier = 1;
 				
-				key.keycode = midi_param1 +  0x20;
+				//key.keycode = midi_param1 - 0x20 + 0x04; //abcd...
+				key.keycode = midi_param1 - 0x20 + 84; //numpad magic
+				keymod.keycode = HID_MODIFIER_LEFT_ALT;
 				
 				if (midi_param2){
 					key.ispressed = 1;
+					keymod.ispressed = 1;
 				}
 				else{
 					key.ispressed = 0;
+					keymod.ispressed = 0;
 				}
 				
+				//grid_keyboard_keychange(&grid_keyboard_state, &keymod);
 				//grid_keyboard_keychange(&grid_keyboard_state, &key);
+				
+				
+				
 				
 				struct grid_midi_event_desc midievent;
 								
