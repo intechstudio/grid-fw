@@ -471,14 +471,14 @@
         <targetDevice>ATSAMD51N20A</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>noID</platformTool>
+        <platformTool>snap</platformTool>
         <languageToolchain>ARM</languageToolchain>
         <languageToolchainVersion>9.2.1</languageToolchainVersion>
         <platform>2</platform>
       </toolsSet>
       <packs>
-        <pack name="SAMD51_DFP" vendor="Microchip" version="3.3.76"/>
         <pack name="CMSIS" vendor="ARM" version="5.4.0"/>
+        <pack name="SAMD51_DFP" vendor="Microchip" version="3.3.76"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -639,7 +639,7 @@
         <property key="processor-mode" value="-mthumb"/>
         <property key="srec" value="true"/>
         <property key="user-pack-include"
-                  value="/home/suku/Documents/d51_package/samd51a/include;/opt/microchip/mplabx/v5.45/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include"/>
+                  value="/home/suku/Documents/grid-fw/grid_toplevel/device_support_pack/samd51a/include;/opt/microchip/mplabx/v5.45/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include"/>
       </ARM-Global>
       <ARM-LD>
         <property key="additional-specs" value=""/>
@@ -688,6 +688,8 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="0-fffff"/>
         <property key="memories.rww" value="true"/>
+        <property key="programmerToGoFilePath"
+                  value="/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid_toplevel.X/debug/Release/grid_toplevel_ptg"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.pgmentry.voltage" value="low"/>
@@ -745,7 +747,8 @@
         <makeUseCleanTarget>false</makeUseCleanTarget>
         <makeCustomizationPreStep></makeCustomizationPreStep>
         <makeCustomizationPostStepEnabled>false</makeCustomizationPostStepEnabled>
-        <makeCustomizationPostStep>     </makeCustomizationPostStep>
+        <makeCustomizationPostStep>
+    </makeCustomizationPostStep>
         <makeCustomizationPutChecksumInUserID>false</makeCustomizationPutChecksumInUserID>
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
@@ -882,7 +885,7 @@
         <property key="processor-mode" value="-mthumb"/>
         <property key="srec" value="true"/>
         <property key="user-pack-include"
-                  value="/home/suku/Documents/d51_package/samd51a/include;/opt/microchip/mplabx/v5.45/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include"/>
+                  value="/home/suku/Documents/grid-fw/grid_toplevel/device_support_pack/samd51a/include;/opt/microchip/mplabx/v5.45/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include"/>
       </ARM-Global>
       <ARM-LD>
         <property key="additional-specs" value=""/>
@@ -931,6 +934,8 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="0-fffff"/>
         <property key="memories.rww" value="true"/>
+        <property key="programmerToGoFilePath"
+                  value="/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid_toplevel.X/debug/Debug/grid_toplevel_ptg"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.pgmentry.voltage" value="low"/>
@@ -963,8 +968,8 @@
         <platform>2</platform>
       </toolsSet>
       <packs>
-        <pack name="CMSIS" vendor="ARM" version="5.4.0"/>
         <pack name="SAMD51_DFP" vendor="Microchip" version="3.3.76"/>
+        <pack name="CMSIS" vendor="ARM" version="5.4.0"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -1125,7 +1130,7 @@
         <property key="processor-mode" value="-mthumb"/>
         <property key="srec" value="true"/>
         <property key="user-pack-include"
-                  value="/home/suku/Documents/d51_package/samd51a/include;/opt/microchip/mplabx/v5.45/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include"/>
+                  value="/home/suku/Documents/grid-fw/grid_toplevel/device_support_pack/samd51a/include;/opt/microchip/mplabx/v5.45/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include"/>
       </ARM-Global>
       <ARM-LD>
         <property key="additional-specs" value=""/>
@@ -1174,6 +1179,8 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="0-fffff"/>
         <property key="memories.rww" value="true"/>
+        <property key="programmerToGoFilePath"
+                  value="/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid_toplevel.X/debug/Unittest/grid_toplevel_ptg"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.pgmentry.voltage" value="low"/>
@@ -1200,7 +1207,7 @@
         <targetDevice>ATSAMD51N20A</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>noID</platformTool>
+        <platformTool>snap</platformTool>
         <languageToolchain>ARM</languageToolchain>
         <languageToolchainVersion>9.2.1</languageToolchainVersion>
         <platform>2</platform>
@@ -1368,7 +1375,7 @@
         <property key="processor-mode" value="-mthumb"/>
         <property key="srec" value="true"/>
         <property key="user-pack-include"
-                  value="/home/suku/Documents/d51_package/samd51a/include;/opt/microchip/mplabx/v5.45/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include"/>
+                  value="/home/suku/Documents/grid-fw/grid_toplevel/device_support_pack/samd51a/include;/opt/microchip/mplabx/v5.45/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include"/>
       </ARM-Global>
       <ARM-LD>
         <property key="additional-specs" value=""/>
@@ -1417,6 +1424,8 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="0-fffff"/>
         <property key="memories.rww" value="true"/>
+        <property key="programmerToGoFilePath"
+                  value="/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid_toplevel.X/debug/Nightly/grid_toplevel_ptg"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.pgmentry.voltage" value="low"/>
