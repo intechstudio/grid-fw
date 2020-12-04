@@ -1215,6 +1215,56 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				grid_keyboard_keychange(&grid_keyboard_state, &key);
 				
 			}
+			else if (msg_class == GRID_CLASS_HIDKEYMACRO_code && msg_instr == GRID_INSTR_EXECUTE_code){
+				
+				for (uint8_t k=0; k<6; k++){
+                
+                    uint8_t key_ismodifier =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_offset + k*2,	GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_length);
+                    uint8_t key_code =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYCODE0_offset + k*2,          GRID_CLASS_HIDKEYMACRO_KEYCODE0_length);
+                    
+                    if (key_code != 255){
+                    
+				
+                        struct grid_keyboard_key_desc key;
+
+                        key.ismodifier = key_ismodifier;
+                        key.keycode = key_code;
+                        key.ispressed = 1;
+
+                        grid_keyboard_keychange(&grid_keyboard_state, &key);
+
+                        delay_us(500);
+                    }
+                
+                }
+                
+                delay_ms(5);
+                
+				for (uint8_t k=0; k<6; k++){
+                
+                    uint8_t key_ismodifier =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_offset + k*2,	GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_length);
+                    uint8_t key_code =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYCODE0_offset + k*2,          GRID_CLASS_HIDKEYMACRO_KEYCODE0_length);
+                    
+                    if (key_code != 255){
+                    
+				
+                        struct grid_keyboard_key_desc key;
+
+                        key.ismodifier = key_ismodifier;
+                        key.keycode = key_code;
+                        key.ispressed = 0;
+
+                        grid_keyboard_keychange(&grid_keyboard_state, &key);
+                        
+                        delay_us(500);
+
+                    }
+                
+                }
+                
+
+				
+			}
 			else{
 // 					sprintf(&por->tx_double_buffer[output_cursor], "[UNKNOWN] -> Protocol: %d\n", msg_protocol);
 // 					

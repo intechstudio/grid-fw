@@ -192,7 +192,7 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
 		
 		}
 		else{
-			grid_debug_print_text("activekeys limit hit!");
+			//grid_debug_print_text("activekeys limit hit!");
 		}
 		
 	}
@@ -200,14 +200,14 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
 	
 	if (changed_flag == 1){
 		
-		uint8_t debugtext[100] = {0};
-		snprintf(debugtext, 99, "cound: %d | activekeys: %d, %d, %d, %d, %d, %d", kb->key_active_count, kb->key_list[0].keycode, kb->key_list[1].keycode, kb->key_list[2].keycode, kb->key_list[3].keycode, kb->key_list[4].keycode, kb->key_list[5].keycode);	
-		
-		if (!print_happened){
-			
-			
-			grid_debug_print_text(debugtext);
-		}
+//		uint8_t debugtext[100] = {0};
+//		snprintf(debugtext, 99, "cound: %d | activekeys: %d, %d, %d, %d, %d, %d", kb->key_active_count, kb->key_list[0].keycode, kb->key_list[1].keycode, kb->key_list[2].keycode, kb->key_list[3].keycode, kb->key_list[4].keycode, kb->key_list[5].keycode);	
+//		
+//		if (!print_happened){
+//			
+//			
+//			grid_debug_print_text(debugtext);
+//		}
 			
 		
 		for(uint8_t i=0; i<GRID_KEYBOARD_KEY_maxcount; i++){

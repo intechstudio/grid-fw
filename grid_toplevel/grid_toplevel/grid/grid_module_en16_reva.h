@@ -26,6 +26,8 @@ struct grid_ui_encoder{
 	
 	uint8_t phase_a_previous;
 	uint8_t phase_b_previous;
+    
+    uint8_t phase_change_lock;
 	
 };
 

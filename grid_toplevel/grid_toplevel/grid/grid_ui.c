@@ -358,7 +358,7 @@ void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_
 	}
 	else if (element_type == GRID_UI_ELEMENT_ENCODER){
 		
-		ele->event_list_length = 4;
+		ele->event_list_length = 5;
 		
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
 		
@@ -366,6 +366,7 @@ void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_
 		grid_ui_event_init(ele, 1, GRID_UI_EVENT_DP);	// Press
 		grid_ui_event_init(ele, 2, GRID_UI_EVENT_DR);	// Release
 		grid_ui_event_init(ele, 3, GRID_UI_EVENT_AVC7); // Absolute Value Change (7bit)
+		grid_ui_event_init(ele, 4, GRID_UI_EVENT_ENCPUSHROT); // Absolute Value Change (7bit)
 		
 	}
 	else{
@@ -1011,6 +1012,12 @@ void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_u
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 		
 		}
+		else if (event_type == GRID_UI_EVENT_ENCPUSHROT){
+		
+			sprintf(event_string, GRID_EVENTSTRING_PUSHROT_ENC); // !!
+			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
+		
+		}
 		else if (event_type == GRID_UI_EVENT_DP){
 				
 			sprintf(event_string, GRID_EVENTSTRING_DP_ENC); // !!
@@ -1071,10 +1078,11 @@ void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_
 	else if (ele->type == GRID_UI_ELEMENT_ENCODER){
 		
 		switch(event_type){
-			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT_ENC);	break;
-			case GRID_UI_EVENT_AVC7:	sprintf(action_string, GRID_ACTIONSTRING_AVC7_ENC);	break;
-			case GRID_UI_EVENT_DP:		sprintf(action_string, GRID_ACTIONSTRING_DP_ENC);	break;
-			case GRID_UI_EVENT_DR:		sprintf(action_string, GRID_ACTIONSTRING_DR_ENC);	break;
+			case GRID_UI_EVENT_INIT:        sprintf(action_string, GRID_ACTIONSTRING_INIT_ENC);	break;
+			case GRID_UI_EVENT_AVC7:        sprintf(action_string, GRID_ACTIONSTRING_AVC7_ENC);	break;
+			case GRID_UI_EVENT_ENCPUSHROT:	sprintf(action_string, GRID_ACTIONSTRING_PUSHROT_ENC);	break;
+			case GRID_UI_EVENT_DP:          sprintf(action_string, GRID_ACTIONSTRING_DP_ENC);	break;
+			case GRID_UI_EVENT_DR:          sprintf(action_string, GRID_ACTIONSTRING_DR_ENC);	break;
 		}
 			
 	}

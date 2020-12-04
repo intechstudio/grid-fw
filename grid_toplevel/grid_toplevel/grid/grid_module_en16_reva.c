@@ -109,12 +109,15 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 			
 		if (old_value != new_value){
 
+            UI_SPI_RX_BUFFER_LAST[j] = new_value;
 				
 			UI_SPI_DEBUG = j;
+            
+            // GND Button PhaseB PhaseA
 				
-			uint8_t button_value = new_value>>2;
-			uint8_t phase_a = (new_value>>1)&1;
-			uint8_t phase_b = (new_value)&1;
+			uint8_t button_value = (new_value&0b00000100)?1:0;
+            uint8_t phase_a      = (new_value&0b00000010)?1:0;
+			uint8_t phase_b      = (new_value&0b00000001)?1:0;
 				
 			if (button_value != grid_ui_encoder_array[i].button_value){
 				// BUTTON CHANGE
@@ -191,17 +194,39 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 			
 			int16_t delta = 0;
 			
-			if (a_now != a_prev){
-				
-				if (b_now != a_now){
-					delta = -1;
-				}
-				else{
-					delta = +1;
-				}
-				
-				
-			}
+//			if (a_now != a_prev){
+//				
+//				if (b_now != a_now){
+//					delta = -1;
+//				}
+//				else{
+//					delta = +1;
+//				}
+//				
+//				
+//			}
+            
+            if (a_now == 1 && b_now == 1){ //detent found
+            
+                if (b_prev == 0 && grid_ui_encoder_array[i].phase_change_lock == 0){
+                    delta = -1;
+                    grid_ui_encoder_array[i].phase_change_lock = 1;
+                }
+                
+                if (a_prev == 0 && grid_ui_encoder_array[i].phase_change_lock == 0){
+                    delta = 1;
+                    grid_ui_encoder_array[i].phase_change_lock = 1;
+                }
+                
+            }
+            
+            //printf("%d %d %d\n", button_value, phase_a, phase_b);
+            
+            if (a_now == 0 && b_now == 0){
+            
+                grid_ui_encoder_array[i].phase_change_lock = 0;
+                
+            }
 			
 
 			
@@ -210,40 +235,40 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 						
 			if (delta != 0){
 				
-				volatile uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_ui_encoder_array[i].last_real_time);
-				
-				if (elapsed_time>400){
-					elapsed_time = 400;
-				}
-				
-				if (elapsed_time<20){
-					elapsed_time = 20;
-				}
-			
-				
-				uint16_t velocityfactor = (160000-elapsed_time*elapsed_time)/60000.0 + 1;
-				
-				
-				grid_ui_encoder_array[i].last_real_time = grid_sys_rtc_get_time(&grid_sys_state);
-				
-				int16_t xi = delta + delta * velocityfactor;
-				
-				if (delta<0){
-					if (grid_ui_encoder_array[i].rotation_value + xi >= 0){
-						grid_ui_encoder_array[i].rotation_value += xi;
-					}
-					else{
-						grid_ui_encoder_array[i].rotation_value = 0;
-					}
-				}
-				else if (delta>0){
-					if (grid_ui_encoder_array[i].rotation_value + xi <= 127){
-						grid_ui_encoder_array[i].rotation_value += xi;
-					}
-					else{
-						grid_ui_encoder_array[i].rotation_value = 127;
-					}
-				}
+//				volatile uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_ui_encoder_array[i].last_real_time);
+//				
+//				if (elapsed_time>400){
+//					elapsed_time = 400;
+//				}
+//				
+//				if (elapsed_time<20){
+//					elapsed_time = 20;
+//				}
+//			
+//				
+//				uint16_t velocityfactor = (160000-elapsed_time*elapsed_time)/60000.0 + 1;
+//				
+//				
+//				grid_ui_encoder_array[i].last_real_time = grid_sys_rtc_get_time(&grid_sys_state);
+//				
+//				int16_t xi = delta + delta * velocityfactor;
+//				
+//				if (delta<0){
+//					if (grid_ui_encoder_array[i].rotation_value + xi >= 0){
+//						grid_ui_encoder_array[i].rotation_value += xi;
+//					}
+//					else{
+//						grid_ui_encoder_array[i].rotation_value = 0;
+//					}
+//				}
+//				else if (delta>0){
+//					if (grid_ui_encoder_array[i].rotation_value + xi <= 127){
+//						grid_ui_encoder_array[i].rotation_value += xi;
+//					}
+//					else{
+//						grid_ui_encoder_array[i].rotation_value = 127;
+//					}
+//				}
 				
 
 				//CRITICAL_SECTION_ENTER()
@@ -269,7 +294,6 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 						new_abs_value += delta;
 					}	
 						
-					grid_en16_helper_template_e_abs[bank][i] = new_abs_value;
 					uint8_t res_index = i;
 					uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
 					uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};				
@@ -277,8 +301,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER] = res_index;
 					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
 
-					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS] = new_abs_value;
-					
+
 					new_rel_value = template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL];
 					
 
@@ -298,7 +321,20 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 					
 					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL] = new_rel_value;
 				
-					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_AVC7);
+                    
+                    if (button_value == 1){
+                        
+                        // ABS is only updated if nonpush rotation event happened
+                        grid_en16_helper_template_e_abs[bank][i] = new_abs_value;
+                        template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS] = new_abs_value;
+					
+                        
+                        grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_AVC7);				
+                    }
+                    else{
+                        grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_ENCPUSHROT);
+
+                    }
 					
 				}
 				
@@ -375,6 +411,8 @@ void grid_module_en16_reva_init(){
 		grid_ui_encoder_array[j].velocity = 0;
 		grid_ui_encoder_array[j].phase_a_previous = 1;
 		grid_ui_encoder_array[j].phase_b_previous = 1;	
+        
+        grid_ui_encoder_array[j].phase_change_lock = 0;
 		
 	}
 	
