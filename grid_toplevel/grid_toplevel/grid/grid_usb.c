@@ -128,9 +128,9 @@ uint8_t grid_keyboard_cleanup(struct grid_keyboard_model* kb){
 	
 	if (changed_flag == 1){
 			
-		uint8_t debugtext[100] = {0};
-		snprintf(debugtext, 99, "cound: %d | activekeys: %d, %d, %d, %d, %d, %d", kb->key_active_count, kb->key_list[0].keycode, kb->key_list[1].keycode, kb->key_list[2].keycode, kb->key_list[3].keycode, kb->key_list[4].keycode, kb->key_list[5].keycode);
-		grid_debug_print_text(debugtext);
+//		uint8_t debugtext[100] = {0};
+//		snprintf(debugtext, 99, "count: %d | activekeys: %d, %d, %d, %d, %d, %d", kb->key_active_count, kb->key_list[0].keycode, kb->key_list[1].keycode, kb->key_list[2].keycode, kb->key_list[3].keycode, kb->key_list[4].keycode, kb->key_list[5].keycode);
+//		grid_debug_print_text(debugtext);
 			
 			
 		// USB SEND

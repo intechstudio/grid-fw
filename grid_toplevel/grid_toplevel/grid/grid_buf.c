@@ -1219,8 +1219,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				
 				for (uint8_t k=0; k<6; k++){
                 
-                    uint8_t key_ismodifier =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_offset + k*2,	GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_length);
-                    uint8_t key_code =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYCODE0_offset + k*2,          GRID_CLASS_HIDKEYMACRO_KEYCODE0_length);
+                    uint8_t key_ismodifier =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_offset + k*4,	GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_length);
+                    uint8_t key_code =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYCODE0_offset + k*4,          GRID_CLASS_HIDKEYMACRO_KEYCODE0_length);
                     
                     if (key_code != 255){
                     
@@ -1242,8 +1242,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
                 
 				for (uint8_t k=0; k<6; k++){
                 
-                    uint8_t key_ismodifier =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_offset + k*2,	GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_length);
-                    uint8_t key_code =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYCODE0_offset + k*2,          GRID_CLASS_HIDKEYMACRO_KEYCODE0_length);
+                    uint8_t key_ismodifier =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_offset + k*4,	GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_length);
+                    uint8_t key_code =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYCODE0_offset + k*4,          GRID_CLASS_HIDKEYMACRO_KEYCODE0_length);
                     
                     if (key_code != 255){
                     
@@ -1616,7 +1616,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				else if (msg_class == GRID_CLASS_CONFIGURATION_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_local)){
 
                         
-                    if (1){
+                    if (!position_is_local){
                         // disable hid action automatically
                         grid_keyboard_state.isenabled = 0;             
                         //grid_debug_print_text("Disabling KB");
@@ -1727,7 +1727,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				}
 				else if (msg_class == GRID_CLASS_CONFIGURATION_code && msg_instr == GRID_INSTR_EXECUTE_code){
 
-                    if (1){
+                    if (!position_is_local){
                         // disable hid action automatically
                         grid_keyboard_state.isenabled = 0;             
                         //grid_debug_print_text("Disabling KB");
