@@ -89,6 +89,8 @@ void grid_keyboard_init(struct grid_keyboard_model* kb){
 	}
 	
 	kb->key_active_count = 0;
+    
+    kb->isenabled = 1;
 	
 }
 
@@ -217,8 +219,43 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
 			kb->hid_key_array[i].state = kb->key_list[i].ispressed;
 		
 		}
+        
+        
+        if (kb->isenabled){
+            
+            
+    		hiddf_keyboard_keys_state_change(kb->hid_key_array, kb->key_active_count);    
+        
+        }
+        else{
+        
+            //grid_debug_print_text("KB IS DISABLED");
+            
+            
+            // Generate ACKNOWLEDGE RESPONSE
+            struct grid_msg response;
+
+            grid_msg_init(&response);
+            grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+
+            uint8_t response_payload[10] = {0};
+            sprintf(response_payload, GRID_CLASS_HIDKEYSTATUS_frame);
+
+            grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+
+            grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, kb->isenabled);
+
+            grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+
+
+            grid_msg_packet_close(&response);
+            grid_msg_packet_send_everywhere(&response);
+            
+            
+        
+        }
 		
-		hiddf_keyboard_keys_state_change(kb->hid_key_array, kb->key_active_count);
+
 		
 		
 		// USB SEND

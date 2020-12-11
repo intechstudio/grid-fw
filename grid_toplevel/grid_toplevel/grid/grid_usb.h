@@ -68,6 +68,8 @@ struct grid_keyboard_model{
 	struct hiddf_kb_key_descriptors hid_key_array[GRID_KEYBOARD_KEY_maxcount]; 
 	struct  grid_keyboard_key_desc key_list[GRID_KEYBOARD_KEY_maxcount];
 	uint8_t key_active_count;
+    
+    uint8_t isenabled;
 	
 };
 
