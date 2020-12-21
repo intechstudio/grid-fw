@@ -9,10 +9,10 @@
             <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid/grid_usb.c</file>
             <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid/grid_protocol.h</file>
             <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/main.c</file>
-            <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid/grid_module_en16_reva.c</file>
             <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid/grid_usb.h</file>
             <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/usb/class/hid/device/hiddf_keyboard.c</file>
             <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid/grid_buf.c</file>
+            <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid/grid_module.h</file>
         </group>
     </open-files>
 </project-private>

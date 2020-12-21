@@ -74,6 +74,13 @@ void grid_usb_midi_init()
 }
 
 void grid_keyboard_init(struct grid_keyboard_model* kb){
+    
+    grid_keyboard_tx_rtc_lasttimestamp = grid_sys_rtc_get_time(&grid_sys_state);
+    grid_keyboard_tx_write_index = 0;
+	grid_keyboard_tx_read_index = 0;
+	grid_keyboard_buffer_init(grid_keyboard_tx_buffer, GRID_KEYBOARD_TX_BUFFER_length);
+    
+    
 	
 	for (uint8_t i=0; i<GRID_KEYBOARD_KEY_maxcount; i++)
 	{
@@ -141,7 +148,7 @@ uint8_t grid_keyboard_cleanup(struct grid_keyboard_model* kb){
 }
 
 
-uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyboard_key_desc* key){
+uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyboard_event_desc* key){
 	
 	uint8_t item_index = 255;
 	uint8_t remove_flag = 0;
@@ -304,6 +311,64 @@ uint8_t grid_midi_tx_pop(){
 			audiodf_midi_write(byte0, byte1, byte2, byte3);
 
 			grid_midi_tx_read_index = (grid_midi_tx_read_index+1)%GRID_MIDI_TX_BUFFER_length;
+
+		}
+		
+	}
+
+}
+
+
+void grid_keyboard_buffer_init(struct grid_keyboard_event_desc* buf, uint16_t length){
+	
+	
+	for (uint16_t i=0; i<length; i++)
+	{
+		buf[i].ismodifier = 0;
+		buf[i].keycode = 0;
+		buf[i].ispressed = 0;
+		buf[i].delay = 0;
+	}
+	
+}
+
+uint8_t grid_keyboard_tx_push(struct grid_keyboard_event_desc keyboard_event){
+
+
+	grid_keyboard_tx_buffer[grid_keyboard_tx_write_index] = keyboard_event;
+
+	grid_keyboard_tx_write_index = (grid_keyboard_tx_write_index+1)%GRID_KEYBOARD_TX_BUFFER_length;
+
+
+
+}
+
+uint8_t grid_keyboard_tx_pop(){
+
+	if (grid_keyboard_tx_read_index != grid_keyboard_tx_write_index){
+		
+        
+        
+        uint32_t elapsed = grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_keyboard_tx_rtc_lasttimestamp);
+        
+        
+		if (elapsed > grid_keyboard_tx_buffer[grid_keyboard_tx_read_index].delay*RTC1MS){
+            
+            struct grid_keyboard_event_desc key;
+            
+            key.ismodifier = grid_keyboard_tx_buffer[grid_keyboard_tx_read_index].ismodifier;
+            key.keycode =    grid_keyboard_tx_buffer[grid_keyboard_tx_read_index].keycode;
+            key.ispressed =  grid_keyboard_tx_buffer[grid_keyboard_tx_read_index].ispressed;
+            key.delay = 0;
+            
+                  
+            //grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 50);
+            
+            grid_keyboard_keychange(&grid_keyboard_state, &key);
+
+			grid_keyboard_tx_read_index = (grid_keyboard_tx_read_index+1)%GRID_KEYBOARD_TX_BUFFER_length;
+            
+            grid_keyboard_tx_rtc_lasttimestamp = grid_sys_rtc_get_time(&grid_sys_state);
 
 		}
 		

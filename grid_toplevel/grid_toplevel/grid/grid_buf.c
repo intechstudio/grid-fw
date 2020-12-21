@@ -1128,8 +1128,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 // 				sprintf(debug, "MIDI: %02x %02x %02x %02x", 0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);
 // 				grid_debug_print_text(debug);	
 				
-				struct grid_keyboard_key_desc key;
-				struct grid_keyboard_key_desc keymod;
+				struct grid_keyboard_event_desc key;
+				struct grid_keyboard_event_desc keymod;
 				
 				key.ismodifier = 0;
 				keymod.ismodifier = 1;
@@ -1206,7 +1206,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				uint8_t key_state  =		grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset  ,			GRID_CLASS_HIDKEYBOARD_KEYSTATE_length);
 
 				
-				struct grid_keyboard_key_desc key;
+				struct grid_keyboard_event_desc key;
 				
 				key.ismodifier = key_ismodifier;
 				key.keycode = key_code;
@@ -1217,6 +1217,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 			}
 			else if (msg_class == GRID_CLASS_HIDKEYMACRO_code && msg_instr == GRID_INSTR_EXECUTE_code){
 				
+                
+                
 				for (uint8_t k=0; k<6; k++){
                 
                     uint8_t key_ismodifier =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_offset + k*4,	GRID_CLASS_HIDKEYMACRO_KEYISMODIFIER0_length);
@@ -1224,16 +1226,20 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
                     
                     if (key_code != 255){
                     
-				
-                        struct grid_keyboard_key_desc key;
+                        struct grid_keyboard_event_desc key;
+
+
+
+                        
 
                         key.ismodifier = key_ismodifier;
                         key.keycode = key_code;
                         key.ispressed = 1;
+                        
+                        key.delay = 100;
+ 
+                        grid_keyboard_tx_push(key);
 
-                        grid_keyboard_keychange(&grid_keyboard_state, &key);
-
-                        delay_us(500);
                     }
                 
                 }
@@ -1248,15 +1254,16 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
                     if (key_code != 255){
                     
 				
-                        struct grid_keyboard_key_desc key;
+                        struct grid_keyboard_event_desc key;
 
                         key.ismodifier = key_ismodifier;
                         key.keycode = key_code;
                         key.ispressed = 0;
 
-                        grid_keyboard_keychange(&grid_keyboard_state, &key);
-                        
-                        delay_us(500);
+                        key.delay = 100;
+ 
+                        grid_keyboard_tx_push(key);
+
 
                     }
                 

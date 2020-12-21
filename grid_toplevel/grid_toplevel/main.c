@@ -75,7 +75,6 @@ static void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 			
 			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_MAPMODE_PRESS);		
 			
-			
 
 
 									 
@@ -265,6 +264,9 @@ int main(void)
 		grid_task_enter_task(&grid_task_state, GRID_TASK_RECEIVE);
 
 		
+        
+		grid_keyboard_tx_pop();
+        
 		// MIDI READ TEST CODE
 		
 		uint8_t midi_rx_buffer[10] = {0};
@@ -294,7 +296,7 @@ int main(void)
 	
 		cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
 		
-		// itt lesz a baj: circ buffer kéne
+		// itt lesz a baj: circ buffer kï¿½ne
 		uint16_t usblength = strlen(GRID_PORT_H.rx_double_buffer);
 		
 		if (usblength){	
