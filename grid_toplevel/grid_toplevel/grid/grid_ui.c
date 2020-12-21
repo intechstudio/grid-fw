@@ -83,7 +83,7 @@ void grid_port_process_ui(struct grid_port* por){
 	
 		struct grid_msg message;
 		grid_msg_init(&message);
-		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 			
 			
 		// Prepare packet header
@@ -169,7 +169,7 @@ void grid_port_process_ui(struct grid_port* por){
 			
 		struct grid_msg message;
 		grid_msg_init(&message);
-		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 		
 
 		// CORE SYSTEM
@@ -512,7 +512,7 @@ void grid_ui_nvm_store_all_configuration(struct grid_ui_model* ui, struct grid_n
 	struct grid_msg response;
 		
 	grid_msg_init(&response);
-	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 	uint8_t response_payload[10] = {0};
 	sprintf(response_payload, GRID_CLASS_LOCALSTORE_frame);
@@ -578,7 +578,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t ban
 		struct grid_msg message;
 
 		grid_msg_init(&message);
-		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 
 		uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
@@ -636,7 +636,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t ban
 		struct grid_msg message;
 
 		grid_msg_init(&message);
-		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 
 		uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
@@ -680,7 +680,7 @@ uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct g
 	struct grid_msg message;
 
 	grid_msg_init(&message);
-	grid_msg_init_header(&message, GRID_SYS_LOCAL_POSITION, GRID_SYS_LOCAL_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+	grid_msg_init_header(&message, GRID_SYS_LOCAL_POSITION, GRID_SYS_LOCAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 
 	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};

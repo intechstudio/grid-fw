@@ -201,8 +201,11 @@ void	grid_msg_init(struct grid_msg* msg){
 
 // ======================= MSG INIT HEADER======================//
 
-void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy, uint8_t rot, uint8_t age){
+void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy, uint8_t rot){
 	
+    
+    uint8_t age = grid_sys_state.sessionid;
+    
 	sprintf(msg->header, GRID_BRC_frame);
 	msg->header_length = strlen(msg->header);
 	

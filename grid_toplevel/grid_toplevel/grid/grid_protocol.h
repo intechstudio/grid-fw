@@ -206,7 +206,6 @@
 
 
 
-
 // DEBUGTEXT
 #define GRID_CLASS_DEBUGTEXT_code					0x020
 #define GRID_CLASS_DEBUGTEXT_frame_start			"%c%03xe",GRID_CONST_STX,GRID_CLASS_DEBUGTEXT_code

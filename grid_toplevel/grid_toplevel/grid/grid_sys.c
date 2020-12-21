@@ -50,7 +50,7 @@ void grid_sys_nvm_store_configuration(struct grid_sys_model* sys, struct grid_nv
 	struct grid_msg message;
 	
 	grid_msg_init(&message);
-	grid_msg_init_header(&message, GRID_SYS_LOCAL_POSITION, GRID_SYS_LOCAL_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+	grid_msg_init_header(&message, GRID_SYS_LOCAL_POSITION, GRID_SYS_LOCAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 
 	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
@@ -116,7 +116,7 @@ void grid_sys_nvm_store_configuration(struct grid_sys_model* sys, struct grid_nv
 	struct grid_msg response;
 	
 	grid_msg_init(&response);
-	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 	uint8_t response_payload[10] = {0};
 	sprintf(response_payload, GRID_CLASS_GLOBALSTORE_frame);	
@@ -143,7 +143,7 @@ void grid_sys_recall_configuration(struct grid_sys_model* sys, uint8_t bank){
 	struct grid_msg message;
 	
 	grid_msg_init(&message);
-	grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+	grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 
 	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
@@ -195,7 +195,7 @@ void grid_sys_recall_configuration(struct grid_sys_model* sys, uint8_t bank){
 // 	struct grid_msg response;
 // 	
 // 	grid_msg_init(&response);
-// 	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+// 	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 // 
 // 	uint8_t response_payload[10] = {0};
 // 	sprintf(response_payload, GRID_CLASS_GLOBALSTORE_frame);
@@ -265,7 +265,7 @@ void grid_sys_nvm_load_configuration(struct grid_sys_model* sys, struct grid_nvm
 	struct grid_msg response;
 	
 	grid_msg_init(&response);
-	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 	uint8_t response_payload[10] = {0};
 	sprintf(response_payload, GRID_CLASS_GLOBALLOAD_frame);
@@ -299,7 +299,7 @@ void grid_sys_nvm_clear_configuration(struct grid_sys_model* sys, struct grid_nv
 	struct grid_msg response;
 		
 	grid_msg_init(&response);
-	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 	uint8_t response_payload[10] = {0};
 	sprintf(response_payload, GRID_CLASS_GLOBALCLEAR_frame);
@@ -329,7 +329,7 @@ void grid_debug_print_text(uint8_t* debug_string){
 	struct grid_msg message;
 	
 	grid_msg_init(&message);
-	grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION, GRID_SYS_DEFAULT_AGE);
+	grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 	
 	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
 	uint32_t offset = 0;
@@ -668,6 +668,9 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->uptime = 0;
 	mod->reset_cause = hri_rstc_read_RCAUSE_reg(RSTC);
 	
+    
+	mod->sessionid = rand();
+    
 	
 	mod->bank_color_r[0] = 0;
 	mod->bank_color_g[0] = 100;
@@ -710,6 +713,8 @@ void grid_sys_init(struct grid_sys_model* mod){
 	grid_sys_uart_init();
 	grid_sys_dma_rx_init();
 	
+    
+
 }
 
 
@@ -1175,6 +1180,8 @@ uint32_t grid_msg_set_parameter(uint8_t* message, uint8_t offset, uint8_t length
 
 uint8_t grid_msg_find_recent(struct grid_sys_model* model, uint32_t fingerprint){
 	
+    //uint32_t fingerprint = updated_id*256*256*256 + updated_dx*256*256 + updated_dy*256 + updated_age;
+    
 	for(GRID_SYS_RECENT_MESSAGES_INDEX_T i = 0; i<GRID_SYS_RECENT_MESSAGES_LENGTH; i++){
 		
 		if (model->recent_messages[i%GRID_SYS_RECENT_MESSAGES_LENGTH] == fingerprint){
