@@ -1583,10 +1583,12 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				else if (msg_class == GRID_CLASS_GLOBALSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 			
 					grid_sys_nvm_store_configuration(&grid_sys_state, &grid_nvm_state);
+                    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
 				}
 				else if (msg_class == GRID_CLASS_GLOBALCLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_sys_nvm_clear_configuration(&grid_ui_state, &grid_nvm_state);
+                    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
 				}
 				else if (msg_class == GRID_CLASS_GLOBALRECALL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 					
@@ -1602,7 +1604,10 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				}
 				else if (msg_class == GRID_CLASS_LOCALSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
+                    //blocking NVM code, not bulk style
+                    
 					grid_ui_nvm_store_all_configuration(&grid_ui_state, &grid_nvm_state);
+                    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
 				}
 
 				else if (msg_class == GRID_CLASS_LOCALCLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
@@ -1646,7 +1651,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
                         grid_msg_packet_close(&response);
                         grid_msg_packet_send_everywhere(&response);
 
-                        // keyboard disabling done                    
+                        // keyboard disabling done      
+                        
+                        grid_sys_alert_set_alert(&grid_sys_state, 100, 100, 100, 0, 250);
                     }
 
 

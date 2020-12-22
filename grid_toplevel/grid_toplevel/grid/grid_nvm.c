@@ -111,10 +111,12 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 				
 			if (acknowledge == 1){
 				grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-			}
+
+            }
 			else{
 				grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
-			}
+
+            }
 
 				
 			grid_msg_packet_close(&response);
@@ -198,10 +200,12 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 				
 			if (acknowledge == 1){
 				grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-			}
+                grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
+            }
 			else{
 				grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
-			}
+                grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
+            }
 
 				
 			grid_msg_packet_close(&response);
