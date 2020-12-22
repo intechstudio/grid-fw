@@ -176,8 +176,14 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 		
 		if (nvm->clear_bulk_page_index < GRID_NVM_STRATEGY_EVENT_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_BANK_maxcount-1){ // multiply with bankcount
 			
-			nvm->clear_bulk_page_index++;
-			
+            
+            uint8_t intensity = abs(nvm->clear_bulk_page_index%100 - 50)/1.5 + 40;
+  
+            grid_sys_alert_set_alert(&grid_sys_state, intensity, intensity*0.75, 0, 1, 1000);
+
+
+            
+            nvm->clear_bulk_page_index++;
 		}
 		else{
 			
