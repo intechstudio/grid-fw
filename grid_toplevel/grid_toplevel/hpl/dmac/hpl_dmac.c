@@ -215,10 +215,10 @@ static void _dmac_handler(void)
 	uint8_t               channel      = hri_dmac_get_INTPEND_reg(DMAC, DMAC_INTPEND_ID_Msk);
 	struct _dma_resource *tmp_resource = &_resources[channel];
 
-	if (hri_dmac_get_CHINTFLAG_TERR_bit(DMAC, channel)) {
+	if (hri_dmac_get_INTPEND_TERR_bit(DMAC)) {
 		hri_dmac_clear_CHINTFLAG_TERR_bit(DMAC, channel);
 		tmp_resource->dma_cb.error(tmp_resource);
-	} else if (hri_dmac_get_CHINTFLAG_TCMPL_bit(DMAC, channel)) {
+	} else if (hri_dmac_get_INTPEND_TCMPL_bit(DMAC)) {
 		hri_dmac_clear_CHINTFLAG_TCMPL_bit(DMAC, channel);
 		tmp_resource->dma_cb.transfer_done(tmp_resource);
 	}

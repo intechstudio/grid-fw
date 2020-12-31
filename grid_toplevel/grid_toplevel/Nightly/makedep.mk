@@ -74,6 +74,8 @@ hal\src\hal_io.c
 
 hal\src\hal_qspi_dma.c
 
+hal\src\hal_rand_sync.c
+
 hal\src\hal_sleep.c
 
 hal\src\hal_spi_m_async.c
@@ -139,6 +141,8 @@ hpl\sercom\hpl_sercom.c
 hpl\systick\hpl_systick.c
 
 hpl\tc\hpl_tc.c
+
+hpl\trng\hpl_trng.c
 
 hpl\usb\hpl_usb.c
 

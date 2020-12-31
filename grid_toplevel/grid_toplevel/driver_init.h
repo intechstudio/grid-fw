@@ -56,6 +56,8 @@ extern "C" {
 #include <hal_timer.h>
 #include <hpl_tc_base.h>
 
+#include <hal_rand_sync.h>
+
 #include "hal_usb_device.h"
 
 #include <hal_wdt.h>
@@ -85,6 +87,8 @@ extern struct timer_descriptor TIMER_0;
 extern struct timer_descriptor TIMER_1;
 extern struct timer_descriptor TIMER_2;
 extern struct timer_descriptor TIMER_3;
+
+extern struct rand_sync_desc RAND_0;
 
 extern struct wdt_descriptor WDT_0;
 
@@ -132,6 +136,9 @@ void GRID_LED_CLOCK_init(void);
 void GRID_LED_init(void);
 
 void delay_driver_init(void);
+
+void RAND_0_CLOCK_init(void);
+void RAND_0_init(void);
 
 void USB_DEVICE_INSTANCE_CLOCK_init(void);
 void USB_DEVICE_INSTANCE_init(void);

@@ -81,6 +81,8 @@ struct i2c_m_async_desc SYS_I2C;
 
 struct spi_m_dma_descriptor GRID_LED;
 
+struct rand_sync_desc RAND_0;
+
 struct wdt_descriptor WDT_0;
 
 /**
@@ -776,6 +778,17 @@ static void TIMER_3_init(void)
 	timer_init(&TIMER_3, TC3, _tc_get_timer());
 }
 
+void RAND_0_CLOCK_init(void)
+{
+	hri_mclk_set_APBCMASK_TRNG_bit(MCLK);
+}
+
+void RAND_0_init(void)
+{
+	RAND_0_CLOCK_init();
+	rand_sync_init(&RAND_0, TRNG);
+}
+
 void USB_DEVICE_INSTANCE_PORT_init(void)
 {
 
@@ -1110,6 +1123,8 @@ void system_init(void)
 	TIMER_1_init();
 	TIMER_2_init();
 	TIMER_3_init();
+	RAND_0_init();
+
 	USB_DEVICE_INSTANCE_init();
 
 	WDT_0_init();

@@ -171,6 +171,16 @@ static void _adc_init_irq_param(const void *const hw, struct _adc_async_device *
  */
 static int32_t _adc_init(void *const hw, const uint8_t i)
 {
+	uint16_t calib_reg = 0;
+	if (hw == ADC0) {
+		calib_reg = ADC_CALIB_BIASREFBUF((*(uint32_t *)ADC0_FUSES_BIASREFBUF_ADDR >> ADC0_FUSES_BIASREFBUF_Pos))
+		            | ADC_CALIB_BIASR2R((*(uint32_t *)ADC0_FUSES_BIASR2R_ADDR >> ADC0_FUSES_BIASR2R_Pos))
+		            | ADC_CALIB_BIASCOMP((*(uint32_t *)ADC0_FUSES_BIASCOMP_ADDR >> ADC0_FUSES_BIASCOMP_Pos));
+	} else if (hw == ADC1) {
+		calib_reg = ADC_CALIB_BIASREFBUF((*(uint32_t *)ADC1_FUSES_BIASREFBUF_ADDR >> ADC1_FUSES_BIASREFBUF_Pos))
+		            | ADC_CALIB_BIASR2R((*(uint32_t *)ADC1_FUSES_BIASR2R_ADDR >> ADC1_FUSES_BIASR2R_Pos))
+		            | ADC_CALIB_BIASCOMP((*(uint32_t *)ADC1_FUSES_BIASCOMP_ADDR >> ADC1_FUSES_BIASCOMP_Pos));
+	}
 
 	if (!hri_adc_is_syncing(hw, ADC_SYNCBUSY_SWRST)) {
 		if (hri_adc_get_CTRLA_reg(hw, ADC_CTRLA_ENABLE)) {
@@ -181,6 +191,7 @@ static int32_t _adc_init(void *const hw, const uint8_t i)
 	}
 	hri_adc_wait_for_sync(hw, ADC_SYNCBUSY_SWRST);
 
+	hri_adc_write_CALIB_reg(hw, calib_reg);
 	hri_adc_write_CTRLB_reg(hw, _adcs[i].ctrl_b);
 	hri_adc_write_REFCTRL_reg(hw, _adcs[i].ref_ctrl);
 	hri_adc_write_EVCTRL_reg(hw, _adcs[i].ev_ctrl);

@@ -1143,6 +1143,7 @@ static void _sercom_i2c_m_irq_handler(struct _i2c_m_async_device *i2c_dev)
 		} else {
 			i2c_dev->cb.error(i2c_dev, I2C_ERR_BUS);
 		}
+		hri_sercomi2cm_clear_INTFLAG_reg(hw, SERCOM_I2CM_INTFLAG_ERROR);
 	}
 }
 
@@ -1795,6 +1796,12 @@ static struct i2cs_configuration _i2css[] = {
 #if CONF_SERCOM_5_I2CS_ENABLE == 1
     I2CS_CONFIGURATION(5),
 #endif
+#if CONF_SERCOM_6_I2CS_ENABLE == 1
+    I2CS_CONFIGURATION(6),
+#endif
+#if CONF_SERCOM_7_I2CS_ENABLE == 1
+    I2CS_CONFIGURATION(7),
+#endif
 };
 #endif
 
@@ -1839,6 +1846,9 @@ int32_t _i2c_s_async_init(struct _i2c_s_async_device *const device, void *const 
 		NVIC_EnableIRQ((IRQn_Type)irq);
 		irq++;
 	}
+	// Enable Address Match and PREC interrupt by default.
+	hri_sercomi2cs_set_INTEN_AMATCH_bit(hw);
+	hri_sercomi2cs_set_INTEN_PREC_bit(hw);
 
 	return ERR_NONE;
 }
@@ -3309,6 +3319,31 @@ void _spi_s_async_set_irq_state(struct _spi_async_dev *const device, const enum 
 #define CONF_SERCOM_7_SPI_M_DMA_RX_CHANNEL 1
 #endif
 
+#ifndef CONF_SERCOM_0_SPI_RX_CHANNEL
+#define CONF_SERCOM_0_SPI_RX_CHANNEL 0
+#endif
+#ifndef CONF_SERCOM_1_SPI_RX_CHANNEL
+#define CONF_SERCOM_1_SPI_RX_CHANNEL 0
+#endif
+#ifndef CONF_SERCOM_2_SPI_RX_CHANNEL
+#define CONF_SERCOM_2_SPI_RX_CHANNEL 0
+#endif
+#ifndef CONF_SERCOM_3_SPI_RX_CHANNEL
+#define CONF_SERCOM_3_SPI_RX_CHANNEL 0
+#endif
+#ifndef CONF_SERCOM_4_SPI_RX_CHANNEL
+#define CONF_SERCOM_4_SPI_RX_CHANNEL 0
+#endif
+#ifndef CONF_SERCOM_5_SPI_RX_CHANNEL
+#define CONF_SERCOM_5_SPI_RX_CHANNEL 0
+#endif
+#ifndef CONF_SERCOM_6_SPI_RX_CHANNEL
+#define CONF_SERCOM_6_SPI_RX_CHANNEL 0
+#endif
+#ifndef CONF_SERCOM_7_SPI_RX_CHANNEL
+#define CONF_SERCOM_7_SPI_RX_CHANNEL 0
+#endif
+
 /** \internal Enable SERCOM SPI RX
  *
  *  \param[in] hw Pointer to the hardware register base.
@@ -3411,6 +3446,38 @@ static uint8_t _spi_get_tx_dma_channel(const void *const hw)
 }
 
 /**
+ *  \brief Return whether SPI RX DMA channel is enabled or not
+ *  \param[in] hw_addr The hardware register base address
+ *
+ *  \return one if enabled.
+ */
+static uint8_t _spi_is_rx_dma_channel_enabled(const void *const hw)
+{
+	uint8_t index = _sercom_get_hardware_index(hw);
+
+	switch (index) {
+	case 0:
+		return CONF_SERCOM_0_SPI_RX_CHANNEL;
+	case 1:
+		return CONF_SERCOM_1_SPI_RX_CHANNEL;
+	case 2:
+		return CONF_SERCOM_2_SPI_RX_CHANNEL;
+	case 3:
+		return CONF_SERCOM_3_SPI_RX_CHANNEL;
+	case 4:
+		return CONF_SERCOM_4_SPI_RX_CHANNEL;
+	case 5:
+		return CONF_SERCOM_5_SPI_RX_CHANNEL;
+	case 6:
+		return CONF_SERCOM_6_SPI_RX_CHANNEL;
+	case 7:
+		return CONF_SERCOM_7_SPI_RX_CHANNEL;
+	default:
+		return false;
+	}
+}
+
+/**
  *  \brief Return the SPI RX DMA channel index
  *  \param[in] hw_addr The hardware register base address
  *
@@ -3505,11 +3572,13 @@ int32_t _spi_m_dma_init(struct _spi_m_dma_dev *dev, void *const hw)
 
 	_spi_load_regs_master(hw, regs);
 
-	/* Initialize DMA rx channel */
-	_dma_get_channel_resource(&dev->resource, _spi_get_rx_dma_channel(hw));
-	dev->resource->back                 = dev;
-	dev->resource->dma_cb.transfer_done = _spi_dma_rx_complete;
-	dev->resource->dma_cb.error         = _spi_dma_error_occured;
+	/* If enabled, initialize DMA rx channel */
+	if (_spi_is_rx_dma_channel_enabled(hw)) {
+		_dma_get_channel_resource(&dev->resource, _spi_get_rx_dma_channel(hw));
+		dev->resource->back                 = dev;
+		dev->resource->dma_cb.transfer_done = _spi_dma_rx_complete;
+		dev->resource->dma_cb.error         = _spi_dma_error_occured;
+	}
 	/* Initialize DMA tx channel */
 	_dma_get_channel_resource(&dev->resource, _spi_get_tx_dma_channel(hw));
 	dev->resource->back                 = dev;

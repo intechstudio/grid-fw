@@ -158,6 +158,9 @@ int main(void)
 		
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
 		
+		
+	rand_sync_enable(&RAND_0);	
+		
 	grid_module_common_init();
 	grid_ui_reinit(&grid_ui_state);
 	

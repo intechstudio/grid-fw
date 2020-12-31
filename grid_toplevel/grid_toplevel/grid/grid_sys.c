@@ -669,7 +669,7 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->reset_cause = hri_rstc_read_RCAUSE_reg(RSTC);
 	
     
-	mod->sessionid = rand();
+	mod->sessionid = rand_sync_read8(&RAND_0);
     
 	
 	mod->bank_color_r[0] = 0;

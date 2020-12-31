@@ -2,16 +2,16 @@ format_version: '2'
 name: My Project
 versions:
   api: '1.0'
-  backend: 1.7.279
-  commit: 1e07622763d149970fd8808a8f12ff3b1e84e0d7
+  backend: 1.8.491
+  commit: 605bd5a7663644fb84783aa2b00942b79b0d8955
   content: unknown
   content_pack_name: unknown
   format: '2'
-  frontend: 1.7.279
-  packs_version_avr8: 1.0.1401
+  frontend: 1.8.491
+  packs_version_avr8: 1.0.1446
   packs_version_qtouch: unknown
-  packs_version_sam: 1.0.1373
-  version_backend: 1.7.279
+  packs_version_sam: 1.0.1726
+  version_backend: 1.8.491
   version_frontend: ''
 board:
   identifier: CustomBoard
@@ -1261,6 +1261,22 @@ drivers:
     functionality: System
     api: HAL:HPL:GCLK
     configuration:
+      $input: 12000000
+      $input_id: External Crystal Oscillator 8-48MHz (XOSC1)
+      RESERVED_InputFreq: 12000000
+      RESERVED_InputFreq_id: External Crystal Oscillator 8-48MHz (XOSC1)
+      _$freq_output_Generic clock generator 0: 120000000
+      _$freq_output_Generic clock generator 1: 48000000
+      _$freq_output_Generic clock generator 10: 12000000
+      _$freq_output_Generic clock generator 11: 12000000
+      _$freq_output_Generic clock generator 2: 3000000
+      _$freq_output_Generic clock generator 3: 32768
+      _$freq_output_Generic clock generator 4: 12000000
+      _$freq_output_Generic clock generator 5: 48000000
+      _$freq_output_Generic clock generator 6: 12000000
+      _$freq_output_Generic clock generator 7: 12000000
+      _$freq_output_Generic clock generator 8: 12000000
+      _$freq_output_Generic clock generator 9: 12000000
       enable_gclk_gen_0: true
       enable_gclk_gen_0__externalclock: 1000000
       enable_gclk_gen_1: true
@@ -1391,6 +1407,11 @@ drivers:
     functionality: System
     api: HAL:HPL:MCLK
     configuration:
+      $input: 120000000
+      $input_id: Generic clock generator 0
+      RESERVED_InputFreq: 120000000
+      RESERVED_InputFreq_id: Generic clock generator 0
+      _$freq_output_CPU: 120000000
       cpu_clock_source: Generic clock generator 0
       cpu_div: '1'
       enable_cpu_clock: true
@@ -1427,6 +1448,11 @@ drivers:
     functionality: System
     api: HAL:HPL:OSC32KCTRL
     configuration:
+      $input: 32768
+      $input_id: 32kHz Ultra Low Power Internal Oscillator (OSCULP32K)
+      RESERVED_InputFreq: 32768
+      RESERVED_InputFreq_id: 32kHz Ultra Low Power Internal Oscillator (OSCULP32K)
+      _$freq_output_RTC source: 32768
       enable_osculp32k: true
       enable_rtc_source: false
       enable_xosc32k: false
@@ -1455,6 +1481,15 @@ drivers:
     functionality: System
     api: HAL:HPL:OSCCTRL
     configuration:
+      $input: 3000000
+      $input_id: Generic clock generator 2
+      RESERVED_InputFreq: 3000000
+      RESERVED_InputFreq_id: Generic clock generator 2
+      _$freq_output_Digital Frequency Locked Loop (DFLL48M): 48000000
+      _$freq_output_Digital Phase Locked Loop (DPLL0): 120042496
+      _$freq_output_Digital Phase Locked Loop (DPLL1): 120000000
+      _$freq_output_External Crystal Oscillator 8-48MHz (XOSC0): 12000000
+      _$freq_output_External Crystal Oscillator 8-48MHz (XOSC1): 12000000
       dfll_arch_bplckc: false
       dfll_arch_calibration: false
       dfll_arch_ccdis: false
@@ -2218,6 +2253,18 @@ drivers:
           external_frequency: 0
         configuration:
           tc_gclk_selection: Generic clock generator 0
+  RAND_0:
+    user_label: RAND_0
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::TRNG::driver_config_definition::RAND::HAL:Driver:RAND.Sync
+    functionality: RAND
+    api: HAL:Driver:RAND_Sync
+    configuration:
+      trng_datardyeo: false
+      trng_runstdby: false
+    optional_signals: []
+    variant: null
+    clocks:
+      domain_group: null
   USB_DEVICE_INSTANCE:
     user_label: USB_DEVICE_INSTANCE
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51N20A-AF::USB::driver_config_definition::USB.Device::HAL:Driver:USB.Device
