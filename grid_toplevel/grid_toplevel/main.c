@@ -188,8 +188,18 @@ int main(void)
 	grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
 	grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
 	
-	
-		
+
+//     Clear NVM if user is stuc with old incompatible config	
+//    grid_ui_nvm_clear_all_configuration(&grid_ui_state, &grid_nvm_state);	
+//    while (grid_nvm_ui_bulk_clear_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+//
+//        grid_nvm_ui_bulk_clear_next(&grid_nvm_state, &grid_ui_state);
+//
+//
+//    }
+
+
+
 	
 	while (1) {
 	

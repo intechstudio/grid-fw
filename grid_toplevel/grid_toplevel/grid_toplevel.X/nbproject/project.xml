@@ -4,7 +4,7 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
             <name>grid_toplevel</name>
-            <creation-uuid>e30edd2b-a37d-491f-ad47-0e89cdf5ab19</creation-uuid>
+            <creation-uuid>83d544da-d880-4e03-9904-3e361de6f2e6</creation-uuid>
             <make-project-type>0</make-project-type>
             <c-extensions>c</c-extensions>
             <cpp-extensions/>
@@ -28,6 +28,10 @@
                 </confElem>
                 <confElem>
                     <name>Nightly</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>HardwareTest</name>
                     <type>2</type>
                 </confElem>
             </confList>

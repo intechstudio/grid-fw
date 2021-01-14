@@ -32,3 +32,10 @@ CND_ARTIFACT_PATH_Nightly=dist/Nightly/production/grid_toplevel.X.production.hex
 CND_PACKAGE_DIR_Nightly=${CND_DISTDIR}/Nightly/package
 CND_PACKAGE_NAME_Nightly=gridtoplevel.x.tar
 CND_PACKAGE_PATH_Nightly=${CND_DISTDIR}/Nightly/package/gridtoplevel.x.tar
+# HardwareTest configuration
+CND_ARTIFACT_DIR_HardwareTest=dist/HardwareTest/production
+CND_ARTIFACT_NAME_HardwareTest=grid_toplevel.X.production.hex
+CND_ARTIFACT_PATH_HardwareTest=dist/HardwareTest/production/grid_toplevel.X.production.hex
+CND_PACKAGE_DIR_HardwareTest=${CND_DISTDIR}/HardwareTest/package
+CND_PACKAGE_NAME_HardwareTest=gridtoplevel.x.tar
+CND_PACKAGE_PATH_HardwareTest=${CND_DISTDIR}/HardwareTest/package/gridtoplevel.x.tar

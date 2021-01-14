@@ -20,6 +20,7 @@
         <itemPath>../Config/hpl_sercom_config.h</itemPath>
         <itemPath>../Config/hpl_systick_config.h</itemPath>
         <itemPath>../Config/hpl_tc_config.h</itemPath>
+        <itemPath>../Config/hpl_trng_config.h</itemPath>
         <itemPath>../Config/hpl_usb_config.h</itemPath>
         <itemPath>../Config/hpl_wdt_config.h</itemPath>
         <itemPath>../Config/peripheral_clk_config.h</itemPath>
@@ -68,6 +69,7 @@
           <itemPath>../hal/include/hal_init.h</itemPath>
           <itemPath>../hal/include/hal_io.h</itemPath>
           <itemPath>../hal/include/hal_qspi_dma.h</itemPath>
+          <itemPath>../hal/include/hal_rand_sync.h</itemPath>
           <itemPath>../hal/include/hal_sleep.h</itemPath>
           <itemPath>../hal/include/hal_spi_m_async.h</itemPath>
           <itemPath>../hal/include/hal_spi_m_dma.h</itemPath>
@@ -101,6 +103,7 @@
           <itemPath>../hal/include/hpl_qspi_dma.h</itemPath>
           <itemPath>../hal/include/hpl_qspi_sync.h</itemPath>
           <itemPath>../hal/include/hpl_ramecc.h</itemPath>
+          <itemPath>../hal/include/hpl_rand_sync.h</itemPath>
           <itemPath>../hal/include/hpl_reset.h</itemPath>
           <itemPath>../hal/include/hpl_sleep.h</itemPath>
           <itemPath>../hal/include/hpl_spi.h</itemPath>
@@ -286,6 +289,19 @@
         <itemPath>../Device_Startup/startup_samd51.c</itemPath>
         <itemPath>../Device_Startup/system_samd51.c</itemPath>
       </logicalFolder>
+      <logicalFolder name="documentation"
+                     displayName="documentation"
+                     projectFiles="true">
+        <itemPath>../documentation/stdio.rst</itemPath>
+        <itemPath>../documentation/usb_device_composite.rst</itemPath>
+        <itemPath>../documentation/usb_device_core.rst</itemPath>
+        <itemPath>../documentation/usb_protocol_cdc.rst</itemPath>
+        <itemPath>../documentation/usb_protocol_core.rst</itemPath>
+        <itemPath>../documentation/usb_protocol_hid.rst</itemPath>
+        <itemPath>../documentation/usb_protocol_hub.rst</itemPath>
+        <itemPath>../documentation/usb_protocol_msc.rst</itemPath>
+        <itemPath>../documentation/usb_protocol_vendor.rst</itemPath>
+      </logicalFolder>
       <logicalFolder name="examples" displayName="examples" projectFiles="true">
         <itemPath>../examples/driver_examples.c</itemPath>
       </logicalFolder>
@@ -313,6 +329,24 @@
         <itemPath>../grid/grid_usb.c</itemPath>
       </logicalFolder>
       <logicalFolder name="hal" displayName="hal" projectFiles="true">
+        <logicalFolder name="documentation"
+                       displayName="documentation"
+                       projectFiles="true">
+          <itemPath>../hal/documentation/adc_async.rst</itemPath>
+          <itemPath>../hal/documentation/crc_sync.rst</itemPath>
+          <itemPath>../hal/documentation/evsys.rst</itemPath>
+          <itemPath>../hal/documentation/flash.rst</itemPath>
+          <itemPath>../hal/documentation/i2c_master_async.rst</itemPath>
+          <itemPath>../hal/documentation/quad_spi_dma.rst</itemPath>
+          <itemPath>../hal/documentation/rand_sync.rst</itemPath>
+          <itemPath>../hal/documentation/spi_master_async.rst</itemPath>
+          <itemPath>../hal/documentation/spi_master_dma.rst</itemPath>
+          <itemPath>../hal/documentation/timer.rst</itemPath>
+          <itemPath>../hal/documentation/usart_async.rst</itemPath>
+          <itemPath>../hal/documentation/usart_sync.rst</itemPath>
+          <itemPath>../hal/documentation/usb_device_async.rst</itemPath>
+          <itemPath>../hal/documentation/wdt.rst</itemPath>
+        </logicalFolder>
         <logicalFolder name="src" displayName="src" projectFiles="true">
           <itemPath>../hal/src/hal_adc_async.c</itemPath>
           <itemPath>../hal/src/hal_atomic.c</itemPath>
@@ -326,6 +360,7 @@
           <itemPath>../hal/src/hal_init.c</itemPath>
           <itemPath>../hal/src/hal_io.c</itemPath>
           <itemPath>../hal/src/hal_qspi_dma.c</itemPath>
+          <itemPath>../hal/src/hal_rand_sync.c</itemPath>
           <itemPath>../hal/src/hal_sleep.c</itemPath>
           <itemPath>../hal/src/hal_spi_m_async.c</itemPath>
           <itemPath>../hal/src/hal_spi_m_dma.c</itemPath>
@@ -404,6 +439,9 @@
         <logicalFolder name="tc" displayName="tc" projectFiles="true">
           <itemPath>../hpl/tc/hpl_tc.c</itemPath>
         </logicalFolder>
+        <logicalFolder name="trng" displayName="trng" projectFiles="true">
+          <itemPath>../hpl/trng/hpl_trng.c</itemPath>
+        </logicalFolder>
         <logicalFolder name="usb" displayName="usb" projectFiles="true">
           <itemPath>../hpl/usb/hpl_usb.c</itemPath>
         </logicalFolder>
@@ -471,7 +509,7 @@
         <targetDevice>ATSAMD51N20A</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>snap</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>ARM</languageToolchain>
         <languageToolchainVersion>9.2.1</languageToolchainVersion>
         <platform>2</platform>
@@ -502,7 +540,7 @@
         <makeUseCleanTarget>false</makeUseCleanTarget>
         <makeCustomizationPreStep></makeCustomizationPreStep>
         <makeCustomizationPostStepEnabled>true</makeCustomizationPostStepEnabled>
-        <makeCustomizationPostStep>python3 ${ProjectDir}/../../build_scripts/macro2json.py ${ProjectDir}/../../grid_toplevel/grid/grid_protocol.h ${ProjectDir}/../../../../grid-protocol/grid_protocol_release.json &amp;&amp; python3 ${ProjectDir}/../../build_scripts/uf2conv.py -c -b 0x4000 -o ${ProjectDir}/../../${ProjectName}_release.uf2 ${ProjectDir}/dist/Release/production/${ProjectName}.X.production.bin</makeCustomizationPostStep>
+        <makeCustomizationPostStep> python3 ${ProjectDir}/../../build_scripts/macro2json.py ${ProjectDir}/../../grid_toplevel/grid/grid_protocol.h ${ProjectDir}/../../../../grid-protocol/grid_protocol_release.json &amp;&amp; python3 ${ProjectDir}/../../build_scripts/uf2conv.py -c -b 0x4000 -o ${ProjectDir}/../../${ProjectName}_release.uf2 ${ProjectDir}/dist/Release/production/${ProjectName}.X.production.bin</makeCustomizationPostStep>
         <makeCustomizationPutChecksumInUserID>false</makeCustomizationPutChecksumInUserID>
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
@@ -557,19 +595,401 @@
         <ARM-LD>
         </ARM-LD>
       </item>
+      <item path="../documentation/stdio.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_device_composite.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_device_core.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_cdc.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_core.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_hid.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_hub.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_msc.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_vendor.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/adc_async.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/crc_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/evsys.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/flash.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/i2c_master_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/quad_spi_dma.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/rand_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/spi_master_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/spi_master_dma.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/timer.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usart_async.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usart_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usb_device_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/wdt.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
       <ARM-AR>
         <property key="archiver-flags" value="-r"/>
       </ARM-AR>
       <ARM-AS>
         <property key="announce-version" value="false"/>
         <property key="include-paths"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="suppress-warnings" value="false"/>
       </ARM-AS>
       <ARM-AS-PRE>
         <property key="announce-version" value="false"/>
         <property key="include-paths"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="preprocessor-macros" value=""/>
         <property key="preprocessor-macros-undefined" value=""/>
         <property key="suppress-warnings" value="false"/>
@@ -608,7 +1028,7 @@
         <property key="default-bitfield-type" value="false"/>
         <property key="default-char-type" value="false"/>
         <property key="extra-include-directories"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="extra-warnings" value="false"/>
         <property key="fast-math" value="false"/>
         <property key="garbage-collect-data" value="false"/>
@@ -661,54 +1081,6 @@
         <property key="unsafe-math" value="false"/>
         <appendMe value="-Tsamd51n20a_flash_bootloader.ld"/>
       </ARM-LD>
-      <snap>
-        <property key="AutoSelectMemRanges" value="auto"/>
-        <property key="ToolFirmwareFilePath"
-                  value="Press to browse for a specific firmware version"/>
-        <property key="ToolFirmwareOption.UpdateOptions"
-                  value="ToolFirmwareOption.UseLatest"/>
-        <property key="ToolFirmwareToolPack"
-                  value="Press to select which tool pack to use"/>
-        <property key="communication.interface" value="swd"/>
-        <property key="communication.interface.jtag" value="2wire"/>
-        <property key="communication.speed" value="2.000"/>
-        <property key="debugoptions.useswbreakpoints" value="false"/>
-        <property key="freeze.timers" value="false"/>
-        <property key="memories.aux" value="false"/>
-        <property key="memories.bootflash" value="true"/>
-        <property key="memories.configurationmemory" value="true"/>
-        <property key="memories.configurationmemory2" value="true"/>
-        <property key="memories.dataflash" value="true"/>
-        <property key="memories.eeprom" value="true"/>
-        <property key="memories.exclude.configurationmemory" value="true"/>
-        <property key="memories.flashdata" value="true"/>
-        <property key="memories.id" value="true"/>
-        <property key="memories.instruction.ram.ranges"
-                  value="${memories.instruction.ram.ranges}"/>
-        <property key="memories.programmemory" value="true"/>
-        <property key="memories.programmemory.ranges" value="0-fffff"/>
-        <property key="memories.rww" value="true"/>
-        <property key="programmerToGoFilePath"
-                  value="/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid_toplevel.X/debug/Release/grid_toplevel_ptg"/>
-        <property key="programoptions.donoteraseauxmem" value="false"/>
-        <property key="programoptions.eraseb4program" value="true"/>
-        <property key="programoptions.pgmentry.voltage" value="low"/>
-        <property key="programoptions.pgmspeed" value="Med"/>
-        <property key="programoptions.preservedataflash" value="false"/>
-        <property key="programoptions.preservedataflash.ranges"
-                  value="${memories.dataflash.default}"/>
-        <property key="programoptions.preserveeeprom" value="false"/>
-        <property key="programoptions.preserveeeprom.ranges" value=""/>
-        <property key="programoptions.preserveprogram.ranges" value=""/>
-        <property key="programoptions.preserveprogramrange" value="false"/>
-        <property key="programoptions.programcalmem" value="false"/>
-        <property key="programoptions.programuserotp" value="false"/>
-        <property key="programoptions.testmodeentrymethod" value="VDDFirst"/>
-        <property key="toolpack.updateoptions"
-                  value="toolpack.updateoptions.uselatestoolpack"/>
-        <property key="toolpack.updateoptions.packversion"
-                  value="Press to select which tool pack to use"/>
-      </snap>
     </conf>
     <conf name="Debug" type="2">
       <toolsSet>
@@ -716,7 +1088,7 @@
         <targetDevice>ATSAMD51N20A</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>snap</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>ARM</languageToolchain>
         <languageToolchainVersion>9.2.1</languageToolchainVersion>
         <platform>2</platform>
@@ -803,19 +1175,401 @@
         <ARM-LD>
         </ARM-LD>
       </item>
+      <item path="../documentation/stdio.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_device_composite.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_device_core.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_cdc.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_core.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_hid.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_hub.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_msc.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_vendor.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/adc_async.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/crc_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/evsys.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/flash.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/i2c_master_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/quad_spi_dma.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/rand_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/spi_master_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/spi_master_dma.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/timer.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usart_async.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usart_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usb_device_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/wdt.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
       <ARM-AR>
         <property key="archiver-flags" value="-r"/>
       </ARM-AR>
       <ARM-AS>
         <property key="announce-version" value="false"/>
         <property key="include-paths"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="suppress-warnings" value="false"/>
       </ARM-AS>
       <ARM-AS-PRE>
         <property key="announce-version" value="false"/>
         <property key="include-paths"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="preprocessor-macros" value=""/>
         <property key="preprocessor-macros-undefined" value=""/>
         <property key="suppress-warnings" value="false"/>
@@ -854,7 +1608,7 @@
         <property key="default-bitfield-type" value="false"/>
         <property key="default-char-type" value="false"/>
         <property key="extra-include-directories"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="extra-warnings" value="false"/>
         <property key="fast-math" value="false"/>
         <property key="garbage-collect-data" value="false"/>
@@ -907,54 +1661,6 @@
         <property key="unsafe-math" value="false"/>
         <appendMe value="-Tsamd51n20a_flash.ld"/>
       </ARM-LD>
-      <snap>
-        <property key="AutoSelectMemRanges" value="auto"/>
-        <property key="ToolFirmwareFilePath"
-                  value="Press to browse for a specific firmware version"/>
-        <property key="ToolFirmwareOption.UpdateOptions"
-                  value="ToolFirmwareOption.UseLatest"/>
-        <property key="ToolFirmwareToolPack"
-                  value="Press to select which tool pack to use"/>
-        <property key="communication.interface" value="swd"/>
-        <property key="communication.interface.jtag" value="2wire"/>
-        <property key="communication.speed" value="2.000"/>
-        <property key="debugoptions.useswbreakpoints" value="false"/>
-        <property key="freeze.timers" value="false"/>
-        <property key="memories.aux" value="false"/>
-        <property key="memories.bootflash" value="true"/>
-        <property key="memories.configurationmemory" value="true"/>
-        <property key="memories.configurationmemory2" value="true"/>
-        <property key="memories.dataflash" value="true"/>
-        <property key="memories.eeprom" value="true"/>
-        <property key="memories.exclude.configurationmemory" value="true"/>
-        <property key="memories.flashdata" value="true"/>
-        <property key="memories.id" value="true"/>
-        <property key="memories.instruction.ram.ranges"
-                  value="${memories.instruction.ram.ranges}"/>
-        <property key="memories.programmemory" value="true"/>
-        <property key="memories.programmemory.ranges" value="0-fffff"/>
-        <property key="memories.rww" value="true"/>
-        <property key="programmerToGoFilePath"
-                  value="/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid_toplevel.X/debug/Debug/grid_toplevel_ptg"/>
-        <property key="programoptions.donoteraseauxmem" value="false"/>
-        <property key="programoptions.eraseb4program" value="true"/>
-        <property key="programoptions.pgmentry.voltage" value="low"/>
-        <property key="programoptions.pgmspeed" value="Med"/>
-        <property key="programoptions.preservedataflash" value="false"/>
-        <property key="programoptions.preservedataflash.ranges"
-                  value="${memories.dataflash.default}"/>
-        <property key="programoptions.preserveeeprom" value="false"/>
-        <property key="programoptions.preserveeeprom.ranges" value=""/>
-        <property key="programoptions.preserveprogram.ranges" value=""/>
-        <property key="programoptions.preserveprogramrange" value="false"/>
-        <property key="programoptions.programcalmem" value="false"/>
-        <property key="programoptions.programuserotp" value="false"/>
-        <property key="programoptions.testmodeentrymethod" value="VDDFirst"/>
-        <property key="toolpack.updateoptions"
-                  value="toolpack.updateoptions.uselatestoolpack"/>
-        <property key="toolpack.updateoptions.packversion"
-                  value="Press to select which tool pack to use"/>
-      </snap>
     </conf>
     <conf name="Unittest" type="2">
       <toolsSet>
@@ -962,7 +1668,7 @@
         <targetDevice>ATSAMD51N20A</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>snap</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>ARM</languageToolchain>
         <languageToolchainVersion>9.2.1</languageToolchainVersion>
         <platform>2</platform>
@@ -1048,19 +1754,401 @@
         <ARM-LD>
         </ARM-LD>
       </item>
+      <item path="../documentation/stdio.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_device_composite.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_device_core.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_cdc.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_core.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_hid.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_hub.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_msc.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_vendor.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/adc_async.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/crc_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/evsys.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/flash.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/i2c_master_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/quad_spi_dma.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/rand_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/spi_master_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/spi_master_dma.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/timer.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usart_async.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usart_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usb_device_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/wdt.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
       <ARM-AR>
         <property key="archiver-flags" value="-r"/>
       </ARM-AR>
       <ARM-AS>
         <property key="announce-version" value="false"/>
         <property key="include-paths"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="suppress-warnings" value="false"/>
       </ARM-AS>
       <ARM-AS-PRE>
         <property key="announce-version" value="false"/>
         <property key="include-paths"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="preprocessor-macros" value=""/>
         <property key="preprocessor-macros-undefined" value=""/>
         <property key="suppress-warnings" value="false"/>
@@ -1099,7 +2187,7 @@
         <property key="default-bitfield-type" value="false"/>
         <property key="default-char-type" value="false"/>
         <property key="extra-include-directories"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="extra-warnings" value="false"/>
         <property key="fast-math" value="false"/>
         <property key="garbage-collect-data" value="false"/>
@@ -1152,54 +2240,6 @@
         <property key="unsafe-math" value="false"/>
         <appendMe value="-Tsamd51n20a_flash.ld"/>
       </ARM-LD>
-      <snap>
-        <property key="AutoSelectMemRanges" value="auto"/>
-        <property key="ToolFirmwareFilePath"
-                  value="Press to browse for a specific firmware version"/>
-        <property key="ToolFirmwareOption.UpdateOptions"
-                  value="ToolFirmwareOption.UseLatest"/>
-        <property key="ToolFirmwareToolPack"
-                  value="Press to select which tool pack to use"/>
-        <property key="communication.interface" value="swd"/>
-        <property key="communication.interface.jtag" value="2wire"/>
-        <property key="communication.speed" value="2.000"/>
-        <property key="debugoptions.useswbreakpoints" value="false"/>
-        <property key="freeze.timers" value="false"/>
-        <property key="memories.aux" value="false"/>
-        <property key="memories.bootflash" value="true"/>
-        <property key="memories.configurationmemory" value="true"/>
-        <property key="memories.configurationmemory2" value="true"/>
-        <property key="memories.dataflash" value="true"/>
-        <property key="memories.eeprom" value="true"/>
-        <property key="memories.exclude.configurationmemory" value="true"/>
-        <property key="memories.flashdata" value="true"/>
-        <property key="memories.id" value="true"/>
-        <property key="memories.instruction.ram.ranges"
-                  value="${memories.instruction.ram.ranges}"/>
-        <property key="memories.programmemory" value="true"/>
-        <property key="memories.programmemory.ranges" value="0-fffff"/>
-        <property key="memories.rww" value="true"/>
-        <property key="programmerToGoFilePath"
-                  value="/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid_toplevel.X/debug/Unittest/grid_toplevel_ptg"/>
-        <property key="programoptions.donoteraseauxmem" value="false"/>
-        <property key="programoptions.eraseb4program" value="true"/>
-        <property key="programoptions.pgmentry.voltage" value="low"/>
-        <property key="programoptions.pgmspeed" value="Med"/>
-        <property key="programoptions.preservedataflash" value="false"/>
-        <property key="programoptions.preservedataflash.ranges"
-                  value="${memories.dataflash.default}"/>
-        <property key="programoptions.preserveeeprom" value="false"/>
-        <property key="programoptions.preserveeeprom.ranges" value=""/>
-        <property key="programoptions.preserveprogram.ranges" value=""/>
-        <property key="programoptions.preserveprogramrange" value="false"/>
-        <property key="programoptions.programcalmem" value="false"/>
-        <property key="programoptions.programuserotp" value="false"/>
-        <property key="programoptions.testmodeentrymethod" value="VDDFirst"/>
-        <property key="toolpack.updateoptions"
-                  value="toolpack.updateoptions.uselatestoolpack"/>
-        <property key="toolpack.updateoptions.packversion"
-                  value="Press to select which tool pack to use"/>
-      </snap>
     </conf>
     <conf name="Nightly" type="2">
       <toolsSet>
@@ -1207,14 +2247,14 @@
         <targetDevice>ATSAMD51N20A</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>snap</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>ARM</languageToolchain>
         <languageToolchainVersion>9.2.1</languageToolchainVersion>
         <platform>2</platform>
       </toolsSet>
       <packs>
-        <pack name="SAMD51_DFP" vendor="Microchip" version="3.3.76"/>
         <pack name="CMSIS" vendor="ARM" version="5.4.0"/>
+        <pack name="SAMD51_DFP" vendor="Microchip" version="3.3.76"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -1293,19 +2333,401 @@
         <ARM-LD>
         </ARM-LD>
       </item>
+      <item path="../documentation/stdio.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_device_composite.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_device_core.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_cdc.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_core.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_hid.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_hub.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_msc.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_vendor.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/adc_async.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/crc_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/evsys.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/flash.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/i2c_master_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/quad_spi_dma.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/rand_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/spi_master_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/spi_master_dma.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/timer.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usart_async.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usart_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usb_device_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/wdt.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
       <ARM-AR>
         <property key="archiver-flags" value="-r"/>
       </ARM-AR>
       <ARM-AS>
         <property key="announce-version" value="false"/>
         <property key="include-paths"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="suppress-warnings" value="false"/>
       </ARM-AS>
       <ARM-AS-PRE>
         <property key="announce-version" value="false"/>
         <property key="include-paths"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="preprocessor-macros" value=""/>
         <property key="preprocessor-macros-undefined" value=""/>
         <property key="suppress-warnings" value="false"/>
@@ -1344,7 +2766,7 @@
         <property key="default-bitfield-type" value="false"/>
         <property key="default-char-type" value="false"/>
         <property key="extra-include-directories"
-                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
         <property key="extra-warnings" value="false"/>
         <property key="fast-math" value="false"/>
         <property key="garbage-collect-data" value="false"/>
@@ -1397,54 +2819,585 @@
         <property key="unsafe-math" value="false"/>
         <appendMe value="-Tsamd51n20a_flash_bootloader.ld"/>
       </ARM-LD>
-      <snap>
-        <property key="AutoSelectMemRanges" value="auto"/>
-        <property key="ToolFirmwareFilePath"
-                  value="Press to browse for a specific firmware version"/>
-        <property key="ToolFirmwareOption.UpdateOptions"
-                  value="ToolFirmwareOption.UseLatest"/>
-        <property key="ToolFirmwareToolPack"
-                  value="Press to select which tool pack to use"/>
-        <property key="communication.interface" value="swd"/>
-        <property key="communication.interface.jtag" value="2wire"/>
-        <property key="communication.speed" value="2.000"/>
-        <property key="debugoptions.useswbreakpoints" value="false"/>
-        <property key="freeze.timers" value="false"/>
-        <property key="memories.aux" value="false"/>
-        <property key="memories.bootflash" value="true"/>
-        <property key="memories.configurationmemory" value="true"/>
-        <property key="memories.configurationmemory2" value="true"/>
-        <property key="memories.dataflash" value="true"/>
-        <property key="memories.eeprom" value="true"/>
-        <property key="memories.exclude.configurationmemory" value="true"/>
-        <property key="memories.flashdata" value="true"/>
-        <property key="memories.id" value="true"/>
-        <property key="memories.instruction.ram.ranges"
-                  value="${memories.instruction.ram.ranges}"/>
-        <property key="memories.programmemory" value="true"/>
-        <property key="memories.programmemory.ranges" value="0-fffff"/>
-        <property key="memories.rww" value="true"/>
-        <property key="programmerToGoFilePath"
-                  value="/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid_toplevel.X/debug/Nightly/grid_toplevel_ptg"/>
-        <property key="programoptions.donoteraseauxmem" value="false"/>
-        <property key="programoptions.eraseb4program" value="true"/>
-        <property key="programoptions.pgmentry.voltage" value="low"/>
-        <property key="programoptions.pgmspeed" value="Med"/>
-        <property key="programoptions.preservedataflash" value="false"/>
-        <property key="programoptions.preservedataflash.ranges"
-                  value="${memories.dataflash.default}"/>
-        <property key="programoptions.preserveeeprom" value="false"/>
-        <property key="programoptions.preserveeeprom.ranges" value=""/>
-        <property key="programoptions.preserveprogram.ranges" value=""/>
-        <property key="programoptions.preserveprogramrange" value="false"/>
-        <property key="programoptions.programcalmem" value="false"/>
-        <property key="programoptions.programuserotp" value="false"/>
-        <property key="programoptions.testmodeentrymethod" value="VDDFirst"/>
-        <property key="toolpack.updateoptions"
-                  value="toolpack.updateoptions.uselatestoolpack"/>
-        <property key="toolpack.updateoptions.packversion"
-                  value="Press to select which tool pack to use"/>
-      </snap>
+    </conf>
+    <conf name="HardwareTest" type="2">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <targetDevice>ATSAMD51N20A</targetDevice>
+        <targetHeader></targetHeader>
+        <targetPluginBoard></targetPluginBoard>
+        <platformTool>noID</platformTool>
+        <languageToolchain>ARM</languageToolchain>
+        <languageToolchainVersion>9.2.1</languageToolchainVersion>
+        <platform>2</platform>
+      </toolsSet>
+      <packs>
+        <pack name="CMSIS" vendor="ARM" version="5.4.0"/>
+        <pack name="SAMD51_DFP" vendor="Microchip" version="3.3.76"/>
+      </packs>
+      <ScriptingSettings>
+      </ScriptingSettings>
+      <compileType>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+        <archiverTool>
+        </archiverTool>
+        <loading>
+          <useAlternateLoadableFile>false</useAlternateLoadableFile>
+          <parseOnProdLoad>false</parseOnProdLoad>
+          <alternateLoadableFile></alternateLoadableFile>
+        </loading>
+        <subordinates>
+        </subordinates>
+      </compileType>
+      <makeCustomizationType>
+        <makeCustomizationPreStepEnabled>false</makeCustomizationPreStepEnabled>
+        <makeUseCleanTarget>false</makeUseCleanTarget>
+        <makeCustomizationPreStep></makeCustomizationPreStep>
+        <makeCustomizationPostStepEnabled>true</makeCustomizationPostStepEnabled>
+        <makeCustomizationPostStep> python3 ${ProjectDir}/../../build_scripts/uf2conv.py -c -b 0x4000 -o ${ProjectDir}/../../${ProjectName}_hardware_test.uf2 ${ProjectDir}/dist/HardwareTest/production/${ProjectName}.X.production.bin</makeCustomizationPostStep>
+        <makeCustomizationPutChecksumInUserID>false</makeCustomizationPutChecksumInUserID>
+        <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
+        <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
+      </makeCustomizationType>
+      <item path="../Device_Startup/samd51n20a_flash.ld" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../Device_Startup/samd51n20a_flash_bootloader.ld"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../Device_Startup/samd51n20a_sram.ld" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/stdio.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_device_composite.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_device_core.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_cdc.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_core.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_hid.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_hub.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_msc.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../documentation/usb_protocol_vendor.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/adc_async.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/crc_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/evsys.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/flash.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/i2c_master_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/quad_spi_dma.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/rand_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/spi_master_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/spi_master_dma.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/timer.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usart_async.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usart_sync.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/usb_device_async.rst"
+            ex="true"
+            overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <item path="../hal/documentation/wdt.rst" ex="true" overriding="false">
+        <ARM-AR>
+        </ARM-AR>
+        <ARM-AS>
+        </ARM-AS>
+        <ARM-AS-PRE>
+        </ARM-AS-PRE>
+        <ARM-CPP>
+        </ARM-CPP>
+        <ARM-GCC>
+        </ARM-GCC>
+        <ARM-Global>
+        </ARM-Global>
+        <ARM-LD>
+        </ARM-LD>
+      </item>
+      <ARM-AR>
+        <property key="archiver-flags" value="-r"/>
+      </ARM-AR>
+      <ARM-AS>
+        <property key="announce-version" value="false"/>
+        <property key="include-paths"
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+        <property key="suppress-warnings" value="false"/>
+      </ARM-AS>
+      <ARM-AS-PRE>
+        <property key="announce-version" value="false"/>
+        <property key="include-paths"
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+        <property key="preprocessor-macros" value="HARDWARETEST"/>
+        <property key="preprocessor-macros-undefined" value=""/>
+        <property key="suppress-warnings" value="false"/>
+      </ARM-AS-PRE>
+      <ARM-CPP>
+        <property key="additional-warnings" value="true"/>
+        <property key="called-functions-located" value="true"/>
+        <property key="default-bitfield-type" value="false"/>
+        <property key="default-char-type" value="false"/>
+        <property key="disable-extra-code-exception" value="true"/>
+        <property key="disable-extra-code-generation" value="true"/>
+        <property key="extra-include-directories" value=""/>
+        <property key="extra-warnings" value="false"/>
+        <property key="fast-math" value="false"/>
+        <property key="garbage-collect-data" value="false"/>
+        <property key="garbage-collect-functions" value="false"/>
+        <property key="inhibit-all" value="false"/>
+        <property key="make-warnings-into-errors" value="false"/>
+        <property key="no-system-directories" value="false"/>
+        <property key="optimization-level" value=""/>
+        <property key="position-independent" value="false"/>
+        <property key="preprocess-only" value="false"/>
+        <property key="preprocessor-macros" value=""/>
+        <property key="preprocessor-macros-undefined" value=""/>
+        <property key="strict-ansi" value="false"/>
+        <property key="strict-ansi-errors" value="false"/>
+        <property key="syntax-only" value="false"/>
+        <property key="undefined-identifier" value="false"/>
+        <property key="unsafe-math" value="false"/>
+        <property key="use-rodata" value="false"/>
+        <property key="verbose" value="false"/>
+      </ARM-CPP>
+      <ARM-GCC>
+        <property key="additional-warnings" value="true"/>
+        <property key="called-functions-located" value="true"/>
+        <property key="default-bitfield-type" value="false"/>
+        <property key="default-char-type" value="false"/>
+        <property key="extra-include-directories"
+                  value="../Config;../;../examples;../hal/include;../hal/utils/include;../hpl/adc;../hpl/cmcc;../hpl/core;../hpl/dmac;../hpl/dsu;../hpl/evsys;../hpl/gclk;../hpl/mclk;../hpl/nvmctrl;../hpl/osc32kctrl;../hpl/oscctrl;../hpl/pac;../hpl/pm;../hpl/port;../hpl/qspi;../hpl/ramecc;../hpl/rtc;../hpl/sercom;../hpl/systick;../hpl/tc;../hpl/trng;../hpl/usb;../hpl/wdt;../hri;../usb;../usb/class/cdc;../usb/class/cdc/device;../usb/class/composite/device;../usb/class/hid;../usb/class/hid/device;../usb/class/hub;../usb/class/msc;../usb/class/msc/device;../usb/class/vendor;../usb/device;../stdio_redirect"/>
+        <property key="extra-warnings" value="false"/>
+        <property key="fast-math" value="false"/>
+        <property key="garbage-collect-data" value="false"/>
+        <property key="garbage-collect-functions" value="true"/>
+        <property key="inhibit-all" value="false"/>
+        <property key="make-warnings-into-errors" value="false"/>
+        <property key="no-system-directories" value="false"/>
+        <property key="optimization-level" value="-Os"/>
+        <property key="position-independent" value="false"/>
+        <property key="preprocessor-macros" value="NDEBUG"/>
+        <property key="preprocessor-macros-undefined" value=""/>
+        <property key="strict-ansi" value="false"/>
+        <property key="strict-ansi-errors" value="false"/>
+        <property key="support-ansi" value="false"/>
+        <property key="syntax-only" value="false"/>
+        <property key="undefined-identifier" value="false"/>
+        <property key="unsafe-math" value="false"/>
+        <property key="verbose" value="false"/>
+        <appendMe value="-std=gnu99 -mfloat-abi=softfp -mfpu=fpv4-sp-d16"/>
+      </ARM-GCC>
+      <ARM-Global>
+        <property key="bin" value="true"/>
+        <property key="common-include-directories" value=""/>
+        <property key="eep" value="true"/>
+        <property key="hex" value="true"/>
+        <property key="lss" value="true"/>
+        <property key="omit-pack-options" value="true"/>
+        <property key="processor-mode" value="-mthumb"/>
+        <property key="srec" value="true"/>
+        <property key="user-pack-include"
+                  value="/home/suku/Documents/grid-fw/grid_toplevel/device_support_pack/samd51a/include;/opt/microchip/mplabx/v5.45/packs/arm/CMSIS/5.4.0/CMSIS/Core/Include"/>
+      </ARM-Global>
+      <ARM-LD>
+        <property key="additional-specs" value=""/>
+        <property key="exclude-standard-libraries" value="false"/>
+        <property key="extra-lib-directories" value="..\Device_Startup"/>
+        <property key="fast-math" value="false"/>
+        <property key="flash-segment" value=""/>
+        <property key="generate-map-file" value="true"/>
+        <property key="input-libraries" value="libm"/>
+        <property key="no-default-libs" value="false"/>
+        <property key="no-shared-libraries" value="false"/>
+        <property key="no-startup-files" value="false"/>
+        <property key="omit-symbol-information" value="false"/>
+        <property key="other-options" value=""/>
+        <property key="position-independent" value="true"/>
+        <property key="remove-unused-sections" value="true"/>
+        <property key="size-optimized-library" value="true"/>
+        <property key="sram-segment" value=""/>
+        <property key="unsafe-math" value="false"/>
+        <appendMe value="-Tsamd51n20a_flash_bootloader.ld"/>
+      </ARM-LD>
     </conf>
   </confs>
 </configurationDescriptor>

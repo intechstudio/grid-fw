@@ -27,11 +27,11 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=grid_toplevel.X
 
 # Active Configuration
-DEFAULTCONF=Release
+DEFAULTCONF=Nightly
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Release Debug Unittest Nightly 
+ALLCONFS=Release Debug Unittest Nightly HardwareTest 
 
 
 # build
@@ -49,6 +49,7 @@ ALLCONFS=Release Debug Unittest Nightly
 	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=Debug clean
 	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=Unittest clean
 	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=Nightly clean
+	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=HardwareTest clean
 
 
 
@@ -58,6 +59,7 @@ ALLCONFS=Release Debug Unittest Nightly
 	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=Debug build
 	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=Unittest build
 	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=Nightly build
+	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=HardwareTest build
 
 
 

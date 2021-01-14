@@ -81,11 +81,13 @@ void grid_d51_init(){
 	GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "No Unit Test");
 	#endif
 	
-	
 	#ifdef HARDWARETEST
 	
 	#include "grid/grid_hardwaretest.h"
-	
+
+	grid_nvm_init(&grid_nvm_state, &FLASH_0);
+
+    
 	grid_hardwaretest_main();
 	
 	

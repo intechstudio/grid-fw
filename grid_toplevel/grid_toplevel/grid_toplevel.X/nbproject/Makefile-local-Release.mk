@@ -34,5 +34,5 @@ MP_AS_DIR="/usr/bin"
 MP_LD_DIR="/usr/bin"
 MP_AR_DIR="/usr/bin"
 # MP_BC_DIR is not defined
-CMSIS_DIR=/opt/microchip/mplabx/v5.45/packs/arm/CMSIS/5.4.0
 DFP_DIR=/opt/microchip/mplabx/v5.45/packs/Microchip/SAMD51_DFP/3.3.76
+CMSIS_DIR=/opt/microchip/mplabx/v5.45/packs/arm/CMSIS/5.4.0
