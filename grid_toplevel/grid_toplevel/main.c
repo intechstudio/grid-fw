@@ -358,7 +358,7 @@ int main(void)
 		if (grid_nvm_ui_bulk_store_is_in_progress(&grid_nvm_state, &grid_ui_state)){
 			
 			grid_nvm_ui_bulk_store_next(&grid_nvm_state, &grid_ui_state);
-			
+			 
 			
 		}
 		

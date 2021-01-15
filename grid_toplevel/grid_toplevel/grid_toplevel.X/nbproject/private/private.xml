@@ -5,6 +5,7 @@
         <group>
             <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid/grid_nvm.c</file>
             <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid/grid_ui.c</file>
+            <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid/grid_protocol.h</file>
             <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/main.c</file>
             <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid/grid_nvm.h</file>
             <file>file:/home/suku/Documents/grid-fw/grid_toplevel/grid_toplevel/grid/grid_buf.c</file>
