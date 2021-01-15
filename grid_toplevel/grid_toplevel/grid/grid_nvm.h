@@ -76,6 +76,9 @@ struct grid_nvm_model{
 	
 	uint32_t clear_bulk_page_index;
 	uint8_t clear_bulk_status;
+    
+	uint32_t store_bulk_page_index;
+	uint8_t store_bulk_status;
 	
 	uint32_t write_bulk_page_index;
 	uint8_t write_bulk_status;
@@ -98,6 +101,10 @@ void	grid_nvm_ui_bulk_clear_init(struct grid_nvm_model* nvm, struct grid_ui_mode
 uint8_t grid_nvm_ui_bulk_clear_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 void	grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 
+
+void	grid_nvm_ui_bulk_store_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+uint8_t grid_nvm_ui_bulk_store_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+void	grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 
 
 void grid_nvm_clear_read_buffer(struct grid_nvm_model* mod);

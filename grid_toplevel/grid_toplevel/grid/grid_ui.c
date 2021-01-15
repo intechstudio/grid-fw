@@ -470,66 +470,7 @@ void grid_ui_reinit(struct grid_ui_model* ui){
 
 void grid_ui_nvm_store_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
 	
-	uint8_t acknowledge = 0;
-	
-		
-	for(uint8_t i = 0; i<ui->bank_list_length; i++){
-		
-		struct grid_ui_bank* bank = &ui->bank_list[i];
-		
-		for (uint8_t j=0; j<bank->element_list_length; j++){
-			
-			struct grid_ui_element* ele = &bank->element_list[j];
-			
-			for (uint8_t k=0; k<ele->event_list_length; k++){
-			
-				struct grid_ui_event* eve = &ele->event_list[k];
-				
-				if (eve->cfg_changed_flag == 1){
-					
-					
-					if (grid_ui_nvm_store_event_configuration(ui, nvm, eve)){
-					
-						acknowledge = 1;
-					
-					
-					}
-					
-
-		
-				}
-			
-			
-			}	
-					
-		}
-		
-	}
-	
-	
-
-	// Generate ACKNOWLEDGE RESPONSE
-	struct grid_msg response;
-		
-	grid_msg_init(&response);
-	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
-
-	uint8_t response_payload[10] = {0};
-	sprintf(response_payload, GRID_CLASS_LOCALSTORE_frame);
-
-	grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
-		
-	if (acknowledge == 1){
-		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-	}
-	else{
-		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
-	}
-
-		
-	grid_msg_packet_close(&response);
-	grid_msg_packet_send_everywhere(&response);
-		
+    grid_nvm_ui_bulk_store_init(nvm, ui);
 
 }
 
