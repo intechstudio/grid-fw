@@ -13,7 +13,9 @@ enum grid_ui_status {
 	GRID_UI_STATUS_OK,
 	
 	GRID_UI_STATUS_READY,
-	GRID_UI_STATUS_TRIGGERED
+	GRID_UI_STATUS_TRIGGERED,
+            
+	GRID_UI_STATUS_TRIGGERED_LOCAL
 	
 };
 
@@ -134,6 +136,8 @@ uint8_t grid_ui_nvm_clear_event_configuration(struct grid_ui_model* ui, struct g
 
 void grid_ui_reinit(struct grid_ui_model* ui);
 
+void grid_ui_reinit_local(struct grid_ui_model* ui);
+
 void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length);
 void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
 
@@ -144,12 +148,15 @@ void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_
 uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
 uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event_index);
 void grid_ui_event_trigger(struct grid_ui_element* ele, uint8_t event_index);
+void grid_ui_event_trigger_local(struct grid_ui_element* ele, uint8_t event_index);
 
 void grid_ui_smart_trigger(struct grid_ui_model* mod, uint8_t bank, uint8_t element, enum grid_ui_event_t event);
+void grid_ui_smart_trigger_local(struct grid_ui_model* mod, uint8_t bank, uint8_t element, enum grid_ui_event_t event);
 
 void grid_ui_event_reset(struct grid_ui_event* eve);
 
 uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve);
+uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve);
 
 uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_string);
 

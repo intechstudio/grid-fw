@@ -1,5 +1,4 @@
 
-
 #include "grid/grid_module.h"
 
 #include <atmel_start.h>
@@ -139,6 +138,9 @@ int main(void)
 
 
 	atmel_start_init();	
+    
+            
+            
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
 
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "D51 Init");
@@ -162,7 +164,7 @@ int main(void)
 	rand_sync_enable(&RAND_0);	
 		
 	grid_module_common_init();
-	grid_ui_reinit(&grid_ui_state);
+    grid_ui_reinit(&grid_ui_state);
 	
 			
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
@@ -200,6 +202,7 @@ int main(void)
 
 
 
+    
 	
 	while (1) {
 	

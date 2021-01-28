@@ -52,10 +52,11 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 				
 			// action template bug fix try
 			grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i].template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_NUMBER] = i;
-				
-			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
 
-
+			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
+            
+			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_DP);
+			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_DR);
 		}
 		
 	}
@@ -133,8 +134,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 			
 			if (grid_bu16_helper_template_b_abs[res_index] == 0){ // Button Press Event
 				
-				// Button ABS
-				template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_ABS] = 127;
+				
 					
 				// Button TGL2
 				if (template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL2] == 0){
@@ -158,7 +158,16 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 				grid_bu16_helper_template_b_tgl2[grid_sys_state.bank_activebank_number][i] = template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL2];
 				grid_bu16_helper_template_b_tgl3[grid_sys_state.bank_activebank_number][i] = template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL3];
 				
-							
+
+                // Button ABS
+
+                for (uint8_t j=0; j<GRID_SYS_BANK_MAXNUMBER; j++){
+
+                    template_parameter_list = grid_ui_state.bank_list[j].element_list[res_index].template_parameter_list;
+                    template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_ABS] = 127;      
+
+                }   
+                
 				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_DP);
 				
 				grid_bu16_helper_template_b_abs[result_index[i]] = res_value;
@@ -168,9 +177,16 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 				
 				template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_NUMBER] = res_index;
 				template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_bu16_mux_reversed_lookup[res_index];
+                
+                // Button ABS
 
-				template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_ABS] = 0;
+                for (uint8_t j=0; j<GRID_SYS_BANK_MAXNUMBER; j++){
 
+                    template_parameter_list = grid_ui_state.bank_list[j].element_list[res_index].template_parameter_list;
+                    template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_ABS] = 0;      
+
+                }   
+                
 				
 				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_DR);
 

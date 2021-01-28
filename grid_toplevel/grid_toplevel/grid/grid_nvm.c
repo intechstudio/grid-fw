@@ -357,6 +357,10 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 				
 			grid_msg_packet_close(&response);
 			grid_msg_packet_send_everywhere(&response);
+            
+            
+            
+            grid_ui_reinit_local(&grid_ui_state);
 						
 		}
 		

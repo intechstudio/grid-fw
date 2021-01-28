@@ -19,16 +19,16 @@ void grid_port_process_ui(struct grid_port* por){
 			for (uint8_t k=0; k<grid_ui_state.bank_list[i].element_list[j].event_list_length; k++){
 				
 				if (grid_ui_event_istriggered(&grid_ui_state.bank_list[i].element_list[j].event_list[k])){
+
+					message_broadcast_action_available++;
+
 					
-					if (k==0){
-						
-						message_local_action_available++;
-						
-						}else{
-						
-						
-						message_broadcast_action_available++;
-					}
+				}
+                
+				if (grid_ui_event_istriggered_local(&grid_ui_state.bank_list[i].element_list[j].event_list[k])){
+                    
+                    message_local_action_available++;
+
 					
 				}
 				
@@ -97,23 +97,26 @@ void grid_port_process_ui(struct grid_port* por){
 		{
 			for (uint8_t j=0; j<grid_ui_state.bank_list[i].element_list_length; j++){
 				
-				uint8_t event = GRID_UI_EVENT_INIT;
+                for (uint8_t k=0; k<grid_ui_state.bank_list[i].element_list[j].event_list_length; k++){
 				
-				if (offset>GRID_PARAMETER_PACKET_marign){
-					continue;
-				}
-				else{
-					
-					CRITICAL_SECTION_ENTER()
-					if (grid_ui_event_istriggered(&grid_ui_state.bank_list[i].element_list[j].event_list[event])){
+					if (offset>GRID_PARAMETER_PACKET_marign){
+						continue;
+					}		
+					else{
 						
-						offset += grid_ui_event_render_action(&grid_ui_state.bank_list[i].element_list[j].event_list[event], &payload[offset]);
-						grid_ui_event_reset(&grid_ui_state.bank_list[i].element_list[j].event_list[event]);
+						CRITICAL_SECTION_ENTER()
+						if (grid_ui_event_istriggered_local(&grid_ui_state.bank_list[i].element_list[j].event_list[k])){
+							
+                            offset += grid_ui_event_render_action(&grid_ui_state.bank_list[i].element_list[j].event_list[k], &payload[offset]);
+                            grid_ui_event_reset(&grid_ui_state.bank_list[i].element_list[j].event_list[k]);
+                        
+						}
+						CRITICAL_SECTION_LEAVE()
 						
 					}
-					CRITICAL_SECTION_LEAVE()
-					
+				
 				}
+                
 				
 
 				
@@ -205,7 +208,7 @@ void grid_port_process_ui(struct grid_port* por){
 		for (uint8_t i=0; i<grid_ui_state.bank_list_length; i++){
 			for (uint8_t j=0; j<grid_ui_state.bank_list[i].element_list_length; j++){
 			
-				for (uint8_t k=1; k<grid_ui_state.bank_list[i].element_list[j].event_list_length; k++){ //j=1 because init is local
+				for (uint8_t k=0; k<grid_ui_state.bank_list[i].element_list[j].event_list_length; k++){ //j=1 because init is local
 				
 					if (grid_msg_packet_get_length(&message)>GRID_PARAMETER_PACKET_marign){
 						continue;
@@ -456,6 +459,9 @@ void grid_ui_reinit(struct grid_ui_model* ui){
 				
 				
 				grid_ui_event_reset(eve);
+                
+                
+                //grid_ui_smart_trigger_local(ui, i, j, eve->type);
 				
 			}
 			
@@ -463,9 +469,43 @@ void grid_ui_reinit(struct grid_ui_model* ui){
 		
 	}
 	
-	
+	grid_sys_state.bank_active_changed = 1;
 	
 }
+
+
+void grid_ui_reinit_local(struct grid_ui_model* ui){
+	
+	for(uint8_t i = 0; i<ui->bank_list_length; i++){
+		
+		struct grid_ui_bank* bank = &ui->bank_list[i];
+		
+		for (uint8_t j=0; j<bank->element_list_length; j++){
+			
+			struct grid_ui_element* ele = &bank->element_list[j];
+			
+			for (uint8_t k=0; k<ele->event_list_length; k++){
+				
+				struct grid_ui_event* eve = &ele->event_list[k];
+				
+				grid_ui_event_generate_actionstring(ele, eve->type);
+				
+				
+				grid_ui_event_reset(eve);
+                
+                
+                grid_ui_smart_trigger_local(ui, i, j, eve->type);
+				
+			}
+			
+		}
+		
+	}
+	
+	grid_sys_state.bank_active_changed = 1;
+	
+}
+
 
 
 void grid_ui_nvm_store_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
@@ -1177,6 +1217,22 @@ void grid_ui_event_trigger(struct grid_ui_element* ele, uint8_t event_index){
 
 }
 
+void grid_ui_event_trigger_local(struct grid_ui_element* ele, uint8_t event_index){
+
+	if (event_index == 255){
+		
+		return;
+	}
+	
+	struct grid_ui_event* eve = &ele->event_list[event_index];
+
+
+		
+	eve->trigger = GRID_UI_STATUS_TRIGGERED_LOCAL;
+
+}
+
+
 void grid_ui_smart_trigger(struct grid_ui_model* mod, uint8_t bank, uint8_t element, enum grid_ui_event_t event){
 
 	uint8_t event_index = grid_ui_event_find(&mod->bank_list[bank].element_list[element], event);
@@ -1193,6 +1249,23 @@ void grid_ui_smart_trigger(struct grid_ui_model* mod, uint8_t bank, uint8_t elem
 }
 
 
+void grid_ui_smart_trigger_local(struct grid_ui_model* mod, uint8_t bank, uint8_t element, enum grid_ui_event_t event){
+
+	uint8_t event_index = grid_ui_event_find(&mod->bank_list[bank].element_list[element], event);
+	
+	if (event_index == 255){
+		
+		return;
+	}
+	
+	grid_ui_event_template_action(&mod->bank_list[bank].element_list[element], event_index);
+
+    
+    grid_ui_event_trigger_local(&mod->bank_list[bank].element_list[element], event_index);
+    
+}
+
+
 void grid_ui_event_reset(struct grid_ui_event* eve){
 	
 	eve->trigger = GRID_UI_STATUS_READY;
@@ -1202,6 +1275,23 @@ uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve){
 		
 		
 	if (eve->trigger == GRID_UI_STATUS_TRIGGERED){
+		
+					
+		return 1;
+				
+	}
+	else{
+		
+		return 0;
+	}
+			
+}
+
+
+uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve){
+		
+		
+	if (eve->trigger == GRID_UI_STATUS_TRIGGERED_LOCAL){
 		
 					
 		return 1;
@@ -1233,7 +1323,10 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 	// RESET ENCODER RELATIVE TEMPLATE PARAMETER VALUES
 	if(eve->parent->type == GRID_UI_ELEMENT_ENCODER){	
 		eve->parent->template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL] = 255;	
-	}
+		eve->parent->template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL_VELOCITY_LOW] = 255;	
+		eve->parent->template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL_VELOCITY_HIGH] = 255;	
+	
+    }
 	
 	
 	return eve->event_string_length + eve->action_string_length;

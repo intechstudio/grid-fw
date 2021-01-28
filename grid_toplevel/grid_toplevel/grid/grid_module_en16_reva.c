@@ -12,6 +12,8 @@ volatile uint8_t UI_SPI_DONE = 0;
 
 
 static uint8_t grid_en16_helper_template_e_abs[GRID_SYS_BANK_MAXNUMBER][16] = {0};
+static uint8_t grid_en16_helper_template_e_abs_low_velocity[GRID_SYS_BANK_MAXNUMBER][16] = {0};
+static uint8_t grid_en16_helper_template_e_abs_high_velocity[GRID_SYS_BANK_MAXNUMBER][16] = {0};
 	
 static uint8_t grid_en16_helper_template_b_tgl2[GRID_SYS_BANK_MAXNUMBER][16] = {0};
 static uint8_t grid_en16_helper_template_b_tgl3[GRID_SYS_BANK_MAXNUMBER][16] = {0};
@@ -85,10 +87,13 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
 
 			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS] = grid_en16_helper_template_e_abs[bank][i];
-			
+			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS_VELOCITY_LOW] = grid_en16_helper_template_e_abs_low_velocity[bank][i];
+			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS_VELOCITY_HIGH] = grid_en16_helper_template_e_abs_high_velocity[bank][i];			
 					
-			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
-					
+			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
+            
+            grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_AVC7);
+            				
 
 
 			
@@ -233,101 +238,158 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 			grid_ui_encoder_array[i].phase_a_previous = a_now;
 			grid_ui_encoder_array[i].phase_b_previous = b_now;
 						
+            
+            int16_t delta_low = 0;
+            int16_t delta_high = 0;
+            
 			if (delta != 0){
 				
-//				volatile uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_ui_encoder_array[i].last_real_time);
-//				
-//				if (elapsed_time>400){
-//					elapsed_time = 400;
-//				}
-//				
-//				if (elapsed_time<20){
-//					elapsed_time = 20;
-//				}
-//			
-//				
-//				uint16_t velocityfactor = (160000-elapsed_time*elapsed_time)/60000.0 + 1;
-//				
-//				
-//				grid_ui_encoder_array[i].last_real_time = grid_sys_rtc_get_time(&grid_sys_state);
-//				
-//				int16_t xi = delta + delta * velocityfactor;
-//				
-//				if (delta<0){
-//					if (grid_ui_encoder_array[i].rotation_value + xi >= 0){
-//						grid_ui_encoder_array[i].rotation_value += xi;
-//					}
-//					else{
-//						grid_ui_encoder_array[i].rotation_value = 0;
-//					}
-//				}
-//				else if (delta>0){
-//					if (grid_ui_encoder_array[i].rotation_value + xi <= 127){
-//						grid_ui_encoder_array[i].rotation_value += xi;
-//					}
-//					else{
-//						grid_ui_encoder_array[i].rotation_value = 127;
-//					}
-//				}
+				uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_ui_encoder_array[i].last_real_time);
+				
+                uint32_t elapsed_ms = elapsed_time/RTC1MS;
+                
+                
+				if (elapsed_ms>25){
+					elapsed_ms = 25;
+				}
+				
+				if (elapsed_ms<1){
+					elapsed_ms = 1;
+				}
+			
+				
+				uint8_t velocityfactor = (25*25-elapsed_ms*elapsed_ms)/150 + 1;
+				
+				
+				grid_ui_encoder_array[i].last_real_time = grid_sys_rtc_get_time(&grid_sys_state);
+				
+				delta_low =  delta * velocityfactor;			
+				delta_high = delta * (velocityfactor * 2 - 1);
+                
 				
 
 				//CRITICAL_SECTION_ENTER()
-				
+
+                uint8_t res_index = i;
+                uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
+                uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
+
 				uint8_t command = GRID_PARAMETER_MIDI_CONTROLCHANGE;
 				uint8_t controlnumber = i;
-				uint8_t new_abs_value = grid_en16_helper_template_e_abs[bank][i];
-				uint8_t new_rel_value = 0;
+ 
+                template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER] = res_index;
+                template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index]; 
+
+				uint8_t new_abs_no_velocity_value = grid_en16_helper_template_e_abs[bank][i];
+				uint8_t new_abs_low_velocity_value = grid_en16_helper_template_e_abs_low_velocity[bank][i];
+				uint8_t new_abs_high_velocity_value = grid_en16_helper_template_e_abs_high_velocity[bank][i];
+                
+				uint8_t new_rel_no_velocity_value =  template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL];
+				uint8_t new_rel_low_velocity_value =  template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL];
+				uint8_t new_rel_high_velocity_value =  template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL];
 								
-				
-								
-				uint8_t actuator = new_abs_value*2;
 				
 				if (delta != 0){
-						
-					if (new_abs_value + delta < 0){
-						new_abs_value = 0;
+                    
+                    
+                    // ABSOLUTE NO VELOCITY						
+					if (new_abs_no_velocity_value + delta < 0){
+						new_abs_no_velocity_value = 0;
 					}
-					else if (new_abs_value + delta > 127){
-						new_abs_value = 127;
+					else if (new_abs_no_velocity_value + delta > 127){
+						new_abs_no_velocity_value = 127;
 					}
 					else{
-						new_abs_value += delta;
+						new_abs_no_velocity_value += delta;
 					}	
-						
-					uint8_t res_index = i;
-					uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
-					uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};				
-															
-					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER] = res_index;
-					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_en16_mux_reversed_lookup[res_index];
+                    
+                    // ABSOLUTE LOW VELOCITY						
+					if (new_abs_low_velocity_value + delta_low < 0){
+						new_abs_low_velocity_value = 0;
+					}
+					else if (new_abs_low_velocity_value + delta_low > 127){
+						new_abs_low_velocity_value = 127;
+					}
+					else{
+						new_abs_low_velocity_value += delta_low;
+					}	
+  					
+                    // ABSOLUTE HIGH VELOCITY						
+					if (new_abs_high_velocity_value + delta_high < 0){
+						new_abs_high_velocity_value = 0;
+					}
+					else if (new_abs_high_velocity_value + delta_high > 127){
+						new_abs_high_velocity_value = 127;
+					}
+					else{
+						new_abs_high_velocity_value += delta_high;
+					}	
 
 
-					new_rel_value = template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL];
-					
 
-		
-					if (new_rel_value == 255){
+                    // RELATIVE NO VELOCITY
+					if (new_rel_no_velocity_value == 255){
 						if (delta>0){
-							new_rel_value = 65;
+							new_rel_no_velocity_value = 65;
 						}
 						else{
-							new_rel_value = 63;
+							new_rel_no_velocity_value = 63;
 						}
 					}
 					else{
-						new_rel_value += delta;
+						new_rel_no_velocity_value += delta;
+					}
+                    
+                    // RELATIVE LOW VELOCITY
+					if (new_rel_low_velocity_value == 255){
+                        
+                        new_rel_low_velocity_value = 64 + delta_low;
+					
+					}
+					else{
+						new_rel_low_velocity_value += delta_low;
+					}
+                    
+                    // RELATIVE HIGH VELOCITY
+					if (new_rel_high_velocity_value == 255){
+				
+                        new_rel_high_velocity_value = 64 + delta_high;
+						
+					}
+					else{
+						new_rel_high_velocity_value += delta_high;
 					}
 	
+                    
+                    
 					
-					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL] = new_rel_value;
+					template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL] = new_rel_no_velocity_value;
+                    template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL_VELOCITY_LOW] = new_rel_low_velocity_value;
+                    template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL_VELOCITY_HIGH] = new_rel_high_velocity_value;
 				
+                    
+                    
+                    
+                    
+                    
+                    
                     
                     if (button_value == 1){
                         
                         // ABS is only updated if nonpush rotation event happened
-                        grid_en16_helper_template_e_abs[bank][i] = new_abs_value;
-                        template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS] = new_abs_value;
-					
+                        grid_en16_helper_template_e_abs[bank][i] = new_abs_no_velocity_value;
+                        grid_en16_helper_template_e_abs_low_velocity[bank][i] = new_abs_low_velocity_value;
+                        grid_en16_helper_template_e_abs_high_velocity[bank][i] = new_abs_high_velocity_value;
+                        
+                        // ABS no velocity
+                        template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS] = new_abs_no_velocity_value;
+                        
+                        // ABS low velocity
+                        template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS_VELOCITY_LOW] = new_abs_low_velocity_value;
+                        
+                        // ABS high velocity
+                        template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS_VELOCITY_HIGH] = new_abs_high_velocity_value;
+                        
                         
                         grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_AVC7);				
                     }
@@ -362,7 +424,7 @@ void grid_module_en16_reva_hardware_init(void){
 	
 	
 	spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
-	spi_m_async_set_baudrate(&UI_SPI, 400000);
+	spi_m_async_set_baudrate(&UI_SPI, 1000000); // was 400000 check clock div setting
 	
 	spi_m_async_get_io_descriptor(&UI_SPI, &grid_module_en16_reva_hardware_io);
 
