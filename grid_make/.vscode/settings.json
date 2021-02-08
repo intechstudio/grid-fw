@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "grid_sys.h": "c",
+        "grid_module.h": "c",
+        "grid_ui.h": "c",
+        "atmel_start.h": "c",
+        "driver_init.h": "c"
+    }
+}

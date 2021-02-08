@@ -1,0 +1,93 @@
+SUB_DIRS +=  \
+\
+usb/class/midi/device \
+usb/class/midi \
+grid \
+\
+
+OBJS +=  \
+\
+usb/class/midi/device/audiodf_midi.o \
+usb/class/midi/usb_protocol_midi.o \
+grid/grid_ain.o \
+grid/grid_buf.o \
+grid/grid_d51.o \
+grid/grid_debug.o \
+grid/grid_default.o \
+grid/grid_hardwaretest.o \
+grid/grid_led.o \
+grid/grid_module.o \
+grid/grid_module_bu16_revb.o \
+grid/grid_module_en16_reva.o \
+grid/grid_module_pbf4_reva.o \
+grid/grid_module_po16_revb.o \
+grid/grid_msg.o \
+grid/grid_nvm.o \
+grid/grid_protocol.o \
+grid/grid_sys.o \
+grid/grid_ui.o \
+grid/grid_unittest.o \
+grid/grid_usb.o \
+\
+
+
+OBJS_AS_ARGS +=  \
+\
+"usb/class/midi/device/audiodf_midi.o" \
+"usb/class/midi/usb_protocol_midi.o" \
+"grid/grid_ain.o" \
+"grid/grid_buf.o" \
+"grid/grid_d51.o" \
+"grid/grid_debug.o" \
+"grid/grid_default.o" \
+"grid/grid_hardwaretest.o" \
+"grid/grid_led.o" \
+"grid/grid_module.o" \
+"grid/grid_module_bu16_revb.o" \
+"grid/grid_module_en16_reva.o" \
+"grid/grid_module_pbf4_reva.o" \
+"grid/grid_module_po16_revb.o" \
+"grid/grid_msg.o" \
+"grid/grid_nvm.o" \
+"grid/grid_protocol.o" \
+"grid/grid_sys.o" \
+"grid/grid_ui.o" \
+"grid/grid_unittest.o" \
+"grid/grid_usb.o" \
+\
+
+
+
+DIR_INCLUDES +=  \
+-I"../" \
+-I"../grid" \
+-I"../usb/class/midi/" \
+-I"../usb/class/midi/device" \
+
+
+
+DEPS_AS_ARGS +=  \
+\
+"usb/class/midi/device/audiodf_midi.d" \
+"usb/class/midi/usb_protocol_midi.d" \
+"grid/grid_ain.d" \
+"grid/grid_buf.d" \
+"grid/grid_d51.d" \
+"grid/grid_debug.d" \
+"grid/grid_default.d" \
+"grid/grid_hardwaretest.d" \
+"grid/grid_led.d" \
+"grid/grid_module.d" \
+"grid/grid_module_bu16_revb.d" \
+"grid/grid_module_en16_reva.d" \
+"grid/grid_module_pbf4_reva.d" \
+"grid/grid_module_po16_revb.d" \
+"grid/grid_msg.d" \
+"grid/grid_nvm.d" \
+"grid/grid_protocol.d" \
+"grid/grid_sys.d" \
+"grid/grid_ui.d" \
+"grid/grid_unittest.d" \
+"grid/grid_usb.d" \
+\
+
