@@ -41,18 +41,21 @@ static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state)
 void grid_usb_serial_init()
 {
 	cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C, (FUNC_PTR)grid_usb_serial_statechange_cb);
+//	cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)grid_usb_midi_bulkout_cb);
+//	cdcdf_acm_register_callback(CDCDF_ACM_CB_READ, (FUNC_PTR)grid_usb_midi_bulkout_cb);
 }
 
 
 
 static bool grid_usb_midi_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
+
 	grid_sys_alert_set_alert(&grid_sys_state, 255,255,0,2,300);
 	return false;
 }
 static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
-	
+
 	grid_sys_alert_set_alert(&grid_sys_state, 255,0,255,2,300);
 	return false;
 }

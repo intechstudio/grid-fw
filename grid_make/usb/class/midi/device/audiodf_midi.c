@@ -14,7 +14,8 @@ struct audiodf_midi_func_data {
 	uint8_t protocol; //????
 	
 	uint8_t midi_report[4]; //????
-	
+
+	uint8_t midi_report_inbound[4]; //????	
 	
 	bool enabled;
 };
@@ -88,8 +89,7 @@ static int32_t audio_midi_enable(struct usbdf_driver *drv, struct usbd_descripto
 				
 				usb_debug2[0] = i;
 				
-				if (usb_debug2[5] = usb_d_ep_init(ep_desc.bEndpointAddress, ep_desc.bmAttributes, ep_desc.wMaxPacketSize)) {
-					usb_debug2[6] = - usb_debug2[5];
+				if (usb_d_ep_init(ep_desc.bEndpointAddress, ep_desc.bmAttributes, ep_desc.wMaxPacketSize)) {
 					return ERR_NOT_INITIALIZED;
 				}
 				if (ep_desc.bEndpointAddress & USB_EP_DIR_IN) {

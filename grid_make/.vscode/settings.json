@@ -4,6 +4,10 @@
         "grid_module.h": "c",
         "grid_ui.h": "c",
         "atmel_start.h": "c",
-        "driver_init.h": "c"
+        "driver_init.h": "c",
+        "array": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "utility": "c"
     }
 }

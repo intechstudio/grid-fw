@@ -20,7 +20,7 @@ volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
 
-
+volatile uint8_t midi_rx_buffer[16] = {0};
 
 static struct timer_task RTC_Scheduler_rx_task;
 static struct timer_task RTC_Scheduler_ping;
@@ -55,6 +55,14 @@ void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 
 void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
+
+
+
+
+
+
+
+
 	grid_sys_rtc_tick_time(&grid_sys_state);	
 	grid_task_timer_tick(&grid_task_state);
 			
@@ -155,8 +163,9 @@ int main(void)
 
 
 	grid_usb_serial_init();
+	//grid_usb_midi_init();
 	grid_usb_midi_init();
-		
+
 	grid_keyboard_init(&grid_keyboard_state);
 		
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
@@ -215,7 +224,6 @@ int main(void)
 		
 		if (usb_init_flag == 0){
 			
-	
 			
 			if (usb_d_get_frame_num() == 0){
 				
@@ -284,27 +292,51 @@ int main(void)
 		
         
 		grid_keyboard_tx_pop();
-        
+		
+		grid_midi_tx_pop();        
+		
 		// MIDI READ TEST CODE
 		
-		uint8_t midi_rx_buffer[10] = {0};
+		
 		uint8_t midi_rx_length = 0;
+
 		
-		grid_midi_tx_pop();
-		
-		audiodf_midi_read(midi_rx_buffer,4);
+		audiodf_midi_read(midi_rx_buffer,16);
 		
 		midi_rx_length = strlen(midi_rx_buffer);		
 		
-			
-		if (midi_rx_buffer[0]!=0 || midi_rx_buffer[1]!=0 || midi_rx_buffer[2]!=0 || midi_rx_buffer[3]!=0){
+		uint8_t found = 0;
+
+		for (uint8_t i=0; i<16; i++){
+
+			if (midi_rx_buffer[i]){
+				found++;
+			}
+
+		}
 
 			
+		if (found){
+
+			
+
+
+			printf("MIDI: %02x %02x %02x %02x\n", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
+			
+
+
 			uint8_t message[30] = {0};
 				
 			sprintf(message, "MIDI: %02x %02x %02x %02x\n", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
 			
 			grid_debug_print_text(message);
+
+			for (uint8_t i=0; i<16; i++){
+
+				midi_rx_buffer[i] = 0;
+
+			}
+
 
 		}	
 		

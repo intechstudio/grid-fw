@@ -29,6 +29,11 @@ bool audiodf_midi_is_enabled(void);
 enum audiodf_midi_cb_type { AUDIODF_MIDI_CB_READ, AUDIODF_MIDI_CB_WRITE};
 
 int32_t audiodf_midi_write_status();
+int32_t audiodf_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
+int32_t audiodf_midi_read(uint8_t *buf, uint32_t size);
+
+
+int32_t audiodf_midi_register_callback(enum audiodf_midi_cb_type cb_type, FUNC_PTR func);
 
 /**
  * \brief Return version
