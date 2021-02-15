@@ -501,6 +501,9 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
   </logicalFolder>
+  <sourceRootList>
+    <Elem>../../device_support_pack</Elem>
+  </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="Release" type="2">
@@ -1094,8 +1097,8 @@
         <platform>2</platform>
       </toolsSet>
       <packs>
-        <pack name="SAMD51_DFP" vendor="Microchip" version="3.3.76"/>
         <pack name="CMSIS" vendor="ARM" version="5.4.0"/>
+        <pack name="SAMD51_DFP" vendor="Microchip" version="3.3.76"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -2253,8 +2256,8 @@
         <platform>2</platform>
       </toolsSet>
       <packs>
-        <pack name="CMSIS" vendor="ARM" version="5.4.0"/>
         <pack name="SAMD51_DFP" vendor="Microchip" version="3.3.76"/>
+        <pack name="CMSIS" vendor="ARM" version="5.4.0"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>

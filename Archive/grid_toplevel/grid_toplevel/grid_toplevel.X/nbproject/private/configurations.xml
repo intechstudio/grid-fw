@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="65">
   <projectmakefile>Makefile</projectmakefile>
-  <defaultConf>3</defaultConf>
+  <defaultConf>1</defaultConf>
   <confs>
     <conf name="Release" type="2">
       <platformToolSN>noToolString</platformToolSN>

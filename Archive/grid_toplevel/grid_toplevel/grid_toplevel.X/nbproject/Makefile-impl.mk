@@ -27,7 +27,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=grid_toplevel.X
 
 # Active Configuration
-DEFAULTCONF=Nightly
+DEFAULTCONF=Debug
 CONF=${DEFAULTCONF}
 
 # All Configurations

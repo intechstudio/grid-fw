@@ -12,7 +12,9 @@
             <asminc-extensions/>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
-            <sourceRootList/>
+            <sourceRootList>
+                <sourceRootElem>../../device_support_pack</sourceRootElem>
+            </sourceRootList>
             <confList>
                 <confElem>
                     <name>Release</name>
