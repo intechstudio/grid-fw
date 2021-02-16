@@ -30,6 +30,7 @@
 #include "grid_usb.h"
 
 
+#include "grid_expr.h"
 
 #include "grid_ain.h"
 #include "grid_buf.h"

@@ -149,9 +149,9 @@ grid/grid_hardwaretest.d grid/grid_hardwaretest.o: \
  ../grid/grid_module_po16_revb.h ../grid/grid_module_pbf4_reva.h \
  ../grid/grid_module_en16_reva.h ../atmel_start_pins.h \
  ../grid/grid_unittest.h ../grid/grid_debug.h ../grid/grid_usb.h \
- ../grid/grid_ain.h ../grid/grid_module.h ../grid/grid_buf.h \
- ../grid/grid_protocol.h ../grid/grid_sys.h ../grid/grid_ui.h \
- ../grid/grid_nvm.h ../grid/grid_msg.h
+ ../grid/grid_expr.h ../grid/grid_ain.h ../grid/grid_module.h \
+ ../grid/grid_buf.h ../grid/grid_protocol.h ../grid/grid_sys.h \
+ ../grid/grid_ui.h ../grid/grid_nvm.h ../grid/grid_msg.h
 
 ../grid/grid_hardwaretest.h:
 
@@ -714,6 +714,8 @@ grid/grid_hardwaretest.d grid/grid_hardwaretest.o: \
 ../grid/grid_debug.h:
 
 ../grid/grid_usb.h:
+
+../grid/grid_expr.h:
 
 ../grid/grid_ain.h:
 

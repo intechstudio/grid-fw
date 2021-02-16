@@ -173,6 +173,12 @@ int main(void)
 		
 	rand_sync_enable(&RAND_0);	
 		
+	grid_expr_init(&grid_expr_state);
+
+	uint8_t test_string[] = "print(2*add(3+4+5+6,10),4)";
+
+	grid_expr_evaluate(&grid_expr_state, test_string, strlen(test_string));
+
 	grid_module_common_init();
     grid_ui_reinit(&grid_ui_state);
 	

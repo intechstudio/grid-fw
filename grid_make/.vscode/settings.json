@@ -8,6 +8,16 @@
         "array": "c",
         "string_view": "c",
         "initializer_list": "c",
-        "utility": "c"
+        "utility": "c",
+        "grid_expr.h": "c",
+        "grid_module_bu16_revb.h": "c",
+        "string.h": "c",
+        "exception": "c",
+        "optional": "c",
+        "functional": "c",
+        "type_traits": "c",
+        "typeinfo": "c",
+        "random": "c",
+        "sstream": "c"
     }
 }
