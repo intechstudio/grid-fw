@@ -1311,12 +1311,65 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 	
 	for(true; i<eve->event_string_length; i++){
 		target_string[i] = eve->event_string[i];
-		
+
+
 	}
 		
+	uint32_t block_start = 0;
+	uint32_t block_length = 0;
+
+
+	uint32_t total_substituted_length = 0;
+
+
 	for(true; i<(eve->event_string_length + eve->action_string_length) ; i++){
-		target_string[i] = eve->action_string[i-eve->event_string_length];
+
+		target_string[i-total_substituted_length] = eve->action_string[i-eve->event_string_length];
 		
+				
+		if (eve->action_string[i-eve->event_string_length] == '{'){
+			
+			block_start = i-eve->event_string_length;
+
+		}
+		else if (eve->action_string[i-eve->event_string_length] == '}'){
+
+			block_length = i-eve->event_string_length - block_start - 1; // -2 to remove {}
+
+			if (block_length){
+
+
+				printf("len %d expr ", block_length);
+				for (uint8_t j = 0; j<block_length; j++){
+					printf("%c", eve->action_string[block_start+1 + j]);
+				}
+				printf("\r\n", block_length);
+
+				grid_expr_evaluate(&grid_expr_state, &eve->action_string[block_start+1], block_length); // +1 to not include {
+
+
+				printf("oslen %d\r\n", grid_expr_state.output_string_length);
+
+				for (uint8_t j = 0; j<grid_expr_state.output_string_length; j++){
+					target_string[i-total_substituted_length-block_length-1+j] = grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length+j];
+					
+					printf("putc: %c\r\n", target_string[i-total_substituted_length-block_length-1+j]);
+					
+					target_string[i-total_substituted_length-block_length-1+j + 1] =0;
+				}
+
+				total_substituted_length += block_length;
+
+				//uint8_t test_string2[] = "print(2*add(3+4+5+6,10),4)";
+
+				//grid_expr_evaluate(&grid_expr_state, test_string2, strlen(test_string2));
+
+				printf(" evaluated %s\r\n", &grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length]);
+
+			}
+		}
+
+
 	}
 	
 	
@@ -1329,12 +1382,12 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
     }
 	
 	
-	return eve->event_string_length + eve->action_string_length;
+	return eve->event_string_length + eve->action_string_length - total_substituted_length;
 		
 }
 
 uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event_index){
-	
+
 	if (event_index == 255){
 		
 		return;
@@ -1346,7 +1399,7 @@ uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event
 			
 		if (ele->event_list[event_index].event_parameter_list[i].group == 'P' || ele->event_list[event_index].event_parameter_list[i].group == 'B'){
 				
-
+			
 				
 			uint32_t parameter_value =  ele->template_parameter_list[ele->event_list[event_index].event_parameter_list[i].address];
 			uint32_t parameter_offset = ele->event_list[event_index].event_parameter_list[i].offset;
