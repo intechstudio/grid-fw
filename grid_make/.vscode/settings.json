@@ -19,6 +19,7 @@
         "typeinfo": "c",
         "random": "c",
         "sstream": "c",
-        "grid_module_en16_reva.h": "c"
+        "grid_module_en16_reva.h": "c",
+        "sam.h": "c"
     }
 }

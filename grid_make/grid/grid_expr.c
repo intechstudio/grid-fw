@@ -11,6 +11,8 @@ Write your code in this editor and press "Run" button to compile and execute it.
 
 void grid_expr_init(struct grid_expr_model* expr){
 
+    expr->current_event = NULL;
+
     grid_expr_clear_input(expr);
     grid_expr_clear_output(expr);
 
@@ -40,6 +42,13 @@ grid_expr_clear_output(struct grid_expr_model* expr){
 
     }
 
+}
+
+
+
+grid_expr_set_current_event(struct grid_expr_model* expr, struct grid_ui_event* eve){
+
+    expr->current_event = eve;
 }
 
 
@@ -557,24 +566,13 @@ void subst_all_variables_starting_from_the_back(char* expr_string, int len){
                 int variable_value = 1;
                 
                 if (var_name_len == 2){
-                    if (var_name_good[0] == 'E'){
+                    if (var_name_good[0] == 'T'){
                         
-                        if (var_name_good[1] >= '0' && var_name_good[1] <= '9' ){
+                        if (var_name_good[1] >= '0' && var_name_good[1] <= '9' ){ //HEX para
                             
-                            int index = var_name_good[1] - '0';
+                            uint8_t index = var_name_good[1] - '0';
                             
-                            variable_value = e_param_list[index];
-                            
-                        }
-                        
-                    }
-                    else if (var_name_good[0] == 'P'){
-                        
-                        if (var_name_good[1] >= '0' && var_name_good[1] <= '9' ){
-                            
-                            int index = var_name_good[1] - '0';
-                            
-                            variable_value = p_param_list[index];
+                            variable_value = (int) grid_expr_state.current_event->parent->template_parameter_list[index];
                             
                         }
                         

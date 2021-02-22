@@ -60,27 +60,97 @@ grid/grid_expr.d grid/grid_expr.o: ../grid/grid_expr.c \
  ../samd51a/include/instance/tcc2.h ../samd51a/include/instance/tcc3.h \
  ../samd51a/include/instance/tcc4.h ../samd51a/include/instance/trng.h \
  ../samd51a/include/instance/usb.h ../samd51a/include/instance/wdt.h \
- ../samd51a/include/pio/samd51n20a.h /usr/include/newlib/stdio.h \
+ ../samd51a/include/pio/samd51n20a.h ../grid/grid_module.h \
+ ../grid/../atmel_start.h ../grid/../driver_init.h \
+ ../grid/../atmel_start_pins.h ../hal/include/hal_gpio.h \
+ ../hal/include/hpl_gpio.h ../hal/utils/include/compiler.h \
+ /usr/lib/gcc/arm-none-eabi/9.2.1/include/stddef.h \
+ /usr/lib/gcc/arm-none-eabi/9.2.1/include/stdbool.h \
+ ../hal/utils/include/parts.h ../samd51a/include/samd51.h \
+ ../hri/hri_d51.h ../hri/hri_ac_d51.h ../hal/include/hal_atomic.h \
+ ../hri/hri_adc_d51.h ../hri/hri_aes_d51.h ../hri/hri_ccl_d51.h \
+ ../hri/hri_cmcc_d51.h ../hri/hri_dac_d51.h ../hri/hri_dmac_d51.h \
+ ../hri/hri_dsu_d51.h ../hri/hri_eic_d51.h ../hri/hri_evsys_d51.h \
+ ../hri/hri_freqm_d51.h ../hri/hri_gclk_d51.h ../hri/hri_hmatrixb_d51.h \
+ ../hri/hri_i2s_d51.h ../hri/hri_icm_d51.h ../hri/hri_mclk_d51.h \
+ ../hri/hri_nvmctrl_d51.h ../hri/hri_osc32kctrl_d51.h \
+ ../hri/hri_oscctrl_d51.h ../hri/hri_pac_d51.h ../hri/hri_pcc_d51.h \
+ ../hri/hri_pdec_d51.h ../hri/hri_pm_d51.h ../hri/hri_port_d51.h \
+ ../hri/hri_qspi_d51.h ../hri/hri_ramecc_d51.h ../hri/hri_rstc_d51.h \
+ ../hri/hri_rtc_d51.h ../hri/hri_sdhc_d51.h ../hri/hri_sercom_d51.h \
+ ../hri/hri_supc_d51.h ../hri/hri_tc_d51.h ../hri/hri_tcc_d51.h \
+ ../hri/hri_trng_d51.h ../hri/hri_usb_d51.h ../hri/hri_wdt_d51.h \
+ ../hal/utils/include/err_codes.h ../hpl/port/hpl_gpio_base.h \
+ ../hal/utils/include/utils_assert.h ../config/hpl_port_config.h \
+ ../hal/include/hal_delay.h ../hal/include/hpl_irq.h \
+ ../hal/include/hpl_reset.h ../hal/include/hpl_sleep.h \
+ ../hal/include/hal_init.h ../hal/include/hpl_init.h \
+ ../hal/include/hal_io.h ../hal/include/hal_sleep.h \
+ ../hal/include/hal_adc_async.h ../hal/include/hpl_adc_async.h \
+ ../hal/include/hpl_adc_sync.h ../hal/include/hpl_irq.h \
+ ../hal/utils/include/utils_ringbuffer.h ../hal/utils/include/compiler.h \
+ ../hal/utils/include/utils_assert.h \
+ ../hal/include/hpl_missing_features.h ../hal/include/hal_crc_sync.h \
+ ../hal/include/hpl_crc_sync.h ../hal/include/hal_evsys.h \
+ ../hal/include/hpl_evsys.h ../hal/include/hal_flash.h \
+ ../hal/include/hpl_flash.h ../hal/include/hal_qspi_dma.h \
+ ../hal/include/hpl_qspi_dma.h ../hal/include/hpl_qspi.h \
+ ../hal/include/hpl_dma.h ../hal/include/hal_timer.h \
+ ../hal/utils/include/utils_list.h ../hal/include/hpl_timer.h \
+ ../hal/include/hal_usart_async.h ../hal/include/hal_io.h \
+ ../hal/include/hpl_usart_async.h ../hal/include/hpl_usart.h \
+ ../hal/include/hal_usart_sync.h ../hal/include/hpl_usart_sync.h \
+ ../hal/include/hpl_usart.h ../hal/include/hal_spi_m_async.h \
+ ../hal/include/hpl_spi_m_async.h ../hal/include/hpl_spi.h \
+ ../hal/utils/include/utils.h ../hal/include/hpl_spi_async.h \
+ ../hal/include/hal_i2c_m_async.h ../hal/include/hpl_i2c_m_async.h \
+ ../hal/include/hpl_i2c_m_sync.h ../hal/include/hal_spi_m_dma.h \
+ ../hal/include/hpl_spi_m_dma.h ../hal/include/hpl_spi_dma.h \
+ ../hal/include/hpl_dma.h ../hpl/tc/hpl_tc_base.h \
+ ../hal/include/hpl_pwm.h ../hal/include/hal_rand_sync.h \
+ ../hal/include/hpl_rand_sync.h ../hal/include/hal_usb_device.h \
+ ../hal/include/hpl_usb_device.h ../hal/include/hpl_usb.h \
+ ../config/hpl_usb_config.h ../hal/include/hal_wdt.h \
+ ../hal/include/hpl_wdt.h ../grid/../usb_start.h \
+ ../usb/class/cdc/device/cdcdf_acm.h ../usb/device/usbdc.h \
+ ../usb/usb_includes.h /usr/include/newlib/string.h \
  /usr/include/newlib/_ansi.h /usr/include/newlib/newlib.h \
  /usr/include/newlib/_newlib_version.h /usr/include/newlib/sys/config.h \
  /usr/include/newlib/machine/ieeefp.h /usr/include/newlib/sys/features.h \
- /usr/include/newlib/sys/cdefs.h \
- /usr/include/newlib/machine/_default_types.h \
- /usr/lib/gcc/arm-none-eabi/9.2.1/include/stddef.h \
- /usr/lib/gcc/arm-none-eabi/9.2.1/include/stdarg.h \
  /usr/include/newlib/sys/reent.h /usr/include/newlib/_ansi.h \
  /usr/include/newlib/sys/_types.h /usr/include/newlib/machine/_types.h \
- /usr/include/newlib/sys/lock.h /usr/include/newlib/sys/types.h \
- /usr/include/newlib/sys/_stdint.h /usr/include/newlib/machine/endian.h \
+ /usr/include/newlib/machine/_default_types.h \
+ /usr/include/newlib/sys/lock.h /usr/include/newlib/sys/cdefs.h \
+ /usr/include/newlib/sys/_locale.h /usr/include/newlib/strings.h \
+ /usr/include/newlib/sys/string.h ../usb/usb_protocol.h \
+ ../usb/usb_includes.h ../config/usbd_config.h \
+ ../usb/class/cdc/usb_protocol_cdc.h \
+ ../usb/class/hid/device/hiddf_mouse.h \
+ ../usb/class/hid/usb_protocol_hid.h \
+ ../usb/class/hid/device/hiddf_keyboard.h \
+ ../usb/class/hid/device/hiddf_generic.h ../usb/class/msc/device/mscdf.h \
+ ../usb/class/msc/usb_protocol_msc.h ../usb/class/msc/spc_protocol.h \
+ ../usb/class/msc/sbc_protocol.h \
+ ../usb/class/composite/device/composite_desc.h ../grid/../stdio_start.h \
+ /usr/include/newlib/stdio.h \
+ /usr/lib/gcc/arm-none-eabi/9.2.1/include/stdarg.h \
+ /usr/include/newlib/sys/types.h /usr/include/newlib/sys/_stdint.h \
+ /usr/include/newlib/machine/endian.h \
  /usr/include/newlib/machine/_endian.h /usr/include/newlib/sys/select.h \
  /usr/include/newlib/sys/_sigset.h /usr/include/newlib/sys/_timeval.h \
  /usr/include/newlib/sys/timespec.h /usr/include/newlib/sys/_timespec.h \
  /usr/include/newlib/sys/_pthreadtypes.h /usr/include/newlib/sys/sched.h \
  /usr/include/newlib/machine/types.h /usr/include/newlib/sys/stdio.h \
+ ../stdio_redirect/stdio_io.h ../grid/../samd51a/include/samd51n20a.h \
  /usr/include/newlib/stdlib.h /usr/include/newlib/machine/stdlib.h \
- /usr/include/newlib/alloca.h /usr/include/newlib/string.h \
- /usr/include/newlib/sys/_locale.h /usr/include/newlib/strings.h \
- /usr/include/newlib/sys/string.h
+ /usr/include/newlib/alloca.h ../grid/grid_d51.h \
+ ../hal/include/hpl_user_area.h ../grid/grid_module_bu16_revb.h \
+ ../grid/grid_module_po16_revb.h ../grid/grid_module_pbf4_reva.h \
+ ../grid/grid_module_en16_reva.h ../atmel_start_pins.h \
+ ../grid/grid_unittest.h ../grid/grid_debug.h ../grid/grid_usb.h \
+ ../grid/grid_ain.h ../grid/grid_module.h ../grid/grid_buf.h \
+ ../grid/grid_led.h ../grid/grid_protocol.h ../grid/grid_sys.h \
+ ../grid/grid_ui.h ../grid/grid_nvm.h ../grid/grid_msg.h
 
 ../grid/grid_expr.h:
 
@@ -290,7 +360,237 @@ grid/grid_expr.d grid/grid_expr.o: ../grid/grid_expr.c \
 
 ../samd51a/include/pio/samd51n20a.h:
 
-/usr/include/newlib/stdio.h:
+../grid/grid_module.h:
+
+../grid/../atmel_start.h:
+
+../grid/../driver_init.h:
+
+../grid/../atmel_start_pins.h:
+
+../hal/include/hal_gpio.h:
+
+../hal/include/hpl_gpio.h:
+
+../hal/utils/include/compiler.h:
+
+/usr/lib/gcc/arm-none-eabi/9.2.1/include/stddef.h:
+
+/usr/lib/gcc/arm-none-eabi/9.2.1/include/stdbool.h:
+
+../hal/utils/include/parts.h:
+
+../samd51a/include/samd51.h:
+
+../hri/hri_d51.h:
+
+../hri/hri_ac_d51.h:
+
+../hal/include/hal_atomic.h:
+
+../hri/hri_adc_d51.h:
+
+../hri/hri_aes_d51.h:
+
+../hri/hri_ccl_d51.h:
+
+../hri/hri_cmcc_d51.h:
+
+../hri/hri_dac_d51.h:
+
+../hri/hri_dmac_d51.h:
+
+../hri/hri_dsu_d51.h:
+
+../hri/hri_eic_d51.h:
+
+../hri/hri_evsys_d51.h:
+
+../hri/hri_freqm_d51.h:
+
+../hri/hri_gclk_d51.h:
+
+../hri/hri_hmatrixb_d51.h:
+
+../hri/hri_i2s_d51.h:
+
+../hri/hri_icm_d51.h:
+
+../hri/hri_mclk_d51.h:
+
+../hri/hri_nvmctrl_d51.h:
+
+../hri/hri_osc32kctrl_d51.h:
+
+../hri/hri_oscctrl_d51.h:
+
+../hri/hri_pac_d51.h:
+
+../hri/hri_pcc_d51.h:
+
+../hri/hri_pdec_d51.h:
+
+../hri/hri_pm_d51.h:
+
+../hri/hri_port_d51.h:
+
+../hri/hri_qspi_d51.h:
+
+../hri/hri_ramecc_d51.h:
+
+../hri/hri_rstc_d51.h:
+
+../hri/hri_rtc_d51.h:
+
+../hri/hri_sdhc_d51.h:
+
+../hri/hri_sercom_d51.h:
+
+../hri/hri_supc_d51.h:
+
+../hri/hri_tc_d51.h:
+
+../hri/hri_tcc_d51.h:
+
+../hri/hri_trng_d51.h:
+
+../hri/hri_usb_d51.h:
+
+../hri/hri_wdt_d51.h:
+
+../hal/utils/include/err_codes.h:
+
+../hpl/port/hpl_gpio_base.h:
+
+../hal/utils/include/utils_assert.h:
+
+../config/hpl_port_config.h:
+
+../hal/include/hal_delay.h:
+
+../hal/include/hpl_irq.h:
+
+../hal/include/hpl_reset.h:
+
+../hal/include/hpl_sleep.h:
+
+../hal/include/hal_init.h:
+
+../hal/include/hpl_init.h:
+
+../hal/include/hal_io.h:
+
+../hal/include/hal_sleep.h:
+
+../hal/include/hal_adc_async.h:
+
+../hal/include/hpl_adc_async.h:
+
+../hal/include/hpl_adc_sync.h:
+
+../hal/include/hpl_irq.h:
+
+../hal/utils/include/utils_ringbuffer.h:
+
+../hal/utils/include/compiler.h:
+
+../hal/utils/include/utils_assert.h:
+
+../hal/include/hpl_missing_features.h:
+
+../hal/include/hal_crc_sync.h:
+
+../hal/include/hpl_crc_sync.h:
+
+../hal/include/hal_evsys.h:
+
+../hal/include/hpl_evsys.h:
+
+../hal/include/hal_flash.h:
+
+../hal/include/hpl_flash.h:
+
+../hal/include/hal_qspi_dma.h:
+
+../hal/include/hpl_qspi_dma.h:
+
+../hal/include/hpl_qspi.h:
+
+../hal/include/hpl_dma.h:
+
+../hal/include/hal_timer.h:
+
+../hal/utils/include/utils_list.h:
+
+../hal/include/hpl_timer.h:
+
+../hal/include/hal_usart_async.h:
+
+../hal/include/hal_io.h:
+
+../hal/include/hpl_usart_async.h:
+
+../hal/include/hpl_usart.h:
+
+../hal/include/hal_usart_sync.h:
+
+../hal/include/hpl_usart_sync.h:
+
+../hal/include/hpl_usart.h:
+
+../hal/include/hal_spi_m_async.h:
+
+../hal/include/hpl_spi_m_async.h:
+
+../hal/include/hpl_spi.h:
+
+../hal/utils/include/utils.h:
+
+../hal/include/hpl_spi_async.h:
+
+../hal/include/hal_i2c_m_async.h:
+
+../hal/include/hpl_i2c_m_async.h:
+
+../hal/include/hpl_i2c_m_sync.h:
+
+../hal/include/hal_spi_m_dma.h:
+
+../hal/include/hpl_spi_m_dma.h:
+
+../hal/include/hpl_spi_dma.h:
+
+../hal/include/hpl_dma.h:
+
+../hpl/tc/hpl_tc_base.h:
+
+../hal/include/hpl_pwm.h:
+
+../hal/include/hal_rand_sync.h:
+
+../hal/include/hpl_rand_sync.h:
+
+../hal/include/hal_usb_device.h:
+
+../hal/include/hpl_usb_device.h:
+
+../hal/include/hpl_usb.h:
+
+../config/hpl_usb_config.h:
+
+../hal/include/hal_wdt.h:
+
+../hal/include/hpl_wdt.h:
+
+../grid/../usb_start.h:
+
+../usb/class/cdc/device/cdcdf_acm.h:
+
+../usb/device/usbdc.h:
+
+../usb/usb_includes.h:
+
+/usr/include/newlib/string.h:
 
 /usr/include/newlib/_ansi.h:
 
@@ -304,14 +604,6 @@ grid/grid_expr.d grid/grid_expr.o: ../grid/grid_expr.c \
 
 /usr/include/newlib/sys/features.h:
 
-/usr/include/newlib/sys/cdefs.h:
-
-/usr/include/newlib/machine/_default_types.h:
-
-/usr/lib/gcc/arm-none-eabi/9.2.1/include/stddef.h:
-
-/usr/lib/gcc/arm-none-eabi/9.2.1/include/stdarg.h:
-
 /usr/include/newlib/sys/reent.h:
 
 /usr/include/newlib/_ansi.h:
@@ -320,7 +612,49 @@ grid/grid_expr.d grid/grid_expr.o: ../grid/grid_expr.c \
 
 /usr/include/newlib/machine/_types.h:
 
+/usr/include/newlib/machine/_default_types.h:
+
 /usr/include/newlib/sys/lock.h:
+
+/usr/include/newlib/sys/cdefs.h:
+
+/usr/include/newlib/sys/_locale.h:
+
+/usr/include/newlib/strings.h:
+
+/usr/include/newlib/sys/string.h:
+
+../usb/usb_protocol.h:
+
+../usb/usb_includes.h:
+
+../config/usbd_config.h:
+
+../usb/class/cdc/usb_protocol_cdc.h:
+
+../usb/class/hid/device/hiddf_mouse.h:
+
+../usb/class/hid/usb_protocol_hid.h:
+
+../usb/class/hid/device/hiddf_keyboard.h:
+
+../usb/class/hid/device/hiddf_generic.h:
+
+../usb/class/msc/device/mscdf.h:
+
+../usb/class/msc/usb_protocol_msc.h:
+
+../usb/class/msc/spc_protocol.h:
+
+../usb/class/msc/sbc_protocol.h:
+
+../usb/class/composite/device/composite_desc.h:
+
+../grid/../stdio_start.h:
+
+/usr/include/newlib/stdio.h:
+
+/usr/lib/gcc/arm-none-eabi/9.2.1/include/stdarg.h:
 
 /usr/include/newlib/sys/types.h:
 
@@ -348,16 +682,50 @@ grid/grid_expr.d grid/grid_expr.o: ../grid/grid_expr.c \
 
 /usr/include/newlib/sys/stdio.h:
 
+../stdio_redirect/stdio_io.h:
+
+../grid/../samd51a/include/samd51n20a.h:
+
 /usr/include/newlib/stdlib.h:
 
 /usr/include/newlib/machine/stdlib.h:
 
 /usr/include/newlib/alloca.h:
 
-/usr/include/newlib/string.h:
+../grid/grid_d51.h:
 
-/usr/include/newlib/sys/_locale.h:
+../hal/include/hpl_user_area.h:
 
-/usr/include/newlib/strings.h:
+../grid/grid_module_bu16_revb.h:
 
-/usr/include/newlib/sys/string.h:
+../grid/grid_module_po16_revb.h:
+
+../grid/grid_module_pbf4_reva.h:
+
+../grid/grid_module_en16_reva.h:
+
+../atmel_start_pins.h:
+
+../grid/grid_unittest.h:
+
+../grid/grid_debug.h:
+
+../grid/grid_usb.h:
+
+../grid/grid_ain.h:
+
+../grid/grid_module.h:
+
+../grid/grid_buf.h:
+
+../grid/grid_led.h:
+
+../grid/grid_protocol.h:
+
+../grid/grid_sys.h:
+
+../grid/grid_ui.h:
+
+../grid/grid_nvm.h:
+
+../grid/grid_msg.h:

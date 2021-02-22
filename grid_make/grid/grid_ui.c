@@ -1345,6 +1345,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 				}
 				printf("\r\n", block_length);
 
+				grid_expr_set_current_event(&grid_expr_state, &eve);
 				grid_expr_evaluate(&grid_expr_state, &eve->action_string[block_start+1], block_length); // +1 to not include {
 
 

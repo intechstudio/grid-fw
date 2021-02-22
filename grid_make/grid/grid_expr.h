@@ -2,6 +2,7 @@
 #define GRID_EXPR_H_INCLUDED
 
 #include "sam.h"
+#include "grid_module.h"
 
 #include <stdio.h>
 #include <stdlib.h> 
@@ -13,6 +14,11 @@
 
 struct grid_expr_model
 {
+
+    struct grid_ui_event* current_event;
+
+    
+
 
     uint8_t input_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH];
     uint8_t input_string_length;
@@ -35,6 +41,9 @@ volatile struct grid_expr_model grid_expr_state;
 
 void grid_expr_init(struct grid_expr_model* expr);
 
+
+
+grid_expr_set_current_event(struct grid_expr_model* expr, struct grid_ui_event* eve);
 grid_expr_evaluate(struct grid_expr_model* expr, char* input_str, uint8_t input_length);
 
 
