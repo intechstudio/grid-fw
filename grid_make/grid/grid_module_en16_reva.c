@@ -71,7 +71,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 			
 
 			uint8_t res_index = i;
-			uint32_t* template_parameter_list = grid_ui_state.bank_list[bank].element_list[res_index].template_parameter_list;
+			int32_t* template_parameter_list = grid_ui_state.bank_list[bank].element_list[res_index].template_parameter_list;
 			uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
 			
 			//BUTTON
@@ -131,7 +131,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				
 
 				uint8_t res_index = i;
-				uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;						
+				int32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;						
 				uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
 					
 				if (grid_ui_encoder_array[i].button_value == 0){ // Button Press Event
@@ -271,7 +271,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				//CRITICAL_SECTION_ENTER()
 
                 uint8_t res_index = i;
-                uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
+                int32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
                 uint8_t grid_module_en16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
 
 				uint8_t command = GRID_PARAMETER_MIDI_CONTROLCHANGE;

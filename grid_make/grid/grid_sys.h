@@ -186,6 +186,8 @@ uint8_t grid_sys_get_bank_red(struct grid_sys_model* mod);
 uint8_t grid_sys_get_bank_gre(struct grid_sys_model* mod);
 uint8_t grid_sys_get_bank_blu(struct grid_sys_model* mod);
 
+uint8_t grid_sys_get_map_state(struct grid_sys_model* mod);
+
 
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t value);
 

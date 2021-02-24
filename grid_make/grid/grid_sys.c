@@ -786,6 +786,12 @@ uint8_t grid_sys_get_bank_blu(struct grid_sys_model* mod){
 	return mod->bank_activebank_color_b;
 }
 
+uint8_t grid_sys_get_map_state(struct grid_sys_model* mod){
+
+	return mod->mapmodestate;
+
+}
+
 
 uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod){
 		

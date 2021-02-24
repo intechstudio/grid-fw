@@ -23,23 +23,9 @@ enum grid_ui_status {
 
 
 #define GRID_UI_EVENT_STRING_maxlength		30
-#define GRID_UI_EVENT_PARAMETER_maxcount	4
 
 
-#define GRID_UI_ACTION_STRING_maxlength		120
-#define GRID_UI_ACTION_PARAMETER_maxcount	14
-
-
-struct grid_ui_template_parameter{
-	
-	enum grid_ui_status status;
-	
-	uint8_t group;
-	uint8_t address;
-	uint8_t length;
-	uint8_t offset;
-		
-};
+#define GRID_UI_ACTION_STRING_maxlength		130
 
 
 struct grid_ui_event
@@ -57,15 +43,9 @@ struct grid_ui_event
 	uint32_t							event_string_length;
 	uint8_t								event_string[GRID_UI_EVENT_STRING_maxlength];
 	
-	uint8_t								event_parameter_count;
-	struct grid_ui_template_parameter	event_parameter_list[GRID_UI_EVENT_PARAMETER_maxcount];
-	
 	uint32_t							action_string_length;
 	uint8_t								action_string[GRID_UI_ACTION_STRING_maxlength];
-	
-	uint8_t								action_parameter_count;
-	struct grid_ui_template_parameter	action_parameter_list[GRID_UI_ACTION_PARAMETER_maxcount];
-	
+
 	uint8_t cfg_changed_flag;
 	uint8_t cfg_default_flag;
 	uint8_t cfg_flashempty_flag;
@@ -82,7 +62,7 @@ struct grid_ui_element
 	
 	enum grid_ui_element_t type;
 	
-	uint32_t template_parameter_list[GRID_TEMPLATE_UI_PARAMETER_LIST_LENGTH];
+	int32_t template_parameter_list[GRID_TEMPLATE_UI_PARAMETER_LIST_LENGTH];
 	
 	uint8_t						event_list_length;
 	struct grid_ui_event*		event_list;
@@ -146,7 +126,6 @@ void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_
 
 
 uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
-uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event_index);
 void grid_ui_event_trigger(struct grid_ui_element* ele, uint8_t event_index);
 void grid_ui_event_trigger_local(struct grid_ui_element* ele, uint8_t event_index);
 

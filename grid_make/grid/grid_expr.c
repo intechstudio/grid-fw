@@ -54,6 +54,8 @@ grid_expr_set_current_event(struct grid_expr_model* expr, struct grid_ui_event* 
 
 grid_expr_evaluate(struct grid_expr_model* expr, char* input_str, uint8_t input_length){
 
+    uint8_t debug_level = 0;
+
     grid_expr_clear_input(expr);
     grid_expr_clear_output(expr);
 
@@ -66,17 +68,22 @@ grid_expr_evaluate(struct grid_expr_model* expr, char* input_str, uint8_t input_
     expr->input_string_length = input_length;
 
 
-
+    if (debug_level) printf("Input: %s\r\n", expr->input_string);
+    if (debug_level) delay_ms(3);
+    
     subst_all_variables_starting_from_the_back(expr->input_string, expr->input_string_length);    
     subst_all_functions_starting_from_the_back(expr->input_string, expr->input_string_length);
 
     int32_t result = expression(expr->input_string);
 
+    expr->return_value = result;
 
-    printf("Result: %d\r\n", result);
-
-    printf("Result String: \"%s\"\r\n", &expr->output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-expr->output_string_length]);
-
+    if (debug_level) printf("Result: %d\r\n", result);
+    if (debug_level) delay_ms(3);
+    
+    if (debug_level) printf("Result String: \"%s\"\r\n", &expr->output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-expr->output_string_length]);
+    if (debug_level) delay_ms(3);
+    
 }
   
   
@@ -262,12 +269,30 @@ int brack_len(char* funcDesc,int maxLen){ //pl.: almafa(6*(2+2))*45
 
 
 void calcSubFnc(char* startposition){
+
+    uint8_t debug_level = 0; 
+
     char* fName = startposition;
     char* fNameEnd = strstr(fName,"(");
+
+
+    if (debug_level) printf("FNC name: ");
+    if (debug_level) delay_ms(1);
+
+    for(uint8_t i=0; i<fNameEnd-fName; i++){
+
+        if (debug_level) printf("%c",fName[i]);
+        if (debug_level) delay_ms(1);
+
+    }
+
+    if (debug_level) printf("\r\n");
+    if (debug_level) delay_ms(1);
     
     int max_offset = brack_len(fNameEnd,strlen(fNameEnd)) -2;
     
-    printf("Maxoffset: %d  ## \r\n", max_offset);
+    if (debug_level) printf("calcSubFnc Maxoffset: %d  ## \r\n", max_offset);
+    if (debug_level) delay_ms(5);;
     
     int param_expr_results[10] = {0};
 
@@ -298,7 +323,7 @@ void calcSubFnc(char* startposition){
  
         if (commaoffset==-1){
             
-            printf("No more commas! \r\n");
+           // printf("No more commas! \r\n");
             
             char param_expr[20] = {0};
             
@@ -308,13 +333,15 @@ void calcSubFnc(char* startposition){
                 
             }
             
-            printf("Parameter: \"%s\", ", param_expr);
-        
+            if (debug_level) printf("Parameter: \"%s\", ", param_expr);
+            if (debug_level) delay_ms(2);
             
             param_expr_results[param_expr_results_count] = expression(param_expr);
             
             
-            printf("Result: \"%d\" \r\n", param_expr_results[param_expr_results_count]);
+            if (debug_level) printf("Result: \"%d\" \r\n", param_expr_results[param_expr_results_count]);
+            if (debug_level) delay_ms(2);
+            
             param_expr_results_count++;
             
             
@@ -322,7 +349,7 @@ void calcSubFnc(char* startposition){
             break;
         }
         else{
-            printf("Commaoffset : %d: %d!  ", i, commaoffset);
+            //printf("Commaoffset : %d: %d!  ", i, commaoffset);
             
             char param_expr[20] = {0};
             
@@ -331,13 +358,16 @@ void calcSubFnc(char* startposition){
                 
             }
             
-            printf("Parameter: \"%s\" , ", param_expr);
+            if (debug_level) printf("Parameter: \"%s\" , ", param_expr);
+            if (debug_level) delay_ms(2);
        
             
             param_expr_results[param_expr_results_count] = expression(param_expr);
             
             
-            printf("Result: \"%d\" \r\n", param_expr_results[param_expr_results_count]);
+            if (debug_level) printf("Result: \"%d\" \r\n", param_expr_results[param_expr_results_count]);
+            if (debug_level) delay_ms(2);
+            
             param_expr_results_count++;
             
             i=commaoffset+1;
@@ -358,6 +388,7 @@ void calcSubFnc(char* startposition){
     for (int i=0; i<9; i++){
         
         if (fName[i] == '('){
+            //justName[i] == '(';
             break;
         }
         else{
@@ -376,29 +407,44 @@ void calcSubFnc(char* startposition){
     else if(strcmp(justName,"add")==0){
         resultOfFnc = param_expr_results[0] + param_expr_results[1];
     }
-    else if(strcmp(justName,"print")==0){
+    else if(strcmp(justName,"print")==0 || strcmp(justName,"p")==0 ){
+
+        //printf("print param count %d\r\n", param_expr_results_count);
 
         char fmt_str[] = "%02x";
         
         //printf("print_length: %d (%c)", param_expr_results[1], param_expr_results[1]+'0');
 
-        if (param_expr_results[1]<=8){
+        if (param_expr_results_count>1){
 
-            fmt_str[2] = param_expr_results[1]+'0';
+            if (param_expr_results[param_expr_results_count-1]<=8){
+
+                fmt_str[2] = param_expr_results[param_expr_results_count-1]+'0';
+            }
+            else{
+
+                fmt_str[2] = 8+'0';
+
+            }
+
         }
-        else{
 
-            fmt_str[2] = 8+'0';
-
-        }
         
         uint8_t temp_array[20] = {0};
         uint8_t temp_array_length = 0;
 
-
+        // print only the first param, maybe enable multiple params later!!
         sprintf(temp_array, fmt_str, param_expr_results[0]);
-        temp_array_length = strlen(temp_array);
-        
+
+        if (param_expr_results_count>1){
+
+            temp_array_length = param_expr_results[param_expr_results_count-1];
+        }
+        else{
+
+            temp_array_length = 2; // default print length
+        }
+
         struct grid_expr_model* expr = &grid_expr_state;
 
         for (uint8_t i=0; i<temp_array_length; i++){
@@ -437,7 +483,7 @@ void calcSubFnc(char* startposition){
     
     char buff[100] = {0};
     
-    sprintf(buff,"(%d)",resultOfFnc); //HEX para
+    sprintf(buff,"(%d)",resultOfFnc); //HEX para, sign para
     
     // hova, milyen hosszan, mit
     insertTo(startposition,(fNameEnd-fName)+max_offset+2,buff);
@@ -446,68 +492,75 @@ void calcSubFnc(char* startposition){
     //printf(" @@ debug: %s @@\n", startposition);
 }
 
+
+uint8_t char_is_valid_name(uint8_t ch){
+
+
+    if ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch == '_')){
+
+                    return 1;
+                }
+    
+    return 0;
+
+
+}
+
+
 void subst_all_variables_starting_from_the_back(char* expr_string, int len){
+
+
+    uint8_t debug_level = 0;
     
+    uint8_t function_name_found = 0;
+    uint8_t variable_name_found = 0;
+    uint8_t variable_name_valid = 0;
     
+
     int izgi = 0;
     int var_end_pos = -1;
     char var_name[10] = {0};
     
-    //printf("Subst Vars\n");
+    if (debug_level) printf("Subst Vars\r\n");
     
     // i must be signed int
-    for(int i= len; i>=0; i--){
+    for(int i = len; i>=0; i--){
         
-        //printf("i=%d\n",i);
-        
-        if (izgi == -1){
+
+        if (function_name_found){
              
             // HEX para
-            if ((expr_string[i] >= '0' && expr_string[i] <= '9') || 
-                (expr_string[i] >= 'a' && expr_string[i] <= 'z') || 
-                (expr_string[i] >= 'A' && expr_string[i] <= 'Z') || 
-                (expr_string[i] == '_')){
+            if (char_is_valid_name(expr_string[i])){
                 //továbbra is para van mert ez funtion
             }
             else {
-                izgi=0;
-                //printf("izgi=%d, i=%d\n", izgi, i);
+                function_name_found=0;
             }
             
             
         }
-        
-        if (izgi == 0){
+        else if (variable_name_found == 0){
             // HEX para
-            if  ((expr_string[i] >= '0' && expr_string[i] <= '9') || 
-                (expr_string[i] >= 'a' && expr_string[i] <= 'z') || 
-                (expr_string[i] >= 'A' && expr_string[i] <= 'Z') || 
-                (expr_string[i] == '_')){
+            if  (char_is_valid_name(expr_string[i])){
                 
                 if (expr_string[i+1] == '('){
                     
-                    izgi = -1;
-                    
-                    //printf("izgi=%d, i=%d\n", izgi, i);
-                    
+                    variable_name_found = 0;
+                    function_name_found = 1;                    
                     
                 }
                 else{
                     
                     if ((expr_string[i] >= '0' && expr_string[i] <= '9')){
                         
-                        izgi = 1;
-                        //printf("izgi=%d, i=%d\n", izgi, i);
+                        variable_name_found = 1;                   
                         var_end_pos = i;
-                        var_name[var_end_pos-i] = expr_string[i];                     
-                        
                     }
                     else{
                         // nem csak szám van benne szóval fasz
-                        izgi = 2;
-                        //printf("izgi=%d, i=%d\n", izgi, i);
-                        var_end_pos = i;
-                        var_name[var_end_pos-i] = expr_string[i];   
+                        variable_name_found = 1;
+                        variable_name_valid = 1; 
+                        var_end_pos = i; 
                         
                     }                  
  
@@ -517,165 +570,282 @@ void subst_all_variables_starting_from_the_back(char* expr_string, int len){
             }
             
         }
-        else if (izgi == 1 || izgi == 2){
-            // HEX para
-            if (((expr_string[i] >= '0' && expr_string[i] <= '9') || 
-            (expr_string[i] >= 'a' && expr_string[i] <= 'z') || 
-            (expr_string[i] >= 'A' && expr_string[i] <= 'Z') || 
-            (expr_string[i] == '_') )&& i!=0){
+
+        if (variable_name_found){
+
+            if (char_is_valid_name(expr_string[i])){
                 
                 
                 var_name[var_end_pos-i] = expr_string[i];
                 
+                
                 if ((expr_string[i] >= '0' && expr_string[i] <= '9')){
+                    //variable_name_valid = 0; //pl nem valid a 0variable12
+                }
+                else{
+                    // nem csak szám van benne szóval fasza
+                    variable_name_valid = 1;
+                }
+
+                
+            }
+
+            if (variable_name_valid){
+
+                uint8_t test = 0;
+
+                if (i==0){
+                    test = 1;
                     
                 }
                 else{
-                    // nem csak szám van benne szóval fasz
-                    izgi = 2;
-                    
-                }
-
-                
-            }
-            else if (izgi==2){
-                
-                if (((expr_string[i] >= '0' && expr_string[i] <= '9') || 
-                    (expr_string[i] >= 'a' && expr_string[i] <= 'z') || 
-                    (expr_string[i] >= 'A' && expr_string[i] <= 'Z') || 
-                    (expr_string[i] == '_') )&& i==0){
-                        //printf("Special\n");
-                        
-                        var_name[var_end_pos-i] = expr_string[i];
-                       i--;
+                    if (!char_is_valid_name(expr_string[i-1])){
+                        test = 1;
                     }
-
-                int var_name_len = strlen(var_name);
-                
-                // need to reverse the variable name string
-                char var_name_good[10] = {0};
-    
-                for (int j = 0; j<var_name_len; j++){
-                    var_name_good[j] = var_name[var_name_len-1-j];
-                    var_name_good[j+1] = 0;
                 }
-                
-                //printf("Variable \"%s\" found!\n", var_name_good);
-                
-                // TODO: Find variable registered in a list or something. Now var is always 1
-                int variable_value = 1;
-                
-                if (var_name_len == 2){
-                    if (var_name_good[0] == 'T'){
+
+                if (test){
+
+
+                    int var_name_len = strlen(var_name);
+                    
+                    // need to reverse the variable name string
+                    char var_name_good[10] = {0};
+        
+                    for (int j = 0; j<var_name_len; j++){
+                        var_name_good[j] = var_name[var_name_len-1-j];
+                        var_name_good[j+1] = 0;
+                    }
+                    
+                    if (debug_level) printf("Variable \"%s\" found!\r\n", var_name_good);
+                    
+                    // TODO: Find variable registered in a list or something. Now var is always 1
+                    int32_t variable_value = 1;
+                    
+                    // T TEST
+                    if (var_name_len == 2 || var_name_len == 3){
                         
-                        if (var_name_good[1] >= '0' && var_name_good[1] <= '9' ){ //HEX para
+                        if (var_name_good[0] == 'T'){
                             
-                            uint8_t index = var_name_good[1] - '0';
+                            uint8_t is_template_var = 1;
+                            uint8_t index = 0;
+
+                            for (uint8_t j = 1; j<var_name_len; j++){
+
+                                if (var_name_good[j] >= '0' && var_name_good[j] <= '9' ){
+
+                                    // all good
+                                    index = index*10;
+                                    index += var_name_good[j] - '0'; 
+
+                                }
+                                else{
+
+                                    is_template_var = 0;
+
+                                }
+
+                            }
+
+                            if (is_template_var){
+
+                                variable_value = grid_expr_state.current_event->parent->template_parameter_list[index];
+
+                                if (debug_level) printf(" ## var dump:  %d ", variable_value);
+
+                                for(uint8_t j=0; j<32; j++){
+                                    if (debug_level) printf("%d",(variable_value>>(31-j))&1);
+
+                                }
+
+                                if (debug_level) printf(" \r\n", variable_value);
                             
-                            variable_value = (int) grid_expr_state.current_event->parent->template_parameter_list[index];
+                            }
                             
                         }
-                        
+                        else if (var_name_good[0] == 'Z'){
+                            
+                            uint8_t is_template_var = 1;
+                            uint8_t index = 0;
+
+                            for (uint8_t j = 1; j<var_name_len; j++){
+
+                                if (var_name_good[j] >= '0' && var_name_good[j] <= '9' ){
+
+                                    // all good
+                                    index = index*10;
+                                    index += var_name_good[j] - '0'; 
+
+                                }
+                                else{
+
+                                    is_template_var = 0;
+
+                                }
+
+                            }
+
+                            if (is_template_var){
+
+                                if (index == 0){
+                                    variable_value = grid_sys_get_bank_num(&grid_sys_state);
+                                }
+                                else if (index == 1){
+                                    variable_value = grid_sys_get_bank_red(&grid_sys_state);
+                                }
+                                else if (index == 2){
+                                    variable_value = grid_sys_get_bank_gre(&grid_sys_state);
+                                }
+                                else if (index == 3){
+                                    variable_value = grid_sys_get_bank_blu(&grid_sys_state);
+                                }
+                                else if (index == 4){
+                                    variable_value = grid_sys_get_map_state(&grid_sys_state);
+                                }
+                                else if (index == 5){
+                                    variable_value = grid_sys_get_bank_next(&grid_sys_state);
+                                }
+                            
+                            }
+                            
+                        }
                     }
+                    
+
+                    char* found = &expr_string[i]; // i+1 helyen lesz mindenképpen!
+                    
+                    char buff[100] = {0};
+                    
+                    sprintf(buff,"%d",variable_value); // HEX para
+                    
+                    // hova, milyen hosszú helyre, mit
+                    insertTo(found,var_name_len,buff);
+                    variable_name_found = 0;
+                    variable_name_valid = 0;
+                    
+                    if (debug_level) printf("%s\r\n", expr_string);
+
+                    for (int j = 0; j<10; j++){
+                        var_name[j] = 0;
+                    }
+
+                    
+                    variable_name_found = 0;
+                    variable_name_valid = 0;
+                
+
+                    for (int j = 0; j<10; j++){
+                        var_name[j] = 0;
+                    }
+
                 }
+
+            }   
+
+            if (!char_is_valid_name(expr_string[i])){
                 
-                
-                char* found = &expr_string[i+1]; // i+1 helyen lesz mindenképpen!
-                
-                char buff[100] = {0};
-                
-                sprintf(buff,"%d",variable_value); // HEX para
-                
-                // hova, milyen hosszú helyre, mit
-                insertTo(found,var_name_len,buff);
-                izgi = 0;
-                
-                printf("%s\n", expr_string);
-                
-            }
-            else{
-                
-                izgi = 0;
+                variable_name_found = 0;
+                variable_name_valid = 0;
+            
+
                 for (int j = 0; j<10; j++){
                     var_name[j] = 0;
                 }
+
                 
+            }         
+
+
+       
+        }else{
+
+            variable_name_found = 0;
+            variable_name_valid = 0;
+        
+
+            for (int j = 0; j<10; j++){
+                var_name[j] = 0;
             }
-            
         }
-        
-        
+   
+    if (debug_level ==2) printf("i%d %d %d %d\r\n",i, function_name_found, variable_name_found, variable_name_valid);
+    if (debug_level ==2) delay_ms(5);
         
     }
     
 }
 
 
+
 void subst_all_functions_starting_from_the_back(char* expr_string, int len){
     
-    int izgi = 0;
+
+    uint8_t debug_level = 0;   
+
+
+    if (debug_level) printf("Subst Fncs in %s\r\n", expr_string);
+    if (debug_level) delay_ms(5);
     
-    printf("Subst Fncs\n");
-    
+    uint8_t function_name_found = 0;
+    uint8_t function_name_valid = 0;
+
     // i must be signed int!!!!
     for(int i= len; i>=0; i--){
         
-        if (izgi == 0){
-            
-            if (expr_string[i] == '(' ){
+        if (expr_string[i] == '(' && function_name_valid == 0){
 
-                izgi = 1;
+            function_name_found = 1;
+            function_name_valid = 0;
                 //printf("izgi=%d, i=%d\n", izgi, i);  
-                
-            }
+
             
         }
-        else if (izgi == 1 || izgi == 2 || izgi == 3){
+        else if (function_name_found){
             
-            if ((expr_string[i] >= '0' && expr_string[i] <= '9') || 
-            (expr_string[i] >= 'a' && expr_string[i] <= 'z') || 
-            (expr_string[i] >= 'A' && expr_string[i] <= 'Z') || 
-            (expr_string[i] == '_')){
+            if (char_is_valid_name(expr_string[i])){
                 
-
-                if (izgi==1){
-                    izgi = 2;
-                }
-
                 if ((expr_string[i] >= '0' && expr_string[i] <= '9')){
                     
                 }
                 else{
                     // nem csak szám van benne szóval fasz
-                    izgi = 3;
+                    function_name_valid = 1;
                     
                 }
                 
                 
-                if (i==0 && izgi==3){ // start of expr string special case
+                if (i==0 && function_name_valid){ // start of expr string special case
                     calcSubFnc(&expr_string[i]);
+
+                    function_name_valid = 0;
+                    function_name_found = 0;
                     
                 }
                 //printf("izgi=%d, i=%d\n", izgi, i);  
                 
             }
-            else if (izgi==3){
+            else if (function_name_valid){
                 
                 calcSubFnc(&expr_string[i+1]);
   
-                izgi = 0;
+                function_name_valid = 0;
+                function_name_found = (expr_string[i] == '(');
                 //printf("izgi=%d, i=%d\n", izgi, i);  
                 
             }
             else{
-                //mégsem
-                izgi = 0;
+                
+                function_name_valid = 0;
+                function_name_found = 0;
                 //printf("izgi=%d, i=%d\n", izgi, i);  
                 //printf("mégsem");
                 
             }
             
         }
+
+        if (debug_level) printf("i%d %d %d\r\n",i, function_name_found, function_name_valid);
+        if (debug_level) delay_ms(1);
     }
     
 }

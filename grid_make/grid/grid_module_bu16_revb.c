@@ -45,7 +45,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 			
 			
 			uint8_t res_index = i;
-			uint32_t* template_parameter_list = grid_ui_state.bank_list[bank].element_list[res_index].template_parameter_list;
+			int32_t* template_parameter_list = grid_ui_state.bank_list[bank].element_list[res_index].template_parameter_list;
 			
 			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL2] = grid_bu16_helper_template_b_tgl2[bank][i];
 			template_parameter_list[GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL3] = grid_bu16_helper_template_b_tgl3[bank][i];
@@ -127,7 +127,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		uint8_t res_valid = result_valid[i];
 		uint8_t res_value = result_value[i];
 		
-		uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;		
+		int32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;		
 		
 		if (res_value != grid_bu16_helper_template_b_abs[res_index] && res_valid == 1){
 			

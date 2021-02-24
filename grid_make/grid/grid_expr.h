@@ -9,8 +9,8 @@
 #include <string.h> 
 
 
-#define GRID_EXPR_INPUT_STRING_MAXLENGTH 100
-#define GRID_EXPR_OUTPUT_STRING_MAXLENGTH 100
+#define GRID_EXPR_INPUT_STRING_MAXLENGTH 250
+#define GRID_EXPR_OUTPUT_STRING_MAXLENGTH 250
 
 struct grid_expr_model
 {
@@ -25,6 +25,8 @@ struct grid_expr_model
 
     uint8_t output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH+1]; 
     uint8_t output_string_length;
+
+    int32_t return_value;
 	
 
 };

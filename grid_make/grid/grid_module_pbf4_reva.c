@@ -134,7 +134,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			uint8_t res_valid = result_valid[i];
 			uint8_t res_value = result_value[i];
 		
-			uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
+			int32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
 		
 			if (res_value != grid_pbf4_helper_template_b_abs[res_index] && res_valid == 1){
 			
@@ -239,7 +239,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 			// Helper variable for readability
 			uint8_t res_index = result_index[i];
 
-			uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
+			int32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
 		
 			if (grid_ain_get_changed(res_index)){
 			

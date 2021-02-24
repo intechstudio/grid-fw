@@ -407,29 +407,7 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	
 	eve->action_string_length = 0;
 	
-	
-	// Initializing Event Parameters
-	eve->event_parameter_count = 0;
-	
 
-	for (uint32_t i=0; i<GRID_UI_EVENT_PARAMETER_maxcount; i++){
-		eve->event_parameter_list[i].status = GRID_UI_STATUS_UNDEFINED;
-		eve->event_parameter_list[i].address = 0;
-		eve->event_parameter_list[i].offset = 0;
-		eve->event_parameter_list[i].length = 0;
-	}	
-	
-	// Initializing Action Parameters
-	eve->action_parameter_count = 0;
-	
-
-	for (uint32_t i=0; i<GRID_UI_ACTION_PARAMETER_maxcount; i++){
-		eve->action_parameter_list[i].status = GRID_UI_STATUS_UNDEFINED;
-		eve->action_parameter_list[i].address = 0;
-		eve->action_parameter_list[i].offset = 0;
-		eve->action_parameter_list[i].length = 0;
-	}	
-			
 			
 	grid_ui_event_generate_eventstring(eve->parent, event_type);
 	grid_ui_event_generate_actionstring(eve->parent, event_type);	
@@ -584,20 +562,6 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t ban
 		offset = grid_msg_body_get_length(&message);
 		grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
 
-		for(uint8_t t=0; t<eve->action_parameter_count; t++){
-				
-			uint32_t parameter_offset  = eve->action_parameter_list[t].offset;
-			uint8_t	 parameter_lenght  = eve->action_parameter_list[t].length;
-				
-			uint8_t	 parameter_group   = eve->action_parameter_list[t].group;
-			uint8_t	 parameter_address = eve->action_parameter_list[t].address;
-				
-				
-			message.body[offset + parameter_offset] = parameter_group;
-			grid_msg_text_set_parameter(&message, offset, parameter_offset+1, parameter_lenght-1, parameter_address);
-
-				
-		}
 
 
 
@@ -686,20 +650,6 @@ uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct g
 	offset = grid_msg_body_get_length(&message);
 	grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
 
-	for(uint8_t t=0; t<eve->action_parameter_count; t++){
-	
-		uint32_t parameter_offset  = eve->action_parameter_list[t].offset;
-		uint8_t	 parameter_lenght  = eve->action_parameter_list[t].length;
-	
-		uint8_t	 parameter_group   = eve->action_parameter_list[t].group;
-		uint8_t	 parameter_address = eve->action_parameter_list[t].address;
-	
-	
-		message.body[offset + parameter_offset] = parameter_group;
-		grid_msg_text_set_parameter(&message, offset, parameter_offset+1, parameter_lenght-1, parameter_address);
-
-	
-	}
 
 
 
@@ -850,20 +800,7 @@ void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_u
 	}
 	ele->event_list[event_index].event_string_length = 0;
 	
-	// Clear Action Parameter List
-	for(uint8_t i=0; i<GRID_UI_EVENT_PARAMETER_maxcount; i++){
 		
-		ele->event_list[event_index].event_parameter_list[i].status = GRID_UI_STATUS_UNDEFINED;
-		ele->event_list[event_index].event_parameter_list[i].address = 0;
-		ele->event_list[event_index].event_parameter_list[i].group = 0;
-		ele->event_list[event_index].event_parameter_list[i].length = 0;
-		ele->event_list[event_index].event_parameter_list[i].offset = 0;
-	}
-	ele->event_list[event_index].event_parameter_count = 0;
-	
-	
-	
-	
 	// TEMPLATE MAGIC COMING UP!
 	
 	uint8_t parameter_list_length = 0;
@@ -881,40 +818,12 @@ void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_u
 			ele->event_list[event_index].event_string[i] -= 128;
 			
 		}
-		
-		
-		// if current character is P or B and the next character is a number from 0 to 9
-		if ((event_string[i-1] == 'P' || event_string[i-1] == 'B' || event_string[i-1] == 'E') && (event_string[i]-'0') < 10){
-			
-			ele->event_list[event_index].event_parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;
-			
-			ele->event_list[event_index].event_parameter_list[parameter_list_length].group = event_string[i-1];
-			
-			ele->event_list[event_index].event_parameter_list[parameter_list_length].address = (event_string[i]-'0');
-			ele->event_list[event_index].event_parameter_list[parameter_list_length].offset = i-1;
-			ele->event_list[event_index].event_parameter_list[parameter_list_length].length = 2;
-			parameter_list_length++;
-			
-		}
-		else if (event_string[i-1] == 'Z' && (event_string[i]-'0') < GRID_TEMPLATE_Z_PARAMETER_LIST_LENGTH){
-			
-			ele->event_list[event_index].event_parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;
-			
-			ele->event_list[event_index].event_parameter_list[parameter_list_length].group = event_string[i-1];
-			
-			ele->event_list[event_index].event_parameter_list[parameter_list_length].address = (event_string[i]-'0');
-			ele->event_list[event_index].event_parameter_list[parameter_list_length].offset = i-1;
-			ele->event_list[event_index].event_parameter_list[parameter_list_length].length = 2;
-			
-			parameter_list_length++;
-			
-		}
+	
 		
 	}
 	
 
 	ele->event_list[event_index].event_string_length = event_string_length;
-	ele->event_list[event_index].event_parameter_count = parameter_list_length;
 	
 	grid_ui_smart_trigger(ele->parent->parent, ele->parent->index, ele->index, event_type);
 	
@@ -1102,23 +1011,6 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 	}
 	ele->event_list[event_index].action_string_length = 0;
 	
-	// Clear Action Parameter List
-	for(uint8_t i=0; i<GRID_UI_ACTION_PARAMETER_maxcount; i++){
-		
-		ele->event_list[event_index].action_parameter_list[i].status = GRID_UI_STATUS_UNDEFINED;
-		ele->event_list[event_index].action_parameter_list[i].address = 0;
-		ele->event_list[event_index].action_parameter_list[i].group = 0;
-		ele->event_list[event_index].action_parameter_list[i].length = 0;
-		ele->event_list[event_index].action_parameter_list[i].offset = 0;
-	}
-	ele->event_list[event_index].action_parameter_count = 0;
-	
-	
-	
-	
-	// TEMPLATE MAGIC COMING UP!
-	
-	uint8_t parameter_list_length = 0;
 
 	uint8_t escaped_characters = 0;
 	
@@ -1135,52 +1027,13 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 			
 		}
 		
-		
-		// if current character is P or B and the next character is a number from 0 to 9
-		if ((action_string[i-1] == 'P' || action_string[i-1] == 'B' || action_string[i-1] == 'E') && (action_string[i]-'0') < 10){
-						
-			ele->event_list[event_index].action_parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;
-			
-			ele->event_list[event_index].action_parameter_list[parameter_list_length].group = action_string[i-1];
-			
-			ele->event_list[event_index].action_parameter_list[parameter_list_length].address = (action_string[i]-'0');
-			ele->event_list[event_index].action_parameter_list[parameter_list_length].offset = i-1;
-			ele->event_list[event_index].action_parameter_list[parameter_list_length].length = 2;
-			parameter_list_length++;
-	
-		}
-		else if (action_string[i-1] == 'Z' && (action_string[i]-'0') < GRID_TEMPLATE_Z_PARAMETER_LIST_LENGTH){
-			
-			ele->event_list[event_index].action_parameter_list[parameter_list_length].status = GRID_UI_STATUS_INITIALIZED;		
-			
-			ele->event_list[event_index].action_parameter_list[parameter_list_length].group = action_string[i-1];
-			
-			ele->event_list[event_index].action_parameter_list[parameter_list_length].address = (action_string[i]-'0');
-			ele->event_list[event_index].action_parameter_list[parameter_list_length].offset = i-1;
-			ele->event_list[event_index].action_parameter_list[parameter_list_length].length = 2;
-			
-			parameter_list_length++;
-			
-		}		
-		
 	}
 	
 
 	ele->event_list[event_index].action_string_length = action_string_length;
-	ele->event_list[event_index].action_parameter_count = parameter_list_length;
 	
-
-			
-		
-		
 	ele->event_list[event_index].cfg_changed_flag = 1;
 	
-	
-// 	uint8_t debugtext[GRID_UI_ACTION_STRING_maxlength+50] = {0};
-// 	sprintf(debugtext, "CFG Execute: B %d, E %d, Ev %d, Len: %d Ac: %s Esc: %d", ele->parent->index, ele->index, event_type, action_string_length, action_string, escaped_characters);
-// 	grid_debug_print_text(debugtext);
-
-	grid_ui_event_template_action(ele, event_index);
 	
 }
 
@@ -1242,8 +1095,6 @@ void grid_ui_smart_trigger(struct grid_ui_model* mod, uint8_t bank, uint8_t elem
 		return;
 	}
 	
-	
-	grid_ui_event_template_action(&mod->bank_list[bank].element_list[element], event_index);
 	grid_ui_event_trigger(&mod->bank_list[bank].element_list[element], event_index);
 
 }
@@ -1257,10 +1108,7 @@ void grid_ui_smart_trigger_local(struct grid_ui_model* mod, uint8_t bank, uint8_
 		
 		return;
 	}
-	
-	grid_ui_event_template_action(&mod->bank_list[bank].element_list[element], event_index);
 
-    
     grid_ui_event_trigger_local(&mod->bank_list[bank].element_list[element], event_index);
     
 }
@@ -1307,13 +1155,22 @@ uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve){
 uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_string){
 
 	
+	uint8_t temp[500] = {0};
+
 	uint32_t i=0;
 	
+	// copy event string
 	for(true; i<eve->event_string_length; i++){
-		target_string[i] = eve->event_string[i];
-
-
+		temp[i] = eve->event_string[i];
+	
 	}
+
+	// copy action string
+	for(true; i<(eve->event_string_length + eve->action_string_length); i++){
+		temp[i] = eve->action_string[i - eve->event_string_length];
+	
+	}
+	
 		
 	uint32_t block_start = 0;
 	uint32_t block_length = 0;
@@ -1321,53 +1178,142 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 	uint32_t total_substituted_length = 0;
 
+	uint8_t condition_state = 0;
+	uint8_t condition_istrue = 0;
 
-	for(true; i<(eve->event_string_length + eve->action_string_length) ; i++){
 
-		target_string[i-total_substituted_length] = eve->action_string[i-eve->event_string_length];
-		
-				
-		if (eve->action_string[i-eve->event_string_length] == '{'){
+	for(i=0; i<(eve->event_string_length + eve->action_string_length) ; i++){
+
+		target_string[i-total_substituted_length] = temp[i];
+
+
+		if (temp[i] == '{'){
 			
-			block_start = i-eve->event_string_length;
+			block_start = i;
 
 		}
-		else if (eve->action_string[i-eve->event_string_length] == '}'){
+		else if (temp[i] == '}'){
 
-			block_length = i-eve->event_string_length - block_start - 1; // -2 to remove {}
+			block_length = i - block_start + 1;
 
 			if (block_length){
 
 
-				printf("len %d expr ", block_length);
+				//printf("block_length %d \r\n", block_length);
+				
+				grid_expr_set_current_event(&grid_expr_state, eve);
+				grid_expr_evaluate(&grid_expr_state, &temp[block_start+1], block_length-2); // -2 to not include {
+
+
+				//printf("oslen %d\r\n", grid_expr_state.output_string_length);
+
+
+				// Clear all of the copied expression
 				for (uint8_t j = 0; j<block_length; j++){
-					printf("%c", eve->action_string[block_start+1 + j]);
+					target_string[i-total_substituted_length-block_length+1+j] = 0;	
 				}
-				printf("\r\n", block_length);
 
-				grid_expr_set_current_event(&grid_expr_state, &eve);
-				grid_expr_evaluate(&grid_expr_state, &eve->action_string[block_start+1], block_length); // +1 to not include {
-
-
-				printf("oslen %d\r\n", grid_expr_state.output_string_length);
-
+				// Copy the result
 				for (uint8_t j = 0; j<grid_expr_state.output_string_length; j++){
-					target_string[i-total_substituted_length-block_length-1+j] = grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length+j];
+					target_string[i-total_substituted_length-block_length+j + 1] = grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length+j];
 					
-					printf("putc: %c\r\n", target_string[i-total_substituted_length-block_length-1+j]);
-					
-					target_string[i-total_substituted_length-block_length-1+j + 1] =0;
+					//printf("putc: %c\r\n", grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length+j]);
+				
 				}
 
-				total_substituted_length += block_length;
+				total_substituted_length += block_length - grid_expr_state.output_string_length;
 
-				//uint8_t test_string2[] = "print(2*add(3+4+5+6,10),4)";
+				//printf(" evaluated %s\r\n", &grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length]);
 
-				//grid_expr_evaluate(&grid_expr_state, test_string2, strlen(test_string2));
+				if (condition_state == 1){
 
-				printf(" evaluated %s\r\n", &grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length]);
-
+					condition_istrue = grid_expr_state.return_value;
+				}
 			}
+		}
+		else if(temp[i] == '#'){
+
+			if (temp[i+1] == 'I' && temp[i+2] == 'F' ){
+				printf("#IF  \r\n");
+
+				total_substituted_length += 3;
+				i+=2;
+				condition_state = 1;
+
+			}else if (temp[i+1] == 'T' && temp[i+2] == 'H' ){
+				printf("#THEN  \r\n");
+
+
+
+				if (!condition_istrue){
+					//SKIP
+					printf("skip \r\n");
+					for(uint8_t j=1; j<(eve->event_string_length + eve->action_string_length)-i; j++){
+
+						if (temp[i+j] == '#'){
+
+
+							total_substituted_length += j;
+							i+=j-1;
+							break;
+						}
+						else if(j==(eve->event_string_length + eve->action_string_length)-i-1){
+							printf("Syntax Error!\r\n");
+						}
+
+					}
+
+				}
+				else{
+
+					total_substituted_length += 3;
+					i+=2;
+
+					printf("no skip\r\n");
+				}
+
+
+			}else if (temp[i+1] == 'E' && temp[i+2] == 'L' ){
+				printf("#ELSE  \r\n");
+
+				if (condition_istrue){
+					//SKIP
+					printf("skip \r\n");
+					for(uint8_t j=1; j<(eve->event_string_length + eve->action_string_length)-i; j++){
+
+						if (temp[i+j] == '#'){
+	
+							total_substituted_length += j;
+							i+=j-1;
+							break;
+						}
+						else if(j==(eve->event_string_length + eve->action_string_length)-i-1){
+							printf("Syntax Error!\r\n");
+						}
+
+					}
+
+				}
+				else{
+					printf("no skip\r\n");
+
+
+					total_substituted_length += 3;
+					i+=2;
+
+				}
+
+			}else if (temp[i+1] == 'E' && temp[i+2] == 'N' ){
+				printf("#ENDIF  \r\n");
+				total_substituted_length += 3;
+				i+=2;
+				condition_istrue = 0;
+				condition_state = 0;
+			}
+			
+
+
+
 		}
 
 
@@ -1387,145 +1333,4 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 		
 }
 
-uint8_t grid_ui_event_template_action(struct grid_ui_element* ele, uint8_t event_index){
-
-	if (event_index == 255){
-		
-		return;
-	}
-	
-	// TEMPLATE EVENT
-	for (uint8_t i=0; i<ele->event_list[event_index].event_parameter_count; i++){
-			
-			
-		if (ele->event_list[event_index].event_parameter_list[i].group == 'P' || ele->event_list[event_index].event_parameter_list[i].group == 'B'){
-				
-			
-				
-			uint32_t parameter_value =  ele->template_parameter_list[ele->event_list[event_index].event_parameter_list[i].address];
-			uint32_t parameter_offset = ele->event_list[event_index].event_parameter_list[i].offset;
-			uint8_t parameter_length = ele->event_list[event_index].event_parameter_list[i].length;
-				
-			uint8_t error = 0;
-			grid_msg_set_parameter(ele->event_list[event_index].event_string, parameter_offset, parameter_length, parameter_value, &error);
-			//printf("Value: %d Offset: %d Error: %d\n", error, error, error);
-			//printf("%d\n",error);
-			//delay_us(50);
-			//ele->event[event_index].action_string
-		}
-		if (ele->event_list[event_index].event_parameter_list[i].group == 'E'){
-					
-			uint32_t parameter_value =  ele->template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + ele->event_list[event_index].event_parameter_list[i].address];
-			uint32_t parameter_offset = ele->event_list[event_index].event_parameter_list[i].offset;
-			uint8_t parameter_length = ele->event_list[event_index].event_parameter_list[i].length;
-					
-			uint8_t error = 0;
-			grid_msg_set_parameter(ele->event_list[event_index].event_string, parameter_offset, parameter_length, parameter_value, &error);
-			//printf("Value: %d Offset: %d Error: %d\n", error, error, error);
-			//printf("%d\n",error);
-			//delay_us(50);
-			//ele->event[event_index].action_string
-		}
-		else if (ele->event_list[event_index].event_parameter_list[i].group == 'Z'){
-
-			uint32_t parameter_value = 0;
-			uint32_t parameter_offset = ele->event_list[event_index].event_parameter_list[i].offset;
-			uint8_t parameter_length = ele->event_list[event_index].event_parameter_list[i].length;
-
-			if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_NUMBER_ACTIVE){
-				parameter_value = grid_sys_get_bank_num(&grid_sys_state);
-			}
-			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_RED){
-				parameter_value = grid_sys_get_bank_red(&grid_sys_state);
-			}
-			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_GRE){
-				parameter_value = grid_sys_get_bank_gre(&grid_sys_state);
-			}
-			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_BLU){
-				parameter_value = grid_sys_get_bank_blu(&grid_sys_state);
-			}
-			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_MAPMODE_STATE){
-				parameter_value = grid_sys_state.mapmodestate;
-			}
-			else if (ele->event_list[event_index].event_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_NEXT){
-				parameter_value = grid_sys_get_bank_next(&grid_sys_state);
-			}
-				
-			uint8_t error = 0;
-			grid_msg_set_parameter(ele->event_list[event_index].event_string, parameter_offset, parameter_length, parameter_value, &error);
-
-		}
-			
-
-			
-	}
-	// TEMPLATE ACTION
-	for (uint8_t i=0; i<ele->event_list[event_index].action_parameter_count; i++){
-		
-		
-		if (ele->event_list[event_index].action_parameter_list[i].group == 'P' || ele->event_list[event_index].action_parameter_list[i].group == 'B'){
-		
-			uint32_t parameter_value =  ele->template_parameter_list[ele->event_list[event_index].action_parameter_list[i].address];
-			uint32_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
-			uint8_t parameter_length = ele->event_list[event_index].action_parameter_list[i].length;
-			
-			uint8_t error = 0;
-			grid_msg_set_parameter(ele->event_list[event_index].action_string, parameter_offset, parameter_length, parameter_value, &error);
-			//printf("Value: %d Offset: %d Error: %d\n", error, error, error);
-			//printf("%d\n",error);
-			//delay_us(50);
-			//ele->event[event_index].action_string
-		}
-		if (ele->event_list[event_index].action_parameter_list[i].group == 'E'){
-					
-			uint32_t parameter_value =  ele->template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + ele->event_list[event_index].action_parameter_list[i].address];
-			uint32_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
-			uint8_t parameter_length = ele->event_list[event_index].action_parameter_list[i].length;
-					
-			uint8_t error = 0;
-			grid_msg_set_parameter(ele->event_list[event_index].action_string, parameter_offset, parameter_length, parameter_value, &error);
-			//printf("Value: %d Offset: %d Error: %d\n", error, error, error);
-			//printf("%d\n",error);
-			//delay_us(50);
-			//ele->event[event_index].action_string
-		}
-		else if (ele->event_list[event_index].action_parameter_list[i].group == 'Z'){
-
-			uint32_t parameter_value = 0;
-			uint32_t parameter_offset = ele->event_list[event_index].action_parameter_list[i].offset;
-			uint8_t parameter_length = ele->event_list[event_index].action_parameter_list[i].length;
-
-			if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_NUMBER_ACTIVE){
-				parameter_value = grid_sys_get_bank_num(&grid_sys_state);
-			}
-			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_RED){
-				parameter_value = grid_sys_get_bank_red(&grid_sys_state);
-			}
-			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_GRE){
-				parameter_value = grid_sys_get_bank_gre(&grid_sys_state);
-			}
-			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_COLOR_BLU){
-				parameter_value = grid_sys_get_bank_blu(&grid_sys_state);
-			}
-			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_MAPMODE_STATE){
-				parameter_value = grid_sys_state.mapmodestate;
-			}
-			else if (ele->event_list[event_index].action_parameter_list[i].address == GRID_TEMPLATE_Z_PARAMETER_BANK_NEXT){
-				parameter_value = grid_sys_get_bank_next(&grid_sys_state);
-			}
-			
-			uint8_t error = 0;
-			grid_msg_set_parameter(ele->event_list[event_index].action_string, parameter_offset, parameter_length, parameter_value, &error);
-
-		}
-		
-
-		
-	}
-	
-	
-	
-	
-	
-}
 

@@ -99,7 +99,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		// Helper variable for readability
 		uint8_t res_index = result_index[i];
 
-		uint32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
+		int32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
  
         
         
