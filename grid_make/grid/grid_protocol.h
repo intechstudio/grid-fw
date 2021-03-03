@@ -600,7 +600,7 @@ enum grid_ui_event_t {
 #define GRID_CLASS_CONFIGURATION_ACTIONSTRING_offset		11
 #define GRID_CLASS_CONFIGURATION_ACTIONSTRING_length		0
 
-
+  
 
 
 // CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)

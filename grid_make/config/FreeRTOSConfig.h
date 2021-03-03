@@ -28,7 +28,7 @@ void assert_triggered(const char *file, uint32_t line);
 // <i> Default: 5
 // <id> freertos_max_priorities
 #ifndef configMAX_PRIORITIES
-#define configMAX_PRIORITIES (5)
+#define configMAX_PRIORITIES (32)
 #endif
 
 // <o> Minimal stack size<64-1024>
@@ -46,7 +46,7 @@ void assert_triggered(const char *file, uint32_t line);
 // <i> Default: 2400
 // <id> freertos_total_heap_size
 #ifndef configTOTAL_HEAP_SIZE
-#define configTOTAL_HEAP_SIZE ((size_t)(2400))
+#define configTOTAL_HEAP_SIZE ((size_t)(32000))
 #endif
 
 // <q> Enable mutex
@@ -66,7 +66,7 @@ void assert_triggered(const char *file, uint32_t line);
 // <e> Advanced
 // <id> freertos_advanced
 #ifndef FREERTOS_ADVANCED_CONFIG
-#define FREERTOS_ADVANCED_CONFIG 0
+#define FREERTOS_ADVANCED_CONFIG 1
 #endif
 
 // <q> Enable preemption
@@ -167,7 +167,7 @@ void assert_triggered(const char *file, uint32_t line);
 // <i> Default is 1KHz
 // <id> freertos_tick_rate_hz
 #ifndef configTICK_RATE_HZ
-#define configTICK_RATE_HZ ((TickType_t)1000)
+#define configTICK_RATE_HZ ((TickType_t)5000)
 #endif
 
 /* Software timer definitions. */

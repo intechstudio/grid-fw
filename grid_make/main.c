@@ -36,6 +36,10 @@
 static TaskHandle_t      xCreatedExampleTask;
 static TaskHandle_t      xCreatedExample2Task;
 static TaskHandle_t      xCreatedLedTask;
+
+
+static TaskHandle_t      xCreatedUsbTask;
+
 static SemaphoreHandle_t disp_mutex;
 
 /**
@@ -71,7 +75,7 @@ static void example_task(void *p)
 		CRITICAL_SECTION_LEAVE()
 
 
-		vTaskDelay(500/portTICK_PERIOD_MS);
+		vTaskDelay(1000*configTICK_RATE_HZ/1000);
 
 		//os_sleep(400);
 
@@ -86,7 +90,7 @@ static void example2_task(void *p)
 
 		//printf("Example2 Task Printing... \r\n");
 		//globaltest++;
-		vTaskDelay(1000/portTICK_PERIOD_MS);
+		vTaskDelay(1000); //  portTICK_PERIOD_MS
 
 
 	}
@@ -346,6 +350,22 @@ static void led_task_inner(){
 
 }
 
+static void usb_task(void *p)
+{
+	(void)p;
+
+	while (1) {
+
+	
+		usb_task_inner();
+		vTaskDelay(1*configTICK_RATE_HZ/1000);
+
+	}
+
+}
+
+
+
 
 static void led_task(void *p)
 {
@@ -354,17 +374,18 @@ static void led_task(void *p)
 	while (1) {
 
 		globaltest++;
-		// usb_task_inner();
-		// nvm_task_inner();
-		// receive_task_inner();
-		//	ui_task_inner();
-		// inbound_task_inner();
-		// outbound_task_inner();
+		
+
+		nvm_task_inner();
+		receive_task_inner();
+		ui_task_inner();
+		inbound_task_inner();
+		outbound_task_inner();
 
 		led_task_inner();
 
 
-		vTaskDelay(10/portTICK_PERIOD_MS);
+		vTaskDelay(1*configTICK_RATE_HZ/1000);
 
 		//os_sleep(400);
 
@@ -572,29 +593,29 @@ int main(void)
 	// 	}
 	// }
 
-	if (xTaskCreate(example_task, "Example", TASK_EXAMPLE_STACK_SIZE/4, NULL, TASK_EXAMPLE_STACK_PRIORITY, &xCreatedExampleTask)
+
+    
+	if (xTaskCreate(usb_task, "Usb Task", ((2000)/sizeof(portSTACK_TYPE)), NULL, tskIDLE_PRIORITY +5 , &xCreatedUsbTask)
+	    != pdPASS) {
+		while (1) {
+			;
+		}
+	}
+
+
+	if (xTaskCreate(led_task, "Led Task", ((16000)/sizeof(portSTACK_TYPE)), NULL, tskIDLE_PRIORITY +1, &xCreatedLedTask)
 	    != pdPASS) {
 		while (1) {
 			;
 		}
 	}
     
-	// if (xTaskCreate(example2_task, "Example2", TASK_EXAMPLE_STACK_SIZE, NULL, TASK_EXAMPLE2_STACK_PRIORITY, &xCreatedExample2Task)
-	//     != pdPASS) {
-	// 	while (1) {
-	// 		;
-	// 	}
-	// }
-
-
-	if (xTaskCreate(led_task, "Led Task", ((2*512)/sizeof(portSTACK_TYPE)), NULL, tskIDLE_PRIORITY +1, &xCreatedLedTask)
+	if (xTaskCreate(example_task, "Example", TASK_EXAMPLE_STACK_SIZE, NULL, TASK_EXAMPLE_STACK_PRIORITY, &xCreatedExampleTask)
 	    != pdPASS) {
 		while (1) {
 			;
 		}
 	}
-    
-
 	
 	while (1) {
 	

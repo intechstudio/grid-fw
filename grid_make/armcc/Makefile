@@ -70,10 +70,10 @@ hpl/dsu
 OBJS +=  \
 hal/src/hal_io.o \
 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_1.o \
 hpl/pac/hpl_pac.o \
 hal/src/hal_i2c_m_async.o \
 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/event_groups.o \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_4.o \
 hpl/wdt/hpl_wdt.o \
 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/croutine.o \
 usb/usb_protocol.o \
@@ -148,10 +148,10 @@ hpl/dsu/hpl_dsu.o
 OBJS_AS_ARGS +=  \
 "hal/src/hal_io.o" \
 "thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_1.o" \
 "hpl/pac/hpl_pac.o" \
 "hal/src/hal_i2c_m_async.o" \
 "thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/event_groups.o" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_4.o" \
 "hpl/wdt/hpl_wdt.o" \
 "thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/croutine.o" \
 "usb/usb_protocol.o" \
@@ -239,6 +239,7 @@ DEPS_AS_ARGS +=  \
 "hpl/core/hpl_core_m4.d" \
 "hpl/evsys/hpl_evsys.d" \
 "usb/class/cdc/device/cdcdf_acm.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/RVDS/ARM_CM4F/port.d" \
 "hal/src/hal_spi_m_dma.d" \
 "samd51a/armcc/Device/SAMD51/Source/system_samd51.d" \
 "hpl/usb/hpl_usb.d" \
@@ -277,11 +278,10 @@ DEPS_AS_ARGS +=  \
 "hpl/systick/hpl_systick.d" \
 "hal/src/hal_usart_async.d" \
 "hpl/osc32kctrl/hpl_osc32kctrl.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_1.d" \
 "rtos_start.d" \
 "examples/driver_examples.d" \
 "hpl/rtc/hpl_rtc.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/RVDS/ARM_CM4F/port.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_4.d" \
 "thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.d" \
 "thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/queue.d" \
 "samd51a/armcc/Device/SAMD51/Source/ARM/startup_samd51.d" \
