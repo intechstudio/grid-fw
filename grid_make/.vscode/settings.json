@@ -20,6 +20,8 @@
         "random": "c",
         "sstream": "c",
         "grid_module_en16_reva.h": "c",
-        "sam.h": "c"
+        "sam.h": "c",
+        "samd51n20a.h": "c",
+        "audiodf_midi.h": "c"
     }
 }

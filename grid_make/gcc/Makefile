@@ -95,6 +95,9 @@ DEPS_AS_ARGS +=  \
 \
 
 
+
+
+
 ################################################################################
 # Automatically-generated file. Do not edit!
 ################################################################################
@@ -125,7 +128,8 @@ else
 endif
 
 # List the subdirectories for creating object files
-SUB_DIRS += \
+SUB_DIRS +=  \
+ \
 hpl/adc \
 usb/class/cdc/device \
 hpl/ramecc \
@@ -135,6 +139,8 @@ hpl/qspi \
 examples \
 hpl/systick \
 hpl/oscctrl \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0 \
 stdio_redirect \
 hpl/tc \
 hpl/osc32kctrl \
@@ -149,6 +155,8 @@ hpl/rtc \
 hpl/trng \
 usb/class/hid/device \
 hpl/usb \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang \
 hpl/mclk \
 hpl/cmcc \
 hpl/gclk \
@@ -164,11 +172,16 @@ hpl/dsu
 # List the object files
 OBJS +=  \
 hal/src/hal_io.o \
-stdio_redirect/stdio_io.o \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_1.o \
 hpl/pac/hpl_pac.o \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.o \
 hal/src/hal_i2c_m_async.o \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/event_groups.o \
 hpl/wdt/hpl_wdt.o \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/croutine.o \
 usb/usb_protocol.o \
+stdio_redirect/stdio_io.o \
 hal/src/hal_spi_m_dma.o \
 stdio_redirect/gcc/write.o \
 samd51a/gcc/system_samd51.o \
@@ -177,15 +190,17 @@ hal/src/hal_init.o \
 hpl/evsys/hpl_evsys.o \
 hpl/core/hpl_core_m4.o \
 hal/src/hal_cache.o \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/stream_buffer.o \
 usb/class/cdc/device/cdcdf_acm.o \
 hal/utils/src/utils_syscalls.o \
 hpl/qspi/hpl_qspi.o \
 hpl/nvmctrl/hpl_nvmctrl.o \
-usb/class/msc/device/mscdf.o \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/queue.o \
 usb_start.o \
 hal/src/hal_timer.o \
 hpl/usb/hpl_usb.o \
 stdio_redirect/gcc/read.o \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/timers.o \
 hal/src/hal_delay.o \
 hpl/pm/hpl_pm.o \
 hpl/core/hpl_init.o \
@@ -205,20 +220,24 @@ hpl/gclk/hpl_gclk.o \
 stdio_start.o \
 hal/src/hal_flash.o \
 hal/src/hal_spi_m_async.o \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/rtos_port.o \
 hal/src/hal_crc_sync.o \
 hal/src/hal_usb_device.o \
-main.o \
+rtos_start.o \
 hal/utils/src/utils_list.o \
 hpl/osc32kctrl/hpl_osc32kctrl.o \
 hpl/rtc/hpl_rtc.o \
 examples/driver_examples.o \
 driver_init.o \
 hal/src/hal_usart_async.o \
+usb/class/msc/device/mscdf.o \
 hpl/sercom/hpl_sercom.o \
 hal/utils/src/utils_ringbuffer.o \
 hal/src/hal_atomic.o \
+main.o \
 hal/src/hal_gpio.o \
 hal/src/hal_qspi_dma.o \
+thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o \
 hal/src/hal_evsys.o \
 hal/utils/src/utils_event.o \
 hal/src/hal_sleep.o \
@@ -233,11 +252,16 @@ hpl/dsu/hpl_dsu.o
 
 OBJS_AS_ARGS +=  \
 "hal/src/hal_io.o" \
-"stdio_redirect/stdio_io.o" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_1.o" \
 "hpl/pac/hpl_pac.o" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.o" \
 "hal/src/hal_i2c_m_async.o" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/event_groups.o" \
 "hpl/wdt/hpl_wdt.o" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/croutine.o" \
 "usb/usb_protocol.o" \
+"stdio_redirect/stdio_io.o" \
 "hal/src/hal_spi_m_dma.o" \
 "stdio_redirect/gcc/write.o" \
 "samd51a/gcc/system_samd51.o" \
@@ -246,15 +270,17 @@ OBJS_AS_ARGS +=  \
 "hpl/evsys/hpl_evsys.o" \
 "hpl/core/hpl_core_m4.o" \
 "hal/src/hal_cache.o" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/stream_buffer.o" \
 "usb/class/cdc/device/cdcdf_acm.o" \
 "hal/utils/src/utils_syscalls.o" \
 "hpl/qspi/hpl_qspi.o" \
 "hpl/nvmctrl/hpl_nvmctrl.o" \
-"usb/class/msc/device/mscdf.o" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/queue.o" \
 "usb_start.o" \
 "hal/src/hal_timer.o" \
 "hpl/usb/hpl_usb.o" \
 "stdio_redirect/gcc/read.o" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/timers.o" \
 "hal/src/hal_delay.o" \
 "hpl/pm/hpl_pm.o" \
 "hpl/core/hpl_init.o" \
@@ -274,20 +300,24 @@ OBJS_AS_ARGS +=  \
 "stdio_start.o" \
 "hal/src/hal_flash.o" \
 "hal/src/hal_spi_m_async.o" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/rtos_port.o" \
 "hal/src/hal_crc_sync.o" \
 "hal/src/hal_usb_device.o" \
-"main.o" \
+"rtos_start.o" \
 "hal/utils/src/utils_list.o" \
 "hpl/osc32kctrl/hpl_osc32kctrl.o" \
 "hpl/rtc/hpl_rtc.o" \
 "examples/driver_examples.o" \
 "driver_init.o" \
 "hal/src/hal_usart_async.o" \
+"usb/class/msc/device/mscdf.o" \
 "hpl/sercom/hpl_sercom.o" \
 "hal/utils/src/utils_ringbuffer.o" \
 "hal/src/hal_atomic.o" \
+"main.o" \
 "hal/src/hal_gpio.o" \
 "hal/src/hal_qspi_dma.o" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o" \
 "hal/src/hal_evsys.o" \
 "hal/utils/src/utils_event.o" \
 "hal/src/hal_sleep.o" \
@@ -333,6 +363,13 @@ DIR_INCLUDES +=  \
 -I"../hri" \
 -I"../" \
 -I"../config" \
+-I"../thirdparty/RTOS" \
+-I"../thirdparty/RTOS/freertos/FreeRTOSV10.0.0" \
+-I"../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include" \
+-I"../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F" \
+-I"../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/module_config" \
+-I"../" \
+-I"../config" \
 -I"../usb" \
 -I"../usb/class/cdc" \
 -I"../usb/class/cdc/device" \
@@ -356,6 +393,8 @@ DEPS := $(OBJS:%.o=%.d)
 
 DEPS_AS_ARGS +=  \
 "usb/usb_protocol.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/event_groups.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/croutine.d" \
 "hpl/wdt/hpl_wdt.d" \
 "stdio_redirect/stdio_io.d" \
 "hal/utils/src/utils_event.d" \
@@ -370,6 +409,8 @@ DEPS_AS_ARGS +=  \
 "stdio_redirect/gcc/write.d" \
 "hal/src/hal_spi_m_dma.d" \
 "hpl/usb/hpl_usb.d" \
+"main.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/timers.d" \
 "stdio_redirect/gcc/read.d" \
 "usb/class/msc/device/mscdf.d" \
 "hpl/nvmctrl/hpl_nvmctrl.d" \
@@ -381,6 +422,7 @@ DEPS_AS_ARGS +=  \
 "hal/src/hal_adc_async.d" \
 "hpl/dmac/hpl_dmac.d" \
 "hal/utils/src/utils_assert.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/stream_buffer.d" \
 "hal/src/hal_delay.d" \
 "hal/src/hal_crc_sync.d" \
 "hpl/core/hpl_init.d" \
@@ -390,20 +432,25 @@ DEPS_AS_ARGS +=  \
 "hpl/gclk/hpl_gclk.d" \
 "hal/src/hal_usb_device.d" \
 "hpl/pac/hpl_pac.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/rtos_port.d" \
 "hal/src/hal_spi_m_async.d" \
 "hal/src/hal_usart_sync.d" \
 "usb/class/hid/device/hiddf_keyboard.d" \
 "hpl/trng/hpl_trng.d" \
 "hal/src/hal_rand_sync.d" \
 "hpl/mclk/hpl_mclk.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.d" \
 "driver_init.d" \
 "usb_start.d" \
 "hpl/systick/hpl_systick.d" \
 "hal/src/hal_usart_async.d" \
 "hpl/osc32kctrl/hpl_osc32kctrl.d" \
-"main.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_1.d" \
+"rtos_start.d" \
 "examples/driver_examples.d" \
 "hpl/rtc/hpl_rtc.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/queue.d" \
 "hal/src/hal_qspi_dma.d" \
 "hal/src/hal_cache.d" \
 "hal/utils/src/utils_list.d" \
@@ -420,6 +467,7 @@ DEPS_AS_ARGS +=  \
 "usb/device/usbdc.d" \
 "hpl/oscctrl/hpl_oscctrl.d" \
 "hpl/adc/hpl_adc.d" \
+"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.d" \
 "samd51a/gcc/gcc/startup_samd51.d" \
 "atmel_start.d"
 

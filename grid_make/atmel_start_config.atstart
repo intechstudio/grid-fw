@@ -19,6 +19,51 @@ board:
 details: null
 application: null
 middlewares:
+  FREERTOS_V1000_0:
+    user_label: FREERTOS_V1000_0
+    configuration:
+      freertos_advanced: false
+      freertos_check_for_stack_overflow: false
+      freertos_etaskgetstate: false
+      freertos_generate_run_time_stats: false
+      freertos_max_co_routine_priorities: 2
+      freertos_max_priorities: 5
+      freertos_minimal_stack_size: 64
+      freertos_pctaskgettaskname: false
+      freertos_tick_rate_hz: 1000
+      freertos_timer_task_priority: 2
+      freertos_timer_task_stack_depth: 64
+      freertos_total_heap_size: 2400
+      freertos_use_16_bit_ticks: false
+      freertos_use_application_task_tag_functions: false
+      freertos_use_co_routines: false
+      freertos_use_counting_semaphores: true
+      freertos_use_idle_hook: false
+      freertos_use_malloc_failed_hook: false
+      freertos_use_mutexes: true
+      freertos_use_port_optimised_functions: false
+      freertos_use_preemption: true
+      freertos_use_recursive_mutexes: true
+      freertos_use_stats_formatting_functions: true
+      freertos_use_tick_hook: false
+      freertos_use_tickless_idle: false
+      freertos_use_timers: true
+      freertos_use_trace_facility: true
+      freertos_uxtaskpriorityget: false
+      freertos_vtaskcleanupresources: false
+      freertos_vtaskdelay: true
+      freertos_vtaskdelayuntil: false
+      freertos_vtaskdelete: false
+      freertos_vtaskpriorityset: false
+      freertos_vtasksuspend: true
+      freertos_xresumefromisr: false
+      freertos_xtaskgetcurrenttaskhandle: false
+      freertos_xtaskgetidletaskhandle: false
+      freertos_xtimerpendfunctioncall: false
+    definition: Atmel:RTOS1000:0.0.1::FreeRTOS_v1000_MemMang_1
+    functionality: FreeRTOS_v10.0.0
+    api: RTOS:FreeRTOSv1000:MemMang_1
+    dependencies: {}
   USB_CHAPTER_9:
     user_label: USB_CHAPTER_9
     configuration: {}

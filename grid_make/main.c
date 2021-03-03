@@ -16,16 +16,373 @@
 #include <hpl_reset.h>
 
 
+#include "hal_rtos.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+
+
+
+#include "usb/class/midi/device/audiodf_midi.h"
+
+
+
+
+#define TASK_EXAMPLE_STACK_SIZE (512 / sizeof(portSTACK_TYPE))
+#define TASK_EXAMPLE_STACK_PRIORITY (tskIDLE_PRIORITY + 2)
+#define TASK_EXAMPLE2_STACK_PRIORITY (tskIDLE_PRIORITY + 3)
+
+static TaskHandle_t      xCreatedExampleTask;
+static TaskHandle_t      xCreatedExample2Task;
+static TaskHandle_t      xCreatedLedTask;
+static SemaphoreHandle_t disp_mutex;
+
+/**
+ * OS example task
+ *
+ * \param[in] p The void pointer for OS task Standard model.
+ *
+ */
+
+volatile uint32_t globaltest = 0;
+
+static void example_task(void *p)
+{
+	(void)p;
+	while (1) {
+
+		// if (xSemaphoreTake(disp_mutex, 1)) {
+		// 	/* add your code */
+
+		// 	printf("ExampleTask ????... %d \r\n", globaltest);
+
+		// }
+
+		// if (globaltest%4 == 0){
+
+
+		// 	xSemaphoreGive(disp_mutex);
+
+		// }
+		CRITICAL_SECTION_ENTER()
+
+		printf("ExampleTask ????... %d \r\n", globaltest);
+		CRITICAL_SECTION_LEAVE()
+
+
+		vTaskDelay(500/portTICK_PERIOD_MS);
+
+		//os_sleep(400);
+
+	}
+}
+
+
+static void example2_task(void *p)
+{
+	(void)p;
+	while (1) {
+
+		//printf("Example2 Task Printing... \r\n");
+		//globaltest++;
+		vTaskDelay(1000/portTICK_PERIOD_MS);
+
+
+	}
+}
+
+
+volatile uint8_t midi_rx_buffer[16] = {0};
+
+static void usb_task_inner(){
+
+
+	
+	grid_keyboard_tx_pop();
+	
+	grid_midi_tx_pop();        
+	
+	// MIDI READ TEST CODE
+	
+	
+	uint8_t midi_rx_length = 0;
+
+	
+	audiodf_midi_read(midi_rx_buffer,16);
+	
+	midi_rx_length = strlen(midi_rx_buffer);		
+	
+	uint8_t found = 0;
+
+	for (uint8_t i=0; i<16; i++){
+
+		if (midi_rx_buffer[i]){
+			found++;
+		}
+
+	}
+
+		
+	if (found){
+
+		
+
+
+		printf("MIDI: %02x %02x %02x %02x\n", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
+		
+
+
+		uint8_t message[30] = {0};
+			
+		sprintf(message, "MIDI: %02x %02x %02x %02x\n", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
+		
+		grid_debug_print_text(message);
+
+		for (uint8_t i=0; i<16; i++){
+
+			midi_rx_buffer[i] = 0;
+
+		}
+
+
+	}	
+	
+	
+	// SERIAL READ 
+
+	cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
+	
+	// itt lesz a baj: circ buffer k�ne
+	uint16_t usblength = strlen(GRID_PORT_H.rx_double_buffer);
+	
+	if (usblength){	
+
+		GRID_PORT_H.rx_double_buffer_status = 1;			
+		GRID_PORT_H.rx_double_buffer_read_start_index = 0;
+		GRID_PORT_H.rx_double_buffer_seek_start_index = usblength-3; //-3
+
+		//grid_port_receive_decode(&GRID_PORT_H, 0, usblength-2);
+		grid_port_receive_task(&GRID_PORT_H);
+		
+		//clear buffer otherwise strlen might fail
+		for(uint32_t i=0; i<usblength; i++){
+			
+			GRID_PORT_H.rx_double_buffer[i] = 0;
+		}
+			
+	}
+
+
+}
+
+
+
+static void nvm_task_inner(){
+
+	// NVM BULK READ
+	
+	if (GRID_PORT_U.rx_double_buffer_status == 0){
+		
+		if (grid_nvm_ui_bulk_read_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+			
+			grid_nvm_ui_bulk_read_next(&grid_nvm_state, &grid_ui_state);
+			
+			
+		}	
+		
+	}
+	
+
+	// NVM BULK CLEAR
+	
+	if (grid_nvm_ui_bulk_clear_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+		
+		grid_nvm_ui_bulk_clear_next(&grid_nvm_state, &grid_ui_state);
+		
+		
+	}
+	
+	// NVM BULK STORE
+	
+	if (grid_nvm_ui_bulk_store_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+		
+		grid_nvm_ui_bulk_store_next(&grid_nvm_state, &grid_ui_state);
+			
+		
+	}
+	
+	
+	
+	// NVM READ
+
+	uint32_t nvmlength = GRID_PORT_U.rx_double_buffer_status;
+						
+	if (nvmlength){
+			
+		GRID_PORT_U.rx_double_buffer_status = 1;
+		GRID_PORT_U.rx_double_buffer_read_start_index = 0;
+		GRID_PORT_U.rx_double_buffer_seek_start_index = nvmlength-1; //-3
+			
+		// GETS HERE	
+		//grid_port_receive_decode(&GRID_PORT_U, 0, nvmlength-1);		
+		grid_port_receive_task(&GRID_PORT_U);	
+	}	
+		
+	//clear buffer
+	for (uint32_t i=0; i<GRID_NVM_PAGE_SIZE; i++)
+	{
+		GRID_PORT_U.rx_double_buffer[i] = 0;
+	}
+
+}
+
+static void receive_task_inner(){
+			
+	grid_port_receive_task(&GRID_PORT_N);
+	grid_port_receive_task(&GRID_PORT_E);
+	grid_port_receive_task(&GRID_PORT_S);
+	grid_port_receive_task(&GRID_PORT_W);							
+
+}
+
+static void ui_task_inner(){
+	
+	grid_port_process_ui(&GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
+
+}
+
+
+static void inbound_task_inner(){
+		
+	/* ========================= GRID INBOUND TASK ============================= */						
+
+	
+	// Copy data from UI_RX to HOST_TX & north TX AND STUFF
+	grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback
+	
+	grid_port_process_inbound(&GRID_PORT_N, 0);		
+	grid_port_process_inbound(&GRID_PORT_E, 0);		
+	grid_port_process_inbound(&GRID_PORT_S, 0);
+	grid_port_process_inbound(&GRID_PORT_W, 0);
+	
+	grid_port_process_inbound(&GRID_PORT_H, 0);	// USB	
+
+}
+
+static void outbound_task_inner(){
+		
+		
+	/* ========================= GRID OUTBOUND TASK ============================= */	
+	
+	// If previous xfer is completed and new data is available then move data from txbuffer to txdoublebuffer and start new xfer.
+	grid_port_process_outbound_usart(&GRID_PORT_N);
+	grid_port_process_outbound_usart(&GRID_PORT_E);
+	grid_port_process_outbound_usart(&GRID_PORT_S);
+	grid_port_process_outbound_usart(&GRID_PORT_W);
+	
+	// Translate grid messages to usb messages and xfer them to the host
+	grid_port_process_outbound_usb(&GRID_PORT_H);
+	
+	// Translate grid messages to ui commands (LED)
+	grid_port_process_outbound_ui(&GRID_PORT_U);
+
+
+}
+
+
+static void led_task_inner(){
+
+	if (grid_sys_state.alert_state){
+		
+		grid_sys_state.alert_state--;
+
+		if (grid_sys_alert_read_color_changed_flag(&grid_sys_state)){
+			
+			grid_sys_alert_clear_color_changed_flag(&grid_sys_state);			
+			
+			uint8_t color_r   = grid_sys_alert_get_color_r(&grid_sys_state);
+			uint8_t color_g   = grid_sys_alert_get_color_g(&grid_sys_state);
+			uint8_t color_b   = grid_sys_alert_get_color_b(&grid_sys_state);
+			
+			for (uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
+
+				grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*0   , color_g*0   , color_b*0);
+				grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*0.5 , color_g*0.5 , color_b*0.5);
+				grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*1   , color_g*1   , color_b*1);
+					
+				
+			}
+	
+		}
+		
+		uint8_t intensity = grid_sys_alert_get_color_intensity(&grid_sys_state);
+
+		for (uint8_t i=0; i<grid_led_state.led_number; i++){	
+			//grid_led_set_color(i, 0, 255, 0);	
+	
+			grid_led_set_phase(&grid_led_state, i, GRID_LED_LAYER_ALERT, intensity);
+							
+		}
+		
+		
+	}
+	
+	grid_task_enter_task(&grid_task_state, GRID_TASK_LED);
+
+	grid_led_tick(&grid_led_state);
+
+
+	
+	grid_led_lowlevel_render_all(&grid_led_state);	
+				
+// 	 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
+// 	
+// 	 		}
+	grid_led_lowlevel_hardware_start_transfer(&grid_led_state);
+
+	
+		
+
+}
+
+
+static void led_task(void *p)
+{
+	(void)p;
+
+	while (1) {
+
+		globaltest++;
+		// usb_task_inner();
+		// nvm_task_inner();
+		// receive_task_inner();
+		//	ui_task_inner();
+		// inbound_task_inner();
+		// outbound_task_inner();
+
+		led_task_inner();
+
+
+		vTaskDelay(10/portTICK_PERIOD_MS);
+
+		//os_sleep(400);
+
+	}
+}
+
+
+
+
+
 volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
 
-volatile uint8_t midi_rx_buffer[16] = {0};
 
 static struct timer_task RTC_Scheduler_rx_task;
 static struct timer_task RTC_Scheduler_ping;
 static struct timer_task RTC_Scheduler_realtime;
-static struct timer_task RTC_Scheduler_report;
 static struct timer_task RTC_Scheduler_heartbeat;
 
 void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
@@ -99,14 +456,6 @@ void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 
 }
 
-volatile uint8_t scheduler_report_flag = 0;
-static void RTC_Scheduler_report_cb(const struct timer_task *const timer_task)
-{
-	scheduler_report_flag = 1;
-	
-}
-
-
 
 void init_timer(void)
 {
@@ -121,9 +470,6 @@ void init_timer(void)
 	RTC_Scheduler_heartbeat.cb       = RTC_Scheduler_heartbeat_cb;
 	RTC_Scheduler_heartbeat.mode     = TIMER_TASK_REPEAT;
 	
-	RTC_Scheduler_report.interval = RTC1SEC/10;
-	RTC_Scheduler_report.cb       = RTC_Scheduler_report_cb;
-	RTC_Scheduler_report.mode     = TIMER_TASK_REPEAT;
 	
 	RTC_Scheduler_realtime.interval = 1;
 	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
@@ -131,7 +477,6 @@ void init_timer(void)
 
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_ping);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_heartbeat);
-	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_report);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime);
 	
 	timer_start(&RTC_Scheduler);
@@ -156,7 +501,7 @@ int main(void)
 	grid_d51_init(); // Check User Row
 
 
-	#include "usb/class/midi/device/audiodf_midi.h"
+
 	audiodf_midi_init();
 
 	composite_device_start();
@@ -219,16 +564,40 @@ int main(void)
 //
 //    }
 
+	// disp_mutex = xSemaphoreCreateMutex();
 
+	// if (disp_mutex == NULL) {
+	// 	while (1) {
+	// 		;
+	// 	}
+	// }
 
+	if (xTaskCreate(example_task, "Example", TASK_EXAMPLE_STACK_SIZE/4, NULL, TASK_EXAMPLE_STACK_PRIORITY, &xCreatedExampleTask)
+	    != pdPASS) {
+		while (1) {
+			;
+		}
+	}
     
+	// if (xTaskCreate(example2_task, "Example2", TASK_EXAMPLE_STACK_SIZE, NULL, TASK_EXAMPLE2_STACK_PRIORITY, &xCreatedExample2Task)
+	//     != pdPASS) {
+	// 	while (1) {
+	// 		;
+	// 	}
+	// }
+
+
+	if (xTaskCreate(led_task, "Led Task", ((2*512)/sizeof(portSTACK_TYPE)), NULL, tskIDLE_PRIORITY +1, &xCreatedLedTask)
+	    != pdPASS) {
+		while (1) {
+			;
+		}
+	}
+    
+
 	
 	while (1) {
 	
-			
-		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);
-		
-		
 		
 		if (usb_init_flag == 0){
 			
@@ -249,6 +618,33 @@ int main(void)
 				
 				usb_init_flag = 1;
 				
+				
+
+				printf("Forever! \r\n");
+				delay_ms(2);
+
+
+				vTaskStartScheduler();
+
+				while(1){
+				
+		
+					
+					usb_task_inner();
+					nvm_task_inner();
+
+					receive_task_inner();
+
+					ui_task_inner();
+
+					inbound_task_inner();
+
+					outbound_task_inner();
+
+					led_task_inner();
+
+					delay_ms(1);
+				}
 			}
 			
 		}
@@ -269,320 +665,34 @@ int main(void)
 		
 		loopcounter++;
 	
-		loopstart = grid_sys_rtc_get_time(&grid_sys_state);
-		
-		if (scheduler_report_flag){
-			
-			
-			
-			scheduler_report_flag=0;
-		
-			uint32_t task_val[GRID_TASK_NUMBER] = {0};
-				
-			for(uint8_t i = 0; i<GRID_TASK_NUMBER; i++){
-	
-				task_val[i] = grid_task_timer_read(&grid_task_state, i);
-			
-			}
-			grid_task_timer_reset(&grid_task_state);
-			
-			loopcounter = 0;
-			loopslow = 0;
-			loopfast = 0;
-			loopwarp = 0;
-		}
-		
-		
-		
-							
-		grid_task_enter_task(&grid_task_state, GRID_TASK_RECEIVE);
 
 		
-        
-		grid_keyboard_tx_pop();
-		
-		grid_midi_tx_pop();        
-		
-		// MIDI READ TEST CODE
 		
 		
-		uint8_t midi_rx_length = 0;
-
-		
-		audiodf_midi_read(midi_rx_buffer,16);
-		
-		midi_rx_length = strlen(midi_rx_buffer);		
-		
-		uint8_t found = 0;
-
-		for (uint8_t i=0; i<16; i++){
-
-			if (midi_rx_buffer[i]){
-				found++;
-			}
-
-		}
-
-			
-		if (found){
-
-			
-
-
-			printf("MIDI: %02x %02x %02x %02x\n", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
-			
-
-
-			uint8_t message[30] = {0};
-				
-			sprintf(message, "MIDI: %02x %02x %02x %02x\n", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
-			
-			grid_debug_print_text(message);
-
-			for (uint8_t i=0; i<16; i++){
-
-				midi_rx_buffer[i] = 0;
-
-			}
-
-
-		}	
-		
-		
-		// SERIAL READ 
-	
-		cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
-		
-		// itt lesz a baj: circ buffer k�ne
-		uint16_t usblength = strlen(GRID_PORT_H.rx_double_buffer);
-		
-		if (usblength){	
-
-			GRID_PORT_H.rx_double_buffer_status = 1;			
-			GRID_PORT_H.rx_double_buffer_read_start_index = 0;
-			GRID_PORT_H.rx_double_buffer_seek_start_index = usblength-3; //-3
-
-			//grid_port_receive_decode(&GRID_PORT_H, 0, usblength-2);
-			grid_port_receive_task(&GRID_PORT_H);
-			
-			//clear buffer otherwise strlen might fail
-			for(uint32_t i=0; i<usblength; i++){
-				
-				GRID_PORT_H.rx_double_buffer[i] = 0;
-			}
-				
-		}
-
-
-		// NVM BULK READ
-		
-		if (GRID_PORT_U.rx_double_buffer_status == 0){
-			
-			if (grid_nvm_ui_bulk_read_is_in_progress(&grid_nvm_state, &grid_ui_state)){
-				
-				grid_nvm_ui_bulk_read_next(&grid_nvm_state, &grid_ui_state);
-				
-				
-			}	
-			
-		}
+		usb_task_inner();
 		
 
-		// NVM BULK CLEAR
-		
-		if (grid_nvm_ui_bulk_clear_is_in_progress(&grid_nvm_state, &grid_ui_state)){
-			
-			grid_nvm_ui_bulk_clear_next(&grid_nvm_state, &grid_ui_state);
-			
-			
-		}
-        
-        // NVM BULK STORE
-		
-		if (grid_nvm_ui_bulk_store_is_in_progress(&grid_nvm_state, &grid_ui_state)){
-			
-			grid_nvm_ui_bulk_store_next(&grid_nvm_state, &grid_ui_state);
-			 
-			
-		}
-		
-		
-		
-		// NVM READ
-	
-		uint32_t nvmlength = GRID_PORT_U.rx_double_buffer_status;
-							
-		if (nvmlength){
-				
-			GRID_PORT_U.rx_double_buffer_status = 1;
-			GRID_PORT_U.rx_double_buffer_read_start_index = 0;
-			GRID_PORT_U.rx_double_buffer_seek_start_index = nvmlength-1; //-3
-				
-			// GETS HERE	
-			//grid_port_receive_decode(&GRID_PORT_U, 0, nvmlength-1);		
-			grid_port_receive_task(&GRID_PORT_U);	
-		}	
-			
-		//clear buffer
-		for (uint32_t i=0; i<GRID_NVM_PAGE_SIZE; i++)
-		{
-			GRID_PORT_U.rx_double_buffer[i] = 0;
-		}
+
+		nvm_task_inner();
 		
 					
-		// CHECK RX BUFFERS
-				
-				
-		grid_port_receive_task(&GRID_PORT_N);
-		grid_port_receive_task(&GRID_PORT_E);
-		grid_port_receive_task(&GRID_PORT_S);
-		grid_port_receive_task(&GRID_PORT_W);							
-	
-	
-		/* ========================= GRID REPORT TASK ============================= */
-		grid_task_enter_task(&grid_task_state, GRID_TASK_REPORT);
 
 
-		grid_port_process_ui(&GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
+		receive_task_inner();
 
+		ui_task_inner();
+		
+		
+		
+		
+		
+		inbound_task_inner();
 
-		/* ========================= GRID INBOUND TASK ============================= */						
-		grid_task_enter_task(&grid_task_state, GRID_TASK_INBOUND);	
-		
-		// Copy data from UI_RX to HOST_TX & north TX AND STUFF
-		grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback
-		
-		grid_port_process_inbound(&GRID_PORT_N, 0);		
-		grid_port_process_inbound(&GRID_PORT_E, 0);		
-		grid_port_process_inbound(&GRID_PORT_S, 0);
-		grid_port_process_inbound(&GRID_PORT_W, 0);
-		
-		grid_port_process_inbound(&GRID_PORT_H, 0);	// USB	
-		
-		
-		
-		
-		
-		
-		
-		/* ========================= GRID OUTBOUND TASK ============================= */		
-		grid_task_enter_task(&grid_task_state, GRID_TASK_OUTBOUND);
-		
-		// If previous xfer is completed and new data is available then move data from txbuffer to txdoublebuffer and start new xfer.
-		grid_port_process_outbound_usart(&GRID_PORT_N);
-		grid_port_process_outbound_usart(&GRID_PORT_E);
-		grid_port_process_outbound_usart(&GRID_PORT_S);
-		grid_port_process_outbound_usart(&GRID_PORT_W);
-		
-		// Translate grid messages to usb messages and xfer them to the host
-		grid_port_process_outbound_usb(&GRID_PORT_H);
-		
-		// Translate grid messages to ui commands (LED)
-		grid_port_process_outbound_ui(&GRID_PORT_U);
+		outbound_task_inner();
 
+		led_task_inner();
 
-		/* ========================= GRID ALERT TASK ============================= */		
-		grid_task_enter_task(&grid_task_state, GRID_TASK_ALERT);	
-		
-			
-		if (grid_sys_state.alert_state){
-			
-			grid_sys_state.alert_state--;
-	
-			if (grid_sys_alert_read_color_changed_flag(&grid_sys_state)){
-				
-				grid_sys_alert_clear_color_changed_flag(&grid_sys_state);			
-				
-				uint8_t color_r   = grid_sys_alert_get_color_r(&grid_sys_state);
-				uint8_t color_g   = grid_sys_alert_get_color_g(&grid_sys_state);
-				uint8_t color_b   = grid_sys_alert_get_color_b(&grid_sys_state);
-				
-				for (uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
-
-					grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*0   , color_g*0   , color_b*0);
-					grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*0.5 , color_g*0.5 , color_b*0.5);
-					grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*1   , color_g*1   , color_b*1);
-						
-					
-				}
-		
-			}
-			
-			uint8_t intensity = grid_sys_alert_get_color_intensity(&grid_sys_state);
-	
-			for (uint8_t i=0; i<grid_led_state.led_number; i++){	
-				//grid_led_set_color(i, 0, 255, 0);	
-		
-				grid_led_set_phase(&grid_led_state, i, GRID_LED_LAYER_ALERT, intensity);
-								
-			}
-			
-			
-		}
-		
-		grid_task_enter_task(&grid_task_state, GRID_TASK_LED);
-	
-		grid_led_tick(&grid_led_state);
-	
-
-		
-		if (loopcounter%1 == 0){
-			
-			grid_led_lowlevel_render_all(&grid_led_state);	
-						
-// 	 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
-// 	
-// 	 		}
-			grid_led_lowlevel_hardware_start_transfer(&grid_led_state);
-		}		
-		
-		
-	
-	
-	
-	
-		grid_task_enter_task(&grid_task_state, GRID_TASK_IDLE);
-
-
-		// IDLETASK
-		
-		
-		uint32_t elapsed = grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart);
-		
-		if (elapsed < RTC1MS){
-			
-			if (loopwarp>5){
-				
-				if (RTC1MS - elapsed > 0){
-					
-					if ((RTC1MS - elapsed)<loopwarp){				
-						loopwarp-=(RTC1MS - elapsed);
-						loopstart-=(RTC1MS - elapsed);
-					}
-					else{
-						loopwarp-=loopwarp;
-						loopstart-=loopwarp;
-					}
-					
-					loopfast++;
-				}
-			}
-			
-			while(grid_sys_rtc_get_elapsed_time(&grid_sys_state, loopstart) < RTC1SEC/1000){	
-					
-				delay_us(1);			
-			}	
-					
-		}
-		else{
-			loopwarp+= elapsed - RTC1MS;
-			
-			loopslow++;
-		}
-		
-		grid_task_enter_task(&grid_task_state, GRID_TASK_UNDEFINED);		
-
-		
+		delay_ms(1);
 
 	}//WHILE
 	

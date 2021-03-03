@@ -153,13 +153,8 @@ static inline int32_t _usb_d_trans(const uint8_t ep, const bool dir, const uint8
  * \param[in] unused2 Unused parameter.
  * \return Always \c false.
  */
-
-
-
-
 static bool usb_d_dummy_cb_false(uint32_t unused0, uint32_t unused1, uint32_t unused2)
 {
-
 	(void)unused0;
 	(void)unused1;
 	(void)unused2;
@@ -569,9 +564,6 @@ void usb_d_ep_register_callback(const uint8_t ep, const enum usb_d_ep_cb_type ty
 	int8_t           ep_index = _usb_d_find_ep(ep);
 	struct usb_d_ep *ept      = &usb_d_inst.ep[ep_index];
 	FUNC_PTR         f        = func ? (FUNC_PTR)func : (FUNC_PTR)usb_d_dummy_cb_false;
-
-	f = (FUNC_PTR)func; // SUKU EDIT
-
 	if (ep_index < 0) {
 		return;
 	}

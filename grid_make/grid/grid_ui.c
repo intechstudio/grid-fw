@@ -1234,20 +1234,20 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 		else if(temp[i] == '#'){
 
 			if (temp[i+1] == 'I' && temp[i+2] == 'F' ){
-				printf("#IF  \r\n");
+				//printf("#IF  \r\n");
 
 				total_substituted_length += 3;
 				i+=2;
 				condition_state = 1;
 
 			}else if (temp[i+1] == 'T' && temp[i+2] == 'H' ){
-				printf("#THEN  \r\n");
+				//printf("#THEN  \r\n");
 
 
 
 				if (!condition_istrue){
 					//SKIP
-					printf("skip \r\n");
+					//printf("skip \r\n");
 					for(uint8_t j=1; j<(eve->event_string_length + eve->action_string_length)-i; j++){
 
 						if (temp[i+j] == '#'){
@@ -1269,16 +1269,16 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 					total_substituted_length += 3;
 					i+=2;
 
-					printf("no skip\r\n");
+					//printf("no skip\r\n");
 				}
 
 
 			}else if (temp[i+1] == 'E' && temp[i+2] == 'L' ){
-				printf("#ELSE  \r\n");
+				//printf("#ELSE  \r\n");
 
 				if (condition_istrue){
 					//SKIP
-					printf("skip \r\n");
+					//printf("skip \r\n");
 					for(uint8_t j=1; j<(eve->event_string_length + eve->action_string_length)-i; j++){
 
 						if (temp[i+j] == '#'){
@@ -1288,14 +1288,14 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 							break;
 						}
 						else if(j==(eve->event_string_length + eve->action_string_length)-i-1){
-							printf("Syntax Error!\r\n");
+							//printf("Syntax Error!\r\n");
 						}
 
 					}
 
 				}
 				else{
-					printf("no skip\r\n");
+					//printf("no skip\r\n");
 
 
 					total_substituted_length += 3;
@@ -1304,7 +1304,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 				}
 
 			}else if (temp[i+1] == 'E' && temp[i+2] == 'N' ){
-				printf("#ENDIF  \r\n");
+				//printf("#ENDIF  \r\n");
 				total_substituted_length += 3;
 				i+=2;
 				condition_istrue = 0;

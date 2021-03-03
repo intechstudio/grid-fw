@@ -111,9 +111,23 @@ grid/grid_d51.d grid/grid_d51.o: ../grid/grid_d51.c ../grid/grid_d51.h \
  ../hal/include/hpl_rand_sync.h ../hal/include/hal_usb_device.h \
  ../hal/include/hpl_usb_device.h ../hal/include/hpl_usb.h \
  ../config/hpl_usb_config.h ../hal/include/hal_wdt.h \
- ../hal/include/hpl_wdt.h ../grid/../usb_start.h \
- ../usb/class/cdc/device/cdcdf_acm.h ../usb/device/usbdc.h \
- ../usb/usb_includes.h /usr/include/newlib/string.h \
+ ../hal/include/hpl_wdt.h ../grid/../rtos_start.h \
+ ../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/FreeRTOS.h \
+ ../config/FreeRTOSConfig.h ../config/peripheral_clk_config.h \
+ ../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/projdefs.h \
+ ../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/portable.h \
+ ../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/deprecated_definitions.h \
+ ../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/portmacro.h \
+ ../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/mpu_wrappers.h \
+ ../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/task.h \
+ ../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/list.h \
+ ../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/semphr.h \
+ ../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/queue.h \
+ ../thirdparty/RTOS/hal_rtos.h ../hal/include/hpl_core.h \
+ ../hpl/core/hpl_core_port.h \
+ ../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/rtos_port.h \
+ ../grid/../usb_start.h ../usb/class/cdc/device/cdcdf_acm.h \
+ ../usb/device/usbdc.h ../usb/usb_includes.h /usr/include/newlib/string.h \
  /usr/include/newlib/_ansi.h /usr/include/newlib/newlib.h \
  /usr/include/newlib/_newlib_version.h /usr/include/newlib/sys/config.h \
  /usr/include/newlib/machine/ieeefp.h /usr/include/newlib/sys/features.h \
@@ -583,6 +597,40 @@ grid/grid_d51.d grid/grid_d51.o: ../grid/grid_d51.c ../grid/grid_d51.h \
 ../hal/include/hal_wdt.h:
 
 ../hal/include/hpl_wdt.h:
+
+../grid/../rtos_start.h:
+
+../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/FreeRTOS.h:
+
+../config/FreeRTOSConfig.h:
+
+../config/peripheral_clk_config.h:
+
+../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/projdefs.h:
+
+../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/portable.h:
+
+../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/deprecated_definitions.h:
+
+../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/portmacro.h:
+
+../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/mpu_wrappers.h:
+
+../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/task.h:
+
+../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/list.h:
+
+../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/semphr.h:
+
+../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include/queue.h:
+
+../thirdparty/RTOS/hal_rtos.h:
+
+../hal/include/hpl_core.h:
+
+../hpl/core/hpl_core_port.h:
+
+../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/rtos_port.h:
 
 ../grid/../usb_start.h:
 
