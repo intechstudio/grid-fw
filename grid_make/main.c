@@ -27,6 +27,48 @@
 #include "usb/class/midi/device/audiodf_midi.h"
 
 
+void vApplicationStackOverflowHook( TaskHandle_t xTask, signed char *pcTaskName ){
+
+	CRITICAL_SECTION_ENTER()
+
+	while(1){
+
+		printf("Stack overflow in task %s\r\n", pcTaskGetName(xTask));
+		delay_ms(1000);
+	}
+
+	CRITICAL_SECTION_LEAVE()
+
+
+}
+
+static TaskHandle_t      		xCreatedUiTask;
+#define TASK_UI_STACK_SIZE 		(4*1024 / sizeof(portSTACK_TYPE))
+#define TASK_UI_PRIORITY 		(5)
+
+static TaskHandle_t      		xCreatedUsbTask;
+#define TASK_USB_STACK_SIZE 	(2048 / sizeof(portSTACK_TYPE))
+#define TASK_USB_PRIORITY 		(1)
+
+static TaskHandle_t      		xCreatedNvmTask;
+#define TASK_NVM_STACK_SIZE 	(1024 / sizeof(portSTACK_TYPE))
+#define TASK_NVM_PRIORITY 		(2)
+
+static TaskHandle_t      			xCreatedReceiveTask;
+#define TASK_RECEIVE_STACK_SIZE 	(1024 / sizeof(portSTACK_TYPE))
+#define TASK_RECEIVE_PRIORITY 		(2)
+
+static TaskHandle_t      			xCreatedInboundTask;
+#define TASK_INBOUND_STACK_SIZE 	(1024 / sizeof(portSTACK_TYPE))
+#define TASK_INBOUND_PRIORITY 		(2)
+
+static TaskHandle_t      			xCreatedOutboundTask;
+#define TASK_OUTBOUND_STACK_SIZE 	(1024 / sizeof(portSTACK_TYPE))
+#define TASK_OUTBOUND_PRIORITY 		(2)
+
+static TaskHandle_t      		xCreatedLedTask;
+#define TASK_LED_STACK_SIZE 	(16*1024 / sizeof(portSTACK_TYPE))
+#define TASK_LED_PRIORITY 		(4)
 
 
 #define TASK_EXAMPLE_STACK_SIZE (512 / sizeof(portSTACK_TYPE))
@@ -35,10 +77,6 @@
 
 static TaskHandle_t      xCreatedExampleTask;
 static TaskHandle_t      xCreatedExample2Task;
-static TaskHandle_t      xCreatedLedTask;
-
-
-static TaskHandle_t      xCreatedUsbTask;
 
 static SemaphoreHandle_t disp_mutex;
 
@@ -356,7 +394,6 @@ static void usb_task(void *p)
 
 	while (1) {
 
-	
 		usb_task_inner();
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
 
@@ -364,7 +401,67 @@ static void usb_task(void *p)
 
 }
 
+static void nvm_task(void *p){
 
+
+	(void)p;
+
+	while (1) {
+
+		nvm_task_inner();
+		vTaskDelay(1*configTICK_RATE_HZ/1000);
+
+	}
+
+}
+
+
+static void ui_task(void *p){
+
+	(void)p;
+
+	while (1) {
+			
+		vTaskDelay(1*configTICK_RATE_HZ/1000);
+
+	}
+}
+
+static void receive_task(void *p){
+
+	(void)p;
+
+	while (1) {
+			
+		
+		receive_task_inner();
+		vTaskDelay(1*configTICK_RATE_HZ/1000);
+
+	}
+}
+
+static void inbound_task(void *p){
+
+	(void)p;
+
+	while (1) {
+			
+		vTaskDelay(1*configTICK_RATE_HZ/1000);
+
+	}
+}
+
+
+static void outbound_task(void *p){
+
+	(void)p;
+
+	while (1) {
+			
+		vTaskDelay(1*configTICK_RATE_HZ/1000);
+
+	}
+}
 
 
 static void led_task(void *p)
@@ -376,11 +473,12 @@ static void led_task(void *p)
 		globaltest++;
 		
 
-		nvm_task_inner();
-		receive_task_inner();
-		ui_task_inner();
 		inbound_task_inner();
 		outbound_task_inner();
+
+		ui_task_inner();
+
+
 
 		led_task_inner();
 
@@ -595,7 +693,42 @@ int main(void)
 
 
     
-	if (xTaskCreate(usb_task, "Usb Task", ((2000)/sizeof(portSTACK_TYPE)), NULL, tskIDLE_PRIORITY +5 , &xCreatedUsbTask)
+	if (xTaskCreate(usb_task, "Usb Task", TASK_USB_STACK_SIZE, NULL, TASK_USB_PRIORITY, &xCreatedUsbTask)
+	    != pdPASS) {
+		while (1) {
+			;
+		}
+	}
+
+	if (xTaskCreate(usb_task, "Nvm Task", TASK_NVM_STACK_SIZE, NULL, TASK_NVM_PRIORITY, &xCreatedNvmTask)
+	    != pdPASS) {
+		while (1) {
+			;
+		}
+	}
+
+	if (xTaskCreate(usb_task, "Ui Task", TASK_UI_STACK_SIZE, NULL, TASK_UI_PRIORITY, &xCreatedUiTask)
+	    != pdPASS) {
+		while (1) {
+			;
+		}
+	}
+
+	if (xTaskCreate(receive_task, "Receive Task", TASK_RECEIVE_STACK_SIZE, NULL, TASK_RECEIVE_PRIORITY, &xCreatedReceiveTask)
+	    != pdPASS) {
+		while (1) {
+			;
+		}
+	}
+
+	if (xTaskCreate(inbound_task, "Inbound Task", TASK_INBOUND_STACK_SIZE, NULL, TASK_INBOUND_PRIORITY, &xCreatedInboundTask)
+	    != pdPASS) {
+		while (1) {
+			;
+		}
+	}
+
+	if (xTaskCreate(outbound_task, "Outbound Task", TASK_OUTBOUND_STACK_SIZE, NULL, TASK_OUTBOUND_PRIORITY, &xCreatedOutboundTask)
 	    != pdPASS) {
 		while (1) {
 			;
@@ -603,7 +736,7 @@ int main(void)
 	}
 
 
-	if (xTaskCreate(led_task, "Led Task", ((16000)/sizeof(portSTACK_TYPE)), NULL, tskIDLE_PRIORITY +1, &xCreatedLedTask)
+	if (xTaskCreate(led_task, "Led Task", TASK_LED_STACK_SIZE, NULL, TASK_LED_PRIORITY, &xCreatedLedTask)
 	    != pdPASS) {
 		while (1) {
 			;
