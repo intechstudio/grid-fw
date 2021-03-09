@@ -552,3 +552,5 @@ clean:
 	rm -f $(OUTPUT_FILE_NAME).a $(OUTPUT_FILE_NAME).hex $(OUTPUT_FILE_NAME).bin \
         $(OUTPUT_FILE_NAME).lss $(OUTPUT_FILE_NAME).eep $(OUTPUT_FILE_NAME).map \
         $(OUTPUT_FILE_NAME).srec
+debug:
+	arm-none-eabi-gdb -iex "target extended-remote localhost:3333" AtmelStart.elf
