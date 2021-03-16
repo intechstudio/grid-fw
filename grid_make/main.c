@@ -607,14 +607,44 @@ void init_timer(void)
 int main(void)
 {
 
+
 	
+
+	// boundary scan here
+
+	uint32_t boundary_result[4] = {0};
+
+	grid_d51_boundary_scan(boundary_result);
+
 
 
 	atmel_start_init();	
     
             
-            
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
+
+
+	for (uint8_t i=0; i<4; i++){
+
+		printf("boundary_result[%d] = ", i);
+
+		for (uint8_t j=0; j<32; j++){
+
+			if (boundary_result[i]&(1<<j)){
+				printf("1");
+			}
+			else{
+				printf("0");
+			}
+		}
+
+
+		printf("\r\n");
+
+	}
+
+
+	printf("Hello %d %d %d %d", boundary_result[0], boundary_result[1], boundary_result[2], boundary_result[3]);
 
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "D51 Init");
 	grid_d51_init(); // Check User Row

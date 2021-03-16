@@ -14,11 +14,12 @@
 
 #define  GRID_D51_USER_ROW_BASE 0x804000
 
-void grid_d51_bitmap_write_bit(uint8_t* buffer, uint8_t offset, uint8_t value, uint8_t* changed);
-
 void grid_d51_init();
 
 void grid_d51_verify_user_row();
+
+uint8_t grid_d51_boundary_scan();
+
 
 
 
