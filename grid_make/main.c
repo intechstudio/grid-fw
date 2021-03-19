@@ -624,9 +624,18 @@ int main(void)
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
 
 
+	printf("test.mcu.ATSAMD51N20A\r\n");
+	printf("test.hwcfg.%d\r\n", grid_sys_get_hwcfg());
+
+	uint32_t uniqueid[4] = {0};
+	grid_sys_get_id(uniqueid);	
+
+	printf("test.serialno.%08x %08x %08x %08x\r\n", uniqueid[0], uniqueid[1], uniqueid[2], uniqueid[3]);
+
 	for (uint8_t i=0; i<4; i++){
 
-		printf("boundary_result[%d] = ", i);
+		delay_ms(10);
+		printf("test.boundary.%d.", i);
 
 		for (uint8_t j=0; j<32; j++){
 
