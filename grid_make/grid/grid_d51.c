@@ -81,6 +81,8 @@ void grid_d51_init(){
 	GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "No Unit Test");
 	#endif
 	
+	//#define HARDWARETEST
+
 	#ifdef HARDWARETEST
 	
 	#include "grid/grid_hardwaretest.h"
@@ -476,8 +478,8 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 			if (pin_failed){
 				//Sorry, pin failed
 
-				uint8_t error_array_index = i/25;
-				uint8_t error_bit_index = i%25;
+				uint8_t error_array_index = (i-1)/25;
+				uint8_t error_bit_index = (i-1)%25;
 
 				error_count++;
 				error_bitmap[error_array_index] |= (1<<error_bit_index);

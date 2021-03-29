@@ -19,46 +19,84 @@ void grid_hardwaretest_main(){
 	uint8_t button_last = 1;
 	uint8_t button_now = 1;
 	uint8_t mode_changed = 1;
-	
+
+
+	uint8_t clear_in_progress = 1;
+	uint32_t clear_max_offset = GRID_NVM_STRATEGY_BANK_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_EVENT_maxcount;
+	uint32_t clear_offset = 0;
+
+	flash_erase(grid_nvm_state.flash, GRID_NVM_GLOBAL_BASE_ADDRESS, 1);
+				
+
 	while(1){
-	
-		if (gpio_get_pin_level(MAP_MODE) == 0){
-			if (button_last == 1){
-				testmode++;
-				testmode%=2;
-				mode_changed = 1;
-				button_last=0;
-			}			
+
+
+		if (clear_in_progress){
+			
+			if (clear_offset < clear_max_offset){
+				flash_erase(grid_nvm_state.flash, GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*clear_offset, 1);
+				clear_offset++;
+			}
+			else{
+				//Done!
+				clear_in_progress = 0;
+			}
+
+
+			for(uint8_t i=0; i<grid_led_state.led_number; i++){
+			
+				grid_led_lowlevel_set_color(&grid_led_state, i, counter%64, counter%64, counter%64);
+			
+			}
+							
+			while(grid_led_lowlevel_hardware_is_transfer_completed(&grid_led_state) != 1){
+					
+			}
+			grid_led_lowlevel_hardware_start_transfer(&grid_led_state);
+			
+
 		}
 		else{
-			button_last = 1;
-		}
-		
 
-	
-		if (testmode == 0){
-			
-			if (mode_changed){
-				grid_hardwaretest_led_test_photo(&grid_led_state, counter);
-				grid_hardwaretest_led_test_photo(&grid_led_state, counter);
+
+			if (gpio_get_pin_level(MAP_MODE) == 0){
+				if (button_last == 1){
+					testmode++;
+					testmode%=2;
+					mode_changed = 1;
+					button_last=0;
+				}			
+			}
+			else{
+				button_last = 1;
+			}
+		
+			if (testmode == 0){
 				
-				for (uint8_t i=0; i<grid_sys_get_hwcfg()/4; i++){
-					
+				if (mode_changed){
 					grid_hardwaretest_led_test_photo(&grid_led_state, counter);
 					grid_hardwaretest_led_test_photo(&grid_led_state, counter);
 					
-				}		
+					for (uint8_t i=0; i<grid_sys_get_hwcfg()/4; i++){
+						
+						grid_hardwaretest_led_test_photo(&grid_led_state, counter);
+						grid_hardwaretest_led_test_photo(&grid_led_state, counter);
+						
+					}		
+					
+				}
+				
 				
 			}
+			else if (testmode == 1){
 			
-			
+				grid_hardwaretest_port_test(counter);
+				grid_hardwaretest_led_test(&grid_led_state, counter);	
+				
+			}
+
 		}
-		else if (testmode == 1){
-		
-			grid_hardwaretest_port_test(counter);
-			grid_hardwaretest_led_test(&grid_led_state, counter);	
-			
-		}
+	
 		
 		
 		delay_ms(1);
