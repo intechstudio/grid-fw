@@ -22,6 +22,11 @@
         "grid_module_en16_reva.h": "c",
         "sam.h": "c",
         "samd51n20a.h": "c",
-        "audiodf_midi.h": "c"
+        "audiodf_midi.h": "c",
+        "lualib.h": "c",
+        "lauxlib.h": "c",
+        "duk_config.h": "c",
+        "picol.h": "c",
+        "v7.h": "c"
     }
 }

@@ -350,26 +350,23 @@ void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_
 	}
 	else if (element_type == GRID_UI_ELEMENT_BUTTON){
 		
+		ele->event_list_length = 2;
+		
+		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
+		
+		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
+		grid_ui_event_init(ele, 1, GRID_UI_EVENT_BC);	// Button Change
+		
+	}
+	else if (element_type == GRID_UI_ELEMENT_ENCODER){
+		
 		ele->event_list_length = 3;
 		
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
 		
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
-		grid_ui_event_init(ele, 1, GRID_UI_EVENT_DP);	// Press
-		grid_ui_event_init(ele, 2, GRID_UI_EVENT_DR);	// Release
-		
-	}
-	else if (element_type == GRID_UI_ELEMENT_ENCODER){
-		
-		ele->event_list_length = 5;
-		
-		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
-		
-		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
-		grid_ui_event_init(ele, 1, GRID_UI_EVENT_DP);	// Press
-		grid_ui_event_init(ele, 2, GRID_UI_EVENT_DR);	// Release
-		grid_ui_event_init(ele, 3, GRID_UI_EVENT_AVC7); // Absolute Value Change (7bit)
-		grid_ui_event_init(ele, 4, GRID_UI_EVENT_ENCPUSHROT); // Absolute Value Change (7bit)
+		grid_ui_event_init(ele, 1, GRID_UI_EVENT_AVC7);	// Absolute Value Change (7bit)
+		grid_ui_event_init(ele, 2, GRID_UI_EVENT_BC);	// Button Change
 		
 	}
 	else{
@@ -509,6 +506,7 @@ void grid_ui_nvm_clear_all_configuration(struct grid_ui_model* ui, struct grid_n
 
 uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t bank, uint8_t element, enum grid_ui_event_t event_type){
 	
+
 	struct grid_ui_element* ele = NULL;
 	struct grid_ui_event* eve = NULL;
 	uint8_t event_index = 255;
@@ -858,15 +856,9 @@ void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_u
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 						
 		}
-		else if (event_type == GRID_UI_EVENT_DP){
+		else if (event_type == GRID_UI_EVENT_BC){
 			
-			sprintf(event_string, GRID_EVENTSTRING_DP_BUT); // !!
-			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
-					
-		}
-		else if (event_type == GRID_UI_EVENT_DR){
-			
-			sprintf(event_string, GRID_EVENTSTRING_DR_BUT); // !!
+			sprintf(event_string, GRID_EVENTSTRING_BC); // !!
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 				
 		}
@@ -908,15 +900,9 @@ void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_u
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 		
 		}
-		else if (event_type == GRID_UI_EVENT_DP){
-				
-			sprintf(event_string, GRID_EVENTSTRING_DP_ENC); // !!
-			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
-				
-		}
-		else if (event_type == GRID_UI_EVENT_DR){
-				
-			sprintf(event_string, GRID_EVENTSTRING_DR_ENC); // !!
+		else if (event_type == GRID_UI_EVENT_BC){
+			
+			sprintf(event_string, GRID_EVENTSTRING_BC); // !!
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 				
 		}
@@ -952,8 +938,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_
 				
 		switch(event_type){
 			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT_BUT);		break;
-			case GRID_UI_EVENT_DP:		sprintf(action_string, GRID_ACTIONSTRING_DP_BUT);		break;
-			case GRID_UI_EVENT_DR:		sprintf(action_string, GRID_ACTIONSTRING_DR_BUT);		break;
+			case GRID_UI_EVENT_BC:		sprintf(action_string, GRID_ACTIONSTRING_BC);			break;
 		}
 		
 	}
@@ -971,8 +956,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_
 			case GRID_UI_EVENT_INIT:        sprintf(action_string, GRID_ACTIONSTRING_INIT_ENC);	break;
 			case GRID_UI_EVENT_AVC7:        sprintf(action_string, GRID_ACTIONSTRING_AVC7_ENC);	break;
 			case GRID_UI_EVENT_ENCPUSHROT:	sprintf(action_string, GRID_ACTIONSTRING_PUSHROT_ENC);	break;
-			case GRID_UI_EVENT_DP:          sprintf(action_string, GRID_ACTIONSTRING_DP_ENC);	break;
-			case GRID_UI_EVENT_DR:          sprintf(action_string, GRID_ACTIONSTRING_DR_ENC);	break;
+			case GRID_UI_EVENT_BC:			sprintf(action_string, GRID_ACTIONSTRING_BC);			break;
 		}
 			
 	}

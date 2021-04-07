@@ -55,8 +55,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 
 			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
             
-			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_DP);
-			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_DR);
+			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_BC);
 		}
 		
 	}
@@ -168,7 +167,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 
                 }   
                 
-				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_DP);
+				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_BC);
 				
 				grid_bu16_helper_template_b_abs[result_index[i]] = res_value;
 				
@@ -188,7 +187,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
                 }   
                 
 				
-				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_DR);
+				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_BC);
 
 				grid_bu16_helper_template_b_abs[result_index[i]] = res_value;
 			}

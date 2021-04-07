@@ -16,6 +16,7 @@
 	let uart_console_enabled = true;
 	let openocd_console_enabled = true;
 	let telnet_console_enabled = true;
+	let telnet_autosend = true;
 
 	function keyup_telnet(e){
 		if (e.keyCode === 13) {
@@ -458,26 +459,27 @@
 		<input name="uart_enable" id="uart_enable" type="checkbox" bind:checked={uart_console_enabled}><label for="uart_enable">UART</label>
 		<input name="openocd_enable" id="openocd_enable" type="checkbox" bind:checked={openocd_console_enabled}><label for="openocd_enable">OpenOCD</label>
 		<input name="telnet_enable" id="telnet_enable" type="checkbox" bind:checked={telnet_console_enabled}><label for="telnet_enable">Telnet</label>
+		<input name="telnet_autosend" id="telnet_autosend" type="checkbox" bind:checked={telnet_autosend}><label for="telnet_autosend">Autosend</label>
 	
 	</div>
 	<div>
 		Chip: 
-		<input type="button" on:click={function(){telnet_input_field = "reset";}} value="reset">
-		<input type="button" on:click={function(){telnet_input_field = "reset init";}} value="reset init">
-		<input type="button" on:click={function(){telnet_input_field = "atsame5 chip-erase";}} value="erase">
+		<input type="button" on:click={function(){telnet_input_field = "reset"; if (telnet_autosend) telnet_send();}} value="reset">
+		<input type="button" on:click={function(){telnet_input_field = "reset init"; if (telnet_autosend) telnet_send();}} value="reset init">
+		<input type="button" on:click={function(){telnet_input_field = "atsame5 chip-erase"; if (telnet_autosend) telnet_send();}} value="erase">
 
 	</div>
 	<div>
 		Bootloader: 
-		<input type="button" on:click={function(){telnet_input_field = "atsame5 bootloader";}} value="check">
-		<input type="button" on:click={function(){telnet_input_field = "atsame5 bootloader 16384";}} value="lock">
-		<input type="button" on:click={function(){telnet_input_field = "atsame5 bootloader 0";}} value="unlock">
-		<input type="button" on:click={function(){telnet_input_field = "program bootloader-intech_grid-v3.3.0-8-g945e9ec-dirty.elf verify";}} value="install">
+		<input type="button" on:click={function(){telnet_input_field = "atsame5 bootloader"; if (telnet_autosend) telnet_send();}} value="check">
+		<input type="button" on:click={function(){telnet_input_field = "atsame5 bootloader 16384"; if (telnet_autosend) telnet_send();}} value="lock">
+		<input type="button" on:click={function(){telnet_input_field = "atsame5 bootloader 0"; if (telnet_autosend) telnet_send();}} value="unlock">
+		<input type="button" on:click={function(){telnet_input_field = "program bootloader-intech_grid-v3.3.0-8-g945e9ec-dirty.elf verify"; if (telnet_autosend) telnet_send();}} value="install">
 
 	</div>
 	<div>
 		Firmware: 
-		<input type="button" on:click={function(){telnet_input_field = "program ../grid_make/gcc/AtmelStart.bin verify 0x4000";}} value="install">
+		<input type="button" on:click={function(){telnet_input_field = "program ../grid_make/gcc/AtmelStart.bin verify 0x4000"; if (telnet_autosend) telnet_send();}} value="install">
 
 	</div>
 

@@ -170,6 +170,8 @@ app.post('/api/telnet/send', function (req, res) {
   }
 
 
+  consoleData.push({context:"telnet", data: "Telnet: try >> "+req.body.data});
+
   //consoleData.push({context:"telnet", data: req.body.data});
 
   // var temp = [];

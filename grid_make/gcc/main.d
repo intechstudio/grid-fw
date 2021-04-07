@@ -182,7 +182,9 @@ main.d main.o: ../main.c ../grid/grid_module.h ../grid/../atmel_start.h \
  ../grid/grid_module.h ../grid/grid_buf.h ../grid/grid_led.h \
  ../grid/grid_protocol.h ../grid/grid_sys.h ../grid/grid_ui.h \
  ../grid/grid_nvm.h ../grid/grid_msg.h ../grid/grid_ui.h ../atmel_start.h \
- ../atmel_start_pins.h ../usb/class/midi/device/audiodf_midi.h
+ ../atmel_start_pins.h ../grid/v7.h \
+ /usr/share/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/inttypes.h \
+ ../usb/class/midi/device/audiodf_midi.h
 
 ../grid/grid_module.h:
 
@@ -807,5 +809,9 @@ main.d main.o: ../main.c ../grid/grid_module.h ../grid/../atmel_start.h \
 ../atmel_start.h:
 
 ../atmel_start_pins.h:
+
+../grid/v7.h:
+
+/usr/share/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/inttypes.h:
 
 ../usb/class/midi/device/audiodf_midi.h:

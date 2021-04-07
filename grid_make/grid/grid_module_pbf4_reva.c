@@ -39,9 +39,8 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
             
             
 			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_AVC7);
-			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_DP);
-			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_DR);
-			
+			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_BC);
+		
 
 		}
 		
@@ -177,7 +176,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 
                     }   
                     
-					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_DP);
+					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_BC);
 					
 					grid_pbf4_helper_template_b_abs[result_index[i]] = res_value;
 				
@@ -196,7 +195,7 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 
                     }   
 				
-					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_DR);
+					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_BC);
 				
 					grid_pbf4_helper_template_b_abs[result_index[i]] = res_value;
 				}

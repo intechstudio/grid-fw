@@ -15,7 +15,12 @@
 #define  GRID_MODULE_BU16_RevC		136
 
 #define  GRID_MODULE_PBF4_RevA		64
+
 #define  GRID_MODULE_EN16_RevA		192
+#define  GRID_MODULE_EN16_ND_RevA	200
+
+#define  GRID_MODULE_EN16_RevD		193
+#define  GRID_MODULE_EN16_ND_RevD	201
 
 #define  GRID_PARAMETER_HEARTBEAT_interval	250
 #define  GRID_PARAMETER_PING_interval		100
@@ -417,12 +422,9 @@ enum grid_ui_event_t {
 		
 	
 	GRID_UI_EVENT_AVC7,
-	GRID_UI_EVENT_RVC7,
-	GRID_UI_EVENT_DVC,
-	GRID_UI_EVENT_DP,
-	GRID_UI_EVENT_DR,
-	GRID_UI_EVENT_DD,
-	
+	GRID_UI_EVENT_RVC7, // can be depricated
+	GRID_UI_EVENT_DVC, // can be depricated
+	GRID_UI_EVENT_BC,
 	GRID_UI_EVENT_MAPMODE_PRESS,
 	GRID_UI_EVENT_MAPMODE_RELEASE,
 	
@@ -435,6 +437,8 @@ enum grid_ui_event_t {
 	GRID_UI_EVENT_HEARTBEAT,
     
     GRID_UI_EVENT_ENCPUSHROT
+
+	
 	
 };
 
@@ -463,8 +467,7 @@ enum grid_ui_event_t {
 
 #define GRID_EVENTSTRING_AVC7_POT		"\x02""050e{p(Z0)}{p(T0)}01{p(T2)}\x03"
 
-#define GRID_EVENTSTRING_DP_BUT			"\x02""050e{p(Z0)}{p(T0)}04{p(T2)}\x03"
-#define GRID_EVENTSTRING_DR_BUT			"\x02""050e{p(Z0)}{p(T0)}05{p(T2)}\x03"
+#define GRID_EVENTSTRING_BC				"\x02""050e{p(Z0)}{p(T0)}04{p(T5)}\x03"
 
 #define GRID_EVENTSTRING_AVC7_ENC		"\x02""050e{p(Z0)}{p(T0)}01{p(T5)}\x03"
 #define GRID_EVENTSTRING_PUSHROT_ENC    "\x02""050e{p(Z0)}{p(T0)}0d{p(T5)}\x03"
@@ -495,9 +498,8 @@ enum grid_ui_event_t {
 #define GRID_ACTIONSTRING_INIT_ENC			"\x02""041e{p(T0)}01{p(Z1)}{p(Z2)}{p(Z3)}\x03\x02""041e{p(T0)}02{p(Z1)}{p(Z2)}{p(Z3)}\x03"
 
 #define GRID_ACTIONSTRING_AVC7_POT			"\x02""000e00b0{p(T0)}{p(T2)}\x03\x02""040e{p(T0)}01{p(T2)}\x03"
-#define GRID_ACTIONSTRING_DP_BUT			"\x02""000e0090{p(T0)}{p(T2)}\x03\x02""040e{p(T0)}01{p(T2)}\x03"
-#define GRID_ACTIONSTRING_DR_BUT			"\x02""000e0080{p(T0)}{p(T2)}\x03\x02""040e{p(T0)}01{p(T2)}\x03"
 
+#define GRID_ACTIONSTRING_BC				"\x02""000e0090{p(T0)}{p(T2)}\x03\x02""040e{p(T0)}01{p(T2)}\x03"
 
 
 // OVERRIDE to test toggle

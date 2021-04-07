@@ -29,6 +29,7 @@ grid/grid_sys.o \
 grid/grid_ui.o \
 grid/grid_unittest.o \
 grid/grid_usb.o \
+grid/v7.o \
 \
 
 
@@ -56,6 +57,7 @@ OBJS_AS_ARGS +=  \
 "grid/grid_ui.o" \
 "grid/grid_unittest.o" \
 "grid/grid_usb.o" \
+"grid/v7.o" \
 \
 
 
@@ -92,6 +94,7 @@ DEPS_AS_ARGS +=  \
 "grid/grid_ui.d" \
 "grid/grid_unittest.d" \
 "grid/grid_usb.d" \
+"grid/v7.d" \
 \
 
 
@@ -489,7 +492,9 @@ $(OUTPUT_FILE_PATH): $(OBJS)
 -Wl,-Map="$(OUTPUT_FILE_NAME).map" --specs=nano.specs -Wl,--gc-sections -mcpu=cortex-m4 \
  \
 -T"../grid/samd51n20a_flash_bootloader.ld" \
--L"../samd51a/gcc/gcc"
+-L"../samd51a/gcc/gcc" \
+-lm \
+
 	@echo Finished building target: $@
 
 	"arm-none-eabi-objcopy" -O binary "$(OUTPUT_FILE_NAME).elf" "$(OUTPUT_FILE_NAME).bin"

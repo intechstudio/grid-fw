@@ -22,6 +22,29 @@
 #include "task.h"
 #include "semphr.h"
 
+#include "grid/v7.h"
+struct v7 *v7;
+
+
+
+static void call_sum(struct v7 *v7) {
+  v7_val_t func, result, args;
+
+  func = v7_get(v7, v7_get_global(v7), "sum", 3);
+
+  args = v7_mk_array(v7);
+  v7_array_push(v7, args, v7_mk_number(v7, 123.0));
+  v7_array_push(v7, args, v7_mk_number(v7, 456.789));
+
+  if (v7_apply(v7, func, V7_UNDEFINED, args, &result) == V7_OK) {
+    printf("Result: %d\n", v7_get_int(v7, result));
+	delay_ms(100);
+  } else {
+    v7_print_error(stderr, v7, "Error while calling sum", result);
+  }
+}
+
+
 
 
 #include "usb/class/midi/device/audiodf_midi.h"
@@ -604,6 +627,9 @@ void init_timer(void)
 
 //====================== USB TEST =====================//
 
+
+
+
 int main(void)
 {
 
@@ -687,6 +713,10 @@ int main(void)
 	grid_module_common_init();
     grid_ui_reinit(&grid_ui_state);
 	
+
+    // Work with lua API
+
+ 	
 			
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
 
@@ -703,7 +733,6 @@ int main(void)
 	uint8_t usb_init_flag = 0;	
 
 	
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 	//GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop2 test");
 	
 
@@ -788,7 +817,25 @@ int main(void)
 			;
 		}
 	}
-	
+
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
+	enum v7_err rcode = V7_OK;
+	v7_val_t result;
+	struct v7 *v7 = v7_create();
+	rcode = v7_exec(v7, "var sum = function(a, b) { return a + b; };", &result);
+	if (rcode != V7_OK) {
+		v7_print_error(stderr, v7, "Evaluation error", result);
+		goto clean;
+	}
+
+	call_sum(v7);
+
+	clean:
+	v7_destroy(v7);
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
+
+
+
 	while (1) {
 	
 		

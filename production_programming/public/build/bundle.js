@@ -375,38 +375,38 @@ var app = (function () {
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[28] = list[i];
+    	child_ctx[30] = list[i];
     	return child_ctx;
     }
 
     function get_each_context_1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[31] = list[i];
+    	child_ctx[33] = list[i];
     	return child_ctx;
     }
 
     function get_each_context_2(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[31] = list[i];
+    	child_ctx[33] = list[i];
     	return child_ctx;
     }
 
     function get_each_context_3(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[31] = list[i];
+    	child_ctx[33] = list[i];
     	return child_ctx;
     }
 
     function get_each_context_4(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[31] = list[i];
+    	child_ctx[33] = list[i];
     	return child_ctx;
     }
 
-    // (390:3) {#each mcu_pins[0] as pin}
+    // (391:3) {#each mcu_pins[0] as pin}
     function create_each_block_4(ctx) {
     	let div;
-    	let t_value = /*pin*/ ctx[31].function + "";
+    	let t_value = /*pin*/ ctx[33].function + "";
     	let t;
     	let div_class_value;
 
@@ -414,17 +414,17 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[31].class + " svelte-16idiwm");
-    			add_location(div, file, 390, 4, 10217);
+    			attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
+    			add_location(div, file, 391, 4, 10246);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
     			append_dev(div, t);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*mcu_pins*/ 128 && t_value !== (t_value = /*pin*/ ctx[31].function + "")) set_data_dev(t, t_value);
+    			if (dirty[0] & /*mcu_pins*/ 256 && t_value !== (t_value = /*pin*/ ctx[33].function + "")) set_data_dev(t, t_value);
 
-    			if (dirty[0] & /*mcu_pins*/ 128 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[31].class + " svelte-16idiwm")) {
+    			if (dirty[0] & /*mcu_pins*/ 256 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
     				attr_dev(div, "class", div_class_value);
     			}
     		},
@@ -437,17 +437,17 @@ var app = (function () {
     		block,
     		id: create_each_block_4.name,
     		type: "each",
-    		source: "(390:3) {#each mcu_pins[0] as pin}",
+    		source: "(391:3) {#each mcu_pins[0] as pin}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (395:2) {#each mcu_pins[1] as pin}
+    // (396:2) {#each mcu_pins[1] as pin}
     function create_each_block_3(ctx) {
     	let div;
-    	let t_value = /*pin*/ ctx[31].function + "";
+    	let t_value = /*pin*/ ctx[33].function + "";
     	let t;
     	let div_class_value;
 
@@ -455,17 +455,17 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[31].class + " svelte-16idiwm");
-    			add_location(div, file, 395, 3, 10346);
+    			attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
+    			add_location(div, file, 396, 3, 10375);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
     			append_dev(div, t);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*mcu_pins*/ 128 && t_value !== (t_value = /*pin*/ ctx[31].function + "")) set_data_dev(t, t_value);
+    			if (dirty[0] & /*mcu_pins*/ 256 && t_value !== (t_value = /*pin*/ ctx[33].function + "")) set_data_dev(t, t_value);
 
-    			if (dirty[0] & /*mcu_pins*/ 128 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[31].class + " svelte-16idiwm")) {
+    			if (dirty[0] & /*mcu_pins*/ 256 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
     				attr_dev(div, "class", div_class_value);
     			}
     		},
@@ -478,17 +478,17 @@ var app = (function () {
     		block,
     		id: create_each_block_3.name,
     		type: "each",
-    		source: "(395:2) {#each mcu_pins[1] as pin}",
+    		source: "(396:2) {#each mcu_pins[1] as pin}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (402:3) {#each mcu_pins[2] as pin}
+    // (403:3) {#each mcu_pins[2] as pin}
     function create_each_block_2(ctx) {
     	let div;
-    	let t_value = /*pin*/ ctx[31].function + "";
+    	let t_value = /*pin*/ ctx[33].function + "";
     	let t;
     	let div_class_value;
 
@@ -496,17 +496,17 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[31].class + " svelte-16idiwm");
-    			add_location(div, file, 402, 4, 10480);
+    			attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
+    			add_location(div, file, 403, 4, 10509);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
     			append_dev(div, t);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*mcu_pins*/ 128 && t_value !== (t_value = /*pin*/ ctx[31].function + "")) set_data_dev(t, t_value);
+    			if (dirty[0] & /*mcu_pins*/ 256 && t_value !== (t_value = /*pin*/ ctx[33].function + "")) set_data_dev(t, t_value);
 
-    			if (dirty[0] & /*mcu_pins*/ 128 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[31].class + " svelte-16idiwm")) {
+    			if (dirty[0] & /*mcu_pins*/ 256 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
     				attr_dev(div, "class", div_class_value);
     			}
     		},
@@ -519,17 +519,17 @@ var app = (function () {
     		block,
     		id: create_each_block_2.name,
     		type: "each",
-    		source: "(402:3) {#each mcu_pins[2] as pin}",
+    		source: "(403:3) {#each mcu_pins[2] as pin}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (407:3) {#each mcu_pins[3] as pin}
+    // (408:3) {#each mcu_pins[3] as pin}
     function create_each_block_1(ctx) {
     	let div;
-    	let t_value = /*pin*/ ctx[31].function + "";
+    	let t_value = /*pin*/ ctx[33].function + "";
     	let t;
     	let div_class_value;
 
@@ -537,17 +537,17 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[31].class + " svelte-16idiwm");
-    			add_location(div, file, 407, 4, 10612);
+    			attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
+    			add_location(div, file, 408, 4, 10641);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
     			append_dev(div, t);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*mcu_pins*/ 128 && t_value !== (t_value = /*pin*/ ctx[31].function + "")) set_data_dev(t, t_value);
+    			if (dirty[0] & /*mcu_pins*/ 256 && t_value !== (t_value = /*pin*/ ctx[33].function + "")) set_data_dev(t, t_value);
 
-    			if (dirty[0] & /*mcu_pins*/ 128 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[31].class + " svelte-16idiwm")) {
+    			if (dirty[0] & /*mcu_pins*/ 256 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
     				attr_dev(div, "class", div_class_value);
     			}
     		},
@@ -560,17 +560,17 @@ var app = (function () {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(407:3) {#each mcu_pins[3] as pin}",
+    		source: "(408:3) {#each mcu_pins[3] as pin}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (420:4) {#if entry.context == "uart" && uart_console_enabled}
+    // (421:4) {#if entry.context == "uart" && uart_console_enabled}
     function create_if_block_3(ctx) {
     	let div;
-    	let t_value = /*entry*/ ctx[28].data + "";
+    	let t_value = /*entry*/ ctx[30].data + "";
     	let t;
     	let div_class_value;
 
@@ -578,17 +578,17 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[28].context + " svelte-16idiwm");
-    			add_location(div, file, 420, 5, 10853);
+    			attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm");
+    			add_location(div, file, 421, 5, 10882);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
     			append_dev(div, t);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*ui_console*/ 32 && t_value !== (t_value = /*entry*/ ctx[28].data + "")) set_data_dev(t, t_value);
+    			if (dirty[0] & /*ui_console*/ 64 && t_value !== (t_value = /*entry*/ ctx[30].data + "")) set_data_dev(t, t_value);
 
-    			if (dirty[0] & /*ui_console*/ 32 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[28].context + " svelte-16idiwm")) {
+    			if (dirty[0] & /*ui_console*/ 64 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm")) {
     				attr_dev(div, "class", div_class_value);
     			}
     		},
@@ -601,17 +601,17 @@ var app = (function () {
     		block,
     		id: create_if_block_3.name,
     		type: "if",
-    		source: "(420:4) {#if entry.context == \\\"uart\\\" && uart_console_enabled}",
+    		source: "(421:4) {#if entry.context == \\\"uart\\\" && uart_console_enabled}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (423:4) {#if entry.context == "openocd" && openocd_console_enabled}
+    // (424:4) {#if entry.context == "openocd" && openocd_console_enabled}
     function create_if_block_2(ctx) {
     	let div;
-    	let t_value = /*entry*/ ctx[28].data + "";
+    	let t_value = /*entry*/ ctx[30].data + "";
     	let t;
     	let div_class_value;
 
@@ -619,17 +619,17 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[28].context + " svelte-16idiwm");
-    			add_location(div, file, 423, 5, 10992);
+    			attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm");
+    			add_location(div, file, 424, 5, 11021);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
     			append_dev(div, t);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*ui_console*/ 32 && t_value !== (t_value = /*entry*/ ctx[28].data + "")) set_data_dev(t, t_value);
+    			if (dirty[0] & /*ui_console*/ 64 && t_value !== (t_value = /*entry*/ ctx[30].data + "")) set_data_dev(t, t_value);
 
-    			if (dirty[0] & /*ui_console*/ 32 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[28].context + " svelte-16idiwm")) {
+    			if (dirty[0] & /*ui_console*/ 64 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm")) {
     				attr_dev(div, "class", div_class_value);
     			}
     		},
@@ -642,17 +642,17 @@ var app = (function () {
     		block,
     		id: create_if_block_2.name,
     		type: "if",
-    		source: "(423:4) {#if entry.context == \\\"openocd\\\" && openocd_console_enabled}",
+    		source: "(424:4) {#if entry.context == \\\"openocd\\\" && openocd_console_enabled}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (426:4) {#if entry.context == "telnet" && telnet_console_enabled}
+    // (427:4) {#if entry.context == "telnet" && telnet_console_enabled}
     function create_if_block_1(ctx) {
     	let div;
-    	let t_value = /*entry*/ ctx[28].data + "";
+    	let t_value = /*entry*/ ctx[30].data + "";
     	let t;
     	let div_class_value;
 
@@ -660,17 +660,17 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[28].context + " svelte-16idiwm");
-    			add_location(div, file, 426, 5, 11129);
+    			attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm");
+    			add_location(div, file, 427, 5, 11158);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
     			append_dev(div, t);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*ui_console*/ 32 && t_value !== (t_value = /*entry*/ ctx[28].data + "")) set_data_dev(t, t_value);
+    			if (dirty[0] & /*ui_console*/ 64 && t_value !== (t_value = /*entry*/ ctx[30].data + "")) set_data_dev(t, t_value);
 
-    			if (dirty[0] & /*ui_console*/ 32 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[28].context + " svelte-16idiwm")) {
+    			if (dirty[0] & /*ui_console*/ 64 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm")) {
     				attr_dev(div, "class", div_class_value);
     			}
     		},
@@ -683,17 +683,17 @@ var app = (function () {
     		block,
     		id: create_if_block_1.name,
     		type: "if",
-    		source: "(426:4) {#if entry.context == \\\"telnet\\\" && telnet_console_enabled}",
+    		source: "(427:4) {#if entry.context == \\\"telnet\\\" && telnet_console_enabled}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (429:4) {#if entry.context == "fuser" }
+    // (430:4) {#if entry.context == "fuser" }
     function create_if_block(ctx) {
     	let div;
-    	let t_value = /*entry*/ ctx[28].data + "";
+    	let t_value = /*entry*/ ctx[30].data + "";
     	let t;
     	let div_class_value;
 
@@ -701,17 +701,17 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[28].context + " svelte-16idiwm");
-    			add_location(div, file, 429, 5, 11240);
+    			attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm");
+    			add_location(div, file, 430, 5, 11269);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
     			append_dev(div, t);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*ui_console*/ 32 && t_value !== (t_value = /*entry*/ ctx[28].data + "")) set_data_dev(t, t_value);
+    			if (dirty[0] & /*ui_console*/ 64 && t_value !== (t_value = /*entry*/ ctx[30].data + "")) set_data_dev(t, t_value);
 
-    			if (dirty[0] & /*ui_console*/ 32 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[28].context + " svelte-16idiwm")) {
+    			if (dirty[0] & /*ui_console*/ 64 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm")) {
     				attr_dev(div, "class", div_class_value);
     			}
     		},
@@ -724,23 +724,23 @@ var app = (function () {
     		block,
     		id: create_if_block.name,
     		type: "if",
-    		source: "(429:4) {#if entry.context == \\\"fuser\\\" }",
+    		source: "(430:4) {#if entry.context == \\\"fuser\\\" }",
     		ctx
     	});
 
     	return block;
     }
 
-    // (419:3) {#each ui_console as entry}
+    // (420:3) {#each ui_console as entry}
     function create_each_block(ctx) {
     	let t0;
     	let t1;
     	let t2;
     	let if_block3_anchor;
-    	let if_block0 = /*entry*/ ctx[28].context == "uart" && /*uart_console_enabled*/ ctx[2] && create_if_block_3(ctx);
-    	let if_block1 = /*entry*/ ctx[28].context == "openocd" && /*openocd_console_enabled*/ ctx[3] && create_if_block_2(ctx);
-    	let if_block2 = /*entry*/ ctx[28].context == "telnet" && /*telnet_console_enabled*/ ctx[4] && create_if_block_1(ctx);
-    	let if_block3 = /*entry*/ ctx[28].context == "fuser" && create_if_block(ctx);
+    	let if_block0 = /*entry*/ ctx[30].context == "uart" && /*uart_console_enabled*/ ctx[2] && create_if_block_3(ctx);
+    	let if_block1 = /*entry*/ ctx[30].context == "openocd" && /*openocd_console_enabled*/ ctx[3] && create_if_block_2(ctx);
+    	let if_block2 = /*entry*/ ctx[30].context == "telnet" && /*telnet_console_enabled*/ ctx[4] && create_if_block_1(ctx);
+    	let if_block3 = /*entry*/ ctx[30].context == "fuser" && create_if_block(ctx);
 
     	const block = {
     		c: function create() {
@@ -764,7 +764,7 @@ var app = (function () {
     			insert_dev(target, if_block3_anchor, anchor);
     		},
     		p: function update(ctx, dirty) {
-    			if (/*entry*/ ctx[28].context == "uart" && /*uart_console_enabled*/ ctx[2]) {
+    			if (/*entry*/ ctx[30].context == "uart" && /*uart_console_enabled*/ ctx[2]) {
     				if (if_block0) {
     					if_block0.p(ctx, dirty);
     				} else {
@@ -777,7 +777,7 @@ var app = (function () {
     				if_block0 = null;
     			}
 
-    			if (/*entry*/ ctx[28].context == "openocd" && /*openocd_console_enabled*/ ctx[3]) {
+    			if (/*entry*/ ctx[30].context == "openocd" && /*openocd_console_enabled*/ ctx[3]) {
     				if (if_block1) {
     					if_block1.p(ctx, dirty);
     				} else {
@@ -790,7 +790,7 @@ var app = (function () {
     				if_block1 = null;
     			}
 
-    			if (/*entry*/ ctx[28].context == "telnet" && /*telnet_console_enabled*/ ctx[4]) {
+    			if (/*entry*/ ctx[30].context == "telnet" && /*telnet_console_enabled*/ ctx[4]) {
     				if (if_block2) {
     					if_block2.p(ctx, dirty);
     				} else {
@@ -803,7 +803,7 @@ var app = (function () {
     				if_block2 = null;
     			}
 
-    			if (/*entry*/ ctx[28].context == "fuser") {
+    			if (/*entry*/ ctx[30].context == "fuser") {
     				if (if_block3) {
     					if_block3.p(ctx, dirty);
     				} else {
@@ -832,7 +832,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(419:3) {#each ui_console as entry}",
+    		source: "(420:3) {#each ui_console as entry}",
     		ctx
     	});
 
@@ -848,43 +848,43 @@ var app = (function () {
     	let tr0;
     	let td0;
     	let td1;
-    	let t1_value = /*grid*/ ctx[6].mcu + "";
+    	let t1_value = /*grid*/ ctx[7].mcu + "";
     	let t1;
     	let td2;
-    	let t2_value = /*grid*/ ctx[6].mcustatus + "";
+    	let t2_value = /*grid*/ ctx[7].mcustatus + "";
     	let t2;
     	let t3;
     	let tr1;
     	let td3;
     	let td4;
-    	let t5_value = /*grid*/ ctx[6].hwcfg + "";
+    	let t5_value = /*grid*/ ctx[7].hwcfg + "";
     	let t5;
     	let td5;
-    	let t6_value = /*grid*/ ctx[6].hwcfgstatus + "";
+    	let t6_value = /*grid*/ ctx[7].hwcfgstatus + "";
     	let t6;
     	let t7;
     	let tr2;
     	let td6;
     	let td7;
-    	let t9_value = /*grid*/ ctx[6].model + "";
+    	let t9_value = /*grid*/ ctx[7].model + "";
     	let t9;
     	let t10;
     	let tr3;
     	let td8;
     	let td9;
-    	let t12_value = /*grid*/ ctx[6].serialno[0] + "";
+    	let t12_value = /*grid*/ ctx[7].serialno[0] + "";
     	let t12;
     	let td10;
-    	let t13_value = /*grid*/ ctx[6].serialno[1] + "";
+    	let t13_value = /*grid*/ ctx[7].serialno[1] + "";
     	let t13;
     	let t14;
     	let tr4;
     	let td11;
     	let td12;
-    	let t15_value = /*grid*/ ctx[6].serialno[2] + "";
+    	let t15_value = /*grid*/ ctx[7].serialno[2] + "";
     	let t15;
     	let td13;
-    	let t16_value = /*grid*/ ctx[6].serialno[3] + "";
+    	let t16_value = /*grid*/ ctx[7].serialno[3] + "";
     	let t16;
     	let t17;
     	let div2;
@@ -928,30 +928,33 @@ var app = (function () {
     	let input11;
     	let label2;
     	let t37;
-    	let div12;
-    	let t38;
     	let input12;
+    	let label3;
     	let t39;
-    	let input13;
+    	let div12;
     	let t40;
-    	let input14;
+    	let input13;
     	let t41;
-    	let div13;
+    	let input14;
     	let t42;
     	let input15;
     	let t43;
-    	let input16;
+    	let div13;
     	let t44;
-    	let input17;
+    	let input16;
     	let t45;
-    	let input18;
+    	let input17;
     	let t46;
-    	let div14;
+    	let input18;
     	let t47;
     	let input19;
+    	let t48;
+    	let div14;
+    	let t49;
+    	let input20;
     	let mounted;
     	let dispose;
-    	let each_value_4 = /*mcu_pins*/ ctx[7][0];
+    	let each_value_4 = /*mcu_pins*/ ctx[8][0];
     	validate_each_argument(each_value_4);
     	let each_blocks_4 = [];
 
@@ -959,7 +962,7 @@ var app = (function () {
     		each_blocks_4[i] = create_each_block_4(get_each_context_4(ctx, each_value_4, i));
     	}
 
-    	let each_value_3 = /*mcu_pins*/ ctx[7][1];
+    	let each_value_3 = /*mcu_pins*/ ctx[8][1];
     	validate_each_argument(each_value_3);
     	let each_blocks_3 = [];
 
@@ -967,7 +970,7 @@ var app = (function () {
     		each_blocks_3[i] = create_each_block_3(get_each_context_3(ctx, each_value_3, i));
     	}
 
-    	let each_value_2 = /*mcu_pins*/ ctx[7][2];
+    	let each_value_2 = /*mcu_pins*/ ctx[8][2];
     	validate_each_argument(each_value_2);
     	let each_blocks_2 = [];
 
@@ -975,7 +978,7 @@ var app = (function () {
     		each_blocks_2[i] = create_each_block_2(get_each_context_2(ctx, each_value_2, i));
     	}
 
-    	let each_value_1 = /*mcu_pins*/ ctx[7][3];
+    	let each_value_1 = /*mcu_pins*/ ctx[8][3];
     	validate_each_argument(each_value_1);
     	let each_blocks_1 = [];
 
@@ -983,7 +986,7 @@ var app = (function () {
     		each_blocks_1[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
     	}
 
-    	let each_value = /*ui_console*/ ctx[5];
+    	let each_value = /*ui_console*/ ctx[6];
     	validate_each_argument(each_value);
     	let each_blocks = [];
 
@@ -1104,148 +1107,159 @@ var app = (function () {
     			label2 = element("label");
     			label2.textContent = "Telnet";
     			t37 = space();
-    			div12 = element("div");
-    			t38 = text("Chip: \n\t\t");
     			input12 = element("input");
+    			label3 = element("label");
+    			label3.textContent = "Autosend";
     			t39 = space();
+    			div12 = element("div");
+    			t40 = text("Chip: \n\t\t");
     			input13 = element("input");
-    			t40 = space();
-    			input14 = element("input");
     			t41 = space();
-    			div13 = element("div");
-    			t42 = text("Bootloader: \n\t\t");
+    			input14 = element("input");
+    			t42 = space();
     			input15 = element("input");
     			t43 = space();
+    			div13 = element("div");
+    			t44 = text("Bootloader: \n\t\t");
     			input16 = element("input");
-    			t44 = space();
-    			input17 = element("input");
     			t45 = space();
-    			input18 = element("input");
+    			input17 = element("input");
     			t46 = space();
-    			div14 = element("div");
-    			t47 = text("Firmware: \n\t\t");
+    			input18 = element("input");
+    			t47 = space();
     			input19 = element("input");
-    			add_location(td0, file, 365, 6, 9695);
-    			add_location(td1, file, 365, 20, 9709);
-    			add_location(td2, file, 365, 39, 9728);
-    			add_location(tr0, file, 364, 5, 9684);
-    			add_location(td3, file, 369, 6, 9783);
-    			add_location(td4, file, 369, 21, 9798);
-    			add_location(td5, file, 369, 42, 9819);
-    			add_location(tr1, file, 368, 5, 9772);
-    			add_location(td6, file, 372, 6, 9874);
+    			t48 = space();
+    			div14 = element("div");
+    			t49 = text("Firmware: \n\t\t");
+    			input20 = element("input");
+    			add_location(td0, file, 366, 6, 9724);
+    			add_location(td1, file, 366, 20, 9738);
+    			add_location(td2, file, 366, 39, 9757);
+    			add_location(tr0, file, 365, 5, 9713);
+    			add_location(td3, file, 370, 6, 9812);
+    			add_location(td4, file, 370, 21, 9827);
+    			add_location(td5, file, 370, 42, 9848);
+    			add_location(tr1, file, 369, 5, 9801);
+    			add_location(td6, file, 373, 6, 9903);
     			attr_dev(td7, "colspan", "2");
-    			add_location(td7, file, 372, 21, 9889);
-    			add_location(tr2, file, 371, 5, 9863);
-    			add_location(td8, file, 376, 6, 9951);
-    			add_location(td9, file, 376, 19, 9964);
-    			add_location(td10, file, 376, 46, 9991);
-    			add_location(tr3, file, 375, 5, 9940);
-    			add_location(td11, file, 379, 6, 10046);
-    			add_location(td12, file, 379, 15, 10055);
-    			add_location(td13, file, 379, 42, 10082);
-    			add_location(tr4, file, 378, 5, 10035);
+    			add_location(td7, file, 373, 21, 9918);
+    			add_location(tr2, file, 372, 5, 9892);
+    			add_location(td8, file, 377, 6, 9980);
+    			add_location(td9, file, 377, 19, 9993);
+    			add_location(td10, file, 377, 46, 10020);
+    			add_location(tr3, file, 376, 5, 9969);
+    			add_location(td11, file, 380, 6, 10075);
+    			add_location(td12, file, 380, 15, 10084);
+    			add_location(td13, file, 380, 42, 10111);
+    			add_location(tr4, file, 379, 5, 10064);
     			attr_dev(table, "border", "1");
     			attr_dev(table, "width", "300px");
-    			add_location(table, file, 362, 4, 9645);
+    			add_location(table, file, 363, 4, 9674);
     			attr_dev(div0, "class", "chip_info svelte-16idiwm");
-    			add_location(div0, file, 361, 6, 9617);
+    			add_location(div0, file, 362, 6, 9646);
     			attr_dev(div1, "class", "chip svelte-16idiwm");
-    			add_location(div1, file, 359, 2, 9591);
+    			add_location(div1, file, 360, 2, 9620);
     			attr_dev(div2, "class", "side rot0 svelte-16idiwm");
-    			add_location(div2, file, 388, 2, 10159);
+    			add_location(div2, file, 389, 2, 10188);
     			attr_dev(div3, "class", "side rot90 svelte-16idiwm");
-    			add_location(div3, file, 393, 2, 10289);
+    			add_location(div3, file, 394, 2, 10318);
     			attr_dev(div4, "class", "side rot180 svelte-16idiwm");
-    			add_location(div4, file, 400, 2, 10420);
+    			add_location(div4, file, 401, 2, 10449);
     			attr_dev(div5, "class", "side rot270 svelte-16idiwm");
-    			add_location(div5, file, 405, 2, 10552);
+    			add_location(div5, file, 406, 2, 10581);
     			attr_dev(div6, "class", "boundary_check container svelte-16idiwm");
-    			add_location(div6, file, 357, 1, 9549);
+    			add_location(div6, file, 358, 1, 9578);
     			attr_dev(div7, "class", "serial_console svelte-16idiwm");
-    			add_location(div7, file, 417, 2, 10730);
+    			add_location(div7, file, 418, 2, 10759);
     			attr_dev(div8, "class", "serial_container svelte-16idiwm");
-    			add_location(div8, file, 416, 1, 10697);
+    			add_location(div8, file, 417, 1, 10726);
     			attr_dev(input0, "type", "button");
     			input0.value = "Reset Ports";
-    			add_location(input0, file, 441, 2, 11357);
+    			add_location(input0, file, 442, 2, 11386);
     			attr_dev(input1, "type", "button");
     			input1.value = "OpenOCD Start";
-    			add_location(input1, file, 443, 2, 11424);
+    			add_location(input1, file, 444, 2, 11453);
     			attr_dev(input2, "type", "button");
     			input2.value = "OpenOCD Stop";
-    			add_location(input2, file, 444, 2, 11495);
+    			add_location(input2, file, 445, 2, 11524);
     			attr_dev(input3, "type", "button");
     			input3.value = "Telnet Start";
-    			add_location(input3, file, 445, 2, 11564);
+    			add_location(input3, file, 446, 2, 11593);
     			attr_dev(input4, "type", "button");
     			input4.value = "Telnet Stop";
-    			add_location(input4, file, 446, 2, 11633);
-    			add_location(div9, file, 437, 1, 11343);
+    			add_location(input4, file, 447, 2, 11662);
+    			add_location(div9, file, 438, 1, 11372);
     			attr_dev(input5, "type", "text");
     			attr_dev(input5, "placeholder", "UART command");
-    			add_location(input5, file, 449, 2, 11715);
+    			add_location(input5, file, 450, 2, 11744);
     			attr_dev(input6, "type", "button");
     			input6.value = "Send";
-    			add_location(input6, file, 450, 2, 11795);
-    			add_location(div10, file, 448, 1, 11707);
+    			add_location(input6, file, 451, 2, 11824);
+    			add_location(div10, file, 449, 1, 11736);
     			attr_dev(input7, "type", "text");
     			attr_dev(input7, "placeholder", "Telnet command");
-    			add_location(input7, file, 454, 2, 11869);
+    			add_location(input7, file, 455, 2, 11898);
     			attr_dev(input8, "type", "button");
     			input8.value = "Send";
-    			add_location(input8, file, 455, 2, 11977);
+    			add_location(input8, file, 456, 2, 12006);
     			attr_dev(input9, "name", "uart_enable");
     			attr_dev(input9, "id", "uart_enable");
     			attr_dev(input9, "type", "checkbox");
-    			add_location(input9, file, 457, 2, 12038);
+    			add_location(input9, file, 458, 2, 12067);
     			attr_dev(label0, "for", "uart_enable");
     			attr_dev(label0, "class", "svelte-16idiwm");
-    			add_location(label0, file, 457, 97, 12133);
+    			add_location(label0, file, 458, 97, 12162);
     			attr_dev(input10, "name", "openocd_enable");
     			attr_dev(input10, "id", "openocd_enable");
     			attr_dev(input10, "type", "checkbox");
-    			add_location(input10, file, 458, 2, 12173);
+    			add_location(input10, file, 459, 2, 12202);
     			attr_dev(label1, "for", "openocd_enable");
     			attr_dev(label1, "class", "svelte-16idiwm");
-    			add_location(label1, file, 458, 106, 12277);
+    			add_location(label1, file, 459, 106, 12306);
     			attr_dev(input11, "name", "telnet_enable");
     			attr_dev(input11, "id", "telnet_enable");
     			attr_dev(input11, "type", "checkbox");
-    			add_location(input11, file, 459, 2, 12323);
+    			add_location(input11, file, 460, 2, 12352);
     			attr_dev(label2, "for", "telnet_enable");
     			attr_dev(label2, "class", "svelte-16idiwm");
-    			add_location(label2, file, 459, 103, 12424);
-    			add_location(div11, file, 453, 1, 11861);
-    			attr_dev(input12, "type", "button");
-    			input12.value = "reset";
-    			add_location(input12, file, 464, 2, 12494);
+    			add_location(label2, file, 460, 103, 12453);
+    			attr_dev(input12, "name", "telnet_autosend");
+    			attr_dev(input12, "id", "telnet_autosend");
+    			attr_dev(input12, "type", "checkbox");
+    			add_location(input12, file, 461, 2, 12497);
+    			attr_dev(label3, "for", "telnet_autosend");
+    			attr_dev(label3, "class", "svelte-16idiwm");
+    			add_location(label3, file, 461, 100, 12595);
+    			add_location(div11, file, 454, 1, 11890);
     			attr_dev(input13, "type", "button");
-    			input13.value = "reset init";
-    			add_location(input13, file, 465, 2, 12585);
+    			input13.value = "reset";
+    			add_location(input13, file, 466, 2, 12669);
     			attr_dev(input14, "type", "button");
-    			input14.value = "erase";
-    			add_location(input14, file, 466, 2, 12686);
-    			add_location(div12, file, 462, 1, 12477);
+    			input14.value = "reset init";
+    			add_location(input14, file, 467, 2, 12796);
     			attr_dev(input15, "type", "button");
-    			input15.value = "check";
-    			add_location(input15, file, 471, 2, 12821);
+    			input15.value = "erase";
+    			add_location(input15, file, 468, 2, 12933);
+    			add_location(div12, file, 464, 1, 12652);
     			attr_dev(input16, "type", "button");
-    			input16.value = "lock";
-    			add_location(input16, file, 472, 2, 12925);
+    			input16.value = "check";
+    			add_location(input16, file, 473, 2, 13104);
     			attr_dev(input17, "type", "button");
-    			input17.value = "unlock";
-    			add_location(input17, file, 473, 2, 13034);
+    			input17.value = "lock";
+    			add_location(input17, file, 474, 2, 13244);
     			attr_dev(input18, "type", "button");
-    			input18.value = "install";
-    			add_location(input18, file, 474, 2, 13141);
-    			add_location(div13, file, 469, 1, 12798);
+    			input18.value = "unlock";
+    			add_location(input18, file, 475, 2, 13389);
     			attr_dev(input19, "type", "button");
     			input19.value = "install";
-    			add_location(input19, file, 479, 2, 13323);
-    			add_location(div14, file, 477, 1, 13302);
+    			add_location(input19, file, 476, 2, 13532);
+    			add_location(div13, file, 471, 1, 13081);
+    			attr_dev(input20, "type", "button");
+    			input20.value = "install";
+    			add_location(input20, file, 481, 2, 13750);
+    			add_location(div14, file, 479, 1, 13729);
     			attr_dev(main, "class", "svelte-16idiwm");
-    			add_location(main, file, 355, 0, 9540);
+    			add_location(main, file, 356, 0, 9569);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1359,28 +1373,32 @@ var app = (function () {
     			append_dev(div11, input11);
     			input11.checked = /*telnet_console_enabled*/ ctx[4];
     			append_dev(div11, label2);
-    			append_dev(main, t37);
+    			append_dev(div11, t37);
+    			append_dev(div11, input12);
+    			input12.checked = /*telnet_autosend*/ ctx[5];
+    			append_dev(div11, label3);
+    			append_dev(main, t39);
     			append_dev(main, div12);
-    			append_dev(div12, t38);
-    			append_dev(div12, input12);
-    			append_dev(div12, t39);
-    			append_dev(div12, input13);
     			append_dev(div12, t40);
+    			append_dev(div12, input13);
+    			append_dev(div12, t41);
     			append_dev(div12, input14);
-    			append_dev(main, t41);
+    			append_dev(div12, t42);
+    			append_dev(div12, input15);
+    			append_dev(main, t43);
     			append_dev(main, div13);
-    			append_dev(div13, t42);
-    			append_dev(div13, input15);
-    			append_dev(div13, t43);
-    			append_dev(div13, input16);
     			append_dev(div13, t44);
-    			append_dev(div13, input17);
+    			append_dev(div13, input16);
     			append_dev(div13, t45);
+    			append_dev(div13, input17);
+    			append_dev(div13, t46);
     			append_dev(div13, input18);
-    			append_dev(main, t46);
+    			append_dev(div13, t47);
+    			append_dev(div13, input19);
+    			append_dev(main, t48);
     			append_dev(main, div14);
-    			append_dev(div14, t47);
-    			append_dev(div14, input19);
+    			append_dev(div14, t49);
+    			append_dev(div14, input20);
 
     			if (!mounted) {
     				dispose = [
@@ -1389,40 +1407,41 @@ var app = (function () {
     					listen_dev(input2, "click", openocd_stop, false, false, false),
     					listen_dev(input3, "click", telnet_start, false, false, false),
     					listen_dev(input4, "click", telnet_stop, false, false, false),
-    					listen_dev(input5, "input", /*input5_input_handler*/ ctx[12]),
-    					listen_dev(input6, "click", /*uart_send*/ ctx[10], false, false, false),
-    					listen_dev(input7, "keyup", /*keyup_telnet*/ ctx[8], false, false, false),
-    					listen_dev(input7, "input", /*input7_input_handler*/ ctx[13]),
-    					listen_dev(input8, "click", /*telnet_send*/ ctx[9], false, false, false),
-    					listen_dev(input9, "change", /*input9_change_handler*/ ctx[14]),
-    					listen_dev(input10, "change", /*input10_change_handler*/ ctx[15]),
-    					listen_dev(input11, "change", /*input11_change_handler*/ ctx[16]),
-    					listen_dev(input12, "click", /*click_handler*/ ctx[17], false, false, false),
-    					listen_dev(input13, "click", /*click_handler_1*/ ctx[18], false, false, false),
-    					listen_dev(input14, "click", /*click_handler_2*/ ctx[19], false, false, false),
-    					listen_dev(input15, "click", /*click_handler_3*/ ctx[20], false, false, false),
-    					listen_dev(input16, "click", /*click_handler_4*/ ctx[21], false, false, false),
-    					listen_dev(input17, "click", /*click_handler_5*/ ctx[22], false, false, false),
-    					listen_dev(input18, "click", /*click_handler_6*/ ctx[23], false, false, false),
-    					listen_dev(input19, "click", /*click_handler_7*/ ctx[24], false, false, false)
+    					listen_dev(input5, "input", /*input5_input_handler*/ ctx[13]),
+    					listen_dev(input6, "click", /*uart_send*/ ctx[11], false, false, false),
+    					listen_dev(input7, "keyup", /*keyup_telnet*/ ctx[9], false, false, false),
+    					listen_dev(input7, "input", /*input7_input_handler*/ ctx[14]),
+    					listen_dev(input8, "click", /*telnet_send*/ ctx[10], false, false, false),
+    					listen_dev(input9, "change", /*input9_change_handler*/ ctx[15]),
+    					listen_dev(input10, "change", /*input10_change_handler*/ ctx[16]),
+    					listen_dev(input11, "change", /*input11_change_handler*/ ctx[17]),
+    					listen_dev(input12, "change", /*input12_change_handler*/ ctx[18]),
+    					listen_dev(input13, "click", /*click_handler*/ ctx[19], false, false, false),
+    					listen_dev(input14, "click", /*click_handler_1*/ ctx[20], false, false, false),
+    					listen_dev(input15, "click", /*click_handler_2*/ ctx[21], false, false, false),
+    					listen_dev(input16, "click", /*click_handler_3*/ ctx[22], false, false, false),
+    					listen_dev(input17, "click", /*click_handler_4*/ ctx[23], false, false, false),
+    					listen_dev(input18, "click", /*click_handler_5*/ ctx[24], false, false, false),
+    					listen_dev(input19, "click", /*click_handler_6*/ ctx[25], false, false, false),
+    					listen_dev(input20, "click", /*click_handler_7*/ ctx[26], false, false, false)
     				];
 
     				mounted = true;
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*grid*/ 64 && t1_value !== (t1_value = /*grid*/ ctx[6].mcu + "")) set_data_dev(t1, t1_value);
-    			if (dirty[0] & /*grid*/ 64 && t2_value !== (t2_value = /*grid*/ ctx[6].mcustatus + "")) set_data_dev(t2, t2_value);
-    			if (dirty[0] & /*grid*/ 64 && t5_value !== (t5_value = /*grid*/ ctx[6].hwcfg + "")) set_data_dev(t5, t5_value);
-    			if (dirty[0] & /*grid*/ 64 && t6_value !== (t6_value = /*grid*/ ctx[6].hwcfgstatus + "")) set_data_dev(t6, t6_value);
-    			if (dirty[0] & /*grid*/ 64 && t9_value !== (t9_value = /*grid*/ ctx[6].model + "")) set_data_dev(t9, t9_value);
-    			if (dirty[0] & /*grid*/ 64 && t12_value !== (t12_value = /*grid*/ ctx[6].serialno[0] + "")) set_data_dev(t12, t12_value);
-    			if (dirty[0] & /*grid*/ 64 && t13_value !== (t13_value = /*grid*/ ctx[6].serialno[1] + "")) set_data_dev(t13, t13_value);
-    			if (dirty[0] & /*grid*/ 64 && t15_value !== (t15_value = /*grid*/ ctx[6].serialno[2] + "")) set_data_dev(t15, t15_value);
-    			if (dirty[0] & /*grid*/ 64 && t16_value !== (t16_value = /*grid*/ ctx[6].serialno[3] + "")) set_data_dev(t16, t16_value);
+    			if (dirty[0] & /*grid*/ 128 && t1_value !== (t1_value = /*grid*/ ctx[7].mcu + "")) set_data_dev(t1, t1_value);
+    			if (dirty[0] & /*grid*/ 128 && t2_value !== (t2_value = /*grid*/ ctx[7].mcustatus + "")) set_data_dev(t2, t2_value);
+    			if (dirty[0] & /*grid*/ 128 && t5_value !== (t5_value = /*grid*/ ctx[7].hwcfg + "")) set_data_dev(t5, t5_value);
+    			if (dirty[0] & /*grid*/ 128 && t6_value !== (t6_value = /*grid*/ ctx[7].hwcfgstatus + "")) set_data_dev(t6, t6_value);
+    			if (dirty[0] & /*grid*/ 128 && t9_value !== (t9_value = /*grid*/ ctx[7].model + "")) set_data_dev(t9, t9_value);
+    			if (dirty[0] & /*grid*/ 128 && t12_value !== (t12_value = /*grid*/ ctx[7].serialno[0] + "")) set_data_dev(t12, t12_value);
+    			if (dirty[0] & /*grid*/ 128 && t13_value !== (t13_value = /*grid*/ ctx[7].serialno[1] + "")) set_data_dev(t13, t13_value);
+    			if (dirty[0] & /*grid*/ 128 && t15_value !== (t15_value = /*grid*/ ctx[7].serialno[2] + "")) set_data_dev(t15, t15_value);
+    			if (dirty[0] & /*grid*/ 128 && t16_value !== (t16_value = /*grid*/ ctx[7].serialno[3] + "")) set_data_dev(t16, t16_value);
 
-    			if (dirty[0] & /*mcu_pins*/ 128) {
-    				each_value_4 = /*mcu_pins*/ ctx[7][0];
+    			if (dirty[0] & /*mcu_pins*/ 256) {
+    				each_value_4 = /*mcu_pins*/ ctx[8][0];
     				validate_each_argument(each_value_4);
     				let i;
 
@@ -1445,8 +1464,8 @@ var app = (function () {
     				each_blocks_4.length = each_value_4.length;
     			}
 
-    			if (dirty[0] & /*mcu_pins*/ 128) {
-    				each_value_3 = /*mcu_pins*/ ctx[7][1];
+    			if (dirty[0] & /*mcu_pins*/ 256) {
+    				each_value_3 = /*mcu_pins*/ ctx[8][1];
     				validate_each_argument(each_value_3);
     				let i;
 
@@ -1469,8 +1488,8 @@ var app = (function () {
     				each_blocks_3.length = each_value_3.length;
     			}
 
-    			if (dirty[0] & /*mcu_pins*/ 128) {
-    				each_value_2 = /*mcu_pins*/ ctx[7][2];
+    			if (dirty[0] & /*mcu_pins*/ 256) {
+    				each_value_2 = /*mcu_pins*/ ctx[8][2];
     				validate_each_argument(each_value_2);
     				let i;
 
@@ -1493,8 +1512,8 @@ var app = (function () {
     				each_blocks_2.length = each_value_2.length;
     			}
 
-    			if (dirty[0] & /*mcu_pins*/ 128) {
-    				each_value_1 = /*mcu_pins*/ ctx[7][3];
+    			if (dirty[0] & /*mcu_pins*/ 256) {
+    				each_value_1 = /*mcu_pins*/ ctx[8][3];
     				validate_each_argument(each_value_1);
     				let i;
 
@@ -1517,8 +1536,8 @@ var app = (function () {
     				each_blocks_1.length = each_value_1.length;
     			}
 
-    			if (dirty[0] & /*ui_console, telnet_console_enabled, openocd_console_enabled, uart_console_enabled*/ 60) {
-    				each_value = /*ui_console*/ ctx[5];
+    			if (dirty[0] & /*ui_console, telnet_console_enabled, openocd_console_enabled, uart_console_enabled*/ 92) {
+    				each_value = /*ui_console*/ ctx[6];
     				validate_each_argument(each_value);
     				let i;
 
@@ -1559,6 +1578,10 @@ var app = (function () {
 
     			if (dirty[0] & /*telnet_console_enabled*/ 16) {
     				input11.checked = /*telnet_console_enabled*/ ctx[4];
+    			}
+
+    			if (dirty[0] & /*telnet_autosend*/ 32) {
+    				input12.checked = /*telnet_autosend*/ ctx[5];
     			}
     		},
     		i: noop,
@@ -1637,6 +1660,7 @@ var app = (function () {
     	let uart_console_enabled = true;
     	let openocd_console_enabled = true;
     	let telnet_console_enabled = true;
+    	let telnet_autosend = true;
 
     	function keyup_telnet(e) {
     		if (e.keyCode === 13) {
@@ -1714,7 +1738,7 @@ var app = (function () {
     				//var str = String.fromCharCode.apply(null, element.data);
     				console.log(element);
 
-    				$$invalidate(5, ui_console = [element, ...ui_console]);
+    				$$invalidate(6, ui_console = [element, ...ui_console]);
 
     				//ui_console.data = [...ui_console.data, element.data];
     				//ui_console.context = [...ui_console.context, element.context];
@@ -1736,22 +1760,22 @@ var app = (function () {
 
     						for (var i = 0; i < indices.length; i++) {
     							let side = parseInt(str.substring(14, 15));
-    							$$invalidate(7, mcu_pins[side][indices[i]].class += "pinerror", mcu_pins);
+    							$$invalidate(8, mcu_pins[side][indices[i]].class += "pinerror", mcu_pins);
     						}
     					} else if (str.startsWith("test.hwcfg.")) {
-    						$$invalidate(6, grid.hwcfg = parseInt(str.substring(11, str.length)), grid);
+    						$$invalidate(7, grid.hwcfg = parseInt(str.substring(11, str.length)), grid);
 
     						if (grid.hwcfg == 192) {
-    							$$invalidate(6, grid.model = "EN16 RevA", grid);
-    							$$invalidate(6, grid.hwcfgstatus = "OK", grid);
+    							$$invalidate(7, grid.model = "EN16 RevA", grid);
+    							$$invalidate(7, grid.hwcfgstatus = "OK", grid);
     						}
     					} else if (str.startsWith("test.serialno.")) {
-    						$$invalidate(6, grid.serialno = str.substring(14, str.length).split(" "), grid);
+    						$$invalidate(7, grid.serialno = str.substring(14, str.length).split(" "), grid);
     					} else if (str.startsWith("test.mcu.")) {
-    						$$invalidate(6, grid.mcu = str.split(".")[2], grid);
+    						$$invalidate(7, grid.mcu = str.split(".")[2], grid);
 
     						if (grid.mcu == "ATSAMD51N20A") {
-    							$$invalidate(6, grid.mcustatus = "OK", grid);
+    							$$invalidate(7, grid.mcustatus = "OK", grid);
     						}
     					}
     				}
@@ -2122,40 +2146,53 @@ var app = (function () {
     		$$invalidate(4, telnet_console_enabled);
     	}
 
+    	function input12_change_handler() {
+    		telnet_autosend = this.checked;
+    		$$invalidate(5, telnet_autosend);
+    	}
+
     	const click_handler = function () {
     		$$invalidate(1, telnet_input_field = "reset");
+    		if (telnet_autosend) telnet_send();
     	};
 
     	const click_handler_1 = function () {
     		$$invalidate(1, telnet_input_field = "reset init");
+    		if (telnet_autosend) telnet_send();
     	};
 
     	const click_handler_2 = function () {
     		$$invalidate(1, telnet_input_field = "atsame5 chip-erase");
+    		if (telnet_autosend) telnet_send();
     	};
 
     	const click_handler_3 = function () {
     		$$invalidate(1, telnet_input_field = "atsame5 bootloader");
+    		if (telnet_autosend) telnet_send();
     	};
 
     	const click_handler_4 = function () {
     		$$invalidate(1, telnet_input_field = "atsame5 bootloader 16384");
+    		if (telnet_autosend) telnet_send();
     	};
 
     	const click_handler_5 = function () {
     		$$invalidate(1, telnet_input_field = "atsame5 bootloader 0");
+    		if (telnet_autosend) telnet_send();
     	};
 
     	const click_handler_6 = function () {
     		$$invalidate(1, telnet_input_field = "program bootloader-intech_grid-v3.3.0-8-g945e9ec-dirty.elf verify");
+    		if (telnet_autosend) telnet_send();
     	};
 
     	const click_handler_7 = function () {
     		$$invalidate(1, telnet_input_field = "program ../grid_make/gcc/AtmelStart.bin verify 0x4000");
+    		if (telnet_autosend) telnet_send();
     	};
 
     	$$self.$$set = $$props => {
-    		if ("name" in $$props) $$invalidate(11, name = $$props.name);
+    		if ("name" in $$props) $$invalidate(12, name = $$props.name);
     	};
 
     	$$self.$capture_state = () => ({
@@ -2169,6 +2206,7 @@ var app = (function () {
     		uart_console_enabled,
     		openocd_console_enabled,
     		telnet_console_enabled,
+    		telnet_autosend,
     		keyup_telnet,
     		fuser_kill,
     		openocd_start,
@@ -2184,7 +2222,7 @@ var app = (function () {
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("name" in $$props) $$invalidate(11, name = $$props.name);
+    		if ("name" in $$props) $$invalidate(12, name = $$props.name);
     		if ("uart_input_field" in $$props) $$invalidate(0, uart_input_field = $$props.uart_input_field);
     		if ("telnet_input_field" in $$props) $$invalidate(1, telnet_input_field = $$props.telnet_input_field);
     		if ("telnet_history" in $$props) telnet_history = $$props.telnet_history;
@@ -2192,9 +2230,10 @@ var app = (function () {
     		if ("uart_console_enabled" in $$props) $$invalidate(2, uart_console_enabled = $$props.uart_console_enabled);
     		if ("openocd_console_enabled" in $$props) $$invalidate(3, openocd_console_enabled = $$props.openocd_console_enabled);
     		if ("telnet_console_enabled" in $$props) $$invalidate(4, telnet_console_enabled = $$props.telnet_console_enabled);
-    		if ("ui_console" in $$props) $$invalidate(5, ui_console = $$props.ui_console);
-    		if ("grid" in $$props) $$invalidate(6, grid = $$props.grid);
-    		if ("mcu_pins" in $$props) $$invalidate(7, mcu_pins = $$props.mcu_pins);
+    		if ("telnet_autosend" in $$props) $$invalidate(5, telnet_autosend = $$props.telnet_autosend);
+    		if ("ui_console" in $$props) $$invalidate(6, ui_console = $$props.ui_console);
+    		if ("grid" in $$props) $$invalidate(7, grid = $$props.grid);
+    		if ("mcu_pins" in $$props) $$invalidate(8, mcu_pins = $$props.mcu_pins);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -2207,6 +2246,7 @@ var app = (function () {
     		uart_console_enabled,
     		openocd_console_enabled,
     		telnet_console_enabled,
+    		telnet_autosend,
     		ui_console,
     		grid,
     		mcu_pins,
@@ -2219,6 +2259,7 @@ var app = (function () {
     		input9_change_handler,
     		input10_change_handler,
     		input11_change_handler,
+    		input12_change_handler,
     		click_handler,
     		click_handler_1,
     		click_handler_2,
@@ -2233,7 +2274,7 @@ var app = (function () {
     class App extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment, safe_not_equal, { name: 11 }, [-1, -1]);
+    		init(this, options, instance, create_fragment, safe_not_equal, { name: 12 }, [-1, -1]);
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -2245,7 +2286,7 @@ var app = (function () {
     		const { ctx } = this.$$;
     		const props = options.props || {};
 
-    		if (/*name*/ ctx[11] === undefined && !("name" in props)) {
+    		if (/*name*/ ctx[12] === undefined && !("name" in props)) {
     			console_1.warn("<App> was created without expected prop 'name'");
     		}
     	}

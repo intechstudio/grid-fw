@@ -225,8 +225,12 @@ void grid_module_common_init(void){
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: PBF4");					
 		grid_module_pbf4_reva_init();			
 	}
-	else if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevA){
+	else if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevA || grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevD ){
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: EN16");
+		grid_module_en16_reva_init();	
+	}	
+	else if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_ND_RevA || grid_sys_get_hwcfg() == GRID_MODULE_EN16_ND_RevD ){
+		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: EN16 ND");
 		grid_module_en16_reva_init();	
 	}	
 	else{
