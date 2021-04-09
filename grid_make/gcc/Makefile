@@ -2,6 +2,7 @@ SUB_DIRS +=  \
 \
 usb/class/midi/device \
 usb/class/midi \
+grid/lua \
 grid \
 \
 
@@ -29,7 +30,7 @@ grid/grid_sys.o \
 grid/grid_ui.o \
 grid/grid_unittest.o \
 grid/grid_usb.o \
-grid/v7.o \
+grid/wren.o \
 \
 
 
@@ -57,7 +58,7 @@ OBJS_AS_ARGS +=  \
 "grid/grid_ui.o" \
 "grid/grid_unittest.o" \
 "grid/grid_usb.o" \
-"grid/v7.o" \
+"grid/wren.o" \
 \
 
 
@@ -67,6 +68,7 @@ DIR_INCLUDES +=  \
 -I"../grid" \
 -I"../usb/class/midi/" \
 -I"../usb/class/midi/device" \
+-I"../grid/lua" \
 
 
 
@@ -94,7 +96,7 @@ DEPS_AS_ARGS +=  \
 "grid/grid_ui.d" \
 "grid/grid_unittest.d" \
 "grid/grid_usb.d" \
-"grid/v7.d" \
+"grid/wren.d" \
 \
 
 
@@ -489,11 +491,12 @@ $(OUTPUT_FILE_PATH): $(OBJS)
 	@echo Building target: $@
 	@echo Invoking: ARM/GNU Linker
 	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -o $(OUTPUT_FILE_NAME).elf $(OBJS_AS_ARGS) -Wl,--start-group -lm -Wl,--end-group -mthumb \
--Wl,-Map="$(OUTPUT_FILE_NAME).map" --specs=nano.specs -Wl,--gc-sections -mcpu=cortex-m4 \
+-Wl,-Map="$(OUTPUT_FILE_NAME).map" --specs=nosys.specs -Wl,--gc-sections -mcpu=cortex-m4 \
  \
 -T"../grid/samd51n20a_flash_bootloader.ld" \
 -L"../samd51a/gcc/gcc" \
--lm \
+-L"../grid/lua" \
+-llua -lm  -lgcc -lc
 
 	@echo Finished building target: $@
 
@@ -516,7 +519,7 @@ $(OUTPUT_FILE_PATH): $(OBJS)
 %.o: %.c
 	@echo Building file: $<
 	@echo ARM/GNU C Compiler
-	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb -DDEBUG -g -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 $(DIR_INCLUDES) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
@@ -525,7 +528,7 @@ $(DIR_INCLUDES) \
 %.o: %.s
 	@echo Building file: $<
 	@echo ARM/GNU Assembler
-	$(QUOTE)arm-none-eabi-as$(QUOTE) -x c -mthumb -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	$(QUOTE)arm-none-eabi-as$(QUOTE) -x c -mthumb -DDEBUG -g -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 $(DIR_INCLUDES) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
@@ -534,7 +537,7 @@ $(DIR_INCLUDES) \
 %.o: %.S
 	@echo Building file: $<
 	@echo ARM/GNU Preprocessing Assembler
-	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb -DDEBUG -g -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 $(DIR_INCLUDES) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"

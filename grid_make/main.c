@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 
-
+#include <string.h>
 #include <hpl_reset.h>
 
 
@@ -22,32 +22,41 @@
 #include "task.h"
 #include "semphr.h"
 
-#include "grid/v7.h"
-struct v7 *v7;
+//#include "grid/v7.h"
+//#include "grid/mjs.h"
+//#include "grid/wren.h"
 
+#include "grid/lua/lua.h"
+#include "grid/lua/lualib.h"
+#include "grid/lua/lauxlib.h"
 
-
-static void call_sum(struct v7 *v7) {
-  v7_val_t func, result, args;
-
-  func = v7_get(v7, v7_get_global(v7), "sum", 3);
-
-  args = v7_mk_array(v7);
-  v7_array_push(v7, args, v7_mk_number(v7, 123.0));
-  v7_array_push(v7, args, v7_mk_number(v7, 456.789));
-
-  if (v7_apply(v7, func, V7_UNDEFINED, args, &result) == V7_OK) {
-    printf("Result: %d\n", v7_get_int(v7, result));
-	delay_ms(100);
-  } else {
-    v7_print_error(stderr, v7, "Error while calling sum", result);
-  }
-}
-
-
-
+lua_State *L = NULL;
 
 #include "usb/class/midi/device/audiodf_midi.h"
+/* GetIdleTaskMemory prototype (linked to static allocation support) */
+
+
+static StaticTask_t xTimerTaskTCBBuffer;
+static StackType_t xTimerStack[configMINIMAL_STACK_SIZE];
+
+
+
+void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer,
+                                          uint32_t *pulTimerTaskStackSize){
+  *ppxTimerTaskTCBBuffer = &xTimerTaskTCBBuffer;
+  *ppxTimerTaskStackBuffer = &xTimerStack[0];
+  *pulTimerTaskStackSize = configMINIMAL_STACK_SIZE;
+}
+
+static StaticTask_t xIdleTaskTCBBuffer;
+static StackType_t xIdleStack[configMINIMAL_STACK_SIZE];
+
+void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer,
+                                          uint32_t *pulIdleTaskStackSize){
+  *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
+  *ppxIdleTaskStackBuffer = &xIdleStack[0];
+  *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+}
 
 
 void vApplicationStackOverflowHook( TaskHandle_t xTask, signed char *pcTaskName ){
@@ -55,8 +64,7 @@ void vApplicationStackOverflowHook( TaskHandle_t xTask, signed char *pcTaskName 
 	CRITICAL_SECTION_ENTER()
 
 	while(1){
-
-		printf("Stack overflow in task %s\r\n", pcTaskGetName(xTask));
+		printf("Stack Overflow %s\r\n", pcTaskGetName(xTask));
 		delay_ms(1000);
 	}
 
@@ -66,19 +74,19 @@ void vApplicationStackOverflowHook( TaskHandle_t xTask, signed char *pcTaskName 
 }
 
 static TaskHandle_t      		xCreatedUiTask;
-#define TASK_UI_STACK_SIZE 		(4*1024 / sizeof(portSTACK_TYPE))
-#define TASK_UI_PRIORITY 		(5)
+#define TASK_UI_STACK_SIZE 		(512 / sizeof(portSTACK_TYPE))
+#define TASK_UI_PRIORITY 		(1)
 
 static TaskHandle_t      		xCreatedUsbTask;
-#define TASK_USB_STACK_SIZE 	(2048 / sizeof(portSTACK_TYPE))
-#define TASK_USB_PRIORITY 		(1)
+#define TASK_USB_STACK_SIZE 	(512 / sizeof(portSTACK_TYPE))
+#define TASK_USB_PRIORITY 		(2)
 
 static TaskHandle_t      		xCreatedNvmTask;
-#define TASK_NVM_STACK_SIZE 	(1024 / sizeof(portSTACK_TYPE))
+#define TASK_NVM_STACK_SIZE 	(512 / sizeof(portSTACK_TYPE))
 #define TASK_NVM_PRIORITY 		(2)
 
 static TaskHandle_t      			xCreatedReceiveTask;
-#define TASK_RECEIVE_STACK_SIZE 	(1024 / sizeof(portSTACK_TYPE))
+#define TASK_RECEIVE_STACK_SIZE 	(512 / sizeof(portSTACK_TYPE))
 #define TASK_RECEIVE_PRIORITY 		(2)
 
 static TaskHandle_t      			xCreatedInboundTask;
@@ -90,7 +98,7 @@ static TaskHandle_t      			xCreatedOutboundTask;
 #define TASK_OUTBOUND_PRIORITY 		(2)
 
 static TaskHandle_t      		xCreatedLedTask;
-#define TASK_LED_STACK_SIZE 	(16*1024 / sizeof(portSTACK_TYPE))
+#define TASK_LED_STACK_SIZE 	(4*1024 / sizeof(portSTACK_TYPE))
 #define TASK_LED_PRIORITY 		(4)
 
 
@@ -103,6 +111,28 @@ static TaskHandle_t      xCreatedExample2Task;
 
 static SemaphoreHandle_t disp_mutex;
 
+StaticTask_t xTaskBufferUi;
+StackType_t xStackUi[TASK_UI_STACK_SIZE];
+
+StaticTask_t xTaskBufferUsb;
+StackType_t xStackUsb[TASK_USB_STACK_SIZE];
+
+StaticTask_t xTaskBufferNvm;
+StackType_t xStackNvm[TASK_NVM_STACK_SIZE];
+
+StaticTask_t xTaskBufferReceive;
+StackType_t xStackReceive[TASK_RECEIVE_STACK_SIZE];
+
+StaticTask_t xTaskBufferInbound;
+StackType_t xStackInbound[TASK_INBOUND_STACK_SIZE];
+
+StaticTask_t xTaskBufferOutbound;
+StackType_t xStackOutbound[TASK_OUTBOUND_STACK_SIZE];
+
+StaticTask_t xTaskBufferLed;
+StackType_t xStackLed[TASK_LED_STACK_SIZE];
+
+
 /**
  * OS example task
  *
@@ -112,50 +142,6 @@ static SemaphoreHandle_t disp_mutex;
 
 volatile uint32_t globaltest = 0;
 
-static void example_task(void *p)
-{
-	(void)p;
-	while (1) {
-
-		// if (xSemaphoreTake(disp_mutex, 1)) {
-		// 	/* add your code */
-
-		// 	printf("ExampleTask ????... %d \r\n", globaltest);
-
-		// }
-
-		// if (globaltest%4 == 0){
-
-
-		// 	xSemaphoreGive(disp_mutex);
-
-		// }
-		CRITICAL_SECTION_ENTER()
-
-		printf("ExampleTask ????... %d \r\n", globaltest);
-		CRITICAL_SECTION_LEAVE()
-
-
-		vTaskDelay(1000*configTICK_RATE_HZ/1000);
-
-		//os_sleep(400);
-
-	}
-}
-
-
-static void example2_task(void *p)
-{
-	(void)p;
-	while (1) {
-
-		//printf("Example2 Task Printing... \r\n");
-		//globaltest++;
-		vTaskDelay(1000); //  portTICK_PERIOD_MS
-
-
-	}
-}
 
 
 volatile uint8_t midi_rx_buffer[16] = {0};
@@ -444,6 +430,11 @@ static void ui_task(void *p){
 	(void)p;
 
 	while (1) {
+
+
+
+
+		ui_task_inner();
 			
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
 
@@ -491,15 +482,23 @@ static void led_task(void *p)
 {
 	(void)p;
 
+
+
+
+
+
+
 	while (1) {
 
 		globaltest++;
 		
 
+		
+
 		inbound_task_inner();
 		outbound_task_inner();
 
-		ui_task_inner();
+
 
 
 
@@ -512,6 +511,9 @@ static void led_task(void *p)
 
 	}
 }
+
+
+
 
 
 
@@ -627,7 +629,21 @@ void init_timer(void)
 
 //====================== USB TEST =====================//
 
+static int l_my_print(lua_State* L) {
+    int nargs = lua_gettop(L);
+    printf("LUA PRINT:\r\n");
+    for (int i=1; i <= nargs; ++i) {
+		printf("%s\r\n", lua_tostring(L, i));
+    }
+    printf("LUA END\r\n");
 
+    return 0;
+}
+
+static const struct luaL_Reg printlib [] = {
+  {"print", l_my_print},
+  {NULL, NULL} /* end of array */
+};
 
 
 int main(void)
@@ -648,6 +664,12 @@ int main(void)
     
             
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
+
+	L = luaL_newstate();
+    luaL_openlibs(L);
+
+
+
 
 
 	printf("test.mcu.ATSAMD51N20A\r\n");
@@ -721,6 +743,8 @@ int main(void)
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
 
 	init_timer();
+
+	
 	
 	uint32_t loopcounter = 0;
 	
@@ -742,96 +766,18 @@ int main(void)
 	grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
 	
 
-//     Clear NVM if user is stuc with old incompatible config	
-//    grid_ui_nvm_clear_all_configuration(&grid_ui_state, &grid_nvm_state);	
-//    while (grid_nvm_ui_bulk_clear_is_in_progress(&grid_nvm_state, &grid_ui_state)){
-//
-//        grid_nvm_ui_bulk_clear_next(&grid_nvm_state, &grid_ui_state);
-//
-//
-//    }
 
-	// disp_mutex = xSemaphoreCreateMutex();
+	// xCreatedUsbTask = xTaskCreateStatic(usb_task, "Usb Task", TASK_USB_STACK_SIZE, ( void * ) 1, TASK_USB_PRIORITY, xStackUsb, &xTaskBufferUsb);
+	// xCreatedNvmTask = xTaskCreateStatic(nvm_task, "Nvm Task", TASK_NVM_STACK_SIZE, ( void * ) 1, TASK_NVM_PRIORITY, xStackNvm, &xTaskBufferNvm);
+	// xCreatedUiTask = xTaskCreateStatic(ui_task, "Ui Task",  TASK_UI_STACK_SIZE, ( void * ) 1, TASK_UI_PRIORITY, xStackUi, &xTaskBufferUi);
+	// xCreatedReceiveTask = xTaskCreateStatic(receive_task, "Rec Task", TASK_RECEIVE_STACK_SIZE, ( void * ) 1, TASK_RECEIVE_PRIORITY, xStackReceive, &xTaskBufferReceive);
+	// xCreatedInboundTask = xTaskCreateStatic(inbound_task, "Inb Task", TASK_INBOUND_STACK_SIZE, ( void * ) 1, TASK_INBOUND_PRIORITY, xStackInbound, &xTaskBufferInbound);
+	// xCreatedOutboundTask = xTaskCreateStatic(outbound_task, "Outb Task", TASK_OUTBOUND_STACK_SIZE, ( void * ) 1, TASK_OUTBOUND_PRIORITY, xStackOutbound, &xTaskBufferOutbound);
+	// xCreatedLedTask = xTaskCreateStatic(led_task, "Led Task", TASK_LED_STACK_SIZE, ( void * ) 1, TASK_LED_PRIORITY, xStackLed, &xTaskBufferLed);
 
-	// if (disp_mutex == NULL) {
-	// 	while (1) {
-	// 		;
-	// 	}
-	// }
-
-
-    
-	if (xTaskCreate(usb_task, "Usb Task", TASK_USB_STACK_SIZE, NULL, TASK_USB_PRIORITY, &xCreatedUsbTask)
-	    != pdPASS) {
-		while (1) {
-			;
-		}
-	}
-
-	if (xTaskCreate(usb_task, "Nvm Task", TASK_NVM_STACK_SIZE, NULL, TASK_NVM_PRIORITY, &xCreatedNvmTask)
-	    != pdPASS) {
-		while (1) {
-			;
-		}
-	}
-
-	if (xTaskCreate(usb_task, "Ui Task", TASK_UI_STACK_SIZE, NULL, TASK_UI_PRIORITY, &xCreatedUiTask)
-	    != pdPASS) {
-		while (1) {
-			;
-		}
-	}
-
-	if (xTaskCreate(receive_task, "Receive Task", TASK_RECEIVE_STACK_SIZE, NULL, TASK_RECEIVE_PRIORITY, &xCreatedReceiveTask)
-	    != pdPASS) {
-		while (1) {
-			;
-		}
-	}
-
-	if (xTaskCreate(inbound_task, "Inbound Task", TASK_INBOUND_STACK_SIZE, NULL, TASK_INBOUND_PRIORITY, &xCreatedInboundTask)
-	    != pdPASS) {
-		while (1) {
-			;
-		}
-	}
-
-	if (xTaskCreate(outbound_task, "Outbound Task", TASK_OUTBOUND_STACK_SIZE, NULL, TASK_OUTBOUND_PRIORITY, &xCreatedOutboundTask)
-	    != pdPASS) {
-		while (1) {
-			;
-		}
-	}
-
-
-	if (xTaskCreate(led_task, "Led Task", TASK_LED_STACK_SIZE, NULL, TASK_LED_PRIORITY, &xCreatedLedTask)
-	    != pdPASS) {
-		while (1) {
-			;
-		}
-	}
-    
-	if (xTaskCreate(example_task, "Example", TASK_EXAMPLE_STACK_SIZE, NULL, TASK_EXAMPLE_STACK_PRIORITY, &xCreatedExampleTask)
-	    != pdPASS) {
-		while (1) {
-			;
-		}
-	}
 
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
-	enum v7_err rcode = V7_OK;
-	v7_val_t result;
-	struct v7 *v7 = v7_create();
-	rcode = v7_exec(v7, "var sum = function(a, b) { return a + b; };", &result);
-	if (rcode != V7_OK) {
-		v7_print_error(stderr, v7, "Evaluation error", result);
-		goto clean;
-	}
 
-	call_sum(v7);
-
-	clean:
-	v7_destroy(v7);
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 
 
@@ -860,37 +806,13 @@ int main(void)
 				
 				
 
-				printf("Forever! \r\n");
-				delay_ms(2);
 
-
-				vTaskStartScheduler();
-
-				while(1){
 				
-		
-					
-					usb_task_inner();
-					nvm_task_inner();
-
-					receive_task_inner();
-
-					ui_task_inner();
-
-					inbound_task_inner();
-
-					outbound_task_inner();
-
-					led_task_inner();
-
-					delay_ms(1);
-				}
 			}
 			
 		}
 		
-		
-		
+
 		// Request neighbor bank settings if we don't have it initialized
 		
  		if (grid_sys_get_bank_valid(&grid_sys_state) == 0 && loopcounter%80 == 0){
@@ -904,28 +826,66 @@ int main(void)
 
 		
 		loopcounter++;
-	
 
+		if (loopcounter == 1000){
+
+
+			printf("vTaskStartScheduler! \r\n");
+			delay_ms(2);
+
+
+			//vTaskStartScheduler();
+
+		}
+
+
+				//gpio_set_pin_level(MUX_A, true);
+		int top = 0; //lua_gettop(L);
+		char * code = "return (3+4+5+10 *4 + 6)";
 		
+		int loopc = loopcounter;
+
+		//CRITICAL_SECTION_ENTER()
 		
+		if (luaL_loadstring(L, code) == LUA_OK){
+
+			if (( lua_pcall(L, 0, LUA_MULTRET, 0)) == LUA_OK) {
+				// If it was executed successfuly we 
+				// remove the code from the stack
+
+				int top2 = lua_gettop(L);
+				if (lua_isnumber(L, -1)){
+
+					int res1 = lua_tonumber(L, -1);
+					printf("%d: LUAOK %s -> %d (Top: %d %d)\r\n",loopc, code, res1, top, top2);
+					
+				}
+				else {
+					printf("Notnumber %d\r\n", loopc);
+				}
+
+			}
+			else{
+
+				printf("LUA not OK\r\n");
+			}
+
+			lua_pop(L, lua_gettop(L));
+			
+
+		}
+
+
+		//CRITICAL_SECTION_LEAVE()
 		
 		usb_task_inner();
-		
-
-
+	
 		nvm_task_inner();
 		
-					
-
-
 		receive_task_inner();
 
 		ui_task_inner();
-		
-		
-		
-		
-		
+	
 		inbound_task_inner();
 
 		outbound_task_inner();

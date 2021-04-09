@@ -2,6 +2,11 @@
 #ifndef FREERTOSCONFIG_H
 #define FREERTOSCONFIG_H
 
+
+// SUKU
+#define configSUPPORT_STATIC_ALLOCATION 1
+
+
 // <<< Use Configuration Wizard in Context Menu >>>
 
 #if defined(__GNUC__) || defined(__ICCARM__)
@@ -331,5 +336,7 @@ to all Cortex-M ports, and do not rely on any particular library functions. */
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS))
 
 // <<< end of configuration section >>>
+
+
 
 #endif // FREERTOSCONFIG_H

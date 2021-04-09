@@ -27,6 +27,13 @@
         "lauxlib.h": "c",
         "duk_config.h": "c",
         "picol.h": "c",
-        "v7.h": "c"
+        "v7.h": "c",
+        "hpl_reset.h": "c",
+        "mjs.h": "c",
+        "wren.h": "c",
+        "lua.h": "c",
+        "system_error": "c",
+        "freertos.h": "c",
+        "freertosconfig.h": "c"
     }
 }
