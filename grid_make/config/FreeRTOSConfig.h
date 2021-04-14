@@ -4,7 +4,7 @@
 
 
 // SUKU
-#define configSUPPORT_STATIC_ALLOCATION 1
+//#define configSUPPORT_STATIC_ALLOCATION 1
 
 
 // <<< Use Configuration Wizard in Context Menu >>>

@@ -221,7 +221,39 @@ void grid_port_process_ui(struct grid_port* por){
 							uint32_t offset = grid_msg_body_get_length(&message); 
 							message.body_length += grid_ui_event_render_action(&grid_ui_state.bank_list[i].element_list[j].event_list[k], &message.body[offset]);
 							grid_ui_event_reset(&grid_ui_state.bank_list[i].element_list[j].event_list[k]);
+				
 							
+							uint8_t t0 = grid_ui_state.bank_list[i].element_list[j].template_parameter_list[0];
+
+							uint8_t t8 = grid_ui_state.bank_list[i].element_list[j].template_parameter_list[8];
+
+
+							char * code[50] = {0};
+
+							printf("debug: %d %d\r\n", t0, t8);
+
+							sprintf(code, "t0 = %d t8 = %d grid_send_midi(0,176,t0,t8)", t0, t8, t8);
+
+							grid_lua_dostring(&grid_lua_state, code);
+
+
+							char* code2 = "grid_send_midi(0,176,t0,t8)";
+							//grid_lua_dostring(&grid_lua_state, code2);
+
+							// lua_getglobal(grid_lua_state.L, "grid_send_midi");
+							// lua_pushinteger(grid_lua_state.L, 2);
+							// lua_pushinteger(grid_lua_state.L, 4);
+							// lua_pushinteger(grid_lua_state.L, 6);
+							// lua_pushinteger(grid_lua_state.L, 8);
+							// lua_pcall(grid_lua_state.L, 4, 0, 0);
+
+
+							printf(grid_lua_state.stdo);
+							printf("\r\n");
+
+							grid_lua_clear_stdo(&grid_lua_state);
+
+
 						}
 						CRITICAL_SECTION_LEAVE()
 						

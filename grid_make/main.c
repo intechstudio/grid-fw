@@ -22,23 +22,16 @@
 #include "task.h"
 #include "semphr.h"
 
-//#include "grid/v7.h"
-//#include "grid/mjs.h"
-//#include "grid/wren.h"
-
-#include "grid/lua/lua.h"
-#include "grid/lua/lualib.h"
-#include "grid/lua/lauxlib.h"
-
-lua_State *L = NULL;
 
 #include "usb/class/midi/device/audiodf_midi.h"
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
 
 
+
+
+
 static StaticTask_t xTimerTaskTCBBuffer;
 static StackType_t xTimerStack[configMINIMAL_STACK_SIZE];
-
 
 
 void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer,
@@ -111,26 +104,26 @@ static TaskHandle_t      xCreatedExample2Task;
 
 static SemaphoreHandle_t disp_mutex;
 
-StaticTask_t xTaskBufferUi;
-StackType_t xStackUi[TASK_UI_STACK_SIZE];
+// StaticTask_t xTaskBufferUi;
+// StackType_t xStackUi[TASK_UI_STACK_SIZE];
 
-StaticTask_t xTaskBufferUsb;
-StackType_t xStackUsb[TASK_USB_STACK_SIZE];
+// StaticTask_t xTaskBufferUsb;
+// StackType_t xStackUsb[TASK_USB_STACK_SIZE];
 
-StaticTask_t xTaskBufferNvm;
-StackType_t xStackNvm[TASK_NVM_STACK_SIZE];
+// StaticTask_t xTaskBufferNvm;
+// StackType_t xStackNvm[TASK_NVM_STACK_SIZE];
 
-StaticTask_t xTaskBufferReceive;
-StackType_t xStackReceive[TASK_RECEIVE_STACK_SIZE];
+// StaticTask_t xTaskBufferReceive;
+// StackType_t xStackReceive[TASK_RECEIVE_STACK_SIZE];
 
-StaticTask_t xTaskBufferInbound;
-StackType_t xStackInbound[TASK_INBOUND_STACK_SIZE];
+// StaticTask_t xTaskBufferInbound;
+// StackType_t xStackInbound[TASK_INBOUND_STACK_SIZE];
 
-StaticTask_t xTaskBufferOutbound;
-StackType_t xStackOutbound[TASK_OUTBOUND_STACK_SIZE];
+// StaticTask_t xTaskBufferOutbound;
+// StackType_t xStackOutbound[TASK_OUTBOUND_STACK_SIZE];
 
-StaticTask_t xTaskBufferLed;
-StackType_t xStackLed[TASK_LED_STACK_SIZE];
+// StaticTask_t xTaskBufferLed;
+// StackType_t xStackLed[TASK_LED_STACK_SIZE];
 
 
 /**
@@ -513,12 +506,6 @@ static void led_task(void *p)
 }
 
 
-
-
-
-
-
-
 volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
@@ -551,7 +538,6 @@ void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 	}
 	
 }
-
 
 
 void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
@@ -629,21 +615,79 @@ void init_timer(void)
 
 //====================== USB TEST =====================//
 
-static int l_my_print(lua_State* L) {
-    int nargs = lua_gettop(L);
-    printf("LUA PRINT:\r\n");
-    for (int i=1; i <= nargs; ++i) {
-		printf("%s\r\n", lua_tostring(L, i));
-    }
-    printf("LUA END\r\n");
 
-    return 0;
+enum SYS_I2C_STATUS{
+	SYS_I2C_STATUS_BUSY,
+	SYS_I2C_STATUS_INIT,
+	SYS_I2C_STATUS_TXC,
+	SYS_I2C_STATUS_RXC,
+	SYS_I2C_STATUS_ERR,
+	SYS_I2C_STATUS_TRAP
+};
+
+static uint8_t SYS_I2C_example_str[12] = "Hello World!";
+struct io_descriptor *SYS_I2C_io;
+volatile uint8_t sys_i2c_done_flag = SYS_I2C_STATUS_INIT;
+volatile uint8_t sys_i2c_enabled = 0;
+
+
+
+void SYS_I2C_tx_complete_callback(struct i2c_m_async_desc *const i2c)
+{
+
+	printf("$");
+	sys_i2c_done_flag = SYS_I2C_STATUS_TXC;
+
+	//uint8_t* rxbuffer = io_read(SYS_I2C_io, rxbuffer, 1);
+
+
+	//printf("Re: %d\r\n", rxbuffer[0]);
+
+	//while(1){}
 }
 
-static const struct luaL_Reg printlib [] = {
-  {"print", l_my_print},
-  {NULL, NULL} /* end of array */
-};
+void SYS_I2C_rx_complete_callback(struct i2c_m_async_desc *const i2c)
+{
+	printf("#");
+
+	//i2c_m_async_send_stop(&SYS_I2C);
+
+
+	// uint8_t* rxbuffer[10] = {0};
+	// if (io_read(SYS_I2C_io, rxbuffer, 2) == 2){
+
+	// 				printf("!%s!\r\n", rxbuffer);
+	// }
+	sys_i2c_done_flag = SYS_I2C_STATUS_RXC;
+	//while(1){}
+
+}
+
+void SYS_I2C_error_callback(struct i2c_m_async_desc *const i2c, int32_t error)
+{
+	printf("@");
+	sys_i2c_done_flag = SYS_I2C_STATUS_ERR;
+	//printf("i2c address: %d error!\r\n", i2c->slave_addr);
+
+	//while(1){}
+
+}
+
+uint32_t SYS_I2C_start(void)
+{
+
+	i2c_m_async_get_io_descriptor(&SYS_I2C, &SYS_I2C_io);
+
+	i2c_m_async_register_callback(&SYS_I2C, I2C_M_ASYNC_TX_COMPLETE, (FUNC_PTR)SYS_I2C_tx_complete_callback);
+	i2c_m_async_register_callback(&SYS_I2C, I2C_M_ASYNC_RX_COMPLETE, (FUNC_PTR)SYS_I2C_rx_complete_callback);
+	i2c_m_async_register_callback(&SYS_I2C, I2C_M_ASYNC_ERROR, (FUNC_PTR)SYS_I2C_error_callback);
+
+	return i2c_m_async_enable(&SYS_I2C);
+
+
+}
+
+
 
 
 int main(void)
@@ -665,12 +709,26 @@ int main(void)
             
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
 
-	L = luaL_newstate();
-    luaL_openlibs(L);
+	grid_lua_init(&grid_lua_state);
+	grid_lua_start_vm(&grid_lua_state);
 
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "LUA init complete");
 
+	if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevD || grid_sys_get_hwcfg() == GRID_MODULE_EN16_ND_RevD ){
 
+		if (SYS_I2C_start() == ERR_NONE){
+			sys_i2c_enabled = 1;
+			printf("I2C init OK!\r\n");
+		}
+		else{
+			printf("I2C init FAILED!\r\n");
+		}
 
+	}
+	else{
+
+		printf("I2C UNSUPPORTED!\r\n");
+	}
 
 	printf("test.mcu.ATSAMD51N20A\r\n");
 	printf("test.hwcfg.%d\r\n", grid_sys_get_hwcfg());
@@ -701,6 +759,7 @@ int main(void)
 	}
 
 
+
 	printf("Hello %d %d %d %d", boundary_result[0], boundary_result[1], boundary_result[2], boundary_result[3]);
 
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "D51 Init");
@@ -726,18 +785,11 @@ int main(void)
 		
 	grid_expr_init(&grid_expr_state);
 
-	uint8_t test_string[] = "print(if(10>20,(1+2),(3+4)),4)";
-
-	//grid_expr_evaluate(&grid_expr_state, test_string, strlen(test_string));
 	//NVIC_SystemReset();
 
 
 	grid_module_common_init();
     grid_ui_reinit(&grid_ui_state);
-	
-
-    // Work with lua API
-
  	
 			
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
@@ -803,11 +855,7 @@ int main(void)
 				
 				
 				usb_init_flag = 1;
-				
-				
-
-
-				
+		
 			}
 			
 		}
@@ -832,52 +880,74 @@ int main(void)
 
 			printf("vTaskStartScheduler! \r\n");
 			delay_ms(2);
-
-
 			//vTaskStartScheduler();
 
 		}
 
 
-				//gpio_set_pin_level(MUX_A, true);
-		int top = 0; //lua_gettop(L);
-		char * code = "return (3+4+5+10 *4 + 6)";
+		//gpio_set_pin_level(MUX_A, true);
+
 		
 		int loopc = loopcounter;
 
 		//CRITICAL_SECTION_ENTER()
-		
-		if (luaL_loadstring(L, code) == LUA_OK){
 
-			if (( lua_pcall(L, 0, LUA_MULTRET, 0)) == LUA_OK) {
-				// If it was executed successfuly we 
-				// remove the code from the stack
 
-				int top2 = lua_gettop(L);
-				if (lua_isnumber(L, -1)){
-
-					int res1 = lua_tonumber(L, -1);
-					printf("%d: LUAOK %s -> %d (Top: %d %d)\r\n",loopc, code, res1, top, top2);
-					
-				}
-				else {
-					printf("Notnumber %d\r\n", loopc);
-				}
-
-			}
-			else{
-
-				printf("LUA not OK\r\n");
-			}
-
-			lua_pop(L, lua_gettop(L));
-			
-
-		}
 
 
 		//CRITICAL_SECTION_LEAVE()
+
 		
+		// if (sys_i2c_enabled){
+
+
+		// 	if (sys_i2c_done_flag == SYS_I2C_STATUS_TXC){
+		// 		printf("I2C TXC\r\n");
+
+		// 		// uint8_t reg_value = 0;
+
+		// 		// sys_i2c_done_flag = SYS_I2C_STATUS_BUSY;
+		// 		// printf("I2C Slave Reset!\r\n");
+				
+				
+		// 		// //i2c_m_async_cmd_read(&SYS_I2C, 0x01, &reg_value);
+		// 		// uint8_t buff[11] = {0};
+		// 		// //io_read(SYS_I2C_io, buff, 10);
+		// 		// printf("I2C Device ID (%d)\r\n", reg_value);
+
+		// 	}
+		// 	else if (sys_i2c_done_flag == SYS_I2C_STATUS_RXC){
+		// 		printf("I2C RXC\r\n");
+		// 	}
+		// 	else if (sys_i2c_done_flag == SYS_I2C_STATUS_ERR){
+		// 		printf("I2C ERR\r\n");
+		// 	}
+		// 	else{
+		// 		printf("I2C ???%d\r\n", sys_i2c_done_flag);
+		// 	}
+
+		// 	printf("Scan I2C address: 0x%02x (%d)\r\n", 0x22, 0x22);
+
+		// 	sys_i2c_done_flag = SYS_I2C_STATUS_BUSY;
+		// 	i2c_m_async_set_slaveaddr(&SYS_I2C, 0x22, I2C_M_SEVEN);
+			
+
+		// 	uint8_t* txbuffer[4] = {0}; 
+		// 	uint8_t* rxbuffer[10] = {0}; 
+
+		// 	txbuffer[0] = 0x01; // ID
+
+
+		// 	uint8_t len = 0;
+
+		// 	io_write(SYS_I2C_io, txbuffer, 1);
+		// 	delay_ms(200);
+		// 	i2c_m_async_send_stop(&SYS_I2C);
+		// 	uint8_t value = 0;
+		// }
+
+
+
 		usb_task_inner();
 	
 		nvm_task_inner();

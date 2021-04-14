@@ -46,6 +46,8 @@
 #include "grid_nvm.h"
 #include "grid_msg.h"
 
+#include "grid_lua_api.h"
+
 
 
 

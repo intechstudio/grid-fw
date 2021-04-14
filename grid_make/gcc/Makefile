@@ -4,6 +4,7 @@ usb/class/midi/device \
 usb/class/midi \
 grid/lua \
 grid \
+thirdparty/Lua/lua-5.4.3/src \
 \
 
 OBJS +=  \
@@ -30,8 +31,43 @@ grid/grid_sys.o \
 grid/grid_ui.o \
 grid/grid_unittest.o \
 grid/grid_usb.o \
-grid/wren.o \
-\
+grid/grid_lua_api.o \
+thirdparty/Lua/lua-5.4.3/src/lapi.o \
+thirdparty/Lua/lua-5.4.3/src/lctype.o \
+thirdparty/Lua/lua-5.4.3/src/lfunc.o \
+thirdparty/Lua/lua-5.4.3/src/lmathlib.o \
+thirdparty/Lua/lua-5.4.3/src/loslib.o \
+thirdparty/Lua/lua-5.4.3/src/ltable.o \
+thirdparty/Lua/lua-5.4.3/src/lundump.o \
+thirdparty/Lua/lua-5.4.3/src/lauxlib.o \
+thirdparty/Lua/lua-5.4.3/src/ldblib.o \
+thirdparty/Lua/lua-5.4.3/src/lgc.o \
+thirdparty/Lua/lua-5.4.3/src/lmem.o \
+thirdparty/Lua/lua-5.4.3/src/lparser.o \
+thirdparty/Lua/lua-5.4.3/src/ltablib.o \
+thirdparty/Lua/lua-5.4.3/src/lutf8lib.o \
+thirdparty/Lua/lua-5.4.3/src/lbaselib.o \
+thirdparty/Lua/lua-5.4.3/src/ldebug.o \
+thirdparty/Lua/lua-5.4.3/src/linit.o \
+thirdparty/Lua/lua-5.4.3/src/loadlib.o \
+thirdparty/Lua/lua-5.4.3/src/lstate.o \
+thirdparty/Lua/lua-5.4.3/src/ltm.o \
+thirdparty/Lua/lua-5.4.3/src/lvm.o \
+thirdparty/Lua/lua-5.4.3/src/lcode.o \
+thirdparty/Lua/lua-5.4.3/src/ldo.o \
+thirdparty/Lua/lua-5.4.3/src/liolib.o \
+thirdparty/Lua/lua-5.4.3/src/lobject.o \
+thirdparty/Lua/lua-5.4.3/src/lstring.o \
+thirdparty/Lua/lua-5.4.3/src/lzio.o \
+thirdparty/Lua/lua-5.4.3/src/llex.o \
+thirdparty/Lua/lua-5.4.3/src/lopcodes.o \
+thirdparty/Lua/lua-5.4.3/src/ldump.o \
+thirdparty/Lua/lua-5.4.3/src/lstrlib.o \
+thirdparty/Lua/lua-5.4.3/src/lcorolib.o \
+
+# thirdparty/Lua/lua-5.4.3/src/luac.o \
+# thirdparty/Lua/lua-5.4.3/src/lua.o \
+
 
 
 OBJS_AS_ARGS +=  \
@@ -58,8 +94,42 @@ OBJS_AS_ARGS +=  \
 "grid/grid_ui.o" \
 "grid/grid_unittest.o" \
 "grid/grid_usb.o" \
-"grid/wren.o" \
-\
+"grid/grid_lua_api.o" \
+"thirdparty/Lua/lua-5.4.3/src/lapi.o" \
+"thirdparty/Lua/lua-5.4.3/src/lctype.o" \
+"thirdparty/Lua/lua-5.4.3/src/lfunc.o" \
+"thirdparty/Lua/lua-5.4.3/src/lmathlib.o" \
+"thirdparty/Lua/lua-5.4.3/src/loslib.o" \
+"thirdparty/Lua/lua-5.4.3/src/ltable.o" \
+"thirdparty/Lua/lua-5.4.3/src/lundump.o" \
+"thirdparty/Lua/lua-5.4.3/src/lauxlib.o" \
+"thirdparty/Lua/lua-5.4.3/src/ldblib.o" \
+"thirdparty/Lua/lua-5.4.3/src/lgc.o" \
+"thirdparty/Lua/lua-5.4.3/src/lmem.o" \
+"thirdparty/Lua/lua-5.4.3/src/lparser.o" \
+"thirdparty/Lua/lua-5.4.3/src/ltablib.o" \
+"thirdparty/Lua/lua-5.4.3/src/lutf8lib.o" \
+"thirdparty/Lua/lua-5.4.3/src/lbaselib.o" \
+"thirdparty/Lua/lua-5.4.3/src/ldebug.o" \
+"thirdparty/Lua/lua-5.4.3/src/linit.o" \
+"thirdparty/Lua/lua-5.4.3/src/loadlib.o" \
+"thirdparty/Lua/lua-5.4.3/src/lstate.o" \
+"thirdparty/Lua/lua-5.4.3/src/ltm.o" \
+"thirdparty/Lua/lua-5.4.3/src/lvm.o" \
+"thirdparty/Lua/lua-5.4.3/src/lcode.o" \
+"thirdparty/Lua/lua-5.4.3/src/ldo.o" \
+"thirdparty/Lua/lua-5.4.3/src/liolib.o" \
+"thirdparty/Lua/lua-5.4.3/src/lobject.o" \
+"thirdparty/Lua/lua-5.4.3/src/lstring.o" \
+"thirdparty/Lua/lua-5.4.3/src/lzio.o" \
+"thirdparty/Lua/lua-5.4.3/src/llex.o" \
+"thirdparty/Lua/lua-5.4.3/src/lopcodes.o" \
+"thirdparty/Lua/lua-5.4.3/src/ldump.o" \
+"thirdparty/Lua/lua-5.4.3/src/lstrlib.o" \
+"thirdparty/Lua/lua-5.4.3/src/lcorolib.o" \
+
+# "thirdparty/Lua/lua-5.4.3/src/luac.o" \
+# "thirdparty/Lua/lua-5.4.3/src/lua.o" \
 
 
 
@@ -68,7 +138,7 @@ DIR_INCLUDES +=  \
 -I"../grid" \
 -I"../usb/class/midi/" \
 -I"../usb/class/midi/device" \
--I"../grid/lua" \
+-I"../thirdparty/Lua/lua-5.4.3/src" \
 
 
 
@@ -96,9 +166,42 @@ DEPS_AS_ARGS +=  \
 "grid/grid_ui.d" \
 "grid/grid_unittest.d" \
 "grid/grid_usb.d" \
-"grid/wren.d" \
-\
+"grid/grid_lua_api.d" \
+"thirdparty/Lua/lua-5.4.3/src/lapi.d" \
+"thirdparty/Lua/lua-5.4.3/src/lctype.d" \
+"thirdparty/Lua/lua-5.4.3/src/lfunc.d" \
+"thirdparty/Lua/lua-5.4.3/src/lmathlib.d" \
+"thirdparty/Lua/lua-5.4.3/src/loslib.d" \
+"thirdparty/Lua/lua-5.4.3/src/ltable.d" \
+"thirdparty/Lua/lua-5.4.3/src/lundump.d" \
+"thirdparty/Lua/lua-5.4.3/src/lauxlib.d" \
+"thirdparty/Lua/lua-5.4.3/src/ldblib.d" \
+"thirdparty/Lua/lua-5.4.3/src/lgc.d" \
+"thirdparty/Lua/lua-5.4.3/src/lmem.d" \
+"thirdparty/Lua/lua-5.4.3/src/lparser.d" \
+"thirdparty/Lua/lua-5.4.3/src/ltablib.d" \
+"thirdparty/Lua/lua-5.4.3/src/lutf8lib.d" \
+"thirdparty/Lua/lua-5.4.3/src/lbaselib.d" \
+"thirdparty/Lua/lua-5.4.3/src/ldebug.d" \
+"thirdparty/Lua/lua-5.4.3/src/linit.d" \
+"thirdparty/Lua/lua-5.4.3/src/loadlib.d" \
+"thirdparty/Lua/lua-5.4.3/src/lstate.d" \
+"thirdparty/Lua/lua-5.4.3/src/ltm.d" \
+"thirdparty/Lua/lua-5.4.3/src/lvm.d" \
+"thirdparty/Lua/lua-5.4.3/src/lcode.d" \
+"thirdparty/Lua/lua-5.4.3/src/ldo.d" \
+"thirdparty/Lua/lua-5.4.3/src/liolib.d" \
+"thirdparty/Lua/lua-5.4.3/src/lobject.d" \
+"thirdparty/Lua/lua-5.4.3/src/lstring.d" \
+"thirdparty/Lua/lua-5.4.3/src/lzio.d" \
+"thirdparty/Lua/lua-5.4.3/src/llex.d" \
+"thirdparty/Lua/lua-5.4.3/src/lopcodes.d" \
+"thirdparty/Lua/lua-5.4.3/src/ldump.d" \
+"thirdparty/Lua/lua-5.4.3/src/lstrlib.d" \
+"thirdparty/Lua/lua-5.4.3/src/lcorolib.d" \
 
+# "thirdparty/Lua/lua-5.4.3/src/luac.d" \
+# "thirdparty/Lua/lua-5.4.3/src/lua.d" \
 
 ################################################################################
 # Automatically-generated file. Do not edit!
@@ -491,12 +594,10 @@ $(OUTPUT_FILE_PATH): $(OBJS)
 	@echo Building target: $@
 	@echo Invoking: ARM/GNU Linker
 	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -o $(OUTPUT_FILE_NAME).elf $(OBJS_AS_ARGS) -Wl,--start-group -lm -Wl,--end-group -mthumb \
--Wl,-Map="$(OUTPUT_FILE_NAME).map" --specs=nosys.specs -Wl,--gc-sections -mcpu=cortex-m4 \
+-Wl,-Map="$(OUTPUT_FILE_NAME).map" --specs=nano.specs -Wl,--gc-sections -mcpu=cortex-m4 \
  \
 -T"../grid/samd51n20a_flash_bootloader.ld" \
 -L"../samd51a/gcc/gcc" \
--L"../grid/lua" \
--llua -lm  -lgcc -lc
 
 	@echo Finished building target: $@
 
@@ -519,7 +620,7 @@ $(OUTPUT_FILE_PATH): $(OBJS)
 %.o: %.c
 	@echo Building file: $<
 	@echo ARM/GNU C Compiler
-	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb -DDEBUG -g -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 $(DIR_INCLUDES) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
@@ -528,7 +629,7 @@ $(DIR_INCLUDES) \
 %.o: %.s
 	@echo Building file: $<
 	@echo ARM/GNU Assembler
-	$(QUOTE)arm-none-eabi-as$(QUOTE) -x c -mthumb -DDEBUG -g -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	$(QUOTE)arm-none-eabi-as$(QUOTE) -x c -mthumb -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 $(DIR_INCLUDES) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
@@ -537,7 +638,7 @@ $(DIR_INCLUDES) \
 %.o: %.S
 	@echo Building file: $<
 	@echo ARM/GNU Preprocessing Assembler
-	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb -DDEBUG -g -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 $(DIR_INCLUDES) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"

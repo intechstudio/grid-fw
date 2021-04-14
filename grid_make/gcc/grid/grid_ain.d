@@ -180,7 +180,16 @@ grid/grid_ain.d grid/grid_ain.o: ../grid/grid_ain.c ../grid/grid_ain.h \
  ../atmel_start_pins.h ../grid/grid_unittest.h ../grid/grid_debug.h \
  ../grid/grid_usb.h ../grid/grid_expr.h ../grid/grid_buf.h \
  ../grid/grid_led.h ../grid/grid_protocol.h ../grid/grid_sys.h \
- ../grid/grid_ui.h ../grid/grid_nvm.h ../grid/grid_msg.h
+ ../grid/grid_ui.h ../grid/grid_nvm.h ../grid/grid_msg.h \
+ ../grid/grid_lua_api.h ../thirdparty/Lua/lua-5.4.3/src/lua.h \
+ ../thirdparty/Lua/lua-5.4.3/src/luaconf.h \
+ /usr/share/gcc-arm-none-eabi-10-2020-q4-major/lib/gcc/arm-none-eabi/9.3.1/include-fixed/limits.h \
+ /usr/share/gcc-arm-none-eabi-10-2020-q4-major/lib/gcc/arm-none-eabi/9.3.1/include-fixed/syslimits.h \
+ /usr/share/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/limits.h \
+ /usr/share/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys/syslimits.h \
+ ../thirdparty/Lua/lua-5.4.3/src/lualib.h \
+ ../thirdparty/Lua/lua-5.4.3/src/lua.h \
+ ../thirdparty/Lua/lua-5.4.3/src/lauxlib.h
 
 ../grid/grid_ain.h:
 
@@ -797,3 +806,23 @@ grid/grid_ain.d grid/grid_ain.o: ../grid/grid_ain.c ../grid/grid_ain.h \
 ../grid/grid_nvm.h:
 
 ../grid/grid_msg.h:
+
+../grid/grid_lua_api.h:
+
+../thirdparty/Lua/lua-5.4.3/src/lua.h:
+
+../thirdparty/Lua/lua-5.4.3/src/luaconf.h:
+
+/usr/share/gcc-arm-none-eabi-10-2020-q4-major/lib/gcc/arm-none-eabi/9.3.1/include-fixed/limits.h:
+
+/usr/share/gcc-arm-none-eabi-10-2020-q4-major/lib/gcc/arm-none-eabi/9.3.1/include-fixed/syslimits.h:
+
+/usr/share/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/limits.h:
+
+/usr/share/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/sys/syslimits.h:
+
+../thirdparty/Lua/lua-5.4.3/src/lualib.h:
+
+../thirdparty/Lua/lua-5.4.3/src/lua.h:
+
+../thirdparty/Lua/lua-5.4.3/src/lauxlib.h:
