@@ -43,33 +43,26 @@ static int l_my_print(lua_State* L) {
 static int l_grid_send(lua_State* L) {
 
     int nargs = lua_gettop(L);
+
+    char start_of_text[2] = {GRID_CONST_STX, 0};
+    
+    strcat(grid_lua_state.stdo, start_of_text);
+
     for (int i=1; i <= nargs; ++i) {
         strcat(grid_lua_state.stdo, lua_tostring(L, i));
     }
 
-    return 0;
-}
+    char end_of_text[2] =   {GRID_CONST_ETX, 0};
 
-
-static int l_grid_send_midi(lua_State* L) {
-
-    int nargs = lua_gettop(L);
-    for (int i=1; i <= nargs; ++i) {
-
-        uint8_t buff[10] = {0};
-        sprintf(buff, "%02x", lua_tointeger(L, i));
-        
-
-        strcat(grid_lua_state.stdo, buff);
-    }
+    strcat(grid_lua_state.stdo, end_of_text);
 
     return 0;
 }
+
 
 static const struct luaL_Reg printlib [] = {
   {"print", l_my_print},
   {"grid_send", l_grid_send},
-//  {"grid_send_midi", l_grid_send_midi},
   {NULL, NULL} /* end of array */
 };
 
@@ -101,10 +94,9 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 	luaL_setfuncs(mod->L, printlib, 0);
 	lua_pop(mod->L, 1);
 
-    grid_lua_dostring(mod, "p2x = function(num) local a if num%16 < 10 then a = string.char(48+num%16)  else a = string.char(97+num%%16-10) end return a end");
     grid_lua_dostring(mod, "p2x = function(num) local a local b  if num%16 < 10 then a = string.char(48+num%16) else a = string.char(97+num%16-10) end if num//16 < 10 then b = string.char(48+num//16) else b = string.char(97+num//16-10) end return b .. a end");
 
-    grid_lua_dostring(mod, "grid_send_midi = function(ch, cmd, p1, p2) print('000e' .. p2x(ch) .. p2x(cmd) .. p2x(p1) .. p2x(p2)) end");
+    grid_lua_dostring(mod, "grid_send_midi = function(ch, cmd, p1, p2) grid_send('000e', p2x(ch), p2x(cmd), p2x(p1), p2x(p2)) end");
 
 
 }

@@ -227,32 +227,7 @@ void grid_port_process_ui(struct grid_port* por){
 
 							uint8_t t8 = grid_ui_state.bank_list[i].element_list[j].template_parameter_list[8];
 
-
-							char * code[50] = {0};
-
-							printf("debug: %d %d\r\n", t0, t8);
-
-							sprintf(code, "t0 = %d t8 = %d grid_send_midi(0,176,t0,t8)", t0, t8, t8);
-
-							grid_lua_dostring(&grid_lua_state, code);
-
-
-							char* code2 = "grid_send_midi(0,176,t0,t8)";
-							//grid_lua_dostring(&grid_lua_state, code2);
-
-							// lua_getglobal(grid_lua_state.L, "grid_send_midi");
-							// lua_pushinteger(grid_lua_state.L, 2);
-							// lua_pushinteger(grid_lua_state.L, 4);
-							// lua_pushinteger(grid_lua_state.L, 6);
-							// lua_pushinteger(grid_lua_state.L, 8);
-							// lua_pcall(grid_lua_state.L, 4, 0, 0);
-
-
-							printf(grid_lua_state.stdo);
-							printf("\r\n");
-
-							grid_lua_clear_stdo(&grid_lua_state);
-
+					
 
 						}
 						CRITICAL_SECTION_LEAVE()
@@ -1186,16 +1161,17 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 		temp[i] = eve->action_string[i - eve->event_string_length];
 	
 	}
-	
-		
-	uint32_t block_start = 0;
-	uint32_t block_length = 0;
+
+	// new php style implementation
+	uint32_t code_start = 0;
+	uint32_t code_end = 0;
+	uint32_t code_length = 0;
+	uint32_t code_type = 0;  // 0: nocode, 1: expr, 2: lua
+
 
 
 	uint32_t total_substituted_length = 0;
 
-	uint8_t condition_state = 0;
-	uint8_t condition_istrue = 0;
 
 
 	for(i=0; i<(eve->event_string_length + eve->action_string_length) ; i++){
@@ -1203,134 +1179,82 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 		target_string[i-total_substituted_length] = temp[i];
 
 
-		if (temp[i] == '{'){
-			
-			block_start = i;
+
+		if (0 == strncmp(&temp[i], "<?expr ", 7)){
+
+			printf("<?expr \r\n");
+			code_start = i;
+			code_end = i;
+			code_type = 1; // 1=expr
+
 
 		}
-		else if (temp[i] == '}'){
+		else if (0 == strncmp(&temp[i], "<?lua ", 6)){
 
-			block_length = i - block_start + 1;
+			printf("<?lua \r\n");
+			code_start = i;
+			code_end = i;
+			code_type = 2; // 2=lua
 
-			if (block_length){
 
+		}
+		else if (0 == strncmp(&temp[i], " ?>", 3)){
 
-				//printf("block_length %d \r\n", block_length);
+			code_end = i + 3; // +3 because  ?>
+			printf(" ?>\r\n");
+
+			if (code_type == 2){ //LUA
 				
+				temp[i] = 0; // terminating zero for lua dostring
+				grid_lua_dostring(&grid_lua_state, &temp[code_start+6]); // +6 is length of "<?lua "
+
+				uint32_t code_stdo_length = strlen(grid_lua_state.stdo);
+
+				temp[i] = ' '; // reverting terminating zero to space
+
+				i+= 3-1; // +3 because  ?> -1 because i++
+				code_length = code_end - code_start;
+
+				strcpy(&target_string[code_start-total_substituted_length], grid_lua_state.stdo);
+
+				total_substituted_length += code_length - code_stdo_length;
+		
+				printf(grid_lua_state.stdo);
+				printf("\r\n");
+				grid_lua_clear_stdo(&grid_lua_state);
+
+			}
+			else if(code_type == 1){ // expr
+
+				temp[i] = 0; // terminating zero for strlen
 				grid_expr_set_current_event(&grid_expr_state, eve);
-				grid_expr_evaluate(&grid_expr_state, &temp[block_start+1], block_length-2); // -2 to not include {
+				grid_expr_evaluate(&grid_expr_state, &temp[code_start+7], strlen( &temp[code_start+7])); // -2 to not include {
 
-
-				//printf("oslen %d\r\n", grid_expr_state.output_string_length);
-
-
-				// Clear all of the copied expression
-				for (uint8_t j = 0; j<block_length; j++){
-					target_string[i-total_substituted_length-block_length+1+j] = 0;	
-				}
-
-				// Copy the result
-				for (uint8_t j = 0; j<grid_expr_state.output_string_length; j++){
-					target_string[i-total_substituted_length-block_length+j + 1] = grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length+j];
-					
-					//printf("putc: %c\r\n", grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length+j]);
+				uint32_t code_stdo_length = grid_expr_state.output_string_length;
 				
-				}
+				temp[i] = ' '; // reverting terminating zero to space
 
-				total_substituted_length += block_length - grid_expr_state.output_string_length;
+				i+= 3-1; // +3 because  ?> -1 because i++
+				code_length = code_end - code_start;
 
-				//printf(" evaluated %s\r\n", &grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length]);
+				char* stdo = &grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length];				
 
-				if (condition_state == 1){
+				char out[30] = {0};
+				sprintf(out, "stdo len: %d, stdo: %s", code_stdo_length, stdo);
+				printf(out);
+				strcpy(&target_string[code_start-total_substituted_length], stdo);
 
-					condition_istrue = grid_expr_state.return_value;
-				}
+
+				total_substituted_length += code_length - code_stdo_length;
+		
+				printf("\r\n");
+
 			}
-		}
-		else if(temp[i] == '#'){
 
-			if (temp[i+1] == 'I' && temp[i+2] == 'F' ){
-				//printf("#IF  \r\n");
-
-				total_substituted_length += 3;
-				i+=2;
-				condition_state = 1;
-
-			}else if (temp[i+1] == 'T' && temp[i+2] == 'H' ){
-				//printf("#THEN  \r\n");
-
-
-
-				if (!condition_istrue){
-					//SKIP
-					//printf("skip \r\n");
-					for(uint8_t j=1; j<(eve->event_string_length + eve->action_string_length)-i; j++){
-
-						if (temp[i+j] == '#'){
-
-
-							total_substituted_length += j;
-							i+=j-1;
-							break;
-						}
-						else if(j==(eve->event_string_length + eve->action_string_length)-i-1){
-							printf("Syntax Error!\r\n");
-						}
-
-					}
-
-				}
-				else{
-
-					total_substituted_length += 3;
-					i+=2;
-
-					//printf("no skip\r\n");
-				}
-
-
-			}else if (temp[i+1] == 'E' && temp[i+2] == 'L' ){
-				//printf("#ELSE  \r\n");
-
-				if (condition_istrue){
-					//SKIP
-					//printf("skip \r\n");
-					for(uint8_t j=1; j<(eve->event_string_length + eve->action_string_length)-i; j++){
-
-						if (temp[i+j] == '#'){
-	
-							total_substituted_length += j;
-							i+=j-1;
-							break;
-						}
-						else if(j==(eve->event_string_length + eve->action_string_length)-i-1){
-							//printf("Syntax Error!\r\n");
-						}
-
-					}
-
-				}
-				else{
-					//printf("no skip\r\n");
-
-
-					total_substituted_length += 3;
-					i+=2;
-
-				}
-
-			}else if (temp[i+1] == 'E' && temp[i+2] == 'N' ){
-				//printf("#ENDIF  \r\n");
-				total_substituted_length += 3;
-				i+=2;
-				condition_istrue = 0;
-				condition_state = 0;
-			}
+			code_type = 0;
 			
-
-
-
 		}
+		
 
 
 	}

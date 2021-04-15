@@ -22,10 +22,10 @@ enum grid_ui_status {
 
 
 
-#define GRID_UI_EVENT_STRING_maxlength		30
+#define GRID_UI_EVENT_STRING_maxlength		60
 
 
-#define GRID_UI_ACTION_STRING_maxlength		130
+#define GRID_UI_ACTION_STRING_maxlength		140
 
 
 struct grid_ui_event

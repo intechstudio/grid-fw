@@ -386,14 +386,14 @@ enum grid_template_z_parameter_index_t {
 	
 };
 
-#define GRID_PARAMETER_TEMPLATE_Z_BANKNUM_code	    "{p(Z0)}"
+#define GRID_PARAMETER_TEMPLATE_Z_BANKNUM_code	    "<?expr p(Z0) ?>"
 
-#define GRID_PARAMETER_TEMPLATE_Z_BANKRED_code	    "{p(Z1)}"
-#define GRID_PARAMETER_TEMPLATE_Z_BANKGRE_code	    "{p(Z2)}"
-#define GRID_PARAMETER_TEMPLATE_Z_BANKBLU_code	    "{p(Z3)}"
+#define GRID_PARAMETER_TEMPLATE_Z_BANKRED_code	    "<?expr p(Z1) ?>"
+#define GRID_PARAMETER_TEMPLATE_Z_BANKGRE_code	    "<?expr p(Z2) ?>"
+#define GRID_PARAMETER_TEMPLATE_Z_BANKBLU_code	    "<?expr p(Z3) ?>"
 
-#define GRID_PARAMETER_TEMPLATE_Z_MAPSTATE_code	    "{p(Z4)}"
-#define GRID_PARAMETER_TEMPLATE_Z_BANKNEXT_code	    "{p(Z5)}"
+#define GRID_PARAMETER_TEMPLATE_Z_MAPSTATE_code	    "<?expr p(Z4) ?>"
+#define GRID_PARAMETER_TEMPLATE_Z_BANKNEXT_code	    "<?expr p(Z5) ?>"
 
 
 
@@ -463,84 +463,57 @@ enum grid_ui_event_t {
 // BANK + ELEMENT NUMBER + EVENT TYPE + PARAMETER
 
 
-#define GRID_EVENTSTRING_HEARTBEAT		"\x02""050e{p(Z0)}000c00\x03"
+#define GRID_EVENTSTRING_HEARTBEAT		"\x02""050e<?expr p(Z0) ?>000c00\x03"
 
-#define GRID_EVENTSTRING_AVC7_POT		"\x02""050e{p(Z0)}{p(T0)}01{p(T2)}\x03"
+#define GRID_EVENTSTRING_AVC7_POT		"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>01<?expr p(T2) ?>\x03"
 
-#define GRID_EVENTSTRING_BC				"\x02""050e{p(Z0)}{p(T0)}04{p(T5)}\x03"
+#define GRID_EVENTSTRING_BC				"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>04<?expr p(T5) ?>\x03"
 
-#define GRID_EVENTSTRING_AVC7_ENC		"\x02""050e{p(Z0)}{p(T0)}01{p(T5)}\x03"
-#define GRID_EVENTSTRING_PUSHROT_ENC    "\x02""050e{p(Z0)}{p(T0)}0d{p(T5)}\x03"
+#define GRID_EVENTSTRING_AVC7_ENC		"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>01<?expr p(T5) ?>\x03"
+#define GRID_EVENTSTRING_PUSHROT_ENC    "\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>0d<?expr p(T5) ?>\x03"
 
-#define GRID_EVENTSTRING_DP_ENC			"\x02""050e{p(Z0)}{p(T0)}04{p(T2)}\x03"
-#define GRID_EVENTSTRING_DR_ENC			"\x02""050e{p(Z0)}{p(T0)}05{p(T2)}\x03"
-
-
-#define GRID_EVENTSTRING_INIT_POT		"\x02""050e{p(Z0)}{p(T0)}0000\x03"
-#define GRID_EVENTSTRING_INIT_BUT		"\x02""050e{p(Z0)}{p(T0)}0000\x03"
-#define GRID_EVENTSTRING_INIT_ENC		"\x02""050e{p(Z0)}{p(T0)}0000\x03"
+#define GRID_EVENTSTRING_DP_ENC			"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>04<?expr p(T2) ?>\x03"
+#define GRID_EVENTSTRING_DR_ENC			"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>05<?expr p(T2) ?>\x03"
 
 
+#define GRID_EVENTSTRING_INIT_POT		"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>0000\x03"
+#define GRID_EVENTSTRING_INIT_BUT		"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>0000\x03"
+#define GRID_EVENTSTRING_INIT_ENC		"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>0000\x03"
 
 
 
-#define GRID_EVENTSTRING_MAPMODE_PRESS		"\x02""050e{p(Z0)}0008{p(Z4)}\x03"
-#define GRID_EVENTSTRING_MAPMODE_RELEASE	"\x02""050e{p(Z0)}0009{p(Z4)}\x03"
 
-#define GRID_EVENTSTRING_CFG_RESPONES		"\x02""050e{p(Z0)}000a{p(Z4)}\x03"
-#define GRID_EVENTSTRING_CFG_REQUEST		"\x02""050e{p(Z0)}000b{p(Z4)}\x03"
+
+#define GRID_EVENTSTRING_MAPMODE_PRESS		"\x02""050e<?expr p(Z0) ?>0008<?expr p(Z4) ?>\x03"
+#define GRID_EVENTSTRING_MAPMODE_RELEASE	"\x02""050e<?expr p(Z0) ?>0009<?expr p(Z4) ?>\x03"
+
+#define GRID_EVENTSTRING_CFG_RESPONES		"\x02""050e<?expr p(Z0) ?>000a<?expr p(Z4) ?>\x03"
+#define GRID_EVENTSTRING_CFG_REQUEST		"\x02""050e<?expr p(Z0) ?>000b<?expr p(Z4) ?>\x03"
 
 
 // DEFAULT ACTION:                     FIRST MIDI then LED_SET_PHASE
 
-#define GRID_ACTIONSTRING_INIT_POT			"\x02""041e{p(T0)}01{p(Z1)}{p(Z2)}{p(Z3)}\x03"
-#define GRID_ACTIONSTRING_INIT_BUT			"\x02""041e{p(T0)}01{p(Z1)}{p(Z2)}{p(Z3)}\x03"
-#define GRID_ACTIONSTRING_INIT_ENC			"\x02""041e{p(T0)}01{p(Z1)}{p(Z2)}{p(Z3)}\x03\x02""041e{p(T0)}02{p(Z1)}{p(Z2)}{p(Z3)}\x03"
+#define GRID_ACTIONSTRING_INIT_POT			"\x02""041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
+#define GRID_ACTIONSTRING_INIT_BUT			"\x02""041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
+#define GRID_ACTIONSTRING_INIT_ENC			"\x02""041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03\x02""041e<?expr p(T0) ?>02<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
 
-#define GRID_ACTIONSTRING_AVC7_POT			"\x02""000e00b0{p(T0)}{p(T2)}\x03\x02""040e{p(T0)}01{p(T2)}\x03"
+#define GRID_ACTIONSTRING_AVC7_POT			"\x02""000e00b0<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T2) ?>\x03"
 
-#define GRID_ACTIONSTRING_BC				"\x02""000e0090{p(T0)}{p(T2)}\x03\x02""040e{p(T0)}01{p(T2)}\x03"
-
-
-// OVERRIDE to test toggle
-// #define GRID_ACTIONSTRING_INIT_BUT			"\x02""041eB001{p(Z1)}{p(Z2)}{p(Z3)}\x03""\x02""040eB001B4\x03"
-// #define GRID_ACTIONSTRING_DP_BUT			"\x02""000e00b0B0B4\x03\x02""040eB001B4\x03"
-// #define GRID_ACTIONSTRING_DR_BUT			""
-
-// OVERRIDE to test keyboard
-// #define GRID_ACTIONSTRING_DP_BUT			"\x02""090e000801\x03\x02""040eB001B2\x03"
-// #define GRID_ACTIONSTRING_DR_BUT			"\x02""090e000800\x03\x02""040eB001B2\x03"
-
-// OVERRIDE to test MACRO
-//#define GRID_ACTIONSTRING_DP_BUT			"\x02""091e010101040017ffffffffffff\x03\x02""040eB001B2\x03"
-//#define GRID_ACTIONSTRING_DR_BUT			"\x02""040eB001B2\x03"
-
-#define GRID_ACTIONSTRING_DP_ENC			"\x02""000e0090{p(T0)}{p(T2)}\x03\x02""040e{p(T0)}02{p(T2)}\x03"
-#define GRID_ACTIONSTRING_DR_ENC			"\x02""000e0080{p(T0)}{p(T2)}\x03\x02""040e{p(T0)}02{p(T2)}\x03"
+#define GRID_ACTIONSTRING_BC				"\x02""000e0090<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T2) ?>\x03"
 
 
-// OVERRIDE to test toggle
-//#define GRID_ACTIONSTRING_INIT_ENC		"\x02""041eE001{p(Z1)}{p(Z2)}{p(Z3)}\x03\x02""041eB002{p(Z1)}{p(Z2)}{p(Z3)}\x03""\x02""040eE001E2\x03""\x02""040eE002B3\x03"
-//#define GRID_ACTIONSTRING_DP_ENC			"\x02""000e00b0B0B3\x03\x02""040eB002B3\x03"
-//#define GRID_ACTIONSTRING_DR_ENC			""
+#define GRID_ACTIONSTRING_DP_ENC			"\x02""000e0090<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>02<?expr p(T2) ?>\x03"
+#define GRID_ACTIONSTRING_DR_ENC			"\x02""000e0080<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>02<?expr p(T2) ?>\x03"
 
+#define GRID_ACTIONSTRING_AVC7_ENC		"\x02""040e<?expr p(T0) ?>01<?expr p(T8) ?>\x03<?lua print('hello from lua') grid_send_midi(0,176,2,100) ?>"
 
+#define GRID_ACTIONSTRING_PUSHROT_ENC		"\x02""000e00b0<?expr p(T0) ?><?expr p(T8) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T8) ?>\x03"
 
-#define GRID_ACTIONSTRING_AVC7_ENC			"\x02""000e00b0{p(T0)}{p(T8)}\x03#IF{Z0==3}#TH\x02""041e{p(T0)}01{p(T8)}{p(Z2)}{p(128-T8)}\x03#EL#EN\x02""040e{p(T0)}01{p(T8)}\x03"
-#define GRID_ACTIONSTRING_PUSHROT_ENC		"\x02""000e00b0{p(T0)}{p(T8)}\x03\x02""040e{p(T0)}01{p(T8)}\x03"
-
-//#define GRID_ACTIONSTRING_AVC7_ENC			"\x02""000e00b0{print(T0,2)}{print(T8,2)}\x03""\x02""041e{p(T0)}01{print(if(T7>64,(T7-64)*4,0),2)}32{10}\x03""\x02""040e{p(T0)}01{p(T2)}\x03"
-//#define GRID_ACTIONSTRING_PUSHROT_ENC		"\x02""000e00b0#IF{T0>4}#TH{print(T0+10,2)}#EL{print(T0,2)}#EN{print(T10,2)}\x03"
-
-// OVERRIDE TO TEST RELATIVE ENCODER
-// #define GRID_ACTIONSTRING_INIT_ENC			"\x02""041eE001{p(Z1)}{p(Z2)}{p(Z3)}\x03\x02""041eB002{p(Z1)}{p(Z2)}{p(Z3)}\x03""\x02""040eE00100\x03"
-// #define GRID_ACTIONSTRING_AVC7_ENC			"\x02""000e00b0E0E5\x03\x02""040eE00100\x03"
-
-#define GRID_ACTIONSTRING_MAPMODE_PRESS		"\x02""030e{p(Z5)}\x03"
+#define GRID_ACTIONSTRING_MAPMODE_PRESS		"\x02""030e<?expr p(Z5) ?>\x03"
 #define GRID_ACTIONSTRING_MAPMODE_RELEASE	""
 
-#define GRID_ACTIONSTRING_CFG_RESPONSE		"\x02""030e{p(Z0)}\x03"
-#define GRID_ACTIONSTRING_CFG_REQUEST 		"\x02""030f{p(Z0)}\x03"
+#define GRID_ACTIONSTRING_CFG_RESPONSE		"\x02""030e<?expr p(Z0) ?>\x03"
+#define GRID_ACTIONSTRING_CFG_REQUEST 		"\x02""030f<?expr p(Z0) ?>\x03"
 
 
 #define GRID_CLASS_EVENT_code						0x050
