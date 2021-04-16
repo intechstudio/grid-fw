@@ -1206,7 +1206,26 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 			if (code_type == 2){ //LUA
 				
 				temp[i] = 0; // terminating zero for lua dostring
+
+				uint32_t cycles[5] = {0};
+
+				cycles[0] = grid_d51_dwt_cycles_read();
+
+				for (uint8_t t=0; t<10; t++){
+					char varname[] = "T0";
+					varname[1] = '0'+t;
+					int32_t varvalue = eve->parent->template_parameter_list[t];
+
+					lua_pushinteger(grid_lua_state.L, varvalue);
+					lua_setglobal(grid_lua_state.L, varname);
+					lua_pop(grid_lua_state.L, lua_gettop(grid_lua_state.L));
+				}
+
+				cycles[1] = grid_d51_dwt_cycles_read();
+
 				grid_lua_dostring(&grid_lua_state, &temp[code_start+6]); // +6 is length of "<?lua "
+
+				cycles[2] = grid_d51_dwt_cycles_read();
 
 				uint32_t code_stdo_length = strlen(grid_lua_state.stdo);
 
@@ -1218,9 +1237,15 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 				strcpy(&target_string[code_start-total_substituted_length], grid_lua_state.stdo);
 
 				total_substituted_length += code_length - code_stdo_length;
-		
-				printf(grid_lua_state.stdo);
-				printf("\r\n");
+
+				cycles[3] = grid_d51_dwt_cycles_read();
+
+				uint8_t debug[50] = {};
+
+				sprintf(debug, "Lua: %s \r\nTime [us]: %d %d %d\r\n", grid_lua_state.stdo, (cycles[1]-cycles[0])/120, (cycles[2]-cycles[1])/120, (cycles[3]-cycles[2])/120 );
+
+				printf(debug);
+
 				grid_lua_clear_stdo(&grid_lua_state);
 
 			}
@@ -1228,7 +1253,15 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				temp[i] = 0; // terminating zero for strlen
 				grid_expr_set_current_event(&grid_expr_state, eve);
+
+
+				uint32_t cycles[5] = {0};
+
+				cycles[0] = grid_d51_dwt_cycles_read();
+
 				grid_expr_evaluate(&grid_expr_state, &temp[code_start+7], strlen( &temp[code_start+7])); // -2 to not include {
+
+				cycles[1] = grid_d51_dwt_cycles_read();
 
 				uint32_t code_stdo_length = grid_expr_state.output_string_length;
 				
@@ -1239,15 +1272,17 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				char* stdo = &grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length];				
 
-				char out[30] = {0};
-				sprintf(out, "stdo len: %d, stdo: %s", code_stdo_length, stdo);
-				printf(out);
+				char debug[50] = {0};
+
+				sprintf(debug, "Expr: %s \r\nTime [us]: %d\r\n", stdo, (cycles[1]-cycles[0])/120);
+
+				printf(debug);
+
 				strcpy(&target_string[code_start-total_substituted_length], stdo);
 
 
 				total_substituted_length += code_length - code_stdo_length;
 		
-				printf("\r\n");
 
 			}
 

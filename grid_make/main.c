@@ -539,16 +539,10 @@ void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 	
 }
 
+volatile uint8_t heartbeat_enable = 0;
 
 void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
-
-
-
-
-
-
-
 
 	grid_sys_rtc_tick_time(&grid_sys_state);	
 	grid_task_timer_tick(&grid_task_state);
@@ -562,28 +556,28 @@ void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 		if (grid_sys_state.mapmodestate == 0){ // RELEASE
 			
 			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_MAPMODE_RELEASE);
-			
+			heartbeat_enable = !heartbeat_enable;
 
 				
 		}
 		else{ // PRESS
 			
 			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_MAPMODE_PRESS);		
-			
-
-
-									 
+												 
 		}
 
 	}
 
 }
 
+
 void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 {
-	
-	//grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_HEARTBEAT);
+	if (heartbeat_enable){
 
+		grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_HEARTBEAT);
+
+	}
 }
 
 
@@ -700,12 +694,14 @@ int main(void)
 
 	uint32_t boundary_result[4] = {0};
 
+
 	grid_d51_boundary_scan(boundary_result);
 
 
 
 	atmel_start_init();	
     
+	grid_d51_dwt_enable();
             
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
 

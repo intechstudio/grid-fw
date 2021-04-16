@@ -505,7 +505,7 @@ enum grid_ui_event_t {
 #define GRID_ACTIONSTRING_DP_ENC			"\x02""000e0090<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>02<?expr p(T2) ?>\x03"
 #define GRID_ACTIONSTRING_DR_ENC			"\x02""000e0080<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>02<?expr p(T2) ?>\x03"
 
-#define GRID_ACTIONSTRING_AVC7_ENC		"\x02""040e<?expr p(T0) ?>01<?expr p(T8) ?>\x03<?lua print('hello from lua') grid_send_midi(0,176,2,100) ?>"
+#define GRID_ACTIONSTRING_AVC7_ENC		"\x02""040e<?expr p(T0) ?>01<?expr p(T8) ?>\x03<?lua grid_send_midi(0,176,T0,T8) ?>"
 
 #define GRID_ACTIONSTRING_PUSHROT_ENC		"\x02""000e00b0<?expr p(T0) ?><?expr p(T8) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T8) ?>\x03"
 

@@ -12,13 +12,26 @@
 #include <hpl_user_area.h>
 #include "grid_module.h"
 
+
+
+
 #define  GRID_D51_USER_ROW_BASE 0x804000
+
+#define  GRID_D51_DEMCR      (*(uint32_t *)0xE000EDFC)
+#define  GRID_D51_DWT_CTRL   (*(uint32_t *)0xE0001000)
+#define  GRID_D51_DWT_CYCCNT (*(uint32_t *)0xE0001004)
+
 
 void grid_d51_init();
 
 void grid_d51_verify_user_row();
 
+
 uint8_t grid_d51_boundary_scan();
+
+
+uint32_t grid_d51_dwt_enable();
+uint32_t grid_d51_dwt_cycles_read();
 
 
 

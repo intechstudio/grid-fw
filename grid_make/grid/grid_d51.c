@@ -497,3 +497,31 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 
 
 }
+
+
+
+uint32_t grid_d51_dwt_enable(){
+
+    if (GRID_D51_DWT_CTRL != 0) {                  // See if DWT is available
+        GRID_D51_DEMCR      |= 1 << 24;            // Set bit 24
+        GRID_D51_DWT_CYCCNT  = 0;                
+        GRID_D51_DWT_CTRL   |= 1 << 0;             // Set bit 0
+
+        printf("Debug Watch and Trace enabled!\r\n");
+    }
+    else{
+        printf("Debug Watch and Trace not supported!\r\n");
+    }
+}
+
+
+
+uint32_t grid_d51_dwt_cycles_read(){
+
+	return GRID_D51_DWT_CYCCNT;
+
+}
+
+
+
+
