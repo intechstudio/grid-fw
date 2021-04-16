@@ -15,6 +15,16 @@ int _unlink(){while(1);}
 int _link(){while(1);} 
 
 
+static int grid_lua_panic(lua_State *L) {
+
+    while(1){
+
+        printf("LUA PANIC\r\n");
+        delay_ms(1000);
+    }
+}
+
+
 static int l_my_print(lua_State* L) {
 
     int nargs = lua_gettop(L);
@@ -83,21 +93,39 @@ uint8_t grid_lua_deinit(struct grid_lua_model* mod){
 
 }
 
+uint8_t grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
+
+    uint32_t memusage = lua_gc(grid_lua_state.L, LUA_GCCOUNT)*1024 + lua_gc(grid_lua_state.L, LUA_GCCOUNTB);
+    printf("LUA mem usage: %d(%s)\r\n", memusage, message);
+
+}
+
 
 uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 
 	mod->L = luaL_newstate();
+
+    lua_atpanic(mod->L, &grid_lua_panic);
+
+    grid_lua_debug_memory_stats(mod, "Init");
+
+
     luaL_openlibs(mod->L);
 
+
+    grid_lua_debug_memory_stats(mod, "Openlibs");
 
     lua_getglobal(mod->L, "_G");
 	luaL_setfuncs(mod->L, printlib, 0);
 	lua_pop(mod->L, 1);
+    grid_lua_debug_memory_stats(mod, "Printlib");
+
 
     grid_lua_dostring(mod, "p2x = function(num) local a local b  if num%16 < 10 then a = string.char(48+num%16) else a = string.char(97+num%16-10) end if num//16 < 10 then b = string.char(48+num//16) else b = string.char(97+num//16-10) end return b .. a end");
+    grid_lua_debug_memory_stats(mod, "P2X");
 
     grid_lua_dostring(mod, "grid_send_midi = function(ch, cmd, p1, p2) grid_send('000e', p2x(ch), p2x(cmd), p2x(p1), p2x(p2)) end");
-
+    grid_lua_debug_memory_stats(mod, "grid_send");
 
 }
 
@@ -121,7 +149,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
             printf("LUA not OK\r\n");
         }
 
-        //lua_pop(mod->L, lua_gettop(mod->L));
+        lua_pop(mod->L, lua_gettop(mod->L));
     
     }
     else{

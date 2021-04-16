@@ -539,7 +539,7 @@ void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 	
 }
 
-volatile uint8_t heartbeat_enable = 0;
+volatile uint8_t heartbeat_enable = 1;
 
 void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
@@ -644,6 +644,7 @@ void SYS_I2C_rx_complete_callback(struct i2c_m_async_desc *const i2c)
 {
 	printf("#");
 
+	//i2c->device.service.msg.flags&=~I2C_M_BUSY;
 	//i2c_m_async_send_stop(&SYS_I2C);
 
 
@@ -672,11 +673,14 @@ uint32_t SYS_I2C_start(void)
 
 	i2c_m_async_get_io_descriptor(&SYS_I2C, &SYS_I2C_io);
 
+	uint32_t ret = i2c_m_async_enable(&SYS_I2C);
+
+
 	i2c_m_async_register_callback(&SYS_I2C, I2C_M_ASYNC_TX_COMPLETE, (FUNC_PTR)SYS_I2C_tx_complete_callback);
 	i2c_m_async_register_callback(&SYS_I2C, I2C_M_ASYNC_RX_COMPLETE, (FUNC_PTR)SYS_I2C_rx_complete_callback);
 	i2c_m_async_register_callback(&SYS_I2C, I2C_M_ASYNC_ERROR, (FUNC_PTR)SYS_I2C_error_callback);
 
-	return i2c_m_async_enable(&SYS_I2C);
+	return ret;
 
 
 }
@@ -786,8 +790,7 @@ int main(void)
 
 	grid_module_common_init();
     grid_ui_reinit(&grid_ui_state);
- 	
-			
+ 				
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
 
 	init_timer();
@@ -797,23 +800,16 @@ int main(void)
 	uint32_t loopcounter = 0;
 	
 	uint32_t loopstart = 0;
-	
-	uint32_t loopslow = 0;
-	uint32_t loopfast = 0;
-	uint32_t loopwarp = 0;
-	
+
 	uint8_t usb_init_flag = 0;	
 
-	
-	//GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop2 test");
-	
+
 
 	// Init Bank Color Bug when config was previously saved
 	
 	grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
 	grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
 	
-
 
 	// xCreatedUsbTask = xTaskCreateStatic(usb_task, "Usb Task", TASK_USB_STACK_SIZE, ( void * ) 1, TASK_USB_PRIORITY, xStackUsb, &xTaskBufferUsb);
 	// xCreatedNvmTask = xTaskCreateStatic(nvm_task, "Nvm Task", TASK_NVM_STACK_SIZE, ( void * ) 1, TASK_NVM_PRIORITY, xStackNvm, &xTaskBufferNvm);
@@ -826,7 +822,6 @@ int main(void)
 
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 
 
 
@@ -886,63 +881,74 @@ int main(void)
 		
 		int loopc = loopcounter;
 
-		//CRITICAL_SECTION_ENTER()
-
-
-
-
-		//CRITICAL_SECTION_LEAVE()
 
 		
-		// if (sys_i2c_enabled){
+		if (sys_i2c_enabled){
 
 
-		// 	if (sys_i2c_done_flag == SYS_I2C_STATUS_TXC){
-		// 		printf("I2C TXC\r\n");
 
-		// 		// uint8_t reg_value = 0;
+			// if (sys_i2c_done_flag == SYS_I2C_STATUS_TXC){
+			// 	printf("I2C TXC\r\n");
 
-		// 		// sys_i2c_done_flag = SYS_I2C_STATUS_BUSY;
-		// 		// printf("I2C Slave Reset!\r\n");
+			// }
+			// else if (sys_i2c_done_flag == SYS_I2C_STATUS_RXC){
+			// 	printf("I2C RXC\r\n");
+			// }
+			// else if (sys_i2c_done_flag == SYS_I2C_STATUS_ERR){
+			// 	printf("I2C ERR\r\n");
+			// }
+			// else{
+			// 	printf("I2C ???%d\r\n", sys_i2c_done_flag);
+			// }
+
+			//printf("Scan I2C address: 0x%02x (%d)\r\n", 0x22, 0x22);
+
+			sys_i2c_done_flag = SYS_I2C_STATUS_BUSY;
+
+
+
+			if (1){
 				
+				i2c_m_async_set_slaveaddr(&SYS_I2C, 0x22, I2C_M_SEVEN);
+
+				//io_write(sys_i2c_io, )
+				//i2c_m_async_cmd_write(&SYS_I2C, 0x01, 1);
+
+				// uint8_t buf[2] = {0};
+				// uint8_t n = 2;
+
+				// struct i2c_m_async_desc *i2c = &SYS_I2C;
+				// struct _i2c_m_msg        msg;
+				// int32_t                  ret;
+
+				// msg.addr   = i2c->slave_addr;
+				// msg.len    = n;
+				// msg.flags  = I2C_M_STOP;
+				// msg.buffer = (uint8_t *)buf;
+
+				// /* start transfer then return */
+				// ret = i2c_m_async_transfer(&i2c->device, &msg);
+
 				
-		// 		// //i2c_m_async_cmd_read(&SYS_I2C, 0x01, &reg_value);
-		// 		// uint8_t buff[11] = {0};
-		// 		// //io_read(SYS_I2C_io, buff, 10);
-		// 		// printf("I2C Device ID (%d)\r\n", reg_value);
+				//i2c_m_async_cmd_read(&SYS_I2C, 0x01, &buf); //does not work
+				//io_write(SYS_I2C_io, SYS_I2C_example_str, 10); //works
 
-		// 	}
-		// 	else if (sys_i2c_done_flag == SYS_I2C_STATUS_RXC){
-		// 		printf("I2C RXC\r\n");
-		// 	}
-		// 	else if (sys_i2c_done_flag == SYS_I2C_STATUS_ERR){
-		// 		printf("I2C ERR\r\n");
-		// 	}
-		// 	else{
-		// 		printf("I2C ???%d\r\n", sys_i2c_done_flag);
-		// 	}
-
-		// 	printf("Scan I2C address: 0x%02x (%d)\r\n", 0x22, 0x22);
-
-		// 	sys_i2c_done_flag = SYS_I2C_STATUS_BUSY;
-		// 	i2c_m_async_set_slaveaddr(&SYS_I2C, 0x22, I2C_M_SEVEN);
-			
-
-		// 	uint8_t* txbuffer[4] = {0}; 
-		// 	uint8_t* rxbuffer[10] = {0}; 
-
-		// 	txbuffer[0] = 0x01; // ID
+				// if (ret != 0) {
+				// 	/* error occurred */
+				// 	return ret;
+				// }
 
 
-		// 	uint8_t len = 0;
 
-		// 	io_write(SYS_I2C_io, txbuffer, 1);
-		// 	delay_ms(200);
-		// 	i2c_m_async_send_stop(&SYS_I2C);
-		// 	uint8_t value = 0;
-		// }
+				//printf("Buffer: %d\r\n", buffer);
+			}
 
+			uint8_t* txbuffer[4] = {0}; 
+			uint8_t* rxbuffer[10] = {0}; 
 
+			txbuffer[0] = 0x01; // ID
+
+		}
 
 		usb_task_inner();
 	
@@ -958,7 +964,7 @@ int main(void)
 
 		led_task_inner();
 
-		delay_ms(1);
+		lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
 
 	}//WHILE
 	

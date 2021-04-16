@@ -33,6 +33,11 @@ struct grid_lua_model{
 
 struct grid_lua_model grid_lua_state;
 
+
+
+uint8_t grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message);
+static int grid_lua_panic(lua_State *L);
+
 uint8_t grid_lua_init(struct grid_lua_model* mod);
 uint8_t grid_lua_deinit(struct grid_lua_model* mod);
 

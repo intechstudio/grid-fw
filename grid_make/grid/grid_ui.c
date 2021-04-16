@@ -1211,7 +1211,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				cycles[0] = grid_d51_dwt_cycles_read();
 
-				for (uint8_t t=0; t<10; t++){
+				for (uint8_t t=0; t<10; t+=8){
 					char varname[] = "T0";
 					varname[1] = '0'+t;
 					int32_t varvalue = eve->parent->template_parameter_list[t];
@@ -1226,6 +1226,8 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 				grid_lua_dostring(&grid_lua_state, &temp[code_start+6]); // +6 is length of "<?lua "
 
 				cycles[2] = grid_d51_dwt_cycles_read();
+				
+				
 
 				uint32_t code_stdo_length = strlen(grid_lua_state.stdo);
 
@@ -1238,14 +1240,15 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				total_substituted_length += code_length - code_stdo_length;
 
+				
+
+
 				cycles[3] = grid_d51_dwt_cycles_read();
 
-				uint8_t debug[50] = {};
 
-				sprintf(debug, "Lua: %s \r\nTime [us]: %d %d %d\r\n", grid_lua_state.stdo, (cycles[1]-cycles[0])/120, (cycles[2]-cycles[1])/120, (cycles[3]-cycles[2])/120 );
 
-				printf(debug);
-
+				printf("Lua: %s \r\nTime [us]: %d %d %d\r\n", grid_lua_state.stdo, (cycles[1]-cycles[0])/120, (cycles[2]-cycles[1])/120, (cycles[3]-cycles[2])/120);
+				grid_lua_debug_memory_stats(&grid_lua_state, "Ui");
 				grid_lua_clear_stdo(&grid_lua_state);
 
 			}
@@ -1270,13 +1273,9 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 				i+= 3-1; // +3 because  ?> -1 because i++
 				code_length = code_end - code_start;
 
-				char* stdo = &grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length];				
+				char* stdo = &grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length];
 
-				char debug[50] = {0};
-
-				sprintf(debug, "Expr: %s \r\nTime [us]: %d\r\n", stdo, (cycles[1]-cycles[0])/120);
-
-				printf(debug);
+				printf("Expr: %s \r\nTime [us]: %d\r\n", stdo, (cycles[1]-cycles[0])/120);
 
 				strcpy(&target_string[code_start-total_substituted_length], stdo);
 
