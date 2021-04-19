@@ -34,6 +34,7 @@
         "lua.h": "c",
         "system_error": "c",
         "freertos.h": "c",
-        "freertosconfig.h": "c"
+        "freertosconfig.h": "c",
+        "hal_rtos.h": "c"
     }
 }

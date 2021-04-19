@@ -632,39 +632,25 @@ void SYS_I2C_tx_complete_callback(struct i2c_m_async_desc *const i2c)
 	printf("$");
 	sys_i2c_done_flag = SYS_I2C_STATUS_TXC;
 
-	//uint8_t* rxbuffer = io_read(SYS_I2C_io, rxbuffer, 1);
+	i2c_m_async_send_stop(i2c);
 
-
-	//printf("Re: %d\r\n", rxbuffer[0]);
-
-	//while(1){}
 }
 
 void SYS_I2C_rx_complete_callback(struct i2c_m_async_desc *const i2c)
 {
 	printf("#");
 
-	//i2c->device.service.msg.flags&=~I2C_M_BUSY;
-	//i2c_m_async_send_stop(&SYS_I2C);
-
-
-	// uint8_t* rxbuffer[10] = {0};
-	// if (io_read(SYS_I2C_io, rxbuffer, 2) == 2){
-
-	// 				printf("!%s!\r\n", rxbuffer);
-	// }
 	sys_i2c_done_flag = SYS_I2C_STATUS_RXC;
-	//while(1){}
 
 }
 
 void SYS_I2C_error_callback(struct i2c_m_async_desc *const i2c, int32_t error)
 {
 	printf("@");
-	sys_i2c_done_flag = SYS_I2C_STATUS_ERR;
-	//printf("i2c address: %d error!\r\n", i2c->slave_addr);
 
-	//while(1){}
+	i2c_m_async_send_stop(i2c);
+	sys_i2c_done_flag = SYS_I2C_STATUS_ERR;
+
 
 }
 
@@ -885,59 +871,70 @@ int main(void)
 		
 		if (sys_i2c_enabled){
 
-
-
-			// if (sys_i2c_done_flag == SYS_I2C_STATUS_TXC){
-			// 	printf("I2C TXC\r\n");
-
-			// }
-			// else if (sys_i2c_done_flag == SYS_I2C_STATUS_RXC){
-			// 	printf("I2C RXC\r\n");
-			// }
-			// else if (sys_i2c_done_flag == SYS_I2C_STATUS_ERR){
-			// 	printf("I2C ERR\r\n");
-			// }
-			// else{
-			// 	printf("I2C ???%d\r\n", sys_i2c_done_flag);
-			// }
-
-			//printf("Scan I2C address: 0x%02x (%d)\r\n", 0x22, 0x22);
-
 			sys_i2c_done_flag = SYS_I2C_STATUS_BUSY;
 
 
+
+			uint8_t buffer[2] = {0x01, 0x00};
 
 			if (1){
 				
 				i2c_m_async_set_slaveaddr(&SYS_I2C, 0x22, I2C_M_SEVEN);
 
-				//io_write(sys_i2c_io, )
-				//i2c_m_async_cmd_write(&SYS_I2C, 0x01, 1);
+				struct io_descriptor *const io = SYS_I2C_io;
+				const uint8_t *buf = buffer;
+				const uint16_t n = 1;
 
-				// uint8_t buf[2] = {0};
-				// uint8_t n = 2;
+				if (1){
 
-				// struct i2c_m_async_desc *i2c = &SYS_I2C;
-				// struct _i2c_m_msg        msg;
-				// int32_t                  ret;
+					struct i2c_m_async_desc *i2c = &SYS_I2C;
+					struct _i2c_m_msg        msg;
+					int32_t                  ret;
 
-				// msg.addr   = i2c->slave_addr;
-				// msg.len    = n;
-				// msg.flags  = I2C_M_STOP;
-				// msg.buffer = (uint8_t *)buf;
+					msg.addr   = i2c->slave_addr;
+					msg.len    = n;
+					msg.flags  = 0;
+					msg.buffer = (uint8_t *)buf;
 
-				// /* start transfer then return */
-				// ret = i2c_m_async_transfer(&i2c->device, &msg);
+					//i2c->device.cb.error = NULL;
+					//i2c->device.cb.tx_complete = NULL;
+					//i2c->device.cb.rx_complete = NULL;
 
-				
-				//i2c_m_async_cmd_read(&SYS_I2C, 0x01, &buf); //does not work
-				//io_write(SYS_I2C_io, SYS_I2C_example_str, 10); //works
+					/* start transfer then return */
+					ret = i2c_m_async_transfer(&i2c->device, &msg);
 
-				// if (ret != 0) {
-				// 	/* error occurred */
-				// 	return ret;
-				// }
+					if (ret != 0) {
+						printf("I2C error\r\n");
+					}
 
+					uint32_t cycles = grid_d51_dwt_cycles_read();
+
+
+					while (i2c->device.service.msg.flags & I2C_M_BUSY) {
+						;
+					}
+
+					msg.flags  = I2C_M_RD | I2C_M_STOP;		
+					ret = i2c_m_async_transfer(&i2c->device, &msg);
+
+					if (ret != 0) {
+						printf("I2C error\r\n");
+					}
+
+					while (i2c->device.service.msg.flags & I2C_M_BUSY) {
+						;
+					}
+
+
+
+					printf("I2C: %d ,Elapsed %dus\r\n", buf[0], (grid_d51_dwt_cycles_read()-cycles)/120);
+
+					//return (int32_t)n;
+				}
+				else{
+
+					io_write(SYS_I2C_io, SYS_I2C_example_str, 10); //works
+				}
 
 
 				//printf("Buffer: %d\r\n", buffer);
