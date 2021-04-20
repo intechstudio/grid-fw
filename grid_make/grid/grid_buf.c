@@ -1766,6 +1766,59 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
                         // keyboard disabling done                    
                     }
                 }
+				else if (msg_class == GRID_CLASS_CONFIG_code && msg_instr == GRID_INSTR_EXECUTE_code){
+
+                    if (!position_is_local){
+                        // disable hid action automatically
+                        grid_keyboard_state.isenabled = 0;             
+                        //grid_debug_print_text("Disabling KB");
+
+						// uint8_t banknumber		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_BANKNUMBER_offset]		, GRID_CLASS_CONFIGURATION_BANKNUMBER_length	, &error_flag);
+						// uint8_t elementnumber	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset]	, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length	, &error_flag);
+						// uint8_t eventtype		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_EVENTTYPE_offset]		, GRID_CLASS_CONFIGURATION_EVENTTYPE_length		, &error_flag);
+					
+						uint8_t pagenumber = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
+						uint8_t elementnumber = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
+						uint8_t eventtype = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
+						uint16_t actionlength = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
+
+						char* action = &message[current_start + GRID_CLASS_CONFIG_ACTIONSTRING_offset];
+
+						if (action[actionlength] == GRID_CONST_ETX){
+							
+							action[actionlength] = 0;
+							printf("Config: %d %d %d %d -> %s\r\n", pagenumber, elementnumber, eventtype, actionlength, action);
+							action[actionlength] = GRID_CONST_ETX;
+
+						}
+						else{
+
+							printf("Config fram invalid: %d %d %d %d end: %d\r\n", pagenumber, elementnumber, eventtype, actionlength, action[actionlength]);
+
+						}
+
+						
+                        // struct grid_msg response;
+
+                        // grid_msg_init(&response);
+                        // grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+
+                        // uint8_t response_payload[10] = {0};
+                        // sprintf(response_payload, GRID_CLASS_HIDKEYSTATUS_frame);
+
+                        // grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+
+                        // grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, grid_keyboard_state.isenabled);
+
+                        // grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+
+
+                        // grid_msg_packet_close(&response);
+                        // grid_msg_packet_send_everywhere(&response);
+
+                        // keyboard disabling done                    
+                    }
+                }
                 else if (msg_class == GRID_CLASS_HIDKEYSTATUS_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
                     uint8_t isenabled =	grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset]		, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length	, &error_flag);

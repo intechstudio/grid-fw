@@ -1182,7 +1182,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 		if (0 == strncmp(&temp[i], "<?expr ", 7)){
 
-			printf("<?expr \r\n");
+			//printf("<?expr \r\n");
 			code_start = i;
 			code_end = i;
 			code_type = 1; // 1=expr
@@ -1191,7 +1191,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 		}
 		else if (0 == strncmp(&temp[i], "<?lua ", 6)){
 
-			printf("<?lua \r\n");
+			//printf("<?lua \r\n");
 			code_start = i;
 			code_end = i;
 			code_type = 2; // 2=lua
@@ -1201,7 +1201,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 		else if (0 == strncmp(&temp[i], " ?>", 3)){
 
 			code_end = i + 3; // +3 because  ?>
-			printf(" ?>\r\n");
+			//printf(" ?>\r\n");
 
 			if (code_type == 2){ //LUA
 				
@@ -1242,12 +1242,11 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				
 
-
 				cycles[3] = grid_d51_dwt_cycles_read();
 
 
 
-				printf("Lua: %s \r\nTime [us]: %d %d %d\r\n", grid_lua_state.stdo, (cycles[1]-cycles[0])/120, (cycles[2]-cycles[1])/120, (cycles[3]-cycles[2])/120);
+				//printf("Lua: %s \r\nTime [us]: %d %d %d\r\n", grid_lua_state.stdo, (cycles[1]-cycles[0])/120, (cycles[2]-cycles[1])/120, (cycles[3]-cycles[2])/120);
 				grid_lua_debug_memory_stats(&grid_lua_state, "Ui");
 				grid_lua_clear_stdo(&grid_lua_state);
 
@@ -1275,7 +1274,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				char* stdo = &grid_expr_state.output_string[GRID_EXPR_OUTPUT_STRING_MAXLENGTH-grid_expr_state.output_string_length];
 
-				printf("Expr: %s \r\nTime [us]: %d\r\n", stdo, (cycles[1]-cycles[0])/120);
+				//printf("Expr: %s \r\nTime [us]: %d\r\n", stdo, (cycles[1]-cycles[0])/120);
 
 				strcpy(&target_string[code_start-total_substituted_length], stdo);
 

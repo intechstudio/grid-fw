@@ -625,7 +625,6 @@ volatile uint8_t sys_i2c_done_flag = SYS_I2C_STATUS_INIT;
 volatile uint8_t sys_i2c_enabled = 0;
 
 
-
 void SYS_I2C_tx_complete_callback(struct i2c_m_async_desc *const i2c)
 {
 
@@ -808,8 +807,12 @@ int main(void)
 
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 
+	//  x/512xb 0x80000
+
+	grid_nvm_toc_create(&grid_nvm_state);
 
 
+	//flash_erase(grid_nvm_state.flash, GRID_NVM_LOCAL_BASE_ADDRESS, 1);
 
 	while (1) {
 	
@@ -887,6 +890,7 @@ int main(void)
 
 				if (1){
 
+
 					struct i2c_m_async_desc *i2c = &SYS_I2C;
 					struct _i2c_m_msg        msg;
 					int32_t                  ret;
@@ -895,10 +899,6 @@ int main(void)
 					msg.len    = n;
 					msg.flags  = 0;
 					msg.buffer = (uint8_t *)buf;
-
-					//i2c->device.cb.error = NULL;
-					//i2c->device.cb.tx_complete = NULL;
-					//i2c->device.cb.rx_complete = NULL;
 
 					/* start transfer then return */
 					ret = i2c_m_async_transfer(&i2c->device, &msg);

@@ -14,10 +14,15 @@
 
 #define GRID_NVM_GLOBAL_BASE_ADDRESS		0x7F000
 
-#define GRID_NVM_LOCAL_BASE_ADDRESS		0x80000
-
 #define GRID_NVM_PAGE_SIZE					512
 #define GRID_NVM_PAGE_OFFSET				0x200
+
+#define GRID_NVM_LOCAL_BASE_ADDRESS			0x80000
+#define GRID_NVM_LOCAL_END_ADDRESS			0x100000
+#define GRID_NVM_LOCAL_PAGE_COUNT			((GRID_NVM_LOCAL_END_ADDRESS - GRID_NVM_LOCAL_BASE_ADDRESS)/GRID_NVM_PAGE_OFFSET)
+
+// 1024 page * 512byte/page = 0.5MB
+
 
 // Every event is stored in one page
 #define GRID_NVM_STRATEGY_EVENT_maxcount	10
@@ -51,9 +56,29 @@ enum grid_nvm_buffer_status_t{
 		
 };
 
+
+
+struct grid_nvm_toc_entry{
+
+	uint8_t status;
+	uint8_t page_id;
+	uint8_t element_id;
+	uint8_t event_type;
+
+	uint16_t config_string_length;
+	uint32_t config_string_address;
+
+	struct grid_nvm_toc_entry* next;
+	struct grid_nvm_toc_entry* prev;
+
+};
+
 struct grid_nvm_model{
 
 	struct flash_descriptor* flash;
+
+	uint32_t next_write_address;
+
 
 	uint32_t bank_settings_page_address;
 
@@ -83,13 +108,26 @@ struct grid_nvm_model{
 	uint32_t write_bulk_page_index;
 	uint8_t write_bulk_status;
 
+	struct grid_nvm_toc_entry* toc_head;
+	uint16_t toc_count;
 
 };
+
+uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type, uint16_t config_string_length, uint32_t config_string_address);
+uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type);
+
+
+void grid_nvm_toc_debug(struct grid_nvm_model* mod);
+
 
 struct grid_nvm_model grid_nvm_state;
 
 
 void grid_nvm_init(struct grid_nvm_model* mod, struct flash_descriptor* flash_instance);
+
+
+
+void grid_nvm_toc_create(struct grid_nvm_model* mod);
 
 
 

@@ -35,6 +35,7 @@
         "system_error": "c",
         "freertos.h": "c",
         "freertosconfig.h": "c",
-        "hal_rtos.h": "c"
+        "hal_rtos.h": "c",
+        "hpl_flash.h": "c"
     }
 }

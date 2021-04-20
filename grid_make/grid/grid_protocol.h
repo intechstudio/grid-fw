@@ -557,7 +557,7 @@ enum grid_ui_event_t {
 #define GRID_CLASS_LOCALCLEAR_frame					"%c%03xe%c",GRID_CONST_STX,GRID_CLASS_LOCALCLEAR_code,GRID_CONST_ETX
 
 
-// CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)
+// CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)  ////// DEPRICATED
 #define GRID_CLASS_CONFIGURATION_code						0x080
 #define GRID_CLASS_CONFIGURATION_frame						"%c%03x_......%c",GRID_CONST_STX,GRID_CLASS_CONFIGURATION_code,GRID_CONST_ETX
 #define GRID_CLASS_CONFIGURATION_frame_start				"%c%03x_......",GRID_CONST_STX,GRID_CLASS_CONFIGURATION_code
@@ -575,7 +575,7 @@ enum grid_ui_event_t {
 #define GRID_CLASS_CONFIGURATION_ACTIONSTRING_offset		11
 #define GRID_CLASS_CONFIGURATION_ACTIONSTRING_length		0
 
-  
+
 
 
 // CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)
@@ -592,6 +592,31 @@ enum grid_ui_event_t {
 
 #define GRID_CLASS_CONFIGDEFAULT_EVENTTYPE_offset			9
 #define GRID_CLASS_CONFIGDEFAULT_EVENTTYPE_length			2
+
+  
+// CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)
+#define GRID_CLASS_CONFIG_code						0x082
+#define GRID_CLASS_CONFIG_frame						"%c%03x_..........%c",GRID_CONST_STX,GRID_CLASS_CONFIG_code,GRID_CONST_ETX
+#define GRID_CLASS_CONFIG_frame_start				"%c%03x_..........",GRID_CONST_STX,GRID_CLASS_CONFIG_code
+#define GRID_CLASS_CONFIG_frame_end					"%c",GRID_CONST_ETX
+
+#define GRID_CLASS_CONFIG_PAGENUMBER_offset			5
+#define GRID_CLASS_CONFIG_PAGENUMBER_length			2
+
+#define GRID_CLASS_CONFIG_ELEMENTNUMBER_offset		7
+#define GRID_CLASS_CONFIG_ELEMENTNUMBER_length		2
+
+#define GRID_CLASS_CONFIG_EVENTTYPE_offset			9
+#define GRID_CLASS_CONFIG_EVENTTYPE_length			2
+
+#define GRID_CLASS_CONFIG_ACTIONLENGTH_offset		11
+#define GRID_CLASS_CONFIG_ACTIONLENGTH_length		4
+
+#define GRID_CLASS_CONFIG_ACTIONSTRING_offset		15
+#define GRID_CLASS_CONFIG_ACTIONSTRING_length		0
+
+
+
 
 
 
