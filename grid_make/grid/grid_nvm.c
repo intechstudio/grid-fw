@@ -14,7 +14,7 @@ void grid_nvm_init(struct grid_nvm_model* nvm, struct flash_descriptor* flash_in
 	nvm->toc_count = 0;
 	nvm->toc_head = NULL;
 
-	nvm->next_write_address = 0;
+	nvm->next_write_offset = 0;
 
 	nvm->bank_settings_page_address = GRID_NVM_GLOBAL_BASE_ADDRESS;
 	
@@ -41,6 +41,239 @@ void grid_nvm_init(struct grid_nvm_model* nvm, struct flash_descriptor* flash_in
 }
 
 
+uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod){
+
+	uint8_t block_buffer[GRID_NVM_BLOCK_SIZE] = {0x00};
+
+	uint16_t block_count = 0;
+
+	uint32_t write_ptr = 0;
+
+	struct grid_nvm_toc_entry* current = mod->toc_head;
+
+	while (current != NULL)
+	{
+
+		//current->config_string_offset = block_count * GRID_NVM_BLOCK_SIZE + write_ptr;
+		printf("Moving CFG %d %d %d  Offset: %d -> %d\r\n", current->page_id, current->element_id, current->event_type, current->config_string_offset ,block_count * GRID_NVM_BLOCK_SIZE + write_ptr);
+
+		if (write_ptr + current->config_string_length < GRID_NVM_BLOCK_SIZE){
+
+			// the current config_string fit into the block no problem!
+			flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset, &block_buffer[write_ptr], current->config_string_length);
+			write_ptr += current->config_string_length;
+
+		}
+		else{
+
+			uint16_t part1_length = GRID_NVM_BLOCK_SIZE - write_ptr;
+			uint16_t part2_length = current->config_string_length - part1_length;
+
+			if (part2_length > GRID_NVM_BLOCK_SIZE){
+				printf("error.nvm.cfg file is larger than nvm block size!\r\n");
+			}
+
+			// read as much as we can fit into the current block
+			flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset, &block_buffer[write_ptr], part1_length);
+			
+			// write the current block to flash
+			flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+			flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, block_buffer, GRID_NVM_BLOCK_SIZE);
+
+			// update the write_ptr and block_count
+			write_ptr = 0;
+			block_count++;
+
+			// clear the blockbuffer
+			for (uint16_t i=0; i<GRID_NVM_BLOCK_SIZE; i++){
+				block_buffer[i] = 0x00;
+			}
+
+			// read the rest of the configuration
+			flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset + part1_length, &block_buffer[write_ptr], part2_length);
+					
+			// update the write_ptr
+			write_ptr += part2_length;
+
+			//read
+
+
+		}
+
+		current->config_string_offset = GRID_NVM_BLOCK_SIZE * block_count + write_ptr - current->config_string_length;
+		
+
+		if (current->next == NULL){
+
+			// no more elements in the list, write last partial block to NVM
+			flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+			flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, block_buffer, write_ptr);
+			break;
+		
+		}
+		else{
+			// jump to next and run the loop again
+			current = current->next;
+		}
+
+	}
+
+	// set the next_write_offset to allow proper writes after defrag
+	mod->next_write_offset = block_count*GRID_NVM_BLOCK_SIZE + write_ptr;
+	printf("After defrag next_write_offset: %d\r\n", mod->next_write_offset);
+
+	// clear the rest of the memory!
+	block_count++;
+
+	while(GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE < GRID_NVM_LOCAL_END_ADDRESS){
+
+		flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+		block_count++;
+	}
+	
+
+	grid_nvm_toc_debug(mod);
+	
+}
+
+uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t length){
+
+	// before append pad to 4 byte words
+
+	uint32_t append_length = length + (4 - length%4)%4; 
+
+	uint8_t append_buffer[append_length];
+
+	for (uint8_t i=0; i<append_length; i++){
+
+		if (i<length){
+			append_buffer[i] = buffer[i];
+		}
+		else{
+			append_buffer[i] = 0x00;
+		}
+
+	}
+
+	// use GRID_NVM_LOCAL_END_ADDRESS instead of 0x81000
+	if (GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + append_length > 0x81000){
+
+		// not enough space for configs
+		// run defrag algorithm!
+
+		grid_nvm_toc_defragmant(mod);
+
+	}
+
+	// SUKU HACK
+	flash_write(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, append_buffer, append_length);
+	
+	uint8_t verify_buffer[append_length];
+
+	for (uint16_t i=0; i<append_length; i++){
+		verify_buffer[i] = 0xff;
+	}
+
+	flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, verify_buffer, append_length);
+	
+	for (uint16_t i=0; i<append_length; i++){
+		if (verify_buffer[i] != append_buffer[i]){
+			printf("error.nvm.append verify failed! 0x%x  nwo:%d len:%d (%d!=%d)\r\n\r\n", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, mod->bank_settings_page_address, append_length, verify_buffer[i], append_buffer[i]);
+		}
+	}
+
+
+
+	mod->next_write_offset += append_length;
+
+	return mod->next_write_offset-append_length; // return the start offset of the newly appended item
+
+}
+uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t length){
+
+
+	uint16_t clear_length = length + (4 - length%4)%4; 
+	
+	uint8_t clear_buffer[clear_length];
+	uint8_t verify_buffer[clear_length];
+
+	for (uint16_t i=0; i<clear_length; i++){
+
+		clear_buffer[i] = 0x00;
+		verify_buffer[i] = 0x00;
+		
+
+	}
+
+	// SUKU HACK
+	flash_write(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset, clear_buffer, clear_length);
+
+	flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset, verify_buffer, clear_length);
+
+	for (uint16_t i=0; i<clear_length; i++){
+		if (verify_buffer[i] != 0x00){
+			printf("error.nvm.clear verify failed at 0x%x cb:%d vb:%d", GRID_NVM_LOCAL_BASE_ADDRESS + offset + i, clear_buffer[i], verify_buffer[i]);
+			
+			for(uint8_t j=0; j<10; j++){ // retry max 10 times
+
+				// try again chunk
+				uint32_t chunk = 0x00000000;
+				flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset + (i/4)*4, &chunk, 4);
+				flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset + (i/4)*4, &chunk, 4);
+				
+				if (chunk == 0x00000000){
+					printf(" but FIXED try=%d!!!!\r\n", j);
+					break;
+				}
+				else{
+					printf("\r\n\r\nANGRY!!!!\r\n\r\n");
+				}
+
+			}
+
+		}
+	}
+	
+
+}
+
+uint32_t grid_nvm_erase_all(struct grid_nvm_model* mod){
+
+	printf("\r\n\r\nFlash Erase\r\n\r\n");
+	flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS, (GRID_NVM_LOCAL_END_ADDRESS-GRID_NVM_LOCAL_BASE_ADDRESS)/GRID_NVM_PAGE_SIZE);
+	
+	printf("\r\n\r\nFlash Verify\r\n\r\n");
+	uint32_t address = GRID_NVM_LOCAL_BASE_ADDRESS;
+	uint32_t run = 0;
+	uint32_t fail_count = 0;
+
+	while (address != GRID_NVM_LOCAL_END_ADDRESS)
+	{
+
+		uint8_t verify_buffer[GRID_NVM_PAGE_SIZE] = {0};
+		flash_read(mod->flash, address, verify_buffer, GRID_NVM_PAGE_SIZE);
+
+		for(uint16_t i=0; i<GRID_NVM_PAGE_SIZE; i++){
+
+			if (verify_buffer[i] != 0xff){
+
+				printf("error.verify failed 0x%d\r\n", address + i);
+				fail_count++;
+
+			}
+		}
+		run++;
+		address += GRID_NVM_PAGE_OFFSET;
+	}
+	
+	printf("\r\n\r\nFlash Done, Run: %d Fail: %d\r\n\r\n", run, fail_count);
+
+	return fail_count;
+
+}
+
+
+
 /*
 
 GRID_NVM_TOC : Table of Contents
@@ -62,23 +295,14 @@ GRID_NVM_TOC : Table of Contents
 
 */
 
-void grid_nvm_toc_create(struct grid_nvm_model* mod){
+void grid_nvm_toc_init(struct grid_nvm_model* mod){
 
-	uint8_t flash_write_buffer[512] = {0};
-
-	flash_write_buffer[2] = 0xff;
-	flash_write_buffer[3] = 0xff;
-	flash_write_buffer[4] = 0xff;
-	flash_write_buffer[5] = 0xff;
-
-	flash_append(grid_nvm_state.flash, GRID_NVM_LOCAL_BASE_ADDRESS, flash_write_buffer, 12);
-
-	uint8_t flash_read_buffer[512] = {255};
+	uint8_t flash_read_buffer[GRID_NVM_PAGE_SIZE] = {255};
 
 	uint32_t last_used_page_offset = 0;
-	uint32_t last_used_byte_offset = -1;
+	uint32_t last_used_byte_offset = -4; // -4 because we will add +4 when calculating next_write_address
 
-	// check firest byte of every page to see if there is any useful data
+	// check first byte of every page to see if there is any useful data
 	for (uint32_t i=0; i<GRID_NVM_LOCAL_PAGE_COUNT; i++){
 
 		flash_read(grid_nvm_state.flash, GRID_NVM_LOCAL_BASE_ADDRESS + i*GRID_NVM_PAGE_OFFSET, flash_read_buffer, 1);
@@ -97,7 +321,7 @@ void grid_nvm_toc_create(struct grid_nvm_model* mod){
 	// read the last page that has actual data
 	flash_read(grid_nvm_state.flash, GRID_NVM_LOCAL_BASE_ADDRESS + last_used_page_offset*GRID_NVM_PAGE_OFFSET, flash_read_buffer, GRID_NVM_PAGE_SIZE);	
 
-	for(uint32_t i = 0; i<GRID_NVM_PAGE_SIZE; i++){
+	for(uint32_t i = 0; i<GRID_NVM_PAGE_SIZE; i+=4){ // +=4 because we want to keep the offset aligned
 
 		if (flash_read_buffer[i] != 0xff){
 			last_used_byte_offset = i;
@@ -109,62 +333,147 @@ void grid_nvm_toc_create(struct grid_nvm_model* mod){
 	}
 
 
-	mod->next_write_address = GRID_NVM_LOCAL_BASE_ADDRESS + last_used_page_offset*GRID_NVM_PAGE_OFFSET + last_used_byte_offset + 1; // +1 because we want to write to the firest byte after the last used byte
+	mod->next_write_offset = last_used_page_offset*GRID_NVM_PAGE_OFFSET + last_used_byte_offset + 4; // +4 because we want to write to the next word after the last used word
+
+
+	// Read through the whole valid configuration area and parse valid configs into TOC
+
+
+	uint8_t config_header[6] = {0};
+	snprintf(config_header, 5, GRID_CLASS_CONFIG_frame_start); 
+
+	for (uint32_t i=0; i<=last_used_page_offset; i++){ // <= because we want to check the last_used_page too
+
+		flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + i*GRID_NVM_PAGE_SIZE, flash_read_buffer, GRID_NVM_PAGE_SIZE);
+
+		for (uint16_t j=0; j<GRID_NVM_PAGE_SIZE; j++){
+
+			uint32_t current_offset = j + GRID_NVM_PAGE_SIZE*i;
+
+
+			if (flash_read_buffer[j] == GRID_CONST_STX){
+
+				uint8_t temp_buffer[20] = {0};
+
+				uint8_t* current_header = temp_buffer;
+
+				if (j>GRID_NVM_PAGE_SIZE-20){
+					// read from flash, because the whole header is not in the page
+					flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current_offset, temp_buffer, 19);
+				}
+				else{
+					current_header = &flash_read_buffer[j];
+				}
+
+				if (0 == strncmp(current_header, config_header, 4)){
+
+					uint8_t page_number = 0;
+					uint8_t element_number = 0;
+					uint8_t event_type = 0;
+					uint8_t action_length = 0;
+
+					page_number = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
+					element_number = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
+					event_type = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
+					action_length = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
+
+					grid_nvm_toc_entry_create(&grid_nvm_state, page_number, element_number, event_type, current_offset, action_length);
+
+					
+				}
+
+			}
+
+
+		}	
 	
-	if(mod->next_write_address%4 != 0){
-		printf("error.nvm.next_write_address is not aligned! \r\n");
 	}
 
 
-	printf("Flash: next_write_address: %x\r\n", mod->next_write_address);
-
-	uint8_t* str = "123";
-	uint32_t len = strlen(str) + 1; // +1 because we print the NULL terminator for easy debugging
-
-	// before append pad to 4 byte words
-
-	
-
-	uint32_t _len = len + (8 - mod->next_write_address%4 - len%4)%4; 
-	printf("Flash: len: %d, _len: %d\r\n", len, _len);
-	uint8_t _str[_len];
-
-	for (uint8_t j=0; j<_len; j++){
-		_str[j] = 0x00;
-	}
-	
-	strcat(_str, str);
-
-	for (uint8_t j=0; j<_len; j++){
-		printf(" %d", _str[j]);
-	}
-	printf("\r\n");
-
-	flash_append(grid_nvm_state.flash, mod->next_write_address, _str, _len);
-	mod->next_write_address += len; // not _len because we want to write right next to it
-
-	if(mod->next_write_address%4 != 0){
-		printf("error.nvm.next_write_address is not aligned! \r\n");
-	}
-
-
-	printf("Flash: %s %d next_write_address: %x\r\n", str, len, mod->next_write_address);
-
-	grid_nvm_toc_entry_create(&grid_nvm_state, 1, 2, 3, 0, 1);
-	grid_nvm_toc_entry_create(&grid_nvm_state, 1, 4, 2, 0, 2);
-	grid_nvm_toc_entry_create(&grid_nvm_state, 1, 3, 1, 0, 3);
-	grid_nvm_toc_entry_create(&grid_nvm_state, 1, 3, 1, 0, 4);
-	grid_nvm_toc_entry_create(&grid_nvm_state, 1, 3, 2, 0, 5);
-	grid_nvm_toc_entry_create(&grid_nvm_state, 1, 3, 0, 0, 6);
-	grid_nvm_toc_entry_create(&grid_nvm_state, 1, 4, 1, 0, 7);
-	grid_nvm_toc_entry_create(&grid_nvm_state, 2, 4, 2, 0, 8);
-	grid_nvm_toc_entry_create(&grid_nvm_state, 1, 4, 2, 0, 9);
-
-	grid_nvm_toc_debug(&grid_nvm_state);
 
 }
 
-uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type, uint16_t config_string_length, uint32_t config_string_address){
+uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
+
+
+
+	// generate random configuration
+	
+
+	uint8_t buf[300] = {0};
+	uint16_t len = 0;
+
+	uint8_t page_number = 0;
+	uint8_t element_number = rand_sync_read8(&RAND_0)%3;
+	uint8_t event_type = rand_sync_read8(&RAND_0)%3;
+
+	sprintf(buf, GRID_CLASS_CONFIG_frame_start);
+
+	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, page_number, NULL);
+	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, element_number, NULL);
+	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type, NULL);
+
+	len = strlen(buf);
+
+	// append random length of fake actionstrings
+
+	uint8_t mock_length = rand_sync_read8(&RAND_0)%128; // 0...127 is the mock length
+
+	for (uint8_t i=0; i<mock_length; i++){ 
+
+		buf[len+i] = 'a' + i%26;
+
+	}
+
+	len = strlen(buf);
+
+	sprintf(&buf[len], GRID_CLASS_CONFIG_frame_end);
+
+	len = strlen(buf);
+
+
+	uint16_t config_length = len;
+
+	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, config_length, NULL);
+
+	printf("Mock frame len: %d -> %s\r\n", len, buf);
+
+
+	grid_nvm_config_store(mod, page_number, element_number, event_type, buf, len);
+
+
+
+}
+
+
+uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, uint8_t element_number, uint8_t event_type, uint8_t* config_buffer, uint16_t config_length){
+
+
+	struct grid_nvm_toc_entry* entry = NULL;
+
+	entry = grid_nvm_toc_entry_find(&grid_nvm_state, page_number, element_number, event_type);
+
+	uint32_t append_offset = grid_nvm_append(mod, config_buffer, config_length);
+
+	if (entry == NULL){
+
+		printf("NEW\r\n");
+		grid_nvm_toc_entry_create(&grid_nvm_state, page_number, element_number, event_type, append_offset, config_length);
+
+	}
+	else{
+
+		printf("UPDATE %d %d %d :  0x%x to 0x%x %d\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, append_offset, config_length);
+		grid_nvm_clear(mod, entry->config_string_offset, entry->config_string_length);
+		grid_nvm_toc_entry_update(entry, append_offset, config_length);
+		
+	}
+
+
+
+}
+
+uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type, uint32_t config_string_offset, uint16_t config_string_length){
 
 	struct grid_nvm_toc_entry* prev = NULL;
 	struct grid_nvm_toc_entry* next = mod->toc_head;
@@ -174,7 +483,6 @@ uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, u
 
 	uint8_t duplicate = 0;
 
-	printf("!!!!\r\n");
 
 	while(1){
 
@@ -189,21 +497,17 @@ uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, u
 		if (next == NULL){
 			// this is the end of the list
 
-			printf("I am last\r\n");
 			break;
 		}
 		else if (next_sort>this_sort){
 
-			printf("place found!\r\n");
 			break;
 		}
 		else if (next_sort==this_sort){
-			printf("Duplicate entry\r\n");
 			duplicate = 1;
 			break;
 		}
 		else{
-			printf("next->next\r\n");
 			prev = next;
 			next = next->next;
 		}
@@ -251,7 +555,7 @@ uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, u
 		entry->event_type = event_type;
 
 		// here manipulate NVM if duplicate
-		entry->config_string_address = config_string_address;
+		entry->config_string_offset = config_string_offset;
 		entry->config_string_length = config_string_length;
 
 
@@ -263,10 +567,38 @@ uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, u
 	
 	}
 
+}
 
 
+struct grid_nvm_toc_entry* grid_nvm_toc_entry_find(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type){
+
+	struct grid_nvm_toc_entry* current = mod->toc_head;
+
+	while (current != NULL)
+	{
+		if (current->page_id == page_id && current->element_id == element_id && current->event_type == event_type){
+
+			// Found the list item that we were looking for
+
+			return current;
+
+		}
+
+		current = current->next;
+	}
+	
+	return NULL;
+}
+
+uint8_t grid_nvm_toc_entry_update(struct grid_nvm_toc_entry* entry, uint32_t config_string_offset, uint16_t config_string_length){
+
+	printf("UPDATE: %d -> %d\r\n", entry->config_string_offset, config_string_offset);
+
+	entry->config_string_offset = config_string_offset;
+	entry->config_string_length = config_string_length;
 
 }
+
 uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type);
 
 void grid_nvm_toc_debug(struct grid_nvm_model* mod){
@@ -279,7 +611,7 @@ void grid_nvm_toc_debug(struct grid_nvm_model* mod){
 	while (next != NULL){
 
 
-		printf("toc entry: %d %d %d :  %d \r\n", next->page_id, next->element_id, next->event_type, next->config_string_address);
+		printf("toc entry: %d %d %d :  0x%x %d\r\n", next->page_id, next->element_id, next->event_type, next->config_string_offset, next->config_string_length);
 
 		next = next->next;
 	}

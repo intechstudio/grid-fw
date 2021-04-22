@@ -809,10 +809,19 @@ int main(void)
 
 	//  x/512xb 0x80000
 
-	grid_nvm_toc_create(&grid_nvm_state);
+	grid_nvm_toc_init(&grid_nvm_state);
+
+	grid_nvm_config_mock(&grid_nvm_state);
+	grid_nvm_config_mock(&grid_nvm_state);
+	grid_nvm_config_mock(&grid_nvm_state);
+
+	grid_nvm_toc_debug(&grid_nvm_state);
+
+	// grid_nvm_toc_defragmant(&grid_nvm_state);
 
 
-	//flash_erase(grid_nvm_state.flash, GRID_NVM_LOCAL_BASE_ADDRESS, 1);
+//	grid_nvm_erase_all(&grid_nvm_state);
+
 
 	while (1) {
 	

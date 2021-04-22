@@ -14,9 +14,13 @@
 
 #define GRID_NVM_GLOBAL_BASE_ADDRESS		0x7F000
 
+#define GRID_NVM_BLOCK_SIZE 				8192
+
 #define GRID_NVM_PAGE_SIZE					512
 #define GRID_NVM_PAGE_OFFSET				0x200
 
+
+// align local base address to start at a block start!!!
 #define GRID_NVM_LOCAL_BASE_ADDRESS			0x80000
 #define GRID_NVM_LOCAL_END_ADDRESS			0x100000
 #define GRID_NVM_LOCAL_PAGE_COUNT			((GRID_NVM_LOCAL_END_ADDRESS - GRID_NVM_LOCAL_BASE_ADDRESS)/GRID_NVM_PAGE_OFFSET)
@@ -66,18 +70,19 @@ struct grid_nvm_toc_entry{
 	uint8_t event_type;
 
 	uint16_t config_string_length;
-	uint32_t config_string_address;
+	uint32_t config_string_offset;
 
 	struct grid_nvm_toc_entry* next;
 	struct grid_nvm_toc_entry* prev;
 
 };
 
+
 struct grid_nvm_model{
 
 	struct flash_descriptor* flash;
 
-	uint32_t next_write_address;
+	uint32_t next_write_offset;
 
 
 	uint32_t bank_settings_page_address;
@@ -113,9 +118,23 @@ struct grid_nvm_model{
 
 };
 
-uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type, uint16_t config_string_length, uint32_t config_string_address);
+uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type, uint32_t config_string_offset, uint16_t config_string_length);
+struct grid_nvm_toc_entry* grid_nvm_toc_entry_find(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type);
+uint8_t grid_nvm_toc_entry_update(struct grid_nvm_toc_entry* entry, uint32_t config_string_offset, uint16_t config_string_length);
+
 uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type);
 
+
+uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod);
+
+
+uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod);
+uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, uint8_t element_number, uint8_t event_type, uint8_t* config_buffer, uint16_t config_length);
+
+uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t length);
+uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t length);
+
+uint32_t grid_nvm_erase_all(struct grid_nvm_model* mod);
 
 void grid_nvm_toc_debug(struct grid_nvm_model* mod);
 
@@ -127,7 +146,7 @@ void grid_nvm_init(struct grid_nvm_model* mod, struct flash_descriptor* flash_in
 
 
 
-void grid_nvm_toc_create(struct grid_nvm_model* mod);
+void grid_nvm_toc_init(struct grid_nvm_model* mod);
 
 
 

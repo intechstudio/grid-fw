@@ -96,7 +96,7 @@ uint8_t grid_lua_deinit(struct grid_lua_model* mod){
 uint8_t grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
     uint32_t memusage = lua_gc(grid_lua_state.L, LUA_GCCOUNT)*1024 + lua_gc(grid_lua_state.L, LUA_GCCOUNTB);
-    printf("LUA mem usage: %d(%s)\r\n", memusage, message);
+    //printf("LUA mem usage: %d(%s)\r\n", memusage, message);
 
 }
 
