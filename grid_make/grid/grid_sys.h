@@ -64,6 +64,11 @@ struct grid_sys_model
 	uint32_t hwfcg;
 	uint8_t heartbeat_type;
 	
+	int8_t module_x;
+	int8_t module_y;
+	uint8_t module_rot;
+	
+	
 	uint32_t recent_messages[GRID_SYS_RECENT_MESSAGES_LENGTH];
 	GRID_SYS_RECENT_MESSAGES_INDEX_T recent_messages_index;
 	
@@ -121,13 +126,12 @@ uint32_t grid_task_timer_read(struct grid_task_model* mod, enum grid_task task);
 /* ==================== Reading MCU Unique Serial Nuber ====================== */
 // Word 0: 0x008061FC	Word 1: 0x00806010	Word 2: 0x00806014	Word 3: 0x00806018
 
-#define GRID_SYS_UNIQUE_ID_ADDRESS_0 0x008061FC
-#define GRID_SYS_UNIQUE_ID_ADDRESS_1 0x00806010
-#define GRID_SYS_UNIQUE_ID_ADDRESS_2 0x00806014
-#define GRID_SYS_UNIQUE_ID_ADDRESS_3 0x00806018
+#define GRID_D51_UNIQUE_ID_ADDRESS_0 0x008061FC
+#define GRID_D51_UNIQUE_ID_ADDRESS_1 0x00806010
+#define GRID_D51_UNIQUE_ID_ADDRESS_2 0x00806014
+#define GRID_D51_UNIQUE_ID_ADDRESS_3 0x00806018
 
 
-uint32_t grid_sys_hwfcg;
 
 #define GRID_SYS_DEFAULT_POSITION 127
 #define GRID_SYS_LOCAL_POSITION 255

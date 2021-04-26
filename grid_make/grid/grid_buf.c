@@ -1332,6 +1332,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		
 		uint8_t dx = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
 		uint8_t dy = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
+		uint8_t rot = grid_msg_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
 			
 		uint8_t position_is_me = 0;
 		uint8_t position_is_global = 0;
@@ -1377,6 +1378,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					if (msg_instr == GRID_INSTR_EXECUTE_code){ //SET BANK
 									
 						if (grid_sys_get_bank_valid(&grid_sys_state) == 0){
+							
 							
 							
 							grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_HEARTBEAT);
@@ -1461,6 +1463,32 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						}
 					}
 									
+				}
+				else if (msg_class == GRID_CLASS_HEARTBEAT_code){
+					
+					uint8_t type  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_HEARTBEAT_TYPE_offset], GRID_CLASS_HEARTBEAT_TYPE_length, &error_flag);
+					
+					if (type == 0){
+						// from other grid module
+					}
+					else if (type == 1){
+						// from usb connected module
+
+						grid_sys_state.module_x = dx-127;
+						grid_sys_state.module_y = dy-127;
+						grid_sys_state.module_rot = rot;
+
+
+					}
+					else if (type == 255){
+						
+						// from editor
+
+					}
+					else{
+						// unknown type
+					}
+							
 				}
 				else if (msg_class == GRID_CLASS_LEDPHASE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_local || position_is_me)){
 					

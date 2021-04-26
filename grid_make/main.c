@@ -315,7 +315,7 @@ static void inbound_task_inner(){
 }
 
 static void outbound_task_inner(){
-		
+	
 		
 	/* ========================= GRID OUTBOUND TASK ============================= */	
 	
@@ -573,7 +573,7 @@ void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 
 void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 {
-	if (heartbeat_enable){
+	if (heartbeat_enable || 1){
 
 		grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_HEARTBEAT);
 
@@ -900,14 +900,17 @@ int main(void)
 				
 				grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_CFG_RESPONSE);
 				
+
 				
 				uint8_t heartbeateventnum = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT);
 
 				if (heartbeateventnum != 255){
 					char* actionstring = grid_core_state.bank_list[0].element_list[0].event_list[heartbeateventnum].action_string;
 			
-			
+					
 					grid_msg_set_parameter(actionstring, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, 1, NULL);
+
+					printf(actionstring);
 
 				}
 

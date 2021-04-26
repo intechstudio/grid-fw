@@ -671,6 +671,10 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->hwfcg = -1;
 	mod->heartbeat_type = 0;
 
+	mod->module_x = 0;
+	mod->module_y = 0;
+	mod->module_rot = 0;
+
     
 	mod->sessionid = rand_sync_read8(&RAND_0);
     
@@ -709,14 +713,7 @@ void grid_sys_init(struct grid_sys_model* mod){
 
 
 	mod->bank_activebank_number = 0;
-	grid_sys_set_bank(&grid_sys_state, 255);
-	
-	grid_port_init_all();
-	
-	grid_sys_uart_init();
-	grid_sys_dma_rx_init();
-	
-    
+
 
 }
 
@@ -1045,10 +1042,10 @@ void grid_sys_write_hex_string_value(uint8_t* start_location, uint8_t size, uint
 
 uint32_t grid_sys_get_id(uint32_t* return_array){
 			
-	return_array[0] = *(uint32_t*)(GRID_SYS_UNIQUE_ID_ADDRESS_0);
-	return_array[1] = *(uint32_t*)(GRID_SYS_UNIQUE_ID_ADDRESS_1);
-	return_array[2] = *(uint32_t*)(GRID_SYS_UNIQUE_ID_ADDRESS_2);
-	return_array[3] = *(uint32_t*)(GRID_SYS_UNIQUE_ID_ADDRESS_3);
+	return_array[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);
+	return_array[1] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_1);
+	return_array[2] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_2);
+	return_array[3] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_3);
 	
 	return 1;
 	
@@ -1106,7 +1103,7 @@ uint32_t grid_sys_get_hwcfg(struct grid_sys_model* mod){
 	}
 
 	
-	return grid_sys_hwfcg;
+	return mod->hwfcg;
 
 }
 

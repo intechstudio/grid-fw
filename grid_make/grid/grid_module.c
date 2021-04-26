@@ -138,9 +138,6 @@ void grid_module_common_init(void){
 		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 		uint8_t payload_length = 0;
 	
-		sprintf(payload_template, GRID_EVENTSTRING_HEARTBEAT );
-		payload_length = strlen(payload_template);
-	
 		sprintf(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_frame);
 		uint8_t error = 0;
 		grid_msg_set_parameter(&payload_template[payload_length], GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, &error);
@@ -154,6 +151,7 @@ void grid_module_common_init(void){
 	
 		payload_length = strlen(payload_template);
 	
+		grid_ui_event_register_eventstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT, GRID_EVENTSTRING_HEARTBEAT, strlen(GRID_EVENTSTRING_HEARTBEAT));
 		grid_ui_event_register_actionstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT, payload_template, payload_length);		
 		
 	}
@@ -212,6 +210,11 @@ void grid_module_common_init(void){
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "UI Power Enable");
 	gpio_set_pin_level(UI_PWR_EN, true);
 
+
+
+
+	grid_sys_init(&grid_sys_state);
+
 	// ADC SETUP	
 	
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevC){
@@ -240,9 +243,11 @@ void grid_module_common_init(void){
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "HWCFG Mismatch");
 	}
 
+	grid_port_init_all();
+	grid_sys_uart_init();
+	grid_sys_dma_rx_init();
 
-	grid_sys_init(&grid_sys_state);
-
+	grid_sys_set_bank(&grid_sys_state, 255);
 
 	grid_nvm_init(&grid_nvm_state, &FLASH_0);
 	
