@@ -1238,9 +1238,31 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				strcpy(&target_string[code_start-total_substituted_length], grid_lua_state.stdo);
 
-				total_substituted_length += code_length - code_stdo_length;
-
 				
+				uint8_t errorlen = 0;
+
+				if (strlen(grid_lua_state.stde)){
+
+					
+					printf(grid_lua_state.stde);
+
+					uint8_t errorbuffer[100] = {0};
+
+					sprintf(errorbuffer, GRID_CLASS_DEBUGTEXT_frame_start);
+					strcat(errorbuffer, grid_lua_state.stde);
+					sprintf(&errorbuffer[strlen(errorbuffer)], GRID_CLASS_DEBUGTEXT_frame_end);
+					
+					errorlen = strlen(errorbuffer);
+
+					strcpy(&target_string[code_start-total_substituted_length+code_stdo_length], errorbuffer);
+
+					grid_lua_clear_stde(&grid_lua_state);
+
+				}
+
+
+				total_substituted_length += code_length - code_stdo_length - errorlen;
+
 
 				cycles[3] = grid_d51_dwt_cycles_read();
 

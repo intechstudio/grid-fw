@@ -525,13 +525,9 @@ enum grid_ui_event_t {
 
 #define GRID_ACTIONSTRING_AVC7_POT			"\x02""000e00b0<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T2) ?>\x03"
 
-#define GRID_ACTIONSTRING_BC				"\x02""000e0090<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T2) ?>\x03"
+#define GRID_ACTIONSTRING_BC				"<?lua grid_led_set_phase(T0,T8) ?>"
 
-
-#define GRID_ACTIONSTRING_DP_ENC			"\x02""000e0090<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>02<?expr p(T2) ?>\x03"
-#define GRID_ACTIONSTRING_DR_ENC			"\x02""000e0080<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>02<?expr p(T2) ?>\x03"
-
-#define GRID_ACTIONSTRING_AVC7_ENC		"\x02""040e<?expr p(T0) ?>01<?expr p(T8) ?>\x03<?lua grid_send_midi(0,176,T0,T8) ?>"
+#define GRID_ACTIONSTRING_AVC7_ENC			"<?lua grid_send_midi(0,176,T0,T8) grid_led_set_phase(T0, 1, T8) ?>"
 
 #define GRID_ACTIONSTRING_PUSHROT_ENC		"\x02""000e00b0<?expr p(T0) ?><?expr p(T8) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T8) ?>\x03"
 

@@ -69,10 +69,34 @@ static int l_grid_send(lua_State* L) {
     return 0;
 }
 
+static int l_grid_led_set_phase(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+   
+
+    if (nargs!=3){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[3] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    grid_led_set_phase(&grid_led_state, param[0], param[1], param[2]);
+
+    return 0;
+}
+
 
 static const struct luaL_Reg printlib [] = {
   {"print", l_my_print},
   {"grid_send", l_grid_send},
+  {"grid_led_set_phase", l_grid_led_set_phase},
   {NULL, NULL} /* end of array */
 };
 
@@ -82,9 +106,11 @@ uint8_t grid_lua_init(struct grid_lua_model* mod){
 
     mod->stdo_len = GRID_LUA_STDO_LENGTH;
     mod->stdi_len = GRID_LUA_STDI_LENGTH;
+    mod->stde_len = GRID_LUA_STDE_LENGTH;
 
     grid_lua_clear_stdo(mod);
     grid_lua_clear_stdi(mod);
+    grid_lua_clear_stde(mod);
 
 }
 
@@ -126,6 +152,7 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 
     grid_lua_dostring(mod, "grid_send_midi = function(ch, cmd, p1, p2) grid_send('000e', p2x(ch), p2x(cmd), p2x(p1), p2x(p2)) end");
     grid_lua_debug_memory_stats(mod, "grid_send");
+
 
 }
 
@@ -178,5 +205,15 @@ void grid_lua_clear_stdo(struct grid_lua_model* mod){
 }
 
 
+
+void grid_lua_clear_stde(struct grid_lua_model* mod){
+
+
+    for (uint32_t i=0; i<mod->stde_len; i++){
+        mod->stde[i] = 0;
+    }
+
+
+}
 
 

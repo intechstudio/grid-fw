@@ -19,6 +19,8 @@ int _link(void);
 #define GRID_LUA_STDO_LENGTH    100
 #define GRID_LUA_STDI_LENGTH    100
 
+#define GRID_LUA_STDE_LENGTH    100
+
 struct grid_lua_model{
     
     lua_State *L;
@@ -26,8 +28,12 @@ struct grid_lua_model{
     uint32_t stdo_len;
     uint32_t stdi_len;
 
+    uint32_t stde_len;
+
     uint8_t stdo[GRID_LUA_STDO_LENGTH];
     uint8_t stdi[GRID_LUA_STDI_LENGTH];
+
+    uint8_t stde[GRID_LUA_STDE_LENGTH];
 
 };
 
@@ -48,6 +54,8 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code);
 
 void grid_lua_clear_stdi(struct grid_lua_model* mod);
 void grid_lua_clear_stdo(struct grid_lua_model* mod);
+
+void grid_lua_clear_stde(struct grid_lua_model* mod);
 
 
 

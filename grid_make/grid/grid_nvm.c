@@ -156,7 +156,7 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 	}
 
 	// use GRID_NVM_LOCAL_END_ADDRESS instead of 0x81000
-	if (GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + append_length > 0x81000){
+	if (mod->next_write_offset + append_length > 0x1000){
 
 		// not enough space for configs
 		// run defrag algorithm!
