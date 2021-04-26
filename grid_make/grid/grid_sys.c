@@ -524,7 +524,6 @@ void dma_transfer_complete(struct grid_port* por){
 }
 
 
-uint32_t grid_sys_hwfcg = -1;
 
 
 
@@ -668,6 +667,10 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->uptime = 0;
 	mod->reset_cause = hri_rstc_read_RCAUSE_reg(RSTC);
 	
+
+	mod->hwfcg = -1;
+	mod->heartbeat_type = 0;
+
     
 	mod->sessionid = rand_sync_read8(&RAND_0);
     
@@ -1051,11 +1054,11 @@ uint32_t grid_sys_get_id(uint32_t* return_array){
 	
 }
 
-uint32_t grid_sys_get_hwcfg(){
+uint32_t grid_sys_get_hwcfg(struct grid_sys_model* mod){
 	
 	// Read the register for the first time, then later just return the saved value
 
-	if (grid_sys_hwfcg == -1){
+	if (mod->hwfcg == -1){
 
 		gpio_set_pin_direction(HWCFG_SHIFT, GPIO_DIRECTION_OUT);
 		gpio_set_pin_direction(HWCFG_CLOCK, GPIO_DIRECTION_OUT);
@@ -1098,7 +1101,7 @@ uint32_t grid_sys_get_hwcfg(){
 							
 		}
 		
-		grid_sys_hwfcg = hwcfg_value;
+		mod->hwfcg = hwcfg_value;
 		
 	}
 

@@ -159,23 +159,28 @@
 #define GRID_CLASS_MIDIABSOLUTE_PARAM2_length				2
 
 
-// HEARTBEAT
+// HEARTBEAT (type=0 grid, type=1 gridmaster, type=255 editor)
 #define GRID_CLASS_HEARTBEAT_code				0x010
-#define GRID_CLASS_HEARTBEAT_frame				"%c%03x_........%c",GRID_CONST_STX,GRID_CLASS_HEARTBEAT_code,GRID_CONST_ETX
+#define GRID_CLASS_HEARTBEAT_frame				"%c%03x_..........%c",GRID_CONST_STX,GRID_CLASS_HEARTBEAT_code,GRID_CONST_ETX
 
-#define GRID_CLASS_HEARTBEAT_HWCFG_offset		5
+#define GRID_CLASS_HEARTBEAT_TYPE_offset		5
+#define GRID_CLASS_HEARTBEAT_TYPE_length		2
+
+#define GRID_CLASS_HEARTBEAT_HWCFG_offset		7
 #define GRID_CLASS_HEARTBEAT_HWCFG_length		2
 
-#define GRID_CLASS_HEARTBEAT_VMAJOR_offset		7
+#define GRID_CLASS_HEARTBEAT_VMAJOR_offset		9
 #define GRID_CLASS_HEARTBEAT_VMAJOR_length		2
 
-#define GRID_CLASS_HEARTBEAT_VMINOR_offset		9
+#define GRID_CLASS_HEARTBEAT_VMINOR_offset		11
 #define GRID_CLASS_HEARTBEAT_VMINOR_length		2
 
-#define GRID_CLASS_HEARTBEAT_VPATCH_offset		11
+#define GRID_CLASS_HEARTBEAT_VPATCH_offset		13
 #define GRID_CLASS_HEARTBEAT_VPATCH_length		2
 
-// HEARTBEAT
+
+
+// SERIAL NUMBER
 #define GRID_CLASS_SERIALNUMBER_code			0x011
 #define GRID_CLASS_SERIALNUMBER_frame			"%c%03x_................................%c",GRID_CONST_STX,GRID_CLASS_SERIALNUMBER_code,GRID_CONST_ETX
 
@@ -287,6 +292,23 @@
 #define GRID_CLASS_LEDCOLOR_BLU_length		2
 
 
+#define GRID_CLASS_LEDPREVIEW_code			0x042
+#define GRID_CLASS_LEDPREVIEW_frame			"%c%03x_..........%c",GRID_CONST_STX,GRID_CLASS_LEDCOLOR_code,GRID_CONST_ETX
+
+#define GRID_CLASS_LEDPREVIEW_LENGTH_offset		5
+#define GRID_CLASS_LEDPREVIEW_LENGTH_length		2
+
+#define GRID_CLASS_LEDPREVIEW_NUM_offset		7
+#define GRID_CLASS_LEDPREVIEW_NUM_length		2
+
+#define GRID_CLASS_LEDPREVIEW_RED_offset		9
+#define GRID_CLASS_LEDPREVIEW_RED_length		2
+
+#define GRID_CLASS_LEDPREVIEW_GRE_offset		11
+#define GRID_CLASS_LEDPREVIEW_GRE_length		2
+
+#define GRID_CLASS_LEDPREVIEW_BLU_offset		13
+#define GRID_CLASS_LEDPREVIEW_BLU_length		2
 
 
 
@@ -457,6 +479,10 @@ enum grid_ui_event_t {
 #define GRID_PARAMETER_EVENT_HEARTBEAT  12
 
 #define GRID_PARAMETER_EVENT_ENCPUSHROT  13
+
+
+
+
 
 
 

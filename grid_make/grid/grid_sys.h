@@ -59,6 +59,10 @@ struct grid_sys_model
 	uint8_t bank_init_flag;
 	
 	uint32_t realtime;
+
+
+	uint32_t hwfcg;
+	uint8_t heartbeat_type;
 	
 	uint32_t recent_messages[GRID_SYS_RECENT_MESSAGES_LENGTH];
 	GRID_SYS_RECENT_MESSAGES_INDEX_T recent_messages_index;
@@ -163,7 +167,7 @@ uint32_t grid_sys_rtc_get_elapsed_time(struct grid_sys_model* mod, uint32_t told
 
 void grid_sys_rtc_tick_time(struct grid_sys_model* mod);
 
-uint32_t grid_sys_get_hwcfg();
+uint32_t grid_sys_get_hwcfg(struct grid_sys_model* mod);
 
 
 

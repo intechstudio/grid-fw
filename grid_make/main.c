@@ -671,6 +671,46 @@ uint32_t SYS_I2C_start(void)
 }
 
 
+// QSPI
+static uint8_t buf[16] = {0x0};
+
+static void qspi_xfer_complete_cb(struct _dma_resource *resource)
+{
+	/* Transfer completed */
+	printf("QSPI XFER DONE! ");
+
+	for (uint8_t i=0; i<16; i++){
+
+		printf("0x%02x ", buf[i]);
+	}
+	printf("\r\n");
+}
+
+/**
+ * Example of using QSPI_INSTANCE to get N25Q256A status value,
+ * and check bit 0 which indicate embedded operation is busy or not.
+ */
+void qspi_test(void)
+{
+	struct _qspi_command cmd = {
+	    .inst_frame.bits.inst_en      = 1,
+	    .inst_frame.bits.data_en      = 1,
+	    .inst_frame.bits.addr_en      = 1,
+	    .inst_frame.bits.dummy_cycles = 8,
+	    .inst_frame.bits.tfr_type     = QSPI_READMEM_ACCESS,
+	    .instruction                  = 0x0B,
+	    .address                      = 0,
+	    .buf_len                      = 14,
+	    .rx_buf                       = buf,
+	};
+
+	qspi_dma_register_callback(&QSPI_INSTANCE, QSPI_DMA_CB_XFER_DONE, qspi_xfer_complete_cb);
+	qspi_dma_enable(&QSPI_INSTANCE);
+	qspi_dma_serial_run_command(&QSPI_INSTANCE, &cmd);
+	
+}
+
+
 
 
 int main(void)
@@ -699,7 +739,7 @@ int main(void)
 
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "LUA init complete");
 
-	if (grid_sys_get_hwcfg() == GRID_MODULE_EN16_RevD || grid_sys_get_hwcfg() == GRID_MODULE_EN16_ND_RevD ){
+	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
 
 		if (SYS_I2C_start() == ERR_NONE){
 			sys_i2c_enabled = 1;
@@ -716,7 +756,7 @@ int main(void)
 	}
 
 	printf("test.mcu.ATSAMD51N20A\r\n");
-	printf("test.hwcfg.%d\r\n", grid_sys_get_hwcfg());
+	printf("test.hwcfg.%d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
 
 	uint32_t uniqueid[4] = {0};
 	grid_sys_get_id(uniqueid);	
@@ -819,12 +859,30 @@ int main(void)
 
 	// grid_nvm_toc_defragmant(&grid_nvm_state);
 
+	printf("QSPI\r\n");
+	qspi_test();
 
 //	grid_nvm_erase_all(&grid_nvm_state);
 
 
 	while (1) {
 	
+
+		// struct _qspi_command cmd = {
+		// 	.inst_frame.bits.inst_en      = 1,
+		// 	.inst_frame.bits.data_en      = 1,
+		// 	.inst_frame.bits.addr_en      = 1,
+		// 	.inst_frame.bits.dummy_cycles = 8,
+		// 	.inst_frame.bits.tfr_type     = QSPI_READMEM_ACCESS,
+		// 	.instruction                  = 0x0B,
+		// 	.address                      = 0,
+		// 	.buf_len                      = 14,
+		// 	.rx_buf                       = buf,
+		// };
+
+		// qspi_dma_serial_run_command(&QSPI_INSTANCE, &cmd);
+
+
 		
 		if (usb_init_flag == 0){
 			
@@ -843,6 +901,18 @@ int main(void)
 				grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_CFG_RESPONSE);
 				
 				
+				uint8_t heartbeateventnum = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT);
+
+				if (heartbeateventnum != 255){
+					char* actionstring = grid_core_state.bank_list[0].element_list[0].event_list[heartbeateventnum].action_string;
+			
+			
+					grid_msg_set_parameter(actionstring, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, 1, NULL);
+
+				}
+
+
+
 				usb_init_flag = 1;
 		
 			}

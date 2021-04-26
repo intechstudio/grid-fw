@@ -77,7 +77,7 @@ void grid_hardwaretest_main(){
 					grid_hardwaretest_led_test_photo(&grid_led_state, counter);
 					grid_hardwaretest_led_test_photo(&grid_led_state, counter);
 					
-					for (uint8_t i=0; i<grid_sys_get_hwcfg()/4; i++){
+					for (uint8_t i=0; i<grid_sys_get_hwcfg(&grid_sys_state)/4; i++){
 						
 						grid_hardwaretest_led_test_photo(&grid_led_state, counter);
 						grid_hardwaretest_led_test_photo(&grid_led_state, counter);

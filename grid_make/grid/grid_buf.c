@@ -888,7 +888,7 @@ void grid_port_init(volatile struct grid_port* por, struct usart_async_descripto
 		por->partner_fi = 0;
 		
 		
-		sprintf(por->ping_packet, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, por->direction, grid_sys_get_hwcfg(), 255, 255, GRID_CONST_EOT);
+		sprintf(por->ping_packet, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, por->direction, grid_sys_get_hwcfg(&grid_sys_state), 255, 255, GRID_CONST_EOT);
 		
 		por->ping_packet_length = strlen(por->ping_packet);	
 			

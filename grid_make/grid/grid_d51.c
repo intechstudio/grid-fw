@@ -49,7 +49,7 @@ void grid_d51_bitmap_write_bit(uint8_t* buffer, uint8_t offset, uint8_t value, u
 
 void grid_d51_init(){
 	
-	uint32_t hwid = grid_sys_get_hwcfg();
+	uint32_t hwid = grid_sys_get_hwcfg(&grid_sys_state);
 	
 	printf("{\"type\":\"HWCFG\", \"data\": \"%d\"}\r\n", hwid);
 	
@@ -340,7 +340,6 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 	// gpio_set_pin_function(HWCFG_DATA, GPIO_PIN_FUNCTION_OFF);
 
 	// // READ THE HWCFG REGISTER
-	// grid_sys_get_hwcfg();
 
 	// // RESET HWCFG PINS TO THEIR DEFAULT STATE	
 
