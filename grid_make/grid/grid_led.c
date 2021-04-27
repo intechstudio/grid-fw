@@ -193,11 +193,29 @@ uint8_t grid_led_lowlevel_set_color(struct grid_led_model* mod, uint32_t led_ind
 	
 	//if index is valid
 	if (led_index<mod->led_number){
+
+		// green
+		if (mod->led_frame_buffer_usable[led_index*3 + 0] != grid_led_color_code[led_g]){
+			mod->led_lowlevel_changed[led_index] = 1;
+			mod->led_lowlevel_gre[led_index] = led_g;
+			mod->led_frame_buffer_usable[led_index*3 + 0] = grid_led_color_code[led_g];
+		}
+
+		// red
+		if (mod->led_frame_buffer_usable[led_index*3 + 1] != grid_led_color_code[led_r]){
+			mod->led_lowlevel_changed[led_index] = 1;
+			mod->led_lowlevel_red[led_index] = led_r;
+			mod->led_frame_buffer_usable[led_index*3 + 1] = grid_led_color_code[led_r];
+		}
 		
-		mod->led_frame_buffer_usable[led_index*3 + 0] = grid_led_color_code[led_g];
-		mod->led_frame_buffer_usable[led_index*3 + 1] = grid_led_color_code[led_r];
-		mod->led_frame_buffer_usable[led_index*3 + 2] = grid_led_color_code[led_b];
-		
+		// blue
+		if (mod->led_frame_buffer_usable[led_index*3 + 2] != grid_led_color_code[led_b]){
+			mod->led_lowlevel_changed[led_index] = 1;
+			mod->led_lowlevel_blu[led_index] = led_b;
+			mod->led_frame_buffer_usable[led_index*3 + 2] = grid_led_color_code[led_b];
+		}
+
+
 		return 0;
 		
 	}
@@ -231,7 +249,8 @@ void grid_led_buffer_init(struct grid_led_model* mod, uint32_t length){
 	mod->led_frame_buffer_size = (GRID_LED_RESET_LENGTH + mod->led_number*3*4);
 	mod->led_frame_buffer = (uint8_t*) malloc(mod->led_frame_buffer_size * sizeof(uint8_t));
 	mod->led_frame_buffer_usable = (uint32_t*) &mod->led_frame_buffer[GRID_LED_RESET_LENGTH];
-		
+	
+
 	// Allocating memory for the smart buffer (2D array)
 		
 	
@@ -243,7 +262,23 @@ void grid_led_buffer_init(struct grid_led_model* mod, uint32_t length){
 		}		
 		
 	}
+
+
+	// Allocating memory for low level color buffer for reporting
+
+	mod->led_lowlevel_red = (uint8_t*) malloc(mod->led_number * sizeof(uint8_t));
+	mod->led_lowlevel_gre = (uint8_t*) malloc(mod->led_number * sizeof(uint8_t));
+	mod->led_lowlevel_blu = (uint8_t*) malloc(mod->led_number * sizeof(uint8_t));
+	mod->led_lowlevel_changed = (uint8_t*) malloc(mod->led_number * sizeof(uint8_t));
+	
+	if(mod->led_lowlevel_changed == NULL || mod->led_lowlevel_red == NULL || mod->led_lowlevel_gre == NULL || mod->led_lowlevel_blu == NULL){
+		while(1){
+			//MALLOC FAILED			
+		}		
 		
+	}
+
+
 	// Fill the first 24 bytes with the rr_code (reset)
 	// This memory is essentially wasted but allows the entire frame to be sent out using DMA
 
@@ -255,6 +290,14 @@ void grid_led_buffer_init(struct grid_led_model* mod, uint32_t length){
 	// Fill the rest of the buffer with rgb=(0,0,0);
 	for (uint32_t i = 0; i<mod->led_number; i++){
 		grid_led_lowlevel_set_color(mod,i,0,0,0);
+	}
+
+	// Clear Changed buffer
+	for (uint8_t i = 0; i<mod->led_number; i++){
+		mod->led_lowlevel_changed[i] = 0;
+		mod->led_lowlevel_red[i] = 0;
+		mod->led_lowlevel_gre[i] = 0;
+		mod->led_lowlevel_blu[i] = 0;
 	}
 	
 
@@ -565,4 +608,55 @@ uint8_t grid_led_lowlevel_hardware_is_transfer_completed(struct grid_led_model* 
 
 	return grid_led_hardware_transfer_done;
 	
+}
+
+
+
+
+uint8_t grid_led_lowlevel_change_count(struct grid_led_model* mod){
+
+	uint8_t count = 0; 
+
+	for(uint8_t i=0; i<mod->led_number; i++){
+		if (mod->led_lowlevel_changed[i] != 0){
+			count++;
+		}
+	}
+
+	return count;
+
+}
+
+
+uint16_t grid_led_lowlevel_change_report_length(struct grid_led_model* mod){
+
+	return grid_led_lowlevel_change_count(mod) * 8;
+}
+
+uint16_t grid_led_lowlevel_change_report(struct grid_led_model* mod, uint16_t maxlength, uint8_t* output){
+
+	uint16_t length = 0;
+
+	for(uint8_t i=0; i<mod->led_number; i++){
+
+		if (mod->led_lowlevel_changed[i] != 0){
+
+			if (length + 8 <= maxlength){
+
+				grid_msg_set_parameter(&output[length], 0, 2, i, NULL);
+				grid_msg_set_parameter(&output[length], 2, 2, mod->led_lowlevel_red[i], NULL);
+				grid_msg_set_parameter(&output[length], 4, 2, mod->led_lowlevel_gre[i], NULL);
+				grid_msg_set_parameter(&output[length], 6, 2, mod->led_lowlevel_blu[i], NULL);
+				
+				mod->led_lowlevel_changed[i] = 0;
+
+				length+=8;
+			}
+			else{
+				break;
+			}
+		}
+	}
+
+	return length; 
 }

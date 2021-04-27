@@ -40,6 +40,10 @@ struct grid_led_model{
 	uint8_t* led_frame_buffer; // The frame buffer is used to send data to the LEDs
 	uint32_t* led_frame_buffer_usable; // The part of the frame buffer that contains LED data
 
+	uint8_t* led_lowlevel_changed;
+	uint8_t* led_lowlevel_red;
+	uint8_t* led_lowlevel_gre;
+	uint8_t* led_lowlevel_blu;
 
 	struct LED_layer* led_smart_buffer; // 2D array if LED_Layers: Smart buffer contains the usable data coming from the API
 
@@ -64,6 +68,10 @@ uint8_t grid_led_lowlevel_hardware_is_transfer_completed(struct grid_led_model* 
 
 // INITIALIZING THE GRID_LED LIBRARY
 uint8_t grid_led_lowlevel_init(struct grid_led_model* mod, uint8_t num);
+
+uint8_t grid_led_lowlevel_change_count(struct grid_led_model* mod);
+uint16_t grid_led_lowlevel_change_report_length(struct grid_led_model* mod);
+uint16_t grid_led_lowlevel_change_report(struct grid_led_model* mod, uint16_t maxlength, uint8_t* output);
 
 // ACCESSING THE FRAME BUFFER (READ)
 uint8_t* grid_led_lowlevel_get_frame_buffer_pointer(struct grid_led_model* mod);
