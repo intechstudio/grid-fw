@@ -329,14 +329,6 @@ enum grid_template_p_parameter_index_t {
 	
 };
 
-#define GRID_PARAMETER_TEMPLATE_P_CNUMBER_code		"P0"
-#define GRID_PARAMETER_TEMPLATE_P_CNUMBERREV_code	"P1"
-
-#define GRID_PARAMETER_TEMPLATE_P_ABS_code			"P2"
-#define GRID_PARAMETER_TEMPLATE_P_ABS14U_code		"P3"
-#define GRID_PARAMETER_TEMPLATE_P_ABS14L_code		"P4"
-
-
 
 // Button parameters
 #define GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH    5
@@ -352,15 +344,6 @@ enum grid_template_b_parameter_index_t {
 	GRID_TEMPLATE_B_PARAMETER_CONTROLLER_TGL3,
 	
 };
-
-
-#define GRID_PARAMETER_TEMPLATE_B_CNUMBER_code		"B0"
-#define GRID_PARAMETER_TEMPLATE_B_CNUMBERREV_code	"B1"
-
-#define GRID_PARAMETER_TEMPLATE_B_ABS_code			"B2"
-
-#define GRID_PARAMETER_TEMPLATE_B_TGL2_code			"B3"
-#define GRID_PARAMETER_TEMPLATE_B_TGL3_code			"B4"
 
 
 // Encoder parameters
@@ -382,18 +365,6 @@ enum grid_template_e_parameter_index_t {
 };
 
 
-#define GRID_PARAMETER_TEMPLATE_E_CNUMBER_code		"E0"
-#define GRID_PARAMETER_TEMPLATE_E_CNUMBERREV_code	"E1"
-
-#define GRID_PARAMETER_TEMPLATE_E_ABS_code			"E2"
-#define GRID_PARAMETER_TEMPLATE_E_ABSVL_code		"E3"
-#define GRID_PARAMETER_TEMPLATE_E_ABSVH_code		"E4"
-
-#define GRID_PARAMETER_TEMPLATE_E_REL_code			"E5"
-#define GRID_PARAMETER_TEMPLATE_E_RELVL_code		"E6"
-#define GRID_PARAMETER_TEMPLATE_E_RELVH_code		"E7"
-
-
 // Global parameters
 #define GRID_TEMPLATE_Z_PARAMETER_LIST_LENGTH    6
 
@@ -410,14 +381,6 @@ enum grid_template_z_parameter_index_t {
 	
 };
 
-#define GRID_PARAMETER_TEMPLATE_Z_BANKNUM_code	    "<?expr p(Z0) ?>"
-
-#define GRID_PARAMETER_TEMPLATE_Z_BANKRED_code	    "<?expr p(Z1) ?>"
-#define GRID_PARAMETER_TEMPLATE_Z_BANKGRE_code	    "<?expr p(Z2) ?>"
-#define GRID_PARAMETER_TEMPLATE_Z_BANKBLU_code	    "<?expr p(Z3) ?>"
-
-#define GRID_PARAMETER_TEMPLATE_Z_MAPSTATE_code	    "<?expr p(Z4) ?>"
-#define GRID_PARAMETER_TEMPLATE_Z_BANKNEXT_code	    "<?expr p(Z5) ?>"
 
 
 
@@ -527,9 +490,10 @@ enum grid_ui_event_t {
 
 #define GRID_ACTIONSTRING_AVC7_POT			"\x02""000e00b0<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T2) ?>\x03"
 
-#define GRID_ACTIONSTRING_BC				"<?lua grid_led_set_shape(this.T[0], 1, (this.T[0])%%4) grid_led_set_frequency(this.T[0], 1, 1) ?>"
+#define GRID_ACTIONSTRING_BC				"<?lua if (this.T[2] > 0) then grid_led_set_pfs(this.T[0], 2, 0, 1, (this.T[0])%%4) else  grid_led_set_pfs(this.T[0], 2, 0, 0, 0) end ?>"
+//#define GRID_ACTIONSTRING_BC				"<?lua if (this.T[2] == 127) then print(127) else print(0) end ?>"
 
-#define GRID_ACTIONSTRING_AVC7_ENC			"<?lua grid_send_midi(0,176,this.T[0],this.T[8]) grid_led_set_phase(this.T[0], 1, this.T[8]) ?>"
+#define GRID_ACTIONSTRING_AVC7_ENC			"<?lua grid_send_midi(0,176,this.T[0],this.T[9]) grid_led_set_phase(this.T[0], 1, this.T[9]) ?>"
 
 #define GRID_ACTIONSTRING_PUSHROT_ENC		"\x02""000e00b0<?expr p(T0) ?><?expr p(T8) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T8) ?>\x03"
 

@@ -207,6 +207,35 @@ static int l_grid_led_set_shape(lua_State* L) {
     return 0;
 }
 
+static int l_grid_led_set_pfs(lua_State* L) {
+
+    
+
+    int nargs = lua_gettop(L);
+
+
+    if (nargs!=5){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[5] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+
+    //printf("Led shape %d %d %d\r\n", param[0], param[1], param[2]);
+
+    grid_led_set_phase(&grid_led_state, param[0], param[1], param[2]);
+    grid_led_set_frequency(&grid_led_state, param[0], param[1], param[3]);
+    grid_led_set_shape(&grid_led_state, param[0], param[1], param[4]);
+
+
+    return 0;
+}
 
 static int l_grid_load_template_variables(lua_State* L) {
 
@@ -252,6 +281,7 @@ static const struct luaL_Reg printlib [] = {
   {"grid_led_set_max", l_grid_led_set_max},
   {"grid_led_set_frequency", l_grid_led_set_frequency},
   {"grid_led_set_shape", l_grid_led_set_shape},
+  {"grid_led_set_pfs", l_grid_led_set_pfs},
   {"grid_load_template_variables", l_grid_load_template_variables},
   {NULL, NULL} /* end of array */
 };

@@ -1226,6 +1226,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 				// 	lua_pop(grid_lua_state.L, lua_gettop(grid_lua_state.L));
 				// }
 
+				
 				cycles[1] = grid_d51_dwt_cycles_read();
 
 				grid_lua_dostring(&grid_lua_state, &temp[code_start+6]); // +6 is length of "<?lua "
