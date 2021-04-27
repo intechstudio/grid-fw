@@ -1211,15 +1211,20 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				cycles[0] = grid_d51_dwt_cycles_read();
 
-				for (uint8_t t=0; t<10; t+=8){
-					char varname[] = "T0";
-					varname[1] = '0'+t;
-					int32_t varvalue = eve->parent->template_parameter_list[t];
+				// element index
+				uint8_t str_to_do[100] = {0};
+				sprintf(str_to_do, "grid_load_template_variables(%d)", eve->parent->index);
+				grid_lua_dostring(&grid_lua_state, str_to_do); // +6 is length of "<?lua "
+				
+				// for (uint8_t t=0; t<10; t+=8){
+				// 	char varname[] = "T0";
+				// 	varname[1] = '0'+t;
+				// 	int32_t varvalue = eve->parent->template_parameter_list[t];
 
-					lua_pushinteger(grid_lua_state.L, varvalue);
-					lua_setglobal(grid_lua_state.L, varname);
-					lua_pop(grid_lua_state.L, lua_gettop(grid_lua_state.L));
-				}
+				// 	lua_pushinteger(grid_lua_state.L, varvalue);
+				// 	lua_setglobal(grid_lua_state.L, varname);
+				// 	lua_pop(grid_lua_state.L, lua_gettop(grid_lua_state.L));
+				// }
 
 				cycles[1] = grid_d51_dwt_cycles_read();
 

@@ -17,9 +17,9 @@
 #define  GRID_MODULE_PBF4_RevA		64
 
 #define  GRID_MODULE_EN16_RevA		192
-#define  GRID_MODULE_EN16_ND_RevA	200
-
 #define  GRID_MODULE_EN16_RevD		193
+
+#define  GRID_MODULE_EN16_ND_RevA	200
 #define  GRID_MODULE_EN16_ND_RevD	201
 
 #define  GRID_PARAMETER_HEARTBEAT_interval	250
@@ -529,7 +529,7 @@ enum grid_ui_event_t {
 
 #define GRID_ACTIONSTRING_BC				"<?lua grid_led_set_phase(T0,T8) ?>"
 
-#define GRID_ACTIONSTRING_AVC7_ENC			"<?lua grid_send_midi(0,176,T0,T8) grid_led_set_phase(T0, 1, T8) ?>"
+#define GRID_ACTIONSTRING_AVC7_ENC			"<?lua grid_send_midi(0,176,this.T[0],this.T[8]) grid_led_set_phase(this.T[0], 1, this.T[8]) ?>"
 
 #define GRID_ACTIONSTRING_PUSHROT_ENC		"\x02""000e00b0<?expr p(T0) ?><?expr p(T8) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T8) ?>\x03"
 

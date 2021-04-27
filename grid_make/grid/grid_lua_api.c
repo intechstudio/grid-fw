@@ -92,11 +92,46 @@ static int l_grid_led_set_phase(lua_State* L) {
     return 0;
 }
 
+static int l_grid_load_template_variables(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=1){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[1] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    uint8_t str_to_do[100] = {0};
+    sprintf(str_to_do, "this = element[%d]", param[0]);    
+    grid_lua_dostring(&grid_lua_state, str_to_do);
+
+
+    for (uint8_t i=0; i<10; i++){
+
+        int32_t vari = grid_ui_state.bank_list[grid_sys_get_bank_num(&grid_sys_state)].element_list[param[0]].template_parameter_list[i];
+
+        uint8_t str_to_do[100] = {0};
+        sprintf(str_to_do, "this.T[%d]=%d", i, vari);
+				
+        grid_lua_dostring(&grid_lua_state, str_to_do); // +6 is length of "<?lua "
+  
+    }
+
+    return 0;
+}
 
 static const struct luaL_Reg printlib [] = {
   {"print", l_my_print},
   {"grid_send", l_grid_send},
   {"grid_led_set_phase", l_grid_led_set_phase},
+  {"grid_load_template_variables", l_grid_load_template_variables},
   {NULL, NULL} /* end of array */
 };
 
@@ -153,8 +188,98 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
     grid_lua_dostring(mod, "grid_send_midi = function(ch, cmd, p1, p2) grid_send('000e', p2x(ch), p2x(cmd), p2x(p1), p2x(p2)) end");
     grid_lua_debug_memory_stats(mod, "grid_send");
 
+    grid_lua_ui_init(mod, &grid_sys_state);
+
 
 }
+
+uint8_t grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys){
+
+
+    printf("LUA UI INIT HWCFG:%d\r\n", grid_sys_get_hwcfg(sys));
+
+
+    switch (grid_sys_get_hwcfg(sys)){
+
+        case GRID_MODULE_PO16_RevB: grid_lua_ui_init_po16(mod); break;
+        case GRID_MODULE_PO16_RevC: grid_lua_ui_init_po16(mod); break;
+
+        case GRID_MODULE_BU16_RevB: grid_lua_ui_init_bu16(mod); break;
+        case GRID_MODULE_BU16_RevC: grid_lua_ui_init_bu16(mod); break;
+
+        case GRID_MODULE_PBF4_RevA: grid_lua_ui_init_pbf4(mod); break;
+
+        case GRID_MODULE_EN16_RevA: grid_lua_ui_init_en16(mod); break;
+        case GRID_MODULE_EN16_RevD: grid_lua_ui_init_en16(mod); break;
+
+        case GRID_MODULE_EN16_ND_RevA: grid_lua_ui_init_en16(mod); break;
+        case GRID_MODULE_EN16_ND_RevD: grid_lua_ui_init_en16(mod); break;
+
+    }
+
+}
+
+uint8_t grid_lua_ui_init_po16(struct grid_lua_model* mod){
+
+    printf("LUA UI INIT PO16\r\n");
+    // define encoder_init_function
+    grid_lua_dostring(mod, "init_encoder = function (e) e.T = {} for i=0, 10 do e.T[i] = 0 end end");
+
+    // create element array
+    grid_lua_dostring(mod, "element = {} this = {}");
+
+    // initialize 16 encoders
+    grid_lua_dostring(mod, "for i=0, 15 do element[i] = {} init_encoder(element[i]) end");
+    
+    printf("LUA UI INIT\r\n");
+}
+
+uint8_t grid_lua_ui_init_bu16(struct grid_lua_model* mod){
+
+    printf("LUA UI INIT BU16\r\n");
+    // define encoder_init_function
+    grid_lua_dostring(mod, "init_encoder = function (e) e.T = {} for i=0, 10 do e.T[i] = 0 end end");
+
+    // create element array
+    grid_lua_dostring(mod, "element = {} this = {}");
+
+    // initialize 16 encoders
+    grid_lua_dostring(mod, "for i=0, 15 do element[i] = {} init_encoder(element[i]) end");
+    
+    printf("LUA UI INIT\r\n");
+}
+
+uint8_t grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
+
+    printf("LUA UI INIT PBF4\r\n");
+    // define encoder_init_function
+    grid_lua_dostring(mod, "init_encoder = function (e) e.T = {} for i=0, 10 do e.T[i] = 0 end end");
+
+    // create element array
+    grid_lua_dostring(mod, "element = {} this = {}");
+
+    // initialize 16 encoders
+    grid_lua_dostring(mod, "for i=0, 15 do element[i] = {} init_encoder(element[i]) end");
+    
+    printf("LUA UI INIT\r\n");
+}
+
+uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod){
+
+    printf("LUA UI INIT EN16\r\n");
+    // define encoder_init_function
+    grid_lua_dostring(mod, "init_encoder = function (e) e.T = {} for i=0, 10 do e.T[i] = 0 end end");
+
+    // create element array
+    grid_lua_dostring(mod, "element = {} this = {}");
+
+    // initialize 16 encoders
+    grid_lua_dostring(mod, "for i=0, 15 do element[i] = {} init_encoder(element[i]) end");
+    
+    printf("LUA UI INIT\r\n");
+
+}
+
 
 uint8_t grid_lua_stop_vm(struct grid_lua_model* mod){
 

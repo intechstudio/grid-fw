@@ -716,7 +716,7 @@ int main(void)
 {
 
 
-	
+	grid_sys_state.hwfcg = -1;
 
 	// boundary scan here
 
@@ -733,10 +733,6 @@ int main(void)
             
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
 
-	grid_lua_init(&grid_lua_state);
-	grid_lua_start_vm(&grid_lua_state);
-
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "LUA init complete");
 
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
 
@@ -753,6 +749,12 @@ int main(void)
 
 		printf("I2C UNSUPPORTED!\r\n");
 	}
+
+	grid_lua_init(&grid_lua_state);
+	grid_lua_start_vm(&grid_lua_state);
+
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "LUA init complete");
+
 
 	printf("test.mcu.ATSAMD51N20A\r\n");
 	printf("test.hwcfg.%d\r\n", grid_sys_get_hwcfg(&grid_sys_state));

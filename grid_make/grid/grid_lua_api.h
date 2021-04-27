@@ -57,6 +57,13 @@ void grid_lua_clear_stdo(struct grid_lua_model* mod);
 
 void grid_lua_clear_stde(struct grid_lua_model* mod);
 
+uint8_t grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys);
+
+uint8_t grid_lua_ui_init_po16(struct grid_lua_model* mod);
+uint8_t grid_lua_ui_init_bu16(struct grid_lua_model* mod);
+uint8_t grid_lua_ui_init_pbf4(struct grid_lua_model* mod);
+uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod);
+
 
 
 #endif
