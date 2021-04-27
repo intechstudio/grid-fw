@@ -486,11 +486,11 @@ enum grid_ui_event_t {
 
 #define GRID_ACTIONSTRING_INIT_POT			"\x02""041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
 #define GRID_ACTIONSTRING_INIT_BUT			"\x02""041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
-#define GRID_ACTIONSTRING_INIT_ENC			"\x02""041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03\x02""041e<?expr p(T0) ?>02<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
+#define GRID_ACTIONSTRING_INIT_ENC			"<\x02""041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03\x02""041e<?expr p(T0) ?>02<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
 
 #define GRID_ACTIONSTRING_AVC7_POT			"\x02""000e00b0<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T2) ?>\x03"
 
-#define GRID_ACTIONSTRING_BC				"<?lua if (this.T[2] > 0) then grid_led_set_pfs(this.T[0], 2, 0, 1, (this.T[0])%%4) else  grid_led_set_pfs(this.T[0], 2, 0, 0, 0) end ?>"
+#define GRID_ACTIONSTRING_BC				"<?lua if (this.T[3] > 0) then grid_led_set_pfs(this.T[0], 2, 0, 1, (this.T[0])%%4) else  grid_led_set_pfs(this.T[0], 2, 0, 0, 0) end ?>"
 //#define GRID_ACTIONSTRING_BC				"<?lua if (this.T[2] == 127) then print(127) else print(0) end ?>"
 
 #define GRID_ACTIONSTRING_AVC7_ENC			"<?lua grid_send_midi(0,176,this.T[0],this.T[9]) grid_led_set_phase(this.T[0], 1, this.T[9]) ?>"
