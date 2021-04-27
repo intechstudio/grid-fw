@@ -22,12 +22,9 @@ struct LED_layer
 	struct LED_color color_mid;
 	struct LED_color color_max;
 	
-	uint8_t top; //TOP LEVEL
-	uint8_t bot; //BOTTOM LEVEL
-	
 	uint8_t pha; //PHASE
 	uint8_t fre; //FREQUENCY
-	
+	uint8_t sha;
 };
 
 
@@ -97,6 +94,7 @@ void grid_led_set_mid(struct grid_led_model* mod, uint8_t num, uint8_t layer, ui
 void grid_led_set_max(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
 void grid_led_set_phase(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_frequency(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
+void grid_led_set_shape(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
 
 uint32_t grid_led_get_led_number(struct grid_led_model* mod);
 

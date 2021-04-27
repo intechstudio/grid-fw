@@ -92,6 +92,122 @@ static int l_grid_led_set_phase(lua_State* L) {
     return 0;
 }
 
+
+static int l_grid_led_set_min(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=5){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[5] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    grid_led_set_min(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+
+
+    return 0;
+}
+
+static int l_grid_led_set_mid(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=5){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[5] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    grid_led_set_mid(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+
+
+    return 0;
+}
+
+static int l_grid_led_set_max(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=5){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[5] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    grid_led_set_max(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+
+
+    return 0;
+}
+
+static int l_grid_led_set_frequency(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=3){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[3] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    grid_led_set_frequency(&grid_led_state, param[0], param[1], param[2]);
+    return 0;
+}
+
+static int l_grid_led_set_shape(lua_State* L) {
+
+    
+
+    int nargs = lua_gettop(L);
+
+
+    if (nargs!=3){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[3] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+
+    printf("Led shape %d %d %d\r\n", param[0], param[1], param[2]);
+
+    grid_led_set_shape(&grid_led_state, param[0], param[1], param[2]);
+
+
+    return 0;
+}
+
+
 static int l_grid_load_template_variables(lua_State* L) {
 
     int nargs = lua_gettop(L);
@@ -131,6 +247,11 @@ static const struct luaL_Reg printlib [] = {
   {"print", l_my_print},
   {"grid_send", l_grid_send},
   {"grid_led_set_phase", l_grid_led_set_phase},
+  {"grid_led_set_min", l_grid_led_set_min},
+  {"grid_led_set_mid", l_grid_led_set_mid},
+  {"grid_led_set_max", l_grid_led_set_max},
+  {"grid_led_set_frequency", l_grid_led_set_frequency},
+  {"grid_led_set_shape", l_grid_led_set_shape},
   {"grid_load_template_variables", l_grid_load_template_variables},
   {NULL, NULL} /* end of array */
 };
@@ -340,5 +461,4 @@ void grid_lua_clear_stde(struct grid_lua_model* mod){
 
 
 }
-
 

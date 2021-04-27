@@ -527,7 +527,7 @@ enum grid_ui_event_t {
 
 #define GRID_ACTIONSTRING_AVC7_POT			"\x02""000e00b0<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T2) ?>\x03"
 
-#define GRID_ACTIONSTRING_BC				"<?lua grid_led_set_phase(T0,T8) ?>"
+#define GRID_ACTIONSTRING_BC				"<?lua grid_led_set_shape(this.T[0], 1, (this.T[0])%%4) grid_led_set_frequency(this.T[0], 1, 1) ?>"
 
 #define GRID_ACTIONSTRING_AVC7_ENC			"<?lua grid_send_midi(0,176,this.T[0],this.T[8]) grid_led_set_phase(this.T[0], 1, this.T[8]) ?>"
 
