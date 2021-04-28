@@ -372,7 +372,7 @@ void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
 		
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
-		grid_ui_event_init(ele, 1, GRID_UI_EVENT_AVC7);	// Absolute Value Change (7bit)
+		grid_ui_event_init(ele, 1, GRID_UI_EVENT_EC);	// Encoder Change
 		grid_ui_event_init(ele, 2, GRID_UI_EVENT_BC);	// Button Change
 		
 	}
@@ -895,15 +895,9 @@ void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_u
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 				
 		}
-		else if (event_type == GRID_UI_EVENT_AVC7){
+		else if (event_type == GRID_UI_EVENT_EC){
 		
-			sprintf(event_string, GRID_EVENTSTRING_AVC7_ENC); // !!
-			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
-		
-		}
-		else if (event_type == GRID_UI_EVENT_ENCPUSHROT){
-		
-			sprintf(event_string, GRID_EVENTSTRING_PUSHROT_ENC); // !!
+			sprintf(event_string, GRID_EVENTSTRING_EC); // !!
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 		
 		}
@@ -961,8 +955,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_
 		
 		switch(event_type){
 			case GRID_UI_EVENT_INIT:        sprintf(action_string, GRID_ACTIONSTRING_INIT_ENC);	break;
-			case GRID_UI_EVENT_AVC7:        sprintf(action_string, GRID_ACTIONSTRING_AVC7_ENC);	break;
-			case GRID_UI_EVENT_ENCPUSHROT:	sprintf(action_string, GRID_ACTIONSTRING_PUSHROT_ENC);	break;
+			case GRID_UI_EVENT_EC:        	sprintf(action_string, GRID_ACTIONSTRING_EC);	break;
 			case GRID_UI_EVENT_BC:			sprintf(action_string, GRID_ACTIONSTRING_BC);			break;
 		}
 			
@@ -1323,10 +1316,18 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 	
 	// RESET ENCODER RELATIVE TEMPLATE PARAMETER VALUES
 	if(eve->parent->type == GRID_UI_ELEMENT_ENCODER){	
-		eve->parent->template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL] = 255;	
-		eve->parent->template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL_VELOCITY_LOW] = 255;	
-		eve->parent->template_parameter_list[GRID_TEMPLATE_B_PARAMETER_LIST_LENGTH + GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL_VELOCITY_HIGH] = 255;	
-	
+
+		int32_t* template_parameter_list = eve->parent->template_parameter_list;
+
+		if (template_parameter_list[GRID_TEMPLATE_E_ENCODER_MODE] != 0){ // relative
+
+			int32_t min = template_parameter_list[GRID_TEMPLATE_E_ENCODER_MIN];
+			int32_t max = template_parameter_list[GRID_TEMPLATE_E_ENCODER_MAX];
+
+			template_parameter_list[GRID_TEMPLATE_E_ENCODER_VALUE] = ((max+1)-min)/2;
+
+		}	
+
     }
 	
 	

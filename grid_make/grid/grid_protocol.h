@@ -347,22 +347,36 @@ enum grid_template_b_parameter_index_t {
 
 
 // Encoder parameters
-#define GRID_TEMPLATE_E_PARAMETER_LIST_LENGTH    8
+#define GRID_TEMPLATE_E_LIST_LENGTH    14 // 16 makes the grid freeze 
 
 enum grid_template_e_parameter_index_t {
 	
-	GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER,
-	GRID_TEMPLATE_E_PARAMETER_CONTROLLER_NUMBER_REVERSED,
+	GRID_TEMPLATE_E_BUTTON_ID,
+	GRID_TEMPLATE_E_BUTTON_NUMBER,
 	
-	GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS,
-	GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS_VELOCITY_LOW,
-	GRID_TEMPLATE_E_PARAMETER_CONTROLLER_ABS_VELOCITY_HIGH,
+	GRID_TEMPLATE_E_BUTTON_VALUE,
+	GRID_TEMPLATE_E_BUTTON_MIN,	   // min value
+	GRID_TEMPLATE_E_BUTTON_MAX,	   // max value
+	GRID_TEMPLATE_E_BUTTON_MODE,   // 0:abs, 1,2,3,4: toggle
+	GRID_TEMPLATE_E_BUTTON_ELAPSED,  
 	
-	GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL,
-	GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL_VELOCITY_LOW,
-	GRID_TEMPLATE_E_PARAMETER_CONTROLLER_REL_VELOCITY_HIGH,
+	GRID_TEMPLATE_E_ENCODER_ID,
+	GRID_TEMPLATE_E_ENCODER_NUMBER,
+	
+	GRID_TEMPLATE_E_ENCODER_VALUE,
+	GRID_TEMPLATE_E_ENCODER_MIN,	// min value
+	GRID_TEMPLATE_E_ENCODER_MAX,	// max value
+	GRID_TEMPLATE_E_ENCODER_MODE,   // 0:abs, 1:rel
+	GRID_TEMPLATE_E_ENCODER_ELAPSED,   // 0:abs, 1:rel
 	
 };
+
+// mode: absolute/relative
+// velocity: curve parameters
+// resolution
+// 
+
+
 
 
 // Global parameters
@@ -407,49 +421,22 @@ enum grid_ui_event_t {
 	
 	GRID_UI_EVENT_INIT,
 		
-	
 	GRID_UI_EVENT_AVC7,
-	GRID_UI_EVENT_RVC7, // can be depricated
-	GRID_UI_EVENT_DVC, // can be depricated
+	GRID_UI_EVENT_EC,
 	GRID_UI_EVENT_BC,
 	GRID_UI_EVENT_MAPMODE_PRESS,
 	GRID_UI_EVENT_MAPMODE_RELEASE,
-	
-	
-	
+		
 	GRID_UI_EVENT_CFG_RESPONSE,
 	GRID_UI_EVENT_CFG_REQUEST,
 	GRID_UI_EVENT_CFG_EDITOR,
 	
 	GRID_UI_EVENT_HEARTBEAT,
     
-    GRID_UI_EVENT_ENCPUSHROT
 
 	
 	
 };
-
-#define GRID_PARAMETER_EVENT_INIT		0
-#define GRID_PARAMETER_EVENT_AVC7		1
-#define GRID_PARAMETER_EVENT_RVC7		2
-#define GRID_PARAMETER_EVENT_DVC		3
-#define GRID_PARAMETER_EVENT_DP			4
-#define GRID_PARAMETER_EVENT_DR			5
-#define GRID_PARAMETER_EVENT_DD			6
-#define GRID_PARAMETER_EVENT_MP			7
-#define GRID_PARAMETER_EVENT_MR			8
-#define GRID_PARAMETER_EVENT_CFG_RES	9
-#define GRID_PARAMETER_EVENT_CFG_REQ	10
-#define GRID_PARAMETER_EVENT_CFG_EDITOR 11
-#define GRID_PARAMETER_EVENT_HEARTBEAT  12
-
-#define GRID_PARAMETER_EVENT_ENCPUSHROT  13
-
-
-
-
-
-
 
 // BANK + ELEMENT NUMBER + EVENT TYPE + PARAMETER
 
@@ -460,8 +447,7 @@ enum grid_ui_event_t {
 
 #define GRID_EVENTSTRING_BC				"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>04<?expr p(T5) ?>\x03"
 
-#define GRID_EVENTSTRING_AVC7_ENC		"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>01<?expr p(T5) ?>\x03"
-#define GRID_EVENTSTRING_PUSHROT_ENC    "\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>0d<?expr p(T5) ?>\x03"
+#define GRID_EVENTSTRING_EC				"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>01<?expr p(T5) ?>\x03"
 
 #define GRID_EVENTSTRING_DP_ENC			"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>04<?expr p(T2) ?>\x03"
 #define GRID_EVENTSTRING_DR_ENC			"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>05<?expr p(T2) ?>\x03"
@@ -490,12 +476,10 @@ enum grid_ui_event_t {
 
 #define GRID_ACTIONSTRING_AVC7_POT			"\x02""000e00b0<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T2) ?>\x03"
 
-#define GRID_ACTIONSTRING_BC				"<?lua if (this.T[3] > 0) then grid_led_set_pfs(this.T[0], 2, 0, 1, (this.T[0])%%4) else  grid_led_set_pfs(this.T[0], 2, 0, 0, 0) end ?>"
+#define GRID_ACTIONSTRING_BC				"<?lua if (this.T[2] > 0) then grid_led_set_pfs(this.T[0], 2, 0, 1, (this.T[0])%%4) else  grid_led_set_pfs(this.T[0], 2, 0, 0, 0) end ?>"
 //#define GRID_ACTIONSTRING_BC				"<?lua if (this.T[2] == 127) then print(127) else print(0) end ?>"
 
-#define GRID_ACTIONSTRING_AVC7_ENC			"<?lua grid_send_midi(0,176,this.T[0],this.T[9]) grid_led_set_phase(this.T[0], 1, this.T[9]) ?>"
-
-#define GRID_ACTIONSTRING_PUSHROT_ENC		"\x02""000e00b0<?expr p(T0) ?><?expr p(T8) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T8) ?>\x03"
+#define GRID_ACTIONSTRING_EC				"<?lua grid_send_midi(0,176,this.T[0],this.T[9]) grid_led_set_phase(this.T[0], 1, this.T[9]) ?>"
 
 #define GRID_ACTIONSTRING_MAPMODE_PRESS		"\x02""030e<?expr p(Z5) ?>\x03"
 #define GRID_ACTIONSTRING_MAPMODE_RELEASE	""
