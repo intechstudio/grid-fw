@@ -138,9 +138,9 @@ uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod){
 
 uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t length){
 
-	// before append pad to 4 byte words
+	// before append pad to 8 byte words
 
-	uint32_t append_length = length + (4 - length%4)%4; 
+	uint32_t append_length = length + (8 - length%8)%8; 
 
 	uint8_t append_buffer[append_length];
 
@@ -166,7 +166,7 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 	}
 
 	// SUKU HACK
-	flash_write(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, append_buffer, append_length);
+	flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, append_buffer, append_length);
 	
 	uint8_t verify_buffer[append_length];
 
@@ -192,7 +192,7 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t length){
 
 
-	uint16_t clear_length = length + (4 - length%4)%4; 
+	uint16_t clear_length = length + (8 - length%8)%8; 
 	
 	uint8_t clear_buffer[clear_length];
 	uint8_t verify_buffer[clear_length];
@@ -205,28 +205,39 @@ uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t le
 
 	}
 
+	printf("clear_length: %d offset: %d\r\n", clear_length, offset);
 	// SUKU HACK
-	flash_write(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset, clear_buffer, clear_length);
+	flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset, clear_buffer, clear_length);
 
 	flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset, verify_buffer, clear_length);
 
 	for (uint16_t i=0; i<clear_length; i++){
 		if (verify_buffer[i] != 0x00){
-			printf("error.nvm.clear verify failed at 0x%x cb:%d vb:%d", GRID_NVM_LOCAL_BASE_ADDRESS + offset + i, clear_buffer[i], verify_buffer[i]);
+			printf("\r\n\r\nerror.nvm.clear verify failed at 0x%x cb:%d vb:%d", GRID_NVM_LOCAL_BASE_ADDRESS + offset + i, clear_buffer[i], verify_buffer[i]);
 			
 			for(uint8_t j=0; j<10; j++){ // retry max 10 times
 
 				// try again chunk
-				uint32_t chunk = 0x00000000;
-				flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset + (i/4)*4, &chunk, 4);
-				flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset + (i/4)*4, &chunk, 4);
+				uint8_t chunk[8] = {0};
+				flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset + (i/8)*8, &chunk, 8);
+				flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset + (i/8)*8, &chunk, 8);
 				
-				if (chunk == 0x00000000){
-					printf(" but FIXED try=%d!!!!\r\n", j);
+				uint8_t failed_count = 0;
+
+				for (uint8_t k = 0; k<8; k++){
+
+					if (chunk[k] != 0x00){
+					
+						failed_count++;
+					}
+				}
+
+				if (failed_count == 0){
+					printf("\r\n\r\nHAPPY!!!!\r\n\r\n");
 					break;
 				}
 				else{
-					printf("\r\n\r\nANGRY!!!!\r\n\r\n");
+						printf("\r\n\r\nANGRY!!!!\r\n\r\n");
 				}
 
 			}
@@ -279,7 +290,7 @@ uint32_t grid_nvm_erase_all(struct grid_nvm_model* mod){
 GRID_NVM_TOC : Table of Contents
 
 1. Scan through the user configurating memory area and find the next_write_address!
- - Make sure that next_write_address is always 4-byte aligned
+ - Make sure that next_write_address is always 4-byte aligned (actually 8 byte because of ECC)
 
 2. Scan through the memory area that actually contains user configuration and create toc!
  - toc is a array of pointers that point to specific configuration strings in flash.
@@ -300,7 +311,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 	uint8_t flash_read_buffer[GRID_NVM_PAGE_SIZE] = {255};
 
 	uint32_t last_used_page_offset = 0;
-	uint32_t last_used_byte_offset = -4; // -4 because we will add +4 when calculating next_write_address
+	uint32_t last_used_byte_offset = -8; // -8 because we will add +8 when calculating next_write_address
 
 	// check first byte of every page to see if there is any useful data
 	for (uint32_t i=0; i<GRID_NVM_LOCAL_PAGE_COUNT; i++){
@@ -321,7 +332,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 	// read the last page that has actual data
 	flash_read(grid_nvm_state.flash, GRID_NVM_LOCAL_BASE_ADDRESS + last_used_page_offset*GRID_NVM_PAGE_OFFSET, flash_read_buffer, GRID_NVM_PAGE_SIZE);	
 
-	for(uint32_t i = 0; i<GRID_NVM_PAGE_SIZE; i+=4){ // +=4 because we want to keep the offset aligned
+	for(uint32_t i = 0; i<GRID_NVM_PAGE_SIZE; i+=8){ // +=8 because we want to keep the offset aligned
 
 		if (flash_read_buffer[i] != 0xff){
 			last_used_byte_offset = i;
@@ -333,7 +344,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 	}
 
 
-	mod->next_write_offset = last_used_page_offset*GRID_NVM_PAGE_OFFSET + last_used_byte_offset + 4; // +4 because we want to write to the next word after the last used word
+	mod->next_write_offset = last_used_page_offset*GRID_NVM_PAGE_OFFSET + last_used_byte_offset + 8; // +8 because we want to write to the next word after the last used word
 
 
 	// Read through the whole valid configuration area and parse valid configs into TOC

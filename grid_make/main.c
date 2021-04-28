@@ -854,7 +854,7 @@ int main(void)
 
 	grid_nvm_config_mock(&grid_nvm_state);
 	grid_nvm_config_mock(&grid_nvm_state);
-	grid_nvm_config_mock(&grid_nvm_state);
+//	grid_nvm_config_mock(&grid_nvm_state);
 
 	grid_nvm_toc_debug(&grid_nvm_state);
 
