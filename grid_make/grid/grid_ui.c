@@ -1205,9 +1205,9 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 				cycles[0] = grid_d51_dwt_cycles_read();
 
 				// element index
-				uint8_t str_to_do[100] = {0};
-				sprintf(str_to_do, "grid_load_template_variables(%d)", eve->parent->index);
-				grid_lua_dostring(&grid_lua_state, str_to_do); // +6 is length of "<?lua "
+				uint8_t load_script[100] = {0};
+				sprintf(load_script, "grid_load_template_variables(%d)", eve->parent->index);
+				grid_lua_dostring(&grid_lua_state, load_script);
 				
 				// for (uint8_t t=0; t<10; t+=8){
 				// 	char varname[] = "T0";
@@ -1226,7 +1226,14 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				cycles[2] = grid_d51_dwt_cycles_read();
 				
-				
+				uint8_t store_script[100] = {0};
+				sprintf(store_script, "grid_store_template_variables(%d)", eve->parent->index);
+				grid_lua_dostring(&grid_lua_state, store_script);
+
+
+
+
+
 
 				uint32_t code_stdo_length = strlen(grid_lua_state.stdo);
 

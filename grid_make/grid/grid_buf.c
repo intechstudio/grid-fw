@@ -1106,57 +1106,19 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 			uint8_t msg_class = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_offset, GRID_CLASS_length);
 			uint8_t msg_instr = grid_msg_text_get_parameter(&message, current_start, GRID_INSTR_offset, GRID_INSTR_length);
 											
-			if (msg_class == GRID_CLASS_MIDIRELATIVE_code && msg_instr == GRID_INSTR_EXECUTE_code){
+			if (msg_class == GRID_CLASS_MIDI_code && msg_instr == GRID_INSTR_EXECUTE_code){
 					
 										
-				uint8_t midi_cablecommand = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset,		GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length);
-				uint8_t midi_commandchannel = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset ,		GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length);
-				uint8_t midi_param1  = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_PARAM1_offset  ,			GRID_CLASS_MIDIRELATIVE_PARAM1_length);
-				uint8_t midi_param2  = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIRELATIVE_PARAM2_offset  ,			GRID_CLASS_MIDIRELATIVE_PARAM2_length);
-						
-				// Relative midi translation magic
-			//	midi_channel = ((256-dy*2)%8+grid_sys_state.bank_active*8)%16;		  2bank			
-						
-						
-				uint8_t midi_command = 	(midi_commandchannel&0xF0)>>4;
-				uint8_t midi_channel = ((256-dy*1)%4+grid_sys_state.bank_activebank_number*4)%16;
-					
-					
-				midi_param1  = (256-32+midi_param1 + 16*dx)%96; // 96-128 reserved
-												
-// 				uint8_t debug[30] = {0};
-// 				sprintf(debug, "MIDI: %02x %02x %02x %02x", 0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);
-// 				grid_debug_print_text(debug);	
+				uint8_t midi_channel = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDI_CHANNEL_offset,		GRID_CLASS_MIDI_CHANNEL_length);
+				uint8_t midi_command = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDI_COMMAND_offset ,	GRID_CLASS_MIDI_COMMAND_length);
+				uint8_t midi_param1  = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDI_PARAM1_offset  ,	GRID_CLASS_MIDI_PARAM1_length);
+				uint8_t midi_param2  = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDI_PARAM2_offset  ,	GRID_CLASS_MIDI_PARAM2_length);
 				
-				struct grid_keyboard_event_desc key;
-				struct grid_keyboard_event_desc keymod;
-				
-				key.ismodifier = 0;
-				keymod.ismodifier = 1;
-				
-				//key.keycode = midi_param1 - 0x20 + 0x04; //abcd...
-				key.keycode = midi_param1 - 0x20 + 84; //numpad magic
-				keymod.keycode = HID_MODIFIER_LEFT_ALT;
-				
-				if (midi_param2){
-					key.ispressed = 1;
-					keymod.ispressed = 1;
-				}
-				else{
-					key.ispressed = 0;
-					keymod.ispressed = 0;
-				}
-				
-				//grid_keyboard_keychange(&grid_keyboard_state, &keymod);
-				//grid_keyboard_keychange(&grid_keyboard_state, &key);
-				
-				
-				
-				
+				//printf("midi: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1, midi_param2);
 				struct grid_midi_event_desc midievent;
 								
-				midievent.byte0 = 0<<4|midi_command;
-				midievent.byte1 = midi_command<<4|midi_channel;
+				midievent.byte0 = 0<<4|midi_command>>4;
+				midievent.byte1 = midi_command|midi_channel;
 				midievent.byte2 = midi_param1;
 				midievent.byte3 = midi_param2;
 				

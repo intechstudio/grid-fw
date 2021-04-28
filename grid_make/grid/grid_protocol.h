@@ -126,20 +126,20 @@
 #define GRID_CLASS_offset					1
 
 // ================== MIDI RELATIVE CLASS =================== //
-#define GRID_CLASS_MIDIRELATIVE_code		0x000
-#define GRID_CLASS_MIDIRELATIVE_frame		"%c%03x_........%c",GRID_CONST_STX,GRID_CLASS_MIDIRELATIVE_code,GRID_CONST_ETX
+#define GRID_CLASS_MIDI_code		0x000
+#define GRID_CLASS_MIDI_frame		"%c%03x_........%c",GRID_CONST_STX,GRID_CLASS_MIDI_code,GRID_CONST_ETX
 
-#define GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_offset			5
-#define GRID_CLASS_MIDIRELATIVE_CABLECOMMAND_length			2
+#define GRID_CLASS_MIDI_CHANNEL_offset		5
+#define GRID_CLASS_MIDI_CHANNEL_length		2
 
-#define GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_offset		7
-#define GRID_CLASS_MIDIRELATIVE_COMMANDCHANNEL_length		2
+#define GRID_CLASS_MIDI_COMMAND_offset		7
+#define GRID_CLASS_MIDI_COMMAND_length		2
 
-#define GRID_CLASS_MIDIRELATIVE_PARAM1_offset				9
-#define GRID_CLASS_MIDIRELATIVE_PARAM1_length				2
+#define GRID_CLASS_MIDI_PARAM1_offset		9
+#define GRID_CLASS_MIDI_PARAM1_length		2
 
-#define GRID_CLASS_MIDIRELATIVE_PARAM2_offset				11
-#define GRID_CLASS_MIDIRELATIVE_PARAM2_length				2
+#define GRID_CLASS_MIDI_PARAM2_offset		11
+#define GRID_CLASS_MIDI_PARAM2_length		2
 
 
 // ================== MIDI ABSOLUTE CLASS =================== //
@@ -477,9 +477,10 @@ enum grid_ui_event_t {
 #define GRID_ACTIONSTRING_AVC7_POT			"\x02""000e00b0<?expr p(T0) ?><?expr p(T2) ?>\x03\x02""040e<?expr p(T0) ?>01<?expr p(T2) ?>\x03"
 
 #define GRID_ACTIONSTRING_BC				"<?lua if (this.T[2] > 0) then grid_led_set_pfs(this.T[0], 2, 0, 1, (this.T[0])%%4) else  grid_led_set_pfs(this.T[0], 2, 0, 0, 0) end ?>"
-//#define GRID_ACTIONSTRING_BC				"<?lua if (this.T[2] == 127) then print(127) else print(0) end ?>"
 
 #define GRID_ACTIONSTRING_EC				"<?lua grid_send_midi(0,176,this.T[0],this.T[9]) grid_led_set_phase(this.T[0], 1, this.T[9]) ?>"
+// 14bit midi test
+// #define GRID_ACTIONSTRING_EC				"<?lua this.T[11]=16383 gsm(0,176,this.T[0],this.T[9]//128) gsm(0,176,this.T[0]+32,this.T[9]%%128) glsp(this.T[0], 1, this.T[9]//128) ?>"
 
 #define GRID_ACTIONSTRING_MAPMODE_PRESS		"\x02""030e<?expr p(Z5) ?>\x03"
 #define GRID_ACTIONSTRING_MAPMODE_RELEASE	""

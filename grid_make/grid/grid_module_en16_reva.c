@@ -280,7 +280,7 @@ void grid_module_en16_reva_init(){
 			template_parameter_list[GRID_TEMPLATE_E_ENCODER_NUMBER] 	= j;
 			template_parameter_list[GRID_TEMPLATE_E_ENCODER_VALUE] 		= 0;
 			template_parameter_list[GRID_TEMPLATE_E_ENCODER_MIN] 		= 0;
-			template_parameter_list[GRID_TEMPLATE_E_ENCODER_MAX] 		= 127;
+			template_parameter_list[GRID_TEMPLATE_E_ENCODER_MAX] 		= 128 - 1;
 			template_parameter_list[GRID_TEMPLATE_E_ENCODER_MODE] 		= 0;
 			template_parameter_list[GRID_TEMPLATE_E_ENCODER_ELAPSED] 	= 0;
 

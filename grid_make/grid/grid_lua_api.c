@@ -258,7 +258,7 @@ static int l_grid_load_template_variables(lua_State* L) {
     grid_lua_dostring(&grid_lua_state, str_to_do);
 
 
-    for (uint8_t i=0; i<10; i++){
+    for (uint8_t i=0; i<14; i++){
 
         int32_t vari = grid_ui_state.bank_list[grid_sys_get_bank_num(&grid_sys_state)].element_list[param[0]].template_parameter_list[i];
 
@@ -267,8 +267,47 @@ static int l_grid_load_template_variables(lua_State* L) {
 				
         grid_lua_dostring(&grid_lua_state, str_to_do); // +6 is length of "<?lua "
   
+        //printf("GRID: %s: %d\r\n", str_to_do, vari);
     }
 
+    return 0;
+}
+
+static int l_grid_store_template_variables(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=1){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[1] = {0};
+
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    lua_pop(L, 2);
+
+    for (uint8_t i=0; i<14; i++){
+
+        uint8_t str_to_do[100] = {0};
+        sprintf(str_to_do, "return this.T[%d]", i);		
+        grid_lua_dostring(&grid_lua_state, str_to_do); // +6 is length of "<?lua "
+
+        lua_Integer lnum = lua_tointeger(L, -1);
+        lua_pop(L, 1);
+
+        grid_ui_state.bank_list[grid_sys_get_bank_num(&grid_sys_state)].element_list[param[0]].template_parameter_list[i] = lnum;
+
+        //printf("LUA: %s: %d\r\n", str_to_do, lnum);
+
+    }
+
+    lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
     return 0;
 }
 
@@ -276,6 +315,7 @@ static const struct luaL_Reg printlib [] = {
   {"print", l_my_print},
   {"grid_send", l_grid_send},
   {"grid_led_set_phase", l_grid_led_set_phase},
+  {"glsp", l_grid_led_set_phase},
   {"grid_led_set_min", l_grid_led_set_min},
   {"grid_led_set_mid", l_grid_led_set_mid},
   {"grid_led_set_max", l_grid_led_set_max},
@@ -283,6 +323,8 @@ static const struct luaL_Reg printlib [] = {
   {"grid_led_set_shape", l_grid_led_set_shape},
   {"grid_led_set_pfs", l_grid_led_set_pfs},
   {"grid_load_template_variables", l_grid_load_template_variables},
+  {"grid_store_template_variables", l_grid_store_template_variables},
+  
   {NULL, NULL} /* end of array */
 };
 
@@ -337,6 +379,8 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
     grid_lua_debug_memory_stats(mod, "P2X");
 
     grid_lua_dostring(mod, "grid_send_midi = function(ch, cmd, p1, p2) grid_send('000e', p2x(ch), p2x(cmd), p2x(p1), p2x(p2)) end");
+    grid_lua_dostring(mod, "gsm = grid_send_midi");
+
     grid_lua_debug_memory_stats(mod, "grid_send");
 
     grid_lua_ui_init(mod, &grid_sys_state);
@@ -419,7 +463,7 @@ uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod){
 
     printf("LUA UI INIT EN16\r\n");
     // define encoder_init_function
-    grid_lua_dostring(mod, "init_encoder = function (e) e.T = {} for i=0, 10 do e.T[i] = 0 end end");
+    grid_lua_dostring(mod, "init_encoder = function (e) e.T = {} for i=0, 14 do e.T[i] = 0 end end");
 
     // create element array
     grid_lua_dostring(mod, "element = {} this = {}");
