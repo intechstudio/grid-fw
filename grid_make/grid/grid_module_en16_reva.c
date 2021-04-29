@@ -13,10 +13,6 @@ volatile uint8_t UI_SPI_DONE = 0;
 
 volatile uint8_t UI_SPI_RX_BUFFER_LAST[16] = {0};
 
-
-
-static int32_t grid_en16_helper[GRID_SYS_BANK_MAXNUMBER][16][GRID_TEMPLATE_E_LIST_LENGTH] = {0};
-
 uint8_t UI_ENCODER_LOOKUP[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1} ;
 
 uint8_t UI_ENCODER_LOOKUP_REVERSED[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
@@ -58,15 +54,6 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				
 		for (uint8_t i = 0; i<16; i++)
 		{
-			
-			uint8_t res_index = i;
-			int32_t* template_parameter_list = grid_ui_state.bank_list[bank].element_list[res_index].template_parameter_list;
-			
-			for (uint8_t j = 0; j<GRID_TEMPLATE_E_LIST_LENGTH; j++){
-
-				// recall the template parameters of this page
-				template_parameter_list[j] = grid_en16_helper[grid_sys_state.bank_activebank_number][i][j];
-			}
 
 			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);  
             grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_EC);
@@ -284,19 +271,9 @@ void grid_module_en16_reva_init(){
 			template_parameter_list[GRID_TEMPLATE_E_ENCODER_MODE] 		= 0;
 			template_parameter_list[GRID_TEMPLATE_E_ENCODER_ELAPSED] 	= 0;
 
-			for (uint8_t k = 0; k<GRID_TEMPLATE_E_LIST_LENGTH; k++){
-
-				grid_en16_helper[i][j][k] = template_parameter_list[k];
-			}
-
-
 		}		
 		
 	}
-
-
-	
-
 
 	// initialize local encoder helper struct
 	for (uint8_t j = 0; j<16; j++)

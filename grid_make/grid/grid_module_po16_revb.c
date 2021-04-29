@@ -3,6 +3,7 @@
 volatile uint8_t grid_module_po16_revb_hardware_transfer_complete = 0;
 volatile uint8_t grid_module_po16_revb_mux =0;
 volatile uint8_t grid_module_po16_revb_mux_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15};
+volatile uint8_t grid_module_po16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
 
 void grid_module_po16_revb_hardware_start_transfer(void){
 	
@@ -13,27 +14,19 @@ void grid_module_po16_revb_hardware_start_transfer(void){
 
 static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 
-	
 	if (grid_module_po16_revb_hardware_transfer_complete == 0){
 		grid_module_po16_revb_hardware_transfer_complete++;
 		return;
 	}
 	
-	
 	if (grid_sys_state.bank_active_changed){
 		grid_sys_state.bank_active_changed = 0;
-
 		
 		for (uint8_t i=0; i<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length; i++){
 			
-			// action template bug fix try
-			grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[i].template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_NUMBER] = i;
-			
 			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
             grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_AVC7);
-            				
-          
-            
+            				        
 		}
 		
 	}	
@@ -58,8 +51,8 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 	adc_async_read_channel(&ADC_0, 0, &adcresult_0, 2);
 	adc_async_read_channel(&ADC_1, 0, &adcresult_1, 2);
 
-	// FAKE CALIBRATION
-	uint32_t input_0 = adcresult_0*1.03;	
+	// FAKE CALIBRATION to compensate oversampling and decimation
+	uint32_t input_0 = adcresult_0*1.03;	 // 1.03
 	if (input_0 > (1<<16)-1){
 		input_0 = (1<<16)-1;
 	}
@@ -78,9 +71,12 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		adcresult_0	= 65535 - adcresult_0;
 		adcresult_1 = 65535 - adcresult_1;
 	}
+		
+    uint8_t resolution_0 = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[adc_index_0].template_parameter_list[GRID_TEMPLATE_P_POTMETER_MODE];
+    uint8_t resolution_1 = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[adc_index_1].template_parameter_list[GRID_TEMPLATE_P_POTMETER_MODE];
 
-	grid_ain_add_sample(adc_index_0, adcresult_0);
-	grid_ain_add_sample(adc_index_1, adcresult_1);
+	grid_ain_add_sample(adc_index_0, adcresult_0, resolution_0);
+	grid_ain_add_sample(adc_index_1, adcresult_1, resolution_1);
 
 
 	uint8_t result_index[2] = {0};
@@ -89,7 +85,6 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 	result_index[1] = adc_index_1;
 
 
-	uint8_t grid_module_po16_mux_reversed_lookup[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
 
 	// Process both ADC results
 
@@ -100,35 +95,40 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		uint8_t res_index = result_index[i];
 
 		int32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
- 
-        
-        
+
 		if (grid_ain_get_changed(res_index)){
-		
-			template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_NUMBER] = res_index;
-			template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_NUMBER_REVERSED] = grid_module_po16_mux_reversed_lookup[res_index];
-
-            for (uint8_t j=0; j<GRID_SYS_BANK_MAXNUMBER; j++){
                 
-                template_parameter_list = grid_ui_state.bank_list[j].element_list[res_index].template_parameter_list;
- 
-                
-                template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_ABS] = grid_ain_get_average(res_index, 7);
-                template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_ABS14U] = grid_ain_get_average(res_index, 7);
-                template_parameter_list[GRID_TEMPLATE_P_PARAMETER_CONTROLLER_ABS14L] = 0;          
 
-            }
-            
+			int32_t resolution = template_parameter_list[GRID_TEMPLATE_P_POTMETER_MODE];
 
-			
-			
+			if (resolution < 1){
+				resolution = 1;
+			}
+			else if (resolution > 12){
+				resolution = 12;
+			}
+
+			int32_t value = grid_ain_get_average(res_index);
+
+			int32_t min = template_parameter_list[GRID_TEMPLATE_P_POTMETER_MIN];
+			int32_t max = template_parameter_list[GRID_TEMPLATE_P_POTMETER_MAX];
+
+			// map the input range to the output range
+
+			uint16_t range_max = GRID_AIN_MAXVALUE - (1<<16-resolution);
+
+			int32_t next = value * (max - min) / range_max + min;
+
+			printf("%d   (%d)\r\n", next, value);
+
+			template_parameter_list[GRID_TEMPLATE_P_POTMETER_VALUE] = next;
+    
 			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_AVC7);		
 			
 		}
 
 	}
-	
-	
+		
 	grid_module_po16_revb_hardware_transfer_complete = 0;
 	grid_module_po16_revb_hardware_start_transfer();
 }
@@ -149,10 +149,9 @@ void grid_module_po16_revb_hardware_init(void){
 void grid_module_po16_revb_init(){
 	
 	// 16 pot, depth of 5, 14bit internal, 7bit result;
-	grid_ain_init(16, 5, 14, 7);
+	grid_ain_init(16, 5);
 	grid_led_lowlevel_init(&grid_led_state, 16);
 
-	
 	grid_ui_model_init(&grid_ui_state, GRID_SYS_BANK_MAXNUMBER);
 	
 	for(uint8_t i=0; i<GRID_SYS_BANK_MAXNUMBER; i++){	
@@ -162,6 +161,16 @@ void grid_module_po16_revb_init(){
 		for(uint8_t j=0; j<16; j++){
 			
 			grid_ui_element_init(&grid_ui_state.bank_list[i], j, GRID_UI_ELEMENT_POTENTIOMETER);
+
+			int32_t* template_parameter_list = grid_ui_state.bank_list[i].element_list[j].template_parameter_list;
+	
+			template_parameter_list[GRID_TEMPLATE_P_POTMETER_ID] 		= j;
+			template_parameter_list[GRID_TEMPLATE_P_POTMETER_NUMBER] 	= j;
+			template_parameter_list[GRID_TEMPLATE_P_POTMETER_VALUE] 	= 0;
+			template_parameter_list[GRID_TEMPLATE_P_POTMETER_MIN] 		= 0;
+			template_parameter_list[GRID_TEMPLATE_P_POTMETER_MAX] 		= (1<<14)-1;
+			template_parameter_list[GRID_TEMPLATE_P_POTMETER_MODE] 		= 9;
+			template_parameter_list[GRID_TEMPLATE_P_POTMETER_ELAPSED] 	= 0;
 
 		}
 	}
