@@ -7,6 +7,7 @@
 // Recent messages buffer allows detection and termination of duplicate messages
 // Store: dX, dY, ID, ID
 
+int32_t grid_utility_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
 
 
 #define GRID_SYS_RECENT_MESSAGES_LENGTH			32

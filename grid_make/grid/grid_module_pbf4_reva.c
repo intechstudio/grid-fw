@@ -231,7 +231,10 @@ void grid_module_pbf4_reva_hardware_transfer_complete_cb(void){
 				int32_t max = template_parameter_list[GRID_TEMPLATE_P_POTMETER_MAX];
 
 				// map the input range to the output range
-				int32_t next = value * (max - min) / GRID_AIN_MAXVALUE + min;
+
+				uint16_t range_max = GRID_AIN_MAXVALUE - (1<<16-resolution);
+
+				int32_t next = value * (max - min) / range_max + min;
 
 				template_parameter_list[GRID_TEMPLATE_P_POTMETER_VALUE] = next;
 		

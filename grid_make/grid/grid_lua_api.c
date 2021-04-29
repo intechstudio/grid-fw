@@ -73,23 +73,76 @@ static int l_grid_led_set_phase(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
-   
+    if (nargs == 2){  // automatically set phase to element value
 
-    if (nargs!=3){
+
+        uint8_t param[2] = {0};
+
+        for (int i=1; i <= nargs; ++i) {
+            param[i-1] = lua_tointeger(L, i);
+        }
+
+        if (param[0]<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length){
+	        
+            struct grid_ui_element* ele = &grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[param[0]];
+            enum grid_ui_element_t ele_type = ele->type;
+
+            int32_t min = 0;
+            int32_t max = 0;
+            int32_t val = 0;
+
+            //printf("Param0: %d ", param[0]);
+
+            if (ele_type == GRID_UI_ELEMENT_POTENTIOMETER){
+
+                min = ele->template_parameter_list[GRID_TEMPLATE_P_POTMETER_MIN];
+                max = ele->template_parameter_list[GRID_TEMPLATE_P_POTMETER_MAX];
+                val = ele->template_parameter_list[GRID_TEMPLATE_P_POTMETER_VALUE];
+            }
+            else if (ele_type == GRID_UI_ELEMENT_ENCODER){
+                
+                min = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_MIN];
+                max = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_MAX];
+                val = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_VALUE];
+            }
+            else{
+
+                strcat(grid_lua_state.stde, "#elementNotSupported");
+                return 0;
+            }
+
+            uint16_t phase = grid_utility_map(val, min, max, 0, 255);
+            //printf("LED: %d\r\n", phase);
+            grid_led_set_phase(&grid_led_state, param[0], param[1], phase);
+
+
+        }
+
+
+        return 0;
+
+
+    }
+    else if (nargs == 3){  // manually set phase to arbitery value
+
+        uint8_t param[3] = {0};
+
+        for (int i=1; i <= nargs; ++i) {
+            param[i-1] = lua_tointeger(L, i);
+        }
+
+        grid_led_set_phase(&grid_led_state, param[0], param[1], param[2]);
+
+        return 0;
+
+    }
+    else
+    {
         // error
         strcat(grid_lua_state.stde, "#invalidParams");
         return 0;
     }
 
-    uint8_t param[3] = {0};
-
-    for (int i=1; i <= nargs; ++i) {
-        param[i-1] = lua_tointeger(L, i);
-    }
-
-    grid_led_set_phase(&grid_led_state, param[0], param[1], param[2]);
-
-    return 0;
 }
 
 
@@ -493,14 +546,14 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
 
         }
         else{
-            printf("LUA not OK\r\n");
+            printf("LUA not OK: %s \r\n", code);
         }
 
         lua_pop(mod->L, lua_gettop(mod->L));
     
     }
     else{
-        printf("LUA not OK\r\n");
+        printf("LUA not OK:  %s\r\n", code);
     }
 
 }

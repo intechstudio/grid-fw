@@ -119,8 +119,6 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 
 			int32_t next = value * (max - min) / range_max + min;
 
-			printf("%d   (%d)\r\n", next, value);
-
 			template_parameter_list[GRID_TEMPLATE_P_POTMETER_VALUE] = next;
     
 			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_AVC7);		
@@ -168,8 +166,8 @@ void grid_module_po16_revb_init(){
 			template_parameter_list[GRID_TEMPLATE_P_POTMETER_NUMBER] 	= j;
 			template_parameter_list[GRID_TEMPLATE_P_POTMETER_VALUE] 	= 0;
 			template_parameter_list[GRID_TEMPLATE_P_POTMETER_MIN] 		= 0;
-			template_parameter_list[GRID_TEMPLATE_P_POTMETER_MAX] 		= (1<<14)-1;
-			template_parameter_list[GRID_TEMPLATE_P_POTMETER_MODE] 		= 9;
+			template_parameter_list[GRID_TEMPLATE_P_POTMETER_MAX] 		= 127;
+			template_parameter_list[GRID_TEMPLATE_P_POTMETER_MODE] 		= 7;
 			template_parameter_list[GRID_TEMPLATE_P_POTMETER_ELAPSED] 	= 0;
 
 		}
