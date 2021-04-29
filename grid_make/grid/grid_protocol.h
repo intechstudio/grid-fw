@@ -321,7 +321,7 @@
 
 enum grid_template_p_parameter_index_t {
 	
-	GRID_TEMPLATE_P_POTMETER_ID,
+	GRID_TEMPLATE_P_ELEMENT_INDEX,
 	GRID_TEMPLATE_P_POTMETER_NUMBER,
 	
 	GRID_TEMPLATE_P_POTMETER_VALUE,
@@ -332,12 +332,25 @@ enum grid_template_p_parameter_index_t {
 	
 };
 
+/*
+
+index  			READ-ONLY
+
+p_number
+p_value
+p_min
+p_max
+p_resolution
+p_elapsed
+
+*/
+
 // Button parameters
 #define GRID_TEMPLATE_B_LIST_LENGTH	8
 
 enum grid_template_b_parameter_index_t {
 
-	GRID_TEMPLATE_B_BUTTON_ID,
+	GRID_TEMPLATE_B_ELEMENT_INDEX,
 	GRID_TEMPLATE_B_BUTTON_NUMBER,
 	
 	GRID_TEMPLATE_B_BUTTON_VALUE,
@@ -349,13 +362,28 @@ enum grid_template_b_parameter_index_t {
 	
 };
 
+/*
+
+index  			READ-ONLY
+
+b_number
+b_value
+b_min
+b_max
+b_mode
+b_elapsed
+b_state
+
+*/
+
 
 // Encoder parameters
 #define GRID_TEMPLATE_E_LIST_LENGTH    14 // 16 makes the grid freeze 
 
 enum grid_template_e_parameter_index_t {
 	
-	GRID_TEMPLATE_E_BUTTON_ID,
+	GRID_TEMPLATE_E_ELEMENT_INDEX,
+	
 	GRID_TEMPLATE_E_BUTTON_NUMBER,
 	
 	GRID_TEMPLATE_E_BUTTON_VALUE,
@@ -363,8 +391,8 @@ enum grid_template_e_parameter_index_t {
 	GRID_TEMPLATE_E_BUTTON_MAX,	   // max value
 	GRID_TEMPLATE_E_BUTTON_MODE,   // 0:abs, 1,2,3,4: toggle
 	GRID_TEMPLATE_E_BUTTON_ELAPSED,  
-	
-	GRID_TEMPLATE_E_ENCODER_ID,
+	GRID_TEMPLATE_E_BUTTON_STATE,
+
 	GRID_TEMPLATE_E_ENCODER_NUMBER,
 	
 	GRID_TEMPLATE_E_ENCODER_VALUE,
@@ -374,6 +402,31 @@ enum grid_template_e_parameter_index_t {
 	GRID_TEMPLATE_E_ENCODER_ELAPSED,   // 0:abs, 1:rel
 	
 };
+
+
+/*
+
+LUA		JS			HUMAN
+
+ind		index  		element_index
+
+bnu		b_number	button_number
+bva		b_value		button_value
+bmi		b_min		button_min
+bma		b_max		button_max
+bmo		b_mode		button_mode
+ble		b_elapsed	button_elapsed_time
+bts		b_state		button_state
+
+enu		e_number	encoder_number
+eva		e_value		encoder_value
+emi		e_min		encoder_min
+ema		e_max		encoder_max
+emo		e_mode		encoder_mode
+eel		e_elapsed	encoder_elapsed_time
+
+*/
+
 
 // mode: absolute/relative
 // velocity: curve parameters

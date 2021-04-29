@@ -293,7 +293,7 @@ void grid_module_pbf4_reva_init(){
 				
 				int32_t* template_parameter_list = grid_ui_state.bank_list[i].element_list[j].template_parameter_list;
 	
-				template_parameter_list[GRID_TEMPLATE_P_POTMETER_ID] 		= j;
+				template_parameter_list[GRID_TEMPLATE_P_ELEMENT_INDEX] 		= j;
 				template_parameter_list[GRID_TEMPLATE_P_POTMETER_NUMBER] 	= j;
 				template_parameter_list[GRID_TEMPLATE_P_POTMETER_VALUE] 	= 0;
 				template_parameter_list[GRID_TEMPLATE_P_POTMETER_MIN] 		= 0;
@@ -308,7 +308,7 @@ void grid_module_pbf4_reva_init(){
 				
 				int32_t* template_parameter_list = grid_ui_state.bank_list[i].element_list[j].template_parameter_list;
 
-				template_parameter_list[GRID_TEMPLATE_B_BUTTON_ID] 		= j;
+				template_parameter_list[GRID_TEMPLATE_B_ELEMENT_INDEX] 		= j;
 				template_parameter_list[GRID_TEMPLATE_B_BUTTON_NUMBER] 	= j;
 				template_parameter_list[GRID_TEMPLATE_B_BUTTON_VALUE] 	= 0;
 				template_parameter_list[GRID_TEMPLATE_B_BUTTON_MIN] 	= 0;

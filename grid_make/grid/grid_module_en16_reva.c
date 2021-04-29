@@ -255,15 +255,15 @@ void grid_module_en16_reva_init(){
 			int32_t* template_parameter_list = grid_ui_state.bank_list[i].element_list[j].template_parameter_list;
 
 
-			template_parameter_list[GRID_TEMPLATE_E_BUTTON_ID] 		= j;
+			template_parameter_list[GRID_TEMPLATE_E_ELEMENT_INDEX] 		= j;
 			template_parameter_list[GRID_TEMPLATE_E_BUTTON_NUMBER] 	= j;
 			template_parameter_list[GRID_TEMPLATE_E_BUTTON_VALUE] 	= 0;
 			template_parameter_list[GRID_TEMPLATE_E_BUTTON_MIN] 	= 0;
 			template_parameter_list[GRID_TEMPLATE_E_BUTTON_MAX] 	= 127;
 			template_parameter_list[GRID_TEMPLATE_E_BUTTON_MODE] 	= 0;
 			template_parameter_list[GRID_TEMPLATE_E_BUTTON_ELAPSED] = 0;
+			template_parameter_list[GRID_TEMPLATE_E_BUTTON_STATE] 		= 0;
 
-			template_parameter_list[GRID_TEMPLATE_E_ENCODER_ID] 		= j;
 			template_parameter_list[GRID_TEMPLATE_E_ENCODER_NUMBER] 	= j;
 			template_parameter_list[GRID_TEMPLATE_E_ENCODER_VALUE] 		= 0;
 			template_parameter_list[GRID_TEMPLATE_E_ENCODER_MIN] 		= 0;
