@@ -381,6 +381,62 @@ static const struct luaL_Reg printlib [] = {
   {NULL, NULL} /* end of array */
 };
 
+/*
+
+LUA     HUMAN
+
+p()         print()
+
+glsp()      led_value()
+
+glsn()      led_color_min()
+glsd()      led_color_mid()
+glsx()      led_color_max()
+
+glsc()      led_color()
+
+glsf()      led_animation_rate()
+glss()      led_animation_type()
+
+glspfs()    led_animation_phase_rate_type
+
+gms()       midi_send()
+gmr()       midi_receive()
+
+gsk()       keyboard_send()
+
+gps()       page_select()
+gpsn()      page_select_next()
+gpsp()      page_select_prev()
+
+gzx         module_position_x
+gzy         module_position_y
+gzr         module_rotation            
+
+local ch = 0 + 4*module_position_y
+local cmd = 176
+local num = this.encoder_number + 16*module_position_x
+local val = this.encoder_value
+
+midi_send(ch, cmd, num, val)
+
+element[0].button_value
+
+uptime
+resetcause
+memory states
+version
+stored config version
+stored config date
+
+
+
+
+
+*/
+
+
+
 
 uint8_t grid_lua_init(struct grid_lua_model* mod){
 
