@@ -2852,7 +2852,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x16 grid/grid_default.o
  .debug_macro   0x0000000000000000       0x34 grid/grid_default.o
  .debug_line    0x0000000000000000     0x15a9 grid/grid_default.o
- .debug_str     0x0000000000000000   0x101c7d grid/grid_default.o
+ .debug_str     0x0000000000000000   0x101c77 grid/grid_default.o
  .comment       0x0000000000000000       0x4d grid/grid_default.o
  .ARM.attributes
                 0x0000000000000000       0x37 grid/grid_default.o
@@ -3816,7 +3816,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x16 grid/grid_hardwaretest.o
  .debug_macro   0x0000000000000000       0x1c grid/grid_hardwaretest.o
  .debug_line    0x0000000000000000     0x241e grid/grid_hardwaretest.o
- .debug_str     0x0000000000000000   0x102399 grid/grid_hardwaretest.o
+ .debug_str     0x0000000000000000   0x102393 grid/grid_hardwaretest.o
  .comment       0x0000000000000000       0x4d grid/grid_hardwaretest.o
  .debug_frame   0x0000000000000000      0x114 grid/grid_hardwaretest.o
  .ARM.attributes
@@ -7602,7 +7602,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0xaa8 grid/grid_protocol.o
  .debug_macro   0x0000000000000000      0x78e grid/grid_protocol.o
  .debug_line    0x0000000000000000       0x4b grid/grid_protocol.o
- .debug_str     0x0000000000000000     0x62ee grid/grid_protocol.o
+ .debug_str     0x0000000000000000     0x62ea grid/grid_protocol.o
  .comment       0x0000000000000000       0x4d grid/grid_protocol.o
  .ARM.attributes
                 0x0000000000000000       0x37 grid/grid_protocol.o
@@ -9060,7 +9060,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0xe1 grid/grid_unittest.o
  .debug_macro   0x0000000000000000       0x16 grid/grid_unittest.o
  .debug_line    0x0000000000000000     0x18ef grid/grid_unittest.o
- .debug_str     0x0000000000000000   0x101d5f grid/grid_unittest.o
+ .debug_str     0x0000000000000000   0x101d59 grid/grid_unittest.o
  .comment       0x0000000000000000       0x4d grid/grid_unittest.o
  .debug_frame   0x0000000000000000       0xbc grid/grid_unittest.o
  .ARM.attributes
@@ -44917,218 +44917,218 @@ LOAD linker stubs
  .debug_line    0x0000000000083cf7      0xafd hpl/systick/hpl_systick.o
  .debug_line    0x00000000000847f4      0xc2e hpl/dsu/hpl_dsu.o
 
-.debug_str      0x0000000000000000   0x13868c
+.debug_str      0x0000000000000000   0x138686
  .debug_str     0x0000000000000000    0xed4a5 usb/class/midi/device/audiodf_midi.o
                                       0xedab4 (size before relaxing)
- .debug_str     0x00000000000ed4a5    0x1475b grid/grid_ain.o
-                                     0x101dd7 (size before relaxing)
- .debug_str     0x0000000000101c00      0xa50 grid/grid_buf.o
-                                     0x1027b7 (size before relaxing)
- .debug_str     0x0000000000102650      0x644 grid/grid_d51.o
-                                     0x102401 (size before relaxing)
- .debug_str     0x0000000000102c94      0x38b grid/grid_expr.o
-                                     0x1020b3 (size before relaxing)
- .debug_str     0x000000000010301f      0x4c1 grid/grid_led.o
-                                     0x10229e (size before relaxing)
- .debug_str     0x00000000001034e0      0x273 grid/grid_module.o
-                                     0x102373 (size before relaxing)
- .debug_str     0x0000000000103753      0x331 grid/grid_module_bu16_revb.o
-                                     0x102302 (size before relaxing)
- .debug_str     0x0000000000103a84      0x3e5 grid/grid_module_en16_reva.o
-                                     0x102527 (size before relaxing)
- .debug_str     0x0000000000103e69      0x25b grid/grid_module_pbf4_reva.o
-                                     0x1024ac (size before relaxing)
- .debug_str     0x00000000001040c4       0xe6 grid/grid_module_po16_revb.o
-                                     0x10231f (size before relaxing)
- .debug_str     0x00000000001041aa      0x1c6 grid/grid_msg.o
-                                     0x10209a (size before relaxing)
- .debug_str     0x0000000000104370      0x4d7 grid/grid_nvm.o
-                                     0x1023ae (size before relaxing)
- .debug_str     0x0000000000104847     0x1f86 grid/grid_sys.o
-                                     0x1047ac (size before relaxing)
- .debug_str     0x00000000001067cd      0x2f5 grid/grid_ui.o
-                                     0x1026e3 (size before relaxing)
- .debug_str     0x0000000000106ac2      0x308 grid/grid_usb.o
-                                     0x1021e4 (size before relaxing)
- .debug_str     0x0000000000106dca      0x316 grid/grid_lua_api.o
-                                     0x1023dc (size before relaxing)
- .debug_str     0x00000000001070e0     0x5990 thirdparty/Lua/lua-5.4.3/src/lapi.o
+ .debug_str     0x00000000000ed4a5    0x14755 grid/grid_ain.o
+                                     0x101dd1 (size before relaxing)
+ .debug_str     0x0000000000101bfa      0xa50 grid/grid_buf.o
+                                     0x1027b1 (size before relaxing)
+ .debug_str     0x000000000010264a      0x644 grid/grid_d51.o
+                                     0x1023fb (size before relaxing)
+ .debug_str     0x0000000000102c8e      0x38b grid/grid_expr.o
+                                     0x1020ad (size before relaxing)
+ .debug_str     0x0000000000103019      0x4c1 grid/grid_led.o
+                                     0x102298 (size before relaxing)
+ .debug_str     0x00000000001034da      0x273 grid/grid_module.o
+                                     0x10236d (size before relaxing)
+ .debug_str     0x000000000010374d      0x331 grid/grid_module_bu16_revb.o
+                                     0x1022fc (size before relaxing)
+ .debug_str     0x0000000000103a7e      0x3e5 grid/grid_module_en16_reva.o
+                                     0x102521 (size before relaxing)
+ .debug_str     0x0000000000103e63      0x25b grid/grid_module_pbf4_reva.o
+                                     0x1024a6 (size before relaxing)
+ .debug_str     0x00000000001040be       0xe6 grid/grid_module_po16_revb.o
+                                     0x102319 (size before relaxing)
+ .debug_str     0x00000000001041a4      0x1c6 grid/grid_msg.o
+                                     0x102094 (size before relaxing)
+ .debug_str     0x000000000010436a      0x4d7 grid/grid_nvm.o
+                                     0x1023a8 (size before relaxing)
+ .debug_str     0x0000000000104841     0x1f86 grid/grid_sys.o
+                                     0x1047a6 (size before relaxing)
+ .debug_str     0x00000000001067c7      0x2f5 grid/grid_ui.o
+                                     0x1026dd (size before relaxing)
+ .debug_str     0x0000000000106abc      0x308 grid/grid_usb.o
+                                     0x1021de (size before relaxing)
+ .debug_str     0x0000000000106dc4      0x316 grid/grid_lua_api.o
+                                     0x1023d6 (size before relaxing)
+ .debug_str     0x00000000001070da     0x5990 thirdparty/Lua/lua-5.4.3/src/lapi.o
                                        0xe58a (size before relaxing)
- .debug_str     0x000000000010ca70      0x241 thirdparty/Lua/lua-5.4.3/src/lctype.o
+ .debug_str     0x000000000010ca6a      0x241 thirdparty/Lua/lua-5.4.3/src/lctype.o
                                        0x7a1f (size before relaxing)
- .debug_str     0x000000000010ccb1      0x1ad thirdparty/Lua/lua-5.4.3/src/lfunc.o
+ .debug_str     0x000000000010ccab      0x1ad thirdparty/Lua/lua-5.4.3/src/lfunc.o
                                        0xc1c5 (size before relaxing)
- .debug_str     0x000000000010ce5e      0xf9b thirdparty/Lua/lua-5.4.3/src/lmathlib.o
+ .debug_str     0x000000000010ce58      0xf9b thirdparty/Lua/lua-5.4.3/src/lmathlib.o
                                        0xa92c (size before relaxing)
- .debug_str     0x000000000010ddf9      0x7a2 thirdparty/Lua/lua-5.4.3/src/loslib.o
+ .debug_str     0x000000000010ddf3      0x7a2 thirdparty/Lua/lua-5.4.3/src/loslib.o
                                        0xa477 (size before relaxing)
- .debug_str     0x000000000010e59b      0x492 thirdparty/Lua/lua-5.4.3/src/ltable.o
+ .debug_str     0x000000000010e595      0x492 thirdparty/Lua/lua-5.4.3/src/ltable.o
                                        0xe3dd (size before relaxing)
- .debug_str     0x000000000010ea2d      0x202 thirdparty/Lua/lua-5.4.3/src/lundump.o
+ .debug_str     0x000000000010ea27      0x202 thirdparty/Lua/lua-5.4.3/src/lundump.o
                                        0xd74c (size before relaxing)
- .debug_str     0x000000000010ec2f      0x489 thirdparty/Lua/lua-5.4.3/src/lauxlib.o
+ .debug_str     0x000000000010ec29      0x489 thirdparty/Lua/lua-5.4.3/src/lauxlib.o
                                        0xa5f7 (size before relaxing)
- .debug_str     0x000000000010f0b8      0x228 thirdparty/Lua/lua-5.4.3/src/ldblib.o
+ .debug_str     0x000000000010f0b2      0x228 thirdparty/Lua/lua-5.4.3/src/ldblib.o
                                        0x9e1a (size before relaxing)
- .debug_str     0x000000000010f2e0      0x860 thirdparty/Lua/lua-5.4.3/src/lgc.o
+ .debug_str     0x000000000010f2da      0x860 thirdparty/Lua/lua-5.4.3/src/lgc.o
                                        0xe48d (size before relaxing)
- .debug_str     0x000000000010fb40       0xee thirdparty/Lua/lua-5.4.3/src/lmem.o
+ .debug_str     0x000000000010fb3a       0xee thirdparty/Lua/lua-5.4.3/src/lmem.o
                                        0xbdb1 (size before relaxing)
- .debug_str     0x000000000010fc2e     0x1b00 thirdparty/Lua/lua-5.4.3/src/lparser.o
+ .debug_str     0x000000000010fc28     0x1b00 thirdparty/Lua/lua-5.4.3/src/lparser.o
                                        0xf571 (size before relaxing)
- .debug_str     0x000000000011172e      0x18b thirdparty/Lua/lua-5.4.3/src/ltablib.o
+ .debug_str     0x0000000000111728      0x18b thirdparty/Lua/lua-5.4.3/src/ltablib.o
                                        0x9bcb (size before relaxing)
- .debug_str     0x00000000001118b9      0x1b2 thirdparty/Lua/lua-5.4.3/src/lutf8lib.o
+ .debug_str     0x00000000001118b3      0x1b2 thirdparty/Lua/lua-5.4.3/src/lutf8lib.o
                                        0x9b36 (size before relaxing)
- .debug_str     0x0000000000111a6b      0x6c4 thirdparty/Lua/lua-5.4.3/src/lbaselib.o
+ .debug_str     0x0000000000111a65      0x6c4 thirdparty/Lua/lua-5.4.3/src/lbaselib.o
                                        0xa202 (size before relaxing)
- .debug_str     0x000000000011212f      0x254 thirdparty/Lua/lua-5.4.3/src/ldebug.o
+ .debug_str     0x0000000000112129      0x254 thirdparty/Lua/lua-5.4.3/src/ldebug.o
                                        0xf0ce (size before relaxing)
- .debug_str     0x0000000000112383       0x3c thirdparty/Lua/lua-5.4.3/src/linit.o
+ .debug_str     0x000000000011237d       0x3c thirdparty/Lua/lua-5.4.3/src/linit.o
                                        0x9751 (size before relaxing)
- .debug_str     0x00000000001123bf      0x300 thirdparty/Lua/lua-5.4.3/src/loadlib.o
+ .debug_str     0x00000000001123b9      0x300 thirdparty/Lua/lua-5.4.3/src/loadlib.o
                                        0x9db3 (size before relaxing)
- .debug_str     0x00000000001126bf      0x208 thirdparty/Lua/lua-5.4.3/src/lstate.o
+ .debug_str     0x00000000001126b9      0x208 thirdparty/Lua/lua-5.4.3/src/lstate.o
                                        0xdae2 (size before relaxing)
- .debug_str     0x00000000001128c7      0x123 thirdparty/Lua/lua-5.4.3/src/ltm.o
+ .debug_str     0x00000000001128c1      0x123 thirdparty/Lua/lua-5.4.3/src/ltm.o
                                        0xd9f5 (size before relaxing)
- .debug_str     0x00000000001129ea     0x14fb thirdparty/Lua/lua-5.4.3/src/lvm.o
+ .debug_str     0x00000000001129e4     0x14fb thirdparty/Lua/lua-5.4.3/src/lvm.o
                                       0x112b6 (size before relaxing)
- .debug_str     0x0000000000113ee5      0x378 thirdparty/Lua/lua-5.4.3/src/lcode.o
+ .debug_str     0x0000000000113edf      0x378 thirdparty/Lua/lua-5.4.3/src/lcode.o
                                        0xfa7a (size before relaxing)
- .debug_str     0x000000000011425d      0x29a thirdparty/Lua/lua-5.4.3/src/ldo.o
+ .debug_str     0x0000000000114257      0x29a thirdparty/Lua/lua-5.4.3/src/ldo.o
                                        0xefc2 (size before relaxing)
- .debug_str     0x00000000001144f7      0x484 thirdparty/Lua/lua-5.4.3/src/liolib.o
+ .debug_str     0x00000000001144f1      0x484 thirdparty/Lua/lua-5.4.3/src/liolib.o
                                        0xa9a7 (size before relaxing)
- .debug_str     0x000000000011497b      0x20f thirdparty/Lua/lua-5.4.3/src/lobject.o
+ .debug_str     0x0000000000114975      0x20f thirdparty/Lua/lua-5.4.3/src/lobject.o
                                        0xea10 (size before relaxing)
- .debug_str     0x0000000000114b8a       0xaa thirdparty/Lua/lua-5.4.3/src/lstring.o
+ .debug_str     0x0000000000114b84       0xaa thirdparty/Lua/lua-5.4.3/src/lstring.o
                                        0xd485 (size before relaxing)
- .debug_str     0x0000000000114c34       0x2f thirdparty/Lua/lua-5.4.3/src/lzio.o
+ .debug_str     0x0000000000114c2e       0x2f thirdparty/Lua/lua-5.4.3/src/lzio.o
                                        0xc585 (size before relaxing)
- .debug_str     0x0000000000114c63      0x1a1 thirdparty/Lua/lua-5.4.3/src/llex.o
+ .debug_str     0x0000000000114c5d      0x1a1 thirdparty/Lua/lua-5.4.3/src/llex.o
                                        0xdcee (size before relaxing)
- .debug_str     0x0000000000114e04       0x4e thirdparty/Lua/lua-5.4.3/src/lopcodes.o
+ .debug_str     0x0000000000114dfe       0x4e thirdparty/Lua/lua-5.4.3/src/lopcodes.o
                                        0x87cf (size before relaxing)
- .debug_str     0x0000000000114e52      0x183 thirdparty/Lua/lua-5.4.3/src/ldump.o
+ .debug_str     0x0000000000114e4c      0x183 thirdparty/Lua/lua-5.4.3/src/ldump.o
                                        0xb4df (size before relaxing)
- .debug_str     0x0000000000114fd5      0x5f0 thirdparty/Lua/lua-5.4.3/src/lstrlib.o
+ .debug_str     0x0000000000114fcf      0x5f0 thirdparty/Lua/lua-5.4.3/src/lstrlib.o
                                        0xb2da (size before relaxing)
- .debug_str     0x00000000001155c5      0x11f thirdparty/Lua/lua-5.4.3/src/lcorolib.o
+ .debug_str     0x00000000001155bf      0x11f thirdparty/Lua/lua-5.4.3/src/lcorolib.o
                                        0x9b11 (size before relaxing)
- .debug_str     0x00000000001156e4       0x2c hal/src/hal_io.o
+ .debug_str     0x00000000001156de       0x2c hal/src/hal_io.o
                                       0xe73cf (size before relaxing)
- .debug_str     0x0000000000115710      0x15c thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o
+ .debug_str     0x000000000011570a      0x15c thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o
                                        0xaee4 (size before relaxing)
- .debug_str     0x000000000011586c      0x81a thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.o
+ .debug_str     0x0000000000115866      0x81a thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.o
                                        0x8e18 (size before relaxing)
- .debug_str     0x0000000000116086      0x2c4 hal/src/hal_i2c_m_async.o
+ .debug_str     0x0000000000116080      0x2c4 hal/src/hal_i2c_m_async.o
                                       0xe7ed0 (size before relaxing)
- .debug_str     0x000000000011634a      0x512 hpl/wdt/hpl_wdt.o
+ .debug_str     0x0000000000116344      0x512 hpl/wdt/hpl_wdt.o
                                       0xe78d4 (size before relaxing)
- .debug_str     0x000000000011685c      0x11f usb/usb_protocol.o
+ .debug_str     0x0000000000116856      0x11f usb/usb_protocol.o
                                       0xeb523 (size before relaxing)
- .debug_str     0x000000000011697b       0x68 stdio_redirect/stdio_io.o
+ .debug_str     0x0000000000116975       0x68 stdio_redirect/stdio_io.o
                                       0xeaf93 (size before relaxing)
- .debug_str     0x00000000001169e3      0x2a5 hal/src/hal_spi_m_dma.o
+ .debug_str     0x00000000001169dd      0x2a5 hal/src/hal_spi_m_dma.o
                                       0xe7e41 (size before relaxing)
- .debug_str     0x0000000000116c88       0x1e stdio_redirect/gcc/write.o
+ .debug_str     0x0000000000116c82       0x1e stdio_redirect/gcc/write.o
                                       0xeaf0c (size before relaxing)
- .debug_str     0x0000000000116ca6     0x7d5e hpl/evsys/hpl_evsys.o
+ .debug_str     0x0000000000116ca0     0x7d5e hpl/evsys/hpl_evsys.o
                                       0xef198 (size before relaxing)
- .debug_str     0x000000000011ea04      0x124 hpl/core/hpl_core_m4.o
+ .debug_str     0x000000000011e9fe      0x124 hpl/core/hpl_core_m4.o
                                       0xe8eeb (size before relaxing)
- .debug_str     0x000000000011eb28      0x2a2 usb/class/cdc/device/cdcdf_acm.o
+ .debug_str     0x000000000011eb22      0x2a2 usb/class/cdc/device/cdcdf_acm.o
                                       0xee836 (size before relaxing)
- .debug_str     0x000000000011edca      0x5b0 hal/utils/src/utils_syscalls.o
+ .debug_str     0x000000000011edc4      0x5b0 hal/utils/src/utils_syscalls.o
                                        0x7a5e (size before relaxing)
- .debug_str     0x000000000011f37a      0x855 hpl/qspi/hpl_qspi.o
+ .debug_str     0x000000000011f374      0x855 hpl/qspi/hpl_qspi.o
                                       0xe8b62 (size before relaxing)
- .debug_str     0x000000000011fbcf      0xf29 hpl/nvmctrl/hpl_nvmctrl.o
+ .debug_str     0x000000000011fbc9      0xf29 hpl/nvmctrl/hpl_nvmctrl.o
                                       0xebd4f (size before relaxing)
- .debug_str     0x0000000000120af8      0x266 usb_start.o
+ .debug_str     0x0000000000120af2      0x266 usb_start.o
                                       0xfadea (size before relaxing)
- .debug_str     0x0000000000120d5e      0x1b6 hal/src/hal_timer.o
+ .debug_str     0x0000000000120d58      0x1b6 hal/src/hal_timer.o
                                       0xe7bc3 (size before relaxing)
- .debug_str     0x0000000000120f14     0x2454 hpl/usb/hpl_usb.o
+ .debug_str     0x0000000000120f0e     0x2454 hpl/usb/hpl_usb.o
                                       0xedb93 (size before relaxing)
- .debug_str     0x0000000000123368       0x1d stdio_redirect/gcc/read.o
+ .debug_str     0x0000000000123362       0x1d stdio_redirect/gcc/read.o
                                       0xeaf0a (size before relaxing)
- .debug_str     0x0000000000123385       0x6c hal/src/hal_delay.o
+ .debug_str     0x000000000012337f       0x6c hal/src/hal_delay.o
                                       0xe739e (size before relaxing)
- .debug_str     0x00000000001233f1     0x319d hpl/core/hpl_init.o
+ .debug_str     0x00000000001233eb     0x319d hpl/core/hpl_init.o
                                       0xec1a9 (size before relaxing)
- .debug_str     0x000000000012658e      0x25d hpl/ramecc/hpl_ramecc.o
+ .debug_str     0x0000000000126588      0x25d hpl/ramecc/hpl_ramecc.o
                                       0xe825c (size before relaxing)
- .debug_str     0x00000000001267eb      0x217 usb/class/hid/device/hiddf_mouse.o
+ .debug_str     0x00000000001267e5      0x217 usb/class/hid/device/hiddf_mouse.o
                                       0xeeb78 (size before relaxing)
- .debug_str     0x0000000000126a02       0x20 hal/utils/src/utils_assert.o
+ .debug_str     0x00000000001269fc       0x20 hal/utils/src/utils_assert.o
                                       0xe7344 (size before relaxing)
- .debug_str     0x0000000000126a22      0xaa2 hpl/dmac/hpl_dmac.o
+ .debug_str     0x0000000000126a1c      0xaa2 hpl/dmac/hpl_dmac.o
                                       0xf1681 (size before relaxing)
- .debug_str     0x00000000001274c4      0x532 hal/src/hal_adc_async.o
+ .debug_str     0x00000000001274be      0x532 hal/src/hal_adc_async.o
                                       0xe81c9 (size before relaxing)
- .debug_str     0x00000000001279f6     0x170b hpl/oscctrl/hpl_oscctrl.o
+ .debug_str     0x00000000001279f0     0x170b hpl/oscctrl/hpl_oscctrl.o
                                       0xe8e8b (size before relaxing)
- .debug_str     0x0000000000129101      0x110 hal/src/hal_rand_sync.o
+ .debug_str     0x00000000001290fb      0x110 hal/src/hal_rand_sync.o
                                       0xe799e (size before relaxing)
- .debug_str     0x0000000000129211      0x1ea hpl/trng/hpl_trng.o
+ .debug_str     0x000000000012920b      0x1ea hpl/trng/hpl_trng.o
                                       0xe7616 (size before relaxing)
- .debug_str     0x00000000001293fb      0x19c usb/class/hid/device/hiddf_keyboard.o
+ .debug_str     0x00000000001293f5      0x19c usb/class/hid/device/hiddf_keyboard.o
                                       0xeeb0b (size before relaxing)
- .debug_str     0x0000000000129597      0x437 hal/src/hal_usart_sync.o
+ .debug_str     0x0000000000129591      0x437 hal/src/hal_usart_sync.o
                                       0xe7e6f (size before relaxing)
- .debug_str     0x00000000001299ce       0x47 hpl/mclk/hpl_mclk.o
+ .debug_str     0x00000000001299c8       0x47 hpl/mclk/hpl_mclk.o
                                       0xe843c (size before relaxing)
- .debug_str     0x0000000000129a15       0x48 hpl/gclk/hpl_gclk.o
+ .debug_str     0x0000000000129a0f       0x48 hpl/gclk/hpl_gclk.o
                                       0xe8070 (size before relaxing)
- .debug_str     0x0000000000129a5d       0x3e stdio_start.o
+ .debug_str     0x0000000000129a57       0x3e stdio_start.o
                                       0xfa4a4 (size before relaxing)
- .debug_str     0x0000000000129a9b       0xa6 hal/src/hal_flash.o
+ .debug_str     0x0000000000129a95       0xa6 hal/src/hal_flash.o
                                       0xe7b5a (size before relaxing)
- .debug_str     0x0000000000129b41      0x2b0 hal/src/hal_spi_m_async.o
+ .debug_str     0x0000000000129b3b      0x2b0 hal/src/hal_spi_m_async.o
                                       0xe8209 (size before relaxing)
- .debug_str     0x0000000000129df1       0x97 hal/src/hal_crc_sync.o
+ .debug_str     0x0000000000129deb       0x97 hal/src/hal_crc_sync.o
                                       0xe748f (size before relaxing)
- .debug_str     0x0000000000129e88      0x383 hal/src/hal_usb_device.o
+ .debug_str     0x0000000000129e82      0x383 hal/src/hal_usb_device.o
                                       0xeb511 (size before relaxing)
- .debug_str     0x000000000012a20b       0x57 hal/utils/src/utils_list.o
+ .debug_str     0x000000000012a205       0x57 hal/utils/src/utils_list.o
                                       0xe73ee (size before relaxing)
- .debug_str     0x000000000012a262      0x43b hpl/osc32kctrl/hpl_osc32kctrl.o
+ .debug_str     0x000000000012a25c      0x43b hpl/osc32kctrl/hpl_osc32kctrl.o
                                       0xe779c (size before relaxing)
- .debug_str     0x000000000012a69d      0xc62 hpl/rtc/hpl_rtc.o
+ .debug_str     0x000000000012a697      0xc62 hpl/rtc/hpl_rtc.o
                                       0xe893f (size before relaxing)
- .debug_str     0x000000000012b2ff      0xe4b driver_init.o
+ .debug_str     0x000000000012b2f9      0xe4b driver_init.o
                                       0xedec4 (size before relaxing)
- .debug_str     0x000000000012c14a      0x398 hal/src/hal_usart_async.o
+ .debug_str     0x000000000012c144      0x398 hal/src/hal_usart_async.o
                                       0xe8219 (size before relaxing)
- .debug_str     0x000000000012c4e2     0x606a hpl/sercom/hpl_sercom.o
+ .debug_str     0x000000000012c4dc     0x606a hpl/sercom/hpl_sercom.o
                                       0xf0a08 (size before relaxing)
- .debug_str     0x000000000013254c       0x24 hal/utils/src/utils_ringbuffer.o
+ .debug_str     0x0000000000132546       0x24 hal/utils/src/utils_ringbuffer.o
                                       0xe73d8 (size before relaxing)
- .debug_str     0x0000000000132570       0x63 hal/src/hal_atomic.o
+ .debug_str     0x000000000013256a       0x63 hal/src/hal_atomic.o
                                       0xe7334 (size before relaxing)
- .debug_str     0x00000000001325d3      0x8c6 main.o
-                                     0x1032b1 (size before relaxing)
- .debug_str     0x0000000000132e99       0x58 hal/src/hal_qspi_dma.o
+ .debug_str     0x00000000001325cd      0x8c6 main.o
+                                     0x1032ab (size before relaxing)
+ .debug_str     0x0000000000132e93       0x58 hal/src/hal_qspi_dma.o
                                       0xe7b2b (size before relaxing)
- .debug_str     0x0000000000132ef1     0x1af2 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
+ .debug_str     0x0000000000132eeb     0x1af2 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
                                        0xe141 (size before relaxing)
- .debug_str     0x00000000001349e3       0x69 hal/src/hal_evsys.o
+ .debug_str     0x00000000001349dd       0x69 hal/src/hal_evsys.o
                                       0xe740a (size before relaxing)
- .debug_str     0x0000000000134a4c     0x16e6 hpl/adc/hpl_adc.o
+ .debug_str     0x0000000000134a46     0x16e6 hpl/adc/hpl_adc.o
                                       0xef163 (size before relaxing)
- .debug_str     0x0000000000136132      0xca8 samd51a/gcc/gcc/startup_samd51.o
+ .debug_str     0x000000000013612c      0xca8 samd51a/gcc/gcc/startup_samd51.o
                                       0xd1b4c (size before relaxing)
- .debug_str     0x0000000000136dda       0x11 atmel_start.o
+ .debug_str     0x0000000000136dd4       0x11 atmel_start.o
                                       0xfa47d (size before relaxing)
- .debug_str     0x0000000000136deb      0x49c usb/device/usbdc.o
+ .debug_str     0x0000000000136de5      0x49c usb/device/usbdc.o
                                       0xedeb0 (size before relaxing)
- .debug_str     0x0000000000137287     0x11b2 hpl/tc/hpl_tc.o
+ .debug_str     0x0000000000137281     0x11b2 hpl/tc/hpl_tc.o
                                       0xea3d9 (size before relaxing)
- .debug_str     0x0000000000138439       0xcd hpl/systick/hpl_systick.o
+ .debug_str     0x0000000000138433       0xcd hpl/systick/hpl_systick.o
                                       0xe738c (size before relaxing)
- .debug_str     0x0000000000138506      0x186 hpl/dsu/hpl_dsu.o
+ .debug_str     0x0000000000138500      0x186 hpl/dsu/hpl_dsu.o
                                       0xe78ca (size before relaxing)
 
 .debug_frame    0x0000000000000000    0x10fdc

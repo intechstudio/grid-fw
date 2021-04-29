@@ -351,7 +351,7 @@ void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
 		
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
-		grid_ui_event_init(ele, 1, GRID_UI_EVENT_AVC7); // Absolute Value Change (7bit)
+		grid_ui_event_init(ele, 1, GRID_UI_EVENT_AC); // Absolute Value Change (7bit)
 		
 		
 	}
@@ -879,9 +879,9 @@ void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_u
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 			
 		}
-		else if (event_type == GRID_UI_EVENT_AVC7){
+		else if (event_type == GRID_UI_EVENT_AC){
 			
-			sprintf(event_string, GRID_EVENTSTRING_AVC7_POT); // !!
+			sprintf(event_string, GRID_EVENTSTRING_AC_POT); // !!
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 			
 		}
@@ -947,7 +947,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_
 		
 		switch(event_type){
 			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT_BUT);		break;
-			case GRID_UI_EVENT_AVC7:	sprintf(action_string, GRID_ACTIONSTRING_AVC7_POT);		break;
+			case GRID_UI_EVENT_AC:	sprintf(action_string, GRID_ACTIONSTRING_AC_POT);		break;
 		}
 		
 	}

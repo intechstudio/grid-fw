@@ -422,7 +422,7 @@ enum grid_ui_event_t {
 	
 	GRID_UI_EVENT_INIT,
 		
-	GRID_UI_EVENT_AVC7,
+	GRID_UI_EVENT_AC,
 	GRID_UI_EVENT_EC,
 	GRID_UI_EVENT_BC,
 	GRID_UI_EVENT_MAPMODE_PRESS,
@@ -444,7 +444,7 @@ enum grid_ui_event_t {
 
 #define GRID_EVENTSTRING_HEARTBEAT		"\x02""050e<?expr p(Z0) ?>000c00\x03"
 
-#define GRID_EVENTSTRING_AVC7_POT		"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>01<?expr p(T2) ?>\x03"
+#define GRID_EVENTSTRING_AC_POT		"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>01<?expr p(T2) ?>\x03"
 
 #define GRID_EVENTSTRING_BC				"\x02""050e<?expr p(Z0) ?><?expr p(T0) ?>04<?expr p(T5) ?>\x03"
 
@@ -475,13 +475,13 @@ enum grid_ui_event_t {
 #define GRID_ACTIONSTRING_INIT_BUT			"\x02""041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
 #define GRID_ACTIONSTRING_INIT_ENC			"<\x02""041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03\x02""041e<?expr p(T0) ?>02<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
 
-//#define GRID_ACTIONSTRING_AVC7_POT			"<?lua gsm(0,176,this.T[0],this.T[2]) glsp(this.T[0], 1) ?>"
+//#define GRID_ACTIONSTRING_AC_POT			"<?lua gsm(0,176,this.T[0],this.T[2]) glsp(this.T[0], 1) ?>"
 
 
-#define GRID_ACTIONSTRING_AVC7_POT			"<?lua this.T[4]=16383 this.T[5]=9 gsm(0,176,this.T[0],this.T[2]//128) gsm(0,176,this.T[0]+32,this.T[2]%%128) glsp(this.T[0], 1) ?>"
+#define GRID_ACTIONSTRING_AC_POT			"<?lua this.T[4]=16383 this.T[5]=9 gsm(0,176,this.T[0],this.T[2]//128) gsm(0,176,this.T[0]+32,this.T[2]%%128) glsp(this.T[0], 1) ?>"
 
 // 14bit     gsm(0,176,this.T[0],this.T[2]//128) gsm(0,176,this.T[0]+32,this.T[2]%%128)
-//#define GRID_ACTIONSTRING_AVC7_POT			"<?lua this.T[4]=16383 this.T[5]=9  gslp(this.T[0], 1) ?>"
+//#define GRID_ACTIONSTRING_AC_POT			"<?lua this.T[4]=16383 this.T[5]=9  gslp(this.T[0], 1) ?>"
 
 #define GRID_ACTIONSTRING_BC				"<?lua if (this.T[2] > 0) then grid_led_set_pfs(this.T[0], 2, 0, 1, (this.T[0])%%4) else  grid_led_set_pfs(this.T[0], 2, 0, 0, 0) end ?>"
 
