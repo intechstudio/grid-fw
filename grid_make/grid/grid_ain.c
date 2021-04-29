@@ -8,10 +8,6 @@
 #include "grid_ain.h"
 
 
-struct AIN_Channel* ain_channel_buffer;
-
-
-
 uint8_t grid_ain_channel_init(struct AIN_Channel* instance , uint8_t buffer_depth, uint8_t result_format, uint8_t result_resolution){
 	
 	instance->buffer_depth = buffer_depth;
