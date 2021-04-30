@@ -364,6 +364,71 @@ enum grid_template_b_parameter_index_t {
 
 
 
+#define GRID_LUA_FNC_LED_PHASE_short 		"glp"		// led_value()
+#define GRID_LUA_FNC_LED_PHASE_fnptr 		l_grid_led_set_phase
+
+#define GRID_LUA_FNC_LED_MIN_short 			"gln"		// led_color_min()
+#define GRID_LUA_FNC_LED_MIN_fnptr 			l_grid_led_set_min
+
+#define GRID_LUA_FNC_LED_MID_short 			"gld"		// led_color_mid()
+#define GRID_LUA_FNC_LED_MID_fnptr 			l_grid_led_set_mid
+
+#define GRID_LUA_FNC_LED_MAX_short 			"glx"		// led_color_max()
+#define GRID_LUA_FNC_LED_MAX_fnptr 			l_grid_led_set_max
+
+#define GRID_LUA_FNC_LED_COLOR_short 		"glc"		// led_color()
+#define GRID_LUA_FNC_LED_COLOR_fnptr 		l_grid_led_set_color
+
+#define GRID_LUA_FNC_LED_FREQUENCY_short 	"glf"		// led_animation_rate()
+#define GRID_LUA_FNC_LED_FREQUENCY_fnptr	l_grid_led_set_frequency
+
+#define GRID_LUA_FNC_LED_SHAPE_short 		"gls"		// led_animation_type()
+#define GRID_LUA_FNC_LED_SHAPE_fnptr		l_grid_led_set_phase
+
+#define GRID_LUA_FNC_LED_PSF_short 			"glpfs"		// led_animation_phase_rate_type()
+#define GRID_LUA_FNC_LED_PSF_fnptr			l_grid_led_set_pfs
+
+#define GRID_LUA_FNC_MIDI_SEND_short 		"gms"		// midi_send()
+#define GRID_LUA_FNC_MIDI_SEND_fnptr		l_grid_midi_send
+
+
+/*
+
+LUA     HUMAN
+
+p()         print()
+
+gms()       midi_send()
+gmr()       midi_receive()
+
+gks()       keyboard_send()
+
+gps()       page_select()
+gpsn()      page_select_next()
+gpsp()      page_select_prev()
+
+gzx         module_position_x
+gzy         module_position_y
+gzr         module_rotation            
+
+local ch = 0 + 4*module_position_y
+local cmd = 176
+local num = this.encoder_number + 16*module_position_x
+local val = this.encoder_value
+
+midi_send(ch, cmd, num, val)
+
+element[0].button_value
+
+uptime
+resetcause
+memory states
+version
+stored config version
+stored config date
+
+*/
+
 #define GRID_TEMPLATE_E_ELEMENT_INDEX_index		0
 #define GRID_TEMPLATE_E_ELEMENT_INDEX_helper	"0"
 #define GRID_TEMPLATE_E_ELEMENT_INDEX_short     "ind"   //element_index
@@ -552,13 +617,13 @@ enum grid_ui_event_t {
 // 14bit     gsm(0,176,this.T[0],this.T[2]//128) gsm(0,176,this.T[0]+32,this.T[2]%%128)
 //#define GRID_ACTIONSTRING_AC_POT			"<?lua this.T[4]=16383 this.T[5]=9  gslp(this.T[0], 1) ?>"
 
-#define GRID_ACTIONSTRING_BC				"<?lua if (this.T[2] > 0) then grid_led_set_pfs(this.T[0], 2, 0, 1, (this.T[0])%%4) else  grid_led_set_pfs(this.T[0], 2, 0, 0, 0) end ?>"
+#define GRID_ACTIONSTRING_BC				"<?lua gln(this.ind(),2,255,7,0) if (this.bva()>0) then glpfs(this.ind(),2,0,1,(this.ind())%%4) else glpfs(this.ind(), 2, 0, 0, 0) end ?>"
 
 //#define GRID_ACTIONSTRING_EC				"<?lua grid_send_midi(0,176,this.enu(),this.eva()) grid_led_set_phase(this.ind(), 1, this.eva()) ?>"
 // 14bit midi test
 // #define GRID_ACTIONSTRING_EC				"<?lua this.T[11]=16383 gsm(0,176,this.T[0],this.T[9]//128) gsm(0,176,this.T[0]+32,this.T[9]%%128) glsp(this.T[0], 1, this.T[9]//128) ?>"
 
-#define GRID_ACTIONSTRING_EC				"<?lua this.ema(100) glsp(this.ind(), 1, this.eva()) ?>"
+#define GRID_ACTIONSTRING_EC				"<?lua gms(0, 176, this.ind(), this.eva()) gld(this.ind(), 1 , 0, 130, 0) glp(this.ind(), 1, this.eva()) ?>"
 
 
 #define GRID_ACTIONSTRING_MAPMODE_PRESS		"\x02""030e<?expr p(Z5) ?>\x03"

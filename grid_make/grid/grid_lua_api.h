@@ -68,56 +68,6 @@ uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod);
 
 
 
-/*
-
-LUA     HUMAN
-
-p()         print()
-
-glp()       led_value()
-
-glcn()      led_color_min()
-glcd()      led_color_mid()
-glcx()      led_color_max()
-
-glc()       led_color()
-
-glaf()      led_animation_rate()
-glas()      led_animation_type()
-
-glapfs()    led_animation_phase_rate_type
-
-gms()       midi_send()
-gmr()       midi_receive()
-
-gks()       keyboard_send()
-
-gps()       page_select()
-gpsn()      page_select_next()
-gpsp()      page_select_prev()
-
-gzx         module_position_x
-gzy         module_position_y
-gzr         module_rotation            
-
-local ch = 0 + 4*module_position_y
-local cmd = 176
-local num = this.encoder_number + 16*module_position_x
-local val = this.encoder_value
-
-midi_send(ch, cmd, num, val)
-
-element[0].button_value
-
-uptime
-resetcause
-memory states
-version
-stored config version
-stored config date
-
-*/
-
 
 
 #endif

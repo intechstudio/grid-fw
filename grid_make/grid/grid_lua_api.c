@@ -86,6 +86,47 @@ static int l_grid_send(lua_State* L) {
     return 0;
 }
 
+
+
+static int l_grid_midi_send(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=4){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[4] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    uint8_t channel = param[0];
+    uint8_t command = param[1];
+    uint8_t param1 = param[2];
+    uint8_t param2 = param[3];
+
+
+    uint8_t midiframe[20] = {0};
+
+    sprintf(midiframe, GRID_CLASS_MIDI_frame);
+
+    grid_msg_set_parameter(midiframe, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+
+    grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, channel, NULL);
+    grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, command, NULL);
+    grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, param1, NULL);
+    grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2, NULL);
+    
+    printf("MIDI: %s\r\n", midiframe);  
+    strcat(grid_lua_state.stdo, midiframe);
+
+    return 1;
+}
+
 static int l_grid_led_set_phase(lua_State* L) {
 
     int nargs = lua_gettop(L);
@@ -224,6 +265,28 @@ static int l_grid_led_set_max(lua_State* L) {
     }
 
     grid_led_set_max(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+
+
+    return 0;
+}
+
+static int l_grid_led_set_color(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=5){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[5] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    grid_led_set_color(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
 
 
     return 0;
@@ -438,42 +501,22 @@ static int l_grid_template_variable(lua_State* L) {
 static const struct luaL_Reg printlib [] = {
   {"print", l_my_print},
   {"grid_send", l_grid_send},
-  {"grid_led_set_phase", l_grid_led_set_phase},
-  {"glsp", l_grid_led_set_phase},
-  {"grid_led_set_min", l_grid_led_set_min},
-  {"grid_led_set_mid", l_grid_led_set_mid},
-  {"grid_led_set_max", l_grid_led_set_max},
-  {"grid_led_set_frequency", l_grid_led_set_frequency},
-  {"grid_led_set_shape", l_grid_led_set_shape},
-  {"grid_led_set_pfs", l_grid_led_set_pfs},
-  {"grid_load_template_variables", l_grid_load_template_variables},
-  {"grid_store_template_variables", l_grid_store_template_variables},
+  {GRID_LUA_FNC_LED_PHASE_short, GRID_LUA_FNC_LED_PHASE_fnptr},
+  {GRID_LUA_FNC_LED_MIN_short, GRID_LUA_FNC_LED_MIN_fnptr},
+  {GRID_LUA_FNC_LED_MID_short, GRID_LUA_FNC_LED_MID_fnptr},
+  {GRID_LUA_FNC_LED_MAX_short, GRID_LUA_FNC_LED_MAX_fnptr},
+  {GRID_LUA_FNC_LED_COLOR_short, GRID_LUA_FNC_LED_COLOR_fnptr},
+  {GRID_LUA_FNC_LED_FREQUENCY_short, GRID_LUA_FNC_LED_FREQUENCY_fnptr},
+  {GRID_LUA_FNC_LED_SHAPE_short, GRID_LUA_FNC_LED_SHAPE_fnptr},
+  {GRID_LUA_FNC_LED_PSF_short, GRID_LUA_FNC_LED_PSF_fnptr},
+
+  {GRID_LUA_FNC_MIDI_SEND_short, GRID_LUA_FNC_MIDI_SEND_fnptr},
+  
+
   {"gtv", l_grid_template_variable},
   
   {NULL, NULL} /* end of array */
 };
-/*
-
-LUA		JS			HUMAN
-
-ind		index  		element_index
-
-bnu		b_number	button_number
-bva		b_value		button_value
-bmi		b_min		button_min
-bma		b_max		button_max
-bmo		b_mode		button_mode
-ble		b_elapsed	button_elapsed_time
-bts		b_state		button_state
-
-enu		e_number	encoder_number
-eva		e_value		encoder_value
-emi		e_min		encoder_min
-ema		e_max		encoder_max
-emo		e_mode		encoder_mode
-eel		e_elapsed	encoder_elapsed_time
-
-*/
 
 
 
@@ -526,8 +569,8 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
     grid_lua_dostring(mod, "p2x = function(num) local a local b  if num%16 < 10 then a = string.char(48+num%16) else a = string.char(97+num%16-10) end if num//16 < 10 then b = string.char(48+num//16) else b = string.char(97+num//16-10) end return b .. a end");
     grid_lua_debug_memory_stats(mod, "P2X");
 
-    grid_lua_dostring(mod, "grid_send_midi = function(ch, cmd, p1, p2) grid_send('000e', p2x(ch), p2x(cmd), p2x(p1), p2x(p2)) end");
-    grid_lua_dostring(mod, "gsm = grid_send_midi");
+    //grid_lua_dostring(mod, "grid_send_midi = function(ch, cmd, p1, p2) grid_send('000e', p2x(ch), p2x(cmd), p2x(p1), p2x(p2)) end");
+    //grid_lua_dostring(mod, "gsm = grid_send_midi");
 
     grid_lua_debug_memory_stats(mod, "grid_send");
 
@@ -543,10 +586,7 @@ uint8_t grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys)
 
     printf("LUA UI INIT HWCFG:%d\r\n", grid_sys_get_hwcfg(sys));
 
-
     //register init functions for different ui elements
-
-
 
     switch (grid_sys_get_hwcfg(sys)){
 
