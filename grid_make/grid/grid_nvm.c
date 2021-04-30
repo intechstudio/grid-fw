@@ -233,11 +233,11 @@ uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t le
 				}
 
 				if (failed_count == 0){
-					printf("\r\n\r\nHAPPY!!!!\r\n\r\n");
+					//printf("\r\n\r\nHAPPY!!!!\r\n\r\n");
 					break;
 				}
 				else{
-						printf("\r\n\r\nANGRY!!!!\r\n\r\n");
+						//printf("\r\n\r\nANGRY!!!!\r\n\r\n");
 				}
 
 			}

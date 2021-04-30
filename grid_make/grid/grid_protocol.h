@@ -362,76 +362,92 @@ enum grid_template_b_parameter_index_t {
 	
 };
 
-/*
 
-index  			READ-ONLY
 
-b_number
-b_value
-b_min
-b_max
-b_mode
-b_elapsed
-b_state
+#define GRID_TEMPLATE_E_ELEMENT_INDEX_index		0
+#define GRID_TEMPLATE_E_ELEMENT_INDEX_helper	"0"
+#define GRID_TEMPLATE_E_ELEMENT_INDEX_short     "ind"   //element_index
 
-*/
+#define GRID_TEMPLATE_E_BUTTON_NUMBER_index     1
+#define GRID_TEMPLATE_E_BUTTON_NUMBER_helper    "1"
+#define GRID_TEMPLATE_E_BUTTON_NUMBER_short     "bnu"   //button_number
 
+#define GRID_TEMPLATE_E_BUTTON_VALUE_index		2
+#define GRID_TEMPLATE_E_BUTTON_VALUE_helper		"2"
+#define GRID_TEMPLATE_E_BUTTON_VALUE_short      "bva"   //button_value
+
+#define GRID_TEMPLATE_E_BUTTON_MIN_index		3
+#define GRID_TEMPLATE_E_BUTTON_MIN_helper		"3"
+#define GRID_TEMPLATE_E_BUTTON_MIN_short        "bmi"   //button_min
+
+#define GRID_TEMPLATE_E_BUTTON_MAX_index		4
+#define GRID_TEMPLATE_E_BUTTON_MAX_helper		"4"
+#define GRID_TEMPLATE_E_BUTTON_MAX_short        "bma"   //button_max
+
+#define GRID_TEMPLATE_E_BUTTON_MODE_index		5
+#define GRID_TEMPLATE_E_BUTTON_MODE_helper		"5"
+#define GRID_TEMPLATE_E_BUTTON_MODE_short       "bmo"   //button_mode
+
+#define GRID_TEMPLATE_E_BUTTON_ELAPSED_index	6
+#define GRID_TEMPLATE_E_BUTTON_ELAPSED_helper	"6"
+#define GRID_TEMPLATE_E_BUTTON_ELAPSED_short    "bel"   //button_elapsed_time
+
+#define GRID_TEMPLATE_E_BUTTON_STATE_index		7
+#define GRID_TEMPLATE_E_BUTTON_STATE_helper		"7"
+#define GRID_TEMPLATE_E_BUTTON_STATE_short      "bst"   //button_state
+
+#define GRID_TEMPLATE_E_ENCODER_NUMBER_index	8
+#define GRID_TEMPLATE_E_ENCODER_NUMBER_helper	"8"
+#define GRID_TEMPLATE_E_ENCODER_NUMBER_short    "enu"   //encoder_number
+
+#define GRID_TEMPLATE_E_ENCODER_VALUE_index		9
+#define GRID_TEMPLATE_E_ENCODER_VALUE_helper	"9"
+#define GRID_TEMPLATE_E_ENCODER_VALUE_short     "eva"   //encoder_value
+
+#define GRID_TEMPLATE_E_ENCODER_MIN_index		10
+#define GRID_TEMPLATE_E_ENCODER_MIN_helper		"10"
+#define GRID_TEMPLATE_E_ENCODER_MIN_short       "emi"   //encoder_min
+
+#define GRID_TEMPLATE_E_ENCODER_MAX_index		11
+#define GRID_TEMPLATE_E_ENCODER_MAX_helper		"11"
+#define GRID_TEMPLATE_E_ENCODER_MAX_short       "ema"   //encoder_max
+
+#define GRID_TEMPLATE_E_ENCODER_MODE_index		12
+#define GRID_TEMPLATE_E_ENCODER_MODE_helper		"12"
+#define GRID_TEMPLATE_E_ENCODER_MODE_short      "emo"   //encoder_mode
+
+#define GRID_TEMPLATE_E_ENCODER_ELAPSED_index	13
+#define GRID_TEMPLATE_E_ENCODER_ELAPSED_helper	"13"
+#define GRID_TEMPLATE_E_ENCODER_ELAPSED_short   "eel"   //encoder_elapsed_time
 
 // Encoder parameters
-#define GRID_TEMPLATE_E_LIST_LENGTH    14 // 16 makes the grid freeze 
+#define GRID_TEMPLATE_E_LIST_LENGTH    			14
 
-enum grid_template_e_parameter_index_t {
-	
-	GRID_TEMPLATE_E_ELEMENT_INDEX,
-	
-	GRID_TEMPLATE_E_BUTTON_NUMBER,
-	
-	GRID_TEMPLATE_E_BUTTON_VALUE,
-	GRID_TEMPLATE_E_BUTTON_MIN,	   // min value
-	GRID_TEMPLATE_E_BUTTON_MAX,	   // max value
-	GRID_TEMPLATE_E_BUTTON_MODE,   // 0:abs, 1,2,3,4: toggle
-	GRID_TEMPLATE_E_BUTTON_ELAPSED,  
-	GRID_TEMPLATE_E_BUTTON_STATE,
+// Encoder init function
+#define GRID_LUA_E_LIST_init	"init_encoder = function (e, i) \
+	 \
+	e."GRID_TEMPLATE_E_ELEMENT_INDEX_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_ELEMENT_INDEX_helper", a) end \
+	\
+	e."GRID_TEMPLATE_E_BUTTON_NUMBER_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_BUTTON_NUMBER_helper", a) end \
+	e."GRID_TEMPLATE_E_BUTTON_VALUE_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_BUTTON_VALUE_helper", a) end \
+	e."GRID_TEMPLATE_E_BUTTON_MIN_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_BUTTON_MIN_helper", a) end \
+	e."GRID_TEMPLATE_E_BUTTON_MAX_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_BUTTON_MAX_helper", a) end \
+	e."GRID_TEMPLATE_E_BUTTON_MODE_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_BUTTON_MODE_helper", a) end \
+	e."GRID_TEMPLATE_E_BUTTON_ELAPSED_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_BUTTON_ELAPSED_helper", a) end \
+	e."GRID_TEMPLATE_E_BUTTON_STATE_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_BUTTON_STATE_helper", a) end \
+	\
+	e."GRID_TEMPLATE_E_ENCODER_NUMBER_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_ENCODER_NUMBER_helper", a) end \
+	e."GRID_TEMPLATE_E_ENCODER_VALUE_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_ENCODER_VALUE_helper", a) end \
+	e."GRID_TEMPLATE_E_ENCODER_MIN_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_ENCODER_MIN_helper", a) end \
+	e."GRID_TEMPLATE_E_ENCODER_MAX_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_ENCODER_MAX_helper", a) end \
+	e."GRID_TEMPLATE_E_ENCODER_MODE_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_ENCODER_MODE_helper", a) end \
+	e."GRID_TEMPLATE_E_ENCODER_ELAPSED_short"=function (a) return gtv(i, "GRID_TEMPLATE_E_ENCODER_ELAPSED_helper", a) end \
+    end"
 
-	GRID_TEMPLATE_E_ENCODER_NUMBER,
-	
-	GRID_TEMPLATE_E_ENCODER_VALUE,
-	GRID_TEMPLATE_E_ENCODER_MIN,	// min value
-	GRID_TEMPLATE_E_ENCODER_MAX,	// max value
-	GRID_TEMPLATE_E_ENCODER_MODE,   // 0:abs, 1:rel
-	GRID_TEMPLATE_E_ENCODER_ELAPSED,   // 0:abs, 1:rel
-	
-};
-
-
-/*
-
-LUA		JS			HUMAN
-
-ind		index  		element_index
-
-bnu		b_number	button_number
-bva		b_value		button_value
-bmi		b_min		button_min
-bma		b_max		button_max
-bmo		b_mode		button_mode
-ble		b_elapsed	button_elapsed_time
-bts		b_state		button_state
-
-enu		e_number	encoder_number
-eva		e_value		encoder_value
-emi		e_min		encoder_min
-ema		e_max		encoder_max
-emo		e_mode		encoder_mode
-eel		e_elapsed	encoder_elapsed_time
-
-*/
+#define GRID_LUA_KW_ELEMENT_short "ele"
+#define GRID_LUA_KW_THIS_short "this"
 
 
-// mode: absolute/relative
-// velocity: curve parameters
-// resolution
-// 
 
 // Global parameters
 #define GRID_TEMPLATE_Z_PARAMETER_LIST_LENGTH    6
@@ -538,9 +554,12 @@ enum grid_ui_event_t {
 
 #define GRID_ACTIONSTRING_BC				"<?lua if (this.T[2] > 0) then grid_led_set_pfs(this.T[0], 2, 0, 1, (this.T[0])%%4) else  grid_led_set_pfs(this.T[0], 2, 0, 0, 0) end ?>"
 
-#define GRID_ACTIONSTRING_EC				"<?lua grid_send_midi(0,176,this.T[0],this.T[9]) grid_led_set_phase(this.T[0], 1, this.T[9]) ?>"
+//#define GRID_ACTIONSTRING_EC				"<?lua grid_send_midi(0,176,this.enu(),this.eva()) grid_led_set_phase(this.ind(), 1, this.eva()) ?>"
 // 14bit midi test
 // #define GRID_ACTIONSTRING_EC				"<?lua this.T[11]=16383 gsm(0,176,this.T[0],this.T[9]//128) gsm(0,176,this.T[0]+32,this.T[9]%%128) glsp(this.T[0], 1, this.T[9]//128) ?>"
+
+#define GRID_ACTIONSTRING_EC				"<?lua this.ema(100) glsp(this.ind(), 1, this.eva()) ?>"
+
 
 #define GRID_ACTIONSTRING_MAPMODE_PRESS		"\x02""030e<?expr p(Z5) ?>\x03"
 #define GRID_ACTIONSTRING_MAPMODE_RELEASE	""

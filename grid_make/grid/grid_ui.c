@@ -1204,31 +1204,24 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				cycles[0] = grid_d51_dwt_cycles_read();
 
-				// element index
-				uint8_t load_script[100] = {0};
-				sprintf(load_script, "grid_load_template_variables(%d)", eve->parent->index);
-				grid_lua_dostring(&grid_lua_state, load_script);
-				
-				// for (uint8_t t=0; t<10; t+=8){
-				// 	char varname[] = "T0";
-				// 	varname[1] = '0'+t;
-				// 	int32_t varvalue = eve->parent->template_parameter_list[t];
+				// // element index
+				// uint8_t load_script[100] = {0};
+				// sprintf(load_script, "grid_load_template_variables(%d)", eve->parent->index);
+				// grid_lua_dostring(&grid_lua_state, load_script);
 
-				// 	lua_pushinteger(grid_lua_state.L, varvalue);
-				// 	lua_setglobal(grid_lua_state.L, varname);
-				// 	lua_pop(grid_lua_state.L, lua_gettop(grid_lua_state.L));
-				// }
-
-				
+				uint8_t str_to_do[100] = {0};
+				sprintf(str_to_do, "this = "GRID_LUA_KW_ELEMENT_short"[%d]", eve->parent->index);    
+				grid_lua_dostring(&grid_lua_state, str_to_do);
+							
 				cycles[1] = grid_d51_dwt_cycles_read();
 
 				grid_lua_dostring(&grid_lua_state, &temp[code_start+6]); // +6 is length of "<?lua "
 
 				cycles[2] = grid_d51_dwt_cycles_read();
 				
-				uint8_t store_script[100] = {0};
-				sprintf(store_script, "grid_store_template_variables(%d)", eve->parent->index);
-				grid_lua_dostring(&grid_lua_state, store_script);
+				// uint8_t store_script[100] = {0};
+				// sprintf(store_script, "grid_store_template_variables(%d)", eve->parent->index);
+				// grid_lua_dostring(&grid_lua_state, store_script);
 
 
 
@@ -1326,12 +1319,12 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 		int32_t* template_parameter_list = eve->parent->template_parameter_list;
 
-		if (template_parameter_list[GRID_TEMPLATE_E_ENCODER_MODE] != 0){ // relative
+		if (template_parameter_list[GRID_TEMPLATE_E_ENCODER_MODE_index] != 0){ // relative
 
-			int32_t min = template_parameter_list[GRID_TEMPLATE_E_ENCODER_MIN];
-			int32_t max = template_parameter_list[GRID_TEMPLATE_E_ENCODER_MAX];
+			int32_t min = template_parameter_list[GRID_TEMPLATE_E_ENCODER_MIN_index];
+			int32_t max = template_parameter_list[GRID_TEMPLATE_E_ENCODER_MAX_index];
 
-			template_parameter_list[GRID_TEMPLATE_E_ENCODER_VALUE] = ((max+1)-min)/2;
+			template_parameter_list[GRID_TEMPLATE_E_ENCODER_VALUE_index] = ((max+1)-min)/2;
 
 		}	
 

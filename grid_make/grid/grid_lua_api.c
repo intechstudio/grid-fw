@@ -44,7 +44,24 @@ static int l_my_print(lua_State* L) {
 
 		    printf(" num: %d ", (int)lnum);
         }
+        else if (lua_type(L, i) == LUA_TNIL){
+            printf(" nil ");
+        }
+        else if (lua_type(L, i) == LUA_TFUNCTION){
+            printf(" fnc ");
+        }
+        else if (lua_type(L, i) == LUA_TTABLE){
+            printf(" table ");
+        }
+        else{
+            printf(" unknown data type ");
+        }
     }
+
+    if (nargs == 0){
+        printf(" no arguments ");
+    }
+
     printf("\r\n");
 
     return 0;
@@ -101,9 +118,9 @@ static int l_grid_led_set_phase(lua_State* L) {
             }
             else if (ele_type == GRID_UI_ELEMENT_ENCODER){
                 
-                min = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_MIN];
-                max = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_MAX];
-                val = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_VALUE];
+                min = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_MIN_index];
+                max = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_MAX_index];
+                val = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_VALUE_index];
             }
             else{
 
@@ -364,6 +381,60 @@ static int l_grid_store_template_variables(lua_State* L) {
     return 0;
 }
 
+static int l_grid_template_variable(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=2 && nargs!=3){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+
+    uint8_t param[3] = {0};
+
+    uint8_t isgetter = 0;
+
+    for (int i=1; i <= nargs; ++i) {
+
+        if (lua_isinteger(L, i)){
+            
+        }
+        else if (lua_isnil(L, i)){
+            printf(" %d : NIL ", i);
+            if (i==3){
+                isgetter = 1;
+            }
+        }
+
+        param[i-1] = lua_tointeger(L, i);
+    }
+    //lua_pop(L, 2);
+
+    if (isgetter){
+
+    }else{
+        printf("SETTER!!!\r\n\r\n");
+    }
+
+
+    if (isgetter){
+
+        int32_t var = grid_ui_state.bank_list[grid_sys_get_bank_num(&grid_sys_state)].element_list[param[0]].template_parameter_list[param[1]];
+        printf("GTV Getter: %d %d %d : %d\r\n", param[0], param[1], param[2], var);
+        lua_pushinteger(L, var);
+
+    }
+    else{
+        int32_t var =  param[2];
+        grid_ui_state.bank_list[grid_sys_get_bank_num(&grid_sys_state)].element_list[param[0]].template_parameter_list[param[1]] = var;
+        printf("GTV Setter: %d %d %d : %d\r\n", param[0], param[1], param[2], var);
+        //lua_pushinteger(L, var);
+    }
+    
+    return 1;
+}
+
 static const struct luaL_Reg printlib [] = {
   {"print", l_my_print},
   {"grid_send", l_grid_send},
@@ -377,64 +448,32 @@ static const struct luaL_Reg printlib [] = {
   {"grid_led_set_pfs", l_grid_led_set_pfs},
   {"grid_load_template_variables", l_grid_load_template_variables},
   {"grid_store_template_variables", l_grid_store_template_variables},
+  {"gtv", l_grid_template_variable},
   
   {NULL, NULL} /* end of array */
 };
-
 /*
 
-LUA     HUMAN
+LUA		JS			HUMAN
 
-p()         print()
+ind		index  		element_index
 
-glsp()      led_value()
+bnu		b_number	button_number
+bva		b_value		button_value
+bmi		b_min		button_min
+bma		b_max		button_max
+bmo		b_mode		button_mode
+ble		b_elapsed	button_elapsed_time
+bts		b_state		button_state
 
-glsn()      led_color_min()
-glsd()      led_color_mid()
-glsx()      led_color_max()
-
-glsc()      led_color()
-
-glsf()      led_animation_rate()
-glss()      led_animation_type()
-
-glspfs()    led_animation_phase_rate_type
-
-gms()       midi_send()
-gmr()       midi_receive()
-
-gsk()       keyboard_send()
-
-gps()       page_select()
-gpsn()      page_select_next()
-gpsp()      page_select_prev()
-
-gzx         module_position_x
-gzy         module_position_y
-gzr         module_rotation            
-
-local ch = 0 + 4*module_position_y
-local cmd = 176
-local num = this.encoder_number + 16*module_position_x
-local val = this.encoder_value
-
-midi_send(ch, cmd, num, val)
-
-element[0].button_value
-
-uptime
-resetcause
-memory states
-version
-stored config version
-stored config date
-
-
-
-
+enu		e_number	encoder_number
+eva		e_value		encoder_value
+emi		e_min		encoder_min
+ema		e_max		encoder_max
+emo		e_mode		encoder_mode
+eel		e_elapsed	encoder_elapsed_time
 
 */
-
 
 
 
@@ -492,6 +531,8 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 
     grid_lua_debug_memory_stats(mod, "grid_send");
 
+
+
     grid_lua_ui_init(mod, &grid_sys_state);
 
 
@@ -501,6 +542,10 @@ uint8_t grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys)
 
 
     printf("LUA UI INIT HWCFG:%d\r\n", grid_sys_get_hwcfg(sys));
+
+
+    //register init functions for different ui elements
+
 
 
     switch (grid_sys_get_hwcfg(sys)){
@@ -563,23 +608,28 @@ uint8_t grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
     grid_lua_dostring(mod, "element = {} this = {}");
 
     // initialize 16 encoders
-    grid_lua_dostring(mod, "for i=0, 15 do element[i] = {} init_encoder(element[i]) end");
+    grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_encoder("GRID_LUA_KW_ELEMENT_short"[i]) end");
     
     printf("LUA UI INIT\r\n");
+
 }
+
+
+
 
 uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod){
 
     printf("LUA UI INIT EN16\r\n");
     // define encoder_init_function
-    grid_lua_dostring(mod, "init_encoder = function (e) e.T = {} for i=0, 14 do e.T[i] = 0 end end");
+
+    grid_lua_dostring(mod, GRID_LUA_E_LIST_init);
 
     // create element array
-    grid_lua_dostring(mod, "element = {} this = {}");
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} "GRID_LUA_KW_THIS_short" = {}");
 
     // initialize 16 encoders
-    grid_lua_dostring(mod, "for i=0, 15 do element[i] = {} init_encoder(element[i]) end");
-    
+    grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_encoder(ele[i], i) end");
+
     printf("LUA UI INIT\r\n");
 
 }
