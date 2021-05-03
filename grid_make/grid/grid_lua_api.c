@@ -159,9 +159,9 @@ static int l_grid_led_set_phase(lua_State* L) {
             }
             else if (ele_type == GRID_UI_ELEMENT_ENCODER){
                 
-                min = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_MIN_index];
-                max = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_MAX_index];
-                val = ele->template_parameter_list[GRID_TEMPLATE_E_ENCODER_VALUE_index];
+                min = ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
+                max = ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
+                val = ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
             }
             else{
 
@@ -499,23 +499,23 @@ static int l_grid_template_variable(lua_State* L) {
 }
 
 static const struct luaL_Reg printlib [] = {
-  {"print", l_my_print},
-  {"grid_send", l_grid_send},
-  {GRID_LUA_FNC_LED_PHASE_short, GRID_LUA_FNC_LED_PHASE_fnptr},
-  {GRID_LUA_FNC_LED_MIN_short, GRID_LUA_FNC_LED_MIN_fnptr},
-  {GRID_LUA_FNC_LED_MID_short, GRID_LUA_FNC_LED_MID_fnptr},
-  {GRID_LUA_FNC_LED_MAX_short, GRID_LUA_FNC_LED_MAX_fnptr},
-  {GRID_LUA_FNC_LED_COLOR_short, GRID_LUA_FNC_LED_COLOR_fnptr},
-  {GRID_LUA_FNC_LED_FREQUENCY_short, GRID_LUA_FNC_LED_FREQUENCY_fnptr},
-  {GRID_LUA_FNC_LED_SHAPE_short, GRID_LUA_FNC_LED_SHAPE_fnptr},
-  {GRID_LUA_FNC_LED_PSF_short, GRID_LUA_FNC_LED_PSF_fnptr},
+    {"print", l_my_print},
+    {"grid_send", l_grid_send},
 
-  {GRID_LUA_FNC_MIDI_SEND_short, GRID_LUA_FNC_MIDI_SEND_fnptr},
-  
+    {GRID_LUA_FNC_G_LED_PHASE_short,        GRID_LUA_FNC_G_LED_PHASE_fnptr},
+    {GRID_LUA_FNC_G_LED_MIN_short,          GRID_LUA_FNC_G_LED_MIN_fnptr},
+    {GRID_LUA_FNC_G_LED_MID_short,          GRID_LUA_FNC_G_LED_MID_fnptr},
+    {GRID_LUA_FNC_G_LED_MAX_short,          GRID_LUA_FNC_G_LED_MAX_fnptr},
+    {GRID_LUA_FNC_G_LED_COLOR_short,        GRID_LUA_FNC_G_LED_COLOR_fnptr},
+    {GRID_LUA_FNC_G_LED_FREQUENCY_short,    GRID_LUA_FNC_G_LED_FREQUENCY_fnptr},
+    {GRID_LUA_FNC_G_LED_SHAPE_short,        GRID_LUA_FNC_G_LED_SHAPE_fnptr},
+    {GRID_LUA_FNC_G_LED_PSF_short,          GRID_LUA_FNC_G_LED_PSF_fnptr},
 
-  {"gtv", l_grid_template_variable},
+    {GRID_LUA_FNC_G_MIDI_SEND_short,        GRID_LUA_FNC_G_MIDI_SEND_fnptr},
   
-  {NULL, NULL} /* end of array */
+    {"gtv", l_grid_template_variable},
+  
+    {NULL, NULL} /* end of array */
 };
 
 

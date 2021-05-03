@@ -1319,12 +1319,12 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 		int32_t* template_parameter_list = eve->parent->template_parameter_list;
 
-		if (template_parameter_list[GRID_TEMPLATE_E_ENCODER_MODE_index] != 0){ // relative
+		if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] != 0){ // relative
 
-			int32_t min = template_parameter_list[GRID_TEMPLATE_E_ENCODER_MIN_index];
-			int32_t max = template_parameter_list[GRID_TEMPLATE_E_ENCODER_MAX_index];
+			int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
+			int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
 
-			template_parameter_list[GRID_TEMPLATE_E_ENCODER_VALUE_index] = ((max+1)-min)/2;
+			template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = ((max+1)-min)/2;
 
 		}	
 
