@@ -89,6 +89,9 @@ struct grid_ui_model
 	uint8_t						bank_list_length;
 	struct	grid_ui_bank*		bank_list;
 	
+	void (*page_change_cb)(uint8_t page_old, uint8_t page_new);
+	void (*event_clear_cb)(struct grid_ui_event* eve);
+
 };
 
 

@@ -836,7 +836,7 @@ uint8_t grid_sys_get_bank_number_of_first_valid(struct grid_sys_model* mod){
 
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 	
-
+	uint8_t old_page = mod->bank_activebank_number;
 	
 	if (banknumber == 255){
 			
@@ -881,6 +881,16 @@ void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 		
 		//grid_debug_print_text("Invalid Bank Number");	
 				
+	}
+
+	uint8_t new_page = mod->bank_activebank_number;
+
+	
+	// Call the page_change callback
+	
+	if (grid_ui_state.page_change_cb != NULL){
+
+		grid_ui_state.page_change_cb(old_page, new_page);
 	}
 
 	

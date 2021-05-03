@@ -153,9 +153,9 @@ static int l_grid_led_set_phase(lua_State* L) {
 
             if (ele_type == GRID_UI_ELEMENT_POTENTIOMETER){
 
-                min = ele->template_parameter_list[GRID_TEMPLATE_P_POTMETER_MIN];
-                max = ele->template_parameter_list[GRID_TEMPLATE_P_POTMETER_MAX];
-                val = ele->template_parameter_list[GRID_TEMPLATE_P_POTMETER_VALUE];
+                min = ele->template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index];
+                max = ele->template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index];
+                val = ele->template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index];
             }
             else if (ele_type == GRID_UI_ELEMENT_ENCODER){
                 
@@ -610,46 +610,51 @@ uint8_t grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys)
 
 uint8_t grid_lua_ui_init_po16(struct grid_lua_model* mod){
 
-    printf("LUA UI INIT PO16\r\n");
+     printf("LUA UI INIT PO16\r\n");
     // define encoder_init_function
-    grid_lua_dostring(mod, "init_encoder = function (e) e.T = {} for i=0, 10 do e.T[i] = 0 end end");
+
+    grid_lua_dostring(mod, GRID_LUA_P_LIST_init);
 
     // create element array
-    grid_lua_dostring(mod, "element = {} this = {}");
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} "GRID_LUA_KW_THIS_short" = {}");
 
-    // initialize 16 encoders
-    grid_lua_dostring(mod, "for i=0, 15 do element[i] = {} init_encoder(element[i]) end");
-    
+    // initialize 16 potmeters
+    grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_potmeter(ele[i], i) end");
+
     printf("LUA UI INIT\r\n");
 }
 
 uint8_t grid_lua_ui_init_bu16(struct grid_lua_model* mod){
 
-    printf("LUA UI INIT BU16\r\n");
+     printf("LUA UI INIT BU16\r\n");
     // define encoder_init_function
-    grid_lua_dostring(mod, "init_encoder = function (e) e.T = {} for i=0, 10 do e.T[i] = 0 end end");
+
+    grid_lua_dostring(mod, GRID_LUA_B_LIST_init);
 
     // create element array
-    grid_lua_dostring(mod, "element = {} this = {}");
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} "GRID_LUA_KW_THIS_short" = {}");
 
-    // initialize 16 encoders
-    grid_lua_dostring(mod, "for i=0, 15 do element[i] = {} init_encoder(element[i]) end");
-    
+    // initialize 16 buttons
+    grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_button(ele[i], i) end");
+
     printf("LUA UI INIT\r\n");
 }
 
 uint8_t grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
 
-    printf("LUA UI INIT PBF4\r\n");
+     printf("LUA UI INIT PBF4\r\n");
     // define encoder_init_function
-    grid_lua_dostring(mod, "init_encoder = function (e) e.T = {} for i=0, 10 do e.T[i] = 0 end end");
+
+    grid_lua_dostring(mod, GRID_LUA_P_LIST_init);
+    grid_lua_dostring(mod, GRID_LUA_B_LIST_init);
 
     // create element array
-    grid_lua_dostring(mod, "element = {} this = {}");
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} "GRID_LUA_KW_THIS_short" = {}");
 
-    // initialize 16 encoders
-    grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_encoder("GRID_LUA_KW_ELEMENT_short"[i]) end");
-    
+    // initialize 8 potmeters and 4 buttons
+    grid_lua_dostring(mod, "for i=0, 7  do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_potmeter(ele[i], i) end");
+    grid_lua_dostring(mod, "for i=8, 11 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_button(ele[i], i) end");
+
     printf("LUA UI INIT\r\n");
 
 }

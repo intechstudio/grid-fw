@@ -39,28 +39,6 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 	// Set the shift registers to continuously load data until new transaction is issued
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 
-
-	uint8_t bank = grid_sys_get_bank_num(&grid_sys_state);
-	
-	if (bank == 255){
-		bank=0;
-	}
-
-
-	uint8_t bank_changed = grid_sys_state.bank_active_changed;
-		
-	if (bank_changed){
-		grid_sys_state.bank_active_changed = 0;
-				
-		for (uint8_t i = 0; i<16; i++)
-		{
-
-			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);  
-            grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_EC);
-			
-		}
-	}
-
 	// Buffer is only 8 bytes but we check all 16 encoders separately
 	for (uint8_t j=0; j<16; j++){
 		
@@ -219,6 +197,37 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 	grid_module_en16_reva_hardware_start_transfer();
 }
 
+
+void grid_module_en16_event_clear_cb(struct grid_ui_event* eve){
+
+
+	int32_t* template_parameter_list = eve->parent->template_parameter_list;
+
+	if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] != 0){ // relative
+
+		int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
+		int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
+
+		template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = ((max+1)-min)/2;
+
+	}	
+ 
+}
+
+void grid_module_en16_page_change_cb(uint8_t page_old, uint8_t page_new){
+
+	grid_sys_state.bank_active_changed = 0;
+			
+	for (uint8_t i = 0; i<16; i++)
+	{
+
+		grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);  
+		grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_EC);
+		
+	}
+
+}
+
 void grid_module_en16_reva_hardware_init(void){
 	
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
@@ -294,6 +303,8 @@ void grid_module_en16_reva_init(){
 		
 	}
 	
+	grid_ui_state.event_clear_cb = &grid_module_en16_event_clear_cb;
+	grid_ui_state.page_change_cb = &grid_module_en16_page_change_cb;
 	
 	grid_module_en16_reva_hardware_init();
 	

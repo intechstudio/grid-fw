@@ -1124,41 +1124,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				
 				grid_midi_tx_push(midievent);
 				grid_midi_tx_pop(midievent);				
-// 				while(audiodf_midi_write_status() == USB_BUSY){
-// 					delay_us(20);
-// 					grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 0, 2, 250);
-// 				}
-// 				
-// 				audiodf_midi_write(0<<4|midi_command, midi_command<<4|midi_channel, midi_param1, midi_param2);	
 				
 													
-			}
-			else if (msg_class == GRID_CLASS_MIDIABSOLUTE_code && msg_instr == GRID_INSTR_EXECUTE_code){
-					
-					
-				uint8_t midi_cablecommand =		grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIABSOLUTE_CABLECOMMAND_offset,		GRID_CLASS_MIDIABSOLUTE_CABLECOMMAND_length);
-				uint8_t midi_commandchannel =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIABSOLUTE_COMMANDCHANNEL_offset,		GRID_CLASS_MIDIABSOLUTE_COMMANDCHANNEL_length);
-				uint8_t midi_param1  =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIABSOLUTE_PARAM1_offset  ,			GRID_CLASS_MIDIABSOLUTE_PARAM1_length);
-				uint8_t midi_param2  =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDIABSOLUTE_PARAM2_offset  ,			GRID_CLASS_MIDIABSOLUTE_PARAM2_length);
-					
-				struct grid_midi_event_desc midievent;
-				
-				midievent.byte0 = midi_cablecommand;
-				midievent.byte1 = midi_commandchannel;
-				midievent.byte2 = midi_param1;
-				midievent.byte3 = midi_param2;
-					
-				grid_midi_tx_push(midievent);
-				grid_midi_tx_pop(midievent);	
-					
-// 				while(audiodf_midi_write_status() == USB_BUSY){
-// 					delay_us(20);
-// 					grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 0, 2, 250);
-// 				}
-// 						
-// 				audiodf_midi_write(midi_cablecommand, midi_commandchannel, midi_param1, midi_param2);
-					
-					
 			}
 			else if (msg_class == GRID_CLASS_HIDKEYBOARD_code && msg_instr == GRID_INSTR_EXECUTE_code){
 				
@@ -1179,13 +1146,13 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				grid_keyboard_tx_push(key);
 
 				// instant keychange
-				//grid_keyboard_keychange(&grid_keyboard_state, &key);
+				// grid_keyboard_keychange(&grid_keyboard_state, &key);
 				
 			}
 			else{
-// 					sprintf(&por->tx_double_buffer[output_cursor], "[UNKNOWN] -> Protocol: %d\n", msg_protocol);
-// 					
-// 					output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
+				
+				// sprintf(&por->tx_double_buffer[output_cursor], "[UNKNOWN] -> Protocol: %d\n", msg_protocol);
+				// output_cursor += strlen(&por->tx_double_buffer[output_cursor]);		
 			}
 				
 			current_start = 0;

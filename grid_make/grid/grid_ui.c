@@ -278,6 +278,9 @@ void grid_port_process_ui(struct grid_port* por){
 void grid_ui_model_init(struct grid_ui_model* mod, uint8_t bank_list_length){
 	
 	mod->status = GRID_UI_STATUS_INITIALIZED;
+
+	mod->event_clear_cb = NULL;
+	mod->page_change_cb = NULL;
 	
 	mod->bank_list_length = bank_list_length;	
 	mod->bank_list = malloc(mod->bank_list_length*sizeof(struct grid_ui_bank));
@@ -881,7 +884,7 @@ void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_u
 		}
 		else if (event_type == GRID_UI_EVENT_AC){
 			
-			sprintf(event_string, GRID_EVENTSTRING_AC_POT); // !!
+			sprintf(event_string, GRID_EVENTSTRING_AC); // !!
 			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
 			
 		}
@@ -947,7 +950,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_
 		
 		switch(event_type){
 			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT_BUT);		break;
-			case GRID_UI_EVENT_AC:	sprintf(action_string, GRID_ACTIONSTRING_AC_POT);		break;
+			case GRID_UI_EVENT_AC:	sprintf(action_string, GRID_ACTIONSTRING_AC);		break;
 		}
 		
 	}
@@ -1312,23 +1315,14 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 
 	}
-	
-	
-	// RESET ENCODER RELATIVE TEMPLATE PARAMETER VALUES
-	if(eve->parent->type == GRID_UI_ELEMENT_ENCODER){	
 
-		int32_t* template_parameter_list = eve->parent->template_parameter_list;
 
-		if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] != 0){ // relative
+	// Call the event clear callback
 
-			int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
-			int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
+	if (eve->parent->parent->parent->event_clear_cb != NULL){
 
-			template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = ((max+1)-min)/2;
-
-		}	
-
-    }
+		eve->parent->parent->parent->event_clear_cb(eve);
+	}
 	
 	
 	return eve->event_string_length + eve->action_string_length - total_substituted_length;

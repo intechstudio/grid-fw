@@ -85,7 +85,7 @@
 #define GRID_BRC_ROT_offset 12
 #define GRID_BRC_ROT_length 2
 
-//NEW ERA
+
 
 #define GRID_INSTR_length 1
 #define GRID_INSTR_offset 4
@@ -108,7 +108,9 @@
 #define GRID_CLASS_length 3
 #define GRID_CLASS_offset 1
 
-// ================== MIDI RELATIVE CLASS =================== //
+
+
+// ================== MIDI CLASS =================== //
 #define GRID_CLASS_MIDI_code 0x000
 #define GRID_CLASS_MIDI_frame "%c%03x_........%c", GRID_CONST_STX, GRID_CLASS_MIDI_code, GRID_CONST_ETX
 
@@ -124,21 +126,6 @@
 #define GRID_CLASS_MIDI_PARAM2_offset 11
 #define GRID_CLASS_MIDI_PARAM2_length 2
 
-// ================== MIDI ABSOLUTE CLASS =================== //
-#define GRID_CLASS_MIDIABSOLUTE_code 0x001
-#define GRID_CLASS_MIDIABSOLUTE_frame "%c%03x_........%c", GRID_CONST_STX, GRID_CLASS_MIDIABSOLUTE_code, GRID_CONST_ETX
-
-#define GRID_CLASS_MIDIABSOLUTE_CABLECOMMAND_offset 5
-#define GRID_CLASS_MIDIABSOLUTE_CABLECOMMAND_length 2
-
-#define GRID_CLASS_MIDIABSOLUTE_COMMANDCHANNEL_offset 7
-#define GRID_CLASS_MIDIABSOLUTE_COMMANDCHANNEL_length 2
-
-#define GRID_CLASS_MIDIABSOLUTE_PARAM1_offset 9
-#define GRID_CLASS_MIDIABSOLUTE_PARAM1_length 2
-
-#define GRID_CLASS_MIDIABSOLUTE_PARAM2_offset 11
-#define GRID_CLASS_MIDIABSOLUTE_PARAM2_length 2
 
 // HEARTBEAT (type=0 grid, type=1 gridmaster, type=255 editor)
 #define GRID_CLASS_HEARTBEAT_code 0x010
@@ -288,53 +275,7 @@
 
 #define GRID_TEMPLATE_UI_PARAMETER_LIST_LENGTH 20
 
-// Potentiometer parameters
-#define GRID_TEMPLATE_P_PARAMETER_LIST_LENGTH 7
 
-enum grid_template_p_parameter_index_t
-{
-
-	GRID_TEMPLATE_P_ELEMENT_INDEX,
-	GRID_TEMPLATE_P_POTMETER_NUMBER,
-
-	GRID_TEMPLATE_P_POTMETER_VALUE,
-	GRID_TEMPLATE_P_POTMETER_MIN,  // min value
-	GRID_TEMPLATE_P_POTMETER_MAX,  // max value
-	GRID_TEMPLATE_P_POTMETER_MODE, // resolution
-	GRID_TEMPLATE_P_POTMETER_ELAPSED
-
-};
-
-/*
-
-index  			READ-ONLY
-
-p_number
-p_value
-p_min
-p_max
-p_resolution
-p_elapsed
-
-*/
-
-// Button parameters
-#define GRID_TEMPLATE_B_LIST_LENGTH 8
-
-enum grid_template_b_parameter_index_t
-{
-
-	GRID_TEMPLATE_B_ELEMENT_INDEX,
-	GRID_TEMPLATE_B_BUTTON_NUMBER,
-
-	GRID_TEMPLATE_B_BUTTON_VALUE,
-	GRID_TEMPLATE_B_BUTTON_MIN,	 // min value
-	GRID_TEMPLATE_B_BUTTON_MAX,	 // max value
-	GRID_TEMPLATE_B_BUTTON_MODE, // 0:abs, 1,2,3,4: toggle
-	GRID_TEMPLATE_B_BUTTON_ELAPSED,
-	GRID_TEMPLATE_B_BUTTON_STATE // 0: not pressed
-
-};
 
 #define GRID_LUA_FNC_G_LED_PHASE_short "glp"
 #define GRID_LUA_FNC_G_LED_PHASE_human "led_value"
@@ -383,64 +324,81 @@ stored config date
 
 */
 
+
+// ========================= ENCODER =========================== //
+
 #define GRID_LUA_FNC_E_ELEMENT_INDEX_index 0
 #define GRID_LUA_FNC_E_ELEMENT_INDEX_helper "0"
-#define GRID_LUA_FNC_E_ELEMENT_INDEX_short "ind" //element_index
+#define GRID_LUA_FNC_E_ELEMENT_INDEX_short "ind"
+#define GRID_LUA_FNC_E_ELEMENT_INDEX_human "element_index"
 
 #define GRID_LUA_FNC_E_BUTTON_NUMBER_index 1
 #define GRID_LUA_FNC_E_BUTTON_NUMBER_helper "1"
-#define GRID_LUA_FNC_E_BUTTON_NUMBER_short "bnu" //button_number
+#define GRID_LUA_FNC_E_BUTTON_NUMBER_short "bnu"
+#define GRID_LUA_FNC_E_BUTTON_NUMBER_human "button_number"
 
 #define GRID_LUA_FNC_E_BUTTON_VALUE_index 2
 #define GRID_LUA_FNC_E_BUTTON_VALUE_helper "2"
-#define GRID_LUA_FNC_E_BUTTON_VALUE_short "bva" //button_value
+#define GRID_LUA_FNC_E_BUTTON_VALUE_short "bva"
+#define GRID_LUA_FNC_E_BUTTON_VALUE_human "button_value"
 
 #define GRID_LUA_FNC_E_BUTTON_MIN_index 3
 #define GRID_LUA_FNC_E_BUTTON_MIN_helper "3"
-#define GRID_LUA_FNC_E_BUTTON_MIN_short "bmi" //button_min
+#define GRID_LUA_FNC_E_BUTTON_MIN_short "bmi"
+#define GRID_LUA_FNC_E_BUTTON_MIN_human "button_min"
 
 #define GRID_LUA_FNC_E_BUTTON_MAX_index 4
 #define GRID_LUA_FNC_E_BUTTON_MAX_helper "4"
-#define GRID_LUA_FNC_E_BUTTON_MAX_short "bma" //button_max
+#define GRID_LUA_FNC_E_BUTTON_MAX_short "bma"
+#define GRID_LUA_FNC_E_BUTTON_MAX_human "button_max"
 
 #define GRID_LUA_FNC_E_BUTTON_MODE_index 5
 #define GRID_LUA_FNC_E_BUTTON_MODE_helper "5"
-#define GRID_LUA_FNC_E_BUTTON_MODE_short "bmo" //button_mode
+#define GRID_LUA_FNC_E_BUTTON_MODE_short "bmo"
+#define GRID_LUA_FNC_E_BUTTON_MODE_human "button_mode"
 
 #define GRID_LUA_FNC_E_BUTTON_ELAPSED_index 6
 #define GRID_LUA_FNC_E_BUTTON_ELAPSED_helper "6"
-#define GRID_LUA_FNC_E_BUTTON_ELAPSED_short "bel" //button_elapsed_time
+#define GRID_LUA_FNC_E_BUTTON_ELAPSED_short "bel"
+#define GRID_LUA_FNC_E_BUTTON_ELAPSED_human "button_elapsed_time"
 
 #define GRID_LUA_FNC_E_BUTTON_STATE_index 7
 #define GRID_LUA_FNC_E_BUTTON_STATE_helper "7"
-#define GRID_LUA_FNC_E_BUTTON_STATE_short "bst" //button_state
+#define GRID_LUA_FNC_E_BUTTON_STATE_short "bst"
+#define GRID_LUA_FNC_E_BUTTON_STATE_human "button_state"
 
 #define GRID_LUA_FNC_E_ENCODER_NUMBER_index 8
 #define GRID_LUA_FNC_E_ENCODER_NUMBER_helper "8"
-#define GRID_LUA_FNC_E_ENCODER_NUMBER_short "enu" //encoder_number
+#define GRID_LUA_FNC_E_ENCODER_NUMBER_short "enu"
+#define GRID_LUA_FNC_E_ENCODER_NUMBER_human "encoder_number"
 
 #define GRID_LUA_FNC_E_ENCODER_VALUE_index 9
 #define GRID_LUA_FNC_E_ENCODER_VALUE_helper "9"
-#define GRID_LUA_FNC_E_ENCODER_VALUE_short "eva" //encoder_value
+#define GRID_LUA_FNC_E_ENCODER_VALUE_short "eva"
+#define GRID_LUA_FNC_E_ENCODER_VALUE_human "encoder_value"
 
 #define GRID_LUA_FNC_E_ENCODER_MIN_index 10
 #define GRID_LUA_FNC_E_ENCODER_MIN_helper "10"
-#define GRID_LUA_FNC_E_ENCODER_MIN_short "emi" //encoder_min
+#define GRID_LUA_FNC_E_ENCODER_MIN_short "emi"
+#define GRID_LUA_FNC_E_ENCODER_MIN_human "encoder_min"
 
 #define GRID_LUA_FNC_E_ENCODER_MAX_index 11
 #define GRID_LUA_FNC_E_ENCODER_MAX_helper "11"
-#define GRID_LUA_FNC_E_ENCODER_MAX_short "ema" //encoder_max
+#define GRID_LUA_FNC_E_ENCODER_MAX_short "ema"
+#define GRID_LUA_FNC_E_ENCODER_MAX_human "encoder_max"
 
 #define GRID_LUA_FNC_E_ENCODER_MODE_index 12
 #define GRID_LUA_FNC_E_ENCODER_MODE_helper "12"
-#define GRID_LUA_FNC_E_ENCODER_MODE_short "emo" //encoder_mode
+#define GRID_LUA_FNC_E_ENCODER_MODE_short "emo"
+#define GRID_LUA_FNC_E_ENCODER_MODE_human "encoder_mode"
 
 #define GRID_LUA_FNC_E_ENCODER_ELAPSED_index 13
 #define GRID_LUA_FNC_E_ENCODER_ELAPSED_helper "13"
-#define GRID_LUA_FNC_E_ENCODER_ELAPSED_short "eel" //encoder_elapsed_time
+#define GRID_LUA_FNC_E_ENCODER_ELAPSED_short "eel"
+#define GRID_LUA_FNC_E_ENCODER_ELAPSED_human "encoder_elapsed_time"
 
 // Encoder parameters
-#define GRID_LUA_FNC_E_LIST_LENGTH 14
+#define GRID_LUA_FNC_E_LIST_length 14
 
 // Encoder init function
 #define GRID_LUA_E_LIST_init "init_encoder = function (e, i) \
@@ -462,6 +420,122 @@ stored config date
 	e." GRID_LUA_FNC_E_ENCODER_MODE_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MODE_helper ", a) end \
 	e." GRID_LUA_FNC_E_ENCODER_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_ELAPSED_helper ", a) end \
     end"
+
+// ========================= POTMETER =========================== //
+
+#define GRID_LUA_FNC_P_ELEMENT_INDEX_index 0
+#define GRID_LUA_FNC_P_ELEMENT_INDEX_helper "0"
+#define GRID_LUA_FNC_P_ELEMENT_INDEX_short "ind"
+#define GRID_LUA_FNC_P_ELEMENT_INDEX_human "element_index"
+
+#define GRID_LUA_FNC_P_POTMETER_NUMBER_index 1
+#define GRID_LUA_FNC_P_POTMETER_NUMBER_helper "1"
+#define GRID_LUA_FNC_P_POTMETER_NUMBER_short "pnu"
+#define GRID_LUA_FNC_P_POTMETER_NUMBER_human "potmeter_number"
+
+#define GRID_LUA_FNC_P_POTMETER_VALUE_index 2
+#define GRID_LUA_FNC_P_POTMETER_VALUE_helper "2"
+#define GRID_LUA_FNC_P_POTMETER_VALUE_short "pva"
+#define GRID_LUA_FNC_P_POTMETER_VALUE_human "potmeter_value"
+
+#define GRID_LUA_FNC_P_POTMETER_MIN_index 3
+#define GRID_LUA_FNC_P_POTMETER_MIN_helper "3"
+#define GRID_LUA_FNC_P_POTMETER_MIN_short "pmi"
+#define GRID_LUA_FNC_P_POTMETER_MIN_human "potmeter_min"
+
+#define GRID_LUA_FNC_P_POTMETER_MAX_index 4
+#define GRID_LUA_FNC_P_POTMETER_MAX_helper "4"
+#define GRID_LUA_FNC_P_POTMETER_MAX_short "pma"
+#define GRID_LUA_FNC_P_POTMETER_MAX_human "potmeter_max"
+
+#define GRID_LUA_FNC_P_POTMETER_MODE_index 5
+#define GRID_LUA_FNC_P_POTMETER_MODE_helper "5"
+#define GRID_LUA_FNC_P_POTMETER_MODE_short "pmo"
+#define GRID_LUA_FNC_P_POTMETER_MODE_human "potmeter_resolution"
+
+#define GRID_LUA_FNC_P_POTMETER_ELAPSED_index 6
+#define GRID_LUA_FNC_P_POTMETER_ELAPSED_helper "6"
+#define GRID_LUA_FNC_P_POTMETER_ELAPSED_short "pel"
+#define GRID_LUA_FNC_P_POTMETER_ELAPSED_human "potmeter_elapsed_time"
+
+// Encoder parameters
+#define GRID_LUA_FNC_P_LIST_length 7
+
+// Encoder init function
+#define GRID_LUA_P_LIST_init "init_potmeter = function (e, i) \
+	 \
+	e." GRID_LUA_FNC_P_ELEMENT_INDEX_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_ELEMENT_INDEX_helper ", a) end \
+	\
+	e." GRID_LUA_FNC_P_POTMETER_NUMBER_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_NUMBER_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_VALUE_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_VALUE_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_MIN_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MIN_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_MAX_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MAX_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_MODE_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MODE_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_ELAPSED_helper ", a) end \
+	\
+    end"
+
+
+// ========================= BUTTON =========================== //
+
+#define GRID_LUA_FNC_B_ELEMENT_INDEX_index 0
+#define GRID_LUA_FNC_B_ELEMENT_INDEX_helper "0"
+#define GRID_LUA_FNC_B_ELEMENT_INDEX_short "ind"
+#define GRID_LUA_FNC_B_ELEMENT_INDEX_human "element_index"
+
+#define GRID_LUA_FNC_B_BUTTON_NUMBER_index 1
+#define GRID_LUA_FNC_B_BUTTON_NUMBER_helper "1"
+#define GRID_LUA_FNC_B_BUTTON_NUMBER_short "bnu"
+#define GRID_LUA_FNC_B_BUTTON_NUMBER_human "button_number"
+
+#define GRID_LUA_FNC_B_BUTTON_VALUE_index 2
+#define GRID_LUA_FNC_B_BUTTON_VALUE_helper "2"
+#define GRID_LUA_FNC_B_BUTTON_VALUE_short "bva"
+#define GRID_LUA_FNC_B_BUTTON_VALUE_human "button_value"
+
+#define GRID_LUA_FNC_B_BUTTON_MIN_index 3
+#define GRID_LUA_FNC_B_BUTTON_MIN_helper "3"
+#define GRID_LUA_FNC_B_BUTTON_MIN_short "bmi"
+#define GRID_LUA_FNC_B_BUTTON_MIN_human "button_min"
+
+#define GRID_LUA_FNC_B_BUTTON_MAX_index 4
+#define GRID_LUA_FNC_B_BUTTON_MAX_helper "4"
+#define GRID_LUA_FNC_B_BUTTON_MAX_short "bma"
+#define GRID_LUA_FNC_B_BUTTON_MAX_human "button_max"
+
+#define GRID_LUA_FNC_B_BUTTON_MODE_index 5
+#define GRID_LUA_FNC_B_BUTTON_MODE_helper "5"
+#define GRID_LUA_FNC_B_BUTTON_MODE_short "bmo"
+#define GRID_LUA_FNC_B_BUTTON_MODE_human "button_resolution"
+
+#define GRID_LUA_FNC_B_BUTTON_ELAPSED_index 6
+#define GRID_LUA_FNC_B_BUTTON_ELAPSED_helper "6"
+#define GRID_LUA_FNC_B_BUTTON_ELAPSED_short "bel"
+#define GRID_LUA_FNC_B_BUTTON_ELAPSED_human "button_elapsed_time"
+
+#define GRID_LUA_FNC_B_BUTTON_STATE_index 7
+#define GRID_LUA_FNC_B_BUTTON_STATE_helper "7"
+#define GRID_LUA_FNC_B_BUTTON_STATE_short "bst"
+#define GRID_LUA_FNC_B_BUTTON_STATE_human "button_state"
+
+// Encoder parameters
+#define GRID_LUA_FNC_B_LIST_length 8
+
+// Encoder init function
+#define GRID_LUA_B_LIST_init "init_button = function (e, i) \
+	 \
+	e." GRID_LUA_FNC_B_ELEMENT_INDEX_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_ELEMENT_INDEX_helper ", a) end \
+	\
+	e." GRID_LUA_FNC_B_BUTTON_NUMBER_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_NUMBER_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_VALUE_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_VALUE_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_MIN_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MIN_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_MAX_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MAX_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_MODE_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MODE_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_ELAPSED_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_STATE_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_STATE_helper ", a) end \
+	\
+    end"
+
 
 #define GRID_LUA_KW_ELEMENT_short "ele"
 #define GRID_LUA_KW_THIS_short "this"
@@ -525,7 +599,7 @@ enum grid_ui_event_t
 #define GRID_EVENTSTRING_HEARTBEAT "\x02" \
 								   "050e<?expr p(Z0) ?>000c00\x03"
 
-#define GRID_EVENTSTRING_AC_POT "\x02" \
+#define GRID_EVENTSTRING_AC "\x02" \
 								"050e<?expr p(Z0) ?><?expr p(T0) ?>01<?expr p(T2) ?>\x03"
 
 #define GRID_EVENTSTRING_BC "\x02" \
@@ -566,9 +640,9 @@ enum grid_ui_event_t
 								   "041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03\x02" \
 								   "041e<?expr p(T0) ?>02<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
 
-//#define GRID_ACTIONSTRING_AC_POT			"<?lua gsm(0,176,this.T[0],this.T[2]) glsp(this.T[0], 1) ?>"
+#define GRID_ACTIONSTRING_AC			"<?lua gms(0,176,this.ind(),this.pva()) glp(this.ind(), 1) ?>"
 
-#define GRID_ACTIONSTRING_AC_POT "<?lua this.T[4]=16383 this.T[5]=9 gsm(0,176,this.T[0],this.T[2]//128) gsm(0,176,this.T[0]+32,this.T[2]%%128) glsp(this.T[0], 1) ?>"
+//#define GRID_ACTIONSTRING_AC_POT "<?lua this.T[4]=16383 this.T[5]=9 gsm(0,176,this.T[0],this.T[2]//128) gsm(0,176,this.T[0]+32,this.T[2]%%128) glsp(this.T[0], 1) ?>"
 
 // 14bit     gsm(0,176,this.T[0],this.T[2]//128) gsm(0,176,this.T[0]+32,this.T[2]%%128)
 //#define GRID_ACTIONSTRING_AC_POT			"<?lua this.T[4]=16383 this.T[5]=9  gslp(this.T[0], 1) ?>"

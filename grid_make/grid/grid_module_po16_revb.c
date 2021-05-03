@@ -19,18 +19,6 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		return;
 	}
 	
-	if (grid_sys_state.bank_active_changed){
-		grid_sys_state.bank_active_changed = 0;
-		
-		for (uint8_t i=0; i<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length; i++){
-			
-			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
-            grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_AC);
-            				        
-		}
-		
-	}	
-		
 	/* Read conversion results */
 	
 	uint16_t adcresult_0 = 0;
@@ -72,8 +60,8 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		adcresult_1 = 65535 - adcresult_1;
 	}
 		
-    uint8_t resolution_0 = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[adc_index_0].template_parameter_list[GRID_TEMPLATE_P_POTMETER_MODE];
-    uint8_t resolution_1 = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[adc_index_1].template_parameter_list[GRID_TEMPLATE_P_POTMETER_MODE];
+    uint8_t resolution_0 = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[adc_index_0].template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
+    uint8_t resolution_1 = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[adc_index_1].template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
 
 	grid_ain_add_sample(adc_index_0, adcresult_0, resolution_0);
 	grid_ain_add_sample(adc_index_1, adcresult_1, resolution_1);
@@ -99,7 +87,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 		if (grid_ain_get_changed(res_index)){
                 
 
-			int32_t resolution = template_parameter_list[GRID_TEMPLATE_P_POTMETER_MODE];
+			int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
 
 			if (resolution < 1){
 				resolution = 1;
@@ -110,8 +98,8 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 
 			int32_t value = grid_ain_get_average(res_index);
 
-			int32_t min = template_parameter_list[GRID_TEMPLATE_P_POTMETER_MIN];
-			int32_t max = template_parameter_list[GRID_TEMPLATE_P_POTMETER_MAX];
+			int32_t min = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index];
+			int32_t max = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index];
 
 			// map the input range to the output range
 
@@ -119,7 +107,7 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 
 			int32_t next = value * (max - min) / range_max + min;
 
-			template_parameter_list[GRID_TEMPLATE_P_POTMETER_VALUE] = next;
+			template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
     
 			grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_AC);		
 			
@@ -131,6 +119,23 @@ static void grid_module_po16_revb_hardware_transfer_complete_cb(void){
 	grid_module_po16_revb_hardware_start_transfer();
 }
 
+
+void grid_module_po16_event_clear_cb(struct grid_ui_event* eve){
+
+}
+
+void grid_module_po16_page_change_cb(uint8_t page_old, uint8_t page_new){
+
+	grid_sys_state.bank_active_changed = 0;
+	
+	for (uint8_t i=0; i<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length; i++){
+		
+		grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
+		grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_AC);
+								
+	}
+}
+
 void grid_module_po16_revb_hardware_init(void){
 	
 	adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, grid_module_po16_revb_hardware_transfer_complete_cb);
@@ -140,9 +145,6 @@ void grid_module_po16_revb_hardware_init(void){
 	adc_async_enable_channel(&ADC_1, 0);
 
 }
-
-
-
 
 void grid_module_po16_revb_init(){
 	
@@ -162,17 +164,20 @@ void grid_module_po16_revb_init(){
 
 			int32_t* template_parameter_list = grid_ui_state.bank_list[i].element_list[j].template_parameter_list;
 	
-			template_parameter_list[GRID_TEMPLATE_P_ELEMENT_INDEX]		= j;
-			template_parameter_list[GRID_TEMPLATE_P_POTMETER_NUMBER] 	= j;
-			template_parameter_list[GRID_TEMPLATE_P_POTMETER_VALUE] 	= 0;
-			template_parameter_list[GRID_TEMPLATE_P_POTMETER_MIN] 		= 0;
-			template_parameter_list[GRID_TEMPLATE_P_POTMETER_MAX] 		= 127;
-			template_parameter_list[GRID_TEMPLATE_P_POTMETER_MODE] 		= 7;
-			template_parameter_list[GRID_TEMPLATE_P_POTMETER_ELAPSED] 	= 0;
+			template_parameter_list[GRID_LUA_FNC_P_ELEMENT_INDEX_index]		= j;
+			template_parameter_list[GRID_LUA_FNC_P_POTMETER_NUMBER_index] 	= j;
+			template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] 	= 0;
+			template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index] 		= 0;
+			template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index] 		= 127;
+			template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index] 	= 7;
+			template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] 	= 0;
 
 		}
 	}
 	
+	grid_ui_state.event_clear_cb = &grid_module_po16_event_clear_cb;
+	grid_ui_state.page_change_cb = &grid_module_po16_page_change_cb;
+
 	grid_module_po16_revb_hardware_init();
 	grid_module_po16_revb_hardware_start_transfer();
 	

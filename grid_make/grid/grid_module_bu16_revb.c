@@ -21,25 +21,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		grid_module_bu16_revb_hardware_transfer_complete++;
 		return;
 	}
-	
-	uint8_t bank = grid_sys_get_bank_num(&grid_sys_state);
-	
-	if (bank == 255){
-		bank=0;
-	}
-	
-	uint8_t bank_changed = grid_sys_state.bank_active_changed;
-	
-	if (bank_changed){
-		grid_sys_state.bank_active_changed = 0;
 
-		for (uint8_t i=0; i<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length; i++){
-			
-			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
-			grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_BC);
-		}
-		
-	}
 	
 	/* Read conversion results */
 	
@@ -106,27 +88,27 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		
 		int32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;		
 		
-		if (res_value != template_parameter_list[GRID_TEMPLATE_B_BUTTON_STATE] && res_valid == 1){
+		if (res_value != template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] && res_valid == 1){
 			// button change happened
-			template_parameter_list[GRID_TEMPLATE_B_BUTTON_STATE] = res_value;
+			template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = res_value;
 			
 			if (res_value == 0){ // Button Press Event
 
 
-				if (template_parameter_list[GRID_TEMPLATE_B_BUTTON_MODE] == 0){
+				if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
 					
 					// Button ABS
-					template_parameter_list[GRID_TEMPLATE_B_BUTTON_VALUE] = template_parameter_list[GRID_TEMPLATE_B_BUTTON_MAX];
+					template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
 				
 				}
 				else{
 
 					// Toggle
 
-					int32_t min = template_parameter_list[GRID_TEMPLATE_B_BUTTON_MIN];
-					int32_t max = template_parameter_list[GRID_TEMPLATE_B_BUTTON_MAX];
-					int32_t steps = template_parameter_list[GRID_TEMPLATE_B_BUTTON_MODE];
-					int32_t last = template_parameter_list[GRID_TEMPLATE_B_BUTTON_VALUE];
+					int32_t min = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
+					int32_t max = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
+					int32_t steps = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index];
+					int32_t last = template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index];
 
 					int32_t next = last + (max - min)/steps;
 
@@ -136,7 +118,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 						next = min;
 					}
 
-					template_parameter_list[GRID_TEMPLATE_B_BUTTON_VALUE] = next;
+					template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = next;
 
 				}
                 
@@ -145,10 +127,10 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 			}
 			else{  // Button Release Event
 				
-				if (template_parameter_list[GRID_TEMPLATE_B_BUTTON_MODE] == 0){
+				if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
 					
 					// Button ABS
-					template_parameter_list[GRID_TEMPLATE_B_BUTTON_VALUE] = template_parameter_list[GRID_TEMPLATE_B_BUTTON_MIN];
+					template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
 				
 				}
  				else{
@@ -167,6 +149,23 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 	
 	grid_module_bu16_revb_hardware_transfer_complete = 0;
 	grid_module_bu16_revb_hardware_start_transfer();
+}
+
+void grid_module_bu16_event_clear_cb(struct grid_ui_event* eve){
+
+
+}
+
+void grid_module_bu16_page_change_cb(uint8_t page_old, uint8_t page_new){
+
+	grid_sys_state.bank_active_changed = 0;
+	
+	for (uint8_t i=0; i<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length; i++){
+		
+		grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
+		grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_BC);
+								
+	}
 }
 
 void grid_module_bu16_revb_hardware_init(void){
@@ -195,19 +194,23 @@ void grid_module_bu16_revb_init(){
 
 			int32_t* template_parameter_list = grid_ui_state.bank_list[i].element_list[j].template_parameter_list;
 
-			template_parameter_list[GRID_TEMPLATE_B_ELEMENT_INDEX] 		= j;
-			template_parameter_list[GRID_TEMPLATE_B_BUTTON_NUMBER] 	= j;
-			template_parameter_list[GRID_TEMPLATE_B_BUTTON_VALUE] 	= 0;
-			template_parameter_list[GRID_TEMPLATE_B_BUTTON_MIN] 	= 0;
-			template_parameter_list[GRID_TEMPLATE_B_BUTTON_MAX] 	= 127;
-			template_parameter_list[GRID_TEMPLATE_B_BUTTON_MODE] 	= 0;
-			template_parameter_list[GRID_TEMPLATE_B_BUTTON_ELAPSED] = 0;
-			template_parameter_list[GRID_TEMPLATE_B_BUTTON_STATE] 	= 0;
+			template_parameter_list[GRID_LUA_FNC_B_ELEMENT_INDEX_index] 	= j;
+			template_parameter_list[GRID_LUA_FNC_B_BUTTON_NUMBER_index] 	= j;
+			template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] 		= 0;
+			template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index] 		= 0;
+			template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index] 		= 127;
+			template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] 		= 0;
+			template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] 	= 0;
+			template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] 		= 0;
 
 		}					
 		
 	}
 				
+
+	grid_ui_state.event_clear_cb = &grid_module_bu16_event_clear_cb;
+	grid_ui_state.page_change_cb = &grid_module_bu16_page_change_cb;
+
 	grid_module_bu16_revb_hardware_init();
 	grid_module_bu16_revb_hardware_start_transfer();
 
