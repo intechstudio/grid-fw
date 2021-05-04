@@ -594,3 +594,75 @@ uint8_t grid_fusb302_read_id(struct io_descriptor * i2c_io){
 
 }
 
+
+
+uint8_t grid_mxt144u_read_id(struct io_descriptor * i2c_io){
+
+
+
+		uint8_t buffer[2] = {0x03, 0x00};
+
+		if (1){
+			
+			i2c_m_async_set_slaveaddr(&SYS_I2C, 0x4a, I2C_M_SEVEN);
+
+			struct io_descriptor *const io = i2c_io;
+			const uint8_t *buf = buffer;
+			const uint16_t n = 1;
+
+
+
+			struct i2c_m_async_desc *i2c = &SYS_I2C;
+			struct _i2c_m_msg        msg;
+			int32_t                  ret;
+
+			msg.addr   = i2c->slave_addr;
+			msg.len    = n;
+			msg.flags  = 0;
+			msg.buffer = (uint8_t *)buf;
+
+			/* start transfer then return */
+			ret = i2c_m_async_transfer(&i2c->device, &msg);
+
+			if (ret != 0) {
+				printf("I2C error\r\n");
+			}
+
+			uint32_t cycles = grid_d51_dwt_cycles_read();
+
+
+			while (i2c->device.service.msg.flags & I2C_M_BUSY) {
+				;
+			}
+
+			msg.flags  = I2C_M_RD | I2C_M_STOP;		
+			ret = i2c_m_async_transfer(&i2c->device, &msg);
+
+			if (ret != 0) {
+				printf("I2C error\r\n");
+			}
+
+			while (i2c->device.service.msg.flags & I2C_M_BUSY) {
+				;
+			}
+
+
+
+			printf("I2C: %d ,Elapsed %dus\r\n", buf[0], (grid_d51_dwt_cycles_read()-cycles)/120);
+
+			//return (int32_t)n;
+		
+
+
+			//printf("Buffer: %d\r\n", buffer);
+		}
+
+		uint8_t* txbuffer[4] = {0}; 
+		uint8_t* rxbuffer[10] = {0}; 
+
+		txbuffer[0] = 0x01; // ID
+
+
+
+
+}
