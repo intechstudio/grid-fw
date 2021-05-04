@@ -823,6 +823,10 @@ int main(void)
 //	grid_nvm_erase_all(&grid_nvm_state);
 
 
+	if (sys_i2c_enabled){
+		uint8_t id = grid_fusb302_read_id(SYS_I2C_io);
+	}
+
 	while (1) {
 	
 
@@ -844,7 +848,6 @@ int main(void)
 		
 		if (usb_init_flag == 0){
 			
-			
 			if (usb_d_get_frame_num() == 0){
 				
 			}
@@ -854,20 +857,13 @@ int main(void)
 				
 				GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Connected");
 				
-				grid_sys_set_bank(&grid_sys_state, grid_sys_get_bank_number_of_first_valid(&grid_sys_state));
-				
-				grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_CFG_RESPONSE);
-				
 
-				
 				uint8_t heartbeateventnum = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT);
 
 				if (heartbeateventnum != 255){
 					char* actionstring = grid_core_state.element_list[0].event_list[heartbeateventnum].action_string;
 			
 					grid_msg_set_parameter(actionstring, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, 1, NULL);
-
-					printf(actionstring);
 
 				}
 
@@ -876,18 +872,6 @@ int main(void)
 			}
 			
 		}
-		
-
-		// Request neighbor bank settings if we don't have it initialized
-		
- 		if (grid_sys_get_bank_valid(&grid_sys_state) == 0 && loopcounter%80 == 0){
- 								
-			if (grid_sys_state.bank_init_flag == 0)	{
-				
-				grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_CFG_REQUEST);
-			}				 		
-			 
- 		}
 
 		
 		loopcounter++;
@@ -901,81 +885,6 @@ int main(void)
 
 		}
 		
-		int loopc = loopcounter;
-
-	
-		if (sys_i2c_enabled){
-
-			sys_i2c_done_flag = SYS_I2C_STATUS_BUSY;
-
-			uint8_t buffer[2] = {0x01, 0x00};
-
-			if (1){
-				
-				i2c_m_async_set_slaveaddr(&SYS_I2C, 0x22, I2C_M_SEVEN);
-
-				struct io_descriptor *const io = SYS_I2C_io;
-				const uint8_t *buf = buffer;
-				const uint16_t n = 1;
-
-				if (1){
-
-
-					struct i2c_m_async_desc *i2c = &SYS_I2C;
-					struct _i2c_m_msg        msg;
-					int32_t                  ret;
-
-					msg.addr   = i2c->slave_addr;
-					msg.len    = n;
-					msg.flags  = 0;
-					msg.buffer = (uint8_t *)buf;
-
-					/* start transfer then return */
-					ret = i2c_m_async_transfer(&i2c->device, &msg);
-
-					if (ret != 0) {
-						printf("I2C error\r\n");
-					}
-
-					uint32_t cycles = grid_d51_dwt_cycles_read();
-
-
-					while (i2c->device.service.msg.flags & I2C_M_BUSY) {
-						;
-					}
-
-					msg.flags  = I2C_M_RD | I2C_M_STOP;		
-					ret = i2c_m_async_transfer(&i2c->device, &msg);
-
-					if (ret != 0) {
-						printf("I2C error\r\n");
-					}
-
-					while (i2c->device.service.msg.flags & I2C_M_BUSY) {
-						;
-					}
-
-
-
-					printf("I2C: %d ,Elapsed %dus\r\n", buf[0], (grid_d51_dwt_cycles_read()-cycles)/120);
-
-					//return (int32_t)n;
-				}
-				else{
-
-					io_write(SYS_I2C_io, SYS_I2C_example_str, 10); //works
-				}
-
-
-				//printf("Buffer: %d\r\n", buffer);
-			}
-
-			uint8_t* txbuffer[4] = {0}; 
-			uint8_t* rxbuffer[10] = {0}; 
-
-			txbuffer[0] = 0x01; // ID
-
-		}
 
 		usb_task_inner();
 	

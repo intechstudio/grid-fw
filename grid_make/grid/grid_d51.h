@@ -33,7 +33,7 @@ uint8_t grid_d51_boundary_scan();
 uint32_t grid_d51_dwt_enable();
 uint32_t grid_d51_dwt_cycles_read();
 
-
+uint8_t grid_fusb302_read_id(struct io_descriptor * i2c_io);
 
 
 #endif /* GRID_D51_H_ */

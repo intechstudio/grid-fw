@@ -175,8 +175,8 @@ grid/grid_sys.d grid/grid_sys.o: ../grid/grid_sys.c ../grid/grid_sys.h \
  /usr/share/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/machine/stdlib.h \
  /usr/share/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/alloca.h \
  ../grid/grid_d51.h ../hal/include/hpl_user_area.h \
- ../grid/grid_module_bu16_revb.h ../grid/grid_module_po16_revb.h \
- ../grid/grid_module_pbf4_reva.h ../grid/grid_module_en16_reva.h \
+ ../grid/grid_module_bu16.h ../grid/grid_module_po16.h \
+ ../grid/grid_module_pbf4.h ../grid/grid_module_en16.h \
  ../atmel_start_pins.h ../grid/grid_unittest.h ../grid/grid_debug.h \
  ../grid/grid_usb.h ../grid/grid_expr.h ../grid/grid_ain.h \
  ../grid/grid_module.h ../grid/grid_buf.h ../grid/grid_led.h \
@@ -774,13 +774,13 @@ grid/grid_sys.d grid/grid_sys.o: ../grid/grid_sys.c ../grid/grid_sys.h \
 
 ../hal/include/hpl_user_area.h:
 
-../grid/grid_module_bu16_revb.h:
+../grid/grid_module_bu16.h:
 
-../grid/grid_module_po16_revb.h:
+../grid/grid_module_po16.h:
 
-../grid/grid_module_pbf4_reva.h:
+../grid/grid_module_pbf4.h:
 
-../grid/grid_module_en16_reva.h:
+../grid/grid_module_en16.h:
 
 ../atmel_start_pins.h:
 

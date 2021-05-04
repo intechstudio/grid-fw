@@ -18,10 +18,10 @@
  
 #include "grid_d51.h"
  
-#include "grid_module_bu16_revb.h"
-#include "grid_module_po16_revb.h"
-#include "grid_module_pbf4_reva.h"
-#include "grid_module_en16_reva.h"
+#include "grid_module_bu16.h"
+#include "grid_module_po16.h"
+#include "grid_module_pbf4.h"
+#include "grid_module_en16.h"
 
 #include "atmel_start_pins.h"
 
