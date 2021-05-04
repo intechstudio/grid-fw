@@ -86,7 +86,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 		uint8_t res_valid = result_valid[i];
 		uint8_t res_value = result_value[i];
 		
-		int32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;		
+		int32_t* template_parameter_list = grid_ui_state.element_list[res_index].template_parameter_list;		
 		
 		if (res_value != template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] && res_valid == 1){
 			// button change happened
@@ -122,7 +122,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 
 				}
                 
-				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_BC);
+				grid_ui_smart_trigger(&grid_ui_state, res_index, GRID_UI_EVENT_BC);
 				
 			}
 			else{  // Button Release Event
@@ -139,7 +139,7 @@ static void grid_module_bu16_revb_hardware_transfer_complete_cb(void){
 
 				}               
 				
-				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, res_index, GRID_UI_EVENT_BC);
+				grid_ui_smart_trigger(&grid_ui_state, res_index, GRID_UI_EVENT_BC);
 
 			}
 			
@@ -158,12 +158,11 @@ void grid_module_bu16_event_clear_cb(struct grid_ui_event* eve){
 
 void grid_module_bu16_page_change_cb(uint8_t page_old, uint8_t page_new){
 
-	grid_sys_state.bank_active_changed = 0;
 	
-	for (uint8_t i=0; i<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length; i++){
+	for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
 		
-		grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);
-		grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_BC);
+		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_INIT);
+		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_BC);
 								
 	}
 }
@@ -182,32 +181,14 @@ void grid_module_bu16_revb_init(){
 
 	grid_led_lowlevel_init(&grid_led_state, 16);
 	
-	grid_ui_model_init(&grid_ui_state, GRID_SYS_BANK_MAXNUMBER);
+	grid_ui_model_init(&grid_ui_state, 16);
+
+	for (uint8_t j=0; j<16; j++){
+
+		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_BUTTON);
+
+	}					
 	
-	for (uint8_t i=0; i<GRID_SYS_BANK_MAXNUMBER; i++){
-		
-		grid_ui_bank_init(&grid_ui_state, i, 16);
-		
-		for (uint8_t j=0; j<16; j++){
-
-			grid_ui_element_init(&grid_ui_state.bank_list[i], j, GRID_UI_ELEMENT_BUTTON);
-
-			int32_t* template_parameter_list = grid_ui_state.bank_list[i].element_list[j].template_parameter_list;
-
-			template_parameter_list[GRID_LUA_FNC_B_ELEMENT_INDEX_index] 	= j;
-			template_parameter_list[GRID_LUA_FNC_B_BUTTON_NUMBER_index] 	= j;
-			template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] 		= 0;
-			template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index] 		= 0;
-			template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index] 		= 127;
-			template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] 		= 0;
-			template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] 	= 0;
-			template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] 		= 0;
-
-		}					
-		
-	}
-				
-
 	grid_ui_state.event_clear_cb = &grid_module_bu16_event_clear_cb;
 	grid_ui_state.page_change_cb = &grid_module_bu16_page_change_cb;
 

@@ -10,39 +10,36 @@ void grid_port_process_ui(struct grid_port* por){
 	uint8_t message_broadcast_action_available = 0;
 	uint8_t message_local_action_available = 0;
 
-	
 	// UI STATE
-	for (uint8_t i=0; i<grid_ui_state.bank_list_length; i++){
 		
-		for (uint8_t j=0; j<grid_ui_state.bank_list[i].element_list_length; j++){
+	for (uint8_t j=0; j<grid_ui_state.element_list_length; j++){
+		
+		for (uint8_t k=0; k<grid_ui_state.element_list[j].event_list_length; k++){
 			
-			for (uint8_t k=0; k<grid_ui_state.bank_list[i].element_list[j].event_list_length; k++){
-				
-				if (grid_ui_event_istriggered(&grid_ui_state.bank_list[i].element_list[j].event_list[k])){
+			if (grid_ui_event_istriggered(&grid_ui_state.element_list[j].event_list[k])){
 
-					message_broadcast_action_available++;
+				message_broadcast_action_available++;
 
-					
-				}
-                
-				if (grid_ui_event_istriggered_local(&grid_ui_state.bank_list[i].element_list[j].event_list[k])){
-                    
-                    message_local_action_available++;
-
-					
-				}
 				
 			}
 			
-		}	
+			if (grid_ui_event_istriggered_local(&grid_ui_state.element_list[j].event_list[k])){
+				
+				message_local_action_available++;
+
+				
+			}
+			
+		}
+		
 	}		
 	
 	// CORE SYSTEM
-	for (uint8_t i=0; i<grid_core_state.bank_list[0].element_list_length; i++){
+	for (uint8_t i=0; i<grid_core_state.element_list_length; i++){
 		
-		for (uint8_t j=0; j<grid_core_state.bank_list[0].element_list[i].event_list_length; j++){
+		for (uint8_t j=0; j<grid_core_state.element_list[i].event_list_length; j++){
 			
-			if (grid_ui_event_istriggered(&grid_core_state.bank_list[0].element_list[i].event_list[j])){
+			if (grid_ui_event_istriggered(&grid_core_state.element_list[i].event_list[j])){
 				
 				message_broadcast_action_available++;
 			}
@@ -93,35 +90,34 @@ void grid_port_process_ui(struct grid_port* por){
 		
 		
 		// UI STATE
-		for (uint8_t i=0; i<grid_ui_state.bank_list_length; i++)
-		{
-			for (uint8_t j=0; j<grid_ui_state.bank_list[i].element_list_length; j++){
-				
-                for (uint8_t k=0; k<grid_ui_state.bank_list[i].element_list[j].event_list_length; k++){
-				
-					if (offset>GRID_PARAMETER_PACKET_marign){
-						continue;
-					}		
-					else{
-						
-						CRITICAL_SECTION_ENTER()
-						if (grid_ui_event_istriggered_local(&grid_ui_state.bank_list[i].element_list[j].event_list[k])){
-							
-                            offset += grid_ui_event_render_action(&grid_ui_state.bank_list[i].element_list[j].event_list[k], &payload[offset]);
-                            grid_ui_event_reset(&grid_ui_state.bank_list[i].element_list[j].event_list[k]);
-                        
-						}
-						CRITICAL_SECTION_LEAVE()
-						
-					}
-				
-				}
-                
-				
 
-				
+		for (uint8_t j=0; j<grid_ui_state.element_list_length; j++){
+			
+			for (uint8_t k=0; k<grid_ui_state.element_list[j].event_list_length; k++){
+			
+				if (offset>GRID_PARAMETER_PACKET_marign){
+					continue;
+				}		
+				else{
+					
+					CRITICAL_SECTION_ENTER()
+					if (grid_ui_event_istriggered_local(&grid_ui_state.element_list[j].event_list[k])){
+						
+						offset += grid_ui_event_render_action(&grid_ui_state.element_list[j].event_list[k], &payload[offset]);
+						grid_ui_event_reset(&grid_ui_state.element_list[j].event_list[k]);
+					
+					}
+					CRITICAL_SECTION_LEAVE()
+					
+				}
+			
 			}
+			
+			
+
+			
 		}
+		
 		
 		
 		grid_msg_body_append_text(&message, payload, offset);
@@ -176,9 +172,9 @@ void grid_port_process_ui(struct grid_port* por){
 		
 
 		// CORE SYSTEM
-		for (uint8_t i=0; i<grid_core_state.bank_list[0].element_list_length; i++){
+		for (uint8_t i=0; i<grid_core_state.element_list_length; i++){
 			
-			for (uint8_t j=0; j<grid_core_state.bank_list[0].element_list[i].event_list_length; j++){
+			for (uint8_t j=0; j<grid_core_state.element_list[i].event_list_length; j++){
 				
 				if (grid_msg_packet_get_length(&message)>GRID_PARAMETER_PACKET_marign){
 					continue;
@@ -186,11 +182,11 @@ void grid_port_process_ui(struct grid_port* por){
 				else{
 					
 					CRITICAL_SECTION_ENTER()
-					if (grid_ui_event_istriggered(&grid_core_state.bank_list[0].element_list[i].event_list[j])){
+					if (grid_ui_event_istriggered(&grid_core_state.element_list[i].event_list[j])){
 						
 						uint32_t offset = grid_msg_body_get_length(&message); 
-						message.body_length += grid_ui_event_render_action(&grid_core_state.bank_list[0].element_list[i].event_list[j], &message.body[offset]);
-						grid_ui_event_reset(&grid_core_state.bank_list[0].element_list[i].event_list[j]);
+						message.body_length += grid_ui_event_render_action(&grid_core_state.element_list[i].event_list[j], &message.body[offset]);
+						grid_ui_event_reset(&grid_core_state.element_list[i].event_list[j]);
 						
 					}
 					CRITICAL_SECTION_LEAVE()
@@ -205,39 +201,39 @@ void grid_port_process_ui(struct grid_port* por){
 		}
 		
 		// UI STATE
-		for (uint8_t i=0; i<grid_ui_state.bank_list_length; i++){
-			for (uint8_t j=0; j<grid_ui_state.bank_list[i].element_list_length; j++){
+
+		for (uint8_t j=0; j<grid_ui_state.element_list_length; j++){
+		
+			for (uint8_t k=0; k<grid_ui_state.element_list[j].event_list_length; k++){ //j=1 because init is local
 			
-				for (uint8_t k=0; k<grid_ui_state.bank_list[i].element_list[j].event_list_length; k++){ //j=1 because init is local
-				
-					if (grid_msg_packet_get_length(&message)>GRID_PARAMETER_PACKET_marign){
-						continue;
-					}		
-					else{
-						
-						CRITICAL_SECTION_ENTER()
-						if (grid_ui_event_istriggered(&grid_ui_state.bank_list[i].element_list[j].event_list[k])){
-							
-							uint32_t offset = grid_msg_body_get_length(&message); 
-							message.body_length += grid_ui_event_render_action(&grid_ui_state.bank_list[i].element_list[j].event_list[k], &message.body[offset]);
-							grid_ui_event_reset(&grid_ui_state.bank_list[i].element_list[j].event_list[k]);
-				
-							
-							uint8_t t0 = grid_ui_state.bank_list[i].element_list[j].template_parameter_list[0];
-
-							uint8_t t8 = grid_ui_state.bank_list[i].element_list[j].template_parameter_list[8];
-
+				if (grid_msg_packet_get_length(&message)>GRID_PARAMETER_PACKET_marign){
+					continue;
+				}		
+				else{
 					
-
-						}
-						CRITICAL_SECTION_LEAVE()
+					CRITICAL_SECTION_ENTER()
+					if (grid_ui_event_istriggered(&grid_ui_state.element_list[j].event_list[k])){
 						
-					}
+						uint32_t offset = grid_msg_body_get_length(&message); 
+						message.body_length += grid_ui_event_render_action(&grid_ui_state.element_list[j].event_list[k], &message.body[offset]);
+						grid_ui_event_reset(&grid_ui_state.element_list[j].event_list[k]);
+			
+						
+						uint8_t t0 = grid_ui_state.element_list[j].template_parameter_list[0];
+
+						uint8_t t8 = grid_ui_state.element_list[j].template_parameter_list[8];
+
 				
+
+					}
+					CRITICAL_SECTION_LEAVE()
+					
 				}
 			
 			}
+		
 		}
+		
 			
 
 		
@@ -275,63 +271,101 @@ void grid_port_process_ui(struct grid_port* por){
 }
 
 
-void grid_ui_model_init(struct grid_ui_model* mod, uint8_t bank_list_length){
+void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
 	
 	mod->status = GRID_UI_STATUS_INITIALIZED;
 
 	mod->event_clear_cb = NULL;
 	mod->page_change_cb = NULL;
-	
-	mod->bank_list_length = bank_list_length;	
-	mod->bank_list = malloc(mod->bank_list_length*sizeof(struct grid_ui_bank));
-	
-	for(uint8_t i=0; i<bank_list_length; i++){
-		
-		mod->bank_list[i].status = GRID_UI_STATUS_UNDEFINED;		
-		mod->bank_list[i].element_list_length = 0;
-		
-	}
+
+	mod->element_list_length = element_list_length;	
+
+	printf("UI MODEL INIT: %d\r\n", element_list_length);
+	mod->element_list = malloc(element_list_length*sizeof(struct grid_ui_element));
+;
 	
 }
 
-void grid_ui_bank_init(struct grid_ui_model* parent, uint8_t index, uint8_t element_list_length){
+struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_element* ele){
 	
-	struct grid_ui_bank* bank = &parent->bank_list[index];
-	bank->parent = parent;
-	bank->index = index;
+
 	
-	
-	bank->status = GRID_UI_STATUS_INITIALIZED;
-	
-	bank->element_list_length = element_list_length;
-	bank->element_list = malloc(bank->element_list_length*sizeof(struct grid_ui_element));
-	
-	for(uint8_t i=0; i<element_list_length; i++){
+	struct grid_ui_template_buffer* this = NULL;
+	struct grid_ui_template_buffer* prev = ele->template_buffer_list_head;
+
+	this = malloc(sizeof(struct grid_ui_template_buffer));
+
+	if (this == NULL){
+		printf("error.ui.MallocFailed\r\n");
+	}
+	else{
+
+		this->status = 0;
+		this->next = NULL;
+		this->page_number = 0;
+		this->parent = ele;
+
 		
-		bank->element_list[i].status = GRID_UI_STATUS_UNDEFINED;
-		bank->element_list[i].event_list_length = 0;
-		
+		this->template_parameter_list = malloc(ele->template_parameter_list_length*sizeof(int32_t));
+
+		if (this->template_parameter_list == NULL){
+			printf("error.ui.MallocFailed\r\n");
+		}
+		else{
+
+			if (ele->template_initializer!=NULL){
+				ele->template_initializer(this);
+			}
+
+			printf("LIST\r\n");
+
+			if (prev != NULL){
+
+				this->page_number++;
+
+				while(prev->next != NULL){
+
+					this->page_number++;
+					prev = prev->next;
+
+				}
+
+				prev->next = this;
+				return this;
+
+			}
+			else{
+				prev = this;
+				return this;
+				//this is the first item in the list
+			}
+
+
+			
+
+		}
 	}
 	
+	// FAILED
+	return NULL;
 }
 
 
-
-void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_ui_element_t element_type){
+void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid_ui_element_t element_type){
 	
+
 	struct grid_ui_element* ele = &parent->element_list[index];
 	ele->parent = parent;
 	ele->index = index;
 
+	ele->template_parameter_list_length = 0;
+	ele->template_parameter_list = NULL;
+
+	ele->template_buffer_list_head = NULL;
 
 	ele->status = GRID_UI_STATUS_INITIALIZED;
 	
 	ele->type = element_type;
-	
-	// initialize all of the A template parameter values
-	for(uint8_t i=0; i<GRID_TEMPLATE_UI_PARAMETER_LIST_LENGTH; i++){
-		ele->template_parameter_list[i] = 0;
-	}
 
 	
 	if (element_type == GRID_UI_ELEMENT_SYSTEM){
@@ -345,6 +379,9 @@ void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_
 		grid_ui_event_init(ele, 3, GRID_UI_EVENT_MAPMODE_RELEASE); // Mapmode release
 		grid_ui_event_init(ele, 4, GRID_UI_EVENT_CFG_RESPONSE); //
 		grid_ui_event_init(ele, 5, GRID_UI_EVENT_CFG_REQUEST); //
+
+		ele->template_initializer = NULL;
+		ele->template_parameter_list_length = 0;
 		
 	}
 	else if (element_type == GRID_UI_ELEMENT_POTENTIOMETER){
@@ -355,7 +392,9 @@ void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_
 		
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
 		grid_ui_event_init(ele, 1, GRID_UI_EVENT_AC); // Absolute Value Change (7bit)
-		
+
+		ele->template_initializer = &grid_element_potmeter_template_parameter_init;
+		ele->template_parameter_list_length = GRID_LUA_FNC_P_LIST_length;
 		
 	}
 	else if (element_type == GRID_UI_ELEMENT_BUTTON){
@@ -366,7 +405,10 @@ void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_
 		
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
 		grid_ui_event_init(ele, 1, GRID_UI_EVENT_BC);	// Button Change
-		
+
+		ele->template_initializer = &grid_element_button_template_parameter_init;
+		ele->template_parameter_list_length = GRID_LUA_FNC_B_LIST_length;
+
 	}
 	else if (element_type == GRID_UI_ELEMENT_ENCODER){
 		
@@ -377,16 +419,39 @@ void grid_ui_element_init(struct grid_ui_bank* parent, uint8_t index, enum grid_
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
 		grid_ui_event_init(ele, 1, GRID_UI_EVENT_EC);	// Encoder Change
 		grid_ui_event_init(ele, 2, GRID_UI_EVENT_BC);	// Button Change
+
+		ele->template_initializer = &grid_element_encoder_template_parameter_init;
+		ele->template_parameter_list_length = GRID_LUA_FNC_E_LIST_length;
 		
 	}
 	else{
 		//UNKNOWN ELEMENT TYPE
+		printf("error.unknown_element_type\r\n");
+		ele->template_initializer = NULL;
+	}
+
+	if (ele->template_initializer != NULL){
+
+		struct grid_ui_template_buffer* buf = grid_ui_template_buffer_create(ele);
+
+		if (buf != NULL){
+
+			ele->template_parameter_list = buf->template_parameter_list;
+		}
+		else{
+
+		}
+
 	}
 	
 }
 
 void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid_ui_event_t event_type){
 	
+
+
+	printf("EV INIT\r\n");
+
 	struct grid_ui_event* eve = &parent->event_list[index];
 	eve->parent = parent;
 	eve->index = index;
@@ -426,73 +491,6 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 }
 
 
-void grid_ui_reinit(struct grid_ui_model* ui){
-	
-	for(uint8_t i = 0; i<ui->bank_list_length; i++){
-		
-		struct grid_ui_bank* bank = &ui->bank_list[i];
-		
-		for (uint8_t j=0; j<bank->element_list_length; j++){
-			
-			struct grid_ui_element* ele = &bank->element_list[j];
-			
-			for (uint8_t k=0; k<ele->event_list_length; k++){
-				
-				struct grid_ui_event* eve = &ele->event_list[k];
-				
-				grid_ui_event_generate_actionstring(ele, eve->type);
-				
-				
-				grid_ui_event_reset(eve);
-                
-                
-                //grid_ui_smart_trigger_local(ui, i, j, eve->type);
-				
-			}
-			
-		}
-		
-	}
-	
-	grid_sys_state.bank_active_changed = 1;
-	
-}
-
-
-void grid_ui_reinit_local(struct grid_ui_model* ui){
-	
-	for(uint8_t i = 0; i<ui->bank_list_length; i++){
-		
-		struct grid_ui_bank* bank = &ui->bank_list[i];
-		
-		for (uint8_t j=0; j<bank->element_list_length; j++){
-			
-			struct grid_ui_element* ele = &bank->element_list[j];
-			
-			for (uint8_t k=0; k<ele->event_list_length; k++){
-				
-				struct grid_ui_event* eve = &ele->event_list[k];
-				
-				grid_ui_event_generate_actionstring(ele, eve->type);
-				
-				
-				grid_ui_event_reset(eve);
-                
-                
-                grid_ui_smart_trigger_local(ui, i, j, eve->type);
-				
-			}
-			
-		}
-		
-	}
-	
-	grid_sys_state.bank_active_changed = 1;
-	
-}
-
-
-
 void grid_ui_nvm_store_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
 	
     grid_nvm_ui_bulk_store_init(nvm, ui);
@@ -503,8 +501,6 @@ void grid_ui_nvm_load_all_configuration(struct grid_ui_model* ui, struct grid_nv
 	
 	grid_nvm_ui_bulk_read_init(nvm, ui);
 
-		
-	
 }
 
 void grid_ui_nvm_clear_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
@@ -514,113 +510,53 @@ void grid_ui_nvm_clear_all_configuration(struct grid_ui_model* ui, struct grid_n
 }
 
 
-uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t bank, uint8_t element, enum grid_ui_event_t event_type){
+uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type){
 	
+	// need implementation
 
-	struct grid_ui_element* ele = NULL;
-	struct grid_ui_event* eve = NULL;
-	uint8_t event_index = 255;
+	printf("RECALL NOT IMPLEMENTED!!! \r\n");
+
+	// struct grid_msg message;
+
+	// grid_msg_init(&message);
+	// grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+
+
+	// uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
+	// uint8_t payload_length = 0;
+	// uint32_t offset = 0;
+
+
+
+	// // BANK ENABLED
+	// offset = grid_msg_body_get_length(&message);
+
+	// sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
+	// payload_length = strlen(payload);
+
+	// grid_msg_body_append_text(&message, payload, payload_length);
+
+	// grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, eve->parent->parent->index);
+	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, eve->parent->index);
+	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, eve->type);
+
+	// offset = grid_msg_body_get_length(&message);
+	// grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
+
+
+
+
+
+	// sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
+	// payload_length = strlen(payload);
+
+	// grid_msg_body_append_text(&message, payload, payload_length);
+
+
+	// grid_msg_packet_close(&message);
+	// grid_msg_packet_send_everywhere(&message);
 	
-	if (bank < ui->bank_list_length){
-		
-		if (element < ui->bank_list[bank].element_list_length){
-			
-			ele = &ui->bank_list[bank].element_list[element];
-			
-			for(uint8_t i=0; i<ele->event_list_length; i++){
-				if (ele->event_list[i].type == event_type){
-					event_index = i;
-					eve = &ele->event_list[event_index];
-				}
-			}	
-			
-		}
-		
-		
-	}
-	
-	
-	if (event_index != 255){ // OK
-		
-		struct grid_msg message;
-
-		grid_msg_init(&message);
-		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
-
-
-		uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
-		uint8_t payload_length = 0;
-		uint32_t offset = 0;
-
-
-
-		// BANK ENABLED
-		offset = grid_msg_body_get_length(&message);
-
-		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
-		payload_length = strlen(payload);
-
-		grid_msg_body_append_text(&message, payload, payload_length);
-
-		grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, eve->parent->parent->index);
-		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, eve->parent->index);
-		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, eve->type);
-
-		offset = grid_msg_body_get_length(&message);
-		grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
-
-
-
-
-
-		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
-		payload_length = strlen(payload);
-
-		grid_msg_body_append_text(&message, payload, payload_length);
-
-
-		grid_msg_packet_close(&message);
-		grid_msg_packet_send_everywhere(&message);
-		
-	}
-	else{ // INVALID REQUEST
-		
-		struct grid_msg message;
-
-		grid_msg_init(&message);
-		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
-
-
-		uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
-		uint8_t payload_length = 0;
-		uint32_t offset = 0;
-
-		// BANK ENABLED
-		offset = grid_msg_body_get_length(&message);
-
-		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
-		payload_length = strlen(payload);
-
-		grid_msg_body_append_text(&message, payload, payload_length);
-
-		grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
-		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, bank);
-		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, element);
-		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, event_type);
-
-
-		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
-		payload_length = strlen(payload);
-
-		grid_msg_body_append_text(&message, payload, payload_length);
-
-
-		grid_msg_packet_close(&message);
-		grid_msg_packet_send_everywhere(&message);		
-		
-		
-	}
 
 	
 }
@@ -629,92 +565,93 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t ban
 
 uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
 	
+	printf("STORE NOT IMPLEMENTED\r\n");
 
-	struct grid_msg message;
+	// struct grid_msg message;
 
-	grid_msg_init(&message);
-	grid_msg_init_header(&message, GRID_SYS_LOCAL_POSITION, GRID_SYS_LOCAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
-
-
-	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
-	uint8_t payload_length = 0;
-	uint32_t offset = 0;
+	// grid_msg_init(&message);
+	// grid_msg_init_header(&message, GRID_SYS_LOCAL_POSITION, GRID_SYS_LOCAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 
-
-	// BANK ENABLED
-	offset = grid_msg_body_get_length(&message);
-
-	sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
-	payload_length = strlen(payload);
-
-	grid_msg_body_append_text(&message, payload, payload_length);
-
-	grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-	grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, eve->parent->parent->index);
-	grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, eve->parent->index);
-	grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, eve->type);
-
-	offset = grid_msg_body_get_length(&message);
-	grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
+	// uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
+	// uint8_t payload_length = 0;
+	// uint32_t offset = 0;
 
 
 
+	// // BANK ENABLED
+	// offset = grid_msg_body_get_length(&message);
+
+	// sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
+	// payload_length = strlen(payload);
+
+	// grid_msg_body_append_text(&message, payload, payload_length);
+
+	// grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, eve->parent->parent->index);
+	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, eve->parent->index);
+	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, eve->type);
+
+	// offset = grid_msg_body_get_length(&message);
+	// grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
 
 
-	sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
-	payload_length = strlen(payload);
-
-	grid_msg_body_append_text(&message, payload, payload_length);
 
 
-	grid_msg_packet_close(&message);
 
-	grid_nvm_clear_write_buffer(nvm);
+	// sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
+	// payload_length = strlen(payload);
 
-	uint32_t message_length = grid_msg_packet_get_length(&message);
+	// grid_msg_body_append_text(&message, payload, payload_length);
 
-	if (message_length){
 
-		nvm->write_buffer_length = message_length;
+	// grid_msg_packet_close(&message);
+
+	// grid_nvm_clear_write_buffer(nvm);
+
+	// uint32_t message_length = grid_msg_packet_get_length(&message);
+
+	// if (message_length){
+
+	// 	nvm->write_buffer_length = message_length;
 	
-		for(uint32_t i = 0; i<message_length; i++){
+	// 	for(uint32_t i = 0; i<message_length; i++){
 		
-			nvm->write_buffer[i] = grid_msg_packet_send_char(&message, i);
-		}
+	// 		nvm->write_buffer[i] = grid_msg_packet_send_char(&message, i);
+	// 	}
 
-	}
+	// }
 
-	uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(nvm, eve);
-	nvm->write_target_address = GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset;
+	// uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(nvm, eve);
+	// nvm->write_target_address = GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset;
 
-	int status = 0;
+	// int status = 0;
 	
 	
-	uint8_t debugtext[200] = {0};
+	// uint8_t debugtext[200] = {0};
 
-	if (eve->cfg_default_flag == 1 && eve->cfg_flashempty_flag == 0){
+	// if (eve->cfg_default_flag == 1 && eve->cfg_flashempty_flag == 0){
 		
-		//sprintf(debugtext, "Cfg: Default B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);
-		flash_erase(nvm->flash, nvm->write_target_address, 1);
-		eve->cfg_flashempty_flag = 1;
-		status = 1;
-	}
+	// 	//sprintf(debugtext, "Cfg: Default B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);
+	// 	flash_erase(nvm->flash, nvm->write_target_address, 1);
+	// 	eve->cfg_flashempty_flag = 1;
+	// 	status = 1;
+	// }
 	
 	
-	if (eve->cfg_default_flag == 0 && eve->cfg_changed_flag == 1){
+	// if (eve->cfg_default_flag == 0 && eve->cfg_changed_flag == 1){
 		
-		//sprintf(debugtext, "Cfg: Store B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);		
-		flash_write(nvm->flash, nvm->write_target_address, nvm->write_buffer, GRID_NVM_PAGE_SIZE);
-		status = 1;
-	}
+	// 	//sprintf(debugtext, "Cfg: Store B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);		
+	// 	flash_write(nvm->flash, nvm->write_target_address, nvm->write_buffer, GRID_NVM_PAGE_SIZE);
+	// 	status = 1;
+	// }
 
 
-	//grid_debug_print_text(debugtext);
+	// //grid_debug_print_text(debugtext);
 
-	eve->cfg_changed_flag = 0;
+	// eve->cfg_changed_flag = 0;
 	
-	return status;
+	// return status;
 	
 }
 
@@ -722,49 +659,51 @@ uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct g
 
 uint8_t grid_ui_nvm_load_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
 	
+
+	printf("LOAD NOT IMPLEMENTED !!!! \r\n");
 		
-	grid_nvm_clear_read_buffer(nvm);
+	// grid_nvm_clear_read_buffer(nvm);
 	
-	uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(nvm, eve);	
-	nvm->read_source_address = GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset;	
+	// uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(nvm, eve);	
+	// nvm->read_source_address = GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset;	
 	
 
-	int status = flash_read(nvm->flash, nvm->read_source_address, nvm->read_buffer, GRID_NVM_PAGE_SIZE);	
+	// int status = flash_read(nvm->flash, nvm->read_source_address, nvm->read_buffer, GRID_NVM_PAGE_SIZE);	
 		
-	uint8_t copydone = 0;
+	// uint8_t copydone = 0;
 	
-	uint8_t cfgfound = 0;
+	// uint8_t cfgfound = 0;
 		
-	for (uint16_t i=0; i<GRID_NVM_PAGE_SIZE; i++){
+	// for (uint16_t i=0; i<GRID_NVM_PAGE_SIZE; i++){
 			
 			
-		if (copydone == 0){
+	// 	if (copydone == 0){
 				
-			if (nvm->read_buffer[i] == '\n'){ // END OF PACKET, copy newline character
-				GRID_PORT_U.rx_double_buffer[i] = nvm->read_buffer[i];
-				GRID_PORT_U.rx_double_buffer_status = i+1;
-				GRID_PORT_U.rx_double_buffer_read_start_index = 0;
-				copydone = 1;
+	// 		if (nvm->read_buffer[i] == '\n'){ // END OF PACKET, copy newline character
+	// 			GRID_PORT_U.rx_double_buffer[i] = nvm->read_buffer[i];
+	// 			GRID_PORT_U.rx_double_buffer_status = i+1;
+	// 			GRID_PORT_U.rx_double_buffer_read_start_index = 0;
+	// 			copydone = 1;
 				
-				cfgfound=2;
+	// 			cfgfound=2;
 					
-			}
-			else if (nvm->read_buffer[i] == 255){ // UNPROGRAMMED MEMORY, lets get out of here
-				copydone = 1;
-			}
-			else{ // NORMAL CHARACTER, can be copied
-				GRID_PORT_U.rx_double_buffer[i] = nvm->read_buffer[i];
+	// 		}
+	// 		else if (nvm->read_buffer[i] == 255){ // UNPROGRAMMED MEMORY, lets get out of here
+	// 			copydone = 1;
+	// 		}
+	// 		else{ // NORMAL CHARACTER, can be copied
+	// 			GRID_PORT_U.rx_double_buffer[i] = nvm->read_buffer[i];
 				
-				cfgfound=1;
-			}
+	// 			cfgfound=1;
+	// 		}
 				
 				
-		}
+	// 	}
 			
 			
-	}
+	// }
 	
-	return cfgfound;
+	// return cfgfound;
 	
 	
 }
@@ -833,7 +772,7 @@ void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_u
 
 	ele->event_list[event_index].event_string_length = event_string_length;
 	
-	grid_ui_smart_trigger(ele->parent->parent, ele->parent->index, ele->index, event_type);
+	grid_ui_smart_trigger(ele->parent, ele->index, event_type);
 	
 	
 }
@@ -1073,30 +1012,30 @@ void grid_ui_event_trigger_local(struct grid_ui_element* ele, uint8_t event_inde
 }
 
 
-void grid_ui_smart_trigger(struct grid_ui_model* mod, uint8_t bank, uint8_t element, enum grid_ui_event_t event){
+void grid_ui_smart_trigger(struct grid_ui_model* mod, uint8_t element, enum grid_ui_event_t event){
 
-	uint8_t event_index = grid_ui_event_find(&mod->bank_list[bank].element_list[element], event);
+	uint8_t event_index = grid_ui_event_find(&mod->element_list[element], event);
 	
 	if (event_index == 255){
 		
 		return;
 	}
 	
-	grid_ui_event_trigger(&mod->bank_list[bank].element_list[element], event_index);
+	grid_ui_event_trigger(&mod->element_list[element], event_index);
 
 }
 
 
-void grid_ui_smart_trigger_local(struct grid_ui_model* mod, uint8_t bank, uint8_t element, enum grid_ui_event_t event){
+void grid_ui_smart_trigger_local(struct grid_ui_model* mod, uint8_t element, enum grid_ui_event_t event){
 
-	uint8_t event_index = grid_ui_event_find(&mod->bank_list[bank].element_list[element], event);
+	uint8_t event_index = grid_ui_event_find(&mod->element_list[element], event);
 	
 	if (event_index == 255){
 		
 		return;
 	}
 
-    grid_ui_event_trigger_local(&mod->bank_list[bank].element_list[element], event_index);
+    grid_ui_event_trigger_local(&mod->element_list[element], event_index);
     
 }
 
@@ -1319,9 +1258,9 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 	// Call the event clear callback
 
-	if (eve->parent->parent->parent->event_clear_cb != NULL){
+	if (eve->parent->parent->event_clear_cb != NULL){
 
-		eve->parent->parent->parent->event_clear_cb(eve);
+		eve->parent->parent->event_clear_cb(eve);
 	}
 	
 	

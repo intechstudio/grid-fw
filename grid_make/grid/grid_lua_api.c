@@ -121,7 +121,7 @@ static int l_grid_midi_send(lua_State* L) {
     grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, param1, NULL);
     grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2, NULL);
     
-    printf("MIDI: %s\r\n", midiframe);  
+    // printf("MIDI: %s\r\n", midiframe);  
     strcat(grid_lua_state.stdo, midiframe);
 
     return 1;
@@ -140,9 +140,9 @@ static int l_grid_led_set_phase(lua_State* L) {
             param[i-1] = lua_tointeger(L, i);
         }
 
-        if (param[0]<grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list_length){
+        if (param[0]<grid_ui_state.element_list_length){
 	        
-            struct grid_ui_element* ele = &grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[param[0]];
+            struct grid_ui_element* ele = &grid_ui_state.element_list[param[0]];
             enum grid_ui_element_t ele_type = ele->type;
 
             int32_t min = 0;
@@ -393,7 +393,7 @@ static int l_grid_load_template_variables(lua_State* L) {
 
     for (uint8_t i=0; i<14; i++){
 
-        int32_t vari = grid_ui_state.bank_list[grid_sys_get_bank_num(&grid_sys_state)].element_list[param[0]].template_parameter_list[i];
+        int32_t vari = grid_ui_state.element_list[param[0]].template_parameter_list[i];
 
         uint8_t str_to_do[100] = {0};
         sprintf(str_to_do, "this.T[%d]=%d", i, vari);
@@ -434,7 +434,7 @@ static int l_grid_store_template_variables(lua_State* L) {
         lua_Integer lnum = lua_tointeger(L, -1);
         lua_pop(L, 1);
 
-        grid_ui_state.bank_list[grid_sys_get_bank_num(&grid_sys_state)].element_list[param[0]].template_parameter_list[i] = lnum;
+        grid_ui_state.element_list[param[0]].template_parameter_list[i] = lnum;
 
         //printf("LUA: %s: %d\r\n", str_to_do, lnum);
 
@@ -464,7 +464,7 @@ static int l_grid_template_variable(lua_State* L) {
             
         }
         else if (lua_isnil(L, i)){
-            printf(" %d : NIL ", i);
+            // printf(" %d : NIL ", i);
             if (i==3){
                 isgetter = 1;
             }
@@ -476,22 +476,15 @@ static int l_grid_template_variable(lua_State* L) {
 
     if (isgetter){
 
-    }else{
-        printf("SETTER!!!\r\n\r\n");
-    }
-
-
-    if (isgetter){
-
-        int32_t var = grid_ui_state.bank_list[grid_sys_get_bank_num(&grid_sys_state)].element_list[param[0]].template_parameter_list[param[1]];
-        printf("GTV Getter: %d %d %d : %d\r\n", param[0], param[1], param[2], var);
+        int32_t var = grid_ui_state.element_list[param[0]].template_parameter_list[param[1]];
+        // printf("GTV Getter: %d %d %d : %d\r\n", param[0], param[1], param[2], var);
         lua_pushinteger(L, var);
 
     }
     else{
         int32_t var =  param[2];
-        grid_ui_state.bank_list[grid_sys_get_bank_num(&grid_sys_state)].element_list[param[0]].template_parameter_list[param[1]] = var;
-        printf("GTV Setter: %d %d %d : %d\r\n", param[0], param[1], param[2], var);
+        grid_ui_state.element_list[param[0]].template_parameter_list[param[1]] = var;
+        // printf("GTV Setter: %d %d %d : %d\r\n", param[0], param[1], param[2], var);
         //lua_pushinteger(L, var);
     }
     

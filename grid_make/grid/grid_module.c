@@ -129,10 +129,11 @@ uint8_t grid_adc_get_config(uint8_t register_offset, uint8_t bit_offest){
 void grid_module_common_init(void){
 
 	grid_ui_model_init(&grid_core_state, 1);
-	grid_ui_bank_init(&grid_core_state, 0, 1);
-	grid_ui_element_init(&grid_core_state.bank_list[0], 0, GRID_UI_ELEMENT_SYSTEM);
+
 	
-		
+	printf("Model init done\r\n");	
+	grid_ui_element_init(&grid_core_state, 0, GRID_UI_ELEMENT_SYSTEM);
+	
 	if (1){	// INIT CORE_STATE->hearbeat	
 		
 		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
@@ -151,8 +152,8 @@ void grid_module_common_init(void){
 	
 		payload_length = strlen(payload_template);
 	
-		grid_ui_event_register_eventstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT, GRID_EVENTSTRING_HEARTBEAT, strlen(GRID_EVENTSTRING_HEARTBEAT));
-		grid_ui_event_register_actionstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT, payload_template, payload_length);		
+		grid_ui_event_register_eventstring(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT, GRID_EVENTSTRING_HEARTBEAT, strlen(GRID_EVENTSTRING_HEARTBEAT));
+		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT, payload_template, payload_length);		
 		
 	}
 
@@ -164,7 +165,7 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_MAPMODE_PRESS GRID_ACTIONSTRING_MAPMODE_PRESS);
 		payload_length = strlen(payload_template);
 	
-		grid_ui_event_register_actionstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_MAPMODE_PRESS, payload_template, payload_length);			
+		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_PRESS, payload_template, payload_length);			
 		
 	}	
 
@@ -176,7 +177,7 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_MAPMODE_RELEASE GRID_ACTIONSTRING_MAPMODE_RELEASE);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_actionstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE, payload_template, payload_length);
+		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE, payload_template, payload_length);
 		
 	}	
 	
@@ -188,7 +189,7 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_CFG_RESPONES GRID_ACTIONSTRING_CFG_RESPONSE);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_actionstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_CFG_RESPONSE, payload_template, payload_length);
+		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_RESPONSE, payload_template, payload_length);
 		
 	}	
 	
@@ -200,11 +201,13 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_CFG_REQUEST GRID_ACTIONSTRING_CFG_REQUEST);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_actionstring(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_CFG_REQUEST, payload_template, payload_length);
+		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_REQUEST, payload_template, payload_length);
 		
 	}	
 	
 	
+	printf("Common init done\r\n");	
+
 	//enable pwr!
 	
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "UI Power Enable");
@@ -252,4 +255,62 @@ void grid_module_common_init(void){
 	grid_nvm_init(&grid_nvm_state, &FLASH_0);
 	
 		
+}
+
+
+
+void grid_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf){
+
+	printf("POTIKA\r\n");
+
+	uint8_t element_index = buf->parent->index;
+	int32_t* template_parameter_list = buf->template_parameter_list;
+
+	template_parameter_list[GRID_LUA_FNC_P_ELEMENT_INDEX_index]		= element_index;
+	template_parameter_list[GRID_LUA_FNC_P_POTMETER_NUMBER_index] 	= element_index;
+	template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] 	= 0;
+	template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index] 		= 0;
+	template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index] 		= 127;
+	template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index] 	= 7;
+	template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] 	= 0;
+
+
+}
+
+void grid_element_button_template_parameter_init(struct grid_ui_template_buffer* buf){
+	
+	uint8_t element_index = buf->parent->index;
+	int32_t* template_parameter_list = buf->template_parameter_list;
+
+	template_parameter_list[GRID_LUA_FNC_B_ELEMENT_INDEX_index] 	= element_index;
+	template_parameter_list[GRID_LUA_FNC_B_BUTTON_NUMBER_index] 	= element_index;
+	template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] 		= 0;
+	template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index] 		= 0;
+	template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index] 		= 127;
+	template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] 		= 0;
+	template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] 	= 0;
+	template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] 		= 0;
+}
+
+void grid_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf){
+
+	uint8_t element_index = buf->parent->index;
+	int32_t* template_parameter_list = buf->template_parameter_list;
+
+	template_parameter_list[GRID_LUA_FNC_E_ELEMENT_INDEX_index] 	= element_index;
+	template_parameter_list[GRID_LUA_FNC_E_BUTTON_NUMBER_index] 	= element_index;
+	template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] 		= 0;
+	template_parameter_list[GRID_LUA_FNC_E_BUTTON_MIN_index] 		= 0;
+	template_parameter_list[GRID_LUA_FNC_E_BUTTON_MAX_index] 		= 127;
+	template_parameter_list[GRID_LUA_FNC_E_BUTTON_MODE_index] 		= 0;
+	template_parameter_list[GRID_LUA_FNC_E_BUTTON_ELAPSED_index] 	= 0;
+	template_parameter_list[GRID_LUA_FNC_E_BUTTON_STATE_index] 		= 0;
+
+	template_parameter_list[GRID_LUA_FNC_E_ENCODER_NUMBER_index] 	= element_index;
+	template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] 	= 0;
+	template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index] 		= 0;
+	template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index] 		= 128 - 1;
+	template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] 		= 0;
+	template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] 	= 0;
+
 }

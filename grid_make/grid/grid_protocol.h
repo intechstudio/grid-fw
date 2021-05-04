@@ -277,41 +277,41 @@
 
 
 
-#define GRID_LUA_FNC_G_LED_PHASE_short "glp"
-#define GRID_LUA_FNC_G_LED_PHASE_human "led_value"
-#define GRID_LUA_FNC_G_LED_PHASE_fnptr l_grid_led_set_phase
+#define GRID_LUA_FNC_G_LED_PHASE_short 	"glp"
+#define GRID_LUA_FNC_G_LED_PHASE_human 	"led_value"
+#define GRID_LUA_FNC_G_LED_PHASE_fnptr 	l_grid_led_set_phase
 
-#define GRID_LUA_FNC_G_LED_MIN_short "gln"
-#define GRID_LUA_FNC_G_LED_MIN_human "led_color_min"
-#define GRID_LUA_FNC_G_LED_MIN_fnptr l_grid_led_set_min
+#define GRID_LUA_FNC_G_LED_MIN_short 	"gln"
+#define GRID_LUA_FNC_G_LED_MIN_human 	"led_color_min"
+#define GRID_LUA_FNC_G_LED_MIN_fnptr 	l_grid_led_set_min
 
-#define GRID_LUA_FNC_G_LED_MID_short "gld"
-#define GRID_LUA_FNC_G_LED_MID_human "led_color_mid"
-#define GRID_LUA_FNC_G_LED_MID_fnptr l_grid_led_set_mid
+#define GRID_LUA_FNC_G_LED_MID_short 	"gld"
+#define GRID_LUA_FNC_G_LED_MID_human 	"led_color_mid"
+#define GRID_LUA_FNC_G_LED_MID_fnptr 	l_grid_led_set_mid
 
-#define GRID_LUA_FNC_G_LED_MAX_short "glx"
-#define GRID_LUA_FNC_G_LED_MAX_human "led_color_max"
-#define GRID_LUA_FNC_G_LED_MAX_fnptr l_grid_led_set_max
+#define GRID_LUA_FNC_G_LED_MAX_short 	"glx"
+#define GRID_LUA_FNC_G_LED_MAX_human 	"led_color_max"
+#define GRID_LUA_FNC_G_LED_MAX_fnptr 	l_grid_led_set_max
 
-#define GRID_LUA_FNC_G_LED_COLOR_short "glc"
-#define GRID_LUA_FNC_G_LED_COLOR_human "led_color"
-#define GRID_LUA_FNC_G_LED_COLOR_fnptr l_grid_led_set_color
+#define GRID_LUA_FNC_G_LED_COLOR_short 	"glc"
+#define GRID_LUA_FNC_G_LED_COLOR_human 	"led_color"
+#define GRID_LUA_FNC_G_LED_COLOR_fnptr 	l_grid_led_set_color
 
-#define GRID_LUA_FNC_G_LED_FREQUENCY_short "glf"
-#define GRID_LUA_FNC_G_LED_FREQUENCY_human "led_animation_rate"
-#define GRID_LUA_FNC_G_LED_FREQUENCY_fnptr l_grid_led_set_frequency
+#define GRID_LUA_FNC_G_LED_FREQUENCY_short 	"glf"
+#define GRID_LUA_FNC_G_LED_FREQUENCY_human 	"led_animation_rate"
+#define GRID_LUA_FNC_G_LED_FREQUENCY_fnptr 	l_grid_led_set_frequency
 
-#define GRID_LUA_FNC_G_LED_SHAPE_short "gls"
-#define GRID_LUA_FNC_G_LED_SHAPE_human "led_animation_type"
-#define GRID_LUA_FNC_G_LED_SHAPE_fnptr l_grid_led_set_phase
+#define GRID_LUA_FNC_G_LED_SHAPE_short 	"gls"
+#define GRID_LUA_FNC_G_LED_SHAPE_human 	"led_animation_type"
+#define GRID_LUA_FNC_G_LED_SHAPE_fnptr 	l_grid_led_set_phase
 
-#define GRID_LUA_FNC_G_LED_PSF_short "glpfs"
-#define GRID_LUA_FNC_G_LED_PSF_human "led_animation_phase_rate_type"
-#define GRID_LUA_FNC_G_LED_PSF_fnptr l_grid_led_set_pfs
+#define GRID_LUA_FNC_G_LED_PSF_short 	"glpfs"
+#define GRID_LUA_FNC_G_LED_PSF_human 	"led_animation_phase_rate_type"
+#define GRID_LUA_FNC_G_LED_PSF_fnptr 	l_grid_led_set_pfs
 
-#define GRID_LUA_FNC_G_MIDI_SEND_short "gms"
-#define GRID_LUA_FNC_G_MIDI_SEND_human "midi_send"
-#define GRID_LUA_FNC_G_MIDI_SEND_fnptr l_grid_midi_send
+#define GRID_LUA_FNC_G_MIDI_SEND_short 	"gms"
+#define GRID_LUA_FNC_G_MIDI_SEND_human 	"midi_send"
+#define GRID_LUA_FNC_G_MIDI_SEND_fnptr 	l_grid_midi_send
 
 /*
 

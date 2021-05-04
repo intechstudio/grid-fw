@@ -26,10 +26,6 @@
 #include "usb/class/midi/device/audiodf_midi.h"
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
 
-
-
-
-
 static StaticTask_t xTimerTaskTCBBuffer;
 static StackType_t xTimerStack[configMINIMAL_STACK_SIZE];
 
@@ -140,8 +136,6 @@ volatile uint32_t globaltest = 0;
 volatile uint8_t midi_rx_buffer[16] = {0};
 
 static void usb_task_inner(){
-
-
 	
 	grid_keyboard_tx_pop();
 	
@@ -170,13 +164,8 @@ static void usb_task_inner(){
 		
 	if (found){
 
-		
-
-
 		printf("MIDI: %02x %02x %02x %02x\n", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
 		
-
-
 		uint8_t message[30] = {0};
 			
 		sprintf(message, "MIDI: %02x %02x %02x %02x\n", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
@@ -191,7 +180,6 @@ static void usb_task_inner(){
 
 
 	}	
-	
 	
 	// SERIAL READ 
 
@@ -220,8 +208,6 @@ static void usb_task_inner(){
 
 }
 
-
-
 static void nvm_task_inner(){
 
 	// NVM BULK READ
@@ -237,7 +223,6 @@ static void nvm_task_inner(){
 		
 	}
 	
-
 	// NVM BULK CLEAR
 	
 	if (grid_nvm_ui_bulk_clear_is_in_progress(&grid_nvm_state, &grid_ui_state)){
@@ -255,8 +240,6 @@ static void nvm_task_inner(){
 			
 		
 	}
-	
-	
 	
 	// NVM READ
 
@@ -404,14 +387,12 @@ static void usb_task(void *p)
 
 static void nvm_task(void *p){
 
-
 	(void)p;
 
 	while (1) {
 
 		nvm_task_inner();
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
-
 	}
 
 }
@@ -423,11 +404,7 @@ static void ui_task(void *p){
 
 	while (1) {
 
-
-
-
 		ui_task_inner();
-			
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
 
 	}
@@ -439,7 +416,6 @@ static void receive_task(void *p){
 
 	while (1) {
 			
-		
 		receive_task_inner();
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
 
@@ -450,10 +426,8 @@ static void inbound_task(void *p){
 
 	(void)p;
 
-	while (1) {
-			
+	while (1) {	
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
-
 	}
 }
 
@@ -461,11 +435,8 @@ static void inbound_task(void *p){
 static void outbound_task(void *p){
 
 	(void)p;
-
-	while (1) {
-			
+	while (1) {	
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
-
 	}
 }
 
@@ -473,26 +444,11 @@ static void outbound_task(void *p){
 static void led_task(void *p)
 {
 	(void)p;
-
-
-
-
-
-
-
 	while (1) {
 
 		globaltest++;
-		
-
-		
-
 		inbound_task_inner();
 		outbound_task_inner();
-
-
-
-
 
 		led_task_inner();
 
@@ -554,14 +510,14 @@ void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 			
 		if (grid_sys_state.mapmodestate == 0){ // RELEASE
 			
-			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_MAPMODE_RELEASE);
+			grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_MAPMODE_RELEASE);
 			heartbeat_enable = !heartbeat_enable;
 
 				
 		}
 		else{ // PRESS
 			
-			grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_MAPMODE_PRESS);		
+			grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_MAPMODE_PRESS);		
 												 
 		}
 
@@ -574,7 +530,7 @@ void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 {
 	if (heartbeat_enable || 1){
 
-		grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_HEARTBEAT);
+		grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_HEARTBEAT);
 
 	}
 }
@@ -815,7 +771,6 @@ int main(void)
 
 
 	grid_module_common_init();
-    grid_ui_reinit(&grid_ui_state);
  				
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
 
@@ -833,9 +788,7 @@ int main(void)
 
 	// Init Bank Color Bug when config was previously saved
 	
-	grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
-	grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
-	
+
 
 	// xCreatedUsbTask = xTaskCreateStatic(usb_task, "Usb Task", TASK_USB_STACK_SIZE, ( void * ) 1, TASK_USB_PRIORITY, xStackUsb, &xTaskBufferUsb);
 	// xCreatedNvmTask = xTaskCreateStatic(nvm_task, "Nvm Task", TASK_NVM_STACK_SIZE, ( void * ) 1, TASK_NVM_PRIORITY, xStackNvm, &xTaskBufferNvm);
@@ -851,6 +804,10 @@ int main(void)
 	//  x/512xb 0x80000
 
 	grid_nvm_toc_init(&grid_nvm_state);
+
+	// grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
+	// grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
+	
 
 	grid_nvm_config_mock(&grid_nvm_state);
 	grid_nvm_config_mock(&grid_nvm_state);
@@ -899,23 +856,20 @@ int main(void)
 				
 				grid_sys_set_bank(&grid_sys_state, grid_sys_get_bank_number_of_first_valid(&grid_sys_state));
 				
-				grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_CFG_RESPONSE);
+				grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_CFG_RESPONSE);
 				
 
 				
-				uint8_t heartbeateventnum = grid_ui_event_find(&grid_core_state.bank_list[0].element_list[0], GRID_UI_EVENT_HEARTBEAT);
+				uint8_t heartbeateventnum = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT);
 
 				if (heartbeateventnum != 255){
-					char* actionstring = grid_core_state.bank_list[0].element_list[0].event_list[heartbeateventnum].action_string;
+					char* actionstring = grid_core_state.element_list[0].event_list[heartbeateventnum].action_string;
 			
-					
 					grid_msg_set_parameter(actionstring, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, 1, NULL);
 
 					printf(actionstring);
 
 				}
-
-
 
 				usb_init_flag = 1;
 		
@@ -930,7 +884,7 @@ int main(void)
  								
 			if (grid_sys_state.bank_init_flag == 0)	{
 				
-				grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_CFG_REQUEST);
+				grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_CFG_REQUEST);
 			}				 		
 			 
  		}
@@ -941,25 +895,18 @@ int main(void)
 		if (loopcounter == 1000){
 
 
-			printf("vTaskStartScheduler! \r\n");
-			delay_ms(2);
-			//vTaskStartScheduler();
+			// printf("vTaskStartScheduler! \r\n");
+			// delay_ms(2);
+			// vTaskStartScheduler();
 
 		}
-
-
-		//gpio_set_pin_level(MUX_A, true);
-
 		
 		int loopc = loopcounter;
 
-
-		
+	
 		if (sys_i2c_enabled){
 
 			sys_i2c_done_flag = SYS_I2C_STATUS_BUSY;
-
-
 
 			uint8_t buffer[2] = {0x01, 0x00};
 

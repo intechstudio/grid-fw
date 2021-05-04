@@ -102,7 +102,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 
 
 				uint8_t res_index = i;
-				int32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;					
+				int32_t* template_parameter_list = grid_ui_state.element_list[res_index].template_parameter_list;					
 
 
 				if (grid_ui_encoder_array[i].button_value == 0){ // Button Press
@@ -117,7 +117,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 127;
 					}
 					
-					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_BC);
+					grid_ui_smart_trigger(&grid_ui_state, i, GRID_UI_EVENT_BC);
 		
 				}
 				else{  // Button Release
@@ -132,7 +132,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 0;
 					}
 					
-					grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_BC);
+					grid_ui_smart_trigger(&grid_ui_state, i, GRID_UI_EVENT_BC);
 					
 				}
 			
@@ -142,7 +142,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				
 
 				uint8_t res_index = i;
-                int32_t* template_parameter_list = grid_ui_state.bank_list[grid_sys_state.bank_activebank_number].element_list[res_index].template_parameter_list;
+                int32_t* template_parameter_list = grid_ui_state.element_list[res_index].template_parameter_list;
    			
 				uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_ui_encoder_array[i].last_real_time);
 				grid_ui_encoder_array[i].last_real_time = grid_sys_rtc_get_time(&grid_sys_state);
@@ -182,7 +182,7 @@ void grid_module_en16_reva_hardware_transfer_complete_cb(void){
 				
 				template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_value;
 
-				grid_ui_smart_trigger(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_EC);				
+				grid_ui_smart_trigger(&grid_ui_state, i, GRID_UI_EVENT_EC);				
 							
 			
 				
@@ -216,13 +216,12 @@ void grid_module_en16_event_clear_cb(struct grid_ui_event* eve){
 
 void grid_module_en16_page_change_cb(uint8_t page_old, uint8_t page_new){
 
-	grid_sys_state.bank_active_changed = 0;
 			
 	for (uint8_t i = 0; i<16; i++)
 	{
 
-		grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_INIT);  
-		grid_ui_smart_trigger_local(&grid_ui_state, grid_sys_state.bank_activebank_number, i, GRID_UI_EVENT_EC);
+		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_INIT);  
+		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_EC);
 		
 	}
 
@@ -248,41 +247,14 @@ void grid_module_en16_reva_init(){
 	
 	grid_led_lowlevel_init(&grid_led_state, 16);
 	
-	grid_ui_model_init(&grid_ui_state, GRID_SYS_BANK_MAXNUMBER);	
-
-
+	grid_ui_model_init(&grid_ui_state, 16);	
+		
+	for(uint8_t j=0; j<16; j++){
 	
-	for (uint8_t i=0; i<GRID_SYS_BANK_MAXNUMBER; i++)
-	{
+		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_ENCODER);
+
+	}		
 		
-		grid_ui_bank_init(&grid_ui_state, i, 16);	
-		
-		for(uint8_t j=0; j<16; j++){
-		
-			grid_ui_element_init(&grid_ui_state.bank_list[i], j, GRID_UI_ELEMENT_ENCODER);
-
-			int32_t* template_parameter_list = grid_ui_state.bank_list[i].element_list[j].template_parameter_list;
-
-
-			template_parameter_list[GRID_LUA_FNC_E_ELEMENT_INDEX_index] 	= j;
-			template_parameter_list[GRID_LUA_FNC_E_BUTTON_NUMBER_index] 	= j;
-			template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] 	= 0;
-			template_parameter_list[GRID_LUA_FNC_E_BUTTON_MIN_index] 		= 0;
-			template_parameter_list[GRID_LUA_FNC_E_BUTTON_MAX_index] 		= 127;
-			template_parameter_list[GRID_LUA_FNC_E_BUTTON_MODE_index] 		= 0;
-			template_parameter_list[GRID_LUA_FNC_E_BUTTON_ELAPSED_index] 	= 0;
-			template_parameter_list[GRID_LUA_FNC_E_BUTTON_STATE_index] 	= 0;
-
-			template_parameter_list[GRID_LUA_FNC_E_ENCODER_NUMBER_index] 	= j;
-			template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] 	= 0;
-			template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index] 		= 0;
-			template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index] 		= 128 - 1;
-			template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] 	= 0;
-			template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] 	= 0;
-
-		}		
-		
-	}
 
 	// initialize local encoder helper struct
 	for (uint8_t j = 0; j<16; j++)

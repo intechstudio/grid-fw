@@ -1258,7 +1258,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							
 							
 							
-							grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_HEARTBEAT);
+							grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_HEARTBEAT);
 
 						}
 							
@@ -1272,7 +1272,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						
 						if (grid_sys_get_bank_valid(&grid_sys_state) != 0){
 							
-							grid_ui_smart_trigger(&grid_core_state, 0, 0, GRID_UI_EVENT_CFG_RESPONSE);
+							grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_CFG_RESPONSE);
 							
 						}						
 						
@@ -1629,29 +1629,29 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					
 					//grid_debug_print_text("Cfg: Received");
-					grid_ui_event_register_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype, actionstring, actionstring_length);
+					grid_ui_event_register_actionstring(&grid_ui_state.element_list[elementnumber], eventtype, actionstring, actionstring_length);
 
 					if (banknumber == grid_sys_state.bank_activebank_number){
 							
-						grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
+						grid_ui_smart_trigger(&grid_ui_state, elementnumber, eventtype);
 							
 					}
 
 					acknowledge = 1;
 							
-					uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
+					uint8_t event_index = grid_ui_event_find(&grid_ui_state.element_list[elementnumber], eventtype);
 					if (event_index != 255){
 						if (position_is_local){
 							// Clear changed flag because confguration came from nvm
-							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_flashempty_flag=0;
+							grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_flashempty_flag=0;
 								
-							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_changed_flag = 0;
-							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
+							grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_changed_flag = 0;
+							grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
 						}
 						if (position_is_me){
 							// Clear changed flag because confguration came from nvm
-							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_changed_flag = 1;
-							grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
+							grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_changed_flag = 1;
+							grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
 						}
 					}
 					
@@ -1822,20 +1822,20 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 						
 					//grid_debug_print_text("Cfg: Default");
-					grid_ui_event_generate_actionstring(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
+					grid_ui_event_generate_actionstring(&grid_ui_state.element_list[elementnumber], eventtype);
 						
 					if (banknumber == grid_sys_state.bank_activebank_number){
 							
-						grid_ui_smart_trigger(&grid_ui_state, banknumber, elementnumber, eventtype);
+						grid_ui_smart_trigger(&grid_ui_state, elementnumber, eventtype);
 							
 					}
 						
-					uint8_t event_index = grid_ui_event_find(&grid_ui_state.bank_list[banknumber].element_list[elementnumber], eventtype);
+					uint8_t event_index = grid_ui_event_find(&grid_ui_state.element_list[elementnumber], eventtype);
 					if (event_index != 255){
 							
 						// Clear changed flag because confguration came from nvm
-						grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_changed_flag = 1;
-						grid_ui_state.bank_list[banknumber].element_list[elementnumber].event_list[event_index].cfg_default_flag = 1;
+						grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_changed_flag = 1;
+						grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_default_flag = 1;
 					}
 
 					
