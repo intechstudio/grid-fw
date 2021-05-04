@@ -355,6 +355,10 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 	
 
 	struct grid_ui_element* ele = &parent->element_list[index];
+
+	parent->event_clear_cb = NULL;
+	parent->page_change_cb = NULL;
+
 	ele->parent = parent;
 	ele->index = index;
 
@@ -396,6 +400,9 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 		ele->template_initializer = &grid_element_potmeter_template_parameter_init;
 		ele->template_parameter_list_length = GRID_LUA_FNC_P_LIST_length;
 		
+		parent->event_clear_cb = &grid_element_potmeter_event_clear_cb;
+		parent->page_change_cb = &grid_element_potmeter_page_change_cb;
+
 	}
 	else if (element_type == GRID_UI_ELEMENT_BUTTON){
 		
@@ -408,6 +415,9 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 
 		ele->template_initializer = &grid_element_button_template_parameter_init;
 		ele->template_parameter_list_length = GRID_LUA_FNC_B_LIST_length;
+
+		parent->event_clear_cb = &grid_element_button_event_clear_cb;
+		parent->page_change_cb = &grid_element_button_page_change_cb;
 
 	}
 	else if (element_type == GRID_UI_ELEMENT_ENCODER){
@@ -423,6 +433,9 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 		ele->template_initializer = &grid_element_encoder_template_parameter_init;
 		ele->template_parameter_list_length = GRID_LUA_FNC_E_LIST_length;
 		
+		parent->event_clear_cb = &grid_element_encoder_event_clear_cb;
+		parent->page_change_cb = &grid_element_encoder_page_change_cb;
+
 	}
 	else{
 		//UNKNOWN ELEMENT TYPE

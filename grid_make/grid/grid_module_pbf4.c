@@ -241,24 +241,6 @@ void grid_module_pbf4_hardware_transfer_complete_cb(void){
 }
 
 
-
-void grid_module_pbf4_event_clear_cb(struct grid_ui_event* eve){
-
-
-}
-
-void grid_module_pbf4_page_change_cb(uint8_t page_old, uint8_t page_new){
-
-	
-	for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
-		
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_INIT);
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_AC);
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_BC);
-								
-	}
-}
-
 void grid_module_pbf4_hardware_init(void){
 	
 	adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, grid_module_pbf4_hardware_transfer_complete_cb);
@@ -291,8 +273,6 @@ void grid_module_pbf4_init(){
 	
 	}		
 	
-	grid_ui_state.event_clear_cb = &grid_module_pbf4_event_clear_cb;
-	grid_ui_state.page_change_cb = &grid_module_pbf4_page_change_cb;
 
 	grid_module_pbf4_hardware_init();
 	grid_module_pbf4_hardware_start_transfer();

@@ -198,35 +198,6 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 }
 
 
-void grid_module_en16_event_clear_cb(struct grid_ui_event* eve){
-
-
-	int32_t* template_parameter_list = eve->parent->template_parameter_list;
-
-	if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] != 0){ // relative
-
-		int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
-		int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
-
-		template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = ((max+1)-min)/2;
-
-	}	
- 
-}
-
-void grid_module_en16_page_change_cb(uint8_t page_old, uint8_t page_new){
-
-			
-	for (uint8_t i = 0; i<16; i++)
-	{
-
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_INIT);  
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_EC);
-		
-	}
-
-}
-
 void grid_module_en16_hardware_init(void){
 	
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
@@ -274,9 +245,6 @@ void grid_module_en16_init(){
         grid_ui_encoder_array[j].phase_change_lock = 0;
 		
 	}
-	
-	grid_ui_state.event_clear_cb = &grid_module_en16_event_clear_cb;
-	grid_ui_state.page_change_cb = &grid_module_en16_page_change_cb;
 	
 	grid_module_en16_hardware_init();
 	

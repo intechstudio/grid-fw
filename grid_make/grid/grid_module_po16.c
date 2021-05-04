@@ -120,22 +120,6 @@ static void grid_module_po16_hardware_transfer_complete_cb(void){
 }
 
 
-void grid_module_po16_event_clear_cb(struct grid_ui_event* eve){
-
-}
-
-void grid_module_po16_page_change_cb(uint8_t page_old, uint8_t page_new){
-
-	grid_sys_state.bank_active_changed = 0;
-	
-	for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
-		
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_INIT);
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_AC);
-								
-	}
-}
-
 
 void grid_module_po16_hardware_init(void){
 	
@@ -161,9 +145,6 @@ void grid_module_po16_init(){
 
 	}
 	
-	grid_ui_state.event_clear_cb = &grid_module_po16_event_clear_cb;
-	grid_ui_state.page_change_cb = &grid_module_po16_page_change_cb;
-
 	grid_module_po16_hardware_init();
 	grid_module_po16_hardware_start_transfer();
 	

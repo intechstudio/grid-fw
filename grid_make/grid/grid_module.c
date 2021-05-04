@@ -314,3 +314,72 @@ void grid_element_encoder_template_parameter_init(struct grid_ui_template_buffer
 	template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] 	= 0;
 
 }
+
+
+
+void grid_element_button_event_clear_cb(struct grid_ui_event* eve){
+
+
+}
+
+void grid_element_button_page_change_cb(uint8_t page_old, uint8_t page_new){
+
+	
+	for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
+		
+		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_INIT);
+		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_BC);
+								
+	}
+}
+
+
+
+void grid_element_encoder_event_clear_cb(struct grid_ui_event* eve){
+
+
+	int32_t* template_parameter_list = eve->parent->template_parameter_list;
+
+	if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] != 0){ // relative
+
+		int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
+		int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
+
+		template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = ((max+1)-min)/2;
+
+	}	
+ 
+}
+
+void grid_element_encoder_page_change_cb(uint8_t page_old, uint8_t page_new){
+
+			
+	for (uint8_t i = 0; i<16; i++)
+	{
+
+		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_INIT);  
+		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_EC);
+		
+	}
+
+}
+
+
+
+
+
+void grid_element_potmeter_event_clear_cb(struct grid_ui_event* eve){
+
+}
+
+void grid_element_potmeter_page_change_cb(uint8_t page_old, uint8_t page_new){
+
+	grid_sys_state.bank_active_changed = 0;
+	
+	for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
+		
+		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_INIT);
+		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_AC);
+								
+	}
+}
