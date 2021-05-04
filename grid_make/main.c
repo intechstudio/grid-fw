@@ -820,12 +820,15 @@ int main(void)
 	printf("QSPI\r\n");
 	qspi_test();
 
-//	grid_nvm_erase_all(&grid_nvm_state);
+	// grid_nvm_erase_all(&grid_nvm_state);
 
 
 	if (sys_i2c_enabled){
 		uint8_t id = grid_fusb302_read_id(SYS_I2C_io);
 	}
+
+	// wtf init config sometimes missing on pot12
+	printf("action 12 init: %d\r\n", grid_ui_state.element_list[12].event_list[0].action_string_length);
 
 	while (1) {
 	

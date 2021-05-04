@@ -275,8 +275,7 @@ void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
 	
 	mod->status = GRID_UI_STATUS_INITIALIZED;
 
-	mod->event_clear_cb = NULL;
-	mod->page_change_cb = NULL;
+	mod->page_activepage = 0;
 
 	mod->element_list_length = element_list_length;	
 
@@ -356,8 +355,9 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 
 	struct grid_ui_element* ele = &parent->element_list[index];
 
-	parent->event_clear_cb = NULL;
-	parent->page_change_cb = NULL;
+	parent->element_list[index].event_clear_cb = NULL;
+	parent->element_list[index].page_change_cb = NULL;
+
 
 	ele->parent = parent;
 	ele->index = index;
@@ -400,8 +400,8 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 		ele->template_initializer = &grid_element_potmeter_template_parameter_init;
 		ele->template_parameter_list_length = GRID_LUA_FNC_P_LIST_length;
 		
-		parent->event_clear_cb = &grid_element_potmeter_event_clear_cb;
-		parent->page_change_cb = &grid_element_potmeter_page_change_cb;
+		ele->event_clear_cb = &grid_element_potmeter_event_clear_cb;
+		ele->page_change_cb = &grid_element_potmeter_page_change_cb;
 
 	}
 	else if (element_type == GRID_UI_ELEMENT_BUTTON){
@@ -416,8 +416,8 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 		ele->template_initializer = &grid_element_button_template_parameter_init;
 		ele->template_parameter_list_length = GRID_LUA_FNC_B_LIST_length;
 
-		parent->event_clear_cb = &grid_element_button_event_clear_cb;
-		parent->page_change_cb = &grid_element_button_page_change_cb;
+		ele->event_clear_cb = &grid_element_button_event_clear_cb;
+		ele->page_change_cb = &grid_element_button_page_change_cb;
 
 	}
 	else if (element_type == GRID_UI_ELEMENT_ENCODER){
@@ -433,8 +433,8 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 		ele->template_initializer = &grid_element_encoder_template_parameter_init;
 		ele->template_parameter_list_length = GRID_LUA_FNC_E_LIST_length;
 		
-		parent->event_clear_cb = &grid_element_encoder_event_clear_cb;
-		parent->page_change_cb = &grid_element_encoder_page_change_cb;
+		ele->event_clear_cb = &grid_element_encoder_event_clear_cb;
+		ele->page_change_cb = &grid_element_encoder_page_change_cb;
 
 	}
 	else{
@@ -500,6 +500,12 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	eve->cfg_changed_flag = 0;
 	eve->cfg_default_flag = 1;
 	eve->cfg_flashempty_flag = 1;
+
+	if (event_type == GRID_UI_EVENT_INIT){
+
+		printf("initevent\r\n");
+
+	}
 	
 }
 
@@ -527,48 +533,83 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t pag
 	
 	// need implementation
 
-	printf("RECALL NOT IMPLEMENTED!!! \r\n");
+	printf("RECALL!!! \r\n");
 
-	// struct grid_msg message;
+	
 
-	// grid_msg_init(&message);
-	// grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+	struct grid_msg message;
 
-
-	// uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
-	// uint8_t payload_length = 0;
-	// uint32_t offset = 0;
+	grid_msg_init(&message);
+	grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 
+	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
+	uint8_t payload_length = 0;
+	uint32_t offset = 0;
 
-	// // BANK ENABLED
-	// offset = grid_msg_body_get_length(&message);
+	struct grid_ui_element* ele = &ui->element_list[element];
+	uint8_t event_index = grid_ui_event_find(ele, event_type);
+	struct grid_ui_event* eve = NULL;
 
-	// sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
-	// payload_length = strlen(payload);
+	if (event_index != 255){
 
-	// grid_msg_body_append_text(&message, payload, payload_length);
+		// Event actually exists
 
-	// grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, eve->parent->parent->index);
-	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, eve->parent->index);
-	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, eve->type);
+		eve = &ele->event_list[event_index]; 
 
-	// offset = grid_msg_body_get_length(&message);
-	// grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
+		offset = grid_msg_body_get_length(&message);
+
+		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
+		payload_length = strlen(payload);
+
+		grid_msg_body_append_text(&message, payload, payload_length);
+
+		grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, page);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, element);
+		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, event_type);
+
+		offset = grid_msg_body_get_length(&message);
+
+		if (ui->page_activepage == page){
+			// currently active page needs to be sent
+			grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
+		}		
+		else{
+
+			// use nvm_toc to find the configuration to be sent
+			printf("warning."__FILE__".toc search not implemented!\r\n");
+
+			struct grid_nvm_toc_entry* entry = NULL;
+			entry = grid_nvm_toc_entry_find(&grid_nvm_state, page, element, event_type);
+
+			if (entry != NULL){
+				printf("FOUND!\r\n");
+			}
+			else{
+				printf("NOT!\r\n");
+			}
+
+			// if no toc entry is found but page exists then send efault configuration
+
+		}
+	
+		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
+		payload_length = strlen(payload);
+
+		grid_msg_body_append_text(&message, payload, payload_length);
+
+
+		grid_msg_packet_close(&message);
+		grid_msg_packet_send_everywhere(&message);
+	}
+	else{
+
+		printf("warning."__FILE__".event does not exist!\r\n");
+	}
 
 
 
-
-
-	// sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
-	// payload_length = strlen(payload);
-
-	// grid_msg_body_append_text(&message, payload, payload_length);
-
-
-	// grid_msg_packet_close(&message);
-	// grid_msg_packet_send_everywhere(&message);
 	
 
 	
@@ -1271,9 +1312,9 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 	// Call the event clear callback
 
-	if (eve->parent->parent->event_clear_cb != NULL){
+	if (eve->parent->event_clear_cb != NULL){
 
-		eve->parent->parent->event_clear_cb(eve);
+		eve->parent->event_clear_cb(eve);
 	}
 	
 	

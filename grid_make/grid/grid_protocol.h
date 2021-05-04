@@ -640,20 +640,9 @@ enum grid_ui_event_t
 								   "041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03\x02" \
 								   "041e<?expr p(T0) ?>02<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
 
-#define GRID_ACTIONSTRING_AC			"<?lua gms(0,176,this.ind(),this.pva()) glp(this.ind(), 1) ?>"
-
-//#define GRID_ACTIONSTRING_AC_POT "<?lua this.T[4]=16383 this.T[5]=9 gsm(0,176,this.T[0],this.T[2]//128) gsm(0,176,this.T[0]+32,this.T[2]%%128) glsp(this.T[0], 1) ?>"
-
-// 14bit     gsm(0,176,this.T[0],this.T[2]//128) gsm(0,176,this.T[0]+32,this.T[2]%%128)
-//#define GRID_ACTIONSTRING_AC_POT			"<?lua this.T[4]=16383 this.T[5]=9  gslp(this.T[0], 1) ?>"
-
-#define GRID_ACTIONSTRING_BC "<?lua gln(this.ind(),2,255,7,0) if (this.bva()>0) then glpfs(this.ind(),2,0,1,(this.ind())%%4) else glpfs(this.ind(), 2, 0, 0, 0) end ?>"
-
-//#define GRID_ACTIONSTRING_EC				"<?lua grid_send_midi(0,176,this.enu(),this.eva()) grid_led_set_phase(this.ind(), 1, this.eva()) ?>"
-// 14bit midi test
-// #define GRID_ACTIONSTRING_EC				"<?lua this.T[11]=16383 gsm(0,176,this.T[0],this.T[9]//128) gsm(0,176,this.T[0]+32,this.T[9]%%128) glsp(this.T[0], 1, this.T[9]//128) ?>"
-
-#define GRID_ACTIONSTRING_EC "<?lua gms(0, 176, this.ind(), this.eva()) gld(this.ind(), 1 , 0, 130, 0) glp(this.ind(), 1, this.eva()) ?>"
+#define GRID_ACTIONSTRING_AC "<?lua --[[@gms]]gms(0, 176, this.ind(), this.pva()) --[[@glp]]glp(this.ind(), 1, this.pva()) ?>"
+#define GRID_ACTIONSTRING_BC "<?lua --[[@gms]]gms(0, 144, this.ind(), this.bva()) --[[@glp]]glp(this.ind(), 1, this.bva()) ?>"
+#define GRID_ACTIONSTRING_EC "<?lua --[[@gms]]gms(0, 176, this.ind(), this.eva()) --[[@glp]]glp(this.ind(), 2, this.eva()) ?>"
 
 #define GRID_ACTIONSTRING_MAPMODE_PRESS "\x02" \
 										"030e<?expr p(Z5) ?>\x03"
