@@ -493,9 +493,13 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	eve->action_string_length = 0;
 	
 
-			
-	grid_ui_event_generate_eventstring(eve->parent, event_type);
-	grid_ui_event_generate_actionstring(eve->parent, event_type);	
+	uint8_t eventstring[GRID_UI_EVENT_STRING_maxlength] = {0};
+	grid_ui_event_generate_eventstring(eve->parent->type, event_type, eventstring);	
+	grid_ui_event_register_eventstring(eve->parent, event_type, eventstring);
+
+	uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength] = {0};
+	grid_ui_event_generate_actionstring(eve->parent->type, event_type, actionstring);	
+	grid_ui_event_register_actionstring(eve->parent, event_type, actionstring);
 	
 	eve->cfg_changed_flag = 0;
 	eve->cfg_default_flag = 1;
@@ -557,49 +561,63 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t pag
 
 		eve = &ele->event_list[event_index]; 
 
-		offset = grid_msg_body_get_length(&message);
-
-		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
+		sprintf(payload, GRID_CLASS_CONFIG_frame_start);
 		payload_length = strlen(payload);
 
 		grid_msg_body_append_text(&message, payload, payload_length);
 
-		grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, page);
-		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, element);
-		grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, event_type);
-
-		offset = grid_msg_body_get_length(&message);
+		grid_msg_text_set_parameter(&message, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, page);
+		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, element);
+		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type);
+		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, 0);
 
 		if (ui->page_activepage == page){
 			// currently active page needs to be sent
 			grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
+			grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, eve->action_string_length);
 		}		
 		else{
 
 			// use nvm_toc to find the configuration to be sent
-			printf("warning."__FILE__".toc search not implemented!\r\n");
 
 			struct grid_nvm_toc_entry* entry = NULL;
 			entry = grid_nvm_toc_entry_find(&grid_nvm_state, page, element, event_type);
 
 			if (entry != NULL){
-				printf("FOUND!\r\n");
+				
+				printf("FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
+
+				uint8_t buffer[entry->config_string_length+10];
+
+				flash_read(&FLASH_0, GRID_NVM_LOCAL_BASE_ADDRESS+entry->config_string_offset, buffer, entry->config_string_length);
+
+				// reset body pointer because cfg in nvm already has the config header
+				message.body_length = 0;
+				grid_msg_body_append_text_escaped(&message, buffer, entry->config_string_length);
+
+				grid_msg_text_set_parameter(&message, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+			
 			}
 			else{
-				printf("NOT!\r\n");
+				printf("NOT FOUND, Send default!\r\n");
+				uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength] = {0};
+				grid_ui_event_generate_actionstring(eve->parent->type, event_type, actionstring);	
+				grid_msg_body_append_text_escaped(&message, actionstring, strlen(actionstring));
+				grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, eve->action_string_length);
+
 			}
 
 			// if no toc entry is found but page exists then send efault configuration
 
 		}
 	
-		sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
+		sprintf(payload, GRID_CLASS_CONFIG_frame_end);
 		payload_length = strlen(payload);
 
 		grid_msg_body_append_text(&message, payload, payload_length);
 
-
+		printf("CFG: %s\r\n", message.body);
 		grid_msg_packet_close(&message);
 		grid_msg_packet_send_everywhere(&message);
 	}
@@ -777,9 +795,8 @@ uint8_t grid_ui_nvm_clear_event_configuration(struct grid_ui_model* ui, struct g
 
 
 
-void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length){
+void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string){
 	
-	grid_debug_print_text("Register Action");
 	uint8_t event_index = 255;
 	
 	for(uint8_t i=0; i<ele->event_list_length; i++){
@@ -793,183 +810,20 @@ void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_u
 		return; // EVENT NOT FOUND
 	}
 	
-	
-	
-	// Clear Action String
-	for(uint32_t i=0; i<GRID_UI_EVENT_STRING_maxlength; i++){
-		ele->event_list[event_index].event_string[i] = 0;
-	}
-	ele->event_list[event_index].event_string_length = 0;
-	
-		
-	// TEMPLATE MAGIC COMING UP!
-	
-	uint8_t parameter_list_length = 0;
+	struct grid_ui_event* eve = &ele->event_list[event_index];
 
-	
-	for (uint32_t i=0; i<event_string_length; i++){
-		
-		// Copy Action
-		ele->event_list[event_index].event_string[i] = event_string[i];
-		
-		// Check if STX or ETX was escaped, if so fix it!
-		if (ele->event_list[event_index].event_string[i] > 127){
-			
-			grid_debug_print_text(" Escaped Char Found ");
-			ele->event_list[event_index].event_string[i] -= 128;
-			
-		}
-	
-		
-	}
-	
+	strcpy(eve->event_string, event_string);
 
-	ele->event_list[event_index].event_string_length = event_string_length;
+	eve->event_string_length = strlen(eve->event_string);
 	
 	grid_ui_smart_trigger(ele->parent, ele->index, event_type);
 	
 	
 }
 
-void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type){
-	
-	uint8_t event_index = 255;
-	
-	for(uint8_t i=0; i<ele->event_list_length; i++){
-		if (ele->event_list[i].type == event_type){
-			event_index = i;
-		}
-	}
-	
-	if (event_index == 255){
-		return; // EVENT NOT FOUND
-	}
-	
-	
-	
-	
-	uint8_t event_string[GRID_UI_EVENT_STRING_maxlength] = {0};	
-	
-	
-	if (ele->type == GRID_UI_ELEMENT_BUTTON){
-		
-		if (event_type == GRID_UI_EVENT_INIT){
-			
-			sprintf(event_string, GRID_EVENTSTRING_INIT_BUT); // !!
-			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
-						
-		}
-		else if (event_type == GRID_UI_EVENT_BC){
-			
-			sprintf(event_string, GRID_EVENTSTRING_BC); // !!
-			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
-				
-		}
-		
-	}
-	else if (ele->type == GRID_UI_ELEMENT_POTENTIOMETER){
-		
-		if (event_type == GRID_UI_EVENT_INIT){
-			
-			sprintf(event_string, GRID_EVENTSTRING_INIT_POT); // !!
-			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
-			
-		}
-		else if (event_type == GRID_UI_EVENT_AC){
-			
-			sprintf(event_string, GRID_EVENTSTRING_AC); // !!
-			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
-			
-		}
-		
-	}
-	else if (ele->type == GRID_UI_ELEMENT_ENCODER){
-			
-		if (event_type == GRID_UI_EVENT_INIT){
-				
-			sprintf(event_string, GRID_EVENTSTRING_INIT_ENC); // !!
-			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
-				
-		}
-		else if (event_type == GRID_UI_EVENT_EC){
-		
-			sprintf(event_string, GRID_EVENTSTRING_EC); // !!
-			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
-		
-		}
-		else if (event_type == GRID_UI_EVENT_BC){
-			
-			sprintf(event_string, GRID_EVENTSTRING_BC); // !!
-			grid_ui_event_register_eventstring(ele, event_type, event_string, strlen(event_string));
-				
-		}
-			
-	}
-	
-		
-	
-}
 
 
-
-
-void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type){
-	
-	uint8_t event_index = 255;
-	
-	for(uint8_t i=0; i<ele->event_list_length; i++){
-		if (ele->event_list[i].type == event_type){
-			event_index = i;
-		}
-	}
-	
-	if (event_index == 255){
-		return; // EVENT NOT FOUND
-	}
-	
-	
-	
-	uint8_t action_string[GRID_UI_ACTION_STRING_maxlength] = {0};
-	
-	if (ele->type == GRID_UI_ELEMENT_BUTTON){
-				
-		switch(event_type){
-			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT_BUT);		break;
-			case GRID_UI_EVENT_BC:		sprintf(action_string, GRID_ACTIONSTRING_BC);			break;
-		}
-		
-	}
-	else if (ele->type == GRID_UI_ELEMENT_POTENTIOMETER){
-		
-		switch(event_type){
-			case GRID_UI_EVENT_INIT:	sprintf(action_string, GRID_ACTIONSTRING_INIT_BUT);		break;
-			case GRID_UI_EVENT_AC:	sprintf(action_string, GRID_ACTIONSTRING_AC);		break;
-		}
-		
-	}
-	else if (ele->type == GRID_UI_ELEMENT_ENCODER){
-		
-		switch(event_type){
-			case GRID_UI_EVENT_INIT:        sprintf(action_string, GRID_ACTIONSTRING_INIT_ENC);	break;
-			case GRID_UI_EVENT_EC:        	sprintf(action_string, GRID_ACTIONSTRING_EC);	break;
-			case GRID_UI_EVENT_BC:			sprintf(action_string, GRID_ACTIONSTRING_BC);			break;
-		}
-			
-	}
-	
-	if (strlen(action_string)){
-		
-		grid_ui_event_register_actionstring(ele, event_type, action_string, strlen(action_string));
-		
-	}
-	
-	ele->event_list[event_index].cfg_changed_flag = 0;
-	ele->event_list[event_index].cfg_default_flag = 1;	
-	
-}
-
-
-void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string, uint32_t action_string_length){
+void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string){
 		
 	uint8_t event_index = 255;
 	
@@ -980,43 +834,90 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 	}
 	
 	if (event_index == 255){
+		grid_debug_print_text("Event Not Found");
 		return; // EVENT NOT FOUND
 	}
-	
-	
-	
-	// Clear Action String
-	for(uint32_t i=0; i<GRID_UI_ACTION_STRING_maxlength; i++){
-		ele->event_list[event_index].action_string[i] = 0;
-	}
-	ele->event_list[event_index].action_string_length = 0;
-	
 
-	uint8_t escaped_characters = 0;
-	
-	for (uint32_t i=0; i<action_string_length; i++){
-		
-		// Copy Action
-		ele->event_list[event_index].action_string[i] = action_string[i];
-		
-		// Check if STX or ETX was escaped, if so fix it!
-		if (ele->event_list[event_index].action_string[i] > 127){
-			
-			escaped_characters++;
-			ele->event_list[event_index].action_string[i] -= 128;
-			
-		}
-		
-	}
-	
+	struct grid_ui_event* eve = &ele->event_list[event_index];
 
-	ele->event_list[event_index].action_string_length = action_string_length;
+	strcpy(eve->action_string, action_string);
+	
+	eve->action_string_length = strlen(eve->action_string);
 	
 	ele->event_list[event_index].cfg_changed_flag = 1;
 	
 	
 }
 
+
+
+
+void grid_ui_event_generate_eventstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring){
+	
+	
+	if (element_type == GRID_UI_ELEMENT_BUTTON){
+
+		switch(event_type){
+			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_EVENTSTRING_INIT_BUT);	break;
+			case GRID_UI_EVENT_BC:		sprintf(targetstring, GRID_EVENTSTRING_BC);			break;
+		}		
+		
+	}
+	else if (element_type== GRID_UI_ELEMENT_POTENTIOMETER){
+		
+		switch(event_type){
+			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_EVENTSTRING_INIT_POT);	break;
+			case GRID_UI_EVENT_AC:		sprintf(targetstring, GRID_EVENTSTRING_AC);			break;
+		}			
+
+		
+	}
+	else if (element_type == GRID_UI_ELEMENT_ENCODER){
+
+		switch(event_type){
+			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_EVENTSTRING_INIT_ENC);	break;
+			case GRID_UI_EVENT_EC:		sprintf(targetstring, GRID_EVENTSTRING_EC);			break;
+			case GRID_UI_EVENT_BC:		sprintf(targetstring, GRID_EVENTSTRING_BC);			break;
+		}	
+			
+	}
+	
+}
+
+
+
+
+void grid_ui_event_generate_actionstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring){
+	
+
+	if (element_type == GRID_UI_ELEMENT_BUTTON){
+				
+		switch(event_type){
+			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;
+			case GRID_UI_EVENT_BC:		sprintf(targetstring, GRID_ACTIONSTRING_BC);			break;
+		}
+		
+	}
+	else if (element_type == GRID_UI_ELEMENT_POTENTIOMETER){
+		
+		switch(event_type){
+			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;
+			case GRID_UI_EVENT_AC:		sprintf(targetstring, GRID_ACTIONSTRING_AC);		break;
+		}
+		
+	}
+	else if (element_type == GRID_UI_ELEMENT_ENCODER){
+		
+		switch(event_type){
+			case GRID_UI_EVENT_INIT:        sprintf(targetstring, GRID_ACTIONSTRING_INIT_ENC);	break;
+			case GRID_UI_EVENT_EC:        	sprintf(targetstring, GRID_ACTIONSTRING_EC);	break;
+			case GRID_UI_EVENT_BC:			sprintf(targetstring, GRID_ACTIONSTRING_BC);			break;
+		}
+			
+	}
+	
+	
+}
 
 
 uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type){

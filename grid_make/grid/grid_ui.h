@@ -125,12 +125,12 @@ uint8_t grid_ui_nvm_load_event_configuration(struct grid_ui_model* ui, struct gr
 uint8_t grid_ui_nvm_clear_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve);
 
 
-void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string, uint32_t event_string_length);
-void grid_ui_event_generate_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
+void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string);
+void grid_ui_event_generate_eventstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring);
 
-void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string, uint32_t action_string_length);
-void grid_ui_event_generate_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
-
+void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string);
+void grid_ui_event_generate_actionstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring);
+	
 
 uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
 void grid_ui_event_trigger(struct grid_ui_element* ele, uint8_t event_index);

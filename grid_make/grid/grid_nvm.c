@@ -414,7 +414,7 @@ uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
 	uint8_t buf[300] = {0};
 	uint16_t len = 0;
 
-	uint8_t page_number = 0;
+	uint8_t page_number = rand_sync_read8(&RAND_0)%2;
 	uint8_t element_number = rand_sync_read8(&RAND_0)%3;
 	uint8_t event_type = rand_sync_read8(&RAND_0)%3;
 

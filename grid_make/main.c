@@ -887,7 +887,12 @@ int main(void)
 			// vTaskStartScheduler();
 
 		}
-		grid_mxt144u_read_id(SYS_I2C_io);
+
+
+		if (sys_i2c_enabled){
+			grid_mxt144u_read_id(SYS_I2C_io);
+		}
+		
 
 		usb_task_inner();
 	

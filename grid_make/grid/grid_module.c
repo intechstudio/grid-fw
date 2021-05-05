@@ -130,7 +130,6 @@ void grid_module_common_init(void){
 
 	grid_ui_model_init(&grid_core_state, 1);
 
-	
 	printf("Model init done\r\n");	
 	grid_ui_element_init(&grid_core_state, 0, GRID_UI_ELEMENT_SYSTEM);
 	
@@ -152,8 +151,8 @@ void grid_module_common_init(void){
 	
 		payload_length = strlen(payload_template);
 	
-		grid_ui_event_register_eventstring(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT, GRID_EVENTSTRING_HEARTBEAT, strlen(GRID_EVENTSTRING_HEARTBEAT));
-		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT, payload_template, payload_length);		
+		grid_ui_event_register_eventstring(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT, GRID_EVENTSTRING_HEARTBEAT);
+		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT, payload_template);		
 		
 	}
 
@@ -165,7 +164,7 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_MAPMODE_PRESS GRID_ACTIONSTRING_MAPMODE_PRESS);
 		payload_length = strlen(payload_template);
 	
-		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_PRESS, payload_template, payload_length);			
+		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_PRESS, payload_template);			
 		
 	}	
 
@@ -177,7 +176,7 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_MAPMODE_RELEASE GRID_ACTIONSTRING_MAPMODE_RELEASE);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE, payload_template, payload_length);
+		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE, payload_template);
 		
 	}	
 	
@@ -189,7 +188,7 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_CFG_RESPONES GRID_ACTIONSTRING_CFG_RESPONSE);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_RESPONSE, payload_template, payload_length);
+		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_RESPONSE, payload_template);
 		
 	}	
 	
@@ -201,7 +200,7 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_CFG_REQUEST GRID_ACTIONSTRING_CFG_REQUEST);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_REQUEST, payload_template, payload_length);
+		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_REQUEST, payload_template);
 		
 	}	
 	
