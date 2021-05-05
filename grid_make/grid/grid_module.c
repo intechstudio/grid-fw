@@ -215,7 +215,6 @@ void grid_module_common_init(void){
 
 
 
-	grid_sys_init(&grid_sys_state);
 
 	// ADC SETUP	
 	
@@ -249,7 +248,7 @@ void grid_module_common_init(void){
 	grid_sys_uart_init();
 	grid_sys_dma_rx_init();
 
-	grid_sys_set_bank(&grid_sys_state, 255);
+	grid_sys_set_bank(&grid_sys_state, 0);
 
 	grid_nvm_init(&grid_nvm_state, &FLASH_0);
 	

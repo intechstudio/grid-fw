@@ -333,8 +333,21 @@
 #define GRID_LUA_FNC_G_VERSION_PATCH_human 		"version_patch"
 #define GRID_LUA_FNC_G_VERSION_PATCH_fnptr 		l_grid_version_patch
 
+#define GRID_LUA_FNC_G_MODULE_POSX_short 		"mx"
+#define GRID_LUA_FNC_G_MODULE_POSX_human 		"module_position_x"
+#define GRID_LUA_FNC_G_MODULE_POSX_fnptr 		l_grid_position_x
+
+#define GRID_LUA_FNC_G_MODULE_POSY_short 		"my"
+#define GRID_LUA_FNC_G_MODULE_POSY_human 		"module_position_y"
+#define GRID_LUA_FNC_G_MODULE_POSY_fnptr 		l_grid_position_y
+
+#define GRID_LUA_FNC_G_MODULE_ROT_short 		"mr"
+#define GRID_LUA_FNC_G_MODULE_ROT_human 		"module_rotation"
+#define GRID_LUA_FNC_G_MODULE_ROT_fnptr 		l_grid_rotation
+
 #define GRID_LUA_INIT_SCRIPT_1 "print('Hardware: ', hwcfg(), ' Version: ', vmaj(), vmin(), vpat())"
 #define GRID_LUA_INIT_SCRIPT_2 "print('Random: ', rnd(), rnd(), rnd(), rnd())"
+#define GRID_LUA_INIT_SCRIPT_3 "print('X, Y, Rot: ', mx(), my(), mr())"
 
 /*
 

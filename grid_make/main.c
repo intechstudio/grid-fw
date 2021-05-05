@@ -707,6 +707,8 @@ int main(void)
 	}
 
 	rand_sync_enable(&RAND_0);	
+	grid_sys_init(&grid_sys_state);
+	
 	grid_lua_init(&grid_lua_state);
 	grid_lua_start_vm(&grid_lua_state);
 

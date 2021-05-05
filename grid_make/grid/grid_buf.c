@@ -1356,8 +1356,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					else if (type == 1){
 						// from usb connected module
 
-						grid_sys_state.module_x = dx-127;
-						grid_sys_state.module_y = dy-127;
+						grid_sys_state.module_x = dx-GRID_SYS_DEFAULT_POSITION; // convert to signed ind
+						grid_sys_state.module_y = dy-GRID_SYS_DEFAULT_POSITION; // convert to signed ind
 						grid_sys_state.module_rot = rot;
 
 
@@ -1734,7 +1734,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 				else if (msg_class == GRID_CLASS_CONFIG_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
 					
-
 					
 					uint8_t pagenumber = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
 					uint8_t elementnumber = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);

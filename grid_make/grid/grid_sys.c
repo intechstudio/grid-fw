@@ -675,9 +675,9 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->hwfcg = -1;
 	mod->heartbeat_type = 0;
 
-	mod->module_x = 0;
-	mod->module_y = 0;
-	mod->module_rot = 0;
+	mod->module_x = 0; // 0 because this is signed int
+	mod->module_y = 0; // 0 because this is signed int
+	mod->module_rot = GRID_SYS_DEFAULT_ROTATION;
 
     
 	mod->sessionid = rand_sync_read8(&RAND_0);

@@ -496,6 +496,51 @@ static int l_grid_random(lua_State* L) {
     return 1;
 }
 
+static int l_grid_position_x(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+
+    lua_pushinteger(L, grid_sys_state.module_x);
+    
+    return 1;
+}
+
+static int l_grid_position_y(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+
+    lua_pushinteger(L, grid_sys_state.module_y);
+    
+    return 1;
+}
+
+static int l_grid_rotation(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+
+    lua_pushinteger(L, grid_sys_state.module_rot);
+    
+    return 1;
+}
+
 static const struct luaL_Reg printlib [] = {
     {"print", l_my_print},
     {"grid_send", l_grid_send},
@@ -514,6 +559,10 @@ static const struct luaL_Reg printlib [] = {
     {GRID_LUA_FNC_G_VERSION_MAJOR_short,    GRID_LUA_FNC_G_VERSION_MAJOR_fnptr},
     {GRID_LUA_FNC_G_VERSION_MINOR_short,    GRID_LUA_FNC_G_VERSION_MINOR_fnptr},
     {GRID_LUA_FNC_G_VERSION_PATCH_short,    GRID_LUA_FNC_G_VERSION_PATCH_fnptr},
+
+    {GRID_LUA_FNC_G_MODULE_POSX_short,    GRID_LUA_FNC_G_MODULE_POSX_fnptr},
+    {GRID_LUA_FNC_G_MODULE_POSY_short,    GRID_LUA_FNC_G_MODULE_POSY_fnptr},
+    {GRID_LUA_FNC_G_MODULE_ROT_short,    GRID_LUA_FNC_G_MODULE_ROT_fnptr},
 
     {GRID_LUA_FNC_G_HWCFG_short,    GRID_LUA_FNC_G_HWCFG_fnptr},
 
@@ -573,6 +622,7 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 
     grid_lua_dostring(mod, GRID_LUA_INIT_SCRIPT_1);
     grid_lua_dostring(mod, GRID_LUA_INIT_SCRIPT_2);
+    grid_lua_dostring(mod, GRID_LUA_INIT_SCRIPT_3);
 
     grid_lua_debug_memory_stats(mod, "grid_send");
 
