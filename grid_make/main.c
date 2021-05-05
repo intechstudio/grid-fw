@@ -706,6 +706,7 @@ int main(void)
 		printf("I2C UNSUPPORTED!\r\n");
 	}
 
+	rand_sync_enable(&RAND_0);	
 	grid_lua_init(&grid_lua_state);
 	grid_lua_start_vm(&grid_lua_state);
 
@@ -763,7 +764,6 @@ int main(void)
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
 		
 		
-	rand_sync_enable(&RAND_0);	
 		
 	grid_expr_init(&grid_expr_state);
 

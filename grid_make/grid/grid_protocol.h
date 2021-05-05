@@ -313,11 +313,36 @@
 #define GRID_LUA_FNC_G_MIDI_SEND_human 	"midi_send"
 #define GRID_LUA_FNC_G_MIDI_SEND_fnptr 	l_grid_midi_send
 
+#define GRID_LUA_FNC_G_RANDOM_short 	"rnd"
+#define GRID_LUA_FNC_G_RANDOM_human 	"random"
+#define GRID_LUA_FNC_G_RANDOM_fnptr 	l_grid_random
+
+#define GRID_LUA_FNC_G_HWCFG_short 		"hwcfg"
+#define GRID_LUA_FNC_G_HWCFG_human 		"hardware_configuration"
+#define GRID_LUA_FNC_G_HWCFG_fnptr 		l_grid_hwcfg
+
+#define GRID_LUA_FNC_G_VERSION_MAJOR_short 		"vmaj"
+#define GRID_LUA_FNC_G_VERSION_MAJOR_human 		"version_major"
+#define GRID_LUA_FNC_G_VERSION_MAJOR_fnptr 		l_grid_version_major
+
+#define GRID_LUA_FNC_G_VERSION_MINOR_short 		"vmin"
+#define GRID_LUA_FNC_G_VERSION_MINOR_human 		"version_minor"
+#define GRID_LUA_FNC_G_VERSION_MINOR_fnptr 		l_grid_version_minor
+
+#define GRID_LUA_FNC_G_VERSION_PATCH_short 		"vpat"
+#define GRID_LUA_FNC_G_VERSION_PATCH_human 		"version_patch"
+#define GRID_LUA_FNC_G_VERSION_PATCH_fnptr 		l_grid_version_patch
+
+#define GRID_LUA_INIT_SCRIPT_1 "print('Hardware: ', hwcfg(), ' Version: ', vmaj(), vmin(), vpat())"
+#define GRID_LUA_INIT_SCRIPT_2 "print('Random: ', rnd(), rnd(), rnd(), rnd())"
+
 /*
 
+hwcfg
+random_number_generator
 uptime
 resetcause
-memory states
+memory stats
 version
 stored config version
 stored config date

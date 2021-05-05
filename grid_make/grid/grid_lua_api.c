@@ -418,6 +418,84 @@ static int l_grid_template_variable(lua_State* L) {
     return 1;
 }
 
+
+
+static int l_grid_version_major(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+
+    lua_pushinteger(L, GRID_PROTOCOL_VERSION_MAJOR);
+    
+    return 1;
+}
+
+
+static int l_grid_version_minor(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+
+    lua_pushinteger(L, GRID_PROTOCOL_VERSION_MINOR);
+    
+    return 1;
+}
+
+static int l_grid_version_patch(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+
+    lua_pushinteger(L, GRID_PROTOCOL_VERSION_PATCH);
+    
+    return 1;
+}
+
+static int l_grid_hwcfg(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+
+    lua_pushinteger(L, grid_sys_get_hwcfg(&grid_sys_state));
+    
+    return 1;
+}
+
+static int l_grid_random(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+
+    lua_pushinteger(L, rand_sync_read8(&RAND_0));
+    
+    return 1;
+}
+
 static const struct luaL_Reg printlib [] = {
     {"print", l_my_print},
     {"grid_send", l_grid_send},
@@ -432,6 +510,14 @@ static const struct luaL_Reg printlib [] = {
     {GRID_LUA_FNC_G_LED_PSF_short,          GRID_LUA_FNC_G_LED_PSF_fnptr},
 
     {GRID_LUA_FNC_G_MIDI_SEND_short,        GRID_LUA_FNC_G_MIDI_SEND_fnptr},
+
+    {GRID_LUA_FNC_G_VERSION_MAJOR_short,    GRID_LUA_FNC_G_VERSION_MAJOR_fnptr},
+    {GRID_LUA_FNC_G_VERSION_MINOR_short,    GRID_LUA_FNC_G_VERSION_MINOR_fnptr},
+    {GRID_LUA_FNC_G_VERSION_PATCH_short,    GRID_LUA_FNC_G_VERSION_PATCH_fnptr},
+
+    {GRID_LUA_FNC_G_HWCFG_short,    GRID_LUA_FNC_G_HWCFG_fnptr},
+
+    {GRID_LUA_FNC_G_RANDOM_short,    GRID_LUA_FNC_G_RANDOM_fnptr},
   
     {"gtv", l_grid_template_variable},
   
@@ -485,12 +571,8 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 	lua_pop(mod->L, 1);
     grid_lua_debug_memory_stats(mod, "Printlib");
 
-
-    grid_lua_dostring(mod, "p2x = function(num) local a local b  if num%16 < 10 then a = string.char(48+num%16) else a = string.char(97+num%16-10) end if num//16 < 10 then b = string.char(48+num//16) else b = string.char(97+num//16-10) end return b .. a end");
-    grid_lua_debug_memory_stats(mod, "P2X");
-
-    //grid_lua_dostring(mod, "grid_send_midi = function(ch, cmd, p1, p2) grid_send('000e', p2x(ch), p2x(cmd), p2x(p1), p2x(p2)) end");
-    //grid_lua_dostring(mod, "gsm = grid_send_midi");
+    grid_lua_dostring(mod, GRID_LUA_INIT_SCRIPT_1);
+    grid_lua_dostring(mod, GRID_LUA_INIT_SCRIPT_2);
 
     grid_lua_debug_memory_stats(mod, "grid_send");
 
