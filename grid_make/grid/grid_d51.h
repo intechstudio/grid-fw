@@ -27,8 +27,8 @@ void grid_d51_init();
 void grid_d51_verify_user_row();
 
 
-uint8_t grid_d51_boundary_scan();
-
+uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap);
+void grid_d51_boundary_scan_report(uint32_t* result_bitmap);
 
 uint32_t grid_d51_dwt_enable();
 uint32_t grid_d51_dwt_cycles_read();

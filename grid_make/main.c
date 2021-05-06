@@ -672,24 +672,24 @@ int main(void)
 {
 
 
-	grid_sys_state.hwfcg = -1;
+
 
 	// boundary scan here
-
 	uint32_t boundary_result[4] = {0};
+	grid_d51_boundary_scan(boundary_result); // must run before atmel_start_init sets up gpio
 
+	atmel_start_init();	// this sets up gpio and printf
+	
+    GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
 
-	grid_d51_boundary_scan(boundary_result);
+	grid_d51_init(); // Check User Row
 
+	grid_sys_init(&grid_sys_state);
 
+	grid_d51_boundary_scan_report(boundary_result);
 
-	atmel_start_init();	
-    
-	grid_d51_dwt_enable();
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "D51 Init");
             
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
-
-
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
 
 		if (SYS_I2C_start() == ERR_NONE){
@@ -706,118 +706,6 @@ int main(void)
 		printf("I2C UNSUPPORTED!\r\n");
 	}
 
-	rand_sync_enable(&RAND_0);	
-	grid_sys_init(&grid_sys_state);
-	
-	grid_lua_init(&grid_lua_state);
-	grid_lua_start_vm(&grid_lua_state);
-
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "LUA init complete");
-
-
-	printf("test.mcu.ATSAMD51N20A\r\n");
-	printf("test.hwcfg.%d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
-
-	uint32_t uniqueid[4] = {0};
-	grid_sys_get_id(uniqueid);	
-
-	printf("test.serialno.%08x %08x %08x %08x\r\n", uniqueid[0], uniqueid[1], uniqueid[2], uniqueid[3]);
-
-	for (uint8_t i=0; i<4; i++){
-
-		delay_ms(10);
-		printf("test.boundary.%d.", i);
-
-		for (uint8_t j=0; j<32; j++){
-
-			if (boundary_result[i]&(1<<j)){
-				printf("1");
-			}
-			else{
-				printf("0");
-			}
-		}
-
-
-		printf("\r\n");
-
-	}
-
-
-
-	printf("Hello %d %d %d %d", boundary_result[0], boundary_result[1], boundary_result[2], boundary_result[3]);
-
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "D51 Init");
-	grid_d51_init(); // Check User Row
-
-
-
-	audiodf_midi_init();
-
-	composite_device_start();
-
-
-	grid_usb_serial_init();
-	//grid_usb_midi_init();
-	grid_usb_midi_init();
-
-	grid_keyboard_init(&grid_keyboard_state);
-		
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
-		
-		
-		
-	grid_expr_init(&grid_expr_state);
-
-	//NVIC_SystemReset();
-
-
-	grid_module_common_init();
- 				
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
-
-	init_timer();
-
-	
-	
-	uint32_t loopcounter = 0;
-	
-	uint32_t loopstart = 0;
-
-	uint8_t usb_init_flag = 0;	
-
-
-
-	// Init Bank Color Bug when config was previously saved
-	
-
-
-	// xCreatedUsbTask = xTaskCreateStatic(usb_task, "Usb Task", TASK_USB_STACK_SIZE, ( void * ) 1, TASK_USB_PRIORITY, xStackUsb, &xTaskBufferUsb);
-	// xCreatedNvmTask = xTaskCreateStatic(nvm_task, "Nvm Task", TASK_NVM_STACK_SIZE, ( void * ) 1, TASK_NVM_PRIORITY, xStackNvm, &xTaskBufferNvm);
-	// xCreatedUiTask = xTaskCreateStatic(ui_task, "Ui Task",  TASK_UI_STACK_SIZE, ( void * ) 1, TASK_UI_PRIORITY, xStackUi, &xTaskBufferUi);
-	// xCreatedReceiveTask = xTaskCreateStatic(receive_task, "Rec Task", TASK_RECEIVE_STACK_SIZE, ( void * ) 1, TASK_RECEIVE_PRIORITY, xStackReceive, &xTaskBufferReceive);
-	// xCreatedInboundTask = xTaskCreateStatic(inbound_task, "Inb Task", TASK_INBOUND_STACK_SIZE, ( void * ) 1, TASK_INBOUND_PRIORITY, xStackInbound, &xTaskBufferInbound);
-	// xCreatedOutboundTask = xTaskCreateStatic(outbound_task, "Outb Task", TASK_OUTBOUND_STACK_SIZE, ( void * ) 1, TASK_OUTBOUND_PRIORITY, xStackOutbound, &xTaskBufferOutbound);
-	// xCreatedLedTask = xTaskCreateStatic(led_task, "Led Task", TASK_LED_STACK_SIZE, ( void * ) 1, TASK_LED_PRIORITY, xStackLed, &xTaskBufferLed);
-
-
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
-
-	//  x/512xb 0x80000
-
-	grid_nvm_toc_init(&grid_nvm_state);
-
-	// grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
-	// grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
-	
-
-	grid_nvm_config_mock(&grid_nvm_state);
-	grid_nvm_config_mock(&grid_nvm_state);
-//	grid_nvm_config_mock(&grid_nvm_state);
-
-	grid_nvm_toc_debug(&grid_nvm_state);
-
-	// grid_nvm_toc_defragmant(&grid_nvm_state);
 
 	printf("QSPI\r\n");
 	qspi_test();
@@ -828,9 +716,73 @@ int main(void)
 	if (sys_i2c_enabled){
 		uint8_t id = grid_fusb302_read_id(SYS_I2C_io);
 	}
+		
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Hardware test complete");
 
-	// wtf init config sometimes missing on pot12
-	printf("action 12 init: %d\r\n", grid_ui_state.element_list[12].event_list[0].action_string_length);
+	grid_expr_init(&grid_expr_state);
+
+	grid_lua_init(&grid_lua_state);
+	grid_lua_start_vm(&grid_lua_state);
+
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "LUA init complete");
+
+	audiodf_midi_init();
+
+	composite_device_start();
+
+	grid_usb_serial_init();
+	grid_usb_midi_init();
+
+	grid_keyboard_init(&grid_keyboard_state);
+		
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
+		
+		
+
+	
+
+
+	// Init Bank Color Bug when config was previously saved
+
+	// xCreatedUsbTask = xTaskCreateStatic(usb_task, "Usb Task", TASK_USB_STACK_SIZE, ( void * ) 1, TASK_USB_PRIORITY, xStackUsb, &xTaskBufferUsb);
+	// xCreatedNvmTask = xTaskCreateStatic(nvm_task, "Nvm Task", TASK_NVM_STACK_SIZE, ( void * ) 1, TASK_NVM_PRIORITY, xStackNvm, &xTaskBufferNvm);
+	// xCreatedUiTask = xTaskCreateStatic(ui_task, "Ui Task",  TASK_UI_STACK_SIZE, ( void * ) 1, TASK_UI_PRIORITY, xStackUi, &xTaskBufferUi);
+	// xCreatedReceiveTask = xTaskCreateStatic(receive_task, "Rec Task", TASK_RECEIVE_STACK_SIZE, ( void * ) 1, TASK_RECEIVE_PRIORITY, xStackReceive, &xTaskBufferReceive);
+	// xCreatedInboundTask = xTaskCreateStatic(inbound_task, "Inb Task", TASK_INBOUND_STACK_SIZE, ( void * ) 1, TASK_INBOUND_PRIORITY, xStackInbound, &xTaskBufferInbound);
+	// xCreatedOutboundTask = xTaskCreateStatic(outbound_task, "Outb Task", TASK_OUTBOUND_STACK_SIZE, ( void * ) 1, TASK_OUTBOUND_PRIORITY, xStackOutbound, &xTaskBufferOutbound);
+	// xCreatedLedTask = xTaskCreateStatic(led_task, "Led Task", TASK_LED_STACK_SIZE, ( void * ) 1, TASK_LED_PRIORITY, xStackLed, &xTaskBufferLed);
+
+
+	//  x/512xb 0x80000
+	grid_module_common_init();
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
+	grid_nvm_toc_init(&grid_nvm_state);
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "TOC Initialized");
+	grid_ui_page_load(&grid_ui_state, &grid_nvm_state, 0); //load page 0;
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "UI Page0 loaded");
+
+	// grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
+	// grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
+	
+	grid_nvm_config_mock(&grid_nvm_state);
+	grid_nvm_config_mock(&grid_nvm_state);
+//	grid_nvm_config_mock(&grid_nvm_state);
+
+	grid_nvm_toc_debug(&grid_nvm_state);
+
+	// grid_nvm_toc_defragmant(&grid_nvm_state);
+
+
+
+
+	// init_timer is last before loop because it creates interrupts
+	init_timer();
+
+	uint32_t loopcounter = 0;
+	uint32_t loopstart = 0;
+	uint8_t usb_init_flag = 0;	
+
+	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 
 	while (1) {
 	

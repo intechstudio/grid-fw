@@ -406,10 +406,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 
 uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
 
-
-
 	// generate random configuration
-	
 
 	uint8_t buf[300] = {0};
 	uint16_t len = 0;
@@ -417,14 +414,6 @@ uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
 	uint8_t page_number = rand_sync_read8(&RAND_0)%2;
 	uint8_t element_number = rand_sync_read8(&RAND_0)%3;
 	uint8_t event_type = rand_sync_read8(&RAND_0)%3;
-
-	sprintf(buf, GRID_CLASS_CONFIG_frame_start);
-
-	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, page_number, NULL);
-	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, element_number, NULL);
-	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type, NULL);
-
-	len = strlen(buf);
 
 	// append random length of fake actionstrings
 
@@ -435,6 +424,30 @@ uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
 		buf[len+i] = 'a' + i%26;
 
 	}
+
+	grid_nvm_config_store(mod, page_number, element_number, event_type, buf);
+
+}
+
+
+
+uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, uint8_t element_number, uint8_t event_type, uint8_t* actionstring){
+
+	uint8_t buf[GRID_UI_ACTION_STRING_maxlength] = {0};
+
+	uint16_t len = 0;
+
+	sprintf(buf, GRID_CLASS_CONFIG_frame_start);
+
+	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, page_number, NULL);
+	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, element_number, NULL);
+	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type, NULL);
+
+	len = strlen(buf);
+
+	// append random length of fake actionstrings
+	
+	sprintf(&buf[len], actionstring);
 
 	len = strlen(buf);
 
@@ -447,24 +460,15 @@ uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
 
 	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, config_length, NULL);
 
-	printf("Mock frame len: %d -> %s\r\n", len, buf);
+	printf("Config frame len: %d -> %s\r\n", len, buf);
 
-
-	grid_nvm_config_store(mod, page_number, element_number, event_type, buf, len);
-
-
-
-}
-
-
-uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, uint8_t element_number, uint8_t event_type, uint8_t* config_buffer, uint16_t config_length){
 
 
 	struct grid_nvm_toc_entry* entry = NULL;
 
 	entry = grid_nvm_toc_entry_find(&grid_nvm_state, page_number, element_number, event_type);
 
-	uint32_t append_offset = grid_nvm_append(mod, config_buffer, config_length);
+	uint32_t append_offset = grid_nvm_append(mod, buf, config_length);
 
 	if (entry == NULL){
 
@@ -635,6 +639,20 @@ void grid_nvm_toc_debug(struct grid_nvm_model* mod){
 }
 
 
+
+uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct grid_nvm_toc_entry* entry, uint8_t* targetstring){
+
+	// -GRID_CLASS_CONFIG_ACTIONSTRING_offset to get rid of the config class header
+
+	flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS+entry->config_string_offset+GRID_CLASS_CONFIG_ACTIONSTRING_offset, targetstring, entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset);
+
+	targetstring[entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset] = '\0';
+	
+	//printf("toc g a %d %s\r\n", entry->config_string_length, targetstring);
+
+	return strlen(targetstring);
+
+}
 
 
 

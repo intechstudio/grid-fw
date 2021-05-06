@@ -48,12 +48,9 @@ void grid_d51_bitmap_write_bit(uint8_t* buffer, uint8_t offset, uint8_t value, u
 
 
 void grid_d51_init(){
-	
-	uint32_t hwid = grid_sys_get_hwcfg(&grid_sys_state);
-	
-	printf("{\"type\":\"HWCFG\", \"data\": \"%d\"}\r\n", hwid);
-	
-	
+
+	grid_d51_dwt_enable(); // debug watch for counting cpu cycles
+
 	#ifdef NDEBUG		
 	GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "USER ROW CHECK!");
 	grid_d51_verify_user_row();
@@ -495,6 +492,38 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 	}
 
 
+}
+
+void grid_d51_boundary_scan_report(uint32_t* result_bitmap){
+
+	printf("test.mcu.ATSAMD51N20A\r\n");
+	grid_sys_state.hwfcg = -1;
+	printf("test.hwcfg.%d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
+
+	uint32_t uniqueid[4] = {0};
+	grid_sys_get_id(uniqueid);	
+
+	printf("test.serialno.%08x %08x %08x %08x\r\n", uniqueid[0], uniqueid[1], uniqueid[2], uniqueid[3]);
+
+	for (uint8_t i=0; i<4; i++){
+
+		delay_ms(10);
+		printf("test.boundary.%d.", i);
+
+		for (uint8_t j=0; j<32; j++){
+
+			if (result_bitmap[i]&(1<<j)){
+				printf("1");
+			}
+			else{
+				printf("0");
+			}
+		}
+
+
+		printf("\r\n");
+
+	}
 }
 
 

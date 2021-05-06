@@ -680,6 +680,7 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->module_rot = GRID_SYS_DEFAULT_ROTATION;
 
     
+	rand_sync_enable(&RAND_0);	
 	mod->sessionid = rand_sync_read8(&RAND_0);
     
 	

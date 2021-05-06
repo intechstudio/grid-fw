@@ -36,6 +36,7 @@
         "freertos.h": "c",
         "freertosconfig.h": "c",
         "hal_rtos.h": "c",
-        "hpl_flash.h": "c"
+        "hpl_flash.h": "c",
+        "grid_nvm.h": "c"
     }
 }

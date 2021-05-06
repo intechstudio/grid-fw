@@ -71,8 +71,6 @@ void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy, uint8_t 
 
 void	grid_msg_body_append_text(struct grid_msg* msg, uint8_t* string, uint32_t len);
 
-void	grid_msg_body_append_text_escaped(struct grid_msg* msg, uint8_t* string, uint32_t len);
-
 void	grid_msg_packet_receive_char(struct grid_msg* msg, uint8_t nextchar);
 
 uint8_t	grid_msg_packet_send_char(struct grid_msg* msg, uint32_t charindex);

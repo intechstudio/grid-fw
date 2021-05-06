@@ -1,0 +1,48 @@
+@startuml test
+
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+
+Host <-> Master : ACM Open
+rnote over Master
+  hb_type
+  updated
+end note
+rnote over Host
+  Port
+  opened
+end note
+...
+hnote over Master
+ Tick
+endhnote
+Master -> Host : Heartbeat
+rnote left
+  Create Module
+  X=0, Y=0
+end note
+Master -> Grid : Heartbeat
+hnote over Grid
+  From master?
+  Update X, Y
+end note
+...
+hnote over Grid
+ Tick
+endhnote
+Grid -> Master : Heartbeat
+Master -> Host : Heartbeat
+rnote left
+  Create Module
+  X=0, Y=1
+end note
+...
+hnote over Host
+ Tick
+endhnote
+Host -> Master : Heartbeat
+Master -> Grid : Heartbeat
+
+
+
+@enduml

@@ -500,6 +500,7 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength] = {0};
 	grid_ui_event_generate_actionstring(eve->parent->type, event_type, actionstring);	
 	grid_ui_event_register_actionstring(eve->parent, event_type, actionstring);
+	eve->cfg_changed_flag = 0; // clear changed flag
 	
 	eve->cfg_changed_flag = 0;
 	eve->cfg_default_flag = 1;
@@ -533,7 +534,7 @@ void grid_ui_nvm_clear_all_configuration(struct grid_ui_model* ui, struct grid_n
 }
 
 
-uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type){
+uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page, uint8_t element, enum grid_ui_event_t event_type){
 	
 	// need implementation
 
@@ -574,7 +575,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t pag
 
 		if (ui->page_activepage == page){
 			// currently active page needs to be sent
-			grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
+			grid_msg_body_append_text(&message, eve->action_string, eve->action_string_length);
 			grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, eve->action_string_length);
 		}		
 		else{
@@ -590,11 +591,11 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t pag
 
 				uint8_t buffer[entry->config_string_length+10];
 
-				flash_read(&FLASH_0, GRID_NVM_LOCAL_BASE_ADDRESS+entry->config_string_offset, buffer, entry->config_string_length);
+				uint32_t len = grid_nvm_toc_generate_actionstring(nvm, entry, buffer);
 
 				// reset body pointer because cfg in nvm already has the config header
 				message.body_length = 0;
-				grid_msg_body_append_text_escaped(&message, buffer, entry->config_string_length);
+				grid_msg_body_append_text(&message, buffer, len);
 
 				grid_msg_text_set_parameter(&message, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
 			
@@ -603,7 +604,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t pag
 				printf("NOT FOUND, Send default!\r\n");
 				uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength] = {0};
 				grid_ui_event_generate_actionstring(eve->parent->type, event_type, actionstring);	
-				grid_msg_body_append_text_escaped(&message, actionstring, strlen(actionstring));
+				grid_msg_body_append_text(&message, actionstring, strlen(actionstring));
 				grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, eve->action_string_length);
 
 			}
@@ -633,7 +634,72 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t pag
 	
 }
 
+uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page){
 
+	ui->page_activepage = page;
+
+	for (uint8_t i=0; i<ui->element_list_length; i++){
+
+		struct grid_ui_element* ele = &ui->element_list[i];
+
+		for (uint8_t j=0; j<ele->event_list_length; j++){
+
+			struct grid_ui_event* eve = &ele->event_list[j];
+
+			struct grid_nvm_toc_entry* entry = NULL;
+			entry = grid_nvm_toc_entry_find(&grid_nvm_state, page, ele->index, eve->type);
+
+			if (entry != NULL){
+				
+				printf("Page Load: FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
+
+				eve->action_string_length = grid_nvm_toc_generate_actionstring(nvm, entry, eve->action_string);
+				eve->cfg_changed_flag = 0; // clear changed flag
+
+			}
+			else{
+				printf("Page Load: NOT FOUND, Send default!\r\n");
+				grid_ui_event_generate_actionstring(eve->parent->type, eve->type, eve->action_string);
+
+				eve->action_string_length = strlen(eve->action_string);
+				eve->cfg_changed_flag = 0; // clear changed flag
+
+			}
+
+			grid_ui_smart_trigger_local(ui, ele->index, eve->type);
+
+		}
+
+	}
+	
+}
+
+uint8_t grid_ui_page_store(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
+
+	for (uint8_t i=0; i<ui->element_list_length; i++){
+
+		struct grid_ui_element* ele = &ui->element_list[i];
+
+		for (uint8_t j=0; j<ele->event_list_length; j++){
+
+			struct grid_ui_event* eve = &ele->event_list[j];
+
+			if (eve->cfg_changed_flag){
+				
+				printf("CHANGED %d %d\r\n", i, j);
+				grid_nvm_config_store(&grid_nvm_state, ele->parent->page_activepage, ele->index, eve->type, eve->action_string);
+
+				eve->cfg_changed_flag = 0; // clear changed flag
+			}
+
+
+
+
+		}
+
+	}
+	
+}
 
 uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
 	
