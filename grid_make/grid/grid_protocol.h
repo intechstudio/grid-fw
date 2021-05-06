@@ -127,6 +127,7 @@
 #define GRID_CLASS_MIDI_PARAM2_length 2
 
 
+
 // HEARTBEAT (type=0 grid, type=1 gridmaster, type=255 editor)
 #define GRID_CLASS_HEARTBEAT_code 0x010
 #define GRID_CLASS_HEARTBEAT_frame "%c%03x_..........%c", GRID_CONST_STX, GRID_CLASS_HEARTBEAT_code, GRID_CONST_ETX
@@ -801,6 +802,17 @@ enum grid_ui_event_t
 #define GRID_CLASS_CONFIG_ACTIONSTRING_offset 15
 #define GRID_CLASS_CONFIG_ACTIONSTRING_length 0
 
+// RUN imediate
+#define GRID_CLASS_IMEDIATE_code 0x085
+#define GRID_CLASS_IMEDIATE_frame_start "%c%03x_....", GRID_CONST_STX, GRID_CLASS_IMEDIATE_code
+#define GRID_CLASS_IMEDIATE_frame_end "%c", GRID_CONST_ETX
+
+#define GRID_CLASS_IMEDIATE_ACTIONLENGTH_offset 5
+#define GRID_CLASS_IMEDIATE_ACTIONLENGTH_length 4
+
+#define GRID_CLASS_IMEDIATE_ACTIONSTRING_offset 9
+#define GRID_CLASS_IMEDIATE_ACTIONSTRING_length 0
+
 // 090 HID KEYBOARD STATUS
 
 #define GRID_CLASS_HIDKEYSTATUS_code 0x090
@@ -824,5 +836,7 @@ enum grid_ui_event_t
 
 #define GRID_CLASS_HIDKEYBOARD_KEYCODE_offset 7
 #define GRID_CLASS_HIDKEYBOARD_KEYCODE_length 2
+
+
 
 #endif /* GRID_PROTOCOL_H_INCLUDED */

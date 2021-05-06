@@ -1346,6 +1346,32 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}
 									
 				}
+				else if (msg_class == GRID_CLASS_IMEDIATE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_global || position_is_me || position_is_local)){
+
+					uint16_t length = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_IMEDIATE_ACTIONLENGTH_offset], GRID_CLASS_IMEDIATE_ACTIONLENGTH_length, &error_flag);
+					uint8_t actionstring[200] = {0};
+					strncpy(actionstring, &message[current_start+GRID_CLASS_IMEDIATE_ACTIONSTRING_offset], length);
+
+
+					if (0 == strncmp(actionstring, "<?lua ", 6) && actionstring[length-3] == ' ' && actionstring[length-2] == '?' && actionstring[length-1] == '>'){
+					
+					
+						printf("IMEDIATE %d: %s\r\n", length, actionstring);
+						
+						actionstring[length-3] = '\0';
+						grid_lua_dostring(&grid_lua_state, &actionstring[6]);
+
+					
+					}
+					else{
+						printf("IMEDIATE NOT OK %d: %s\r\n", length, actionstring);
+					}
+
+					
+
+
+
+				}
 				else if (msg_class == GRID_CLASS_HEARTBEAT_code){
 					
 					uint8_t type  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_HEARTBEAT_TYPE_offset], GRID_CLASS_HEARTBEAT_TYPE_length, &error_flag);
