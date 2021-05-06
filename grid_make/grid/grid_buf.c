@@ -1366,6 +1366,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						
 						printf("Editor Heartbeat\r\n");
 
+						uint8_t led_report_valid = 0;
+						uint8_t ui_report_valid = 0;
 
 						for(uint8_t j=0; j<grid_led_state.led_number; j++){
 
@@ -1376,40 +1378,108 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 								uint8_t led_gre = grid_led_state.led_lowlevel_gre[j];
 								uint8_t led_blu = grid_led_state.led_lowlevel_blu[j];
 								
-								printf("%d: %d %d %d\r\n", led_num, led_red, led_gre, led_blu);
+								printf("Led %d: %d %d %d\r\n", led_num, led_red, led_gre, led_blu);
 								
 								//grid_led_state.led_lowlevel_changed[j] = 0;
-
+								led_report_valid = 1;
 							}
 
 						}
-						printf("\r\n");
 
-						struct grid_msg response;
-												
-						grid_msg_init(&response);
-						grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+						if (1){
 
-						uint8_t response_payload[300] = {0};
-						uint16_t len = 0;
-						snprintf(response_payload, 299, GRID_CLASS_LEDPREVIEW_frame_start);
-						len += strlen(&response_payload[len]);
 
-						uint16_t report_length = grid_led_lowlevel_change_report(&grid_led_state, -1, &response_payload[len]);
 
-						len += strlen(&response_payload[len]);
 
-						grid_msg_body_append_text(&response, response_payload, len);
+
+							uint16_t report_length = 0;
+							struct grid_msg response;
+													
+							grid_msg_init(&response);
+							grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+
+							uint8_t response_payload[300] = {0};
+							uint16_t len = 0;
+							snprintf(&response_payload[len], 299, GRID_CLASS_EVENTPREVIEW_frame_start);
+							len += strlen(&response_payload[len]);
+
+
+
+							for(uint8_t j=0; j<grid_ui_state.element_list_length; j++){
+
+
+								struct grid_ui_element* ele = &grid_ui_state.element_list[j];
+
+								uint8_t element_num = ele->index;
+								uint8_t element_value = 0;
+
+								if (ele->type == GRID_UI_ELEMENT_POTENTIOMETER){
+
+									element_value = ele->template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index];
+								}
+								else if (ele->type == GRID_UI_ELEMENT_ENCODER){
+
+									element_value = ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
+								}
+								
+								report_length += 4;
+
+								printf("Element %d: %d\r\n", element_num, element_value);
+								
+								//grid_led_state.led_lowlevel_changed[j] = 0;
+
+								ui_report_valid = 1;
+
+								sprintf(&response_payload[len], "%02x%02x", element_num, element_value);
+								len += strlen(&response_payload[len]);
+
+							}
+
+
+							sprintf(&response_payload[len], GRID_CLASS_EVENTPREVIEW_frame_end);
+							len += strlen(&response_payload[len]);
+
+							grid_msg_body_append_text(&response, response_payload, len);
+								
+
+							grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
+							grid_msg_text_set_parameter(&response, 0, GRID_CLASS_EVENTPREVIEW_LENGTH_offset, GRID_CLASS_EVENTPREVIEW_LENGTH_length, report_length);
 							
-						grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
-						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
-						
-						grid_msg_packet_close(&response);
-						grid_msg_packet_send_everywhere(&response);
+							grid_msg_packet_close(&response);
+							grid_msg_packet_send_everywhere(&response);
 
-						printf(response.body);
-						printf("\r\n");
+							printf(response.body);
+							printf("\r\n");
+						}
 
+						if (led_report_valid){
+
+							struct grid_msg response;
+													
+							grid_msg_init(&response);
+							grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+
+							uint8_t response_payload[300] = {0};
+							uint16_t len = 0;
+							snprintf(response_payload, 299, GRID_CLASS_LEDPREVIEW_frame_start);
+							len += strlen(&response_payload[len]);
+
+							uint16_t report_length = grid_led_lowlevel_change_report(&grid_led_state, -1, &response_payload[len]);
+
+							len += strlen(&response_payload[len]);
+
+							grid_msg_body_append_text(&response, response_payload, len);
+								
+							grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
+							grid_msg_text_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
+							
+							grid_msg_packet_close(&response);
+							grid_msg_packet_send_everywhere(&response);
+
+							printf(response.body);
+							printf("\r\n");
+
+						}
 
 
 						// from editor
