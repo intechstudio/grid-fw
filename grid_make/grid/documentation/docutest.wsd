@@ -3,12 +3,12 @@
 skinparam Style strictuml
 skinparam SequenceMessageAlignment center
 
-Host <-> Master : ACM Open
+Editor <-> Master : ACM Open
 rnote over Master
   hb_type
   updated
 end note
-rnote over Host
+rnote over Editor
   Port
   opened
 end note
@@ -16,7 +16,7 @@ end note
 hnote over Master
  Tick
 endhnote
-Master -> Host : Heartbeat
+Master -> Editor : Heartbeat
 rnote left
   Create Module
   X=0, Y=0
@@ -31,16 +31,16 @@ hnote over Grid
  Tick
 endhnote
 Grid -> Master : Heartbeat
-Master -> Host : Heartbeat
+Master -> Editor : Heartbeat
 rnote left
   Create Module
   X=0, Y=1
 end note
 ...
-hnote over Host
+hnote over Editor
  Tick
 endhnote
-Host -> Master : Heartbeat
+Editor -> Master : Heartbeat
 Master -> Grid : Heartbeat
 
 

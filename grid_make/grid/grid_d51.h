@@ -14,6 +14,35 @@
 
 
 
+#define GRID_D51_TASK_SUBTASK_count 10
+#define GRID_D51_TASK_NAME_length 10
+
+
+struct grid_d51_task{
+
+	uint8_t taskname[GRID_D51_TASK_NAME_length];
+
+    uint8_t startcount;
+
+    uint8_t subtask;
+
+    uint32_t t1;
+
+	uint32_t min[GRID_D51_TASK_SUBTASK_count];
+	uint32_t max[GRID_D51_TASK_SUBTASK_count];
+	uint32_t sum[GRID_D51_TASK_SUBTASK_count];
+
+};
+
+void grid_d51_task_init(struct grid_d51_task* task, uint8_t* name);
+
+void grid_d51_task_start(struct grid_d51_task* task);
+void grid_d51_task_next(struct grid_d51_task* task);
+void grid_d51_task_stop(struct grid_d51_task* task);
+
+void grid_d51_task_clear(struct grid_d51_task* task);
+
+
 
 #define  GRID_D51_USER_ROW_BASE 0x804000
 
@@ -35,6 +64,8 @@ uint32_t grid_d51_dwt_cycles_read();
 
 uint8_t grid_fusb302_read_id(struct io_descriptor * i2c_io);
 uint8_t grid_mxt144u_read_id(struct io_descriptor * i2c_io);
+
+
 
 
 #endif /* GRID_D51_H_ */

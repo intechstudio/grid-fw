@@ -695,3 +695,91 @@ uint8_t grid_mxt144u_read_id(struct io_descriptor * i2c_io){
 
 
 }
+
+
+
+void grid_d51_task_init(struct grid_d51_task* task, uint8_t* name){
+
+	if (task == NULL) return;
+
+	strncpy(task->taskname, name, GRID_D51_TASK_NAME_length-1);
+
+	grid_d51_task_clear(task);
+
+}
+
+void grid_d51_task_start(struct grid_d51_task* task){
+
+	if (task == NULL) return;
+
+	task->startcount++;
+	task->subtask = 0;
+	task->t1 = grid_d51_dwt_cycles_read();
+
+}
+void grid_d51_task_next(struct grid_d51_task* task){
+
+	if (task == NULL) return;
+
+
+
+	uint32_t elapsed = grid_d51_dwt_cycles_read() - task->t1;
+
+	task->sum[task->subtask] += elapsed;
+
+	if (elapsed < task->min[task->subtask]){
+		task->min[task->subtask] = elapsed;
+	}	
+	
+	if (elapsed > task->max[task->subtask]){
+		task->max[task->subtask] = elapsed;
+	}
+
+	
+
+
+	if (task->subtask<GRID_D51_TASK_SUBTASK_count-1){
+
+		task->subtask++;
+	}
+
+	task->t1 = grid_d51_dwt_cycles_read();
+
+}
+
+void grid_d51_task_stop(struct grid_d51_task* task){
+
+	if (task == NULL) return;
+
+
+	uint32_t elapsed = grid_d51_dwt_cycles_read() - task->t1;
+
+	task->sum[task->subtask] += elapsed;
+
+	if (elapsed < task->min[task->subtask]){
+		task->min[task->subtask] = elapsed;
+	}	
+	
+	if (elapsed > task->max[task->subtask]){
+		task->max[task->subtask] = elapsed;
+	}
+
+}
+
+void grid_d51_task_clear(struct grid_d51_task* task){
+
+	if (task == NULL) return;
+
+	for (uint8_t i=0; i<GRID_D51_TASK_SUBTASK_count; i++){
+
+		task->min[i] = -1;
+		task->max[i] = 0;
+		task->sum[i] = 0;
+
+	}
+
+	task->startcount = 0;
+	task->subtask = 0;
+	task->t1 = 0;
+
+}

@@ -135,8 +135,10 @@ volatile uint32_t globaltest = 0;
 
 volatile uint8_t midi_rx_buffer[16] = {0};
 
-static void usb_task_inner(){
-	
+static void usb_task_inner(struct grid_d51_task* task){
+
+	grid_d51_task_start(task);
+
 	grid_keyboard_tx_pop();
 	
 	grid_midi_tx_pop();        
@@ -206,9 +208,12 @@ static void usb_task_inner(){
 	}
 
 
+	grid_d51_task_stop(task);
 }
 
-static void nvm_task_inner(){
+static void nvm_task_inner(struct grid_d51_task* task){
+
+	grid_d51_task_start(task);
 
 	// NVM BULK READ
 	
@@ -262,28 +267,39 @@ static void nvm_task_inner(){
 		GRID_PORT_U.rx_double_buffer[i] = 0;
 	}
 
+	grid_d51_task_stop(task);
 }
 
-static void receive_task_inner(){
-			
+static void receive_task_inner(struct grid_d51_task* task){
+
+	grid_d51_task_start(task);	
+
 	grid_port_receive_task(&GRID_PORT_N);
 	grid_port_receive_task(&GRID_PORT_E);
 	grid_port_receive_task(&GRID_PORT_S);
-	grid_port_receive_task(&GRID_PORT_W);							
+	grid_port_receive_task(&GRID_PORT_W);	
+
+	
+	grid_d51_task_stop(task);						
 
 }
 
-static void ui_task_inner(){
+static void ui_task_inner(struct grid_d51_task* task){
 	
+
+	grid_d51_task_start(task);
+
 	grid_port_process_ui(&GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
 
+	grid_d51_task_stop(task);
 }
 
 
-static void inbound_task_inner(){
+static void inbound_task_inner(struct grid_d51_task* task){
 		
 	/* ========================= GRID INBOUND TASK ============================= */						
 
+	grid_d51_task_start(task);
 	
 	// Copy data from UI_RX to HOST_TX & north TX AND STUFF
 	grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback
@@ -295,11 +311,15 @@ static void inbound_task_inner(){
 	
 	grid_port_process_inbound(&GRID_PORT_H, 0);	// USB	
 
+
+	grid_d51_task_stop(task);
+
 }
 
-static void outbound_task_inner(){
+static void outbound_task_inner(struct grid_d51_task* task){
 	
 		
+	grid_d51_task_start(task);
 	/* ========================= GRID OUTBOUND TASK ============================= */	
 	
 	// If previous xfer is completed and new data is available then move data from txbuffer to txdoublebuffer and start new xfer.
@@ -314,11 +334,13 @@ static void outbound_task_inner(){
 	// Translate grid messages to ui commands (LED)
 	grid_port_process_outbound_ui(&GRID_PORT_U);
 
-
+	grid_d51_task_stop(task);
 }
 
 
-static void led_task_inner(){
+static void led_task_inner(struct grid_d51_task* task){
+
+	grid_d51_task_start(task);
 
 	if (grid_sys_state.alert_state){
 		
@@ -354,7 +376,6 @@ static void led_task_inner(){
 		
 	}
 	
-	grid_task_enter_task(&grid_task_state, GRID_TASK_LED);
 
 	grid_led_tick(&grid_led_state);
 
@@ -368,7 +389,7 @@ static void led_task_inner(){
 	grid_led_lowlevel_hardware_start_transfer(&grid_led_state);
 
 	
-		
+	grid_d51_task_stop(task);	
 
 }
 
@@ -378,7 +399,7 @@ static void usb_task(void *p)
 
 	while (1) {
 
-		usb_task_inner();
+		usb_task_inner(NULL);
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
 
 	}
@@ -391,7 +412,7 @@ static void nvm_task(void *p){
 
 	while (1) {
 
-		nvm_task_inner();
+		nvm_task_inner(NULL);
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
 	}
 
@@ -404,7 +425,7 @@ static void ui_task(void *p){
 
 	while (1) {
 
-		ui_task_inner();
+		ui_task_inner(NULL);
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
 
 	}
@@ -416,7 +437,7 @@ static void receive_task(void *p){
 
 	while (1) {
 			
-		receive_task_inner();
+		receive_task_inner(NULL);
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
 
 	}
@@ -447,10 +468,10 @@ static void led_task(void *p)
 	while (1) {
 
 		globaltest++;
-		inbound_task_inner();
-		outbound_task_inner();
+		inbound_task_inner(NULL);
+		outbound_task_inner(NULL);
 
-		led_task_inner();
+		led_task_inner(NULL);
 
 
 		vTaskDelay(1*configTICK_RATE_HZ/1000);
@@ -464,12 +485,13 @@ static void led_task(void *p)
 volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
-
+volatile uint8_t reportflag = 0;
 
 static struct timer_task RTC_Scheduler_rx_task;
 static struct timer_task RTC_Scheduler_ping;
 static struct timer_task RTC_Scheduler_realtime;
 static struct timer_task RTC_Scheduler_heartbeat;
+static struct timer_task RTC_Scheduler_report;
 
 void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 {
@@ -535,6 +557,11 @@ void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 	}
 }
 
+void RTC_Scheduler_report_cb(const struct timer_task *const timer_task)
+{
+	reportflag = 1;
+}
+
 
 void init_timer(void)
 {
@@ -554,9 +581,14 @@ void init_timer(void)
 	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
 	RTC_Scheduler_realtime.mode     = TIMER_TASK_REPEAT;
 
+	RTC_Scheduler_report.interval = RTC1MS*1000;
+	RTC_Scheduler_report.cb       = RTC_Scheduler_report_cb;
+	RTC_Scheduler_report.mode     = TIMER_TASK_REPEAT;
+
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_ping);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_heartbeat);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime);
+	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_report);
 	
 	timer_start(&RTC_Scheduler);
 	
@@ -782,6 +814,26 @@ int main(void)
 	uint32_t loopstart = 0;
 	uint8_t usb_init_flag = 0;	
 
+	uint8_t task_list_length = 6;
+	struct grid_d51_task task_list[task_list_length];
+
+	struct grid_d51_task* grid_usb_task = &task_list[0];
+	struct grid_d51_task* grid_nvm_task = &task_list[1];
+	struct grid_d51_task* grid_receive_task = &task_list[2];
+	struct grid_d51_task* grid_ui_task = &task_list[3];
+	struct grid_d51_task* grid_inbound_task = &task_list[4];
+	struct grid_d51_task* grid_outbound_task = &task_list[5];
+	struct grid_d51_task* grid_led_task = &task_list[6];
+
+	grid_d51_task_init(grid_usb_task, 		"usb");
+	grid_d51_task_init(grid_nvm_task, 		"nvm");
+	grid_d51_task_init(grid_receive_task, 	"rec");
+	grid_d51_task_init(grid_ui_task, 		"ui ");
+	grid_d51_task_init(grid_inbound_task, 	"in ");
+	grid_d51_task_init(grid_outbound_task, 	"out");
+	grid_d51_task_init(grid_led_task, 		"led");
+
+
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
 
 	while (1) {
@@ -848,24 +900,81 @@ int main(void)
 		}
 		
 
-		usb_task_inner();
+		usb_task_inner(grid_usb_task);
 	
-		nvm_task_inner();
+		nvm_task_inner(grid_nvm_task);
 		
-		receive_task_inner();
+		receive_task_inner(grid_receive_task);
 
-		ui_task_inner();
+		ui_task_inner(grid_ui_task);
 	
-		inbound_task_inner();
+		inbound_task_inner(grid_inbound_task);
 
-		outbound_task_inner();
+		outbound_task_inner(grid_outbound_task);
 
-		led_task_inner();
+		led_task_inner(grid_led_task);
 
 		lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
 
+
+		if (reportflag){
+
+
+			reportflag = 0;
+
+
+			uint8_t reportbuffer[300] = {0};
+			uint16_t length = 0;
+
+
+
+			sprintf(&reportbuffer[length], GRID_CLASS_DEBUGTASK_frame_start);
+			length += strlen(&reportbuffer[length]);
+
+			for (uint8_t i=0; i<task_list_length; i++){
+
+				struct grid_d51_task* task = &task_list[i];
+
+				for (uint8_t j=0; j<GRID_D51_TASK_SUBTASK_count; j++){
+
+					if (task->sum[j] == 0) break;
+
+					sprintf(&reportbuffer[length], "!%s,%d,%d,%d", task->taskname, task->min[j]/120, task->sum[j]/120/task->startcount, task->max[j]/120);
+					length += strlen(&reportbuffer[length]);
+
+				}
+
+				grid_d51_task_clear(task);
+				
+
+			}
+
+
+			sprintf(&reportbuffer[length], GRID_CLASS_EVENTPREVIEW_frame_end);
+			length += strlen(&reportbuffer[length]);
+
+
+
+			struct grid_msg response;
+									
+			grid_msg_init(&response);
+			grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+
+			grid_msg_body_append_text(&response, reportbuffer, length);
+				
+
+			grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
+			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_EVENTPREVIEW_LENGTH_offset, GRID_CLASS_EVENTPREVIEW_LENGTH_length, length-GRID_CLASS_DEBUGTASK_OUTPUT_offset);
+			
+
+
+			grid_msg_packet_close(&response);
+			grid_msg_packet_send_everywhere(&response);			
+
+		}
+
 	}//WHILE
-	
-	
-	
+
+
+
 }//MAIN
