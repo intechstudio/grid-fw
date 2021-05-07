@@ -41431,307 +41431,307 @@ LOAD /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/
                 0x000000000002b3a0       0x38 main.o
                 0x000000000002b3a0                vApplicationStackOverflowHook
  .text.init_timer
-                0x000000000002b3d8       0x98 main.o
+                0x000000000002b3d8       0x94 main.o
                 0x000000000002b3d8                init_timer
  .text.SYS_I2C_start
-                0x000000000002b470       0x54 main.o
-                0x000000000002b470                SYS_I2C_start
+                0x000000000002b46c       0x54 main.o
+                0x000000000002b46c                SYS_I2C_start
  .text.qspi_test
-                0x000000000002b4c4       0x6c main.o
-                0x000000000002b4c4                qspi_test
+                0x000000000002b4c0       0x6c main.o
+                0x000000000002b4c0                qspi_test
  .text.startup.main
-                0x000000000002b530      0x840 main.o
-                0x000000000002b530                main
+                0x000000000002b52c      0x840 main.o
+                0x000000000002b52c                main
  .text.qspi_dma_init
-                0x000000000002bd70       0x30 hal/src/hal_qspi_dma.o
-                0x000000000002bd70                qspi_dma_init
+                0x000000000002bd6c       0x30 hal/src/hal_qspi_dma.o
+                0x000000000002bd6c                qspi_dma_init
  .text.qspi_dma_enable
-                0x000000000002bda0       0x28 hal/src/hal_qspi_dma.o
-                0x000000000002bda0                qspi_dma_enable
+                0x000000000002bd9c       0x28 hal/src/hal_qspi_dma.o
+                0x000000000002bd9c                qspi_dma_enable
  .text.qspi_dma_serial_run_command
-                0x000000000002bdc8       0x30 hal/src/hal_qspi_dma.o
-                0x000000000002bdc8                qspi_dma_serial_run_command
+                0x000000000002bdc4       0x30 hal/src/hal_qspi_dma.o
+                0x000000000002bdc4                qspi_dma_serial_run_command
  .text.qspi_dma_register_callback
-                0x000000000002bdf8       0x34 hal/src/hal_qspi_dma.o
-                0x000000000002bdf8                qspi_dma_register_callback
+                0x000000000002bdf4       0x34 hal/src/hal_qspi_dma.o
+                0x000000000002bdf4                qspi_dma_register_callback
  .text.prvResetNextTaskUnblockTime
-                0x000000000002be2c       0x24 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
+                0x000000000002be28       0x24 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
  .text.pcTaskGetName
-                0x000000000002be50       0x24 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
-                0x000000000002be50                pcTaskGetName
+                0x000000000002be4c       0x24 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
+                0x000000000002be4c                pcTaskGetName
  .text.xTaskIncrementTick
-                0x000000000002be74      0x104 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
-                0x000000000002be74                xTaskIncrementTick
+                0x000000000002be70      0x104 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
+                0x000000000002be70                xTaskIncrementTick
  .text.vTaskSwitchContext
-                0x000000000002bf78       0x8c thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
-                0x000000000002bf78                vTaskSwitchContext
+                0x000000000002bf74       0x8c thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
+                0x000000000002bf74                vTaskSwitchContext
  .text.event_system_init
-                0x000000000002c004        0x8 hal/src/hal_evsys.o
-                0x000000000002c004                event_system_init
+                0x000000000002c000        0x8 hal/src/hal_evsys.o
+                0x000000000002c000                event_system_init
  .text.hri_adc_wait_for_sync
-                0x000000000002c00c        0x8 hpl/adc/hpl_adc.o
+                0x000000000002c008        0x8 hpl/adc/hpl_adc.o
  .text.hri_adc_set_CTRLA_ENABLE_bit
-                0x000000000002c014       0x14 hpl/adc/hpl_adc.o
+                0x000000000002c010       0x14 hpl/adc/hpl_adc.o
  .text.hri_adc_clear_CTRLA_ENABLE_bit
-                0x000000000002c028       0x18 hpl/adc/hpl_adc.o
+                0x000000000002c024       0x18 hpl/adc/hpl_adc.o
  .text._adc_interrupt_handler
-                0x000000000002c040       0x4e hpl/adc/hpl_adc.o
- *fill*         0x000000000002c08e        0x2 
+                0x000000000002c03c       0x4e hpl/adc/hpl_adc.o
+ *fill*         0x000000000002c08a        0x2 
  .text._adc_get_regs
-                0x000000000002c090       0x30 hpl/adc/hpl_adc.o
+                0x000000000002c08c       0x30 hpl/adc/hpl_adc.o
  .text.__NVIC_ClearPendingIRQ
-                0x000000000002c0c0       0x1c hpl/adc/hpl_adc.o
+                0x000000000002c0bc       0x1c hpl/adc/hpl_adc.o
  .text._adc_get_irq_num.isra.0
-                0x000000000002c0dc       0x14 hpl/adc/hpl_adc.o
+                0x000000000002c0d8       0x14 hpl/adc/hpl_adc.o
  .text.__NVIC_DisableIRQ
-                0x000000000002c0f0       0x24 hpl/adc/hpl_adc.o
+                0x000000000002c0ec       0x24 hpl/adc/hpl_adc.o
  .text._adc_init
-                0x000000000002c114       0xfc hpl/adc/hpl_adc.o
+                0x000000000002c110       0xfc hpl/adc/hpl_adc.o
  .text._adc_async_init
-                0x000000000002c210       0xcc hpl/adc/hpl_adc.o
-                0x000000000002c210                _adc_async_init
+                0x000000000002c20c       0xcc hpl/adc/hpl_adc.o
+                0x000000000002c20c                _adc_async_init
  .text._adc_async_enable_channel
-                0x000000000002c2dc        0xc hpl/adc/hpl_adc.o
-                0x000000000002c2dc                _adc_async_enable_channel
+                0x000000000002c2d8        0xc hpl/adc/hpl_adc.o
+                0x000000000002c2d8                _adc_async_enable_channel
  .text._adc_async_get_data_size
-                0x000000000002c2e8       0x12 hpl/adc/hpl_adc.o
-                0x000000000002c2e8                _adc_async_get_data_size
- *fill*         0x000000000002c2fa        0x2 
+                0x000000000002c2e4       0x12 hpl/adc/hpl_adc.o
+                0x000000000002c2e4                _adc_async_get_data_size
+ *fill*         0x000000000002c2f6        0x2 
  .text._adc_async_convert
-                0x000000000002c2fc       0x18 hpl/adc/hpl_adc.o
-                0x000000000002c2fc                _adc_async_convert
+                0x000000000002c2f8       0x18 hpl/adc/hpl_adc.o
+                0x000000000002c2f8                _adc_async_convert
  .text._adc_async_set_irq_state
-                0x000000000002c314       0x20 hpl/adc/hpl_adc.o
-                0x000000000002c314                _adc_async_set_irq_state
+                0x000000000002c310       0x20 hpl/adc/hpl_adc.o
+                0x000000000002c310                _adc_async_set_irq_state
  .text.ADC0_0_Handler
-                0x000000000002c334       0x10 hpl/adc/hpl_adc.o
-                0x000000000002c334                ADC0_0_Handler
+                0x000000000002c330       0x10 hpl/adc/hpl_adc.o
+                0x000000000002c330                ADC0_0_Handler
  .text.ADC0_1_Handler
-                0x000000000002c344        0x8 hpl/adc/hpl_adc.o
-                0x000000000002c344                ADC0_1_Handler
+                0x000000000002c340        0x8 hpl/adc/hpl_adc.o
+                0x000000000002c340                ADC0_1_Handler
  .text.ADC1_0_Handler
-                0x000000000002c34c       0x10 hpl/adc/hpl_adc.o
-                0x000000000002c34c                ADC1_0_Handler
+                0x000000000002c348       0x10 hpl/adc/hpl_adc.o
+                0x000000000002c348                ADC1_0_Handler
  .text.ADC1_1_Handler
-                0x000000000002c35c        0x8 hpl/adc/hpl_adc.o
-                0x000000000002c35c                ADC1_1_Handler
+                0x000000000002c358        0x8 hpl/adc/hpl_adc.o
+                0x000000000002c358                ADC1_1_Handler
  .text.Dummy_Handler
-                0x000000000002c364        0x2 samd51a/gcc/gcc/startup_samd51.o
-                0x000000000002c364                EIC_5_Handler
-                0x000000000002c364                EIC_13_Handler
-                0x000000000002c364                EVSYS_0_Handler
-                0x000000000002c364                TCC1_3_Handler
-                0x000000000002c364                DAC_3_Handler
-                0x000000000002c364                TRNG_Handler
-                0x000000000002c364                PDEC_2_Handler
-                0x000000000002c364                EIC_4_Handler
-                0x000000000002c364                AC_Handler
-                0x000000000002c364                TCC2_3_Handler
-                0x000000000002c364                TC7_Handler
-                0x000000000002c364                EVSYS_3_Handler
-                0x000000000002c364                PDEC_0_Handler
-                0x000000000002c364                QSPI_Handler
-                0x000000000002c364                TCC0_0_Handler
-                0x000000000002c364                EIC_3_Handler
-                0x000000000002c364                DAC_2_Handler
-                0x000000000002c364                EIC_10_Handler
-                0x000000000002c364                EIC_11_Handler
-                0x000000000002c364                EIC_9_Handler
-                0x000000000002c364                OSC32KCTRL_Handler
-                0x000000000002c364                TCC2_1_Handler
-                0x000000000002c364                SUPC_1_Handler
-                0x000000000002c364                TCC0_5_Handler
-                0x000000000002c364                TCC0_6_Handler
-                0x000000000002c364                EVSYS_1_Handler
-                0x000000000002c364                TCC1_4_Handler
-                0x000000000002c364                TC6_Handler
-                0x000000000002c364                WDT_Handler
-                0x000000000002c364                EIC_8_Handler
-                0x000000000002c364                EIC_15_Handler
-                0x000000000002c364                TC4_Handler
-                0x000000000002c364                OSCCTRL_4_Handler
-                0x000000000002c364                EIC_12_Handler
-                0x000000000002c364                TCC4_2_Handler
-                0x000000000002c364                PAC_Handler
-                0x000000000002c364                TCC1_0_Handler
-                0x000000000002c364                OSCCTRL_0_Handler
-                0x000000000002c364                EIC_0_Handler
-                0x000000000002c364                OSCCTRL_3_Handler
-                0x000000000002c364                Dummy_Handler
-                0x000000000002c364                TCC3_0_Handler
-                0x000000000002c364                TCC2_2_Handler
-                0x000000000002c364                TCC1_1_Handler
-                0x000000000002c364                OSCCTRL_2_Handler
-                0x000000000002c364                TCC1_2_Handler
-                0x000000000002c364                SERCOM7_1_Handler
-                0x000000000002c364                PM_Handler
-                0x000000000002c364                SERCOM2_3_Handler
-                0x000000000002c364                DAC_4_Handler
-                0x000000000002c364                TCC3_2_Handler
-                0x000000000002c364                SERCOM7_0_Handler
-                0x000000000002c364                TCC0_2_Handler
-                0x000000000002c364                TCC4_0_Handler
-                0x000000000002c364                SERCOM7_3_Handler
-                0x000000000002c364                SDHC1_Handler
-                0x000000000002c364                SERCOM7_2_Handler
-                0x000000000002c364                TCC2_0_Handler
-                0x000000000002c364                PDEC_1_Handler
-                0x000000000002c364                TCC4_1_Handler
-                0x000000000002c364                SDHC0_Handler
-                0x000000000002c364                I2S_Handler
-                0x000000000002c364                EIC_2_Handler
-                0x000000000002c364                PCC_Handler
-                0x000000000002c364                DAC_0_Handler
-                0x000000000002c364                TCC0_1_Handler
-                0x000000000002c364                EIC_6_Handler
-                0x000000000002c364                OSCCTRL_1_Handler
-                0x000000000002c364                PUKCC_Handler
-                0x000000000002c364                SERCOM2_1_Handler
-                0x000000000002c364                EIC_1_Handler
-                0x000000000002c364                EVSYS_4_Handler
-                0x000000000002c364                EIC_7_Handler
-                0x000000000002c364                SERCOM2_2_Handler
-                0x000000000002c364                TCC3_1_Handler
-                0x000000000002c364                EIC_14_Handler
-                0x000000000002c364                DAC_1_Handler
-                0x000000000002c364                MCLK_Handler
-                0x000000000002c364                EVSYS_2_Handler
-                0x000000000002c364                SUPC_0_Handler
-                0x000000000002c364                FREQM_Handler
-                0x000000000002c364                TCC0_3_Handler
-                0x000000000002c364                TCC0_4_Handler
-                0x000000000002c364                TC5_Handler
-                0x000000000002c364                SERCOM2_0_Handler
-                0x000000000002c364                AES_Handler
-                0x000000000002c364                ICM_Handler
+                0x000000000002c360        0x2 samd51a/gcc/gcc/startup_samd51.o
+                0x000000000002c360                EIC_5_Handler
+                0x000000000002c360                EIC_13_Handler
+                0x000000000002c360                EVSYS_0_Handler
+                0x000000000002c360                TCC1_3_Handler
+                0x000000000002c360                DAC_3_Handler
+                0x000000000002c360                TRNG_Handler
+                0x000000000002c360                PDEC_2_Handler
+                0x000000000002c360                EIC_4_Handler
+                0x000000000002c360                AC_Handler
+                0x000000000002c360                TCC2_3_Handler
+                0x000000000002c360                TC7_Handler
+                0x000000000002c360                EVSYS_3_Handler
+                0x000000000002c360                PDEC_0_Handler
+                0x000000000002c360                QSPI_Handler
+                0x000000000002c360                TCC0_0_Handler
+                0x000000000002c360                EIC_3_Handler
+                0x000000000002c360                DAC_2_Handler
+                0x000000000002c360                EIC_10_Handler
+                0x000000000002c360                EIC_11_Handler
+                0x000000000002c360                EIC_9_Handler
+                0x000000000002c360                OSC32KCTRL_Handler
+                0x000000000002c360                TCC2_1_Handler
+                0x000000000002c360                SUPC_1_Handler
+                0x000000000002c360                TCC0_5_Handler
+                0x000000000002c360                TCC0_6_Handler
+                0x000000000002c360                EVSYS_1_Handler
+                0x000000000002c360                TCC1_4_Handler
+                0x000000000002c360                TC6_Handler
+                0x000000000002c360                WDT_Handler
+                0x000000000002c360                EIC_8_Handler
+                0x000000000002c360                EIC_15_Handler
+                0x000000000002c360                TC4_Handler
+                0x000000000002c360                OSCCTRL_4_Handler
+                0x000000000002c360                EIC_12_Handler
+                0x000000000002c360                TCC4_2_Handler
+                0x000000000002c360                PAC_Handler
+                0x000000000002c360                TCC1_0_Handler
+                0x000000000002c360                OSCCTRL_0_Handler
+                0x000000000002c360                EIC_0_Handler
+                0x000000000002c360                OSCCTRL_3_Handler
+                0x000000000002c360                Dummy_Handler
+                0x000000000002c360                TCC3_0_Handler
+                0x000000000002c360                TCC2_2_Handler
+                0x000000000002c360                TCC1_1_Handler
+                0x000000000002c360                OSCCTRL_2_Handler
+                0x000000000002c360                TCC1_2_Handler
+                0x000000000002c360                SERCOM7_1_Handler
+                0x000000000002c360                PM_Handler
+                0x000000000002c360                SERCOM2_3_Handler
+                0x000000000002c360                DAC_4_Handler
+                0x000000000002c360                TCC3_2_Handler
+                0x000000000002c360                SERCOM7_0_Handler
+                0x000000000002c360                TCC0_2_Handler
+                0x000000000002c360                TCC4_0_Handler
+                0x000000000002c360                SERCOM7_3_Handler
+                0x000000000002c360                SDHC1_Handler
+                0x000000000002c360                SERCOM7_2_Handler
+                0x000000000002c360                TCC2_0_Handler
+                0x000000000002c360                PDEC_1_Handler
+                0x000000000002c360                TCC4_1_Handler
+                0x000000000002c360                SDHC0_Handler
+                0x000000000002c360                I2S_Handler
+                0x000000000002c360                EIC_2_Handler
+                0x000000000002c360                PCC_Handler
+                0x000000000002c360                DAC_0_Handler
+                0x000000000002c360                TCC0_1_Handler
+                0x000000000002c360                EIC_6_Handler
+                0x000000000002c360                OSCCTRL_1_Handler
+                0x000000000002c360                PUKCC_Handler
+                0x000000000002c360                SERCOM2_1_Handler
+                0x000000000002c360                EIC_1_Handler
+                0x000000000002c360                EVSYS_4_Handler
+                0x000000000002c360                EIC_7_Handler
+                0x000000000002c360                SERCOM2_2_Handler
+                0x000000000002c360                TCC3_1_Handler
+                0x000000000002c360                EIC_14_Handler
+                0x000000000002c360                DAC_1_Handler
+                0x000000000002c360                MCLK_Handler
+                0x000000000002c360                EVSYS_2_Handler
+                0x000000000002c360                SUPC_0_Handler
+                0x000000000002c360                FREQM_Handler
+                0x000000000002c360                TCC0_3_Handler
+                0x000000000002c360                TCC0_4_Handler
+                0x000000000002c360                TC5_Handler
+                0x000000000002c360                SERCOM2_0_Handler
+                0x000000000002c360                AES_Handler
+                0x000000000002c360                ICM_Handler
  .text.Dummy_Handler_NonMaskableInt_Handler
-                0x000000000002c366        0x2 samd51a/gcc/gcc/startup_samd51.o
-                0x000000000002c366                NonMaskableInt_Handler
-                0x000000000002c366                Dummy_Handler_NonMaskableInt_Handler
+                0x000000000002c362        0x2 samd51a/gcc/gcc/startup_samd51.o
+                0x000000000002c362                NonMaskableInt_Handler
+                0x000000000002c362                Dummy_Handler_NonMaskableInt_Handler
  .text.Dummy_Handler_HardFault_Handler
-                0x000000000002c368        0x2 samd51a/gcc/gcc/startup_samd51.o
-                0x000000000002c368                Dummy_Handler_HardFault_Handler
-                0x000000000002c368                HardFault_Handler
+                0x000000000002c364        0x2 samd51a/gcc/gcc/startup_samd51.o
+                0x000000000002c364                Dummy_Handler_HardFault_Handler
+                0x000000000002c364                HardFault_Handler
  .text.Dummy_Handler_MemManagement_Handler
-                0x000000000002c36a        0x2 samd51a/gcc/gcc/startup_samd51.o
-                0x000000000002c36a                MemManagement_Handler
-                0x000000000002c36a                Dummy_Handler_MemManagement_Handler
+                0x000000000002c366        0x2 samd51a/gcc/gcc/startup_samd51.o
+                0x000000000002c366                MemManagement_Handler
+                0x000000000002c366                Dummy_Handler_MemManagement_Handler
  .text.Dummy_Handler_BusFault_Handler
-                0x000000000002c36c        0x2 samd51a/gcc/gcc/startup_samd51.o
-                0x000000000002c36c                Dummy_Handler_BusFault_Handler
-                0x000000000002c36c                BusFault_Handler
+                0x000000000002c368        0x2 samd51a/gcc/gcc/startup_samd51.o
+                0x000000000002c368                Dummy_Handler_BusFault_Handler
+                0x000000000002c368                BusFault_Handler
  .text.Dummy_Handler_UsageFault_Handler
-                0x000000000002c36e        0x2 samd51a/gcc/gcc/startup_samd51.o
-                0x000000000002c36e                UsageFault_Handler
-                0x000000000002c36e                Dummy_Handler_UsageFault_Handler
+                0x000000000002c36a        0x2 samd51a/gcc/gcc/startup_samd51.o
+                0x000000000002c36a                UsageFault_Handler
+                0x000000000002c36a                Dummy_Handler_UsageFault_Handler
  .text.Dummy_Handler_DebugMonitor_Handler
-                0x000000000002c370        0x2 samd51a/gcc/gcc/startup_samd51.o
-                0x000000000002c370                Dummy_Handler_DebugMonitor_Handler
-                0x000000000002c370                DebugMonitor_Handler
- *fill*         0x000000000002c372        0x2 
+                0x000000000002c36c        0x2 samd51a/gcc/gcc/startup_samd51.o
+                0x000000000002c36c                Dummy_Handler_DebugMonitor_Handler
+                0x000000000002c36c                DebugMonitor_Handler
+ *fill*         0x000000000002c36e        0x2 
  .text.Reset_Handler
-                0x000000000002c374       0x78 samd51a/gcc/gcc/startup_samd51.o
-                0x000000000002c374                Reset_Handler
+                0x000000000002c370       0x78 samd51a/gcc/gcc/startup_samd51.o
+                0x000000000002c370                Reset_Handler
  .text.atmel_start_init
-                0x000000000002c3ec       0x20 atmel_start.o
-                0x000000000002c3ec                atmel_start_init
+                0x000000000002c3e8       0x20 atmel_start.o
+                0x000000000002c3e8                atmel_start_init
  .text.usbdc_unconfig
-                0x000000000002c40c       0x1c usb/device/usbdc.o
+                0x000000000002c408       0x1c usb/device/usbdc.o
  .text.usbdc_change_notify
-                0x000000000002c428       0x20 usb/device/usbdc.o
+                0x000000000002c424       0x20 usb/device/usbdc.o
  .text.usbdc_request_handler
-                0x000000000002c448       0x38 usb/device/usbdc.o
+                0x000000000002c444       0x38 usb/device/usbdc.o
  .text.usbd_sof_cb
-                0x000000000002c480       0x18 usb/device/usbdc.o
+                0x000000000002c47c       0x18 usb/device/usbdc.o
  .text.usbdc_cb_ctl_done
-                0x000000000002c498       0x6c usb/device/usbdc.o
+                0x000000000002c494       0x6c usb/device/usbdc.o
  .text.usbdc_reset
-                0x000000000002c504       0x58 usb/device/usbdc.o
-                0x000000000002c504                usbdc_reset
+                0x000000000002c500       0x58 usb/device/usbdc.o
+                0x000000000002c500                usbdc_reset
  .text.usbd_event_cb
-                0x000000000002c55c       0x18 usb/device/usbdc.o
+                0x000000000002c558       0x18 usb/device/usbdc.o
  .text.usbdc_xfer
-                0x000000000002c574       0x20 usb/device/usbdc.o
-                0x000000000002c574                usbdc_xfer
+                0x000000000002c570       0x20 usb/device/usbdc.o
+                0x000000000002c570                usbdc_xfer
  .text.usbdc_cb_ctl_req
-                0x000000000002c594      0x338 usb/device/usbdc.o
+                0x000000000002c590      0x338 usb/device/usbdc.o
  .text.usbdc_register_handler
-                0x000000000002c8cc       0x2c usb/device/usbdc.o
-                0x000000000002c8cc                usbdc_register_handler
+                0x000000000002c8c8       0x2c usb/device/usbdc.o
+                0x000000000002c8c8                usbdc_register_handler
  .text.usbdc_init
-                0x000000000002c8f8       0x5c usb/device/usbdc.o
-                0x000000000002c8f8                usbdc_init
+                0x000000000002c8f4       0x5c usb/device/usbdc.o
+                0x000000000002c8f4                usbdc_init
  .text.usbdc_register_function
-                0x000000000002c954       0x10 usb/device/usbdc.o
-                0x000000000002c954                usbdc_register_function
+                0x000000000002c950       0x10 usb/device/usbdc.o
+                0x000000000002c950                usbdc_register_function
  .text.usbdc_start
-                0x000000000002c964       0x34 usb/device/usbdc.o
-                0x000000000002c964                usbdc_start
+                0x000000000002c960       0x34 usb/device/usbdc.o
+                0x000000000002c960                usbdc_start
  .text.usbdc_attach
-                0x000000000002c998        0x8 usb/device/usbdc.o
-                0x000000000002c998                usbdc_attach
+                0x000000000002c994        0x8 usb/device/usbdc.o
+                0x000000000002c994                usbdc_attach
  .text.usbdc_get_ctrl_buffer
-                0x000000000002c9a0        0xc usb/device/usbdc.o
-                0x000000000002c9a0                usbdc_get_ctrl_buffer
+                0x000000000002c99c        0xc usb/device/usbdc.o
+                0x000000000002c99c                usbdc_get_ctrl_buffer
  .text.usbdc_get_state
-                0x000000000002c9ac       0x14 usb/device/usbdc.o
-                0x000000000002c9ac                usbdc_get_state
+                0x000000000002c9a8       0x14 usb/device/usbdc.o
+                0x000000000002c9a8                usbdc_get_state
  .text.hri_tc_wait_for_sync
-                0x000000000002c9c0        0x8 hpl/tc/hpl_tc.o
+                0x000000000002c9bc        0x8 hpl/tc/hpl_tc.o
  .text._tc_timer_start
-                0x000000000002c9c8       0x14 hpl/tc/hpl_tc.o
-                0x000000000002c9c8                _tc_timer_start
+                0x000000000002c9c4       0x14 hpl/tc/hpl_tc.o
+                0x000000000002c9c4                _tc_timer_start
  .text._tc_timer_get_period
-                0x000000000002c9dc       0x4c hpl/tc/hpl_tc.o
-                0x000000000002c9dc                _tc_timer_get_period
+                0x000000000002c9d8       0x4c hpl/tc/hpl_tc.o
+                0x000000000002c9d8                _tc_timer_get_period
  .text._tc_timer_is_started
-                0x000000000002ca28       0x18 hpl/tc/hpl_tc.o
-                0x000000000002ca28                _tc_timer_is_started
+                0x000000000002ca24       0x18 hpl/tc/hpl_tc.o
+                0x000000000002ca24                _tc_timer_is_started
  .text.tc_interrupt_handler
-                0x000000000002ca40       0x12 hpl/tc/hpl_tc.o
- *fill*         0x000000000002ca52        0x2 
+                0x000000000002ca3c       0x12 hpl/tc/hpl_tc.o
+ *fill*         0x000000000002ca4e        0x2 
  .text.get_tc_index
-                0x000000000002ca54       0x64 hpl/tc/hpl_tc.o
+                0x000000000002ca50       0x64 hpl/tc/hpl_tc.o
  .text._tc_timer_set_irq
-                0x000000000002cab8       0x40 hpl/tc/hpl_tc.o
-                0x000000000002cab8                _tc_timer_set_irq
+                0x000000000002cab4       0x40 hpl/tc/hpl_tc.o
+                0x000000000002cab4                _tc_timer_set_irq
  .text._tc_timer_stop
-                0x000000000002caf8       0x14 hpl/tc/hpl_tc.o
-                0x000000000002caf8                _tc_timer_stop
+                0x000000000002caf4       0x14 hpl/tc/hpl_tc.o
+                0x000000000002caf4                _tc_timer_stop
  .text._tc_timer_deinit
-                0x000000000002cb0c       0x7c hpl/tc/hpl_tc.o
-                0x000000000002cb0c                _tc_timer_deinit
+                0x000000000002cb08       0x7c hpl/tc/hpl_tc.o
+                0x000000000002cb08                _tc_timer_deinit
  .text._tc_timer_init
-                0x000000000002cb88      0x178 hpl/tc/hpl_tc.o
-                0x000000000002cb88                _tc_timer_init
+                0x000000000002cb84      0x178 hpl/tc/hpl_tc.o
+                0x000000000002cb84                _tc_timer_init
  .text._tc_timer_set_period
-                0x000000000002cd00       0x3c hpl/tc/hpl_tc.o
-                0x000000000002cd00                _tc_timer_set_period
+                0x000000000002ccfc       0x3c hpl/tc/hpl_tc.o
+                0x000000000002ccfc                _tc_timer_set_period
  .text._tc_get_timer
-                0x000000000002cd3c        0x8 hpl/tc/hpl_tc.o
-                0x000000000002cd3c                _tc_get_timer
+                0x000000000002cd38        0x8 hpl/tc/hpl_tc.o
+                0x000000000002cd38                _tc_get_timer
  .text.TC0_Handler
-                0x000000000002cd44       0x10 hpl/tc/hpl_tc.o
-                0x000000000002cd44                TC0_Handler
+                0x000000000002cd40       0x10 hpl/tc/hpl_tc.o
+                0x000000000002cd40                TC0_Handler
  .text.TC1_Handler
-                0x000000000002cd54       0x10 hpl/tc/hpl_tc.o
-                0x000000000002cd54                TC1_Handler
+                0x000000000002cd50       0x10 hpl/tc/hpl_tc.o
+                0x000000000002cd50                TC1_Handler
  .text.TC2_Handler
-                0x000000000002cd64       0x10 hpl/tc/hpl_tc.o
-                0x000000000002cd64                TC2_Handler
+                0x000000000002cd60       0x10 hpl/tc/hpl_tc.o
+                0x000000000002cd60                TC2_Handler
  .text.TC3_Handler
-                0x000000000002cd74       0x10 hpl/tc/hpl_tc.o
-                0x000000000002cd74                TC3_Handler
+                0x000000000002cd70       0x10 hpl/tc/hpl_tc.o
+                0x000000000002cd70                TC3_Handler
  .text._delay_init
-                0x000000000002cd84       0x14 hpl/systick/hpl_systick.o
-                0x000000000002cd84                _delay_init
+                0x000000000002cd80       0x14 hpl/systick/hpl_systick.o
+                0x000000000002cd80                _delay_init
  .text._delay_cycles
-                0x000000000002cd98       0x38 hpl/systick/hpl_systick.o
-                0x000000000002cd98                _delay_cycles
+                0x000000000002cd94       0x38 hpl/systick/hpl_systick.o
+                0x000000000002cd94                _delay_cycles
  .text._crc_sync_init
-                0x000000000002cdd0        0x6 hpl/dsu/hpl_dsu.o
-                0x000000000002cdd0                _crc_sync_init
- *fill*         0x000000000002cdd6        0x2 
+                0x000000000002cdcc        0x6 hpl/dsu/hpl_dsu.o
+                0x000000000002cdcc                _crc_sync_init
+ *fill*         0x000000000002cdd2        0x6 
  .text.ceil     0x000000000002cdd8       0xf8 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-s_ceil.o)
                 0x000000000002cdd8                ceil
  .text.cos      0x000000000002ced0       0xac /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-s_cos.o)
@@ -44887,7 +44887,7 @@ LOAD linker stubs
  .debug_macro   0x0000000000059161       0x10 hpl/systick/hpl_systick.o
  .debug_macro   0x0000000000059171      0x665 hpl/dsu/hpl_dsu.o
 
-.debug_line     0x0000000000000000    0x84ee1
+.debug_line     0x0000000000000000    0x84eda
  .debug_line    0x0000000000000000      0xfcd usb/class/midi/device/audiodf_midi.o
  .debug_line    0x0000000000000fcd     0x185b grid/grid_ain.o
  .debug_line    0x0000000000002828     0x3455 grid/grid_buf.o
@@ -44983,17 +44983,17 @@ LOAD linker stubs
  .debug_line    0x0000000000070642     0x5cb8 hpl/sercom/hpl_sercom.o
  .debug_line    0x00000000000762fa      0xb92 hal/utils/src/utils_ringbuffer.o
  .debug_line    0x0000000000076e8c      0xa56 hal/src/hal_atomic.o
- .debug_line    0x00000000000778e2     0x1ff9 main.o
- .debug_line    0x00000000000798db      0xb7d hal/src/hal_qspi_dma.o
- .debug_line    0x000000000007a458     0x25f5 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
- .debug_line    0x000000000007ca4d      0xa79 hal/src/hal_evsys.o
- .debug_line    0x000000000007d4c6     0x1e63 hpl/adc/hpl_adc.o
- .debug_line    0x000000000007f329      0x8c9 samd51a/gcc/gcc/startup_samd51.o
- .debug_line    0x000000000007fbf2     0x1312 atmel_start.o
- .debug_line    0x0000000000080f04     0x154c usb/device/usbdc.o
- .debug_line    0x0000000000082450     0x1366 hpl/tc/hpl_tc.o
- .debug_line    0x00000000000837b6      0xafd hpl/systick/hpl_systick.o
- .debug_line    0x00000000000842b3      0xc2e hpl/dsu/hpl_dsu.o
+ .debug_line    0x00000000000778e2     0x1ff2 main.o
+ .debug_line    0x00000000000798d4      0xb7d hal/src/hal_qspi_dma.o
+ .debug_line    0x000000000007a451     0x25f5 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
+ .debug_line    0x000000000007ca46      0xa79 hal/src/hal_evsys.o
+ .debug_line    0x000000000007d4bf     0x1e63 hpl/adc/hpl_adc.o
+ .debug_line    0x000000000007f322      0x8c9 samd51a/gcc/gcc/startup_samd51.o
+ .debug_line    0x000000000007fbeb     0x1312 atmel_start.o
+ .debug_line    0x0000000000080efd     0x154c usb/device/usbdc.o
+ .debug_line    0x0000000000082449     0x1366 hpl/tc/hpl_tc.o
+ .debug_line    0x00000000000837af      0xafd hpl/systick/hpl_systick.o
+ .debug_line    0x00000000000842ac      0xc2e hpl/dsu/hpl_dsu.o
 
 .debug_str      0x0000000000000000   0x13b2f1
  .debug_str     0x0000000000000000    0xed4a5 usb/class/midi/device/audiodf_midi.o

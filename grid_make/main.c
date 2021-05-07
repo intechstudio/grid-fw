@@ -581,7 +581,7 @@ void init_timer(void)
 	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
 	RTC_Scheduler_realtime.mode     = TIMER_TASK_REPEAT;
 
-	RTC_Scheduler_report.interval = RTC1MS*1000;
+	RTC_Scheduler_report.interval = RTC1MS*100;
 	RTC_Scheduler_report.cb       = RTC_Scheduler_report_cb;
 	RTC_Scheduler_report.mode     = TIMER_TASK_REPEAT;
 

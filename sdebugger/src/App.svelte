@@ -9,13 +9,30 @@
 		socket = new WebSocket(url);
 		socket.onmessage = function (event) {
 			let message = JSON.parse(event.data);
-			serial = [...serial, {type: message.type, data: serialParser(message.data)}];
+
+			let temp = serialParser(message.data);
+			if (temp != undefined){			
+				serial = [...serial, {type: message.type, data: temp}];
+			}
+
 		}
 		socket.onclose = function (){
 			socket = null;
 			setTimeout(function (){start(url)},1000)
 		}
 	}
+
+	var testchart = create_chart("testchart", 250,250,0,1000);
+
+
+	let charts = [];
+
+	charts.push(create_chart(150, 200, 0, 1000));
+	charts.push(create_chart(150, 200, 0, 1000));
+	charts.push(create_chart(150, 200, 0, 1000));
+	charts.push(create_chart(150, 200, 0, 1000));
+	charts.push(create_chart(150, 200, 0, 1000));
+	charts.push(create_chart(150, 200, 0, 1000));
 
 	let serial = [];
 
@@ -26,19 +43,19 @@
 	function hexdump(buffer, blockSize) {
 		
 		if(typeof buffer === 'string'){
-			console.log("buffer is string");
+			//console.log("buffer is string");
 			//do nothing
 		}else if(buffer instanceof ArrayBuffer && buffer.byteLength !== undefined){
-			console.log("buffer is ArrayBuffer");
+			//console.log("buffer is ArrayBuffer");
 			buffer = String.fromCharCode.apply(String, [].slice.call(new Uint8Array(buffer)));
 		}else if(Array.isArray(buffer)){
-			console.log("buffer is Array");
+			//console.log("buffer is Array");
 			buffer = String.fromCharCode.apply(String, buffer);
 		}else if (buffer.constructor === Uint8Array) {
-			console.log("buffer is Uint8Array");
+			//console.log("buffer is Uint8Array");
 			buffer = String.fromCharCode.apply(String, [].slice.call(buffer));
 		}else{
-			console.log("Error: buffer is unknown...");
+			//console.log("Error: buffer is unknown...");
 			return false;
 		}
 		
@@ -73,33 +90,115 @@
 		return ret;
 	}
 
-//tests:
-var buffer = 'very very long string; very very long string; very very long string;';		//long string	- working
-console.log( hexdump( buffer , 16 ) ) ;
 
-var buffer = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]).buffer;	//arrayBuffer	- working
-console.log( hexdump( buffer , 16 ) ) ;
+	function create_chart(cw, ch, minValue, maxValue){
 
-var buffer = new Uint8Array([21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40]);	//Uint8Array	- working
-console.log( hexdump( buffer , 16 ) ) ;
+		var new_chart = {
+		
+		chartwidth: cw,
+			chartheight: ch,
+			minvalue: minValue,
+			maxvalue: maxValue,
+		slope: 0,
 
-var buffer = [41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60];			//bytearray	- working
-console.log( hexdump( buffer , 16 ) ) ;
+		values: [],
+
+		points: [],
+
+		render: function(){
+
+			this.slope = (this.chartheight - 0) / (this.maxvalue - this.minvalue);
+
+
+			for (let j=0; j<this.values[0].length; j++){
+				var pointsstring = "";
+
+				for(let i = 0; i<this.values.length; i++){
+
+					var input = this.values[i][j];
+					var output = this.chartheight - this.slope * (input - this.minvalue);
+
+					pointsstring += (i*(this.chartwidth/(this.values.length-1))) + "," + output+" ";
+
+				}
+
+				this.points[j] = pointsstring;
+
+				//document.getElementById("chart_"+this.id+"_"+[j]).setAttribute("points", pointsstring);
+
+				//console.log(this.points[0]);
+
+			}
+
+
+		}
+		};
+
+		return new_chart;
+	}
+
 
 
 	function serialParser(serial){
 		
+
+
+		let stx = String.fromCharCode(2);
+		let etx = String.fromCharCode(3);
+
+		let buffer =  String.fromCharCode.apply(String, serial);
+
+		let search = buffer.search(stx+"021d")
+
+		if (search != -1){
+
+			let trim =  buffer.split(etx);
+			let parts = trim[0].split('!');
+			parts.shift();
+
+
+			for (let i = 0; i<charts.length; i++){
+
+				let topush = parts[i].split(',');
+
+				charts[i].name = topush[0];
+				charts[i].min = topush[1];
+				charts[i].avg = topush[2];
+				charts[i].max = topush[3];
+				charts[i].values.push([topush[1], topush[2], topush[3]]);
+				charts[i].render();
+
+				if (charts[i].values.length > 100){
+					charts[i].values.shift();
+				}
+
+			}
+
+
+
+
+
+			//console.log(parts);
+			//console.log(search);
+			
+			//return '';
+
+		}
+		else{
+
+			//console.log("no");
+			
+		    return hexdump( serial , 16 );
+			
+		}
+
+
+
+
 		// SUKU MAGIC:
-		return hexdump( serial , 16 );
 
 
-		// TOFI MAGIC:
-		let _serial = ''
-		_serial = serial.map(arg => {
-			return String.fromCharCode(arg)
-		});
-		_serial = _serial.join('');
-		return _serial;
+
 	}
 
 	function heartbeat(e){
@@ -116,7 +215,11 @@ console.log( hexdump( buffer , 16 ) ) ;
 
 	onMount(()=>{
 		start(url);
+
+		
 	})
+
+
 
 </script>
 
@@ -175,10 +278,60 @@ console.log( hexdump( buffer , 16 ) ) ;
 			</div>
 		{/each}
 	</div>
-	
+
+	<div class="charts">
+
+		{#each charts as entry}
+
+			<svg class="chart" height="{entry.chartheight}" width="{entry.chartwidth}" viewBox="0 0 {entry.chartwidth} {entry.chartheight}">
+				<polyline id="chart_testchart_0"
+				fill="none"
+				stroke="#00d974"
+				stroke-width="1"
+				points="{entry.points[0]}"/>
+		
+				<polyline id="chart_testchart_1"
+				fill="none"
+				stroke="#0074d9"
+				stroke-width="1"
+				points="{entry.points[1]}"/>
+		
+				<polyline id="chart_testchart_2"
+				fill="none"
+				stroke="#d97400"
+				stroke-width="1"
+				points="{entry.points[2]}"/>
+		
+				<text class="name" x="0" y="15" fill="black">{entry.name}</text>
+				<text class="max" x="0" y="25%" fill="red">{entry.max}</text>
+				<text class="avg" x="0" y="50%" fill="red">{entry.avg}</text>
+				<text class="min" x="0" y="75%" fill="red">{entry.min}</text>
+			</svg>
+
+		{/each}
+
+	</div>
+
+
+
+
 </main>
 
 <style>
+
+	.charts{
+		position: absolute;
+		bottom: 0px;
+		left: 0px;
+		width: 100%;
+	}
+
+	.chart{
+
+		margin: 5px;
+		border: 1px solid rgba(0,0,0,0.2);
+		background-color: white;
+	}
 
 	.addr{
 		display:flex;
@@ -206,7 +359,7 @@ console.log( hexdump( buffer , 16 ) ) ;
 	}
 
 	.debug{
-		height:600px;
+		height:500px;
 		font-family: monospace;
 		overflow: scroll;
 		justify-content: flex-start;
