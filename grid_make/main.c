@@ -289,7 +289,7 @@ static void ui_task_inner(struct grid_d51_task* task){
 
 	grid_d51_task_start(task);
 
-	grid_port_process_ui(&GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
+	grid_port_process_ui(&grid_ui_state, &GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
 
 	grid_d51_task_stop(task);
 }
@@ -802,15 +802,14 @@ int main(void)
 
 	grid_nvm_toc_debug(&grid_nvm_state);
 
-	// grid_nvm_toc_defragmant(&grid_nvm_state);
-
+//	grid_nvm_toc_defragmant(&grid_nvm_state);
 
 
 
 	// init_timer is last before loop because it creates interrupts
 	init_timer();
 
-	uint32_t loopcounter = 0;
+	uint32_t loopcounter = 1;
 	uint32_t loopstart = 0;
 	uint8_t usb_init_flag = 0;	
 
@@ -832,6 +831,9 @@ int main(void)
 	grid_d51_task_init(grid_inbound_task, 	"in ");
 	grid_d51_task_init(grid_outbound_task, 	"out");
 	grid_d51_task_init(grid_led_task, 		"led");
+
+
+	grid_ui_state.task = grid_ui_task;
 
 
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
@@ -935,9 +937,8 @@ int main(void)
 
 				struct grid_d51_task* task = &task_list[i];
 
-				for (uint8_t j=0; j<GRID_D51_TASK_SUBTASK_count; j++){
-
-					if (task->sum[j] == 0) break;
+				//printf("%s %d ", task->taskname, task->subtaskcount);
+				for (uint8_t j=0; j<task->subtaskcount; j++){
 
 					sprintf(&reportbuffer[length], "!%s,%d,%d,%d", task->taskname, task->min[j]/120, task->sum[j]/120/task->startcount, task->max[j]/120);
 					length += strlen(&reportbuffer[length]);
@@ -945,9 +946,9 @@ int main(void)
 				}
 
 				grid_d51_task_clear(task);
-				
-
 			}
+
+			//printf("\r\n");
 
 
 			sprintf(&reportbuffer[length], GRID_CLASS_EVENTPREVIEW_frame_end);
@@ -970,6 +971,20 @@ int main(void)
 
 			grid_msg_packet_close(&response);
 			grid_msg_packet_send_everywhere(&response);			
+
+		
+			receive_task_inner(NULL);
+			//ui_task_inner(grid_ui_task);
+			inbound_task_inner(NULL);
+			outbound_task_inner(NULL);
+
+			//lua_getglobal(grid_lua_state.L, "print");
+
+
+		    //grid_lua_dostring(&grid_lua_state, "ele[0].ec()");
+
+		
+			//grid_lua_dostring(&grid_lua_state, grid_ui_state.element_list[0].event_list[2].action_call);
 
 		}
 

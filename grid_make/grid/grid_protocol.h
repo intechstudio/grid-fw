@@ -448,6 +448,14 @@ stored config date
 #define GRID_LUA_FNC_E_ENCODER_ELAPSED_short "eel"
 #define GRID_LUA_FNC_E_ENCODER_ELAPSED_human "encoder_elapsed_time"
 
+
+#define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short "ec"
+#define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_human "encoder change"
+
+#define GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short "bc"
+#define GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_human "encoder change"
+
+
 // Encoder parameters
 #define GRID_LUA_FNC_E_LIST_length 14
 
@@ -470,7 +478,12 @@ stored config date
 	e." GRID_LUA_FNC_E_ENCODER_MAX_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MAX_helper ", a) end \
 	e." GRID_LUA_FNC_E_ENCODER_MODE_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MODE_helper ", a) end \
 	e." GRID_LUA_FNC_E_ENCODER_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_ELAPSED_helper ", a) end \
+	\
+	e."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (a) print('undefined action') end\
+	e."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (a) print('undefined action') end\
+	\
     end"
+
 
 // ========================= POTMETER =========================== //
 
@@ -645,19 +658,24 @@ enum grid_ui_event_t
 
 };
 
+#define 	GRID_EVENT_INIT	"00"
+#define 	GRID_EVENT_AC	"01"
+#define 	GRID_EVENT_EC	"02"
+#define 	GRID_EVENT_BC	"03"
+
 // BANK + ELEMENT NUMBER + EVENT TYPE + PARAMETER
 
 #define GRID_EVENTSTRING_HEARTBEAT "\x02" \
 								   "050e<?expr p(Z0) ?>000c00\x03"
 
 #define GRID_EVENTSTRING_AC "\x02" \
-								"050e<?expr p(Z0) ?><?expr p(T0) ?>01<?expr p(T2) ?>\x03"
+								"050e<?expr p(Z0) ?><?expr p(T0) ?>"GRID_EVENT_AC"<?expr p(T2) ?>\x03"
 
 #define GRID_EVENTSTRING_BC "\x02" \
-							"050e<?expr p(Z0) ?><?expr p(T0) ?>04<?expr p(T5) ?>\x03"
+							"050e<?expr p(Z0) ?><?expr p(T0) ?>"GRID_EVENT_BC"<?expr p(T5) ?>\x03"
 
 #define GRID_EVENTSTRING_EC "\x02" \
-							"050e<?expr p(Z0) ?><?expr p(T0) ?>01<?expr p(T5) ?>\x03"
+							"050e<?expr p(Z0) ?><?expr p(T0) ?>"GRID_EVENT_EC"<?expr p(T5) ?>\x03"
 
 #define GRID_EVENTSTRING_DP_ENC "\x02" \
 								"050e<?expr p(Z0) ?><?expr p(T0) ?>04<?expr p(T2) ?>\x03"

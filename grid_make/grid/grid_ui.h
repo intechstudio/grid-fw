@@ -27,6 +27,8 @@ enum grid_ui_status {
 
 #define GRID_UI_ACTION_STRING_maxlength		230
 
+#define GRID_UI_ACTION_CALL_maxlength 		20
+
 
 struct grid_ui_event
 {
@@ -45,6 +47,9 @@ struct grid_ui_event
 	
 	uint32_t							action_string_length;
 	uint8_t								action_string[GRID_UI_ACTION_STRING_maxlength];
+
+
+	uint8_t								action_call[GRID_UI_ACTION_CALL_maxlength];
 
 	uint8_t cfg_changed_flag;
 	uint8_t cfg_default_flag;
@@ -89,6 +94,10 @@ struct grid_ui_element
 
 struct grid_ui_model
 {
+
+	struct grid_d51_task* task;
+	
+
 	enum grid_ui_status status;
 	
 	uint8_t page_activepage;
@@ -136,6 +145,9 @@ void grid_ui_event_generate_eventstring(enum grid_ui_element_t element_type, enu
 void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string);
 void grid_ui_event_generate_actionstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring);
 	
+void grid_ui_event_generate_callstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring);
+
+
 
 uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
 void grid_ui_event_trigger(struct grid_ui_element* ele, uint8_t event_index);
@@ -153,7 +165,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 
 
-void grid_port_process_ui(struct grid_port* por);
+void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por);
 
 
 

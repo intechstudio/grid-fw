@@ -13,6 +13,9 @@
 			let temp = serialParser(message.data);
 			if (temp != undefined){			
 				serial = [...serial, {type: message.type, data: temp}];
+				if (serial.length > 30){
+					serial.shift();
+				}
 			}
 
 		}
@@ -27,12 +30,16 @@
 
 	let charts = [];
 
-	charts.push(create_chart(150, 200, 0, 1000));
-	charts.push(create_chart(150, 200, 0, 1000));
-	charts.push(create_chart(150, 200, 0, 1000));
-	charts.push(create_chart(150, 200, 0, 1000));
-	charts.push(create_chart(150, 200, 0, 1000));
-	charts.push(create_chart(150, 200, 0, 1000));
+	charts.push(create_chart(100, 200, 0, 1000));
+	charts.push(create_chart(100, 200, 0, 1000));
+	charts.push(create_chart(100, 200, 0, 1000));
+	charts.push(create_chart(100, 200, 0, 1000));
+	charts.push(create_chart(100, 200, 0, 1000));
+	charts.push(create_chart(100, 200, 0, 1000));
+	charts.push(create_chart(100, 200, 0, 1000));
+	charts.push(create_chart(100, 200, 0, 1000));
+	charts.push(create_chart(100, 200, 0, 1000));
+	charts.push(create_chart(100, 200, 0, 1000));
 
 	let serial = [];
 
@@ -151,6 +158,8 @@
 		let search = buffer.search(stx+"021d")
 
 		if (search != -1){
+
+			//console.log(buffer)
 
 			let trim =  buffer.split(etx);
 			let parts = trim[0].split('!');

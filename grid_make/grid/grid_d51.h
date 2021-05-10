@@ -28,6 +28,8 @@ struct grid_d51_task{
 
     uint32_t t1;
 
+	uint8_t subtaskcount;
+
 	uint32_t min[GRID_D51_TASK_SUBTASK_count];
 	uint32_t max[GRID_D51_TASK_SUBTASK_count];
 	uint32_t sum[GRID_D51_TASK_SUBTASK_count];

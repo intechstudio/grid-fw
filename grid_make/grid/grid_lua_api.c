@@ -121,7 +121,7 @@ static int l_grid_midi_send(lua_State* L) {
     grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, param1, NULL);
     grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2, NULL);
     
-    // printf("MIDI: %s\r\n", midiframe);  
+    printf("MIDI: %s\r\n", midiframe);  
     strcat(grid_lua_state.stdo, midiframe);
 
     return 1;
@@ -726,6 +726,7 @@ uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod){
 
     // initialize 16 encoders
     grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_encoder(ele[i], i) end");
+
 
     printf("LUA UI INIT\r\n");
 

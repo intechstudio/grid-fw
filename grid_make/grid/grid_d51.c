@@ -704,6 +704,8 @@ void grid_d51_task_init(struct grid_d51_task* task, uint8_t* name){
 
 	strncpy(task->taskname, name, GRID_D51_TASK_NAME_length-1);
 
+	task->subtaskcount = 0;
+
 	grid_d51_task_clear(task);
 
 }
@@ -714,6 +716,9 @@ void grid_d51_task_start(struct grid_d51_task* task){
 
 	task->startcount++;
 	task->subtask = 0;
+
+	if (task->subtaskcount < task->subtask + 1 ) task->subtaskcount++;
+
 	task->t1 = grid_d51_dwt_cycles_read();
 
 }
@@ -721,13 +726,11 @@ void grid_d51_task_next(struct grid_d51_task* task){
 
 	if (task == NULL) return;
 
-
-
 	uint32_t elapsed = grid_d51_dwt_cycles_read() - task->t1;
 
 	task->sum[task->subtask] += elapsed;
 
-	if (elapsed < task->min[task->subtask]){
+	if (elapsed < task->min[task->subtask] || task->min[task->subtask]==0){
 		task->min[task->subtask] = elapsed;
 	}	
 	
@@ -739,9 +742,10 @@ void grid_d51_task_next(struct grid_d51_task* task){
 
 
 	if (task->subtask<GRID_D51_TASK_SUBTASK_count-1){
-
 		task->subtask++;
 	}
+
+	if (task->subtaskcount < task->subtask + 1 ) task->subtaskcount++;
 
 	task->t1 = grid_d51_dwt_cycles_read();
 
@@ -756,7 +760,7 @@ void grid_d51_task_stop(struct grid_d51_task* task){
 
 	task->sum[task->subtask] += elapsed;
 
-	if (elapsed < task->min[task->subtask]){
+	if (elapsed < task->min[task->subtask] || task->min[task->subtask]==0){
 		task->min[task->subtask] = elapsed;
 	}	
 	
@@ -772,7 +776,7 @@ void grid_d51_task_clear(struct grid_d51_task* task){
 
 	for (uint8_t i=0; i<GRID_D51_TASK_SUBTASK_count; i++){
 
-		task->min[i] = -1;
+		task->min[i] = 0;
 		task->max[i] = 0;
 		task->sum[i] = 0;
 
