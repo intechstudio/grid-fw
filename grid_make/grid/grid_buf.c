@@ -1886,7 +1886,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							}
 							
 							action[actionlength] = GRID_CONST_ETX;
-							ack = 0;
 
 
 
@@ -1896,7 +1895,34 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							printf("Config frame invalid: %d %d %d %d end: %d %s\r\n", pagenumber, elementnumber, eventtype, actionlength, action[actionlength], action);
 
 						}
-             
+
+
+						// Generate ACKNOWLEDGE RESPONSE
+						struct grid_msg response;
+						
+						grid_msg_init(&response);
+						grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+
+						uint8_t response_payload[10] = {0};
+						sprintf(response_payload, GRID_CLASS_CONFIG_frame);
+						
+						grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+						
+						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, pagenumber);
+						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, elementnumber);
+						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, eventtype);
+						
+						
+						if (ack == 1){
+							grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+						}
+						else{
+							grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+						}
+
+						grid_msg_packet_close(&response);
+						grid_msg_packet_send_everywhere(&response);
+
                     }
                 }
                 else if (msg_class == GRID_CLASS_HIDKEYSTATUS_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
