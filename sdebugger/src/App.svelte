@@ -196,8 +196,12 @@
 		else{
 
 			//console.log("no");
+		
+			let temp = String.fromCharCode.apply(String, serial);
+			console.log(temp)
 			
 		    return hexdump( serial , 16 );
+
 			
 		}
 
