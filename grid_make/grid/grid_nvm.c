@@ -661,7 +661,7 @@ uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct g
 
 	// -GRID_CLASS_CONFIG_ACTIONSTRING_offset to get rid of the config class header
 
-	flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS+entry->config_string_offset+GRID_CLASS_CONFIG_ACTIONSTRING_offset, targetstring, entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset);
+	flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS+entry->config_string_offset+GRID_CLASS_CONFIG_ACTIONSTRING_offset, targetstring, entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset-1); //-1 etx
 
 	targetstring[entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset] = '\0';
 	
