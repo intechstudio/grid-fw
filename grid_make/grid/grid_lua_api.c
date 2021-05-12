@@ -121,7 +121,7 @@ static int l_grid_midi_send(lua_State* L) {
     grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, param1, NULL);
     grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2, NULL);
     
-    printf("MIDI: %s\r\n", midiframe);  
+    //printf("MIDI: %s\r\n", midiframe);  
     strcat(grid_lua_state.stdo, midiframe);
 
     return 1;
@@ -596,7 +596,7 @@ uint8_t grid_lua_deinit(struct grid_lua_model* mod){
 uint8_t grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
     uint32_t memusage = lua_gc(grid_lua_state.L, LUA_GCCOUNT)*1024 + lua_gc(grid_lua_state.L, LUA_GCCOUNTB);
-    //printf("LUA mem usage: %d(%s)\r\n", memusage, message);
+    printf("LUA mem usage: %d(%s)\r\n", memusage, message);
 
 }
 

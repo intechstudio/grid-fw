@@ -450,10 +450,10 @@ stored config date
 
 
 #define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short "ec"
-#define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_human "encoder change"
+#define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_human "encoder_change"
 
 #define GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short "bc"
-#define GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_human "encoder change"
+#define GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_human "button_change"
 
 
 // Encoder parameters
@@ -725,8 +725,8 @@ enum grid_ui_event_t
 #define GRID_CLASS_EVENT_code 0x050
 #define GRID_CLASS_EVENT_frame "%c%03x_........%c", GRID_CONST_STX, GRID_CLASS_EVENT_code, GRID_CONST_ETX
 
-#define GRID_CLASS_EVENT_BANKNUMBER_offset 5
-#define GRID_CLASS_EVENT_BANKNUMBER_length 2
+#define GRID_CLASS_EVENT_PAGENUMBER_offset 5
+#define GRID_CLASS_EVENT_PAGENUMBER_length 2
 
 #define GRID_CLASS_EVENT_ELEMENTNUMBER_offset 7
 #define GRID_CLASS_EVENT_ELEMENTNUMBER_length 2

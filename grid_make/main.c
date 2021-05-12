@@ -801,9 +801,8 @@ int main(void)
 //	grid_nvm_config_mock(&grid_nvm_state);
 
 	grid_nvm_toc_debug(&grid_nvm_state);
-
+	
 //	grid_nvm_toc_defragmant(&grid_nvm_state);
-
 
 
 	// init_timer is last before loop because it creates interrupts
@@ -908,7 +907,11 @@ int main(void)
 		
 		receive_task_inner(grid_receive_task);
 
+		//lua_gc(grid_lua_state.L, LUA_GCSTOP);
+
 		ui_task_inner(grid_ui_task);
+
+		//lua_gc(grid_lua_state.L, LUA_GCRESTART);
 	
 		inbound_task_inner(grid_inbound_task);
 
@@ -916,7 +919,12 @@ int main(void)
 
 		led_task_inner(grid_led_task);
 
+
+		//grid_lua_debug_memory_stats(&grid_lua_state, "Ui");
 		lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
+
+
+		
 
 
 		if (reportflag){

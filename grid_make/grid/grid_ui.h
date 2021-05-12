@@ -145,7 +145,7 @@ void grid_ui_event_generate_eventstring(enum grid_ui_element_t element_type, enu
 void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string);
 void grid_ui_event_generate_actionstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring);
 	
-void grid_ui_event_generate_callstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring);
+void grid_ui_event_generate_callstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring, uint8_t element_number);
 
 
 
@@ -161,8 +161,8 @@ void grid_ui_event_reset(struct grid_ui_event* eve);
 uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve);
 uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve);
 
+uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, uint8_t* target_string);
 uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_string);
-
 
 
 void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por);
