@@ -13,8 +13,9 @@ RUN npm install
 # RUN npm ci --only=production
 
 # Bundle app source
-COPY . .
+# COPY . .
+COPY rollup.config.js ./
 
 EXPOSE 5000
-CMD [ "npm", "run" , "dev" ]
+CMD ["npm", "run" , "dev" ]
 

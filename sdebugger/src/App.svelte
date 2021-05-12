@@ -155,9 +155,7 @@
 
 		let buffer =  String.fromCharCode.apply(String, serial);
 
-		let search = buffer.search(stx+"021d")
-
-		if (search != -1){
+		if (buffer.search(stx+"021d") != -1){
 
 			//console.log(buffer)
 
@@ -183,14 +181,10 @@
 
 			}
 
+		}
+		else if(buffer.search(stx+"010e") != -1){
 
 
-
-
-			//console.log(parts);
-			//console.log(search);
-			
-			//return '';
 
 		}
 		else{
@@ -198,7 +192,7 @@
 			//console.log("no");
 		
 			let temp = String.fromCharCode.apply(String, serial);
-			console.log(temp)
+			//console.log(temp)
 			
 		    return hexdump( serial , 16 );
 
