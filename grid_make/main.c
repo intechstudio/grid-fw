@@ -796,8 +796,8 @@ int main(void)
 	// grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
 	// grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
 	
-	grid_nvm_config_mock(&grid_nvm_state);
-	grid_nvm_config_mock(&grid_nvm_state);
+//	grid_nvm_config_mock(&grid_nvm_state);
+//	grid_nvm_config_mock(&grid_nvm_state);
 //	grid_nvm_config_mock(&grid_nvm_state);
 
 	grid_nvm_toc_debug(&grid_nvm_state);

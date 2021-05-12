@@ -681,8 +681,13 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 				printf("Page Load: FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
 
 				if (entry->config_string_length){
+					uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
 
-					eve->action_string_length = grid_nvm_toc_generate_actionstring(nvm, entry, eve->action_string);
+					grid_nvm_toc_generate_actionstring(nvm, entry, temp);
+					
+					//printf("%s \r\n", temp);
+					grid_ui_event_register_actionstring(ele, eve->type, temp);
+					
 					eve->cfg_changed_flag = 0; // clear changed flag
 				}
 				else{
@@ -955,6 +960,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 		uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
 		action_string[strlen(action_string)-3] = '\0';
 		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (a) local this = ele[%d] %s end", ele->index, ele->index, &action_string[6]);
+		printf("%s \r\n", temp);
 		grid_lua_dostring(&grid_lua_state, temp);
 		//printf("ENCODER ACTION: %s\r\n", temp);
 	}
@@ -967,7 +973,8 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 		//printf("BUTTON ACTION: %s\r\n", temp);
 	}
 
-	
+	grid_lua_debug_memory_stats(&grid_lua_state, "R.A.S.");
+	lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
 	
 }
 
