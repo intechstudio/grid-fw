@@ -1630,203 +1630,12 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					NVIC_SystemReset();
 				
 				}				
-				else if (msg_class == GRID_CLASS_GLOBALLOAD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
-				
-					grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
-				}
-				else if (msg_class == GRID_CLASS_GLOBALSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 			
-					grid_sys_nvm_store_configuration(&grid_sys_state, &grid_nvm_state);
-                    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
-				}
-				else if (msg_class == GRID_CLASS_GLOBALCLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
-				
-					grid_sys_nvm_clear_configuration(&grid_ui_state, &grid_nvm_state);
-                    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
-				}
-				else if (msg_class == GRID_CLASS_GLOBALRECALL_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
-					
-					uint8_t banknumber		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_GLOBALRECALL_BANKNUMBER_offset], GRID_CLASS_GLOBALRECALL_BANKNUMBER_length	, &error_flag);
-					grid_sys_recall_configuration(&grid_sys_state, banknumber);
-				}
-			
-				
-				else if (msg_class == GRID_CLASS_LOCALLOAD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
-				
-					grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);						
-						
-				}
-				else if (msg_class == GRID_CLASS_LOCALSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				else if (msg_class == GRID_CLASS_CONFIGSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_ui_page_store(&grid_ui_state, &grid_nvm_state);
 
 				}
-
-				else if (msg_class == GRID_CLASS_LOCALCLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
-				
-					grid_ui_nvm_clear_all_configuration(&grid_ui_state, &grid_nvm_state);
-				
-				}
-				// else if (msg_class == GRID_CLASS_CONFIGURATION_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
-					
-
-					
-				// 	uint8_t banknumber		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_BANKNUMBER_offset]		, GRID_CLASS_CONFIGURATION_BANKNUMBER_length	, &error_flag);
-				// 	uint8_t elementnumber	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset]	, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length	, &error_flag);
-				// 	uint8_t eventtype		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_EVENTTYPE_offset]		, GRID_CLASS_CONFIGURATION_EVENTTYPE_length		, &error_flag);
-					
-					
-				// 	grid_ui_recall_event_configuration(&grid_ui_state, banknumber, elementnumber, eventtype);
-					
-				// }
-				// else if (msg_class == GRID_CLASS_CONFIGURATION_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_local)){
-
-                        
-                //     if (!position_is_local){
-                //         // disable hid action automatically
-                //         grid_keyboard_state.isenabled = 0;             
-                //         //grid_debug_print_text("Disabling KB");
-
-                //         struct grid_msg response;
-
-                //         grid_msg_init(&response);
-                //         grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
-
-                //         uint8_t response_payload[10] = {0};
-                //         sprintf(response_payload, GRID_CLASS_HIDKEYSTATUS_frame);
-
-                //         grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
-
-                //         grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, grid_keyboard_state.isenabled);
-
-                //         grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-
-
-                //         grid_msg_packet_close(&response);
-                //         grid_msg_packet_send_everywhere(&response);
-
-                //         // keyboard disabling done      
-                        
-                //         grid_sys_alert_set_alert(&grid_sys_state, 100, 100, 100, 0, 250);
-                //     }
-
-
-                    
-				// 	uint8_t banknumber		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_BANKNUMBER_offset]		, GRID_CLASS_CONFIGURATION_BANKNUMBER_length	, &error_flag);
-				// 	uint8_t elementnumber	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset]	, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length	, &error_flag);
-				// 	uint8_t eventtype		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_EVENTTYPE_offset]		, GRID_CLASS_CONFIGURATION_EVENTTYPE_length		, &error_flag);
-					
-				// 	uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength]	= {0};
-				// 	uint32_t actionstring_length = current_stop-current_start-GRID_CLASS_CONFIGURATION_ACTIONSTRING_offset;
-													
-				
-					
-				// 	for(uint32_t j = 0; j<actionstring_length; j++){
-					
-				// 		actionstring[j] = message[current_start+GRID_CLASS_CONFIGURATION_ACTIONSTRING_offset + j];
-						
-				// 	}
-					
-				// 	actionstring[actionstring_length] = '\0';
-
-				// 	uint8_t acknowledge = 0;
-					
-					
-				// 	//grid_debug_print_text("Cfg: Received");
-
-
-				// 	grid_ui_event_register_actionstring(&grid_ui_state.element_list[elementnumber], eventtype, actionstring);
-
-				// 	if (banknumber == grid_sys_state.bank_activebank_number){
-							
-				// 		grid_ui_smart_trigger(&grid_ui_state, elementnumber, eventtype);
-							
-				// 	}
-
-				// 	acknowledge = 1;
-							
-				// 	uint8_t event_index = grid_ui_event_find(&grid_ui_state.element_list[elementnumber], eventtype);
-				// 	if (event_index != 255){
-				// 		if (position_is_local){
-				// 			// Clear changed flag because confguration came from nvm
-				// 			grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_flashempty_flag=0;
-								
-				// 			grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_changed_flag = 0;
-				// 			grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
-				// 		}
-				// 		if (position_is_me){
-				// 			// Clear changed flag because confguration came from nvm
-				// 			grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_changed_flag = 1;
-				// 			grid_ui_state.element_list[elementnumber].event_list[event_index].cfg_default_flag = 0;
-				// 		}
-				// 	}
-					
-					
-					
-					
-
-				// 	// Generate ACKNOWLEDGE RESPONSE
-				// 	struct grid_msg response;
-								
-				// 	grid_msg_init(&response);
-				// 	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
-
-				// 	uint8_t response_payload[10] = {0};
-				// 	sprintf(response_payload, GRID_CLASS_CONFIGURATION_frame);
-					
-					
-
-				// 	grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
-					
-				// 	grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, banknumber);
-				// 	grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, elementnumber);
-				// 	grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, eventtype);
-					
-								
-				// 	if (acknowledge == 1){
-				// 		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-				// 	}
-				// 	else{
-				// 		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
-				// 	}
-
-								
-				// 	grid_msg_packet_close(&response);
-				// 	grid_msg_packet_send_everywhere(&response);	
-
-					
-
-				// }
-				// else if (msg_class == GRID_CLASS_CONFIGURATION_code && msg_instr == GRID_INSTR_EXECUTE_code){
-
-                //     if (!position_is_local){
-                //         // disable hid action automatically
-                //         grid_keyboard_state.isenabled = 0;             
-                //         //grid_debug_print_text("Disabling KB");
-
-                //         struct grid_msg response;
-
-                //         grid_msg_init(&response);
-                //         grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
-
-                //         uint8_t response_payload[10] = {0};
-                //         sprintf(response_payload, GRID_CLASS_HIDKEYSTATUS_frame);
-
-                //         grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
-
-                //         grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, grid_keyboard_state.isenabled);
-
-                //         grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-
-
-                //         grid_msg_packet_close(&response);
-                //         grid_msg_packet_send_everywhere(&response);
-
-                //         // keyboard disabling done                    
-                //     }
-                // }
-
-
 				else if (msg_class == GRID_CLASS_CONFIG_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
 					
 					
@@ -1846,10 +1655,17 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
                         grid_keyboard_state.isenabled = 0;             
                         //grid_debug_print_text("Disabling KB");
 
-						// uint8_t banknumber		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_BANKNUMBER_offset]		, GRID_CLASS_CONFIGURATION_BANKNUMBER_length	, &error_flag);
-						// uint8_t elementnumber	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset]	, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length	, &error_flag);
-						// uint8_t eventtype		= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_CONFIGURATION_EVENTTYPE_offset]		, GRID_CLASS_CONFIGURATION_EVENTTYPE_length		, &error_flag);
-					
+						uint8_t vmajor = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
+						uint8_t vminor = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, NULL);
+						uint8_t vpatch = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, NULL);
+									
+						if (vmajor == GRID_PROTOCOL_VERSION_MAJOR && vminor == GRID_PROTOCOL_VERSION_MINOR && vpatch == GRID_PROTOCOL_VERSION_PATCH){
+							// version ok	
+						}
+						else{
+							printf("error.buf.config version mismatch\r\n");
+						}
+
 						uint8_t pagenumber = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
 						uint8_t elementnumber = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
 						uint8_t eventtype = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
