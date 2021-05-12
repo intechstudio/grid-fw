@@ -589,6 +589,12 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 		grid_msg_body_append_text(&message, payload, payload_length);
 
 		grid_msg_text_set_parameter(&message, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+		
+		
+		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
+		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
+		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
+				
 		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, page);
 		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, element);
 		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type);
