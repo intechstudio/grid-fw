@@ -453,58 +453,11 @@ static int l_led_default_red(lua_State* L) {
 
         int32_t var = grid_sys_state.bank_activebank_color_r;
         lua_pushinteger(L, var);
-        printf("GET RED: %d\r\n", var);
     }
     else{
 
         int32_t var =  param[0];
         grid_sys_state.bank_activebank_color_r = var;
-        printf("SET RED: %d\r\n", var);
-    }
-    
-    return 1;
-}
-
-static int l_led_default_blue(lua_State* L) {
-
-    int nargs = lua_gettop(L);
-
-    if (nargs!=0 && nargs!=1){
-        // error
-        strcat(grid_lua_state.stde, "#LED.invalidParams");
-        return 0;
-    }
-
-    uint8_t param[1] = {0};
-
-    uint8_t isgetter = 0;
-
-    for (int i=1; i <= nargs; ++i) {
-
-        if (lua_isinteger(L, i)){
-            
-        }
-        else if (lua_isnil(L, i)){
-            // printf(" %d : NIL ", i);
-            if (i==1){
-                isgetter = 1;
-            }
-        }
-
-        param[i-1] = lua_tointeger(L, i);
-    }
-
-
-    if (isgetter){
-
-        int32_t var = grid_sys_state.bank_activebank_color_b;
-        lua_pushinteger(L, var);
-
-    }
-    else{
-        
-        int32_t var =  param[0];
-        grid_sys_state.bank_activebank_color_b = var;
     }
     
     return 1;
@@ -521,12 +474,12 @@ static int l_led_default_green(lua_State* L) {
 
     uint8_t param[1] = {0};
 
-    uint8_t isgetter = 0;
+    uint8_t isgetter = 1;
 
     for (int i=1; i <= nargs; ++i) {
 
         if (lua_isinteger(L, i)){
-            
+            isgetter = 0;
         }
         else if (lua_isnil(L, i)){
             // printf(" %d : NIL ", i);
@@ -543,12 +496,54 @@ static int l_led_default_green(lua_State* L) {
 
         int32_t var = grid_sys_state.bank_activebank_color_g;
         lua_pushinteger(L, var);
-
     }
     else{
-        
+
         int32_t var =  param[0];
         grid_sys_state.bank_activebank_color_g = var;
+    }
+    
+    return 1;
+}
+static int l_led_default_blue(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0 && nargs!=1){
+        // error
+        strcat(grid_lua_state.stde, "#LED.invalidParams");
+        return 0;
+    }
+
+    uint8_t param[1] = {0};
+
+    uint8_t isgetter = 1;
+
+    for (int i=1; i <= nargs; ++i) {
+
+        if (lua_isinteger(L, i)){
+            isgetter = 0;
+        }
+        else if (lua_isnil(L, i)){
+            // printf(" %d : NIL ", i);
+            if (i==1){
+                isgetter = 1;
+            }
+        }
+
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+
+    if (isgetter){
+
+        int32_t var = grid_sys_state.bank_activebank_color_b;
+        lua_pushinteger(L, var);
+    }
+    else{
+
+        int32_t var =  param[0];
+        grid_sys_state.bank_activebank_color_b = var;
     }
     
     return 1;

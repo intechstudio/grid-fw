@@ -995,6 +995,8 @@ int main(void)
 
 		    //grid_lua_dostring(&grid_lua_state, "ele[0].ec()");
 
+		    //grid_lua_dostring(&grid_lua_state, "print(glr(), glg(), glb())");
+
 		
 			//grid_lua_dostring(&grid_lua_state, grid_ui_state.element_list[0].event_list[2].action_call);
 

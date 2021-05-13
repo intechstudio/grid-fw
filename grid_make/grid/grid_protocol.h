@@ -710,7 +710,7 @@ enum grid_ui_event_t
 
 
 
-#define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@glc]]glc(this.ind(), 1, 0, 30, 200) --[[@glc]]glc(this.ind(), 2, 0, 30, 200) ?>"
+#define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) --[[@glc]]glc(this.ind(), 2, glr(), glg(), glb()) ?>"
 
 
 
