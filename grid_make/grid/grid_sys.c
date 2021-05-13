@@ -83,7 +83,7 @@ void grid_debug_print_text(uint8_t* debug_string){
 	sprintf(&payload[offset], GRID_CLASS_DEBUGTEXT_frame_end);
 	offset += strlen(&payload[offset]);	
 	
-	grid_msg_body_append_text(&message, payload, offset);
+	grid_msg_body_append_text(&message, payload);
 	grid_msg_packet_close(&message);
 	
 	grid_msg_packet_send_everywhere(&message);

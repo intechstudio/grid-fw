@@ -116,8 +116,9 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 						// IMPLEMENT STEP TOGGLE HERE
 						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 127;
 					}
-					
-					grid_ui_smart_trigger(&grid_ui_state, i, GRID_UI_EVENT_BC);
+						
+					struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_BC);
+					grid_ui_event_trigger(eve);	
 		
 				}
 				else{  // Button Release
@@ -131,8 +132,9 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 						// IMPLEMENT STEP TOGGLE HERE
 						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 0;
 					}
-					
-					grid_ui_smart_trigger(&grid_ui_state, i, GRID_UI_EVENT_BC);
+								
+					struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_BC);
+					grid_ui_event_trigger(eve);	
 					
 				}
 			
@@ -181,9 +183,9 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 				}	
 				
 				template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_value;
-
-				grid_ui_smart_trigger(&grid_ui_state, i, GRID_UI_EVENT_EC);				
-							
+		
+				struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_EC);
+				grid_ui_event_trigger(eve);	
 			
 				
 			}

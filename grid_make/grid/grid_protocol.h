@@ -290,6 +290,21 @@
 
 
 
+
+
+#define GRID_LUA_FNC_G_LED_RED_human 	"led_default_red"
+#define GRID_LUA_FNC_G_LED_RED_fnptr 	l_led_default_red
+#define GRID_LUA_FNC_G_LED_RED_short 	"glr"
+
+#define GRID_LUA_FNC_G_LED_GRE_human 	"led_default_green"
+#define GRID_LUA_FNC_G_LED_GRE_fnptr 	l_led_default_green
+#define GRID_LUA_FNC_G_LED_GRE_short 	"glg"
+
+#define GRID_LUA_FNC_G_LED_BLU_human 	"led_default_blue"
+#define GRID_LUA_FNC_G_LED_BLU_fnptr 	l_led_default_blue
+#define GRID_LUA_FNC_G_LED_BLU_short 	"glb"
+
+
 #define GRID_LUA_FNC_G_LED_PHASE_short 	"glp"
 #define GRID_LUA_FNC_G_LED_PHASE_human 	"led_value"
 #define GRID_LUA_FNC_G_LED_PHASE_fnptr 	l_grid_led_set_phase
@@ -448,6 +463,9 @@ stored config date
 #define GRID_LUA_FNC_E_ENCODER_ELAPSED_short "eel"
 #define GRID_LUA_FNC_E_ENCODER_ELAPSED_human "encoder_elapsed_time"
 
+
+#define GRID_LUA_FNC_E_ACTION_INIT_short "init"
+#define GRID_LUA_FNC_E_ACTION_INIT_human "init"
 
 #define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short "ec"
 #define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_human "encoder_change"
@@ -668,26 +686,6 @@ enum grid_ui_event_t
 #define GRID_EVENTSTRING_HEARTBEAT "\x02" \
 								   "050e<?expr p(Z0) ?>000c00\x03"
 
-#define GRID_EVENTSTRING_AC "\x02" \
-								"050e<?expr p(Z0) ?><?expr p(T0) ?>"GRID_EVENT_AC"<?expr p(T2) ?>\x03"
-
-#define GRID_EVENTSTRING_BC "\x02" \
-							"050e<?expr p(Z0) ?><?expr p(T0) ?>"GRID_EVENT_BC"<?expr p(T5) ?>\x03"
-
-#define GRID_EVENTSTRING_EC "\x02" \
-							"050e<?expr p(Z0) ?><?expr p(T0) ?>"GRID_EVENT_EC"<?expr p(T5) ?>\x03"
-
-#define GRID_EVENTSTRING_DP_ENC "\x02" \
-								"050e<?expr p(Z0) ?><?expr p(T0) ?>04<?expr p(T2) ?>\x03"
-#define GRID_EVENTSTRING_DR_ENC "\x02" \
-								"050e<?expr p(Z0) ?><?expr p(T0) ?>05<?expr p(T2) ?>\x03"
-
-#define GRID_EVENTSTRING_INIT_POT "\x02" \
-								  "050e<?expr p(Z0) ?><?expr p(T0) ?>0000\x03"
-#define GRID_EVENTSTRING_INIT_BUT "\x02" \
-								  "050e<?expr p(Z0) ?><?expr p(T0) ?>0000\x03"
-#define GRID_EVENTSTRING_INIT_ENC "\x02" \
-								  "050e<?expr p(Z0) ?><?expr p(T0) ?>0000\x03"
 
 #define GRID_EVENTSTRING_MAPMODE_PRESS "\x02" \
 									   "050e<?expr p(Z0) ?>0008<?expr p(Z4) ?>\x03"
@@ -699,15 +697,22 @@ enum grid_ui_event_t
 #define GRID_EVENTSTRING_CFG_REQUEST "\x02" \
 									 "050e<?expr p(Z0) ?>000b<?expr p(Z4) ?>\x03"
 
+
 // DEFAULT ACTION:                     FIRST MIDI then LED_SET_PHASE
 
 #define GRID_ACTIONSTRING_INIT_POT "\x02" \
 								   "041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
 #define GRID_ACTIONSTRING_INIT_BUT "\x02" \
 								   "041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
-#define GRID_ACTIONSTRING_INIT_ENC "<\x02"                                                                      \
+//#define GRID_ACTIONSTRING_INIT_ENC "<\x02"                                                                      \
 								   "041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03\x02" \
 								   "041e<?expr p(T0) ?>02<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
+
+
+
+#define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@glc]]glc(this.ind(), 1, 0, 30, 200) --[[@glc]]glc(this.ind(), 2, 0, 30, 200) ?>"
+
+
 
 #define GRID_ACTIONSTRING_AC "<?lua --[[@gms]]gms(0, 176, this.ind(), this.pva()) --[[@glp]]glp(this.ind(), 1, this.pva()) ?>"
 #define GRID_ACTIONSTRING_BC "<?lua --[[@gms]]gms(0, 144, this.ind(), this.bva()) --[[@glp]]glp(this.ind(), 1, this.bva()) ?>"

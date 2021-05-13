@@ -37,6 +37,12 @@
         "freertosconfig.h": "c",
         "hal_rtos.h": "c",
         "hpl_flash.h": "c",
-        "grid_nvm.h": "c"
+        "grid_nvm.h": "c",
+        "memory": "c",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "ranges": "cpp"
     }
 }

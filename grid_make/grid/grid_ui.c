@@ -120,7 +120,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		
 		
 		
-		grid_msg_body_append_text(&message, payload, offset);
+		grid_msg_body_append_text(&message, payload);
 		grid_msg_packet_close(&message);
 			
 		uint32_t message_length = grid_msg_packet_get_length(&message);
@@ -471,9 +471,6 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid_ui_event_t event_type){
 	
 
-
-	printf("EV INIT\r\n");
-
 	struct grid_ui_event* eve = &parent->event_list[index];
 	eve->parent = parent;
 	eve->index = index;
@@ -485,39 +482,17 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	eve->type   = event_type;	
 	eve->status = GRID_UI_STATUS_READY;
 
-
-	// Initializing Event String	
-	for (uint32_t i=0; i<GRID_UI_EVENT_STRING_maxlength; i++){
-		eve->event_string[i] = 0;
-	}
-	
-	eve->event_string_length = 0;
 	
 
 	// Initializing Action String
 	for (uint32_t i=0; i<GRID_UI_ACTION_STRING_maxlength; i++){
 		eve->action_string[i] = 0;
 	}		
-	
-	// Initializing Action String
-	for (uint32_t i=0; i<GRID_UI_ACTION_CALL_maxlength; i++){
-		eve->action_call[i] = 0;
-	}	
-	
-	eve->action_string_length = 0;
-	
-
-	uint8_t eventstring[GRID_UI_EVENT_STRING_maxlength] = {0};
-	grid_ui_event_generate_eventstring(eve->parent->type, event_type, eventstring);	
-	grid_ui_event_register_eventstring(eve->parent, event_type, eventstring);
 
 	uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength] = {0};
-	grid_ui_event_generate_actionstring(eve->parent->type, event_type, actionstring);	
-	grid_ui_event_register_actionstring(eve->parent, event_type, actionstring);
+	grid_ui_event_generate_actionstring(eve, actionstring);	
+	grid_ui_event_register_actionstring(eve, actionstring);
 
-	uint8_t callstring[GRID_UI_ACTION_CALL_maxlength] = {0};
-	grid_ui_event_generate_callstring(eve->parent->type, event_type, callstring, eve->parent->index);	
-	grid_ui_event_register_callstring(eve->parent, event_type, callstring);
 
 	eve->cfg_changed_flag = 0; // clear changed flag
 	
@@ -525,12 +500,6 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	eve->cfg_default_flag = 1;
 	eve->cfg_flashempty_flag = 1;
 
-	if (event_type == GRID_UI_EVENT_INIT){
-
-		printf("initevent\r\n");
-
-	}
-	
 }
 
 
@@ -574,19 +543,17 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 	uint32_t offset = 0;
 
 	struct grid_ui_element* ele = &ui->element_list[element];
-	uint8_t event_index = grid_ui_event_find(ele, event_type);
-	struct grid_ui_event* eve = NULL;
 
-	if (event_index != 255){
+	struct grid_ui_event* eve = grid_ui_event_find(ele, event_type);
+
+	if (eve != NULL){
 
 		// Event actually exists
-
-		eve = &ele->event_list[event_index]; 
 
 		sprintf(payload, GRID_CLASS_CONFIG_frame_start);
 		payload_length = strlen(payload);
 
-		grid_msg_body_append_text(&message, payload, payload_length);
+		grid_msg_body_append_text(&message, payload);
 
 		grid_msg_text_set_parameter(&message, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
 		
@@ -602,8 +569,8 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 
 		if (ui->page_activepage == page){
 			// currently active page needs to be sent
-			grid_msg_body_append_text(&message, eve->action_string, eve->action_string_length);
-			grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, eve->action_string_length);
+			grid_msg_body_append_text(&message, eve->action_string);
+			grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(eve->action_string));
 		}		
 		else{
 
@@ -622,7 +589,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 
 				// reset body pointer because cfg in nvm already has the config header
 				message.body_length = 0;
-				grid_msg_body_append_text(&message, buffer, len);
+				grid_msg_body_append_text(&message, buffer);
 
 				grid_msg_text_set_parameter(&message, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
 			
@@ -630,9 +597,11 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 			else{
 				printf("NOT FOUND, Send default!\r\n");
 				uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength] = {0};
-				grid_ui_event_generate_actionstring(eve->parent->type, event_type, actionstring);	
-				grid_msg_body_append_text(&message, actionstring, strlen(actionstring));
-				grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, eve->action_string_length);
+				grid_ui_event_generate_actionstring(eve, actionstring);	
+				//grid_ui_event_register_actionstring(eve, actionstring);	
+
+				grid_msg_body_append_text(&message, actionstring);
+				grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(eve->action_string));
 
 			}
 
@@ -643,7 +612,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 		sprintf(payload, GRID_CLASS_CONFIG_frame_end);
 		payload_length = strlen(payload);
 
-		grid_msg_body_append_text(&message, payload, payload_length);
+		grid_msg_body_append_text(&message, payload);
 
 		printf("CFG: %s\r\n", message.body);
 		grid_msg_packet_close(&message);
@@ -684,9 +653,7 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 					uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
 
 					grid_nvm_toc_generate_actionstring(nvm, entry, temp);
-					
-					//printf("%s \r\n", temp);
-					grid_ui_event_register_actionstring(ele, eve->type, temp);
+					grid_ui_event_register_actionstring(eve, temp);
 					
 					eve->cfg_changed_flag = 0; // clear changed flag
 				}
@@ -697,15 +664,20 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 
 			}
 			else{
-				printf("Page Load: NOT FOUND, Send default!\r\n");
-				grid_ui_event_generate_actionstring(eve->parent->type, eve->type, eve->action_string);
+				printf("Page Load: NOT FOUND, Set default!\r\n");
 
-				eve->action_string_length = strlen(eve->action_string);
+
+				uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
+
+				grid_ui_event_generate_actionstring(eve, temp);
+				grid_ui_event_register_actionstring(eve, temp);
+
 				eve->cfg_changed_flag = 0; // clear changed flag
 
 			}
 
-			grid_ui_smart_trigger_local(ui, ele->index, eve->type);
+
+			grid_ui_event_trigger_local(eve);
 
 		}
 
@@ -899,79 +871,58 @@ uint8_t grid_ui_nvm_clear_event_configuration(struct grid_ui_model* ui, struct g
 }
 
 
-
-void grid_ui_event_register_eventstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* event_string){
-	
-	uint8_t event_index = 255;
-	
-	for(uint8_t i=0; i<ele->event_list_length; i++){
-		if (ele->event_list[i].type == event_type){
-			event_index = i;
-		}
-	}
-	
-	if (event_index == 255){
-		grid_debug_print_text("Event Not Found");
-		return; // EVENT NOT FOUND
-	}
-	
-	struct grid_ui_event* eve = &ele->event_list[event_index];
-
-	strcpy(eve->event_string, event_string);
-
-	eve->event_string_length = strlen(eve->event_string);
-	
-	grid_ui_smart_trigger(ele->parent, ele->index, event_type);
-	
-	
-}
-
-
-
-void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* action_string){
+void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* action_string){
 		
-	uint8_t event_index = 255;
-	
-	for(uint8_t i=0; i<ele->event_list_length; i++){
-		if (ele->event_list[i].type == event_type){
-			event_index = i;
-		}
-	}
-	
-	if (event_index == 255){
-		grid_debug_print_text("Event Not Found");
-		return; // EVENT NOT FOUND
+
+	if (strlen(action_string) == 0){
+
+		printf("NULLSTRING\r\n");
+		return;
+
 	}
 
 
-	struct grid_ui_event* eve = &ele->event_list[event_index];
-
-	strcpy(eve->action_string, action_string);
-	
-	eve->action_string_length = strlen(eve->action_string);
-	
-	ele->event_list[event_index].cfg_changed_flag = 1;
-
-
-	
-	
-	if (event_type == GRID_UI_EVENT_EC){
+	if (eve->type == GRID_UI_EVENT_EC){
 
 		uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
 		action_string[strlen(action_string)-3] = '\0';
-		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (a) local this = ele[%d] %s end", ele->index, ele->index, &action_string[6]);
-		printf("%s \r\n", temp);
+		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+
 		grid_lua_dostring(&grid_lua_state, temp);
-		//printf("ENCODER ACTION: %s\r\n", temp);
+
+		sprintf(eve->action_string, "<?lua ele[%d]."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short"() ?>", eve->parent->index);
+
+
 	}
-	else if (event_type == GRID_UI_EVENT_BC){
+	else if (eve->type == GRID_UI_EVENT_BC){
 
 		uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
 		action_string[strlen(action_string)-3] = '\0';
-		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (a) local this = ele[%d] %s end", ele->index, ele->index, &action_string[6]);
+		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+
 		grid_lua_dostring(&grid_lua_state, temp);
-		//printf("BUTTON ACTION: %s\r\n", temp);
+
+		sprintf(eve->action_string, "<?lua ele[%d]."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short"() ?>", eve->parent->index);
+
 	}
+	else if (eve->type == GRID_UI_EVENT_INIT){
+
+		uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
+		action_string[strlen(action_string)-3] = '\0';
+
+		sprintf(eve->action_string, "<?lua local this = ele[%d] %s ?>", eve->parent->index, &action_string[6]);
+
+	}
+	else{
+
+		sprintf(eve->action_string, action_string);
+		
+		
+		eve->cfg_changed_flag = 1;
+
+	}
+
+	printf("action: %s\r\n", eve->action_string);
 
 	grid_lua_debug_memory_stats(&grid_lua_state, "R.A.S.");
 	lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
@@ -979,90 +930,31 @@ void grid_ui_event_register_actionstring(struct grid_ui_element* ele, enum grid_
 }
 
 
-
-void grid_ui_event_register_callstring(struct grid_ui_element* ele, enum grid_ui_event_t event_type, uint8_t* call_string){
-		
-	uint8_t event_index = 255;
-	
-	for(uint8_t i=0; i<ele->event_list_length; i++){
-		if (ele->event_list[i].type == event_type){
-			event_index = i;
-		}
-	}
-	
-	if (event_index == 255){
-		grid_debug_print_text("Event Not Found");
-		return; // EVENT NOT FOUND
-	}
-
-	struct grid_ui_event* eve = &ele->event_list[event_index];
-
-	strcpy(eve->action_call, call_string);
-	
-	
-	
-}
-
-void grid_ui_event_generate_eventstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring){
-	
-	
-	if (element_type == GRID_UI_ELEMENT_BUTTON){
-
-		switch(event_type){
-			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_EVENTSTRING_INIT_BUT);	break;
-			case GRID_UI_EVENT_BC:		sprintf(targetstring, GRID_EVENTSTRING_BC);			break;
-		}		
-		
-	}
-	else if (element_type== GRID_UI_ELEMENT_POTENTIOMETER){
-		
-		switch(event_type){
-			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_EVENTSTRING_INIT_POT);	break;
-			case GRID_UI_EVENT_AC:		sprintf(targetstring, GRID_EVENTSTRING_AC);			break;
-		}			
-
-		
-	}
-	// else if (element_type == GRID_UI_ELEMENT_ENCODER){
-
-	// 	switch(event_type){
-	// 		case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_EVENTSTRING_INIT_ENC);	break;
-	// 		case GRID_UI_EVENT_EC:		sprintf(targetstring, GRID_EVENTSTRING_EC);			break;
-	// 		case GRID_UI_EVENT_BC:		sprintf(targetstring, GRID_EVENTSTRING_BC);			break;
-	// 	}	
-			
-	// }
-	
-}
-
-
-
-
-void grid_ui_event_generate_actionstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring){
+void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* targetstring){
 	
 
-	if (element_type == GRID_UI_ELEMENT_BUTTON){
+	if (eve->parent->type == GRID_UI_ELEMENT_BUTTON){
 				
-		switch(event_type){
+		switch(eve->type){
 			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;
 			case GRID_UI_EVENT_BC:		sprintf(targetstring, GRID_ACTIONSTRING_BC);			break;
 		}
 		
 	}
-	else if (element_type == GRID_UI_ELEMENT_POTENTIOMETER){
+	else if (eve->parent->type == GRID_UI_ELEMENT_POTENTIOMETER){
 		
-		switch(event_type){
+		switch(eve->type){
 			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;
-			case GRID_UI_EVENT_AC:		sprintf(targetstring, GRID_ACTIONSTRING_AC);		break;
+			case GRID_UI_EVENT_AC:		sprintf(targetstring, GRID_ACTIONSTRING_AC);			break;
 		}
 		
 	}
-	else if (element_type == GRID_UI_ELEMENT_ENCODER){
+	else if (eve->parent->type == GRID_UI_ELEMENT_ENCODER){
 		
-		switch(event_type){
+		switch(eve->type){
 			case GRID_UI_EVENT_INIT:        sprintf(targetstring, GRID_ACTIONSTRING_INIT_ENC);	break;
-			case GRID_UI_EVENT_EC:        	sprintf(targetstring, GRID_ACTIONSTRING_EC);	break;
-			case GRID_UI_EVENT_BC:			sprintf(targetstring, GRID_ACTIONSTRING_BC);			break;
+			case GRID_UI_EVENT_EC:        	sprintf(targetstring, GRID_ACTIONSTRING_EC);		break;
+			case GRID_UI_EVENT_BC:			sprintf(targetstring, GRID_ACTIONSTRING_BC);		break;
 		}
 			
 	}
@@ -1070,125 +962,52 @@ void grid_ui_event_generate_actionstring(enum grid_ui_element_t element_type, en
 	
 }
 
-void grid_ui_event_generate_callstring(enum grid_ui_element_t element_type, enum grid_ui_event_t event_type, uint8_t* targetstring, uint8_t element_number){
 
 
-	if (element_type == GRID_UI_ELEMENT_BUTTON){
-				
-		switch(event_type){
-			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;
-			case GRID_UI_EVENT_BC:		sprintf(targetstring, GRID_ACTIONSTRING_BC);			break;
-		}
-		
-	}
-	else if (element_type == GRID_UI_ELEMENT_POTENTIOMETER){
-		
-		switch(event_type){
-			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;
-			case GRID_UI_EVENT_AC:		sprintf(targetstring, GRID_ACTIONSTRING_AC);		break;
-		}
-		
-	}
-	else if (element_type == GRID_UI_ELEMENT_ENCODER){
-		
-		switch(event_type){
-			case GRID_UI_EVENT_INIT:        sprintf(targetstring, GRID_ACTIONSTRING_INIT_ENC);	break;
-			case GRID_UI_EVENT_EC:        	sprintf(targetstring, "ele[%d]."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short"()", element_number);	break;
-			case GRID_UI_EVENT_BC:			sprintf(targetstring, "ele[%d]."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short"()", element_number);	break;
-		}
-			
-	}
-	
-	printf("TARGETSTRING: %s \r\n", targetstring);
-	
-}
-
-
-uint8_t grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type){
+struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type){
 
 	uint8_t event_index = 255;
 		
 	for(uint8_t i=0; i<ele->event_list_length; i++){
 		if (ele->event_list[i].type == event_type){
-			event_index = i;
+			return &ele->event_list[i];
 		}
 	}
 
 		
 		
-	return event_index;
+	return NULL;
 	
 }
 
-void grid_ui_event_trigger(struct grid_ui_element* ele, uint8_t event_index){
+void grid_ui_event_trigger(struct grid_ui_event* eve){
 
-	if (event_index == 255){
-		
-		return;
-	}
-	
-	struct grid_ui_event* eve = &ele->event_list[event_index];
+	if (eve != NULL){
 
-
-		
-	eve->trigger = GRID_UI_STATUS_TRIGGERED;
-
-}
-
-void grid_ui_event_trigger_local(struct grid_ui_element* ele, uint8_t event_index){
-
-	if (event_index == 255){
-		
-		return;
-	}
-	
-	struct grid_ui_event* eve = &ele->event_list[event_index];
-
-
-		
-	eve->trigger = GRID_UI_STATUS_TRIGGERED_LOCAL;
-
-}
-
-
-void grid_ui_smart_trigger(struct grid_ui_model* mod, uint8_t element, enum grid_ui_event_t event){
-
-	uint8_t event_index = grid_ui_event_find(&mod->element_list[element], event);
-	
-	if (event_index == 255){
-		
-		return;
-	}
-	
-	grid_ui_event_trigger(&mod->element_list[element], event_index);
-
-}
-
-
-void grid_ui_smart_trigger_local(struct grid_ui_model* mod, uint8_t element, enum grid_ui_event_t event){
-
-	uint8_t event_index = grid_ui_event_find(&mod->element_list[element], event);
-	
-	if (event_index == 255){
-		
-		return;
+		eve->trigger = GRID_UI_STATUS_TRIGGERED;
 	}
 
-    grid_ui_event_trigger_local(&mod->element_list[element], event_index);
-    
 }
 
+void grid_ui_event_trigger_local(struct grid_ui_event* eve){
 
+	if (eve != NULL){
+
+		eve->trigger = GRID_UI_STATUS_TRIGGERED_LOCAL;
+	}
+
+}
 void grid_ui_event_reset(struct grid_ui_event* eve){
-	
-	eve->trigger = GRID_UI_STATUS_READY;
+
+	if (eve != NULL){
+		eve->trigger = GRID_UI_STATUS_READY;
+	}
 }
 
 uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve){
 		
-		
-	if (eve->trigger == GRID_UI_STATUS_TRIGGERED){
-		
+	
+	if (eve != NULL && eve->trigger == GRID_UI_STATUS_TRIGGERED){
 					
 		return 1;
 				
@@ -1197,15 +1016,14 @@ uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve){
 		
 		return 0;
 	}
-			
+				
 }
 
 
 uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve){
 		
 		
-	if (eve->trigger == GRID_UI_STATUS_TRIGGERED_LOCAL){
-		
+	if (eve != NULL && eve->trigger == GRID_UI_STATUS_TRIGGERED_LOCAL){
 					
 		return 1;
 				
@@ -1245,12 +1063,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 	uint32_t i=0;
 	
 
-
-	// copy action string
-	for(true; i<eve->action_string_length; i++){
-		temp[i] = eve->action_string[i];
-
-	}
+	strcpy(temp, eve->action_string);
 
 	// new php style implementation
 	uint32_t code_start = 0;
@@ -1263,8 +1076,11 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 	uint32_t total_substituted_length = 0;
 
 
+	printf("ACTION: %s\r\n", eve->action_string);
 
-	for(i=0; i<eve->action_string_length ; i++){
+	uint32_t length = strlen(eve->action_string);
+
+	for(i=0; i<length ; i++){
 
 		target_string[i-total_substituted_length] = temp[i];
 
@@ -1301,45 +1117,13 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				cycles[0] = grid_d51_dwt_cycles_read();
 
-				// // element index
-				// uint8_t load_script[100] = {0};
-				// sprintf(load_script, "grid_load_template_variables(%d)", eve->parent->index);
-				// grid_lua_dostring(&grid_lua_state, load_script);
-
-				// uint8_t str_to_do[100] = {0};
-				// sprintf(str_to_do, "this = "GRID_LUA_KW_ELEMENT_short"[%d]", eve->parent->index);    
-				// grid_lua_dostring(&grid_lua_state, str_to_do);
 							
 				cycles[1] = grid_d51_dwt_cycles_read();
 
-				if (strlen(eve->action_call)){
-
-					//printf("Actioncall: %s\r\n", eve->action_call);
-					grid_lua_dostring(&grid_lua_state, eve->action_call);
-
-				}
-				else{
-					printf("error: lua but no action_call \r\n");
-					grid_lua_dostring(&grid_lua_state, &temp[code_start+6]); // +6 is length of "<?lua "
+				printf("Render Actionstring: %s\r\n", &temp[code_start+6]);
+				grid_lua_dostring(&grid_lua_state, &temp[code_start+6]); // +6 is length of "<?lua "
 					
-				}
-
-
-
-
-
-
-
 				cycles[2] = grid_d51_dwt_cycles_read();
-				
-				// uint8_t store_script[100] = {0};
-				// sprintf(store_script, "grid_store_template_variables(%d)", eve->parent->index);
-				// grid_lua_dostring(&grid_lua_state, store_script);
-
-
-
-
-
 
 				uint32_t code_stdo_length = strlen(grid_lua_state.stdo);
 
@@ -1434,8 +1218,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 		eve->parent->event_clear_cb(eve);
 	}
 	
-	
-	return eve->action_string_length - total_substituted_length;
+	return length - total_substituted_length;
 		
 }
 

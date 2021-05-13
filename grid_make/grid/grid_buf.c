@@ -1261,9 +1261,11 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 									
 						if (grid_sys_get_bank_valid(&grid_sys_state) == 0){
 							
+							struct grid_ui_event* eve = NULL;
+
+							eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT);
+							grid_ui_event_trigger_local(eve);	
 							
-							
-							grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_HEARTBEAT);
 
 						}
 							
@@ -1277,8 +1279,10 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						
 						if (grid_sys_get_bank_valid(&grid_sys_state) != 0){
 							
-							grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_CFG_RESPONSE);
-							
+							struct grid_ui_event* eve = NULL;
+
+							eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_RESPONSE);
+							grid_ui_event_trigger_local(eve);	
 						}						
 						
 					}
@@ -1465,7 +1469,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							sprintf(&response_payload[len], GRID_CLASS_EVENTPREVIEW_frame_end);
 							len += strlen(&response_payload[len]);
 
-							grid_msg_body_append_text(&response, response_payload, len);
+							grid_msg_body_append_text(&response, response_payload);
 								
 
 							grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
@@ -1494,7 +1498,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 							len += strlen(&response_payload[len]);
 
-							grid_msg_body_append_text(&response, response_payload, len);
+							grid_msg_body_append_text(&response, response_payload);
 								
 							grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
 							grid_msg_text_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
@@ -1558,7 +1562,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					uint8_t response_payload[50] = {0};
 					snprintf(response_payload, 49, GRID_CLASS_SERIALNUMBER_frame);
 
-					grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+					grid_msg_body_append_text(&response, response_payload);
 						
 					grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);					
 											
@@ -1585,7 +1589,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					uint8_t response_payload[50] = {0};
 					snprintf(response_payload, 49, GRID_CLASS_UPTIME_frame);
 
-					grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+					grid_msg_body_append_text(&response, response_payload);
 				
 					grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
 				
@@ -1614,7 +1618,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					uint8_t response_payload[50] = {0};
 					snprintf(response_payload, 49, GRID_CLASS_RESETCAUSE_frame);
 
-					grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+					grid_msg_body_append_text(&response, response_payload);
 					
 					grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
 					
@@ -1695,12 +1699,14 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 									//register actionstring
 									struct grid_ui_event* eve = &grid_ui_state.element_list[elementnumber].event_list[event_index];
 									
-									grid_ui_event_register_actionstring(eve->parent, eve->type, action);
+									grid_ui_event_register_actionstring(eve, action);
 									printf("Registered\r\n");
 									//acknowledge
 									ack = 1;
 
-									grid_ui_smart_trigger_local(&grid_ui_state, elementnumber, eve->type);
+
+									grid_ui_event_trigger_local(eve);	
+
 
 								}
 
@@ -1727,7 +1733,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						uint8_t response_payload[10] = {0};
 						sprintf(response_payload, GRID_CLASS_CONFIG_frame);
 						
-						grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+						grid_msg_body_append_text(&response, response_payload);
 						
 						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, pagenumber);
 						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, elementnumber);
@@ -1771,7 +1777,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
                     uint8_t response_payload[10] = {0};
                     sprintf(response_payload, GRID_CLASS_HIDKEYSTATUS_frame);
 
-                    grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+                    grid_msg_body_append_text(&response, response_payload);
 
                     grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, grid_keyboard_state.isenabled);
 

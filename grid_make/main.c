@@ -532,14 +532,17 @@ void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 			
 		if (grid_sys_state.mapmodestate == 0){ // RELEASE
 			
-			grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_MAPMODE_RELEASE);
+			struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE);
+			grid_ui_event_trigger(eve);
+
 			heartbeat_enable = !heartbeat_enable;
 
 				
 		}
 		else{ // PRESS
-			
-			grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_MAPMODE_PRESS);		
+
+			struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_PRESS);
+			grid_ui_event_trigger(eve);		
 												 
 		}
 
@@ -550,9 +553,10 @@ void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 
 void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 {
-	if (heartbeat_enable || 1){
+	if (heartbeat_enable || 1){	
 
-		grid_ui_smart_trigger(&grid_core_state, 0, GRID_UI_EVENT_HEARTBEAT);
+		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT);
+		grid_ui_event_trigger(eve);		
 
 	}
 }
@@ -969,7 +973,7 @@ int main(void)
 			grid_msg_init(&response);
 			grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
-			grid_msg_body_append_text(&response, reportbuffer, length);
+			grid_msg_body_append_text(&response, reportbuffer);
 				
 
 			grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													

@@ -150,9 +150,9 @@ void grid_module_common_init(void){
 		grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length  , GRID_PROTOCOL_VERSION_PATCH, &error);
 	
 		payload_length = strlen(payload_template);
-	
-		grid_ui_event_register_eventstring(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT, GRID_EVENTSTRING_HEARTBEAT);
-		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT, payload_template);		
+
+		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT);
+		grid_ui_event_register_actionstring(eve, payload_template);		
 		
 	}
 
@@ -164,8 +164,8 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_MAPMODE_PRESS GRID_ACTIONSTRING_MAPMODE_PRESS);
 		payload_length = strlen(payload_template);
 	
-		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_PRESS, payload_template);			
-		
+		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_PRESS);
+		grid_ui_event_register_actionstring(eve, payload_template);		
 	}	
 
 	if (1){ // INIT CORE_STATE->mapmode release
@@ -176,8 +176,8 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_MAPMODE_RELEASE GRID_ACTIONSTRING_MAPMODE_RELEASE);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE, payload_template);
-		
+		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE);
+		grid_ui_event_register_actionstring(eve, payload_template);		
 	}	
 	
 	if (1){ // INIT CORE_STATE->cfgresponse
@@ -188,8 +188,8 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_CFG_RESPONES GRID_ACTIONSTRING_CFG_RESPONSE);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_RESPONSE, payload_template);
-		
+		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_RESPONSE);
+		grid_ui_event_register_actionstring(eve, payload_template);		
 	}	
 	
 	if (1){ // INIT CORE_STATE->cfgrequest
@@ -200,8 +200,8 @@ void grid_module_common_init(void){
 		sprintf(payload_template, GRID_EVENTSTRING_CFG_REQUEST GRID_ACTIONSTRING_CFG_REQUEST);
 		payload_length = strlen(payload_template);
 		
-		grid_ui_event_register_actionstring(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_REQUEST, payload_template);
-		
+		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_REQUEST);
+		grid_ui_event_register_actionstring(eve, payload_template);		
 	}	
 	
 	
@@ -324,10 +324,14 @@ void grid_element_button_page_change_cb(uint8_t page_old, uint8_t page_new){
 
 	
 	for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
-		
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_INIT);
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_BC);
-								
+
+		struct grid_ui_event* eve = NULL;
+
+		eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_INIT);
+		grid_ui_event_trigger_local(eve);	
+
+		eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_BC);
+		grid_ui_event_trigger_local(eve);	
 	}
 }
 
@@ -354,10 +358,14 @@ void grid_element_encoder_page_change_cb(uint8_t page_old, uint8_t page_new){
 			
 	for (uint8_t i = 0; i<16; i++)
 	{
-
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_INIT);  
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_EC);
 		
+		struct grid_ui_event* eve = NULL;
+
+		eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_INIT);
+		grid_ui_event_trigger_local(eve);	
+
+		eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_EC);
+		grid_ui_event_trigger_local(eve);	
 	}
 
 }
@@ -376,8 +384,13 @@ void grid_element_potmeter_page_change_cb(uint8_t page_old, uint8_t page_new){
 	
 	for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
 		
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_INIT);
-		grid_ui_smart_trigger_local(&grid_ui_state, i, GRID_UI_EVENT_AC);
+		struct grid_ui_event* eve = NULL;
+
+		eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_INIT);
+		grid_ui_event_trigger_local(eve);	
+
+		eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_AC);
+		grid_ui_event_trigger_local(eve);	
 								
 	}
 }

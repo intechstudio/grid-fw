@@ -122,8 +122,9 @@ uint32_t grid_msg_footer_get_length(struct grid_msg* msg){
 }
 
 
-void	grid_msg_body_append_text(struct grid_msg* msg, uint8_t* str, uint32_t len){
+void	grid_msg_body_append_text(struct grid_msg* msg, uint8_t* str){
 
+	uint32_t len = strlen(str);
 	
 	for(uint32_t i=0; i<len; i++){
 		

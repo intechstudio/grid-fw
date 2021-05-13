@@ -251,7 +251,7 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
             uint8_t response_payload[10] = {0};
             sprintf(response_payload, GRID_CLASS_HIDKEYSTATUS_frame);
 
-            grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+            grid_msg_body_append_text(&response, response_payload);
 
             grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, kb->isenabled);
 
