@@ -670,6 +670,71 @@ static int l_grid_rotation(lua_State* L) {
     return 1;
 }
 
+static int l_grid_page_next(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+           
+    lua_pushinteger(L, grid_sys_get_bank_next(&grid_sys_state));
+    
+    return 1;
+}
+
+static int l_grid_page_prev(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+           
+    lua_pushinteger(L, grid_sys_get_bank_next(&grid_sys_state));
+    
+    return 1;
+}
+
+static int l_grid_page_load(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=1){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[1] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    uint8_t page = param[0];
+   
+
+
+    uint8_t response[20] = {0};
+
+    sprintf(response, GRID_CLASS_PAGEACTIVE_frame);
+
+    grid_msg_set_parameter(response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+
+    grid_msg_set_parameter(response, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, page, NULL);
+
+    printf("PAGE LOAD: %d\r\n", page);  
+    strcat(grid_lua_state.stdo, response);
+
+    return 1;
+}
+
+
 static const struct luaL_Reg printlib [] = {
     {"print", l_my_print},
     {"grid_send", l_grid_send},
@@ -696,6 +761,10 @@ static const struct luaL_Reg printlib [] = {
     {GRID_LUA_FNC_G_MODULE_POSX_short,    GRID_LUA_FNC_G_MODULE_POSX_fnptr},
     {GRID_LUA_FNC_G_MODULE_POSY_short,    GRID_LUA_FNC_G_MODULE_POSY_fnptr},
     {GRID_LUA_FNC_G_MODULE_ROT_short,    GRID_LUA_FNC_G_MODULE_ROT_fnptr},
+
+    {GRID_LUA_FNC_G_PAGE_NEXT_short,    GRID_LUA_FNC_G_PAGE_NEXT_fnptr},
+    {GRID_LUA_FNC_G_PAGE_PREV_short,    GRID_LUA_FNC_G_PAGE_PREV_fnptr},
+    {GRID_LUA_FNC_G_PAGE_LOAD_short,    GRID_LUA_FNC_G_PAGE_LOAD_fnptr},
 
     {GRID_LUA_FNC_G_HWCFG_short,    GRID_LUA_FNC_G_HWCFG_fnptr},
 

@@ -198,37 +198,14 @@
 #define GRID_CLASS_DEBUGTASK_OUTPUT_length 0
 
 
-// BANK
-#define GRID_CLASS_BANKACTIVE_code 0x030
-#define GRID_CLASS_BANKACTIVE_format "%c%03x%01x%02x%c", GRID_CONST_STX, GRID_CLASS_BANKACTIVE_code, instruction, banknumber, GRID_CONST_ETX
-#define GRID_CLASS_BANKACTIVE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_BANKACTIVE_code, GRID_CONST_ETX
+// PAGE
+#define GRID_CLASS_PAGEACTIVE_code 0x030
+#define GRID_CLASS_PAGEACTIVE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGEACTIVE_code, GRID_CONST_ETX
 
-#define GRID_CLASS_BANKACTIVE_BANKNUMBER_offset 5
-#define GRID_CLASS_BANKACTIVE_BANKNUMBER_length 2
+#define GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset 5
+#define GRID_CLASS_PAGEACTIVE_PAGENUMBER_length 2
 
-#define GRID_CLASS_BANKENABLED_code 0x031
-#define GRID_CLASS_BANKENABLED_frame "%c%03x_....%c", GRID_CONST_STX, GRID_CLASS_BANKENABLED_code, GRID_CONST_ETX
 
-#define GRID_CLASS_BANKENABLED_BANKNUMBER_offset 5
-#define GRID_CLASS_BANKENABLED_BANKNUMBER_length 2
-
-#define GRID_CLASS_BANKENABLED_ISENABLED_offset 7
-#define GRID_CLASS_BANKENABLED_ISENABLED_length 2
-
-#define GRID_CLASS_BANKCOLOR_code 0x032
-#define GRID_CLASS_BANKCOLOR_frame "%c%03x_........%c", GRID_CONST_STX, GRID_CLASS_BANKCOLOR_code, GRID_CONST_ETX
-
-#define GRID_CLASS_BANKCOLOR_NUM_offset 5
-#define GRID_CLASS_BANKCOLOR_NUM_length 2
-
-#define GRID_CLASS_BANKCOLOR_RED_offset 7
-#define GRID_CLASS_BANKCOLOR_RED_length 2
-
-#define GRID_CLASS_BANKCOLOR_GRE_offset 9
-#define GRID_CLASS_BANKCOLOR_GRE_length 2
-
-#define GRID_CLASS_BANKCOLOR_BLU_offset 11
-#define GRID_CLASS_BANKCOLOR_BLU_length 2
 
 // LED SET PHASE
 
@@ -341,41 +318,54 @@
 #define GRID_LUA_FNC_G_MIDI_SEND_human 	"midi_send"
 #define GRID_LUA_FNC_G_MIDI_SEND_fnptr 	l_grid_midi_send
 
-#define GRID_LUA_FNC_G_RANDOM_short 	"rnd"
+#define GRID_LUA_FNC_G_RANDOM_short 	"grnd"
 #define GRID_LUA_FNC_G_RANDOM_human 	"random"
 #define GRID_LUA_FNC_G_RANDOM_fnptr 	l_grid_random
 
-#define GRID_LUA_FNC_G_HWCFG_short 		"hwcfg"
+#define GRID_LUA_FNC_G_HWCFG_short 		"ghwcfg"
 #define GRID_LUA_FNC_G_HWCFG_human 		"hardware_configuration"
 #define GRID_LUA_FNC_G_HWCFG_fnptr 		l_grid_hwcfg
 
-#define GRID_LUA_FNC_G_VERSION_MAJOR_short 		"vmaj"
+#define GRID_LUA_FNC_G_VERSION_MAJOR_short 		"gvmaj"
 #define GRID_LUA_FNC_G_VERSION_MAJOR_human 		"version_major"
 #define GRID_LUA_FNC_G_VERSION_MAJOR_fnptr 		l_grid_version_major
 
-#define GRID_LUA_FNC_G_VERSION_MINOR_short 		"vmin"
+#define GRID_LUA_FNC_G_VERSION_MINOR_short 		"gvmin"
 #define GRID_LUA_FNC_G_VERSION_MINOR_human 		"version_minor"
 #define GRID_LUA_FNC_G_VERSION_MINOR_fnptr 		l_grid_version_minor
 
-#define GRID_LUA_FNC_G_VERSION_PATCH_short 		"vpat"
+#define GRID_LUA_FNC_G_VERSION_PATCH_short 		"gvpat"
 #define GRID_LUA_FNC_G_VERSION_PATCH_human 		"version_patch"
 #define GRID_LUA_FNC_G_VERSION_PATCH_fnptr 		l_grid_version_patch
 
-#define GRID_LUA_FNC_G_MODULE_POSX_short 		"mx"
+#define GRID_LUA_FNC_G_MODULE_POSX_short 		"gmx"
 #define GRID_LUA_FNC_G_MODULE_POSX_human 		"module_position_x"
 #define GRID_LUA_FNC_G_MODULE_POSX_fnptr 		l_grid_position_x
 
-#define GRID_LUA_FNC_G_MODULE_POSY_short 		"my"
+#define GRID_LUA_FNC_G_MODULE_POSY_short 		"gmy"
 #define GRID_LUA_FNC_G_MODULE_POSY_human 		"module_position_y"
 #define GRID_LUA_FNC_G_MODULE_POSY_fnptr 		l_grid_position_y
 
-#define GRID_LUA_FNC_G_MODULE_ROT_short 		"mr"
+#define GRID_LUA_FNC_G_MODULE_ROT_short 		"gmr"
 #define GRID_LUA_FNC_G_MODULE_ROT_human 		"module_rotation"
 #define GRID_LUA_FNC_G_MODULE_ROT_fnptr 		l_grid_rotation
 
-#define GRID_LUA_INIT_SCRIPT_1 "print('Hardware: ', hwcfg(), ' Version: ', vmaj(), vmin(), vpat())"
-#define GRID_LUA_INIT_SCRIPT_2 "print('Random: ', rnd(), rnd(), rnd(), rnd())"
-#define GRID_LUA_INIT_SCRIPT_3 "print('X, Y, Rot: ', mx(), my(), mr())"
+
+#define GRID_LUA_FNC_G_PAGE_NEXT_short 			"gpn"
+#define GRID_LUA_FNC_G_PAGE_NEXT_human 			"page_next"
+#define GRID_LUA_FNC_G_PAGE_NEXT_fnptr 			l_grid_page_next
+
+#define GRID_LUA_FNC_G_PAGE_PREV_short 			"gpp"
+#define GRID_LUA_FNC_G_PAGE_PREV_human 			"page_prev"
+#define GRID_LUA_FNC_G_PAGE_PREV_fnptr 			l_grid_page_prev
+
+#define GRID_LUA_FNC_G_PAGE_LOAD_short 			"gpl"
+#define GRID_LUA_FNC_G_PAGE_LOAD_human 			"page_load"
+#define GRID_LUA_FNC_G_PAGE_LOAD_fnptr 			l_grid_page_load
+
+#define GRID_LUA_INIT_SCRIPT_1 "print('Hardware: ', ghwcfg(), ' Version: ', gvmaj(), gvmin(), gvpat())"
+#define GRID_LUA_INIT_SCRIPT_2 "print('Random: ', grnd(), grnd(), grnd(), grnd())"
+#define GRID_LUA_INIT_SCRIPT_3 "print('X, Y, Rot: ', gmx(), gmy(), gmr())"
 
 /*
 
@@ -665,14 +655,8 @@ enum grid_ui_event_t
 	GRID_UI_EVENT_AC,
 	GRID_UI_EVENT_EC,
 	GRID_UI_EVENT_BC,
-	GRID_UI_EVENT_MAPMODE_PRESS,
-	GRID_UI_EVENT_MAPMODE_RELEASE,
+	GRID_UI_EVENT_MAPMODE_CHANGE,
 
-	GRID_UI_EVENT_CFG_RESPONSE,
-	GRID_UI_EVENT_CFG_REQUEST,
-	GRID_UI_EVENT_CFG_EDITOR,
-
-	GRID_UI_EVENT_HEARTBEAT,
 
 };
 
@@ -699,14 +683,8 @@ enum grid_ui_event_t
 #define GRID_ACTIONSTRING_BC "<?lua --[[@gms]]gms(0, 144, this.ind(), this.bva()) --[[@glp]]glp(this.ind(), 1, this.bva()) ?>"
 #define GRID_ACTIONSTRING_EC "<?lua --[[@gms]]gms(0, 176, this.ind(), this.eva()) --[[@glp]]glp(this.ind(), 2, this.eva()) ?>"
 
-#define GRID_ACTIONSTRING_MAPMODE_PRESS "\x02" \
-										"030e<?expr p(Z5) ?>\x03"
-#define GRID_ACTIONSTRING_MAPMODE_RELEASE ""
+#define GRID_ACTIONSTRING_MAPMODE_CHANGE "<?lua gpl(gpn()) ?>"
 
-#define GRID_ACTIONSTRING_CFG_RESPONSE "\x02" \
-									   "030e<?expr p(Z0) ?>\x03"
-#define GRID_ACTIONSTRING_CFG_REQUEST "\x02" \
-									  "030f<?expr p(Z0) ?>\x03"
 
 #define GRID_CLASS_EVENT_code 0x050
 #define GRID_CLASS_EVENT_frame "%c%03x_........%c", GRID_CONST_STX, GRID_CLASS_EVENT_code, GRID_CONST_ETX

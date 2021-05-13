@@ -185,6 +185,8 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 				}
 				else{
 					
+					printf("CORE AVAILABLE\r\n");
+
 					CRITICAL_SECTION_ENTER()
 					if (grid_ui_event_istriggered(&grid_core_state.element_list[i].event_list[j])){
 						
@@ -383,15 +385,11 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 	
 	if (element_type == GRID_UI_ELEMENT_SYSTEM){
 		
-		ele->event_list_length = 6;
+		ele->event_list_length = 2;
 		
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
-		grid_ui_event_init(ele, 1, GRID_UI_EVENT_HEARTBEAT); // Heartbeat
-		grid_ui_event_init(ele, 2, GRID_UI_EVENT_MAPMODE_PRESS); // Mapmode press
-		grid_ui_event_init(ele, 3, GRID_UI_EVENT_MAPMODE_RELEASE); // Mapmode release
-		grid_ui_event_init(ele, 4, GRID_UI_EVENT_CFG_RESPONSE); //
-		grid_ui_event_init(ele, 5, GRID_UI_EVENT_CFG_REQUEST); //
+		grid_ui_event_init(ele, 1, GRID_UI_EVENT_MAPMODE_CHANGE); // Mapmode change
 
 		ele->template_initializer = NULL;
 		ele->template_parameter_list_length = 0;
@@ -930,8 +928,15 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 
 void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* targetstring){
 	
-
-	if (eve->parent->type == GRID_UI_ELEMENT_BUTTON){
+	if (eve->parent->type == GRID_UI_ELEMENT_SYSTEM){
+				
+		switch(eve->type){
+			case GRID_UI_EVENT_INIT:	break;
+			case GRID_UI_EVENT_MAPMODE_CHANGE:		sprintf(targetstring, GRID_ACTIONSTRING_MAPMODE_CHANGE);			break;
+		}
+		
+	}
+	else if (eve->parent->type == GRID_UI_ELEMENT_BUTTON){
 				
 		switch(eve->type){
 			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;

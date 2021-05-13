@@ -1251,11 +1251,10 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
 		
 		
-			
-				if (msg_class == GRID_CLASS_BANKACTIVE_code){
+				if (msg_class == GRID_CLASS_PAGEACTIVE_code){
 					
-					
-					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKACTIVE_BANKNUMBER_offset], GRID_CLASS_BANKACTIVE_BANKNUMBER_length, &error_flag);
+					printf("PAGE CHANGE\r\n");
+					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset], GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, &error_flag);
 									
 					if (msg_instr == GRID_INSTR_EXECUTE_code){ //SET BANK
 									
@@ -1263,92 +1262,12 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							
 							struct grid_ui_event* eve = NULL;
 
-							eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT);
-							grid_ui_event_trigger_local(eve);	
-							
-
 						}
-							
-						
-																		
+																
 						grid_sys_set_bank(&grid_sys_state, banknumber);
-						
 													
 					}
-					else if (msg_instr == GRID_INSTR_FETCH_code){ //GET BANK
-						
-						if (grid_sys_get_bank_valid(&grid_sys_state) != 0){
-							
-							struct grid_ui_event* eve = NULL;
-
-							eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_RESPONSE);
-							grid_ui_event_trigger_local(eve);	
-						}						
-						
-					}
 					
-					
-				}
-				else if (msg_class == GRID_CLASS_BANKENABLED_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_global || position_is_me || position_is_local)){
-					
-					//grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 0, 500); // RED
-										
-					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKENABLED_BANKNUMBER_offset], GRID_CLASS_BANKENABLED_BANKNUMBER_length, &error_flag);
-					uint8_t isenabled  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKENABLED_ISENABLED_offset], GRID_CLASS_BANKENABLED_ISENABLED_length, &error_flag);
-					
-					if (isenabled == 1){
-						
-						
-						grid_sys_bank_enable(&grid_sys_state, banknumber);
-						
-						if (grid_sys_get_bank_num(&grid_sys_state) == banknumber){
-							
-							if (grid_sys_state.bank_activebank_valid == 1){
-														
-								grid_sys_set_bank(&grid_sys_state, banknumber);
-														
-							}
-						}
-						
-						
-					}else if (isenabled == 0){	
-						
-						if (grid_sys_get_bank_num(&grid_sys_state) == banknumber){
-			
-							if (grid_sys_state.bank_activebank_valid == 1){
-								
-								grid_sys_set_bank(&grid_sys_state, 255);
-								
-							}
-						}	
-						
-						grid_sys_bank_disable(&grid_sys_state, banknumber);
-					}
-					else{
-						//Sorry
-					}
-					
-					
-				}	
-				else if (msg_class == GRID_CLASS_BANKCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_global || position_is_me || position_is_local)){
-					
-					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_NUM_offset], GRID_CLASS_BANKCOLOR_NUM_length, &error_flag);
-					uint8_t red		   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_RED_offset], GRID_CLASS_BANKCOLOR_RED_length, &error_flag);
-					uint8_t green	   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_GRE_offset], GRID_CLASS_BANKCOLOR_GRE_length, &error_flag);
-					uint8_t blue	   = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_BANKCOLOR_BLU_offset], GRID_CLASS_BANKCOLOR_BLU_length, &error_flag);
-					
-					grid_sys_bank_set_color(&grid_sys_state, banknumber, (red<<16) + (green<<8) + (blue<<0) );
-					
-					// If the currently active bank was changed, then we must reinitialize the bank so the color can be updated properly!
-					if (grid_sys_get_bank_num(&grid_sys_state) == banknumber){
-						
-						if (grid_sys_state.bank_activebank_valid == 1){
-							
-							grid_sys_set_bank(&grid_sys_state, banknumber);
-							
-						}
-					}
-									
 				}
 				else if (msg_class == GRID_CLASS_IMEDIATE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_global || position_is_me || position_is_local)){
 

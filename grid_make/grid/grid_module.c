@@ -133,77 +133,7 @@ void grid_module_common_init(void){
 	printf("Model init done\r\n");	
 	grid_ui_element_init(&grid_core_state, 0, GRID_UI_ELEMENT_SYSTEM);
 	
-	if (1){	// INIT CORE_STATE->hearbeat	
-		
-		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
-		uint8_t payload_length = 0;
-	
-		sprintf(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_frame);
-		uint8_t error = 0;
-		grid_msg_set_parameter(&payload_template[payload_length], GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, &error);
-	
-		grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, 0, &error);
-		
-		grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(&grid_sys_state), &error);
-		grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length , GRID_PROTOCOL_VERSION_MAJOR, &error);
-		grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length  , GRID_PROTOCOL_VERSION_MINOR, &error);
-		grid_msg_set_parameter(&payload_template[payload_length], GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length  , GRID_PROTOCOL_VERSION_PATCH, &error);
-	
-		payload_length = strlen(payload_template);
 
-		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_HEARTBEAT);
-		grid_ui_event_register_actionstring(eve, payload_template);		
-		
-	}
-
-	if (1){	// INIT CORE_STATE->mapmode press
-		
-		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
-		uint8_t payload_length = 0;
-	
-		sprintf(payload_template, GRID_ACTIONSTRING_MAPMODE_PRESS);
-		payload_length = strlen(payload_template);
-	
-		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_PRESS);
-		grid_ui_event_register_actionstring(eve, payload_template);		
-	}	
-
-	if (1){ // INIT CORE_STATE->mapmode release
-			
-		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
-		uint8_t payload_length = 0;
-		
-		sprintf(payload_template, GRID_ACTIONSTRING_MAPMODE_RELEASE);
-		payload_length = strlen(payload_template);
-		
-		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE);
-		grid_ui_event_register_actionstring(eve, payload_template);		
-	}	
-	
-	if (1){ // INIT CORE_STATE->cfgresponse
-		
-		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
-		uint8_t payload_length = 0;
-		
-		sprintf(payload_template, GRID_ACTIONSTRING_CFG_RESPONSE);
-		payload_length = strlen(payload_template);
-		
-		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_RESPONSE);
-		grid_ui_event_register_actionstring(eve, payload_template);		
-	}	
-	
-	if (1){ // INIT CORE_STATE->cfgrequest
-		
-		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
-		uint8_t payload_length = 0;
-		
-		sprintf(payload_template, GRID_ACTIONSTRING_CFG_REQUEST);
-		payload_length = strlen(payload_template);
-		
-		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_REQUEST);
-		grid_ui_event_register_actionstring(eve, payload_template);		
-	}	
-	
 	
 	printf("Common init done\r\n");	
 
