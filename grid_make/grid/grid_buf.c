@@ -1670,6 +1670,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 									
 						if (vmajor == GRID_PROTOCOL_VERSION_MAJOR && vminor == GRID_PROTOCOL_VERSION_MINOR && vpatch == GRID_PROTOCOL_VERSION_PATCH){
 							// version ok	
+							printf("version ok\r\n");
 						}
 						else{
 							printf("error.buf.config version mismatch\r\n");
@@ -1692,12 +1693,11 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							if (pagenumber == grid_ui_state.page_activepage){
 
 								//find event
-								uint8_t event_index = grid_ui_event_find(&grid_ui_state.element_list[elementnumber], eventtype);
+								struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[elementnumber], eventtype);
 								
-								if (event_index != 255){
+								if (eve != NULL){
 
 									//register actionstring
-									struct grid_ui_event* eve = &grid_ui_state.element_list[elementnumber].event_list[event_index];
 									
 									grid_ui_event_register_actionstring(eve, action);
 									printf("Registered\r\n");

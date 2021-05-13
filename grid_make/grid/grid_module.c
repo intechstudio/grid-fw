@@ -161,7 +161,7 @@ void grid_module_common_init(void){
 		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 		uint8_t payload_length = 0;
 	
-		sprintf(payload_template, GRID_EVENTSTRING_MAPMODE_PRESS GRID_ACTIONSTRING_MAPMODE_PRESS);
+		sprintf(payload_template, GRID_ACTIONSTRING_MAPMODE_PRESS);
 		payload_length = strlen(payload_template);
 	
 		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_PRESS);
@@ -173,7 +173,7 @@ void grid_module_common_init(void){
 		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 		uint8_t payload_length = 0;
 		
-		sprintf(payload_template, GRID_EVENTSTRING_MAPMODE_RELEASE GRID_ACTIONSTRING_MAPMODE_RELEASE);
+		sprintf(payload_template, GRID_ACTIONSTRING_MAPMODE_RELEASE);
 		payload_length = strlen(payload_template);
 		
 		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_RELEASE);
@@ -185,7 +185,7 @@ void grid_module_common_init(void){
 		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 		uint8_t payload_length = 0;
 		
-		sprintf(payload_template, GRID_EVENTSTRING_CFG_RESPONES GRID_ACTIONSTRING_CFG_RESPONSE);
+		sprintf(payload_template, GRID_ACTIONSTRING_CFG_RESPONSE);
 		payload_length = strlen(payload_template);
 		
 		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_RESPONSE);
@@ -197,7 +197,7 @@ void grid_module_common_init(void){
 		uint8_t payload_template[GRID_UI_ACTION_STRING_maxlength] = {0};
 		uint8_t payload_length = 0;
 		
-		sprintf(payload_template, GRID_EVENTSTRING_CFG_REQUEST GRID_ACTIONSTRING_CFG_REQUEST);
+		sprintf(payload_template, GRID_ACTIONSTRING_CFG_REQUEST);
 		payload_length = strlen(payload_template);
 		
 		struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_CFG_REQUEST);

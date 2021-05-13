@@ -683,33 +683,14 @@ enum grid_ui_event_t
 
 // BANK + ELEMENT NUMBER + EVENT TYPE + PARAMETER
 
-#define GRID_EVENTSTRING_HEARTBEAT "\x02" \
-								   "050e<?expr p(Z0) ?>000c00\x03"
 
-
-#define GRID_EVENTSTRING_MAPMODE_PRESS "\x02" \
-									   "050e<?expr p(Z0) ?>0008<?expr p(Z4) ?>\x03"
-#define GRID_EVENTSTRING_MAPMODE_RELEASE "\x02" \
-										 "050e<?expr p(Z0) ?>0009<?expr p(Z4) ?>\x03"
-
-#define GRID_EVENTSTRING_CFG_RESPONES "\x02" \
-									  "050e<?expr p(Z0) ?>000a<?expr p(Z4) ?>\x03"
-#define GRID_EVENTSTRING_CFG_REQUEST "\x02" \
-									 "050e<?expr p(Z0) ?>000b<?expr p(Z4) ?>\x03"
 
 
 // DEFAULT ACTION:                     FIRST MIDI then LED_SET_PHASE
 
-#define GRID_ACTIONSTRING_INIT_POT "\x02" \
-								   "041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
-#define GRID_ACTIONSTRING_INIT_BUT "\x02" \
-								   "041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
-//#define GRID_ACTIONSTRING_INIT_ENC "<\x02"                                                                      \
-								   "041e<?expr p(T0) ?>01<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03\x02" \
-								   "041e<?expr p(T0) ?>02<?expr p(Z1) ?><?expr p(Z2) ?><?expr p(Z3) ?>\x03"
 
-
-
+#define GRID_ACTIONSTRING_INIT_POT "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) ?>"
+#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) ?>"
 #define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) --[[@glc]]glc(this.ind(), 2, glr(), glg(), glb()) ?>"
 
 
