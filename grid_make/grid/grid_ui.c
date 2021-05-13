@@ -684,6 +684,8 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 
 uint8_t grid_ui_page_store(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
 
+	printf("STORE!\r\n");
+
 	for (uint8_t i=0; i<ui->element_list_length; i++){
 
 		struct grid_ui_element* ele = &ui->element_list[i];
@@ -914,10 +916,11 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		sprintf(eve->action_string, action_string);
 		
 		
-		eve->cfg_changed_flag = 1;
 
 	}
 
+
+	eve->cfg_changed_flag = 1;
 	//printf("action: %s\r\n", eve->action_string);
 
 	//grid_lua_debug_memory_stats(&grid_lua_state, "R.A.S.");
