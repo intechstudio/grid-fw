@@ -1654,9 +1654,15 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						
 						grid_msg_body_append_text(&response, response_payload);
 						
+						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
+						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
+						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
+											
 						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, pagenumber);
 						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, elementnumber);
 						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, eventtype);
+												
+						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, 0);
 						
 						
 						if (ack == 1){
