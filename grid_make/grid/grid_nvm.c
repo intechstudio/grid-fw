@@ -779,8 +779,9 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 
 void grid_nvm_ui_bulk_store_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
+
 	nvm->store_bulk_status = 1;
-	
+
 }
 
 uint8_t grid_nvm_ui_bulk_store_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
@@ -796,8 +797,10 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 		return;
 	}
 
+	printf("STORE\r\n");
+
     // START: NEW
-	uint32_t cycles_limit = 1000*120;  // 1ms
+	uint32_t cycles_limit = 5000*120;  // 5ms
 	uint32_t cycles_start = grid_d51_dwt_cycles_read();
 
 
@@ -828,6 +831,21 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	}
 
+	struct grid_msg response;
+
+	grid_msg_init(&response);
+	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+
+	uint8_t response_payload[50] = {0};
+	snprintf(response_payload, 49, GRID_CLASS_CONFIGSTORE_frame);
+
+	grid_msg_body_append_text(&response, response_payload);
+	
+	grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	
+	grid_msg_packet_close(&response);
+	grid_msg_packet_send_everywhere(&response);
+	
 	nvm->store_bulk_status = 0;
 		
 }
@@ -874,7 +892,7 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	}
 
-	nvm->store_bulk_status = 0;
+	nvm->clear_bulk_status = 0;
 
 	uint8_t acknowledge = 1;
 
@@ -900,9 +918,8 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 		
 	grid_msg_packet_close(&response);
-	
-	
-	nvm->clear_bulk_status = 0;
+
+
 	
 }
 

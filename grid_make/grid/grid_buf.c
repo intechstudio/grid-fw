@@ -1551,12 +1551,14 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			
 				else if (msg_class == GRID_CLASS_CONFIGSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_nvm_ui_bulk_store_init(&grid_ui_state, &grid_nvm_state);
+					grid_nvm_ui_bulk_store_init(&grid_nvm_state, &grid_ui_state);
+
+					
 
 				}
 				else if (msg_class == GRID_CLASS_CONFIGERASE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_nvm_ui_bulk_clear_init(&grid_ui_state, &grid_nvm_state);
+					grid_nvm_ui_bulk_clear_init(&grid_nvm_state, &grid_ui_state);
 					//grid_nvm_erase_all(&grid_nvm_state);
 
 				}

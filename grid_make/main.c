@@ -241,6 +241,7 @@ static void nvm_task_inner(struct grid_d51_task* task){
 	
 	if (grid_nvm_ui_bulk_store_is_in_progress(&grid_nvm_state, &grid_ui_state)){
 		
+		printf("HI\r\n");
 		grid_nvm_ui_bulk_store_next(&grid_nvm_state, &grid_ui_state);
 			
 		
