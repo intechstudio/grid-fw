@@ -534,7 +534,9 @@ void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 		}
 		else{ // PRESS
 
-			struct grid_ui_event* eve = grid_ui_event_find(&grid_core_state.element_list[0], GRID_UI_EVENT_MAPMODE_CHANGE);
+			struct grid_ui_element* sys_ele = &grid_ui_state.element_list[grid_ui_state.element_list_length-1]; 
+
+			struct grid_ui_event* eve = grid_ui_event_find(sys_ele, GRID_UI_EVENT_MAPMODE_CHANGE);
 			
 			if (eve == NULL){
 				printf("NOT FOUND!\r\n");

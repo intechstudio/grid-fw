@@ -8,7 +8,6 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	
 	
 	uint8_t ui_available = 0;
-	uint8_t core_available = 0;
 	uint8_t message_local_action_available = 0;
 
 	// UI STATE
@@ -33,22 +32,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 			
 		}
 		
-	}		
-	
-	// CORE SYSTEM
-	for (uint8_t i=0; i<grid_core_state.element_list_length; i++){
-		
-		for (uint8_t j=0; j<grid_core_state.element_list[i].event_list_length; j++){
-			
-			if (grid_ui_event_istriggered(&grid_core_state.element_list[i].event_list[j])){
-				
-				core_available++;
-			}
-			
-		}
-		
-	}	
-	
+	}
 	
 	
 	//NEW PING
@@ -173,40 +157,6 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	grid_msg_init(&message);
 	grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 	
-	// BROADCAST MESSAGES : CORE SYSTEM	
-	if (core_available){
-			
-		for (uint8_t i=0; i<grid_core_state.element_list_length; i++){
-			
-			for (uint8_t j=0; j<grid_core_state.element_list[i].event_list_length; j++){
-				
-				if (grid_msg_packet_get_length(&message)>GRID_PARAMETER_PACKET_marign){
-					continue;
-				}
-				else{
-					
-					printf("CORE AVAILABLE\r\n");
-
-					CRITICAL_SECTION_ENTER()
-					if (grid_ui_event_istriggered(&grid_core_state.element_list[i].event_list[j])){
-						
-						uint32_t offset = grid_msg_body_get_length(&message); 
-						message.body_length += grid_ui_event_render_action(&grid_core_state.element_list[i].event_list[j], &message.body[offset]);
-						grid_ui_event_reset(&grid_core_state.element_list[i].event_list[j]);
-						
-					}
-					CRITICAL_SECTION_LEAVE()
-									
-					
-				}						
-				
-
-				
-			}
-			
-		}
-
-	}
 	
 	grid_d51_task_next(ui->task);
 	// BROADCAST MESSAGES : UI STATE
@@ -245,7 +195,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	}
 
 	grid_d51_task_next(ui->task);	
-	if (core_available + ui_available){
+	if (ui_available){
 
 		
 		//por->cooldown += (2+por->cooldown/2);
@@ -292,14 +242,11 @@ void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
 
 	printf("UI MODEL INIT: %d\r\n", element_list_length);
 	mod->element_list = malloc(element_list_length*sizeof(struct grid_ui_element));
-;
 	
 }
 
 struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_element* ele){
-	
-
-	
+		
 	struct grid_ui_template_buffer* this = NULL;
 	struct grid_ui_template_buffer* prev = ele->template_buffer_list_head;
 

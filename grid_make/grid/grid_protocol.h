@@ -677,8 +677,6 @@ enum grid_ui_event_t
 #define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) --[[@glp]]glp(this.ind(), 1, this.bva()) ?>"
 #define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) --[[@glc]]glc(this.ind(), 2, glr(), glg(), glb()) --[[@glp]]glp(this.ind(), 1, this.bva()) --[[@glp]]glp(this.ind(), 2, this.eva()) ?>"
 
-
-
 #define GRID_ACTIONSTRING_AC "<?lua --[[@gms]]gms(0, 176, this.ind(), this.pva()) --[[@glp]]glp(this.ind(), 1, this.pva()) ?>"
 #define GRID_ACTIONSTRING_BC "<?lua --[[@gms]]gms(0, 144, this.ind(), this.bva()) --[[@glp]]glp(this.ind(), 1, this.bva()) ?>"
 #define GRID_ACTIONSTRING_EC "<?lua --[[@gms]]gms(0, 176, this.ind(), this.eva()) --[[@glp]]glp(this.ind(), 2, this.eva()) ?>"

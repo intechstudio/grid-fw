@@ -127,13 +127,6 @@ uint8_t grid_adc_get_config(uint8_t register_offset, uint8_t bit_offest){
 
 
 void grid_module_common_init(void){
-
-	grid_ui_model_init(&grid_core_state, 1);
-
-	printf("Model init done\r\n");	
-	grid_ui_element_init(&grid_core_state, 0, GRID_UI_ELEMENT_SYSTEM);
-	
-
 	
 	printf("Common init done\r\n");	
 
@@ -173,6 +166,13 @@ void grid_module_common_init(void){
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: Unknown Module");
 		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "HWCFG Mismatch");
 	}
+
+	printf("Model init done\r\n");
+
+
+	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
+	
+
 
 	grid_port_init_all();
 	grid_sys_uart_init();

@@ -105,8 +105,6 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_find(struct grid_ui_elem
 
 
 volatile struct grid_ui_model grid_ui_state;
-volatile struct grid_ui_model grid_core_state;
-
 
 void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length);
 void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid_ui_element_t element_type);
