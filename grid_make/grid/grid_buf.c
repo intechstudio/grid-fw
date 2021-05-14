@@ -1568,7 +1568,11 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					uint8_t eventtype = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
 					//uint16_t actionlength = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
 
-					
+					// Helper to map system element to 255
+					if (elementnumber == 255){
+						elementnumber = grid_ui_state.element_list_length - 1;
+					}
+
 					grid_ui_recall_event_configuration(&grid_ui_state, &grid_nvm_state, pagenumber, elementnumber, eventtype);
 					
 				}
@@ -1595,6 +1599,10 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						uint8_t elementnumber = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
 						uint8_t eventtype = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
 						uint16_t actionlength = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
+
+						if (elementnumber == 255){
+							elementnumber = grid_ui_state.element_list_length - 1;
+						}
 
 						char* action = &message[current_start + GRID_CLASS_CONFIG_ACTIONSTRING_offset];
 
