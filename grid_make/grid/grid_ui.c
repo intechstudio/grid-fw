@@ -327,11 +327,10 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_el
 				ele->template_initializer(this);
 			}
 
-			printf("LIST\r\n");
+			//printf("LIST\r\n");
 
 			if (prev != NULL){
 
-				this->page_number++;
 
 				while(prev->next != NULL){
 
@@ -345,20 +344,54 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_el
 
 			}
 			else{
-				prev = this;
+				
+				this->parent->template_buffer_list_head = this;
 				return this;
 				//this is the first item in the list
 			}
-
-
-			
-
 		}
 	}
 	
 	// FAILED
 	return NULL;
 }
+
+uint8_t grid_ui_template_buffer_list_length(struct grid_ui_element* ele){
+
+	uint8_t count = 0;
+
+	struct grid_ui_template_buffer* this = ele->template_buffer_list_head;
+
+	while (this != NULL)
+	{
+		count++;
+		this = this->next;
+	}
+	
+	return count;
+
+}
+
+struct grid_ui_template_buffer* grid_ui_template_buffer_find(struct grid_ui_element* ele, uint8_t page){
+
+	uint8_t count = 0;
+
+	struct grid_ui_template_buffer* this = ele->template_buffer_list_head;
+
+	while (this != NULL)
+	{
+		if (count == page){
+			return this;
+		}
+
+		count++;
+		this = this->next;
+	}
+	
+	return NULL;
+
+}
+
 
 
 void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid_ui_element_t element_type){
@@ -501,35 +534,11 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 }
 
 
-void grid_ui_nvm_store_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
-	
-    grid_nvm_ui_bulk_store_init(nvm, ui);
-
-}
-
-void grid_ui_nvm_load_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
-	
-	grid_nvm_ui_bulk_read_init(nvm, ui);
-
-}
-
-void grid_ui_nvm_clear_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
-	
-	
-	grid_nvm_erase_all(&grid_nvm_state);
-	// grid_nvm_ui_bulk_clear_init(nvm, ui);
-
-}
-
-
 uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page, uint8_t element, enum grid_ui_event_t event_type){
 	
-	// need implementation
-
 	printf("RECALL!!! \r\n");
 
 	
-
 	struct grid_msg message;
 
 	grid_msg_init(&message);
@@ -619,254 +628,58 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 
 		printf("warning."__FILE__".event does not exist!\r\n");
 	}
-
-
-
-	
-
 	
 }
 
 uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page){
 
+	uint8_t oldpage = ui->page_activepage;
 	ui->page_activepage = page;
+	// Call the page_change callback
 
-	for (uint8_t i=0; i<ui->element_list_length; i++){
+	printf("LOAD PAGE: %d\r\n", page);
 
-		struct grid_ui_element* ele = &ui->element_list[i];
+	for (uint8_t i = 0; i < grid_ui_state.element_list_length; i++)
+	{	
 
-		for (uint8_t j=0; j<ele->event_list_length; j++){
+		struct grid_ui_element* ele = &grid_ui_state.element_list[i];
 
-			struct grid_ui_event* eve = &ele->event_list[j];
+		uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
 
-			struct grid_nvm_toc_entry* entry = NULL;
-			entry = grid_nvm_toc_entry_find(&grid_nvm_state, page, ele->index, eve->type);
+		if (i==0) printf("TB LEN: %d\r\n", template_buffer_length);
+		if (template_buffer_length < page+1){
 
-			if (entry != NULL){
-				
-				//printf("Page Load: FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
+			grid_ui_template_buffer_create(ele);
 
-				if (entry->config_string_length){
-					uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
-
-					grid_nvm_toc_generate_actionstring(nvm, entry, temp);
-					grid_ui_event_register_actionstring(eve, temp);
-					
-					eve->cfg_changed_flag = 0; // clear changed flag
-				}
-				else{
-					//printf("Page Load: NULL length\r\n");
-				}
-				
-
-			}
-			else{
-				//printf("Page Load: NOT FOUND, Set default!\r\n");
+			if (i==0) printf("CREATE NEW, LEN: %d\r\n", grid_ui_template_buffer_list_length(ele));
+			
+		}
 
 
-				uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
+		struct grid_ui_template_buffer* buf =  grid_ui_template_buffer_find(ele, page);
+		
+		if (buf == NULL){
 
-				grid_ui_event_generate_actionstring(eve, temp);
-				grid_ui_event_register_actionstring(eve, temp);
+			printf("error.template buffer is invalid\r\n");
 
-				eve->cfg_changed_flag = 0; // clear changed flag
+		}
+		else{
 
-			}
-
-
-			grid_ui_event_trigger_local(eve);
+			// load the template parameter list
+			ele->template_parameter_list = buf->template_parameter_list;
 
 		}
 
-	}
-	
-}
 
-uint8_t grid_ui_page_store(struct grid_ui_model* ui, struct grid_nvm_model* nvm){
+		if (ele->page_change_cb != NULL){
 
-	printf("STORE!\r\n");
-
-	for (uint8_t i=0; i<ui->element_list_length; i++){
-
-		struct grid_ui_element* ele = &ui->element_list[i];
-
-		for (uint8_t j=0; j<ele->event_list_length; j++){
-
-			struct grid_ui_event* eve = &ele->event_list[j];
-
-			if (eve->cfg_changed_flag){
-				
-				printf("CHANGED %d %d\r\n", i, j);
-				grid_nvm_config_store(&grid_nvm_state, ele->parent->page_activepage, ele->index, eve->type, eve->action_string);
-
-				eve->cfg_changed_flag = 0; // clear changed flag
-			}
-
-
-
-
+			ele->page_change_cb(oldpage, page);
 		}
 
 	}
+
+	grid_nvm_ui_bulk_read_init(nvm, ui);
 	
-}
-
-uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
-	
-	printf("STORE NOT IMPLEMENTED\r\n");
-
-	// struct grid_msg message;
-
-	// grid_msg_init(&message);
-	// grid_msg_init_header(&message, GRID_SYS_LOCAL_POSITION, GRID_SYS_LOCAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
-
-
-	// uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
-	// uint8_t payload_length = 0;
-	// uint32_t offset = 0;
-
-
-
-	// // BANK ENABLED
-	// offset = grid_msg_body_get_length(&message);
-
-	// sprintf(payload, GRID_CLASS_CONFIGURATION_frame_start);
-	// payload_length = strlen(payload);
-
-	// grid_msg_body_append_text(&message, payload, payload_length);
-
-	// grid_msg_text_set_parameter(&message, offset, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_offset, GRID_CLASS_CONFIGURATION_BANKNUMBER_length, eve->parent->parent->index);
-	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_offset, GRID_CLASS_CONFIGURATION_ELEMENTNUMBER_length, eve->parent->index);
-	// grid_msg_text_set_parameter(&message, offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_offset, GRID_CLASS_CONFIGURATION_EVENTTYPE_length, eve->type);
-
-	// offset = grid_msg_body_get_length(&message);
-	// grid_msg_body_append_text_escaped(&message, eve->action_string, eve->action_string_length);
-
-
-
-
-
-	// sprintf(payload, GRID_CLASS_CONFIGURATION_frame_end);
-	// payload_length = strlen(payload);
-
-	// grid_msg_body_append_text(&message, payload, payload_length);
-
-
-	// grid_msg_packet_close(&message);
-
-	// grid_nvm_clear_write_buffer(nvm);
-
-	// uint32_t message_length = grid_msg_packet_get_length(&message);
-
-	// if (message_length){
-
-	// 	nvm->write_buffer_length = message_length;
-	
-	// 	for(uint32_t i = 0; i<message_length; i++){
-		
-	// 		nvm->write_buffer[i] = grid_msg_packet_send_char(&message, i);
-	// 	}
-
-	// }
-
-	// uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(nvm, eve);
-	// nvm->write_target_address = GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset;
-
-	// int status = 0;
-	
-	
-	// uint8_t debugtext[200] = {0};
-
-	// if (eve->cfg_default_flag == 1 && eve->cfg_flashempty_flag == 0){
-		
-	// 	//sprintf(debugtext, "Cfg: Default B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);
-	// 	flash_erase(nvm->flash, nvm->write_target_address, 1);
-	// 	eve->cfg_flashempty_flag = 1;
-	// 	status = 1;
-	// }
-	
-	
-	// if (eve->cfg_default_flag == 0 && eve->cfg_changed_flag == 1){
-		
-	// 	//sprintf(debugtext, "Cfg: Store B:%d E:%d Ev:%d => Page: %d Status: %d", eve->parent->parent->index, eve->parent->index, eve->index, event_page_offset, status);		
-	// 	flash_write(nvm->flash, nvm->write_target_address, nvm->write_buffer, GRID_NVM_PAGE_SIZE);
-	// 	status = 1;
-	// }
-
-
-	// //grid_debug_print_text(debugtext);
-
-	// eve->cfg_changed_flag = 0;
-	
-	// return status;
-	
-}
-
-
-
-uint8_t grid_ui_nvm_load_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
-	
-
-	printf("LOAD NOT IMPLEMENTED !!!! \r\n");
-		
-	// grid_nvm_clear_read_buffer(nvm);
-	
-	// uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(nvm, eve);	
-	// nvm->read_source_address = GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset;	
-	
-
-	// int status = flash_read(nvm->flash, nvm->read_source_address, nvm->read_buffer, GRID_NVM_PAGE_SIZE);	
-		
-	// uint8_t copydone = 0;
-	
-	// uint8_t cfgfound = 0;
-		
-	// for (uint16_t i=0; i<GRID_NVM_PAGE_SIZE; i++){
-			
-			
-	// 	if (copydone == 0){
-				
-	// 		if (nvm->read_buffer[i] == '\n'){ // END OF PACKET, copy newline character
-	// 			GRID_PORT_U.rx_double_buffer[i] = nvm->read_buffer[i];
-	// 			GRID_PORT_U.rx_double_buffer_status = i+1;
-	// 			GRID_PORT_U.rx_double_buffer_read_start_index = 0;
-	// 			copydone = 1;
-				
-	// 			cfgfound=2;
-					
-	// 		}
-	// 		else if (nvm->read_buffer[i] == 255){ // UNPROGRAMMED MEMORY, lets get out of here
-	// 			copydone = 1;
-	// 		}
-	// 		else{ // NORMAL CHARACTER, can be copied
-	// 			GRID_PORT_U.rx_double_buffer[i] = nvm->read_buffer[i];
-				
-	// 			cfgfound=1;
-	// 		}
-				
-				
-	// 	}
-			
-			
-	// }
-	
-	// return cfgfound;
-	
-	
-}
-uint8_t grid_ui_nvm_clear_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve){
-		
-		uint32_t event_page_offset = grid_nvm_calculate_event_page_offset(nvm, eve);
-		
-		
-
-		flash_erase(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*event_page_offset, 1);
-
-		
-		
-		return 1;
-		
 }
 
 

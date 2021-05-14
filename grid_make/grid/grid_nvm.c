@@ -16,27 +16,16 @@ void grid_nvm_init(struct grid_nvm_model* nvm, struct flash_descriptor* flash_in
 
 	nvm->next_write_offset = 0;
 
-	nvm->bank_settings_page_address = GRID_NVM_GLOBAL_BASE_ADDRESS;
 	
 	nvm->flash = flash_instance;
 	
 	nvm->status = 1;
-	nvm->read_buffer_status = GRID_NVM_BUFFER_STATUS_UNINITIALIZED;
-	nvm->write_buffer_status = GRID_NVM_BUFFER_STATUS_UNINITIALIZED;
 	
 	
-	nvm->read_bulk_page_index = 0;
 	nvm->read_bulk_status = 0;
-	
-	nvm->clear_bulk_page_index = 0;
 	nvm->clear_bulk_status = 0;	
+	nvm->store_bulk_status = 0;
 	
-	nvm->write_bulk_page_index = 0;
-	nvm->write_bulk_status = 0;
-	
-	
-	grid_nvm_clear_read_buffer(nvm);
-	grid_nvm_clear_write_buffer(nvm);
 
 }
 
@@ -178,7 +167,7 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 	
 	for (uint16_t i=0; i<append_length; i++){
 		if (verify_buffer[i] != append_buffer[i]){
-			printf("error.nvm.append verify failed! 0x%x  nwo:%d len:%d (%d!=%d)\r\n\r\n", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, mod->bank_settings_page_address, append_length, verify_buffer[i], append_buffer[i]);
+			printf("error.nvm.append verify failed! 0x%x  len:%d (%d!=%d)\r\n\r\n", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
 		}
 	}
 
@@ -678,7 +667,10 @@ uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct g
 
 void grid_nvm_ui_bulk_read_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
-	nvm->read_bulk_page_index = 0;
+
+	nvm->read_bulk_last_element = 0;
+	nvm->read_bulk_last_event = -1;
+
 	nvm->read_bulk_status = 1;
 			
 }
@@ -687,100 +679,106 @@ uint8_t grid_nvm_ui_bulk_read_is_in_progress(struct grid_nvm_model* nvm, struct 
 
 	return nvm->read_bulk_status;
 	
+
 }
 
 void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 	
-	printf("grid_nvm_ui_bulk_read_next not implemented\r\n");
+	if (!grid_nvm_ui_bulk_read_is_in_progress(nvm, ui)){
+		return;
+	}
 
+	// START: NEW
+	uint32_t cycles_limit = 5000*120;  // 5ms
+	uint32_t cycles_start = grid_d51_dwt_cycles_read();
 
-// 	if (nvm->read_bulk_status == 1){
-		
-		
-// 		uint8_t bank    = (nvm->read_bulk_page_index/GRID_NVM_STRATEGY_EVENT_maxcount/GRID_NVM_STRATEGY_ELEMENT_maxcount)%GRID_NVM_STRATEGY_BANK_maxcount;
-// 		uint8_t element = (nvm->read_bulk_page_index/GRID_NVM_STRATEGY_EVENT_maxcount)%GRID_NVM_STRATEGY_ELEMENT_maxcount;
-// 		uint8_t event   = nvm->read_bulk_page_index%GRID_NVM_STRATEGY_EVENT_maxcount;
-		
-		
-// 		if (bank < ui->bank_list_length){
-			
-// 			if (element < ui->bank_list[bank].element_list_length){
-				
-// 				if (event < ui->bank_list[bank].element_list[element].event_list_length){
-// 					// Valid memory location
-					
-// 					int status = grid_ui_nvm_load_event_configuration(ui, nvm, &ui->bank_list[bank].element_list[element].event_list[event]);
+	uint8_t last_element_helper = nvm->read_bulk_last_element;
+	uint8_t last_event_helper = nvm->read_bulk_last_event + 1;
+
+	uint8_t firstrun = 1;
+	
+
+	//printf("BULK READ PAGE LOAD %d %d\r\n", last_element_helper, last_event_helper);
+
+	for (uint8_t i=last_element_helper; i<ui->element_list_length; i++){
+
+		struct grid_ui_element* ele = &ui->element_list[i];
+
+		for (uint8_t j=0; j<ele->event_list_length; j++){
+
+			if (firstrun){
+
+				j = last_event_helper;
+				firstrun = 0;
 							
+				if (j>=ele->event_list_length){ // to check last_event_helper in the first iteration
+					break;
+				}
+			}
+
+			//printf("CYCLES: %d\r\n", grid_d51_dwt_cycles_read() - cycles_start);
+			if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){
+
+				//printf("LIMIT: %d\r\n", grid_d51_dwt_cycles_read() - cycles_start);
+				return;
+			}
+
+			
+
+			struct grid_ui_event* eve = &ele->event_list[j];
+
+			struct grid_nvm_toc_entry* entry = NULL;
+
+			entry = grid_nvm_toc_entry_find(&grid_nvm_state, ui->page_activepage, ele->index, eve->type);
+
+			if (entry != NULL){
+				
+				//printf("Page Load: FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
+
+				if (entry->config_string_length){
+					uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
+
+					grid_nvm_toc_generate_actionstring(nvm, entry, temp);
+					grid_ui_event_register_actionstring(eve, temp);
 					
-							
-// // 					uint8_t debugtext[200] = {0};
-// // 					sprintf(debugtext, "Bulk Read Valid:: Status: %d, Index: %d => Bank: %d, Ele: %d, Eve: %d", status, nvm->read_bulk_page_index, bank, element, event);
-// // 					grid_debug_print_text(debugtext);
-// // 						
-						
-						
-					
-					
-// 				}
+					eve->cfg_changed_flag = 0; // clear changed flag
+				}
+				else{
+					//printf("Page Load: NULL length\r\n");
+				}
 				
-// 			}
+			}
+			else{
+				//printf("Page Load: NOT FOUND, Set default!\r\n");
+
+
+				uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
+
+				grid_ui_event_generate_actionstring(eve, temp);
+				grid_ui_event_register_actionstring(eve, temp);
+
+				eve->cfg_changed_flag = 0; // clear changed flag
+
+			}
+
+			if (eve->type == GRID_UI_EVENT_INIT){
+
+				grid_ui_event_trigger_local(eve);
+			}
+
+			nvm->read_bulk_last_element = i;
+			nvm->read_bulk_last_event = j;
+
+		}
+
+	}
 	
-// 		}
-		
-		
-// 		if (nvm->read_bulk_page_index < GRID_NVM_STRATEGY_EVENT_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_BANK_maxcount-1){ // multiply with bankcount
-			
-// 			nvm->read_bulk_page_index++;
-			
-// 		}
-// 		else{
-			
-// 			nvm->read_bulk_page_index = 0;
-// 			nvm->read_bulk_status = 0;
-			
-			
-// 			uint8_t acknowledge = 1;
-
-// 			// Generate ACKNOWLEDGE RESPONSE
-// 			struct grid_msg response;
-				
-// 			grid_msg_init(&response);
-// 			grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
-
-// 			uint8_t response_payload[10] = {0};
-// 			sprintf(response_payload, GRID_CLASS_LOCALLOAD_frame);
-
-// 			grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
-				
-// 			if (acknowledge == 1){
-// 				grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-
-//             }
-// 			else{
-// 				grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
-
-//             }
-
-				
-// 			grid_msg_packet_close(&response);
-// 			grid_msg_packet_send_everywhere(&response);
-				
-			
-// 		}
-		
-		
-		
-// 	}
-	
-	
-	
-	
+	nvm->read_bulk_status = 0;
 }
 
 
 void grid_nvm_ui_bulk_store_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
-	nvm->store_bulk_page_index = 0;
 	nvm->store_bulk_status = 1;
 	
 }
@@ -793,124 +791,45 @@ uint8_t grid_nvm_ui_bulk_store_is_in_progress(struct grid_nvm_model* nvm, struct
 
 // DO THIS!!
 void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
-     
+
+ 	if (!grid_nvm_ui_bulk_store_is_in_progress(nvm, ui)){
+		return;
+	}
+
     // START: NEW
-    
-	printf("grid_nvm_ui_bulk_store_next not implemented\r\n");
-    
-	// if (nvm->store_bulk_status == 1){
-		
-    //     uint8_t something_was_stored = 0;
-        
-    //     while (something_was_stored == 0){
-        
-    //         uint8_t bank    = (nvm->store_bulk_page_index/GRID_NVM_STRATEGY_EVENT_maxcount/GRID_NVM_STRATEGY_ELEMENT_maxcount)%GRID_NVM_STRATEGY_BANK_maxcount;
-    //         uint8_t element = (nvm->store_bulk_page_index/GRID_NVM_STRATEGY_EVENT_maxcount)%GRID_NVM_STRATEGY_ELEMENT_maxcount;
-    //         uint8_t event   = nvm->store_bulk_page_index%GRID_NVM_STRATEGY_EVENT_maxcount;
+	uint32_t cycles_limit = 1000*120;  // 1ms
+	uint32_t cycles_start = grid_d51_dwt_cycles_read();
 
 
-    //         if (bank < ui->bank_list_length){
+	for (uint8_t i=0; i<ui->element_list_length; i++){
 
-    //             if (element < ui->bank_list[bank].element_list_length){
+		struct grid_ui_element* ele = &ui->element_list[i];
 
-    //                 if (event < ui->bank_list[bank].element_list[element].event_list_length){
-    //                     // Valid memory location
+		for (uint8_t j=0; j<ele->event_list_length; j++){
 
-    //                     struct grid_ui_event* eve = &ui->bank_list[bank].element_list[element].event_list[event];
+			struct grid_ui_event* eve = &ele->event_list[j];
 
-    //                     if (eve->cfg_changed_flag == 1){
-
-
-    //                         if (grid_ui_nvm_store_event_configuration(ui, nvm, eve)){
-
-    //                             something_was_stored = 1;
-
-
-    //                         }
-
-
-
-    //                     }
-    //                 }
-
-
-    //             }
-
-    //         }
-            
-            
-
-    //         if (nvm->store_bulk_page_index < GRID_NVM_STRATEGY_EVENT_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_BANK_maxcount-1){ // multiply with bankcount
-
-
-
-    //             nvm->store_bulk_page_index++;       
-    //         }           
-    //         else{
-                
-    //             //done deal, nothing was to be stored
-    //             // lets lie to break out from the loop
-    //             something_was_stored = 1;
-    //         }
-            
-    
-        
-    //     }
-		
-
-		
-		
-		
-	// 	if (nvm->store_bulk_page_index < GRID_NVM_STRATEGY_EVENT_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_BANK_maxcount-1){ // multiply with bankcount
-			
-            
-    //         uint8_t intensity = abs(nvm->store_bulk_page_index%100 - 50)/1.5 + 40;
-  
-    //         grid_sys_alert_set_alert(&grid_sys_state, 0, intensity*0.75, intensity, 1, 1000);
-
-
-	// 	}
-	// 	else{
-			
-	// 		nvm->store_bulk_page_index = 0;
-	// 		nvm->store_bulk_status = 0;
-			
-			
-	// 		uint8_t acknowledge = 1;
-
-	// 		// Generate ACKNOWLEDGE RESPONSE
-	// 		struct grid_msg response;
+			if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){
 				
-	// 		grid_msg_init(&response);
-	// 		grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+				printf("CYCLES LIMIT HIT\r\n");
+				return;
 
-	// 		uint8_t response_payload[10] = {0};
-	// 		sprintf(response_payload, GRID_CLASS_LOCALSTORE_frame);
+			}
 
-	// 		grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
+			if (eve->cfg_changed_flag){
 				
-	// 		if (acknowledge == 1){
-	// 			grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-    //             grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
-    //         }
-	// 		else{
-	// 			grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
-    //             grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
-    //         }
+				printf("CHANGED %d %d\r\n", i, j);
+				grid_nvm_config_store(&grid_nvm_state, ele->parent->page_activepage, ele->index, eve->type, eve->action_string);
 
-				
-	// 		grid_msg_packet_close(&response);
-	// 		grid_msg_packet_send_everywhere(&response);
-						
-	// 	}
+				eve->cfg_changed_flag = 0; // clear changed flag
+			}
+
+		}
+
+	}
+
+	nvm->store_bulk_status = 0;
 		
-		
-		
-	// }
-	
-	
-	
-	
 }
 
 
@@ -920,9 +839,10 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 void grid_nvm_ui_bulk_clear_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
-	nvm->clear_bulk_page_index = 0;
+	uint32_t clear_bulk_address = GRID_NVM_LOCAL_BASE_ADDRESS;
+
 	nvm->clear_bulk_status = 1;
-	
+
 }
 
 uint8_t grid_nvm_ui_bulk_clear_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
@@ -935,133 +855,54 @@ uint8_t grid_nvm_ui_bulk_clear_is_in_progress(struct grid_nvm_model* nvm, struct
 void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 	
 
-	printf("grid_nvm_ui_bulk_clear_next not implemented\r\n");
-
-	// if (nvm->clear_bulk_status == 1){
-		
-		
-	// 	uint8_t bank    = (nvm->clear_bulk_page_index/GRID_NVM_STRATEGY_EVENT_maxcount/GRID_NVM_STRATEGY_ELEMENT_maxcount)%GRID_NVM_STRATEGY_BANK_maxcount;
-	// 	uint8_t element = (nvm->clear_bulk_page_index/GRID_NVM_STRATEGY_EVENT_maxcount)%GRID_NVM_STRATEGY_ELEMENT_maxcount;
-	// 	uint8_t event   = nvm->clear_bulk_page_index%GRID_NVM_STRATEGY_EVENT_maxcount;
-		
-		
-	// 	if (bank < ui->bank_list_length){
-			
-	// 		if (element < ui->bank_list[bank].element_list_length){
-				
-	// 			if (event < ui->bank_list[bank].element_list[element].event_list_length){
-	// 				// Valid memory location
-					
-	// 				grid_ui_nvm_clear_event_configuration(ui, nvm, &ui->bank_list[bank].element_list[element].event_list[event]);		
-				
-	// 			}
-				
-	// 		}
-	
-	// 	}
-		
-		
-		
-	// 	if (nvm->clear_bulk_page_index < GRID_NVM_STRATEGY_EVENT_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_BANK_maxcount-1){ // multiply with bankcount
-			
-            
-    //         uint8_t intensity = abs(nvm->clear_bulk_page_index%100 - 50)/1.5 + 40;
-  
-    //         grid_sys_alert_set_alert(&grid_sys_state, intensity, intensity*0.75, 0, 1, 1000);
-
-
-            
-    //         nvm->clear_bulk_page_index++;
-	// 	}
-	// 	else{
-			
-	// 		nvm->clear_bulk_page_index = 0;
-	// 		nvm->clear_bulk_status = 0;
-			
-			
-	// 		uint8_t acknowledge = 1;
-
-	// 		// Generate ACKNOWLEDGE RESPONSE
-	// 		struct grid_msg response;
-				
-	// 		grid_msg_init(&response);
-	// 		grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
-
-	// 		uint8_t response_payload[10] = {0};
-	// 		sprintf(response_payload, GRID_CLASS_LOCALCLEAR_frame);
-
-	// 		grid_msg_body_append_text(&response, response_payload, strlen(response_payload));
-				
-	// 		if (acknowledge == 1){
-	// 			grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-    //             grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
-    //         }
-	// 		else{
-	// 			grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
-    //             grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
-    //         }
-
-				
-	// 		grid_msg_packet_close(&response);
-	// 		grid_msg_packet_send_everywhere(&response);
-            
-            
-            
-    //         grid_ui_reinit_local(&grid_ui_state);
-						
-	// 	}
-		
-		
-		
-	// }
-	
-	
-	
-	
-}
+	    // START: NEW
+	uint32_t cycles_limit = 1000*120;  // 1ms
+	uint32_t cycles_start = grid_d51_dwt_cycles_read();
 
 
 
+	while(nvm->clear_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){
 
+		if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){		
+			printf("CYCLES LIMIT HIT\r\n");
+			return;
+		}
 
-void grid_nvm_clear_read_buffer(struct grid_nvm_model* mod){
-	
-	for (uint32_t i=0; i<GRID_NVM_PAGE_SIZE; i++){
-		
-		mod->read_buffer[i] = 255;
-		
+		flash_erase(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+
+		nvm->clear_bulk_address += GRID_NVM_BLOCK_SIZE;
+
 	}
 
-	mod->read_buffer_status = GRID_NVM_BUFFER_STATUS_EMPTY;
-	mod->read_buffer_length = 0;
-	
-}
+	nvm->store_bulk_status = 0;
 
-void grid_nvm_clear_write_buffer(struct grid_nvm_model* mod){
-	
-	for (uint32_t i=0; i<GRID_NVM_PAGE_SIZE; i++){
+	uint8_t acknowledge = 1;
+
+	// Generate ACKNOWLEDGE RESPONSE
+	struct grid_msg response;
 		
-		mod->write_buffer[i] = 255;
+	grid_msg_init(&response);
+	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+
+	uint8_t response_payload[10] = {0};
+	sprintf(response_payload, GRID_CLASS_CONFIGERASE_frame);
+
+	grid_msg_body_append_text(&response, response_payload);
 		
+	if (acknowledge == 1){
+		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+		grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
 	}
+	else{
+		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+		grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
+	}
+
+		
+	grid_msg_packet_close(&response);
 	
-	mod->write_buffer_status = GRID_NVM_BUFFER_STATUS_EMPTY;
-	mod->write_buffer_length = 0;
-	mod->write_target_address = -1;
-}
-
-
-uint32_t grid_nvm_calculate_event_page_offset(struct grid_nvm_model* nvm, struct grid_ui_event* eve){
 	
-	
-
-	printf("grid_nvm_calculate_event_page_offset not implemented\r\n");
-
-	
-	// uint8_t bank_number		= eve->parent->parent->index;
-	// uint8_t element_number	= eve->parent->index;
-	// uint8_t event_number	= eve->index;
-
-	// return GRID_NVM_STRATEGY_BANK_size * bank_number + GRID_NVM_STRATEGY_ELEMENT_size * element_number + GRID_NVM_STRATEGY_EVENT_size * event_number;
+	nvm->clear_bulk_status = 0;
 	
 }
+

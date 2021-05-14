@@ -673,9 +673,9 @@ enum grid_ui_event_t
 // DEFAULT ACTION:                     FIRST MIDI then LED_SET_PHASE
 
 
-#define GRID_ACTIONSTRING_INIT_POT "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) ?>"
-#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) ?>"
-#define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) --[[@glc]]glc(this.ind(), 2, glr(), glg(), glb()) ?>"
+#define GRID_ACTIONSTRING_INIT_POT "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) --[[@glp]]glp(this.ind(), 1, this.pva()) ?>"
+#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) --[[@glp]]glp(this.ind(), 1, this.bva()) ?>"
+#define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@glc]]glc(this.ind(), 1, glr(), glg(), glb()) --[[@glc]]glc(this.ind(), 2, glr(), glg(), glb()) --[[@glp]]glp(this.ind(), 1, this.bva()) --[[@glp]]glp(this.ind(), 2, this.eva()) ?>"
 
 
 
@@ -748,10 +748,10 @@ enum grid_ui_event_t
 
 
 #define GRID_CLASS_CONFIGSTORE_code 0x061
-#define GRID_CLASS_CONFIGSTORE_frame "%c%03xe%c", GRID_CONST_STX, GRID_CLASS_LOCALSTORE_code, GRID_CONST_ETX
+#define GRID_CLASS_CONFIGSTORE_frame "%c%03xe%c", GRID_CONST_STX, GRID_CLASS_CONFIGSTORE_code, GRID_CONST_ETX
 
 #define GRID_CLASS_CONFIGERASE_code 0x062
-#define GRID_CLASS_CONFIGERASE_frame "%c%03xe%c", GRID_CONST_STX, GRID_CLASS_LOCALCLEAR_code, GRID_CONST_ETX
+#define GRID_CLASS_CONFIGERASE_frame "%c%03xe%c", GRID_CONST_STX, GRID_CLASS_CONFIGERASE_code, GRID_CONST_ETX
 
 
 // RUN imediate

@@ -22,20 +22,18 @@ void grid_hardwaretest_main(){
 
 
 	uint8_t clear_in_progress = 1;
-	uint32_t clear_max_offset = GRID_NVM_STRATEGY_BANK_maxcount*GRID_NVM_STRATEGY_ELEMENT_maxcount*GRID_NVM_STRATEGY_EVENT_maxcount;
-	uint32_t clear_offset = 0;
-
-	flash_erase(grid_nvm_state.flash, GRID_NVM_GLOBAL_BASE_ADDRESS, 1);
-				
+	uint32_t clear_max_offset = GRID_NVM_LOCAL_END_ADDRESS;
+	uint32_t clear_address = GRID_NVM_LOCAL_BASE_ADDRESS;
+		
 
 	while(1){
 
 
 		if (clear_in_progress){
 			
-			if (clear_offset < clear_max_offset){
-				flash_erase(grid_nvm_state.flash, GRID_NVM_LOCAL_BASE_ADDRESS + GRID_NVM_PAGE_OFFSET*clear_offset, 1);
-				clear_offset++;
+			if (clear_address < clear_max_offset){
+				flash_erase(grid_nvm_state.flash, clear_address, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+				clear_address+= GRID_NVM_BLOCK_SIZE;
 			}
 			else{
 				//Done!

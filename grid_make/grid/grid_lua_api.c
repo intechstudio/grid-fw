@@ -728,7 +728,6 @@ static int l_grid_page_load(lua_State* L) {
 
     grid_msg_set_parameter(response, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, page, NULL);
 
-    printf("PAGE LOAD: %d\r\n", page);  
     strcat(grid_lua_state.stdo, response);
 
     return 1;

@@ -28,39 +28,6 @@
 // 1024 page * 512byte/page = 0.5MB
 
 
-// Every event is stored in one page
-#define GRID_NVM_STRATEGY_EVENT_maxcount	10
-
-// Max 10 event in each element
-#define GRID_NVM_STRATEGY_ELEMENT_maxcount	16
-
-// Max 16 element in each bank
-#define GRID_NVM_STRATEGY_BANK_maxcount		4
-
-
-// Next event is 1 page away
-#define GRID_NVM_STRATEGY_EVENT_size		1
-
-// Next element is 10 page away
-#define GRID_NVM_STRATEGY_ELEMENT_size		GRID_NVM_STRATEGY_EVENT_size * GRID_NVM_STRATEGY_EVENT_maxcount
-
-// Next bank is 160 page away
-#define GRID_NVM_STRATEGY_BANK_size			GRID_NVM_STRATEGY_ELEMENT_size * GRID_NVM_STRATEGY_ELEMENT_maxcount
-
-
-
-
-enum grid_nvm_buffer_status_t{
-
-	GRID_NVM_BUFFER_STATUS_UNINITIALIZED,
-	GRID_NVM_BUFFER_STATUS_INITIALIZED,
-	GRID_NVM_BUFFER_STATUS_EMPTY,
-	GRID_NVM_BUFFER_STATUS_DIRTY,
-	GRID_NVM_BUFFER_STATUS_DONE,
-		
-};
-
-
 
 struct grid_nvm_toc_entry{
 
@@ -82,37 +49,20 @@ struct grid_nvm_model{
 
 	struct flash_descriptor* flash;
 
-	uint32_t next_write_offset;
-
-
-	uint32_t bank_settings_page_address;
-
 	uint8_t status;
-	
-	uint8_t read_buffer[GRID_NVM_PAGE_SIZE];
-	uint32_t read_buffer_length;
-	enum grid_nvm_buffer_status_t read_buffer_status;
-	uint32_t read_source_address;
-	
-	uint8_t write_buffer[GRID_NVM_PAGE_SIZE];
-	uint32_t write_buffer_length;
-	enum grid_nvm_buffer_status_t write_buffer_status;
-	uint32_t write_target_address;
-	
-	
-	
-	uint32_t read_bulk_page_index;
-	uint8_t read_bulk_status;
-	
-	uint32_t clear_bulk_page_index;
-	uint8_t clear_bulk_status;
-    
-	uint32_t store_bulk_page_index;
-	uint8_t store_bulk_status;
-	
-	uint32_t write_bulk_page_index;
-	uint8_t write_bulk_status;
 
+
+	uint8_t read_bulk_status;
+	uint8_t read_bulk_last_element;
+	uint8_t read_bulk_last_event;
+	
+	uint8_t clear_bulk_status;
+	uint32_t clear_bulk_address;
+    
+	uint8_t store_bulk_status;
+
+
+	uint32_t next_write_offset;
 	struct grid_nvm_toc_entry* toc_head;
 	uint16_t toc_count;
 
@@ -127,7 +77,6 @@ uint8_t grid_nvm_toc_entry_update(struct grid_nvm_toc_entry* entry, uint32_t con
 uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type);
 
 uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct grid_nvm_toc_entry* entry, uint8_t* targetstring);
-
 
 uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod);
 
@@ -149,7 +98,6 @@ struct grid_nvm_model grid_nvm_state;
 void grid_nvm_init(struct grid_nvm_model* mod, struct flash_descriptor* flash_instance);
 
 
-
 void grid_nvm_toc_init(struct grid_nvm_model* mod);
 
 
@@ -166,13 +114,6 @@ void	grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 void	grid_nvm_ui_bulk_store_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 uint8_t grid_nvm_ui_bulk_store_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 void	grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
-
-
-void grid_nvm_clear_read_buffer(struct grid_nvm_model* mod);
-void grid_nvm_clear_write_buffer(struct grid_nvm_model* mod);
-
-
-uint32_t grid_nvm_calculate_event_page_offset(struct grid_nvm_model* nvm, struct grid_ui_event* eve);
 
 
 #endif /* GRID_NVM_H_ */

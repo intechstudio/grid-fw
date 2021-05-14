@@ -608,15 +608,7 @@ void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 	uint8_t new_page = mod->bank_activebank_number;
 
 	
-	// Call the page_change callback
 
-	for (uint8_t i = 0; i < grid_ui_state.element_list_length; i++)
-	{	
-		if (grid_ui_state.element_list[i].page_change_cb != NULL){
-
-			grid_ui_state.element_list[i].page_change_cb(old_page, new_page);
-		}
-	}
 	
 	
 

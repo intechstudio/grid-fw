@@ -99,7 +99,9 @@ struct grid_ui_model
 
 struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_element* ele);
 
+uint8_t grid_ui_template_buffer_list_length(struct grid_ui_element* ele);
 
+struct grid_ui_template_buffer* grid_ui_template_buffer_find(struct grid_ui_element* ele, uint8_t page);
 
 
 volatile struct grid_ui_model grid_ui_state;
@@ -111,24 +113,13 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid_ui_event_t event_type);
 
 
-void grid_ui_nvm_store_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm);
-void grid_ui_nvm_load_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm);
-void grid_ui_nvm_clear_all_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm);
-
 uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page, uint8_t element, enum grid_ui_event_t event_type);
-
-uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page);
-uint8_t grid_ui_page_store(struct grid_ui_model* ui, struct grid_nvm_model* nvm);
-
-
-
-uint8_t grid_ui_nvm_store_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve);
-uint8_t grid_ui_nvm_load_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve);
-uint8_t grid_ui_nvm_clear_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, struct grid_ui_event* eve);
-
 
 void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* targetstring);
 void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* targetstring);
+
+uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page);
+
 
 struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
 

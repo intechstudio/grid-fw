@@ -1252,19 +1252,14 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		
 		
 				if (msg_class == GRID_CLASS_PAGEACTIVE_code){
-					
-					printf("PAGE CHANGE\r\n");
-					uint8_t banknumber = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset], GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, &error_flag);
+						
+					uint8_t page = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset], GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, &error_flag);
 									
 					if (msg_instr == GRID_INSTR_EXECUTE_code){ //SET BANK
-									
-						if (grid_sys_get_bank_valid(&grid_sys_state) == 0){
-							
-							struct grid_ui_event* eve = NULL;
 
-						}
-																
-						grid_sys_set_bank(&grid_sys_state, banknumber);
+						grid_ui_page_load(&grid_ui_state, &grid_nvm_state, page);
+
+						grid_sys_set_bank(&grid_sys_state, page);
 													
 					}
 					
@@ -1556,12 +1551,13 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			
 				else if (msg_class == GRID_CLASS_CONFIGSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_ui_page_store(&grid_ui_state, &grid_nvm_state);
+					grid_nvm_ui_bulk_store_init(&grid_ui_state, &grid_nvm_state);
 
 				}
 				else if (msg_class == GRID_CLASS_CONFIGERASE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_nvm_erase_all(&grid_nvm_state);
+					grid_nvm_ui_bulk_clear_init(&grid_ui_state, &grid_nvm_state);
+					//grid_nvm_erase_all(&grid_nvm_state);
 
 				}
 				else if (msg_class == GRID_CLASS_CONFIG_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){

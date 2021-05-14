@@ -814,6 +814,13 @@ int main(void)
 	grid_nvm_toc_init(&grid_nvm_state);
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "TOC Initialized");
 	grid_ui_page_load(&grid_ui_state, &grid_nvm_state, 0); //load page 0;
+
+	while (grid_nvm_ui_bulk_read_is_in_progress(&grid_nvm_state, &grid_ui_state))
+	{
+		grid_nvm_ui_bulk_read_next(&grid_nvm_state, &grid_ui_state);
+	}
+	
+
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "UI Page0 loaded");
 
 	// grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
