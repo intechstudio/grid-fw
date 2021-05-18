@@ -214,14 +214,19 @@
 #define GRID_CLASS_DEBUGTASK_OUTPUT_length 0
 
 
-// PAGE
+// PAGEACTIVE
 #define GRID_CLASS_PAGEACTIVE_code 0x030
 #define GRID_CLASS_PAGEACTIVE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGEACTIVE_code, GRID_CONST_ETX
 
 #define GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset 5
 #define GRID_CLASS_PAGEACTIVE_PAGENUMBER_length 2
 
+// PAGECOUNT
+#define GRID_CLASS_PAGECOUNT_code 0x031
+#define GRID_CLASS_PAGECOUNT_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGECOUNT_code, GRID_CONST_ETX
 
+#define GRID_CLASS_PAGECOUNT_PAGENUMBER_offset 5
+#define GRID_CLASS_PAGECOUNT_PAGENUMBER_length 2
 
 // LED SET PHASE
 
@@ -474,10 +479,6 @@ stored config date
 #define GRID_LUA_FNC_E_ENCODER_STATE_short "est"
 #define GRID_LUA_FNC_E_ENCODER_STATE_human "encoder_state"
 
-
-#define GRID_LUA_FNC_E_ACTION_INIT_short "init"
-#define GRID_LUA_FNC_E_ACTION_INIT_human "init"
-
 #define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short "ec"
 #define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_human "encoder_change"
 
@@ -557,6 +558,9 @@ stored config date
 #define GRID_LUA_FNC_P_POTMETER_STATE_short "pst"
 #define GRID_LUA_FNC_P_POTMETER_STATE_human "potmeter_state"
 
+#define GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short "pc"
+#define GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_human "potmeter_change"
+
 // Encoder parameters
 #define GRID_LUA_FNC_P_LIST_length 8
 
@@ -573,6 +577,7 @@ stored config date
 	e." GRID_LUA_FNC_P_POTMETER_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_ELAPSED_helper ", a) end \
 	e." GRID_LUA_FNC_P_POTMETER_STATE_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_STATE_helper ", a) end \
 	\
+	e."GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (a) print('undefined action') end\
     end"
 
 
@@ -618,6 +623,9 @@ stored config date
 #define GRID_LUA_FNC_B_BUTTON_STATE_short "bst"
 #define GRID_LUA_FNC_B_BUTTON_STATE_human "button_state"
 
+#define GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short "bc"
+#define GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_human "button_change"
+
 // Encoder parameters
 #define GRID_LUA_FNC_B_LIST_length 8
 
@@ -634,6 +642,7 @@ stored config date
 	e." GRID_LUA_FNC_B_BUTTON_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_ELAPSED_helper ", a) end \
 	e." GRID_LUA_FNC_B_BUTTON_STATE_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_STATE_helper ", a) end \
 	\
+	e."GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (a) print('undefined action') end\
     end"
 
 

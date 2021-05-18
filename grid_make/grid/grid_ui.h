@@ -89,6 +89,7 @@ struct grid_ui_model
 	enum grid_ui_status status;
 	
 	uint8_t page_activepage;
+	uint8_t page_count;
 
 	uint8_t						element_list_length;
 	struct	grid_ui_element*	element_list;

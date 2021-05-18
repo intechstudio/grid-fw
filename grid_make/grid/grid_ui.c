@@ -235,6 +235,7 @@ void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
 	mod->status = GRID_UI_STATUS_INITIALIZED;
 
 	mod->page_activepage = 0;
+	mod->page_count = 4;
 
 	mod->element_list_length = element_list_length;	
 
@@ -636,6 +637,7 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 
 void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* action_string){
 		
+	struct grid_ui_element* ele = eve->parent;
 
 	if (strlen(action_string) == 0){
 
@@ -644,10 +646,9 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 
 	}
 
-
 	if (eve->type == GRID_UI_EVENT_EC){
 
-		uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
+		uint8_t temp[GRID_UI_ACTION_STRING_maxlength+100] = {0};
 		uint32_t len = strlen(action_string);
 		action_string[len-3] = '\0';
 		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
@@ -656,13 +657,35 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		grid_lua_dostring(&grid_lua_state, temp);
 
 		sprintf(eve->action_string, action_string);
+	}	
+	if (eve->type == GRID_UI_EVENT_AC){
+
+		uint8_t temp[GRID_UI_ACTION_STRING_maxlength+100] = {0};
+		uint32_t len = strlen(action_string);
+		action_string[len-3] = '\0';
+		sprintf(temp, "ele[%d]."GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+		action_string[len-3] = ' ';
+
+		grid_lua_dostring(&grid_lua_state, temp);
+
+		sprintf(eve->action_string, action_string);
 	}
 	else if (eve->type == GRID_UI_EVENT_BC){
 
-		uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
+		uint8_t temp[GRID_UI_ACTION_STRING_maxlength+100] = {0};
 		uint32_t len = strlen(action_string);
 		action_string[len-3] = '\0';
-		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+
+		if (ele->type = GRID_UI_ELEMENT_ENCODER){
+			sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+		}
+		else if (ele->type = GRID_UI_ELEMENT_BUTTON){
+			sprintf(temp, "ele[%d]."GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+		}
+		else{
+			printf("Unsupported Element\r\n");
+		}
+
 		action_string[len-3] = ' ';
 
 		grid_lua_dostring(&grid_lua_state, temp);
@@ -852,6 +875,11 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 	if (eve->type == GRID_UI_EVENT_EC){
 
 		sprintf(temp, "<?lua ele[%d]."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short"() ?>", eve->parent->index);
+
+	}	
+	else if (eve->type == GRID_UI_EVENT_AC){
+
+		sprintf(temp, "<?lua ele[%d]."GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short"() ?>", eve->parent->index);
 
 	}
 	else if (eve->type == GRID_UI_EVENT_BC){
