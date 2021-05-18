@@ -487,6 +487,7 @@ volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
 volatile uint8_t reportflag = 0;
+volatile uint8_t heartbeatflag = 0;
 
 static struct timer_task RTC_Scheduler_rx_task;
 static struct timer_task RTC_Scheduler_ping;
@@ -558,28 +559,11 @@ void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 }
 
 
+
 void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
 {
 
-	struct grid_msg response;
-
-	grid_msg_init(&response);
-	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
-
-	uint8_t temp[30] = {0};
-	sprintf(temp, GRID_CLASS_HEARTBEAT_frame);
-	grid_msg_body_append_text(&response, temp);
-
-	grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-
-	grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, grid_sys_state.heartbeat_type);
-	grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(&grid_sys_state));
-	grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
-	grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
-	grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
-
-	grid_msg_packet_close(&response);
-	grid_msg_packet_send_everywhere(&response);
+	heartbeatflag = 1;
 
 }
 
@@ -951,7 +935,33 @@ int main(void)
 		lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
 
 
-		
+		if (heartbeatflag){
+
+			heartbeatflag = 0;
+
+			
+			struct grid_msg response;
+
+			grid_msg_init(&response);
+			grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+
+			uint8_t temp[30] = {0};
+			sprintf(temp, GRID_CLASS_HEARTBEAT_frame);
+			grid_msg_body_append_text(&response, temp);
+
+			grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+
+			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, grid_sys_state.heartbeat_type);
+			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(&grid_sys_state));
+			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
+			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
+			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
+
+			grid_msg_packet_close(&response);
+			grid_msg_packet_send_everywhere(&response);
+
+
+		}
 
 
 		if (reportflag){

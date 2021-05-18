@@ -139,7 +139,8 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	}
 	
 	
-	if (por->cooldown > 10){
+	if (por->cooldown > 4){
+		printf("SKIP\r\n");
 		// dummy calls to make sure subtask after return are counted properly
 		grid_d51_task_next(ui->task);		
 		grid_d51_task_next(ui->task);		
@@ -197,7 +198,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 		
 		//por->cooldown += (2+por->cooldown/2);
-		por->cooldown += 10;
+		por->cooldown += 2;
 		//por->cooldown = 3;
 		
 		

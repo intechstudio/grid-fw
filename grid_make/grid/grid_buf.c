@@ -1251,7 +1251,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
 		
 		
-				if (msg_class == GRID_CLASS_PAGEACTIVE_code && (position_is_global || position_is_me)){
+				if (msg_class == GRID_CLASS_PAGEACTIVE_code){ // dont check address!
 						
 					uint8_t page = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset], GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, &error_flag);
 									
