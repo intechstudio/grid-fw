@@ -926,6 +926,8 @@ int main(void)
 		}
 		
 
+		
+
 		usb_task_inner(grid_usb_task);
 	
 		nvm_task_inner(grid_nvm_task);
@@ -934,10 +936,10 @@ int main(void)
 
 		//lua_gc(grid_lua_state.L, LUA_GCSTOP);
 
+
+
 		ui_task_inner(grid_ui_task);
 
-		//lua_gc(grid_lua_state.L, LUA_GCRESTART);
-	
 		inbound_task_inner(grid_inbound_task);
 
 		outbound_task_inner(grid_outbound_task);

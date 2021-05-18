@@ -107,6 +107,8 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 
 				if (grid_ui_encoder_array[i].button_value == 0){ // Button Press
 		
+					template_parameter_list[GRID_LUA_FNC_E_BUTTON_STATE_index] = 127;
+
 					// Button ABS
 					if (template_parameter_list[GRID_LUA_FNC_E_BUTTON_MODE_index] == 0){
 
@@ -123,6 +125,8 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 				}
 				else{  // Button Release
 				
+					template_parameter_list[GRID_LUA_FNC_E_BUTTON_STATE_index] = 0;
+
 					// Button ABS
 					if (template_parameter_list[GRID_LUA_FNC_E_BUTTON_MODE_index] == 0){
 
@@ -171,6 +175,8 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 				int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
 				int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
 
+
+				template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] += delta_velocity;
 
 				if (new_value + delta_velocity < min){
 					new_value = min;

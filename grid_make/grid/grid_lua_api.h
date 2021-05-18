@@ -35,6 +35,8 @@ struct grid_lua_model{
 
     uint8_t stde[GRID_LUA_STDE_LENGTH];
 
+    uint32_t dostring_count;
+
 };
 
 struct grid_lua_model grid_lua_state;
@@ -42,6 +44,8 @@ struct grid_lua_model grid_lua_state;
 
 
 uint8_t grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message);
+void grid_lua_gc_try_collct(struct grid_lua_model* mod);
+
 static int grid_lua_panic(lua_State *L);
 
 uint8_t grid_lua_init(struct grid_lua_model* mod);

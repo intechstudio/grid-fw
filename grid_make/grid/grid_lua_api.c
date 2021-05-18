@@ -787,6 +787,8 @@ uint8_t grid_lua_init(struct grid_lua_model* mod){
     grid_lua_clear_stdi(mod);
     grid_lua_clear_stde(mod);
 
+    mod->dostring_count = 0;
+
 }
 
 uint8_t grid_lua_deinit(struct grid_lua_model* mod){
@@ -941,7 +943,22 @@ uint8_t grid_lua_stop_vm(struct grid_lua_model* mod){
 
 
 
+void grid_lua_gc_try_collect(struct grid_lua_model* mod){
+
+    if (lua_gc(mod->L, LUA_GCCOUNT)>60){ //60kb
+
+        lua_gc(mod->L, LUA_GCCOLLECT);
+        grid_lua_debug_memory_stats(mod, "gc 60kb");
+        mod->dostring_count = 0;
+
+    }
+
+
+}
+
 uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
+
+    mod->dostring_count++;
 
     if (luaL_loadstring(mod->L, code) == LUA_OK){
 
@@ -960,6 +977,9 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
     else{
         printf("LUA not OK:  %s\r\n", code);
     }
+
+
+    grid_lua_gc_try_collect(mod);
 
 }
 

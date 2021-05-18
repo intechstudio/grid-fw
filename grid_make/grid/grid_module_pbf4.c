@@ -109,6 +109,9 @@ void grid_module_pbf4_hardware_transfer_complete_cb(void){
 				if (res_value == 0){ // Button Press Event
 
 
+					// for display in editor
+   					template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 127;
+
 					if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
 						
 						// Button ABS
@@ -140,7 +143,10 @@ void grid_module_pbf4_hardware_transfer_complete_cb(void){
 					
 				}
 				else{  // Button Release Event
-					
+
+					// for display in editor
+   					template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 0;	
+
 					if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
 						
 						// Button ABS
@@ -221,6 +227,10 @@ void grid_module_pbf4_hardware_transfer_complete_cb(void){
 				int32_t next = value * (max - min) / range_max + min;
 
 				template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
+
+				// for display in editor
+				int32_t state = value * (127 - 0) / range_max;
+				template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
 		
 				struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[res_index], GRID_UI_EVENT_AC);
 				grid_ui_event_trigger(eve);		

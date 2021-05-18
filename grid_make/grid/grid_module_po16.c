@@ -108,7 +108,12 @@ static void grid_module_po16_hardware_transfer_complete_cb(void){
 			int32_t next = value * (max - min) / range_max + min;
 
 			template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
-    
+
+			
+			// for display in editor
+			int32_t state = value * (127 - 0) / range_max;
+   			template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
+
 			struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[res_index], GRID_UI_EVENT_AC);
 			grid_ui_event_trigger(eve);	
 			

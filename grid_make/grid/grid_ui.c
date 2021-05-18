@@ -55,8 +55,6 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	}			
 
 	grid_d51_task_next(ui->task);
-		
-
 	
 	//LOCAL MESSAGES
 	if (message_local_action_available){
@@ -687,10 +685,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 
 
 	eve->cfg_changed_flag = 1;
-	//printf("action: %s\r\n", eve->action_string);
 
-	//grid_lua_debug_memory_stats(&grid_lua_state, "R.A.S.");
-	lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
 	
 }
 
@@ -812,7 +807,26 @@ uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, uint8_t* target_s
 	uint8_t page = eve->parent->parent->page_activepage;
 	uint8_t element = eve->parent->index;
 	uint8_t event = eve->type;
-	uint8_t param = 7;
+	uint8_t param = 0;
+
+	if (eve->parent->type == GRID_UI_ELEMENT_POTENTIOMETER){
+		param = eve->parent->template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index];
+	}
+	else if (eve->parent->type == GRID_UI_ELEMENT_BUTTON){
+		param = eve->parent->template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index];
+	}
+	else if (eve->parent->type == GRID_UI_ELEMENT_ENCODER && eve->action_string == GRID_UI_EVENT_EC){
+		param = eve->parent->template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index];
+	}
+	else if (eve->parent->type == GRID_UI_ELEMENT_ENCODER && eve->action_string == GRID_UI_EVENT_BC){
+		param = eve->parent->template_parameter_list[GRID_LUA_FNC_E_BUTTON_STATE_index];
+	}
+
+	// map mapmode to element 255
+	if (eve->parent->type == GRID_UI_ELEMENT_SYSTEM){
+		element = 255;
+	}
+
 
 	sprintf(target_string, GRID_CLASS_EVENT_frame);
 
@@ -829,11 +843,11 @@ uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, uint8_t* target_s
 
 uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_string){
 
-	
-	uint8_t temp[500] = {0};
+
+	uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
 
 	uint32_t i=0;
-	
+
 
 	if (eve->type == GRID_UI_EVENT_EC){
 
@@ -859,15 +873,11 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 	}
 
-
-
 	// new php style implementation
 	uint32_t code_start = 0;
 	uint32_t code_end = 0;
 	uint32_t code_length = 0;
 	uint32_t code_type = 0;  // 0: nocode, 1: expr, 2: lua
-
-
 
 	uint32_t total_substituted_length = 0;
 

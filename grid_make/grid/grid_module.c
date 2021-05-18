@@ -136,9 +136,6 @@ void grid_module_common_init(void){
 	gpio_set_pin_level(UI_PWR_EN, true);
 
 
-
-
-
 	// ADC SETUP	
 	
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevC){
@@ -189,8 +186,6 @@ void grid_module_common_init(void){
 
 void grid_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf){
 
-	printf("POTIKA\r\n");
-
 	uint8_t element_index = buf->parent->index;
 	int32_t* template_parameter_list = buf->template_parameter_list;
 
@@ -201,6 +196,7 @@ void grid_element_potmeter_template_parameter_init(struct grid_ui_template_buffe
 	template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index] 		= 127;
 	template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index] 	= 7;
 	template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] 	= 0;
+	template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] 	= 0;
 
 
 }
@@ -240,6 +236,7 @@ void grid_element_encoder_template_parameter_init(struct grid_ui_template_buffer
 	template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index] 		= 128 - 1;
 	template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] 		= 0;
 	template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] 	= 0;
+	template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] 	= 64;
 
 }
 
@@ -270,16 +267,20 @@ void grid_element_button_page_change_cb(uint8_t page_old, uint8_t page_new){
 void grid_element_encoder_event_clear_cb(struct grid_ui_event* eve){
 
 
-	// int32_t* template_parameter_list = eve->parent->template_parameter_list;
+	int32_t* template_parameter_list = eve->parent->template_parameter_list;
 
-	// if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] != 0){ // relative
 
-	// 	int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
-	// 	int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
 
-	// 	template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = ((max+1)-min)/2;
+	template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] = 64;
 
-	// }	
+	if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] != 0){ // relative
+
+		int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
+		int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
+
+		template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = ((max+1)-min)/2;
+
+	}	
  
 }
 
@@ -310,17 +311,17 @@ void grid_element_potmeter_event_clear_cb(struct grid_ui_event* eve){
 
 void grid_element_potmeter_page_change_cb(uint8_t page_old, uint8_t page_new){
 
-	grid_sys_state.bank_active_changed = 0;
+	// grid_sys_state.bank_active_changed = 0;
 	
-	for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
+	// for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
 		
-		struct grid_ui_event* eve = NULL;
+	// 	struct grid_ui_event* eve = NULL;
 
-		eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_INIT);
-		grid_ui_event_trigger_local(eve);	
+	// 	eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_INIT);
+	// 	grid_ui_event_trigger_local(eve);	
 
-		eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_AC);
-		grid_ui_event_trigger_local(eve);	
+	// 	eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_AC);
+	// 	grid_ui_event_trigger_local(eve);	
 								
-	}
+	// }
 }

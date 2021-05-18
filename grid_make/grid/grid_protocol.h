@@ -1,3 +1,17 @@
+/**
+ * \file grid_protocol.h
+ * \brief This file defines the communictaion classes and protocol constants of Grid.
+ *
+ * Here typically goes a more extensive explanation of what the header
+ * defines. Doxygens tags are words preceeded by either a backslash @\
+ * or by an at symbol @@.
+ * 
+ * \author Suku Wc (Intech Studio)
+ * \see https://intech.studio/
+ * \see https://github.com/intechstudio/grid-fw/
+ */
+
+
 #ifndef GRID_PROTOCOL_H_INCLUDED
 #define GRID_PROTOCOL_H_INCLUDED
 
@@ -6,6 +20,7 @@
 #define GRID_PROTOCOL_VERSION_PATCH 9
 
 // Module HWCFG definitions
+
 
 #define GRID_MODULE_PO16_RevB 0
 #define GRID_MODULE_PO16_RevC 8
@@ -20,6 +35,7 @@
 
 #define GRID_MODULE_EN16_ND_RevA 200
 #define GRID_MODULE_EN16_ND_RevD 201
+
 
 #define GRID_PARAMETER_HEARTBEAT_interval 250
 #define GRID_PARAMETER_PING_interval 100
@@ -453,6 +469,11 @@ stored config date
 #define GRID_LUA_FNC_E_ENCODER_ELAPSED_short "eel"
 #define GRID_LUA_FNC_E_ENCODER_ELAPSED_human "encoder_elapsed_time"
 
+#define GRID_LUA_FNC_E_ENCODER_STATE_index 14
+#define GRID_LUA_FNC_E_ENCODER_STATE_helper "14"
+#define GRID_LUA_FNC_E_ENCODER_STATE_short "est"
+#define GRID_LUA_FNC_E_ENCODER_STATE_human "encoder_state"
+
 
 #define GRID_LUA_FNC_E_ACTION_INIT_short "init"
 #define GRID_LUA_FNC_E_ACTION_INIT_human "init"
@@ -465,7 +486,7 @@ stored config date
 
 
 // Encoder parameters
-#define GRID_LUA_FNC_E_LIST_length 14
+#define GRID_LUA_FNC_E_LIST_length 15
 
 // Encoder init function
 #define GRID_LUA_E_LIST_init "init_encoder = function (e, i) \
@@ -486,6 +507,7 @@ stored config date
 	e." GRID_LUA_FNC_E_ENCODER_MAX_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MAX_helper ", a) end \
 	e." GRID_LUA_FNC_E_ENCODER_MODE_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MODE_helper ", a) end \
 	e." GRID_LUA_FNC_E_ENCODER_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_ELAPSED_helper ", a) end \
+	e." GRID_LUA_FNC_E_ENCODER_STATE_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_STATE_helper ", a) end \
 	\
 	e."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (a) print('undefined action') end\
 	e."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (a) print('undefined action') end\
@@ -530,8 +552,13 @@ stored config date
 #define GRID_LUA_FNC_P_POTMETER_ELAPSED_short "pel"
 #define GRID_LUA_FNC_P_POTMETER_ELAPSED_human "potmeter_elapsed_time"
 
+#define GRID_LUA_FNC_P_POTMETER_STATE_index 7
+#define GRID_LUA_FNC_P_POTMETER_STATE_helper "7"
+#define GRID_LUA_FNC_P_POTMETER_STATE_short "pst"
+#define GRID_LUA_FNC_P_POTMETER_STATE_human "potmeter_state"
+
 // Encoder parameters
-#define GRID_LUA_FNC_P_LIST_length 7
+#define GRID_LUA_FNC_P_LIST_length 8
 
 // Encoder init function
 #define GRID_LUA_P_LIST_init "init_potmeter = function (e, i) \
@@ -544,6 +571,7 @@ stored config date
 	e." GRID_LUA_FNC_P_POTMETER_MAX_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MAX_helper ", a) end \
 	e." GRID_LUA_FNC_P_POTMETER_MODE_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MODE_helper ", a) end \
 	e." GRID_LUA_FNC_P_POTMETER_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_ELAPSED_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_STATE_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_STATE_helper ", a) end \
 	\
     end"
 
@@ -664,11 +692,9 @@ enum grid_ui_event_t
 #define 	GRID_EVENT_AC	"01"
 #define 	GRID_EVENT_EC	"02"
 #define 	GRID_EVENT_BC	"03"
+#define 	GRID_EVENT_MAP	"04"
 
 // BANK + ELEMENT NUMBER + EVENT TYPE + PARAMETER
-
-
-
 
 // DEFAULT ACTION:                     FIRST MIDI then LED_SET_PHASE
 

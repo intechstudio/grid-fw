@@ -94,7 +94,9 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 			
 			if (res_value == 0){ // Button Press Event
 
-
+				// for display in editor
+				template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 127;
+					
 				if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
 					
 					// Button ABS
@@ -127,7 +129,10 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 				
 			}
 			else{  // Button Release Event
-				
+
+				// for display in editor
+				template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 0;
+
 				if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
 					
 					// Button ABS
