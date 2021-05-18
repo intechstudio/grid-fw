@@ -25,6 +25,49 @@ static int grid_lua_panic(lua_State *L) {
 }
 
 
+
+static int l_grid_keyboard_send(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs%3 != 0 || nargs == 0){
+
+        printf("kb invalid params %d\r\n", nargs);
+        return 0;
+    }
+
+
+    uint8_t temp[100] = {0};
+    sprintf(temp, GRID_CLASS_HIDKEYBOARD_frame_start);
+
+    grid_msg_set_parameter(temp, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+
+    for (int i=1; i <= nargs; i+=3) {
+
+        uint8_t ismodifier = lua_tonumber(L, i);
+        uint8_t keystate = lua_tonumber(L, i+1);
+        uint8_t keycode = lua_tonumber(L, i+2);
+        
+        printf("kb: %d %d %d \r\n", ismodifier, keystate, keycode);
+
+        grid_msg_set_parameter(&temp[(i-1)/3*4], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, ismodifier, NULL);
+        grid_msg_set_parameter(&temp[(i-1)/3*4], GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset, GRID_CLASS_HIDKEYBOARD_KEYSTATE_length, keystate, NULL);
+        grid_msg_set_parameter(&temp[(i-1)/3*4], GRID_CLASS_HIDKEYBOARD_KEYCODE_offset, GRID_CLASS_HIDKEYBOARD_KEYCODE_length, keycode, NULL);
+         
+    }
+
+    grid_msg_set_parameter(temp, GRID_CLASS_HIDKEYBOARD_LENGTH_offset, GRID_CLASS_HIDKEYBOARD_LENGTH_length, nargs/3*4, NULL);
+         
+    temp[strlen(temp)] = GRID_CONST_ETX;
+
+    strcat(grid_lua_state.stdo, temp);
+
+    printf("keyboard: %s\r\n", temp); 
+
+    return 1;
+}
+
+
 static int l_my_print(lua_State* L) {
 
     int nargs = lua_gettop(L);
@@ -752,6 +795,8 @@ static const struct luaL_Reg printlib [] = {
     {GRID_LUA_FNC_G_LED_PSF_short,          GRID_LUA_FNC_G_LED_PSF_fnptr},
 
     {GRID_LUA_FNC_G_MIDI_SEND_short,        GRID_LUA_FNC_G_MIDI_SEND_fnptr},
+
+    {GRID_LUA_FNC_G_KEYBOARD_SEND_short,        GRID_LUA_FNC_G_KEYBOARD_SEND_fnptr},
 
     {GRID_LUA_FNC_G_VERSION_MAJOR_short,    GRID_LUA_FNC_G_VERSION_MAJOR_fnptr},
     {GRID_LUA_FNC_G_VERSION_MINOR_short,    GRID_LUA_FNC_G_VERSION_MINOR_fnptr},

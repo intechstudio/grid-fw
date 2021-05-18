@@ -748,12 +748,10 @@ int main(void)
 		printf("I2C UNSUPPORTED!\r\n");
 	}
 
-
 	printf("QSPI\r\n");
 	qspi_test();
 
 	// grid_nvm_erase_all(&grid_nvm_state);
-
 
 	if (sys_i2c_enabled){
 		uint8_t id = grid_fusb302_read_id(SYS_I2C_io);
@@ -778,11 +776,6 @@ int main(void)
 	grid_keyboard_init(&grid_keyboard_state);
 		
 	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
-		
-		
-
-	
-
 
 	// Init Bank Color Bug when config was previously saved
 
@@ -793,7 +786,6 @@ int main(void)
 	// xCreatedInboundTask = xTaskCreateStatic(inbound_task, "Inb Task", TASK_INBOUND_STACK_SIZE, ( void * ) 1, TASK_INBOUND_PRIORITY, xStackInbound, &xTaskBufferInbound);
 	// xCreatedOutboundTask = xTaskCreateStatic(outbound_task, "Outb Task", TASK_OUTBOUND_STACK_SIZE, ( void * ) 1, TASK_OUTBOUND_PRIORITY, xStackOutbound, &xTaskBufferOutbound);
 	// xCreatedLedTask = xTaskCreateStatic(led_task, "Led Task", TASK_LED_STACK_SIZE, ( void * ) 1, TASK_LED_PRIORITY, xStackLed, &xTaskBufferLed);
-
 
 	//  x/512xb 0x80000
 	grid_module_common_init();
@@ -939,7 +931,7 @@ int main(void)
 
 			heartbeatflag = 0;
 
-			
+
 			struct grid_msg response;
 
 			grid_msg_init(&response);

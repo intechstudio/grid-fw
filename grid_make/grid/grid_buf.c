@@ -1129,24 +1129,32 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 			}
 			else if (msg_class == GRID_CLASS_HIDKEYBOARD_code && msg_instr == GRID_INSTR_EXECUTE_code){
 				
+				uint8_t length =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYBOARD_LENGTH_offset,		GRID_CLASS_HIDKEYBOARD_LENGTH_length);
 				
-				uint8_t key_ismodifier =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset,		GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length);
-				uint8_t key_state  =		grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset  ,			GRID_CLASS_HIDKEYBOARD_KEYSTATE_length);
-				uint8_t key_code =			grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYBOARD_KEYCODE_offset,				GRID_CLASS_HIDKEYBOARD_KEYCODE_length);
+				
 
-				
-				struct grid_keyboard_event_desc key;
-				
-				key.ismodifier = key_ismodifier;
-				key.keycode = key_code;
-				key.ispressed = key_state;
-				key.delay = 10;
-				
-				// key change fifo buffer
-				grid_keyboard_tx_push(key);
 
-				// instant keychange
-				// grid_keyboard_keychange(&grid_keyboard_state, &key);
+				for(uint8_t j=0; j<length; j+=4){
+
+					uint8_t key_ismodifier =	grid_msg_text_get_parameter(&message, current_start+j, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset,	GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length);
+					uint8_t key_state  =		grid_msg_text_get_parameter(&message, current_start+j, GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset,		GRID_CLASS_HIDKEYBOARD_KEYSTATE_length);
+					uint8_t key_code =			grid_msg_text_get_parameter(&message, current_start+j, GRID_CLASS_HIDKEYBOARD_KEYCODE_offset,		GRID_CLASS_HIDKEYBOARD_KEYCODE_length);
+				
+					printf("key: %d %d %d\r\n", key_ismodifier, key_state, key_code);
+
+					struct grid_keyboard_event_desc key;
+					
+					key.ismodifier = key_ismodifier;
+					key.keycode = key_code;
+					key.ispressed = key_state;
+					key.delay = 10;
+					
+					// key change fifo buffer
+
+					//grid_keyboard_tx_push(key);
+				}
+
+
 				
 			}
 			else{

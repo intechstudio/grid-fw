@@ -286,10 +286,6 @@
 
 #define GRID_TEMPLATE_UI_PARAMETER_LIST_LENGTH 20
 
-
-
-
-
 #define GRID_LUA_FNC_G_LED_RED_human 	"led_default_red"
 #define GRID_LUA_FNC_G_LED_RED_fnptr 	l_led_default_red
 #define GRID_LUA_FNC_G_LED_RED_short 	"glr"
@@ -338,6 +334,12 @@
 #define GRID_LUA_FNC_G_MIDI_SEND_short 	"gms"
 #define GRID_LUA_FNC_G_MIDI_SEND_human 	"midi_send"
 #define GRID_LUA_FNC_G_MIDI_SEND_fnptr 	l_grid_midi_send
+
+
+#define GRID_LUA_FNC_G_KEYBOARD_SEND_short 	"gks"
+#define GRID_LUA_FNC_G_KEYBOARD_SEND_human 	"keyboard_send"
+#define GRID_LUA_FNC_G_KEYBOARD_SEND_fnptr 	l_grid_keyboard_send
+
 
 #define GRID_LUA_FNC_G_RANDOM_short 	"grnd"
 #define GRID_LUA_FNC_G_RANDOM_human 	"random"
@@ -809,17 +811,20 @@ enum grid_ui_event_t
 // 091 HID KEYBOARD LOWLEVEL KEYPRESS/RELEASE
 
 #define GRID_CLASS_HIDKEYBOARD_code 0x091
-#define GRID_CLASS_HIDKEYBOARD_frame "%c%03x_....%c", GRID_CONST_STX, GRID_CLASS_HIDKEYBOARD_code, GRID_CONST_ETX
-#define GRID_CLASS_HIDKEYBOARD_frame_start "%c%03x_", GRID_CONST_STX, GRID_CLASS_HIDKEYBOARD_code
+#define GRID_CLASS_HIDKEYBOARD_frame "%c%03x_......%c", GRID_CONST_STX, GRID_CLASS_HIDKEYBOARD_code, GRID_CONST_ETX
+#define GRID_CLASS_HIDKEYBOARD_frame_start "%c%03x_......", GRID_CONST_STX, GRID_CLASS_HIDKEYBOARD_code
 #define GRID_CLASS_HIDKEYBOARD_frame_end "%c", GRID_CONST_ETX
 
-#define GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset 5
+#define GRID_CLASS_HIDKEYBOARD_LENGTH_offset 5
+#define GRID_CLASS_HIDKEYBOARD_LENGTH_length 2
+
+#define GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset 7
 #define GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length 1
 
-#define GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset 6
+#define GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset 8
 #define GRID_CLASS_HIDKEYBOARD_KEYSTATE_length 1
 
-#define GRID_CLASS_HIDKEYBOARD_KEYCODE_offset 7
+#define GRID_CLASS_HIDKEYBOARD_KEYCODE_offset 9
 #define GRID_CLASS_HIDKEYBOARD_KEYCODE_length 2
 
 
