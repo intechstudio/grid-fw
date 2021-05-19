@@ -1131,7 +1131,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				
 				uint8_t length =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYBOARD_LENGTH_offset,		GRID_CLASS_HIDKEYBOARD_LENGTH_length);
 				
-				
+				uint8_t default_delay = 5; // ms
 
 
 				for(uint8_t j=0; j<length; j+=4){
@@ -1144,23 +1144,28 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 
 					struct grid_keyboard_event_desc key;
 					
-					if (key_ismodifier == 0){
-						//	Not modifier standard key
+					if (key_ismodifier == 0 || key_ismodifier == 1){
+
 						key.ismodifier 	= key_ismodifier;
 						key.ispressed 	= key_state;
 						key.keycode 	= key_code;
-						key.delay 		= 1;
+						key.delay 		= default_delay;
 
-						printf("standardkey: %d %d %d\r\n", key_ismodifier, key_state, key_code);
-					}
-					else if (key_ismodifier == 1){
-						// Modifier standard key
-						key.ismodifier 	= key_ismodifier;
-						key.ispressed 	= key_state;
-						key.keycode 	= key_code;
-						key.delay 		= 1;
+						if (key_state == 2){ // combined press and release
 
-						printf("modifier: %d %d %d\r\n", key_ismodifier, key_state, key_code);
+							printf("DOUBLE\r\n");
+							key.ispressed 	= 1;
+							grid_keyboard_tx_push(key);
+							key.ispressed 	= 0;
+							grid_keyboard_tx_push(key);
+
+						}
+						else{ // single press or release
+
+							grid_keyboard_tx_push(key);
+
+						}
+
 					}
 					else if (key_ismodifier == 0xf){
 						// Special delay event
@@ -1172,7 +1177,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 						key.keycode 	= 0;
 						key.delay 		= delay;
 
-						printf("delay: %d %d\r\n", key_ismodifier, delay);
+						grid_keyboard_tx_push(key);
+
 					}
 					else{
 						printf("invalid key_ismodifier parameter\r\n");
@@ -1180,7 +1186,6 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					
 					// key change fifo buffer
 
-					grid_keyboard_tx_push(key);
 				}
 
 
@@ -1614,9 +1619,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			
 				else if (msg_class == GRID_CLASS_CONFIGSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_nvm_ui_bulk_store_init(&grid_nvm_state, &grid_ui_state);
-
-					
+					grid_keyboard_state.isenabled = 1;
+					grid_nvm_ui_bulk_store_init(&grid_nvm_state, &grid_ui_state);					
 
 				}
 				else if (msg_class == GRID_CLASS_CONFIGERASE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){

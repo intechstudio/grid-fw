@@ -233,7 +233,6 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
         
         if (kb->isenabled){
             
-            
     		hiddf_keyboard_keys_state_change(kb->hid_key_array, kb->key_active_count);    
         
         }

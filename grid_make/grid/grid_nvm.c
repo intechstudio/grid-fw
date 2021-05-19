@@ -129,11 +129,13 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 
 	// before append pad to 8 byte words
 
+	printf("APPEND START\r\n");
 	uint32_t append_length = length + (8 - length%8)%8; 
+
 
 	uint8_t append_buffer[append_length];
 
-	for (uint8_t i=0; i<append_length; i++){
+	for (uint16_t i=0; i<append_length; i++){
 
 		if (i<length){
 			append_buffer[i] = buffer[i];
@@ -154,7 +156,6 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 
 	}
 
-	// SUKU HACK
 	flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, append_buffer, append_length);
 	
 	uint8_t verify_buffer[append_length];
@@ -174,6 +175,8 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 
 
 	mod->next_write_offset += append_length;
+
+	printf("APPEND OK\r\n");
 
 	return mod->next_write_offset-append_length; // return the start offset of the newly appended item
 
@@ -435,7 +438,8 @@ uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
 
 uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, uint8_t element_number, uint8_t event_type, uint8_t* actionstring){
 
-	uint8_t buf[GRID_UI_ACTION_STRING_maxlength] = {0};
+
+	uint8_t buf[GRID_UI_ACTION_STRING_maxlength+100] = {0};
 
 	uint16_t len = 0;
 

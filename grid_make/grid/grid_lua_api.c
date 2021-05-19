@@ -50,21 +50,18 @@ static int l_grid_keyboard_send(lua_State* L) {
         int32_t keystate = lua_tonumber(L, i+1);
 
         if (modifier > 15 || modifier<0){printf("invalid modifier param %d\r\n", modifier); continue;}
-        if (!(keystate==0 || keystate==1)){printf("invalid keystate param %d\r\n", keystate); continue;}
-
+        if (!(keystate==0 || keystate==1 || keystate==2)){printf("invalid keystate param %d\r\n", keystate); continue;}
 
         if (modifier == 15){
             // delay command
             int32_t delay = lua_tonumber(L, i+2);
-
-            printf("delaydebug: %d", delay);
 
             if (delay > 4095) delay = 4095;
             if (delay < 0) delay = 0;
     
             grid_msg_set_parameter(&temp[(cursor-1)/3*4], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, modifier, NULL);
             grid_msg_set_parameter(&temp[(cursor-1)/3*4], GRID_CLASS_HIDKEYBOARD_DELAY_offset, GRID_CLASS_HIDKEYBOARD_DELAY_length, delay, NULL);   
-            printf("delay: %d %d \r\n", modifier, delay);
+
         }
         else if (modifier == 0 || modifier == 1){
             // normal key or modifier
@@ -73,10 +70,10 @@ static int l_grid_keyboard_send(lua_State* L) {
             grid_msg_set_parameter(&temp[(cursor-1)/3*4], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, modifier, NULL);
             grid_msg_set_parameter(&temp[(cursor-1)/3*4], GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset, GRID_CLASS_HIDKEYBOARD_KEYSTATE_length, keystate, NULL);
             grid_msg_set_parameter(&temp[(cursor-1)/3*4], GRID_CLASS_HIDKEYBOARD_KEYCODE_offset, GRID_CLASS_HIDKEYBOARD_KEYCODE_length, keycode, NULL);   
-            printf("key: %d %d %d \r\n", modifier, keystate, keycode);
+
         }
         else{
-            printf("invalid modifier param %d\r\n", modifier); 
+
             continue;
         }
     
