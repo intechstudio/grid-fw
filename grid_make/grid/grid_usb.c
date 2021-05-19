@@ -363,15 +363,19 @@ uint8_t grid_keyboard_tx_pop(){
             key.keycode =    grid_keyboard_tx_buffer[grid_keyboard_tx_read_index].keycode;
             key.ispressed =  grid_keyboard_tx_buffer[grid_keyboard_tx_read_index].ispressed;
             key.delay = 0;
-            
-                  
-            //grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 50);
-            
-            grid_keyboard_keychange(&grid_keyboard_state, &key);
 
 			grid_keyboard_tx_read_index = (grid_keyboard_tx_read_index+1)%GRID_KEYBOARD_TX_BUFFER_length;
             
             grid_keyboard_tx_rtc_lasttimestamp = grid_sys_rtc_get_time(&grid_sys_state);
+
+			if (key.ismodifier != 0xf){
+				//printf("# K\r\n");
+           		grid_keyboard_keychange(&grid_keyboard_state, &key);
+			}
+			else{
+				//printf("# D\r\n");	
+			}
+
 
 		}
 		

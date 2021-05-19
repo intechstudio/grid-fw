@@ -1135,23 +1135,52 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 
 
 				for(uint8_t j=0; j<length; j+=4){
-
+					
 					uint8_t key_ismodifier =	grid_msg_text_get_parameter(&message, current_start+j, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset,	GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length);
 					uint8_t key_state  =		grid_msg_text_get_parameter(&message, current_start+j, GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset,		GRID_CLASS_HIDKEYBOARD_KEYSTATE_length);
 					uint8_t key_code =			grid_msg_text_get_parameter(&message, current_start+j, GRID_CLASS_HIDKEYBOARD_KEYCODE_offset,		GRID_CLASS_HIDKEYBOARD_KEYCODE_length);
-				
-					printf("key: %d %d %d\r\n", key_ismodifier, key_state, key_code);
+
+
 
 					struct grid_keyboard_event_desc key;
 					
-					key.ismodifier = key_ismodifier;
-					key.keycode = key_code;
-					key.ispressed = key_state;
-					key.delay = 10;
+					if (key_ismodifier == 0){
+						//	Not modifier standard key
+						key.ismodifier 	= key_ismodifier;
+						key.ispressed 	= key_state;
+						key.keycode 	= key_code;
+						key.delay 		= 1;
+
+						printf("standardkey: %d %d %d\r\n", key_ismodifier, key_state, key_code);
+					}
+					else if (key_ismodifier == 1){
+						// Modifier standard key
+						key.ismodifier 	= key_ismodifier;
+						key.ispressed 	= key_state;
+						key.keycode 	= key_code;
+						key.delay 		= 1;
+
+						printf("modifier: %d %d %d\r\n", key_ismodifier, key_state, key_code);
+					}
+					else if (key_ismodifier == 0xf){
+						// Special delay event
+
+						uint16_t delay = grid_msg_text_get_parameter(&message, current_start+j, GRID_CLASS_HIDKEYBOARD_DELAY_offset, GRID_CLASS_HIDKEYBOARD_DELAY_length);
+
+						key.ismodifier 	= key_ismodifier;
+						key.ispressed 	= 0;
+						key.keycode 	= 0;
+						key.delay 		= delay;
+
+						printf("delay: %d %d\r\n", key_ismodifier, delay);
+					}
+					else{
+						printf("invalid key_ismodifier parameter\r\n");
+					}
 					
 					// key change fifo buffer
 
-					//grid_keyboard_tx_push(key);
+					grid_keyboard_tx_push(key);
 				}
 
 
