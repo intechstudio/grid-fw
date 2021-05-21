@@ -1382,6 +1382,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}
 					else if (type >127){ // editor
 
+
 						if (grid_sys_state.editor_connected == 0){
 							grid_sys_state.editor_connected = 1;
 							printf("EDITOR connect\r\n");

@@ -753,8 +753,9 @@ static int l_grid_page_next(lua_State* L) {
         strcat(grid_lua_state.stde, "#GTV.invalidParams");
         return 0;
     }
-           
-    lua_pushinteger(L, grid_sys_get_bank_next(&grid_sys_state));
+    
+    uint8_t page = (grid_ui_state.page_activepage + 1) % grid_ui_state.page_count;
+    lua_pushinteger(L, page);
     
     return 1;
 }
@@ -769,7 +770,8 @@ static int l_grid_page_prev(lua_State* L) {
         return 0;
     }
            
-    lua_pushinteger(L, grid_sys_get_bank_next(&grid_sys_state));
+    uint8_t page = (grid_ui_state.page_activepage - 1) % grid_ui_state.page_count;
+    lua_pushinteger(L, page);
     
     return 1;
 }
@@ -802,7 +804,8 @@ static int l_grid_page_load(lua_State* L) {
 
     }
     else{
-
+        grid_debug_printf("page change is disabled");
+        grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 0, 200); // Purple
     }
 
 
