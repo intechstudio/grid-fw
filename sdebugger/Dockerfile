@@ -17,5 +17,7 @@ RUN npm install
 COPY rollup.config.js ./
 
 EXPOSE 5000
+EXPOSE 1040
+EXPOSE 35729
 CMD ["npm", "run" , "dev" ]
 
