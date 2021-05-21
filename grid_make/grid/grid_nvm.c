@@ -783,6 +783,7 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 
 void grid_nvm_ui_bulk_store_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
+	grid_debug_print_text("Hello");
 
 	nvm->store_bulk_status = 1;
 
@@ -840,13 +841,6 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 	grid_msg_init(&response);
 	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
-
-	// uint8_t response_payload[50] = {0};
-	// snprintf(response_payload, 49, GRID_CLASS_CONFIGSTORE_frame);
-	// grid_msg_body_append_text(&response, response_payload);
-	// grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-	
-
 	grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGSTORE_frame);
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 
@@ -901,28 +895,14 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	nvm->clear_bulk_status = 0;
 
-	uint8_t acknowledge = 1;
-
 	// Generate ACKNOWLEDGE RESPONSE
 	struct grid_msg response;
 		
 	grid_msg_init(&response);
 	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
-	uint8_t response_payload[10] = {0};
-	sprintf(response_payload, GRID_CLASS_CONFIGERASE_frame);
-
-	grid_msg_body_append_text(&response, response_payload);
-		
-	if (acknowledge == 1){
-		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-		grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
-	}
-	else{
-		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
-		grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 1000);
-	}
-
+	grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGERASE_frame);
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 		
 	grid_msg_packet_close(&response);
 

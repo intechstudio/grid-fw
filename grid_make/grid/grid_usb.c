@@ -242,31 +242,20 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
             
             
             // Generate ACKNOWLEDGE RESPONSE
-            struct grid_msg response;
+            struct grid_msg message;
 
-            grid_msg_init(&response);
-            grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+            grid_msg_init(&message);
+            grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
-            uint8_t response_payload[10] = {0};
-            sprintf(response_payload, GRID_CLASS_HIDKEYSTATUS_frame);
-
-            grid_msg_body_append_text(&response, response_payload);
-
-            grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, kb->isenabled);
-
-            grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-
-
-            grid_msg_packet_close(&response);
-            grid_msg_packet_send_everywhere(&response);
+			grid_msg_body_append_printf(&message, GRID_CLASS_HIDKEYSTATUS_frame);
+			grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+			grid_msg_body_append_parameter(&message, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, kb->isenabled);
+			
+            grid_msg_packet_close(&message);
+            grid_msg_packet_send_everywhere(&message);
             
-            
-        
         }
-		
 
-		
-		
 		// USB SEND
 	}
 	

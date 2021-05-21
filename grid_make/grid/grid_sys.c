@@ -55,42 +55,15 @@ void grid_debug_print_text(uint8_t* debug_string){
 	
 	grid_msg_init(&message);
 	grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
-	
-	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
-	uint32_t offset = 0;
-	
-	sprintf(&payload[offset], GRID_CLASS_DEBUGTEXT_frame_start);
-	offset += strlen(&payload[offset]);
-		
-	sprintf(&payload[offset], "# ");
-	offset += strlen(&payload[offset]);
 
-	for(uint32_t i=0; i<debug_string_length; i++){
-		
-		payload[offset+i] = debug_string[i];
-		
-		if (offset + i > GRID_PARAMETER_PACKET_marign)
-		{
-			break;
-		}
-	}
-	offset += strlen(&payload[offset]);
-	
-	
-	sprintf(&payload[offset], " #");
-	offset += strlen(&payload[offset]);
-	
-	sprintf(&payload[offset], GRID_CLASS_DEBUGTEXT_frame_end);
-	offset += strlen(&payload[offset]);	
-	
-	grid_msg_body_append_text(&message, payload);
+	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_start);
+	grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&message, debug_string);
+	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_end);
+
 	grid_msg_packet_close(&message);
-	
 	grid_msg_packet_send_everywhere(&message);
-	
-
-	
-	
+		
 }
 
 

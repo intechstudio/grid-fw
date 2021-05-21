@@ -132,6 +132,7 @@ void	grid_msg_body_append_text(struct grid_msg* msg, uint8_t* str){
 	}
 	
 	msg->body_length += len;
+	msg->last_appended_length  += len;
 
 }
 

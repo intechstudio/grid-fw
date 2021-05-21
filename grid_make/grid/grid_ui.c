@@ -494,10 +494,6 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 	grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 
-	uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};
-	uint8_t payload_length = 0;
-	uint32_t offset = 0;
-
 	struct grid_ui_element* ele = &ui->element_list[element];
 
 	struct grid_ui_event* eve = grid_ui_event_find(ele, event_type);
@@ -506,15 +502,14 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 
 		// Event actually exists
 
-		sprintf(payload, GRID_CLASS_CONFIG_frame_start);
-		grid_msg_body_append_text(&message, payload);
 
-		grid_msg_text_set_parameter(&message, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+		grid_msg_body_append_printf(&message, GRID_CLASS_CONFIG_frame_start);
+
+		grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
 		
-		
-		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
-		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
-		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
 
 		// Helper to map system element to 255
 		uint8_t element_helper = element;
@@ -522,16 +517,15 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 			element_helper = 255;
 		}
 
-		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, page);
-		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, element_helper);
-		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type);
-		grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, 0);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, page);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, element_helper);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, 0);
 
 		if (ui->page_activepage == page){
 			// currently active page needs to be sent
-			grid_msg_body_append_text(&message, eve->action_string);
-			grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(eve->action_string));		
-		
+			grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(eve->action_string));		
+			grid_msg_body_append_printf(&message, eve->action_string);
 		}		
 		else{
 
@@ -551,8 +545,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 				// reset body pointer because cfg in nvm already has the config header
 				message.body_length = 0;
 				grid_msg_body_append_text(&message, buffer);
-
-				grid_msg_text_set_parameter(&message, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+				grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
 			
 			}
 			else{
@@ -562,18 +555,16 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 				//grid_ui_event_register_actionstring(eve, actionstring);	
 
 				grid_msg_body_append_text(&message, actionstring);
-				grid_msg_text_set_parameter(&message, 0, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(eve->action_string));
+				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(eve->action_string));
 
 			}
 
 			// if no toc entry is found but page exists then send efault configuration
 
 		}
-	
-		sprintf(payload, GRID_CLASS_CONFIG_frame_end);
-		payload_length = strlen(payload);
+					
+		grid_msg_body_append_printf(&message, GRID_CLASS_CONFIG_frame_end);
 
-		grid_msg_body_append_text(&message, payload);
 
 		printf("CFG: %s\r\n", message.body);
 		grid_msg_packet_close(&message);
