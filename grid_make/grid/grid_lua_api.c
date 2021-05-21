@@ -87,7 +87,7 @@ static int l_grid_keyboard_send(lua_State* L) {
 
     if (cursor != 1){
         strcat(grid_lua_state.stdo, temp);
-        printf("keyboard: %s\r\n", temp); 
+        //printf("keyboard: %s\r\n", temp); 
     }
     else{
         printf("invalid args!\r\n");
@@ -901,15 +901,8 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 	lua_pop(mod->L, 1);
     grid_lua_debug_memory_stats(mod, "Printlib");
 
-    grid_lua_dostring(mod, GRID_LUA_INIT_SCRIPT_1);
-    grid_lua_dostring(mod, GRID_LUA_INIT_SCRIPT_2);
-    grid_lua_dostring(mod, GRID_LUA_INIT_SCRIPT_3);
-
-    grid_lua_debug_memory_stats(mod, "grid_send");
-
-
-
     grid_lua_ui_init(mod, &grid_sys_state);
+    grid_lua_debug_memory_stats(mod, "Ui init");
 
 
 }

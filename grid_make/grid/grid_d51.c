@@ -51,13 +51,6 @@ void grid_d51_init(){
 
 	grid_d51_dwt_enable(); // debug watch for counting cpu cycles
 
-	#ifdef NDEBUG		
-	GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "USER ROW CHECK!");
-	grid_d51_verify_user_row();
-	#else
-	GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "NO USER ROW CHECK!");
-	#endif
-	
 
 			
 	#ifdef UNITTEST
@@ -74,8 +67,6 @@ void grid_d51_init(){
 	}
 	
 	#else
-	
-	GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "No Unit Test");
 	#endif
 	
 	//#define HARDWARETEST
@@ -95,7 +86,6 @@ void grid_d51_init(){
 	}
 	#else
 	
-	GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_BOOT, "No Hardware Test");
 	#endif
 		
 }
@@ -111,13 +101,13 @@ void grid_d51_verify_user_row(){
 		
 
 
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Reading User Row");
+	printf("Reading User Row\r\n");
 	_user_area_read(GRID_D51_USER_ROW_BASE, 0, user_area_buffer, 512);
 
 
 	//BOD33 characteristics datasheet page 1796
 
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Verifying User Row");
+	printf("Verifying User Row\r\n");
 		
 	// BOD33 Disable Bit => Set 0
 	grid_d51_bitmap_write_bit(user_area_buffer, 0, 0, &user_area_changed_flag);
@@ -152,15 +142,15 @@ void grid_d51_verify_user_row(){
 		
 	if (user_area_changed_flag == 1){
 			
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Updating User Row");
+		printf("Updating User Row\r\n");
 		_user_area_write(GRID_D51_USER_ROW_BASE, 0, user_area_buffer, 512);
 			
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "System Reset");
+		printf("System Reset\r\n");
 		NVIC_SystemReset();
 			
 	}else{
 			
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Unchanged User Row");
+		printf("Unchanged User Row\r\n");
 	}
 	
 }
@@ -535,7 +525,6 @@ uint32_t grid_d51_dwt_enable(){
         GRID_D51_DWT_CYCCNT  = 0;                
         GRID_D51_DWT_CTRL   |= 1 << 0;             // Set bit 0
 
-        printf("Debug Watch and Trace enabled!\r\n");
     }
     else{
         printf("Debug Watch and Trace not supported!\r\n");

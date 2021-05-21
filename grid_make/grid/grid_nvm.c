@@ -168,7 +168,8 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 	
 	for (uint16_t i=0; i<append_length; i++){
 		if (verify_buffer[i] != append_buffer[i]){
-			printf("error.nvm.append verify failed! 0x%x  len:%d (%d!=%d)\r\n\r\n", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
+			printf("ERROR: APPEND VERIFY FAILED 0x%x  len:%d (%d!=%d)\r\n\r\n", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
+			grid_debug_printf("ERROR: APPEND VERIFY FAILED 0x%x  len:%d (%d!=%d)\r\n\r\n", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
 		}
 	}
 
@@ -635,7 +636,6 @@ void grid_nvm_toc_debug(struct grid_nvm_model* mod){
 
 	while (next != NULL){
 
-
 		printf("toc entry: %d %d %d :  0x%x %d\r\n", next->page_id, next->element_id, next->event_type, next->config_string_offset, next->config_string_length);
 
 		next = next->next;
@@ -802,8 +802,6 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 		return;
 	}
 
-	printf("STORE\r\n");
-
     // START: NEW
 	uint32_t cycles_limit = 5000*120;  // 5ms
 	uint32_t cycles_start = grid_d51_dwt_cycles_read();
@@ -819,14 +817,12 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 			if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){
 				
-				printf("CYCLES LIMIT HIT\r\n");
 				return;
 
 			}
 
 			if (eve->cfg_changed_flag){
 				
-				printf("CHANGED %d %d\r\n", i, j);
 				grid_nvm_config_store(&grid_nvm_state, ele->parent->page_activepage, ele->index, eve->type, eve->action_string);
 
 				eve->cfg_changed_flag = 0; // clear changed flag
@@ -882,8 +878,7 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	while(nvm->clear_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){
 
-		if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){		
-			printf("CYCLES LIMIT HIT\r\n");
+		if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){
 			return;
 		}
 

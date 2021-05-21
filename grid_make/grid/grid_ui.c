@@ -485,9 +485,6 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 
 uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page, uint8_t element, enum grid_ui_event_t event_type){
 	
-	printf("RECALL!!! \r\n");
-
-	
 	struct grid_msg message;
 
 	grid_msg_init(&message);
@@ -536,7 +533,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 
 			if (entry != NULL){
 				
-				printf("FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
+				//printf("FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
 
 				uint8_t buffer[entry->config_string_length+10];
 
@@ -549,7 +546,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 			
 			}
 			else{
-				printf("NOT FOUND, Send default!\r\n");
+				//printf("NOT FOUND, Send default!\r\n");
 				uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength] = {0};
 				grid_ui_event_generate_actionstring(eve, actionstring);	
 				//grid_ui_event_register_actionstring(eve, actionstring);	
@@ -566,13 +563,13 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 		grid_msg_body_append_printf(&message, GRID_CLASS_CONFIG_frame_end);
 
 
-		printf("CFG: %s\r\n", message.body);
+		//printf("CFG: %s\r\n", message.body);
 		grid_msg_packet_close(&message);
 		grid_msg_packet_send_everywhere(&message);
 	}
 	else{
 
-		printf("warning."__FILE__".event does not exist!\r\n");
+		//printf("warning."__FILE__".event does not exist!\r\n");
 	}
 	
 }
@@ -635,7 +632,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 
 	if (strlen(action_string) == 0){
 
-		printf("NULLSTRING\r\n");
+		printf("NULLSTRING el:%d, elv:%d\r\n", ele->index, eve->type);
 		return;
 
 	}

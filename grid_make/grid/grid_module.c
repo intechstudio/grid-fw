@@ -131,37 +131,34 @@ void grid_module_common_init(void){
 	printf("Common init done\r\n");	
 
 	//enable pwr!
-	
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "UI Power Enable");
 	gpio_set_pin_level(UI_PWR_EN, true);
 
 
 	// ADC SETUP	
 	
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevC){
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: PO16");
+		printf("Init Module: PO16");
 		grid_module_po16_init();
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevC ){
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: BU16");
+		printf("Init Module: BU16");
 		grid_module_bu16_init();
 	
 	}	
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevA){
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: PBF4");					
+		printf("Init Module: PBF4");					
 		grid_module_pbf4_init();			
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD ){
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: EN16");
+		printf("Init Module: EN16");
 		grid_module_en16_init();	
 	}	
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: EN16 ND");
+		printf("Init Module: EN16 ND");
 		grid_module_en16_init();	
 	}	
 	else{
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Init Module: Unknown Module");
-		GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "HWCFG Mismatch");
+		printf("Init Module: Unknown Module");
 	}
 
 	printf("Model init done\r\n");

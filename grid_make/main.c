@@ -241,7 +241,6 @@ static void nvm_task_inner(struct grid_d51_task* task){
 	
 	if (grid_nvm_ui_bulk_store_is_in_progress(&grid_nvm_state, &grid_ui_state)){
 		
-		printf("HI\r\n");
 		grid_nvm_ui_bulk_store_next(&grid_nvm_state, &grid_ui_state);
 			
 		
@@ -722,7 +721,7 @@ int main(void)
 
 	atmel_start_init();	// this sets up gpio and printf
 	
-    GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Start Initialized");
+   	printf("Start Initialized\r\n");
 
 	grid_d51_init(); // Check User Row
 
@@ -730,7 +729,6 @@ int main(void)
 
 	grid_d51_boundary_scan_report(boundary_result);
 
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "D51 Init");
             
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
 
@@ -757,14 +755,13 @@ int main(void)
 		uint8_t id = grid_fusb302_read_id(SYS_I2C_io);
 	}
 		
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "Hardware test complete");
+	printf("Hardware test complete");
 
 	grid_expr_init(&grid_expr_state);
 
 	grid_lua_init(&grid_lua_state);
 	grid_lua_start_vm(&grid_lua_state);
 
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_PORT, "LUA init complete");
 
 	audiodf_midi_init();
 
@@ -775,7 +772,6 @@ int main(void)
 
 	grid_keyboard_init(&grid_keyboard_state);
 		
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Initialized");
 
 	// Init Bank Color Bug when config was previously saved
 
@@ -789,9 +785,7 @@ int main(void)
 
 	//  x/512xb 0x80000
 	grid_module_common_init();
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Grid Module Initialized");
 	grid_nvm_toc_init(&grid_nvm_state);
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "TOC Initialized");
 	grid_ui_page_load(&grid_ui_state, &grid_nvm_state, 0); //load page 0;
 
 	while (grid_nvm_ui_bulk_read_is_in_progress(&grid_nvm_state, &grid_ui_state))
@@ -800,7 +794,6 @@ int main(void)
 	}
 	
 
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "UI Page0 loaded");
 
 	// grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
 	// grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
@@ -871,8 +864,6 @@ int main(void)
 			else{			
 			
 				grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN	
-				
-				GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Composite Device Connected");
 				
 				grid_sys_state.heartbeat_type = 1;
 

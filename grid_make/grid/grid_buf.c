@@ -88,7 +88,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 			message = &buffer[i];
 			
 			
-			GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Frame Start Offset");
+			printf("Frame Start Offset");
 			
 			
 		}
@@ -324,7 +324,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							
 							
 							
-							GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Connect");
+							printf("Connect");
 							
 							grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN
 							
@@ -389,7 +389,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 			else{ // Unknown Message Type
 				
 				//grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // RED SHORT now GREEN
-				printf("{\"type\": \"WARNING\", \"data\": [\"Unknow Message Type\"]}\r\n");
+				printf("Unknown message type\r\n");
 				
 			}
 			
@@ -399,7 +399,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		else{
 			// INVALID CHECKSUM
 			
-			printf("{\"type\": \"WARNING\", \"data\": [\"Invalid Checksum\"]}\r\n");
+			printf("Invalid Checksum\r\n");
 			
 			if (error_flag != 0){
 				//usart_async_disable(&USART_EAST);
@@ -454,7 +454,7 @@ void grid_port_receive_task(struct grid_port* por){
 				if (por->partner_status == 1){
 				
 				
-					GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Timeout Disconnect & Reset Receiver");
+					printf("Timeout Disconnect & Reset Receiver");
 				
 					grid_port_reset_receiver(por);
 				
@@ -467,7 +467,7 @@ void grid_port_receive_task(struct grid_port* por){
 					}
 					else{
 					
-						GRID_DEBUG_WARNING(GRID_DEBUG_CONTEXT_PORT, "Timeout & Reset Receiver");
+						printf("Timeout & Reset Receiver");
 						grid_port_reset_receiver(por);
 					}
 				
@@ -1153,7 +1153,6 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 
 						if (key_state == 2){ // combined press and release
 
-							printf("DOUBLE\r\n");
 							key.ispressed 	= 1;
 							grid_keyboard_tx_push(key);
 							key.ispressed 	= 0;
