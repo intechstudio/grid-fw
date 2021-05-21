@@ -844,8 +844,6 @@ int main(void)
 	grid_ui_state.task = grid_ui_task;
 
 
-	GRID_DEBUG_LOG(GRID_DEBUG_CONTEXT_BOOT, "Entering Main Loop");
-
 	while (1) {
 	
 

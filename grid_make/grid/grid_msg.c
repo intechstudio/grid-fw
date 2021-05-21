@@ -137,6 +137,32 @@ void	grid_msg_body_append_text(struct grid_msg* msg, uint8_t* str){
 
 
 
+void grid_msg_body_append_printf(struct grid_msg* msg, char const *fmt, ...){
+
+	va_list ap;
+
+
+	va_start(ap, fmt);
+
+	vsprintf(&msg->body[msg->body_length], fmt, ap);
+
+	va_end(ap);
+	
+
+	msg->last_appended_length = strlen(&msg->body[msg->body_length]);
+
+	msg->body_length += msg->last_appended_length;
+
+	return;
+}
+void grid_msg_body_append_parameter(struct grid_msg* msg,  uint8_t parameter_offset, uint8_t parameter_length, uint32_t value){
+
+	uint8_t text_start_offset = msg->body_length - msg->last_appended_length;
+
+	grid_msg_text_set_parameter(msg, text_start_offset, parameter_offset, parameter_length, value);
+
+}
+
 uint32_t grid_msg_text_get_parameter(struct grid_msg* msg, uint32_t text_start_offset, uint8_t parameter_offset, uint8_t parameter_length){
 	
 	uint8_t error;
@@ -160,6 +186,7 @@ void	grid_msg_init(struct grid_msg* msg){
 	
 	msg->header_length = 0;
 	msg->body_length = 0;
+	msg->last_appended_length = 0;
 	msg->footer_length = 0;
 	
 	for (uint32_t i=0; i<GRID_MSG_HEADER_maxlength; i++)

@@ -840,13 +840,16 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 	grid_msg_init(&response);
 	grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
-	uint8_t response_payload[50] = {0};
-	snprintf(response_payload, 49, GRID_CLASS_CONFIGSTORE_frame);
 
-	grid_msg_body_append_text(&response, response_payload);
+	// uint8_t response_payload[50] = {0};
+	// snprintf(response_payload, 49, GRID_CLASS_CONFIGSTORE_frame);
+	// grid_msg_body_append_text(&response, response_payload);
+	// grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 	
-	grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-	
+
+	grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGSTORE_frame);
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+
 	grid_msg_packet_close(&response);
 	grid_msg_packet_send_everywhere(&response);
 	
