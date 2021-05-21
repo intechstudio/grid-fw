@@ -783,7 +783,7 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 
 void grid_nvm_ui_bulk_store_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
-	grid_debug_print_text("Hello");
+	grid_debug_printf("Hello %d", rand_sync_read8(&RAND_0));
 
 	nvm->store_bulk_status = 1;
 

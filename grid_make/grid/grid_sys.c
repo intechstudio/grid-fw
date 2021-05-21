@@ -66,7 +66,23 @@ void grid_debug_print_text(uint8_t* debug_string){
 		
 }
 
+void grid_debug_printf(char const *fmt, ...){
 
+	va_list ap;
+
+
+	uint8_t temp[100] = {0};
+
+	va_start(ap, fmt);
+
+	vsnprintf(temp, 99, fmt, ap);
+
+	va_end(ap);
+
+	grid_debug_print_text(temp);
+
+	return;
+}
 //====================== grid sys unittest ===================================//
 
 uint32_t grid_sys_unittest(void){
