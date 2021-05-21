@@ -956,6 +956,22 @@ int main(void)
 		}
 
 
+
+		if (grid_sys_state.editor_connected == 1){
+
+			if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_sys_state.editor_heartbeat_lastrealtime)>1000*RTC1MS){
+
+				printf("EDITOR timeout\r\n");
+				grid_sys_state.editor_connected = 0;
+
+				grid_ui_state.page_change_enabled = 1;
+
+			}
+
+		}
+
+
+
 		if (reportflag){
 
 

@@ -238,6 +238,8 @@ void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
 	mod->page_activepage = 0;
 	mod->page_count = 4;
 
+	mod->page_change_enabled = 1;
+
 	mod->element_list_length = element_list_length;	
 
 	printf("UI MODEL INIT: %d\r\n", element_list_length);

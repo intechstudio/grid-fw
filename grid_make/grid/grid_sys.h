@@ -21,7 +21,9 @@ struct grid_sys_model
 	uint32_t uptime;
 	uint8_t reset_cause;
 	
-    
+	uint8_t editor_connected;
+	uint32_t editor_heartbeat_lastrealtime;
+
     uint8_t sessionid;
 	
 	uint8_t alert_color_red;

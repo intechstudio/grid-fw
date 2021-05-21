@@ -1299,9 +1299,16 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 									
 					if (msg_instr == GRID_INSTR_EXECUTE_code){ //SET BANK
 
-						grid_ui_page_load(&grid_ui_state, &grid_nvm_state, page);
+						if (grid_ui_state.page_change_enabled == 1){
 
-						grid_sys_set_bank(&grid_sys_state, page);
+							grid_ui_page_load(&grid_ui_state, &grid_nvm_state, page);
+							grid_sys_set_bank(&grid_sys_state, page);
+
+						}
+						else{
+
+							printf("PAGE CHANGE DISABLED\r\n");
+						}
 													
 					}
 					
@@ -1374,35 +1381,46 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 
 					}
-					else if (type == 255){
-						
-						printf("Editor Heartbeat\r\n");
+					else if (type >127){ // editor
+
+						if (grid_sys_state.editor_connected == 0){
+							grid_sys_state.editor_connected = 1;
+							printf("EDITOR connect\r\n");
+						}
+
+						grid_sys_state.editor_heartbeat_lastrealtime = grid_sys_rtc_get_time(&grid_sys_state);
+
+						if (type == 255){
+							grid_ui_state.page_change_enabled = 1;
+						}
+						else{
+							grid_ui_state.page_change_enabled = 0;
+						}
 
 						uint8_t led_report_valid = 0;
 						uint8_t ui_report_valid = 0;
 
-						for(uint8_t j=0; j<grid_led_state.led_number; j++){
+						if (1 && 0){
 
-							if (grid_led_state.led_lowlevel_changed[j]){
+							for(uint8_t j=0; j<grid_led_state.led_number; j++){
 
-								uint8_t led_num = j;
-								uint8_t led_red = grid_led_state.led_lowlevel_red[j];
-								uint8_t led_gre = grid_led_state.led_lowlevel_gre[j];
-								uint8_t led_blu = grid_led_state.led_lowlevel_blu[j];
-								
-								printf("Led %d: %d %d %d\r\n", led_num, led_red, led_gre, led_blu);
-								
-								//grid_led_state.led_lowlevel_changed[j] = 0;
-								led_report_valid = 1;
+								if (grid_led_state.led_lowlevel_changed[j]){
+
+									uint8_t led_num = j;
+									uint8_t led_red = grid_led_state.led_lowlevel_red[j];
+									uint8_t led_gre = grid_led_state.led_lowlevel_gre[j];
+									uint8_t led_blu = grid_led_state.led_lowlevel_blu[j];
+									
+									printf("Led %d: %d %d %d\r\n", led_num, led_red, led_gre, led_blu);
+									
+									//grid_led_state.led_lowlevel_changed[j] = 0;
+									led_report_valid = 1;
+								}
+
 							}
-
 						}
 
-						if (1){
-
-
-
-
+						if (1 && 0){
 
 							uint16_t report_length = 0;
 							struct grid_msg response;
@@ -1464,7 +1482,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							printf("\r\n");
 						}
 
-						if (led_report_valid){
+						if (led_report_valid && 0){
 
 							struct grid_msg response;
 													

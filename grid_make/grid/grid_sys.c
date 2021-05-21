@@ -441,6 +441,9 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->bank_activebank_number = 0;
 
 
+	mod->editor_connected = 0;
+	mod->editor_heartbeat_lastrealtime = 0;
+
 }
 
 
