@@ -35,8 +35,8 @@ struct grid_msg{
 
 };
 
-void	grid_msg_header_set_len(struct grid_msg* msg, uint8_t len);
-uint8_t grid_msg_header_get_len(struct grid_msg* msg);
+void	grid_msg_header_set_len(struct grid_msg* msg, uint16_t len);
+uint16_t grid_msg_header_get_len(struct grid_msg* msg);
 
 void	grid_msg_header_set_id(struct grid_msg* msg, uint8_t id);
 uint8_t grid_msg_header_get_id(struct grid_msg* msg);
@@ -47,11 +47,22 @@ uint8_t grid_msg_header_get_dx(struct grid_msg* msg);
 void	grid_msg_header_set_dy(struct grid_msg* msg, uint8_t dy);
 uint8_t grid_msg_header_get_dy(struct grid_msg* msg);
 
+void	grid_msg_header_set_sx(struct grid_msg* msg, uint8_t sx);
+uint8_t grid_msg_header_get_sx(struct grid_msg* msg);
+
+void	grid_msg_header_set_sy(struct grid_msg* msg, uint8_t sy);
+uint8_t grid_msg_header_get_sy(struct grid_msg* msg);
+
+
+
 void	grid_msg_header_set_rot(struct grid_msg* msg, uint8_t rot);
 uint8_t grid_msg_header_get_rot(struct grid_msg* msg);
 
 void	grid_msg_header_set_age(struct grid_msg* msg, uint8_t age);
 uint8_t grid_msg_header_get_age(struct grid_msg* msg);
+
+void	grid_msg_header_set_session(struct grid_msg* msg, uint8_t session);
+uint8_t grid_msg_header_get_session(struct grid_msg* msg);
 
 
 uint32_t grid_msg_packet_get_length(struct grid_msg* msg);

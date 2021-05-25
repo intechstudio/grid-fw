@@ -74,34 +74,36 @@
 #define GRID_PARAMETER_MIDI_NOTEON 0x90
 #define GRID_PARAMETER_MIDI_CONTROLCHANGE 0xB0
 
-#define GRID_PARAMETER_KEYBOARD_KEYDOWN 128
-#define GRID_PARAMETER_KEYBOARD_KEYUP 129
-#define GRID_PARAMETER_KEYBOARD_MODIFIER 130
-#define GRID_PARAMETER_KEYBOARD_NOTMODIFIER 131
-
 // HEADER BROADCAST
 
-#define GRID_BRC_frame "%c%c............%c", GRID_CONST_SOH, GRID_CONST_BRC, GRID_CONST_EOB
+#define GRID_BRC_frame "%c%c....................%c", GRID_CONST_SOH, GRID_CONST_BRC, GRID_CONST_EOB
 
 #define GRID_BRC_LEN_offset 2
-#define GRID_BRC_LEN_length 2
+#define GRID_BRC_LEN_length 4
 
-#define GRID_BRC_ID_offset 4
+#define GRID_BRC_ID_offset 6
 #define GRID_BRC_ID_length 2
 
-#define GRID_BRC_DX_offset 6
+#define GRID_BRC_SESSION_offset 8
+#define GRID_BRC_SESSION_length 2
+
+#define GRID_BRC_SX_offset 10
+#define GRID_BRC_SX_length 2
+
+#define GRID_BRC_SY_offset 12
+#define GRID_BRC_SY_length 2
+
+#define GRID_BRC_DX_offset 14
 #define GRID_BRC_DX_length 2
 
-#define GRID_BRC_DY_offset 8
+#define GRID_BRC_DY_offset 16
 #define GRID_BRC_DY_length 2
 
-#define GRID_BRC_AGE_offset 10
-#define GRID_BRC_AGE_length 2
-
-#define GRID_BRC_ROT_offset 12
+#define GRID_BRC_ROT_offset 18
 #define GRID_BRC_ROT_length 2
 
-
+#define GRID_BRC_MSGAGE_offset 20
+#define GRID_BRC_MSGAGE_length 2
 
 #define GRID_INSTR_length 1
 #define GRID_INSTR_offset 4
@@ -811,23 +813,27 @@ enum grid_ui_event_t
 // 091 HID KEYBOARD LOWLEVEL KEYPRESS/RELEASE
 
 #define GRID_CLASS_HIDKEYBOARD_code 0x091
-#define GRID_CLASS_HIDKEYBOARD_frame "%c%03x_......%c", GRID_CONST_STX, GRID_CLASS_HIDKEYBOARD_code, GRID_CONST_ETX
-#define GRID_CLASS_HIDKEYBOARD_frame_start "%c%03x_......", GRID_CONST_STX, GRID_CLASS_HIDKEYBOARD_code
+#define GRID_CLASS_HIDKEYBOARD_frame "%c%03x_........%c", GRID_CONST_STX, GRID_CLASS_HIDKEYBOARD_code, GRID_CONST_ETX
+#define GRID_CLASS_HIDKEYBOARD_frame_start "%c%03x_........", GRID_CONST_STX, GRID_CLASS_HIDKEYBOARD_code
 #define GRID_CLASS_HIDKEYBOARD_frame_end "%c", GRID_CONST_ETX
 
-#define GRID_CLASS_HIDKEYBOARD_LENGTH_offset 5
+
+#define GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_offset 5
+#define GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_length 2
+
+#define GRID_CLASS_HIDKEYBOARD_LENGTH_offset 7
 #define GRID_CLASS_HIDKEYBOARD_LENGTH_length 2
 
-#define GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset 7
+#define GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset 9
 #define GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length 1
 
-#define GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset 8
+#define GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset 10
 #define GRID_CLASS_HIDKEYBOARD_KEYSTATE_length 1
 
-#define GRID_CLASS_HIDKEYBOARD_KEYCODE_offset 9
+#define GRID_CLASS_HIDKEYBOARD_KEYCODE_offset 11
 #define GRID_CLASS_HIDKEYBOARD_KEYCODE_length 2
 
-#define GRID_CLASS_HIDKEYBOARD_DELAY_offset 8
+#define GRID_CLASS_HIDKEYBOARD_DELAY_offset 10
 #define GRID_CLASS_HIDKEYBOARD_DELAY_length 3
 
 

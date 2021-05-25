@@ -121,11 +121,16 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				
 				// Read the received id age values
 				uint8_t received_id  = grid_msg_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
-				uint8_t received_age = grid_msg_get_parameter(message, GRID_BRC_AGE_offset, GRID_BRC_AGE_length, &error);
+				uint8_t received_session = grid_msg_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
+				uint8_t received_msgage = grid_msg_get_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
 				
-				// Read the received X Y values (SIGNED INT)
+				// Read the received destination X Y values (SIGNED INT)
 				int8_t received_dx  = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_SYS_DEFAULT_POSITION;
 				int8_t received_dy  = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_SYS_DEFAULT_POSITION;
+				
+				// Read the received source X Y values (SIGNED INT)
+				int8_t received_sx  = grid_msg_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_SYS_DEFAULT_POSITION;
+				int8_t received_sy  = grid_msg_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_SYS_DEFAULT_POSITION;
 				
 				uint8_t received_rot = grid_msg_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
 				
@@ -136,6 +141,9 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				
 				int8_t rotated_dx = 0;
 				int8_t rotated_dy = 0;
+
+				int8_t rotated_sx = 0;
+				int8_t rotated_sy = 0;
 				
 				uint8_t updated_rot = (received_rot + por->partner_fi)%4;
 
@@ -144,18 +152,30 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				if (por->partner_fi == 0){ // 0 deg
 					rotated_dx  += received_dx;
 					rotated_dy  += received_dy;
+
+					rotated_sx  += received_sx;
+					rotated_sy  += received_sy;
 				}
 				else if(por->partner_fi == 1){ // 90 deg
 					rotated_dx  -= received_dy;
 					rotated_dy  += received_dx;
+
+					rotated_sx  -= received_sy;
+					rotated_sy  += received_sx;
 				}
 				else if(por->partner_fi == 2){ // 180 deg
 					rotated_dx  -= received_dx;
 					rotated_dy  -= received_dy;
+
+					rotated_sx  -= received_sx;
+					rotated_sy  -= received_sy;
 				}
 				else if(por->partner_fi == 3){ // 270 deg
 					rotated_dx  += received_dy;
 					rotated_dy  -= received_dx;
+
+					rotated_sx  += received_sy;
+					rotated_sy  -= received_sx;
 				}
 				else{
 					// TRAP INVALID MESSAGE
@@ -163,10 +183,13 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				
 				uint8_t updated_dx = rotated_dx + GRID_SYS_DEFAULT_POSITION + por->dx;
 				uint8_t updated_dy = rotated_dy + GRID_SYS_DEFAULT_POSITION + por->dy;
+
+				uint8_t updated_sx = rotated_sx + GRID_SYS_DEFAULT_POSITION + por->dx;
+				uint8_t updated_sy = rotated_sy + GRID_SYS_DEFAULT_POSITION + por->dy;
 				
 				
 				
-				uint8_t updated_age = received_age;
+				uint8_t updated_msgage = received_msgage+1;
 				
 				if (received_dx + GRID_SYS_DEFAULT_POSITION == 0 && received_dy + GRID_SYS_DEFAULT_POSITION == 0)
 				{
@@ -184,14 +207,32 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 					grid_msg_set_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, updated_id, &error);
 					grid_msg_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
 					grid_msg_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
-					grid_msg_set_parameter(message, GRID_BRC_AGE_offset, GRID_BRC_AGE_length, updated_age, &error);
+					grid_msg_set_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, updated_msgage, &error);
 					grid_msg_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);
+				}
+				
+								
+				if (received_sx + GRID_SYS_DEFAULT_POSITION == 0 && received_sy + GRID_SYS_DEFAULT_POSITION == 0)
+				{
+					// EDITOR GENERATED GLOBAL MESSAGE
+					
+				}
+				else if (received_sx + GRID_SYS_DEFAULT_POSITION == 255 && received_sy + GRID_SYS_DEFAULT_POSITION == 255){
+					
+					// GRID GENERATED GLOBAL MESSAGE
+					
+				}
+				else{
+					
+					// Update message with the new values
+					grid_msg_set_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, updated_sx, &error);
+					grid_msg_set_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, updated_sy, &error);
 				}
 				
 				
 
 				
-				uint32_t fingerprint = updated_id*256*256*256 + updated_dx*256*256 + updated_dy*256 + updated_age;
+				uint32_t fingerprint = updated_id*256*256*256 + updated_sx*256*256 + updated_sy*256 + received_session;
 				
 				
 				if (0 == grid_msg_find_recent(&grid_sys_state, fingerprint)){
@@ -1131,7 +1172,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				
 				uint8_t length =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYBOARD_LENGTH_offset,		GRID_CLASS_HIDKEYBOARD_LENGTH_length);
 				
-				uint8_t default_delay = 5; // ms
+				uint8_t default_delay =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_offset,		GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_length);
+				
 
 
 				for(uint8_t j=0; j<length; j+=4){
@@ -1187,8 +1229,6 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 
 				}
 
-
-				
 			}
 			else{
 				

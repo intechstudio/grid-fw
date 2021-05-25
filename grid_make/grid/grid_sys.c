@@ -912,8 +912,6 @@ uint32_t grid_msg_set_parameter(uint8_t* message, uint8_t offset, uint8_t length
 
 uint8_t grid_msg_find_recent(struct grid_sys_model* model, uint32_t fingerprint){
 	
-    //uint32_t fingerprint = updated_id*256*256*256 + updated_dx*256*256 + updated_dy*256 + updated_age;
-    
 	for(GRID_SYS_RECENT_MESSAGES_INDEX_T i = 0; i<GRID_SYS_RECENT_MESSAGES_LENGTH; i++){
 		
 		if (model->recent_messages[i%GRID_SYS_RECENT_MESSAGES_LENGTH] == fingerprint){

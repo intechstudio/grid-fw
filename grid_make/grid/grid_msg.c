@@ -10,14 +10,14 @@
 
 
 // ======================= GRID MSG LEN ======================//
-void	grid_msg_header_set_len(struct grid_msg* msg, uint8_t len){
+void	grid_msg_header_set_len(struct grid_msg* msg, uint16_t len){
 	
 	uint8_t error = 0;
 	grid_msg_set_parameter(msg->header, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, len, &error);
 	
 }
 
-uint8_t grid_msg_header_get_len(struct grid_msg* msg){
+uint16_t grid_msg_header_get_len(struct grid_msg* msg){
 	
 	uint8_t error = 0;
 	return grid_msg_get_parameter(msg->header, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, &error);
@@ -53,6 +53,7 @@ uint8_t grid_msg_header_get_dx(struct grid_msg* msg){
 	return grid_msg_get_parameter(msg->header, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
 }
 
+
 // ======================= GRID MSG DY ======================//
 void	grid_msg_header_set_dy(struct grid_msg* msg, uint8_t dy){
 	
@@ -67,6 +68,38 @@ uint8_t grid_msg_header_get_dy(struct grid_msg* msg){
 	uint8_t error = 0;
 	return grid_msg_get_parameter(msg->header, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
 }
+
+// ======================= GRID MSG SX ======================//
+void	grid_msg_header_set_sx(struct grid_msg* msg, uint8_t sx){
+	
+	uint8_t error = 0;
+	grid_msg_set_parameter(msg->header, GRID_BRC_SX_offset, GRID_BRC_SX_length, sx, &error);
+	
+}
+
+
+uint8_t grid_msg_header_get_sx(struct grid_msg* msg){
+	
+	uint8_t error = 0;
+	return grid_msg_get_parameter(msg->header, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
+}
+
+// ======================= GRID MSG SY ======================//
+void	grid_msg_header_set_sy(struct grid_msg* msg, uint8_t sy){
+	
+	uint8_t error = 0;
+	grid_msg_set_parameter(msg->header, GRID_BRC_SY_offset, GRID_BRC_SY_length, sy, &error);
+	
+}
+
+
+uint8_t grid_msg_header_get_sy(struct grid_msg* msg){
+	
+	uint8_t error = 0;
+	return grid_msg_get_parameter(msg->header, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
+}
+
+
 
 // ======================= GRID MSG ROT ======================//
 void	grid_msg_header_set_rot(struct grid_msg* msg, uint8_t rot){
@@ -87,14 +120,28 @@ uint8_t grid_msg_header_get_rot(struct grid_msg* msg){
 void	grid_msg_header_set_age(struct grid_msg* msg, uint8_t age){
 	
 	uint8_t error = 0;
-	grid_msg_set_parameter(msg->header, GRID_BRC_AGE_offset, GRID_BRC_AGE_length, age, &error);
+	grid_msg_set_parameter(msg->header, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, age, &error);
 	
 }
 
 uint8_t grid_msg_header_get_age(struct grid_msg* msg){
 	
 	uint8_t error = 0;
-	return grid_msg_get_parameter(msg->header, GRID_BRC_AGE_offset, GRID_BRC_AGE_length, &error);
+	return grid_msg_get_parameter(msg->header, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
+}
+
+// ======================= GRID MSG session ======================//
+void	grid_msg_header_set_session(struct grid_msg* msg, uint8_t session){
+	
+	uint8_t error = 0;
+	grid_msg_set_parameter(msg->header, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, session, &error);
+	
+}
+
+uint8_t grid_msg_header_get_session(struct grid_msg* msg){
+	
+	uint8_t error = 0;
+	return grid_msg_get_parameter(msg->header, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
 }
 
 // ======================= MSG GET PACKET LENGTH ======================//
@@ -213,15 +260,22 @@ void	grid_msg_init(struct grid_msg* msg){
 void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy, uint8_t rot){
 	
     
-    uint8_t age = grid_sys_state.sessionid;
+    uint8_t session = grid_sys_state.sessionid;
     
 	sprintf(msg->header, GRID_BRC_frame);
 	msg->header_length = strlen(msg->header);
 	
 	grid_msg_header_set_dx(msg, dx);
 	grid_msg_header_set_dy(msg, dy);
+
+	grid_msg_header_set_sx(msg, GRID_SYS_DEFAULT_POSITION);
+	grid_msg_header_set_sy(msg, GRID_SYS_DEFAULT_POSITION);
+
 	grid_msg_header_set_rot(msg, rot);
-	grid_msg_header_set_age(msg, age);
+	
+	grid_msg_header_set_age(msg, GRID_SYS_DEFAULT_AGE);
+
+	grid_msg_header_set_session(msg, session);
 	
 	
 }

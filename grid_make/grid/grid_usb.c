@@ -238,9 +238,8 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
         }
         else{
         
-            //grid_debug_print_text("KB IS DISABLED");
-            
-            
+            grid_debug_print_text("KB IS DISABLED");
+                   
             // Generate ACKNOWLEDGE RESPONSE
             struct grid_msg message;
 
