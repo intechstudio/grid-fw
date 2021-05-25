@@ -43795,113 +43795,113 @@ LOAD linker stubs
  .comment       0x000000000000004c       0x4d hpl/systick/hpl_systick.o
  .comment       0x000000000000004c       0x4d hpl/dsu/hpl_dsu.o
 
-.debug_info     0x0000000000000000   0x11a9d5
+.debug_info     0x0000000000000000   0x11a9b5
  .debug_info    0x0000000000000000     0x1671 usb/class/midi/device/audiodf_midi.o
  .debug_info    0x0000000000001671     0x2efc grid/grid_ain.o
- .debug_info    0x000000000000456d     0x6155 grid/grid_buf.o
- .debug_info    0x000000000000a6c2     0x5377 grid/grid_d51.o
- .debug_info    0x000000000000fa39     0x414b grid/grid_expr.o
- .debug_info    0x0000000000013b84     0x3fac grid/grid_led.o
- .debug_info    0x0000000000017b30     0x4540 grid/grid_module.o
- .debug_info    0x000000000001c070     0x3b53 grid/grid_module_bu16.o
- .debug_info    0x000000000001fbc3     0x3d78 grid/grid_module_en16.o
- .debug_info    0x000000000002393b     0x3e51 grid/grid_module_pbf4.o
- .debug_info    0x000000000002778c     0x3c01 grid/grid_module_po16.o
- .debug_info    0x000000000002b38d     0x3c4d grid/grid_msg.o
- .debug_info    0x000000000002efda     0x492e grid/grid_nvm.o
- .debug_info    0x0000000000033908     0xa1c4 grid/grid_sys.o
- .debug_info    0x000000000003dacc     0x4970 grid/grid_ui.o
- .debug_info    0x000000000004243c     0x361e grid/grid_usb.o
- .debug_info    0x0000000000045a5a     0x587b grid/grid_lua_api.o
- .debug_info    0x000000000004b2d5     0x5ccf thirdparty/Lua/lua-5.4.3/src/lapi.o
- .debug_info    0x0000000000050fa4       0xd8 thirdparty/Lua/lua-5.4.3/src/lctype.o
- .debug_info    0x000000000005107c     0x1e89 thirdparty/Lua/lua-5.4.3/src/lfunc.o
- .debug_info    0x0000000000052f05     0x23d1 thirdparty/Lua/lua-5.4.3/src/lmathlib.o
- .debug_info    0x00000000000552d6     0x1f9b thirdparty/Lua/lua-5.4.3/src/loslib.o
- .debug_info    0x0000000000057271     0x3c66 thirdparty/Lua/lua-5.4.3/src/ltable.o
- .debug_info    0x000000000005aed7     0x2dc7 thirdparty/Lua/lua-5.4.3/src/lundump.o
- .debug_info    0x000000000005dc9e     0x4d86 thirdparty/Lua/lua-5.4.3/src/lauxlib.o
- .debug_info    0x0000000000062a24     0x2c48 thirdparty/Lua/lua-5.4.3/src/ldblib.o
- .debug_info    0x000000000006566c     0x508e thirdparty/Lua/lua-5.4.3/src/lgc.o
- .debug_info    0x000000000006a6fa     0x1385 thirdparty/Lua/lua-5.4.3/src/lmem.o
- .debug_info    0x000000000006ba7f     0x8a0b thirdparty/Lua/lua-5.4.3/src/lparser.o
- .debug_info    0x000000000007448a     0x2254 thirdparty/Lua/lua-5.4.3/src/ltablib.o
- .debug_info    0x00000000000766de     0x176d thirdparty/Lua/lua-5.4.3/src/lutf8lib.o
- .debug_info    0x0000000000077e4b     0x2c70 thirdparty/Lua/lua-5.4.3/src/lbaselib.o
- .debug_info    0x000000000007aabb     0x3ee5 thirdparty/Lua/lua-5.4.3/src/ldebug.o
- .debug_info    0x000000000007e9a0      0xa57 thirdparty/Lua/lua-5.4.3/src/linit.o
- .debug_info    0x000000000007f3f7     0x2b19 thirdparty/Lua/lua-5.4.3/src/loadlib.o
- .debug_info    0x0000000000081f10     0x298a thirdparty/Lua/lua-5.4.3/src/lstate.o
- .debug_info    0x000000000008489a     0x29c2 thirdparty/Lua/lua-5.4.3/src/ltm.o
- .debug_info    0x000000000008725c     0x796c thirdparty/Lua/lua-5.4.3/src/lvm.o
- .debug_info    0x000000000008ebc8     0x75c4 thirdparty/Lua/lua-5.4.3/src/lcode.o
- .debug_info    0x000000000009618c     0x3eed thirdparty/Lua/lua-5.4.3/src/ldo.o
- .debug_info    0x000000000009a079     0x340e thirdparty/Lua/lua-5.4.3/src/liolib.o
- .debug_info    0x000000000009d487     0x30f1 thirdparty/Lua/lua-5.4.3/src/lobject.o
- .debug_info    0x00000000000a0578     0x25cd thirdparty/Lua/lua-5.4.3/src/lstring.o
- .debug_info    0x00000000000a2b45     0x1812 thirdparty/Lua/lua-5.4.3/src/lzio.o
- .debug_info    0x00000000000a4357     0x382a thirdparty/Lua/lua-5.4.3/src/llex.o
- .debug_info    0x00000000000a7b81      0x30a thirdparty/Lua/lua-5.4.3/src/lopcodes.o
- .debug_info    0x00000000000a7e8b     0x2171 thirdparty/Lua/lua-5.4.3/src/ldump.o
- .debug_info    0x00000000000a9ffc     0x5e9a thirdparty/Lua/lua-5.4.3/src/lstrlib.o
- .debug_info    0x00000000000afe96     0x1674 thirdparty/Lua/lua-5.4.3/src/lcorolib.o
- .debug_info    0x00000000000b150a      0x2c9 hal/src/hal_io.o
- .debug_info    0x00000000000b17d3      0xb7c thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o
- .debug_info    0x00000000000b234f      0x5a6 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.o
- .debug_info    0x00000000000b28f5      0xf9c hal/src/hal_i2c_m_async.o
- .debug_info    0x00000000000b3891      0xe09 hpl/wdt/hpl_wdt.o
- .debug_info    0x00000000000b469a      0xea9 usb/usb_protocol.o
- .debug_info    0x00000000000b5543      0xb9a stdio_redirect/stdio_io.o
- .debug_info    0x00000000000b60dd      0xc3a hal/src/hal_spi_m_dma.o
- .debug_info    0x00000000000b6d17      0xa05 stdio_redirect/gcc/write.o
- .debug_info    0x00000000000b771c     0x10be hpl/evsys/hpl_evsys.o
- .debug_info    0x00000000000b87da      0xc6d hpl/core/hpl_core_m4.o
- .debug_info    0x00000000000b9447     0x17aa usb/class/cdc/device/cdcdf_acm.o
- .debug_info    0x00000000000babf1      0xd78 hal/utils/src/utils_syscalls.o
- .debug_info    0x00000000000bb969     0x1a5a hpl/qspi/hpl_qspi.o
- .debug_info    0x00000000000bd3c3     0x40c0 hpl/nvmctrl/hpl_nvmctrl.o
- .debug_info    0x00000000000c1483     0x2a98 usb_start.o
- .debug_info    0x00000000000c3f1b      0xacc hal/src/hal_timer.o
- .debug_info    0x00000000000c49e7     0x95ac hpl/usb/hpl_usb.o
- .debug_info    0x00000000000cdf93      0xa05 stdio_redirect/gcc/read.o
- .debug_info    0x00000000000ce998      0x1ed hal/src/hal_delay.o
- .debug_info    0x00000000000ceb85     0x1484 hpl/core/hpl_init.o
- .debug_info    0x00000000000d0009      0xc45 hpl/ramecc/hpl_ramecc.o
- .debug_info    0x00000000000d0c4e     0x14f2 usb/class/hid/device/hiddf_mouse.o
- .debug_info    0x00000000000d2140      0x127 hal/utils/src/utils_assert.o
- .debug_info    0x00000000000d2267     0x31ea hpl/dmac/hpl_dmac.o
- .debug_info    0x00000000000d5451     0x158a hal/src/hal_adc_async.o
- .debug_info    0x00000000000d69db     0x1eb2 hpl/oscctrl/hpl_oscctrl.o
- .debug_info    0x00000000000d888d      0x6d1 hal/src/hal_rand_sync.o
- .debug_info    0x00000000000d8f5e      0x932 hpl/trng/hpl_trng.o
- .debug_info    0x00000000000d9890     0x14ad usb/class/hid/device/hiddf_keyboard.o
- .debug_info    0x00000000000dad3d      0xd2e hal/src/hal_usart_sync.o
- .debug_info    0x00000000000dba6b      0x9ef hpl/mclk/hpl_mclk.o
- .debug_info    0x00000000000dc45a      0x793 hpl/gclk/hpl_gclk.o
- .debug_info    0x00000000000dcbed     0x18dc stdio_start.o
- .debug_info    0x00000000000de4c9      0xd10 hal/src/hal_flash.o
- .debug_info    0x00000000000df1d9     0x1107 hal/src/hal_spi_m_async.o
- .debug_info    0x00000000000e02e0      0x4bc hal/src/hal_crc_sync.o
- .debug_info    0x00000000000e079c     0x1ebc hal/src/hal_usb_device.o
- .debug_info    0x00000000000e2658      0x358 hal/utils/src/utils_list.o
- .debug_info    0x00000000000e29b0      0x746 hpl/osc32kctrl/hpl_osc32kctrl.o
- .debug_info    0x00000000000e30f6     0x3717 hpl/rtc/hpl_rtc.o
- .debug_info    0x00000000000e680d     0xf1f9 driver_init.o
- .debug_info    0x00000000000f5a06     0x1357 hal/src/hal_usart_async.o
- .debug_info    0x00000000000f6d5d     0xd07a hpl/sercom/hpl_sercom.o
- .debug_info    0x0000000000103dd7      0x32a hal/utils/src/utils_ringbuffer.o
- .debug_info    0x0000000000104101      0x20d hal/src/hal_atomic.o
- .debug_info    0x000000000010430e     0x5a60 main.o
- .debug_info    0x0000000000109d6e      0x6bb hal/src/hal_qspi_dma.o
- .debug_info    0x000000000010a429     0x32c7 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
- .debug_info    0x000000000010d6f0      0x2b1 hal/src/hal_evsys.o
- .debug_info    0x000000000010d9a1     0x4358 hpl/adc/hpl_adc.o
- .debug_info    0x0000000000111cf9      0xd58 samd51a/gcc/gcc/startup_samd51.o
- .debug_info    0x0000000000112a51     0x18b1 atmel_start.o
- .debug_info    0x0000000000114302     0x23f7 usb/device/usbdc.o
- .debug_info    0x00000000001166f9     0x2dde hpl/tc/hpl_tc.o
- .debug_info    0x00000000001194d7      0x280 hpl/systick/hpl_systick.o
- .debug_info    0x0000000000119757     0x127e hpl/dsu/hpl_dsu.o
+ .debug_info    0x000000000000456d     0x6149 grid/grid_buf.o
+ .debug_info    0x000000000000a6b6     0x5377 grid/grid_d51.o
+ .debug_info    0x000000000000fa2d     0x414b grid/grid_expr.o
+ .debug_info    0x0000000000013b78     0x3fac grid/grid_led.o
+ .debug_info    0x0000000000017b24     0x4540 grid/grid_module.o
+ .debug_info    0x000000000001c064     0x3b53 grid/grid_module_bu16.o
+ .debug_info    0x000000000001fbb7     0x3d78 grid/grid_module_en16.o
+ .debug_info    0x000000000002392f     0x3e51 grid/grid_module_pbf4.o
+ .debug_info    0x0000000000027780     0x3c01 grid/grid_module_po16.o
+ .debug_info    0x000000000002b381     0x3c4d grid/grid_msg.o
+ .debug_info    0x000000000002efce     0x492c grid/grid_nvm.o
+ .debug_info    0x00000000000338fa     0xa1c2 grid/grid_sys.o
+ .debug_info    0x000000000003dabc     0x496c grid/grid_ui.o
+ .debug_info    0x0000000000042428     0x3612 grid/grid_usb.o
+ .debug_info    0x0000000000045a3a     0x587b grid/grid_lua_api.o
+ .debug_info    0x000000000004b2b5     0x5ccf thirdparty/Lua/lua-5.4.3/src/lapi.o
+ .debug_info    0x0000000000050f84       0xd8 thirdparty/Lua/lua-5.4.3/src/lctype.o
+ .debug_info    0x000000000005105c     0x1e89 thirdparty/Lua/lua-5.4.3/src/lfunc.o
+ .debug_info    0x0000000000052ee5     0x23d1 thirdparty/Lua/lua-5.4.3/src/lmathlib.o
+ .debug_info    0x00000000000552b6     0x1f9b thirdparty/Lua/lua-5.4.3/src/loslib.o
+ .debug_info    0x0000000000057251     0x3c66 thirdparty/Lua/lua-5.4.3/src/ltable.o
+ .debug_info    0x000000000005aeb7     0x2dc7 thirdparty/Lua/lua-5.4.3/src/lundump.o
+ .debug_info    0x000000000005dc7e     0x4d86 thirdparty/Lua/lua-5.4.3/src/lauxlib.o
+ .debug_info    0x0000000000062a04     0x2c48 thirdparty/Lua/lua-5.4.3/src/ldblib.o
+ .debug_info    0x000000000006564c     0x508e thirdparty/Lua/lua-5.4.3/src/lgc.o
+ .debug_info    0x000000000006a6da     0x1385 thirdparty/Lua/lua-5.4.3/src/lmem.o
+ .debug_info    0x000000000006ba5f     0x8a0b thirdparty/Lua/lua-5.4.3/src/lparser.o
+ .debug_info    0x000000000007446a     0x2254 thirdparty/Lua/lua-5.4.3/src/ltablib.o
+ .debug_info    0x00000000000766be     0x176d thirdparty/Lua/lua-5.4.3/src/lutf8lib.o
+ .debug_info    0x0000000000077e2b     0x2c70 thirdparty/Lua/lua-5.4.3/src/lbaselib.o
+ .debug_info    0x000000000007aa9b     0x3ee5 thirdparty/Lua/lua-5.4.3/src/ldebug.o
+ .debug_info    0x000000000007e980      0xa57 thirdparty/Lua/lua-5.4.3/src/linit.o
+ .debug_info    0x000000000007f3d7     0x2b19 thirdparty/Lua/lua-5.4.3/src/loadlib.o
+ .debug_info    0x0000000000081ef0     0x298a thirdparty/Lua/lua-5.4.3/src/lstate.o
+ .debug_info    0x000000000008487a     0x29c2 thirdparty/Lua/lua-5.4.3/src/ltm.o
+ .debug_info    0x000000000008723c     0x796c thirdparty/Lua/lua-5.4.3/src/lvm.o
+ .debug_info    0x000000000008eba8     0x75c4 thirdparty/Lua/lua-5.4.3/src/lcode.o
+ .debug_info    0x000000000009616c     0x3eed thirdparty/Lua/lua-5.4.3/src/ldo.o
+ .debug_info    0x000000000009a059     0x340e thirdparty/Lua/lua-5.4.3/src/liolib.o
+ .debug_info    0x000000000009d467     0x30f1 thirdparty/Lua/lua-5.4.3/src/lobject.o
+ .debug_info    0x00000000000a0558     0x25cd thirdparty/Lua/lua-5.4.3/src/lstring.o
+ .debug_info    0x00000000000a2b25     0x1812 thirdparty/Lua/lua-5.4.3/src/lzio.o
+ .debug_info    0x00000000000a4337     0x382a thirdparty/Lua/lua-5.4.3/src/llex.o
+ .debug_info    0x00000000000a7b61      0x30a thirdparty/Lua/lua-5.4.3/src/lopcodes.o
+ .debug_info    0x00000000000a7e6b     0x2171 thirdparty/Lua/lua-5.4.3/src/ldump.o
+ .debug_info    0x00000000000a9fdc     0x5e9a thirdparty/Lua/lua-5.4.3/src/lstrlib.o
+ .debug_info    0x00000000000afe76     0x1674 thirdparty/Lua/lua-5.4.3/src/lcorolib.o
+ .debug_info    0x00000000000b14ea      0x2c9 hal/src/hal_io.o
+ .debug_info    0x00000000000b17b3      0xb7c thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o
+ .debug_info    0x00000000000b232f      0x5a6 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.o
+ .debug_info    0x00000000000b28d5      0xf9c hal/src/hal_i2c_m_async.o
+ .debug_info    0x00000000000b3871      0xe09 hpl/wdt/hpl_wdt.o
+ .debug_info    0x00000000000b467a      0xea9 usb/usb_protocol.o
+ .debug_info    0x00000000000b5523      0xb9a stdio_redirect/stdio_io.o
+ .debug_info    0x00000000000b60bd      0xc3a hal/src/hal_spi_m_dma.o
+ .debug_info    0x00000000000b6cf7      0xa05 stdio_redirect/gcc/write.o
+ .debug_info    0x00000000000b76fc     0x10be hpl/evsys/hpl_evsys.o
+ .debug_info    0x00000000000b87ba      0xc6d hpl/core/hpl_core_m4.o
+ .debug_info    0x00000000000b9427     0x17aa usb/class/cdc/device/cdcdf_acm.o
+ .debug_info    0x00000000000babd1      0xd78 hal/utils/src/utils_syscalls.o
+ .debug_info    0x00000000000bb949     0x1a5a hpl/qspi/hpl_qspi.o
+ .debug_info    0x00000000000bd3a3     0x40c0 hpl/nvmctrl/hpl_nvmctrl.o
+ .debug_info    0x00000000000c1463     0x2a98 usb_start.o
+ .debug_info    0x00000000000c3efb      0xacc hal/src/hal_timer.o
+ .debug_info    0x00000000000c49c7     0x95ac hpl/usb/hpl_usb.o
+ .debug_info    0x00000000000cdf73      0xa05 stdio_redirect/gcc/read.o
+ .debug_info    0x00000000000ce978      0x1ed hal/src/hal_delay.o
+ .debug_info    0x00000000000ceb65     0x1484 hpl/core/hpl_init.o
+ .debug_info    0x00000000000cffe9      0xc45 hpl/ramecc/hpl_ramecc.o
+ .debug_info    0x00000000000d0c2e     0x14f2 usb/class/hid/device/hiddf_mouse.o
+ .debug_info    0x00000000000d2120      0x127 hal/utils/src/utils_assert.o
+ .debug_info    0x00000000000d2247     0x31ea hpl/dmac/hpl_dmac.o
+ .debug_info    0x00000000000d5431     0x158a hal/src/hal_adc_async.o
+ .debug_info    0x00000000000d69bb     0x1eb2 hpl/oscctrl/hpl_oscctrl.o
+ .debug_info    0x00000000000d886d      0x6d1 hal/src/hal_rand_sync.o
+ .debug_info    0x00000000000d8f3e      0x932 hpl/trng/hpl_trng.o
+ .debug_info    0x00000000000d9870     0x14ad usb/class/hid/device/hiddf_keyboard.o
+ .debug_info    0x00000000000dad1d      0xd2e hal/src/hal_usart_sync.o
+ .debug_info    0x00000000000dba4b      0x9ef hpl/mclk/hpl_mclk.o
+ .debug_info    0x00000000000dc43a      0x793 hpl/gclk/hpl_gclk.o
+ .debug_info    0x00000000000dcbcd     0x18dc stdio_start.o
+ .debug_info    0x00000000000de4a9      0xd10 hal/src/hal_flash.o
+ .debug_info    0x00000000000df1b9     0x1107 hal/src/hal_spi_m_async.o
+ .debug_info    0x00000000000e02c0      0x4bc hal/src/hal_crc_sync.o
+ .debug_info    0x00000000000e077c     0x1ebc hal/src/hal_usb_device.o
+ .debug_info    0x00000000000e2638      0x358 hal/utils/src/utils_list.o
+ .debug_info    0x00000000000e2990      0x746 hpl/osc32kctrl/hpl_osc32kctrl.o
+ .debug_info    0x00000000000e30d6     0x3717 hpl/rtc/hpl_rtc.o
+ .debug_info    0x00000000000e67ed     0xf1f9 driver_init.o
+ .debug_info    0x00000000000f59e6     0x1357 hal/src/hal_usart_async.o
+ .debug_info    0x00000000000f6d3d     0xd07a hpl/sercom/hpl_sercom.o
+ .debug_info    0x0000000000103db7      0x32a hal/utils/src/utils_ringbuffer.o
+ .debug_info    0x00000000001040e1      0x20d hal/src/hal_atomic.o
+ .debug_info    0x00000000001042ee     0x5a60 main.o
+ .debug_info    0x0000000000109d4e      0x6bb hal/src/hal_qspi_dma.o
+ .debug_info    0x000000000010a409     0x32c7 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
+ .debug_info    0x000000000010d6d0      0x2b1 hal/src/hal_evsys.o
+ .debug_info    0x000000000010d981     0x4358 hpl/adc/hpl_adc.o
+ .debug_info    0x0000000000111cd9      0xd58 samd51a/gcc/gcc/startup_samd51.o
+ .debug_info    0x0000000000112a31     0x18b1 atmel_start.o
+ .debug_info    0x00000000001142e2     0x23f7 usb/device/usbdc.o
+ .debug_info    0x00000000001166d9     0x2dde hpl/tc/hpl_tc.o
+ .debug_info    0x00000000001194b7      0x280 hpl/systick/hpl_systick.o
+ .debug_info    0x0000000000119737     0x127e hpl/dsu/hpl_dsu.o
 
 .debug_abbrev   0x0000000000000000    0x1ad2b
  .debug_abbrev  0x0000000000000000      0x4bf usb/class/midi/device/audiodf_midi.o
@@ -44872,7 +44872,7 @@ LOAD linker stubs
  .debug_macro   0x00000000000590c1       0x10 hpl/systick/hpl_systick.o
  .debug_macro   0x00000000000590d1      0x665 hpl/dsu/hpl_dsu.o
 
-.debug_line     0x0000000000000000    0x84c93
+.debug_line     0x0000000000000000    0x84c96
  .debug_line    0x0000000000000000      0xfcd usb/class/midi/device/audiodf_midi.o
  .debug_line    0x0000000000000fcd     0x185b grid/grid_ain.o
  .debug_line    0x0000000000002828     0x32b0 grid/grid_buf.o
@@ -44968,17 +44968,17 @@ LOAD linker stubs
  .debug_line    0x00000000000703a7     0x5cb8 hpl/sercom/hpl_sercom.o
  .debug_line    0x000000000007605f      0xb92 hal/utils/src/utils_ringbuffer.o
  .debug_line    0x0000000000076bf1      0xa56 hal/src/hal_atomic.o
- .debug_line    0x0000000000077647     0x2046 main.o
- .debug_line    0x000000000007968d      0xb7d hal/src/hal_qspi_dma.o
- .debug_line    0x000000000007a20a     0x25f5 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
- .debug_line    0x000000000007c7ff      0xa79 hal/src/hal_evsys.o
- .debug_line    0x000000000007d278     0x1e63 hpl/adc/hpl_adc.o
- .debug_line    0x000000000007f0db      0x8c9 samd51a/gcc/gcc/startup_samd51.o
- .debug_line    0x000000000007f9a4     0x1312 atmel_start.o
- .debug_line    0x0000000000080cb6     0x154c usb/device/usbdc.o
- .debug_line    0x0000000000082202     0x1366 hpl/tc/hpl_tc.o
- .debug_line    0x0000000000083568      0xafd hpl/systick/hpl_systick.o
- .debug_line    0x0000000000084065      0xc2e hpl/dsu/hpl_dsu.o
+ .debug_line    0x0000000000077647     0x2049 main.o
+ .debug_line    0x0000000000079690      0xb7d hal/src/hal_qspi_dma.o
+ .debug_line    0x000000000007a20d     0x25f5 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
+ .debug_line    0x000000000007c802      0xa79 hal/src/hal_evsys.o
+ .debug_line    0x000000000007d27b     0x1e63 hpl/adc/hpl_adc.o
+ .debug_line    0x000000000007f0de      0x8c9 samd51a/gcc/gcc/startup_samd51.o
+ .debug_line    0x000000000007f9a7     0x1312 atmel_start.o
+ .debug_line    0x0000000000080cb9     0x154c usb/device/usbdc.o
+ .debug_line    0x0000000000082205     0x1366 hpl/tc/hpl_tc.o
+ .debug_line    0x000000000008356b      0xafd hpl/systick/hpl_systick.o
+ .debug_line    0x0000000000084068      0xc2e hpl/dsu/hpl_dsu.o
 
 .debug_str      0x0000000000000000   0x13aa49
  .debug_str     0x0000000000000000    0xed4a5 usb/class/midi/device/audiodf_midi.o

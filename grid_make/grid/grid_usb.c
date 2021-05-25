@@ -244,7 +244,7 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
             struct grid_msg message;
 
             grid_msg_init(&message);
-            grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+            grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 			grid_msg_body_append_printf(&message, GRID_CLASS_HIDKEYSTATUS_frame);
 			grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);

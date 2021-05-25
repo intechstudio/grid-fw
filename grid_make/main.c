@@ -924,7 +924,7 @@ int main(void)
 			struct grid_msg response;
 
 			grid_msg_init(&response);
-			grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+			grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 			uint8_t temp[30] = {0};
 			sprintf(temp, GRID_CLASS_HEARTBEAT_frame);

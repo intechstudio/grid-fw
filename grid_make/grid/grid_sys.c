@@ -54,7 +54,7 @@ void grid_debug_print_text(uint8_t* debug_string){
 	struct grid_msg message;
 	
 	grid_msg_init(&message);
-	grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
 	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_start);
 	grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);

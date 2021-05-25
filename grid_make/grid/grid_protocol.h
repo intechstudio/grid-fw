@@ -836,5 +836,4 @@ enum grid_ui_event_t
 #define GRID_CLASS_HIDKEYBOARD_DELAY_offset 10
 #define GRID_CLASS_HIDKEYBOARD_DELAY_length 3
 
-
 #endif /* GRID_PROTOCOL_H_INCLUDED */
