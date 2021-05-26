@@ -723,7 +723,7 @@ enum grid_ui_event_t
 
 
 #define GRID_ACTIONSTRING_PAGE_INIT		 "<?lua print('page init') ?>"
-#define GRID_ACTIONSTRING_MAPMODE_CHANGE "<?lua gpl(gpn()) ?>"
+#define GRID_ACTIONSTRING_MAPMODE_CHANGE "<?lua print('test') gpl(gpn()) ?>"
 
 
 #define GRID_CLASS_EVENT_code 0x050

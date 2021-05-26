@@ -12,7 +12,7 @@
 #include "grid_module.h"
 
 
-#define GRID_MSG_HEADER_maxlength 20
+#define GRID_MSG_HEADER_maxlength 26
 #define GRID_MSG_FOOTER_maxlength 5
 
 #define GRID_MSG_BODY_maxlength  GRID_PARAMETER_PACKET_maxlength - GRID_MSG_HEADER_maxlength - GRID_MSG_FOOTER_maxlength

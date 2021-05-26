@@ -183,6 +183,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 						grid_ui_event_reset(&grid_ui_state.element_list[j].event_list[k]);
 						CRITICAL_SECTION_LEAVE()
 						
+
 					}
 					
 				}
@@ -222,8 +223,6 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		else{
 			// LOG UNABLE TO WRITE EVENT
 		}
-		
-		
 		
 	
 	}

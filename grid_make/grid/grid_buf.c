@@ -1306,7 +1306,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			position_is_local = 1;
 		}
 		
-		
 			
 		uint8_t current_start		= 0;
 		uint8_t current_stop		= 0;
@@ -1322,6 +1321,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		for (uint16_t i=0; i<length; i++){
 	
 			if (message[i] == GRID_CONST_STX){
+
+				printf("RX: %s\r\n", &message[i]);
 				current_start = i;
 				start_count++;
 			}
@@ -1331,12 +1332,21 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_offset], GRID_CLASS_length, &error_flag);
 				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
 		
+
+				
+
 		
 				if (msg_class == GRID_CLASS_PAGEACTIVE_code){ // dont check address!
 						
+
+		
+
 					uint8_t page = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset], GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, &error_flag);
-									
+								
+					
 					if (msg_instr == GRID_INSTR_EXECUTE_code){ //SET BANK
+
+						printf("wtf\r\n");
 
 						if (grid_ui_state.page_change_enabled == 1){
 
