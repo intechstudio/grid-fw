@@ -440,7 +440,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		else{
 			// INVALID CHECKSUM
 			
-			printf("Invalid Checksum\r\n");
+			grid_debug_printf("Invalid Checksum\r\n");
 			
 			if (error_flag != 0){
 				//usart_async_disable(&USART_EAST);

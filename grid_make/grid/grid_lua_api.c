@@ -30,7 +30,7 @@ static int l_grid_keyboard_send(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
-    if (nargs%3 != 0 || nargs == 0){
+    if ((nargs-1)%3 != 0 || nargs == 0){
 
         printf("kb invalid params %d\r\n", nargs);
         return 0;
