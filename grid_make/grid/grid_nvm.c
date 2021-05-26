@@ -129,7 +129,7 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 
 	// before append pad to 8 byte words
 
-	printf("APPEND START\r\n");
+	printf("APPEND START len: %d\r\n", length);
 	uint32_t append_length = length + (8 - length%8)%8; 
 
 
@@ -169,7 +169,7 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 	for (uint16_t i=0; i<append_length; i++){
 		if (verify_buffer[i] != append_buffer[i]){
 			printf("ERROR: APPEND VERIFY FAILED 0x%x  len:%d (%d!=%d)\r\n\r\n", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
-			grid_debug_printf("ERROR: APPEND VERIFY FAILED 0x%x  len:%d (%d!=%d)\r\n\r\n", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
+			grid_debug_printf("append verify failed");
 		}
 	}
 
@@ -207,7 +207,7 @@ uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t le
 	for (uint16_t i=0; i<clear_length; i++){
 		if (verify_buffer[i] != 0x00){
 			printf("\r\n\r\nerror.nvm.clear verify failed at 0x%x cb:%d vb:%d", GRID_NVM_LOCAL_BASE_ADDRESS + offset + i, clear_buffer[i], verify_buffer[i]);
-			
+			grid_debug_printf("clear verify failed");
 			for(uint8_t j=0; j<10; j++){ // retry max 10 times
 
 				// try again chunk
@@ -374,7 +374,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 					uint8_t page_number = 0;
 					uint8_t element_number = 0;
 					uint8_t event_type = 0;
-					uint8_t action_length = 0;
+					uint16_t action_length = 0;
 
 
 					uint8_t vmajor = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
@@ -473,11 +473,12 @@ uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, 
 
 	printf("Config frame len: %d -> %s\r\n", len, buf);
 
-
+	grid_nvm_toc_debug(mod);
 
 	struct grid_nvm_toc_entry* entry = NULL;
 
 	entry = grid_nvm_toc_entry_find(&grid_nvm_state, page_number, element_number, event_type);
+
 
 	uint32_t append_offset = grid_nvm_append(mod, buf, config_length);
 
@@ -496,6 +497,7 @@ uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, 
 	}
 
 
+	grid_nvm_toc_debug(mod);
 
 }
 
@@ -522,18 +524,21 @@ uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, u
 
 		if (next == NULL){
 			// this is the end of the list
-
+			printf("A)\r\n");
 			break;
 		}
 		else if (next_sort>this_sort){
+			printf("B)\r\n");
 
 			break;
 		}
 		else if (next_sort==this_sort){
+			printf("C)\r\n");
 			duplicate = 1;
 			break;
 		}
 		else{
+			printf("next)\r\n");
 			prev = next;
 			next = next->next;
 		}
@@ -562,6 +567,7 @@ uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, u
 			if (prev == NULL){
 				// this is first element
 				mod->toc_head = entry;
+				printf("toc head\r\n");
 			}
 			else{
 				prev->next = entry;
@@ -579,10 +585,12 @@ uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, u
 		entry->page_id = page_id;
 		entry->element_id = element_id;
 		entry->event_type = event_type;
-
-		// here manipulate NVM if duplicate
 		entry->config_string_offset = config_string_offset;
 		entry->config_string_length = config_string_length;
+
+		printf("toc create: %d %d %d offs: 0x%x len: %d\r\n", page_id, element_id, event_type, entry->config_string_offset, entry->config_string_length);
+
+		// here manipulate NVM if duplicate
 
 
 	}
@@ -658,7 +666,7 @@ uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct g
 
 	targetstring[entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset] = '\0';
 	
-	//printf("toc g a %d %s\r\n", entry->config_string_length, targetstring);
+	printf("toc g a %d %s\r\n", entry->config_string_length, targetstring);
 
 	return strlen(targetstring);
 
@@ -740,7 +748,7 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 				//printf("Page Load: FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
 
 				if (entry->config_string_length){
-					uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
+					uint8_t temp[GRID_UI_ACTION_STRING_maxlength + 100] = {0};
 
 					grid_nvm_toc_generate_actionstring(nvm, entry, temp);
 					grid_ui_event_register_actionstring(eve, temp);
@@ -756,7 +764,7 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 				//printf("Page Load: NOT FOUND, Set default!\r\n");
 
 
-				uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
+				uint8_t temp[GRID_UI_ACTION_STRING_maxlength + 100] = {0};
 
 				grid_ui_event_generate_actionstring(eve, temp);
 				grid_ui_event_register_actionstring(eve, temp);
@@ -777,13 +785,15 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 
 	}
 	
+
+    //grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
+	grid_debug_printf("read complete");
 	nvm->read_bulk_status = 0;
 }
 
 
 void grid_nvm_ui_bulk_store_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
-	grid_debug_printf("store complete");
 
 	nvm->store_bulk_status = 1;
 
@@ -832,6 +842,8 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	}
 
+	grid_nvm_toc_debug(&grid_nvm_state);
+
 	struct grid_msg response;
 
 	grid_msg_init(&response);
@@ -844,6 +856,11 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 	grid_msg_packet_send_everywhere(&response);
 	
 	nvm->store_bulk_status = 0;
+
+	grid_debug_printf("store complete");
+
+
+    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
 		
 }
 
@@ -901,6 +918,8 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 		
 	grid_msg_packet_close(&response);
 
+	grid_debug_printf("clear complete");
+    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
 
 	
 }

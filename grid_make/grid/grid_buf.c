@@ -1345,7 +1345,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					if (msg_instr == GRID_INSTR_EXECUTE_code){ //SET BANK
 
-						printf("wtf\r\n");
 
 						if (grid_ui_state.page_change_enabled == 1){
 
@@ -1751,6 +1750,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							action[actionlength] = 0;
 							printf("Config: %d %d %d %d -> %s\r\n", pagenumber, elementnumber, eventtype, actionlength, action);
 							
+    						grid_sys_alert_set_alert(&grid_sys_state, 127, 127, 127, 0, 200); // Green
 								if (pagenumber == grid_ui_state.page_activepage){
 
 									//find event
