@@ -1777,6 +1777,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							}
 							else{
 								printf("Config actionstring too long\r\n");
+								grid_debug_printf("config too long");
 							}
 
 						}
