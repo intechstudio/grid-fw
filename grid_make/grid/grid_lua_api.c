@@ -110,7 +110,8 @@ static int l_my_print(lua_State* L) {
     for (int i=1; i <= nargs; ++i) {
 
         if (lua_type(L, i) == LUA_TSTRING){
-
+            
+            grid_debug_printf("%s", lua_tostring(L, i));
 		    printf(" str: %s ", lua_tostring(L, i));
         }
         else if (lua_type(L, i) == LUA_TNUMBER){
@@ -120,6 +121,7 @@ static int l_my_print(lua_State* L) {
             lua_numbertointeger(lnum, &lint);
             //int32_t num = lua_tonumber
 
+            grid_debug_printf("%d", (int)lnum);
 		    printf(" num: %d ", (int)lnum);
         }
         else if (lua_type(L, i) == LUA_TNIL){
@@ -1047,6 +1049,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
         }
         else{
             printf("LUA not OK: %s \r\n", code);
+            grid_debug_printf("LUA not OK");
         }
 
         lua_pop(mod->L, lua_gettop(mod->L));
@@ -1054,6 +1057,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
     }
     else{
         printf("LUA not OK:  %s\r\n", code);
+        grid_debug_printf("LUA not OK");
     }
 
 

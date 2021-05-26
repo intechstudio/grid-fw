@@ -720,6 +720,9 @@ enum grid_ui_event_t
 #define GRID_ACTIONSTRING_BC "<?lua --[[@gms]]gms(0, 144, this.ind(), this.bva()) --[[@glp]]glp(this.ind(), 1, this.bva()) ?>"
 #define GRID_ACTIONSTRING_EC "<?lua --[[@gms]]gms(0, 176, this.ind(), this.eva()) --[[@glp]]glp(this.ind(), 2, this.eva()) ?>"
 
+
+
+#define GRID_ACTIONSTRING_PAGE_INIT		 "<?lua print('page init') ?>"
 #define GRID_ACTIONSTRING_MAPMODE_CHANGE "<?lua gpl(gpn()) ?>"
 
 

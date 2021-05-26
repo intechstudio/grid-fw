@@ -709,8 +709,8 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 	if (eve->parent->type == GRID_UI_ELEMENT_SYSTEM){
 				
 		switch(eve->type){
-			case GRID_UI_EVENT_INIT:	break;
-			case GRID_UI_EVENT_MAPMODE_CHANGE:		sprintf(targetstring, GRID_ACTIONSTRING_MAPMODE_CHANGE);			break;
+			case GRID_UI_EVENT_INIT:				sprintf(targetstring, GRID_ACTIONSTRING_PAGE_INIT);			break;
+			case GRID_UI_EVENT_MAPMODE_CHANGE:		sprintf(targetstring, GRID_ACTIONSTRING_MAPMODE_CHANGE);	break;
 		}
 		
 	}
