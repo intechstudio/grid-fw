@@ -20,7 +20,7 @@ enum grid_ui_status {
 };
 
 
-#define GRID_UI_ACTION_STRING_maxlength		240
+#define GRID_UI_ACTION_STRING_maxlength		250
 
 
 

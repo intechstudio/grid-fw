@@ -1322,7 +1322,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 	
 			if (message[i] == GRID_CONST_STX){
 
-				printf("RX: %s\r\n", &message[i]);
 				current_start = i;
 				start_count++;
 			}
