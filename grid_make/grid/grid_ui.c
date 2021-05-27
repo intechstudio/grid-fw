@@ -243,6 +243,8 @@ void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
 
 	printf("UI MODEL INIT: %d\r\n", element_list_length);
 	mod->element_list = malloc(element_list_length*sizeof(struct grid_ui_element));
+
+	mod->page_negotiated = 0;
 	
 }
 
@@ -726,7 +728,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 	else if (eve->parent->type == GRID_UI_ELEMENT_POTENTIOMETER){
 		
 		switch(eve->type){
-			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;
+			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_POT);		break;
 			case GRID_UI_EVENT_AC:		sprintf(targetstring, GRID_ACTIONSTRING_AC);			break;
 		}
 		

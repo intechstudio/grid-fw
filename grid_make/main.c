@@ -809,7 +809,6 @@ int main(void)
 
 	uint32_t loopcounter = 1;
 	uint32_t loopstart = 0;
-	uint8_t usb_init_flag = 0;	
 
 	uint8_t task_list_length = 6;
 	struct grid_d51_task task_list[task_list_length];
@@ -853,22 +852,24 @@ int main(void)
 
 
 		
-		if (usb_init_flag == 0){
+		if (usb_d_get_frame_num() != 0){
 			
-			if (usb_d_get_frame_num() == 0){
-				
-			}
-			else{			
+			if (grid_sys_state.heartbeat_type != 1){
 			
-				grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN	
+				printf("USB CONNECTED\r\n\r\n");
+
+				grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 250); // GREEN	
 				
 				grid_sys_state.heartbeat_type = 1;
 
-				usb_init_flag = 1;
 		
 			}
-			
+
 		}
+			
+		//printf("WTF\r\n\r\n");
+	
+
 
 		
 		loopcounter++;
@@ -923,17 +924,27 @@ int main(void)
 			grid_msg_init(&response);
 			grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
 
-			uint8_t temp[30] = {0};
-			sprintf(temp, GRID_CLASS_HEARTBEAT_frame);
-			grid_msg_body_append_text(&response, temp);
+			grid_msg_body_append_printf(&response, GRID_CLASS_HEARTBEAT_frame);
 
-			grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+			grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
 
-			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, grid_sys_state.heartbeat_type);
-			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(&grid_sys_state));
-			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
-			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
-			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
+			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, grid_sys_state.heartbeat_type);
+			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(&grid_sys_state));
+			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
+			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
+			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
+				
+			if (grid_sys_state.heartbeat_type == 1){	// I am usb connected deevice
+
+				
+				grid_msg_body_append_printf(&response, GRID_CLASS_PAGEACTIVE_frame);
+				grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+				grid_msg_body_append_parameter(&response, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, grid_ui_state.page_activepage);
+
+				//printf("DEBUG: %s\r\n", response.body);
+			}
+
+
 
 			grid_msg_packet_close(&response);
 			grid_msg_packet_send_everywhere(&response);
@@ -958,7 +969,7 @@ int main(void)
 
 
 
-		if (reportflag && 0){
+		if (reportflag){
 
 
 			reportflag = 0;

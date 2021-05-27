@@ -367,7 +367,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							
 							printf("Connect");
 							
-							grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN
+							grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 250); // GREEN
 							
 
 							
@@ -440,7 +440,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		else{
 			// INVALID CHECKSUM
 			
-			grid_debug_printf("Invalid Checksum\r\n");
+			grid_debug_printf("Invalid Checksum");
 			
 			if (error_flag != 0){
 				//usart_async_disable(&USART_EAST);
@@ -1290,6 +1290,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		
 		uint8_t dx = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
 		uint8_t dy = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
+		uint8_t sx = grid_msg_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
+		uint8_t sy = grid_msg_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
 		uint8_t rot = grid_msg_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
 			
 		uint8_t position_is_me = 0;
@@ -1332,19 +1334,15 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
 		
 
-				
-
 		
 				if (msg_class == GRID_CLASS_PAGEACTIVE_code){ // dont check address!
 						
-
-		
-
 					uint8_t page = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset], GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, &error_flag);
 								
 					
 					if (msg_instr == GRID_INSTR_EXECUTE_code){ //SET BANK
 
+						
 
 						if (grid_ui_state.page_change_enabled == 1){
 
@@ -1358,6 +1356,30 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						}
 													
 					}
+
+					if (msg_instr == GRID_INSTR_REPORT_code){ //SET BANK
+
+				
+						//printf("RX: %d %d\r\n", sx, sy);
+
+						if (!(sx==GRID_SYS_DEFAULT_POSITION && sy==GRID_SYS_DEFAULT_POSITION)){
+
+							//printf("RX: %s\r\n", &message[current_start]);
+							if (grid_ui_state.page_negotiated == 0){
+
+								grid_ui_state.page_negotiated = 1;
+								grid_ui_page_load(&grid_ui_state, &grid_nvm_state, page);
+								grid_sys_set_bank(&grid_sys_state, page);
+								
+							}
+							
+
+
+
+						}
+													
+					}
+
 					
 				}
 				if (msg_class == GRID_CLASS_PAGECOUNT_code && (position_is_global || position_is_me)){

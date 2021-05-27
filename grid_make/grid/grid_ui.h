@@ -90,6 +90,7 @@ struct grid_ui_model
 	uint8_t page_count;
 
 	uint8_t page_change_enabled;
+	uint8_t page_negotiated;
 
 	uint8_t						element_list_length;
 	struct	grid_ui_element*	element_list;
