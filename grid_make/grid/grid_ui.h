@@ -110,7 +110,7 @@ volatile struct grid_ui_model grid_ui_state;
 
 void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length);
 void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid_ui_element_t element_type);
-void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid_ui_event_t event_type);
+void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui_event_t event_type);
 
 
 uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page, uint8_t element, enum grid_ui_event_t event_type);

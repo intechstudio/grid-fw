@@ -55,22 +55,22 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 	uint8_t adcresult_0_valid = 0;
 	
 	if (adcresult_0>60000){
-		result_value[0] = 0;
+		result_value[0] = 127;
 		result_valid[0] = 1;
 	}
 	else if (adcresult_0<200){
-		result_value[0] = 1;
+		result_value[0] = 0;
 		result_valid[0] = 1;
 	}
 		
 	uint8_t adcresult_1_valid = 0;
 	
 	if (adcresult_1>60000){
-		result_value[1] = 0;
+		result_value[1] = 127;
 		result_valid[1] = 1;
 	}
 	else if (adcresult_1<200){
-		result_value[1] = 1;
+		result_value[1] = 0;
 		result_valid[1] = 1;
 	}
 
@@ -93,9 +93,6 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 			template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = res_value;
 			
 			if (res_value == 0){ // Button Press Event
-
-				// for display in editor
-				template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 127;
 					
 				if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
 					
@@ -129,9 +126,6 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 				
 			}
 			else{  // Button Release Event
-
-				// for display in editor
-				template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 0;
 
 				if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
 					

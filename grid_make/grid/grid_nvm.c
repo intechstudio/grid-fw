@@ -716,6 +716,8 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 
 		struct grid_ui_element* ele = &ui->element_list[i];
 
+
+
 		for (uint8_t j=0; j<ele->event_list_length; j++){
 
 			if (firstrun){
@@ -761,10 +763,13 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 				
 			}
 			else{
+				
 				//printf("Page Load: NOT FOUND, Set default!\r\n");
 
 
 				uint8_t temp[GRID_UI_ACTION_STRING_maxlength + 100] = {0};
+
+
 
 				grid_ui_event_generate_actionstring(eve, temp);
 				grid_ui_event_register_actionstring(eve, temp);
@@ -773,7 +778,10 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 
 			}
 
+
 			if (eve->type == GRID_UI_EVENT_INIT){
+
+
 
 				grid_ui_event_trigger_local(eve);
 			}

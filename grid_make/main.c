@@ -782,15 +782,23 @@ int main(void)
 
 	//  x/512xb 0x80000
 	grid_module_common_init();
+
+	struct grid_ui_element* ele = &grid_ui_state.element_list[2];
+	printf("actionstring %s\r\n", ele->event_list[0].action_string);
+
 	grid_nvm_toc_init(&grid_nvm_state);
+	printf("actionstring %s\r\n", ele->event_list[0].action_string);
 	grid_ui_page_load(&grid_ui_state, &grid_nvm_state, 0); //load page 0;
+
+	printf("actionstring %s\r\n", ele->event_list[0].action_string);
+
 
 	while (grid_nvm_ui_bulk_read_is_in_progress(&grid_nvm_state, &grid_ui_state))
 	{
 		grid_nvm_ui_bulk_read_next(&grid_nvm_state, &grid_ui_state);
 	}
 	
-
+	printf("actionstring %s\r\n", ele->event_list[0].action_string);
 
 	// grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
 	// grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	

@@ -4,8 +4,7 @@
 
 void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	
-	// Priorities: Always process local, try to process direct, broadcast messages are last. 
-	
+	// Priorities: Always process local, try to process direct, broadcast messages are last. 	
 	
 	uint8_t ui_available = 0;
 	uint8_t message_local_action_available = 0;
@@ -59,6 +58,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	//LOCAL MESSAGES
 	if (message_local_action_available){
 		
+		printf("%d\r\n", message_local_action_available);
 	
 		struct grid_msg message;
 		grid_msg_init(&message);
@@ -99,8 +99,6 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 			
 		}
-		
-		
 		
 		grid_msg_body_append_text(&message, payload);
 		grid_msg_packet_close(&message);
@@ -147,10 +145,6 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		grid_d51_task_next(ui->task);	
 		return;
 	}
-
-	
-	
-	grid_d51_task_next(ui->task);	
 
 	struct grid_msg message;
 	grid_msg_init(&message);
@@ -365,7 +359,7 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 	
 	ele->type = element_type;
 
-	
+
 	if (element_type == GRID_UI_ELEMENT_SYSTEM){
 		
 		ele->event_list_length = 2;
@@ -396,12 +390,18 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 	}
 	else if (element_type == GRID_UI_ELEMENT_BUTTON){
 		
+
 		ele->event_list_length = 2;
 		
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
+
+
 		
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
+
 		grid_ui_event_init(ele, 1, GRID_UI_EVENT_BC);	// Button Change
+
+
 
 		ele->template_initializer = &grid_element_button_template_parameter_init;
 		ele->template_parameter_list_length = GRID_LUA_FNC_B_LIST_length;
@@ -446,14 +446,16 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 		}
 
 	}
+
 	
 }
 
-void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid_ui_event_t event_type){
+void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui_event_t event_type){
 	
 
-	struct grid_ui_event* eve = &parent->event_list[index];
-	eve->parent = parent;
+	struct grid_ui_event* eve = &ele->event_list[index];
+
+	eve->parent = ele;
 	eve->index = index;
 
 	eve->cfg_changed_flag = 0;
@@ -463,17 +465,17 @@ void grid_ui_event_init(struct grid_ui_element* parent, uint8_t index, enum grid
 	eve->type   = event_type;	
 	eve->status = GRID_UI_STATUS_READY;
 
-	
-
 	// Initializing Action String
 	for (uint32_t i=0; i<GRID_UI_ACTION_STRING_maxlength; i++){
 		eve->action_string[i] = 0;
 	}		
 
 	uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength] = {0};
-	grid_ui_event_generate_actionstring(eve, actionstring);	
-	grid_ui_event_register_actionstring(eve, actionstring);
 
+
+	grid_ui_event_generate_actionstring(eve, actionstring);	
+
+	grid_ui_event_register_actionstring(eve, actionstring);
 
 	eve->cfg_changed_flag = 0; // clear changed flag
 	
@@ -590,6 +592,8 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 
 		struct grid_ui_element* ele = &grid_ui_state.element_list[i];
 
+
+
 		uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
 
 		if (i==0) printf("TB LEN: %d\r\n", template_buffer_length);
@@ -639,6 +643,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		return;
 
 	}
+	
 
 	if (eve->type == GRID_UI_EVENT_EC){
 
@@ -670,10 +675,10 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		uint32_t len = strlen(action_string);
 		action_string[len-3] = '\0';
 
-		if (ele->type = GRID_UI_ELEMENT_ENCODER){
+		if (ele->type == GRID_UI_ELEMENT_ENCODER){
 			sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
 		}
-		else if (ele->type = GRID_UI_ELEMENT_BUTTON){
+		else if (ele->type == GRID_UI_ELEMENT_BUTTON){
 			sprintf(temp, "ele[%d]."GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
 		}
 		else{
@@ -685,6 +690,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		grid_lua_dostring(&grid_lua_state, temp);
 
 		sprintf(eve->action_string, action_string);
+
 	}
 	else if (eve->type == GRID_UI_EVENT_INIT){
 
@@ -699,6 +705,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		
 
 	}
+
 
 
 	eve->cfg_changed_flag = 1;
@@ -719,6 +726,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 	}
 	else if (eve->parent->type == GRID_UI_ELEMENT_BUTTON){
 				
+
 		switch(eve->type){
 			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;
 			case GRID_UI_EVENT_BC:		sprintf(targetstring, GRID_ACTIONSTRING_BC);			break;
@@ -861,7 +869,9 @@ uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, uint8_t* target_s
 uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_string){
 
 
-	uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
+
+
+	uint8_t temp[GRID_UI_ACTION_STRING_maxlength + 100] = {0};
 
 	uint32_t i=0;
 

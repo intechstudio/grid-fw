@@ -716,6 +716,10 @@ enum grid_ui_event_t
 #define GRID_ACTIONSTRING_INIT_POT "<?lua --[[@l]]local num,val,red,gre,blu = this.ind(),this.pva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glp]]glp(num,1,val) ?>"
 
 #define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@l]]local num,val,red,gre,blu = this.ind(),this.bva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glp]]glp(num,1,val) ?>"
+
+//#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@glc]]glc(2,1,100,200,230) --[[@glp]]glp(2,1,100) ?>"
+
+
 #define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@l]]local num,bval,eval,red,gre,blu = this.ind(),this.bva(),this.eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) ?>"
 
 #define GRID_ACTIONSTRING_AC "<?lua --[[@l]]local num, val = this.ind(), this.pva() --[[@gms]]gms(0, 176, num, val) --[[@glp]]glp(num, 1, val) ?>"

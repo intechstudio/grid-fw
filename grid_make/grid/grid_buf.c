@@ -1025,7 +1025,8 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 			
 				if (packet_size > grid_buffer_write_size(&port_array[i]->tx_buffer)){
 					
-					grid_sys_alert_set_alert(&grid_sys_state, 100,100,0,2,200);
+					printf("buffer full \r\n");
+					grid_sys_alert_set_alert(&grid_sys_state, 100,100,0,2,200); // yellow
 					
 					// sorry one of the buffers cannot store the packet, we will try later
 					return 0;
@@ -1772,7 +1773,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							action[actionlength] = 0;
 							printf("Config: %d %d %d %d -> %s\r\n", pagenumber, elementnumber, eventtype, actionlength, action);
 							
-    						grid_sys_alert_set_alert(&grid_sys_state, 127, 127, 127, 0, 200); // Green
+    						grid_sys_alert_set_alert(&grid_sys_state, 127, 127, 127, 0, 200); // White
 								if (pagenumber == grid_ui_state.page_activepage){
 
 									//find event
