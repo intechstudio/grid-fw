@@ -80,7 +80,7 @@ void		grid_msg_text_set_parameter(struct grid_msg* msg, uint32_t text_start_offs
 
 void	grid_msg_init(struct grid_msg* msg);
 
-void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy, uint8_t rot);
+void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy);
 
 void	grid_msg_body_append_text(struct grid_msg* msg, uint8_t* string);
 

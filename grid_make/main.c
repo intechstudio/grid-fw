@@ -930,7 +930,7 @@ int main(void)
 			struct grid_msg response;
 
 			grid_msg_init(&response);
-			grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
+			grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 			grid_msg_body_append_printf(&response, GRID_CLASS_HEARTBEAT_frame);
 
@@ -1017,7 +1017,7 @@ int main(void)
 			struct grid_msg response;
 									
 			grid_msg_init(&response);
-			grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+			grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
 
 			grid_msg_body_append_text(&response, reportbuffer);
 				

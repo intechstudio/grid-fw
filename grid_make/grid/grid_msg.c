@@ -260,7 +260,7 @@ void	grid_msg_init(struct grid_msg* msg){
 
 // ======================= MSG INIT HEADER======================//
 
-void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy, uint8_t rot){
+void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy){
 	
     
     uint8_t session = grid_sys_state.sessionid;

@@ -62,7 +62,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	
 		struct grid_msg message;
 		grid_msg_init(&message);
-		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_ROTATION);
+		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
 			
 			
 		// Prepare packet header
@@ -150,7 +150,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 	struct grid_msg message;
 	grid_msg_init(&message);
-	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
+	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 	
 	grid_d51_task_next(ui->task);
 	
@@ -494,7 +494,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 	struct grid_msg message;
 
 	grid_msg_init(&message);
-	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
+	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 
 	struct grid_ui_element* ele = &ui->element_list[element];
