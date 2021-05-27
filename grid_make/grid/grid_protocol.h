@@ -78,6 +78,10 @@
 
 #define GRID_BRC_frame "%c%c....................%c", GRID_CONST_SOH, GRID_CONST_BRC, GRID_CONST_EOB
 
+#define GRID_BRC_frame_quick "%c%c......%02x7f7f%02x%02x0000%c"
+
+
+
 #define GRID_BRC_LEN_offset 2
 #define GRID_BRC_LEN_length 4
 

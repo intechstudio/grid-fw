@@ -237,20 +237,23 @@ void	grid_msg_init(struct grid_msg* msg){
 	msg->last_appended_length = 0;
 	msg->footer_length = 0;
 	
-	for (uint32_t i=0; i<GRID_MSG_HEADER_maxlength; i++)
-	{
-		msg->header[i] = 0;
-	}
+
+	// No need to initialize array
+
+	// for (uint32_t i=0; i<GRID_MSG_HEADER_maxlength; i++)
+	// {
+	// 	msg->header[i] = 0;
+	// }
 	
-	for (uint32_t i=0; i<GRID_MSG_BODY_maxlength; i++)
-	{
-		msg->body[i] = 0;
-	}
+	// for (uint32_t i=0; i<GRID_MSG_BODY_maxlength; i++)
+	// {
+	// 	msg->body[i] = 0;
+	// }
 	
-	for (uint32_t i=0; i<GRID_MSG_FOOTER_maxlength; i++)
-	{
-		msg->footer[i] = 0;
-	}
+	// for (uint32_t i=0; i<GRID_MSG_FOOTER_maxlength; i++)
+	// {
+	// 	msg->footer[i] = 0;
+	// }
 	
 		
 }
@@ -262,20 +265,18 @@ void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy, uint8_t 
     
     uint8_t session = grid_sys_state.sessionid;
     
-	sprintf(msg->header, GRID_BRC_frame);
+	sprintf(msg->header, GRID_BRC_frame_quick, GRID_CONST_SOH, GRID_CONST_BRC, session, dx, dy , GRID_CONST_EOB);
 	msg->header_length = strlen(msg->header);
 	
-	grid_msg_header_set_dx(msg, dx);
-	grid_msg_header_set_dy(msg, dy);
+	// grid_msg_header_set_dx(msg, dx);
+	// grid_msg_header_set_dy(msg, dy);
 
-	grid_msg_header_set_sx(msg, GRID_SYS_DEFAULT_POSITION);
-	grid_msg_header_set_sy(msg, GRID_SYS_DEFAULT_POSITION);
+	// grid_msg_header_set_sx(msg, GRID_SYS_DEFAULT_POSITION);
+	// grid_msg_header_set_sy(msg, GRID_SYS_DEFAULT_POSITION);
+	// grid_msg_header_set_rot(msg, rot);
+	// grid_msg_header_set_age(msg, GRID_SYS_DEFAULT_AGE);
 
-	grid_msg_header_set_rot(msg, rot);
-	
-	grid_msg_header_set_age(msg, GRID_SYS_DEFAULT_AGE);
-
-	grid_msg_header_set_session(msg, session);
+	// grid_msg_header_set_session(msg, session);
 	
 	
 }

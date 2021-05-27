@@ -58,7 +58,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	//LOCAL MESSAGES
 	if (message_local_action_available){
 		
-		printf("%d\r\n", message_local_action_available);
+		printf("L:%d\r\n", message_local_action_available);
 	
 		struct grid_msg message;
 		grid_msg_init(&message);
@@ -141,20 +141,23 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		printf("SKIP\r\n");
 		// dummy calls to make sure subtask after return are counted properly
 		grid_d51_task_next(ui->task);		
-		grid_d51_task_next(ui->task);		
+		grid_d51_task_next(ui->task);
 		grid_d51_task_next(ui->task);	
 		return;
 	}
+
+	grid_d51_task_next(ui->task);
 
 	struct grid_msg message;
 	grid_msg_init(&message);
 	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION, GRID_SYS_DEFAULT_ROTATION);
 	
-	
 	grid_d51_task_next(ui->task);
+	
 	// BROADCAST MESSAGES : UI STATE
 	if (ui_available){
-		
+
+		printf("G:%d\r\n", ui_available);		
 		for (uint8_t j=0; j<grid_ui_state.element_list_length; j++){
 		
 			for (uint8_t k=0; k<grid_ui_state.element_list[j].event_list_length; k++){ //j=1 because init is local
