@@ -926,8 +926,11 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 		
 	grid_msg_packet_close(&response);
 
+	grid_ui_page_load(ui, nvm, ui->page_activepage);
+	
 	grid_debug_printf("clear complete");
     grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
+
 
 	
 }

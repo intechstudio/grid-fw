@@ -1,3 +1,22 @@
+// <o.0..10> Number of Samples to be Collected
+// <0x0=>1 sample
+// <0x1=>2 samples
+// <0x2=>4 samples
+// <0x3=>8 samples
+// <0x4=>16 samples
+// <0x5=>32 samples
+// <0x6=>64 samples
+// <0x7=>128 samples
+// <0x8=>256 samples
+// <0x9=>512 samples
+// <0xA=>1024 samples
+// <i> Define how many samples should be added together.The result will be available in the Result register (SAMPLENUM)
+// <id> adc_arch_samplenum
+
+
+#define CONF_ADC_0_SAMPLENUM 0x6
+#define CONF_ADC_1_SAMPLENUM 0x6
+
 
 
 #include "grid/grid_module.h"

@@ -92,6 +92,11 @@ struct wdt_descriptor WDT_0;
  */
 void ADC_0_init(void)
 {
+
+
+
+
+	
 	hri_mclk_set_APBDMASK_ADC0_bit(MCLK);
 	hri_gclk_write_PCHCTRL_reg(GCLK, ADC0_GCLK_ID, CONF_GCLK_ADC0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 	adc_async_init(&ADC_0, ADC0, ADC_0_map, ADC_0_CH_MAX, ADC_0_CH_AMOUNT, &ADC_0_ch[0], (void *)NULL);

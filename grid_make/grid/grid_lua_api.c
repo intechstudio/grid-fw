@@ -461,7 +461,7 @@ static int l_grid_template_variable(lua_State* L) {
         return 0;
     }
 
-    uint8_t param[3] = {0};
+    int32_t param[3] = {0};
 
     uint8_t isgetter = 0;
 
