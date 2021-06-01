@@ -1288,7 +1288,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		// GRID-2-UI TRANSLATOR
 		
 		uint8_t error=0;
-		
+
+		uint8_t id = grid_msg_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+			
 		uint8_t dx = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
 		uint8_t dy = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
 		uint8_t sx = grid_msg_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
@@ -1706,14 +1708,27 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				
 				}				
 			
+				else if (msg_class == GRID_CLASS_CONFIGDISCARD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+
+					printf("DISCARD!!!\r\n");	
+					grid_debug_print_text("discard test");				
+					grid_sys_state.lastheader_configdiscard.status = -1;
+					grid_sys_state.lastheader_configdiscard.id = id;		
+					grid_nvm_ui_bulk_read_init(&grid_nvm_state, &grid_ui_state);				
+
+				}			
 				else if (msg_class == GRID_CLASS_CONFIGSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_keyboard_state.isenabled = 1;
+					grid_keyboard_state.isenabled = 1;					
+					grid_sys_state.lastheader_configstore.status = -1;
+					grid_sys_state.lastheader_configstore.id = id;
 					grid_nvm_ui_bulk_store_init(&grid_nvm_state, &grid_ui_state);					
 
 				}
 				else if (msg_class == GRID_CLASS_CONFIGERASE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
+					grid_sys_state.lastheader_configerase.status = -1;
+					grid_sys_state.lastheader_configerase.id = id;
 					grid_nvm_ui_bulk_clear_init(&grid_nvm_state, &grid_ui_state);
 					//grid_nvm_erase_all(&grid_nvm_state);
 
@@ -1760,7 +1775,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 						if (elementnumber == 255){
 							elementnumber = grid_ui_state.element_list_length - 1;
-						}
+						}	
 
 						char* action = &message[current_start + GRID_CLASS_CONFIG_ACTIONSTRING_offset];
 
@@ -1834,6 +1849,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						
 						
 						if (ack == 1){
+							grid_sys_state.lastheader_config.status = 0;
+							grid_sys_state.lastheader_config.id = id;
 							grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 						}
 						else{

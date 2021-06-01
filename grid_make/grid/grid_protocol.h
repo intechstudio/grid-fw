@@ -113,19 +113,17 @@
 #define GRID_INSTR_offset 4
 
 // Save the following action to the given event & change instruction to execute
-#define GRID_INSTR_ACKNOWLEDGE_code 0xA //a
+#define GRID_INSTR_ACKNOWLEDGE_code 0xA
 
-#define GRID_INSTR_NACKNOWLEDGE_code 0xB //b
+#define GRID_INSTR_NACKNOWLEDGE_code 0xB
 
-#define GRID_INSTR_CONFIGURE_code 0xC //c
+#define GRID_INSTR_CHECK_code 0xC
 
-#define GRID_INSTR_REPORT_code 0xD //c
+#define GRID_INSTR_REPORT_code 0xD
 
-// Respond with executable please!
-#define GRID_INSTR_FETCH_code 0xF //e
+#define GRID_INSTR_FETCH_code 0xF
 
-// Execute The Action if possible!
-#define GRID_INSTR_EXECUTE_code 0xE //f
+#define GRID_INSTR_EXECUTE_code 0xE
 
 #define GRID_CLASS_length 3
 #define GRID_CLASS_offset 1
@@ -772,6 +770,10 @@ enum grid_ui_event_t
 #define GRID_CLASS_CONFIG_frame_start "%c%03x_................", GRID_CONST_STX, GRID_CLASS_CONFIG_code
 #define GRID_CLASS_CONFIG_frame_end "%c", GRID_CONST_ETX
 
+// used when check instruction is received
+#define GRID_CLASS_CONFIG_LASTHEADER_offset 5
+#define GRID_CLASS_CONFIG_LASTHEADER_length 2
+
 #define GRID_CLASS_CONFIG_VERSIONMAJOR_offset 5
 #define GRID_CLASS_CONFIG_VERSIONMAJOR_length 2
 
@@ -798,11 +800,25 @@ enum grid_ui_event_t
 
 
 #define GRID_CLASS_CONFIGSTORE_code 0x061
-#define GRID_CLASS_CONFIGSTORE_frame "%c%03x_%c", GRID_CONST_STX, GRID_CLASS_CONFIGSTORE_code, GRID_CONST_ETX
+#define GRID_CLASS_CONFIGSTORE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_CONFIGSTORE_code, GRID_CONST_ETX
+
+// used when check instruction is received
+#define GRID_CLASS_CONFIGSTORE_LASTHEADER_offset 5
+#define GRID_CLASS_CONFIGSTORE_LASTHEADER_length 2
 
 #define GRID_CLASS_CONFIGERASE_code 0x062
-#define GRID_CLASS_CONFIGERASE_frame "%c%03x_%c", GRID_CONST_STX, GRID_CLASS_CONFIGERASE_code, GRID_CONST_ETX
+#define GRID_CLASS_CONFIGERASE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_CONFIGERASE_code, GRID_CONST_ETX
 
+// used when check instruction is received
+#define GRID_CLASS_CONFIGERASE_LASTHEADER_offset 5
+#define GRID_CLASS_CONFIGERASE_LASTHEADER_length 2
+
+#define GRID_CLASS_CONFIGDISCARD_code 0x063
+#define GRID_CLASS_CONFIGDISCARD_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_CONFIGDISCARD_code, GRID_CONST_ETX
+
+// used when check instruction is received
+#define GRID_CLASS_CONFIGDISCARD_LASTHEADER_offset 5
+#define GRID_CLASS_CONFIGDISCARD_LASTHEADER_length 2
 
 // RUN imediate
 #define GRID_CLASS_IMEDIATE_code 0x085

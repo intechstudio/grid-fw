@@ -15,6 +15,15 @@ int32_t grid_utility_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_
 
 #define GRID_SYS_BANK_MAXNUMBER					4
 
+struct grid_lastheader{
+
+	uint8_t status;
+	uint8_t id;
+
+};
+
+
+
 struct grid_sys_model
 {
 	
@@ -23,6 +32,13 @@ struct grid_sys_model
 	
 	uint8_t editor_connected;
 	uint32_t editor_heartbeat_lastrealtime;
+
+
+	struct grid_lastheader lastheader_config;
+	struct grid_lastheader lastheader_configstore;
+	struct grid_lastheader lastheader_configerase;
+	struct grid_lastheader lastheader_configdiscard;
+
 
     uint8_t sessionid;
 	

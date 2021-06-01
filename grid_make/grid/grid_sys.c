@@ -389,6 +389,11 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->module_y = 0; // 0 because this is signed int
 	mod->module_rot = GRID_SYS_DEFAULT_ROTATION;
 
+	mod->lastheader_config.status = -1;
+	mod->lastheader_configstore.status = -1;
+	mod->lastheader_configerase.status = -1;
+	mod->lastheader_configdiscard.status = -1;
+
     
 	rand_sync_enable(&RAND_0);	
 	mod->sessionid = rand_sync_read8(&RAND_0);

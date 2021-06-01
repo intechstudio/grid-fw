@@ -796,6 +796,10 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 
     //grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
 	grid_debug_printf("read complete");
+	grid_debug_printf("or discard");
+
+	grid_sys_state.lastheader_configdiscard.status = 0;
+
 	nvm->read_bulk_status = 0;
 }
 
@@ -867,6 +871,7 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	grid_debug_printf("store complete");
 
+	grid_sys_state.lastheader_configstore.status = 0;
 
     grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
 		
@@ -929,6 +934,9 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 	grid_ui_page_load(ui, nvm, ui->page_activepage);
 	
 	grid_debug_printf("clear complete");
+
+	grid_sys_state.lastheader_configerase.status = 0;
+
     grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
 
 
