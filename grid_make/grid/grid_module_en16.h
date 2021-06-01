@@ -19,9 +19,7 @@ struct grid_ui_encoder{
 	uint8_t rotation_changed;
 	
 	uint8_t rotation_direction;
-	
-	uint32_t last_real_time;
-	
+
 	uint8_t velocity;
 	
 	uint8_t phase_a_previous;
@@ -32,6 +30,10 @@ struct grid_ui_encoder{
 };
 
 struct grid_ui_encoder grid_ui_encoder_array[16];
+
+
+
+
 
 uint8_t UI_SPI_TX_BUFFER[14];
 uint8_t UI_SPI_RX_BUFFER[14];

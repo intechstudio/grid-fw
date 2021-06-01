@@ -16,7 +16,9 @@ volatile uint8_t UI_SPI_RX_BUFFER_LAST[16] = {0};
 uint8_t UI_ENCODER_LOOKUP[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1} ;
 
 uint8_t UI_ENCODER_LOOKUP_REVERSED[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
-			
+		
+static uint32_t encoder_last_real_time[16] = {0};
+static uint32_t button_last_real_time[16] = {0};
 
 
 void grid_module_en16_hardware_start_transfer(void){
@@ -41,11 +43,24 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 
 	// Buffer is only 8 bytes but we check all 16 encoders separately
 	for (uint8_t j=0; j<16; j++){
-		
-		uint8_t i = UI_ENCODER_LOOKUP[j];
-		
+
 		uint8_t new_value = (UI_SPI_RX_BUFFER[j/2]>>(4*(j%2)))&0x0F;
 		uint8_t old_value = UI_SPI_RX_BUFFER_LAST[j];
+
+		uint8_t i = UI_ENCODER_LOOKUP[j];
+
+		// limit lastrealtime
+		uint32_t button_elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, button_last_real_time[i]);
+		if (GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS < grid_sys_rtc_get_elapsed_time(&grid_sys_state, button_last_real_time[i])){
+			button_last_real_time[i] = grid_sys_rtc_get_time(&grid_sys_state) - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+			button_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+		}
+		uint32_t encoder_elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, encoder_last_real_time[i]);
+		if (GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS < grid_sys_rtc_get_elapsed_time(&grid_sys_state, encoder_last_real_time[i])){
+			encoder_last_real_time[i] = grid_sys_rtc_get_time(&grid_sys_state) - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+			encoder_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+		}
+				
 			
 		if (old_value != new_value){
 
@@ -95,6 +110,7 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 
 			// Evaluate the results
 
+
 			if (button_value != grid_ui_encoder_array[i].button_value){  // The button has changed
 				// BUTTON CHANGE
 				grid_ui_encoder_array[i].button_changed = 1;
@@ -103,6 +119,12 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 
 				uint8_t res_index = i;
 				int32_t* template_parameter_list = grid_ui_state.element_list[res_index].template_parameter_list;					
+
+				// update lastrealtime
+				button_last_real_time[res_index] = grid_sys_rtc_get_time(&grid_sys_state); 
+				template_parameter_list[GRID_LUA_FNC_E_BUTTON_ELAPSED_index] = button_elapsed_time/RTC1MS;
+
+
 
 
 				if (grid_ui_encoder_array[i].button_value == 0){ // Button Press
@@ -145,18 +167,17 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 			}
 				
 			if (delta != 0){ // The encoder rotation has changed
-				
+
 
 				uint8_t res_index = i;
                 int32_t* template_parameter_list = grid_ui_state.element_list[res_index].template_parameter_list;
-   			
-				uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_ui_encoder_array[i].last_real_time);
-				grid_ui_encoder_array[i].last_real_time = grid_sys_rtc_get_time(&grid_sys_state);
+			
+				// update lastrealtime
+				encoder_last_real_time[res_index] = grid_sys_rtc_get_time(&grid_sys_state); 
+				template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] = encoder_elapsed_time/RTC1MS;
 
-                uint32_t elapsed_ms = elapsed_time/RTC1MS;
+				uint32_t elapsed_ms = encoder_elapsed_time/RTC1MS;
 
-				template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] = elapsed_ms;
-                  
 				if (elapsed_ms>25){
 					elapsed_ms = 25;
 				}
@@ -245,7 +266,6 @@ void grid_module_en16_init(){
 		grid_ui_encoder_array[j].rotation_value = 0;
 		grid_ui_encoder_array[j].rotation_changed = 1;
 		grid_ui_encoder_array[j].rotation_direction = 0;
-		grid_ui_encoder_array[j].last_real_time = -1;
 		grid_ui_encoder_array[j].velocity = 0;
 		grid_ui_encoder_array[j].phase_a_previous = 1;
 		grid_ui_encoder_array[j].phase_b_previous = 1;	

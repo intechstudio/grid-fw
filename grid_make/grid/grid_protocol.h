@@ -658,6 +658,8 @@ stored config date
 #define GRID_LUA_KW_ELEMENT_short "ele"
 #define GRID_LUA_KW_THIS_short "this"
 
+#define GRID_PARAMETER_ELAPSED_LIMIT 10000
+
 // element[4].encoder_value()
 // ele[4].eva()
 

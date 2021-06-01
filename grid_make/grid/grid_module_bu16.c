@@ -7,6 +7,7 @@ volatile uint8_t grid_module_bu16_mux = 0;
 volatile uint8_t grid_module_bu16_mux_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15};
 uint8_t grid_module_bu16_mux_reversed_lookup[16]      = {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};	
 
+static uint32_t last_real_time[16] = {0};
 	
 void grid_module_bu16_hardware_start_transfer(void){
 	
@@ -50,8 +51,8 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 		
 	result_index[0] = adc_index_0;
 	result_index[1] = adc_index_1;
-		
-		
+
+
 	uint8_t adcresult_0_valid = 0;
 	
 	if (adcresult_0>60000){
@@ -80,11 +81,19 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 	
 	for (uint8_t i=0; i<2; i++)
 	{
-		
+
 		// Helper variable for readability
 		uint8_t res_index = result_index[i];
 		uint8_t res_valid = result_valid[i];
 		uint8_t res_value = result_value[i];
+
+		// limit lastrealtime
+		uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, last_real_time[res_index]);
+		if (GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS < grid_sys_rtc_get_elapsed_time(&grid_sys_state, last_real_time[res_index])){
+			last_real_time[res_index] = grid_sys_rtc_get_time(&grid_sys_state) - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+			elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+		}
+
 		
 		int32_t* template_parameter_list = grid_ui_state.element_list[res_index].template_parameter_list;		
 		
@@ -92,6 +101,10 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 			// button change happened
 			template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = res_value;
 			
+			// update lastrealtime
+			last_real_time[res_index] = grid_sys_rtc_get_time(&grid_sys_state); 
+			template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] = elapsed_time/RTC1MS;
+
 			if (res_value == 0){ // Button Press Event
 					
 				if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
