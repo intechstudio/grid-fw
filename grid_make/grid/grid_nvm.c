@@ -710,6 +710,9 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 	uint8_t firstrun = 1;
 	
 
+	//grid_lua_debug_memory_stats(&grid_lua_state, "Ui");
+	lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
+
 	//printf("BULK READ PAGE LOAD %d %d\r\n", last_element_helper, last_event_helper);
 
 	for (uint8_t i=last_element_helper; i<ui->element_list_length; i++){
@@ -794,7 +797,7 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 	}
 	
 
-    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
+    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // Green
     //grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
 	grid_debug_printf("read complete");
 	grid_sys_state.lastheader_configdiscard.status = 0;
@@ -882,7 +885,7 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	grid_sys_state.lastheader_configstore.status = 0;
 
-    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
+    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // Green
 		
 }
 
@@ -950,7 +953,7 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	grid_sys_state.lastheader_configerase.status = 0;
 
-    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
+    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // Green
 
 
 	

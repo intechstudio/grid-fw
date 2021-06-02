@@ -106,13 +106,13 @@ static int l_grid_keyboard_send(lua_State* L) {
 static int l_my_print(lua_State* L) {
 
     int nargs = lua_gettop(L);
-    printf("LUA PRINT: ");
+    //printf("LUA PRINT: ");
     for (int i=1; i <= nargs; ++i) {
 
         if (lua_type(L, i) == LUA_TSTRING){
             
             grid_debug_printf("%s", lua_tostring(L, i));
-		    printf(" str: %s ", lua_tostring(L, i));
+		    //printf(" str: %s ", lua_tostring(L, i));
         }
         else if (lua_type(L, i) == LUA_TNUMBER){
 
@@ -122,27 +122,27 @@ static int l_my_print(lua_State* L) {
             //int32_t num = lua_tonumber
 
             grid_debug_printf("%d", (int)lnum);
-		    printf(" num: %d ", (int)lnum);
+		    //printf(" num: %d ", (int)lnum);
         }
         else if (lua_type(L, i) == LUA_TNIL){
-            printf(" nil ");
+            //printf(" nil ");
         }
         else if (lua_type(L, i) == LUA_TFUNCTION){
-            printf(" fnc ");
+            //printf(" fnc ");
         }
         else if (lua_type(L, i) == LUA_TTABLE){
-            printf(" table ");
+            //printf(" table ");
         }
         else{
-            printf(" unknown data type ");
+            //printf(" unknown data type ");
         }
     }
 
     if (nargs == 0){
-        printf(" no arguments ");
+        //printf(" no arguments ");
     }
 
-    printf("\r\n");
+    //printf("\r\n");
 
     return 0;
 }

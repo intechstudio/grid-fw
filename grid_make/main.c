@@ -885,7 +885,7 @@ int main(void)
 			
 				printf("USB CONNECTED\r\n\r\n");
 
-				grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 250); // GREEN	
+				grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // GREEN	
 				
 				grid_sys_state.heartbeat_type = 1;
 
@@ -937,14 +937,10 @@ int main(void)
 		led_task_inner(grid_led_task);
 
 
-		//grid_lua_debug_memory_stats(&grid_lua_state, "Ui");
-		lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
-
 
 		if (heartbeatflag){
 
 			heartbeatflag = 0;
-
 
 			struct grid_msg response;
 
