@@ -794,11 +794,19 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 	}
 	
 
+    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
     //grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
 	grid_debug_printf("read complete");
-	grid_debug_printf("or discard");
-
 	grid_sys_state.lastheader_configdiscard.status = 0;
+
+	// Generate ACKNOWLEDGE RESPONSE
+	struct grid_msg response;	
+	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGDISCARD_frame);
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	grid_msg_body_append_parameter(&response, GRID_CLASS_CONFIGDISCARD_LASTHEADER_offset, GRID_CLASS_CONFIGDISCARD_LASTHEADER_length, grid_sys_state.lastheader_configdiscard.id);		
+	grid_msg_packet_close(&response);
+	grid_msg_packet_send_everywhere(&response);
 
 	nvm->read_bulk_status = 0;
 }
@@ -858,11 +866,12 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	struct grid_msg response;
 
-	grid_msg_init(&response);
 	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 	grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGSTORE_frame);
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	grid_msg_body_append_parameter(&response, GRID_CLASS_CONFIGSTORE_LASTHEADER_offset, GRID_CLASS_CONFIGSTORE_LASTHEADER_length, grid_sys_state.lastheader_configstore.id);		
+				
 
 	grid_msg_packet_close(&response);
 	grid_msg_packet_send_everywhere(&response);
@@ -923,13 +932,17 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 	// Generate ACKNOWLEDGE RESPONSE
 	struct grid_msg response;
 		
-	grid_msg_init(&response);
 	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 	grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGERASE_frame);
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-		
+	
+	grid_msg_body_append_parameter(&response, GRID_CLASS_CONFIGERASE_LASTHEADER_offset, GRID_CLASS_CONFIGERASE_LASTHEADER_length, grid_sys_state.lastheader_configerase.id);		
+				
 	grid_msg_packet_close(&response);
+
+	grid_msg_packet_send_everywhere(&response);
+
 
 	grid_ui_page_load(ui, nvm, ui->page_activepage);
 	

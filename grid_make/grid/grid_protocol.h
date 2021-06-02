@@ -771,6 +771,8 @@ enum grid_ui_event_t
 #define GRID_CLASS_CONFIG_frame_end "%c", GRID_CONST_ETX
 
 // used when check instruction is received
+#define GRID_CLASS_CONFIG_frame_check "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_CONFIG_code, GRID_CONST_ETX
+
 #define GRID_CLASS_CONFIG_LASTHEADER_offset 5
 #define GRID_CLASS_CONFIG_LASTHEADER_length 2
 

@@ -43,7 +43,8 @@
 
 	let serial = [];
 
-	let brc = []; // must be array, to be encoded by Grid Editor
+	let dx = '0';
+	let dy = '0';
 	let command = '';
 
 	
@@ -208,12 +209,8 @@
 
 	}
 
-	function heartbeat(e){
-		socket.send(JSON.stringify({type: 'filter', data: {class: 'heartbeat', status: !e.target.checked}}))
-	}
-
 	function sendSerialCommand(){
-		socket.send(JSON.stringify({type: 'command', data: {brc: brc, command: command}}))
+		socket.send(JSON.stringify({type: 'command', data: {dx: dx, dy: dy, command: command}}))
 	}
 
 	function clear(){
@@ -236,29 +233,15 @@
 	<button on:click={clear}>clear</button>
 
 	<div class="debug-control-block">
-		<div class="input-block">
-			<input id="heartbeat" type="checkbox" checked on:change={(e)=>{heartbeat(e)}}>
-			<label for="heartbeat">heartbeat</label>
-		</div>
 
 		<div class="input-block">
 			<label for="dx">dx</label>
-			<input type="text" id="dx" class="" bind:value={brc[0]}>
+			<input type="text" id="dx" class="" bind:value={dx}>
 		</div>
 
 		<div class="input-block">
 			<label for="dy">dy</label>
-			<input type="text" id="dy" class=""  bind:value={brc[1]}>
-		</div>
-
-		<div class="input-block">
-			<label for="age">age</label>
-			<input type="text" id="age" class=""  bind:value={brc[2]}>
-		</div>
-
-		<div class="input-block">
-			<label for="rot">rot</label>
-			<input type="text" id="rot" class=""  bind:value={brc[3]}>
+			<input type="text" id="dy" class=""  bind:value={dy}>
 		</div>
 
 		<div class="input-block">

@@ -226,11 +226,9 @@ void grid_msg_text_set_parameter(struct grid_msg* msg, uint32_t text_start_offse
 }
 
 
+// ======================= MSG INIT HEADER======================//
 
-
-
-// ======================= GRID MSG INIT ======================//
-void	grid_msg_init(struct grid_msg* msg){
+void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy){
 	
 	msg->header_length = 0;
 	msg->body_length = 0;
@@ -254,14 +252,6 @@ void	grid_msg_init(struct grid_msg* msg){
 	// {
 	// 	msg->footer[i] = 0;
 	// }
-	
-		
-}
-
-// ======================= MSG INIT HEADER======================//
-
-void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy){
-	
     
     uint8_t session = grid_sys_state.sessionid;
     
@@ -347,15 +337,18 @@ uint8_t	grid_msg_packet_send_char(struct grid_msg* msg, uint32_t charindex){
 
 uint8_t	grid_msg_packet_close(struct grid_msg* msg){
 	
+
 	
 	sprintf(&msg->footer[msg->footer_length], "%c", GRID_CONST_EOT);
 	msg->footer_length += strlen(&msg->footer[msg->footer_length]);
 	
 	grid_msg_header_set_len(msg, msg->header_length + msg->body_length + msg->footer_length);
+	grid_msg_header_set_session(msg, grid_sys_state.sessionid);	
 	grid_msg_header_set_id(msg, grid_sys_state.next_broadcast_message_id);	
 	
 	grid_sys_state.next_broadcast_message_id++;
 	
+
 	
 	uint8_t checksum = 0;
 	

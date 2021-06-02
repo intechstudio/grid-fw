@@ -53,7 +53,6 @@ void grid_debug_print_text(uint8_t* debug_string){
 	
 	struct grid_msg message;
 	
-	grid_msg_init(&message);
 	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_start);

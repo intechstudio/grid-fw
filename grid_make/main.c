@@ -948,7 +948,6 @@ int main(void)
 
 			struct grid_msg response;
 
-			grid_msg_init(&response);
 			grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 			grid_msg_body_append_printf(&response, GRID_CLASS_HEARTBEAT_frame);
@@ -974,6 +973,7 @@ int main(void)
 
 
 			grid_msg_packet_close(&response);
+
 			grid_msg_packet_send_everywhere(&response);
 
 
@@ -983,7 +983,7 @@ int main(void)
 
 		if (grid_sys_state.editor_connected == 1){
 
-			if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_sys_state.editor_heartbeat_lastrealtime)>1000*RTC1MS){
+			if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_sys_state.editor_heartbeat_lastrealtime)>2000*RTC1MS){
 
 				printf("EDITOR timeout\r\n");
 				grid_sys_state.editor_connected = 0;
@@ -1035,8 +1035,7 @@ int main(void)
 
 			struct grid_msg response;
 									
-			grid_msg_init(&response);
-			grid_msg_init_header(&response, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
+			grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 			grid_msg_body_append_text(&response, reportbuffer);
 				
@@ -1047,6 +1046,8 @@ int main(void)
 
 
 			grid_msg_packet_close(&response);
+
+
 			grid_msg_packet_send_everywhere(&response);			
 
 		
@@ -1054,16 +1055,6 @@ int main(void)
 			//ui_task_inner(grid_ui_task);
 			inbound_task_inner(NULL);
 			outbound_task_inner(NULL);
-
-			//lua_getglobal(grid_lua_state.L, "print");
-
-
-		    //grid_lua_dostring(&grid_lua_state, "ele[0].ec()");
-
-		    //grid_lua_dostring(&grid_lua_state, "print(glr(), glg(), glb())");
-
-		
-			//grid_lua_dostring(&grid_lua_state, grid_ui_state.element_list[0].event_list[2].action_call);
 
 		}
 

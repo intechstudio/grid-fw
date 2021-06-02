@@ -243,7 +243,6 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
             // Generate ACKNOWLEDGE RESPONSE
             struct grid_msg message;
 
-            grid_msg_init(&message);
             grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 			grid_msg_body_append_printf(&message, GRID_CLASS_HIDKEYSTATUS_frame);
