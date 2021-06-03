@@ -510,6 +510,21 @@ void grid_led_tick(struct grid_led_model* mod){
 	
 }
 
+void grid_led_set_alert(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_t b, uint16_t duration){
+
+	printf("ALERT\r\n");
+
+	for (uint8_t i = 0; i<mod->led_number; i++){
+
+		grid_led_set_color(mod, i, GRID_LED_LAYER_ALERT, r, g, b);
+		grid_led_set_timeout(mod, i, GRID_LED_LAYER_ALERT, duration);
+		grid_led_set_phase(mod, i, GRID_LED_LAYER_ALERT, (uint8_t)duration);
+		grid_led_set_frequency(mod, i, GRID_LED_LAYER_ALERT, -1);
+
+	}
+
+
+}
 
 void grid_led_set_color(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b){
 	

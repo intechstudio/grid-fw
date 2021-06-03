@@ -42,17 +42,6 @@ struct grid_sys_model
 
     uint8_t sessionid;
 	
-	uint8_t alert_color_red;
-	uint8_t alert_color_green;
-	uint8_t alert_color_blue;
-	
-	uint16_t alert_state;
-	uint8_t alert_style;
-	uint8_t alert_code;
-	
-	uint8_t alert_color_changed;
-	
-	
 	uint8_t bank_activebank_number;
 
 	uint8_t mapmodestate;
@@ -210,22 +199,6 @@ uint8_t grid_sys_get_map_state(struct grid_sys_model* mod);
 
 
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t value);
-
-//====================== SYS ALERT ==========================//
-uint8_t grid_sys_alert_read_color_changed_flag(struct grid_sys_model* mod);
-
-void grid_sys_alert_set_color_changed_flag(struct grid_sys_model* mod);
-void grid_sys_alert_clear_color_changed_flag(struct grid_sys_model* mod);
-uint8_t grid_sys_alert_get_color_intensity(struct grid_sys_model* mod);
-
-void grid_sys_alert_set_color(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue);
-
-void grid_sys_alert_set_alert(struct grid_sys_model* mod, uint8_t red, uint8_t green, uint8_t blue, uint8_t style, uint16_t duration);
-
-uint8_t grid_sys_alert_get_color_r(struct grid_sys_model* mod);
-uint8_t grid_sys_alert_get_color_g(struct grid_sys_model* mod);
-
-uint8_t grid_sys_alert_get_color_b(struct grid_sys_model* mod);
 
 //=========================== SYS MSG ============================//
 

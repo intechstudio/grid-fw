@@ -297,10 +297,8 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				
 				if (message[2] == GRID_CONST_ACK){
 
-					//grid_sys_alert_set_alert(&grid_sys_state, 30, 30, 30, 0, 250); // LIGHT WHITE PULSE
 				}
 				else if (message[2] == GRID_CONST_NAK){
-					//grid_sys_alert_set_alert(&grid_sys_state, 50, 0, 0, 0, 250); // LIGHT RED PULSE
 					// RESEND PREVIOUS
 				}
 				else if (message[2] == GRID_CONST_CAN){
@@ -366,9 +364,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							
 							
 							printf("Connect");
-							
-							grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 250); // GREEN
-							
+							grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 255);
 
 							
 						}
@@ -395,12 +391,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 						if (validator == 1){
 							
 							// OK nice job!
-							
-							//printf("LS: %d RS: %d LR: %d RR: %d  (Validate)\r\n",local_stored,remote_stored,local_received,remote_received);
-							
-							//OK
-							//grid_sys_alert_set_alert(&grid_sys_state, 6, 6, 6, 0, 200); // LIGHT WHITE
-							
+
 						}
 						else{
 							
@@ -416,9 +407,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							
 							
 							//printf("LS: %d RS: %d LR: %d RR: %d  (Invalid)\r\n",local_stored,remote_stored,local_received,remote_received);
-							
-							//grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 2, 200); // Purple
-							
+		
 							
 						}
 					}
@@ -429,7 +418,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 			}
 			else{ // Unknown Message Type
 				
-				//grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // RED SHORT now GREEN
 				printf("Unknown message type\r\n");
 				
 			}
@@ -441,16 +429,14 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 			// INVALID CHECKSUM
 			
 			grid_debug_printf("Invalid Checksum");
+
+			printf("#### %s \r\n", message);
 			
 			if (error_flag != 0){
 				//usart_async_disable(&USART_EAST);
-				//grid_sys_alert_set_alert(&grid_sys_state, 20, 0, 0, 1, 200); // SOFT RED
 				//usart_async_enable(&USART_EAST);
 			}
 			else{
-				
-				//grid_sys_alert_set_alert(&grid_sys_state, 20, 0, 255, 1, 200); // BLUE BLINKY
-				
 				
 			}
 			
@@ -478,7 +464,7 @@ void grid_port_receive_task(struct grid_port* por){
 		
 		grid_port_reset_receiver(por);
 		
-		grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 500); // White triangle
+		grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 255);
 
 		
 	}
@@ -497,9 +483,9 @@ void grid_port_receive_task(struct grid_port* por){
 				
 					printf("Timeout Disconnect & Reset Receiver");
 				
-					grid_port_reset_receiver(por);
-				
-					grid_sys_alert_set_alert(&grid_sys_state, 255, 255, 255, 0, 500);
+					grid_port_reset_receiver(por);			
+
+					grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 255);
 				}
 				else{
 				
@@ -542,7 +528,7 @@ void grid_port_receive_task(struct grid_port* por){
 			{
 						
 				grid_port_reset_receiver(por);	
-				grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 0, 2, 200); // RED
+				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 255);
 				return;
 			}
 			// Buffer overrun error 1, 2, 3
@@ -550,7 +536,7 @@ void grid_port_receive_task(struct grid_port* por){
 			{
 				
 				grid_port_reset_receiver(por);
-				grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 2, 200); // RED
+				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 255);
 				return;
 			}
 			// Buffer overrun error 1, 2, 3
@@ -558,7 +544,7 @@ void grid_port_receive_task(struct grid_port* por){
 			{
 				
 				grid_port_reset_receiver(por);
-				grid_sys_alert_set_alert(&grid_sys_state, 0, 0, 255, 2, 200); // RED
+				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 255);
 				return;
 			}
 										
@@ -1026,7 +1012,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 				if (packet_size > grid_buffer_write_size(&port_array[i]->tx_buffer)){
 					
 					printf("buffer full \r\n");
-					grid_sys_alert_set_alert(&grid_sys_state, 100,100,0,2,200); // yellow
+					grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW, 255);
 					
 					// sorry one of the buffers cannot store the packet, we will try later
 					return 0;
@@ -1321,7 +1307,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			
 		uint8_t error_flag = 0;	
 		
-		//grid_sys_alert_set_alert(&grid_sys_state, 100,0,0,1,300);
 		
 		for (uint16_t i=0; i<length; i++){
 	
@@ -1834,7 +1819,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							action[actionlength] = 0;
 							printf("Config: %d %d %d %d -> %s\r\n", pagenumber, elementnumber, eventtype, actionlength, action);
 							
-    						grid_sys_alert_set_alert(&grid_sys_state, 127, 127, 127, 0, 200); // White
+								grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 255);
 								if (pagenumber == grid_ui_state.page_activepage){
 
 									//find event

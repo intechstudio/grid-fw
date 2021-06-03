@@ -10,7 +10,7 @@
 
 static bool     grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
-	//grid_sys_alert_set_alert(&grid_sys_state, 255,255,0,2,300);
+	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
 //	cdcdf_acm_read((uint8_t *)cdcdf_demo_buf, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);
 	
 	//cdcdf_acm_write(cdcdf_demo_buf, count); /* Echo data */
@@ -19,7 +19,7 @@ static bool     grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer
 static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
 	
-	//grid_sys_alert_set_alert(&grid_sys_state, 255,0,255,2,300);
+	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
 
 //	cdcdf_acm_read((uint8_t *)cdcdf_demo_buf, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS); /* Another read */
 	return false;                                                                                 /* No error. */
@@ -27,7 +27,7 @@ static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code
 static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state)
 {
 	
-	//grid_sys_alert_set_alert(&grid_sys_state, 0,255,255,2,300);
+	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
 	
 	if (state.rs232.DTR || 1) {
 		/* After connection the R/W callbacks can be registered */
@@ -49,14 +49,13 @@ void grid_usb_serial_init()
 
 static bool grid_usb_midi_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
-
-	grid_sys_alert_set_alert(&grid_sys_state, 255,255,0,2,300);
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
 	return false;
 }
 static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
 
-	grid_sys_alert_set_alert(&grid_sys_state, 255,0,255,2,300);
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
 	return false;
 }
 

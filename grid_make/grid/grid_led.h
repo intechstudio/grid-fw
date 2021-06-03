@@ -10,6 +10,13 @@
 #define GRID_LED_LAYER_NUMBER 3
 
 
+#define GRID_LED_COLOR_PURPLE	255,0,255
+#define GRID_LED_COLOR_YELLOW	255,255,0
+#define GRID_LED_COLOR_RED		255,0,0
+#define GRID_LED_COLOR_GREEN	0,255,0
+#define GRID_LED_COLOR_BLUE		0,0,255
+#define GRID_LED_COLOR_WHITE	255,255,255
+
 struct LED_color{
 	uint8_t r;
 	uint8_t g;
@@ -87,6 +94,9 @@ uint8_t grid_led_lowlevel_set_color(struct grid_led_model* mod, uint32_t led_ind
 // TIME TICK FOR ANIMATIONS
 void grid_led_tick(struct grid_led_model* mod);
 
+
+
+void grid_led_set_alert(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_t b, uint16_t duration);
 
 // WRITING THE SMART BUFFER
 

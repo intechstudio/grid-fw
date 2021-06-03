@@ -796,9 +796,7 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 
 	}
 	
-
-    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // Green
-    //grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 200); // Green
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 64);
 	grid_debug_printf("read complete");
 	grid_sys_state.lastheader_configdiscard.status = 0;
 
@@ -885,7 +883,7 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	grid_sys_state.lastheader_configstore.status = 0;
 
-    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // Green
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 64);
 		
 }
 
@@ -953,7 +951,7 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	grid_sys_state.lastheader_configerase.status = 0;
 
-    grid_sys_alert_set_alert(&grid_sys_state, 0, 255, 0, 0, 500); // Green
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 64);	
 
 
 	

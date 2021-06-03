@@ -834,7 +834,7 @@ static int l_grid_page_load(lua_State* L) {
     else{
         printf("page change is disabled\r\n");
         grid_debug_printf("page change is disabled");
-        grid_sys_alert_set_alert(&grid_sys_state, 255, 0, 255, 0, 200); // Purple
+    	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
     }
 
 
