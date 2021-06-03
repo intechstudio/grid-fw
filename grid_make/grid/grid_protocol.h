@@ -308,6 +308,10 @@
 #define GRID_LUA_FNC_G_LED_PHASE_human 	"led_value"
 #define GRID_LUA_FNC_G_LED_PHASE_fnptr 	l_grid_led_set_phase
 
+#define GRID_LUA_FNC_G_LED_TIMEOUT_short 	"glt"
+#define GRID_LUA_FNC_G_LED_TIMEOUT_human 	"led_timeout"
+#define GRID_LUA_FNC_G_LED_TIMEOUT_fnptr 	l_grid_led_set_timeout
+
 #define GRID_LUA_FNC_G_LED_MIN_short 	"gln"
 #define GRID_LUA_FNC_G_LED_MIN_human 	"led_color_min"
 #define GRID_LUA_FNC_G_LED_MIN_fnptr 	l_grid_led_set_min

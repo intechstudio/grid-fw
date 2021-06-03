@@ -306,6 +306,7 @@ static int l_grid_led_set_min(lua_State* L) {
     return 0;
 }
 
+
 static int l_grid_led_set_mid(lua_State* L) {
 
     int nargs = lua_gettop(L);
@@ -417,6 +418,26 @@ static int l_grid_led_set_shape(lua_State* L) {
     grid_led_set_shape(&grid_led_state, param[0], param[1], param[2]);
 
 
+    return 0;
+}
+
+static int l_grid_led_set_timeout(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=3){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint16_t param[3] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    grid_led_set_timeout(&grid_led_state, (uint8_t)param[0], (uint8_t)param[1], param[2]);
     return 0;
 }
 
@@ -836,6 +857,7 @@ static const struct luaL_Reg printlib [] = {
     {GRID_LUA_FNC_G_LED_COLOR_short,        GRID_LUA_FNC_G_LED_COLOR_fnptr},
     {GRID_LUA_FNC_G_LED_FREQUENCY_short,    GRID_LUA_FNC_G_LED_FREQUENCY_fnptr},
     {GRID_LUA_FNC_G_LED_SHAPE_short,        GRID_LUA_FNC_G_LED_SHAPE_fnptr},
+    {GRID_LUA_FNC_G_LED_TIMEOUT_short,      GRID_LUA_FNC_G_LED_TIMEOUT_fnptr},
     {GRID_LUA_FNC_G_LED_PSF_short,          GRID_LUA_FNC_G_LED_PSF_fnptr},
 
     {GRID_LUA_FNC_G_MIDI_SEND_short,        GRID_LUA_FNC_G_MIDI_SEND_fnptr},

@@ -361,52 +361,59 @@ static void led_task_inner(struct grid_d51_task* task){
 
 	grid_d51_task_start(task);
 
-	if (grid_sys_state.alert_state){
-		
-		grid_sys_state.alert_state--;
 
-		if (grid_sys_alert_read_color_changed_flag(&grid_sys_state)){
+	if (RTC1MS < grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_led_state.last_tick_realtime)){
+	
+		grid_led_state.last_tick_realtime = grid_sys_rtc_get_time(&grid_sys_state);
+
+		if (grid_sys_state.alert_state){
 			
-			grid_sys_alert_clear_color_changed_flag(&grid_sys_state);			
-			
-			uint8_t color_r   = grid_sys_alert_get_color_r(&grid_sys_state);
-			uint8_t color_g   = grid_sys_alert_get_color_g(&grid_sys_state);
-			uint8_t color_b   = grid_sys_alert_get_color_b(&grid_sys_state);
-			
-			for (uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
+			grid_sys_state.alert_state--;
 
-				grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*0   , color_g*0   , color_b*0);
-				grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*0.5 , color_g*0.5 , color_b*0.5);
-				grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*1   , color_g*1   , color_b*1);
-					
-			}
-	
-		}
-		
-		uint8_t intensity = grid_sys_alert_get_color_intensity(&grid_sys_state);
-
-		for (uint8_t i=0; i<grid_led_state.led_number; i++){	
-			//grid_led_set_color(i, 0, 255, 0);	
-	
-			grid_led_set_phase(&grid_led_state, i, GRID_LED_LAYER_ALERT, intensity);
-							
-		}
-		
-		
-	}
-	
-
-	grid_led_tick(&grid_led_state);
-
-
-	
-	grid_led_lowlevel_render_all(&grid_led_state);	
+			if (grid_sys_alert_read_color_changed_flag(&grid_sys_state)){
 				
+				grid_sys_alert_clear_color_changed_flag(&grid_sys_state);			
+				
+				uint8_t color_r   = grid_sys_alert_get_color_r(&grid_sys_state);
+				uint8_t color_g   = grid_sys_alert_get_color_g(&grid_sys_state);
+				uint8_t color_b   = grid_sys_alert_get_color_b(&grid_sys_state);
+				
+				for (uint8_t i=0; i<grid_led_get_led_number(&grid_led_state); i++){
+
+					grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*0   , color_g*0   , color_b*0);
+					grid_led_set_mid(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*0.5 , color_g*0.5 , color_b*0.5);
+					grid_led_set_max(&grid_led_state, i, GRID_LED_LAYER_ALERT, color_r*1   , color_g*1   , color_b*1);
+						
+				}
+		
+			}
+			
+			uint8_t intensity = grid_sys_alert_get_color_intensity(&grid_sys_state);
+
+			for (uint8_t i=0; i<grid_led_state.led_number; i++){	
+				//grid_led_set_color(i, 0, 255, 0);	
+		
+				grid_led_set_phase(&grid_led_state, i, GRID_LED_LAYER_ALERT, intensity);
+								
+			}
+			
+			
+		}
+		
+
+		grid_led_tick(&grid_led_state);
+
+
+		
+		grid_led_lowlevel_render_all(&grid_led_state);	
+					
 // 	 		while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
 // 	
 // 	 		}
-	grid_led_lowlevel_hardware_start_transfer(&grid_led_state);
+		grid_led_lowlevel_hardware_start_transfer(&grid_led_state);
 
+
+	}
 	
 	grid_d51_task_stop(task);	
 

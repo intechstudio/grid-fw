@@ -24,13 +24,16 @@ struct LED_layer
 	
 	uint8_t pha; //PHASE
 	uint8_t fre; //FREQUENCY
-	uint8_t sha;
+	uint8_t sha; //SHAPE
+	uint16_t timeout; //ANIMATION TIMEOUT
 };
 
 
 struct grid_led_model{
 
 	uint8_t status;
+
+	uint32_t last_tick_realtime;
 	
 	uint8_t led_number;
 	uint32_t led_frame_buffer_size;
@@ -95,6 +98,7 @@ void grid_led_set_max(struct grid_led_model* mod, uint8_t num, uint8_t layer, ui
 void grid_led_set_phase(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_frequency(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_shape(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
+void grid_led_set_timeout(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint16_t val);
 
 uint32_t grid_led_get_led_number(struct grid_led_model* mod);
 
