@@ -53,7 +53,6 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 			
 	}			
 
-	grid_d51_task_next(ui->task);
 	
 	//LOCAL MESSAGES
 	if (message_local_action_available){
@@ -522,7 +521,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 			// currently active page needs to be sent
 			grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(eve->action_string));		
 			grid_msg_body_append_printf(&message, eve->action_string);
-			printf("config: %s\r\n", eve->action_string);
+			//printf("config: %s\r\n", eve->action_string);
 		}		
 		else{
 
@@ -533,13 +532,13 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 
 			if (entry != NULL){
 				
-				printf("FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
+				//printf("FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
 
 				uint8_t buffer[entry->config_string_length+10];
 
 				uint32_t len = grid_nvm_toc_generate_actionstring(nvm, entry, buffer);
 
-				printf("config: %s", buffer);
+				//printf("config: %s", buffer);
 				// reset body pointer because cfg in nvm already has the config header
 				message.body_length = 0;
 				grid_msg_body_append_text(&message, buffer);
@@ -547,7 +546,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 			
 			}
 			else{
-				printf("NOT FOUND, Send default!\r\n");
+				//printf("NOT FOUND, Send default!\r\n");
 				uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength] = {0};
 				grid_ui_event_generate_actionstring(eve, actionstring);	
 				//grid_ui_event_register_actionstring(eve, actionstring);	

@@ -805,7 +805,7 @@ int main(void)
 	uint32_t loopcounter = 1;
 	uint32_t loopstart = 0;
 
-	uint8_t task_list_length = 6;
+	uint8_t task_list_length = 7;
 	struct grid_d51_task task_list[task_list_length];
 
 	struct grid_d51_task* grid_usb_task = &task_list[0];

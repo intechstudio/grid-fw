@@ -430,7 +430,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 			
 			grid_debug_printf("Invalid Checksum");
 
-			printf("#### %s \r\n", message);
+			printf("# %d # %d # %d # %s \r\n", checksum_calculated, checksum_received, error_flag, message);
 			
 			if (error_flag != 0){
 				//usart_async_disable(&USART_EAST);
@@ -1817,9 +1817,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							if (actionlength < GRID_UI_ACTION_STRING_maxlength){
 
 							action[actionlength] = 0;
-							printf("Config: %d %d %d %d -> %s\r\n", pagenumber, elementnumber, eventtype, actionlength, action);
+							//printf("Config: %d %d %d %d -> %s\r\n", pagenumber, elementnumber, eventtype, actionlength, action);
 							
-								grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 255);
+								grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 64);
 								if (pagenumber == grid_ui_state.page_activepage){
 
 									//find event
