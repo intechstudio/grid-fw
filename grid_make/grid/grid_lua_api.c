@@ -797,7 +797,7 @@ static int l_grid_page_prev(lua_State* L) {
         return 0;
     }
            
-    uint8_t page = (grid_ui_state.page_activepage - 1) % grid_ui_state.page_count;
+    uint8_t page = (grid_ui_state.page_activepage + grid_ui_state.page_count - 1) % grid_ui_state.page_count;
     lua_pushinteger(L, page);
     
     return 1;
@@ -823,7 +823,7 @@ static int l_grid_page_load(lua_State* L) {
    
     if (grid_ui_state.page_change_enabled == 1){
 
-        //grid_debug_printf("page change %d", page);
+        grid_debug_printf("page request: %d", page);
         uint8_t response[20] = {0};
         sprintf(response, GRID_CLASS_PAGEACTIVE_frame);
         grid_msg_set_parameter(response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
