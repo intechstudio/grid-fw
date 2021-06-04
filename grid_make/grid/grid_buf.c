@@ -602,9 +602,6 @@ void grid_port_receive_task(struct grid_port* por){
 
 
 
-
-
-
 uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length){
 	
 	grid_buffer_error_count = 0;

@@ -23,7 +23,9 @@ static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code r
 
 void grid_usb_midi_init();
 
-volatile grid_usb_serial_bulkin_flag;
+volatile uint8_t grid_usb_serial_rx_flag;
+volatile uint8_t grid_usb_serial_rx_buffer[512];
+volatile uint16_t grid_usb_serial_rx_size;
 
 struct grid_midi_event_desc {
 	
@@ -37,7 +39,6 @@ struct grid_midi_event_desc {
 
 uint16_t grid_midi_tx_write_index;
 uint16_t grid_midi_tx_read_index;
-
 
 #define GRID_MIDI_TX_BUFFER_length 300
 

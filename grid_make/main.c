@@ -204,30 +204,40 @@ static void usb_task_inner(struct grid_d51_task* task){
 	
 	// SERIAL READ 
 
-	if (grid_usb_serial_bulkin_flag){
+	if (grid_usb_serial_rx_flag){
 		
+		//cdcdf_acm_read((uint8_t *)grid_usb_serial_rx_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS); /* Another read */
 
-		cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
+	//	cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
 
-		grid_usb_serial_bulkin_flag = 0;
+		grid_usb_serial_rx_flag = 0;
 
+	
+		// printf(" # %d # %s\r\n", grid_usb_serial_rx_size, grid_usb_serial_rx_buffer);
 
 		//cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
 	
 		// circular buffer would be nice
-		uint16_t usblength = strlen(GRID_PORT_H.rx_double_buffer);
 		
-		if (usblength > 10){	
+		if (grid_usb_serial_rx_size){	
+
+
+			strcpy(GRID_PORT_H.rx_double_buffer, grid_usb_serial_rx_buffer);
+			for (uint16_t i = 0; i < CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS; i++)
+			{
+				grid_usb_serial_rx_buffer[i] = 0;
+			}
 
 			// printf("len: %d\r\n", usblength);
 			GRID_PORT_H.rx_double_buffer_status = 1;			
 			GRID_PORT_H.rx_double_buffer_read_start_index = 0;
-			GRID_PORT_H.rx_double_buffer_seek_start_index = usblength-3; //-3
+			GRID_PORT_H.rx_double_buffer_seek_start_index = grid_usb_serial_rx_size-3; //-3
 
-			//grid_port_receive_decode(&GRID_PORT_H, 0, usblength-2);
-			grid_port_receive_task(&GRID_PORT_H);
+			grid_port_receive_decode(&GRID_PORT_H, 0, grid_usb_serial_rx_size);
+			//grid_port_receive_task(&GRID_PORT_H);
 			
 
+			grid_usb_serial_rx_size = 0;
 
 
 			// //clear buffer otherwise strlen might fail

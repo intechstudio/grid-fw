@@ -10,22 +10,38 @@
 
 static bool     grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
-	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
-//	cdcdf_acm_read((uint8_t *)cdcdf_demo_buf, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);
+
+	grid_usb_serial_rx_flag = 1;
+	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 25);
+	cdcdf_acm_read((uint8_t *)grid_usb_serial_rx_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);
 	
+	grid_usb_serial_rx_size = 0;
+
+	for(uint16_t i=0; i<CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS; i++){
+
+		// add terminating zero to the end of the packet
+
+		if (grid_usb_serial_rx_buffer[i] == '\n'){
+			grid_usb_serial_rx_buffer[i+1] = '\0';
+			grid_usb_serial_rx_size = i+1;
+			break;
+		}
+
+		if (i == CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS-1){
+			grid_usb_serial_rx_buffer[0] = '\0'; // no newline was found, make the packet invalid
+		}
+
+	}
+
 	//cdcdf_acm_write(cdcdf_demo_buf, count); /* Echo data */
 	return false;                           /* No error. */
 }
 static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
-	grid_usb_serial_bulkin_flag = 1;
-
-	//printf("## %d\r\n", count);
-
 
 	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
 
-//	cdcdf_acm_read((uint8_t *)cdcdf_demo_buf, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS); /* Another read */
+	
 	return false;                                                                                 /* No error. */
 }
 static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state)
@@ -38,13 +54,16 @@ static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state)
 		cdcdf_acm_register_callback(CDCDF_ACM_CB_READ, (FUNC_PTR)grid_usb_serial_bulkout_cb);
 		cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)grid_usb_serial_bulkin_cb);
 		/* Start Rx */
-		//cdcdf_acm_read((uint8_t *)cdcdf_demo_buf, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);
+		cdcdf_acm_read((uint8_t *)grid_usb_serial_rx_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);
 	}
+
 	return false; /* No error. */
 }
 void grid_usb_serial_init()
 {
-	grid_usb_serial_bulkin_flag = 0;
+
+	grid_usb_serial_rx_size = 0;
+	grid_usb_serial_rx_flag = 0;
 	cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C, (FUNC_PTR)grid_usb_serial_statechange_cb);
 //	cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)grid_usb_midi_bulkout_cb);
 //	cdcdf_acm_register_callback(CDCDF_ACM_CB_READ, (FUNC_PTR)grid_usb_midi_bulkout_cb);
