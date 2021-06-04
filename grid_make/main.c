@@ -982,7 +982,7 @@ int main(void)
 
 
 
-		if (reportflag){
+		if (reportflag && 0){
 
 
 			reportflag = 0;
