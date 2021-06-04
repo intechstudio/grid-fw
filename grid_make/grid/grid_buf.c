@@ -1816,10 +1816,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						uint8_t eventtype = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
 						uint16_t actionlength = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
 
-						uint8_t autotrigger = 1;
 
-						if (elementnumber == 255 || elementnumber == (grid_ui_state.element_list_length - 1)){
-							autotrigger = 0;
+						if (elementnumber == 255){
+							
 							elementnumber = grid_ui_state.element_list_length - 1;
 						}	
 
@@ -1843,7 +1842,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 									if (eve != NULL){
 
 										//register actionstring
-										
+										grid_ui_state.page_change_enabled = 0;
 										grid_ui_event_register_actionstring(eve, action);
 										//printf("Registered\r\n");
 										//acknowledge
@@ -1851,10 +1850,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 										//grid_debug_printf("autotrigger: %d", autotrigger);
 
-										if (autotrigger){
-
-											grid_ui_event_trigger_local(eve);	
-										}
+										grid_ui_event_trigger_local(eve);	
+										
 
 
 									}
