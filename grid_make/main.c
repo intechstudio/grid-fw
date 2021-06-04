@@ -204,29 +204,43 @@ static void usb_task_inner(struct grid_d51_task* task){
 	
 	// SERIAL READ 
 
-	cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
-	
-	// itt lesz a baj: circ buffer k�ne
-	uint16_t usblength = strlen(GRID_PORT_H.rx_double_buffer);
-	
-	if (usblength){	
-
-		GRID_PORT_H.rx_double_buffer_status = 1;			
-		GRID_PORT_H.rx_double_buffer_read_start_index = 0;
-		GRID_PORT_H.rx_double_buffer_seek_start_index = usblength-3; //-3
-
-		//grid_port_receive_decode(&GRID_PORT_H, 0, usblength-2);
-		grid_port_receive_task(&GRID_PORT_H);
+	if (grid_usb_serial_bulkin_flag){
 		
-		//clear buffer otherwise strlen might fail
-		for(uint32_t i=0; i<usblength; i++){
+
+		cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
+
+		grid_usb_serial_bulkin_flag = 0;
+
+
+		//cdcdf_acm_read(GRID_PORT_H.rx_double_buffer, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);			
+	
+		// circular buffer would be nice
+		uint16_t usblength = strlen(GRID_PORT_H.rx_double_buffer);
+		
+		if (usblength > 10){	
+
+			// printf("len: %d\r\n", usblength);
+			GRID_PORT_H.rx_double_buffer_status = 1;			
+			GRID_PORT_H.rx_double_buffer_read_start_index = 0;
+			GRID_PORT_H.rx_double_buffer_seek_start_index = usblength-3; //-3
+
+			//grid_port_receive_decode(&GRID_PORT_H, 0, usblength-2);
+			grid_port_receive_task(&GRID_PORT_H);
 			
-			GRID_PORT_H.rx_double_buffer[i] = 0;
+
+
+
+			// //clear buffer otherwise strlen might fail
+			for(uint32_t i=0; i<0x200; i++){
+				
+				GRID_PORT_H.rx_double_buffer[i] = 0;
+			}
+				
+		}else{
+			//printf("USBLENERR\r\n");
 		}
-			
+
 	}
-
-
 	grid_d51_task_stop(task);
 }
 

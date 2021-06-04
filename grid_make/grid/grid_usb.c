@@ -18,8 +18,12 @@ static bool     grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer
 }
 static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
-	
-	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
+	grid_usb_serial_bulkin_flag = 1;
+
+	//printf("## %d\r\n", count);
+
+
+	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
 
 //	cdcdf_acm_read((uint8_t *)cdcdf_demo_buf, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS); /* Another read */
 	return false;                                                                                 /* No error. */
@@ -40,6 +44,7 @@ static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state)
 }
 void grid_usb_serial_init()
 {
+	grid_usb_serial_bulkin_flag = 0;
 	cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C, (FUNC_PTR)grid_usb_serial_statechange_cb);
 //	cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)grid_usb_midi_bulkout_cb);
 //	cdcdf_acm_register_callback(CDCDF_ACM_CB_READ, (FUNC_PTR)grid_usb_midi_bulkout_cb);

@@ -23,8 +23,7 @@ static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code r
 
 void grid_usb_midi_init();
 
-
-
+volatile grid_usb_serial_bulkin_flag;
 
 struct grid_midi_event_desc {
 	

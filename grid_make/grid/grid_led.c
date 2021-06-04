@@ -512,7 +512,7 @@ void grid_led_tick(struct grid_led_model* mod){
 
 void grid_led_set_alert(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_t b, uint16_t duration){
 
-	printf("ALERT\r\n");
+	//printf("ALERT\r\n");
 
 	for (uint8_t i = 0; i<mod->led_number; i++){
 

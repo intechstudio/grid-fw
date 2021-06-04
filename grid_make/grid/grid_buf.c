@@ -56,7 +56,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 	uint8_t* message;
 	
 	uint16_t length = len;
-	uint8_t buffer[length];
+	uint8_t buffer[length+1];
 
 	
 	// Store message in temporary buffer (MAXMSGLEN = 250 character)
@@ -64,6 +64,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		buffer[i] = por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE];
 		por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE]=0;
 	}
+	buffer[length] = 0;
 	
 	message = &buffer[0];
 	
@@ -88,9 +89,16 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 			message = &buffer[i];
 			
 			
-			printf("Frame Start Offset");
+			grid_debug_printf("Frame Start Offset");
 			
 			
+		}
+
+		if (buffer[i] == '\n' && i<length-1){
+
+			grid_debug_printf("Frame End Offset");
+			length = i;
+			break;
 		}
 		
 	}
@@ -364,7 +372,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							
 							
 							printf("Connect");
-							grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 255);
+							grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 128);
 
 							
 						}
@@ -418,7 +426,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 			}
 			else{ // Unknown Message Type
 				
-				printf("Unknown message type\r\n");
+				grid_debug_printf("Unknown message type\r\n");
 				
 			}
 			
@@ -428,16 +436,15 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		else{
 			// INVALID CHECKSUM
 			
-			grid_debug_printf("Invalid Checksum");
 
-			printf("# %d # %d # %d # %s \r\n", checksum_calculated, checksum_received, error_flag, message);
-			
 			if (error_flag != 0){
 				//usart_async_disable(&USART_EAST);
 				//usart_async_enable(&USART_EAST);
+				grid_debug_printf("Invalid Checksum + flag");
 			}
 			else{
-				
+				printf("##  %s", message);
+				grid_debug_printf("Invalid Checksum %02x %02x", checksum_calculated, checksum_received);
 			}
 			
 			
@@ -448,6 +455,8 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 	else{
 		// frame error
 		
+		grid_debug_printf("Frame Error %d", length);
+		printf("FRAME %s\r\n", message);
 	}
 	
 	return;
@@ -464,7 +473,7 @@ void grid_port_receive_task(struct grid_port* por){
 		
 		grid_port_reset_receiver(por);
 		
-		grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 255);
+		grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 64);
 
 		
 	}
@@ -485,7 +494,7 @@ void grid_port_receive_task(struct grid_port* por){
 				
 					grid_port_reset_receiver(por);			
 
-					grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 255);
+					grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 64);
 				}
 				else{
 				
@@ -528,7 +537,7 @@ void grid_port_receive_task(struct grid_port* por){
 			{
 						
 				grid_port_reset_receiver(por);	
-				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 255);
+				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 64);
 				return;
 			}
 			// Buffer overrun error 1, 2, 3
@@ -536,7 +545,7 @@ void grid_port_receive_task(struct grid_port* por){
 			{
 				
 				grid_port_reset_receiver(por);
-				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 255);
+				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 64);
 				return;
 			}
 			// Buffer overrun error 1, 2, 3
@@ -544,7 +553,7 @@ void grid_port_receive_task(struct grid_port* por){
 			{
 				
 				grid_port_reset_receiver(por);
-				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 255);
+				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 64);
 				return;
 			}
 										
@@ -1714,7 +1723,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				}			
 				else if (msg_class == GRID_CLASS_CONFIGSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_keyboard_state.isenabled = 1;					
+									
 					grid_sys_state.lastheader_configstore.status = -1;
 					grid_sys_state.lastheader_configstore.id = id;
 					grid_nvm_ui_bulk_store_init(&grid_nvm_state, &grid_ui_state);					
@@ -1845,7 +1854,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 								action[actionlength] = GRID_CONST_ETX;
 							}
 							else{
-								printf("Config actionstring too long\r\n");
 								grid_debug_printf("config too long");
 							}
 
@@ -1870,9 +1878,11 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							grid_sys_state.lastheader_config.status = 0;
 							grid_sys_state.lastheader_config.id = id;
 							grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+							grid_debug_printf("Config %d", id);
 						}
 						else{
 							grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+							grid_debug_printf("Config Error");
 						}
 						
 						grid_msg_packet_close(&response);
