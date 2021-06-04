@@ -143,11 +143,6 @@ void grid_module_common_init(void){
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevC ){
 		printf("Init Module: BU16");
 		grid_module_bu16_init();
-
-
-
-		struct grid_ui_element* ele = &grid_ui_state.element_list[0];
-		printf("!!element type: %d\r\n", ele->type);
 	
 	}	
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevA){

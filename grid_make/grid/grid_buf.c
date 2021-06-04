@@ -120,11 +120,15 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		
 		// checksum validator
 		if (checksum_calculated == checksum_received && error_flag == 0){
-			
-
-			
+					
 			if (message[1] == GRID_CONST_BRC){ // Broadcast message
 				
+				if (por->partner_status == 0 && por->type != 1){
+					printf("$");
+					grid_port_reset_receiver(por);
+					return;
+				}
+
 				uint8_t error=0;
 				
 				// Read the received id age values
@@ -370,8 +374,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							
 							
 							
-							
-							printf("Connect");
+							grid_debug_printf("Connect");
 							grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 128);
 
 							
@@ -472,7 +475,7 @@ void grid_port_receive_task(struct grid_port* por){
 		por->usart_error_flag = 0;
 		
 		grid_port_reset_receiver(por);
-		
+		grid_debug_printf("Parity error");
 		grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 64);
 
 		
@@ -489,8 +492,7 @@ void grid_port_receive_task(struct grid_port* por){
 			
 				if (por->partner_status == 1){
 				
-				
-					printf("Timeout Disconnect & Reset Receiver");
+					grid_debug_printf("Timeout Disconnect 1");
 				
 					grid_port_reset_receiver(por);			
 
@@ -503,7 +505,7 @@ void grid_port_receive_task(struct grid_port* por){
 					}
 					else{
 					
-						printf("Timeout & Reset Receiver");
+						grid_debug_printf("Timeout Disconnect 2");
 						grid_port_reset_receiver(por);
 					}
 				
@@ -535,7 +537,8 @@ void grid_port_receive_task(struct grid_port* por){
 			// Buffer overrun error 1, 2, 3
 			if (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1)
 			{
-						
+			
+				grid_debug_printf("Buffer Overrun 1");
 				grid_port_reset_receiver(por);	
 				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 64);
 				return;
@@ -544,6 +547,7 @@ void grid_port_receive_task(struct grid_port* por){
 			if (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0)
 			{
 				
+				grid_debug_printf("Buffer Overrun 2");
 				grid_port_reset_receiver(por);
 				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 64);
 				return;
@@ -552,6 +556,7 @@ void grid_port_receive_task(struct grid_port* por){
 			if (por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE -1)%GRID_DOUBLE_BUFFER_RX_SIZE] !=0)
 			{
 				
+				grid_debug_printf("Buffer Overrun 3");
 				grid_port_reset_receiver(por);
 				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 64);
 				return;
@@ -1017,7 +1022,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 			
 				if (packet_size > grid_buffer_write_size(&port_array[i]->tx_buffer)){
 					
-					printf("buffer full \r\n");
+					grid_debug_printf("Buffer full");
 					grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW, 255);
 					
 					// sorry one of the buffers cannot store the packet, we will try later
@@ -1340,13 +1345,14 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 						if (grid_ui_state.page_change_enabled == 1){
 
+							//grid_debug_printf("TRY");
 							grid_ui_page_load(&grid_ui_state, &grid_nvm_state, page);
 							grid_sys_set_bank(&grid_sys_state, page);
 
 						}
 						else{
 
-							printf("PAGE CHANGE DISABLED\r\n");
+							//grid_debug_printf("DISABLE");
 						}
 													
 					}

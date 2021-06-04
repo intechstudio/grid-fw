@@ -823,7 +823,7 @@ static int l_grid_page_load(lua_State* L) {
    
     if (grid_ui_state.page_change_enabled == 1){
 
-        printf("page change %d\r\n", page);
+        //grid_debug_printf("page change %d", page);
         uint8_t response[20] = {0};
         sprintf(response, GRID_CLASS_PAGEACTIVE_frame);
         grid_msg_set_parameter(response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
@@ -832,9 +832,9 @@ static int l_grid_page_load(lua_State* L) {
 
     }
     else{
-        printf("page change is disabled\r\n");
+        //printf("page change is disabled\r\n");
         grid_debug_printf("page change is disabled");
-    	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
+    	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
     }
 
 

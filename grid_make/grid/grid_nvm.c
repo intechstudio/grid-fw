@@ -700,6 +700,9 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 		return;
 	}
 
+	//grid_lua_debug_memory_stats(&grid_lua_state, "Ui");
+	lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
+
 	// START: NEW
 	uint32_t cycles_limit = 5000*120;  // 5ms
 	uint32_t cycles_start = grid_d51_dwt_cycles_read();
@@ -710,8 +713,6 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 	uint8_t firstrun = 1;
 	
 
-	//grid_lua_debug_memory_stats(&grid_lua_state, "Ui");
-	lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
 
 	//printf("BULK READ PAGE LOAD %d %d\r\n", last_element_helper, last_event_helper);
 

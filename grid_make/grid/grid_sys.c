@@ -262,9 +262,10 @@ static void err_cb_USART_GRID_W(const struct usart_async_descriptor *const descr
 
 
 void err_cb_USART_GRID(struct grid_port* const por){
+
 	por->usart_error_flag = 1;	
-	
-	usart_async_disable(por->usart);
+	//printf("@");
+	//usart_async_disable(por->usart);
 }
 
 

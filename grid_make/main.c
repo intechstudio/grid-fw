@@ -583,7 +583,6 @@ void RTC_Scheduler_report_cb(const struct timer_task *const timer_task)
 void init_timer(void)
 {
 	
-		
 	//RTC_Scheduler_ping.interval = RTC1SEC/20; //50ms
 	RTC_Scheduler_ping.interval = RTC1MS*GRID_PARAMETER_PING_interval;
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
@@ -592,7 +591,6 @@ void init_timer(void)
 	RTC_Scheduler_heartbeat.interval = RTC1MS*GRID_PARAMETER_HEARTBEAT_interval;
 	RTC_Scheduler_heartbeat.cb       = RTC_Scheduler_heartbeat_cb;
 	RTC_Scheduler_heartbeat.mode     = TIMER_TASK_REPEAT;
-	
 	
 	RTC_Scheduler_realtime.interval = 1;
 	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
