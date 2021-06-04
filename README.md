@@ -58,11 +58,17 @@ Here you can download the latest stable relese. Plese visit the [releases](https
 page for more information.
 
 [![GitHub version](https://badge.fury.io/gh/intechstudio%2Fgrid-fw.svg)](https://github.com/intechstudio/grid-fw/releases/latest)
-[![Only 32 Kb](https://badge-size.herokuapp.com/intechstudio/grid-fw/master/grid_toplevel/grid_toplevel_release.uf2)](https://github.com/intechstudio/grid-fw/tree/master/grid_toplevel/grid_toplevel_release.uf2)
+[![Only 32 Kb](https://badge-size.herokuapp.com/intechstudio/grid-fw/master/binary/grid_release.uf2)](https://github.com/intechstudio/grid-fw/tree/master/binary/grid_release.uf2)
 
 ## Nightly Build
 Nightly builds of the Grid firmware are available for those who wish to experiment with the latest features.
 Please check the related commit messages to learn more about the current build.
 
-[![Only 32 Kb](https://badge-size.herokuapp.com/intechstudio/grid-fw/master/grid_toplevel/grid_toplevel_nightly.uf2)](https://github.com/intechstudio/grid-fw/tree/master/grid_toplevel/grid_toplevel_nightly.uf2)
+[![Only 32 Kb](https://badge-size.herokuapp.com/intechstudio/grid-fw/master/binary/grid_nightly.uf2)](https://github.com/intechstudio/grid-fw/tree/master/binary/grid_nightly.uf2)
+
+
+## Recovery Firmware
+This version erases all configuration from the Grid. Use this version of the firmware to recover from faulty configuration state or if the module cannot boot properly. 
+
+[![Only 32 Kb](https://badge-size.herokuapp.com/intechstudio/grid-fw/master/binary/grid_nvm_hardware_test.uf2)](https://github.com/intechstudio/grid-fw/tree/master/binary/grid_nvm_hardware_test.uf2)
 
