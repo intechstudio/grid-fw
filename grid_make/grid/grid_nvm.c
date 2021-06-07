@@ -797,7 +797,7 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 
 	}
 	
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 64);
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 40);
 	grid_debug_printf("read complete");
 	grid_keyboard_state.isenabled = 1;	
 	grid_sys_state.lastheader_configdiscard.status = 0;
@@ -819,6 +819,12 @@ void grid_nvm_ui_bulk_store_init(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 
 	nvm->store_bulk_status = 1;
+
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
+	grid_led_set_alert_frequency(&grid_led_state, -8);	
+	for (uint8_t i = 0; i<grid_led_state.led_number; i++){
+		grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
+	}
 
 }
 
@@ -885,7 +891,7 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 	grid_keyboard_state.isenabled = 1;	
 	grid_sys_state.lastheader_configstore.status = 0;
 
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 64);
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 127);
 		
 }
 
@@ -896,7 +902,14 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 void grid_nvm_ui_bulk_clear_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
-	uint32_t clear_bulk_address = GRID_NVM_LOCAL_BASE_ADDRESS;
+
+	nvm->clear_bulk_address = GRID_NVM_LOCAL_BASE_ADDRESS;
+
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
+	grid_led_set_alert_frequency(&grid_led_state, -8);	
+	for (uint8_t i = 0; i<grid_led_state.led_number; i++){
+		grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
+	}
 
 	nvm->clear_bulk_status = 1;
 
@@ -921,6 +934,7 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 	while(nvm->clear_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){
 
 		if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){
+			grid_debug_printf("limit");
 			return;
 		}
 
@@ -952,8 +966,7 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 	grid_debug_printf("clear complete");
 	grid_keyboard_state.isenabled = 1;	
 	grid_sys_state.lastheader_configerase.status = 0;
-
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 64);	
+	
 
 
 	

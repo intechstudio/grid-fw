@@ -875,7 +875,9 @@ int main(void)
 			
 				printf("USB CONNECTED\r\n\r\n");
 
-				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 128);	
+				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
+				grid_led_set_alert_frequency(&grid_led_state, -2);	
+				grid_led_set_alert_phase(&grid_led_state, 200);	
 				
 				grid_sys_state.heartbeat_type = 1;
 
