@@ -934,7 +934,7 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 	while(nvm->clear_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){
 
 		if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){
-			grid_debug_printf("limit");
+			//grid_debug_printf("limit");
 			return;
 		}
 
