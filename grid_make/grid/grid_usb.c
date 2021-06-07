@@ -8,7 +8,7 @@
 #include "grid_usb.h"
 #include "../usb/class/midi/device/audiodf_midi.h"
 
-static bool     grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
+static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
 
 	grid_usb_serial_rx_flag = 1;

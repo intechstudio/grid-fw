@@ -1291,7 +1291,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		grid_buffer_read_init(&por->tx_buffer);
 		
 		for (uint16_t i = 0; i<length; i++){
-					
+			
 			message[i] = grid_buffer_read_character(&por->tx_buffer);
 			//usb_tx_double_buffer[i] = character;
 					
@@ -1398,6 +1398,38 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}
 
 					
+				}
+				if (msg_class == GRID_CLASS_MIDI_code && msg_instr == GRID_INSTR_REPORT_code){
+						
+									
+					uint8_t midi_channel = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_CHANNEL_offset], GRID_CLASS_MIDI_CHANNEL_length, &error_flag);	
+					uint8_t midi_command = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_COMMAND_offset], GRID_CLASS_MIDI_COMMAND_length, &error_flag);	
+					uint8_t midi_param1 = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_PARAM1_offset], GRID_CLASS_MIDI_PARAM1_length, &error_flag);	
+					uint8_t midi_param2 = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_PARAM2_offset], GRID_CLASS_MIDI_PARAM2_length, &error_flag);		
+					
+					//printf("M: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1, midi_param2);
+
+					uint8_t temp[GRID_UI_ACTION_STRING_maxlength + 100] = {0};
+					sprintf(temp, "midi={} midi.ch,midi.cmd,midi.p1,midi.p2 = %d, %d, %d, %d ", midi_channel, midi_command, midi_param1, midi_param2);
+					//grid_lua_dostring(&grid_lua_state, temp);
+
+					struct grid_ui_element* ele = &grid_ui_state.element_list[grid_ui_state.element_list_length-1];
+					struct grid_ui_event* eve = NULL;
+
+					eve = grid_ui_event_find(ele, GRID_UI_EVENT_MIDIRX);
+					if (eve != NULL){
+
+						sprintf(&temp[strlen(temp)], " %s", &eve->action_string[6]);
+						temp[strlen(temp)-3] = '\0'; 
+
+						grid_lua_dostring(&grid_lua_state, temp);
+						//printf("%s \r\n", temp);
+
+					}
+
+
+
+														
 				}
 				if (msg_class == GRID_CLASS_PAGECOUNT_code && (position_is_global || position_is_me)){
 				

@@ -706,6 +706,7 @@ enum grid_ui_event_t
 	GRID_UI_EVENT_EC,
 	GRID_UI_EVENT_BC,
 	GRID_UI_EVENT_MAPMODE_CHANGE,
+	GRID_UI_EVENT_MIDIRX,
 
 
 };
@@ -715,6 +716,7 @@ enum grid_ui_event_t
 #define 	GRID_EVENT_EC	"02"
 #define 	GRID_EVENT_BC	"03"
 #define 	GRID_EVENT_MAP	"04"
+#define 	GRID_EVENT_MIDIRX "05"
 
 // BANK + ELEMENT NUMBER + EVENT TYPE + PARAMETER
 
@@ -724,6 +726,8 @@ enum grid_ui_event_t
 #define GRID_ACTIONSTRING_INIT_POT "<?lua --[[@l]]local num,val,red,gre,blu = this.ind(),this.pva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glp]]glp(num,1,val) ?>"
 
 #define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@l]]local num,val,red,gre,blu = this.ind(),this.bva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glp]]glp(num,1,val) ?>"
+
+#define GRID_ACTIONSTRING_MIDIRX  "<?lua --[[@l]]local ch,cmd,param1,param2 = midi.ch,midi.cmd,midi.p1,midi.p2 --[[@cb]]print('Midi', ch, cmd, param1, param2) ?>"
 
 //#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@glc]]glc(2,1,100,200,230) --[[@glp]]glp(2,1,100) ?>"
 

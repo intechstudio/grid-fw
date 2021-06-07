@@ -358,11 +358,12 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 
 	if (element_type == GRID_UI_ELEMENT_SYSTEM){
 		
-		ele->event_list_length = 2;
+		ele->event_list_length = 3;
 		
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
 		grid_ui_event_init(ele, 1, GRID_UI_EVENT_MAPMODE_CHANGE); // Mapmode change
+		grid_ui_event_init(ele, 2, GRID_UI_EVENT_MIDIRX); // Mapmode change
 
 		ele->template_initializer = NULL;
 		ele->template_parameter_list_length = 0;
@@ -716,6 +717,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 		switch(eve->type){
 			case GRID_UI_EVENT_INIT:				sprintf(targetstring, GRID_ACTIONSTRING_PAGE_INIT);			break;
 			case GRID_UI_EVENT_MAPMODE_CHANGE:		sprintf(targetstring, GRID_ACTIONSTRING_MAPMODE_CHANGE);	break;
+			case GRID_UI_EVENT_MIDIRX:				sprintf(targetstring, GRID_ACTIONSTRING_MIDIRX);			break;
 		}
 		
 	}

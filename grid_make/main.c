@@ -185,13 +185,31 @@ static void usb_task_inner(struct grid_d51_task* task){
 		
 	if (found){
 
-		printf("MIDI: %02x %02x %02x %02x\n", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
+		//grid_debug_printf("MIDI: %02x %02x %02x %02x", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
+
+		uint8_t channel = midi_rx_buffer[1] & 0x0f;
+		uint8_t command = midi_rx_buffer[1] & 0xf0;
+		uint8_t param1 = midi_rx_buffer[2];
+		uint8_t param2 = midi_rx_buffer[3];
+
+		//grid_debug_printf("decoded: %d %d %d %d", channel, command, param1, param2);
 		
-		uint8_t message[30] = {0};
-			
-		sprintf(message, "MIDI: %02x %02x %02x %02x\n", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
+		// SX SY Global, DX DY Global
+		struct grid_msg message;
+		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
+		grid_msg_header_set_sx(&message, GRID_SYS_DEFAULT_POSITION);
+		grid_msg_header_set_sy(&message, GRID_SYS_DEFAULT_POSITION);
+
+		grid_msg_body_append_printf(&message, GRID_CLASS_MIDI_frame);
+		grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
 		
-		grid_debug_print_text(message);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, channel);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, command);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, param1);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2);
+
+		grid_msg_packet_close(&message);
+		grid_msg_packet_send_everywhere(&message);
 
 		for (uint8_t i=0; i<16; i++){
 
