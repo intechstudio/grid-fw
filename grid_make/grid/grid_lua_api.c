@@ -823,12 +823,19 @@ static int l_grid_page_load(lua_State* L) {
    
     if (grid_ui_state.page_change_enabled == 1){
 
-        grid_debug_printf("page request: %d", page);
-        uint8_t response[20] = {0};
-        sprintf(response, GRID_CLASS_PAGEACTIVE_frame);
-        grid_msg_set_parameter(response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
-        grid_msg_set_parameter(response, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, page, NULL);
-        strcat(grid_lua_state.stdo, response);
+        if (grid_nvm_ui_bulk_read_is_in_progress(&grid_nvm_state, &grid_ui_state) == 0){
+
+            grid_debug_printf("page request: %d", page);
+            uint8_t response[20] = {0};
+            sprintf(response, GRID_CLASS_PAGEACTIVE_frame);
+            grid_msg_set_parameter(response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+            grid_msg_set_parameter(response, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, page, NULL);
+            strcat(grid_lua_state.stdo, response);
+
+        }
+        else{
+            printf("rip \r\n");
+        }
 
     }
     else{

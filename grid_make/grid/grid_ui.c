@@ -593,12 +593,13 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 		uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
 
 		if (i==0) printf("TB LEN: %d\r\n", template_buffer_length);
-		if (template_buffer_length < page+1){
+		while (template_buffer_length < page+1){
 
 			grid_ui_template_buffer_create(ele);
 
-			if (i==0) printf("CREATE NEW, LEN: %d\r\n", grid_ui_template_buffer_list_length(ele));
-			
+			template_buffer_length = grid_ui_template_buffer_list_length(ele);
+
+			if (i==0) printf("CREATE NEW, LEN: %d\r\n", template_buffer_length);
 		}
 
 
