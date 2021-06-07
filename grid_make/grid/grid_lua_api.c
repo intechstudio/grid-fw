@@ -413,7 +413,7 @@ static int l_grid_led_set_shape(lua_State* L) {
     }
 
 
-    printf("Led shape %d %d %d\r\n", param[0], param[1], param[2]);
+    //printf("Led shape %d %d %d\r\n", param[0], param[1], param[2]);
 
     grid_led_set_shape(&grid_led_state, param[0], param[1], param[2]);
 

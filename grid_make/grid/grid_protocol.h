@@ -334,7 +334,7 @@
 
 #define GRID_LUA_FNC_G_LED_SHAPE_short 	"gls"
 #define GRID_LUA_FNC_G_LED_SHAPE_human 	"led_animation_type"
-#define GRID_LUA_FNC_G_LED_SHAPE_fnptr 	l_grid_led_set_phase
+#define GRID_LUA_FNC_G_LED_SHAPE_fnptr 	l_grid_led_set_shape
 
 #define GRID_LUA_FNC_G_LED_PSF_short 	"glpfs"
 #define GRID_LUA_FNC_G_LED_PSF_human 	"led_animation_phase_rate_type"
