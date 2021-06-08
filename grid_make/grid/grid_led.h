@@ -107,7 +107,10 @@ void grid_led_set_color(struct grid_led_model* mod, uint8_t num, uint8_t layer, 
 void grid_led_set_min(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
 void grid_led_set_mid(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
 void grid_led_set_max(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
+
+uint8_t  grid_led_get_phase(struct grid_led_model* mod, uint8_t num, uint8_t layer);
 void grid_led_set_phase(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
+
 void grid_led_set_frequency(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_shape(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_timeout(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint16_t val);

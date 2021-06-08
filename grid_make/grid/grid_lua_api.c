@@ -207,6 +207,44 @@ static int l_grid_midi_send(lua_State* L) {
     return 1;
 }
 
+
+static int l_grid_led_phase(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=2 && nargs!=3){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+
+    int32_t param[3] = {0};
+    uint8_t isgetter = 0;
+
+    for (int i=1; i <= nargs; ++i) {
+
+        if (lua_isnumber(L, i)){
+            param[i-1] = lua_tointeger(L, i);  
+        }
+
+        
+    }
+
+    if (nargs == 3){
+        //setter
+        grid_led_set_phase(&grid_led_state, param[0], param[1], param[2]);
+
+    }
+    else{
+        //getter
+        int32_t var = grid_led_get_phase(&grid_led_state, param[0], param[1]);
+        lua_pushinteger(L, var);
+    }
+    
+    return 1;
+}
+
+
 static int l_grid_led_set_phase(lua_State* L) {
 
     int nargs = lua_gettop(L);
