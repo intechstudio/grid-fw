@@ -232,6 +232,10 @@ static int l_grid_led_phase(lua_State* L) {
 
     if (nargs == 3){
         //setter
+
+        if (param[2] > 255)  param[2] = 255;
+        if (param[2] < 0)    param[2] = 0;
+
         grid_led_set_phase(&grid_led_state, param[0], param[1], param[2]);
 
     }
@@ -971,13 +975,18 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 
     luaL_openlibs(mod->L);
 
-
     grid_lua_debug_memory_stats(mod, "Openlibs");
+
+    grid_lua_dostring(mod, GRID_LUA_GLUT_source);
+    grid_lua_dostring(mod, GRID_LUA_GLIM_source);
 
     lua_getglobal(mod->L, "_G");
 	luaL_setfuncs(mod->L, printlib, 0);
 	lua_pop(mod->L, 1);
     grid_lua_debug_memory_stats(mod, "Printlib");
+
+
+
 
     grid_lua_ui_init(mod, &grid_sys_state);
     grid_lua_debug_memory_stats(mod, "Ui init");

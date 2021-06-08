@@ -16,6 +16,28 @@ int _unlink(void);
 int _link(void);
 
 
+// GRID LOOKUP TABLE
+#define GRID_LUA_GLUT_source \
+"function glut (a, ...)      \
+ local t = table.pack(...)   \
+ for i = 1, t.n//2*2 do      \
+  if i%2 == 1 then           \
+   if t[i] == a then         \
+    return t[i+1]            \
+   end                       \
+  end                        \
+ end                         \
+ return nil                  \
+end"
+
+// GRID LIMIT
+#define GRID_LUA_GLIM_source  \
+"function glim (a, min, max)  \
+ if a>max then return max end \
+ if a<min then return min end \
+ return a \
+end"
+
 #define GRID_LUA_STDO_LENGTH    100
 #define GRID_LUA_STDI_LENGTH    100
 
