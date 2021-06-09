@@ -43,6 +43,8 @@
         "string": "cpp",
         "unordered_map": "cpp",
         "vector": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "ostream": "c",
+        "tuple": "c"
     }
 }

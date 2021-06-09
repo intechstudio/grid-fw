@@ -191,25 +191,120 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 				uint8_t velocityfactor = (25*25-elapsed_ms*elapsed_ms)/150 + 1;		
 				int32_t delta_velocity = delta * (velocityfactor * 2 - 1);
 
-
-				int32_t new_value = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
+				int32_t old_value = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
 				int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
 				int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
 
 
 				template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] += delta_velocity;
 
-				if (new_value + delta_velocity < min){
-					new_value = min;
+				if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 0){ // Absolute
+
+					int32_t new_value = 0;
+
+					if (old_value + delta_velocity < min){
+						new_value = min;
+					}
+					else if (old_value + delta_velocity > max){
+						new_value = max;
+					}
+					else{
+						new_value = old_value + delta_velocity;
+					}	
+					
+					template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_value;
+
 				}
-				else if (new_value + delta_velocity > max){
-					new_value = max;
+				else if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 1){ // Relative
+
+					int32_t new_value = 0;
+
+					if (old_value + delta_velocity < min){
+						new_value = min;
+					}
+					else if (old_value + delta_velocity > max){
+						new_value = max;
+					}
+					else{
+						new_value = old_value + delta_velocity;
+					}	
+					
+					template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_value;
+					
 				}
-				else{
-					new_value += delta_velocity;
-				}	
+				else if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 2){ // Relative 2's complement
+
+					// Two's complement magic 7 bit signed variable
 				
-				template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_value;
+				   	int old_value = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
+    
+					if (old_value>127){
+						old_value =127;
+					}
+					if (old_value<0){
+						old_value = 0;
+					}
+					
+					if (old_value > 63){ // elojel kiterjesztes 8n bitre
+						old_value+=128;
+					}
+					
+					short unsigned val = old_value;
+					short val2 = old_value;
+					
+					if (old_value>127){
+						
+						//printf(" true ");
+						val2 = -( (~val) + 1 + 256);
+						
+					}
+					else{
+						
+						//printf(" false ");
+						val2 = -(~val) - 1;
+						
+					}
+
+					int8_t old = val2; 	
+					int16_t new = old;
+					new -= delta_velocity;
+				
+					if (new<-64){
+						new = -64;
+					}
+
+					if (new>63){
+						new = 63;
+					}
+
+					int8_t new2 = new;
+
+
+					printf("%d  ", new2 );
+
+					// Two's complement magic
+					uint8_t new3 = (~new2)+1;
+							
+
+					printf("%d %d  ", new2, new3);
+
+					template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new3 & 127;
+
+
+					for (uint8_t j=0; j<8;j++) {
+						if (new3 & (1<<(7-j)))
+							printf("1");
+						else
+							printf("0");
+
+					}
+					printf("\r\n");
+									
+					
+					
+				}
+
+
 		
 				struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_EC);
 				grid_ui_event_trigger(eve);	

@@ -270,7 +270,7 @@ void grid_element_encoder_event_clear_cb(struct grid_ui_event* eve){
 
 	template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] = 64;
 
-	if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] != 0){ // relative
+	if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 1){ // relative
 
 		int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
 		int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
@@ -278,6 +278,11 @@ void grid_element_encoder_event_clear_cb(struct grid_ui_event* eve){
 		template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = ((max+1)-min)/2;
 
 	}	
+	else if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 2){
+
+		template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = 0;
+
+	}
  
 }
 
