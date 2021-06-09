@@ -236,71 +236,53 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 
 					// Two's complement magic 7 bit signed variable
 				
-				   	int old_value = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
-    
-					if (old_value>127){
-						old_value =127;
+				   	int32_t old_twoscomplement = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
+					
+					uint8_t old_8bit_extended_twoscomplement;
+
+					//Limit to signed -64 +63 range
+					if (old_twoscomplement>127){
+						old_8bit_extended_twoscomplement = 127;
 					}
-					if (old_value<0){
-						old_value = 0;
+					if (old_twoscomplement<0){
+						old_8bit_extended_twoscomplement = 0;
 					}
 					
-					if (old_value > 63){ // elojel kiterjesztes 8n bitre
-						old_value+=128;
+					if (old_twoscomplement > 63){ // extend sign bit to 8 bit size
+						old_8bit_extended_twoscomplement+=128;
 					}
 					
-					short unsigned val = old_value;
-					short val2 = old_value;
-					
-					if (old_value>127){
-						
-						//printf(" true ");
-						val2 = -( (~val) + 1 + 256);
-						
+					short unsigned val = old_8bit_extended_twoscomplement;
+
+					int8_t old_signed;
+
+					if (old_8bit_extended_twoscomplement>127){ // negative number
+						old_signed = -( (~old_8bit_extended_twoscomplement) + 1 + 256);	
 					}
-					else{
-						
-						//printf(" false ");
-						val2 = -(~val) - 1;
-						
+					else{ // positive number
+						old_signed = -(~old_8bit_extended_twoscomplement) - 1;
 					}
 
-					int8_t old = val2; 	
-					int16_t new = old;
-					new -= delta_velocity;
+					int16_t new_signed = old_signed - delta_velocity;
 				
-					if (new<-64){
-						new = -64;
+					//Limit to signed -64 +63 range
+					if (new_signed<-64){
+						new_signed = -64;
 					}
 
-					if (new>63){
-						new = 63;
+					if (new_signed>63){
+						new_signed = 63;
 					}
 
-					int8_t new2 = new;
-
-
-					printf("%d  ", new2 );
+					int8_t new_signed_8bit = new_signed;
 
 					// Two's complement magic
-					uint8_t new3 = (~new2)+1;
+					uint8_t new_twoscomplement = (~new_signed_8bit)+1;
 							
+					// reduce the result to 7 bit length
+					uint8_t new_7bit_twoscomplement = new_twoscomplement & 127;
 
-					printf("%d %d  ", new2, new3);
-
-					template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new3 & 127;
-
-
-					for (uint8_t j=0; j<8;j++) {
-						if (new3 & (1<<(7-j)))
-							printf("1");
-						else
-							printf("0");
-
-					}
-					printf("\r\n");
-									
-					
+					template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_7bit_twoscomplement;
 					
 				}
 
