@@ -149,7 +149,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 
 				// DO THE DX DY AGE calculations
 				
-				uint8_t updated_id  = received_id;
 				
 				int8_t rotated_dx = 0;
 				int8_t rotated_dy = 0;
@@ -216,11 +215,9 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				else{
 					
 					// Update message with the new values
-					grid_msg_set_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, updated_id, &error);
 					grid_msg_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
 					grid_msg_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
-					grid_msg_set_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, updated_msgage, &error);
-					grid_msg_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);
+
 				}
 				
 								
@@ -241,10 +238,12 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 					grid_msg_set_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, updated_sy, &error);
 				}
 				
-				
+				grid_msg_set_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, updated_msgage, &error);
+				grid_msg_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);
+				grid_msg_set_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, por->partner_fi, &error);
 
 				
-				uint32_t fingerprint = updated_id*256*256*256 + updated_sx*256*256 + updated_sy*256 + received_session;
+				uint32_t fingerprint = received_id*256*256*256 + updated_sx*256*256 + updated_sy*256 + received_session;
 				
 				
 				if (0 == grid_msg_find_recent(&grid_sys_state, fingerprint)){
@@ -257,8 +256,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 
 					// IF WE CAN STORE THE MESSAGE IN THE RX BUFFER
 					if (grid_buffer_write_init(&por->rx_buffer, length)){
-						
-		
 						
 						for (uint16_t i=0; i<length; i++){
 							
@@ -1307,9 +1304,12 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			
 		uint8_t dx = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
 		uint8_t dy = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
+
 		uint8_t sx = grid_msg_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
 		uint8_t sy = grid_msg_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
+
 		uint8_t rot = grid_msg_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
+		uint8_t portrot = grid_msg_get_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, &error);
 			
 		uint8_t position_is_me = 0;
 		uint8_t position_is_global = 0;
@@ -1490,10 +1490,44 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						// from other grid module
 					}
 					else if (type == 1){
-						// from usb connected module
 
-						grid_sys_state.module_x = dx-GRID_SYS_DEFAULT_POSITION; // convert to signed ind
-						grid_sys_state.module_y = dy-GRID_SYS_DEFAULT_POSITION; // convert to signed ind
+						// from usb connected module
+						int8_t received_sx = sx-GRID_SYS_DEFAULT_POSITION; // convert to signed ind
+						int8_t received_sy = sy-GRID_SYS_DEFAULT_POSITION; // convert to signed ind
+						int8_t rotated_sx;
+						int8_t rotated_sy;
+
+						// APPLY THE 2D ROTATION MATRIX
+						
+						printf("Protrot %d \r\n", portrot);
+
+						if (portrot == 0){ // 0 deg
+
+							rotated_sx  -= received_sx;
+							rotated_sy  -= received_sy;
+						}
+						else if(portrot == 1){ // 90 deg
+
+							rotated_sx  -= received_sy;
+							rotated_sy  += received_sx;
+						}
+						else if(portrot == 2){ // 180 deg
+
+							rotated_sx  += received_sx;
+							rotated_sy  += received_sy;
+						}
+						else if(portrot == 3){ // 270 deg
+
+							rotated_sx  += received_sy;
+							rotated_sy  -= received_sx;
+						}
+						else{
+							// TRAP INVALID MESSAGE
+						}
+
+
+						grid_sys_state.module_x = rotated_sx; // convert to signed ind
+						grid_sys_state.module_y = rotated_sy; // convert to signed ind
 						grid_sys_state.module_rot = rot;
 
 

@@ -104,7 +104,10 @@
 #define GRID_BRC_DY_length 2
 
 #define GRID_BRC_ROT_offset 18
-#define GRID_BRC_ROT_length 2
+#define GRID_BRC_ROT_length 1
+
+#define GRID_BRC_PORTROT_offset 19
+#define GRID_BRC_PORTROT_length 1
 
 #define GRID_BRC_MSGAGE_offset 20
 #define GRID_BRC_MSGAGE_length 2
