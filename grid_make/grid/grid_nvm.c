@@ -129,7 +129,7 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 
 	// before append pad to 8 byte words
 
-	printf("APPEND START len: %d\r\n", length);
+	//printf("APPEND START len: %d\r\n", length);
 	uint32_t append_length = length + (8 - length%8)%8; 
 
 
@@ -177,7 +177,7 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 
 	mod->next_write_offset += append_length;
 
-	printf("APPEND OK\r\n");
+	//printf("APPEND OK\r\n");
 
 	return mod->next_write_offset-append_length; // return the start offset of the newly appended item
 
@@ -198,7 +198,7 @@ uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t le
 
 	}
 
-	printf("clear_length: %d offset: %d\r\n", clear_length, offset);
+	//printf("clear_length: %d offset: %d\r\n", clear_length, offset);
 	// SUKU HACK
 	flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset, clear_buffer, clear_length);
 
@@ -243,10 +243,10 @@ uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t le
 
 uint32_t grid_nvm_erase_all(struct grid_nvm_model* mod){
 
-	printf("\r\n\r\nFlash Erase\r\n\r\n");
+	//printf("\r\n\r\nFlash Erase\r\n\r\n");
 	flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS, (GRID_NVM_LOCAL_END_ADDRESS-GRID_NVM_LOCAL_BASE_ADDRESS)/GRID_NVM_PAGE_SIZE);
 	
-	printf("\r\n\r\nFlash Verify\r\n\r\n");
+	//printf("\r\n\r\nFlash Verify\r\n\r\n");
 	uint32_t address = GRID_NVM_LOCAL_BASE_ADDRESS;
 	uint32_t run = 0;
 	uint32_t fail_count = 0;
@@ -270,7 +270,7 @@ uint32_t grid_nvm_erase_all(struct grid_nvm_model* mod){
 		address += GRID_NVM_PAGE_OFFSET;
 	}
 	
-	printf("\r\n\r\nFlash Done, Run: %d Fail: %d\r\n\r\n", run, fail_count);
+	//printf("\r\n\r\nFlash Done, Run: %d Fail: %d\r\n\r\n", run, fail_count);
 
 	return fail_count;
 
@@ -385,7 +385,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 						// version ok	
 					}
 					else{
-						printf("error.nvm.config version mismatch\r\n");
+						grid_debug_printf("error.nvm.config version mismatch\r\n");
 					}
 
 
@@ -471,7 +471,7 @@ uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, 
 
 	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, config_length, NULL);
 
-	printf("Config frame len: %d -> %s\r\n", len, buf);
+	//printf("Config frame len: %d -> %s\r\n", len, buf);
 
 	grid_nvm_toc_debug(mod);
 
@@ -484,13 +484,13 @@ uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, 
 
 	if (entry == NULL){
 
-		printf("NEW\r\n");
+		//printf("NEW\r\n");
 		grid_nvm_toc_entry_create(&grid_nvm_state, page_number, element_number, event_type, append_offset, config_length);
 
 	}
 	else{
 
-		printf("UPDATE %d %d %d :  0x%x to 0x%x %d\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, append_offset, config_length);
+		//printf("UPDATE %d %d %d :  0x%x to 0x%x %d\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, append_offset, config_length);
 		grid_nvm_clear(mod, entry->config_string_offset, entry->config_string_length);
 		grid_nvm_toc_entry_update(entry, append_offset, config_length);
 		
@@ -524,21 +524,21 @@ uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, u
 
 		if (next == NULL){
 			// this is the end of the list
-			printf("A)\r\n");
+			//printf("A)\r\n");
 			break;
 		}
 		else if (next_sort>this_sort){
-			printf("B)\r\n");
+			//printf("B)\r\n");
 
 			break;
 		}
 		else if (next_sort==this_sort){
-			printf("C)\r\n");
+			//printf("C)\r\n");
 			duplicate = 1;
 			break;
 		}
 		else{
-			printf("next)\r\n");
+			//printf("next)\r\n");
 			prev = next;
 			next = next->next;
 		}
@@ -567,7 +567,7 @@ uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, u
 			if (prev == NULL){
 				// this is first element
 				mod->toc_head = entry;
-				printf("toc head\r\n");
+				//printf("toc head\r\n");
 			}
 			else{
 				prev->next = entry;
@@ -588,7 +588,7 @@ uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, u
 		entry->config_string_offset = config_string_offset;
 		entry->config_string_length = config_string_length;
 
-		printf("toc create: %d %d %d offs: 0x%x len: %d\r\n", page_id, element_id, event_type, entry->config_string_offset, entry->config_string_length);
+		//printf("toc create: %d %d %d offs: 0x%x len: %d\r\n", page_id, element_id, event_type, entry->config_string_offset, entry->config_string_length);
 
 		// here manipulate NVM if duplicate
 
@@ -626,7 +626,7 @@ struct grid_nvm_toc_entry* grid_nvm_toc_entry_find(struct grid_nvm_model* mod, u
 
 uint8_t grid_nvm_toc_entry_update(struct grid_nvm_toc_entry* entry, uint32_t config_string_offset, uint16_t config_string_length){
 
-	printf("UPDATE: %d -> %d\r\n", entry->config_string_offset, config_string_offset);
+	//printf("UPDATE: %d -> %d\r\n", entry->config_string_offset, config_string_offset);
 
 	entry->config_string_offset = config_string_offset;
 	entry->config_string_length = config_string_length;
@@ -640,16 +640,16 @@ void grid_nvm_toc_debug(struct grid_nvm_model* mod){
 	struct grid_nvm_toc_entry* next = mod->toc_head;
 
 
-	printf("DUMP START\r\n");
+	//printf("DUMP START\r\n");
 
 	while (next != NULL){
 
-		printf("toc entry: %d %d %d :  0x%x %d\r\n", next->page_id, next->element_id, next->event_type, next->config_string_offset, next->config_string_length);
+		//printf("toc entry: %d %d %d :  0x%x %d\r\n", next->page_id, next->element_id, next->event_type, next->config_string_offset, next->config_string_length);
 
 		next = next->next;
 	}
 
-	printf("DUMP DONE\r\n");
+	//printf("DUMP DONE\r\n");
 
 
 
@@ -666,7 +666,7 @@ uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct g
 
 	targetstring[entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset] = '\0';
 	
-	printf("toc g a %d %s\r\n", entry->config_string_length, targetstring);
+	//printf("toc g a %d %s\r\n", entry->config_string_length, targetstring);
 
 	return strlen(targetstring);
 

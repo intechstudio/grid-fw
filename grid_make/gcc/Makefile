@@ -1,3 +1,5 @@
+GRID_DEFINES = -DGRID_BUILD_UNKNOWN
+
 SUB_DIRS +=  \
 \
 usb/class/midi/device \
@@ -620,7 +622,7 @@ $(OUTPUT_FILE_PATH): $(OBJS)
 %.o: %.c
 	@echo Building file: $<
 	@echo ARM/GNU C Compiler
-	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb $(GRID_DEFINES) -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 $(DIR_INCLUDES) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
@@ -629,7 +631,7 @@ $(DIR_INCLUDES) \
 %.o: %.s
 	@echo Building file: $<
 	@echo ARM/GNU Assembler
-	$(QUOTE)arm-none-eabi-as$(QUOTE) -x c -mthumb -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	$(QUOTE)arm-none-eabi-as$(QUOTE) -x c -mthumb $(GRID_DEFINES) -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 $(DIR_INCLUDES) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
@@ -638,7 +640,7 @@ $(DIR_INCLUDES) \
 %.o: %.S
 	@echo Building file: $<
 	@echo ARM/GNU Preprocessing Assembler
-	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb $(GRID_DEFINES) -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 $(DIR_INCLUDES) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
@@ -663,3 +665,11 @@ clean:
         $(OUTPUT_FILE_NAME).srec
 debug:
 	arm-none-eabi-gdb -iex "target extended-remote localhost:3333" AtmelStart.elf
+nightly:
+	python3 ./../buildscripts/macro2json.py ./../grid/grid_protocol.h ./../../../grid-protocol/grid_protocol_nightly.json
+	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_nightly.uf2 ./AtmelStart.bin
+	cp ./../../binary/grid_nightly.uf2 /media/${shell whoami}/GRID
+release:
+	python3 ./../buildscripts/macro2json.py ./../grid/grid_protocol.h ./../../../grid-protocol/grid_protocol_release_test.json
+	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_release_test.uf2 ./AtmelStart.bin
+

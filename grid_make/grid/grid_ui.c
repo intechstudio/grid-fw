@@ -581,7 +581,7 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 	ui->page_activepage = page;
 	// Call the page_change callback
 
-	printf("LOAD PAGE: %d\r\n", page);
+	//printf("LOAD PAGE: %d\r\n", page);
 
 	for (uint8_t i = 0; i < grid_ui_state.element_list_length; i++)
 	{	
@@ -592,14 +592,14 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 
 		uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
 
-		if (i==0) printf("TB LEN: %d\r\n", template_buffer_length);
+		//if (i==0) printf("TB LEN: %d\r\n", template_buffer_length);
 		while (template_buffer_length < page+1){
 
 			grid_ui_template_buffer_create(ele);
 
 			template_buffer_length = grid_ui_template_buffer_list_length(ele);
 
-			if (i==0) printf("CREATE NEW, LEN: %d\r\n", template_buffer_length);
+			//if (i==0) printf("CREATE NEW, LEN: %d\r\n", template_buffer_length);
 		}
 
 
@@ -636,7 +636,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 
 	if (strlen(action_string) == 0){
 
-		printf("NULLSTRING el:%d, elv:%d\r\n", ele->index, eve->type);
+		//printf("NULLSTRING el:%d, elv:%d\r\n", ele->index, eve->type);
 		return;
 
 	}
@@ -976,7 +976,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 				if (strlen(grid_lua_state.stde)){
 
 					
-					printf(grid_lua_state.stde);
+					//printf(grid_lua_state.stde);
 
 					uint8_t errorbuffer[100] = {0};
 

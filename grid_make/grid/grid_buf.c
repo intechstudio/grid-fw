@@ -1499,7 +1499,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 						// APPLY THE 2D ROTATION MATRIX
 						
-						printf("Protrot %d \r\n", portrot);
+						//printf("Protrot %d \r\n", portrot);
 
 						if (portrot == 0){ // 0 deg
 
