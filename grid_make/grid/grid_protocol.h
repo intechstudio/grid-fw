@@ -749,7 +749,7 @@ enum grid_ui_event_t
 
 // new dynamic midi based on x y and activepage
 #define GRID_ACTIONSTRING_AC "<?lua --[[@l]] local num,val,ch,cc=this.ind(),this.pva(),gmy()*4+gpc(),32+gmx()*16+this.ind() --[[@gms]]gms(0, 176, cc, val) --[[@glp]]glp(num, 1, val) ?>"
-#define GRID_ACTIONSTRING_BC "<?lua --[[@l]] local num,val,ch,note=this.ind(),this.bva(),gmy()*4+gpc(),32+gmx()*16+this.ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val)?>"
+#define GRID_ACTIONSTRING_BC "<?lua --[[@l]] local num,val,ch,note=this.ind(),this.bva(),gmy()*4+gpc(),32+gmx()*16+this.ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
 #define GRID_ACTIONSTRING_EC "<?lua --[[@l]] local num,val,ch,cc=this.ind(),this.eva(),gmy()*4+gpc(),32+gmx()*16+this.ind() --[[@gms]]gms(0, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
 
 
