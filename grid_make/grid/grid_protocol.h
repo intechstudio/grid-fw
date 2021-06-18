@@ -534,6 +534,7 @@ stored config date
 	\
     end"
 
+#define GRID_LUA_E_LIST_deinit "init_encoder = nil"
 
 // ========================= POTMETER =========================== //
 
@@ -599,6 +600,7 @@ stored config date
 	e."GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (a) print('undefined action') end\
     end"
 
+#define GRID_LUA_P_LIST_deinit "init_potmeter = nil"
 
 // ========================= BUTTON =========================== //
 
@@ -664,6 +666,7 @@ stored config date
 	e."GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (a) print('undefined action') end\
     end"
 
+#define GRID_LUA_B_LIST_deinit "init_button = nil"
 
 #define GRID_LUA_KW_ELEMENT_short "ele"
 #define GRID_LUA_KW_THIS_short "this"

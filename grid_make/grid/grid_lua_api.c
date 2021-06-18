@@ -1050,6 +1050,7 @@ uint8_t grid_lua_ui_init_po16(struct grid_lua_model* mod){
     // initialize 16 potmeters
     grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_potmeter(ele[i], i) end");
 
+    grid_lua_dostring(mod, GRID_LUA_P_LIST_deinit);
     printf("LUA UI INIT\r\n");
 }
 
@@ -1066,6 +1067,7 @@ uint8_t grid_lua_ui_init_bu16(struct grid_lua_model* mod){
     // initialize 16 buttons
     grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_button(ele[i], i) end");
 
+    grid_lua_dostring(mod, GRID_LUA_B_LIST_deinit);
     printf("LUA UI INIT\r\n");
 }
 
@@ -1084,6 +1086,8 @@ uint8_t grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
     grid_lua_dostring(mod, "for i=0, 7  do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_potmeter(ele[i], i) end");
     grid_lua_dostring(mod, "for i=8, 11 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_button(ele[i], i) end");
 
+    grid_lua_dostring(mod, GRID_LUA_P_LIST_deinit);
+    grid_lua_dostring(mod, GRID_LUA_B_LIST_deinit);
     printf("LUA UI INIT\r\n");
 
 }
@@ -1104,7 +1108,7 @@ uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod){
     // initialize 16 encoders
     grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_encoder(ele[i], i) end");
 
-
+    grid_lua_dostring(mod, GRID_LUA_E_LIST_deinit);
     printf("LUA UI INIT\r\n");
 
 }
