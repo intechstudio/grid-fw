@@ -392,8 +392,12 @@
 #define GRID_LUA_FNC_G_PAGE_NEXT_fnptr 			l_grid_page_next
 
 #define GRID_LUA_FNC_G_PAGE_PREV_short 			"gpp"
-#define GRID_LUA_FNC_G_PAGE_PREV_human 			"page_prev"
+#define GRID_LUA_FNC_G_PAGE_PREV_human 			"page_previous"
 #define GRID_LUA_FNC_G_PAGE_PREV_fnptr 			l_grid_page_prev
+
+#define GRID_LUA_FNC_G_PAGE_CURR_short 			"gpc"
+#define GRID_LUA_FNC_G_PAGE_CURR_human 			"page_current"
+#define GRID_LUA_FNC_G_PAGE_CURR_fnptr 			l_grid_page_curr
 
 #define GRID_LUA_FNC_G_PAGE_LOAD_short 			"gpl"
 #define GRID_LUA_FNC_G_PAGE_LOAD_human 			"page_load"
@@ -738,9 +742,16 @@ enum grid_ui_event_t
 
 #define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@l]]local num,bval,eval,red,gre,blu = this.ind(),this.bva(),this.eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) ?>"
 
+// old static midi
 #define GRID_ACTIONSTRING_AC "<?lua --[[@l]]local num, val = this.ind(), this.pva() --[[@gms]]gms(0, 176, num, val) --[[@glp]]glp(num, 1, val) ?>"
 #define GRID_ACTIONSTRING_BC "<?lua --[[@l]]local num, val = this.ind(), this.bva() --[[@gms]]gms(0, 144, num, val) --[[@glp]]glp(num, 1, val) ?>"
 #define GRID_ACTIONSTRING_EC "<?lua --[[@l]]local num, val = this.ind(), this.eva() --[[@gms]]gms(0, 176, num, val) --[[@glp]]glp(num, 2, val) ?>"
+
+// new dynamic midi based on x y and activepage
+#define GRID_ACTIONSTRING_AC "<?lua --[[@l]] local num,val,ch,cc=this.ind(),this.pva(),gmy()*4+gpc(),32+gmx()*16+this.ind() --[[@gms]]gms(0, 176, cc, val) --[[@glp]]glp(num, 1, val) ?>"
+#define GRID_ACTIONSTRING_BC "<?lua --[[@l]] local num,val,ch,note=this.ind(),this.bva(),gmy()*4+gpc(),32+gmx()*16+this.ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val)?>"
+#define GRID_ACTIONSTRING_EC "<?lua --[[@l]] local num,val,ch,cc=this.ind(),this.eva(),gmy()*4+gpc(),32+gmx()*16+this.ind() --[[@gms]]gms(0, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+
 
 #define GRID_ACTIONSTRING_PAGE_INIT		 "<?lua --[[@cb]]print('page init') ?>"
 #define GRID_ACTIONSTRING_MAPMODE_CHANGE "<?lua --[[@cb]]gpl(gpn()) ?>"

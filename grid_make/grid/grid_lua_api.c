@@ -845,6 +845,21 @@ static int l_grid_page_prev(lua_State* L) {
     return 1;
 }
 
+static int l_grid_page_curr(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=0){
+        // error
+        strcat(grid_lua_state.stde, "#GTV.invalidParams");
+        return 0;
+    }
+           
+    uint8_t page = (grid_ui_state.page_activepage);
+    lua_pushinteger(L, page);
+    
+    return 1;
+}
 static int l_grid_page_load(lua_State* L) {
 
     int nargs = lua_gettop(L);
@@ -923,6 +938,7 @@ static const struct luaL_Reg printlib [] = {
 
     {GRID_LUA_FNC_G_PAGE_NEXT_short,    GRID_LUA_FNC_G_PAGE_NEXT_fnptr},
     {GRID_LUA_FNC_G_PAGE_PREV_short,    GRID_LUA_FNC_G_PAGE_PREV_fnptr},
+    {GRID_LUA_FNC_G_PAGE_CURR_short,    GRID_LUA_FNC_G_PAGE_CURR_fnptr},
     {GRID_LUA_FNC_G_PAGE_LOAD_short,    GRID_LUA_FNC_G_PAGE_LOAD_fnptr},
 
     {GRID_LUA_FNC_G_HWCFG_short,    GRID_LUA_FNC_G_HWCFG_fnptr},
