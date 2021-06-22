@@ -18,6 +18,8 @@
  
 #include "grid_d51.h"
  
+#include "grid_protocol.h"
+
 #include "grid_module_bu16.h"
 #include "grid_module_po16.h"
 #include "grid_module_pbf4.h"
@@ -39,7 +41,6 @@
 #include "grid_buf.h"
 #include "grid_led.h"
 
-#include "grid_protocol.h"
 #include "grid_sys.h"
 #include "grid_ui.h"
 

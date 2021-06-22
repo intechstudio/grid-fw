@@ -11,11 +11,14 @@
 
 
 void grid_port_reset_receiver(struct grid_port* por){
-	
+
+	if (por == &GRID_PORT_E){
+
+		printf("*");
+	}
+
 	usart_async_disable(por->usart);
 	
-	por->rx_double_buffer_seek_start_index = 0;
-	por->rx_double_buffer_read_start_index = 0;
 	por->partner_status = 0;
 	
 	
@@ -31,6 +34,11 @@ void grid_port_reset_receiver(struct grid_port* por){
 	por->rx_double_buffer_timeout = 0;
 	grid_sys_port_reset_dma(por);
 	
+
+
+	por->rx_double_buffer_seek_start_index = 0;
+	por->rx_double_buffer_read_start_index = 0;
+
 	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
 		por->rx_double_buffer[i] = 0;
 	}
@@ -40,6 +48,33 @@ void grid_port_reset_receiver(struct grid_port* por){
 	}
 	
 	usart_async_enable(por->usart);
+	
+}
+
+void grid_port_reset_receiver2(struct grid_port* por){
+
+
+	
+	por->partner_status = 0;
+
+	
+	por->rx_double_buffer_timeout = 0;
+	
+
+	por->rx_double_buffer_seek_start_index = 0;
+	por->rx_double_buffer_read_start_index = 0;
+
+	grid_sys_port_reset_dma(por);
+
+	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
+		por->rx_double_buffer[i] = 0;
+	}
+	
+	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
+		por->tx_double_buffer[i] = 0;
+	}
+
+	
 	
 }
 
@@ -123,12 +158,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 					
 			if (message[1] == GRID_CONST_BRC){ // Broadcast message
 				
-				if (por->partner_status == 0 && por->type != 1){
-					printf("$");
-					grid_port_reset_receiver(por);
-					return;
-				}
-
 				uint8_t error=0;
 				
 				// Read the received id age values
@@ -314,10 +343,32 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 					// RESEND PREVIOUS
 				}
 				else if (message[2] == GRID_CONST_BELL){
+
+					if (por->partner_status == 0){
+
+						// CONNECT
+						por->partner_fi = (message[3] - por->direction + 6)%4;
+						por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-10], 2, error_flag);
+						por->partner_status = 1;
+						
+						por->rx_double_buffer_timeout = 0;
+						
+						grid_debug_printf("Connect");			
+						grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
+						grid_led_set_alert_frequency(&grid_led_state, -2);	
+						grid_led_set_alert_phase(&grid_led_state, 100);	
+
+
+					}
+					else{
+
+						por->rx_double_buffer_timeout = 0;
+					}
+				}
+				else if (message[2] == GRID_CONST_BELL + 1){ // OLD IMPLEMENTATION
 					
 					
 					// Handshake logic
-				
 					
 					uint8_t local_token_received = grid_sys_read_hex_string_value(&message[8], 2, error_flag);
 					uint8_t partner_token_received = grid_sys_read_hex_string_value(&message[6], 2, error_flag);
@@ -326,6 +377,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 												
 						if (por->ping_local_token == 255){ // I have no clue
 							
+							printf("BELL 0\r\n");
 							// Generate new local
 							
 							por->ping_local_token  = grid_sys_rtc_get_time(&grid_sys_state)%128;
@@ -339,6 +391,8 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 						}
 						else if (partner_token_received == 255){
 							
+
+							printf("BELL 1\r\n");
 							// Remote is clueless
 							// No chance to connect now
 							
@@ -350,7 +404,8 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							//NEW
 							grid_sys_write_hex_string_value(&por->ping_packet[8], 2, partner_token_received);
 							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
-								
+							
+							printf("BELL 2\r\n");	
 
 							
 							// Store remote
@@ -358,6 +413,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 						}
 						if (por->ping_local_token != local_token_received){
 							
+							printf("BELL 3\r\n");
 							// Remote is clueless
 							// No chance to connect now
 							
@@ -466,7 +522,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 }
 
 void grid_port_receive_task(struct grid_port* por){
-	
+
 	//parity error
 	
 	if (por->usart_error_flag == 1){
@@ -487,7 +543,7 @@ void grid_port_receive_task(struct grid_port* por){
 
 	if	(por->rx_double_buffer_status == 0){
 		
-		if (por->usart!=NULL){ // His is GRID usart port
+		if (por->usart!=NULL){ // This is GRID usart port
 
 			if (por->rx_double_buffer_timeout > 1000){
 			
@@ -495,7 +551,9 @@ void grid_port_receive_task(struct grid_port* por){
 				
 					grid_debug_printf("Timeout Disconnect 1");
 				
-					grid_port_reset_receiver(por);			
+						//grid_port_reset_receiver(por);	
+						grid_port_reset_receiver2(por);	
+								
 
 						grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
 						grid_led_set_alert_frequency(&grid_led_state, -2);	
@@ -505,11 +563,13 @@ void grid_port_receive_task(struct grid_port* por){
 				
 					if (por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0){
 						// Ready to receive
+						
+						//grid_port_reset_receiver(por);
 					}
 					else{
 					
 						grid_debug_printf("Timeout Disconnect 2");
-						grid_port_reset_receiver(por);
+						//grid_port_reset_receiver(por);
 					}
 				
 				}
@@ -540,7 +600,7 @@ void grid_port_receive_task(struct grid_port* por){
 			// Buffer overrun error 1, 2, 3
 			if (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1)
 			{
-			
+
 				grid_debug_printf("Buffer Overrun 1");
 				grid_port_reset_receiver(por);					
 
@@ -608,7 +668,7 @@ void grid_port_receive_task(struct grid_port* por){
 		length = GRID_DOUBLE_BUFFER_RX_SIZE + por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
 	}
 	
-	
+
 	grid_port_receive_decode(por, por->rx_double_buffer_read_start_index, length);
 	
 

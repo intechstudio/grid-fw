@@ -5,7 +5,7 @@
 
 #define GRID_BUFFER_SIZE	1000 //1000
 
-#define GRID_DOUBLE_BUFFER_TX_SIZE	4000 //600
+#define GRID_DOUBLE_BUFFER_TX_SIZE	GRID_PARAMETER_PACKET_maxlength
 #define GRID_DOUBLE_BUFFER_RX_SIZE	4000 //600
 
 
@@ -131,5 +131,10 @@ uint8_t grid_buffer_write_cancel(struct grid_buffer* buf);
 void grid_port_init_all(void);
 
 void grid_port_init(volatile struct grid_port* por, struct usart_async_descriptor*  usart, uint8_t type, uint8_t dir, uint8_t dma);
+
+uint8_t grid_port_process_outbound_usart(struct grid_port* por);
+uint8_t grid_port_process_outbound_usb(struct grid_port* por);
+uint8_t grid_port_process_outbound_ui(struct grid_port* por);
+
 
 #endif

@@ -2,16 +2,16 @@ format_version: '2'
 name: My Project
 versions:
   api: '1.0'
-  backend: 1.8.491
-  commit: 605bd5a7663644fb84783aa2b00942b79b0d8955
+  backend: 1.8.580
+  commit: f3d8d96e294de8dee688333bbbe8d8458a4f6b4c
   content: unknown
   content_pack_name: unknown
   format: '2'
-  frontend: 1.8.491
-  packs_version_avr8: 1.0.1446
+  frontend: 1.8.580
+  packs_version_avr8: 1.0.1463
   packs_version_qtouch: unknown
   packs_version_sam: 1.0.1726
-  version_backend: 1.8.491
+  version_backend: 1.8.580
   version_frontend: ''
 board:
   identifier: CustomBoard
@@ -1806,11 +1806,11 @@ drivers:
       usart_arch_sampa: 7-8-9 (3-4-5 8-bit over-sampling)
       usart_arch_sampr: 16x arithmetic
       usart_arch_sfde: false
-      usart_baud_rate: 1000000
+      usart_baud_rate: 2000000
       usart_character_size: 8 bits
-      usart_parity: No parity
+      usart_parity: Odd parity
       usart_rx_enable: true
-      usart_stop_bit: One stop bit
+      usart_stop_bit: Two stop bits
       usart_tx_enable: true
     optional_signals: []
     variant:
@@ -1855,11 +1855,11 @@ drivers:
       usart_arch_sampa: 7-8-9 (3-4-5 8-bit over-sampling)
       usart_arch_sampr: 16x arithmetic
       usart_arch_sfde: false
-      usart_baud_rate: 1000000
+      usart_baud_rate: 2000000
       usart_character_size: 8 bits
-      usart_parity: No parity
+      usart_parity: Odd parity
       usart_rx_enable: true
-      usart_stop_bit: One stop bit
+      usart_stop_bit: Two stop bits
       usart_tx_enable: true
     optional_signals: []
     variant:
@@ -1997,11 +1997,11 @@ drivers:
       usart_arch_sampa: 7-8-9 (3-4-5 8-bit over-sampling)
       usart_arch_sampr: 16x arithmetic
       usart_arch_sfde: false
-      usart_baud_rate: 1000000
+      usart_baud_rate: 2000000
       usart_character_size: 8 bits
-      usart_parity: No parity
+      usart_parity: Odd parity
       usart_rx_enable: true
-      usart_stop_bit: One stop bit
+      usart_stop_bit: Two stop bits
       usart_tx_enable: true
     optional_signals: []
     variant:
@@ -2086,11 +2086,11 @@ drivers:
       usart_arch_sampa: 7-8-9 (3-4-5 8-bit over-sampling)
       usart_arch_sampr: 16x arithmetic
       usart_arch_sfde: false
-      usart_baud_rate: 1000000
+      usart_baud_rate: 2000000
       usart_character_size: 8 bits
-      usart_parity: No parity
+      usart_parity: Odd parity
       usart_rx_enable: true
-      usart_stop_bit: One stop bit
+      usart_stop_bit: Two stop bits
       usart_tx_enable: true
     optional_signals: []
     variant:
@@ -2609,3 +2609,4 @@ pads:
     user_label: PB31
     configuration: null
 toolchain_options: []
+static_files: []

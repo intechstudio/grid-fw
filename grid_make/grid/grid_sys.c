@@ -257,6 +257,7 @@ static void err_cb_USART_GRID_S(const struct usart_async_descriptor *const descr
 
 static void err_cb_USART_GRID_W(const struct usart_async_descriptor *const descr)
 {
+	
 	err_cb_USART_GRID(&GRID_PORT_W);
 }
 
@@ -264,7 +265,10 @@ static void err_cb_USART_GRID_W(const struct usart_async_descriptor *const descr
 void err_cb_USART_GRID(struct grid_port* const por){
 
 	por->usart_error_flag = 1;	
-	//printf("@");
+	//uint8_t character = (((Sercom *)((*por->usart).device.hw))->USART.DATA.reg);
+
+	//printf("@%d\r\n", character);
+
 	//usart_async_disable(por->usart);
 }
 
@@ -300,22 +304,21 @@ void grid_sys_uart_init(){
 	usart_async_register_callback(&USART_WEST,  USART_ASYNC_TXC_CB, tx_cb_USART_GRID_W);
 			
 	// Set parity for grid uart communication
-	usart_async_set_parity(&USART_NORTH, USART_PARITY_ODD);
-	usart_async_set_parity(&USART_EAST, USART_PARITY_ODD);	
-	usart_async_set_parity(&USART_SOUTH, USART_PARITY_ODD);
-	usart_async_set_parity(&USART_WEST, USART_PARITY_ODD);
+	// usart_async_set_parity(&USART_NORTH, USART_PARITY_ODD);
+	// usart_async_set_parity(&USART_EAST, USART_PARITY_ODD);	
+	// usart_async_set_parity(&USART_SOUTH, USART_PARITY_ODD);
+	// usart_async_set_parity(&USART_WEST, USART_PARITY_ODD);
+
+	// _usart_async_set_stop_bits(&USART_NORTH, USART_STOP_BITS_ONE);
+	// _usart_async_set_stop_bits(&USART_EAST, USART_STOP_BITS_TWO);	
+	// _usart_async_set_stop_bits(&USART_SOUTH, USART_STOP_BITS_TWO);
+	// _usart_async_set_stop_bits(&USART_WEST, USART_STOP_BITS_TWO);
 	
 	// Set callback function for parity error
-	usart_async_register_callback(&USART_NORTH, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_N);
-	usart_async_register_callback(&USART_EAST, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_E);
-	usart_async_register_callback(&USART_SOUTH, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_S);
-	usart_async_register_callback(&USART_WEST, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_W);
-	
-	
-	
-	
-	
-	
+	// usart_async_register_callback(&USART_NORTH, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_N);
+	// usart_async_register_callback(&USART_EAST, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_E);
+	// usart_async_register_callback(&USART_SOUTH, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_S);
+	// usart_async_register_callback(&USART_WEST, USART_ASYNC_ERROR_CB, err_cb_USART_GRID_W);
 	
 // 	usart_async_register_callback(&USART_NORTH, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_N);
 // 	usart_async_register_callback(&USART_EAST,  USART_ASYNC_RXC_CB, rx_cb_USART_GRID_E);
@@ -327,15 +330,13 @@ void grid_sys_uart_init(){
 	usart_async_get_io_descriptor(&USART_EAST,  &grid_sys_east_io);
 	usart_async_get_io_descriptor(&USART_SOUTH, &grid_sys_south_io);
 	usart_async_get_io_descriptor(&USART_WEST,  &grid_sys_west_io);
-	
-	
+
+
 	usart_async_enable(&USART_NORTH);
 	usart_async_enable(&USART_EAST);
 	usart_async_enable(&USART_SOUTH);
 	usart_async_enable(&USART_WEST);
-
-
-
+	
 
 }
 

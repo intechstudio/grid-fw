@@ -601,7 +601,6 @@ void RTC_Scheduler_report_cb(const struct timer_task *const timer_task)
 void init_timer(void)
 {
 	
-	//RTC_Scheduler_ping.interval = RTC1SEC/20; //50ms
 	RTC_Scheduler_ping.interval = RTC1MS*GRID_PARAMETER_PING_interval;
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
 	RTC_Scheduler_ping.mode     = TIMER_TASK_REPEAT;
@@ -1007,6 +1006,11 @@ int main(void)
 		}
 
 
+		if (loopcounter%200 == 0){
+
+			printf("R: %4d S: %4d (%4d) (%d)\r\n", GRID_PORT_E.rx_double_buffer_read_start_index, GRID_PORT_E.rx_double_buffer_seek_start_index, GRID_PORT_E.rx_double_buffer_timeout, GRID_PORT_E.partner_status);
+
+		}
 
 		if (reportflag && 0){
 

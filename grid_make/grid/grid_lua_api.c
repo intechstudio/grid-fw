@@ -1123,10 +1123,10 @@ uint8_t grid_lua_stop_vm(struct grid_lua_model* mod){
 
 void grid_lua_gc_try_collect(struct grid_lua_model* mod){
 
-    if (lua_gc(mod->L, LUA_GCCOUNT)>60){ //60kb
+    if (lua_gc(mod->L, LUA_GCCOUNT)>70){ //60kb
 
         lua_gc(mod->L, LUA_GCCOLLECT);
-        grid_lua_debug_memory_stats(mod, "gc 60kb");
+        grid_lua_debug_memory_stats(mod, "gc 70kb");
         mod->dostring_count = 0;
 
     }

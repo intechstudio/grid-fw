@@ -176,11 +176,11 @@ grid/grid_default.d grid/grid_default.o: ../grid/grid_default.c \
  /usr/share/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/machine/stdlib.h \
  /usr/share/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/include/alloca.h \
  ../grid/grid_d51.h ../hal/include/hpl_user_area.h \
- ../grid/grid_module_bu16.h ../grid/grid_module_po16.h \
- ../grid/grid_module_pbf4.h ../grid/grid_module_en16.h \
- ../atmel_start_pins.h ../grid/grid_unittest.h ../grid/grid_debug.h \
- ../grid/grid_usb.h ../grid/grid_expr.h ../grid/grid_ain.h \
- ../grid/grid_module.h ../grid/grid_led.h ../grid/grid_protocol.h \
+ ../grid/grid_protocol.h ../grid/grid_module_bu16.h \
+ ../grid/grid_module_po16.h ../grid/grid_module_pbf4.h \
+ ../grid/grid_module_en16.h ../atmel_start_pins.h ../grid/grid_unittest.h \
+ ../grid/grid_debug.h ../grid/grid_usb.h ../grid/grid_expr.h \
+ ../grid/grid_ain.h ../grid/grid_module.h ../grid/grid_led.h \
  ../grid/grid_sys.h ../grid/grid_ui.h ../grid/grid_nvm.h \
  ../grid/grid_msg.h ../grid/grid_lua_api.h \
  ../thirdparty/Lua/lua-5.4.3/src/lua.h \
@@ -775,6 +775,8 @@ grid/grid_default.d grid/grid_default.o: ../grid/grid_default.c \
 
 ../hal/include/hpl_user_area.h:
 
+../grid/grid_protocol.h:
+
 ../grid/grid_module_bu16.h:
 
 ../grid/grid_module_po16.h:
@@ -798,8 +800,6 @@ grid/grid_default.d grid/grid_default.o: ../grid/grid_default.c \
 ../grid/grid_module.h:
 
 ../grid/grid_led.h:
-
-../grid/grid_protocol.h:
 
 ../grid/grid_sys.h:
 

@@ -33,7 +33,7 @@
 // <i> Parity bit mode for USART frame
 // <id> usart_parity
 #ifndef CONF_SERCOM_0_USART_PARITY
-#define CONF_SERCOM_0_USART_PARITY 0x0
+#define CONF_SERCOM_0_USART_PARITY 0x2
 #endif
 
 // <o> Character Size
@@ -54,14 +54,14 @@
 // <i> Number of stop bits in USART frame
 // <id> usart_stop_bit
 #ifndef CONF_SERCOM_0_USART_SBMODE
-#define CONF_SERCOM_0_USART_SBMODE 0
+#define CONF_SERCOM_0_USART_SBMODE 1
 #endif
 
 // <o> Baud rate <1-6250000>
 // <i> USART baud rate setting
 // <id> usart_baud_rate
 #ifndef CONF_SERCOM_0_USART_BAUD
-#define CONF_SERCOM_0_USART_BAUD 1000000
+#define CONF_SERCOM_0_USART_BAUD 2000000
 #endif
 
 // </h>
@@ -302,7 +302,7 @@
 // <i> Parity bit mode for USART frame
 // <id> usart_parity
 #ifndef CONF_SERCOM_1_USART_PARITY
-#define CONF_SERCOM_1_USART_PARITY 0x0
+#define CONF_SERCOM_1_USART_PARITY 0x2
 #endif
 
 // <o> Character Size
@@ -323,14 +323,14 @@
 // <i> Number of stop bits in USART frame
 // <id> usart_stop_bit
 #ifndef CONF_SERCOM_1_USART_SBMODE
-#define CONF_SERCOM_1_USART_SBMODE 0
+#define CONF_SERCOM_1_USART_SBMODE 1
 #endif
 
 // <o> Baud rate <1-6250000>
 // <i> USART baud rate setting
 // <id> usart_baud_rate
 #ifndef CONF_SERCOM_1_USART_BAUD
-#define CONF_SERCOM_1_USART_BAUD 1000000
+#define CONF_SERCOM_1_USART_BAUD 2000000
 #endif
 
 // </h>
@@ -999,7 +999,7 @@
 // <i> Parity bit mode for USART frame
 // <id> usart_parity
 #ifndef CONF_SERCOM_4_USART_PARITY
-#define CONF_SERCOM_4_USART_PARITY 0x0
+#define CONF_SERCOM_4_USART_PARITY 0x2
 #endif
 
 // <o> Character Size
@@ -1020,14 +1020,14 @@
 // <i> Number of stop bits in USART frame
 // <id> usart_stop_bit
 #ifndef CONF_SERCOM_4_USART_SBMODE
-#define CONF_SERCOM_4_USART_SBMODE 0
+#define CONF_SERCOM_4_USART_SBMODE 1
 #endif
 
 // <o> Baud rate <1-6250000>
 // <i> USART baud rate setting
 // <id> usart_baud_rate
 #ifndef CONF_SERCOM_4_USART_BAUD
-#define CONF_SERCOM_4_USART_BAUD 1000000
+#define CONF_SERCOM_4_USART_BAUD 2000000
 #endif
 
 // </h>
@@ -1403,7 +1403,7 @@
 // <i> Parity bit mode for USART frame
 // <id> usart_parity
 #ifndef CONF_SERCOM_6_USART_PARITY
-#define CONF_SERCOM_6_USART_PARITY 0x0
+#define CONF_SERCOM_6_USART_PARITY 0x2
 #endif
 
 // <o> Character Size
@@ -1424,14 +1424,14 @@
 // <i> Number of stop bits in USART frame
 // <id> usart_stop_bit
 #ifndef CONF_SERCOM_6_USART_SBMODE
-#define CONF_SERCOM_6_USART_SBMODE 0
+#define CONF_SERCOM_6_USART_SBMODE 1
 #endif
 
 // <o> Baud rate <1-6250000>
 // <i> USART baud rate setting
 // <id> usart_baud_rate
 #ifndef CONF_SERCOM_6_USART_BAUD
-#define CONF_SERCOM_6_USART_BAUD 1000000
+#define CONF_SERCOM_6_USART_BAUD 2000000
 #endif
 
 // </h>
