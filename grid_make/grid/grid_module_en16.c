@@ -137,8 +137,22 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 127;
 					}
 					else{
-						// IMPLEMENT STEP TOGGLE HERE
-						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 127;
+						// IMPLEMENT STEP TOGGLE HERE					// Toggle
+
+						int32_t min = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
+						int32_t max = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
+						int32_t steps = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index];
+						int32_t last = template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index];
+
+						int32_t next = last + (max - min)/steps;
+
+						if (next > max){
+
+							//overflow
+							next = min;
+						}
+
+						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = next;
 					}
 						
 					struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_BC);
@@ -156,7 +170,7 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 					}
 					else{
 						// IMPLEMENT STEP TOGGLE HERE
-						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 0;
+
 					}
 								
 					struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[i], GRID_UI_EVENT_BC);
