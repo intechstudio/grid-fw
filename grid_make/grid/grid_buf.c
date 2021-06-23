@@ -551,8 +551,8 @@ void grid_port_receive_task(struct grid_port* por){
 				
 					grid_debug_printf("Timeout Disconnect 1");
 				
-						//grid_port_reset_receiver(por);	
 						grid_port_reset_receiver2(por);	
+						//grid_port_reset_receiver2(por);	
 								
 
 						grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
@@ -564,12 +564,12 @@ void grid_port_receive_task(struct grid_port* por){
 					if (por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0){
 						// Ready to receive
 						
-						//grid_port_reset_receiver(por);
+						grid_port_reset_receiver2(por);
 					}
 					else{
 					
 						grid_debug_printf("Timeout Disconnect 2");
-						//grid_port_reset_receiver(por);
+						grid_port_reset_receiver2(por);
 					}
 				
 				}
@@ -597,45 +597,23 @@ void grid_port_receive_task(struct grid_port* por){
 			}
 				
 				
+			uint8_t overrun_condition_1 = (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1);
+			uint8_t overrun_condition_2 = (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0);
+			uint8_t overrun_condition_3 = (por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE -1)%GRID_DOUBLE_BUFFER_RX_SIZE] !=0);
+			
 			// Buffer overrun error 1, 2, 3
-			if (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1)
-			{
+			if (overrun_condition_1 || overrun_condition_2 || overrun_condition_3){
 
-				grid_debug_printf("Buffer Overrun 1");
-				grid_port_reset_receiver(por);					
+				grid_port_reset_receiver(por);	
+				
+				printf("Overrun\r\n"); // never use grid message to indicate overrun directly				
 
 				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
 				grid_led_set_alert_frequency(&grid_led_state, -2);	
 				grid_led_set_alert_phase(&grid_led_state, 100);	
 				return;
 			}
-			// Buffer overrun error 1, 2, 3
-			if (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0)
-			{
 				
-				grid_debug_printf("Buffer Overrun 2");
-				grid_port_reset_receiver(por);
-				
-				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
-				grid_led_set_alert_frequency(&grid_led_state, -2);	
-				grid_led_set_alert_phase(&grid_led_state, 100);	
-
-				return;
-			}
-			// Buffer overrun error 1, 2, 3
-			if (por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE -1)%GRID_DOUBLE_BUFFER_RX_SIZE] !=0)
-			{
-				
-				grid_debug_printf("Buffer Overrun 3");
-				grid_port_reset_receiver(por);
-				
-				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
-				grid_led_set_alert_frequency(&grid_led_state, -2);	
-				grid_led_set_alert_phase(&grid_led_state, 100);	
-
-				return;
-			}
-										
 				
 			if (por->rx_double_buffer_seek_start_index < GRID_DOUBLE_BUFFER_RX_SIZE-1){
 					
@@ -1096,7 +1074,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 			
 				if (packet_size > grid_buffer_write_size(&port_array[i]->tx_buffer)){
 					
-					grid_debug_printf("Buffer full");
+					printf("Buffer full\r\n");
 					grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_BLUE, 255);
 					
 					// sorry one of the buffers cannot store the packet, we will try later
