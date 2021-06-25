@@ -20,7 +20,6 @@ enum grid_ui_status {
 };
 
 
-#define GRID_UI_ACTION_STRING_maxlength		300
 
 struct grid_ui_event
 {
@@ -35,7 +34,7 @@ struct grid_ui_event
 	enum grid_ui_event_t type;
 	
 
-	uint8_t	action_string[GRID_UI_ACTION_STRING_maxlength];
+	uint8_t	action_string[GRID_PARAMETER_ACTIONSTRING_maxlength];
 
 	uint8_t cfg_changed_flag;
 	uint8_t cfg_default_flag;

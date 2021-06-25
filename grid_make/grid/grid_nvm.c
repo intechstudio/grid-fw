@@ -440,7 +440,7 @@ uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
 uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, uint8_t element_number, uint8_t event_type, uint8_t* actionstring){
 
 
-	uint8_t buf[GRID_UI_ACTION_STRING_maxlength+100] = {0};
+	uint8_t buf[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
 
 	uint16_t len = 0;
 
@@ -754,7 +754,7 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 				//printf("Page Load: FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
 
 				if (entry->config_string_length){
-					uint8_t temp[GRID_UI_ACTION_STRING_maxlength + 100] = {0};
+					uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
 					grid_nvm_toc_generate_actionstring(nvm, entry, temp);
 					grid_ui_event_register_actionstring(eve, temp);
@@ -771,7 +771,7 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 				//printf("Page Load: NOT FOUND, Set default!\r\n");
 
 
-				uint8_t temp[GRID_UI_ACTION_STRING_maxlength + 100] = {0};
+				uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
 
 

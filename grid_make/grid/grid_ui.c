@@ -463,11 +463,11 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui
 	eve->status = GRID_UI_STATUS_READY;
 
 	// Initializing Action String
-	for (uint32_t i=0; i<GRID_UI_ACTION_STRING_maxlength; i++){
+	for (uint32_t i=0; i<GRID_PARAMETER_ACTIONSTRING_maxlength; i++){
 		eve->action_string[i] = 0;
 	}		
 
-	uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength] = {0};
+	uint8_t actionstring[GRID_PARAMETER_ACTIONSTRING_maxlength] = {0};
 
 
 	grid_ui_event_generate_actionstring(eve, actionstring);	
@@ -548,7 +548,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 			}
 			else{
 				//printf("NOT FOUND, Send default!\r\n");
-				uint8_t actionstring[GRID_UI_ACTION_STRING_maxlength] = {0};
+				uint8_t actionstring[GRID_PARAMETER_ACTIONSTRING_maxlength] = {0};
 				grid_ui_event_generate_actionstring(eve, actionstring);	
 				//grid_ui_event_register_actionstring(eve, actionstring);	
 
@@ -644,10 +644,10 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 
 	if (eve->type == GRID_UI_EVENT_EC){
 
-		uint8_t temp[GRID_UI_ACTION_STRING_maxlength+100] = {0};
+		uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
 		uint32_t len = strlen(action_string);
 		action_string[len-3] = '\0';
-		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
 		action_string[len-3] = ' ';
 
 		grid_lua_dostring(&grid_lua_state, temp);
@@ -656,10 +656,10 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 	}	
 	if (eve->type == GRID_UI_EVENT_AC){
 
-		uint8_t temp[GRID_UI_ACTION_STRING_maxlength+100] = {0};
+		uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
 		uint32_t len = strlen(action_string);
 		action_string[len-3] = '\0';
-		sprintf(temp, "ele[%d]."GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+		sprintf(temp, "ele[%d]."GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
 		action_string[len-3] = ' ';
 
 		grid_lua_dostring(&grid_lua_state, temp);
@@ -668,15 +668,15 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 	}
 	else if (eve->type == GRID_UI_EVENT_BC){
 
-		uint8_t temp[GRID_UI_ACTION_STRING_maxlength+100] = {0};
+		uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
 		uint32_t len = strlen(action_string);
 		action_string[len-3] = '\0';
 
 		if (ele->type == GRID_UI_ELEMENT_ENCODER){
-			sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+			sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
 		}
 		else if (ele->type == GRID_UI_ELEMENT_BUTTON){
-			sprintf(temp, "ele[%d]."GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (a) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+			sprintf(temp, "ele[%d]."GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
 		}
 		else{
 			printf("Unsupported Element\r\n");
@@ -689,9 +689,15 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		sprintf(eve->action_string, action_string);
 
 	}
-	else if (eve->type == GRID_UI_EVENT_INIT){
+	if (eve->type == GRID_UI_EVENT_INIT){
 
-		uint8_t temp[GRID_UI_ACTION_STRING_maxlength] = {0};
+		uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
+		uint32_t len = strlen(action_string);
+		action_string[len-3] = '\0';
+		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_INIT_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+		action_string[len-3] = ' ';
+
+		grid_lua_dostring(&grid_lua_state, temp);
 
 		sprintf(eve->action_string, action_string);
 	}
@@ -869,33 +875,32 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 
 
-	uint8_t temp[GRID_UI_ACTION_STRING_maxlength + 100] = {0};
+	uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
 	uint32_t i=0;
 
+	if (eve->parent->index == eve->parent->parent->element_list_length - 1){
+		// system events
+		strcpy(temp, eve->action_string);
+	}
+	else if (eve->type == GRID_UI_EVENT_EC){
 
-	if (eve->type == GRID_UI_EVENT_EC){
-
-		sprintf(temp, "<?lua ele[%d]."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short"() ?>", eve->parent->index);
+		sprintf(temp, "<?lua ele[%d]:"GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short"(self) ?>", eve->parent->index);
 
 	}	
 	else if (eve->type == GRID_UI_EVENT_AC){
 
-		sprintf(temp, "<?lua ele[%d]."GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short"() ?>", eve->parent->index);
+		sprintf(temp, "<?lua ele[%d]:"GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short"(self) ?>", eve->parent->index);
 
 	}
 	else if (eve->type == GRID_UI_EVENT_BC){
 
-		sprintf(temp, "<?lua ele[%d]."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short"() ?>", eve->parent->index);
+		sprintf(temp, "<?lua ele[%d]:"GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short"(self) ?>", eve->parent->index);
 
 	}
 	else if (eve->type == GRID_UI_EVENT_INIT){
 
-		uint32_t len = strlen(eve->action_string);	
-		eve->action_string[len-3] = '\0';	
-		sprintf(temp, "<?lua local this = ele[%d] %s ?>", eve->parent->index, &eve->action_string[6]);
-		eve->action_string[len-3] = ' ';
-
+		sprintf(temp, "<?lua ele[%d]:"GRID_LUA_FNC_E_ACTION_INIT_short"(self) ?>", eve->parent->index);
 	}
 	else{
 
@@ -922,16 +927,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 
 
-		if (0 == strncmp(&temp[i], "<?expr ", 7)){
-
-			//printf("<?expr \r\n");
-			code_start = i;
-			code_end = i;
-			code_type = 1; // 1=expr
-
-
-		}
-		else if (0 == strncmp(&temp[i], "<?lua ", 6)){
+		if (0 == strncmp(&temp[i], "<?lua ", 6)){
 
 			//printf("<?lua \r\n");
 			code_start = i;

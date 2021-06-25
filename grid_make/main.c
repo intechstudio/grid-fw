@@ -1008,7 +1008,7 @@ int main(void)
 
 		if (loopcounter%200 == 0){
 
-			printf("R: %4d S: %4d (%4d) (%d)\r\n", GRID_PORT_E.rx_double_buffer_read_start_index, GRID_PORT_E.rx_double_buffer_seek_start_index, GRID_PORT_E.rx_double_buffer_timeout, GRID_PORT_E.partner_status);
+			//printf("R: %4d S: %4d (%4d) (%d)\r\n", GRID_PORT_E.rx_double_buffer_read_start_index, GRID_PORT_E.rx_double_buffer_seek_start_index, GRID_PORT_E.rx_double_buffer_timeout, GRID_PORT_E.partner_status);
 
 		}
 

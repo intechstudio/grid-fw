@@ -44,6 +44,10 @@
 #define GRID_PARAMETER_PACKET_maxlength 400
 #define GRID_PARAMETER_PACKET_marign 200
 
+
+#define GRID_PARAMETER_ACTIONSTRING_maxlength 300
+
+
 // SPECIAL CHARACTERS
 
 #define GRID_CONST_NUL 0x00
@@ -358,6 +362,7 @@
 #define GRID_LUA_FNC_G_RANDOM_human 	"random"
 #define GRID_LUA_FNC_G_RANDOM_fnptr 	l_grid_random
 
+
 #define GRID_LUA_FNC_G_HWCFG_short 		"ghwcfg"
 #define GRID_LUA_FNC_G_HWCFG_human 		"hardware_configuration"
 #define GRID_LUA_FNC_G_HWCFG_fnptr 		l_grid_hwcfg
@@ -403,6 +408,13 @@
 #define GRID_LUA_FNC_G_PAGE_LOAD_human 			"page_load"
 #define GRID_LUA_FNC_G_PAGE_LOAD_fnptr 			l_grid_page_load
 
+
+#define GRID_LUA_FNC_G_LOOKUP_short 	"glut"
+#define GRID_LUA_FNC_G_LOOKUP_human 	"lookup"
+
+#define GRID_LUA_FNC_G_LIMIT_short 	"glim"
+#define GRID_LUA_FNC_G_LIMIT_human 	"limit"
+
 #define GRID_LUA_INIT_SCRIPT_1 "print('Hardware: ', ghwcfg(), ' Version: ', gvmaj(), gvmin(), gvpat())"
 #define GRID_LUA_INIT_SCRIPT_2 "print('Random: ', grnd(), grnd(), grnd(), grnd())"
 #define GRID_LUA_INIT_SCRIPT_3 "print('X, Y, Rot: ', gmx(), gmy(), gmr())"
@@ -419,6 +431,14 @@ stored config version
 stored config date
 
 */
+
+
+
+// ========================= UI ABSTRACTION =========================== //
+
+
+
+
 
 
 // ========================= ENCODER =========================== //
@@ -498,6 +518,9 @@ stored config date
 #define GRID_LUA_FNC_E_ENCODER_STATE_short "est"
 #define GRID_LUA_FNC_E_ENCODER_STATE_human "encoder_state"
 
+#define GRID_LUA_FNC_E_ACTION_INIT_short "init"
+#define GRID_LUA_FNC_E_ACTION_INIT_human "initialize"
+
 #define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short "ec"
 #define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_human "encoder_change"
 
@@ -511,26 +534,28 @@ stored config date
 // Encoder init function
 #define GRID_LUA_E_LIST_init "init_encoder = function (e, i) \
 	 \
-	e." GRID_LUA_FNC_E_ELEMENT_INDEX_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ELEMENT_INDEX_helper ", a) end \
+	e." GRID_LUA_FNC_E_ELEMENT_INDEX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ELEMENT_INDEX_helper ", a) end \
 	\
-	e." GRID_LUA_FNC_E_BUTTON_NUMBER_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_NUMBER_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_VALUE_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_VALUE_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_MIN_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_MIN_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_MAX_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_MAX_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_MODE_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_MODE_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_ELAPSED_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_STATE_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_STATE_helper ", a) end \
+	e." GRID_LUA_FNC_E_BUTTON_NUMBER_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_NUMBER_helper ", a) end \
+	e." GRID_LUA_FNC_E_BUTTON_VALUE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_VALUE_helper ", a) end \
+	e." GRID_LUA_FNC_E_BUTTON_MIN_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_MIN_helper ", a) end \
+	e." GRID_LUA_FNC_E_BUTTON_MAX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_MAX_helper ", a) end \
+	e." GRID_LUA_FNC_E_BUTTON_MODE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_MODE_helper ", a) end \
+	e." GRID_LUA_FNC_E_BUTTON_ELAPSED_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_ELAPSED_helper ", a) end \
+	e." GRID_LUA_FNC_E_BUTTON_STATE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_STATE_helper ", a) end \
 	\
-	e." GRID_LUA_FNC_E_ENCODER_NUMBER_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_NUMBER_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_VALUE_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_VALUE_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_MIN_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MIN_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_MAX_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MAX_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_MODE_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MODE_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_ELAPSED_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_STATE_short "=function (a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_STATE_helper ", a) end \
+	e." GRID_LUA_FNC_E_ENCODER_NUMBER_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_NUMBER_helper ", a) end \
+	e." GRID_LUA_FNC_E_ENCODER_VALUE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_VALUE_helper ", a) end \
+	e." GRID_LUA_FNC_E_ENCODER_MIN_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MIN_helper ", a) end \
+	e." GRID_LUA_FNC_E_ENCODER_MAX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MAX_helper ", a) end \
+	e." GRID_LUA_FNC_E_ENCODER_MODE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MODE_helper ", a) end \
+	e." GRID_LUA_FNC_E_ENCODER_ELAPSED_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_ELAPSED_helper ", a) end \
+	e." GRID_LUA_FNC_E_ENCODER_STATE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_STATE_helper ", a) end \
 	\
-	e."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (a) print('undefined action') end\
-	e."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (a) print('undefined action') end\
+	e.test = function() print('Hello') return 12 end\
+	e."GRID_LUA_FNC_E_ACTION_INIT_short" = function (self) print('undefined action') end\
+	e."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (self) print('undefined action') end\
+	e."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end\
 	\
     end"
 
@@ -578,26 +603,30 @@ stored config date
 #define GRID_LUA_FNC_P_POTMETER_STATE_short "pst"
 #define GRID_LUA_FNC_P_POTMETER_STATE_human "potmeter_state"
 
+#define GRID_LUA_FNC_P_ACTION_INIT_short "init"
+#define GRID_LUA_FNC_P_ACTION_INIT_human "initialize"
+
 #define GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short "pc"
 #define GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_human "potmeter_change"
 
-// Encoder parameters
+// Potmeter parameters
 #define GRID_LUA_FNC_P_LIST_length 8
 
-// Encoder init function
+// Potmeter init function
 #define GRID_LUA_P_LIST_init "init_potmeter = function (e, i) \
 	 \
-	e." GRID_LUA_FNC_P_ELEMENT_INDEX_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_ELEMENT_INDEX_helper ", a) end \
+	e." GRID_LUA_FNC_P_ELEMENT_INDEX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_ELEMENT_INDEX_helper ", a) end \
 	\
-	e." GRID_LUA_FNC_P_POTMETER_NUMBER_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_NUMBER_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_VALUE_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_VALUE_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_MIN_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MIN_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_MAX_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MAX_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_MODE_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MODE_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_ELAPSED_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_STATE_short "=function (a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_STATE_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_NUMBER_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_NUMBER_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_VALUE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_VALUE_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_MIN_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MIN_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_MAX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MAX_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_MODE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MODE_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_ELAPSED_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_ELAPSED_helper ", a) end \
+	e." GRID_LUA_FNC_P_POTMETER_STATE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_STATE_helper ", a) end \
 	\
-	e."GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (a) print('undefined action') end\
+	e."GRID_LUA_FNC_P_ACTION_INIT_short" = function (self) print('undefined action') end\
+	e."GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (self) print('undefined action') end\
     end"
 
 #define GRID_LUA_P_LIST_deinit "init_potmeter = nil"
@@ -632,7 +661,7 @@ stored config date
 #define GRID_LUA_FNC_B_BUTTON_MODE_index 5
 #define GRID_LUA_FNC_B_BUTTON_MODE_helper "5"
 #define GRID_LUA_FNC_B_BUTTON_MODE_short "bmo"
-#define GRID_LUA_FNC_B_BUTTON_MODE_human "button_resolution"
+#define GRID_LUA_FNC_B_BUTTON_MODE_human "button_mode"
 
 #define GRID_LUA_FNC_B_BUTTON_ELAPSED_index 6
 #define GRID_LUA_FNC_B_BUTTON_ELAPSED_helper "6"
@@ -644,32 +673,42 @@ stored config date
 #define GRID_LUA_FNC_B_BUTTON_STATE_short "bst"
 #define GRID_LUA_FNC_B_BUTTON_STATE_human "button_state"
 
+#define GRID_LUA_FNC_B_ACTION_INIT_short "init"
+#define GRID_LUA_FNC_B_ACTION_INIT_human "initialize"
+
 #define GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short "bc"
 #define GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_human "button_change"
 
-// Encoder parameters
+// Button parameters
 #define GRID_LUA_FNC_B_LIST_length 8
 
 // Encoder init function
 #define GRID_LUA_B_LIST_init "init_button = function (e, i) \
 	 \
-	e." GRID_LUA_FNC_B_ELEMENT_INDEX_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_ELEMENT_INDEX_helper ", a) end \
+	e." GRID_LUA_FNC_B_ELEMENT_INDEX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_ELEMENT_INDEX_helper ", a) end \
 	\
-	e." GRID_LUA_FNC_B_BUTTON_NUMBER_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_NUMBER_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_VALUE_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_VALUE_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_MIN_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MIN_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_MAX_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MAX_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_MODE_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MODE_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_ELAPSED_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_ELAPSED_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_STATE_short "=function (a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_STATE_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_NUMBER_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_NUMBER_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_VALUE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_VALUE_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_MIN_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MIN_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_MAX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MAX_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_MODE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MODE_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_ELAPSED_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_ELAPSED_helper ", a) end \
+	e." GRID_LUA_FNC_B_BUTTON_STATE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_STATE_helper ", a) end \
 	\
-	e."GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (a) print('undefined action') end\
+	e."GRID_LUA_FNC_B_ACTION_INIT_short" = function (self) print('undefined action') end\
+	e."GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end\
     end"
 
 #define GRID_LUA_B_LIST_deinit "init_button = nil"
 
 #define GRID_LUA_KW_ELEMENT_short "ele"
+#define GRID_LUA_KW_ELEMENT_human "element"
+
 #define GRID_LUA_KW_THIS_short "this"
+#define GRID_LUA_KW_THIS_human "this"
+
+#define GRID_LUA_KW_SELF_short "self"
+#define GRID_LUA_KW_SELF_human "self"
 
 #define GRID_PARAMETER_ELAPSED_LIMIT 10000
 
@@ -734,26 +773,21 @@ enum grid_ui_event_t
 // DEFAULT ACTION:                     FIRST MIDI then LED_SET_PHASE
 
 
-#define GRID_ACTIONSTRING_INIT_POT "<?lua --[[@l]]local num,val,red,gre,blu = this.ind(),this.pva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glp]]glp(num,1,val) ?>"
+#define GRID_ACTIONSTRING_INIT_POT "<?lua --[[@l]]local num,val,red,gre,blu = self:ind(),self:pva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glp]]glp(num,1,val) ?>"
 
-#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@l]]local num,val,red,gre,blu = this.ind(),this.bva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glp]]glp(num,1,val) ?>"
+#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@l]]local num,val,red,gre,blu = self:ind(),self:bva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glp]]glp(num,1,val) ?>"
 
 #define GRID_ACTIONSTRING_MIDIRX  "<?lua --[[@l]]local ch,cmd,param1,param2 = midi.ch,midi.cmd,midi.p1,midi.p2 --[[@cb]]print('Midi', ch, cmd, param1, param2) ?>"
 
 //#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@glc]]glc(2,1,100,200,230) --[[@glp]]glp(2,1,100) ?>"
 
 
-#define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@l]]local num,bval,eval,red,gre,blu = this.ind(),this.bva(),this.eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) ?>"
-
-// old static midi
-#define GRID_ACTIONSTRING_AC "<?lua --[[@l]]local num, val = this.ind(), this.pva() --[[@gms]]gms(0, 176, num, val) --[[@glp]]glp(num, 1, val) ?>"
-#define GRID_ACTIONSTRING_BC "<?lua --[[@l]]local num, val = this.ind(), this.bva() --[[@gms]]gms(0, 144, num, val) --[[@glp]]glp(num, 1, val) ?>"
-#define GRID_ACTIONSTRING_EC "<?lua --[[@l]]local num, val = this.ind(), this.eva() --[[@gms]]gms(0, 176, num, val) --[[@glp]]glp(num, 2, val) ?>"
+#define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
 
 // new dynamic midi based on x y and activepage
-#define GRID_ACTIONSTRING_AC "<?lua --[[@l]] local num,val,ch,cc=this.ind(),this.pva(),gmy()*4+gpc(),32+gmx()*16+this.ind() --[[@gms]]gms(0, 176, cc, val) --[[@glp]]glp(num, 1, val) ?>"
-#define GRID_ACTIONSTRING_BC "<?lua --[[@l]] local num,val,ch,note=this.ind(),this.bva(),gmy()*4+gpc(),32+gmx()*16+this.ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
-#define GRID_ACTIONSTRING_EC "<?lua --[[@l]] local num,val,ch,cc=this.ind(),this.eva(),gmy()*4+gpc(),32+gmx()*16+this.ind() --[[@gms]]gms(0, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+#define GRID_ACTIONSTRING_AC "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:pva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(0, 176, cc, val) --[[@glp]]glp(num, 1, val) ?>"
+#define GRID_ACTIONSTRING_BC "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+#define GRID_ACTIONSTRING_EC "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(0, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
 
 
 #define GRID_ACTIONSTRING_PAGE_INIT		 "<?lua --[[@cb]]print('page init') ?>"

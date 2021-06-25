@@ -1447,7 +1447,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					//printf("M: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1, midi_param2);
 
-					uint8_t temp[GRID_UI_ACTION_STRING_maxlength + 100] = {0};
+					uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 					sprintf(temp, "midi={} midi.ch,midi.cmd,midi.p1,midi.p2 = %d, %d, %d, %d ", midi_channel, midi_command, midi_param1, midi_param2);
 					//grid_lua_dostring(&grid_lua_state, temp);
 
@@ -1949,7 +1949,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 						if (action[actionlength] == GRID_CONST_ETX){
 							
-							if (actionlength < GRID_UI_ACTION_STRING_maxlength){
+							if (actionlength < GRID_PARAMETER_ACTIONSTRING_maxlength){
 
 							action[actionlength] = 0;
 							//printf("Config: %d %d %d %d -> %s\r\n", pagenumber, elementnumber, eventtype, actionlength, action);

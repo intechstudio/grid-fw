@@ -15,7 +15,6 @@ int _times(void);
 int _unlink(void);
 int _link(void);
 
-
 // GRID LOOKUP TABLE
 #define GRID_LUA_GLUT_source \
 "function glut (a, ...)      \
