@@ -518,6 +518,11 @@ stored config date
 #define GRID_LUA_FNC_E_ENCODER_STATE_short "est"
 #define GRID_LUA_FNC_E_ENCODER_STATE_human "encoder_state"
 
+#define GRID_LUA_FNC_E_ENCODER_VELOCITY_index 15
+#define GRID_LUA_FNC_E_ENCODER_VELOCITY_helper "15"
+#define GRID_LUA_FNC_E_ENCODER_VELOCITY_short "ev0"
+#define GRID_LUA_FNC_E_ENCODER_VELOCITY_human "encoder_velocity"
+
 #define GRID_LUA_FNC_E_ACTION_INIT_short "init"
 #define GRID_LUA_FNC_E_ACTION_INIT_human "initialize"
 
@@ -529,7 +534,7 @@ stored config date
 
 
 // Encoder parameters
-#define GRID_LUA_FNC_E_LIST_length 15
+#define GRID_LUA_FNC_E_LIST_length 16
 
 // Encoder init function
 #define GRID_LUA_E_LIST_init "init_encoder = function (e, i) \
@@ -551,6 +556,7 @@ stored config date
 	e." GRID_LUA_FNC_E_ENCODER_MODE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MODE_helper ", a) end \
 	e." GRID_LUA_FNC_E_ENCODER_ELAPSED_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_ELAPSED_helper ", a) end \
 	e." GRID_LUA_FNC_E_ENCODER_STATE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_STATE_helper ", a) end \
+	e." GRID_LUA_FNC_E_ENCODER_VELOCITY_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_VELOCITY_helper ", a) end \
 	\
 	e.test = function() print('Hello') return 12 end\
 	e."GRID_LUA_FNC_E_ACTION_INIT_short" = function (self) print('undefined action') end\

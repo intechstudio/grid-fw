@@ -190,7 +190,11 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 				encoder_last_real_time[res_index] = grid_sys_rtc_get_time(&grid_sys_state); 
 				template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] = encoder_elapsed_time/RTC1MS;
 
-				uint32_t elapsed_ms = encoder_elapsed_time/RTC1MS;
+
+				int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
+				int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
+
+				double elapsed_ms = encoder_elapsed_time/RTC1MS;
 
 				if (elapsed_ms>25){
 					elapsed_ms = 25;
@@ -199,16 +203,17 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 				if (elapsed_ms<1){
 					elapsed_ms = 1;
 				}
-								
+
+				double minmaxscale = (max-min)/128.0;	
+				
+				double velocityparam = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VELOCITY_index]/100.0;
+						
 					
 				// implement configurable velocity parameters here	
-				uint8_t velocityfactor = (25*25-elapsed_ms*elapsed_ms)/150 + 1;		
-				int32_t delta_velocity = delta * (velocityfactor * 2 - 1);
+				double velocityfactor = ((25*25-elapsed_ms*elapsed_ms)/75.0)*minmaxscale*velocityparam + 1.0;		
+				int32_t delta_velocity = delta * velocityfactor;
 
 				int32_t old_value = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
-				int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
-				int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
-
 
 				template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] += delta_velocity;
 
