@@ -785,9 +785,9 @@ enum grid_ui_event_t
 #define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
 
 // new dynamic midi based on x y and activepage
-#define GRID_ACTIONSTRING_AC "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:pva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(0, 176, cc, val) --[[@glp]]glp(num, 1, val) ?>"
+#define GRID_ACTIONSTRING_AC "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:pva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 1, val) ?>"
 #define GRID_ACTIONSTRING_BC "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
-#define GRID_ACTIONSTRING_EC "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(0, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+#define GRID_ACTIONSTRING_EC "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
 
 
 #define GRID_ACTIONSTRING_PAGE_INIT		 "<?lua --[[@cb]]print('page init') ?>"
