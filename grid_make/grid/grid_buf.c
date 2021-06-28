@@ -1218,6 +1218,30 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				
 													
 			}
+			else if (msg_class == GRID_CLASS_HIDMOUSEBUTTON_code && msg_instr == GRID_INSTR_EXECUTE_code){
+					
+										
+				uint8_t state = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDMOUSEBUTTON_STATE_offset, GRID_CLASS_HIDMOUSEBUTTON_STATE_length);
+				uint8_t button = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_offset ,	GRID_CLASS_HIDMOUSEBUTTON_BUTTON_length);
+			
+				//grid_debug_printf("MouseButton: %d %d", state, button);	
+				
+				hiddf_mouse_button_change(state, button);
+													
+			}
+			else if (msg_class == GRID_CLASS_HIDMOUSEMOVE_code && msg_instr == GRID_INSTR_EXECUTE_code){
+					
+										
+				uint8_t position_raw = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDMOUSEMOVE_POSITION_offset, GRID_CLASS_HIDMOUSEMOVE_POSITION_length);
+				uint8_t axis = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDMOUSEMOVE_AXIS_offset ,	GRID_CLASS_HIDMOUSEMOVE_AXIS_length);
+			
+				int8_t position = position_raw - 128;
+
+				//grid_debug_printf("MouseMove: %d %d", position, axis);	
+				
+				hiddf_mouse_move(position, axis);
+													
+			}
 			else if (msg_class == GRID_CLASS_HIDKEYBOARD_code && msg_instr == GRID_INSTR_EXECUTE_code){
 				
 				uint8_t length =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYBOARD_LENGTH_offset,		GRID_CLASS_HIDKEYBOARD_LENGTH_length);

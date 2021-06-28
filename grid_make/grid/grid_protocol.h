@@ -357,6 +357,14 @@
 #define GRID_LUA_FNC_G_KEYBOARD_SEND_human 	"keyboard_send"
 #define GRID_LUA_FNC_G_KEYBOARD_SEND_fnptr 	l_grid_keyboard_send
 
+#define GRID_LUA_FNC_G_MOUSEMOVE_SEND_short 	"gmms"
+#define GRID_LUA_FNC_G_MOUSEMOVE_SEND_human 	"mouse_move_send"
+#define GRID_LUA_FNC_G_MOUSEMOVE_SEND_fnptr 	l_grid_mousemove_send
+
+#define GRID_LUA_FNC_G_MOUSEBUTTON_SEND_short 	"gmbs"
+#define GRID_LUA_FNC_G_MOUSEBUTTON_SEND_human 	"mouse_button_send"
+#define GRID_LUA_FNC_G_MOUSEBUTTON_SEND_fnptr 	l_grid_mousebutton_send
+
 
 #define GRID_LUA_FNC_G_RANDOM_short 	"grnd"
 #define GRID_LUA_FNC_G_RANDOM_human 	"random"
@@ -932,5 +940,27 @@ enum grid_ui_event_t
 
 #define GRID_CLASS_HIDKEYBOARD_DELAY_offset 10
 #define GRID_CLASS_HIDKEYBOARD_DELAY_length 3
+
+// 092 HID MOUSE MOVE (X, Y or WHEEL)
+#define GRID_CLASS_HIDMOUSEMOVE_code 0x092
+#define GRID_CLASS_HIDMOUSEMOVE_frame "%c%03x_....%c", GRID_CONST_STX, GRID_CLASS_HIDMOUSEMOVE_code, GRID_CONST_ETX
+
+#define GRID_CLASS_HIDMOUSEMOVE_POSITION_offset 5
+#define GRID_CLASS_HIDMOUSEMOVE_POSITION_length 2
+
+#define GRID_CLASS_HIDMOUSEMOVE_AXIS_offset 7
+#define GRID_CLASS_HIDMOUSEMOVE_AXIS_length 2
+
+// 093 HID MOUSE BUTTON (left, right, middle)
+#define GRID_CLASS_HIDMOUSEBUTTON_code 0x093
+#define GRID_CLASS_HIDMOUSEBUTTON_frame "%c%03x_....%c", GRID_CONST_STX, GRID_CLASS_HIDMOUSEBUTTON_code, GRID_CONST_ETX
+
+#define GRID_CLASS_HIDMOUSEBUTTON_STATE_offset 5
+#define GRID_CLASS_HIDMOUSEBUTTON_STATE_length 2
+
+#define GRID_CLASS_HIDMOUSEBUTTON_BUTTON_offset 7
+#define GRID_CLASS_HIDMOUSEBUTTON_BUTTON_length 2
+
+
 
 #endif /* GRID_PROTOCOL_H_INCLUDED */
