@@ -37,17 +37,29 @@ struct grid_midi_event_desc {
 };
 
 
-uint16_t grid_midi_tx_write_index;
-uint16_t grid_midi_tx_read_index;
-
-#define GRID_MIDI_TX_BUFFER_length 300
-
-struct grid_midi_event_desc grid_midi_tx_buffer[GRID_MIDI_TX_BUFFER_length];
 
 void grid_midi_buffer_init(struct grid_midi_event_desc* buf, uint16_t length);
 
+// Midi tx buffer
+#define GRID_MIDI_TX_BUFFER_length 200
+struct grid_midi_event_desc grid_midi_tx_buffer[GRID_MIDI_TX_BUFFER_length];
+
+uint16_t grid_midi_tx_write_index;
+uint16_t grid_midi_tx_read_index;
+
 uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event);
 uint8_t grid_midi_tx_pop();
+
+// Midi rx buffer
+#define GRID_MIDI_RX_BUFFER_length 100
+struct grid_midi_event_desc grid_midi_rx_buffer[GRID_MIDI_RX_BUFFER_length];
+
+uint16_t grid_midi_rx_write_index;
+uint16_t grid_midi_rx_read_index;
+
+uint8_t grid_midi_rx_push(struct grid_midi_event_desc midi_event);
+uint8_t grid_midi_rx_pop();
+
 
 
 struct grid_keyboard_event_desc {

@@ -160,14 +160,15 @@ static void usb_task_inner(struct grid_d51_task* task){
 
 	grid_keyboard_tx_pop();
 	
+	// Send midi from Grid to Host!
 	grid_midi_tx_pop();        
 	
+	// Forward midi from Host to Grid!
+	grid_midi_rx_pop();
+
 	// MIDI READ TEST CODE
-	
-	
 	uint8_t midi_rx_length = 0;
 
-	
 	audiodf_midi_read(midi_rx_buffer,16);
 	
 	midi_rx_length = strlen(midi_rx_buffer);		
@@ -194,22 +195,15 @@ static void usb_task_inner(struct grid_d51_task* task){
 
 		//grid_debug_printf("decoded: %d %d %d %d", channel, command, param1, param2);
 		
-		// SX SY Global, DX DY Global
-		struct grid_msg message;
-		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
-		grid_msg_header_set_sx(&message, GRID_SYS_DEFAULT_POSITION);
-		grid_msg_header_set_sy(&message, GRID_SYS_DEFAULT_POSITION);
+		struct grid_midi_event_desc midi_ev;
 
-		grid_msg_body_append_printf(&message, GRID_CLASS_MIDI_frame);
-		grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-		
-		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, channel);
-		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, command);
-		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, param1);
-		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2);
+		midi_ev.byte0 = channel;
+		midi_ev.byte1 = command;
+		midi_ev.byte2 = param1;
+		midi_ev.byte3 = param2;
 
-		grid_msg_packet_close(&message);
-		grid_msg_packet_send_everywhere(&message);
+		grid_midi_rx_push(midi_ev);
+
 
 		for (uint8_t i=0; i<16; i++){
 

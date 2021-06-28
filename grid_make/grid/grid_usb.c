@@ -91,7 +91,10 @@ void grid_usb_midi_init()
 	grid_midi_tx_write_index = 0;
 	grid_midi_tx_read_index = 0;
 	grid_midi_buffer_init(grid_midi_tx_buffer, GRID_MIDI_TX_BUFFER_length);
-		
+
+	grid_midi_rx_write_index = 0;
+	grid_midi_rx_read_index = 0;
+	grid_midi_buffer_init(grid_midi_rx_buffer, GRID_MIDI_RX_BUFFER_length);
 		
 	audiodf_midi_register_callback(AUDIODF_MIDI_CB_READ, (FUNC_PTR)grid_usb_midi_bulkout_cb);
 	audiodf_midi_register_callback(AUDIODF_MIDI_CB_WRITE, (FUNC_PTR)grid_usb_midi_bulkin_cb);
@@ -299,13 +302,8 @@ void grid_midi_buffer_init(struct grid_midi_event_desc* buf, uint16_t length){
 
 uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event){
 
-
 	grid_midi_tx_buffer[grid_midi_tx_write_index] = midi_event;
-
 	grid_midi_tx_write_index = (grid_midi_tx_write_index+1)%GRID_MIDI_TX_BUFFER_length;
-
-
-
 
 }
 
@@ -325,6 +323,74 @@ uint8_t grid_midi_tx_pop(){
 			grid_midi_tx_read_index = (grid_midi_tx_read_index+1)%GRID_MIDI_TX_BUFFER_length;
 
 		}
+		
+	}
+
+}
+
+
+uint8_t grid_midi_rx_push(struct grid_midi_event_desc midi_event){
+
+
+	// recude commandchange time resolution HERE!!
+
+	//       W              R
+	//[0][1][2][3][4][5][6][7][8][9][10]
+	for(uint16_t i=0; i<GRID_MIDI_RX_BUFFER_length; i++){
+
+		if (grid_midi_rx_write_index-i == grid_midi_rx_read_index){
+
+			grid_midi_rx_buffer[grid_midi_rx_write_index] = midi_event;
+			grid_midi_rx_write_index = (grid_midi_rx_write_index+1)%GRID_MIDI_RX_BUFFER_length;
+			break; //return
+
+		}
+
+		if (grid_midi_rx_buffer[grid_midi_rx_write_index-i].byte2 != GRID_PARAMETER_MIDI_CONTROLCHANGE) continue;
+
+		if (grid_midi_rx_buffer[grid_midi_rx_write_index-i].byte0 != midi_event.byte0) continue;
+		if (grid_midi_rx_buffer[grid_midi_rx_write_index-i].byte1 != midi_event.byte1) continue;
+		if (grid_midi_rx_buffer[grid_midi_rx_write_index-i].byte2 != midi_event.byte2) continue;
+
+		// it's a match, update to the newer value!!
+		grid_midi_rx_buffer[grid_midi_rx_write_index-i].byte3 = midi_event.byte3;
+		break; //return;
+
+	}
+
+
+}
+
+uint8_t grid_midi_rx_pop(){
+
+	if (grid_midi_rx_read_index != grid_midi_rx_write_index){
+		
+
+		uint8_t byte0 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte0;
+		uint8_t byte1 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte1;
+		uint8_t byte2 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte2;
+		uint8_t byte3 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte3;
+			
+		// Combine multiple midi messages into one packet if possible
+
+		// SX SY Global, DX DY Global
+		struct grid_msg message;
+		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
+		grid_msg_header_set_sx(&message, GRID_SYS_DEFAULT_POSITION);
+		grid_msg_header_set_sy(&message, GRID_SYS_DEFAULT_POSITION);
+
+		grid_msg_body_append_printf(&message, GRID_CLASS_MIDI_frame);
+		grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+		
+		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, byte0);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, byte1);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, byte2);
+		grid_msg_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, byte3);
+
+		grid_msg_packet_close(&message);
+		grid_msg_packet_send_everywhere(&message);
+
+		grid_midi_rx_read_index = (grid_midi_rx_read_index+1)%GRID_MIDI_RX_BUFFER_length;
 		
 	}
 
