@@ -777,7 +777,7 @@ enum grid_ui_event_t
 
 #define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@l]]local num,val,red,gre,blu = self:ind(),self:bva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glp]]glp(num,1,val) ?>"
 
-#define GRID_ACTIONSTRING_MIDIRX  "<?lua --[[@l]]local ch,cmd,param1,param2 = midi.ch,midi.cmd,midi.p1,midi.p2 --[[@cb]]print('Midi', ch, cmd, param1, param2) ?>"
+#define GRID_ACTIONSTRING_MIDIRX  "<?lua --[[@l]]local ch,cmd,param1,param2 = midi.ch,midi.cmd,midi.p1,midi.p2 ?>"
 
 //#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@glc]]glc(2,1,100,200,230) --[[@glp]]glp(2,1,100) ?>"
 

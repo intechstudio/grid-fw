@@ -2855,7 +2855,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x22 grid/grid_default.o
  .debug_macro   0x0000000000000000       0x34 grid/grid_default.o
  .debug_line    0x0000000000000000     0x1595 grid/grid_default.o
- .debug_str     0x0000000000000000   0x105096 grid/grid_default.o
+ .debug_str     0x0000000000000000   0x105066 grid/grid_default.o
  .comment       0x0000000000000000       0x4d grid/grid_default.o
  .ARM.attributes
                 0x0000000000000000       0x37 grid/grid_default.o
@@ -3839,7 +3839,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x22 grid/grid_hardwaretest.o
  .debug_macro   0x0000000000000000       0x46 grid/grid_hardwaretest.o
  .debug_line    0x0000000000000000     0x23fb grid/grid_hardwaretest.o
- .debug_str     0x0000000000000000   0x1057b3 grid/grid_hardwaretest.o
+ .debug_str     0x0000000000000000   0x105783 grid/grid_hardwaretest.o
  .comment       0x0000000000000000       0x4d grid/grid_hardwaretest.o
  .debug_frame   0x0000000000000000      0x114 grid/grid_hardwaretest.o
  .ARM.attributes
@@ -7616,7 +7616,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0xaae grid/grid_protocol.o
  .debug_macro   0x0000000000000000      0xdad grid/grid_protocol.o
  .debug_line    0x0000000000000000       0x4b grid/grid_protocol.o
- .debug_str     0x0000000000000000     0x9844 grid/grid_protocol.o
+ .debug_str     0x0000000000000000     0x9814 grid/grid_protocol.o
  .comment       0x0000000000000000       0x4d grid/grid_protocol.o
  .ARM.attributes
                 0x0000000000000000       0x37 grid/grid_protocol.o
@@ -9081,7 +9081,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0xe1 grid/grid_unittest.o
  .debug_macro   0x0000000000000000       0x22 grid/grid_unittest.o
  .debug_line    0x0000000000000000     0x18db grid/grid_unittest.o
- .debug_str     0x0000000000000000   0x105178 grid/grid_unittest.o
+ .debug_str     0x0000000000000000   0x105148 grid/grid_unittest.o
  .comment       0x0000000000000000       0x4d grid/grid_unittest.o
  .debug_frame   0x0000000000000000       0xbc grid/grid_unittest.o
  .ARM.attributes
@@ -37764,7 +37764,7 @@ LOAD /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/
 LOAD /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtn.o
                 0x0000000000010000                STACK_SIZE = DEFINED (STACK_SIZE)?STACK_SIZE:DEFINED (__stack_size__)?__stack_size__:0x10000
 
-.text           0x0000000000004000    0x3acf8
+.text           0x0000000000004000    0x3acc8
                 0x0000000000004000                . = ALIGN (0x4)
                 0x0000000000004000                _sfixed = .
  *(.vectors .vectors.*)
@@ -42372,417 +42372,417 @@ LOAD /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/
                 0x0000000000039119       0xb0 grid/grid_sys.o
                                          0xb3 (size before relaxing)
  .rodata.str1.1
-                0x00000000000391c9      0x680 grid/grid_ui.o
-                                        0x6c0 (size before relaxing)
- *fill*         0x0000000000039849        0x3 
- .rodata        0x000000000003984c       0x10 grid/grid_ui.o
+                0x00000000000391c9      0x650 grid/grid_ui.o
+                                        0x690 (size before relaxing)
+ *fill*         0x0000000000039819        0x3 
+ .rodata        0x000000000003981c       0x10 grid/grid_ui.o
  .rodata.str1.1
-                0x000000000003985c        0xf grid/grid_usb.o
+                0x000000000003982c        0xf grid/grid_usb.o
                                          0x2d (size before relaxing)
  .rodata.str1.1
-                0x000000000003986b      0xd3e grid/grid_lua_api.o
+                0x000000000003983b      0xd3e grid/grid_lua_api.o
                                         0xd62 (size before relaxing)
- *fill*         0x000000000003a5a9        0x3 
- .rodata        0x000000000003a5ac       0xf4 grid/grid_lua_api.o
+ *fill*         0x000000000003a579        0x3 
+ .rodata        0x000000000003a57c       0xf4 grid/grid_lua_api.o
  .rodata.str1.1
-                0x000000000003a6a0        0xa thirdparty/Lua/lua-5.4.3/src/lapi.o
+                0x000000000003a670        0xa thirdparty/Lua/lua-5.4.3/src/lapi.o
                                           0xd (size before relaxing)
- *fill*         0x000000000003a6aa        0x2 
- .rodata        0x000000000003a6ac       0x85 thirdparty/Lua/lua-5.4.3/src/lapi.o
-                0x000000000003a6b0                lua_ident
- .rodata        0x000000000003a731      0x101 thirdparty/Lua/lua-5.4.3/src/lctype.o
-                0x000000000003a731                luai_ctype_
+ *fill*         0x000000000003a67a        0x2 
+ .rodata        0x000000000003a67c       0x85 thirdparty/Lua/lua-5.4.3/src/lapi.o
+                0x000000000003a680                lua_ident
+ .rodata        0x000000000003a701      0x101 thirdparty/Lua/lua-5.4.3/src/lctype.o
+                0x000000000003a701                luai_ctype_
  .rodata.str1.1
-                0x000000000003a832       0x27 thirdparty/Lua/lua-5.4.3/src/lfunc.o
+                0x000000000003a802       0x27 thirdparty/Lua/lua-5.4.3/src/lfunc.o
                                          0x29 (size before relaxing)
  .rodata.str1.1
-                0x000000000003a859       0xc0 thirdparty/Lua/lua-5.4.3/src/lmathlib.o
+                0x000000000003a829       0xc0 thirdparty/Lua/lua-5.4.3/src/lmathlib.o
                                          0xe2 (size before relaxing)
- *fill*         0x000000000003a919        0x3 
- .rodata        0x000000000003a91c       0xf8 thirdparty/Lua/lua-5.4.3/src/lmathlib.o
+ *fill*         0x000000000003a8e9        0x3 
+ .rodata        0x000000000003a8ec       0xf8 thirdparty/Lua/lua-5.4.3/src/lmathlib.o
  .rodata.str1.1
-                0x000000000003aa14      0x1ec thirdparty/Lua/lua-5.4.3/src/loslib.o
+                0x000000000003a9e4      0x1ec thirdparty/Lua/lua-5.4.3/src/loslib.o
                                         0x200 (size before relaxing)
- .rodata        0x000000000003ac00       0x94 thirdparty/Lua/lua-5.4.3/src/loslib.o
+ .rodata        0x000000000003abd0       0x94 thirdparty/Lua/lua-5.4.3/src/loslib.o
  .rodata.str1.1
-                0x000000000003ac94       0x4b thirdparty/Lua/lua-5.4.3/src/ltable.o
- *fill*         0x000000000003acdf        0x1 
- .rodata        0x000000000003ace0       0x28 thirdparty/Lua/lua-5.4.3/src/ltable.o
+                0x000000000003ac64       0x4b thirdparty/Lua/lua-5.4.3/src/ltable.o
+ *fill*         0x000000000003acaf        0x1 
+ .rodata        0x000000000003acb0       0x28 thirdparty/Lua/lua-5.4.3/src/ltable.o
  .rodata.str1.1
-                0x000000000003ad08      0x10b thirdparty/Lua/lua-5.4.3/src/lundump.o
+                0x000000000003acd8      0x10b thirdparty/Lua/lua-5.4.3/src/lundump.o
                                         0x11b (size before relaxing)
  .rodata.str1.1
-                0x000000000003ae13      0x30c thirdparty/Lua/lua-5.4.3/src/lauxlib.o
+                0x000000000003ade3      0x30c thirdparty/Lua/lua-5.4.3/src/lauxlib.o
                                         0x35c (size before relaxing)
- *fill*         0x000000000003b11f        0x1 
- .rodata        0x000000000003b120       0x18 thirdparty/Lua/lua-5.4.3/src/lauxlib.o
+ *fill*         0x000000000003b0ef        0x1 
+ .rodata        0x000000000003b0f0       0x18 thirdparty/Lua/lua-5.4.3/src/lauxlib.o
  .rodata.str1.1
-                0x000000000003b138      0x203 thirdparty/Lua/lua-5.4.3/src/ldblib.o
+                0x000000000003b108      0x203 thirdparty/Lua/lua-5.4.3/src/ldblib.o
                                         0x238 (size before relaxing)
- *fill*         0x000000000003b33b        0x1 
- .rodata        0x000000000003b33c       0xa4 thirdparty/Lua/lua-5.4.3/src/ldblib.o
+ *fill*         0x000000000003b30b        0x1 
+ .rodata        0x000000000003b30c       0xa4 thirdparty/Lua/lua-5.4.3/src/ldblib.o
  .rodata.str1.1
-                0x000000000003b3e0       0x10 thirdparty/Lua/lua-5.4.3/src/lgc.o
- .rodata        0x000000000003b3f0        0x7 thirdparty/Lua/lua-5.4.3/src/lgc.o
+                0x000000000003b3b0       0x10 thirdparty/Lua/lua-5.4.3/src/lgc.o
+ .rodata        0x000000000003b3c0        0x7 thirdparty/Lua/lua-5.4.3/src/lgc.o
  .rodata.str1.1
-                0x000000000003b3f7       0x41 thirdparty/Lua/lua-5.4.3/src/lmem.o
+                0x000000000003b3c7       0x41 thirdparty/Lua/lua-5.4.3/src/lmem.o
  .rodata.str1.1
-                0x000000000003b438      0x272 thirdparty/Lua/lua-5.4.3/src/lparser.o
+                0x000000000003b408      0x272 thirdparty/Lua/lua-5.4.3/src/lparser.o
                                         0x28b (size before relaxing)
- .rodata        0x000000000003b6aa       0x2e thirdparty/Lua/lua-5.4.3/src/lparser.o
+ .rodata        0x000000000003b67a       0x2e thirdparty/Lua/lua-5.4.3/src/lparser.o
  .rodata.str1.1
-                0x000000000003b6d8       0xfe thirdparty/Lua/lua-5.4.3/src/ltablib.o
+                0x000000000003b6a8       0xfe thirdparty/Lua/lua-5.4.3/src/ltablib.o
                                         0x137 (size before relaxing)
- *fill*         0x000000000003b7d6        0x2 
- .rodata        0x000000000003b7d8       0x40 thirdparty/Lua/lua-5.4.3/src/ltablib.o
+ *fill*         0x000000000003b7a6        0x2 
+ .rodata        0x000000000003b7a8       0x40 thirdparty/Lua/lua-5.4.3/src/ltablib.o
  .rodata.str1.1
-                0x000000000003b818       0xc5 thirdparty/Lua/lua-5.4.3/src/lutf8lib.o
+                0x000000000003b7e8       0xc5 thirdparty/Lua/lua-5.4.3/src/lutf8lib.o
                                          0xf4 (size before relaxing)
- *fill*         0x000000000003b8dd        0x3 
- .rodata        0x000000000003b8e0       0x5f thirdparty/Lua/lua-5.4.3/src/lutf8lib.o
+ *fill*         0x000000000003b8ad        0x3 
+ .rodata        0x000000000003b8b0       0x5f thirdparty/Lua/lua-5.4.3/src/lutf8lib.o
  .rodata.str1.1
-                0x000000000003b93f      0x19e thirdparty/Lua/lua-5.4.3/src/lbaselib.o
+                0x000000000003b90f      0x19e thirdparty/Lua/lua-5.4.3/src/lbaselib.o
                                         0x20c (size before relaxing)
- *fill*         0x000000000003badd        0x3 
- .rodata        0x000000000003bae0      0x124 thirdparty/Lua/lua-5.4.3/src/lbaselib.o
+ *fill*         0x000000000003baad        0x3 
+ .rodata        0x000000000003bab0      0x124 thirdparty/Lua/lua-5.4.3/src/lbaselib.o
  .rodata.str1.1
-                0x000000000003bc04      0x156 thirdparty/Lua/lua-5.4.3/src/ldebug.o
+                0x000000000003bbd4      0x156 thirdparty/Lua/lua-5.4.3/src/ldebug.o
                                         0x18c (size before relaxing)
  .rodata.str1.1
-                0x000000000003bd5a       0x15 thirdparty/Lua/lua-5.4.3/src/linit.o
+                0x000000000003bd2a       0x15 thirdparty/Lua/lua-5.4.3/src/linit.o
                                          0x38 (size before relaxing)
- *fill*         0x000000000003bd6f        0x1 
- .rodata        0x000000000003bd70       0x58 thirdparty/Lua/lua-5.4.3/src/linit.o
+ *fill*         0x000000000003bd3f        0x1 
+ .rodata        0x000000000003bd40       0x58 thirdparty/Lua/lua-5.4.3/src/linit.o
  .rodata.str1.1
-                0x000000000003bdc8      0x28d thirdparty/Lua/lua-5.4.3/src/loadlib.o
+                0x000000000003bd98      0x28d thirdparty/Lua/lua-5.4.3/src/loadlib.o
                                         0x2bc (size before relaxing)
- *fill*         0x000000000003c055        0x3 
- .rodata        0x000000000003c058       0x64 thirdparty/Lua/lua-5.4.3/src/loadlib.o
+ *fill*         0x000000000003c025        0x3 
+ .rodata        0x000000000003c028       0x64 thirdparty/Lua/lua-5.4.3/src/loadlib.o
  .rodata.str1.1
-                0x000000000003c0bc       0x1e thirdparty/Lua/lua-5.4.3/src/lstate.o
+                0x000000000003c08c       0x1e thirdparty/Lua/lua-5.4.3/src/lstate.o
                                          0x3d (size before relaxing)
  .rodata.str1.1
-                0x000000000003c0da       0xc8 thirdparty/Lua/lua-5.4.3/src/ltm.o
+                0x000000000003c0aa       0xc8 thirdparty/Lua/lua-5.4.3/src/ltm.o
                                         0x125 (size before relaxing)
- *fill*         0x000000000003c1a2        0x2 
- .rodata        0x000000000003c1a4       0x9d thirdparty/Lua/lua-5.4.3/src/ltm.o
-                0x000000000003c208                luaT_typenames_
+ *fill*         0x000000000003c172        0x2 
+ .rodata        0x000000000003c174       0x9d thirdparty/Lua/lua-5.4.3/src/ltm.o
+                0x000000000003c1d8                luaT_typenames_
  .rodata.str1.1
-                0x000000000003c241       0xcd thirdparty/Lua/lua-5.4.3/src/lvm.o
+                0x000000000003c211       0xcd thirdparty/Lua/lua-5.4.3/src/lvm.o
                                          0xde (size before relaxing)
- *fill*         0x000000000003c30e        0x2 
- .rodata        0x000000000003c310      0x14c thirdparty/Lua/lua-5.4.3/src/lvm.o
+ *fill*         0x000000000003c2de        0x2 
+ .rodata        0x000000000003c2e0      0x14c thirdparty/Lua/lua-5.4.3/src/lvm.o
  .rodata.str1.1
-                0x000000000003c45c       0x42 thirdparty/Lua/lua-5.4.3/src/lcode.o
+                0x000000000003c42c       0x42 thirdparty/Lua/lua-5.4.3/src/lcode.o
                                          0x63 (size before relaxing)
- *fill*         0x000000000003c49e        0x2 
- .rodata        0x000000000003c4a0       0x20 thirdparty/Lua/lua-5.4.3/src/lcode.o
+ *fill*         0x000000000003c46e        0x2 
+ .rodata        0x000000000003c470       0x20 thirdparty/Lua/lua-5.4.3/src/lcode.o
  .rodata.str1.1
-                0x000000000003c4c0       0xe5 thirdparty/Lua/lua-5.4.3/src/ldo.o
+                0x000000000003c490       0xe5 thirdparty/Lua/lua-5.4.3/src/ldo.o
                                          0xf4 (size before relaxing)
  .rodata.str1.1
-                0x000000000003c5a5      0x16f thirdparty/Lua/lua-5.4.3/src/liolib.o
+                0x000000000003c575      0x16f thirdparty/Lua/lua-5.4.3/src/liolib.o
                                         0x1f0 (size before relaxing)
- .rodata        0x000000000003c714      0x100 thirdparty/Lua/lua-5.4.3/src/liolib.o
+ .rodata        0x000000000003c6e4      0x100 thirdparty/Lua/lua-5.4.3/src/liolib.o
  .rodata.str1.1
-                0x000000000003c814       0x53 thirdparty/Lua/lua-5.4.3/src/lobject.o
+                0x000000000003c7e4       0x53 thirdparty/Lua/lua-5.4.3/src/lobject.o
                                          0x65 (size before relaxing)
- .rodata        0x000000000003c867      0x100 thirdparty/Lua/lua-5.4.3/src/lobject.o
+ .rodata        0x000000000003c837      0x100 thirdparty/Lua/lua-5.4.3/src/lobject.o
  .rodata.str1.1
-                0x000000000003c967       0x12 thirdparty/Lua/lua-5.4.3/src/lstring.o
+                0x000000000003c937       0x12 thirdparty/Lua/lua-5.4.3/src/lstring.o
  .rodata.str1.1
-                0x000000000003c967      0x1a8 thirdparty/Lua/lua-5.4.3/src/llex.o
+                0x000000000003c937      0x1a8 thirdparty/Lua/lua-5.4.3/src/llex.o
                                         0x20b (size before relaxing)
- *fill*         0x000000000003cb0f        0x1 
- .rodata        0x000000000003cb10       0x94 thirdparty/Lua/lua-5.4.3/src/llex.o
- .rodata        0x000000000003cba4       0x53 thirdparty/Lua/lua-5.4.3/src/lopcodes.o
-                0x000000000003cba4                luaP_opmodes
+ *fill*         0x000000000003cadf        0x1 
+ .rodata        0x000000000003cae0       0x94 thirdparty/Lua/lua-5.4.3/src/llex.o
+ .rodata        0x000000000003cb74       0x53 thirdparty/Lua/lua-5.4.3/src/lopcodes.o
+                0x000000000003cb74                luaP_opmodes
  .rodata.str1.1
-                0x000000000003cbf7        0xc thirdparty/Lua/lua-5.4.3/src/ldump.o
+                0x000000000003cbc7        0xc thirdparty/Lua/lua-5.4.3/src/ldump.o
  .rodata.str1.1
-                0x000000000003cbf7      0x4bc thirdparty/Lua/lua-5.4.3/src/lstrlib.o
+                0x000000000003cbc7      0x4bc thirdparty/Lua/lua-5.4.3/src/lstrlib.o
                                         0x57d (size before relaxing)
- *fill*         0x000000000003d0b3        0x1 
- .rodata        0x000000000003d0b4       0xe0 thirdparty/Lua/lua-5.4.3/src/lstrlib.o
+ *fill*         0x000000000003d083        0x1 
+ .rodata        0x000000000003d084       0xe0 thirdparty/Lua/lua-5.4.3/src/lstrlib.o
  .rodata.str1.1
-                0x000000000003d194       0x8f thirdparty/Lua/lua-5.4.3/src/lcorolib.o
+                0x000000000003d164       0x8f thirdparty/Lua/lua-5.4.3/src/lcorolib.o
                                          0xab (size before relaxing)
- *fill*         0x000000000003d223        0x1 
- .rodata        0x000000000003d224       0x58 thirdparty/Lua/lua-5.4.3/src/lcorolib.o
+ *fill*         0x000000000003d1f3        0x1 
+ .rodata        0x000000000003d1f4       0x58 thirdparty/Lua/lua-5.4.3/src/lcorolib.o
  .rodata.str1.1
-                0x000000000003d27c       0x14 hal/src/hal_io.o
+                0x000000000003d24c       0x14 hal/src/hal_io.o
  .rodata.str1.1
-                0x000000000003d290       0x1d hal/src/hal_i2c_m_async.o
+                0x000000000003d260       0x1d hal/src/hal_i2c_m_async.o
  .rodata.str1.1
-                0x000000000003d2ad       0x15 hpl/wdt/hpl_wdt.o
+                0x000000000003d27d       0x15 hpl/wdt/hpl_wdt.o
  .rodata.str1.1
-                0x000000000003d2c2       0x1b hal/src/hal_spi_m_dma.o
- *fill*         0x000000000003d2dd        0x3 
- .rodata        0x000000000003d2e0      0x104 hpl/evsys/hpl_evsys.o
+                0x000000000003d292       0x1b hal/src/hal_spi_m_dma.o
+ *fill*         0x000000000003d2ad        0x3 
+ .rodata        0x000000000003d2b0      0x104 hpl/evsys/hpl_evsys.o
  .rodata.str1.1
-                0x000000000003d3e4       0x19 hal/utils/src/utils_syscalls.o
+                0x000000000003d3b4       0x19 hal/utils/src/utils_syscalls.o
  .rodata.str1.1
-                0x000000000003d3fd       0x17 hpl/qspi/hpl_qspi.o
+                0x000000000003d3cd       0x17 hpl/qspi/hpl_qspi.o
  .rodata.str1.1
-                0x000000000003d414       0x1d hpl/nvmctrl/hpl_nvmctrl.o
+                0x000000000003d3e4       0x1d hpl/nvmctrl/hpl_nvmctrl.o
  .rodata.str1.1
-                0x000000000003d431       0x17 hal/src/hal_timer.o
- .rodata        0x000000000003d448       0x48 hpl/usb/hpl_usb.o
- .rodata        0x000000000003d490       0x34 usb/class/hid/device/hiddf_mouse.o
-                0x000000000003d490                mouse_report_desc
- .rodata        0x000000000003d4c4      0x100 hpl/dmac/hpl_dmac.o
+                0x000000000003d401       0x17 hal/src/hal_timer.o
+ .rodata        0x000000000003d418       0x48 hpl/usb/hpl_usb.o
+ .rodata        0x000000000003d460       0x34 usb/class/hid/device/hiddf_mouse.o
+                0x000000000003d460                mouse_report_desc
+ .rodata        0x000000000003d494      0x100 hpl/dmac/hpl_dmac.o
  .rodata.str1.1
-                0x000000000003d5c4       0x1b hal/src/hal_adc_async.o
+                0x000000000003d594       0x1b hal/src/hal_adc_async.o
  .rodata.str1.1
-                0x000000000003d5df       0x1b hal/src/hal_rand_sync.o
+                0x000000000003d5af       0x1b hal/src/hal_rand_sync.o
  .rodata.str1.1
-                0x000000000003d5fa       0x17 hpl/trng/hpl_trng.o
- .rodata        0x000000000003d611       0x3b usb/class/hid/device/hiddf_keyboard.o
-                0x000000000003d611                keyboard_report_desc
+                0x000000000003d5ca       0x17 hpl/trng/hpl_trng.o
+ .rodata        0x000000000003d5e1       0x3b usb/class/hid/device/hiddf_keyboard.o
+                0x000000000003d5e1                keyboard_report_desc
  .rodata.str1.1
-                0x000000000003d64c       0x1c hal/src/hal_usart_sync.o
+                0x000000000003d61c       0x1c hal/src/hal_usart_sync.o
  .rodata.str1.1
-                0x000000000003d668       0x17 hal/src/hal_flash.o
+                0x000000000003d638       0x17 hal/src/hal_flash.o
  .rodata.str1.1
-                0x000000000003d67f       0x1d hal/src/hal_spi_m_async.o
+                0x000000000003d64f       0x1d hal/src/hal_spi_m_async.o
  .rodata.str1.1
-                0x000000000003d69c       0x1a hal/src/hal_crc_sync.o
- .rodata        0x000000000003d6b6        0xe hal/src/hal_usb_device.o
+                0x000000000003d66c       0x1a hal/src/hal_crc_sync.o
+ .rodata        0x000000000003d686        0xe hal/src/hal_usb_device.o
  .rodata.str1.1
-                0x000000000003d6c4       0x1e hal/utils/src/utils_list.o
+                0x000000000003d694       0x1e hal/utils/src/utils_list.o
  .rodata.str1.1
-                0x000000000003d6e2       0x15 hpl/rtc/hpl_rtc.o
+                0x000000000003d6b2       0x15 hpl/rtc/hpl_rtc.o
  .rodata.str1.1
-                0x000000000003d6f7       0x19 driver_init.o
+                0x000000000003d6c7       0x19 driver_init.o
  .rodata.str1.1
-                0x000000000003d710       0x1d hal/src/hal_usart_async.o
+                0x000000000003d6e0       0x1d hal/src/hal_usart_async.o
  .rodata.str1.1
-                0x000000000003d72d       0x1b hpl/sercom/hpl_sercom.o
- .rodata        0x000000000003d748       0xd4 hpl/sercom/hpl_sercom.o
+                0x000000000003d6fd       0x1b hpl/sercom/hpl_sercom.o
+ .rodata        0x000000000003d718       0xd4 hpl/sercom/hpl_sercom.o
  .rodata.str1.1
-                0x000000000003d81c       0x24 hal/utils/src/utils_ringbuffer.o
+                0x000000000003d7ec       0x24 hal/utils/src/utils_ringbuffer.o
  .rodata.str1.1
-                0x000000000003d840       0xd4 main.o
+                0x000000000003d810       0xd4 main.o
                                          0xee (size before relaxing)
  .rodata.str1.1
-                0x000000000003d914       0x1a hal/src/hal_qspi_dma.o
+                0x000000000003d8e4       0x1a hal/src/hal_qspi_dma.o
  .rodata.str1.1
-                0x000000000003d92e       0x15 hpl/adc/hpl_adc.o
- *fill*         0x000000000003d943        0x1 
- .rodata        0x000000000003d944       0x2c hpl/adc/hpl_adc.o
+                0x000000000003d8fe       0x15 hpl/adc/hpl_adc.o
+ *fill*         0x000000000003d913        0x1 
+ .rodata        0x000000000003d914       0x2c hpl/adc/hpl_adc.o
  .rodata.str1.1
-                0x000000000003d970       0x16 usb/device/usbdc.o
+                0x000000000003d940       0x16 usb/device/usbdc.o
  .rodata.str1.1
-                0x000000000003d986       0x13 hpl/tc/hpl_tc.o
- *fill*         0x000000000003d999        0x3 
- .rodata        0x000000000003d99c       0x70 hpl/tc/hpl_tc.o
+                0x000000000003d956       0x13 hpl/tc/hpl_tc.o
+ *fill*         0x000000000003d969        0x3 
+ .rodata        0x000000000003d96c       0x70 hpl/tc/hpl_tc.o
  .rodata.acos.str1.4
-                0x000000000003da0c        0x1 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-w_acos.o)
+                0x000000000003d9dc        0x1 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-w_acos.o)
  .rodata.asin.str1.4
-                0x000000000003da0d        0x1 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-w_asin.o)
+                0x000000000003d9dd        0x1 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-w_asin.o)
  .rodata.log.str1.4
-                0x000000000003da0d        0x1 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-w_log.o)
+                0x000000000003d9dd        0x1 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-w_log.o)
  .rodata.log10.str1.4
-                0x000000000003da0d        0x1 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-w_log10.o)
- *fill*         0x000000000003da0d        0x3 
+                0x000000000003d9dd        0x1 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-w_log10.o)
+ *fill*         0x000000000003d9dd        0x3 
  .rodata.CSWTCH.8
-                0x000000000003da10       0x18 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_atan2.o)
+                0x000000000003d9e0       0x18 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_atan2.o)
  .rodata.CSWTCH.9
-                0x000000000003da28       0x18 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_atan2.o)
- .rodata.halF   0x000000000003da40       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_exp.o)
- .rodata.ln2HI  0x000000000003da50       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_exp.o)
- .rodata.ln2LO  0x000000000003da60       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_exp.o)
- .rodata.Zero   0x000000000003da70       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_fmod.o)
+                0x000000000003d9f8       0x18 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_atan2.o)
+ .rodata.halF   0x000000000003da10       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_exp.o)
+ .rodata.ln2HI  0x000000000003da20       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_exp.o)
+ .rodata.ln2LO  0x000000000003da30       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_exp.o)
+ .rodata.Zero   0x000000000003da40       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_fmod.o)
  .rodata.__ieee754_pow.str1.4
-                0x000000000003da80        0x1 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_pow.o)
+                0x000000000003da50        0x1 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_pow.o)
  .rodata.npio2_hw
-                0x000000000003da80       0x80 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_rem_pio2.o)
+                0x000000000003da50       0x80 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_rem_pio2.o)
  .rodata.two_over_pi
-                0x000000000003db00      0x108 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_rem_pio2.o)
- .rodata.PIo2   0x000000000003dc08       0x40 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-k_rem_pio2.o)
+                0x000000000003dad0      0x108 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-e_rem_pio2.o)
+ .rodata.PIo2   0x000000000003dbd8       0x40 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-k_rem_pio2.o)
  .rodata.init_jk
-                0x000000000003dc48       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-k_rem_pio2.o)
+                0x000000000003dc18       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-k_rem_pio2.o)
  .rodata.atanhi
-                0x000000000003dc58       0x20 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-s_atan.o)
+                0x000000000003dc28       0x20 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-s_atan.o)
  .rodata.atanlo
-                0x000000000003dc78       0x20 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-s_atan.o)
- .rodata.TWO52  0x000000000003dc98       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-s_rint.o)
+                0x000000000003dc48       0x20 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-s_atan.o)
+ .rodata.TWO52  0x000000000003dc68       0x10 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a(lib_a-s_rint.o)
  .rodata._ctype_
-                0x000000000003dca8      0x101 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-ctype_.o)
-                0x000000000003dca8                _ctype_
- *fill*         0x000000000003dda9        0x3 
+                0x000000000003dc78      0x101 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-ctype_.o)
+                0x000000000003dc78                _ctype_
+ *fill*         0x000000000003dd79        0x3 
  .rodata.__sf_fake_stderr
-                0x000000000003ddac       0x20 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-findfp.o)
-                0x000000000003ddac                __sf_fake_stderr
+                0x000000000003dd7c       0x20 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-findfp.o)
+                0x000000000003dd7c                __sf_fake_stderr
  .rodata.__sf_fake_stdin
-                0x000000000003ddcc       0x20 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-findfp.o)
-                0x000000000003ddcc                __sf_fake_stdin
+                0x000000000003dd9c       0x20 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-findfp.o)
+                0x000000000003dd9c                __sf_fake_stdin
  .rodata.__sf_fake_stdout
-                0x000000000003ddec       0x20 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-findfp.o)
-                0x000000000003ddec                __sf_fake_stdout
+                0x000000000003ddbc       0x20 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-findfp.o)
+                0x000000000003ddbc                __sf_fake_stdout
  .rodata.gmtime.str1.1
-                0x000000000003de0c       0x93 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-gmtime.o)
- *fill*         0x000000000003de9f        0x1 
+                0x000000000003dddc       0x93 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-gmtime.o)
+ *fill*         0x000000000003de6f        0x1 
  .rodata._global_impure_ptr
-                0x000000000003dea0        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-impure.o)
-                0x000000000003dea0                _global_impure_ptr
+                0x000000000003de70        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-impure.o)
+                0x000000000003de70                _global_impure_ptr
  .rodata.localtime.str1.1
-                0x000000000003dea4       0x7d /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-lcltime.o)
+                0x000000000003de74       0x7d /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-lcltime.o)
                                          0x94 (size before relaxing)
  .rodata._setlocale_r.str1.1
-                0x000000000003df21        0x6 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-locale.o)
+                0x000000000003def1        0x6 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-locale.o)
                                           0x9 (size before relaxing)
  .rodata.str1.1
-                0x000000000003df27        0x2 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-locale.o)
- *fill*         0x000000000003df27        0x1 
+                0x000000000003def7        0x2 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-locale.o)
+ *fill*         0x000000000003def7        0x1 
  .rodata.DAYS_IN_MONTH
-                0x000000000003df28       0x30 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mktime.o)
+                0x000000000003def8       0x30 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mktime.o)
  .rodata._DAYS_BEFORE_MONTH
-                0x000000000003df58       0x30 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mktime.o)
+                0x000000000003df28       0x30 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mktime.o)
  .rodata.__month_lengths
-                0x000000000003df88       0x60 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-month_lengths.o)
-                0x000000000003df88                __month_lengths
+                0x000000000003df58       0x60 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-month_lengths.o)
+                0x000000000003df58                __month_lengths
  .rodata._vfprintf_r.str1.1
-                0x000000000003dfe8       0x11 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-vfprintf.o)
+                0x000000000003dfb8       0x11 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-vfprintf.o)
  .rodata._printf_i.str1.1
-                0x000000000003dff9       0x22 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-vfprintf_i.o)
+                0x000000000003dfc9       0x22 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-vfprintf_i.o)
  .rodata._strerror_r.str1.1
-                0x000000000003e01b      0x696 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strerror.o)
+                0x000000000003dfeb      0x696 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strerror.o)
                                         0x697 (size before relaxing)
  .rodata.__strftime.str1.1
-                0x000000000003e6b1       0x52 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strftime.o)
+                0x000000000003e681       0x52 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strftime.o)
                                          0x6b (size before relaxing)
  .rodata._strtod_l.str1.1
-                0x000000000003e703        0x9 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strtod.o)
+                0x000000000003e6d3        0x9 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strtod.o)
                                           0xd (size before relaxing)
  .rodata.fpi.6220
-                0x000000000003e70c       0x14 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strtod.o)
+                0x000000000003e6dc       0x14 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strtod.o)
  .rodata.fpinan.6256
-                0x000000000003e720       0x14 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strtod.o)
- *fill*         0x000000000003e734        0x4 
+                0x000000000003e6f0       0x14 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strtod.o)
+ *fill*         0x000000000003e704        0x4 
  .rodata.tinytens
-                0x000000000003e738       0x28 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strtod.o)
+                0x000000000003e708       0x28 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-strtod.o)
  .rodata.str1.1
-                0x000000000003e760      0x12b /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-timelocal.o)
+                0x000000000003e730      0x12b /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-timelocal.o)
                                         0x12c (size before relaxing)
- *fill*         0x000000000003e88b        0x1 
+ *fill*         0x000000000003e85b        0x1 
  .rodata._C_time_locale
-                0x000000000003e88c       0xfc /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-timelocal.o)
-                0x000000000003e88c                _C_time_locale
+                0x000000000003e85c       0xfc /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-timelocal.o)
+                0x000000000003e85c                _C_time_locale
  .rodata._tmpfile_r.str1.1
-                0x000000000003e988        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-tmpfile.o)
+                0x000000000003e958        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-tmpfile.o)
  .rodata.worker.str1.1
-                0x000000000003e98c        0xb /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-tmpnam.o)
+                0x000000000003e95c        0xb /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-tmpnam.o)
  .rodata._tmpnam_r.str1.1
-                0x000000000003e997       0x82 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-tmpnam.o)
+                0x000000000003e967       0x82 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-tmpnam.o)
                                          0x9b (size before relaxing)
  .rodata._tzset_unlocked_r.str1.1
-                0x000000000003ea19       0x3c /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-tzset_r.o)
+                0x000000000003e9e9       0x3c /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-tzset_r.o)
                                          0x4e (size before relaxing)
  .rodata.str1.1
-                0x000000000003ea55        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-tzvars.o)
+                0x000000000003ea25        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-tzvars.o)
  .rodata.__assert_func.str1.1
-                0x000000000003ea55       0x3c /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-assert.o)
+                0x000000000003ea25       0x3c /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-assert.o)
                                          0x3d (size before relaxing)
  .rodata.__gethex.str1.1
-                0x000000000003ea91       0x95 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-gdtoa-gethex.o)
+                0x000000000003ea61       0x95 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-gdtoa-gethex.o)
  .rodata.str1.1
-                0x000000000003eb26        0x3 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-lnumeric.o)
- *fill*         0x000000000003eb26        0x2 
+                0x000000000003eaf6        0x3 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-lnumeric.o)
+ *fill*         0x000000000003eaf6        0x2 
  .rodata._C_numeric_locale
-                0x000000000003eb28        0xc /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-lnumeric.o)
-                0x000000000003eb28                _C_numeric_locale
+                0x000000000003eaf8        0xc /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-lnumeric.o)
+                0x000000000003eaf8                _C_numeric_locale
  .rodata._Balloc.str1.1
-                0x000000000003eb34       0x7d /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mprec.o)
+                0x000000000003eb04       0x7d /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mprec.o)
                                          0x94 (size before relaxing)
  .rodata.__multadd.str1.1
-                0x000000000003ebb1       0x11 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mprec.o)
- *fill*         0x000000000003ebb1        0x7 
+                0x000000000003eb81       0x11 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mprec.o)
+ *fill*         0x000000000003eb81        0x7 
  .rodata.__mprec_bigtens
-                0x000000000003ebb8       0x28 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mprec.o)
-                0x000000000003ebb8                __mprec_bigtens
+                0x000000000003eb88       0x28 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mprec.o)
+                0x000000000003eb88                __mprec_bigtens
  .rodata.__mprec_tens
-                0x000000000003ebe0       0xc8 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mprec.o)
-                0x000000000003ebe0                __mprec_tens
+                0x000000000003ebb0       0xc8 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mprec.o)
+                0x000000000003ebb0                __mprec_tens
  .rodata.p05.6150
-                0x000000000003eca8        0xc /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mprec.o)
+                0x000000000003ec78        0xc /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-mprec.o)
  .rodata._svfprintf_r.str1.1
-                0x000000000003ecb4       0x11 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-svfprintf.o)
+                0x000000000003ec84       0x11 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-svfprintf.o)
  .rodata.__ssvfscanf_r.str1.1
-                0x000000000003ecb4        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-svfscanf.o)
+                0x000000000003ec84        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-svfscanf.o)
  .rodata.str1.1
-                0x000000000003ecb4        0x3 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
+                0x000000000003ec84        0x3 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
                                           0x9 (size before relaxing)
  .rodata._scanf_i.str1.1
-                0x000000000003ecb7       0x12 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
- *fill*         0x000000000003ecc9        0x3 
- .rodata        0x000000000003eccc        0xc /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
+                0x000000000003ec87       0x12 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
+ *fill*         0x000000000003ec99        0x3 
+ .rodata        0x000000000003ec9c        0xc /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x000000000003ecd8                . = ALIGN (0x4)
+                0x000000000003eca8                . = ALIGN (0x4)
  *(.init)
- .init          0x000000000003ecd8        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crti.o
-                0x000000000003ecd8                _init
- .init          0x000000000003ecdc        0x8 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtn.o
-                0x000000000003ece4                . = ALIGN (0x4)
-                0x000000000003ece4                __preinit_array_start = .
+ .init          0x000000000003eca8        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crti.o
+                0x000000000003eca8                _init
+ .init          0x000000000003ecac        0x8 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtn.o
+                0x000000000003ecb4                . = ALIGN (0x4)
+                0x000000000003ecb4                __preinit_array_start = .
  *(.preinit_array)
-                0x000000000003ece4                __preinit_array_end = .
-                0x000000000003ece4                . = ALIGN (0x4)
-                0x000000000003ece4                __init_array_start = .
+                0x000000000003ecb4                __preinit_array_end = .
+                0x000000000003ecb4                . = ALIGN (0x4)
+                0x000000000003ecb4                __init_array_start = .
  *(SORT_BY_NAME(.init_array.*))
  *(.init_array)
- .init_array    0x000000000003ece4        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
-                0x000000000003ece8                __init_array_end = .
-                0x000000000003ece8                . = ALIGN (0x4)
+ .init_array    0x000000000003ecb4        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
+                0x000000000003ecb8                __init_array_end = .
+                0x000000000003ecb8                . = ALIGN (0x4)
  *crtbegin.o(.ctors)
  *(EXCLUDE_FILE(*crtend.o) .ctors)
  *(SORT_BY_NAME(.ctors.*))
  *crtend.o(.ctors)
-                0x000000000003ece8                . = ALIGN (0x4)
+                0x000000000003ecb8                . = ALIGN (0x4)
  *(.fini)
- .fini          0x000000000003ece8        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crti.o
-                0x000000000003ece8                _fini
- .fini          0x000000000003ecec        0x8 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtn.o
-                0x000000000003ecf4                . = ALIGN (0x4)
-                0x000000000003ecf4                __fini_array_start = .
+ .fini          0x000000000003ecb8        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crti.o
+                0x000000000003ecb8                _fini
+ .fini          0x000000000003ecbc        0x8 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtn.o
+                0x000000000003ecc4                . = ALIGN (0x4)
+                0x000000000003ecc4                __fini_array_start = .
  *(.fini_array)
- .fini_array    0x000000000003ecf4        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
+ .fini_array    0x000000000003ecc4        0x4 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
  *(SORT_BY_NAME(.fini_array.*))
-                0x000000000003ecf8                __fini_array_end = .
+                0x000000000003ecc8                __fini_array_end = .
  *crtbegin.o(.dtors)
  *(EXCLUDE_FILE(*crtend.o) .dtors)
  *(SORT_BY_NAME(.dtors.*))
  *crtend.o(.dtors)
-                0x000000000003ecf8                . = ALIGN (0x4)
-                0x000000000003ecf8                _efixed = .
+                0x000000000003ecc8                . = ALIGN (0x4)
+                0x000000000003ecc8                _efixed = .
                 [!provide]                        PROVIDE (__exidx_start = .)
 
-.vfp11_veneer   0x000000000003ecf8        0x0
- .vfp11_veneer  0x000000000003ecf8        0x0 linker stubs
+.vfp11_veneer   0x000000000003ecc8        0x0
+ .vfp11_veneer  0x000000000003ecc8        0x0 linker stubs
 
-.v4_bx          0x000000000003ecf8        0x0
- .v4_bx         0x000000000003ecf8        0x0 linker stubs
+.v4_bx          0x000000000003ecc8        0x0
+ .v4_bx         0x000000000003ecc8        0x0 linker stubs
 
-.iplt           0x000000000003ecf8        0x0
- .iplt          0x000000000003ecf8        0x0 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
+.iplt           0x000000000003ecc8        0x0
+ .iplt          0x000000000003ecc8        0x0 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
 
-.igot.plt       0x000000000003ecf8        0x0
- .igot.plt      0x000000000003ecf8        0x0 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
+.igot.plt       0x000000000003ecc8        0x0
+ .igot.plt      0x000000000003ecc8        0x0 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
 
-.ARM.exidx      0x000000000003ecf8        0x8
+.ARM.exidx      0x000000000003ecc8        0x8
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
- .ARM.exidx     0x000000000003ecf8        0x8 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/libgcc.a(_udivmoddi4.o)
+ .ARM.exidx     0x000000000003ecc8        0x8 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/libgcc.a(_udivmoddi4.o)
                 [!provide]                        PROVIDE (__exidx_end = .)
 
-.eh_frame       0x000000000003ed00        0x0
- .eh_frame      0x000000000003ed00        0x0 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
+.eh_frame       0x000000000003ecd0        0x0
+ .eh_frame      0x000000000003ecd0        0x0 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
 
-.rel.dyn        0x000000000003ed00        0x0
- .rel.iplt      0x000000000003ed00        0x0 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
-                0x000000000003ed00                . = ALIGN (0x4)
-                0x000000000003ed00                _etext = .
+.rel.dyn        0x000000000003ecd0        0x0
+ .rel.iplt      0x000000000003ecd0        0x0 /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v7e-m/nofp/crtbegin.o
+                0x000000000003ecd0                . = ALIGN (0x4)
+                0x000000000003ecd0                _etext = .
 
-.relocate       0x0000000020000000      0x8c4 load address 0x000000000003ed00
+.relocate       0x0000000020000000      0x8c4 load address 0x000000000003ecd0
                 0x0000000020000000                . = ALIGN (0x4)
                 0x0000000020000000                _srelocate = .
  *(.ramfunc .ramfunc.*)
@@ -42854,7 +42854,7 @@ LOAD /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/
                 0x0000000004000000                . = ALIGN (0x8)
                 0x0000000004000000                _eqspi = .
 
-.bss            0x00000000200008d0     0xc7a8 load address 0x000000000003f5d0
+.bss            0x00000000200008d0     0xc7a8 load address 0x000000000003f5a0
                 0x00000000200008d0                . = ALIGN (0x4)
                 0x00000000200008d0                _sbss = .
                 0x00000000200008d0                _szero = .
@@ -43025,7 +43025,7 @@ LOAD /usr/share/gcc-arm-none-eabi-10-2020-q4-major/bin/../lib/gcc/arm-none-eabi/
                 0x000000002000d078                _ebss = .
                 0x000000002000d078                _ezero = .
 
-.stack          0x000000002000d078    0x10000 load address 0x000000000004bd78
+.stack          0x000000002000d078    0x10000 load address 0x000000000004bd48
                 0x000000002000d078                . = ALIGN (0x8)
                 0x000000002000d078                _sstack = .
                 0x000000002001d078                . = (. + STACK_SIZE)
@@ -44917,218 +44917,218 @@ LOAD linker stubs
  .debug_line    0x0000000000083d9a      0xafd hpl/systick/hpl_systick.o
  .debug_line    0x0000000000084897      0xc2e hpl/dsu/hpl_dsu.o
 
-.debug_str      0x0000000000000000   0x13b916
+.debug_str      0x0000000000000000   0x13b8e6
  .debug_str     0x0000000000000000    0xed4ba usb/class/midi/device/audiodf_midi.o
                                       0xedac9 (size before relaxing)
- .debug_str     0x00000000000ed4ba    0x17b47 grid/grid_ain.o
-                                     0x1051f0 (size before relaxing)
- .debug_str     0x0000000000105001      0xb28 grid/grid_buf.o
-                                     0x105cc1 (size before relaxing)
- .debug_str     0x0000000000105b29      0x72c grid/grid_d51.o
-                                     0x105970 (size before relaxing)
- .debug_str     0x0000000000106255      0x38b grid/grid_expr.o
-                                     0x1054cc (size before relaxing)
- .debug_str     0x00000000001065e0      0x4f6 grid/grid_led.o
-                                     0x10572f (size before relaxing)
- .debug_str     0x0000000000106ad6      0x37c grid/grid_module.o
-                                     0x10580c (size before relaxing)
- .debug_str     0x0000000000106e52      0x231 grid/grid_module_bu16.o
-                                     0x10560a (size before relaxing)
- .debug_str     0x0000000000107083      0x2d4 grid/grid_module_en16.o
-                                     0x105808 (size before relaxing)
- .debug_str     0x0000000000107357      0x14c grid/grid_module_pbf4.o
-                                     0x1056e6 (size before relaxing)
- .debug_str     0x00000000001074a3       0xcd grid/grid_module_po16.o
-                                     0x10565e (size before relaxing)
- .debug_str     0x0000000000107570      0x27e grid/grid_msg.o
-                                     0x1055b1 (size before relaxing)
- .debug_str     0x00000000001077ee      0x444 grid/grid_nvm.o
-                                     0x1057e4 (size before relaxing)
- .debug_str     0x0000000000107c32     0x1de2 grid/grid_sys.o
-                                     0x1078a6 (size before relaxing)
- .debug_str     0x0000000000109a14      0x233 grid/grid_ui.o
-                                     0x105779 (size before relaxing)
- .debug_str     0x0000000000109c47      0x332 grid/grid_usb.o
-                                     0x105635 (size before relaxing)
- .debug_str     0x0000000000109f79      0x2c4 grid/grid_lua_api.o
-                                     0x1057aa (size before relaxing)
- .debug_str     0x000000000010a23d     0x5960 thirdparty/Lua/lua-5.4.3/src/lapi.o
+ .debug_str     0x00000000000ed4ba    0x17b17 grid/grid_ain.o
+                                     0x1051c0 (size before relaxing)
+ .debug_str     0x0000000000104fd1      0xb28 grid/grid_buf.o
+                                     0x105c91 (size before relaxing)
+ .debug_str     0x0000000000105af9      0x72c grid/grid_d51.o
+                                     0x105940 (size before relaxing)
+ .debug_str     0x0000000000106225      0x38b grid/grid_expr.o
+                                     0x10549c (size before relaxing)
+ .debug_str     0x00000000001065b0      0x4f6 grid/grid_led.o
+                                     0x1056ff (size before relaxing)
+ .debug_str     0x0000000000106aa6      0x37c grid/grid_module.o
+                                     0x1057dc (size before relaxing)
+ .debug_str     0x0000000000106e22      0x231 grid/grid_module_bu16.o
+                                     0x1055da (size before relaxing)
+ .debug_str     0x0000000000107053      0x2d4 grid/grid_module_en16.o
+                                     0x1057d8 (size before relaxing)
+ .debug_str     0x0000000000107327      0x14c grid/grid_module_pbf4.o
+                                     0x1056b6 (size before relaxing)
+ .debug_str     0x0000000000107473       0xcd grid/grid_module_po16.o
+                                     0x10562e (size before relaxing)
+ .debug_str     0x0000000000107540      0x27e grid/grid_msg.o
+                                     0x105581 (size before relaxing)
+ .debug_str     0x00000000001077be      0x444 grid/grid_nvm.o
+                                     0x1057b4 (size before relaxing)
+ .debug_str     0x0000000000107c02     0x1de2 grid/grid_sys.o
+                                     0x107876 (size before relaxing)
+ .debug_str     0x00000000001099e4      0x233 grid/grid_ui.o
+                                     0x105749 (size before relaxing)
+ .debug_str     0x0000000000109c17      0x332 grid/grid_usb.o
+                                     0x105605 (size before relaxing)
+ .debug_str     0x0000000000109f49      0x2c4 grid/grid_lua_api.o
+                                     0x10577a (size before relaxing)
+ .debug_str     0x000000000010a20d     0x5960 thirdparty/Lua/lua-5.4.3/src/lapi.o
                                        0xe59f (size before relaxing)
- .debug_str     0x000000000010fb9d      0x241 thirdparty/Lua/lua-5.4.3/src/lctype.o
+ .debug_str     0x000000000010fb6d      0x241 thirdparty/Lua/lua-5.4.3/src/lctype.o
                                        0x7a34 (size before relaxing)
- .debug_str     0x000000000010fdde      0x1ad thirdparty/Lua/lua-5.4.3/src/lfunc.o
+ .debug_str     0x000000000010fdae      0x1ad thirdparty/Lua/lua-5.4.3/src/lfunc.o
                                        0xc1da (size before relaxing)
- .debug_str     0x000000000010ff8b      0xf9b thirdparty/Lua/lua-5.4.3/src/lmathlib.o
+ .debug_str     0x000000000010ff5b      0xf9b thirdparty/Lua/lua-5.4.3/src/lmathlib.o
                                        0xa941 (size before relaxing)
- .debug_str     0x0000000000110f26      0x7a2 thirdparty/Lua/lua-5.4.3/src/loslib.o
+ .debug_str     0x0000000000110ef6      0x7a2 thirdparty/Lua/lua-5.4.3/src/loslib.o
                                        0xa48c (size before relaxing)
- .debug_str     0x00000000001116c8      0x492 thirdparty/Lua/lua-5.4.3/src/ltable.o
+ .debug_str     0x0000000000111698      0x492 thirdparty/Lua/lua-5.4.3/src/ltable.o
                                        0xe3f2 (size before relaxing)
- .debug_str     0x0000000000111b5a      0x202 thirdparty/Lua/lua-5.4.3/src/lundump.o
+ .debug_str     0x0000000000111b2a      0x202 thirdparty/Lua/lua-5.4.3/src/lundump.o
                                        0xd761 (size before relaxing)
- .debug_str     0x0000000000111d5c      0x489 thirdparty/Lua/lua-5.4.3/src/lauxlib.o
+ .debug_str     0x0000000000111d2c      0x489 thirdparty/Lua/lua-5.4.3/src/lauxlib.o
                                        0xa60c (size before relaxing)
- .debug_str     0x00000000001121e5      0x228 thirdparty/Lua/lua-5.4.3/src/ldblib.o
+ .debug_str     0x00000000001121b5      0x228 thirdparty/Lua/lua-5.4.3/src/ldblib.o
                                        0x9e2f (size before relaxing)
- .debug_str     0x000000000011240d      0x85b thirdparty/Lua/lua-5.4.3/src/lgc.o
+ .debug_str     0x00000000001123dd      0x85b thirdparty/Lua/lua-5.4.3/src/lgc.o
                                        0xe4a2 (size before relaxing)
- .debug_str     0x0000000000112c68       0xee thirdparty/Lua/lua-5.4.3/src/lmem.o
+ .debug_str     0x0000000000112c38       0xee thirdparty/Lua/lua-5.4.3/src/lmem.o
                                        0xbdc6 (size before relaxing)
- .debug_str     0x0000000000112d56     0x1b00 thirdparty/Lua/lua-5.4.3/src/lparser.o
+ .debug_str     0x0000000000112d26     0x1b00 thirdparty/Lua/lua-5.4.3/src/lparser.o
                                        0xf586 (size before relaxing)
- .debug_str     0x0000000000114856      0x18b thirdparty/Lua/lua-5.4.3/src/ltablib.o
+ .debug_str     0x0000000000114826      0x18b thirdparty/Lua/lua-5.4.3/src/ltablib.o
                                        0x9be0 (size before relaxing)
- .debug_str     0x00000000001149e1      0x1b2 thirdparty/Lua/lua-5.4.3/src/lutf8lib.o
+ .debug_str     0x00000000001149b1      0x1b2 thirdparty/Lua/lua-5.4.3/src/lutf8lib.o
                                        0x9b4b (size before relaxing)
- .debug_str     0x0000000000114b93      0x6c4 thirdparty/Lua/lua-5.4.3/src/lbaselib.o
+ .debug_str     0x0000000000114b63      0x6c4 thirdparty/Lua/lua-5.4.3/src/lbaselib.o
                                        0xa217 (size before relaxing)
- .debug_str     0x0000000000115257      0x254 thirdparty/Lua/lua-5.4.3/src/ldebug.o
+ .debug_str     0x0000000000115227      0x254 thirdparty/Lua/lua-5.4.3/src/ldebug.o
                                        0xf0e3 (size before relaxing)
- .debug_str     0x00000000001154ab       0x3c thirdparty/Lua/lua-5.4.3/src/linit.o
+ .debug_str     0x000000000011547b       0x3c thirdparty/Lua/lua-5.4.3/src/linit.o
                                        0x9766 (size before relaxing)
- .debug_str     0x00000000001154e7      0x300 thirdparty/Lua/lua-5.4.3/src/loadlib.o
+ .debug_str     0x00000000001154b7      0x300 thirdparty/Lua/lua-5.4.3/src/loadlib.o
                                        0x9dc8 (size before relaxing)
- .debug_str     0x00000000001157e7      0x208 thirdparty/Lua/lua-5.4.3/src/lstate.o
+ .debug_str     0x00000000001157b7      0x208 thirdparty/Lua/lua-5.4.3/src/lstate.o
                                        0xdaf7 (size before relaxing)
- .debug_str     0x00000000001159ef      0x123 thirdparty/Lua/lua-5.4.3/src/ltm.o
+ .debug_str     0x00000000001159bf      0x123 thirdparty/Lua/lua-5.4.3/src/ltm.o
                                        0xda0a (size before relaxing)
- .debug_str     0x0000000000115b12     0x14fb thirdparty/Lua/lua-5.4.3/src/lvm.o
+ .debug_str     0x0000000000115ae2     0x14fb thirdparty/Lua/lua-5.4.3/src/lvm.o
                                       0x112cb (size before relaxing)
- .debug_str     0x000000000011700d      0x378 thirdparty/Lua/lua-5.4.3/src/lcode.o
+ .debug_str     0x0000000000116fdd      0x378 thirdparty/Lua/lua-5.4.3/src/lcode.o
                                        0xfa8f (size before relaxing)
- .debug_str     0x0000000000117385      0x29a thirdparty/Lua/lua-5.4.3/src/ldo.o
+ .debug_str     0x0000000000117355      0x29a thirdparty/Lua/lua-5.4.3/src/ldo.o
                                        0xefd7 (size before relaxing)
- .debug_str     0x000000000011761f      0x484 thirdparty/Lua/lua-5.4.3/src/liolib.o
+ .debug_str     0x00000000001175ef      0x484 thirdparty/Lua/lua-5.4.3/src/liolib.o
                                        0xa9bc (size before relaxing)
- .debug_str     0x0000000000117aa3      0x20f thirdparty/Lua/lua-5.4.3/src/lobject.o
+ .debug_str     0x0000000000117a73      0x20f thirdparty/Lua/lua-5.4.3/src/lobject.o
                                        0xea25 (size before relaxing)
- .debug_str     0x0000000000117cb2       0xaa thirdparty/Lua/lua-5.4.3/src/lstring.o
+ .debug_str     0x0000000000117c82       0xaa thirdparty/Lua/lua-5.4.3/src/lstring.o
                                        0xd49a (size before relaxing)
- .debug_str     0x0000000000117d5c       0x2f thirdparty/Lua/lua-5.4.3/src/lzio.o
+ .debug_str     0x0000000000117d2c       0x2f thirdparty/Lua/lua-5.4.3/src/lzio.o
                                        0xc59a (size before relaxing)
- .debug_str     0x0000000000117d8b      0x1a1 thirdparty/Lua/lua-5.4.3/src/llex.o
+ .debug_str     0x0000000000117d5b      0x1a1 thirdparty/Lua/lua-5.4.3/src/llex.o
                                        0xdd03 (size before relaxing)
- .debug_str     0x0000000000117f2c       0x4e thirdparty/Lua/lua-5.4.3/src/lopcodes.o
+ .debug_str     0x0000000000117efc       0x4e thirdparty/Lua/lua-5.4.3/src/lopcodes.o
                                        0x87e4 (size before relaxing)
- .debug_str     0x0000000000117f7a      0x183 thirdparty/Lua/lua-5.4.3/src/ldump.o
+ .debug_str     0x0000000000117f4a      0x183 thirdparty/Lua/lua-5.4.3/src/ldump.o
                                        0xb4f4 (size before relaxing)
- .debug_str     0x00000000001180fd      0x5f0 thirdparty/Lua/lua-5.4.3/src/lstrlib.o
+ .debug_str     0x00000000001180cd      0x5f0 thirdparty/Lua/lua-5.4.3/src/lstrlib.o
                                        0xb2ef (size before relaxing)
- .debug_str     0x00000000001186ed      0x11f thirdparty/Lua/lua-5.4.3/src/lcorolib.o
+ .debug_str     0x00000000001186bd      0x11f thirdparty/Lua/lua-5.4.3/src/lcorolib.o
                                        0x9b26 (size before relaxing)
- .debug_str     0x000000000011880c       0x2c hal/src/hal_io.o
+ .debug_str     0x00000000001187dc       0x2c hal/src/hal_io.o
                                       0xe73e4 (size before relaxing)
- .debug_str     0x0000000000118838      0x15c thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o
+ .debug_str     0x0000000000118808      0x15c thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o
                                        0xaef9 (size before relaxing)
- .debug_str     0x0000000000118994      0x81a thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.o
+ .debug_str     0x0000000000118964      0x81a thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.o
                                        0x8e2d (size before relaxing)
- .debug_str     0x00000000001191ae      0x2aa hal/src/hal_i2c_m_async.o
+ .debug_str     0x000000000011917e      0x2aa hal/src/hal_i2c_m_async.o
                                       0xe7ee5 (size before relaxing)
- .debug_str     0x0000000000119458      0x512 hpl/wdt/hpl_wdt.o
+ .debug_str     0x0000000000119428      0x512 hpl/wdt/hpl_wdt.o
                                       0xe78e9 (size before relaxing)
- .debug_str     0x000000000011996a      0x11f usb/usb_protocol.o
+ .debug_str     0x000000000011993a      0x11f usb/usb_protocol.o
                                       0xeb538 (size before relaxing)
- .debug_str     0x0000000000119a89       0x68 stdio_redirect/stdio_io.o
+ .debug_str     0x0000000000119a59       0x68 stdio_redirect/stdio_io.o
                                       0xeafa8 (size before relaxing)
- .debug_str     0x0000000000119af1      0x2a5 hal/src/hal_spi_m_dma.o
+ .debug_str     0x0000000000119ac1      0x2a5 hal/src/hal_spi_m_dma.o
                                       0xe7e56 (size before relaxing)
- .debug_str     0x0000000000119d96       0x1e stdio_redirect/gcc/write.o
+ .debug_str     0x0000000000119d66       0x1e stdio_redirect/gcc/write.o
                                       0xeaf21 (size before relaxing)
- .debug_str     0x0000000000119db4     0x7d5e hpl/evsys/hpl_evsys.o
+ .debug_str     0x0000000000119d84     0x7d5e hpl/evsys/hpl_evsys.o
                                       0xef1ad (size before relaxing)
- .debug_str     0x0000000000121b12      0x124 hpl/core/hpl_core_m4.o
+ .debug_str     0x0000000000121ae2      0x124 hpl/core/hpl_core_m4.o
                                       0xe8f00 (size before relaxing)
- .debug_str     0x0000000000121c36      0x293 usb/class/cdc/device/cdcdf_acm.o
+ .debug_str     0x0000000000121c06      0x293 usb/class/cdc/device/cdcdf_acm.o
                                       0xee84b (size before relaxing)
- .debug_str     0x0000000000121ec9      0x5b0 hal/utils/src/utils_syscalls.o
+ .debug_str     0x0000000000121e99      0x5b0 hal/utils/src/utils_syscalls.o
                                        0x7a73 (size before relaxing)
- .debug_str     0x0000000000122479      0x855 hpl/qspi/hpl_qspi.o
+ .debug_str     0x0000000000122449      0x855 hpl/qspi/hpl_qspi.o
                                       0xe8b77 (size before relaxing)
- .debug_str     0x0000000000122cce      0xf29 hpl/nvmctrl/hpl_nvmctrl.o
+ .debug_str     0x0000000000122c9e      0xf29 hpl/nvmctrl/hpl_nvmctrl.o
                                       0xebd64 (size before relaxing)
- .debug_str     0x0000000000123bf7      0x266 usb_start.o
+ .debug_str     0x0000000000123bc7      0x266 usb_start.o
                                       0xfadff (size before relaxing)
- .debug_str     0x0000000000123e5d      0x1b6 hal/src/hal_timer.o
+ .debug_str     0x0000000000123e2d      0x1b6 hal/src/hal_timer.o
                                       0xe7bd8 (size before relaxing)
- .debug_str     0x0000000000124013     0x2454 hpl/usb/hpl_usb.o
+ .debug_str     0x0000000000123fe3     0x2454 hpl/usb/hpl_usb.o
                                       0xedba8 (size before relaxing)
- .debug_str     0x0000000000126467       0x1d stdio_redirect/gcc/read.o
+ .debug_str     0x0000000000126437       0x1d stdio_redirect/gcc/read.o
                                       0xeaf1f (size before relaxing)
- .debug_str     0x0000000000126484       0x6c hal/src/hal_delay.o
+ .debug_str     0x0000000000126454       0x6c hal/src/hal_delay.o
                                       0xe73b3 (size before relaxing)
- .debug_str     0x00000000001264f0     0x319d hpl/core/hpl_init.o
+ .debug_str     0x00000000001264c0     0x319d hpl/core/hpl_init.o
                                       0xec1be (size before relaxing)
- .debug_str     0x000000000012968d      0x25d hpl/ramecc/hpl_ramecc.o
+ .debug_str     0x000000000012965d      0x25d hpl/ramecc/hpl_ramecc.o
                                       0xe8271 (size before relaxing)
- .debug_str     0x00000000001298ea      0x217 usb/class/hid/device/hiddf_mouse.o
+ .debug_str     0x00000000001298ba      0x217 usb/class/hid/device/hiddf_mouse.o
                                       0xeeb8d (size before relaxing)
- .debug_str     0x0000000000129b01       0x20 hal/utils/src/utils_assert.o
+ .debug_str     0x0000000000129ad1       0x20 hal/utils/src/utils_assert.o
                                       0xe7359 (size before relaxing)
- .debug_str     0x0000000000129b21      0xaa2 hpl/dmac/hpl_dmac.o
+ .debug_str     0x0000000000129af1      0xaa2 hpl/dmac/hpl_dmac.o
                                       0xf1696 (size before relaxing)
- .debug_str     0x000000000012a5c3      0x532 hal/src/hal_adc_async.o
+ .debug_str     0x000000000012a593      0x532 hal/src/hal_adc_async.o
                                       0xe81de (size before relaxing)
- .debug_str     0x000000000012aaf5     0x170b hpl/oscctrl/hpl_oscctrl.o
+ .debug_str     0x000000000012aac5     0x170b hpl/oscctrl/hpl_oscctrl.o
                                       0xe8ea0 (size before relaxing)
- .debug_str     0x000000000012c200      0x110 hal/src/hal_rand_sync.o
+ .debug_str     0x000000000012c1d0      0x110 hal/src/hal_rand_sync.o
                                       0xe79b3 (size before relaxing)
- .debug_str     0x000000000012c310      0x1ea hpl/trng/hpl_trng.o
+ .debug_str     0x000000000012c2e0      0x1ea hpl/trng/hpl_trng.o
                                       0xe762b (size before relaxing)
- .debug_str     0x000000000012c4fa      0x19c usb/class/hid/device/hiddf_keyboard.o
+ .debug_str     0x000000000012c4ca      0x19c usb/class/hid/device/hiddf_keyboard.o
                                       0xeeb20 (size before relaxing)
- .debug_str     0x000000000012c696      0x49e hal/src/hal_usart_sync.o
+ .debug_str     0x000000000012c666      0x49e hal/src/hal_usart_sync.o
                                       0xe7e84 (size before relaxing)
- .debug_str     0x000000000012cb34       0x47 hpl/mclk/hpl_mclk.o
+ .debug_str     0x000000000012cb04       0x47 hpl/mclk/hpl_mclk.o
                                       0xe8451 (size before relaxing)
- .debug_str     0x000000000012cb7b       0x48 hpl/gclk/hpl_gclk.o
+ .debug_str     0x000000000012cb4b       0x48 hpl/gclk/hpl_gclk.o
                                       0xe8085 (size before relaxing)
- .debug_str     0x000000000012cbc3       0x3e stdio_start.o
+ .debug_str     0x000000000012cb93       0x3e stdio_start.o
                                       0xfa4b9 (size before relaxing)
- .debug_str     0x000000000012cc01       0xa6 hal/src/hal_flash.o
+ .debug_str     0x000000000012cbd1       0xa6 hal/src/hal_flash.o
                                       0xe7b6f (size before relaxing)
- .debug_str     0x000000000012cca7      0x2b0 hal/src/hal_spi_m_async.o
+ .debug_str     0x000000000012cc77      0x2b0 hal/src/hal_spi_m_async.o
                                       0xe821e (size before relaxing)
- .debug_str     0x000000000012cf57       0x97 hal/src/hal_crc_sync.o
+ .debug_str     0x000000000012cf27       0x97 hal/src/hal_crc_sync.o
                                       0xe74a4 (size before relaxing)
- .debug_str     0x000000000012cfee      0x383 hal/src/hal_usb_device.o
+ .debug_str     0x000000000012cfbe      0x383 hal/src/hal_usb_device.o
                                       0xeb526 (size before relaxing)
- .debug_str     0x000000000012d371       0x57 hal/utils/src/utils_list.o
+ .debug_str     0x000000000012d341       0x57 hal/utils/src/utils_list.o
                                       0xe7403 (size before relaxing)
- .debug_str     0x000000000012d3c8      0x43b hpl/osc32kctrl/hpl_osc32kctrl.o
+ .debug_str     0x000000000012d398      0x43b hpl/osc32kctrl/hpl_osc32kctrl.o
                                       0xe77b1 (size before relaxing)
- .debug_str     0x000000000012d803      0xc68 hpl/rtc/hpl_rtc.o
+ .debug_str     0x000000000012d7d3      0xc68 hpl/rtc/hpl_rtc.o
                                       0xe8954 (size before relaxing)
- .debug_str     0x000000000012e46b      0xe4b driver_init.o
+ .debug_str     0x000000000012e43b      0xe4b driver_init.o
                                       0xeded9 (size before relaxing)
- .debug_str     0x000000000012f2b6      0x398 hal/src/hal_usart_async.o
+ .debug_str     0x000000000012f286      0x398 hal/src/hal_usart_async.o
                                       0xe822e (size before relaxing)
- .debug_str     0x000000000012f64e     0x60de hpl/sercom/hpl_sercom.o
+ .debug_str     0x000000000012f61e     0x60de hpl/sercom/hpl_sercom.o
                                       0xf0a91 (size before relaxing)
- .debug_str     0x000000000013572c       0x24 hal/utils/src/utils_ringbuffer.o
+ .debug_str     0x00000000001356fc       0x24 hal/utils/src/utils_ringbuffer.o
                                       0xe73ed (size before relaxing)
- .debug_str     0x0000000000135750       0x63 hal/src/hal_atomic.o
+ .debug_str     0x0000000000135720       0x63 hal/src/hal_atomic.o
                                       0xe7349 (size before relaxing)
- .debug_str     0x00000000001357b3      0x970 main.o
-                                     0x1066d4 (size before relaxing)
- .debug_str     0x0000000000136123       0x58 hal/src/hal_qspi_dma.o
+ .debug_str     0x0000000000135783      0x970 main.o
+                                     0x1066a4 (size before relaxing)
+ .debug_str     0x00000000001360f3       0x58 hal/src/hal_qspi_dma.o
                                       0xe7b40 (size before relaxing)
- .debug_str     0x000000000013617b     0x1af2 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
+ .debug_str     0x000000000013614b     0x1af2 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o
                                        0xe156 (size before relaxing)
- .debug_str     0x0000000000137c6d       0x69 hal/src/hal_evsys.o
+ .debug_str     0x0000000000137c3d       0x69 hal/src/hal_evsys.o
                                       0xe741f (size before relaxing)
- .debug_str     0x0000000000137cd6     0x16e6 hpl/adc/hpl_adc.o
+ .debug_str     0x0000000000137ca6     0x16e6 hpl/adc/hpl_adc.o
                                       0xef178 (size before relaxing)
- .debug_str     0x00000000001393bc      0xca8 samd51a/gcc/gcc/startup_samd51.o
+ .debug_str     0x000000000013938c      0xca8 samd51a/gcc/gcc/startup_samd51.o
                                       0xd1b61 (size before relaxing)
- .debug_str     0x000000000013a064       0x11 atmel_start.o
+ .debug_str     0x000000000013a034       0x11 atmel_start.o
                                       0xfa492 (size before relaxing)
- .debug_str     0x000000000013a075      0x49c usb/device/usbdc.o
+ .debug_str     0x000000000013a045      0x49c usb/device/usbdc.o
                                       0xedec5 (size before relaxing)
- .debug_str     0x000000000013a511     0x11b2 hpl/tc/hpl_tc.o
+ .debug_str     0x000000000013a4e1     0x11b2 hpl/tc/hpl_tc.o
                                       0xea3ee (size before relaxing)
- .debug_str     0x000000000013b6c3       0xcd hpl/systick/hpl_systick.o
+ .debug_str     0x000000000013b693       0xcd hpl/systick/hpl_systick.o
                                       0xe73a1 (size before relaxing)
- .debug_str     0x000000000013b790      0x186 hpl/dsu/hpl_dsu.o
+ .debug_str     0x000000000013b760      0x186 hpl/dsu/hpl_dsu.o
                                       0xe78df (size before relaxing)
 
 .debug_frame    0x0000000000000000    0x113a0
