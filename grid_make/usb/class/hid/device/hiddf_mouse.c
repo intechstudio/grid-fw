@@ -324,7 +324,12 @@ bool hiddf_mouse_is_enabled(void)
 int32_t hiddf_mouse_move(int8_t pos, enum hiddf_mouse_move_type type)
 {
 
-	_hiddf_mouse_funcd.mouse_report.u32 = 0;
+	// SUKU HACK
+	// _hiddf_mouse_funcd.mouse_report.u32 = 0;
+
+	_hiddf_mouse_funcd.mouse_report.bytes.x_axis_var = 0; // SUKU HACK
+	_hiddf_mouse_funcd.mouse_report.bytes.y_axis_var = 0; // SUKU HACK
+	_hiddf_mouse_funcd.mouse_report.bytes.scroll_var = 0; // SUKU HACK
 
 	if (type == HID_MOUSE_X_AXIS_MV) {
 		_hiddf_mouse_funcd.mouse_report.bytes.x_axis_var = pos;
@@ -347,12 +352,14 @@ int32_t hiddf_mouse_move(int8_t pos, enum hiddf_mouse_move_type type)
  */
 int32_t hiddf_mouse_button_change(enum hiddf_mouse_button_state b_state, enum hiddf_mouse_button_type type)
 {
-	_hiddf_mouse_funcd.mouse_report.u32 = 0;
+
+	// SUKU HACK
+	//_hiddf_mouse_funcd.mouse_report.u32 = 0;
 
 	if (b_state == HID_MOUSE_BTN_DOWN) {
-		_hiddf_mouse_funcd.mouse_report.bytes.button_state = type;
+		_hiddf_mouse_funcd.mouse_report.bytes.button_state |= type; // SUKU HACK
 	} else {
-		_hiddf_mouse_funcd.mouse_report.bytes.button_state = 0x00;
+		_hiddf_mouse_funcd.mouse_report.bytes.button_state &= ~type; // SUKU HACK
 	}
 
 	return usbdc_xfer(_hiddf_mouse_funcd.func_ep_in, &_hiddf_mouse_funcd.mouse_report.bytes.button_state, 4, false);
