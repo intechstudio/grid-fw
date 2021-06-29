@@ -1120,6 +1120,7 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 
     grid_lua_dostring(mod, GRID_LUA_GLUT_source);
     grid_lua_dostring(mod, GRID_LUA_GLIM_source);
+    grid_lua_dostring(mod, "midi = {} midi.ch = 0 midi.cmd=176 midi.p1=0 midi.p2=0");
 
     lua_getglobal(mod->L, "_G");
 	luaL_setfuncs(mod->L, printlib, 0);
@@ -1271,7 +1272,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
 
         }
         else{
-            printf("LUA not OK: %s \r\n", code);
+            //printf("LUA not OK: %s \r\n", code);
             grid_debug_printf("LUA not OK");
         }
 
@@ -1279,7 +1280,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
     
     }
     else{
-        printf("LUA not OK:  %s\r\n", code);
+        //printf("LUA not OK:  %s\r\n", code);
         grid_debug_printf("LUA not OK");
     }
 
