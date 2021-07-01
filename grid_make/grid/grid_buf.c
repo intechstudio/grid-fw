@@ -1732,35 +1732,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}
 							
 				}
-				else if (msg_class == GRID_CLASS_LEDPHASE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_local || position_is_me)){
-					
-					uint8_t led_num  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_NUM_offset], GRID_CLASS_LEDPHASE_NUM_length, &error_flag);
-					uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_LAY_offset], GRID_CLASS_LEDPHASE_LAY_length, &error_flag);
-					uint16_t led_pha  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDPHASE_PHA_offset], GRID_CLASS_LEDPHASE_PHA_length, &error_flag);
-					
-					if (led_pha*2 > 255){
-						grid_led_set_phase(&grid_led_state, led_num, led_lay, 255);
-					}
-					else{
-						grid_led_set_phase(&grid_led_state, led_num, led_lay, led_pha*2);
-					}
-					
-					
-					
-							
-				}
-				else if (msg_class == GRID_CLASS_LEDCOLOR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_local || position_is_me)){
-					
-						
-					uint8_t led_num = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_NUM_offset], GRID_CLASS_LEDCOLOR_NUM_length, &error_flag);
-					uint8_t led_lay = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_LAY_offset], GRID_CLASS_LEDCOLOR_LAY_length, &error_flag);
-					uint8_t led_red	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_RED_offset], GRID_CLASS_LEDCOLOR_RED_length, &error_flag);
-					uint8_t led_gre	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_GRE_offset], GRID_CLASS_LEDCOLOR_GRE_length, &error_flag);
-					uint8_t led_blu	= grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_LEDCOLOR_BLU_offset], GRID_CLASS_LEDCOLOR_BLU_length, &error_flag);
-																							
-					grid_led_set_color(&grid_led_state, led_num, led_lay, led_red, led_gre, led_blu);
-				
-				}
 				else if(msg_class == GRID_CLASS_SERIALNUMBER_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
 					
 					uint32_t uniqueid[4] = {0};

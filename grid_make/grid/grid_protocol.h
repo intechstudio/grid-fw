@@ -240,42 +240,6 @@
 #define GRID_CLASS_PAGECOUNT_PAGENUMBER_offset 5
 #define GRID_CLASS_PAGECOUNT_PAGENUMBER_length 2
 
-// LED SET PHASE
-
-#define GRID_CLASS_LEDPHASE_code 0x040
-#define GRID_CLASS_LEDPHASE_format "%c%03x%01x%02x%02x%02x%c", GRID_CONST_STX, GRID_CLASS_LEDPHASE_code, instruction, layernumber, lednumber, phase, GRID_CONST_ETX
-#define GRID_CLASS_LEDPHASE_frame "%c%03x_......%c", GRID_CONST_STX, GRID_CLASS_LEDPHASE_code, GRID_CONST_ETX
-
-#define GRID_CLASS_LEDPHASE_NUM_offset 5
-#define GRID_CLASS_LEDPHASE_NUM_length 2
-
-#define GRID_CLASS_LEDPHASE_LAY_offset 7
-#define GRID_CLASS_LEDPHASE_LAY_length 2
-
-#define GRID_CLASS_LEDPHASE_PHA_offset 9
-#define GRID_CLASS_LEDPHASE_PHA_length 2
-
-// LED SET COLOR
-
-#define GRID_CLASS_LEDCOLOR_code 0x041
-#define GRID_CLASS_LEDCOLOR_format "%c%03x%01x%02x%02x%02x%02x%02x%c", GRID_CONST_STX, GRID_CLASS_LEDPHASE_code, instruction, layernumber, lednumber, red, gre, blu, GRID_CONST_ETX
-#define GRID_CLASS_LEDCOLOR_frame "%c%03x_..........%c", GRID_CONST_STX, GRID_CLASS_LEDCOLOR_code, GRID_CONST_ETX
-
-#define GRID_CLASS_LEDCOLOR_NUM_offset 5
-#define GRID_CLASS_LEDCOLOR_NUM_length 2
-
-#define GRID_CLASS_LEDCOLOR_LAY_offset 7
-#define GRID_CLASS_LEDCOLOR_LAY_length 2
-
-#define GRID_CLASS_LEDCOLOR_RED_offset 9
-#define GRID_CLASS_LEDCOLOR_RED_length 2
-
-#define GRID_CLASS_LEDCOLOR_GRE_offset 11
-#define GRID_CLASS_LEDCOLOR_GRE_length 2
-
-#define GRID_CLASS_LEDCOLOR_BLU_offset 13
-#define GRID_CLASS_LEDCOLOR_BLU_length 2
-
 #define GRID_CLASS_LEDPREVIEW_code 0x042
 #define GRID_CLASS_LEDPREVIEW_frame "%c%03x_............%c", GRID_CONST_STX, GRID_CLASS_LEDPREVIEW_code, GRID_CONST_ETX
 #define GRID_CLASS_LEDPREVIEW_frame_start "%c%03x_....", GRID_CONST_STX, GRID_CLASS_LEDPREVIEW_code
