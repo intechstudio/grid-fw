@@ -519,19 +519,42 @@ static int l_grid_led_set_color(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
-    if (nargs!=5){
+    if (nargs==5){
+        
+        uint8_t param[5] = {0};
+
+        for (int i=1; i <= nargs; ++i) {
+            param[i-1] = lua_tointeger(L, i);
+        }
+
+        grid_led_set_color(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+    }
+    else if(nargs==6){
+
+        uint8_t param[6] = {0};
+
+        for (int i=1; i <= nargs; ++i) {
+            if (lua_isnil(L, i)){
+                param[i-1] = 0;
+            }
+            else{
+                param[i-1] = lua_tointeger(L, i);
+            }
+        }
+
+        grid_led_set_color(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+        if (param[5] != 0){
+            grid_led_set_min(&grid_led_state, param[0], param[1], 0,0,0);
+        }
+
+    }
+    else{
         // error
         strcat(grid_lua_state.stde, "#invalidParams");
         return 0;
     }
 
-    uint8_t param[5] = {0};
 
-    for (int i=1; i <= nargs; ++i) {
-        param[i-1] = lua_tointeger(L, i);
-    }
-
-    grid_led_set_color(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
 
 
     return 0;
@@ -1120,7 +1143,19 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 
     grid_lua_dostring(mod, GRID_LUA_GLUT_source);
     grid_lua_dostring(mod, GRID_LUA_GLIM_source);
-    grid_lua_dostring(mod, "midi = {} midi.ch = 0 midi.cmd=176 midi.p1=0 midi.p2=0");
+    grid_lua_dostring(mod, "midi = {}");
+    grid_lua_dostring(mod, "midi.ch = 0 midi.cmd=176 midi.p1=0 midi.p2=0");
+    grid_lua_dostring(mod, "midi.send_packet = function (self,ch,cmd,p1,p2) "GRID_LUA_FNC_G_MIDI_SEND_short"(ch,cmd,p1,p2) end");
+
+    grid_lua_dostring(mod, "mouse = {}");
+    grid_lua_dostring(mod, "mouse.send_axis_move = function (self,p,a) "GRID_LUA_FNC_G_MOUSEMOVE_SEND_short"(p,a) end");
+    grid_lua_dostring(mod, "mouse.send_button_change = function (self,s,b) "GRID_LUA_FNC_G_MOUSEBUTTON_SEND_short"(s,b) end");
+ 
+    grid_lua_dostring(mod, "keyboard = {}");
+    grid_lua_dostring(mod, "keyboard.send_macro = function (self,...) "GRID_LUA_FNC_G_KEYBOARD_SEND_short"(...) end");
+
+
+
 
     lua_getglobal(mod->L, "_G");
 	luaL_setfuncs(mod->L, printlib, 0);
@@ -1226,15 +1261,17 @@ uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod){
     printf("LUA UI INIT EN16\r\n");
     // define encoder_init_function
 
-    grid_lua_dostring(mod, GRID_LUA_E_LIST_init);
+    grid_lua_dostring(mod, GRID_LUA_E_META_init);
 
     // create element array
     grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} "GRID_LUA_KW_THIS_short" = {}");
 
     // initialize 16 encoders
-    grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_encoder(ele[i], i) end");
+    //grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {} init_encoder(ele[i], i) end");
+    grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
+    grid_lua_dostring(mod, "for i=0, 15 do setmetatable("GRID_LUA_KW_ELEMENT_short"[i], encoder_meta) end");
 
-    grid_lua_dostring(mod, GRID_LUA_E_LIST_deinit);
+    //grid_lua_dostring(mod, GRID_LUA_E_LIST_deinit);
     printf("LUA UI INIT\r\n");
 
 }
