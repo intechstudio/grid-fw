@@ -537,35 +537,6 @@ stored config date
 	\
     }}"
 
-// Encoder init function
-#define GRID_LUA_E_LIST_init "init_encoder = function (e, i) \
-	 \
-	e." GRID_LUA_FNC_E_ELEMENT_INDEX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ELEMENT_INDEX_helper ", a) end \
-	\
-	e." GRID_LUA_FNC_E_BUTTON_NUMBER_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_NUMBER_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_VALUE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_VALUE_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_MIN_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_MIN_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_MAX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_MAX_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_MODE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_MODE_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_ELAPSED_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_ELAPSED_helper ", a) end \
-	e." GRID_LUA_FNC_E_BUTTON_STATE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_BUTTON_STATE_helper ", a) end \
-	\
-	e." GRID_LUA_FNC_E_ENCODER_NUMBER_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_NUMBER_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_VALUE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_VALUE_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_MIN_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MIN_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_MAX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MAX_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_MODE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_MODE_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_ELAPSED_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_ELAPSED_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_STATE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_STATE_helper ", a) end \
-	e." GRID_LUA_FNC_E_ENCODER_VELOCITY_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_E_ENCODER_VELOCITY_helper ", a) end \
-	\
-	e."GRID_LUA_FNC_E_ACTION_INIT_short" = function (self) print('undefined action') end\
-	e."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (self) print('undefined action') end\
-	e."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end\
-	\
-    end"
-
-#define GRID_LUA_E_LIST_deinit "init_encoder = nil"
 
 // ========================= POTMETER =========================== //
 
@@ -619,21 +590,21 @@ stored config date
 #define GRID_LUA_FNC_P_LIST_length 8
 
 // Potmeter init function
-#define GRID_LUA_P_LIST_init "init_potmeter = function (e, i) \
+#define GRID_LUA_P_META_init "potmeter_meta = { __index = { \
 	 \
-	e." GRID_LUA_FNC_P_ELEMENT_INDEX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_ELEMENT_INDEX_helper ", a) end \
+	" GRID_LUA_FNC_P_ELEMENT_INDEX_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_P_ELEMENT_INDEX_helper ", a) end, \
 	\
-	e." GRID_LUA_FNC_P_POTMETER_NUMBER_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_NUMBER_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_VALUE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_VALUE_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_MIN_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MIN_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_MAX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MAX_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_MODE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_MODE_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_ELAPSED_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_ELAPSED_helper ", a) end \
-	e." GRID_LUA_FNC_P_POTMETER_STATE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_P_POTMETER_STATE_helper ", a) end \
+	" GRID_LUA_FNC_P_POTMETER_NUMBER_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_P_POTMETER_NUMBER_helper ", a) end, \
+	" GRID_LUA_FNC_P_POTMETER_VALUE_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_P_POTMETER_VALUE_helper ", a) end, \
+	" GRID_LUA_FNC_P_POTMETER_MIN_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_P_POTMETER_MIN_helper ", a) end, \
+	" GRID_LUA_FNC_P_POTMETER_MAX_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_P_POTMETER_MAX_helper ", a) end, \
+	" GRID_LUA_FNC_P_POTMETER_MODE_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_P_POTMETER_MODE_helper ", a) end, \
+	" GRID_LUA_FNC_P_POTMETER_ELAPSED_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_P_POTMETER_ELAPSED_helper ", a) end, \
+	" GRID_LUA_FNC_P_POTMETER_STATE_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_P_POTMETER_STATE_helper ", a) end, \
 	\
-	e."GRID_LUA_FNC_P_ACTION_INIT_short" = function (self) print('undefined action') end\
-	e."GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (self) print('undefined action') end\
-    end"
+	"GRID_LUA_FNC_P_ACTION_INIT_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (self) print('undefined action') end\
+    }}"
 
 #define GRID_LUA_P_LIST_deinit "init_potmeter = nil"
 
@@ -689,21 +660,21 @@ stored config date
 #define GRID_LUA_FNC_B_LIST_length 8
 
 // Encoder init function
-#define GRID_LUA_B_LIST_init "init_button = function (e, i) \
+#define GRID_LUA_B_META_init "button_meta = { __index = { \
 	 \
-	e." GRID_LUA_FNC_B_ELEMENT_INDEX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_ELEMENT_INDEX_helper ", a) end \
+	" GRID_LUA_FNC_B_ELEMENT_INDEX_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_ELEMENT_INDEX_helper ", a) end, \
 	\
-	e." GRID_LUA_FNC_B_BUTTON_NUMBER_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_NUMBER_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_VALUE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_VALUE_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_MIN_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MIN_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_MAX_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MAX_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_MODE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_MODE_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_ELAPSED_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_ELAPSED_helper ", a) end \
-	e." GRID_LUA_FNC_B_BUTTON_STATE_short "=function (self,a) return gtv(i, " GRID_LUA_FNC_B_BUTTON_STATE_helper ", a) end \
+	" GRID_LUA_FNC_B_BUTTON_NUMBER_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_BUTTON_NUMBER_helper ", a) end, \
+	" GRID_LUA_FNC_B_BUTTON_VALUE_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_BUTTON_VALUE_helper ", a) end, \
+	" GRID_LUA_FNC_B_BUTTON_MIN_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_BUTTON_MIN_helper ", a) end, \
+	" GRID_LUA_FNC_B_BUTTON_MAX_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_BUTTON_MAX_helper ", a) end, \
+	" GRID_LUA_FNC_B_BUTTON_MODE_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_BUTTON_MODE_helper ", a) end, \
+	" GRID_LUA_FNC_B_BUTTON_ELAPSED_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_BUTTON_ELAPSED_helper ", a) end, \
+	" GRID_LUA_FNC_B_BUTTON_STATE_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_BUTTON_STATE_helper ", a) end, \
 	\
-	e."GRID_LUA_FNC_B_ACTION_INIT_short" = function (self) print('undefined action') end\
-	e."GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end\
-    end"
+	"GRID_LUA_FNC_B_ACTION_INIT_short" = function (self) print('undefined action') end, \
+	"GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end\
+    }}"
 
 #define GRID_LUA_B_LIST_deinit "init_button = nil"
 
