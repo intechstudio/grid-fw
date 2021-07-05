@@ -148,6 +148,8 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 
 	}
 
+	printf("APPEND: %s", append_buffer);
+
 	// use GRID_NVM_LOCAL_END_ADDRESS instead of 0x81000
 	if (GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + append_length > GRID_NVM_LOCAL_END_ADDRESS - 0x1000){
 
@@ -479,6 +481,7 @@ uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
 uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, uint8_t element_number, uint8_t event_type, uint8_t* actionstring){
 
 
+	printf("ACTIONSTRING: %s", actionstring);
 	uint8_t buf[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
 
 	uint16_t len = 0;
@@ -497,7 +500,7 @@ uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, 
 
 	// append random length of fake actionstrings
 	
-	sprintf(&buf[len], actionstring);
+	strcpy(&buf[len], actionstring);
 
 	len = strlen(buf);
 
@@ -703,9 +706,10 @@ uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct g
 
 	flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS+entry->config_string_offset+GRID_CLASS_CONFIG_ACTIONSTRING_offset, targetstring, entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset-1); //-1 etx
 
+
 	targetstring[entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset] = '\0';
 	
-	//printf("toc g a %d %s\r\n", entry->config_string_length, targetstring);
+	printf("toc g a %d %s\r\n", entry->config_string_length, targetstring);
 
 	return strlen(targetstring);
 

@@ -1957,6 +1957,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 									
 									if (eve != NULL){
 
+
+
 										//register actionstring
 										grid_ui_state.page_change_enabled = 0;
 										grid_ui_event_register_actionstring(eve, action);
