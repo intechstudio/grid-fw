@@ -1,0 +1,251 @@
+{
+    "name": "0.2.red",
+    "meta": {
+        "type": "EN16_dx:0;dy:0",
+        "version": {
+            "major": 1,
+            "minor": 2,
+            "patch": 2
+        }
+    },
+    "configs": [
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]] local num,bval,eval,red,gre,blu=self:ind(),self:bva(),self:eva(),255,0, 0--[[@glc]] glc(num,1,red,gre,blu)--[[@glc]] glc(num,2,red,gre,blu)--[[@glp]] glp(num,1,bval)--[[@glp]] glp(num,2,eval)--[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]] local num,bval,eval,red,gre,blu=self:ind(),self:bva(),self:eva(),255,0, 0--[[@glc]] glc(num,1,red,gre,blu)--[[@glc]] glc(num,2,red,gre,blu)--[[@glp]] glp(num,1,bval)--[[@glp]] glp(num,2,eval)--[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+            },
+            {
+                "event": "3",
+                "config": "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
+            },
+            {
+                "event": "2",
+                "config": "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": "<?lua --[[@cb]]print('page init') ?>"
+            },
+            {
+                "event": "4",
+                "config": ""
+            },
+            {
+                "event": "5",
+                "config": "<?lua --[[@l]]local ch,cmd,param1,param2 = midi.ch,midi.cmd,midi.p1,midi.p2 ?>"
+            }
+        ]
+    ]
+}

@@ -23,8 +23,9 @@ void grid_nvm_init(struct grid_nvm_model* nvm, struct flash_descriptor* flash_in
 	
 	
 	nvm->read_bulk_status = 0;
-	nvm->clear_bulk_status = 0;	
+	nvm->erase_bulk_status = 0;	
 	nvm->store_bulk_status = 0;
+	nvm->clear_bulk_status = 0;
 	
 
 }
@@ -148,7 +149,7 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 
 	}
 
-	printf("APPEND: %s", append_buffer);
+	//printf("APPEND: %s", append_buffer);
 
 	// use GRID_NVM_LOCAL_END_ADDRESS instead of 0x81000
 	if (GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + append_length > GRID_NVM_LOCAL_END_ADDRESS - 0x1000){
@@ -481,7 +482,7 @@ uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
 uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, uint8_t element_number, uint8_t event_type, uint8_t* actionstring){
 
 
-	printf("ACTIONSTRING: %s", actionstring);
+	//printf("ACTIONSTRING: %s", actionstring);
 	uint8_t buf[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
 
 	uint16_t len = 0;
@@ -675,23 +676,51 @@ uint8_t grid_nvm_toc_entry_update(struct grid_nvm_toc_entry* entry, uint32_t con
 
 }
 
-uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type);
+uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* nvm, struct grid_nvm_toc_entry* entry){
+
+	if (entry == NULL){
+		return -1;
+	}
+
+	if (nvm->toc_count > 0){
+		nvm->toc_count--;
+	}
+
+	grid_nvm_clear(nvm, entry->config_string_offset, entry->config_string_length);
+
+	if (entry->prev != NULL){
+		entry->prev->next = entry->next;
+	}
+	else{
+		nvm->toc_head = entry->next;
+	}
+
+
+	if (entry->next != NULL){
+		entry->next->prev = entry->prev;
+	}
+
+	free(entry);
+
+	return 0;
+}
+
 
 void grid_nvm_toc_debug(struct grid_nvm_model* mod){
 
 	struct grid_nvm_toc_entry* next = mod->toc_head;
 
 
-	//printf("DUMP START\r\n");
+	printf("DUMP START\r\n");
 
 	while (next != NULL){
 
-		//printf("toc entry: %d %d %d :  0x%x %d\r\n", next->page_id, next->element_id, next->event_type, next->config_string_offset, next->config_string_length);
+		printf("toc entry: %d %d %d :  0x%x %d\r\n", next->page_id, next->element_id, next->event_type, next->config_string_offset, next->config_string_length);
 
 		next = next->next;
 	}
 
-	//printf("DUMP DONE\r\n");
+	printf("DUMP DONE\r\n");
 
 
 
@@ -709,18 +738,14 @@ uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct g
 
 	targetstring[entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset] = '\0';
 	
-	printf("toc g a %d %s\r\n", entry->config_string_length, targetstring);
+	//printf("toc g a %d %s\r\n", entry->config_string_length, targetstring);
 
 	return strlen(targetstring);
 
 }
 
 
-
-
-
-
-void grid_nvm_ui_bulk_read_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+void grid_nvm_ui_bulk_pageread_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
 
 	nvm->read_bulk_last_element = 0;
@@ -730,16 +755,16 @@ void grid_nvm_ui_bulk_read_init(struct grid_nvm_model* nvm, struct grid_ui_model
 			
 }
 
-uint8_t grid_nvm_ui_bulk_read_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+uint8_t grid_nvm_ui_bulk_pageread_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
 	return nvm->read_bulk_status;
 	
 
 }
 
-void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 	
-	if (!grid_nvm_ui_bulk_read_is_in_progress(nvm, ui)){
+	if (!grid_nvm_ui_bulk_pageread_is_in_progress(nvm, ui)){
 		return;
 	}
 
@@ -843,14 +868,14 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 40);
 	grid_debug_printf("read complete");
 	grid_keyboard_state.isenabled = 1;	
-	grid_sys_state.lastheader_configdiscard.status = 0;
+	grid_sys_state.lastheader_pagediscard.status = 0;
 
 	// Generate ACKNOWLEDGE RESPONSE
 	struct grid_msg response;	
 	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
-	grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGDISCARD_frame);
+	grid_msg_body_append_printf(&response, GRID_CLASS_PAGEDISCARD_frame);
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-	grid_msg_body_append_parameter(&response, GRID_CLASS_CONFIGDISCARD_LASTHEADER_offset, GRID_CLASS_CONFIGDISCARD_LASTHEADER_length, grid_sys_state.lastheader_configdiscard.id);		
+	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, grid_sys_state.lastheader_pagediscard.id);		
 	grid_msg_packet_close(&response);
 	grid_msg_packet_send_everywhere(&response);
 
@@ -858,7 +883,7 @@ void grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model
 }
 
 
-void grid_nvm_ui_bulk_store_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+void grid_nvm_ui_bulk_pagestore_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
 
 	nvm->store_bulk_status = 1;
@@ -871,16 +896,16 @@ void grid_nvm_ui_bulk_store_init(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 }
 
-uint8_t grid_nvm_ui_bulk_store_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+uint8_t grid_nvm_ui_bulk_pagestore_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
 	return nvm->store_bulk_status;
 	
 }
 
 // DO THIS!!
-void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
- 	if (!grid_nvm_ui_bulk_store_is_in_progress(nvm, ui)){
+ 	if (!grid_nvm_ui_bulk_pagestore_is_in_progress(nvm, ui)){
 		return;
 	}
 
@@ -920,9 +945,9 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
-	grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGSTORE_frame);
+	grid_msg_body_append_printf(&response, GRID_CLASS_PAGESTORE_frame);
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-	grid_msg_body_append_parameter(&response, GRID_CLASS_CONFIGSTORE_LASTHEADER_offset, GRID_CLASS_CONFIGSTORE_LASTHEADER_length, grid_sys_state.lastheader_configstore.id);		
+	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGESTORE_LASTHEADER_offset, GRID_CLASS_PAGESTORE_LASTHEADER_length, grid_sys_state.lastheader_pagestore.id);		
 				
 
 	grid_msg_packet_close(&response);
@@ -932,7 +957,79 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	grid_debug_printf("store complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);
 	grid_keyboard_state.isenabled = 1;	
-	grid_sys_state.lastheader_configstore.status = 0;
+	grid_sys_state.lastheader_pagestore.status = 0;
+
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 127);
+		
+}
+
+
+
+
+void grid_nvm_ui_bulk_pageclear_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+
+
+	nvm->clear_bulk_status = 1;
+
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
+	grid_led_set_alert_frequency(&grid_led_state, -8);	
+	for (uint8_t i = 0; i<grid_led_state.led_number; i++){
+		grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
+	}
+
+}
+
+uint8_t grid_nvm_ui_bulk_pageclear_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+
+	return nvm->clear_bulk_status;
+	
+}
+
+// DO THIS!!
+void grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+
+ 	if (!grid_nvm_ui_bulk_pageclear_is_in_progress(nvm, ui)){
+		return;
+	}
+
+    // START: NEW
+	uint32_t cycles_limit = 5000*120;  // 5ms
+	uint32_t cycles_start = grid_d51_dwt_cycles_read();
+
+
+	grid_nvm_toc_debug(&grid_nvm_state);
+
+	struct grid_nvm_toc_entry* current = nvm->toc_head;
+
+	while (current != NULL)
+	{
+		if (current->page_id == ui->page_activepage){
+
+			grid_nvm_toc_entry_destroy(nvm, current);
+
+		}
+
+		current = current->next;
+	}
+
+	grid_nvm_toc_debug(&grid_nvm_state);
+
+	struct grid_msg response;
+
+	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+
+	grid_msg_body_append_printf(&response, GRID_CLASS_PAGECLEAR_frame);
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGECLEAR_LASTHEADER_offset, GRID_CLASS_PAGECLEAR_LASTHEADER_length, grid_sys_state.lastheader_pageclear.id);		
+				
+
+	grid_msg_packet_close(&response);
+	grid_msg_packet_send_everywhere(&response);
+	
+	nvm->clear_bulk_status = 0;
+
+	grid_debug_printf("clear complete");
+	grid_sys_state.lastheader_pageclear.status = 0;
 
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 127);
 		
@@ -942,11 +1039,9 @@ void grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 
 
+void grid_nvm_ui_bulk_nvmerase_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
-void grid_nvm_ui_bulk_clear_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
-
-
-	nvm->clear_bulk_address = GRID_NVM_LOCAL_BASE_ADDRESS;
+	nvm->erase_bulk_address = GRID_NVM_LOCAL_BASE_ADDRESS;
 
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
 	grid_led_set_alert_frequency(&grid_led_state, -8);	
@@ -954,18 +1049,34 @@ void grid_nvm_ui_bulk_clear_init(struct grid_nvm_model* nvm, struct grid_ui_mode
 		grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
 	}
 
-	nvm->clear_bulk_status = 1;
+
+	// destroy the entire toc list
+	grid_nvm_toc_debug(nvm);
+
+	struct grid_nvm_toc_entry* current = nvm->toc_head;
+
+	while (current != NULL)
+	{
+
+		grid_nvm_toc_entry_destroy(nvm, current);
+		current = current->next;
+	}
+
+	grid_nvm_toc_debug(nvm);
+
+
+	nvm->erase_bulk_status = 1;
 
 }
 
-uint8_t grid_nvm_ui_bulk_clear_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+uint8_t grid_nvm_ui_bulk_nvmerase_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
-	return nvm->clear_bulk_status;
+	return nvm->erase_bulk_status;
 	
 }
 
 
-void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 	
 
 	    // START: NEW
@@ -973,8 +1084,7 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 	uint32_t cycles_start = grid_d51_dwt_cycles_read();
 
 
-
-	while(nvm->clear_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){
+	while(nvm->erase_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){
 
 		if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){
 			//grid_debug_printf("limit");
@@ -983,21 +1093,23 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 		flash_erase(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
 
-		nvm->clear_bulk_address += GRID_NVM_BLOCK_SIZE;
+		nvm->erase_bulk_address += GRID_NVM_BLOCK_SIZE;
 
 	}
 
-	nvm->clear_bulk_status = 0;
+
+
+	nvm->erase_bulk_status = 0;
 
 	// Generate ACKNOWLEDGE RESPONSE
 	struct grid_msg response;
 		
 	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
-	grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGERASE_frame);
+	grid_msg_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 	
-	grid_msg_body_append_parameter(&response, GRID_CLASS_CONFIGERASE_LASTHEADER_offset, GRID_CLASS_CONFIGERASE_LASTHEADER_length, grid_sys_state.lastheader_configerase.id);		
+	grid_msg_body_append_parameter(&response, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, grid_sys_state.lastheader_nvmerase.id);		
 				
 	grid_msg_packet_close(&response);
 
@@ -1006,9 +1118,9 @@ void grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_mode
 
 	grid_ui_page_load(ui, nvm, ui->page_activepage);
 	
-	grid_debug_printf("clear complete");
+	grid_debug_printf("erase complete");
 	grid_keyboard_state.isenabled = 1;	
-	grid_sys_state.lastheader_configerase.status = 0;
+	grid_sys_state.lastheader_nvmerase.status = 0;
 	
 
 

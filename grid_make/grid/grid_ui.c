@@ -625,7 +625,7 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 
 	}
 
-	grid_nvm_ui_bulk_read_init(nvm, ui);
+	grid_nvm_ui_bulk_pageread_init(nvm, ui);
 	
 }
 
@@ -641,6 +641,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 
 	}
 	
+	eve->cfg_default_flag = 0;
 
 	if (eve->type == GRID_UI_EVENT_EC){
 
@@ -650,6 +651,10 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		action_string[len-3] = '\0';
 		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
 		action_string[len-3] = ' ';
+
+		if (strcmp(action_string, GRID_ACTIONSTRING_EC) == 0){
+			eve->cfg_default_flag = 1;
+		}
 
 		grid_lua_dostring(&grid_lua_state, temp);
 		strcpy(eve->action_string, action_string);
@@ -662,8 +667,11 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		sprintf(temp, "ele[%d]."GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
 		action_string[len-3] = ' ';
 
-		grid_lua_dostring(&grid_lua_state, temp);
+		if (strcmp(action_string, GRID_ACTIONSTRING_AC) == 0){
+			eve->cfg_default_flag = 1;
+		}
 
+		grid_lua_dostring(&grid_lua_state, temp);
 		strcpy(eve->action_string, action_string);
 	}
 	else if (eve->type == GRID_UI_EVENT_BC){
@@ -674,9 +682,17 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 
 		if (ele->type == GRID_UI_ELEMENT_ENCODER){
 			sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+	
+			if (strcmp(action_string, GRID_ACTIONSTRING_BC) == 0){
+				eve->cfg_default_flag = 1;
+			}
 		}
 		else if (ele->type == GRID_UI_ELEMENT_BUTTON){
 			sprintf(temp, "ele[%d]."GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+		
+			if (strcmp(action_string, GRID_ACTIONSTRING_BC) == 0){
+				eve->cfg_default_flag = 1;
+			}	
 		}
 		else{
 			printf("Unsupported Element\r\n");
@@ -685,7 +701,6 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		action_string[len-3] = ' ';
 
 		grid_lua_dostring(&grid_lua_state, temp);
-
 		strcpy(eve->action_string, action_string);
 
 	}
@@ -697,9 +712,50 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_INIT_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
 		action_string[len-3] = ' ';
 
+		if (ele->type == GRID_UI_ELEMENT_ENCODER){
+
+			if (strcmp(action_string, GRID_ACTIONSTRING_INIT_ENC) == 0){
+				eve->cfg_default_flag = 1;
+			}
+		}
+		else if (ele->type == GRID_UI_ELEMENT_BUTTON){
+
+			if (strcmp(action_string, GRID_ACTIONSTRING_INIT_BUT) == 0){
+				eve->cfg_default_flag = 1;
+			}	
+		}
+		else if (ele->type == GRID_UI_ELEMENT_POTENTIOMETER){
+
+			if (strcmp(action_string, GRID_ACTIONSTRING_INIT_POT) == 0){
+				eve->cfg_default_flag = 1;
+			}	
+		}
+		else if (ele->type == GRID_UI_ELEMENT_SYSTEM){
+
+			if (strcmp(action_string, GRID_ACTIONSTRING_PAGE_INIT) == 0){
+				eve->cfg_default_flag = 1;
+			}	
+		}
+
 		grid_lua_dostring(&grid_lua_state, temp);
 
 		strcpy(eve->action_string, action_string);
+	}
+	else if (eve->type == GRID_UI_EVENT_MAPMODE_CHANGE){
+
+		if (strcmp(action_string, GRID_ACTIONSTRING_MAPMODE_CHANGE) == 0){
+			eve->cfg_default_flag = 1;
+		}	
+		strcpy(eve->action_string, action_string);
+		
+	}
+	else if (eve->type == GRID_UI_EVENT_MIDIRX){
+
+		if (strcmp(action_string, GRID_ACTIONSTRING_MIDIRX) == 0){
+			eve->cfg_default_flag = 1;
+		}	
+		strcpy(eve->action_string, action_string);
+		
 	}
 	else{
 
@@ -711,6 +767,11 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 
 	// 	printf("eve->action_string: %s \r\n", eve->action_string);
 	// }
+
+	if (eve->cfg_default_flag){
+
+		printf("HELLO, THIS IS ACTUALLY THE DEFAULT CONFIG!!\r\n");
+	}
 
 
 	eve->cfg_changed_flag = 1;

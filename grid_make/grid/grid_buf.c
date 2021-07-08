@@ -1388,11 +1388,12 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		}
 		
 			
-		uint8_t current_start		= 0;
-		uint8_t current_stop		= 0;
+		uint16_t current_start		= 0;
+		uint16_t current_stop		= 0;
+		uint16_t current_length		= 0;
 
-		uint8_t start_count		= 0;
-		uint8_t stop_count		= 0;
+		uint16_t start_count		= 0;
+		uint16_t stop_count		= 0;
 			
 			
 		uint8_t error_flag = 0;	
@@ -1407,7 +1408,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			}
 			else if (message[i] == GRID_CONST_ETX && current_start!=0 && (start_count-stop_count) == 1){
 				current_stop = i;
+				current_length		= current_stop-current_start;
 				stop_count++;
+
 				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_offset], GRID_CLASS_length, &error_flag);
 				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
 		
@@ -1815,21 +1818,21 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				
 				}				
 			
-				else if (msg_class == GRID_CLASS_CONFIGDISCARD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				else if (msg_class == GRID_CLASS_PAGEDISCARD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 			
-					grid_sys_state.lastheader_configdiscard.status = -1;
-					grid_sys_state.lastheader_configdiscard.id = id;		
-					grid_nvm_ui_bulk_read_init(&grid_nvm_state, &grid_ui_state);				
+					grid_sys_state.lastheader_pagediscard.status = -1;
+					grid_sys_state.lastheader_pagediscard.id = id;		
+					grid_nvm_ui_bulk_pageread_init(&grid_nvm_state, &grid_ui_state);				
 
 				}		
-				else if (msg_class == GRID_CLASS_CONFIGDISCARD_code && msg_instr == GRID_INSTR_CHECK_code && (position_is_me || position_is_global)){
+				else if (msg_class == GRID_CLASS_PAGEDISCARD_code && msg_instr == GRID_INSTR_CHECK_code && (position_is_me || position_is_global)){
 					
 					struct grid_msg response;	
 					grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
-					grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGDISCARD_frame);
-					grid_msg_body_append_parameter(&response, GRID_CLASS_CONFIGDISCARD_LASTHEADER_offset, GRID_CLASS_CONFIGDISCARD_LASTHEADER_length, grid_sys_state.lastheader_configdiscard.id);		
+					grid_msg_body_append_printf(&response, GRID_CLASS_PAGEDISCARD_frame);
+					grid_msg_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, grid_sys_state.lastheader_pagediscard.id);		
 				
-					if (grid_sys_state.lastheader_configdiscard.status != -1){ // ACK
+					if (grid_sys_state.lastheader_pagediscard.status != -1){ // ACK
 						grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 					}		
 					else{ // NACK
@@ -1840,22 +1843,22 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					grid_msg_packet_send_everywhere(&response);	
 
 				}			
-				else if (msg_class == GRID_CLASS_CONFIGSTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				else if (msg_class == GRID_CLASS_PAGESTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 									
-					grid_sys_state.lastheader_configstore.status = -1;
-					grid_sys_state.lastheader_configstore.id = id;
-					grid_nvm_ui_bulk_store_init(&grid_nvm_state, &grid_ui_state);					
+					grid_sys_state.lastheader_pagestore.status = -1;
+					grid_sys_state.lastheader_pagestore.id = id;
+					grid_nvm_ui_bulk_pagestore_init(&grid_nvm_state, &grid_ui_state);					
 
 				}		
-				else if (msg_class == GRID_CLASS_CONFIGSTORE_code && msg_instr == GRID_INSTR_CHECK_code && (position_is_me || position_is_global)){
+				else if (msg_class == GRID_CLASS_PAGESTORE_code && msg_instr == GRID_INSTR_CHECK_code && (position_is_me || position_is_global)){
 					
 					struct grid_msg response;	
 					grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
-					grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGSTORE_frame);
-					grid_msg_body_append_parameter(&response, GRID_CLASS_CONFIGSTORE_LASTHEADER_offset, GRID_CLASS_CONFIGSTORE_LASTHEADER_length, grid_sys_state.lastheader_configstore.id);		
+					grid_msg_body_append_printf(&response, GRID_CLASS_PAGESTORE_frame);
+					grid_msg_body_append_parameter(&response, GRID_CLASS_PAGESTORE_LASTHEADER_offset, GRID_CLASS_PAGESTORE_LASTHEADER_length, grid_sys_state.lastheader_pagestore.id);		
 				
-					if (grid_sys_state.lastheader_configstore.status != -1 && 0 == grid_nvm_ui_bulk_store_is_in_progress(&grid_nvm_state, &grid_ui_state)){ // ACK
+					if (grid_sys_state.lastheader_pagestore.status != -1 && 0 == grid_nvm_ui_bulk_pagestore_is_in_progress(&grid_nvm_state, &grid_ui_state)){ // ACK
 						grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 					}		
 					else{ // NACK
@@ -1866,22 +1869,39 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					grid_msg_packet_send_everywhere(&response);	
 
 				}	
-				else if (msg_class == GRID_CLASS_CONFIGERASE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				else if (msg_class == GRID_CLASS_NVMERASE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_sys_state.lastheader_configerase.status = -1;
-					grid_sys_state.lastheader_configerase.id = id;
-					grid_nvm_ui_bulk_clear_init(&grid_nvm_state, &grid_ui_state);
-					//grid_nvm_erase_all(&grid_nvm_state);
+					printf("curent_length=%d\r\n", current_length);
+
+
+					if (grid_nvm_ui_bulk_nvmerase_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+						grid_debug_printf("Warning: Erase: Already in progress!");
+					}
+
+					if (current_length==5){ // erase all nvm configs
+
+						grid_sys_state.lastheader_nvmerase.status = -1;
+						grid_sys_state.lastheader_nvmerase.id = id;
+
+						grid_nvm_ui_bulk_nvmerase_init(&grid_nvm_state, &grid_ui_state);
+
+					}
+					else{
+						grid_debug_printf("Warning: Erase: Invalid params!");
+						// invalid params;
+					}
+
+
 
 				}		
-				else if (msg_class == GRID_CLASS_CONFIGERASE_code && msg_instr == GRID_INSTR_CHECK_code && (position_is_me || position_is_global)){
+				else if (msg_class == GRID_CLASS_NVMERASE_code && msg_instr == GRID_INSTR_CHECK_code && (position_is_me || position_is_global)){
 					
 					struct grid_msg response;	
 					grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
-					grid_msg_body_append_printf(&response, GRID_CLASS_CONFIGERASE_frame);
-					grid_msg_body_append_parameter(&response, GRID_CLASS_CONFIGERASE_LASTHEADER_offset, GRID_CLASS_CONFIGERASE_LASTHEADER_length, grid_sys_state.lastheader_configerase.id);		
+					grid_msg_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
+					grid_msg_body_append_parameter(&response, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, grid_sys_state.lastheader_nvmerase.id);		
 				
-					if (grid_sys_state.lastheader_configerase.status != -1 && 0 == grid_nvm_ui_bulk_clear_is_in_progress(&grid_nvm_state, &grid_ui_state)){ // ACK
+					if (grid_sys_state.lastheader_nvmerase.status != -1 && 0 == grid_nvm_ui_bulk_nvmerase_is_in_progress(&grid_nvm_state, &grid_ui_state)){ // ACK
 						grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 					}		
 					else{ // NACK

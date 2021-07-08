@@ -391,9 +391,10 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->module_rot = GRID_SYS_DEFAULT_ROTATION;
 
 	mod->lastheader_config.status = -1;
-	mod->lastheader_configstore.status = -1;
-	mod->lastheader_configerase.status = -1;
-	mod->lastheader_configdiscard.status = -1;
+	mod->lastheader_pagestore.status = -1;
+	mod->lastheader_nvmerase.status = -1;
+	mod->lastheader_pagediscard.status = -1;
+	mod->lastheader_pageclear.status = -1;
 
     
 	rand_sync_enable(&RAND_0);	

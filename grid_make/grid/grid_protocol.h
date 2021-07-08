@@ -750,25 +750,24 @@ enum grid_ui_event_t
 // DEFAULT ACTION:                     FIRST MIDI then LED_SET_PHASE
 
 
-#define GRID_ACTIONSTRING_INIT_POT "<?lua --[[@l]]local num,val,red,gre,blu = self:ind(),self:pva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glp]]glp(num,1,val) ?>"
+#define GRID_ACTIONSTRING_INIT_POT "<?lua --[[@l]] local num,val,red,gre,blu=self:ind(),self:pva(),glr(),glg(),glb()--[[@glc]] glc(num,1,red,gre,blu)--[[@glp]] glp(num,1,val) ?>"
 
-#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@l]]local num,val,red,gre,blu = self:ind(),self:bva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glp]]glp(num,1,val) ?>"
+#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@l]] local num,val,red,gre,blu=self:ind(),self:bva(),glr(),glg(),glb()--[[@glc]] glc(num,1,red,gre,blu)--[[@glp]] glp(num,1,val) ?>"
 
-#define GRID_ACTIONSTRING_MIDIRX  "<?lua --[[@l]]local ch,cmd,param1,param2 = midi.ch,midi.cmd,midi.p1,midi.p2 ?>"
+#define GRID_ACTIONSTRING_MIDIRX  "<?lua --[[@l]] local ch,cmd,param1,param2=midi.ch,midi.cmd,midi.p1,midi.p2 ?>"
 
 //#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@glc]]glc(2,1,100,200,230) --[[@glp]]glp(2,1,100) ?>"
 
 
-#define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@l]]local num,bval,eval,red,gre,blu = self:ind(),self:bva(),self:eva(),glr(),glg(),glb() --[[@glc]]glc(num,1,red,gre,blu) --[[@glc]]glc(num,2,red,gre,blu) --[[@glp]]glp(num,1,bval) --[[@glp]]glp(num,2,eval) --[[@cb]] self.init = nil ?>"
+#define GRID_ACTIONSTRING_INIT_ENC "<?lua --[[@l]] local num,bval,eval,red,gre,blu=self:ind(),self:bva(),self:eva(),glr(),glg(),glb()--[[@glc]] glc(num,1,red,gre,blu)--[[@glc]] glc(num,2,red,gre,blu)--[[@glp]] glp(num,1,bval)--[[@glp]] glp(num,2,eval)--[[@cb]] self.init = nil ?>"
 
 // new dynamic midi based on x y and activepage
-#define GRID_ACTIONSTRING_AC "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:pva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 1, val) ?>"
+#define GRID_ACTIONSTRING_AC "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:pva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 176, cc, val)--[[@glp]] glp(num, 1, val) ?>"
 #define GRID_ACTIONSTRING_BC "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 144,note, val)--[[@glp]] glp(num, 1, val) ?>"
-#define GRID_ACTIONSTRING_EC "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind() --[[@gms]]gms(ch, 176, cc, val) --[[@glp]]glp(num, 2, val) ?>"
+#define GRID_ACTIONSTRING_EC "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),gmy()*4+gpc(),32+gmx()*16+self:ind()--[[@gms]] gms(ch, 176, cc, val)--[[@glp]] glp(num, 2, val) ?>"
 
-
-#define GRID_ACTIONSTRING_PAGE_INIT		 "<?lua --[[@cb]]print('page init') ?>"
-#define GRID_ACTIONSTRING_MAPMODE_CHANGE "<?lua --[[@cb]]gpl(gpn()) ?>"
+#define GRID_ACTIONSTRING_PAGE_INIT		 "<?lua --[[@cb]] print('page init') ?>"
+#define GRID_ACTIONSTRING_MAPMODE_CHANGE "<?lua --[[@cb]] gpl(gpn()) ?>"
 
 
 #define GRID_CLASS_EVENT_code 0x050
@@ -838,26 +837,33 @@ enum grid_ui_event_t
 #define GRID_CLASS_CONFIG_ACTIONSTRING_length 0
 
 
-#define GRID_CLASS_CONFIGSTORE_code 0x061
-#define GRID_CLASS_CONFIGSTORE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_CONFIGSTORE_code, GRID_CONST_ETX
+#define GRID_CLASS_PAGESTORE_code 0x061
+#define GRID_CLASS_PAGESTORE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGESTORE_code, GRID_CONST_ETX
 
 // used when check instruction is received
-#define GRID_CLASS_CONFIGSTORE_LASTHEADER_offset 5
-#define GRID_CLASS_CONFIGSTORE_LASTHEADER_length 2
+#define GRID_CLASS_PAGESTORE_LASTHEADER_offset 5
+#define GRID_CLASS_PAGESTORE_LASTHEADER_length 2
 
-#define GRID_CLASS_CONFIGERASE_code 0x062
-#define GRID_CLASS_CONFIGERASE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_CONFIGERASE_code, GRID_CONST_ETX
-
-// used when check instruction is received
-#define GRID_CLASS_CONFIGERASE_LASTHEADER_offset 5
-#define GRID_CLASS_CONFIGERASE_LASTHEADER_length 2
-
-#define GRID_CLASS_CONFIGDISCARD_code 0x063
-#define GRID_CLASS_CONFIGDISCARD_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_CONFIGDISCARD_code, GRID_CONST_ETX
+#define GRID_CLASS_NVMERASE_code 0x062
+#define GRID_CLASS_NVMERASE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_NVMERASE_code, GRID_CONST_ETX
 
 // used when check instruction is received
-#define GRID_CLASS_CONFIGDISCARD_LASTHEADER_offset 5
-#define GRID_CLASS_CONFIGDISCARD_LASTHEADER_length 2
+#define GRID_CLASS_NVMERASE_LASTHEADER_offset 5
+#define GRID_CLASS_NVMERASE_LASTHEADER_length 2
+
+#define GRID_CLASS_PAGEDISCARD_code 0x063
+#define GRID_CLASS_PAGEDISCARD_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGEDISCARD_code, GRID_CONST_ETX
+
+// used when check instruction is received
+#define GRID_CLASS_PAGEDISCARD_LASTHEADER_offset 5
+#define GRID_CLASS_PAGEDISCARD_LASTHEADER_length 2
+
+#define GRID_CLASS_PAGECLEAR_code 0x064
+#define GRID_CLASS_PAGECLEAR_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGECLEAR_code, GRID_CONST_ETX
+
+// used when check instruction is received
+#define GRID_CLASS_PAGECLEAR_LASTHEADER_offset 5
+#define GRID_CLASS_PAGECLEAR_LASTHEADER_length 2
 
 // RUN imediate
 #define GRID_CLASS_IMEDIATE_code 0x085

@@ -1,0 +1,251 @@
+{
+    "name": "0.1.red",
+    "meta": {
+        "type": "EN16_dx:0;dy:0",
+        "version": {
+            "major": 1,
+            "minor": 2,
+            "patch": 2
+        }
+    },
+    "configs": [
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "3",
+                "config": ""
+            },
+            {
+                "event": "2",
+                "config": ""
+            }
+        ],
+        [
+            {
+                "event": "0",
+                "config": ""
+            },
+            {
+                "event": "4",
+                "config": ""
+            },
+            {
+                "event": "5",
+                "config": ""
+            }
+        ]
+    ]
+}

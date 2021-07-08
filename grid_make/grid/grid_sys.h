@@ -35,9 +35,10 @@ struct grid_sys_model
 
 
 	struct grid_lastheader lastheader_config;
-	struct grid_lastheader lastheader_configstore;
-	struct grid_lastheader lastheader_configerase;
-	struct grid_lastheader lastheader_configdiscard;
+	struct grid_lastheader lastheader_pagestore;
+	struct grid_lastheader lastheader_pagediscard;
+	struct grid_lastheader lastheader_pageclear;
+	struct grid_lastheader lastheader_nvmerase;
 
 
     uint8_t sessionid;

@@ -56,11 +56,13 @@ struct grid_nvm_model{
 	uint8_t read_bulk_last_element;
 	uint8_t read_bulk_last_event;
 	
-	uint8_t clear_bulk_status;
-	uint32_t clear_bulk_address;
+	uint8_t erase_bulk_status;
+	uint32_t erase_bulk_address;
     
 	uint8_t store_bulk_status;
 
+	uint8_t clear_bulk_status;
+	
 
 	uint32_t next_write_offset;
 	struct grid_nvm_toc_entry* toc_head;
@@ -74,7 +76,7 @@ uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, u
 struct grid_nvm_toc_entry* grid_nvm_toc_entry_find(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type);
 uint8_t grid_nvm_toc_entry_update(struct grid_nvm_toc_entry* entry, uint32_t config_string_offset, uint16_t config_string_length);
 
-uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type);
+uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* nvm, struct grid_nvm_toc_entry* entry);
 
 uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct grid_nvm_toc_entry* entry, uint8_t* targetstring);
 
@@ -102,18 +104,21 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod);
 
 
 
-void	grid_nvm_ui_bulk_read_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
-uint8_t grid_nvm_ui_bulk_read_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
-void	grid_nvm_ui_bulk_read_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+void	grid_nvm_ui_bulk_pageread_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+uint8_t grid_nvm_ui_bulk_pageread_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+void	grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 
-void	grid_nvm_ui_bulk_clear_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
-uint8_t grid_nvm_ui_bulk_clear_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
-void	grid_nvm_ui_bulk_clear_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+void	grid_nvm_ui_bulk_nvmerase_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+uint8_t grid_nvm_ui_bulk_nvmerase_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+void	grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 
+void	grid_nvm_ui_bulk_pagestore_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+uint8_t grid_nvm_ui_bulk_pagestore_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+void	grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 
-void	grid_nvm_ui_bulk_store_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
-uint8_t grid_nvm_ui_bulk_store_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
-void	grid_nvm_ui_bulk_store_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+void	grid_nvm_ui_bulk_pageclear_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+uint8_t grid_nvm_ui_bulk_pageclear_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+void	grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 
 
 #endif /* GRID_NVM_H_ */

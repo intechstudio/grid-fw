@@ -274,29 +274,38 @@ static void nvm_task_inner(struct grid_d51_task* task){
 	
 	if (GRID_PORT_U.rx_double_buffer_status == 0){
 		
-		if (grid_nvm_ui_bulk_read_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+		if (grid_nvm_ui_bulk_pageread_is_in_progress(&grid_nvm_state, &grid_ui_state)){
 			
-			grid_nvm_ui_bulk_read_next(&grid_nvm_state, &grid_ui_state);
+			grid_nvm_ui_bulk_pageread_next(&grid_nvm_state, &grid_ui_state);
 			
 			
 		}	
 		
 	}
 	
-	// NVM BULK CLEAR
+	// NVM BULK ERASE
 	
-	if (grid_nvm_ui_bulk_clear_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+	if (grid_nvm_ui_bulk_nvmerase_is_in_progress(&grid_nvm_state, &grid_ui_state)){
 		
-		grid_nvm_ui_bulk_clear_next(&grid_nvm_state, &grid_ui_state);
+		grid_nvm_ui_bulk_nvmerase_next(&grid_nvm_state, &grid_ui_state);
 		
 		
 	}
 	
 	// NVM BULK STORE
 	
-	if (grid_nvm_ui_bulk_store_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+	if (grid_nvm_ui_bulk_pagestore_is_in_progress(&grid_nvm_state, &grid_ui_state)){
 		
-		grid_nvm_ui_bulk_store_next(&grid_nvm_state, &grid_ui_state);
+		grid_nvm_ui_bulk_pagestore_next(&grid_nvm_state, &grid_ui_state);
+			
+		
+	}
+	
+	// NVM BULK CLEAR
+
+	if (grid_nvm_ui_bulk_pageclear_is_in_progress(&grid_nvm_state, &grid_ui_state)){
+		
+		grid_nvm_ui_bulk_pageclear_next(&grid_nvm_state, &grid_ui_state);
 			
 		
 	}
@@ -807,9 +816,9 @@ int main(void)
 	grid_nvm_toc_init(&grid_nvm_state);
 	grid_ui_page_load(&grid_ui_state, &grid_nvm_state, 0); //load page 0
 
-	while (grid_nvm_ui_bulk_read_is_in_progress(&grid_nvm_state, &grid_ui_state))
+	while (grid_nvm_ui_bulk_pageread_is_in_progress(&grid_nvm_state, &grid_ui_state))
 	{
-		grid_nvm_ui_bulk_read_next(&grid_nvm_state, &grid_ui_state);
+		grid_nvm_ui_bulk_pageread_next(&grid_nvm_state, &grid_ui_state);
 	}
 	
 
