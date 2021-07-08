@@ -1036,7 +1036,7 @@ static int l_grid_page_load(lua_State* L) {
 
         }
         else{
-            printf("rip \r\n");
+            //printf("page change in progress \r\n");
         }
 
     }

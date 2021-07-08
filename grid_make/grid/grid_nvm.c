@@ -930,7 +930,23 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 			if (eve->cfg_changed_flag){
 				
-				grid_nvm_config_store(&grid_nvm_state, ele->parent->page_activepage, ele->index, eve->type, eve->action_string);
+				if (eve->cfg_default_flag){
+
+					struct grid_nvm_toc_entry* entry = grid_nvm_toc_entry_find(nvm, ele->parent->page_activepage, ele->index, eve->type);
+					if (entry != NULL){
+						printf("DESTROY!\r\n");
+						grid_nvm_toc_entry_destroy(nvm, entry);
+					}
+					else{
+
+						printf("WAS NOT FOUND!\r\n");
+					}
+	
+				}
+				else{
+					grid_nvm_config_store(nvm, ele->parent->page_activepage, ele->index, eve->type, eve->action_string);
+	
+				}
 
 				eve->cfg_changed_flag = 0; // clear changed flag
 			}

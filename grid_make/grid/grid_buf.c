@@ -1609,9 +1609,11 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 						if (type == 255){
 							grid_ui_state.page_change_enabled = 1;
+							//printf("255\r\n");
 						}
 						else{
 							grid_ui_state.page_change_enabled = 0;
+							//printf("254\r\n");
 						}
 
 						uint8_t led_report_valid = 0;
@@ -1822,7 +1824,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 			
 					grid_sys_state.lastheader_pagediscard.status = -1;
 					grid_sys_state.lastheader_pagediscard.id = id;		
-					grid_nvm_ui_bulk_pageread_init(&grid_nvm_state, &grid_ui_state);				
+					grid_nvm_ui_bulk_pageread_init(&grid_nvm_state, &grid_ui_state);	
+
+
 
 				}		
 				else if (msg_class == GRID_CLASS_PAGEDISCARD_code && msg_instr == GRID_INSTR_CHECK_code && (position_is_me || position_is_global)){
