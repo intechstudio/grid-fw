@@ -709,35 +709,39 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
 		uint32_t len = strlen(action_string);
 		action_string[len-3] = '\0';
+		
 		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_INIT_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+		
 		action_string[len-3] = ' ';
 
 		if (ele->type == GRID_UI_ELEMENT_ENCODER){
 
 			if (strcmp(action_string, GRID_ACTIONSTRING_INIT_ENC) == 0){
 				eve->cfg_default_flag = 1;
-			}
+			}	
+			grid_lua_dostring(&grid_lua_state, temp);
+			
 		}
 		else if (ele->type == GRID_UI_ELEMENT_BUTTON){
 
 			if (strcmp(action_string, GRID_ACTIONSTRING_INIT_BUT) == 0){
 				eve->cfg_default_flag = 1;
-			}	
+			}		
+			grid_lua_dostring(&grid_lua_state, temp);
+			
 		}
 		else if (ele->type == GRID_UI_ELEMENT_POTENTIOMETER){
 
 			if (strcmp(action_string, GRID_ACTIONSTRING_INIT_POT) == 0){
 				eve->cfg_default_flag = 1;
 			}	
+			grid_lua_dostring(&grid_lua_state, temp);
+
 		}
 		else if (ele->type == GRID_UI_ELEMENT_SYSTEM){
-
-			if (strcmp(action_string, GRID_ACTIONSTRING_PAGE_INIT) == 0){
-				eve->cfg_default_flag = 1;
-			}	
+			
+			//do nothing because this does not need to be stored under an element
 		}
-
-		grid_lua_dostring(&grid_lua_state, temp);
 
 		strcpy(eve->action_string, action_string);
 	}
