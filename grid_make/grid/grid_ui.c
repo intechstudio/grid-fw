@@ -774,7 +774,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 
 	if (eve->cfg_default_flag){
 
-		printf("DEF!!\r\n");
+		//printf("DEF!!\r\n");
 	}
 
 

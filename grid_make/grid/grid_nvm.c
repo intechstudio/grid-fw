@@ -708,6 +708,8 @@ uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* nvm, struct grid_nvm_t
 
 void grid_nvm_toc_debug(struct grid_nvm_model* mod){
 
+	return; // degub disabled
+
 	struct grid_nvm_toc_entry* next = mod->toc_head;
 
 

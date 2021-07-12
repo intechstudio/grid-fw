@@ -671,6 +671,6 @@ nightly:
 	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_nightly.uf2 ./AtmelStart.bin
 	cp ./../../binary/grid_nightly.uf2 /media/${shell whoami}/GRID
 release:
-	python3 ./../buildscripts/macro2json.py ./../grid/grid_protocol.h ./../../../grid-protocol/grid_protocol_release_test.json
-	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_release_test.uf2 ./AtmelStart.bin
+	python3 ./../buildscripts/macro2json.py ./../grid/grid_protocol.h ./../../../grid-protocol/grid_protocol_release.json
+	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_release.uf2 ./AtmelStart.bin
 

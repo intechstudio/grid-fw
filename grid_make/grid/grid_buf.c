@@ -1953,10 +1953,10 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 									
 						if (vmajor == GRID_PROTOCOL_VERSION_MAJOR && vminor == GRID_PROTOCOL_VERSION_MINOR && vpatch == GRID_PROTOCOL_VERSION_PATCH){
 							// version ok	
-							printf("version ok\r\n");
+							//printf("version ok\r\n");
 						}
 						else{
-							printf("error.buf.config version mismatch\r\n");
+							//printf("error.buf.config version mismatch\r\n");
 						}
 
 						uint8_t pagenumber = grid_msg_get_parameter(message, current_start+GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
