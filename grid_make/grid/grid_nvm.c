@@ -1048,6 +1048,8 @@ void grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_
 	grid_sys_state.lastheader_pageclear.status = 0;
 
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 127);
+
+	grid_ui_page_load(ui, nvm, ui->page_activepage);
 		
 }
 
@@ -1132,13 +1134,13 @@ void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_m
 	grid_msg_packet_send_everywhere(&response);
 
 
-	grid_ui_page_load(ui, nvm, ui->page_activepage);
 	
 	grid_debug_printf("erase complete");
 	grid_keyboard_state.isenabled = 1;	
 	grid_sys_state.lastheader_nvmerase.status = 0;
 	
 
+	grid_ui_page_load(ui, nvm, ui->page_activepage);
 
 	
 }

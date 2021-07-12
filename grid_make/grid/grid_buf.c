@@ -1854,6 +1854,14 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					grid_sys_state.lastheader_pagestore.id = id;
 					grid_nvm_ui_bulk_pagestore_init(&grid_nvm_state, &grid_ui_state);					
 
+				}			
+				else if (msg_class == GRID_CLASS_PAGECLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+				
+									
+					grid_sys_state.lastheader_pageclear.status = -1;
+					grid_sys_state.lastheader_pageclear.id = id;
+					grid_nvm_ui_bulk_pageclear_init(&grid_nvm_state, &grid_ui_state);					
+
 				}		
 				else if (msg_class == GRID_CLASS_PAGESTORE_code && msg_instr == GRID_INSTR_CHECK_code && (position_is_me || position_is_global)){
 					
