@@ -69,7 +69,7 @@ struct grid_ui_element
 	uint8_t template_parameter_list_length;
 	int32_t* template_parameter_list;
 
-	void (*page_change_cb)(uint8_t, uint8_t);
+	void (*page_change_cb)(struct grid_ui_element*, uint8_t, uint8_t);
 	void (*event_clear_cb)(struct grid_ui_event*);
 
 	uint8_t						event_list_length;

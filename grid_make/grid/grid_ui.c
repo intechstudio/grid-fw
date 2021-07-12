@@ -620,7 +620,7 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 
 		if (ele->page_change_cb != NULL){
 
-			ele->page_change_cb(oldpage, page);
+			ele->page_change_cb(ele, oldpage, page);
 		}
 
 	}
