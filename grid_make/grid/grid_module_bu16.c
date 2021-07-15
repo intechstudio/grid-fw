@@ -110,8 +110,9 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 				if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
 					
 					// Button ABS
-					template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
-				
+					int32_t max = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
+					template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = max;
+		
 				}
 				else{
 
@@ -142,8 +143,9 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 
 				if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
 					
-					// Button ABS
-					template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
+					// Button ABS						
+					int32_t min = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
+					template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = min;
 				
 				}
  				else{

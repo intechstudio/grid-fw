@@ -134,7 +134,8 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 					// Button ABS
 					if (template_parameter_list[GRID_LUA_FNC_E_BUTTON_MODE_index] == 0){
 
-						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 127;
+						int32_t max = template_parameter_list[GRID_LUA_FNC_E_BUTTON_MAX_index];
+						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = max;
 					}
 					else{
 						// IMPLEMENT STEP TOGGLE HERE					// Toggle
@@ -166,7 +167,9 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 					// Button ABS
 					if (template_parameter_list[GRID_LUA_FNC_E_BUTTON_MODE_index] == 0){
 
-						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 0;
+						int32_t min = template_parameter_list[GRID_LUA_FNC_E_BUTTON_MIN_index];
+
+						template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = min;
 					}
 					else{
 						// IMPLEMENT STEP TOGGLE HERE
