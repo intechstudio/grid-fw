@@ -804,6 +804,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 		switch(eve->type){
 			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;
 			case GRID_UI_EVENT_BC:		sprintf(targetstring, GRID_ACTIONSTRING_BC);			break;
+			case GRID_UI_EVENT_TIMER:	sprintf(targetstring, GRID_ACTIONSTRING_TIMER);			break;
 		}
 		
 	}
@@ -812,6 +813,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 		switch(eve->type){
 			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_POT);		break;
 			case GRID_UI_EVENT_AC:		sprintf(targetstring, GRID_ACTIONSTRING_AC);			break;
+			case GRID_UI_EVENT_TIMER:	sprintf(targetstring, GRID_ACTIONSTRING_TIMER);			break;
 		}
 		
 	}
@@ -821,6 +823,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 			case GRID_UI_EVENT_INIT:        sprintf(targetstring, GRID_ACTIONSTRING_INIT_ENC);	break;
 			case GRID_UI_EVENT_EC:        	sprintf(targetstring, GRID_ACTIONSTRING_EC);		break;
 			case GRID_UI_EVENT_BC:			sprintf(targetstring, GRID_ACTIONSTRING_BC);		break;
+			case GRID_UI_EVENT_TIMER:		sprintf(targetstring, GRID_ACTIONSTRING_TIMER);		break;
 		}
 			
 	}
@@ -914,10 +917,10 @@ uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, uint8_t* target_s
 	else if (eve->parent->type == GRID_UI_ELEMENT_BUTTON){
 		param = eve->parent->template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index];
 	}
-	else if (eve->parent->type == GRID_UI_ELEMENT_ENCODER && eve->action_string == GRID_UI_EVENT_EC){
+	else if (eve->parent->type == GRID_UI_ELEMENT_ENCODER && eve->type == GRID_UI_EVENT_EC){
 		param = eve->parent->template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index];
 	}
-	else if (eve->parent->type == GRID_UI_ELEMENT_ENCODER && eve->action_string == GRID_UI_EVENT_BC){
+	else if (eve->parent->type == GRID_UI_ELEMENT_ENCODER && eve->type == GRID_UI_EVENT_BC){
 		param = eve->parent->template_parameter_list[GRID_LUA_FNC_E_BUTTON_STATE_index];
 	}
 
