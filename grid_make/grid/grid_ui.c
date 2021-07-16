@@ -355,15 +355,18 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 	
 	ele->type = element_type;
 
+	ele->timer_event_helper = 0;
+
 
 	if (element_type == GRID_UI_ELEMENT_SYSTEM){
 		
-		ele->event_list_length = 3;
+		ele->event_list_length = 4;
 		
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
 		grid_ui_event_init(ele, 1, GRID_UI_EVENT_MAPMODE_CHANGE); // Mapmode change
-		grid_ui_event_init(ele, 2, GRID_UI_EVENT_MIDIRX); // Mapmode change
+		grid_ui_event_init(ele, 2, GRID_UI_EVENT_MIDIRX); // Midi Receive
+		grid_ui_event_init(ele, 3, GRID_UI_EVENT_TIMER);
 
 		ele->template_initializer = NULL;
 		ele->template_parameter_list_length = 0;
@@ -371,12 +374,13 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 	}
 	else if (element_type == GRID_UI_ELEMENT_POTENTIOMETER){
 		
-		ele->event_list_length = 2;
+		ele->event_list_length = 3;
 		
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
 		
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
 		grid_ui_event_init(ele, 1, GRID_UI_EVENT_AC); // Absolute Value Change (7bit)
+		grid_ui_event_init(ele, 2, GRID_UI_EVENT_TIMER);
 
 		ele->template_initializer = &grid_element_potmeter_template_parameter_init;
 		ele->template_parameter_list_length = GRID_LUA_FNC_P_LIST_length;
@@ -388,15 +392,13 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 	else if (element_type == GRID_UI_ELEMENT_BUTTON){
 		
 
-		ele->event_list_length = 2;
+		ele->event_list_length = 3;
 		
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
 
-
-		
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
-
 		grid_ui_event_init(ele, 1, GRID_UI_EVENT_BC);	// Button Change
+		grid_ui_event_init(ele, 2, GRID_UI_EVENT_TIMER);
 
 
 
@@ -409,13 +411,14 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 	}
 	else if (element_type == GRID_UI_ELEMENT_ENCODER){
 		
-		ele->event_list_length = 3;
+		ele->event_list_length = 4;
 		
 		ele->event_list = malloc(ele->event_list_length*sizeof(struct grid_ui_event));
 		
 		grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT); // Element Initialization Event
 		grid_ui_event_init(ele, 1, GRID_UI_EVENT_EC);	// Encoder Change
 		grid_ui_event_init(ele, 2, GRID_UI_EVENT_BC);	// Button Change
+		grid_ui_event_init(ele, 3, GRID_UI_EVENT_TIMER);
 
 		ele->template_initializer = &grid_element_encoder_template_parameter_init;
 		ele->template_parameter_list_length = GRID_LUA_FNC_E_LIST_length;
@@ -468,7 +471,6 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui
 	}		
 
 	uint8_t actionstring[GRID_PARAMETER_ACTIONSTRING_maxlength] = {0};
-
 
 	grid_ui_event_generate_actionstring(eve, actionstring);	
 
@@ -792,6 +794,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 			case GRID_UI_EVENT_INIT:				sprintf(targetstring, GRID_ACTIONSTRING_PAGE_INIT);			break;
 			case GRID_UI_EVENT_MAPMODE_CHANGE:		sprintf(targetstring, GRID_ACTIONSTRING_MAPMODE_CHANGE);	break;
 			case GRID_UI_EVENT_MIDIRX:				sprintf(targetstring, GRID_ACTIONSTRING_MIDIRX);			break;
+			case GRID_UI_EVENT_TIMER:				sprintf(targetstring, GRID_ACTIONSTRING_TIMER);				break;
 		}
 		
 	}

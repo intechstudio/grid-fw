@@ -56,6 +56,8 @@ struct grid_ui_template_buffer{
 struct grid_ui_element
 {
 	enum grid_ui_status status;
+
+ 	uint32_t timer_event_helper;
 	
 	struct grid_ui_model* parent;
 	uint8_t index;

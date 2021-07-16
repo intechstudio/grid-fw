@@ -555,7 +555,38 @@ void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 	grid_sys_rtc_tick_time(&grid_sys_state);	
 	grid_task_timer_tick(&grid_task_state);
 			
+
+	for (uint8_t i = 0; i<grid_ui_state.element_list_length; i++){
+
+		struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+
+		if (ele->timer_event_helper > 0){
+
+			ele->timer_event_helper--;
+			
+			if (ele->timer_event_helper == 0){
+
+				printf("tick\r\n");
+
+				struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_TIMER);
+				
+				if (eve != NULL){
+				
+					printf("bumm\r\n");
+					grid_ui_event_trigger(eve);
+
+				}
+
+
+			}
+
+			
+		}
+		
+	}
+
 	uint8_t mapmode_value = !gpio_get_pin_level(MAP_MODE);
+
 
 	if (mapmode_value != grid_sys_state.mapmodestate){
 		

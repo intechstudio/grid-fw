@@ -275,51 +275,51 @@
 #define GRID_LUA_FNC_G_LED_BLU_short 	"glb"
 
 
-#define GRID_LUA_FNC_G_LED_PHASE_short 	"glp"
-#define GRID_LUA_FNC_G_LED_PHASE_human 	"led_value"
-#define GRID_LUA_FNC_G_LED_PHASE_fnptr 	l_grid_led_phase
+#define GRID_LUA_FNC_G_LED_PHASE_short 		"glp"
+#define GRID_LUA_FNC_G_LED_PHASE_human 		"led_value"
+#define GRID_LUA_FNC_G_LED_PHASE_fnptr 		l_grid_led_phase
 
 
 #define GRID_LUA_FNC_G_LED_TIMEOUT_short 	"glt"
 #define GRID_LUA_FNC_G_LED_TIMEOUT_human 	"led_timeout"
 #define GRID_LUA_FNC_G_LED_TIMEOUT_fnptr 	l_grid_led_set_timeout
 
-#define GRID_LUA_FNC_G_LED_MIN_short 	"gln"
-#define GRID_LUA_FNC_G_LED_MIN_human 	"led_color_min"
-#define GRID_LUA_FNC_G_LED_MIN_fnptr 	l_grid_led_set_min
+#define GRID_LUA_FNC_G_LED_MIN_short 		"gln"
+#define GRID_LUA_FNC_G_LED_MIN_human 		"led_color_min"
+#define GRID_LUA_FNC_G_LED_MIN_fnptr 		l_grid_led_set_min
 
-#define GRID_LUA_FNC_G_LED_MID_short 	"gld"
-#define GRID_LUA_FNC_G_LED_MID_human 	"led_color_mid"
-#define GRID_LUA_FNC_G_LED_MID_fnptr 	l_grid_led_set_mid
+#define GRID_LUA_FNC_G_LED_MID_short 		"gld"
+#define GRID_LUA_FNC_G_LED_MID_human 		"led_color_mid"
+#define GRID_LUA_FNC_G_LED_MID_fnptr 		l_grid_led_set_mid
 
-#define GRID_LUA_FNC_G_LED_MAX_short 	"glx"
-#define GRID_LUA_FNC_G_LED_MAX_human 	"led_color_max"
-#define GRID_LUA_FNC_G_LED_MAX_fnptr 	l_grid_led_set_max
+#define GRID_LUA_FNC_G_LED_MAX_short 		"glx"
+#define GRID_LUA_FNC_G_LED_MAX_human 		"led_color_max"
+#define GRID_LUA_FNC_G_LED_MAX_fnptr 		l_grid_led_set_max
 
-#define GRID_LUA_FNC_G_LED_COLOR_short 	"glc"
-#define GRID_LUA_FNC_G_LED_COLOR_human 	"led_color"
-#define GRID_LUA_FNC_G_LED_COLOR_fnptr 	l_grid_led_set_color
+#define GRID_LUA_FNC_G_LED_COLOR_short 		"glc"
+#define GRID_LUA_FNC_G_LED_COLOR_human 		"led_color"
+#define GRID_LUA_FNC_G_LED_COLOR_fnptr 		l_grid_led_set_color
 
-#define GRID_LUA_FNC_G_LED_FREQUENCY_short 	"glf"
-#define GRID_LUA_FNC_G_LED_FREQUENCY_human 	"led_animation_rate"
-#define GRID_LUA_FNC_G_LED_FREQUENCY_fnptr 	l_grid_led_set_frequency
+#define GRID_LUA_FNC_G_LED_FREQUENCY_short 		"glf"
+#define GRID_LUA_FNC_G_LED_FREQUENCY_human 		"led_animation_rate"
+#define GRID_LUA_FNC_G_LED_FREQUENCY_fnptr 		l_grid_led_set_frequency
 
-#define GRID_LUA_FNC_G_LED_SHAPE_short 	"gls"
-#define GRID_LUA_FNC_G_LED_SHAPE_human 	"led_animation_type"
-#define GRID_LUA_FNC_G_LED_SHAPE_fnptr 	l_grid_led_set_shape
+#define GRID_LUA_FNC_G_LED_SHAPE_short 			"gls"
+#define GRID_LUA_FNC_G_LED_SHAPE_human 			"led_animation_type"
+#define GRID_LUA_FNC_G_LED_SHAPE_fnptr 			l_grid_led_set_shape
 
-#define GRID_LUA_FNC_G_LED_PSF_short 	"glpfs"
-#define GRID_LUA_FNC_G_LED_PSF_human 	"led_animation_phase_rate_type"
-#define GRID_LUA_FNC_G_LED_PSF_fnptr 	l_grid_led_set_pfs
+#define GRID_LUA_FNC_G_LED_PSF_short 			"glpfs"
+#define GRID_LUA_FNC_G_LED_PSF_human 			"led_animation_phase_rate_type"
+#define GRID_LUA_FNC_G_LED_PSF_fnptr 			l_grid_led_set_pfs
 
-#define GRID_LUA_FNC_G_MIDI_SEND_short 	"gms"
-#define GRID_LUA_FNC_G_MIDI_SEND_human 	"midi_send"
-#define GRID_LUA_FNC_G_MIDI_SEND_fnptr 	l_grid_midi_send
+#define GRID_LUA_FNC_G_MIDI_SEND_short 			"gms"
+#define GRID_LUA_FNC_G_MIDI_SEND_human 			"midi_send"
+#define GRID_LUA_FNC_G_MIDI_SEND_fnptr 			l_grid_midi_send
 
 
-#define GRID_LUA_FNC_G_KEYBOARD_SEND_short 	"gks"
-#define GRID_LUA_FNC_G_KEYBOARD_SEND_human 	"keyboard_send"
-#define GRID_LUA_FNC_G_KEYBOARD_SEND_fnptr 	l_grid_keyboard_send
+#define GRID_LUA_FNC_G_KEYBOARD_SEND_short 		"gks"
+#define GRID_LUA_FNC_G_KEYBOARD_SEND_human 		"keyboard_send"
+#define GRID_LUA_FNC_G_KEYBOARD_SEND_fnptr 		l_grid_keyboard_send
 
 #define GRID_LUA_FNC_G_MOUSEMOVE_SEND_short 	"gmms"
 #define GRID_LUA_FNC_G_MOUSEMOVE_SEND_human 	"mouse_move_send"
@@ -330,14 +330,14 @@
 #define GRID_LUA_FNC_G_MOUSEBUTTON_SEND_fnptr 	l_grid_mousebutton_send
 
 
-#define GRID_LUA_FNC_G_RANDOM_short 	"grnd"
-#define GRID_LUA_FNC_G_RANDOM_human 	"random"
-#define GRID_LUA_FNC_G_RANDOM_fnptr 	l_grid_random
+#define GRID_LUA_FNC_G_RANDOM_short 			"grnd"
+#define GRID_LUA_FNC_G_RANDOM_human 			"random"
+#define GRID_LUA_FNC_G_RANDOM_fnptr 			l_grid_random
 
 
-#define GRID_LUA_FNC_G_HWCFG_short 		"ghwcfg"
-#define GRID_LUA_FNC_G_HWCFG_human 		"hardware_configuration"
-#define GRID_LUA_FNC_G_HWCFG_fnptr 		l_grid_hwcfg
+#define GRID_LUA_FNC_G_HWCFG_short 				"ghwcfg"
+#define GRID_LUA_FNC_G_HWCFG_human 				"hardware_configuration"
+#define GRID_LUA_FNC_G_HWCFG_fnptr 				l_grid_hwcfg
 
 #define GRID_LUA_FNC_G_VERSION_MAJOR_short 		"gvmaj"
 #define GRID_LUA_FNC_G_VERSION_MAJOR_human 		"version_major"
@@ -379,6 +379,14 @@
 #define GRID_LUA_FNC_G_PAGE_LOAD_short 			"gpl"
 #define GRID_LUA_FNC_G_PAGE_LOAD_human 			"page_load"
 #define GRID_LUA_FNC_G_PAGE_LOAD_fnptr 			l_grid_page_load
+
+#define GRID_LUA_FNC_G_TIMER_START_short 		"gtt"
+#define GRID_LUA_FNC_G_TIMER_START_human 		"timer_start"
+#define GRID_LUA_FNC_G_TIMER_START_fnptr 		l_grid_timer_start
+
+#define GRID_LUA_FNC_G_TIMER_STOP_short 		"gtp"
+#define GRID_LUA_FNC_G_TIMER_STOP_human 		"timer_stop"
+#define GRID_LUA_FNC_G_TIMER_STOP_fnptr 		l_grid_timer_stop
 
 
 #define GRID_LUA_FNC_G_LOOKUP_short 	"glut"
@@ -533,7 +541,10 @@ stored config date
 	\
 	"GRID_LUA_FNC_E_ACTION_INIT_short" = function (self) print('undefined action') end,\
 	"GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (self) print('undefined action') end,\
-	"GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end\
+	"GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end,\
+	\
+	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
+	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
 	\
     }}"
 
@@ -734,6 +745,7 @@ enum grid_ui_event_t
 	GRID_UI_EVENT_BC,
 	GRID_UI_EVENT_MAPMODE_CHANGE,
 	GRID_UI_EVENT_MIDIRX,
+	GRID_UI_EVENT_TIMER,
 
 
 };
@@ -744,6 +756,7 @@ enum grid_ui_event_t
 #define 	GRID_EVENT_BC	"03"
 #define 	GRID_EVENT_MAP	"04"
 #define 	GRID_EVENT_MIDIRX "05"
+#define 	GRID_EVENT_TIMER "06"
 
 // BANK + ELEMENT NUMBER + EVENT TYPE + PARAMETER
 
@@ -755,6 +768,8 @@ enum grid_ui_event_t
 #define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@l]] local num,val,red,gre,blu=self:ind(),self:bva(),glr(),glg(),glb()--[[@glc]] glc(num,1,red,gre,blu)--[[@glp]] glp(num,1,val) ?>"
 
 #define GRID_ACTIONSTRING_MIDIRX  "<?lua --[[@l]] local ch,cmd,param1,param2=midi.ch,midi.cmd,midi.p1,midi.p2 ?>"
+
+#define GRID_ACTIONSTRING_TIMER  "<?lua --[[@cb]] print('tick') ?>"
 
 //#define GRID_ACTIONSTRING_INIT_BUT "<?lua --[[@glc]]glc(2,1,100,200,230) --[[@glp]]glp(2,1,100) ?>"
 
