@@ -137,129 +137,6 @@
 
 
 
-// ================== MIDI CLASS =================== //
-#define GRID_CLASS_MIDI_code 0x000
-#define GRID_CLASS_MIDI_frame "%c%03x_........%c", GRID_CONST_STX, GRID_CLASS_MIDI_code, GRID_CONST_ETX
-
-#define GRID_CLASS_MIDI_CHANNEL_offset 5
-#define GRID_CLASS_MIDI_CHANNEL_length 2
-
-#define GRID_CLASS_MIDI_COMMAND_offset 7
-#define GRID_CLASS_MIDI_COMMAND_length 2
-
-#define GRID_CLASS_MIDI_PARAM1_offset 9
-#define GRID_CLASS_MIDI_PARAM1_length 2
-
-#define GRID_CLASS_MIDI_PARAM2_offset 11
-#define GRID_CLASS_MIDI_PARAM2_length 2
-
-
-
-// HEARTBEAT (type=0 grid, type=1 gridmaster, type=255 editor)
-#define GRID_CLASS_HEARTBEAT_code 0x010
-#define GRID_CLASS_HEARTBEAT_frame "%c%03x_..........%c", GRID_CONST_STX, GRID_CLASS_HEARTBEAT_code, GRID_CONST_ETX
-
-#define GRID_CLASS_HEARTBEAT_TYPE_offset 5
-#define GRID_CLASS_HEARTBEAT_TYPE_length 2
-
-#define GRID_CLASS_HEARTBEAT_HWCFG_offset 7
-#define GRID_CLASS_HEARTBEAT_HWCFG_length 2
-
-#define GRID_CLASS_HEARTBEAT_VMAJOR_offset 9
-#define GRID_CLASS_HEARTBEAT_VMAJOR_length 2
-
-#define GRID_CLASS_HEARTBEAT_VMINOR_offset 11
-#define GRID_CLASS_HEARTBEAT_VMINOR_length 2
-
-#define GRID_CLASS_HEARTBEAT_VPATCH_offset 13
-#define GRID_CLASS_HEARTBEAT_VPATCH_length 2
-
-
-// SERIAL NUMBER
-#define GRID_CLASS_SERIALNUMBER_code 0x011
-#define GRID_CLASS_SERIALNUMBER_frame "%c%03x_................................%c", GRID_CONST_STX, GRID_CLASS_SERIALNUMBER_code, GRID_CONST_ETX
-
-#define GRID_CLASS_SERIALNUMBER_WORD0_offset 5
-#define GRID_CLASS_SERIALNUMBER_WORD0_length 8
-
-#define GRID_CLASS_SERIALNUMBER_WORD1_offset 13
-#define GRID_CLASS_SERIALNUMBER_WORD1_length 8
-
-#define GRID_CLASS_SERIALNUMBER_WORD2_offset 21
-#define GRID_CLASS_SERIALNUMBER_WORD2_length 8
-
-#define GRID_CLASS_SERIALNUMBER_WORD3_offset 29
-#define GRID_CLASS_SERIALNUMBER_WORD3_length 8
-
-// RESETCAUSE
-#define GRID_CLASS_RESETCAUSE_code 0x012
-#define GRID_CLASS_RESETCAUSE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_RESETCAUSE_code, GRID_CONST_ETX
-
-#define GRID_CLASS_RESETCAUSE_CAUSE_offset 5
-#define GRID_CLASS_RESETCAUSE_CAUSE_length 2
-
-// RESET
-#define GRID_CLASS_RESET_code 0x013
-#define GRID_CLASS_RESET_frame "%c%03xe%c", GRID_CONST_STX, GRID_CLASS_RESET_code, GRID_CONST_ETX
-
-// UPTIME
-#define GRID_CLASS_UPTIME_code 0x014
-#define GRID_CLASS_UPTIME_frame "%c%03x_........%c", GRID_CONST_STX, GRID_CLASS_UPTIME_code, GRID_CONST_ETX
-
-#define GRID_CLASS_UPTIME_UPTIME_offset 5
-#define GRID_CLASS_UPTIME_UPTIME_length 8
-
-// DEBUGTEXT
-#define GRID_CLASS_DEBUGTEXT_code 0x020
-#define GRID_CLASS_DEBUGTEXT_frame_start "%c%03x_", GRID_CONST_STX, GRID_CLASS_DEBUGTEXT_code
-#define GRID_CLASS_DEBUGTEXT_frame_end "%c", GRID_CONST_ETX
-
-// DEBUGTASK
-#define GRID_CLASS_DEBUGTASK_code 0x021
-#define GRID_CLASS_DEBUGTASK_frame_start "%c%03x_....", GRID_CONST_STX, GRID_CLASS_DEBUGTASK_code
-#define GRID_CLASS_DEBUGTASK_frame_end "%c", GRID_CONST_ETX
-
-#define GRID_CLASS_DEBUGTASK_LENGTH_offset 5
-#define GRID_CLASS_DEBUGTASK_LENGTH_length 4
-
-#define GRID_CLASS_DEBUGTASK_OUTPUT_offset 9
-#define GRID_CLASS_DEBUGTASK_OUTPUT_length 0
-
-
-// PAGEACTIVE
-#define GRID_CLASS_PAGEACTIVE_code 0x030
-#define GRID_CLASS_PAGEACTIVE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGEACTIVE_code, GRID_CONST_ETX
-
-#define GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset 5
-#define GRID_CLASS_PAGEACTIVE_PAGENUMBER_length 2
-
-// PAGECOUNT
-#define GRID_CLASS_PAGECOUNT_code 0x031
-#define GRID_CLASS_PAGECOUNT_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGECOUNT_code, GRID_CONST_ETX
-
-#define GRID_CLASS_PAGECOUNT_PAGENUMBER_offset 5
-#define GRID_CLASS_PAGECOUNT_PAGENUMBER_length 2
-
-#define GRID_CLASS_LEDPREVIEW_code 0x042
-#define GRID_CLASS_LEDPREVIEW_frame "%c%03x_............%c", GRID_CONST_STX, GRID_CLASS_LEDPREVIEW_code, GRID_CONST_ETX
-#define GRID_CLASS_LEDPREVIEW_frame_start "%c%03x_....", GRID_CONST_STX, GRID_CLASS_LEDPREVIEW_code
-#define GRID_CLASS_LEDPREVIEW_frame_end "%c", GRID_CONST_ETX
-
-#define GRID_CLASS_LEDPREVIEW_LENGTH_offset 5
-#define GRID_CLASS_LEDPREVIEW_LENGTH_length 4
-
-#define GRID_CLASS_LEDPREVIEW_NUM_offset 9
-#define GRID_CLASS_LEDPREVIEW_NUM_length 2
-
-#define GRID_CLASS_LEDPREVIEW_RED_offset 11
-#define GRID_CLASS_LEDPREVIEW_RED_length 2
-
-#define GRID_CLASS_LEDPREVIEW_GRE_offset 13
-#define GRID_CLASS_LEDPREVIEW_GRE_length 2
-
-#define GRID_CLASS_LEDPREVIEW_BLU_offset 15
-#define GRID_CLASS_LEDPREVIEW_BLU_length 2
-
 #define GRID_TEMPLATE_UI_PARAMETER_LIST_LENGTH 20
 
 #define GRID_LUA_FNC_G_LED_RED_human 	"led_default_red"
@@ -512,6 +389,9 @@ stored config date
 #define GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short "bc"
 #define GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_human "button_change"
 
+#define GRID_LUA_FNC_E_ACTION_TIMER_short "tim"
+#define GRID_LUA_FNC_E_ACTION_TIMER_human "timer"
+
 
 // Encoder parameters
 #define GRID_LUA_FNC_E_LIST_length 16
@@ -542,6 +422,7 @@ stored config date
 	"GRID_LUA_FNC_E_ACTION_INIT_short" = function (self) print('undefined action') end,\
 	"GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (self) print('undefined action') end,\
 	"GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_E_ACTION_TIMER_short" = function (self) print('undefined action') end,\
 	\
 	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
 	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
@@ -597,6 +478,9 @@ stored config date
 #define GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short "pc"
 #define GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_human "potmeter_change"
 
+#define GRID_LUA_FNC_P_ACTION_TIMER_short "tim"
+#define GRID_LUA_FNC_P_ACTION_TIMER_human "timer"
+
 // Potmeter parameters
 #define GRID_LUA_FNC_P_LIST_length 8
 
@@ -614,7 +498,11 @@ stored config date
 	" GRID_LUA_FNC_P_POTMETER_STATE_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_P_POTMETER_STATE_helper ", a) end, \
 	\
 	"GRID_LUA_FNC_P_ACTION_INIT_short" = function (self) print('undefined action') end,\
-	"GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (self) print('undefined action') end\
+	"GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_P_ACTION_TIMER_short" = function (self) print('undefined action') end,\
+	\
+	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
+	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
     }}"
 
 #define GRID_LUA_P_LIST_deinit "init_potmeter = nil"
@@ -667,6 +555,9 @@ stored config date
 #define GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short "bc"
 #define GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_human "button_change"
 
+#define GRID_LUA_FNC_B_ACTION_TIMER_short "tim"
+#define GRID_LUA_FNC_B_ACTION_TIMER_human "timer"
+
 // Button parameters
 #define GRID_LUA_FNC_B_LIST_length 8
 
@@ -684,7 +575,11 @@ stored config date
 	" GRID_LUA_FNC_B_BUTTON_STATE_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_BUTTON_STATE_helper ", a) end, \
 	\
 	"GRID_LUA_FNC_B_ACTION_INIT_short" = function (self) print('undefined action') end, \
-	"GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end\
+	"GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_B_ACTION_TIMER_short" = function (self) print('undefined action') end,\
+	\
+	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
+	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
     }}"
 
 #define GRID_LUA_B_LIST_deinit "init_button = nil"
@@ -783,6 +678,145 @@ enum grid_ui_event_t
 
 #define GRID_ACTIONSTRING_PAGE_INIT		 "<?lua --[[@cb]] print('page init') ?>"
 #define GRID_ACTIONSTRING_MAPMODE_CHANGE "<?lua --[[@cb]] gpl(gpn()) ?>"
+
+
+
+
+
+// ================== MIDI CLASS =================== //
+#define GRID_CLASS_MIDI_code 0x000
+#define GRID_CLASS_MIDI_frame "%c%03x_........%c", GRID_CONST_STX, GRID_CLASS_MIDI_code, GRID_CONST_ETX
+
+#define GRID_CLASS_MIDI_CHANNEL_offset 5
+#define GRID_CLASS_MIDI_CHANNEL_length 2
+
+#define GRID_CLASS_MIDI_COMMAND_offset 7
+#define GRID_CLASS_MIDI_COMMAND_length 2
+
+#define GRID_CLASS_MIDI_PARAM1_offset 9
+#define GRID_CLASS_MIDI_PARAM1_length 2
+
+#define GRID_CLASS_MIDI_PARAM2_offset 11
+#define GRID_CLASS_MIDI_PARAM2_length 2
+
+#define GRID_CLASS_MIDISYSEX_code 0x001
+#define GRID_CLASS_MIDISYSEX_frame_start "%c%03x_....", GRID_CONST_STX, GRID_CLASS_MIDISYSEX_code
+#define GRID_CLASS_MIDISYSEX_frame_end "%c", GRID_CONST_ETX
+
+
+#define GRID_CLASS_MIDISYSEX_LENGTH_offset 5
+#define GRID_CLASS_MIDISYSEX_LENGTH_length 4
+
+#define GRID_CLASS_MIDISYSEX_PAYLOAD_offset 9
+#define GRID_CLASS_MIDISYSEX_PAYLOAD_length 2
+
+
+
+// HEARTBEAT (type=0 grid, type=1 gridmaster, type=255 editor)
+#define GRID_CLASS_HEARTBEAT_code 0x010
+#define GRID_CLASS_HEARTBEAT_frame "%c%03x_..........%c", GRID_CONST_STX, GRID_CLASS_HEARTBEAT_code, GRID_CONST_ETX
+
+#define GRID_CLASS_HEARTBEAT_TYPE_offset 5
+#define GRID_CLASS_HEARTBEAT_TYPE_length 2
+
+#define GRID_CLASS_HEARTBEAT_HWCFG_offset 7
+#define GRID_CLASS_HEARTBEAT_HWCFG_length 2
+
+#define GRID_CLASS_HEARTBEAT_VMAJOR_offset 9
+#define GRID_CLASS_HEARTBEAT_VMAJOR_length 2
+
+#define GRID_CLASS_HEARTBEAT_VMINOR_offset 11
+#define GRID_CLASS_HEARTBEAT_VMINOR_length 2
+
+#define GRID_CLASS_HEARTBEAT_VPATCH_offset 13
+#define GRID_CLASS_HEARTBEAT_VPATCH_length 2
+
+
+// SERIAL NUMBER
+#define GRID_CLASS_SERIALNUMBER_code 0x011
+#define GRID_CLASS_SERIALNUMBER_frame "%c%03x_................................%c", GRID_CONST_STX, GRID_CLASS_SERIALNUMBER_code, GRID_CONST_ETX
+
+#define GRID_CLASS_SERIALNUMBER_WORD0_offset 5
+#define GRID_CLASS_SERIALNUMBER_WORD0_length 8
+
+#define GRID_CLASS_SERIALNUMBER_WORD1_offset 13
+#define GRID_CLASS_SERIALNUMBER_WORD1_length 8
+
+#define GRID_CLASS_SERIALNUMBER_WORD2_offset 21
+#define GRID_CLASS_SERIALNUMBER_WORD2_length 8
+
+#define GRID_CLASS_SERIALNUMBER_WORD3_offset 29
+#define GRID_CLASS_SERIALNUMBER_WORD3_length 8
+
+// RESETCAUSE
+#define GRID_CLASS_RESETCAUSE_code 0x012
+#define GRID_CLASS_RESETCAUSE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_RESETCAUSE_code, GRID_CONST_ETX
+
+#define GRID_CLASS_RESETCAUSE_CAUSE_offset 5
+#define GRID_CLASS_RESETCAUSE_CAUSE_length 2
+
+// RESET
+#define GRID_CLASS_RESET_code 0x013
+#define GRID_CLASS_RESET_frame "%c%03xe%c", GRID_CONST_STX, GRID_CLASS_RESET_code, GRID_CONST_ETX
+
+// UPTIME
+#define GRID_CLASS_UPTIME_code 0x014
+#define GRID_CLASS_UPTIME_frame "%c%03x_........%c", GRID_CONST_STX, GRID_CLASS_UPTIME_code, GRID_CONST_ETX
+
+#define GRID_CLASS_UPTIME_UPTIME_offset 5
+#define GRID_CLASS_UPTIME_UPTIME_length 8
+
+// DEBUGTEXT
+#define GRID_CLASS_DEBUGTEXT_code 0x020
+#define GRID_CLASS_DEBUGTEXT_frame_start "%c%03x_", GRID_CONST_STX, GRID_CLASS_DEBUGTEXT_code
+#define GRID_CLASS_DEBUGTEXT_frame_end "%c", GRID_CONST_ETX
+
+// DEBUGTASK
+#define GRID_CLASS_DEBUGTASK_code 0x021
+#define GRID_CLASS_DEBUGTASK_frame_start "%c%03x_....", GRID_CONST_STX, GRID_CLASS_DEBUGTASK_code
+#define GRID_CLASS_DEBUGTASK_frame_end "%c", GRID_CONST_ETX
+
+#define GRID_CLASS_DEBUGTASK_LENGTH_offset 5
+#define GRID_CLASS_DEBUGTASK_LENGTH_length 4
+
+#define GRID_CLASS_DEBUGTASK_OUTPUT_offset 9
+#define GRID_CLASS_DEBUGTASK_OUTPUT_length 0
+
+
+// PAGEACTIVE
+#define GRID_CLASS_PAGEACTIVE_code 0x030
+#define GRID_CLASS_PAGEACTIVE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGEACTIVE_code, GRID_CONST_ETX
+
+#define GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset 5
+#define GRID_CLASS_PAGEACTIVE_PAGENUMBER_length 2
+
+// PAGECOUNT
+#define GRID_CLASS_PAGECOUNT_code 0x031
+#define GRID_CLASS_PAGECOUNT_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGECOUNT_code, GRID_CONST_ETX
+
+#define GRID_CLASS_PAGECOUNT_PAGENUMBER_offset 5
+#define GRID_CLASS_PAGECOUNT_PAGENUMBER_length 2
+
+#define GRID_CLASS_LEDPREVIEW_code 0x042
+#define GRID_CLASS_LEDPREVIEW_frame "%c%03x_............%c", GRID_CONST_STX, GRID_CLASS_LEDPREVIEW_code, GRID_CONST_ETX
+#define GRID_CLASS_LEDPREVIEW_frame_start "%c%03x_....", GRID_CONST_STX, GRID_CLASS_LEDPREVIEW_code
+#define GRID_CLASS_LEDPREVIEW_frame_end "%c", GRID_CONST_ETX
+
+#define GRID_CLASS_LEDPREVIEW_LENGTH_offset 5
+#define GRID_CLASS_LEDPREVIEW_LENGTH_length 4
+
+#define GRID_CLASS_LEDPREVIEW_NUM_offset 9
+#define GRID_CLASS_LEDPREVIEW_NUM_length 2
+
+#define GRID_CLASS_LEDPREVIEW_RED_offset 11
+#define GRID_CLASS_LEDPREVIEW_RED_length 2
+
+#define GRID_CLASS_LEDPREVIEW_GRE_offset 13
+#define GRID_CLASS_LEDPREVIEW_GRE_length 2
+
+#define GRID_CLASS_LEDPREVIEW_BLU_offset 15
+#define GRID_CLASS_LEDPREVIEW_BLU_length 2
+
 
 
 #define GRID_CLASS_EVENT_code 0x050

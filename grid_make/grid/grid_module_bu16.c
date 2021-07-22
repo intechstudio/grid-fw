@@ -136,7 +136,10 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 				}
                 
 				struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[res_index], GRID_UI_EVENT_BC);
-				grid_ui_event_trigger(eve);	
+				
+				if (grid_ui_state.ui_interaction_enabled){
+					grid_ui_event_trigger(eve);	
+				}	
 				
 			}
 			else{  // Button Release Event
@@ -155,7 +158,10 @@ static void grid_module_bu16_hardware_transfer_complete_cb(void){
 				}               
 				
 				struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[res_index], GRID_UI_EVENT_BC);
-				grid_ui_event_trigger(eve);	
+				
+				if (grid_ui_state.ui_interaction_enabled){
+					grid_ui_event_trigger(eve);	
+				}	
 
 			}
 			

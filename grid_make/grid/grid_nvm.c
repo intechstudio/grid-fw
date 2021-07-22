@@ -855,8 +855,6 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 
 			if (eve->type == GRID_UI_EVENT_INIT){
 
-
-
 				grid_ui_event_trigger_local(eve);
 			}
 

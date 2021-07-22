@@ -170,6 +170,9 @@ static void usb_task_inner(struct grid_d51_task* task){
 	uint8_t midi_rx_length = 0;
 
 	audiodf_midi_read(midi_rx_buffer,16);
+
+	
+
 	
 	midi_rx_length = strlen(midi_rx_buffer);		
 	
@@ -952,7 +955,7 @@ int main(void)
 
 		if (loopcounter == 1000){
 
-
+			grid_ui_state.ui_interaction_enabled = 1;
 			// printf("vTaskStartScheduler! \r\n");
 			// delay_ms(2);
 			// vTaskStartScheduler();

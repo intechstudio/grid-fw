@@ -235,6 +235,8 @@ void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
 	mod->element_list = malloc(element_list_length*sizeof(struct grid_ui_element));
 
 	mod->page_negotiated = 0;
+
+	mod->ui_interaction_enabled = 0;
 	
 }
 
@@ -645,7 +647,23 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 	
 	eve->cfg_default_flag = 0;
 
-	if (eve->type == GRID_UI_EVENT_EC){
+	if (eve->type == GRID_UI_EVENT_TIMER){
+
+		uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
+		uint32_t len = strlen(action_string);
+
+		action_string[len-3] = '\0';
+		sprintf(temp, "ele[%d]."GRID_LUA_FNC_E_ACTION_TIMER_short" = function (self) local this = ele[%d] %s end", eve->parent->index, eve->parent->index, &action_string[6]);
+		action_string[len-3] = ' ';
+
+		if (strcmp(action_string, GRID_ACTIONSTRING_TIMER) == 0){
+			eve->cfg_default_flag = 1;
+		}
+
+		grid_lua_dostring(&grid_lua_state, temp);
+		strcpy(eve->action_string, action_string);
+	}
+	else if (eve->type == GRID_UI_EVENT_EC){
 
 		uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
 		uint32_t len = strlen(action_string);
@@ -974,6 +992,10 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 	else if (eve->type == GRID_UI_EVENT_INIT){
 
 		sprintf(temp, "<?lua ele[%d]:"GRID_LUA_FNC_E_ACTION_INIT_short"(self) ?>", eve->parent->index);
+	}
+	else if (eve->type == GRID_UI_EVENT_TIMER){
+
+		sprintf(temp, "<?lua ele[%d]:"GRID_LUA_FNC_E_ACTION_TIMER_short"(self) ?>", eve->parent->index);
 	}
 	else{
 
