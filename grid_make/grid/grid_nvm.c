@@ -828,7 +828,8 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 					grid_nvm_toc_generate_actionstring(nvm, entry, temp);
 					grid_ui_event_register_actionstring(eve, temp);
 					
-					strcpy(eve->action_string, "\0"); // clear (free) actionstring
+					// came from default so no need to store it in eve->action_string
+					grid_ui_event_free_actionstring(eve);
 					eve->cfg_changed_flag = 0; // clear changed flag
 				}
 				else{
@@ -848,6 +849,9 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 				grid_ui_event_generate_actionstring(eve, temp);
 				grid_ui_event_register_actionstring(eve, temp);
 
+
+				// came from TOC so no need to store it in eve->action_string
+				grid_ui_event_free_actionstring(eve);
 				eve->cfg_changed_flag = 0; // clear changed flag
 
 			}
@@ -942,13 +946,16 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 						printf("WAS NOT FOUND!\r\n");
 					}
 
+					// its reverted to default, so no need to keep it in eve->action_string
+					grid_ui_event_free_actionstring(eve);
 					strcpy(eve->action_string, "\0"); // clear (free) actionstring
 	
 				}
 				else{
 					grid_nvm_config_store(nvm, ele->parent->page_activepage, ele->index, eve->type, eve->action_string);
 
-					strcpy(eve->action_string, "\0"); // clear (free) actionstring
+					// now its stored in TOC so no need to keep it in eve->action_string
+					grid_ui_event_free_actionstring(eve);
 
 				}
 

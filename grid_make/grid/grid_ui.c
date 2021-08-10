@@ -496,20 +496,8 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui
 		}
 	}
 	
+	eve->action_string = NULL;
 
-	// Initializing Action String
-	for (uint32_t i=0; i<GRID_PARAMETER_ACTIONSTRING_maxlength; i++){
-		eve->action_string[i] = 0;
-	}		
-
-	uint8_t actionstring[GRID_PARAMETER_ACTIONSTRING_maxlength] = {0};
-
-	grid_ui_event_generate_actionstring(eve, actionstring);	
-
-	grid_ui_event_register_actionstring(eve, actionstring);
-
-	eve->cfg_changed_flag = 0; // clear changed flag
-	
 	eve->cfg_changed_flag = 0;
 	eve->cfg_default_flag = 1;
 	eve->cfg_flashempty_flag = 1;
@@ -570,7 +558,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 				grid_msg_body_append_text(&message, temp);
 
 			}
-			else if (strlen(eve->action_string) != 0){
+			else if (eve->action_string != NULL){
 
 				printf("FOUND eve->action_string: %s\r\n", eve->action_string);
 
@@ -598,10 +586,9 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 				grid_ui_event_generate_actionstring(eve, temp);
 				
 				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(temp));		
-				grid_msg_body_append_text(&message, eve->action_string);
+				grid_msg_body_append_text(&message, temp);
 			}
 
-			//printf("config: %s\r\n", eve->action_string);
 		}		
 		else{
 
@@ -629,7 +616,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 				//grid_ui_event_register_actionstring(eve, actionstring);	
 
 				grid_msg_body_append_text(&message, actionstring);
-				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(eve->action_string));
+				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(actionstring));
 
 			}
 
@@ -816,7 +803,11 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 
 	if (eve->cfg_default_flag == 0){ // NOT DEFAULT
 
-		// use malloc free pair instead
+		// free old action string
+		grid_ui_event_free_actionstring(eve);
+
+		// allocate space for the new action string
+		grid_ui_event_allocate_actionstring(eve, strlen(action_string));
 		strcpy(eve->action_string, action_string);
 	}
 	else{
@@ -1099,16 +1090,22 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 }
 
 
-// void* grid_ui_event_allocate_actionstring(struct grid_ui_event* eve, uint32_t length){
+void* grid_ui_event_allocate_actionstring(struct grid_ui_event* eve, uint32_t length){
 
-// 	eve->action_string = (uint8_t*) malloc(length * sizeof(uint8_t));
-// 	return eve->action_string;
+	// +1 for termination zero
+	eve->action_string = (uint8_t*) malloc((length+1) * sizeof(uint8_t));
+	return eve->action_string;
 
-// }
+}
 
-// void grid_ui_event_free_actionstring(struct grid_ui_event* eve){
+void grid_ui_event_free_actionstring(struct grid_ui_event* eve){
 
-// 	free(eve->action_string);
-// 	eve->action_string = NULL;
+	if (eve->action_string == NULL){
+		// not allocated
+		return;
+	}
 
-// }
+	free(eve->action_string);
+	eve->action_string = NULL;
+
+}

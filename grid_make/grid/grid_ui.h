@@ -33,7 +33,7 @@ struct grid_ui_event
 	
 	enum grid_ui_event_t type;
 	
-	uint8_t	action_string[GRID_PARAMETER_ACTIONSTRING_maxlength];
+	uint8_t* action_string;
 
 	uint8_t function_name[10];
 
