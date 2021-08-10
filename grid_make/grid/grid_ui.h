@@ -33,8 +33,9 @@ struct grid_ui_event
 	
 	enum grid_ui_event_t type;
 	
-
 	uint8_t	action_string[GRID_PARAMETER_ACTIONSTRING_maxlength];
+
+	uint8_t function_name[10];
 
 	uint8_t cfg_changed_flag;
 	uint8_t cfg_default_flag;
@@ -117,6 +118,8 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui
 
 uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page, uint8_t element, enum grid_ui_event_t event_type);
 
+
+uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, uint8_t* action_string);
 void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* targetstring);
 void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* targetstring);
 

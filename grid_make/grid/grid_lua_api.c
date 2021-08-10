@@ -1274,6 +1274,14 @@ uint8_t grid_lua_ui_init_po16(struct grid_lua_model* mod){
     // initialize 16 potmeter
     grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
     grid_lua_dostring(mod, "for i=0, 15 do setmetatable("GRID_LUA_KW_ELEMENT_short"[i], potmeter_meta) end");
+
+    grid_lua_gc_try_collect(mod);
+
+    //initialize the system element
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[16] = {index = 16}");
+    grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
+    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], encoder_meta)");
+
 }
 
 uint8_t grid_lua_ui_init_bu16(struct grid_lua_model* mod){
@@ -1289,6 +1297,13 @@ uint8_t grid_lua_ui_init_bu16(struct grid_lua_model* mod){
     // initialize 16 buttons
     grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
     grid_lua_dostring(mod, "for i=0, 15 do setmetatable("GRID_LUA_KW_ELEMENT_short"[i], button_meta) end");
+
+    grid_lua_gc_try_collect(mod);
+
+    //initialize the system element
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[16] = {index = 16}");
+    grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
+    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], encoder_meta)");
 }
 
 uint8_t grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
@@ -1310,6 +1325,12 @@ uint8_t grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
     grid_lua_dostring(mod, "for i=8, 11 do  setmetatable("GRID_LUA_KW_ELEMENT_short"[i], button_meta)  end");
 
   
+    grid_lua_gc_try_collect(mod);
+
+    //initialize the system element
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[12] = {index = 12}");
+    grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
+    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[12], encoder_meta)");
 
 }
 
@@ -1330,6 +1351,13 @@ uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod){
     grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
     grid_lua_dostring(mod, "for i=0, 15 do setmetatable("GRID_LUA_KW_ELEMENT_short"[i], encoder_meta) end");
 
+
+    grid_lua_gc_try_collect(mod);
+
+    //initialize the system element
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[16] = {index = 16}");
+    grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
+    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], encoder_meta)");
 }
 
 

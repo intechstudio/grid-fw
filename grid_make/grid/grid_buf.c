@@ -1089,7 +1089,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 			}
 		}
 		
-		// Let's init all of the buffers for transaction		 
+		// Let's init all of the buffers for transfer		 
 		
 		for (uint8_t i=0; i<port_count; i++)
 		{
@@ -1098,7 +1098,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 			}
 		}
 		
-		// Let's do the transaction
+		// Let's do the transfer
 												
 		for (uint16_t j=0; j<packet_size; j++)
 		{
@@ -1114,7 +1114,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 		}
 			
 								
-		// Let's acknowledge all of the transactions					
+		// Let's acknowledge all of the transfer					
 		grid_buffer_read_acknowledge(&por->rx_buffer);
 					
 		for (uint8_t i=0; i<port_count; i++)
@@ -1173,7 +1173,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 			
 	}
 				
-	// Let's acknowledge the transactions	(should wait for partner to send ack)
+	// Let's acknowledge the transfer	(should wait for partner to send ack)
 	grid_buffer_read_acknowledge(&por->tx_buffer);
 		
 
@@ -1524,22 +1524,22 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				else if (msg_class == GRID_CLASS_IMEDIATE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_global || position_is_me || position_is_local)){
 
 					uint16_t length = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_IMEDIATE_ACTIONLENGTH_offset], GRID_CLASS_IMEDIATE_ACTIONLENGTH_length, &error_flag);
-					uint8_t actionstring[200] = {0};
-					strncpy(actionstring, &message[current_start+GRID_CLASS_IMEDIATE_ACTIONSTRING_offset], length);
+					uint8_t lua_script[200] = {0};
+					strncpy(lua_script, &message[current_start+GRID_CLASS_IMEDIATE_ACTIONSTRING_offset], length);
 
 
-					if (0 == strncmp(actionstring, "<?lua ", 6) && actionstring[length-3] == ' ' && actionstring[length-2] == '?' && actionstring[length-1] == '>'){
+					if (0 == strncmp(lua_script, "<?lua ", 6) && lua_script[length-3] == ' ' && lua_script[length-2] == '?' && lua_script[length-1] == '>'){
 					
 					
-						printf("IMEDIATE %d: %s\r\n", length, actionstring);
+						printf("IMEDIATE %d: %s\r\n", length, lua_script);
 						
-						actionstring[length-3] = '\0';
-						grid_lua_dostring(&grid_lua_state, &actionstring[6]);
+						lua_script[length-3] = '\0';
+						grid_lua_dostring(&grid_lua_state, &lua_script[6]);
 
 					
 					}
 					else{
-						printf("IMEDIATE NOT OK %d: %s\r\n", length, actionstring);
+						printf("IMEDIATE NOT OK %d: %s\r\n", length, lua_script);
 					}
 
 					

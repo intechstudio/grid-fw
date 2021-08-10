@@ -65,7 +65,7 @@ struct grid_lua_model grid_lua_state;
 
 
 uint8_t grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message);
-void grid_lua_gc_try_collct(struct grid_lua_model* mod);
+void grid_lua_gc_try_collect(struct grid_lua_model* mod);
 
 static int grid_lua_panic(lua_State *L);
 

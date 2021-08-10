@@ -295,6 +295,26 @@ stored config date
 
 
 
+#define GRID_LUA_FNC_ACTION_INIT_short "init"
+#define GRID_LUA_FNC_ACTION_INIT_human "initialize"
+
+#define GRID_LUA_FNC_ACTION_ENCODERCHANGE_short "ec"
+#define GRID_LUA_FNC_ACTION_ENCODERCHANGE_human "encoder_change"
+
+#define GRID_LUA_FNC_ACTION_BUTTONCHANGE_short "bc"
+#define GRID_LUA_FNC_ACTION_BUTTONCHANGE_human "button_change"
+
+#define GRID_LUA_FNC_ACTION_POTMETERCHANGE_short "pc"
+#define GRID_LUA_FNC_ACTION_POTMETERCHANGE_human "potmeter_change"
+
+#define GRID_LUA_FNC_ACTION_TIMER_short "tim"
+#define GRID_LUA_FNC_ACTION_TIMER_human "timer"
+
+#define GRID_LUA_FNC_ACTION_MAPMODE_short "map"
+#define GRID_LUA_FNC_ACTION_MAPMODE_human "mapmode"
+
+#define GRID_LUA_FNC_ACTION_MIDIRX_short "mrx"
+#define GRID_LUA_FNC_ACTION_MIDIRX_human "midirx"
 
 
 
@@ -380,17 +400,6 @@ stored config date
 #define GRID_LUA_FNC_E_ENCODER_VELOCITY_short "ev0"
 #define GRID_LUA_FNC_E_ENCODER_VELOCITY_human "encoder_velocity"
 
-#define GRID_LUA_FNC_E_ACTION_INIT_short "init"
-#define GRID_LUA_FNC_E_ACTION_INIT_human "initialize"
-
-#define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short "ec"
-#define GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_human "encoder_change"
-
-#define GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short "bc"
-#define GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_human "button_change"
-
-#define GRID_LUA_FNC_E_ACTION_TIMER_short "tim"
-#define GRID_LUA_FNC_E_ACTION_TIMER_human "timer"
 
 
 // Encoder parameters
@@ -419,10 +428,10 @@ stored config date
 	" GRID_LUA_FNC_E_ENCODER_STATE_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_E_ENCODER_STATE_helper ", a) end, \
 	" GRID_LUA_FNC_E_ENCODER_VELOCITY_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_E_ENCODER_VELOCITY_helper ", a) end, \
 	\
-	"GRID_LUA_FNC_E_ACTION_INIT_short" = function (self) print('undefined action') end,\
-	"GRID_LUA_FNC_E_ACTION_ENCODERCHANGE_short" = function (self) print('undefined action') end,\
-	"GRID_LUA_FNC_E_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end,\
-	"GRID_LUA_FNC_E_ACTION_TIMER_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_ACTION_INIT_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_ACTION_ENCODERCHANGE_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_ACTION_TIMER_short" = function (self) print('undefined action') end,\
 	\
 	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
 	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
@@ -472,14 +481,8 @@ stored config date
 #define GRID_LUA_FNC_P_POTMETER_STATE_short "pst"
 #define GRID_LUA_FNC_P_POTMETER_STATE_human "potmeter_state"
 
-#define GRID_LUA_FNC_P_ACTION_INIT_short "init"
-#define GRID_LUA_FNC_P_ACTION_INIT_human "initialize"
 
-#define GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short "pc"
-#define GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_human "potmeter_change"
 
-#define GRID_LUA_FNC_P_ACTION_TIMER_short "tim"
-#define GRID_LUA_FNC_P_ACTION_TIMER_human "timer"
 
 // Potmeter parameters
 #define GRID_LUA_FNC_P_LIST_length 8
@@ -497,9 +500,9 @@ stored config date
 	" GRID_LUA_FNC_P_POTMETER_ELAPSED_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_P_POTMETER_ELAPSED_helper ", a) end, \
 	" GRID_LUA_FNC_P_POTMETER_STATE_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_P_POTMETER_STATE_helper ", a) end, \
 	\
-	"GRID_LUA_FNC_P_ACTION_INIT_short" = function (self) print('undefined action') end,\
-	"GRID_LUA_FNC_P_ACTION_POTMETERCHANGE_short" = function (self) print('undefined action') end,\
-	"GRID_LUA_FNC_P_ACTION_TIMER_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_ACTION_INIT_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_ACTION_POTMETERCHANGE_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_ACTION_TIMER_short" = function (self) print('undefined action') end,\
 	\
 	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
 	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
@@ -549,19 +552,10 @@ stored config date
 #define GRID_LUA_FNC_B_BUTTON_STATE_short "bst"
 #define GRID_LUA_FNC_B_BUTTON_STATE_human "button_state"
 
-#define GRID_LUA_FNC_B_ACTION_INIT_short "init"
-#define GRID_LUA_FNC_B_ACTION_INIT_human "initialize"
-
-#define GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short "bc"
-#define GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_human "button_change"
-
-#define GRID_LUA_FNC_B_ACTION_TIMER_short "tim"
-#define GRID_LUA_FNC_B_ACTION_TIMER_human "timer"
-
 // Button parameters
 #define GRID_LUA_FNC_B_LIST_length 8
 
-// Encoder init function
+// Button init function
 #define GRID_LUA_B_META_init "button_meta = { __index = { \
 	 \
 	" GRID_LUA_FNC_B_ELEMENT_INDEX_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_ELEMENT_INDEX_helper ", a) end, \
@@ -574,15 +568,29 @@ stored config date
 	" GRID_LUA_FNC_B_BUTTON_ELAPSED_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_BUTTON_ELAPSED_helper ", a) end, \
 	" GRID_LUA_FNC_B_BUTTON_STATE_short "=function (self,a) return gtv(self.index, " GRID_LUA_FNC_B_BUTTON_STATE_helper ", a) end, \
 	\
-	"GRID_LUA_FNC_B_ACTION_INIT_short" = function (self) print('undefined action') end, \
-	"GRID_LUA_FNC_B_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end,\
-	"GRID_LUA_FNC_B_ACTION_TIMER_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_ACTION_INIT_short" = function (self) print('undefined action') end, \
+	"GRID_LUA_FNC_ACTION_BUTTONCHANGE_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_ACTION_TIMER_short" = function (self) print('undefined action') end,\
 	\
 	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
 	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
     }}"
 
 #define GRID_LUA_B_LIST_deinit "init_button = nil"
+
+// System init function
+#define GRID_LUA_SYS_META_init "system_meta = { __index = { \
+	\
+	"GRID_LUA_FNC_ACTION_INIT_short" = function (self) print('undefined action') end, \
+	"GRID_LUA_FNC_ACTION_MAPMODE_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_ACTION_MIDIRX_short" = function (self) print('undefined action') end,\
+	"GRID_LUA_FNC_ACTION_TIMER_short" = function (self) print('undefined action') end\
+	\
+    }}"
+
+#define GRID_LUA_SYS_LIST_deinit "init_system = nil"
+
+
 
 #define GRID_LUA_KW_ELEMENT_short "ele"
 #define GRID_LUA_KW_ELEMENT_human "element"
@@ -595,8 +603,6 @@ stored config date
 
 #define GRID_PARAMETER_ELAPSED_LIMIT 10000
 
-// element[4].encoder_value()
-// ele[4].eva()
 
 // Global parameters
 #define GRID_TEMPLATE_Z_PARAMETER_LIST_LENGTH 6
@@ -630,6 +636,9 @@ enum grid_ui_element_t
 #define GRID_PARAMETER_ELEMENTTYPE_BUTTON_code "02"
 #define GRID_PARAMETER_ELEMENTTYPE_ENCODER_code "03"
 
+
+// dont change the order because it will break existing profile files
+
 enum grid_ui_event_t
 {
 
@@ -645,6 +654,7 @@ enum grid_ui_event_t
 
 };
 
+// dont change the order because it will break existing profile files
 #define 	GRID_EVENT_INIT	"00"
 #define 	GRID_EVENT_AC	"01"
 #define 	GRID_EVENT_EC	"02"

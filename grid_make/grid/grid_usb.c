@@ -331,7 +331,6 @@ uint8_t grid_midi_tx_pop(){
 
 uint8_t grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 
-
 	// recude commandchange time resolution HERE!!
 
 	//       W              R
