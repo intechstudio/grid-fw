@@ -572,7 +572,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 			}
 			else if (strlen(eve->action_string) != 0){
 
-				printf("FOUND: %s\r\n", eve->action_string);
+				printf("FOUND eve->action_string: %s\r\n", eve->action_string);
 
 				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(eve->action_string));		
 				grid_msg_body_append_text(&message, eve->action_string);
@@ -584,9 +584,10 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 
 				uint32_t len = grid_nvm_toc_generate_actionstring(nvm, entry, temp);
 
-				//printf("config: %s", buffer);
-				// reset body pointer because cfg in nvm already has the config header
-				message.body_length = 0;
+
+				printf("FOUND in TOC: %s\r\n", temp);
+
+				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(temp));		
 				grid_msg_body_append_text(&message, temp);
 
 			}
@@ -614,16 +615,12 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 				
 				//printf("FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
 
-				uint8_t buffer[entry->config_string_length+10];
+				uint8_t temp[entry->config_string_length+10];
 
-				uint32_t len = grid_nvm_toc_generate_actionstring(nvm, entry, buffer);
+				uint32_t len = grid_nvm_toc_generate_actionstring(nvm, entry, temp);
 
-				//printf("config: %s", buffer);
-				// reset body pointer because cfg in nvm already has the config header
-				message.body_length = 0;
-				grid_msg_body_append_text(&message, buffer);
-				grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-			
+				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(temp));		
+				grid_msg_body_append_text(&message, temp);
 			}
 			else{
 				//printf("NOT FOUND, Send default!\r\n");
@@ -1006,8 +1003,6 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 	uint32_t total_substituted_length = 0;
 
 
-	// printf("ACTION: %s\r\n", eve->action_string);
-
 	uint32_t length = strlen(temp);
 
 	for(i=0; i<length ; i++){
@@ -1104,3 +1099,16 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 }
 
 
+// void* grid_ui_event_allocate_actionstring(struct grid_ui_event* eve, uint32_t length){
+
+// 	eve->action_string = (uint8_t*) malloc(length * sizeof(uint8_t));
+// 	return eve->action_string;
+
+// }
+
+// void grid_ui_event_free_actionstring(struct grid_ui_event* eve){
+
+// 	free(eve->action_string);
+// 	eve->action_string = NULL;
+
+// }

@@ -1474,9 +1474,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					//printf("M: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1, midi_param2);
 
-					uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
+					uint8_t temp[100] = {0};
 					sprintf(temp, "midi={} midi.ch,midi.cmd,midi.p1,midi.p2 = %d, %d, %d, %d ", midi_channel, midi_command, midi_param1, midi_param2);
-					//grid_lua_dostring(&grid_lua_state, temp);
+					grid_lua_dostring(&grid_lua_state, temp);
 
 					struct grid_ui_element* ele = &grid_ui_state.element_list[grid_ui_state.element_list_length-1];
 					struct grid_ui_event* eve = NULL;
@@ -1484,11 +1484,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					eve = grid_ui_event_find(ele, GRID_UI_EVENT_MIDIRX);
 					if (eve != NULL){
 
-						sprintf(&temp[strlen(temp)], " %s", &eve->action_string[6]);
-						temp[strlen(temp)-3] = '\0'; 
-
-						grid_lua_dostring(&grid_lua_state, temp);
-						//printf("%s \r\n", temp);
+						grid_ui_event_trigger(eve);
 
 					}
 
@@ -1943,7 +1939,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				else if (msg_class == GRID_CLASS_CONFIG_code && msg_instr == GRID_INSTR_EXECUTE_code){
 
                     if (position_is_local || position_is_global || position_is_me){
-                        // disable hid action automatically
+                        // disable hid automatically
                         grid_keyboard_state.isenabled = 0;             
                         //grid_debug_print_text("Disabling KB");
 

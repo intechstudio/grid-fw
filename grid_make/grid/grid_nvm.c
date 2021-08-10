@@ -482,7 +482,6 @@ uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
 uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, uint8_t element_number, uint8_t event_type, uint8_t* actionstring){
 
 
-	//printf("ACTIONSTRING: %s", actionstring);
 	uint8_t buf[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
 
 	uint16_t len = 0;
@@ -829,6 +828,7 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 					grid_nvm_toc_generate_actionstring(nvm, entry, temp);
 					grid_ui_event_register_actionstring(eve, temp);
 					
+					strcpy(eve->action_string, "\0"); // clear (free) actionstring
 					eve->cfg_changed_flag = 0; // clear changed flag
 				}
 				else{
@@ -941,11 +941,15 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 						printf("WAS NOT FOUND!\r\n");
 					}
+
+					strcpy(eve->action_string, "\0"); // clear (free) actionstring
 	
 				}
 				else{
 					grid_nvm_config_store(nvm, ele->parent->page_activepage, ele->index, eve->type, eve->action_string);
-	
+
+					strcpy(eve->action_string, "\0"); // clear (free) actionstring
+
 				}
 
 				eve->cfg_changed_flag = 0; // clear changed flag

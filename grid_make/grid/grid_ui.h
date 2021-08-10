@@ -140,6 +140,9 @@ uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve);
 uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, uint8_t* target_string);
 uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_string);
 
+void* grid_ui_event_allocate_actionstring(struct grid_ui_event* eve, uint32_t length);
+void grid_ui_event_free_actionstring(struct grid_ui_event* eve);
+
 
 void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por);
 
