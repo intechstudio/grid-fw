@@ -583,8 +583,10 @@ stored config date
 	"GRID_LUA_FNC_ACTION_INIT_short" = function (self) print('undefined action') end, \
 	"GRID_LUA_FNC_ACTION_MAPMODE_short" = function (self) print('undefined action') end,\
 	"GRID_LUA_FNC_ACTION_MIDIRX_short" = function (self) print('undefined action') end,\
-	"GRID_LUA_FNC_ACTION_TIMER_short" = function (self) print('undefined action') end\
+	"GRID_LUA_FNC_ACTION_TIMER_short" = function (self) print('undefined action') end,\
 	\
+	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
+	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
     }}"
 
 #define GRID_LUA_SYS_LIST_deinit "init_system = nil"
