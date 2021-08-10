@@ -825,10 +825,10 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 	if (eve->parent->type == GRID_UI_ELEMENT_SYSTEM){
 				
 		switch(eve->type){
-			case GRID_UI_EVENT_INIT:				sprintf(targetstring, GRID_ACTIONSTRING_PAGE_INIT);			break;
-			case GRID_UI_EVENT_MAPMODE_CHANGE:		sprintf(targetstring, GRID_ACTIONSTRING_MAPMODE_CHANGE);	break;
-			case GRID_UI_EVENT_MIDIRX:				sprintf(targetstring, GRID_ACTIONSTRING_MIDIRX);			break;
-			case GRID_UI_EVENT_TIMER:				sprintf(targetstring, GRID_ACTIONSTRING_TIMER);				break;
+			case GRID_UI_EVENT_INIT:				strcpy(targetstring, GRID_ACTIONSTRING_PAGE_INIT);			break;
+			case GRID_UI_EVENT_MAPMODE_CHANGE:		strcpy(targetstring, GRID_ACTIONSTRING_MAPMODE_CHANGE);	break;
+			case GRID_UI_EVENT_MIDIRX:				strcpy(targetstring, GRID_ACTIONSTRING_MIDIRX);			break;
+			case GRID_UI_EVENT_TIMER:				strcpy(targetstring, GRID_ACTIONSTRING_TIMER);				break;
 		}
 		
 	}
@@ -836,28 +836,28 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 				
 
 		switch(eve->type){
-			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;
-			case GRID_UI_EVENT_BC:		sprintf(targetstring, GRID_ACTIONSTRING_BC);			break;
-			case GRID_UI_EVENT_TIMER:	sprintf(targetstring, GRID_ACTIONSTRING_TIMER);			break;
+			case GRID_UI_EVENT_INIT:	strcpy(targetstring, GRID_ACTIONSTRING_INIT_BUT);		break;
+			case GRID_UI_EVENT_BC:		strcpy(targetstring, GRID_ACTIONSTRING_BC);			break;
+			case GRID_UI_EVENT_TIMER:	strcpy(targetstring, GRID_ACTIONSTRING_TIMER);			break;
 		}
 		
 	}
 	else if (eve->parent->type == GRID_UI_ELEMENT_POTENTIOMETER){
 		
 		switch(eve->type){
-			case GRID_UI_EVENT_INIT:	sprintf(targetstring, GRID_ACTIONSTRING_INIT_POT);		break;
-			case GRID_UI_EVENT_AC:		sprintf(targetstring, GRID_ACTIONSTRING_AC);			break;
-			case GRID_UI_EVENT_TIMER:	sprintf(targetstring, GRID_ACTIONSTRING_TIMER);			break;
+			case GRID_UI_EVENT_INIT:	strcpy(targetstring, GRID_ACTIONSTRING_INIT_POT);		break;
+			case GRID_UI_EVENT_AC:		strcpy(targetstring, GRID_ACTIONSTRING_AC);			break;
+			case GRID_UI_EVENT_TIMER:	strcpy(targetstring, GRID_ACTIONSTRING_TIMER);			break;
 		}
 		
 	}
 	else if (eve->parent->type == GRID_UI_ELEMENT_ENCODER){
 		
 		switch(eve->type){
-			case GRID_UI_EVENT_INIT:        sprintf(targetstring, GRID_ACTIONSTRING_INIT_ENC);	break;
-			case GRID_UI_EVENT_EC:        	sprintf(targetstring, GRID_ACTIONSTRING_EC);		break;
-			case GRID_UI_EVENT_BC:			sprintf(targetstring, GRID_ACTIONSTRING_BC);		break;
-			case GRID_UI_EVENT_TIMER:		sprintf(targetstring, GRID_ACTIONSTRING_TIMER);		break;
+			case GRID_UI_EVENT_INIT:        strcpy(targetstring, GRID_ACTIONSTRING_INIT_ENC);	break;
+			case GRID_UI_EVENT_EC:        	strcpy(targetstring, GRID_ACTIONSTRING_EC);		break;
+			case GRID_UI_EVENT_BC:			strcpy(targetstring, GRID_ACTIONSTRING_BC);		break;
+			case GRID_UI_EVENT_TIMER:		strcpy(targetstring, GRID_ACTIONSTRING_TIMER);		break;
 		}
 			
 	}
