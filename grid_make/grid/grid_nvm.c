@@ -52,7 +52,10 @@ uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod){
 		if (write_ptr + current->config_string_length < GRID_NVM_BLOCK_SIZE){
 
 			// the current config_string fit into the block no problem!
+			CRITICAL_SECTION_ENTER()
 			flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset, &block_buffer[write_ptr], current->config_string_length);
+			CRITICAL_SECTION_LEAVE()
+
 			write_ptr += current->config_string_length;
 
 		}
@@ -66,11 +69,13 @@ uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod){
 			}
 
 			// read as much as we can fit into the current block
-			flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset, &block_buffer[write_ptr], part1_length);
-			
+			CRITICAL_SECTION_ENTER()
+			flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset, &block_buffer[write_ptr], part1_length);		
 			// write the current block to flash
 			flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
 			flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, block_buffer, GRID_NVM_BLOCK_SIZE);
+			CRITICAL_SECTION_LEAVE()	
+
 
 			// update the write_ptr and block_count
 			write_ptr = 0;
@@ -82,8 +87,10 @@ uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod){
 			}
 
 			// read the rest of the configuration
+			CRITICAL_SECTION_ENTER()	
 			flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset + part1_length, &block_buffer[write_ptr], part2_length);
-					
+			CRITICAL_SECTION_LEAVE()	
+
 			// update the write_ptr
 			write_ptr += part2_length;
 
@@ -98,8 +105,11 @@ uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod){
 		if (current->next == NULL){
 
 			// no more elements in the list, write last partial block to NVM
+			CRITICAL_SECTION_ENTER()	
 			flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
 			flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, block_buffer, write_ptr);
+			CRITICAL_SECTION_LEAVE()	
+
 			break;
 		
 		}
@@ -119,7 +129,10 @@ uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod){
 
 	while(GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE < GRID_NVM_LOCAL_END_ADDRESS){
 
+		CRITICAL_SECTION_ENTER()	
 		flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+		CRITICAL_SECTION_LEAVE()	
+	
 		block_count++;
 	}
 	
@@ -163,8 +176,9 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 
 
 	// APPEND
+	CRITICAL_SECTION_ENTER()	
 	flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, append_buffer, append_length);
-	
+	CRITICAL_SECTION_LEAVE()		
 
 	// CREATE VERIFY BUFFER
 	uint8_t verify_buffer[append_length];
@@ -174,8 +188,9 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 	}
 
 	// VERIFY FLASH CONTENT
+	CRITICAL_SECTION_ENTER()	
 	flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, verify_buffer, append_length);
-	
+	CRITICAL_SECTION_LEAVE()		
 	uint8_t failed_flag = 0;
 
 	for (uint16_t i=0; i<append_length; i++){
@@ -189,8 +204,11 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 	// IF FAILED, TRY USING FLASH_WRITE
 	if (failed_flag){
 		grid_debug_printf("Attempt to fix flash content");
+
+		CRITICAL_SECTION_ENTER()	
 		flash_write(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, append_buffer, append_length);
-	
+		CRITICAL_SECTION_LEAVE()
+
 		// VERIFY AGAIN
 		failed_flag = 0;
 
@@ -199,8 +217,10 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 		}
 
 		// VERIFY FLASH CONTENT
+		CRITICAL_SECTION_ENTER()	
 		flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, verify_buffer, append_length);
-		
+		CRITICAL_SECTION_LEAVE()			
+
 		uint8_t failed_flag = 0;
 
 		for (uint16_t i=0; i<append_length; i++){
@@ -242,8 +262,9 @@ uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t le
 
 	//printf("clear_length: %d offset: %d\r\n", clear_length, offset);
 	// SUKU HACK
+	CRITICAL_SECTION_ENTER()	
 	flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset, clear_buffer, clear_length);
-
+	CRITICAL_SECTION_LEAVE()	
 	// flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset, verify_buffer, clear_length);
 
 	// for (uint16_t i=0; i<clear_length; i++){
@@ -286,8 +307,10 @@ uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t le
 uint32_t grid_nvm_erase_all(struct grid_nvm_model* mod){
 
 	//printf("\r\n\r\nFlash Erase\r\n\r\n");
+	CRITICAL_SECTION_ENTER()	
 	flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS, (GRID_NVM_LOCAL_END_ADDRESS-GRID_NVM_LOCAL_BASE_ADDRESS)/GRID_NVM_PAGE_SIZE);
-	
+	CRITICAL_SECTION_LEAVE()	
+
 	//printf("\r\n\r\nFlash Verify\r\n\r\n");
 	uint32_t address = GRID_NVM_LOCAL_BASE_ADDRESS;
 	uint32_t run = 0;
@@ -297,7 +320,9 @@ uint32_t grid_nvm_erase_all(struct grid_nvm_model* mod){
 	{
 
 		uint8_t verify_buffer[GRID_NVM_PAGE_SIZE] = {0};
+		CRITICAL_SECTION_ENTER()	
 		flash_read(mod->flash, address, verify_buffer, GRID_NVM_PAGE_SIZE);
+		CRITICAL_SECTION_LEAVE()	
 
 		for(uint16_t i=0; i<GRID_NVM_PAGE_SIZE; i++){
 
@@ -351,7 +376,10 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 	// check first byte of every page to see if there is any useful data
 	for (uint32_t i=0; i<GRID_NVM_LOCAL_PAGE_COUNT; i++){
 
+		CRITICAL_SECTION_ENTER()	
 		flash_read(grid_nvm_state.flash, GRID_NVM_LOCAL_BASE_ADDRESS + i*GRID_NVM_PAGE_OFFSET, flash_read_buffer, 1);
+		CRITICAL_SECTION_LEAVE()	
+
 		if (flash_read_buffer[0] != 0xff){ // zero index because only first byt of the page was read
 
 			// page is not empty!
@@ -390,7 +418,9 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 
 	for (uint32_t i=0; i<=last_used_page_offset; i++){ // <= because we want to check the last_used_page too
 
+		CRITICAL_SECTION_ENTER()	
 		flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + i*GRID_NVM_PAGE_SIZE, flash_read_buffer, GRID_NVM_PAGE_SIZE);
+		CRITICAL_SECTION_LEAVE()	
 
 		for (uint16_t j=0; j<GRID_NVM_PAGE_SIZE; j++){
 
@@ -405,7 +435,11 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 
 				if (j>GRID_NVM_PAGE_SIZE-20){
 					// read from flash, because the whole header is not in the page
+
+					CRITICAL_SECTION_ENTER()	
 					flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current_offset, temp_buffer, 19);
+					CRITICAL_SECTION_LEAVE()	
+	
 				}
 				else{
 					current_header = &flash_read_buffer[j];
@@ -707,7 +741,9 @@ uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* nvm, struct grid_nvm_t
 
 void grid_nvm_toc_debug(struct grid_nvm_model* mod){
 
-	return; // degub disabled
+
+	//return; // degub disabled
+
 
 	struct grid_nvm_toc_entry* next = mod->toc_head;
 
@@ -724,8 +760,6 @@ void grid_nvm_toc_debug(struct grid_nvm_model* mod){
 	printf("DUMP DONE\r\n");
 
 
-
-
 }
 
 
@@ -733,9 +767,9 @@ void grid_nvm_toc_debug(struct grid_nvm_model* mod){
 uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct grid_nvm_toc_entry* entry, uint8_t* targetstring){
 
 	// -GRID_CLASS_CONFIG_ACTIONSTRING_offset to get rid of the config class header
-
+	CRITICAL_SECTION_ENTER()
 	flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS+entry->config_string_offset+GRID_CLASS_CONFIG_ACTIONSTRING_offset, targetstring, entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset-1); //-1 etx
-
+	CRITICAL_SECTION_LEAVE()
 
 	targetstring[entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset] = '\0';
 	
@@ -1086,7 +1120,6 @@ void grid_nvm_ui_bulk_nvmerase_init(struct grid_nvm_model* nvm, struct grid_ui_m
 
 	while (current != NULL)
 	{
-
 		grid_nvm_toc_entry_destroy(nvm, current);
 		current = current->next;
 	}
@@ -1116,11 +1149,13 @@ void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_m
 	while(nvm->erase_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){
 
 		if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){
-			//grid_debug_printf("limit");
+			printf("limit");
 			return;
 		}
 
+		CRITICAL_SECTION_ENTER()
 		flash_erase(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+		CRITICAL_SECTION_LEAVE()
 
 		nvm->erase_bulk_address += GRID_NVM_BLOCK_SIZE;
 
