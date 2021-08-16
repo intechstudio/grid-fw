@@ -80,7 +80,7 @@ uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* nvm, struct grid_nvm_t
 
 uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct grid_nvm_toc_entry* entry, uint8_t* targetstring);
 
-uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod);
+uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* mod);
 
 
 uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod);

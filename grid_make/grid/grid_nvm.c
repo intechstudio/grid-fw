@@ -31,7 +31,7 @@ void grid_nvm_init(struct grid_nvm_model* nvm, struct flash_descriptor* flash_in
 }
 
 
-uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod){
+uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* mod){
 
 	grid_debug_printf("Start defragmentation");
 
@@ -105,10 +105,10 @@ uint32_t grid_nvm_toc_defragmant(struct grid_nvm_model* mod){
 		if (current->next == NULL){
 
 			// no more elements in the list, write last partial block to NVM
-			CRITICAL_SECTION_ENTER()	
+			//CRITICAL_SECTION_ENTER()	
 			flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
 			flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, block_buffer, write_ptr);
-			CRITICAL_SECTION_LEAVE()	
+			//CRITICAL_SECTION_LEAVE()	
 
 			break;
 		
@@ -170,7 +170,7 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 		// not enough space for configs
 		// run defrag algorithm!
 
-		grid_nvm_toc_defragmant(mod);
+		grid_nvm_toc_defragment(mod);
 
 	}
 
@@ -1142,53 +1142,45 @@ uint8_t grid_nvm_ui_bulk_nvmerase_is_in_progress(struct grid_nvm_model* nvm, str
 
 void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 	
+	// flash_erase takes 32 ms so no need to implement timeout here, only erase one block at a time!
 
-	    // START: NEW
-	uint32_t cycles_limit = 1000*120;  // 1ms
-	uint32_t cycles_start = grid_d51_dwt_cycles_read();
+	if(nvm->erase_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){ // erase is in progress
 
-
-	while(nvm->erase_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){
-
-		if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){
-			printf("limit");
-			return;
-		}
-
-		CRITICAL_SECTION_ENTER()
+		//CRITICAL_SECTION_ENTER()
 		flash_erase(nvm->flash, nvm->erase_bulk_address, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
-		CRITICAL_SECTION_LEAVE()
+		//CRITICAL_SECTION_LEAVE()
 
 		nvm->erase_bulk_address += GRID_NVM_BLOCK_SIZE;
 
 	}
+	else{ // done with the erase
 
+		nvm->erase_bulk_status = 0;
 
+		// Generate ACKNOWLEDGE RESPONSE
+		struct grid_msg response;
+			
+		grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
-	nvm->erase_bulk_status = 0;
-
-	// Generate ACKNOWLEDGE RESPONSE
-	struct grid_msg response;
+		grid_msg_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
+		grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 		
-	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+		grid_msg_body_append_parameter(&response, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, grid_sys_state.lastheader_nvmerase.id);		
+					
+		grid_msg_packet_close(&response);
 
-	grid_msg_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
-	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-	
-	grid_msg_body_append_parameter(&response, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, grid_sys_state.lastheader_nvmerase.id);		
-				
-	grid_msg_packet_close(&response);
-
-	grid_msg_packet_send_everywhere(&response);
+		grid_msg_packet_send_everywhere(&response);
 
 
-	
-	grid_debug_printf("erase complete");
-	grid_keyboard_state.isenabled = 1;	
-	grid_sys_state.lastheader_nvmerase.status = 0;
-	
+		
+		grid_debug_printf("erase complete");
+		grid_keyboard_state.isenabled = 1;	
+		grid_sys_state.lastheader_nvmerase.status = 0;
+		
 
-	grid_ui_page_load(ui, nvm, ui->page_activepage);
+		grid_ui_page_load(ui, nvm, ui->page_activepage);
+
+	}
 
 	
 }

@@ -17,7 +17,7 @@
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
 #define GRID_PROTOCOL_VERSION_MINOR 2
-#define GRID_PROTOCOL_VERSION_PATCH 3
+#define GRID_PROTOCOL_VERSION_PATCH 5
 
 // Module HWCFG definitions
 
@@ -896,34 +896,42 @@ enum grid_ui_event_t
 #define GRID_CLASS_CONFIG_ACTIONSTRING_offset 21
 #define GRID_CLASS_CONFIG_ACTIONSTRING_length 0
 
-
+// =========== PAGE STORE =========== //
 #define GRID_CLASS_PAGESTORE_code 0x061
 #define GRID_CLASS_PAGESTORE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGESTORE_code, GRID_CONST_ETX
-
 // used when check instruction is received
 #define GRID_CLASS_PAGESTORE_LASTHEADER_offset 5
 #define GRID_CLASS_PAGESTORE_LASTHEADER_length 2
 
+// =========== NVM ERASE =========== //
 #define GRID_CLASS_NVMERASE_code 0x062
 #define GRID_CLASS_NVMERASE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_NVMERASE_code, GRID_CONST_ETX
-
 // used when check instruction is received
 #define GRID_CLASS_NVMERASE_LASTHEADER_offset 5
 #define GRID_CLASS_NVMERASE_LASTHEADER_length 2
 
+// =========== PAGE DISCARD =========== //
 #define GRID_CLASS_PAGEDISCARD_code 0x063
 #define GRID_CLASS_PAGEDISCARD_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGEDISCARD_code, GRID_CONST_ETX
-
 // used when check instruction is received
 #define GRID_CLASS_PAGEDISCARD_LASTHEADER_offset 5
 #define GRID_CLASS_PAGEDISCARD_LASTHEADER_length 2
 
+// =========== PAGE CLEAR =========== //
 #define GRID_CLASS_PAGECLEAR_code 0x064
 #define GRID_CLASS_PAGECLEAR_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGECLEAR_code, GRID_CONST_ETX
-
 // used when check instruction is received
 #define GRID_CLASS_PAGECLEAR_LASTHEADER_offset 5
 #define GRID_CLASS_PAGECLEAR_LASTHEADER_length 2
+
+// =========== NVM DEFRAG =========== //
+#define GRID_CLASS_NVMDEFRAG_code 0x065
+#define GRID_CLASS_NVMDEFRAG_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_NVMDEFRAG_code, GRID_CONST_ETX
+// used when check instruction is received
+#define GRID_CLASS_NVMDEFRAG_LASTHEADER_offset 5
+#define GRID_CLASS_NVMDEFRAG_LASTHEADER_length 2
+
+
 
 // RUN imediate
 #define GRID_CLASS_IMEDIATE_code 0x085
