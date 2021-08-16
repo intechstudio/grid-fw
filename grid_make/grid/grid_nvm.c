@@ -972,20 +972,22 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 					struct grid_nvm_toc_entry* entry = grid_nvm_toc_entry_find(nvm, ele->parent->page_activepage, ele->index, eve->type);
 					if (entry != NULL){
-						printf("DESTROY!\r\n");
+						printf("DEFAULT, FOUND - SO DESTROY! %d %d\r\n", ele->index, eve->index);
 						grid_nvm_toc_entry_destroy(nvm, entry);
 					}
 					else{
 
-						printf("WAS NOT FOUND!\r\n");
+						printf("DEFAULT BUT NOT FOUND! %d %d\r\n", ele->index, eve->index);
 					}
 
 					// its reverted to default, so no need to keep it in eve->action_string
 					grid_ui_event_free_actionstring(eve);
-					strcpy(eve->action_string, "\0"); // clear (free) actionstring
 	
 				}
 				else{
+					
+					printf("NOT DEFAULT! %d %d\r\n", ele->index, eve->index);
+
 					grid_nvm_config_store(nvm, ele->parent->page_activepage, ele->index, eve->type, eve->action_string);
 
 					// now its stored in TOC so no need to keep it in eve->action_string
