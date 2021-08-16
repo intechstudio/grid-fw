@@ -101,7 +101,7 @@ void assert_triggered(const char *file, uint32_t line);
 // <q> Check stack overflow
 // <id> freertos_check_for_stack_overflow
 #ifndef configCHECK_FOR_STACK_OVERFLOW
-#define configCHECK_FOR_STACK_OVERFLOW 1
+#define configCHECK_FOR_STACK_OVERFLOW 0
 #endif
 
 // <q> Use maclloc failed hook

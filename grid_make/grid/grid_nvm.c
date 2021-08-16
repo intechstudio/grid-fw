@@ -31,7 +31,7 @@ void grid_nvm_init(struct grid_nvm_model* nvm, struct flash_descriptor* flash_in
 }
 
 
-uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* mod){
+uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 
 	grid_debug_printf("Start defragmentation");
 
@@ -41,7 +41,7 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* mod){
 
 	uint32_t write_ptr = 0;
 
-	struct grid_nvm_toc_entry* current = mod->toc_head;
+	struct grid_nvm_toc_entry* current = nvm->toc_head;
 
 	while (current != NULL)
 	{
@@ -53,7 +53,7 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* mod){
 
 			// the current config_string fit into the block no problem!
 			CRITICAL_SECTION_ENTER()
-			flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset, &block_buffer[write_ptr], current->config_string_length);
+			flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset, &block_buffer[write_ptr], current->config_string_length);
 			CRITICAL_SECTION_LEAVE()
 
 			write_ptr += current->config_string_length;
@@ -70,10 +70,10 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* mod){
 
 			// read as much as we can fit into the current block
 			CRITICAL_SECTION_ENTER()
-			flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset, &block_buffer[write_ptr], part1_length);		
+			flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset, &block_buffer[write_ptr], part1_length);		
 			// write the current block to flash
-			flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
-			flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, block_buffer, GRID_NVM_BLOCK_SIZE);
+			flash_erase(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+			flash_append(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, block_buffer, GRID_NVM_BLOCK_SIZE);
 			CRITICAL_SECTION_LEAVE()	
 
 
@@ -88,7 +88,7 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* mod){
 
 			// read the rest of the configuration
 			CRITICAL_SECTION_ENTER()	
-			flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset + part1_length, &block_buffer[write_ptr], part2_length);
+			flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset + part1_length, &block_buffer[write_ptr], part2_length);
 			CRITICAL_SECTION_LEAVE()	
 
 			// update the write_ptr
@@ -106,8 +106,8 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* mod){
 
 			// no more elements in the list, write last partial block to NVM
 			//CRITICAL_SECTION_ENTER()	
-			flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
-			flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, block_buffer, write_ptr);
+			flash_erase(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+			flash_append(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, block_buffer, write_ptr);
 			//CRITICAL_SECTION_LEAVE()	
 
 			break;
@@ -121,8 +121,9 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* mod){
 	}
 
 	// set the next_write_offset to allow proper writes after defrag
-	mod->next_write_offset = block_count*GRID_NVM_BLOCK_SIZE + write_ptr;
-	printf("After defrag next_write_offset: %d\r\n", mod->next_write_offset);
+	nvm->next_write_offset = block_count*GRID_NVM_BLOCK_SIZE + write_ptr;
+	printf("After defrag next_write_offset: %d\r\n", nvm->next_write_offset);
+
 
 	// clear the rest of the memory!
 	block_count++;
@@ -130,14 +131,15 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* mod){
 	while(GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE < GRID_NVM_LOCAL_END_ADDRESS){
 
 		CRITICAL_SECTION_ENTER()	
-		flash_erase(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+		flash_erase(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_NVM_BLOCK_SIZE, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
 		CRITICAL_SECTION_LEAVE()	
 	
 		block_count++;
 	}
 	
+	grid_debug_printf("defrag complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);
 
-	grid_nvm_toc_debug(mod);
+	grid_nvm_toc_debug(nvm);
 	
 }
 

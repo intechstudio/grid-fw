@@ -18,7 +18,6 @@
 #define CONF_ADC_1_SAMPLENUM 0x6
 
 
-
 #include "grid/grid_module.h"
 
 #include "grid/grid_ui.h"
@@ -35,118 +34,7 @@
 #include <hpl_reset.h>
 
 
-#include "hal_rtos.h"
-
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-
-
 #include "usb/class/midi/device/audiodf_midi.h"
-/* GetIdleTaskMemory prototype (linked to static allocation support) */
-
-static StaticTask_t xTimerTaskTCBBuffer;
-static StackType_t xTimerStack[configMINIMAL_STACK_SIZE];
-
-
-void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer,
-                                          uint32_t *pulTimerTaskStackSize){
-  *ppxTimerTaskTCBBuffer = &xTimerTaskTCBBuffer;
-  *ppxTimerTaskStackBuffer = &xTimerStack[0];
-  *pulTimerTaskStackSize = configMINIMAL_STACK_SIZE;
-}
-
-static StaticTask_t xIdleTaskTCBBuffer;
-static StackType_t xIdleStack[configMINIMAL_STACK_SIZE];
-
-void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer,
-                                          uint32_t *pulIdleTaskStackSize){
-  *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
-  *ppxIdleTaskStackBuffer = &xIdleStack[0];
-  *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
-}
-
-
-void vApplicationStackOverflowHook( TaskHandle_t xTask, signed char *pcTaskName ){
-
-	CRITICAL_SECTION_ENTER()
-
-	while(1){
-		printf("Stack Overflow %s\r\n", pcTaskGetName(xTask));
-		delay_ms(1000);
-	}
-
-	CRITICAL_SECTION_LEAVE()
-
-
-}
-
-static TaskHandle_t      		xCreatedUiTask;
-#define TASK_UI_STACK_SIZE 		(512 / sizeof(portSTACK_TYPE))
-#define TASK_UI_PRIORITY 		(1)
-
-static TaskHandle_t      		xCreatedUsbTask;
-#define TASK_USB_STACK_SIZE 	(512 / sizeof(portSTACK_TYPE))
-#define TASK_USB_PRIORITY 		(2)
-
-static TaskHandle_t      		xCreatedNvmTask;
-#define TASK_NVM_STACK_SIZE 	(512 / sizeof(portSTACK_TYPE))
-#define TASK_NVM_PRIORITY 		(2)
-
-static TaskHandle_t      			xCreatedReceiveTask;
-#define TASK_RECEIVE_STACK_SIZE 	(512 / sizeof(portSTACK_TYPE))
-#define TASK_RECEIVE_PRIORITY 		(2)
-
-static TaskHandle_t      			xCreatedInboundTask;
-#define TASK_INBOUND_STACK_SIZE 	(1024 / sizeof(portSTACK_TYPE))
-#define TASK_INBOUND_PRIORITY 		(2)
-
-static TaskHandle_t      			xCreatedOutboundTask;
-#define TASK_OUTBOUND_STACK_SIZE 	(1024 / sizeof(portSTACK_TYPE))
-#define TASK_OUTBOUND_PRIORITY 		(2)
-
-static TaskHandle_t      		xCreatedLedTask;
-#define TASK_LED_STACK_SIZE 	(4*1024 / sizeof(portSTACK_TYPE))
-#define TASK_LED_PRIORITY 		(4)
-
-
-#define TASK_EXAMPLE_STACK_SIZE (512 / sizeof(portSTACK_TYPE))
-#define TASK_EXAMPLE_STACK_PRIORITY (tskIDLE_PRIORITY + 2)
-#define TASK_EXAMPLE2_STACK_PRIORITY (tskIDLE_PRIORITY + 3)
-
-static TaskHandle_t      xCreatedExampleTask;
-static TaskHandle_t      xCreatedExample2Task;
-
-static SemaphoreHandle_t disp_mutex;
-
-// StaticTask_t xTaskBufferUi;
-// StackType_t xStackUi[TASK_UI_STACK_SIZE];
-
-// StaticTask_t xTaskBufferUsb;
-// StackType_t xStackUsb[TASK_USB_STACK_SIZE];
-
-// StaticTask_t xTaskBufferNvm;
-// StackType_t xStackNvm[TASK_NVM_STACK_SIZE];
-
-// StaticTask_t xTaskBufferReceive;
-// StackType_t xStackReceive[TASK_RECEIVE_STACK_SIZE];
-
-// StaticTask_t xTaskBufferInbound;
-// StackType_t xStackInbound[TASK_INBOUND_STACK_SIZE];
-
-// StaticTask_t xTaskBufferOutbound;
-// StackType_t xStackOutbound[TASK_OUTBOUND_STACK_SIZE];
-
-// StaticTask_t xTaskBufferLed;
-// StackType_t xStackLed[TASK_LED_STACK_SIZE];
-
-
-/**
- * OS example task
- *
- * \param[in] p The void pointer for OS task Standard model.
- *
- */
 
 volatile uint32_t globaltest = 0;
 
@@ -428,95 +316,6 @@ static void led_task_inner(struct grid_d51_task* task){
 
 }
 
-static void usb_task(void *p)
-{
-	(void)p;
-
-	while (1) {
-
-		usb_task_inner(NULL);
-		vTaskDelay(1*configTICK_RATE_HZ/1000);
-
-	}
-
-}
-
-static void nvm_task(void *p){
-
-	(void)p;
-
-	while (1) {
-
-		nvm_task_inner(NULL);
-		vTaskDelay(1*configTICK_RATE_HZ/1000);
-	}
-
-}
-
-
-static void ui_task(void *p){
-
-	(void)p;
-
-	while (1) {
-
-		ui_task_inner(NULL);
-		vTaskDelay(1*configTICK_RATE_HZ/1000);
-
-	}
-}
-
-static void receive_task(void *p){
-
-	(void)p;
-
-	while (1) {
-			
-		receive_task_inner(NULL);
-		vTaskDelay(1*configTICK_RATE_HZ/1000);
-
-	}
-}
-
-static void inbound_task(void *p){
-
-	(void)p;
-
-	while (1) {	
-		vTaskDelay(1*configTICK_RATE_HZ/1000);
-	}
-}
-
-
-static void outbound_task(void *p){
-
-	(void)p;
-	while (1) {	
-		vTaskDelay(1*configTICK_RATE_HZ/1000);
-	}
-}
-
-
-static void led_task(void *p)
-{
-	(void)p;
-	while (1) {
-
-		globaltest++;
-		inbound_task_inner(NULL);
-		outbound_task_inner(NULL);
-
-		led_task_inner(NULL);
-
-
-		vTaskDelay(1*configTICK_RATE_HZ/1000);
-
-		//os_sleep(400);
-
-	}
-}
-
-
 volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
@@ -772,9 +571,6 @@ void qspi_test(void)
 int main(void)
 {
 
-
-
-
 	// boundary scan here
 	uint32_t boundary_result[4] = {0};
 	grid_d51_boundary_scan(boundary_result); // must run before atmel_start_init sets up gpio
@@ -833,16 +629,6 @@ int main(void)
 	grid_keyboard_init(&grid_keyboard_state);
 		
 
-	// Init Bank Color Bug when config was previously saved
-
-	// xCreatedUsbTask = xTaskCreateStatic(usb_task, "Usb Task", TASK_USB_STACK_SIZE, ( void * ) 1, TASK_USB_PRIORITY, xStackUsb, &xTaskBufferUsb);
-	// xCreatedNvmTask = xTaskCreateStatic(nvm_task, "Nvm Task", TASK_NVM_STACK_SIZE, ( void * ) 1, TASK_NVM_PRIORITY, xStackNvm, &xTaskBufferNvm);
-	// xCreatedUiTask = xTaskCreateStatic(ui_task, "Ui Task",  TASK_UI_STACK_SIZE, ( void * ) 1, TASK_UI_PRIORITY, xStackUi, &xTaskBufferUi);
-	// xCreatedReceiveTask = xTaskCreateStatic(receive_task, "Rec Task", TASK_RECEIVE_STACK_SIZE, ( void * ) 1, TASK_RECEIVE_PRIORITY, xStackReceive, &xTaskBufferReceive);
-	// xCreatedInboundTask = xTaskCreateStatic(inbound_task, "Inb Task", TASK_INBOUND_STACK_SIZE, ( void * ) 1, TASK_INBOUND_PRIORITY, xStackInbound, &xTaskBufferInbound);
-	// xCreatedOutboundTask = xTaskCreateStatic(outbound_task, "Outb Task", TASK_OUTBOUND_STACK_SIZE, ( void * ) 1, TASK_OUTBOUND_PRIORITY, xStackOutbound, &xTaskBufferOutbound);
-	// xCreatedLedTask = xTaskCreateStatic(led_task, "Led Task", TASK_LED_STACK_SIZE, ( void * ) 1, TASK_LED_PRIORITY, xStackLed, &xTaskBufferLed);
-
 	//  x/512xb 0x80000
 	grid_module_common_init();
 
@@ -855,20 +641,8 @@ int main(void)
 		grid_nvm_ui_bulk_pageread_next(&grid_nvm_state, &grid_ui_state);
 	}
 	
-
-	// grid_sys_nvm_load_configuration(&grid_sys_state, &grid_nvm_state);
-	// grid_ui_nvm_load_all_configuration(&grid_ui_state, &grid_nvm_state);	
-	
-//	grid_nvm_config_mock(&grid_nvm_state);
-//	grid_nvm_config_mock(&grid_nvm_state);
-//	grid_nvm_config_mock(&grid_nvm_state);
-
 	grid_nvm_toc_debug(&grid_nvm_state);
 	
-//	grid_nvm_toc_defragmant(&grid_nvm_state);
-
-
-	// init_timer is last before loop because it creates interrupts
 	init_timer();
 
 	uint32_t loopcounter = 1;
@@ -947,27 +721,19 @@ int main(void)
 		}
 			
 		//printf("WTF\r\n\r\n");
-	
-
-
 		
 		loopcounter++;
 
 		if (loopcounter == 1000){
 
 			grid_ui_state.ui_interaction_enabled = 1;
-			// printf("vTaskStartScheduler! \r\n");
-			// delay_ms(2);
-			// vTaskStartScheduler();
 
 		}
 
-
-		if (sys_i2c_enabled){
-			grid_mxt144u_read_id(SYS_I2C_io);
-		}
-		
-
+		// Touch Chip
+		// if (sys_i2c_enabled){
+		// 	grid_mxt144u_read_id(SYS_I2C_io);
+		// }
 		
 
 		usb_task_inner(grid_usb_task);
@@ -1042,12 +808,6 @@ int main(void)
 
 		}
 
-
-		if (loopcounter%200 == 0){
-
-			//printf("R: %4d S: %4d (%4d) (%d)\r\n", GRID_PORT_E.rx_double_buffer_read_start_index, GRID_PORT_E.rx_double_buffer_seek_start_index, GRID_PORT_E.rx_double_buffer_timeout, GRID_PORT_E.partner_status);
-
-		}
 
 		if (reportflag && 0){
 
