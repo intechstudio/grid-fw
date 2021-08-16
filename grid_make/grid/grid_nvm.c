@@ -1154,7 +1154,7 @@ void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_m
 		}
 
 		CRITICAL_SECTION_ENTER()
-		flash_erase(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+		flash_erase(nvm->flash, nvm->erase_bulk_address, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
 		CRITICAL_SECTION_LEAVE()
 
 		nvm->erase_bulk_address += GRID_NVM_BLOCK_SIZE;
