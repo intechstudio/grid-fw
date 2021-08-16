@@ -45,7 +45,6 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 
 	while (current != NULL)
 	{
-
 		//current->config_string_offset = block_count * GRID_NVM_BLOCK_SIZE + write_ptr;
 		printf("Moving CFG %d %d %d  Offset: %d -> %d\r\n", current->page_id, current->element_id, current->event_type, current->config_string_offset ,block_count * GRID_NVM_BLOCK_SIZE + write_ptr);
 
@@ -137,7 +136,25 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 		block_count++;
 	}
 	
-	grid_debug_printf("defrag complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);
+
+	struct grid_msg response;
+		
+	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+
+	// acknowledge
+	grid_msg_body_append_printf(&response, GRID_CLASS_NVMDEFRAG_frame);
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+
+	// debugtext
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&response, "xdefrag complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);		
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);	
+
+	grid_msg_packet_close(&response);
+
+	grid_msg_packet_send_everywhere(&response);
+
 
 	grid_nvm_toc_debug(nvm);
 	
@@ -906,7 +923,7 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 	}
 	
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 40);
-	grid_debug_printf("read complete");
+	//grid_debug_printf("read complete");
 	grid_keyboard_state.isenabled = 1;	
 	grid_sys_state.lastheader_pagediscard.status = 0;
 
@@ -915,7 +932,7 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 	grid_msg_body_append_printf(&response, GRID_CLASS_PAGEDISCARD_frame);
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, grid_sys_state.lastheader_pagediscard.id);		
+	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, grid_sys_state.lastheader_pagediscard.id);
 	grid_msg_packet_close(&response);
 	grid_msg_packet_send_everywhere(&response);
 
@@ -1010,17 +1027,22 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
+	// acknowledge
 	grid_msg_body_append_printf(&response, GRID_CLASS_PAGESTORE_frame);
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGESTORE_LASTHEADER_offset, GRID_CLASS_PAGESTORE_LASTHEADER_length, grid_sys_state.lastheader_pagestore.id);		
-				
+
+	// debugtext
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&response, "xstore complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);				
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
 
 	grid_msg_packet_close(&response);
 	grid_msg_packet_send_everywhere(&response);
 	
 	nvm->store_bulk_status = 0;
 
-	grid_debug_printf("store complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);
 	grid_keyboard_state.isenabled = 1;	
 	grid_sys_state.lastheader_pagestore.status = 0;
 
@@ -1083,17 +1105,22 @@ void grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
+	// acknowledge
 	grid_msg_body_append_printf(&response, GRID_CLASS_PAGECLEAR_frame);
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGECLEAR_LASTHEADER_offset, GRID_CLASS_PAGECLEAR_LASTHEADER_length, grid_sys_state.lastheader_pageclear.id);		
 				
+	// debugtext
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&response, "xclear complete");				
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
 
 	grid_msg_packet_close(&response);
 	grid_msg_packet_send_everywhere(&response);
 	
 	nvm->clear_bulk_status = 0;
 
-	grid_debug_printf("clear complete");
 	grid_sys_state.lastheader_pageclear.status = 0;
 
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 127);
@@ -1164,18 +1191,22 @@ void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_m
 			
 		grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
+		// acknowledge
 		grid_msg_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
 		grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-		
 		grid_msg_body_append_parameter(&response, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, grid_sys_state.lastheader_nvmerase.id);		
-					
+
+
+		// debugtext
+		grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
+		grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+		grid_msg_body_append_printf(&response, "xerase complete");				
+		grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);	
+
 		grid_msg_packet_close(&response);
 
 		grid_msg_packet_send_everywhere(&response);
 
-
-		
-		grid_debug_printf("erase complete");
 		grid_keyboard_state.isenabled = 1;	
 		grid_sys_state.lastheader_nvmerase.status = 0;
 		

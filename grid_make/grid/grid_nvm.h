@@ -62,6 +62,10 @@ struct grid_nvm_model{
 	uint8_t store_bulk_status;
 
 	uint8_t clear_bulk_status;
+
+
+	uint8_t bulk_nvmdefrag_status;
+	uint8_t bulk_nvmdefrag_stage; // 0: move, 1: erase
 	
 
 	uint32_t next_write_offset;
@@ -119,6 +123,11 @@ void	grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 void	grid_nvm_ui_bulk_pageclear_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 uint8_t grid_nvm_ui_bulk_pageclear_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 void	grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
+
+void	grid_nvm_ui_bulk_nvmdefrag_init(struct grid_nvm_model* nvm);
+uint8_t grid_nvm_ui_bulk_nvmdefrag_is_in_progress(struct grid_nvm_model* nvm);
+void	grid_nvm_ui_bulk_nvmdefrag_next(struct grid_nvm_model* nvm);
+
 
 
 #endif /* GRID_NVM_H_ */

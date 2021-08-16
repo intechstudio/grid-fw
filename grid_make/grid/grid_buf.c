@@ -1922,7 +1922,6 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				}	
 				else if (msg_class == GRID_CLASS_NVMDEFRAG_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_debug_printf("Defrag Command");
 					grid_nvm_toc_defragment(&grid_nvm_state);
 
 				}

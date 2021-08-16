@@ -687,7 +687,7 @@ enum grid_ui_event_t
 #define GRID_ACTIONSTRING_BC "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128--[[@gms]] gms(ch,144,note,val)--[[@glp]] glp(num,1,val) ?>"
 #define GRID_ACTIONSTRING_EC "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:eva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128--[[@gms]] gms(ch,176,cc,val)--[[@glp]] glp(num,2,val) ?>"
 
-#define GRID_ACTIONSTRING_PAGE_INIT		 "<?lua --[[@cb]] print('page init') ?>"
+#define GRID_ACTIONSTRING_PAGE_INIT		 "<?lua --[[@cb]] --[[page init]] ?>"
 #define GRID_ACTIONSTRING_MAPMODE_CHANGE "<?lua --[[@cb]] gpl(gpn()) ?>"
 
 
