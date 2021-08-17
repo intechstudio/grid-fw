@@ -728,6 +728,12 @@ int main(void)
 
 			grid_ui_state.ui_interaction_enabled = 1;
 
+			grid_d51_nvic_set_interrupt_priority_mask(0);
+			grid_d51_nvic_set_interrupt_priority(SERCOM3_2_IRQn, 1);
+			
+			grid_d51_nvic_debug_priorities();
+
+
 		}
 
 		// Touch Chip

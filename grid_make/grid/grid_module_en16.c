@@ -37,6 +37,7 @@ void grid_module_en16_hardware_transfer_complete_cb(void){
 
 	/* Transfer completed */
 
+	//printf("%d\r\n", _irq_get_current());
 	
 	// Set the shift registers to continuously load data until new transaction is issued
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);

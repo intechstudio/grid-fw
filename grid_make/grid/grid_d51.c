@@ -532,6 +532,68 @@ uint32_t grid_d51_dwt_enable(){
 }
 
 
+void grid_d51_nvic_debug_priorities(void){
+
+	//The default priority is 0 for every interrupt
+
+	printf("Pri MASK    %d\r\n", 		grid_d51_nvic_get_interrupt_priority_mask());
+
+	printf("USB_0       %d\r\n", 		grid_d51_nvic_get_interrupt_priority(USB_0_IRQn));
+	printf("USB_1       %d\r\n", 		grid_d51_nvic_get_interrupt_priority(USB_1_IRQn));
+	printf("USB_2       %d\r\n", 		grid_d51_nvic_get_interrupt_priority(USB_2_IRQn));
+	printf("USB_3       %d\r\n", 		grid_d51_nvic_get_interrupt_priority(USB_3_IRQn));
+
+	printf("ADC0_0      %d\r\n", 		grid_d51_nvic_get_interrupt_priority(ADC0_0_IRQn));
+	printf("ADC0_1      %d\r\n", 		grid_d51_nvic_get_interrupt_priority(ADC0_1_IRQn));
+
+	printf("ADC1_0      %d\r\n", 		grid_d51_nvic_get_interrupt_priority(ADC1_0_IRQn));
+	printf("ADC1_1      %d\r\n", 		grid_d51_nvic_get_interrupt_priority(ADC1_1_IRQn));
+
+	printf("DMAC_0      %d\r\n", 		grid_d51_nvic_get_interrupt_priority(DMAC_0_IRQn));
+	printf("DMAC_1      %d\r\n", 		grid_d51_nvic_get_interrupt_priority(DMAC_1_IRQn));
+	printf("DMAC_2      %d\r\n", 		grid_d51_nvic_get_interrupt_priority(DMAC_2_IRQn));
+	printf("DMAC_3      %d\r\n", 		grid_d51_nvic_get_interrupt_priority(DMAC_3_IRQn));
+	printf("DMAC_4..31  %d\r\n", 		grid_d51_nvic_get_interrupt_priority(DMAC_4_IRQn));
+
+	printf("SERCOM3 2   %d\r\n", 		grid_d51_nvic_get_interrupt_priority(SERCOM3_2_IRQn)); // SPI_UI transfer complete
+
+	printf("EVSYS_0     %d\r\n", 		grid_d51_nvic_get_interrupt_priority(EVSYS_0_IRQn));
+	printf("EVSYS_1     %d\r\n", 		grid_d51_nvic_get_interrupt_priority(EVSYS_1_IRQn));
+	printf("EVSYS_2     %d\r\n", 		grid_d51_nvic_get_interrupt_priority(EVSYS_2_IRQn));
+	printf("EVSYS_3     %d\r\n", 		grid_d51_nvic_get_interrupt_priority(EVSYS_3_IRQn));
+	printf("EVSYS_4..11 %d\r\n", 		grid_d51_nvic_get_interrupt_priority(EVSYS_4_IRQn));
+}
+
+void grid_d51_nvic_set_interrupt_priority(IRQn_Type irqn, uint32_t priority){
+
+	ASSERT(irqn < 136+1); // Fron D51 Datasheet
+	ASSERT(priority < (1<<__NVIC_PRIO_BITS)); // Fron D51 Datasheet
+
+	NVIC_SetPriority(irqn, priority);
+}
+
+uint32_t grid_d51_nvic_get_interrupt_priority(IRQn_Type irqn){
+
+	ASSERT(irqn < 136+1); // Fron D51 Datasheet
+
+	return NVIC_GetPriority(irqn);
+}
+
+void grid_d51_nvic_set_interrupt_priority_mask(uint32_t priority){
+
+	printf("PROMASK value %d\r\n", priority<<(8-__NVIC_PRIO_BITS));
+
+	__set_BASEPRI(priority<<(8-__NVIC_PRIO_BITS));
+
+}
+
+uint32_t grid_d51_nvic_get_interrupt_priority_mask(void){
+
+	return __get_BASEPRI()>>(8-__NVIC_PRIO_BITS);
+
+}
+
+
 
 uint32_t grid_d51_dwt_cycles_read(){
 
