@@ -500,6 +500,41 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 	}
 
 
+	// create template buffers for all of the pages
+
+
+	uint8_t pagecount = 4; // by default allocate 4 pages
+
+	struct grid_nvm_toc_entry* current = mod->toc_head;
+
+	while (current != NULL)
+	{
+		if (current->page_id > pagecount){
+			pagecount = current->page_id;
+		}
+		current = current->next;
+	}
+
+
+	for (uint8_t i = 0; i < grid_ui_state.element_list_length; i++)
+	{
+
+		struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+
+		uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
+
+		while (template_buffer_length < pagecount){
+
+			grid_ui_template_buffer_create(ele);
+			template_buffer_length = grid_ui_template_buffer_list_length(ele);
+
+		}
+
+
+	}
+
+
+
 
 }
 

@@ -552,7 +552,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 				grid_ui_event_generate_actionstring(eve, temp);
 				
 
-				printf("DEFAULT: %s\r\n", temp);
+				//printf("DEFAULT: %s\r\n", temp);
 
 				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(temp));		
 				grid_msg_body_append_text(&message, temp);
@@ -667,6 +667,7 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 		//if (i==0) printf("TB LEN: %d\r\n", template_buffer_length);
 		while (template_buffer_length < page+1){
 
+			printf("$"); // emergency allocation
 			grid_ui_template_buffer_create(ele);
 
 			template_buffer_length = grid_ui_template_buffer_list_length(ele);

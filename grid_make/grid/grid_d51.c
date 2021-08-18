@@ -581,8 +581,6 @@ uint32_t grid_d51_nvic_get_interrupt_priority(IRQn_Type irqn){
 
 void grid_d51_nvic_set_interrupt_priority_mask(uint32_t priority){
 
-	printf("PROMASK value %d\r\n", priority<<(8-__NVIC_PRIO_BITS));
-
 	__set_BASEPRI(priority<<(8-__NVIC_PRIO_BITS));
 
 }
