@@ -749,9 +749,11 @@ int main(void)
 
 		ui_task_inner(grid_ui_task);
 
+	
+		outbound_task_inner(grid_outbound_task);
+
 		inbound_task_inner(grid_inbound_task);
 
-		outbound_task_inner(grid_outbound_task);
 
 		led_task_inner(grid_led_task);
 
