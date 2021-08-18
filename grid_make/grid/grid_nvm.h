@@ -106,7 +106,7 @@ void grid_nvm_init(struct grid_nvm_model* mod, struct flash_descriptor* flash_in
 
 void grid_nvm_toc_init(struct grid_nvm_model* mod);
 
-
+uint8_t grid_nvm_is_ready(struct grid_nvm_model* nvm);
 
 void	grid_nvm_ui_bulk_pageread_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui);
 uint8_t grid_nvm_ui_bulk_pageread_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui);

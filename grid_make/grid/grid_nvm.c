@@ -281,9 +281,7 @@ uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t le
 
 	//printf("clear_length: %d offset: %d\r\n", clear_length, offset);
 	// SUKU HACK
-	CRITICAL_SECTION_ENTER()	
 	flash_append(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset, clear_buffer, clear_length);
-	CRITICAL_SECTION_LEAVE()	
 	// flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + offset, verify_buffer, clear_length);
 
 	// for (uint16_t i=0; i<clear_length; i++){
@@ -812,13 +810,16 @@ void grid_nvm_ui_bulk_pageread_init(struct grid_nvm_model* nvm, struct grid_ui_m
 uint8_t grid_nvm_ui_bulk_pageread_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 
 	return nvm->read_bulk_status;
-	
 
 }
 
 void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
 	
 	if (!grid_nvm_ui_bulk_pageread_is_in_progress(nvm, ui)){
+		return;
+	}
+
+	if (!grid_nvm_is_ready(nvm)){
 		return;
 	}
 
@@ -966,6 +967,10 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 		return;
 	}
 
+	if (!grid_nvm_is_ready(nvm)){
+		return;
+	}
+
     // START: NEW
 	uint32_t cycles_limit = 5000*120;  // 5ms
 	uint32_t cycles_start = grid_d51_dwt_cycles_read();
@@ -1079,6 +1084,10 @@ void grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_
 		return;
 	}
 
+	if (!grid_nvm_is_ready(nvm)){
+		return;
+	}
+
     // START: NEW
 	uint32_t cycles_limit = 5000*120;  // 5ms
 	uint32_t cycles_start = grid_d51_dwt_cycles_read();
@@ -1138,7 +1147,7 @@ void grid_nvm_ui_bulk_nvmerase_init(struct grid_nvm_model* nvm, struct grid_ui_m
 	nvm->erase_bulk_address = GRID_NVM_LOCAL_BASE_ADDRESS;
 
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
-	grid_led_set_alert_frequency(&grid_led_state, -8);	
+	grid_led_set_alert_frequency(&grid_led_state, -2);	
 	for (uint8_t i = 0; i<grid_led_state.led_number; i++){
 		grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
 	}
@@ -1170,7 +1179,15 @@ uint8_t grid_nvm_ui_bulk_nvmerase_is_in_progress(struct grid_nvm_model* nvm, str
 
 
 void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
-	
+
+	if (!grid_nvm_ui_bulk_nvmerase_is_in_progress(nvm, ui)){
+		return;
+	}
+
+	if (!grid_nvm_is_ready(nvm)){
+		return;
+	}
+
 	// flash_erase takes 32 ms so no need to implement timeout here, only erase one block at a time!
 
 	if(nvm->erase_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){ // erase is in progress
@@ -1218,3 +1235,9 @@ void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_m
 	
 }
 
+
+
+uint8_t grid_nvm_is_ready(struct grid_nvm_model* nvm){
+
+	return hri_nvmctrl_get_STATUS_READY_bit(nvm->flash->dev.hw);
+}
