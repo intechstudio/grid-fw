@@ -305,6 +305,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				}
 				else{
 					// WE ALREADY HEARD THIS MESSAGE
+					// grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 20);
 					
 				}
 				
@@ -606,7 +607,7 @@ void grid_port_receive_task(struct grid_port* por){
 
 				grid_port_reset_receiver(por);	
 				
-				printf("Overrun\r\n"); // never use grid message to indicate overrun directly				
+				//printf("Overrun\r\n"); // never use grid message to indicate overrun directly				
 
 				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
 				grid_led_set_alert_frequency(&grid_led_state, -2);	
@@ -1074,8 +1075,8 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 			
 				if (packet_size > grid_buffer_write_size(&port_array[i]->tx_buffer)){
 					
-					printf("Buffer full\r\n");
-					grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_BLUE, 255);
+
+					grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_BLUE, 128);
 					
 					// sorry one of the buffers cannot store the packet, we will try later
 					return 0;

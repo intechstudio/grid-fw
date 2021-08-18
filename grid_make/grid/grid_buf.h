@@ -3,10 +3,10 @@
 
 #include "grid_module.h"
 
-#define GRID_BUFFER_SIZE	1000 //1000
+#define GRID_BUFFER_SIZE	2000 //1000 this is the buffer for internal routing
 
 #define GRID_DOUBLE_BUFFER_TX_SIZE	GRID_PARAMETER_PACKET_maxlength
-#define GRID_DOUBLE_BUFFER_RX_SIZE	3500 //600
+#define GRID_DOUBLE_BUFFER_RX_SIZE	3000 //600
 
 
 

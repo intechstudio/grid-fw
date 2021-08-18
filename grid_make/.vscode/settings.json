@@ -45,6 +45,7 @@
         "vector": "cpp",
         "ranges": "cpp",
         "ostream": "c",
-        "tuple": "c"
+        "tuple": "c",
+        "grid_buf.h": "c"
     }
 }
