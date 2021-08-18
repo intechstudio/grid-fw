@@ -531,6 +531,40 @@ void grid_led_set_alert(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_
 
 }
 
+void grid_led_set_alert_timeout_automatic(struct grid_led_model* mod){
+
+	uint8_t old_phase = grid_led_get_phase(mod, 0, GRID_LED_LAYER_ALERT);
+
+	uint8_t new_phase = (old_phase/2)*2;
+
+	for (uint8_t i = 0; i<mod->led_number; i++){
+		grid_led_set_min(mod, i, GRID_LED_LAYER_ALERT, 0, 0, 0);
+	}
+
+	grid_led_set_alert_phase(mod, new_phase);
+	grid_led_set_alert_frequency(mod, -2);
+
+	if (new_phase/2 == 0){
+		grid_led_set_alert_frequency(mod, 0);	
+	}
+	else{
+		grid_led_set_alert_timeout(mod, new_phase/2);
+	}
+
+
+}
+
+
+void grid_led_set_alert_timeout(struct grid_led_model* mod, uint8_t timeout){
+
+	//printf("ALERT\r\n");
+
+	for (uint8_t i = 0; i<mod->led_number; i++){
+		grid_led_set_timeout(mod, i, GRID_LED_LAYER_ALERT, timeout);
+	}
+
+}
+
 void grid_led_set_alert_frequency(struct grid_led_model* mod, uint8_t frequency){
 
 	//printf("ALERT\r\n");

@@ -923,7 +923,6 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 
 	}
 	
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 40);
 	//grid_debug_printf("read complete");
 	grid_keyboard_state.isenabled = 1;	
 	grid_sys_state.lastheader_pagediscard.status = 0;
@@ -938,6 +937,10 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 	grid_msg_packet_send_everywhere(&response);
 
 	nvm->read_bulk_status = 0;
+
+	// phase out the animation
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+	grid_led_set_alert_timeout_automatic(&grid_led_state);
 }
 
 
@@ -946,11 +949,10 @@ void grid_nvm_ui_bulk_pagestore_init(struct grid_nvm_model* nvm, struct grid_ui_
 
 	nvm->store_bulk_status = 1;
 
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
-	grid_led_set_alert_frequency(&grid_led_state, -8);	
-	for (uint8_t i = 0; i<grid_led_state.led_number; i++){
-		grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
-	}
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);		
+	grid_led_set_alert_frequency(&grid_led_state, -4);	
+
+
 
 }
 
@@ -1051,8 +1053,9 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 	grid_keyboard_state.isenabled = 1;	
 	grid_sys_state.lastheader_pagestore.status = 0;
 
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 127);
-		
+	// phase out the animation
+	grid_led_set_alert_timeout_automatic(&grid_led_state);
+
 }
 
 
@@ -1064,10 +1067,7 @@ void grid_nvm_ui_bulk_pageclear_init(struct grid_nvm_model* nvm, struct grid_ui_
 	nvm->clear_bulk_status = 1;
 
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
-	grid_led_set_alert_frequency(&grid_led_state, -8);	
-	for (uint8_t i = 0; i<grid_led_state.led_number; i++){
-		grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
-	}
+	grid_led_set_alert_frequency(&grid_led_state, -4);	
 
 }
 
@@ -1132,14 +1132,10 @@ void grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 	grid_sys_state.lastheader_pageclear.status = 0;
 
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 127);
 
 	grid_ui_page_load(ui, nvm, ui->page_activepage);
 		
 }
-
-
-
 
 
 void grid_nvm_ui_bulk_nvmerase_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
@@ -1235,9 +1231,38 @@ void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_m
 	
 }
 
-
-
 uint8_t grid_nvm_is_ready(struct grid_nvm_model* nvm){
 
 	return hri_nvmctrl_get_STATUS_READY_bit(nvm->flash->dev.hw);
 }
+
+uint8_t grid_nvm_ui_bluk_anything_is_in_progress(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
+
+	if (grid_nvm_ui_bulk_nvmerase_is_in_progress(nvm, ui)){
+		return 1;
+	}
+	
+	if (grid_nvm_ui_bulk_pageclear_is_in_progress(nvm, ui)){
+		return 1;
+	}
+
+	if (grid_nvm_ui_bulk_pageread_is_in_progress(nvm, ui)){
+		return 1;
+	}
+	
+	if (grid_nvm_ui_bulk_pagestore_is_in_progress(nvm, ui)){
+		return 1;
+	}
+
+	// if (grid_nvm_ui_bulk_nvmdefrag_is_in_progress(nvm, ui)){
+	// 	return 1;
+	// }
+
+	// Return 0 if nothing is in progress
+	return 0;
+
+
+}
+
+
+

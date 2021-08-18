@@ -17,6 +17,7 @@
 #define GRID_LED_COLOR_GREEN	0,255,0
 #define GRID_LED_COLOR_BLUE		0,0,255
 #define GRID_LED_COLOR_WHITE	255,255,255
+#define GRID_LED_COLOR_WHITE_DIM	127,127,127
 
 struct LED_color{
 	uint8_t r;
@@ -98,6 +99,9 @@ void grid_led_tick(struct grid_led_model* mod);
 
 
 void grid_led_set_alert(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_t b, uint16_t duration);
+
+void grid_led_set_alert_timeout(struct grid_led_model* mod, uint8_t timeout);
+void grid_led_set_alert_timeout_automatic(struct grid_led_model* mod);
 void grid_led_set_alert_frequency(struct grid_led_model* mod, uint8_t frequency);
 void grid_led_set_alert_phase(struct grid_led_model* mod, uint8_t phase);
 // WRITING THE SMART BUFFER

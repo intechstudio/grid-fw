@@ -1878,14 +1878,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 				}	
 				else if (msg_class == GRID_CLASS_NVMERASE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+
 				
-					printf("curent_length=%d\r\n", current_length);
-
-
-					if (grid_nvm_ui_bulk_nvmerase_is_in_progress(&grid_nvm_state, &grid_ui_state)){
-						grid_debug_printf("Warning: Erase: Already in progress!");
-					}
-
 					if (current_length==5){ // erase all nvm configs
 
 						grid_sys_state.lastheader_nvmerase.status = -1;
@@ -1895,11 +1889,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 					}
 					else{
-						grid_debug_printf("Warning: Erase: Invalid params!");
-						// invalid params;
+						grid_debug_printf("Erase: Invalid params!");
 					}
-
-
+					
 
 				}		
 				else if (msg_class == GRID_CLASS_NVMERASE_code && msg_instr == GRID_INSTR_CHECK_code && (position_is_me || position_is_global)){

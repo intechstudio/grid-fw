@@ -133,8 +133,21 @@ void grid_module_common_init(void){
 	//enable pwr!
 	gpio_set_pin_level(UI_PWR_EN, true);
 
+	// set priorities for all of the UI related interrupts
 
-	// ADC SETUP	
+	grid_d51_nvic_set_interrupt_priority(ADC0_0_IRQn, 1); 
+	grid_d51_nvic_set_interrupt_priority(ADC0_1_IRQn, 1); 
+	grid_d51_nvic_set_interrupt_priority(ADC1_0_IRQn, 1); 
+	grid_d51_nvic_set_interrupt_priority(ADC1_1_IRQn, 1); 
+
+	grid_d51_nvic_set_interrupt_priority(SERCOM3_0_IRQn, 1); 
+	grid_d51_nvic_set_interrupt_priority(SERCOM3_1_IRQn, 1); 
+	grid_d51_nvic_set_interrupt_priority(SERCOM3_2_IRQn, 1); // SERCOM3_2_IRQn handles reading encoders
+	grid_d51_nvic_set_interrupt_priority(SERCOM3_3_IRQn, 1); 
+
+	// disable ui interrupts
+	grid_d51_nvic_set_interrupt_priority_mask(1);
+
 	
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevC){
 		printf("Init Module: PO16");
