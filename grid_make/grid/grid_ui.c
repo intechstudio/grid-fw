@@ -651,6 +651,15 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 
 		struct grid_ui_element* ele = &grid_ui_state.element_list[i];
 
+		ele->timer_event_helper = 0; // stop the event's timer
+
+		// clear all of the pending events for the element
+		for (uint8_t j = 0; j < ele->event_list_length; j++){
+			struct grid_ui_event* eve = &ele->event_list[j];
+
+			grid_ui_event_reset(eve);
+
+		}	
 
 
 		uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
