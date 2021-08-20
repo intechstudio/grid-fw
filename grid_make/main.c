@@ -673,16 +673,16 @@ int main(void)
 	grid_ui_state.task = grid_ui_task;
 
 
-	#ifdef DGRID_BUILD_UNKNOWN
+	#ifdef GRID_BUILD_UNKNOWN
 		printf("\r\n##Build: Unknown##\r\n\r\n");
 	#endif
-	#ifdef DGRID_BUILD_NIGHTLY
+	#ifdef GRID_BUILD_NIGHTLY
 		printf("\r\n##Build: Nightly##\r\n\r\n");
 	#endif
-	#ifdef DGRID_BUILD_DEBUG
+	#ifdef GRID_BUILD_DEBUG
 		printf("\r\n##Build: Debug##\r\n\r\n");
 	#endif
-	#ifdef DGRID_BUILD_RELEASE
+	#ifdef GRID_BUILD_RELEASE
 		printf("\r\n##Build: Release##\r\n\r\n");
 	#endif
 

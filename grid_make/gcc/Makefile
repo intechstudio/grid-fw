@@ -1,5 +1,4 @@
-GRID_DEFINES = -DGRID_BUILD_UNKNOWN
-
+GRID_DEFINES = -DGRID
 
 SUB_DIRS +=  \
 \
@@ -654,23 +653,50 @@ ifneq ($(strip $(DEPS)),)
 endif
 endif
 
+
 $(SUB_DIRS):
 	$(MK_DIR) "$@"
 
 clean:
+	rm -f lastconfig.txt
 	rm -f $(OBJS_AS_ARGS)
 	rm -f $(OUTPUT_FILE_PATH)
 	rm -f $(DEPS_AS_ARGS)
 	rm -f $(OUTPUT_FILE_NAME).a $(OUTPUT_FILE_NAME).hex $(OUTPUT_FILE_NAME).bin \
         $(OUTPUT_FILE_NAME).lss $(OUTPUT_FILE_NAME).eep $(OUTPUT_FILE_NAME).map \
         $(OUTPUT_FILE_NAME).srec
-debug:
-	arm-none-eabi-gdb -iex "target extended-remote localhost:3333" AtmelStart.elf
-nightly:
+
+# ================== NIGHTLY WITH AUTOUPLOAD =================
+nightly: GRID_DEFINES = -DGRID_BUILD_NIGHTLY
+ifneq (nightly, $(file < lastconfig.txt))
+nightly: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) nightly_post
+else
+nightly: $(SUB_DIRS) $(OUTPUT_FILE_PATH) nightly_post
+endif
+nightly_post: 
+	@echo "nightly" > lastconfig.txt
 	python3 ./../buildscripts/macro2json.py ./../grid/grid_protocol.h ./../../../grid-protocol/grid_protocol_nightly.json
 	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_nightly.uf2 ./AtmelStart.bin
 	cp ./../../binary/grid_nightly.uf2 /media/${shell whoami}/GRID
-release:
+
+# ================== DEBUG WITH AUTOGDB =================
+debug: GRID_DEFINES = -DGRID_BUILD_DEBUG
+ifneq (debug, $(file < lastconfig.txt))
+debug: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) debug_post
+else
+debug: $(SUB_DIRS) $(OUTPUT_FILE_PATH) debug_post
+endif
+debug_post: 
+	arm-none-eabi-gdb -iex "target extended-remote localhost:3333" AtmelStart.elf
+
+# ================== RELEASE WITH AUTOUPLOAD =================
+release: GRID_DEFINES = -DGRID_BUILD_RELEASE
+ifneq (release, $(file < lastconfig.txt))
+release: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
+else
+release: $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
+endif
+release_post:
 	python3 ./../buildscripts/macro2json.py ./../grid/grid_protocol.h ./../../../grid-protocol/grid_protocol_release.json
 	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_release.uf2 ./AtmelStart.bin
 
