@@ -383,7 +383,7 @@ GRID_NVM_TOC : Table of Contents
 
 */
 
-void grid_nvm_toc_init(struct grid_nvm_model* mod){
+void grid_nvm_toc_init(struct grid_nvm_model* nvm){
 
 	uint8_t flash_read_buffer[GRID_NVM_PAGE_SIZE] = {255};
 
@@ -424,7 +424,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 	}
 
 
-	mod->next_write_offset = last_used_page_offset*GRID_NVM_PAGE_OFFSET + last_used_byte_offset + 8; // +8 because we want to write to the next word after the last used word
+	nvm->next_write_offset = last_used_page_offset*GRID_NVM_PAGE_OFFSET + last_used_byte_offset + 8; // +8 because we want to write to the next word after the last used word
 
 
 	// Read through the whole valid configuration area and parse valid configs into TOC
@@ -436,7 +436,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 	for (uint32_t i=0; i<=last_used_page_offset; i++){ // <= because we want to check the last_used_page too
 
 		CRITICAL_SECTION_ENTER()	
-		flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + i*GRID_NVM_PAGE_SIZE, flash_read_buffer, GRID_NVM_PAGE_SIZE);
+		flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + i*GRID_NVM_PAGE_SIZE, flash_read_buffer, GRID_NVM_PAGE_SIZE);
 		CRITICAL_SECTION_LEAVE()	
 
 		for (uint16_t j=0; j<GRID_NVM_PAGE_SIZE; j++){
@@ -454,7 +454,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 					// read from flash, because the whole header is not in the page
 
 					CRITICAL_SECTION_ENTER()	
-					flash_read(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current_offset, temp_buffer, 19);
+					flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current_offset, temp_buffer, 19);
 					CRITICAL_SECTION_LEAVE()	
 	
 				}
@@ -467,7 +467,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 					uint8_t page_number = 0;
 					uint8_t element_number = 0;
 					uint8_t event_type = 0;
-					uint16_t action_length = 0;
+					uint16_t config_length = 0;
 
 
 					uint8_t vmajor = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
@@ -485,10 +485,31 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 					page_number = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
 					element_number = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
 					event_type = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
-					action_length = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
+					config_length = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
 
-					grid_nvm_toc_entry_create(&grid_nvm_state, page_number, element_number, event_type, current_offset, action_length);
+					uint8_t frist_character = current_header[GRID_CLASS_CONFIG_ACTIONSTRING_offset];
 
+					printf("\r\nFIRSTCHARACTER: %d : %c \r\n\r\n", frist_character, frist_character);
+
+					if (frist_character==GRID_CONST_ETX){
+						printf("\r\nETX -> Default config marker!! \r\n\r\n");
+						// this is default config
+						struct grid_nvm_toc_entry* entry = NULL;
+						entry = grid_nvm_toc_entry_find(nvm, page_number, element_number,event_type);
+						
+						if (entry != NULL){
+							grid_nvm_toc_entry_remove(nvm, entry);
+						}
+						else{
+
+						}
+					}
+					else{
+						grid_nvm_toc_entry_create(&grid_nvm_state, page_number, element_number, event_type, current_offset, config_length);
+
+					}
+
+			
 					
 				}
 
@@ -505,7 +526,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* mod){
 
 	uint8_t pagecount = 4; // by default allocate 4 pages
 
-	struct grid_nvm_toc_entry* current = mod->toc_head;
+	struct grid_nvm_toc_entry* current = nvm->toc_head;
 
 	while (current != NULL)
 	{
@@ -565,7 +586,7 @@ uint32_t grid_nvm_config_mock(struct grid_nvm_model* mod){
 
 
 
-uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, uint8_t element_number, uint8_t event_type, uint8_t* actionstring){
+uint32_t grid_nvm_config_store(struct grid_nvm_model* nvm, uint8_t page_number, uint8_t element_number, uint8_t event_type, uint8_t* actionstring){
 
 
 	uint8_t buf[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
@@ -583,8 +604,6 @@ uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, 
 	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type, NULL);
 
 	len = strlen(buf);
-
-	// append random length of fake actionstrings
 	
 	strcpy(&buf[len], actionstring);
 
@@ -601,31 +620,41 @@ uint32_t grid_nvm_config_store(struct grid_nvm_model* mod, uint8_t page_number, 
 
 	//printf("Config frame len: %d -> %s\r\n", len, buf);
 
-	grid_nvm_toc_debug(mod);
+	grid_nvm_toc_debug(nvm);
 
 	struct grid_nvm_toc_entry* entry = NULL;
 
 	entry = grid_nvm_toc_entry_find(&grid_nvm_state, page_number, element_number, event_type);
 
 
-	uint32_t append_offset = grid_nvm_append(mod, buf, config_length);
+	uint32_t append_offset = grid_nvm_append(nvm, buf, config_length);
 
-	if (entry == NULL){
-
-		//printf("NEW\r\n");
-		grid_nvm_toc_entry_create(&grid_nvm_state, page_number, element_number, event_type, append_offset, config_length);
-
+	if (strlen(actionstring) == 0){
+		printf("STORE: No Need To Create Toc (Default) \r\n");
+		grid_nvm_toc_entry_remove(nvm, entry);
 	}
 	else{
 
-		//printf("UPDATE %d %d %d :  0x%x to 0x%x %d\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, append_offset, config_length);
-		grid_nvm_clear(mod, entry->config_string_offset, entry->config_string_length);
-		grid_nvm_toc_entry_update(entry, append_offset, config_length);
+		if (entry == NULL){
+
+			//printf("NEW\r\n");
+			grid_nvm_toc_entry_create(&grid_nvm_state, page_number, element_number, event_type, append_offset, config_length);
+
+		}
+		else{
+
+			//printf("UPDATE %d %d %d :  0x%x to 0x%x %d\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, append_offset, config_length);
 		
+			// actually we don't want to clear previous, to preserve config history
+			//grid_nvm_clear(mod, entry->config_string_offset, entry->config_string_length);
+
+
+			grid_nvm_toc_entry_update(entry, append_offset, config_length);
+			
+		}
+
 	}
-
-
-	grid_nvm_toc_debug(mod);
+	grid_nvm_toc_debug(nvm);
 
 }
 
@@ -767,11 +796,28 @@ uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* nvm, struct grid_nvm_t
 		return -1;
 	}
 
+	// don't clear
+	// grid_nvm_clear(nvm, entry->config_string_offset, entry->config_string_length);
+
+	// append a new empty config to signal that it was cleard
+	grid_nvm_config_store(nvm, entry->page_id, entry->element_id, entry->event_type, "");
+
+	return 0;
+}
+
+
+uint8_t grid_nvm_toc_entry_remove(struct grid_nvm_model* nvm, struct grid_nvm_toc_entry* entry){
+
+	if (entry == NULL){
+		return -1;
+	}
+
 	if (nvm->toc_count > 0){
 		nvm->toc_count--;
 	}
 
-	grid_nvm_clear(nvm, entry->config_string_offset, entry->config_string_length);
+
+
 
 	if (entry->prev != NULL){
 		entry->prev->next = entry->next;
@@ -788,7 +834,10 @@ uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* nvm, struct grid_nvm_t
 	free(entry);
 
 	return 0;
+
+	
 }
+
 
 
 void grid_nvm_toc_debug(struct grid_nvm_model* mod){
@@ -1034,7 +1083,9 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 					struct grid_nvm_toc_entry* entry = grid_nvm_toc_entry_find(nvm, ele->parent->page_activepage, ele->index, eve->type);
 					if (entry != NULL){
 						printf("DEFAULT, FOUND - SO DESTROY! %d %d\r\n", ele->index, eve->index);
-						grid_nvm_toc_entry_destroy(nvm, entry);
+
+						grid_nvm_config_store(nvm, entry->page_id, entry->element_id, entry->event_type, "");
+	
 					}
 					else{
 

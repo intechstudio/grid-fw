@@ -632,8 +632,10 @@ int main(void)
 	//  x/512xb 0x80000
 	grid_module_common_init();
 
-	struct grid_ui_element* ele = &grid_ui_state.element_list[2];
+	printf("Start TOC init\r\n");
 	grid_nvm_toc_init(&grid_nvm_state);
+	grid_nvm_toc_debug(&grid_nvm_state);
+	printf("Done TOC init\r\n");
 	grid_ui_page_load(&grid_ui_state, &grid_nvm_state, 0); //load page 0
 
 	while (grid_nvm_ui_bulk_pageread_is_in_progress(&grid_nvm_state, &grid_ui_state))

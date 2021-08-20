@@ -75,12 +75,18 @@ struct grid_nvm_model{
 };
 
 
-void grid_nvm_toc_init(struct grid_nvm_model* mod);
-uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type, uint32_t config_string_offset, uint16_t config_string_length);
-struct grid_nvm_toc_entry* grid_nvm_toc_entry_find(struct grid_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type);
+void grid_nvm_toc_init(struct grid_nvm_model* nvm);
+uint8_t grid_nvm_toc_entry_create(struct grid_nvm_model* nvm, uint8_t page_id, uint8_t element_id, uint8_t event_type, uint32_t config_string_offset, uint16_t config_string_length);
+struct grid_nvm_toc_entry* grid_nvm_toc_entry_find(struct grid_nvm_model* nvm, uint8_t page_id, uint8_t element_id, uint8_t event_type);
 uint8_t grid_nvm_toc_entry_update(struct grid_nvm_toc_entry* entry, uint32_t config_string_offset, uint16_t config_string_length);
 
+// Destroy the TOC entry + append defaultconfiguration to NVM
 uint8_t grid_nvm_toc_entry_destroy(struct grid_nvm_model* nvm, struct grid_nvm_toc_entry* entry);
+
+// Only remove the TOC entry from the list, do not touch NVM
+uint8_t grid_nvm_toc_entry_remove(struct grid_nvm_model* nvm, struct grid_nvm_toc_entry* entry);
+
+
 
 uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct grid_nvm_toc_entry* entry, uint8_t* targetstring);
 
