@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=GridTerminal
+Comment=
+Exec=xfce4-terminal --maximize -e "picocom -b 2000000 -r -l /dev/ttyUSB0"
+Icon=gnome-nettool
+Path=
+Terminal=false
+StartupNotify=false

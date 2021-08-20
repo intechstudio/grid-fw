@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=OpenOCD
+Comment=
+Exec=xfce4-terminal --default-working-directory "/home/suku/Documents/grid-fw/build_scripts/" --maximize -e "openocd"
+Icon=org.freedesktop.fwupd
+Path=
+Terminal=true
+StartupNotify=false
