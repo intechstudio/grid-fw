@@ -687,9 +687,10 @@ else
 debug: $(SUB_DIRS) $(OUTPUT_FILE_PATH) debug_post
 endif
 debug_post: 
+	@echo "debug" > lastconfig.txt
 	arm-none-eabi-gdb -iex "target extended-remote localhost:3333" AtmelStart.elf
 
-# ================== RELEASE WITH AUTOUPLOAD =================
+# ================== RELEASE =================
 release: GRID_DEFINES = -DGRID_BUILD_RELEASE
 ifneq (release, $(file < lastconfig.txt))
 release: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
@@ -697,6 +698,7 @@ else
 release: $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
 endif
 release_post:
+	@echo "release" > lastconfig.txt
 	python3 ./../buildscripts/macro2json.py ./../grid/grid_protocol.h ./../../../grid-protocol/grid_protocol_release.json
 	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_release.uf2 ./AtmelStart.bin
 
