@@ -680,8 +680,24 @@ void Dummy_Handler(void)
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
+
 void Dummy_Handler_NonMaskableInt_Handler(void){while (1) {}}
-void Dummy_Handler_HardFault_Handler(void){while (1) {}}
+
+void Dummy_Handler_HardFault_Handler(void){
+
+	#pragma GCC diagnostic ignored "-Wunused-variable"
+	volatile uint32_t ipsr = __get_IPSR();
+	#pragma GCC diagnostic ignored "-Wunused-variable"
+	volatile uint32_t msp = __get_MSP();
+	#pragma GCC diagnostic ignored "-Wunused-variable"
+	volatile uint32_t psp = __get_PSP();
+	#pragma GCC diagnostic ignored "-Wunused-variable"
+	volatile uint32_t hfsr = *(uint32_t*)(0xE000ED2C);
+
+	while (1) {}
+
+}
+
 void Dummy_Handler_MemManagement_Handler(void){while (1) {}}
 void Dummy_Handler_BusFault_Handler(void){while (1) {}}
 void Dummy_Handler_UsageFault_Handler(void){while (1) {}}
