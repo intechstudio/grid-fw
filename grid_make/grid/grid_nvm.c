@@ -446,7 +446,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* nvm){
 
 			if (flash_read_buffer[j] == GRID_CONST_STX){
 
-				uint8_t temp_buffer[20] = {0};
+				uint8_t temp_buffer[33] = {0};
 
 				uint8_t* current_header = temp_buffer;
 
@@ -454,7 +454,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* nvm){
 					// read from flash, because the whole header is not in the page
 
 					CRITICAL_SECTION_ENTER()	
-					flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current_offset, temp_buffer, 19);
+					flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS + current_offset, temp_buffer, 32);
 					CRITICAL_SECTION_LEAVE()	
 	
 				}
@@ -482,14 +482,19 @@ void grid_nvm_toc_init(struct grid_nvm_model* nvm){
 					}
 
 
+
 					page_number = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
 					element_number = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
 					event_type = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
 					config_length = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
 
-					uint8_t frist_character = current_header[GRID_CLASS_CONFIG_ACTIONSTRING_offset];
 
-					printf("\r\nFIRSTCHARACTER: %d : %c \r\n\r\n", frist_character, frist_character);
+					if (config_length == 0){
+						
+						printf("\r\nLENGTH 0: %s\r\n\r\n", temp_buffer);
+					}
+
+					uint8_t frist_character = current_header[GRID_CLASS_CONFIG_ACTIONSTRING_offset];
 
 					if (frist_character==GRID_CONST_ETX){
 						printf("\r\nETX -> Default config marker!! \r\n\r\n");
@@ -505,6 +510,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* nvm){
 						}
 					}
 					else{
+
 						grid_nvm_toc_entry_create(&grid_nvm_state, page_number, element_number, event_type, current_offset, config_length);
 
 					}
@@ -872,8 +878,24 @@ uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct g
 	flash_read(nvm->flash, GRID_NVM_LOCAL_BASE_ADDRESS+entry->config_string_offset+GRID_CLASS_CONFIG_ACTIONSTRING_offset, targetstring, entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset-1); //-1 etx
 	CRITICAL_SECTION_LEAVE()
 
-	targetstring[entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset] = '\0';
-	
+	uint16_t length = entry->config_string_length-GRID_CLASS_CONFIG_ACTIONSTRING_offset-1;
+
+	targetstring[length] = '\0';
+
+
+	for (uint16_t i = 0; i<length; i++){
+		if (targetstring[i] < 32 || targetstring[i] > 127){
+
+			printf("char: @%d is %d length: %d\r\n", i,  targetstring[i], length);
+
+			grid_debug_printf("toc invalid g a %d --- char: @%d is %d length: %d", entry->config_string_length, i,  targetstring[i], length);
+
+			printf("toc invalid g a %d %s\r\n", entry->config_string_length, targetstring);
+
+			break;
+		}
+	}
+
 	//printf("toc g a %d %s\r\n", entry->config_string_length, targetstring);
 
 	return strlen(targetstring);

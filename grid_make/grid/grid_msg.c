@@ -393,3 +393,12 @@ uint8_t	grid_msg_packet_send_everywhere(struct grid_msg* msg){
 	
 }
 
+
+
+uint8_t grid_msg_string_validate(uint8_t* packet){
+
+// Cannot check everything because we don't have time for that.
+// Later we might extend 
+
+	return 0;
+}
