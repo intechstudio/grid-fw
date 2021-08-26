@@ -82,9 +82,9 @@ uint32_t grid_keyboard_tx_rtc_lasttimestamp;
 
 
 
-#define GRID_KEYBOARD_TX_BUFFER_length 300
+#define GRID_KEYBOARD_TX_BUFFER_length 100
 
-struct grid_keyboard_event_desc grid_keyboard_tx_buffer[GRID_MIDI_TX_BUFFER_length];
+struct grid_keyboard_event_desc grid_keyboard_tx_buffer[GRID_KEYBOARD_TX_BUFFER_length];
 
 void grid_keyboard_buffer_init(struct grid_keyboard_event_desc* buf, uint16_t length);
 
