@@ -1219,6 +1219,30 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				
 													
 			}
+			// else if (msg_class == GRID_CLASS_HIDMOUSEBUTTONIMMEDIATE_code && msg_instr == GRID_INSTR_EXECUTE_code){
+					
+										
+			// 	uint8_t state = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDMOUSEBUTTON_STATE_offset, GRID_CLASS_HIDMOUSEBUTTON_STATE_length);
+			// 	uint8_t button = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_offset ,	GRID_CLASS_HIDMOUSEBUTTON_BUTTON_length);
+			
+			// 	//grid_debug_printf("MouseButton: %d %d", state, button);	
+				
+			// 	hiddf_mouse_button_change(state, button);
+													
+			// }
+			// else if (msg_class == GRID_CLASS_HIDMOUSEMOVEIMMEDIATE_code && msg_instr == GRID_INSTR_EXECUTE_code){
+					
+										
+			// 	uint8_t position_raw = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDMOUSEMOVE_POSITION_offset, GRID_CLASS_HIDMOUSEMOVE_POSITION_length);
+			// 	uint8_t axis = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDMOUSEMOVE_AXIS_offset ,	GRID_CLASS_HIDMOUSEMOVE_AXIS_length);
+			
+			// 	int8_t position = position_raw - 128;
+
+			// 	//grid_debug_printf("MouseMove: %d %d", position, axis);	
+				
+			// 	hiddf_mouse_move(position, axis);
+													
+			// }
 			else if (msg_class == GRID_CLASS_HIDMOUSEBUTTON_code && msg_instr == GRID_INSTR_EXECUTE_code){
 					
 										
@@ -1226,21 +1250,32 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				uint8_t button = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_offset ,	GRID_CLASS_HIDMOUSEBUTTON_BUTTON_length);
 			
 				//grid_debug_printf("MouseButton: %d %d", state, button);	
-				
-				hiddf_mouse_button_change(state, button);
+
+				struct grid_keyboard_event_desc key;
+			
+				key.ismodifier 	= 3; // 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
+				key.ispressed 	= state;
+				key.keycode 	= button;
+				key.delay 		= 1;
+
+				grid_keyboard_tx_push(key);
 													
 			}
 			else if (msg_class == GRID_CLASS_HIDMOUSEMOVE_code && msg_instr == GRID_INSTR_EXECUTE_code){
-					
-										
+											
 				uint8_t position_raw = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDMOUSEMOVE_POSITION_offset, GRID_CLASS_HIDMOUSEMOVE_POSITION_length);
 				uint8_t axis = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDMOUSEMOVE_AXIS_offset ,	GRID_CLASS_HIDMOUSEMOVE_AXIS_length);
 			
 				int8_t position = position_raw - 128;
 
-				//grid_debug_printf("MouseMove: %d %d", position, axis);	
-				
-				hiddf_mouse_move(position, axis);
+				struct grid_keyboard_event_desc key;
+			
+				key.ismodifier 	= 2; // 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
+				key.ispressed 	= position_raw;
+				key.keycode 	= axis;
+				key.delay 		= 1;
+
+				grid_keyboard_tx_push(key);
 													
 			}
 			else if (msg_class == GRID_CLASS_HIDKEYBOARD_code && msg_instr == GRID_INSTR_EXECUTE_code){
@@ -1297,7 +1332,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 
 					}
 					else{
-						printf("invalid key_ismodifier parameter\r\n");
+						printf("invalid key_ismodifier parameter %d\r\n", key.ismodifier);
 					}
 					
 					// key change fifo buffer

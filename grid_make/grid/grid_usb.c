@@ -302,6 +302,7 @@ void grid_midi_buffer_init(struct grid_midi_event_desc* buf, uint16_t length){
 
 uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event){
 
+
 	grid_midi_tx_buffer[grid_midi_tx_write_index] = midi_event;
 	grid_midi_tx_write_index = (grid_midi_tx_write_index+1)%GRID_MIDI_TX_BUFFER_length;
 
@@ -411,6 +412,10 @@ void grid_keyboard_buffer_init(struct grid_keyboard_event_desc* buf, uint16_t le
 
 uint8_t grid_keyboard_tx_push(struct grid_keyboard_event_desc keyboard_event){
 
+	//printf("R: %d, W: %d\r\n", grid_midi_tx_read_index, grid_midi_tx_write_index);
+	//printf("kb tx R: %d, W: %d\r\n", grid_keyboard_tx_read_index, grid_keyboard_tx_write_index);
+
+
 
 	grid_keyboard_tx_buffer[grid_keyboard_tx_write_index] = keyboard_event;
 
@@ -442,12 +447,38 @@ uint8_t grid_keyboard_tx_pop(){
             
             grid_keyboard_tx_rtc_lasttimestamp = grid_sys_rtc_get_time(&grid_sys_state);
 
-			if (key.ismodifier != 0xf){
-				//printf("# K\r\n");
+			// 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
+
+			if (key.ismodifier == 0 || key.ismodifier == 1){
+
            		grid_keyboard_keychange(&grid_keyboard_state, &key);
 			}
+			else if(key.ismodifier == 2){ // mousemove
+
+				uint8_t axis = key.keycode; 
+				int8_t position = key.ispressed - 128;
+				hiddf_mouse_move(position, axis);
+
+				//printf("MouseMove: %d %d\r\n", position, axis);	
+
+
+			}
+			else if(key.ismodifier == 3){
+
+										
+				uint8_t state = key.ispressed;
+				uint8_t button = key.keycode;
+			
+				//printf("MouseButton: %d %d\r\n", state, button);	
+				
+				hiddf_mouse_button_change(state, button);
+
+			}
+			else if(key.ismodifier == 0xf){
+				// delay, nothing to do here
+			}
 			else{
-				//printf("# D\r\n");	
+				printf("Keyboard Mouse Invalid\r\n");	
 			}
 
 
