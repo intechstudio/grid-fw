@@ -59,7 +59,6 @@ static void usb_task_inner(struct grid_d51_task* task){
 
 	audiodf_midi_read(midi_rx_buffer,16);
 
-	
 
 	
 	midi_rx_length = strlen(midi_rx_buffer);		
