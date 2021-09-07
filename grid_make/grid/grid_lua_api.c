@@ -1280,7 +1280,7 @@ uint8_t grid_lua_ui_init_po16(struct grid_lua_model* mod){
     //initialize the system element
     grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[16] = {index = 16}");
     grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], encoder_meta)");
+    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], system_meta)");
 
 }
 
@@ -1303,7 +1303,7 @@ uint8_t grid_lua_ui_init_bu16(struct grid_lua_model* mod){
     //initialize the system element
     grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[16] = {index = 16}");
     grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], encoder_meta)");
+    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], system_meta)");
 }
 
 uint8_t grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
@@ -1330,7 +1330,7 @@ uint8_t grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
     //initialize the system element
     grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[12] = {index = 12}");
     grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[12], encoder_meta)");
+    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[12], system_meta)");
 
 }
 
@@ -1357,7 +1357,7 @@ uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod){
     //initialize the system element
     grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[16] = {index = 16}");
     grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], encoder_meta)");
+    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], system_meta)");
 }
 
 
