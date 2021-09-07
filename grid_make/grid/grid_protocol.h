@@ -264,6 +264,9 @@
 #define GRID_LUA_FNC_G_TIMER_STOP_human 		"timer_stop"
 #define GRID_LUA_FNC_G_TIMER_STOP_fnptr 		l_grid_timer_stop
 
+#define GRID_LUA_FNC_G_EVENT_TRIGGER_short 		"get"
+#define GRID_LUA_FNC_G_EVENT_TRIGGER_human 		"event_trigger"
+#define GRID_LUA_FNC_G_EVENT_TRIGGER_fnptr 		l_grid_event_trigger
 
 #define GRID_LUA_FNC_G_LOOKUP_short 	"glut"
 #define GRID_LUA_FNC_G_LOOKUP_human 	"lookup"
@@ -433,7 +436,8 @@ stored config date
 	"GRID_LUA_FNC_ACTION_TIMER_short" = function (self) print('undefined action') end,\
 	\
 	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
-	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
+	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end,\
+	get = function (self,a) "GRID_LUA_FNC_G_EVENT_TRIGGER_short"(self.index,a) end\
 	\
     }}"
 
@@ -504,7 +508,8 @@ stored config date
 	"GRID_LUA_FNC_ACTION_TIMER_short" = function (self) print('undefined action') end,\
 	\
 	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
-	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
+	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end,\
+	get = function (self,a) "GRID_LUA_FNC_G_EVENT_TRIGGER_short"(self.index,a) end\
     }}"
 
 #define GRID_LUA_P_LIST_deinit "init_potmeter = nil"
@@ -572,7 +577,8 @@ stored config date
 	"GRID_LUA_FNC_ACTION_TIMER_short" = function (self) print('undefined action') end,\
 	\
 	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
-	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
+	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end,\
+	get = function (self,a) "GRID_LUA_FNC_G_EVENT_TRIGGER_short"(self.index,a) end\
     }}"
 
 #define GRID_LUA_B_LIST_deinit "init_button = nil"
@@ -586,7 +592,8 @@ stored config date
 	"GRID_LUA_FNC_ACTION_TIMER_short" = function (self) print('undefined action') end,\
 	\
 	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
-	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end\
+	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end,\
+	get = function (self,a) "GRID_LUA_FNC_G_EVENT_TRIGGER_short"(self.index,a) end\
     }}"
 
 #define GRID_LUA_SYS_LIST_deinit "init_system = nil"
