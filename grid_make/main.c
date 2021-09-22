@@ -606,9 +606,7 @@ int main(void)
 
 	// grid_nvm_erase_all(&grid_nvm_state);
 
-	if (sys_i2c_enabled){
-		uint8_t id = grid_fusb302_read_id(SYS_I2C_io);
-	}
+
 		
 	printf("Hardware test complete");
 
@@ -630,6 +628,10 @@ int main(void)
 
 	//  x/512xb 0x80000
 	grid_module_common_init();
+
+	if (sys_i2c_enabled){
+		uint8_t id = grid_fusb302_read_id(SYS_I2C_io);
+	}
 
 	printf("Start TOC init\r\n");
 	grid_nvm_toc_init(&grid_nvm_state);
@@ -732,10 +734,11 @@ int main(void)
 			grid_d51_nvic_debug_priorities();
 		}
 
-		// Touch Chip
-		// if (sys_i2c_enabled){
-		// 	grid_mxt144u_read_id(SYS_I2C_io);
-		// }
+		//Touch Chip
+		if (sys_i2c_enabled && loopcounter%100 == 0){
+			grid_mxt144u_read_id(SYS_I2C_io);
+			//grid_fusb302_read_id(SYS_I2C_io);
+		}
 		
 
 		usb_task_inner(grid_usb_task);
