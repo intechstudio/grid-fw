@@ -14,7 +14,8 @@
 #include "grid_module.h"
 
 
-void grid_hardwaretest_main();
+void grid_nvm_hardwaretest_main();
+void grid_interface_hardwaretest_main();
 
 void grid_hardwaretest_led_test_init(struct grid_led_model* mod, uint8_t num);
 

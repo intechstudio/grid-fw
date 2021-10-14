@@ -7,7 +7,49 @@
 
 #include "grid_hardwaretest.h"
 
-void grid_hardwaretest_main(){
+void grid_interface_hardwaretest_main(){
+	
+	grid_ui_state.page_activepage = grid_ui_state.page_count -2; 
+
+	printf("Hardware Test Init");
+	
+	grid_hardwaretest_led_test_init(&grid_led_state, 16);
+	
+	uint32_t counter = 0;
+	
+	uint8_t testmode = 1;
+	uint8_t button_last = 1;
+	uint8_t button_now = 1;
+	uint8_t mode_changed = 1;
+
+
+	uint8_t clear_in_progress = 1;
+	uint32_t clear_max_offset = GRID_NVM_LOCAL_END_ADDRESS;
+	uint32_t clear_address = GRID_NVM_LOCAL_BASE_ADDRESS;
+		
+
+	while(1){
+
+		if (gpio_get_pin_level(MAP_MODE) == 0){
+
+			return;		
+		}
+		else{
+			button_last = 1;
+		}
+			
+		grid_hardwaretest_port_test(counter);
+		grid_hardwaretest_led_test(&grid_led_state, counter);	
+		
+		
+		delay_ms(1);
+		
+		counter++;			
+		
+	}
+
+}
+void grid_nvm_hardwaretest_main(){
 	
 	printf("Hardware Test Init");
 	
