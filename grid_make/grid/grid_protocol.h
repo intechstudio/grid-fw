@@ -131,8 +131,8 @@
 
 #define GRID_INSTR_EXECUTE_code 0xE
 
-#define GRID_CLASS_length 3
-#define GRID_CLASS_offset 1
+#define GRID_PARAMETER_CLASSCODE_length 3
+#define GRID_PARAMETER_CLASSCODE_offset 1
 
 
 
@@ -789,6 +789,9 @@ enum grid_ui_event_t
 #define GRID_CLASS_DEBUGTEXT_frame_start "%c%03x_", GRID_CONST_STX, GRID_CLASS_DEBUGTEXT_code
 #define GRID_CLASS_DEBUGTEXT_frame_end "%c", GRID_CONST_ETX
 
+#define GRID_CLASS_DEBUGTEXT_TEXT_offset 5
+#define GRID_CLASS_DEBUGTEXT_TEXT_length -1
+
 // DEBUGTASK
 #define GRID_CLASS_DEBUGTASK_code 0x021
 #define GRID_CLASS_DEBUGTASK_frame_start "%c%03x_....", GRID_CONST_STX, GRID_CLASS_DEBUGTASK_code
@@ -901,7 +904,7 @@ enum grid_ui_event_t
 #define GRID_CLASS_CONFIG_ACTIONLENGTH_length 4
 
 #define GRID_CLASS_CONFIG_ACTIONSTRING_offset 21
-#define GRID_CLASS_CONFIG_ACTIONSTRING_length 0
+#define GRID_CLASS_CONFIG_ACTIONSTRING_length -1
 
 // =========== PAGE STORE =========== //
 #define GRID_CLASS_PAGESTORE_code 0x061

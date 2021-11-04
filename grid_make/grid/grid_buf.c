@@ -1195,7 +1195,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 		}
 		else if (message.body[i] == GRID_CONST_ETX && current_start!=0){
 			current_stop = i;
-			uint8_t msg_class = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_offset, GRID_CLASS_length);
+			uint8_t msg_class = grid_msg_text_get_parameter(&message, current_start, GRID_PARAMETER_CLASSCODE_offset, GRID_PARAMETER_CLASSCODE_length);
 			uint8_t msg_instr = grid_msg_text_get_parameter(&message, current_start, GRID_INSTR_offset, GRID_INSTR_length);
 											
 			if (msg_class == GRID_CLASS_MIDI_code && msg_instr == GRID_INSTR_EXECUTE_code){
@@ -1447,7 +1447,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				current_length		= current_stop-current_start;
 				stop_count++;
 
-				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_offset], GRID_CLASS_length, &error_flag);
+				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+GRID_PARAMETER_CLASSCODE_offset], GRID_PARAMETER_CLASSCODE_length, &error_flag);
 				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
 		
 
