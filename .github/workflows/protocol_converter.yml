@@ -32,5 +32,5 @@ jobs:
       - run: python ./.github/workflows/protocol_converter.py
 
       - name: Check file
-        run: |
+      - run: |
           cat -v out.json
