@@ -26,10 +26,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Check file
       - uses: actions/checkout@v2
+      - name: Checkout repository
+      
       - uses: actions/setup-python@v2
-      - run: python ./.github/workflows/protocol_converter.py
+      - name: Setup python
+        run: python ./.github/workflows/protocol_converter.py
 
       - name: Check file
       - run: |
