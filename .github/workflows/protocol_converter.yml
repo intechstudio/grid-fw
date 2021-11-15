@@ -46,14 +46,15 @@ jobs:
           cat -v grid_protocol_bot.json
           if git diff-index --quiet HEAD --; then
             # No changes
-            echo "changed=0" >> $GITHUB_ENV
+            echo "changed=$(0)" >> $GITHUB_ENV
           else
             # Changes           
             git add -A
             git commit -m "BOT protocol file synced from grid-fw repo"
             git push
-            echo "changed=1" >> $GITHUB_ENV
+            echo "changed=$(1)" >> $GITHUB_ENV
           fi
+          echo "CHANGED:  ${{ env.action_date }}"
           
       - uses: tsickert/discord-webhook@v4.0.0
         if: ${{ env.action_date }} == 1
