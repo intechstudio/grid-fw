@@ -27,10 +27,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - name: Checkout repository
         run: |
-          python ./.github/workflows/protocol_converter.py
+          git --version
+          git config --global user.email "bot@intech.studio"
+          git config --global user.name "Intech Bot"
+          git clone https://${{ secrets.PERSONALACCESSTOKEN }}@github.com/intechstudio/grid-protocol.git
+          ls
+      
+      - uses: actions/setup-python@v2
+      - name: Setup python
+        run: | 
+          python ./.github/workflows/protocol_converter.py grid_make/grid/grid_protocol.h grid-protocol/grid_protocol_bot.json
 
       - name: Check file
-      	run: |
-          cat -v out.json
+        run: |
+          cd grid-protocol
+          cat -v grid_protocol_bot.json
+          if git diff-index --quiet HEAD --; then
+            # No changes
+            echo "changed=false" >> $GITHUB_ENV
+          else
+            # Changes           
+            git add -A
+            git commit -m "BOT protocol file synced from grid-fw repo"
+            git push
+            echo "changed=true" >> $GITHUB_ENV
+          fi
+          echo "CHANGED:  ${{ env.changed }}"
+          
+      - uses: tsickert/discord-webhook@v4.0.0
+        if: env.changed == 'true'
+        with:
+          webhook-url: ${{ secrets.WEBHOOK_URL }}
+          content: "Hello, I just updated the GRID_PROTOCOL.json file! Please update the Submodules in the grid-editor repository!"
+          
