@@ -40,3 +40,4 @@ jobs:
         run: |
           ls
           cat -v out.json
+          git --version
