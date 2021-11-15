@@ -26,11 +26,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Check file
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
-        run: |
-          python ./.github/workflows/protocol_converter.py
+      - run: python ./.github/workflows/protocol_converter.py
 
       - name: Check file
-      	run: |
+        run: |
           cat -v out.json
