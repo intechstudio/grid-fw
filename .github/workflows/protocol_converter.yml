@@ -41,3 +41,5 @@ jobs:
           ls
           cat -v out.json
           git --version
+          git clone https://${{ secrets.PERSONALACCESSTOKEN }}@github.com/intechstudio/grid-protocol.git
+          ls
