@@ -48,3 +48,8 @@ jobs:
           git commit -m "BOT protocol file synced from grid-fw repo"
           git push
           
+      - uses: tsickert/discord-webhook@v4.0.0
+        with:
+          webhook-url: ${{ secrets.WEBHOOK_URL }}
+          content: "Hello, I just updated the GRID_PROTOCOL.json file! Please update the Submodules in the grid-editor repository!"
+          
