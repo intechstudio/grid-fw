@@ -28,10 +28,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Checkout repository
+        run: |
+          ls
       
       - uses: actions/setup-python@v2
       - name: Setup python
-        run: python ./.github/workflows/protocol_converter.py
+        run: | 
+          python ./.github/workflows/protocol_converter.py
 
       - name: Check file
       - run: |
