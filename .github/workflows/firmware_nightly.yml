@@ -31,3 +31,7 @@ jobs:
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
           release: '9-2020-q2' # <-- The compiler release to use
+
+      - name: Test ARM GCC
+        run: |
+          arm-none-eabi-gcc -v
