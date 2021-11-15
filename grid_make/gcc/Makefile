@@ -699,6 +699,5 @@ release: $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
 endif
 release_post:
 	@echo "release" > lastconfig.txt
-	python3 ./../buildscripts/macro2json.py ./../grid/grid_protocol.h ./../../../grid-protocol/grid_protocol_release.json
 	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_release.uf2 ./AtmelStart.bin
 
