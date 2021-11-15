@@ -54,10 +54,10 @@ jobs:
             git push
             echo "changed=$(1)" >> $GITHUB_ENV
           fi
-          echo "CHANGED:  ${{ env.action_date }}"
+          echo "CHANGED:  ${{ env.changed }}"
           
       - uses: tsickert/discord-webhook@v4.0.0
-        if: ${{ env.action_date }} == 1
+        if: ${{ env.changed }} == 1
         with:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
           content: "Hello, I just updated the GRID_PROTOCOL.json file! Please update the Submodules in the grid-editor repository!"
