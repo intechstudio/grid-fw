@@ -16,6 +16,7 @@ on:
   push:
     paths:
       - '.github/workflows/firmware_nightly.yml'
+      - 'grid_make/gcc/Makefile'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -35,4 +36,4 @@ jobs:
       - name: Test ARM GCC
         run: |
           arm-none-eabi-gcc -v
-          cd grid_make/gcc && make nightly
+          cd grid_make/gcc && make release
