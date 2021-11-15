@@ -35,3 +35,4 @@ jobs:
       - name: Test ARM GCC
         run: |
           arm-none-eabi-gcc -v
+          cd grid_make/gcc && make nightly
