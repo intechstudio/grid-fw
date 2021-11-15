@@ -35,3 +35,9 @@ jobs:
       - name: Setup python
         run: | 
           python ./.github/workflows/protocol_converter.py
+
+      - uses: actions/checkout@v2
+      - name: Check file
+      - run: |
+          ls
+          cat -v out.json
