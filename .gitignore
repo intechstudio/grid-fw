@@ -2,3 +2,5 @@ node_modules/
 /grid_toplevel/grid_toplevel/grid_toplevel.X/build/
 /grid_toplevel/grid_toplevel/grid_toplevel.X/dist/
 
+*/grid_make/gcc/*
+!*/grid_make/gcc/Makefile
