@@ -36,10 +36,19 @@ jobs:
       - name: Test ARM GCC
         run: |
           arm-none-eabi-gcc -v
-          cd grid_make/gcc && make release
-          
+          cd grid_make/gcc && make nightly_automation
+
+      - name: Set Date
+        run: echo "action_date=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
+        
+      - name: Copy and rename the artifact
+        run: |
+          cd ..
+          cd ..
+          cp binary/grid_nightly.uf2 grid_nightly_${{ env.action_date }}.uf2"
+
       - uses: tsickert/discord-webhook@v4.0.0
         with:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
           content: "Heyo, the Nightly Firmware is build ready!"
-          filename: "binary/grid_release.uf2"
+          filename: "grid_nightly_${{ env.action_date }}.uf2"
