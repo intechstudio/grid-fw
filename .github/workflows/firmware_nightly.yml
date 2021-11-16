@@ -44,9 +44,6 @@ jobs:
       - name: Copy and rename the artifact
         run: |
           ls
-          cd ..
-          cd ..
-          ls
           cp binary/grid_nightly.uf2 grid_nightly_${{ env.action_date }}.uf2
 
       - uses: tsickert/discord-webhook@v4.0.0
