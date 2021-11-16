@@ -675,7 +675,6 @@ nightly: $(SUB_DIRS) $(OUTPUT_FILE_PATH) nightly_post
 endif
 nightly_post: 
 	@echo "nightly" > lastconfig.txt
-	python3 ./../buildscripts/macro2json.py ./../grid/grid_protocol.h ./../../../grid-protocol/grid_protocol_nightly.json
 	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_nightly.uf2 ./AtmelStart.bin
 	cp ./../../binary/grid_nightly.uf2 /media/${shell whoami}/GRID
 
@@ -701,3 +700,14 @@ release_post:
 	@echo "release" > lastconfig.txt
 	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_release.uf2 ./AtmelStart.bin
 
+# ================== NIGHTLY FOR AUTOMATION =================
+nightly_automation: GRID_DEFINES = -DGRID_BUILD_NIGHTLY
+nightly_automation: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) nightly_automation_post
+nightly_automation_post: 
+	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_nightly.uf2 ./AtmelStart.bin
+
+# ================== RELEASE FOR AUTOMATION =================
+release_automation: GRID_DEFINES = -DGRID_BUILD_RELEASE
+release_automation: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_automation_post
+release_automation_post:
+	python3 ./../buildscripts/uf2conv.py -c -b 0x4000 -o ./../../binary/grid_release.uf2 ./AtmelStart.bin
