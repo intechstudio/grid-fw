@@ -792,7 +792,7 @@ enum grid_ui_event_t
 #define GRID_CLASS_DEBUGTEXT_frame_end "%c", GRID_CONST_ETX
 
 #define GRID_CLASS_DEBUGTEXT_TEXT_offset 5
-#define GRID_CLASS_DEBUGTEXT_TEXT_length -1
+#define GRID_CLASS_DEBUGTEXT_TEXT_length 0
 
 // DEBUGTASK
 #define GRID_CLASS_DEBUGTASK_code 0x021
@@ -906,7 +906,7 @@ enum grid_ui_event_t
 #define GRID_CLASS_CONFIG_ACTIONLENGTH_length 4
 
 #define GRID_CLASS_CONFIG_ACTIONSTRING_offset 21
-#define GRID_CLASS_CONFIG_ACTIONSTRING_length -1
+#define GRID_CLASS_CONFIG_ACTIONSTRING_length 0
 
 // =========== PAGE STORE =========== //
 #define GRID_CLASS_PAGESTORE_code 0x061
