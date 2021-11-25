@@ -17,6 +17,7 @@ on:
     paths:
       - '.github/workflows/firmware_nightly.yml'
       - 'grid_make/gcc/Makefile'
+      - 'grid_make/*'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
