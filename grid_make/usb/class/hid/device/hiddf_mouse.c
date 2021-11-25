@@ -356,6 +356,10 @@ int32_t hiddf_mouse_button_change(enum hiddf_mouse_button_state b_state, enum hi
 	// SUKU HACK
 	//_hiddf_mouse_funcd.mouse_report.u32 = 0;
 
+	_hiddf_mouse_funcd.mouse_report.bytes.x_axis_var = 0;
+	_hiddf_mouse_funcd.mouse_report.bytes.y_axis_var = 0;
+	_hiddf_mouse_funcd.mouse_report.bytes.scroll_var = 0;
+
 	if (b_state == HID_MOUSE_BTN_DOWN) {
 		_hiddf_mouse_funcd.mouse_report.bytes.button_state |= type; // SUKU HACK
 	} else {

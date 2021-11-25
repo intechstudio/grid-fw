@@ -459,8 +459,7 @@ uint8_t grid_keyboard_tx_pop(){
 				int8_t position = key.ispressed - 128;
 				hiddf_mouse_move(position, axis);
 
-				//printf("MouseMove: %d %d\r\n", position, axis);	
-
+				grid_debug_printf("MouseMove: %d %d", position, axis);	
 
 			}
 			else if(key.ismodifier == 3){
@@ -469,7 +468,7 @@ uint8_t grid_keyboard_tx_pop(){
 				uint8_t state = key.ispressed;
 				uint8_t button = key.keycode;
 			
-				//printf("MouseButton: %d %d\r\n", state, button);	
+				grid_debug_printf("MouseButton: %d %d", state, button);	
 				
 				hiddf_mouse_button_change(state, button);
 
