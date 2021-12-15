@@ -78,7 +78,7 @@ void grid_d51_init(){
 	grid_nvm_init(&grid_nvm_state, &FLASH_0);
 
     
-	grid_hardwaretest_main();
+	grid_nvm_hardwaretest_main();
 	
 	
 	while (1)

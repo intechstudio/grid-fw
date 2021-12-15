@@ -587,6 +587,7 @@ void grid_led_set_alert_phase(struct grid_led_model* mod, uint8_t phase){
 
 void grid_led_set_color(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b){
 	
+
 	if (num<mod->led_number && layer<GRID_LED_LAYER_NUMBER){	
 		
 		grid_led_set_min(mod, num, layer, r/20, g/20, b/20);				

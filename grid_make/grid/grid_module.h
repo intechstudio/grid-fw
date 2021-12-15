@@ -24,6 +24,7 @@
 #include "grid_module_po16.h"
 #include "grid_module_pbf4.h"
 #include "grid_module_en16.h"
+#include "grid_module_ef44.h"
 
 #include "atmel_start_pins.h"
 

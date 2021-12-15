@@ -26,6 +26,7 @@ grid/grid_module_bu16.o \
 grid/grid_module_en16.o \
 grid/grid_module_pbf4.o \
 grid/grid_module_po16.o \
+grid/grid_module_ef44.o \
 grid/grid_msg.o \
 grid/grid_nvm.o \
 grid/grid_protocol.o \
@@ -89,6 +90,7 @@ OBJS_AS_ARGS +=  \
 "grid/grid_module_en16.o" \
 "grid/grid_module_pbf4.o" \
 "grid/grid_module_po16.o" \
+"grid/grid_module_ef44.o" \
 "grid/grid_msg.o" \
 "grid/grid_nvm.o" \
 "grid/grid_protocol.o" \
@@ -161,6 +163,7 @@ DEPS_AS_ARGS +=  \
 "grid/grid_module_en16.d" \
 "grid/grid_module_pbf4.d" \
 "grid/grid_module_po16.d" \
+"grid/grid_module_ef44.d" \
 "grid/grid_msg.d" \
 "grid/grid_nvm.d" \
 "grid/grid_protocol.d" \

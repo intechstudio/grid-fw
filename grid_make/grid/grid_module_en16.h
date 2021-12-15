@@ -29,38 +29,11 @@ struct grid_ui_encoder{
 	
 };
 
-struct grid_ui_encoder grid_ui_encoder_array[16];
 
-
-
-
-
-uint8_t UI_SPI_TX_BUFFER[14];
-uint8_t UI_SPI_RX_BUFFER[14];
-uint8_t UI_SPI_TRANSFER_LENGTH;
-
-uint8_t UI_SPI_DEBUG;
-
-volatile uint8_t UI_SPI_DONE;
-
-
-volatile uint8_t UI_SPI_RX_BUFFER_LAST[16];
-
-
-uint8_t UI_ENCODER_LOOKUP[16];
-
-
-
-
-struct io_descriptor *grid_module_en16_hardware_io;
-
-
-volatile uint8_t grid_module_en16_hardware_transfer_complete;
-
-
-void grid_module_en16_hardware_start_transfer(void);
-void grid_module_en16_hardware_transfer_complete_cb(void);
-void grid_module_en16_hardware_init(void);
+ 
+static void grid_module_en16_hardware_start_transfer(void);
+static void grid_module_en16_hardware_transfer_complete_cb(void);
+static void grid_module_en16_hardware_init(void);
 
 void grid_module_en16_init(void);
 

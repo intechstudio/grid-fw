@@ -527,6 +527,7 @@ static int l_grid_led_set_color(lua_State* L) {
             param[i-1] = lua_tointeger(L, i);
         }
 
+
         grid_led_set_color(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
     }
     else if(nargs==6){
@@ -1298,6 +1299,11 @@ uint8_t grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys)
         case GRID_MODULE_EN16_ND_RevA: grid_lua_ui_init_en16(mod); break;
         case GRID_MODULE_EN16_ND_RevD: grid_lua_ui_init_en16(mod); break;
 
+        case GRID_MODULE_EF44_RevA: grid_lua_ui_init_ef44(mod); break;
+        case GRID_MODULE_EF44_RevD: grid_lua_ui_init_ef44(mod); break;
+
+        default: printf("\r\n### LUA HWCFG NOT REGISTERED ### \r\n\r\n");
+
     }
 
 }
@@ -1399,6 +1405,34 @@ uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod){
     grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[16] = {index = 16}");
     grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
     grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], system_meta)");
+}
+
+uint8_t grid_lua_ui_init_ef44(struct grid_lua_model* mod){
+
+    printf("LUA UI INIT EF44\r\n");
+    // define encoder_init_function
+
+    grid_lua_dostring(mod, GRID_LUA_E_META_init);
+    grid_lua_dostring(mod, GRID_LUA_P_META_init);
+
+    // create element array
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} "GRID_LUA_KW_THIS_short" = {}");
+
+    // initialize 4 encoders and 4 faders
+    grid_lua_dostring(mod, "for i=0, 3  do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
+    grid_lua_dostring(mod, "for i=0, 3  do  setmetatable("GRID_LUA_KW_ELEMENT_short"[i], encoder_meta)  end");
+
+    grid_lua_dostring(mod, "for i=4, 7 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
+    grid_lua_dostring(mod, "for i=4, 7 do  setmetatable("GRID_LUA_KW_ELEMENT_short"[i], potmeter_meta)  end");
+
+  
+    grid_lua_gc_try_collect(mod);
+
+    //initialize the system element
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[8] = {index = 8}");
+    grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
+    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[8], system_meta)");
+
 }
 
 

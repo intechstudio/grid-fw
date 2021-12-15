@@ -150,28 +150,32 @@ void grid_module_common_init(void){
 
 	
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevC){
-		printf("Init Module: PO16");
+		printf("Init Module: PO16\r\n");
 		grid_module_po16_init();
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevC ){
-		printf("Init Module: BU16");
+		printf("Init Module: BU16\r\n");
 		grid_module_bu16_init();
 	
 	}	
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevA){
-		printf("Init Module: PBF4");					
+		printf("Init Module: PBF4\r\n");					
 		grid_module_pbf4_init();			
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD ){
-		printf("Init Module: EN16");
+		printf("Init Module: EN16\r\n");
 		grid_module_en16_init();	
 	}	
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
-		printf("Init Module: EN16 ND");
+		printf("Init Module: EN16 ND\r\n");
 		grid_module_en16_init();	
+	}		
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD ){
+		printf("Init Module: EF44\r\n");
+		grid_module_ef44_init();	
 	}	
 	else{
-		printf("Init Module: Unknown Module");
+		printf("Init Module: Unknown Module\r\n");
 	}
 
 	printf("Model init done\r\n");

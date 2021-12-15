@@ -304,7 +304,7 @@ static void led_task_inner(struct grid_d51_task* task){
 		grid_led_tick(&grid_led_state);
 		
 		grid_led_lowlevel_render_all(&grid_led_state);	
-					
+
 // 	 	while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
 // 	 	}
 		grid_led_lowlevel_hardware_start_transfer(&grid_led_state);
@@ -695,7 +695,7 @@ int main(void)
 	
 
 	while (1) {
-	
+
 
 		// struct _qspi_command cmd = {
 		// 	.inst_frame.bits.inst_en      = 1,

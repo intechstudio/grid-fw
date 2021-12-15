@@ -1,42 +1,41 @@
-#include "grid_module_en16.h"
+#include "grid_module_ef44.h"
 
 
 
+static volatile uint8_t grid_module_ef44_adc_complete = 0;
+static volatile uint8_t grid_module_ef44_mux = 0;
+static volatile uint8_t grid_module_ef44_mux_lookup[16] = {4,5,0,0,0,0,0,0,6,7,0,0,0,0,0,0};
 
-static struct grid_ui_encoder grid_ui_encoder_array[16] = {0};
+static uint32_t last_real_time[16] = {0};
+
+struct grid_ui_encoder2 grid_ui_encoder_array2[16];
 
 
+
+static struct io_descriptor *grid_module_ef44_hardware_io;
+static volatile uint8_t grid_module_ef44_hardware_transfer_complete;
 
 
 static uint8_t UI_SPI_DEBUG;
 
-
-
-
-
-
-
-struct io_descriptor *grid_module_en16_hardware_io;
-
-
-static volatile uint8_t grid_module_en16_hardware_transfer_complete;
 
 static uint8_t UI_SPI_TX_BUFFER[14] = {0};
 static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 static uint8_t UI_SPI_TRANSFER_LENGTH = 10;
 
 static volatile uint8_t UI_SPI_DONE = 0;
+
+
 static volatile uint8_t UI_SPI_RX_BUFFER_LAST[16] = {0};
 
-static uint8_t UI_ENCODER_LOOKUP[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1} ;
-
-static uint8_t UI_ENCODER_LOOKUP_REVERSED[16] =   {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
+//static uint8_t UI_ENCODER_LOOKUP[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1} ;
+static uint8_t UI_ENCODER_LOOKUP2[4] = {2, 3, 0, 1} ;
 		
 static uint32_t encoder_last_real_time[16] = {0};
 static uint32_t button_last_real_time[16] = {0};
 
 
-static void grid_module_en16_hardware_start_transfer(void){
+static void grid_module_ef44_hardware_start_transfer(void){
 	
 
 	gpio_set_pin_level(PIN_UI_SPI_CS0, true);
@@ -48,7 +47,15 @@ static void grid_module_en16_hardware_start_transfer(void){
 
 }
 
-static void grid_module_en16_hardware_transfer_complete_cb(void){
+static void grid_module_ef44_hardware_start_adc(void){
+	
+	adc_async_start_conversion(&ADC_0);
+	adc_async_start_conversion(&ADC_1);
+}
+
+
+
+static void grid_module_ef44_hardware_transfer_complete_cb(void){
 
 	/* Transfer completed */
 
@@ -58,12 +65,12 @@ static void grid_module_en16_hardware_transfer_complete_cb(void){
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 
 	// Buffer is only 8 bytes but we check all 16 encoders separately
-	for (uint8_t j=0; j<16; j++){
+	for (uint8_t j=0; j<4; j++){
 
 		uint8_t new_value = (UI_SPI_RX_BUFFER[j/2]>>(4*(j%2)))&0x0F;
 		uint8_t old_value = UI_SPI_RX_BUFFER_LAST[j];
 
-		uint8_t i = UI_ENCODER_LOOKUP[j];
+		uint8_t i = UI_ENCODER_LOOKUP2[j];
 
 		// limit lastrealtime
 		uint32_t button_elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, button_last_real_time[i]);
@@ -95,42 +102,42 @@ static void grid_module_en16_hardware_transfer_complete_cb(void){
 			uint8_t a_now = phase_a;
 			uint8_t b_now = phase_b;
 			
-			uint8_t a_prev = grid_ui_encoder_array[i].phase_a_previous;
-			uint8_t b_prev = grid_ui_encoder_array[i].phase_b_previous;
+			uint8_t a_prev = grid_ui_encoder_array2[i].phase_a_previous;
+			uint8_t b_prev = grid_ui_encoder_array2[i].phase_b_previous;
 			
 			int16_t delta = 0;
 			
             if (a_now == 1 && b_now == 1){ //detent found
             
-                if (b_prev == 0 && grid_ui_encoder_array[i].phase_change_lock == 0){
+                if (b_prev == 0 && grid_ui_encoder_array2[i].phase_change_lock == 0){
                     delta = -1;
-                    grid_ui_encoder_array[i].phase_change_lock = 1;
+                    grid_ui_encoder_array2[i].phase_change_lock = 1;
                 }
                 
-                if (a_prev == 0 && grid_ui_encoder_array[i].phase_change_lock == 0){
+                if (a_prev == 0 && grid_ui_encoder_array2[i].phase_change_lock == 0){
                     delta = 1;
-                    grid_ui_encoder_array[i].phase_change_lock = 1;
+                    grid_ui_encoder_array2[i].phase_change_lock = 1;
                 }
                 
             }
             
             if (a_now == 0 && b_now == 0){
             
-                grid_ui_encoder_array[i].phase_change_lock = 0;
+                grid_ui_encoder_array2[i].phase_change_lock = 0;
     
             }
 			
-			grid_ui_encoder_array[i].phase_a_previous = a_now;
-			grid_ui_encoder_array[i].phase_b_previous = b_now;
+			grid_ui_encoder_array2[i].phase_a_previous = a_now;
+			grid_ui_encoder_array2[i].phase_b_previous = b_now;
 						
 
 			// Evaluate the results
 
 
-			if (button_value != grid_ui_encoder_array[i].button_value){  // The button has changed
+			if (button_value != grid_ui_encoder_array2[i].button_value){  // The button has changed
 				// BUTTON CHANGE
-				grid_ui_encoder_array[i].button_changed = 1;
-				grid_ui_encoder_array[i].button_value = new_value>>2;
+				grid_ui_encoder_array2[i].button_changed = 1;
+				grid_ui_encoder_array2[i].button_value = new_value>>2;
 
 
 				uint8_t res_index = i;
@@ -143,7 +150,7 @@ static void grid_module_en16_hardware_transfer_complete_cb(void){
 
 
 
-				if (grid_ui_encoder_array[i].button_value == 0){ // Button Press
+				if (grid_ui_encoder_array2[i].button_value == 0){ // Button Press
 		
 					template_parameter_list[GRID_LUA_FNC_E_BUTTON_STATE_index] = 127;
 
@@ -346,12 +353,138 @@ static void grid_module_en16_hardware_transfer_complete_cb(void){
 	}
 		
 
-	grid_module_en16_hardware_transfer_complete = 0;
-	grid_module_en16_hardware_start_transfer();
+	grid_module_ef44_hardware_transfer_complete = 0;
+	grid_module_ef44_hardware_start_transfer();
+}
+
+static void grid_module_ef44_adc_complete_cb(void){
+
+	if (grid_module_ef44_adc_complete == 0){
+		grid_module_ef44_adc_complete++;
+		return;
+	}
+	
+	/* Read conversion results */
+	
+	uint16_t adcresult_0 = 0;
+	uint16_t adcresult_1 = 0;
+	
+	uint8_t adc_index_0 = grid_module_ef44_mux_lookup[grid_module_ef44_mux+8];
+	uint8_t adc_index_1 = grid_module_ef44_mux_lookup[grid_module_ef44_mux+0];
+	
+	/* Update the multiplexer */
+	
+	grid_module_ef44_mux++;
+	grid_module_ef44_mux%=2;
+	
+	gpio_set_pin_level(MUX_A, grid_module_ef44_mux/1%2);
+	gpio_set_pin_level(MUX_B, grid_module_ef44_mux/2%2);
+	gpio_set_pin_level(MUX_C, grid_module_ef44_mux/4%2);
+	
+	adc_async_read_channel(&ADC_0, 0, &adcresult_0, 2);
+	adc_async_read_channel(&ADC_1, 0, &adcresult_1, 2);
+
+	// FAKE CALIBRATION to compensate oversampling and decimation
+	uint32_t input_0 = adcresult_0*1.03;	 // 1.03
+	if (input_0 > (1<<16)-1){
+		input_0 = (1<<16)-1;
+	}
+	adcresult_0 = input_0;
+	
+	uint32_t input_1 = adcresult_1*1.03;	
+	if (input_1 > (1<<16)-1){
+		input_1 = (1<<16)-1;
+	}
+	adcresult_1 = input_1;
+
+		
+    uint8_t resolution_0 = grid_ui_state.element_list[adc_index_0].template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
+    uint8_t resolution_1 = grid_ui_state.element_list[adc_index_1].template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
+
+	// grid_ain_add_sample(adc_index_0, adcresult_0, resolution_0);
+	// grid_ain_add_sample(adc_index_1, adcresult_1, resolution_1);
+
+	if (adc_index_1 == 4){
+
+		
+		grid_ain_add_sample(adc_index_1, adcresult_1, resolution_1);
+	}
+
+
+	uint8_t result_index[2] = {0};
+	
+	result_index[0] = adc_index_0;
+	result_index[1] = adc_index_1;
+
+
+
+	// Process both ADC results
+
+	for (uint8_t i=0; i<2; i++)
+	{
+	
+		// Helper variable for readability
+		uint8_t res_index = result_index[i];
+
+		// limit lastrealtime
+		uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, last_real_time[res_index]);
+		if (GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS < grid_sys_rtc_get_elapsed_time(&grid_sys_state, last_real_time[res_index])){
+			last_real_time[res_index] = grid_sys_rtc_get_time(&grid_sys_state) - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+			elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+		}
+
+		int32_t* template_parameter_list = grid_ui_state.element_list[res_index].template_parameter_list;
+
+		if (grid_ain_get_changed(res_index)){
+
+			// update lastrealtime
+			last_real_time[res_index] = grid_sys_rtc_get_time(&grid_sys_state); 
+			template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] = elapsed_time/RTC1MS;
+
+			int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
+
+			if (resolution < 1){
+				resolution = 1;
+			}
+			else if (resolution > 12){
+				resolution = 12;
+			}
+
+			int32_t value = grid_ain_get_average(res_index);
+
+
+			int32_t min = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index];
+			int32_t max = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index];
+
+			// map the input range to the output range
+
+			uint16_t range_max = GRID_AIN_MAXVALUE - (1<<16-resolution);
+
+			int32_t next = value * (max - min) / range_max + min;
+
+			template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
+
+			printf("SAMPLE %3d %3d\r\n", res_index, next);
+			// for display in editor
+			int32_t state = value * (127 - 0) / range_max;
+   			template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
+
+			struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[res_index], GRID_UI_EVENT_AC);
+			
+			if (grid_ui_state.ui_interaction_enabled){
+				grid_ui_event_trigger(eve);	
+			}	
+			
+		}
+
+	}
+		
+	grid_module_ef44_adc_complete = 0;
+	grid_module_ef44_hardware_start_adc();
 }
 
 
-static void grid_module_en16_hardware_init(void){
+static void grid_module_ef44_hardware_init(void){
 	
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 	gpio_set_pin_direction(PIN_UI_SPI_CS0, GPIO_DIRECTION_OUT);
@@ -360,47 +493,63 @@ static void grid_module_en16_hardware_init(void){
 	spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
 	spi_m_async_set_baudrate(&UI_SPI, 1000000); // was 400000 check clock div setting
 	
-	spi_m_async_get_io_descriptor(&UI_SPI, &grid_module_en16_hardware_io);
+	spi_m_async_get_io_descriptor(&UI_SPI, &grid_module_ef44_hardware_io);
 
-	spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, grid_module_en16_hardware_transfer_complete_cb);
+	spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, grid_module_ef44_hardware_transfer_complete_cb);
+
+
+
+	adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, grid_module_ef44_adc_complete_cb);
+	adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, grid_module_ef44_adc_complete_cb);
+		
+	adc_async_enable_channel(&ADC_0, 0);
+	adc_async_enable_channel(&ADC_1, 0);
 
 }
 
-void grid_module_en16_init(){
+void grid_module_ef44_init(){
 	
+	// should be 4 but indexing is bad at grid_element_potmeter_template_parameter_init
+	grid_ain_init(8, 5);
+
+	grid_led_lowlevel_init(&grid_led_state, 8);
 	
-	grid_led_lowlevel_init(&grid_led_state, 16);
-	
-	grid_ui_model_init(&grid_ui_state, 16+1); // +1 for the system element	
+	grid_ui_model_init(&grid_ui_state, 8+1); // +1 for the system element	
 		
-	for(uint8_t j=0; j<16; j++){
+	for(uint8_t j=0; j<4; j++){
 	
 		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_ENCODER);
 
 	}		
-		
+
+	for(uint8_t j=4; j<8; j++){
+	
+		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_POTENTIOMETER);
+
+	}				
 
 	// initialize local encoder helper struct
-	for (uint8_t j = 0; j<16; j++)
+	for (uint8_t j = 0; j<4; j++)
 	{
-		grid_ui_encoder_array[j].controller_number = j;
+		grid_ui_encoder_array2[j].controller_number = j;
 		
-		grid_ui_encoder_array[j].button_value = 1;
-		grid_ui_encoder_array[j].button_changed = 0; 
-		grid_ui_encoder_array[j].rotation_value = 0;
-		grid_ui_encoder_array[j].rotation_changed = 1;
-		grid_ui_encoder_array[j].rotation_direction = 0;
-		grid_ui_encoder_array[j].velocity = 0;
-		grid_ui_encoder_array[j].phase_a_previous = 1;
-		grid_ui_encoder_array[j].phase_b_previous = 1;	
+		grid_ui_encoder_array2[j].button_value = 1;
+		grid_ui_encoder_array2[j].button_changed = 0; 
+		grid_ui_encoder_array2[j].rotation_value = 0;
+		grid_ui_encoder_array2[j].rotation_changed = 1;
+		grid_ui_encoder_array2[j].rotation_direction = 0;
+		grid_ui_encoder_array2[j].velocity = 0;
+		grid_ui_encoder_array2[j].phase_a_previous = 1;
+		grid_ui_encoder_array2[j].phase_b_previous = 1;	
         
-        grid_ui_encoder_array[j].phase_change_lock = 0;
+        grid_ui_encoder_array2[j].phase_change_lock = 0;
 		
 	}
 	
-	grid_module_en16_hardware_init();
+	grid_module_ef44_hardware_init();
 	
 	
-	grid_module_en16_hardware_start_transfer();
+	grid_module_ef44_hardware_start_transfer();
+	grid_module_ef44_hardware_start_adc();
 	
 }
