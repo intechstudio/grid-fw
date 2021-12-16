@@ -58,8 +58,6 @@ static void grid_module_ef44_hardware_start_adc(void){
 static void grid_module_ef44_hardware_transfer_complete_cb(void){
 
 	/* Transfer completed */
-
-	//printf("%d\r\n", _irq_get_current());
 	
 	// Set the shift registers to continuously load data until new transaction is issued
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
@@ -464,7 +462,6 @@ static void grid_module_ef44_adc_complete_cb(void){
 
 			template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
 
-			printf("SAMPLE %3d %3d\r\n", res_index, next);
 			// for display in editor
 			int32_t state = value * (127 - 0) / range_max;
    			template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
