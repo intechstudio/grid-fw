@@ -69,21 +69,18 @@ void grid_d51_init(){
 	#else
 	#endif
 	
-	//#define HARDWARETEST
+	#define HARDWARETEST
 
 	#ifdef HARDWARETEST
 	
 	#include "grid/grid_hardwaretest.h"
 
-	grid_nvm_init(&grid_nvm_state, &FLASH_0);
+	//grid_nvm_init(&grid_nvm_state, &FLASH_0);
 
     
-	grid_nvm_hardwaretest_main();
+	grid_interface_hardwaretest_main();
 	
 	
-	while (1)
-	{
-	}
 	#else
 	
 	#endif
