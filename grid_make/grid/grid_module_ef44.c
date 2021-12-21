@@ -4,9 +4,8 @@
 
 static volatile uint8_t grid_module_ef44_adc_complete = 0;
 static volatile uint8_t grid_module_ef44_mux = 0;
-static volatile uint8_t grid_module_ef44_mux_lookup[16] = {4,5,0,0,0,0,0,0,6,7,0,0,0,0,0,0};
 
-static uint32_t last_real_time[16] = {0};
+static uint32_t last_real_time[4] = {0};
 
 struct grid_ui_encoder2 grid_ui_encoder_array2[16];
 
@@ -367,8 +366,8 @@ static void grid_module_ef44_adc_complete_cb(void){
 	uint16_t adcresult_0 = 0;
 	uint16_t adcresult_1 = 0;
 	
-	uint8_t adc_index_0 = grid_module_ef44_mux_lookup[grid_module_ef44_mux+8];
-	uint8_t adc_index_1 = grid_module_ef44_mux_lookup[grid_module_ef44_mux+0];
+	uint8_t adc_index_0 = grid_module_ef44_mux+2;
+	uint8_t adc_index_1 = grid_module_ef44_mux;
 	
 	/* Update the multiplexer */
 	
@@ -396,17 +395,12 @@ static void grid_module_ef44_adc_complete_cb(void){
 	adcresult_1 = input_1;
 
 		
-    uint8_t resolution_0 = grid_ui_state.element_list[adc_index_0].template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
-    uint8_t resolution_1 = grid_ui_state.element_list[adc_index_1].template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
+    uint8_t resolution_0 = grid_ui_state.element_list[adc_index_0+4].template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
+    uint8_t resolution_1 = grid_ui_state.element_list[adc_index_1+4].template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
 
-	// grid_ain_add_sample(adc_index_0, adcresult_0, resolution_0);
-	// grid_ain_add_sample(adc_index_1, adcresult_1, resolution_1);
 
-	if (adc_index_1 == 4){
-
-		
-		grid_ain_add_sample(adc_index_1, adcresult_1, resolution_1);
-	}
+	grid_ain_add_sample(adc_index_0, adcresult_0, resolution_0);
+	grid_ain_add_sample(adc_index_1, adcresult_1, resolution_1);
 
 
 	uint8_t result_index[2] = {0};
@@ -431,9 +425,12 @@ static void grid_module_ef44_adc_complete_cb(void){
 			elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
 		}
 
-		int32_t* template_parameter_list = grid_ui_state.element_list[res_index].template_parameter_list;
+		int32_t* template_parameter_list = grid_ui_state.element_list[res_index+4].template_parameter_list;
 
 		if (grid_ain_get_changed(res_index)){
+
+
+
 
 			// update lastrealtime
 			last_real_time[res_index] = grid_sys_rtc_get_time(&grid_sys_state); 
@@ -451,6 +448,7 @@ static void grid_module_ef44_adc_complete_cb(void){
 			int32_t value = grid_ain_get_average(res_index);
 
 
+
 			int32_t min = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index];
 			int32_t max = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index];
 
@@ -462,11 +460,12 @@ static void grid_module_ef44_adc_complete_cb(void){
 
 			template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
 
+
 			// for display in editor
 			int32_t state = value * (127 - 0) / range_max;
    			template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
 
-			struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[res_index], GRID_UI_EVENT_AC);
+			struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[res_index+4], GRID_UI_EVENT_AC);
 			
 			if (grid_ui_state.ui_interaction_enabled){
 				grid_ui_event_trigger(eve);	
