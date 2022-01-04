@@ -16,7 +16,7 @@ fail=0
 for line in $file
 do
 
-    if ls | grep -q -ir "$line" "./grid-documentation"; then ((pass++)); else ((fail++)); fi
+    if ls | grep -q -ir "$line" "./grid-documentation"; then pass=$((pass+1)); else fail=$((fail+1)); fi
 
 done
 
