@@ -44,15 +44,15 @@ jobs:
         run: |
           cd grid-protocol
           cat -v grid_protocol_bot.json
-          if git log --stat; then
-            # No changes
-            echo "changed=false" >> $GITHUB_ENV
-          else
+          if [[ `git status --porcelain` ]]; then
             # Changes           
             git add -A
             git commit -m "BOT protocol file synced from grid-fw repo"
             git push
             echo "changed=true" >> $GITHUB_ENV
+          else
+            # No changes
+            echo "changed=false" >> $GITHUB_ENV
           fi
           echo "CHANGED:  ${{ env.changed }}"
           
