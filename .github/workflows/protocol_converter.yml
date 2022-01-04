@@ -72,6 +72,6 @@ jobs:
       - uses: tsickert/discord-webhook@v4.0.0
         with:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
-          content: "Check Documentation! ${{ message }}"
+          content: "Check Documentation! ${{ env.message }}"
           filename: "report.txt"
           
