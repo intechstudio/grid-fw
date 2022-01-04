@@ -62,3 +62,9 @@ jobs:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
           content: "Hello, I just updated the GRID_PROTOCOL.json file! Please update the Submodules in the grid-editor repository!"
           
+      - name: Clone documentation
+        run: |
+          git clone https://github.com/intechstudio/grid-documentation.git
+          ls
+          ./.github/workflows/documentation_validator.sh
+          ls
