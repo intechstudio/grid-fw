@@ -67,7 +67,7 @@ jobs:
         run: |
           git clone https://github.com/intechstudio/grid-documentation.git
           sh ./.github/workflows/documentation_validator.sh > report.txt
-          echo 'message="$(cat report.txt)"' >> $GITHUB_ENV
+          echo 'message=\"$(cat report.txt)\"' >> $GITHUB_ENV
                 
       - uses: tsickert/discord-webhook@v4.0.0
         with:
