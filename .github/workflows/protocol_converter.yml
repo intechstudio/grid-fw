@@ -67,9 +67,7 @@ jobs:
         run: |
           git clone https://github.com/intechstudio/grid-documentation.git
           sh ./.github/workflows/documentation_validator.sh >> report.txt
-          echo '{"content": "' > report.json
-          head -1 report.txt >>report.json
-          echo '", "filename": "report.txt"}' >> report.json
+          { echo '{"content": "'; head -1 report.txt; echo '", "filename": "report.txt"}';} | tr "\n" " " > report.json
           cat report.json
                 
       - uses: tsickert/discord-webhook@v4.0.0
