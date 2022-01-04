@@ -1,6 +1,6 @@
 # List all of the Grid LUA API function in text.txt
 touch "test.txt"
-grep -i "GRID_LUA_FNC_.*_human" "grid_protocol_bot.json" > test.txt
+grep -i "GRID_LUA_FNC_.*_human" "./grid-protocol/grid_protocol_bot.json" > test.txt
 
 # Regexpr to only keep the human readable fnc names
 sed -r -i 's/ *".*"://g' test.txt
