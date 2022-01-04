@@ -20,11 +20,11 @@ do
 
 done
 
-echo -n "Coverage: $((100*$pass/($pass+$fail)))%  ($pass Passed, $fail Failed)\n"
+echo -n "Coverage: $((100*$pass/($pass+$fail)))%  ($pass Passed, $fail Failed)\\n"
 
 for line in $file
 do
 
-    if ls | grep -q -ir "$line" "./grid-documentation"; then pass=0; else echo -n "Missing: $line\n"; fi
+    if ls | grep -q -ir "$line" "./grid-documentation"; then pass=0; else echo -n "Missing: $line\\n"; fi
 
 done
