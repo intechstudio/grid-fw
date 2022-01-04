@@ -66,9 +66,10 @@ jobs:
       - name: Clone documentation
         run: |
           git clone https://github.com/intechstudio/grid-documentation.git
+          sh ./.github/workflows/documentation_validator.sh >> report.txt
           echo '{"content": "' > report.json
-          sh ./.github/workflows/documentation_validator.sh >> report.json
-          echo '"}' >> report.json
+          head -1 report.txt >>report.json
+          echo '", "filename": "report.txt"}' >> report.json
           cat report.json
                 
       - uses: tsickert/discord-webhook@v4.0.0
