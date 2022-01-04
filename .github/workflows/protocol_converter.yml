@@ -67,11 +67,11 @@ jobs:
         run: |
           git clone https://github.com/intechstudio/grid-documentation.git
           sh ./.github/workflows/documentation_validator.sh > report.txt
-          export FOO_BACKWARDS=$(cat report.txt | rev)
+          echo "message=$(cat report.txt)" >> $GITHUB_ENV
                 
       - uses: tsickert/discord-webhook@v4.0.0
         with:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
-          content: "Check Documentation! ${{ FOO_BACKWARDS }}"
+          content: "Check Documentation! ${{ message }}"
           filename: "report.txt"
           
