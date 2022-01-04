@@ -20,6 +20,7 @@ on:
       - 'grid_make/grid/grid_protocol.h'
       - '.github/workflows/protocol_converter.yml'
       - '.github/workflows/protocol_converter.py'
+      - '.github/workflows/documentation_validator.sh'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
