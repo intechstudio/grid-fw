@@ -44,7 +44,7 @@ jobs:
         run: |
           cd grid-protocol
           cat -v grid_protocol_bot.json
-          if git diff-index --quiet HEAD --; then
+          if git log --stat; then
             # No changes
             echo "changed=false" >> $GITHUB_ENV
           else
