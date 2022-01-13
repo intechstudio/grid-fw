@@ -43,13 +43,13 @@ jobs:
           cp binary/grid_release.uf2 grid_release_${{ env.action_date }}.uf2
          
       - name: Zipping artifacts for Discord      
-        uses: papeloto/action-zip@v1
+        uses: vimtor/action-zip@v1
         with:
           files: grid_release_${{ env.action_date }}.uf2
           dest: grid_release_${{ env.action_date }}.zip
           
       - name: Zipping artifacts for Github Release   
-        uses: papeloto/action-zip@v1
+        uses: vimtor/action-zip@v1
         with:
           files: grid_release_${{ env.action_date }}.uf2
           dest: grid_release.zip     
