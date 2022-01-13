@@ -69,7 +69,7 @@ void grid_d51_init(){
 	#else
 	#endif
 	
-	#define HARDWARETEST
+	//#define HARDWARETEST
 
 	#ifdef HARDWARETEST
 	

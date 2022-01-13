@@ -513,8 +513,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 	}
 	else{
 		// frame error
-		
-		grid_debug_printf("Frame Error %d", length);
+		grid_debug_printf("Frame Error %d ", length);
 		printf("FRAME %s\r\n", message);
 	}
 	
