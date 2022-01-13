@@ -20,6 +20,7 @@ on:
       - 'grid_make/grid/grid_protocol.h'
       - '.github/workflows/protocol_converter.yml'
       - '.github/workflows/protocol_converter.py'
+      - '.github/workflows/documentation_validator.sh'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -44,15 +45,15 @@ jobs:
         run: |
           cd grid-protocol
           cat -v grid_protocol_bot.json
-          if git diff-index --quiet HEAD --; then
-            # No changes
-            echo "changed=false" >> $GITHUB_ENV
-          else
+          if [[ `git status --porcelain` ]]; then
             # Changes           
             git add -A
             git commit -m "BOT protocol file synced from grid-fw repo"
             git push
             echo "changed=true" >> $GITHUB_ENV
+          else
+            # No changes
+            echo "changed=false" >> $GITHUB_ENV
           fi
           echo "CHANGED:  ${{ env.changed }}"
           
@@ -62,3 +63,22 @@ jobs:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
           content: "Hello, I just updated the GRID_PROTOCOL.json file! Please update the Submodules in the grid-editor repository!"
           
+      - name: Clone documentation
+        run: |
+          git clone https://github.com/intechstudio/grid-documentation.git
+          sh ./.github/workflows/documentation_validator.sh >> report.txt
+          { echo '{"content": "'; head -1 report.txt; echo '", "filename": "report.txt"}';} | tr "\n" " " > report.json
+          cat report.json          
+          cat report.txt
+            
+      - uses: tsickert/discord-webhook@v4.0.0
+        with:
+          webhook-url: ${{ secrets.WEBHOOK_URL }}
+          content: Here is your Grid API Documentation report!
+          filename: report.txt
+          
+      - uses: tsickert/discord-webhook@v4.0.0
+        with:
+          webhook-url: ${{ secrets.WEBHOOK_URL }}
+          raw-data: report.json
+
