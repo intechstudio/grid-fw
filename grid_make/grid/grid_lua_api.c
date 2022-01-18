@@ -329,6 +329,38 @@ static int l_grid_midi_send(lua_State* L) {
     return 1;
 }
 
+static int l_grid_midi_sysex_send(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs<2){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t midiframe[50] = {0};
+
+    sprintf(midiframe, GRID_CLASS_MIDISYSEX_frame_start);
+
+    grid_msg_set_parameter(midiframe, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+
+    int i;
+    for ( i=1; i <= nargs; ++i) {
+
+        grid_msg_set_parameter(midiframe, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i*2-2, 2, lua_tointeger(L, i), NULL);
+    }
+
+    grid_msg_set_parameter(midiframe, GRID_CLASS_MIDISYSEX_LENGTH_offset, GRID_CLASS_MIDISYSEX_LENGTH_length, i-1, NULL);
+
+    sprintf(&midiframe[strlen(midiframe)], GRID_CLASS_MIDISYSEX_frame_end);
+
+    //printf("MIDI: %s\r\n", midiframe);  
+    strcat(grid_lua_state.stdo, midiframe);
+
+    return 1;
+}
+
 
 static int l_grid_led_phase(lua_State* L) {
 
@@ -1170,6 +1202,7 @@ static const struct luaL_Reg printlib [] = {
     {GRID_LUA_FNC_G_LED_PSF_short,          GRID_LUA_FNC_G_LED_PSF_fnptr},
 
     {GRID_LUA_FNC_G_MIDI_SEND_short,        GRID_LUA_FNC_G_MIDI_SEND_fnptr},
+    {GRID_LUA_FNC_G_MIDISYSEX_SEND_short,  GRID_LUA_FNC_G_MIDISYSEX_SEND_fnptr},
 
     {GRID_LUA_FNC_G_KEYBOARD_SEND_short,    GRID_LUA_FNC_G_KEYBOARD_SEND_fnptr},
 

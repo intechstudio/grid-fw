@@ -1218,6 +1218,77 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				
 													
 			}
+			if (msg_class == GRID_CLASS_MIDISYSEX_code && msg_instr == GRID_INSTR_EXECUTE_code){
+					
+
+				uint16_t length = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDISYSEX_LENGTH_offset,		GRID_CLASS_MIDISYSEX_LENGTH_length);
+
+				//printf("midi: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1, midi_param2);
+
+								
+				grid_debug_printf("Midi Sysex received: %d", length);
+
+				// https://www.usb.org/sites/default/files/midi10.pdf page 17 Table 4-2: Examples of Parsed MIDI Events in 32 -bit USB-MIDI Event Packets
+				
+
+				uint8_t first = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDISYSEX_PAYLOAD_offset, GRID_CLASS_MIDISYSEX_PAYLOAD_length);
+				uint8_t last = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + (length-1)*2, GRID_CLASS_MIDISYSEX_PAYLOAD_length);
+
+				if (first != 0xF0 || last != 0xF7){
+					grid_debug_printf("Sysex invalid: %d %d", first, last);
+				}
+
+				struct grid_midi_event_desc midievent;
+				for (uint16_t i=0; i<length;){
+
+					midievent.byte0 = 0;
+					midievent.byte1 = 0;
+					midievent.byte2 = 0;
+					midievent.byte3 = 0;
+
+					midievent.byte1 = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDISYSEX_PAYLOAD_offset+i*2, GRID_CLASS_MIDISYSEX_PAYLOAD_length);
+					i++;
+					if (i<length){
+						midievent.byte2 = grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDISYSEX_PAYLOAD_offset+i*2, GRID_CLASS_MIDISYSEX_PAYLOAD_length);
+						i++;
+					}
+					if (i<length){
+						midievent.byte3 =  grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_MIDISYSEX_PAYLOAD_offset+i*2, GRID_CLASS_MIDISYSEX_PAYLOAD_length);
+						i++;
+					}
+
+					if (length<4){  //shortsysex
+						if (length == 2){
+							midievent.byte0 = 0<<4 | 6;
+						}
+						if (length == 3){
+							midievent.byte0 = 0<<4 | 7;
+						}
+					}
+					else if (i<4){ //first eventpacket of longsysex
+						midievent.byte0 = 0<<4 | 4;
+					}
+					else{ // how many useful bytes are in this eventpacket
+						if (i%3 == 0){ // 3
+							midievent.byte0 = 0<<4 | 7;
+						}
+						else if (i%3 == 1){ // 1
+							midievent.byte0 = 0<<4 | 5;
+						}
+						else if (i%3 == 2){ // 2
+							midievent.byte0 = 0<<4 | 6;
+						}
+					}
+
+					grid_debug_printf("Packet: %d %d %d %d", midievent.byte0, midievent.byte1, midievent.byte2, midievent.byte3);
+					grid_midi_tx_push(midievent);
+					
+				}
+				
+				grid_midi_tx_pop(midievent);				
+				
+													
+			}
 			// else if (msg_class == GRID_CLASS_HIDMOUSEBUTTONIMMEDIATE_code && msg_instr == GRID_INSTR_EXECUTE_code){
 					
 										

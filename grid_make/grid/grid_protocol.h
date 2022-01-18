@@ -17,7 +17,7 @@
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
 #define GRID_PROTOCOL_VERSION_MINOR 2
-#define GRID_PROTOCOL_VERSION_PATCH 12
+#define GRID_PROTOCOL_VERSION_PATCH 13
 
 // Module HWCFG definitions
 
@@ -194,6 +194,10 @@
 #define GRID_LUA_FNC_G_MIDI_SEND_short 			"gms"
 #define GRID_LUA_FNC_G_MIDI_SEND_human 			"midi_send"
 #define GRID_LUA_FNC_G_MIDI_SEND_fnptr 			l_grid_midi_send
+
+#define GRID_LUA_FNC_G_MIDISYSEX_SEND_short 	"gmss"
+#define GRID_LUA_FNC_G_MIDISYSEX_SEND_human 	"midi_sysex_send"
+#define GRID_LUA_FNC_G_MIDISYSEX_SEND_fnptr 	l_grid_midi_sysex_send
 
 
 #define GRID_LUA_FNC_G_KEYBOARD_SEND_short 		"gks"
