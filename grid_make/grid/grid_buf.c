@@ -119,14 +119,19 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 	for (uint16_t i = 1; i<length; i++){
 		
 		if (buffer[i] == GRID_CONST_SOH){
+
+			if (i>0){
+
+				for (uint16_t j=0; j<length; j++){
+					printf("%d, ", buffer[j]);
+				}
+				printf("\r\n");
+				grid_debug_printf("Frame Start Offset %d %d %d", buffer[0], buffer[1], i);
+			}
 			
 			length -= i;
 			message = &buffer[i];
-			
-			
-			grid_debug_printf("Frame Start Offset");
-			
-			
+		
 		}
 
 		if (buffer[i] == '\n' && i<length-1){
@@ -510,11 +515,29 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		}
 		
 
+		// if (length>150){
+		// 	printf("long frame: ");
+		// 	for(uint16_t i=0; i<length; i++){
+		// 		printf("%d,", message[i]);
+		// 	}
+		// 	printf("\r\n");
+		// }
+
 	}
 	else{
 		// frame error
+
 		grid_debug_printf("Frame Error %d ", length);
-		printf("FRAME %s\r\n", message);
+
+		// printf("\r\bFRAME ");
+		// for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
+		// 	printf("%02x ", GRID_PORT_H.rx_double_buffer[i]);
+		// }
+		// printf("\r\n");
+		
+		grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
+		grid_led_set_alert_frequency(&grid_led_state, -2);	
+		grid_led_set_alert_phase(&grid_led_state, 100);	
 	}
 	
 	return;

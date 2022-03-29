@@ -46,7 +46,7 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 	while (current != NULL)
 	{
 		//current->config_string_offset = block_count * GRID_NVM_BLOCK_SIZE + write_ptr;
-		printf("Moving CFG %d %d %d  Offset: %d -> %d\r\n", current->page_id, current->element_id, current->event_type, current->config_string_offset ,block_count * GRID_NVM_BLOCK_SIZE + write_ptr);
+		// printf("Moving CFG %d %d %d  Offset: %d -> %d\r\n", current->page_id, current->element_id, current->event_type, current->config_string_offset ,block_count * GRID_NVM_BLOCK_SIZE + write_ptr);
 
 		if (write_ptr + current->config_string_length < GRID_NVM_BLOCK_SIZE){
 
@@ -64,7 +64,7 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 			uint16_t part2_length = current->config_string_length - part1_length;
 
 			if (part2_length > GRID_NVM_BLOCK_SIZE){
-				printf("error.nvm.cfg file is larger than nvm block size!\r\n");
+				//printf("error.nvm.cfg file is larger than nvm block size!\r\n");
 			}
 
 			// read as much as we can fit into the current block
@@ -121,7 +121,7 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 
 	// set the next_write_offset to allow proper writes after defrag
 	nvm->next_write_offset = block_count*GRID_NVM_BLOCK_SIZE + write_ptr;
-	printf("After defrag next_write_offset: %d\r\n", nvm->next_write_offset);
+	//printf("After defrag next_write_offset: %d\r\n", nvm->next_write_offset);
 
 
 	// clear the rest of the memory!
@@ -345,7 +345,7 @@ uint32_t grid_nvm_erase_all(struct grid_nvm_model* mod){
 
 			if (verify_buffer[i] != 0xff){
 
-				printf("error.verify failed 0x%d\r\n", address + i);
+				//printf("error.verify failed 0x%d\r\n", address + i);
 				fail_count++;
 
 			}
@@ -491,13 +491,13 @@ void grid_nvm_toc_init(struct grid_nvm_model* nvm){
 
 					if (config_length == 0){
 						
-						printf("\r\nLENGTH 0: %s\r\n\r\n", temp_buffer);
+						//printf("\r\nLENGTH 0: %s\r\n\r\n", temp_buffer);
 					}
 
 					uint8_t frist_character = current_header[GRID_CLASS_CONFIG_ACTIONSTRING_offset];
 
 					if (frist_character==GRID_CONST_ETX){
-						printf("\r\nETX -> Default config marker!! \r\n\r\n");
+						//printf("\r\nETX -> Default config marker!! \r\n\r\n");
 						// this is default config
 						struct grid_nvm_toc_entry* entry = NULL;
 						entry = grid_nvm_toc_entry_find(nvm, page_number, element_number,event_type);
@@ -636,7 +636,7 @@ uint32_t grid_nvm_config_store(struct grid_nvm_model* nvm, uint8_t page_number, 
 	uint32_t append_offset = grid_nvm_append(nvm, buf, config_length);
 
 	if (strlen(actionstring) == 0){
-		printf("STORE: No Need To Create Toc (Default) \r\n");
+		//printf("STORE: No Need To Create Toc (Default) \r\n");
 		grid_nvm_toc_entry_remove(nvm, entry);
 	}
 	else{
@@ -1104,14 +1104,14 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 					struct grid_nvm_toc_entry* entry = grid_nvm_toc_entry_find(nvm, ele->parent->page_activepage, ele->index, eve->type);
 					if (entry != NULL){
-						printf("DEFAULT, FOUND - SO DESTROY! %d %d\r\n", ele->index, eve->index);
+						//printf("DEFAULT, FOUND - SO DESTROY! %d %d\r\n", ele->index, eve->index);
 
 						grid_nvm_config_store(nvm, entry->page_id, entry->element_id, entry->event_type, "");
 	
 					}
 					else{
 
-						printf("DEFAULT BUT NOT FOUND! %d %d\r\n", ele->index, eve->index);
+						//printf("DEFAULT BUT NOT FOUND! %d %d\r\n", ele->index, eve->index);
 					}
 
 					// its reverted to default, so no need to keep it in eve->action_string
@@ -1120,7 +1120,7 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 				}
 				else{
 					
-					printf("NOT DEFAULT! %d %d\r\n", ele->index, eve->index);
+					//printf("NOT DEFAULT! %d %d\r\n", ele->index, eve->index);
 
 					grid_nvm_config_store(nvm, ele->parent->page_activepage, ele->index, eve->type, eve->action_string);
 

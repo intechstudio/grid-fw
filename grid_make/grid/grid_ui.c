@@ -560,7 +560,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 			}
 			else if (eve->action_string != NULL){
 
-				printf("FOUND eve->action_string: %s\r\n", eve->action_string);
+				//printf("FOUND eve->action_string: %s\r\n", eve->action_string);
 
 				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(eve->action_string));		
 				grid_msg_body_append_text(&message, eve->action_string);
@@ -573,7 +573,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 				uint32_t len = grid_nvm_toc_generate_actionstring(nvm, entry, temp);
 
 
-				printf("FOUND in TOC: %s\r\n", temp);
+				//printf("FOUND in TOC: %s\r\n", temp);
 
 				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(temp));		
 				grid_msg_body_append_text(&message, temp);

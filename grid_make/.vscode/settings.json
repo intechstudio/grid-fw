@@ -48,6 +48,7 @@
         "tuple": "c",
         "grid_buf.h": "c",
         "grid_module_en16.h": "c",
-        "grid_hardwaretest.h": "c"
+        "grid_hardwaretest.h": "c",
+        "grid_usb.h": "c"
     }
 }

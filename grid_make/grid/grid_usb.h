@@ -11,6 +11,7 @@
 
 #include "grid_module.h"
 
+
 static uint8_t *cdcdf_demo_buf;
 static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count);
 static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count);
@@ -23,8 +24,10 @@ static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code r
 
 void grid_usb_midi_init();
 
+
+
+
 volatile uint8_t grid_usb_serial_rx_flag;
-volatile uint8_t grid_usb_serial_rx_buffer[512];
 volatile uint16_t grid_usb_serial_rx_size;
 
 struct grid_midi_event_desc {
