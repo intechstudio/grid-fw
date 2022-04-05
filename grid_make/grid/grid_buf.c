@@ -535,9 +535,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		// }
 		// printf("\r\n");
 		
-		grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
-		grid_led_set_alert_frequency(&grid_led_state, -2);	
-		grid_led_set_alert_phase(&grid_led_state, 100);	
 	}
 	
 	return;
