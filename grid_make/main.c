@@ -17,6 +17,22 @@
 #define CONF_ADC_0_SAMPLENUM 0x6
 #define CONF_ADC_1_SAMPLENUM 0x6
 
+// <o> Prescaler configuration
+// <0x0=>Peripheral clock divided by 2
+// <0x1=>Peripheral clock divided by 4
+// <0x2=>Peripheral clock divided by 8
+// <0x3=>Peripheral clock divided by 16
+// <0x4=>Peripheral clock divided by 32
+// <0x5=>Peripheral clock divided by 64
+// <0x6=>Peripheral clock divided by 128
+// <0x7=>Peripheral clock divided by 256
+// <i> These bits define the ADC clock relative to the peripheral clock (PRESCALER)
+// <id> adc_prescaler
+
+//#define CONF_ADC_0_PRESCALER 0x1
+#define CONF_ADC_0_PRESCALER 0x6
+#define CONF_ADC_1_PRESCALER 0x6
+
 
 #include "grid/grid_module.h"
 
