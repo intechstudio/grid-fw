@@ -1738,28 +1738,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							//printf("254\r\n");
 						}
 
-						uint8_t led_report_valid = 0;
 						uint8_t ui_report_valid = 0;
 
-						if (1 && 0){
-
-							for(uint8_t j=0; j<grid_led_state.led_count; j++){
-
-								if (grid_led_state.led_lowlevel_changed[j]){
-
-									uint8_t led_num = j;
-									uint8_t led_red = grid_led_state.led_lowlevel_red[j];
-									uint8_t led_gre = grid_led_state.led_lowlevel_gre[j];
-									uint8_t led_blu = grid_led_state.led_lowlevel_blu[j];
-									
-									printf("Led %d: %d %d %d\r\n", led_num, led_red, led_gre, led_blu);
-									
-									//grid_led_state.led_lowlevel_changed[j] = 0;
-									led_report_valid = 1;
-								}
-
-							}
-						}
 
 						if (1 && 0){
 
@@ -1822,7 +1802,10 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							printf("\r\n");
 						}
 
-						if (led_report_valid && 0){
+
+						// Report the state of the changed leds
+
+						if (grid_led_lowlevel_change_report_length(&grid_led_state)){
 
 							struct grid_msg response;
 													
@@ -1838,17 +1821,19 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							len += strlen(&response_payload[len]);
 
 							grid_msg_body_append_text(&response, response_payload);
-								
+
+
+							grid_msg_body_append_printf(&response, GRID_CLASS_LEDPREVIEW_frame_end);
+
 							grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
 							grid_msg_text_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
 							
 							grid_msg_packet_close(&response);
 							grid_msg_packet_send_everywhere(&response);
 
-							printf(response.body);
-							printf("\r\n");
-
 						}
+
+
 
 
 						// from editor

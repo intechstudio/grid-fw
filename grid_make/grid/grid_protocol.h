@@ -877,6 +877,7 @@ enum grid_ui_event_t
 #define GRID_CLASS_EVENTPREVIEW_VALUE_offset 11
 #define GRID_CLASS_EVENTPREVIEW_VALUE_length 2
 
+
 // CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)
 #define GRID_CLASS_CONFIG_code 0x060
 #define GRID_CLASS_CONFIG_frame "%c%03x_................%c", GRID_CONST_STX, GRID_CLASS_CONFIG_code, GRID_CONST_ETX

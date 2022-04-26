@@ -96,6 +96,8 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		}
 		
 		grid_msg_body_append_text(&message, payload);
+
+
 		grid_msg_packet_close(&message);
 			
 		uint32_t message_length = grid_msg_packet_get_length(&message);
@@ -179,7 +181,6 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 				}
 			
 			}
-		
 		}
 		
 	}
@@ -190,9 +191,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		
 		//por->cooldown += (2+por->cooldown/2);
 		por->cooldown += 2;
-		//por->cooldown = 3;
-		
-		
+		//por->cooldown = 3;		
 
 		grid_msg_packet_close(&message);
 		uint32_t length = grid_msg_packet_get_length(&message);
@@ -213,9 +212,41 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		else{
 			// LOG UNABLE TO WRITE EVENT
 		}
+
 		
-	
 	}
+
+	// LEDREPORT
+	if (ui_available && grid_led_lowlevel_change_report_length(&grid_led_state) && grid_sys_state.editor_connected){
+
+		struct grid_msg response;
+								
+		grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+
+		uint8_t response_payload[300] = {0};
+		uint16_t len = 0;
+		snprintf(response_payload, 299, GRID_CLASS_LEDPREVIEW_frame_start);
+		len += strlen(&response_payload[len]);
+
+		uint16_t report_length = grid_led_lowlevel_change_report(&grid_led_state, -1, &response_payload[len]);
+
+		len += strlen(&response_payload[len]);
+
+		grid_msg_body_append_text(&response, response_payload);
+
+
+		grid_msg_body_append_printf(&response, GRID_CLASS_LEDPREVIEW_frame_end);
+
+		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
+		grid_msg_text_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
+		
+		grid_msg_packet_close(&response);
+		grid_msg_packet_send_everywhere(&response);
+
+	}
+
+
+
 	
 }
 
