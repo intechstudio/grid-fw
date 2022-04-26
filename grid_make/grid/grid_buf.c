@@ -1743,7 +1743,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 						if (1 && 0){
 
-							for(uint8_t j=0; j<grid_led_state.led_number; j++){
+							for(uint8_t j=0; j<grid_led_state.led_count; j++){
 
 								if (grid_led_state.led_lowlevel_changed[j]){
 

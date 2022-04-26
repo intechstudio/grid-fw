@@ -226,7 +226,7 @@ uint8_t grid_led_lowlevel_set_color(struct grid_led_model* mod, uint32_t led_ind
 
 	
 	//if index is valid
-	if (led_index<mod->led_number){
+	if (led_index<mod->led_count){
 
 		// green
 		if (mod->led_frame_buffer_usable[led_index*3 + 0] != grid_led_color_code[led_g]){
@@ -275,14 +275,14 @@ void grid_led_lowlevel_hardware_transfer_complete_cb(struct _dma_resource *resou
 
 void grid_led_buffer_init(struct grid_led_model* mod, uint32_t length){
 	
-	mod->led_number = length;
+	mod->led_count = length;
 	
 	uint32_t last_tick_realtime = 0;
 	
 	
 		
 	// Allocating memory for the frame buffer
-	mod->led_frame_buffer_size = (GRID_LED_RESET_LENGTH + mod->led_number*3*4);
+	mod->led_frame_buffer_size = (GRID_LED_RESET_LENGTH + mod->led_count*3*4);
 	mod->led_frame_buffer = (uint8_t*) malloc(mod->led_frame_buffer_size * sizeof(uint8_t));
 	mod->led_frame_buffer_usable = (uint32_t*) &mod->led_frame_buffer[GRID_LED_RESET_LENGTH];
 	
@@ -290,7 +290,7 @@ void grid_led_buffer_init(struct grid_led_model* mod, uint32_t length){
 	// Allocating memory for the smart buffer (2D array)
 		
 	
-	mod->led_smart_buffer = (struct LED_layer*) malloc(mod->led_number * GRID_LED_LAYER_NUMBER * sizeof(struct LED_layer));
+	mod->led_smart_buffer = (struct LED_layer*) malloc(mod->led_count * GRID_LED_LAYER_COUNT * sizeof(struct LED_layer));
 	
 	if(mod->led_frame_buffer==NULL || mod->led_smart_buffer==NULL){
 		while(1){
@@ -302,10 +302,10 @@ void grid_led_buffer_init(struct grid_led_model* mod, uint32_t length){
 
 	// Allocating memory for low level color buffer for reporting
 
-	mod->led_lowlevel_red = (uint8_t*) malloc(mod->led_number * sizeof(uint8_t));
-	mod->led_lowlevel_gre = (uint8_t*) malloc(mod->led_number * sizeof(uint8_t));
-	mod->led_lowlevel_blu = (uint8_t*) malloc(mod->led_number * sizeof(uint8_t));
-	mod->led_lowlevel_changed = (uint8_t*) malloc(mod->led_number * sizeof(uint8_t));
+	mod->led_lowlevel_red = (uint8_t*) malloc(mod->led_count * sizeof(uint8_t));
+	mod->led_lowlevel_gre = (uint8_t*) malloc(mod->led_count * sizeof(uint8_t));
+	mod->led_lowlevel_blu = (uint8_t*) malloc(mod->led_count * sizeof(uint8_t));
+	mod->led_lowlevel_changed = (uint8_t*) malloc(mod->led_count * sizeof(uint8_t));
 	
 	if(mod->led_lowlevel_changed == NULL || mod->led_lowlevel_red == NULL || mod->led_lowlevel_gre == NULL || mod->led_lowlevel_blu == NULL){
 		while(1){
@@ -324,12 +324,12 @@ void grid_led_buffer_init(struct grid_led_model* mod, uint32_t length){
 		
 		
 	// Fill the rest of the buffer with rgb=(0,0,0);
-	for (uint32_t i = 0; i<mod->led_number; i++){
+	for (uint32_t i = 0; i<mod->led_count; i++){
 		grid_led_lowlevel_set_color(mod,i,0,0,0);
 	}
 
 	// Clear Changed buffer
-	for (uint8_t i = 0; i<mod->led_number; i++){
+	for (uint8_t i = 0; i<mod->led_count; i++){
 		mod->led_lowlevel_changed[i] = 0;
 		mod->led_lowlevel_red[i] = 0;
 		mod->led_lowlevel_gre[i] = 0;
@@ -338,23 +338,7 @@ void grid_led_buffer_init(struct grid_led_model* mod, uint32_t length){
 	
 
 	// DEFAULT CONFIG 
-	for(uint8_t i = 0; i<mod->led_number; i++){
-			
-		for(uint8_t j = 0; j<GRID_LED_LAYER_NUMBER; j++){
-
-			grid_led_set_min(mod,i, j, 0x00, 0x00, 0x00);
-			grid_led_set_mid(mod,i, j, 0x00, 0x00, 0x00);
-			grid_led_set_max(mod,i, j, 0x00, 0x00, 0x00);
-				
-			grid_led_set_frequency(mod,i, j, 0);
-			grid_led_set_phase(mod, i, j, 0);
-			grid_led_set_shape(mod, i, j, 0);
-
-			grid_led_set_timeout(mod, i, j, 0);
-
-		}
-
-	}
+	grid_led_reset(mod);
 
 
 }
@@ -403,7 +387,7 @@ void grid_led_startup_animation(struct grid_led_model* mod){
 		// SEND DATA TO LEDs
 		
 
-		for (uint8_t j=0; j<mod->led_number; j++){
+		for (uint8_t j=0; j<mod->led_count; j++){
 			//grid_led_lowlevel_set_color(i, 0, 255, 0);
 			grid_led_lowlevel_set_color(mod, j, (color_r*i*s%256)/2, (color_g*i*s%256)/2, (color_b*i*s%256)/2); // This is not an alert, this is low level shit
 			
@@ -476,22 +460,49 @@ uint8_t grid_led_lowlevel_init(struct grid_led_model* mod, uint8_t num){
 }
 
 
-uint32_t grid_led_get_led_number(struct grid_led_model* mod){
+uint32_t grid_led_get_led_count(struct grid_led_model* mod){
 
-	return mod->led_number;
+	return mod->led_count;
 
 }
+
+
+
+void grid_led_reset(struct grid_led_model* mod){
+
+
+
+	for (uint8_t i=0; i<grid_led_get_led_count(mod); i++){
+
+		for (uint8_t j=0; j<GRID_LED_LAYER_COUNT; j++){
+
+			grid_led_set_color(mod, i, j, 0, 0, 0);			
+			grid_led_set_frequency(mod, i, j, 0);
+			grid_led_set_phase(mod, i, j, 0);
+			grid_led_set_shape(mod, i, j, 0);
+			grid_led_set_timeout(mod, i, j, 0);
+
+		}
+
+
+	}
+
+
+
+
+}
+
 
 /** ================== ANIMATION ==================  */
 
 
 void grid_led_tick(struct grid_led_model* mod){
 
-	for (uint8_t j=0; j<mod->led_number; j++){
+	for (uint8_t j=0; j<mod->led_count; j++){
 					
-		for(uint8_t i=0; i<GRID_LED_LAYER_NUMBER; i++){
+		for(uint8_t i=0; i<GRID_LED_LAYER_COUNT; i++){
 			
-			struct LED_layer* ledbuf = &mod->led_smart_buffer[j+(mod->led_number*i)];
+			struct LED_layer* ledbuf = &mod->led_smart_buffer[j+(mod->led_count*i)];
 			
 			if (ledbuf->timeout != 0){
 				
@@ -514,7 +525,7 @@ void grid_led_set_alert(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_
 
 	//printf("ALERT\r\n");
 
-	for (uint8_t i = 0; i<mod->led_number; i++){
+	for (uint8_t i = 0; i<mod->led_count; i++){
 
 		grid_led_set_color(mod, i, GRID_LED_LAYER_ALERT, r, g, b);
 
@@ -537,7 +548,7 @@ void grid_led_set_alert_timeout_automatic(struct grid_led_model* mod){
 
 	uint8_t new_phase = (old_phase/2)*2;
 
-	for (uint8_t i = 0; i<mod->led_number; i++){
+	for (uint8_t i = 0; i<mod->led_count; i++){
 		grid_led_set_min(mod, i, GRID_LED_LAYER_ALERT, 0, 0, 0);
 	}
 
@@ -559,7 +570,7 @@ void grid_led_set_alert_timeout(struct grid_led_model* mod, uint8_t timeout){
 
 	//printf("ALERT\r\n");
 
-	for (uint8_t i = 0; i<mod->led_number; i++){
+	for (uint8_t i = 0; i<mod->led_count; i++){
 		grid_led_set_timeout(mod, i, GRID_LED_LAYER_ALERT, timeout);
 	}
 
@@ -569,7 +580,7 @@ void grid_led_set_alert_frequency(struct grid_led_model* mod, uint8_t frequency)
 
 	//printf("ALERT\r\n");
 
-	for (uint8_t i = 0; i<mod->led_number; i++){
+	for (uint8_t i = 0; i<mod->led_count; i++){
 		grid_led_set_frequency(mod, i, GRID_LED_LAYER_ALERT, frequency);
 	}
 
@@ -579,7 +590,7 @@ void grid_led_set_alert_phase(struct grid_led_model* mod, uint8_t phase){
 
 	//printf("ALERT\r\n");
 
-	for (uint8_t i = 0; i<mod->led_number; i++){
+	for (uint8_t i = 0; i<mod->led_count; i++){
 		grid_led_set_phase(mod, i, GRID_LED_LAYER_ALERT, phase);
 	}
 
@@ -588,7 +599,7 @@ void grid_led_set_alert_phase(struct grid_led_model* mod, uint8_t phase){
 void grid_led_set_color(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b){
 	
 
-	if (num<mod->led_number && layer<GRID_LED_LAYER_NUMBER){	
+	if (num<mod->led_count && layer<GRID_LED_LAYER_COUNT){	
 		
 		grid_led_set_min(mod, num, layer, r/20, g/20, b/20);				
 		grid_led_set_mid(mod, num, layer, r/2, g/2, b/2);
@@ -600,72 +611,72 @@ void grid_led_set_color(struct grid_led_model* mod, uint8_t num, uint8_t layer, 
 
 void grid_led_set_min(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b){
 	
-	if (num<mod->led_number && layer<GRID_LED_LAYER_NUMBER){	
+	if (num<mod->led_count && layer<GRID_LED_LAYER_COUNT){	
 
-		mod->led_smart_buffer[num+(mod->led_number*layer)].color_min.r = r;
-		mod->led_smart_buffer[num+(mod->led_number*layer)].color_min.g = g;
-		mod->led_smart_buffer[num+(mod->led_number*layer)].color_min.b = b;	
+		mod->led_smart_buffer[num+(mod->led_count*layer)].color_min.r = r;
+		mod->led_smart_buffer[num+(mod->led_count*layer)].color_min.g = g;
+		mod->led_smart_buffer[num+(mod->led_count*layer)].color_min.b = b;	
 	}
 }
 
 void grid_led_set_mid(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b){
 	
-	if (num<mod->led_number && layer<GRID_LED_LAYER_NUMBER){	
+	if (num<mod->led_count && layer<GRID_LED_LAYER_COUNT){	
 
-		mod->led_smart_buffer[num+(mod->led_number*layer)].color_mid.r = r;
-		mod->led_smart_buffer[num+(mod->led_number*layer)].color_mid.g = g;
-		mod->led_smart_buffer[num+(mod->led_number*layer)].color_mid.b = b;	
+		mod->led_smart_buffer[num+(mod->led_count*layer)].color_mid.r = r;
+		mod->led_smart_buffer[num+(mod->led_count*layer)].color_mid.g = g;
+		mod->led_smart_buffer[num+(mod->led_count*layer)].color_mid.b = b;	
 	}
 }
 
 void grid_led_set_max(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b){
 
-	if (num<mod->led_number && layer<GRID_LED_LAYER_NUMBER){	
+	if (num<mod->led_count && layer<GRID_LED_LAYER_COUNT){	
 
-		mod->led_smart_buffer[num+(mod->led_number*layer)].color_max.r = r;
-		mod->led_smart_buffer[num+(mod->led_number*layer)].color_max.g = g;
-		mod->led_smart_buffer[num+(mod->led_number*layer)].color_max.b = b;	
+		mod->led_smart_buffer[num+(mod->led_count*layer)].color_max.r = r;
+		mod->led_smart_buffer[num+(mod->led_count*layer)].color_max.g = g;
+		mod->led_smart_buffer[num+(mod->led_count*layer)].color_max.b = b;	
 	}
 }
 
 void grid_led_set_phase(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val){
 	
-	if (num<mod->led_number && layer<GRID_LED_LAYER_NUMBER){	
+	if (num<mod->led_count && layer<GRID_LED_LAYER_COUNT){	
 
-		mod->led_smart_buffer[num+(mod->led_number*layer)].pha = val;
+		mod->led_smart_buffer[num+(mod->led_count*layer)].pha = val;
 	}
 }
 
 uint8_t grid_led_get_phase(struct grid_led_model* mod, uint8_t num, uint8_t layer){
 	
-	if (num<mod->led_number && layer<GRID_LED_LAYER_NUMBER){	
+	if (num<mod->led_count && layer<GRID_LED_LAYER_COUNT){	
 
-		return mod->led_smart_buffer[num+(mod->led_number*layer)].pha;
+		return mod->led_smart_buffer[num+(mod->led_count*layer)].pha;
 	}
 }
 
 void grid_led_set_frequency(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val){
 
-	if (num<mod->led_number && layer<GRID_LED_LAYER_NUMBER){	
+	if (num<mod->led_count && layer<GRID_LED_LAYER_COUNT){	
 	
-		mod->led_smart_buffer[num+(mod->led_number*layer)].fre = val;
+		mod->led_smart_buffer[num+(mod->led_count*layer)].fre = val;
 	}
 }
 
 void grid_led_set_shape(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val){
 	
-	if (num<mod->led_number && layer<GRID_LED_LAYER_NUMBER){	
+	if (num<mod->led_count && layer<GRID_LED_LAYER_COUNT){	
 
-		mod->led_smart_buffer[num+(mod->led_number*layer)].sha = val;
+		mod->led_smart_buffer[num+(mod->led_count*layer)].sha = val;
 	}
 
 }
 
 void grid_led_set_timeout(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint16_t val){
 	
-	if (num<mod->led_number && layer<GRID_LED_LAYER_NUMBER){
+	if (num<mod->led_count && layer<GRID_LED_LAYER_COUNT){
 
-		mod->led_smart_buffer[num+(mod->led_number*layer)].timeout = val;
+		mod->led_smart_buffer[num+(mod->led_count*layer)].timeout = val;
 	}
 
 }
@@ -679,11 +690,11 @@ void grid_led_lowlevel_render(struct grid_led_model* mod, uint32_t num){
 	uint32_t mix_b = 0;
 	
 	// RENDER & SUM ALL LAYERS PER LED
-	for (uint8_t i = 0; i<GRID_LED_LAYER_NUMBER; i++){
+	for (uint8_t i = 0; i<GRID_LED_LAYER_COUNT; i++){
 		
 		uint8_t layer = i;
 
-		uint8_t phase = mod->led_smart_buffer[num+(mod->led_number*layer)].pha;
+		uint8_t phase = mod->led_smart_buffer[num+(mod->led_count*layer)].pha;
 
 		/* SHAPES
 		
@@ -698,7 +709,7 @@ void grid_led_lowlevel_render(struct grid_led_model* mod, uint32_t num){
 		uint8_t intensity = phase;
 
 
-		uint8_t shape = mod->led_smart_buffer[num+(mod->led_number*layer)].sha;
+		uint8_t shape = mod->led_smart_buffer[num+(mod->led_count*layer)].sha;
 
 		if (shape == 0){
 			intensity = phase;
@@ -714,19 +725,19 @@ void grid_led_lowlevel_render(struct grid_led_model* mod, uint32_t num){
 		}
 		
 				
-		uint8_t min_r = mod->led_smart_buffer[num+(mod->led_number*layer)].color_min.r;
-		uint8_t min_g = mod->led_smart_buffer[num+(mod->led_number*layer)].color_min.g;
-		uint8_t min_b = mod->led_smart_buffer[num+(mod->led_number*layer)].color_min.b;
+		uint8_t min_r = mod->led_smart_buffer[num+(mod->led_count*layer)].color_min.r;
+		uint8_t min_g = mod->led_smart_buffer[num+(mod->led_count*layer)].color_min.g;
+		uint8_t min_b = mod->led_smart_buffer[num+(mod->led_count*layer)].color_min.b;
 		uint8_t min_a = min_lookup[intensity];
 	
-		uint8_t mid_r = mod->led_smart_buffer[num+(mod->led_number*layer)].color_mid.r;
-		uint8_t mid_g = mod->led_smart_buffer[num+(mod->led_number*layer)].color_mid.g;
-		uint8_t mid_b = mod->led_smart_buffer[num+(mod->led_number*layer)].color_mid.b;
+		uint8_t mid_r = mod->led_smart_buffer[num+(mod->led_count*layer)].color_mid.r;
+		uint8_t mid_g = mod->led_smart_buffer[num+(mod->led_count*layer)].color_mid.g;
+		uint8_t mid_b = mod->led_smart_buffer[num+(mod->led_count*layer)].color_mid.b;
 		uint8_t mid_a = mid_lookup[intensity];
 		
-		uint8_t max_r = mod->led_smart_buffer[num+(mod->led_number*layer)].color_max.r;
-		uint8_t max_g = mod->led_smart_buffer[num+(mod->led_number*layer)].color_max.g;
-		uint8_t max_b = mod->led_smart_buffer[num+(mod->led_number*layer)].color_max.b;
+		uint8_t max_r = mod->led_smart_buffer[num+(mod->led_count*layer)].color_max.r;
+		uint8_t max_g = mod->led_smart_buffer[num+(mod->led_count*layer)].color_max.g;
+		uint8_t max_b = mod->led_smart_buffer[num+(mod->led_count*layer)].color_max.b;
 		uint8_t max_a = max_lookup[intensity];
 				
 		mix_r += min_r*min_a + mid_r*mid_a + max_r*max_a;
@@ -750,7 +761,7 @@ void grid_led_lowlevel_render(struct grid_led_model* mod, uint32_t num){
 
 void grid_led_lowlevel_render_all(struct grid_led_model* mod){
 	
-	for (uint32_t i=0; i<mod->led_number; i++){
+	for (uint32_t i=0; i<mod->led_count; i++){
 		
 		grid_led_lowlevel_render(mod, i);
 	}
@@ -795,7 +806,7 @@ uint8_t grid_led_lowlevel_change_count(struct grid_led_model* mod){
 
 	uint8_t count = 0; 
 
-	for(uint8_t i=0; i<mod->led_number; i++){
+	for(uint8_t i=0; i<mod->led_count; i++){
 		if (mod->led_lowlevel_changed[i] != 0){
 			count++;
 		}
@@ -815,7 +826,7 @@ uint16_t grid_led_lowlevel_change_report(struct grid_led_model* mod, uint16_t ma
 
 	uint16_t length = 0;
 
-	for(uint8_t i=0; i<mod->led_number; i++){
+	for(uint8_t i=0; i<mod->led_count; i++){
 
 		if (mod->led_lowlevel_changed[i] != 0){
 

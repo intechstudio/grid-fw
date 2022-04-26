@@ -640,6 +640,18 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 
 uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page){
 
+	/*
+	
+		Reset encoder mode
+		Reset button mode
+		Reset potmeter mode/reso
+		Reset led animations
+
+	*/
+
+	// reset all of the state parameters of all leds
+	grid_led_reset(&grid_led_state);
+
 	uint8_t oldpage = ui->page_activepage;
 	ui->page_activepage = page;
 	// Call the page_change callback
@@ -660,6 +672,10 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 			grid_ui_event_reset(eve);
 
 		}	
+
+		if (ele->template_initializer!=NULL){
+			ele->template_initializer(ele->template_buffer_list_head);
+		}
 
 
 		uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);

@@ -7,7 +7,7 @@
 #define GRID_LED_LAYER_UI_A		1
 #define GRID_LED_LAYER_UI_B		2
 
-#define GRID_LED_LAYER_NUMBER 3
+#define GRID_LED_LAYER_COUNT 3
 
 
 #define GRID_LED_COLOR_PURPLE	255,0,255
@@ -44,7 +44,7 @@ struct grid_led_model{
 
 	uint32_t last_tick_realtime;
 	
-	uint8_t led_number;
+	uint8_t led_count;
 	uint32_t led_frame_buffer_size;
 	uint8_t* led_frame_buffer; // The frame buffer is used to send data to the LEDs
 	uint32_t* led_frame_buffer_usable; // The part of the frame buffer that contains LED data
@@ -96,16 +96,17 @@ uint8_t grid_led_lowlevel_set_color(struct grid_led_model* mod, uint32_t led_ind
 // TIME TICK FOR ANIMATIONS
 void grid_led_tick(struct grid_led_model* mod);
 
-
-
 void grid_led_set_alert(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_t b, uint16_t duration);
 
 void grid_led_set_alert_timeout(struct grid_led_model* mod, uint8_t timeout);
 void grid_led_set_alert_timeout_automatic(struct grid_led_model* mod);
 void grid_led_set_alert_frequency(struct grid_led_model* mod, uint8_t frequency);
 void grid_led_set_alert_phase(struct grid_led_model* mod, uint8_t phase);
-// WRITING THE SMART BUFFER
 
+// reset the state of the led smartbuffer
+void grid_led_reset(struct grid_led_model* mod);
+
+// WRITING THE SMART BUFFER
 void grid_led_set_color(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
 
 void grid_led_set_min(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
@@ -119,7 +120,7 @@ void grid_led_set_frequency(struct grid_led_model* mod, uint8_t num, uint8_t lay
 void grid_led_set_shape(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_timeout(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint16_t val);
 
-uint32_t grid_led_get_led_number(struct grid_led_model* mod);
+uint32_t grid_led_get_led_count(struct grid_led_model* mod);
 
 /** ======================== SMART BUFFER  ========================== */
 

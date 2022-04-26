@@ -29,9 +29,9 @@
 // <i> These bits define the ADC clock relative to the peripheral clock (PRESCALER)
 // <id> adc_prescaler
 
-//#define CONF_ADC_0_PRESCALER 0x1
-#define CONF_ADC_0_PRESCALER 0x6
-#define CONF_ADC_1_PRESCALER 0x6
+//#define CONF_ADC_0_PRESCALER 0x1 original
+//#define CONF_ADC_0_PRESCALER 0x6
+//#define CONF_ADC_1_PRESCALER 0x6
 
 
 #include "grid/grid_module.h"

@@ -83,7 +83,7 @@ void grid_nvm_hardwaretest_main(){
 			}
 
 
-			for(uint8_t i=0; i<grid_led_state.led_number; i++){
+			for(uint8_t i=0; i<grid_led_state.led_count; i++){
 			
 				grid_led_lowlevel_set_color(&grid_led_state, i, counter%64, counter%64, counter%64);
 			
@@ -167,7 +167,7 @@ void grid_hardwaretest_led_test_init(struct grid_led_model* mod, uint8_t num){
 void grid_hardwaretest_led_test(struct grid_led_model* mod, uint32_t loop){
 		
 		
-	for(uint8_t i=0; i<mod->led_number; i++){
+	for(uint8_t i=0; i<mod->led_count; i++){
 	
 		grid_led_lowlevel_set_color(mod, i, loop/10%128*(loop/1280%3==0), loop/10%128*(loop/1280%3==1), loop/10%128*(loop/1280%3==2));
 	
@@ -191,7 +191,7 @@ void grid_hardwaretest_led_test_photo(struct grid_led_model* mod, uint32_t loop)
 	uint8_t color_b[4] = {127, 127, 0, 255};
 	
 	
-	for(uint8_t i=0; i<mod->led_number; i++){
+	for(uint8_t i=0; i<mod->led_count; i++){
 		
 		uint8_t intensity = (rand()%255)*(rand()%255)/256.0/2;
 		//uint8_t intensity = (rand()%255)/2;
