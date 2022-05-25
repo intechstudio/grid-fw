@@ -382,6 +382,8 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->uptime = 0;
 	mod->reset_cause = hri_rstc_read_RCAUSE_reg(RSTC);
 	
+	mod->midirx_any_enabled = 1;
+	mod->midirx_sync_enabled = 0;
 
 	mod->hwfcg = -1;
 	mod->heartbeat_type = 0;

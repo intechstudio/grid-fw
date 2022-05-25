@@ -67,8 +67,7 @@ static void usb_task_inner(struct grid_d51_task* task){
 	// Send midi from Grid to Host!
 	grid_midi_tx_pop();        
 	
-	// Forward midi from Host to Grid!
-	grid_midi_rx_pop();
+
 
 	// MIDI READ TEST CODE
 	uint8_t midi_rx_length = 0;
@@ -119,6 +118,9 @@ static void usb_task_inner(struct grid_d51_task* task){
 
 
 	}	
+
+	// Forward midi from Host to Grid!
+	grid_midi_rx_pop();
 	
 	// SERIAL READ 
 

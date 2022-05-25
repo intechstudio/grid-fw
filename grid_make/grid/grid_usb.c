@@ -124,8 +124,8 @@ void grid_usb_midi_init()
 
 void grid_keyboard_init(struct grid_keyboard_model* kb){
     
-    grid_keyboard_tx_rtc_lasttimestamp = grid_sys_rtc_get_time(&grid_sys_state);
-    grid_keyboard_tx_write_index = 0;
+	grid_keyboard_tx_rtc_lasttimestamp = grid_sys_rtc_get_time(&grid_sys_state);
+	grid_keyboard_tx_write_index = 0;
 	grid_keyboard_tx_read_index = 0;
 	grid_keyboard_buffer_init(grid_keyboard_tx_buffer, GRID_KEYBOARD_TX_BUFFER_length);
     
@@ -322,7 +322,6 @@ void grid_midi_buffer_init(struct grid_midi_event_desc* buf, uint16_t length){
 
 uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event){
 
-
 	grid_midi_tx_buffer[grid_midi_tx_write_index] = midi_event;
 	grid_midi_tx_write_index = (grid_midi_tx_write_index+1)%GRID_MIDI_TX_BUFFER_length;
 
@@ -352,10 +351,39 @@ uint8_t grid_midi_tx_pop(){
 
 uint8_t grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 
+	// MIDI RX IS DISABLED
+	if (grid_sys_state.midirx_any_enabled == 0){
+		return;
+	}
+
+	if (grid_sys_state.midirx_sync_enabled == 0){
+
+		if (midi_event.byte0 == 8 && midi_event.byte1 == 240 && midi_event.byte2 == 36){
+			// midi clock message was recieved
+			return;
+
+		}
+
+		if (midi_event.byte0 == 10 && midi_event.byte1 == 240 && midi_event.byte2 == 36){
+			// midi start message was recieved
+			return;
+
+		}
+
+		if (midi_event.byte0 == 12 && midi_event.byte1 == 240 && midi_event.byte2 == 36){
+			// midi stop message was recieved
+			return;
+
+		}
+
+	}
+
 	// recude commandchange time resolution HERE!!
 
 	//       W              R
 	//[0][1][2][3][4][5][6][7][8][9][10]
+
+
 	for(uint16_t i=0; i<GRID_MIDI_RX_BUFFER_length; i++){
 
 		if (grid_midi_rx_write_index-i == grid_midi_rx_read_index){
@@ -373,7 +401,9 @@ uint8_t grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 		if (grid_midi_rx_buffer[grid_midi_rx_write_index-i].byte2 != midi_event.byte2) continue;
 
 		// it's a match, update to the newer value!!
+		grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
 		grid_midi_rx_buffer[grid_midi_rx_write_index-i].byte3 = midi_event.byte3;
+
 		break; //return;
 
 	}

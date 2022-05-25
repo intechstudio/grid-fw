@@ -275,6 +275,14 @@
 #define GRID_LUA_FNC_G_EVENT_TRIGGER_human 		"event_trigger"
 #define GRID_LUA_FNC_G_EVENT_TRIGGER_fnptr 		l_grid_event_trigger
 
+#define GRID_LUA_FNC_G_MIDIRX_ENABLED_short "mre"
+#define GRID_LUA_FNC_G_MIDIRX_ENABLED_human "midirx_enabled"
+#define GRID_LUA_FNC_G_MIDIRX_ENABLED_fnptr l_grid_midirx_enabled
+
+#define GRID_LUA_FNC_G_MIDIRX_SYNC_short 		"mrs"
+#define GRID_LUA_FNC_G_MIDIRX_SYNC_human 		"midirx_sync"
+#define GRID_LUA_FNC_G_MIDIRX_SYNC_fnptr 		l_grid_midirx_sync
+
 #define GRID_LUA_FNC_G_LOOKUP_short 	"glut"
 #define GRID_LUA_FNC_G_LOOKUP_human 	"lookup"
 

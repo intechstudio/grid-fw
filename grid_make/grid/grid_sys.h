@@ -33,6 +33,8 @@ struct grid_sys_model
 	uint8_t editor_connected;
 	uint32_t editor_heartbeat_lastrealtime;
 
+	uint8_t midirx_any_enabled;
+	uint8_t midirx_sync_enabled;
 
 	struct grid_lastheader lastheader_config;
 	struct grid_lastheader lastheader_pagestore;
