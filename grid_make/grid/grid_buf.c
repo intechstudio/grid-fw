@@ -1673,6 +1673,9 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					uint8_t type  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_HEARTBEAT_TYPE_offset], GRID_CLASS_HEARTBEAT_TYPE_length, &error_flag);
 					
+					uint8_t editor_connected_now = 0;
+
+
 					if (type == 0){
 						// from other grid module
 					}
@@ -1724,6 +1727,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 						if (grid_sys_state.editor_connected == 0){
 							grid_sys_state.editor_connected = 1;
+							editor_connected_now = 1;
 							printf("EDITOR connect\r\n");
 						}
 
@@ -1741,7 +1745,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						uint8_t ui_report_valid = 0;
 
 
-						if (1 && 0){
+						if (editor_connected_now){
 
 							uint16_t report_length = 0;
 							struct grid_msg response;
@@ -1774,7 +1778,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 								
 								report_length += 4;
 
-								printf("Element %d: %d\r\n", element_num, element_value);
+								//printf("Element %d: %d\r\n", element_num, element_value);
 								
 								//grid_led_state.led_lowlevel_changed[j] = 0;
 
@@ -1798,14 +1802,21 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							grid_msg_packet_close(&response);
 							grid_msg_packet_send_everywhere(&response);
 
-							printf(response.body);
-							printf("\r\n");
+							//printf(response.body);
+							//printf("\r\n");
 						}
 
 
 						// Report the state of the changed leds
 
+						if (editor_connected_now){
+							// reset the changed flags to force report all leds
+							grid_led_lowlevel_change_reset(&grid_led_state);
+						}
+
+
 						if (grid_led_lowlevel_change_report_length(&grid_led_state)){
+
 
 							struct grid_msg response;
 													
@@ -1833,8 +1844,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 						}
 
-
-
+						
 
 						// from editor
 

@@ -800,6 +800,15 @@ uint8_t grid_led_lowlevel_hardware_is_transfer_completed(struct grid_led_model* 
 }
 
 
+uint8_t grid_led_lowlevel_change_reset(struct grid_led_model* mod){
+
+
+	for(uint8_t i=0; i<mod->led_count; i++){
+		mod->led_lowlevel_changed[i] = 1;
+	}
+
+
+}
 
 
 uint8_t grid_led_lowlevel_change_count(struct grid_led_model* mod){

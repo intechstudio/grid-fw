@@ -78,6 +78,7 @@ uint8_t grid_led_lowlevel_hardware_is_transfer_completed(struct grid_led_model* 
 // INITIALIZING THE GRID_LED LIBRARY
 uint8_t grid_led_lowlevel_init(struct grid_led_model* mod, uint8_t num);
 
+uint8_t grid_led_lowlevel_change_reset(struct grid_led_model* mod);
 uint8_t grid_led_lowlevel_change_count(struct grid_led_model* mod);
 uint16_t grid_led_lowlevel_change_report_length(struct grid_led_model* mod);
 uint16_t grid_led_lowlevel_change_report(struct grid_led_model* mod, uint16_t maxlength, uint8_t* output);
