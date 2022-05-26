@@ -1,39 +1,3 @@
-// <o.0..10> Number of Samples to be Collected
-// <0x0=>1 sample
-// <0x1=>2 samples
-// <0x2=>4 samples
-// <0x3=>8 samples
-// <0x4=>16 samples
-// <0x5=>32 samples
-// <0x6=>64 samples
-// <0x7=>128 samples
-// <0x8=>256 samples
-// <0x9=>512 samples
-// <0xA=>1024 samples
-// <i> Define how many samples should be added together.The result will be available in the Result register (SAMPLENUM)
-// <id> adc_arch_samplenum
-
-
-#define CONF_ADC_0_SAMPLENUM 0x6
-#define CONF_ADC_1_SAMPLENUM 0x6
-
-// <o> Prescaler configuration
-// <0x0=>Peripheral clock divided by 2
-// <0x1=>Peripheral clock divided by 4
-// <0x2=>Peripheral clock divided by 8
-// <0x3=>Peripheral clock divided by 16
-// <0x4=>Peripheral clock divided by 32
-// <0x5=>Peripheral clock divided by 64
-// <0x6=>Peripheral clock divided by 128
-// <0x7=>Peripheral clock divided by 256
-// <i> These bits define the ADC clock relative to the peripheral clock (PRESCALER)
-// <id> adc_prescaler
-
-//#define CONF_ADC_0_PRESCALER 0x1 original
-//#define CONF_ADC_0_PRESCALER 0x6
-//#define CONF_ADC_1_PRESCALER 0x6
-
-
 #include "grid/grid_module.h"
 
 #include "grid/grid_ui.h"
@@ -55,6 +19,8 @@
 volatile uint32_t globaltest = 0;
 
 
+volatile uint32_t loopcounter = 1;
+volatile uint32_t loopcount = 0;
 
 volatile uint8_t midi_rx_buffer[16] = {0};
 
@@ -119,8 +85,10 @@ static void usb_task_inner(struct grid_d51_task* task){
 
 	}	
 
+
 	// Forward midi from Host to Grid!
 	grid_midi_rx_pop();
+	
 	
 	// SERIAL READ 
 
@@ -423,7 +391,7 @@ void init_timer(void)
 	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
 	RTC_Scheduler_realtime.mode     = TIMER_TASK_REPEAT;
 
-	RTC_Scheduler_report.interval = RTC1MS*100;
+	RTC_Scheduler_report.interval = RTC1MS*1000;
 	RTC_Scheduler_report.cb       = RTC_Scheduler_report_cb;
 	RTC_Scheduler_report.mode     = TIMER_TASK_REPEAT;
 
@@ -623,7 +591,6 @@ int main(void)
 	
 	init_timer();
 
-	uint32_t loopcounter = 1;
 	uint32_t loopstart = 0;
 
 	uint8_t task_list_length = 7;
@@ -708,6 +675,15 @@ int main(void)
 		//printf("WTF\r\n\r\n");
 		
 		loopcounter++;
+		loopcount++;
+
+	if (reportflag){
+
+			reportflag = 0;
+			//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
+			printf("%d \r\n", loopcount);
+			loopcount = 0;
+	}
 
 		if (loopcounter == 1000){
 
@@ -724,6 +700,7 @@ int main(void)
 		
 
 		usb_task_inner(grid_usb_task);
+	
 	
 		nvm_task_inner(grid_nvm_task);
 		
@@ -798,7 +775,7 @@ int main(void)
 		}
 
 
-		if (reportflag && 0){
+		if (reportflag&&0){
 
 
 			reportflag = 0;
@@ -809,8 +786,8 @@ int main(void)
 
 
 
-			sprintf(&reportbuffer[length], GRID_CLASS_DEBUGTASK_frame_start);
-			length += strlen(&reportbuffer[length]);
+			//sprintf(&reportbuffer[length], GRID_CLASS_DEBUGTASK_frame_start);
+			//length += strlen(&reportbuffer[length]);
 
 			for (uint8_t i=0; i<task_list_length; i++){
 
@@ -819,7 +796,7 @@ int main(void)
 				//printf("%s %d ", task->taskname, task->subtaskcount);
 				for (uint8_t j=0; j<task->subtaskcount; j++){
 
-					sprintf(&reportbuffer[length], "!%s,%d,%d,%d", task->taskname, task->min[j]/120, task->sum[j]/120/task->startcount, task->max[j]/120);
+					sprintf(&reportbuffer[length], " !%s,%4d,%4d,%4d", task->taskname, task->min[j]/120, task->sum[j]/120/task->startcount, task->max[j]/120);
 					length += strlen(&reportbuffer[length]);
 
 				}
@@ -830,8 +807,8 @@ int main(void)
 			//printf("\r\n");
 
 
-			sprintf(&reportbuffer[length], GRID_CLASS_EVENTPREVIEW_frame_end);
-			length += strlen(&reportbuffer[length]);
+			//sprintf(&reportbuffer[length], GRID_CLASS_EVENTPREVIEW_frame_end);
+			//length += strlen(&reportbuffer[length]);
 
 
 
@@ -850,7 +827,9 @@ int main(void)
 			grid_msg_packet_close(&response);
 
 
-			grid_msg_packet_send_everywhere(&response);			
+			//grid_msg_packet_send_everywhere(&response);			
+
+			printf("%s\r\n", reportbuffer);
 
 		
 			receive_task_inner(NULL);

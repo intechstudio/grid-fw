@@ -50,6 +50,7 @@
         "grid_module_en16.h": "c",
         "grid_hardwaretest.h": "c",
         "grid_usb.h": "c",
-        "grid_protocol.h": "c"
+        "grid_protocol.h": "c",
+        "grid_unittest.h": "c"
     }
 }

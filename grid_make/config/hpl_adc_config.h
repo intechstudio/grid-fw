@@ -1,3 +1,9 @@
+
+#define CONF_ADC_0_SAMPLENUM 0x4
+#define CONF_ADC_1_SAMPLENUM 0x4
+#define CONF_ADC_0_PRESCALER 0x6
+#define CONF_ADC_1_PRESCALER 0x6
+
 /* Auto-generated config file hpl_adc_config.h */
 #ifndef HPL_ADC_CONFIG_H
 #define HPL_ADC_CONFIG_H

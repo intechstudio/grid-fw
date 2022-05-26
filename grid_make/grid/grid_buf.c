@@ -1728,7 +1728,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						if (grid_sys_state.editor_connected == 0){
 							grid_sys_state.editor_connected = 1;
 							editor_connected_now = 1;
-							printf("EDITOR connect\r\n");
+							grid_debug_print_text("EDITOR connect");
 						}
 
 						grid_sys_state.editor_heartbeat_lastrealtime = grid_sys_rtc_get_time(&grid_sys_state);
