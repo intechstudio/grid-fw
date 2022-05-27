@@ -565,7 +565,7 @@ void grid_port_receive_task(struct grid_port* por){
 		
 		if (por->usart!=NULL){ // This is GRID usart port
 
-			if (por->rx_double_buffer_timeout > 1000){
+			if (por->rx_double_buffer_timeout > 4000){
 			
 				if (por->partner_status == 1){
 				

@@ -186,7 +186,12 @@ static void ui_task_inner(struct grid_d51_task* task){
 
 	grid_d51_task_start(task);
 
-	grid_port_process_ui(&grid_ui_state, &GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
+	// every other entry of the superloop
+	if (loopcount%4==0){
+
+		grid_port_process_ui(&grid_ui_state, &GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
+
+	}
 
 	grid_d51_task_stop(task);
 }
@@ -677,13 +682,13 @@ int main(void)
 		loopcounter++;
 		loopcount++;
 
-	if (reportflag){
+		if (reportflag){
 
-			reportflag = 0;
-			//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
-			printf("%d \r\n", loopcount);
-			loopcount = 0;
-	}
+				reportflag = 0;
+				//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
+				printf("%d \r\n", loopcount);
+				loopcount = 0;
+		}
 
 		if (loopcounter == 1000){
 
