@@ -269,6 +269,56 @@ static int l_my_print(lua_State* L) {
     return 0;
 }
 
+
+static int l_grid_elementname_send(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+    //printf("LUA PRINT: ");
+    if (nargs == 2){
+
+        if (lua_type(L, 1) == LUA_TNUMBER && lua_type(L, 2) == LUA_TSTRING){
+
+
+            uint8_t frame[30] = {0};
+
+            uint8_t number = (uint8_t)lua_tointeger(L, 1);
+            uint8_t string[20] = {0};
+
+            strncpy(string, lua_tostring(L, 2), 19);
+
+
+            sprintf(frame, GRID_CLASS_ELEMENTNAME_frame_start);
+
+            grid_msg_set_parameter(frame, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+
+            grid_msg_set_parameter(frame, GRID_CLASS_ELEMENTNAME_NUM_offset, GRID_CLASS_ELEMENTNAME_NUM_length, number, NULL);
+            grid_msg_set_parameter(frame, GRID_CLASS_ELEMENTNAME_LENGTH_offset, GRID_CLASS_ELEMENTNAME_LENGTH_length, strlen(string), NULL);
+            strcpy(&frame[GRID_CLASS_ELEMENTNAME_NAME_offset], string);
+            sprintf(&frame[strlen(frame)], GRID_CLASS_ELEMENTNAME_frame_end);
+
+            strcat(grid_lua_state.stdo, frame);
+
+            //printf("TEST: %s,%s\r\n", grid_lua_state.stdo, frame);
+            return;
+
+
+            //grid_debug_printf("SN: %d, %s", number, string);
+		    //printf(" str: %s ", lua_tostring(L, i));
+        }
+        else{
+            grid_debug_printf("Invalid args");
+        }
+
+    }
+    else{
+        grid_debug_printf("Invalid args");
+    }
+
+    return 0;
+}
+
+
+
 static int l_grid_send(lua_State* L) {
 
     int nargs = lua_gettop(L);
@@ -1287,6 +1337,9 @@ static const struct luaL_Reg printlib [] = {
     {GRID_LUA_FNC_G_HWCFG_short,    GRID_LUA_FNC_G_HWCFG_fnptr},
 
     {GRID_LUA_FNC_G_RANDOM_short,    GRID_LUA_FNC_G_RANDOM_fnptr},
+    {GRID_LUA_FNC_G_ELEMENTNAME_SEND_short, GRID_LUA_FNC_G_ELEMENTNAME_SEND_fnptr},
+
+    {"print", l_my_print},
   
     {"gtv", l_grid_template_variable},
   
@@ -1337,7 +1390,8 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
     grid_lua_debug_memory_stats(mod, "Openlibs");
 
     grid_lua_dostring(mod, GRID_LUA_GLUT_source);
-    grid_lua_dostring(mod, GRID_LUA_GLIM_source);
+    grid_lua_dostring(mod, GRID_LUA_GLIM_source);    
+    grid_lua_dostring(mod, GRID_LUA_GEN_source);
     grid_lua_dostring(mod, "midi = {}");
     grid_lua_dostring(mod, "midi.ch = 0 midi.cmd=176 midi.p1=0 midi.p2=0");
     grid_lua_dostring(mod, "midi.send_packet = function (self,ch,cmd,p1,p2) "GRID_LUA_FNC_G_MIDI_SEND_short"(ch,cmd,p1,p2) end");
@@ -1354,6 +1408,8 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 
     lua_getglobal(mod->L, "_G");
 	luaL_setfuncs(mod->L, printlib, 0);
+
+
 	lua_pop(mod->L, 1);
     grid_lua_debug_memory_stats(mod, "Printlib");
 
@@ -1362,6 +1418,7 @@ uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
 
     grid_lua_ui_init(mod, &grid_sys_state);
     grid_lua_debug_memory_stats(mod, "Ui init");
+
 
 
 }

@@ -37,6 +37,17 @@ end"
  return a \
 end"
 
+// GRID ELEMENT NAME
+#define GRID_LUA_GEN_source  \
+"function gen (a, b)  \
+ if b==nil then \
+  return ele[a].sn \
+ else \
+  ele[a].sn=b \
+  gens(a,b) \
+ end \
+end"
+
 #define GRID_LUA_STDO_LENGTH    100
 #define GRID_LUA_STDI_LENGTH    100
 

@@ -2131,7 +2131,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						}
 						else{
 
-							printf("Config frame invalid: %d %d %d %d end: %d %s\r\n", pagenumber, elementnumber, eventtype, actionlength, action[actionlength], action);
+							printf("Config frame invalid: %d %d %d %d end: %d %s\r\n", pagenumber, elementnumber, eventtype, actionlength, action[actionlength], message);
 
 						}
 
@@ -2153,7 +2153,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						}
 						else{
 							grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
-							grid_debug_printf("Config Error");
+							grid_debug_printf("Config Error %d", id);
 						}
 						
 						grid_msg_packet_close(&response);

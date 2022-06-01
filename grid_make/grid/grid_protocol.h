@@ -17,7 +17,7 @@
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
 #define GRID_PROTOCOL_VERSION_MINOR 2
-#define GRID_PROTOCOL_VERSION_PATCH 16
+#define GRID_PROTOCOL_VERSION_PATCH 17
 
 // Module HWCFG definitions
 
@@ -283,11 +283,16 @@
 #define GRID_LUA_FNC_G_MIDIRX_SYNC_human 		"midirx_sync"
 #define GRID_LUA_FNC_G_MIDIRX_SYNC_fnptr 		l_grid_midirx_sync
 
+#define GRID_LUA_FNC_G_ELEMENTNAME_SEND_short 	"gens"
+#define GRID_LUA_FNC_G_ELEMENTNAME_SEND_human 	"elementname_send"
+#define GRID_LUA_FNC_G_ELEMENTNAME_SEND_fnptr 	l_grid_elementname_send
+
 #define GRID_LUA_FNC_G_LOOKUP_short 	"glut"
 #define GRID_LUA_FNC_G_LOOKUP_human 	"lookup"
 
 #define GRID_LUA_FNC_G_LIMIT_short 	"glim"
 #define GRID_LUA_FNC_G_LIMIT_human 	"limit"
+
 
 #define GRID_LUA_INIT_SCRIPT_1 "print('Hardware: ', ghwcfg(), ' Version: ', gvmaj(), gvmin(), gvpat())"
 #define GRID_LUA_INIT_SCRIPT_2 "print('Random: ', grnd(), grnd(), grnd(), grnd())"
@@ -452,7 +457,8 @@ stored config date
 	\
 	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
 	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end,\
-	get = function (self,a) "GRID_LUA_FNC_G_EVENT_TRIGGER_short"(self.index,a) end\
+	get = function (self,a) "GRID_LUA_FNC_G_EVENT_TRIGGER_short"(self.index,a) end,\
+	gen = function (self,a) return gen(self.index,a) end\
 	\
     }}"
 
@@ -524,7 +530,8 @@ stored config date
 	\
 	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
 	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end,\
-	get = function (self,a) "GRID_LUA_FNC_G_EVENT_TRIGGER_short"(self.index,a) end\
+	get = function (self,a) "GRID_LUA_FNC_G_EVENT_TRIGGER_short"(self.index,a) end,\
+	gen = function (self,a) return gen(self.index,a) end\
     }}"
 
 #define GRID_LUA_P_LIST_deinit "init_potmeter = nil"
@@ -593,7 +600,8 @@ stored config date
 	\
 	gtt = function (self,a) "GRID_LUA_FNC_G_TIMER_START_short"(self.index,a) end,\
 	gtp = function (self) "GRID_LUA_FNC_G_TIMER_STOP_short"(self.index) end,\
-	get = function (self,a) "GRID_LUA_FNC_G_EVENT_TRIGGER_short"(self.index,a) end\
+	get = function (self,a) "GRID_LUA_FNC_G_EVENT_TRIGGER_short"(self.index,a) end,\
+	gen = function (self,a) return gen(self.index,a) end\
     }}"
 
 #define GRID_LUA_B_LIST_deinit "init_button = nil"
@@ -819,6 +827,7 @@ enum grid_ui_event_t
 #define GRID_CLASS_DEBUGTASK_OUTPUT_length 0
 
 
+
 // PAGEACTIVE
 #define GRID_CLASS_PAGEACTIVE_code 0x030
 #define GRID_CLASS_PAGEACTIVE_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_PAGEACTIVE_code, GRID_CONST_ETX
@@ -884,6 +893,23 @@ enum grid_ui_event_t
 
 #define GRID_CLASS_EVENTPREVIEW_VALUE_offset 11
 #define GRID_CLASS_EVENTPREVIEW_VALUE_length 2
+
+
+// STRNGNAME
+#define GRID_CLASS_ELEMENTNAME_code 0x052
+#define GRID_CLASS_ELEMENTNAME_frame "%c%03x_..%c", GRID_CONST_STX, GRID_CLASS_ELEMENTNAME_code, GRID_CONST_ETX
+#define GRID_CLASS_ELEMENTNAME_frame_start "%c%03x_..", GRID_CONST_STX, GRID_CLASS_ELEMENTNAME_code
+#define GRID_CLASS_ELEMENTNAME_frame_end "%c", GRID_CONST_ETX
+
+#define GRID_CLASS_ELEMENTNAME_NUM_offset 5
+#define GRID_CLASS_ELEMENTNAME_NUM_length 2
+
+#define GRID_CLASS_ELEMENTNAME_LENGTH_offset 7
+#define GRID_CLASS_ELEMENTNAME_LENGTH_length 2
+
+#define GRID_CLASS_ELEMENTNAME_NAME_offset 9
+#define GRID_CLASS_ELEMENTNAME_NAME_length 0
+
 
 
 // CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)
@@ -1023,6 +1049,7 @@ enum grid_ui_event_t
 
 #define GRID_CLASS_HIDMOUSEBUTTON_BUTTON_offset 7
 #define GRID_CLASS_HIDMOUSEBUTTON_BUTTON_length 2
+
 
 
 
