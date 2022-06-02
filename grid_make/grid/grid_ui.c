@@ -57,12 +57,17 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	//LOCAL MESSAGES
 	if (message_local_action_available){
 			
-		struct grid_msg message;
-		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
-						
-		// Prepare packet header
-		uint8_t payload[GRID_PARAMETER_PACKET_maxlength] = {0};				
-		uint32_t offset=0;
+		// Prepare packet header LOCAL
+		struct grid_msg message_local;
+		grid_msg_init_header(&message_local, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
+		uint8_t payload_local[GRID_PARAMETER_PACKET_maxlength] = {0};				
+		uint32_t offset_local=0;		
+
+		// Prepare packet header GLOBAL
+		struct grid_msg message_global;
+		grid_msg_init_header(&message_global, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
+		uint8_t payload_global[GRID_PARAMETER_PACKET_maxlength] = {0};				
+		uint32_t offset_global=0;
 		
 		
 		
@@ -72,7 +77,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 			
 			for (uint8_t k=0; k<grid_ui_state.element_list[j].event_list_length; k++){
 			
-				if (offset>GRID_PARAMETER_PACKET_marign){
+				if (offset_local>GRID_PARAMETER_PACKET_marign || offset_global>GRID_PARAMETER_PACKET_marign){
 					continue;
 				}		
 				else{
@@ -80,8 +85,28 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 					CRITICAL_SECTION_ENTER()
 					if (grid_ui_event_istriggered_local(&grid_ui_state.element_list[j].event_list[k])){
 						
-						offset += grid_ui_event_render_action(&grid_ui_state.element_list[j].event_list[k], &payload[offset]);
+						offset_local += grid_ui_event_render_action(&grid_ui_state.element_list[j].event_list[k], &payload_local[offset_local]);
 						grid_ui_event_reset(&grid_ui_state.element_list[j].event_list[k]);
+
+
+						// automatically report elementname after config
+						if (j<grid_ui_state.element_list_length-1){
+							
+
+								uint8_t number = j;
+								uint8_t command[20] = {0};
+
+								sprintf(command, "gens(%d,ele[%d]:gen())", j, j);
+
+								// lua get element name
+								grid_lua_clear_stdo(&grid_lua_state);
+								grid_lua_dostring(&grid_lua_state, command);
+								strcat(payload_global, grid_lua_state.stdo);
+								grid_lua_clear_stdo(&grid_lua_state);
+
+						}
+						
+
 					
 					}
 					CRITICAL_SECTION_LEAVE()
@@ -94,20 +119,28 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 			
 		}
+
+		if (strlen(payload_global)>0){
+
+			grid_msg_body_append_text(&message_global, payload_global);
+			grid_msg_packet_close(&message_global);
+			grid_msg_packet_send_everywhere(&message_global);
+		}
+
 		
-		grid_msg_body_append_text(&message, payload);
+		grid_msg_body_append_text(&message_local, payload_local);
 
 
-		grid_msg_packet_close(&message);
+		grid_msg_packet_close(&message_local);
 			
-		uint32_t message_length = grid_msg_packet_get_length(&message);
+		uint32_t message_length = grid_msg_packet_get_length(&message_local);
 			
 		// Put the packet into the UI_TX buffer
 		if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, message_length)){
 				
 			for(uint32_t i = 0; i<message_length; i++){
 					
-				grid_buffer_write_character(&GRID_PORT_U.tx_buffer, grid_msg_packet_send_char(&message, i));
+				grid_buffer_write_character(&GRID_PORT_U.tx_buffer, grid_msg_packet_send_char(&message_local, i));
 			}
 				
 			grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
@@ -745,6 +778,13 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 
 	}
 
+
+	printf("STOP\r\n");
+	grid_lua_stop_vm(&grid_lua_state);
+	printf("START\r\n");
+	grid_lua_start_vm(&grid_lua_state);
+
+	
 	grid_nvm_ui_bulk_pageread_init(nvm, ui);
 	
 }
@@ -1095,7 +1135,6 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 				code_length = code_end - code_start;
 
 				strcpy(&target_string[code_start-total_substituted_length], grid_lua_state.stdo);
-
 				
 				uint8_t errorlen = 0;
 

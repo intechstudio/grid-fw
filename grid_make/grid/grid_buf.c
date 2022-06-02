@@ -1806,6 +1806,40 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							//printf("\r\n");
 						}
 
+						// report stringnames
+						if (editor_connected_now){
+
+							uint16_t report_length = 0;
+							struct grid_msg response;
+													
+							grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+
+
+							// -1 to exclude system element
+							for(uint8_t j=0; j<grid_ui_state.element_list_length-1; j++){
+
+								struct grid_ui_element* ele = &grid_ui_state.element_list[j];
+								
+								uint8_t number = j;
+								uint8_t command[20] = {0};
+
+								sprintf(command, "gens(%d,ele[%d]:gen())", j, j);
+
+								// lua get element name
+								grid_lua_clear_stdo(&grid_lua_state);
+								grid_lua_dostring(&grid_lua_state, command);
+
+								grid_msg_body_append_text(&response, grid_lua_state.stdo);
+
+							}
+
+							grid_msg_packet_close(&response);
+							grid_msg_packet_send_everywhere(&response);
+
+							//printf(response.body);
+							//printf("\r\n");
+						}
+
 
 						// Report the state of the changed leds
 

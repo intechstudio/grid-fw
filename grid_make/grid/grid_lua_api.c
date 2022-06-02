@@ -279,7 +279,6 @@ static int l_grid_elementname_send(lua_State* L) {
         if (lua_type(L, 1) == LUA_TNUMBER && lua_type(L, 2) == LUA_TSTRING){
 
 
-            uint8_t frame[30] = {0};
 
             uint8_t number = (uint8_t)lua_tointeger(L, 1);
             uint8_t string[20] = {0};
@@ -287,6 +286,7 @@ static int l_grid_elementname_send(lua_State* L) {
             strncpy(string, lua_tostring(L, 2), 19);
 
 
+            uint8_t frame[30] = {0};
             sprintf(frame, GRID_CLASS_ELEMENTNAME_frame_start);
 
             grid_msg_set_parameter(frame, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
@@ -298,8 +298,25 @@ static int l_grid_elementname_send(lua_State* L) {
 
             strcat(grid_lua_state.stdo, frame);
 
-            //printf("TEST: %s,%s\r\n", grid_lua_state.stdo, frame);
-            return;
+
+            // MUST BE SENT OUT IMEDIATELY (NOT THROUGH STDO) BECAUSE IT MUST BE SENT OUT EVEN AFTER LOCAL TRIGGER (CONFIG)
+            // struct grid_msg response;
+                                    
+            // grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+
+            // uint8_t response_payload[50] = {0};
+
+            // grid_msg_body_append_printf(&response, GRID_CLASS_ELEMENTNAME_frame_start);
+                
+            // grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);	
+            // grid_msg_text_set_parameter(&response, 0, GRID_CLASS_ELEMENTNAME_NUM_offset, GRID_CLASS_ELEMENTNAME_NUM_length, number);	
+            // grid_msg_text_set_parameter(&response, 0, GRID_CLASS_ELEMENTNAME_LENGTH_offset, GRID_CLASS_ELEMENTNAME_LENGTH_length, strlen(string));					
+
+            // grid_msg_body_append_printf(&response, "%s", string);
+            // grid_msg_body_append_printf(&response, GRID_CLASS_ELEMENTNAME_frame_end);    
+
+            // grid_msg_packet_close(&response);
+            // grid_msg_packet_send_everywhere(&response);
 
 
             //grid_debug_printf("SN: %d, %s", number, string);

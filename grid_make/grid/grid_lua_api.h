@@ -41,7 +41,11 @@ end"
 #define GRID_LUA_GEN_source  \
 "function gen (a, b)  \
  if b==nil then \
-  return ele[a].sn \
+  if ele[a].sn==nil then\
+   return ''\
+  else\
+   return ele[a].sn \
+  end\
  else \
   ele[a].sn=b \
   gens(a,b) \
