@@ -283,9 +283,13 @@
 #define GRID_LUA_FNC_G_MIDIRX_SYNC_human 		"midirx_sync"
 #define GRID_LUA_FNC_G_MIDIRX_SYNC_fnptr 		l_grid_midirx_sync
 
+
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_short 	"gens"
-#define GRID_LUA_FNC_G_ELEMENTNAME_SEND_human 	"elementname_send"
+#define GRID_LUA_FNC_G_ELEMENTNAME_SEND_human 	"element_name_send"
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_fnptr 	l_grid_elementname_send
+
+#define GRID_LUA_FNC_G_ELEMENTNAME_short 	"gen"
+#define GRID_LUA_FNC_G_ELEMENTNAME_human 	"element_name"
 
 #define GRID_LUA_FNC_G_LOOKUP_short 	"glut"
 #define GRID_LUA_FNC_G_LOOKUP_human 	"lookup"
@@ -626,11 +630,6 @@ stored config date
 #define GRID_LUA_KW_ELEMENT_short "ele"
 #define GRID_LUA_KW_ELEMENT_human "element"
 
-#define GRID_LUA_KW_THIS_short "this"
-#define GRID_LUA_KW_THIS_human "this"
-
-#define GRID_LUA_KW_SELF_short "self"
-#define GRID_LUA_KW_SELF_human "self"
 
 #define GRID_PARAMETER_ELAPSED_LIMIT 10000
 

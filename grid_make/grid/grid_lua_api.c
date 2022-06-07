@@ -1480,7 +1480,7 @@ uint8_t grid_lua_ui_init_po16(struct grid_lua_model* mod){
     grid_lua_dostring(mod, GRID_LUA_P_META_init);
 
     // create element array
-    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} "GRID_LUA_KW_THIS_short" = {}");
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} ");
 
     // initialize 16 potmeter
     grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
@@ -1503,7 +1503,7 @@ uint8_t grid_lua_ui_init_bu16(struct grid_lua_model* mod){
     grid_lua_dostring(mod, GRID_LUA_B_META_init);
 
     // create element array
-    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} "GRID_LUA_KW_THIS_short" = {}");
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} ");
 
     // initialize 16 buttons
     grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
@@ -1526,7 +1526,7 @@ uint8_t grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
     grid_lua_dostring(mod, GRID_LUA_B_META_init);
 
     // create element array
-    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} "GRID_LUA_KW_THIS_short" = {}");
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} ");
 
     // initialize 8 potmeters and 4 buttons
     grid_lua_dostring(mod, "for i=0, 7  do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
@@ -1556,7 +1556,7 @@ uint8_t grid_lua_ui_init_en16(struct grid_lua_model* mod){
     grid_lua_dostring(mod, GRID_LUA_E_META_init);
 
     // create element array
-    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} "GRID_LUA_KW_THIS_short" = {}");
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} ");
 
     // initialize 16 encoders
     grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
@@ -1580,7 +1580,7 @@ uint8_t grid_lua_ui_init_ef44(struct grid_lua_model* mod){
     grid_lua_dostring(mod, GRID_LUA_P_META_init);
 
     // create element array
-    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} "GRID_LUA_KW_THIS_short" = {}");
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} ");
 
     // initialize 4 encoders and 4 faders
     grid_lua_dostring(mod, "for i=0, 3  do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
