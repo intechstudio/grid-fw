@@ -156,6 +156,7 @@ uint32_t grid_sys_unittest(void);
 void grid_sys_recall_configuration(struct grid_sys_model* sys, uint8_t bank);
 
 void grid_debug_print_text(uint8_t* str);
+void grid_websocket_print_text(uint8_t* str);
 
 void grid_debug_printf(char const *fmt, ...);
 

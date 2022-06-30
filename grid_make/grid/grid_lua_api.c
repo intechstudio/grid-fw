@@ -269,6 +269,78 @@ static int l_my_print(lua_State* L) {
     return 0;
 }
 
+static int l_grid_websocket_send(lua_State* L) {
+
+    uint8_t message[500] = {0};
+
+
+    int nargs = lua_gettop(L);
+    //printf("LUA PRINT: ");
+    for (int i=1; i <= nargs; ++i) {
+
+        if (lua_type(L, i) == LUA_TSTRING){
+            
+            strcat(message, lua_tostring(L, i));
+		    //printf(" str: %s ", lua_tostring(L, i));
+        }
+        else if (lua_type(L, i) == LUA_TNUMBER){
+
+            lua_Number lnum = lua_tonumber(L, i);
+            lua_Integer lint;
+            lua_numbertointeger(lnum, &lint);
+            //int32_t num = lua_tonumber
+
+            sprintf(&message[strlen(message)], "%lf", lnum);
+
+
+            // remove unnesesery trailing zeros
+            uint8_t index_helper = strlen(message);
+            for (uint8_t i=0; i<8; i++){
+
+                if (message[index_helper-i-1] == '0'){
+
+                    message[index_helper-i-1] = '\0';
+                    
+                }
+                else if (message[index_helper-i-1] == '.'){
+
+                    message[index_helper-i-1] = '\0';
+                    break;
+
+                }
+                else{
+                    break;
+                }
+
+            }
+
+		    //printf(" num: %d ", (int)lnum);
+        }
+        else if (lua_type(L, i) == LUA_TNIL){
+            //printf(" nil ");
+        }
+        else if (lua_type(L, i) == LUA_TFUNCTION){
+            //printf(" fnc ");
+        }
+        else if (lua_type(L, i) == LUA_TTABLE){
+            //printf(" table ");
+        }
+        else{
+            //printf(" unknown data type ");
+        }
+    }
+
+    if (nargs == 0){
+        //printf(" no arguments ");
+    }
+
+    //printf("\r\n");
+
+    grid_websocket_print_text(message);
+
+    return 0;
+}
+
 
 static int l_grid_elementname_send(lua_State* L) {
 
@@ -1355,6 +1427,8 @@ static const struct luaL_Reg printlib [] = {
 
     {GRID_LUA_FNC_G_RANDOM_short,    GRID_LUA_FNC_G_RANDOM_fnptr},
     {GRID_LUA_FNC_G_ELEMENTNAME_SEND_short, GRID_LUA_FNC_G_ELEMENTNAME_SEND_fnptr},
+
+    {GRID_LUA_FNC_G_WEBSOCKET_SEND_short, GRID_LUA_FNC_G_WEBSOCKET_SEND_fnptr},
 
     {"print", l_my_print},
   

@@ -17,7 +17,7 @@
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
 #define GRID_PROTOCOL_VERSION_MINOR 2
-#define GRID_PROTOCOL_VERSION_PATCH 17
+#define GRID_PROTOCOL_VERSION_PATCH 18
 
 // Module HWCFG definitions
 
@@ -296,6 +296,10 @@
 
 #define GRID_LUA_FNC_G_LIMIT_short 	"glim"
 #define GRID_LUA_FNC_G_LIMIT_human 	"limit"
+
+#define GRID_LUA_FNC_G_WEBSOCKET_SEND_short 	"gwss"
+#define GRID_LUA_FNC_G_WEBSOCKET_SEND_human 	"websocket_send"
+#define GRID_LUA_FNC_G_WEBSOCKET_SEND_fnptr 	l_grid_websocket_send
 
 
 #define GRID_LUA_INIT_SCRIPT_1 "print('Hardware: ', ghwcfg(), ' Version: ', gvmaj(), gvmin(), gvpat())"
@@ -824,6 +828,14 @@ enum grid_ui_event_t
 
 #define GRID_CLASS_DEBUGTASK_OUTPUT_offset 9
 #define GRID_CLASS_DEBUGTASK_OUTPUT_length 0
+
+// WEBSOCKET
+#define GRID_CLASS_WEBSOCKET_code 0x022
+#define GRID_CLASS_WEBSOCKET_frame_start "%c%03x_", GRID_CONST_STX, GRID_CLASS_WEBSOCKET_code
+#define GRID_CLASS_WEBSOCKET_frame_end "%c", GRID_CONST_ETX
+
+#define GRID_CLASS_WEBSOCKET_TEXT_offset 5
+#define GRID_CLASS_WEBSOCKET_TEXT_length 0
 
 
 

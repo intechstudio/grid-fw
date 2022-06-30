@@ -65,6 +65,25 @@ void grid_debug_print_text(uint8_t* debug_string){
 		
 }
 
+
+void grid_websocket_print_text(uint8_t* debug_string){
+	
+	uint32_t debug_string_length = strlen(debug_string);
+	
+	struct grid_msg message;
+	
+	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+
+	grid_msg_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_start);
+	grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&message, debug_string);
+	grid_msg_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_end);
+
+	grid_msg_packet_close(&message);
+	grid_msg_packet_send_everywhere(&message);
+		
+}
+
 void grid_debug_printf(char const *fmt, ...){
 
 	va_list ap;
