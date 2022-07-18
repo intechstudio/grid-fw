@@ -153,11 +153,9 @@
 #define GRID_LUA_FNC_G_LED_BLU_fnptr 	l_led_default_blue
 #define GRID_LUA_FNC_G_LED_BLU_short 	"glb"
 
-
 #define GRID_LUA_FNC_G_LED_PHASE_short 		"glp"
 #define GRID_LUA_FNC_G_LED_PHASE_human 		"led_value"
 #define GRID_LUA_FNC_G_LED_PHASE_fnptr 		l_grid_led_phase
-
 
 #define GRID_LUA_FNC_G_LED_TIMEOUT_short 	"glt"
 #define GRID_LUA_FNC_G_LED_TIMEOUT_human 	"led_timeout"
@@ -212,11 +210,9 @@
 #define GRID_LUA_FNC_G_MOUSEBUTTON_SEND_human 	"mouse_button_send"
 #define GRID_LUA_FNC_G_MOUSEBUTTON_SEND_fnptr 	l_grid_mousebutton_send
 
-
 #define GRID_LUA_FNC_G_RANDOM_short 			"grnd"
 #define GRID_LUA_FNC_G_RANDOM_human 			"random"
 #define GRID_LUA_FNC_G_RANDOM_fnptr 			l_grid_random
-
 
 #define GRID_LUA_FNC_G_HWCFG_short 				"ghwcfg"
 #define GRID_LUA_FNC_G_HWCFG_human 				"hardware_configuration"

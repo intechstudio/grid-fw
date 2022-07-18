@@ -275,7 +275,7 @@ void grid_element_encoder_template_parameter_init(struct grid_ui_template_buffer
 	template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] 		= 0;
 	template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] 	= 0;
 	template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] 	= 64;
-	template_parameter_list[GRID_LUA_FNC_E_ENCODER_VELOCITY_index] 	= 100;
+	template_parameter_list[GRID_LUA_FNC_E_ENCODER_VELOCITY_index] 	= 50;
 
 }
 
