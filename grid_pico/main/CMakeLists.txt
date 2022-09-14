@@ -1,0 +1,16 @@
+add_executable(main
+         main.c
+         )
+
+pico_generate_pio_header(main ${CMAKE_CURRENT_LIST_DIR}/uart_tx.pio)
+
+target_sources(main PRIVATE uart_tx.c)
+
+ # Import pico_stdlib which imports commonly used features
+ target_link_libraries(main PRIVATE pico_stdlib hardware_pio)
+
+ # Create map/bin/hex file etc.
+ pico_add_extra_outputs(main)
+
+ # Add path via pico_set_program_url CMAKE
+ example_auto_set_url(main)

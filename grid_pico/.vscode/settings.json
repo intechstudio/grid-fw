@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "stdlib.h": "c",
+        "pio.h": "c",
+        "uart_tx.pio.h": "c"
+    }
+}
