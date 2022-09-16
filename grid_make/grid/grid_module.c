@@ -256,6 +256,8 @@ void grid_element_button_template_parameter_init(struct grid_ui_template_buffer*
 
 void grid_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf){
 
+	//printf("template parameter init\r\n");
+
 	uint8_t element_index = buf->parent->index;
 	int32_t* template_parameter_list = buf->template_parameter_list;
 

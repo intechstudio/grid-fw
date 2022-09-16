@@ -583,7 +583,7 @@ int main(void)
 
 	printf("Start TOC init\r\n");
 	grid_nvm_toc_init(&grid_nvm_state);
-	grid_nvm_toc_debug(&grid_nvm_state);
+	//grid_nvm_toc_debug(&grid_nvm_state);
 	printf("Done TOC init\r\n");
 	grid_ui_page_load(&grid_ui_state, &grid_nvm_state, 0); //load page 0
 
@@ -592,7 +592,7 @@ int main(void)
 		grid_nvm_ui_bulk_pageread_next(&grid_nvm_state, &grid_ui_state);
 	}
 	
-	grid_nvm_toc_debug(&grid_nvm_state);
+	//grid_nvm_toc_debug(&grid_nvm_state);
 	
 	init_timer();
 
@@ -686,7 +686,7 @@ int main(void)
 
 				reportflag = 0;
 				//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
-				printf("%d \r\n", loopcount);
+				//printf("%d \r\n", loopcount);
 				loopcount = 0;
 		}
 

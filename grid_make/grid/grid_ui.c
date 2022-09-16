@@ -311,6 +311,8 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_el
 
 	this = malloc(sizeof(struct grid_ui_template_buffer));
 
+	//printf("Template Buffer Create %x \r\n", this);
+
 	if (this == NULL){
 		printf("error.ui.MallocFailed\r\n");
 	}
@@ -499,6 +501,8 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 		ele->template_initializer = NULL;
 	}
 
+
+/*
 	if (ele->template_initializer != NULL){
 
 		struct grid_ui_template_buffer* buf = grid_ui_template_buffer_create(ele);
@@ -508,10 +512,12 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 			ele->template_parameter_list = buf->template_parameter_list;
 		}
 		else{
+			// TRAP
+			while(1){}
 
 		}
 
-	}
+	}*/
 
 	
 }
@@ -737,9 +743,9 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 
 		}	
 
-		if (ele->template_initializer!=NULL){
-			ele->template_initializer(ele->template_buffer_list_head);
-		}
+		// if (ele->template_initializer!=NULL){
+		// 	ele->template_initializer(ele->template_buffer_list_head);
+		// }
 
 
 		uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
@@ -756,17 +762,40 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 		}
 
 
+
+		//struct grid_ui_template_buffer* buf =  grid_ui_template_buffer_find(ele, page==0?1:page);
 		struct grid_ui_template_buffer* buf =  grid_ui_template_buffer_find(ele, page);
 		
 		if (buf == NULL){
 
 			printf("error.template buffer is invalid\r\n");
+			grid_debug_print_text("error.template buffer is invalid");
 
 		}
 		else{
 
 			// load the template parameter list
 			ele->template_parameter_list = buf->template_parameter_list;
+
+			if (buf->template_parameter_list == NULL){
+				grid_debug_print_text("NULL");
+			}
+
+
+			if (i<4 && 0){
+
+
+				for (uint8_t j = 0; j<13; j++){
+					printf("%d:%d ", j, ele->template_parameter_list[j]);
+
+				}
+				printf("\r\n");
+
+				grid_debug_printf("Val[%d]: %d", i, ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index]);
+
+			}
+
+
 
 		}
 
