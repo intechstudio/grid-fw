@@ -123,6 +123,7 @@ uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, uint8_t*
 void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* targetstring);
 void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* targetstring);
 
+uint8_t grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t page);
 uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page);
 
 

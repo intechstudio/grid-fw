@@ -708,6 +708,27 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 	
 }
 
+
+uint8_t grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t page){
+
+
+
+
+	for (uint8_t i = 0; i < grid_ui_state.element_list_length; i++)
+	{	
+		struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+
+		struct grid_ui_template_buffer* buf = grid_ui_template_buffer_find(ele, page);
+
+		if (ele->template_initializer!=NULL){
+			ele->template_initializer(buf);
+		}
+
+		
+	}
+
+}
+
 uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page){
 
 	/*

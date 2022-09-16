@@ -1047,11 +1047,12 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 	// phase out the animation
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
 	grid_led_set_alert_timeout_automatic(&grid_led_state);
+
+
 }
 
 
 void grid_nvm_ui_bulk_pagestore_init(struct grid_nvm_model* nvm, struct grid_ui_model* ui){
-
 
 	nvm->store_bulk_status = 1;
 
@@ -1164,6 +1165,10 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 	// phase out the animation
 	grid_led_set_alert_timeout_automatic(&grid_led_state);
 
+	// clear template variable after store command
+	grid_ui_page_clear_template_parameters(ui, ui->page_activepage);
+
+	grid_ui_page_load(ui, nvm, ui->page_activepage);
 }
 
 
@@ -1240,7 +1245,8 @@ void grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 	grid_sys_state.lastheader_pageclear.status = 0;
 
-
+	// clear template variable after clear command
+	grid_ui_page_clear_template_parameters(ui, ui->page_activepage);
 	grid_ui_page_load(ui, nvm, ui->page_activepage);
 		
 }
