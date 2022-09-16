@@ -2,6 +2,26 @@
     "files.associations": {
         "stdlib.h": "c",
         "pio.h": "c",
-        "uart_tx.pio.h": "c"
+        "uart_tx.pio.h": "c",
+        "multicore.h": "c"
+    },
+    "actionButtons": {
+      "defaultColor": "#ff0034", // Can also use string color names.
+      "loadNpmCommands":false, // Disables automatic generation of actions for npm commands.
+      "reloadButton":"♻️", // Custom reload button text or icon (default ↻). null value enables automatic reload on configuration change
+      "commands": [     
+          {
+              "name": "Lazygit",
+              "color": "white",
+              "singleInstance": true,
+              "command": "lazygit",
+          },
+          {
+              "name": "Docker Terminal",
+              "color": "white",
+              "singleInstance": true,
+              "command": "podman run -it -v $PWD:/pico/project -w /pico/project atoktoto/pico-builder:latest",
+          }
+      ]
     }
 }

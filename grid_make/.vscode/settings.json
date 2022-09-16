@@ -52,5 +52,18 @@
         "grid_usb.h": "c",
         "grid_protocol.h": "c",
         "grid_unittest.h": "c"
+    },
+    "actionButtons": {
+      "defaultColor": "#ff0034", // Can also use string color names.
+      "loadNpmCommands":false, // Disables automatic generation of actions for npm commands.
+      "reloadButton":"♻️", // Custom reload button text or icon (default ↻). null value enables automatic reload on configuration change
+      "commands": [       
+          {
+              "name": "Docker Build & Upload",
+              "color": "white",
+              "singleInstance": true,
+              "command": "podman run -v /home/suku/Documents/grid-fw/:/grid-fw -v /media/suku/:/media/root/ -a stdin -a stdout -i -t sukuwc/fw-tools make nightly"
+          }
+      ]
     }
 }
