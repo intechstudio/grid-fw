@@ -1698,6 +1698,8 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
 
     mod->dostring_count++;
 
+    uint32_t is_ok = 1;
+
     if (luaL_loadstring(mod->L, code) == LUA_OK){
 
         if (( lua_pcall(mod->L, 0, LUA_MULTRET, 0)) == LUA_OK) {
@@ -1707,7 +1709,8 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
         }
         else{
             //printf("LUA not OK: %s \r\n", code);
-            grid_debug_printf("LUA not OK");
+            //grid_debug_printf("LUA not OK");
+            is_ok = 0;
         }
 
         lua_pop(mod->L, lua_gettop(mod->L));
@@ -1715,11 +1718,14 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
     }
     else{
         //printf("LUA not OK:  %s\r\n", code);
-        grid_debug_printf("LUA not OK");
+        //grid_debug_printf("LUA not OK");
+        is_ok = 0;
     }
 
 
     grid_lua_gc_try_collect(mod);
+
+    return is_ok;
 
 }
 

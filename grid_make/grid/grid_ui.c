@@ -946,7 +946,9 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 		eve->cfg_default_flag = 1;
 	}
 
-	grid_lua_dostring(&grid_lua_state, temp);
+	if (0 == grid_lua_dostring(&grid_lua_state, temp)){
+		grid_debug_printf("LUA not OK, Failed to register action! EL: %d EV: %d", ele->index, eve->index);
+	};
 
 	if (eve->cfg_default_flag == 0){ // NOT DEFAULT
 
@@ -1172,9 +1174,11 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 							
 				cycles[1] = grid_d51_dwt_cycles_read();
 
-				// printf("Render Actionstring: %s\r\n", &temp[code_start+6]);
-				grid_lua_dostring(&grid_lua_state, &temp[code_start+6]); // +6 is length of "<?lua "
-					
+
+				if (0 == grid_lua_dostring(&grid_lua_state, &temp[code_start+6])){
+					grid_debug_printf("LUA not OK! EL: %d EV: %d", eve->parent->index, eve->index);
+				};
+
 				cycles[2] = grid_d51_dwt_cycles_read();
 
 				uint32_t code_stdo_length = strlen(grid_lua_state.stdo);
