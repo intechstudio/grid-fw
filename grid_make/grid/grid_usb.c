@@ -325,6 +325,22 @@ uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event){
 	grid_midi_tx_buffer[grid_midi_tx_write_index] = midi_event;
 	grid_midi_tx_write_index = (grid_midi_tx_write_index+1)%GRID_MIDI_TX_BUFFER_length;
 
+
+	uint32_t space_in_buffer = (grid_midi_tx_read_index-grid_midi_tx_write_index + GRID_MIDI_TX_BUFFER_length)%GRID_MIDI_TX_BUFFER_length;
+
+	uint8_t return_packet_was_dropped = 0;
+
+	if (space_in_buffer == 0){
+		return_packet_was_dropped = 1;
+		//Increment teh read index to drop latest packet and make space for a new one.
+		grid_midi_tx_read_index = (grid_midi_tx_read_index+1)%GRID_MIDI_TX_BUFFER_length;
+	}
+
+	//printf("W: %d %d : %d\r\n", grid_midi_tx_write_index, grid_midi_tx_read_index, space_in_buffer);
+
+	return return_packet_was_dropped;
+
+
 }
 
 uint8_t grid_midi_tx_pop(){
@@ -338,9 +354,14 @@ uint8_t grid_midi_tx_pop(){
 			uint8_t byte2 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte2;
 			uint8_t byte3 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte3;
 			
+			grid_midi_tx_read_index = (grid_midi_tx_read_index+1)%GRID_MIDI_TX_BUFFER_length;
+			uint32_t space_in_buffer = (grid_midi_tx_read_index-grid_midi_tx_write_index + GRID_MIDI_TX_BUFFER_length)%GRID_MIDI_TX_BUFFER_length;
+	
+
+			//printf("R: %d %d: %d\r\n", grid_midi_tx_write_index, grid_midi_tx_read_index, space_in_buffer);
 			audiodf_midi_write(byte0, byte1, byte2, byte3);
 
-			grid_midi_tx_read_index = (grid_midi_tx_read_index+1)%GRID_MIDI_TX_BUFFER_length;
+
 
 		}
 		

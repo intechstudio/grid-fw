@@ -1233,7 +1233,9 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				midievent.byte2 = midi_param1;
 				midievent.byte3 = midi_param2;
 				
-				grid_midi_tx_push(midievent);
+				if (grid_midi_tx_push(midievent)){
+					grid_debug_print_text("MIDI TX: Packet Dropped!");
+				};
 				grid_midi_tx_pop(midievent);				
 				
 													
@@ -1246,7 +1248,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				//printf("midi: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1, midi_param2);
 
 								
-				grid_debug_printf("Midi Sysex received: %d", length);
+				//grid_debug_printf("Midi Sysex received: %d", length);
 
 				// https://www.usb.org/sites/default/files/midi10.pdf page 17 Table 4-2: Examples of Parsed MIDI Events in 32 -bit USB-MIDI Event Packets
 				
@@ -1257,6 +1259,8 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				if (first != 0xF0 || last != 0xF7){
 					grid_debug_printf("Sysex invalid: %d %d", first, last);
 				}
+
+				uint32_t number_of_packets_dropped = 0;
 
 				struct grid_midi_event_desc midievent;
 				for (uint16_t i=0; i<length;){
@@ -1300,12 +1304,17 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 						}
 					}
 
-					grid_debug_printf("Packet: %d %d %d %d", midievent.byte0, midievent.byte1, midievent.byte2, midievent.byte3);
-					grid_midi_tx_push(midievent);
+					//grid_debug_printf("Packet: %d %d %d %d", midievent.byte0, midievent.byte1, midievent.byte2, midievent.byte3);
+					number_of_packets_dropped += grid_midi_tx_push(midievent);
+					// try to pop
+					grid_midi_tx_pop(midievent);	
 					
 				}
-				
-				grid_midi_tx_pop(midievent);				
+
+				if (number_of_packets_dropped){
+					grid_debug_printf("MIDI TX: %d Packet(s) Dropped!", number_of_packets_dropped);
+				};
+							
 				
 													
 			}

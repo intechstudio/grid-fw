@@ -2,6 +2,7 @@
 #define GRID_BUF_H_INCLUDED
 
 #include "grid_module.h"
+#include "grid_sys.h"
 
 #define GRID_BUFFER_SIZE	2000 //1000 this is the buffer for internal routing
 

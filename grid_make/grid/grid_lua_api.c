@@ -37,7 +37,7 @@ static int l_grid_keyboard_send(lua_State* L) {
     }
 
 
-    uint8_t temp[100] = {0};
+    uint8_t temp[20+nargs*4];
     sprintf(temp, GRID_CLASS_HIDKEYBOARD_frame_start);
 
     grid_msg_set_parameter(temp, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
