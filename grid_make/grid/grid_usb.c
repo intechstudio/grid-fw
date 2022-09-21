@@ -503,6 +503,22 @@ uint8_t grid_keyboard_tx_push(struct grid_keyboard_event_desc keyboard_event){
 
 
 
+	uint32_t space_in_buffer = (grid_keyboard_tx_read_index-grid_keyboard_tx_write_index + GRID_KEYBOARD_TX_BUFFER_length)%GRID_MIDI_TX_BUFFER_length;
+
+	uint8_t return_packet_was_dropped = 0;
+
+	if (space_in_buffer == 0){
+		return_packet_was_dropped = 1;
+		//Increment teh read index to drop latest packet and make space for a new one.
+		grid_keyboard_tx_read_index = (grid_keyboard_tx_read_index+1)%GRID_KEYBOARD_TX_BUFFER_length;
+	}
+
+	//printf("W: %d %d : %d\r\n", grid_keyboard_tx_write_index, grid_keyboard_tx_read_index, space_in_buffer);
+
+	return return_packet_was_dropped;
+
+
+
 }
 
 uint8_t grid_keyboard_tx_pop(){

@@ -1357,7 +1357,9 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				key.keycode 	= button;
 				key.delay 		= 1;
 
-				grid_keyboard_tx_push(key);
+				if (0 != grid_keyboard_tx_push(key)){
+					grid_debug_printf("MOUSE: Packet Dropped!");
+				};
 													
 			}
 			else if (msg_class == GRID_CLASS_HIDMOUSEMOVE_code && msg_instr == GRID_INSTR_EXECUTE_code){
@@ -1374,7 +1376,9 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				key.keycode 	= axis;
 				key.delay 		= 1;
 
-				grid_keyboard_tx_push(key);
+				if (0 != grid_keyboard_tx_push(key)){
+					grid_debug_printf("MOUSE: Packet Dropped!");
+				};
 													
 			}
 			else if (msg_class == GRID_CLASS_HIDKEYBOARD_code && msg_instr == GRID_INSTR_EXECUTE_code){
@@ -1384,6 +1388,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 				uint8_t default_delay =	grid_msg_text_get_parameter(&message, current_start, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_offset,		GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_length);
 				
 
+				uint32_t number_of_packets_dropped = 0;
 
 				for(uint8_t j=0; j<length; j+=4){
 					
@@ -1405,14 +1410,14 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 						if (key_state == 2){ // combined press and release
 
 							key.ispressed 	= 1;
-							grid_keyboard_tx_push(key);
+							number_of_packets_dropped += grid_keyboard_tx_push(key);
 							key.ispressed 	= 0;
-							grid_keyboard_tx_push(key);
+							number_of_packets_dropped += grid_keyboard_tx_push(key);
 
 						}
 						else{ // single press or release
 
-							grid_keyboard_tx_push(key);
+							number_of_packets_dropped += grid_keyboard_tx_push(key);
 
 						}
 
@@ -1427,7 +1432,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 						key.keycode 	= 0;
 						key.delay 		= delay;
 
-						grid_keyboard_tx_push(key);
+						number_of_packets_dropped += grid_keyboard_tx_push(key);
 
 					}
 					else{
@@ -1437,6 +1442,10 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por){
 					// key change fifo buffer
 
 				}
+				
+				if (number_of_packets_dropped){
+					grid_debug_printf("KEYBOARD: %d Packet(s) Dropped!", number_of_packets_dropped);
+				};
 
 			}
 			else{
