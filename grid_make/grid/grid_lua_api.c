@@ -38,17 +38,22 @@ static int l_grid_keyboard_send(lua_State* L) {
 
 
     uint8_t temp[20+nargs*4];
+    memset(temp, 0x00, 20+nargs*4);
     sprintf(temp, GRID_CLASS_HIDKEYBOARD_frame_start);
 
     grid_msg_set_parameter(temp, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
 
-    uint8_t cursor = 0;
+    uint16_t cursor = 0;
 
     uint8_t default_delay = lua_tonumber(L, 1);
 
     grid_msg_set_parameter(temp, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_offset, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_length, default_delay, NULL);
 
+    uint8_t cnt = 0;
+
     for (int i=2; i <= nargs; i+=3) {
+
+        cnt++;
 
         int32_t modifier = lua_tonumber(L, i);
         int32_t keystate = lua_tonumber(L, i+1);
@@ -65,11 +70,15 @@ static int l_grid_keyboard_send(lua_State* L) {
     
             grid_msg_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, modifier, NULL);
             grid_msg_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_DELAY_offset, GRID_CLASS_HIDKEYBOARD_DELAY_length, delay, NULL);   
+            cursor += 4;
 
         }
         else if (modifier == 0 || modifier == 1){
             // normal key or modifier
             int32_t keycode = lua_tonumber(L, i+2);
+
+            //01234567890123456789012printf("%d-%d ", cnt, keycode);
+            cursor += 4;
 
             grid_msg_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, modifier, NULL);
             grid_msg_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset, GRID_CLASS_HIDKEYBOARD_KEYSTATE_length, keystate, NULL);
@@ -81,11 +90,11 @@ static int l_grid_keyboard_send(lua_State* L) {
             continue;
         }
     
-        cursor += 4;
+
 
     }
 
-    grid_msg_set_parameter(temp, GRID_CLASS_HIDKEYBOARD_LENGTH_offset, GRID_CLASS_HIDKEYBOARD_LENGTH_length, cursor/3*4, NULL);
+    grid_msg_set_parameter(temp, GRID_CLASS_HIDKEYBOARD_LENGTH_offset, GRID_CLASS_HIDKEYBOARD_LENGTH_length, cursor/4+1, NULL);
          
     temp[strlen(temp)] = GRID_CONST_ETX;
 

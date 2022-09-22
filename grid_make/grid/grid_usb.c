@@ -325,7 +325,6 @@ uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event){
 	grid_midi_tx_buffer[grid_midi_tx_write_index] = midi_event;
 	grid_midi_tx_write_index = (grid_midi_tx_write_index+1)%GRID_MIDI_TX_BUFFER_length;
 
-
 	uint32_t space_in_buffer = (grid_midi_tx_read_index-grid_midi_tx_write_index + GRID_MIDI_TX_BUFFER_length)%GRID_MIDI_TX_BUFFER_length;
 
 	uint8_t return_packet_was_dropped = 0;
@@ -496,14 +495,11 @@ uint8_t grid_keyboard_tx_push(struct grid_keyboard_event_desc keyboard_event){
 	//printf("kb tx R: %d, W: %d\r\n", grid_keyboard_tx_read_index, grid_keyboard_tx_write_index);
 
 
-
 	grid_keyboard_tx_buffer[grid_keyboard_tx_write_index] = keyboard_event;
 
 	grid_keyboard_tx_write_index = (grid_keyboard_tx_write_index+1)%GRID_KEYBOARD_TX_BUFFER_length;
 
-
-
-	uint32_t space_in_buffer = (grid_keyboard_tx_read_index-grid_keyboard_tx_write_index + GRID_KEYBOARD_TX_BUFFER_length)%GRID_MIDI_TX_BUFFER_length;
+	uint32_t space_in_buffer = (grid_keyboard_tx_read_index-grid_keyboard_tx_write_index + GRID_KEYBOARD_TX_BUFFER_length)%GRID_KEYBOARD_TX_BUFFER_length;
 
 	uint8_t return_packet_was_dropped = 0;
 
@@ -531,6 +527,10 @@ uint8_t grid_keyboard_tx_pop(){
         
         
 		if (elapsed > grid_keyboard_tx_buffer[grid_keyboard_tx_read_index].delay*RTC1MS){
+			
+			uint32_t space_in_buffer = (grid_keyboard_tx_read_index-grid_keyboard_tx_write_index + GRID_KEYBOARD_TX_BUFFER_length)%GRID_KEYBOARD_TX_BUFFER_length;
+
+			//printf("R: %d %d : %d\r\n", grid_keyboard_tx_write_index, grid_keyboard_tx_read_index, space_in_buffer);
             
             struct grid_keyboard_event_desc key;
             
