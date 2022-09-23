@@ -1,0 +1,44 @@
+{
+  "files.associations": {
+    "string.h": "c",
+    "task.h": "c",
+    "swd_spi_raw.h": "c",
+    "spi_types.h": "c",
+    "*.inc": "c",
+    "esp_cpu.h": "c",
+    "xtensa_api.h": "c",
+    "xtensa_context.h": "c",
+    "dap_config.h": "c",
+    "debug_cm.h": "c",
+    "swd_host.h": "c",
+    "usb_host.h": "c",
+    "libswd.h": "c",
+    "esp_timer.h": "c"
+},
+  "actionButtons": {
+    "defaultColor": "#ff0034", // Can also use string color names.
+    "loadNpmCommands":false, // Disables automatic generation of actions for npm commands.
+    "reloadButton":"♻️", // Custom reload button text or icon (default ↻). null value enables automatic reload on configuration change
+    "commands": [
+        {
+            "name": "Docker Build",
+            "color": "white",
+            "singleInstance": true,
+            "command": "podman run --rm -v $PWD:/project -w /project espressif/idf:latest idf.py build && ./uf2convert.sh",
+        }, 
+        {
+            "name": "Flash",
+            "color": "white",
+            "singleInstance": true,
+            "command": "podman run --privileged -it -v /dev:/dev -v $PWD:/project -w /project espressif/idf:latest",
+        },        
+        {
+            "name": "Docker Unit Test",
+            "color": "white",
+            "singleInstance": true,
+            "command": "podman run -it -v $PWD:/project -w /project espressif/idf:latest",
+        }
+    ]
+},
+"git.ignoreLimitWarning": true
+}
