@@ -14,5 +14,9 @@ target_sources(main PRIVATE)
  # Create map/bin/hex file etc.
  pico_add_extra_outputs(main)
 
+
+pico_set_binary_type(main no_flash)
+
+
  # Add path via pico_set_program_url CMAKE
  example_auto_set_url(main)

@@ -48,15 +48,26 @@ int main()
     uart_rx_program_init(pio, sm, offset, PIN_RX_N, SERIAL_BAUD);
 
 
-    uint8_t loopcouter = 0;
+    uint8_t loopcouter = 0;    
+    
+    uint32_t loopcouter2 = 0;
+
+
 
     while (1) 
     {
         loopcouter++;
+        loopcouter2++;
+        
         loopcouter%=10;
 
-        gpio_put(LED_PIN, 1);
-        gpio_put(LED_PIN, 0);
+        if (loopcouter2 > 10000){
+            gpio_put(LED_PIN, 1);
+        }
+        if (loopcouter2 > 20000){
+            loopcouter2 = 0;
+            gpio_put(LED_PIN, 0);
+        }
 
 
         uart_tx_program_putc(pio_N, sm_N, '0'+loopcouter);
