@@ -36,15 +36,18 @@ extern void led_task(void *arg);
 
 
 
-void swd_write(uint32_t data, uint8_t length){
+void swd_dummy_clock(void){
+    gpio_set_level(SWD_CLK_PIN, 1);
+    ets_delay_us(SWD_CLOCK_PERIOD);
+    gpio_set_level(SWD_CLK_PIN, 0);
+    ets_delay_us(SWD_CLOCK_PERIOD);
+}
 
-
-    // TARGETSELECT
-    uint32_t targetselect_sequence = data;
+void swd_write_raw(uint32_t data, uint8_t length){
 
     for(uint8_t i=0; i<length; i++){
 
-        if ((targetselect_sequence >> (length-1-i))&0x00000001u){
+        if ((data >> (length-1-i))&0x00000001u){
             gpio_set_level(SWD_IO_PIN, 1);
         }
         else{
@@ -64,6 +67,53 @@ void swd_write(uint32_t data, uint8_t length){
 
 }
 
+
+void swd_write(uint32_t data, uint8_t length){
+
+
+    uint32_t num_of_ones = 0;
+
+    for(uint8_t i=0; i<length; i++){
+
+        if ((data >> (i))&0x00000001u){
+            gpio_set_level(SWD_IO_PIN, 1);
+            num_of_ones++;
+        }
+        else{
+            gpio_set_level(SWD_IO_PIN, 0);
+        }
+        gpio_set_level(SWD_CLK_PIN, 0);
+        ets_delay_us(SWD_CLOCK_PERIOD);
+        gpio_set_level(SWD_CLK_PIN, 1);
+        ets_delay_us(SWD_CLOCK_PERIOD);
+ 
+    }    
+    gpio_set_level(SWD_CLK_PIN, 0);
+
+
+
+    if (length == 32){
+
+        // write parity bit
+        if (num_of_ones%2==1){
+            gpio_set_level(SWD_IO_PIN, 1);
+        }
+        else{
+            gpio_set_level(SWD_IO_PIN, 0);
+        }
+
+        ets_delay_us(SWD_CLOCK_PERIOD);
+        gpio_set_level(SWD_CLK_PIN, 1);
+        ets_delay_us(SWD_CLOCK_PERIOD);
+    }
+
+    gpio_set_level(SWD_CLK_PIN, 0);
+    gpio_set_level(SWD_IO_PIN, 0);
+
+    ets_delay_us(SWD_CLOCK_PERIOD);
+
+}
+
 void swd_linereset(){
 
     for(uint8_t i=0; i<7; i++){
@@ -72,7 +122,7 @@ void swd_linereset(){
         gpio_set_level(SWD_IO_PIN, 1);
         ets_delay_us(SWD_CLOCK_PERIOD*1);
 
-        swd_write(0xff, 8);
+        swd_write_raw(0xff, 8);
 
         ets_delay_us(SWD_CLOCK_PERIOD*1);
         gpio_set_level(SWD_IO_PIN, 0);
@@ -149,6 +199,8 @@ uint8_t swd_read_acknowledge(){
         ets_delay_us(SWD_CLOCK_PERIOD);
     }
 
+    //printf("ACKNOWLEDGE: %d\r\n", acknowledge);
+
     return acknowledge;
 
 }
@@ -156,30 +208,80 @@ uint8_t swd_read_acknowledge(){
 
 void swd_target_select(){
 
-    swd_write(0b10011001, 8); // targetselect should be 0b10011101
+    swd_write_raw(0b10011001, 8); // targetselect should be 0b10011101
 
-    swd_turnround_target_next();
-    swd_read_acknowledge();
-    swd_turnround_host_next();
+    // fake ack
+    gpio_set_level(SWD_IO_PIN, 1);
 
+
+    gpio_set_level(SWD_CLK_PIN, 1);
+    ets_delay_us(SWD_CLOCK_PERIOD);
+
+
+    gpio_set_level(SWD_CLK_PIN, 0);
+    ets_delay_us(SWD_CLOCK_PERIOD);
+    
+    gpio_set_level(SWD_IO_PIN, 0);
+
+    gpio_set_level(SWD_CLK_PIN, 1);
+    ets_delay_us(SWD_CLOCK_PERIOD);
+    gpio_set_level(SWD_CLK_PIN, 0);
+    ets_delay_us(SWD_CLOCK_PERIOD);    
+
+
+    gpio_set_level(SWD_CLK_PIN, 1);
+    ets_delay_us(SWD_CLOCK_PERIOD);
+    gpio_set_level(SWD_CLK_PIN, 0);
+    ets_delay_us(SWD_CLOCK_PERIOD);    
+    gpio_set_level(SWD_CLK_PIN, 1);
+    ets_delay_us(SWD_CLOCK_PERIOD);
+    gpio_set_level(SWD_CLK_PIN, 0);
+    ets_delay_us(SWD_CLOCK_PERIOD);    
+    gpio_set_level(SWD_CLK_PIN, 1);
+    ets_delay_us(SWD_CLOCK_PERIOD);
+    gpio_set_level(SWD_CLK_PIN, 0);
+    ets_delay_us(SWD_CLOCK_PERIOD);    
 
 
     #define RP2040_CORE0_ID 0x01002927 // this is reversed
     #define RP2040_CORE1_ID 0x11002927
 
-    // COREID
-    swd_write(0b11100100, 8);
-    swd_write(0b10010100, 8);
-    swd_write(0b00000000, 8);
-    swd_write(0b10000000, 8);
-
-    swd_write(0b0, 1); // parity
-
-
-    ets_delay_us(SWD_CLOCK_PERIOD*5);
+    swd_write(RP2040_CORE0_ID, 32);
 
 }
 
+uint32_t swd_read(uint8_t length){
+
+    uint32_t retval = gpio_get_level(SWD_IO_PIN);
+    //printf("Read[0:%d]: %d", length-1, gpio_get_level(SWD_IO_PIN));
+
+    ets_delay_us(SWD_CLOCK_PERIOD);
+    for(uint8_t i=1; i<length; i++){
+        gpio_set_level(SWD_CLK_PIN, 1);
+        ets_delay_us(SWD_CLOCK_PERIOD);
+        gpio_set_level(SWD_CLK_PIN, 0);
+        retval |= gpio_get_level(SWD_IO_PIN)<<(i);
+        //printf("%d", gpio_get_level(SWD_IO_PIN));
+        if (i%4 == 3){
+            //printf(" ");
+        }
+        ets_delay_us(SWD_CLOCK_PERIOD);
+
+    }
+    //printf("= 0x%08lx\r\n", retval);
+
+    if (length == 32){
+
+        gpio_set_level(SWD_CLK_PIN, 1);
+        ets_delay_us(SWD_CLOCK_PERIOD);
+        gpio_set_level(SWD_CLK_PIN, 0);
+        ets_delay_us(SWD_CLOCK_PERIOD);
+
+    }
+
+    return retval;
+
+}
 
 uint32_t swd_read_idcode(){
 
@@ -194,13 +296,71 @@ uint32_t swd_read_idcode(){
     swd_read_acknowledge();
 
     //DATA
-    for(uint8_t i=0; i<33; i++){
-        gpio_set_level(SWD_CLK_PIN, 1);
-        ets_delay_us(SWD_CLOCK_PERIOD);
-        gpio_set_level(SWD_CLK_PIN, 0);
-        ets_delay_us(SWD_CLOCK_PERIOD);
+    uint32_t idcode = swd_read(32);
 
-    }
+
+    swd_turnround_host_next();
+    
+
+    return 0;
+
+}
+
+uint32_t swd_read_dlcr(){
+
+
+    // DLCR
+
+    swd_write_raw(0b10110001,8);
+
+    swd_turnround_target_next();
+
+    //ACKNOWLEDGE
+    swd_read_acknowledge();
+
+    //DATA
+    uint32_t dlcr = swd_read(32);
+
+
+    swd_turnround_host_next();
+    
+
+    return 0;
+
+}
+
+
+void swd_write_select(uint32_t value){
+
+    swd_write(0xb1,8); // w select
+    swd_turnround_target_next();
+    swd_read_acknowledge();
+    swd_turnround_host_next();
+    swd_write(value,32);
+
+}
+
+void swd_write_ctrlstat(uint32_t value){
+
+    swd_write_raw(0b10010101,8); // w ctrlstat
+    swd_turnround_target_next();
+    swd_read_acknowledge();
+    swd_turnround_host_next();
+    swd_write(value,32);
+
+}
+
+uint32_t swd_read_ctrlstat(){
+
+    swd_write_raw(0b10110001,8);
+
+    swd_turnround_target_next();
+
+    //ACKNOWLEDGE
+    swd_read_acknowledge();
+
+    //DATA
+    uint32_t dlcr = swd_read(32);
 
 
     swd_turnround_host_next();
@@ -243,29 +403,29 @@ void app_main(void)
 
     // magic write packets, no response from target, confirmed
 
-    swd_write(0b11111111, 8);
-    swd_write(0b01001001, 8);
-    swd_write(0b11001111, 8);
-    swd_write(0b10010000, 8);
+    swd_write_raw(0b11111111, 8);
+    swd_write_raw(0b01001001, 8);
+    swd_write_raw(0b11001111, 8);
+    swd_write_raw(0b10010000, 8);
 
-    swd_write(0b01000110, 8);
-    swd_write(0b10101001, 8);
-    swd_write(0b10110100, 8);
-    swd_write(0b10100001, 8);
+    swd_write_raw(0b01000110, 8);
+    swd_write_raw(0b10101001, 8);
+    swd_write_raw(0b10110100, 8);
+    swd_write_raw(0b10100001, 8);
     
-    swd_write(0b01100001, 8);
-    swd_write(0b10010111, 8);
-    swd_write(0b11110101, 8);
-    swd_write(0b10111011, 8);
+    swd_write_raw(0b01100001, 8);
+    swd_write_raw(0b10010111, 8);
+    swd_write_raw(0b11110101, 8);
+    swd_write_raw(0b10111011, 8);
     
-    swd_write(0b11000111, 8);
-    swd_write(0b01000101, 8);
-    swd_write(0b01110000, 8);
-    swd_write(0b00111101, 8);
+    swd_write_raw(0b11000111, 8);
+    swd_write_raw(0b01000101, 8);
+    swd_write_raw(0b01110000, 8);
+    swd_write_raw(0b00111101, 8);
     
-    swd_write(0b10011000, 8);
-    swd_write(0b00000101, 8);
-    swd_write(0b10001111, 8);
+    swd_write_raw(0b10011000, 8);
+    swd_write_raw(0b00000101, 8);
+    swd_write_raw(0b10001111, 8);
 
 
     // initialization
@@ -296,16 +456,56 @@ void app_main(void)
         ets_delay_us(SWD_CLOCK_PERIOD);
 
     }
+    
 
-
-    ets_delay_us(SWD_CLOCK_PERIOD*5);
-
-
+    swd_dummy_clock();
     swd_target_select();
+    swd_dummy_clock();
 
     swd_read_idcode();
+    swd_dummy_clock();
+
+    swd_write(0x81,8); // w abort
+    swd_turnround_target_next();
+    swd_read_acknowledge();
+    swd_turnround_host_next();
+    swd_write(0x0000001e,32);
 
 
+    swd_dummy_clock();
+
+    swd_write_select(0x00000003);
+    swd_dummy_clock();
+
+    swd_read_dlcr();
+    swd_dummy_clock();
+
+    swd_write_select(0x00000000);
+    swd_dummy_clock();
+
+    swd_write_ctrlstat(0x50000020);
+    swd_dummy_clock();
+
+    swd_read_ctrlstat();
+    swd_dummy_clock();
+
+    swd_write_ctrlstat(0x50000000);
+    swd_dummy_clock();
+
+    swd_read_ctrlstat();
+    swd_dummy_clock();
+
+    swd_read_ctrlstat();
+    swd_dummy_clock();
+
+    swd_read_ctrlstat();
+    swd_dummy_clock();  
+        
+    swd_write_ctrlstat(0x50000001);
+    swd_dummy_clock();
+
+    swd_read_ctrlstat();
+    swd_dummy_clock();
 
     SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
