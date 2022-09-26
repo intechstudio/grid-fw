@@ -206,7 +206,7 @@ uint8_t swd_read_acknowledge(){
 }
 
 
-void swd_target_select(){
+void swd_target_select(uint8_t core_id){
 
     swd_write_raw(0b10011001, 8); // targetselect should be 0b10011101
 
@@ -244,9 +244,14 @@ void swd_target_select(){
 
 
     #define RP2040_CORE0_ID 0x01002927 // this is reversed
-    #define RP2040_CORE1_ID 0x11002927
+    #define RP2040_CORE1_ID 0x11002927 // parity = 1
 
-    swd_write(RP2040_CORE0_ID, 32);
+    if (core_id == 0){     
+        swd_write(RP2040_CORE0_ID, 32);
+    }
+    else{
+        swd_write(RP2040_CORE1_ID, 32);
+    }
 
 }
 
@@ -340,9 +345,49 @@ void swd_write_select(uint32_t value){
 
 }
 
+void swd_write_abort(uint32_t value){
+
+    swd_write(0x81,8); // w abort
+    swd_turnround_target_next();
+    swd_read_acknowledge();
+    swd_turnround_host_next();
+    swd_write(value,32);
+
+}
+
 void swd_write_ctrlstat(uint32_t value){
 
     swd_write_raw(0b10010101,8); // w ctrlstat
+    swd_turnround_target_next();
+    swd_read_acknowledge();
+    swd_turnround_host_next();
+    swd_write(value,32);
+
+}
+
+void swd_write_ap0(uint32_t value){
+
+    swd_write_raw(0b11000101,8); // w ap0
+    swd_turnround_target_next();
+    swd_read_acknowledge();
+    swd_turnround_host_next();
+    swd_write(value,32);
+
+}
+
+void swd_write_ap4(uint32_t value){
+
+    swd_write_raw(0b11010001,8); // w ap8
+    swd_turnround_target_next();
+    swd_read_acknowledge();
+    swd_turnround_host_next();
+    swd_write(value,32);
+
+}
+
+void swd_write_ap8(uint32_t value){
+
+    swd_write_raw(0b11001001,8); // w ap8
     swd_turnround_target_next();
     swd_read_acknowledge();
     swd_turnround_host_next();
@@ -370,6 +415,63 @@ uint32_t swd_read_ctrlstat(){
 
 }
 
+uint32_t swd_read_buff(){
+
+    swd_write_raw(0b10111101,8);
+
+    swd_turnround_target_next();
+
+    //ACKNOWLEDGE
+    swd_read_acknowledge();
+
+    //DATA
+    uint32_t buff = swd_read(32);
+
+
+    swd_turnround_host_next();
+    
+
+    return 0;
+
+}
+uint32_t swd_read_ap0(){
+
+    swd_write_raw(0b11100001,8);
+
+    swd_turnround_target_next();
+
+    //ACKNOWLEDGE
+    swd_read_acknowledge();
+
+    //DATA
+    uint32_t ap0 = swd_read(32);
+
+
+    swd_turnround_host_next();
+    
+
+    return 0;
+
+}
+
+void swd_idle(){
+
+    ets_delay_us(SWD_CLOCK_PERIOD*5);
+
+    // IDLE
+    gpio_set_level(SWD_IO_PIN, 0);
+    for(uint8_t i=0; i<8; i++){
+        gpio_set_level(SWD_CLK_PIN, 1);
+        ets_delay_us(SWD_CLOCK_PERIOD);
+        gpio_set_level(SWD_CLK_PIN, 0);
+        ets_delay_us(SWD_CLOCK_PERIOD);
+
+    }
+    
+
+    swd_dummy_clock();
+
+}
 
 void app_main(void)
 {
@@ -401,111 +503,169 @@ void app_main(void)
 
     ets_delay_us(SWD_CLOCK_PERIOD*5);
 
-    // magic write packets, no response from target, confirmed
-
-    swd_write_raw(0b11111111, 8);
-    swd_write_raw(0b01001001, 8);
-    swd_write_raw(0b11001111, 8);
-    swd_write_raw(0b10010000, 8);
-
-    swd_write_raw(0b01000110, 8);
-    swd_write_raw(0b10101001, 8);
-    swd_write_raw(0b10110100, 8);
-    swd_write_raw(0b10100001, 8);
-    
-    swd_write_raw(0b01100001, 8);
-    swd_write_raw(0b10010111, 8);
-    swd_write_raw(0b11110101, 8);
-    swd_write_raw(0b10111011, 8);
-    
-    swd_write_raw(0b11000111, 8);
-    swd_write_raw(0b01000101, 8);
-    swd_write_raw(0b01110000, 8);
-    swd_write_raw(0b00111101, 8);
-    
-    swd_write_raw(0b10011000, 8);
-    swd_write_raw(0b00000101, 8);
-    swd_write_raw(0b10001111, 8);
 
 
-    // initialization
-    swd_linereset();
-    //swd_switch_from_jtag_to_swd();
+    if (0){
+        // magic write packets, no response from target, confirmed
 
-    // IDLE
-    gpio_set_level(SWD_IO_PIN, 0);
-    for(uint8_t i=0; i<8; i++){
-        gpio_set_level(SWD_CLK_PIN, 1);
-        ets_delay_us(SWD_CLOCK_PERIOD);
-        gpio_set_level(SWD_CLK_PIN, 0);
-        ets_delay_us(SWD_CLOCK_PERIOD);
+        swd_write_raw(0b11111111, 8);
+        swd_write_raw(0b01001001, 8);
+        swd_write_raw(0b11001111, 8);
+        swd_write_raw(0b10010000, 8);
 
-    }
-
-    swd_linereset();
-
-
-    ets_delay_us(SWD_CLOCK_PERIOD*5);
-
-    // IDLE
-    gpio_set_level(SWD_IO_PIN, 0);
-    for(uint8_t i=0; i<8; i++){
-        gpio_set_level(SWD_CLK_PIN, 1);
-        ets_delay_us(SWD_CLOCK_PERIOD);
-        gpio_set_level(SWD_CLK_PIN, 0);
-        ets_delay_us(SWD_CLOCK_PERIOD);
-
-    }
-    
-
-    swd_dummy_clock();
-    swd_target_select();
-    swd_dummy_clock();
-
-    swd_read_idcode();
-    swd_dummy_clock();
-
-    swd_write(0x81,8); // w abort
-    swd_turnround_target_next();
-    swd_read_acknowledge();
-    swd_turnround_host_next();
-    swd_write(0x0000001e,32);
-
-
-    swd_dummy_clock();
-
-    swd_write_select(0x00000003);
-    swd_dummy_clock();
-
-    swd_read_dlcr();
-    swd_dummy_clock();
-
-    swd_write_select(0x00000000);
-    swd_dummy_clock();
-
-    swd_write_ctrlstat(0x50000020);
-    swd_dummy_clock();
-
-    swd_read_ctrlstat();
-    swd_dummy_clock();
-
-    swd_write_ctrlstat(0x50000000);
-    swd_dummy_clock();
-
-    swd_read_ctrlstat();
-    swd_dummy_clock();
-
-    swd_read_ctrlstat();
-    swd_dummy_clock();
-
-    swd_read_ctrlstat();
-    swd_dummy_clock();  
+        swd_write_raw(0b01000110, 8);
+        swd_write_raw(0b10101001, 8);
+        swd_write_raw(0b10110100, 8);
+        swd_write_raw(0b10100001, 8);
         
-    swd_write_ctrlstat(0x50000001);
-    swd_dummy_clock();
+        swd_write_raw(0b01100001, 8);
+        swd_write_raw(0b10010111, 8);
+        swd_write_raw(0b11110101, 8);
+        swd_write_raw(0b10111011, 8);
+        
+        swd_write_raw(0b11000111, 8);
+        swd_write_raw(0b01000101, 8);
+        swd_write_raw(0b01110000, 8);
+        swd_write_raw(0b00111101, 8);
+        
+        swd_write_raw(0b10011000, 8);
+        swd_write_raw(0b00000101, 8);
+        swd_write_raw(0b10001111, 8);
 
-    swd_read_ctrlstat();
-    swd_dummy_clock();
+
+        // initialization
+        swd_linereset();
+        //swd_switch_from_jtag_to_swd();
+
+        // IDLE
+        gpio_set_level(SWD_IO_PIN, 0);
+        for(uint8_t i=0; i<8; i++){
+            gpio_set_level(SWD_CLK_PIN, 1);
+            ets_delay_us(SWD_CLOCK_PERIOD);
+            gpio_set_level(SWD_CLK_PIN, 0);
+            ets_delay_us(SWD_CLOCK_PERIOD);
+
+        }
+
+        swd_linereset();
+
+
+        ets_delay_us(SWD_CLOCK_PERIOD*5);
+
+        // IDLE
+        gpio_set_level(SWD_IO_PIN, 0);
+        for(uint8_t i=0; i<8; i++){
+            gpio_set_level(SWD_CLK_PIN, 1);
+            ets_delay_us(SWD_CLOCK_PERIOD);
+            gpio_set_level(SWD_CLK_PIN, 0);
+            ets_delay_us(SWD_CLOCK_PERIOD);
+
+        }
+        
+
+        swd_dummy_clock();
+        swd_target_select(0);
+        swd_dummy_clock();
+
+        swd_read_idcode();
+        swd_dummy_clock();
+        
+        swd_write_abort(0x0000001e);
+        swd_dummy_clock();
+
+        swd_write_select(0x00000003);
+        swd_dummy_clock();
+
+        swd_read_dlcr();
+        swd_dummy_clock();
+
+        swd_write_select(0x00000000);
+        swd_dummy_clock();
+
+        swd_write_ctrlstat(0x50000020);
+        swd_dummy_clock();
+
+        swd_read_ctrlstat();
+        swd_dummy_clock();
+
+        swd_write_ctrlstat(0x50000000);
+        swd_dummy_clock();
+
+        swd_read_ctrlstat();
+        swd_dummy_clock();
+
+        swd_read_ctrlstat();
+        swd_dummy_clock();
+
+        swd_read_ctrlstat();
+        swd_dummy_clock();  
+            
+        swd_write_ctrlstat(0x50000001);
+        swd_dummy_clock();
+
+        swd_read_ctrlstat();
+        swd_dummy_clock();
+
+    }
+
+
+    // resume 0x200000000
+
+    swd_linereset();
+    swd_idle();
+    swd_target_select(0); swd_dummy_clock();
+    swd_read_idcode(); swd_dummy_clock();
+    swd_write_abort(0x00000010);    swd_dummy_clock();
+    swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+    swd_read_ap0();                 swd_dummy_clock(); //0x0
+    swd_read_buff();                swd_dummy_clock(); //0x30003
+
+
+
+    swd_linereset();
+    swd_idle();
+    swd_target_select(1); swd_dummy_clock();
+    swd_read_idcode(); swd_dummy_clock();
+    swd_write_abort(0x00000010);    swd_dummy_clock();
+    swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001 
+    swd_read_ap0();                 swd_dummy_clock(); //0x0
+    swd_read_buff();                swd_dummy_clock(); //0x30003
+
+    // 3rd
+
+    swd_linereset();
+    swd_idle();
+    swd_target_select(0); swd_dummy_clock();
+    swd_read_idcode(); swd_dummy_clock();
+    swd_write_abort(0x00000010);    swd_dummy_clock();
+    swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001
+    swd_write_ap8(0x20000000);      swd_dummy_clock();
+    swd_write_ap4(0x0001000f);      swd_dummy_clock();
+
+    // 4th
+
+    swd_linereset();
+    swd_idle();
+    swd_target_select(1); swd_dummy_clock();
+    swd_read_idcode(); swd_dummy_clock();
+    swd_write_abort(0x00000010);    swd_dummy_clock();
+    swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001 
+    swd_write_ap0(0xa05f0001);      swd_dummy_clock();
+
+    // 5th
+
+    swd_linereset();
+    swd_idle();
+    swd_target_select(0); swd_dummy_clock();
+    swd_read_idcode(); swd_dummy_clock();
+    swd_write_abort(0x00000010);    swd_dummy_clock();
+    swd_read_ctrlstat();            swd_dummy_clock(); //0x01 
+    swd_write_ap0(0xa05f0001);      swd_dummy_clock();
+
+
+
+
+
 
     SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 

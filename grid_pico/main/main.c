@@ -21,6 +21,11 @@ int main()
     const uint LED_PIN = PICO_DEFAULT_LED_PIN;
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
+
+
+    gpio_init(15);
+    gpio_set_dir(15, GPIO_OUT);
+    gpio_put(15, 1);
     
     const uint SERIAL_BAUD = 2000000UL;
 
@@ -58,13 +63,13 @@ int main()
     {
         loopcouter++;
         loopcouter2++;
-        
+
         loopcouter%=10;
 
-        if (loopcouter2 > 10000){
+        if (loopcouter2 > 20000){
             gpio_put(LED_PIN, 1);
         }
-        if (loopcouter2 > 20000){
+        if (loopcouter2 > 40000){
             loopcouter2 = 0;
             gpio_put(LED_PIN, 0);
         }
