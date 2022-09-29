@@ -3,6 +3,7 @@ idf_component_register(
         "grid_fw.c" 
         "led_driver.c" 
         "led_strip_encoder.c"
+        "pico_firmware.h"
 
     INCLUDE_DIRS 
         "."

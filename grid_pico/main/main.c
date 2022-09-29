@@ -57,6 +57,7 @@ int main()
     
     uint32_t loopcouter2 = 0;
 
+    
 
 
     while (1) 
@@ -66,10 +67,10 @@ int main()
 
         loopcouter%=10;
 
-        if (loopcouter2 > 20000){
+        if (loopcouter2 > 10000){
             gpio_put(LED_PIN, 1);
         }
-        if (loopcouter2 > 40000){
+        if (loopcouter2 > 20000){
             loopcouter2 = 0;
             gpio_put(LED_PIN, 0);
         }

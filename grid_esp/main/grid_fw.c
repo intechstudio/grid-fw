@@ -21,6 +21,8 @@
 #include "esp_task_wdt.h"
 
 
+#include "pico_firmware.h"
+
 
 #define LED_TASK_PRIORITY 2
 extern void led_task(void *arg);
@@ -33,7 +35,7 @@ extern void led_task(void *arg);
 #define SWD_CLK_PIN 12
 #define SWD_IO_PIN 13
 
-#define SWD_CLOCK_PERIOD 1
+#define SWD_CLOCK_PERIOD 0
 
 
 
@@ -577,8 +579,6 @@ void app_main(void)
     gpio_set_direction(SWD_IO_PIN, GPIO_MODE_OUTPUT);
 
 
-
-    ets_delay_us(SWD_CLOCK_PERIOD*5);
 
 
     // initialization
@@ -1135,6 +1135,24 @@ void app_main(void)
         #define BIN_SIZE 18060
 
 
+
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        for (uint32_t i = 0; i<___grid_pico_build_main_main_bin_len; i+=4){
+
+            if (i%0x400 == 0){
+                swd_write_ap4(0x20000000+i);      swd_dummy_clock();
+                //printf("\r\n\r\n%08lx :: \r\n", i);
+            }
+
+            uint32_t word = *(uint32_t*)(___grid_pico_build_main_main_bin+i);
+            swd_write_apc(word); // 0x491c481b
+
+            //printf(" %08lx", word);
+
+        }
+
+        /*
+
         swd_write_select(0x00000003);   swd_dummy_clock();
         for(uint32_t i = 0; i<BIN_SIZE+BURST_SIZE; i+=4*BURST_SIZE) {
 
@@ -1162,6 +1180,8 @@ void app_main(void)
 
 
         }
+        */
+
         printf("\r\n END OF DUMP \r\n");
 
 
@@ -1180,39 +1200,10 @@ void app_main(void)
         swd_read_ap0();            swd_dummy_clock(); //0x00000000
         swd_read_buff();                swd_dummy_clock(); //0x00040001
 
-        // reandom idle
-
-        for(uint8_t i=0; i<10; i++){
-
-
-            ets_delay_us(100000ul);
-
-            swd_linereset();
-            swd_idle();
-            swd_target_select(0); swd_dummy_clock();
-            swd_read_idcode(); swd_dummy_clock();
-            swd_write_abort(0x00000010);    swd_dummy_clock();
-            swd_read_dlcr();            swd_dummy_clock(); //0x00000001 
-            swd_read_ap0();            swd_dummy_clock(); //0x00000000
-            swd_read_buff();                swd_dummy_clock(); //0x30003
-
-            swd_linereset();
-            swd_idle();
-            swd_target_select(1); swd_dummy_clock();
-            swd_read_idcode(); swd_dummy_clock();
-            swd_write_abort(0x00000010);    swd_dummy_clock();
-            swd_read_dlcr();            swd_dummy_clock(); //0x10000001 
-            swd_read_ap0();            swd_dummy_clock(); //0x00000000
-            swd_read_buff();                swd_dummy_clock(); //0x00040001
-
-        }
-
-
-
     }
 
 
-    ets_delay_us(500000ul);
+    ets_delay_us(5000ul);
     
 
 
