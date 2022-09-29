@@ -13,7 +13,8 @@
     "swd_host.h": "c",
     "usb_host.h": "c",
     "libswd.h": "c",
-    "esp_timer.h": "c"
+    "esp_timer.h": "c",
+    "esp_flash.h": "c"
 },
   "actionButtons": {
     "defaultColor": "#ff0034", // Can also use string color names.

@@ -17,7 +17,8 @@
 #include "rom/ets_sys.h" // For ets_printf
 
 #include "driver/gpio.h"
-
+#include "esp_flash.h"
+#include "esp_task_wdt.h"
 
 
 
@@ -210,37 +211,41 @@ void swd_target_select(uint8_t core_id){
 
     swd_write_raw(0b10011001, 8); // targetselect should be 0b10011101
 
-    // fake ack
-    gpio_set_level(SWD_IO_PIN, 1);
+    // // fake ack
+    // gpio_set_level(SWD_IO_PIN, 1);
 
 
-    gpio_set_level(SWD_CLK_PIN, 1);
-    ets_delay_us(SWD_CLOCK_PERIOD);
+    // gpio_set_level(SWD_CLK_PIN, 1);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
 
 
-    gpio_set_level(SWD_CLK_PIN, 0);
-    ets_delay_us(SWD_CLOCK_PERIOD);
+    // gpio_set_level(SWD_CLK_PIN, 0);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
     
-    gpio_set_level(SWD_IO_PIN, 0);
+    // gpio_set_level(SWD_IO_PIN, 0);
 
-    gpio_set_level(SWD_CLK_PIN, 1);
-    ets_delay_us(SWD_CLOCK_PERIOD);
-    gpio_set_level(SWD_CLK_PIN, 0);
-    ets_delay_us(SWD_CLOCK_PERIOD);    
+    // gpio_set_level(SWD_CLK_PIN, 1);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
+    // gpio_set_level(SWD_CLK_PIN, 0);
+    // ets_delay_us(SWD_CLOCK_PERIOD);    
 
 
-    gpio_set_level(SWD_CLK_PIN, 1);
-    ets_delay_us(SWD_CLOCK_PERIOD);
-    gpio_set_level(SWD_CLK_PIN, 0);
-    ets_delay_us(SWD_CLOCK_PERIOD);    
-    gpio_set_level(SWD_CLK_PIN, 1);
-    ets_delay_us(SWD_CLOCK_PERIOD);
-    gpio_set_level(SWD_CLK_PIN, 0);
-    ets_delay_us(SWD_CLOCK_PERIOD);    
-    gpio_set_level(SWD_CLK_PIN, 1);
-    ets_delay_us(SWD_CLOCK_PERIOD);
-    gpio_set_level(SWD_CLK_PIN, 0);
-    ets_delay_us(SWD_CLOCK_PERIOD);    
+    // gpio_set_level(SWD_CLK_PIN, 1);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
+    // gpio_set_level(SWD_CLK_PIN, 0);
+    // ets_delay_us(SWD_CLOCK_PERIOD);    
+    // gpio_set_level(SWD_CLK_PIN, 1);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
+    // gpio_set_level(SWD_CLK_PIN, 0);
+    // ets_delay_us(SWD_CLOCK_PERIOD);    
+    // gpio_set_level(SWD_CLK_PIN, 1);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
+    // gpio_set_level(SWD_CLK_PIN, 0);
+    // ets_delay_us(SWD_CLOCK_PERIOD);    
+
+    swd_turnround_target_next();
+    swd_read_acknowledge();
+    swd_turnround_host_next();
 
 
     #define RP2040_CORE0_ID 0x01002927 // this is reversed
@@ -365,6 +370,16 @@ void swd_write_ctrlstat(uint32_t value){
 
 }
 
+void swd_write_apc(uint32_t value){
+
+    swd_write_raw(0b11011101,8); // w apc
+    swd_turnround_target_next();
+    swd_read_acknowledge();
+    swd_turnround_host_next();
+    swd_write(value,32);
+
+}
+
 void swd_write_ap0(uint32_t value){
 
     swd_write_raw(0b11000101,8); // w ap0
@@ -434,6 +449,28 @@ uint32_t swd_read_buff(){
     return 0;
 
 }
+
+uint32_t swd_read_apc(){
+
+    swd_write_raw(0b11111001,8);
+
+    swd_turnround_target_next();
+
+    //ACKNOWLEDGE
+    swd_read_acknowledge();
+
+    //DATA
+    uint32_t apc = swd_read(32);
+
+
+    swd_turnround_host_next();
+    
+
+    return 0;
+
+}
+
+
 uint32_t swd_read_ap0(){
 
     swd_write_raw(0b11100001,8);
@@ -445,6 +482,26 @@ uint32_t swd_read_ap0(){
 
     //DATA
     uint32_t ap0 = swd_read(32);
+
+
+    swd_turnround_host_next();
+    
+
+    return 0;
+
+}
+
+uint32_t swd_read_ap4(){
+
+    swd_write_raw(0b11110101,8);
+
+    swd_turnround_target_next();
+
+    //ACKNOWLEDGE
+    swd_read_acknowledge();
+
+    //DATA
+    uint32_t ap4 = swd_read(32);
 
 
     swd_turnround_host_next();
@@ -525,7 +582,7 @@ void app_main(void)
 
 
     // initialization
-    if (0){
+    if (1){
         // magic write packets, no response from target, confirmed
 
         swd_write_raw(0b11111111, 8);
@@ -628,6 +685,278 @@ void app_main(void)
 
     }
 
+
+    ets_delay_us(5000ul);
+
+
+    // reset
+    if (1){
+        swd_linereset();
+        swd_idle();
+        swd_target_select(0); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+        swd_read_ap0();                 swd_dummy_clock(); //0x0
+        swd_read_buff();                swd_dummy_clock(); //0x40001
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(1); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001 
+        swd_read_ap0();                 swd_dummy_clock(); //0x0
+        swd_read_buff();                swd_dummy_clock(); //0x40001
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(0); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+        swd_write_select(0x000000f3);   swd_dummy_clock();
+        swd_read_apc();                
+        swd_idle();
+        swd_read_buff();                swd_dummy_clock(); //0x04770031 
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap0(0xa2000020);      swd_dummy_clock();
+        swd_write_ap4(0x00000000);      swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0x0
+        swd_read_buff();                swd_dummy_clock(); //0x03000040
+        swd_write_select(0x000000f3);   swd_dummy_clock();
+        swd_read_ap4();                 swd_dummy_clock(); //0x00
+        swd_read_buff();                swd_dummy_clock(); //0x00
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(1); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_dlcr();                swd_dummy_clock(); //0x10000001 
+        swd_write_select(0x000000f3);   swd_dummy_clock();
+        swd_read_apc();                
+        swd_idle();
+        swd_read_buff();                swd_dummy_clock(); //0x04770031 
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap0(0xa2000020);      swd_dummy_clock();
+        swd_write_ap4(0x00000000);      swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0x0
+        swd_read_buff();                swd_dummy_clock(); //0x03000040
+        swd_write_select(0x000000f3);   swd_dummy_clock();
+        swd_read_ap4();                 swd_dummy_clock(); //0x00
+        swd_read_buff();                swd_dummy_clock(); //0x00
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(0); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_dlcr();                swd_dummy_clock(); //0x00000001 
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap0(0xa2000022);      swd_dummy_clock();
+        swd_write_ap4(0xe000edf0);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0x00 
+        swd_read_buff();                swd_dummy_clock(); //0x40001
+        swd_write_ap0(0xa05f0003);      swd_dummy_clock();
+        swd_write_ap8(0x00000000);      swd_dummy_clock();
+        swd_write_ap0(0xa05f0003);      swd_dummy_clock();
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap4(0xe000ed30);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0x00
+        swd_read_buff();                swd_dummy_clock(); //0x01
+        swd_write_ap0(0x00000001);      swd_dummy_clock();
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap4(0xe000edf0);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_write_ap0(0xa05f0001);      swd_dummy_clock();
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap4(0xe000ed00);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_write_apc(0x05fa0004);      swd_dummy_clock();
+        swd_write_select(0x00000010);   swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000041 
+        swd_write_select(0x00000000);   swd_dummy_clock();
+        swd_write_ctrlstat(0x50000020); swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000040
+        swd_write_ctrlstat(0x50000000); swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000040
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000040
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000040
+        swd_write_ctrlstat(0x50000001); swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000041
+        swd_write_ap0(0xa2000002);      swd_dummy_clock();
+        swd_write_ap4(0xe000ed00);      swd_dummy_clock();
+        swd_write_select(0x00000010);   swd_dummy_clock();
+        swd_read_apc();                 
+        swd_idle();
+        swd_read_buff();                swd_dummy_clock(); //0xfa050000
+        //END OF FIRST BIG BLOCK
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(1); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_dlcr();                swd_dummy_clock(); //0x10000001 
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap0(0xa2000022);      swd_dummy_clock();
+        swd_write_ap4(0xe000edf0);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0x00 
+        swd_read_buff();                swd_dummy_clock(); //0x40001
+        swd_write_ap0(0xa05f0003);      swd_dummy_clock();
+        swd_write_ap8(0x00000000);      swd_dummy_clock();
+        swd_write_ap0(0xa05f0003);      swd_dummy_clock();
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap4(0xe000ed30);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0x00
+        swd_read_buff();                swd_dummy_clock(); //0x01
+        swd_write_ap0(0x00000001);      swd_dummy_clock();
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap4(0xe000edf0);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_write_ap0(0xa05f0001);      swd_dummy_clock();
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap4(0xe000ed00);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_write_apc(0x05fa0004);      swd_dummy_clock();
+        swd_write_select(0x00000010);   swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000041 
+        swd_write_select(0x00000000);   swd_dummy_clock();
+        swd_write_ctrlstat(0x50000020); swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000040
+        swd_write_ctrlstat(0x50000000); swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000040
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000040
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000040
+        swd_write_ctrlstat(0x50000001); swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000041
+        swd_write_ap0(0xa2000002);      swd_dummy_clock();
+        swd_write_ap4(0xe000ed00);      swd_dummy_clock();
+        swd_write_select(0x00000010);   swd_dummy_clock();
+        swd_read_apc();                 
+        swd_idle();
+        swd_read_buff();                swd_dummy_clock(); //0xfa050000
+        //END OF SECOND BIG BLOCK
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(0); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_read_dlcr();                swd_dummy_clock(); //0x00000001 
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap4(0xe000edf0);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0x00
+        swd_read_buff();                swd_dummy_clock(); //0x03040001
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(1); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_read_dlcr();                swd_dummy_clock(); //0x10000001 
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap4(0xe000edf0);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0x00
+        swd_read_buff();                swd_dummy_clock(); //0x03040001
+        // END OF THIRD BLOCK
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(0); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_dlcr();                swd_dummy_clock(); //0x00000001 
+        swd_read_ap0();                 swd_dummy_clock(); //0x00
+        swd_read_buff();                swd_dummy_clock(); //0x00040001
+        swd_read_apc();             
+        swd_idle();           
+        swd_read_buff();                swd_dummy_clock(); //0x0x01000000
+        swd_write_ap8(0x00000000);      swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0xe00ff003
+        swd_read_buff();                swd_dummy_clock(); //0x00040001
+        swd_write_apc(0x01000000);      swd_dummy_clock();
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap0(0xa2000012);      swd_dummy_clock();
+        swd_write_ap4(0xe0002000);      swd_dummy_clock();
+        swd_write_apc(0x00000003);      swd_dummy_clock();
+        swd_write_ap4(0xe0002000);      swd_dummy_clock();
+        swd_read_apc();             
+        swd_idle();           
+        swd_read_buff();                swd_dummy_clock(); //0x00000041
+        swd_write_ap4(0xe0002008);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_ap4(0xe0001020);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_ap4(0xe0001030);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_ap4(0xe000edf0);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0x00
+        swd_read_buff();                swd_dummy_clock(); //0x00040001
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(1); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_dlcr();                swd_dummy_clock(); //0x10000001 
+        swd_read_ap0();                 swd_dummy_clock(); //0x00
+        swd_read_buff();                swd_dummy_clock(); //0x00040001
+        swd_read_apc();             
+        swd_idle();           
+        swd_read_buff();                swd_dummy_clock(); //0x0x01000000
+        swd_write_ap8(0x00000000);      swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0xe00ff003
+        swd_read_buff();                swd_dummy_clock(); //0x00040001
+        swd_write_apc(0x01000000);      swd_dummy_clock();
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap0(0xa2000012);      swd_dummy_clock();
+        swd_write_ap4(0xe0002000);      swd_dummy_clock();
+        swd_write_apc(0x00000003);      swd_dummy_clock();
+        swd_write_ap4(0xe0002000);      swd_dummy_clock();
+        swd_read_apc();             
+        swd_idle();           
+        swd_read_buff();                swd_dummy_clock(); //0x00000041
+        swd_write_ap4(0xe0002008);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_ap4(0xe0001020);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_ap4(0xe0001030);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_apc(0x00000000);      swd_dummy_clock();
+        swd_write_ap4(0xe000edf0);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0x00
+        swd_read_buff();                swd_dummy_clock(); //0x00040001
+
+
+
+    }
+   
+    ets_delay_us(5000ul);
 
     // halt
     if (1){
@@ -743,7 +1072,149 @@ void app_main(void)
 
     }
 
-    ets_delay_us(1000000ul);
+    ets_delay_us(5000ul);
+
+    // program_sram
+    if (1){
+
+         // reandom idle
+/*
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(0); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_dlcr();            swd_dummy_clock(); //0x00000001 
+        swd_read_ap0();            swd_dummy_clock(); //0x00000000
+        swd_read_buff();                swd_dummy_clock(); //0x30003
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(1); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_dlcr();            swd_dummy_clock(); //0x10000001 
+        swd_read_ap0();            swd_dummy_clock(); //0x00000000
+        swd_read_buff();                swd_dummy_clock(); //0x00040001
+*/
+
+        // start programming
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(0); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+        swd_read_ap0();            swd_dummy_clock(); //0x00000000
+        swd_read_buff();                swd_dummy_clock(); //0x30003
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(1); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001 
+        swd_read_ap0();            swd_dummy_clock(); //0x00000000
+        swd_read_buff();                swd_dummy_clock(); //0x00040001
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(0); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        swd_write_ap4(0x20000000);      swd_dummy_clock();
+
+        printf("\r\n START OF DUMP \r\n");
+
+        // burst size: how may words in page
+        #define BURST_SIZE 256
+        #define BIN_SIZE 18060
+
+
+        swd_write_select(0x00000003);   swd_dummy_clock();
+        for(uint32_t i = 0; i<BIN_SIZE+BURST_SIZE; i+=4*BURST_SIZE) {
+
+            uint8_t buffer[4*BURST_SIZE] = {0};
+            esp_flash_read(NULL, buffer, 0x450000 + i, 4*BURST_SIZE);  
+
+            // select next page
+            swd_write_ap4(0x20000000+i);      swd_dummy_clock();
+
+            printf("\r\n\r\n%08lx :: \r\n", i);
+
+            for (uint32_t j=0; j<BURST_SIZE; j++){
+
+                if (i + j*4<BIN_SIZE){ // BIN_SIZE
+
+                    uint32_t word = *(uint32_t*)(buffer+j*4);
+                    swd_write_apc(word); // 0x491c481b
+                    //printf(" %08lx", word);
+
+                }
+
+
+            }
+
+
+
+        }
+        printf("\r\n END OF DUMP \r\n");
+
+
+        swd_write_ap4(0xe000edf0);      swd_dummy_clock();
+        swd_write_select(0x00000013);   swd_dummy_clock();
+        swd_read_ap0();                 swd_dummy_clock(); //0x00
+        swd_read_buff();                swd_dummy_clock(); //0x000030003
+
+
+        swd_linereset();
+        swd_idle();
+        swd_target_select(1); swd_dummy_clock();
+        swd_read_idcode(); swd_dummy_clock();
+        swd_write_abort(0x00000010);    swd_dummy_clock();
+        swd_read_dlcr();            swd_dummy_clock(); //0x10000001 
+        swd_read_ap0();            swd_dummy_clock(); //0x00000000
+        swd_read_buff();                swd_dummy_clock(); //0x00040001
+
+        // reandom idle
+
+        for(uint8_t i=0; i<10; i++){
+
+
+            ets_delay_us(100000ul);
+
+            swd_linereset();
+            swd_idle();
+            swd_target_select(0); swd_dummy_clock();
+            swd_read_idcode(); swd_dummy_clock();
+            swd_write_abort(0x00000010);    swd_dummy_clock();
+            swd_read_dlcr();            swd_dummy_clock(); //0x00000001 
+            swd_read_ap0();            swd_dummy_clock(); //0x00000000
+            swd_read_buff();                swd_dummy_clock(); //0x30003
+
+            swd_linereset();
+            swd_idle();
+            swd_target_select(1); swd_dummy_clock();
+            swd_read_idcode(); swd_dummy_clock();
+            swd_write_abort(0x00000010);    swd_dummy_clock();
+            swd_read_dlcr();            swd_dummy_clock(); //0x10000001 
+            swd_read_ap0();            swd_dummy_clock(); //0x00000000
+            swd_read_buff();                swd_dummy_clock(); //0x00040001
+
+        }
+
+
+
+    }
+
+
+    ets_delay_us(500000ul);
+    
+
 
     // resume 0x200000000
     if (1){
