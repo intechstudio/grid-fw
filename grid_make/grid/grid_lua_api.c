@@ -487,7 +487,7 @@ static int l_grid_midi_sysex_send(lua_State* L) {
         return 0;
     }
 
-    uint8_t midiframe[50] = {0};
+    uint8_t midiframe[500] = {0};
 
     sprintf(midiframe, GRID_CLASS_MIDISYSEX_frame_start);
 
