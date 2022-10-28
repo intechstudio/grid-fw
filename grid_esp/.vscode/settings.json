@@ -38,7 +38,7 @@
             "name": "Docker Unit Test",
             "color": "white",
             "singleInstance": true,
-            "command": "podman run -it -v $PWD:/project -w /project espressif/idf:latest",
+            "command": "podman run -it -v /dev:/dev -v $PWD:/project -w /project espressif/idf:latest",
         }
     ]
 },
