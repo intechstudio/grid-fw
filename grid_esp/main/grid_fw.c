@@ -34,8 +34,9 @@ extern void led_task(void *arg);
 
 
 
-#define SWD_CLK_PIN 12
+#define SWD_CLK_PIN 14
 #define SWD_IO_PIN 13
+#define RP2040_CLOCK 15
 
 #define SWD_CLOCK_PERIOD 0
 
@@ -597,7 +598,7 @@ void app_main(void)
         .channel        = LEDC_CHANNEL_0,
         .timer_sel      = LEDC_TIMER_0,
         .intr_type      = LEDC_INTR_DISABLE,
-        .gpio_num       = 38,
+        .gpio_num       = RP2040_CLOCK,
         .duty           = 0,
         .hpoint         = 0
     };
