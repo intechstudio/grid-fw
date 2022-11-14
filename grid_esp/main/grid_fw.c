@@ -32,7 +32,7 @@ extern void led_task(void *arg);
 
 #include <esp_timer.h>
 
-
+#include "grid_esp32.h"
 
 #define SWD_CLK_PIN 14
 #define SWD_IO_PIN 13
@@ -561,6 +561,8 @@ void app_main(void)
     static const char *TAG = "main";
 
 
+    grid_esp32_get_hwcfg();
+    grid_esp32_get_cpuid();
 
     #define LDO_PIN 17
     gpio_set_direction(LDO_PIN, GPIO_MODE_OUTPUT);
