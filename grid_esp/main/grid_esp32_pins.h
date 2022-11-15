@@ -23,6 +23,10 @@ extern "C" {
 #define GRID_ESP32_PINS_HWCFG_DATA  12
 
 
+#define GRID_ESP32_PINS_RP_SWDIO 13
+#define GRID_ESP32_PINS_RP_SWCLK 14
+#define GRID_ESP32_PINS_RP_CLOCK 15
+
 
 #ifdef __cplusplus
 }

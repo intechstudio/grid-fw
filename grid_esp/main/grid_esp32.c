@@ -8,6 +8,8 @@
 
 static const char *TAG = "grid_esp32";
 
+
+
 uint32_t grid_esp32_get_hwcfg(){
 
 

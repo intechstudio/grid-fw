@@ -4,6 +4,7 @@ idf_component_register(
         "led_driver.c" 
         "led_strip_encoder.c"
         "grid_esp32.c"
+        "grid_esp32_swd.c"
         "pico_firmware.h"
         "grid_esp32_pins.h"
 

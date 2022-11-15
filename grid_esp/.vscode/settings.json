@@ -18,7 +18,10 @@
     "pico_firmware.h": "c",
     "spi_master.h": "c",
     "esp_intr_alloc.h": "c",
-    "freertos.h": "c"
+    "freertos.h": "c",
+    "grid_esp32.h": "c",
+    "grid_esp32_swd.h": "c",
+    "grid_esp32_pins.h": "c"
 },
   "actionButtons": {
     "defaultColor": "#ff0034", // Can also use string color names.

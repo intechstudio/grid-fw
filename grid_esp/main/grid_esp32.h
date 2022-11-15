@@ -18,6 +18,7 @@
 extern "C" {
 #endif
 
+
 /**
  * @brief Read HWCFG register value on ESP32 based module
  *
