@@ -5,15 +5,14 @@
  */
 
 #include "grid_esp32_swd.h"
-#include "pico_firmware.h"
 
 static const char *TAG = "grid_esp32_swd";
 
 
 void swd_dummy_clock(void){
-    gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+    gpio_set_level(swd_pin_swclk, 1);
     ets_delay_us(SWD_CLOCK_PERIOD);
-    gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+    gpio_set_level(swd_pin_swclk, 0);
     ets_delay_us(SWD_CLOCK_PERIOD);
 }
 
@@ -22,20 +21,20 @@ void swd_write_raw(uint32_t data, uint8_t length){
     for(uint8_t i=0; i<length; i++){
 
         if ((data >> (length-1-i))&0x00000001u){
-            gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 1);
+            gpio_set_level(swd_pin_swdio, 1);
         }
         else{
-            gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 0);
+            gpio_set_level(swd_pin_swdio, 0);
         }
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+        gpio_set_level(swd_pin_swclk, 0);
         ets_delay_us(SWD_CLOCK_PERIOD);
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+        gpio_set_level(swd_pin_swclk, 1);
         ets_delay_us(SWD_CLOCK_PERIOD);
  
     }    
-    gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+    gpio_set_level(swd_pin_swclk, 0);
 
-    gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 0);
+    gpio_set_level(swd_pin_swdio, 0);
 
     ets_delay_us(SWD_CLOCK_PERIOD);
 
@@ -50,19 +49,19 @@ void swd_write(uint32_t data, uint8_t length){
     for(uint8_t i=0; i<length; i++){
 
         if ((data >> (i))&0x00000001u){
-            gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 1);
+            gpio_set_level(swd_pin_swdio, 1);
             num_of_ones++;
         }
         else{
-            gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 0);
+            gpio_set_level(swd_pin_swdio, 0);
         }
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+        gpio_set_level(swd_pin_swclk, 0);
         ets_delay_us(SWD_CLOCK_PERIOD);
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+        gpio_set_level(swd_pin_swclk, 1);
         ets_delay_us(SWD_CLOCK_PERIOD);
  
     }    
-    gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+    gpio_set_level(swd_pin_swclk, 0);
 
 
 
@@ -70,19 +69,19 @@ void swd_write(uint32_t data, uint8_t length){
 
         // write parity bit
         if (num_of_ones%2==1){
-            gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 1);
+            gpio_set_level(swd_pin_swdio, 1);
         }
         else{
-            gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 0);
+            gpio_set_level(swd_pin_swdio, 0);
         }
 
         ets_delay_us(SWD_CLOCK_PERIOD);
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+        gpio_set_level(swd_pin_swclk, 1);
         ets_delay_us(SWD_CLOCK_PERIOD);
     }
 
-    gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
-    gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 0);
+    gpio_set_level(swd_pin_swclk, 0);
+    gpio_set_level(swd_pin_swdio, 0);
 
     ets_delay_us(SWD_CLOCK_PERIOD);
 
@@ -93,13 +92,13 @@ void swd_linereset(){
     for(uint8_t i=0; i<7; i++){
 
         ets_delay_us(SWD_CLOCK_PERIOD*1);
-        gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 1);
+        gpio_set_level(swd_pin_swdio, 1);
         ets_delay_us(SWD_CLOCK_PERIOD*1);
 
         swd_write_raw(0xff, 8);
 
         ets_delay_us(SWD_CLOCK_PERIOD*1);
-        gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 0);
+        gpio_set_level(swd_pin_swdio, 0);
         ets_delay_us(SWD_CLOCK_PERIOD*1);
 
     }
@@ -110,20 +109,20 @@ void swd_linereset(){
 
 void swd_switch_from_jtag_to_swd(){
 
-    gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 1);
+    gpio_set_level(swd_pin_swdio, 1);
     uint32_t switch_sequence = 0b0111100111100111;
     for(uint8_t i=0; i<16; i++){
 
         if ((switch_sequence >> (15-i))&0x00000001u){
-            gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 1);
+            gpio_set_level(swd_pin_swdio, 1);
         }
         else{
-            gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 0);
+            gpio_set_level(swd_pin_swdio, 0);
         }
         ets_delay_us(SWD_CLOCK_PERIOD);
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+        gpio_set_level(swd_pin_swclk, 1);
         ets_delay_us(SWD_CLOCK_PERIOD);
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+        gpio_set_level(swd_pin_swclk, 0);
 
     }
 
@@ -134,28 +133,28 @@ void swd_switch_from_jtag_to_swd(){
 
 void swd_turnround_target_next(){
 
-    gpio_set_pull_mode(GRID_ESP32_PINS_RP_SWDIO, GPIO_PULLUP_ENABLE);
-    gpio_pullup_en(GRID_ESP32_PINS_RP_SWDIO);
-    gpio_set_direction(GRID_ESP32_PINS_RP_SWDIO, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(swd_pin_swdio, GPIO_PULLUP_ENABLE);
+    gpio_pullup_en(swd_pin_swdio);
+    gpio_set_direction(swd_pin_swdio, GPIO_MODE_INPUT);
 
 
     ets_delay_us(SWD_CLOCK_PERIOD);
-    gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+    gpio_set_level(swd_pin_swclk, 1);
     ets_delay_us(SWD_CLOCK_PERIOD);
-    gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+    gpio_set_level(swd_pin_swclk, 0);
     ets_delay_us(SWD_CLOCK_PERIOD);
-    gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+    gpio_set_level(swd_pin_swclk, 1);
     ets_delay_us(SWD_CLOCK_PERIOD);
 
 }
 
 void swd_turnround_host_next(){
     
-    gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+    gpio_set_level(swd_pin_swclk, 1);
     ets_delay_us(SWD_CLOCK_PERIOD);
-    gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+    gpio_set_level(swd_pin_swclk, 0);
     ets_delay_us(SWD_CLOCK_PERIOD);
-    gpio_set_direction(GRID_ESP32_PINS_RP_SWDIO, GPIO_MODE_OUTPUT);
+    gpio_set_direction(swd_pin_swdio, GPIO_MODE_OUTPUT);
 
 }
 
@@ -164,12 +163,12 @@ uint8_t swd_read_acknowledge(){
     uint8_t acknowledge = 0;
 
     for(uint8_t i=0; i<3; i++){
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+        gpio_set_level(swd_pin_swclk, 1);
         ets_delay_us(SWD_CLOCK_PERIOD);
 
-        acknowledge |= gpio_get_level(GRID_ESP32_PINS_RP_SWDIO)<<(2-i);
+        acknowledge |= gpio_get_level(swd_pin_swdio)<<(2-i);
 
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+        gpio_set_level(swd_pin_swclk, 0);
         ets_delay_us(SWD_CLOCK_PERIOD);
     }
 
@@ -185,35 +184,35 @@ void swd_target_select(uint8_t core_id){
     swd_write_raw(0b10011001, 8); // targetselect should be 0b10011101
 
     // // fake ack
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 1);
+    // gpio_set_level(swd_pin_swdio, 1);
 
 
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+    // gpio_set_level(swd_pin_swclk, 1);
     // ets_delay_us(SWD_CLOCK_PERIOD);
 
 
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+    // gpio_set_level(swd_pin_swclk, 0);
     // ets_delay_us(SWD_CLOCK_PERIOD);
     
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 0);
+    // gpio_set_level(swd_pin_swdio, 0);
 
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+    // gpio_set_level(swd_pin_swclk, 1);
     // ets_delay_us(SWD_CLOCK_PERIOD);
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+    // gpio_set_level(swd_pin_swclk, 0);
     // ets_delay_us(SWD_CLOCK_PERIOD);    
 
 
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+    // gpio_set_level(swd_pin_swclk, 1);
     // ets_delay_us(SWD_CLOCK_PERIOD);
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+    // gpio_set_level(swd_pin_swclk, 0);
     // ets_delay_us(SWD_CLOCK_PERIOD);    
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+    // gpio_set_level(swd_pin_swclk, 1);
     // ets_delay_us(SWD_CLOCK_PERIOD);
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+    // gpio_set_level(swd_pin_swclk, 0);
     // ets_delay_us(SWD_CLOCK_PERIOD);    
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+    // gpio_set_level(swd_pin_swclk, 1);
     // ets_delay_us(SWD_CLOCK_PERIOD);
-    // gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+    // gpio_set_level(swd_pin_swclk, 0);
     // ets_delay_us(SWD_CLOCK_PERIOD);    
 
     swd_turnround_target_next();
@@ -235,16 +234,16 @@ void swd_target_select(uint8_t core_id){
 
 uint32_t swd_read(uint8_t length){
 
-    uint32_t retval = gpio_get_level(GRID_ESP32_PINS_RP_SWDIO);
-    //printf("Read[0:%d]: %d", length-1, gpio_get_level(GRID_ESP32_PINS_RP_SWDIO));
+    uint32_t retval = gpio_get_level(swd_pin_swdio);
+    //printf("Read[0:%d]: %d", length-1, gpio_get_level(swd_pin_swdio));
 
     ets_delay_us(SWD_CLOCK_PERIOD);
     for(uint8_t i=1; i<length; i++){
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+        gpio_set_level(swd_pin_swclk, 1);
         ets_delay_us(SWD_CLOCK_PERIOD);
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
-        retval |= gpio_get_level(GRID_ESP32_PINS_RP_SWDIO)<<(i);
-        //printf("%d", gpio_get_level(GRID_ESP32_PINS_RP_SWDIO));
+        gpio_set_level(swd_pin_swclk, 0);
+        retval |= gpio_get_level(swd_pin_swdio)<<(i);
+        //printf("%d", gpio_get_level(swd_pin_swdio));
         if (i%4 == 3){
             //printf(" ");
         }
@@ -255,9 +254,9 @@ uint32_t swd_read(uint8_t length){
 
     if (length == 32){
 
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+        gpio_set_level(swd_pin_swclk, 1);
         ets_delay_us(SWD_CLOCK_PERIOD);
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+        gpio_set_level(swd_pin_swclk, 0);
         ets_delay_us(SWD_CLOCK_PERIOD);
 
     }
@@ -509,11 +508,11 @@ void swd_idle(){
     ets_delay_us(SWD_CLOCK_PERIOD*5);
 
     // IDLE
-    gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 0);
+    gpio_set_level(swd_pin_swdio, 0);
     for(uint8_t i=0; i<8; i++){
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+        gpio_set_level(swd_pin_swclk, 1);
         ets_delay_us(SWD_CLOCK_PERIOD);
-        gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+        gpio_set_level(swd_pin_swclk, 0);
         ets_delay_us(SWD_CLOCK_PERIOD);
 
     }
@@ -524,16 +523,56 @@ void swd_idle(){
 }
 
 
-void grid_esp32_swd_init_coprocessor(){
+void grid_esp32_swd_pico_pins_init(uint8_t swclk_pin, uint8_t swdio_pin, uint8_t clock_pin){
+
+
+    swd_pin_swdio = swdio_pin;
+    swd_pin_swclk = swclk_pin;
+    swd_pin_sysclk = clock_pin;
+
+
+}
+
+void grid_esp32_swd_pico_clock_init(uint8_t timer_instance, uint8_t channel_instance){
+
+
+    ledc_timer_config_t pwm_config = {
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .timer_num = timer_instance,
+        .freq_hz = 12000000,
+        .duty_resolution = LEDC_TIMER_2_BIT,
+        .clk_cfg = LEDC_AUTO_CLK
+    };
+
+    ESP_ERROR_CHECK(ledc_timer_config(&pwm_config));
+
+    ledc_channel_config_t ledc_channel = {
+        .speed_mode     = LEDC_LOW_SPEED_MODE,
+        .channel        = channel_instance,
+        .timer_sel      = timer_instance,
+        .intr_type      = LEDC_INTR_DISABLE,
+        .gpio_num       = swd_pin_sysclk,
+        .duty           = 0,
+        .hpoint         = 0
+    };
+    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
+
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 2));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0));
+
+
+}
+
+void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint8_t* buffer, uint32_t length){
 
 
 
 
-    gpio_set_direction(GRID_ESP32_PINS_RP_SWCLK, GPIO_MODE_OUTPUT);
-    gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+    gpio_set_direction(swclk_pin, GPIO_MODE_OUTPUT);
+    gpio_set_level(swclk_pin, 0);
 
-    gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 1);
-    gpio_set_direction(GRID_ESP32_PINS_RP_SWDIO, GPIO_MODE_OUTPUT);
+    gpio_set_level(swdio_pin, 1);
+    gpio_set_direction(swdio_pin, GPIO_MODE_OUTPUT);
 
 
 
@@ -574,11 +613,11 @@ void grid_esp32_swd_init_coprocessor(){
         //swd_switch_from_jtag_to_swd();
 
         // IDLE
-        gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 0);
+        gpio_set_level(swd_pin_swdio, 0);
         for(uint8_t i=0; i<8; i++){
-            gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+            gpio_set_level(swd_pin_swclk, 1);
             ets_delay_us(SWD_CLOCK_PERIOD);
-            gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+            gpio_set_level(swd_pin_swclk, 0);
             ets_delay_us(SWD_CLOCK_PERIOD);
 
         }
@@ -589,11 +628,11 @@ void grid_esp32_swd_init_coprocessor(){
         ets_delay_us(SWD_CLOCK_PERIOD*5);
 
         // IDLE
-        gpio_set_level(GRID_ESP32_PINS_RP_SWDIO, 0);
+        gpio_set_level(swd_pin_swdio, 0);
         for(uint8_t i=0; i<8; i++){
-            gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 1);
+            gpio_set_level(swd_pin_swclk, 1);
             ets_delay_us(SWD_CLOCK_PERIOD);
-            gpio_set_level(GRID_ESP32_PINS_RP_SWCLK, 0);
+            gpio_set_level(swd_pin_swclk, 0);
             ets_delay_us(SWD_CLOCK_PERIOD);
 
         }
@@ -1096,14 +1135,14 @@ void grid_esp32_swd_init_coprocessor(){
 
 
         swd_write_select(0x00000003);   swd_dummy_clock();
-        for (uint32_t i = 0; i<___grid_pico_build_main_main_bin_len; i+=4){
+        for (uint32_t i = 0; i<length; i+=4){
 
             if (i%0x400 == 0){
                 swd_write_ap4(0x20000000+i);      swd_dummy_clock();
                 //printf("\r\n\r\n%08lx :: \r\n", i);
             }
 
-            uint32_t word = *(uint32_t*)(___grid_pico_build_main_main_bin+i);
+            uint32_t word = *(uint32_t*)(buffer+i);
             swd_write_apc(word); // 0x491c481b
 
             //printf(" %08lx", word);

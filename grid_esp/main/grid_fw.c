@@ -21,13 +21,14 @@
 #include "esp_task_wdt.h"
 
 
-#include "driver/ledc.h"
+#include "pico_firmware.h"
 
 
 #define LED_TASK_PRIORITY 2
 extern void led_task(void *arg);
 
 
+#include "driver/ledc.h"
 #include <esp_timer.h>
 
 #include "grid_esp32.h"
@@ -49,37 +50,10 @@ void app_main(void)
 
     vTaskDelay(100);
     
-    grid_esp32_swd_init_coprocessor();
+    grid_esp32_swd_pico_pins_init(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, GRID_ESP32_PINS_RP_CLOCK);
+    grid_esp32_swd_pico_clock_init(LEDC_TIMER_0, LEDC_CHANNEL_0);
+    grid_esp32_swd_pico_program_sram(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, ___grid_pico_build_main_main_bin, ___grid_pico_build_main_main_bin_len);
 
-
-
-    ledc_timer_config_t pwm_config = {
-        .speed_mode = LEDC_LOW_SPEED_MODE,
-        .timer_num = LEDC_TIMER_0,
-        .freq_hz = 12000000,
-        .duty_resolution = LEDC_TIMER_2_BIT,
-        .clk_cfg = LEDC_AUTO_CLK
-    };
-
-    ESP_ERROR_CHECK(ledc_timer_config(&pwm_config));
-
-    ledc_channel_config_t ledc_channel = {
-        .speed_mode     = LEDC_LOW_SPEED_MODE,
-        .channel        = LEDC_CHANNEL_0,
-        .timer_sel      = LEDC_TIMER_0,
-        .intr_type      = LEDC_INTR_DISABLE,
-        .gpio_num       = GRID_ESP32_PINS_RP_CLOCK,
-        .duty           = 0,
-        .hpoint         = 0
-    };
-    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
-
-    ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 2));
-    ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0));
-
-
-esp_err_t ledc_set_duty(ledc_mode_t speed_mode, ledc_channel_t channel, uint32_t duty);
-esp_err_t ledc_update_duty(ledc_mode_t speed_mode, ledc_channel_t channel);
 
 
 

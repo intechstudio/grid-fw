@@ -21,7 +21,8 @@
     "freertos.h": "c",
     "grid_esp32.h": "c",
     "grid_esp32_swd.h": "c",
-    "grid_esp32_pins.h": "c"
+    "grid_esp32_pins.h": "c",
+    "ledc.h": "c"
 },
   "actionButtons": {
     "defaultColor": "#ff0034", // Can also use string color names.
