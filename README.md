@@ -1,5 +1,5 @@
 # Intech Studio firmware repository
-![img](https://intech.studio/assets/image/grid_magnetic_interface_1.jpg)
+![img](./diagram.svg)
 
 ## Instructions
 This document will walk you through the process of updating the firmware on your IntechGrid midicontroller. Please read through the  entire document beforehand in order to avid making any mistakes.
