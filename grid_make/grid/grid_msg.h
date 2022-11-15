@@ -9,8 +9,14 @@
 #ifndef GRID_MSG_H_
 #define GRID_MSG_H_
 
-#include "grid_module.h"
 
+#include "grid_protocol.h"
+
+// for variable argument lists
+#include <stdarg.h>
+
+// only for uint definitions
+#include "../atmel_start.h"
 
 #define GRID_MSG_HEADER_maxlength 26
 #define GRID_MSG_FOOTER_maxlength 5
@@ -18,6 +24,23 @@
 #define GRID_MSG_BODY_maxlength  GRID_PARAMETER_PACKET_maxlength - GRID_MSG_HEADER_maxlength - GRID_MSG_FOOTER_maxlength
 
 
+
+#define GRID_MSG_RECENT_MESSAGES_LENGTH			32
+#define GRID_MSG_RECENT_MESSAGES_INDEX_T		uint8_t
+
+struct grid_msg_model
+{
+	
+	uint32_t recent_messages[GRID_MSG_RECENT_MESSAGES_LENGTH];
+	GRID_MSG_RECENT_MESSAGES_INDEX_T recent_messages_index;
+	
+    uint8_t sessionid;
+	uint8_t next_broadcast_message_id;
+	
+};
+
+
+volatile struct grid_msg_model grid_msg_state;
 
 
 struct grid_msg{
@@ -96,9 +119,32 @@ uint8_t	grid_msg_packet_send_char(struct grid_msg* msg, uint32_t charindex);
 uint8_t	grid_msg_packet_close(struct grid_msg* msg);
 
 
-uint8_t	grid_msg_packet_send_everywhere(struct grid_msg* msg);
 
 
 uint8_t grid_msg_string_validate(uint8_t* packet);
+
+
+uint8_t grid_msg_find_recent(struct grid_msg_model* mod, uint32_t fingerprint);
+
+void grid_msg_push_recent(struct grid_msg_model* mod, uint32_t fingerprint);
+
+
+
+
+uint32_t grid_msg_get_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint8_t* error);
+uint32_t grid_msg_set_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error);
+
+
+uint8_t grid_msg_calculate_checksum_of_packet_string(uint8_t* str, uint32_t length);
+uint8_t grid_msg_calculate_checksum_of_string(uint8_t* str, uint32_t length);
+
+uint8_t grid_msg_checksum_read(uint8_t* str, uint32_t length);
+void grid_msg_checksum_write(uint8_t* message, uint32_t length, uint8_t checksum);
+
+
+uint8_t grid_msg_read_hex_char_value(uint8_t ascii, uint8_t* error_flag);
+uint32_t grid_msg_read_hex_string_value(uint8_t* start_location, uint8_t length, uint8_t* error_flag);
+void grid_msg_write_hex_string_value(uint8_t* start_location, uint8_t size, uint32_t value);
+
 
 #endif /* GRID_MSG_H_ */

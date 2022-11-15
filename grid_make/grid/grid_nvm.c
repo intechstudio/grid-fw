@@ -153,7 +153,7 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 
 	grid_msg_packet_close(&response);
 
-	grid_msg_packet_send_everywhere(&response);
+	grid_sys_packet_send_everywhere(&response);
 
 
 	grid_nvm_toc_debug(nvm);
@@ -1040,7 +1040,7 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, grid_sys_state.lastheader_pagediscard.id);
 	grid_msg_packet_close(&response);
-	grid_msg_packet_send_everywhere(&response);
+	grid_sys_packet_send_everywhere(&response);
 
 	nvm->read_bulk_status = 0;
 
@@ -1155,7 +1155,7 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
 
 	grid_msg_packet_close(&response);
-	grid_msg_packet_send_everywhere(&response);
+	grid_sys_packet_send_everywhere(&response);
 	
 	nvm->store_bulk_status = 0;
 
@@ -1239,7 +1239,7 @@ void grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_
 	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
 
 	grid_msg_packet_close(&response);
-	grid_msg_packet_send_everywhere(&response);
+	grid_sys_packet_send_everywhere(&response);
 	
 	nvm->clear_bulk_status = 0;
 
@@ -1332,7 +1332,7 @@ void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_m
 
 		grid_msg_packet_close(&response);
 
-		grid_msg_packet_send_everywhere(&response);
+		grid_sys_packet_send_everywhere(&response);
 
 		grid_keyboard_state.isenabled = 1;	
 		grid_sys_state.lastheader_nvmerase.status = 0;

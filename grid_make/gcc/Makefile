@@ -32,7 +32,6 @@ grid/grid_nvm.o \
 grid/grid_protocol.o \
 grid/grid_sys.o \
 grid/grid_ui.o \
-grid/grid_unittest.o \
 grid/grid_usb.o \
 grid/grid_lua_api.o \
 thirdparty/Lua/lua-5.4.3/src/lapi.o \
@@ -96,7 +95,6 @@ OBJS_AS_ARGS +=  \
 "grid/grid_protocol.o" \
 "grid/grid_sys.o" \
 "grid/grid_ui.o" \
-"grid/grid_unittest.o" \
 "grid/grid_usb.o" \
 "grid/grid_lua_api.o" \
 "thirdparty/Lua/lua-5.4.3/src/lapi.o" \
@@ -169,7 +167,6 @@ DEPS_AS_ARGS +=  \
 "grid/grid_protocol.d" \
 "grid/grid_sys.d" \
 "grid/grid_ui.d" \
-"grid/grid_unittest.d" \
 "grid/grid_usb.d" \
 "grid/grid_lua_api.d" \
 "thirdparty/Lua/lua-5.4.3/src/lapi.d" \

@@ -397,7 +397,7 @@ static int l_grid_elementname_send(lua_State* L) {
             // grid_msg_body_append_printf(&response, GRID_CLASS_ELEMENTNAME_frame_end);    
 
             // grid_msg_packet_close(&response);
-            // grid_msg_packet_send_everywhere(&response);
+            // grid_sys_packet_send_everywhere(&response);
 
 
             //grid_debug_printf("SN: %d, %s", number, string);

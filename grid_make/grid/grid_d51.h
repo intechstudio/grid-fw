@@ -53,6 +53,15 @@ void grid_d51_task_clear(struct grid_d51_task* task);
 #define  GRID_D51_DWT_CYCCNT (*(uint32_t *)0xE0001004)
 
 
+/* ==================== Reading MCU Unique Serial Nuber ====================== */
+// Word 0: 0x008061FC	Word 1: 0x00806010	Word 2: 0x00806014	Word 3: 0x00806018
+
+#define GRID_D51_UNIQUE_ID_ADDRESS_0 0x008061FC
+#define GRID_D51_UNIQUE_ID_ADDRESS_1 0x00806010
+#define GRID_D51_UNIQUE_ID_ADDRESS_2 0x00806014
+#define GRID_D51_UNIQUE_ID_ADDRESS_3 0x00806018
+
+
 void grid_d51_init();
 
 void grid_d51_verify_user_row();
@@ -77,5 +86,10 @@ void grid_d51_nvic_set_interrupt_priority_mask(uint32_t priority);
 uint32_t grid_d51_nvic_get_interrupt_priority_mask(void);
 
 
+uint32_t grid_d51_get_id(uint32_t* return_array);
+uint32_t grid_d51_get_hwcfg();
+
+uint8_t grid_d51_get_random_8();
+uint8_t grid_d51_get_reset_cause();
 
 #endif /* GRID_D51_H_ */

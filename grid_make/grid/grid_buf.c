@@ -25,8 +25,8 @@ void grid_port_reset_receiver(struct grid_port* por){
 	por->ping_partner_token = 255;
 	por->ping_local_token = 255;
 	
-	grid_sys_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
-	grid_sys_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
+	grid_msg_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
+	grid_msg_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
 	grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 
 
@@ -280,7 +280,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				uint32_t fingerprint = received_id*256*256*256 + updated_sx*256*256 + updated_sy*256 + received_session;
 				
 				
-				if (0 == grid_msg_find_recent(&grid_sys_state, fingerprint)){
+				if (0 == grid_msg_find_recent(&grid_msg_state, fingerprint)){
 					// WE HAVE NOT HEARD THIS MESSAGE BEFORE
 					
 					// Recalculate and update the checksum
@@ -301,7 +301,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 						
 						//grid_port_process_inbound(por);
 						
-						grid_msg_push_recent(&grid_sys_state, fingerprint);
+						grid_msg_push_recent(&grid_msg_state, fingerprint);
 						
 					}
 					
@@ -354,7 +354,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 
 						// CONNECT
 						por->partner_fi = (message[3] - por->direction + 6)%4;
-						por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-10], 2, error_flag);
+						por->partner_hwcfg = grid_msg_read_hex_string_value(&message[length-10], 2, error_flag);
 						por->partner_status = 1;
 						
 						por->rx_double_buffer_timeout = 0;
@@ -376,8 +376,8 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 					
 					// Handshake logic
 					
-					uint8_t local_token_received = grid_sys_read_hex_string_value(&message[8], 2, error_flag);
-					uint8_t partner_token_received = grid_sys_read_hex_string_value(&message[6], 2, error_flag);
+					uint8_t local_token_received = grid_msg_read_hex_string_value(&message[8], 2, error_flag);
+					uint8_t partner_token_received = grid_msg_read_hex_string_value(&message[6], 2, error_flag);
 							
 					if (por->partner_status == 0){
 												
@@ -389,7 +389,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							por->ping_local_token  = grid_sys_rtc_get_time(&grid_sys_state)%128;
 							
 							//NEW
-							grid_sys_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
+							grid_msg_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
 							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 								
 							// No chance to connect now
@@ -408,7 +408,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							por->ping_partner_token = partner_token_received;							
 							
 							//NEW
-							grid_sys_write_hex_string_value(&por->ping_packet[8], 2, partner_token_received);
+							grid_msg_write_hex_string_value(&por->ping_packet[8], 2, partner_token_received);
 							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 							
 							printf("BELL 2\r\n");	
@@ -428,7 +428,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							
 							// CONNECT
 							por->partner_fi = (message[3] - por->direction + 6)%4;
-							por->partner_hwcfg = grid_sys_read_hex_string_value(&message[length-10], 2, error_flag);
+							por->partner_hwcfg = grid_msg_read_hex_string_value(&message[length-10], 2, error_flag);
 							por->partner_status = 1;
 							
 							
@@ -457,7 +457,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 						validator &= partner_token_received == por->ping_partner_token;
 						
 						validator &= por->partner_fi == (message[3] - por->direction + 6)%4;
-						validator &= por->partner_hwcfg == grid_sys_read_hex_string_value(&message[length-10], 2, error_flag);
+						validator &= por->partner_hwcfg == grid_msg_read_hex_string_value(&message[length-10], 2, error_flag);
 						
 						
 						if (validator == 1){
@@ -473,8 +473,8 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 							por->ping_partner_token = 255;
 							por->ping_local_token = 255;
 							
-							grid_sys_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
-							grid_sys_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
+							grid_msg_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
+							grid_msg_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
 							grid_msg_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 							
 							
@@ -1555,14 +1555,14 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				current_length		= current_stop-current_start;
 				stop_count++;
 
-				uint8_t msg_class = grid_sys_read_hex_string_value(&message[current_start+GRID_PARAMETER_CLASSCODE_offset], GRID_PARAMETER_CLASSCODE_length, &error_flag);
-				uint8_t msg_instr = grid_sys_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
+				uint8_t msg_class = grid_msg_read_hex_string_value(&message[current_start+GRID_PARAMETER_CLASSCODE_offset], GRID_PARAMETER_CLASSCODE_length, &error_flag);
+				uint8_t msg_instr = grid_msg_read_hex_string_value(&message[current_start+GRID_INSTR_offset], GRID_INSTR_length, &error_flag);
 		
 
 		
 				if (msg_class == GRID_CLASS_PAGEACTIVE_code){ // dont check address!
 						
-					uint8_t page = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset], GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, &error_flag);
+					uint8_t page = grid_msg_read_hex_string_value(&message[current_start+GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset], GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, &error_flag);
 								
 					
 					if (msg_instr == GRID_INSTR_EXECUTE_code){ //SET BANK
@@ -1611,10 +1611,10 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				if (msg_class == GRID_CLASS_MIDI_code && msg_instr == GRID_INSTR_REPORT_code){
 						
 									
-					uint8_t midi_channel = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_CHANNEL_offset], GRID_CLASS_MIDI_CHANNEL_length, &error_flag);	
-					uint8_t midi_command = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_COMMAND_offset], GRID_CLASS_MIDI_COMMAND_length, &error_flag);	
-					uint8_t midi_param1 = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_PARAM1_offset], GRID_CLASS_MIDI_PARAM1_length, &error_flag);	
-					uint8_t midi_param2 = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_PARAM2_offset], GRID_CLASS_MIDI_PARAM2_length, &error_flag);		
+					uint8_t midi_channel = grid_msg_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_CHANNEL_offset], GRID_CLASS_MIDI_CHANNEL_length, &error_flag);	
+					uint8_t midi_command = grid_msg_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_COMMAND_offset], GRID_CLASS_MIDI_COMMAND_length, &error_flag);	
+					uint8_t midi_param1 = grid_msg_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_PARAM1_offset], GRID_CLASS_MIDI_PARAM1_length, &error_flag);	
+					uint8_t midi_param2 = grid_msg_read_hex_string_value(&message[current_start+GRID_CLASS_MIDI_PARAM2_offset], GRID_CLASS_MIDI_PARAM2_length, &error_flag);		
 					
 					//printf("M: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1, midi_param2);
 
@@ -1654,7 +1654,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						grid_msg_text_set_parameter(&response, 0, GRID_CLASS_PAGECOUNT_PAGENUMBER_offset, GRID_CLASS_PAGECOUNT_PAGENUMBER_length, grid_ui_state.page_count);
 
 						grid_msg_packet_close(&response);
-						grid_msg_packet_send_everywhere(&response);
+						grid_sys_packet_send_everywhere(&response);
 							
 
 													
@@ -1663,7 +1663,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				}
 				else if (msg_class == GRID_CLASS_IMEDIATE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_global || position_is_me || position_is_local)){
 
-					uint16_t length = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_IMEDIATE_ACTIONLENGTH_offset], GRID_CLASS_IMEDIATE_ACTIONLENGTH_length, &error_flag);
+					uint16_t length = grid_msg_read_hex_string_value(&message[current_start+GRID_CLASS_IMEDIATE_ACTIONLENGTH_offset], GRID_CLASS_IMEDIATE_ACTIONLENGTH_length, &error_flag);
 					uint8_t lua_script[200] = {0};
 					strncpy(lua_script, &message[current_start+GRID_CLASS_IMEDIATE_ACTIONSTRING_offset], length);
 
@@ -1689,7 +1689,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				}
 				else if (msg_class == GRID_CLASS_HEARTBEAT_code){
 					
-					uint8_t type  = grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_HEARTBEAT_TYPE_offset], GRID_CLASS_HEARTBEAT_TYPE_length, &error_flag);
+					uint8_t type  = grid_msg_read_hex_string_value(&message[current_start+GRID_CLASS_HEARTBEAT_TYPE_offset], GRID_CLASS_HEARTBEAT_TYPE_length, &error_flag);
 					
 					uint8_t editor_connected_now = 0;
 
@@ -1818,7 +1818,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							grid_msg_text_set_parameter(&response, 0, GRID_CLASS_EVENTPREVIEW_LENGTH_offset, GRID_CLASS_EVENTPREVIEW_LENGTH_length, report_length);
 							
 							grid_msg_packet_close(&response);
-							grid_msg_packet_send_everywhere(&response);
+							grid_sys_packet_send_everywhere(&response);
 
 							//printf(response.body);
 							//printf("\r\n");
@@ -1852,7 +1852,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							}
 
 							grid_msg_packet_close(&response);
-							grid_msg_packet_send_everywhere(&response);
+							grid_sys_packet_send_everywhere(&response);
 
 							//printf(response.body);
 							//printf("\r\n");
@@ -1892,7 +1892,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							grid_msg_text_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
 							
 							grid_msg_packet_close(&response);
-							grid_msg_packet_send_everywhere(&response);
+							grid_sys_packet_send_everywhere(&response);
 
 						}
 
@@ -1909,7 +1909,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				else if(msg_class == GRID_CLASS_SERIALNUMBER_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
 					
 					uint32_t uniqueid[4] = {0};
-					grid_sys_get_id(uniqueid);					
+					grid_sys_get_id(&grid_sys_state, uniqueid);					
 					// Generate RESPONSE
 					struct grid_msg response;
 											
@@ -1930,7 +1930,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 											
 					grid_msg_packet_close(&response);
-					grid_msg_packet_send_everywhere(&response);
+					grid_sys_packet_send_everywhere(&response);
 						
 	
 				}
@@ -1958,7 +1958,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 				
 					grid_msg_packet_close(&response);
-					grid_msg_packet_send_everywhere(&response);
+					grid_sys_packet_send_everywhere(&response);
 				
 				
 				}
@@ -1979,7 +1979,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_RESETCAUSE_CAUSE_offset, GRID_CLASS_RESETCAUSE_CAUSE_length,grid_sys_state.reset_cause);
 			
 					grid_msg_packet_close(&response);
-					grid_msg_packet_send_everywhere(&response);
+					grid_sys_packet_send_everywhere(&response);
 					
 					
 				}
@@ -2013,7 +2013,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}	
 
 					grid_msg_packet_close(&response);
-					grid_msg_packet_send_everywhere(&response);	
+					grid_sys_packet_send_everywhere(&response);	
 
 				}			
 				else if (msg_class == GRID_CLASS_PAGESTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
@@ -2047,7 +2047,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}	
 
 					grid_msg_packet_close(&response);
-					grid_msg_packet_send_everywhere(&response);	
+					grid_sys_packet_send_everywhere(&response);	
 
 				}	
 				else if (msg_class == GRID_CLASS_NVMERASE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
@@ -2082,7 +2082,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}	
 
 					grid_msg_packet_close(&response);
-					grid_msg_packet_send_everywhere(&response);	
+					grid_sys_packet_send_everywhere(&response);	
 
 				}	
 				else if (msg_class == GRID_CLASS_NVMDEFRAG_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
@@ -2209,7 +2209,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						}
 						
 						grid_msg_packet_close(&response);
-						grid_msg_packet_send_everywhere(&response);
+						grid_sys_packet_send_everywhere(&response);
 
                     }
                 }		
@@ -2228,12 +2228,12 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					}	
 
 					grid_msg_packet_close(&response);
-					grid_msg_packet_send_everywhere(&response);	
+					grid_sys_packet_send_everywhere(&response);	
 
 				}	
                 else if (msg_class == GRID_CLASS_HIDKEYSTATUS_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-                    uint8_t isenabled =	grid_sys_read_hex_string_value(&message[current_start+GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset]		, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length	, &error_flag);
+                    uint8_t isenabled =	grid_msg_read_hex_string_value(&message[current_start+GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset]		, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length	, &error_flag);
 					
                     
                     grid_keyboard_state.isenabled = isenabled;
@@ -2260,7 +2260,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 
                     grid_msg_packet_close(&response);
-                    grid_msg_packet_send_everywhere(&response);
+                    grid_sys_packet_send_everywhere(&response);
 
                 }
 				else{

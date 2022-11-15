@@ -61,7 +61,7 @@ void grid_debug_print_text(uint8_t* debug_string){
 	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_end);
 
 	grid_msg_packet_close(&message);
-	grid_msg_packet_send_everywhere(&message);
+	grid_sys_packet_send_everywhere(&message);
 		
 }
 
@@ -80,7 +80,7 @@ void grid_websocket_print_text(uint8_t* debug_string){
 	grid_msg_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_end);
 
 	grid_msg_packet_close(&message);
-	grid_msg_packet_send_everywhere(&message);
+	grid_sys_packet_send_everywhere(&message);
 		
 }
 
@@ -101,78 +101,29 @@ void grid_debug_printf(char const *fmt, ...){
 
 	return;
 }
-//====================== grid sys unittest ===================================//
 
-uint32_t grid_sys_unittest(void){
+uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg){
+	
+	uint32_t message_length = grid_msg_packet_get_length(msg);
+	
+	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, message_length)){
 
+		for(uint32_t i = 0; i<message_length; i++){
 
-	if(grid_unittest_group_init(&grid_unittest_state, "grid_sys::checksum"))
-	{
-		if(grid_unittest_case_init(&grid_unittest_state, "Checksum Read/Calculate"))
-		{ // Read/Calculate
-			
-			uint8_t length = 8;
-			uint8_t packet[8] = {1, 0, 2, 2, 4, 0, 0, 10};
-		
-			uint8_t checksum_calc = grid_msg_calculate_checksum_of_packet_string(packet, length);
-			uint8_t checksum_read = grid_msg_checksum_read(packet, length);
-				
-			char str[100] = {0};
-			sprintf(str, "packet{%d, %d, %d, %d, %d, %d, %d, %d} Read: %d, Calculate: %d", packet[0], packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7], checksum_read, checksum_calc);	
-				
-			if (checksum_calc != checksum_read){		
-				grid_unittest_case_pass(&grid_unittest_state,str);
-			}
-			else{
-				grid_unittest_case_fail(&grid_unittest_state,str);
-			}
-			
+			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char(msg, i));
 		}
-		if (grid_unittest_case_init(&grid_unittest_state, "Checksum Write/Calculate")) // Write/Calculate	
-		{	
+
+		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
+
+		return 1;
+	}
+	else{
 		
-		
-			uint8_t length = 8;
-			uint8_t packet[8] = {1, 0, 2, 2, 4, 0, 0, 10};
-					
-			uint8_t checksum_calc = grid_msg_calculate_checksum_of_packet_string(packet, length);
-		
-			grid_msg_checksum_write(packet, length, checksum_calc);
-		
-			uint8_t checksum_read = grid_msg_checksum_read(packet, length);
-				
-			char str[100] = {0};
-			sprintf(str, "packet{%d, %d, %d, %d, %d, %d, %d, %d} Read: %d, Calculate: %d", packet[0], packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7], checksum_read, checksum_calc);	
-		
-		
-			if (checksum_calc == checksum_read){		
-				grid_unittest_case_pass(&grid_unittest_state,str);
-			}
-			else{
-				grid_unittest_case_fail(&grid_unittest_state,str);
-			}
-				
-		}	
-		
-		
+		return 0;
 	}
 	
-	grid_unittest_case_init(&grid_unittest_state, "Checksum Overwrite");
-	grid_unittest_case_fail(&grid_unittest_state, "Parapaprikas");
-		
-	grid_unittest_group_done(&grid_unittest_state);
-		
-
-	//grid_unittest_case_init(&grid_unittest_state, );
-
-	return 1;
+	
 }
-
-
-
-
-
-
 
 
 //=============================== USART TX COMPLETE ==============================//
@@ -398,13 +349,27 @@ void grid_sys_dma_rx_init(){
 
 void grid_sys_init(struct grid_sys_model* mod){
 	
+	// PLATFORM SPECIFIC INITIALIZERS
+
+	mod->reset_cause = grid_d51_get_reset_cause();
+	grid_msg_state.sessionid = grid_d51_get_random_8();
+	mod->hwfcg = grid_d51_get_hwcfg();
+
+	uint32_t uniqueid[4] = {0};
+	grid_d51_get_id(uniqueid);			
+
+	mod->uniqueid_array[0] = uniqueid[0];
+	mod->uniqueid_array[1] = uniqueid[1];
+	mod->uniqueid_array[2] = uniqueid[2];
+	mod->uniqueid_array[3] = uniqueid[3];
+
+	// LOCAL INITIALIZERS
 	mod->uptime = 0;
-	mod->reset_cause = hri_rstc_read_RCAUSE_reg(RSTC);
+
 	
 	mod->midirx_any_enabled = 1;
 	mod->midirx_sync_enabled = 0;
 
-	mod->hwfcg = -1;
 	mod->heartbeat_type = 0;
 
 	mod->module_x = 0; // 0 because this is signed int
@@ -417,10 +382,6 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->lastheader_pagediscard.status = -1;
 	mod->lastheader_pageclear.status = -1;
 
-    
-	rand_sync_enable(&RAND_0);	
-	mod->sessionid = rand_sync_read8(&RAND_0);
-    
 	
 	mod->bank_color_r[0] = 0;
 	mod->bank_color_g[0] = 100;
@@ -667,127 +628,29 @@ void grid_sys_rtc_tick_time(struct grid_sys_model* mod){
 	
 }
 
-uint8_t grid_sys_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
-		
-	uint8_t result = 0;
-	
-	if (ascii>47 && ascii<58){
-		result = ascii-48;
-	}
-	else if(ascii>96 && ascii<103){
-		result = ascii - 97 + 10;
-	}
-	else{
-		// wrong input
-		if (error_flag != NULL){
-			*error_flag = ascii;
-		}
-	}
-	
-	return result;	
-}
-
-uint32_t grid_sys_read_hex_string_value(uint8_t* start_location, uint8_t length, uint8_t* error_flag){
-	
-	uint32_t result  = 0;
-	
-	for(uint8_t i=0; i<length; i++){
-		
-		result += grid_sys_read_hex_char_value(start_location[i], error_flag) << (length-i-1)*4;
-
-		
-	}
-
-	return result;
-}
-
-void grid_sys_write_hex_string_value(uint8_t* start_location, uint8_t size, uint32_t value){
-	
-	uint8_t str[10];
-	
-	sprintf(str, "%08x", value);
-		
-	for(uint8_t i=0; i<size; i++){	
-		start_location[i] = str[8-size+i];	
-	}
-
-}
-
-
-
-
-uint32_t grid_sys_get_id(uint32_t* return_array){
-			
-	return_array[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);
-	return_array[1] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_1);
-	return_array[2] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_2);
-	return_array[3] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_3);
-	
-	return 1;
-	
-}
-
-uint32_t grid_sys_get_hwcfg(struct grid_sys_model* mod){
-	
-	// Read the register for the first time, then later just return the saved value
-
-	if (mod->hwfcg == -1){
-
-		gpio_set_pin_direction(HWCFG_SHIFT, GPIO_DIRECTION_OUT);
-		gpio_set_pin_direction(HWCFG_CLOCK, GPIO_DIRECTION_OUT);
-		gpio_set_pin_direction(HWCFG_DATA, GPIO_DIRECTION_IN);
-			
-		// LOAD DATA
-		gpio_set_pin_level(HWCFG_SHIFT, 0);
-		delay_ms(1);
-			
-			
-			
-		uint8_t hwcfg_value = 0;
-			
-			
-		for(uint8_t i = 0; i<8; i++){ // now we need to shift in the remaining 7 values
-				
-			// SHIFT DATA
-			gpio_set_pin_level(HWCFG_SHIFT, 1); //This outputs the first value to HWCFG_DATA
-			delay_ms(1);
-				
-				
-			if(gpio_get_pin_level(HWCFG_DATA)){
-					
-				hwcfg_value |= (1<<i);
-					
-				}else{
-					
-					
-			}
-				
-			if(i!=7){
-					
-				// Clock rise
-				gpio_set_pin_level(HWCFG_CLOCK, 1);
-					
-				delay_ms(1);
-					
-				gpio_set_pin_level(HWCFG_CLOCK, 0);
-			}
-							
-		}
-		
-		mod->hwfcg = hwcfg_value;
-		
-	}
-
-	
-	return mod->hwfcg;
-
-}
 
 
 #define GRID_SYS_NORTH	0
 #define GRID_SYS_EAST	1
 #define GRID_SYS_SOUTH	2
 #define GRID_SYS_WEST	3
+
+
+uint32_t grid_sys_get_hwcfg(struct grid_sys_model* mod){
+
+	return mod->hwfcg;
+}
+
+uint32_t grid_sys_get_id(struct grid_sys_model* mod, uint32_t* return_array){
+			
+	return_array[0] = mod->uniqueid_array[0];
+	return_array[1] = mod->uniqueid_array[1];
+	return_array[2] = mod->uniqueid_array[2];
+	return_array[3] = mod->uniqueid_array[3];
+	
+	return 1;
+	
+}
 
 
 
@@ -797,89 +660,5 @@ void grid_sys_ping_all(){
 	grid_sys_ping(&GRID_PORT_E);
 	grid_sys_ping(&GRID_PORT_S);
 	grid_sys_ping(&GRID_PORT_W);
-	
-}
-
-uint8_t grid_msg_calculate_checksum_of_packet_string(uint8_t* str, uint32_t length){
-	
-	uint8_t checksum = 0;
-	for (uint32_t i=0; i<length-3; i++){
-		checksum ^= str[i];
-	}
-	
-	return checksum;
-	
-}
-
-uint8_t grid_msg_calculate_checksum_of_string(uint8_t* str, uint32_t length){
-	
-	uint8_t checksum = 0;
-	for (uint32_t i=0; i<length; i++){
-		checksum ^= str[i];
-	}
-	
-	return checksum;
-	
-}
-
-
-uint8_t grid_msg_checksum_read(uint8_t* str, uint32_t length){
-	uint8_t error_flag;
-	return grid_sys_read_hex_string_value(&str[length-3], 2, &error_flag);
-}
-
-void grid_msg_checksum_write(uint8_t* message, uint32_t length, uint8_t checksum){
-	
-// 	uint8_t checksum_string[4];
-// 
-// 	sprintf(checksum_string, "%02x", checksum);
-// 
-// 	message[length-3] = checksum_string[0];
-// 	message[length-2] = checksum_string[1];
-	
-	grid_sys_write_hex_string_value(&message[length-3], 2, checksum);
-	
-}
-
-
-// MESSAGE PARAMETER FUNCTIONS
-
-uint32_t grid_msg_get_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint8_t* error){
-		
-	return grid_sys_read_hex_string_value(&message[offset], length, error);	
-}
-
-uint32_t grid_msg_set_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error){
-	
-	grid_sys_write_hex_string_value(&message[offset], length, value);
-	
-}
-
-
-
-
-// RECENT MESSAGES
-
-uint8_t grid_msg_find_recent(struct grid_sys_model* model, uint32_t fingerprint){
-	
-	for(GRID_SYS_RECENT_MESSAGES_INDEX_T i = 0; i<GRID_SYS_RECENT_MESSAGES_LENGTH; i++){
-		
-		if (model->recent_messages[i%GRID_SYS_RECENT_MESSAGES_LENGTH] == fingerprint){
-			
-			return 1;
-			
-		}
-		
-	}
-	
-	return 0;
-}
-
-void grid_msg_push_recent(struct grid_sys_model* model, uint32_t fingerprint){
-	
-	model->recent_messages_index+=1;
-	model->recent_messages_index%=GRID_SYS_RECENT_MESSAGES_LENGTH;
-	
-	model->recent_messages[model->recent_messages_index] = fingerprint;
 	
 }

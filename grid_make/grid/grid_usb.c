@@ -296,7 +296,7 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
 						grid_msg_body_append_parameter(&message, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, kb->isenabled);
 						
             grid_msg_packet_close(&message);
-            grid_msg_packet_send_everywhere(&message);
+            grid_sys_packet_send_everywhere(&message);
             
         }
 
@@ -468,7 +468,7 @@ uint8_t grid_midi_rx_pop(){
 		}
 
 		grid_msg_packet_close(&message);
-		grid_msg_packet_send_everywhere(&message);
+		grid_sys_packet_send_everywhere(&message);
 
 		
 	}

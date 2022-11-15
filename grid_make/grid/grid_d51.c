@@ -49,22 +49,14 @@ void grid_d51_bitmap_write_bit(uint8_t* buffer, uint8_t offset, uint8_t value, u
 
 void grid_d51_init(){
 
+	rand_sync_enable(&RAND_0); 
+
 	grid_d51_dwt_enable(); // debug watch for counting cpu cycles
 
 
 			
 	#ifdef UNITTEST
-	#include "grid/grid_unittest.h"
-	grid_unittest_start();
-	
-	grid_sys_unittest();
-	grid_sys_unittest();
-	
-	printf(" Unit Test Finished\r\n");
-	
-	while (1)
-	{
-	}
+
 	
 	#else
 	#endif
@@ -309,37 +301,6 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 	// START OF GRID MODULE SPECIFIC PIN DEFINITIONS
 
 
-
-	// SET PINS SO HWCFG CAN BE READ
-	// gpio_set_pin_level(HWCFG_SHIFT, false);
-	// gpio_set_pin_direction(HWCFG_SHIFT, GPIO_DIRECTION_OUT);
-	// gpio_set_pin_function(HWCFG_SHIFT, GPIO_PIN_FUNCTION_OFF);
-
-	// gpio_set_pin_level(HWCFG_CLOCK, false);
-	// gpio_set_pin_direction(HWCFG_CLOCK, GPIO_DIRECTION_OUT);
-	// gpio_set_pin_function(HWCFG_CLOCK, GPIO_PIN_FUNCTION_OFF);
-
-	// gpio_set_pin_direction(HWCFG_DATA, GPIO_DIRECTION_IN);
-	// gpio_set_pin_pull_mode(HWCFG_DATA, GPIO_PULL_OFF);
-	// gpio_set_pin_function(HWCFG_DATA, GPIO_PIN_FUNCTION_OFF);
-
-	// // READ THE HWCFG REGISTER
-
-	// // RESET HWCFG PINS TO THEIR DEFAULT STATE	
-
-	// gpio_set_pin_level(HWCFG_SHIFT, false);
-	// gpio_set_pin_direction(HWCFG_SHIFT, GPIO_DIRECTION_OFF);
-	// gpio_set_pin_function(HWCFG_SHIFT, GPIO_PIN_FUNCTION_OFF);
-
-	// gpio_set_pin_level(HWCFG_CLOCK, false);
-	// gpio_set_pin_direction(HWCFG_CLOCK, GPIO_DIRECTION_OFF);
-	// gpio_set_pin_function(HWCFG_CLOCK, GPIO_PIN_FUNCTION_OFF);
-
-	// gpio_set_pin_direction(HWCFG_DATA, GPIO_DIRECTION_OFF);
-	// gpio_set_pin_pull_mode(HWCFG_DATA, GPIO_PULL_OFF);
-	// gpio_set_pin_function(HWCFG_DATA, GPIO_PIN_FUNCTION_OFF);	
-
-
 	// END OF GRID MODULE SPECIFIC PIN DEFINITIONS
 
 
@@ -484,11 +445,10 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 void grid_d51_boundary_scan_report(uint32_t* result_bitmap){
 
 	printf("test.mcu.ATSAMD51N20A\r\n");
-	grid_sys_state.hwfcg = -1;
-	printf("test.hwcfg.%d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
+	printf("test.hwcfg.%d\r\n", grid_d51_get_hwcfg(&grid_sys_state));
 
 	uint32_t uniqueid[4] = {0};
-	grid_sys_get_id(uniqueid);	
+	grid_d51_get_id(uniqueid);	
 
 	printf("test.serialno.%08x %08x %08x %08x\r\n", uniqueid[0], uniqueid[1], uniqueid[2], uniqueid[3]);
 
@@ -799,3 +759,85 @@ void grid_d51_task_clear(struct grid_d51_task* task){
 }
 
 
+
+uint32_t grid_d51_get_id(uint32_t* return_array){
+			
+	return_array[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);
+	return_array[1] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_1);
+	return_array[2] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_2);
+	return_array[3] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_3);
+	
+	return 1;
+	
+}
+
+uint32_t grid_d51_get_hwcfg(){
+	
+	// Read the register for the first time, then later just return the saved value
+
+
+	gpio_set_pin_direction(HWCFG_SHIFT, GPIO_DIRECTION_OUT);
+	gpio_set_pin_direction(HWCFG_CLOCK, GPIO_DIRECTION_OUT);
+	gpio_set_pin_direction(HWCFG_DATA, GPIO_DIRECTION_IN);
+		
+	// LOAD DATA
+	gpio_set_pin_level(HWCFG_SHIFT, 0);
+	delay_ms(1);
+	gpio_set_pin_level(HWCFG_SHIFT, 1);
+	delay_ms(1);
+	gpio_set_pin_level(HWCFG_SHIFT, 0);
+		
+		
+		
+		
+	uint8_t hwcfg_value = 0;
+		
+		
+	for(uint8_t i = 0; i<8; i++){ // now we need to shift in the remaining 7 values
+			
+		// SHIFT DATA
+		gpio_set_pin_level(HWCFG_SHIFT, 1); //This outputs the first value to HWCFG_DATA
+		delay_ms(1);
+			
+			
+		if(gpio_get_pin_level(HWCFG_DATA)){
+				
+			hwcfg_value |= (1<<i);
+				
+			}else{
+				
+				
+		}
+			
+		if(i!=7){
+				
+			// Clock rise
+			gpio_set_pin_level(HWCFG_CLOCK, 1);
+				
+			delay_ms(1);
+				
+			gpio_set_pin_level(HWCFG_CLOCK, 0);
+		}
+						
+	}
+
+	return hwcfg_value;
+	
+
+
+}
+
+
+uint8_t grid_d51_get_random_8(){
+
+	return rand_sync_read8(&RAND_0);
+
+
+}
+
+uint8_t grid_d51_get_reset_cause(){
+
+	return hri_rstc_read_RCAUSE_reg(RSTC);
+
+
+}

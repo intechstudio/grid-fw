@@ -215,13 +215,13 @@ uint32_t grid_msg_text_get_parameter(struct grid_msg* msg, uint32_t text_start_o
 	
 	uint8_t error;
 	
-	return grid_sys_read_hex_string_value(&msg->body[text_start_offset + parameter_offset], parameter_length, error);
+	return grid_msg_read_hex_string_value(&msg->body[text_start_offset + parameter_offset], parameter_length, error);
 	
 }
 
 void grid_msg_text_set_parameter(struct grid_msg* msg, uint32_t text_start_offset, uint8_t parameter_offset, uint8_t parameter_length, uint32_t value){
 	
-	return grid_sys_write_hex_string_value(&msg->body[text_start_offset + parameter_offset], parameter_length, value);
+	return grid_msg_write_hex_string_value(&msg->body[text_start_offset + parameter_offset], parameter_length, value);
 	
 }
 
@@ -253,7 +253,7 @@ void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy){
 	// 	msg->footer[i] = 0;
 	// }
     
-    uint8_t session = grid_sys_state.sessionid;
+    uint8_t session = grid_msg_state.sessionid;
     
 	sprintf(msg->header, GRID_BRC_frame_quick, GRID_CONST_SOH, GRID_CONST_BRC, session, dx, dy , GRID_CONST_EOB);
 	msg->header_length = strlen(msg->header);
@@ -343,10 +343,10 @@ uint8_t	grid_msg_packet_close(struct grid_msg* msg){
 	msg->footer_length += strlen(&msg->footer[msg->footer_length]);
 	
 	grid_msg_header_set_len(msg, msg->header_length + msg->body_length + msg->footer_length);
-	grid_msg_header_set_session(msg, grid_sys_state.sessionid);	
-	grid_msg_header_set_id(msg, grid_sys_state.next_broadcast_message_id);	
+	grid_msg_header_set_session(msg, grid_msg_state.sessionid);	
+	grid_msg_header_set_id(msg, grid_msg_state.next_broadcast_message_id);	
 	
-	grid_sys_state.next_broadcast_message_id++;
+	grid_msg_state.next_broadcast_message_id++;
 	
 
 	
@@ -370,28 +370,7 @@ uint8_t	grid_msg_packet_close(struct grid_msg* msg){
 	
 }
 
-uint8_t	grid_msg_packet_send_everywhere(struct grid_msg* msg){
-	
-	uint32_t message_length = grid_msg_packet_get_length(msg);
-	
-	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, message_length)){
 
-		for(uint32_t i = 0; i<message_length; i++){
-
-			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char(msg, i));
-		}
-
-		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
-
-		return 1;
-	}
-	else{
-		
-		return 0;
-	}
-	
-	
-}
 
 
 
@@ -402,3 +381,140 @@ uint8_t grid_msg_string_validate(uint8_t* packet){
 
 	return 0;
 }
+
+
+
+
+// RECENT MESSAGES
+
+uint8_t grid_msg_find_recent(struct grid_msg_model* model, uint32_t fingerprint){
+	
+	for(GRID_MSG_RECENT_MESSAGES_INDEX_T i = 0; i<GRID_MSG_RECENT_MESSAGES_LENGTH; i++){
+		
+		if (model->recent_messages[i%GRID_MSG_RECENT_MESSAGES_LENGTH] == fingerprint){
+			
+			return 1;
+			
+		}
+		
+	}
+	
+	return 0;
+}
+
+void grid_msg_push_recent(struct grid_msg_model* model, uint32_t fingerprint){
+	
+	model->recent_messages_index+=1;
+	model->recent_messages_index%=GRID_MSG_RECENT_MESSAGES_LENGTH;
+	
+	model->recent_messages[model->recent_messages_index] = fingerprint;
+	
+}
+
+
+
+
+uint8_t grid_msg_calculate_checksum_of_packet_string(uint8_t* str, uint32_t length){
+	
+	uint8_t checksum = 0;
+	for (uint32_t i=0; i<length-3; i++){
+		checksum ^= str[i];
+	}
+	
+	return checksum;
+	
+}
+
+uint8_t grid_msg_calculate_checksum_of_string(uint8_t* str, uint32_t length){
+	
+	uint8_t checksum = 0;
+	for (uint32_t i=0; i<length; i++){
+		checksum ^= str[i];
+	}
+	
+	return checksum;
+	
+}
+
+
+uint8_t grid_msg_checksum_read(uint8_t* str, uint32_t length){
+	uint8_t error_flag;
+	return grid_msg_read_hex_string_value(&str[length-3], 2, &error_flag);
+}
+
+void grid_msg_checksum_write(uint8_t* message, uint32_t length, uint8_t checksum){
+	
+// 	uint8_t checksum_string[4];
+// 
+// 	sprintf(checksum_string, "%02x", checksum);
+// 
+// 	message[length-3] = checksum_string[0];
+// 	message[length-2] = checksum_string[1];
+	
+	grid_msg_write_hex_string_value(&message[length-3], 2, checksum);
+	
+}
+
+
+// MESSAGE PARAMETER FUNCTIONS
+
+uint32_t grid_msg_get_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint8_t* error){
+		
+	return grid_msg_read_hex_string_value(&message[offset], length, error);	
+}
+
+uint32_t grid_msg_set_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error){
+	
+	grid_msg_write_hex_string_value(&message[offset], length, value);
+	
+}
+
+
+uint8_t grid_msg_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
+		
+	uint8_t result = 0;
+	
+	if (ascii>47 && ascii<58){
+		result = ascii-48;
+	}
+	else if(ascii>96 && ascii<103){
+		result = ascii - 97 + 10;
+	}
+	else{
+		// wrong input
+		if (error_flag != NULL){
+			*error_flag = ascii;
+		}
+	}
+	
+	return result;	
+}
+
+uint32_t grid_msg_read_hex_string_value(uint8_t* start_location, uint8_t length, uint8_t* error_flag){
+	
+	uint32_t result  = 0;
+	
+	for(uint8_t i=0; i<length; i++){
+		
+		result += grid_msg_read_hex_char_value(start_location[i], error_flag) << (length-i-1)*4;
+
+		
+	}
+
+	return result;
+}
+
+void grid_msg_write_hex_string_value(uint8_t* start_location, uint8_t size, uint32_t value){
+	
+	uint8_t str[10];
+	
+	sprintf(str, "%08x", value);
+		
+	for(uint8_t i=0; i<size; i++){	
+		start_location[i] = str[8-size+i];	
+	}
+
+}
+
+
+

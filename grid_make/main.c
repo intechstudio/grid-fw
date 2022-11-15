@@ -665,6 +665,7 @@ int main(void)
 			if (grid_sys_state.heartbeat_type != 1){
 			
 				printf("USB CONNECTED\r\n\r\n");
+				printf("HWCFG %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
 
 				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
 				grid_led_set_alert_frequency(&grid_led_state, -2);	
@@ -759,7 +760,7 @@ int main(void)
 
 			grid_msg_packet_close(&response);
 
-			grid_msg_packet_send_everywhere(&response);
+			grid_sys_packet_send_everywhere(&response);
 
 
 		}
@@ -832,7 +833,7 @@ int main(void)
 			grid_msg_packet_close(&response);
 
 
-			//grid_msg_packet_send_everywhere(&response);			
+			//grid_sys_packet_send_everywhere(&response);			
 
 			printf("%s\r\n", reportbuffer);
 

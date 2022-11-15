@@ -124,7 +124,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 			grid_msg_body_append_text(&message_global, payload_global);
 			grid_msg_packet_close(&message_global);
-			grid_msg_packet_send_everywhere(&message_global);
+			grid_sys_packet_send_everywhere(&message_global);
 		}
 
 		
@@ -274,7 +274,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		grid_msg_text_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
 		
 		grid_msg_packet_close(&response);
-		grid_msg_packet_send_everywhere(&response);
+		grid_sys_packet_send_everywhere(&response);
 
 	}
 
@@ -699,7 +699,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 
 		//printf("CFG: %s\r\n", message.body);
 		grid_msg_packet_close(&message);
-		grid_msg_packet_send_everywhere(&message);
+		grid_sys_packet_send_everywhere(&message);
 	}
 	else{
 

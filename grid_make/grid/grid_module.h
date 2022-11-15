@@ -28,8 +28,6 @@
 
 #include "atmel_start_pins.h"
 
-
-#include "grid_unittest.h"
 #include "grid_debug.h"
 
 
