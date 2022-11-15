@@ -16,9 +16,6 @@ usb/class/midi/usb_protocol_midi.o \
 grid/grid_ain.o \
 grid/grid_buf.o \
 grid/grid_d51.o \
-grid/grid_debug.o \
-grid/grid_default.o \
-grid/grid_expr.o \
 grid/grid_hardwaretest.o \
 grid/grid_led.o \
 grid/grid_module.o \
@@ -79,9 +76,6 @@ OBJS_AS_ARGS +=  \
 "grid/grid_ain.o" \
 "grid/grid_buf.o" \
 "grid/grid_d51.o" \
-"grid/grid_debug.o" \
-"grid/grid_default.o" \
-"grid/grid_expr.o" \
 "grid/grid_hardwaretest.o" \
 "grid/grid_led.o" \
 "grid/grid_module.o" \
@@ -151,9 +145,6 @@ DEPS_AS_ARGS +=  \
 "grid/grid_ain.d" \
 "grid/grid_buf.d" \
 "grid/grid_d51.d" \
-"grid/grid_debug.d" \
-"grid/grid_default.d" \
-"grid/grid_expr.d" \
 "grid/grid_hardwaretest.d" \
 "grid/grid_led.d" \
 "grid/grid_module.d" \

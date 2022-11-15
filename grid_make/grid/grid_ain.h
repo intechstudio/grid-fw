@@ -5,7 +5,8 @@
 #ifndef GRID_AIN_H_INCLUDED
 #define GRID_AIN_H_INCLUDED
 
-#include "grid/grid_module.h"
+// only for uint definitions
+#include "../atmel_start.h"
 
 #define GRID_AIN_MAXVALUE ((1<<16)-1)
 

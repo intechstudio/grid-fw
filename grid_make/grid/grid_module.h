@@ -28,13 +28,9 @@
 
 #include "atmel_start_pins.h"
 
-#include "grid_debug.h"
-
 
 #include "grid_usb.h"
 
-
-#include "grid_expr.h"
 
 #include "grid_ain.h"
 #include "grid_buf.h"
