@@ -1,5 +1,6 @@
 # Intech Studio firmware repository
 ![img](./diagram.svg)
+[Interactive Diagram](https://mango-dune-07a8b7110.1.azurestaticapps.net/?repo=intechstudio%2Fgrid-fw)
 
 ## Instructions
 This document will walk you through the process of updating the firmware on your IntechGrid midicontroller. Please read through the  entire document beforehand in order to avid making any mistakes.
