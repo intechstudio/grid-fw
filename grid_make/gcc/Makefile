@@ -13,7 +13,7 @@ OBJS +=  \
 \
 usb/class/midi/device/audiodf_midi.o \
 usb/class/midi/usb_protocol_midi.o \
-grid/grid_ain.o \
+../grid_common/grid_ain.o \
 grid/grid_buf.o \
 grid/grid_d51.o \
 grid/grid_hardwaretest.o \
@@ -73,7 +73,7 @@ OBJS_AS_ARGS +=  \
 \
 "usb/class/midi/device/audiodf_midi.o" \
 "usb/class/midi/usb_protocol_midi.o" \
-"grid/grid_ain.o" \
+"../grid_common/grid_ain.o" \
 "grid/grid_buf.o" \
 "grid/grid_d51.o" \
 "grid/grid_hardwaretest.o" \
@@ -143,7 +143,7 @@ DEPS_AS_ARGS +=  \
 \
 "usb/class/midi/device/audiodf_midi.d" \
 "usb/class/midi/usb_protocol_midi.d" \
-"grid/grid_ain.d" \
+"../grid_common/grid_ain.d" \
 "grid/grid_buf.d" \
 "grid/grid_d51.d" \
 "grid/grid_hardwaretest.d" \
