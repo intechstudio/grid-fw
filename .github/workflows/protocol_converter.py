@@ -2,7 +2,7 @@ import sys
 import re
 import json
 
-def build_json(file_name='grid_make/grid/grid_protocol.h'):
+def build_json(file_name='grid_common/grid_protocol.h'):
     data = {};
     for line in get_lines(file_name):
         key, value = get_macro_key_value(line)

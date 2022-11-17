@@ -6,7 +6,7 @@ usb/class/midi/device \
 usb/class/midi \
 grid/lua \
 grid \
-thirdparty/Lua/lua-5.4.3/src \
+../grid_common/lua-5.4.3/src \
 \
 
 OBJS +=  \
@@ -26,46 +26,46 @@ grid/grid_module_po16.o \
 grid/grid_module_ef44.o \
 grid/grid_msg.o \
 grid/grid_nvm.o \
-grid/grid_protocol.o \
+../grid_common/grid_protocol.o \
 grid/grid_sys.o \
 grid/grid_ui.o \
 grid/grid_usb.o \
 grid/grid_lua_api.o \
-thirdparty/Lua/lua-5.4.3/src/lapi.o \
-thirdparty/Lua/lua-5.4.3/src/lctype.o \
-thirdparty/Lua/lua-5.4.3/src/lfunc.o \
-thirdparty/Lua/lua-5.4.3/src/lmathlib.o \
-thirdparty/Lua/lua-5.4.3/src/loslib.o \
-thirdparty/Lua/lua-5.4.3/src/ltable.o \
-thirdparty/Lua/lua-5.4.3/src/lundump.o \
-thirdparty/Lua/lua-5.4.3/src/lauxlib.o \
-thirdparty/Lua/lua-5.4.3/src/ldblib.o \
-thirdparty/Lua/lua-5.4.3/src/lgc.o \
-thirdparty/Lua/lua-5.4.3/src/lmem.o \
-thirdparty/Lua/lua-5.4.3/src/lparser.o \
-thirdparty/Lua/lua-5.4.3/src/ltablib.o \
-thirdparty/Lua/lua-5.4.3/src/lutf8lib.o \
-thirdparty/Lua/lua-5.4.3/src/lbaselib.o \
-thirdparty/Lua/lua-5.4.3/src/ldebug.o \
-thirdparty/Lua/lua-5.4.3/src/linit.o \
-thirdparty/Lua/lua-5.4.3/src/loadlib.o \
-thirdparty/Lua/lua-5.4.3/src/lstate.o \
-thirdparty/Lua/lua-5.4.3/src/ltm.o \
-thirdparty/Lua/lua-5.4.3/src/lvm.o \
-thirdparty/Lua/lua-5.4.3/src/lcode.o \
-thirdparty/Lua/lua-5.4.3/src/ldo.o \
-thirdparty/Lua/lua-5.4.3/src/liolib.o \
-thirdparty/Lua/lua-5.4.3/src/lobject.o \
-thirdparty/Lua/lua-5.4.3/src/lstring.o \
-thirdparty/Lua/lua-5.4.3/src/lzio.o \
-thirdparty/Lua/lua-5.4.3/src/llex.o \
-thirdparty/Lua/lua-5.4.3/src/lopcodes.o \
-thirdparty/Lua/lua-5.4.3/src/ldump.o \
-thirdparty/Lua/lua-5.4.3/src/lstrlib.o \
-thirdparty/Lua/lua-5.4.3/src/lcorolib.o \
+../grid_common/lua-5.4.3/src/lapi.o \
+../grid_common/lua-5.4.3/src/lctype.o \
+../grid_common/lua-5.4.3/src/lfunc.o \
+../grid_common/lua-5.4.3/src/lmathlib.o \
+../grid_common/lua-5.4.3/src/loslib.o \
+../grid_common/lua-5.4.3/src/ltable.o \
+../grid_common/lua-5.4.3/src/lundump.o \
+../grid_common/lua-5.4.3/src/lauxlib.o \
+../grid_common/lua-5.4.3/src/ldblib.o \
+../grid_common/lua-5.4.3/src/lgc.o \
+../grid_common/lua-5.4.3/src/lmem.o \
+../grid_common/lua-5.4.3/src/lparser.o \
+../grid_common/lua-5.4.3/src/ltablib.o \
+../grid_common/lua-5.4.3/src/lutf8lib.o \
+../grid_common/lua-5.4.3/src/lbaselib.o \
+../grid_common/lua-5.4.3/src/ldebug.o \
+../grid_common/lua-5.4.3/src/linit.o \
+../grid_common/lua-5.4.3/src/loadlib.o \
+../grid_common/lua-5.4.3/src/lstate.o \
+../grid_common/lua-5.4.3/src/ltm.o \
+../grid_common/lua-5.4.3/src/lvm.o \
+../grid_common/lua-5.4.3/src/lcode.o \
+../grid_common/lua-5.4.3/src/ldo.o \
+../grid_common/lua-5.4.3/src/liolib.o \
+../grid_common/lua-5.4.3/src/lobject.o \
+../grid_common/lua-5.4.3/src/lstring.o \
+../grid_common/lua-5.4.3/src/lzio.o \
+../grid_common/lua-5.4.3/src/llex.o \
+../grid_common/lua-5.4.3/src/lopcodes.o \
+../grid_common/lua-5.4.3/src/ldump.o \
+../grid_common/lua-5.4.3/src/lstrlib.o \
+../grid_common/lua-5.4.3/src/lcorolib.o \
 
-# thirdparty/Lua/lua-5.4.3/src/luac.o \
-# thirdparty/Lua/lua-5.4.3/src/lua.o \
+# ../grid_common/lua-5.4.3/src/luac.o \
+# ../grid_common/lua-5.4.3/src/lua.o \
 
 
 
@@ -86,46 +86,46 @@ OBJS_AS_ARGS +=  \
 "grid/grid_module_ef44.o" \
 "grid/grid_msg.o" \
 "grid/grid_nvm.o" \
-"grid/grid_protocol.o" \
+"../grid_common/grid_protocol.o" \
 "grid/grid_sys.o" \
 "grid/grid_ui.o" \
 "grid/grid_usb.o" \
 "grid/grid_lua_api.o" \
-"thirdparty/Lua/lua-5.4.3/src/lapi.o" \
-"thirdparty/Lua/lua-5.4.3/src/lctype.o" \
-"thirdparty/Lua/lua-5.4.3/src/lfunc.o" \
-"thirdparty/Lua/lua-5.4.3/src/lmathlib.o" \
-"thirdparty/Lua/lua-5.4.3/src/loslib.o" \
-"thirdparty/Lua/lua-5.4.3/src/ltable.o" \
-"thirdparty/Lua/lua-5.4.3/src/lundump.o" \
-"thirdparty/Lua/lua-5.4.3/src/lauxlib.o" \
-"thirdparty/Lua/lua-5.4.3/src/ldblib.o" \
-"thirdparty/Lua/lua-5.4.3/src/lgc.o" \
-"thirdparty/Lua/lua-5.4.3/src/lmem.o" \
-"thirdparty/Lua/lua-5.4.3/src/lparser.o" \
-"thirdparty/Lua/lua-5.4.3/src/ltablib.o" \
-"thirdparty/Lua/lua-5.4.3/src/lutf8lib.o" \
-"thirdparty/Lua/lua-5.4.3/src/lbaselib.o" \
-"thirdparty/Lua/lua-5.4.3/src/ldebug.o" \
-"thirdparty/Lua/lua-5.4.3/src/linit.o" \
-"thirdparty/Lua/lua-5.4.3/src/loadlib.o" \
-"thirdparty/Lua/lua-5.4.3/src/lstate.o" \
-"thirdparty/Lua/lua-5.4.3/src/ltm.o" \
-"thirdparty/Lua/lua-5.4.3/src/lvm.o" \
-"thirdparty/Lua/lua-5.4.3/src/lcode.o" \
-"thirdparty/Lua/lua-5.4.3/src/ldo.o" \
-"thirdparty/Lua/lua-5.4.3/src/liolib.o" \
-"thirdparty/Lua/lua-5.4.3/src/lobject.o" \
-"thirdparty/Lua/lua-5.4.3/src/lstring.o" \
-"thirdparty/Lua/lua-5.4.3/src/lzio.o" \
-"thirdparty/Lua/lua-5.4.3/src/llex.o" \
-"thirdparty/Lua/lua-5.4.3/src/lopcodes.o" \
-"thirdparty/Lua/lua-5.4.3/src/ldump.o" \
-"thirdparty/Lua/lua-5.4.3/src/lstrlib.o" \
-"thirdparty/Lua/lua-5.4.3/src/lcorolib.o" \
+"../grid_common/lua-5.4.3/src/lapi.o" \
+"../grid_common/lua-5.4.3/src/lctype.o" \
+"../grid_common/lua-5.4.3/src/lfunc.o" \
+"../grid_common/lua-5.4.3/src/lmathlib.o" \
+"../grid_common/lua-5.4.3/src/loslib.o" \
+"../grid_common/lua-5.4.3/src/ltable.o" \
+"../grid_common/lua-5.4.3/src/lundump.o" \
+"../grid_common/lua-5.4.3/src/lauxlib.o" \
+"../grid_common/lua-5.4.3/src/ldblib.o" \
+"../grid_common/lua-5.4.3/src/lgc.o" \
+"../grid_common/lua-5.4.3/src/lmem.o" \
+"../grid_common/lua-5.4.3/src/lparser.o" \
+"../grid_common/lua-5.4.3/src/ltablib.o" \
+"../grid_common/lua-5.4.3/src/lutf8lib.o" \
+"../grid_common/lua-5.4.3/src/lbaselib.o" \
+"../grid_common/lua-5.4.3/src/ldebug.o" \
+"../grid_common/lua-5.4.3/src/linit.o" \
+"../grid_common/lua-5.4.3/src/loadlib.o" \
+"../grid_common/lua-5.4.3/src/lstate.o" \
+"../grid_common/lua-5.4.3/src/ltm.o" \
+"../grid_common/lua-5.4.3/src/lvm.o" \
+"../grid_common/lua-5.4.3/src/lcode.o" \
+"../grid_common/lua-5.4.3/src/ldo.o" \
+"../grid_common/lua-5.4.3/src/liolib.o" \
+"../grid_common/lua-5.4.3/src/lobject.o" \
+"../grid_common/lua-5.4.3/src/lstring.o" \
+"../grid_common/lua-5.4.3/src/lzio.o" \
+"../grid_common/lua-5.4.3/src/llex.o" \
+"../grid_common/lua-5.4.3/src/lopcodes.o" \
+"../grid_common/lua-5.4.3/src/ldump.o" \
+"../grid_common/lua-5.4.3/src/lstrlib.o" \
+"../grid_common/lua-5.4.3/src/lcorolib.o" \
 
-# "thirdparty/Lua/lua-5.4.3/src/luac.o" \
-# "thirdparty/Lua/lua-5.4.3/src/lua.o" \
+# "../grid_common/lua-5.4.3/src/luac.o" \
+# "../grid_common/lua-5.4.3/src/lua.o" \
 
 
 
@@ -134,7 +134,8 @@ DIR_INCLUDES +=  \
 -I"../grid" \
 -I"../usb/class/midi/" \
 -I"../usb/class/midi/device" \
--I"../thirdparty/Lua/lua-5.4.3/src" \
+-I"../../grid_common" \
+-I"../../grid_common/lua-5.4.3/src" \
 
 
 
@@ -155,46 +156,46 @@ DEPS_AS_ARGS +=  \
 "grid/grid_module_ef44.d" \
 "grid/grid_msg.d" \
 "grid/grid_nvm.d" \
-"grid/grid_protocol.d" \
+"../grid_common/grid_protocol.d" \
 "grid/grid_sys.d" \
 "grid/grid_ui.d" \
 "grid/grid_usb.d" \
 "grid/grid_lua_api.d" \
-"thirdparty/Lua/lua-5.4.3/src/lapi.d" \
-"thirdparty/Lua/lua-5.4.3/src/lctype.d" \
-"thirdparty/Lua/lua-5.4.3/src/lfunc.d" \
-"thirdparty/Lua/lua-5.4.3/src/lmathlib.d" \
-"thirdparty/Lua/lua-5.4.3/src/loslib.d" \
-"thirdparty/Lua/lua-5.4.3/src/ltable.d" \
-"thirdparty/Lua/lua-5.4.3/src/lundump.d" \
-"thirdparty/Lua/lua-5.4.3/src/lauxlib.d" \
-"thirdparty/Lua/lua-5.4.3/src/ldblib.d" \
-"thirdparty/Lua/lua-5.4.3/src/lgc.d" \
-"thirdparty/Lua/lua-5.4.3/src/lmem.d" \
-"thirdparty/Lua/lua-5.4.3/src/lparser.d" \
-"thirdparty/Lua/lua-5.4.3/src/ltablib.d" \
-"thirdparty/Lua/lua-5.4.3/src/lutf8lib.d" \
-"thirdparty/Lua/lua-5.4.3/src/lbaselib.d" \
-"thirdparty/Lua/lua-5.4.3/src/ldebug.d" \
-"thirdparty/Lua/lua-5.4.3/src/linit.d" \
-"thirdparty/Lua/lua-5.4.3/src/loadlib.d" \
-"thirdparty/Lua/lua-5.4.3/src/lstate.d" \
-"thirdparty/Lua/lua-5.4.3/src/ltm.d" \
-"thirdparty/Lua/lua-5.4.3/src/lvm.d" \
-"thirdparty/Lua/lua-5.4.3/src/lcode.d" \
-"thirdparty/Lua/lua-5.4.3/src/ldo.d" \
-"thirdparty/Lua/lua-5.4.3/src/liolib.d" \
-"thirdparty/Lua/lua-5.4.3/src/lobject.d" \
-"thirdparty/Lua/lua-5.4.3/src/lstring.d" \
-"thirdparty/Lua/lua-5.4.3/src/lzio.d" \
-"thirdparty/Lua/lua-5.4.3/src/llex.d" \
-"thirdparty/Lua/lua-5.4.3/src/lopcodes.d" \
-"thirdparty/Lua/lua-5.4.3/src/ldump.d" \
-"thirdparty/Lua/lua-5.4.3/src/lstrlib.d" \
-"thirdparty/Lua/lua-5.4.3/src/lcorolib.d" \
+"../grid_common/lua-5.4.3/src/lapi.d" \
+"../grid_common/lua-5.4.3/src/lctype.d" \
+"../grid_common/lua-5.4.3/src/lfunc.d" \
+"../grid_common/lua-5.4.3/src/lmathlib.d" \
+"../grid_common/lua-5.4.3/src/loslib.d" \
+"../grid_common/lua-5.4.3/src/ltable.d" \
+"../grid_common/lua-5.4.3/src/lundump.d" \
+"../grid_common/lua-5.4.3/src/lauxlib.d" \
+"../grid_common/lua-5.4.3/src/ldblib.d" \
+"../grid_common/lua-5.4.3/src/lgc.d" \
+"../grid_common/lua-5.4.3/src/lmem.d" \
+"../grid_common/lua-5.4.3/src/lparser.d" \
+"../grid_common/lua-5.4.3/src/ltablib.d" \
+"../grid_common/lua-5.4.3/src/lutf8lib.d" \
+"../grid_common/lua-5.4.3/src/lbaselib.d" \
+"../grid_common/lua-5.4.3/src/ldebug.d" \
+"../grid_common/lua-5.4.3/src/linit.d" \
+"../grid_common/lua-5.4.3/src/loadlib.d" \
+"../grid_common/lua-5.4.3/src/lstate.d" \
+"../grid_common/lua-5.4.3/src/ltm.d" \
+"../grid_common/lua-5.4.3/src/lvm.d" \
+"../grid_common/lua-5.4.3/src/lcode.d" \
+"../grid_common/lua-5.4.3/src/ldo.d" \
+"../grid_common/lua-5.4.3/src/liolib.d" \
+"../grid_common/lua-5.4.3/src/lobject.d" \
+"../grid_common/lua-5.4.3/src/lstring.d" \
+"../grid_common/lua-5.4.3/src/lzio.d" \
+"../grid_common/lua-5.4.3/src/llex.d" \
+"../grid_common/lua-5.4.3/src/lopcodes.d" \
+"../grid_common/lua-5.4.3/src/ldump.d" \
+"../grid_common/lua-5.4.3/src/lstrlib.d" \
+"../grid_common/lua-5.4.3/src/lcorolib.d" \
 
-# "thirdparty/Lua/lua-5.4.3/src/luac.d" \
-# "thirdparty/Lua/lua-5.4.3/src/lua.d" \
+# "../grid_common/lua-5.4.3/src/luac.d" \
+# "../grid_common/lua-5.4.3/src/lua.d" \
 
 ################################################################################
 # Automatically-generated file. Do not edit!

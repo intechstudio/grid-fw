@@ -4,9 +4,9 @@
 #include "sam.h"
 #include "grid_module.h"
 
-#include "thirdparty/Lua/lua-5.4.3/src/lua.h"
-#include "thirdparty/Lua/lua-5.4.3/src/lualib.h"
-#include "thirdparty/Lua/lua-5.4.3/src/lauxlib.h"
+#include "lua-5.4.3/src/lua.h"
+#include "lua-5.4.3/src/lualib.h"
+#include "lua-5.4.3/src/lauxlib.h"
 
 
 int _gettimeofday(void);
