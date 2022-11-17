@@ -23,7 +23,11 @@
     "grid_esp32_swd.h": "c",
     "grid_esp32_pins.h": "c",
     "ledc.h": "c",
-    "semphr.h": "c"
+    "semphr.h": "c",
+    "grid_protocol.h": "c",
+    "grid_ain.h": "c",
+    "led_strip_encoder.h": "c",
+    "esp_check.h": "c"
 },
   "actionButtons": {
     "defaultColor": "#ff0034", // Can also use string color names.
@@ -34,7 +38,7 @@
             "name": "Docker Build",
             "color": "white",
             "singleInstance": true,
-            "command": "podman run --rm -v $PWD:/project -w /project espressif/idf:latest idf.py build && ./uf2convert.sh",
+            "command": "podman run --rm -v $PWD/..:/project -w /project/grid_esp espressif/idf:latest idf.py build && ./uf2convert.sh",
         }, 
         {
             "name": "Flash",
@@ -46,7 +50,7 @@
             "name": "Docker Unit Test",
             "color": "white",
             "singleInstance": true,
-            "command": "podman run -it -v /dev:/dev -v $PWD:/project -w /project espressif/idf:latest",
+            "command": "podman run -it -v /dev:/dev -v $PWD/..:/project -w /project/grid_esp espressif/idf:latest",
         }
     ]
 },

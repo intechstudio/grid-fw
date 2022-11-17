@@ -34,9 +34,13 @@ extern void led_task(void *arg);
 #include "grid_esp32.h"
 #include "grid_esp32_swd.h"
 
+#include "esp_log.h"
+#include "esp_check.h"
+#include "rom/ets_sys.h" // For ets_printf
 
 
-
+#include "../../grid_common/grid_protocol.h"
+#include "../../grid_common/grid_ain.h"
 
 
 void app_main(void)
@@ -55,9 +59,11 @@ void app_main(void)
     grid_esp32_swd_pico_program_sram(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, ___grid_pico_build_main_main_bin, ___grid_pico_build_main_main_bin_len);
 
 
+    ets_printf("Testing External Libraries:\r\n");
+    ets_printf("Version: %d %d %d\r\n", GRID_PROTOCOL_VERSION_MAJOR, GRID_PROTOCOL_VERSION_MINOR, GRID_PROTOCOL_VERSION_PATCH );
+    ets_printf("grid_ain_abs test -7 -> %d\r\n", grid_ain_abs(-7));
 
-
-
+    ain_channel_buffer = NULL;
 
     SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 

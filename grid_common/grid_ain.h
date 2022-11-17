@@ -1,12 +1,12 @@
-
-
-
+#pragma once
 
 #ifndef GRID_AIN_H_INCLUDED
 #define GRID_AIN_H_INCLUDED
 
 // only for uint definitions
-#include "../atmel_start.h"
+#include  <stdint.h>
+// only for malloc
+#include  <stdlib.h>
 
 #define GRID_AIN_MAXVALUE ((1<<16)-1)
 
@@ -26,7 +26,7 @@ struct AIN_Channel
 	
 };
 
-struct AIN_Channel* ain_channel_buffer;
+extern struct AIN_Channel* ain_channel_buffer;
 
 uint8_t grid_ain_channel_init(struct AIN_Channel* instance , uint8_t buffer_depth);
 
@@ -41,5 +41,7 @@ uint8_t grid_ain_add_sample(uint8_t channel, uint16_t value, uint8_t resolution)
 uint8_t grid_ain_get_changed(uint8_t channel);
 uint16_t grid_ain_get_average(uint8_t channel);
 
+
+uint32_t grid_ain_abs(int32_t value);
 
 #endif /* GRID_AIN_H_INCLUDED */

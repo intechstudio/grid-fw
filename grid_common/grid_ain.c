@@ -7,6 +7,17 @@
 
 #include "grid_ain.h"
 
+struct AIN_Channel* ain_channel_buffer;
+
+uint32_t grid_ain_abs(int32_t value){
+
+	if (value>0){
+		return value;
+	}
+	else{
+		return -value;	
+	}
+}
 
 uint8_t grid_ain_channel_init(struct AIN_Channel* instance , uint8_t buffer_depth){
 	
@@ -104,7 +115,7 @@ uint8_t grid_ain_add_sample(uint8_t channel, uint16_t value, uint8_t resolution)
 	
 	uint8_t criteria_a = instance->result_value != upscaled;
 
-	uint8_t criteria_b = abs(instance->result_average - average)>(1<<downscale_factor);
+	uint8_t criteria_b = grid_ain_abs(instance->result_average - average)>(1<<downscale_factor);
 	uint8_t criteria_c = upscaled > ((1<<16)-(1<<upscale_factor) -1);
 	uint8_t criteria_d = upscaled==0;
 	

@@ -276,7 +276,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				grid_msg_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);
 				grid_msg_set_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, por->partner_fi, &error);
 
-				
+
 				uint32_t fingerprint = received_id*256*256*256 + updated_sx*256*256 + updated_sy*256 + received_session;
 				
 				

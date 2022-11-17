@@ -7,6 +7,7 @@
 #include "esp_check.h"
 #include "led_strip_encoder.h"
 
+
 static const char *TAG = "led_encoder";
 
 typedef struct {
