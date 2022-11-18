@@ -28,6 +28,20 @@ extern "C" {
 #define GRID_ESP32_PINS_RP_CLOCK 15
 
 
+
+#define GRID_ESP32_PINS_MUX_0_A 37
+#define GRID_ESP32_PINS_MUX_0_B 36
+#define GRID_ESP32_PINS_MUX_0_C 35
+
+#define GRID_ESP32_PINS_MUX_0_Z 18
+
+#define GRID_ESP32_PINS_MUX_1_A 37
+#define GRID_ESP32_PINS_MUX_1_B 36
+#define GRID_ESP32_PINS_MUX_1_C 35
+
+#define GRID_ESP32_PINS_MUX_1_Z 2
+
+
 #ifdef __cplusplus
 }
 #endif

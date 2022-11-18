@@ -7,7 +7,7 @@
 
 #include "grid_ain.h"
 
-struct AIN_Channel* ain_channel_buffer;
+struct grid_ain_model grid_ain_state;
 
 uint32_t grid_ain_abs(int32_t value){
 
@@ -19,26 +19,26 @@ uint32_t grid_ain_abs(int32_t value){
 	}
 }
 
-uint8_t grid_ain_channel_init(struct AIN_Channel* instance , uint8_t buffer_depth){
+uint8_t grid_ain_channel_init(struct grid_ain_model* mod, uint8_t channel, uint8_t buffer_depth){
 	
-	instance->buffer_depth = buffer_depth;
+	mod->channel_buffer[channel].buffer_depth = buffer_depth;
 	
-	instance->result_average = 0;
+	mod->channel_buffer[channel].result_average = 0;
 	
-	instance->buffer = malloc(instance->buffer_depth * sizeof(uint16_t));
+	mod->channel_buffer[channel].buffer = malloc(mod->channel_buffer[channel].buffer_depth * sizeof(uint16_t));
 	
 	// Init the whole buffer with zeros
-	for(uint8_t i=0; i<instance->buffer_depth; i++){
-		instance->buffer[i] = 0;
+	for(uint8_t i=0; i<mod->channel_buffer[channel].buffer_depth; i++){
+		mod->channel_buffer[channel].buffer[i] = 0;
 	}
 	
-	instance->result_changed = 0;
-	instance->result_value = 0;
+	mod->channel_buffer[channel].result_changed = 0;
+	mod->channel_buffer[channel].result_value = 0;
 		
 	return 0;
 }
 
-uint8_t grid_ain_channel_deinit(struct AIN_Channel* instance){
+uint8_t grid_ain_channel_deinit(struct grid_ain_model* mod, uint8_t channel){
 	
 	while(1) {
 		//TRAP
@@ -47,21 +47,24 @@ uint8_t grid_ain_channel_deinit(struct AIN_Channel* instance){
 
 
 /** Initialize ain buffer for a given number of analog channels */
-uint8_t grid_ain_init(uint8_t length, uint8_t depth){
+uint8_t grid_ain_init(struct grid_ain_model* mod, uint8_t length, uint8_t depth){
 	
 	// 2D buffer, example: 16 potentiometers, last 32 samples stored for each
-	ain_channel_buffer = (struct AIN_Channel*) malloc(length * sizeof(struct AIN_Channel));
+	mod->channel_buffer = (struct AIN_Channel*) malloc(length * sizeof(struct AIN_Channel));
+	mod->channel_buffer_length = length;
 
 	for (uint8_t i=0; i<length; i++){
-		grid_ain_channel_init(&ain_channel_buffer[i], depth);
+		grid_ain_channel_init(mod, i, depth);
 	}
 
 	return 0;
 }
 
-uint8_t grid_ain_add_sample(uint8_t channel, uint16_t value, uint8_t resolution){
+uint8_t grid_ain_add_sample(struct grid_ain_model* mod, uint8_t channel, uint16_t value, uint8_t source_resolution, uint8_t result_resolution){
 	
-	struct AIN_Channel* instance = &ain_channel_buffer[channel];
+	
+
+	struct AIN_Channel* instance = &mod->channel_buffer[channel];
 	
 	uint32_t sum = 0;
 	uint16_t minimum = -1; // -1 trick to get the largest possible number
@@ -106,8 +109,8 @@ uint8_t grid_ain_add_sample(uint8_t channel, uint16_t value, uint8_t resolution)
 
 	// up until here all looks good, everything is 16 bit
 	
-	uint8_t downscale_factor = (16-resolution);
-	uint8_t upscale_factor   = (16-resolution);
+	uint8_t downscale_factor = (source_resolution-result_resolution);
+	uint8_t upscale_factor   = (source_resolution-result_resolution);
 	
 	
 	uint16_t downsampled = (average>>downscale_factor);
@@ -116,7 +119,7 @@ uint8_t grid_ain_add_sample(uint8_t channel, uint16_t value, uint8_t resolution)
 	uint8_t criteria_a = instance->result_value != upscaled;
 
 	uint8_t criteria_b = grid_ain_abs(instance->result_average - average)>(1<<downscale_factor);
-	uint8_t criteria_c = upscaled > ((1<<16)-(1<<upscale_factor) -1);
+	uint8_t criteria_c = upscaled > ((1<<source_resolution)-(1<<upscale_factor) -1);
 	uint8_t criteria_d = upscaled==0;
 	
 	if (criteria_a && (criteria_b || criteria_c || criteria_d)){
@@ -131,9 +134,9 @@ uint8_t grid_ain_add_sample(uint8_t channel, uint16_t value, uint8_t resolution)
 	
 }
 
-uint8_t grid_ain_get_changed(uint8_t channel){
+uint8_t grid_ain_get_changed(struct grid_ain_model* mod, uint8_t channel){
 	
-	struct AIN_Channel* instance = &ain_channel_buffer[channel];
+	struct AIN_Channel* instance = &mod->channel_buffer[channel];
 
 	if (instance->result_changed){
 
@@ -145,12 +148,28 @@ uint8_t grid_ain_get_changed(uint8_t channel){
 	}
 }
 	
-uint16_t grid_ain_get_average(uint8_t channel){
+uint16_t grid_ain_get_average(struct grid_ain_model* mod, uint8_t channel){
 	
-	struct AIN_Channel* instance = &ain_channel_buffer[channel];	
+	struct AIN_Channel* instance = &mod->channel_buffer[channel];	
 	
 	instance->result_changed = 0;
 
 	return instance->result_value;
+
+}
+
+
+int32_t grid_ain_get_average_scaled(struct grid_ain_model* mod, uint8_t channel, uint8_t source_resolution, uint8_t result_resolution, int32_t min, int32_t max){
+
+	struct AIN_Channel* instance = &mod->channel_buffer[channel];	
+	
+	instance->result_changed = 0;
+
+
+	uint16_t range_max = ((1<<source_resolution) - 1) - (1<<(source_resolution-result_resolution));
+
+	int32_t next = instance->result_value * (max - min) / range_max + min;
+
+	return next;
 
 }

@@ -22,10 +22,14 @@
 
 
 #include "pico_firmware.h"
+#include "grid_esp32_adc.h"
 
 
 #define LED_TASK_PRIORITY 2
 extern void led_task(void *arg);
+
+#define LED_TASK_PRIORITY 2
+extern void grid_esp32_adc_task(void *arg);
 
 
 #include "driver/ledc.h"
@@ -63,10 +67,22 @@ void app_main(void)
     ets_printf("Version: %d %d %d\r\n", GRID_PROTOCOL_VERSION_MAJOR, GRID_PROTOCOL_VERSION_MINOR, GRID_PROTOCOL_VERSION_PATCH );
     ets_printf("grid_ain_abs test -7 -> %d\r\n", grid_ain_abs(-7));
 
-    ain_channel_buffer = NULL;
 
     SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
+
+
+    TaskHandle_t adc_task_hdl;
+
+
+    //Create the class driver task
+    xTaskCreatePinnedToCore(grid_esp32_adc_task,
+                            "adc",
+                            4096,
+                            (void *)signaling_sem,
+                            LED_TASK_PRIORITY,
+                            &adc_task_hdl,
+                            0);
 
 
     TaskHandle_t led_task_hdl;
@@ -79,6 +95,7 @@ void app_main(void)
                             LED_TASK_PRIORITY,
                             &led_task_hdl,
                             0);
+
 
 
 }

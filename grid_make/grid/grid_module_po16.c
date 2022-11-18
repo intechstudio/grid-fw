@@ -66,8 +66,8 @@ static void grid_module_po16_hardware_transfer_complete_cb(void){
     uint8_t resolution_0 = grid_ui_state.element_list[adc_index_0].template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
     uint8_t resolution_1 = grid_ui_state.element_list[adc_index_1].template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
 
-	grid_ain_add_sample(adc_index_0, adcresult_0, resolution_0);
-	grid_ain_add_sample(adc_index_1, adcresult_1, resolution_1);
+	grid_ain_add_sample(&grid_ain_state, adc_index_0, adcresult_0, 16, resolution_0);
+	grid_ain_add_sample(&grid_ain_state, adc_index_1, adcresult_1, 16, resolution_1);
 
 
 	uint8_t result_index[2] = {0};
@@ -94,7 +94,7 @@ static void grid_module_po16_hardware_transfer_complete_cb(void){
 
 		int32_t* template_parameter_list = grid_ui_state.element_list[res_index].template_parameter_list;
 
-		if (grid_ain_get_changed(res_index)){
+		if (grid_ain_get_changed(&grid_ain_state, res_index)){
 
 			// update lastrealtime
 			last_real_time[res_index] = grid_sys_rtc_get_time(&grid_sys_state); 
@@ -109,21 +109,14 @@ static void grid_module_po16_hardware_transfer_complete_cb(void){
 				resolution = 12;
 			}
 
-			int32_t value = grid_ain_get_average(res_index);
-
 			int32_t min = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index];
 			int32_t max = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index];
 
-			// map the input range to the output range
-
-			uint16_t range_max = GRID_AIN_MAXVALUE - (1<<16-resolution);
-
-			int32_t next = value * (max - min) / range_max + min;
-
+			int32_t next = grid_ain_get_average_scaled(&grid_ain_state, res_index, 16, resolution, min, max);
 			template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
 
 			// for display in editor
-			int32_t state = value * (127 - 0) / range_max;
+			int32_t state = grid_ain_get_average_scaled(&grid_ain_state, res_index, 16, resolution, 0, 127);
    			template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
 
 			struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[res_index], GRID_UI_EVENT_AC);
@@ -155,7 +148,7 @@ void grid_module_po16_hardware_init(void){
 void grid_module_po16_init(){
 	
 	// 16 pot, depth of 5, 14bit internal, 7bit result;
-	grid_ain_init(16, 5);
+	grid_ain_init(&grid_ain_state, 16, 5);
 	grid_led_lowlevel_init(&grid_led_state, 16);
 
 	grid_ui_model_init(&grid_ui_state, 16+1); // +1 for the system element

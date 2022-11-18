@@ -11,6 +11,7 @@
 #include "esp_log.h"
 
 
+
 #include "driver/gpio.h"
 
 #include "driver/rmt_tx.h"
@@ -103,6 +104,8 @@ void led_task(void *arg)
 {
 
 
+
+
     SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
 
     ////Wait until daemon task has installed USB Host Library
@@ -146,11 +149,6 @@ void led_task(void *arg)
 
 
     while (1) {
-
-
-
-        //ESP_LOGI(TAG, "Update LED");
-
 
         hue = 0 + start_rgb;
         led_strip_hsv2rgb(hue, 100, 100, &red, &green, &blue);

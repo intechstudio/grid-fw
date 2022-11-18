@@ -224,18 +224,14 @@ void grid_element_potmeter_template_parameter_init(struct grid_ui_template_buffe
 		resolution = 12;
 	}
 
-	int32_t value = grid_ain_get_average(element_index);
-
 	int32_t min = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index];
 	int32_t max = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index];
 
-	// map the input range to the output range
-
-	uint16_t range_max = GRID_AIN_MAXVALUE - (1<<16-resolution);
-
-	int32_t next = value * (max - min) / range_max + min;
-
+	int32_t next = grid_ain_get_average_scaled(&grid_ain_state, element_index, 16, resolution, min, max);
 	template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
+
+
+	
 
 }
 
@@ -361,6 +357,7 @@ void grid_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_t p
 	uint8_t element_index = ele->index;
 	int32_t* template_parameter_list = ele->template_parameter_list;
 
+
 	int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
 
 	if (resolution < 1){
@@ -370,16 +367,9 @@ void grid_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_t p
 		resolution = 12;
 	}
 
-	int32_t value = grid_ain_get_average(element_index);
-
 	int32_t min = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index];
 	int32_t max = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index];
 
-	// map the input range to the output range
-
-	uint16_t range_max = GRID_AIN_MAXVALUE - (1<<16-resolution);
-
-	int32_t next = value * (max - min) / range_max + min;
-
+	int32_t next = grid_ain_get_average_scaled(&grid_ain_state, element_index, 16, resolution, min, max);
 	template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
 }
