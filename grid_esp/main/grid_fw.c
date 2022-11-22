@@ -45,6 +45,7 @@ extern void grid_esp32_adc_task(void *arg);
 
 #include "../../grid_common/grid_protocol.h"
 #include "../../grid_common/grid_ain.h"
+#include "../../grid_common/grid_led.h"
 
 
 void app_main(void)
@@ -54,6 +55,15 @@ void app_main(void)
 
     grid_esp32_get_hwcfg();
     grid_esp32_get_cpuid();
+
+    // GRID_MODULE_INIT (based on hwcfg)
+
+
+    ets_printf("LED INIT ...\r\n");
+
+    grid_led_init(&grid_led_state, 16);
+
+    ets_printf("LED INIT DONE\r\n");
 
 
     vTaskDelay(100);

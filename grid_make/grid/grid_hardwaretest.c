@@ -152,7 +152,7 @@ void grid_hardwaretest_led_test_init(struct grid_led_model* mod, uint8_t num){
 	
 	gpio_set_pin_level(UI_PWR_EN, true);
 	
-	grid_led_lowlevel_init(mod, num);
+	grid_led_init(mod, num);
 	
 	for(uint8_t i=0; i<num; i++){
 		
@@ -160,7 +160,6 @@ void grid_hardwaretest_led_test_init(struct grid_led_model* mod, uint8_t num){
 		
 	}
 
-	grid_led_hardware_transfer_done = 1;
 }
 
 

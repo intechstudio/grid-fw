@@ -295,7 +295,7 @@ void grid_module_pbf4_init(){
 	
 	// 16 pot, depth of 5, 14bit internal, 7bit result;
 	grid_ain_init(&grid_ain_state, 16, 5);
-	grid_led_lowlevel_init(&grid_led_state, 12);	
+	grid_led_init(&grid_led_state, 12);	
 	
 	grid_ui_model_init(&grid_ui_state, 12+1); // +1 for the system element
 

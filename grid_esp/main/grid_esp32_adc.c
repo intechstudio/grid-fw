@@ -11,10 +11,13 @@
 static const char *TAG = "esp32_adc";
 
 
+#include "../../grid_common/grid_led.h"
 
 
 void grid_esp32_adc_task(void *arg)
 {
+
+    
 
 
     ESP_LOGI(TAG, "Init ADC");
@@ -75,7 +78,7 @@ void grid_esp32_adc_task(void *arg)
 
                 int32_t scaled = grid_ain_get_average_scaled(&grid_ain_state, i, source_resolution, result_resolution, min, max);
 
-
+                grid_led_set_layer_phase(&grid_led_state, i, GRID_LED_LAYER_UI_A, scaled/4);
 
 
                 ESP_LOGI(TAG, "CH %d reading: %ld", i, scaled);  

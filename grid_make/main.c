@@ -245,17 +245,17 @@ static void led_task_inner(struct grid_d51_task* task){
 	grid_d51_task_start(task);
 
 
-	if (RTC1MS*10 < grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_led_state.last_tick_realtime)){
+	if (RTC1MS*10 < grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_led_get_tick_lastrealtime(&grid_led_state))){
 	
-		grid_led_state.last_tick_realtime = grid_sys_rtc_get_time(&grid_sys_state);
+		grid_led_set_tick_lastrealtime(&grid_led_state, grid_sys_rtc_get_time(&grid_sys_state));
 
 		grid_led_tick(&grid_led_state);
 		
-		grid_led_lowlevel_render_all(&grid_led_state);	
+		grid_led_render_framebuffer(&grid_led_state);	
 
-// 	 	while(grid_led_hardware_is_transfer_completed(&grid_led_state) != 1){
-// 	 	}
-		grid_led_lowlevel_hardware_start_transfer(&grid_led_state);
+		grid_d51_led_generate_frame(&grid_d51_led_state, &grid_led_state);
+
+		grid_d51_led_start_transfer(&grid_d51_led_state);
 
 	}
 	
@@ -577,6 +577,8 @@ int main(void)
 	//  x/512xb 0x80000
 	grid_module_common_init();
 
+	grid_d51_led_init(&grid_d51_led_state, &grid_led_state);
+
 	if (sys_i2c_enabled){
 		uint8_t id = grid_fusb302_read_id(SYS_I2C_io);
 	}
@@ -686,8 +688,6 @@ int main(void)
 		if (reportflag){
 
 				reportflag = 0;
-				//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
-				//printf("%d \r\n", loopcount);
 				loopcount = 0;
 		}
 

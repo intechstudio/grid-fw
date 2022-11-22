@@ -369,7 +369,7 @@ static void grid_module_en16_hardware_init(void){
 void grid_module_en16_init(){
 	
 	
-	grid_led_lowlevel_init(&grid_led_state, 16);
+	grid_led_init(&grid_led_state, 16);
 	
 	grid_ui_model_init(&grid_ui_state, 16+1); // +1 for the system element	
 		

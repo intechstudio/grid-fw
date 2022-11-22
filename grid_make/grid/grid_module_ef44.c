@@ -499,7 +499,7 @@ void grid_module_ef44_init(){
 	// should be 4 but indexing is bad at grid_element_potmeter_template_parameter_init
 	grid_ain_init(&grid_ain_state, 8, 5);
 
-	grid_led_lowlevel_init(&grid_led_state, 8);
+	grid_led_init(&grid_led_state, 8);
 	
 	grid_ui_model_init(&grid_ui_state, 8+1); // +1 for the system element	
 		

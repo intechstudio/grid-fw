@@ -11,6 +11,7 @@
 #include "esp_log.h"
 
 
+#include "../../grid_common/grid_led.h"
 
 #include "driver/gpio.h"
 
@@ -21,34 +22,11 @@
 #define RMT_LED_STRIP_GPIO_NUM      21
 
 
-#define EXAMPLE_LED_NUMBERS         3
+#define EXAMPLE_LED_NUMBERS         16
 #define EXAMPLE_CHASE_SPEED_MS      10
 
-static uint8_t led_strip_pixels[EXAMPLE_LED_NUMBERS * 3];
 
 
-
-volatile uint8_t tx_led_timer = 0;
-volatile uint8_t rx_led_timer = 0;
-volatile uint8_t err_led_timer = 0;
-
-void led_tx_effect_start(void)
-{
-   
-    tx_led_timer = 10;
-}
-
-void led_rx_effect_start(void)
-{
-   
-    rx_led_timer = 10;
-}
-
-void led_err_effect_start(void)
-{
-   
-    err_led_timer = 10;
-}
 
 
 void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t *g, uint32_t *b)
@@ -106,6 +84,7 @@ void led_task(void *arg)
 
 
 
+
     SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
 
     ////Wait until daemon task has installed USB Host Library
@@ -148,16 +127,51 @@ void led_task(void *arg)
     };
 
 
+    static uint32_t loopcounter = 0;
+
     while (1) {
 
-        hue = 0 + start_rgb;
-        led_strip_hsv2rgb(hue, 100, 100, &red, &green, &blue);
-        led_strip_pixels[0 * 3 + 0] = green/5;
-        led_strip_pixels[0 * 3 + 1] = 0;
-        led_strip_pixels[0 * 3 + 2] = 0;
+        if (loopcounter<300){
+            loopcounter++;
+
+            hue = 0 + start_rgb;
+            led_strip_hsv2rgb(hue, 100, 100, &red, &green, &blue);
+            grid_led_framebuffer_set_color(&grid_led_state, 0, red, 0, 0);
+            grid_led_framebuffer_set_color(&grid_led_state, 1, 0, green, 0);
+            grid_led_framebuffer_set_color(&grid_led_state, 2, 0, 0, blue);
+            grid_led_framebuffer_set_color(&grid_led_state, 3, 50, 50, 50);
+
+            if (loopcounter == 300){
+                for (uint8_t i=0; i<grid_led_get_led_count(&grid_led_state); i++){
+
+                    grid_led_framebuffer_set_color(&grid_led_state, i, 0, 0, 0);
+
+                    grid_led_set_layer_color(&grid_led_state, i, GRID_LED_LAYER_UI_A, 0,0,255);
+
+                    grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 300);
 
 
-        ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, led_strip_pixels, sizeof(led_strip_pixels), &tx_config));
+                }
+            }
+        } 
+        else{
+
+            grid_led_tick(&grid_led_state);
+            grid_led_render_framebuffer(&grid_led_state);
+
+
+        }
+
+
+
+
+        const uint8_t* frame_buffer = grid_led_get_framebuffer_pointer(&grid_led_state);
+        const uint32_t frame_buffer_size = grid_led_get_framebuffer_size(&grid_led_state);
+
+
+
+
+        ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, frame_buffer, frame_buffer_size, &tx_config));
         vTaskDelay(pdMS_TO_TICKS(EXAMPLE_CHASE_SPEED_MS));
 
         start_rgb += 10;

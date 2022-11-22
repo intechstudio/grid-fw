@@ -12,6 +12,8 @@
 #include <hpl_user_area.h>
 #include "grid_module.h"
 
+#include "grid_d51_led.h"
+
 
 
 #define GRID_D51_TASK_SUBTASK_count 10
@@ -91,5 +93,6 @@ uint32_t grid_d51_get_hwcfg();
 
 uint8_t grid_d51_get_random_8();
 uint8_t grid_d51_get_reset_cause();
+
 
 #endif /* GRID_D51_H_ */

@@ -564,7 +564,7 @@ static int l_grid_midirx_sync(lua_State* L) {
 }
 
 
-static int l_grid_led_phase(lua_State* L) {
+static int l_grid_led_layer_phase(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
@@ -592,12 +592,12 @@ static int l_grid_led_phase(lua_State* L) {
         if (param[2] > 255)  param[2] = 255;
         if (param[2] < 0)    param[2] = 0;
 
-        grid_led_set_phase(&grid_led_state, param[0], param[1], param[2]);
+        grid_led_set_layer_phase(&grid_led_state, param[0], param[1], param[2]);
 
     }
     else{
         //getter
-        int32_t var = grid_led_get_phase(&grid_led_state, param[0], param[1]);
+        int32_t var = grid_led_get_layer_phase(&grid_led_state, param[0], param[1]);
         lua_pushinteger(L, var);
     }
     
@@ -605,7 +605,7 @@ static int l_grid_led_phase(lua_State* L) {
 }
 
 
-static int l_grid_led_set_phase(lua_State* L) {
+static int l_grid_led_set_phase_BAK(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
@@ -649,7 +649,7 @@ static int l_grid_led_set_phase(lua_State* L) {
 
             uint16_t phase = grid_utility_map(val, min, max, 0, 255);
             //printf("LED: %d\r\n", phase);
-            grid_led_set_phase(&grid_led_state, param[0], param[1], phase);
+            grid_led_set_layer_phase(&grid_led_state, param[0], param[1], phase);
 
 
         }
@@ -667,7 +667,7 @@ static int l_grid_led_set_phase(lua_State* L) {
             param[i-1] = lua_tointeger(L, i);
         }
 
-        grid_led_set_phase(&grid_led_state, param[0], param[1], param[2]);
+        grid_led_set_layer_phase(&grid_led_state, param[0], param[1], param[2]);
 
         return 0;
 
@@ -682,7 +682,7 @@ static int l_grid_led_set_phase(lua_State* L) {
 }
 
 
-static int l_grid_led_set_min(lua_State* L) {
+static int l_grid_led_layer_min(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
@@ -698,14 +698,14 @@ static int l_grid_led_set_min(lua_State* L) {
         param[i-1] = lua_tointeger(L, i);
     }
 
-    grid_led_set_min(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+    grid_led_set_layer_min(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
 
 
     return 0;
 }
 
 
-static int l_grid_led_set_mid(lua_State* L) {
+static int l_grid_led_layer_mid(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
@@ -721,13 +721,13 @@ static int l_grid_led_set_mid(lua_State* L) {
         param[i-1] = lua_tointeger(L, i);
     }
 
-    grid_led_set_mid(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+    grid_led_set_layer_mid(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
 
 
     return 0;
 }
 
-static int l_grid_led_set_max(lua_State* L) {
+static int l_grid_led_layer_max(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
@@ -743,13 +743,13 @@ static int l_grid_led_set_max(lua_State* L) {
         param[i-1] = lua_tointeger(L, i);
     }
 
-    grid_led_set_max(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+    grid_led_set_layer_max(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
 
 
     return 0;
 }
 
-static int l_grid_led_set_color(lua_State* L) {
+static int l_grid_led_layer_color(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
@@ -762,7 +762,7 @@ static int l_grid_led_set_color(lua_State* L) {
         }
 
 
-        grid_led_set_color(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+        grid_led_set_layer_color(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
     }
     else if(nargs==6){
 
@@ -777,9 +777,9 @@ static int l_grid_led_set_color(lua_State* L) {
             }
         }
 
-        grid_led_set_color(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+        grid_led_set_layer_color(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
         if (param[5] != 0){
-            grid_led_set_min(&grid_led_state, param[0], param[1], 0,0,0);
+            grid_led_set_layer_min(&grid_led_state, param[0], param[1], 0,0,0);
         }
 
     }
@@ -795,7 +795,7 @@ static int l_grid_led_set_color(lua_State* L) {
     return 0;
 }
 
-static int l_grid_led_set_frequency(lua_State* L) {
+static int l_grid_led_layer_frequency(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
@@ -811,11 +811,11 @@ static int l_grid_led_set_frequency(lua_State* L) {
         param[i-1] = lua_tointeger(L, i);
     }
 
-    grid_led_set_frequency(&grid_led_state, param[0], param[1], param[2]);
+    grid_led_set_layer_frequency(&grid_led_state, param[0], param[1], param[2]);
     return 0;
 }
 
-static int l_grid_led_set_shape(lua_State* L) {
+static int l_grid_led_layer_shape(lua_State* L) {
 
     
 
@@ -837,13 +837,13 @@ static int l_grid_led_set_shape(lua_State* L) {
 
     //printf("Led shape %d %d %d\r\n", param[0], param[1], param[2]);
 
-    grid_led_set_shape(&grid_led_state, param[0], param[1], param[2]);
+    grid_led_set_layer_shape(&grid_led_state, param[0], param[1], param[2]);
 
 
     return 0;
 }
 
-static int l_grid_led_set_timeout(lua_State* L) {
+static int l_grid_led_layer_timeout(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
@@ -859,11 +859,11 @@ static int l_grid_led_set_timeout(lua_State* L) {
         param[i-1] = lua_tointeger(L, i);
     }
 
-    grid_led_set_timeout(&grid_led_state, (uint8_t)param[0], (uint8_t)param[1], param[2]);
+    grid_led_set_layer_timeout(&grid_led_state, (uint8_t)param[0], (uint8_t)param[1], param[2]);
     return 0;
 }
 
-static int l_grid_led_set_pfs(lua_State* L) {
+static int l_grid_led_layer_pfs(lua_State* L) {
 
     
 
@@ -885,9 +885,9 @@ static int l_grid_led_set_pfs(lua_State* L) {
 
     //printf("Led shape %d %d %d\r\n", param[0], param[1], param[2]);
 
-    grid_led_set_phase(&grid_led_state, param[0], param[1], param[2]);
-    grid_led_set_frequency(&grid_led_state, param[0], param[1], param[3]);
-    grid_led_set_shape(&grid_led_state, param[0], param[1], param[4]);
+    grid_led_set_layer_phase(&grid_led_state, param[0], param[1], param[2]);
+    grid_led_set_layer_frequency(&grid_led_state, param[0], param[1], param[3]);
+    grid_led_set_layer_shape(&grid_led_state, param[0], param[1], param[4]);
 
 
     return 0;

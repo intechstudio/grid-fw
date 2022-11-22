@@ -1259,7 +1259,7 @@ void grid_nvm_ui_bulk_nvmerase_init(struct grid_nvm_model* nvm, struct grid_ui_m
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
 	grid_led_set_alert_frequency(&grid_led_state, -2);	
 	for (uint8_t i = 0; i<grid_led_state.led_count; i++){
-		grid_led_set_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
+		grid_led_set_layer_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
 	}
 
 

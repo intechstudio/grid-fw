@@ -1863,11 +1863,11 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 						if (editor_connected_now){
 							// reset the changed flags to force report all leds
-							grid_led_lowlevel_change_reset(&grid_led_state);
+							grid_led_change_flag_reset(&grid_led_state);
 						}
 
 
-						if (grid_led_lowlevel_change_report_length(&grid_led_state)){
+						if (grid_d51_led_change_report_length(&grid_led_state)){
 
 
 							struct grid_msg response;
@@ -1879,7 +1879,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							snprintf(response_payload, 299, GRID_CLASS_LEDPREVIEW_frame_start);
 							len += strlen(&response_payload[len]);
 
-							uint16_t report_length = grid_led_lowlevel_change_report(&grid_led_state, -1, &response_payload[len]);
+							uint16_t report_length = grid_d51_led_change_report_generate(&grid_led_state, -1, &response_payload[len]);
 
 							len += strlen(&response_payload[len]);
 

@@ -44,7 +44,9 @@
     "tuple": "c",
     "type_traits": "c",
     "utility": "c",
-    "variant": "c"
+    "variant": "c",
+    "grid_led.h": "c",
+    "stdlib.h": "c"
 },
   "actionButtons": {
     "defaultColor": "#ff0034", // Can also use string color names.
