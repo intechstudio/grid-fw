@@ -244,7 +244,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	}
 
 	// LEDREPORT
-	if (ui_available && grid_d51_led_change_report_length(&grid_led_state) && grid_sys_state.editor_connected){
+	if (ui_available && grid_d51_led_change_report_length(&grid_led_state) && grid_sys_get_editor_connected_state(&grid_sys_state)){
 
 		struct grid_msg response;
 								

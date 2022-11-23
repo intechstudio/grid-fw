@@ -252,11 +252,16 @@ volatile uint8_t pingflag = 0;
 volatile uint8_t reportflag = 0;
 volatile uint8_t heartbeatflag = 0;
 
+volatile uint8_t mapmodestate = 0;
+
+
+
 static struct timer_task RTC_Scheduler_rx_task;
 static struct timer_task RTC_Scheduler_ping;
 static struct timer_task RTC_Scheduler_realtime;
 static struct timer_task RTC_Scheduler_heartbeat;
 static struct timer_task RTC_Scheduler_report;
+
 
 void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 {
@@ -319,11 +324,11 @@ void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 	uint8_t mapmode_value = !gpio_get_pin_level(MAP_MODE);
 
 
-	if (mapmode_value != grid_sys_state.mapmodestate){
+	if (mapmode_value != mapmodestate){
 		
-		grid_sys_state.mapmodestate = mapmode_value;
+		mapmodestate = mapmode_value;
 			
-		if (grid_sys_state.mapmodestate == 0){ // RELEASE
+		if (mapmodestate == 0){ // RELEASE
 			
 				
 		}
@@ -511,6 +516,7 @@ int main(void)
 	grid_d51_init(); // Check User Row
 
 	grid_sys_init(&grid_sys_state);
+	grid_msg_init(&grid_msg_state);
 
 	grid_d51_boundary_scan_report(boundary_result);
 
@@ -621,7 +627,7 @@ int main(void)
 		
 		if (usb_d_get_frame_num() != 0){
 			
-			if (grid_sys_state.heartbeat_type != 1){
+			if (grid_msg_state.heartbeat_type != 1){
 			
 				printf("USB CONNECTED\r\n\r\n");
 				printf("HWCFG %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
@@ -630,7 +636,7 @@ int main(void)
 				grid_led_set_alert_frequency(&grid_led_state, -2);	
 				grid_led_set_alert_phase(&grid_led_state, 200);	
 				
-				grid_sys_state.heartbeat_type = 1;
+				grid_msg_state.heartbeat_type = 1;
 
 		
 			}
@@ -697,13 +703,13 @@ int main(void)
 
 			grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
 
-			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, grid_sys_state.heartbeat_type);
+			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, grid_msg_state.heartbeat_type);
 			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(&grid_sys_state));
 			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
 			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
 			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
 				
-			if (grid_sys_state.heartbeat_type == 1){	// I am usb connected deevice
+			if (grid_msg_state.heartbeat_type == 1){	// I am usb connected deevice
 
 				
 				grid_msg_body_append_printf(&response, GRID_CLASS_PAGEACTIVE_frame);
@@ -722,14 +728,15 @@ int main(void)
 
 		}
 
+		
 
+		if (grid_sys_get_editor_connected_state(&grid_sys_state) == 1){
 
-		if (grid_sys_state.editor_connected == 1){
-
-			if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_sys_state.editor_heartbeat_lastrealtime)>2000*RTC1MS){
+			if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_msg_state.editor_heartbeat_lastrealtime)>2000*RTC1MS){
 
 				printf("EDITOR timeout\r\n");
-				grid_sys_state.editor_connected = 0;
+
+				grid_sys_set_editor_connected_state(&grid_sys_state, 0);
 
 				grid_ui_state.page_change_enabled = 1;
 

@@ -531,7 +531,8 @@ static int l_grid_midirx_enabled(lua_State* L) {
         
     }
 
-    grid_sys_state.midirx_any_enabled = (uint8_t) param[0];
+    grid_sys_set_midirx_any_state(&grid_sys_state, (uint8_t) param[0]);
+
     
     return 1;
 }
@@ -557,8 +558,8 @@ static int l_grid_midirx_sync(lua_State* L) {
 
         
     }
-
-    grid_sys_state.midirx_sync_enabled = (uint8_t) param[0];
+    
+    grid_sys_set_midirx_sync_state(&grid_sys_state, (uint8_t) param[0]);
     
     return 1;
 }
@@ -974,13 +975,13 @@ static int l_led_default_red(lua_State* L) {
 
     if (isgetter){
 
-        int32_t var = grid_sys_state.bank_activebank_color_r;
+        int32_t var = grid_sys_get_bank_red(&grid_sys_state);
         lua_pushinteger(L, var);
     }
     else{
 
         int32_t var =  param[0];
-        grid_sys_state.bank_activebank_color_r = var;
+        grid_sys_set_bank_red(&grid_sys_state, var);
     }
     
     return 1;
@@ -1017,13 +1018,13 @@ static int l_led_default_green(lua_State* L) {
 
     if (isgetter){
 
-        int32_t var = grid_sys_state.bank_activebank_color_g;
+        int32_t var = grid_sys_get_bank_gre(&grid_sys_state);
         lua_pushinteger(L, var);
     }
     else{
 
         int32_t var =  param[0];
-        grid_sys_state.bank_activebank_color_g = var;
+        grid_sys_set_bank_gre(&grid_sys_state, var);
     }
     
     return 1;
@@ -1060,13 +1061,13 @@ static int l_led_default_blue(lua_State* L) {
 
     if (isgetter){
 
-        int32_t var = grid_sys_state.bank_activebank_color_b;
+        int32_t var = grid_sys_get_bank_blu(&grid_sys_state);
         lua_pushinteger(L, var);
     }
     else{
 
         int32_t var =  param[0];
-        grid_sys_state.bank_activebank_color_b = var;
+        grid_sys_set_bank_blu(&grid_sys_state, var);
     }
     
     return 1;
@@ -1158,7 +1159,8 @@ static int l_grid_position_x(lua_State* L) {
         return 0;
     }
 
-    lua_pushinteger(L, grid_sys_state.module_x);
+
+    lua_pushinteger(L, grid_sys_get_module_x(&grid_sys_state));
     
     return 1;
 }
@@ -1173,7 +1175,7 @@ static int l_grid_position_y(lua_State* L) {
         return 0;
     }
 
-    lua_pushinteger(L, grid_sys_state.module_y);
+    lua_pushinteger(L, grid_sys_get_module_y(&grid_sys_state));
     
     return 1;
 }
@@ -1188,7 +1190,7 @@ static int l_grid_rotation(lua_State* L) {
         return 0;
     }
 
-    lua_pushinteger(L, grid_sys_state.module_rot);
+    lua_pushinteger(L, grid_sys_get_module_rot(&grid_sys_state));
     
     return 1;
 }

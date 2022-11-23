@@ -12,12 +12,7 @@ int32_t grid_utility_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_
 
 #define GRID_SYS_BANK_MAXNUMBER					4
 
-struct grid_lastheader{
 
-	uint8_t status;
-	uint8_t id;
-
-};
 
 
 struct grid_sys_model
@@ -27,16 +22,10 @@ struct grid_sys_model
 	uint8_t reset_cause;
 	
 	uint8_t editor_connected;
-	uint32_t editor_heartbeat_lastrealtime;
 
 	uint8_t midirx_any_enabled;
 	uint8_t midirx_sync_enabled;
 
-	struct grid_lastheader lastheader_config;
-	struct grid_lastheader lastheader_pagestore;
-	struct grid_lastheader lastheader_pagediscard;
-	struct grid_lastheader lastheader_pageclear;
-	struct grid_lastheader lastheader_nvmerase;
 
 
 	
@@ -68,7 +57,6 @@ struct grid_sys_model
 
 
 	uint32_t hwfcg;
-	uint8_t heartbeat_type;
 	
 	int8_t module_x;
 	int8_t module_y;
@@ -109,37 +97,47 @@ struct io_descriptor *grid_sys_south_io;
 struct io_descriptor *grid_sys_west_io;
 
 
+
+uint32_t grid_sys_get_uptime(struct grid_sys_model* mod);
+
 uint32_t grid_sys_rtc_get_time(struct grid_sys_model* mod);
-
-
 void grid_sys_rtc_set_time(struct grid_sys_model* mod, uint32_t tvalue);
-
 uint32_t grid_sys_rtc_get_elapsed_time(struct grid_sys_model* mod, uint32_t told);
-
 void grid_sys_rtc_tick_time(struct grid_sys_model* mod);
-
-
-
-uint8_t grid_sys_bank_enable(struct grid_sys_model* mod, uint8_t banknumber);
-uint8_t grid_sys_bank_disable(struct grid_sys_model* mod, uint8_t banknumber);
-
-uint8_t grid_sys_bank_set_color(struct grid_sys_model* mod, uint8_t banknumber, uint32_t rgb);
-uint32_t grid_sys_bank_get_color(struct grid_sys_model* mod, uint8_t banknumber);
-
 
 
 uint8_t grid_sys_get_bank_num(struct grid_sys_model* mod);
 uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod);
 
-uint8_t grid_sys_get_bank_number_of_first_valid(struct grid_sys_model* mod);
 
-uint8_t grid_sys_get_bank_valid(struct grid_sys_model* mod);
+
+uint8_t grid_sys_get_editor_connected_state(struct grid_sys_model* mod);
+void grid_sys_set_editor_connected_state(struct grid_sys_model* mod, uint8_t state);
+
+uint8_t grid_sys_get_midirx_any_state(struct grid_sys_model* mod);
+uint8_t grid_sys_get_midirx_sync_state(struct grid_sys_model* mod);
+
+void grid_sys_set_midirx_any_state(struct grid_sys_model* mod, uint8_t state);
+void grid_sys_set_midirx_sync_state(struct grid_sys_model* mod, uint8_t state);
+
+
+uint8_t grid_sys_get_module_x(struct grid_sys_model* mod);
+uint8_t grid_sys_get_module_y(struct grid_sys_model* mod);
+uint8_t grid_sys_get_module_rot(struct grid_sys_model* mod);
+
+void grid_sys_set_module_x(struct grid_sys_model* mod, uint8_t x);
+void grid_sys_set_module_y(struct grid_sys_model* mod, uint8_t y);
+void grid_sys_set_module_rot(struct grid_sys_model* mod, uint8_t rot);
+
 
 uint8_t grid_sys_get_bank_red(struct grid_sys_model* mod);
 uint8_t grid_sys_get_bank_gre(struct grid_sys_model* mod);
 uint8_t grid_sys_get_bank_blu(struct grid_sys_model* mod);
 
-uint8_t grid_sys_get_map_state(struct grid_sys_model* mod);
+
+void grid_sys_set_bank_red(struct grid_sys_model* mod, uint8_t red);
+void grid_sys_set_bank_gre(struct grid_sys_model* mod, uint8_t gre);
+void grid_sys_set_bank_blu(struct grid_sys_model* mod, uint8_t blu);
 
 
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t value);

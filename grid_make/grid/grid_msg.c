@@ -8,6 +8,19 @@
 
 #include "grid_msg.h"
 
+void grid_msg_init(struct grid_msg_model* mod){
+
+	mod->lastheader_config.status = -1;
+	mod->lastheader_pagestore.status = -1;
+	mod->lastheader_nvmerase.status = -1;
+	mod->lastheader_pagediscard.status = -1;
+	mod->lastheader_pageclear.status = -1;
+
+	mod->editor_heartbeat_lastrealtime = 0;	
+	mod->heartbeat_type = 0;
+
+}
+
 
 // ======================= GRID MSG LEN ======================//
 void	grid_msg_header_set_len(struct grid_msg* msg, uint16_t len){
@@ -482,7 +495,7 @@ uint8_t grid_msg_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
 	}
 	else{
 		// wrong input
-		if (error_flag != NULL){
+		if (error_flag != 0){
 			*error_flag = ascii;
 		}
 	}

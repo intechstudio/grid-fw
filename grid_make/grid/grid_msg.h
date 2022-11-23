@@ -16,7 +16,7 @@
 #include <stdarg.h>
 
 // only for uint definitions
-#include "../atmel_start.h"
+#include <stdint.h>
 
 #define GRID_MSG_HEADER_maxlength 26
 #define GRID_MSG_FOOTER_maxlength 5
@@ -28,15 +28,35 @@
 #define GRID_MSG_RECENT_MESSAGES_LENGTH			32
 #define GRID_MSG_RECENT_MESSAGES_INDEX_T		uint8_t
 
+struct grid_lastheader{
+
+	uint8_t status;
+	uint8_t id;
+
+};
+
+
 struct grid_msg_model
 {
 	
+
+	uint32_t editor_heartbeat_lastrealtime;
+	uint8_t heartbeat_type;
+
 	uint32_t recent_messages[GRID_MSG_RECENT_MESSAGES_LENGTH];
 	GRID_MSG_RECENT_MESSAGES_INDEX_T recent_messages_index;
 	
     uint8_t sessionid;
 	uint8_t next_broadcast_message_id;
 	
+
+	struct grid_lastheader lastheader_config;
+	struct grid_lastheader lastheader_pagestore;
+	struct grid_lastheader lastheader_pagediscard;
+	struct grid_lastheader lastheader_pageclear;
+	struct grid_lastheader lastheader_nvmerase;
+
+
 };
 
 
@@ -57,6 +77,8 @@ struct grid_msg{
 
 
 };
+
+void grid_msg_init(struct grid_msg_model* mod);
 
 void	grid_msg_header_set_len(struct grid_msg* msg, uint16_t len);
 uint16_t grid_msg_header_get_len(struct grid_msg* msg);

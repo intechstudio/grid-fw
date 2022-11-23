@@ -372,11 +372,13 @@ uint8_t grid_midi_tx_pop(){
 uint8_t grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 
 	// MIDI RX IS DISABLED
-	if (grid_sys_state.midirx_any_enabled == 0){
+
+
+	if (grid_sys_get_midirx_any_state(&grid_sys_state) == 0){
 		return;
 	}
 
-	if (grid_sys_state.midirx_sync_enabled == 0){
+	if (grid_sys_get_midirx_sync_state(&grid_sys_state) == 0){
 
 		if (midi_event.byte0 == 8 && midi_event.byte1 == 240 && midi_event.byte2 == 36){
 			// midi clock message was recieved
