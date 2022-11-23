@@ -33,11 +33,20 @@
 
 struct grid_lastheader{
 
-	uint8_t status;
+	uint8_t state;
 	uint8_t id;
 
 };
 
+
+enum grid_msg_lastheader_index_t{
+	GRID_MSG_LASTHEADER_CONFIG_INDEX,
+	GRID_MSG_LASTHEADER_STORE_INDEX,
+	GRID_MSG_LASTHEADER_DISCARD_INDEX,
+	GRID_MSG_LASTHEADER_CLEAR_INDEX,
+	GRID_MSG_LASTHEADER_ERASE_INDEX,
+	GRID_MSG_LASTHEADER_INDEX_COUNT,
+};
 
 struct grid_msg_model
 {
@@ -53,18 +62,13 @@ struct grid_msg_model
 	uint8_t next_broadcast_message_id;
 	
 
-	struct grid_lastheader lastheader_config;
-	struct grid_lastheader lastheader_pagestore;
-	struct grid_lastheader lastheader_pagediscard;
-	struct grid_lastheader lastheader_pageclear;
-	struct grid_lastheader lastheader_nvmerase;
-
+	
+	struct grid_lastheader lastheader[GRID_MSG_LASTHEADER_INDEX_COUNT];
 
 };
 
 
-volatile struct grid_msg_model grid_msg_state;
-
+extern struct grid_msg_model grid_msg_state;
 
 struct grid_msg{
 	
@@ -81,7 +85,19 @@ struct grid_msg{
 
 };
 
+
 void grid_msg_init(struct grid_msg_model* mod);
+
+
+void grid_msg_store_lastheader(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index, uint8_t value);
+void grid_msg_clear_lastheader(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index);
+
+uint8_t grid_msg_get_lastheader_state(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index);
+uint8_t grid_msg_get_lastheader_id(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index);
+
+void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* mod, uint32_t timestamp);
+uint32_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* mod);
+
 
 void	grid_msg_header_set_len(struct grid_msg* msg, uint16_t len);
 uint16_t grid_msg_header_get_len(struct grid_msg* msg);

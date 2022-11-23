@@ -3,6 +3,8 @@
 
 #include "grid_module.h"
 
+#include <stdint.h>
+#include <stdlib.h>
 
 
 enum grid_ui_status {
