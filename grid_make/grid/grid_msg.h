@@ -88,6 +88,9 @@ struct grid_msg{
 
 void grid_msg_init(struct grid_msg_model* mod);
 
+void grid_msg_set_heartbeat_type(struct grid_msg_model* mod, uint8_t type);
+uint8_t grid_msg_get_heartbeat_type(struct grid_msg_model* mod);
+
 
 void grid_msg_store_lastheader(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index, uint8_t value);
 void grid_msg_clear_lastheader(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index);

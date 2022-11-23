@@ -14,6 +14,8 @@
 #include <hpl_reset.h>
 
 
+#include "grid_msg.h"
+
 #include "usb/class/midi/device/audiodf_midi.h"
 
 volatile uint32_t globaltest = 0;
@@ -627,7 +629,7 @@ int main(void)
 		
 		if (usb_d_get_frame_num() != 0){
 			
-			if (grid_msg_state.heartbeat_type != 1){
+			if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1){
 			
 				printf("USB CONNECTED\r\n\r\n");
 				printf("HWCFG %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
@@ -636,7 +638,7 @@ int main(void)
 				grid_led_set_alert_frequency(&grid_led_state, -2);	
 				grid_led_set_alert_phase(&grid_led_state, 200);	
 				
-				grid_msg_state.heartbeat_type = 1;
+				grid_msg_set_heartbeat_type(&grid_msg_state, 1);
 
 		
 			}
@@ -703,13 +705,15 @@ int main(void)
 
 			grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
 
-			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, grid_msg_state.heartbeat_type);
+			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, grid_msg_get_heartbeat_type(&grid_msg_state));
 			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(&grid_sys_state));
 			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
 			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
 			grid_msg_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
 				
-			if (grid_msg_state.heartbeat_type == 1){	// I am usb connected deevice
+			
+
+			if (grid_msg_get_heartbeat_type(&grid_msg_state) == 1){	// I am usb connected deevice
 
 				
 				grid_msg_body_append_printf(&response, GRID_CLASS_PAGEACTIVE_frame);
@@ -732,7 +736,9 @@ int main(void)
 
 		if (grid_sys_get_editor_connected_state(&grid_sys_state) == 1){
 
-			if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_msg_state.editor_heartbeat_lastrealtime)>2000*RTC1MS){
+			
+
+			if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state))>2000*RTC1MS){
 
 				printf("EDITOR timeout\r\n");
 
