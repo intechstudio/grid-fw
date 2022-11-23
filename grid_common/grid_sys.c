@@ -7,7 +7,7 @@
 
 #include "grid_sys.h"
 
-volatile struct grid_sys_model grid_sys_state;
+struct grid_sys_model grid_sys_state;
 
 
 void grid_sys_init(struct grid_sys_model* mod){
@@ -36,7 +36,7 @@ void grid_sys_init(struct grid_sys_model* mod){
 
 	mod->module_x = 0; // 0 because this is signed int
 	mod->module_y = 0; // 0 because this is signed int
-	mod->module_rot = GRID_SYS_DEFAULT_ROTATION;
+	mod->module_rot = GRID_PARAMETER_DEFAULT_ROTATION;
 
 
 	
@@ -185,8 +185,6 @@ uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod){
 
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 	
-	uint8_t old_page = mod->bank_activebank_number;
-	
 	if (banknumber == 255){
 			
 		//mod->bank_activebank_number = 0;
@@ -232,7 +230,6 @@ void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 				
 	}
 
-	uint8_t new_page = mod->bank_activebank_number;
 	
 }
 

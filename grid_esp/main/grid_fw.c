@@ -45,6 +45,7 @@
 #include "../../grid_common/grid_ain.h"
 #include "../../grid_common/grid_led.h"
 #include "../../grid_common/grid_sys.h"
+#include "../../grid_common/grid_msg.h"
 
 
 void app_main(void)
@@ -64,6 +65,7 @@ void app_main(void)
     ets_printf("LED INIT ...\r\n");
 
     grid_led_init(&grid_led_state, 16);
+    grid_msg_init(&grid_msg_state);
 
     ets_printf("LED INIT DONE\r\n");
 

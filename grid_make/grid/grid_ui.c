@@ -59,13 +59,13 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 			
 		// Prepare packet header LOCAL
 		struct grid_msg message_local;
-		grid_msg_init_header(&grid_msg_state, &message_local, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
+		grid_msg_init_header(&grid_msg_state, &message_local, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
 		uint8_t payload_local[GRID_PARAMETER_PACKET_maxlength] = {0};				
 		uint32_t offset_local=0;		
 
 		// Prepare packet header GLOBAL
 		struct grid_msg message_global;
-		grid_msg_init_header(&grid_msg_state, &message_global, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
+		grid_msg_init_header(&grid_msg_state, &message_global, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
 		uint8_t payload_global[GRID_PARAMETER_PACKET_maxlength] = {0};				
 		uint32_t offset_global=0;
 		
@@ -175,7 +175,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 
 	struct grid_msg message;
-	grid_msg_init_header(&grid_msg_state, &message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 	
 	
 	// BROADCAST MESSAGES : UI STATE
@@ -248,7 +248,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 		struct grid_msg response;
 								
-		grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+		grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 		uint8_t response_payload[300] = {0};
 		uint16_t len = 0;
@@ -572,7 +572,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 	
 	struct grid_msg message;
 
-	grid_msg_init_header(&grid_msg_state, &message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 
 	struct grid_ui_element* ele = &ui->element_list[element];

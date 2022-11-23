@@ -226,7 +226,7 @@ uint32_t grid_msg_footer_get_length(struct grid_msg* msg){
 
 void	grid_msg_body_append_text(struct grid_msg* msg, uint8_t* str){
 
-	uint32_t len = strlen(str);
+	uint32_t len = strlen((char*) str);
 	
 	for(uint32_t i=0; i<len; i++){
 		
@@ -247,12 +247,12 @@ void grid_msg_body_append_printf(struct grid_msg* msg, char const *fmt, ...){
 
 	va_start(ap, fmt);
 
-	vsprintf(&msg->body[msg->body_length], fmt, ap);
+	vsprintf((char*) &msg->body[msg->body_length], fmt, ap);
 
 	va_end(ap);
 	
 
-	msg->last_appended_length = strlen(&msg->body[msg->body_length]);
+	msg->last_appended_length = strlen((char*) &msg->body[msg->body_length]);
 
 	msg->body_length += msg->last_appended_length;
 
@@ -268,9 +268,9 @@ void grid_msg_body_append_parameter(struct grid_msg* msg,  uint8_t parameter_off
 
 uint32_t grid_msg_text_get_parameter(struct grid_msg* msg, uint32_t text_start_offset, uint8_t parameter_offset, uint8_t parameter_length){
 	
-	uint8_t error;
+	uint8_t error = 0;
 	
-	return grid_msg_read_hex_string_value(&msg->body[text_start_offset + parameter_offset], parameter_length, error);
+	return grid_msg_read_hex_string_value(&msg->body[text_start_offset + parameter_offset], parameter_length, &error);
 	
 }
 
@@ -310,8 +310,8 @@ void	grid_msg_init_header(struct grid_msg_model* mod, struct grid_msg* msg, uint
     
     uint8_t session = mod->sessionid;
     
-	sprintf(msg->header, GRID_BRC_frame_quick, GRID_CONST_SOH, GRID_CONST_BRC, session, dx, dy , GRID_CONST_EOB);
-	msg->header_length = strlen(msg->header);
+	sprintf((char*) msg->header, GRID_BRC_frame_quick, GRID_CONST_SOH, GRID_CONST_BRC, session, dx, dy , GRID_CONST_EOB);
+	msg->header_length = strlen((char*) msg->header);
 	
 	// grid_msg_header_set_dx(msg, dx);
 	// grid_msg_header_set_dy(msg, dy);
@@ -390,12 +390,12 @@ uint8_t	grid_msg_packet_send_char(struct grid_msg* msg, uint32_t charindex){
 
 
 
-uint8_t	grid_msg_packet_close(struct grid_msg_model* mod, struct grid_msg* msg){
+void grid_msg_packet_close(struct grid_msg_model* mod, struct grid_msg* msg){
 	
 
 	
-	sprintf(&msg->footer[msg->footer_length], "%c", GRID_CONST_EOT);
-	msg->footer_length += strlen(&msg->footer[msg->footer_length]);
+	sprintf((char*) &msg->footer[msg->footer_length], "%c", GRID_CONST_EOT);
+	msg->footer_length += strlen((char*) &msg->footer[msg->footer_length]);
 	
 	grid_msg_header_set_len(msg, msg->header_length + msg->body_length + msg->footer_length);
 	grid_msg_header_set_session(msg, mod->sessionid);	
@@ -419,8 +419,8 @@ uint8_t	grid_msg_packet_close(struct grid_msg_model* mod, struct grid_msg* msg){
 		checksum ^= msg->footer[i];
 	}
 	
-	sprintf(&msg->footer[msg->footer_length], "%02x\n", checksum);
-	msg->footer_length += strlen(&msg->footer[msg->footer_length]);
+	sprintf((char*) &msg->footer[msg->footer_length], "%02x\n", checksum);
+	msg->footer_length += strlen((char*) &msg->footer[msg->footer_length]);
 	
 	
 }
@@ -501,7 +501,7 @@ void grid_msg_checksum_write(uint8_t* message, uint32_t length, uint8_t checksum
 	
 // 	uint8_t checksum_string[4];
 // 
-// 	sprintf(checksum_string, "%02x", checksum);
+// 	sprintf((char*) checksum_string, "%02x", checksum);
 // 
 // 	message[length-3] = checksum_string[0];
 // 	message[length-2] = checksum_string[1];
@@ -518,7 +518,7 @@ uint32_t grid_msg_get_parameter(uint8_t* message, uint8_t offset, uint8_t length
 	return grid_msg_read_hex_string_value(&message[offset], length, error);	
 }
 
-uint32_t grid_msg_set_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error){
+void grid_msg_set_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error){
 	
 	grid_msg_write_hex_string_value(&message[offset], length, value);
 	
@@ -563,7 +563,7 @@ void grid_msg_write_hex_string_value(uint8_t* start_location, uint8_t size, uint
 	
 	uint8_t str[10];
 	
-	sprintf(str, "%08x", value);
+	sprintf((char*) str, "%08lx", value);
 		
 	for(uint8_t i=0; i<size; i++){	
 		start_location[i] = str[8-size+i];	
@@ -571,86 +571,3 @@ void grid_msg_write_hex_string_value(uint8_t* start_location, uint8_t size, uint
 
 }
 
-
-
-
-void grid_debug_print_text(uint8_t* debug_string){
-	
-	uint32_t debug_string_length = strlen(debug_string);
-	
-	struct grid_msg message;
-	
-	grid_msg_init_header(&grid_msg_state, &message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
-
-	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_start);
-	grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-	grid_msg_body_append_printf(&message, debug_string);
-	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_end);
-
-	grid_msg_packet_close(&grid_msg_state, &message);
-	grid_sys_packet_send_everywhere(&message);
-		
-}
-
-
-void grid_websocket_print_text(uint8_t* debug_string){
-	
-	uint32_t debug_string_length = strlen(debug_string);
-	
-	struct grid_msg message;
-	
-	grid_msg_init_header(&grid_msg_state, &message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
-
-	grid_msg_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_start);
-	grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-	grid_msg_body_append_printf(&message, debug_string);
-	grid_msg_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_end);
-
-	grid_msg_packet_close(&grid_msg_state, &message);
-	grid_sys_packet_send_everywhere(&message);
-		
-}
-
-void grid_debug_printf(char const *fmt, ...){
-
-	va_list ap;
-
-
-	uint8_t temp[100] = {0};
-
-	va_start(ap, fmt);
-
-	vsnprintf(temp, 99, fmt, ap);
-
-	va_end(ap);
-
-	grid_debug_print_text(temp);
-
-	return;
-}
-
-
-
-
-uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg){
-	
-	uint32_t message_length = grid_msg_packet_get_length(msg);
-	
-	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, message_length)){
-
-		for(uint32_t i = 0; i<message_length; i++){
-
-			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char(msg, i));
-		}
-
-		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
-
-		return 1;
-	}
-	else{
-		
-		return 0;
-	}
-	
-	
-}

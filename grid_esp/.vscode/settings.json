@@ -48,7 +48,10 @@
     "grid_led.h": "c",
     "stdlib.h": "c",
     "grid_esp32_led.h": "c",
-    "bootloader_random.h": "c"
+    "bootloader_random.h": "c",
+    "grid_sys.h": "c",
+    "grid_msg.h": "c",
+    "stdio.h": "c"
 },
   "actionButtons": {
     "defaultColor": "#ff0034", // Can also use string color names.

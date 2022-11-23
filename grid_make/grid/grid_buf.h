@@ -138,4 +138,12 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por);
 uint8_t grid_port_process_outbound_ui(struct grid_port* por);
 
 
+void grid_debug_print_text(uint8_t* str);
+void grid_websocket_print_text(uint8_t* str);
+
+void grid_debug_printf(char const *fmt, ...);
+
+
+uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg);
+
 #endif

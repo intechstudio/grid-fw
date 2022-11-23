@@ -699,7 +699,7 @@ int main(void)
 
 			struct grid_msg response;
 
-			grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+			grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 			grid_msg_body_append_printf(&response, GRID_CLASS_HEARTBEAT_frame);
 

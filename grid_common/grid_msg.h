@@ -18,8 +18,12 @@
 // only for uint definitions
 #include <stdint.h>
 
-// for reandom uint8_t generation
-#include "grid_d51.h"
+// for sprintf and strlen
+#include <stdio.h>
+#include <string.h>
+
+
+extern uint8_t grid_platform_get_random_8();
 
 #define GRID_MSG_HEADER_maxlength 26
 #define GRID_MSG_FOOTER_maxlength 5
@@ -160,7 +164,7 @@ void	grid_msg_packet_receive_char(struct grid_msg* msg, uint8_t nextchar);
 uint8_t	grid_msg_packet_send_char(struct grid_msg* msg, uint32_t charindex);
 
 
-uint8_t	grid_msg_packet_close(struct grid_msg_model* mod, struct grid_msg* msg);
+void	grid_msg_packet_close(struct grid_msg_model* mod, struct grid_msg* msg);
 
 
 
@@ -176,7 +180,7 @@ void grid_msg_push_recent(struct grid_msg_model* mod, uint32_t fingerprint);
 
 
 uint32_t grid_msg_get_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint8_t* error);
-uint32_t grid_msg_set_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error);
+void grid_msg_set_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error);
 
 
 uint8_t grid_msg_calculate_checksum_of_packet_string(uint8_t* str, uint32_t length);
@@ -192,12 +196,5 @@ void grid_msg_write_hex_string_value(uint8_t* start_location, uint8_t size, uint
 
 
 
-void grid_debug_print_text(uint8_t* str);
-void grid_websocket_print_text(uint8_t* str);
-
-void grid_debug_printf(char const *fmt, ...);
-
-
-uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg);
 
 #endif /* GRID_MSG_H_ */

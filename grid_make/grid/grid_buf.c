@@ -171,12 +171,12 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				uint8_t received_msgage = grid_msg_get_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
 				
 				// Read the received destination X Y values (SIGNED INT)
-				int8_t received_dx  = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_SYS_DEFAULT_POSITION;
-				int8_t received_dy  = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_SYS_DEFAULT_POSITION;
+				int8_t received_dx  = grid_msg_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+				int8_t received_dy  = grid_msg_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
 				
 				// Read the received source X Y values (SIGNED INT)
-				int8_t received_sx  = grid_msg_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_SYS_DEFAULT_POSITION;
-				int8_t received_sy  = grid_msg_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_SYS_DEFAULT_POSITION;
+				int8_t received_sx  = grid_msg_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+				int8_t received_sy  = grid_msg_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
 				
 				uint8_t received_rot = grid_msg_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
 				
@@ -226,22 +226,22 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 					// TRAP INVALID MESSAGE
 				}
 				
-				uint8_t updated_dx = rotated_dx + GRID_SYS_DEFAULT_POSITION + por->dx;
-				uint8_t updated_dy = rotated_dy + GRID_SYS_DEFAULT_POSITION + por->dy;
+				uint8_t updated_dx = rotated_dx + GRID_PARAMETER_DEFAULT_POSITION + por->dx;
+				uint8_t updated_dy = rotated_dy + GRID_PARAMETER_DEFAULT_POSITION + por->dy;
 
-				uint8_t updated_sx = rotated_sx + GRID_SYS_DEFAULT_POSITION + por->dx;
-				uint8_t updated_sy = rotated_sy + GRID_SYS_DEFAULT_POSITION + por->dy;
+				uint8_t updated_sx = rotated_sx + GRID_PARAMETER_DEFAULT_POSITION + por->dx;
+				uint8_t updated_sy = rotated_sy + GRID_PARAMETER_DEFAULT_POSITION + por->dy;
 				
 				
 				
 				uint8_t updated_msgage = received_msgage+1;
 				
-				if (received_dx + GRID_SYS_DEFAULT_POSITION == 0 && received_dy + GRID_SYS_DEFAULT_POSITION == 0)
+				if (received_dx + GRID_PARAMETER_DEFAULT_POSITION == 0 && received_dy + GRID_PARAMETER_DEFAULT_POSITION == 0)
 				{
 					// EDITOR GENERATED GLOBAL MESSAGE
 					
 				}
-				else if (received_dx + GRID_SYS_DEFAULT_POSITION == 255 && received_dy + GRID_SYS_DEFAULT_POSITION == 255){
+				else if (received_dx + GRID_PARAMETER_DEFAULT_POSITION == 255 && received_dy + GRID_PARAMETER_DEFAULT_POSITION == 255){
 					
 					// GRID GENERATED GLOBAL MESSAGE
 					
@@ -255,12 +255,12 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				}
 				
 								
-				if (received_sx + GRID_SYS_DEFAULT_POSITION == 0 && received_sy + GRID_SYS_DEFAULT_POSITION == 0)
+				if (received_sx + GRID_PARAMETER_DEFAULT_POSITION == 0 && received_sy + GRID_PARAMETER_DEFAULT_POSITION == 0)
 				{
 					// EDITOR GENERATED GLOBAL MESSAGE
 					
 				}
-				else if (received_sx + GRID_SYS_DEFAULT_POSITION == 255 && received_sy + GRID_SYS_DEFAULT_POSITION == 255){
+				else if (received_sx + GRID_PARAMETER_DEFAULT_POSITION == 255 && received_sy + GRID_PARAMETER_DEFAULT_POSITION == 255){
 					
 					// GRID GENERATED GLOBAL MESSAGE
 					
@@ -1521,13 +1521,13 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 		uint8_t position_is_global = 0;
 		uint8_t position_is_local = 0;
 			
-		if (dx == GRID_SYS_DEFAULT_POSITION && dy == GRID_SYS_DEFAULT_POSITION){
+		if (dx == GRID_PARAMETER_DEFAULT_POSITION && dy == GRID_PARAMETER_DEFAULT_POSITION){
 			position_is_me = 1;
 		}
-		else if (dx == GRID_SYS_GLOBAL_POSITION && dy==GRID_SYS_GLOBAL_POSITION){
+		else if (dx == GRID_PARAMETER_GLOBAL_POSITION && dy==GRID_PARAMETER_GLOBAL_POSITION){
 			position_is_global = 1;
 		}
-		else if (dx == GRID_SYS_LOCAL_POSITION && dy==GRID_SYS_LOCAL_POSITION){
+		else if (dx == GRID_PARAMETER_LOCAL_POSITION && dy==GRID_PARAMETER_LOCAL_POSITION){
 			position_is_local = 1;
 		}
 		
@@ -1588,7 +1588,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				
 						//printf("RX: %d %d\r\n", sx, sy);
 
-						if (!(sx==GRID_SYS_DEFAULT_POSITION && sy==GRID_SYS_DEFAULT_POSITION)){
+						if (!(sx==GRID_PARAMETER_DEFAULT_POSITION && sy==GRID_PARAMETER_DEFAULT_POSITION)){
 
 							//printf("RX: %s\r\n", &message[current_start]);
 							if (grid_ui_state.page_negotiated == 0){
@@ -1642,7 +1642,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 						struct grid_msg response;
 												
-						grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+						grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 						uint8_t response_payload[50] = {0};
 						snprintf(response_payload, 49, GRID_CLASS_PAGECOUNT_frame);
@@ -1700,8 +1700,8 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					else if (type == 1){
 
 						// from usb connected module
-						int8_t received_sx = sx-GRID_SYS_DEFAULT_POSITION; // convert to signed ind
-						int8_t received_sy = sy-GRID_SYS_DEFAULT_POSITION; // convert to signed ind
+						int8_t received_sx = sx-GRID_PARAMETER_DEFAULT_POSITION; // convert to signed ind
+						int8_t received_sy = sy-GRID_PARAMETER_DEFAULT_POSITION; // convert to signed ind
 						int8_t rotated_sx;
 						int8_t rotated_sy;
 
@@ -1768,7 +1768,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							uint16_t report_length = 0;
 							struct grid_msg response;
 													
-							grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+							grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 							uint8_t response_payload[300] = {0};
 							uint16_t len = 0;
@@ -1830,7 +1830,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							uint16_t report_length = 0;
 							struct grid_msg response;
 													
-							grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+							grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 
 							// -1 to exclude system element
@@ -1872,7 +1872,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 							struct grid_msg response;
 													
-							grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+							grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 							uint8_t response_payload[300] = {0};
 							uint16_t len = 0;
@@ -1913,7 +1913,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					// Generate RESPONSE
 					struct grid_msg response;
 											
-					grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+					grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 					uint8_t response_payload[50] = {0};
 					snprintf(response_payload, 49, GRID_CLASS_SERIALNUMBER_frame);
@@ -1939,7 +1939,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					// Generate RESPONSE
 					struct grid_msg response;
 				
-					grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+					grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 					uint8_t response_payload[50] = {0};
 					snprintf(response_payload, 49, GRID_CLASS_UPTIME_frame);
@@ -1968,7 +1968,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					// Generate RESPONSE
 					struct grid_msg response;
 					
-					grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+					grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 					uint8_t response_payload[50] = {0};
 					snprintf(response_payload, 49, GRID_CLASS_RESETCAUSE_frame);
@@ -2007,7 +2007,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 
 					struct grid_msg response;	
-					grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+					grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 					grid_msg_body_append_printf(&response, GRID_CLASS_PAGEDISCARD_frame);
 					grid_msg_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, id);		
 
@@ -2042,7 +2042,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					uint8_t id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX);
 
 					struct grid_msg response;	
-					grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+					grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 					grid_msg_body_append_printf(&response, GRID_CLASS_PAGESTORE_frame);
 					grid_msg_body_append_parameter(&response, GRID_CLASS_PAGESTORE_LASTHEADER_offset, GRID_CLASS_PAGESTORE_LASTHEADER_length, id);		
 				
@@ -2079,7 +2079,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 
 					struct grid_msg response;	
-					grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+					grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 					grid_msg_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
 					grid_msg_body_append_parameter(&response, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, id);		
 				
@@ -2200,7 +2200,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						// Generate ACKNOWLEDGE RESPONSE
 						struct grid_msg response;
 
-						grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+						grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 						
 						grid_msg_body_append_printf(&response, GRID_CLASS_CONFIG_frame_check);
 						
@@ -2231,7 +2231,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 
 					struct grid_msg response;	
-					grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+					grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 					grid_msg_body_append_printf(&response, GRID_CLASS_CONFIG_frame);
 					grid_msg_body_append_parameter(&response, GRID_CLASS_CONFIG_LASTHEADER_offset, GRID_CLASS_CONFIG_LASTHEADER_length, id);		
 				
@@ -2265,7 +2265,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
                     // Generate ACKNOWLEDGE RESPONSE
                     struct grid_msg response;
 
-                    grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+                    grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
                     grid_msg_body_append_printf(&response, GRID_CLASS_HIDKEYSTATUS_frame);
 
@@ -2331,4 +2331,90 @@ uint8_t grid_port_process_outbound_usart(struct grid_port* por){
 	}
 	
 	return 0;
+}
+
+
+
+
+
+
+void grid_debug_print_text(uint8_t* debug_string){
+	
+	uint32_t debug_string_length = strlen(debug_string);
+	
+	struct grid_msg message;
+	
+	grid_msg_init_header(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_start);
+	grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&message, debug_string);
+	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_end);
+
+	grid_msg_packet_close(&grid_msg_state, &message);
+	grid_sys_packet_send_everywhere(&message);
+		
+}
+
+
+void grid_websocket_print_text(uint8_t* debug_string){
+	
+	uint32_t debug_string_length = strlen(debug_string);
+	
+	struct grid_msg message;
+	
+	grid_msg_init_header(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+	grid_msg_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_start);
+	grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&message, debug_string);
+	grid_msg_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_end);
+
+	grid_msg_packet_close(&grid_msg_state, &message);
+	grid_sys_packet_send_everywhere(&message);
+		
+}
+
+void grid_debug_printf(char const *fmt, ...){
+
+	va_list ap;
+
+
+	uint8_t temp[100] = {0};
+
+	va_start(ap, fmt);
+
+	vsnprintf(temp, 99, fmt, ap);
+
+	va_end(ap);
+
+	grid_debug_print_text(temp);
+
+	return;
+}
+
+
+
+
+uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg){
+	
+	uint32_t message_length = grid_msg_packet_get_length(msg);
+	
+	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, message_length)){
+
+		for(uint32_t i = 0; i<message_length; i++){
+
+			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char(msg, i));
+		}
+
+		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
+
+		return 1;
+	}
+	else{
+		
+		return 0;
+	}
+	
+	
 }

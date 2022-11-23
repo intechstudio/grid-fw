@@ -15,6 +15,7 @@ usb/class/midi/device/audiodf_midi.o \
 usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_ain.o \
 ../grid_common/grid_sys.o \
+../grid_common/grid_msg.o \
 grid/grid_buf.o \
 grid/grid_d51.o \
 grid/grid_d51_led.o \
@@ -26,7 +27,6 @@ grid/grid_module_en16.o \
 grid/grid_module_pbf4.o \
 grid/grid_module_po16.o \
 grid/grid_module_ef44.o \
-grid/grid_msg.o \
 grid/grid_nvm.o \
 ../grid_common/grid_protocol.o \
 grid/grid_ui.o \
@@ -76,6 +76,7 @@ OBJS_AS_ARGS +=  \
 "usb/class/midi/usb_protocol_midi.o" \
 "../grid_common/grid_ain.o" \
 "../grid_common/grid_sys.o" \
+"../grid_common/grid_msg.o" \
 "grid/grid_buf.o" \
 "grid/grid_d51.o" \
 "grid/grid_d51_led.o" \
@@ -87,7 +88,6 @@ OBJS_AS_ARGS +=  \
 "grid/grid_module_pbf4.o" \
 "grid/grid_module_po16.o" \
 "grid/grid_module_ef44.o" \
-"grid/grid_msg.o" \
 "grid/grid_nvm.o" \
 "../grid_common/grid_protocol.o" \
 "grid/grid_ui.o" \
@@ -147,6 +147,7 @@ DEPS_AS_ARGS +=  \
 "usb/class/midi/usb_protocol_midi.d" \
 "../grid_common/grid_ain.d" \
 "../grid_common/grid_sys.d" \
+"../grid_common/grid_msg.d" \
 "grid/grid_buf.d" \
 "grid/grid_d51.d" \
 "grid/grid_d51_led.d" \
@@ -158,7 +159,6 @@ DEPS_AS_ARGS +=  \
 "grid/grid_module_pbf4.d" \
 "grid/grid_module_po16.d" \
 "grid/grid_module_ef44.d" \
-"grid/grid_msg.d" \
 "grid/grid_nvm.d" \
 "../grid_common/grid_protocol.d" \
 "grid/grid_ui.d" \

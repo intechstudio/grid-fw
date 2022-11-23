@@ -1,6 +1,7 @@
 #ifndef GRID_SYS_H_INCLUDED
 #define GRID_SYS_H_INCLUDED
 
+#include "grid_protocol.h"
 
 #include <stdint.h>
 
@@ -67,18 +68,13 @@ struct grid_sys_model
 	
 };
 
-extern volatile struct grid_sys_model grid_sys_state;
+extern struct grid_sys_model grid_sys_state;
 
 
 void grid_sys_init(struct grid_sys_model* mod); 
 
 
 
-#define GRID_SYS_DEFAULT_POSITION 127
-#define GRID_SYS_LOCAL_POSITION 255
-#define GRID_SYS_GLOBAL_POSITION 0
-#define GRID_SYS_DEFAULT_ROTATION 0
-#define GRID_SYS_DEFAULT_AGE 0
 
 
 

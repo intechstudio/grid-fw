@@ -139,7 +139,7 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 
 	struct grid_msg response;
 		
-	grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 	// acknowledge
 	grid_msg_body_append_printf(&response, GRID_CLASS_NVMDEFRAG_frame);
@@ -1039,7 +1039,7 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 
 	// Generate ACKNOWLEDGE RESPONSE
 	struct grid_msg response;	
-	grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 	grid_msg_body_append_printf(&response, GRID_CLASS_PAGEDISCARD_frame);
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, lastheader_id);
@@ -1155,7 +1155,7 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 	struct grid_msg response;
 
-	grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 	// acknowledge
 	grid_msg_body_append_printf(&response, GRID_CLASS_PAGESTORE_frame);
@@ -1242,7 +1242,7 @@ void grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 	struct grid_msg response;
 
-	grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 	// acknowledge
 	grid_msg_body_append_printf(&response, GRID_CLASS_PAGECLEAR_frame);
@@ -1336,7 +1336,7 @@ void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_m
 		// Generate ACKNOWLEDGE RESPONSE
 		struct grid_msg response;
 			
-		grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+		grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 		// acknowledge
 		grid_msg_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
