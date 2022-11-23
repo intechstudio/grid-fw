@@ -10,7 +10,7 @@ static const char *TAG = "grid_esp32";
 
 
 
-uint32_t grid_esp32_get_hwcfg(){
+uint32_t grid_platform_get_hwcfg(){
 
 
     gpio_set_direction(GRID_ESP32_PINS_HWCFG_SHIFT, GPIO_MODE_OUTPUT);
@@ -58,7 +58,7 @@ uint32_t grid_esp32_get_hwcfg(){
 }
 
 
-uint64_t grid_esp32_get_cpuid(){
+uint32_t grid_platform_get_id(uint32_t* return_array){
 
 /*
 
@@ -96,6 +96,26 @@ uint64_t grid_esp32_get_cpuid(){
 
     ESP_LOGI(TAG, "CPUID: %016llx",cpuid);
 
+    uint8_t* array = (uint8_t*)return_array;
+    array[0] = mac_address[0];
+    array[1] = mac_address[1];
+    array[2] = mac_address[2];
+    array[3] = mac_address[3];
+    array[4] = mac_address[4];
+    array[5] = mac_address[5];
 
-    return cpuid;
+    return 0;
+}
+
+
+
+uint8_t grid_platform_get_random_8(){
+    uint32_t random_number = esp_random();
+    return random_number%256;
+}
+
+
+
+uint8_t grid_platform_get_reset_cause(){
+    return 0;
 }

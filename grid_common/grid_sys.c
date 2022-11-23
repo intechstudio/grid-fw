@@ -7,7 +7,7 @@
 
 #include "grid_sys.h"
 
-
+volatile struct grid_sys_model grid_sys_state;
 
 
 void grid_sys_init(struct grid_sys_model* mod){

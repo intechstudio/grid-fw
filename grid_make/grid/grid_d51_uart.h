@@ -25,6 +25,10 @@ void grid_d51_uart_init();
 //=========================== SYS CB ============================//
 
 
+struct io_descriptor *grid_sys_north_io;
+struct io_descriptor *grid_sys_east_io;
+struct io_descriptor *grid_sys_south_io;
+struct io_descriptor *grid_sys_west_io;
 
 static void err_cb_USART_GRID_N(const struct usart_async_descriptor *const descr);
 static void err_cb_USART_GRID_E(const struct usart_async_descriptor *const descr);

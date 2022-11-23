@@ -44,6 +44,7 @@
 #include "../../grid_common/grid_protocol.h"
 #include "../../grid_common/grid_ain.h"
 #include "../../grid_common/grid_led.h"
+#include "../../grid_common/grid_sys.h"
 
 
 void app_main(void)
@@ -51,10 +52,13 @@ void app_main(void)
 
     static const char *TAG = "main";
 
-    grid_esp32_get_hwcfg();
-    grid_esp32_get_cpuid();
+    grid_platform_get_hwcfg();
+    uint32_t id_array[4] = {};
+    grid_platform_get_id(id_array);
 
     // GRID_MODULE_INIT (based on hwcfg)
+
+    ets_printf("RANDOM: %d %d %d %d\r\n", grid_platform_get_random_8(), grid_platform_get_random_8(), grid_platform_get_random_8(), grid_platform_get_random_8());
 
 
     ets_printf("LED INIT ...\r\n");
@@ -78,6 +82,10 @@ void app_main(void)
 
     SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
+
+    grid_sys_init(&grid_sys_state);
+
+    ets_printf("GRID_SYS_TEST %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
 
 
     TaskHandle_t adc_task_hdl;

@@ -15,6 +15,9 @@
 #include "esp_efuse.h"
 
 
+#include "bootloader_random.h"
+#include "esp_random.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,7 +30,7 @@ extern "C" {
  * @return
  *      - 32-bit unsigned value of HWCFG register
  */
-uint32_t grid_esp32_get_hwcfg();
+uint32_t grid_platform_get_hwcfg();
 
 /**
  * @brief Read CPUID register (mac address) value on ESP32 based module
@@ -36,8 +39,13 @@ uint32_t grid_esp32_get_hwcfg();
  * @return
  *      - 64-bit unsigned value of CPUID register
  */
-uint64_t grid_esp32_get_cpuid();
+uint32_t grid_platform_get_id(uint32_t* return_array);
 
+
+uint32_t grid_platform_get_id(uint32_t* return_array);
+uint32_t grid_platform_get_hwcfg();
+uint8_t grid_platform_get_random_8();
+uint8_t grid_platform_get_reset_cause();
 
 #ifdef __cplusplus
 }

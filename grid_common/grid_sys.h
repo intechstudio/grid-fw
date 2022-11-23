@@ -67,7 +67,7 @@ struct grid_sys_model
 	
 };
 
-volatile struct grid_sys_model grid_sys_state;
+extern volatile struct grid_sys_model grid_sys_state;
 
 
 void grid_sys_init(struct grid_sys_model* mod); 
@@ -82,10 +82,6 @@ void grid_sys_init(struct grid_sys_model* mod);
 
 
 
-struct io_descriptor *grid_sys_north_io;
-struct io_descriptor *grid_sys_east_io;
-struct io_descriptor *grid_sys_south_io;
-struct io_descriptor *grid_sys_west_io;
 
 
 

@@ -12,6 +12,7 @@ idf_component_register(
         "../../grid_common/grid_protocol.c"
         "../../grid_common/grid_ain.c"
         "../../grid_common/grid_led.c"
+        "../../grid_common/grid_sys.c"
 
     INCLUDE_DIRS 
         "."
