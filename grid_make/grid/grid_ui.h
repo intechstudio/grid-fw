@@ -83,8 +83,6 @@ struct grid_ui_element
 struct grid_ui_model
 {
 
-	struct grid_d51_task* task;
-	
 
 	enum grid_ui_status status;
 	

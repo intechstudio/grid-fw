@@ -11,41 +11,6 @@ int32_t grid_utility_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-enum grid_task grid_task_enter_task(struct grid_task_model* mod, enum grid_task next_task){
-	
-	
-	enum grid_task previous_task = mod->current_task;
-	mod->current_task = next_task;
-	return previous_task;
-	
-}
-
-void grid_task_leave_task(struct grid_task_model* mod, enum grid_task previous_task){
-	
-	mod->current_task = previous_task;
-	
-}
-
-void grid_task_timer_tick(struct grid_task_model* mod){
-	
-	mod->timer[mod->current_task]++;
-	
-}
-
-void grid_task_timer_reset(struct grid_task_model* mod){
-	
-	for (uint8_t i=0; i<GRID_TASK_NUMBER; i++){
-		mod->timer[i] = 0;
-	}
-	
-}
-
-uint32_t grid_task_timer_read(struct grid_task_model* mod, enum grid_task task){
-
-	return 	mod->timer[task];
-	
-}
-
 
 void grid_debug_print_text(uint8_t* debug_string){
 	

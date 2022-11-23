@@ -23,13 +23,11 @@
 
 #include "pico_firmware.h"
 #include "grid_esp32_adc.h"
+#include "grid_esp32_led.h"
 
 
 #define LED_TASK_PRIORITY 2
-extern void led_task(void *arg);
-
 #define LED_TASK_PRIORITY 2
-extern void grid_esp32_adc_task(void *arg);
 
 
 #include "driver/ledc.h"
@@ -98,7 +96,7 @@ void app_main(void)
     TaskHandle_t led_task_hdl;
 
     //Create the class driver task
-    xTaskCreatePinnedToCore(led_task,
+    xTaskCreatePinnedToCore(grid_esp32_led_task,
                             "led",
                             4096,
                             (void *)signaling_sem,

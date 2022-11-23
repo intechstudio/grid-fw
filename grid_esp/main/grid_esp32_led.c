@@ -17,6 +17,7 @@
 
 #include "driver/rmt_tx.h"
 #include "led_strip_encoder.h"
+#include "grid_esp32_led.h"
 
 #define RMT_LED_STRIP_RESOLUTION_HZ 10000000 // 10MHz resolution, 1 tick = 0.1us (led strip needs a high resolution)
 #define RMT_LED_STRIP_GPIO_NUM      21
@@ -78,7 +79,7 @@ void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t
 static const char *TAG = "LED";
 
 
-void led_task(void *arg)
+void grid_esp32_led_task(void *arg)
 {
 
 

@@ -24,9 +24,8 @@ volatile uint32_t loopcount = 0;
 
 volatile uint8_t midi_rx_buffer[16] = {0};
 
-static void usb_task_inner(struct grid_d51_task* task){
+static void usb_task_inner(){
 
-	grid_d51_task_start(task);
 
 	grid_keyboard_tx_pop();
 	
@@ -94,12 +93,10 @@ static void usb_task_inner(struct grid_d51_task* task){
 
 	grid_port_receive_task(&GRID_PORT_H); // USB
 
-	grid_d51_task_stop(task);
 }
 
-static void nvm_task_inner(struct grid_d51_task* task){
+static void nvm_task_inner(){
 
-	grid_d51_task_start(task);
 
 	if (grid_nvm_ui_bluk_anything_is_in_progress(&grid_nvm_state, &grid_ui_state)){
 		grid_d51_nvic_set_interrupt_priority_mask(1);
@@ -162,12 +159,10 @@ static void nvm_task_inner(struct grid_d51_task* task){
 		GRID_PORT_U.rx_double_buffer[i] = 0;
 	}
 
-	grid_d51_task_stop(task);
 }
 
-static void receive_task_inner(struct grid_d51_task* task){
+static void receive_task_inner(){
 
-	grid_d51_task_start(task);	
 
 
 
@@ -175,16 +170,12 @@ static void receive_task_inner(struct grid_d51_task* task){
 	grid_port_receive_task(&GRID_PORT_E);
 	grid_port_receive_task(&GRID_PORT_S);
 	grid_port_receive_task(&GRID_PORT_W);	
-
-	
-	grid_d51_task_stop(task);						
+		
 
 }
 
-static void ui_task_inner(struct grid_d51_task* task){
+static void ui_task_inner(){
 	
-
-	grid_d51_task_start(task);
 
 	// every other entry of the superloop
 	if (loopcount%4==0){
@@ -193,15 +184,13 @@ static void ui_task_inner(struct grid_d51_task* task){
 
 	}
 
-	grid_d51_task_stop(task);
 }
 
 
-static void inbound_task_inner(struct grid_d51_task* task){
+static void inbound_task_inner(){
 		
 	/* ========================= GRID INBOUND TASK ============================= */						
 
-	grid_d51_task_start(task);
 	
 	// Copy data from UI_RX to HOST_TX & north TX AND STUFF
 	grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback
@@ -214,14 +203,12 @@ static void inbound_task_inner(struct grid_d51_task* task){
 	grid_port_process_inbound(&GRID_PORT_H, 0);	// USB	
 
 
-	grid_d51_task_stop(task);
 
 }
 
-static void outbound_task_inner(struct grid_d51_task* task){
+static void outbound_task_inner(){
 	
 		
-	grid_d51_task_start(task);
 	/* ========================= GRID OUTBOUND TASK ============================= */	
 	
 	// If previous xfer is completed and new data is available then move data from txbuffer to txdoublebuffer and start new xfer.
@@ -236,13 +223,10 @@ static void outbound_task_inner(struct grid_d51_task* task){
 	// Translate grid messages to ui commands (LED)
 	grid_port_process_outbound_ui(&GRID_PORT_U);
 
-	grid_d51_task_stop(task);
 }
 
 
-static void led_task_inner(struct grid_d51_task* task){
-
-	grid_d51_task_start(task);
+static void led_task_inner(){
 
 
 	if (RTC1MS*10 < grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_led_get_tick_lastrealtime(&grid_led_state))){
@@ -259,7 +243,6 @@ static void led_task_inner(struct grid_d51_task* task){
 
 	}
 	
-	grid_d51_task_stop(task);	
 
 }
 
@@ -302,7 +285,6 @@ void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
 
 	grid_sys_rtc_tick_time(&grid_sys_state);	
-	grid_task_timer_tick(&grid_task_state);
 			
 
 	for (uint8_t i = 0; i<grid_ui_state.element_list_length; i++){
@@ -600,27 +582,7 @@ int main(void)
 
 	uint32_t loopstart = 0;
 
-	uint8_t task_list_length = 7;
-	struct grid_d51_task task_list[task_list_length];
 
-	struct grid_d51_task* grid_usb_task = &task_list[0];
-	struct grid_d51_task* grid_nvm_task = &task_list[1];
-	struct grid_d51_task* grid_receive_task = &task_list[2];
-	struct grid_d51_task* grid_ui_task = &task_list[3];
-	struct grid_d51_task* grid_inbound_task = &task_list[4];
-	struct grid_d51_task* grid_outbound_task = &task_list[5];
-	struct grid_d51_task* grid_led_task = &task_list[6];
-
-	grid_d51_task_init(grid_usb_task, 		"usb");
-	grid_d51_task_init(grid_nvm_task, 		"nvm");
-	grid_d51_task_init(grid_receive_task, 	"rec");
-	grid_d51_task_init(grid_ui_task, 		"ui ");
-	grid_d51_task_init(grid_inbound_task, 	"in ");
-	grid_d51_task_init(grid_outbound_task, 	"out");
-	grid_d51_task_init(grid_led_task, 		"led");
-
-
-	grid_ui_state.task = grid_ui_task;
 
 
 	#ifdef GRID_BUILD_UNKNOWN
@@ -705,26 +667,26 @@ int main(void)
 		}
 		
 
-		usb_task_inner(grid_usb_task);
+		usb_task_inner();
 	
 	
-		nvm_task_inner(grid_nvm_task);
+		nvm_task_inner();
 		
-		receive_task_inner(grid_receive_task);
+		receive_task_inner();
 
 		//lua_gc(grid_lua_state.L, LUA_GCSTOP);
 
 
 
-		ui_task_inner(grid_ui_task);
+		ui_task_inner();
 
 	
-		outbound_task_inner(grid_outbound_task);
+		outbound_task_inner();
 
-		inbound_task_inner(grid_inbound_task);
+		inbound_task_inner();
 
 
-		led_task_inner(grid_led_task);
+		led_task_inner();
 
 
 
@@ -780,70 +742,6 @@ int main(void)
 
 		}
 
-
-		if (reportflag&&0){
-
-
-			reportflag = 0;
-
-
-			uint8_t reportbuffer[300] = {0};
-			uint16_t length = 0;
-
-
-
-			//sprintf(&reportbuffer[length], GRID_CLASS_DEBUGTASK_frame_start);
-			//length += strlen(&reportbuffer[length]);
-
-			for (uint8_t i=0; i<task_list_length; i++){
-
-				struct grid_d51_task* task = &task_list[i];
-
-				//printf("%s %d ", task->taskname, task->subtaskcount);
-				for (uint8_t j=0; j<task->subtaskcount; j++){
-
-					sprintf(&reportbuffer[length], " !%s,%4d,%4d,%4d", task->taskname, task->min[j]/120, task->sum[j]/120/task->startcount, task->max[j]/120);
-					length += strlen(&reportbuffer[length]);
-
-				}
-
-				grid_d51_task_clear(task);
-			}
-
-			//printf("\r\n");
-
-
-			//sprintf(&reportbuffer[length], GRID_CLASS_EVENTPREVIEW_frame_end);
-			//length += strlen(&reportbuffer[length]);
-
-
-
-			struct grid_msg response;
-									
-			grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
-
-			grid_msg_body_append_text(&response, reportbuffer);
-				
-
-			grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
-			grid_msg_text_set_parameter(&response, 0, GRID_CLASS_EVENTPREVIEW_LENGTH_offset, GRID_CLASS_EVENTPREVIEW_LENGTH_length, length-GRID_CLASS_DEBUGTASK_OUTPUT_offset);
-			
-
-
-			grid_msg_packet_close(&response);
-
-
-			//grid_sys_packet_send_everywhere(&response);			
-
-			printf("%s\r\n", reportbuffer);
-
-		
-			receive_task_inner(NULL);
-			//ui_task_inner(grid_ui_task);
-			inbound_task_inner(NULL);
-			outbound_task_inner(NULL);
-
-		}
 
 	}//WHILE
 

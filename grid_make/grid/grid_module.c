@@ -77,14 +77,6 @@ void grid_sync_set_level(enum grid_sync_selector sync_select, uint8_t sync_level
 		
 }
 
-
-
-	
-
-
-
-
-
 	
 #define GRID_ADC_CFG_REVERSED	0
 #define GRID_ADC_CFG_BINARY		1
@@ -342,8 +334,6 @@ void grid_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t pa
 	// }
 
 }
-
-
 
 
 
