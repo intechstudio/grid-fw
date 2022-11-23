@@ -17,7 +17,6 @@ usb/class/midi/usb_protocol_midi.o \
 grid/grid_buf.o \
 grid/grid_d51.o \
 grid/grid_d51_led.o \
-grid/grid_hardwaretest.o \
 ../grid_common/grid_led.o \
 grid/grid_module.o \
 grid/grid_module_bu16.o \
@@ -78,7 +77,6 @@ OBJS_AS_ARGS +=  \
 "grid/grid_buf.o" \
 "grid/grid_d51.o" \
 "grid/grid_d51_led.o" \
-"grid/grid_hardwaretest.o" \
 "../grid_common/grid_led.o" \
 "grid/grid_module.o" \
 "grid/grid_module_bu16.o" \
@@ -149,7 +147,6 @@ DEPS_AS_ARGS +=  \
 "grid/grid_buf.d" \
 "grid/grid_d51.d" \
 "grid/grid_d51_led.d" \
-"grid/grid_hardwaretest.d" \
 "../grid_common/grid_led.d" \
 "grid/grid_module.d" \
 "grid/grid_module_bu16.d" \

@@ -594,16 +594,11 @@ int main(void)
 	#ifdef GRID_BUILD_DEBUG
 		printf("\r\n##Build: Debug##\r\n\r\n");
 	#endif
-	#ifdef GRID_BUILD_HARDWARETEST
-		printf("\r\n##Build: Hardware Test##\r\n\r\n");
-		grid_interface_hardwaretest_main();
-	#endif
 	#ifdef GRID_BUILD_RELEASE
 		printf("\r\n##Build: Release##\r\n\r\n");
 	#endif
 
 
-	
 
 	while (1) {
 
