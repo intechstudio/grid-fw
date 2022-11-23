@@ -10,6 +10,9 @@
 
 void grid_msg_init(struct grid_msg_model* mod){
 
+
+	mod->sessionid = grid_platform_get_random_8();
+
 	mod->lastheader_config.status = -1;
 	mod->lastheader_pagestore.status = -1;
 	mod->lastheader_nvmerase.status = -1;
@@ -531,3 +534,84 @@ void grid_msg_write_hex_string_value(uint8_t* start_location, uint8_t size, uint
 
 
 
+
+void grid_debug_print_text(uint8_t* debug_string){
+	
+	uint32_t debug_string_length = strlen(debug_string);
+	
+	struct grid_msg message;
+	
+	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+
+	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_start);
+	grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&message, debug_string);
+	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_end);
+
+	grid_msg_packet_close(&message);
+	grid_sys_packet_send_everywhere(&message);
+		
+}
+
+
+void grid_websocket_print_text(uint8_t* debug_string){
+	
+	uint32_t debug_string_length = strlen(debug_string);
+	
+	struct grid_msg message;
+	
+	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+
+	grid_msg_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_start);
+	grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&message, debug_string);
+	grid_msg_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_end);
+
+	grid_msg_packet_close(&message);
+	grid_sys_packet_send_everywhere(&message);
+		
+}
+
+void grid_debug_printf(char const *fmt, ...){
+
+	va_list ap;
+
+
+	uint8_t temp[100] = {0};
+
+	va_start(ap, fmt);
+
+	vsnprintf(temp, 99, fmt, ap);
+
+	va_end(ap);
+
+	grid_debug_print_text(temp);
+
+	return;
+}
+
+
+
+
+uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg){
+	
+	uint32_t message_length = grid_msg_packet_get_length(msg);
+	
+	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, message_length)){
+
+		for(uint32_t i = 0; i<message_length; i++){
+
+			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char(msg, i));
+		}
+
+		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
+
+		return 1;
+	}
+	else{
+		
+		return 0;
+	}
+	
+	
+}

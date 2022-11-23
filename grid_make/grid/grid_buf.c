@@ -32,7 +32,7 @@ void grid_port_reset_receiver(struct grid_port* por){
 
 	
 	por->rx_double_buffer_timeout = 0;
-	grid_sys_port_reset_dma(por);
+	grid_d51_uart_port_reset_dma(por);
 	
 
 
@@ -64,7 +64,7 @@ void grid_port_reset_receiver2(struct grid_port* por){
 	por->rx_double_buffer_seek_start_index = 0;
 	por->rx_double_buffer_read_start_index = 0;
 
-	grid_sys_port_reset_dma(por);
+	grid_d51_uart_port_reset_dma(por);
 
 	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
 		por->rx_double_buffer[i] = 0;
@@ -1979,7 +1979,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					
 					
 
-					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_RESETCAUSE_CAUSE_offset, GRID_CLASS_RESETCAUSE_CAUSE_length, grid_d51_get_reset_cause());
+					grid_msg_text_set_parameter(&response, 0, GRID_CLASS_RESETCAUSE_CAUSE_offset, GRID_CLASS_RESETCAUSE_CAUSE_length, grid_platform_get_reset_cause());
 			
 					grid_msg_packet_close(&response);
 					grid_sys_packet_send_everywhere(&response);

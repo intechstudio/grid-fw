@@ -445,10 +445,10 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 void grid_d51_boundary_scan_report(uint32_t* result_bitmap){
 
 	printf("test.mcu.ATSAMD51N20A\r\n");
-	printf("test.hwcfg.%d\r\n", grid_d51_get_hwcfg(&grid_sys_state));
+	printf("test.hwcfg.%d\r\n", grid_platform_get_hwcfg(&grid_sys_state));
 
 	uint32_t uniqueid[4] = {0};
-	grid_d51_get_id(uniqueid);	
+	grid_platform_get_id(uniqueid);	
 
 	printf("test.serialno.%08x %08x %08x %08x\r\n", uniqueid[0], uniqueid[1], uniqueid[2], uniqueid[3]);
 
@@ -667,7 +667,7 @@ uint8_t grid_mxt144u_read_id(struct io_descriptor * i2c_io){
 }
 
 
-uint32_t grid_d51_get_id(uint32_t* return_array){
+uint32_t grid_platform_get_id(uint32_t* return_array){
 			
 	return_array[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);
 	return_array[1] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_1);
@@ -678,7 +678,7 @@ uint32_t grid_d51_get_id(uint32_t* return_array){
 	
 }
 
-uint32_t grid_d51_get_hwcfg(){
+uint32_t grid_platform_get_hwcfg(){
 	
 	// Read the register for the first time, then later just return the saved value
 
@@ -735,14 +735,14 @@ uint32_t grid_d51_get_hwcfg(){
 }
 
 
-uint8_t grid_d51_get_random_8(){
+uint8_t grid_platform_get_random_8(){
 
 	return rand_sync_read8(&RAND_0);
 
 
 }
 
-uint8_t grid_d51_get_reset_cause(){
+uint8_t grid_platform_get_reset_cause(){
 
 	return hri_rstc_read_RCAUSE_reg(RSTC);
 

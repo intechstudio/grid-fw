@@ -24,7 +24,9 @@ static int grid_lua_panic(lua_State *L) {
     }
 }
 
-
+static int32_t grid_utility_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 static int l_grid_keyboard_send(lua_State* L) {
 
@@ -647,6 +649,11 @@ static int l_grid_led_set_phase_BAK(lua_State* L) {
                 strcat(grid_lua_state.stde, "#elementNotSupported");
                 return 0;
             }
+
+
+
+
+
 
             uint16_t phase = grid_utility_map(val, min, max, 0, 255);
             //printf("LED: %d\r\n", phase);

@@ -55,11 +55,11 @@ void grid_d51_nvic_set_interrupt_priority_mask(uint32_t priority);
 uint32_t grid_d51_nvic_get_interrupt_priority_mask(void);
 
 
-uint32_t grid_d51_get_id(uint32_t* return_array);
-uint32_t grid_d51_get_hwcfg();
 
-uint8_t grid_d51_get_random_8();
-uint8_t grid_d51_get_reset_cause();
+uint32_t grid_platform_get_id(uint32_t* return_array);
+uint32_t grid_platform_get_hwcfg();
+uint8_t grid_platform_get_random_8();
+uint8_t grid_platform_get_reset_cause();
 
 
 #endif /* GRID_D51_H_ */

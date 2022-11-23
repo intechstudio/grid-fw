@@ -57,7 +57,10 @@
         "hal_gpio.h": "c",
         "grid_ain.h": "c",
         "grid_led.h": "c",
-        "grid_d51_led.h": "c"
+        "grid_d51_led.h": "c",
+        "grid_d51_uart.h": "c",
+        "grid_d51.h": "c",
+        "hal_evsys.h": "c"
     },
     "actionButtons": {
       "defaultColor": "#ff0034", // Can also use string color names.

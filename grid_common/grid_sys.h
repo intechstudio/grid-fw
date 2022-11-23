@@ -1,16 +1,18 @@
 #ifndef GRID_SYS_H_INCLUDED
 #define GRID_SYS_H_INCLUDED
 
-#include "grid_module.h"
-#include "grid_buf.h"
+
+#include <stdint.h>
+
+extern uint32_t grid_platform_get_id(uint32_t* return_array);
+extern uint32_t grid_platform_get_hwcfg();
+extern uint8_t grid_platform_get_random_8();
+extern uint8_t grid_platform_get_reset_cause();
 
 
-int32_t grid_utility_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
 
 
-
-
-#define GRID_SYS_BANK_MAXNUMBER					4
+#define GRID_SYS_BANK_MAXNUMBER	4
 
 
 
@@ -72,23 +74,12 @@ void grid_sys_init(struct grid_sys_model* mod);
 
 
 
-
-
-
-
 #define GRID_SYS_DEFAULT_POSITION 127
 #define GRID_SYS_LOCAL_POSITION 255
 #define GRID_SYS_GLOBAL_POSITION 0
 #define GRID_SYS_DEFAULT_ROTATION 0
 #define GRID_SYS_DEFAULT_AGE 0
 
-
-void grid_sys_recall_configuration(struct grid_sys_model* sys, uint8_t bank);
-
-void grid_debug_print_text(uint8_t* str);
-void grid_websocket_print_text(uint8_t* str);
-
-void grid_debug_printf(char const *fmt, ...);
 
 
 struct io_descriptor *grid_sys_north_io;
@@ -143,38 +134,8 @@ void grid_sys_set_bank_blu(struct grid_sys_model* mod, uint8_t blu);
 void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t value);
 
 
-uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg);
-
-//=========================== SYS CB ============================//
-
-static void tx_cb_USART_GRID_N(const struct usart_async_descriptor *const descr);
-
-static void tx_cb_USART_GRID_E(const struct usart_async_descriptor *const descr);
-
-static void tx_cb_USART_GRID_S(const struct usart_async_descriptor *const descr);
-
-static void tx_cb_USART_GRID_W(const struct usart_async_descriptor *const descr);
-
-void tx_cb_USART_GRID(struct grid_port* const por);
 
 
-static void rx_cb_USART_GRID_N(const struct usart_async_descriptor *const descr);
-
-static void rx_cb_USART_GRID_E(const struct usart_async_descriptor *const descr);
-
-static void rx_cb_USART_GRID_S(const struct usart_async_descriptor *const descr);
-
-static void rx_cb_USART_GRID_W(const struct usart_async_descriptor *const descr);
-
-void rx_cb_USART_GRID(struct grid_port* const por);
-
-
-
-void dma_transfer_complete_n_cb(struct _dma_resource *resource);
-void dma_transfer_complete_e_cb(struct _dma_resource *resource);
-void dma_transfer_complete_s_cb(struct _dma_resource *resource);
-void dma_transfer_complete_w_cb(struct _dma_resource *resource);
-void dma_transfer_complete(struct grid_port* por);
 
 uint32_t grid_sys_get_hwcfg(struct grid_sys_model* mod);
 uint32_t grid_sys_get_id(struct grid_sys_model* mod, uint32_t* return_array);

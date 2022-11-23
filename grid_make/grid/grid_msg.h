@@ -18,6 +18,9 @@
 // only for uint definitions
 #include <stdint.h>
 
+// for reandom uint8_t generation
+#include "grid_d51.h"
+
 #define GRID_MSG_HEADER_maxlength 26
 #define GRID_MSG_FOOTER_maxlength 5
 
@@ -168,5 +171,14 @@ uint8_t grid_msg_read_hex_char_value(uint8_t ascii, uint8_t* error_flag);
 uint32_t grid_msg_read_hex_string_value(uint8_t* start_location, uint8_t length, uint8_t* error_flag);
 void grid_msg_write_hex_string_value(uint8_t* start_location, uint8_t size, uint32_t value);
 
+
+
+void grid_debug_print_text(uint8_t* str);
+void grid_websocket_print_text(uint8_t* str);
+
+void grid_debug_printf(char const *fmt, ...);
+
+
+uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg);
 
 #endif /* GRID_MSG_H_ */

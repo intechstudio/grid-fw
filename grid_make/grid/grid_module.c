@@ -178,8 +178,7 @@ void grid_module_common_init(void){
 
 
 	grid_port_init_all();
-	grid_sys_uart_init();
-	grid_sys_dma_rx_init();
+	grid_d51_uart_init();
 
 	grid_sys_set_bank(&grid_sys_state, 0);
 

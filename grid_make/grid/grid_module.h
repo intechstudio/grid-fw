@@ -36,6 +36,10 @@
 #include "grid_buf.h"
 #include "grid_led.h"
 
+#include "grid_d51_uart.h"
+
+
+
 #include "grid_sys.h"
 #include "grid_ui.h"
 
