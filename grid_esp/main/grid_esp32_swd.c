@@ -8,6 +8,9 @@
 
 static const char *TAG = "grid_esp32_swd";
 
+static uint8_t swd_pin_swdio;
+static uint8_t swd_pin_swclk;
+static uint8_t swd_pin_sysclk;
 
 void swd_dummy_clock(void){
     gpio_set_level(swd_pin_swclk, 1);
@@ -284,7 +287,7 @@ uint32_t swd_read_idcode(){
     swd_turnround_host_next();
     
 
-    return 0;
+    return idcode;
 
 }
 
@@ -307,7 +310,7 @@ uint32_t swd_read_dlcr(){
     swd_turnround_host_next();
     
 
-    return 0;
+    return dlcr;
 
 }
 
@@ -392,13 +395,13 @@ uint32_t swd_read_ctrlstat(){
     swd_read_acknowledge();
 
     //DATA
-    uint32_t dlcr = swd_read(32);
+    uint32_t ctrlstat = swd_read(32);
 
 
     swd_turnround_host_next();
     
 
-    return 0;
+    return ctrlstat;
 
 }
 
@@ -418,7 +421,7 @@ uint32_t swd_read_buff(){
     swd_turnround_host_next();
     
 
-    return 0;
+    return buff;
 
 }
 
@@ -438,7 +441,7 @@ uint32_t swd_read_apc(){
     swd_turnround_host_next();
     
 
-    return 0;
+    return apc;
 
 }
 
@@ -459,7 +462,7 @@ uint32_t swd_read_ap0(){
     swd_turnround_host_next();
     
 
-    return 0;
+    return ap0;
 
 }
 
@@ -479,7 +482,7 @@ uint32_t swd_read_ap4(){
     swd_turnround_host_next();
     
 
-    return 0;
+    return ap4;
 
 }
 
@@ -499,7 +502,7 @@ uint32_t swd_read_ap8(){
     swd_turnround_host_next();
     
 
-    return 0;
+    return ap8;
 
 }
 

@@ -4,19 +4,6 @@
  * SPDX-License-Identifier: Unlicense OR CC0-1.0
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-#include "esp_log.h"
-
-
-#include "../../grid_common/grid_led.h"
-
-#include "driver/gpio.h"
-
-#include "driver/rmt_tx.h"
-#include "led_strip_encoder.h"
 #include "grid_esp32_led.h"
 
 #define RMT_LED_STRIP_RESOLUTION_HZ 10000000 // 10MHz resolution, 1 tick = 0.1us (led strip needs a high resolution)
@@ -25,9 +12,6 @@
 
 #define EXAMPLE_LED_NUMBERS         16
 #define EXAMPLE_CHASE_SPEED_MS      10
-
-
-
 
 
 void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t *g, uint32_t *b)

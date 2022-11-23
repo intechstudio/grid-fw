@@ -7,10 +7,23 @@
 
 #include <stdint.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
 
 #include "esp_check.h"
+
+
+#include <stdlib.h>
+#include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "esp_log.h"
+
+
+#include "../../grid_common/grid_led.h"
+
+#include "driver/gpio.h"
+
+#include "driver/rmt_tx.h"
+#include "led_strip_encoder.h"
 
 
 #ifdef __cplusplus
