@@ -59,13 +59,13 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 			
 		// Prepare packet header LOCAL
 		struct grid_msg message_local;
-		grid_msg_init_header(&message_local, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
+		grid_msg_init_header(&grid_msg_state, &message_local, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
 		uint8_t payload_local[GRID_PARAMETER_PACKET_maxlength] = {0};				
 		uint32_t offset_local=0;		
 
 		// Prepare packet header GLOBAL
 		struct grid_msg message_global;
-		grid_msg_init_header(&message_global, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
+		grid_msg_init_header(&grid_msg_state, &message_global, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
 		uint8_t payload_global[GRID_PARAMETER_PACKET_maxlength] = {0};				
 		uint32_t offset_global=0;
 		
@@ -123,7 +123,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		if (strlen(payload_global)>0){
 
 			grid_msg_body_append_text(&message_global, payload_global);
-			grid_msg_packet_close(&message_global);
+			grid_msg_packet_close(&grid_msg_state, &message_global);
 			grid_sys_packet_send_everywhere(&message_global);
 		}
 
@@ -131,7 +131,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		grid_msg_body_append_text(&message_local, payload_local);
 
 
-		grid_msg_packet_close(&message_local);
+		grid_msg_packet_close(&grid_msg_state, &message_local);
 			
 		uint32_t message_length = grid_msg_packet_get_length(&message_local);
 			
@@ -175,7 +175,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 
 	struct grid_msg message;
-	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 	
 	
 	// BROADCAST MESSAGES : UI STATE
@@ -220,7 +220,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		por->cooldown += 3;
 		//por->cooldown = 3;		
 
-		grid_msg_packet_close(&message);
+		grid_msg_packet_close(&grid_msg_state, &message);
 		uint32_t length = grid_msg_packet_get_length(&message);
 		
 
@@ -248,7 +248,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 		struct grid_msg response;
 								
-		grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+		grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 		uint8_t response_payload[300] = {0};
 		uint16_t len = 0;
@@ -267,7 +267,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
 		grid_msg_text_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
 		
-		grid_msg_packet_close(&response);
+		grid_msg_packet_close(&grid_msg_state, &response);
 		grid_sys_packet_send_everywhere(&response);
 
 	}
@@ -572,7 +572,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 	
 	struct grid_msg message;
 
-	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 
 	struct grid_ui_element* ele = &ui->element_list[element];
@@ -692,7 +692,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 
 
 		//printf("CFG: %s\r\n", message.body);
-		grid_msg_packet_close(&message);
+		grid_msg_packet_close(&grid_msg_state, &message);
 		grid_sys_packet_send_everywhere(&message);
 	}
 	else{

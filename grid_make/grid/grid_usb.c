@@ -289,13 +289,13 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
             // Generate ACKNOWLEDGE RESPONSE
             struct grid_msg message;
 
-            grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+            grid_msg_init_header(&grid_msg_state, &message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 						grid_msg_body_append_printf(&message, GRID_CLASS_HIDKEYSTATUS_frame);
 						grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
 						grid_msg_body_append_parameter(&message, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, kb->isenabled);
 						
-            grid_msg_packet_close(&message);
+            grid_msg_packet_close(&grid_msg_state, &message);
             grid_sys_packet_send_everywhere(&message);
             
         }
@@ -447,7 +447,7 @@ uint8_t grid_midi_rx_pop(){
 
 		// SX SY Global, DX DY Global
 		struct grid_msg message;
-		grid_msg_init_header(&message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
+		grid_msg_init_header(&grid_msg_state, &message, GRID_SYS_DEFAULT_POSITION, GRID_SYS_DEFAULT_POSITION);
 		grid_msg_header_set_sx(&message, GRID_SYS_DEFAULT_POSITION);
 		grid_msg_header_set_sy(&message, GRID_SYS_DEFAULT_POSITION);
 
@@ -469,7 +469,7 @@ uint8_t grid_midi_rx_pop(){
 
 		}
 
-		grid_msg_packet_close(&message);
+		grid_msg_packet_close(&grid_msg_state, &message);
 		grid_sys_packet_send_everywhere(&message);
 
 		

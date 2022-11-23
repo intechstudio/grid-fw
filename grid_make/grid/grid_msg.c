@@ -283,7 +283,7 @@ void grid_msg_text_set_parameter(struct grid_msg* msg, uint32_t text_start_offse
 
 // ======================= MSG INIT HEADER======================//
 
-void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy){
+void	grid_msg_init_header(struct grid_msg_model* mod, struct grid_msg* msg, uint8_t dx, uint8_t dy){
 	
 	msg->header_length = 0;
 	msg->body_length = 0;
@@ -308,7 +308,7 @@ void	grid_msg_init_header(struct grid_msg* msg, uint8_t dx, uint8_t dy){
 	// 	msg->footer[i] = 0;
 	// }
     
-    uint8_t session = grid_msg_state.sessionid;
+    uint8_t session = mod->sessionid;
     
 	sprintf(msg->header, GRID_BRC_frame_quick, GRID_CONST_SOH, GRID_CONST_BRC, session, dx, dy , GRID_CONST_EOB);
 	msg->header_length = strlen(msg->header);
@@ -390,7 +390,7 @@ uint8_t	grid_msg_packet_send_char(struct grid_msg* msg, uint32_t charindex){
 
 
 
-uint8_t	grid_msg_packet_close(struct grid_msg* msg){
+uint8_t	grid_msg_packet_close(struct grid_msg_model* mod, struct grid_msg* msg){
 	
 
 	
@@ -398,10 +398,10 @@ uint8_t	grid_msg_packet_close(struct grid_msg* msg){
 	msg->footer_length += strlen(&msg->footer[msg->footer_length]);
 	
 	grid_msg_header_set_len(msg, msg->header_length + msg->body_length + msg->footer_length);
-	grid_msg_header_set_session(msg, grid_msg_state.sessionid);	
-	grid_msg_header_set_id(msg, grid_msg_state.next_broadcast_message_id);	
+	grid_msg_header_set_session(msg, mod->sessionid);	
+	grid_msg_header_set_id(msg, mod->next_broadcast_message_id);	
 	
-	grid_msg_state.next_broadcast_message_id++;
+	mod->next_broadcast_message_id++;
 	
 
 	
@@ -580,14 +580,14 @@ void grid_debug_print_text(uint8_t* debug_string){
 	
 	struct grid_msg message;
 	
-	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_start);
 	grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
 	grid_msg_body_append_printf(&message, debug_string);
 	grid_msg_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_end);
 
-	grid_msg_packet_close(&message);
+	grid_msg_packet_close(&grid_msg_state, &message);
 	grid_sys_packet_send_everywhere(&message);
 		
 }
@@ -599,14 +599,14 @@ void grid_websocket_print_text(uint8_t* debug_string){
 	
 	struct grid_msg message;
 	
-	grid_msg_init_header(&message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &message, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 	grid_msg_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_start);
 	grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
 	grid_msg_body_append_printf(&message, debug_string);
 	grid_msg_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_end);
 
-	grid_msg_packet_close(&message);
+	grid_msg_packet_close(&grid_msg_state, &message);
 	grid_sys_packet_send_everywhere(&message);
 		
 }

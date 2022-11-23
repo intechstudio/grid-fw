@@ -139,7 +139,7 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 
 	struct grid_msg response;
 		
-	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 	// acknowledge
 	grid_msg_body_append_printf(&response, GRID_CLASS_NVMDEFRAG_frame);
@@ -151,7 +151,7 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 	grid_msg_body_append_printf(&response, "xdefrag complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);		
 	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);	
 
-	grid_msg_packet_close(&response);
+	grid_msg_packet_close(&grid_msg_state, &response);
 
 	grid_sys_packet_send_everywhere(&response);
 
@@ -1039,11 +1039,11 @@ void grid_nvm_ui_bulk_pageread_next(struct grid_nvm_model* nvm, struct grid_ui_m
 
 	// Generate ACKNOWLEDGE RESPONSE
 	struct grid_msg response;	
-	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 	grid_msg_body_append_printf(&response, GRID_CLASS_PAGEDISCARD_frame);
 	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, lastheader_id);
-	grid_msg_packet_close(&response);
+	grid_msg_packet_close(&grid_msg_state, &response);
 	grid_sys_packet_send_everywhere(&response);
 
 
@@ -1155,7 +1155,7 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 	struct grid_msg response;
 
-	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 	// acknowledge
 	grid_msg_body_append_printf(&response, GRID_CLASS_PAGESTORE_frame);
@@ -1168,7 +1168,7 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 	grid_msg_body_append_printf(&response, "xstore complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);				
 	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
 
-	grid_msg_packet_close(&response);
+	grid_msg_packet_close(&grid_msg_state, &response);
 	grid_sys_packet_send_everywhere(&response);
 	
 	nvm->store_bulk_status = 0;
@@ -1242,7 +1242,7 @@ void grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 	struct grid_msg response;
 
-	grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+	grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 	// acknowledge
 	grid_msg_body_append_printf(&response, GRID_CLASS_PAGECLEAR_frame);
@@ -1255,7 +1255,7 @@ void grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_
 	grid_msg_body_append_printf(&response, "xclear complete");				
 	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
 
-	grid_msg_packet_close(&response);
+	grid_msg_packet_close(&grid_msg_state, &response);
 	grid_sys_packet_send_everywhere(&response);
 	
 	nvm->clear_bulk_status = 0;
@@ -1336,7 +1336,7 @@ void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_m
 		// Generate ACKNOWLEDGE RESPONSE
 		struct grid_msg response;
 			
-		grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+		grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
 		// acknowledge
 		grid_msg_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
@@ -1350,7 +1350,7 @@ void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_m
 		grid_msg_body_append_printf(&response, "xerase complete");				
 		grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);	
 
-		grid_msg_packet_close(&response);
+		grid_msg_packet_close(&grid_msg_state, &response);
 
 		grid_sys_packet_send_everywhere(&response);
 

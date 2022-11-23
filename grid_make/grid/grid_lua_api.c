@@ -385,7 +385,7 @@ static int l_grid_elementname_send(lua_State* L) {
             // MUST BE SENT OUT IMEDIATELY (NOT THROUGH STDO) BECAUSE IT MUST BE SENT OUT EVEN AFTER LOCAL TRIGGER (CONFIG)
             // struct grid_msg response;
                                     
-            // grid_msg_init_header(&response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+            // grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
             // uint8_t response_payload[50] = {0};
 
@@ -398,7 +398,7 @@ static int l_grid_elementname_send(lua_State* L) {
             // grid_msg_body_append_printf(&response, "%s", string);
             // grid_msg_body_append_printf(&response, GRID_CLASS_ELEMENTNAME_frame_end);    
 
-            // grid_msg_packet_close(&response);
+            // grid_msg_packet_close(&grid_msg_state, &response);
             // grid_sys_packet_send_everywhere(&response);
 
 
