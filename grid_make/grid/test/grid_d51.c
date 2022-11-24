@@ -803,16 +803,16 @@ uint8_t grid_platform_disable_grid_transmitter(uint8_t direction){
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction){
 
 	if (direction == GRID_CONST_NORTH){
-		grid_d51_uart_port_reset_dma(DMA_NORTH_RX_CHANNEL);
+		grid_d51_uart_port_reset_dma(0);
 	}
 	else if (direction == GRID_CONST_EAST){
-		grid_d51_uart_port_reset_dma(DMA_EAST_RX_CHANNEL);
+		grid_d51_uart_port_reset_dma(1);
 	}
 	else if (direction == GRID_CONST_SOUTH){
-		grid_d51_uart_port_reset_dma(DMA_SOUTH_RX_CHANNEL);
+		grid_d51_uart_port_reset_dma(2);
 	}
 	else if (direction == GRID_CONST_WEST){
-		grid_d51_uart_port_reset_dma(DMA_WEST_RX_CHANNEL);
+		grid_d51_uart_port_reset_dma(3);
 	}
 	else{
 

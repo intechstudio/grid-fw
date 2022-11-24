@@ -94,23 +94,7 @@ static void dma_transfer_complete_w_cb(struct _dma_resource *resource){
 }
 static void dma_transfer_complete(struct grid_port* por){
 
-	uint8_t direction = por->direction;
-
-	if (direction == GRID_CONST_NORTH){
-		grid_d51_uart_port_reset_dma(DMA_NORTH_RX_CHANNEL);
-	}
-	else if (direction == GRID_CONST_EAST){
-		grid_d51_uart_port_reset_dma(DMA_EAST_RX_CHANNEL);
-	}
-	else if (direction == GRID_CONST_SOUTH){
-		grid_d51_uart_port_reset_dma(DMA_SOUTH_RX_CHANNEL);
-	}
-	else if (direction == GRID_CONST_WEST){
-		grid_d51_uart_port_reset_dma(DMA_WEST_RX_CHANNEL);
-	}
-	else{
-
-	}
+	grid_d51_uart_port_reset_dma(por);
 
 }
 
@@ -229,10 +213,10 @@ void grid_d51_uart_dma_rx_init_one(struct usart_async_descriptor* usart, uint8_t
 
 void grid_d51_uart_dma_rx_init(){
 	
-	grid_d51_uart_dma_rx_init_one(&USART_NORTH, DMA_NORTH_RX_CHANNEL, GRID_PORT_N.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_n_cb);
-	grid_d51_uart_dma_rx_init_one(&USART_EAST,  DMA_EAST_RX_CHANNEL, GRID_PORT_E.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_e_cb);
-	grid_d51_uart_dma_rx_init_one(&USART_SOUTH, DMA_SOUTH_RX_CHANNEL, GRID_PORT_S.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_s_cb);
-	grid_d51_uart_dma_rx_init_one(&USART_WEST,  DMA_WEST_RX_CHANNEL, GRID_PORT_W.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_w_cb);
+	grid_d51_uart_dma_rx_init_one(&USART_NORTH, 0, GRID_PORT_N.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_n_cb);
+	grid_d51_uart_dma_rx_init_one(&USART_EAST,  1, GRID_PORT_E.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_e_cb);
+	grid_d51_uart_dma_rx_init_one(&USART_SOUTH, 2, GRID_PORT_S.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_s_cb);
+	grid_d51_uart_dma_rx_init_one(&USART_WEST,  3, GRID_PORT_W.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_w_cb);
 
 	NVIC_SetPriority(DMAC_0_IRQn, 0);
 	NVIC_SetPriority(DMAC_1_IRQn, 0);
