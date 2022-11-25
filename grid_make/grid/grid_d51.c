@@ -859,8 +859,83 @@ uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, uint8
 
 }
 
-void grid_platform_load_page_configuration(struct grid_ui_model* ui, void (*success_cb)(), void (*fail_cb)()){
 
-	grid_nvm_ui_bulk_pageread_init(&grid_nvm_state, ui);
 
+void grid_platform_delete_actionstring_file(void* file_pointer){
+
+	struct grid_nvm_toc_entry*	entry = (struct grid_nvm_toc_entry*) file_pointer;
+	grid_nvm_config_store(&grid_nvm_state, entry->page_id, entry->element_id, entry->event_type, "");
+
+}
+
+
+void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, uint8_t* buffer, uint16_t length){
+
+	grid_nvm_config_store(&grid_nvm_state, page, element, event_type, buffer);
+
+}
+
+
+uint8_t grid_platform_get_nvm_state(){
+
+	return grid_nvm_is_ready(&grid_nvm_state);
+}
+
+
+uint32_t grid_plaform_get_nvm_nextwriteoffset(){
+	return grid_nvm_state.next_write_offset;
+}
+
+
+uint8_t	grid_platform_clear_actionstring_files_from_page(uint8_t page){
+
+	struct grid_nvm_toc_entry* current = grid_nvm_state.toc_head;
+
+	while (current != NULL)
+	{
+		if (current->page_id == page){
+
+			grid_nvm_toc_entry_destroy(&grid_nvm_state, current);
+
+		}
+
+		current = current->next;
+	}
+
+
+}
+
+void grid_platform_delete_actionstring_files_all(){
+
+
+	grid_nvm_state.erase_bulk_address = GRID_NVM_LOCAL_BASE_ADDRESS;
+
+	struct grid_nvm_toc_entry* current = grid_nvm_state.toc_head;
+
+	while (current != NULL)
+	{
+		grid_nvm_toc_entry_destroy(&grid_nvm_state, current);
+		current = current->next;
+	}
+
+}
+
+uint8_t grid_platform_erase_nvm_next(){
+
+	if(grid_nvm_state.erase_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){ // erase is in progress
+
+		//CRITICAL_SECTION_ENTER()
+		flash_erase(grid_nvm_state.flash, grid_nvm_state.erase_bulk_address, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+		//CRITICAL_SECTION_LEAVE()
+
+		grid_nvm_state.erase_bulk_address += GRID_NVM_BLOCK_SIZE;
+
+		return 1;
+
+	}
+	else{
+
+		return 0;
+
+	}
 }

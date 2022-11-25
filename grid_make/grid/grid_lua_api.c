@@ -1269,7 +1269,7 @@ static int l_grid_page_load(lua_State* L) {
    
     if (grid_ui_state.page_change_enabled == 1){
 
-        if (grid_nvm_ui_bulk_pageread_is_in_progress(&grid_nvm_state, &grid_ui_state) == 0){
+        if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state) == 0){
 
             grid_debug_printf("page request: %d", page);
             uint8_t response[20] = {0};

@@ -99,6 +99,21 @@ struct grid_ui_model
 	struct	grid_ui_element*	element_list;
 	
 
+	/// BULK OPERATIONS ///
+	uint8_t read_bulk_status;
+	uint8_t read_bulk_last_element;
+	uint8_t read_bulk_last_event;
+	
+	uint8_t erase_bulk_status;
+    
+	uint8_t store_bulk_status;
+
+	uint8_t clear_bulk_status;
+
+
+	uint8_t bulk_nvmdefrag_status;
+	uint8_t bulk_nvmdefrag_stage; // 0: move, 1: erase
+
 };
 
 
@@ -146,6 +161,33 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por);
 // requires NVM
 uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page);
 uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type);
+
+
+
+
+uint8_t grid_ui_bluk_anything_is_in_progress(struct grid_ui_model* ui);
+
+void	grid_ui_bulk_pageread_init(struct grid_ui_model* ui);
+uint8_t grid_ui_bulk_pageread_is_in_progress(struct grid_ui_model* ui);
+void	grid_ui_bulk_pageread_next(struct grid_ui_model* ui);
+
+void	grid_ui_bulk_pagestore_init(struct grid_ui_model* ui);
+uint8_t grid_ui_bulk_pagestore_is_in_progress(struct grid_ui_model* ui);
+void	grid_ui_bulk_pagestore_next(struct grid_ui_model* ui);
+
+void	grid_ui_bulk_pageclear_init(struct grid_ui_model* ui);
+uint8_t grid_ui_bulk_pageclear_is_in_progress(struct grid_ui_model* ui);
+void	grid_ui_bulk_pageclear_next(struct grid_ui_model* ui);
+
+void	grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui);
+uint8_t grid_ui_bulk_nvmerase_is_in_progress(struct grid_ui_model* ui);
+void	grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui);
+
+
+void	grid_ui_bulk_nvmdefrag_init(struct grid_nvm_model* nvm);
+uint8_t grid_ui_bulk_nvmdefrag_is_in_progress(struct grid_nvm_model* nvm);
+void	grid_ui_bulk_nvmdefrag_next(struct grid_nvm_model* nvm);
+
 
 
 #endif
