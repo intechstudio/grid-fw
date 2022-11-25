@@ -577,7 +577,7 @@ int main(void)
 	grid_nvm_toc_init(&grid_nvm_state);
 	//grid_nvm_toc_debug(&grid_nvm_state);
 	printf("Done TOC init\r\n");
-	grid_ui_page_load(&grid_ui_state, &grid_nvm_state, 0); //load page 0
+	grid_ui_page_load(&grid_ui_state, 0); //load page 0
 
 	while (grid_nvm_ui_bulk_pageread_is_in_progress(&grid_nvm_state, &grid_ui_state))
 	{

@@ -568,7 +568,7 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui
 
 }
 
-uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page, uint8_t element, enum grid_ui_event_t event_type){
+uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type){
 	
 	struct grid_msg message;
 
@@ -606,8 +606,9 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 		if (ui->page_activepage == page){
 			// currently active page needs to be sent
 
-			struct grid_nvm_toc_entry* entry = NULL;
-			entry = grid_nvm_toc_entry_find(&grid_nvm_state, page, element, event_type);
+			// file pointer
+			void* entry = NULL;
+			entry = grid_platform_find_actionstring_file(page, element, event_type);
 
 			if (eve->cfg_default_flag){ // SEND BACK THE DEFAULT
 
@@ -634,7 +635,7 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 
 				uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength]  = {0};
 
-				uint32_t len = grid_nvm_toc_generate_actionstring(nvm, entry, temp);
+				uint32_t len = grid_platform_read_actionstring_file_contents(entry, temp);
 
 
 				//printf("FOUND in TOC: %s\r\n", temp);
@@ -659,16 +660,19 @@ uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, struct grid
 			printf("!!!!! PAGE IS NOT ACTIVE\r\n");
 			// use nvm_toc to find the configuration to be sent
 
-			struct grid_nvm_toc_entry* entry = NULL;
-			entry = grid_nvm_toc_entry_find(&grid_nvm_state, page, element, event_type);
+			// file pointer
+			void* entry = NULL;
+			entry = grid_platform_find_actionstring_file(page, element, event_type);
 
 			if (entry != NULL){
 				
 				//printf("FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
 
-				uint8_t temp[entry->config_string_length+10];
+				uint16_t length = grid_platform_get_actionstring_file_size(entry);
 
-				uint32_t len = grid_nvm_toc_generate_actionstring(nvm, entry, temp);
+				uint8_t temp[length+10];
+
+				uint32_t len = grid_platform_read_actionstring_file_contents(entry, temp);
 
 				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(temp));		
 				grid_msg_body_append_text(&message, temp);
@@ -723,7 +727,7 @@ uint8_t grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t
 
 }
 
-uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, uint8_t page){
+uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 
 	/*
 	
@@ -829,7 +833,7 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, struct grid_nvm_model* nvm, 
 	grid_lua_start_vm(&grid_lua_state);
 
 	
-	grid_nvm_ui_bulk_pageread_init(nvm, ui);
+	grid_platform_load_page_configuration(ui, NULL, NULL);
 	
 }
 

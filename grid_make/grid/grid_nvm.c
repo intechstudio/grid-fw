@@ -1181,7 +1181,7 @@ void grid_nvm_ui_bulk_pagestore_next(struct grid_nvm_model* nvm, struct grid_ui_
 	// clear template variable after store command
 	grid_ui_page_clear_template_parameters(ui, ui->page_activepage);
 
-	grid_ui_page_load(ui, nvm, ui->page_activepage);
+	grid_ui_page_load(ui, ui->page_activepage);
 }
 
 
@@ -1263,7 +1263,7 @@ void grid_nvm_ui_bulk_pageclear_next(struct grid_nvm_model* nvm, struct grid_ui_
 
 	// clear template variable after clear command
 	grid_ui_page_clear_template_parameters(ui, ui->page_activepage);
-	grid_ui_page_load(ui, nvm, ui->page_activepage);
+	grid_ui_page_load(ui, ui->page_activepage);
 		
 }
 
@@ -1357,7 +1357,7 @@ void grid_nvm_ui_bulk_nvmerase_next(struct grid_nvm_model* nvm, struct grid_ui_m
 		grid_keyboard_state.isenabled = 1;	
 		
 
-		grid_ui_page_load(ui, nvm, ui->page_activepage);
+		grid_ui_page_load(ui, ui->page_activepage);
 
 	}
 

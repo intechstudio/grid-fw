@@ -839,3 +839,28 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction){
 
 	}
 }
+
+
+void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type){
+
+	return (void*) grid_nvm_toc_entry_find(&grid_nvm_state, page, element, event_type);
+}
+
+uint16_t grid_platform_get_actionstring_file_size(void* file_pointer){
+
+	struct grid_nvm_toc_entry*	entry = (struct grid_nvm_toc_entry*) file_pointer;
+	return entry->config_string_length;
+
+}
+
+uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, uint8_t* targetstring){
+
+	return grid_nvm_toc_generate_actionstring(&grid_nvm_state, (struct grid_nvm_toc_entry*) file_pointer, targetstring);
+
+}
+
+void grid_platform_load_page_configuration(struct grid_ui_model* ui, void (*success_cb)(), void (*fail_cb)()){
+
+	grid_nvm_ui_bulk_pageread_init(&grid_nvm_state, ui);
+
+}

@@ -1572,7 +1572,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						if (grid_ui_state.page_change_enabled == 1){
 
 							//grid_debug_printf("TRY");
-							grid_ui_page_load(&grid_ui_state, &grid_nvm_state, page);
+							grid_ui_page_load(&grid_ui_state, page);
 							grid_sys_set_bank(&grid_sys_state, page);
 
 						}
@@ -1594,7 +1594,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 							if (grid_ui_state.page_negotiated == 0){
 
 								grid_ui_state.page_negotiated = 1;
-								grid_ui_page_load(&grid_ui_state, &grid_nvm_state, page);
+								grid_ui_page_load(&grid_ui_state, page);
 								grid_sys_set_bank(&grid_sys_state, page);
 								
 							}
@@ -1995,7 +1995,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				else if (msg_class == GRID_CLASS_PAGEDISCARD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 					
 					grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX, id);
-					grid_nvm_ui_bulk_pageread_init(&grid_nvm_state, &grid_ui_state);	
+					grid_platform_load_page_configuration(&grid_ui_state, NULL, NULL);
 
 
 
@@ -2112,7 +2112,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						elementnumber = grid_ui_state.element_list_length - 1;
 					}
 
-					grid_ui_recall_event_configuration(&grid_ui_state, &grid_nvm_state, pagenumber, elementnumber, eventtype);
+					grid_ui_recall_event_configuration(&grid_ui_state, pagenumber, elementnumber, eventtype);
 					
 				}
 				else if (msg_class == GRID_CLASS_CONFIG_code && msg_instr == GRID_INSTR_EXECUTE_code){
