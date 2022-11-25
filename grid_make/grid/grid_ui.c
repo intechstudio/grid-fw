@@ -1173,19 +1173,9 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 				
 				temp[i] = 0; // terminating zero for lua dostring
 
-				uint32_t cycles[5] = {0};
-
-				cycles[0] = grid_d51_dwt_cycles_read();
-
-							
-				cycles[1] = grid_d51_dwt_cycles_read();
-
-
 				if (0 == grid_lua_dostring(&grid_lua_state, &temp[code_start+6])){
 					grid_debug_printf("LUA not OK! EL: %d EV: %d", eve->parent->index, eve->index);
 				};
-
-				cycles[2] = grid_d51_dwt_cycles_read();
 
 				uint32_t code_stdo_length = strlen(grid_lua_state.stdo);
 
@@ -1220,9 +1210,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 
 				total_substituted_length += code_length - code_stdo_length - errorlen;
 
-				cycles[3] = grid_d51_dwt_cycles_read();
 
-				//printf("Lua: %s \r\nTime [us]: %d %d %d\r\n", grid_lua_state.stdo, (cycles[1]-cycles[0])/120, (cycles[2]-cycles[1])/120, (cycles[3]-cycles[2])/120);
 				//grid_lua_debug_memory_stats(&grid_lua_state, "Ui");
 				grid_lua_clear_stdo(&grid_lua_state);
 
@@ -1299,9 +1287,6 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 	//grid_lua_debug_memory_stats(&grid_lua_state, "Ui");
 	lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
 
-	// START: NEW
-	uint32_t cycles_limit = 5000*120;  // 5ms
-	uint32_t cycles_start = grid_d51_dwt_cycles_read();
 
 	uint8_t last_element_helper = ui->read_bulk_last_element;
 	uint8_t last_event_helper = ui->read_bulk_last_event + 1;
@@ -1328,16 +1313,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 				if (j>=ele->event_list_length){ // to check last_event_helper in the first iteration
 					break;
 				}
-			}
-
-			//printf("CYCLES: %d\r\n", grid_d51_dwt_cycles_read() - cycles_start);
-			if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){
-
-				//printf("LIMIT: %d\r\n", grid_d51_dwt_cycles_read() - cycles_start);
-				return;
-			}
-
-			
+			}			
 
 			struct grid_ui_event* eve = &ele->event_list[j];
 
@@ -1394,6 +1370,8 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 
 			ui->read_bulk_last_element = i;
 			ui->read_bulk_last_event = j;
+
+			return;
 
 		}
 
@@ -1457,9 +1435,6 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui){
 		return;
 	}
 
-    // START: NEW
-	uint32_t cycles_limit = 5000*120;  // 5ms
-	uint32_t cycles_start = grid_d51_dwt_cycles_read();
 
 
 	for (uint8_t i=0; i<ui->element_list_length; i++){
@@ -1469,12 +1444,6 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui){
 		for (uint8_t j=0; j<ele->event_list_length; j++){
 
 			struct grid_ui_event* eve = &ele->event_list[j];
-
-			if (grid_d51_dwt_cycles_read() - cycles_start > cycles_limit){
-				
-				return;
-
-			}
 
 			if (eve->cfg_changed_flag){
 				
@@ -1510,12 +1479,16 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui){
 				}
 
 				eve->cfg_changed_flag = 0; // clear changed flag
+
+				// after the first successful store quit from this function
+				return;
 			}
 
 		}
 
 	}
 
+	// if every change was previously stored then execution will continue from here
 
 	uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX);
 	grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX);

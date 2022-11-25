@@ -122,7 +122,13 @@ static void nvm_task_inner(){
 	// NVM BULK STORE
 	if (grid_ui_bulk_pagestore_is_in_progress(&grid_ui_state)){
 		
-		grid_ui_bulk_pagestore_next(&grid_ui_state);
+		// START: NEW
+		uint32_t cycles_limit = 5000*120;  // 5ms
+		uint32_t cycles_start = grid_d51_dwt_cycles_read();
+
+		while(grid_d51_dwt_cycles_read() - cycles_start < cycles_limit){
+			grid_ui_bulk_pagestore_next(&grid_ui_state);
+		}		
 	}
 	
 	// NVM BULK CLEAR
@@ -137,7 +143,19 @@ static void nvm_task_inner(){
 		
 		if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
 			
-			grid_ui_bulk_pageread_next(&grid_ui_state);
+			
+
+			// START: NEW
+			uint32_t cycles_limit = 5000*120;  // 5ms
+			uint32_t cycles_start = grid_d51_dwt_cycles_read();
+
+			while(grid_d51_dwt_cycles_read() - cycles_start < cycles_limit){
+				grid_ui_bulk_pageread_next(&grid_ui_state);
+			}		
+
+			printf("progress\r\n");
+
+			
 		}	
 	}
 	// NVM READ
