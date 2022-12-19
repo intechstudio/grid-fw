@@ -303,6 +303,13 @@ void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
 	mod->erase_bulk_status = 0;	
 	mod->store_bulk_status = 0;
 	mod->clear_bulk_status = 0;
+	mod->bulk_nvmdefrag_status = 0;
+
+	mod->read_success_callback = NULL;
+	mod->erase_success_callback = NULL;
+	mod->store_success_callback = NULL;
+	mod->clear_success_callback = NULL;
+	mod->defrag_success_callback = NULL;
 	
 }
 
@@ -840,7 +847,7 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 	printf("START\r\n");
 	grid_lua_start_vm(&grid_lua_state);
 
-	grid_ui_bulk_pageread_init(ui);
+	grid_ui_bulk_pageread_init(ui, NULL);
 
 	
 }
@@ -1258,7 +1265,10 @@ void grid_ui_event_free_actionstring(struct grid_ui_event* eve){
 // ==================== BULK OPERATIONS ======================== //
 
 
-void grid_ui_bulk_pageread_init(struct grid_ui_model* ui){
+void grid_ui_bulk_pageread_init(struct grid_ui_model* ui, void (*success_cb)()){
+
+
+	ui->read_success_callback = success_cb;
 
 
 	ui->read_bulk_last_element = 0;
@@ -1381,23 +1391,19 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 	grid_keyboard_state.isenabled = 1;	
 
 
-	uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX);
-	grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX);
-
-
-	// Generate ACKNOWLEDGE RESPONSE
-	struct grid_msg response;	
-	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
-	grid_msg_body_append_printf(&response, GRID_CLASS_PAGEDISCARD_frame);
-	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, lastheader_id);
-	grid_msg_packet_close(&grid_msg_state, &response);
-	grid_sys_packet_send_everywhere(&response);
-
-
-
-
 	ui->read_bulk_status = 0;
+
+	if (ui->read_success_callback != NULL){
+		ui->read_success_callback();
+		ui->read_success_callback = NULL;
+	}
+
+
+
+
+
+
+
 
 	// phase out the animation
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
@@ -1407,7 +1413,10 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 }
 
 
-void grid_ui_bulk_pagestore_init(struct grid_ui_model* ui){
+void grid_ui_bulk_pagestore_init(struct grid_ui_model* ui, void (*success_cb)()){
+
+	ui->store_success_callback = success_cb;
+
 
 	ui->store_bulk_status = 1;
 
@@ -1490,27 +1499,12 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui){
 
 	// if every change was previously stored then execution will continue from here
 
-	uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX);
-	grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX);
+	if (ui->store_success_callback != NULL){
+		ui->store_success_callback();
+		ui->store_success_callback = NULL;
+	}
 
 
-	struct grid_msg response;
-
-	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
-
-	// acknowledge
-	grid_msg_body_append_printf(&response, GRID_CLASS_PAGESTORE_frame);
-	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGESTORE_LASTHEADER_offset, GRID_CLASS_PAGESTORE_LASTHEADER_length, lastheader_id);		
-
-	// debugtext
-	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
-	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-	grid_msg_body_append_printf(&response, "xstore complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + grid_plaform_get_nvm_nextwriteoffset());				
-	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
-
-	grid_msg_packet_close(&grid_msg_state, &response);
-	grid_sys_packet_send_everywhere(&response);
 	
 	ui->store_bulk_status = 0;
 
@@ -1528,7 +1522,9 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui){
 
 
 
-void grid_ui_bulk_pageclear_init(struct grid_ui_model* ui){
+void grid_ui_bulk_pageclear_init(struct grid_ui_model* ui, void (*success_cb)()){
+
+	ui->clear_success_callback = success_cb;
 
 
 	ui->clear_bulk_status = 1;
@@ -1557,28 +1553,12 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui){
 
 	grid_platform_clear_actionstring_files_from_page(ui->page_activepage);
 
-
-	uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX);
-	grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX);
-
-	struct grid_msg response;
-
-	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
-
-	// acknowledge
-	grid_msg_body_append_printf(&response, GRID_CLASS_PAGECLEAR_frame);
-	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGECLEAR_LASTHEADER_offset, GRID_CLASS_PAGECLEAR_LASTHEADER_length, lastheader_id);		
-				
-	// debugtext
-	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
-	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-	grid_msg_body_append_printf(&response, "xclear complete");				
-	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
-
-	grid_msg_packet_close(&grid_msg_state, &response);
-	grid_sys_packet_send_everywhere(&response);
 	
+	if (ui->clear_success_callback != NULL){
+		ui->clear_success_callback();
+		ui->clear_success_callback = NULL;
+	}
+
 	ui->clear_bulk_status = 0;
 
 
@@ -1589,8 +1569,10 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui){
 }
 
 
-void grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui){
+void grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, void (*success_cb)()){
 
+
+	ui->erase_success_callback = success_cb;
 
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
 	grid_led_set_alert_frequency(&grid_led_state, -2);	
@@ -1632,36 +1614,18 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui){
 	}
 	else{ // done with the erase
 
+
+		// call success callback
+		if (ui->erase_success_callback != NULL){
+
+			ui->erase_success_callback();
+			ui->erase_success_callback = NULL;
+		}
+
+
+
 		ui->erase_bulk_status = 0;
-
-
-		uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
-		grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
-
-		// Generate ACKNOWLEDGE RESPONSE
-		struct grid_msg response;
-			
-		grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
-
-		// acknowledge
-		grid_msg_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
-		grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-		grid_msg_body_append_parameter(&response, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, lastheader_id);		
-
-
-		// debugtext
-		grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
-		grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-		grid_msg_body_append_printf(&response, "xerase complete");				
-		grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);	
-
-		grid_msg_packet_close(&grid_msg_state, &response);
-
-		grid_sys_packet_send_everywhere(&response);
-
 		grid_keyboard_state.isenabled = 1;	
-		
-
 		grid_ui_page_load(ui, ui->page_activepage);
 
 	}

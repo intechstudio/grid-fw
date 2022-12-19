@@ -1995,7 +1995,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				else if (msg_class == GRID_CLASS_PAGEDISCARD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 					
 					grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX, id);
-					grid_ui_bulk_pageread_init(&grid_ui_state);
+					grid_ui_bulk_pageread_init(&grid_ui_state, &grid_protocol_nvm_read_succcess_callback);
 
 
 				}		
@@ -2026,13 +2026,13 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				
 									
 					grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX, id);
-					grid_ui_bulk_pagestore_init(&grid_ui_state);					
+					grid_ui_bulk_pagestore_init(&grid_ui_state, &grid_protocol_nvm_store_succcess_callback);					
 
 				}			
 				else if (msg_class == GRID_CLASS_PAGECLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX, id);			
-					grid_ui_bulk_pageclear_init(&grid_ui_state);					
+					grid_ui_bulk_pageclear_init(&grid_ui_state, &grid_protocol_nvm_clear_succcess_callback);					
 
 				}		
 				else if (msg_class == GRID_CLASS_PAGESTORE_code && msg_instr == GRID_INSTR_CHECK_code && (position_is_me || position_is_global)){
@@ -2062,7 +2062,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 					if (current_length==5){ // erase all nvm configs
 
 						grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX, id);
-						grid_ui_bulk_nvmerase_init(&grid_ui_state);
+						grid_ui_bulk_nvmerase_init(&grid_ui_state, &grid_protocol_nvm_erase_succcess_callback);
 
 					}
 					else{
@@ -2418,3 +2418,121 @@ uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg){
 	
 	
 }
+
+
+void grid_protocol_nvm_erase_succcess_callback(){
+
+	uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
+		
+	grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
+
+	// Generate ACKNOWLEDGE RESPONSE
+	struct grid_msg response;
+		
+	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+	// acknowledge
+	grid_msg_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	grid_msg_body_append_parameter(&response, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, lastheader_id);		
+
+
+	// debugtext
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&response, "xxerase complete");				
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);	
+
+	grid_msg_packet_close(&grid_msg_state, &response);
+
+	grid_sys_packet_send_everywhere(&response);
+
+
+}
+
+
+
+void grid_protocol_nvm_clear_succcess_callback(){
+
+
+	uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX);
+	grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX);
+
+	struct grid_msg response;
+
+	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+	// acknowledge
+	grid_msg_body_append_printf(&response, GRID_CLASS_PAGECLEAR_frame);
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGECLEAR_LASTHEADER_offset, GRID_CLASS_PAGECLEAR_LASTHEADER_length, lastheader_id);		
+				
+	// debugtext
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&response, "xxclear complete");				
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
+
+	grid_msg_packet_close(&grid_msg_state, &response);
+	grid_sys_packet_send_everywhere(&response);
+
+
+}
+
+void grid_protocol_nvm_read_succcess_callback(){
+
+	uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX);
+	grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX);
+
+	// Generate ACKNOWLEDGE RESPONSE
+	struct grid_msg response;	
+	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+	grid_msg_body_append_printf(&response, GRID_CLASS_PAGEDISCARD_frame);
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, lastheader_id);
+
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&response, "xxread complete");				
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
+
+	grid_msg_packet_close(&grid_msg_state, &response);
+	grid_sys_packet_send_everywhere(&response);
+
+}
+
+void grid_protocol_nvm_store_succcess_callback(){
+
+	uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX);
+	grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX);
+
+
+	struct grid_msg response;
+
+	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+	// acknowledge
+	grid_msg_body_append_printf(&response, GRID_CLASS_PAGESTORE_frame);
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	grid_msg_body_append_parameter(&response, GRID_CLASS_PAGESTORE_LASTHEADER_offset, GRID_CLASS_PAGESTORE_LASTHEADER_length, lastheader_id);		
+
+	// debugtext
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
+	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_body_append_printf(&response, "xxstore complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + grid_plaform_get_nvm_nextwriteoffset());				
+	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
+
+	grid_msg_packet_close(&grid_msg_state, &response);
+	grid_sys_packet_send_everywhere(&response);
+
+}
+
+
+void grid_protocol_nvm_defrag_succcess_callback(){
+
+	uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
+		
+	grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
+
+}
+

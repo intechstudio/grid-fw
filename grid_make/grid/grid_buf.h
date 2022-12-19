@@ -156,4 +156,10 @@ void grid_debug_printf(char const *fmt, ...);
 
 uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg);
 
+void grid_protocol_nvm_erase_succcess_callback();
+void grid_protocol_nvm_clear_succcess_callback();
+void grid_protocol_nvm_read_succcess_callback();
+void grid_protocol_nvm_store_succcess_callback();
+void grid_protocol_nvm_defrag_succcess_callback();
+
 #endif
