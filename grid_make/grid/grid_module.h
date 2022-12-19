@@ -9,8 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
  
- 
+
  #define RTC1SEC 16384
 
  #define RTC1MS (RTC1SEC/1000)
@@ -34,6 +35,7 @@
 
 #include "grid_ain.h"
 #include "grid_buf.h"
+#include "grid_port.h"
 #include "grid_led.h"
 
 #include "grid_d51_uart.h"
@@ -47,6 +49,9 @@
 #include "grid_msg.h"
 
 #include "grid_lua_api.h"
+
+
+
 
 //====================== GRID SYNC ===================================//
 enum grid_sync_selector { GRID_SYNC_UNDEFINED, GRID_SYNC_1, GRID_SYNC_2};

@@ -1,0 +1,121 @@
+#ifndef GRID_PORT_H_INCLUDED
+#define GRID_PORT_H_INCLUDED
+
+#include "grid_module.h"
+
+#include "grid_sys.h"
+#include "grid_msg.h"
+#include "grid_led.h"
+#include "grid_protocol.h"
+
+#include "grid_buf.h"
+
+#include <stdint.h>
+#include <stdarg.h>
+#include <string.h>
+
+extern uint8_t grid_platform_send_grid_message(uint8_t direction, uint8_t* buffer, uint16_t length);
+extern uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
+extern uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
+extern uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
+
+
+
+
+
+struct grid_port{
+	
+	uint32_t cooldown;
+
+	uint8_t type;     // 0 undefined, 1 usart, 2 usb, 3 ui, 4 telemetry
+	uint8_t direction;
+	
+	uint16_t tx_double_buffer_status;
+	
+	uint32_t tx_double_buffer_ack_fingerprint;
+	uint32_t tx_double_buffer_ack_timeout;
+	
+	uint8_t usart_error_flag;
+	
+	uint32_t rx_double_buffer_timeout; // is packet ready for verification
+	
+	uint32_t rx_double_buffer_status; // is packet ready for verification
+	uint32_t rx_double_buffer_seek_start_index; // offset of next received byte in buffer
+	uint32_t rx_double_buffer_read_start_index;
+	
+	uint8_t tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE];
+	uint8_t rx_double_buffer[GRID_DOUBLE_BUFFER_RX_SIZE];
+		
+	
+	struct grid_buffer tx_buffer;
+	struct grid_buffer rx_buffer;
+	
+	uint32_t partner_hwcfg;
+	uint8_t partner_fi;
+	
+	uint8_t ping_local_token;
+	uint8_t ping_partner_token;
+	
+	uint8_t ping_packet[20];
+	uint8_t ping_packet_length;
+	
+	uint8_t ping_flag;
+		
+	
+	
+	int8_t dx;
+	int8_t dy;
+	
+	uint8_t partner_status;
+	
+};
+
+
+volatile struct grid_port GRID_PORT_N;
+volatile struct grid_port GRID_PORT_E;
+volatile struct grid_port GRID_PORT_S;
+volatile struct grid_port GRID_PORT_W;
+
+volatile struct grid_port GRID_PORT_U;
+volatile struct grid_port GRID_PORT_H;
+
+
+void grid_port_reset_receiver(struct grid_port* por);
+
+void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint16_t len);
+
+void grid_port_receive_task(struct grid_port* por);
+
+
+
+#define GRID_PORT_TYPE_UNDEFINED	0
+#define GRID_PORT_TYPE_USART		1
+#define GRID_PORT_TYPE_USB			2
+#define GRID_PORT_TYPE_UI			3
+#define GRID_PORT_TYPE_TELEMETRY	4
+
+
+void grid_port_init_all(void);
+
+void grid_port_init(volatile struct grid_port* por, uint8_t type, uint8_t dir);
+
+uint8_t grid_port_process_outbound_usart(struct grid_port* por);
+uint8_t grid_port_process_outbound_usb(struct grid_port* por);
+uint8_t grid_port_process_outbound_ui(struct grid_port* por);
+
+
+void grid_debug_print_text(uint8_t* str);
+void grid_websocket_print_text(uint8_t* str);
+
+void grid_debug_printf(char const *fmt, ...);
+
+
+uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg);
+
+void grid_protocol_nvm_erase_succcess_callback();
+void grid_protocol_nvm_clear_succcess_callback();
+void grid_protocol_nvm_read_succcess_callback();
+void grid_protocol_nvm_store_succcess_callback();
+void grid_protocol_nvm_defrag_succcess_callback();
+
+#endif

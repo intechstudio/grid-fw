@@ -289,7 +289,6 @@ void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
 
 	mod->element_list_length = element_list_length;	
 
-	printf("UI MODEL INIT: %d\r\n", element_list_length);
 	mod->element_list = malloc(element_list_length*sizeof(struct grid_ui_element));
 
 	mod->page_negotiated = 0;
