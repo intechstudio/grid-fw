@@ -583,141 +583,88 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui
 
 }
 
-uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type){
+uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type, uint8_t* targetstring){
 	
-	struct grid_msg message;
-
-	grid_msg_init_header(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
-
 
 	struct grid_ui_element* ele = &ui->element_list[element];
 
 	struct grid_ui_event* eve = grid_ui_event_find(ele, event_type);
 
-	if (eve != NULL){
 
-		// Event actually exists
+	if (eve == NULL){
 
-
-		grid_msg_body_append_printf(&message, GRID_CLASS_CONFIG_frame_start);
-
-		grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-		
-		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
-		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
-		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
-
-		// Helper to map system element to 255
-		uint8_t element_helper = element;
-		if (element == grid_ui_state.element_list_length - 1){
-			element_helper = 255;
-		}
-
-		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, page);
-		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, element_helper);
-		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type);
-		grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, 0);
-
-		if (ui->page_activepage == page){
-			// currently active page needs to be sent
-
-			// file pointer
-			void* entry = NULL;
-			entry = grid_platform_find_actionstring_file(page, element, event_type);
-
-			if (eve->cfg_default_flag){ // SEND BACK THE DEFAULT
-
-
-				uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength]  = {0};
-				grid_ui_event_generate_actionstring(eve, temp);
-				
-
-				//printf("DEFAULT: %s\r\n", temp);
-
-				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(temp));		
-				grid_msg_body_append_text(&message, temp);
-
-			}
-			else if (eve->action_string != NULL){
-
-				//printf("FOUND eve->action_string: %s\r\n", eve->action_string);
-
-				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(eve->action_string));		
-				grid_msg_body_append_text(&message, eve->action_string);
-
-			}
-			else if (entry != NULL){
-
-				uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength]  = {0};
-
-				uint32_t len = grid_platform_read_actionstring_file_contents(entry, temp);
-
-
-				//printf("FOUND in TOC: %s\r\n", temp);
-
-				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(temp));		
-				grid_msg_body_append_text(&message, temp);
-
-			}
-			else{
-				printf("BIG PROBLEM, SENDING DEFAULT\r\n");
-
-				uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength]  = {0};
-				grid_ui_event_generate_actionstring(eve, temp);
-				
-				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(temp));		
-				grid_msg_body_append_text(&message, temp);
-			}
-
-		}		
-		else{
-
-			printf("!!!!! PAGE IS NOT ACTIVE\r\n");
-			// use nvm_toc to find the configuration to be sent
-
-			// file pointer
-			void* entry = NULL;
-			entry = grid_platform_find_actionstring_file(page, element, event_type);
-
-			if (entry != NULL){
-				
-				//printf("FOUND %d %d %d 0x%x (+%d)!\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, entry->config_string_length);
-
-				uint16_t length = grid_platform_get_actionstring_file_size(entry);
-
-				uint8_t temp[length+10];
-
-				uint32_t len = grid_platform_read_actionstring_file_contents(entry, temp);
-
-				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(temp));		
-				grid_msg_body_append_text(&message, temp);
-			}
-			else{
-				//printf("NOT FOUND, Send default!\r\n");
-				uint8_t actionstring[GRID_PARAMETER_ACTIONSTRING_maxlength] = {0};
-				grid_ui_event_generate_actionstring(eve, actionstring);	
-				//grid_ui_event_register_actionstring(eve, actionstring);	
-
-				grid_msg_body_append_text(&message, actionstring);
-				grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(actionstring));
-
-			}
-
-			// if no toc entry is found but page exists then send efault configuration
-
-		}
-					
-		grid_msg_body_append_printf(&message, GRID_CLASS_CONFIG_frame_end);
-
-
-		//printf("CFG: %s\r\n", message.body);
-		grid_msg_packet_close(&grid_msg_state, &message);
-		grid_sys_packet_send_everywhere(&message);
+		printf("warning."__FILE__".event does not exist!\r\n");
+		return -1;
 	}
+
+
+
+	// Event actually exists
+
+
+	if (ui->page_activepage == page){
+		// currently active page needs to be sent
+
+		// file pointer
+		void* entry = NULL;
+		entry = grid_platform_find_actionstring_file(page, element, event_type);
+
+		if (eve->cfg_default_flag){ // SEND BACK THE DEFAULT
+
+
+			grid_ui_event_generate_actionstring(eve, targetstring);
+			
+
+			//printf("DEFAULT: %s\r\n", temp);
+
+		}
+		else if (eve->action_string != NULL){
+
+			//printf("FOUND eve->action_string: %s\r\n", eve->action_string);
+
+			strcpy(targetstring, eve->action_string);
+
+		}
+		else if (entry != NULL){
+
+
+			uint32_t len = grid_platform_read_actionstring_file_contents(entry, targetstring);
+
+		}
+		else{
+			printf("BIG PROBLEM, SENDING DEFAULT\r\n");
+
+			grid_ui_event_generate_actionstring(eve, targetstring);
+			
+		}
+
+	}		
 	else{
 
-		//printf("warning."__FILE__".event does not exist!\r\n");
+		printf("!!!!! PAGE IS NOT ACTIVE\r\n");
+		// use nvm_toc to find the configuration to be sent
+
+		// file pointer
+		void* entry = NULL;
+		entry = grid_platform_find_actionstring_file(page, element, event_type);
+
+		if (entry != NULL){
+			
+			uint32_t len = grid_platform_read_actionstring_file_contents(entry, targetstring);
+
+		}
+		else{
+			//printf("NOT FOUND, Send default!\r\n");
+			grid_ui_event_generate_actionstring(eve, targetstring);	
+			//grid_ui_event_register_actionstring(eve, actionstring);	
+
+		}
+
+		// if no toc entry is found but page exists then send efault configuration
+
 	}
+				
+
 	
 }
 

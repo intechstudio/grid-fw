@@ -169,7 +169,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por);
 
 // requires NVM
 uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page);
-uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type);
+uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type, uint8_t* targetstring);
 
 
 

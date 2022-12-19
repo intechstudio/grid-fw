@@ -2111,8 +2111,54 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 						elementnumber = grid_ui_state.element_list_length - 1;
 					}
 
-					grid_ui_recall_event_configuration(&grid_ui_state, pagenumber, elementnumber, eventtype);
+
+					uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength]  = {0};
+
+					uint8_t error = grid_ui_recall_event_configuration(&grid_ui_state, pagenumber, elementnumber, eventtype, temp);
 					
+					if (strlen(temp) != 0){
+
+
+
+						struct grid_msg message;
+
+						grid_msg_init_header(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+						grid_msg_body_append_printf(&message, GRID_CLASS_CONFIG_frame_start);
+
+						grid_msg_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+						
+						grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
+						grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
+						grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
+
+						// Helper to map system element to 255
+						uint8_t element_helper = elementnumber;
+						if (elementnumber == grid_ui_state.element_list_length - 1){
+							element_helper = 255;
+						}
+
+						grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, pagenumber);
+						grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, element_helper);
+						grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, eventtype);
+						grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, 0);
+
+
+
+						grid_msg_body_append_parameter(&message, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, strlen(temp));		
+						grid_msg_body_append_text(&message, temp);
+
+						grid_msg_body_append_printf(&message, GRID_CLASS_CONFIG_frame_end);
+
+
+						//printf("CFG: %s\r\n", message.body);
+						grid_msg_packet_close(&grid_msg_state, &message);
+						grid_sys_packet_send_everywhere(&message);
+						
+
+					}
+
+
 				}
 				else if (msg_class == GRID_CLASS_CONFIG_code && msg_instr == GRID_INSTR_EXECUTE_code){
 
