@@ -51,7 +51,8 @@
     "bootloader_random.h": "c",
     "grid_sys.h": "c",
     "grid_msg.h": "c",
-    "stdio.h": "c"
+    "stdio.h": "c",
+    "grid_buf.h": "c"
 },
   "actionButtons": {
     "defaultColor": "#ff0034", // Can also use string color names.

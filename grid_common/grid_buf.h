@@ -2,12 +2,15 @@
 #define GRID_BUF_H_INCLUDED
 
 
-#include <stdint.h>
+// only for uint definitions
+#include  <stdint.h>
+// only for malloc
+#include  <stdlib.h>
 
 #include "grid_protocol.h"
 
 
-volatile uint8_t grid_buffer_error_count;
+extern uint32_t grid_buffer_error_count;
 
  
 #define GRID_BUFFER_SIZE	2000 //1000 this is the buffer for internal routing
@@ -21,7 +24,7 @@ volatile uint8_t grid_buffer_error_count;
 struct grid_buffer{
 	
 	uint16_t buffer_length;
-	uint8_t buffer_storage[GRID_BUFFER_SIZE];
+	uint8_t* buffer_storage;
 	
 	uint16_t read_start;
 	uint16_t read_stop;

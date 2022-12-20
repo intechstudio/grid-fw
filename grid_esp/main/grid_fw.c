@@ -46,6 +46,7 @@
 #include "../../grid_common/grid_led.h"
 #include "../../grid_common/grid_sys.h"
 #include "../../grid_common/grid_msg.h"
+#include "../../grid_common/grid_buf.h"
 
 
 void app_main(void)
@@ -81,6 +82,9 @@ void app_main(void)
     ets_printf("Version: %d %d %d\r\n", GRID_PROTOCOL_VERSION_MAJOR, GRID_PROTOCOL_VERSION_MINOR, GRID_PROTOCOL_VERSION_PATCH );
     ets_printf("grid_ain_abs test -7 -> %d\r\n", grid_ain_abs(-7));
 
+    struct grid_buffer buf;
+
+    grid_buffer_init(&buf, 1000);
 
     SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
