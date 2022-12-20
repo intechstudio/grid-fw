@@ -58,14 +58,14 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	if (message_local_action_available){
 			
 		// Prepare packet header LOCAL
-		struct grid_msg message_local;
-		grid_msg_init_header(&grid_msg_state, &message_local, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
+		struct grid_msg_packet message_local;
+		grid_msg_packet_init(&grid_msg_state, &message_local, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
 		uint8_t payload_local[GRID_PARAMETER_PACKET_maxlength] = {0};				
 		uint32_t offset_local=0;		
 
 		// Prepare packet header GLOBAL
-		struct grid_msg message_global;
-		grid_msg_init_header(&grid_msg_state, &message_global, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
+		struct grid_msg_packet message_global;
+		grid_msg_packet_init(&grid_msg_state, &message_global, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
 		uint8_t payload_global[GRID_PARAMETER_PACKET_maxlength] = {0};				
 		uint32_t offset_global=0;
 		
@@ -122,13 +122,13 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 		if (strlen(payload_global)>0){
 
-			grid_msg_body_append_text(&message_global, payload_global);
+			grid_msg_packet_body_append_text(&message_global, payload_global);
 			grid_msg_packet_close(&grid_msg_state, &message_global);
 			grid_sys_packet_send_everywhere(&message_global);
 		}
 
 		
-		grid_msg_body_append_text(&message_local, payload_local);
+		grid_msg_packet_body_append_text(&message_local, payload_local);
 
 
 		grid_msg_packet_close(&grid_msg_state, &message_local);
@@ -140,7 +140,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 				
 			for(uint32_t i = 0; i<message_length; i++){
 					
-				grid_buffer_write_character(&GRID_PORT_U.tx_buffer, grid_msg_packet_send_char(&message_local, i));
+				grid_buffer_write_character(&GRID_PORT_U.tx_buffer, grid_msg_packet_send_char_by_char(&message_local, i));
 			}
 				
 			grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
@@ -174,8 +174,8 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	}
 
 
-	struct grid_msg message;
-	grid_msg_init_header(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+	struct grid_msg_packet message;
+	grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 	
 	
 	// BROADCAST MESSAGES : UI STATE
@@ -192,11 +192,11 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 								
 					if (grid_ui_event_istriggered(&grid_ui_state.element_list[j].event_list[k])){
 
-						uint32_t offset = grid_msg_body_get_length(&message); 
+						uint32_t offset = grid_msg_packet_body_get_length(&message); 
 
 						message.body_length += grid_ui_event_render_event(&grid_ui_state.element_list[j].event_list[k], &message.body[offset]);
 					
-						offset = grid_msg_body_get_length(&message); 
+						offset = grid_msg_packet_body_get_length(&message); 
 
 						CRITICAL_SECTION_ENTER()
 						message.body_length += grid_ui_event_render_action(&grid_ui_state.element_list[j].event_list[k], &message.body[offset]);
@@ -229,7 +229,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	
 			for(uint16_t i = 0; i<length; i++){
 				
-				grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char(&message, i));
+				grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char_by_char(&message, i));
 			}
 			
 			grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
@@ -246,9 +246,9 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	// LEDREPORT
 	if (ui_available && grid_d51_led_change_report_length(&grid_led_state) && grid_sys_get_editor_connected_state(&grid_sys_state)){
 
-		struct grid_msg response;
+		struct grid_msg_packet response;
 								
-		grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+		grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 		uint8_t response_payload[300] = {0};
 		uint16_t len = 0;
@@ -259,13 +259,13 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 		len += strlen(&response_payload[len]);
 
-		grid_msg_body_append_text(&response, response_payload);
+		grid_msg_packet_body_append_text(&response, response_payload);
 
 
-		grid_msg_body_append_printf(&response, GRID_CLASS_LEDPREVIEW_frame_end);
+		grid_msg_packet_body_append_printf(&response, GRID_CLASS_LEDPREVIEW_frame_end);
 
-		grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
-		grid_msg_text_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
+		grid_msg_packet_body_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);													
+		grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
 		
 		grid_msg_packet_close(&grid_msg_state, &response);
 		grid_sys_packet_send_everywhere(&response);
@@ -1074,12 +1074,12 @@ uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, uint8_t* target_s
 
 	sprintf(target_string, GRID_CLASS_EVENT_frame);
 
-	grid_msg_set_parameter(target_string, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+	grid_msg_string_set_parameter(target_string, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
 
-	grid_msg_set_parameter(target_string, GRID_CLASS_EVENT_PAGENUMBER_offset, GRID_CLASS_EVENT_PAGENUMBER_length, page, NULL);
-	grid_msg_set_parameter(target_string, GRID_CLASS_EVENT_ELEMENTNUMBER_offset, GRID_CLASS_EVENT_ELEMENTNUMBER_length, element, NULL);
-	grid_msg_set_parameter(target_string, GRID_CLASS_EVENT_EVENTTYPE_offset, GRID_CLASS_EVENT_EVENTTYPE_length, event, NULL);
-	grid_msg_set_parameter(target_string, GRID_CLASS_EVENT_EVENTPARAM_offset, GRID_CLASS_EVENT_EVENTPARAM_length, param, NULL);
+	grid_msg_string_set_parameter(target_string, GRID_CLASS_EVENT_PAGENUMBER_offset, GRID_CLASS_EVENT_PAGENUMBER_length, page, NULL);
+	grid_msg_string_set_parameter(target_string, GRID_CLASS_EVENT_ELEMENTNUMBER_offset, GRID_CLASS_EVENT_ELEMENTNUMBER_length, element, NULL);
+	grid_msg_string_set_parameter(target_string, GRID_CLASS_EVENT_EVENTTYPE_offset, GRID_CLASS_EVENT_EVENTTYPE_length, event, NULL);
+	grid_msg_string_set_parameter(target_string, GRID_CLASS_EVENT_EVENTPARAM_offset, GRID_CLASS_EVENT_EVENTPARAM_length, param, NULL);
 
 	return strlen(target_string);
 

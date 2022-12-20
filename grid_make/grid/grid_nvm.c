@@ -133,19 +133,19 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 	}
 	
 
-	struct grid_msg response;
+	struct grid_msg_packet response;
 		
-	grid_msg_init_header(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+	grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 	// acknowledge
-	grid_msg_body_append_printf(&response, GRID_CLASS_NVMDEFRAG_frame);
-	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+	grid_msg_packet_body_append_printf(&response, GRID_CLASS_NVMDEFRAG_frame);
+	grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 
 	// debugtext
-	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
-	grid_msg_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-	grid_msg_body_append_printf(&response, "xdefrag complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);		
-	grid_msg_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);	
+	grid_msg_packet_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
+	grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+	grid_msg_packet_body_append_printf(&response, "xdefrag complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);		
+	grid_msg_packet_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);	
 
 	grid_msg_packet_close(&grid_msg_state, &response);
 
@@ -466,9 +466,9 @@ void grid_nvm_toc_init(struct grid_nvm_model* nvm){
 					uint16_t config_length = 0;
 
 
-					uint8_t vmajor = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
-					uint8_t vminor = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, NULL);
-					uint8_t vpatch = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, NULL);
+					uint8_t vmajor = grid_msg_string_get_parameter(current_header, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
+					uint8_t vminor = grid_msg_string_get_parameter(current_header, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, NULL);
+					uint8_t vpatch = grid_msg_string_get_parameter(current_header, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, NULL);
 								
 					if (vmajor == GRID_PROTOCOL_VERSION_MAJOR && vminor == GRID_PROTOCOL_VERSION_MINOR && vpatch == GRID_PROTOCOL_VERSION_PATCH){
 						// version ok	
@@ -479,10 +479,10 @@ void grid_nvm_toc_init(struct grid_nvm_model* nvm){
 
 
 
-					page_number = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
-					element_number = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
-					event_type = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
-					config_length = grid_msg_get_parameter(current_header, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
+					page_number = grid_msg_string_get_parameter(current_header, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
+					element_number = grid_msg_string_get_parameter(current_header, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
+					event_type = grid_msg_string_get_parameter(current_header, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
+					config_length = grid_msg_string_get_parameter(current_header, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
 
 
 					if (config_length == 0){
@@ -597,13 +597,13 @@ uint32_t grid_nvm_config_store(struct grid_nvm_model* nvm, uint8_t page_number, 
 
 	sprintf(buf, GRID_CLASS_CONFIG_frame_start);
 
-	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR, NULL);
-	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, GRID_PROTOCOL_VERSION_MINOR, NULL);
-	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, GRID_PROTOCOL_VERSION_PATCH, NULL);
+	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR, NULL);
+	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, GRID_PROTOCOL_VERSION_MINOR, NULL);
+	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, GRID_PROTOCOL_VERSION_PATCH, NULL);
 	
-	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, page_number, NULL);
-	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, element_number, NULL);
-	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type, NULL);
+	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, page_number, NULL);
+	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, element_number, NULL);
+	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type, NULL);
 
 	len = strlen(buf);
 	
@@ -618,7 +618,7 @@ uint32_t grid_nvm_config_store(struct grid_nvm_model* nvm, uint8_t page_number, 
 
 	uint16_t config_length = len;
 
-	grid_msg_set_parameter(buf, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, config_length, NULL);
+	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, config_length, NULL);
 
 	//printf("Config frame len: %d -> %s\r\n", len, buf);
 

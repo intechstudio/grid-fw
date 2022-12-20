@@ -34,7 +34,6 @@
 
 
 #include "grid_ain.h"
-#include "grid_buf.h"
 #include "grid_port.h"
 #include "grid_led.h"
 

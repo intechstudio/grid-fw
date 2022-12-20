@@ -110,7 +110,7 @@ void grid_websocket_print_text(uint8_t* str);
 void grid_debug_printf(char const *fmt, ...);
 
 
-uint8_t	grid_sys_packet_send_everywhere(struct grid_msg* msg);
+uint8_t	grid_sys_packet_send_everywhere(struct grid_msg_packet* msg);
 
 void grid_protocol_nvm_erase_succcess_callback();
 void grid_protocol_nvm_clear_succcess_callback();

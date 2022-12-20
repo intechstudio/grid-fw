@@ -43,13 +43,13 @@ static int l_grid_keyboard_send(lua_State* L) {
     memset(temp, 0x00, 20+nargs*4);
     sprintf(temp, GRID_CLASS_HIDKEYBOARD_frame_start);
 
-    grid_msg_set_parameter(temp, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+    grid_msg_string_set_parameter(temp, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
 
     uint16_t cursor = 0;
 
     uint8_t default_delay = lua_tonumber(L, 1);
 
-    grid_msg_set_parameter(temp, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_offset, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_length, default_delay, NULL);
+    grid_msg_string_set_parameter(temp, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_offset, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_length, default_delay, NULL);
 
     uint8_t cnt = 0;
 
@@ -70,8 +70,8 @@ static int l_grid_keyboard_send(lua_State* L) {
             if (delay > 4095) delay = 4095;
             if (delay < 0) delay = 0;
     
-            grid_msg_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, modifier, NULL);
-            grid_msg_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_DELAY_offset, GRID_CLASS_HIDKEYBOARD_DELAY_length, delay, NULL);   
+            grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, modifier, NULL);
+            grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_DELAY_offset, GRID_CLASS_HIDKEYBOARD_DELAY_length, delay, NULL);   
             cursor += 4;
 
         }
@@ -82,9 +82,9 @@ static int l_grid_keyboard_send(lua_State* L) {
             //01234567890123456789012printf("%d-%d ", cnt, keycode);
             cursor += 4;
 
-            grid_msg_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, modifier, NULL);
-            grid_msg_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset, GRID_CLASS_HIDKEYBOARD_KEYSTATE_length, keystate, NULL);
-            grid_msg_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYCODE_offset, GRID_CLASS_HIDKEYBOARD_KEYCODE_length, keycode, NULL);   
+            grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, modifier, NULL);
+            grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset, GRID_CLASS_HIDKEYBOARD_KEYSTATE_length, keystate, NULL);
+            grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYCODE_offset, GRID_CLASS_HIDKEYBOARD_KEYCODE_length, keycode, NULL);   
 
         }
         else{
@@ -96,7 +96,7 @@ static int l_grid_keyboard_send(lua_State* L) {
 
     }
 
-    grid_msg_set_parameter(temp, GRID_CLASS_HIDKEYBOARD_LENGTH_offset, GRID_CLASS_HIDKEYBOARD_LENGTH_length, cursor/4+1, NULL);
+    grid_msg_string_set_parameter(temp, GRID_CLASS_HIDKEYBOARD_LENGTH_offset, GRID_CLASS_HIDKEYBOARD_LENGTH_length, cursor/4+1, NULL);
          
     temp[strlen(temp)] = GRID_CONST_ETX;
 
@@ -165,10 +165,10 @@ static int l_grid_mousemove_send(lua_State* L) {
 
     sprintf(frame, GRID_CLASS_HIDMOUSEMOVE_frame);
 
-    grid_msg_set_parameter(frame, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+    grid_msg_string_set_parameter(frame, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
 
-    grid_msg_set_parameter(frame, GRID_CLASS_HIDMOUSEMOVE_POSITION_offset, GRID_CLASS_HIDMOUSEMOVE_POSITION_length, position, NULL);
-    grid_msg_set_parameter(frame, GRID_CLASS_HIDMOUSEMOVE_AXIS_offset, GRID_CLASS_HIDMOUSEMOVE_AXIS_length, axis, NULL);
+    grid_msg_string_set_parameter(frame, GRID_CLASS_HIDMOUSEMOVE_POSITION_offset, GRID_CLASS_HIDMOUSEMOVE_POSITION_length, position, NULL);
+    grid_msg_string_set_parameter(frame, GRID_CLASS_HIDMOUSEMOVE_AXIS_offset, GRID_CLASS_HIDMOUSEMOVE_AXIS_length, axis, NULL);
 
     strcat(grid_lua_state.stdo, frame);
 
@@ -226,10 +226,10 @@ static int l_grid_mousebutton_send(lua_State* L) {
 
     sprintf(frame, GRID_CLASS_HIDMOUSEBUTTON_frame);
 
-    grid_msg_set_parameter(frame, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+    grid_msg_string_set_parameter(frame, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
 
-    grid_msg_set_parameter(frame, GRID_CLASS_HIDMOUSEBUTTON_STATE_offset, GRID_CLASS_HIDMOUSEBUTTON_STATE_length, state, NULL);
-    grid_msg_set_parameter(frame, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_offset, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_length, button, NULL);
+    grid_msg_string_set_parameter(frame, GRID_CLASS_HIDMOUSEBUTTON_STATE_offset, GRID_CLASS_HIDMOUSEBUTTON_STATE_length, state, NULL);
+    grid_msg_string_set_parameter(frame, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_offset, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_length, button, NULL);
 
     strcat(grid_lua_state.stdo, frame);
 
@@ -372,10 +372,10 @@ static int l_grid_elementname_send(lua_State* L) {
             uint8_t frame[30] = {0};
             sprintf(frame, GRID_CLASS_ELEMENTNAME_frame_start);
 
-            grid_msg_set_parameter(frame, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+            grid_msg_string_set_parameter(frame, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
 
-            grid_msg_set_parameter(frame, GRID_CLASS_ELEMENTNAME_NUM_offset, GRID_CLASS_ELEMENTNAME_NUM_length, number, NULL);
-            grid_msg_set_parameter(frame, GRID_CLASS_ELEMENTNAME_LENGTH_offset, GRID_CLASS_ELEMENTNAME_LENGTH_length, strlen(string), NULL);
+            grid_msg_string_set_parameter(frame, GRID_CLASS_ELEMENTNAME_NUM_offset, GRID_CLASS_ELEMENTNAME_NUM_length, number, NULL);
+            grid_msg_string_set_parameter(frame, GRID_CLASS_ELEMENTNAME_LENGTH_offset, GRID_CLASS_ELEMENTNAME_LENGTH_length, strlen(string), NULL);
             strcpy(&frame[GRID_CLASS_ELEMENTNAME_NAME_offset], string);
             sprintf(&frame[strlen(frame)], GRID_CLASS_ELEMENTNAME_frame_end);
 
@@ -383,20 +383,20 @@ static int l_grid_elementname_send(lua_State* L) {
 
 
             // MUST BE SENT OUT IMEDIATELY (NOT THROUGH STDO) BECAUSE IT MUST BE SENT OUT EVEN AFTER LOCAL TRIGGER (CONFIG)
-            // struct grid_msg response;
+            // struct grid_msg_packet response;
                                     
-            // grid_msg_init_header(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
+            // grid_msg_packet_init(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
             // uint8_t response_payload[50] = {0};
 
-            // grid_msg_body_append_printf(&response, GRID_CLASS_ELEMENTNAME_frame_start);
+            // grid_msg_packet_body_append_printf(&response, GRID_CLASS_ELEMENTNAME_frame_start);
                 
-            // grid_msg_text_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);	
-            // grid_msg_text_set_parameter(&response, 0, GRID_CLASS_ELEMENTNAME_NUM_offset, GRID_CLASS_ELEMENTNAME_NUM_length, number);	
-            // grid_msg_text_set_parameter(&response, 0, GRID_CLASS_ELEMENTNAME_LENGTH_offset, GRID_CLASS_ELEMENTNAME_LENGTH_length, strlen(string));					
+            // grid_msg_packet_body_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);	
+            // grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_ELEMENTNAME_NUM_offset, GRID_CLASS_ELEMENTNAME_NUM_length, number);	
+            // grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_ELEMENTNAME_LENGTH_offset, GRID_CLASS_ELEMENTNAME_LENGTH_length, strlen(string));					
 
-            // grid_msg_body_append_printf(&response, "%s", string);
-            // grid_msg_body_append_printf(&response, GRID_CLASS_ELEMENTNAME_frame_end);    
+            // grid_msg_packet_body_append_printf(&response, "%s", string);
+            // grid_msg_packet_body_append_printf(&response, GRID_CLASS_ELEMENTNAME_frame_end);    
 
             // grid_msg_packet_close(&grid_msg_state, &response);
             // grid_sys_packet_send_everywhere(&response);
@@ -466,12 +466,12 @@ static int l_grid_midi_send(lua_State* L) {
 
     sprintf(midiframe, GRID_CLASS_MIDI_frame);
 
-    grid_msg_set_parameter(midiframe, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+    grid_msg_string_set_parameter(midiframe, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
 
-    grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, channel, NULL);
-    grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, command, NULL);
-    grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, param1, NULL);
-    grid_msg_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2, NULL);
+    grid_msg_string_set_parameter(midiframe, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, channel, NULL);
+    grid_msg_string_set_parameter(midiframe, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, command, NULL);
+    grid_msg_string_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, param1, NULL);
+    grid_msg_string_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2, NULL);
     
     //printf("MIDI: %s\r\n", midiframe);  
     strcat(grid_lua_state.stdo, midiframe);
@@ -493,15 +493,15 @@ static int l_grid_midi_sysex_send(lua_State* L) {
 
     sprintf(midiframe, GRID_CLASS_MIDISYSEX_frame_start);
 
-    grid_msg_set_parameter(midiframe, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+    grid_msg_string_set_parameter(midiframe, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
 
     int i;
     for ( i=1; i <= nargs; ++i) {
 
-        grid_msg_set_parameter(midiframe, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i*2-2, 2, lua_tointeger(L, i), NULL);
+        grid_msg_string_set_parameter(midiframe, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i*2-2, 2, lua_tointeger(L, i), NULL);
     }
 
-    grid_msg_set_parameter(midiframe, GRID_CLASS_MIDISYSEX_LENGTH_offset, GRID_CLASS_MIDISYSEX_LENGTH_length, i-1, NULL);
+    grid_msg_string_set_parameter(midiframe, GRID_CLASS_MIDISYSEX_LENGTH_offset, GRID_CLASS_MIDISYSEX_LENGTH_length, i-1, NULL);
 
     sprintf(&midiframe[strlen(midiframe)], GRID_CLASS_MIDISYSEX_frame_end);
 
@@ -1274,8 +1274,8 @@ static int l_grid_page_load(lua_State* L) {
             grid_debug_printf("page request: %d", page);
             uint8_t response[20] = {0};
             sprintf(response, GRID_CLASS_PAGEACTIVE_frame);
-            grid_msg_set_parameter(response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
-            grid_msg_set_parameter(response, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, page, NULL);
+            grid_msg_string_set_parameter(response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+            grid_msg_string_set_parameter(response, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, page, NULL);
             strcat(grid_lua_state.stdo, response);
 
         }
