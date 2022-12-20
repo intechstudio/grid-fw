@@ -11,6 +11,11 @@
 
 #include "grid_module.h"
 
+// only for uint definitions
+#include  <stdint.h>
+// only for malloc
+#include  <stdlib.h>
+
 
 extern int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
 extern int32_t grid_platform_usb_midi_write_status(void);

@@ -341,10 +341,6 @@ uint8_t grid_midi_rx_pop(){
 	if (grid_midi_rx_read_index != grid_midi_rx_write_index){
 		
 
-		uint8_t byte0 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte0;
-		uint8_t byte1 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte1;
-		uint8_t byte2 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte2;
-		uint8_t byte3 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte3;
 			
 		// Combine multiple midi messages into one packet if possible
 
@@ -353,10 +349,15 @@ uint8_t grid_midi_rx_pop(){
 		grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
 
 
-		// combuine up to 6 midi messages into a packet
+		// combine up to 6 midi messages into a packet
 		for (uint8_t i = 0; i<6; i++){
 
 			if(grid_midi_rx_read_index != grid_midi_rx_write_index){
+
+				uint8_t byte0 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte0;
+				uint8_t byte1 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte1;
+				uint8_t byte2 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte2;
+				uint8_t byte3 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte3;
 
 				grid_msg_packet_body_append_printf(&message, GRID_CLASS_MIDI_frame);
 				grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
