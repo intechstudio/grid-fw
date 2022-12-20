@@ -1598,7 +1598,7 @@ uint8_t grid_ui_bluk_anything_is_in_progress(struct grid_ui_model* ui){
 		return 1;
 	}
 
-	// if (grid_nvm_ui_bulk_nvmdefrag_is_in_progress(nvm, ui)){
+	// if (grid_d51_nvm_ui_bulk_nvmdefrag_is_in_progress(nvm, ui)){
 	// 	return 1;
 	// }
 

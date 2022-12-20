@@ -25,6 +25,7 @@ grid/d51/grid_d51.o \
 grid/d51/grid_d51_led.o \
 grid/d51/grid_d51_uart.o \
 grid/d51/grid_d51_usb.o \
+grid/d51/grid_d51_nvm.o \
 ../grid_common/grid_led.o \
 grid/grid_module.o \
 grid/grid_module_bu16.o \
@@ -32,7 +33,6 @@ grid/grid_module_en16.o \
 grid/grid_module_pbf4.o \
 grid/grid_module_po16.o \
 grid/grid_module_ef44.o \
-grid/grid_nvm.o \
 ../grid_common/grid_protocol.o \
 grid/grid_ui.o \
 grid/grid_lua_api.o \
@@ -89,6 +89,7 @@ OBJS_AS_ARGS +=  \
 "grid/d51/grid_d51_led.o" \
 "grid/d51/grid_d51_uart.o" \
 "grid/d51/grid_d51_usb.o" \
+"grid/d51/grid_d51_nvm.o" \
 "../grid_common/grid_led.o" \
 "grid/grid_module.o" \
 "grid/grid_module_bu16.o" \
@@ -96,7 +97,6 @@ OBJS_AS_ARGS +=  \
 "grid/grid_module_pbf4.o" \
 "grid/grid_module_po16.o" \
 "grid/grid_module_ef44.o" \
-"grid/grid_nvm.o" \
 "../grid_common/grid_protocol.o" \
 "grid/grid_ui.o" \
 "grid/grid_lua_api.o" \
@@ -164,6 +164,7 @@ DEPS_AS_ARGS +=  \
 "grid/d51/grid_d51_led.d" \
 "grid/d51/grid_d51_uart.d" \
 "grid/d51/grid_d51_usb.d" \
+"grid/d51/grid_d51_nvm.d" \
 "../grid_common/grid_led.d" \
 "grid/grid_module.d" \
 "grid/grid_module_bu16.d" \
@@ -171,7 +172,6 @@ DEPS_AS_ARGS +=  \
 "grid/grid_module_pbf4.d" \
 "grid/grid_module_po16.d" \
 "grid/grid_module_ef44.d" \
-"grid/grid_nvm.d" \
 "../grid_common/grid_protocol.d" \
 "grid/grid_ui.d" \
 "grid/grid_lua_api.d" \

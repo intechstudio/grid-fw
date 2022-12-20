@@ -174,7 +174,7 @@ static void nvm_task_inner(){
 	}	
 		
 	//clear buffer
-	for (uint32_t i=0; i<GRID_NVM_PAGE_SIZE; i++)
+	for (uint32_t i=0; i<GRID_D51_NVM_PAGE_SIZE; i++)
 	{
 		GRID_PORT_U.rx_double_buffer[i] = 0;
 	}
@@ -560,7 +560,7 @@ int main(void)
 	printf("QSPI\r\n");
 	qspi_test();
 
-	// grid_nvm_erase_all(&grid_nvm_state);
+	// grid_d51_nvm_erase_all(&grid_d51_nvm_state);
 
 	
 
@@ -595,8 +595,8 @@ int main(void)
 	}
 
 	printf("Start TOC init\r\n");
-	grid_nvm_toc_init(&grid_nvm_state);
-	//grid_nvm_toc_debug(&grid_nvm_state);
+	grid_d51_nvm_toc_init(&grid_d51_nvm_state);
+	//grid_d51_nvm_toc_debug(&grid_d51_nvm_state);
 	printf("Done TOC init\r\n");
 	grid_ui_page_load(&grid_ui_state, 0); //load page 0
 
@@ -605,7 +605,7 @@ int main(void)
 		grid_ui_bulk_pageread_next(&grid_ui_state);
 	}
 	
-	//grid_nvm_toc_debug(&grid_nvm_state);
+	//grid_d51_nvm_toc_debug(&grid_d51_nvm_state);
 	
 	init_timer();
 

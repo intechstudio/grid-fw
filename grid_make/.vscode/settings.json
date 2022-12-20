@@ -69,7 +69,8 @@
         "usbd_config.h": "c",
         "hiddf_mouse.h": "c",
         "hiddf_keyboard.h": "c",
-        "grid_portback.h": "c"
+        "grid_portback.h": "c",
+        "grid_module_bu16.h": "c"
     },
     "actionButtons": {
       "defaultColor": "#ff0034", // Can also use string color names.

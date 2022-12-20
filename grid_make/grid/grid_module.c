@@ -182,7 +182,7 @@ void grid_module_common_init(void){
 
 	grid_sys_set_bank(&grid_sys_state, 0);
 
-	grid_nvm_init(&grid_nvm_state, &FLASH_0);
+	grid_d51_nvm_init(&grid_d51_nvm_state, &FLASH_0);
 	
 		
 }

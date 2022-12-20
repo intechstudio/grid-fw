@@ -1728,7 +1728,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				}	
 				else if (msg_class == GRID_CLASS_NVMDEFRAG_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
-					grid_nvm_toc_defragment(&grid_nvm_state);
+					grid_d51_nvm_toc_defragment(&grid_d51_nvm_state);
 
 				}
 				else if (msg_class == GRID_CLASS_CONFIG_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
@@ -2115,7 +2115,7 @@ void grid_protocol_nvm_store_succcess_callback(){
 	// debugtext
 	grid_msg_packet_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
 	grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-	grid_msg_packet_body_append_printf(&response, "xxstore complete 0x%x", GRID_NVM_LOCAL_BASE_ADDRESS + grid_plaform_get_nvm_nextwriteoffset());				
+	grid_msg_packet_body_append_printf(&response, "xxstore complete 0x%x", GRID_D51_NVM_LOCAL_BASE_ADDRESS + grid_plaform_get_nvm_nextwriteoffset());				
 	grid_msg_packet_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
 
 	grid_msg_packet_close(&grid_msg_state, &response);

@@ -67,7 +67,7 @@ void grid_d51_init(){
 	
 	#include "grid/grid_hardwaretest.h"
 
-	//grid_nvm_init(&grid_nvm_state, &FLASH_0);
+	//grid_d51_nvm_init(&grid_d51_nvm_state, &FLASH_0);
 
     
 	grid_interface_hardwaretest_main();
@@ -843,19 +843,19 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction){
 
 void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type){
 
-	return (void*) grid_nvm_toc_entry_find(&grid_nvm_state, page, element, event_type);
+	return (void*) grid_d51_nvm_toc_entry_find(&grid_d51_nvm_state, page, element, event_type);
 }
 
 uint16_t grid_platform_get_actionstring_file_size(void* file_pointer){
 
-	struct grid_nvm_toc_entry*	entry = (struct grid_nvm_toc_entry*) file_pointer;
+	struct grid_d51_nvm_toc_entry*	entry = (struct grid_d51_nvm_toc_entry*) file_pointer;
 	return entry->config_string_length;
 
 }
 
 uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, uint8_t* targetstring){
 
-	return grid_nvm_toc_generate_actionstring(&grid_nvm_state, (struct grid_nvm_toc_entry*) file_pointer, targetstring);
+	return grid_d51_nvm_toc_generate_actionstring(&grid_d51_nvm_state, (struct grid_d51_nvm_toc_entry*) file_pointer, targetstring);
 
 }
 
@@ -863,39 +863,39 @@ uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, uint8
 
 void grid_platform_delete_actionstring_file(void* file_pointer){
 
-	struct grid_nvm_toc_entry*	entry = (struct grid_nvm_toc_entry*) file_pointer;
-	grid_nvm_config_store(&grid_nvm_state, entry->page_id, entry->element_id, entry->event_type, "");
+	struct grid_d51_nvm_toc_entry*	entry = (struct grid_d51_nvm_toc_entry*) file_pointer;
+	grid_d51_nvm_config_store(&grid_d51_nvm_state, entry->page_id, entry->element_id, entry->event_type, "");
 
 }
 
 
 void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, uint8_t* buffer, uint16_t length){
 
-	grid_nvm_config_store(&grid_nvm_state, page, element, event_type, buffer);
+	grid_d51_nvm_config_store(&grid_d51_nvm_state, page, element, event_type, buffer);
 
 }
 
 
 uint8_t grid_platform_get_nvm_state(){
 
-	return grid_nvm_is_ready(&grid_nvm_state);
+	return grid_d51_nvm_is_ready(&grid_d51_nvm_state);
 }
 
 
 uint32_t grid_plaform_get_nvm_nextwriteoffset(){
-	return grid_nvm_state.next_write_offset;
+	return grid_d51_nvm_state.next_write_offset;
 }
 
 
 uint8_t	grid_platform_clear_actionstring_files_from_page(uint8_t page){
 
-	struct grid_nvm_toc_entry* current = grid_nvm_state.toc_head;
+	struct grid_d51_nvm_toc_entry* current = grid_d51_nvm_state.toc_head;
 
 	while (current != NULL)
 	{
 		if (current->page_id == page){
 
-			grid_nvm_toc_entry_destroy(&grid_nvm_state, current);
+			grid_d51_nvm_toc_entry_destroy(&grid_d51_nvm_state, current);
 
 		}
 
@@ -908,13 +908,13 @@ uint8_t	grid_platform_clear_actionstring_files_from_page(uint8_t page){
 void grid_platform_delete_actionstring_files_all(){
 
 
-	grid_nvm_state.erase_bulk_address = GRID_NVM_LOCAL_BASE_ADDRESS;
+	grid_d51_nvm_state.erase_bulk_address = GRID_D51_NVM_LOCAL_BASE_ADDRESS;
 
-	struct grid_nvm_toc_entry* current = grid_nvm_state.toc_head;
+	struct grid_d51_nvm_toc_entry* current = grid_d51_nvm_state.toc_head;
 
 	while (current != NULL)
 	{
-		grid_nvm_toc_entry_destroy(&grid_nvm_state, current);
+		grid_d51_nvm_toc_entry_destroy(&grid_d51_nvm_state, current);
 		current = current->next;
 	}
 
@@ -922,13 +922,13 @@ void grid_platform_delete_actionstring_files_all(){
 
 uint8_t grid_platform_erase_nvm_next(){
 
-	if(grid_nvm_state.erase_bulk_address < GRID_NVM_LOCAL_END_ADDRESS){ // erase is in progress
+	if(grid_d51_nvm_state.erase_bulk_address < GRID_D51_NVM_LOCAL_END_ADDRESS){ // erase is in progress
 
 		//CRITICAL_SECTION_ENTER()
-		flash_erase(grid_nvm_state.flash, grid_nvm_state.erase_bulk_address, GRID_NVM_BLOCK_SIZE/GRID_NVM_PAGE_SIZE);
+		flash_erase(grid_d51_nvm_state.flash, grid_d51_nvm_state.erase_bulk_address, GRID_D51_NVM_BLOCK_SIZE/GRID_D51_NVM_PAGE_SIZE);
 		//CRITICAL_SECTION_LEAVE()
 
-		grid_nvm_state.erase_bulk_address += GRID_NVM_BLOCK_SIZE;
+		grid_d51_nvm_state.erase_bulk_address += GRID_D51_NVM_BLOCK_SIZE;
 
 		return 1;
 
