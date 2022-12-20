@@ -18,7 +18,9 @@ usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_sys.o \
 ../grid_common/grid_msg.o \
 ../grid_common/grid_buf.o \
-grid/grid_port.o \
+../grid_common/grid_port.o \
+../grid_common/grid_usb.o \
+grid/grid_portback.o \
 grid/d51/grid_d51.o \
 grid/d51/grid_d51_led.o \
 grid/d51/grid_d51_uart.o \
@@ -33,7 +35,6 @@ grid/grid_module_ef44.o \
 grid/grid_nvm.o \
 ../grid_common/grid_protocol.o \
 grid/grid_ui.o \
-grid/grid_usb.o \
 grid/grid_lua_api.o \
 ../grid_common/lua-5.4.3/src/lapi.o \
 ../grid_common/lua-5.4.3/src/lctype.o \
@@ -81,7 +82,9 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_sys.o" \
 "../grid_common/grid_msg.o" \
 "../grid_common/grid_buf.o" \
-"grid/grid_port.o" \
+"../grid_common/grid_port.o" \
+"../grid_common/grid_usb.o" \
+"grid/grid_portback.o" \
 "grid/d51/grid_d51.o" \
 "grid/d51/grid_d51_led.o" \
 "grid/d51/grid_d51_uart.o" \
@@ -96,7 +99,6 @@ OBJS_AS_ARGS +=  \
 "grid/grid_nvm.o" \
 "../grid_common/grid_protocol.o" \
 "grid/grid_ui.o" \
-"grid/grid_usb.o" \
 "grid/grid_lua_api.o" \
 "../grid_common/lua-5.4.3/src/lapi.o" \
 "../grid_common/lua-5.4.3/src/lctype.o" \
@@ -155,7 +157,9 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_sys.d" \
 "../grid_common/grid_msg.d" \
 "../grid_common/grid_buf.d" \
-"grid/grid_port.d" \
+"../grid_common/grid_port.d" \
+"../grid_common/grid_usb.d" \
+"grid/grid_portback.d" \
 "grid/d51/grid_d51.d" \
 "grid/d51/grid_d51_led.d" \
 "grid/d51/grid_d51_uart.d" \
@@ -170,7 +174,6 @@ DEPS_AS_ARGS +=  \
 "grid/grid_nvm.d" \
 "../grid_common/grid_protocol.d" \
 "grid/grid_ui.d" \
-"grid/grid_usb.d" \
 "grid/grid_lua_api.d" \
 "../grid_common/lua-5.4.3/src/lapi.d" \
 "../grid_common/lua-5.4.3/src/lctype.d" \

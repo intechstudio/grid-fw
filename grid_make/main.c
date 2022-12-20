@@ -58,14 +58,14 @@ static void usb_task_inner(){
 		
 	if (found){
 
-		//grid_debug_printf("MIDI: %02x %02x %02x %02x", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
+		//grid_port_debug_printf("MIDI: %02x %02x %02x %02x", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
 
 		uint8_t channel = midi_rx_buffer[1] & 0x0f;
 		uint8_t command = midi_rx_buffer[1] & 0xf0;
 		uint8_t param1 = midi_rx_buffer[2];
 		uint8_t param2 = midi_rx_buffer[3];
 
-		//grid_debug_printf("decoded: %d %d %d %d", channel, command, param1, param2);
+		//grid_port_debug_printf("decoded: %d %d %d %d", channel, command, param1, param2);
 		
 		struct grid_midi_event_desc midi_ev;
 
@@ -748,7 +748,7 @@ int main(void)
 
 			grid_msg_packet_close(&grid_msg_state, &response);
 
-			grid_sys_packet_send_everywhere(&response);
+			grid_port_packet_send_everywhere(&response);
 
 
 		}

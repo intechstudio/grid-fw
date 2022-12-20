@@ -244,7 +244,7 @@ static int l_my_print(lua_State* L) {
 
         if (lua_type(L, i) == LUA_TSTRING){
             
-            grid_debug_printf("%s", lua_tostring(L, i));
+            grid_port_debug_printf("%s", lua_tostring(L, i));
 		    //printf(" str: %s ", lua_tostring(L, i));
         }
         else if (lua_type(L, i) == LUA_TNUMBER){
@@ -254,7 +254,7 @@ static int l_my_print(lua_State* L) {
             lua_numbertointeger(lnum, &lint);
             //int32_t num = lua_tonumber
 
-            grid_debug_printf("%d", (int)lnum);
+            grid_port_debug_printf("%d", (int)lnum);
 		    //printf(" num: %d ", (int)lnum);
         }
         else if (lua_type(L, i) == LUA_TNIL){
@@ -347,7 +347,7 @@ static int l_grid_websocket_send(lua_State* L) {
 
     //printf("\r\n");
 
-    grid_websocket_print_text(message);
+    grid_port_websocket_print_text(message);
 
     return 0;
 }
@@ -399,19 +399,19 @@ static int l_grid_elementname_send(lua_State* L) {
             // grid_msg_packet_body_append_printf(&response, GRID_CLASS_ELEMENTNAME_frame_end);    
 
             // grid_msg_packet_close(&grid_msg_state, &response);
-            // grid_sys_packet_send_everywhere(&response);
+            // grid_port_packet_send_everywhere(&response);
 
 
-            //grid_debug_printf("SN: %d, %s", number, string);
+            //grid_port_debug_printf("SN: %d, %s", number, string);
 		    //printf(" str: %s ", lua_tostring(L, i));
         }
         else{
-            grid_debug_printf("Invalid args");
+            grid_port_debug_printf("Invalid args");
         }
 
     }
     else{
-        grid_debug_printf("Invalid args");
+        grid_port_debug_printf("Invalid args");
     }
 
     return 0;
@@ -1271,7 +1271,7 @@ static int l_grid_page_load(lua_State* L) {
 
         if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state) == 0){
 
-            grid_debug_printf("page request: %d", page);
+            grid_port_debug_printf("page request: %d", page);
             uint8_t response[20] = {0};
             sprintf(response, GRID_CLASS_PAGEACTIVE_frame);
             grid_msg_string_set_parameter(response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
@@ -1286,7 +1286,7 @@ static int l_grid_page_load(lua_State* L) {
     }
     else{
         //printf("page change is disabled\r\n");
-        grid_debug_printf("page change is disabled");
+        grid_port_debug_printf("page change is disabled");
     	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
     }
 
@@ -1727,7 +1727,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
         }
         else{
             //printf("LUA not OK: %s \r\n", code);
-            //grid_debug_printf("LUA not OK");
+            //grid_port_debug_printf("LUA not OK");
             is_ok = 0;
         }
 
@@ -1736,7 +1736,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
     }
     else{
         //printf("LUA not OK:  %s\r\n", code);
-        //grid_debug_printf("LUA not OK");
+        //grid_port_debug_printf("LUA not OK");
         is_ok = 0;
     }
 

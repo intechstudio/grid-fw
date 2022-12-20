@@ -15,6 +15,8 @@ idf_component_register(
         "../../grid_common/grid_sys.c"
         "../../grid_common/grid_msg.c"
         "../../grid_common/grid_buf.c"
+        "../../grid_common/grid_port.c"
+        "../../grid_common/grid_usb.c"
 
     INCLUDE_DIRS 
         "."

@@ -8,8 +8,22 @@
 #include "grid_usb.h"
 
 
+struct grid_midi_event_desc grid_midi_tx_buffer[GRID_MIDI_TX_BUFFER_length];
 
+uint16_t grid_midi_tx_write_index;
+uint16_t grid_midi_tx_read_index;
 
+struct grid_midi_event_desc grid_midi_rx_buffer[GRID_MIDI_RX_BUFFER_length];
+uint16_t grid_midi_rx_write_index;
+uint16_t grid_midi_rx_read_index;
+
+uint16_t grid_keyboard_tx_write_index;
+uint16_t grid_keyboard_tx_read_index;
+uint32_t grid_keyboard_tx_rtc_lasttimestamp;
+
+struct grid_keyboard_event_desc grid_keyboard_tx_buffer[GRID_KEYBOARD_TX_BUFFER_length];
+
+struct grid_keyboard_model grid_keyboard_state;
 
 void grid_usb_midi_init()
 {
@@ -38,7 +52,7 @@ void grid_keyboard_init(struct grid_keyboard_model* kb){
 	{
 		kb->hid_key_array[i].b_modifier = false;
 		kb->hid_key_array[i].key_id = 255;
-		kb->hid_key_array[i].state = HID_KB_KEY_UP;
+		kb->hid_key_array[i].state = GRID_KB_KEY_UP;
 		
 		
 		kb->key_list[i].ismodifier = 0;
@@ -89,7 +103,7 @@ uint8_t grid_keyboard_cleanup(struct grid_keyboard_model* kb){
 			
 //		uint8_t debugtext[100] = {0};
 //		snprintf(debugtext, 99, "count: %d | activekeys: %d, %d, %d, %d, %d, %d", kb->key_active_count, kb->key_list[0].keycode, kb->key_list[1].keycode, kb->key_list[2].keycode, kb->key_list[3].keycode, kb->key_list[4].keycode, kb->key_list[5].keycode);
-//		grid_debug_print_text(debugtext);
+//		grid_port_debug_print_text(debugtext);
 			
 			
 		// USB SEND
@@ -100,10 +114,9 @@ uint8_t grid_keyboard_cleanup(struct grid_keyboard_model* kb){
 }
 
 
-uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyboard_event_desc* key){
+void grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyboard_event_desc* key){
 	
 	uint8_t item_index = 255;
-	uint8_t remove_flag = 0;
 	uint8_t changed_flag = 0;
 	
 
@@ -134,7 +147,7 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
 	}
 	
 	
-	uint8_t print_happened = grid_keyboard_cleanup(kb);
+	grid_keyboard_cleanup(kb);
 	
 	
 	if (item_index == 255){
@@ -153,7 +166,7 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
 		
 		}
 		else{
-			//grid_debug_print_text("activekeys limit hit!");
+			//grid_port_debug_print_text("activekeys limit hit!");
 		}
 		
 	}
@@ -167,7 +180,7 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
 //		if (!print_happened){
 //			
 //			
-//			grid_debug_print_text(debugtext);
+//			grid_port_debug_print_text(debugtext);
 //		}
 			
 		
@@ -187,7 +200,7 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
         }
         else{
         
-            grid_debug_print_text("KB IS DISABLED");
+            grid_port_debug_print_text("KB IS DISABLED");
                    
             // Generate ACKNOWLEDGE RESPONSE
             struct grid_msg_packet message;
@@ -199,7 +212,7 @@ uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyb
 			grid_msg_packet_body_append_parameter(&message, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, kb->isenabled);
 			
             grid_msg_packet_close(&grid_msg_state, &message);
-            grid_sys_packet_send_everywhere(&message);
+            grid_port_packet_send_everywhere(&message);
             
         }
 
@@ -245,7 +258,7 @@ uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event){
 
 }
 
-uint8_t grid_midi_tx_pop(){
+void grid_midi_tx_pop(){
 
 	if (grid_midi_tx_read_index != grid_midi_tx_write_index){
 		
@@ -257,10 +270,6 @@ uint8_t grid_midi_tx_pop(){
 			uint8_t byte3 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte3;
 			
 			grid_midi_tx_read_index = (grid_midi_tx_read_index+1)%GRID_MIDI_TX_BUFFER_length;
-			uint32_t space_in_buffer = (grid_midi_tx_read_index-grid_midi_tx_write_index + GRID_MIDI_TX_BUFFER_length)%GRID_MIDI_TX_BUFFER_length;
-	
-
-			//printf("R: %d %d: %d\r\n", grid_midi_tx_write_index, grid_midi_tx_read_index, space_in_buffer);
 			grid_platform_usb_midi_write(byte0, byte1, byte2, byte3);
 
 
@@ -272,7 +281,7 @@ uint8_t grid_midi_tx_pop(){
 }
 
 
-uint8_t grid_midi_rx_push(struct grid_midi_event_desc midi_event){
+void grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 
 	// MIDI RX IS DISABLED
 
@@ -336,7 +345,7 @@ uint8_t grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 
 }
 
-uint8_t grid_midi_rx_pop(){
+void grid_midi_rx_pop(){
 
 	if (grid_midi_rx_read_index != grid_midi_rx_write_index){
 		
@@ -373,7 +382,7 @@ uint8_t grid_midi_rx_pop(){
 		}
 
 		grid_msg_packet_close(&grid_msg_state, &message);
-		grid_sys_packet_send_everywhere(&message);
+		grid_port_packet_send_everywhere(&message);
 
 		
 	}
@@ -422,7 +431,7 @@ uint8_t grid_keyboard_tx_push(struct grid_keyboard_event_desc keyboard_event){
 
 }
 
-uint8_t grid_keyboard_tx_pop(){
+void grid_keyboard_tx_pop(){
 
 	if (grid_keyboard_tx_read_index != grid_keyboard_tx_write_index){
 		
@@ -433,10 +442,7 @@ uint8_t grid_keyboard_tx_pop(){
         
 		if (elapsed > grid_keyboard_tx_buffer[grid_keyboard_tx_read_index].delay*RTC1MS){
 			
-			uint32_t space_in_buffer = (grid_keyboard_tx_read_index-grid_keyboard_tx_write_index + GRID_KEYBOARD_TX_BUFFER_length)%GRID_KEYBOARD_TX_BUFFER_length;
 
-			//printf("R: %d %d : %d\r\n", grid_keyboard_tx_write_index, grid_keyboard_tx_read_index, space_in_buffer);
-            
             struct grid_keyboard_event_desc key;
             
             key.ismodifier = grid_keyboard_tx_buffer[grid_keyboard_tx_read_index].ismodifier;
@@ -461,7 +467,7 @@ uint8_t grid_keyboard_tx_pop(){
 				grid_platform_usb_mouse_move(position, axis);
 
 
-				// grid_debug_printf("MouseMove: %d %d", position, axis);	
+				// grid_port_debug_printf("MouseMove: %d %d", position, axis);	
 
 			}
 			else if(key.ismodifier == 3){
@@ -471,7 +477,7 @@ uint8_t grid_keyboard_tx_pop(){
 				uint8_t button = key.keycode;
 				grid_platform_usb_mouse_button_change(state, button);
 			
-				// grid_debug_printf("MouseButton: %d %d", state, button);	
+				// grid_port_debug_printf("MouseButton: %d %d", state, button);	
 				
 
 			}

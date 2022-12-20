@@ -29,7 +29,7 @@ void grid_nvm_init(struct grid_nvm_model* nvm, struct flash_descriptor* flash_in
 
 uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 
-	grid_debug_printf("Start defragmentation");
+	grid_port_debug_printf("Start defragmentation");
 
 	uint8_t block_buffer[GRID_NVM_BLOCK_SIZE] = {0x00};
 
@@ -149,7 +149,7 @@ uint32_t grid_nvm_toc_defragment(struct grid_nvm_model* nvm){
 
 	grid_msg_packet_close(&grid_msg_state, &response);
 
-	grid_sys_packet_send_everywhere(&response);
+	grid_port_packet_send_everywhere(&response);
 
 
 	grid_nvm_toc_debug(nvm);
@@ -211,14 +211,14 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 	for (uint16_t i=0; i<append_length; i++){
 		if (verify_buffer[i] != append_buffer[i]){
 			//printf("ERROR: APPEND VERIFY FAILED 0x%x  len:%d (%d!=%d)\r\n\r\n", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
-			grid_debug_printf("append verify failed 0x%x len:%d (%d!=%d)", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
+			grid_port_debug_printf("append verify failed 0x%x len:%d (%d!=%d)", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
 			failed_flag = 1;
 		}
 	}
 
 	// IF FAILED, TRY USING FLASH_WRITE
 	if (failed_flag){
-		grid_debug_printf("Attempt to fix flash content");
+		grid_port_debug_printf("Attempt to fix flash content");
 
 		CRITICAL_SECTION_ENTER()	
 		flash_write(mod->flash, GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, append_buffer, append_length);
@@ -241,16 +241,16 @@ uint32_t grid_nvm_append(struct grid_nvm_model* mod, uint8_t* buffer, uint16_t l
 		for (uint16_t i=0; i<append_length; i++){
 			if (verify_buffer[i] != append_buffer[i]){
 				//printf("ERROR: APPEND VERIFY FAILED 0x%x  len:%d (%d!=%d)\r\n\r\n", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
-				grid_debug_printf("append verify failed 0x%x len:%d (%d!=%d)", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
+				grid_port_debug_printf("append verify failed 0x%x len:%d (%d!=%d)", GRID_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset + i, append_length, verify_buffer[i], append_buffer[i]);
 				failed_flag = 1;
 			}
 		}
 
 		if (failed_flag){
-			grid_debug_printf("Still failed, sorry!");
+			grid_port_debug_printf("Still failed, sorry!");
 		}
 		else{
-			grid_debug_printf("All Good!");
+			grid_port_debug_printf("All Good!");
 		}
 	}
 
@@ -283,7 +283,7 @@ uint32_t grid_nvm_clear(struct grid_nvm_model* mod, uint32_t offset, uint16_t le
 	// for (uint16_t i=0; i<clear_length; i++){
 	// 	if (verify_buffer[i] != 0x00){
 	// 		printf("\r\n\r\nerror.nvm.clear verify failed at 0x%x cb:%d vb:%d", GRID_NVM_LOCAL_BASE_ADDRESS + offset + i, clear_buffer[i], verify_buffer[i]);
-	// 		grid_debug_printf("clear verify failed");
+	// 		grid_port_debug_printf("clear verify failed");
 	// 		for(uint8_t j=0; j<10; j++){ // retry max 10 times
 
 	// 			// try again chunk
@@ -474,7 +474,7 @@ void grid_nvm_toc_init(struct grid_nvm_model* nvm){
 						// version ok	
 					}
 					else{
-						grid_debug_printf("error.nvm.config version mismatch\r\n");
+						grid_port_debug_printf("error.nvm.config version mismatch\r\n");
 					}
 
 
@@ -884,7 +884,7 @@ uint32_t grid_nvm_toc_generate_actionstring(struct grid_nvm_model* nvm, struct g
 
 			printf("char: @%d is %d length: %d\r\n", i,  targetstring[i], length);
 
-			grid_debug_printf("toc invalid g a %d --- char: @%d is %d length: %d", entry->config_string_length, i,  targetstring[i], length);
+			grid_port_debug_printf("toc invalid g a %d --- char: @%d is %d length: %d", entry->config_string_length, i,  targetstring[i], length);
 
 			printf("toc invalid g a %d %s\r\n", entry->config_string_length, targetstring);
 

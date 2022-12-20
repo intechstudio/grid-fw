@@ -124,7 +124,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 			grid_msg_packet_body_append_text(&message_global, payload_global);
 			grid_msg_packet_close(&grid_msg_state, &message_global);
-			grid_sys_packet_send_everywhere(&message_global);
+			grid_port_packet_send_everywhere(&message_global);
 		}
 
 		
@@ -147,7 +147,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 			
 // 			uint8_t debug_string[200] = {0};
 // 			sprintf(debug_string, "Space: RX: %d/%d  TX: %d/%d", grid_buffer_get_space(&GRID_PORT_U.rx_buffer), GRID_BUFFER_SIZE, grid_buffer_get_space(&GRID_PORT_U.tx_buffer), GRID_BUFFER_SIZE);
-// 			grid_debug_print_text(debug_string);
+// 			grid_port_debug_print_text(debug_string);
 
 
 		}
@@ -268,7 +268,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 		grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
 		
 		grid_msg_packet_close(&grid_msg_state, &response);
-		grid_sys_packet_send_everywhere(&response);
+		grid_port_packet_send_everywhere(&response);
 
 	}
 
@@ -749,7 +749,7 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 		if (buf == NULL){
 
 			printf("error.template buffer is invalid\r\n");
-			grid_debug_print_text("error.template buffer is invalid");
+			grid_port_debug_print_text("error.template buffer is invalid");
 
 		}
 		else{
@@ -758,7 +758,7 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 			ele->template_parameter_list = buf->template_parameter_list;
 
 			if (buf->template_parameter_list == NULL){
-				grid_debug_print_text("NULL");
+				grid_port_debug_print_text("NULL");
 			}
 
 
@@ -771,7 +771,7 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 				}
 				printf("\r\n");
 
-				grid_debug_printf("Val[%d]: %d", i, ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index]);
+				grid_port_debug_printf("Val[%d]: %d", i, ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index]);
 
 			}
 
@@ -906,7 +906,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* act
 	}
 
 	if (0 == grid_lua_dostring(&grid_lua_state, temp)){
-		grid_debug_printf("LUA not OK, Failed to register action! EL: %d EV: %d", ele->index, eve->index);
+		grid_port_debug_printf("LUA not OK, Failed to register action! EL: %d EV: %d", ele->index, eve->index);
 	};
 
 	if (eve->cfg_default_flag == 0){ // NOT DEFAULT
@@ -1127,7 +1127,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 				temp[i] = 0; // terminating zero for lua dostring
 
 				if (0 == grid_lua_dostring(&grid_lua_state, &temp[code_start+6])){
-					grid_debug_printf("LUA not OK! EL: %d EV: %d", eve->parent->index, eve->index);
+					grid_port_debug_printf("LUA not OK! EL: %d EV: %d", eve->parent->index, eve->index);
 				};
 
 				uint32_t code_stdo_length = strlen(grid_lua_state.stdo);
@@ -1333,7 +1333,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 
 	}
 	
-	//grid_debug_printf("read complete");
+	//grid_port_debug_printf("read complete");
 	grid_keyboard_state.isenabled = 1;	
 
 

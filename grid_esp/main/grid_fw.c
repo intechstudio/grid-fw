@@ -47,6 +47,10 @@
 #include "../../grid_common/grid_sys.h"
 #include "../../grid_common/grid_msg.h"
 #include "../../grid_common/grid_buf.h"
+#include "../../grid_common/grid_port.h"
+#include "../../grid_common/grid_usb.h"
+
+
 
 
 void app_main(void)
@@ -85,6 +89,8 @@ void app_main(void)
     struct grid_buffer buf;
 
     grid_buffer_init(&buf, 1000);
+    grid_port_init_all();
+    grid_usb_midi_init();
 
     SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 

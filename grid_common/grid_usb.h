@@ -9,7 +9,11 @@
 #ifndef GRID_USB_H_
 #define GRID_USB_H_
 
-#include "grid_module.h"
+#include "grid_port.h"
+#include "grid_sys.h"
+#include "grid_led.h"
+
+#include <stdbool.h>
 
 // only for uint definitions
 #include  <stdint.h>
@@ -27,6 +31,9 @@ extern int32_t grid_platform_usb_keyboard_keys_state_change(void* keys_desc, uin
 void grid_usb_midi_init();
 
 
+
+enum grid_kb_key_state { GRID_KB_KEY_UP, GRID_KB_KEY_DOWN };
+
 /** Describes the USB HID Keyboard Key descriptors. */
 struct grid_kb_key_descriptors {
 	/* HID Key Value, defined in usb_protocol_hid.h */
@@ -34,7 +41,7 @@ struct grid_kb_key_descriptors {
 	/* Flag whether it is a modifier key */
 	bool b_modifier;
 	/* Key State */
-	enum hiddf_kb_key_state state;
+	enum grid_kb_key_state state;
 };
 
 
@@ -53,23 +60,23 @@ void grid_midi_buffer_init(struct grid_midi_event_desc* buf, uint16_t length);
 
 // Midi tx buffer
 #define GRID_MIDI_TX_BUFFER_length 100
-struct grid_midi_event_desc grid_midi_tx_buffer[GRID_MIDI_TX_BUFFER_length];
 
-uint16_t grid_midi_tx_write_index;
-uint16_t grid_midi_tx_read_index;
+extern struct grid_midi_event_desc grid_midi_tx_buffer[GRID_MIDI_TX_BUFFER_length];
+extern uint16_t grid_midi_tx_write_index;
+extern uint16_t grid_midi_tx_read_index;
 
 uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event);
-uint8_t grid_midi_tx_pop();
+void grid_midi_tx_pop();
 
 // Midi rx buffer
 #define GRID_MIDI_RX_BUFFER_length 100
-struct grid_midi_event_desc grid_midi_rx_buffer[GRID_MIDI_RX_BUFFER_length];
 
-uint16_t grid_midi_rx_write_index;
-uint16_t grid_midi_rx_read_index;
+extern struct grid_midi_event_desc grid_midi_rx_buffer[GRID_MIDI_RX_BUFFER_length];
+extern uint16_t grid_midi_rx_write_index;
+extern uint16_t grid_midi_rx_read_index;
 
-uint8_t grid_midi_rx_push(struct grid_midi_event_desc midi_event);
-uint8_t grid_midi_rx_pop();
+void grid_midi_rx_push(struct grid_midi_event_desc midi_event);
+void grid_midi_rx_pop();
 
 
 
@@ -82,10 +89,9 @@ struct grid_keyboard_event_desc {
 
 };
 
-uint16_t grid_keyboard_tx_write_index;
-uint16_t grid_keyboard_tx_read_index;
-
-uint32_t grid_keyboard_tx_rtc_lasttimestamp;
+extern uint16_t grid_keyboard_tx_write_index;
+extern uint16_t grid_keyboard_tx_read_index;
+extern uint32_t grid_keyboard_tx_rtc_lasttimestamp;
 
 
 
@@ -95,12 +101,12 @@ uint32_t grid_keyboard_tx_rtc_lasttimestamp;
 
 #define GRID_KEYBOARD_TX_BUFFER_length 101
 
-struct grid_keyboard_event_desc grid_keyboard_tx_buffer[GRID_KEYBOARD_TX_BUFFER_length];
+extern struct grid_keyboard_event_desc grid_keyboard_tx_buffer[GRID_KEYBOARD_TX_BUFFER_length];
 
 void grid_keyboard_buffer_init(struct grid_keyboard_event_desc* buf, uint16_t length);
 
 uint8_t grid_keyboard_tx_push(struct grid_keyboard_event_desc keyboard_event);
-uint8_t grid_keyboard_tx_pop();
+void grid_keyboard_tx_pop();
 
 
 
@@ -118,13 +124,13 @@ struct grid_keyboard_model{
 	
 };
 
-struct grid_keyboard_model grid_keyboard_state;
+extern struct grid_keyboard_model grid_keyboard_state;
 
 void grid_keyboard_init(struct grid_keyboard_model* kb);
 
 uint8_t grid_keyboard_cleanup(struct grid_keyboard_model* kb);
 
-uint8_t grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyboard_event_desc* key);
+void grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyboard_event_desc* key);
 
 
 

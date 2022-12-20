@@ -11,10 +11,6 @@
 
 
  
-
- #define RTC1SEC 16384
-
- #define RTC1MS (RTC1SEC/1000)
  
  
 #include "d51/grid_d51.h"
@@ -36,6 +32,7 @@
 
 
 #include "grid_ain.h"
+#include "grid_portback.h"
 #include "grid_port.h"
 #include "grid_led.h"
 
