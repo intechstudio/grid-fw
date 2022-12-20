@@ -63,7 +63,12 @@
         "hal_evsys.h": "c",
         "grid_port.h": "c",
         "stdint.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "grid_d51_usb.h": "c",
+        "cdcdf_acm.h": "c",
+        "usbd_config.h": "c",
+        "hiddf_mouse.h": "c",
+        "hiddf_keyboard.h": "c"
     },
     "actionButtons": {
       "defaultColor": "#ff0034", // Can also use string color names.

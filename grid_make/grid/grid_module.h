@@ -17,7 +17,9 @@
  #define RTC1MS (RTC1SEC/1000)
  
  
-#include "grid_d51.h"
+#include "d51/grid_d51.h"
+#include "d51/grid_d51_uart.h"
+#include "d51/grid_d51_usb.h"
  
 #include "grid_protocol.h"
 
@@ -37,7 +39,6 @@
 #include "grid_port.h"
 #include "grid_led.h"
 
-#include "grid_d51_uart.h"
 
 
 

@@ -12,23 +12,26 @@
 #include "grid_module.h"
 
 
-static uint8_t *cdcdf_demo_buf;
-static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count);
-static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count);
-static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state);
-void grid_usb_serial_init();
+extern int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
+extern int32_t grid_platform_usb_midi_write_status(void);
+extern int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type);
+extern int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis);
+extern int32_t grid_platform_usb_keyboard_keys_state_change(void* keys_desc, uint8_t keys_count);
 
-
-static bool grid_usb_midi_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count);
-static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count);
 
 void grid_usb_midi_init();
 
 
+/** Describes the USB HID Keyboard Key descriptors. */
+struct grid_kb_key_descriptors {
+	/* HID Key Value, defined in usb_protocol_hid.h */
+	uint8_t key_id;
+	/* Flag whether it is a modifier key */
+	bool b_modifier;
+	/* Key State */
+	enum hiddf_kb_key_state state;
+};
 
-
-volatile uint8_t grid_usb_serial_rx_flag;
-volatile uint16_t grid_usb_serial_rx_size;
 
 struct grid_midi_event_desc {
 	
@@ -102,7 +105,7 @@ uint8_t grid_keyboard_tx_pop();
 
 struct grid_keyboard_model{
 	
-	struct hiddf_kb_key_descriptors hid_key_array[GRID_KEYBOARD_KEY_maxcount]; 
+	struct grid_kb_key_descriptors hid_key_array[GRID_KEYBOARD_KEY_maxcount]; 
 	struct  grid_keyboard_event_desc key_list[GRID_KEYBOARD_KEY_maxcount];
 	uint8_t key_active_count;
     

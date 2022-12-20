@@ -6,6 +6,7 @@ usb/class/midi/device \
 usb/class/midi \
 grid/lua \
 grid \
+grid/d51 \
 ../grid_common/lua-5.4.3/src \
 \
 
@@ -18,9 +19,10 @@ usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_msg.o \
 ../grid_common/grid_buf.o \
 grid/grid_port.o \
-grid/grid_d51.o \
-grid/grid_d51_led.o \
-grid/grid_d51_uart.o \
+grid/d51/grid_d51.o \
+grid/d51/grid_d51_led.o \
+grid/d51/grid_d51_uart.o \
+grid/d51/grid_d51_usb.o \
 ../grid_common/grid_led.o \
 grid/grid_module.o \
 grid/grid_module_bu16.o \
@@ -80,9 +82,10 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_msg.o" \
 "../grid_common/grid_buf.o" \
 "grid/grid_port.o" \
-"grid/grid_d51.o" \
-"grid/grid_d51_led.o" \
-"grid/grid_d51_uart.o" \
+"grid/d51/grid_d51.o" \
+"grid/d51/grid_d51_led.o" \
+"grid/d51/grid_d51_uart.o" \
+"grid/d51/grid_d51_usb.o" \
 "../grid_common/grid_led.o" \
 "grid/grid_module.o" \
 "grid/grid_module_bu16.o" \
@@ -136,6 +139,7 @@ OBJS_AS_ARGS +=  \
 DIR_INCLUDES +=  \
 -I"../" \
 -I"../grid" \
+-I"../grid/d51" \
 -I"../usb/class/midi/" \
 -I"../usb/class/midi/device" \
 -I"../../grid_common" \
@@ -152,9 +156,10 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_msg.d" \
 "../grid_common/grid_buf.d" \
 "grid/grid_port.d" \
-"grid/grid_d51.d" \
-"grid/grid_d51_led.d" \
-"grid/grid_d51_uart.d" \
+"grid/d51/grid_d51.d" \
+"grid/d51/grid_d51_led.d" \
+"grid/d51/grid_d51_uart.d" \
+"grid/d51/grid_d51_usb.d" \
 "../grid_common/grid_led.d" \
 "grid/grid_module.d" \
 "grid/grid_module_bu16.d" \

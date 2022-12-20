@@ -576,7 +576,10 @@ int main(void)
 
 	composite_device_start();
 
-	grid_usb_serial_init();
+
+
+	grid_d51_usb_init();
+
 	grid_usb_midi_init();
 
 	grid_keyboard_init(&grid_keyboard_state);
