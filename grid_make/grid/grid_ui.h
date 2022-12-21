@@ -85,6 +85,7 @@ struct grid_ui_element
 struct grid_ui_model
 {
 
+	struct grid_port* port;
 
 	enum grid_ui_status status;
 	
@@ -133,7 +134,7 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_find(struct grid_ui_elem
 
 volatile struct grid_ui_model grid_ui_state;
 
-void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length);
+void grid_ui_model_init(struct grid_ui_model* mod, struct grid_port* port, uint8_t element_list_length);
 void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid_ui_element_t element_type);
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui_event_t event_type);
 
@@ -157,6 +158,12 @@ void grid_ui_event_reset(struct grid_ui_event* eve);
 uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve);
 uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve);
 
+uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui);
+uint16_t grid_ui_event_count_istriggered_local(struct grid_ui_model* ui);
+
+
+
+
 uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, uint8_t* target_string);
 uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_string);
 
@@ -164,7 +171,8 @@ void* grid_ui_event_allocate_actionstring(struct grid_ui_event* eve, uint32_t le
 void grid_ui_event_free_actionstring(struct grid_ui_event* eve);
 
 
-void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por);
+void grid_port_process_ui(struct grid_ui_model* ui);
+void grid_port_process_ui_local(struct grid_ui_model* ui);
 
 
 // requires NVM

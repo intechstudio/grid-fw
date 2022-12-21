@@ -203,7 +203,36 @@ static void ui_task_inner(){
 
 		grid_port_ping_try_everywhere();
 
-		grid_port_process_ui(&grid_ui_state, &GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
+		// IF LOCAL MESSAGE IS AVAILABLE
+		if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
+
+			grid_port_process_ui_local(&grid_ui_state); // COOLDOWN DELAY IMPLEMENTED INSIDE
+
+		}
+
+
+		// Bandwidth Limiter for Broadcast messages
+
+		
+		
+		if (grid_ui_state.port->cooldown > 0){
+			grid_ui_state.port->cooldown--;
+		}
+		
+		
+		if (grid_ui_state.port->cooldown > 5){
+			printf("SKIP\r\n");
+
+		}
+		else{
+
+			if (grid_ui_event_count_istriggered(&grid_ui_state)){
+
+				grid_ui_state.port->cooldown += 3;	
+				grid_port_process_ui(&grid_ui_state); // COOLDOWN DELAY IMPLEMENTED INSIDE
+			}
+		}
+
 
 	}
 

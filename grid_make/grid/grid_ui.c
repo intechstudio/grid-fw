@@ -2,229 +2,181 @@
 
 
 
-void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
-	
-	// Priorities: Always process local, try to process direct, broadcast messages are last. 	
-	
-	uint8_t ui_available = 0;
-	uint8_t message_local_action_available = 0;
+void grid_port_process_ui_local(struct grid_ui_model* ui){
 
-	// UI STATE
+
 		
+	// Prepare packet header LOCAL
+	struct grid_msg_packet message_local;
+	grid_msg_packet_init(&grid_msg_state, &message_local, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
+	uint8_t payload_local[GRID_PARAMETER_PACKET_maxlength] = {0};				
+	uint32_t offset_local=0;		
+
+	// Prepare packet header GLOBAL
+	struct grid_msg_packet message_global;
+	grid_msg_packet_init(&grid_msg_state, &message_global, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
+	uint8_t payload_global[GRID_PARAMETER_PACKET_maxlength] = {0};				
+	uint32_t offset_global=0;
+	
+	
+	
+	// UI STATE
+
 	for (uint8_t j=0; j<grid_ui_state.element_list_length; j++){
 		
 		for (uint8_t k=0; k<grid_ui_state.element_list[j].event_list_length; k++){
-			
-			if (grid_ui_event_istriggered(&grid_ui_state.element_list[j].event_list[k])){
+		
+			if (offset_local>GRID_PARAMETER_PACKET_marign || offset_global>GRID_PARAMETER_PACKET_marign){
+				continue;
+			}		
+			else{
+				
+				CRITICAL_SECTION_ENTER()
+				if (grid_ui_event_istriggered_local(&grid_ui_state.element_list[j].event_list[k])){
+					
+					offset_local += grid_ui_event_render_action(&grid_ui_state.element_list[j].event_list[k], &payload_local[offset_local]);
+					grid_ui_event_reset(&grid_ui_state.element_list[j].event_list[k]);
 
-				ui_available++;
 
+					// automatically report elementname after config
+					if (j<grid_ui_state.element_list_length-1){
+						
+
+							uint8_t number = j;
+							uint8_t command[20] = {0};
+
+							sprintf(command, "gens(%d,ele[%d]:gen())", j, j);
+
+							// lua get element name
+							grid_lua_clear_stdo(&grid_lua_state);
+							grid_lua_dostring(&grid_lua_state, command);
+							strcat(payload_global, grid_lua_get_output_string(&grid_lua_state));
+							grid_lua_clear_stdo(&grid_lua_state);
+
+					}
+					
+
+				
+				}
+				CRITICAL_SECTION_LEAVE()
 				
 			}
-			
-			if (grid_ui_event_istriggered_local(&grid_ui_state.element_list[j].event_list[k])){
-				
-				message_local_action_available++;
-
-				
-			}
-			
+		
 		}
+		
+		
+
 		
 	}
+
+	if (strlen(payload_global)>0){
+
+		grid_msg_packet_body_append_text(&message_global, payload_global);
+		grid_msg_packet_close(&grid_msg_state, &message_global);
+		grid_port_packet_send_everywhere(&message_global);
+	}
+
 	
-	
-	//LOCAL MESSAGES
-	if (message_local_action_available){
-			
-		// Prepare packet header LOCAL
-		struct grid_msg_packet message_local;
-		grid_msg_packet_init(&grid_msg_state, &message_local, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
-		uint8_t payload_local[GRID_PARAMETER_PACKET_maxlength] = {0};				
-		uint32_t offset_local=0;		
+	grid_msg_packet_body_append_text(&message_local, payload_local);
 
-		// Prepare packet header GLOBAL
-		struct grid_msg_packet message_global;
-		grid_msg_packet_init(&grid_msg_state, &message_global, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
-		uint8_t payload_global[GRID_PARAMETER_PACKET_maxlength] = {0};				
-		uint32_t offset_global=0;
+
+	grid_msg_packet_close(&grid_msg_state, &message_local);
 		
+	uint32_t message_length = grid_msg_packet_get_length(&message_local);
 		
-		
-		// UI STATE
-
-		for (uint8_t j=0; j<grid_ui_state.element_list_length; j++){
+	// Put the packet into the UI_TX buffer
+	if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, message_length)){
 			
-			for (uint8_t k=0; k<grid_ui_state.element_list[j].event_list_length; k++){
-			
-				if (offset_local>GRID_PARAMETER_PACKET_marign || offset_global>GRID_PARAMETER_PACKET_marign){
-					continue;
-				}		
-				else{
-					
-					CRITICAL_SECTION_ENTER()
-					if (grid_ui_event_istriggered_local(&grid_ui_state.element_list[j].event_list[k])){
-						
-						offset_local += grid_ui_event_render_action(&grid_ui_state.element_list[j].event_list[k], &payload_local[offset_local]);
-						grid_ui_event_reset(&grid_ui_state.element_list[j].event_list[k]);
-
-
-						// automatically report elementname after config
-						if (j<grid_ui_state.element_list_length-1){
-							
-
-								uint8_t number = j;
-								uint8_t command[20] = {0};
-
-								sprintf(command, "gens(%d,ele[%d]:gen())", j, j);
-
-								// lua get element name
-								grid_lua_clear_stdo(&grid_lua_state);
-								grid_lua_dostring(&grid_lua_state, command);
-								strcat(payload_global, grid_lua_get_output_string(&grid_lua_state));
-								grid_lua_clear_stdo(&grid_lua_state);
-
-						}
-						
-
-					
-					}
-					CRITICAL_SECTION_LEAVE()
-					
-				}
-			
-			}
-			
-			
-
-			
-		}
-
-		if (strlen(payload_global)>0){
-
-			grid_msg_packet_body_append_text(&message_global, payload_global);
-			grid_msg_packet_close(&grid_msg_state, &message_global);
-			grid_port_packet_send_everywhere(&message_global);
-		}
-
-		
-		grid_msg_packet_body_append_text(&message_local, payload_local);
-
-
-		grid_msg_packet_close(&grid_msg_state, &message_local);
-			
-		uint32_t message_length = grid_msg_packet_get_length(&message_local);
-			
-		// Put the packet into the UI_TX buffer
-		if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, message_length)){
+		for(uint32_t i = 0; i<message_length; i++){
 				
-			for(uint32_t i = 0; i<message_length; i++){
-					
-				grid_buffer_write_character(&GRID_PORT_U.tx_buffer, grid_msg_packet_send_char_by_char(&message_local, i));
-			}
-				
-			grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
+			grid_buffer_write_character(&GRID_PORT_U.tx_buffer, grid_msg_packet_send_char_by_char(&message_local, i));
+		}
 			
+		grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
+		
 // 			uint8_t debug_string[200] = {0};
 // 			sprintf(debug_string, "Space: RX: %d/%d  TX: %d/%d", grid_buffer_get_space(&GRID_PORT_U.rx_buffer), GRID_BUFFER_SIZE, grid_buffer_get_space(&GRID_PORT_U.tx_buffer), GRID_BUFFER_SIZE);
 // 			grid_port_debug_print_text(debug_string);
 
 
-		}
-		else{
-			// LOG UNABLE TO WRITE EVENT
-		}
-			
 	}
-	
-	
-	
-	
-	// Bandwidth Limiter for Broadcast messages
-	
-	if (por->cooldown > 0){
-		por->cooldown--;
+	else{
+		// LOG UNABLE TO WRITE EVENT
 	}
-	
-	
-	if (por->cooldown > 5){
-		printf("SKIP\r\n");
+		
 
-		return;
-	}
+
+
+
+
+}
+
+
+void grid_port_process_ui(struct grid_ui_model* ui){
+	
 
 
 	struct grid_msg_packet message;
 	grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 	
+
+	for (uint8_t j=0; j<grid_ui_state.element_list_length; j++){
 	
-	// BROADCAST MESSAGES : UI STATE
-	if (ui_available){
+		for (uint8_t k=0; k<grid_ui_state.element_list[j].event_list_length; k++){ //j=1 because init is local
 		
-		for (uint8_t j=0; j<grid_ui_state.element_list_length; j++){
-		
-			for (uint8_t k=0; k<grid_ui_state.element_list[j].event_list_length; k++){ //j=1 because init is local
-			
-				if (grid_msg_packet_get_length(&message)>GRID_PARAMETER_PACKET_marign){
-					continue;
-				}		
-				else{
-								
-					if (grid_ui_event_istriggered(&grid_ui_state.element_list[j].event_list[k])){
+			if (grid_msg_packet_get_length(&message)>GRID_PARAMETER_PACKET_marign){
+				continue;
+			}		
+			else{
+							
+				if (grid_ui_event_istriggered(&grid_ui_state.element_list[j].event_list[k])){
 
-						uint32_t offset = grid_msg_packet_body_get_length(&message); 
+					uint32_t offset = grid_msg_packet_body_get_length(&message); 
 
-						message.body_length += grid_ui_event_render_event(&grid_ui_state.element_list[j].event_list[k], &message.body[offset]);
-					
-						offset = grid_msg_packet_body_get_length(&message); 
-
-						CRITICAL_SECTION_ENTER()
-						message.body_length += grid_ui_event_render_action(&grid_ui_state.element_list[j].event_list[k], &message.body[offset]);
-						grid_ui_event_reset(&grid_ui_state.element_list[j].event_list[k]);
-						CRITICAL_SECTION_LEAVE()
-						
-
-					}
-					
-				}
-			
-			}
-		}
-		
-	}
-	
-	if (ui_available){
-
-		
-		//por->cooldown += (2+por->cooldown/2);
-		por->cooldown += 3;
-		//por->cooldown = 3;		
-
-		grid_msg_packet_close(&grid_msg_state, &message);
-		uint32_t length = grid_msg_packet_get_length(&message);
-		
-
-		// Put the packet into the UI_RX buffer
-		if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, length)){
-	
-			for(uint16_t i = 0; i<length; i++){
+					message.body_length += grid_ui_event_render_event(&grid_ui_state.element_list[j].event_list[k], &message.body[offset]);
 				
-				grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char_by_char(&message, i));
-			}
-			
-			grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
+					offset = grid_msg_packet_body_get_length(&message); 
 
+					CRITICAL_SECTION_ENTER()
+					message.body_length += grid_ui_event_render_action(&grid_ui_state.element_list[j].event_list[k], &message.body[offset]);
+					grid_ui_event_reset(&grid_ui_state.element_list[j].event_list[k]);
+					CRITICAL_SECTION_LEAVE()
+					
+
+				}
+				
+			}
+		
+		}
+	}
+	
+
+	
+
+	grid_msg_packet_close(&grid_msg_state, &message);
+	uint32_t length = grid_msg_packet_get_length(&message);
+	
+
+	// Put the packet into the UI_RX buffer
+	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, length)){
+
+		for(uint16_t i = 0; i<length; i++){
 			
+			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char_by_char(&message, i));
 		}
-		else{
-			// LOG UNABLE TO WRITE EVENT
-		}
+		
+		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
 
 		
 	}
+	else{
+		// LOG UNABLE TO WRITE EVENT
+	}
+
+	
 
 	// LEDREPORT
-	if (ui_available && grid_d51_led_change_report_length(&grid_led_state) && grid_sys_get_editor_connected_state(&grid_sys_state)){
+	if (grid_d51_led_change_report_length(&grid_led_state) && grid_sys_get_editor_connected_state(&grid_sys_state)){
 
 		struct grid_msg_packet response;
 								
@@ -254,12 +206,19 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 
 
 
+
+
+
+
 	
 }
 
 
-void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
+void grid_ui_model_init(struct grid_ui_model* mod, struct grid_port* port, uint8_t element_list_length){
 	
+
+	mod->port = port;
+
 	mod->status = GRID_UI_STATUS_INITIALIZED;
 
 	mod->page_activepage = 0;
@@ -1025,6 +984,59 @@ uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve){
 	}
 			
 }
+
+uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui){
+
+	
+	uint16_t count = 0;
+
+	// UI STATE
+		
+	for (uint8_t j=0; j<ui->element_list_length; j++){
+		
+		for (uint8_t k=0; k<ui->element_list[j].event_list_length; k++){
+			
+			if (grid_ui_event_istriggered(&ui->element_list[j].event_list[k])){
+
+				count++;
+
+				
+			}
+		
+			
+		}
+		
+	}
+
+	return count;
+
+}
+uint16_t grid_ui_event_count_istriggered_local(struct grid_ui_model* ui){
+
+	uint16_t count = 0;
+
+	// UI STATE
+		
+	for (uint8_t j=0; j<ui->element_list_length; j++){
+		
+		for (uint8_t k=0; k<ui->element_list[j].event_list_length; k++){
+			
+			if (grid_ui_event_istriggered_local(&ui->element_list[j].event_list[k])){
+
+				count++;
+
+				
+			}
+		
+			
+		}
+		
+	}
+	return count;
+
+
+}
+
 
 uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, uint8_t* target_string){
 

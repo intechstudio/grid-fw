@@ -297,7 +297,7 @@ void grid_module_pbf4_init(){
 	grid_ain_init(&grid_ain_state, 16, 5);
 	grid_led_init(&grid_led_state, 12);	
 	
-	grid_ui_model_init(&grid_ui_state, 12+1); // +1 for the system element
+	grid_ui_model_init(&grid_ui_state, &GRID_PORT_U, 12+1); // +1 for the system element
 
 	for(uint8_t j=0; j<8; j++){
 			
