@@ -1797,7 +1797,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
                     if (position_is_local || position_is_global || position_is_me){
                         // disable hid automatically
-                        grid_keyboard_state.isenabled = 0;             
+						grid_keyboard_disable(&grid_keyboard_state);          
                         //grid_port_debug_print_text("Disabling KB");
 
 						uint8_t vmajor = grid_msg_string_get_parameter(message, current_start+GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
@@ -1928,17 +1928,13 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 				
                     uint8_t isenabled =	grid_msg_string_read_hex_string_value(&message[current_start+GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset]		, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length	, &error_flag);
 					
-                    
-                    grid_keyboard_state.isenabled = isenabled;
-
                     if (isenabled){
-                    
-                        //grid_port_debug_print_text("Enabling KB");
-                    
-                    }
-                    else{
-                        //grid_port_debug_print_text("Disabling  KB");
-                    }
+						grid_keyboard_enable(&grid_keyboard_state);
+					}
+					else{
+						grid_keyboard_disable(&grid_keyboard_state);
+					}
+
                     
                     // Generate ACKNOWLEDGE RESPONSE
                     struct grid_msg_packet response;
@@ -1947,7 +1943,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
                     grid_msg_packet_body_append_printf(&response, GRID_CLASS_HIDKEYSTATUS_frame);
 
-                    grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, grid_keyboard_state.isenabled);
+                    grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, grid_keyboard_isenabled(&grid_keyboard_state));
 
                     grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 

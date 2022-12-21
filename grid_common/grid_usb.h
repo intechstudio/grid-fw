@@ -132,8 +132,9 @@ uint8_t grid_keyboard_cleanup(struct grid_keyboard_model* kb);
 
 void grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyboard_event_desc* key);
 
-
-
+void grid_keyboard_enable(struct grid_keyboard_model* kb);
+void grid_keyboard_disable(struct grid_keyboard_model* kb);
+uint8_t grid_keyboard_isenabled(struct grid_keyboard_model* kb);
 
 
 

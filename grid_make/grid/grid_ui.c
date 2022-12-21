@@ -1322,8 +1322,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 
 	}
 	
-	//grid_port_debug_printf("read complete");
-	grid_keyboard_state.isenabled = 1;	
+	grid_keyboard_enable(&grid_keyboard_state);
 
 
 	ui->read_bulk_status = 0;
@@ -1443,7 +1442,7 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui){
 	
 	ui->store_bulk_status = 0;
 
-	grid_keyboard_state.isenabled = 1;	
+	grid_keyboard_enable(&grid_keyboard_state);
 
 	// phase out the animation
 	grid_led_set_alert_timeout_automatic(&grid_led_state);
@@ -1511,7 +1510,9 @@ void grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, void (*success_cb)()){
 
 	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
 	grid_led_set_alert_frequency(&grid_led_state, -2);	
-	for (uint8_t i = 0; i<grid_led_state.led_count; i++){
+
+	
+	for (uint8_t i = 0; i<grid_led_get_led_count(&grid_led_state); i++){
 		grid_led_set_layer_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
 	}
 
@@ -1560,7 +1561,9 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui){
 
 
 		ui->erase_bulk_status = 0;
-		grid_keyboard_state.isenabled = 1;	
+		
+		grid_keyboard_enable(&grid_keyboard_state);
+
 		grid_ui_page_load(ui, ui->page_activepage);
 
 	}

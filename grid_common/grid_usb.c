@@ -495,3 +495,23 @@ void grid_keyboard_tx_pop(){
 
 }
 
+
+void grid_keyboard_enable(struct grid_keyboard_model* kb){
+
+	kb->isenabled = 1;
+
+}
+
+void grid_keyboard_disable(struct grid_keyboard_model* kb){
+
+	kb->isenabled = 0;
+	
+}
+
+
+uint8_t grid_keyboard_isenabled(struct grid_keyboard_model* kb){
+
+	return kb->isenabled;
+
+}
+
