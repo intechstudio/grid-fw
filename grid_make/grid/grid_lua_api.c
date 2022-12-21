@@ -28,7 +28,7 @@ static int grid_lua_panic(lua_State *L) {
     while(1){
 
         printf("LUA PANIC\r\n");
-        delay_ms(1000);
+        grid_platform_delay_ms(1000);
     }
 }
 
@@ -1159,7 +1159,10 @@ static int l_grid_random(lua_State* L) {
         return 0;
     }
 
-    lua_pushinteger(L, rand_sync_read8(&RAND_0));
+
+    uint8_t random = grid_platform_get_random_8();
+
+    lua_pushinteger(L, random);
     
     return 1;
 }

@@ -12,6 +12,9 @@
 #include <hpl_user_area.h>
 #include "grid_module.h"
 
+
+#include "sam.h"
+
 #include "grid_d51_led.h"
 
 
@@ -59,6 +62,7 @@ uint32_t grid_d51_nvic_get_interrupt_priority_mask(void);
 uint32_t grid_platform_get_id(uint32_t* return_array);
 uint32_t grid_platform_get_hwcfg();
 uint8_t grid_platform_get_random_8();
+void grid_platform_delay_ms(uint32_t delay_milliseconds);
 uint8_t grid_platform_get_reset_cause();
 
 

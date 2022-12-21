@@ -98,7 +98,7 @@ void app_main(void)
     grid_sys_init(&grid_sys_state);
 
     ets_printf("GRID_SYS_TEST %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
-
+    grid_platform_delay_ms(10);
 
     TaskHandle_t adc_task_hdl;
 
