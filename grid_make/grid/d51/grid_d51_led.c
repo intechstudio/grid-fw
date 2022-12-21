@@ -180,36 +180,3 @@ void grid_led_startup_animation(struct grid_d51_led_model* mod){
 
 
 
-
-uint16_t grid_d51_led_change_report_length(struct grid_led_model* mod){
-
-	return grid_led_change_flag_count(mod) * 8;
-}
-
-uint16_t grid_d51_led_change_report_generate(struct grid_led_model* mod, uint16_t maxlength, uint8_t* output){
-
-	uint16_t length = 0;
-
-	for(uint8_t i=0; i<mod->led_count; i++){
-
-		if (mod->led_changed_flag_array[i] != 0){
-
-			if (length + 8 <= maxlength){
-
-				grid_msg_string_set_parameter(&output[length], 0, 2, i, NULL);
-				grid_msg_string_set_parameter(&output[length], 2, 2, mod->led_frame_buffer[i*3 + 1], NULL);
-				grid_msg_string_set_parameter(&output[length], 4, 2, mod->led_frame_buffer[i*3 + 0], NULL);
-				grid_msg_string_set_parameter(&output[length], 6, 2, mod->led_frame_buffer[i*3 + 2], NULL);
-				
-				mod->led_changed_flag_array[i] = 0;
-
-				length+=8;
-			}
-			else{
-				break;
-			}
-		}
-	}
-
-	return length; 
-}

@@ -83,8 +83,6 @@ void grid_d51_led_set_color(struct grid_d51_led_model* mod, uint32_t led_index, 
 void grid_led_startup_animation(struct grid_d51_led_model* mod);
 
 
-uint16_t grid_d51_led_change_report_length(struct grid_led_model* mod);
-uint16_t grid_d51_led_change_report_generate(struct grid_led_model* mod, uint16_t maxlength, uint8_t* output);
 
 
 #endif /* GRID_D51_LED_H_ */

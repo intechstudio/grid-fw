@@ -176,7 +176,7 @@ void grid_port_process_ui(struct grid_ui_model* ui){
 	
 
 	// LEDREPORT
-	if (grid_d51_led_change_report_length(&grid_led_state) && grid_sys_get_editor_connected_state(&grid_sys_state)){
+	if (grid_protocol_led_change_report_length(&grid_led_state) && grid_sys_get_editor_connected_state(&grid_sys_state)){
 
 		struct grid_msg_packet response;
 								
@@ -187,7 +187,7 @@ void grid_port_process_ui(struct grid_ui_model* ui){
 		snprintf(response_payload, 299, GRID_CLASS_LEDPREVIEW_frame_start);
 		len += strlen(&response_payload[len]);
 
-		uint16_t report_length = grid_d51_led_change_report_generate(&grid_led_state, -1, &response_payload[len]);
+		uint16_t report_length = grid_protocol_led_change_report_generate(&grid_led_state, -1, &response_payload[len]);
 
 		len += strlen(&response_payload[len]);
 
