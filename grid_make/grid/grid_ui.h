@@ -138,7 +138,7 @@ void grid_ui_model_init(struct grid_ui_model* mod, struct grid_port* port, uint8
 void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid_ui_element_t element_type);
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui_event_t event_type);
 
-
+uint8_t grid_ui_get_activepage(struct grid_ui_model* ui);
 
 uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, uint8_t* action_string);
 void grid_ui_event_register_actionstring(struct grid_ui_event* eve, uint8_t* targetstring);
@@ -179,8 +179,7 @@ void grid_port_process_ui_local(struct grid_ui_model* ui);
 uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page);
 uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type, uint8_t* targetstring);
 
-
-
+void grid_ui_page_load_success_callback(void);
 
 uint8_t grid_ui_bluk_anything_is_in_progress(struct grid_ui_model* ui);
 

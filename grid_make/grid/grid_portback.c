@@ -1656,15 +1656,21 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 				}			
 				else if (msg_class == GRID_CLASS_PAGESTORE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
-				
-									
+								
 					grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX, id);
+					
+					// start animation (it will be stopped in the callback function)
+					grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);		
+					grid_led_set_alert_frequency(&grid_led_state, -4);	
+
 					grid_ui_bulk_pagestore_init(&grid_ui_state, &grid_protocol_nvm_store_succcess_callback);					
 
 				}			
 				else if (msg_class == GRID_CLASS_PAGECLEAR_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 				
 					grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX, id);			
+
+
 					grid_ui_bulk_pageclear_init(&grid_ui_state, &grid_protocol_nvm_clear_succcess_callback);					
 
 				}		
@@ -1696,6 +1702,15 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 						grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX, id);
 						grid_ui_bulk_nvmerase_init(&grid_ui_state, &grid_protocol_nvm_erase_succcess_callback);
+
+
+						// start animation (it will be stopped in the callback function)
+						grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
+						grid_led_set_alert_frequency(&grid_led_state, -2);	
+
+						for (uint8_t i = 0; i<grid_led_get_led_count(&grid_led_state); i++){
+							grid_led_set_layer_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
+						}
 
 					}
 					else{
@@ -2040,6 +2055,11 @@ void grid_protocol_nvm_erase_succcess_callback(){
 	grid_port_packet_send_everywhere(&response);
 
 
+		
+	grid_keyboard_enable(&grid_keyboard_state);
+
+	grid_ui_page_load(&grid_ui_state, grid_ui_get_activepage(&grid_ui_state));
+
 }
 
 
@@ -2069,6 +2089,12 @@ void grid_protocol_nvm_clear_succcess_callback(){
 	grid_port_packet_send_everywhere(&response);
 
 
+
+	// clear template variable after clear command
+	grid_ui_page_clear_template_parameters(&grid_ui_state, grid_ui_get_activepage(&grid_ui_state));
+
+	grid_ui_page_load(&grid_ui_state, grid_ui_get_activepage(&grid_ui_state));
+
 }
 
 void grid_protocol_nvm_read_succcess_callback(){
@@ -2090,6 +2116,15 @@ void grid_protocol_nvm_read_succcess_callback(){
 
 	grid_msg_packet_close(&grid_msg_state, &response);
 	grid_port_packet_send_everywhere(&response);
+
+
+
+	grid_keyboard_enable(&grid_keyboard_state);
+
+
+	// phase out the animation
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+	grid_led_set_alert_timeout_automatic(&grid_led_state);
 
 }
 
@@ -2116,6 +2151,21 @@ void grid_protocol_nvm_store_succcess_callback(){
 
 	grid_msg_packet_close(&grid_msg_state, &response);
 	grid_port_packet_send_everywhere(&response);
+
+
+	//enable keyboard
+	grid_keyboard_enable(&grid_keyboard_state);
+
+	// phase out the animation
+	grid_led_set_alert_timeout_automatic(&grid_led_state);
+
+	// clear template variable after store command
+
+	grid_ui_page_clear_template_parameters(&grid_ui_state, grid_ui_get_activepage(&grid_ui_state));
+
+	// reload configuration
+
+	grid_ui_page_load(&grid_ui_state, grid_ui_get_activepage(&grid_ui_state));
 
 }
 

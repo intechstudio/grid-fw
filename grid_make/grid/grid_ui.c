@@ -521,6 +521,13 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui
 
 }
 
+
+uint8_t grid_ui_get_activepage(struct grid_ui_model* ui){
+
+	return ui->page_activepage;
+
+}
+
 uint8_t grid_ui_recall_event_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type, uint8_t* targetstring){
 	
 
@@ -732,10 +739,22 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 	printf("START\r\n");
 	grid_lua_start_vm(&grid_lua_state);
 
-	grid_ui_bulk_pageread_init(ui, NULL);
+	grid_ui_bulk_pageread_init(ui, &grid_ui_page_load_success_callback);
 
 	
 }
+
+void grid_ui_page_load_success_callback(void){
+
+	grid_keyboard_enable(&grid_keyboard_state);
+
+
+	// phase out the animation
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+	grid_led_set_alert_timeout_automatic(&grid_led_state);
+	
+}
+
 
 uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, uint8_t* action_string){
 
@@ -1322,26 +1341,14 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 
 	}
 	
-	grid_keyboard_enable(&grid_keyboard_state);
 
-
-	ui->read_bulk_status = 0;
 
 	if (ui->read_success_callback != NULL){
 		ui->read_success_callback();
 		ui->read_success_callback = NULL;
 	}
 
-
-
-
-
-
-
-
-	// phase out the animation
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
-	grid_led_set_alert_timeout_automatic(&grid_led_state);
+	ui->read_bulk_status = 0;
 
 
 }
@@ -1351,11 +1358,7 @@ void grid_ui_bulk_pagestore_init(struct grid_ui_model* ui, void (*success_cb)())
 
 	ui->store_success_callback = success_cb;
 
-
 	ui->store_bulk_status = 1;
-
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);		
-	grid_led_set_alert_frequency(&grid_led_state, -4);	
 
 
 
@@ -1438,19 +1441,7 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui){
 		ui->store_success_callback = NULL;
 	}
 
-
-	
 	ui->store_bulk_status = 0;
-
-	grid_keyboard_enable(&grid_keyboard_state);
-
-	// phase out the animation
-	grid_led_set_alert_timeout_automatic(&grid_led_state);
-
-	// clear template variable after store command
-	grid_ui_page_clear_template_parameters(ui, ui->page_activepage);
-
-	grid_ui_page_load(ui, ui->page_activepage);
 }
 
 
@@ -1462,9 +1453,6 @@ void grid_ui_bulk_pageclear_init(struct grid_ui_model* ui, void (*success_cb)())
 
 
 	ui->clear_bulk_status = 1;
-
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
-	grid_led_set_alert_frequency(&grid_led_state, -4);	
 
 }
 
@@ -1496,9 +1484,7 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui){
 	ui->clear_bulk_status = 0;
 
 
-	// clear template variable after clear command
-	grid_ui_page_clear_template_parameters(ui, ui->page_activepage);
-	grid_ui_page_load(ui, ui->page_activepage);
+
 		
 }
 
@@ -1508,13 +1494,6 @@ void grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, void (*success_cb)()){
 
 	ui->erase_success_callback = success_cb;
 
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
-	grid_led_set_alert_frequency(&grid_led_state, -2);	
-
-	
-	for (uint8_t i = 0; i<grid_led_get_led_count(&grid_led_state); i++){
-		grid_led_set_layer_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
-	}
 
 
 	grid_platform_delete_actionstring_files_all();
@@ -1561,10 +1540,7 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui){
 
 
 		ui->erase_bulk_status = 0;
-		
-		grid_keyboard_enable(&grid_keyboard_state);
 
-		grid_ui_page_load(ui, ui->page_activepage);
 
 	}
 
