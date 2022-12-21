@@ -85,17 +85,17 @@ void grid_port_process_ui_local(struct grid_ui_model* ui){
 	uint32_t message_length = grid_msg_packet_get_length(&message_local);
 		
 	// Put the packet into the UI_TX buffer
-	if (grid_buffer_write_init(&GRID_PORT_U.tx_buffer, message_length)){
+	if (grid_buffer_write_init(&ui->port->tx_buffer, message_length)){
 			
 		for(uint32_t i = 0; i<message_length; i++){
 				
-			grid_buffer_write_character(&GRID_PORT_U.tx_buffer, grid_msg_packet_send_char_by_char(&message_local, i));
+			grid_buffer_write_character(&ui->port->tx_buffer, grid_msg_packet_send_char_by_char(&message_local, i));
 		}
 			
-		grid_buffer_write_acknowledge(&GRID_PORT_U.tx_buffer);
+		grid_buffer_write_acknowledge(&ui->port->tx_buffer);
 		
 // 			uint8_t debug_string[200] = {0};
-// 			sprintf(debug_string, "Space: RX: %d/%d  TX: %d/%d", grid_buffer_get_space(&GRID_PORT_U.rx_buffer), GRID_BUFFER_SIZE, grid_buffer_get_space(&GRID_PORT_U.tx_buffer), GRID_BUFFER_SIZE);
+// 			sprintf(debug_string, "Space: RX: %d/%d  TX: %d/%d", grid_buffer_get_space(&ui->port->rx_buffer), GRID_BUFFER_SIZE, grid_buffer_get_space(&ui->port->tx_buffer), GRID_BUFFER_SIZE);
 // 			grid_port_debug_print_text(debug_string);
 
 
@@ -158,14 +158,14 @@ void grid_port_process_ui(struct grid_ui_model* ui){
 	
 
 	// Put the packet into the UI_RX buffer
-	if (grid_buffer_write_init(&GRID_PORT_U.rx_buffer, length)){
+	if (grid_buffer_write_init(&ui->port->rx_buffer, length)){
 
 		for(uint16_t i = 0; i<length; i++){
 			
-			grid_buffer_write_character(&GRID_PORT_U.rx_buffer, grid_msg_packet_send_char_by_char(&message, i));
+			grid_buffer_write_character(&ui->port->rx_buffer, grid_msg_packet_send_char_by_char(&message, i));
 		}
 		
-		grid_buffer_write_acknowledge(&GRID_PORT_U.rx_buffer);
+		grid_buffer_write_acknowledge(&ui->port->rx_buffer);
 
 		
 	}

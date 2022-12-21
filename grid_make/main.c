@@ -183,9 +183,6 @@ static void nvm_task_inner(){
 
 static void receive_task_inner(){
 
-
-
-
 	grid_port_receive_task(&GRID_PORT_N);
 	grid_port_receive_task(&GRID_PORT_E);
 	grid_port_receive_task(&GRID_PORT_S);
