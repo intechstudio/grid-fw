@@ -200,6 +200,9 @@ static void ui_task_inner(){
 	// every other entry of the superloop
 	if (loopcount%4==0){
 
+
+		grid_port_ping_try_everywhere();
+
 		grid_port_process_ui(&grid_ui_state, &GRID_PORT_U); // COOLDOWN DELAY IMPLEMENTED INSIDE
 
 	}

@@ -77,10 +77,12 @@ struct grid_lua_model{
 
 struct grid_lua_model grid_lua_state;
 
-
+uint8_t* grid_lua_get_output_string(struct grid_lua_model* mod);
+uint8_t* grid_lua_get_error_string(struct grid_lua_model* mod);
 
 uint8_t grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message);
 void grid_lua_gc_try_collect(struct grid_lua_model* mod);
+void grid_lua_gc_collect(struct grid_lua_model* mod);
 
 static int grid_lua_panic(lua_State *L);
 

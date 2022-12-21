@@ -14,6 +14,14 @@ int _times(){while(1);}
 int _unlink(){while(1);} 
 int _link(){while(1);} 
 
+uint8_t* grid_lua_get_output_string(struct grid_lua_model* mod){
+    return mod->stdo;
+}
+
+uint8_t* grid_lua_get_error_string(struct grid_lua_model* mod){
+    return mod->stde;
+}
+
 
 static int grid_lua_panic(lua_State *L) {
 
@@ -1708,6 +1716,14 @@ void grid_lua_gc_try_collect(struct grid_lua_model* mod){
         mod->dostring_count = 0;
 
     }
+
+
+}
+
+
+void grid_lua_gc_collect(struct grid_lua_model* mod){
+
+    lua_gc(mod->L, LUA_GCCOLLECT);
 
 
 }

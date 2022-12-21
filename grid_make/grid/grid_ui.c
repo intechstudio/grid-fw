@@ -34,26 +34,6 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 	}
 	
 	
-	//NEW PING
-	struct grid_port* port[4] = {&GRID_PORT_N, &GRID_PORT_E, &GRID_PORT_S, &GRID_PORT_W};
-	
-	for (uint8_t k = 0; k<4; k++){
-		
-		if (port[k]->ping_flag == 1){
-		
-			if (grid_buffer_write_init(&port[k]->tx_buffer, port[k]->ping_packet_length)){
-				//Success
-				for(uint32_t i = 0; i<port[k]->ping_packet_length; i++){
-					grid_buffer_write_character(&port[k]->tx_buffer, port[k]->ping_packet[i]);
-				}
-				grid_buffer_write_acknowledge(&port[k]->tx_buffer);
-			}
-			port[k]->ping_flag = 0;
-		}		
-			
-	}			
-
-	
 	//LOCAL MESSAGES
 	if (message_local_action_available){
 			
@@ -101,7 +81,7 @@ void grid_port_process_ui(struct grid_ui_model* ui, struct grid_port* por){
 								// lua get element name
 								grid_lua_clear_stdo(&grid_lua_state);
 								grid_lua_dostring(&grid_lua_state, command);
-								strcat(payload_global, grid_lua_state.stdo);
+								strcat(payload_global, grid_lua_get_output_string(&grid_lua_state));
 								grid_lua_clear_stdo(&grid_lua_state);
 
 						}
@@ -1130,26 +1110,24 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, uint8_t* target_
 					grid_port_debug_printf("LUA not OK! EL: %d EV: %d", eve->parent->index, eve->index);
 				};
 
-				uint32_t code_stdo_length = strlen(grid_lua_state.stdo);
+				uint32_t code_stdo_length = strlen(grid_lua_get_output_string(&grid_lua_state));
 
 				temp[i] = ' '; // reverting terminating zero to space
 
 				i+= 3-1; // +3 because  ?> -1 because i++
 				code_length = code_end - code_start;
 
-				strcpy(&target_string[code_start-total_substituted_length], grid_lua_state.stdo);
+				strcpy(&target_string[code_start-total_substituted_length], grid_lua_get_output_string(&grid_lua_state));
 				
 				uint8_t errorlen = 0;
 
-				if (strlen(grid_lua_state.stde)){
+				if (strlen(grid_lua_get_error_string(&grid_lua_state))){
 
-					
-					//printf(grid_lua_state.stde);
 
 					uint8_t errorbuffer[100] = {0};
 
 					sprintf(errorbuffer, GRID_CLASS_DEBUGTEXT_frame_start);
-					strcat(errorbuffer, grid_lua_state.stde);
+					strcat(errorbuffer, grid_lua_get_error_string(&grid_lua_state));
 					sprintf(&errorbuffer[strlen(errorbuffer)], GRID_CLASS_DEBUGTEXT_frame_end);
 					
 					errorlen = strlen(errorbuffer);
@@ -1240,8 +1218,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 		return;
 	}
 
-	//grid_lua_debug_memory_stats(&grid_lua_state, "Ui");
-	lua_gc(grid_lua_state.L, LUA_GCCOLLECT);
+	grid_lua_gc_collect(&grid_lua_state);
 
 
 	uint8_t last_element_helper = ui->read_bulk_last_element;

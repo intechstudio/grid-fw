@@ -192,3 +192,30 @@ uint8_t	grid_port_packet_send_everywhere(struct grid_msg_packet* msg){
 	
 	
 }
+
+
+
+void grid_port_ping_try_everywhere(void){
+
+	//NEW PING
+	struct grid_port* port[4] = {&GRID_PORT_N, &GRID_PORT_E, &GRID_PORT_S, &GRID_PORT_W};
+	
+	for (uint8_t k = 0; k<4; k++){
+		
+		if (port[k]->ping_flag == 1){
+		
+			if (grid_buffer_write_init(&port[k]->tx_buffer, port[k]->ping_packet_length)){
+				//Success
+				for(uint32_t i = 0; i<port[k]->ping_packet_length; i++){
+					grid_buffer_write_character(&port[k]->tx_buffer, port[k]->ping_packet[i]);
+				}
+				grid_buffer_write_acknowledge(&port[k]->tx_buffer);
+			}
+			port[k]->ping_flag = 0;
+		}		
+			
+	}			
+
+
+
+}

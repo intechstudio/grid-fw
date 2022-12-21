@@ -95,4 +95,9 @@ void grid_port_debug_printf(char const *fmt, ...);
 
 uint8_t	grid_port_packet_send_everywhere(struct grid_msg_packet* msg);
 
+
+void grid_port_ping_try_everywhere(void);
+
+
+
 #endif
