@@ -22,9 +22,9 @@ void grid_port_process_ui_local(struct grid_ui_model* ui){
 	
 	// UI STATE
 
-	for (uint8_t j=0; j<grid_ui_state.element_list_length; j++){
+	for (uint8_t j=0; j<ui->element_list_length; j++){
 		
-		for (uint8_t k=0; k<grid_ui_state.element_list[j].event_list_length; k++){
+		for (uint8_t k=0; k<ui->element_list[j].event_list_length; k++){
 		
 			if (offset_local>GRID_PARAMETER_PACKET_marign || offset_global>GRID_PARAMETER_PACKET_marign){
 				continue;
@@ -32,14 +32,14 @@ void grid_port_process_ui_local(struct grid_ui_model* ui){
 			else{
 				
 				CRITICAL_SECTION_ENTER()
-				if (grid_ui_event_istriggered_local(&grid_ui_state.element_list[j].event_list[k])){
+				if (grid_ui_event_istriggered_local(&ui->element_list[j].event_list[k])){
 					
-					offset_local += grid_ui_event_render_action(&grid_ui_state.element_list[j].event_list[k], &payload_local[offset_local]);
-					grid_ui_event_reset(&grid_ui_state.element_list[j].event_list[k]);
+					offset_local += grid_ui_event_render_action(&ui->element_list[j].event_list[k], &payload_local[offset_local]);
+					grid_ui_event_reset(&ui->element_list[j].event_list[k]);
 
 
 					// automatically report elementname after config
-					if (j<grid_ui_state.element_list_length-1){
+					if (j<ui->element_list_length-1){
 						
 
 							uint8_t number = j;
@@ -120,26 +120,26 @@ void grid_port_process_ui(struct grid_ui_model* ui){
 	grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 	
 
-	for (uint8_t j=0; j<grid_ui_state.element_list_length; j++){
+	for (uint8_t j=0; j<ui->element_list_length; j++){
 	
-		for (uint8_t k=0; k<grid_ui_state.element_list[j].event_list_length; k++){ //j=1 because init is local
+		for (uint8_t k=0; k<ui->element_list[j].event_list_length; k++){ //j=1 because init is local
 		
 			if (grid_msg_packet_get_length(&message)>GRID_PARAMETER_PACKET_marign){
 				continue;
 			}		
 			else{
 							
-				if (grid_ui_event_istriggered(&grid_ui_state.element_list[j].event_list[k])){
+				if (grid_ui_event_istriggered(&ui->element_list[j].event_list[k])){
 
 					uint32_t offset = grid_msg_packet_body_get_length(&message); 
 
-					message.body_length += grid_ui_event_render_event(&grid_ui_state.element_list[j].event_list[k], &message.body[offset]);
+					message.body_length += grid_ui_event_render_event(&ui->element_list[j].event_list[k], &message.body[offset]);
 				
 					offset = grid_msg_packet_body_get_length(&message); 
 
 					CRITICAL_SECTION_ENTER()
-					message.body_length += grid_ui_event_render_action(&grid_ui_state.element_list[j].event_list[k], &message.body[offset]);
-					grid_ui_event_reset(&grid_ui_state.element_list[j].event_list[k]);
+					message.body_length += grid_ui_event_render_action(&ui->element_list[j].event_list[k], &message.body[offset]);
+					grid_ui_event_reset(&ui->element_list[j].event_list[k]);
 					CRITICAL_SECTION_LEAVE()
 					
 
@@ -612,9 +612,9 @@ uint8_t grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t
 
 
 
-	for (uint8_t i = 0; i < grid_ui_state.element_list_length; i++)
+	for (uint8_t i = 0; i < ui->element_list_length; i++)
 	{	
-		struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+		struct grid_ui_element* ele = &ui->element_list[i];
 
 		struct grid_ui_template_buffer* buf = grid_ui_template_buffer_find(ele, page);
 
@@ -647,10 +647,10 @@ uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 
 	//printf("LOAD PAGE: %d\r\n", page);
 
-	for (uint8_t i = 0; i < grid_ui_state.element_list_length; i++)
+	for (uint8_t i = 0; i < ui->element_list_length; i++)
 	{	
 
-		struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+		struct grid_ui_element* ele = &ui->element_list[i];
 
 		ele->timer_event_helper = 0; // stop the event's timer
 
