@@ -53,7 +53,10 @@
     "grid_msg.h": "c",
     "stdio.h": "c",
     "grid_buf.h": "c",
-    "grid_usb.h": "c"
+    "grid_usb.h": "c",
+    "lauxlib.h": "c",
+    "lualib.h": "c",
+    "lua.h": "c"
 },
   "actionButtons": {
     "defaultColor": "#ff0034", // Can also use string color names.

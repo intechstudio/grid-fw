@@ -51,10 +51,20 @@
 #include "../../grid_common/grid_usb.h"
 
 
+#include "../../grid_common/lua-5.4.3/src/lua.h"
+#include "../../grid_common/lua-5.4.3/src/lualib.h"
+#include "../../grid_common/lua-5.4.3/src/lauxlib.h"
 
 
 void app_main(void)
 {
+
+    lua_State* L = luaL_newstate();
+
+    luaL_openlibs(L);
+
+    uint32_t memusage = lua_gc(L, LUA_GCCOUNT)*1024 + lua_gc(L, LUA_GCCOUNTB);
+    printf("LUA mem usage: %ld\r\n", memusage);
 
     static const char *TAG = "main";
 
