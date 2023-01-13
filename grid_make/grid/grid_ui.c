@@ -933,6 +933,19 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 
 
 
+
+struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t element_number){
+
+	if (element_number < ui->element_list_length){
+
+		return &ui->element_list[element_number];
+	}
+	else{
+		return NULL;
+	}
+
+}
+
 struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type){
 
 	uint8_t event_index = 255;
@@ -1529,7 +1542,6 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui){
 	}
 	else{ // done with the erase
 
-
 		// call success callback
 		if (ui->erase_success_callback != NULL){
 
@@ -1578,3 +1590,16 @@ uint8_t grid_ui_bluk_anything_is_in_progress(struct grid_ui_model* ui){
 
 
 
+
+uint8_t grid_ui_page_get_next(struct grid_ui_model* ui){
+
+
+	return (ui->page_activepage + 1) % ui->page_count;
+
+}
+
+uint8_t grid_ui_page_get_prev(struct grid_ui_model* ui){
+
+	return (ui->page_activepage + ui->page_count - 1) % ui->page_count;
+
+}

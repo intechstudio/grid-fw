@@ -147,6 +147,7 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, uint8_t* tar
 uint8_t grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t page);
 
 
+struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t element_number);
 struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
 
 void grid_ui_event_trigger(struct grid_ui_event* eve);
@@ -203,6 +204,10 @@ void	grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui);
 void	grid_ui_bulk_nvmdefrag_init(struct grid_d51_nvm_model* nvm, void (*success_cb)());
 uint8_t grid_ui_bulk_nvmdefrag_is_in_progress(struct grid_d51_nvm_model* nvm);
 void	grid_ui_bulk_nvmdefrag_next(struct grid_d51_nvm_model* nvm);
+
+
+uint8_t grid_ui_page_get_next(struct grid_ui_model* ui);
+uint8_t grid_ui_page_get_prev(struct grid_ui_model* ui);
 
 
 

@@ -601,37 +601,12 @@ static int l_grid_led_layer_phase(lua_State* L) {
         //setter
 
         if (param[2] > 255)  param[2] = 255;
-        if (param[2] < 0)    param[2] = 0;
-
-        grid_led_set_layer_phase(&grid_led_state, param[0], param[1], param[2]);
-
-    }
-    else{
-        //getter
-        int32_t var = grid_led_get_layer_phase(&grid_led_state, param[0], param[1]);
-        lua_pushinteger(L, var);
-    }
-    
-    return 1;
-}
-
-
-static int l_grid_led_set_phase_BAK(lua_State* L) {
-
-    int nargs = lua_gettop(L);
-
-    if (nargs == 2){  // automatically set phase to element value
-
-
-        uint8_t param[2] = {0};
-
-        for (int i=1; i <= nargs; ++i) {
-            param[i-1] = lua_tointeger(L, i);
+        if (param[2] < 0){ // phase is a phase value
+            grid_led_set_layer_phase(&grid_led_state, param[0], param[1], param[2]);
         }
+        else{   // phase == -1 means it should be automatically calculated based on min-max values
 
-        if (param[0]<grid_ui_state.element_list_length){
-	        
-            struct grid_ui_element* ele = &grid_ui_state.element_list[param[0]];
+            struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, param[0]);
             enum grid_ui_element_t ele_type = ele->type;
 
             int32_t min = 0;
@@ -659,42 +634,21 @@ static int l_grid_led_set_phase_BAK(lua_State* L) {
             }
 
 
-
-
-
-
             uint16_t phase = grid_utility_map(val, min, max, 0, 255);
             //printf("LED: %d\r\n", phase);
             grid_led_set_layer_phase(&grid_led_state, param[0], param[1], phase);
 
-
         }
 
 
-        return 0;
-
-
     }
-    else if (nargs == 3){  // manually set phase to arbitery value
-
-        uint8_t param[3] = {0};
-
-        for (int i=1; i <= nargs; ++i) {
-            param[i-1] = lua_tointeger(L, i);
-        }
-
-        grid_led_set_layer_phase(&grid_led_state, param[0], param[1], param[2]);
-
-        return 0;
-
+    else{
+        //getter
+        int32_t var = grid_led_get_layer_phase(&grid_led_state, param[0], param[1]);
+        lua_pushinteger(L, var);
     }
-    else
-    {
-        // error
-        strcat(grid_lua_state.stde, "#invalidParams");
-        return 0;
-    }
-
+    
+    return 1;
 }
 
 
@@ -1223,7 +1177,8 @@ static int l_grid_page_next(lua_State* L) {
         return 0;
     }
     
-    uint8_t page = (grid_ui_state.page_activepage + 1) % grid_ui_state.page_count;
+    
+    uint8_t page = grid_ui_page_get_next(&grid_ui_state);
     lua_pushinteger(L, page);
     
     return 1;
@@ -1239,7 +1194,8 @@ static int l_grid_page_prev(lua_State* L) {
         return 0;
     }
            
-    uint8_t page = (grid_ui_state.page_activepage + grid_ui_state.page_count - 1) % grid_ui_state.page_count;
+           
+    uint8_t page = grid_ui_page_get_prev(&grid_ui_state);
     lua_pushinteger(L, page);
     
     return 1;
@@ -1255,7 +1211,7 @@ static int l_grid_page_curr(lua_State* L) {
         return 0;
     }
            
-    uint8_t page = (grid_ui_state.page_activepage);
+    uint8_t page = grid_ui_get_activepage(&grid_ui_state);
     lua_pushinteger(L, page);
     
     return 1;
@@ -1384,7 +1340,9 @@ static int l_grid_event_trigger(lua_State* L) {
 
     if (param[0] < grid_ui_state.element_list_length){
 
-        struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[param[0]], param[1]);
+
+        struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, param[0]);
+        struct grid_ui_event* eve = grid_ui_event_find(ele, param[1]);
 
         if (eve != NULL){
 
