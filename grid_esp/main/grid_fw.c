@@ -78,6 +78,7 @@ void app_main(void)
 
     ets_printf("RANDOM: %d %d %d %d\r\n", grid_platform_get_random_8(), grid_platform_get_random_8(), grid_platform_get_random_8(), grid_platform_get_random_8());
 
+    //l_grid_random(NULL);
 
     ets_printf("LED INIT ...\r\n");
 

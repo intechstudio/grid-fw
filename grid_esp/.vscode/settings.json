@@ -56,7 +56,8 @@
     "grid_usb.h": "c",
     "lauxlib.h": "c",
     "lualib.h": "c",
-    "lua.h": "c"
+    "lua.h": "c",
+    "grid_port.h": "c"
 },
   "actionButtons": {
     "defaultColor": "#ff0034", // Can also use string color names.
