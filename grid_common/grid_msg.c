@@ -224,7 +224,7 @@ uint32_t grid_msg_packet_footer_get_length(struct grid_msg_packet* msg){
 }
 
 
-void	grid_msg_packet_body_append_text(struct grid_msg_packet* msg, uint8_t* str){
+void	grid_msg_packet_body_append_text(struct grid_msg_packet* msg, char* str){
 
 	uint32_t len = strlen((char*) str);
 	
@@ -458,7 +458,7 @@ void grid_msg_recent_fingerprint_store(struct grid_msg_model* model, uint32_t fi
 
 
 
-uint8_t grid_msg_string_calculate_checksum_of_packet_string(uint8_t* str, uint32_t length){
+uint8_t grid_msg_string_calculate_checksum_of_packet_string(char* str, uint32_t length){
 	
 	uint8_t checksum = 0;
 	for (uint32_t i=0; i<length-3; i++){
@@ -469,7 +469,7 @@ uint8_t grid_msg_string_calculate_checksum_of_packet_string(uint8_t* str, uint32
 	
 }
 
-uint8_t grid_msg_string_calculate_checksum_of_string(uint8_t* str, uint32_t length){
+uint8_t grid_msg_string_calculate_checksum_of_string(char* str, uint32_t length){
 	
 	uint8_t checksum = 0;
 	for (uint32_t i=0; i<length; i++){
@@ -481,12 +481,12 @@ uint8_t grid_msg_string_calculate_checksum_of_string(uint8_t* str, uint32_t leng
 }
 
 
-uint8_t grid_msg_string_checksum_read(uint8_t* str, uint32_t length){
+uint8_t grid_msg_string_checksum_read(char* str, uint32_t length){
 	uint8_t error_flag;
 	return grid_msg_string_read_hex_string_value(&str[length-3], 2, &error_flag);
 }
 
-void grid_msg_string_checksum_write(uint8_t* message, uint32_t length, uint8_t checksum){
+void grid_msg_string_checksum_write(char* message, uint32_t length, uint8_t checksum){
 	
 // 	uint8_t checksum_string[4];
 // 
@@ -502,12 +502,12 @@ void grid_msg_string_checksum_write(uint8_t* message, uint32_t length, uint8_t c
 
 // MESSAGE PARAMETER FUNCTIONS
 
-uint32_t grid_msg_string_get_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint8_t* error){
+uint32_t grid_msg_string_get_parameter(char* message, uint8_t offset, uint8_t length, uint8_t* error){
 		
 	return grid_msg_string_read_hex_string_value(&message[offset], length, error);	
 }
 
-void grid_msg_string_set_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error){
+void grid_msg_string_set_parameter(char* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error){
 	
 	grid_msg_string_write_hex_string_value(&message[offset], length, value);
 	
@@ -534,7 +534,7 @@ uint8_t grid_msg_string_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
 	return result;	
 }
 
-uint32_t grid_msg_string_read_hex_string_value(uint8_t* start_location, uint8_t length, uint8_t* error_flag){
+uint32_t grid_msg_string_read_hex_string_value(char* start_location, uint8_t length, uint8_t* error_flag){
 	
 	uint32_t result  = 0;
 	
@@ -548,7 +548,7 @@ uint32_t grid_msg_string_read_hex_string_value(uint8_t* start_location, uint8_t 
 	return result;
 }
 
-void grid_msg_string_write_hex_string_value(uint8_t* start_location, uint8_t size, uint32_t value){
+void grid_msg_string_write_hex_string_value(char* start_location, uint8_t size, uint32_t value){
 	
 	uint8_t str[10];
 	

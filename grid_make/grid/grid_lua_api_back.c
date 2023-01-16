@@ -411,27 +411,6 @@ int _link(){while(1);}
 
 
 
-/*static*/ int l_grid_send(lua_State* L) {
-
-    int nargs = lua_gettop(L);
-
-    char start_of_text[2] = {GRID_CONST_STX, 0};
-    
-    strcat(grid_lua_state.stdo, start_of_text);
-
-    for (int i=1; i <= nargs; ++i) {
-        strcat(grid_lua_state.stdo, lua_tostring(L, i));
-    }
-
-    char end_of_text[2] =   {GRID_CONST_ETX, 0};
-
-    strcat(grid_lua_state.stdo, end_of_text);
-
-    return 0;
-}
-
-
-
 
 /*static*/ int l_grid_midi_send(lua_State* L) {
 
@@ -455,7 +434,7 @@ int _link(){while(1);}
     uint8_t param2 = param[3];
 
 
-    uint8_t midiframe[20] = {0};
+    char midiframe[20] = {0};
 
     sprintf(midiframe, GRID_CLASS_MIDI_frame);
 
@@ -504,60 +483,7 @@ int _link(){while(1);}
     return 1;
 }
 
-/*static*/ int l_grid_midirx_enabled(lua_State* L) {
 
-    int nargs = lua_gettop(L);
-
-    if (nargs!=1){
-        // error
-        strcat(grid_lua_state.stde, "#GTV.invalidParams");
-        return 0;
-    }
-
-    int32_t param[1] = {0};
-    uint8_t isgetter = 0;
-
-    for (int i=1; i <= nargs; ++i) {
-
-        if (lua_isnumber(L, i)){
-            param[i-1] = lua_tointeger(L, i);  
-        }
-
-        
-    }
-
-    grid_sys_set_midirx_any_state(&grid_sys_state, (uint8_t) param[0]);
-
-    
-    return 1;
-}
-
-/*static*/ int l_grid_midirx_sync(lua_State* L) {
-
-    int nargs = lua_gettop(L);
-
-    if (nargs!=1){
-        // error
-        strcat(grid_lua_state.stde, "#GTV.invalidParams");
-        return 0;
-    }
-
-    int32_t param[1] = {0};
-    uint8_t isgetter = 0;
-
-    for (int i=1; i <= nargs; ++i) {
-
-        if (lua_isnumber(L, i)){
-            param[i-1] = lua_tointeger(L, i);  
-        }
-
-        
-    }
-    
-    grid_sys_set_midirx_sync_state(&grid_sys_state, (uint8_t) param[0]);
-    
-    return 1;
-}
 
 
 /*static*/ int l_grid_led_layer_phase(lua_State* L) {

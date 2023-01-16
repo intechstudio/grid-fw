@@ -54,7 +54,7 @@ struct grid_port{
 	uint8_t ping_local_token;
 	uint8_t ping_partner_token;
 	
-	uint8_t ping_packet[20];
+	char ping_packet[20];
 	uint8_t ping_packet_length;
 	
 	uint8_t ping_flag;

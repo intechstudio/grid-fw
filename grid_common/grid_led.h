@@ -117,7 +117,7 @@ uint32_t grid_led_get_led_count(struct grid_led_model* mod);
 
 
 uint16_t grid_protocol_led_change_report_length(struct grid_led_model* mod);
-uint16_t grid_protocol_led_change_report_generate(struct grid_led_model* mod, uint16_t maxlength, uint8_t* output);
+uint16_t grid_protocol_led_change_report_generate(struct grid_led_model* mod, uint16_t maxlength, char* output);
 
 
 

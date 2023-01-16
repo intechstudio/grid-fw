@@ -76,9 +76,9 @@ extern struct grid_msg_model grid_msg_state;
 
 struct grid_msg_packet{
 	
-	uint8_t header[grid_msg_packet_header_maxlength];
-	uint8_t body[grid_msg_packet_body_maxlength];
-	uint8_t footer[GRID_MSG_FOOTER_maxlength];
+	char header[grid_msg_packet_header_maxlength];
+	char body[grid_msg_packet_body_maxlength];
+	char footer[GRID_MSG_FOOTER_maxlength];
 	
 	uint32_t header_length;
 	uint32_t body_length;
@@ -157,7 +157,7 @@ void		grid_msg_packet_body_set_parameter(struct grid_msg_packet* msg, uint32_t t
 
 
 
-void	grid_msg_packet_body_append_text(struct grid_msg_packet* msg, uint8_t* string);
+void	grid_msg_packet_body_append_text(struct grid_msg_packet* msg, char* string);
 
 
 void 	grid_msg_packet_body_append_printf(struct grid_msg_packet* msg, char const *fmt, ...);
@@ -181,20 +181,20 @@ void grid_msg_recent_fingerprint_store(struct grid_msg_model* mod, uint32_t fing
 
 // STRING FUNCTIONS
 
-uint32_t grid_msg_string_get_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint8_t* error);
-void grid_msg_string_set_parameter(uint8_t* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error);
+uint32_t grid_msg_string_get_parameter(char* message, uint8_t offset, uint8_t length, uint8_t* error);
+void grid_msg_string_set_parameter(char* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error);
 
 
-uint8_t grid_msg_string_calculate_checksum_of_packet_string(uint8_t* str, uint32_t length);
-uint8_t grid_msg_string_calculate_checksum_of_string(uint8_t* str, uint32_t length);
+uint8_t grid_msg_string_calculate_checksum_of_packet_string(char* str, uint32_t length);
+uint8_t grid_msg_string_calculate_checksum_of_string(char* str, uint32_t length);
 
-uint8_t grid_msg_string_checksum_read(uint8_t* str, uint32_t length);
-void grid_msg_string_checksum_write(uint8_t* message, uint32_t length, uint8_t checksum);
+uint8_t grid_msg_string_checksum_read(char* str, uint32_t length);
+void grid_msg_string_checksum_write(char* message, uint32_t length, uint8_t checksum);
 
 
 uint8_t grid_msg_string_read_hex_char_value(uint8_t ascii, uint8_t* error_flag);
-uint32_t grid_msg_string_read_hex_string_value(uint8_t* start_location, uint8_t length, uint8_t* error_flag);
-void grid_msg_string_write_hex_string_value(uint8_t* start_location, uint8_t size, uint32_t value);
+uint32_t grid_msg_string_read_hex_string_value(char* start_location, uint8_t length, uint8_t* error_flag);
+void grid_msg_string_write_hex_string_value(char* start_location, uint8_t size, uint32_t value);
 
 
 

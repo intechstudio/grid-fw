@@ -16,6 +16,8 @@
 #include "lua-5.4.3/src/lauxlib.h"
 
 #include "grid_protocol.h"
+#include "grid_msg.h"
+#include "grid_sys.h"
 
 extern void grid_platform_printf(char const *fmt, ...);
 extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
@@ -106,6 +108,21 @@ void grid_lua_gc_collect(struct grid_lua_model* mod);
 
 
 void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message);
+
+
 /*static*/ int grid_lua_panic(lua_State *L);
+
+/* ==================== LUA C API REGISTERED FUNCTIONS  ====================*/
+
+/*static*/ int l_grid_send(lua_State* L);
+
+
+// ==== MIDI ====
+
+/*static*/ int l_grid_midirx_enabled(lua_State* L);
+/*static*/ int l_grid_midirx_sync(lua_State* L);
+
+
+///*static*/ int l_grid_midi_send(lua_State* L);
 
 #endif /* GRID_LUA_API_H_INCLUDED */
