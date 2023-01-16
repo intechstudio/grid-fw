@@ -40,8 +40,10 @@ uint32_t grid_platform_get_hwcfg();
  * @return
  *      - 64-bit unsigned value of CPUID register
  */
-uint32_t grid_platform_get_id(uint32_t* return_array);
 
+void grid_platform_printf(char const *fmt, ...);
+
+uint32_t grid_platform_get_id(uint32_t* return_array);
 
 uint32_t grid_platform_get_id(uint32_t* return_array);
 uint32_t grid_platform_get_hwcfg();

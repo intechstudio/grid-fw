@@ -122,3 +122,20 @@ void grid_platform_delay_ms(uint32_t delay_milliseconds){
 uint8_t grid_platform_get_reset_cause(){
     return 0;
 }
+
+void grid_platform_printf(char const *fmt, ...){
+
+    ets_printf("PLATFORM SPECIFIC PRINTF NOT IMPLEMENTED!!!");
+
+    
+/*
+	va_list ap;
+	va_start(ap, fmt);
+	vprintf(fmt, ap);
+	va_end(ap);
+
+*/
+
+
+
+}

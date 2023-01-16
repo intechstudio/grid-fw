@@ -19,52 +19,8 @@ int _link(void);
 
 
 
-#define GRID_LUA_STDO_LENGTH    100
-#define GRID_LUA_STDI_LENGTH    100
 
-#define GRID_LUA_STDE_LENGTH    100
 
-struct grid_lua_model{
-    
-    lua_State *L;
-
-    uint32_t stdo_len;
-    uint32_t stdi_len;
-
-    uint32_t stde_len;
-
-    uint8_t stdo[GRID_LUA_STDO_LENGTH];
-    uint8_t stdi[GRID_LUA_STDI_LENGTH];
-
-    uint8_t stde[GRID_LUA_STDE_LENGTH];
-
-    uint32_t dostring_count;
-
-};
-
-struct grid_lua_model grid_lua_state;
-
-uint8_t* grid_lua_get_output_string(struct grid_lua_model* mod);
-uint8_t* grid_lua_get_error_string(struct grid_lua_model* mod);
-
-uint8_t grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message);
-void grid_lua_gc_try_collect(struct grid_lua_model* mod);
-void grid_lua_gc_collect(struct grid_lua_model* mod);
-
-static int grid_lua_panic(lua_State *L);
-
-uint8_t grid_lua_init(struct grid_lua_model* mod);
-uint8_t grid_lua_deinit(struct grid_lua_model* mod);
-
-uint8_t grid_lua_start_vm(struct grid_lua_model* mod);
-uint8_t grid_lua_stop_vm(struct grid_lua_model* mod);
-
-uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code);
-
-void grid_lua_clear_stdi(struct grid_lua_model* mod);
-void grid_lua_clear_stdo(struct grid_lua_model* mod);
-
-void grid_lua_clear_stde(struct grid_lua_model* mod);
 
 uint8_t grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys);
 
@@ -76,6 +32,8 @@ uint8_t grid_lua_ui_init_ef44(struct grid_lua_model* mod);
 
 
 
+uint8_t grid_lua_start_vm(struct grid_lua_model* mod);
+uint8_t grid_lua_stop_vm(struct grid_lua_model* mod);
 
 
 

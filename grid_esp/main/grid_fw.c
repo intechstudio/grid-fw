@@ -50,6 +50,8 @@
 #include "../../grid_common/grid_port.h"
 #include "../../grid_common/grid_usb.h"
 
+#include "../../grid_common/grid_lua_api.h"
+
 
 #include "../../grid_common/lua-5.4.3/src/lua.h"
 #include "../../grid_common/lua-5.4.3/src/lualib.h"

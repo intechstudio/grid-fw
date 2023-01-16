@@ -14,23 +14,7 @@ int _times(){while(1);}
 int _unlink(){while(1);} 
 int _link(){while(1);} 
 
-uint8_t* grid_lua_get_output_string(struct grid_lua_model* mod){
-    return mod->stdo;
-}
 
-uint8_t* grid_lua_get_error_string(struct grid_lua_model* mod){
-    return mod->stde;
-}
-
-
-/*static*/ int grid_lua_panic(lua_State *L) {
-
-    while(1){
-
-        grid_platform_printf("LUA PANIC\r\n");
-        grid_platform_delay_ms(1000);
-    }
-}
 
 /*static*/ int32_t grid_utility_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max) {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -445,6 +429,7 @@ uint8_t* grid_lua_get_error_string(struct grid_lua_model* mod){
 
     return 0;
 }
+
 
 
 
@@ -1444,80 +1429,7 @@ uint8_t* grid_lua_get_error_string(struct grid_lua_model* mod){
 
 
 
-uint8_t grid_lua_init(struct grid_lua_model* mod){
 
-
-    mod->stdo_len = GRID_LUA_STDO_LENGTH;
-    mod->stdi_len = GRID_LUA_STDI_LENGTH;
-    mod->stde_len = GRID_LUA_STDE_LENGTH;
-
-    grid_lua_clear_stdo(mod);
-    grid_lua_clear_stdi(mod);
-    grid_lua_clear_stde(mod);
-
-    mod->dostring_count = 0;
-
-}
-
-uint8_t grid_lua_deinit(struct grid_lua_model* mod){
-
-
-}
-
-uint8_t grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
-
-    uint32_t memusage = lua_gc(grid_lua_state.L, LUA_GCCOUNT)*1024 + lua_gc(grid_lua_state.L, LUA_GCCOUNTB);
-    grid_platform_printf("LUA mem usage: %d(%s)\r\n", memusage, message);
-
-}
-
-
-uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
-
-	mod->L = luaL_newstate();
-
-    lua_atpanic(mod->L, &grid_lua_panic);
-
-    grid_lua_debug_memory_stats(mod, "Init");
-
-
-    luaL_openlibs(mod->L);
-
-    grid_lua_debug_memory_stats(mod, "Openlibs");
-
-    grid_lua_dostring(mod, GRID_LUA_GLUT_source);
-    grid_lua_dostring(mod, GRID_LUA_GLIM_source);    
-    grid_lua_dostring(mod, GRID_LUA_GEN_source);
-    grid_lua_dostring(mod, "midi = {}");
-    grid_lua_dostring(mod, "midi.ch = 0 midi.cmd=176 midi.p1=0 midi.p2=0");
-    grid_lua_dostring(mod, "midi.send_packet = function (self,ch,cmd,p1,p2) "GRID_LUA_FNC_G_MIDI_SEND_short"(ch,cmd,p1,p2) end");
-
-    grid_lua_dostring(mod, "mouse = {}");
-    grid_lua_dostring(mod, "mouse.send_axis_move = function (self,p,a) "GRID_LUA_FNC_G_MOUSEMOVE_SEND_short"(p,a) end");
-    grid_lua_dostring(mod, "mouse.send_button_change = function (self,s,b) "GRID_LUA_FNC_G_MOUSEBUTTON_SEND_short"(s,b) end");
- 
-    grid_lua_dostring(mod, "keyboard = {}");
-    grid_lua_dostring(mod, "keyboard.send_macro = function (self,...) "GRID_LUA_FNC_G_KEYBOARD_SEND_short"(...) end");
-
-
-
-
-    lua_getglobal(mod->L, "_G");
-	luaL_setfuncs(mod->L, printlib, 0);
-
-
-	lua_pop(mod->L, 1);
-    grid_lua_debug_memory_stats(mod, "Printlib");
-
-
-
-
-    grid_lua_ui_init(mod, &grid_sys_state);
-    grid_lua_debug_memory_stats(mod, "Ui init");
-
-
-
-}
 
 uint8_t grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys){
 
@@ -1679,97 +1591,59 @@ uint8_t grid_lua_ui_init_ef44(struct grid_lua_model* mod){
 }
 
 
+
+
+
+
+uint8_t grid_lua_start_vm(struct grid_lua_model* mod){
+
+	mod->L = luaL_newstate();
+
+    lua_atpanic(mod->L, &grid_lua_panic);
+
+    grid_lua_debug_memory_stats(mod, "Init");
+
+
+    luaL_openlibs(mod->L);
+
+    grid_lua_debug_memory_stats(mod, "Openlibs");
+
+    grid_lua_dostring(mod, GRID_LUA_GLUT_source);
+    grid_lua_dostring(mod, GRID_LUA_GLIM_source);    
+    grid_lua_dostring(mod, GRID_LUA_GEN_source);
+    grid_lua_dostring(mod, "midi = {}");
+    grid_lua_dostring(mod, "midi.ch = 0 midi.cmd=176 midi.p1=0 midi.p2=0");
+    grid_lua_dostring(mod, "midi.send_packet = function (self,ch,cmd,p1,p2) "GRID_LUA_FNC_G_MIDI_SEND_short"(ch,cmd,p1,p2) end");
+
+    grid_lua_dostring(mod, "mouse = {}");
+    grid_lua_dostring(mod, "mouse.send_axis_move = function (self,p,a) "GRID_LUA_FNC_G_MOUSEMOVE_SEND_short"(p,a) end");
+    grid_lua_dostring(mod, "mouse.send_button_change = function (self,s,b) "GRID_LUA_FNC_G_MOUSEBUTTON_SEND_short"(s,b) end");
+ 
+    grid_lua_dostring(mod, "keyboard = {}");
+    grid_lua_dostring(mod, "keyboard.send_macro = function (self,...) "GRID_LUA_FNC_G_KEYBOARD_SEND_short"(...) end");
+
+
+
+
+    lua_getglobal(mod->L, "_G");
+	luaL_setfuncs(mod->L, printlib, 0);
+
+
+	lua_pop(mod->L, 1);
+    grid_lua_debug_memory_stats(mod, "Printlib");
+
+
+
+
+    grid_lua_ui_init(mod, &grid_sys_state);
+    grid_lua_debug_memory_stats(mod, "Ui init");
+
+
+
+}
+
 uint8_t grid_lua_stop_vm(struct grid_lua_model* mod){
 
     lua_close(mod->L);
-}
-
-
-
-void grid_lua_gc_try_collect(struct grid_lua_model* mod){
-
-    if (lua_gc(mod->L, LUA_GCCOUNT)>70){ //60kb
-
-        lua_gc(mod->L, LUA_GCCOLLECT);
-        grid_lua_debug_memory_stats(mod, "gc 70kb");
-        mod->dostring_count = 0;
-
-    }
-
-
-}
-
-
-void grid_lua_gc_collect(struct grid_lua_model* mod){
-
-    lua_gc(mod->L, LUA_GCCOLLECT);
-
-
-}
-
-uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
-
-    mod->dostring_count++;
-
-    uint32_t is_ok = 1;
-
-    if (luaL_loadstring(mod->L, code) == LUA_OK){
-
-        if (( lua_pcall(mod->L, 0, LUA_MULTRET, 0)) == LUA_OK) {
-            // If it was executed successfuly we 
-            // remove the code from the stack
-
-        }
-        else{
-            //grid_platform_printf("LUA not OK: %s \r\n", code);
-            //grid_port_debug_printf("LUA not OK");
-            is_ok = 0;
-        }
-
-        lua_pop(mod->L, lua_gettop(mod->L));
-    
-    }
-    else{
-        //grid_platform_printf("LUA not OK:  %s\r\n", code);
-        //grid_port_debug_printf("LUA not OK");
-        is_ok = 0;
-    }
-
-
-    grid_lua_gc_try_collect(mod);
-
-    return is_ok;
-
-}
-
-
-void grid_lua_clear_stdi(struct grid_lua_model* mod){
-
-    for (uint32_t i=0; i<mod->stdi_len; i++){
-        mod->stdi[i] = 0;
-    }
-
-}
-
-void grid_lua_clear_stdo(struct grid_lua_model* mod){
-
-
-    for (uint32_t i=0; i<mod->stdo_len; i++){
-        mod->stdo[i] = 0;
-    }
-
-
-}
-
-
-
-void grid_lua_clear_stde(struct grid_lua_model* mod){
-
-
-    for (uint32_t i=0; i<mod->stde_len; i++){
-        mod->stde[i] = 0;
-    }
-
-
 }
 
