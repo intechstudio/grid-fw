@@ -560,7 +560,7 @@ int main(void)
 
 	atmel_start_init();	// this sets up gpio and printf
 	
-   	printf("Start Initialized\r\n");
+   	grid_platform_printf("Start Initialized %d %s\r\n", 123, "Cool!");
 
 	grid_d51_init(); // Check User Row
 

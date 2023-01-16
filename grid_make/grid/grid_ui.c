@@ -634,6 +634,41 @@ uint8_t grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t
 
 }
 
+void grid_ui_element_timer_set(struct grid_ui_element* ele, uint32_t duration){
+
+
+	ele->timer_event_helper = duration;
+
+}
+
+
+void grid_ui_element_set_template_parameter(struct grid_ui_element* ele, uint8_t template_index, int32_t value){
+
+	if (template_index < ele->template_parameter_list_length){
+
+		ele->template_parameter_list[template_index] = value;
+	}
+
+}
+
+int32_t grid_ui_element_get_template_parameter(struct grid_ui_element* ele, uint8_t template_index){
+
+	if (template_index < ele->template_parameter_list_length){
+
+		return ele->template_parameter_list[template_index];
+	}	
+	else{
+		return 0;
+	}
+
+}
+
+uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui)
+{
+	return ui->page_change_enabled;
+
+}
+
 uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 
 	/*
@@ -947,6 +982,10 @@ struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t e
 }
 
 struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type){
+
+	if (ele == NULL) {
+		return NULL;
+	}
 
 	uint8_t event_index = 255;
 		

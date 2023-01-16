@@ -667,6 +667,17 @@ uint8_t grid_mxt144u_read_id(struct io_descriptor * i2c_io){
 }
 
 
+void grid_platform_printf(char const *fmt, ...){
+
+
+	va_list ap;
+	va_start(ap, fmt);
+	vprintf(fmt, ap);
+	va_end(ap);
+
+
+}
+
 uint32_t grid_platform_get_id(uint32_t* return_array){
 			
 	return_array[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);

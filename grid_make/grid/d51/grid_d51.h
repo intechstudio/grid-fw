@@ -59,11 +59,15 @@ uint32_t grid_d51_nvic_get_interrupt_priority_mask(void);
 
 
 
+void grid_platform_printf(char const *fmt, ...);
+
 uint32_t grid_platform_get_id(uint32_t* return_array);
 uint32_t grid_platform_get_hwcfg();
 uint8_t grid_platform_get_random_8();
 void grid_platform_delay_ms(uint32_t delay_milliseconds);
 uint8_t grid_platform_get_reset_cause();
+
+
 
 
 uint8_t grid_platform_send_grid_message(uint8_t direction, uint8_t* buffer, uint16_t length);
