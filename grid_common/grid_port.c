@@ -111,7 +111,74 @@ void grid_port_init_all(void){
 
 
 
+void grid_port_receiver_softreset(struct grid_port* por){
 
+
+	
+	por->partner_status = 0;
+
+	
+	por->rx_double_buffer_timeout = 0;
+	
+
+	por->rx_double_buffer_seek_start_index = 0;
+	por->rx_double_buffer_read_start_index = 0;
+
+	grid_platform_reset_grid_transmitter(por->direction);
+
+	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
+		por->rx_double_buffer[i] = 0;
+	}
+	
+	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
+		por->tx_double_buffer[i] = 0;
+	}
+
+}
+
+
+void grid_port_receiver_hardreset(struct grid_port* por){
+
+	if (por == &GRID_PORT_E){
+
+		printf("*");
+	}
+
+
+	grid_platform_disable_grid_transmitter(por->direction);
+
+
+	por->partner_status = 0;
+	
+	
+	por->ping_partner_token = 255;
+	por->ping_local_token = 255;
+	
+	grid_msg_string_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
+	grid_msg_string_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
+	grid_msg_string_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_string_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
+
+
+	
+	por->rx_double_buffer_timeout = 0;
+	grid_platform_reset_grid_transmitter(por->direction);
+	
+
+
+	por->rx_double_buffer_seek_start_index = 0;
+	por->rx_double_buffer_read_start_index = 0;
+
+	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
+		por->rx_double_buffer[i] = 0;
+	}
+	
+	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
+		por->tx_double_buffer[i] = 0;
+	}
+	
+	grid_platform_enable_grid_transmitter(por->direction);
+	
+}
 
 
 void grid_port_debug_print_text(char* debug_string){

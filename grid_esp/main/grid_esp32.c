@@ -139,3 +139,23 @@ void grid_platform_printf(char const *fmt, ...){
 
 
 }
+
+
+uint8_t grid_platform_disable_grid_transmitter(uint8_t direction){
+
+    ets_printf("grid_platform_disable_grid_transmitter NOT IMPLEMENTED!!!");
+    return 1;
+}
+
+uint8_t grid_platform_reset_grid_transmitter(uint8_t direction){
+    
+    ets_printf("grid_platform_reset_grid_transmitter NOT IMPLEMENTED!!!");
+    return 1;
+}
+
+uint8_t grid_platform_enable_grid_transmitter(uint8_t direction){
+    
+    ets_printf("grid_platform_enable_grid_transmitter NOT IMPLEMENTED!!!");
+    return 1;
+}
+

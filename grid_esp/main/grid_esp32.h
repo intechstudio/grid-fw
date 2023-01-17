@@ -51,6 +51,10 @@ uint8_t grid_platform_get_random_8();
 void grid_platform_delay_ms(uint32_t delay_milliseconds);
 uint8_t grid_platform_get_reset_cause();
 
+uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
+uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
+uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
+
 #ifdef __cplusplus
 }
 #endif

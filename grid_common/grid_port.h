@@ -13,6 +13,11 @@
 
 
 
+extern uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
+extern uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
+extern uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
+
+
 #define GRID_PORT_TYPE_UNDEFINED	0
 #define GRID_PORT_TYPE_USART		1
 #define GRID_PORT_TYPE_USB			2
@@ -86,6 +91,8 @@ void grid_port_init_all(void);
 void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir);
 
 
+void grid_port_receiver_softreset(struct grid_port* por);
+void grid_port_receiver_hardreset(struct grid_port* por);
 
 void grid_port_debug_print_text(char* str);
 void grid_port_websocket_print_text(char* str);
