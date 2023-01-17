@@ -5,6 +5,7 @@
 #include "grid_buf.h"
 #include "grid_msg.h"
 #include "grid_sys.h"
+#include "grid_usb.h"
 #include "grid_protocol.h"
 
 #include <stdint.h>
@@ -17,6 +18,9 @@ extern uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
 extern uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
 extern uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
 
+extern int32_t grid_platform_usb_serial_write(uint8_t* buffer, uint32_t length);
+
+extern void grid_platform_printf(char const *fmt, ...);
 
 #define GRID_PORT_TYPE_UNDEFINED	0
 #define GRID_PORT_TYPE_USART		1
@@ -90,6 +94,9 @@ void grid_port_init_all(void);
 
 void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir);
 
+
+uint8_t grid_port_process_outbound_usart(struct grid_port* por);
+uint8_t grid_port_process_outbound_usb(struct grid_port* por);  // dependency: USB ACM 
 
 void grid_port_receiver_softreset(struct grid_port* por);
 void grid_port_receiver_hardreset(struct grid_port* por);

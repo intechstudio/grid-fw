@@ -32,9 +32,7 @@ void grid_port_receive_task(struct grid_port* por);
 
 
 
-uint8_t grid_port_process_outbound_usart(struct grid_port* por);
-uint8_t grid_port_process_outbound_usb(struct grid_port* por);
-uint8_t grid_port_process_outbound_ui(struct grid_port* por);
+uint8_t grid_port_process_outbound_ui(struct grid_port* por); // dependency: UI Page Load
 
 
 

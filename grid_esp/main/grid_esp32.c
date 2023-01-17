@@ -159,3 +159,8 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction){
     return 1;
 }
 
+int32_t grid_platform_usb_serial_write(uint8_t* buffer, uint32_t length){
+
+    ets_printf("grid_platform_usb_serial_write NOT IMPLEMENTED!!!");
+    return 1;
+}

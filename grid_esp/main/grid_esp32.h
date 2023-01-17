@@ -41,6 +41,8 @@ uint32_t grid_platform_get_hwcfg();
  *      - 64-bit unsigned value of CPUID register
  */
 
+
+
 void grid_platform_printf(char const *fmt, ...);
 
 uint32_t grid_platform_get_id(uint32_t* return_array);
@@ -54,6 +56,8 @@ uint8_t grid_platform_get_reset_cause();
 uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
+
+int32_t grid_platform_usb_serial_write(uint8_t* buffer, uint32_t length);
 
 #ifdef __cplusplus
 }
