@@ -78,10 +78,8 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
 
 void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type);
 uint16_t grid_platform_get_actionstring_file_size(void* file_pointer);
-uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, uint8_t* targetstring);
-
+uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, char* targetstring);
 void grid_platform_delete_actionstring_file(void* file_pointer);
-
 void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, uint8_t* buffer, uint16_t length);
 
 

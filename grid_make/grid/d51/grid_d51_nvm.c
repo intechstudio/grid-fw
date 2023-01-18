@@ -867,7 +867,7 @@ void grid_d51_nvm_toc_debug(struct grid_d51_nvm_model* mod){
 
 
 
-uint32_t grid_d51_nvm_toc_generate_actionstring(struct grid_d51_nvm_model* nvm, struct grid_d51_nvm_toc_entry* entry, uint8_t* targetstring){
+uint32_t grid_d51_nvm_toc_generate_actionstring(struct grid_d51_nvm_model* nvm, struct grid_d51_nvm_toc_entry* entry, char* targetstring){
 
 	// -GRID_CLASS_CONFIG_ACTIONSTRING_offset to get rid of the config class header
 	CRITICAL_SECTION_ENTER()

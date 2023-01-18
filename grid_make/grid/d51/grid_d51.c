@@ -869,7 +869,7 @@ uint16_t grid_platform_get_actionstring_file_size(void* file_pointer){
 
 }
 
-uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, uint8_t* targetstring){
+uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, char* targetstring){
 
 	return grid_d51_nvm_toc_generate_actionstring(&grid_d51_nvm_state, (struct grid_d51_nvm_toc_entry*) file_pointer, targetstring);
 

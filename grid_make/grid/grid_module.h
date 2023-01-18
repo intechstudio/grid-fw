@@ -61,20 +61,6 @@ void grid_module_common_init(void);
 void grid_module_init_animation(struct grid_led_model* mod);
 
 
-void grid_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf);
-void grid_element_button_template_parameter_init(struct grid_ui_template_buffer* buf);
-void grid_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf);
-
-
-
-void grid_element_button_event_clear_cb(struct grid_ui_event* eve);
-void grid_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
-
-void grid_element_encoder_event_clear_cb(struct grid_ui_event* eve);
-void grid_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
-
-void grid_element_potmeter_event_clear_cb(struct grid_ui_event* eve);
-void grid_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
 
 #endif

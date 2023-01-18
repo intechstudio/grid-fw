@@ -164,3 +164,41 @@ int32_t grid_platform_usb_serial_write(uint8_t* buffer, uint32_t length){
     ets_printf("grid_platform_usb_serial_write NOT IMPLEMENTED!!!");
     return 1;
 }
+
+void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type){
+
+    ets_printf("grid_platform_find_actionstring_file NOT IMPLEMENTED!!!");
+    return NULL; //not found
+}
+
+
+uint16_t grid_platform_get_actionstring_file_size(void* file_pointer){
+
+    ets_printf("grid_platform_get_actionstring_file_size NOT IMPLEMENTED!!!");
+    return 0;
+}
+
+
+uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, char* targetstring){
+
+    ets_printf("grid_platform_read_actionstring_file_contents NOT IMPLEMENTED!!!");
+    return 0;
+}
+
+
+void grid_platform_delete_actionstring_file(void* file_pointer){
+
+    ets_printf("grid_platform_delete_actionstring_file NOT IMPLEMENTED!!!");
+    return;
+}
+
+
+void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, uint8_t* buffer, uint16_t length){
+
+    ets_printf("grid_platform_write_actionstring_file NOT IMPLEMENTED!!!");
+    return;
+}
+
+
+
+

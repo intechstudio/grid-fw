@@ -11,6 +11,8 @@
 
 #include "grid_module.h"
 
+#include "grid_ui.h"
+
 
 #define GRID_D51_NVM_GLOBAL_BASE_ADDRESS		0x7F000
 
@@ -77,7 +79,7 @@ uint8_t grid_d51_nvm_toc_entry_remove(struct grid_d51_nvm_model* nvm, struct gri
 
 
 
-uint32_t grid_d51_nvm_toc_generate_actionstring(struct grid_d51_nvm_model* nvm, struct grid_d51_nvm_toc_entry* entry, uint8_t* targetstring);
+uint32_t grid_d51_nvm_toc_generate_actionstring(struct grid_d51_nvm_model* nvm, struct grid_d51_nvm_toc_entry* entry, char* targetstring);
 
 uint32_t grid_d51_nvm_toc_defragment(struct grid_d51_nvm_model* nvm);
 

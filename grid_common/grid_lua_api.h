@@ -20,6 +20,7 @@
 #include "grid_sys.h"
 #include "grid_led.h"
 #include "grid_port.h"
+#include "grid_ui.h"
 
 extern struct grid_led_model grid_led_state;
 
@@ -183,6 +184,17 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message);
 /*static*/ int l_grid_rotation(lua_State* L);
 
 
+/*static*/ int l_grid_led_layer_phase(lua_State* L);
+/*static*/ int l_grid_led_layer_pfs(lua_State* L);
+/*static*/ int l_grid_template_variable(lua_State* L);
+/*static*/ int l_grid_page_next(lua_State* L);
+/*static*/ int l_grid_page_prev(lua_State* L);
+/*static*/ int l_grid_page_curr(lua_State* L);
+/*static*/ int l_grid_page_load(lua_State* L);
+/*static*/ int l_grid_timer_start(lua_State* L);
+/*static*/ int l_grid_timer_stop(lua_State* L);
+/*static*/ int l_grid_event_trigger(lua_State* L);
+
 /* ====================  MODULE SPECIFIC INITIALIZERS  ====================*/
 
 void grid_lua_ui_init_po16(struct grid_lua_model* mod);
@@ -193,6 +205,9 @@ void grid_lua_ui_init_ef44(struct grid_lua_model* mod);
 
 
 void grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys);
+
+
+void grid_lua_start_vm(struct grid_lua_model* mod);
 
 
 void grid_lua_stop_vm(struct grid_lua_model* mod);

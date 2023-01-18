@@ -1373,7 +1373,7 @@ uint8_t grid_port_process_outbound_ui(struct grid_port* por){
 
 					uint8_t temp[GRID_PARAMETER_ACTIONSTRING_maxlength]  = {0};
 
-					uint8_t error = grid_ui_recall_event_configuration(&grid_ui_state, pagenumber, elementnumber, eventtype, temp);
+					grid_ui_event_recall_configuration(&grid_ui_state, pagenumber, elementnumber, eventtype, temp);
 					
 					if (strlen(temp) != 0){
 
@@ -1628,7 +1628,7 @@ void grid_protocol_nvm_erase_succcess_callback(){
 		
 	grid_keyboard_enable(&grid_keyboard_state);
 
-	grid_ui_page_load(&grid_ui_state, grid_ui_get_activepage(&grid_ui_state));
+	grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 
 }
 
@@ -1661,9 +1661,9 @@ void grid_protocol_nvm_clear_succcess_callback(){
 
 
 	// clear template variable after clear command
-	grid_ui_page_clear_template_parameters(&grid_ui_state, grid_ui_get_activepage(&grid_ui_state));
+	grid_ui_page_clear_template_parameters(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 
-	grid_ui_page_load(&grid_ui_state, grid_ui_get_activepage(&grid_ui_state));
+	grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 
 }
 
@@ -1731,11 +1731,11 @@ void grid_protocol_nvm_store_succcess_callback(){
 
 	// clear template variable after store command
 
-	grid_ui_page_clear_template_parameters(&grid_ui_state, grid_ui_get_activepage(&grid_ui_state));
+	grid_ui_page_clear_template_parameters(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 
 	// reload configuration
 
-	grid_ui_page_load(&grid_ui_state, grid_ui_get_activepage(&grid_ui_state));
+	grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 
 }
 
