@@ -16,13 +16,17 @@
 
 extern void grid_platform_printf(char const *fmt, ...);
 
-
 extern void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type);
 extern uint16_t grid_platform_get_actionstring_file_size(void* file_pointer);
 extern uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, char* targetstring);
 extern void grid_platform_delete_actionstring_file(void* file_pointer);
-extern void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, uint8_t* buffer, uint16_t length);
+extern void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
 
+extern void	grid_platform_clear_actionstring_files_from_page(uint8_t page);
+extern void grid_platform_delete_actionstring_files_all();
+
+extern uint8_t grid_platform_get_nvm_state();
+extern uint8_t grid_platform_erase_nvm_next();
 
 enum grid_ui_status_t {
 	GRID_UI_STATUS_UNDEFINED,
@@ -224,6 +228,24 @@ void grid_ui_element_potmeter_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
 
+void	grid_ui_bulk_pageread_init(struct grid_ui_model* ui, void (*success_cb)());
 uint8_t grid_ui_bulk_pageread_is_in_progress(struct grid_ui_model* ui);
+void	grid_ui_bulk_pageread_next(struct grid_ui_model* ui);
+
+void	grid_ui_bulk_pagestore_init(struct grid_ui_model* ui, void (*success_cb)());
+uint8_t grid_ui_bulk_pagestore_is_in_progress(struct grid_ui_model* ui);
+void	grid_ui_bulk_pagestore_next(struct grid_ui_model* ui);
+
+void	grid_ui_bulk_pageclear_init(struct grid_ui_model* ui, void (*success_cb)());
+uint8_t grid_ui_bulk_pageclear_is_in_progress(struct grid_ui_model* ui);
+void	grid_ui_bulk_pageclear_next(struct grid_ui_model* ui);
+
+
+
+void	grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, void (*success_cb)());
+uint8_t grid_ui_bulk_nvmerase_is_in_progress(struct grid_ui_model* ui);
+void	grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui);
+
+
 
 #endif /* GRID_UI_H_INCLUDED */

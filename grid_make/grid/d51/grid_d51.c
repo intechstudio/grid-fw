@@ -885,7 +885,7 @@ void grid_platform_delete_actionstring_file(void* file_pointer){
 }
 
 
-void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, uint8_t* buffer, uint16_t length){
+void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length){
 
 	grid_d51_nvm_config_store(&grid_d51_nvm_state, page, element, event_type, buffer);
 
@@ -903,7 +903,7 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset(){
 }
 
 
-uint8_t	grid_platform_clear_actionstring_files_from_page(uint8_t page){
+void	grid_platform_clear_actionstring_files_from_page(uint8_t page){
 
 	struct grid_d51_nvm_toc_entry* current = grid_d51_nvm_state.toc_head;
 

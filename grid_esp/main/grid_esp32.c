@@ -193,12 +193,41 @@ void grid_platform_delete_actionstring_file(void* file_pointer){
 }
 
 
-void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, uint8_t* buffer, uint16_t length){
+void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length){
 
     ets_printf("grid_platform_write_actionstring_file NOT IMPLEMENTED!!!");
     return;
 }
 
 
+uint8_t grid_platform_get_nvm_state(){
 
+
+    ets_printf("grid_platform_get_nvm_state NOT IMPLEMENTED!!!");
+    return 0; //ready
+}
+
+
+void	grid_platform_clear_actionstring_files_from_page(uint8_t page){
+
+
+    ets_printf("grid_platform_clear_actionstring_files_from_page NOT IMPLEMENTED!!!");
+    return;
+}
+;
+void grid_platform_delete_actionstring_files_all(){
+
+
+    ets_printf("grid_platform_delete_actionstring_files_all NOT IMPLEMENTED!!!");
+    return;
+}
+
+
+
+uint8_t grid_platform_erase_nvm_next(){
+
+    ets_printf("grid_platform_erase_nvm_next NOT IMPLEMENTED!!!");
+    return 0; // done
+
+}
 
