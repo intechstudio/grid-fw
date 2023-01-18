@@ -11,30 +11,12 @@
 extern void grid_platform_printf(char const *fmt, ...);
 
 
-
-
-
-
-
-
-
-
 void grid_port_process_ui(struct grid_ui_model* ui);
 void grid_port_process_ui_local(struct grid_ui_model* ui);
 
 
 
-
-
-
 // requires NVM
-uint8_t grid_ui_page_load(struct grid_ui_model* ui, uint8_t page);
-
-
-
-void grid_ui_page_load_success_callback(void);
-
-uint8_t grid_ui_bluk_anything_is_in_progress(struct grid_ui_model* ui);
 
 
 

@@ -345,6 +345,130 @@ uint8_t grid_ui_page_get_prev(struct grid_ui_model* ui){
 
 
 
+void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
+
+	/*
+	
+		Reset encoder mode
+		Reset button mode
+		Reset potmeter mode/reso
+		Reset led animations
+
+	*/
+
+	// reset all of the state parameters of all leds
+	grid_led_reset(&grid_led_state);
+
+	uint8_t oldpage = ui->page_activepage;
+	ui->page_activepage = page;
+	// Call the page_change callback
+
+	//grid_platform_printf("LOAD PAGE: %d\r\n", page);
+
+	for (uint8_t i = 0; i < ui->element_list_length; i++)
+	{	
+
+		struct grid_ui_element* ele = &ui->element_list[i];
+
+		ele->timer_event_helper = 0; // stop the event's timer
+
+		// clear all of the pending events for the element
+		for (uint8_t j = 0; j < ele->event_list_length; j++){
+			struct grid_ui_event* eve = &ele->event_list[j];
+
+			grid_ui_event_reset(eve);
+
+		}	
+
+		// if (ele->template_initializer!=NULL){
+		// 	ele->template_initializer(ele->template_buffer_list_head);
+		// }
+
+
+		uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
+
+		//if (i==0) grid_platform_printf("TB LEN: %d\r\n", template_buffer_length);
+		while (template_buffer_length < page+1){
+
+			grid_platform_printf("$"); // emergency allocation
+			grid_ui_template_buffer_create(ele);
+
+			template_buffer_length = grid_ui_template_buffer_list_length(ele);
+
+			//if (i==0) grid_platform_printf("CREATE NEW, LEN: %d\r\n", template_buffer_length);
+		}
+
+
+
+		//struct grid_ui_template_buffer* buf =  grid_ui_template_buffer_find(ele, page==0?1:page);
+		struct grid_ui_template_buffer* buf =  grid_ui_template_buffer_find(ele, page);
+		
+		if (buf == NULL){
+
+			grid_platform_printf("error.template buffer is invalid\r\n");
+			grid_port_debug_print_text("error.template buffer is invalid");
+
+		}
+		else{
+
+			// load the template parameter list
+			ele->template_parameter_list = buf->template_parameter_list;
+
+			if (buf->template_parameter_list == NULL){
+				grid_port_debug_print_text("NULL");
+			}
+
+
+			if (i<4 && 0){
+
+
+				for (uint8_t j = 0; j<13; j++){
+					grid_platform_printf("%d:%d ", j, ele->template_parameter_list[j]);
+
+				}
+				grid_platform_printf("\r\n");
+
+				grid_port_debug_printf("Val[%d]: %d", i, ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index]);
+
+			}
+
+
+
+		}
+
+
+		if (ele->page_change_cb != NULL){
+
+			ele->page_change_cb(ele, oldpage, page);
+		}
+
+	}
+
+
+	grid_platform_printf("STOP\r\n");
+	grid_lua_stop_vm(&grid_lua_state);
+	grid_platform_printf("START\r\n");
+	grid_lua_start_vm(&grid_lua_state);
+
+	grid_ui_bulk_pageread_init(ui, &grid_ui_page_load_success_callback);
+
+	
+}
+
+void grid_ui_page_load_success_callback(void){
+
+	grid_keyboard_enable(&grid_keyboard_state);
+
+
+	// phase out the animation
+	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+	grid_led_set_alert_timeout_automatic(&grid_led_state);
+	
+}
+
+
+
+
 void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t page){
 
 

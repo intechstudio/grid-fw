@@ -169,6 +169,9 @@ uint8_t grid_ui_page_get_next(struct grid_ui_model* ui);
 uint8_t grid_ui_page_get_prev(struct grid_ui_model* ui);
 
 
+void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page);
+void grid_ui_page_load_success_callback(void);
+
 void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t page);
 uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui);
 
@@ -240,12 +243,11 @@ void	grid_ui_bulk_pageclear_init(struct grid_ui_model* ui, void (*success_cb)())
 uint8_t grid_ui_bulk_pageclear_is_in_progress(struct grid_ui_model* ui);
 void	grid_ui_bulk_pageclear_next(struct grid_ui_model* ui);
 
-
-
 void	grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, void (*success_cb)());
 uint8_t grid_ui_bulk_nvmerase_is_in_progress(struct grid_ui_model* ui);
 void	grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui);
 
 
+uint8_t grid_ui_bluk_anything_is_in_progress(struct grid_ui_model* ui);
 
 #endif /* GRID_UI_H_INCLUDED */
