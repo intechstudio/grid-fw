@@ -17,6 +17,7 @@ idf_component_register(
         "../../grid_common/grid_buf.c"
         "../../grid_common/grid_port.c"
         "../../grid_common/grid_usb.c"
+        "../../grid_common/grid_ui.c"
         "../../grid_common/grid_lua_api.c"
         
         "../../grid_common/lua-5.4.3/src/lapi.c"

@@ -1,7 +1,9 @@
-#ifndef GRID_UI_H_INCLUDED
-#define GRID_UI_H_INCLUDED
+#ifndef GRID_UI_BACK_H_INCLUDED
+#define GRID_UI_BACK_H_INCLUDED
 
 #include "grid_module.h"
+
+#include "grid_ui.h"
 
 #include <stdint.h>
 #include <stdlib.h>

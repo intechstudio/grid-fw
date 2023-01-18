@@ -36,6 +36,8 @@
 #include "grid_esp32.h"
 #include "grid_esp32_swd.h"
 
+
+
 #include "esp_log.h"
 #include "esp_check.h"
 #include "rom/ets_sys.h" // For ets_printf
@@ -51,6 +53,7 @@
 #include "../../grid_common/grid_usb.h"
 
 #include "../../grid_common/grid_lua_api.h"
+#include "../../grid_common/grid_ui.h"
 
 
 #include "../../grid_common/lua-5.4.3/src/lua.h"

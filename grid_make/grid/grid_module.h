@@ -40,7 +40,7 @@
 
 
 #include "grid_sys.h"
-#include "grid_ui.h"
+#include "grid_ui_back.h"
 
 #include "grid_d51_nvm.h"
 #include "grid_msg.h"

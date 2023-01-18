@@ -1,6 +1,6 @@
 #include "grid/grid_module.h"
 
-#include "grid/grid_ui.h"
+#include "grid/grid_ui_back.h"
 
 #include <atmel_start.h>
 #include "atmel_start_pins.h"

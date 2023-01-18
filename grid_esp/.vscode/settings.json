@@ -57,7 +57,8 @@
     "lauxlib.h": "c",
     "lualib.h": "c",
     "lua.h": "c",
-    "grid_port.h": "c"
+    "grid_port.h": "c",
+    "grid_lua_api.h": "c"
 },
   "actionButtons": {
     "defaultColor": "#ff0034", // Can also use string color names.
