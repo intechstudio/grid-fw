@@ -22,7 +22,6 @@ usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_usb.o \
 ../grid_common/grid_ui.o \
 ../grid_common/grid_lua_api.o \
-grid/grid_portback.o \
 grid/d51/grid_d51.o \
 grid/d51/grid_d51_led.o \
 grid/d51/grid_d51_uart.o \
@@ -88,7 +87,6 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_usb.o" \
 "../grid_common/grid_ui.o" \
 "../grid_common/grid_lua_api.o" \
-"grid/grid_portback.o" \
 "grid/d51/grid_d51.o" \
 "grid/d51/grid_d51_led.o" \
 "grid/d51/grid_d51_uart.o" \
@@ -165,7 +163,6 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_usb.d" \
 "../grid_common/grid_ui.d" \
 "../grid_common/grid_lua_api.d" \
-"grid/grid_portback.d" \
 "grid/d51/grid_d51.d" \
 "grid/d51/grid_d51_led.d" \
 "grid/d51/grid_d51_uart.d" \

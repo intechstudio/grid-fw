@@ -767,7 +767,7 @@ uint8_t grid_platform_get_reset_cause(){
 
 
 
-uint8_t grid_platform_send_grid_message(uint8_t direction, uint8_t* buffer, uint16_t length){
+uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length){
 
 
 
@@ -955,3 +955,17 @@ uint8_t grid_platform_erase_nvm_next(){
 
 	}
 }
+
+
+void grid_platform_system_reset(){
+
+	NVIC_SystemReset();
+}
+
+
+void grid_platform_nvm_defrag(){
+
+	grid_d51_nvm_toc_defragment(&grid_d51_nvm_state);
+
+}
+

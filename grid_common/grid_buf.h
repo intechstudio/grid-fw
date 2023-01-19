@@ -11,7 +11,7 @@
 
 
 extern uint32_t grid_buffer_error_count;
-extern uint8_t grid_platform_send_grid_message(uint8_t direction, uint8_t* buffer, uint16_t length);
+extern uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
  
 #define GRID_BUFFER_SIZE	2000 //1000 this is the buffer for internal routing
 
@@ -24,7 +24,7 @@ extern uint8_t grid_platform_send_grid_message(uint8_t direction, uint8_t* buffe
 struct grid_buffer{
 	
 	uint16_t buffer_length;
-	uint8_t* buffer_storage;
+	char* buffer_storage;
 	
 	uint16_t read_start;
 	uint16_t read_stop;
@@ -42,6 +42,7 @@ struct grid_buffer{
 
 uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length);
 
+uint16_t grid_buffer_write_size(struct grid_buffer* buf);
 
 uint16_t grid_buffer_read_size(struct grid_buffer* buf);
 uint16_t grid_buffer_read_init(struct grid_buffer* buf);

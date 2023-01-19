@@ -159,7 +159,7 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction){
     return 1;
 }
 
-int32_t grid_platform_usb_serial_write(uint8_t* buffer, uint32_t length){
+int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
 
     ets_printf("grid_platform_usb_serial_write NOT IMPLEMENTED!!!");
     return 1;
@@ -231,3 +231,31 @@ uint8_t grid_platform_erase_nvm_next(){
 
 }
 
+uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length){
+
+    ets_printf("grid_platform_send_grid_message NOT IMPLEMENTED!!!");
+    return 0; // done
+
+}
+
+
+uint32_t grid_plaform_get_nvm_nextwriteoffset(){
+
+    ets_printf("grid_plaform_get_nvm_nextwriteoffset NOT IMPLEMENTED!!!");
+    return 0; // done
+
+}
+
+
+
+void grid_platform_system_reset(){
+
+    ets_printf("grid_platform_system_reset NOT IMPLEMENTED!!!");
+
+}
+
+void grid_platform_nvm_defrag(){
+
+    ets_printf("grid_platform_nvm_defrag NOT IMPLEMENTED!!!");
+
+}

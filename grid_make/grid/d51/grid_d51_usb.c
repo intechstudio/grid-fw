@@ -78,9 +78,9 @@ static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state)
 }
 
 
-int32_t grid_platform_usb_serial_write(uint8_t* buffer, uint32_t length){
+int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
 
-	return cdcdf_acm_write(buffer, length);
+	return cdcdf_acm_write((uint8_t*) buffer, length);
 }
 
 static bool grid_usb_midi_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)

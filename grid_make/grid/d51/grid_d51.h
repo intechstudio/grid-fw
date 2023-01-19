@@ -70,7 +70,7 @@ uint8_t grid_platform_get_reset_cause();
 
 
 
-uint8_t grid_platform_send_grid_message(uint8_t direction, uint8_t* buffer, uint16_t length);
+uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
 uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
@@ -93,5 +93,9 @@ void	grid_platform_clear_actionstring_files_from_page(uint8_t page);
 void grid_platform_delete_actionstring_files_all();
 
 uint8_t grid_platform_erase_nvm_next();
+
+
+void grid_platform_system_reset();
+void grid_platform_nvm_defrag();
 
 #endif /* GRID_D51_H_ */

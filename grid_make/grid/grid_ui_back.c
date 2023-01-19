@@ -207,12 +207,6 @@ void grid_port_process_ui(struct grid_ui_model* ui){
 
 	}
 
-
-
-
-
-
-
 	
 }
 

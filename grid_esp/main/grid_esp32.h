@@ -57,7 +57,7 @@ uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
 
-int32_t grid_platform_usb_serial_write(uint8_t* buffer, uint32_t length);
+int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
 
 void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type);
 uint16_t grid_platform_get_actionstring_file_size(void* file_pointer);
@@ -73,6 +73,16 @@ void grid_platform_delete_actionstring_files_all();
 
 
 uint8_t grid_platform_erase_nvm_next();
+
+uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
+
+
+uint32_t grid_plaform_get_nvm_nextwriteoffset();
+
+void grid_platform_system_reset();
+void grid_platform_nvm_defrag();
+
+
 
 #ifdef __cplusplus
 }

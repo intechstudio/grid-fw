@@ -6,6 +6,9 @@
 #include "grid_msg.h"
 #include "grid_sys.h"
 #include "grid_usb.h"
+#include "grid_ui.h"
+#include "grid_led.h"
+#include "grid_lua_api.h"
 #include "grid_protocol.h"
 
 #include <stdint.h>
@@ -17,10 +20,15 @@
 extern uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
 extern uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
 extern uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
+extern uint32_t grid_plaform_get_nvm_nextwriteoffset();
 
-extern int32_t grid_platform_usb_serial_write(uint8_t* buffer, uint32_t length);
+extern int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
 
 extern void grid_platform_printf(char const *fmt, ...);
+
+
+extern void grid_platform_system_reset();
+extern void grid_platform_nvm_defrag();
 
 #define GRID_PORT_TYPE_UNDEFINED	0
 #define GRID_PORT_TYPE_USART		1
@@ -50,8 +58,8 @@ struct grid_port{
 	uint32_t rx_double_buffer_seek_start_index; // offset of next received byte in buffer
 	uint32_t rx_double_buffer_read_start_index;
 	
-	uint8_t tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE];
-	uint8_t rx_double_buffer[GRID_DOUBLE_BUFFER_RX_SIZE];
+	char tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE];
+	char rx_double_buffer[GRID_DOUBLE_BUFFER_RX_SIZE];
 		
 	
 	struct grid_buffer tx_buffer;
@@ -88,6 +96,14 @@ extern volatile struct grid_port GRID_PORT_U;
 extern volatile struct grid_port GRID_PORT_H;
 
 
+void grid_port_receive_task(struct grid_port* por);
+void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint16_t len);
+
+uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback);
+
+
+
+
 
 
 void grid_port_init_all(void);
@@ -111,6 +127,18 @@ uint8_t	grid_port_packet_send_everywhere(struct grid_msg_packet* msg);
 
 
 void grid_port_ping_try_everywhere(void);
+
+
+
+void grid_protocol_nvm_erase_succcess_callback();
+void grid_protocol_nvm_clear_succcess_callback();
+void grid_protocol_nvm_read_succcess_callback();
+void grid_protocol_nvm_store_succcess_callback();
+void grid_protocol_nvm_defrag_succcess_callback();
+
+
+void grid_port_process_outbound_ui(struct grid_port* por); // dependency: UI Page Load
+
 
 
 

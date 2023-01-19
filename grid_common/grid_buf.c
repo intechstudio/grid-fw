@@ -25,7 +25,7 @@ uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length){
 	buf->write_active   = 0;
 	
 
-	buf->buffer_storage = (uint8_t*) malloc(length * sizeof(uint8_t));
+	buf->buffer_storage = (char*) malloc(length * sizeof(char));
 	
 
 	for (uint16_t i=0; i<buf->buffer_length; i++){

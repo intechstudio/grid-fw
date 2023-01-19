@@ -11,9 +11,9 @@
 extern void grid_platform_printf(char const *fmt, ...);
 
 
-void grid_port_process_ui(struct grid_ui_model* ui);
 void grid_port_process_ui_local(struct grid_ui_model* ui);
 
+void grid_port_process_ui(struct grid_ui_model* ui);
 
 
 // requires NVM
