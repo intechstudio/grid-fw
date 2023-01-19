@@ -1995,7 +1995,7 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 					uint32_t uptime = grid_sys_get_uptime(&grid_sys_state);
 					
 					uint32_t milliseconds = uptime/RTC1MS%1000;
-					uint32_t seconds =		uptime/RTC1MS/1000%60;
+					uint32_t seconds = 		uptime/RTC1MS/1000%60;
 					uint32_t minutes =		uptime/RTC1MS/1000/60%60;
 					uint32_t hours =		uptime/RTC1MS/1000/60/60%60;
 					

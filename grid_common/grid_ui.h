@@ -239,4 +239,9 @@ void	grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui);
 
 uint8_t grid_ui_bluk_anything_is_in_progress(struct grid_ui_model* ui);
 
+void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui);
+
+void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui);
+
+
 #endif /* GRID_UI_H_INCLUDED */

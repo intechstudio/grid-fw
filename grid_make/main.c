@@ -1,6 +1,5 @@
 #include "grid/grid_module.h"
 
-#include "grid/grid_ui_back.h"
 
 #include <atmel_start.h>
 #include "atmel_start_pins.h"
@@ -203,8 +202,10 @@ static void ui_task_inner(){
 		// IF LOCAL MESSAGE IS AVAILABLE
 		if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
 
-			grid_port_process_ui_local(&grid_ui_state); // COOLDOWN DELAY IMPLEMENTED INSIDE
-
+			CRITICAL_SECTION_ENTER()
+			grid_port_process_ui_local_UNSAFE(&grid_ui_state); // COOLDOWN DELAY IMPLEMENTED INSIDE
+			CRITICAL_SECTION_LEAVE()
+		
 		}
 
 
@@ -226,7 +227,10 @@ static void ui_task_inner(){
 			if (grid_ui_event_count_istriggered(&grid_ui_state)){
 
 				grid_ui_state.port->cooldown += 3;	
-				grid_port_process_ui(&grid_ui_state); // COOLDOWN DELAY IMPLEMENTED INSIDE
+
+				CRITICAL_SECTION_ENTER()
+				grid_port_process_ui_UNSAFE(&grid_ui_state); 
+				CRITICAL_SECTION_LEAVE()
 			}
 		}
 

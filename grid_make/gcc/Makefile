@@ -35,7 +35,6 @@ grid/grid_module_pbf4.o \
 grid/grid_module_po16.o \
 grid/grid_module_ef44.o \
 ../grid_common/grid_protocol.o \
-grid/grid_ui_back.o \
 grid/grid_lua_api_back.o \
 ../grid_common/lua-5.4.3/src/lapi.o \
 ../grid_common/lua-5.4.3/src/lctype.o \
@@ -100,7 +99,6 @@ OBJS_AS_ARGS +=  \
 "grid/grid_module_po16.o" \
 "grid/grid_module_ef44.o" \
 "../grid_common/grid_protocol.o" \
-"grid/grid_ui_back.o" \
 "grid/grid_lua_api_back.o" \
 "../grid_common/lua-5.4.3/src/lapi.o" \
 "../grid_common/lua-5.4.3/src/lctype.o" \
@@ -176,7 +174,6 @@ DEPS_AS_ARGS +=  \
 "grid/grid_module_po16.d" \
 "grid/grid_module_ef44.d" \
 "../grid_common/grid_protocol.d" \
-"grid/grid_ui_back.d" \
 "grid/grid_lua_api_back.d" \
 "../grid_common/lua-5.4.3/src/lapi.d" \
 "../grid_common/lua-5.4.3/src/lctype.d" \
