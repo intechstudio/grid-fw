@@ -9,7 +9,6 @@ idf_component_register(
         "grid_esp32_adc.c"
         "grid_esp32_led.c"
         "../../grid_common/grid_protocol.h"
-        "../../grid_common/grid_protocol.c"
         "../../grid_common/grid_ain.c"
         "../../grid_common/grid_led.c"
         "../../grid_common/grid_sys.c"
