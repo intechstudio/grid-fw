@@ -23,6 +23,8 @@ void grid_lua_init(struct grid_lua_model* mod){
 
     mod->dostring_count = 0;
 
+    mod->L = NULL;
+
 }
 
 void grid_lua_deinit(struct grid_lua_model* mod){
@@ -1724,6 +1726,7 @@ void grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys){
         case GRID_MODULE_BU16_RevC: grid_lua_ui_init_bu16(mod); break;
 
         case GRID_MODULE_PBF4_RevA: grid_lua_ui_init_pbf4(mod); break;
+        case GRID_MODULE_PBF4_RevD: grid_lua_ui_init_pbf4(mod); break;
 
         case GRID_MODULE_EN16_RevA: grid_lua_ui_init_en16(mod); break;
         case GRID_MODULE_EN16_RevD: grid_lua_ui_init_en16(mod); break;
@@ -1791,6 +1794,11 @@ void grid_lua_start_vm(struct grid_lua_model* mod){
 
 void grid_lua_stop_vm(struct grid_lua_model* mod){
 
-    lua_close(mod->L);
+    if (mod->L != NULL){
+
+        lua_close(mod->L);
+        mod->L = NULL;
+
+    }
 }
 

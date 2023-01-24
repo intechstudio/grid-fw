@@ -125,17 +125,18 @@ uint8_t grid_platform_get_reset_cause(){
 
 void grid_platform_printf(char const *fmt, ...){
 
-    ets_printf("PLATFORM SPECIFIC PRINTF NOT IMPLEMENTED!!!");
 
-    
-/*
 	va_list ap;
+
+	char temp[200] = {0};
+
 	va_start(ap, fmt);
-	vprintf(fmt, ap);
+
+	vsnprintf(temp, 199, fmt, ap);
+
 	va_end(ap);
 
-*/
-
+    ets_printf(temp);
 
 
 }
@@ -172,9 +173,10 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
 
 
     
-    tinyusb_cdcacm_write_queue(0, (const uint8_t*) buffer, length);
+    uint32_t queued = tinyusb_cdcacm_write_queue(0, (const uint8_t*) buffer, length);
+    ets_printf("CDC: %d %s\r\n", queued, temp);
 
-    ets_printf("CDC: %s\r\n", temp);
+    tinyusb_cdcacm_write_flush(0, pdMS_TO_TICKS(1000));
 
 
     return 1;
@@ -182,7 +184,7 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
 
 void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type){
 
-    ets_printf("grid_platform_find_actionstring_file NOT IMPLEMENTED!!!");
+    ets_printf("MOCK!!!\r\n");
     return NULL; //not found
 }
 
@@ -219,7 +221,7 @@ uint8_t grid_platform_get_nvm_state(){
 
 
     ets_printf("grid_platform_get_nvm_state NOT IMPLEMENTED!!!");
-    return 0; //ready
+    return 1; //ready
 }
 
 

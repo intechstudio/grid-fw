@@ -80,7 +80,13 @@
             "color": "white",
             "singleInstance": true,
             "command": "podman run --privileged -it -v /dev:/dev -v $PWD/..:/project -w /project/grid_esp espressif/idf:latest",
-        },        
+        },   
+        {
+            "name": "Monitor",
+            "color": "white",
+            "singleInstance": true,
+            "command": "podman run --privileged -it -v /dev:/dev -v $PWD/..:/project -w /project/grid_esp espressif/idf:latest",
+        },      
         {
             "name": "Docker Unit Test",
             "color": "white",

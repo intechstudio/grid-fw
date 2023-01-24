@@ -22,6 +22,8 @@ volatile struct grid_port GRID_PORT_H;
 
 void grid_port_receive_task(struct grid_port* por){
 
+	grid_platform_printf("RECEIVE \r\n");
+
 	//parity error
 	
 	if (por->usart_error_flag == 1){
@@ -161,6 +163,7 @@ void grid_port_receive_task(struct grid_port* por){
 
 void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint16_t len){
 	
+	grid_platform_printf("DECODE \r\n");
 
 	uint8_t error_flag = 0;
 	uint8_t checksum_calculated = 0;
@@ -173,6 +176,8 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 	char buffer[length+1];
 
 	
+
+
 	// Store message in temporary buffer (MAXMSGLEN = 250 character)
 	for (uint16_t i = 0; i<length; i++){
 		buffer[i] = por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE];
@@ -180,6 +185,9 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 	}
 	buffer[length] = 0;
 	
+	grid_platform_printf("%s \r\n", buffer);
+
+
 	message = &buffer[0];
 	
 	// Clear data from rx double buffer
@@ -666,7 +674,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 			
 				if (packet_size > grid_buffer_write_size(&port_array[i]->tx_buffer)){
 					
-
+					grid_platform_printf("Buffer Error: %d/%d \r\n", i, port_count);
 					grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_BLUE, 128);
 					
 					// sorry one of the buffers cannot store the packet, we will try later
@@ -1628,7 +1636,7 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 				current_start = i;
 				start_count++;
 			}
-			else if (message[i] == GRID_CONST_ETX && current_start!=0 && (start_count-stop_count) == 1){
+			else if (message[i] == GRID_CONST_ETX && current_start!=0 && (start_count-stop_count) == 1){	
 				current_stop = i;
 				current_length		= current_stop-current_start;
 				stop_count++;
@@ -2193,6 +2201,7 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 				}
 				else if (msg_class == GRID_CLASS_CONFIG_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
 					
+					grid_platform_printf("CONFIG FETCH\r\n\r\n");
 					
 					uint8_t pagenumber = grid_msg_string_get_parameter(message, current_start+GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
 					uint8_t elementnumber = grid_msg_string_get_parameter(message, current_start+GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
@@ -2209,6 +2218,9 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 
 					grid_ui_event_recall_configuration(&grid_ui_state, pagenumber, elementnumber, eventtype, temp);
 					
+					grid_platform_printf("CONFIG: %s\r\n\r\n", temp);
+
+
 					if (strlen(temp) != 0){
 
 

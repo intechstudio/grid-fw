@@ -70,6 +70,8 @@ static const char *TAG = "USB example";
 
 static uint8_t buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE + 1];
 
+volatile uint16_t grid_usb_rx_double_buffer_index = 0;
+
 void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event)
 {
     /* initialization */
@@ -77,16 +79,20 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event)
 
     /* read */
     esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
-    if (ret == ESP_OK) {
-        ESP_LOGI(TAG, "Data from channel %d:", itf);
-        ESP_LOG_BUFFER_HEXDUMP(TAG, buf, rx_size, ESP_LOG_INFO);
-    } else {
-        ESP_LOGE(TAG, "Read error");
-    }
 
-    /* write back */
-    tinyusb_cdcacm_write_queue(itf, buf, rx_size);
-    tinyusb_cdcacm_write_flush(itf, 0);
+
+    for (uint16_t i=0; i<rx_size; i++){
+
+		GRID_PORT_H.rx_double_buffer[grid_usb_rx_double_buffer_index] = buf[i];
+
+		
+		grid_usb_rx_double_buffer_index++;
+		grid_usb_rx_double_buffer_index%=GRID_DOUBLE_BUFFER_RX_SIZE;
+
+	}
+
+    //ESP_LOGI(TAG, "Data from channel %d len: %d", itf, rx_size);
+
 }
 
 void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event)
@@ -133,31 +139,7 @@ void app_main(void)
 
     // END OF USB
 
-    lua_State* L = luaL_newstate();
-
-    luaL_openlibs(L);
-
-    uint32_t memusage = lua_gc(L, LUA_GCCOUNT)*1024 + lua_gc(L, LUA_GCCOUNTB);
-    printf("LUA mem usage: %ld\r\n", memusage);
-
     static const char *TAG = "main";
-
-    grid_platform_get_hwcfg();
-    uint32_t id_array[4] = {};
-    grid_platform_get_id(id_array);
-
-    // GRID_MODULE_INIT (based on hwcfg)
-
-    ets_printf("RANDOM: %d %d %d %d\r\n", grid_platform_get_random_8(), grid_platform_get_random_8(), grid_platform_get_random_8(), grid_platform_get_random_8());
-
-    //l_grid_random(NULL);
-
-    ets_printf("LED INIT ...\r\n");
-
-    grid_led_init(&grid_led_state, 16);
-    grid_msg_init(&grid_msg_state);
-
-    ets_printf("LED INIT DONE\r\n");
 
 
     vTaskDelay(100);
@@ -167,20 +149,65 @@ void app_main(void)
     grid_esp32_swd_pico_program_sram(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, ___grid_pico_build_main_main_bin, ___grid_pico_build_main_main_bin_len);
 
 
-    ets_printf("Testing External Libraries:\r\n");
-    ets_printf("Version: %d %d %d\r\n", GRID_PROTOCOL_VERSION_MAJOR, GRID_PROTOCOL_VERSION_MINOR, GRID_PROTOCOL_VERSION_PATCH );
-    ets_printf("grid_ain_abs test -7 -> %d\r\n", grid_ain_abs(-7));
 
-    struct grid_buffer buf;
-
-    grid_buffer_init(&buf, 1000);
-    grid_port_init_all();
-    grid_usb_midi_init();
 
     SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
 
+    // GRID MODULE INITIALIZATION SEQUENCE
+
     grid_sys_init(&grid_sys_state);
+	grid_msg_init(&grid_msg_state);
+
+    grid_usb_midi_init();
+    grid_keyboard_init(&grid_keyboard_state);
+
+	grid_lua_init(&grid_lua_state);
+	grid_lua_start_vm(&grid_lua_state);
+
+    // ================== START: grid_module_pbf4_init() ================== //
+
+    // 16 pot, depth of 5, 14bit internal, 7bit result;
+	grid_ain_init(&grid_ain_state, 16, 5);
+	grid_led_init(&grid_led_state, 12);	
+	
+	grid_ui_model_init(&grid_ui_state, &GRID_PORT_U, 12+1); // +1 for the system element
+
+	for(uint8_t j=0; j<8; j++){
+			
+		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_POTENTIOMETER);
+	
+	}	
+
+	for(uint8_t j=8; j<12; j++){
+			
+		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_BUTTON);
+	
+	}		
+
+	//grid_module_pbf4_hardware_init();
+	//grid_module_pbf4_hardware_start_transfer();
+
+    // ================== FINISH: grid_module_pbf4_init() ================== //
+
+	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
+	
+	grid_port_init_all();
+	//grid_d51_uart_init();
+	grid_sys_set_bank(&grid_sys_state, 0);
+
+	//grid_d51_nvm_init(&grid_d51_nvm_state, &FLASH_0);
+
+	grid_ui_page_load(&grid_ui_state, 0); //load page 0
+
+	//*
+    while (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state))
+	{
+		grid_ui_bulk_pageread_next(&grid_ui_state);
+	}
+    
+
+
 
     ets_printf("GRID_SYS_TEST %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
     grid_platform_delay_ms(10);

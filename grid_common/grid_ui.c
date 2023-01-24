@@ -88,6 +88,10 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 
 		ele->template_initializer = NULL;
 		ele->template_parameter_list_length = 0;
+
+
+		ele->event_clear_cb = NULL;
+		ele->page_change_cb = NULL;
 		
 	}
 	else if (element_type == GRID_UI_ELEMENT_POTENTIOMETER){
@@ -237,7 +241,7 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_el
 	//grid_platform_printf("Template Buffer Create %x \r\n", this);
 
 	if (this == NULL){
-		grid_platform_printf("error.ui.MallocFailed\r\n");
+		grid_platform_printf("error.ui.MallocFailed1\r\n");
 	}
 	else{
 
@@ -246,11 +250,20 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_el
 		this->page_number = 0;
 		this->parent = ele;
 
-		
-		this->template_parameter_list = malloc(ele->template_parameter_list_length*sizeof(int32_t));
+		uint8_t allocation_length = ele->template_parameter_list_length;
+
+		if (allocation_length == 0){
+			// always allocate at least one element (ESP malloc returns NULL for zero length allocation on system element)
+			allocation_length=1;
+		}
+
+		this->template_parameter_list = malloc(allocation_length*sizeof(int32_t));
+
+		grid_platform_printf("malloc %d %lx\r\n", ele->template_parameter_list_length, this->template_parameter_list);
 
 		if (this->template_parameter_list == NULL){
-			grid_platform_printf("error.ui.MallocFailed\r\n");
+			grid_platform_printf("error.ui.MallocFailed2\r\n");
+			grid_platform_delay_ms(100);
 		}
 		else{
 
@@ -371,7 +384,11 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 	for (uint8_t i = 0; i < ui->element_list_length; i++)
 	{	
 
-		struct grid_ui_element* ele = &ui->element_list[i];
+		struct grid_ui_element* ele = grid_ui_element_find(ui, i); 
+
+		if (ele == NULL){
+			grid_platform_printf("NULL ELEMENT\r\n");
+		} 
 
 		ele->timer_event_helper = 0; // stop the event's timer
 
@@ -389,6 +406,9 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 
 
 		uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
+
+		
+		grid_platform_printf("Allocating i=%d len=%d\r\n", i, template_buffer_length);
 
 		//if (i==0) grid_platform_printf("TB LEN: %d\r\n", template_buffer_length);
 		while (template_buffer_length < page+1){
@@ -421,22 +441,6 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 				grid_port_debug_print_text("NULL");
 			}
 
-
-			if (i<4 && 0){
-
-
-				for (uint8_t j = 0; j<13; j++){
-					grid_platform_printf("%d:%d ", j, ele->template_parameter_list[j]);
-
-				}
-				grid_platform_printf("\r\n");
-
-				grid_port_debug_printf("Val[%d]: %d", i, ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index]);
-
-			}
-
-
-
 		}
 
 
@@ -460,6 +464,8 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 
 void grid_ui_page_load_success_callback(void){
 
+
+	grid_platform_printf("LOAD SUCCESS\r\n");
 	grid_keyboard_enable(&grid_keyboard_state);
 
 
