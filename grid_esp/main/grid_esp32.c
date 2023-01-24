@@ -161,7 +161,22 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction){
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
 
-    ets_printf("grid_platform_usb_serial_write NOT IMPLEMENTED!!!");
+    char temp[length+1];
+
+    temp[length] = '\0';
+
+    for (uint16_t i=0; i<length; i++){
+
+        temp[i] = buffer[i];
+    }
+
+
+    
+    tinyusb_cdcacm_write_queue(0, (const uint8_t*) buffer, length);
+
+    ets_printf("CDC: %s\r\n", temp);
+
+
     return 1;
 }
 
@@ -257,5 +272,22 @@ void grid_platform_system_reset(){
 void grid_platform_nvm_defrag(){
 
     ets_printf("grid_platform_nvm_defrag NOT IMPLEMENTED!!!");
+
+}
+
+int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3){
+
+
+    ets_printf("grid_platform_usb_midi_write NOT IMPLEMENTED!!!");
+    return 0;
+   
+
+}
+
+
+int32_t grid_platform_usb_midi_write_status(void){
+
+    ets_printf("grid_platform_usb_midi_write_status NOT IMPLEMENTED!!!");
+    return 0;
 
 }

@@ -8,6 +8,8 @@ idf_component_register(
         "grid_esp32_pins.h"
         "grid_esp32_adc.c"
         "grid_esp32_led.c"
+        "grid_esp32_port.c"
+
         "../../grid_common/grid_protocol.h"
         "../../grid_common/grid_ain.c"
         "../../grid_common/grid_led.c"

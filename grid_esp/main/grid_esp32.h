@@ -19,6 +19,9 @@
 #include "esp_random.h"
 
 
+#include "tinyusb.h"
+#include "tusb_cdc_acm.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -82,6 +85,9 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset();
 void grid_platform_system_reset();
 void grid_platform_nvm_defrag();
 
+int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
+
+int32_t grid_platform_usb_midi_write_status(void);
 
 
 #ifdef __cplusplus

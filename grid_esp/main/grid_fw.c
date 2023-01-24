@@ -26,8 +26,9 @@
 #include "grid_esp32_led.h"
 
 
+#define ADC_TASK_PRIORITY 2
 #define LED_TASK_PRIORITY 2
-#define LED_TASK_PRIORITY 2
+#define PORT_TASK_PRIORITY 3
 
 
 #include "driver/ledc.h"
@@ -35,6 +36,7 @@
 
 #include "grid_esp32.h"
 #include "grid_esp32_swd.h"
+#include "grid_esp32_port.h"
 
 
 
@@ -191,8 +193,20 @@ void app_main(void)
                             "adc",
                             4096,
                             (void *)signaling_sem,
-                            LED_TASK_PRIORITY,
+                            ADC_TASK_PRIORITY,
                             &adc_task_hdl,
+                            0);
+
+    TaskHandle_t port_task_hdl;
+
+
+    //Create the class driver task
+    xTaskCreatePinnedToCore(grid_esp32_port_task,
+                            "port",
+                            4096,
+                            (void *)signaling_sem,
+                            PORT_TASK_PRIORITY,
+                            &port_task_hdl,
                             0);
 
 

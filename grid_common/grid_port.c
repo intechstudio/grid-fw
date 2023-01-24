@@ -854,7 +854,7 @@ uint8_t grid_port_process_outbound_usart(struct grid_port* por){
 	return 0;
 }
 
-uint8_t grid_port_process_outbound_usb(struct grid_port* por){
+uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por){
 	
 			
 
@@ -1513,7 +1513,43 @@ void grid_protocol_nvm_defrag_succcess_callback(){
 
 
 
+void grid_protocol_send_heartbeat(){
 
+	struct grid_msg_packet response;
+
+	grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+	grid_msg_packet_body_append_printf(&response, GRID_CLASS_HEARTBEAT_frame);
+
+	grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+
+	grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, grid_msg_get_heartbeat_type(&grid_msg_state));
+	grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(&grid_sys_state));
+	grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
+	grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
+	grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
+		
+	
+
+	if (grid_msg_get_heartbeat_type(&grid_msg_state) == 1){	// I am usb connected deevice
+
+		
+		grid_msg_packet_body_append_printf(&response, GRID_CLASS_PAGEACTIVE_frame);
+		grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+		grid_msg_packet_body_append_parameter(&response, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, grid_ui_state.page_activepage);
+
+		//printf("DEBUG: %s\r\n", response.body);
+	}
+
+
+
+	grid_msg_packet_close(&grid_msg_state, &response);
+
+	grid_port_packet_send_everywhere(&response);
+
+
+
+}
 
 //=============================== PROCESS OUTBOUND ==============================//
 

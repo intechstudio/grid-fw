@@ -112,7 +112,7 @@ void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir);
 
 
 uint8_t grid_port_process_outbound_usart(struct grid_port* por);
-uint8_t grid_port_process_outbound_usb(struct grid_port* por);  // dependency: USB ACM 
+uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por);  // dependency: USB ACM 
 
 void grid_port_receiver_softreset(struct grid_port* por);
 void grid_port_receiver_hardreset(struct grid_port* por);
@@ -135,6 +135,9 @@ void grid_protocol_nvm_clear_succcess_callback();
 void grid_protocol_nvm_read_succcess_callback();
 void grid_protocol_nvm_store_succcess_callback();
 void grid_protocol_nvm_defrag_succcess_callback();
+
+
+void grid_protocol_send_heartbeat();
 
 
 void grid_port_process_outbound_ui(struct grid_port* por); // dependency: UI Page Load

@@ -60,7 +60,9 @@
     "grid_port.h": "c",
     "grid_lua_api.h": "c",
     "ets_sys.h": "c",
-    "grid_ui.h": "c"
+    "grid_ui.h": "c",
+    "esp_random.h": "c",
+    "tusb_cdc_acm.h": "c"
 },
   "actionButtons": {
     "defaultColor": "#ff0034", // Can also use string color names.
