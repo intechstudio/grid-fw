@@ -18,6 +18,7 @@
 
 
 #include "../../grid_common/grid_ain.h"
+#include "../../grid_common/grid_ui.h"
 
 #ifdef __cplusplus
 extern "C" {

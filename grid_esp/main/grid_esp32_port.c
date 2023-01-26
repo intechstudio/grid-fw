@@ -22,6 +22,8 @@ void grid_esp32_port_task(void *arg)
         loopcounter++;
 
 
+
+
         //ESP_LOGI(TAG, "Ping!");
         if (loopcounter%50 == 0){
 
@@ -29,14 +31,39 @@ void grid_esp32_port_task(void *arg)
         }
 
 
+        if (loopcounter%4 == 0){
+
+            if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
+
+                //CRITICAL_SECTION_ENTER()
+                grid_port_process_ui_local_UNSAFE(&grid_ui_state);
+                //CRITICAL_SECTION_LEAVE()
+            
+            }
+			if (grid_ui_event_count_istriggered(&grid_ui_state)){
+
+                grid_platform_printf("TRIGGERCOUNT: %d\r\n", grid_ui_event_count_istriggered(&grid_ui_state));
+				grid_ui_state.port->cooldown += 3;	
+
+				//CRITICAL_SECTION_ENTER()
+				grid_port_process_ui_UNSAFE(&grid_ui_state); 
+				//CRITICAL_SECTION_LEAVE()
+			}
+
+
+        }
+
+
 
 	    grid_port_receive_task(&GRID_PORT_H); // USB
-	    grid_port_receive_task(&GRID_PORT_U); // USB
+	    grid_port_receive_task(&GRID_PORT_U); // UI
         
         // INBOUND
         grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback , put rx_buffer content to each CONNECTED port's tx_buffer
         // ... GRID UART PORTS ...
         grid_port_process_inbound(&GRID_PORT_H, 0);
+
+
 
 
 

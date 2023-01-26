@@ -230,7 +230,7 @@ void app_main(void)
     //Create the class driver task
     xTaskCreatePinnedToCore(grid_esp32_port_task,
                             "port",
-                            4096,
+                            4096*4,
                             (void *)signaling_sem,
                             PORT_TASK_PRIORITY,
                             &port_task_hdl,

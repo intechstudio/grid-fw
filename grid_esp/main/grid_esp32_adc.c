@@ -63,7 +63,7 @@ void grid_esp32_adc_task(void *arg)
         adc_oneshot_read(adc1_handle, ADC_CHANNEL_1, &value_1);
         adc_oneshot_read(adc2_handle, ADC_CHANNEL_7, &value_2);
         
-        int32_t result_resolution = 10;
+        int32_t result_resolution = 7;
         int32_t source_resolution = 12;
 
         grid_ain_add_sample(&grid_ain_state, 0, value_1, source_resolution, result_resolution);
@@ -73,15 +73,29 @@ void grid_esp32_adc_task(void *arg)
 
            if (grid_ain_get_changed(&grid_ain_state, i)){
 
-                int32_t min = 1023;
+                int32_t min = (2<<(result_resolution-1))-1; // 1023 for 10bit result_resolution
                 int32_t max = 0;
 
-                int32_t scaled = grid_ain_get_average_scaled(&grid_ain_state, i, source_resolution, result_resolution, min, max);
-
-                grid_led_set_layer_phase(&grid_led_state, i, GRID_LED_LAYER_UI_A, scaled/4);
+                int32_t* template_parameter_list = grid_ui_state.element_list[i].template_parameter_list;
 
 
-                ESP_LOGI(TAG, "CH %d reading: %ld", i, scaled);  
+                int32_t next = grid_ain_get_average_scaled(&grid_ain_state, i, source_resolution, result_resolution, min, max);
+				template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
+
+				// for display in editor
+				int32_t state = grid_ain_get_average_scaled(&grid_ain_state, i, source_resolution, result_resolution, 0, 127);
+				template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
+
+
+                ESP_LOGI(TAG, "CH %d reading: %ld", i, state);  
+
+                struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i); 
+                struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_AC);
+                grid_ui_event_trigger(eve);
+
+                grid_platform_printf("TRIG 0.0:\r\n");
+
+
 
 
                 

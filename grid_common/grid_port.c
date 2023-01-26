@@ -22,8 +22,6 @@ volatile struct grid_port GRID_PORT_H;
 
 void grid_port_receive_task(struct grid_port* por){
 
-	grid_platform_printf("RECEIVE \r\n");
-
 	//parity error
 	
 	if (por->usart_error_flag == 1){
@@ -162,8 +160,7 @@ void grid_port_receive_task(struct grid_port* por){
 
 
 void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint16_t len){
-	
-	grid_platform_printf("DECODE \r\n");
+
 
 	uint8_t error_flag = 0;
 	uint8_t checksum_calculated = 0;
@@ -184,8 +181,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 		por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE]=0;
 	}
 	buffer[length] = 0;
-	
-	grid_platform_printf("%s \r\n", buffer);
 
 
 	message = &buffer[0];
