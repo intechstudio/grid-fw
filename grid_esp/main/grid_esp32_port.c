@@ -42,7 +42,6 @@ void grid_esp32_port_task(void *arg)
             }
 			if (grid_ui_event_count_istriggered(&grid_ui_state)){
 
-                grid_platform_printf("TRIGGERCOUNT: %d\r\n", grid_ui_event_count_istriggered(&grid_ui_state));
 				grid_ui_state.port->cooldown += 3;	
 
 				//CRITICAL_SECTION_ENTER()

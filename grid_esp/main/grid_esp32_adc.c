@@ -6,103 +6,140 @@
 
 
 #include "grid_esp32_adc.h"
+#include "../../grid_common/grid_led.h"
 
 
 static const char *TAG = "esp32_adc";
 
 
-#include "../../grid_common/grid_led.h"
-
-
-void grid_esp32_adc_task(void *arg)
-{
-
-    
-
+static void adc_init(adc_oneshot_unit_handle_t* adc1_handle, adc_oneshot_unit_handle_t* adc2_handle){
 
     ESP_LOGI(TAG, "Init ADC");
 
     //-------------ADC1 Init---------------//
-    adc_oneshot_unit_handle_t adc1_handle;
     adc_oneshot_unit_init_cfg_t init_config1 = {
         .unit_id = ADC_UNIT_1,
     };
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, adc1_handle));
 
     //-------------ADC1 Config---------------//
     adc_oneshot_chan_cfg_t config1 = {
         .bitwidth = ADC_BITWIDTH_DEFAULT,
         .atten = ADC_ATTEN_DB_11,
     };
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_1, &config1));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(*adc1_handle, ADC_CHANNEL_1, &config1));
    
     //-------------ADC2 Init---------------//
-    adc_oneshot_unit_handle_t adc2_handle;
     adc_oneshot_unit_init_cfg_t init_config2 = {
         .unit_id = ADC_UNIT_2,
     };
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config2, &adc2_handle));
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config2, adc2_handle));
 
     //-------------ADC2 Config---------------//
     adc_oneshot_chan_cfg_t config2 = {
         .bitwidth = ADC_BITWIDTH_DEFAULT,
         .atten = ADC_ATTEN_DB_11,
     };
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc2_handle, ADC_CHANNEL_7, &config2));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(*adc2_handle, ADC_CHANNEL_7, &config2));
 
-    grid_ain_init(&grid_ain_state, 2, 16);
+}
+
+
+
+
+void grid_esp32_adc_task(void *arg)
+{
+
+    adc_oneshot_unit_handle_t adc1_handle;
+    adc_oneshot_unit_handle_t adc2_handle;
+
+   adc_init(&adc1_handle, &adc2_handle);
+
+
+    static uint8_t multiplexer_index =0;
+    static const uint8_t multiplexer_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15};
+
+    static uint32_t last_real_time[16] = {0};
+
+
+
+    gpio_set_direction(GRID_ESP32_PINS_MUX_0_A, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GRID_ESP32_PINS_MUX_0_B, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GRID_ESP32_PINS_MUX_0_C, GPIO_MODE_OUTPUT);
+
+    gpio_set_direction(GRID_ESP32_PINS_MUX_1_A, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GRID_ESP32_PINS_MUX_1_B, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GRID_ESP32_PINS_MUX_1_C, GPIO_MODE_OUTPUT);
+
+    gpio_set_level(GRID_ESP32_PINS_MUX_0_A, 0);
+    gpio_set_level(GRID_ESP32_PINS_MUX_0_B, 0);
+    gpio_set_level(GRID_ESP32_PINS_MUX_0_C, 0);
+
+    gpio_set_level(GRID_ESP32_PINS_MUX_1_A, 0);
+    gpio_set_level(GRID_ESP32_PINS_MUX_1_B, 0);
+    gpio_set_level(GRID_ESP32_PINS_MUX_1_C, 0);
 
 
     while (1) {
 
 
-    
-        int value_1;
-        int value_2;
+	    /* Read conversion results */
 
-        adc_oneshot_read(adc1_handle, ADC_CHANNEL_1, &value_1);
-        adc_oneshot_read(adc2_handle, ADC_CHANNEL_7, &value_2);
+        int adcresult_0 = 0;
+        int adcresult_1 = 0;
+        
+        uint8_t adc_index_0 = multiplexer_lookup[multiplexer_index+8];
+        uint8_t adc_index_1 = multiplexer_lookup[multiplexer_index+0];
+
+
+        adc_oneshot_read(adc1_handle, ADC_CHANNEL_1, &adcresult_0);
+        adc_oneshot_read(adc2_handle, ADC_CHANNEL_7, &adcresult_1);
+
+	
+        /* Update the multiplexer */
+
+        multiplexer_index++;
+        multiplexer_index%=8;
+
+
+        gpio_set_level(GRID_ESP32_PINS_MUX_0_A, multiplexer_index/1%2);
+        gpio_set_level(GRID_ESP32_PINS_MUX_0_B, multiplexer_index/2%2);
+        gpio_set_level(GRID_ESP32_PINS_MUX_0_C, multiplexer_index/4%2);
+
+        gpio_set_level(GRID_ESP32_PINS_MUX_1_A, multiplexer_index/1%2);
+        gpio_set_level(GRID_ESP32_PINS_MUX_1_B, multiplexer_index/2%2);
+        gpio_set_level(GRID_ESP32_PINS_MUX_1_C, multiplexer_index/4%2);
         
         int32_t result_resolution = 7;
         int32_t source_resolution = 12;
 
-        grid_ain_add_sample(&grid_ain_state, 0, value_1, source_resolution, result_resolution);
-        grid_ain_add_sample(&grid_ain_state, 1, value_2, source_resolution, result_resolution);
+        if (adc_index_0<8 || adc_index_0>13){
+            //mux position is valid
 
-        for (uint8_t i=0; i<2; i++){
+            if (adc_index_0>13) { 
 
-           if (grid_ain_get_changed(&grid_ain_state, i)){
+                // adjust button index
+                adc_index_0 -=4;
+                adc_index_1 -=4;
+            
+            }
 
-                int32_t min = (2<<(result_resolution-1))-1; // 1023 for 10bit result_resolution
-                int32_t max = 0;
+            if (adc_index_0<4){
 
-                int32_t* template_parameter_list = grid_ui_state.element_list[i].template_parameter_list;
-
-
-                int32_t next = grid_ain_get_average_scaled(&grid_ain_state, i, source_resolution, result_resolution, min, max);
-				template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
-
-				// for display in editor
-				int32_t state = grid_ain_get_average_scaled(&grid_ain_state, i, source_resolution, result_resolution, 0, 127);
-				template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
+                // adjust potentiometer polarity
+                adcresult_0 = ((1<<12)-1)-adcresult_0;
+                adcresult_1 = ((1<<12)-1)-adcresult_1;
+            }
 
 
-                ESP_LOGI(TAG, "CH %d reading: %ld", i, state);  
+            grid_module_pbf4_store_input(adc_index_0, &last_real_time[adc_index_0], adcresult_0, 12); // 12 bit analog values
+            grid_module_pbf4_store_input(adc_index_1, &last_real_time[adc_index_1], adcresult_1, 12);	
 
-                struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i); 
-                struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_AC);
-                grid_ui_event_trigger(eve);
-
-                grid_platform_printf("TRIG 0.0:\r\n");
-
-
-
-
-                
-            }         
         }
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        if (multiplexer_index == 0){
+            vTaskDelay(pdMS_TO_TICKS(10));
+        }
 
 
     }

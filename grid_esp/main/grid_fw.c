@@ -53,6 +53,7 @@
 #include "../../grid_common/grid_buf.h"
 #include "../../grid_common/grid_port.h"
 #include "../../grid_common/grid_usb.h"
+#include "../../grid_common/grid_module.h"
 
 #include "../../grid_common/grid_lua_api.h"
 #include "../../grid_common/grid_ui.h"
@@ -167,30 +168,10 @@ void app_main(void)
 
     // ================== START: grid_module_pbf4_init() ================== //
 
-    // 16 pot, depth of 5, 14bit internal, 7bit result;
-	grid_ain_init(&grid_ain_state, 16, 5);
-	grid_led_init(&grid_led_state, 12);	
-	
-	grid_ui_model_init(&grid_ui_state, &GRID_PORT_U, 12+1); // +1 for the system element
+    grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 
-	for(uint8_t j=0; j<8; j++){
-			
-		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_POTENTIOMETER);
-	
-	}	
-
-	for(uint8_t j=8; j<12; j++){
-			
-		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_BUTTON);
-	
-	}		
-
-	//grid_module_pbf4_hardware_init();
-	//grid_module_pbf4_hardware_start_transfer();
-
+    grid_ui_state.ui_interaction_enabled = 1;
     // ================== FINISH: grid_module_pbf4_init() ================== //
-
-	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 	
 	grid_port_init_all();
 	//grid_d51_uart_init();

@@ -1,5 +1,5 @@
-#ifndef GRID_MODULE_H_INCLUDED
-#define GRID_MODULE_H_INCLUDED
+#ifndef GRID_D51_MODULE_H_INCLUDED
+#define GRID_D51_MODULE_H_INCLUDED
 
 #include "../atmel_start.h"
 #include "../samd51a/include/samd51n20a.h"
@@ -21,7 +21,7 @@
 
 #include "grid_module_bu16.h"
 #include "grid_module_po16.h"
-#include "grid_module_pbf4.h"
+#include "grid_module_d51_pbf4.h"
 #include "grid_module_en16.h"
 #include "grid_module_ef44.h"
 
@@ -43,7 +43,7 @@
 #include "grid_d51_nvm.h"
 #include "grid_msg.h"
 
-#include "grid_lua_api_back.h"
+#include "grid_d51_lua.h"
 
 
 

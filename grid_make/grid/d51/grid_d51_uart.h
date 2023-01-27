@@ -9,7 +9,7 @@
 #ifndef GRID_D51_UART_H_
 #define GRID_D51_UART_H_
 
-#include "grid_module.h"
+#include "grid_d51_module.h"
 
 //====================== DMA CONFIGURATION FOR GRID USART RX C ===================================//
 

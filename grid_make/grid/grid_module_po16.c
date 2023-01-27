@@ -158,6 +158,9 @@ void grid_module_po16_init(){
 		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_POTENTIOMETER);
 
 	}
+
+
+	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 	
 	grid_module_po16_hardware_init();
 	grid_module_po16_hardware_start_transfer();

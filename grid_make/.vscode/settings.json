@@ -72,7 +72,11 @@
         "grid_portback.h": "c",
         "grid_module_bu16.h": "c",
         "grid_lua_api.h": "c",
-        "grid_lua_api_back.h": "c"
+        "grid_lua_api_back.h": "c",
+        "grid_d51_nvm.h": "c",
+        "grid_d51_lua.h": "c",
+        "grid_module_pbf4.h": "c",
+        "grid_d51_module.h": "c"
     },
     "actionButtons": {
       "defaultColor": "#ff0034", // Can also use string color names.

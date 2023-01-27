@@ -9,7 +9,7 @@
 #ifndef GRID_D51_NVM_H_
 #define GRID_D51_NVM_H_
 
-#include "grid_module.h"
+#include "grid_d51_module.h"
 
 #include "grid_ui.h"
 

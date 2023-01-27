@@ -515,6 +515,9 @@ void grid_module_ef44_init(){
 
 	}				
 
+
+	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
+
 	// initialize local encoder helper struct
 	for (uint8_t j = 0; j<4; j++)
 	{

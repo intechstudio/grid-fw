@@ -1,4 +1,4 @@
-#include "grid_module.h"
+#include "grid_d51_module.h"
 
 
 
@@ -77,36 +77,7 @@ void grid_sync_set_level(enum grid_sync_selector sync_select, uint8_t sync_level
 		
 }
 
-	
-#define GRID_ADC_CFG_REVERSED	0
-#define GRID_ADC_CFG_BINARY		1
 
-	
-uint8_t grid_adc_cfg[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};	
-	
-void grid_adc_set_config(uint8_t register_offset, uint8_t bit_offest, uint8_t value){
-		
-	if (value){
-		grid_adc_cfg[register_offset] |= (1<<bit_offest);
-	}
-	else{
-		grid_adc_cfg[register_offset] &= ~(1<<bit_offest);
-	}
-		
-}
-	
-void grid_adc_set_config_default(uint8_t register_offset){
-		
-	grid_adc_cfg[register_offset] = 0;
-}	
-	
-uint8_t grid_adc_get_config(uint8_t register_offset, uint8_t bit_offest){
-		
-	return (grid_adc_cfg[register_offset] & (1<<bit_offest));
-		
-}	
-		
-		
 	
 
 // Define all of the peripheral interrupt callbacks
@@ -173,7 +144,6 @@ void grid_module_common_init(void){
 	printf("Model init done\r\n");
 
 
-	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 	
 
 

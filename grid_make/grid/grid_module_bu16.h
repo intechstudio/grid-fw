@@ -1,7 +1,7 @@
 #ifndef GRID_MODULE_BU16_H_INCLUDED
 #define GRID_MODULE_BU16_H_INCLUDED
 
-#include "grid_module.h"
+#include "grid_d51_module.h"
 
 
 volatile uint8_t grid_module_bu16_hardware_transfer_complete;

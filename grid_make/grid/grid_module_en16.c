@@ -378,6 +378,9 @@ void grid_module_en16_init(){
 		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_ENCODER);
 
 	}		
+
+
+	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 		
 
 	// initialize local encoder helper struct

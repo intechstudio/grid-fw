@@ -10,9 +10,6 @@
 #define RMT_LED_STRIP_GPIO_NUM      21
 
 
-#define EXAMPLE_LED_NUMBERS         16
-#define EXAMPLE_CHASE_SPEED_MS      10
-
 
 void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t *g, uint32_t *b)
 {
@@ -63,103 +60,66 @@ void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t
 static const char *TAG = "LED";
 
 
-void grid_esp32_led_task(void *arg)
-{
+static void led_init(rmt_encoder_handle_t* led_encoder, rmt_channel_handle_t* led_chan){
 
 
-
-
-
-    SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
-
-    ////Wait until daemon task has installed USB Host Library
-    //xSemaphoreTake(signaling_sem, portMAX_DELAY);
-
-    ESP_LOGI(TAG, "Init LED");
-
-
-    uint32_t red = 0;
-    uint32_t green = 0;
-    uint32_t blue = 0;
-    uint16_t hue = 0;
-    uint16_t start_rgb = 0;
-
-    ESP_LOGI(TAG, "Create RMT TX channel");
-    rmt_channel_handle_t led_chan = NULL;
+    
     rmt_tx_channel_config_t tx_chan_config = {
         .clk_src = RMT_CLK_SRC_DEFAULT, // select source clock
         .gpio_num = RMT_LED_STRIP_GPIO_NUM,
-        .mem_block_symbols = 64, // increase the block size can make the LED less flickering
+        .mem_block_symbols = 200, // was 64,  increase the block size can make the LED less flickering
         .resolution_hz = RMT_LED_STRIP_RESOLUTION_HZ,
         .trans_queue_depth = 4, // set the number of transactions that can be pending in the background
     };
-    ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_chan_config, &led_chan));
+    ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_chan_config, led_chan));
 
     ESP_LOGI(TAG, "Install led strip encoder");
-    rmt_encoder_handle_t led_encoder = NULL;
     led_strip_encoder_config_t encoder_config = {
         .resolution = RMT_LED_STRIP_RESOLUTION_HZ,
     };
     
-    ESP_ERROR_CHECK(rmt_new_led_strip_encoder(&encoder_config, &led_encoder));
+    ESP_ERROR_CHECK(rmt_new_led_strip_encoder(&encoder_config, led_encoder));
+    ESP_ERROR_CHECK(rmt_enable(*led_chan));
 
-    ESP_LOGI(TAG, "Enable RMT TX channel");
-    ESP_ERROR_CHECK(rmt_enable(led_chan));
 
-    ESP_LOGI(TAG, "Start LED rainbow chase");
-    rmt_transmit_config_t tx_config = {
-        .loop_count = 0, // no transfer loop
-    };
+}
+
+
+void grid_esp32_led_task(void *arg)
+{
+
+    rmt_channel_handle_t led_chan = NULL;
+    rmt_encoder_handle_t led_encoder = NULL;
+    led_init(&led_encoder, &led_chan);
+
+    SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
+
 
 
     static uint32_t loopcounter = 0;
 
+
+    grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 300);
+
     while (1) {
 
-        if (loopcounter<300){
-            loopcounter++;
 
-            hue = 0 + start_rgb;
-            led_strip_hsv2rgb(hue, 100, 100, &red, &green, &blue);
-            grid_led_framebuffer_set_color(&grid_led_state, 0, red, 0, 0);
-            grid_led_framebuffer_set_color(&grid_led_state, 1, 0, green, 0);
-            grid_led_framebuffer_set_color(&grid_led_state, 2, 0, 0, blue);
-            grid_led_framebuffer_set_color(&grid_led_state, 3, 50, 50, 50);
-
-            if (loopcounter == 300){
-                for (uint8_t i=0; i<grid_led_get_led_count(&grid_led_state); i++){
-
-                    grid_led_framebuffer_set_color(&grid_led_state, i, 0, 0, 0);
-
-                    grid_led_set_layer_color(&grid_led_state, i, GRID_LED_LAYER_UI_A, 0,0,255);
-
-                    grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 300);
-
-
-                }
-            }
-        } 
-        else{
-
-            grid_led_tick(&grid_led_state);
-            grid_led_render_framebuffer(&grid_led_state);
-
-
-        }
-
-
-
+        grid_led_tick(&grid_led_state);
+        grid_led_render_framebuffer(&grid_led_state);
 
         const uint8_t* frame_buffer = grid_led_get_framebuffer_pointer(&grid_led_state);
         const uint32_t frame_buffer_size = grid_led_get_framebuffer_size(&grid_led_state);
 
 
-
+        rmt_transmit_config_t tx_config = {
+            .loop_count = 0, // no transfer loop
+        };
 
         ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, frame_buffer, frame_buffer_size, &tx_config));
-        vTaskDelay(pdMS_TO_TICKS(EXAMPLE_CHASE_SPEED_MS));
 
-        start_rgb += 10;
+
+        vTaskDelay(pdMS_TO_TICKS(10));
+
 
 
     }

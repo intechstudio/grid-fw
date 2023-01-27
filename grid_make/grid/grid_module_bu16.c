@@ -197,6 +197,8 @@ void grid_module_bu16_init(){
 	}					
 	
 
+	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
+
 	grid_module_bu16_hardware_init();
 	grid_module_bu16_hardware_start_transfer();
 

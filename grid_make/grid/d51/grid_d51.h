@@ -10,7 +10,7 @@
 #define GRID_D51_H_
 
 #include <hpl_user_area.h>
-#include "grid_module.h"
+#include "grid_d51_module.h"
 
 
 #include "sam.h"

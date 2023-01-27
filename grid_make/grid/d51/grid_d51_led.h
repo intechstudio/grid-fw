@@ -9,7 +9,7 @@
 #ifndef GRID_D51_LED_H_
 #define GRID_D51_LED_H_
 
-#include "grid_module.h"
+#include "grid_d51_module.h"
 
 /*
  // ===================== WS2812B-Mini SETUP ========================= //
