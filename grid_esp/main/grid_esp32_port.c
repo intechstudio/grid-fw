@@ -25,7 +25,7 @@ void grid_esp32_port_task(void *arg)
 
 
         //ESP_LOGI(TAG, "Ping!");
-        if (loopcounter%50 == 0){
+        if (loopcounter%30 == 0){
 
             grid_protocol_send_heartbeat(); // Put ping into UI rx_buffer
         }

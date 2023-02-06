@@ -383,17 +383,17 @@ void app_main(void)
 
 #if CFG_TUD_MIDI
 
-    int const tempo = 286;
-    const esp_timer_create_args_t periodic_midi_args = {
+    int tempo = 286;
+    esp_timer_create_args_t periodic_midi_args = {
         .callback = &periodic_midi_write_example_cb,
         /* name is optional, but may help identify the timer when debugging */
         .name = "periodic_midi"
     };
 
-    ESP_LOGI(TAG, "MIDI write task init");
-    esp_timer_handle_t periodic_midi_timer;
-    ESP_ERROR_CHECK(esp_timer_create(&periodic_midi_args, &periodic_midi_timer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_midi_timer, tempo * 1000));
+   // ESP_LOGI(TAG, "MIDI write task init");
+   // esp_timer_handle_t periodic_midi_timer;
+   // ESP_ERROR_CHECK(esp_timer_create(&periodic_midi_args, &periodic_midi_timer));
+   // ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_midi_timer, tempo * 1000));
 
     // Read recieved MIDI packets
     ESP_LOGI(TAG, "MIDI read task init");
