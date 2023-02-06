@@ -1700,7 +1700,7 @@ CONFIG_TINYUSB_CDC_TX_BUFSIZE=512
 #
 # Musical Instrument Digital Interface (MIDI)
 #
-CONFIG_TINYUSB_MIDI_COUNT=0
+CONFIG_TINYUSB_MIDI_COUNT=1
 # end of Musical Instrument Digital Interface (MIDI)
 
 #
