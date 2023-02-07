@@ -49,3 +49,8 @@ jobs:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
           content: "Heyo, the ESP32 Nightly Firmware is build ready!"
           filename: "grid_esp32_nightly_${{ env.action_date }}.uf2"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ESP32 Nightly
+          path: grid_esp32_nightly_${{ env.action_date }}.uf2

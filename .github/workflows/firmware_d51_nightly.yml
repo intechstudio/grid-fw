@@ -53,3 +53,8 @@ jobs:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
           content: "Heyo, the D51 Nightly Firmware is build ready!"
           filename: "grid_d51_nightly_${{ env.action_date }}.uf2"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: D51 Nightly
+          path: grid_d51_nightly_${{ env.action_date }}.uf2
