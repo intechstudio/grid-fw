@@ -1,4 +1,4 @@
-name: Firmware nightly workflow
+name: Firmware nightly workflow (D51)
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
