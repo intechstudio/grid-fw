@@ -13,19 +13,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repo and submodules
       - uses: actions/checkout@v2
-      - name: Checkout repository
+        with:
+          submodules: 'recursive'
+      
+      - name: List files
         run: |
           ls
+          
       - name: Install GNU Arm Embedded Toolchain (arm-none-eabi-gcc)
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
           release: '9-2020-q2' # <-- The compiler release to use
 
-      - name: Test ARM GCC
+      - name: Test ARM GCC and build D51 firmware variant
         run: |
           arm-none-eabi-gcc -v
           cd grid_make/gcc && make release_automation
+          
+      - name: esp-idf build
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: latest
+          target: esp32s3
+          path: 'grid_esp'
+          command: idf.py build
+
+      - name: Convert ESP firmware to UF2
+        run: |
+          cd ./grid_esp && ./uf2convert.sh
+          
           
       - name: Set Date
         run: echo "action_date=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
@@ -37,21 +55,22 @@ jobs:
       - name: See env
         run: echo "${{ env.RELEASE_VERSION }}"
         
-      - name: Copy and rename the artifact
+      - name: Copy and rename the artifacts
         run: |
           ls
-          cp binary/grid_release.uf2 grid_release_${{ env.action_date }}.uf2
+          cp binary/grid_release.uf2 grid_d51_release_${{ env.action_date }}.uf2
+          cp grid_esp/output/grid_fw.uf2 grid_esp32_release_${{ env.action_date }}.uf2
          
       - name: Zipping artifacts for Discord      
         uses: vimtor/action-zip@v1
         with:
-          files: grid_release_${{ env.action_date }}.uf2
+          files: grid_d51_release_${{ env.action_date }}.uf2 grid_esp32_release_${{ env.action_date }}.uf2
           dest: grid_release_${{ env.action_date }}.zip
           
       - name: Zipping artifacts for Github Release   
         uses: vimtor/action-zip@v1
         with:
-          files: grid_release_${{ env.action_date }}.uf2
+          files: grid_d51_release_${{ env.action_date }}.uf2 grid_esp32_release_${{ env.action_date }}.uf2
           dest: grid_release.zip     
           
       - uses: tsickert/discord-webhook@v4.0.0
