@@ -21,7 +21,7 @@ jobs:
           submodules: 'recursive'
 
       - name: List files
-      - run: |
+        run: |
           ls
 
       - name: esp-idf build
