@@ -32,6 +32,20 @@ jobs:
           path: 'grid_esp'
           command: idf.py build
 
-      - name: Test toolchain
+      - name: Convert to UF2
         run: |
-          idf.py --version
+          cd ./grid_esp && ./uf2convert.sh
+
+      - name: Set Date
+        run: echo "action_date=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
+
+      - name: Copy and rename the artifact
+        run: |
+          ls
+          cp grid_esp/output/grid_fw.uf2 grid_esp32_nightly_${{ env.action_date }}.uf2
+
+      - uses: tsickert/discord-webhook@v4.0.0
+        with:
+          webhook-url: ${{ secrets.WEBHOOK_URL }}
+          content: "Heyo, the ESP32 Nightly Firmware is build ready!"
+          filename: "grid_esp32_nightly_${{ env.action_date }}.uf2"
