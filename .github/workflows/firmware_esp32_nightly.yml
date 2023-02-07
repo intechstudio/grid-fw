@@ -1,4 +1,4 @@
-name: Firmware nightly workflow
+name: Firmware nightly workflow (ESP32)
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
@@ -19,7 +19,9 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: 'recursive'
-        run: |
+
+      - name: List files
+      - run: |
           ls
 
       - name: esp-idf build
