@@ -15,7 +15,7 @@ on:
         required: true
   push:
     paths:
-      - '.github/workflows/firmware_nightly.yml'
+      - '.github/workflows/firmware_d51_nightly.yml'
       - 'grid_make/gcc/Makefile'
       - 'grid_make/**'
       - 'grid_common/**'
