@@ -42,6 +42,9 @@ extern "C" {
 #define GRID_ESP32_PINS_MUX_1_Z 2
 
 
+#define GRID_ESP32_PINS_MAPMODE 38
+
+
 #ifdef __cplusplus
 }
 #endif

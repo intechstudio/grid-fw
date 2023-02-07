@@ -207,54 +207,40 @@ static void midi_task_read_example(void *arg)
     }
 }
 
-static void periodic_midi_write_example_cb(void *arg)
+static void periodic_rtc_ms_cb(void *arg)
 {
 
-
-    ESP_LOGI(TAG, "Periodic Midi Task \r\n");
+    grid_ui_rtc_ms_tick_time(&grid_ui_state);
+    grid_ui_rtc_ms_tick_time(&grid_ui_state);
+    grid_ui_rtc_ms_tick_time(&grid_ui_state);
+    grid_ui_rtc_ms_tick_time(&grid_ui_state);
+    grid_ui_rtc_ms_tick_time(&grid_ui_state);
     
-    // Example melody stored as an array of note values
-    uint8_t const note_sequence[] = {
-        74, 78, 81, 86, 90, 93, 98, 102, 57, 61, 66, 69, 73, 78, 81, 85, 88, 92, 97, 100, 97, 92, 88, 85, 81, 78,
-        74, 69, 66, 62, 57, 62, 66, 69, 74, 78, 81, 86, 90, 93, 97, 102, 97, 93, 90, 85, 81, 78, 73, 68, 64, 61,
-        56, 61, 64, 68, 74, 78, 81, 86, 90, 93, 98, 102
-    };
+    grid_ui_rtc_ms_tick_time(&grid_ui_state);
+    grid_ui_rtc_ms_tick_time(&grid_ui_state);
+    grid_ui_rtc_ms_tick_time(&grid_ui_state);
+    grid_ui_rtc_ms_tick_time(&grid_ui_state);
+    grid_ui_rtc_ms_tick_time(&grid_ui_state);	
 
-    static uint8_t const cable_num = 0; // MIDI jack associated with USB endpoint
-    static uint8_t const channel = 0; // 0 for channel 1
-    static uint32_t note_pos = 0;
 
-    // Previous positions in the note sequence.
-    int previous = note_pos - 1;
-
-    // If we currently are at position 0, set the
-    // previous position to the last note in the sequence.
-    if (previous < 0) {
-        previous = sizeof(note_sequence) - 1;
+    if (gpio_get_level(GRID_ESP32_PINS_MAPMODE)){
+        grid_ui_rtc_ms_mapmode_handler(&grid_ui_state, 0);
     }
-
-    // Send Note On for current position at full velocity (127) on channel 1.
-    ESP_LOGI(TAG, "Writing MIDI data %d", note_sequence[note_pos]);
-    uint8_t note_on[3] = {0x90 | channel, note_sequence[note_pos], 127};
-    tud_midi_stream_write(cable_num, note_on, 3);
-
-    // Send Note Off for previous note.
-    uint8_t note_off[3] = {0x80 | channel, note_sequence[previous], 0};
-    tud_midi_stream_write(cable_num, note_off, 3);
-
-    // Increment position
-    note_pos++;
-
-    // If we are at the end of the sequence, start over.
-    if (note_pos >= sizeof(note_sequence)) {
-        note_pos = 0;
+    else{
+        grid_ui_rtc_ms_mapmode_handler(&grid_ui_state, 1);
     }
+		
+
 }
 
 #endif 
 
 void app_main(void)
 {
+
+    gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
+    gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
+
 
     // START OF USB
     ESP_LOGI(TAG, "USB initialization");
@@ -381,19 +367,19 @@ void app_main(void)
 
 
 
-#if CFG_TUD_MIDI
 
-    int tempo = 286;
-    esp_timer_create_args_t periodic_midi_args = {
-        .callback = &periodic_midi_write_example_cb,
+    esp_timer_create_args_t periodic_rtc_ms_args = {
+        .callback = &periodic_rtc_ms_cb,
         /* name is optional, but may help identify the timer when debugging */
-        .name = "periodic_midi"
+        .name = "rtc millisecond"
     };
 
-   // ESP_LOGI(TAG, "MIDI write task init");
-   // esp_timer_handle_t periodic_midi_timer;
-   // ESP_ERROR_CHECK(esp_timer_create(&periodic_midi_args, &periodic_midi_timer));
-   // ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_midi_timer, tempo * 1000));
+   esp_timer_handle_t periodic_rtc_ms_timer;
+   ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
+   ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 10000));
+
+
+#if CFG_TUD_MIDI
 
     // Read recieved MIDI packets
     ESP_LOGI(TAG, "MIDI read task init");
