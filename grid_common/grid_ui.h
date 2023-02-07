@@ -120,6 +120,8 @@ struct grid_ui_model
 	uint8_t page_negotiated;
 	uint8_t ui_interaction_enabled;
 
+	uint8_t mapmode_state;
+
 	uint8_t						element_list_length;
 	struct	grid_ui_element*	element_list;
 	
@@ -161,6 +163,9 @@ void grid_ui_model_init(struct grid_ui_model* mod, struct grid_port* port, uint8
 
 void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid_ui_element_t element_type);
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui_event_t event_type);
+
+void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui);
+void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmode_value);
 
 struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_element* ele);
 uint8_t grid_ui_template_buffer_list_length(struct grid_ui_element* ele);

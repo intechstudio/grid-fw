@@ -259,11 +259,11 @@ uint32_t grid_sys_rtc_get_elapsed_time(struct grid_sys_model* mod, uint32_t t_ol
 
 }
 
-void grid_sys_rtc_tick_time(struct grid_sys_model* mod){
+void grid_sys_rtc_tick_time(struct grid_sys_model* sys){
 	
-	mod->realtime++;
-	if (mod->uptime != -1){
-		mod->uptime++;
+	sys->realtime++;
+	if (sys->uptime != -1){
+		sys->uptime++;
 	}
 	
 }

@@ -1428,7 +1428,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
     if (ele != NULL){
 
-        grid_ui_element_timer_set(ele, param[1]*RTC1MS);
+        grid_ui_element_timer_set(ele, param[1]);
 
     }  
     else{

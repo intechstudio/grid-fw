@@ -90,7 +90,7 @@ uint32_t grid_sys_get_uptime(struct grid_sys_model* mod);
 uint32_t grid_sys_rtc_get_time(struct grid_sys_model* mod);
 void grid_sys_rtc_set_time(struct grid_sys_model* mod, uint32_t tvalue);
 uint32_t grid_sys_rtc_get_elapsed_time(struct grid_sys_model* mod, uint32_t told);
-void grid_sys_rtc_tick_time(struct grid_sys_model* mod);
+void grid_sys_rtc_tick_time(struct grid_sys_model* sys);
 
 
 uint8_t grid_sys_get_bank_num(struct grid_sys_model* mod);

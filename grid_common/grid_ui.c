@@ -30,7 +30,7 @@ void grid_ui_model_init(struct grid_ui_model* mod, struct grid_port* port, uint8
 
 	mod->ui_interaction_enabled = 0;
 
-
+	mod->mapmode_state = 0;
 
 	
 	mod->read_bulk_status = 0;
@@ -230,6 +230,73 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui
 
 
 
+void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui){
+	
+	for (uint8_t i = 0; i<ui->element_list_length; i++){
+
+		struct grid_ui_element* ele = &ui->element_list[i];
+
+		if (ele->timer_event_helper > 0){
+
+			ele->timer_event_helper--;
+			
+			if (ele->timer_event_helper == 0){
+
+				printf("tick\r\n");
+
+				struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_TIMER);
+				
+				if (eve != NULL){
+				
+					printf("bumm\r\n");
+					grid_ui_event_trigger(eve);
+
+				}
+
+
+			}
+
+			
+		}
+		
+	}
+}
+
+void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmode_value){
+
+		
+
+	if (new_mapmode_value != ui->mapmode_state){
+		
+		ui->mapmode_state = new_mapmode_value;
+			
+		if (ui->mapmode_state == 0){ // RELEASE
+			
+				
+		}
+		else{ // PRESS
+
+			
+
+			struct grid_ui_element* sys_ele = &grid_ui_state.element_list[grid_ui_state.element_list_length-1]; 
+
+			struct grid_ui_event* eve = grid_ui_event_find(sys_ele, GRID_UI_EVENT_MAPMODE_CHANGE);
+			
+			if (eve == NULL){
+			}
+			else{
+
+			}
+				
+			grid_ui_event_trigger(eve);		
+
+
+		}
+
+	}
+
+
+}
 
 struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_element* ele){
 		
