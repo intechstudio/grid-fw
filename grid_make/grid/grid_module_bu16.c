@@ -65,7 +65,7 @@ static void adc_transfer_complete_cb(void){
 }
 
 
-void hardware_init(void){
+static void hardware_init(void){
 
 	adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
 	adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
