@@ -56,8 +56,8 @@ static void adc_transfer_complete_cb(void){
 	}
 	adcresult_1 = input_1;
 
-	grid_module_bu16_store_input(adc_index_0, &last_real_time[adc_index_0], adcresult_0, 16); // 16 bit analog values
-	grid_module_bu16_store_input(adc_index_1, &last_real_time[adc_index_1], adcresult_1, 16);	
+	grid_ui_button_store_input(adc_index_0, &last_real_time[adc_index_0], adcresult_0, 16); // 16 bit analog values
+	grid_ui_button_store_input(adc_index_1, &last_real_time[adc_index_1], adcresult_1, 16);	
 
 	adc_complete_count = 0;
 	hardware_start_transfer();

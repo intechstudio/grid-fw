@@ -78,20 +78,8 @@ static void grid_module_en16_hardware_init(void){
 
 void grid_module_en16_init(){
 	
-	
-	grid_led_init(&grid_led_state, 16);
-	
-	grid_ui_model_init(&grid_ui_state, &GRID_PORT_U, 16+1); // +1 for the system element	
-		
-	for(uint8_t j=0; j<16; j++){
-	
-		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_ENCODER);
+	grid_module_en16_ui_init(NULL, &grid_led_state, &grid_ui_state);
 
-	}		
-
-
-	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
-		
 
 	grid_module_en16_hardware_init();
 	
