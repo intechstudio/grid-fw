@@ -133,7 +133,6 @@ static void grid_module_ef44_hardware_transfer_complete_cb(void){
 
 			if (button_value != grid_ui_encoder_array2[i].button_value){  // The button has changed
 				// BUTTON CHANGE
-				grid_ui_encoder_array2[i].button_changed = 1;
 				grid_ui_encoder_array2[i].button_value = new_value>>2;
 
 
@@ -524,7 +523,6 @@ void grid_module_ef44_init(){
 		grid_ui_encoder_array2[j].controller_number = j;
 		
 		grid_ui_encoder_array2[j].button_value = 1;
-		grid_ui_encoder_array2[j].button_changed = 0; 
 		grid_ui_encoder_array2[j].rotation_value = 0;
 		grid_ui_encoder_array2[j].rotation_changed = 1;
 		grid_ui_encoder_array2[j].rotation_direction = 0;
