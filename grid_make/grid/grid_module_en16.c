@@ -3,7 +3,6 @@
 
 
 
-struct io_descriptor *grid_module_en16_hardware_io;
 
 
 
@@ -19,12 +18,8 @@ static uint8_t phase_change_lock_array[16] = {0};
 
 static void hardware_start_transfer(void){
 	
-
 	gpio_set_pin_level(PIN_UI_SPI_CS0, true);
-
 	spi_m_async_enable(&UI_SPI);
-
-	//io_write(io, UI_SPI_TX_BUFFER, 8);
 	spi_m_async_transfer(&UI_SPI, UI_SPI_TX_BUFFER, UI_SPI_RX_BUFFER, 8);
 
 }
@@ -61,7 +56,7 @@ static void spi_transfer_complete_cb(void){
 }
 
 
-static void grid_module_en16_hardware_init(void){
+static void hardware_init(void){
 	
 	gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 	gpio_set_pin_direction(PIN_UI_SPI_CS0, GPIO_DIRECTION_OUT);
@@ -70,7 +65,6 @@ static void grid_module_en16_hardware_init(void){
 	spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
 	spi_m_async_set_baudrate(&UI_SPI, 1000000); // was 400000 check clock div setting
 	
-	spi_m_async_get_io_descriptor(&UI_SPI, &grid_module_en16_hardware_io);
 
 	spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, spi_transfer_complete_cb);
 
@@ -81,7 +75,7 @@ void grid_module_en16_init(){
 	grid_module_en16_ui_init(NULL, &grid_led_state, &grid_ui_state);
 
 
-	grid_module_en16_hardware_init();
+	hardware_init();
 	
 	
 	hardware_start_transfer();

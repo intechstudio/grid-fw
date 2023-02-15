@@ -235,6 +235,35 @@ void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 }
 
 
+void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui){
+	
+	// should be 4 but indexing is bad at grid_element_potmeter_template_parameter_init
+	grid_ain_init(&grid_ain_state, 8, 5);
+
+	grid_led_init(&grid_led_state, 8);
+	
+	grid_ui_model_init(&grid_ui_state, &GRID_PORT_U, 8+1); // +1 for the system element	
+		
+	for(uint8_t j=0; j<4; j++){
+	
+		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_ENCODER);
+
+	}		
+
+	for(uint8_t j=4; j<8; j++){
+	
+		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_POTENTIOMETER);
+
+	}				
+
+
+	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
+
+
+	
+
+
+}
 
 void grid_ui_encoder_store_input(uint8_t input_channel, uint32_t* encoder_last_real_time, uint32_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock){
 
