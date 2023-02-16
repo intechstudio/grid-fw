@@ -221,7 +221,6 @@ void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_
 
 uint8_t grid_platform_get_nvm_state(){
 
-
     ets_printf("grid_platform_get_nvm_state NOT IMPLEMENTED!!!");
     return 1; //ready
 }

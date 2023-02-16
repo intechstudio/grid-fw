@@ -22,6 +22,8 @@
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 
+#include "../managed_components/joltwallet__littlefs/include/esp_littlefs.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

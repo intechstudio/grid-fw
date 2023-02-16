@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/../grid_common/**",
+                "${workspaceFolder}/managed_components/joltwallet__littlefs/**",
                 "/usr/include/**"
             ],
             "defines": [],
