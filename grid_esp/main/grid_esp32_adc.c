@@ -132,9 +132,20 @@ void grid_esp32_adc_task(void *arg)
             }
 
 
-            grid_module_pbf4_store_input(adc_index_0, &last_real_time[adc_index_0], adcresult_0, 12); // 12 bit analog values
-            grid_module_pbf4_store_input(adc_index_1, &last_real_time[adc_index_1], adcresult_1, 12);	
+            if (adc_index_0>7){
+                grid_ui_button_store_input(adc_index_0, &last_real_time[adc_index_0], adcresult_0, 12); // 12 bit analog values
+            }
+            else{
+                grid_ui_potmeter_store_input(adc_index_0, &last_real_time[adc_index_0], adcresult_0, 12); // 12 bit analog values
+            }
 
+
+            if (adc_index_1>7){
+                grid_ui_button_store_input(adc_index_1, &last_real_time[adc_index_1], adcresult_1, 12); // 12 bit analog values
+            }
+            else{
+                grid_ui_potmeter_store_input(adc_index_1, &last_real_time[adc_index_1], adcresult_1, 12); // 12 bit analog values
+            }
         }
 
         if (multiplexer_index == 0){
