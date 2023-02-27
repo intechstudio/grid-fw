@@ -28,6 +28,7 @@
 
 #define ADC_TASK_PRIORITY 2
 #define LED_TASK_PRIORITY 2
+#define NVM_TASK_PRIORITY 2
 #define PORT_TASK_PRIORITY 3
 
 
@@ -37,6 +38,7 @@
 #include "grid_esp32.h"
 #include "grid_esp32_swd.h"
 #include "grid_esp32_port.h"
+#include "grid_esp32_nvm.h"
 
 
 
@@ -63,10 +65,8 @@
 #include "../../grid_common/lua-5.4.3/src/lualib.h"
 #include "../../grid_common/lua-5.4.3/src/lauxlib.h"
 
-#include <sys/stat.h>
-#include "esp_system.h"
-#include "esp_chip_info.h"
-#include "spi_flash_mmap.h"
+
+
 
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
@@ -106,6 +106,8 @@ void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event)
     int rts = event->line_state_changed_data.rts;
     ESP_LOGI(TAG, "Line state changed on channel %d: DTR:%d, RTS:%d", itf, dtr, rts);
 }
+
+
 
 
 //------------- CLASS -------------//
@@ -243,67 +245,6 @@ void app_main(void)
 {
 
 
-    /* Print chip information */
-    esp_chip_info_t chip_info;
-    esp_chip_info(&chip_info);
-    printf("This is %s chip with %d CPU cores, WiFi%s%s, ",
-            CONFIG_IDF_TARGET,
-            chip_info.cores,
-            (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
-            (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
-
-    printf("silicon revision %d, ", chip_info.revision);
-
-    uint32_t size_flash_chip = 0;
-    esp_flash_get_size(NULL, &size_flash_chip);
-    printf("%uMB %s flash\n", (unsigned int)size_flash_chip >> 20,
-            (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
-
-    printf("Free heap: %u\n", (unsigned int) esp_get_free_heap_size());
-
-    printf("Now we are starting the LittleFs Demo ...\n");
-
-    esp_vfs_littlefs_conf_t conf = {
-        .base_path = "/ffat",
-        .partition_label = "ffat",
-        .format_if_mount_failed = true,
-        .dont_mount = false,
-    };
-
-    // Use settings defined above to initialize and mount LittleFS filesystem.
-    // Note: esp_vfs_littlefs_register is an all-in-one convenience function.
-    esp_err_t ret = esp_vfs_littlefs_register(&conf);
-
-    if (ret != ESP_OK)
-    {
-            if (ret == ESP_FAIL)
-            {
-                    ESP_LOGE(TAG, "Failed to mount or format filesystem");
-            }
-            else if (ret == ESP_ERR_NOT_FOUND)
-            {
-                    ESP_LOGE(TAG, "Failed to find LittleFS partition");
-            }
-            else
-            {
-                    ESP_LOGE(TAG, "Failed to initialize LittleFS (%s)", esp_err_to_name(ret));
-            }
-            return;
-    }
-
-
-    size_t total = 0, used = 0;
-    ret = esp_littlefs_info(conf.partition_label, &total, &used);
-    if (ret != ESP_OK)
-    {
-            ESP_LOGE(TAG, "Failed to get LittleFS partition information (%s)", esp_err_to_name(ret));
-    }
-    else
-    {
-            ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
-    }
-
-
     gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
     gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
 
@@ -358,6 +299,9 @@ void app_main(void)
 
 
     // GRID MODULE INITIALIZATION SEQUENCE
+
+
+    grid_esp32_nvm_init(&grid_esp32_nvm_state);
 
     grid_sys_init(&grid_sys_state);
 	grid_msg_init(&grid_msg_state);
@@ -430,6 +374,20 @@ void app_main(void)
                             LED_TASK_PRIORITY,
                             &led_task_hdl,
                             0);
+
+
+
+    TaskHandle_t nvm_task_hdl;
+
+    //Create the class driver task
+    xTaskCreatePinnedToCore(grid_esp32_nvm_task,
+                            "nvm",
+                            4096*4,
+                            (void *)signaling_sem,
+                            NVM_TASK_PRIORITY,
+                            &nvm_task_hdl,
+                            0);
+
 
 
 

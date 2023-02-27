@@ -10,6 +10,7 @@
 
 #include "driver/gpio.h"
 #include "grid_esp32_pins.h"
+#include "grid_esp32_nvm.h"
 #include "esp_check.h"
 #include "rom/ets_sys.h" // For ets_printf
 #include "esp_efuse.h"
@@ -22,7 +23,6 @@
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 
-#include "../managed_components/joltwallet__littlefs/include/esp_littlefs.h"
 
 #ifdef __cplusplus
 extern "C" {

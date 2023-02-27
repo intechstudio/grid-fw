@@ -144,19 +144,19 @@ void grid_platform_printf(char const *fmt, ...){
 
 uint8_t grid_platform_disable_grid_transmitter(uint8_t direction){
 
-    ets_printf("grid_platform_disable_grid_transmitter NOT IMPLEMENTED!!!");
+    ets_printf("grid_platform_disable_grid_transmitter NOT IMPLEMENTED!!!\r\n");
     return 1;
 }
 
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction){
     
-    ets_printf("grid_platform_reset_grid_transmitter NOT IMPLEMENTED!!!");
+    ets_printf("grid_platform_reset_grid_transmitter NOT IMPLEMENTED!!!\r\n");
     return 1;
 }
 
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction){
     
-    ets_printf("grid_platform_enable_grid_transmitter NOT IMPLEMENTED!!!");
+    ets_printf("grid_platform_enable_grid_transmitter NOT IMPLEMENTED!!!\r\n");
     return 1;
 }
 
@@ -186,57 +186,70 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
 
 void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type){
 
-    ets_printf("MOCK!!!\r\n");
-    return NULL; //not found
+
+    void* fp = grid_esp32_nvm_find_file(&grid_esp32_nvm_state, page, element, event_type);
+
+    ets_printf("FILE IS: %lx (%d %d %d)!!!\r\n", fp, page, element, event_type);
+    return fp;
 }
 
 
 uint16_t grid_platform_get_actionstring_file_size(void* file_pointer){
 
-    ets_printf("grid_platform_get_actionstring_file_size NOT IMPLEMENTED!!!");
-    return 0;
+    uint16_t fsize = grid_esp32_nvm_get_file_size(&grid_esp32_nvm_state, file_pointer);
+
+    ets_printf("FILE SIZE IS: %d bytes!!!\r\n", fsize);
+    return fsize;
 }
 
 
 uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, char* targetstring){
 
-    ets_printf("grid_platform_read_actionstring_file_contents NOT IMPLEMENTED!!!");
+
+
+    ets_printf("READ FILE \r\n");
+  
+  
+    grid_esp32_nvm_read_config(&grid_esp32_nvm_state, file_pointer, targetstring);
+    
+
     return 0;
 }
 
 
 void grid_platform_delete_actionstring_file(void* file_pointer){
 
-    ets_printf("grid_platform_delete_actionstring_file NOT IMPLEMENTED!!!");
+    ets_printf("grid_platform_delete_actionstring_file NOT IMPLEMENTED!!!\r\n");
     return;
 }
 
 
 void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length){
 
-    ets_printf("grid_platform_write_actionstring_file NOT IMPLEMENTED!!!");
+    grid_esp32_nvm_save_config(&grid_esp32_nvm_state, page, element, event_type, buffer);
+
     return;
 }
 
 
 uint8_t grid_platform_get_nvm_state(){
 
-    ets_printf("grid_platform_get_nvm_state NOT IMPLEMENTED!!!");
+    ets_printf("grid_platform_get_nvm_state NOT IMPLEMENTED!!!\r\n");
     return 1; //ready
 }
 
 
 void	grid_platform_clear_actionstring_files_from_page(uint8_t page){
 
-
-    ets_printf("grid_platform_clear_actionstring_files_from_page NOT IMPLEMENTED!!!");
+    grid_esp32_nvm_clear_page(&grid_esp32_nvm_state, page);
+    ets_printf("grid_platform_clear_actionstring_files_from_page NOT IMPLEMENTED!!!\r\n");
     return;
 }
 ;
 void grid_platform_delete_actionstring_files_all(){
 
+    grid_esp32_nvm_erase(&grid_esp32_nvm_state);
 
-    ets_printf("grid_platform_delete_actionstring_files_all NOT IMPLEMENTED!!!");
     return;
 }
 
@@ -244,14 +257,15 @@ void grid_platform_delete_actionstring_files_all(){
 
 uint8_t grid_platform_erase_nvm_next(){
 
-    ets_printf("grid_platform_erase_nvm_next NOT IMPLEMENTED!!!");
+    ets_printf("ERASE WAS ALREADY DONE ON INIT!!!\r\n");
+    
     return 0; // done
 
 }
 
 uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length){
 
-    ets_printf("grid_platform_send_grid_message NOT IMPLEMENTED!!!");
+    ets_printf("grid_platform_send_grid_message NOT IMPLEMENTED!!!\r\n");
     return 0; // done
 
 }
@@ -259,7 +273,7 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
 
 uint32_t grid_plaform_get_nvm_nextwriteoffset(){
 
-    ets_printf("grid_plaform_get_nvm_nextwriteoffset NOT IMPLEMENTED!!!");
+    ets_printf("grid_plaform_get_nvm_nextwriteoffset NOT IMPLEMENTED!!!\r\n");
     return 0; // done
 
 }
@@ -268,13 +282,13 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset(){
 
 void grid_platform_system_reset(){
 
-    ets_printf("grid_platform_system_reset NOT IMPLEMENTED!!!");
+    ets_printf("grid_platform_system_reset NOT IMPLEMENTED!!!\r\n");
 
 }
 
 void grid_platform_nvm_defrag(){
 
-    ets_printf("grid_platform_nvm_defrag NOT IMPLEMENTED!!!");
+    ets_printf("grid_platform_nvm_defrag NOT IMPLEMENTED!!!\r\n");
 
 }
 

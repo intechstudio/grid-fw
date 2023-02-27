@@ -974,12 +974,12 @@ void grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, 
 			grid_ui_event_generate_actionstring(eve, targetstring);
 			
 
-			//grid_platform_printf("DEFAULT: %s\r\n", temp);
+			grid_platform_printf("DEFAULT: %s\r\n", targetstring);
 
 		}
 		else if (eve->action_string != NULL){
 
-			//grid_platform_printf("FOUND eve->action_string: %s\r\n", eve->action_string);
+			grid_platform_printf("FOUND eve->action_string: %s\r\n", eve->action_string);
 
 			strcpy(targetstring, eve->action_string);
 

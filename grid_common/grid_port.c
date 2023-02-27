@@ -2075,8 +2075,14 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 			
 				else if (msg_class == GRID_CLASS_PAGEDISCARD_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
 					
+
 					grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX, id);
-					grid_ui_bulk_pageread_init(&grid_ui_state, &grid_protocol_nvm_read_succcess_callback);
+
+					if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
+
+					}else{
+						grid_ui_bulk_pageread_init(&grid_ui_state, &grid_protocol_nvm_read_succcess_callback);
+					}
 
 
 				}		
