@@ -42,7 +42,7 @@ Please verify the Bootloader version before before uploading a new firmware imag
 Download the bootloader image from the repository and unzip the archive. The bootloader binary is contained in a single update-bootloader***.uf2 file. Once the controller is enumerated in bootloader mode, copy the .uf2 image to the removable storage device called GRID. After a successful update, the controller will disconnect from USB turn off. Unplug the usb cable and repeat this step for all of your Grid modules.
 
 ## Updating the firmware
-Download the firmware image from the repository and unzip the archive. The firmware binary is contained in the  grid_toplevel_release.uf2 file. Once the bootloader is enumerated copy the new firmware image to the removable storage device called GRID. After a successful update, the controller will reset and boot the newly installed firmware, ready to use. Make sure to repeat this process for all of your Grid modules, to ensure that they are all running the latest firmware.
+Download the firmware image from the repository and unzip the archive. The firmware binary is contained in the  grid_toplevel_release.uf2 file. **You will find two binary files corresponding to the MCU type in the Grid module, if you're unsure which MCU your module uses, choose the D51 version.** Once the bootloader is enumerated copy the new firmware image to the removable storage device called GRID. After a successful update, the controller will reset and boot the newly installed firmware, ready to use. Make sure to repeat this process for all of your Grid modules, to ensure that they are all running the latest firmware.
 
 ### The firmware updating in steps...
 - Download & unzip the latest release.
