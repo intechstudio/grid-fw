@@ -18,10 +18,12 @@
 #include "esp_log.h"
 
 
+#include "tinyusb.h"
 #include "driver/gpio.h"
 
 
 #include "../../grid_common/grid_port.h"
+#include "../../grid_common/grid_sys.h"
 
 
 #ifdef __cplusplus

@@ -1,0 +1,19 @@
+{
+    "files.associations": {
+        "grid_esp32_port.h": "c",
+        "grid_port.h": "c"
+    },
+    "actionButtons": {
+        "defaultColor": "#ff0034", // Can also use string color names.
+        "loadNpmCommands":false, // Disables automatic generation of actions for npm commands.
+        "reloadButton":"♻️", // Custom reload button text or icon (default ↻). null value enables automatic reload on configuration change
+        "commands": [
+            {
+                "name": "ESP32 Docker",
+                "color": "white",
+                "singleInstance": true,
+                "command": "podman run --privileged -it -v /dev:/dev -v $PWD:/project -w /project/grid_esp espressif/idf:latest",
+            }
+        ]
+    }
+}
