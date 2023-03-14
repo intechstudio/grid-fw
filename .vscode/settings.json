@@ -13,6 +13,12 @@
                 "color": "white",
                 "singleInstance": true,
                 "command": "podman run --privileged -it -v /dev:/dev -v $PWD:/project -w /project/grid_esp espressif/idf:latest",
+            },
+            {
+                "name": "ESP32 Monitor",
+                "color": "white",
+                "singleInstance": true,
+                "command": "podman run --privileged -it -v /dev:/dev -v $PWD:/project -w /project/grid_esp espressif/idf:latest",
             }
         ]
     }

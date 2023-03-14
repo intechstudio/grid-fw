@@ -28,6 +28,8 @@ extern void grid_platform_delete_actionstring_files_all();
 extern uint8_t grid_platform_get_nvm_state();
 extern uint8_t grid_platform_erase_nvm_next();
 
+extern uint8_t grid_platform_get_adc_bit_depth();
+
 enum grid_ui_status_t {
 	GRID_UI_STATUS_UNDEFINED,
 	GRID_UI_STATUS_INITIALIZED,

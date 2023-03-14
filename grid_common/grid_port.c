@@ -1664,7 +1664,7 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 													
 					}
 
-					if (msg_instr == GRID_INSTR_REPORT_code){ //SET BANK
+					if (msg_instr == GRID_INSTR_REPORT_code){ //GET BANK
 
 				
 						//printf("RX: %d %d\r\n", sx, sy);

@@ -1351,7 +1351,7 @@ void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_
 	int32_t min = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index];
 	int32_t max = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index];
 
-	int32_t next = grid_ain_get_average_scaled(&grid_ain_state, element_index, 16, resolution, min, max);
+	int32_t next = grid_ain_get_average_scaled(&grid_ain_state, element_index, grid_platform_get_adc_bit_depth(), resolution, min, max); 
 	template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
 }
 
@@ -1469,7 +1469,6 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 
 
 			if (eve->type == GRID_UI_EVENT_INIT){
-
 				grid_ui_event_trigger_local(eve);
 			}
 
@@ -1730,7 +1729,6 @@ uint8_t grid_ui_bluk_anything_is_in_progress(struct grid_ui_model* ui){
 
 void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui){
 
-
 		
 	// Prepare packet header LOCAL
 	struct grid_msg_packet message_local;
@@ -1839,7 +1837,6 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui){
 
 void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui){
 	
-
 
 	struct grid_msg_packet message;
 	grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);

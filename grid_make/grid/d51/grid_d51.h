@@ -98,4 +98,7 @@ uint8_t grid_platform_erase_nvm_next();
 void grid_platform_system_reset();
 void grid_platform_nvm_defrag();
 
+
+uint8_t grid_platform_get_adc_bit_depth();
+
 #endif /* GRID_D51_H_ */

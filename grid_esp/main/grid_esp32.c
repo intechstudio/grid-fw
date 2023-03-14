@@ -189,7 +189,7 @@ void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_
 
     void* fp = grid_esp32_nvm_find_file(&grid_esp32_nvm_state, page, element, event_type);
 
-    ets_printf("FILE IS: %lx (%d %d %d)!!!\r\n", fp, page, element, event_type);
+    //ets_printf("FILE IS: %lx (%d %d %d)!!!\r\n", fp, page, element, event_type);
     return fp;
 }
 
@@ -234,8 +234,7 @@ void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_
 
 uint8_t grid_platform_get_nvm_state(){
 
-    ets_printf("grid_platform_get_nvm_state NOT IMPLEMENTED!!!\r\n");
-    return 1; //ready
+    return 1; //ready, always ready
 }
 
 
@@ -310,4 +309,8 @@ int32_t grid_platform_usb_midi_write_status(void){
     //ets_printf("grid_platform_usb_midi_write_status NOT IMPLEMENTED!!!");
     return 0;
 
+}
+
+uint8_t grid_platform_get_adc_bit_depth(){
+    return 12;
 }

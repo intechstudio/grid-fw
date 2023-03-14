@@ -91,6 +91,8 @@ int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2
 
 int32_t grid_platform_usb_midi_write_status(void);
 
+uint8_t grid_platform_get_adc_bit_depth();
+
 
 #ifdef __cplusplus
 }

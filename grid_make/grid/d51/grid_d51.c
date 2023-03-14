@@ -969,3 +969,6 @@ void grid_platform_nvm_defrag(){
 
 }
 
+uint8_t grid_platform_get_adc_bit_depth(){
+    return 16;
+}
