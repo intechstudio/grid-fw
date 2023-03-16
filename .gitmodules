@@ -4,6 +4,3 @@
 [submodule "grid_esp/esp-idf"]
 	path = grid_esp/esp-idf
 	url = https://github.com/espressif/esp-idf.git
-[submodule "grid_esp/swd-esp"]
-	path = grid_esp/swd-esp
-	url = https://github.com/huming2207/swd-esp.git

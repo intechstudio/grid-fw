@@ -9,6 +9,11 @@
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 #include "hardware/pio.h"
+
+#include "hardware/irq.h"
+#include "hardware/dma.h"
+#include "hardware/spi.h"
+
 #include "uart_tx.pio.h"
 #include "uart_rx.pio.h"
 

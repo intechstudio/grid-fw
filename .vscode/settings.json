@@ -2,7 +2,20 @@
     "files.associations": {
         "grid_esp32_port.h": "c",
         "grid_port.h": "c"
-    },
+    },   
+    "files.exclude": {
+        ".archive": true,
+        "Documentation": true,
+        "LICENSE": true,
+        "diagram.svg": true,
+        "grid_make/CMSIS": true,
+        "grid_make/armcc": true,
+        "grid_make/hal": true,
+        "grid_make/hpl": true,
+        "grid_make/hri": true,
+        "grid_make/samd51a": true,
+    }
+    ,
     "actionButtons": {
         "defaultColor": "#ff0034", // Can also use string color names.
         "loadNpmCommands":false, // Disables automatic generation of actions for npm commands.

@@ -468,6 +468,30 @@ pico/pico-sdk/src/rp2_common/hardware_divider/divider.S.obj:
 	cd /pico/project && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/main.dir/build.make main/CMakeFiles/main.dir/pico/pico-sdk/src/rp2_common/hardware_divider/divider.S.obj
 .PHONY : pico/pico-sdk/src/rp2_common/hardware_divider/divider.S.obj
 
+pico/pico-sdk/src/rp2_common/hardware_dma/dma.obj: pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.obj
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_dma/dma.obj
+
+# target to build an object file
+pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.obj:
+	cd /pico/project && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/main.dir/build.make main/CMakeFiles/main.dir/pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.obj
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.obj
+
+pico/pico-sdk/src/rp2_common/hardware_dma/dma.i: pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.i
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_dma/dma.i
+
+# target to preprocess a source file
+pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.i:
+	cd /pico/project && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/main.dir/build.make main/CMakeFiles/main.dir/pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.i
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.i
+
+pico/pico-sdk/src/rp2_common/hardware_dma/dma.s: pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.s
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_dma/dma.s
+
+# target to generate assembly for a file
+pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.s:
+	cd /pico/project && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/main.dir/build.make main/CMakeFiles/main.dir/pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.s
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_dma/dma.c.s
+
 pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.obj: pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj
 .PHONY : pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.obj
 
@@ -571,6 +595,30 @@ pico/pico-sdk/src/rp2_common/hardware_pll/pll.s: pico/pico-sdk/src/rp2_common/ha
 pico/pico-sdk/src/rp2_common/hardware_pll/pll.c.s:
 	cd /pico/project && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/main.dir/build.make main/CMakeFiles/main.dir/pico/pico-sdk/src/rp2_common/hardware_pll/pll.c.s
 .PHONY : pico/pico-sdk/src/rp2_common/hardware_pll/pll.c.s
+
+pico/pico-sdk/src/rp2_common/hardware_spi/spi.obj: pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.obj
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_spi/spi.obj
+
+# target to build an object file
+pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.obj:
+	cd /pico/project && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/main.dir/build.make main/CMakeFiles/main.dir/pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.obj
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.obj
+
+pico/pico-sdk/src/rp2_common/hardware_spi/spi.i: pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.i
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_spi/spi.i
+
+# target to preprocess a source file
+pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.i:
+	cd /pico/project && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/main.dir/build.make main/CMakeFiles/main.dir/pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.i
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.i
+
+pico/pico-sdk/src/rp2_common/hardware_spi/spi.s: pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.s
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_spi/spi.s
+
+# target to generate assembly for a file
+pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.s:
+	cd /pico/project && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/main.dir/build.make main/CMakeFiles/main.dir/pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.s
+.PHONY : pico/pico-sdk/src/rp2_common/hardware_spi/spi.c.s
 
 pico/pico-sdk/src/rp2_common/hardware_sync/sync.obj: pico/pico-sdk/src/rp2_common/hardware_sync/sync.c.obj
 .PHONY : pico/pico-sdk/src/rp2_common/hardware_sync/sync.obj
@@ -1197,6 +1245,9 @@ help:
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_clocks/clocks.i"
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_clocks/clocks.s"
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_divider/divider.obj"
+	@echo "... pico/pico-sdk/src/rp2_common/hardware_dma/dma.obj"
+	@echo "... pico/pico-sdk/src/rp2_common/hardware_dma/dma.i"
+	@echo "... pico/pico-sdk/src/rp2_common/hardware_dma/dma.s"
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.obj"
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.i"
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.s"
@@ -1210,6 +1261,9 @@ help:
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_pll/pll.obj"
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_pll/pll.i"
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_pll/pll.s"
+	@echo "... pico/pico-sdk/src/rp2_common/hardware_spi/spi.obj"
+	@echo "... pico/pico-sdk/src/rp2_common/hardware_spi/spi.i"
+	@echo "... pico/pico-sdk/src/rp2_common/hardware_spi/spi.s"
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_sync/sync.obj"
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_sync/sync.i"
 	@echo "... pico/pico-sdk/src/rp2_common/hardware_sync/sync.s"
