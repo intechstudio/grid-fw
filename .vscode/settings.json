@@ -27,6 +27,22 @@
                 "command": "podman run -it -v $PWD/grid_pico:/pico/project -w /pico/project atoktoto/pico-builder:latest",
                 // cmake -B build -S .
                 // 
+            },
+            {
+                "name": "PICO Build",
+                "color": "white",
+                "singleInstance": true,
+                "command": "podman run -it -v $PWD/grid_pico:/pico/project -w /pico/project atoktoto/pico-builder:latest cmake -B build -S .",
+                // cmake -B build -S .
+                // git clean -dxf
+            },
+            {
+                "name": "PICO Convert",
+                "color": "white",
+                "singleInstance": true,
+                "command": "podman run -it -v $PWD/grid_pico:/pico/project -w /pico/project atoktoto/pico-builder:latest cmake -B build -S .",
+                // cmake -B build -S .
+                // git clean -dxf
             }
         ]
     }
