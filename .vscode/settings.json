@@ -32,9 +32,7 @@
                 "name": "PICO Convert",
                 "color": "white",
                 "singleInstance": true,
-                "command": "xxd -i ./grid_pico/build/main/main.bin > ./grid_esp/main/pico_firmware.h && sed -i '1i\\const \\\\' ./main/pico_firmware.h",
-                // cmake -B build -S .
-                // git clean -dxf
+                "command": "xxd -i ./grid_pico/build/main/main.bin > ./grid_esp/main/pico_firmware.h && sed -i '1i\\const \\\\' ./grid_esp/main/pico_firmware.h",
             }
         ]
     }
