@@ -22,6 +22,12 @@
         "reloadButton":"♻️", // Custom reload button text or icon (default ↻). null value enables automatic reload on configuration change
         "commands": [
             {
+                "name": "Clean",
+                "color": "white",
+                "singleInstance": true,
+                "command": "git clean -dxf",
+            },
+            {
                 "name": "ESP32 Docker",
                 "color": "white",
                 "singleInstance": true,
