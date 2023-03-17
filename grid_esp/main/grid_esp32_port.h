@@ -26,6 +26,9 @@
 #include "../../grid_common/grid_sys.h"
 
 
+#include "driver/spi_slave.h"
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

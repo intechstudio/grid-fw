@@ -1,7 +1,8 @@
 {
     "files.associations": {
         "grid_esp32_port.h": "c",
-        "grid_port.h": "c"
+        "grid_port.h": "c",
+        "grid_sys.h": "c"
     },   
     "files.exclude": {
         ".archive": true,
