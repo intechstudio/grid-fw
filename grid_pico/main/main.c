@@ -52,7 +52,7 @@ int main()
     gpio_put(CS_PIN, 1);
 
 
-    spi_init(spi_default, 1000 * 1000);
+    spi_init(spi_default, 31250 * 1000);
     gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
 
     gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
