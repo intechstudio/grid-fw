@@ -61,7 +61,7 @@ int main()
     dma_rx = dma_claim_unused_channel(true);
 
     // Force loopback for testing (I don't have an SPI device handy)
-    hw_set_bits(&spi_get_hw(spi_default)->cr1, SPI_SSPCR1_LBM_BITS);
+    //hw_set_bits(&spi_get_hw(spi_default)->cr1, SPI_SSPCR1_LBM_BITS);
 
     static uint8_t txbuf[TEST_SIZE];
     static uint8_t rxbuf[TEST_SIZE];
@@ -159,10 +159,10 @@ int main()
 
         loopcouter%=10;
 
-        if (loopcouter2 > 50000){
+        if (loopcouter2 > 5000){
             gpio_put(LED_PIN, 1);
         }
-        if (loopcouter2 > 100000){
+        if (loopcouter2 > 10000){
             loopcouter2 = 0;
             gpio_put(LED_PIN, 0);
 
@@ -186,6 +186,9 @@ int main()
 
 
                 if (spi_dma_done){
+
+
+                    printf("RX: %s\n", rxbuf);
                     spi_dma_done = false;
 
 
@@ -200,7 +203,6 @@ int main()
 
 
 
-                    printf("Configure TX DMA\n");
                     dma_channel_config c = dma_channel_get_default_config(dma_tx);
                     channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
                     channel_config_set_dreq(&c, spi_get_dreq(spi_default, true));
@@ -210,7 +212,6 @@ int main()
                                         TEST_SIZE, // element count (each element is of size transfer_data_size)
                                         false); // don't start yet
 
-                    printf("Configure RX DMA\n");
 
                     // We set the inbound DMA to transfer from the SPI receive FIFO to a memory buffer paced by the SPI RX FIFO DREQ
                     // We configure the read address to remain unchanged for each element, but the write
