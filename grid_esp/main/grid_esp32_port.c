@@ -16,14 +16,29 @@ static const char *TAG = "PORT";
 #define RCV_HOST    SPI2_HOST
 
 
+spi_slave_transaction_t t;
+
+
 //Called after a transaction is queued and ready for pickup by master. We use this to set the handshake line high.
 void my_post_setup_cb(spi_slave_transaction_t *trans) {
     //printf("$\r\n");
 }
 
+uint8_t spi_ready = 1;
+
 //Called after transaction is sent/received. We use this to set the handshake line low.
-void my_post_trans_cb(spi_slave_transaction_t *trans) {
+static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
     
+
+    //grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
+    //spi_slave_queue_trans(RCV_HOST, &t, 0);
+    spi_ready = 1;
+
+    
+    spi_slave_transaction_t *result;
+    //spi_slave_get_trans_result(RCV_HOST, &result, 0);
+    grid_platform_printf("@ SPI COMPLETE: ");
+    //free(&result);
    // printf("@\r\n");
 }
 
@@ -31,7 +46,7 @@ void my_post_trans_cb(spi_slave_transaction_t *trans) {
 void grid_esp32_port_task(void *arg)
 {
 
-    int n=0;
+    uint8_t n=0;
     esp_err_t ret;
 
     //Configuration for the SPI bus
@@ -41,6 +56,7 @@ void grid_esp32_port_task(void *arg)
         .sclk_io_num=GPIO_SCLK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
+        .intr_flags = ESP_INTR_FLAG_IRAM
     };
 
     //Configuration for the SPI slave interface
@@ -65,37 +81,58 @@ void grid_esp32_port_task(void *arg)
 
     WORD_ALIGNED_ATTR char sendbuf[512+1]={0};
     WORD_ALIGNED_ATTR char recvbuf[512+1]={0};
-    spi_slave_transaction_t t;
+    
     memset(&t, 0, sizeof(t));
+
+    //Clear receive buffer, set send buffer to something sane
+    memset(recvbuf, 0xA5, 512+1);        
+    sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
+
+
+    //Set up a transaction of 512 bytes to send/receive
+    t.length=512*8;
+    t.tx_buffer=sendbuf;
+    t.rx_buffer=recvbuf;
 
 
     static uint32_t loopcounter = 0;
+    //ret=spi_slave_queue_trans(RCV_HOST, &t, 0);
+    ret=spi_slave_queue_trans(RCV_HOST, &t, portMAX_DELAY);
+    //spi_ready = 0;
 
     while (1) {
 
-        //Clear receive buffer, set send buffer to something sane
-        memset(recvbuf, 0xA5, 512+1);        
-        sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
+
+        if (spi_ready == 1){
+
+            n++;
+            sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
+
+            grid_platform_printf("@ READY COMPLETE: ");
+            spi_slave_transaction_t *trans = NULL;
+            spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
+            grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
+            spi_ready = 0;
+            spi_slave_queue_trans(RCV_HOST, &t, portMAX_DELAY);
+        }
 
         loopcounter++;
 
-        //Set up a transaction of 512 bytes to send/receive
-        t.length=512*8;
-        t.tx_buffer=sendbuf;
-        t.rx_buffer=recvbuf;
+        //grid_platform_printf("FLAG %d \r\n", spi_ready);
+
         /* This call enables the SPI slave interface to send/receive to the sendbuf and recvbuf. The transaction is
         initialized by the SPI master, however, so it will not actually happen until the master starts a hardware transaction
         by pulling CS low and pulsing the clock etc. In this specific example, we use the handshake line, pulled up by the
         .post_setup_cb callback that is called as soon as a transaction is ready, to let the master know it is free to transfer
         data.
         */
-        ret=spi_slave_transmit(RCV_HOST, &t, portMAX_DELAY);
+        //ret=spi_slave_transmit(RCV_HOST, &t, portMAX_DELAY);
         //spi_slave_queue_trans(RCV_HOST, &t, 0);
 
         //spi_slave_transmit does not return until the master has done a transmission, so by here we have sent our data and
         //received data from the master. Print it.
-        printf("Received: %s\n", recvbuf);
-        n++;
+        //printf("Received: %s\n", recvbuf);
+   
 
 
 	

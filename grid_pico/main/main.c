@@ -23,18 +23,30 @@
 
 #define TEST_SIZE 512
 
+uint dma_tx;
+uint dma_rx; 
 
 
+const uint CS_PIN = 17; // was 13
+
+volatile uint8_t spi_dma_done = true;
+
+void dma_handler() {
+
+    spi_dma_done = true;
+    gpio_put(CS_PIN, 1);
+    dma_hw->ints0 = 1u << dma_rx;
+
+}
 
 
 int main() 
 {
 
-    //stdio_init_all();
+    stdio_init_all();
     // SPI INIT
 
     // Setup COMMON stuff
-    const uint CS_PIN = 17; // was 13
     gpio_init(CS_PIN);
     gpio_set_dir(CS_PIN, GPIO_OUT);
     gpio_put(CS_PIN, 1);
@@ -45,8 +57,8 @@ int main()
 
     gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
-    const uint dma_tx = dma_claim_unused_channel(true);
-    const uint dma_rx = dma_claim_unused_channel(true);
+    dma_tx = dma_claim_unused_channel(true);
+    dma_rx = dma_claim_unused_channel(true);
 
     // Force loopback for testing (I don't have an SPI device handy)
     hw_set_bits(&spi_get_hw(spi_default)->cr1, SPI_SSPCR1_LBM_BITS);
@@ -111,8 +123,8 @@ int main()
 
 
     // Setup PIO UART TX
-    const uint PIN_TX_N = 0;
-    const uint PIN_TX_E = 1;
+    const uint PIN_TX_N = 10;
+    const uint PIN_TX_E = 11;
     
     PIO pio_N = pio0;
     uint sm_N = 0;
@@ -156,10 +168,7 @@ int main()
 
 
 
-            gpio_put(CS_PIN, 0);
 
-            sprintf(txbuf, "Test Count: %3d |||", spi_counter);
-            spi_counter++;
 
             // DMA TEST
 
@@ -167,45 +176,79 @@ int main()
             // The default is for the read address to increment every element (in this case 1 byte = DMA_SIZE_8)
             // and for the write address to remain unchanged.
 
-            printf("Configure TX DMA\n");
-            dma_channel_config c = dma_channel_get_default_config(dma_tx);
-            channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-            channel_config_set_dreq(&c, spi_get_dreq(spi_default, true));
-            dma_channel_configure(dma_tx, &c,
-                                &spi_get_hw(spi_default)->dr, // write address
-                                txbuf, // read address
-                                TEST_SIZE, // element count (each element is of size transfer_data_size)
-                                false); // don't start yet
 
-            printf("Configure RX DMA\n");
+            if (dma_channel_is_busy(dma_rx)){
 
-            // We set the inbound DMA to transfer from the SPI receive FIFO to a memory buffer paced by the SPI RX FIFO DREQ
-            // We configure the read address to remain unchanged for each element, but the write
-            // address to increment (so data is written throughout the buffer)
-            c = dma_channel_get_default_config(dma_rx);
-            channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-            channel_config_set_dreq(&c, spi_get_dreq(spi_default, false));
-            channel_config_set_read_increment(&c, false);
-            channel_config_set_write_increment(&c, true);
-            dma_channel_configure(dma_rx, &c,
-                                rxbuf, // write address
-                                &spi_get_hw(spi_default)->dr, // read address
-                                TEST_SIZE, // element count (each element is of size transfer_data_size)
-                                false); // don't start yet
+            }
+            else{
 
 
-            printf("Starting DMAs...\n");
 
-            // start them exactly simultaneously to avoid races (in extreme cases the FIFO could overflow)
-            dma_start_channel_mask((1u << dma_tx) | (1u << dma_rx));
-            printf("Wait for RX complete...\n");
-            dma_channel_wait_for_finish_blocking(dma_rx);
-            if (dma_channel_is_busy(dma_tx)) {
-                panic("RX completed before TX");
+
+                if (spi_dma_done){
+                    spi_dma_done = false;
+
+
+                    gpio_put(CS_PIN, 0);
+
+
+                    sprintf(txbuf, "Test Count: %3d |||", spi_counter);
+                    spi_counter++;
+
+
+                    printf("Starting DMAs...\n");
+
+
+
+                    printf("Configure TX DMA\n");
+                    dma_channel_config c = dma_channel_get_default_config(dma_tx);
+                    channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+                    channel_config_set_dreq(&c, spi_get_dreq(spi_default, true));
+                    dma_channel_configure(dma_tx, &c,
+                                        &spi_get_hw(spi_default)->dr, // write address
+                                        txbuf, // read address
+                                        TEST_SIZE, // element count (each element is of size transfer_data_size)
+                                        false); // don't start yet
+
+                    printf("Configure RX DMA\n");
+
+                    // We set the inbound DMA to transfer from the SPI receive FIFO to a memory buffer paced by the SPI RX FIFO DREQ
+                    // We configure the read address to remain unchanged for each element, but the write
+                    // address to increment (so data is written throughout the buffer)
+                    c = dma_channel_get_default_config(dma_rx);
+                    channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+                    channel_config_set_dreq(&c, spi_get_dreq(spi_default, false));
+                    channel_config_set_read_increment(&c, false);
+                    channel_config_set_write_increment(&c, true);
+                    dma_channel_configure(dma_rx, &c,
+                                        rxbuf, // write address
+                                        &spi_get_hw(spi_default)->dr, // read address
+                                        TEST_SIZE, // element count (each element is of size transfer_data_size)
+                                        false); // don't start yet
+
+
+                    dma_channel_set_irq0_enabled(dma_rx, true);
+
+                    // Configure the processor to run dma_handler() when DMA IRQ 0 is asserted
+                    irq_set_exclusive_handler(DMA_IRQ_0, dma_handler);
+                    irq_set_enabled(DMA_IRQ_0, true);
+
+                    // start them exactly simultaneously to avoid races (in extreme cases the FIFO could overflow)
+                    dma_start_channel_mask((1u << dma_tx) | (1u << dma_rx));
+                    printf("Wait for RX complete...\n");
+                    //dma_channel_wait_for_finish_blocking(dma_rx);
+                    // if (dma_channel_is_busy(dma_tx)) {
+                    //     panic("RX completed before TX");
+                    // }
+
+
+                }
+
+
+
+
             }
 
-
-            gpio_put(CS_PIN, 1);
 
         }
 
