@@ -16,6 +16,8 @@ on:
         # Input has to be provided for the workflow to run
         required: true
   push:
+    branches:
+      - master
     paths:
       - 'grid_common/grid_protocol.h'
       - '.github/workflows/protocol_converter.yml'
