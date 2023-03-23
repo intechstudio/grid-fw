@@ -29,6 +29,38 @@ uint dma_rx;
 
 const uint CS_PIN = 17; // was 13
 
+
+
+
+// PIO SETUP CONSTANTS    
+const uint SERIAL_BAUD = 2000000UL;
+
+const PIO GRID_TX_PIO = pio0;
+const PIO GRID_RX_PIO = pio1;
+
+const uint GRID_NORTH_SM = 0;
+const uint GRID_EAST_SM  = 1;
+const uint GRID_SOUTH_SM = 2;
+const uint GRID_WEST_SM  = 3;
+
+
+// GRID UART PIN CONNECTIONS
+const uint GRID_NORTH_TX_PIN = 23;
+const uint GRID_NORTH_RX_PIN = 6;
+
+const uint GRID_EAST_TX_PIN = 26;
+const uint GRID_EAST_RX_PIN = 24;
+
+const uint GRID_SOUTH_TX_PIN = 2;
+const uint GRID_SOUTH_RX_PIN = 27;
+
+const uint GRID_WEST_TX_PIN = 5;
+const uint GRID_WEST_RX_PIN = 3;
+
+// GRID SYNC PIN CONNECTIONS
+const uint GRID_SYNC_1_PIN = 25;
+const uint GRID_SYNC_2_PIN = 4;
+
 volatile uint8_t spi_dma_done = true;
 
 void dma_handler() {
@@ -118,31 +150,26 @@ int main()
 
 
 
+
+    // INITIALIZE PIO UART TX
+
+    uint offset_tx = pio_add_program(GRID_TX_PIO, &uart_tx_program);
+    uart_tx_program_init(GRID_TX_PIO, GRID_NORTH_SM, offset_tx, GRID_NORTH_TX_PIN, SERIAL_BAUD);
+    uart_tx_program_init(GRID_TX_PIO, GRID_EAST_SM, offset_tx, GRID_EAST_TX_PIN, SERIAL_BAUD);
+    uart_tx_program_init(GRID_TX_PIO, GRID_SOUTH_SM, offset_tx, GRID_SOUTH_TX_PIN, SERIAL_BAUD);
+    uart_tx_program_init(GRID_TX_PIO, GRID_WEST_SM, offset_tx, GRID_WEST_TX_PIN, SERIAL_BAUD);
     
-    const uint SERIAL_BAUD = 2000000UL;
 
 
-    // Setup PIO UART TX
-    const uint PIN_TX_N = 10;
-    const uint PIN_TX_E = 11;
-    
-    PIO pio_N = pio0;
-    uint sm_N = 0;
-    uint offset_N = pio_add_program(pio_N, &uart_tx_program);
-    uart_tx_program_init(pio_N, sm_N, offset_N, PIN_TX_N, SERIAL_BAUD);
 
-    PIO pio_E = pio0;
-    uint sm_E = 1;
-    uint offset_E = pio_add_program(pio_E, &uart_tx_program);
-    uart_tx_program_init(pio_E, sm_E, offset_E, PIN_TX_E, SERIAL_BAUD);
-    
-    // Setup PIO UART RX
-    const uint PIN_RX_N = 3;
+    // INITIALIZE PIO UART RX
 
-    PIO pio = pio1;
-    uint sm = 0;
-    uint offset = pio_add_program(pio, &uart_rx_program);
-    uart_rx_program_init(pio, sm, offset, PIN_RX_N, SERIAL_BAUD);
+    uint offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_program);
+    uart_rx_program_init(GRID_RX_PIO, GRID_NORTH_SM, offset_rx, GRID_NORTH_RX_PIN, SERIAL_BAUD);
+    uart_rx_program_init(GRID_RX_PIO, GRID_EAST_SM, offset_rx, GRID_EAST_RX_PIN, SERIAL_BAUD);
+    uart_rx_program_init(GRID_RX_PIO, GRID_SOUTH_SM, offset_rx, GRID_SOUTH_RX_PIN, SERIAL_BAUD);
+    uart_rx_program_init(GRID_RX_PIO, GRID_WEST_SM, offset_rx, GRID_WEST_RX_PIN, SERIAL_BAUD);
+
 
 
     uint8_t loopcouter = 0;    
@@ -157,7 +184,7 @@ int main()
         loopcouter++;
         loopcouter2++;
 
-        loopcouter%=10;
+        loopcouter%=5;
 
         if (loopcouter2 > 5000){
             gpio_put(LED_PIN, 1);
@@ -254,15 +281,31 @@ int main()
         }
 
 
-        uart_tx_program_putc(pio_N, sm_N, '0'+loopcouter);
+        uart_tx_program_putc(GRID_TX_PIO, GRID_NORTH_SM, '0'+loopcouter);
+        uart_tx_program_putc(GRID_TX_PIO, GRID_EAST_SM, '1'+loopcouter);
+        uart_tx_program_putc(GRID_TX_PIO, GRID_SOUTH_SM, '2'+loopcouter);
+        uart_tx_program_putc(GRID_TX_PIO, GRID_WEST_SM, '3'+loopcouter);
 
 
-        if (uart_rx_program_is_available(pio, sm)){
-            char c = uart_rx_program_getc(pio, sm);
-            uint8_t buffer[10] = {0};
-            sprintf(buffer, "%c", c);
+        
+        if (uart_rx_program_is_available(GRID_RX_PIO, GRID_NORTH_SM)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, GRID_NORTH_SM);
+            printf("N: %c\r\n", c);
+        }
 
-            uart_tx_program_puts(pio_E, sm_E, buffer);
+        if (uart_rx_program_is_available(GRID_RX_PIO, GRID_EAST_SM)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, GRID_EAST_SM);
+            printf("E: %c\r\n", c);
+        }
+
+        if (uart_rx_program_is_available(GRID_RX_PIO, GRID_SOUTH_SM)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, GRID_SOUTH_SM);
+            printf("S: %c\r\n", c);
+        }
+
+        if (uart_rx_program_is_available(GRID_RX_PIO, GRID_WEST_SM)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, GRID_WEST_SM);
+            printf("W: %c\r\n", c);
         }
 
 

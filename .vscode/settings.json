@@ -33,6 +33,7 @@
                 "color": "white",
                 "singleInstance": true,
                 "command": "podman run --privileged -it -v /dev:/dev -v $PWD:/project -w /project/grid_esp espressif/idf:latest",
+                // clear && idf.py build && idf.py -p $(ls /dev/ttyACM*) flash
             },
             {
                 "name": "ESP32 Monitor",
