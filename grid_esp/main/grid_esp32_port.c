@@ -20,7 +20,7 @@ spi_slave_transaction_t t;
 
 
 //Called after a transaction is queued and ready for pickup by master. We use this to set the handshake line high.
-void my_post_setup_cb(spi_slave_transaction_t *trans) {
+static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t *trans) {
     //printf("$\r\n");
 }
 
@@ -29,17 +29,13 @@ uint8_t spi_ready = 1;
 //Called after transaction is sent/received. We use this to set the handshake line low.
 static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
     
-
-    //grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
-    //spi_slave_queue_trans(RCV_HOST, &t, 0);
     spi_ready = 1;
 
     
     spi_slave_transaction_t *result;
     //spi_slave_get_trans_result(RCV_HOST, &result, 0);
-    grid_platform_printf("@ SPI COMPLETE: ");
-    //free(&result);
-   // printf("@\r\n");
+    //grid_platform_printf("@ SPI COMPLETE: ");
+
 }
 
 
@@ -114,25 +110,10 @@ void grid_esp32_port_task(void *arg)
             spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
             grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
             spi_ready = 0;
-            spi_slave_queue_trans(RCV_HOST, &t, portMAX_DELAY);
+            spi_slave_queue_trans(RCV_HOST, &t, 0);
         }
 
         loopcounter++;
-
-        //grid_platform_printf("FLAG %d \r\n", spi_ready);
-
-        /* This call enables the SPI slave interface to send/receive to the sendbuf and recvbuf. The transaction is
-        initialized by the SPI master, however, so it will not actually happen until the master starts a hardware transaction
-        by pulling CS low and pulsing the clock etc. In this specific example, we use the handshake line, pulled up by the
-        .post_setup_cb callback that is called as soon as a transaction is ready, to let the master know it is free to transfer
-        data.
-        */
-        //ret=spi_slave_transmit(RCV_HOST, &t, portMAX_DELAY);
-        //spi_slave_queue_trans(RCV_HOST, &t, 0);
-
-        //spi_slave_transmit does not return until the master has done a transmission, so by here we have sent our data and
-        //received data from the master. Print it.
-        //printf("Received: %s\n", recvbuf);
 
 	
         if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()){
@@ -151,8 +132,9 @@ void grid_esp32_port_task(void *arg)
 
         //ESP_LOGI(TAG, "Ping!");
         if (loopcounter%30 == 0){
-
+            vTaskSuspendAll();
             grid_protocol_send_heartbeat(); // Put ping into UI rx_buffer
+            xTaskResumeAll();
         }
 
 
@@ -186,10 +168,21 @@ void grid_esp32_port_task(void *arg)
 	    grid_port_receive_task(&GRID_PORT_H); // USB
 	    grid_port_receive_task(&GRID_PORT_U); // UI
         
+
+
         // INBOUND
+
+        vTaskSuspendAll();
         grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback , put rx_buffer content to each CONNECTED port's tx_buffer
+        xTaskResumeAll();
+        
+        
+        
         // ... GRID UART PORTS ...
+        
+        vTaskSuspendAll();
         grid_port_process_inbound(&GRID_PORT_H, 0);
+        xTaskResumeAll();
 
 
 
@@ -197,8 +190,15 @@ void grid_esp32_port_task(void *arg)
 
         // OUTBOUND
         // ... GRID UART PORTS ...
-        grid_port_process_outbound_usb(&GRID_PORT_H);       
+        
+        //vTaskSuspendAll();
+        grid_port_process_outbound_usb(&GRID_PORT_H); 
+        //xTaskResumeAll();
+
+
+        //vTaskSuspendAll();        
         grid_port_process_outbound_ui(&GRID_PORT_U);
+        //xTaskResumeAll();
 
         //GRID_PORT_U.rx_buffer.read_start = 0;        
         //GRID_PORT_U.rx_buffer.read_stop = 0;  

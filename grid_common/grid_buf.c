@@ -76,6 +76,7 @@ uint16_t grid_buffer_get_space(struct grid_buffer* buf){
 
 uint16_t grid_buffer_write_init(struct grid_buffer* buf, uint16_t length){
 	
+
 	
 	
 	uint16_t space = grid_buffer_get_space(buf);
@@ -114,12 +115,13 @@ uint8_t grid_buffer_write_character(struct grid_buffer* buf, uint8_t character){
 }
 
 uint8_t grid_buffer_write_acknowledge(struct grid_buffer* buf){
-	
+
 	if (buf->write_active == buf->write_stop){
 		
 		
 		buf->write_start = buf->write_active;
 		return 1;
+
 	}
 	else{
 		

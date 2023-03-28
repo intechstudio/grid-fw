@@ -392,25 +392,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint
 				}
 				
 				
-
-				
-				// 				uint32_t response_length = strlen(response);
-				//
-				// 				if(grid_buffer_write_init(&por->tx_buffer, response_length)){
-				//
-				//
-				// 					uint8_t checksum = grid_msg_get_checksum(response, response_length);
-				// 					grid_msg_set_checksum(response, response_length, checksum);
-				//
-				// 					for (uint32_t i=0; i<response_length; i++)
-				// 					{
-				// 						grid_buffer_write_character(&por->tx_buffer, response[i]);
-				// 					}
-				//
-				// 					grid_buffer_write_acknowledge(&por->tx_buffer);
-				//
-				// 				}
-				
 			}
 			else if (message[1] == GRID_CONST_DCT){ // Direct Message
 				
