@@ -23,10 +23,18 @@
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "freertos/task.h"
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern struct tskTaskControlBlock;
+
+void grid_esp32_housekeeping_task(void *arg);
 
 
 /**

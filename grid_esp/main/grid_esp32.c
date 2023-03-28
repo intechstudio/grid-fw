@@ -9,6 +9,108 @@
 static const char *TAG = "grid_esp32";
 
 
+void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
+
+    TaskStatus_t *pxTaskStatusArray;
+    volatile UBaseType_t uxArraySize, x;
+    uint32_t ulTotalRunTime, ulStatsAsPercentage;
+
+        // Make sure the write buffer does not contain a string.
+    *pcWriteBuffer = 0x00;
+
+    // Take a snapshot of the number of tasks in case it changes while this
+    // function is executing.
+    uxArraySize = uxTaskGetNumberOfTasks();
+
+    // Allocate a TaskStatus_t structure for each task.  An array could be
+    // allocated statically at compile time.
+    pxTaskStatusArray = pvPortMalloc( uxArraySize * sizeof( TaskStatus_t ) );
+
+    if( pxTaskStatusArray != NULL )
+    {
+        // Generate raw status information about each task.
+        uxArraySize = uxTaskGetSystemState( pxTaskStatusArray, uxArraySize, &ulTotalRunTime );
+
+        grid_platform_printf("Task Count : %d Core: %d\r\n\r\n", uxArraySize, xPortGetCoreID());
+
+        // For percentage calculations.
+        ulTotalRunTime /= 100UL;
+
+        // Avoid divide by zero errors.
+        if( ulTotalRunTime > 0 )
+        {
+            // For each populated position in the pxTaskStatusArray array,
+            // format the raw data as human readable ASCII data
+            for( x = 0; x < uxArraySize; x++ )
+            {
+
+                char taskName[10] = ".........\0";
+                snprintf(taskName, 8, pxTaskStatusArray[ x ].pcTaskName);
+
+                uint8_t core = xTaskGetAffinity(pxTaskStatusArray[ x ].xHandle);
+
+
+                /* Inspect our own high water mark on entering the task. */
+                unsigned long uxHighWaterMark = uxTaskGetStackHighWaterMark( pxTaskStatusArray[ x ].xHandle );
+
+
+                // What percentage of the total run time has the task used?
+                // This will always be rounded down to the nearest integer.
+                // ulTotalRunTimeDiv100 has already been divided by 100.
+                ulStatsAsPercentage = pxTaskStatusArray[ x ].ulRunTimeCounter / ulTotalRunTime;
+
+
+                TaskHandle_t task = pxTaskStatusArray[ x ].xHandle;
+
+                if( ulStatsAsPercentage > 0UL )
+                {
+
+                    //xCoreID
+                    sprintf( pcWriteBuffer, "%d-%s\t\t%lu\t\t%lu pcnt\r\n", core,  taskName, uxHighWaterMark, ulStatsAsPercentage );
+                    
+                }
+                else
+                {
+                    // If the percentage is zero here then the task has
+                    // consumed less than 1% of the total run time.
+                    sprintf( pcWriteBuffer, "%d-%s\t\t%lu\t\t<1 pcnt\r\n", core, taskName, uxHighWaterMark );
+                }
+
+                pcWriteBuffer += strlen( ( char * ) pcWriteBuffer );
+            }
+        }
+
+        // The array is no longer needed, free the memory it consumes.
+        vPortFree( pxTaskStatusArray );
+    }
+}
+
+
+
+void grid_esp32_housekeeping_task(void *arg)
+{
+
+
+    char stats[3000] = {0};
+
+    while (1) {
+
+
+        vTaskGetRunTimeStats2(stats);
+        
+        ets_printf("%s\r\n\r\n", stats);
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
+     
+
+
+    }
+
+
+    //Wait to be deleted
+    vTaskSuspend(NULL);
+}
+
 
 uint32_t grid_platform_get_hwcfg(){
 

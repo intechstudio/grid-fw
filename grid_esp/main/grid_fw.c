@@ -370,25 +370,34 @@ void app_main(void)
     //Create the class driver task
     xTaskCreatePinnedToCore(grid_esp32_led_task,
                             "led",
-                            4096,
+                            1024*3,
                             (void *)signaling_sem,
                             LED_TASK_PRIORITY,
                             &led_task_hdl,
                             0);
-
-
 
     TaskHandle_t nvm_task_hdl;
 
     //Create the class driver task
     xTaskCreatePinnedToCore(grid_esp32_nvm_task,
                             "nvm",
-                            4096*4,
+                            1024,
                             (void *)signaling_sem,
                             NVM_TASK_PRIORITY,
                             &nvm_task_hdl,
                             0);
 
+
+    TaskHandle_t housekeeping_task_hdl;
+
+    //Create the class driver task
+    xTaskCreatePinnedToCore(grid_esp32_housekeeping_task,
+                            "housekeeping",
+                            1024*5,
+                            (void *)signaling_sem,
+                            6,
+                            &housekeeping_task_hdl,
+                            0);
 
 
 
@@ -408,7 +417,7 @@ void app_main(void)
 
     // Read recieved MIDI packets
     ESP_LOGI(TAG, "MIDI read task init");
-    xTaskCreate(midi_task_read_example, "midi_task_read_example", 2 * 1024, NULL, 5, NULL);
+    xTaskCreatePinnedToCore(midi_task_read_example, "midi_task_read_example", 2 * 1024, NULL, 5, NULL, 0);
 #endif
 
 }

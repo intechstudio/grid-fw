@@ -7,6 +7,7 @@
 #include "grid_esp32_port.h"
 
 
+
 static const char *TAG = "PORT";
 
 #define GPIO_MOSI 8
@@ -97,18 +98,23 @@ void grid_esp32_port_task(void *arg)
     ret=spi_slave_queue_trans(RCV_HOST, &t, portMAX_DELAY);
     //spi_ready = 0;
 
+
+
     while (1) {
 
 
         if (spi_ready == 1){
 
+
+
+
             n++;
             sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
 
-            grid_platform_printf("@ READY COMPLETE: ");
+           // grid_platform_printf("@ READY COMPLETE: ");
             spi_slave_transaction_t *trans = NULL;
             spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
-            grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
+          //  grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
             spi_ready = 0;
             spi_slave_queue_trans(RCV_HOST, &t, 0);
         }

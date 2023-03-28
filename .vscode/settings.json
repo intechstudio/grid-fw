@@ -2,7 +2,11 @@
     "files.associations": {
         "grid_esp32_port.h": "c",
         "grid_port.h": "c",
-        "grid_sys.h": "c"
+        "grid_sys.h": "c",
+        "semphr.h": "c",
+        "task.h": "c",
+        "ledc.h": "c",
+        "esp_timer.h": "c"
     },   
     "files.exclude": {
         ".archive": true,
