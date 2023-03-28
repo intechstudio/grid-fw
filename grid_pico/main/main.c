@@ -27,6 +27,9 @@ uint dma_tx;
 uint dma_rx; 
 
 
+static uint8_t txbuf[TEST_SIZE];
+static uint8_t rxbuf[TEST_SIZE];
+
 const uint CS_PIN = 17; // was 13
 
 
@@ -72,6 +75,67 @@ void dma_handler() {
 }
 
 
+void init_pio_quad_uart(void){
+
+    // INITIALIZE PIO UART TX
+
+    uint offset_tx = pio_add_program(GRID_TX_PIO, &uart_tx_program);
+    uart_tx_program_init(GRID_TX_PIO, GRID_NORTH_SM, offset_tx, GRID_NORTH_TX_PIN, SERIAL_BAUD);
+    uart_tx_program_init(GRID_TX_PIO, GRID_EAST_SM, offset_tx, GRID_EAST_TX_PIN, SERIAL_BAUD);
+    uart_tx_program_init(GRID_TX_PIO, GRID_SOUTH_SM, offset_tx, GRID_SOUTH_TX_PIN, SERIAL_BAUD);
+    uart_tx_program_init(GRID_TX_PIO, GRID_WEST_SM, offset_tx, GRID_WEST_TX_PIN, SERIAL_BAUD);
+    
+
+    // INITIALIZE PIO UART RX
+
+    uint offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_program);
+    uart_rx_program_init(GRID_RX_PIO, GRID_NORTH_SM, offset_rx, GRID_NORTH_RX_PIN, SERIAL_BAUD);
+    uart_rx_program_init(GRID_RX_PIO, GRID_EAST_SM, offset_rx, GRID_EAST_RX_PIN, SERIAL_BAUD);
+    uart_rx_program_init(GRID_RX_PIO, GRID_SOUTH_SM, offset_rx, GRID_SOUTH_RX_PIN, SERIAL_BAUD);
+    uart_rx_program_init(GRID_RX_PIO, GRID_WEST_SM, offset_rx, GRID_WEST_RX_PIN, SERIAL_BAUD);
+
+
+}
+
+
+void spi_start_transfer(uint tx_channel, uint rx_channel, uint8_t* tx_buffer, uint8_t* rx_buffer, irq_handler_t callback){
+
+    dma_channel_config c = dma_channel_get_default_config(tx_channel);
+    channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+    channel_config_set_dreq(&c, spi_get_dreq(spi_default, true));
+    dma_channel_configure(tx_channel, &c,
+                        &spi_get_hw(spi_default)->dr, // write address
+                        tx_buffer, // read address
+                        TEST_SIZE, // element count (each element is of size transfer_data_size)
+                        false); // don't start yet
+
+
+    c = dma_channel_get_default_config(rx_channel);
+    channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+    channel_config_set_dreq(&c, spi_get_dreq(spi_default, false));
+    channel_config_set_read_increment(&c, false);
+    channel_config_set_write_increment(&c, true);
+    dma_channel_configure(rx_channel, &c,
+                        rx_buffer, // write address
+                        &spi_get_hw(spi_default)->dr, // read address
+                        TEST_SIZE, // element count (each element is of size transfer_data_size)
+                        false); // don't start yet
+
+
+    if (callback != NULL){
+        dma_channel_set_irq0_enabled(rx_channel, true);
+        irq_set_exclusive_handler(DMA_IRQ_0, callback);
+        irq_set_enabled(DMA_IRQ_0, true);
+    }
+
+
+
+    dma_start_channel_mask((1u << tx_channel) | (1u << rx_channel));
+
+
+}
+
+
 int main() 
 {
 
@@ -95,47 +159,13 @@ int main()
     // Force loopback for testing (I don't have an SPI device handy)
     //hw_set_bits(&spi_get_hw(spi_default)->cr1, SPI_SSPCR1_LBM_BITS);
 
-    static uint8_t txbuf[TEST_SIZE];
-    static uint8_t rxbuf[TEST_SIZE];
     for (uint i = 0; i < TEST_SIZE; ++i) {
         txbuf[i] = 'a'+i%20;
     }
     
-    // We set the outbound DMA to transfer from a memory buffer to the SPI transmit FIFO paced by the SPI TX FIFO DREQ
-    // The default is for the read address to increment every element (in this case 1 byte = DMA_SIZE_8)
-    // and for the write address to remain unchanged.
 
-    printf("Configure TX DMA\n");
-    dma_channel_config c = dma_channel_get_default_config(dma_tx);
-    channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-    channel_config_set_dreq(&c, spi_get_dreq(spi_default, true));
-    dma_channel_configure(dma_tx, &c,
-                          &spi_get_hw(spi_default)->dr, // write address
-                          txbuf, // read address
-                          TEST_SIZE, // element count (each element is of size transfer_data_size)
-                          false); // don't start yet
+    spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, NULL);
 
-    printf("Configure RX DMA\n");
-
-    // We set the inbound DMA to transfer from the SPI receive FIFO to a memory buffer paced by the SPI RX FIFO DREQ
-    // We configure the read address to remain unchanged for each element, but the write
-    // address to increment (so data is written throughout the buffer)
-    c = dma_channel_get_default_config(dma_rx);
-    channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-    channel_config_set_dreq(&c, spi_get_dreq(spi_default, false));
-    channel_config_set_read_increment(&c, false);
-    channel_config_set_write_increment(&c, true);
-    dma_channel_configure(dma_rx, &c,
-                          rxbuf, // write address
-                          &spi_get_hw(spi_default)->dr, // read address
-                          TEST_SIZE, // element count (each element is of size transfer_data_size)
-                          false); // don't start yet
-
-
-    printf("Starting DMAs...\n");
-
-    // start them exactly simultaneously to avoid races (in extreme cases the FIFO could overflow)
-    dma_start_channel_mask((1u << dma_tx) | (1u << dma_rx));
     printf("Wait for RX complete...\n");
     dma_channel_wait_for_finish_blocking(dma_rx);
     if (dma_channel_is_busy(dma_tx)) {
@@ -151,26 +181,8 @@ int main()
 
 
 
-    // INITIALIZE PIO UART TX
-
-    uint offset_tx = pio_add_program(GRID_TX_PIO, &uart_tx_program);
-    uart_tx_program_init(GRID_TX_PIO, GRID_NORTH_SM, offset_tx, GRID_NORTH_TX_PIN, SERIAL_BAUD);
-    uart_tx_program_init(GRID_TX_PIO, GRID_EAST_SM, offset_tx, GRID_EAST_TX_PIN, SERIAL_BAUD);
-    uart_tx_program_init(GRID_TX_PIO, GRID_SOUTH_SM, offset_tx, GRID_SOUTH_TX_PIN, SERIAL_BAUD);
-    uart_tx_program_init(GRID_TX_PIO, GRID_WEST_SM, offset_tx, GRID_WEST_TX_PIN, SERIAL_BAUD);
-    
-
-
-
-    // INITIALIZE PIO UART RX
-
-    uint offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_program);
-    uart_rx_program_init(GRID_RX_PIO, GRID_NORTH_SM, offset_rx, GRID_NORTH_RX_PIN, SERIAL_BAUD);
-    uart_rx_program_init(GRID_RX_PIO, GRID_EAST_SM, offset_rx, GRID_EAST_RX_PIN, SERIAL_BAUD);
-    uart_rx_program_init(GRID_RX_PIO, GRID_SOUTH_SM, offset_rx, GRID_SOUTH_RX_PIN, SERIAL_BAUD);
-    uart_rx_program_init(GRID_RX_PIO, GRID_WEST_SM, offset_rx, GRID_WEST_RX_PIN, SERIAL_BAUD);
-
-
+    // INITIALIZE PIO UART
+    init_pio_quad_uart();
 
     uint8_t loopcouter = 0;    
     
@@ -230,44 +242,8 @@ int main()
 
 
 
-                    dma_channel_config c = dma_channel_get_default_config(dma_tx);
-                    channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-                    channel_config_set_dreq(&c, spi_get_dreq(spi_default, true));
-                    dma_channel_configure(dma_tx, &c,
-                                        &spi_get_hw(spi_default)->dr, // write address
-                                        txbuf, // read address
-                                        TEST_SIZE, // element count (each element is of size transfer_data_size)
-                                        false); // don't start yet
+                   spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
 
-
-                    // We set the inbound DMA to transfer from the SPI receive FIFO to a memory buffer paced by the SPI RX FIFO DREQ
-                    // We configure the read address to remain unchanged for each element, but the write
-                    // address to increment (so data is written throughout the buffer)
-                    c = dma_channel_get_default_config(dma_rx);
-                    channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-                    channel_config_set_dreq(&c, spi_get_dreq(spi_default, false));
-                    channel_config_set_read_increment(&c, false);
-                    channel_config_set_write_increment(&c, true);
-                    dma_channel_configure(dma_rx, &c,
-                                        rxbuf, // write address
-                                        &spi_get_hw(spi_default)->dr, // read address
-                                        TEST_SIZE, // element count (each element is of size transfer_data_size)
-                                        false); // don't start yet
-
-
-                    dma_channel_set_irq0_enabled(dma_rx, true);
-
-                    // Configure the processor to run dma_handler() when DMA IRQ 0 is asserted
-                    irq_set_exclusive_handler(DMA_IRQ_0, dma_handler);
-                    irq_set_enabled(DMA_IRQ_0, true);
-
-                    // start them exactly simultaneously to avoid races (in extreme cases the FIFO could overflow)
-                    dma_start_channel_mask((1u << dma_tx) | (1u << dma_rx));
-                    printf("Wait for RX complete...\n");
-                    //dma_channel_wait_for_finish_blocking(dma_rx);
-                    // if (dma_channel_is_busy(dma_tx)) {
-                    //     panic("RX completed before TX");
-                    // }
 
 
                 }
