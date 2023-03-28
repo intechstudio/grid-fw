@@ -43,6 +43,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 }
 
 
+
 void grid_esp32_port_task(void *arg)
 {
 
@@ -132,8 +133,6 @@ void grid_esp32_port_task(void *arg)
         //spi_slave_transmit does not return until the master has done a transmission, so by here we have sent our data and
         //received data from the master. Print it.
         //printf("Received: %s\n", recvbuf);
-   
-
 
 	
         if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()){
@@ -149,10 +148,6 @@ void grid_esp32_port_task(void *arg)
 
     
         }
-			
-
-
-
 
         //ESP_LOGI(TAG, "Ping!");
         if (loopcounter%30 == 0){
@@ -166,7 +161,9 @@ void grid_esp32_port_task(void *arg)
             if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
 
                 //CRITICAL_SECTION_ENTER()
+                vTaskSuspendAll();
                 grid_port_process_ui_local_UNSAFE(&grid_ui_state);
+                xTaskResumeAll();
                 //CRITICAL_SECTION_LEAVE()
             
             }
@@ -175,7 +172,9 @@ void grid_esp32_port_task(void *arg)
 				grid_ui_state.port->cooldown += 3;	
 
 				//CRITICAL_SECTION_ENTER()
+                vTaskSuspendAll();
 				grid_port_process_ui_UNSAFE(&grid_ui_state); 
+                xTaskResumeAll();
 				//CRITICAL_SECTION_LEAVE()
 			}
 

@@ -53,7 +53,7 @@ void grid_esp32_adc_task(void *arg)
     adc_oneshot_unit_handle_t adc1_handle;
     adc_oneshot_unit_handle_t adc2_handle;
 
-   adc_init(&adc1_handle, &adc2_handle);
+    adc_init(&adc1_handle, &adc2_handle);
 
 
     static uint8_t multiplexer_index =0;
