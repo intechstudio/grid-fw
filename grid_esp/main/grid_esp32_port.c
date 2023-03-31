@@ -158,6 +158,8 @@ void grid_esp32_port_task(void *arg)
     spi_empty_transaction.rx_buffer=recvbuf;
 
 
+    GRID_PORT_N.partner_status = 1; // force connected
+
     static uint32_t loopcounter = 0;
     //ret=spi_slave_queue_trans(RCV_HOST, &t, 0);
     ret=spi_slave_queue_trans(RCV_HOST, &t, portMAX_DELAY);
@@ -178,7 +180,7 @@ void grid_esp32_port_task(void *arg)
        printf("LOOP %d\r\n", queue_state);
 
         pingcounter++;
-        if (pingcounter%2 == 0){
+        if (pingcounter%10 == 0){
             ets_printf("TRY PING\r\n");
 
             GRID_PORT_N.ping_flag = 1;
@@ -223,7 +225,7 @@ void grid_esp32_port_task(void *arg)
         }
 
         //ESP_LOGI(TAG, "Ping!");
-        if (loopcounter%30 == 0){
+        if (loopcounter%256 == 0){
             vTaskSuspendAll();
             grid_protocol_send_heartbeat(); // Put ping into UI rx_buffer
             xTaskResumeAll();
@@ -281,6 +283,7 @@ void grid_esp32_port_task(void *arg)
 
 
 
+        grid_port_process_inbound(&GRID_PORT_N, 0);
 
 
         // OUTBOUND
