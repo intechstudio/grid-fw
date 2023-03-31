@@ -1,0 +1,17 @@
+README FOR MANUAL FW UPDATES FOR THE INTECH STUDIO GRID MODULAR CONTROLLERS (03/31/2023)
+
+You will find two binary files corresponding to the MCU type in the Grid module, if you're unsure which MCU your module uses, choose the D51 version.
+
+All modules puchased before May of 2023 will use the D51 binary.
+
+
+
+FOR PEOPLE THAT WANT TO CHECK WHICH MCU YOUR MODULE IS USING
+
+- You might find multiple binary files in this archive, choose the one corresponding to the information in the file named "INFO_UF2.TXT" on the GRID removable device.
+
+- You can check the file when Grid is connected in bootloader mode.
+
+- It will tell you if it's either SAMD51 or ESP32. 
+
+- Use the binary for the firmware update matching the name of the MCU in the module you're updating.

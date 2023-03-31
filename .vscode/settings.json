@@ -44,6 +44,7 @@
                 "color": "white",
                 "singleInstance": true,
                 "command": "podman run --privileged -it -v /dev:/dev -v $PWD:/project -w /project/grid_esp espressif/idf:latest",
+                // idf.py -p $(ls /dev/ttyUSB*) monitor
             },
             {
                 "name": "PICO Terminal",

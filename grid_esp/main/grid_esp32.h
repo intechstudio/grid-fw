@@ -87,7 +87,6 @@ void grid_platform_delete_actionstring_files_all();
 
 uint8_t grid_platform_erase_nvm_next();
 
-uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
 
 
 uint32_t grid_plaform_get_nvm_nextwriteoffset();

@@ -20,6 +20,10 @@ static const char *TAG = "PORT";
 spi_slave_transaction_t t;
 
 
+spi_slave_transaction_t spi_empty_transaction;
+
+uint8_t queue_state = 0;
+
 //Called after a transaction is queued and ready for pickup by master. We use this to set the handshake line high.
 static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t *trans) {
     //printf("$\r\n");
@@ -29,16 +33,69 @@ uint8_t spi_ready = 1;
 
 //Called after transaction is sent/received. We use this to set the handshake line low.
 static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
-    
+
+    if (queue_state>0){
+        queue_state--;
+    }   
+
+
     spi_ready = 1;
 
-    
+   // ets_printf("SPI[499] = %d\r\n", ((uint8_t*) trans->tx_buffer)[499]);
+    ets_printf("SPI[499] = %d\r\n", ((uint8_t*) trans->rx_buffer)[499]);
+
+    uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[499];
+
+
+
+    if ((ready_flags&0b00000001)){
+        GRID_PORT_N.tx_double_buffer_status = 0;
+    }
+
+    if ((ready_flags&0b00000010)){
+        GRID_PORT_E.tx_double_buffer_status = 0;
+    }
+
+    if ((ready_flags&0b00000100)){
+        GRID_PORT_S.tx_double_buffer_status = 0;
+    }
+
+    if ((ready_flags&0b00001000)){
+        GRID_PORT_W.tx_double_buffer_status = 0;
+    }   
+
+
     spi_slave_transaction_t *result;
+
+
+
+
     //spi_slave_get_trans_result(RCV_HOST, &result, 0);
     //grid_platform_printf("@ SPI COMPLETE: ");
 
 }
 
+
+uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length){
+
+    t.tx_buffer = GRID_PORT_N.tx_double_buffer;    
+    GRID_PORT_N.tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE-1] = 1;
+    //GRID_PORT_N.tx_double_buffer[0] = '$';
+
+    spi_slave_queue_trans(RCV_HOST, &t, portMAX_DELAY);
+    queue_state++;
+
+    spi_ready = 0;
+
+
+    
+    ets_printf("SPI queued %s %d, queue_state = %d\r\n", GRID_PORT_N.tx_double_buffer,  GRID_PORT_N.tx_double_buffer_status, queue_state);
+
+
+
+    return 0; // done
+
+}
 
 
 void grid_esp32_port_task(void *arg)
@@ -61,7 +118,7 @@ void grid_esp32_port_task(void *arg)
     spi_slave_interface_config_t slvcfg={
         .mode=0,
         .spics_io_num=GPIO_CS,
-        .queue_size=3,
+        .queue_size=5,
         .flags=0,
         .post_setup_cb=my_post_setup_cb,
         .post_trans_cb=my_post_trans_cb
@@ -92,19 +149,48 @@ void grid_esp32_port_task(void *arg)
     t.tx_buffer=sendbuf;
     t.rx_buffer=recvbuf;
 
+    uint8_t empty_tx_buffer[512] = {0};
+
+    empty_tx_buffer[0] = 'X';
+
+    spi_empty_transaction.length=512*8;
+    spi_empty_transaction.tx_buffer=empty_tx_buffer;
+    spi_empty_transaction.rx_buffer=recvbuf;
+
 
     static uint32_t loopcounter = 0;
     //ret=spi_slave_queue_trans(RCV_HOST, &t, 0);
     ret=spi_slave_queue_trans(RCV_HOST, &t, portMAX_DELAY);
+    queue_state++;
     //spi_ready = 0;
 
 
+    uint8_t pingcounter = 0;
 
     while (1) {
 
+        if (queue_state == 0){
+            spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, portMAX_DELAY);
+            queue_state++;
+        }
+
+
+       printf("LOOP %d\r\n", queue_state);
+
+        pingcounter++;
+        if (pingcounter%2 == 0){
+            ets_printf("TRY PING\r\n");
+
+            GRID_PORT_N.ping_flag = 1;
+
+            grid_port_ping_try_everywhere();
+            
+        }
+
+        
+        grid_port_process_outbound_usart(&GRID_PORT_N);
 
         if (spi_ready == 1){
-
 
 
 
@@ -113,10 +199,10 @@ void grid_esp32_port_task(void *arg)
 
            // grid_platform_printf("@ READY COMPLETE: ");
             spi_slave_transaction_t *trans = NULL;
-            spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
+           // spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
           //  grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
-            spi_ready = 0;
-            spi_slave_queue_trans(RCV_HOST, &t, 0);
+            
+            //spi_slave_queue_trans(RCV_HOST, &t, 0);
         }
 
         loopcounter++;
@@ -191,6 +277,9 @@ void grid_esp32_port_task(void *arg)
         xTaskResumeAll();
 
 
+        //grid_port_process_inbound(&GRID_PORT_N, 0);
+
+
 
 
 
@@ -205,6 +294,8 @@ void grid_esp32_port_task(void *arg)
         //vTaskSuspendAll();        
         grid_port_process_outbound_ui(&GRID_PORT_U);
         //xTaskResumeAll();
+
+
 
         //GRID_PORT_U.rx_buffer.read_start = 0;        
         //GRID_PORT_U.rx_buffer.read_stop = 0;  

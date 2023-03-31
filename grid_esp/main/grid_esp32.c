@@ -31,7 +31,7 @@ void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
         // Generate raw status information about each task.
         uxArraySize = uxTaskGetSystemState( pxTaskStatusArray, uxArraySize, &ulTotalRunTime );
 
-        grid_platform_printf("Task Count : %d Core: %d\r\n\r\n", uxArraySize, xPortGetCoreID());
+        //grid_platform_printf("Task Count : %d Core: %d\r\n\r\n", uxArraySize, xPortGetCoreID());
 
         // For percentage calculations.
         ulTotalRunTime /= 100UL;
@@ -98,7 +98,7 @@ void grid_esp32_housekeeping_task(void *arg)
 
         vTaskGetRunTimeStats2(stats);
         
-        ets_printf("%s\r\n\r\n", stats);
+        //ets_printf("%s\r\n\r\n", stats);
 
         vTaskDelay(pdMS_TO_TICKS(1000));
      
@@ -360,13 +360,6 @@ uint8_t grid_platform_erase_nvm_next(){
 
     ets_printf("ERASE WAS ALREADY DONE ON INIT!!!\r\n");
     
-    return 0; // done
-
-}
-
-uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length){
-
-    ets_printf("grid_platform_send_grid_message NOT IMPLEMENTED!!!\r\n");
     return 0; // done
 
 }

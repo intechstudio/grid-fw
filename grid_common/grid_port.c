@@ -799,6 +799,7 @@ void grid_port_init_all(void){
 }
 
 
+
 uint8_t grid_port_process_outbound_usart(struct grid_port* por){
 	
 	if (por->tx_double_buffer_status == 0){ // READY TO SEND MESSAGE, NO TRANSMISSION IS IN PROGRESS

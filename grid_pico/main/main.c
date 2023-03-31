@@ -20,6 +20,7 @@
 
 #include "hardware/uart.h"
 
+#include <string.h>
 
 #define TEST_SIZE 512
 
@@ -27,12 +28,13 @@ uint dma_tx;
 uint dma_rx; 
 
 
+
 static uint8_t txbuf[TEST_SIZE];
 static uint8_t rxbuf[TEST_SIZE];
 
 const uint CS_PIN = 17; // was 13
 
-
+uint8_t ready_flags = 255;
 
 
 // PIO SETUP CONSTANTS    
@@ -72,7 +74,32 @@ void dma_handler() {
     gpio_put(CS_PIN, 1);
     dma_hw->ints0 = 1u << dma_rx;
 
+    printf("FINISH %d\n", txbuf[499]);
+
 }
+
+uint8_t NORTH_tx_buffer[512] = {0};
+uint8_t NORTH_tx_is_busy = 0;
+uint16_t NORTH_tx_index = 0;
+
+
+uint8_t WEST_tx_buffer[] = {0x1, 0x0E, 0x07, 0x11, 0x34, 0x31, 0x66, 0x66, 0x66, 0x66, 0x04, 0x31, 0x38, 0x0A, 0x00};
+uint8_t WEST_tx_is_busy = 0;
+uint16_t WEST_tx_index = 0;
+
+int has_even_parity(uint8_t x){
+
+    uint8_t count = 0, i, b = 1;
+
+    for(i = 0; i < 8; i++){
+        if( x & (b << i) ){count++;}
+    }
+
+    if( (count % 2) ){return 0;}
+
+    return 1;
+}
+
 
 
 void init_pio_quad_uart(void){
@@ -200,12 +227,28 @@ int main()
 
         if (loopcouter2 > 5000){
             gpio_put(LED_PIN, 1);
+
         }
         if (loopcouter2 > 10000){
             loopcouter2 = 0;
             gpio_put(LED_PIN, 0);
 
 
+
+            //uart_tx_program_putc(GRID_TX_PIO, GRID_EAST_SM, 0b11011011);
+
+            uint32_t toSend = 0x01;
+
+            if (has_even_parity(toSend)){
+               
+                toSend |= 0b100000000;
+            }
+            else{
+            }
+
+            pio_sm_put_blocking(GRID_TX_PIO, GRID_EAST_SM, toSend);
+
+            uart_tx_program_putc(GRID_TX_PIO, GRID_SOUTH_SM, '2'+loopcouter);
 
 
 
@@ -226,8 +269,15 @@ int main()
 
                 if (spi_dma_done){
 
+                    for (uint8_t i = 0; i<10; i++){
 
-                    printf("RX: %s\n", rxbuf);
+                        printf(" 0x%02x ", rxbuf[i]);
+                    }
+
+                    printf("RX[499] = %d: %s ", rxbuf[499], rxbuf);
+
+
+
                     spi_dma_done = false;
 
 
@@ -238,12 +288,50 @@ int main()
                     spi_counter++;
 
 
-                    printf("Starting DMAs...\n");
+                    
+
+
+                    uint8_t busy_flags = rxbuf[499];
 
 
 
-                   spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
 
+
+                    if ((busy_flags&0b00000001)){
+
+                        NORTH_tx_is_busy = 1;
+                        NORTH_tx_index = 0;
+                        strcpy(NORTH_tx_buffer, rxbuf);
+                        
+                        ready_flags &= ~(1<<0); // clear north ready
+
+                    }
+
+                    if ((busy_flags&0b00000010)){
+                        ready_flags |= (1<<1);
+                    }
+
+                    if ((busy_flags&0b00000100)){
+                        ready_flags |= (1<<2);
+                    }
+
+                    if ((busy_flags&0b00001000)){
+                        ready_flags |= (1<<3);
+                    }   
+
+
+                    txbuf[499] = ready_flags;
+
+
+                    printf("START %d\n", txbuf[499]);
+
+
+                    spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
+
+                    if (WEST_tx_is_busy == 0){
+                        WEST_tx_is_busy = 1;
+                        WEST_tx_index = 0;
+                    }
 
 
                 }
@@ -257,10 +345,56 @@ int main()
         }
 
 
-        uart_tx_program_putc(GRID_TX_PIO, GRID_NORTH_SM, '0'+loopcouter);
-        uart_tx_program_putc(GRID_TX_PIO, GRID_EAST_SM, '1'+loopcouter);
-        uart_tx_program_putc(GRID_TX_PIO, GRID_SOUTH_SM, '2'+loopcouter);
-        uart_tx_program_putc(GRID_TX_PIO, GRID_WEST_SM, '3'+loopcouter);
+        if (NORTH_tx_is_busy){
+
+            
+
+            char c = NORTH_tx_buffer[NORTH_tx_index];
+            NORTH_tx_index++;
+
+            uart_tx_program_putc(GRID_TX_PIO, GRID_NORTH_SM, c);
+
+            if (c == '\n'){
+
+                NORTH_tx_is_busy = 0;
+
+                ready_flags |= (1<<0);
+            }
+
+        }
+
+
+        if (WEST_tx_is_busy){
+
+            
+
+            char c = WEST_tx_buffer[WEST_tx_index];
+            WEST_tx_index++;
+
+            uint32_t toSend = c;
+
+            if (has_even_parity(toSend)){
+               
+                toSend |= 0b100000000;
+            }
+            else{
+            }
+
+
+            pio_sm_put_blocking(GRID_TX_PIO, GRID_WEST_SM, toSend);
+           // uart_tx_program_putc(GRID_TX_PIO, GRID_WEST_SM, c);
+
+            if (c == '\n'){
+
+                WEST_tx_is_busy = 0;
+
+            }
+
+        }
+
+
+
+
 
 
         

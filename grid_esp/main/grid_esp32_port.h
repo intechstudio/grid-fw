@@ -10,6 +10,7 @@
 
 #include "esp_check.h"
 
+#include "rom/ets_sys.h" // For ets_printf
 
 #include <stdlib.h>
 #include <string.h>
@@ -28,6 +29,9 @@
 
 
 #include "driver/spi_slave.h"
+
+
+uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
 
 
 #ifdef __cplusplus
