@@ -726,7 +726,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action
 	}
 
 	if (0 == grid_lua_dostring(&grid_lua_state, temp)){
-		grid_port_debug_printf("LUA not OK, Failed to register action! EL: %d EV: %d", ele->index, eve->index);
+		grid_port_debug_printf("LUA not OK, Failed to register action! EL: %d EV: %d", ele->index, eve->type);
 	};
 
 	if (eve->cfg_default_flag == 0){ // NOT DEFAULT
