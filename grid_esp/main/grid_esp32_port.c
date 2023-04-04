@@ -225,7 +225,7 @@ void grid_esp32_port_task(void *arg)
         }
 
         //ESP_LOGI(TAG, "Ping!");
-        if (loopcounter%256 == 0){
+        if (loopcounter%64 == 0){
             vTaskSuspendAll();
             grid_protocol_send_heartbeat(); // Put ping into UI rx_buffer
             xTaskResumeAll();
