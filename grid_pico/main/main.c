@@ -43,11 +43,6 @@ const uint SERIAL_BAUD = 2000000UL;
 const PIO GRID_TX_PIO = pio0;
 const PIO GRID_RX_PIO = pio1;
 
-const uint GRID_NORTH_SM = 0;
-const uint GRID_EAST_SM  = 1;
-const uint GRID_SOUTH_SM = 2;
-const uint GRID_WEST_SM  = 3;
-
 
 // GRID UART PIN CONNECTIONS
 const uint GRID_NORTH_TX_PIN = 23;
@@ -78,54 +73,44 @@ void dma_handler() {
 
 }
 
-uint8_t NORTH_tx_buffer[512] = {0};
-uint8_t NORTH_tx_is_busy = 0;
-uint16_t NORTH_tx_index = 0;
+
+struct grid_port{
+
+    uint8_t port_index;
+    uint8_t tx_buffer[512];
+    uint8_t tx_is_busy;
+    uint16_t tx_index;
+
+};
 
 
-uint8_t WEST_tx_buffer[] = {0x1, 0x0E, 0x07, 0x11, 0x34, 0x31, 0x66, 0x66, 0x66, 0x66, 0x04, 0x31, 0x38, 0x0A, 0x00};
-uint8_t WEST_tx_is_busy = 0;
-uint16_t WEST_tx_index = 0;
+struct grid_port NORTH;
+struct grid_port EAST;
+struct grid_port SOUTH;
+struct grid_port WEST;
 
-int has_even_parity(uint8_t x){
+struct grid_port* port_array[4] = {&NORTH, &EAST, &SOUTH, &WEST}; 
 
-    uint8_t count = 0, i, b = 1;
+void grid_port_init(struct grid_port* port, uint8_t index){
 
-    for(i = 0; i < 8; i++){
-        if( x & (b << i) ){count++;}
+    port->port_index = index;
+
+    for (uint16_t i=0; i<512; i++){
+        port->tx_buffer[i] = 0;   
     }
 
-    if( (count % 2) ){return 0;}
-
-    return 1;
-}
-
-
-
-void init_pio_quad_uart(void){
-
-    // INITIALIZE PIO UART TX
-
-    uint offset_tx = pio_add_program(GRID_TX_PIO, &uart_tx_program);
-    uart_tx_program_init(GRID_TX_PIO, GRID_NORTH_SM, offset_tx, GRID_NORTH_TX_PIN, SERIAL_BAUD);
-    uart_tx_program_init(GRID_TX_PIO, GRID_EAST_SM, offset_tx, GRID_EAST_TX_PIN, SERIAL_BAUD);
-    uart_tx_program_init(GRID_TX_PIO, GRID_SOUTH_SM, offset_tx, GRID_SOUTH_TX_PIN, SERIAL_BAUD);
-    uart_tx_program_init(GRID_TX_PIO, GRID_WEST_SM, offset_tx, GRID_WEST_TX_PIN, SERIAL_BAUD);
-    
-
-    // INITIALIZE PIO UART RX
-
-    uint offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_program);
-    uart_rx_program_init(GRID_RX_PIO, GRID_NORTH_SM, offset_rx, GRID_NORTH_RX_PIN, SERIAL_BAUD);
-    uart_rx_program_init(GRID_RX_PIO, GRID_EAST_SM, offset_rx, GRID_EAST_RX_PIN, SERIAL_BAUD);
-    uart_rx_program_init(GRID_RX_PIO, GRID_SOUTH_SM, offset_rx, GRID_SOUTH_RX_PIN, SERIAL_BAUD);
-    uart_rx_program_init(GRID_RX_PIO, GRID_WEST_SM, offset_rx, GRID_WEST_RX_PIN, SERIAL_BAUD);
-
+    port->tx_index = 0;
+    port->tx_is_busy = false;
 
 }
+
+
 
 
 void spi_start_transfer(uint tx_channel, uint rx_channel, uint8_t* tx_buffer, uint8_t* rx_buffer, irq_handler_t callback){
+
+    spi_dma_done = false;
+    gpio_put(CS_PIN, 0);
 
     dma_channel_config c = dma_channel_get_default_config(tx_channel);
     channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
@@ -163,10 +148,7 @@ void spi_start_transfer(uint tx_channel, uint rx_channel, uint8_t* tx_buffer, ui
 }
 
 
-int main() 
-{
-
-    stdio_init_all();
+void spi_interface_init(){
     // SPI INIT
 
     // Setup COMMON stuff
@@ -174,30 +156,50 @@ int main()
     gpio_set_dir(CS_PIN, GPIO_OUT);
     gpio_put(CS_PIN, 1);
 
-
     spi_init(spi_default, 31250 * 1000);
-    gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
 
+    gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
-    dma_tx = dma_claim_unused_channel(true);
-    dma_rx = dma_claim_unused_channel(true);
 
     // Force loopback for testing (I don't have an SPI device handy)
     //hw_set_bits(&spi_get_hw(spi_default)->cr1, SPI_SSPCR1_LBM_BITS);
 
-    for (uint i = 0; i < TEST_SIZE; ++i) {
-        txbuf[i] = 'a'+i%20;
-    }
+
+
+    dma_tx = dma_claim_unused_channel(true);
+    dma_rx = dma_claim_unused_channel(true);
+
+}
+
+int main() 
+{
+
+    stdio_init_all();
+
+    uint offset_tx = pio_add_program(GRID_TX_PIO, &uart_tx_program);
+    uint offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_program);
+
+
+    grid_port_init(&NORTH,  0);
+    grid_port_init(&EAST,   1);
+    grid_port_init(&SOUTH,  2);
+    grid_port_init(&WEST,   3);
+
+
+
+    uart_tx_program_init(GRID_TX_PIO, 0, offset_tx, GRID_NORTH_TX_PIN, SERIAL_BAUD);
+    uart_tx_program_init(GRID_TX_PIO, 1, offset_tx, GRID_EAST_TX_PIN, SERIAL_BAUD);
+    uart_tx_program_init(GRID_TX_PIO, 2, offset_tx, GRID_SOUTH_TX_PIN, SERIAL_BAUD);
+    uart_tx_program_init(GRID_TX_PIO, 3, offset_tx, GRID_WEST_TX_PIN, SERIAL_BAUD);
+
+    uart_rx_program_init(GRID_RX_PIO, 0, offset_rx, GRID_NORTH_RX_PIN, SERIAL_BAUD);
+    uart_rx_program_init(GRID_RX_PIO, 1, offset_rx, GRID_EAST_RX_PIN, SERIAL_BAUD);
+    uart_rx_program_init(GRID_RX_PIO, 2, offset_rx, GRID_SOUTH_RX_PIN, SERIAL_BAUD);
+    uart_rx_program_init(GRID_RX_PIO, 3, offset_rx, GRID_WEST_RX_PIN, SERIAL_BAUD);
     
 
-    spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, NULL);
 
-    printf("Wait for RX complete...\n");
-    dma_channel_wait_for_finish_blocking(dma_rx);
-    if (dma_channel_is_busy(dma_tx)) {
-        panic("RX completed before TX");
-    }
 
 
     // Setup COMMON stuff
@@ -205,60 +207,35 @@ int main()
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
+    spi_interface_init();
+
+    for (uint i = 0; i < TEST_SIZE; ++i) {
+        txbuf[i] = 'a'+i%20;
+    }
 
 
-
-    // INITIALIZE PIO UART
-    init_pio_quad_uart();
-
-    uint8_t loopcouter = 0;    
-    
-    uint32_t loopcouter2 = 0;
-
-    
+    uint32_t loopcouter = 0;
     uint8_t spi_counter = 0;
 
     printf("Init Complete...\n");
 
     while (1) 
     {
+        
         loopcouter++;
-        loopcouter2++;
 
-        loopcouter%=5;
 
-        if (loopcouter2 > 5000){
+        if (loopcouter > 5000){
             gpio_put(LED_PIN, 1);
 
         }
-        if (loopcouter2 > 10000){
-            loopcouter2 = 0;
+        if (loopcouter > 10000){
+            loopcouter = 0;
             gpio_put(LED_PIN, 0);
 
 
 
-            //uart_tx_program_putc(GRID_TX_PIO, GRID_EAST_SM, 0b11011011);
-
-            uint32_t toSend = 0x01;
-
-            if (has_even_parity(toSend)){
-               
-                toSend |= 0b100000000;
-            }
-            else{
-            }
-
-            pio_sm_put_blocking(GRID_TX_PIO, GRID_EAST_SM, toSend);
-
-            uart_tx_program_putc(GRID_TX_PIO, GRID_SOUTH_SM, '2'+loopcouter);
-
-
-
-            // DMA TEST
-
-            // We set the outbound DMA to transfer from a memory buffer to the SPI transmit FIFO paced by the SPI TX FIFO DREQ
-            // The default is for the read address to increment every element (in this case 1 byte = DMA_SIZE_8)
-            // and for the write address to remain unchanged.
+            uart_tx_program_putc(GRID_TX_PIO, SOUTH.port_index, '2');
 
 
             if (dma_channel_is_busy(dma_rx)){
@@ -266,60 +243,32 @@ int main()
             }
             else{
 
-
-
-
                 if (spi_dma_done){
 
-                    for (uint8_t i = 0; i<10; i++){
-
-                        //printf(" 0x%02x ", rxbuf[i]);
-                    }
-
-                    //printf("RX[499] = %d: %s ", rxbuf[499], rxbuf);
-
-
-
-                    spi_dma_done = false;
-
-
-                    gpio_put(CS_PIN, 0);
 
 
                     sprintf(txbuf, "Test Count: %3d |||", spi_counter);
                     spi_counter++;
 
 
-                    
+                    uint8_t destination_flags = rxbuf[499];
 
+                    // iterate through all the ports
+                    for (uint8_t i = 0; i<4; i++){
+ 
+                        struct grid_port* port = port_array[i]; 
 
-                    uint8_t busy_flags = rxbuf[499];
+                        // copy message to the addressed port and set it to busy!
+                        if ((destination_flags&(1<<port->port_index))){
 
+                            port->tx_is_busy = 1;
+                            port->tx_index = 0;
+                            strcpy(port->tx_buffer, rxbuf);
 
-
-
-
-                    if ((busy_flags&0b00000001)){
-
-                        NORTH_tx_is_busy = 1;
-                        NORTH_tx_index = 0;
-                        strcpy(NORTH_tx_buffer, rxbuf);
-                        
-                        ready_flags &= ~(1<<0); // clear north ready
+                            ready_flags &= ~(1<<port->port_index); // clear ready
+                        }
 
                     }
-
-                    if ((busy_flags&0b00000010)){
-                        ready_flags |= (1<<1);
-                    }
-
-                    if ((busy_flags&0b00000100)){
-                        ready_flags |= (1<<2);
-                    }
-
-                    if ((busy_flags&0b00001000)){
-                        ready_flags |= (1<<3);
-                    }   
 
 
                     txbuf[499] = ready_flags;
@@ -330,10 +279,6 @@ int main()
 
                     spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
 
-                    if (WEST_tx_is_busy == 0){
-                        WEST_tx_is_busy = 1;
-                        WEST_tx_index = 0;
-                    }
 
 
                 }
@@ -347,41 +292,56 @@ int main()
         }
 
 
-        if (NORTH_tx_is_busy){
 
-            char c = NORTH_tx_buffer[NORTH_tx_index];
-            NORTH_tx_index++;
 
-            uart_tx_program_putc(GRID_TX_PIO, GRID_NORTH_SM, c);
 
-            if (c == '\n'){
+        // iterate through all the ports
+        for (uint8_t i = 0; i<4; i++){
 
-                NORTH_tx_is_busy = 0;
+            struct grid_port* port = port_array[i]; 
 
-                ready_flags |= (1<<0);
+
+            // if trasmission is in progress then send the next character
+            if (port->tx_is_busy){
+
+                char c = port->tx_buffer[port->tx_index];
+                port->tx_index++;
+
+                uart_tx_program_putc(GRID_TX_PIO, port->port_index, c);
+
+                if (c == '\n'){
+
+                    port->tx_is_busy = 0;
+
+                    ready_flags |= (1<<port->port_index);
+                }
+
             }
 
+
         }
+
+
 
 
         
-        if (uart_rx_program_is_available(GRID_RX_PIO, GRID_NORTH_SM)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, GRID_NORTH_SM);
+        if (uart_rx_program_is_available(GRID_RX_PIO, NORTH.port_index)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, NORTH.port_index);
             printf("N: %c\r\n", c);
         }
 
-        if (uart_rx_program_is_available(GRID_RX_PIO, GRID_EAST_SM)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, GRID_EAST_SM);
+        if (uart_rx_program_is_available(GRID_RX_PIO, EAST.port_index)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, EAST.port_index);
             printf("E: %c\r\n", c);
         }
 
-        if (uart_rx_program_is_available(GRID_RX_PIO, GRID_SOUTH_SM)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, GRID_SOUTH_SM);
+        if (uart_rx_program_is_available(GRID_RX_PIO, SOUTH.port_index)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, SOUTH.port_index);
             printf("S: %c\r\n", c);
         }
 
-        if (uart_rx_program_is_available(GRID_RX_PIO, GRID_WEST_SM)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, GRID_WEST_SM);
+        if (uart_rx_program_is_available(GRID_RX_PIO, WEST.port_index)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, WEST.port_index);
             printf("W: %c\r\n", c);
         }
 
