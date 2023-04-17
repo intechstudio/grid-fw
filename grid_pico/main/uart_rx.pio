@@ -52,6 +52,7 @@ start:
 bitloop:                ; the first data bit (12 cycles incl wait, set).
     in pins, 1          ; Shift data bit into ISR
     jmp x-- bitloop [6] ; Loop 8 times, each loop iteration is 8 cycles
+    set y, 7    [7]     ; SUKU Dummy delay while receiving parity bit
     jmp pin good_stop   ; Check stop bit (should be high)
 
     irq 4 rel           ; Either a framing error or a break. Set a sticky flag,
@@ -89,6 +90,16 @@ static inline char uart_rx_program_getc(PIO pio, uint sm) {
     while (pio_sm_is_rx_fifo_empty(pio, sm))
         tight_loop_contents();
     return (char)*rxfifo_shift;
+}
+
+static inline char uart_rx_program_is_available(PIO pio, uint sm) {
+
+    if (pio_sm_is_rx_fifo_empty(pio, sm)){
+        return false;
+    }
+    else{
+        return true;
+    }
 }
 
 %}

@@ -74,7 +74,7 @@ void dma_handler() {
     gpio_put(CS_PIN, 1);
     dma_hw->ints0 = 1u << dma_rx;
 
-    printf("FINISH %d\n", txbuf[499]);
+    //printf("FINISH %d\n", txbuf[499]);
 
 }
 
@@ -218,6 +218,8 @@ int main()
     
     uint8_t spi_counter = 0;
 
+    printf("Init Complete...\n");
+
     while (1) 
     {
         loopcouter++;
@@ -271,10 +273,10 @@ int main()
 
                     for (uint8_t i = 0; i<10; i++){
 
-                        printf(" 0x%02x ", rxbuf[i]);
+                        //printf(" 0x%02x ", rxbuf[i]);
                     }
 
-                    printf("RX[499] = %d: %s ", rxbuf[499], rxbuf);
+                    //printf("RX[499] = %d: %s ", rxbuf[499], rxbuf);
 
 
 
@@ -323,7 +325,7 @@ int main()
                     txbuf[499] = ready_flags;
 
 
-                    printf("START %d\n", txbuf[499]);
+                    //printf("START %d\n", txbuf[499]);
 
 
                     spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
@@ -347,8 +349,6 @@ int main()
 
         if (NORTH_tx_is_busy){
 
-            
-
             char c = NORTH_tx_buffer[NORTH_tx_index];
             NORTH_tx_index++;
 
@@ -362,39 +362,6 @@ int main()
             }
 
         }
-
-
-        if (WEST_tx_is_busy){
-
-            
-
-            char c = WEST_tx_buffer[WEST_tx_index];
-            WEST_tx_index++;
-
-            uint32_t toSend = c;
-
-            if (has_even_parity(toSend)){
-               
-                toSend |= 0b100000000;
-            }
-            else{
-            }
-
-
-            pio_sm_put_blocking(GRID_TX_PIO, GRID_WEST_SM, toSend);
-           // uart_tx_program_putc(GRID_TX_PIO, GRID_WEST_SM, c);
-
-            if (c == '\n'){
-
-                WEST_tx_is_busy = 0;
-
-            }
-
-        }
-
-
-
-
 
 
         

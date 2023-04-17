@@ -44,9 +44,6 @@ static void adc_init(adc_oneshot_unit_handle_t* adc1_handle, adc_oneshot_unit_ha
 
 }
 
-
-
-
 void grid_esp32_adc_task(void *arg)
 {
 
