@@ -93,6 +93,8 @@ struct grid_bucket{
 
 };
 
+#define BUCKET_BUFFER_LENGTH 500
+
 struct grid_port{
 
     uint8_t port_index;
@@ -111,13 +113,14 @@ struct grid_port{
 uint8_t bucket_array_length = BUCKET_ARRAY_LENGTH;
 struct grid_bucket bucket_array[BUCKET_ARRAY_LENGTH];
 
-struct grid_port NORTH;
-struct grid_port EAST;
-struct grid_port SOUTH;
-struct grid_port WEST;
 
-struct grid_port* port_array[4] = {&NORTH, &EAST, &SOUTH, &WEST}; 
 
+struct grid_port port_array[4]; 
+
+struct grid_port* NORTH = &port_array[0];
+struct grid_port* EAST  = &port_array[1];
+struct grid_port* SOUTH = &port_array[2];
+struct grid_port* WEST  = &port_array[3];
 
 
 void grid_port_init(struct grid_port* port, uint8_t index){
@@ -142,9 +145,9 @@ void grid_bucket_init(struct grid_bucket* bucket, uint8_t index){
 
     bucket->source_port_index = 255;
 
-    for (uint16_t i=0; i<512; i++){
-        bucket->buffer[i] = 0;
-    }
+    //for (uint16_t i=0; i<512; i++){
+    //    bucket->buffer[i] = 0;
+    //}
 
     bucket->buffer_index = 0;
 
@@ -170,12 +173,34 @@ struct grid_bucket* grid_bucket_find_next_match(struct grid_bucket* previous_buc
 
     }
     
-    printf("No bucket 4 u :(\r\n");
+    //printf("No bucket 4 u :(\r\n");
     return NULL;
 }
 
 struct grid_bucket* spi_active_bucket = NULL;
 
+
+void grid_bucket_put_character(struct grid_bucket* bucket, char next_char){
+
+    if (bucket == NULL){
+        
+        printf("PUTC failed: no bucket specified!\n");
+        return; 
+    }
+
+    if (bucket->buffer_index < BUCKET_BUFFER_LENGTH){
+
+        bucket->buffer[bucket->buffer_index] = next_char;
+        bucket->buffer_index++;
+
+    }
+    else{
+        printf("PUTC: no more space");
+    }
+
+
+
+}
 
 void spi_start_transfer(uint tx_channel, uint rx_channel, uint8_t* tx_buffer, uint8_t* rx_buffer, irq_handler_t callback){
 
@@ -242,6 +267,25 @@ void spi_interface_init(){
 
 }
 
+
+void grid_port_attach_bucket(struct grid_port* port){
+
+
+    port->active_bucket = grid_bucket_find_next_match(port->active_bucket, GRID_BUCKET_STATUS_EMPTY);
+
+    if (port->active_bucket != NULL){
+
+        port->active_bucket->status = GRID_BUCKET_STATUS_RECEIVING;
+
+    }
+    else{
+
+        printf("NULL BUCKET\r\n");
+    }
+
+
+}
+
 int main() 
 {
 
@@ -251,12 +295,34 @@ int main()
     uint offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_program);
 
 
-    grid_port_init(&NORTH,  0);
-    grid_port_init(&EAST,   1);
-    grid_port_init(&SOUTH,  2);
-    grid_port_init(&WEST,   3);
+    grid_port_init(NORTH,  0);
+    grid_port_init(EAST,   1);
+    grid_port_init(SOUTH,  2);
+    grid_port_init(WEST,   3);
+
+    for (uint8_t i=0; i<bucket_array_length; i++){
+        grid_bucket_init(&bucket_array[i], i);
+    }
 
 
+
+
+    for (uint8_t i=0; i<4; i++){
+
+        struct grid_port* port = &port_array[i];
+
+        grid_port_attach_bucket(port);
+
+    }
+
+
+    for (uint8_t i=0; i<4; i++){
+
+        struct grid_port* port = &port_array[i];
+
+        grid_bucket_put_character(port->active_bucket, 'X');
+
+    }
 
     uart_tx_program_init(GRID_TX_PIO, 0, offset_tx, GRID_NORTH_TX_PIN, SERIAL_BAUD);
     uart_tx_program_init(GRID_TX_PIO, 1, offset_tx, GRID_EAST_TX_PIN, SERIAL_BAUD);
@@ -280,23 +346,21 @@ int main()
     spi_interface_init();
 
     for (uint i = 0; i < TEST_SIZE; ++i) {
-        txbuf[i] = 'a'+i%20;
+        txbuf[i] = 0;
     }
 
 
     uint32_t loopcouter = 0;
     uint8_t spi_counter = 0;
 
-    while(0){
-
-        printf("Init Complete...\n"); 
-        uart_tx_program_putc(GRID_TX_PIO, SOUTH.port_index, '2');
-    }
 
     while (1) 
     {
         
         
+
+
+
         loopcouter++;
 
 
@@ -308,9 +372,7 @@ int main()
             loopcouter = 0;
             gpio_put(LED_PIN, 0);
 
-
-            printf("PUTC..\n"); 
-            uart_tx_program_putc(GRID_TX_PIO, SOUTH.port_index, '2');
+            uart_tx_program_putc(GRID_TX_PIO, SOUTH->port_index, '2');
 
 
             if (dma_channel_is_busy(dma_rx)){
@@ -320,18 +382,12 @@ int main()
 
                 if (spi_dma_done){
 
-
-
-                    sprintf(txbuf, "Test Count: %3d |||", spi_counter);
-                    spi_counter++;
-
-
                     uint8_t destination_flags = rxbuf[499];
 
                     // iterate through all the ports
                     for (uint8_t i = 0; i<4; i++){
  
-                        struct grid_port* port = port_array[i]; 
+                        struct grid_port* port = &port_array[i]; 
 
                         // copy message to the addressed port and set it to busy!
                         if ((destination_flags&(1<<port->port_index))){
@@ -345,14 +401,53 @@ int main()
 
                     }
 
+                    if (spi_active_bucket != NULL){
+                        // clear the bucket after use
+                        grid_bucket_init(spi_active_bucket, spi_active_bucket->index);
+                        spi_active_bucket = NULL;
 
-                    txbuf[499] = ready_flags;
+                    }
+
+
 
 
                     //printf("START %d\n", txbuf[499]);
 
+                    // try to send bucket content through SPI
 
-                    spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
+                    if (spi_active_bucket == NULL){
+
+
+                        spi_active_bucket = grid_bucket_find_next_match(spi_active_bucket, GRID_BUCKET_STATUS_FULL);        
+
+                        // found full bucket, send it through SPI
+                        if (spi_active_bucket != NULL) {
+
+                            printf("SPI: %s\r\n", spi_active_bucket->buffer);
+
+                            spi_active_bucket->buffer[499] = ready_flags;
+
+                            spi_start_transfer(dma_tx, dma_rx, spi_active_bucket->buffer, rxbuf, dma_handler);
+                            
+
+                        }
+                        else{
+                            // send empty packet with status flags
+
+                            txbuf[0] = 0;
+                            sprintf(txbuf, "DUMMY");
+                            txbuf[499] = ready_flags;
+    
+                            spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
+                                    
+                        }
+
+
+                    }
+
+
+
+
 
 
 
@@ -373,7 +468,7 @@ int main()
         // iterate through all the ports
         for (uint8_t i = 0; i<4; i++){
 
-            struct grid_port* port = port_array[i]; 
+            struct grid_port* port = &port_array[i]; 
 
 
             // if trasmission is in progress then send the next character
@@ -400,23 +495,40 @@ int main()
 
 
         
-        if (uart_rx_program_is_available(GRID_RX_PIO, NORTH.port_index)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, NORTH.port_index);
-            printf("N: %c\r\n", c);
+        if (uart_rx_program_is_available(GRID_RX_PIO, NORTH->port_index)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, NORTH->port_index);
+
+            grid_bucket_put_character(port_array[0].active_bucket, c);
+
+            if (c=='\n'){
+
+                // end of message, put termination zero character
+                grid_bucket_put_character(NORTH->active_bucket, '\0');
+
+
+                printf("NORTH: BUCKET READY %s\r\n", NORTH->active_bucket->buffer);
+                NORTH->active_bucket->status = GRID_BUCKET_STATUS_FULL;
+                NORTH->active_bucket->buffer_index = 0;
+                // clear bucket
+
+                grid_port_attach_bucket(&port_array[0]);
+
+            }
+            
         }
 
-        if (uart_rx_program_is_available(GRID_RX_PIO, EAST.port_index)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, EAST.port_index);
+        if (uart_rx_program_is_available(GRID_RX_PIO, EAST->port_index)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, EAST->port_index);
             printf("E: %c\r\n", c);
         }
 
-        if (uart_rx_program_is_available(GRID_RX_PIO, SOUTH.port_index)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, SOUTH.port_index);
+        if (uart_rx_program_is_available(GRID_RX_PIO, SOUTH->port_index)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, SOUTH->port_index);
             printf("S: %c\r\n", c);
         }
 
-        if (uart_rx_program_is_available(GRID_RX_PIO, WEST.port_index)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, WEST.port_index);
+        if (uart_rx_program_is_available(GRID_RX_PIO, WEST->port_index)){
+            char c = uart_rx_program_getc(GRID_RX_PIO, WEST->port_index);
             printf("W: %c\r\n", c);
         }
 

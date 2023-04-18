@@ -41,8 +41,8 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     spi_ready = 1;
 
-   // ets_printf("SPI[499] = %d\r\n", ((uint8_t*) trans->tx_buffer)[499]);
-    ets_printf("SPI[499] = %d\r\n", ((uint8_t*) trans->rx_buffer)[499]);
+    // ets_printf("SPI[499] = %d\r\n", ((uint8_t*) trans->tx_buffer)[499]);
+    //ets_printf("SPI[499] = %d\r\n", ((uint8_t*) trans->rx_buffer)[499]);
 
     uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[499];
 
@@ -89,7 +89,7 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
 
 
     
-    ets_printf("SPI queued %s %d, queue_state = %d\r\n", GRID_PORT_N.tx_double_buffer,  GRID_PORT_N.tx_double_buffer_status, queue_state);
+    //ets_printf("SPI queued %s %d, queue_state = %d\r\n", GRID_PORT_N.tx_double_buffer,  GRID_PORT_N.tx_double_buffer_status, queue_state);
 
 
 
@@ -171,17 +171,18 @@ void grid_esp32_port_task(void *arg)
 
     while (1) {
 
+
         if (queue_state == 0){
             spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, portMAX_DELAY);
             queue_state++;
         }
 
 
-       printf("LOOP %d\r\n", queue_state);
+        //printf("LOOP %d\r\n", queue_state);
 
         pingcounter++;
         if (pingcounter%10 == 0){
-            ets_printf("TRY PING\r\n");
+            //ets_printf("TRY PING\r\n");
 
             GRID_PORT_N.ping_flag = 1;
 
@@ -201,8 +202,11 @@ void grid_esp32_port_task(void *arg)
 
            // grid_platform_printf("@ READY COMPLETE: ");
             spi_slave_transaction_t *trans = NULL;
-           // spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
+            spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
+
+            ets_printf("RX %d: %s\r\n", ((uint8_t*) trans->rx_buffer)[499], ((uint8_t*) trans->rx_buffer));
           //  grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
+
             
             //spi_slave_queue_trans(RCV_HOST, &t, 0);
         }
