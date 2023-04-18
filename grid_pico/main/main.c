@@ -73,6 +73,25 @@ void dma_handler() {
 
 }
 
+enum grid_bucket_status_t{
+    
+    GRID_BUCKET_STATUS_EMPTY,
+    GRID_BUCKET_STATUS_RECEIVING,
+    GRID_BUCKET_STATUS_FULL,
+    GRID_BUCKET_STATUS_TRANSMITTING,
+    GRID_BUCKET_STATUS_DONE,
+
+};
+
+struct grid_bucket{
+
+    enum grid_bucket_status_t status;
+    uint8_t index;
+    uint8_t source_port_index;
+    uint8_t buffer[512];
+    uint16_t buffer_index;
+
+};
 
 struct grid_port{
 
@@ -81,8 +100,16 @@ struct grid_port{
     uint8_t tx_is_busy;
     uint16_t tx_index;
 
+    struct grid_bucket* active_bucket;
+
 };
 
+
+
+#define BUCKET_ARRAY_LENGTH 10
+
+uint8_t bucket_array_length = BUCKET_ARRAY_LENGTH;
+struct grid_bucket bucket_array[BUCKET_ARRAY_LENGTH];
 
 struct grid_port NORTH;
 struct grid_port EAST;
@@ -90,6 +117,8 @@ struct grid_port SOUTH;
 struct grid_port WEST;
 
 struct grid_port* port_array[4] = {&NORTH, &EAST, &SOUTH, &WEST}; 
+
+
 
 void grid_port_init(struct grid_port* port, uint8_t index){
 
@@ -102,9 +131,50 @@ void grid_port_init(struct grid_port* port, uint8_t index){
     port->tx_index = 0;
     port->tx_is_busy = false;
 
+    port->active_bucket = NULL;
+
 }
 
+void grid_bucket_init(struct grid_bucket* bucket, uint8_t index){
 
+    bucket->status = GRID_BUCKET_STATUS_EMPTY;
+    bucket->index = index;
+
+    bucket->source_port_index = 255;
+
+    for (uint16_t i=0; i<512; i++){
+        bucket->buffer[i] = 0;
+    }
+
+    bucket->buffer_index = 0;
+
+}
+
+// find next bucket, so UART can safely receive data into it
+struct grid_bucket* grid_bucket_find_next_match(struct grid_bucket* previous_bucket, enum grid_bucket_status_t expected_status){
+
+    // if no previous bucket was given then start from the end of the array (+1 will make this the beginning of the array later)
+    if (previous_bucket == NULL){
+        previous_bucket = &bucket_array[bucket_array_length-1];
+    } 
+
+    for (uint8_t i=0; i<bucket_array_length; i++){
+
+        uint8_t next_index = (previous_bucket->index+i+1)%bucket_array_length;
+
+        if (bucket_array[next_index].status == expected_status){
+
+            printf("Bucket 4 u : %d\r\n", next_index);
+            return &bucket_array[next_index];
+        }
+
+    }
+    
+    printf("No bucket 4 u :(\r\n");
+    return NULL;
+}
+
+struct grid_bucket* spi_active_bucket = NULL;
 
 
 void spi_start_transfer(uint tx_channel, uint rx_channel, uint8_t* tx_buffer, uint8_t* rx_buffer, irq_handler_t callback){
@@ -217,10 +287,15 @@ int main()
     uint32_t loopcouter = 0;
     uint8_t spi_counter = 0;
 
-    printf("Init Complete...\n");
+    while(0){
+
+        printf("Init Complete...\n"); 
+        uart_tx_program_putc(GRID_TX_PIO, SOUTH.port_index, '2');
+    }
 
     while (1) 
     {
+        
         
         loopcouter++;
 
@@ -234,7 +309,7 @@ int main()
             gpio_put(LED_PIN, 0);
 
 
-
+            printf("PUTC..\n"); 
             uart_tx_program_putc(GRID_TX_PIO, SOUTH.port_index, '2');
 
 
