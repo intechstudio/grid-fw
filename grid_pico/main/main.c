@@ -356,13 +356,8 @@ int main()
 
     while (1) 
     {
-        
-        
-
-
 
         loopcouter++;
-
 
         if (loopcouter > 5000){
             gpio_put(LED_PIN, 1);
@@ -373,7 +368,6 @@ int main()
             gpio_put(LED_PIN, 0);
 
             uart_tx_program_putc(GRID_TX_PIO, SOUTH->port_index, '2');
-
 
             if (dma_channel_is_busy(dma_rx)){
 
@@ -407,8 +401,6 @@ int main()
                         spi_active_bucket = NULL;
 
                     }
-
-
 
 
                     //printf("START %d\n", txbuf[499]);
@@ -445,31 +437,18 @@ int main()
 
                     }
 
-
-
-
-
-
-
                 }
-
-
-
 
             }
 
-
         }
 
-
-
-
+        /* ==================================  UART TRANSMIT  =================================*/
 
         // iterate through all the ports
         for (uint8_t i = 0; i<4; i++){
 
             struct grid_port* port = &port_array[i]; 
-
 
             // if trasmission is in progress then send the next character
             if (port->tx_is_busy){
@@ -488,54 +467,40 @@ int main()
 
             }
 
-
         }
 
+        /* ==================================  UART RECEIVE  =================================*/
+
+        // iterate through all the ports
+        for (uint8_t i = 0; i<4; i++){
+
+            struct grid_port* port = &port_array[i]; 
+
+            if (uart_rx_program_is_available(GRID_RX_PIO, port->port_index)){
+                char c = uart_rx_program_getc(GRID_RX_PIO, port->port_index);
+
+                grid_bucket_put_character(port->active_bucket, c);
+
+                if (c=='\n'){
+
+                    // end of message, put termination zero character
+                    grid_bucket_put_character(port->active_bucket, '\0');
 
 
+                    printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
+                    port->active_bucket->status = GRID_BUCKET_STATUS_FULL;
+                    port->active_bucket->buffer_index = 0;
+                    // clear bucket
 
-        
-        if (uart_rx_program_is_available(GRID_RX_PIO, NORTH->port_index)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, NORTH->port_index);
+                    grid_port_attach_bucket(port);
 
-            grid_bucket_put_character(port_array[0].active_bucket, c);
-
-            if (c=='\n'){
-
-                // end of message, put termination zero character
-                grid_bucket_put_character(NORTH->active_bucket, '\0');
-
-
-                printf("NORTH: BUCKET READY %s\r\n", NORTH->active_bucket->buffer);
-                NORTH->active_bucket->status = GRID_BUCKET_STATUS_FULL;
-                NORTH->active_bucket->buffer_index = 0;
-                // clear bucket
-
-                grid_port_attach_bucket(&port_array[0]);
-
+                }
+                
             }
-            
+
+
         }
-
-        if (uart_rx_program_is_available(GRID_RX_PIO, EAST->port_index)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, EAST->port_index);
-            printf("E: %c\r\n", c);
-        }
-
-        if (uart_rx_program_is_available(GRID_RX_PIO, SOUTH->port_index)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, SOUTH->port_index);
-            printf("S: %c\r\n", c);
-        }
-
-        if (uart_rx_program_is_available(GRID_RX_PIO, WEST->port_index)){
-            char c = uart_rx_program_getc(GRID_RX_PIO, WEST->port_index);
-            printf("W: %c\r\n", c);
-        }
-
-
-
-
-
+        
         
     }
 }

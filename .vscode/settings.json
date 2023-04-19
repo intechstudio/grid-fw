@@ -52,15 +52,17 @@
                 "name": "PICO Terminal",
                 "color": "white",
                 "singleInstance": true,
-                "command": "podman run -it -v $PWD/grid_pico:/pico/project -w /pico/project atoktoto/pico-builder:latest",
+                "command": "podman run -it -v $PWD:/pico/project -w /pico/project/grid_pico atoktoto/pico-builder:latest",
                 // mkdir -p ./build && cd build && cmake .. && make
+                // apt update && apt install xxd
                 // git clean -dxf
+                // clear && make && xxd -i ./main/main.bin > ../../grid_esp/main/pico_firmware.h && sed -i 's/__main_main_bin/pico_firmware/g; s/unsigned/const unsigned/g' ../../grid_esp/main/pico_firmware.h
             },
             {
                 "name": "PICO Convert",
                 "color": "white",
                 "singleInstance": true,
-                "command": "xxd -i ./grid_pico/build/main/main.bin > ./grid_esp/main/pico_firmware.h && sed -i '1i\\const \\\\' ./grid_esp/main/pico_firmware.h",
+                "command": "xxd -i ./grid_pico/build/main/main.bin > ./grid_esp/main/pico_firmware.h && sed -i 's/__grid_pico_build_main_main_bin/pico_firmware/g; s/unsigned/const unsigned/g' ./grid_esp/main/pico_firmware.h",
             }
         ]
     }

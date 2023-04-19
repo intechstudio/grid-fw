@@ -80,7 +80,6 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
 
     t.tx_buffer = GRID_PORT_N.tx_double_buffer;    
     GRID_PORT_N.tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE-1] = 1;
-    //GRID_PORT_N.tx_double_buffer[0] = '$';
 
     spi_slave_queue_trans(RCV_HOST, &t, portMAX_DELAY);
     queue_state++;
@@ -229,7 +228,7 @@ void grid_esp32_port_task(void *arg)
         }
 
         //ESP_LOGI(TAG, "Ping!");
-        if (loopcounter%64 == 0){
+        if (loopcounter%32 == 0){
             vTaskSuspendAll();
             grid_protocol_send_heartbeat(); // Put ping into UI rx_buffer
             xTaskResumeAll();
