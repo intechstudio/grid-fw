@@ -28,7 +28,9 @@
 
 #define ADC_TASK_PRIORITY 4
 #define LED_TASK_PRIORITY 5
-#define NVM_TASK_PRIORITY 2
+
+// NVM must not be preemted by Port task
+#define NVM_TASK_PRIORITY 1
 #define PORT_TASK_PRIORITY 3
 
 
@@ -39,7 +41,6 @@
 #include "grid_esp32_swd.h"
 #include "grid_esp32_port.h"
 #include "grid_esp32_nvm.h"
-
 
 
 #include "esp_log.h"
@@ -299,6 +300,11 @@ void app_main(void)
     SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
 
+    SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
+
+    xSemaphoreGive(nvm_or_port);
+
+
     // GRID MODULE INITIALIZATION SEQUENCE
 
 
@@ -359,7 +365,7 @@ void app_main(void)
     xTaskCreatePinnedToCore(grid_esp32_port_task,
                             "port",
                             4096*10,
-                            (void *)signaling_sem,
+                            (void *)nvm_or_port,
                             PORT_TASK_PRIORITY,
                             &port_task_hdl,
                             0);
@@ -382,7 +388,7 @@ void app_main(void)
     xTaskCreatePinnedToCore(grid_esp32_nvm_task,
                             "nvm",
                             1024*5,
-                            (void *)signaling_sem,
+                            (void *)nvm_or_port,
                             NVM_TASK_PRIORITY,
                             &nvm_task_hdl,
                             0);

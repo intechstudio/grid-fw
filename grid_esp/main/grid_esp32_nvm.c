@@ -341,28 +341,42 @@ void grid_esp32_nvm_task(void *arg)
 
     while (1) {
 
-	
+
+        if (xSemaphoreTake(signaling_sem, portMAX_DELAY) == pdTRUE){
+
         // NVM BULK STORE
-        if (grid_ui_bulk_pagestore_is_in_progress(&grid_ui_state)){
-            
-            grid_ui_bulk_pagestore_next(&grid_ui_state);
-        }
+            if (grid_ui_bulk_pagestore_is_in_progress(&grid_ui_state)){
+                
+                grid_ui_bulk_pagestore_next(&grid_ui_state);
+            }
 
-        if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
-            
-            grid_ui_bulk_pageread_next(&grid_ui_state);
-        }
 
-        if (grid_ui_bulk_nvmerase_is_in_progress(&grid_ui_state)){
-            
-            grid_ui_bulk_nvmerase_next(&grid_ui_state);
-        }
+            if (GRID_PORT_U.rx_double_buffer_status == 0){
 
-        if (grid_ui_bulk_pageclear_is_in_progress(&grid_ui_state)){
-            
-            grid_ui_bulk_pageclear_next(&grid_ui_state);
-        }
+                if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
 
+                    grid_ui_bulk_pageread_next(&grid_ui_state);
+
+                }
+            }
+
+
+            if (grid_ui_bulk_nvmerase_is_in_progress(&grid_ui_state)){
+                
+                grid_ui_bulk_nvmerase_next(&grid_ui_state);
+            }
+
+            if (grid_ui_bulk_pageclear_is_in_progress(&grid_ui_state)){
+                
+                grid_ui_bulk_pageclear_next(&grid_ui_state);
+            }
+
+
+            xSemaphoreGive(signaling_sem);
+
+        }
+	
+    
 
         vTaskDelay(pdMS_TO_TICKS(10));
 

@@ -100,6 +100,10 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
 void grid_esp32_port_task(void *arg)
 {
 
+
+    SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
+
+
     uint8_t n=0;
     esp_err_t ret;
 
@@ -170,190 +174,188 @@ void grid_esp32_port_task(void *arg)
 
     while (1) {
 
-
-        if (queue_state == 0){
-            spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, portMAX_DELAY);
-            queue_state++;
-        }
+        if (xSemaphoreTake(signaling_sem, portMAX_DELAY) == pdTRUE){
 
 
-        //printf("LOOP %d\r\n", queue_state);
+            if (queue_state == 0){
+                spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, portMAX_DELAY);
+                queue_state++;
+            }
 
-        pingcounter++;
-        if (pingcounter%10 == 0){
-            //ets_printf("TRY PING\r\n");
 
-            GRID_PORT_N.ping_flag = 1;
 
-            grid_port_ping_try_everywhere();
-            
-        }
+
+            if (spi_ready == 1){
+
+
+
+                n++;
+                sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
+
+
+
+            // grid_platform_printf("@ READY COMPLETE: ");
+                spi_slave_transaction_t *trans = NULL;
+                spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
+
+                ets_printf("RX status,source: %d,%d : %s\r\n", ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index], ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index], ((uint8_t*) trans->rx_buffer));
+            //  grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
+
+
+
+
+                // figure out where the message came from (which port)
+                uint8_t source_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
+
+                struct grid_port* port = NULL;
+
+
+                if ((source_flags&0b00000001)){
+                    port = &GRID_PORT_N;
+                }
+
+                if ((source_flags&0b00000010)){
+                    port = &GRID_PORT_E;
+                }
+
+                if ((source_flags&0b00000100)){
+                    port = &GRID_PORT_S;
+                }
+
+                if ((source_flags&0b00001000)){
+                    port = &GRID_PORT_W;
+                }   
+
+                if (port != NULL){
+                    // we found the port in question
+
+                    ets_printf("Decode from %lx %lx\r\n", port, &GRID_PORT_N);
+
+
+
+
+                    port->rx_double_buffer_read_start_index = 0;
+                    strcpy(port->rx_double_buffer, (char*) trans->rx_buffer);
+
+                    grid_port_receive_decode(port, strlen((char*) trans->rx_buffer));
+
+                }
+
+
+                //spi_slave_queue_trans(RCV_HOST, &t, 0);
+            }
+
+            loopcounter++;
 
         
-        grid_port_process_outbound_usart(&GRID_PORT_N);
-
-        if (spi_ready == 1){
-
-
-
-            n++;
-            sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
-
-
-
-           // grid_platform_printf("@ READY COMPLETE: ");
-            spi_slave_transaction_t *trans = NULL;
-            spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
-
-            ets_printf("RX status,source: %d,%d : %s\r\n", ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index], ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index], ((uint8_t*) trans->rx_buffer));
-          //  grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
-
-
-
-
-            // figure out where the message came from (which port)
-            uint8_t source_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
-
-            struct grid_port* port = NULL;
-
-
-            if ((source_flags&0b00000001)){
-                port = &GRID_PORT_N;
-            }
-
-            if ((source_flags&0b00000010)){
-                port = &GRID_PORT_E;
-            }
-
-            if ((source_flags&0b00000100)){
-                port = &GRID_PORT_S;
-            }
-
-            if ((source_flags&0b00001000)){
-                port = &GRID_PORT_W;
-            }   
-
-            if (port != NULL){
-                // we found the port in question
-
-                ets_printf("Decode from %lx %lx\r\n", port, &GRID_PORT_N);
-
-
-
-
-                port->rx_double_buffer_read_start_index = 0;
-                strcpy(port->rx_double_buffer, (char*) trans->rx_buffer);
-
-                grid_port_receive_decode(port, strlen((char*) trans->rx_buffer));
-
-            }
-
-
-            //spi_slave_queue_trans(RCV_HOST, &t, 0);
-        }
-
-        loopcounter++;
-
-	
-        if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()){
-        
-            printf("USB CONNECTED\r\n\r\n");
-            printf("HWCFG %ld\r\n", grid_sys_get_hwcfg(&grid_sys_state));
-
-            grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
-            grid_led_set_alert_frequency(&grid_led_state, -2);	
-            grid_led_set_alert_phase(&grid_led_state, 200);	
+            if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()){
             
-            grid_msg_set_heartbeat_type(&grid_msg_state, 1);
+                printf("USB CONNECTED\r\n\r\n");
+                printf("HWCFG %ld\r\n", grid_sys_get_hwcfg(&grid_sys_state));
 
-    
-        }
+                grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
+                grid_led_set_alert_frequency(&grid_led_state, -2);	
+                grid_led_set_alert_phase(&grid_led_state, 200);	
+                
+                grid_msg_set_heartbeat_type(&grid_msg_state, 1);
 
-        //ESP_LOGI(TAG, "Ping!");
-        if (loopcounter%32 == 0){
-            vTaskSuspendAll();
-            grid_protocol_send_heartbeat(); // Put ping into UI rx_buffer
-            xTaskResumeAll();
-        }
+        
+            }
 
-
-        if (loopcounter%4 == 0){
-
-            if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
-
-                //CRITICAL_SECTION_ENTER()
+            //ESP_LOGI(TAG, "Ping!");
+            if (loopcounter%32 == 0){
                 vTaskSuspendAll();
-                grid_port_process_ui_local_UNSAFE(&grid_ui_state);
+                grid_protocol_send_heartbeat(); // Put ping into UI rx_buffer
                 xTaskResumeAll();
-                //CRITICAL_SECTION_LEAVE()
-            
             }
-			if (grid_ui_event_count_istriggered(&grid_ui_state)){
-
-				grid_ui_state.port->cooldown += 3;	
-
-				//CRITICAL_SECTION_ENTER()
-                vTaskSuspendAll();
-				grid_port_process_ui_UNSAFE(&grid_ui_state); 
-                xTaskResumeAll();
-				//CRITICAL_SECTION_LEAVE()
-			}
 
 
+            if (loopcounter%4 == 0){
+
+                if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
+
+                    //CRITICAL_SECTION_ENTER()
+                    vTaskSuspendAll();
+                    grid_port_process_ui_local_UNSAFE(&grid_ui_state);
+                    xTaskResumeAll();
+                    //CRITICAL_SECTION_LEAVE()
+                
+                }
+                if (grid_ui_event_count_istriggered(&grid_ui_state)){
+
+                    grid_ui_state.port->cooldown += 3;	
+
+                    //CRITICAL_SECTION_ENTER()
+                    vTaskSuspendAll();
+                    grid_port_process_ui_UNSAFE(&grid_ui_state); 
+                    xTaskResumeAll();
+                    //CRITICAL_SECTION_LEAVE()
+                }
+
+
+            }
+
+
+
+            grid_port_receive_task(&GRID_PORT_H); // USB
+            grid_port_receive_task(&GRID_PORT_U); // UI
+            
+
+
+            // INBOUND
+
+
+            grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback , put rx_buffer content to each CONNECTED port's tx_buffer
+
+            
+            
+            
+            // ... GRID UART PORTS ...
+            
+
+            grid_port_process_inbound(&GRID_PORT_H, 0);
+
+
+
+            //grid_port_process_inbound(&GRID_PORT_N, 0);
+
+
+
+            grid_port_process_inbound(&GRID_PORT_N, 0);
+
+
+            // OUTBOUND
+            // ... GRID UART PORTS ...
+            
+
+            grid_port_process_outbound_usb(&GRID_PORT_H); 
+
+
+
+        
+            grid_port_process_outbound_ui(&GRID_PORT_U);
+
+
+
+            //printf("LOOP %d\r\n", queue_state);
+
+            pingcounter++;
+            if (pingcounter%10 == 0){
+                //ets_printf("TRY PING\r\n");
+
+                GRID_PORT_N.ping_flag = 1;
+
+                grid_port_ping_try_everywhere();
+                
+            }
+
+            
+            grid_port_process_outbound_usart(&GRID_PORT_N);
+
+        
+            xSemaphoreGive(signaling_sem);
+            
         }
-
-
-
-	    grid_port_receive_task(&GRID_PORT_H); // USB
-	    grid_port_receive_task(&GRID_PORT_U); // UI
-        
-
-
-        // INBOUND
-
-        vTaskSuspendAll();
-        grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback , put rx_buffer content to each CONNECTED port's tx_buffer
-        xTaskResumeAll();
-        
-        
-        
-        // ... GRID UART PORTS ...
-        
-        vTaskSuspendAll();
-        grid_port_process_inbound(&GRID_PORT_H, 0);
-        xTaskResumeAll();
-
-
-        //grid_port_process_inbound(&GRID_PORT_N, 0);
-
-
-
-        grid_port_process_inbound(&GRID_PORT_N, 0);
-
-
-        // OUTBOUND
-        // ... GRID UART PORTS ...
-        
-        //vTaskSuspendAll();
-        grid_port_process_outbound_usb(&GRID_PORT_H); 
-        //xTaskResumeAll();
-
-
-        //vTaskSuspendAll();        
-        grid_port_process_outbound_ui(&GRID_PORT_U);
-        //xTaskResumeAll();
-
-
-
-        //GRID_PORT_U.rx_buffer.read_start = 0;        
-        //GRID_PORT_U.rx_buffer.read_stop = 0;  
-
-    
-
-        //GRID_PORT_H.rx_buffer.read_start = 0;        
-        //GRID_PORT_H.rx_buffer.write_start = 0;  
-
-        //grid_platform_usb_serial_write(TAG, strlen(TAG));
 
         vTaskDelay(pdMS_TO_TICKS(10));
 

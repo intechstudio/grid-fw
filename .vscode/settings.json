@@ -7,7 +7,9 @@
         "task.h": "c",
         "ledc.h": "c",
         "esp_timer.h": "c",
-        "cstring": "c"
+        "cstring": "c",
+        "string.h": "c",
+        "complex": "c"
     },   
     "files.exclude": {
         ".archive": true,
