@@ -199,6 +199,8 @@ void grid_esp32_port_task(void *arg)
             n++;
             sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
 
+
+
            // grid_platform_printf("@ READY COMPLETE: ");
             spi_slave_transaction_t *trans = NULL;
             spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
@@ -206,7 +208,47 @@ void grid_esp32_port_task(void *arg)
             ets_printf("RX status,source: %d,%d : %s\r\n", ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index], ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index], ((uint8_t*) trans->rx_buffer));
           //  grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
 
-            
+
+
+
+            // figure out where the message came from (which port)
+            uint8_t source_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
+
+            struct grid_port* port = NULL;
+
+
+            if ((source_flags&0b00000001)){
+                port = &GRID_PORT_N;
+            }
+
+            if ((source_flags&0b00000010)){
+                port = &GRID_PORT_E;
+            }
+
+            if ((source_flags&0b00000100)){
+                port = &GRID_PORT_S;
+            }
+
+            if ((source_flags&0b00001000)){
+                port = &GRID_PORT_W;
+            }   
+
+            if (port != NULL){
+                // we found the port in question
+
+                ets_printf("Decode from %lx %lx\r\n", port, &GRID_PORT_N);
+
+
+
+
+                port->rx_double_buffer_read_start_index = 0;
+                strcpy(port->rx_double_buffer, (char*) trans->rx_buffer);
+
+                grid_port_receive_decode(port, strlen((char*) trans->rx_buffer));
+
+            }
+
+
             //spi_slave_queue_trans(RCV_HOST, &t, 0);
         }
 

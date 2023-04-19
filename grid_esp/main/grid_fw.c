@@ -381,7 +381,7 @@ void app_main(void)
     //Create the class driver task
     xTaskCreatePinnedToCore(grid_esp32_nvm_task,
                             "nvm",
-                            1024,
+                            1024*5,
                             (void *)signaling_sem,
                             NVM_TASK_PRIORITY,
                             &nvm_task_hdl,

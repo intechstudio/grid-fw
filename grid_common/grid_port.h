@@ -97,7 +97,7 @@ extern volatile struct grid_port GRID_PORT_H;
 
 
 void grid_port_receive_task(struct grid_port* por);
-void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint16_t len);
+void grid_port_receive_decode(struct grid_port* por, uint16_t len);
 
 uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback);
 

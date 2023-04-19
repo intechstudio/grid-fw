@@ -146,7 +146,7 @@ void grid_port_receive_task(struct grid_port* por){
 	}
 	
 
-	grid_port_receive_decode(por, por->rx_double_buffer_read_start_index, length);
+	grid_port_receive_decode(por, length);
 	
 
 	
@@ -159,7 +159,7 @@ void grid_port_receive_task(struct grid_port* por){
 
 
 
-void grid_port_receive_decode(struct grid_port* por, uint16_t startcommand, uint16_t len){
+void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 
 
 	uint8_t error_flag = 0;
