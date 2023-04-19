@@ -41,10 +41,8 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     spi_ready = 1;
 
-    // ets_printf("SPI[499] = %d\r\n", ((uint8_t*) trans->tx_buffer)[499]);
-    //ets_printf("SPI[499] = %d\r\n", ((uint8_t*) trans->rx_buffer)[499]);
 
-    uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[499];
+    uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
 
 
 
@@ -79,7 +77,9 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length){
 
     t.tx_buffer = GRID_PORT_N.tx_double_buffer;    
-    GRID_PORT_N.tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE-1] = 1;
+
+    GRID_PORT_N.tx_double_buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<(direction-GRID_CONST_NORTH));
+
 
     spi_slave_queue_trans(RCV_HOST, &t, portMAX_DELAY);
     queue_state++;
@@ -133,26 +133,26 @@ void grid_esp32_port_task(void *arg)
     ret=spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
     assert(ret==ESP_OK);
 
-    WORD_ALIGNED_ATTR char sendbuf[512+1]={0};
-    WORD_ALIGNED_ATTR char recvbuf[512+1]={0};
+    WORD_ALIGNED_ATTR char sendbuf[GRID_PARAMETER_SPI_TRANSACTION_length+1]={0};
+    WORD_ALIGNED_ATTR char recvbuf[GRID_PARAMETER_SPI_TRANSACTION_length+1]={0};
     
     memset(&t, 0, sizeof(t));
 
     //Clear receive buffer, set send buffer to something sane
-    memset(recvbuf, 0xA5, 512+1);        
+    memset(recvbuf, 0xA5, GRID_PARAMETER_SPI_TRANSACTION_length+1);        
     sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
 
 
-    //Set up a transaction of 512 bytes to send/receive
-    t.length=512*8;
+    //Set up a transaction of GRID_PARAMETER_SPI_TRANSACTION_length bytes to send/receive
+    t.length=GRID_PARAMETER_SPI_TRANSACTION_length*8;
     t.tx_buffer=sendbuf;
     t.rx_buffer=recvbuf;
 
-    uint8_t empty_tx_buffer[512] = {0};
+    uint8_t empty_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
     empty_tx_buffer[0] = 'X';
 
-    spi_empty_transaction.length=512*8;
+    spi_empty_transaction.length=GRID_PARAMETER_SPI_TRANSACTION_length*8;
     spi_empty_transaction.tx_buffer=empty_tx_buffer;
     spi_empty_transaction.rx_buffer=recvbuf;
 
@@ -203,7 +203,7 @@ void grid_esp32_port_task(void *arg)
             spi_slave_transaction_t *trans = NULL;
             spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
 
-            ets_printf("RX %d: %s\r\n", ((uint8_t*) trans->rx_buffer)[499], ((uint8_t*) trans->rx_buffer));
+            ets_printf("RX status,source: %d,%d : %s\r\n", ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index], ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index], ((uint8_t*) trans->rx_buffer));
           //  grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
 
             

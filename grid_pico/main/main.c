@@ -20,17 +20,18 @@
 
 #include "hardware/uart.h"
 
+#include "../../grid_common/grid_protocol.h"
+
 #include <string.h>
 
-#define TEST_SIZE 512
 
 uint dma_tx;
 uint dma_rx; 
 
 
 
-static uint8_t txbuf[TEST_SIZE];
-static uint8_t rxbuf[TEST_SIZE];
+static uint8_t txbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
+static uint8_t rxbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
 
 const uint CS_PIN = 17; // was 13
 
@@ -69,7 +70,7 @@ void dma_handler() {
     gpio_put(CS_PIN, 1);
     dma_hw->ints0 = 1u << dma_rx;
 
-    //printf("FINISH %d\n", txbuf[499]);
+    //printf("FINISH %d\n", txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
 
 }
 
@@ -213,7 +214,7 @@ void spi_start_transfer(uint tx_channel, uint rx_channel, uint8_t* tx_buffer, ui
     dma_channel_configure(tx_channel, &c,
                         &spi_get_hw(spi_default)->dr, // write address
                         tx_buffer, // read address
-                        TEST_SIZE, // element count (each element is of size transfer_data_size)
+                        GRID_PARAMETER_SPI_TRANSACTION_length, // element count (each element is of size transfer_data_size)
                         false); // don't start yet
 
 
@@ -225,7 +226,7 @@ void spi_start_transfer(uint tx_channel, uint rx_channel, uint8_t* tx_buffer, ui
     dma_channel_configure(rx_channel, &c,
                         rx_buffer, // write address
                         &spi_get_hw(spi_default)->dr, // read address
-                        TEST_SIZE, // element count (each element is of size transfer_data_size)
+                        GRID_PARAMETER_SPI_TRANSACTION_length, // element count (each element is of size transfer_data_size)
                         false); // don't start yet
 
 
@@ -276,6 +277,7 @@ void grid_port_attach_bucket(struct grid_port* port){
     if (port->active_bucket != NULL){
 
         port->active_bucket->status = GRID_BUCKET_STATUS_RECEIVING;
+        port->active_bucket->source_port_index = port->port_index;
 
     }
     else{
@@ -345,7 +347,7 @@ int main()
 
     spi_interface_init();
 
-    for (uint i = 0; i < TEST_SIZE; ++i) {
+    for (uint i = 0; i < GRID_PARAMETER_SPI_TRANSACTION_length; ++i) {
         txbuf[i] = 0;
     }
 
@@ -376,7 +378,7 @@ int main()
 
                 if (spi_dma_done){
 
-                    uint8_t destination_flags = rxbuf[499];
+                    uint8_t destination_flags = rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
 
                     // iterate through all the ports
                     for (uint8_t i = 0; i<4; i++){
@@ -403,7 +405,7 @@ int main()
                     }
 
 
-                    //printf("START %d\n", txbuf[499]);
+                    //printf("START %d\n", txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
 
                     // try to send bucket content through SPI
 
@@ -417,7 +419,8 @@ int main()
 
                             printf("SPI: %s\r\n", spi_active_bucket->buffer);
 
-                            spi_active_bucket->buffer[499] = ready_flags;
+                            spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+                            spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<(spi_active_bucket->source_port_index));
 
                             spi_start_transfer(dma_tx, dma_rx, spi_active_bucket->buffer, rxbuf, dma_handler);
                             
@@ -428,7 +431,8 @@ int main()
 
                             txbuf[0] = 0;
                             sprintf(txbuf, "DUMMY");
-                            txbuf[499] = ready_flags;
+                            txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+                            txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
     
                             spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
                                     
