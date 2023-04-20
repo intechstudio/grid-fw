@@ -168,7 +168,7 @@ struct grid_bucket* grid_bucket_find_next_match(struct grid_bucket* previous_buc
 
         if (bucket_array[next_index].status == expected_status){
 
-            printf("Bucket 4 u : %d\r\n", next_index);
+            //printf("Bucket 4 u : %d\r\n", next_index);
             return &bucket_array[next_index];
         }
 
@@ -318,13 +318,6 @@ int main()
     }
 
 
-    for (uint8_t i=0; i<4; i++){
-
-        struct grid_port* port = &port_array[i];
-
-        grid_bucket_put_character(port->active_bucket, 'X');
-
-    }
 
     uart_tx_program_init(GRID_TX_PIO, 0, offset_tx, GRID_NORTH_TX_PIN, SERIAL_BAUD);
     uart_tx_program_init(GRID_TX_PIO, 1, offset_tx, GRID_EAST_TX_PIN, SERIAL_BAUD);
@@ -369,8 +362,6 @@ int main()
             loopcouter = 0;
             gpio_put(LED_PIN, 0);
 
-            uart_tx_program_putc(GRID_TX_PIO, SOUTH->port_index, '2');
-
             if (dma_channel_is_busy(dma_rx)){
 
             }
@@ -391,6 +382,7 @@ int main()
                             port->tx_is_busy = 1;
                             port->tx_index = 0;
                             strcpy(port->tx_buffer, rxbuf);
+                            printf("SPI receive: %s\r\n", rxbuf);
 
                             ready_flags &= ~(1<<port->port_index); // clear ready
                         }
@@ -417,7 +409,7 @@ int main()
                         // found full bucket, send it through SPI
                         if (spi_active_bucket != NULL) {
 
-                            printf("SPI: %s\r\n", spi_active_bucket->buffer);
+                            printf("SPI send: %s\r\n", spi_active_bucket->buffer);
 
                             spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
                             spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<(spi_active_bucket->source_port_index));

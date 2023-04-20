@@ -204,10 +204,11 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 
 			if (i>0){
 
+				grid_platform_printf("FRAME START OFFSET: ");
 				for (uint16_t j=0; j<length; j++){
-					printf("%d, ", buffer[j]);
+					grid_platform_printf("%d, ", buffer[j]);
 				}
-				printf("\r\n");
+				grid_platform_printf("\r\n");
 				grid_port_debug_printf("Frame Start Offset %d %d %d", buffer[0], buffer[1], i);
 			}
 			

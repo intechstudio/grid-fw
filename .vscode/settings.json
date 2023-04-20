@@ -9,7 +9,9 @@
         "esp_timer.h": "c",
         "cstring": "c",
         "string.h": "c",
-        "complex": "c"
+        "complex": "c",
+        "string_view": "c",
+        "regex": "c"
     },   
     "files.exclude": {
         ".archive": true,

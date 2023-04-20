@@ -16,10 +16,10 @@ static const char *TAG = "PORT";
 #define GPIO_CS 7
 #define RCV_HOST    SPI2_HOST
 
+uint8_t empty_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
+uint8_t message_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
-spi_slave_transaction_t t;
-
-
+spi_slave_transaction_t outbnound_transaction[4];
 spi_slave_transaction_t spi_empty_transaction;
 
 uint8_t queue_state = 0;
@@ -65,32 +65,32 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     spi_slave_transaction_t *result;
 
-
-
-
     //spi_slave_get_trans_result(RCV_HOST, &result, 0);
     //grid_platform_printf("@ SPI COMPLETE: ");
 
 }
 
 
+
+
 uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length){
 
-    t.tx_buffer = GRID_PORT_N.tx_double_buffer;    
-
-    GRID_PORT_N.tx_double_buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<(direction-GRID_CONST_NORTH));
+    uint8_t dir_index = direction-GRID_CONST_NORTH;
 
 
-    spi_slave_queue_trans(RCV_HOST, &t, portMAX_DELAY);
+    spi_slave_transaction_t* t = &outbnound_transaction[dir_index];
+
+
+    ((uint8_t*)t->tx_buffer)[length] = 0; // termination zero fter the message
+    ((uint8_t*)t->tx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<dir_index);
+
+
+    ets_printf("SEND %d: %s\r\n", dir_index, buffer);
+
+    spi_slave_queue_trans(RCV_HOST, t, portMAX_DELAY);
     queue_state++;
 
     spi_ready = 0;
-
-
-    
-    //ets_printf("SPI queued %s %d, queue_state = %d\r\n", GRID_PORT_N.tx_double_buffer,  GRID_PORT_N.tx_double_buffer_status, queue_state);
-
-
 
     return 0; // done
 
@@ -140,19 +140,24 @@ void grid_esp32_port_task(void *arg)
     WORD_ALIGNED_ATTR char sendbuf[GRID_PARAMETER_SPI_TRANSACTION_length+1]={0};
     WORD_ALIGNED_ATTR char recvbuf[GRID_PARAMETER_SPI_TRANSACTION_length+1]={0};
     
-    memset(&t, 0, sizeof(t));
 
     //Clear receive buffer, set send buffer to something sane
     memset(recvbuf, 0xA5, GRID_PARAMETER_SPI_TRANSACTION_length+1);        
     sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
 
 
-    //Set up a transaction of GRID_PARAMETER_SPI_TRANSACTION_length bytes to send/receive
-    t.length=GRID_PARAMETER_SPI_TRANSACTION_length*8;
-    t.tx_buffer=sendbuf;
-    t.rx_buffer=recvbuf;
+    struct grid_port* port_list[4] = {&GRID_PORT_N, &GRID_PORT_E, &GRID_PORT_S, &GRID_PORT_W};
 
-    uint8_t empty_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
+    for (uint8_t i = 0; i<4; i++){
+
+        //Set up a transaction of GRID_PARAMETER_SPI_TRANSACTION_length bytes to send/receive
+
+        memset(&outbnound_transaction[i], 0, sizeof(outbnound_transaction[i]));
+        outbnound_transaction[i].length = GRID_PARAMETER_SPI_TRANSACTION_length*8;
+        outbnound_transaction[i].tx_buffer=port_list[i]->tx_double_buffer;
+        outbnound_transaction[i].rx_buffer=recvbuf;
+    }
+
 
     empty_tx_buffer[0] = 'X';
 
@@ -161,11 +166,17 @@ void grid_esp32_port_task(void *arg)
     spi_empty_transaction.rx_buffer=recvbuf;
 
 
-    GRID_PORT_N.partner_status = 1; // force connected
+
+
+
+    //GRID_PORT_N.partner_status = 1; // force connected
+    //GRID_PORT_E.partner_status = 1; // force connected
+    //GRID_PORT_S.partner_status = 1; // force connected
+    //GRID_PORT_W.partner_status = 1; // force connected
 
     static uint32_t loopcounter = 0;
     //ret=spi_slave_queue_trans(RCV_HOST, &t, 0);
-    ret=spi_slave_queue_trans(RCV_HOST, &t, portMAX_DELAY);
+    ret=spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, portMAX_DELAY);
     queue_state++;
     //spi_ready = 0;
 
@@ -210,6 +221,7 @@ void grid_esp32_port_task(void *arg)
                 struct grid_port* port = NULL;
 
 
+
                 if ((source_flags&0b00000001)){
                     port = &GRID_PORT_N;
                 }
@@ -229,13 +241,13 @@ void grid_esp32_port_task(void *arg)
                 if (port != NULL){
                     // we found the port in question
 
-                    ets_printf("Decode from %lx %lx\r\n", port, &GRID_PORT_N);
 
-
+                    port->rx_double_buffer_timeout = 0;
 
 
                     port->rx_double_buffer_read_start_index = 0;
                     strcpy(port->rx_double_buffer, (char*) trans->rx_buffer);
+                    
 
                     grid_port_receive_decode(port, strlen((char*) trans->rx_buffer));
 
@@ -316,12 +328,10 @@ void grid_esp32_port_task(void *arg)
             grid_port_process_inbound(&GRID_PORT_H, 0);
 
 
-
-            //grid_port_process_inbound(&GRID_PORT_N, 0);
-
-
-
             grid_port_process_inbound(&GRID_PORT_N, 0);
+            grid_port_process_inbound(&GRID_PORT_E, 0);
+            grid_port_process_inbound(&GRID_PORT_S, 0);
+            grid_port_process_inbound(&GRID_PORT_W, 0);
 
 
             // OUTBOUND
@@ -344,18 +354,63 @@ void grid_esp32_port_task(void *arg)
                 //ets_printf("TRY PING\r\n");
 
                 GRID_PORT_N.ping_flag = 1;
+                GRID_PORT_E.ping_flag = 1;
+                GRID_PORT_S.ping_flag = 1;
+                GRID_PORT_W.ping_flag = 1;
 
                 grid_port_ping_try_everywhere();
                 
             }
 
-            
-            grid_port_process_outbound_usart(&GRID_PORT_N);
+
+            //grid_port_process_outbound_usart(&GRID_PORT_N);
+
+            for (uint8_t i=0; i<4; i++){
+                struct grid_port* port = port_list[i];
+                grid_port_process_outbound_usart(port);
+            }
 
         
+
+            for (uint8_t i=0; i<4; i++){
+
+                struct grid_port* port = port_list[i];
+
+                uint32_t limit = 1000;
+
+                if (port->rx_double_buffer_timeout<limit){
+                
+                    port->rx_double_buffer_timeout+=10;
+
+   
+                    if (port->rx_double_buffer_timeout>=limit){
+
+                        if (port->partner_status == 1){
+
+                            grid_port_receiver_softreset(port);	
+                            //grid_port_receiver_softreset(por);	
+                                    
+
+                            grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
+                            grid_led_set_alert_frequency(&grid_led_state, -2);	
+                            grid_led_set_alert_phase(&grid_led_state, 100);	
+
+                        }
+
+                            ets_printf("DISCONNECT\r\n");
+                    }
+                }
+
+
+            }
+
+
+
             xSemaphoreGive(signaling_sem);
-            
+
         }
+
+
 
         vTaskDelay(pdMS_TO_TICKS(10));
 
