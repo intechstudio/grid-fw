@@ -24,6 +24,8 @@
 
 #include <string.h>
 
+#include "pico/time.h"
+
 
 uint dma_tx;
 uint dma_rx; 
@@ -61,7 +63,7 @@ const uint GRID_WEST_RX_PIN = 3;
 const uint GRID_SYNC_1_PIN = 25;
 const uint GRID_SYNC_2_PIN = 4;
 
-volatile uint8_t spi_dma_done = true;
+volatile uint8_t spi_dma_done = false;
 
 void dma_handler() {
 
@@ -348,8 +350,134 @@ int main()
     uint8_t spi_counter = 0;
 
 
+
+    struct grid_task{
+
+        uint32_t start_timestamp;
+        uint32_t interval;
+
+    };
+
+
+    void grid_task_init(struct grid_task* task, uint32_t interval){
+
+        task->interval = interval;
+        task->start_timestamp = time_us_32();
+
+    }
+
+    uint8_t grid_task_should_run_now(struct grid_task* task){
+        
+        if (time_us_32() - task->start_timestamp > task->interval){
+        
+            task->start_timestamp = time_us_32();
+            
+            // should run now!
+            return 1;
+        
+        }
+        else{
+
+            // should not run yet
+            return 0;
+        }
+    }
+
+    struct grid_task spi_receive_transfer_task;
+    grid_task_init(&spi_receive_transfer_task, 1000); // 1 ms interval
+
+    struct grid_task spi_start_transfer_task;
+    grid_task_init(&spi_start_transfer_task, 5000); // 5 ms interval
+
+
+
+
     while (1) 
     {
+
+        // TRY TO RECEIVE FROM SPI
+        if (grid_task_should_run_now(&spi_receive_transfer_task)){
+
+            if (spi_dma_done){
+
+                spi_dma_done = false;
+                uint8_t destination_flags = rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
+
+                // iterate through all the ports
+                for (uint8_t i = 0; i<4; i++){
+
+                    struct grid_port* port = &port_array[i]; 
+
+                    // copy message to the addressed port and set it to busy!
+                    if ((destination_flags&(1<<port->port_index))){
+
+                        port->tx_is_busy = 1;
+                        port->tx_index = 0;
+                        strcpy(port->tx_buffer, rxbuf);
+                        //printf("SPI receive: %s\r\n", rxbuf);
+
+                        ready_flags &= ~(1<<port->port_index); // clear ready
+                    }
+
+                }
+
+                if (spi_active_bucket != NULL){
+                    // clear the bucket after use
+                    grid_bucket_init(spi_active_bucket, spi_active_bucket->index);
+                    spi_active_bucket = NULL;
+
+                }
+
+            }
+
+        }
+
+        // TRY TO SEND THROUGH SPI
+        if (grid_task_should_run_now(&spi_start_transfer_task)){
+
+
+            if (!dma_channel_is_busy(dma_rx)){
+
+                //printf("START %d\n", txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
+
+                // try to send bucket content through SPI
+
+                if (spi_active_bucket == NULL){
+
+                    spi_active_bucket = grid_bucket_find_next_match(spi_active_bucket, GRID_BUCKET_STATUS_FULL);        
+
+                    // found full bucket, send it through SPI
+                    if (spi_active_bucket != NULL) {
+
+                        //printf("SPI send: %s\r\n", spi_active_bucket->buffer);
+
+                        spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+                        spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<(spi_active_bucket->source_port_index));
+
+                        spi_start_transfer(dma_tx, dma_rx, spi_active_bucket->buffer, rxbuf, dma_handler);
+                        
+
+                    }
+                    else{
+                        // send empty packet with status flags
+
+                        txbuf[0] = 0;
+                        sprintf(txbuf, "DUMMY");
+                        txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+                        txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
+
+                        spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
+                                
+                    }
+
+
+                }
+
+                
+
+            }
+
+        }
 
         loopcouter++;
 
@@ -361,80 +489,6 @@ int main()
             loopcouter = 0;
             gpio_put(LED_PIN, 0);
 
-            if (dma_channel_is_busy(dma_rx)){
-
-            }
-            else{
-
-                if (spi_dma_done){
-
-                    uint8_t destination_flags = rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
-
-                    // iterate through all the ports
-                    for (uint8_t i = 0; i<4; i++){
- 
-                        struct grid_port* port = &port_array[i]; 
-
-                        // copy message to the addressed port and set it to busy!
-                        if ((destination_flags&(1<<port->port_index))){
-
-                            port->tx_is_busy = 1;
-                            port->tx_index = 0;
-                            strcpy(port->tx_buffer, rxbuf);
-                            //printf("SPI receive: %s\r\n", rxbuf);
-
-                            ready_flags &= ~(1<<port->port_index); // clear ready
-                        }
-
-                    }
-
-                    if (spi_active_bucket != NULL){
-                        // clear the bucket after use
-                        grid_bucket_init(spi_active_bucket, spi_active_bucket->index);
-                        spi_active_bucket = NULL;
-
-                    }
-
-
-                    //printf("START %d\n", txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
-
-                    // try to send bucket content through SPI
-
-                    if (spi_active_bucket == NULL){
-
-
-                        spi_active_bucket = grid_bucket_find_next_match(spi_active_bucket, GRID_BUCKET_STATUS_FULL);        
-
-                        // found full bucket, send it through SPI
-                        if (spi_active_bucket != NULL) {
-
-                            //printf("SPI send: %s\r\n", spi_active_bucket->buffer);
-
-                            spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
-                            spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<(spi_active_bucket->source_port_index));
-
-                            spi_start_transfer(dma_tx, dma_rx, spi_active_bucket->buffer, rxbuf, dma_handler);
-                            
-
-                        }
-                        else{
-                            // send empty packet with status flags
-
-                            txbuf[0] = 0;
-                            sprintf(txbuf, "DUMMY");
-                            txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
-                            txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
-    
-                            spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
-                                    
-                        }
-
-
-                    }
-
-                }
-
-            }
 
         }
 
