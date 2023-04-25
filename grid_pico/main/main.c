@@ -29,7 +29,6 @@ uint dma_tx;
 uint dma_rx; 
 
 
-
 static uint8_t txbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
 static uint8_t rxbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
 
@@ -354,11 +353,11 @@ int main()
 
         loopcouter++;
 
-        if (loopcouter > 5000){
+        if (loopcouter > 500){
             gpio_put(LED_PIN, 1);
 
         }
-        if (loopcouter > 10000){
+        if (loopcouter > 3000){
             loopcouter = 0;
             gpio_put(LED_PIN, 0);
 
@@ -382,7 +381,7 @@ int main()
                             port->tx_is_busy = 1;
                             port->tx_index = 0;
                             strcpy(port->tx_buffer, rxbuf);
-                            printf("SPI receive: %s\r\n", rxbuf);
+                            //printf("SPI receive: %s\r\n", rxbuf);
 
                             ready_flags &= ~(1<<port->port_index); // clear ready
                         }
@@ -409,7 +408,7 @@ int main()
                         // found full bucket, send it through SPI
                         if (spi_active_bucket != NULL) {
 
-                            printf("SPI send: %s\r\n", spi_active_bucket->buffer);
+                            //printf("SPI send: %s\r\n", spi_active_bucket->buffer);
 
                             spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
                             spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<(spi_active_bucket->source_port_index));
@@ -475,6 +474,10 @@ int main()
             if (uart_rx_program_is_available(GRID_RX_PIO, port->port_index)){
                 char c = uart_rx_program_getc(GRID_RX_PIO, port->port_index);
 
+                if (port->active_bucket == NULL){
+                    grid_port_attach_bucket(port);
+                }
+
                 grid_bucket_put_character(port->active_bucket, c);
 
                 if (c=='\n'){
@@ -483,7 +486,8 @@ int main()
                     grid_bucket_put_character(port->active_bucket, '\0');
 
 
-                    printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
+                    //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
+                    printf("BR%d\r\n", loopcouter);
                     port->active_bucket->status = GRID_BUCKET_STATUS_FULL;
                     port->active_bucket->buffer_index = 0;
                     // clear bucket

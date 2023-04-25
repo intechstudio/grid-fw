@@ -24,6 +24,30 @@ spi_slave_transaction_t spi_empty_transaction;
 
 uint8_t queue_state = 0;
 
+
+void ets_debug_string(char* tag, char* str){
+
+
+    uint16_t length = strlen(str);
+
+    ets_printf("%s: ", tag);
+    for(uint8_t i=0; i<length; i++){
+
+        if (str[i]<32){
+
+            ets_printf("[%x] ", str[i]);
+        }
+        else{
+            ets_printf("%c ", str[i]);
+
+        }
+    }
+    ets_printf("\r\n");
+
+
+};
+
+
 //Called after a transaction is queued and ready for pickup by master. We use this to set the handshake line high.
 static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t *trans) {
     //printf("$\r\n");
@@ -62,6 +86,8 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
         GRID_PORT_W.tx_double_buffer_status = 0;
     }   
 
+    //ets_debug_string("SPI", trans->rx_buffer);
+
 
     spi_slave_transaction_t *result;
 
@@ -85,7 +111,7 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
     ((uint8_t*)t->tx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<dir_index);
 
 
-    ets_printf("SEND %d: %s\r\n", dir_index, buffer);
+    //ets_printf("SEND %d: %s\r\n", dir_index, buffer);
 
     spi_slave_queue_trans(RCV_HOST, t, portMAX_DELAY);
     queue_state++;
@@ -209,7 +235,7 @@ void grid_esp32_port_task(void *arg)
                 spi_slave_transaction_t *trans = NULL;
                 spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
 
-                ets_printf("RX status,source: %d,%d : %s\r\n", ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index], ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index], ((uint8_t*) trans->rx_buffer));
+                //ets_printf("RX status,source: %d,%d : %s\r\n", ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index], ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index], ((uint8_t*) trans->rx_buffer));
             //  grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
 
 
@@ -241,15 +267,38 @@ void grid_esp32_port_task(void *arg)
                 if (port != NULL){
                     // we found the port in question
 
+                    strcpy(port->rx_double_buffer, (char*) trans->rx_buffer);
 
                     port->rx_double_buffer_timeout = 0;
-
-
                     port->rx_double_buffer_read_start_index = 0;
-                    strcpy(port->rx_double_buffer, (char*) trans->rx_buffer);
+                    port->rx_double_buffer_seek_start_index = 0;
                     
 
-                    grid_port_receive_decode(port, strlen((char*) trans->rx_buffer));
+
+                    ets_debug_string("PRE", port->rx_double_buffer);
+
+
+                    for(uint16_t i = 0; i<490; i++){ // 490 is the max processing length
+                            
+                        if (port->rx_double_buffer[port->rx_double_buffer_seek_start_index] == 10){ // \n
+                                
+                            port->rx_double_buffer_status = 1;
+                            uint16_t length = port->rx_double_buffer_seek_start_index - port->rx_double_buffer_read_start_index + 1;
+                            grid_port_receive_decode(port, length);
+
+                            port->rx_double_buffer_status = 0;
+                            port->rx_double_buffer_read_start_index = port->rx_double_buffer_seek_start_index;
+
+                        }
+                        else if (port->rx_double_buffer[port->rx_double_buffer_seek_start_index] == 0){
+                            
+                            break;
+                        }
+
+
+                        port->rx_double_buffer_seek_start_index++;
+                            
+                    }
 
                 }
 
@@ -412,7 +461,7 @@ void grid_esp32_port_task(void *arg)
 
 
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(2));
 
 
 
