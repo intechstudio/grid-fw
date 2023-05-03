@@ -34,8 +34,15 @@
 #define GRID_MODULE_PO16_RevB 0
 #define GRID_MODULE_PO16_RevC 8
 
+// ESP
+#define GRID_MODULE_PO16_RevD 1
+
 #define GRID_MODULE_BU16_RevB 128
 #define GRID_MODULE_BU16_RevC 136
+
+//ESP
+#define GRID_MODULE_BU16_RevD 129
+
 // D51
 #define GRID_MODULE_PBF4_RevA 64
 // ESP32

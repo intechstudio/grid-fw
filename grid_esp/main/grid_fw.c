@@ -22,7 +22,11 @@
 
 
 #include "pico_firmware.h"
-#include "grid_esp32_adc.h"
+#include "grid_esp32_module_pbf4.h"
+#include "grid_esp32_module_po16.h"
+#include "grid_esp32_module_bu16.h"
+#include "grid_esp32_module_en16.h"
+#include "grid_esp32_module_ef44.h"
 #include "grid_esp32_led.h"
 
 
@@ -301,6 +305,7 @@ void app_main(void)
 
 
     SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
+    
 
     xSemaphoreGive(nvm_or_port);
 
@@ -321,42 +326,82 @@ void app_main(void)
 
     // ================== START: grid_module_pbf4_init() ================== //
 
-    grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-
-    grid_ui_state.ui_interaction_enabled = 1;
-    // ================== FINISH: grid_module_pbf4_init() ================== //
 	
-	grid_port_init_all();
-	//grid_d51_uart_init();
-	grid_sys_set_bank(&grid_sys_state, 0);
-
-	//grid_d51_nvm_init(&grid_d51_nvm_state, &FLASH_0);
-
-	grid_ui_page_load(&grid_ui_state, 0); //load page 0
-
-	//*
-    while (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state))
-	{
-		grid_ui_bulk_pageread_next(&grid_ui_state);
-	}
-    
-
+    grid_port_init_all();
+    //grid_d51_uart_init();
+    grid_sys_set_bank(&grid_sys_state, 0);
 
 
     ets_printf("GRID_SYS_TEST %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
     grid_platform_delay_ms(10);
 
-    TaskHandle_t adc_task_hdl;
+
+	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD){
+		grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
+	}
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD ){
+		grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
+	}	
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD){
+        grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
+	}
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD ){
+		grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
+	}	
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
+		grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
+	}		
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD ){
+		grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
+	}	
+	else{
+		ets_printf("Init Module: Unknown Module\r\n");
+	}
 
 
-    //Create the class driver task
-    xTaskCreatePinnedToCore(grid_esp32_adc_task,
-                            "adc",
-                            1024*2,
-                            (void *)signaling_sem,
-                            ADC_TASK_PRIORITY,
-                            &adc_task_hdl,
-                            0);
+
+
+    grid_ui_page_load(&grid_ui_state, 0); //load page 0
+
+    while (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state))
+    {
+        grid_ui_bulk_pageread_next(&grid_ui_state);
+    }
+        
+
+
+    TaskHandle_t module_task_hdl;
+
+
+	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD){
+        xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024*2, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+	}
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD ){
+        xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024*2, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+	}	
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD){
+        xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024*2, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+	}
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD ){
+        xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*2, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+	}	
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
+        xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*2, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+	}		
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD ){
+        xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024*4, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+	}	
+	else{
+		printf("Init Module: Unknown Module\r\n");
+	}
+
+	printf("Model init done\r\n");
+
+
+    grid_ui_state.ui_interaction_enabled = 1;
+    // ================== FINISH: grid_module_pbf4_init() ================== //
+
+
 
     TaskHandle_t port_task_hdl;
 

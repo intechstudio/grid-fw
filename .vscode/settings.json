@@ -11,7 +11,10 @@
         "string.h": "c",
         "complex": "c",
         "string_view": "c",
-        "regex": "c"
+        "regex": "c",
+        "grid_esp32_module_pbf4.h": "c",
+        "grid_esp32_module_bu16.h": "c",
+        "grid_esp32_module_en16.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

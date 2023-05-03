@@ -1721,9 +1721,11 @@ void grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys){
 
         case GRID_MODULE_PO16_RevB: grid_lua_ui_init_po16(mod); break;
         case GRID_MODULE_PO16_RevC: grid_lua_ui_init_po16(mod); break;
+        case GRID_MODULE_PO16_RevD: grid_lua_ui_init_po16(mod); break;
 
         case GRID_MODULE_BU16_RevB: grid_lua_ui_init_bu16(mod); break;
         case GRID_MODULE_BU16_RevC: grid_lua_ui_init_bu16(mod); break;
+        case GRID_MODULE_BU16_RevD: grid_lua_ui_init_bu16(mod); break;
 
         case GRID_MODULE_PBF4_RevA: grid_lua_ui_init_pbf4(mod); break;
         case GRID_MODULE_PBF4_RevD: grid_lua_ui_init_pbf4(mod); break;

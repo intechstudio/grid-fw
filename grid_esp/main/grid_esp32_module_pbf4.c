@@ -5,7 +5,7 @@
  */
 
 
-#include "grid_esp32_adc.h"
+#include "grid_esp32_module_pbf4.h"
 #include "../../grid_common/grid_led.h"
 
 
@@ -44,7 +44,7 @@ static void adc_init(adc_oneshot_unit_handle_t* adc1_handle, adc_oneshot_unit_ha
 
 }
 
-void grid_esp32_adc_task(void *arg)
+void grid_esp32_module_pbf4_task(void *arg)
 {
 
     adc_oneshot_unit_handle_t adc1_handle;

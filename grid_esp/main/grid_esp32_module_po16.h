@@ -29,7 +29,7 @@
 extern "C" {
 #endif
 
-void grid_esp32_adc_task(void *arg);
+void grid_esp32_module_po16_task(void *arg);
 
 
 
