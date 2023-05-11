@@ -35,6 +35,13 @@
 extern "C" {
 #endif
 
+static esp_err_t ret;
+static spi_device_handle_t spi;
+static spi_transaction_t t;
+
+static void IRAM_ATTR my_post_setup_cb(spi_transaction_t *trans);
+static void IRAM_ATTR  my_post_trans_cb(spi_transaction_t *trans);
+
 void grid_esp32_module_en16_task(void *arg);
 
 
