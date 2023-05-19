@@ -14,7 +14,9 @@
         "regex": "c",
         "grid_esp32_module_pbf4.h": "c",
         "grid_esp32_module_bu16.h": "c",
-        "grid_esp32_module_en16.h": "c"
+        "grid_esp32_module_en16.h": "c",
+        "grid_esp32_module_ef44.h": "c",
+        "functional": "c"
     },   
     "files.exclude": {
         ".archive": true,

@@ -10,6 +10,28 @@
 
 static const char *TAG = "esp32_adc";
 
+static uint32_t last_real_time[16] = {0};
+
+static uint8_t multiplexer_index = 0;
+
+static void update_mux(void){
+
+
+    multiplexer_index++;
+    multiplexer_index%=2;
+
+
+    gpio_set_level(GRID_ESP32_PINS_MUX_0_A, multiplexer_index/1%2);
+    gpio_set_level(GRID_ESP32_PINS_MUX_0_B, multiplexer_index/2%2);
+    gpio_set_level(GRID_ESP32_PINS_MUX_0_C, multiplexer_index/4%2);
+
+    gpio_set_level(GRID_ESP32_PINS_MUX_1_A, multiplexer_index/1%2);
+    gpio_set_level(GRID_ESP32_PINS_MUX_1_B, multiplexer_index/2%2);
+    gpio_set_level(GRID_ESP32_PINS_MUX_1_C, multiplexer_index/4%2);
+
+
+}
+
 //Configuration for the SPI bus
 static spi_bus_config_t buscfg={
     .mosi_io_num=-1, // unused pin
@@ -90,38 +112,111 @@ static void IRAM_ATTR  my_post_trans_cb(spi_transaction_t *trans) {
 
 }
 
+#define EXAMPLE_READ_LEN                   2*SOC_ADC_DIGI_DATA_BYTES_PER_CONV
+
+static uint8_t interrupt_count = 255;
+
+static bool IRAM_ATTR s_conv_done_cb(adc_continuous_handle_t handle, const adc_continuous_evt_data_t *edata, void *user_data)
+{
+    interrupt_count++;
+
+    BaseType_t mustYield = pdFALSE;
+    //Notify that ADC continuous driver has done enough number of conversions
+    //vTaskNotifyGiveFromISR(s_task_handle, &mustYield);
+
+    if (interrupt_count%4 == 2){
+        
+
+        update_mux();
+
+    }
+
+    if (interrupt_count%4 == 0){
+
+        uint32_t ret_num = 0;
 
 
-static void adc_init(adc_oneshot_unit_handle_t* adc1_handle, adc_oneshot_unit_handle_t* adc2_handle){
+        void* result = user_data;
 
-    ESP_LOGI(TAG, "Init ADC");
+        adc_continuous_read(handle, result, EXAMPLE_READ_LEN, &ret_num, 0);
 
-    //-------------ADC1 Init---------------//
-    adc_oneshot_unit_init_cfg_t init_config1 = {
-        .unit_id = ADC_UNIT_1,
+
+        //ets_printf("%d %d\r\n", ret_num, SOC_ADC_DIGI_RESULT_BYTES);
+
+        for (int i = 0; i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES) {
+
+            adc_digi_output_data_t *p = (adc_digi_output_data_t*)&result[i];
+
+            uint32_t chan_num = p->type2.channel;
+            uint32_t data = p->type2.data;
+
+            // /* Check the channel number validation, the data is invalid if the channel num exceed the maximum channel */
+            // if (chan_num < SOC_ADC_CHANNEL_NUM(EXAMPLE_ADC_UNIT)) {
+            //     ets_printf("Channel: %d, Value: %d", multiplexer_index+chan_num*2, data);
+            // } else {
+            //     ets_printf("Invalid data");
+            // }
+
+
+            int adcresult = data;
+            
+            uint8_t adc_index = (1-multiplexer_index)+chan_num*2;
+            
+            int32_t result_resolution = 7;
+            int32_t source_resolution = 12;
+
+
+            grid_ui_potmeter_store_input(adc_index+4, &last_real_time[adc_index], adcresult, 12); // 12 bit analog values
+
+
+        }
+
+
+
+    }
+
+
+    return (mustYield == pdTRUE);
+}
+
+
+
+
+static void continuous_adc_init(adc_continuous_handle_t *out_handle)
+{
+    adc_continuous_handle_t handle = NULL;
+
+    adc_continuous_handle_cfg_t adc_config = {
+        .max_store_buf_size = 8,
+        .conv_frame_size = EXAMPLE_READ_LEN,
     };
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, adc1_handle));
+    ESP_ERROR_CHECK(adc_continuous_new_handle(&adc_config, &handle));
 
-    //-------------ADC1 Config---------------//
-    adc_oneshot_chan_cfg_t config1 = {
-        .bitwidth = ADC_BITWIDTH_DEFAULT,
-        .atten = ADC_ATTEN_DB_11,
+    adc_continuous_config_t dig_cfg = {
+        .sample_freq_hz = 20 * 1000,
+        .conv_mode = ADC_CONV_SINGLE_UNIT_1,
+        .format = ADC_DIGI_OUTPUT_FORMAT_TYPE2,
     };
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(*adc1_handle, ADC_CHANNEL_1, &config1));
-   
-    //-------------ADC2 Init---------------//
-    adc_oneshot_unit_init_cfg_t init_config2 = {
-        .unit_id = ADC_UNIT_2,
-    };
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config2, adc2_handle));
 
-    //-------------ADC2 Config---------------//
-    adc_oneshot_chan_cfg_t config2 = {
-        .bitwidth = ADC_BITWIDTH_DEFAULT,
-        .atten = ADC_ATTEN_DB_11,
-    };
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(*adc2_handle, ADC_CHANNEL_7, &config2));
+    dig_cfg.pattern_num = 2;
 
+    adc_digi_pattern_config_t adc_pattern[2] = {0};
+
+    adc_pattern[0].atten = ADC_ATTEN_DB_11;
+    adc_pattern[0].channel = ADC_CHANNEL_1 & 0x7;
+    adc_pattern[0].unit = ADC_UNIT_1;
+    adc_pattern[0].bit_width = SOC_ADC_DIGI_MAX_BITWIDTH;
+
+
+    adc_pattern[1].atten = ADC_ATTEN_DB_11;
+    adc_pattern[1].channel = ADC_CHANNEL_0 & 0x7;
+    adc_pattern[1].unit = ADC_UNIT_1;
+    adc_pattern[1].bit_width = SOC_ADC_DIGI_MAX_BITWIDTH;
+
+    dig_cfg.adc_pattern = adc_pattern;
+    ESP_ERROR_CHECK(adc_continuous_config(handle, &dig_cfg));
+
+    *out_handle = handle;
 }
 
 
@@ -130,15 +225,19 @@ static void adc_init(adc_oneshot_unit_handle_t* adc1_handle, adc_oneshot_unit_ha
 void grid_esp32_module_ef44_task(void *arg)
 {
 
-    // ADC AND MULTIPLEXER INITIALIZATION        
 
-    static uint8_t multiplexer_index = 0;
-    static uint32_t last_real_time[16] = {0};
+    adc_continuous_handle_t handle = NULL;
+    continuous_adc_init(&handle);
 
-    adc_oneshot_unit_handle_t adc1_handle;
-    adc_oneshot_unit_handle_t adc2_handle;
+    uint8_t result[EXAMPLE_READ_LEN] = {0};
+    memset(result, 0xcc, EXAMPLE_READ_LEN);
 
-    adc_init(&adc1_handle, &adc2_handle);
+    adc_continuous_evt_cbs_t cbs = {
+        .on_conv_done = s_conv_done_cb,
+    };
+
+    ESP_ERROR_CHECK(adc_continuous_register_event_callbacks(handle, &cbs, (void*) result));
+    ESP_ERROR_CHECK(adc_continuous_start(handle));
 
 
     gpio_set_direction(GRID_ESP32_PINS_MUX_0_A, GPIO_MODE_OUTPUT);
@@ -204,45 +303,9 @@ void grid_esp32_module_ef44_task(void *arg)
     while (1) {
 
         
-        //ret = spi_device_transmit(spi, &t);
 
-        int adcresult_0 = 0;
-        int adcresult_1 = 0;
-        
-        uint8_t adc_index_0 = multiplexer_index+2;
-        uint8_t adc_index_1 = multiplexer_index;
-
-
-        adc_oneshot_read(adc1_handle, ADC_CHANNEL_1, &adcresult_0);
-        adc_oneshot_read(adc2_handle, ADC_CHANNEL_7, &adcresult_1);
-
-	
-        /* Update the multiplexer */
-
-        multiplexer_index++;
-        multiplexer_index%=2;
-
-
-        gpio_set_level(GRID_ESP32_PINS_MUX_0_A, multiplexer_index/1%2);
-        gpio_set_level(GRID_ESP32_PINS_MUX_0_B, multiplexer_index/2%2);
-        gpio_set_level(GRID_ESP32_PINS_MUX_0_C, multiplexer_index/4%2);
-
-        gpio_set_level(GRID_ESP32_PINS_MUX_1_A, multiplexer_index/1%2);
-        gpio_set_level(GRID_ESP32_PINS_MUX_1_B, multiplexer_index/2%2);
-        gpio_set_level(GRID_ESP32_PINS_MUX_1_C, multiplexer_index/4%2);
-        
-        int32_t result_resolution = 7;
-        int32_t source_resolution = 12;
-
-
-        grid_ui_potmeter_store_input(adc_index_0+4, &last_real_time[adc_index_0], adcresult_0, 12); // 12 bit analog values
-        grid_ui_potmeter_store_input(adc_index_1+4, &last_real_time[adc_index_1], adcresult_1, 12); // 12 bit analog values
-
-        if (multiplexer_index == 0){
-            //ets_printf("%d \n", adcresult_0);
-            vTaskDelay(pdMS_TO_TICKS(10));
-        }
-
+        vTaskDelay(pdMS_TO_TICKS(10));
+ 
     }
 
 
