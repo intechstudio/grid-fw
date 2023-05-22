@@ -112,7 +112,8 @@ static void IRAM_ATTR  my_post_trans_cb(spi_transaction_t *trans) {
 
 }
 
-#define EXAMPLE_READ_LEN                   2*SOC_ADC_DIGI_DATA_BYTES_PER_CONV
+#define ADC_CONVERSION_FRAME_SIZE         32*SOC_ADC_DIGI_DATA_BYTES_PER_CONV
+#define ADC_BUFFER_SIZE                   ADC_CONVERSION_FRAME_SIZE*4
 
 static uint8_t interrupt_count = 255;
 
@@ -124,26 +125,29 @@ static bool IRAM_ATTR s_conv_done_cb(adc_continuous_handle_t handle, const adc_c
     //Notify that ADC continuous driver has done enough number of conversions
     //vTaskNotifyGiveFromISR(s_task_handle, &mustYield);
 
-    if (interrupt_count%4 == 2){
+    if (interrupt_count%2 == 1){
         
 
         update_mux();
 
     }
 
-    if (interrupt_count%4 == 0){
+    if (interrupt_count%2 == 0){
 
         uint32_t ret_num = 0;
 
 
         void* result = user_data;
 
-        adc_continuous_read(handle, result, EXAMPLE_READ_LEN, &ret_num, 0);
+        adc_continuous_read(handle, result, ADC_CONVERSION_FRAME_SIZE, &ret_num, 0);
 
+
+        //ets_printf("NUM: %d\r\n", ret_num/SOC_ADC_DIGI_RESULT_BYTES);
 
         //ets_printf("%d %d\r\n", ret_num, SOC_ADC_DIGI_RESULT_BYTES);
 
         for (int i = 0; i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES) {
+
 
             adc_digi_output_data_t *p = (adc_digi_output_data_t*)&result[i];
 
@@ -160,7 +164,7 @@ static bool IRAM_ATTR s_conv_done_cb(adc_continuous_handle_t handle, const adc_c
 
             int adcresult = data;
             
-            uint8_t adc_index = (1-multiplexer_index)+chan_num*2;
+            uint8_t adc_index = (multiplexer_index)+chan_num*2;
             
             int32_t result_resolution = 7;
             int32_t source_resolution = 12;
@@ -187,13 +191,13 @@ static void continuous_adc_init(adc_continuous_handle_t *out_handle)
     adc_continuous_handle_t handle = NULL;
 
     adc_continuous_handle_cfg_t adc_config = {
-        .max_store_buf_size = 8,
-        .conv_frame_size = EXAMPLE_READ_LEN,
+        .max_store_buf_size = ADC_BUFFER_SIZE,
+        .conv_frame_size = ADC_CONVERSION_FRAME_SIZE,
     };
     ESP_ERROR_CHECK(adc_continuous_new_handle(&adc_config, &handle));
 
     adc_continuous_config_t dig_cfg = {
-        .sample_freq_hz = 20 * 1000,
+        .sample_freq_hz = SOC_ADC_SAMPLE_FREQ_THRES_HIGH/4,
         .conv_mode = ADC_CONV_SINGLE_UNIT_1,
         .format = ADC_DIGI_OUTPUT_FORMAT_TYPE2,
     };
@@ -229,8 +233,8 @@ void grid_esp32_module_ef44_task(void *arg)
     adc_continuous_handle_t handle = NULL;
     continuous_adc_init(&handle);
 
-    uint8_t result[EXAMPLE_READ_LEN] = {0};
-    memset(result, 0xcc, EXAMPLE_READ_LEN);
+    uint8_t result[ADC_CONVERSION_FRAME_SIZE] = {0};
+    memset(result, 0xcc, ADC_CONVERSION_FRAME_SIZE);
 
     adc_continuous_evt_cbs_t cbs = {
         .on_conv_done = s_conv_done_cb,
