@@ -31,6 +31,10 @@
 
 #include "rom/ets_sys.h" // For ets_printf
 
+#include "esp_rom_sys.h"
+
+#include "esp_rom_gpio.h"
+#include "hal/gpio_ll.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,7 +49,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_transaction_t *trans);
 
 void grid_esp32_module_ef44_task(void *arg);
 
-
+extern gpio_dev_t GPIO;
 
 #ifdef __cplusplus
 }

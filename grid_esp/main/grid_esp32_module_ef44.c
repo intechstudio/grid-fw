@@ -12,22 +12,22 @@ static const char *TAG = "esp32_adc";
 
 static uint32_t last_real_time[16] = {0};
 
-static uint8_t multiplexer_index = 0;
+static uint8_t DRAM_ATTR multiplexer_index = 0;
 
-static void update_mux(void){
+static void IRAM_ATTR update_mux(void){
 
 
     multiplexer_index++;
     multiplexer_index%=2;
 
 
-    gpio_set_level(GRID_ESP32_PINS_MUX_0_A, multiplexer_index/1%2);
-    gpio_set_level(GRID_ESP32_PINS_MUX_0_B, multiplexer_index/2%2);
-    gpio_set_level(GRID_ESP32_PINS_MUX_0_C, multiplexer_index/4%2);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_A, multiplexer_index/1%2);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_B, multiplexer_index/2%2);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_C, multiplexer_index/4%2);
 
-    gpio_set_level(GRID_ESP32_PINS_MUX_1_A, multiplexer_index/1%2);
-    gpio_set_level(GRID_ESP32_PINS_MUX_1_B, multiplexer_index/2%2);
-    gpio_set_level(GRID_ESP32_PINS_MUX_1_C, multiplexer_index/4%2);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_A, multiplexer_index/1%2);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_B, multiplexer_index/2%2);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_C, multiplexer_index/4%2);
 
 
 }
@@ -115,69 +115,18 @@ static void IRAM_ATTR  my_post_trans_cb(spi_transaction_t *trans) {
 #define ADC_CONVERSION_FRAME_SIZE         32*SOC_ADC_DIGI_DATA_BYTES_PER_CONV
 #define ADC_BUFFER_SIZE                   ADC_CONVERSION_FRAME_SIZE*4
 
-static uint8_t interrupt_count = 255;
+static uint8_t DRAM_ATTR interrupt_count = 255;
+
+static TaskHandle_t DRAM_ATTR s_task_handle;
 
 static bool IRAM_ATTR s_conv_done_cb(adc_continuous_handle_t handle, const adc_continuous_evt_data_t *edata, void *user_data)
 {
-    interrupt_count++;
 
     BaseType_t mustYield = pdFALSE;
+
+
     //Notify that ADC continuous driver has done enough number of conversions
-    //vTaskNotifyGiveFromISR(s_task_handle, &mustYield);
-
-    if (interrupt_count%2 == 1){
-        
-
-        update_mux();
-
-    }
-
-    if (interrupt_count%2 == 0){
-
-        uint32_t ret_num = 0;
-
-
-        void* result = user_data;
-
-        adc_continuous_read(handle, result, ADC_CONVERSION_FRAME_SIZE, &ret_num, 0);
-
-
-        //ets_printf("NUM: %d\r\n", ret_num/SOC_ADC_DIGI_RESULT_BYTES);
-
-        //ets_printf("%d %d\r\n", ret_num, SOC_ADC_DIGI_RESULT_BYTES);
-
-        for (int i = 0; i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES) {
-
-
-            adc_digi_output_data_t *p = (adc_digi_output_data_t*)&result[i];
-
-            uint32_t chan_num = p->type2.channel;
-            uint32_t data = p->type2.data;
-
-            // /* Check the channel number validation, the data is invalid if the channel num exceed the maximum channel */
-            // if (chan_num < SOC_ADC_CHANNEL_NUM(EXAMPLE_ADC_UNIT)) {
-            //     ets_printf("Channel: %d, Value: %d", multiplexer_index+chan_num*2, data);
-            // } else {
-            //     ets_printf("Invalid data");
-            // }
-
-
-            int adcresult = data;
-            
-            uint8_t adc_index = (multiplexer_index)+chan_num*2;
-            
-            int32_t result_resolution = 7;
-            int32_t source_resolution = 12;
-
-
-            grid_ui_potmeter_store_input(adc_index+4, &last_real_time[adc_index], adcresult, 12); // 12 bit analog values
-
-
-        }
-
-
-
-    }
+    vTaskNotifyGiveFromISR(s_task_handle, &mustYield);
 
 
     return (mustYield == pdTRUE);
@@ -229,6 +178,7 @@ static void continuous_adc_init(adc_continuous_handle_t *out_handle)
 void grid_esp32_module_ef44_task(void *arg)
 {
 
+    s_task_handle = xTaskGetCurrentTaskHandle();
 
     adc_continuous_handle_t handle = NULL;
     continuous_adc_init(&handle);
@@ -240,7 +190,7 @@ void grid_esp32_module_ef44_task(void *arg)
         .on_conv_done = s_conv_done_cb,
     };
 
-    ESP_ERROR_CHECK(adc_continuous_register_event_callbacks(handle, &cbs, (void*) result));
+    ESP_ERROR_CHECK(adc_continuous_register_event_callbacks(handle, &cbs, NULL));
     ESP_ERROR_CHECK(adc_continuous_start(handle));
 
 
@@ -306,9 +256,71 @@ void grid_esp32_module_ef44_task(void *arg)
 
     while (1) {
 
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        interrupt_count++;
+
+        if (interrupt_count%2 == 1){
+            
+
+            update_mux();
+
+        }
+
+        if (interrupt_count%2 == 0){
+
+            uint32_t ret_num = 0;
+
+
+            //void* result = user_data;
+
+            uint8_t result[ADC_CONVERSION_FRAME_SIZE] = {0};
+
+            adc_continuous_read(handle, result, ADC_CONVERSION_FRAME_SIZE, &ret_num, 0);
+
+
+            //ets_printf("NUM: %d\r\n", ret_num/SOC_ADC_DIGI_RESULT_BYTES);
+
+            //ets_printf("%d %d\r\n", ret_num, SOC_ADC_DIGI_RESULT_BYTES);
+
+            for (int i = 0; i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES) {
+
+
+                adc_digi_output_data_t *p = (adc_digi_output_data_t*)&result[i];
+
+                uint32_t chan_num = p->type2.channel;
+                uint32_t data = p->type2.data;
+
+                // /* Check the channel number validation, the data is invalid if the channel num exceed the maximum channel */
+                // if (chan_num < SOC_ADC_CHANNEL_NUM(EXAMPLE_ADC_UNIT)) {
+                //     ets_printf("Channel: %d, Value: %d", multiplexer_index+chan_num*2, data);
+                // } else {
+                //     ets_printf("Invalid data");
+                // }
+
+
+                int adcresult = data;
+                
+                uint8_t adc_index = (multiplexer_index)+chan_num*2;
+                
+                int32_t result_resolution = 7;
+                int32_t source_resolution = 12;
+
+
+                grid_ui_potmeter_store_input(adc_index+4, &last_real_time[adc_index], adcresult, 12); // 12 bit analog values
+
+
+            }
+
+
+
+        }
+
+
+
+        vTaskDelay(pdMS_TO_TICKS(1));
  
     }
 
