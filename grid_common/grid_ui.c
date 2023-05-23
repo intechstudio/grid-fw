@@ -988,6 +988,7 @@ void grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, 
 
 
 			uint32_t len = grid_platform_read_actionstring_file_contents(entry, targetstring);
+			grid_platform_close_actionstring_file(entry);
 
 		}
 		else{
@@ -1010,6 +1011,7 @@ void grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, 
 		if (entry != NULL){
 			
 			uint32_t len = grid_platform_read_actionstring_file_contents(entry, targetstring);
+			grid_platform_close_actionstring_file(entry);
 
 		}
 		else{
@@ -1437,6 +1439,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 					char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
 					grid_platform_read_actionstring_file_contents(entry, temp);
+					grid_platform_close_actionstring_file(entry);
 					grid_ui_event_register_actionstring(eve, temp);
 					
 					// came from default so no need to store it in eve->action_string
@@ -1445,6 +1448,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 				}
 				else{
 					//grid_platform_printf("Page Load: NULL length\r\n");
+					grid_platform_close_actionstring_file(entry);
 				}
 				
 			}

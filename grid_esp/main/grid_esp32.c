@@ -296,9 +296,18 @@ void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_
 }
 
 
+void grid_platform_close_actionstring_file(void* file_pointer){
+    
+    
+    fclose(file_pointer);
+    ets_printf("CLOSE_FILE\r\n");
+
+}
+
 uint16_t grid_platform_get_actionstring_file_size(void* file_pointer){
 
     uint16_t fsize = grid_esp32_nvm_get_file_size(&grid_esp32_nvm_state, file_pointer);
+
 
     ets_printf("FILE SIZE IS: %d bytes!!!\r\n", fsize);
     return fsize;

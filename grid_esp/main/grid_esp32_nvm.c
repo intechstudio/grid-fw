@@ -201,8 +201,6 @@ void grid_esp32_nvm_read_config(struct grid_esp32_nvm_model* nvm, void* fp, char
         fgets(actionstring, GRID_PARAMETER_ACTIONSTRING_maxlength, fp);
         ESP_LOGI(TAG, "FREAD ACTION %s\r\n", actionstring);
 
-
-        fclose (fp);
     }else{
 
 
@@ -242,6 +240,7 @@ uint16_t grid_esp32_nvm_get_file_size(struct grid_esp32_nvm_model* nvm,  void* f
         return size;
     }
     else{
+        ets_printf("INVALID FP\r\n");
         return 0;
     }
 
