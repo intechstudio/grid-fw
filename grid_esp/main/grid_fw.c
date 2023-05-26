@@ -374,13 +374,13 @@ void app_main(void)
 
 
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD){
-        xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024*2, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024*3, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD ){
-        xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024*2, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024*3, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
 	}	
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD){
-        xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024*2, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024*3, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD ){
         xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*2, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
