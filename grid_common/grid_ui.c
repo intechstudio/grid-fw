@@ -151,7 +151,7 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 	}
 	else{
 		//UNKNOWN ELEMENT TYPE
-		grid_platform_printf("error.unknown_element_type\r\n");
+		//grid_platform_printf("error.unknown_element_type\r\n");
 		ele->template_initializer = NULL;
 	}
 
@@ -214,7 +214,7 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui
 	}
 	else{
 		
-		grid_platform_printf("TRAP: Unknown Event "__FILE__"\r\n");	
+		//grid_platform_printf("TRAP: Unknown Event "__FILE__"\r\n");	
 		while(1){
 
 		}
@@ -326,11 +326,11 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_el
 
 		this->template_parameter_list = malloc(allocation_length*sizeof(int32_t));
 
-		grid_platform_printf("malloc %d %lx\r\n", ele->template_parameter_list_length, this->template_parameter_list);
+		//grid_platform_printf("malloc %d %lx\r\n", ele->template_parameter_list_length, this->template_parameter_list);
 
 		if (this->template_parameter_list == NULL){
 			grid_platform_printf("error.ui.MallocFailed2\r\n");
-			grid_platform_delay_ms(100);
+			//grid_platform_delay_ms(100);
 		}
 		else{
 
@@ -475,17 +475,17 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 		uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
 
 		
-		grid_platform_printf("Allocating i=%d len=%d\r\n", i, template_buffer_length);
+		//grid_platform_printf("Allocating i=%d len=%d\r\n", i, template_buffer_length);
 
-		//if (i==0) grid_platform_printf("TB LEN: %d\r\n", template_buffer_length);
+		//if (i==0) //grid_platform_printf("TB LEN: %d\r\n", template_buffer_length);
 		while (template_buffer_length < page+1){
 
-			grid_platform_printf("$"); // emergency allocation
+			//grid_platform_printf("$"); // emergency allocation
 			grid_ui_template_buffer_create(ele);
 
 			template_buffer_length = grid_ui_template_buffer_list_length(ele);
 
-			//if (i==0) grid_platform_printf("CREATE NEW, LEN: %d\r\n", template_buffer_length);
+			//if (i==0) //grid_platform_printf("CREATE NEW, LEN: %d\r\n", template_buffer_length);
 		}
 
 
@@ -519,9 +519,9 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 	}
 
 
-	grid_platform_printf("STOP\r\n");
+	//grid_platform_printf("STOP\r\n");
 	grid_lua_stop_vm(&grid_lua_state);
-	grid_platform_printf("START\r\n");
+	//grid_platform_printf("START\r\n");
 	grid_lua_start_vm(&grid_lua_state);
 
 	grid_ui_bulk_pageread_init(ui, &grid_ui_page_load_success_callback);
@@ -532,7 +532,7 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 void grid_ui_page_load_success_callback(void){
 
 
-	grid_platform_printf("LOAD SUCCESS\r\n");
+	//grid_platform_printf("LOAD SUCCESS\r\n");
 	grid_keyboard_enable(&grid_keyboard_state);
 
 
@@ -705,7 +705,7 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action
 	struct grid_ui_element* ele = eve->parent;
 
 	if (strlen(action_string) == 0){
-		//grid_platform_printf("NULLSTRING el:%d, elv:%d\r\n", ele->index, eve->type);
+		grid_platform_printf("NULLSTRING el:%d, elv:%d\r\n", ele->index, eve->type);
 		return;
 	}
 	
@@ -974,12 +974,12 @@ void grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, 
 			grid_ui_event_generate_actionstring(eve, targetstring);
 			
 
-			grid_platform_printf("DEFAULT: %s\r\n", targetstring);
+			//grid_platform_printf("DEFAULT: %s\r\n", targetstring);
 
 		}
 		else if (eve->action_string != NULL){
 
-			grid_platform_printf("FOUND eve->action_string: %s\r\n", eve->action_string);
+			//grid_platform_printf("FOUND eve->action_string: %s\r\n", eve->action_string);
 
 			strcpy(targetstring, eve->action_string);
 
@@ -1001,7 +1001,7 @@ void grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, 
 	}		
 	else{
 
-		grid_platform_printf("!!!!! PAGE IS NOT ACTIVE\r\n");
+		//grid_platform_printf("!!!!! PAGE IS NOT ACTIVE\r\n");
 		// use nvm_toc to find the configuration to be sent
 
 		// file pointer

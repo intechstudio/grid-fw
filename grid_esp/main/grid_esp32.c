@@ -300,7 +300,7 @@ void grid_platform_close_actionstring_file(void* file_pointer){
     
     
     fclose(file_pointer);
-    ets_printf("CLOSE_FILE\r\n");
+    //ets_printf("CLOSE_FILE\r\n");
 
 }
 
@@ -309,7 +309,7 @@ uint16_t grid_platform_get_actionstring_file_size(void* file_pointer){
     uint16_t fsize = grid_esp32_nvm_get_file_size(&grid_esp32_nvm_state, file_pointer);
 
 
-    ets_printf("FILE SIZE IS: %d bytes!!!\r\n", fsize);
+    //ets_printf("FILE SIZE IS: %d bytes!!!\r\n", fsize);
     return fsize;
 }
 
@@ -318,7 +318,7 @@ uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, char*
 
 
 
-    ets_printf("READ FILE \r\n");
+    //ets_printf("READ FILE \r\n");
   
   
     grid_esp32_nvm_read_config(&grid_esp32_nvm_state, file_pointer, targetstring);

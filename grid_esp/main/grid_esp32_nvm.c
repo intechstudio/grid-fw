@@ -10,8 +10,9 @@ static const char *TAG = "grid_esp32_nvm";
  
 struct grid_esp32_nvm_model* grid_esp32_nvm_state;
 
-void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm){
 
+
+void grid_esp32_nvm_print_chip_info(){
 
     /* Print chip information */
     esp_chip_info_t chip_info;
@@ -30,8 +31,10 @@ void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm){
             (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
 
     printf("Free heap: %u\n", (unsigned int) esp_get_free_heap_size());
+}
 
-    printf("Now we are starting the LittleFs Demo ...\n");
+
+void grid_esp32_nvm_mount(){
 
     esp_vfs_littlefs_conf_t conf = {
         .base_path = "/littlefs",
@@ -73,8 +76,11 @@ void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm){
         ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
     }
 
+}
 
-    grid_esp32_nvm_list_files(nvm);
+void grid_esp32_nvm_read_write_test(){
+
+    grid_esp32_nvm_list_files(NULL);
 
     // Use POSIX and C standard library functions to work with files.
     // First create a file.
@@ -90,7 +96,7 @@ void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm){
     ESP_LOGI(TAG, "File written");
 
 
-    grid_esp32_nvm_list_files(nvm);
+    grid_esp32_nvm_list_files(NULL);
 
     // Check if destination file exists before renaming
     struct stat st;
@@ -111,7 +117,7 @@ void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm){
     }
 
 
-    grid_esp32_nvm_list_files(nvm);
+    grid_esp32_nvm_list_files(NULL);
 
     // Open renamed file for reading
     ESP_LOGI(TAG, "Reading file");
@@ -133,10 +139,17 @@ void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm){
     ESP_LOGI(TAG, "Read from file: '%s'", line);
 
 
-    grid_esp32_nvm_list_files(nvm);
+    grid_esp32_nvm_list_files(NULL);
 
+}
 
-// ============================================================
+void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm){
+
+    //grid_esp32_nvm_print_chip_info();
+
+    grid_esp32_nvm_mount();
+
+    //grid_esp32_nvm_read_write_test();
 
 
 }
@@ -169,7 +182,7 @@ void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model* nvm, uint8_t page, 
 
     sprintf(fname, "/littlefs/%02x%02x%02x.cfg", page, element, event);
 
-    ESP_LOGI(TAG, "%s : %s", fname, actionstring);
+    ESP_LOGD(TAG, "%s : %s", fname, actionstring);
 
 
     FILE * fp;
@@ -194,17 +207,17 @@ void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model* nvm, uint8_t page, 
 void grid_esp32_nvm_read_config(struct grid_esp32_nvm_model* nvm, void* fp, char* actionstring){
 
 
-    ESP_LOGI(TAG, "TRY READ FILE %lx to %lx\r\n", (long unsigned int)fp, (long unsigned int)actionstring);
+    ESP_LOGD(TAG, "TRY READ FILE %lx to %lx\r\n", (long unsigned int)fp, (long unsigned int)actionstring);
 
     if (fp){
 
         fgets(actionstring, GRID_PARAMETER_ACTIONSTRING_maxlength, fp);
-        ESP_LOGI(TAG, "FREAD ACTION %s\r\n", actionstring);
+        ESP_LOGD(TAG, "FREAD ACTION %s\r\n", actionstring);
 
     }else{
 
 
-        ESP_LOGI(TAG, "FREAD NO FILE \r\n");        
+        ESP_LOGD(TAG, "FREAD NO FILE \r\n");        
     }
 
 
@@ -255,7 +268,7 @@ void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm){
 
 
 
-    ESP_LOGI(TAG, "Suku READ DIRECTORY");
+    ESP_LOGD(TAG, "Suku READ DIRECTORY");
 
     DIR *d;
     struct dirent *dir;
@@ -290,7 +303,7 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page){
 
 
 
-    ESP_LOGI(TAG, "Suku READ DIRECTORY");
+    ESP_LOGD(TAG, "Suku READ DIRECTORY");
 
     DIR *d;
     struct dirent *dir;
@@ -383,7 +396,7 @@ void grid_esp32_nvm_task(void *arg)
     }
 
 
-    ESP_LOGI(TAG, "Deinit LED");
+    ESP_LOGI(TAG, "Deinit NVM");
 
     //Wait to be deleted
     xSemaphoreGive(signaling_sem);

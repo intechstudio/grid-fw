@@ -38,6 +38,8 @@
 #define PORT_TASK_PRIORITY 3
 
 
+#define USB_TASK_PRIORITY 3
+
 #include "driver/ledc.h"
 #include <esp_timer.h>
 
@@ -45,6 +47,7 @@
 #include "grid_esp32_swd.h"
 #include "grid_esp32_port.h"
 #include "grid_esp32_nvm.h"
+#include "grid_esp32_usb.h"
 
 
 #include "esp_log.h"
@@ -71,133 +74,11 @@
 #include "../../grid_common/lua-5.4.3/src/lauxlib.h"
 
 
+static const char *TAG = "main";
 
 
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
-
-static const char *TAG = "USB example";
-
-static uint8_t buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE + 1];
-
-volatile uint16_t grid_usb_rx_double_buffer_index = 0;
-
-void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event)
-{
-    /* initialization */
-    size_t rx_size = 0;
-
-    /* read */
-    esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
-
-
-    for (uint16_t i=0; i<rx_size; i++){
-
-		GRID_PORT_H.rx_double_buffer[grid_usb_rx_double_buffer_index] = buf[i];
-
-		
-		grid_usb_rx_double_buffer_index++;
-		grid_usb_rx_double_buffer_index%=GRID_DOUBLE_BUFFER_RX_SIZE;
-
-	}
-
-    //ESP_LOGI(TAG, "Data from channel %d len: %d", itf, rx_size);
-
-}
-
-void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event)
-{
-    int dtr = event->line_state_changed_data.dtr;
-    int rts = event->line_state_changed_data.rts;
-    ESP_LOGI(TAG, "Line state changed on channel %d: DTR:%d, RTS:%d", itf, dtr, rts);
-}
-
-
-
-
-//------------- CLASS -------------//
-#define CFG_TUD_CDC             1
-#define CFG_TUD_HID             0
-#define CFG_TUD_MIDI            1
-#define CFG_TUD_MSC             0
-#define CFG_TUD_VENDOR          0
-
-
-/** Helper defines **/
-
-// Interface counter
-enum interface_count {
-#if CFG_TUD_MIDI
-    ITF_NUM_MIDI = 0,
-    ITF_NUM_MIDI_STREAMING,
-#endif
-#if CFG_TUD_CDC
-    ITF_NUM_CDC_NOTIFY,
-    ITF_NUM_CDC_DATA,
-#endif
-    ITF_COUNT
-};
-
-// USB Endpoint numbers
-enum usb_endpoints {
-    // Available USB Endpoints: 5 IN/OUT EPs and 1 IN EP
-    EP_EMPTY = 0,
-#if CFG_TUD_MIDI
-    EPNUM_MIDI,
-#endif
-#if CFG_TUD_CDC
-    EPNUM_CDC_NOTIFY,
-    EPNUM_CDC_DATA,
-#endif
-};
-
-//#EPNUM_MIDI_IN
-//#EPNUM_MIDI_OUT
-
-
-/** TinyUSB descriptors **/
-
-#define TUSB_DESCRIPTOR_TOTAL_LEN (TUD_CONFIG_DESC_LEN + CFG_TUD_MIDI * TUD_MIDI_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN )
-
-/**
- * @brief String descriptor
- */
-static const char* s_str_desc[6] = {
-    // array of pointer to string descriptors
-    (char[]){0x09, 0x04},  // 0: is supported language is English (0x0409)
-    "Intech Studio",             // 1: Manufacturer
-    "Grid",      // 2: Product
-    "123456",              // 3: Serials, should use chip ID
-    "Intech Grid MIDI device", // 4: MIDI
-    "Intech Grid CDC device",  // 5: CDC
-};
-
-/**
- * @brief Configuration descriptor
- *
- * This is a simple configuration descriptor that defines 1 configuration and a MIDI interface
- */
-static uint8_t s_cfg_desc[] = {
-    // Configuration number, interface count, string index, total length, attribute, power in mA
-    TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESCRIPTOR_TOTAL_LEN, 0, 100),
-
-
-    #if CFG_TUD_CDC
-    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_NOTIFY, 5, (0x80 | EPNUM_CDC_NOTIFY), 64, EPNUM_CDC_DATA, (0x80 | EPNUM_CDC_DATA), 64),
-    #endif
-
-    #if CFG_TUD_MIDI
-    // Interface number, string index, EP Out & EP In address, EP size
-    TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 64),
-    #endif   
-  
-    
-
-
-};
-
-
-#if CFG_TUD_MIDI
 
 static void midi_task_read_example(void *arg)
 {
@@ -217,6 +98,8 @@ static void midi_task_read_example(void *arg)
         }
     }
 }
+
+
 
 static void periodic_rtc_ms_cb(void *arg)
 {
@@ -244,55 +127,28 @@ static void periodic_rtc_ms_cb(void *arg)
 
 }
 
-#endif 
-
 void app_main(void)
 {
 
+
+
+    ESP_LOGI(TAG, "===== MAIN START =====");
 
     gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
     gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
 
 
     // START OF USB
-    ESP_LOGI(TAG, "USB initialization");
+
+    ESP_LOGI(TAG, "===== USB START =====");
+
+    TaskHandle_t usb_task_hdl;
+    xTaskCreatePinnedToCore(grid_esp32_usb_task, "usb", 1024*3, NULL, USB_TASK_PRIORITY, &usb_task_hdl, 0);
 
 
-    tinyusb_config_t tusb_cfg = {
-        .device_descriptor = NULL, // If device_descriptor is NULL, tinyusb_driver_install() will use Kconfig
-        .string_descriptor = s_str_desc,
-        .external_phy = false,
-        .configuration_descriptor = s_cfg_desc,
-    };
-
-    ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
-
-    tinyusb_config_cdcacm_t acm_cfg = {
-        .usb_dev = TINYUSB_USBDEV_0,
-        .cdc_port = TINYUSB_CDC_ACM_0,
-        .rx_unread_buf_sz = 64,
-        .callback_rx = &tinyusb_cdc_rx_callback, // the first way to register a callback
-        .callback_rx_wanted_char = NULL,
-        .callback_line_state_changed = NULL,
-        .callback_line_coding_changed = NULL
-    };
-
-    ESP_ERROR_CHECK(tusb_cdc_acm_init(&acm_cfg));
-    /* the second way to register a callback */
-    ESP_ERROR_CHECK(tinyusb_cdcacm_register_callback(
-                        TINYUSB_CDC_ACM_0,
-                        CDC_EVENT_LINE_STATE_CHANGED,
-                        &tinyusb_cdc_line_state_changed_callback));
-
-    ESP_LOGI(TAG, "USB initialization DONE");
-
-    // END OF USB
 
 
-    static const char *TAG = "main";
-
-
-    vTaskDelay(100);
+    ESP_LOGI(TAG, "===== SWD START =====");
     
     grid_esp32_swd_pico_pins_init(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, GRID_ESP32_PINS_RP_CLOCK);
     grid_esp32_swd_pico_clock_init(LEDC_TIMER_0, LEDC_CHANNEL_0);
@@ -300,42 +156,42 @@ void app_main(void)
 
 
 
-
     SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
-
-
     SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
-    
-
     xSemaphoreGive(nvm_or_port);
 
 
     // GRID MODULE INITIALIZATION SEQUENCE
 
 
+    ESP_LOGI(TAG, "===== NVM START =====");
     grid_esp32_nvm_init(&grid_esp32_nvm_state);
 
+    ESP_LOGI(TAG, "===== SYS START =====");
     grid_sys_init(&grid_sys_state);
+
+    ESP_LOGI(TAG, "===== MSG START =====");
 	grid_msg_init(&grid_msg_state);
 
     grid_usb_midi_init();
     grid_keyboard_init(&grid_keyboard_state);
 
-	grid_lua_init(&grid_lua_state);
+
+    ESP_LOGI(TAG, "===== LUA INIT =====");
+	grid_lua_init(&grid_lua_state);    
+    ESP_LOGI(TAG, "===== LUA START =====");
 	grid_lua_start_vm(&grid_lua_state);
 
     // ================== START: grid_module_pbf4_init() ================== //
 
 	
+    ESP_LOGI(TAG, "===== PORT INIT =====");
     grid_port_init_all();
-    //grid_d51_uart_init();
+    
+    ESP_LOGI(TAG, "===== BANK INIT =====");
     grid_sys_set_bank(&grid_sys_state, 0);
 
-
-    ets_printf("GRID_SYS_TEST %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
-    grid_platform_delay_ms(10);
-
-
+    ESP_LOGI(TAG, "===== UI INIT =====");
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD){
 		grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
 	}
@@ -370,6 +226,8 @@ void app_main(void)
         
 
 
+    ESP_LOGI(TAG, "===== UI TASK INIT =====");
+
     TaskHandle_t module_task_hdl;
 
 
@@ -395,7 +253,9 @@ void app_main(void)
 		printf("Init Module: Unknown Module\r\n");
 	}
 
-	printf("Model init done\r\n");
+
+    ESP_LOGI(TAG, "===== UI TASK DONE =====");
+
 
 
     grid_ui_state.ui_interaction_enabled = 1;
@@ -470,5 +330,8 @@ void app_main(void)
     ESP_LOGI(TAG, "MIDI read task init");
     xTaskCreatePinnedToCore(midi_task_read_example, "midi_task_read_example", 2 * 1024, NULL, 5, NULL, 0);
 #endif
+
+
+    ESP_LOGI(TAG, "===== INIT COMPLETE =====");
 
 }

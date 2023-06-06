@@ -16,7 +16,10 @@
         "grid_esp32_module_bu16.h": "c",
         "grid_esp32_module_en16.h": "c",
         "grid_esp32_module_ef44.h": "c",
-        "functional": "c"
+        "functional": "c",
+        "esp_rom_gpio.h": "c",
+        "grid_esp32_usb.h": "c",
+        "grid_esp32_nvm.h": "c"
     },   
     "files.exclude": {
         ".archive": true,
@@ -57,6 +60,7 @@
                 "singleInstance": true,
                 "command": "podman run --privileged -it -v /dev:/dev -v $PWD:/project -w /project/grid_esp espressif/idf:latest",
                 // idf.py -p $(ls /dev/ttyUSB*) monitor
+                // idf.py -p $(ls /dev/ttyUSB0) monitor
             },
             {
                 "name": "PICO Terminal",

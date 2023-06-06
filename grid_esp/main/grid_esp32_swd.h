@@ -13,6 +13,9 @@
 
 #include "driver/gpio.h"
 
+#include "esp_rom_gpio.h"
+#include "hal/gpio_ll.h"
+
 #include "driver/ledc.h"
 
 #include "rom/ets_sys.h" // For ets_printf
