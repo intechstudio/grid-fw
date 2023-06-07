@@ -142,10 +142,8 @@ void app_main(void)
 
     ESP_LOGI(TAG, "===== USB START =====");
 
-    TaskHandle_t usb_task_hdl;
-    xTaskCreatePinnedToCore(grid_esp32_usb_task, "usb", 1024*3, NULL, USB_TASK_PRIORITY, &usb_task_hdl, 0);
-
-
+    grid_esp32_usb_init();
+    grid_platform_delay_ms(100); // Need delay for usb initialization to complete
 
 
     ESP_LOGI(TAG, "===== SWD START =====");
@@ -153,6 +151,8 @@ void app_main(void)
     grid_esp32_swd_pico_pins_init(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, GRID_ESP32_PINS_RP_CLOCK);
     grid_esp32_swd_pico_clock_init(LEDC_TIMER_0, LEDC_CHANNEL_0);
     grid_esp32_swd_pico_program_sram(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, pico_firmware, pico_firmware_len);
+
+
 
 
 

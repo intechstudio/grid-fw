@@ -35,7 +35,7 @@ extern "C" {
 #endif
 
 void grid_esp32_usb_task(void *arg);
-
+void grid_esp32_usb_init(void);
 
 #ifdef __cplusplus
 }

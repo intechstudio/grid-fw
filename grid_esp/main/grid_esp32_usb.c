@@ -157,15 +157,8 @@ static void midi_task_read_example(void *arg)
 
 #endif 
 
-void grid_esp32_usb_task(void *arg)
-{
 
-
-    SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
-
-
-    ESP_LOGI(TAG, "Test Print From USB");
-
+void grid_esp32_usb_init(){
 
     tinyusb_config_t tusb_cfg = {
         .device_descriptor = NULL, // If device_descriptor is NULL, tinyusb_driver_install() will use Kconfig
@@ -194,6 +187,21 @@ void grid_esp32_usb_task(void *arg)
                         &tinyusb_cdc_line_state_changed_callback));
 
     // END OF USB
+
+}
+
+void grid_esp32_usb_task(void *arg)
+{
+
+
+    SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
+
+
+    ESP_LOGI(TAG, "Test Print From USB");
+    
+    grid_esp32_usb_init();
+
+   
 
 
     while (1) {
