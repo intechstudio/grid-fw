@@ -19,7 +19,8 @@
         "functional": "c",
         "esp_rom_gpio.h": "c",
         "grid_esp32_usb.h": "c",
-        "grid_esp32_nvm.h": "c"
+        "grid_esp32_nvm.h": "c",
+        "grid_esp32_swd.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

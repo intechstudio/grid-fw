@@ -14,9 +14,9 @@ static uint8_t swd_pin_sysclk;
 
 void swd_dummy_clock(void){
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-    //ets_delay_us(SWD_CLOCK_PERIOD);
+    ets_delay_us(SWD_CLOCK_PERIOD);
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    //ets_delay_us(SWD_CLOCK_PERIOD);
+    ets_delay_us(SWD_CLOCK_PERIOD);
 }
 
 void swd_write_raw(uint32_t data, uint8_t length){
@@ -30,16 +30,16 @@ void swd_write_raw(uint32_t data, uint8_t length){
             gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
         }
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
  
     }    
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
 
     gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
 
-    //ets_delay_us(SWD_CLOCK_PERIOD);
+    ets_delay_us(SWD_CLOCK_PERIOD);
 
 }
 
@@ -59,9 +59,9 @@ void swd_write(uint32_t data, uint8_t length){
             gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
         }
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
  
     }    
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
@@ -78,15 +78,15 @@ void swd_write(uint32_t data, uint8_t length){
             gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
         }
 
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
     }
 
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
     gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
 
-    //ets_delay_us(SWD_CLOCK_PERIOD);
+    ets_delay_us(SWD_CLOCK_PERIOD);
 
 }
 
@@ -94,15 +94,15 @@ void swd_linereset(){
 
     for(uint8_t i=0; i<7; i++){
 
-        //ets_delay_us(SWD_CLOCK_PERIOD*1);
+        ets_delay_us(SWD_CLOCK_PERIOD*1);
         gpio_ll_set_level(&GPIO, swd_pin_swdio, 1);
-        //ets_delay_us(SWD_CLOCK_PERIOD*1);
+        ets_delay_us(SWD_CLOCK_PERIOD*1);
 
         swd_write_raw(0xff, 8);
 
-        //ets_delay_us(SWD_CLOCK_PERIOD*1);
+        ets_delay_us(SWD_CLOCK_PERIOD*1);
         gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
-        //ets_delay_us(SWD_CLOCK_PERIOD*1);
+        ets_delay_us(SWD_CLOCK_PERIOD*1);
 
     }
 
@@ -122,14 +122,14 @@ void swd_switch_from_jtag_to_swd(){
         else{
             gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
         }
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
 
     }
 
-    //ets_delay_us(SWD_CLOCK_PERIOD*5);
+    ets_delay_us(SWD_CLOCK_PERIOD*5);
 
 
 }
@@ -141,22 +141,22 @@ void swd_turnround_target_next(){
     gpio_set_direction(swd_pin_swdio, GPIO_MODE_INPUT);
 
 
-    //ets_delay_us(SWD_CLOCK_PERIOD);
+    ets_delay_us(SWD_CLOCK_PERIOD);
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-    //ets_delay_us(SWD_CLOCK_PERIOD);
+    ets_delay_us(SWD_CLOCK_PERIOD);
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    //ets_delay_us(SWD_CLOCK_PERIOD);
+    ets_delay_us(SWD_CLOCK_PERIOD);
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-    //ets_delay_us(SWD_CLOCK_PERIOD);
+    ets_delay_us(SWD_CLOCK_PERIOD);
 
 }
 
 void swd_turnround_host_next(){
     
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-    //ets_delay_us(SWD_CLOCK_PERIOD);
+    ets_delay_us(SWD_CLOCK_PERIOD);
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    //ets_delay_us(SWD_CLOCK_PERIOD);
+    ets_delay_us(SWD_CLOCK_PERIOD);
     gpio_set_direction(swd_pin_swdio, GPIO_MODE_OUTPUT);
 
 }
@@ -167,12 +167,12 @@ uint8_t swd_read_acknowledge(){
 
     for(uint8_t i=0; i<3; i++){
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
 
         acknowledge |= gpio_get_level(swd_pin_swdio)<<(2-i);
 
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
     }
 
     //printf("ACKNOWLEDGE: %d\r\n", acknowledge);
@@ -191,32 +191,32 @@ void swd_target_select(uint8_t core_id){
 
 
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-    // //ets_delay_us(SWD_CLOCK_PERIOD);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
 
 
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    // //ets_delay_us(SWD_CLOCK_PERIOD);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
     
     // gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
 
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-    // //ets_delay_us(SWD_CLOCK_PERIOD);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    // //ets_delay_us(SWD_CLOCK_PERIOD);    
+    // ets_delay_us(SWD_CLOCK_PERIOD);    
 
 
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-    // //ets_delay_us(SWD_CLOCK_PERIOD);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    // //ets_delay_us(SWD_CLOCK_PERIOD);    
+    // ets_delay_us(SWD_CLOCK_PERIOD);    
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-    // //ets_delay_us(SWD_CLOCK_PERIOD);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    // //ets_delay_us(SWD_CLOCK_PERIOD);    
+    // ets_delay_us(SWD_CLOCK_PERIOD);    
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-    // //ets_delay_us(SWD_CLOCK_PERIOD);
+    // ets_delay_us(SWD_CLOCK_PERIOD);
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    // //ets_delay_us(SWD_CLOCK_PERIOD);    
+    // ets_delay_us(SWD_CLOCK_PERIOD);    
 
     swd_turnround_target_next();
     swd_read_acknowledge();
@@ -240,17 +240,17 @@ uint32_t swd_read(uint8_t length){
     uint32_t retval = gpio_get_level(swd_pin_swdio);
     //printf("Read[0:%d]: %d", length-1, gpio_get_level(swd_pin_swdio));
 
-    //ets_delay_us(SWD_CLOCK_PERIOD);
+    ets_delay_us(SWD_CLOCK_PERIOD);
     for(uint8_t i=1; i<length; i++){
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
         retval |= gpio_get_level(swd_pin_swdio)<<(i);
         //printf("%d", gpio_get_level(swd_pin_swdio));
         if (i%4 == 3){
             //printf(" ");
         }
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
 
     }
     //printf("= 0x%08lx\r\n", retval);
@@ -258,9 +258,9 @@ uint32_t swd_read(uint8_t length){
     if (length == 32){
 
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
 
     }
 
@@ -508,15 +508,15 @@ uint32_t swd_read_ap8(){
 
 void swd_idle(){
 
-    //ets_delay_us(SWD_CLOCK_PERIOD*5);
+    ets_delay_us(SWD_CLOCK_PERIOD*5);
 
     // IDLE
     gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
     for(uint8_t i=0; i<8; i++){
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-        //ets_delay_us(SWD_CLOCK_PERIOD);
+        ets_delay_us(SWD_CLOCK_PERIOD);
 
     }
     
@@ -580,7 +580,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
 
 
 
-    //ets_delay_us(100000ul);
+    ets_delay_us(100000ul);
 
     // initialization
     if (1){
@@ -619,24 +619,24 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
         for(uint8_t i=0; i<8; i++){
             gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-            //ets_delay_us(SWD_CLOCK_PERIOD);
+            ets_delay_us(SWD_CLOCK_PERIOD);
             gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-            //ets_delay_us(SWD_CLOCK_PERIOD);
+            ets_delay_us(SWD_CLOCK_PERIOD);
 
         }
 
         swd_linereset();
 
 
-        //ets_delay_us(SWD_CLOCK_PERIOD*5);
+        ets_delay_us(SWD_CLOCK_PERIOD*5);
 
         // IDLE
         gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
         for(uint8_t i=0; i<8; i++){
             gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
-            //ets_delay_us(SWD_CLOCK_PERIOD);
+            ets_delay_us(SWD_CLOCK_PERIOD);
             gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-            //ets_delay_us(SWD_CLOCK_PERIOD);
+            ets_delay_us(SWD_CLOCK_PERIOD);
 
         }
         
@@ -687,7 +687,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
     }
 
 
-    //ets_delay_us(5000ul);
+    ets_delay_us(5000ul);
 
 
     // reset
@@ -957,7 +957,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
 
     }
    
-    //ets_delay_us(5000ul);
+    ets_delay_us(5000ul);
 
     // halt
     if (1){
@@ -1073,7 +1073,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
 
     }
 
-    //ets_delay_us(5000ul);
+    ets_delay_us(5000ul);
 
     // program_sram
     if (1){
@@ -1204,7 +1204,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
     }
 
 
-    //ets_delay_us(5000ul);
+    ets_delay_us(5000ul);
     
 
 

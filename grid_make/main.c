@@ -565,9 +565,9 @@ int main(void)
 
 	grid_d51_usb_init();
 
-	grid_usb_midi_init();
+	grid_usb_midi_buffer_init();
 
-	grid_keyboard_init(&grid_keyboard_state);
+	grid_usb_keyboard_buffer_init(&grid_keyboard_state);
 		
 
 	//  x/512xb 0x80000

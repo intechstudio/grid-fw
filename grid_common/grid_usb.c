@@ -25,7 +25,7 @@ struct grid_keyboard_event_desc grid_keyboard_tx_buffer[GRID_KEYBOARD_TX_BUFFER_
 
 struct grid_keyboard_model grid_keyboard_state;
 
-void grid_usb_midi_init()
+void grid_usb_midi_buffer_init()
 {
 	grid_midi_tx_write_index = 0;
 	grid_midi_tx_read_index = 0;
@@ -39,7 +39,7 @@ void grid_usb_midi_init()
 
 }
 
-void grid_keyboard_init(struct grid_keyboard_model* kb){
+void grid_usb_keyboard_buffer_init(struct grid_keyboard_model* kb){
     
 	grid_keyboard_tx_rtc_lasttimestamp = grid_sys_rtc_get_time(&grid_sys_state);
 	grid_keyboard_tx_write_index = 0;

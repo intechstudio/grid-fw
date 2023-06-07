@@ -28,7 +28,7 @@ extern int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis);
 extern int32_t grid_platform_usb_keyboard_keys_state_change(void* keys_desc, uint8_t keys_count);
 
 
-void grid_usb_midi_init();
+void grid_usb_midi_buffer_init();
 
 
 
@@ -126,7 +126,7 @@ struct grid_keyboard_model{
 
 extern struct grid_keyboard_model grid_keyboard_state;
 
-void grid_keyboard_init(struct grid_keyboard_model* kb);
+void grid_usb_keyboard_buffer_init(struct grid_keyboard_model* kb);
 
 uint8_t grid_keyboard_cleanup(struct grid_keyboard_model* kb);
 

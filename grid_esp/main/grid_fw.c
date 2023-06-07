@@ -127,6 +127,20 @@ static void periodic_rtc_ms_cb(void *arg)
 
 }
 
+
+
+void system_init_core_2_task(void *arg)
+{
+
+
+    grid_esp32_swd_pico_pins_init(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, GRID_ESP32_PINS_RP_CLOCK);
+    grid_esp32_swd_pico_clock_init(LEDC_TIMER_0, LEDC_CHANNEL_0);
+    grid_esp32_swd_pico_program_sram(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, pico_firmware, pico_firmware_len);
+
+    vTaskSuspend(NULL);
+}
+
+
 void app_main(void)
 {
 
@@ -138,27 +152,13 @@ void app_main(void)
     gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
 
 
-    // START OF USB
-
-    ESP_LOGI(TAG, "===== USB START =====");
 
     grid_esp32_usb_init();
-    grid_platform_delay_ms(100); // Need delay for usb initialization to complete
+    grid_usb_midi_buffer_init();
+    grid_usb_keyboard_buffer_init(&grid_keyboard_state);
 
-
-    ESP_LOGI(TAG, "===== SWD START =====");
-    
-    grid_esp32_swd_pico_pins_init(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, GRID_ESP32_PINS_RP_CLOCK);
-    grid_esp32_swd_pico_clock_init(LEDC_TIMER_0, LEDC_CHANNEL_0);
-    grid_esp32_swd_pico_program_sram(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, pico_firmware, pico_firmware_len);
-
-
-
-
-
-    SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
-    SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
-    xSemaphoreGive(nvm_or_port);
+    TaskHandle_t core2_task_hdl;
+    xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024*3, NULL, 4, &core2_task_hdl, 1);
 
 
     // GRID MODULE INITIALIZATION SEQUENCE
@@ -171,22 +171,19 @@ void app_main(void)
     grid_sys_init(&grid_sys_state);
 
     ESP_LOGI(TAG, "===== MSG START =====");
-	grid_msg_init(&grid_msg_state);
+	grid_msg_init(&grid_msg_state); //setup session id, last message buffer init
 
-    grid_usb_midi_init();
-    grid_keyboard_init(&grid_keyboard_state);
+
 
 
     ESP_LOGI(TAG, "===== LUA INIT =====");
-	grid_lua_init(&grid_lua_state);    
-    ESP_LOGI(TAG, "===== LUA START =====");
-	grid_lua_start_vm(&grid_lua_state);
+	grid_lua_init(&grid_lua_state);
 
     // ================== START: grid_module_pbf4_init() ================== //
 
 	
     ESP_LOGI(TAG, "===== PORT INIT =====");
-    grid_port_init_all();
+    grid_port_init_all(); // buffers
     
     ESP_LOGI(TAG, "===== BANK INIT =====");
     grid_sys_set_bank(&grid_sys_state, 0);
@@ -226,11 +223,13 @@ void app_main(void)
         
 
 
+    SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
+
+    
+
     ESP_LOGI(TAG, "===== UI TASK INIT =====");
 
     TaskHandle_t module_task_hdl;
-
-
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD){
         xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024*3, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
 	}
@@ -255,7 +254,7 @@ void app_main(void)
 
 
     ESP_LOGI(TAG, "===== UI TASK DONE =====");
-
+    
 
 
     grid_ui_state.ui_interaction_enabled = 1;
@@ -263,7 +262,26 @@ void app_main(void)
 
 
 
+    
+
+
+
+    //Create the class driver task
+    TaskHandle_t led_task_hdl;
+    xTaskCreatePinnedToCore(grid_esp32_led_task,
+                            "led",
+                            1024*3,
+                            (void *)signaling_sem,
+                            LED_TASK_PRIORITY,
+                            &led_task_hdl,
+                            0);
+
+    TaskHandle_t nvm_task_hdl;
+
+
     TaskHandle_t port_task_hdl;
+    SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
+    xSemaphoreGive(nvm_or_port);
 
 
     //Create the class driver task
@@ -276,19 +294,9 @@ void app_main(void)
                             0);
 
 
-    TaskHandle_t led_task_hdl;
 
-    //Create the class driver task
-    xTaskCreatePinnedToCore(grid_esp32_led_task,
-                            "led",
-                            1024*3,
-                            (void *)signaling_sem,
-                            LED_TASK_PRIORITY,
-                            &led_task_hdl,
-                            0);
 
-    TaskHandle_t nvm_task_hdl;
-
+    
     //Create the class driver task
     xTaskCreatePinnedToCore(grid_esp32_nvm_task,
                             "nvm",
@@ -315,13 +323,14 @@ void app_main(void)
 
     esp_timer_create_args_t periodic_rtc_ms_args = {
         .callback = &periodic_rtc_ms_cb,
-        /* name is optional, but may help identify the timer when debugging */
         .name = "rtc millisecond"
     };
 
    esp_timer_handle_t periodic_rtc_ms_timer;
    ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 10000));
+
+    
 
 
 #if CFG_TUD_MIDI
@@ -331,6 +340,7 @@ void app_main(void)
     xTaskCreatePinnedToCore(midi_task_read_example, "midi_task_read_example", 2 * 1024, NULL, 5, NULL, 0);
 #endif
 
+    
 
     ESP_LOGI(TAG, "===== INIT COMPLETE =====");
 

@@ -50,17 +50,6 @@ void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event)
 
 
 
-
-//------------- CLASS -------------//
-#define CFG_TUD_CDC             1
-#define CFG_TUD_HID             0
-#define CFG_TUD_MIDI            1
-#define CFG_TUD_MSC             0
-#define CFG_TUD_VENDOR          0
-
-
-/** Helper defines **/
-
 // Interface counter
 enum interface_count {
 #if CFG_TUD_MIDI
@@ -200,19 +189,6 @@ void grid_esp32_usb_task(void *arg)
     ESP_LOGI(TAG, "Test Print From USB");
     
     grid_esp32_usb_init();
-
-   
-
-
-    while (1) {
-
-     
-
-        vTaskDelay(pdMS_TO_TICKS(10));
-
-
-
-    }
 
 
     ESP_LOGI(TAG, "Deinit USB");
