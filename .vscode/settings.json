@@ -20,7 +20,14 @@
         "esp_rom_gpio.h": "c",
         "grid_esp32_usb.h": "c",
         "grid_esp32_nvm.h": "c",
-        "grid_esp32_swd.h": "c"
+        "grid_esp32_swd.h": "c",
+        "grid_led.h": "c",
+        "adc_continuous.h": "c",
+        "grid_esp32_adc.h": "c",
+        "adc_oneshot.h": "c",
+        "grid_esp32_pins.h": "c",
+        "array": "c",
+        "string": "c"
     },   
     "files.exclude": {
         ".archive": true,
