@@ -6,7 +6,7 @@ static volatile uint8_t adc_complete_count = 0;
 static uint8_t multiplexer_index =0;
 static const uint8_t multiplexer_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15};
 
-static uint32_t last_real_time[16] = {0};
+static uint64_t last_real_time[16] = {0};
 
 
 static void hardware_start_transfer(void){

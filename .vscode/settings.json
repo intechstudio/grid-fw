@@ -27,7 +27,8 @@
         "adc_oneshot.h": "c",
         "grid_esp32_pins.h": "c",
         "array": "c",
-        "string": "c"
+        "string": "c",
+        "grid_msg.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

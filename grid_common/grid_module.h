@@ -22,9 +22,9 @@ void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui);
 
 
-void grid_ui_potmeter_store_input(uint8_t input_channel, uint32_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
-void grid_ui_button_store_input(uint8_t input_channel, uint32_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
-void grid_ui_encoder_store_input(uint8_t input_channel, uint32_t* encoder_last_real_time, uint32_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock);
+void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
+void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
+void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, uint64_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock);
 
 
 #endif

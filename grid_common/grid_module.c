@@ -20,7 +20,7 @@ void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 }
 
 
-void grid_ui_potmeter_store_input(uint8_t input_channel, uint32_t* last_real_time, uint16_t value, uint8_t adc_bit_depth){
+void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth){
 
 	const uint16_t adc_max_value = (1<<adc_bit_depth) - 1;
 
@@ -32,16 +32,16 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint32_t* last_real_tim
 	grid_ain_add_sample(&grid_ain_state, input_channel, value, adc_bit_depth, (uint8_t) resolution);
 
 	// limit lastrealtime
-	uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, *last_real_time);
+	uint64_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, *last_real_time);
 	if (GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS < grid_sys_rtc_get_elapsed_time(&grid_sys_state, *last_real_time)){
-		*last_real_time = grid_sys_rtc_get_time(&grid_sys_state) - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+		*last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
 		elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
 	}
 
 	if (grid_ain_get_changed(&grid_ain_state, input_channel)){
 
 		// update lastrealtime
-		*last_real_time = grid_sys_rtc_get_time(&grid_sys_state); 
+		*last_real_time = grid_platform_rtc_get_micros(); 
 		template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] = elapsed_time/RTC1MS;
 
 		int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
@@ -96,7 +96,7 @@ void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 }
 
 
-void grid_ui_button_store_input(uint8_t input_channel, uint32_t* last_real_time, uint16_t value, uint8_t adc_bit_depth){
+void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth){
 
 	const uint16_t adc_max_value = (1<<adc_bit_depth) - 1;
 
@@ -105,7 +105,7 @@ void grid_ui_button_store_input(uint8_t input_channel, uint32_t* last_real_time,
 	// limit lastrealtime
 	uint32_t elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, *last_real_time);
 	if (GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS < grid_sys_rtc_get_elapsed_time(&grid_sys_state, *last_real_time)){
-		*last_real_time = grid_sys_rtc_get_time(&grid_sys_state) - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+		*last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
 		elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
 	}
 
@@ -141,7 +141,7 @@ void grid_ui_button_store_input(uint8_t input_channel, uint32_t* last_real_time,
 	template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = value;
 	
 	// update lastrealtime
-	*last_real_time = grid_sys_rtc_get_time(&grid_sys_state); 
+	*last_real_time = grid_platform_rtc_get_micros(); 
 	template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] = elapsed_time/RTC1MS;
 
 
@@ -265,7 +265,7 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 }
 
-void grid_ui_encoder_store_input(uint8_t input_channel, uint32_t* encoder_last_real_time, uint32_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock){
+void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, uint64_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock){
 
 
 
@@ -275,12 +275,12 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint32_t* encoder_last_r
 	// limit lastrealtime
 	uint32_t button_elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, *button_last_real_time);
 	if (GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS < grid_sys_rtc_get_elapsed_time(&grid_sys_state, *button_last_real_time)){
-		*button_last_real_time = grid_sys_rtc_get_time(&grid_sys_state) - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+		*button_last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
 		button_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
 	}
 	uint32_t encoder_elapsed_time = grid_sys_rtc_get_elapsed_time(&grid_sys_state, *encoder_last_real_time);
 	if (GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS < grid_sys_rtc_get_elapsed_time(&grid_sys_state, *encoder_last_real_time)){
-		*encoder_last_real_time = grid_sys_rtc_get_time(&grid_sys_state) - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
+		*encoder_last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
 		encoder_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*RTC1MS;
 	}
 			
@@ -328,7 +328,7 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint32_t* encoder_last_r
 			// BUTTON CHANGE
 
 			// update lastrealtime
-			*button_last_real_time = grid_sys_rtc_get_time(&grid_sys_state); 
+			*button_last_real_time = grid_platform_rtc_get_micros(); 
 			template_parameter_list[GRID_LUA_FNC_E_BUTTON_ELAPSED_index] = button_elapsed_time/RTC1MS;
 
 
@@ -399,7 +399,7 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint32_t* encoder_last_r
 		if (delta != 0){ // The encoder rotation has changed
 
 			// update lastrealtime
-			*encoder_last_real_time = grid_sys_rtc_get_time(&grid_sys_state); 
+			*encoder_last_real_time = grid_platform_rtc_get_micros(); 
 			template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] = encoder_elapsed_time/RTC1MS;
 
 

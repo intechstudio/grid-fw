@@ -19,7 +19,7 @@ uint16_t grid_midi_rx_read_index;
 
 uint16_t grid_keyboard_tx_write_index;
 uint16_t grid_keyboard_tx_read_index;
-uint32_t grid_keyboard_tx_rtc_lasttimestamp;
+uint64_t grid_keyboard_tx_rtc_lasttimestamp;
 
 struct grid_keyboard_event_desc grid_keyboard_tx_buffer[GRID_KEYBOARD_TX_BUFFER_length];
 
@@ -41,7 +41,7 @@ void grid_usb_midi_buffer_init()
 
 void grid_usb_keyboard_buffer_init(struct grid_keyboard_model* kb){
     
-	grid_keyboard_tx_rtc_lasttimestamp = grid_sys_rtc_get_time(&grid_sys_state);
+	grid_keyboard_tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
 	grid_keyboard_tx_write_index = 0;
 	grid_keyboard_tx_read_index = 0;
 	grid_keyboard_buffer_init(grid_keyboard_tx_buffer, GRID_KEYBOARD_TX_BUFFER_length);
@@ -451,8 +451,8 @@ void grid_keyboard_tx_pop(){
             key.delay = 0;
 
 			grid_keyboard_tx_read_index = (grid_keyboard_tx_read_index+1)%GRID_KEYBOARD_TX_BUFFER_length;
-            
-            grid_keyboard_tx_rtc_lasttimestamp = grid_sys_rtc_get_time(&grid_sys_state);
+ 
+			grid_keyboard_tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
 
 			// 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
 

@@ -15,6 +15,7 @@
 #include "rom/ets_sys.h" // For ets_printf
 #include "esp_efuse.h"
 
+#include "esp_timer.h"
 
 #include "bootloader_random.h"
 #include "esp_random.h"
@@ -102,6 +103,9 @@ int32_t grid_platform_usb_midi_write_status(void);
 
 uint8_t grid_platform_get_adc_bit_depth();
 
+
+
+uint64_t grid_platform_rtc_get_micros(void);
 
 #ifdef __cplusplus
 }

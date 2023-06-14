@@ -284,14 +284,14 @@ static void outbound_task_inner(){
 }
 
 
-static uint32_t led_last_tick = 0;
+static uint64_t led_lastrealtime = 0;
 
 static void led_task_inner(){
 
 
-	if (RTC1MS*10 < grid_sys_rtc_get_elapsed_time(&grid_sys_state, led_last_tick)){
+	if (10 * 1000 < grid_sys_rtc_get_elapsed_time(&grid_sys_state, led_lastrealtime)){
 	
-		led_last_tick = grid_sys_rtc_get_time(&grid_sys_state);
+		led_lastrealtime = grid_platform_rtc_get_micros();
 
 		grid_led_tick(&grid_led_state);
 		
@@ -725,7 +725,7 @@ int main(void)
 
 			
 
-			if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state))>2000*RTC1MS){
+			if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state))>2000){ // 2 sec
 
 				printf("EDITOR timeout\r\n");
 

@@ -11,8 +11,8 @@ static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 
 static volatile uint8_t UI_SPI_RX_BUFFER_LAST[16] = {0};
 
-static uint32_t encoder_last_real_time[16] = {0};
-static uint32_t button_last_real_time[16] = {0};
+static uint64_t encoder_last_real_time[16] = {0};
+static uint64_t button_last_real_time[16] = {0};
 
 static uint8_t phase_change_lock_array[16] = {0};
 

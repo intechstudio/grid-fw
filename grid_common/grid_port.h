@@ -15,7 +15,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-
+extern uint64_t grid_platform_rtc_get_micros(void);
 
 extern uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
 extern uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);

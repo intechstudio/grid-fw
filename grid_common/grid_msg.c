@@ -55,7 +55,7 @@ void grid_msg_clear_lastheader(struct grid_msg_model* mod, enum grid_msg_lasthea
 
 
 
-void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* mod, uint32_t timestamp){
+void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* mod, uint64_t timestamp){
 	mod->editor_heartbeat_lastrealtime = timestamp;
 }
 

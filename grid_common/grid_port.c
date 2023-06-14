@@ -445,7 +445,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 							printf("BELL 0\r\n");
 							// Generate new local
 							
-							por->ping_local_token  = grid_sys_rtc_get_time(&grid_sys_state)%128;
+							por->ping_local_token  = grid_platform_rtc_get_micros()%128;
 							
 							//NEW
 							grid_msg_string_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
@@ -1813,7 +1813,7 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 							grid_port_debug_print_text("EDITOR connect");
 						}
 
-						grid_msg_set_editor_heartbeat_lastrealtime(&grid_msg_state, grid_sys_rtc_get_time(&grid_sys_state));
+						grid_msg_set_editor_heartbeat_lastrealtime(&grid_msg_state, grid_platform_rtc_get_micros());
 
 						if (type == 255){
 							grid_ui_state.page_change_enabled = 1;

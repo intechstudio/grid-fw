@@ -56,7 +56,7 @@ struct grid_msg_model
 {
 	
 
-	uint32_t editor_heartbeat_lastrealtime;
+	uint64_t editor_heartbeat_lastrealtime;
 	uint8_t heartbeat_type;
 
 	uint32_t recent_messages[GRID_MSG_RECENT_FINGERPRINT_BUFFER_LENGTH];
@@ -102,7 +102,7 @@ void grid_msg_clear_lastheader(struct grid_msg_model* mod, enum grid_msg_lasthea
 uint8_t grid_msg_get_lastheader_state(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index);
 uint8_t grid_msg_get_lastheader_id(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index);
 
-void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* mod, uint32_t timestamp);
+void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* mod, uint64_t timestamp);
 uint32_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* mod);
 
 
