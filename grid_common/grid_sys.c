@@ -26,7 +26,6 @@ void grid_sys_init(struct grid_sys_model* mod){
 	mod->uniqueid_array[3] = uniqueid[3];
 
 	// LOCAL INITIALIZERS
-	mod->uptime = 0;
 
 	
 	mod->midirx_any_enabled = 1;
@@ -232,43 +231,6 @@ void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber){
 
 	
 }
-
-
-
-// REALTIME
-
-
-uint32_t grid_sys_get_uptime(struct grid_sys_model* mod){
-	return mod->uptime;
-}
-
-uint32_t grid_sys_rtc_get_time(struct grid_sys_model* mod){
-	return mod->realtime;
-}
-
-void grid_sys_rtc_set_time(struct grid_sys_model* mod, uint32_t tvalue){
-	
-	mod->realtime = tvalue;
-}
-
-uint32_t grid_sys_rtc_get_elapsed_time(struct grid_sys_model* mod, uint32_t t_old){
-	
-	return mod->realtime-t_old;
-	
-	
-
-}
-
-void grid_sys_rtc_tick_time(struct grid_sys_model* sys){
-	
-	sys->realtime++;
-	if (sys->uptime != -1){
-		sys->uptime++;
-	}
-	
-}
-
-
 
 
 uint32_t grid_sys_get_hwcfg(struct grid_sys_model* mod){

@@ -28,6 +28,11 @@ extern int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis);
 extern int32_t grid_platform_usb_keyboard_keys_state_change(void* keys_desc, uint8_t keys_count);
 
 
+extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
+
+
+
+
 void grid_usb_midi_buffer_init();
 
 
@@ -91,7 +96,7 @@ struct grid_keyboard_event_desc {
 
 extern uint16_t grid_keyboard_tx_write_index;
 extern uint16_t grid_keyboard_tx_read_index;
-extern uint32_t grid_keyboard_tx_rtc_lasttimestamp;
+extern uint64_t grid_keyboard_tx_rtc_lasttimestamp;
 
 
 

@@ -289,7 +289,7 @@ static uint64_t led_lastrealtime = 0;
 static void led_task_inner(){
 
 
-	if (10 * 1000 < grid_sys_rtc_get_elapsed_time(&grid_sys_state, led_lastrealtime)){
+	if (10 * 1000 < grid_platform_rtc_get_elapsed_time(led_lastrealtime)){
 	
 		led_lastrealtime = grid_platform_rtc_get_micros();
 
@@ -345,10 +345,11 @@ void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 	
 }
 
+#define RTC1SEC 16384
+#define RTC1MS (RTC1SEC/1000)
+
 void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
-
-	grid_sys_rtc_tick_time(&grid_sys_state);
 
 	uint64_t micros = grid_platform_rtc_get_micros();
 	micros += 1000000/RTC1SEC; // 1 000 000 us / 16384TICK/SEC = 1 TICK
@@ -725,7 +726,7 @@ int main(void)
 
 			
 
-			if (grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state))>2000){ // 2 sec
+			if (grid_platform_rtc_get_elapsed_time(grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state))>2000){ // 2 sec
 
 				printf("EDITOR timeout\r\n");
 

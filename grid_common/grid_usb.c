@@ -437,10 +437,10 @@ void grid_keyboard_tx_pop(){
 		
         
         
-        uint32_t elapsed = grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_keyboard_tx_rtc_lasttimestamp);
+        uint32_t elapsed = grid_platform_rtc_get_elapsed_time(grid_keyboard_tx_rtc_lasttimestamp);
         
         
-		if (elapsed > grid_keyboard_tx_buffer[grid_keyboard_tx_read_index].delay*RTC1MS){
+		if (elapsed > grid_keyboard_tx_buffer[grid_keyboard_tx_read_index].delay*MS_TO_US){
 			
 
             struct grid_keyboard_event_desc key;

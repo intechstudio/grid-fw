@@ -28,7 +28,8 @@
         "grid_esp32_pins.h": "c",
         "array": "c",
         "string": "c",
-        "grid_msg.h": "c"
+        "grid_msg.h": "c",
+        "grid_usb.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

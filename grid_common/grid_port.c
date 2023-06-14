@@ -2012,14 +2012,16 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 				
 					grid_msg_packet_body_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
 				
-					grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_UPTIME_UPTIME_offset, GRID_CLASS_UPTIME_UPTIME_length, grid_sys_get_uptime(&grid_sys_state));
+
+					uint64_t uptime = grid_platform_rtc_get_micros();
+
+					grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_UPTIME_UPTIME_offset, GRID_CLASS_UPTIME_UPTIME_length, (uint32_t)uptime);
 					
-					uint32_t uptime = grid_sys_get_uptime(&grid_sys_state);
 					
-					uint32_t milliseconds = uptime/RTC1MS%1000;
-					uint32_t seconds = 		uptime/RTC1MS/1000%60;
-					uint32_t minutes =		uptime/RTC1MS/1000/60%60;
-					uint32_t hours =		uptime/RTC1MS/1000/60/60%60;
+					uint32_t milliseconds = uptime/MS_TO_US%1000;
+					uint32_t seconds = 		uptime/MS_TO_US/1000%60;
+					uint32_t minutes =		uptime/MS_TO_US/1000/60%60;
+					uint32_t hours =		uptime/MS_TO_US/1000/60/60%60;
 					
 				
 					grid_msg_packet_close(&grid_msg_state, &response);
