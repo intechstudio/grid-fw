@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 
-#define ADC_CONVERSION_FRAME_SIZE         32*SOC_ADC_DIGI_DATA_BYTES_PER_CONV
+#define ADC_CONVERSION_FRAME_SIZE         64*SOC_ADC_DIGI_DATA_BYTES_PER_CONV
 #define ADC_BUFFER_SIZE                   ADC_CONVERSION_FRAME_SIZE*4
 
 struct grid_esp32_adc_model
@@ -43,7 +43,7 @@ struct grid_esp32_adc_model
 
 };
 
-extern struct grid_esp32_adc_model grid_esp32_adc_state;
+extern struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
 
 static uint16_t DRAM_ATTR grid_esp32_adc_result_buffer[ADC_CONVERSION_FRAME_SIZE+4];
@@ -59,6 +59,7 @@ void grid_esp32_adc_mux_pins_init(void);
 void IRAM_ATTR grid_esp32_adc_mux_update(uint8_t mux_index);
 
 void grid_esp32_adc_start(struct grid_esp32_adc_model* adc);
+void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc);
 
 
 #ifdef __cplusplus

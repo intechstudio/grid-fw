@@ -127,77 +127,10 @@ bool IRAM_ATTR s_conv_done_cb(adc_continuous_handle_t handle, const adc_continuo
 {
 
     BaseType_t mustYield = pdFALSE;
-
-
-    if (((uint16_t*)user_data)[4] == 255){
-
-        ((uint16_t*)user_data)[4] = 0;
-
-
-        uint32_t ret_num = 0;
-        uint8_t res[ADC_CONVERSION_FRAME_SIZE] = {0};
-
-        adc_continuous_read(handle, res, ADC_CONVERSION_FRAME_SIZE, &ret_num, 0);
-        uint32_t result_count = ret_num/SOC_ADC_DIGI_RESULT_BYTES;
-
-        // separated interleved results from the two channels
-        uint16_t channel_0 = ((adc_digi_output_data_t*)&res)[0].type2.channel;
-        uint16_t channel_1 = ((adc_digi_output_data_t*)&res)[1].type2.channel;
-
-        uint64_t channel_0_sum = 0;
-        uint64_t channel_1_sum = 0;
-
-        uint32_t channel_0_count = 0;
-        uint32_t channel_1_count = 0;
-
-        uint16_t result_length = 0;
-
-        // skip first couple of results
-        for (int i = 4; i < result_count-4; i++) {
-            
-            adc_digi_output_data_t *p = (adc_digi_output_data_t*)&res[i*SOC_ADC_DIGI_RESULT_BYTES];
-
-            uint16_t channel = p->type2.channel;
-            uint32_t data = p->type2.data;
-            uint16_t adcresult = data;
-
-            if (channel == channel_0){
-                
-                channel_0_sum += adcresult; 
-                channel_0_count++;
-
-            }
-
-
-            if (channel == channel_1){
-                
-                channel_1_sum += adcresult; 
-                channel_1_count++;
-
-            }
-
-
-        }
-
-        ((uint16_t*)user_data)[0] = channel_0*2 + multiplexer_index;
-        ((uint16_t*)user_data)[1] = channel_1*2 + multiplexer_index;
-        ((uint16_t*)user_data)[2] = channel_0_sum/channel_0_count;
-        ((uint16_t*)user_data)[3] = channel_1_sum/channel_1_count;
-
-        multiplexer_index++;
-        multiplexer_index%=2;
-        grid_esp32_adc_mux_update(multiplexer_index);
-
-        //Notify that ADC continuous driver has done enough number of conversions
-        vTaskNotifyGiveFromISR(task_handle, &mustYield);
-
-        
-
-
-    }
-
-
-
+    gpio_ll_set_level(&GPIO, 47,1);
+    vTaskNotifyGiveFromISR(task_handle, &mustYield);
+    ets_delay_us(10);
+    gpio_ll_set_level(&GPIO, 47,0);
     return (mustYield == pdTRUE);
 }
 
@@ -238,36 +171,133 @@ void grid_esp32_module_ef44_task(void *arg)
 
     ret = spi_device_queue_trans(spi, &t, portMAX_DELAY);
 
+    
+    uint8_t res[ADC_CONVERSION_FRAME_SIZE*5] = {0};
+
     while (1) {
 
-
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        
-
-        interrupt_count++;
 
 
-        uint16_t channel_0_index = 0;
-        uint16_t channel_1_index = 0;
+        uint32_t ret_num = 0;
+
+        uint8_t channel_0_index = 0;
+        uint8_t channel_1_index = 0;
         uint16_t channel_0_value = 0;
         uint16_t channel_1_value = 0;
 
-        
-        grid_esp32_adc_read(&grid_esp32_adc_state, &channel_0_index, &channel_1_index, &channel_0_value, &channel_1_value);
+
+        uint16_t channel_0_valid = true;
+        uint16_t channel_1_valid = true;
+
+
+        esp_err_t ret = adc_continuous_read(grid_esp32_adc_state.adc_handle, res, ADC_CONVERSION_FRAME_SIZE*5, &ret_num, 0);
+
+        multiplexer_index++;
+        multiplexer_index%=2;
+        grid_esp32_adc_mux_update(multiplexer_index);
+
+        uint32_t result_count = ret_num/SOC_ADC_DIGI_RESULT_BYTES;
+
+        if (ret == ESP_OK) {
+            
+
+
+            // separated interleved results from the two channels
+            channel_0_index = ((adc_digi_output_data_t*)&res)[0].type2.channel;
+            channel_1_index = ((adc_digi_output_data_t*)&res)[1].type2.channel;
+
+            uint64_t channel_0_sum = 0;
+            uint64_t channel_1_sum = 0;
+
+            uint32_t channel_0_count = 0;
+            uint32_t channel_1_count = 0;
+
+            uint16_t result_length = 0;
+
+            // skip first couple of results
+            for (int i = result_count-32; i < result_count; i++) {
+                
+                adc_digi_output_data_t *p = (adc_digi_output_data_t*)&res[i*SOC_ADC_DIGI_RESULT_BYTES];
+
+                uint16_t channel = p->type2.channel;
+                uint32_t data = p->type2.data;
+                uint16_t adcresult = data;
+
+                if (channel == channel_0_index){
+                    
+                    channel_0_sum += adcresult; 
+                    channel_0_count++;
+
+                    if ( abs(adcresult - channel_0_sum/channel_0_count) > 5){
+                        //channel_0_valid = false;
+                    }
+
+                }
+
+
+                if (channel == channel_1_index){
+                    
+                    channel_1_sum += adcresult; 
+                    channel_1_count++;
+                                
+                    if ( abs(adcresult - channel_1_sum/channel_1_count) > 5){
+                        //channel_1_valid = false;
+                    }
+
+                }
+
+
+            }
+
+            if (channel_0_count != 0){
+                channel_0_value = channel_0_sum/channel_0_count;
+            }
+            else{
+                channel_0_valid = false;
+            }
+
+            if (channel_1_count != 0){
+                channel_1_value = channel_1_sum/channel_1_count;
+            }
+            else{
+                channel_1_valid = false;
+            }
+
+
+        }
+
             
         int32_t result_resolution = 7;
         int32_t source_resolution = 12;
 
+        if (channel_0_valid){
+            grid_ui_potmeter_store_input(2*channel_0_index+4+1-multiplexer_index, &last_real_time[channel_0_index], channel_0_value, 12); // 12 bit analog values
+        }
+        if (channel_1_valid){
+            grid_ui_potmeter_store_input(2*channel_1_index+4+1-multiplexer_index, &last_real_time[channel_1_index], channel_1_value, 12); // 12 bit analog values
+        }
 
-        grid_ui_potmeter_store_input(channel_0_index+4, &last_real_time[channel_0_index], channel_0_value, 12); // 12 bit analog values
-        grid_ui_potmeter_store_input(channel_1_index+4, &last_real_time[channel_1_index], channel_1_value, 12); // 12 bit analog values
+
+        // if (multiplexer_index == 0){
+
+        //     if (channel_0_index == 0){
+
+        //         ets_printf("%04d: %d %d %d %d \r\n", result_count,channel_0_index, channel_1_index, channel_0_value, channel_1_value);
+        //     }
+        //     else{
+
+        //         ets_printf("%04d: %d %d %d %d \r\n", result_count,channel_1_index, channel_0_index, channel_1_value, channel_0_value);
+        //     }
+        // }
 
 
-        //ets_printf("%d %d %d %d \r\n", channel_0_index, channel_1_index, channel_0_value, channel_1_value);
-        
+        vTaskDelay(pdMS_TO_TICKS(2));
 
-        vTaskDelay(pdMS_TO_TICKS(1));
- 
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        adc_continuous_read(grid_esp32_adc_state.adc_handle, res, ADC_CONVERSION_FRAME_SIZE*5, &ret_num, 0);
+
+
     }
 
 

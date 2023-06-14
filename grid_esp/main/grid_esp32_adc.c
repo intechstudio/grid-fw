@@ -6,7 +6,7 @@
 
 #include "grid_esp32_adc.h"
 
-struct grid_esp32_adc_model grid_esp32_adc_state;
+struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
 void continuous_adc_init(adc_continuous_handle_t *out_handle)
 {
@@ -19,7 +19,7 @@ void continuous_adc_init(adc_continuous_handle_t *out_handle)
     ESP_ERROR_CHECK(adc_continuous_new_handle(&adc_config, &handle));
 
     adc_continuous_config_t dig_cfg = {
-        .sample_freq_hz = SOC_ADC_SAMPLE_FREQ_THRES_HIGH/4,
+        .sample_freq_hz = SOC_ADC_SAMPLE_FREQ_THRES_HIGH/2,
         .conv_mode = ADC_CONV_SINGLE_UNIT_1,
         .format = ADC_DIGI_OUTPUT_FORMAT_TYPE2,
     };
@@ -65,6 +65,10 @@ void grid_esp32_adc_mux_pins_init(void){
     gpio_set_level(GRID_ESP32_PINS_MUX_1_B, 0);
     gpio_set_level(GRID_ESP32_PINS_MUX_1_C, 0);
 
+    gpio_set_direction(47, GPIO_MODE_OUTPUT);
+    gpio_set_level(47, 0);
+
+
 }
 
 void IRAM_ATTR grid_esp32_adc_mux_update(uint8_t mux_index){
@@ -102,6 +106,13 @@ void grid_esp32_adc_start(struct grid_esp32_adc_model* adc){
 
 
     ESP_ERROR_CHECK(adc_continuous_start(adc->adc_handle));
+
+}
+
+void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc){
+
+
+    ESP_ERROR_CHECK(adc_continuous_stop(adc->adc_handle));
 
 }
 
