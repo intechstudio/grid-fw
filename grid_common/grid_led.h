@@ -82,9 +82,6 @@ uint8_t grid_led_framebuffer_set_color(struct grid_led_model* mod, uint32_t led_
 // TIME TICK FOR ANIMATIONS
 void grid_led_tick(struct grid_led_model* mod);
 
-void grid_led_set_tick_lastrealtime(struct grid_led_model* mod, uint32_t lastrealtime);
-uint32_t grid_led_get_tick_lastrealtime(struct grid_led_model* mod);
-
 void grid_led_set_alert(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_t b, uint16_t duration);
 
 void grid_led_set_alert_timeout(struct grid_led_model* mod, uint8_t timeout);

@@ -284,12 +284,14 @@ static void outbound_task_inner(){
 }
 
 
+static uint32_t led_last_tick = 0;
+
 static void led_task_inner(){
 
 
-	if (RTC1MS*10 < grid_sys_rtc_get_elapsed_time(&grid_sys_state, grid_led_get_tick_lastrealtime(&grid_led_state))){
+	if (RTC1MS*10 < grid_sys_rtc_get_elapsed_time(&grid_sys_state, led_last_tick)){
 	
-		grid_led_set_tick_lastrealtime(&grid_led_state, grid_sys_rtc_get_time(&grid_sys_state));
+		led_last_tick = grid_sys_rtc_get_time(&grid_sys_state);
 
 		grid_led_tick(&grid_led_state);
 		

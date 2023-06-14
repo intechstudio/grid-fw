@@ -233,18 +233,6 @@ void grid_led_init(struct grid_led_model* mod, uint32_t length){
 }
 
 
-
-void grid_led_set_tick_lastrealtime(struct grid_led_model* mod, uint32_t lastrealtime){
-
-	mod->tick_lastrealtime = lastrealtime;
-}
-
-uint32_t grid_led_get_tick_lastrealtime(struct grid_led_model* mod){
-
-	return mod->tick_lastrealtime;
-}
-
-
 uint32_t grid_led_get_led_count(struct grid_led_model* mod){
 
 	return mod->led_count;
