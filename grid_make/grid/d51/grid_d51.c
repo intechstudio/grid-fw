@@ -980,3 +980,14 @@ void grid_platform_nvm_defrag(){
 uint8_t grid_platform_get_adc_bit_depth(){
     return 16;
 }
+
+static uint64_t micros = 0
+
+void grid_platform_rtc_set_micros(uint64_t mic){
+	micros = mic;
+}
+
+uint64_t grid_platform_rtc_get_micros(void){
+
+	return micros;
+}

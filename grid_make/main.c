@@ -25,6 +25,11 @@ volatile uint32_t loopcount = 0;
 
 volatile uint8_t midi_rx_buffer[16] = {0};
 
+
+
+extern void grid_platform_rtc_set_micros(uint64_t mic);
+extern uint64_t grid_platform_rtc_get_micros(void);
+
 static void usb_task_inner(){
 
 
@@ -341,7 +346,11 @@ void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 {
 
-	grid_sys_rtc_tick_time(&grid_sys_state);	
+	grid_sys_rtc_tick_time(&grid_sys_state);
+
+	uint64_t micros = grid_platform_rtc_get_micros();
+	micros += 1000000/RTC1SEC; // 1 000 000 us / 16384TICK/SEC = 1 TICK
+	grid_platform_rtc_set_micros(micros);
 
 }
 

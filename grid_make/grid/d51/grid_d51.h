@@ -101,4 +101,8 @@ void grid_platform_nvm_defrag();
 
 uint8_t grid_platform_get_adc_bit_depth();
 
+
+void grid_platform_rtc_set_micros(uint64_t mic);
+uint64_t grid_platform_rtc_get_micros(void);
+
 #endif /* GRID_D51_H_ */
