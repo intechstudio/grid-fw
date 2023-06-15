@@ -726,7 +726,7 @@ int main(void)
 
 			
 
-			if (grid_platform_rtc_get_elapsed_time(grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state))>2000){ // 2 sec
+			if (grid_platform_rtc_get_elapsed_time(grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state))>2000*MS_TO_US){ // 2 sec
 
 				printf("EDITOR timeout\r\n");
 
