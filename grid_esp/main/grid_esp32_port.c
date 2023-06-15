@@ -462,7 +462,7 @@ void grid_esp32_port_task(void *arg)
 
 
 
-        vTaskDelay(pdMS_TO_TICKS(2));
+        vTaskDelay(pdMS_TO_TICKS(4));
 
 
 

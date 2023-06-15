@@ -30,15 +30,12 @@
 #include "grid_esp32_led.h"
 
 
-#define ADC_TASK_PRIORITY 4
-#define LED_TASK_PRIORITY 5
+#define MODULE_TASK_PRIORITY 4
+#define LED_TASK_PRIORITY 2
 
 // NVM must not be preemted by Port task
 #define NVM_TASK_PRIORITY 1
-#define PORT_TASK_PRIORITY 3
-
-
-#define USB_TASK_PRIORITY 3
+#define PORT_TASK_PRIORITY 5
 
 #include "driver/ledc.h"
 #include <esp_timer.h>
@@ -231,22 +228,22 @@ void app_main(void)
 
     TaskHandle_t module_task_hdl;
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD){
-        xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024*3, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024*3, (void *)signaling_sem, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD ){
-        xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024*3, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024*3, (void *)signaling_sem, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}	
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD){
-        xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024*3, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024*3, (void *)signaling_sem, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD ){
-        xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*2, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*2, (void *)signaling_sem, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}	
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
-        xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*2, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*2, (void *)signaling_sem, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}		
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD ){
-        xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024*4, (void *)signaling_sem, ADC_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024*4, (void *)signaling_sem, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}	
 	else{
 		printf("Init Module: Unknown Module\r\n");
