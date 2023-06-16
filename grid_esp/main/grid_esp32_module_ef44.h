@@ -17,11 +17,6 @@
 #include "../../grid_common/grid_ain.h"
 #include "../../grid_common/grid_ui.h"
 
-#include "driver/gpio.h"
-#include "grid_esp32_pins.h"
-
-#include "driver/spi_master.h"
-
 #include "../../grid_common/grid_module.h"
 
 
@@ -29,11 +24,9 @@
 
 #include "esp_rom_sys.h"
 
-#include "esp_rom_gpio.h"
-#include "hal/gpio_ll.h"
-
 
 #include "grid_esp32_adc.h"
+#include "grid_esp32_encoder.h"
 
 #include "../../grid_common/grid_led.h"
 
@@ -41,11 +34,7 @@
 extern "C" {
 #endif
 
-#define SPI_ENCODER_HOST    SPI3_HOST
 
-static esp_err_t ret;
-static spi_device_handle_t spi;
-static spi_transaction_t t;
 
 static void IRAM_ATTR my_post_setup_cb(spi_transaction_t *trans);
 static void IRAM_ATTR my_post_trans_cb(spi_transaction_t *trans);

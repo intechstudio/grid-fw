@@ -40,6 +40,7 @@ extern "C" {
 struct grid_esp32_adc_model
 {
     adc_continuous_handle_t adc_handle;
+    uint8_t mux_index;
 
 };
 
@@ -55,8 +56,11 @@ void grid_esp32_adc_register_callback(struct grid_esp32_adc_model* adc, void (*c
 void continuous_adc_init(adc_continuous_handle_t* out_handle);
 
 void grid_esp32_adc_read(struct grid_esp32_adc_model* adc, uint16_t* channel_0_index, uint16_t* channel_1_index, uint16_t* channel_0_value, uint16_t* channel_1_value);
-void grid_esp32_adc_mux_pins_init(void);
-void IRAM_ATTR grid_esp32_adc_mux_update(uint8_t mux_index);
+void grid_esp32_adc_mux_pins_init(struct grid_esp32_adc_model* adc);
+
+void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc, uint8_t max);
+void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc);
+uint8_t IRAM_ATTR grid_esp32_adc_mux_get_index(struct grid_esp32_adc_model* adc);
 
 void grid_esp32_adc_start(struct grid_esp32_adc_model* adc);
 void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc);

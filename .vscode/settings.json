@@ -29,7 +29,10 @@
         "array": "c",
         "string": "c",
         "grid_msg.h": "c",
-        "grid_usb.h": "c"
+        "grid_usb.h": "c",
+        "spi_master.h": "c",
+        "freertos.h": "c",
+        "grid_esp32_encoder.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

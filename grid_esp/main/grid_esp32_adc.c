@@ -47,7 +47,7 @@ void continuous_adc_init(adc_continuous_handle_t *out_handle)
 
 
 
-void grid_esp32_adc_mux_pins_init(void){
+void grid_esp32_adc_mux_pins_init(struct grid_esp32_adc_model* adc){
 
     gpio_set_direction(GRID_ESP32_PINS_MUX_0_A, GPIO_MODE_OUTPUT);
     gpio_set_direction(GRID_ESP32_PINS_MUX_0_B, GPIO_MODE_OUTPUT);
@@ -65,22 +65,28 @@ void grid_esp32_adc_mux_pins_init(void){
     gpio_set_level(GRID_ESP32_PINS_MUX_1_B, 0);
     gpio_set_level(GRID_ESP32_PINS_MUX_1_C, 0);
 
-    gpio_set_direction(47, GPIO_MODE_OUTPUT);
-    gpio_set_level(47, 0);
+}
 
+
+void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc, uint8_t max){
+    adc->mux_index++;
+    adc->mux_index%=max;
+}
+
+void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc){
+
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_A, adc->mux_index/1%2);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_B, adc->mux_index/2%2);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_C, adc->mux_index/4%2);
+
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_A, adc->mux_index/1%2);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_B, adc->mux_index/2%2);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_C, adc->mux_index/4%2);
 
 }
 
-void IRAM_ATTR grid_esp32_adc_mux_update(uint8_t mux_index){
-
-    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_A, mux_index/1%2);
-    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_B, mux_index/2%2);
-    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_C, mux_index/4%2);
-
-    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_A, mux_index/1%2);
-    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_B, mux_index/2%2);
-    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_C, mux_index/4%2);
-
+uint8_t IRAM_ATTR grid_esp32_adc_mux_get_index(struct grid_esp32_adc_model* adc){
+    return adc->mux_index;
 }
 
 void grid_esp32_adc_init(struct grid_esp32_adc_model* adc){
@@ -88,6 +94,8 @@ void grid_esp32_adc_init(struct grid_esp32_adc_model* adc){
     adc->adc_handle = NULL;
 
     continuous_adc_init(&adc->adc_handle);
+
+    adc->mux_index = 0;
 
 }
 
