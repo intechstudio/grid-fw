@@ -7,9 +7,6 @@
 
 #include <stdint.h>
 
-#include "esp_adc/adc_oneshot.h"
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_cali_scheme.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -20,31 +17,31 @@
 #include "../../grid_common/grid_ain.h"
 #include "../../grid_common/grid_ui.h"
 
-#include "driver/gpio.h"
-#include "grid_esp32_pins.h"
-
-#include "driver/spi_master.h"
-
 #include "../../grid_common/grid_module.h"
 
 
 #include "rom/ets_sys.h" // For ets_printf
 
+#include "esp_rom_sys.h"
+
+
+#include "grid_esp32_adc.h"
+#include "grid_esp32_encoder.h"
+
+#include "../../grid_common/grid_led.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-static esp_err_t ret;
-static spi_device_handle_t spi;
-static spi_transaction_t t;
+
 
 static void IRAM_ATTR my_post_setup_cb(spi_transaction_t *trans);
-static void IRAM_ATTR  my_post_trans_cb(spi_transaction_t *trans);
+static void IRAM_ATTR my_post_trans_cb(spi_transaction_t *trans);
 
 void grid_esp32_module_en16_task(void *arg);
 
-
+extern gpio_dev_t GPIO;
 
 #ifdef __cplusplus
 }

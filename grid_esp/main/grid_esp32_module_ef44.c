@@ -56,7 +56,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_transaction_t *trans) {
 }
 
 static TaskHandle_t DRAM_ATTR task_handle;
-bool IRAM_ATTR s_conv_done_cb(adc_continuous_handle_t handle, const adc_continuous_evt_data_t *edata, void *user_data)
+static bool IRAM_ATTR s_conv_done_cb(adc_continuous_handle_t handle, const adc_continuous_evt_data_t *edata, void *user_data)
 {
 
     BaseType_t mustYield = pdFALSE;

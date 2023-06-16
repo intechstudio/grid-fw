@@ -37,7 +37,7 @@ void grid_esp32_encoder_spi_init(struct grid_esp32_encoder_model* encoder, void 
         .command_bits=0,
         .address_bits=0,
         .dummy_bits=0,
-        .clock_speed_hz=10000,    //was 500k
+        .clock_speed_hz=1000000,    //was 500k
         .duty_cycle_pos=128,        //50% duty cycle
         .mode=2,
         .spics_io_num=-1,
