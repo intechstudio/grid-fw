@@ -174,16 +174,13 @@ void grid_esp32_module_ef44_task(void *arg)
         }
 
             
-        int32_t result_resolution = 7;
-        int32_t source_resolution = 12;
-
         uint8_t multiplexer_index = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
 
         if (channel_0_valid){
-            grid_ui_potmeter_store_input(2*channel_0_index+4+1-multiplexer_index, &last_real_time[channel_0_index], channel_0_value, 12); // 12 bit analog values
+            grid_ui_potmeter_store_input(2*channel_0_index+4+1-multiplexer_index, &last_real_time[channel_0_index], channel_0_value, grid_platform_get_adc_bit_depth()); // 12 bit analog values
         }
         if (channel_1_valid){
-            grid_ui_potmeter_store_input(2*channel_1_index+4+1-multiplexer_index, &last_real_time[channel_1_index], channel_1_value, 12); // 12 bit analog values
+            grid_ui_potmeter_store_input(2*channel_1_index+4+1-multiplexer_index, &last_real_time[channel_1_index], channel_1_value, grid_platform_get_adc_bit_depth()); // 12 bit analog values
         }
 
 

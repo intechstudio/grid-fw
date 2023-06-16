@@ -32,7 +32,8 @@
         "grid_usb.h": "c",
         "spi_master.h": "c",
         "freertos.h": "c",
-        "grid_esp32_encoder.h": "c"
+        "grid_esp32_encoder.h": "c",
+        "grid_ain.h": "c"
     },   
     "files.exclude": {
         ".archive": true,
