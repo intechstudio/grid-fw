@@ -8,6 +8,127 @@
 
 struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
+
+
+bool IRAM_ATTR grid_esp32_adc_conv_done_cb(adc_continuous_handle_t handle, const adc_continuous_evt_data_t *edata, void *user_data)
+{
+
+
+    struct grid_esp32_adc_model* adc = (struct grid_esp32_adc_model*) user_data;
+
+    BaseType_t mustYield = pdFALSE;
+
+    esp_err_t ret = ESP_ERR_NOT_SUPPORTED;
+
+
+    if (xSemaphoreTakeFromISR(adc->nvm_semaphore, NULL) == pdTRUE){
+
+        adc->adc_interrupt_state++;
+
+        if (adc->adc_interrupt_state%3 == 0){ // update the multiplexer
+
+            // update multiplexer
+            grid_esp32_adc_mux_increment(&grid_esp32_adc_state);
+            grid_esp32_adc_mux_update(&grid_esp32_adc_state);
+
+        }
+        else if(adc->adc_interrupt_state%3 == 1){ // purge previous results
+                    
+            uint32_t ret_num = 0;
+
+            do{
+                // purge buffer
+                ret = adc_continuous_read(handle, adc->adc_result_buffer, ADC_CONVERSION_FRAME_SIZE, &ret_num, 0);
+
+            }while(ret_num);
+
+        }
+        else{ // process valid results
+
+            uint32_t ret_num = 0;
+            adc->adc_interrupt_state = -1;
+
+            ret = adc_continuous_read(handle, adc->adc_result_buffer, ADC_CONVERSION_FRAME_SIZE, &ret_num, 0);
+
+            uint32_t result_count = ret_num/SOC_ADC_DIGI_RESULT_BYTES;
+
+            if (ret == ESP_OK) {
+ 
+
+                struct grid_esp32_adc_preprocessor channel_A = {
+                    .average = 0,
+                    .channel = 0,
+                    .count = 0,
+                    .sum = 0
+                } ;
+
+                struct grid_esp32_adc_preprocessor channel_B = {
+                    .average = 0,
+                    .channel = 0,
+                    .count = 0,
+                    .sum = 0
+                } ;
+
+
+
+                // skip first couple of results
+                for (int i = result_count-32; i < result_count; i++) {
+                    
+                    adc_digi_output_data_t *p = (adc_digi_output_data_t*)&adc->adc_result_buffer[i*SOC_ADC_DIGI_RESULT_BYTES];
+                    struct grid_esp32_adc_preprocessor* channel = ((i%2==0)?&channel_A:&channel_B);
+
+                    channel->channel = p->type2.channel;
+                    channel->sum+=(uint16_t) p->type2.data;
+                    channel->count++;
+                    channel->average = channel->sum/channel->count;
+
+                }
+
+                channel_A.average = channel_A.sum/channel_A.count;
+                channel_B.average = channel_B.sum/channel_B.count;
+            
+
+                // store results
+                for (int i = 0; i < 2; i++) {
+
+                    struct grid_esp32_adc_preprocessor* channel = ((i%2==0)?&channel_A:&channel_B);
+                    
+                    if (channel->count){
+                        struct grid_esp32_adc_result result;
+                        result.channel = channel->channel;
+                        result.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);;
+                        result.value = channel->sum/channel->count;
+                        xRingbufferSendFromISR(adc->ringbuffer_handle , &result, sizeof(struct grid_esp32_adc_result), NULL);
+                    }
+                    else{
+                        ets_printf("$%d\r\n", i);
+                    }
+                    
+                }
+
+            }
+                
+
+        }
+
+
+        
+
+
+
+        
+        xSemaphoreGiveFromISR(adc->nvm_semaphore, NULL);
+    }
+
+
+
+    return (mustYield == pdTRUE);
+
+    
+}
+
+
+
 void continuous_adc_init(adc_continuous_handle_t *out_handle)
 {
     adc_continuous_handle_t handle = NULL;
@@ -47,7 +168,7 @@ void continuous_adc_init(adc_continuous_handle_t *out_handle)
 
 
 
-void grid_esp32_adc_mux_pins_init(struct grid_esp32_adc_model* adc){
+void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overflow){
 
     gpio_set_direction(GRID_ESP32_PINS_MUX_0_A, GPIO_MODE_OUTPUT);
     gpio_set_direction(GRID_ESP32_PINS_MUX_0_B, GPIO_MODE_OUTPUT);
@@ -65,12 +186,13 @@ void grid_esp32_adc_mux_pins_init(struct grid_esp32_adc_model* adc){
     gpio_set_level(GRID_ESP32_PINS_MUX_1_B, 0);
     gpio_set_level(GRID_ESP32_PINS_MUX_1_C, 0);
 
+    adc->mux_overflow = mux_overflow;
 }
 
 
-void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc, uint8_t max){
+void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc){
     adc->mux_index++;
-    adc->mux_index%=max;
+    adc->mux_index%=adc->mux_overflow;
 }
 
 void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc){
@@ -89,11 +211,25 @@ uint8_t IRAM_ATTR grid_esp32_adc_mux_get_index(struct grid_esp32_adc_model* adc)
     return adc->mux_index;
 }
 
-void grid_esp32_adc_init(struct grid_esp32_adc_model* adc){
+void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, SemaphoreHandle_t nvm_semaphore){
+
+    adc->nvm_semaphore = nvm_semaphore;
 
     adc->adc_handle = NULL;
+    adc->adc_interrupt_state = 0;
+
+    adc->adc_result_buffer = (uint8_t*) heap_caps_malloc(ADC_CONVERSION_FRAME_SIZE * sizeof(uint8_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+
+    adc->buffer_struct = (StaticRingbuffer_t *)heap_caps_malloc(sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    adc->buffer_storage = (struct grid_esp32_adc_result *)heap_caps_malloc(sizeof(struct grid_esp32_adc_result)*BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+
+    adc->ringbuffer_handle = xRingbufferCreateStatic(BUFFER_SIZE, BUFFER_TYPE, adc->buffer_storage, adc->buffer_struct);
+
 
     continuous_adc_init(&adc->adc_handle);
+
+
+    
 
     adc->mux_index = 0;
 
@@ -105,8 +241,8 @@ void grid_esp32_adc_register_callback(struct grid_esp32_adc_model* adc, void (*c
         .on_conv_done = callback,
     };
 
-    ESP_ERROR_CHECK(adc_continuous_register_event_callbacks(adc->adc_handle, &cbs, (void*)grid_esp32_adc_result_buffer));
-    grid_esp32_adc_result_buffer[4]=255;
+    ESP_ERROR_CHECK(adc_continuous_register_event_callbacks(adc->adc_handle, &cbs, (void*)adc));
+
 }
 
 
@@ -121,17 +257,6 @@ void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc){
 
 
     ESP_ERROR_CHECK(adc_continuous_stop(adc->adc_handle));
-
-}
-
-void grid_esp32_adc_read(struct grid_esp32_adc_model* adc, uint16_t* channel_0_index, uint16_t* channel_1_index, uint16_t* channel_0_value, uint16_t* channel_1_value){
-
-    *channel_0_index = grid_esp32_adc_result_buffer[0];
-    *channel_1_index = grid_esp32_adc_result_buffer[1];
-    *channel_0_value = grid_esp32_adc_result_buffer[2];
-    *channel_1_value = grid_esp32_adc_result_buffer[3];
-
-    grid_esp32_adc_result_buffer[4]=255;
 
 }
 

@@ -140,6 +140,8 @@ void system_init_core_2_task(void *arg)
 
 void app_main(void)
 {
+    SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
+    xSemaphoreGive(nvm_or_port);
 
 
 
@@ -184,6 +186,7 @@ void app_main(void)
     
     ESP_LOGI(TAG, "===== BANK INIT =====");
     grid_sys_set_bank(&grid_sys_state, 0);
+    ets_delay_us(2000);
 
     ESP_LOGI(TAG, "===== UI INIT =====");
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD){
@@ -243,7 +246,7 @@ void app_main(void)
         xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*2, (void *)signaling_sem, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}		
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD ){
-        xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024*4, (void *)signaling_sem, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024*4, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}	
 	else{
 		printf("Init Module: Unknown Module\r\n");
@@ -277,8 +280,6 @@ void app_main(void)
 
 
     TaskHandle_t port_task_hdl;
-    SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
-    xSemaphoreGive(nvm_or_port);
 
 
     //Create the class driver task
