@@ -10,7 +10,6 @@
 
 static const char *TAG = "module_ef44";
 
-static uint64_t potmeter_last_real_time[4] = {0};
 static uint64_t encoder_last_real_time[16] = {0};
 static uint64_t button_last_real_time[16] = {0};
 static uint8_t phase_change_lock_array[16] = {0};
@@ -50,23 +49,22 @@ static void IRAM_ATTR  my_post_trans_cb(spi_transaction_t *trans) {
 
 void grid_esp32_module_ef44_task(void *arg)
 {
-
-
-    grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);
-    grid_esp32_adc_mux_init(&grid_esp32_adc_state, 2); // 2 states
-    
-    grid_esp32_adc_register_callback(&grid_esp32_adc_state, grid_esp32_adc_conv_done_cb);
-
-    grid_esp32_adc_start(&grid_esp32_adc_state);
-
     grid_esp32_encoder_init(&grid_esp32_encoder_state, my_post_setup_cb, my_post_trans_cb);
     grid_esp32_encoder_spi_start_transfer(&grid_esp32_encoder_state);
 
+    uint64_t potmeter_last_real_time[4] = {0};
+    const uint8_t multiplexer_lookup[4] = { 4, 6, 5, 7 };
+    static const uint8_t invert_result_lookup[4] = {0, 0, 0, 0};
+    const uint8_t multiplexer_overflow = 2;
+
+    grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);
+    grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
+    grid_esp32_adc_register_callback(&grid_esp32_adc_state, grid_esp32_adc_conv_done_cb);
+    grid_esp32_adc_start(&grid_esp32_adc_state);
+
     while (1) {
 
-
-
-        for (uint16_t i = 0; i<500; i++){
+        for (uint16_t i = 0; i<10; i++){
 
             size_t size = 0;
 
@@ -75,9 +73,11 @@ void grid_esp32_module_ef44_task(void *arg)
 
             if (result!=NULL){
 
-
-                uint8_t multiplexer_lookup[4] = { 4, 6, 5, 7 };
                 uint8_t lookup_index = result->mux_state*2 + result->channel;
+
+                if (invert_result_lookup[lookup_index]){
+                    result->value = 4095-result->value;
+                }
 
                 grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12); 
                 vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , result);
@@ -90,7 +90,7 @@ void grid_esp32_module_ef44_task(void *arg)
 
 
 
-        vTaskDelay(pdMS_TO_TICKS(2));
+        vTaskDelay(pdMS_TO_TICKS(GRID_ESP32_ADC_PROCESS_TASK_DELAY_MS));
 
 
     }

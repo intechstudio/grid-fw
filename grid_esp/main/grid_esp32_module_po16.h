@@ -7,27 +7,24 @@
 
 #include <stdint.h>
 
-#include "esp_adc/adc_oneshot.h"
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_cali_scheme.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
 #include "esp_check.h"
 
-
 #include "../../grid_common/grid_ain.h"
-#include "../../grid_common/grid_ui.h"
-
-#include "driver/gpio.h"
-#include "grid_esp32_pins.h"
-
 #include "../../grid_common/grid_module.h"
+
+#include "rom/ets_sys.h" // For ets_printf
+
+#include "grid_esp32_adc.h"
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 void grid_esp32_module_po16_task(void *arg);
 

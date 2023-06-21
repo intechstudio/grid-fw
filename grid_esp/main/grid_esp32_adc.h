@@ -38,12 +38,13 @@
 extern "C" {
 #endif
 
+#define GRID_ESP32_ADC_PROCESS_TASK_DELAY_MS 2
 
 #define ADC_CONVERSION_FRAME_SIZE         64*SOC_ADC_DIGI_DATA_BYTES_PER_CONV
 #define ADC_BUFFER_SIZE                   ADC_CONVERSION_FRAME_SIZE*4
 
 
-#define BUFFER_SIZE     800      //32-bit aligned size
+#define BUFFER_SIZE     4*25      //32-bit aligned size
 #define BUFFER_TYPE     RINGBUF_TYPE_ALLOWSPLIT
 
 struct grid_esp32_adc_model

@@ -231,7 +231,7 @@ void app_main(void)
 
     TaskHandle_t module_task_hdl;
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD){
-        xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024*3, (void *)signaling_sem, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024*4, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD ){
         xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024*3, (void *)signaling_sem, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
