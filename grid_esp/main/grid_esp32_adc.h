@@ -40,8 +40,9 @@ extern "C" {
 
 #define GRID_ESP32_ADC_PROCESS_TASK_DELAY_MS 2
 
-#define ADC_CONVERSION_FRAME_SIZE         64*SOC_ADC_DIGI_DATA_BYTES_PER_CONV
-#define ADC_BUFFER_SIZE                   ADC_CONVERSION_FRAME_SIZE*4
+#define ADC_SAMPLE_COUNT            16
+#define ADC_CONVERSION_FRAME_SIZE   ADC_SAMPLE_COUNT * SOC_ADC_DIGI_DATA_BYTES_PER_CONV
+#define ADC_BUFFER_SIZE             ADC_CONVERSION_FRAME_SIZE
 
 
 #define BUFFER_SIZE     4*25      //32-bit aligned size
@@ -52,6 +53,7 @@ struct grid_esp32_adc_model
     adc_continuous_handle_t adc_handle;
     uint8_t adc_interrupt_state;
     uint8_t* adc_result_buffer;
+    uint8_t* adc_result_buffer2;
     uint8_t mux_index;
     uint8_t mux_overflow;
     StaticRingbuffer_t *buffer_struct;

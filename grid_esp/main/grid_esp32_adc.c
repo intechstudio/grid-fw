@@ -20,37 +20,44 @@ bool IRAM_ATTR grid_esp32_adc_conv_done_cb(adc_continuous_handle_t handle, const
 
     esp_err_t ret = ESP_ERR_NOT_SUPPORTED;
 
+    esp_err_t ret2 = ESP_ERR_NOT_SUPPORTED;
+
 
     if (xSemaphoreTakeFromISR(adc->nvm_semaphore, NULL) == pdTRUE){
 
         adc->adc_interrupt_state++;
 
-        if (adc->adc_interrupt_state%3 == 0){ // update the multiplexer
 
-            // update multiplexer
-            grid_esp32_adc_mux_increment(&grid_esp32_adc_state);
-            grid_esp32_adc_mux_update(&grid_esp32_adc_state);
-
-        }
-        else if(adc->adc_interrupt_state%3 == 1){ // purge previous results
+        if(adc->adc_interrupt_state < 2){ // purge previous results
                     
+            uint8_t counter = 0;
             uint32_t ret_num = 0;
 
             do{
                 // purge buffer
                 ret = adc_continuous_read(handle, adc->adc_result_buffer, ADC_CONVERSION_FRAME_SIZE, &ret_num, 0);
+                counter++;
 
             }while(ret_num);
+
+            //ets_printf("%d\r\n", counter);
 
         }
         else{ // process valid results
 
-            uint32_t ret_num = 0;
+
             adc->adc_interrupt_state = -1;
+            uint8_t counter = 0;            
+            uint32_t ret_num = 0;
+            uint32_t result_count = 0;
 
-            ret = adc_continuous_read(handle, adc->adc_result_buffer, ADC_CONVERSION_FRAME_SIZE, &ret_num, 0);
 
-            uint32_t result_count = ret_num/SOC_ADC_DIGI_RESULT_BYTES;
+            ret = adc_continuous_read(handle, adc->adc_result_buffer, ADC_CONVERSION_FRAME_SIZE*4, &ret_num, 0);
+            result_count = ret_num/SOC_ADC_DIGI_RESULT_BYTES;
+            // update multiplexer
+            uint8_t mux = grid_esp32_adc_mux_get_index(adc);
+            grid_esp32_adc_mux_increment(adc);
+            grid_esp32_adc_mux_update(adc);
 
             if (ret == ESP_OK) {
  
@@ -72,7 +79,7 @@ bool IRAM_ATTR grid_esp32_adc_conv_done_cb(adc_continuous_handle_t handle, const
 
 
                 // skip first couple of results
-                for (int i = result_count-32; i < result_count; i++) {
+                for (int i = result_count-10; i < result_count; i++) {
                     
                     adc_digi_output_data_t *p = (adc_digi_output_data_t*)&adc->adc_result_buffer[i*SOC_ADC_DIGI_RESULT_BYTES];
                     struct grid_esp32_adc_preprocessor* channel = ((i%2==0)?&channel_A:&channel_B);
@@ -96,7 +103,7 @@ bool IRAM_ATTR grid_esp32_adc_conv_done_cb(adc_continuous_handle_t handle, const
                     if (channel->count){
                         struct grid_esp32_adc_result result;
                         result.channel = channel->channel;
-                        result.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);;
+                        result.mux_state = mux;
                         result.value = channel->sum/channel->count;
                         xRingbufferSendFromISR(adc->ringbuffer_handle , &result, sizeof(struct grid_esp32_adc_result), NULL);
                     }
@@ -107,7 +114,13 @@ bool IRAM_ATTR grid_esp32_adc_conv_done_cb(adc_continuous_handle_t handle, const
                 }
 
             }
-                
+
+            ret = adc_continuous_read(handle, adc->adc_result_buffer, ADC_CONVERSION_FRAME_SIZE, &ret_num, 0);
+            if (ret_num){
+                //ets_printf("$\r\n");
+            }
+
+
 
         }
 
@@ -140,7 +153,7 @@ void continuous_adc_init(adc_continuous_handle_t *out_handle)
     ESP_ERROR_CHECK(adc_continuous_new_handle(&adc_config, &handle));
 
     adc_continuous_config_t dig_cfg = {
-        .sample_freq_hz = SOC_ADC_SAMPLE_FREQ_THRES_HIGH/2,
+        .sample_freq_hz = SOC_ADC_SAMPLE_FREQ_THRES_HIGH,
         .conv_mode = ADC_CONV_SINGLE_UNIT_1,
         .format = ADC_DIGI_OUTPUT_FORMAT_TYPE2,
     };
@@ -218,7 +231,8 @@ void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, SemaphoreHandle_t nvm
     adc->adc_handle = NULL;
     adc->adc_interrupt_state = 0;
 
-    adc->adc_result_buffer = (uint8_t*) heap_caps_malloc(ADC_CONVERSION_FRAME_SIZE * sizeof(uint8_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    adc->adc_result_buffer = (uint8_t*) heap_caps_malloc(ADC_CONVERSION_FRAME_SIZE*4 * sizeof(uint8_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+
 
     adc->buffer_struct = (StaticRingbuffer_t *)heap_caps_malloc(sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     adc->buffer_storage = (struct grid_esp32_adc_result *)heap_caps_malloc(sizeof(struct grid_esp32_adc_result)*BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
