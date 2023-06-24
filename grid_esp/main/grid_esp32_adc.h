@@ -25,6 +25,8 @@
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
+#include "esp_timer.h"
+
 #include "rom/ets_sys.h" // For ets_printf
 
 #include "grid_esp32_pins.h"
@@ -49,28 +51,20 @@ extern "C" {
 
 struct grid_esp32_adc_model
 {
-    adc_continuous_handle_t adc_handle;
-    uint8_t adc_interrupt_state;
-    uint8_t* adc_result_buffer;
-    uint8_t mux_index;
-    uint8_t mux_overflow;
+    adc_oneshot_unit_handle_t adc_handle_0;
+    adc_oneshot_unit_handle_t adc_handle_1;
+
+    uint8_t mux_index;    
+    uint8_t mux_overflow;    
+
+
+
     StaticRingbuffer_t *buffer_struct;
     uint8_t *buffer_storage;
     RingbufHandle_t ringbuffer_handle;
+
     SemaphoreHandle_t nvm_semaphore;
 };
-
-
-
-struct grid_esp32_adc_preprocessor {
-
-    uint64_t sum; 
-    uint16_t count; 
-    uint16_t average; 
-    uint8_t channel;
-
-};
-
 
 
 struct grid_esp32_adc_result {
@@ -88,16 +82,14 @@ extern uint8_t *adc_buffer_storage;
 extern RingbufHandle_t adc_buffer_handle;
 
 
+extern esp_err_t adc_oneshot_read_isr(adc_oneshot_unit_handle_t handle, adc_channel_t chan, int *out_raw);
 
 extern struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
-bool IRAM_ATTR grid_esp32_adc_conv_done_cb(adc_continuous_handle_t handle, const adc_continuous_evt_data_t *edata, void *user_data);
+void IRAM_ATTR grid_esp32_adc_convert(void);
 
 void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, SemaphoreHandle_t nvm_semaphore);
 void grid_esp32_adc_register_callback(struct grid_esp32_adc_model* adc, void (*callback)(adc_continuous_handle_t, const adc_continuous_evt_data_t*, void*));
-
-
-void continuous_adc_init(adc_continuous_handle_t* out_handle);
 
 void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overflow);
 

@@ -22,6 +22,7 @@
 
 #include "driver/gpio.h"
 #include "grid_esp32_pins.h"
+#include "grid_esp32_adc.h"
 
 #include "../../grid_common/grid_module.h"
 
