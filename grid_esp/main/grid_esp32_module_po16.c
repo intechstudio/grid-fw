@@ -15,13 +15,12 @@ void grid_esp32_module_po16_task(void *arg)
 {
 
     uint64_t potmeter_last_real_time[16] = {0};
-    static const uint8_t multiplexer_lookup[16] = {0, 2, 1, 3, 4, 6, 5, 7, 8, 10, 9, 11, 12, 14, 13, 15};
+    static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, 10, 8, 11, 9, 14, 12, 15, 13};
     static const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     const uint8_t multiplexer_overflow = 8;
 
     grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);
     grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
-    grid_esp32_adc_register_callback(&grid_esp32_adc_state, grid_esp32_adc_conv_done_cb);
     grid_esp32_adc_start(&grid_esp32_adc_state);
 
     while (1) {

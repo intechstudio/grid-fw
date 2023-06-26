@@ -35,7 +35,7 @@
         "grid_esp32_encoder.h": "c",
         "grid_ain.h": "c",
         "stdlib.h": "c",
-        "gpio_ll.h": "c"
+        "gpio.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

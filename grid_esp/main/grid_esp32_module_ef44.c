@@ -53,13 +53,12 @@ void grid_esp32_module_ef44_task(void *arg)
     grid_esp32_encoder_spi_start_transfer(&grid_esp32_encoder_state);
 
     uint64_t potmeter_last_real_time[4] = {0};
-    const uint8_t multiplexer_lookup[4] = { 4, 6, 5, 7 };
+    const uint8_t multiplexer_lookup[4] = { 6, 4, 7, 5 };
     static const uint8_t invert_result_lookup[4] = {0, 0, 0, 0};
     const uint8_t multiplexer_overflow = 2;
 
     grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);
     grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
-    grid_esp32_adc_register_callback(&grid_esp32_adc_state, grid_esp32_adc_conv_done_cb);
     grid_esp32_adc_start(&grid_esp32_adc_state);
 
     while (1) {
