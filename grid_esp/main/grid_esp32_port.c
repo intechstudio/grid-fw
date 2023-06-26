@@ -69,6 +69,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
 
+    //ets_printf("%d\r\n", ready_flags);
 
 
     if ((ready_flags&0b00000001)){

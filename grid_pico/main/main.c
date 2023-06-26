@@ -293,6 +293,7 @@ int main()
 {
 
     stdio_init_all();
+    printf("RP2040 START\r\n");
 
     uint offset_tx = pio_add_program(GRID_TX_PIO, &uart_tx_program);
     uint offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_program);
@@ -402,6 +403,8 @@ int main()
 
                 spi_dma_done = false;
                 uint8_t destination_flags = rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
+
+                printf("%d\r\n", destination_flags);
 
                 // iterate through all the ports
                 for (uint8_t i = 0; i<4; i++){

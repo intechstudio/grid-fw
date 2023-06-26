@@ -124,7 +124,7 @@ uint8_t grid_ain_add_sample(struct grid_ain_model* mod, uint8_t channel, uint16_
 	
 	if (criteria_a && (criteria_b || criteria_c || criteria_d)){
 		
-		printf("%d: %d %d\r\n", channel, average, upscaled);
+		//printf("%d: %d %d\r\n", channel, average, upscaled);
 		instance->result_average = average;
 		instance->result_value = upscaled;
 		instance->result_changed = 1;
