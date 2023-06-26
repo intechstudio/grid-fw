@@ -31,19 +31,19 @@ void ets_debug_string(char* tag, char* str){
 
     uint16_t length = strlen(str);
 
-    ets_printf("%s: ", tag);
+    //ets_printf("%s: ", tag);
     for(uint8_t i=0; i<length; i++){
 
         if (str[i]<32){
 
-            ets_printf("[%x] ", str[i]);
+            //ets_printf("[%x] ", str[i]);
         }
         else{
-            ets_printf("%c ", str[i]);
+            //ets_printf("%c ", str[i]);
 
         }
     }
-    ets_printf("\r\n");
+    //ets_printf("\r\n");
 
 
 };
@@ -59,14 +59,14 @@ uint8_t spi_ready = 1;
 //Called after transaction is sent/received. We use this to set the handshake line low.
 static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
-    ets_printf(" %d ", queue_state);
+    //ets_printf(" %d ", queue_state);
 
 
     if (queue_state>0){
         queue_state--;
     }   
     else{
-        ets_printf("  QUEUE WAS EMPTY  ");
+        //ets_printf("  QUEUE WAS EMPTY  ");
         while(1){
 
         }
@@ -78,7 +78,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
 
-    ets_printf(" %d\r\n", ready_flags);
+    //ets_printf(" %d\r\n", ready_flags);
 
 
     if ((ready_flags&0b00000001)){
@@ -122,15 +122,15 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
     ((uint8_t*)t->tx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<dir_index);
 
 
-    //ets_printf("SEND %d: %s\r\n", dir_index, buffer);
-    ets_printf("#");
+    ////ets_printf("SEND %d: %s\r\n", dir_index, buffer);
+    //ets_printf("#");
 
     portENTER_CRITICAL(&spinlock);
     queue_state++;
     spi_slave_queue_trans(RCV_HOST, t, 0);
     portEXIT_CRITICAL(&spinlock);
 
-    ets_printf("!");
+    //ets_printf("!");
 
     spi_ready = 0;
 
@@ -233,7 +233,7 @@ void grid_esp32_port_task(void *arg)
 
 
             if (queue_state == 0){
-                ets_printf("@");
+                //ets_printf("@");
                 esp_err_t ret;
 
                 portENTER_CRITICAL(&spinlock);
@@ -242,7 +242,7 @@ void grid_esp32_port_task(void *arg)
                 portEXIT_CRITICAL(&spinlock);
 
 
-                ets_printf("!");
+                //ets_printf("!");
             }
 
 
@@ -261,7 +261,7 @@ void grid_esp32_port_task(void *arg)
                 spi_slave_transaction_t *trans = NULL;
                 spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
 
-                //ets_printf("RX status,source: %d,%d : %s\r\n", ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index], ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index], ((uint8_t*) trans->rx_buffer));
+                ////ets_printf("RX status,source: %d,%d : %s\r\n", ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index], ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index], ((uint8_t*) trans->rx_buffer));
             //  grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
 
 
@@ -424,7 +424,7 @@ void grid_esp32_port_task(void *arg)
 
             pingcounter++;
             if (pingcounter%10 == 0){
-                //ets_printf("TRY PING\r\n");
+                ////ets_printf("TRY PING\r\n");
 
                 GRID_PORT_N.ping_flag = 1;
                 GRID_PORT_E.ping_flag = 1;
@@ -470,7 +470,7 @@ void grid_esp32_port_task(void *arg)
 
                         }
 
-                            ets_printf("DISCONNECT\r\n");
+                            //ets_printf("DISCONNECT\r\n");
                     }
                 }
 
