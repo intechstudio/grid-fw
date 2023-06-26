@@ -16,11 +16,11 @@ static const char *TAG = "PORT";
 #define GPIO_CS 7
 #define RCV_HOST    SPI2_HOST
 
-uint8_t empty_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
-uint8_t message_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
+uint8_t DRAM_ATTR empty_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
+uint8_t DRAM_ATTR message_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
-spi_slave_transaction_t outbnound_transaction[4];
-spi_slave_transaction_t spi_empty_transaction;
+spi_slave_transaction_t DRAM_ATTR outbnound_transaction[4];
+spi_slave_transaction_t DRAM_ATTR spi_empty_transaction;
 
 uint8_t queue_state = 0;
 
@@ -59,9 +59,18 @@ uint8_t spi_ready = 1;
 //Called after transaction is sent/received. We use this to set the handshake line low.
 static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
+    ets_printf(" %d ", queue_state);
+
+
     if (queue_state>0){
         queue_state--;
     }   
+    else{
+        ets_printf("  QUEUE WAS EMPTY  ");
+        while(1){
+
+        }
+    }
 
 
     spi_ready = 1;
@@ -69,7 +78,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
 
-    //ets_printf("%d\r\n", ready_flags);
+    ets_printf(" %d\r\n", ready_flags);
 
 
     if ((ready_flags&0b00000001)){
@@ -98,7 +107,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
 }
 
-
+static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
 
 
 uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length){
@@ -114,16 +123,20 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
 
 
     //ets_printf("SEND %d: %s\r\n", dir_index, buffer);
+    ets_printf("#");
 
-    spi_slave_queue_trans(RCV_HOST, t, portMAX_DELAY);
+    portENTER_CRITICAL(&spinlock);
     queue_state++;
+    spi_slave_queue_trans(RCV_HOST, t, 0);
+    portEXIT_CRITICAL(&spinlock);
+
+    ets_printf("!");
 
     spi_ready = 0;
 
     return 0; // done
 
 }
-
 
 void grid_esp32_port_task(void *arg)
 {
@@ -149,7 +162,7 @@ void grid_esp32_port_task(void *arg)
     spi_slave_interface_config_t slvcfg={
         .mode=0,
         .spics_io_num=GPIO_CS,
-        .queue_size=5,
+        .queue_size=6,
         .flags=0,
         .post_setup_cb=my_post_setup_cb,
         .post_trans_cb=my_post_trans_cb
@@ -203,9 +216,12 @@ void grid_esp32_port_task(void *arg)
     //GRID_PORT_W.partner_status = 1; // force connected
 
     static uint32_t loopcounter = 0;
-    //ret=spi_slave_queue_trans(RCV_HOST, &t, 0);
-    ret=spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, portMAX_DELAY);
+
+    portENTER_CRITICAL(&spinlock);
     queue_state++;
+    ESP_ERROR_CHECK(spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, 0)) ;
+    portEXIT_CRITICAL(&spinlock);
+    
     //spi_ready = 0;
 
 
@@ -217,8 +233,16 @@ void grid_esp32_port_task(void *arg)
 
 
             if (queue_state == 0){
-                spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, portMAX_DELAY);
+                ets_printf("@");
+                esp_err_t ret;
+
+                portENTER_CRITICAL(&spinlock);
                 queue_state++;
+                ESP_ERROR_CHECK(spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, 0)) ;
+                portEXIT_CRITICAL(&spinlock);
+
+
+                ets_printf("!");
             }
 
 
@@ -304,8 +328,6 @@ void grid_esp32_port_task(void *arg)
 
                 }
 
-
-                //spi_slave_queue_trans(RCV_HOST, &t, 0);
             }
 
             loopcounter++;
@@ -460,7 +482,6 @@ void grid_esp32_port_task(void *arg)
             xSemaphoreGive(signaling_sem);
 
         }
-
 
 
         vTaskDelay(pdMS_TO_TICKS(4));
