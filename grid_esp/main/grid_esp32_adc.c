@@ -10,6 +10,7 @@ struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
 
 
+
 void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overflow){
 
     gpio_set_direction(GRID_ESP32_PINS_MUX_0_A, GPIO_MODE_OUTPUT);
@@ -93,6 +94,7 @@ void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, SemaphoreHandle_t nvm
 
     adc->adc_handle_0 = NULL;
     adc->adc_handle_1 = NULL;
+
 
     adc->buffer_struct = (StaticRingbuffer_t *)heap_caps_malloc(sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     adc->buffer_storage = (struct grid_esp32_adc_result *)heap_caps_malloc(sizeof(struct grid_esp32_adc_result)*BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);

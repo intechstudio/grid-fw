@@ -7,16 +7,16 @@
 
 #include "grid_esp32_module_pbf4.h"
 
-
 static const char *TAG = "module_pbf4";
 
+static const char *TAG = "module_pbf4";
 
 void grid_esp32_module_pbf4_task(void *arg)
 {
 
-
     uint64_t potmeter_last_real_time[16] = {0};
     static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, -1, -1, -1, -1, 10, 8, 11, 9};
+
     static const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     const uint8_t multiplexer_overflow = 8;
 
@@ -54,6 +54,7 @@ void grid_esp32_module_pbf4_task(void *arg)
                 }
 
                 vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , result);
+
 
             }      
             else{
