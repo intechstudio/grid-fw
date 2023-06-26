@@ -9,8 +9,6 @@
 
 static const char *TAG = "module_pbf4";
 
-static const char *TAG = "module_pbf4";
-
 void grid_esp32_module_pbf4_task(void *arg)
 {
 
