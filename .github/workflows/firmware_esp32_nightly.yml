@@ -30,7 +30,7 @@ jobs:
           esp_idf_version: latest
           target: esp32s3
           path: 'grid_esp'
-          command: idf.py build
+          command: idf.py --version && idf.py build
 
       - name: Convert to UF2
         run: |
