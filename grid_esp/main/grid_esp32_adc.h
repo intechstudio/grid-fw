@@ -48,7 +48,7 @@ extern "C" {
 
 
 #define BUFFER_SIZE     4*25      //32-bit aligned size
-#define BUFFER_TYPE     RINGBUF_TYPE_ALLOWSPLIT
+#define BUFFER_TYPE     RINGBUF_TYPE_NOSPLIT
 
 struct grid_esp32_adc_model
 {

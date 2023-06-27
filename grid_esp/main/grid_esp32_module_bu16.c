@@ -16,7 +16,7 @@ void grid_esp32_module_bu16_task(void *arg)
 
     uint64_t potmeter_last_real_time[16] = {0};
     static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, 10, 8, 11, 9, 14, 12, 15, 13};
-    static const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     const uint8_t multiplexer_overflow = 8;
 
     grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);

@@ -262,9 +262,6 @@ void app_main(void)
 
 
 
-    
-
-
 
     //Create the class driver task
     TaskHandle_t led_task_hdl;

@@ -101,7 +101,6 @@ void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, SemaphoreHandle_t nvm
 
     adc->ringbuffer_handle = xRingbufferCreateStatic(BUFFER_SIZE, BUFFER_TYPE, adc->buffer_storage, adc->buffer_struct);
 
-
     adc_init(adc);
 
 
@@ -164,7 +163,6 @@ void IRAM_ATTR grid_esp32_adc_convert(void)
         result_1.channel = 1;
         result_1.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);;
         result_1.value = adcresult_1;
-
 
         xRingbufferSendFromISR(adc->ringbuffer_handle , &result_0, sizeof(struct grid_esp32_adc_result), NULL);
         xRingbufferSendFromISR(adc->ringbuffer_handle , &result_1, sizeof(struct grid_esp32_adc_result), NULL);
