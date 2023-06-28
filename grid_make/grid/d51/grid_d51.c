@@ -869,6 +869,21 @@ uint16_t grid_platform_get_actionstring_file_size(void* file_pointer){
 
 }
 
+uint8_t grid_platform_get_actionstring_file_has_size(void* file_pointer){
+
+	struct grid_d51_nvm_toc_entry*	entry = (struct grid_d51_nvm_toc_entry*) file_pointer;
+
+	if (entry->config_string_length){
+		return 1;
+	}
+	else{
+		return 0;
+	}
+
+}
+
+
+
 void grid_platform_close_actionstring_file(void* file_pointer){
     
 	// no need to close files on this platform
@@ -999,3 +1014,14 @@ uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told){
 
 }
 
+uint32_t grid_platform_get_cycles(){
+
+    return grid_d51_dwt_cycles_read();
+
+}
+
+uint32_t grid_platform_get_cycles_per_us(){
+
+    return 120;
+
+}

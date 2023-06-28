@@ -313,6 +313,17 @@ uint16_t grid_platform_get_actionstring_file_size(void* file_pointer){
     return fsize;
 }
 
+uint8_t grid_platform_get_actionstring_file_has_size(void* file_pointer){
+
+    if (file_pointer != NULL){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+
+}
+
 
 uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, char* targetstring){
 
@@ -426,7 +437,20 @@ uint64_t grid_platform_rtc_get_micros(void){
 
 uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told){
 
+
 	return grid_platform_rtc_get_micros() - told;
 
 }
 
+
+uint32_t grid_platform_get_cycles(){
+
+    return cpu_hal_get_cycle_count();
+
+}
+
+uint32_t grid_platform_get_cycles_per_us(){
+
+    return 240;
+
+}

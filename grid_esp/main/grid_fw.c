@@ -34,7 +34,7 @@
 #define LED_TASK_PRIORITY 2
 
 // NVM must not be preemted by Port task
-#define NVM_TASK_PRIORITY 1
+#define NVM_TASK_PRIORITY configMAX_PRIORITIES-1
 #define PORT_TASK_PRIORITY 5
 
 #include "driver/ledc.h"
@@ -177,6 +177,7 @@ void app_main(void)
 
     ESP_LOGI(TAG, "===== LUA INIT =====");
 	grid_lua_init(&grid_lua_state);
+    grid_lua_set_memory_target(&grid_lua_state, 80); //80kb
 
     // ================== START: grid_module_pbf4_init() ================== //
 
@@ -187,6 +188,9 @@ void app_main(void)
     ESP_LOGI(TAG, "===== BANK INIT =====");
     grid_sys_set_bank(&grid_sys_state, 0);
     ets_delay_us(2000);
+
+
+   // grid_sys_state.hwfcg = GRID_MODULE_EF44_RevD;
 
     ESP_LOGI(TAG, "===== UI INIT =====");
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD){

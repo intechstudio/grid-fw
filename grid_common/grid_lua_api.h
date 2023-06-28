@@ -85,6 +85,8 @@ struct grid_lua_model{
 
     uint32_t dostring_count;
 
+    uint8_t target_memory_usage_kilobytes;
+
 };
 
 
@@ -94,6 +96,10 @@ extern struct grid_lua_model grid_lua_state;
 
 void grid_lua_init(struct grid_lua_model* mod);
 void grid_lua_deinit(struct grid_lua_model* mod);
+
+
+void grid_lua_set_memory_target(struct grid_lua_model* mod, uint8_t target_kilobytes);
+uint8_t grid_lua_get_memory_target(struct grid_lua_model* mod);
 
 
 void grid_lua_clear_stdi(struct grid_lua_model* mod);

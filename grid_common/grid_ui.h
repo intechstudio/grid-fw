@@ -20,11 +20,14 @@ extern void grid_platform_printf(char const *fmt, ...);
 extern void grid_platform_close_actionstring_file(void* file_pointer);
 extern void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type);
 extern uint16_t grid_platform_get_actionstring_file_size(void* file_pointer);
+extern uint8_t grid_platform_get_actionstring_file_has_size(void* file_pointer);
 extern uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, char* targetstring);
 extern void grid_platform_delete_actionstring_file(void* file_pointer);
 extern void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
 
 
+extern uint32_t grid_platform_get_cycles();
+extern uint32_t grid_platform_get_cycles_per_us();
 
 extern void	grid_platform_clear_actionstring_files_from_page(uint8_t page);
 extern void grid_platform_delete_actionstring_files_all();

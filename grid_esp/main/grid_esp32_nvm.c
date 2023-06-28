@@ -43,6 +43,8 @@ void grid_esp32_nvm_mount(){
         .dont_mount = false,
     };
 
+
+
     // Use settings defined above to initialize and mount LittleFS filesystem.
     // Note: esp_vfs_littlefs_register is an all-in-one convenience function.
     esp_err_t ret = esp_vfs_littlefs_register(&conf);
@@ -80,7 +82,7 @@ void grid_esp32_nvm_mount(){
 
 void grid_esp32_nvm_read_write_test(){
 
-    grid_esp32_nvm_list_files(NULL);
+    grid_esp32_nvm_list_files(NULL, "/littlefs");
 
     // Use POSIX and C standard library functions to work with files.
     // First create a file.
@@ -96,7 +98,7 @@ void grid_esp32_nvm_read_write_test(){
     ESP_LOGI(TAG, "File written");
 
 
-    grid_esp32_nvm_list_files(NULL);
+    grid_esp32_nvm_list_files(NULL, "/littlefs");
 
     // Check if destination file exists before renaming
     struct stat st;
@@ -117,7 +119,7 @@ void grid_esp32_nvm_read_write_test(){
     }
 
 
-    grid_esp32_nvm_list_files(NULL);
+    grid_esp32_nvm_list_files(NULL, "/littlefs");
 
     // Open renamed file for reading
     ESP_LOGI(TAG, "Reading file");
@@ -139,7 +141,7 @@ void grid_esp32_nvm_read_write_test(){
     ESP_LOGI(TAG, "Read from file: '%s'", line);
 
 
-    grid_esp32_nvm_list_files(NULL);
+    grid_esp32_nvm_list_files(NULL, "/littlefs");
 
 }
 
@@ -149,6 +151,10 @@ void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm){
 
     grid_esp32_nvm_mount();
 
+    //esp_littlefs_format("ffat");
+    //grid_esp32_nvm_list_files(NULL, "/littlefs");
+    //grid_esp32_nvm_list_files(NULL, "/littlefs/00");
+    //grid_esp32_nvm_list_files(NULL, "/littlefs/00/00");
     //grid_esp32_nvm_read_write_test();
 
 
@@ -157,13 +163,13 @@ void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm){
 
 
 
-void grid_esp32_nvm_list_files(struct grid_esp32_nvm_model* nvm){
+void grid_esp32_nvm_list_files(struct grid_esp32_nvm_model* nvm, char* path){
 
-    ESP_LOGI(TAG, "Suku READ DIRECTORY");
+    ESP_LOGI(TAG, "Print Directory: %s", path);
 
     DIR *d;
     struct dirent *dir;
-    d = opendir("/littlefs");
+    d = opendir(path);
 
     if (d) {
         while ((dir = readdir(d)) != NULL) {
@@ -180,9 +186,23 @@ void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model* nvm, uint8_t page, 
 
     char fname[30] = {0};
 
-    sprintf(fname, "/littlefs/%02x%02x%02x.cfg", page, element, event);
+
+    sprintf(fname, "/littlefs/%02x", page);
+
+    if (mkdir(fname, 0777) == -1) {
+        printf("Error creating directory.\n");
+    }
+
+    sprintf(fname, "/littlefs/%02x/%02x", page, element);
+
+    if (mkdir(fname, 0777) == -1) {
+        printf("Error creating directory.\n");
+    }
+
+    sprintf(fname, "/littlefs/%02x/%02x/%02x.cfg", page, element, event);
 
     ESP_LOGD(TAG, "%s : %s", fname, actionstring);
+
 
 
     FILE * fp;
@@ -230,7 +250,7 @@ void* grid_esp32_nvm_find_file(struct grid_esp32_nvm_model* nvm, uint8_t page, u
 
     char fname[30] = {0};
 
-    sprintf(fname, "/littlefs/%02x%02x%02x.cfg", page, element, event);
+    sprintf(fname, "/littlefs/%02x/%02x/%02x.cfg", page, element, event);
 
 
 
@@ -264,7 +284,7 @@ uint16_t grid_esp32_nvm_get_file_size(struct grid_esp32_nvm_model* nvm,  void* f
 void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm){
 
     printf("BEFORE: \r\n");
-    grid_esp32_nvm_list_files(nvm);
+    grid_esp32_nvm_list_files(nvm, "/littlefs");
 
 
 
@@ -290,7 +310,7 @@ void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm){
 
 
     printf("AFTER: \r\n");
-    grid_esp32_nvm_list_files(nvm);
+    grid_esp32_nvm_list_files(NULL, "/littlefs");
 
 
 }
@@ -299,7 +319,7 @@ void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm){
 void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page){
 
     printf("BEFORE: \r\n");
-    grid_esp32_nvm_list_files(nvm);
+    grid_esp32_nvm_list_files(NULL, "/littlefs");
 
 
 
@@ -334,10 +354,12 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page){
 
 
     printf("AFTER: \r\n");
-    grid_esp32_nvm_list_files(nvm);
+    grid_esp32_nvm_list_files(NULL, "/littlefs");
 
 
 }
+
+
 
 void grid_esp32_nvm_task(void *arg)
 {
@@ -356,33 +378,54 @@ void grid_esp32_nvm_task(void *arg)
 
         if (xSemaphoreTake(signaling_sem, portMAX_DELAY) == pdTRUE){
 
-        // NVM BULK STORE
-            if (grid_ui_bulk_pagestore_is_in_progress(&grid_ui_state)){
-                
-                grid_ui_bulk_pagestore_next(&grid_ui_state);
-            }
+            uint64_t time_max_duration = 50*1000; // in microseconds
+            uint64_t time_start = grid_platform_rtc_get_micros();
+            uint32_t counter = 0;
 
+            do{
+            
+                // NVM BULK STORE
+                if (grid_ui_bulk_pagestore_is_in_progress(&grid_ui_state)){
+                    
+                    grid_ui_bulk_pagestore_next(&grid_ui_state);
+                }
+                else if (grid_ui_bulk_nvmerase_is_in_progress(&grid_ui_state)){
+                    
+                    grid_ui_bulk_nvmerase_next(&grid_ui_state);
+                }
+                else if (grid_ui_bulk_pageclear_is_in_progress(&grid_ui_state)){
+                    
+                    grid_ui_bulk_pageclear_next(&grid_ui_state);
+                }
+                else if (GRID_PORT_U.rx_double_buffer_status == 0 && grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
 
-            if (GRID_PORT_U.rx_double_buffer_status == 0){
+                    uint32_t c0 = 0;
+                    uint32_t c1 = 0;
 
-                if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
+				    c0 = grid_platform_get_cycles();
 
                     grid_ui_bulk_pageread_next(&grid_ui_state);
 
+                    c1 = grid_platform_get_cycles();
+
+                    uint32_t delta = c1-c0;
+
+				    //grid_platform_printf("(%ld)us\r\n", delta/grid_platform_get_cycles_per_us());
+                        
                 }
+                else{
+                    break;
+                }
+
+                counter++;
+
+
+            } while(grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration);
+
+            if (counter>0){
+
+                //ets_printf("Loops: %d\r\n", counter);
             }
-
-
-            if (grid_ui_bulk_nvmerase_is_in_progress(&grid_ui_state)){
-                
-                grid_ui_bulk_nvmerase_next(&grid_ui_state);
-            }
-
-            if (grid_ui_bulk_pageclear_is_in_progress(&grid_ui_state)){
-                
-                grid_ui_bulk_pageclear_next(&grid_ui_state);
-            }
-
 
             xSemaphoreGive(signaling_sem);
 
@@ -390,7 +433,7 @@ void grid_esp32_nvm_task(void *arg)
 	
     
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(5));
 
 
     }

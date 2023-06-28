@@ -25,6 +25,8 @@ void grid_lua_init(struct grid_lua_model* mod){
 
     mod->L = NULL;
 
+    mod->target_memory_usage_kilobytes = 70; // 70kb
+
 }
 
 void grid_lua_deinit(struct grid_lua_model* mod){
@@ -107,15 +109,26 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
 
 }
 
+void grid_lua_set_memory_target(struct grid_lua_model* mod, uint8_t target_kilobytes){
+    mod->target_memory_usage_kilobytes = target_kilobytes;
+}
 
+uint8_t grid_lua_get_memory_target(struct grid_lua_model* mod){
+    return mod->target_memory_usage_kilobytes;
+}
 
 
 void grid_lua_gc_try_collect(struct grid_lua_model* mod){
 
-    if (lua_gc(mod->L, LUA_GCCOUNT)>70){ //60kb
+    uint8_t target_kilobytes = grid_lua_get_memory_target(mod);
+
+    if (lua_gc(mod->L, LUA_GCCOUNT) > target_kilobytes){
 
         lua_gc(mod->L, LUA_GCCOLLECT);
-        grid_lua_debug_memory_stats(mod, "gc 70kb");
+
+        char message[10] = {0};
+        sprintf(message, "gc %dkb", target_kilobytes);
+        grid_lua_debug_memory_stats(mod, message);
         mod->dostring_count = 0;
 
     }

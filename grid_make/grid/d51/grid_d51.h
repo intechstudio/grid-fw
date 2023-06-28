@@ -78,6 +78,11 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
 void grid_platform_close_actionstring_file(void* file_pointer);
 void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type);
 uint16_t grid_platform_get_actionstring_file_size(void* file_pointer);
+uint8_t grid_platform_get_actionstring_file_has_size(void* file_pointer);
+
+
+
+
 uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, char* targetstring);
 void grid_platform_delete_actionstring_file(void* file_pointer);
 void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
@@ -106,5 +111,9 @@ void grid_platform_rtc_set_micros(uint64_t mic);
 uint64_t grid_platform_rtc_get_micros(void);
 
 uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
+
+uint32_t grid_platform_get_cycles();
+
+uint32_t grid_platform_get_cycles_per_us();
 
 #endif /* GRID_D51_H_ */
