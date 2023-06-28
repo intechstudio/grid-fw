@@ -220,10 +220,10 @@ void app_main(void)
 
     grid_ui_page_load(&grid_ui_state, 0); //load page 0
 
-    while (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state))
-    {
-        grid_ui_bulk_pageread_next(&grid_ui_state);
-    }
+    // while (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state))
+    // {
+    //     grid_ui_bulk_pageread_next(&grid_ui_state);
+    // }
         
 
 
