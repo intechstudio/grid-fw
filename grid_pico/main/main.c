@@ -388,10 +388,10 @@ int main()
     }
 
     struct grid_task spi_receive_transfer_task;
-    grid_task_init(&spi_receive_transfer_task, 1000); // 1 ms interval
+    grid_task_init(&spi_receive_transfer_task, 100); // 1 ms interval
 
     struct grid_task spi_start_transfer_task;
-    grid_task_init(&spi_start_transfer_task, 5000); // 5 ms interval
+    grid_task_init(&spi_start_transfer_task, 1000); // 5 ms interval
 
 
 

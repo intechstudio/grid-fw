@@ -57,6 +57,7 @@ struct grid_port{
 	uint32_t rx_double_buffer_status; // is packet ready for verification
 	uint32_t rx_double_buffer_seek_start_index; // offset of next received byte in buffer
 	uint32_t rx_double_buffer_read_start_index;
+	uint32_t rx_double_buffer_write_index;
 	
 	char tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE];
 	char rx_double_buffer[GRID_DOUBLE_BUFFER_RX_SIZE];

@@ -74,6 +74,22 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
     }
 
 
+    if (queue_state == 0){
+        //ets_printf("@");
+        esp_err_t ret;
+
+        portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+
+        portENTER_CRITICAL(&spinlock);
+        queue_state++;
+        ESP_ERROR_CHECK(spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, 0)) ;
+        portEXIT_CRITICAL(&spinlock);
+
+
+        //ets_printf("!");
+    }
+
+
     uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
 
     if ((ready_flags&0b00000001)){
@@ -93,73 +109,57 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
     }   
 
 
-    struct grid_port* port = NULL;
+    struct grid_port* por = NULL;
     uint8_t source_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
 
     if ((source_flags&0b00000001)){
-        port = &GRID_PORT_N;
+        por = &GRID_PORT_N;
     }
 
     if ((source_flags&0b00000010)){
-        port = &GRID_PORT_E;
+        por = &GRID_PORT_E;
     }
 
     if ((source_flags&0b00000100)){
-        port = &GRID_PORT_S;
+        por = &GRID_PORT_S;
     }
 
     if ((source_flags&0b00001000)){
-        port = &GRID_PORT_W;
+        por = &GRID_PORT_W;
     }   
 
-    if (port != NULL){
+    if (por != NULL){
 
         if (((char*)trans->rx_buffer)[1] == GRID_CONST_BRC){
 
             uint8_t error;
             
-            uint8_t id = grid_msg_string_get_parameter((char*)trans->rx_buffer, 6, 2, &error);
+            //uint8_t id = grid_msg_string_get_parameter((char*)trans->rx_buffer, 6, 2, &error);
 
-            ets_printf("RX: %02x %d\r\n", id, id);
+            //ets_printf("RX %d: %d\r\n", por->direction, id);
             
         //ets_printf("RX: %s\r\n", trans->rx_buffer);
         }
 
-        strcpy(port->rx_double_buffer, (char*) trans->rx_buffer);
-
-        port->rx_double_buffer_timeout = 0;
-        port->rx_double_buffer_read_start_index = 0;
-        port->rx_double_buffer_seek_start_index = 0;
-
-        for(uint16_t i = 0; i<490; i++){ // 490 is the max processing length
-                
-            if (port->rx_double_buffer[port->rx_double_buffer_seek_start_index] == 10){ // \n
-                    
-                port->rx_double_buffer_status = 1;
+        
+        for (uint16_t i = 0; true; i++){
+        
+            por->rx_double_buffer[por->rx_double_buffer_write_index] = ((char*)trans->rx_buffer)[i];
 
 
-            }
-            else if (port->rx_double_buffer[port->rx_double_buffer_seek_start_index] == 0){
-                
+
+            if (((char*)trans->rx_buffer)[i] == '\0'){
                 break;
             }
 
+            por->rx_double_buffer_write_index++;
+            por->rx_double_buffer_write_index%=GRID_DOUBLE_BUFFER_RX_SIZE;
 
-            port->rx_double_buffer_seek_start_index++;
-                
         }
 
     }
 
 
-
-    // BaseType_t do_yield = pdFALSE;
-
-    // xSemaphoreGiveFromISR(spi_ready_sem, &do_yield);
-
-    // if (do_yield == pdTRUE) {
-    //     portYIELD_FROM_ISR();
-    // }
 
 }
 
@@ -197,7 +197,7 @@ void grid_esp32_port_task(void *arg)
 {
 
 
-    SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
+    SemaphoreHandle_t nvm_or_port = (SemaphoreHandle_t)arg;
 
 
 
@@ -290,7 +290,7 @@ void grid_esp32_port_task(void *arg)
 
     while (1) {
 
-        if (xSemaphoreTake(signaling_sem, pdMS_TO_TICKS(4)) == pdTRUE){
+        if (xSemaphoreTake(nvm_or_port, pdMS_TO_TICKS(4)) == pdTRUE){
 
             if (queue_state == 0){
                 //ets_printf("@");
@@ -309,67 +309,13 @@ void grid_esp32_port_task(void *arg)
             struct grid_port* port_array[4] = {&GRID_PORT_N, &GRID_PORT_E, &GRID_PORT_S, &GRID_PORT_W};
 
 
-            for (uint8_t i=0; i<4; i++){
+            for (uint8_t i = 0; i<4*(4); i++){
 
-                struct grid_port* port = port_list[i];
+                struct grid_port* por = port_array[i%4]; // try to decode multiple packets from each ports
 
-                uint32_t limit = 1000;
-
-                if (port->rx_double_buffer_timeout<limit){
-                
-                    port->rx_double_buffer_timeout+=4;
-   
-                    if (port->rx_double_buffer_timeout>=limit){
-
-                        if (port->partner_status == 1){
-
-                            grid_platform_printf("Timeout from Port\r\n");
-
-                            grid_port_receiver_softreset(port);	
-                            //grid_port_receiver_softreset(por);	
-                                    
-
-                            grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
-                            grid_led_set_alert_frequency(&grid_led_state, -2);	
-                            grid_led_set_alert_phase(&grid_led_state, 100);	
-
-                        }
-
-                            //ets_printf("DISCONNECT\r\n");
-                    }
-                }
-
-
-            }
-
-
-            for (uint8_t i = 0; i<4; i++){
-
-                struct grid_port* port = port_array[i];
-
-                if (port->rx_double_buffer_status){
-
-                    
-                    portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
-
-
-                    //ets_printf("DECODE\r\n");
-
-                    portENTER_CRITICAL(&spinlock);
-
-                    uint16_t length = port->rx_double_buffer_seek_start_index - port->rx_double_buffer_read_start_index;
-                    grid_port_receive_decode(port, length);
-
-                    port->rx_double_buffer_status = 0;
-                    port->rx_double_buffer_read_start_index = port->rx_double_buffer_seek_start_index;  
-
-                    portEXIT_CRITICAL(&spinlock);
-
-
-
-                } 
-
-
+                //portENTER_CRITICAL(&spinlock);
+                grid_port_receive_task(por);
+                //portEXIT_CRITICAL(&spinlock);
 
             }
 
@@ -501,7 +447,7 @@ void grid_esp32_port_task(void *arg)
 
         
 
-            xSemaphoreGive(signaling_sem);
+            xSemaphoreGive(nvm_or_port);
 
         }
         else{

@@ -252,7 +252,7 @@ uint8_t grid_platform_disable_grid_transmitter(uint8_t direction){
 
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction){
     
-    ets_printf("grid_platform_reset_grid_transmitter NOT IMPLEMENTED!!!\r\n");
+    //ets_printf("grid_platform_reset_grid_transmitter NOT IMPLEMENTED!!!\r\n");
     return 1;
 }
 

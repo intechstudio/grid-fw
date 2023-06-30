@@ -164,7 +164,9 @@ void app_main(void)
 
 
     ESP_LOGI(TAG, "===== NVM START =====");
+    xSemaphoreTake(nvm_or_port, 0);
     grid_esp32_nvm_init(&grid_esp32_nvm_state);
+    xSemaphoreGive(nvm_or_port);
 
     ESP_LOGI(TAG, "===== SYS START =====");
     grid_sys_init(&grid_sys_state);

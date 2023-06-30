@@ -69,7 +69,7 @@ void grid_port_receive_task(struct grid_port* por){
 					}
 					else{
 					
-						grid_platform_printf("Timeout Disconnect 2\r\n");
+						//grid_platform_printf("Timeout Disconnect 2\r\n");
 						grid_port_receiver_softreset(por);
 					}
 				
@@ -77,7 +77,6 @@ void grid_port_receive_task(struct grid_port* por){
 			
 			}
 			else{
-			
 				por->rx_double_buffer_timeout++;
 			}			
 					
@@ -105,7 +104,7 @@ void grid_port_receive_task(struct grid_port* por){
 			// Buffer overrun error 1, 2, 3
 			if (overrun_condition_1 || overrun_condition_2 || overrun_condition_3){
 
-				grid_platform_printf("Overrun\r\n");
+				grid_platform_printf("Overrun %d\r\n", por->direction);
 				grid_port_receiver_hardreset(por);	
 				
 				//printf("Overrun\r\n"); // never use grid message to indicate overrun directly				
@@ -248,6 +247,12 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 				
 				// Read the received id age values
 				uint8_t received_id  = grid_msg_string_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+
+				if (por != &GRID_PORT_U && por != &GRID_PORT_H){
+
+					grid_platform_printf("DE %d: %d\r\n", por->direction, received_id);
+				}
+
 				uint8_t received_session = grid_msg_string_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
 				uint8_t received_msgage = grid_msg_string_get_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
 				
@@ -433,121 +438,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 						por->rx_double_buffer_timeout = 0;
 					}
 				}
-				else if (message[2] == GRID_CONST_BELL + 1){ // OLD IMPLEMENTATION
-					
-					
-					// Handshake logic
-					
-					uint8_t local_token_received = grid_msg_string_read_hex_string_value(&message[8], 2, &error_flag);
-					uint8_t partner_token_received = grid_msg_string_read_hex_string_value(&message[6], 2, &error_flag);
-							
-					if (por->partner_status == 0){
-												
-						if (por->ping_local_token == 255){ // I have no clue
-							
-							printf("BELL 0\r\n");
-							// Generate new local
-							
-							por->ping_local_token  = grid_platform_rtc_get_micros()%128;
-							
-							//NEW
-							grid_msg_string_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
-							grid_msg_string_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_string_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
-								
-							// No chance to connect now
-			
-						}
-						else if (partner_token_received == 255){
-							
-
-							printf("BELL 1\r\n");
-							// Remote is clueless
-							// No chance to connect now
-							
-						}
-						if (partner_token_received != por->ping_partner_token){
-							
-							por->ping_partner_token = partner_token_received;							
-							
-							//NEW
-							grid_msg_string_write_hex_string_value(&por->ping_packet[8], 2, partner_token_received);
-							grid_msg_string_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_string_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
-							
-							printf("BELL 2\r\n");	
-
-							
-							// Store remote
-							// No chance to connect now
-						}
-						if (por->ping_local_token != local_token_received){
-							
-							printf("BELL 3\r\n");
-							// Remote is clueless
-							// No chance to connect now
-							
-						}
-						else{
-							
-							// CONNECT
-							por->partner_fi = (message[3] - por->direction + 6)%4;
-							por->partner_hwcfg = grid_msg_string_read_hex_string_value(&message[length-10], 2, &error_flag);
-							por->partner_status = 1;
-							
-							
-							
-							grid_port_debug_printf("Connect");			
-							grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
-							grid_led_set_alert_frequency(&grid_led_state, -2);	
-							grid_led_set_alert_phase(&grid_led_state, 100);	
-
-							
-						}
-				
-						
-						// PUT DIRECT MESSAGE INTO TXBUFFER
-						por->ping_flag = 1;
-						
-											
-					
-					}
-					else{
-						
-						// VALIDATE CONNECTION
-						uint8_t validator = 1;
-						
-						validator &= local_token_received == por->ping_local_token;
-						validator &= partner_token_received == por->ping_partner_token;
-						
-						validator &= por->partner_fi == (message[3] - por->direction + 6)%4;
-						validator &= por->partner_hwcfg == grid_msg_string_read_hex_string_value(&message[length-10], 2, &error_flag);
-						
-						
-						if (validator == 1){
-							
-							// OK nice job!
-
-						}
-						else{
-							
-							//FAILED, DISCONNECT
-							por->partner_status = 0;
-							
-							por->ping_partner_token = 255;
-							por->ping_local_token = 255;
-							
-							grid_msg_string_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
-							grid_msg_string_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
-							grid_msg_string_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_string_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
-							
-							
-							//printf("LS: %d RS: %d LR: %d RR: %d  (Invalid)\r\n",local_stored,remote_stored,local_received,remote_received);
-		
-							
-						}
-					}
-					
-					
-				}
 				
 			}
 			else{ // Unknown Message Type
@@ -729,6 +619,9 @@ void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir){
 	
 	por->tx_double_buffer_status	= 0;
 	por->rx_double_buffer_status	= 0;
+	por->rx_double_buffer_read_start_index = 0;
+	por->rx_double_buffer_seek_start_index = 0;
+	por->rx_double_buffer_write_index = 0;
 	
 	
 	for (uint32_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
@@ -1171,16 +1064,13 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por){
 
 void grid_port_receiver_softreset(struct grid_port* por){
 
-
-	grid_platform_printf("SOFT: ");
 	por->partner_status = 0;
-
-	
 	por->rx_double_buffer_timeout = 0;
 	
 
 	por->rx_double_buffer_seek_start_index = 0;
 	por->rx_double_buffer_read_start_index = 0;
+	por->rx_double_buffer_write_index = 0; 
 
 	grid_platform_reset_grid_transmitter(por->direction);
 
