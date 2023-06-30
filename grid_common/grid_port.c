@@ -28,6 +28,8 @@ void grid_port_receive_task(struct grid_port* por){
 		
 		por->usart_error_flag = 0;
 		
+
+		grid_platform_printf("Parity\r\n");
 		grid_port_receiver_hardreset(por);
 		grid_port_debug_printf("Parity error");
 
@@ -48,7 +50,7 @@ void grid_port_receive_task(struct grid_port* por){
 			
 				if (por->partner_status == 1){
 				
-					grid_port_debug_printf("Timeout Disconnect 1");
+					grid_platform_printf("Timeout Disconnect 1\r\n");
 				
 						grid_port_receiver_softreset(por);	
 						//grid_port_receiver_softreset(por);	
@@ -62,12 +64,12 @@ void grid_port_receive_task(struct grid_port* por){
 				
 					if (por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0){
 						// Ready to receive
-						
+						grid_platform_printf("RtR\r\n");
 						grid_port_receiver_softreset(por);
 					}
 					else{
 					
-						grid_port_debug_printf("Timeout Disconnect 2");
+						grid_platform_printf("Timeout Disconnect 2\r\n");
 						grid_port_receiver_softreset(por);
 					}
 				
@@ -103,6 +105,7 @@ void grid_port_receive_task(struct grid_port* por){
 			// Buffer overrun error 1, 2, 3
 			if (overrun_condition_1 || overrun_condition_2 || overrun_condition_3){
 
+				grid_platform_printf("Overrun\r\n");
 				grid_port_receiver_hardreset(por);	
 				
 				//printf("Overrun\r\n"); // never use grid message to indicate overrun directly				
@@ -566,7 +569,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 				grid_port_debug_printf("Invalid Checksum + flag");
 			}
 			else{
-				printf("##  %s", message);
+				grid_platform_printf("##  %s", message);
 				grid_port_debug_printf("Invalid Checksum %02x %02x", checksum_calculated, checksum_received);
 			}
 			
@@ -1169,7 +1172,7 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por){
 void grid_port_receiver_softreset(struct grid_port* por){
 
 
-	
+	grid_platform_printf("SOFT: ");
 	por->partner_status = 0;
 
 	
@@ -1193,6 +1196,8 @@ void grid_port_receiver_softreset(struct grid_port* por){
 
 
 void grid_port_receiver_hardreset(struct grid_port* por){
+
+	grid_platform_printf("HARD: ");
 
 	if (por == &GRID_PORT_E){
 
@@ -2204,7 +2209,7 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 
 					grid_ui_event_recall_configuration(&grid_ui_state, pagenumber, elementnumber, eventtype, temp);
 					
-					grid_platform_printf("CONFIG: %s\r\n\r\n", temp);
+					//grid_platform_printf("CONFIG: %s\r\n\r\n", temp);
 
 
 					if (strlen(temp) != 0){

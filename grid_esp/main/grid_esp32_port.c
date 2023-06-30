@@ -25,6 +25,9 @@ spi_slave_transaction_t DRAM_ATTR spi_empty_transaction;
 uint8_t queue_state = 0;
 
 
+SemaphoreHandle_t queue_state_sem;
+SemaphoreHandle_t spi_ready_sem;
+
 void ets_debug_string(char* tag, char* str){
 
     return;
@@ -49,14 +52,12 @@ void ets_debug_string(char* tag, char* str){
 };
 
 
-//Called after a transaction is queued and ready for pickup by master. We use this to set the handshake line high.
+
 static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t *trans) {
     //printf("$\r\n");
 }
 
-uint8_t spi_ready = 1;
 
-//Called after transaction is sent/received. We use this to set the handshake line low.
 static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     //ets_printf(" %d ", queue_state);
@@ -66,20 +67,14 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
         queue_state--;
     }   
     else{
-        //ets_printf("  QUEUE WAS EMPTY  ");
+        ets_printf("  QUEUE WAS EMPTY  ");
         while(1){
 
         }
     }
 
 
-    spi_ready = 1;
-
-
     uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
-
-    //ets_printf(" %d\r\n", ready_flags);
-
 
     if ((ready_flags&0b00000001)){
         GRID_PORT_N.tx_double_buffer_status = 0;
@@ -97,13 +92,74 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
         GRID_PORT_W.tx_double_buffer_status = 0;
     }   
 
-    //ets_debug_string("SPI", trans->rx_buffer);
+
+    struct grid_port* port = NULL;
+    uint8_t source_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
+
+    if ((source_flags&0b00000001)){
+        port = &GRID_PORT_N;
+    }
+
+    if ((source_flags&0b00000010)){
+        port = &GRID_PORT_E;
+    }
+
+    if ((source_flags&0b00000100)){
+        port = &GRID_PORT_S;
+    }
+
+    if ((source_flags&0b00001000)){
+        port = &GRID_PORT_W;
+    }   
+
+    if (port != NULL){
+
+        if (((char*)trans->rx_buffer)[1] == GRID_CONST_BRC){
+
+            uint8_t error;
+            
+            uint8_t id = grid_msg_string_get_parameter((char*)trans->rx_buffer, 6, 2, &error);
+
+            ets_printf("RX: %02x %d\r\n", id, id);
+            
+        //ets_printf("RX: %s\r\n", trans->rx_buffer);
+        }
+
+        strcpy(port->rx_double_buffer, (char*) trans->rx_buffer);
+
+        port->rx_double_buffer_timeout = 0;
+        port->rx_double_buffer_read_start_index = 0;
+        port->rx_double_buffer_seek_start_index = 0;
+
+        for(uint16_t i = 0; i<490; i++){ // 490 is the max processing length
+                
+            if (port->rx_double_buffer[port->rx_double_buffer_seek_start_index] == 10){ // \n
+                    
+                port->rx_double_buffer_status = 1;
 
 
-    spi_slave_transaction_t *result;
+            }
+            else if (port->rx_double_buffer[port->rx_double_buffer_seek_start_index] == 0){
+                
+                break;
+            }
 
-    //spi_slave_get_trans_result(RCV_HOST, &result, 0);
-    //grid_platform_printf("@ SPI COMPLETE: ");
+
+            port->rx_double_buffer_seek_start_index++;
+                
+        }
+
+    }
+
+
+
+    // BaseType_t do_yield = pdFALSE;
+
+    // xSemaphoreGiveFromISR(spi_ready_sem, &do_yield);
+
+    // if (do_yield == pdTRUE) {
+    //     portYIELD_FROM_ISR();
+    // }
 
 }
 
@@ -132,17 +188,18 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
 
     //ets_printf("!");
 
-    spi_ready = 0;
-
     return 0; // done
 
 }
+
 
 void grid_esp32_port_task(void *arg)
 {
 
 
     SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
+
+
 
 
     uint8_t n=0;
@@ -217,20 +274,23 @@ void grid_esp32_port_task(void *arg)
 
     static uint32_t loopcounter = 0;
 
+
+    SemaphoreHandle_t spi_ready_sem = xSemaphoreCreateBinary();
+
+
     portENTER_CRITICAL(&spinlock);
     queue_state++;
     ESP_ERROR_CHECK(spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, 0)) ;
     portEXIT_CRITICAL(&spinlock);
     
-    //spi_ready = 0;
-
 
     uint8_t pingcounter = 0;
 
+    uint8_t firstprint = 1;
+
     while (1) {
 
-        if (xSemaphoreTake(signaling_sem, portMAX_DELAY) == pdTRUE){
-
+        if (xSemaphoreTake(signaling_sem, pdMS_TO_TICKS(4)) == pdTRUE){
 
             if (queue_state == 0){
                 //ets_printf("@");
@@ -246,89 +306,74 @@ void grid_esp32_port_task(void *arg)
             }
 
 
+            struct grid_port* port_array[4] = {&GRID_PORT_N, &GRID_PORT_E, &GRID_PORT_S, &GRID_PORT_W};
 
 
-            if (spi_ready == 1){
+            for (uint8_t i=0; i<4; i++){
 
+                struct grid_port* port = port_list[i];
 
+                uint32_t limit = 1000;
 
-                n++;
-                sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
+                if (port->rx_double_buffer_timeout<limit){
+                
+                    port->rx_double_buffer_timeout+=4;
+   
+                    if (port->rx_double_buffer_timeout>=limit){
 
+                        if (port->partner_status == 1){
 
+                            grid_platform_printf("Timeout from Port\r\n");
 
-            // grid_platform_printf("@ READY COMPLETE: ");
-                spi_slave_transaction_t *trans = NULL;
-                spi_slave_get_trans_result(RCV_HOST, &trans, portMAX_DELAY);
+                            grid_port_receiver_softreset(port);	
+                            //grid_port_receiver_softreset(por);	
+                                    
 
-                ////ets_printf("RX status,source: %d,%d : %s\r\n", ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index], ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index], ((uint8_t*) trans->rx_buffer));
-            //  grid_platform_printf("@%d: %s %s\r\n", trans->length, trans->tx_buffer, trans->rx_buffer);
-
-
-
-
-                // figure out where the message came from (which port)
-                uint8_t source_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
-
-                struct grid_port* port = NULL;
-
-
-
-                if ((source_flags&0b00000001)){
-                    port = &GRID_PORT_N;
-                }
-
-                if ((source_flags&0b00000010)){
-                    port = &GRID_PORT_E;
-                }
-
-                if ((source_flags&0b00000100)){
-                    port = &GRID_PORT_S;
-                }
-
-                if ((source_flags&0b00001000)){
-                    port = &GRID_PORT_W;
-                }   
-
-                if (port != NULL){
-                    // we found the port in question
-
-                    strcpy(port->rx_double_buffer, (char*) trans->rx_buffer);
-
-                    port->rx_double_buffer_timeout = 0;
-                    port->rx_double_buffer_read_start_index = 0;
-                    port->rx_double_buffer_seek_start_index = 0;
-                    
-
-
-                    ets_debug_string("PRE", port->rx_double_buffer);
-
-
-                    for(uint16_t i = 0; i<490; i++){ // 490 is the max processing length
-                            
-                        if (port->rx_double_buffer[port->rx_double_buffer_seek_start_index] == 10){ // \n
-                                
-                            port->rx_double_buffer_status = 1;
-                            uint16_t length = port->rx_double_buffer_seek_start_index - port->rx_double_buffer_read_start_index + 1;
-                            grid_port_receive_decode(port, length);
-
-                            port->rx_double_buffer_status = 0;
-                            port->rx_double_buffer_read_start_index = port->rx_double_buffer_seek_start_index;
+                            grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
+                            grid_led_set_alert_frequency(&grid_led_state, -2);	
+                            grid_led_set_alert_phase(&grid_led_state, 100);	
 
                         }
-                        else if (port->rx_double_buffer[port->rx_double_buffer_seek_start_index] == 0){
-                            
-                            break;
-                        }
 
-
-                        port->rx_double_buffer_seek_start_index++;
-                            
+                            //ets_printf("DISCONNECT\r\n");
                     }
-
                 }
+
 
             }
+
+
+            for (uint8_t i = 0; i<4; i++){
+
+                struct grid_port* port = port_array[i];
+
+                if (port->rx_double_buffer_status){
+
+                    
+                    portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+
+
+                    //ets_printf("DECODE\r\n");
+
+                    portENTER_CRITICAL(&spinlock);
+
+                    uint16_t length = port->rx_double_buffer_seek_start_index - port->rx_double_buffer_read_start_index;
+                    grid_port_receive_decode(port, length);
+
+                    port->rx_double_buffer_status = 0;
+                    port->rx_double_buffer_read_start_index = port->rx_double_buffer_seek_start_index;  
+
+                    portEXIT_CRITICAL(&spinlock);
+
+
+
+                } 
+
+
+
+            }
+
+
 
             loopcounter++;
 
@@ -357,6 +402,7 @@ void grid_esp32_port_task(void *arg)
 
             if (loopcounter%4 == 0){
 
+
                 if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
 
                     //CRITICAL_SECTION_ENTER()
@@ -366,16 +412,26 @@ void grid_esp32_port_task(void *arg)
                     //CRITICAL_SECTION_LEAVE()
                 
                 }
-                if (grid_ui_event_count_istriggered(&grid_ui_state)){
 
-                    grid_ui_state.port->cooldown += 3;	
-
-                    //CRITICAL_SECTION_ENTER()
-                    vTaskSuspendAll();
-                    grid_port_process_ui_UNSAFE(&grid_ui_state); 
-                    xTaskResumeAll();
-                    //CRITICAL_SECTION_LEAVE()
+                if (grid_ui_bluk_anything_is_in_progress(&grid_ui_state)){
+                    //SKIP
                 }
+                else{
+
+                    if (grid_ui_event_count_istriggered(&grid_ui_state)){
+
+                        grid_ui_state.port->cooldown += 3;	
+
+                        //CRITICAL_SECTION_ENTER()
+                        vTaskSuspendAll();
+                        grid_port_process_ui_UNSAFE(&grid_ui_state); 
+                        xTaskResumeAll();
+                        //CRITICAL_SECTION_LEAVE()
+                    }
+
+                }
+
+
 
 
             }
@@ -445,44 +501,13 @@ void grid_esp32_port_task(void *arg)
 
         
 
-            for (uint8_t i=0; i<4; i++){
-
-                struct grid_port* port = port_list[i];
-
-                uint32_t limit = 1000;
-
-                if (port->rx_double_buffer_timeout<limit){
-                
-                    port->rx_double_buffer_timeout+=10;
-
-   
-                    if (port->rx_double_buffer_timeout>=limit){
-
-                        if (port->partner_status == 1){
-
-                            grid_port_receiver_softreset(port);	
-                            //grid_port_receiver_softreset(por);	
-                                    
-
-                            grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
-                            grid_led_set_alert_frequency(&grid_led_state, -2);	
-                            grid_led_set_alert_phase(&grid_led_state, 100);	
-
-                        }
-
-                            //ets_printf("DISCONNECT\r\n");
-                    }
-                }
-
-
-            }
-
-
-
             xSemaphoreGive(signaling_sem);
 
         }
+        else{
 
+            ets_printf("NO TAKE\r\n");
+        }
 
         vTaskDelay(pdMS_TO_TICKS(4));
 

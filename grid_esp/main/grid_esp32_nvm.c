@@ -152,9 +152,9 @@ void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm){
     grid_esp32_nvm_mount();
 
     //esp_littlefs_format("ffat");
-    //grid_esp32_nvm_list_files(NULL, "/littlefs");
-    //grid_esp32_nvm_list_files(NULL, "/littlefs/00");
-    //grid_esp32_nvm_list_files(NULL, "/littlefs/00/00");
+    grid_esp32_nvm_list_files(NULL, "/littlefs");
+    grid_esp32_nvm_list_files(NULL, "/littlefs/00");
+    grid_esp32_nvm_list_files(NULL, "/littlefs/00/00");
     //grid_esp32_nvm_read_write_test();
 
 
@@ -410,7 +410,7 @@ void grid_esp32_nvm_task(void *arg)
 
                     uint32_t delta = c1-c0;
 
-				    //grid_platform_printf("(%ld)us\r\n", delta/grid_platform_get_cycles_per_us());
+				    grid_platform_printf("(%ld)us\r\n", delta/grid_platform_get_cycles_per_us());
                         
                 }
                 else{

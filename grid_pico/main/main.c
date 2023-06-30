@@ -27,6 +27,9 @@
 #include "pico/time.h"
 
 
+#define BUCKET_BUFFER_LENGTH 500
+#define BUCKET_ARRAY_LENGTH 50
+
 uint dma_tx;
 uint dma_rx; 
 
@@ -95,7 +98,6 @@ struct grid_bucket{
 
 };
 
-#define BUCKET_BUFFER_LENGTH 500
 
 struct grid_port{
 
@@ -110,7 +112,6 @@ struct grid_port{
 
 
 
-#define BUCKET_ARRAY_LENGTH 10
 
 uint8_t bucket_array_length = BUCKET_ARRAY_LENGTH;
 struct grid_bucket bucket_array[BUCKET_ARRAY_LENGTH];
@@ -180,6 +181,7 @@ struct grid_bucket* grid_bucket_find_next_match(struct grid_bucket* previous_buc
 }
 
 struct grid_bucket* spi_active_bucket = NULL;
+struct grid_bucket* spi_previous_bucket = NULL;
 
 
 void grid_bucket_put_character(struct grid_bucket* bucket, char next_char){
@@ -253,7 +255,8 @@ void spi_interface_init(){
     gpio_set_dir(CS_PIN, GPIO_OUT);
     gpio_put(CS_PIN, 1);
 
-    spi_init(spi_default, 31250 * 1000);
+    uint baudrate = spi_init(spi_default, 31250 * 1000);
+    printf("BAUD: %d", baudrate);
 
     gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
@@ -342,7 +345,7 @@ int main()
 
     spi_interface_init();
 
-    for (uint i = 0; i < GRID_PARAMETER_SPI_TRANSACTION_length; ++i) {
+    for (uint i = 0; i < GRID_PARAMETER_SPI_TRANSACTION_length; i++) {
         txbuf[i] = 0;
     }
 
@@ -404,7 +407,7 @@ int main()
                 spi_dma_done = false;
                 uint8_t destination_flags = rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
 
-                printf("%d\r\n", destination_flags);
+                //printf("%d\r\n", destination_flags);
 
                 // iterate through all the ports
                 for (uint8_t i = 0; i<4; i++){
@@ -427,6 +430,7 @@ int main()
                 if (spi_active_bucket != NULL){
                     // clear the bucket after use
                     grid_bucket_init(spi_active_bucket, spi_active_bucket->index);
+                    spi_previous_bucket = spi_active_bucket;
                     spi_active_bucket = NULL;
 
                 }
@@ -447,7 +451,7 @@ int main()
 
                 if (spi_active_bucket == NULL){
 
-                    spi_active_bucket = grid_bucket_find_next_match(spi_active_bucket, GRID_BUCKET_STATUS_FULL);        
+                    spi_active_bucket = grid_bucket_find_next_match(spi_previous_bucket, GRID_BUCKET_STATUS_FULL);        
 
                     // found full bucket, send it through SPI
                     if (spi_active_bucket != NULL) {
@@ -456,6 +460,13 @@ int main()
 
                         spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
                         spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<(spi_active_bucket->source_port_index));
+
+
+                        //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
+                        if (spi_active_bucket->buffer[1] == GRID_CONST_BRC){
+                       
+                            printf("BR%d %c%c\r\n", spi_active_bucket->index, spi_active_bucket->buffer[6], spi_active_bucket->buffer[7]);
+                        }
 
                         spi_start_transfer(dma_tx, dma_rx, spi_active_bucket->buffer, rxbuf, dma_handler);
                         
@@ -544,7 +555,9 @@ int main()
 
 
                     //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
-                    printf("BR%d\r\n", loopcouter);
+                    if (port->active_bucket->buffer[1] == GRID_CONST_BRC){
+                        //printf("BR%d %c%c\r\n", port->active_bucket->index, port->active_bucket->buffer[6], port->active_bucket->buffer[7]);
+                    }
                     port->active_bucket->status = GRID_BUCKET_STATUS_FULL;
                     port->active_bucket->buffer_index = 0;
                     // clear bucket
