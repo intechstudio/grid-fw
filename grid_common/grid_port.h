@@ -52,7 +52,7 @@ struct grid_port{
 	
 	uint8_t usart_error_flag;
 	
-	uint32_t rx_double_buffer_timeout; // is packet ready for verification
+	uint64_t rx_double_buffer_timestamp; // is packet ready for verification
 	
 	uint32_t rx_double_buffer_status; // is packet ready for verification
 	uint32_t rx_double_buffer_seek_start_index; // offset of next received byte in buffer

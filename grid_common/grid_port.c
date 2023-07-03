@@ -46,7 +46,7 @@ void grid_port_receive_task(struct grid_port* por){
 		
 		if (por->type == GRID_PORT_TYPE_USART){ // This is GRID usart port
 
-			if (por->rx_double_buffer_timeout > 4000){
+			if (grid_platform_rtc_get_elapsed_time(por->rx_double_buffer_timestamp) > 1000*1000){ // 1000*1000us = 1sec
 			
 				if (por->partner_status == 1){
 				
@@ -74,10 +74,7 @@ void grid_port_receive_task(struct grid_port* por){
 				
 				}
 			
-			}
-			else{
-				por->rx_double_buffer_timeout++;
-			}			
+			}		
 					
 		}
 		
@@ -86,7 +83,7 @@ void grid_port_receive_task(struct grid_port* por){
 			if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 10){ // \n
 					
 				por->rx_double_buffer_status = 1;
-				por->rx_double_buffer_timeout = 0;
+				por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 					
 				break;
 			}
@@ -105,25 +102,31 @@ void grid_port_receive_task(struct grid_port* por){
 
 				grid_platform_printf("Overrun%d%d%d %d\r\n", overrun_condition_1, overrun_condition_2, overrun_condition_3, por->direction);
 
-				for (uint16_t i = 0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
-				
-					if (i == por->rx_double_buffer_read_start_index){
-						grid_platform_printf("RPTR ");
-					}
-					if (i == por->rx_double_buffer_seek_start_index){
-						grid_platform_printf("SPTR ");
-					}
-					if (i == por->rx_double_buffer_write_index){
-						grid_platform_printf("WPTR ");
-					}
-				
-				
-					grid_platform_printf("%02x ", por->rx_double_buffer[i]);
-					if (por->rx_double_buffer[i] == '\n'){
-						grid_platform_printf("\r\n");
-					}
-				}
 
+				if (1){
+
+					for (uint16_t i = 0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
+
+						if (i == por->rx_double_buffer_read_start_index){
+							grid_platform_printf("RPTR ");
+						}
+						if (i == por->rx_double_buffer_seek_start_index){
+							grid_platform_printf("SPTR ");
+						}
+						if (i == por->rx_double_buffer_write_index){
+							grid_platform_printf("WPTR ");
+						}
+
+
+						grid_platform_printf("%02x ", por->rx_double_buffer[i]);
+						if (por->rx_double_buffer[i] == '\n'){
+							grid_platform_printf("\r\n");
+						}
+					}
+
+
+				}
+				
 				grid_port_receiver_hardreset(por);	
 				
 				//printf("Overrun\r\n"); // never use grid message to indicate overrun directly				
@@ -137,12 +140,12 @@ void grid_port_receive_task(struct grid_port* por){
 				
 			if (por->rx_double_buffer_seek_start_index < GRID_DOUBLE_BUFFER_RX_SIZE-1){
 					
-				por->rx_double_buffer_timeout = 0;
+				por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 				por->rx_double_buffer_seek_start_index++;
 			}
 			else{
 					
-				por->rx_double_buffer_timeout = 0;
+				por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 				por->rx_double_buffer_seek_start_index=0;
 			}
 				
@@ -443,7 +446,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 						por->partner_hwcfg = grid_msg_string_read_hex_string_value(&message[length-10], 2, &error_flag);
 						por->partner_status = 1;
 						
-						por->rx_double_buffer_timeout = 0;
+						por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 						
 						grid_port_debug_printf("Connect");			
 						grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
@@ -454,7 +457,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 					}
 					else{
 
-						por->rx_double_buffer_timeout = 0;
+						por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 					}
 				}
 				
@@ -1084,7 +1087,7 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por){
 void grid_port_receiver_softreset(struct grid_port* por){
 
 	por->partner_status = 0;
-	por->rx_double_buffer_timeout = 0;
+	por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 	
 
 	por->rx_double_buffer_seek_start_index = 0;
@@ -1129,7 +1132,7 @@ void grid_port_receiver_hardreset(struct grid_port* por){
 
 
 	
-	por->rx_double_buffer_timeout = 0;
+	por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 	grid_platform_reset_grid_transmitter(por->direction);
 	
 
