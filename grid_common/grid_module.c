@@ -242,22 +242,22 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 	grid_led_init(&grid_led_state, 8);
 	
-	grid_ui_model_init(&grid_ui_state, GRID_PORT_U, 8+1); // +1 for the system element	
+	grid_ui_model_init(ui, GRID_PORT_U, 8+1); // +1 for the system element	
 		
 	for(uint8_t j=0; j<4; j++){
 	
-		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_ENCODER);
+		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_ENCODER);
 
 	}		
 
 	for(uint8_t j=4; j<8; j++){
 	
-		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_POTENTIOMETER);
+		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_POTENTIOMETER);
 
 	}				
 
 
-	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
+	grid_ui_element_init(ui, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 
 
 	
@@ -540,16 +540,16 @@ void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 	
 	grid_led_init(&grid_led_state, 16);
 	
-	grid_ui_model_init(&grid_ui_state, GRID_PORT_U, 16+1); // +1 for the system element	
+	grid_ui_model_init(ui, GRID_PORT_U, 16+1); // +1 for the system element	
 		
 	for(uint8_t j=0; j<16; j++){
 	
-		grid_ui_element_init(&grid_ui_state, j, GRID_UI_ELEMENT_ENCODER);
+		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_ENCODER);
 
 	}		
 
 
-	grid_ui_element_init(&grid_ui_state, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
+	grid_ui_element_init(ui, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 		
 	
 }

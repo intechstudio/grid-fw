@@ -9,13 +9,13 @@
 
 
 
-struct grid_port* GRID_PORT_N;
-struct grid_port* GRID_PORT_E;
-struct grid_port* GRID_PORT_S;
-struct grid_port* GRID_PORT_W;
+struct grid_port volatile * GRID_PORT_N;
+struct grid_port volatile * GRID_PORT_E;
+struct grid_port volatile * GRID_PORT_S;
+struct grid_port volatile * GRID_PORT_W;
 
-struct grid_port* GRID_PORT_U;
-struct grid_port* GRID_PORT_H;
+struct grid_port volatile * GRID_PORT_U;
+struct grid_port volatile * GRID_PORT_H;
 
 
 
@@ -659,9 +659,6 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 
 void grid_port_init(struct grid_port** por, uint8_t type, uint8_t dir){
 
-	
-
-	*por = (struct grid_port*) grid_platform_allocate_volatile(1 * sizeof(struct grid_port));
 	
 	grid_buffer_init(&(*por)->tx_buffer, GRID_BUFFER_SIZE);
 	grid_buffer_init(&(*por)->rx_buffer, GRID_BUFFER_SIZE);

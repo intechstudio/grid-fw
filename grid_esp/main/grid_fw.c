@@ -138,6 +138,29 @@ void system_init_core_2_task(void *arg)
 }
 
 
+static struct grid_port DRAM_ATTR PORT_N;
+static struct grid_port DRAM_ATTR PORT_E;
+static struct grid_port DRAM_ATTR PORT_S;
+static struct grid_port DRAM_ATTR PORT_W;
+static struct grid_port DRAM_ATTR PORT_U;
+static struct grid_port DRAM_ATTR PORT_H;
+
+static char DRAM_ATTR PORT_N_TX[GRID_BUFFER_SIZE] = {0};
+static char DRAM_ATTR PORT_N_RX[GRID_BUFFER_SIZE] = {0};
+static char DRAM_ATTR PORT_E_TX[GRID_BUFFER_SIZE] = {0};
+static char DRAM_ATTR PORT_E_RX[GRID_BUFFER_SIZE] = {0};
+static char DRAM_ATTR PORT_S_TX[GRID_BUFFER_SIZE] = {0};
+static char DRAM_ATTR PORT_S_RX[GRID_BUFFER_SIZE] = {0};
+static char DRAM_ATTR PORT_W_TX[GRID_BUFFER_SIZE] = {0};
+static char DRAM_ATTR PORT_W_RX[GRID_BUFFER_SIZE] = {0};
+
+static char DRAM_ATTR PORT_U_TX[GRID_BUFFER_SIZE] = {0};
+static char DRAM_ATTR PORT_U_RX[GRID_BUFFER_SIZE] = {0};
+
+static char DRAM_ATTR PORT_H_TX[GRID_BUFFER_SIZE] = {0};
+static char DRAM_ATTR PORT_H_RX[GRID_BUFFER_SIZE] = {0};
+
+
 void app_main(void)
 {
     SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
@@ -185,6 +208,31 @@ void app_main(void)
 
 	
     ESP_LOGI(TAG, "===== PORT INIT =====");
+
+
+
+	GRID_PORT_N = &PORT_N;
+	GRID_PORT_E = &PORT_E;
+	GRID_PORT_S = &PORT_S;
+	GRID_PORT_W = &PORT_W;
+	GRID_PORT_U = &PORT_U;
+	GRID_PORT_H = &PORT_H;
+
+	GRID_PORT_N->tx_buffer.buffer_storage = PORT_N_TX;
+	GRID_PORT_N->rx_buffer.buffer_storage = PORT_N_RX;
+	GRID_PORT_E->tx_buffer.buffer_storage = PORT_E_TX;
+	GRID_PORT_E->rx_buffer.buffer_storage = PORT_E_RX;
+	GRID_PORT_S->tx_buffer.buffer_storage = PORT_S_TX;
+	GRID_PORT_S->rx_buffer.buffer_storage = PORT_S_RX;
+	GRID_PORT_W->tx_buffer.buffer_storage = PORT_W_TX;
+	GRID_PORT_W->rx_buffer.buffer_storage = PORT_W_RX;
+
+	GRID_PORT_U->tx_buffer.buffer_storage = PORT_U_TX;
+	GRID_PORT_U->rx_buffer.buffer_storage = PORT_U_RX;
+	GRID_PORT_H->tx_buffer.buffer_storage = PORT_H_TX;
+	GRID_PORT_H->rx_buffer.buffer_storage = PORT_H_RX;
+
+
     grid_port_init_all(); // buffers
 
     ets_printf("Port Address: %lx", GRID_PORT_N);
@@ -192,6 +240,9 @@ void app_main(void)
     ESP_LOGI(TAG, "===== BANK INIT =====");
     grid_sys_set_bank(&grid_sys_state, 0);
     ets_delay_us(2000);
+
+
+
 
 
    // grid_sys_state.hwfcg = GRID_MODULE_EF44_RevD;

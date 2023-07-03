@@ -1767,12 +1767,12 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui){
 	uint32_t offset_global=0;
 	
 	
-	
 	// UI STATE
 
 	for (uint8_t j=0; j<ui->element_list_length; j++){
 		
 		for (uint8_t k=0; k<ui->element_list[j].event_list_length; k++){
+	
 		
 			if (offset_local>GRID_PARAMETER_PACKET_marign || offset_global>GRID_PARAMETER_PACKET_marign){
 				continue;
@@ -1816,6 +1816,8 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui){
 		
 	}
 
+	
+
 	if (strlen(payload_global)>0){
 
 		grid_msg_packet_body_append_text(&message_global, payload_global);
@@ -1824,6 +1826,7 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui){
 	}
 
 	
+	
 	grid_msg_packet_body_append_text(&message_local, payload_local);
 
 
@@ -1831,6 +1834,8 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui){
 		
 	uint32_t message_length = grid_msg_packet_get_length(&message_local);
 		
+
+
 	// Put the packet into the UI_TX buffer
 	if (grid_buffer_write_init(&ui->port->tx_buffer, message_length)){
 			
@@ -1851,8 +1856,6 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui){
 		// LOG UNABLE TO WRITE EVENT
 	}
 		
-
-
 
 
 

@@ -157,7 +157,6 @@ static void nvm_task_inner(){
 				grid_ui_bulk_pageread_next(&grid_ui_state);
 			}		
 
-			printf("progress\r\n");
 
 			
 		}	
@@ -202,7 +201,12 @@ static void ui_task_inner(){
 	if (loopcount%4==0){
 
 
+
+
 		grid_port_ping_try_everywhere();
+
+		
+
 
 		// IF LOCAL MESSAGE IS AVAILABLE
 		if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
@@ -224,10 +228,13 @@ static void ui_task_inner(){
 		
 		
 		if (grid_ui_state.port->cooldown > 5){
-			printf("SKIP\r\n");
+
 
 		}
 		else{
+
+
+
 
 			if (grid_ui_event_count_istriggered(&grid_ui_state)){
 
@@ -566,6 +573,7 @@ int main(void)
 
 
 	grid_lua_init(&grid_lua_state);
+    grid_lua_set_memory_target(&grid_lua_state, 80); //80kb
 	grid_lua_start_vm(&grid_lua_state);
 
 
@@ -701,7 +709,7 @@ int main(void)
 
 		ui_task_inner();
 
-	
+
 		outbound_task_inner();
 
 		inbound_task_inner();

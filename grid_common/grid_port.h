@@ -89,13 +89,13 @@ struct grid_port{
 
 
 
-extern struct grid_port* GRID_PORT_N;
-extern struct grid_port* GRID_PORT_E;
-extern struct grid_port* GRID_PORT_S;
-extern struct grid_port* GRID_PORT_W;
+extern struct grid_port volatile * GRID_PORT_N;
+extern struct grid_port volatile * GRID_PORT_E;
+extern struct grid_port volatile * GRID_PORT_S;
+extern struct grid_port volatile * GRID_PORT_W;
 
-extern struct grid_port* GRID_PORT_U;
-extern struct grid_port* GRID_PORT_H;
+extern struct grid_port volatile * GRID_PORT_U;
+extern struct grid_port volatile * GRID_PORT_H;
 
 
 void grid_port_receive_task(struct grid_port* por);
