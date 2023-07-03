@@ -63,12 +63,12 @@ void grid_port_receive_task(struct grid_port* por){
 				
 					if (por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0){
 						// Ready to receive
-						grid_platform_printf("RtR\r\n");
+						//grid_platform_printf("RtR\r\n");
 						grid_port_receiver_softreset(por);
 					}
 					else{
 					
-						grid_platform_printf("Timeout Disconnect 2\r\n");
+						//grid_platform_printf("Timeout Disconnect 2\r\n");
 						grid_port_receiver_softreset(por);
 					}
 				
@@ -426,6 +426,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 			}
 			else if (message[1] == GRID_CONST_DCT){ // Direct Message
 				
+				grid_platform_printf("DE DCT\r\n");
 				//process direct message
 				
 				if (message[2] == GRID_CONST_ACK){
