@@ -454,3 +454,25 @@ uint32_t grid_platform_get_cycles_per_us(){
     return 240;
 
 }
+
+
+
+
+void* grid_platform_allocate_volatile(size_t size){
+
+    void* handle =  heap_caps_malloc(size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+
+    //ets_printf("ADDRESS: %lx\r\n", handle);
+
+    if (handle == NULL){
+        
+        ets_printf("MALLOC FAILED");
+
+        while(1){
+            
+        }
+    }
+
+    return handle;
+
+}

@@ -26,6 +26,7 @@ extern int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
 
 extern void grid_platform_printf(char const *fmt, ...);
 
+extern void* grid_platform_allocate_volatile(size_t size); 
 
 extern void grid_platform_system_reset();
 extern void grid_platform_nvm_defrag();
@@ -88,13 +89,13 @@ struct grid_port{
 
 
 
-extern volatile struct grid_port GRID_PORT_N;
-extern volatile struct grid_port GRID_PORT_E;
-extern volatile struct grid_port GRID_PORT_S;
-extern volatile struct grid_port GRID_PORT_W;
+extern struct grid_port* GRID_PORT_N;
+extern struct grid_port* GRID_PORT_E;
+extern struct grid_port* GRID_PORT_S;
+extern struct grid_port* GRID_PORT_W;
 
-extern volatile struct grid_port GRID_PORT_U;
-extern volatile struct grid_port GRID_PORT_H;
+extern struct grid_port* GRID_PORT_U;
+extern struct grid_port* GRID_PORT_H;
 
 
 void grid_port_receive_task(struct grid_port* por);
@@ -109,7 +110,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback);
 
 void grid_port_init_all(void);
 
-void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir);
+void grid_port_init(struct grid_port** por, uint8_t type, uint8_t dir);
 
 
 uint8_t grid_port_process_outbound_usart(struct grid_port* por);

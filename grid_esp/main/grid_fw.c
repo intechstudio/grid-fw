@@ -186,6 +186,8 @@ void app_main(void)
 	
     ESP_LOGI(TAG, "===== PORT INIT =====");
     grid_port_init_all(); // buffers
+
+    ets_printf("Port Address: %lx", GRID_PORT_N);
     
     ESP_LOGI(TAG, "===== BANK INIT =====");
     grid_sys_set_bank(&grid_sys_state, 0);

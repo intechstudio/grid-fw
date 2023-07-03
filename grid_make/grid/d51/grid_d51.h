@@ -116,4 +116,7 @@ uint32_t grid_platform_get_cycles();
 
 uint32_t grid_platform_get_cycles_per_us();
 
+
+void* grid_platform_allocate_volatile(size_t size);
+
 #endif /* GRID_D51_H_ */

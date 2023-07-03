@@ -12,7 +12,9 @@
 
 extern uint32_t grid_buffer_error_count;
 extern uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
- 
+extern void* grid_platform_allocate_volatile(size_t size); 
+
+
 #define GRID_BUFFER_SIZE	2000 //1000 this is the buffer for internal routing
 
 

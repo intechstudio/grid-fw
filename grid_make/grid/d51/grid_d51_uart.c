@@ -22,22 +22,22 @@ void grid_d51_uart_port_reset_dma(uint8_t dma_channel){
 
 static void tx_cb_USART_GRID_N(const struct usart_async_descriptor *const descr)
 {
-	tx_cb_USART_GRID(&GRID_PORT_N);
+	tx_cb_USART_GRID(GRID_PORT_N);
 }
 
 static void tx_cb_USART_GRID_E(const struct usart_async_descriptor *const descr)
 {
-	tx_cb_USART_GRID(&GRID_PORT_E);
+	tx_cb_USART_GRID(GRID_PORT_E);
 }
 
 static void tx_cb_USART_GRID_S(const struct usart_async_descriptor *const descr)
 {
-	tx_cb_USART_GRID(&GRID_PORT_S);
+	tx_cb_USART_GRID(GRID_PORT_S);
 }
 
 static void tx_cb_USART_GRID_W(const struct usart_async_descriptor *const descr)
 {
-	tx_cb_USART_GRID(&GRID_PORT_W);
+	tx_cb_USART_GRID(GRID_PORT_W);
 }
 
 void tx_cb_USART_GRID(struct grid_port* const por){
@@ -52,22 +52,22 @@ void tx_cb_USART_GRID(struct grid_port* const por){
 
 static void rx_cb_USART_GRID_N(const struct usart_async_descriptor *const descr)
 {
-	rx_cb_USART_GRID(&GRID_PORT_N);
+	rx_cb_USART_GRID(GRID_PORT_N);
 }
 
 static void rx_cb_USART_GRID_E(const struct usart_async_descriptor *const descr)
 {
-	rx_cb_USART_GRID(&GRID_PORT_E);
+	rx_cb_USART_GRID(GRID_PORT_E);
 }
 
 static void rx_cb_USART_GRID_S(const struct usart_async_descriptor *const descr)
 {
-	rx_cb_USART_GRID(&GRID_PORT_S);
+	rx_cb_USART_GRID(GRID_PORT_S);
 }
 
 static void rx_cb_USART_GRID_W(const struct usart_async_descriptor *const descr)
 {
-	rx_cb_USART_GRID(&GRID_PORT_W);
+	rx_cb_USART_GRID(GRID_PORT_W);
 }
 
 void rx_cb_USART_GRID(struct grid_port* const por){
@@ -78,19 +78,19 @@ volatile dmatest = 0;
 
 static void dma_transfer_complete_n_cb(struct _dma_resource *resource){
 	
-	dma_transfer_complete(&GRID_PORT_N);
+	dma_transfer_complete(GRID_PORT_N);
 }
 static void dma_transfer_complete_e_cb(struct _dma_resource *resource){
 	
-	dma_transfer_complete(&GRID_PORT_E);
+	dma_transfer_complete(GRID_PORT_E);
 }
 static void dma_transfer_complete_s_cb(struct _dma_resource *resource){
 	
-	dma_transfer_complete(&GRID_PORT_S);
+	dma_transfer_complete(GRID_PORT_S);
 }
 static void dma_transfer_complete_w_cb(struct _dma_resource *resource){
 	
-	dma_transfer_complete(&GRID_PORT_W);
+	dma_transfer_complete(GRID_PORT_W);
 }
 static void dma_transfer_complete(struct grid_port* por){
 
@@ -120,23 +120,23 @@ static void dma_transfer_complete(struct grid_port* por){
 
 static void err_cb_USART_GRID_N(const struct usart_async_descriptor *const descr)
 {
-	err_cb_USART_GRID(&GRID_PORT_N);
+	err_cb_USART_GRID(GRID_PORT_N);
 }
 
 static void err_cb_USART_GRID_E(const struct usart_async_descriptor *const descr)
 {
-	err_cb_USART_GRID(&GRID_PORT_E);
+	err_cb_USART_GRID(GRID_PORT_E);
 }
 
 static void err_cb_USART_GRID_S(const struct usart_async_descriptor *const descr)
 {
-	err_cb_USART_GRID(&GRID_PORT_S);
+	err_cb_USART_GRID(GRID_PORT_S);
 }
 
 static void err_cb_USART_GRID_W(const struct usart_async_descriptor *const descr)
 {
 	
-	err_cb_USART_GRID(&GRID_PORT_W);
+	err_cb_USART_GRID(GRID_PORT_W);
 }
 
 
@@ -229,10 +229,10 @@ void grid_d51_uart_dma_rx_init_one(struct usart_async_descriptor* usart, uint8_t
 
 void grid_d51_uart_dma_rx_init(){
 	
-	grid_d51_uart_dma_rx_init_one(&USART_NORTH, DMA_NORTH_RX_CHANNEL, GRID_PORT_N.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_n_cb);
-	grid_d51_uart_dma_rx_init_one(&USART_EAST,  DMA_EAST_RX_CHANNEL, GRID_PORT_E.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_e_cb);
-	grid_d51_uart_dma_rx_init_one(&USART_SOUTH, DMA_SOUTH_RX_CHANNEL, GRID_PORT_S.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_s_cb);
-	grid_d51_uart_dma_rx_init_one(&USART_WEST,  DMA_WEST_RX_CHANNEL, GRID_PORT_W.rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_w_cb);
+	grid_d51_uart_dma_rx_init_one(&USART_NORTH, DMA_NORTH_RX_CHANNEL, GRID_PORT_N->rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_n_cb);
+	grid_d51_uart_dma_rx_init_one(&USART_EAST,  DMA_EAST_RX_CHANNEL, GRID_PORT_E->rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_e_cb);
+	grid_d51_uart_dma_rx_init_one(&USART_SOUTH, DMA_SOUTH_RX_CHANNEL, GRID_PORT_S->rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_s_cb);
+	grid_d51_uart_dma_rx_init_one(&USART_WEST,  DMA_WEST_RX_CHANNEL, GRID_PORT_W->rx_double_buffer, GRID_DOUBLE_BUFFER_RX_SIZE, dma_transfer_complete_w_cb);
 
 	NVIC_SetPriority(DMAC_0_IRQn, 0);
 	NVIC_SetPriority(DMAC_1_IRQn, 0);

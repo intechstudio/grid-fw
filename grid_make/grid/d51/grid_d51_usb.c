@@ -31,7 +31,7 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
 		// 	printf(" ...");
 		// }
 
-		GRID_PORT_H.rx_double_buffer[grid_usb_rx_double_buffer_index] = grid_usb_serial_rx_buffer[i];
+		GRID_PORT_H->rx_double_buffer[grid_usb_rx_double_buffer_index] = grid_usb_serial_rx_buffer[i];
 
 		//printf("%d, ", grid_usb_serial_rx_buffer[i]);
 		

@@ -22,7 +22,7 @@ uint8_t DRAM_ATTR message_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0}
 spi_slave_transaction_t DRAM_ATTR outbnound_transaction[4];
 spi_slave_transaction_t DRAM_ATTR spi_empty_transaction;
 
-uint8_t queue_state = 0;
+uint8_t DRAM_ATTR queue_state = 0;
 
 
 SemaphoreHandle_t queue_state_sem;
@@ -92,40 +92,49 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
 
-    if ((ready_flags&0b00000001)){
-        GRID_PORT_N.tx_double_buffer_status = 0;
-    }
+    
+    struct grid_port* port_array[4] = {GRID_PORT_N, GRID_PORT_E, GRID_PORT_S, GRID_PORT_W};
 
-    if ((ready_flags&0b00000010)){
-        GRID_PORT_E.tx_double_buffer_status = 0;
-    }
+    for (uint8_t i=0; i<4; i++){
+        struct grid_port* por = port_array[i];
 
-    if ((ready_flags&0b00000100)){
-        GRID_PORT_S.tx_double_buffer_status = 0;
-    }
+        if ((ready_flags&(0b00000001<<i))){
 
-    if ((ready_flags&0b00001000)){
-        GRID_PORT_W.tx_double_buffer_status = 0;
-    }   
+            //por->tx_double_buffer_status = 0;
+
+            if (por->tx_double_buffer_status == UINT16_MAX){
+
+                por->tx_double_buffer_status = 0;  
+
+            }else if (por->tx_double_buffer_status > 0){
+
+                por->tx_double_buffer_status = UINT16_MAX;  
+
+            }
+
+        }
+
+
+    }
 
 
     struct grid_port* por = NULL;
     uint8_t source_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
 
     if ((source_flags&0b00000001)){
-        por = &GRID_PORT_N;
+        por = GRID_PORT_N;
     }
 
     if ((source_flags&0b00000010)){
-        por = &GRID_PORT_E;
+        por = GRID_PORT_E;
     }
 
     if ((source_flags&0b00000100)){
-        por = &GRID_PORT_S;
+        por = GRID_PORT_S;
     }
 
     if ((source_flags&0b00001000)){
-        por = &GRID_PORT_W;
+        por = GRID_PORT_W;
     }   
 
     if (por != NULL){
@@ -168,6 +177,9 @@ static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
 
 uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length){
 
+
+    //grid_platform_printf("-> %d ", length);
+
     uint8_t dir_index = direction-GRID_CONST_NORTH;
 
 
@@ -177,6 +189,9 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
     ((uint8_t*)t->tx_buffer)[length] = 0; // termination zero fter the message
     ((uint8_t*)t->tx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<dir_index);
 
+
+
+    //ets_printf("%02x %02x %02x %02x ... len: %d\r\n", ((uint8_t*)t->tx_buffer)[0], ((uint8_t*)t->tx_buffer)[1], ((uint8_t*)t->tx_buffer)[2], ((uint8_t*)t->tx_buffer)[3], length);
 
     ////ets_printf("SEND %d: %s\r\n", dir_index, buffer);
     //ets_printf("#");
@@ -244,7 +259,7 @@ void grid_esp32_port_task(void *arg)
     sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
 
 
-    struct grid_port* port_list[4] = {&GRID_PORT_N, &GRID_PORT_E, &GRID_PORT_S, &GRID_PORT_W};
+    struct grid_port* port_list[4] = {GRID_PORT_N, GRID_PORT_E, GRID_PORT_S, GRID_PORT_W};
 
     for (uint8_t i = 0; i<4; i++){
 
@@ -267,10 +282,10 @@ void grid_esp32_port_task(void *arg)
 
 
 
-    //GRID_PORT_N.partner_status = 1; // force connected
-    //GRID_PORT_E.partner_status = 1; // force connected
-    //GRID_PORT_S.partner_status = 1; // force connected
-    //GRID_PORT_W.partner_status = 1; // force connected
+    //GRID_PORT_N->partner_status = 1; // force connected
+    //GRID_PORT_E->partner_status = 1; // force connected
+    //GRID_PORT_S->partner_status = 1; // force connected
+    //GRID_PORT_W->partner_status = 1; // force connected
 
     static uint32_t loopcounter = 0;
 
@@ -306,8 +321,7 @@ void grid_esp32_port_task(void *arg)
             }
 
 
-            struct grid_port* port_array[4] = {&GRID_PORT_N, &GRID_PORT_E, &GRID_PORT_S, &GRID_PORT_W};
-
+            struct grid_port* port_array[4] = {GRID_PORT_N, GRID_PORT_E, GRID_PORT_S, GRID_PORT_W};
 
             for (uint8_t i = 0; i<4*(4); i++){
 
@@ -384,15 +398,15 @@ void grid_esp32_port_task(void *arg)
 
 
 
-            grid_port_receive_task(&GRID_PORT_H); // USB
-            grid_port_receive_task(&GRID_PORT_U); // UI
+            grid_port_receive_task(GRID_PORT_H); // USB
+            grid_port_receive_task(GRID_PORT_U); // UI
             
 
 
             // INBOUND
 
 
-            grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback , put rx_buffer content to each CONNECTED port's tx_buffer
+            grid_port_process_inbound(GRID_PORT_U, 1); // Loopback , put rx_buffer content to each CONNECTED port's tx_buffer
 
             
             
@@ -400,25 +414,25 @@ void grid_esp32_port_task(void *arg)
             // ... GRID UART PORTS ...
             
 
-            grid_port_process_inbound(&GRID_PORT_H, 0);
+            grid_port_process_inbound(GRID_PORT_H, 0);
 
 
-            grid_port_process_inbound(&GRID_PORT_N, 0);
-            grid_port_process_inbound(&GRID_PORT_E, 0);
-            grid_port_process_inbound(&GRID_PORT_S, 0);
-            grid_port_process_inbound(&GRID_PORT_W, 0);
+            grid_port_process_inbound(GRID_PORT_N, 0);
+            grid_port_process_inbound(GRID_PORT_E, 0);
+            grid_port_process_inbound(GRID_PORT_S, 0);
+            grid_port_process_inbound(GRID_PORT_W, 0);
 
 
             // OUTBOUND
             // ... GRID UART PORTS ...
             
 
-            grid_port_process_outbound_usb(&GRID_PORT_H); 
+            grid_port_process_outbound_usb(GRID_PORT_H); 
 
 
  
         
-            grid_port_process_outbound_ui(&GRID_PORT_U);
+            grid_port_process_outbound_ui(GRID_PORT_U);
 
 
 
@@ -427,10 +441,10 @@ void grid_esp32_port_task(void *arg)
             if (grid_platform_rtc_get_elapsed_time(last_ping_timestamp) > GRID_PARAMETER_PING_interval * 1000){
                 //ets_printf("TRY PING\r\n");
 
-                GRID_PORT_N.ping_flag = 1;
-                GRID_PORT_E.ping_flag = 1;
-                GRID_PORT_S.ping_flag = 1;
-                GRID_PORT_W.ping_flag = 1;
+                GRID_PORT_N->ping_flag = 1;
+                GRID_PORT_E->ping_flag = 1;
+                GRID_PORT_S->ping_flag = 1;
+                GRID_PORT_W->ping_flag = 1;
 
                 grid_port_ping_try_everywhere();
 
@@ -439,7 +453,7 @@ void grid_esp32_port_task(void *arg)
             }
 
 
-            //grid_port_process_outbound_usart(&GRID_PORT_N);
+            //grid_port_process_outbound_usart(GRID_PORT_N);
 
             for (uint8_t i=0; i<4; i++){
                 struct grid_port* port = port_list[i];

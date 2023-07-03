@@ -422,6 +422,8 @@ int main()
                         strcpy(port->tx_buffer, rxbuf);
                         //printf("SPI receive: %s\r\n", rxbuf);
 
+                        printf("%02x %02x %02x %02x ...\r\n", rxbuf[0], rxbuf[1], rxbuf[2], rxbuf[3]);
+
                         ready_flags &= ~(1<<port->port_index); // clear ready
                     }
 
@@ -524,8 +526,8 @@ int main()
                 if (c == '\n'){
 
                     port->tx_is_busy = 0;
-
                     ready_flags |= (1<<port->port_index);
+                    
                 }
 
             }

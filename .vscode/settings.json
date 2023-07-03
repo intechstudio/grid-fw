@@ -84,7 +84,10 @@
         "utility": "c",
         "vector": "c",
         "version": "c",
-        "grid_protocol.h": "c"
+        "grid_protocol.h": "c",
+        "*.inc": "c",
+        "grid_buf.h": "c",
+        "sdkconfig.h": "c"
     },   
     "files.exclude": {
         ".archive": true,
@@ -109,6 +112,13 @@
                 "color": "white",
                 "singleInstance": true,
                 "command": "git clean -dxf",
+            },
+            {
+                "name": "D51 Docker",
+                "color": "white",
+                "singleInstance": true,
+                "command": "podman run --privileged -it -v /dev:/dev -v /media:/media -v $PWD:/project -w /project/grid_make/gcc sukuwc/fw-tools:v1",
+                // make nightly
             },
             {
                 "name": "ESP32 Docker",

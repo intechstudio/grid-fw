@@ -1025,3 +1025,23 @@ uint32_t grid_platform_get_cycles_per_us(){
     return 120;
 
 }
+
+
+
+
+
+void* grid_platform_allocate_volatile(size_t size){
+
+    void* handle =  malloc(size);
+    if (handle == NULL){
+        
+        printf("MALLOC FAILED");
+
+        while(1){
+            
+        }
+    }
+
+    return handle;
+
+}

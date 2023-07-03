@@ -97,7 +97,7 @@ static void usb_task_inner(){
 	
 	// SERIAL READ 
 
-	grid_port_receive_task(&GRID_PORT_H); // USB
+	grid_port_receive_task(GRID_PORT_H); // USB
 
 }
 
@@ -143,7 +143,7 @@ static void nvm_task_inner(){
 
 
 	// NVM BULK READ
-	if (GRID_PORT_U.rx_double_buffer_status == 0){
+	if (GRID_PORT_U->rx_double_buffer_status == 0){
 		
 		if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
 			
@@ -164,33 +164,33 @@ static void nvm_task_inner(){
 	}
 	// NVM READ
 
-	uint32_t nvmlength = GRID_PORT_U.rx_double_buffer_status;
+	uint32_t nvmlength = GRID_PORT_U->rx_double_buffer_status;
 						
 	if (nvmlength){
 			
-		GRID_PORT_U.rx_double_buffer_status = 1;
-		GRID_PORT_U.rx_double_buffer_read_start_index = 0;
-		GRID_PORT_U.rx_double_buffer_seek_start_index = nvmlength-1; //-3
+		GRID_PORT_U->rx_double_buffer_status = 1;
+		GRID_PORT_U->rx_double_buffer_read_start_index = 0;
+		GRID_PORT_U->rx_double_buffer_seek_start_index = nvmlength-1; //-3
 			
 		// GETS HERE	
-		//grid_port_receive_decode(&GRID_PORT_U, 0, nvmlength-1);		
-		grid_port_receive_task(&GRID_PORT_U);	
+		//grid_port_receive_decode(GRID_PORT_U, 0, nvmlength-1);		
+		grid_port_receive_task(GRID_PORT_U);	
 	}	
 		
 	//clear buffer
 	for (uint32_t i=0; i<GRID_D51_NVM_PAGE_SIZE; i++)
 	{
-		GRID_PORT_U.rx_double_buffer[i] = 0;
+		GRID_PORT_U->rx_double_buffer[i] = 0;
 	}
 
 }
 
 static void receive_task_inner(){
 
-	grid_port_receive_task(&GRID_PORT_N);
-	grid_port_receive_task(&GRID_PORT_E);
-	grid_port_receive_task(&GRID_PORT_S);
-	grid_port_receive_task(&GRID_PORT_W);	
+	grid_port_receive_task(GRID_PORT_N);
+	grid_port_receive_task(GRID_PORT_E);
+	grid_port_receive_task(GRID_PORT_S);
+	grid_port_receive_task(GRID_PORT_W);	
 		
 
 }
@@ -251,14 +251,14 @@ static void inbound_task_inner(){
 
 	
 	// Copy data from UI_RX to HOST_TX & north TX AND STUFF
-	grid_port_process_inbound(&GRID_PORT_U, 1); // Loopback
+	grid_port_process_inbound(GRID_PORT_U, 1); // Loopback
 	
-	grid_port_process_inbound(&GRID_PORT_N, 0);		
-	grid_port_process_inbound(&GRID_PORT_E, 0);		
-	grid_port_process_inbound(&GRID_PORT_S, 0);
-	grid_port_process_inbound(&GRID_PORT_W, 0);
+	grid_port_process_inbound(GRID_PORT_N, 0);		
+	grid_port_process_inbound(GRID_PORT_E, 0);		
+	grid_port_process_inbound(GRID_PORT_S, 0);
+	grid_port_process_inbound(GRID_PORT_W, 0);
 	
-	grid_port_process_inbound(&GRID_PORT_H, 0);	// USB	
+	grid_port_process_inbound(GRID_PORT_H, 0);	// USB	
 
 
 
@@ -270,16 +270,16 @@ static void outbound_task_inner(){
 	/* ========================= GRID OUTBOUND TASK ============================= */	
 	
 	// If previous xfer is completed and new data is available then move data from txbuffer to txdoublebuffer and start new xfer.
-	grid_port_process_outbound_usart(&GRID_PORT_N);
-	grid_port_process_outbound_usart(&GRID_PORT_E);
-	grid_port_process_outbound_usart(&GRID_PORT_S);
-	grid_port_process_outbound_usart(&GRID_PORT_W);
+	grid_port_process_outbound_usart(GRID_PORT_N);
+	grid_port_process_outbound_usart(GRID_PORT_E);
+	grid_port_process_outbound_usart(GRID_PORT_S);
+	grid_port_process_outbound_usart(GRID_PORT_W);
 	
 	// Translate grid messages to usb messages and xfer them to the host
-	grid_port_process_outbound_usb(&GRID_PORT_H);
+	grid_port_process_outbound_usb(GRID_PORT_H);
 	
 	// Translate grid messages to ui commands (LED)
-	grid_port_process_outbound_ui(&GRID_PORT_U);
+	grid_port_process_outbound_ui(GRID_PORT_U);
 
 }
 
@@ -330,16 +330,16 @@ void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 	switch (pingflag%4)
 	{
 		case 0:
-			GRID_PORT_N.ping_flag = 1;
+			GRID_PORT_N->ping_flag = 1;
 			break;
 		case 1:
-			GRID_PORT_E.ping_flag = 1;
+			GRID_PORT_E->ping_flag = 1;
 			break;
 		case 2:
-			GRID_PORT_S.ping_flag = 1;
+			GRID_PORT_S->ping_flag = 1;
 			break;
 		case 3:
-			GRID_PORT_W.ping_flag = 1;
+			GRID_PORT_W->ping_flag = 1;
 			break;
 	}
 	

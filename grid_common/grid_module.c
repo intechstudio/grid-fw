@@ -7,7 +7,7 @@ void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 	grid_ain_init(ain, 16, 5);
 	grid_led_init(led, 16);	
 	
-	grid_ui_model_init(ui, &GRID_PORT_U, 16+1); // +1 for the system element
+	grid_ui_model_init(ui, GRID_PORT_U, 16+1); // +1 for the system element
 
 	for(uint8_t j=0; j<16; j++){
 			
@@ -83,7 +83,7 @@ void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 	grid_ain_init(ain, 16, 5);
 	grid_led_init(led, 16);	
 	
-	grid_ui_model_init(ui, &GRID_PORT_U, 16+1); // +1 for the system element
+	grid_ui_model_init(ui, GRID_PORT_U, 16+1); // +1 for the system element
 
 	for(uint8_t j=0; j<16; j++){
 			
@@ -215,7 +215,7 @@ void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 	grid_ain_init(ain, 16, 5);
 	grid_led_init(led, 12);	
 	
-	grid_ui_model_init(ui, &GRID_PORT_U, 12+1); // +1 for the system element
+	grid_ui_model_init(ui, GRID_PORT_U, 12+1); // +1 for the system element
 
 	for(uint8_t j=0; j<8; j++){
 			
@@ -242,7 +242,7 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 	grid_led_init(&grid_led_state, 8);
 	
-	grid_ui_model_init(&grid_ui_state, &GRID_PORT_U, 8+1); // +1 for the system element	
+	grid_ui_model_init(&grid_ui_state, GRID_PORT_U, 8+1); // +1 for the system element	
 		
 	for(uint8_t j=0; j<4; j++){
 	
@@ -540,7 +540,7 @@ void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 	
 	grid_led_init(&grid_led_state, 16);
 	
-	grid_ui_model_init(&grid_ui_state, &GRID_PORT_U, 16+1); // +1 for the system element	
+	grid_ui_model_init(&grid_ui_state, GRID_PORT_U, 16+1); // +1 for the system element	
 		
 	for(uint8_t j=0; j<16; j++){
 	

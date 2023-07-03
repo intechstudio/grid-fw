@@ -29,7 +29,7 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event)
 
     for (uint16_t i=0; i<rx_size; i++){
 
-		GRID_PORT_H.rx_double_buffer[grid_usb_rx_double_buffer_index] = buf[i];
+		GRID_PORT_H->rx_double_buffer[grid_usb_rx_double_buffer_index] = buf[i];
 
 		
 		grid_usb_rx_double_buffer_index++;
