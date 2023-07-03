@@ -83,7 +83,8 @@
         "typeinfo": "c",
         "utility": "c",
         "vector": "c",
-        "version": "c"
+        "version": "c",
+        "grid_protocol.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

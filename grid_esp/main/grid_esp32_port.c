@@ -284,9 +284,9 @@ void grid_esp32_port_task(void *arg)
     portEXIT_CRITICAL(&spinlock);
     
 
-    uint8_t pingcounter = 0;
-
     uint8_t firstprint = 1;
+
+    uint64_t last_ping_timestamp = grid_platform_rtc_get_micros();
 
     while (1) {
 
@@ -424,9 +424,8 @@ void grid_esp32_port_task(void *arg)
 
             //printf("LOOP %d\r\n", queue_state);
 
-            pingcounter++;
-            if (pingcounter%10 == 0){
-                ////ets_printf("TRY PING\r\n");
+            if (grid_platform_rtc_get_elapsed_time(last_ping_timestamp) > GRID_PARAMETER_PING_interval * 1000){
+                //ets_printf("TRY PING\r\n");
 
                 GRID_PORT_N.ping_flag = 1;
                 GRID_PORT_E.ping_flag = 1;
@@ -434,6 +433,8 @@ void grid_esp32_port_task(void *arg)
                 GRID_PORT_W.ping_flag = 1;
 
                 grid_port_ping_try_everywhere();
+
+                last_ping_timestamp = grid_platform_rtc_get_micros();
                 
             }
 

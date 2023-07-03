@@ -185,6 +185,7 @@ void grid_port_receive_task(struct grid_port* por){
 
 void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 
+	grid_platform_printf("$");
 
 	uint8_t error_flag = 0;
 	uint8_t checksum_calculated = 0;
