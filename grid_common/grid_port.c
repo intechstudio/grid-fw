@@ -50,10 +50,9 @@ void grid_port_receive_task(struct grid_port* por){
 			
 				if (por->partner_status == 1){
 				
-					grid_platform_printf("Timeout Disconnect 1\r\n");
+						grid_platform_printf("Timeout Disconnect 1\r\n");
 				
 						grid_port_receiver_softreset(por);	
-						//grid_port_receiver_softreset(por);	
 								
 
 						grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
@@ -69,7 +68,7 @@ void grid_port_receive_task(struct grid_port* por){
 					}
 					else{
 					
-						//grid_platform_printf("Timeout Disconnect 2\r\n");
+						grid_platform_printf("Timeout Disconnect 2\r\n");
 						grid_port_receiver_softreset(por);
 					}
 				
@@ -104,7 +103,27 @@ void grid_port_receive_task(struct grid_port* por){
 			// Buffer overrun error 1, 2, 3
 			if (overrun_condition_1 || overrun_condition_2 || overrun_condition_3){
 
-				grid_platform_printf("Overrun %d\r\n", por->direction);
+				grid_platform_printf("Overrun%d%d%d %d\r\n", overrun_condition_1, overrun_condition_2, overrun_condition_3, por->direction);
+
+				for (uint16_t i = 0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
+				
+					if (i == por->rx_double_buffer_read_start_index){
+						grid_platform_printf("RPTR ");
+					}
+					if (i == por->rx_double_buffer_seek_start_index){
+						grid_platform_printf("SPTR ");
+					}
+					if (i == por->rx_double_buffer_write_index){
+						grid_platform_printf("WPTR ");
+					}
+				
+				
+					grid_platform_printf("%02x ", por->rx_double_buffer[i]);
+					if (por->rx_double_buffer[i] == '\n'){
+						grid_platform_printf("\r\n");
+					}
+				}
+
 				grid_port_receiver_hardreset(por);	
 				
 				//printf("Overrun\r\n"); // never use grid message to indicate overrun directly				
@@ -459,7 +478,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 				grid_port_debug_printf("Invalid Checksum + flag");
 			}
 			else{
-				grid_platform_printf("##  %s", message);
+				grid_platform_printf("##CHK  %s", message);
 				grid_port_debug_printf("Invalid Checksum %02x %02x", checksum_calculated, checksum_received);
 			}
 			
@@ -1117,6 +1136,7 @@ void grid_port_receiver_hardreset(struct grid_port* por){
 
 	por->rx_double_buffer_seek_start_index = 0;
 	por->rx_double_buffer_read_start_index = 0;
+	por->rx_double_buffer_write_index = 0; 
 
 	for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
 		por->rx_double_buffer[i] = 0;

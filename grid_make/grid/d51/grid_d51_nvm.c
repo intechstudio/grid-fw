@@ -474,7 +474,7 @@ void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm){
 						// version ok	
 					}
 					else{
-						grid_port_debug_printf("error.nvm.config version mismatch\r\n");
+						//grid_port_debug_printf("error.nvm.config version mismatch\r\n");
 					}
 
 
