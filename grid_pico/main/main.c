@@ -20,6 +20,8 @@
 
 #include "hardware/uart.h"
 
+#include "pico/multicore.h"
+
 #include "../../grid_common/grid_protocol.h"
 
 #include <string.h>
@@ -292,6 +294,66 @@ void grid_port_attach_bucket(struct grid_port* port){
 
 }
 
+
+
+void uart_try_send_all(void){
+
+    // iterate through all the ports
+    for (uint8_t i = 0; i<4; i++){
+
+        struct grid_port* port = &port_array[i]; 
+
+        // if trasmission is in progress then send the next character
+        if (port->tx_is_busy){
+
+
+
+            char c = port->tx_buffer[port->tx_index];
+            port->tx_index++;
+
+            uart_tx_program_putc(GRID_TX_PIO, port->port_index, c);
+
+            if (c == '\n'){
+
+                port->tx_is_busy = 0;
+                ready_flags |= (1<<port->port_index);
+
+            }
+
+        }
+
+    }
+
+
+}
+
+
+void core_1_main_entry(){
+
+    printf("Core 1 init\r\n");
+
+    while(1){
+
+        // iterate through all the ports
+        for (uint8_t i = 0; i<4; i++){
+            if (uart_rx_program_is_available(GRID_RX_PIO, i)){
+
+                char c = uart_rx_program_getc(GRID_RX_PIO, i);
+
+                uint32_t data = c | (i<<8);
+
+                multicore_fifo_push_timeout_us(data,0);
+
+            }
+        }
+
+    }
+
+
+
+}
+
+
 int main() 
 {
 
@@ -396,6 +458,9 @@ int main()
 
 
 
+    multicore_reset_core1();
+    multicore_launch_core1(core_1_main_entry);
+
     while (1) 
     {
 
@@ -422,7 +487,7 @@ int main()
                         strcpy(port->tx_buffer, rxbuf);
                         //printf("SPI receive: %s\r\n", rxbuf);
 
-                        printf("%02x %02x %02x %02x ...\r\n", rxbuf[0], rxbuf[1], rxbuf[2], rxbuf[3]);
+                        //printf("%02x %02x %02x %02x ...\r\n", rxbuf[0], rxbuf[1], rxbuf[2], rxbuf[3]);
 
                         ready_flags &= ~(1<<port->port_index); // clear ready
                     }
@@ -467,7 +532,7 @@ int main()
                         //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
                         if (spi_active_bucket->buffer[1] == GRID_CONST_BRC){
                        
-                            printf("BR%d %c%c\r\n", spi_active_bucket->index, spi_active_bucket->buffer[6], spi_active_bucket->buffer[7]);
+                            //printf("BR%d %c%c\r\n", spi_active_bucket->index, spi_active_bucket->buffer[6], spi_active_bucket->buffer[7]);
                         }
 
                         spi_start_transfer(dma_tx, dma_rx, spi_active_bucket->buffer, rxbuf, dma_handler);
@@ -511,50 +576,83 @@ int main()
         /* ==================================  UART TRANSMIT  =================================*/
 
         // iterate through all the ports
-        for (uint8_t i = 0; i<4; i++){
-
-            struct grid_port* port = &port_array[i]; 
-
-            // if trasmission is in progress then send the next character
-            if (port->tx_is_busy){
-
-                char c = port->tx_buffer[port->tx_index];
-                port->tx_index++;
-
-                uart_tx_program_putc(GRID_TX_PIO, port->port_index, c);
-
-                if (c == '\n'){
-
-                    port->tx_is_busy = 0;
-                    ready_flags |= (1<<port->port_index);
-                    
-                }
-
-            }
-
-        }
-
+        uart_try_send_all();
+        
+        
         /* ==================================  UART RECEIVE  =================================*/
 
         // iterate through all the ports
-        for (uint8_t i = 0; i<4; i++){
+        // for (uint8_t i = 0; i<4; i++){
 
-            struct grid_port* port = &port_array[i]; 
+        //     struct grid_port* port = &port_array[i]; 
 
-            if (uart_rx_program_is_available(GRID_RX_PIO, port->port_index)){
-                char c = uart_rx_program_getc(GRID_RX_PIO, port->port_index);
+        //     if (uart_rx_program_is_available(GRID_RX_PIO, port->port_index)){
+        //         char c = uart_rx_program_getc(GRID_RX_PIO, port->port_index);
+
+        //         if (port->active_bucket == NULL){
+        //             grid_port_attach_bucket(port);
+        //         }
+
+        //         grid_bucket_put_character(port->active_bucket, c);
+
+        //         if (c=='\n'){
+
+        //             // end of message, put termination zero character
+        //             grid_bucket_put_character(port->active_bucket, '\0');
+
+
+        //             //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
+        //             if (port->active_bucket->buffer[1] == GRID_CONST_BRC){
+        //                 //printf("BR%d %c%c\r\n", port->active_bucket->index, port->active_bucket->buffer[6], port->active_bucket->buffer[7]);
+        //             }
+        //             port->active_bucket->status = GRID_BUCKET_STATUS_FULL;
+        //             port->active_bucket->buffer_index = 0;
+        //             // clear bucket
+
+        //             grid_port_attach_bucket(port);
+
+        //         }
+                
+        //     }
+
+
+        // }
+        
+        
+        uint32_t data = 0;
+        uint32_t status = 0;
+        //continue;
+
+        do{
+
+            status = (multicore_fifo_get_status()&0x01);
+
+            if (status){
+
+                data = multicore_fifo_pop_blocking();
+
+                uint8_t c = (data&0x000000FF);
+                uint8_t i = (data&0x0000FF00)>>8; 
+
+                struct grid_port* port = &port_array[i];
 
                 if (port->active_bucket == NULL){
                     grid_port_attach_bucket(port);
                 }
 
+                if (c==0x01 && port->active_bucket->buffer_index>0){
+                    printf("ERROR");
+                }
+
                 grid_bucket_put_character(port->active_bucket, c);
+
+
+                //printf("%c", c);
 
                 if (c=='\n'){
 
                     // end of message, put termination zero character
                     grid_bucket_put_character(port->active_bucket, '\0');
-
 
                     //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
                     if (port->active_bucket->buffer[1] == GRID_CONST_BRC){
@@ -567,12 +665,10 @@ int main()
                     grid_port_attach_bucket(port);
 
                 }
-                
+
+
             }
 
-
-        }
-        
-        
+        }while(status);
     }
 }
