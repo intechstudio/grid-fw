@@ -428,10 +428,12 @@ void grid_esp32_port_task(void *arg)
             
 
             grid_port_process_outbound_usb(GRID_PORT_H); 
+            grid_port_process_outbound_usb(GRID_PORT_H); 
 
 
  
         
+            grid_port_process_outbound_ui(GRID_PORT_U);
             grid_port_process_outbound_ui(GRID_PORT_U);
 
 

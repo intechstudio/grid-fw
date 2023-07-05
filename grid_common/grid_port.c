@@ -51,30 +51,6 @@ void grid_port_receive_task(struct grid_port* por){
 				if (por->partner_status == 1){
 				
 						grid_platform_printf("Timeout Disconnect 1\r\n");
-
-						if (1){
-
-							for (uint16_t i = 0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
-
-								if (i == por->rx_double_buffer_read_start_index){
-									grid_platform_printf("RPTR ");
-								}
-								if (i == por->rx_double_buffer_seek_start_index){
-									grid_platform_printf("SPTR ");
-								}
-								if (i == por->rx_double_buffer_write_index){
-									grid_platform_printf("WPTR ");
-								}
-
-
-								grid_platform_printf("%02x ", por->rx_double_buffer[i]);
-								if (por->rx_double_buffer[i] == '\n'){
-									grid_platform_printf("\r\n");
-								}
-							}
-
-
-						}
 						
 						grid_port_receiver_softreset(por);	
 
@@ -130,31 +106,32 @@ void grid_port_receive_task(struct grid_port* por){
 			if (overrun_condition_1 || overrun_condition_2 || overrun_condition_3){
 
 				grid_platform_printf("Overrun%d%d%d %d\r\n", overrun_condition_1, overrun_condition_2, overrun_condition_3, por->direction);
+				grid_platform_printf("R%d S%d W%d\r\n", por->rx_double_buffer_read_start_index, por->rx_double_buffer_seek_start_index, por->rx_double_buffer_write_index);
 
 
-				if (1){
+				// if (1){
 
-					for (uint16_t i = 0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
+				// 	for (uint16_t i = 0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
 
-						if (i == por->rx_double_buffer_read_start_index){
-							grid_platform_printf("RPTR ");
-						}
-						if (i == por->rx_double_buffer_seek_start_index){
-							grid_platform_printf("SPTR ");
-						}
-						if (i == por->rx_double_buffer_write_index){
-							grid_platform_printf("WPTR ");
-						}
-
-
-						grid_platform_printf("%02x ", por->rx_double_buffer[i]);
-						if (por->rx_double_buffer[i] == '\n'){
-							grid_platform_printf("\r\n");
-						}
-					}
+				// 		if (i == por->rx_double_buffer_read_start_index){
+				// 			grid_platform_printf("RPTR ");
+				// 		}
+				// 		if (i == por->rx_double_buffer_seek_start_index){
+				// 			grid_platform_printf("SPTR ");
+				// 		}
+				// 		if (i == por->rx_double_buffer_write_index){
+				// 			grid_platform_printf("WPTR ");
+				// 		}
 
 
-				}
+				// 		grid_platform_printf("%02x ", por->rx_double_buffer[i]);
+				// 		if (por->rx_double_buffer[i] == '\n'){
+				// 			grid_platform_printf("\r\n");
+				// 		}
+				// 	}
+
+
+				// }
 				
 				grid_port_receiver_hardreset(por);	
 				
@@ -251,6 +228,9 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 	
 	por->rx_double_buffer_status = 0;
 	
+
+		
+
 	// Correct the incorrect frame start location
 	for (uint16_t i = 1; i<length; i++){
 		
@@ -291,12 +271,12 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 		checksum_calculated = grid_msg_string_calculate_checksum_of_packet_string(message, length);
 		
 		// checksum validator
-		if (checksum_calculated == checksum_received && error_flag == 0){
+		if (checksum_calculated == checksum_received){
 					
 			if (message[1] == GRID_CONST_BRC){ // Broadcast message
 				
 				uint8_t error=0;
-				
+
 				// Read the received id age values
 				uint8_t received_id  = grid_msg_string_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
@@ -456,6 +436,8 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 			}
 			else if (message[1] == GRID_CONST_DCT){ // Direct Message
 				
+				uint8_t error=0;
+
 				grid_platform_printf("DE DCT\r\n");
 				//process direct message
 				
@@ -474,7 +456,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 
 						// CONNECT
 						por->partner_fi = (message[3] - por->direction + 6)%4;
-						por->partner_hwcfg = grid_msg_string_read_hex_string_value(&message[length-10], 2, &error_flag);
+						por->partner_hwcfg = grid_msg_string_read_hex_string_value(&message[length-10], 2, &error);
 						por->partner_status = 1;
 						
 						por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
@@ -504,17 +486,15 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 		}
 		else{
 			// INVALID CHECKSUM
-			
+		
 
-			if (error_flag != 0){
-				//maybe disable uart
-				//maybe enable uart
-				grid_port_debug_printf("Invalid Checksum + flag");
-			}
-			else{
-				grid_platform_printf("##CHK  %s", message);
-				grid_port_debug_printf("Invalid Checksum %02x %02x", checksum_calculated, checksum_received);
-			}
+			uint8_t error = 0;
+
+			uint16_t packet_length  = grid_msg_string_get_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, &error);
+			grid_platform_printf("##CHK %d %d : %s",  packet_length, length);
+
+			grid_port_debug_printf("Invalid Checksum %02x %02x", checksum_calculated, checksum_received);
+		
 			
 			
 		}
