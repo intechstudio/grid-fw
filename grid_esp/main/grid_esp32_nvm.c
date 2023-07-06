@@ -410,7 +410,7 @@ void grid_esp32_nvm_task(void *arg)
 
                     uint32_t delta = c1-c0;
 
-				    grid_platform_printf("(%ld)us\r\n", delta/grid_platform_get_cycles_per_us());
+				    //grid_platform_printf("(%ld)us\r\n", delta/grid_platform_get_cycles_per_us());
                         
                 }
                 else{
