@@ -29,6 +29,55 @@
 #include "pico/time.h"
 
 
+
+uint8_t grid_msg_string_calculate_checksum_of_packet_string(char* str, uint32_t length){
+	
+	uint8_t checksum = 0;
+	for (uint32_t i=0; i<length-3; i++){
+		checksum ^= str[i];
+	}
+	
+	return checksum;
+	
+}
+uint8_t grid_msg_string_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
+		
+	uint8_t result = 0;
+	
+	if (ascii>47 && ascii<58){
+		result = ascii-48;
+	}
+	else if(ascii>96 && ascii<103){
+		result = ascii - 97 + 10;
+	}
+	else{
+		// wrong input
+		if (error_flag != 0){
+			*error_flag = ascii;
+		}
+	}
+	
+	return result;	
+}
+uint32_t grid_msg_string_read_hex_string_value(char* start_location, uint8_t length, uint8_t* error_flag){
+	
+	uint32_t result  = 0;
+	
+	for(uint8_t i=0; i<length; i++){
+		
+		result += grid_msg_string_read_hex_char_value(start_location[i], error_flag) << (length-i-1)*4;
+
+		
+	}
+
+	return result;
+}
+uint8_t grid_msg_string_checksum_read(char* str, uint32_t length){
+	uint8_t error_flag;
+	return grid_msg_string_read_hex_string_value(&str[length-3], 2, &error_flag);
+}
+
+
 #define BUCKET_BUFFER_LENGTH 500
 #define BUCKET_ARRAY_LENGTH 50
 
@@ -453,7 +502,7 @@ int main()
     grid_task_init(&spi_receive_transfer_task, 100); // 1 ms interval
 
     struct grid_task spi_start_transfer_task;
-    grid_task_init(&spi_start_transfer_task, 1000); // 5 ms interval
+    grid_task_init(&spi_start_transfer_task, 500); // 5 ms interval -> 1 ms -> 500us
 
 
 
@@ -530,12 +579,58 @@ int main()
 
 
                         //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
+
+                        // validate packet
+                        uint8_t error;
+
+                        uint16_t length = strlen(spi_active_bucket->buffer);
+                        uint16_t received_length = grid_msg_string_read_hex_string_value(&spi_active_bucket->buffer[GRID_BRC_LEN_offset], 4, &error);                            
+                        
+                        uint8_t calculated_checksum = grid_msg_string_calculate_checksum_of_packet_string(spi_active_bucket->buffer, length);
+                        uint8_t received_checksum = grid_msg_string_checksum_read(spi_active_bucket->buffer, length);
+
+                        uint8_t error_count = 0;
+
                         if (spi_active_bucket->buffer[1] == GRID_CONST_BRC){
+
+                            if (length-3 != received_length){
+
+                                printf("L%d %d ", length-3, received_length);
+
+                                error_count++;
+                            }
+
                        
-                            //printf("BR%d %c%c\r\n", spi_active_bucket->index, spi_active_bucket->buffer[6], spi_active_bucket->buffer[7]);
                         }
 
-                        spi_start_transfer(dma_tx, dma_rx, spi_active_bucket->buffer, rxbuf, dma_handler);
+                        if (calculated_checksum != received_checksum){
+                            
+                            printf("C %d %d ", calculated_checksum, received_checksum);
+
+                            error_count++;
+                        }
+                        //printf("BR%d %c%c\r\n", spi_active_bucket->index, spi_active_bucket->buffer[6], spi_active_bucket->buffer[7]);
+
+
+                        if (error_count>0){
+
+                            printf("SKIP\r\n");
+                            
+                            // send empty packet with status flags
+
+                            txbuf[0] = 0;
+                            sprintf(txbuf, "DUMMY");
+                            txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+                            txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
+
+                            spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
+                        }
+                        else{
+
+                            spi_start_transfer(dma_tx, dma_rx, spi_active_bucket->buffer, rxbuf, dma_handler);
+
+                        }
+
                         
 
                     }

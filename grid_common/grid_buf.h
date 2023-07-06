@@ -9,6 +9,7 @@
 
 #include "grid_protocol.h"
 
+extern void grid_platform_printf(char const *fmt, ...);
 
 extern uint32_t grid_buffer_error_count;
 extern uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);

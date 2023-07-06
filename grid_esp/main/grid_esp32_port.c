@@ -207,6 +207,66 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
 
 }
 
+static void plot_port_debug(){
+
+    uint16_t plot[20] = {0};
+
+    plot[0] = grid_buffer_get_space(&GRID_PORT_N->tx_buffer);
+    plot[1] = grid_buffer_get_space(&GRID_PORT_E->tx_buffer);
+    plot[2] = grid_buffer_get_space(&GRID_PORT_S->tx_buffer);
+    plot[3] = grid_buffer_get_space(&GRID_PORT_W->tx_buffer);
+    plot[4] = grid_buffer_get_space(&GRID_PORT_U->tx_buffer);
+    plot[5] = grid_buffer_get_space(&GRID_PORT_H->tx_buffer);
+
+    plot[6] = grid_buffer_get_space(&GRID_PORT_N->rx_buffer);
+    plot[7] = grid_buffer_get_space(&GRID_PORT_E->rx_buffer);
+    plot[8] = grid_buffer_get_space(&GRID_PORT_S->rx_buffer);
+    plot[9] = grid_buffer_get_space(&GRID_PORT_W->rx_buffer);
+    plot[10] = grid_buffer_get_space(&GRID_PORT_U->rx_buffer);
+    plot[11] = grid_buffer_get_space(&GRID_PORT_H->rx_buffer);
+
+    for(uint8_t i=0; i<12; i++){
+
+        if (i==0){
+            ets_printf("TX: ");
+        }
+        else if(i==4){
+
+            ets_printf("|");
+        }
+        else if(i==6){
+
+            ets_printf(" RX: ");
+        }
+        else if(i==10){
+
+            ets_printf("|");
+        }
+
+        uint8_t value = (2000-plot[i])/20;
+        switch (value)
+        {
+            case 0:  ets_printf(" "); break;
+            case 1:  ets_printf("▁"); break;
+            case 2:  ets_printf("▂"); break;
+            case 3:  ets_printf("▃"); break;
+            case 4:  ets_printf("▄"); break;
+            case 5:  ets_printf("▅"); break;
+            case 6:  ets_printf("▆"); break;
+            case 7:  ets_printf("▇"); break;
+            case 8:  ets_printf("█"); break;
+            case 9:  ets_printf("#"); break;
+            default:  ets_printf("@"); break;
+        }
+
+        ets_printf(" ");
+        
+    }
+
+    ets_printf("\r\n");
+
+}
+
 
 void grid_esp32_port_task(void *arg)
 {
@@ -427,12 +487,12 @@ void grid_esp32_port_task(void *arg)
             // ... GRID UART PORTS ...
             
 
+            //plot_port_debug();
+
+         
             grid_port_process_outbound_usb(GRID_PORT_H); 
             grid_port_process_outbound_usb(GRID_PORT_H); 
 
-
- 
-        
             grid_port_process_outbound_ui(GRID_PORT_U);
             grid_port_process_outbound_ui(GRID_PORT_U);
 
@@ -472,7 +532,7 @@ void grid_esp32_port_task(void *arg)
             ets_printf("NO TAKE\r\n");
         }
 
-        vTaskDelay(pdMS_TO_TICKS(4));
+        vTaskDelay(pdMS_TO_TICKS(2));
 
 
 

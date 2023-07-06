@@ -240,9 +240,9 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 
 				grid_platform_printf("FRAME START OFFSET: ");
 				for (uint16_t j=0; j<length; j++){
-					grid_platform_printf("%d, ", buffer[j]);
+					//grid_platform_printf("%d, ", buffer[j]);
 				}
-				grid_platform_printf("\r\n");
+				//grid_platform_printf("\r\n");
 				grid_port_debug_printf("Frame Start Offset %d %d %d", buffer[0], buffer[1], i);
 			}
 			
@@ -279,11 +279,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 
 				// Read the received id age values
 				uint8_t received_id  = grid_msg_string_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
-
-				if (por != GRID_PORT_U && por != GRID_PORT_H){
-
-					grid_platform_printf("DE %d: %d\r\n", por->direction, received_id);
-				}
 
 				uint8_t received_session = grid_msg_string_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
 				uint8_t received_msgage = grid_msg_string_get_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
@@ -438,7 +433,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 				
 				uint8_t error=0;
 
-				grid_platform_printf("DE DCT\r\n");
 				//process direct message
 				
 				if (message[2] == GRID_CONST_ACK){
@@ -491,9 +485,9 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 			uint8_t error = 0;
 
 			uint16_t packet_length  = grid_msg_string_get_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, &error);
-			grid_platform_printf("##CHK %d %d : %s",  packet_length, length);
+			grid_platform_printf("##CHK %d %d\r\n",  packet_length, length);
 
-			grid_port_debug_printf("Invalid Checksum %02x %02x", checksum_calculated, checksum_received);
+			grid_port_debug_printf("Checksum %02x %02x", checksum_calculated, checksum_received);
 		
 			
 			

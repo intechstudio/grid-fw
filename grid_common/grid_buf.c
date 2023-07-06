@@ -62,7 +62,7 @@ uint16_t grid_buffer_get_space(struct grid_buffer* buf){
 	else{
 		space = buf->buffer_length - buf->write_start + buf->read_start;
 	}
-	
+
 	return space;
 }
 
@@ -76,6 +76,7 @@ uint16_t grid_buffer_write_init(struct grid_buffer* buf, uint16_t length){
 	
 	
 	uint16_t space = grid_buffer_get_space(buf);
+
 
 	
 	if (space>length){

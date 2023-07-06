@@ -418,7 +418,7 @@ int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2
     const uint8_t buffer[] =  {byte0, byte1, byte2, byte3};
 
     tud_midi_packet_write(buffer);
-    ets_printf("MIDI\r\n");
+    //ets_printf("MIDI\r\n");
     return 0;
    
 

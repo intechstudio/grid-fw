@@ -87,7 +87,8 @@
         "grid_protocol.h": "c",
         "*.inc": "c",
         "grid_buf.h": "c",
-        "sdkconfig.h": "c"
+        "sdkconfig.h": "c",
+        "system_error": "c"
     },   
     "files.exclude": {
         ".archive": true,
