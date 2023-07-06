@@ -376,6 +376,66 @@ void uart_try_send_all(void){
 
 }
 
+void fifo_try_receive(void){
+
+
+    
+        uint32_t data = 0;
+        uint32_t status = 0;
+        //continue;
+
+        while (multicore_fifo_rvalid()){
+
+
+            data = multicore_fifo_pop_blocking();
+
+            //printf("POP");
+
+            for (uint8_t i=0; i<4; i++){
+
+                uint8_t c = (data>>(8*i))&0x000000FF;
+
+                if (c == 0){
+                    continue;
+                }
+
+                struct grid_port* port = &port_array[i];
+
+                if (port->active_bucket == NULL){
+                    grid_port_attach_bucket(port);
+                }
+
+                if (c==0x01 && port->active_bucket->buffer_index>0){
+                    printf("ERROR");
+                }
+
+                grid_bucket_put_character(port->active_bucket, c);
+
+
+                //printf("%c", c);
+
+                if (c=='\n'){
+
+                    // end of message, put termination zero character
+                    grid_bucket_put_character(port->active_bucket, '\0');
+
+                    //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
+                    if (port->active_bucket->buffer[1] == GRID_CONST_BRC){
+                        //printf("BR%d %c%c\r\n", port->active_bucket->index, port->active_bucket->buffer[6], port->active_bucket->buffer[7]);
+                    }
+                    port->active_bucket->status = GRID_BUCKET_STATUS_FULL;
+                    port->active_bucket->buffer_index = 0;
+                    // clear bucket
+
+                    grid_port_attach_bucket(port);
+
+                }
+
+            }
+
+        }
+
+}
 
 void core_1_main_entry(){
 
@@ -383,18 +443,28 @@ void core_1_main_entry(){
 
     while(1){
 
-        // iterate through all the ports
+        
+
+        uint32_t packed_chars = 0;
+
+        // iterate through all the ports and pack available characters
         for (uint8_t i = 0; i<4; i++){
             if (uart_rx_program_is_available(GRID_RX_PIO, i)){
 
                 char c = uart_rx_program_getc(GRID_RX_PIO, i);
-
-                uint32_t data = c | (i<<8);
-
-                multicore_fifo_push_timeout_us(data,0);
-
+                packed_chars |= (c<<(8*i));
             }
         }
+
+        if (packed_chars != 0){
+
+            uint8_t ok = multicore_fifo_push_timeout_us(packed_chars,0);
+
+            if (!ok){
+                printf("F");
+
+            }
+        }   
 
     }
 
@@ -402,6 +472,13 @@ void core_1_main_entry(){
 
 }
 
+
+void core0_interrupt_handler(void){
+
+    fifo_try_receive();
+    multicore_fifo_clear_irq();
+
+}
 
 int main() 
 {
@@ -510,6 +587,10 @@ int main()
     multicore_reset_core1();
     multicore_launch_core1(core_1_main_entry);
 
+    multicore_fifo_clear_irq();
+    irq_set_exclusive_handler(SIO_IRQ_PROC0, core0_interrupt_handler);
+    irq_set_enabled(SIO_IRQ_PROC0, true);
+
     while (1) 
     {
 
@@ -595,7 +676,7 @@ int main()
 
                             if (length-3 != received_length){
 
-                                printf("L%d %d ", length-3, received_length);
+                                //printf("L%d %d ", length-3, received_length);
 
                                 error_count++;
                             }
@@ -605,7 +686,7 @@ int main()
 
                         if (calculated_checksum != received_checksum){
                             
-                            printf("C %d %d ", calculated_checksum, received_checksum);
+                            //printf("C %d %d ", calculated_checksum, received_checksum);
 
                             error_count++;
                         }
@@ -614,7 +695,8 @@ int main()
 
                         if (error_count>0){
 
-                            printf("SKIP\r\n");
+                            //printf("SKIP\r\n");
+                            printf("S");
                             
                             // send empty packet with status flags
 
@@ -676,94 +758,7 @@ int main()
         
         /* ==================================  UART RECEIVE  =================================*/
 
-        // iterate through all the ports
-        // for (uint8_t i = 0; i<4; i++){
+        //fifo_try_receive();
 
-        //     struct grid_port* port = &port_array[i]; 
-
-        //     if (uart_rx_program_is_available(GRID_RX_PIO, port->port_index)){
-        //         char c = uart_rx_program_getc(GRID_RX_PIO, port->port_index);
-
-        //         if (port->active_bucket == NULL){
-        //             grid_port_attach_bucket(port);
-        //         }
-
-        //         grid_bucket_put_character(port->active_bucket, c);
-
-        //         if (c=='\n'){
-
-        //             // end of message, put termination zero character
-        //             grid_bucket_put_character(port->active_bucket, '\0');
-
-
-        //             //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
-        //             if (port->active_bucket->buffer[1] == GRID_CONST_BRC){
-        //                 //printf("BR%d %c%c\r\n", port->active_bucket->index, port->active_bucket->buffer[6], port->active_bucket->buffer[7]);
-        //             }
-        //             port->active_bucket->status = GRID_BUCKET_STATUS_FULL;
-        //             port->active_bucket->buffer_index = 0;
-        //             // clear bucket
-
-        //             grid_port_attach_bucket(port);
-
-        //         }
-                
-        //     }
-
-
-        // }
-        
-        
-        uint32_t data = 0;
-        uint32_t status = 0;
-        //continue;
-
-        do{
-
-            status = (multicore_fifo_get_status()&0x01);
-
-            if (status){
-
-                data = multicore_fifo_pop_blocking();
-
-                uint8_t c = (data&0x000000FF);
-                uint8_t i = (data&0x0000FF00)>>8; 
-
-                struct grid_port* port = &port_array[i];
-
-                if (port->active_bucket == NULL){
-                    grid_port_attach_bucket(port);
-                }
-
-                if (c==0x01 && port->active_bucket->buffer_index>0){
-                    printf("ERROR");
-                }
-
-                grid_bucket_put_character(port->active_bucket, c);
-
-
-                //printf("%c", c);
-
-                if (c=='\n'){
-
-                    // end of message, put termination zero character
-                    grid_bucket_put_character(port->active_bucket, '\0');
-
-                    //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
-                    if (port->active_bucket->buffer[1] == GRID_CONST_BRC){
-                        //printf("BR%d %c%c\r\n", port->active_bucket->index, port->active_bucket->buffer[6], port->active_bucket->buffer[7]);
-                    }
-                    port->active_bucket->status = GRID_BUCKET_STATUS_FULL;
-                    port->active_bucket->buffer_index = 0;
-                    // clear bucket
-
-                    grid_port_attach_bucket(port);
-
-                }
-
-
-            }
-
-        }while(status);
     }
 }
