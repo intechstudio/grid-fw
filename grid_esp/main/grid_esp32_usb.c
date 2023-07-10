@@ -52,13 +52,13 @@ void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event)
 
 // Interface counter
 enum interface_count {
-#if CFG_TUD_MIDI
-    ITF_NUM_MIDI = 0,
-    ITF_NUM_MIDI_STREAMING,
-#endif
 #if CFG_TUD_CDC
     ITF_NUM_CDC_NOTIFY,
     ITF_NUM_CDC_DATA,
+#endif
+#if CFG_TUD_MIDI
+    ITF_NUM_MIDI,
+    ITF_NUM_MIDI_STREAMING,
 #endif
     ITF_COUNT
 };
@@ -67,12 +67,12 @@ enum interface_count {
 enum usb_endpoints {
     // Available USB Endpoints: 5 IN/OUT EPs and 1 IN EP
     EP_EMPTY = 0,
-#if CFG_TUD_MIDI
-    EPNUM_MIDI,
-#endif
 #if CFG_TUD_CDC
     EPNUM_CDC_NOTIFY,
     EPNUM_CDC_DATA,
+#endif
+#if CFG_TUD_MIDI
+    EPNUM_MIDI
 #endif
 };
 
@@ -82,7 +82,7 @@ enum usb_endpoints {
 
 /** TinyUSB descriptors **/
 
-#define TUSB_DESCRIPTOR_TOTAL_LEN (TUD_CONFIG_DESC_LEN + CFG_TUD_MIDI * TUD_MIDI_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN )
+#define TUSB_DESCRIPTOR_TOTAL_LEN (TUD_CONFIG_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN + CFG_TUD_MIDI * TUD_MIDI_DESC_LEN)
 
 /**
  * @brief String descriptor
