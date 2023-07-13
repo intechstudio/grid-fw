@@ -1,3 +1,0 @@
-# Test configuration for enabling Amazon SMP FreeRTOS, and any optional feature currently supported on it.
-
-CONFIG_FREERTOS_SMP=y
