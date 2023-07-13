@@ -1,21 +1,21 @@
 dependencies:
   espressif/esp_tinyusb:
-    component_hash: 5e37c53a10518f40b288a48afec4ab549784be9e6eb74add699a30395543418a
+    component_hash: 28c68ff118750c0a754c4563c700953a8b54ccb7644fdffb0658e4effa3528c3
     source:
       service_url: https://api.components.espressif.com/
       type: service
-    version: 1.0.3
+    version: 1.3.0
   espressif/tinyusb:
-    component_hash: 820a2eef39c7ff0b810e859efd7035a4e5b9b44e77c49020a50ef0668fc941ae
+    component_hash: e57afcec166cbd5337ea5638230349c03aa95a5fc56eca19cbabfb8e84f8029f
     source:
       service_url: https://api.components.espressif.com/
       type: service
-    version: 0.14.2
+    version: 0.15.1
   idf:
     component_hash: null
     source:
       type: idf
-    version: 5.1.0
+    version: 5.2.0
   joltwallet/littlefs:
     component_hash: 69ffc34bc0b0180754e1c1ab906d8c942dbea31f961cbc0ae8bc6d80f2c7221d
     source:

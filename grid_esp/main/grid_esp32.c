@@ -370,7 +370,6 @@ uint8_t grid_platform_get_nvm_state(){
 void	grid_platform_clear_actionstring_files_from_page(uint8_t page){
 
     grid_esp32_nvm_clear_page(&grid_esp32_nvm_state, page);
-    ets_printf("grid_platform_clear_actionstring_files_from_page NOT IMPLEMENTED!!!\r\n");
     return;
 }
 ;
