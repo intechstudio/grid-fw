@@ -283,34 +283,10 @@ uint16_t grid_esp32_nvm_get_file_size(struct grid_esp32_nvm_model* nvm,  void* f
 
 void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm){
 
-    printf("BEFORE: \r\n");
-    grid_esp32_nvm_list_files(nvm, "/littlefs");
-
-
-
-    ESP_LOGD(TAG, "Suku READ DIRECTORY");
-
-    DIR *d;
-    struct dirent *dir;
-    d = opendir("/littlefs");
-
-    if (d) {
-        while ((dir = readdir(d)) != NULL) {
-            char path[300] = {0};
-
-            sprintf(path, "/littlefs/%s", dir->d_name);
-            printf("deleting %s\n", path);
-            unlink(path);
-
-
-        }
-        closedir(d);
-    }
-
-
-
-    printf("AFTER: \r\n");
-    grid_esp32_nvm_list_files(NULL, "/littlefs");
+    grid_esp32_nvm_clear_page(nvm, 0);
+    grid_esp32_nvm_clear_page(nvm, 1);
+    grid_esp32_nvm_clear_page(nvm, 2);
+    grid_esp32_nvm_clear_page(nvm, 3);
 
 
 }
@@ -322,39 +298,31 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page){
     grid_esp32_nvm_list_files(NULL, "/littlefs");
 
 
+    for (uint8_t i=0; i<17; i++){ // elements
 
-    ESP_LOGD(TAG, "Suku READ DIRECTORY");
+        for (uint8_t j=0; j<10; j++){ //events
 
-    DIR *d;
-    struct dirent *dir;
-    d = opendir("/littlefs");
+            FILE* fp = grid_esp32_nvm_find_file(nvm, page, i, j);
 
-    char page_string[10] = {0};
-    sprintf(page_string, "%02x", page);
+            if (fp != NULL){
 
+                fclose(fp);
 
-    if (d) {
-        while ((dir = readdir(d)) != NULL) {
+                char fname[30] = {0};
 
+                sprintf(fname, "/littlefs/%02x/%02x/%02x.cfg", page, i, j);
 
-            if (dir->d_name[0] == page_string[0] && dir->d_name[1] == page_string[1] ){
-                char path[300] = {0};
+                unlink(fname);
 
-                sprintf(path, "/littlefs/%s", dir->d_name);
-                printf("deleting %s\n", path);
-                unlink(path);
+                ets_printf("DELETE: %s\r\n", fname);
+
             }
 
 
-
         }
-        closedir(d);
+
+
     }
-
-
-
-    printf("AFTER: \r\n");
-    grid_esp32_nvm_list_files(NULL, "/littlefs");
 
 
 }
