@@ -127,15 +127,14 @@ void grid_lua_gc_try_collect(struct grid_lua_model* mod){
         lua_gc(mod->L, LUA_GCCOLLECT);
 
         char message[10] = {0};
-        sprintf(message, "gc %dkb", target_kilobytes);
-        grid_lua_debug_memory_stats(mod, message);
+        //sprintf(message, "gc %dkb", target_kilobytes);
+        //grid_lua_debug_memory_stats(mod, message);
         mod->dostring_count = 0;
 
     }
 
 
 }
-
 
 void grid_lua_gc_collect(struct grid_lua_model* mod){
 

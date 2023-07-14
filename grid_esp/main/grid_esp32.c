@@ -33,8 +33,6 @@ void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
 
         //grid_platform_printf("Task Count : %d Core: %d\r\n\r\n", uxArraySize, xPortGetCoreID());
 
-        // For percentage calculations.
-        ulTotalRunTime /= 100UL;
 
         // Avoid divide by zero errors.
         if( ulTotalRunTime > 0 )
@@ -45,7 +43,7 @@ void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
             {
 
                 char taskName[10] = ".........\0";
-                snprintf(taskName, 8, pxTaskStatusArray[ x ].pcTaskName);
+                snprintf(taskName, 6, pxTaskStatusArray[ x ].pcTaskName);
 
                 uint8_t core = xTaskGetAffinity(pxTaskStatusArray[ x ].xHandle);
 
@@ -57,24 +55,27 @@ void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
                 // What percentage of the total run time has the task used?
                 // This will always be rounded down to the nearest integer.
                 // ulTotalRunTimeDiv100 has already been divided by 100.
-                ulStatsAsPercentage = pxTaskStatusArray[ x ].ulRunTimeCounter / ulTotalRunTime;
+                ulStatsAsPercentage = pxTaskStatusArray[ x ].ulRunTimeCounter / (ulTotalRunTime/100);
 
+
+                uint32_t runtime = pxTaskStatusArray[ x ].ulRunTimeCounter;
 
                 TaskHandle_t task = pxTaskStatusArray[ x ].xHandle;
 
-                if( ulStatsAsPercentage > 0UL )
-                {
 
-                    //xCoreID
-                    sprintf( pcWriteBuffer, "%d-%s\t\t%lu\t\t%lu pcnt\r\n", core,  taskName, uxHighWaterMark, ulStatsAsPercentage );
+                char core_char = 'X';
+
+                if (core == 0){
+                    core_char = '0';
+                }
+                else if (core == 1){
+                    core_char = '1';
+                }
+
+      
+                sprintf( pcWriteBuffer, "%c-%s\t\t%lu\t\t%lu pcnt (%lu/%lu)\r\n", core_char,  taskName, uxHighWaterMark, ulStatsAsPercentage, runtime,  ulTotalRunTime);
                     
-                }
-                else
-                {
-                    // If the percentage is zero here then the task has
-                    // consumed less than 1% of the total run time.
-                    sprintf( pcWriteBuffer, "%d-%s\t\t%lu\t\t<1 pcnt\r\n", core, taskName, uxHighWaterMark );
-                }
+                
 
                 pcWriteBuffer += strlen( ( char * ) pcWriteBuffer );
             }
@@ -82,6 +83,141 @@ void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
 
         // The array is no longer needed, free the memory it consumes.
         vPortFree( pxTaskStatusArray );
+    
+    }
+}
+
+
+#define MAX_TASK_ID 16
+
+uint32_t lastRunTimeCounter[MAX_TASK_ID] = {0};
+uint32_t lastTotalRunTime = 0;
+
+uint8_t skip_list[MAX_TASK_ID] =  {0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0};
+
+void vTaskGetRunTimeStats3( char *pcWriteBuffer ){
+
+    TaskStatus_t *pxTaskStatusArray;
+    volatile UBaseType_t uxArraySize, x;
+    uint32_t ulTotalRunTime, ulStatsAsPercentage;
+
+        // Make sure the write buffer does not contain a string.
+    *pcWriteBuffer = 0x00;
+
+    // Take a snapshot of the number of tasks in case it changes while this
+    // function is executing.
+    uxArraySize = uxTaskGetNumberOfTasks();
+
+    // Allocate a TaskStatus_t structure for each task.  An array could be
+    // allocated statically at compile time.
+    pxTaskStatusArray = pvPortMalloc( uxArraySize * sizeof( TaskStatus_t ) );
+
+    if( pxTaskStatusArray != NULL )
+    {
+        // Generate raw status information about each task.
+        uxArraySize = uxTaskGetSystemState( pxTaskStatusArray, uxArraySize, &ulTotalRunTime );
+
+        //grid_platform_printf("Task Count : %d Core: %d\r\n\r\n", uxArraySize, xPortGetCoreID());
+
+
+        // Avoid divide by zero errors.
+        if( ulTotalRunTime > 0 )
+        {
+            // For each populated position in the pxTaskStatusArray array,
+            // format the raw data as human readable ASCII data
+
+            sprintf( pcWriteBuffer, "{");
+
+            for( uint8_t i = 0; i<MAX_TASK_ID; i++){
+
+                for( x = 0; x < uxArraySize; x++ )
+                {
+
+                    uint32_t taskNumber = pxTaskStatusArray[ x ].xTaskNumber;
+
+                    if (taskNumber == i){
+                        
+                        char taskName[10] = ".........\0";
+                        snprintf(taskName, 6, pxTaskStatusArray[ x ].pcTaskName);
+
+                        uint8_t core = xTaskGetAffinity(pxTaskStatusArray[ x ].xHandle);
+
+
+                        /* Inspect our own high water mark on entering the task. */
+                        unsigned long uxHighWaterMark = uxTaskGetStackHighWaterMark( pxTaskStatusArray[ x ].xHandle );
+
+
+
+
+                        // What percentage of the total run time has the task used?
+                        // This will always be rounded down to the nearest integer.
+
+
+                        uint32_t taskElapsedTime = pxTaskStatusArray[ x ].ulRunTimeCounter - lastRunTimeCounter[taskNumber];
+                        uint32_t totalElapsedTime = (ulTotalRunTime-lastTotalRunTime);
+
+                        ulStatsAsPercentage = (taskElapsedTime*100) / (totalElapsedTime);
+
+                        lastRunTimeCounter[taskNumber] = pxTaskStatusArray[ x ].ulRunTimeCounter;
+                    
+
+
+
+                        uint32_t runtime = pxTaskStatusArray[ x ].ulRunTimeCounter;
+
+                        TaskHandle_t task = pxTaskStatusArray[ x ].xHandle;
+
+
+
+
+                        char core_char = 'X';
+
+                        if (core == 0){
+                            core_char = '0';
+                        }
+                        else if (core == 1){
+                            core_char = '1';
+                        }
+
+                        if (skip_list[i] == 0){
+                            
+
+                            uint32_t debug_var = ulStatsAsPercentage;
+                            sprintf( pcWriteBuffer, "\"c%c %02lu %s\": %3lu, ", core_char, taskNumber,  taskName, debug_var);
+
+                        }
+                        else{
+
+                            // first run
+                            if (lastTotalRunTime == 0){
+
+                                ets_printf("SKIPLIST: %s\r\n", taskName);
+
+                            }
+
+                        }
+                            
+                        
+
+                        pcWriteBuffer += strlen( ( char * ) pcWriteBuffer );
+
+                    }
+
+
+                }
+
+
+            }
+
+
+            sprintf( &pcWriteBuffer[strlen(pcWriteBuffer)-2], "}");
+            lastTotalRunTime = ulTotalRunTime;
+        }
+
+
+        // The array is no longer needed, free the memory it consumes.
+        vPortFree( pxTaskStatusArray );
+    
     }
 }
 
@@ -96,11 +232,11 @@ void grid_esp32_housekeeping_task(void *arg)
     while (1) {
 
 
-        vTaskGetRunTimeStats2(stats);
+        vTaskGetRunTimeStats3(stats);
         
-        //ets_printf("%s\r\n\r\n", stats);
+        ets_printf("%s\r\n", stats);
 
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(250));
      
 
 
