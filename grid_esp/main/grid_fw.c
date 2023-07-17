@@ -29,13 +29,7 @@
 #include "grid_esp32_module_ef44.h"
 #include "grid_esp32_led.h"
 
-#include "ulp_riscv.h"
-#include "ulp_main.h"
 
-extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
-extern const uint8_t ulp_main_bin_end[]   asm("_binary_ulp_main_bin_end");
-
-static void init_ulp_program(void);
 
 #define MODULE_TASK_PRIORITY 4
 #define LED_TASK_PRIORITY 2
@@ -167,27 +161,11 @@ static char DRAM_ATTR PORT_U_RX[GRID_BUFFER_SIZE] = {0};
 static char DRAM_ATTR PORT_H_TX[GRID_BUFFER_SIZE] = {0};
 static char DRAM_ATTR PORT_H_RX[GRID_BUFFER_SIZE] = {0};
 
-static void init_ulp_program(void)
-{
-    esp_err_t err = ulp_riscv_load_binary(ulp_main_bin_start, (ulp_main_bin_end - ulp_main_bin_start));
-    ESP_ERROR_CHECK(err);
-
-    /* The first argument is the period index, which is not used by the ULP-RISC-V timer
-     * The second argument is the period in microseconds, which gives a wakeup time period of: 20ms
-     */
-    ulp_set_wakeup_period(0, 20000);
-
-    /* Start the program */
-    err = ulp_riscv_run();
-    ESP_ERROR_CHECK(err);
-}
-
 
 
 void app_main(void)
 {
 
-    init_ulp_program();
 
     SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
     xSemaphoreGive(nvm_or_port);

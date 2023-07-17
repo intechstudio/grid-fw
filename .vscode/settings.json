@@ -88,7 +88,12 @@
         "*.inc": "c",
         "grid_buf.h": "c",
         "sdkconfig.h": "c",
-        "system_error": "c"
+        "system_error": "c",
+        "ulp_riscv_print.h": "c",
+        "ulp_main.h": "c",
+        "ulp_riscv_uart_ulp_core.h": "c",
+        "ulp_riscv_adc_ulp_core.h": "c",
+        "esp_sleep_internal.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

@@ -19,9 +19,32 @@
 #include "ulp_riscv_print.h"
 
 #include "ulp_riscv_uart_ulp_core.h"
+#include "ulp_riscv_adc_ulp_core.h"
 #include "sdkconfig.h"
 
+
+#include "hal/adc_types.h"
+
+#define EXAMPLE_ADC_CHANNEL     ADC_CHANNEL_0
+#define EXAMPLE_ADC_UNIT        ADC_UNIT_1
+#define EXAMPLE_ADC_ATTEN       ADC_ATTEN_DB_11
+#define EXAMPLE_ADC_WIDTH       ADC_BITWIDTH_DEFAULT
+
+/* Set high threshold, approx. 1.75V*/
+#define EXAMPLE_ADC_TRESHOLD    2000
+
+
+#define SAMPLE_COUNT 16
+
 static ulp_riscv_uart_t s_print_uart;
+
+uint32_t adc_value_1 = 0;
+uint32_t adc_value_2 = 0;
+
+volatile uint32_t adc_result_ready = 0; // volatile otherwise compiler optimizes away external access
+
+uint32_t adcresult_1[SAMPLE_COUNT] = {0};
+uint32_t adcresult_2[SAMPLE_COUNT] = {0};
 
 int main (void)
 {
@@ -33,14 +56,54 @@ int main (void)
     ulp_riscv_print_install((putc_fn_t)ulp_riscv_uart_putc, &s_print_uart);
 
     int cnt = 0;
-    while(1) {
 
-        ulp_riscv_print_str("Hello World from ULP-RISCV!\n");
-        ulp_riscv_print_str("Cnt: 0x");
-        ulp_riscv_print_hex(cnt);
-        ulp_riscv_print_str("\n");
 
-        cnt++;
-        ulp_riscv_delay_cycles(1000 * ULP_RISCV_CYCLES_PER_MS);
+
+    while(1) {    
+
+
+        if (adc_result_ready == 0){
+
+            ulp_riscv_gpio_output_level(cfg.tx_pin, 0);
+            
+            for(uint8_t i=0; i<SAMPLE_COUNT; i++) {
+
+                /* Read ADC value */
+                adcresult_1[i] =  ulp_riscv_adc_read_channel(ADC_UNIT_1, ADC_CHANNEL_1);
+                adcresult_2[i] =  ulp_riscv_adc_read_channel(ADC_UNIT_1, ADC_CHANNEL_0);
+
+            }   
+
+            uint32_t sum_1 = 0;
+            uint32_t sum_2 = 0;
+
+            for(uint8_t i=0; i<SAMPLE_COUNT; i++) {
+
+                sum_1 += adcresult_1[i];
+                sum_2 += adcresult_2[i];
+            }
+
+            adc_value_1 = sum_1 / SAMPLE_COUNT;
+            adc_value_2 = sum_2 / SAMPLE_COUNT;
+
+
+            ulp_riscv_gpio_output_level(cfg.tx_pin, 1);
+
+            // ulp_riscv_print_str("Cnt: 0x");
+            // ulp_riscv_print_hex(adc_value_1);
+            // ulp_riscv_print_str("\n");
+
+            adc_result_ready = 1;
+
+            //ulp_riscv_delay_cycles(1 * ULP_RISCV_CYCLES_PER_MS);
+            
+
+
+        }
+
+
+
+
     }
 }
+
