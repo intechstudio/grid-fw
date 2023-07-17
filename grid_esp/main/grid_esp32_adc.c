@@ -232,6 +232,8 @@ void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc){
 
 
 
+#include "ulp_riscv_lock.h"
+
 void IRAM_ATTR grid_esp32_adc_convert(void)
 {
 
@@ -240,34 +242,40 @@ void IRAM_ATTR grid_esp32_adc_convert(void)
 
     if (xSemaphoreTakeFromISR(adc->nvm_semaphore, NULL) == pdTRUE){
 
-        if (ulp_adc_result_ready){
+        ulp_riscv_lock_t *lock = (ulp_riscv_lock_t*)&ulp_lock;
+
+        ulp_riscv_lock_acquire(lock);
+
+        if (ulp_adc_result_ready>0 && ulp_adc_result_ready<UINT32_MAX/2){
 
             struct grid_esp32_adc_result result_0;
             result_0.channel = 0;
-            result_0.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);;
+            result_0.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
             result_0.value = ulp_adc_value_1;
 
             struct grid_esp32_adc_result result_1;
             result_1.channel = 1;
-            result_1.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);;
+            result_1.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
             result_1.value = ulp_adc_value_2;
 
 
             xRingbufferSendFromISR(adc->ringbuffer_handle , &result_0, sizeof(struct grid_esp32_adc_result), NULL);
             xRingbufferSendFromISR(adc->ringbuffer_handle , &result_1, sizeof(struct grid_esp32_adc_result), NULL);
                 
+            //ets_printf("%d\r\n", ulp_adc_result_ready);
+
+            ulp_adc_result_ready = UINT32_MAX; // start new conversion
 
             grid_esp32_adc_mux_increment(&grid_esp32_adc_state);
             grid_esp32_adc_mux_update(&grid_esp32_adc_state);
 
-            ulp_adc_result_ready = 0; // start new conversion
 
         }
         else{            
             
         }
 
-
+        ulp_riscv_lock_release(lock);
 
         xSemaphoreGiveFromISR(adc->nvm_semaphore, NULL);
     }

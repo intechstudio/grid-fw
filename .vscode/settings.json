@@ -93,7 +93,8 @@
         "ulp_main.h": "c",
         "ulp_riscv_uart_ulp_core.h": "c",
         "ulp_riscv_adc_ulp_core.h": "c",
-        "esp_sleep_internal.h": "c"
+        "esp_sleep_internal.h": "c",
+        "mutex": "c"
     },   
     "files.exclude": {
         ".archive": true,
