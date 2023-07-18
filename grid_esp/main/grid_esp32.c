@@ -93,7 +93,7 @@ void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
 uint32_t lastRunTimeCounter[MAX_TASK_ID] = {0};
 uint32_t lastTotalRunTime = 0;
 
-uint8_t skip_list[MAX_TASK_ID] =  {0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0};
+uint8_t skip_list[MAX_TASK_ID] =  {0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0};
 
 void vTaskGetRunTimeStats3( char *pcWriteBuffer ){
 
@@ -183,7 +183,15 @@ void vTaskGetRunTimeStats3( char *pcWriteBuffer ){
                             
 
                             uint32_t debug_var = ulStatsAsPercentage;
-                            sprintf( pcWriteBuffer, "\"c%c %02lu %s\": %3lu, ", core_char, taskNumber,  taskName, debug_var);
+
+                            // As Percentage (string)
+                            sprintf( pcWriteBuffer, "\"c%c %02lu %s\": \"%lu%%%%\", ", core_char, taskNumber,  taskName, debug_var);
+
+                            // As Integer (string)
+                            //sprintf( pcWriteBuffer, "\"c%c %02lu %s\": \"%lu\", ", core_char, taskNumber,  taskName, debug_var);
+
+                            // As Integer (number)
+                            //sprintf( pcWriteBuffer, "\"c%c %02lu %s\": %lu, ", core_char, taskNumber,  taskName, debug_var);
 
                         }
                         else{
@@ -234,6 +242,8 @@ void grid_esp32_housekeeping_task(void *arg)
 
         vTaskGetRunTimeStats3(stats);
         
+        grid_port_debug_print_text(stats);
+
         ets_printf("%s\r\n", stats);
 
         vTaskDelay(pdMS_TO_TICKS(250));

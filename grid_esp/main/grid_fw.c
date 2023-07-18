@@ -370,7 +370,7 @@ void app_main(void)
     //Create the class driver task
     xTaskCreatePinnedToCore(grid_esp32_housekeeping_task,
                             "housekeeping",
-                            1024*5,
+                            1024*6,
                             (void *)signaling_sem,
                             6,
                             &housekeeping_task_hdl,
