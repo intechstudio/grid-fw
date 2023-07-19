@@ -31,6 +31,17 @@ static struct audiodf_midi_func_data _audiodf_midi_funcd;
 volatile uint8_t usb_debug2[10];
 
 
+
+
+// Define the function pointer type
+typedef bool (*midi_xfer_cb_t)(const uint8_t, const enum usb_xfer_code, const uint32_t);
+
+// Global function pointer
+static midi_xfer_cb_t midi_in_cb = NULL;
+static midi_xfer_cb_t midi_out_cb = NULL;
+static midi_xfer_cb_t midi_installed_cb = NULL;
+
+
 /**
  * \brief Enable Audio Midi Function
  * \param[in] drv Pointer to USB device function driver
@@ -39,6 +50,9 @@ volatile uint8_t usb_debug2[10];
  */
 static int32_t audio_midi_enable(struct usbdf_driver *drv, struct usbd_descriptors *desc)
 {
+
+	printf("MIDI ENABLE\n");
+
 	struct audiodf_midi_func_data *func_data = (struct audiodf_midi_func_data *)(drv->func_data);
 	
 	usb_iface_desc_t ifc_desc;
@@ -95,11 +109,9 @@ static int32_t audio_midi_enable(struct usbdf_driver *drv, struct usbd_descripto
 				if (ep_desc.bEndpointAddress & USB_EP_DIR_IN) {
 					func_data->func_ep_in = ep_desc.bEndpointAddress;
 					usb_d_ep_enable(func_data->func_ep_in);
-					//usb_d_ep_register_callback(func_data->func_ep_in, USB_D_EP_CB_XFER, (FUNC_PTR)midi_cb_ep_bulk_in);
 				} else {
 					func_data->func_ep_out = ep_desc.bEndpointAddress;
 					usb_d_ep_enable(func_data->func_ep_out);
-					//usb_d_ep_register_callback(func_data->func_ep_out, USB_D_EP_CB_XFER, (FUNC_PTR)midi_cb_ep_bulk_out);
 				}
 				desc->sod = ep;
 				ep        = usb_find_ep_desc(usb_desc_next(desc->sod), desc->eod);
@@ -109,6 +121,17 @@ static int32_t audio_midi_enable(struct usbdf_driver *drv, struct usbd_descripto
 		ifc = usb_find_desc(usb_desc_next(desc->sod), desc->eod, USB_DT_INTERFACE);		
 		
 	}
+
+
+	printf("MIDI TEST %d %d \r\n", _audiodf_midi_funcd.func_ep_in, _audiodf_midi_funcd.func_ep_out);
+	
+	usb_d_ep_register_callback(_audiodf_midi_funcd.func_ep_in, USB_D_EP_CB_XFER, midi_in_cb);
+	usb_d_ep_register_callback(_audiodf_midi_funcd.func_ep_out, USB_D_EP_CB_XFER, midi_out_cb);
+	
+	if (midi_installed_cb){
+		midi_installed_cb(0, 0, 0);
+	}
+
 	
 	_audiodf_midi_funcd.enabled = true;
 	return ERR_NONE;
@@ -324,10 +347,13 @@ int32_t audiodf_midi_register_callback(enum audiodf_midi_cb_type cb_type, FUNC_P
 {
 	switch (cb_type) {
 		case AUDIODF_MIDI_CB_READ:
-		usb_d_ep_register_callback(_audiodf_midi_funcd.func_ep_out, USB_D_EP_CB_XFER, func);
+		midi_in_cb = func;
 		break;
 		case AUDIODF_MIDI_CB_WRITE:
-		usb_d_ep_register_callback(_audiodf_midi_funcd.func_ep_in, USB_D_EP_CB_XFER, func);
+		midi_out_cb = func;
+		break;
+		case AUDIODF_MIDI_CB_INSTALLED:
+		midi_installed_cb = func;
 		break;
 		default:
 		return ERR_INVALID_ARG;

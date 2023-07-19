@@ -26,7 +26,7 @@ int32_t audiodf_midi_deinit(void);
 bool audiodf_midi_is_enabled(void);
 
 /** AUDIO MIDI Class Callback Type */
-enum audiodf_midi_cb_type { AUDIODF_MIDI_CB_READ, AUDIODF_MIDI_CB_WRITE};
+enum audiodf_midi_cb_type { AUDIODF_MIDI_CB_READ, AUDIODF_MIDI_CB_WRITE, AUDIODF_MIDI_CB_INSTALLED};
 
 int32_t audiodf_midi_write_status();
 int32_t audiodf_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);

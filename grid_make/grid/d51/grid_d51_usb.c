@@ -83,31 +83,68 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
 	return cdcdf_acm_write((uint8_t*) buffer, length);
 }
 
+
+
+static uint8_t midi_rx_buffer[4] = {0};
+
 static bool grid_usb_midi_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
+	
+	struct grid_midi_event_desc midi_ev;
+
+	midi_ev.byte0 = midi_rx_buffer[1] & 0x0f; // channel
+	midi_ev.byte1 = midi_rx_buffer[1] & 0xf0; // command
+	midi_ev.byte2 = midi_rx_buffer[2]; // param1
+	midi_ev.byte3 = midi_rx_buffer[3]; // param2
+
+	//printf("MIDI OUT CB %d %d %d %d \n", midi_ev.byte0, midi_ev.byte1, midi_ev.byte2, midi_ev.byte3);
+
+	grid_midi_rx_push(midi_ev);
+
+
+	for (uint8_t i=0; i<4; i++){
+
+		midi_rx_buffer[i] = 0;
+
+	}
+
+	audiodf_midi_read(midi_rx_buffer, 4);
+
 	return false;
 }
 static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
 
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
+	//printf("MIDI IN CB\n");
+	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
+	return false;
+}
+
+static bool grid_usb_midi_installed_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
+{
+
+	printf("MIDI INSTALLED CB\n");
+	audiodf_midi_read(midi_rx_buffer, 4);
 	return false;
 }
 
 
-
 void grid_d51_usb_init(void){
 
-	audiodf_midi_register_callback(AUDIODF_MIDI_CB_READ, (FUNC_PTR)grid_usb_midi_bulkout_cb);
-	audiodf_midi_register_callback(AUDIODF_MIDI_CB_WRITE, (FUNC_PTR)grid_usb_midi_bulkin_cb);
+	//audiodf_midi_register_callback(AUDIODF_MIDI_CB_READ, (FUNC_PTR)midi_in_handler);
+	//audiodf_midi_register_callback(AUDIODF_MIDI_CB_WRITE, (FUNC_PTR)midi_out_handler);
 
 
 	grid_usb_serial_rx_size = 0;
 	grid_usb_serial_rx_flag = 0;
-	cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C, (FUNC_PTR)grid_usb_serial_statechange_cb);
-//	cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)grid_usb_midi_bulkout_cb);
-//	cdcdf_acm_register_callback(CDCDF_ACM_CB_READ, (FUNC_PTR)grid_usb_midi_bulkout_cb);
+
+	// this does not directly register the statechange callback to an endpoint, just to the internal driver
+ 	cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C, (FUNC_PTR)grid_usb_serial_statechange_cb);
+
+	audiodf_midi_register_callback(AUDIODF_MIDI_CB_READ, (FUNC_PTR)grid_usb_midi_bulkin_cb);
+	audiodf_midi_register_callback(AUDIODF_MIDI_CB_WRITE, (FUNC_PTR)grid_usb_midi_bulkout_cb);
+
+	audiodf_midi_register_callback(AUDIODF_MIDI_CB_INSTALLED, (FUNC_PTR)grid_usb_midi_installed_cb);
 
 
     

@@ -23,8 +23,6 @@ volatile uint32_t globaltest = 0;
 volatile uint32_t loopcounter = 1;
 volatile uint32_t loopcount = 0;
 
-volatile uint8_t midi_rx_buffer[16] = {0};
-
 
 
 extern void grid_platform_rtc_set_micros(uint64_t mic);
@@ -40,55 +38,6 @@ static void usb_task_inner(){
 	
 
 
-	// MIDI READ TEST CODE
-	uint8_t midi_rx_length = 0;
-
-	audiodf_midi_read(midi_rx_buffer,16);
-
-
-	
-	midi_rx_length = strlen(midi_rx_buffer);		
-	
-	uint8_t found = 0;
-
-	for (uint8_t i=0; i<16; i++){
-
-		if (midi_rx_buffer[i]){
-			found++;
-		}
-
-	}
-
-		
-	if (found){
-
-		//grid_port_debug_printf("MIDI: %02x %02x %02x %02x", midi_rx_buffer[0],midi_rx_buffer[1],midi_rx_buffer[2],midi_rx_buffer[3]);
-
-		uint8_t channel = midi_rx_buffer[1] & 0x0f;
-		uint8_t command = midi_rx_buffer[1] & 0xf0;
-		uint8_t param1 = midi_rx_buffer[2];
-		uint8_t param2 = midi_rx_buffer[3];
-
-		//grid_port_debug_printf("decoded: %d %d %d %d", channel, command, param1, param2);
-		
-		struct grid_midi_event_desc midi_ev;
-
-		midi_ev.byte0 = channel;
-		midi_ev.byte1 = command;
-		midi_ev.byte2 = param1;
-		midi_ev.byte3 = param2;
-
-		grid_midi_rx_push(midi_ev);
-
-
-		for (uint8_t i=0; i<16; i++){
-
-			midi_rx_buffer[i] = 0;
-
-		}
-
-
-	}	
 
 
 	// Forward midi from Host to Grid!
@@ -657,6 +606,7 @@ int main(void)
 			
 			if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1){
 			
+
 				printf("USB CONNECTED\r\n\r\n");
 				printf("HWCFG %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
 
@@ -665,6 +615,10 @@ int main(void)
 				grid_led_set_alert_phase(&grid_led_state, 200);	
 				
 				grid_msg_set_heartbeat_type(&grid_msg_state, 1);
+
+
+				printf("Register MIDI callbacks\r\n\r\n");
+				//grid_d51_usb_midi_register_callbacks();
 
 		
 			}
