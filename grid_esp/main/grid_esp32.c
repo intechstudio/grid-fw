@@ -237,14 +237,14 @@ void grid_esp32_housekeeping_task(void *arg)
 
     char stats[3000] = {0};
 
-    while (1) {
+    while (0) {
 
 
         vTaskGetRunTimeStats3(stats);
         
         grid_port_debug_print_text(stats);
 
-        ets_printf("%s\r\n", stats);
+        //ets_printf("%s\r\n", stats);
 
         vTaskDelay(pdMS_TO_TICKS(250));
      

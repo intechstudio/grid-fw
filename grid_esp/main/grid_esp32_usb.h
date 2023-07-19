@@ -25,6 +25,7 @@
 
 
 #include "../../grid_common/grid_port.h"
+#include "../../grid_common/grid_usb.h"
 #include "../../grid_common/grid_sys.h"
 
 

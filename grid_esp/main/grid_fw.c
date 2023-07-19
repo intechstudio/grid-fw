@@ -78,26 +78,6 @@ static const char *TAG = "main";
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 
-static void midi_task_read_example(void *arg)
-{
-    // The MIDI interface always creates input and output port/jack descriptors
-    // regardless of these being used or not. Therefore incoming traffic should be read
-    // (possibly just discarded) to avoid the sender blocking in IO
-    uint8_t packet[4];
-    bool read = false;
-    for (;;) {
-        vTaskDelay(5);
-        while (tud_midi_available()) {
-            read = tud_midi_packet_read(packet);
-            if (read) {
-                ESP_LOGI(TAG, "Read - Time (ms since boot): %lld, Data: %02hhX %02hhX %02hhX %02hhX",
-                         esp_timer_get_time(), packet[0], packet[1], packet[2], packet[3]);
-            }
-        }
-    }
-}
-
-
 
 static void periodic_rtc_ms_cb(void *arg)
 {
@@ -388,21 +368,6 @@ void app_main(void)
    ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 10000));
 
-
-
-
-
-    
-
-
-#if CFG_TUD_MIDI
-
-    // Read recieved MIDI packets
-    ESP_LOGI(TAG, "MIDI read task init");
-    xTaskCreatePinnedToCore(midi_task_read_example, "midi_task_read_example", 2 * 1024, NULL, 1, NULL, 0);
-#endif
-
-    
 
     ESP_LOGI(TAG, "===== INIT COMPLETE =====");
 

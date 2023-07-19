@@ -18,6 +18,46 @@ static uint8_t buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE + 1];
 
 volatile uint16_t grid_usb_rx_double_buffer_index = 0;
 
+
+void tud_midi_rx_cb(uint8_t itf){
+
+    //ets_printf("MIDI RX: %d\n", itf);
+
+    // The MIDI interface always creates input and output port/jack descriptors
+    // regardless of these being used or not. Therefore incoming traffic should be read
+    // (possibly just discarded) to avoid the sender blocking in IO
+    uint8_t packet[4];
+    bool read = false;
+
+    while (tud_midi_available()) {
+        read = tud_midi_packet_read(packet);
+        if (read) {
+            //ets_printf("Read, Data: %02x %02x %02x %02x\r\n", packet[0], packet[1], packet[2], packet[3]);
+        
+        
+            uint8_t channel = packet[1] & 0x0f;
+            uint8_t command = packet[1] & 0xf0;
+            uint8_t param1 = packet[2];
+            uint8_t param2 = packet[3];
+
+            //grid_port_debug_printf("decoded: %d %d %d %d", channel, command, param1, param2);
+            
+            struct grid_midi_event_desc midi_ev;
+
+            midi_ev.byte0 = channel;
+            midi_ev.byte1 = command;
+            midi_ev.byte2 = param1;
+            midi_ev.byte3 = param2;
+
+		    grid_midi_rx_push(midi_ev);
+        
+        }
+    }
+    
+}
+
+
+
 void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event)
 {
     /* initialization */

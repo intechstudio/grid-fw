@@ -457,8 +457,9 @@ void grid_esp32_port_task(void *arg)
             }
 
 
-
+            grid_midi_rx_pop();
             grid_port_receive_task(GRID_PORT_H); // USB
+            
             grid_port_receive_task(GRID_PORT_U); // UI
             
 
