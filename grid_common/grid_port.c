@@ -1605,7 +1605,7 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 					
 					//printf("M: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1, midi_param2);
 
-					char temp[100] = {0};
+					char temp[130] = {0};
 
 
 					grid_lua_clear_stdo(&grid_lua_state);
