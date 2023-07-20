@@ -1606,8 +1606,15 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 					//printf("M: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1, midi_param2);
 
 					char temp[100] = {0};
-					sprintf(temp, "midi={} midi.ch,midi.cmd,midi.p1,midi.p2 = %d, %d, %d, %d ", midi_channel, midi_command, midi_param1, midi_param2);
+
+
+					grid_lua_clear_stdo(&grid_lua_state);
+
+					// add the received midi message to the dynamic fifo and set the high water mark if necessary
+					sprintf(temp, "table.insert(midi_fifo, {%d, %d, %d, %d}) if #midi_fifo > midi_fifo_highwater then midi_fifo_highwater = #midi_fifo end", midi_channel, midi_command, midi_param1, midi_param2);
 					grid_lua_dostring(&grid_lua_state, temp);
+
+					grid_lua_clear_stdo(&grid_lua_state);
 
 					struct grid_ui_element* ele = &grid_ui_state.element_list[grid_ui_state.element_list_length-1];
 					struct grid_ui_event* eve = NULL;

@@ -1774,8 +1774,10 @@ void grid_lua_start_vm(struct grid_lua_model* mod){
     grid_lua_dostring(mod, GRID_LUA_GLUT_source);
     grid_lua_dostring(mod, GRID_LUA_GLIM_source);    
     grid_lua_dostring(mod, GRID_LUA_GEN_source);
+    grid_lua_dostring(mod, "midi_fifo = {}");
+    grid_lua_dostring(mod, "midi_fifo_highwater = 0");
+    grid_lua_dostring(mod, "midi_fifo_retriggercount = 0");
     grid_lua_dostring(mod, "midi = {}");
-    grid_lua_dostring(mod, "midi.ch = 0 midi.cmd=176 midi.p1=0 midi.p2=0");
     grid_lua_dostring(mod, "midi.send_packet = function (self,ch,cmd,p1,p2) "GRID_LUA_FNC_G_MIDI_SEND_short"(ch,cmd,p1,p2) end");
 
     grid_lua_dostring(mod, "mouse = {}");

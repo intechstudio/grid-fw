@@ -1788,18 +1788,17 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui){
 
 					// automatically report elementname after config
 					if (j<ui->element_list_length-1){
-						
 
-							uint8_t number = j;
-							char command[26] = {0};
+						uint8_t number = j;
+						char command[26] = {0};
 
-							sprintf(command, "gens(%d,ele[%d]:gen())", j, j);
+						sprintf(command, "gens(%d,ele[%d]:gen())", j, j);
 
-							// lua get element name
-							grid_lua_clear_stdo(&grid_lua_state);
-							grid_lua_dostring(&grid_lua_state, command);
-							strcat(payload_global, grid_lua_get_output_string(&grid_lua_state));
-							grid_lua_clear_stdo(&grid_lua_state);
+						// lua get element name
+						grid_lua_clear_stdo(&grid_lua_state);
+						grid_lua_dostring(&grid_lua_state, command);
+						strcat(payload_global, grid_lua_get_output_string(&grid_lua_state));
+						grid_lua_clear_stdo(&grid_lua_state);
 
 					}
 					
@@ -1871,7 +1870,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui){
 
 	for (uint8_t j=0; j<ui->element_list_length; j++){
 	
-		for (uint8_t k=0; k<ui->element_list[j].event_list_length; k++){ //j=1 because init is local
+		for (uint8_t k=0; k<ui->element_list[j].event_list_length; k++){
 		
 			if (grid_msg_packet_get_length(&message)>GRID_PARAMETER_PACKET_marign){
 				continue;
@@ -1879,6 +1878,14 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui){
 			else{
 							
 				if (grid_ui_event_istriggered(&ui->element_list[j].event_list[k])){
+
+
+					// pop one midi rx messages from midi_fifo (array of tables) to midi (table)
+					if (ui->element_list[j].event_list[k].type == GRID_UI_EVENT_MIDIRX){
+
+						grid_lua_dostring(&grid_lua_state, "local FOO = table.remove(midi_fifo, 1) midi.ch = FOO[1] midi.cmd = FOO[2] midi.p1 = FOO[3] midi.p2 = FOO[4]");
+
+					}
 
 					uint32_t offset = grid_msg_packet_body_get_length(&message); 
 
@@ -1891,6 +1898,19 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui){
 					grid_ui_event_reset(&ui->element_list[j].event_list[k]);
 					
 					
+					// retrigger midiRX event automatically if midi_fifo is not empty					
+					
+					if (ui->element_list[j].event_list[k].type == GRID_UI_EVENT_MIDIRX){
+
+						char temp[110] = {0};
+
+						sprintf(temp, "if #midi_fifo > 0 then get(%d, %d) midi_fifo_retriggercount = midi_fifo_retriggercount+1 end", j, GRID_UI_EVENT_MIDIRX);
+
+						grid_lua_dostring(&grid_lua_state, temp);
+
+					}
+
+
 
 				}
 				

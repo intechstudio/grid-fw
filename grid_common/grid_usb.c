@@ -317,6 +317,7 @@ void grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 	//       W              R
 	//[0][1][2][3][4][5][6][7][8][9][10]
 
+	//grid_port_debug_printf("PUSH: %d %d", grid_midi_rx_write_index, grid_midi_rx_read_index);
 
 	for(uint16_t i=0; i<GRID_MIDI_RX_BUFFER_length; i++){
 
@@ -347,9 +348,12 @@ void grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 
 void grid_midi_rx_pop(){
 
-	if (grid_midi_rx_read_index != grid_midi_rx_write_index){
-		
 
+
+	if (grid_midi_rx_read_index != grid_midi_rx_write_index){
+
+
+		//grid_port_debug_printf("POP: %d %d", grid_midi_rx_write_index, grid_midi_rx_read_index);
 			
 		// Combine multiple midi messages into one packet if possible
 
@@ -385,6 +389,10 @@ void grid_midi_rx_pop(){
 		grid_port_packet_send_everywhere(&message);
 
 		
+	}
+	else{
+
+		//no message in fifo
 	}
 
 }
