@@ -292,25 +292,27 @@ void grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 
 	if (grid_sys_get_midirx_sync_state(&grid_sys_state) == 0){
 
-		if (midi_event.byte0 == 8 && midi_event.byte1 == 240 && midi_event.byte2 == 36){
+		if (midi_event.byte0 == 8 && midi_event.byte1 == 240){
 			// midi clock message was recieved
 			return;
 
 		}
 
-		if (midi_event.byte0 == 10 && midi_event.byte1 == 240 && midi_event.byte2 == 36){
+		if (midi_event.byte0 == 10 && midi_event.byte1 == 240){
 			// midi start message was recieved
 			return;
 
 		}
 
-		if (midi_event.byte0 == 12 && midi_event.byte1 == 240 && midi_event.byte2 == 36){
+		if (midi_event.byte0 == 12 && midi_event.byte1 == 240){
 			// midi stop message was recieved
 			return;
 
 		}
 
 	}
+
+	
 
 	// recude commandchange time resolution HERE!!
 

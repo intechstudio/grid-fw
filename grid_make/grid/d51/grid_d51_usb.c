@@ -99,6 +99,14 @@ static bool grid_usb_midi_bulkout_cb(const uint8_t ep, const enum usb_xfer_code 
 
 	//printf("MIDI OUT CB %d %d %d %d \n", midi_ev.byte0, midi_ev.byte1, midi_ev.byte2, midi_ev.byte3);
 
+
+
+	if (midi_ev.byte0 == 8 && midi_ev.byte1 == 240){
+		// if element's timer clock source is midi then decrement timer_helper
+		grid_ui_midi_sync_tick_time(&grid_ui_state);
+
+	}
+
 	grid_midi_rx_push(midi_ev);
 
 

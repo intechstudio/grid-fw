@@ -291,6 +291,10 @@
 #define GRID_LUA_FNC_G_TIMER_STOP_human 		"timer_stop"
 #define GRID_LUA_FNC_G_TIMER_STOP_fnptr 		l_grid_timer_stop
 
+#define GRID_LUA_FNC_G_TIMER_SOURCE_short 		"gts"
+#define GRID_LUA_FNC_G_TIMER_SOURCE_human 		"timer_source"
+#define GRID_LUA_FNC_G_TIMER_SOURCE_fnptr 		l_grid_timer_source
+
 #define GRID_LUA_FNC_G_EVENT_TRIGGER_short 		"get"
 #define GRID_LUA_FNC_G_EVENT_TRIGGER_human 		"event_trigger"
 #define GRID_LUA_FNC_G_EVENT_TRIGGER_fnptr 		l_grid_event_trigger
@@ -302,7 +306,6 @@
 #define GRID_LUA_FNC_G_MIDIRX_SYNC_short 		"mrs"
 #define GRID_LUA_FNC_G_MIDIRX_SYNC_human 		"midirx_sync"
 #define GRID_LUA_FNC_G_MIDIRX_SYNC_fnptr 		l_grid_midirx_sync
-
 
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_short 	"gens"
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_human 	"element_name_send"

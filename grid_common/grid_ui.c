@@ -74,6 +74,7 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 	ele->type = element_type;
 
 	ele->timer_event_helper = 0;
+	ele->timer_source_is_midi = 0;
 
 
 	if (element_type == GRID_UI_ELEMENT_SYSTEM){
@@ -236,28 +237,72 @@ void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui){
 
 		struct grid_ui_element* ele = &ui->element_list[i];
 
-		if (ele->timer_event_helper > 0){
+		if (ele->timer_source_is_midi == 0){
 
-			ele->timer_event_helper--;
-			
-			if (ele->timer_event_helper == 0){
+			if (ele->timer_event_helper > 0){
 
-				printf("tick\r\n");
-
-				struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_TIMER);
+				ele->timer_event_helper--;
 				
-				if (eve != NULL){
-				
-					printf("bumm\r\n");
-					grid_ui_event_trigger(eve);
+				if (ele->timer_event_helper == 0){
+
+					printf("tick\r\n");
+
+					struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_TIMER);
+					
+					if (eve != NULL){
+					
+						printf("bumm\r\n");
+						grid_ui_event_trigger(eve);
+
+					}
+
 
 				}
 
-
+				
 			}
 
-			
 		}
+
+	
+		
+	}
+}
+
+void grid_ui_midi_sync_tick_time(struct grid_ui_model* ui){
+	
+	for (uint8_t i = 0; i<ui->element_list_length; i++){
+
+		struct grid_ui_element* ele = &ui->element_list[i];
+
+		if (ele->timer_source_is_midi != 0){
+
+			if (ele->timer_event_helper > 0){
+
+				ele->timer_event_helper--;
+				
+				if (ele->timer_event_helper == 0){
+
+					//printf("tick\r\n");
+
+					struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_TIMER);
+					
+					if (eve != NULL){
+					
+						//printf("bumm\r\n");
+						grid_ui_event_trigger(eve);
+
+					}
+
+
+				}
+
+				
+			}
+
+		}
+
+	
 		
 	}
 }
@@ -1158,6 +1203,15 @@ void grid_ui_element_timer_set(struct grid_ui_element* ele, uint32_t duration){
 	ele->timer_event_helper = duration;
 
 }
+
+void grid_ui_element_timer_source(struct grid_ui_element* ele, uint8_t source){
+
+
+	ele->timer_source_is_midi = source;
+
+}
+
+
 
 
 void grid_ui_element_set_template_parameter(struct grid_ui_element* ele, uint8_t template_index, int32_t value){

@@ -1486,6 +1486,40 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     return 1;
 }
 
+/*static*/ int l_grid_timer_source(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=2){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint32_t param[2] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+
+    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, param[0]);
+
+    if (ele != NULL){
+
+        grid_ui_element_timer_source(ele, param[1]);
+
+    }  
+    else{
+
+        strcat(grid_lua_state.stde, "#invalidRange");
+    }
+
+
+    return 1;
+}
+
+
 /*static*/ int l_grid_event_trigger(lua_State* L) {
 
     int nargs = lua_gettop(L);
@@ -1575,6 +1609,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
     {GRID_LUA_FNC_G_TIMER_START_short,    GRID_LUA_FNC_G_TIMER_START_fnptr},
     {GRID_LUA_FNC_G_TIMER_STOP_short,    GRID_LUA_FNC_G_TIMER_STOP_fnptr},
+    {GRID_LUA_FNC_G_TIMER_SOURCE_short,    GRID_LUA_FNC_G_TIMER_SOURCE_fnptr},
 
     {GRID_LUA_FNC_G_EVENT_TRIGGER_short,    GRID_LUA_FNC_G_EVENT_TRIGGER_fnptr},
 

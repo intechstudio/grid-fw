@@ -91,6 +91,7 @@ struct grid_ui_element
 {
 	enum grid_ui_status_t status;
 
+ 	uint8_t timer_source_is_midi;
  	uint32_t timer_event_helper;
 	
 	struct grid_ui_model* parent;
@@ -174,6 +175,8 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui_event_t event_type);
 
 void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui);
+void grid_ui_midi_sync_tick_time(struct grid_ui_model* ui);
+
 void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmode_value);
 
 struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_element* ele);
@@ -217,6 +220,7 @@ uint16_t 	grid_ui_event_count_istriggered_local(struct grid_ui_model* ui);
 struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t element_number);
 
 void 		grid_ui_element_timer_set(struct grid_ui_element* ele, uint32_t duration);
+void 		grid_ui_element_timer_source(struct grid_ui_element* ele, uint8_t source);
 void 		grid_ui_element_set_template_parameter(struct grid_ui_element* ele, uint8_t template_index, int32_t value);
 int32_t 	grid_ui_element_get_template_parameter(struct grid_ui_element* ele, uint8_t template_index);
 
