@@ -1818,29 +1818,36 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui){
 	// UI STATE
 
 	for (uint8_t j=0; j<ui->element_list_length; j++){
-		
-		for (uint8_t k=0; k<ui->element_list[j].event_list_length; k++){
+
+		// handle system element first then all the ui elements in ascending order
+		uint8_t element_index = (j == 0 ? ui->element_list_length-1 : j-1);
+		struct grid_ui_element* ele = &ui->element_list[element_index];
+
+		//printf("element_index %d\r\n", element_index);
+
+		for (uint8_t k=0; k<ele->event_list_length; k++){
+
+			struct grid_ui_event* eve = &ele->event_list[k];
 	
 		
 			if (offset_local>GRID_PARAMETER_PACKET_marign || offset_global>GRID_PARAMETER_PACKET_marign){
 				continue;
 			}		
 			else{
-				
-				
-				if (grid_ui_event_istriggered_local(&ui->element_list[j].event_list[k])){
-					
-					offset_local += grid_ui_event_render_action(&ui->element_list[j].event_list[k], &payload_local[offset_local]);
-					grid_ui_event_reset(&ui->element_list[j].event_list[k]);
 
+
+				
+				if (grid_ui_event_istriggered_local(eve)){
+					
+					offset_local += grid_ui_event_render_action(eve, &payload_local[offset_local]);
+					grid_ui_event_reset(eve);
 
 					// automatically report elementname after config
-					if (j<ui->element_list_length-1){
+					if (ele->type != GRID_UI_ELEMENT_SYSTEM){
 
-						uint8_t number = j;
 						char command[26] = {0};
 
-						sprintf(command, "gens(%d,ele[%d]:gen())", j, j);
+						sprintf(command, "gens(%d,ele[%d]:gen())", ele->index, ele->index);
 
 						// lua get element name
 						grid_lua_clear_stdo(&grid_lua_state);
@@ -1917,19 +1924,26 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui){
 	
 
 	for (uint8_t j=0; j<ui->element_list_length; j++){
+
+		// handle system element first then all the ui elements in ascending order
+		uint8_t element_index = (j == 0 ? ui->element_list_length-1 : j-1);
+		struct grid_ui_element* ele = &ui->element_list[element_index];
+
+		//printf("element_index %d\r\n", element_index);
 	
-		for (uint8_t k=0; k<ui->element_list[j].event_list_length; k++){
+		for (uint8_t k=0; k<ele->event_list_length; k++){
+
+			struct grid_ui_event* eve = &ele->event_list[k];
 		
 			if (grid_msg_packet_get_length(&message)>GRID_PARAMETER_PACKET_marign){
 				continue;
 			}		
 			else{
 							
-				if (grid_ui_event_istriggered(&ui->element_list[j].event_list[k])){
-
+				if (grid_ui_event_istriggered(eve)){
 
 					// pop one midi rx messages from midi_fifo (array of tables) to midi (table)
-					if (ui->element_list[j].event_list[k].type == GRID_UI_EVENT_MIDIRX){
+					if (eve->type == GRID_UI_EVENT_MIDIRX){
 
 						grid_lua_dostring(&grid_lua_state, "local FOO = table.remove(midi_fifo, 1) midi.ch = FOO[1] midi.cmd = FOO[2] midi.p1 = FOO[3] midi.p2 = FOO[4]");
 
@@ -1937,18 +1951,18 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui){
 
 					uint32_t offset = grid_msg_packet_body_get_length(&message); 
 
-					message.body_length += grid_ui_event_render_event(&ui->element_list[j].event_list[k], &message.body[offset]);
+					message.body_length += grid_ui_event_render_event(eve, &message.body[offset]);
 				
 					offset = grid_msg_packet_body_get_length(&message); 
 
 					
-					message.body_length += grid_ui_event_render_action(&ui->element_list[j].event_list[k], &message.body[offset]);
-					grid_ui_event_reset(&ui->element_list[j].event_list[k]);
+					message.body_length += grid_ui_event_render_action(eve, &message.body[offset]);
+					grid_ui_event_reset(eve);
 					
 					
 					// retrigger midiRX event automatically if midi_fifo is not empty					
 					
-					if (ui->element_list[j].event_list[k].type == GRID_UI_EVENT_MIDIRX){
+					if (eve->type == GRID_UI_EVENT_MIDIRX){
 
 						char temp[110] = {0};
 
