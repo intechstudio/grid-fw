@@ -245,13 +245,10 @@ void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui){
 				
 				if (ele->timer_event_helper == 0){
 
-					printf("tick\r\n");
-
 					struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_TIMER);
 					
 					if (eve != NULL){
 					
-						printf("bumm\r\n");
 						grid_ui_event_trigger(eve);
 
 					}
@@ -283,13 +280,10 @@ void grid_ui_midi_sync_tick_time(struct grid_ui_model* ui){
 				
 				if (ele->timer_event_helper == 0){
 
-					//printf("tick\r\n");
-
 					struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_TIMER);
 					
 					if (eve != NULL){
 					
-						//printf("bumm\r\n");
 						grid_ui_event_trigger(eve);
 
 					}
