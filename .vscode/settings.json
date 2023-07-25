@@ -124,7 +124,7 @@
                 "name": "D51 Docker",
                 "color": "white",
                 "singleInstance": true,
-                "command": "podman run --privileged -it -v /dev:/dev -v /media:/media -v $PWD:/project -w /project/grid_make/gcc sukuwc/fw-tools:v1",
+                "command": "podman run --privileged -it -v /dev:/dev -v /media:/media -v $PWD:/project -w /project/grid_make/gcc sukuwc/fw-tools:v1 make nightly",
                 // make nightly
             },
             {
