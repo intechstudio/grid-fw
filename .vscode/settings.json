@@ -94,7 +94,10 @@
         "ulp_riscv_uart_ulp_core.h": "c",
         "ulp_riscv_adc_ulp_core.h": "c",
         "esp_sleep_internal.h": "c",
-        "mutex": "c"
+        "mutex": "c",
+        "tinyusb.h": "c",
+        "compare": "c",
+        "variant": "c"
     },   
     "files.exclude": {
         ".archive": true,

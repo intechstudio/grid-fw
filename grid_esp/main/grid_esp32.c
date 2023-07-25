@@ -628,3 +628,94 @@ void* grid_platform_allocate_volatile(size_t size){
     return handle;
 
 }
+
+
+
+static enum mouse_button_type { LEFT_BTN = 0x01, RIGHT_BTN = 0x02, MIDDLE_BTN = 0x04 };
+
+
+static uint8_t hid_mouse_button_state = 0;
+
+int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type){
+
+
+	if (b_state == 1) { // button pressed
+		hid_mouse_button_state |= type;
+	} else {
+		hid_mouse_button_state &= ~type;
+	}
+
+
+    // report_id, buttons, dx, dy, wheel, pan 
+    tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, 0, 0, 0, 0);
+
+    return 1;
+}
+
+
+/* HID Mouse Class Pointer Move Type */
+static enum mouse_move_type { X_AXIS_MV = 0x01, Y_AXIS_MV = 0x02, SCROLL_MV = 0x03 };
+
+int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis){
+    
+    int8_t delta_x = 0;
+    int8_t delta_y = 0;
+    int8_t wheel = 0; 
+    int8_t pan = 0; // not used
+
+ 	if (axis == X_AXIS_MV) {
+		delta_x = position;
+	} else if (axis == Y_AXIS_MV) {
+		delta_y = position;
+	} else if (axis == SCROLL_MV) {
+		wheel = position;
+	} else {
+        return 0;
+	}   
+    
+    // report_id, buttons, dx, dy, wheel, pan 
+    tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, delta_x, delta_y, wheel, pan);
+
+    return 1;
+}
+
+int32_t grid_platform_usb_keyboard_keys_state_change(void* keys_desc, uint8_t keys_count){
+
+
+    uint8_t keycode[6] = {0};
+
+    struct grid_kb_key_descriptors* key_descriptor_array = (struct grid_kb_key_descriptors*) keys_desc;
+
+    uint8_t modifier = 0; // modifier flags
+
+    if (keys_count == 0){
+        ESP_LOGI(TAG, "No Key Is Pressed");
+    }
+
+    uint8_t key_count = 0;
+
+    for (uint8_t i=0; i<keys_count; i++){
+
+        ESP_LOGI(TAG, "IsMod: %d, KeyCode: %d, State: %d", key_descriptor_array[i].b_modifier, key_descriptor_array[i].key_id, key_descriptor_array[i].state);
+
+        if (key_descriptor_array[i].b_modifier){
+
+            modifier |= key_descriptor_array[i].key_id;
+        }
+        else if (key_descriptor_array[i].state && key_descriptor_array[i].key_id != 255){
+
+            keycode[keys_count] = key_descriptor_array[i].key_id;
+            keys_count++;
+
+        }
+
+    }
+
+    // Report Id, modifier, keycodearray
+    tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, modifier, keycode);
+
+    return 0;
+
+}
+
+

@@ -116,6 +116,13 @@ uint32_t grid_platform_get_cycles_per_us();
 
 void* grid_platform_allocate_volatile(size_t size);
 
+
+int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type);
+int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis);
+
+
+int32_t grid_platform_usb_keyboard_keys_state_change(void* keys_desc, uint8_t keys_count);
+
 #ifdef __cplusplus
 }
 #endif
