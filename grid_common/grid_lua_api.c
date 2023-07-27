@@ -1549,6 +1549,8 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         }
         else{
             strcat(grid_lua_state.stde, "#invalidEvent");
+            sprintf(&grid_lua_state.stde[strlen(grid_lua_state.stde)-1], "%ld %ld", param[0], param[1]);
+            
         }
 
     }  

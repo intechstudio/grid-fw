@@ -1966,9 +1966,9 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui){
 
 						char temp[110] = {0};
 
-						sprintf(temp, "if #midi_fifo > 0 then get(%d, %d) midi_fifo_retriggercount = midi_fifo_retriggercount+1 end", j, GRID_UI_EVENT_MIDIRX);
-
+						sprintf(temp, "if #midi_fifo > 0 then get(%d, %d) midi_fifo_retriggercount = midi_fifo_retriggercount+1 end", eve->parent->index, GRID_UI_EVENT_MIDIRX);
 						grid_lua_dostring(&grid_lua_state, temp);
+
 
 					}
 
