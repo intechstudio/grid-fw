@@ -19,8 +19,8 @@ extern void* grid_platform_allocate_volatile(size_t size);
 #define GRID_BUFFER_SIZE	2000 //1000 this is the buffer for internal routing
 
 
-
-#define GRID_DOUBLE_BUFFER_TX_SIZE	GRID_PARAMETER_PACKET_maxlength
+// +4 for status bytes on esp32 to rp2040 transmission
+#define GRID_DOUBLE_BUFFER_TX_SIZE	(GRID_PARAMETER_PACKET_maxlength+4)
 #define GRID_DOUBLE_BUFFER_RX_SIZE	3000 //600
 
 
