@@ -689,14 +689,14 @@ int32_t grid_platform_usb_keyboard_keys_state_change(void* keys_desc, uint8_t ke
     uint8_t modifier = 0; // modifier flags
 
     if (keys_count == 0){
-        ESP_LOGI(TAG, "No Key Is Pressed");
+        ESP_LOGD(TAG, "No Key Is Pressed");
     }
 
     uint8_t key_count = 0;
 
     for (uint8_t i=0; i<keys_count; i++){
 
-        ESP_LOGI(TAG, "IsMod: %d, KeyCode: %d, State: %d", key_descriptor_array[i].b_modifier, key_descriptor_array[i].key_id, key_descriptor_array[i].state);
+        ESP_LOGD(TAG, "IsMod: %d, KeyCode: %d, State: %d", key_descriptor_array[i].b_modifier, key_descriptor_array[i].key_id, key_descriptor_array[i].state);
 
         if (key_descriptor_array[i].b_modifier){
 

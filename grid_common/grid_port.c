@@ -54,12 +54,6 @@ void grid_port_receive_task(struct grid_port* por){
 						
 						grid_port_receiver_softreset(por);	
 
-
-
-
-				
-
-
 						grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
 						grid_led_set_alert_frequency(&grid_led_state, -2);	
 						grid_led_set_alert_phase(&grid_led_state, 100);	
@@ -455,7 +449,8 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 						
 						por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 						
-						grid_port_debug_printf("Connect");			
+						grid_port_debug_printf("Connect");		
+						grid_platform_printf("Connect\r\n");			
 						grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
 						grid_led_set_alert_frequency(&grid_led_state, -2);	
 						grid_led_set_alert_phase(&grid_led_state, 100);	
@@ -463,6 +458,9 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 
 					}
 					else{
+
+
+						//grid_platform_printf("RX\r\n");	
 
 						por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 					}

@@ -334,7 +334,7 @@ void grid_esp32_nvm_task(void *arg)
 
 
 
-    SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
+    SemaphoreHandle_t nvm_or_port = (SemaphoreHandle_t)arg;
 
 
 
@@ -344,7 +344,7 @@ void grid_esp32_nvm_task(void *arg)
     while (1) {
 
 
-        if (xSemaphoreTake(signaling_sem, portMAX_DELAY) == pdTRUE){
+        if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE){
 
             uint64_t time_max_duration = 50*1000; // in microseconds
             uint64_t time_start = grid_platform_rtc_get_micros();
@@ -395,7 +395,7 @@ void grid_esp32_nvm_task(void *arg)
                 //ets_printf("Loops: %d\r\n", counter);
             }
 
-            xSemaphoreGive(signaling_sem);
+            xSemaphoreGive(nvm_or_port);
 
         }
 	
@@ -410,6 +410,6 @@ void grid_esp32_nvm_task(void *arg)
     ESP_LOGI(TAG, "Deinit NVM");
 
     //Wait to be deleted
-    xSemaphoreGive(signaling_sem);
+    xSemaphoreGive(nvm_or_port);
     vTaskSuspend(NULL);
 }

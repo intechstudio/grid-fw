@@ -97,7 +97,8 @@
         "mutex": "c",
         "tinyusb.h": "c",
         "compare": "c",
-        "variant": "c"
+        "variant": "c",
+        "grid_esp32_module_po16.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

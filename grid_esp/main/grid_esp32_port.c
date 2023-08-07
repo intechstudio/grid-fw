@@ -268,11 +268,85 @@ static void plot_port_debug(){
 }
 
 
+
+SemaphoreHandle_t nvm_or_port;
+
+static uint64_t last_ping_timestamp = 0;
+static uint64_t last_heartbeat_timestamp  = 0;
+
+static void periodic_ping_heartbeat_handler_cb(void *arg)
+{
+
+                
+
+
+    // Check if USB is connected and start animation
+    if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()){
+    
+        printf("USB CONNECTED\r\n\r\n");
+
+        grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
+        grid_led_set_alert_frequency(&grid_led_state, -2);	
+        grid_led_set_alert_phase(&grid_led_state, 200);	
+        grid_msg_set_heartbeat_type(&grid_msg_state, 1);
+
+
+    }
+
+    // Send heartbeat when it's time
+    if (grid_platform_rtc_get_elapsed_time(last_heartbeat_timestamp) > GRID_PARAMETER_HEARTBEAT_interval * 1000){
+
+        if (xSemaphoreTake(nvm_or_port, 0) == pdTRUE){
+
+            grid_protocol_send_heartbeat(); // Put heartbeat into UI rx_buffer
+            last_heartbeat_timestamp = grid_platform_rtc_get_micros();
+
+            xSemaphoreGive(nvm_or_port);
+        }
+        else{
+            //printf("H BLOCKED\r\n\r\n");
+        }
+
+
+
+    }
+
+    // Send ping when it's time
+    if (grid_platform_rtc_get_elapsed_time(last_ping_timestamp) > GRID_PARAMETER_PING_interval * 1000){
+        //ets_printf("TRY PING\r\n");
+
+        if (xSemaphoreTake(nvm_or_port, 0) == pdTRUE){
+
+            GRID_PORT_N->ping_flag = 1;
+            GRID_PORT_E->ping_flag = 1;
+            GRID_PORT_S->ping_flag = 1;
+            GRID_PORT_W->ping_flag = 1;
+
+            grid_port_ping_try_everywhere();
+
+            last_ping_timestamp = grid_platform_rtc_get_micros();
+
+            //ets_printf("Ping\r\n");
+
+            xSemaphoreGive(nvm_or_port);
+        }
+        else{
+            //printf("P BLOCKED\r\n\r\n");
+        }
+
+
+        
+    }
+
+
+}
+
+
 void grid_esp32_port_task(void *arg)
 {
 
 
-    SemaphoreHandle_t nvm_or_port = (SemaphoreHandle_t)arg;
+    nvm_or_port = (SemaphoreHandle_t)arg;
 
 
 
@@ -361,14 +435,36 @@ void grid_esp32_port_task(void *arg)
 
     uint8_t firstprint = 1;
 
-    uint64_t last_ping_timestamp = grid_platform_rtc_get_micros();
+    // Create a periodic timer for thread safe miscallenous tasks
+
+    esp_timer_create_args_t periodic_ping_heartbeat_args = {
+        .callback = &periodic_ping_heartbeat_handler_cb,
+        .name = "ping"
+    };
+
+    esp_timer_handle_t periodic_ping_heartbeat_timer;
+    ESP_ERROR_CHECK(esp_timer_create(&periodic_ping_heartbeat_args, &periodic_ping_heartbeat_timer));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_ping_heartbeat_timer, 10));
+
+
+
+
+    gpio_set_direction(47, GPIO_MODE_OUTPUT);
+
+    struct grid_port* port_array[4] = {GRID_PORT_N, GRID_PORT_E, GRID_PORT_S, GRID_PORT_W};
 
     while (1) {
 
         if (xSemaphoreTake(nvm_or_port, pdMS_TO_TICKS(4)) == pdTRUE){
 
+            uint32_t c0, c1;
+            
+
+            gpio_set_level(47, 1);
+
+
             if (queue_state == 0){
-                //ets_printf("@");
+                ets_printf("@");
                 esp_err_t ret;
 
                 portENTER_CRITICAL(&spinlock);
@@ -381,7 +477,6 @@ void grid_esp32_port_task(void *arg)
             }
 
 
-            struct grid_port* port_array[4] = {GRID_PORT_N, GRID_PORT_E, GRID_PORT_S, GRID_PORT_W};
 
             for (uint8_t i = 0; i<4*(4); i++){
 
@@ -397,30 +492,13 @@ void grid_esp32_port_task(void *arg)
 
             loopcounter++;
 
-        
-            if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()){
-            
-                printf("USB CONNECTED\r\n\r\n");
-                printf("HWCFG %ld\r\n", grid_sys_get_hwcfg(&grid_sys_state));
-
-                grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
-                grid_led_set_alert_frequency(&grid_led_state, -2);	
-                grid_led_set_alert_phase(&grid_led_state, 200);	
-                
-                grid_msg_set_heartbeat_type(&grid_msg_state, 1);
-
-        
-            }
-
-            //ESP_LOGI(TAG, "Ping!");
-            if (loopcounter%32 == 0){
-                vTaskSuspendAll();
-                grid_protocol_send_heartbeat(); // Put ping into UI rx_buffer
-                xTaskResumeAll();
-            }
 
 
-            if (loopcounter%4 == 0){
+
+
+            c0 = grid_platform_get_cycles();
+
+            if (loopcounter%2 == 0){
 
 
                 if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
@@ -457,7 +535,10 @@ void grid_esp32_port_task(void *arg)
             }
 
 
-            grid_midi_rx_pop();
+            c1 = grid_platform_get_cycles();
+
+
+            grid_midi_rx_pop(); // send_everywhere pushes to UI->RX_BUFFER
             grid_keyboard_tx_pop();
             grid_port_receive_task(GRID_PORT_H); // USB
             
@@ -466,18 +547,8 @@ void grid_esp32_port_task(void *arg)
 
 
             // INBOUND
-
-
             grid_port_process_inbound(GRID_PORT_U, 1); // Loopback , put rx_buffer content to each CONNECTED port's tx_buffer
-
-            
-            
-            
-            // ... GRID UART PORTS ...
-            
-
             grid_port_process_inbound(GRID_PORT_H, 0);
-
 
             grid_port_process_inbound(GRID_PORT_N, 0);
             grid_port_process_inbound(GRID_PORT_E, 0);
@@ -485,39 +556,12 @@ void grid_esp32_port_task(void *arg)
             grid_port_process_inbound(GRID_PORT_W, 0);
 
 
-            // OUTBOUND
-            // ... GRID UART PORTS ...
-            
-
             //plot_port_debug();
 
-         
-            grid_port_process_outbound_usb(GRID_PORT_H); 
-            grid_port_process_outbound_usb(GRID_PORT_H); 
-
-            grid_port_process_outbound_ui(GRID_PORT_U);
+            // OUTBOUND
+            grid_port_process_outbound_usb(GRID_PORT_H);
             grid_port_process_outbound_ui(GRID_PORT_U);
 
-
-
-            //printf("LOOP %d\r\n", queue_state);
-
-            if (grid_platform_rtc_get_elapsed_time(last_ping_timestamp) > GRID_PARAMETER_PING_interval * 1000){
-                //ets_printf("TRY PING\r\n");
-
-                GRID_PORT_N->ping_flag = 1;
-                GRID_PORT_E->ping_flag = 1;
-                GRID_PORT_S->ping_flag = 1;
-                GRID_PORT_W->ping_flag = 1;
-
-                grid_port_ping_try_everywhere();
-
-                last_ping_timestamp = grid_platform_rtc_get_micros();
-                
-            }
-
-
-            //grid_port_process_outbound_usart(GRID_PORT_N);
 
             for (uint8_t i=0; i<4; i++){
                 struct grid_port* port = port_list[i];
@@ -526,15 +570,28 @@ void grid_esp32_port_task(void *arg)
 
         
 
+            uint32_t delta = c1-c0;
+
+            //grid_platform_printf("(%ld)us\r\n", delta/grid_platform_get_cycles_per_us());
+
+            gpio_set_level(47, 0);
+
             xSemaphoreGive(nvm_or_port);
 
         }
         else{
 
             ets_printf("NO TAKE\r\n");
+            //NVM task is in progress, let it run!
+            vTaskDelay(pdMS_TO_TICKS(10));
         }
 
-        vTaskDelay(pdMS_TO_TICKS(2));
+        //vTaskDelay(pdMS_TO_TICKS(1));
+       
+        for (uint8_t i=0; i<10; i++){
+            taskYIELD();
+            ets_delay_us(50);
+        }
 
 
 

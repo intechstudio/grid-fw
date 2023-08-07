@@ -36,7 +36,7 @@
 
 // NVM must not be preemted by Port task
 #define NVM_TASK_PRIORITY configMAX_PRIORITIES-1
-#define PORT_TASK_PRIORITY 5
+#define PORT_TASK_PRIORITY 1
 
 #include "driver/ledc.h"
 #include <esp_timer.h>
@@ -329,7 +329,7 @@ void app_main(void)
                             (void *)nvm_or_port,
                             PORT_TASK_PRIORITY,
                             &port_task_hdl,
-                            0);
+                            1);
 
 
 
