@@ -469,7 +469,7 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 			
 				int32_t old_twoscomplement = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
 				
-				uint8_t old_8bit_extended_twoscomplement;
+				uint8_t old_8bit_extended_twoscomplement = old_twoscomplement;
 
 				//Limit to signed -64 +63 range
 				if (old_twoscomplement>127){
@@ -482,8 +482,6 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 				if (old_twoscomplement > 63){ // extend sign bit to 8 bit size
 					old_8bit_extended_twoscomplement+=128;
 				}
-				
-				short unsigned val = old_8bit_extended_twoscomplement;
 
 				int8_t old_signed;
 
@@ -494,7 +492,9 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 					old_signed = -(~old_8bit_extended_twoscomplement) - 1;
 				}
 
+
 				int16_t new_signed = old_signed - delta_velocity;
+
 			
 				//Limit to signed -64 +63 range
 				if (new_signed<-64){
