@@ -149,13 +149,7 @@ static void ui_task_inner(){
 	// every other entry of the superloop
 	if (loopcount%4==0){
 
-
-
-
 		grid_port_ping_try_everywhere();
-
-		
-
 
 		// IF LOCAL MESSAGE IS AVAILABLE
 		if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
@@ -168,8 +162,6 @@ static void ui_task_inner(){
 
 
 		// Bandwidth Limiter for Broadcast messages
-
-		
 		
 		if (grid_ui_state.port->cooldown > 0){
 			grid_ui_state.port->cooldown--;
@@ -182,17 +174,24 @@ static void ui_task_inner(){
 		}
 		else{
 
-
-
-
-			if (grid_ui_event_count_istriggered(&grid_ui_state)){
-
-				grid_ui_state.port->cooldown += 3;	
-
-				CRITICAL_SECTION_ENTER()
-				grid_port_process_ui_UNSAFE(&grid_ui_state); 
-				CRITICAL_SECTION_LEAVE()
+			// if there are still unprocessed locally triggered events then must not serve global events yet! 
+			if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
+				return;
 			}
+			else{
+
+				if (grid_ui_event_count_istriggered(&grid_ui_state)){
+
+					grid_ui_state.port->cooldown += 3;	
+
+					CRITICAL_SECTION_ENTER()
+					grid_port_process_ui_UNSAFE(&grid_ui_state); 
+					CRITICAL_SECTION_LEAVE()
+				}
+
+			}
+
+
 		}
 
 
