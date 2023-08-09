@@ -1432,6 +1432,12 @@ void grid_protocol_nvm_defrag_succcess_callback(){
 
 void grid_protocol_send_heartbeat(){
 
+	
+
+	uint8_t portstate = (GRID_PORT_N->partner_status<<0) | (GRID_PORT_E->partner_status<<1) | (GRID_PORT_S->partner_status<<2) | (GRID_PORT_W->partner_status<<3);
+
+
+
 	struct grid_msg_packet response;
 
 	grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
@@ -1445,6 +1451,8 @@ void grid_protocol_send_heartbeat(){
 	grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
 	grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
 	grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
+
+	grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_PORTSTATE_offset, GRID_CLASS_HEARTBEAT_PORTSTATE_length, portstate);
 		
 	
 

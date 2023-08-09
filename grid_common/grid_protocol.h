@@ -20,7 +20,7 @@
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
 #define GRID_PROTOCOL_VERSION_MINOR 2
-#define GRID_PROTOCOL_VERSION_PATCH 21
+#define GRID_PROTOCOL_VERSION_PATCH 22
 
 
 
@@ -781,7 +781,7 @@ enum grid_ui_event_t
 
 // HEARTBEAT (type=0 grid, type=1 gridmaster, type=255 editor)
 #define GRID_CLASS_HEARTBEAT_code 0x010
-#define GRID_CLASS_HEARTBEAT_frame "%c%03x_..........%c", GRID_CONST_STX, GRID_CLASS_HEARTBEAT_code, GRID_CONST_ETX
+#define GRID_CLASS_HEARTBEAT_frame "%c%03x_............%c", GRID_CONST_STX, GRID_CLASS_HEARTBEAT_code, GRID_CONST_ETX
 
 #define GRID_CLASS_HEARTBEAT_TYPE_offset 5
 #define GRID_CLASS_HEARTBEAT_TYPE_length 2
@@ -797,6 +797,9 @@ enum grid_ui_event_t
 
 #define GRID_CLASS_HEARTBEAT_VPATCH_offset 13
 #define GRID_CLASS_HEARTBEAT_VPATCH_length 2
+
+#define GRID_CLASS_HEARTBEAT_PORTSTATE_offset 15
+#define GRID_CLASS_HEARTBEAT_PORTSTATE_length 2
 
 
 // SERIAL NUMBER
