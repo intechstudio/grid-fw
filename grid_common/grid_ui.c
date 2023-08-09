@@ -1511,7 +1511,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 				}
 
 				t1 = grid_platform_get_cycles();
-				grid_platform_printf(" Read: %ld\r\n", (t1-t0)/grid_platform_get_cycles_per_us());
+				//grid_platform_printf(" Read: %ld\r\n", (t1-t0)/grid_platform_get_cycles_per_us());
 				
 			}
 			else{

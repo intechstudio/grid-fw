@@ -218,16 +218,10 @@ void app_main(void)
 
 
     grid_port_init_all(); // buffers
-
-    ets_printf("Port Address: %lx", GRID_PORT_N);
     
     ESP_LOGI(TAG, "===== BANK INIT =====");
     grid_sys_set_bank(&grid_sys_state, 0);
     ets_delay_us(2000);
-
-
-
-
 
    // grid_sys_state.hwfcg = GRID_MODULE_EF44_RevD;
 
@@ -253,8 +247,6 @@ void app_main(void)
 	else{
 		ets_printf("Init Module: Unknown Module\r\n");
 	}
-
-
 
 
     grid_ui_page_load(&grid_ui_state, 0); //load page 0
@@ -336,6 +328,7 @@ void app_main(void)
 
     
     //Create the class driver task
+
     xTaskCreatePinnedToCore(grid_esp32_nvm_task,
                             "nvm",
                             1024*5,
@@ -369,6 +362,9 @@ void app_main(void)
    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 10000));
 
 
+    esp_log_level_set("*", ESP_LOG_INFO);
+
     ESP_LOGI(TAG, "===== INIT COMPLETE =====");
+
 
 }

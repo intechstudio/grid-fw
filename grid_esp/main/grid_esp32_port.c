@@ -58,36 +58,40 @@ static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t *trans) {
 }
 
 
+static void* DRAM_ATTR rx_debug = 0;
+static uint8_t DRAM_ATTR rx_flag = 0;
+
+static char DRAM_ATTR rx_str[500] = {0};
+
 static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
-    //ets_printf(" %d ", queue_state);
 
+    gpio_ll_set_level(&GPIO, 47, 1);
+
+    //ets_printf(" %d ", queue_state);
+    rx_flag = 1;
+    
+    if (((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]){
+        strcpy(rx_str, (char*) trans->rx_buffer);
+        
+    }
+
+
+    portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+    portENTER_CRITICAL(&spinlock);
 
     if (queue_state>0){
         queue_state--;
-    }   
-    else{
-        ets_printf("  QUEUE WAS EMPTY  ");
-        while(1){
-
-        }
     }
-
 
     if (queue_state == 0){
-        //ets_printf("@");
-        esp_err_t ret;
 
-        portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
-
-        portENTER_CRITICAL(&spinlock);
         queue_state++;
         ESP_ERROR_CHECK(spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, 0)) ;
-        portEXIT_CRITICAL(&spinlock);
 
-
-        //ets_printf("!");
     }
+
+    portEXIT_CRITICAL(&spinlock);
 
 
     uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
@@ -121,6 +125,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
     struct grid_port* por = NULL;
     uint8_t source_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
 
+
     if ((source_flags&0b00000001)){
         por = GRID_PORT_N;
     }
@@ -139,6 +144,9 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     if (por != NULL){
 
+
+        rx_debug = (void*) por;
+
         if (((char*)trans->rx_buffer)[1] == GRID_CONST_BRC){
 
             uint8_t error;
@@ -148,6 +156,10 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
             //ets_printf("RX %d: %d\r\n", por->direction, id);
             
         //ets_printf("RX: %s\r\n", trans->rx_buffer);
+        }
+        else{
+            
+
         }
 
         
@@ -169,7 +181,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
     }
 
 
-
+    gpio_ll_set_level(&GPIO, 47, 0);
 }
 
 static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
@@ -197,8 +209,20 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
     //ets_printf("#");
 
     portENTER_CRITICAL(&spinlock);
-    queue_state++;
-    spi_slave_queue_trans(RCV_HOST, t, 0);
+    
+    esp_err_t ret = spi_slave_queue_trans(RCV_HOST, t, 0);
+    if (ret == ESP_OK){
+        queue_state++;
+    }
+    else{
+        // Some outgoing packet could not be transmitted!!!
+
+        // while(1){
+        //     ets_printf("TRAP %d\r\n", queue_state);
+        //     ets_delay_us(1000*1000);
+        // }
+    }
+
     portEXIT_CRITICAL(&spinlock);
 
     //ets_printf("!");
@@ -228,42 +252,42 @@ static void plot_port_debug(){
     for(uint8_t i=0; i<12; i++){
 
         if (i==0){
-            ets_printf("TX: ");
+            //ets_printf("TX: ");
         }
         else if(i==4){
 
-            ets_printf("|");
+            //ets_printf("|");
         }
         else if(i==6){
 
-            ets_printf(" RX: ");
+            //ets_printf(" RX: ");
         }
         else if(i==10){
 
-            ets_printf("|");
+            //ets_printf("|");
         }
 
         uint8_t value = (2000-plot[i])/20;
         switch (value)
         {
-            case 0:  ets_printf(" "); break;
-            case 1:  ets_printf("▁"); break;
-            case 2:  ets_printf("▂"); break;
-            case 3:  ets_printf("▃"); break;
-            case 4:  ets_printf("▄"); break;
-            case 5:  ets_printf("▅"); break;
-            case 6:  ets_printf("▆"); break;
-            case 7:  ets_printf("▇"); break;
-            case 8:  ets_printf("█"); break;
-            case 9:  ets_printf("#"); break;
-            default:  ets_printf("@"); break;
+            case 0:  //ets_printf(" "); break;
+            case 1:  //ets_printf("▁"); break;
+            case 2:  //ets_printf("▂"); break;
+            case 3:  //ets_printf("▃"); break;
+            case 4:  //ets_printf("▄"); break;
+            case 5:  //ets_printf("▅"); break;
+            case 6:  //ets_printf("▆"); break;
+            case 7:  //ets_printf("▇"); break;
+            case 8:  //ets_printf("█"); break;
+            case 9:  //ets_printf("#"); break;
+            default:  //ets_printf("@"); break;
         }
 
-        ets_printf(" ");
+        //ets_printf(" ");
         
     }
 
-    ets_printf("\r\n");
+    //ets_printf("\r\n");
 
 }
 
@@ -289,7 +313,6 @@ static void periodic_ping_heartbeat_handler_cb(void *arg)
         grid_led_set_alert_frequency(&grid_led_state, -2);	
         grid_led_set_alert_phase(&grid_led_state, 200);	
         grid_msg_set_heartbeat_type(&grid_msg_state, 1);
-
 
     }
 
@@ -387,12 +410,6 @@ void grid_esp32_port_task(void *arg)
     WORD_ALIGNED_ATTR char sendbuf[GRID_PARAMETER_SPI_TRANSACTION_length+1]={0};
     WORD_ALIGNED_ATTR char recvbuf[GRID_PARAMETER_SPI_TRANSACTION_length+1]={0};
     
-
-    //Clear receive buffer, set send buffer to something sane
-    memset(recvbuf, 0xA5, GRID_PARAMETER_SPI_TRANSACTION_length+1);        
-    sprintf(sendbuf, "This is the receiver, sending data for transmission number %04d.", n);
-
-
     struct grid_port* port_list[4] = {GRID_PORT_N, GRID_PORT_E, GRID_PORT_S, GRID_PORT_W};
 
     for (uint8_t i = 0; i<4; i++){
@@ -428,8 +445,11 @@ void grid_esp32_port_task(void *arg)
 
 
     portENTER_CRITICAL(&spinlock);
-    queue_state++;
-    ESP_ERROR_CHECK(spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, 0)) ;
+    ret = spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, 0);
+    ESP_ERROR_CHECK(ret);
+    if (ret == ESP_OK){
+        queue_state++;
+    }
     portEXIT_CRITICAL(&spinlock);
     
 
@@ -455,28 +475,31 @@ void grid_esp32_port_task(void *arg)
 
     while (1) {
 
+        //ets_printf("%d", queue_state);
+
         if (xSemaphoreTake(nvm_or_port, pdMS_TO_TICKS(4)) == pdTRUE){
 
-            uint32_t c0, c1;
-            
-
-            gpio_set_level(47, 1);
+            if (rx_flag != 0){
 
 
-            if (queue_state == 0){
-                ets_printf("@");
-                esp_err_t ret;
+                if (rx_debug != 0){
 
-                portENTER_CRITICAL(&spinlock);
-                queue_state++;
-                ESP_ERROR_CHECK(spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, 0)) ;
-                portEXIT_CRITICAL(&spinlock);
+                    //ets_printf("\r\n%c> %s\r\n", grid_port_get_name_char((struct grid_port*) rx_debug), rx_str);
+
+                    rx_debug = 0;
+                }
+                else{
+                    //ets_printf("#");
+                }
 
 
-                //ets_printf("!");
+                rx_flag = 0;
+
             }
 
 
+            uint32_t c0, c1;
+            
 
             for (uint8_t i = 0; i<4*(4); i++){
 
@@ -489,11 +512,7 @@ void grid_esp32_port_task(void *arg)
             }
 
 
-
             loopcounter++;
-
-
-
 
 
             c0 = grid_platform_get_cycles();
@@ -535,6 +554,7 @@ void grid_esp32_port_task(void *arg)
             }
 
 
+
             c1 = grid_platform_get_cycles();
 
 
@@ -574,16 +594,15 @@ void grid_esp32_port_task(void *arg)
 
             //grid_platform_printf("(%ld)us\r\n", delta/grid_platform_get_cycles_per_us());
 
-            gpio_set_level(47, 0);
 
             xSemaphoreGive(nvm_or_port);
 
         }
         else{
 
-            ets_printf("NO TAKE\r\n");
+            //ets_printf("NO TAKE\r\n");
             //NVM task is in progress, let it run!
-            vTaskDelay(pdMS_TO_TICKS(10));
+            //vTaskDelay(pdMS_TO_TICKS(10));
         }
 
         //vTaskDelay(pdMS_TO_TICKS(1));
@@ -592,6 +611,7 @@ void grid_esp32_port_task(void *arg)
             taskYIELD();
             ets_delay_us(50);
         }
+
 
 
 

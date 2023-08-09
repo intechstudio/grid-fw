@@ -239,7 +239,7 @@ void grid_bucket_put_character(struct grid_bucket* bucket, char next_char){
 
     if (bucket == NULL){
         
-        printf("PUTC failed: no bucket specified!\n");
+        printf("PUTC\n");
         return; 
     }
 
@@ -405,8 +405,16 @@ void fifo_try_receive(void){
                     grid_port_attach_bucket(port);
                 }
 
-                if (c==0x01 && port->active_bucket->buffer_index>0){
-                    printf("ERROR");
+                if (c==0x01 && port->active_bucket->buffer_index>0){ // Start of Header character received in the middle of a trasmisdsion
+
+                    printf("E\n");
+
+                    // clear the current active bucet, and attach to a new bucket to start receiving packet
+                    grid_bucket_init(port->active_bucket, port->active_bucket->index);
+                    port->active_bucket == NULL;
+                    grid_port_attach_bucket(port);
+                    
+
                 }
 
                 grid_bucket_put_character(port->active_bucket, c);
@@ -461,7 +469,7 @@ void core_1_main_entry(){
             uint8_t ok = multicore_fifo_push_timeout_us(packed_chars,0);
 
             if (!ok){
-                printf("F");
+                printf("F\n");
 
             }
         }   
@@ -687,7 +695,6 @@ int main()
                         if (calculated_checksum != received_checksum){
                             
                             //printf("C %d %d ", calculated_checksum, received_checksum);
-
                             error_count++;
                         }
                         //printf("BR%d %c%c\r\n", spi_active_bucket->index, spi_active_bucket->buffer[6], spi_active_bucket->buffer[7]);
@@ -696,12 +703,12 @@ int main()
                         if (error_count>0){
 
                             //printf("SKIP\r\n");
-                            printf("S");
+                            printf("S\n");
                             
                             // send empty packet with status flags
 
                             txbuf[0] = 0;
-                            sprintf(txbuf, "DUMMY");
+                            sprintf(txbuf, "DUMMY ERROR");
                             txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
                             txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
 
@@ -709,6 +716,7 @@ int main()
                         }
                         else{
 
+                            printf("%d\n", spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
                             spi_start_transfer(dma_tx, dma_rx, spi_active_bucket->buffer, rxbuf, dma_handler);
 
                         }
@@ -720,7 +728,7 @@ int main()
                         // send empty packet with status flags
 
                         txbuf[0] = 0;
-                        sprintf(txbuf, "DUMMY");
+                        sprintf(txbuf, "DUMMY OK");
                         txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
                         txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
 

@@ -23,6 +23,9 @@
 #include "tinyusb.h"
 #include "driver/gpio.h"
 
+#include "esp_rom_gpio.h"
+#include "hal/gpio_ll.h"
+
 
 #include "../../grid_common/grid_port.h"
 #include "../../grid_common/grid_sys.h"

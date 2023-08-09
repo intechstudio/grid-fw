@@ -17,6 +17,15 @@ struct grid_port volatile * GRID_PORT_W;
 struct grid_port volatile * GRID_PORT_U;
 struct grid_port volatile * GRID_PORT_H;
 
+char grid_port_get_name_char(struct grid_port* por){
+
+	// Print Direction for debugging
+	char direction_lookup[4] = {'N', 'E', 'S', 'W'};
+	uint8_t direction_index = (por->direction+7)%4;
+
+	return direction_lookup[direction_index];
+
+}
 
 
 void grid_port_receive_task(struct grid_port* por){
@@ -50,7 +59,8 @@ void grid_port_receive_task(struct grid_port* por){
 			
 				if (por->partner_status == 1){
 				
-						grid_platform_printf("Timeout Disconnect 1\r\n");
+						// Print Direction for debugging
+						grid_platform_printf("Disconnect %c\r\n", grid_port_get_name_char(por));	
 						
 						grid_port_receiver_softreset(por);	
 
@@ -67,7 +77,8 @@ void grid_port_receive_task(struct grid_port* por){
 					}
 					else{
 					
-						//grid_platform_printf("Timeout Disconnect 2\r\n");
+						// Print Direction for debugging
+						grid_platform_printf("Timeout Disconnect 2 %c (R%d S%d W%d)\r\n", grid_port_get_name_char(por), por->rx_double_buffer_read_start_index, por->rx_double_buffer_seek_start_index, por->rx_double_buffer_write_index);
 						grid_port_receiver_softreset(por);
 					}
 				
@@ -82,7 +93,6 @@ void grid_port_receive_task(struct grid_port* por){
 			if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 10){ // \n
 					
 				por->rx_double_buffer_status = 1;
-				por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 					
 				break;
 			}
@@ -140,12 +150,10 @@ void grid_port_receive_task(struct grid_port* por){
 				
 			if (por->rx_double_buffer_seek_start_index < GRID_DOUBLE_BUFFER_RX_SIZE-1){
 					
-				por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 				por->rx_double_buffer_seek_start_index++;
 			}
 			else{
 					
-				por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 				por->rx_double_buffer_seek_start_index=0;
 			}
 				
@@ -449,8 +457,9 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 						
 						por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 						
-						grid_port_debug_printf("Connect");		
-						grid_platform_printf("Connect\r\n");			
+						// Print Direction for debugging
+						grid_platform_printf("Connect %c\r\n", grid_port_get_name_char(por));	
+
 						grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
 						grid_led_set_alert_frequency(&grid_led_state, -2);	
 						grid_led_set_alert_phase(&grid_led_state, 100);	
@@ -463,6 +472,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 						//grid_platform_printf("RX\r\n");	
 
 						por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
+						//grid_platform_printf("Ping %c\r\n", grid_port_get_name_char(por));	
 					}
 				}
 				
@@ -2115,7 +2125,7 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 				}
 				else if (msg_class == GRID_CLASS_CONFIG_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
 					
-					grid_platform_printf("CONFIG FETCH\r\n\r\n");
+					//grid_platform_printf("CONFIG FETCH\r\n\r\n");
 					
 					uint8_t pagenumber = grid_msg_string_get_parameter(message, current_start+GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
 					uint8_t elementnumber = grid_msg_string_get_parameter(message, current_start+GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);

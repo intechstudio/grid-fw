@@ -1129,7 +1129,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_write_select(0x00000003);   swd_dummy_clock();
         swd_write_ap4(0x20000000);      swd_dummy_clock();
 
-        printf("\r\n START OF DUMP \r\n");
+        //printf("\r\n START OF DUMP \r\n");
 
         // burst size: how may words in page
         #define BURST_SIZE 256
@@ -1183,7 +1183,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         }
         */
 
-        printf("\r\n END OF DUMP \r\n");
+        //printf("\r\n END OF DUMP \r\n");
 
 
         swd_write_ap4(0xe000edf0);      swd_dummy_clock();

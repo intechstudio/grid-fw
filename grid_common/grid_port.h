@@ -105,7 +105,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback);
 
 
 
-
+char grid_port_get_name_char(struct grid_port* por);
 
 
 void grid_port_init_all(void);

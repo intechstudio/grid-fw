@@ -146,7 +146,7 @@ void grid_lua_gc_collect(struct grid_lua_model* mod){
 void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
     uint32_t memusage = lua_gc(grid_lua_state.L, LUA_GCCOUNT)*1024 + lua_gc(grid_lua_state.L, LUA_GCCOUNTB);
-    grid_platform_printf("LUA mem usage: %d(%s)\r\n", memusage, message);
+    //grid_platform_printf("LUA mem usage: %d(%s)\r\n", memusage, message);
 
 }
 
@@ -1635,7 +1635,6 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
 void grid_lua_ui_init_po16(struct grid_lua_model* mod){
 
-    grid_platform_printf("LUA UI INIT PO16\r\n");
     // define encoder_init_function
 
     grid_lua_dostring(mod, GRID_LUA_P_META_init);
@@ -1658,7 +1657,6 @@ void grid_lua_ui_init_po16(struct grid_lua_model* mod){
 
 void grid_lua_ui_init_bu16(struct grid_lua_model* mod){
 
-     grid_platform_printf("LUA UI INIT BU16\r\n");
     // define encoder_init_function
 
     grid_lua_dostring(mod, GRID_LUA_B_META_init);
@@ -1680,7 +1678,6 @@ void grid_lua_ui_init_bu16(struct grid_lua_model* mod){
 
 void grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
 
-     grid_platform_printf("LUA UI INIT PBF4\r\n");
     // define encoder_init_function
 
     grid_lua_dostring(mod, GRID_LUA_P_META_init);
@@ -1708,7 +1705,6 @@ void grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
 
 void grid_lua_ui_init_en16(struct grid_lua_model* mod){
 
-    grid_platform_printf("LUA UI INIT EN16\r\n");
     // define encoder_init_function
 
     grid_lua_dostring(mod, GRID_LUA_E_META_init);
@@ -1730,8 +1726,6 @@ void grid_lua_ui_init_en16(struct grid_lua_model* mod){
 }
 
 void grid_lua_ui_init_ef44(struct grid_lua_model* mod){
-
-    grid_platform_printf("LUA UI INIT EF44\r\n");
     // define encoder_init_function
 
     grid_lua_dostring(mod, GRID_LUA_E_META_init);
