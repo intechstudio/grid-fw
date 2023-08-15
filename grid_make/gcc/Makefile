@@ -274,6 +274,7 @@ hpl/usb \
 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F \
 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang \
 hpl/mclk \
+hpl/eic \
 hpl/cmcc \
 hpl/gclk \
 usb/device \
@@ -352,6 +353,8 @@ hal/utils/src/utils_ringbuffer.o \
 hal/src/hal_atomic.o \
 main.o \
 hal/src/hal_gpio.o \
+hal/src/hal_ext_irq.o \
+hpl/eic/hpl_eic.o \
 hal/src/hal_qspi_dma.o \
 thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o \
 hal/src/hal_evsys.o \
@@ -432,6 +435,8 @@ OBJS_AS_ARGS +=  \
 "hal/src/hal_atomic.o" \
 "main.o" \
 "hal/src/hal_gpio.o" \
+"hal/src/hal_ext_irq.o" \
+"hpl/eic/hpl_eic.o" \
 "hal/src/hal_qspi_dma.o" \
 "thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o" \
 "hal/src/hal_evsys.o" \
@@ -457,6 +462,7 @@ DIR_INCLUDES +=  \
 -I"../hpl/cmcc" \
 -I"../hpl/core" \
 -I"../hpl/dmac" \
+-I"../hpl/eic" \
 -I"../hpl/dsu" \
 -I"../hpl/evsys" \
 -I"../hpl/gclk" \
@@ -575,6 +581,8 @@ DEPS_AS_ARGS +=  \
 "hpl/sercom/hpl_sercom.d" \
 "hal/src/hal_evsys.d" \
 "hal/src/hal_gpio.d" \
+"hal/src/hal_ext_irq.d" \
+"hpl/eic/hpl_eic.d" \
 "usb/class/hid/device/hiddf_generic.d" \
 "hal/src/hal_i2c_m_async.d" \
 "hal/src/hal_atomic.d" \

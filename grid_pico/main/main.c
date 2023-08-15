@@ -114,8 +114,9 @@ const uint GRID_WEST_TX_PIN = 5;
 const uint GRID_WEST_RX_PIN = 3;
 
 // GRID SYNC PIN CONNECTIONS
-const uint GRID_SYNC_1_PIN = 25;
-const uint GRID_SYNC_2_PIN = 4;
+const uint LED_PIN = 15; // was 25 =  PICO_DEFAULT_LED_PIN
+const uint SYNC1_PIN = 25;
+const uint SYNC2_PIN = 4;
 
 volatile uint8_t spi_dma_done = false;
 
@@ -488,6 +489,40 @@ void core0_interrupt_handler(void){
 
 }
 
+
+
+volatile uint8_t sync1_drive = 0;
+volatile uint8_t sync1_interrupt = 0;
+volatile uint8_t sync2_interrupt = 0;
+
+void gpio_sync_pin_callback(uint gpio, uint32_t events) {
+
+    if(gpio==SYNC1_PIN) {
+
+        sync1_interrupt = 1;
+    }
+    else if(gpio==SYNC2_PIN) {
+
+        sync2_interrupt = 1;
+    }
+
+}
+
+void spi_txbuffer_set_sync_state(uint8_t* buff){
+
+    buff[GRID_PARAMETER_SPI_SYNC1_STATE_index] = 0;
+    buff[GRID_PARAMETER_SPI_SYNC2_STATE_index] = 0;
+
+    if (sync1_interrupt){
+        sync1_interrupt = 0;
+        buff[GRID_PARAMETER_SPI_SYNC1_STATE_index] = 1;
+    }
+    if (sync2_interrupt){
+        sync2_interrupt = 0;
+        buff[GRID_PARAMETER_SPI_SYNC2_STATE_index] = 1;
+    }
+}
+
 int main() 
 {
 
@@ -497,6 +532,9 @@ int main()
     uint offset_tx = pio_add_program(GRID_TX_PIO, &uart_tx_program);
     uint offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_program);
 
+    // setup gpio sync interrupts
+    gpio_set_irq_enabled_with_callback(SYNC1_PIN, GPIO_IRQ_EDGE_RISE, true, &gpio_sync_pin_callback);
+    gpio_set_irq_enabled(SYNC2_PIN, GPIO_IRQ_EDGE_RISE, true);
 
     grid_port_init(NORTH,  0);
     grid_port_init(EAST,   1);
@@ -533,9 +571,11 @@ int main()
 
 
 
+    gpio_init(SYNC1_PIN);
+    gpio_init(SYNC2_PIN);
+
 
     // Setup COMMON stuff
-    const uint LED_PIN = 15; // was 25 =  PICO_DEFAULT_LED_PIN
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
@@ -599,6 +639,8 @@ int main()
     irq_set_exclusive_handler(SIO_IRQ_PROC0, core0_interrupt_handler);
     irq_set_enabled(SIO_IRQ_PROC0, true);
 
+  
+
     while (1) 
     {
 
@@ -609,6 +651,26 @@ int main()
 
                 spi_dma_done = false;
                 uint8_t destination_flags = rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
+
+                uint8_t sync1_state = rxbuf[GRID_PARAMETER_SPI_SYNC1_STATE_index];
+
+
+                if (sync1_state){
+
+                    gpio_pull_down(SYNC1_PIN);
+                    sync1_drive = 1;
+                    gpio_set_dir(SYNC1_PIN, GPIO_OUT);
+                    gpio_put(SYNC1_PIN, 1);
+                    //set_drive_mode(SYNC1_PIN, GPIO_DRIVE_MODE_OPEN_DRAIN);
+                    
+
+                }
+                else if (sync1_drive){          
+                    gpio_set_dir(SYNC1_PIN, GPIO_IN);  
+                    sync1_drive = 0;
+                }
+
+
 
                 //printf("%d\r\n", destination_flags);
 
@@ -666,6 +728,8 @@ int main()
                         spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
                         spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<(spi_active_bucket->source_port_index));
 
+                        
+
 
                         //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
 
@@ -711,12 +775,15 @@ int main()
                             sprintf(txbuf, "DUMMY ERROR");
                             txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
                             txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
-
+                            
+                            spi_txbuffer_set_sync_state(txbuf);
                             spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
                         }
                         else{
 
                             printf("%d\n", spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
+
+                            spi_txbuffer_set_sync_state(spi_active_bucket->buffer);
                             spi_start_transfer(dma_tx, dma_rx, spi_active_bucket->buffer, rxbuf, dma_handler);
 
                         }
@@ -732,6 +799,8 @@ int main()
                         txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
                         txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
 
+
+                        spi_txbuffer_set_sync_state(txbuf);
                         spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
                                 
                     }

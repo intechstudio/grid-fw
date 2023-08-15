@@ -85,6 +85,40 @@ struct rand_sync_desc RAND_0;
 
 struct wdt_descriptor WDT_0;
 
+void EXTERNAL_IRQ_0_init(void)
+{
+	hri_gclk_write_PCHCTRL_reg(GCLK, EIC_GCLK_ID, CONF_GCLK_EIC_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+	hri_mclk_set_APBAMASK_EIC_bit(MCLK);
+
+	// Set pin direction to input
+	gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(PIN_GRID_SYNC_1,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(PIN_GRID_SYNC_1, PINMUX_PC18A_EIC_EXTINT2);
+
+	// Set pin direction to input
+	gpio_set_pin_direction(PIN_GRID_SYNC_2, GPIO_DIRECTION_IN);
+
+	gpio_set_pin_pull_mode(PIN_GRID_SYNC_2,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(PIN_GRID_SYNC_2, PINMUX_PB07A_EIC_EXTINT7);
+
+	ext_irq_init();
+}
+
 /**
  * \brief ADC initialization function
  *
@@ -1133,4 +1167,6 @@ void system_init(void)
 	USB_DEVICE_INSTANCE_init();
 
 	WDT_0_init();
+
+	EXTERNAL_IRQ_0_init();
 }

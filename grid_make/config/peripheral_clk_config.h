@@ -576,6 +576,19 @@
 #define CONF_GCLK_EVSYS_CHANNEL_11_FREQUENCY 120000000
 #endif
 
+// <i> Select the clock source for EIC.
+#ifndef CONF_GCLK_EIC_SRC
+#define CONF_GCLK_EIC_SRC GCLK_PCHCTRL_GEN_GCLK0_Val
+#endif
+
+/**
+ * \def CONF_GCLK_EIC_FREQUENCY
+ * \brief EIC's Clock frequency
+ */
+#ifndef CONF_GCLK_EIC_FREQUENCY
+#define CONF_GCLK_EIC_FREQUENCY 120000000
+#endif
+
 /**
  * \def CONF_CPU_FREQUENCY
  * \brief CPU's Clock frequency

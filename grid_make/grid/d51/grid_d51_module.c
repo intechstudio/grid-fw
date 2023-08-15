@@ -24,97 +24,13 @@ static volatile char PORT_U_RX[GRID_BUFFER_SIZE] = {0};
 static volatile char PORT_H_TX[GRID_BUFFER_SIZE] = {0};
 static volatile char PORT_H_RX[GRID_BUFFER_SIZE] = {0};
 
-
-uint8_t grid_sync_mode_register[2] = {0, 0};
-
-//====================== GRID ENCODER K+F ===================================//
-
-
-
-	
-	
-void grid_sync_set_mode(enum grid_sync_selector sync_select, enum grid_sync_mode sync_mode){
-	
-	grid_sync_mode_register[sync_select - 1]  = sync_mode;
-	
-	if (sync_select == GRID_SYNC_1){		
-		
-		if (sync_mode == GRID_SYNC_MASTER){
-			
-			gpio_set_pin_level(PIN_GRID_SYNC_1, true);
-			gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
-		}
-		else if (sync_mode == GRID_SYNC_SLAVE){
-			gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_IN);
-			gpio_set_pin_level(PIN_GRID_SYNC_1, true);
-		}
-		
-	}
-	else if (sync_select == GRID_SYNC_2){	
-			
-		if (sync_mode == GRID_SYNC_MASTER){
-			
-			gpio_set_pin_level(PIN_GRID_SYNC_2, true);
-			gpio_set_pin_direction(PIN_GRID_SYNC_2, GPIO_DIRECTION_OUT);
-		}
-		else if (sync_mode == GRID_SYNC_SLAVE){
-			gpio_set_pin_direction(PIN_GRID_SYNC_2, GPIO_DIRECTION_IN);
-			gpio_set_pin_level(PIN_GRID_SYNC_1, true);
-		}
-		
-	}
-	
-}
-
-enum grid_sync_mode grid_sync_get_mode(enum grid_sync_selector sync_select){
-	
-	if (grid_sync_mode_register[sync_select - 1] == GRID_SYNC_MASTER){
-		return GRID_SYNC_MASTER;
-	}
-	else if (grid_sync_mode_register[sync_select - 1] == GRID_SYNC_SLAVE){
-		return GRID_SYNC_SLAVE;
-	}
-	else{
-		return GRID_SYNC_INITIAL;	
-	}	
-}
-
-void grid_sync_set_level(enum grid_sync_selector sync_select, uint8_t sync_level){
-	
-	if (sync_select == GRID_SYNC_1){
-		
-		if (grid_sync_get_mode(sync_select) == GRID_SYNC_MASTER){
-			
-			gpio_set_pin_level(PIN_GRID_SYNC_1, sync_level);
-		}
-		
-	}
-	else if (sync_select == GRID_SYNC_2){
-		
-		if (grid_sync_get_mode(sync_select) == GRID_SYNC_MASTER){
-			
-			gpio_set_pin_level(PIN_GRID_SYNC_2, sync_level);
-		}
-		
-	}
-		
-}
-
-
-	
-
 // Define all of the peripheral interrupt callbacks
-	
-
-
 
 	
 /* ============================== GRID_MODULE_INIT() ================================ */
 
 
 void grid_module_common_init(void){
-
-
 
 	GRID_PORT_N = &PORT_N;
 	GRID_PORT_E = &PORT_E;

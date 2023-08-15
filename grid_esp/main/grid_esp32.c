@@ -718,4 +718,3 @@ int32_t grid_platform_usb_keyboard_keys_state_change(void* keys_desc, uint8_t ke
 
 }
 
-

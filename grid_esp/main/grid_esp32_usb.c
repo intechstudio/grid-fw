@@ -51,10 +51,9 @@ void tud_midi_rx_cb(uint8_t itf){
             midi_ev.byte2 = param1;
             midi_ev.byte3 = param2;
 
-
-            if (midi_ev.byte0 == 8 && midi_ev.byte1 == 240){
+            if ((midi_ev.byte0 == 8 || midi_ev.byte0 == 10 || midi_ev.byte0 == 12) && midi_ev.byte1 == 240){
                 // if element's timer clock source is midi then decrement timer_helper
-                grid_ui_midi_sync_tick_time(&grid_ui_state);
+                grid_platform_sync1_pulse_send();
 
             }
 

@@ -36,6 +36,7 @@
 
 uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
 
+void grid_platform_sync1_pulse_send();
 
 #ifdef __cplusplus
 extern "C" {

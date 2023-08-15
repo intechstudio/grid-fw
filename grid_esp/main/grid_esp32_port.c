@@ -23,6 +23,13 @@ spi_slave_transaction_t DRAM_ATTR outbnound_transaction[4];
 spi_slave_transaction_t DRAM_ATTR spi_empty_transaction;
 
 uint8_t DRAM_ATTR queue_state = 0;
+uint8_t DRAM_ATTR sync1_received = 0;
+uint8_t DRAM_ATTR sync2_received = 0;
+uint8_t DRAM_ATTR sync1_state = 0;
+
+void grid_platform_sync1_pulse_send(){
+    sync1_state++;
+}
 
 
 SemaphoreHandle_t queue_state_sem;
@@ -55,6 +62,24 @@ void ets_debug_string(char* tag, char* str){
 
 static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t *trans) {
     //printf("$\r\n");
+    gpio_ll_set_level(&GPIO, 47, 1);
+
+
+
+    portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+    portENTER_CRITICAL(&spinlock);
+
+    ((uint8_t*) trans->tx_buffer)[GRID_PARAMETER_SPI_SYNC1_STATE_index] = 0;
+
+    if (sync1_state){
+
+        ((uint8_t*) trans->tx_buffer)[GRID_PARAMETER_SPI_SYNC1_STATE_index] = sync1_state;
+        sync1_state--;
+
+    }
+    portEXIT_CRITICAL(&spinlock);
+
+    gpio_ll_set_level(&GPIO, 47, 0);
 }
 
 
@@ -66,7 +91,7 @@ static char DRAM_ATTR rx_str[500] = {0};
 static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
 
-    gpio_ll_set_level(&GPIO, 47, 1);
+
 
     //ets_printf(" %d ", queue_state);
     rx_flag = 1;
@@ -79,6 +104,14 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
     portENTER_CRITICAL(&spinlock);
+
+    if (((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SYNC1_STATE_index]){
+        sync1_received++;
+    }    
+    if (((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SYNC2_STATE_index]){
+        sync2_received++;
+    }
+
 
     if (queue_state>0){
         queue_state--;
@@ -181,7 +214,6 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
     }
 
 
-    gpio_ll_set_level(&GPIO, 47, 0);
 }
 
 static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
@@ -300,9 +332,6 @@ static uint64_t last_heartbeat_timestamp  = 0;
 
 static void periodic_ping_heartbeat_handler_cb(void *arg)
 {
-
-                
-
 
     // Check if USB is connected and start animation
     if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()){
@@ -475,7 +504,21 @@ void grid_esp32_port_task(void *arg)
 
     while (1) {
 
-        //ets_printf("%d", queue_state);
+        portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+        portENTER_CRITICAL(&spinlock);
+
+        while(sync1_received){
+            grid_ui_midi_sync_tick_time(&grid_ui_state);
+            sync1_received--;
+        }
+
+        while(sync2_received){
+            grid_ui_midi_sync_tick_time(&grid_ui_state);
+            sync2_received--;
+        }
+
+        portEXIT_CRITICAL(&spinlock);
+
 
         if (xSemaphoreTake(nvm_or_port, pdMS_TO_TICKS(4)) == pdTRUE){
 

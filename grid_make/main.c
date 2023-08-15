@@ -23,6 +23,15 @@ volatile uint32_t globaltest = 0;
 volatile uint32_t loopcounter = 1;
 volatile uint32_t loopcount = 0;
 
+static volatile uint8_t sync1_received = 0;
+static volatile uint8_t sync2_received = 0;
+
+static volatile uint8_t sync1_state = 0;
+static volatile uint8_t sync1_drive = 0;
+
+void grid_platform_sync1_pulse_send(){
+    sync1_state++;
+}
 
 
 extern void grid_platform_rtc_set_micros(uint64_t mic);
@@ -273,6 +282,7 @@ static struct timer_task RTC_Scheduler_rx_task;
 static struct timer_task RTC_Scheduler_ping;
 static struct timer_task RTC_Scheduler_realtime;
 static struct timer_task RTC_Scheduler_realtime_ms;
+static struct timer_task RTC_Scheduler_grid_sync;
 static struct timer_task RTC_Scheduler_heartbeat;
 static struct timer_task RTC_Scheduler_report;
 
@@ -320,6 +330,49 @@ void RTC_Scheduler_realtime_millisecond_cb(const struct timer_task *const timer_
 
 }
 
+void RTC_Scheduler_grid_sync_cb(const struct timer_task *const timer_task)
+{
+	CRITICAL_SECTION_ENTER()
+
+	while(sync1_received){
+		grid_ui_midi_sync_tick_time(&grid_ui_state);
+		sync1_received--;
+		//printf("s");
+	}
+
+	while(sync2_received){
+		grid_ui_midi_sync_tick_time(&grid_ui_state);
+		sync2_received--;
+		//printf("s");
+	}
+
+	// if sync 1 was driven by this module then trigger sync tick manually because interrupts cannot trigger on gpio's that are set as output
+	if (sync1_drive == 1){
+		grid_ui_midi_sync_tick_time(&grid_ui_state);
+	}
+
+	if (sync1_state){
+
+		sync1_state--;
+
+		gpio_set_pin_pull_mode(PIN_GRID_SYNC_1, GPIO_PULL_DOWN);
+		sync1_drive = 1;
+
+		gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
+		gpio_set_pin_level(PIN_GRID_SYNC_1, 1);
+		//set_drive_mode(SYNC1_PIN, GPIO_DRIVE_MODE_OPEN_DRAIN);
+		
+
+	}
+	else if (sync1_drive){          
+		gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_IN);  
+		sync1_drive = 0;
+	}
+
+	CRITICAL_SECTION_LEAVE()
+
+}
+
 
 
 void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task)
@@ -354,6 +407,10 @@ void init_timer(void)
 	RTC_Scheduler_realtime_ms.cb       = RTC_Scheduler_realtime_millisecond_cb;
 	RTC_Scheduler_realtime_ms.mode     = TIMER_TASK_REPEAT;
 
+	RTC_Scheduler_grid_sync.interval = RTC1MS/2;
+	RTC_Scheduler_grid_sync.cb       = RTC_Scheduler_grid_sync_cb;
+	RTC_Scheduler_grid_sync.mode     = TIMER_TASK_REPEAT;
+
 	RTC_Scheduler_report.interval = RTC1MS*1000;
 	RTC_Scheduler_report.cb       = RTC_Scheduler_report_cb;
 	RTC_Scheduler_report.mode     = TIMER_TASK_REPEAT;
@@ -362,6 +419,7 @@ void init_timer(void)
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_heartbeat);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime_ms);
+	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_grid_sync);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_report);
 	
 	timer_start(&RTC_Scheduler);
@@ -472,6 +530,13 @@ void qspi_test(void)
 }
 
 
+static void button_on_SYNC1_pressed(void){
+	sync1_received++;
+}
+
+static void button_on_SYNC2_pressed(void){
+	sync2_received++;
+}
 
 
 int main(void)
@@ -581,6 +646,8 @@ int main(void)
 	#endif
 
 
+	ext_irq_register(PIN_GRID_SYNC_1, button_on_SYNC1_pressed);
+	ext_irq_register(PIN_GRID_SYNC_2, button_on_SYNC2_pressed);
 
 	while (1) {
 

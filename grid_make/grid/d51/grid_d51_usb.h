@@ -22,6 +22,7 @@
 #include "grid_port.h"
 
 
+extern void grid_platform_sync1_pulse_send();
 
 volatile uint16_t grid_usb_rx_double_buffer_index;
 
