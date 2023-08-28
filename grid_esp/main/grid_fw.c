@@ -27,6 +27,7 @@
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_en16.h"
 #include "grid_esp32_module_ef44.h"
+#include "grid_esp32_module_tek2.h"
 #include "grid_esp32_led.h"
 
 
@@ -243,6 +244,9 @@ void app_main(void)
 	}		
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD ){
 		grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
+	}		
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA ){
+		grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
 	}	
 	else{
 		ets_printf("Init Module: Unknown Module\r\n");
@@ -282,6 +286,9 @@ void app_main(void)
 	}		
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD ){
         xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024*4, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+	}		
+	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA ){
+        xTaskCreatePinnedToCore(grid_esp32_module_tek2_task, "tek2", 1024*4, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}	
 	else{
 		printf("Init Module: Unknown Module\r\n");

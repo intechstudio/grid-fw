@@ -265,6 +265,24 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 }
 
+void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui){
+	
+	// 16 pot, depth of 5, 14bit internal, 7bit result;
+	grid_ain_init(ain, 16, 5); // TODO: 12 ain for TEK2
+	grid_led_init(led, 16);	 // TODO: 18 led for TEK2
+	
+	grid_ui_model_init(ui, GRID_PORT_U, 16+1); // 10+1 for the system element on TEK2
+
+	for(uint8_t j=0; j<16; j++){
+			
+		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_BUTTON);
+	
+	}	
+
+	grid_ui_element_init(ui, ui->element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
+	
+}
+
 void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, uint64_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock){
 
 

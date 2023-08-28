@@ -58,6 +58,8 @@
 #define GRID_MODULE_EF44_RevA 32
 #define GRID_MODULE_EF44_RevD 33
 
+#define GRID_MODULE_TEK2_RevA 17
+
 
 #define GRID_PARAMETER_HEARTBEAT_interval 250
 #define GRID_PARAMETER_PING_interval 100

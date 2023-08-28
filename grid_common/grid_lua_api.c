@@ -1751,7 +1751,26 @@ void grid_lua_ui_init_ef44(struct grid_lua_model* mod){
 
 }
 
+void grid_lua_ui_init_tek2(struct grid_lua_model* mod){
 
+    // define encoder_init_function
+
+    grid_lua_dostring(mod, GRID_LUA_B_META_init);
+
+    // create element array
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} ");
+
+    // initialize 16 buttons
+    grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
+    grid_lua_dostring(mod, "for i=0, 15 do setmetatable("GRID_LUA_KW_ELEMENT_short"[i], button_meta) end");
+
+    grid_lua_gc_try_collect(mod);
+
+    //initialize the system element
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[16] = {index = 16}");
+    grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
+    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], system_meta)");
+}
 
 void grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys){
 
@@ -1781,6 +1800,8 @@ void grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys){
 
         case GRID_MODULE_EF44_RevA: grid_lua_ui_init_ef44(mod); break;
         case GRID_MODULE_EF44_RevD: grid_lua_ui_init_ef44(mod); break;
+
+        case GRID_MODULE_TEK2_RevA: grid_lua_ui_init_tek2(mod); break;
 
         default: grid_platform_printf("\r\n### LUA HWCFG NOT REGISTERED ### \r\n\r\n");
 

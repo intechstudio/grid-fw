@@ -11,6 +11,7 @@ idf_component_register(
         "grid_esp32_module_bu16.c"
         "grid_esp32_module_en16.c"
         "grid_esp32_module_ef44.c"
+        "grid_esp32_module_tek2.c"
         "grid_esp32_led.c"
         "grid_esp32_port.c"
         "grid_esp32_nvm.c"
