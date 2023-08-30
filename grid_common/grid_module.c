@@ -275,11 +275,17 @@ void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 	grid_led_lookup_init(led, led_lookup); // initialize the optional led index lookup table for array remapping
 	
-	grid_ui_model_init(ui, GRID_PORT_U, 16+1); // 10+1 for the system element on TEK2
+	grid_ui_model_init(ui, GRID_PORT_U, 10+1); // 10+1 for the system element on TEK2
 
-	for(uint8_t j=0; j<16; j++){
+	for(uint8_t j=0; j<10; j++){
 			
-		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_BUTTON);
+		if (j<8){
+
+			grid_ui_element_init(ui, j, GRID_UI_ELEMENT_BUTTON);
+		}
+		else if (j<10){
+			grid_ui_element_init(ui, j, GRID_UI_ELEMENT_ENCODER);
+		}
 	
 	}	
 
@@ -294,18 +300,8 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 	struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, input_channel);
 	int32_t* template_parameter_list = ele->template_parameter_list;	
 
-	// limit lastrealtime
-	uint32_t button_elapsed_time = grid_platform_rtc_get_elapsed_time(*button_last_real_time);
-	if (GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US < grid_platform_rtc_get_elapsed_time(*button_last_real_time)){
-		*button_last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
-		button_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
-	}
-	uint32_t encoder_elapsed_time = grid_platform_rtc_get_elapsed_time(*encoder_last_real_time);
-	if (GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US < grid_platform_rtc_get_elapsed_time(*encoder_last_real_time)){
-		*encoder_last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
-		encoder_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
-	}
-			
+
+
 		
 	if (old_value != new_value){
 
@@ -344,7 +340,12 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 					
 
 		// Evaluate the results
-
+		// limit lastrealtime
+		uint32_t button_elapsed_time = grid_platform_rtc_get_elapsed_time(*button_last_real_time);
+		if (GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US < grid_platform_rtc_get_elapsed_time(*button_last_real_time)){
+			*button_last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
+			button_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
+		}
 
 		if (new_button_value != old_button_value){  // The button has changed
 			// BUTTON CHANGE
@@ -417,6 +418,13 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 			}
 		
 		}
+
+		uint32_t encoder_elapsed_time = grid_platform_rtc_get_elapsed_time(*encoder_last_real_time);
+		if (GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US < grid_platform_rtc_get_elapsed_time(*encoder_last_real_time)){
+			*encoder_last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
+			encoder_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
+		}
+		
 			
 		if (delta != 0){ // The encoder rotation has changed
 
@@ -557,8 +565,10 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 
 
 
-void grid_ui_endlesspot_store_input(uint8_t input_channel, struct grid_module_endlesspot_state* old_value, struct grid_module_endlesspot_state* new_value,  uint8_t adc_bit_depth){
-
+void grid_ui_endlesspot_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, uint64_t* button_last_real_time, struct grid_module_endlesspot_state* old_value, struct grid_module_endlesspot_state* new_value,  uint8_t adc_bit_depth){
+	
+	struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, input_channel);
+	int32_t* template_parameter_list = ele->template_parameter_list;	
 
 	uint16_t value_degrees = 0;
 
@@ -612,7 +622,93 @@ void grid_ui_endlesspot_store_input(uint8_t input_channel, struct grid_module_en
 
 	if (value_degrees>3599) value_degrees = 3599;
 
-	grid_platform_printf("Value %d.%d\r\n", value_degrees/10, value_degrees%10);
+	grid_platform_printf("Value %d.%d ", value_degrees/10, value_degrees%10);
+
+	if (input_channel == 9){
+
+		grid_platform_printf("\r\n");
+	}
+
+
+	// BUTTON
+
+	// Evaluate the results
+	// limit lastrealtime
+	uint32_t button_elapsed_time = grid_platform_rtc_get_elapsed_time(*button_last_real_time);
+	if (GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US < grid_platform_rtc_get_elapsed_time(*button_last_real_time)){
+		*button_last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
+		button_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
+	}
+
+	if (new_value->button_value != old_value->button_value){  // The button has changed
+		// BUTTON CHANGE
+
+
+		// update lastrealtime
+		*button_last_real_time = grid_platform_rtc_get_micros(); 
+		template_parameter_list[GRID_LUA_FNC_E_BUTTON_ELAPSED_index] = button_elapsed_time/MS_TO_US;
+
+		if (new_value->button_value == 0){ // Button Press
+
+			template_parameter_list[GRID_LUA_FNC_E_BUTTON_STATE_index] = 127;
+
+			// Button ABS
+			if (template_parameter_list[GRID_LUA_FNC_E_BUTTON_MODE_index] == 0){
+
+				int32_t max = template_parameter_list[GRID_LUA_FNC_E_BUTTON_MAX_index];
+				template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = max;
+			}
+			else{
+				// IMPLEMENT STEP TOGGLE HERE					// Toggle
+
+				int32_t min = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
+				int32_t max = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
+				int32_t steps = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index];
+				int32_t last = template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index];
+
+				int32_t next = last + (max - min)/steps;
+
+				if (next > max){
+
+					//overflow
+					next = min;
+				}
+
+				template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = next;
+			}
+				
+			struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_BC);
+			
+			if (grid_ui_state.ui_interaction_enabled){
+				grid_ui_event_trigger(eve);	
+			}	
+
+		}
+		else{  // Button Release
+		
+			template_parameter_list[GRID_LUA_FNC_E_BUTTON_STATE_index] = 0;
+
+			// Button ABS
+			if (template_parameter_list[GRID_LUA_FNC_E_BUTTON_MODE_index] == 0){
+
+				int32_t min = template_parameter_list[GRID_LUA_FNC_E_BUTTON_MIN_index];
+
+				template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = min;
+			}
+			else{
+				// IMPLEMENT STEP TOGGLE HERE
+
+			}
+						
+			struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_BC);
+		
+			if (grid_ui_state.ui_interaction_enabled){
+				grid_ui_event_trigger(eve);	
+			}	
+			
+		}
+	
+	}	
 
 }
 
