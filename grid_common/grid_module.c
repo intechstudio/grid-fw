@@ -612,7 +612,7 @@ void grid_ui_endlesspot_store_input(uint8_t input_channel, struct grid_module_en
 
 	if (value_degrees>3599) value_degrees = 3599;
 
-	grid_platform_printf("Value [%d,%d] -> %d\r\n", phase_a_degrees, phase_b_degrees, value_degrees);
+	grid_platform_printf("Value %d.%d\r\n", value_degrees/10, value_degrees%10);
 
 }
 
