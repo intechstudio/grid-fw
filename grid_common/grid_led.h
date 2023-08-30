@@ -49,12 +49,10 @@ struct LED_layer
 struct grid_led_model{
 
 	uint8_t led_count;
+	uint8_t* led_lookup_table;
 	uint8_t* led_frame_buffer; // The frame buffer is used to send data to the LEDs
-
 	uint8_t* led_changed_flag_array;
-
 	uint32_t tick_lastrealtime;
-
 	struct LED_layer* led_smart_buffer; // 2D array if LED_Layers: Smart buffer contains the usable data coming from the API
 
 
@@ -67,6 +65,7 @@ uint32_t grid_led_get_framebuffer_size(struct grid_led_model* mod);
 extern struct grid_led_model grid_led_state;
 
 void grid_led_init(struct grid_led_model* mod, uint32_t length);
+void grid_led_lookup_init(struct grid_led_model* mod, uint8_t* lookup_array);
 
 uint8_t grid_led_change_flag_reset(struct grid_led_model* mod);
 uint8_t grid_led_change_flag_count(struct grid_led_model* mod);
