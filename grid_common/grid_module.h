@@ -23,9 +23,19 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui);
 
 
+struct grid_module_endlesspot_state{
+
+    uint16_t phase_a_value;
+    uint16_t phase_b_value;
+    uint16_t button_value;
+
+};
+
 void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
 void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
 void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, uint64_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock);
+
+void grid_ui_endlesspot_store_input(uint8_t input_channel, struct grid_module_endlesspot_state* old_value, struct grid_module_endlesspot_state* new_value,  uint8_t adc_bit_depth);
 
 extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
 

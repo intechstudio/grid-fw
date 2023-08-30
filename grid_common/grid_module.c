@@ -269,7 +269,11 @@ void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 	
 	// 16 pot, depth of 5, 14bit internal, 7bit result;
 	grid_ain_init(ain, 16, 5); // TODO: 12 ain for TEK2
-	grid_led_init(led, 16);	 // TODO: 18 led for TEK2
+	grid_led_init(led, 18);	 // TODO: 18 led for TEK2
+
+	uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+	grid_led_lookup_init(led, led_lookup); // initialize the optional led index lookup table for array remapping
 	
 	grid_ui_model_init(ui, GRID_PORT_U, 16+1); // 10+1 for the system element on TEK2
 
@@ -552,6 +556,18 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 }
 
 
+
+void grid_ui_endlesspot_store_input(uint8_t input_channel, struct grid_module_endlesspot_state* old_value, struct grid_module_endlesspot_state* new_value,  uint8_t adc_bit_depth){
+
+
+	uint8_t value_degrees = 0;
+
+	// calculate absolute angle based on phase_a and phase_b
+	// .....
+
+	grid_platform_printf("Value %d: [%d,%d][%d] -> %d\r\n", input_channel, new_value->phase_a_value, new_value->phase_b_value, new_value->button_value, value_degrees);
+
+}
 
 
 void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui){
