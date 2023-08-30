@@ -560,12 +560,59 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 void grid_ui_endlesspot_store_input(uint8_t input_channel, struct grid_module_endlesspot_state* old_value, struct grid_module_endlesspot_state* new_value,  uint8_t adc_bit_depth){
 
 
-	uint8_t value_degrees = 0;
+	uint16_t value_degrees = 0;
 
 	// calculate absolute angle based on phase_a and phase_b
 	// .....
+	
+	double phase_a_norm = (double)new_value->phase_a_value / ((1<<adc_bit_depth) - 1) ;
+	double phase_b_norm = (double)new_value->phase_b_value / ((1<<adc_bit_depth) - 1) ;
 
-	grid_platform_printf("Value %d: [%d,%d][%d] -> %d\r\n", input_channel, new_value->phase_a_value, new_value->phase_b_value, new_value->button_value, value_degrees);
+
+	uint16_t phase_a_degrees, phase_b_degrees;
+
+	// Calculate rotation based on phase A
+	if (phase_b_norm>0.5){
+		phase_a_degrees = phase_a_norm*1800;
+	}
+	else{
+		phase_a_degrees = (1800-phase_a_norm*1800) + 1800;
+	}
+
+	// Calculate rotation based on phase B
+	if (phase_a_norm<0.5){
+		phase_b_degrees = (uint16_t)(phase_b_norm*1800 + 2700)%3600;
+	}
+	else{
+		phase_b_degrees = (uint16_t)((1800-phase_b_norm*1800) + 1800 + 2700)%3600;
+	}
+
+	// if one of the phasees are close to 0 and the outher is close to 360 then averaging will not work directly
+	if (phase_b_degrees>3000 && phase_a_degrees<600){
+		phase_a_degrees += 3600;
+		grid_platform_printf("!");
+	}
+	else if (phase_a_degrees>3000 && phase_b_degrees<600){
+		phase_b_degrees += 3600;
+		grid_platform_printf("?");
+	}
+
+
+	// Average the two to eliminate deadzones
+	double weight_a = (phase_b_norm-0.5)*2;
+
+	if (weight_a<0){
+		weight_a = -weight_a;
+	}
+
+	double weight_b = 1-weight_a;
+	double range_calibration = 1+(1/3600.0);
+
+	value_degrees = (phase_a_degrees*weight_a + phase_b_degrees*weight_b)*range_calibration;
+
+	if (value_degrees>3599) value_degrees = 3599;
+
+	grid_platform_printf("Value [%d,%d] -> %d\r\n", phase_a_degrees, phase_b_degrees, value_degrees);
 
 }
 
