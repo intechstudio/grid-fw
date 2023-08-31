@@ -622,12 +622,54 @@ void grid_ui_endlesspot_store_input(uint8_t input_channel, uint64_t* encoder_las
 
 	if (value_degrees>3599) value_degrees = 3599;
 
-	grid_platform_printf("Value %d.%d ", value_degrees/10, value_degrees%10);
+	value_degrees = 3600-value_degrees;
+
+	//grid_platform_printf("Value %d.%d ", value_degrees/10, value_degrees%10);
 
 	if (input_channel == 9){
 
-		grid_platform_printf("\r\n");
+		//grid_platform_printf("\r\n");
 	}
+
+
+
+
+	// ENDLESS POT ROTATION
+
+
+	int32_t resolution = 9;
+
+	if (resolution < 1){
+		resolution = 1;
+	}
+	else if (resolution > 12){
+		resolution = 12;
+	}
+
+	grid_ain_add_sample(&grid_ain_state, input_channel, value_degrees, 12, (uint8_t) resolution);
+
+	if (grid_ain_get_changed(&grid_ain_state, input_channel)){
+
+		template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] = value_degrees/20;
+
+		//grid_platform_printf("%d\r\n", template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index]);
+
+		int32_t next = grid_ain_get_average_scaled(&grid_ain_state, input_channel, adc_bit_depth, resolution, 0, 127);
+		template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = value_degrees/20;
+
+		struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_EC);
+				
+		if (grid_ui_state.ui_interaction_enabled){
+			grid_ui_event_trigger(eve);	
+		}
+
+
+		// for display in editor
+	}
+		
+
+
+
 
 
 	// BUTTON
@@ -709,6 +751,7 @@ void grid_ui_endlesspot_store_input(uint8_t input_channel, uint64_t* encoder_las
 		}
 	
 	}	
+
 
 }
 

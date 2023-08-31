@@ -1756,20 +1756,26 @@ void grid_lua_ui_init_tek2(struct grid_lua_model* mod){
     // define encoder_init_function
 
     grid_lua_dostring(mod, GRID_LUA_B_META_init);
+    grid_lua_dostring(mod, GRID_LUA_E_META_init);
 
     // create element array
     grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"= {} ");
 
-    // initialize 16 buttons
-    grid_lua_dostring(mod, "for i=0, 15 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
-    grid_lua_dostring(mod, "for i=0, 15 do setmetatable("GRID_LUA_KW_ELEMENT_short"[i], button_meta) end");
+    // initialize 8 buttons
+    grid_lua_dostring(mod, "for i=0, 7 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
+    grid_lua_dostring(mod, "for i=0, 7 do setmetatable("GRID_LUA_KW_ELEMENT_short"[i], button_meta) end");
+
+    // initialize 2 endless potentiometers as encoders
+    grid_lua_dostring(mod, "for i=8, 9  do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
+    grid_lua_dostring(mod, "for i=8, 9  do  setmetatable("GRID_LUA_KW_ELEMENT_short"[i], encoder_meta)  end");
+
 
     grid_lua_gc_try_collect(mod);
 
     //initialize the system element
-    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[16] = {index = 16}");
+    grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short"[10] = {index = 10}");
     grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[16], system_meta)");
+    grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[10], system_meta)");
 }
 
 void grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys){

@@ -99,7 +99,8 @@
         "compare": "c",
         "variant": "c",
         "grid_esp32_module_po16.h": "c",
-        "atmel_start_pins.h": "c"
+        "atmel_start_pins.h": "c",
+        "optional": "c"
     },   
     "files.exclude": {
         ".archive": true,
