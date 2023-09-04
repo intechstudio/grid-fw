@@ -410,16 +410,16 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction){
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
 
-
+    //tinyusb_cdcacm_write_flush(0, pdMS_TO_TICKS(10));
     
-    //tinyusb_cdcacm_write_flush(0, pdMS_TO_TICKS(1000));
     uint32_t queued = tinyusb_cdcacm_write_queue(0, (const uint8_t*) buffer, length);
-    
+
+    tinyusb_cdcacm_write_flush(0, 0);
+   
     if (queued != length){
 
-        
-
-        //ets_printf("### CDC ERROR ###: %d %d\r\n", queued, length);
+        ets_printf("### CDC ERROR ###: %d %d\r\n", queued, length);
+        //tinyusb_cdcacm_write_flush(0, pdMS_TO_TICKS(1));
 
     }
 
