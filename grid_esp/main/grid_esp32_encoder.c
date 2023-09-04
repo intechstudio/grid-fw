@@ -8,7 +8,7 @@
 
 
 
-struct grid_esp32_encoder_model grid_esp32_encoder_state;
+struct grid_esp32_encoder_model DRAM_ATTR grid_esp32_encoder_state;
 
 
 void grid_esp32_encoder_pins_init(void){
@@ -30,7 +30,7 @@ void grid_esp32_encoder_spi_init(struct grid_esp32_encoder_model* encoder, void 
         .miso_io_num=GRID_ESP32_PINS_HWCFG_DATA,
         .sclk_io_num=GRID_ESP32_PINS_HWCFG_CLOCK,
         .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
+        .quadhd_io_num = -1
     };
 
     static spi_device_interface_config_t devcfg = {
@@ -61,10 +61,10 @@ void grid_esp32_encoder_spi_init(struct grid_esp32_encoder_model* encoder, void 
 }
 
 
-void grid_esp32_encoder_latch_data(void){
+void IRAM_ATTR grid_esp32_encoder_latch_data(void){
 
-    gpio_set_level(GRID_ESP32_PINS_HWCFG_SHIFT, 0);
-    gpio_set_level(GRID_ESP32_PINS_HWCFG_SHIFT, 1);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_HWCFG_SHIFT, 0);
+    gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_HWCFG_SHIFT, 1);
 
 }
 
@@ -93,12 +93,17 @@ void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, void (*po
 
     grid_esp32_encoder_spi_init(encoder, post_setup_cb, post_trans_cb);
 
+    encoder->buffer_struct = (StaticRingbuffer_t *)heap_caps_malloc(sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    encoder->buffer_storage = (struct grid_esp32_encoder_result *)heap_caps_malloc(sizeof(struct grid_esp32_encoder_result)*ENCODER_BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    encoder->ringbuffer_handle = xRingbufferCreateStatic(ENCODER_BUFFER_SIZE, ENCODER_BUFFER_TYPE, encoder->buffer_storage, encoder->buffer_struct);
+
+
     return;
 
 }
 
 
-void grid_esp32_encoder_spi_start_transfer(struct grid_esp32_encoder_model* encoder){
+void IRAM_ATTR grid_esp32_encoder_spi_start_transfer(struct grid_esp32_encoder_model* encoder){
 
     grid_esp32_encoder_latch_data();
     spi_device_queue_trans(encoder->spi_device_handle, &encoder->transaction, 0);

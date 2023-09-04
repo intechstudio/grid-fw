@@ -47,8 +47,8 @@ extern "C" {
 #define ADC_BUFFER_SIZE             ADC_CONVERSION_FRAME_SIZE
 
 
-#define BUFFER_SIZE     4*25      //32-bit aligned size
-#define BUFFER_TYPE     RINGBUF_TYPE_NOSPLIT
+#define ADC_BUFFER_SIZE     4*25      //32-bit aligned size
+#define ADC_BUFFER_TYPE     RINGBUF_TYPE_NOSPLIT
 
 struct grid_esp32_adc_model
 {
@@ -77,12 +77,6 @@ struct grid_esp32_adc_result {
     uint16_t value;
 
 };
-
-extern StaticRingbuffer_t *adc_buffer_struct;
-extern uint8_t *adc_buffer_storage;
-
-//Create a ring buffer with manually allocated memory
-extern RingbufHandle_t adc_buffer_handle;
 
 
 extern esp_err_t adc_oneshot_read_isr(adc_oneshot_unit_handle_t handle, adc_channel_t chan, int *out_raw);
