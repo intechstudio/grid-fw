@@ -70,7 +70,6 @@ uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
 
-int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
 
 void grid_platform_close_actionstring_file(void* file_pointer);
 

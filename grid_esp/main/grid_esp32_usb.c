@@ -96,8 +96,62 @@ void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event)
     int dtr = event->line_state_changed_data.dtr;
     int rts = event->line_state_changed_data.rts;
     ESP_LOGI(TAG, "Line state changed on channel %d: DTR:%d, RTS:%d", itf, dtr, rts);
+
+    GRID_PORT_H->tx_double_buffer_status = 0;
 }
 
+
+
+void tud_cdc_tx_complete_cb(uint8_t itf){
+    //ets_printf("CDC TXC\r\n");
+    GRID_PORT_H->tx_double_buffer_status = 0;
+}
+
+int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
+
+    //tinyusb_cdcacm_write_flush(0, pdMS_TO_TICKS(10));
+    if (GRID_PORT_H->tx_double_buffer_status == 0){
+
+        GRID_PORT_H->tx_double_buffer_status = 1;
+    
+   
+        uint32_t queued = tinyusb_cdcacm_write_queue(0, (const uint8_t*) buffer, length);
+
+        if (queued==0){
+            GRID_PORT_H->tx_double_buffer_status = 0;
+        }       
+
+        if (queued != length){
+            //ets_printf("CDC QUEUE ERROR: %d %d\r\n", queued, length);
+            //tinyusb_cdcacm_write_flush(0, pdMS_TO_TICKS(1));
+        }
+
+        tinyusb_cdcacm_write_flush(0, 0);
+    }
+    else{
+
+        //ets_printf("CDC SKIP\r\n");
+        tinyusb_cdcacm_write_flush(0, 0);
+
+    }
+
+
+
+    /*
+    char temp[length+1];
+    temp[length] = '\0';
+    for (uint16_t i=0; i<length; i++){
+
+        temp[i] = buffer[i];
+    }
+    ets_printf("CDC: %d %s\r\n", queued, temp);
+    */
+
+    //tinyusb_cdcacm_write_flush(0, pdMS_TO_TICKS(1000));
+
+
+    return 1;
+}
 
 
 // =========================== HID ======================== //

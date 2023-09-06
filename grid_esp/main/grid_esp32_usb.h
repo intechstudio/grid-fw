@@ -54,6 +54,9 @@ void grid_esp32_usb_init(void);
 
 extern void grid_platform_sync1_pulse_send();
 
+
+int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
+
 #ifdef __cplusplus
 }
 #endif

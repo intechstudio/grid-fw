@@ -469,6 +469,8 @@ void grid_esp32_port_task(void *arg)
 
     static uint32_t loopcounter = 0;
 
+    static uint32_t cooldown = 0;
+
 
     SemaphoreHandle_t spi_ready_sem = xSemaphoreCreateBinary();
 
@@ -560,7 +562,13 @@ void grid_esp32_port_task(void *arg)
 
             c0 = grid_platform_get_cycles();
 
-            if (loopcounter%2 == 0){
+
+            if (cooldown>0){
+                cooldown--;
+            }
+
+
+            if (loopcounter%2 == 0 && cooldown == 0){
 
                 // pending local events must be evaluated first
                 // local events are only triggered when configuration changes!
@@ -586,7 +594,7 @@ void grid_esp32_port_task(void *arg)
 
                         if (grid_ui_event_count_istriggered(&grid_ui_state)){
 
-                            grid_ui_state.port->cooldown += 3;	
+                            cooldown += 3;	
 
                             //CRITICAL_SECTION_ENTER()
                             vTaskSuspendAll();
@@ -631,7 +639,10 @@ void grid_esp32_port_task(void *arg)
             //plot_port_debug();
 
             // OUTBOUND
+
+
             grid_port_process_outbound_usb(GRID_PORT_H);
+
             grid_port_process_outbound_ui(GRID_PORT_U);
 
 
