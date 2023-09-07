@@ -161,6 +161,8 @@ void app_main(void)
 
 
     grid_esp32_usb_init();
+
+    ets_printf("TEST\r\n");
     grid_usb_midi_buffer_init();
     grid_usb_keyboard_buffer_init(&grid_keyboard_state);
 

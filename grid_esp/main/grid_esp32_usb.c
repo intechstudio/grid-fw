@@ -91,34 +91,36 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event)
 
 }
 
+static uint8_t DRAM_ATTR usb_tx_ready = 0;
+
 void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event)
 {
     int dtr = event->line_state_changed_data.dtr;
     int rts = event->line_state_changed_data.rts;
     ESP_LOGI(TAG, "Line state changed on channel %d: DTR:%d, RTS:%d", itf, dtr, rts);
 
-    GRID_PORT_H->tx_double_buffer_status = 0;
+    usb_tx_ready = 1;
 }
 
 
 
 void tud_cdc_tx_complete_cb(uint8_t itf){
     //ets_printf("CDC TXC\r\n");
-    GRID_PORT_H->tx_double_buffer_status = 0;
+    usb_tx_ready = 1;
 }
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
 
     //tinyusb_cdcacm_write_flush(0, pdMS_TO_TICKS(10));
-    if (GRID_PORT_H->tx_double_buffer_status == 0){
+    if (usb_tx_ready == 1){
 
-        GRID_PORT_H->tx_double_buffer_status = 1;
+        usb_tx_ready = 0;
     
    
         uint32_t queued = tinyusb_cdcacm_write_queue(0, (const uint8_t*) buffer, length);
 
         if (queued==0){
-            GRID_PORT_H->tx_double_buffer_status = 0;
+            usb_tx_ready = 1;
         }       
 
         if (queued != length){
