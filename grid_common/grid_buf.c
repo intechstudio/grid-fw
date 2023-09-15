@@ -138,26 +138,7 @@ uint8_t grid_buffer_write_cancel(struct grid_buffer* buf){
 }
 
 uint16_t grid_buffer_read_size(struct grid_buffer* buf){
-	
-	if (buf->read_active != buf->read_stop) {
-		while(1){
-			// TRAP: TRANSMISSION WAS NOT OVER YET
-		}
-	}
-	
-	
-	if (buf->read_start	 != buf->read_stop) {
-		while(1){
-			// TRAP: TRANSMISSION WAS NOT OVER YET
-		}
-	}
-	
-	if (buf->read_start == buf->write_start) {
-		return 0;
-	}
-	
-	
-	
+
 	// Seek message end character
 	for (uint16_t i=0; i<buf->buffer_length; i++){
 		
@@ -174,35 +155,11 @@ uint16_t grid_buffer_read_size(struct grid_buffer* buf){
 		
 		
 	}
-	
-	while(1){
-		// TRAP: TRANSMISSION WAS NOT OVER YET
-	}
-	
-	
+
 }
 
 uint16_t grid_buffer_read_init(struct grid_buffer* buf){
-	
-	if (buf->read_active != buf->read_stop) {
-		while(1){
-		// TRAP: TRANSMISSION WAS NOT OVER YET
-		}	
-	}
-	
-	
-	if (buf->read_start	 != buf->read_stop) {
-		while(1){
-		// TRAP: TRANSMISSION WAS NOT OVER YET
-		}	
-	}
-	
-	if (buf->read_start == buf->write_start) {
-		return 0;
-	}
-	
-	
-	
+		
 	// Seek message end character	
 	for (uint16_t i=0; i<buf->buffer_length; i++){
 		
@@ -223,12 +180,6 @@ uint16_t grid_buffer_read_init(struct grid_buffer* buf){
 		
 		
 	}
-		
-	while(1){
-		// TRAP: TRANSMISSION WAS NOT OVER YET
-	}
-	
-	
 }
 
 uint8_t grid_buffer_read_character(struct grid_buffer* buf){
