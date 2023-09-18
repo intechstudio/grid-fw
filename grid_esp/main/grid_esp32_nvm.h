@@ -47,7 +47,6 @@ extern "C" {
 
 struct grid_esp32_nvm_model{
 
-    uint8_t was_factory_reset;
 
 
 };

@@ -111,7 +111,6 @@ static void periodic_rtc_ms_cb(void *arg)
 void system_init_core_2_task(void *arg)
 {
 
-
     grid_esp32_swd_pico_pins_init(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, GRID_ESP32_PINS_RP_CLOCK);
     grid_esp32_swd_pico_clock_init(LEDC_TIMER_0, LEDC_CHANNEL_0);
     grid_esp32_swd_pico_program_sram(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, pico_firmware, pico_firmware_len);
@@ -148,63 +147,6 @@ void app_main(void)
 {
 
 
-    SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
-    xSemaphoreGive(nvm_or_port);
-
-
-
-    ESP_LOGI(TAG, "===== MAIN START =====");
-
-    gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
-    gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
-
-
-
-    grid_esp32_usb_init();
-
-    ets_printf("TEST\r\n");
-    grid_usb_midi_buffer_init();
-    grid_usb_keyboard_buffer_init(&grid_keyboard_state);
-
-    TaskHandle_t core2_task_hdl;
-    xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024*3, NULL, 4, &core2_task_hdl, 1);
-
-
-    // GRID MODULE INITIALIZATION SEQUENCE
-
-
-    ESP_LOGI(TAG, "===== NVM START =====");
-    xSemaphoreTake(nvm_or_port, 0);
-    grid_esp32_nvm_init(&grid_esp32_nvm_state);
-
-    if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0){
-
-        grid_esp32_nvm_erase(&grid_esp32_nvm_state);
-        grid_esp32_nvm_state.was_factory_reset = true;
-    }
-
-    xSemaphoreGive(nvm_or_port);
-
-    ESP_LOGI(TAG, "===== SYS START =====");
-    grid_sys_init(&grid_sys_state);
-
-    ESP_LOGI(TAG, "===== MSG START =====");
-	grid_msg_init(&grid_msg_state); //setup session id, last message buffer init
-
-
-
-
-    ESP_LOGI(TAG, "===== LUA INIT =====");
-	grid_lua_init(&grid_lua_state);
-    grid_lua_set_memory_target(&grid_lua_state, 80); //80kb
-
-    // ================== START: grid_module_pbf4_init() ================== //
-
-	
-    ESP_LOGI(TAG, "===== PORT INIT =====");
-
-
-
 	GRID_PORT_N = &PORT_N;
 	GRID_PORT_E = &PORT_E;
 	GRID_PORT_S = &PORT_S;
@@ -212,28 +154,21 @@ void app_main(void)
 	GRID_PORT_U = &PORT_U;
 	GRID_PORT_H = &PORT_H;
 
-	GRID_PORT_N->tx_buffer.buffer_storage = PORT_N_TX;
-	GRID_PORT_N->rx_buffer.buffer_storage = PORT_N_RX;
-	GRID_PORT_E->tx_buffer.buffer_storage = PORT_E_TX;
-	GRID_PORT_E->rx_buffer.buffer_storage = PORT_E_RX;
-	GRID_PORT_S->tx_buffer.buffer_storage = PORT_S_TX;
-	GRID_PORT_S->rx_buffer.buffer_storage = PORT_S_RX;
-	GRID_PORT_W->tx_buffer.buffer_storage = PORT_W_TX;
-	GRID_PORT_W->rx_buffer.buffer_storage = PORT_W_RX;
 
-	GRID_PORT_U->tx_buffer.buffer_storage = PORT_U_TX;
-	GRID_PORT_U->rx_buffer.buffer_storage = PORT_U_RX;
-	GRID_PORT_H->tx_buffer.buffer_storage = PORT_H_TX;
-	GRID_PORT_H->rx_buffer.buffer_storage = PORT_H_RX;
+    SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
+    xSemaphoreGive(nvm_or_port);
 
 
-    grid_port_init_all(); // buffers
-    
-    ESP_LOGI(TAG, "===== BANK INIT =====");
-    grid_sys_set_bank(&grid_sys_state, 0);
-    ets_delay_us(2000);
 
-   // grid_sys_state.hwfcg = GRID_MODULE_EF44_RevD;
+    ESP_LOGI(TAG, "===== MAIN START =====");
+
+
+    gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
+    gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
+
+    ESP_LOGI(TAG, "===== SYS START =====");
+    grid_sys_init(&grid_sys_state);
+
 
     ESP_LOGI(TAG, "===== UI INIT =====");
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD){
@@ -260,6 +195,89 @@ void app_main(void)
 	else{
 		ets_printf("Init Module: Unknown Module\r\n");
 	}
+
+    TaskHandle_t led_task_hdl;
+    xTaskCreatePinnedToCore(grid_esp32_led_task,
+                            "led",
+                            1024*3,
+                            NULL,
+                            LED_TASK_PRIORITY,
+                            &led_task_hdl,
+                            0);
+
+
+
+
+    grid_esp32_usb_init();
+
+    ets_printf("TEST\r\n");
+    grid_usb_midi_buffer_init();
+    grid_usb_keyboard_buffer_init(&grid_keyboard_state);
+
+    TaskHandle_t core2_task_hdl;
+    xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024*3, NULL, 4, &core2_task_hdl, 1);
+
+    // GRID MODULE INITIALIZATION SEQUENCE
+
+
+    ESP_LOGI(TAG, "===== NVM START =====");
+    xSemaphoreTake(nvm_or_port, 0);
+    grid_esp32_nvm_init(&grid_esp32_nvm_state);
+
+    if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0){
+
+
+        grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
+        grid_led_set_alert_frequency(&grid_led_state, 4);
+        grid_esp32_nvm_erase(&grid_esp32_nvm_state);
+        vTaskDelay(pdMS_TO_TICKS(600));
+
+    }
+
+    xSemaphoreGive(nvm_or_port);
+
+
+
+
+
+
+    ESP_LOGI(TAG, "===== MSG START =====");
+	grid_msg_init(&grid_msg_state); //setup session id, last message buffer init
+
+
+
+
+    ESP_LOGI(TAG, "===== LUA INIT =====");
+	grid_lua_init(&grid_lua_state);
+    grid_lua_set_memory_target(&grid_lua_state, 80); //80kb
+
+    // ================== START: grid_module_pbf4_init() ================== //
+
+	
+    ESP_LOGI(TAG, "===== PORT INIT =====");
+
+
+	GRID_PORT_N->tx_buffer.buffer_storage = PORT_N_TX;
+	GRID_PORT_N->rx_buffer.buffer_storage = PORT_N_RX;
+	GRID_PORT_E->tx_buffer.buffer_storage = PORT_E_TX;
+	GRID_PORT_E->rx_buffer.buffer_storage = PORT_E_RX;
+	GRID_PORT_S->tx_buffer.buffer_storage = PORT_S_TX;
+	GRID_PORT_S->rx_buffer.buffer_storage = PORT_S_RX;
+	GRID_PORT_W->tx_buffer.buffer_storage = PORT_W_TX;
+	GRID_PORT_W->rx_buffer.buffer_storage = PORT_W_RX;
+
+	GRID_PORT_U->tx_buffer.buffer_storage = PORT_U_TX;
+	GRID_PORT_U->rx_buffer.buffer_storage = PORT_U_RX;
+	GRID_PORT_H->tx_buffer.buffer_storage = PORT_H_TX;
+	GRID_PORT_H->rx_buffer.buffer_storage = PORT_H_RX;
+
+    grid_port_init_all(); // buffers
+    
+    ESP_LOGI(TAG, "===== BANK INIT =====");
+    grid_sys_set_bank(&grid_sys_state, 0);
+    ets_delay_us(2000);
+
+
 
 
     grid_ui_page_load(&grid_ui_state, 0); //load page 0
@@ -315,14 +333,7 @@ void app_main(void)
 
 
     //Create the class driver task
-    TaskHandle_t led_task_hdl;
-    xTaskCreatePinnedToCore(grid_esp32_led_task,
-                            "led",
-                            1024*3,
-                            (void *)signaling_sem,
-                            LED_TASK_PRIORITY,
-                            &led_task_hdl,
-                            0);
+
 
     TaskHandle_t nvm_task_hdl;
 
@@ -379,6 +390,9 @@ void app_main(void)
 
 
     esp_log_level_set("*", ESP_LOG_INFO);
+
+
+    grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
 
     ESP_LOGI(TAG, "===== INIT COMPLETE =====");
 

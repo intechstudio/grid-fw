@@ -147,7 +147,6 @@ void grid_esp32_nvm_read_write_test(){
 
 void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm){
 
-    nvm->was_factory_reset = false;
 
     //grid_esp32_nvm_print_chip_info();
 

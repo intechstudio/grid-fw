@@ -19,7 +19,6 @@
 
 
 #include "../../grid_common/grid_led.h"
-#include "grid_esp32_nvm.h"
 
 
 #include "driver/gpio.h"
