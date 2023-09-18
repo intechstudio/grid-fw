@@ -321,13 +321,7 @@ uint32_t grid_msg_recent_fingerprint_calculate(char* message){
 }
 
 
-void grid_port_receive_decode(struct grid_port* por, uint16_t len){
-
-	// Copy data from cyrcular buffer to temporary linear array;
-	char* message;
-	
-	uint16_t length = len;
-	char buffer[length+1];
+static void grid_port_rxdobulebuffer_receive_to_buffer(struct grid_port* por, char* buffer, uint16_t length){
 
 	// Store message in temporary buffer (MAXMSGLEN = 250 character)
 	for (uint16_t i = 0; i<length; i++){
@@ -337,8 +331,6 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 	buffer[length] = 0;
 
 
-	message = &buffer[0];
-	
 	// Clear data from rx double buffer
 	for (uint16_t i = 0; i<length; i++){
 		por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i)%GRID_DOUBLE_BUFFER_RX_SIZE] = 0;
@@ -350,8 +342,19 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 	por->rx_double_buffer_seek_start_index =  por->rx_double_buffer_read_start_index;
 	
 	por->rx_double_buffer_status = 0;
+}
+
+void grid_port_receive_decode(struct grid_port* por, uint16_t len){
+
+
+	uint16_t length = len;
+	char buffer[length+1];
+
+	// Copy data from cyrcular buffer to temporary linear array;
+	grid_port_rxdobulebuffer_receive_to_buffer(por, buffer, length);
 	
 
+	char* message = &buffer[0];
 		
 	// Correct the incorrect frame start location
 	for (uint16_t i = 1; i<length; i++){
@@ -486,7 +489,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 		
 	struct grid_port* target_port_array[port_count];
 
-	uint8_t j=0;
+	uint8_t target_port_count = 0;
 	
 	for(uint8_t i=0; i<port_count; i++){
 
@@ -500,28 +503,17 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 			continue;
 		}
 
-		target_port_array[j] = next_port;
-		j++;	
-	}
-	uint8_t target_port_count = j;
-	
-
-		
-	// Check all of the tx buffers for sufficient storage space
-	
-	for (uint8_t i=0; i<target_port_count; i++)
-	{
-		
-		if (packet_size > grid_buffer_write_size(&target_port_array[i]->tx_buffer)){
-			
+		if (packet_size > grid_buffer_write_size(&next_port->tx_buffer)){
+			// one of the targetports do not have enough space to store the packet			
 			grid_platform_printf("Buffer Error: %d/%d \r\n", i, target_port_count);
 			grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_BLUE, 128);
-			
-			// sorry one of the buffers cannot store the packet, we will try later
 			return 0;
-		}		
+		}
+
+		target_port_array[target_port_count] = next_port;
+		target_port_count++;	
 	}
-	
+		
 	// Copy packet from source buffer to temp array
 	 
 	char buffer[packet_size];
