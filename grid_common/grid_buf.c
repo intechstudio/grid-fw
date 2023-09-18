@@ -156,6 +156,8 @@ uint16_t grid_buffer_read_size(struct grid_buffer* buf){
 		
 	}
 
+	return 0;
+
 }
 
 uint16_t grid_buffer_read_init(struct grid_buffer* buf){
@@ -180,6 +182,8 @@ uint16_t grid_buffer_read_init(struct grid_buffer* buf){
 		
 		
 	}
+
+	return 0;
 }
 
 uint8_t grid_buffer_read_character(struct grid_buffer* buf){
