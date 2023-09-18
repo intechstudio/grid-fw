@@ -98,7 +98,13 @@ void grid_esp32_led_task(void *arg)
 
     static uint32_t loopcounter = 0;
 
-    grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+
+    if (grid_esp32_nvm_state.was_factory_reset){
+        grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 500);
+    }
+    else{
+        grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+    }
 
     while (1) {
 

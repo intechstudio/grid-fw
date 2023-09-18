@@ -47,11 +47,12 @@ extern "C" {
 
 struct grid_esp32_nvm_model{
 
+    uint8_t was_factory_reset;
 
 
 };
 
-extern struct grid_esp32_nvm_model* grid_esp32_nvm_state;
+extern struct grid_esp32_nvm_model grid_esp32_nvm_state;
 
 extern uint32_t grid_platform_get_cycles();
 extern uint32_t grid_platform_get_cycles_per_us();

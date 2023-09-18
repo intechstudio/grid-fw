@@ -176,6 +176,13 @@ void app_main(void)
     ESP_LOGI(TAG, "===== NVM START =====");
     xSemaphoreTake(nvm_or_port, 0);
     grid_esp32_nvm_init(&grid_esp32_nvm_state);
+
+    if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0){
+
+        grid_esp32_nvm_erase(&grid_esp32_nvm_state);
+        grid_esp32_nvm_state.was_factory_reset = true;
+    }
+
     xSemaphoreGive(nvm_or_port);
 
     ESP_LOGI(TAG, "===== SYS START =====");
