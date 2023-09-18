@@ -28,8 +28,97 @@ char grid_port_get_name_char(struct grid_port* por){
 }
 
 
-void grid_port_receive_task(struct grid_port* por){
+static void grid_port_timeout_try_disconect(struct grid_port* por){
 
+	if (grid_platform_rtc_get_elapsed_time(por->rx_double_buffer_timestamp) < 1000*1000){
+		// no need to disconnect yet!
+		return;
+	}
+
+	if (por->partner_status == 1){
+	
+			// Print Direction for debugging
+			grid_platform_printf("Disconnect %c\r\n", grid_port_get_name_char(por));	
+			
+			grid_port_receiver_softreset(por);	
+
+			grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
+			grid_led_set_alert_frequency(&grid_led_state, -2);	
+			grid_led_set_alert_phase(&grid_led_state, 100);	
+	}
+	else{
+	
+		if (por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0){
+			// Ready to receive
+			//grid_platform_printf("RtR\r\n");
+			grid_port_receiver_softreset(por);
+		}
+		else{
+		
+			// Print Direction for debugging
+			grid_platform_printf("Timeout Disconnect 2 %c (R%d S%d W%d)\r\n", grid_port_get_name_char(por), por->rx_double_buffer_read_start_index, por->rx_double_buffer_seek_start_index, por->rx_double_buffer_write_index);
+			grid_port_receiver_softreset(por);
+		}
+	
+	}
+}
+
+
+static uint8_t grid_port_rxdobulebuffer_check_overrun(struct grid_port* por){
+
+	uint8_t overrun_condition_1 = (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1);
+	uint8_t overrun_condition_2 = (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0);
+	uint8_t overrun_condition_3 = (por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE -1)%GRID_DOUBLE_BUFFER_RX_SIZE] !=0);
+
+	return (overrun_condition_1 || overrun_condition_2 || overrun_condition_3);
+
+}
+
+static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por){
+
+
+	for(uint16_t i = 0; i<490; i++){ // 490 is the max processing length
+				
+		if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 10){ // \n
+				
+			por->rx_double_buffer_status = 1;
+				
+			break;
+		}
+		else if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 0){
+			
+			break;
+		}
+			
+		// Buffer overrun error 1, 2, 3
+		if (grid_port_rxdobulebuffer_check_overrun(por)){
+
+			grid_platform_printf("Overrun%d\r\n", por->direction);
+			grid_platform_printf("R%d S%d W%d\r\n", por->rx_double_buffer_read_start_index, por->rx_double_buffer_seek_start_index, por->rx_double_buffer_write_index);
+
+			grid_port_receiver_hardreset(por);	
+
+			grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
+			grid_led_set_alert_frequency(&grid_led_state, -2);	
+			grid_led_set_alert_phase(&grid_led_state, 100);	
+			return;
+		}
+			
+		// Increment seek pointer
+		if (por->rx_double_buffer_seek_start_index < GRID_DOUBLE_BUFFER_RX_SIZE-1){
+				
+			por->rx_double_buffer_seek_start_index++;
+		}
+		else{
+				
+			por->rx_double_buffer_seek_start_index=0;
+		}
+			
+	}
+}
+
+
+void grid_port_receive_task(struct grid_port* por){
 
 	//parity error
 	
@@ -37,7 +126,6 @@ void grid_port_receive_task(struct grid_port* por){
 		
 		por->usart_error_flag = 0;
 		
-
 		grid_platform_printf("Parity\r\n");
 		grid_port_receiver_hardreset(por);
 		grid_port_debug_printf("Parity error");
@@ -55,109 +143,10 @@ void grid_port_receive_task(struct grid_port* por){
 		
 		if (por->type == GRID_PORT_TYPE_USART){ // This is GRID usart port
 
-			if (grid_platform_rtc_get_elapsed_time(por->rx_double_buffer_timestamp) > 1000*1000){ // 1000*1000us = 1sec
-			
-				if (por->partner_status == 1){
-				
-						// Print Direction for debugging
-						grid_platform_printf("Disconnect %c\r\n", grid_port_get_name_char(por));	
-						
-						grid_port_receiver_softreset(por);	
-
-						grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
-						grid_led_set_alert_frequency(&grid_led_state, -2);	
-						grid_led_set_alert_phase(&grid_led_state, 100);	
-				}
-				else{
-				
-					if (por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0){
-						// Ready to receive
-						//grid_platform_printf("RtR\r\n");
-						grid_port_receiver_softreset(por);
-					}
-					else{
-					
-						// Print Direction for debugging
-						grid_platform_printf("Timeout Disconnect 2 %c (R%d S%d W%d)\r\n", grid_port_get_name_char(por), por->rx_double_buffer_read_start_index, por->rx_double_buffer_seek_start_index, por->rx_double_buffer_write_index);
-						grid_port_receiver_softreset(por);
-					}
-				
-				}
-			
-			}		
-					
+			grid_port_timeout_try_disconect(por);					
 		}
 		
-		for(uint16_t i = 0; i<490; i++){ // 490 is the max processing length
-				
-			if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 10){ // \n
-					
-				por->rx_double_buffer_status = 1;
-					
-				break;
-			}
-			else if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 0){
-				
-				break;
-			}
-				
-				
-			uint8_t overrun_condition_1 = (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index-1);
-			uint8_t overrun_condition_2 = (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE-1 && por->rx_double_buffer_read_start_index == 0);
-			uint8_t overrun_condition_3 = (por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE -1)%GRID_DOUBLE_BUFFER_RX_SIZE] !=0);
-			
-			// Buffer overrun error 1, 2, 3
-			if (overrun_condition_1 || overrun_condition_2 || overrun_condition_3){
-
-				grid_platform_printf("Overrun%d%d%d %d\r\n", overrun_condition_1, overrun_condition_2, overrun_condition_3, por->direction);
-				grid_platform_printf("R%d S%d W%d\r\n", por->rx_double_buffer_read_start_index, por->rx_double_buffer_seek_start_index, por->rx_double_buffer_write_index);
-
-
-				// if (1){
-
-				// 	for (uint16_t i = 0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
-
-				// 		if (i == por->rx_double_buffer_read_start_index){
-				// 			grid_platform_printf("RPTR ");
-				// 		}
-				// 		if (i == por->rx_double_buffer_seek_start_index){
-				// 			grid_platform_printf("SPTR ");
-				// 		}
-				// 		if (i == por->rx_double_buffer_write_index){
-				// 			grid_platform_printf("WPTR ");
-				// 		}
-
-
-				// 		grid_platform_printf("%02x ", por->rx_double_buffer[i]);
-				// 		if (por->rx_double_buffer[i] == '\n'){
-				// 			grid_platform_printf("\r\n");
-				// 		}
-				// 	}
-
-
-				// }
-				
-				grid_port_receiver_hardreset(por);	
-				
-				//printf("Overrun\r\n"); // never use grid message to indicate overrun directly				
-
-				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
-				grid_led_set_alert_frequency(&grid_led_state, -2);	
-				grid_led_set_alert_phase(&grid_led_state, 100);	
-				return;
-			}
-				
-				
-			if (por->rx_double_buffer_seek_start_index < GRID_DOUBLE_BUFFER_RX_SIZE-1){
-					
-				por->rx_double_buffer_seek_start_index++;
-			}
-			else{
-					
-				por->rx_double_buffer_seek_start_index=0;
-			}
-				
-		}
+		grid_port_rxdobulebuffer_seek_newline(por);
 	}
 	
 	////////////////// PART 2
@@ -188,25 +177,157 @@ void grid_port_receive_task(struct grid_port* por){
 	
 }
 
+uint8_t grid_msg_is_position_transformable(int8_t received_x, int8_t received_y){
+	// Position is transformabe if x and y positions do not indicate global message or editor message
 
+	if (received_x + GRID_PARAMETER_DEFAULT_POSITION == 0 && received_y + GRID_PARAMETER_DEFAULT_POSITION == 0)
+	{
+		// EDITOR GENERATED GLOBAL MESSAGE
+		return false;
+		
+	}
+	else if (received_x + GRID_PARAMETER_DEFAULT_POSITION == 255 && received_y + GRID_PARAMETER_DEFAULT_POSITION == 255){
+		
+		// GRID GENERATED GLOBAL MESSAGE
+		return false;
+		
+	}
+	else{
+		
+		// Normal grid message
+		return true;
+
+	}
+
+}
+
+void grid_msg_string_transform_brc_params(char* message, int8_t dx, int8_t dy, uint8_t partner_fi){
+
+	uint8_t error = 0;
+
+	uint8_t received_session = grid_msg_string_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
+	uint8_t received_msgage = grid_msg_string_get_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
+	
+	// Read the received destination X Y values (SIGNED INT)
+	int8_t received_dx  = grid_msg_string_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+	int8_t received_dy  = grid_msg_string_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+	
+	// Read the received source X Y values (SIGNED INT)
+	int8_t received_sx  = grid_msg_string_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+	int8_t received_sy  = grid_msg_string_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+	
+	uint8_t received_rot = grid_msg_string_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
+	
+
+	// DO THE DX DY AGE calculations
+	
+	
+	int8_t rotated_dx = 0;
+	int8_t rotated_dy = 0;
+
+	int8_t rotated_sx = 0;
+	int8_t rotated_sy = 0;
+	
+	uint8_t updated_rot = (received_rot + partner_fi)%4;
+
+	// APPLY THE 2D ROTATION MATRIX
+	
+	if (partner_fi == 0){ // 0 deg
+		rotated_dx  += received_dx;
+		rotated_dy  += received_dy;
+
+		rotated_sx  += received_sx;
+		rotated_sy  += received_sy;
+	}
+	else if(partner_fi == 1){ // 90 deg
+		rotated_dx  -= received_dy;
+		rotated_dy  += received_dx;
+
+		rotated_sx  -= received_sy;
+		rotated_sy  += received_sx;
+	}
+	else if(partner_fi == 2){ // 180 deg
+		rotated_dx  -= received_dx;
+		rotated_dy  -= received_dy;
+
+		rotated_sx  -= received_sx;
+		rotated_sy  -= received_sy;
+	}
+	else if(partner_fi == 3){ // 270 deg
+		rotated_dx  += received_dy;
+		rotated_dy  -= received_dx;
+
+		rotated_sx  += received_sy;
+		rotated_sy  -= received_sx;
+	}
+	else{
+		// TRAP INVALID MESSAGE
+	}
+	
+	uint8_t updated_dx = rotated_dx + GRID_PARAMETER_DEFAULT_POSITION + dx;
+	uint8_t updated_dy = rotated_dy + GRID_PARAMETER_DEFAULT_POSITION + dy;
+
+	uint8_t updated_sx = rotated_sx + GRID_PARAMETER_DEFAULT_POSITION + dx;
+	uint8_t updated_sy = rotated_sy + GRID_PARAMETER_DEFAULT_POSITION + dy;
+	
+	
+	
+	uint8_t updated_msgage = received_msgage+1;
+	
+
+	if (grid_msg_is_position_transformable(updated_dx, updated_dy)){
+		
+		// Update message with the new values
+		grid_msg_string_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
+		grid_msg_string_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
+
+	}
+	
+	if (grid_msg_is_position_transformable(updated_sx, updated_sy)){
+		
+		// Update message with the new values
+		grid_msg_string_set_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, updated_sx, &error);
+		grid_msg_string_set_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, updated_sy, &error);
+	}
+	
+	grid_msg_string_set_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, updated_msgage, &error);
+	grid_msg_string_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);
+	grid_msg_string_set_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, partner_fi, &error);
+
+	// Recalculate and update the checksum
+	uint16_t length = strlen(message);
+	grid_msg_string_checksum_write(message, length, grid_msg_string_calculate_checksum_of_packet_string(message, length));
+
+
+
+}
+
+
+
+uint32_t grid_msg_recent_fingerprint_calculate(char* message){
+
+	uint8_t error = 0;
+	
+
+	uint8_t received_id  = grid_msg_string_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+	uint8_t received_session = grid_msg_string_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
+	int8_t updated_sx  = grid_msg_string_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+	int8_t updated_sy  = grid_msg_string_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+	
+	uint32_t fingerprint = received_id*256*256*256 + updated_sx*256*256 + updated_sy*256 + received_session;
+
+	return fingerprint;
+
+}
 
 
 void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 
-	//grid_platform_printf("$");
-
-	uint8_t error_flag = 0;
-	uint8_t checksum_calculated = 0;
-	uint8_t checksum_received = 0;
-	
 	// Copy data from cyrcular buffer to temporary linear array;
 	char* message;
 	
 	uint16_t length = len;
 	char buffer[length+1];
-
-	
-
 
 	// Store message in temporary buffer (MAXMSGLEN = 250 character)
 	for (uint16_t i = 0; i<length; i++){
@@ -232,21 +353,16 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 	
 
 		
-
 	// Correct the incorrect frame start location
 	for (uint16_t i = 1; i<length; i++){
 		
 		if (buffer[i] == GRID_CONST_SOH){
 
-			if (i>0){
+			grid_platform_printf("FRAME START OFFSET: ");
 
-				grid_platform_printf("FRAME START OFFSET: ");
-				for (uint16_t j=0; j<length; j++){
-					//grid_platform_printf("%d, ", buffer[j]);
-				}
-				//grid_platform_printf("\r\n");
-				grid_port_debug_printf("Frame Start Offset %d %d %d", buffer[0], buffer[1], i);
-			}
+			//grid_platform_printf("\r\n");
+			grid_port_debug_printf("Frame Start Offset %d %d %d", buffer[0], buffer[1], i);
+	
 			
 			length -= i;
 			message = &buffer[i];
@@ -261,270 +377,99 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 		}
 		
 	}
+
+	// close the message string with terminating zero character
+	message[length] = '\0';
 	
 	
 	// frame validator
-	if (message[0] == GRID_CONST_SOH && message[length-1] == GRID_CONST_LF){
+	if (message[0] != GRID_CONST_SOH || message[length-1] != GRID_CONST_LF){
 		
-				
-		
-		checksum_received = grid_msg_string_checksum_read(message, length);
-		
-		checksum_calculated = grid_msg_string_calculate_checksum_of_packet_string(message, length);
-		
-		// checksum validator
-		if (checksum_calculated == checksum_received){
-					
-			if (message[1] == GRID_CONST_BRC){ // Broadcast message
-				
-				uint8_t error=0;
-
-				// Read the received id age values
-				uint8_t received_id  = grid_msg_string_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
-
-				uint8_t received_session = grid_msg_string_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
-				uint8_t received_msgage = grid_msg_string_get_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
-				
-				// Read the received destination X Y values (SIGNED INT)
-				int8_t received_dx  = grid_msg_string_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-				int8_t received_dy  = grid_msg_string_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-				
-				// Read the received source X Y values (SIGNED INT)
-				int8_t received_sx  = grid_msg_string_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-				int8_t received_sy  = grid_msg_string_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-				
-				uint8_t received_rot = grid_msg_string_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
-				
-
-				// DO THE DX DY AGE calculations
-				
-				
-				int8_t rotated_dx = 0;
-				int8_t rotated_dy = 0;
-
-				int8_t rotated_sx = 0;
-				int8_t rotated_sy = 0;
-				
-				uint8_t updated_rot = (received_rot + por->partner_fi)%4;
-
-				// APPLY THE 2D ROTATION MATRIX
-				
-				if (por->partner_fi == 0){ // 0 deg
-					rotated_dx  += received_dx;
-					rotated_dy  += received_dy;
-
-					rotated_sx  += received_sx;
-					rotated_sy  += received_sy;
-				}
-				else if(por->partner_fi == 1){ // 90 deg
-					rotated_dx  -= received_dy;
-					rotated_dy  += received_dx;
-
-					rotated_sx  -= received_sy;
-					rotated_sy  += received_sx;
-				}
-				else if(por->partner_fi == 2){ // 180 deg
-					rotated_dx  -= received_dx;
-					rotated_dy  -= received_dy;
-
-					rotated_sx  -= received_sx;
-					rotated_sy  -= received_sy;
-				}
-				else if(por->partner_fi == 3){ // 270 deg
-					rotated_dx  += received_dy;
-					rotated_dy  -= received_dx;
-
-					rotated_sx  += received_sy;
-					rotated_sy  -= received_sx;
-				}
-				else{
-					// TRAP INVALID MESSAGE
-				}
-				
-				uint8_t updated_dx = rotated_dx + GRID_PARAMETER_DEFAULT_POSITION + por->dx;
-				uint8_t updated_dy = rotated_dy + GRID_PARAMETER_DEFAULT_POSITION + por->dy;
-
-				uint8_t updated_sx = rotated_sx + GRID_PARAMETER_DEFAULT_POSITION + por->dx;
-				uint8_t updated_sy = rotated_sy + GRID_PARAMETER_DEFAULT_POSITION + por->dy;
-				
-				
-				
-				uint8_t updated_msgage = received_msgage+1;
-				
-				if (received_dx + GRID_PARAMETER_DEFAULT_POSITION == 0 && received_dy + GRID_PARAMETER_DEFAULT_POSITION == 0)
-				{
-					// EDITOR GENERATED GLOBAL MESSAGE
-					
-				}
-				else if (received_dx + GRID_PARAMETER_DEFAULT_POSITION == 255 && received_dy + GRID_PARAMETER_DEFAULT_POSITION == 255){
-					
-					// GRID GENERATED GLOBAL MESSAGE
-					
-				}
-				else{
-					
-					// Update message with the new values
-					grid_msg_string_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
-					grid_msg_string_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
-
-				}
-				
-								
-				if (received_sx + GRID_PARAMETER_DEFAULT_POSITION == 0 && received_sy + GRID_PARAMETER_DEFAULT_POSITION == 0)
-				{
-					// EDITOR GENERATED GLOBAL MESSAGE
-					
-				}
-				else if (received_sx + GRID_PARAMETER_DEFAULT_POSITION == 255 && received_sy + GRID_PARAMETER_DEFAULT_POSITION == 255){
-					
-					// GRID GENERATED GLOBAL MESSAGE
-					
-				}
-				else{
-					
-					// Update message with the new values
-					grid_msg_string_set_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, updated_sx, &error);
-					grid_msg_string_set_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, updated_sy, &error);
-				}
-				
-				grid_msg_string_set_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, updated_msgage, &error);
-				grid_msg_string_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);
-				grid_msg_string_set_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, por->partner_fi, &error);
-
-
-				uint32_t fingerprint = received_id*256*256*256 + updated_sx*256*256 + updated_sy*256 + received_session;
-				
-				
-				if (0 == grid_msg_recent_fingerprint_find(&grid_msg_state, fingerprint)){
-					// WE HAVE NOT HEARD THIS MESSAGE BEFORE
-					
-					// Recalculate and update the checksum
-					
-					grid_msg_string_checksum_write(message, length, grid_msg_string_calculate_checksum_of_packet_string(message, length));
-					
-
-					// IF WE CAN STORE THE MESSAGE IN THE RX BUFFER
-					if (grid_buffer_write_init(&por->rx_buffer, length)){
-						
-						for (uint16_t i=0; i<length; i++){
-							
-							grid_buffer_write_character(&por->rx_buffer, message[i]);
-							
-						}
-						
-						grid_buffer_write_acknowledge(&por->rx_buffer);
-						
-						//grid_port_process_inbound(por);
-						
-						grid_msg_recent_fingerprint_store(&grid_msg_state, fingerprint);
-						
-					}
-					
-					
-					
-				}
-				else{
-					// WE ALREADY HEARD THIS MESSAGE
-					// grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 20);
-					
-				}
-				
-				
-			}
-			else if (message[1] == GRID_CONST_DCT){ // Direct Message
-				
-				uint8_t error=0;
-
-				//process direct message
-				
-				if (message[2] == GRID_CONST_ACK){
-
-				}
-				else if (message[2] == GRID_CONST_NAK){
-					// RESEND PREVIOUS
-				}
-				else if (message[2] == GRID_CONST_CAN){
-					// RESEND PREVIOUS
-				}
-				else if (message[2] == GRID_CONST_BELL){
-
-					if (por->partner_status == 0){
-
-						// CONNECT
-						por->partner_fi = (message[3] - por->direction + 6)%4;
-						por->partner_hwcfg = grid_msg_string_read_hex_string_value(&message[length-10], 2, &error);
-						por->partner_status = 1;
-						
-						por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
-						
-						// Print Direction for debugging
-						grid_platform_printf("Connect %c\r\n", grid_port_get_name_char(por));	
-
-						grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
-						grid_led_set_alert_frequency(&grid_led_state, -2);	
-						grid_led_set_alert_phase(&grid_led_state, 100);	
-
-
-					}
-					else{
-
-
-						//grid_platform_printf("RX\r\n");	
-
-						por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
-						//grid_platform_printf("Ping %c\r\n", grid_port_get_name_char(por));	
-					}
-				}
-				
-			}
-			else{ // Unknown Message Type
-				
-				grid_port_debug_printf("Unknown message type\r\n");
-				
-			}
-			
-
-			
-		}
-		else{
-			// INVALID CHECKSUM
-		
-
-			uint8_t error = 0;
-
-			uint16_t packet_length  = grid_msg_string_get_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, &error);
-			grid_platform_printf("##CHK %d %d\r\n",  packet_length, length);
-
-			grid_port_debug_printf("Checksum %02x %02x", checksum_calculated, checksum_received);
-		
-			
-			
-		}
-		
-
-		// if (length>150){
-		// 	printf("long frame: ");
-		// 	for(uint16_t i=0; i<length; i++){
-		// 		printf("%d,", message[i]);
-		// 	}
-		// 	printf("\r\n");
-		// }
+		grid_port_debug_printf("Frame Error %d ", length);
+		return;
 
 	}
-	else{
-		// frame error
+	
 
-		grid_port_debug_printf("Frame Error %d ", length);
+	// checksum validator
+	uint8_t checksum_received = grid_msg_string_checksum_read(message, length);
+	uint8_t checksum_calculated = grid_msg_string_calculate_checksum_of_packet_string(message, length);
+	
+	if (checksum_calculated != checksum_received){
 
-		// printf("\r\bFRAME ");
-		// for(uint16_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
-		// 	printf("%02x ", GRID_PORT_H->rx_double_buffer[i]);
-		// }
-		// printf("\r\n");
+		// INVALID CHECKSUM
+		uint8_t error = 0;
+
+		uint16_t packet_length  = grid_msg_string_get_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, &error);
+		grid_platform_printf("##CHK %d %d\r\n",  packet_length, length);
+		grid_port_debug_printf("Checksum %02x %02x", checksum_calculated, checksum_received);
+		return;
+	}
+
+
+			
+	if (message[1] == GRID_CONST_BRC){ // Broadcast message
+		
+		uint8_t error=0;
+
+		// update age, sx, sy, dx, dy, rot etc...
+		grid_msg_string_transform_brc_params(message, por->dx, por->dy, por->partner_fi);
+
+		uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(message);		
+
+		if (grid_msg_recent_fingerprint_find(&grid_msg_state, fingerprint)){
+			// WE HAVE NOT HEARD THIS MESSAGE BEFORE
+			// grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 20);
+			return;
+		}
+		
+		// Check if we can store the message in rx buffer
+		if (grid_buffer_write_init(&por->rx_buffer, length)){
+			
+			for (uint16_t i=0; i<length; i++){
+				
+				grid_buffer_write_character(&por->rx_buffer, message[i]);
+				
+			}
+			
+			grid_buffer_write_acknowledge(&por->rx_buffer);
+			
+			//grid_port_process_inbound(por);
+			
+			grid_msg_recent_fingerprint_store(&grid_msg_state, fingerprint);	
+		}
+			
+	}
+	else if (message[1] == GRID_CONST_DCT || message[2] == GRID_CONST_BELL){ // Direct Message
+		
+		uint8_t error=0;
+
+		// reset timout counter
+		por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
+
+		if (por->partner_status == 0){
+
+			// CONNECT
+			por->partner_fi = (message[3] - por->direction + 6)%4;
+			por->partner_hwcfg = grid_msg_string_read_hex_string_value(&message[length-10], 2, &error);
+			por->partner_status = 1;				
+			
+			// Print Direction for debugging
+			grid_platform_printf("Connect %c\r\n", grid_port_get_name_char(por));	
+
+			grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
+			grid_led_set_alert_frequency(&grid_led_state, -2);	
+			grid_led_set_alert_phase(&grid_led_state, 100);	
+
+		}
+		
+	}
+	else{ // Unknown Message Type
+		
+		grid_port_debug_printf("Unknown message type\r\n");
 		
 	}
 	
-	return;
 	
 }
 

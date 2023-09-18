@@ -181,8 +181,8 @@ void grid_msg_recent_fingerprint_store(struct grid_msg_model* mod, uint32_t fing
 
 // STRING FUNCTIONS
 
-uint32_t grid_msg_string_get_parameter(char* message, uint8_t offset, uint8_t length, uint8_t* error);
-void grid_msg_string_set_parameter(char* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error);
+uint32_t grid_msg_string_get_parameter(char* message, uint16_t offset, uint8_t length, uint8_t* error);
+void grid_msg_string_set_parameter(char* message, uint16_t offset, uint8_t length, uint32_t value, uint8_t* error);
 
 
 uint8_t grid_msg_string_calculate_checksum_of_packet_string(char* str, uint32_t length);

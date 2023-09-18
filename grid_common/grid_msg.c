@@ -502,12 +502,12 @@ void grid_msg_string_checksum_write(char* message, uint32_t length, uint8_t chec
 
 // MESSAGE PARAMETER FUNCTIONS
 
-uint32_t grid_msg_string_get_parameter(char* message, uint8_t offset, uint8_t length, uint8_t* error){
+uint32_t grid_msg_string_get_parameter(char* message, uint16_t offset, uint8_t length, uint8_t* error){
 		
 	return grid_msg_string_read_hex_string_value(&message[offset], length, error);	
 }
 
-void grid_msg_string_set_parameter(char* message, uint8_t offset, uint8_t length, uint32_t value, uint8_t* error){
+void grid_msg_string_set_parameter(char* message, uint16_t offset, uint8_t length, uint32_t value, uint8_t* error){
 	
 	grid_msg_string_write_hex_string_value(&message[offset], length, value);
 	
