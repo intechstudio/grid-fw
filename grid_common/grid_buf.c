@@ -160,6 +160,53 @@ uint16_t grid_buffer_read_size(struct grid_buffer* buf){
 
 }
 
+
+uint8_t grid_buffer_write_chunk(struct grid_buffer* buf, char* chunk, uint16_t length){
+
+
+	if (grid_buffer_write_init(buf, length)){
+
+		for (uint16_t i=0; i<length; i++)
+		{
+			
+			grid_buffer_write_character(buf, chunk[i]);
+								
+		}
+
+		grid_buffer_write_acknowledge(buf);
+
+		return 1;
+	}
+	else{
+
+		return 0;
+	}
+	
+}
+
+uint8_t grid_buffer_write_packet(struct grid_buffer* buf, struct grid_msg_packet* packet){
+
+		
+	uint32_t message_length = grid_msg_packet_get_length(packet);
+		
+
+	// Put the packet into the UI_TX buffer
+	if (grid_buffer_write_init(buf, message_length)){
+			
+		for(uint32_t i = 0; i<message_length; i++){
+				
+			grid_buffer_write_character(buf, grid_msg_packet_send_char_by_char(packet, i));
+		}
+			
+		grid_buffer_write_acknowledge(buf);
+
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}
+
 uint16_t grid_buffer_read_init(struct grid_buffer* buf){
 		
 	// Seek message end character	
@@ -239,6 +286,22 @@ uint8_t grid_buffer_read_cancel(struct grid_buffer* buf){
 	buf->read_active = buf->read_stop;
 	buf->read_start  = buf->read_stop;
 	
+	return 1;
+}
+
+
+uint8_t grid_buffer_read_chunk(struct grid_buffer* buf, char* chunk, uint16_t length){
+
+	grid_buffer_read_init(buf);
+												
+	for (uint16_t i=0; i<length; i++)
+	{
+		
+		chunk[i] = grid_buffer_read_character(buf);
+							
+	}
+	grid_buffer_read_acknowledge(buf);
+
 	return 1;
 }
 
