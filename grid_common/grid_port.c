@@ -693,35 +693,36 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por){
 			
 		// chunk is the specific part of the usb tx doublebuffer that we are currently trying to decode
 		char* chunk = &por->tx_double_buffer[i];
+		char* header = &por->tx_double_buffer[0];
 
 		uint8_t msg_class = grid_msg_string_get_parameter(chunk, GRID_PARAMETER_CLASSCODE_offset, GRID_PARAMETER_CLASSCODE_length, &error);
 		uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 										
-		if (msg_class == GRID_CLASS_MIDI_code && msg_instr == GRID_INSTR_EXECUTE_code){
+		if (msg_class == GRID_CLASS_MIDI_code){
 				
-			grid_decode_midi_to_usb(chunk);
+			grid_decode_midi_to_usb(header, chunk);
 												
 		}
-		if (msg_class == GRID_CLASS_MIDISYSEX_code && msg_instr == GRID_INSTR_EXECUTE_code){
+		if (msg_class == GRID_CLASS_MIDISYSEX_code){
 				
-			grid_decode_sysex_to_usb(chunk);												
+			grid_decode_sysex_to_usb(header, chunk);												
 		}
-		else if (msg_class == GRID_CLASS_HIDMOUSEBUTTON_code && msg_instr == GRID_INSTR_EXECUTE_code){
+		else if (msg_class == GRID_CLASS_HIDMOUSEBUTTON_code){
 				
 		
-			grid_decode_mousebutton_to_usb(chunk);
+			grid_decode_mousebutton_to_usb(header, chunk);
 												
 		}
-		else if (msg_class == GRID_CLASS_HIDMOUSEMOVE_code && msg_instr == GRID_INSTR_EXECUTE_code){
+		else if (msg_class == GRID_CLASS_HIDMOUSEMOVE_code){
 										
 
-			grid_decode_mousemove_to_usb(chunk);
+			grid_decode_mousemove_to_usb(header, chunk);
 												
 		}
-		else if (msg_class == GRID_CLASS_HIDKEYBOARD_code && msg_instr == GRID_INSTR_EXECUTE_code){
+		else if (msg_class == GRID_CLASS_HIDKEYBOARD_code){
 			
 
-			grid_decode_keyboard_to_usb(chunk);
+			grid_decode_keyboard_to_usb(header, chunk);
 
 		}
 		else{
@@ -1135,17 +1136,8 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 	char message[GRID_PARAMETER_PACKET_maxlength] = {0};
 	
 	// Let's transfer the packet to local memory
-	grid_buffer_read_init(&por->tx_buffer);
-	
-	for (uint16_t i = 0; i<length; i++){
-		
-		message[i] = grid_buffer_read_character(&por->tx_buffer);
-		//usb_tx_double_buffer[i] = character;
-				
-	}
+	grid_buffer_read_to_chunk(&por->tx_buffer, message, length);
 
-	grid_buffer_read_acknowledge(&por->tx_buffer);
-	
 	// GRID-2-UI TRANSLATOR
 	
 	uint8_t error=0;
@@ -1175,121 +1167,111 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 		position_is_local = 1;
 	}
 	
-		
-	uint16_t current_start		= 0;
-	uint16_t current_stop		= 0;
-	uint16_t current_length		= 0;
 
-	uint16_t start_count		= 0;
-	uint16_t stop_count		= 0;
-		
-		
-	
-	
 	for (uint16_t i=0; i<length; i++){
 
 		if (message[i] != GRID_CONST_STX){
 			continue;
 		}
 
+
+		char* header = &message[0];
 		char* chunk = &message[i];
 
 		uint8_t msg_class = grid_msg_string_get_parameter(chunk, GRID_PARAMETER_CLASSCODE_offset, GRID_PARAMETER_CLASSCODE_length, &error);
-		uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
-
 
 		if (msg_class == GRID_CLASS_PAGEACTIVE_code){ // dont check address!
 				
-			grid_decode_pageactive_to_ui(chunk, sx, sy);
+			grid_decode_pageactive_to_ui(header, chunk);
 
 		}
-		if (msg_class == GRID_CLASS_PAGECOUNT_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_global || position_is_me)){
+		if (msg_class == GRID_CLASS_PAGECOUNT_code){
 		
 			//get page count
-			grid_decode_pagecount_to_ui(chunk);
+			grid_decode_pagecount_to_ui(header, chunk);
 			
 		}
-		if (msg_class == GRID_CLASS_MIDI_code && msg_instr == GRID_INSTR_REPORT_code){
+		if (msg_class == GRID_CLASS_MIDI_code){
 				
 			// midi rx to lua
-			grid_decode_midi_to_ui(chunk);
+			grid_decode_midi_to_ui(header, chunk);
 
 												
 		}
-		else if (msg_class == GRID_CLASS_IMEDIATE_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_global || position_is_me || position_is_local)){
+		else if (msg_class == GRID_CLASS_IMEDIATE_code){
 
 			// run <?lua ... ?> style imediate script
-			uint8_t	grid_decode_imediate_to_ui(char* chunk);
+			grid_decode_imediate_to_ui(header, chunk);
 
 		}
 		else if (msg_class == GRID_CLASS_HEARTBEAT_code){
 
-			grid_decode_heartbeat_to_ui(chunk, sx, sy, rot, portrot);
+			grid_decode_heartbeat_to_ui(header, chunk);
 					
 		}
-		else if(msg_class == GRID_CLASS_SERIALNUMBER_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
+		else if(msg_class == GRID_CLASS_SERIALNUMBER_code){
 			
-			grid_decode_serialmuber_to_ui(chunk);
+			grid_decode_serialmuber_to_ui(header, chunk);
 				
 
 		}
-		else if(msg_class == GRID_CLASS_UPTIME_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
+		else if(msg_class == GRID_CLASS_UPTIME_code){
 
-			grid_decode_uptime_to_ui(chunk);
+			grid_decode_uptime_to_ui(header, chunk);
 		
 		
 		}
-		else if(msg_class == GRID_CLASS_RESETCAUSE_code && msg_instr == GRID_INSTR_FETCH_code && (position_is_me || position_is_global)){
+		else if(msg_class == GRID_CLASS_RESETCAUSE_code){
 
 			// Generate RESPONSE
-			grid_decode_resetcause_to_ui(chunk);
+			grid_decode_resetcause_to_ui(header, chunk);
 			
 			
 		}
-		else if(msg_class == GRID_CLASS_RESET_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me)){
+		else if(msg_class == GRID_CLASS_RESET_code && (position_is_me)){
 
 			// request immediate system reset
-			grid_decode_reset_to_ui(chunk);
+			grid_decode_reset_to_ui(header, chunk);
 		
 		}				
 	
-		else if (msg_class == GRID_CLASS_PAGEDISCARD_code && (position_is_me || position_is_global)){
+		else if (msg_class == GRID_CLASS_PAGEDISCARD_code){
 			
-			grid_decode_pagediscard_to_ui(chunk, id);
+			grid_decode_pagediscard_to_ui(header, chunk);
 			
 		}			
-		else if (msg_class == GRID_CLASS_PAGESTORE_code && (position_is_me || position_is_global)){
+		else if (msg_class == GRID_CLASS_PAGESTORE_code){
 						
-			grid_decode_pagestore_to_ui(chunk, id);
+			grid_decode_pagestore_to_ui(header, chunk);
 
 		}			
-		else if (msg_class == GRID_CLASS_PAGECLEAR_code && (position_is_me || position_is_global)){
+		else if (msg_class == GRID_CLASS_PAGECLEAR_code){
 		
-			grid_decode_pageclear_to_ui(chunk, id);
+			grid_decode_pageclear_to_ui(header, chunk);
 
 		}		
 
-		else if (msg_class == GRID_CLASS_NVMERASE_code && (position_is_me || position_is_global)){
+		else if (msg_class == GRID_CLASS_NVMERASE_code){
 
 		
-			grid_decode_nvmerase_to_ui(chunk, id);
+			grid_decode_nvmerase_to_ui(header, chunk);
 
 
 		}		
-		else if (msg_class == GRID_CLASS_NVMDEFRAG_code && (position_is_me || position_is_global)){
+		else if (msg_class == GRID_CLASS_NVMDEFRAG_code){
 		
-			grid_decode_nvmdefrag_to_ui(chunk, id);
+			grid_decode_nvmdefrag_to_ui(header, chunk);
 
 		}
 		else if (msg_class == GRID_CLASS_CONFIG_code){
 			
-			grid_decode_config_to_ui(chunk, dx, dy, id);
+			grid_decode_config_to_ui(header, chunk);
 			
 
 		}	
-		else if (msg_class == GRID_CLASS_HIDKEYSTATUS_code && msg_instr == GRID_INSTR_EXECUTE_code && (position_is_me || position_is_global)){
+		else if (msg_class == GRID_CLASS_HIDKEYSTATUS_code){
 		
-			grid_decode_hidkeystatus_to_ui(chunk);
+			grid_decode_hidkeystatus_to_ui(header, chunk);
 
 
 		}

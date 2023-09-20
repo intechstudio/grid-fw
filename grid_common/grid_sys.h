@@ -101,6 +101,8 @@ void grid_sys_set_module_x(struct grid_sys_model* mod, uint8_t x);
 void grid_sys_set_module_y(struct grid_sys_model* mod, uint8_t y);
 void grid_sys_set_module_rot(struct grid_sys_model* mod, uint8_t rot);
 
+void grid_sys_set_module_absolute_position(struct grid_sys_model* mod, uint8_t sx, uint8_t sy, uint8_t rot, uint8_t portrot);
+
 
 uint8_t grid_sys_get_bank_red(struct grid_sys_model* mod);
 uint8_t grid_sys_get_bank_gre(struct grid_sys_model* mod);

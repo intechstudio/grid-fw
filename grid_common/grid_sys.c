@@ -129,6 +129,49 @@ void grid_sys_set_module_rot(struct grid_sys_model* mod, uint8_t rot){
 	mod->module_rot = rot;
 }
 
+void grid_sys_set_module_absolute_position(struct grid_sys_model* mod, uint8_t sx, uint8_t sy, uint8_t rot, uint8_t portrot){
+
+	// from usb connected module
+	int8_t received_sx = sx-GRID_PARAMETER_DEFAULT_POSITION; // convert to signed ind
+	int8_t received_sy = sy-GRID_PARAMETER_DEFAULT_POSITION; // convert to signed ind
+	int8_t rotated_sx = 0;
+	int8_t rotated_sy = 0;
+
+	// APPLY THE 2D ROTATION MATRIX
+	
+	//printf("Protrot %d \r\n", portrot);
+
+	if (portrot == 0){ // 0 deg
+
+		rotated_sx  -= received_sx;
+		rotated_sy  -= received_sy;
+	}
+	else if(portrot == 1){ // 90 deg
+
+		rotated_sx  -= received_sy;
+		rotated_sy  += received_sx;
+	}
+	else if(portrot == 2){ // 180 deg
+
+		rotated_sx  += received_sx;
+		rotated_sy  += received_sy;
+	}
+	else if(portrot == 3){ // 270 deg
+
+		rotated_sx  += received_sy;
+		rotated_sy  -= received_sx;
+	}
+	else{
+		// TRAP INVALID MESSAGE
+	}
+
+	grid_sys_set_module_x(&grid_sys_state, rotated_sx);
+	grid_sys_set_module_y(&grid_sys_state, rotated_sy);
+	grid_sys_set_module_rot(&grid_sys_state, rot);
+
+
+}
+
 uint8_t grid_sys_get_bank_red(struct grid_sys_model* mod){
 	
 	return mod->bank_activebank_color_r;
