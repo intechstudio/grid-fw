@@ -161,7 +161,7 @@ uint16_t grid_buffer_read_size(struct grid_buffer* buf){
 }
 
 
-uint8_t grid_buffer_write_chunk(struct grid_buffer* buf, char* chunk, uint16_t length){
+uint8_t grid_buffer_write_from_chunk(struct grid_buffer* buf, char* chunk, uint16_t length){
 
 
 	if (grid_buffer_write_init(buf, length)){
@@ -184,7 +184,7 @@ uint8_t grid_buffer_write_chunk(struct grid_buffer* buf, char* chunk, uint16_t l
 	
 }
 
-uint8_t grid_buffer_write_packet(struct grid_buffer* buf, struct grid_msg_packet* packet){
+uint8_t grid_buffer_write_from_packet(struct grid_buffer* buf, struct grid_msg_packet* packet){
 
 		
 	uint32_t message_length = grid_msg_packet_get_length(packet);
@@ -290,7 +290,7 @@ uint8_t grid_buffer_read_cancel(struct grid_buffer* buf){
 }
 
 
-uint8_t grid_buffer_read_chunk(struct grid_buffer* buf, char* chunk, uint16_t length){
+uint8_t grid_buffer_read_to_chunk(struct grid_buffer* buf, char* chunk, uint16_t length){
 
 	grid_buffer_read_init(buf);
 												
@@ -300,6 +300,24 @@ uint8_t grid_buffer_read_chunk(struct grid_buffer* buf, char* chunk, uint16_t le
 		chunk[i] = grid_buffer_read_character(buf);
 							
 	}
+	grid_buffer_read_acknowledge(buf);
+
+	return 1;
+}
+
+uint8_t grid_buffer_read_to_packet(struct grid_buffer* buf, struct grid_msg_packet* packet, uint16_t length){
+
+	grid_buffer_read_init(buf);
+		
+	for (uint16_t i = 0; i<length; i++){
+			
+		uint8_t nextchar = grid_buffer_read_character(buf);
+		
+		grid_msg_packet_receive_char_by_char(packet, nextchar);
+			
+	}
+				
+	// Let's acknowledge the transfer	(should wait for partner to send ack)
 	grid_buffer_read_acknowledge(buf);
 
 	return 1;

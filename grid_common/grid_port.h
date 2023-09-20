@@ -2,6 +2,7 @@
 #define GRID_PORT_H_INCLUDED
 
 
+#include "grid_decode.h"
 #include "grid_buf.h"
 #include "grid_msg.h"
 #include "grid_sys.h"

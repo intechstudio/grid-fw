@@ -164,8 +164,7 @@ void 	grid_msg_packet_body_append_printf(struct grid_msg_packet* msg, char const
 void	grid_msg_packet_body_append_parameter(struct grid_msg_packet* msg,  uint8_t parameter_offset, uint8_t parameter_length, uint32_t value);
 
 
-
-
+void grid_msg_packet_to_chunk(struct grid_msg_packet* msg, char* chunk);
 void	grid_msg_packet_receive_char_by_char(struct grid_msg_packet* msg, uint8_t nextchar);
 
 uint8_t	grid_msg_packet_send_char_by_char(struct grid_msg_packet* msg, uint32_t charindex);

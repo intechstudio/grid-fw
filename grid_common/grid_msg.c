@@ -326,6 +326,21 @@ void	grid_msg_packet_init(struct grid_msg_model* mod, struct grid_msg_packet* ms
 	
 }
 
+void grid_msg_packet_to_chunk(struct grid_msg_packet* msg, char* chunk){
+
+	uint16_t length = grid_msg_packet_get_length(msg);
+
+	for (uint16_t i=0; i<length; i++){
+
+		chunk[i] = grid_msg_packet_send_char_by_char(msg, i);
+
+	}
+
+	chunk[length] = '\0';
+
+}
+
+
 // ======================= MSG RECEIVE CHAR ======================//
 void	grid_msg_packet_receive_char_by_char(struct grid_msg_packet* msg, uint8_t nextchar){
 	

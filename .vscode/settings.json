@@ -101,7 +101,8 @@
         "grid_esp32_module_po16.h": "c",
         "atmel_start_pins.h": "c",
         "optional": "c",
-        "grid_esp32_led.h": "c"
+        "grid_esp32_led.h": "c",
+        "grid_decode.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

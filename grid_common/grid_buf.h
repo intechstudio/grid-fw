@@ -57,7 +57,8 @@ uint8_t grid_buffer_read_acknowledge();		// OK, delete
 uint8_t grid_buffer_read_nacknowledge();	// Restart packet
 uint8_t grid_buffer_read_cancel();			// Discard packet
 
-uint8_t grid_buffer_read_chunk(struct grid_buffer* buf, char* chunk, uint16_t length);
+uint8_t grid_buffer_read_to_chunk(struct grid_buffer* buf, char* chunk, uint16_t length);
+uint8_t grid_buffer_read_to_packet(struct grid_buffer* buf, struct grid_msg_packet* packet, uint16_t length);
 
 uint16_t grid_buffer_get_space(struct grid_buffer* buf);
 
@@ -67,8 +68,8 @@ uint8_t  grid_buffer_write_character(struct grid_buffer* buf, uint8_t character)
 uint8_t grid_buffer_write_acknowledge(struct grid_buffer* buf);
 uint8_t grid_buffer_write_cancel(struct grid_buffer* buf);
 
-uint8_t grid_buffer_write_chunk(struct grid_buffer* buf, char* chunk, uint16_t length);
-uint8_t grid_buffer_write_packet(struct grid_buffer* buf, struct grid_msg_packet* packet);
+uint8_t grid_buffer_write_from_chunk(struct grid_buffer* buf, char* chunk, uint16_t length);
+uint8_t grid_buffer_write_from_packet(struct grid_buffer* buf, struct grid_msg_packet* packet);
 
 
 #endif
