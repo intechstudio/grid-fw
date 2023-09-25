@@ -128,7 +128,7 @@ void grid_lua_gc_try_collect(struct grid_lua_model* mod){
 
         char message[10] = {0};
         //sprintf(message, "gc %dkb", target_kilobytes);
-        //grid_lua_debug_memory_stats(mod, message);
+        grid_lua_debug_memory_stats(mod, message);
         mod->dostring_count = 0;
 
     }
@@ -146,7 +146,7 @@ void grid_lua_gc_collect(struct grid_lua_model* mod){
 void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
     uint32_t memusage = lua_gc(grid_lua_state.L, LUA_GCCOUNT)*1024 + lua_gc(grid_lua_state.L, LUA_GCCOUNTB);
-    //grid_platform_printf("LUA mem usage: %d(%s)\r\n", memusage, message);
+    grid_platform_printf("LUA mem usage: %d(%s)\r\n", memusage, message);
 
 }
 
@@ -345,6 +345,36 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     }
     else{
         grid_port_debug_printf("Invalid args");
+    }
+
+    return 0;
+}
+
+
+/*static*/ int l_grid_string_get(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+    //grid_platform_printf("LUA PRINT: ");
+    if (nargs == 2){
+
+        if (lua_type(L, 1) == LUA_TNUMBER && lua_type(L, 2) == LUA_TSTRING){
+
+            uint32_t pointer = (uint32_t)lua_tointeger(L, 1);
+            
+            char* string = (char*) pointer;
+
+            strcpy(string, lua_tostring(L, 2));
+
+            //grid_platform_printf("GET: %x -> %s\r\n", pointer, string);
+
+        }
+        else{
+            grid_port_debug_printf("Invalid type of args");
+        }
+
+    }
+    else{
+        grid_port_debug_printf("Invalid # of args");
     }
 
     return 0;
@@ -1619,6 +1649,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
     {GRID_LUA_FNC_G_RANDOM_short,    GRID_LUA_FNC_G_RANDOM_fnptr},
     {GRID_LUA_FNC_G_ELEMENTNAME_SEND_short, GRID_LUA_FNC_G_ELEMENTNAME_SEND_fnptr},
+    {GRID_LUA_FNC_G_STRING_GET_short, GRID_LUA_FNC_G_STRING_GET_fnptr},
 
     {GRID_LUA_FNC_G_WEBSOCKET_SEND_short, GRID_LUA_FNC_G_WEBSOCKET_SEND_fnptr},
 
@@ -1825,7 +1856,33 @@ void grid_lua_start_vm(struct grid_lua_model* mod){
     grid_lua_debug_memory_stats(mod, "Init");
 
 
-    luaL_openlibs(mod->L);
+
+    // luaL_openlibs(mod->L);
+
+
+    static const luaL_Reg loadedlibs[] = {
+    {LUA_GNAME, luaopen_base},
+    //{LUA_LOADLIBNAME, luaopen_package},
+    //{LUA_COLIBNAME, luaopen_coroutine},
+    {LUA_TABLIBNAME, luaopen_table},
+    //{LUA_IOLIBNAME, luaopen_io},
+    //{LUA_OSLIBNAME, luaopen_os},
+    {LUA_STRLIBNAME, luaopen_string},
+    {LUA_MATHLIBNAME, luaopen_math},
+    //{LUA_UTF8LIBNAME, luaopen_utf8},
+    {LUA_DBLIBNAME, luaopen_debug},
+    {NULL, NULL}
+    };
+
+
+    const luaL_Reg *lib;
+    /* "require" functions from 'loadedlibs' and set results to global table */
+    for (lib = loadedlibs; lib->func; lib++) {
+        luaL_requiref(mod->L, lib->name, lib->func, 1);
+        lua_pop(mod->L, 1);  /* remove lib */
+    }
+    
+
 
     grid_lua_debug_memory_stats(mod, "Openlibs");
 

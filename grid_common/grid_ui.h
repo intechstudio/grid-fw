@@ -65,6 +65,8 @@ struct grid_ui_event
 	
 	enum grid_ui_event_t type;
 	
+	uint16_t action_string_length;
+
 	char* action_string;
 
 	char function_name[10];
@@ -197,12 +199,11 @@ uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui);
 
 struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, enum grid_ui_event_t event_type);
 
-void* 		grid_ui_event_allocate_actionstring(struct grid_ui_event* eve, uint32_t length);
-void 		grid_ui_event_free_actionstring(struct grid_ui_event* eve);
 uint8_t 	grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* action_string);
 void 		grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* targetstring);
 uint32_t 	grid_ui_event_render_event(struct grid_ui_event* eve, char* target_string);
 void 		grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* targetstring);
+void	 	grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstring);
 uint32_t 	grid_ui_event_render_action(struct grid_ui_event* eve, char* target_string);
 void 		grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type, char* targetstring);
 
@@ -214,8 +215,6 @@ uint8_t 	grid_ui_event_istriggered(struct grid_ui_event* eve);
 uint8_t 	grid_ui_event_istriggered_local(struct grid_ui_event* eve);
 uint16_t 	grid_ui_event_count_istriggered(struct grid_ui_model* ui);
 uint16_t 	grid_ui_event_count_istriggered_local(struct grid_ui_model* ui);
-
-
 
 struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t element_number);
 

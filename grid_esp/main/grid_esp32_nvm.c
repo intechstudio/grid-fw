@@ -191,13 +191,13 @@ void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model* nvm, uint8_t page, 
     sprintf(fname, "/littlefs/%02x", page);
 
     if (mkdir(fname, 0777) == -1) {
-        printf("Error creating directory.\n");
+        //printf("Error creating directory.\n");
     }
 
     sprintf(fname, "/littlefs/%02x/%02x", page, element);
 
     if (mkdir(fname, 0777) == -1) {
-        printf("Error creating directory.\n");
+        //printf("Error creating directory.\n");
     }
 
     sprintf(fname, "/littlefs/%02x/%02x/%02x.cfg", page, element, event);

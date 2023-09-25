@@ -221,7 +221,6 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui
 		}
 	}
 	
-	eve->action_string = NULL;
 
 	eve->cfg_changed_flag = 0;
 	eve->cfg_default_flag = 1;
@@ -634,26 +633,6 @@ struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, enum grid_
 }
 
 
-void* grid_ui_event_allocate_actionstring(struct grid_ui_event* eve, uint32_t length){
-
-	// +1 for termination zero
-	eve->action_string = (char*) malloc((length+1) * sizeof(uint8_t));
-	return eve->action_string;
-
-}
-
-void grid_ui_event_free_actionstring(struct grid_ui_event* eve){
-
-	if (eve->action_string == NULL){
-		// not allocated
-		return;
-	}
-
-	free(eve->action_string);
-	eve->action_string = NULL;
-
-}
-
 
 
 uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* action_string){
@@ -751,8 +730,6 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action
 	// by default assume that incoming config is not defaultconfig
 	eve->cfg_default_flag = 0;
 
-
-
 	char temp[GRID_PARAMETER_ACTIONSTRING_maxlength+100] = {0};
 	uint32_t len = strlen(action_string);
 
@@ -768,22 +745,8 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action
 		grid_port_debug_printf("LUA not OK, Failed to register action! EL: %d EV: %d", ele->index, eve->type);
 	};
 
-	if (eve->cfg_default_flag == 0){ // NOT DEFAULT
-
-		// free old action string
-		grid_ui_event_free_actionstring(eve);
-
-		// allocate space for the new action string
-		grid_ui_event_allocate_actionstring(eve, strlen(action_string));
-		strcpy(eve->action_string, action_string);
-	}
-	else{
-		//free
-	}
 
 	eve->cfg_changed_flag = 1;
-
-	
 }
 
 
@@ -879,7 +842,54 @@ void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* target
 }
 
 
+void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstring){
 
+
+	char temp[100] = {0};
+	char result[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
+	// uint32_t len = strlen(action_string);
+
+	sprintf(temp, "gsg(%ld,debug.getinfo(ele[%d].%s,\"S\").source)", (uint32_t)result, eve->parent->index, eve->function_name);
+
+	//grid_platform_printf("TO  %x -> %s\r\n", result, result);
+
+	if (0 == grid_lua_dostring(&grid_lua_state, temp)){
+		grid_port_debug_printf("LUA not OK, Failed to retreive action! EL: %d EV: %d", eve->parent->index, eve->type);
+
+
+	};
+
+	sprintf(temp, "ele[%d].%s", eve->parent->index, eve->function_name);
+
+	// check if string from debug.getinfo is valid, and contains the original function declaration
+	if (0 == strncmp(temp, result, strlen(temp))){
+		
+
+					
+		// transform result to actionstring
+
+		sprintf(&result[strlen(result)-4], " ?>");
+
+		uint8_t offset = 13+strlen(temp);
+
+		sprintf(&result[offset], "<?lua");
+		result[offset+5] = ' '; // replace '\0' with ' '
+
+		// print result
+
+		//grid_platform_printf("%s\r\n", &result[offset]);
+
+
+		strcpy(targetstring, &result[offset]);
+		
+	}		
+	else{
+	
+		grid_ui_event_generate_actionstring(eve, targetstring);
+		grid_platform_printf("ERROR: invalid debug.getinfo\r\n");
+	}	
+
+}
 
 uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, char* target_string){
 
@@ -1004,10 +1014,6 @@ void grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, 
 	if (ui->page_activepage == page){
 		// currently active page needs to be sent
 
-		// file pointer
-		void* entry = NULL;
-		entry = grid_platform_find_actionstring_file(page, element, event_type);
-
 		if (eve->cfg_default_flag){ // SEND BACK THE DEFAULT
 
 
@@ -1016,26 +1022,9 @@ void grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, 
 
 			//grid_platform_printf("DEFAULT: %s\r\n", targetstring);
 
-		}
-		else if (eve->action_string != NULL){
+		}else{
+			grid_ui_event_get_actionstring(eve, targetstring);
 
-			//grid_platform_printf("FOUND eve->action_string: %s\r\n", eve->action_string);
-
-			strcpy(targetstring, eve->action_string);
-
-		}
-		else if (entry != NULL){
-
-
-			uint32_t len = grid_platform_read_actionstring_file_contents(entry, targetstring);
-			grid_platform_close_actionstring_file(entry);
-
-		}
-		else{
-			grid_platform_printf("BIG PROBLEM, SENDING DEFAULT\r\n");
-
-			grid_ui_event_generate_actionstring(eve, targetstring);
-			
 		}
 
 	}		
@@ -1502,8 +1491,6 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 					grid_platform_close_actionstring_file(entry);
 					grid_ui_event_register_actionstring(eve, temp);
 					
-					// came from default so no need to store it in eve->action_string
-					grid_ui_event_free_actionstring(eve);
 					eve->cfg_changed_flag = 0; // clear changed flag
 				}
 				else{
@@ -1529,8 +1516,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 
 				grid_ui_event_generate_actionstring(eve, temp);			
 				grid_ui_event_register_actionstring(eve, temp);		
-				// came from TOC so no need to store it in eve->action_string
-				grid_ui_event_free_actionstring(eve);
+
 				eve->cfg_changed_flag = 0; // clear changed flag
 
 				t1 = grid_platform_get_cycles();
@@ -1624,19 +1610,17 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui){
 
 						//grid_platform_printf("DEFAULT BUT NOT FOUND! %d %d\r\n", ele->index, eve->index);
 					}
-
-					// its reverted to default, so no need to keep it in eve->action_string
-					grid_ui_event_free_actionstring(eve);
 	
 				}
 				else{
 					
 					//grid_platform_printf("NOT DEFAULT! %d %d\r\n", ele->index, eve->index);
 
-					grid_platform_write_actionstring_file(ele->parent->page_activepage, ele->index, eve->type, eve->action_string, strlen(eve->action_string));
+					char buffer[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
+					grid_ui_event_get_actionstring(eve, buffer);
 
-					// now its stored in TOC so no need to keep it in eve->action_string
-					grid_ui_event_free_actionstring(eve);
+
+					grid_platform_write_actionstring_file(ele->parent->page_activepage, ele->index, eve->type, buffer, strlen(buffer));
 
 				}
 
@@ -1693,7 +1677,11 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui){
 	grid_platform_clear_actionstring_files_from_page(ui->page_activepage);
 
 	
+	grid_platform_printf("DONE\r\n");
+
 	if (ui->clear_success_callback != NULL){
+
+		grid_platform_printf("CALLBACK\r\n");
 		ui->clear_success_callback();
 		ui->clear_success_callback = NULL;
 	}
