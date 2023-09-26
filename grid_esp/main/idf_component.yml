@@ -1,6 +1,6 @@
 ## IDF Component Manager Manifest File
 dependencies:
-  joltwallet/littlefs: "==1.5.2"
+  joltwallet/littlefs: "==1.9.1"
   espressif/esp_tinyusb: "*"
   ## Required IDF version
   idf:
