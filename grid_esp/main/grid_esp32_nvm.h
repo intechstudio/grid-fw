@@ -25,8 +25,7 @@
 #include "esp_check.h"
 #include "rom/ets_sys.h" // For ets_printf
 
-#include "../managed_components/joltwallet__littlefs/include/esp_littlefs.h"
-
+#include "esp_littlefs.h"
 
 #include <sys/types.h>
 #include <dirent.h>

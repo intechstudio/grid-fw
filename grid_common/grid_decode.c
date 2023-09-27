@@ -901,8 +901,6 @@ uint8_t	grid_decode_pagestore_to_ui(char* header, char* chunk){
 		grid_port_packet_send_everywhere(&response);	
 	
 	}
-
-
 			
 	return 0; //OK	
 
