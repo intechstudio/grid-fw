@@ -149,6 +149,7 @@ DIR_INCLUDES +=  \
 -I"../usb/class/midi/" \
 -I"../usb/class/midi/device" \
 -I"../../grid_common" \
+-I"../../grid_common/include" \
 -I"../../grid_common/lua-5.4.3/src" \
 
 
