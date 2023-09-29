@@ -29,7 +29,7 @@
 // Frame timing => | 60us  | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | N/A   |
 
 // this is need for types like uint8_t 
-#include "grid_led.h"
+#include "include/grid_led.h"
 
 struct grid_led_model grid_led_state;
 

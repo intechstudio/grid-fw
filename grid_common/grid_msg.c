@@ -6,7 +6,7 @@
  */ 
 
 
-#include "grid_msg.h"
+#include "include/grid_msg.h"
 
 struct grid_msg_model grid_msg_state;
 

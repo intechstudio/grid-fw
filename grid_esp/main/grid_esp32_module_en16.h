@@ -14,10 +14,10 @@
 #include "esp_check.h"
 
 
-#include "../../grid_common/grid_ain.h"
-#include "../../grid_common/grid_ui.h"
+#include "../../grid_common/include/grid_ain.h"
+#include "../../grid_common/include/grid_ui.h"
 
-#include "../../grid_common/grid_module.h"
+#include "../../grid_common/include/grid_module.h"
 
 
 #include "rom/ets_sys.h" // For ets_printf
@@ -28,7 +28,7 @@
 #include "grid_esp32_adc.h"
 #include "grid_esp32_encoder.h"
 
-#include "../../grid_common/grid_led.h"
+#include "../../grid_common/include/grid_led.h"
 
 #ifdef __cplusplus
 extern "C" {

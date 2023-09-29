@@ -5,7 +5,7 @@
  * Author : SUKU WC
 */
 
-#include "grid_sys.h"
+#include "include/grid_sys.h"
 
 struct grid_sys_model grid_sys_state;
 

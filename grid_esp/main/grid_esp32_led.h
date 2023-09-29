@@ -18,7 +18,7 @@
 #include "esp_log.h"
 
 
-#include "../../grid_common/grid_led.h"
+#include "../../grid_common/include/grid_led.h"
 
 
 #include "driver/gpio.h"

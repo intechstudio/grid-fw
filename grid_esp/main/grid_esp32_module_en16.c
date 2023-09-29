@@ -6,7 +6,7 @@
 
 
 #include "grid_esp32_module_en16.h"
-#include "../../grid_common/grid_led.h"
+#include "../../grid_common/include/grid_led.h"
 
 static const char *TAG = "module_en16";
 

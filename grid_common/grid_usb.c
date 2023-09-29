@@ -5,7 +5,7 @@
  *  Author: suku
  */ 
 
-#include "grid_usb.h"
+#include "include/grid_usb.h"
 
 
 struct grid_midi_event_desc grid_midi_tx_buffer[GRID_MIDI_TX_BUFFER_length];

@@ -54,18 +54,18 @@
 #include "rom/ets_sys.h" // For ets_printf
 
 
-#include "../../grid_common/grid_protocol.h"
-#include "../../grid_common/grid_ain.h"
-#include "../../grid_common/grid_led.h"
-#include "../../grid_common/grid_sys.h"
-#include "../../grid_common/grid_msg.h"
-#include "../../grid_common/grid_buf.h"
-#include "../../grid_common/grid_port.h"
-#include "../../grid_common/grid_usb.h"
-#include "../../grid_common/grid_module.h"
+#include "../../grid_common/include/grid_protocol.h"
+#include "../../grid_common/include/grid_ain.h"
+#include "../../grid_common/include/grid_led.h"
+#include "../../grid_common/include/grid_sys.h"
+#include "../../grid_common/include/grid_msg.h"
+#include "../../grid_common/include/grid_buf.h"
+#include "../../grid_common/include/grid_port.h"
+#include "../../grid_common/include/grid_usb.h"
+#include "../../grid_common/include/grid_module.h"
 
-#include "../../grid_common/grid_lua_api.h"
-#include "../../grid_common/grid_ui.h"
+#include "../../grid_common/include/grid_lua_api.h"
+#include "../../grid_common/include/grid_ui.h"
 
 
 #include "../../grid_common/lua-5.4.3/src/lua.h"

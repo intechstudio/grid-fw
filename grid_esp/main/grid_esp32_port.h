@@ -27,8 +27,8 @@
 #include "hal/gpio_ll.h"
 
 
-#include "../../grid_common/grid_port.h"
-#include "../../grid_common/grid_sys.h"
+#include "../../grid_common/include/grid_port.h"
+#include "../../grid_common/include/grid_sys.h"
 
 
 #include "driver/spi_slave.h"

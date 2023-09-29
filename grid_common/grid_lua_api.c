@@ -5,7 +5,7 @@
  * Author : SUKU WC
 */
 
-#include "grid_lua_api.h"
+#include "include/grid_lua_api.h"
 
 
 struct grid_lua_model grid_lua_state;
