@@ -1,6 +1,10 @@
 name: Push components to https://components.espressif.com
 on:
+  workflow_dispatch:
   push:
+    paths:
+      - 'grid_common/**'
+      - '.github/workflows/grid_common_package.yml'
     branches:
       - main
 jobs:
