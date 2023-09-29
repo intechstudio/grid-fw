@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'grid_common/**'
       - '.github/workflows/grid_common_package.yml'
