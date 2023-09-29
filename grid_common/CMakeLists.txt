@@ -14,5 +14,6 @@ idf_component_register(
         "grid_common/grid_ui.c"
         "grid_common/grid_module.c"
         "grid_common/grid_lua_api.c"
-    INCLUDE_DIRS "."
+    INCLUDE_DIRS
+	include
 )

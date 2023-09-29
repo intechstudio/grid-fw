@@ -1,5 +1,0 @@
-version: "1.0.1"
-description: Grid Common library
-url: https://github.com/intechstudio/grid-fw
-dependencies:
-  idf: ">=5.0"
