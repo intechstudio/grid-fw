@@ -22,7 +22,7 @@
 
 #include "pico/multicore.h"
 
-#include "../../grid_common/grid_protocol.h"
+#include "../../grid_common/include/grid_protocol.h"
 
 #include <string.h>
 
