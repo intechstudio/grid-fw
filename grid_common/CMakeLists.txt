@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 idf_component_register(
     SRCS
-        "grid_common/grid_protocol.h"
+        "grid_common/grid_protocol.c"
         "grid_common/grid_ain.c"
         "grid_common/grid_led.c"
         "grid_common/grid_sys.c"
