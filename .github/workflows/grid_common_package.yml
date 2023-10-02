@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - 'grid_common/**'
+      - 'grid_esp/components/**'
       - '.github/workflows/grid_common_package.yml'
 jobs:
   upload_components:
@@ -29,4 +30,5 @@ jobs:
           directories: "grid_esp/components/grid_esp32_led"
           namespace: "sukuwc"
           name: "grid_esp32_led"
+          version: $(date + '1.%Y%m%d.%H%M')
           api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
