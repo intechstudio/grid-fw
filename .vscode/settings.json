@@ -103,7 +103,9 @@
         "optional": "c",
         "grid_esp32_led.h": "c",
         "grid_decode.h": "c",
-        "esp_check.h": "c"
+        "esp_check.h": "c",
+        "lualib.h": "c",
+        "lua.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

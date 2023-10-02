@@ -196,6 +196,10 @@ void app_main(void)
 		ets_printf("Init Module: Unknown Module\r\n");
 	}
 
+
+
+
+
     TaskHandle_t led_task_hdl;
     xTaskCreatePinnedToCore(grid_esp32_led_task,
                             "led",
@@ -250,6 +254,10 @@ void app_main(void)
     ESP_LOGI(TAG, "===== LUA INIT =====");
 	grid_lua_init(&grid_lua_state);
     grid_lua_set_memory_target(&grid_lua_state, 80); //80kb
+
+	grid_lua_start_vm(&grid_lua_state);
+	grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
+
 
     // ================== START: grid_module_pbf4_init() ================== //
 
@@ -388,12 +396,9 @@ void app_main(void)
    ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 10000));
 
-
-    esp_log_level_set("*", ESP_LOG_INFO);
-
-
     grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
-
+    
+    esp_log_level_set("*", ESP_LOG_INFO);
     ESP_LOGI(TAG, "===== INIT COMPLETE =====");
 
 

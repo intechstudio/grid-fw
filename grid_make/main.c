@@ -585,9 +585,6 @@ int main(void)
 	printf("Hardware test complete");
 
 
-	grid_lua_init(&grid_lua_state);
-    grid_lua_set_memory_target(&grid_lua_state, 80); //80kb
-	grid_lua_start_vm(&grid_lua_state);
 
 
 	audiodf_midi_init();
@@ -605,6 +602,12 @@ int main(void)
 
 	//  x/512xb 0x80000
 	grid_module_common_init();
+
+	
+	grid_lua_init(&grid_lua_state);
+    grid_lua_set_memory_target(&grid_lua_state, 80); //80kb
+	grid_lua_start_vm(&grid_lua_state);
+	grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
 
 	grid_d51_led_init(&grid_d51_led_state, &grid_led_state);
 

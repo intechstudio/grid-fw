@@ -12,6 +12,7 @@ struct grid_ui_model grid_ui_state;
 
 void grid_ui_model_init(struct grid_ui_model* mod, struct grid_port* port, uint8_t element_list_length){
 	
+	mod->lua_ui_init_callback = NULL;
 
 	mod->port = port;
 
@@ -561,6 +562,9 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 	grid_lua_stop_vm(&grid_lua_state);
 	//grid_platform_printf("START\r\n");
 	grid_lua_start_vm(&grid_lua_state);
+    grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
+
+
 
 	grid_ui_bulk_pageread_init(ui, &grid_ui_page_load_success_callback);
 
