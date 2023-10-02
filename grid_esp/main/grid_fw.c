@@ -199,6 +199,9 @@ void app_main(void)
 
 
 
+    uint8_t led_pin = 21;
+
+    grid_led_set_pin(&grid_led_state, led_pin);
 
     TaskHandle_t led_task_hdl;
     xTaskCreatePinnedToCore(grid_esp32_led_task,
@@ -397,7 +400,7 @@ void app_main(void)
    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 10000));
 
     grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
-    
+
     esp_log_level_set("*", ESP_LOG_INFO);
     ESP_LOGI(TAG, "===== INIT COMPLETE =====");
 

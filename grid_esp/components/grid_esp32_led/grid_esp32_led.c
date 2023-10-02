@@ -7,7 +7,6 @@
 #include "grid_esp32_led.h"
 
 #define RMT_LED_STRIP_RESOLUTION_HZ 10000000 // 10MHz resolution, 1 tick = 0.1us (led strip needs a high resolution)
-#define RMT_LED_STRIP_GPIO_NUM      21
 
 
 
@@ -60,13 +59,13 @@ void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t
 static const char *TAG = "LED";
 
 
-static void led_init(rmt_encoder_handle_t* led_encoder, rmt_channel_handle_t* led_chan){
+static void led_init(rmt_encoder_handle_t* led_encoder, rmt_channel_handle_t* led_chan, uint8_t led_gpio){
 
 
     
     rmt_tx_channel_config_t tx_chan_config = {
         .clk_src = RMT_CLK_SRC_DEFAULT, // select source clock
-        .gpio_num = RMT_LED_STRIP_GPIO_NUM,
+        .gpio_num = led_gpio,
         .mem_block_symbols = 200, // was 64,  increase the block size can make the LED less flickering
         .resolution_hz = RMT_LED_STRIP_RESOLUTION_HZ,
         .trans_queue_depth = 4, // set the number of transactions that can be pending in the background
@@ -85,12 +84,18 @@ static void led_init(rmt_encoder_handle_t* led_encoder, rmt_channel_handle_t* le
 }
 
 
+
+
 void grid_esp32_led_task(void *arg)
 {
 
+    uint8_t led_pin =  grid_led_get_pin(&grid_led_state);
+
+    
+
     rmt_channel_handle_t led_chan = NULL;
     rmt_encoder_handle_t led_encoder = NULL;
-    led_init(&led_encoder, &led_chan);
+    led_init(&led_encoder, &led_chan, led_pin);
 
     SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
 

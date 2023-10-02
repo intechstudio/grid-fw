@@ -199,6 +199,7 @@ uint32_t grid_led_get_framebuffer_size(struct grid_led_model* mod){
 void grid_led_init(struct grid_led_model* mod, uint32_t length){
 	
 
+	mod->led_pin = -1;
 	mod->tick_lastrealtime = 0;
 
 	mod->led_count = length;
@@ -284,6 +285,13 @@ void grid_led_reset(struct grid_led_model* mod){
 
 /** ================== ANIMATION ==================  */
 
+uint8_t grid_led_get_pin(struct grid_led_model* mod){
+	return mod->led_pin;
+}
+
+void grid_led_set_pin(struct grid_led_model* mod, uint8_t gpio_pin){
+	mod->led_pin = gpio_pin;
+}
 
 void grid_led_tick(struct grid_led_model* mod){
 

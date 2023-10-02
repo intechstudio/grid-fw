@@ -48,6 +48,7 @@ struct LED_layer
 
 struct grid_led_model{
 
+	uint8_t led_pin;
 	uint8_t led_count;
 	uint8_t* led_lookup_table;
 	uint8_t* led_frame_buffer; // The frame buffer is used to send data to the LEDs
@@ -58,6 +59,8 @@ struct grid_led_model{
 
 };
 
+uint8_t grid_led_get_pin(struct grid_led_model* mod);
+void grid_led_set_pin(struct grid_led_model* mod, uint8_t gpio_pin);
 
 uint8_t* grid_led_get_framebuffer_pointer(struct grid_led_model* mod);
 uint32_t grid_led_get_framebuffer_size(struct grid_led_model* mod);
