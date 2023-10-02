@@ -1,7 +1,6 @@
 idf_component_register(
     SRCS 
         "grid_fw.c" 
-        "led_strip_encoder.c"
         "grid_esp32.c"
         "grid_esp32_swd.c"
         "pico_firmware.h"
@@ -12,63 +11,16 @@ idf_component_register(
         "grid_esp32_module_en16.c"
         "grid_esp32_module_ef44.c"
         "grid_esp32_module_tek2.c"
-        "grid_esp32_led.c"
         "grid_esp32_port.c"
         "grid_esp32_nvm.c"
         "grid_esp32_usb.c"
         "grid_esp32_adc.c"
         "grid_esp32_encoder.c"
 
-        "../../grid_common/grid_protocol.c"
-        "../../grid_common/grid_ain.c"
-        "../../grid_common/grid_led.c"
-        "../../grid_common/grid_sys.c"
-        "../../grid_common/grid_msg.c"
-        "../../grid_common/grid_buf.c"
-        "../../grid_common/grid_decode.c"
-        "../../grid_common/grid_port.c"
-        "../../grid_common/grid_usb.c"
-        "../../grid_common/grid_ui.c"
-        "../../grid_common/grid_module.c"
-        "../../grid_common/grid_lua_api.c"
-        
-        "../../grid_common/lua-5.4.3/src/lapi.c"
-        "../../grid_common/lua-5.4.3/src/lctype.c"
-        "../../grid_common/lua-5.4.3/src/lfunc.c"
-        "../../grid_common/lua-5.4.3/src/lmathlib.c"
-        "../../grid_common/lua-5.4.3/src/loslib.c"
-        "../../grid_common/lua-5.4.3/src/ltable.c"
-        "../../grid_common/lua-5.4.3/src/lundump.c"
-        "../../grid_common/lua-5.4.3/src/lauxlib.c"
-        "../../grid_common/lua-5.4.3/src/ldblib.c"
-        "../../grid_common/lua-5.4.3/src/lgc.c"
-        "../../grid_common/lua-5.4.3/src/lmem.c"
-        "../../grid_common/lua-5.4.3/src/lparser.c"
-        "../../grid_common/lua-5.4.3/src/ltablib.c"
-        "../../grid_common/lua-5.4.3/src/lutf8lib.c"
-        "../../grid_common/lua-5.4.3/src/lbaselib.c"
-        "../../grid_common/lua-5.4.3/src/ldebug.c"
-        "../../grid_common/lua-5.4.3/src/linit.c"
-        "../../grid_common/lua-5.4.3/src/loadlib.c"
-        "../../grid_common/lua-5.4.3/src/lstate.c"
-        "../../grid_common/lua-5.4.3/src/ltm.c"
-        "../../grid_common/lua-5.4.3/src/lvm.c"
-        "../../grid_common/lua-5.4.3/src/lcode.c"
-        "../../grid_common/lua-5.4.3/src/ldo.c"
-        "../../grid_common/lua-5.4.3/src/liolib.c"
-        "../../grid_common/lua-5.4.3/src/lobject.c"
-        "../../grid_common/lua-5.4.3/src/lstring.c"
-        "../../grid_common/lua-5.4.3/src/lzio.c"
-        "../../grid_common/lua-5.4.3/src/llex.c"
-        "../../grid_common/lua-5.4.3/src/lopcodes.c"
-        "../../grid_common/lua-5.4.3/src/ldump.c"
-        "../../grid_common/lua-5.4.3/src/lstrlib.c"
-        "../../grid_common/lua-5.4.3/src/lcorolib.c"
-
-
-
     INCLUDE_DIRS 
         "."
+
+    
 )
 
 #

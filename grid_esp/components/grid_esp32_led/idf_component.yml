@@ -1,0 +1,5 @@
+version: "1.0.0"
+description: Grid Esp32 Led library
+url: https://github.com/intechstudio/grid-fw
+dependencies:
+  idf: ">=5.0"

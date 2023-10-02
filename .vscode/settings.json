@@ -105,7 +105,8 @@
         "grid_decode.h": "c",
         "esp_check.h": "c",
         "lualib.h": "c",
-        "lua.h": "c"
+        "lua.h": "c",
+        "led_strip_encoder.h": "c"
     },   
     "files.exclude": {
         ".archive": true,
