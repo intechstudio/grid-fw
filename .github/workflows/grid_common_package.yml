@@ -26,7 +26,7 @@ jobs:
           directories: "grid_common"
           namespace: "sukuwc"
           name: "grid_common"
-	  version: ${{ env.action_date }}
+          version: ${{ env.action_date }}
           api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
 
       - name: Upload components to the component registry
