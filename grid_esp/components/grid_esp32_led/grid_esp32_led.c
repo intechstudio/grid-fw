@@ -62,7 +62,8 @@ static const char *TAG = "LED";
 static void led_init(rmt_encoder_handle_t* led_encoder, rmt_channel_handle_t* led_chan, uint8_t led_gpio){
 
 
-    
+    ESP_LOGI(TAG, "Led Pin: %d", led_gpio);
+
     rmt_tx_channel_config_t tx_chan_config = {
         .clk_src = RMT_CLK_SRC_DEFAULT, // select source clock
         .gpio_num = led_gpio,
