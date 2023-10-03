@@ -1447,9 +1447,9 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 
 	for (uint8_t i=last_element_helper; i<ui->element_list_length; i++){
 
-		struct grid_ui_element* ele = &ui->element_list[i];
-
-
+		// load system element first
+		uint8_t element_index = (i == 0 ? ui->element_list_length-1 : i-1);
+		struct grid_ui_element* ele = &ui->element_list[element_index];
 
 		for (uint8_t j=0; j<ele->event_list_length; j++){
 
