@@ -5,7 +5,7 @@
  * Author : SUKU WC
 */
 
-#include "include/grid_port.h"
+#include "grid_port.h"
 
 
 
@@ -42,9 +42,9 @@ static void grid_port_timeout_try_disconect(struct grid_port* por){
 			
 			grid_port_receiver_softreset(por);	
 
-			grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
-			grid_led_set_alert_frequency(&grid_led_state, -2);	
-			grid_led_set_alert_phase(&grid_led_state, 100);	
+			grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);	
+			grid_alert_all_set_frequency(&grid_led_state, -2);	
+			grid_alert_all_set_phase(&grid_led_state, 100);	
 	}
 	else{
 	
@@ -98,9 +98,9 @@ static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por){
 
 			grid_port_receiver_hardreset(por);	
 
-			grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
-			grid_led_set_alert_frequency(&grid_led_state, -2);	
-			grid_led_set_alert_phase(&grid_led_state, 100);	
+			grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);	
+			grid_alert_all_set_frequency(&grid_led_state, -2);	
+			grid_alert_all_set_phase(&grid_led_state, 100);	
 			return;
 		}
 			
@@ -130,9 +130,9 @@ void grid_port_receive_task(struct grid_port* por){
 		grid_port_receiver_hardreset(por);
 		grid_port_debug_printf("Parity error");
 
-		grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_RED, 50);	
-		grid_led_set_alert_frequency(&grid_led_state, -2);	
-		grid_led_set_alert_phase(&grid_led_state, 100);	
+		grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);	
+		grid_alert_all_set_frequency(&grid_led_state, -2);	
+		grid_alert_all_set_phase(&grid_led_state, 100);	
 		
 	}
 	
@@ -357,7 +357,7 @@ void grid_port_receive_broadcast_message(struct grid_port* por, char* message, u
 
 	if (grid_msg_recent_fingerprint_find(&grid_msg_state, fingerprint)){
 		// WE HAVE NOT HEARD THIS MESSAGE BEFORE
-		// grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 20);
+		// grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 20);
 		return;
 	}
 	
@@ -389,9 +389,9 @@ void grid_port_receive_direct_message(struct grid_port* por, char* message, uint
 			// Print Direction for debugging
 			grid_platform_printf("Connect %c\r\n", grid_port_get_name_char(por));	
 
-			grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
-			grid_led_set_alert_frequency(&grid_led_state, -2);	
-			grid_led_set_alert_phase(&grid_led_state, 100);	
+			grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 50);	
+			grid_alert_all_set_frequency(&grid_led_state, -2);	
+			grid_alert_all_set_phase(&grid_led_state, 100);	
 
 		}
 
@@ -495,7 +495,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 		if (packet_size > grid_buffer_write_size(&next_port->tx_buffer)){
 			// one of the targetports do not have enough space to store the packet			
 			grid_platform_printf("Buffer Error: %d/%d \r\n", i, target_port_count);
-			grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_BLUE, 128);
+			grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_BLUE, 128);
 			return 0;
 		}
 
@@ -1015,8 +1015,8 @@ void grid_protocol_nvm_read_succcess_callback(){
 
 
 	// phase out the animation
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
-	grid_led_set_alert_timeout_automatic(&grid_led_state);
+	grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+	grid_alert_all_set_timeout_automatic(&grid_led_state);
 
 }
 
@@ -1049,7 +1049,7 @@ void grid_protocol_nvm_store_succcess_callback(){
 	grid_keyboard_enable(&grid_keyboard_state);
 
 	// phase out the animation
-	grid_led_set_alert_timeout_automatic(&grid_led_state);
+	grid_alert_all_set_timeout_automatic(&grid_led_state);
 
 	// clear template variable after store command
 

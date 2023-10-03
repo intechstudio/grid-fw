@@ -51,6 +51,6 @@ idf_component_register(
 
     INCLUDE_DIRS 
         "."
-        "../../../grid_common/include"
+        "../../../grid_common"
         "../../../grid_common/lua-5.4.3/src"
 )

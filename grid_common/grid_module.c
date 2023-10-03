@@ -1,4 +1,4 @@
-#include "include/grid_module.h"
+#include "grid_module.h"
 
 
 void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui){

@@ -54,18 +54,18 @@
 #include "rom/ets_sys.h" // For ets_printf
 
 
-#include "../../grid_common/include/grid_protocol.h"
-#include "../../grid_common/include/grid_ain.h"
-#include "../../grid_common/include/grid_led.h"
-#include "../../grid_common/include/grid_sys.h"
-#include "../../grid_common/include/grid_msg.h"
-#include "../../grid_common/include/grid_buf.h"
-#include "../../grid_common/include/grid_port.h"
-#include "../../grid_common/include/grid_usb.h"
-#include "../../grid_common/include/grid_module.h"
+#include "../../grid_common/grid_protocol.h"
+#include "../../grid_common/grid_ain.h"
+#include "../../grid_common/grid_led.h"
+#include "../../grid_common/grid_sys.h"
+#include "../../grid_common/grid_msg.h"
+#include "../../grid_common/grid_buf.h"
+#include "../../grid_common/grid_port.h"
+#include "../../grid_common/grid_usb.h"
+#include "../../grid_common/grid_module.h"
 
-#include "../../grid_common/include/grid_lua_api.h"
-#include "../../grid_common/include/grid_ui.h"
+#include "../../grid_common/grid_lua_api.h"
+#include "../../grid_common/grid_ui.h"
 
 
 #include "../../grid_common/lua-5.4.3/src/lua.h"
@@ -234,8 +234,8 @@ void app_main(void)
     if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0){
 
 
-        grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
-        grid_led_set_alert_frequency(&grid_led_state, 4);
+        grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
+        grid_alert_all_set_frequency(&grid_led_state, 4);
         grid_esp32_nvm_erase(&grid_esp32_nvm_state);
         vTaskDelay(pdMS_TO_TICKS(600));
 
@@ -399,7 +399,7 @@ void app_main(void)
    ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 10000));
 
-    grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+    grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
 
     esp_log_level_set("*", ESP_LOG_INFO);
     ESP_LOGI(TAG, "===== INIT COMPLETE =====");

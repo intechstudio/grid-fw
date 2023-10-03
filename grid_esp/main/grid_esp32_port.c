@@ -338,9 +338,9 @@ static void periodic_ping_heartbeat_handler_cb(void *arg)
     
         printf("USB CONNECTED\r\n\r\n");
 
-        grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
-        grid_led_set_alert_frequency(&grid_led_state, -2);	
-        grid_led_set_alert_phase(&grid_led_state, 200);	
+        grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
+        grid_alert_all_set_frequency(&grid_led_state, -2);	
+        grid_alert_all_set_phase(&grid_led_state, 200);	
         grid_msg_set_heartbeat_type(&grid_msg_state, 1);
 
     }

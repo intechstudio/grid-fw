@@ -1,2 +1,2 @@
-#include "include/grid_protocol.h"
+#include "grid_protocol.h"
 

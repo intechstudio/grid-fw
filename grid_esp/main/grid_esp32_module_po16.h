@@ -13,8 +13,8 @@
 
 #include "esp_check.h"
 
-#include "../../grid_common/include/grid_ain.h"
-#include "../../grid_common/include/grid_module.h"
+#include "../../grid_common/grid_ain.h"
+#include "../../grid_common/grid_module.h"
 
 #include "rom/ets_sys.h" // For ets_printf
 

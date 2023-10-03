@@ -37,7 +37,7 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 
-#include "../../grid_common/include/grid_ui.h"
+#include "../../grid_common/grid_ui.h"
 
 
 #ifdef __cplusplus

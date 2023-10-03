@@ -5,7 +5,7 @@
  * Author : SUKU WC
 */
 
-#include "include/grid_lua_api.h"
+#include "grid_lua_api.h"
 
 
 struct grid_lua_model grid_lua_state;
@@ -1442,7 +1442,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     else{
         //grid_platform_printf("page change is disabled\r\n");
         grid_port_debug_printf("page change is disabled");
-    	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
+    	grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
     }
 
 

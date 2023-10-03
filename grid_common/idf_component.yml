@@ -1,4 +1,4 @@
-version: "1.0.8"
+version: "1.0.0"
 description: Grid Common library
 url: https://github.com/intechstudio/grid-fw
 dependencies:

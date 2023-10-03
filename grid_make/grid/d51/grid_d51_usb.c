@@ -54,7 +54,7 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
 static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
 
-	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
+	//grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
 
 	
 	return false;                                                                                 /* No error. */
@@ -62,7 +62,7 @@ static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code
 static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state)
 {
 	
-	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
+	//grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
 	
 	//printf("\r\n### USB SERIAL STATE CHANGE %d ###\r\n", sizeof(grid_usb_serial_rx_buffer));
 
@@ -124,7 +124,7 @@ static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code r
 {
 
 	//printf("MIDI IN CB\n");
-	//grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
+	//grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
 	return false;
 }
 

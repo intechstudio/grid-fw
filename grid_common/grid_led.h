@@ -84,12 +84,18 @@ uint8_t grid_led_framebuffer_set_color(struct grid_led_model* mod, uint32_t led_
 // TIME TICK FOR ANIMATIONS
 void grid_led_tick(struct grid_led_model* mod);
 
-void grid_led_set_alert(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_t b, uint16_t duration);
+void grid_alert_all_set(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_t b, uint16_t duration);
+void grid_alert_all_set_timeout(struct grid_led_model* mod, uint8_t timeout);
+void grid_alert_all_set_timeout_automatic(struct grid_led_model* mod);
+void grid_alert_all_set_frequency(struct grid_led_model* mod, uint8_t frequency);
+void grid_alert_all_set_phase(struct grid_led_model* mod, uint8_t phase);
 
-void grid_led_set_alert_timeout(struct grid_led_model* mod, uint8_t timeout);
-void grid_led_set_alert_timeout_automatic(struct grid_led_model* mod);
-void grid_led_set_alert_frequency(struct grid_led_model* mod, uint8_t frequency);
-void grid_led_set_alert_phase(struct grid_led_model* mod, uint8_t phase);
+void grid_alert_one_set(struct grid_led_model* mod, uint8_t num, uint8_t r, uint8_t g, uint8_t b, uint16_t duration);
+void grid_alert_one_set_timeout(struct grid_led_model* mod, uint8_t num, uint8_t timeout);
+void grid_alert_one_set_timeout_automatic(struct grid_led_model* mod, uint8_t num);
+void grid_alert_one_set_frequency(struct grid_led_model* mod, uint8_t num, uint8_t frequency);
+void grid_alert_one_set_phase(struct grid_led_model* mod, uint8_t num, uint8_t phase);
+
 
 // reset the state of the led smartbuffer
 void grid_led_reset(struct grid_led_model* mod);

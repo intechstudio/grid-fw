@@ -1,4 +1,4 @@
-#include "include/grid_decode.h"
+#include "grid_decode.h"
 
 static enum GRID_DESTINATION{
 
@@ -877,8 +877,8 @@ uint8_t	grid_decode_pagestore_to_ui(char* header, char* chunk){
 		grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX, id);
 		
 		// start animation (it will be stopped in the callback function)
-		grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);		
-		grid_led_set_alert_frequency(&grid_led_state, -4);	
+		grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);		
+		grid_alert_all_set_frequency(&grid_led_state, -4);	
 
 		grid_ui_bulk_pagestore_init(&grid_ui_state, &grid_protocol_nvm_store_succcess_callback);	
 	
@@ -970,8 +970,8 @@ uint8_t	grid_decode_nvmerase_to_ui(char* header, char* chunk){
 
 
 		// start animation (it will be stopped in the callback function)
-		grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
-		grid_led_set_alert_frequency(&grid_led_state, -2);	
+		grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);	
+		grid_alert_all_set_frequency(&grid_led_state, -2);	
 
 		for (uint8_t i = 0; i<grid_led_get_led_count(&grid_led_state); i++){
 			grid_led_set_layer_min(&grid_led_state, i, GRID_LED_LAYER_ALERT, GRID_LED_COLOR_YELLOW_DIM);
@@ -1081,7 +1081,7 @@ uint8_t	grid_decode_config_to_ui(char* header, char* chunk){
 			action[actionlength] = 0;
 			//printf("Config: %d %d %d %d -> %s\r\n", pagenumber, elementnumber, eventtype, actionlength, action);
 			
-				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE, 64);
+				grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE, 64);
 				if (pagenumber == grid_ui_state.page_activepage){
 
 					//find event

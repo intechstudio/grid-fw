@@ -17,14 +17,14 @@
 #include "esp_check.h"
 
 
-#include "../../grid_common/include/grid_ain.h"
-#include "../../grid_common/include/grid_ui.h"
+#include "../../grid_common/grid_ain.h"
+#include "../../grid_common/grid_ui.h"
 
 #include "driver/gpio.h"
 #include "grid_esp32_pins.h"
 #include "grid_esp32_adc.h"
 
-#include "../../grid_common/include/grid_module.h"
+#include "../../grid_common/grid_module.h"
 
 #ifdef __cplusplus
 extern "C" {

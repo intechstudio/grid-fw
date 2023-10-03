@@ -5,7 +5,7 @@
  * Author : SUKU WC
 */
 
-#include "include/grid_ui.h"
+#include "grid_ui.h"
 
 
 struct grid_ui_model grid_ui_state;
@@ -579,8 +579,8 @@ void grid_ui_page_load_success_callback(void){
 
 
 	// phase out the animation
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
-	grid_led_set_alert_timeout_automatic(&grid_led_state);
+	grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+	grid_alert_all_set_timeout_automatic(&grid_led_state);
 	
 }
 
