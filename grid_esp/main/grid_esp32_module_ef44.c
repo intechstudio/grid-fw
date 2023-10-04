@@ -31,8 +31,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_transaction_t *trans) {
 
     xRingbufferSendFromISR(grid_esp32_encoder_state.ringbuffer_handle , &result, sizeof(struct grid_esp32_encoder_result), NULL);
 
-    grid_esp32_encoder_spi_start_transfer(&grid_esp32_encoder_state);    
-    
+    //grid_esp32_encoder_spi_start_transfer(&grid_esp32_encoder_state);    
     //portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
     //portENTER_CRITICAL(&spinlock);
     //spi_device_queue_trans(grid_esp32_encoder_state.spi_device_handle, &grid_esp32_encoder_state.transaction, 0);
@@ -47,7 +46,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_transaction_t *trans) {
 void grid_esp32_module_ef44_task(void *arg)
 {
     grid_esp32_encoder_init(&grid_esp32_encoder_state, my_post_setup_cb, my_post_trans_cb);
-    grid_esp32_encoder_spi_start_transfer(&grid_esp32_encoder_state);
+    grid_esp32_encoder_start(&grid_esp32_encoder_state);
 
     uint64_t potmeter_last_real_time[4] = {0};
     const uint8_t multiplexer_lookup[4] = { 6, 4, 7, 5 };

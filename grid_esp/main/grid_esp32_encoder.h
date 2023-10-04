@@ -25,6 +25,7 @@
 #include "rom/ets_sys.h" // For ets_printf
 
 #include "grid_esp32_pins.h"
+#include "driver/gptimer.h"
 
 
 #include "freertos/ringbuf.h"
@@ -82,6 +83,8 @@ void IRAM_ATTR grid_esp32_encoder_latch_data(void);
 
 void grid_esp32_encoder_spi_init(struct grid_esp32_encoder_model* encoder, void (*post_setup_cb)(spi_transaction_t*), void (*post_trans_cb)(spi_transaction_t*));
 void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, void (*post_setup_cb)(spi_transaction_t*), void (*post_trans_cb)(spi_transaction_t*));
+
+void grid_esp32_encoder_start(struct grid_esp32_encoder_model* encoder);
 
 void IRAM_ATTR grid_esp32_encoder_spi_start_transfer(struct grid_esp32_encoder_model* encoder);
 
