@@ -77,7 +77,7 @@ uint8_t	grid_decode_midi_to_usb(char* header, char* chunk){
 	if (grid_midi_tx_push(midievent)){
 		grid_port_debug_print_text("MIDI TX: Packet Dropped!");
 	};
-	grid_midi_tx_pop(midievent);				
+	//grid_midi_tx_pop(midievent);				
 
 	return 0; //OK	
 }
@@ -158,7 +158,7 @@ uint8_t	grid_decode_sysex_to_usb(char* header, char* chunk){
 	}
 
 	// try to pop
-	grid_midi_tx_pop(midievent);	
+	//grid_midi_tx_pop(midievent);	
 	
 	if (number_of_packets_dropped){
 		grid_port_debug_printf("MIDI TX: %d Packet(s) Dropped!", number_of_packets_dropped);

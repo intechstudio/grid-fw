@@ -43,7 +43,12 @@ static void usb_task_inner(){
 	grid_keyboard_tx_pop();
 	
 	// Send midi from Grid to Host!
-	grid_midi_tx_pop();        
+
+	for (uint8_t i=0; i<5; i++){
+		
+		grid_midi_tx_pop();     
+
+	}   
 	
 
 

@@ -733,11 +733,10 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por){
 
 								
 	}		
-		
-			
+
+	
 	// Let's send the packet through USB
 	grid_platform_usb_serial_write(por->tx_double_buffer, length);
-
 
 	return 0;
 }
