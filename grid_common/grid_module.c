@@ -304,45 +304,27 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 
 		
 	if (old_value != new_value){
+		// something changed since the last time we read the shift register
 
+		// shift register bits arrangement: MSB to LSB
 		// GND Button PhaseB PhaseA
 			
 		uint8_t new_button_value = (new_value&0b00000100)?1:0;
-		uint8_t new_phase_a      = (new_value&0b00000010)?1:0;
-		uint8_t new_phase_b      = (new_value&0b00000001)?1:0;
-
 		uint8_t old_button_value = (old_value&0b00000100)?1:0;
-		uint8_t old_phase_a      = (old_value&0b00000010)?1:0;
-		uint8_t old_phase_b      = (old_value&0b00000001)?1:0;
-		
 		int16_t delta = 0;
-		
-		#if 0
-		if (new_phase_a == 1 && new_phase_b == 1){ //detent found
-		
-			if (old_phase_b == 0 && *phase_change_lock == 0){
-				delta = -1;
-				*phase_change_lock = 1;
-			}
-			
-			if (old_phase_a == 0 && *phase_change_lock == 0){
-				delta = 1;
-				*phase_change_lock = 1;
-			}
-			
-		}
-		
-		if (new_phase_a == 0 && new_phase_b == 0){
-		
-			*phase_change_lock = 0;
 
-		}
-		#endif
-		
 		// lookup table, of state machine of the combination of old encoder AB and new encoder AB
 		static int8_t encoder_heading[] = { 0, 1, -1, 0, -1, 0, 0, 1, 1, 0, 0, -1, 0, -1, 1, };
 		uint8_t encoder_state = (old_value & 0b11) <<2 | (new_value & 0b11);
 		delta = encoder_heading[encoder_state];
+
+		// Only non-detent modules want updates every quadrature phase.
+		if ( grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD ){
+			if ((new_value & 0b11) != 0b11){ // we haven't landed on the detent
+				// override delta to ignore in-between movement of the encoder for detented modules
+				delta = 0;
+			}
+		}
 
 		// Evaluate the results
 		// limit lastrealtime
@@ -358,9 +340,6 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 			// update lastrealtime
 			*button_last_real_time = grid_platform_rtc_get_micros(); 
 			template_parameter_list[GRID_LUA_FNC_E_BUTTON_ELAPSED_index] = button_elapsed_time/MS_TO_US;
-
-
-
 
 			if (new_button_value == 0){ // Button Press
 	
