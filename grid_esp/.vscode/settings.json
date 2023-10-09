@@ -102,5 +102,6 @@
         }
     ]
 },
-"git.ignoreLimitWarning": true
+"git.ignoreLimitWarning": true,
+"idf.adapterTargetName": "esp32s3"
 }

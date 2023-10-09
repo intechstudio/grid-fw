@@ -627,13 +627,13 @@ void grid_esp32_port_task(void *arg)
 
 
             // INBOUND
-            grid_port_process_inbound(GRID_PORT_U, 1); // Loopback , put rx_buffer content to each CONNECTED port's tx_buffer
-            grid_port_process_inbound(GRID_PORT_H, 0);
+            grid_port_process_inbound(GRID_PORT_U); // Loopback , put rx_buffer content to each CONNECTED port's tx_buffer
+            grid_port_process_inbound(GRID_PORT_H);
 
-            grid_port_process_inbound(GRID_PORT_N, 0);
-            grid_port_process_inbound(GRID_PORT_E, 0);
-            grid_port_process_inbound(GRID_PORT_S, 0);
-            grid_port_process_inbound(GRID_PORT_W, 0);
+            grid_port_process_inbound(GRID_PORT_N);
+            grid_port_process_inbound(GRID_PORT_E);
+            grid_port_process_inbound(GRID_PORT_S);
+            grid_port_process_inbound(GRID_PORT_W);
 
 
             //plot_port_debug();

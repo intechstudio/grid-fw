@@ -173,5 +173,6 @@
                 "command": "xxd -i ./grid_pico/build/main/main.bin > ./grid_esp/main/pico_firmware.h && sed -i 's/__grid_pico_build_main_main_bin/pico_firmware/g; s/unsigned/const unsigned/g' ./grid_esp/main/pico_firmware.h",
             }
         ]
-    }
+    },
+    "cmake.sourceDirectory": "/home/suku/Documents/grid-fw/grid_common"
 }

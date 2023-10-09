@@ -109,7 +109,7 @@ void grid_module_common_init(void){
 
 	
 
-
+    grid_transport_init(&grid_transport_state);
 
 	grid_port_init_all();
 	grid_d51_uart_init();

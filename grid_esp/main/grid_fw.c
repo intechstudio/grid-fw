@@ -316,6 +316,8 @@ void app_main(void)
 	GRID_PORT_H->tx_buffer.buffer_storage = PORT_H_TX;
 	GRID_PORT_H->rx_buffer.buffer_storage = PORT_H_RX;
 
+    grid_transport_init(&grid_transport_state);
+
     grid_port_init_all(); // buffers
     
     ESP_LOGI(TAG, "===== BANK INIT =====");

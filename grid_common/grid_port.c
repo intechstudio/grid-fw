@@ -17,6 +17,23 @@ struct grid_port volatile * GRID_PORT_W;
 struct grid_port volatile * GRID_PORT_U;
 struct grid_port volatile * GRID_PORT_H;
 
+
+struct grid_transport_model grid_transport_state;
+
+void grid_transport_init(struct grid_transport_model* transport){
+	transport->port_array_length = 0;
+	memset(transport->port_array, 0, sizeof(transport->port_array));
+}
+
+
+void grid_transport_register_port(struct grid_transport_model* transport, struct grid_port* port){
+
+	transport->port_array[transport->port_array_length] = port;
+	transport->port_array_length++;
+
+}
+
+
 char grid_port_get_name_char(struct grid_port* por){
 
 	// Print Direction for debugging
@@ -464,8 +481,10 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 //=============================== PROCESS INBOUND ==============================//
 
 
-uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
+uint8_t grid_port_process_inbound(struct grid_port* por){
 	
+	uint8_t loopback = por->inbound_loopback;
+
 	uint16_t packet_size = grid_buffer_read_size(&por->rx_buffer);
 	
 	if (packet_size == 0){	
@@ -528,91 +547,94 @@ uint8_t grid_port_process_inbound(struct grid_port* por, uint8_t loopback){
 
 
 
-void grid_port_init(struct grid_port** por, uint8_t type, uint8_t dir){
+void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir, uint8_t inbound_loopback){
+
+	grid_transport_register_port(&grid_transport_state, por);
 
 	
-	grid_buffer_init(&(*por)->tx_buffer, GRID_BUFFER_SIZE);
-	grid_buffer_init(&(*por)->rx_buffer, GRID_BUFFER_SIZE);
+	grid_buffer_init(&por->tx_buffer, GRID_BUFFER_SIZE);
+	grid_buffer_init(&por->rx_buffer, GRID_BUFFER_SIZE);
 	
 	
-	(*por)->cooldown = 0;
+	por->cooldown = 0;
+	por->inbound_loopback = inbound_loopback;
 	
+	por->direction = dir;
 	
-	(*por)->direction = dir;
+	por->type		= type;
 	
-	(*por)->type		= type;
-	
-	(*por)->tx_double_buffer_status	= 0;
-	(*por)->rx_double_buffer_status	= 0;
-	(*por)->rx_double_buffer_read_start_index = 0;
-	(*por)->rx_double_buffer_seek_start_index = 0;
-	(*por)->rx_double_buffer_write_index = 0;
+	por->tx_double_buffer_status	= 0;
+	por->rx_double_buffer_status	= 0;
+	por->rx_double_buffer_read_start_index = 0;
+	por->rx_double_buffer_seek_start_index = 0;
+	por->rx_double_buffer_write_index = 0;
 	
 	
 	for (uint32_t i=0; i<GRID_DOUBLE_BUFFER_TX_SIZE; i++){
-		(*por)->tx_double_buffer[i] = 0;		
+		por->tx_double_buffer[i] = 0;		
 	}
 	for (uint32_t i=0; i<GRID_DOUBLE_BUFFER_RX_SIZE; i++){
-		(*por)->rx_double_buffer[i] = 0;
+		por->rx_double_buffer[i] = 0;
 	}
 	
-	(*por)->partner_fi = 0;
+	por->partner_fi = 0;
 	
-	(*por)->partner_hwcfg = 0;
-	(*por)->partner_status = 1;
+	por->partner_hwcfg = 0;
+	por->partner_status = 1;
 	
-	(*por)->ping_local_token = 255;
-	(*por)->ping_partner_token = 255;
+	por->ping_local_token = 255;
+	por->ping_partner_token = 255;
 	
-	(*por)->ping_flag = 0;
+	por->ping_flag = 0;
 	
 	if (type == GRID_PORT_TYPE_USART){	
 		
-		(*por)->partner_status = 0;
-		(*por)->partner_fi = 0;
+		por->partner_status = 0;
+		por->partner_fi = 0;
 		
 		
-		sprintf((char*) (*por)->ping_packet, "%c%c%c%c%02lx%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, (*por)->direction, grid_sys_get_hwcfg(&grid_sys_state), 255, 255, GRID_CONST_EOT);
+		sprintf((char*) por->ping_packet, "%c%c%c%c%02lx%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, por->direction, grid_sys_get_hwcfg(&grid_sys_state), 255, 255, GRID_CONST_EOT);
 		
-		(*por)->ping_packet_length = strlen((char*) (*por)->ping_packet);	
+		por->ping_packet_length = strlen((char*) por->ping_packet);	
 			
-		grid_msg_string_checksum_write((*por)->ping_packet, (*por)->ping_packet_length, grid_msg_string_calculate_checksum_of_packet_string((*por)->ping_packet, (*por)->ping_packet_length));
+		grid_msg_string_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_string_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 		
 
 		
-		if ((*por)->direction == GRID_CONST_NORTH){
-			(*por)->dx = 0;
-			(*por)->dy = 1;
+		if (por->direction == GRID_CONST_NORTH){
+			por->dx = 0;
+			por->dy = 1;
 		}
-		else if ((*por)->direction == GRID_CONST_EAST){
-			(*por)->dx = 1;
-			(*por)->dy = 0;
+		else if (por->direction == GRID_CONST_EAST){
+			por->dx = 1;
+			por->dy = 0;
 		}
-		else if ((*por)->direction == GRID_CONST_SOUTH){
-			(*por)->dx = 0;
-			(*por)->dy = -1;
+		else if (por->direction == GRID_CONST_SOUTH){
+			por->dx = 0;
+			por->dy = -1;
 		}
-		else if ((*por)->direction == GRID_CONST_WEST){
-			(*por)->dx = -1;
-			(*por)->dy = 0;
+		else if (por->direction == GRID_CONST_WEST){
+			por->dx = -1;
+			por->dy = 0;
 		}
 		
 	}
 	else{
-		(*por)->partner_status = 1; //UI AND USB are considered to be connected by default
+		por->partner_status = 1; //UI AND USB are considered to be connected by default
 	}
 	
 }
 
 void grid_port_init_all(void){
+
 	
-	grid_port_init(&GRID_PORT_N, GRID_PORT_TYPE_USART, GRID_CONST_NORTH);
-	grid_port_init(&GRID_PORT_E,  GRID_PORT_TYPE_USART, GRID_CONST_EAST);
-	grid_port_init(&GRID_PORT_S, GRID_PORT_TYPE_USART, GRID_CONST_SOUTH);
-	grid_port_init(&GRID_PORT_W,  GRID_PORT_TYPE_USART, GRID_CONST_WEST);
+	grid_port_init(GRID_PORT_N, GRID_PORT_TYPE_USART, GRID_CONST_NORTH, 0);
+	grid_port_init(GRID_PORT_E,  GRID_PORT_TYPE_USART, GRID_CONST_EAST, 0);
+	grid_port_init(GRID_PORT_S, GRID_PORT_TYPE_USART, GRID_CONST_SOUTH, 0);
+	grid_port_init(GRID_PORT_W,  GRID_PORT_TYPE_USART, GRID_CONST_WEST, 0);
 	
-	grid_port_init(&GRID_PORT_U, GRID_PORT_TYPE_UI, 0);
-	grid_port_init(&GRID_PORT_H, GRID_PORT_TYPE_USB, 0);	
+	grid_port_init(GRID_PORT_U, GRID_PORT_TYPE_UI, 0, 1);
+	grid_port_init(GRID_PORT_H, GRID_PORT_TYPE_USB, 0, 0);	
 	
 }
 

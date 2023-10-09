@@ -220,14 +220,14 @@ static void inbound_task_inner(){
 
 	
 	// Copy data from UI_RX to HOST_TX & north TX AND STUFF
-	grid_port_process_inbound(GRID_PORT_U, 1); // Loopback
+	grid_port_process_inbound(GRID_PORT_U); // Loopback
 	
-	grid_port_process_inbound(GRID_PORT_N, 0);		
-	grid_port_process_inbound(GRID_PORT_E, 0);		
-	grid_port_process_inbound(GRID_PORT_S, 0);
-	grid_port_process_inbound(GRID_PORT_W, 0);
+	grid_port_process_inbound(GRID_PORT_N);		
+	grid_port_process_inbound(GRID_PORT_E);		
+	grid_port_process_inbound(GRID_PORT_S);
+	grid_port_process_inbound(GRID_PORT_W);
 	
-	grid_port_process_inbound(GRID_PORT_H, 0);	// USB	
+	grid_port_process_inbound(GRID_PORT_H);	// USB	
 
 
 
