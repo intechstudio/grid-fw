@@ -29,7 +29,7 @@
 // Frame timing => | 60us  | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | N/A   |
 
 // this is need for types like uint8_t 
-#include "include/grid_led.h"
+#include "grid_led.h"
 
 struct grid_led_model grid_led_state;
 
@@ -199,6 +199,7 @@ uint32_t grid_led_get_framebuffer_size(struct grid_led_model* mod){
 void grid_led_init(struct grid_led_model* mod, uint32_t length){
 	
 
+	mod->led_pin = -1;
 	mod->tick_lastrealtime = 0;
 
 	mod->led_count = length;
@@ -284,6 +285,13 @@ void grid_led_reset(struct grid_led_model* mod){
 
 /** ================== ANIMATION ==================  */
 
+uint8_t grid_led_get_pin(struct grid_led_model* mod){
+	return mod->led_pin;
+}
+
+void grid_led_set_pin(struct grid_led_model* mod, uint8_t gpio_pin){
+	mod->led_pin = gpio_pin;
+}
 
 void grid_led_tick(struct grid_led_model* mod){
 
@@ -310,76 +318,116 @@ void grid_led_tick(struct grid_led_model* mod){
 	
 }
 
-void grid_led_set_alert(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_t b, uint16_t duration){
+void grid_alert_all_set(struct grid_led_model* mod, uint8_t r, uint8_t g, uint8_t b, uint16_t duration){
 
 
 	for (uint8_t i = 0; i<mod->led_count; i++){
 
-		grid_led_set_layer_color(mod, i, GRID_LED_LAYER_ALERT, r, g, b);
-
-		// just to make sure that minimum is 0
-		grid_led_set_layer_min(mod, i, GRID_LED_LAYER_ALERT, 0, 0, 0);
-
-		grid_led_set_layer_shape(mod, i, GRID_LED_LAYER_ALERT, 0);
-
-		grid_led_set_layer_timeout(mod, i, GRID_LED_LAYER_ALERT, duration);
-		grid_led_set_layer_phase(mod, i, GRID_LED_LAYER_ALERT, (uint8_t)duration);
-		grid_led_set_layer_frequency(mod, i, GRID_LED_LAYER_ALERT, -1);
+		grid_alert_one_set(mod, i, r, g, b, duration);
 
 	}
 
 }
 
-void grid_led_set_alert_timeout_automatic(struct grid_led_model* mod){
+void grid_alert_all_set_timeout_automatic(struct grid_led_model* mod){
 
-	uint8_t old_phase = grid_led_get_layer_phase(mod, 0, GRID_LED_LAYER_ALERT);
+	for (uint8_t i = 0; i<mod->led_count; i++){
+
+		grid_alert_one_set_timeout_automatic(mod, i);
+
+	}
+
+}
+
+
+void grid_alert_all_set_timeout(struct grid_led_model* mod, uint8_t timeout){
+
+
+	for (uint8_t i = 0; i<mod->led_count; i++){
+		grid_alert_one_set_timeout(mod, i, timeout);
+	}
+
+}
+
+void grid_alert_all_set_frequency(struct grid_led_model* mod, uint8_t frequency){
+
+
+	for (uint8_t i = 0; i<mod->led_count; i++){
+		grid_alert_one_set_frequency(mod, i, frequency);
+	}
+
+}
+
+void grid_alert_all_set_phase(struct grid_led_model* mod, uint8_t phase){
+
+
+	for (uint8_t i = 0; i<mod->led_count; i++){
+		grid_alert_one_set_phase(mod, i, phase);
+	}
+
+}
+
+void grid_alert_one_set(struct grid_led_model* mod, uint8_t num, uint8_t r, uint8_t g, uint8_t b, uint16_t duration){
+
+
+	grid_led_set_layer_color(mod, num, GRID_LED_LAYER_ALERT, r, g, b);
+
+	// just to make sure that minimum is 0
+	grid_led_set_layer_min(mod, num, GRID_LED_LAYER_ALERT, 0, 0, 0);
+
+	grid_led_set_layer_shape(mod, num, GRID_LED_LAYER_ALERT, 0);
+
+	grid_led_set_layer_timeout(mod, num, GRID_LED_LAYER_ALERT, duration);
+	grid_led_set_layer_phase(mod, num, GRID_LED_LAYER_ALERT, (uint8_t)duration);
+	grid_led_set_layer_frequency(mod, num, GRID_LED_LAYER_ALERT, -1);
+
+	
+
+}
+
+void grid_alert_one_set_timeout_automatic(struct grid_led_model* mod, uint8_t num){
+
+	uint8_t old_phase = grid_led_get_layer_phase(mod, num, GRID_LED_LAYER_ALERT);
 
 	uint8_t new_phase = (old_phase/2)*2;
 
-	for (uint8_t i = 0; i<mod->led_count; i++){
-		grid_led_set_layer_min(mod, i, GRID_LED_LAYER_ALERT, 0, 0, 0);
-	}
 
-	grid_led_set_alert_phase(mod, new_phase);
-	grid_led_set_alert_frequency(mod, -2);
+	grid_led_set_layer_min(mod, num, GRID_LED_LAYER_ALERT, 0, 0, 0);
+	
+	grid_alert_one_set_phase(mod, num, new_phase);
+	grid_alert_one_set_frequency(mod, num, -2);
 
 	if (new_phase/2 == 0){
-		grid_led_set_alert_frequency(mod, 0);	
+		grid_alert_one_set_frequency(mod, num, 0);	
 	}
 	else{
-		grid_led_set_alert_timeout(mod, new_phase/2);
+		grid_alert_one_set_timeout(mod, num, new_phase/2);
 	}
 
 
 }
 
 
-void grid_led_set_alert_timeout(struct grid_led_model* mod, uint8_t timeout){
+void grid_alert_one_set_timeout(struct grid_led_model* mod, uint8_t num, uint8_t timeout){
 
-
-	for (uint8_t i = 0; i<mod->led_count; i++){
-		grid_led_set_layer_timeout(mod, i, GRID_LED_LAYER_ALERT, timeout);
-	}
+	grid_led_set_layer_timeout(mod, num, GRID_LED_LAYER_ALERT, timeout);
 
 }
 
-void grid_led_set_alert_frequency(struct grid_led_model* mod, uint8_t frequency){
+void grid_alert_one_set_frequency(struct grid_led_model* mod, uint8_t num, uint8_t frequency){
 
-
-	for (uint8_t i = 0; i<mod->led_count; i++){
-		grid_led_set_layer_frequency(mod, i, GRID_LED_LAYER_ALERT, frequency);
-	}
+	grid_led_set_layer_frequency(mod, num, GRID_LED_LAYER_ALERT, frequency);
 
 }
 
-void grid_led_set_alert_phase(struct grid_led_model* mod, uint8_t phase){
+void grid_alert_one_set_phase(struct grid_led_model* mod, uint8_t num, uint8_t phase){
 
-
-	for (uint8_t i = 0; i<mod->led_count; i++){
-		grid_led_set_layer_phase(mod, i, GRID_LED_LAYER_ALERT, phase);
-	}
+	grid_led_set_layer_phase(mod, num, GRID_LED_LAYER_ALERT, phase);
 
 }
+
+
+
 
 void grid_led_set_layer_color(struct grid_led_model* mod, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b){
 	

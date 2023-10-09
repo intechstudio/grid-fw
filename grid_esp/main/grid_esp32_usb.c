@@ -106,51 +106,58 @@ void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event)
 
 void tud_cdc_tx_complete_cb(uint8_t itf){
     //ets_printf("CDC TXC\r\n");
+    esp_err_t status = tinyusb_cdcacm_write_flush(0, 0);
+
     usb_tx_ready = 1;
+    //ets_printf("# %d\r\n", status);
 }
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
 
+
+    // portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+    // portENTER_CRITICAL(&spinlock);
+
+    esp_err_t status = 0;
+
     //tinyusb_cdcacm_write_flush(0, pdMS_TO_TICKS(10));
     if (usb_tx_ready == 1){
 
-        usb_tx_ready = 0;
+
+        //ets_printf("$\r\n");
+
     
+        usb_tx_ready = 0;
    
         uint32_t queued = tinyusb_cdcacm_write_queue(0, (const uint8_t*) buffer, length);
 
-        if (queued==0){
-            usb_tx_ready = 1;
-        }       
 
         if (queued != length){
-            //ets_printf("CDC QUEUE ERROR: %d %d\r\n", queued, length);
-            //tinyusb_cdcacm_write_flush(0, pdMS_TO_TICKS(1));
+            ets_printf("CDC QUEUE ERROR: %d %d\r\n", queued, length);
+            tinyusb_cdcacm_write_flush(0,  0);
+        }
+        else{        
+            status = tinyusb_cdcacm_write_flush(0, 0);
+            //ets_printf("$ %d\r\n", status);
         }
 
-        tinyusb_cdcacm_write_flush(0, 0);
+
     }
     else{
 
-        //ets_printf("CDC SKIP\r\n");
-        tinyusb_cdcacm_write_flush(0, 0);
+        status = tinyusb_cdcacm_write_flush(0, 0);
+
+        ets_printf("SKIP %d\r\n", status);
+
+        if (status == ESP_OK){
+            ets_printf("READY\r\n");
+            usb_tx_ready = 1;
+        }
+        
 
     }
 
-
-
-    /*
-    char temp[length+1];
-    temp[length] = '\0';
-    for (uint16_t i=0; i<length; i++){
-
-        temp[i] = buffer[i];
-    }
-    ets_printf("CDC: %d %s\r\n", queued, temp);
-    */
-
-    //tinyusb_cdcacm_write_flush(0, pdMS_TO_TICKS(1000));
-
+    // portEXIT_CRITICAL(&spinlock);
 
     return 1;
 }

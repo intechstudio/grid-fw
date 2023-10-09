@@ -1,4 +1,4 @@
-#include "include/grid_module.h"
+#include "grid_module.h"
 
 
 void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui){
@@ -17,6 +17,8 @@ void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 	grid_ui_element_init(ui, ui->element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 	
+	ui->lua_ui_init_callback = grid_lua_ui_init_po16;
+
 }
 
 
@@ -93,6 +95,7 @@ void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 	grid_ui_element_init(ui, ui->element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 	
+	ui->lua_ui_init_callback = grid_lua_ui_init_bu16;
 }
 
 
@@ -232,6 +235,7 @@ void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 	grid_ui_element_init(ui, ui->element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 	
+	ui->lua_ui_init_callback = grid_lua_ui_init_pbf4;
 }
 
 
@@ -261,6 +265,7 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 
 	
+	ui->lua_ui_init_callback = grid_lua_ui_init_ef44;
 
 
 }
@@ -291,6 +296,7 @@ void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 	grid_ui_element_init(ui, ui->element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 	
+	ui->lua_ui_init_callback = grid_lua_ui_init_tek2;
 }
 
 void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, uint64_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock){
@@ -755,5 +761,6 @@ void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 	grid_ui_element_init(ui, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 		
-	
+	ui->lua_ui_init_callback = grid_lua_ui_init_en16;
 }
+

@@ -5,7 +5,7 @@
  * Author : SUKU WC
 */
 
-#include "include/grid_buf.h"
+#include "grid_buf.h"
 
 uint32_t grid_buffer_error_count = 0;
 

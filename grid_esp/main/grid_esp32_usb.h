@@ -24,9 +24,9 @@
 #include "driver/gpio.h"
 
 
-#include "../../grid_common/include/grid_port.h"
-#include "../../grid_common/include/grid_usb.h"
-#include "../../grid_common/include/grid_sys.h"
+#include "../../grid_common/grid_port.h"
+#include "../../grid_common/grid_usb.h"
+#include "../../grid_common/grid_sys.h"
 
 
 

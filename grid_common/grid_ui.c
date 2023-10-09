@@ -5,13 +5,14 @@
  * Author : SUKU WC
 */
 
-#include "include/grid_ui.h"
+#include "grid_ui.h"
 
 
 struct grid_ui_model grid_ui_state;
 
 void grid_ui_model_init(struct grid_ui_model* mod, struct grid_port* port, uint8_t element_list_length){
 	
+	mod->lua_ui_init_callback = NULL;
 
 	mod->port = port;
 
@@ -561,6 +562,9 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page){
 	grid_lua_stop_vm(&grid_lua_state);
 	//grid_platform_printf("START\r\n");
 	grid_lua_start_vm(&grid_lua_state);
+    grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
+
+
 
 	grid_ui_bulk_pageread_init(ui, &grid_ui_page_load_success_callback);
 
@@ -575,8 +579,8 @@ void grid_ui_page_load_success_callback(void){
 
 
 	// phase out the animation
-	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
-	grid_led_set_alert_timeout_automatic(&grid_led_state);
+	grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+	grid_alert_all_set_timeout_automatic(&grid_led_state);
 	
 }
 
@@ -1443,9 +1447,9 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui){
 
 	for (uint8_t i=last_element_helper; i<ui->element_list_length; i++){
 
-		struct grid_ui_element* ele = &ui->element_list[i];
-
-
+		// load system element first
+		uint8_t element_index = (i == 0 ? ui->element_list_length-1 : i-1);
+		struct grid_ui_element* ele = &ui->element_list[element_index];
 
 		for (uint8_t j=0; j<ele->event_list_length; j++){
 

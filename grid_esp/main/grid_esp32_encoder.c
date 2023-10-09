@@ -37,7 +37,7 @@ void grid_esp32_encoder_spi_init(struct grid_esp32_encoder_model* encoder, void 
         .command_bits=0,
         .address_bits=0,
         .dummy_bits=0,
-        .clock_speed_hz=500000,    //was 500k
+        .clock_speed_hz=4000000,    //was 500k
         .duty_cycle_pos=128,        //50% duty cycle
         .mode=2,
         .spics_io_num=-1,
@@ -97,9 +97,60 @@ void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, void (*po
     encoder->buffer_storage = (struct grid_esp32_encoder_result *)heap_caps_malloc(sizeof(struct grid_esp32_encoder_result)*ENCODER_BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     encoder->ringbuffer_handle = xRingbufferCreateStatic(ENCODER_BUFFER_SIZE, ENCODER_BUFFER_TYPE, encoder->buffer_storage, encoder->buffer_struct);
 
-
     return;
 
+}
+
+
+
+
+
+
+static bool IRAM_ATTR example_timer_on_alarm_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_ctx)
+{
+    BaseType_t high_task_awoken = pdFALSE;
+
+
+    struct grid_esp32_encoder_model* encoder = (struct grid_esp32_encoder_model*)user_ctx;
+    grid_esp32_encoder_spi_start_transfer(encoder);
+
+
+    return high_task_awoken == pdTRUE;
+}
+
+
+
+void grid_esp32_encoder_start(struct grid_esp32_encoder_model* encoder){
+
+    // setup the periodic timer that will trigger the spi transaction
+
+    ESP_LOGI("ENC", "Create timer handle");
+    gptimer_handle_t gptimer = NULL;
+    gptimer_config_t timer_config = {
+        .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+        .direction = GPTIMER_COUNT_UP,
+        .resolution_hz = 1000000, // 1MHz, 1 tick=1us
+    };
+    ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
+
+    gptimer_event_callbacks_t cbs = {
+        .on_alarm = example_timer_on_alarm_cb, // register user callback
+    };
+    ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, (void*) encoder));
+
+
+
+    gptimer_alarm_config_t alarm_config = {
+        .reload_count = 0, // counter will reload with 0 on alarm event
+        .alarm_count = 250, // period = 1s @resolution 1MHz
+        .flags.auto_reload_on_alarm = true, // enable auto-reload
+    };
+    ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
+
+
+    ESP_ERROR_CHECK(gptimer_enable(gptimer));
+    ESP_ERROR_CHECK(gptimer_start(gptimer));
+    
 }
 
 

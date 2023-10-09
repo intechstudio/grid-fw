@@ -54,18 +54,18 @@
 #include "rom/ets_sys.h" // For ets_printf
 
 
-#include "../../grid_common/include/grid_protocol.h"
-#include "../../grid_common/include/grid_ain.h"
-#include "../../grid_common/include/grid_led.h"
-#include "../../grid_common/include/grid_sys.h"
-#include "../../grid_common/include/grid_msg.h"
-#include "../../grid_common/include/grid_buf.h"
-#include "../../grid_common/include/grid_port.h"
-#include "../../grid_common/include/grid_usb.h"
-#include "../../grid_common/include/grid_module.h"
+#include "../../grid_common/grid_protocol.h"
+#include "../../grid_common/grid_ain.h"
+#include "../../grid_common/grid_led.h"
+#include "../../grid_common/grid_sys.h"
+#include "../../grid_common/grid_msg.h"
+#include "../../grid_common/grid_buf.h"
+#include "../../grid_common/grid_port.h"
+#include "../../grid_common/grid_usb.h"
+#include "../../grid_common/grid_module.h"
 
-#include "../../grid_common/include/grid_lua_api.h"
-#include "../../grid_common/include/grid_ui.h"
+#include "../../grid_common/grid_lua_api.h"
+#include "../../grid_common/grid_ui.h"
 
 
 #include "../../grid_common/lua-5.4.3/src/lua.h"
@@ -141,6 +141,37 @@ static char DRAM_ATTR PORT_U_RX[GRID_BUFFER_SIZE] = {0};
 static char DRAM_ATTR PORT_H_TX[GRID_BUFFER_SIZE] = {0};
 static char DRAM_ATTR PORT_H_RX[GRID_BUFFER_SIZE] = {0};
 
+static TaskHandle_t s_tusb_tskh;
+
+/**
+ * @brief This top level thread processes all usb events and invokes callbacks
+ */
+static void tusb_device_task(void *arg)
+{
+    ESP_LOGD(TAG, "tinyusb task started");
+    while (1) { // RTOS forever loop
+        tud_task();
+    }
+}
+
+esp_err_t tusb_run_task(void)
+{
+    // This function is not garanteed to be thread safe, if invoked multiple times without calling `tusb_stop_task`, will cause memory leak
+    // doing a sanity check anyway
+    ESP_RETURN_ON_FALSE(!s_tusb_tskh, ESP_ERR_INVALID_STATE, TAG, "TinyUSB main task already started");
+    // Create a task for tinyusb device stack:
+    xTaskCreatePinnedToCore(tusb_device_task, "TinyUSB", 4096, NULL, 6, &s_tusb_tskh, 1);
+    ESP_RETURN_ON_FALSE(s_tusb_tskh, ESP_FAIL, TAG, "create TinyUSB main task failed");
+    return ESP_OK;
+}
+
+esp_err_t tusb_stop_task(void)
+{
+    ESP_RETURN_ON_FALSE(s_tusb_tskh, ESP_ERR_INVALID_STATE, TAG, "TinyUSB main task not started yet");
+    vTaskDelete(s_tusb_tskh);
+    s_tusb_tskh = NULL;
+    return ESP_OK;
+}
 
 
 void app_main(void)
@@ -196,6 +227,13 @@ void app_main(void)
 		ets_printf("Init Module: Unknown Module\r\n");
 	}
 
+
+
+
+    uint8_t led_pin = 21;
+
+    grid_led_set_pin(&grid_led_state, led_pin);
+
     TaskHandle_t led_task_hdl;
     xTaskCreatePinnedToCore(grid_esp32_led_task,
                             "led",
@@ -214,6 +252,9 @@ void app_main(void)
     grid_usb_midi_buffer_init();
     grid_usb_keyboard_buffer_init(&grid_keyboard_state);
 
+    tusb_run_task();
+
+
     TaskHandle_t core2_task_hdl;
     xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024*3, NULL, 4, &core2_task_hdl, 1);
 
@@ -227,8 +268,8 @@ void app_main(void)
     if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0){
 
 
-        grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
-        grid_led_set_alert_frequency(&grid_led_state, 4);
+        grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
+        grid_alert_all_set_frequency(&grid_led_state, 4);
         grid_esp32_nvm_erase(&grid_esp32_nvm_state);
         vTaskDelay(pdMS_TO_TICKS(600));
 
@@ -250,6 +291,10 @@ void app_main(void)
     ESP_LOGI(TAG, "===== LUA INIT =====");
 	grid_lua_init(&grid_lua_state);
     grid_lua_set_memory_target(&grid_lua_state, 80); //80kb
+
+	grid_lua_start_vm(&grid_lua_state);
+	grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
+
 
     // ================== START: grid_module_pbf4_init() ================== //
 
@@ -388,12 +433,9 @@ void app_main(void)
    ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 10000));
 
+    grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
 
     esp_log_level_set("*", ESP_LOG_INFO);
-
-
-    grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
-
     ESP_LOGI(TAG, "===== INIT COMPLETE =====");
 
 

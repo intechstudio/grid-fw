@@ -43,7 +43,12 @@ static void usb_task_inner(){
 	grid_keyboard_tx_pop();
 	
 	// Send midi from Grid to Host!
-	grid_midi_tx_pop();        
+
+	for (uint8_t i=0; i<5; i++){
+		
+		grid_midi_tx_pop();     
+
+	}   
 	
 
 
@@ -585,9 +590,6 @@ int main(void)
 	printf("Hardware test complete");
 
 
-	grid_lua_init(&grid_lua_state);
-    grid_lua_set_memory_target(&grid_lua_state, 80); //80kb
-	grid_lua_start_vm(&grid_lua_state);
 
 
 	audiodf_midi_init();
@@ -605,6 +607,12 @@ int main(void)
 
 	//  x/512xb 0x80000
 	grid_module_common_init();
+
+	
+	grid_lua_init(&grid_lua_state);
+    grid_lua_set_memory_target(&grid_lua_state, 80); //80kb
+	grid_lua_start_vm(&grid_lua_state);
+	grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
 
 	grid_d51_led_init(&grid_d51_led_state, &grid_led_state);
 
@@ -676,9 +684,9 @@ int main(void)
 				printf("USB CONNECTED\r\n\r\n");
 				printf("HWCFG %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
 
-				grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
-				grid_led_set_alert_frequency(&grid_led_state, -2);	
-				grid_led_set_alert_phase(&grid_led_state, 200);	
+				grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
+				grid_alert_all_set_frequency(&grid_led_state, -2);	
+				grid_alert_all_set_phase(&grid_led_state, 200);	
 				
 				grid_msg_set_heartbeat_type(&grid_msg_state, 1);
 

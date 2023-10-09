@@ -6,14 +6,19 @@ on:
       - master
     paths:
       - 'grid_common/**'
+      - 'grid_esp/components/**'
       - '.github/workflows/grid_common_package.yml'
 jobs:
   upload_components:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: "recursive"
+
+      - name: Set Date
+        run: echo "action_date=$(date +'v1.%Y%m%d.%H%M')" >> $GITHUB_ENV
+
+      - name: Check Date
+        run: echo ${{ env.action_date }}
 
       - name: Upload components to the component registry
         uses: espressif/upload-components-ci-action@v1
@@ -21,4 +26,14 @@ jobs:
           directories: "grid_common"
           namespace: "sukuwc"
           name: "grid_common"
+          version: ${{ env.action_date }}
+          api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
+
+      - name: Upload components to the component registry
+        uses: espressif/upload-components-ci-action@v1
+        with:
+          directories: "grid_esp/components/grid_esp32_led"
+          namespace: "sukuwc"
+          name: "grid_esp32_led"
+          version: ${{ env.action_date }}
           api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}

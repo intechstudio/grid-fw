@@ -5,7 +5,7 @@
  * Author : SUKU WC
 */
 
-#include "include/grid_lua_api.h"
+#include "grid_lua_api.h"
 
 
 struct grid_lua_model grid_lua_state;
@@ -1442,7 +1442,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     else{
         //grid_platform_printf("page change is disabled\r\n");
         grid_port_debug_printf("page change is disabled");
-    	grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
+    	grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
     }
 
 
@@ -1809,40 +1809,18 @@ void grid_lua_ui_init_tek2(struct grid_lua_model* mod){
     grid_lua_dostring(mod, "setmetatable("GRID_LUA_KW_ELEMENT_short"[10], system_meta)");
 }
 
-void grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys){
+void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui){
 
 
-    grid_platform_printf("LUA UI INIT HWCFG:%d\r\n", grid_sys_get_hwcfg(sys));
+    if (ui->lua_ui_init_callback == NULL){
 
-    //register init functions for different ui elements
-
-    switch (grid_sys_get_hwcfg(sys)){
-
-        case GRID_MODULE_PO16_RevB: grid_lua_ui_init_po16(mod); break;
-        case GRID_MODULE_PO16_RevC: grid_lua_ui_init_po16(mod); break;
-        case GRID_MODULE_PO16_RevD: grid_lua_ui_init_po16(mod); break;
-
-        case GRID_MODULE_BU16_RevB: grid_lua_ui_init_bu16(mod); break;
-        case GRID_MODULE_BU16_RevC: grid_lua_ui_init_bu16(mod); break;
-        case GRID_MODULE_BU16_RevD: grid_lua_ui_init_bu16(mod); break;
-
-        case GRID_MODULE_PBF4_RevA: grid_lua_ui_init_pbf4(mod); break;
-        case GRID_MODULE_PBF4_RevD: grid_lua_ui_init_pbf4(mod); break;
-
-        case GRID_MODULE_EN16_RevA: grid_lua_ui_init_en16(mod); break;
-        case GRID_MODULE_EN16_RevD: grid_lua_ui_init_en16(mod); break;
-
-        case GRID_MODULE_EN16_ND_RevA: grid_lua_ui_init_en16(mod); break;
-        case GRID_MODULE_EN16_ND_RevD: grid_lua_ui_init_en16(mod); break;
-
-        case GRID_MODULE_EF44_RevA: grid_lua_ui_init_ef44(mod); break;
-        case GRID_MODULE_EF44_RevD: grid_lua_ui_init_ef44(mod); break;
-
-        case GRID_MODULE_TEK2_RevA: grid_lua_ui_init_tek2(mod); break;
-
-        default: grid_platform_printf("\r\n### LUA HWCFG NOT REGISTERED ### \r\n\r\n");
-
+        grid_platform_printf("LUA UI INIT FAILED: ui->lua_ui_init_callback not registered\r\n");
+        return;
     }
+
+    ui->lua_ui_init_callback(lua);
+
+    grid_lua_debug_memory_stats(lua, "Ui init");
 
 }
 
@@ -1911,14 +1889,6 @@ void grid_lua_start_vm(struct grid_lua_model* mod){
 
 	lua_pop(mod->L, 1);
     grid_lua_debug_memory_stats(mod, "Printlib");
-
-
-
-
-    grid_lua_ui_init(mod, &grid_sys_state);
-    grid_lua_debug_memory_stats(mod, "Ui init");
-
-
 
 }
 

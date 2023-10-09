@@ -11,9 +11,9 @@
 #include <string.h>
 
 
-#include "../lua-5.4.3/src/lua.h"
-#include "../lua-5.4.3/src/lualib.h"
-#include "../lua-5.4.3/src/lauxlib.h"
+#include "lua-5.4.3/src/lua.h"
+#include "lua-5.4.3/src/lualib.h"
+#include "lua-5.4.3/src/lauxlib.h"
 
 #include "grid_protocol.h"
 #include "grid_msg.h"
@@ -213,7 +213,7 @@ void grid_lua_ui_init_ef44(struct grid_lua_model* mod);
 void grid_lua_ui_init_tek2(struct grid_lua_model* mod);
 
 
-void grid_lua_ui_init(struct grid_lua_model* mod, struct grid_sys_model* sys);
+void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui);
 
 
 void grid_lua_start_vm(struct grid_lua_model* mod);

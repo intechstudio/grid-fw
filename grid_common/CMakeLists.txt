@@ -50,6 +50,6 @@ idf_component_register(
 
 
     INCLUDE_DIRS
-	include
-	lua-5.4.3/src
+        "."
+	    "lua-5.4.3/src"
 )

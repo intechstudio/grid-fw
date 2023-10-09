@@ -155,6 +155,7 @@ struct grid_ui_model
 	uint8_t bulk_nvmdefrag_stage; // 0: move, 1: erase
 
 
+	void (*lua_ui_init_callback)(struct grid_lua_model*);
 
 	void ( *read_success_callback)();
 	void ( *erase_success_callback)();

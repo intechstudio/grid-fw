@@ -338,9 +338,9 @@ static void periodic_ping_heartbeat_handler_cb(void *arg)
     
         printf("USB CONNECTED\r\n\r\n");
 
-        grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
-        grid_led_set_alert_frequency(&grid_led_state, -2);	
-        grid_led_set_alert_phase(&grid_led_state, 200);	
+        grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
+        grid_alert_all_set_frequency(&grid_led_state, -2);	
+        grid_alert_all_set_phase(&grid_led_state, 200);	
         grid_msg_set_heartbeat_type(&grid_msg_state, 1);
 
     }
@@ -619,7 +619,7 @@ void grid_esp32_port_task(void *arg)
 
 
             grid_midi_rx_pop(); // send_everywhere pushes to UI->RX_BUFFER
-            grid_keyboard_tx_pop();
+            
             grid_port_receive_task(GRID_PORT_H); // USB
             
             grid_port_receive_task(GRID_PORT_U); // UI
@@ -640,8 +640,26 @@ void grid_esp32_port_task(void *arg)
 
             // OUTBOUND
 
+            // NEED DELAY BETWEEN REQUESTING USB TRANSACTIONS (MIDI, HID, SERIAL etc)
+            for (uint8_t i=0; i<4; i++){
 
-            grid_port_process_outbound_usb(GRID_PORT_H);
+                if (grid_keyboard_tx_read_index != grid_keyboard_tx_write_index){
+                    grid_keyboard_tx_pop();
+                    ets_delay_us(20);
+                }
+
+
+
+                if (grid_midi_tx_read_index != grid_midi_tx_write_index){
+                    grid_midi_tx_pop();
+                    ets_delay_us(20);
+                }
+
+            }
+
+
+
+            grid_port_process_outbound_usb(GRID_PORT_H); // WRITE TO USB SERIAL
 
             grid_port_process_outbound_ui(GRID_PORT_U);
 

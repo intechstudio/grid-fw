@@ -5,7 +5,7 @@
  *  Author: suku
  */ 
 
-#include "include/grid_usb.h"
+#include "grid_usb.h"
 
 
 struct grid_midi_event_desc grid_midi_tx_buffer[GRID_MIDI_TX_BUFFER_length];
@@ -338,7 +338,7 @@ void grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 		if (grid_midi_rx_buffer[grid_midi_rx_write_index-i].byte2 != midi_event.byte2) continue;
 
 		// it's a match, update to the newer value!!
-		grid_led_set_alert(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
+		grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
 		grid_midi_rx_buffer[grid_midi_rx_write_index-i].byte3 = midi_event.byte3;
 
 		break; //return;
