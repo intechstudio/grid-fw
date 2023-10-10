@@ -293,31 +293,6 @@ static uint8_t s_cfg_desc[] = {
 };
 
 
-#if CFG_TUD_MIDI
-
-static void midi_task_read_example(void *arg)
-{
-    // The MIDI interface always creates input and output port/jack descriptors
-    // regardless of these being used or not. Therefore incoming traffic should be read
-    // (possibly just discarded) to avoid the sender blocking in IO
-    uint8_t packet[4];
-    bool read = false;
-    for (;;) {
-        vTaskDelay(1);
-        while (tud_midi_available()) {
-            read = tud_midi_packet_read(packet);
-            if (read) {
-                ESP_LOGI(TAG, "Read - Time (ms since boot): %lld, Data: %02hhX %02hhX %02hhX %02hhX",
-                         esp_timer_get_time(), packet[0], packet[1], packet[2], packet[3]);
-            }
-        }
-    }
-}
-
-
-#endif 
-
-
 void grid_esp32_usb_init(){
 
     tinyusb_config_t tusb_cfg = {
@@ -354,14 +329,15 @@ void grid_esp32_usb_task(void *arg)
 {
 
 
-    SemaphoreHandle_t signaling_sem = (SemaphoreHandle_t)arg;
-
-
-    ESP_LOGI(TAG, "Test Print From USB");
-    
     grid_esp32_usb_init();
+    grid_usb_midi_buffer_init();
+    grid_usb_keyboard_buffer_init(&grid_keyboard_state);
+
+    ESP_LOGD(TAG, "tinyusb task started");
+    while (1) { // RTOS forever loop
+        tud_task();
+    }
 
 
-    ESP_LOGI(TAG, "Deinit USB");
-    vTaskSuspend(NULL);
 }
+

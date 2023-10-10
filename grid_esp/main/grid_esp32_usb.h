@@ -49,8 +49,8 @@ extern "C" {
 
 /** Helper defines **/
 
-void grid_esp32_usb_task(void *arg);
 void grid_esp32_usb_init(void);
+void grid_esp32_usb_task(void *arg);
 
 extern void grid_platform_sync1_pulse_send();
 

@@ -119,37 +119,8 @@ void system_init_core_2_task(void *arg)
 }
 
 
-static TaskHandle_t s_tusb_tskh;
 
-/**
- * @brief This top level thread processes all usb events and invokes callbacks
- */
-static void tusb_device_task(void *arg)
-{
-    ESP_LOGD(TAG, "tinyusb task started");
-    while (1) { // RTOS forever loop
-        tud_task();
-    }
-}
 
-esp_err_t tusb_run_task(void)
-{
-    // This function is not garanteed to be thread safe, if invoked multiple times without calling `tusb_stop_task`, will cause memory leak
-    // doing a sanity check anyway
-    ESP_RETURN_ON_FALSE(!s_tusb_tskh, ESP_ERR_INVALID_STATE, TAG, "TinyUSB main task already started");
-    // Create a task for tinyusb device stack:
-    xTaskCreatePinnedToCore(tusb_device_task, "TinyUSB", 4096, NULL, 6, &s_tusb_tskh, 1);
-    ESP_RETURN_ON_FALSE(s_tusb_tskh, ESP_FAIL, TAG, "create TinyUSB main task failed");
-    return ESP_OK;
-}
-
-esp_err_t tusb_stop_task(void)
-{
-    ESP_RETURN_ON_FALSE(s_tusb_tskh, ESP_ERR_INVALID_STATE, TAG, "TinyUSB main task not started yet");
-    vTaskDelete(s_tusb_tskh);
-    s_tusb_tskh = NULL;
-    return ESP_OK;
-}
 
 
 void app_main(void)
@@ -213,14 +184,9 @@ void app_main(void)
 
 
 
-    grid_esp32_usb_init();
 
-    ets_printf("TEST\r\n");
-    grid_usb_midi_buffer_init();
-    grid_usb_keyboard_buffer_init(&grid_keyboard_state);
-
-    tusb_run_task();
-
+    TaskHandle_t usb_task_hdl;
+    xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6, &usb_task_hdl, 1);
 
     TaskHandle_t core2_task_hdl;
     xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024*3, NULL, 4, &core2_task_hdl, 1);
