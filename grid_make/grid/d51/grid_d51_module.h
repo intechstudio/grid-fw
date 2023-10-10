@@ -19,11 +19,11 @@
  
 #include "grid_protocol.h"
 
-#include "grid_module_bu16.h"
-#include "grid_module_po16.h"
-#include "grid_module_d51_pbf4.h"
-#include "grid_module_en16.h"
-#include "grid_module_ef44.h"
+#include "grid_d51_module_bu16.h"
+#include "grid_d51_module_po16.h"
+#include "grid_d51_module_pbf4.h"
+#include "grid_d51_module_en16.h"
+#include "grid_d51_module_ef44.h"
 
 #include "atmel_start_pins.h"
 
