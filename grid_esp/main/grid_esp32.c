@@ -230,12 +230,12 @@ void vTaskGetRunTimeStats3( char *pcWriteBuffer ){
 }
 
 
-
 void grid_esp32_housekeeping_task(void *arg)
 {
 
 
     char stats[3000] = {0};
+
 
     while (0) {
 

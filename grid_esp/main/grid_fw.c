@@ -30,7 +30,7 @@
 #include "grid_esp32_module_tek2.h"
 #include "grid_esp32_led.h"
 
-
+#include "grid_esp32_trace.h"
 
 #define MODULE_TASK_PRIORITY 4
 #define LED_TASK_PRIORITY 2
@@ -350,6 +350,17 @@ void app_main(void)
                             6,
                             &housekeeping_task_hdl,
                             0);
+
+
+    TaskHandle_t grid_trace_report_task_hdl;
+
+    xTaskCreatePinnedToCore(grid_trace_report_task,
+                            "housekeeping",
+                            1024*4,
+                            (void *)signaling_sem,
+                            6,
+                            &grid_trace_report_task_hdl,
+                            0);                            
 
 
 

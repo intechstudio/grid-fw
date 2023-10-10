@@ -109,7 +109,8 @@
         "led_strip_encoder.h": "c",
         "grid_d51_module.h": "c",
         "grid_module_d51_pbf4.h": "c",
-        "grid_module.h": "c"
+        "grid_module.h": "c",
+        "stdint.h": "c"
     },   
     "files.exclude": {
         ".archive": true,
@@ -149,6 +150,7 @@
                 "command": "podman run --privileged -it -v /dev:/dev -v $PWD:/project -w /project/grid_esp espressif/idf:latest",
                 // clear && idf.py build && idf.py -p $(ls /dev/ttyACM*) flash
                 // ./burn_bootloader.sh
+                // sed -i '10s|.*|#include "../../../../../../../../../project/grid_esp/components/grid_esp32_trace/trace_hooks.h"|' /opt/esp/idf/components/freertos/config/include/freertos/FreeRTOSConfig.h
                 // clear && idf.py build && esptool.py --chip esp32s3 -p $(ls /dev/ttyACM*) --before=default_reset --after=no_reset write_flash --flash_mode dio --flash_size detect --flash_freq 80m 0x10000 build/grid_fw.bin && otatool.py -p $(ls /dev/ttyACM*) switch_ota_partition --slot 0
             },
             {
