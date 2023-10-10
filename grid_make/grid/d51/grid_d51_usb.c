@@ -141,6 +141,11 @@ static bool grid_usb_midi_installed_cb(const uint8_t ep, const enum usb_xfer_cod
 
 void grid_d51_usb_init(void){
 
+	
+	audiodf_midi_init();
+	composite_device_start();
+
+
 	host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
 
 	//audiodf_midi_register_callback(AUDIODF_MIDI_CB_READ, (FUNC_PTR)midi_in_handler);
@@ -158,7 +163,9 @@ void grid_d51_usb_init(void){
 
 	audiodf_midi_register_callback(AUDIODF_MIDI_CB_INSTALLED, (FUNC_PTR)grid_usb_midi_installed_cb);
 
+	grid_usb_midi_buffer_init();
 
+	grid_usb_keyboard_buffer_init(&grid_keyboard_state);
     
 }
 

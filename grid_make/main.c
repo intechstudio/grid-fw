@@ -446,107 +446,6 @@ void init_timer(void)
 //====================== USB TEST =====================//
 
 
-enum SYS_I2C_STATUS{
-	SYS_I2C_STATUS_BUSY,
-	SYS_I2C_STATUS_INIT,
-	SYS_I2C_STATUS_TXC,
-	SYS_I2C_STATUS_RXC,
-	SYS_I2C_STATUS_ERR,
-	SYS_I2C_STATUS_TRAP
-};
-
-static uint8_t SYS_I2C_example_str[12] = "Hello World!";
-struct io_descriptor *SYS_I2C_io;
-volatile uint8_t sys_i2c_done_flag = SYS_I2C_STATUS_INIT;
-volatile uint8_t sys_i2c_enabled = 0;
-
-
-void SYS_I2C_tx_complete_callback(struct i2c_m_async_desc *const i2c)
-{
-
-	printf("$");
-	sys_i2c_done_flag = SYS_I2C_STATUS_TXC;
-
-	i2c_m_async_send_stop(i2c);
-
-}
-
-void SYS_I2C_rx_complete_callback(struct i2c_m_async_desc *const i2c)
-{
-	printf("#");
-
-	sys_i2c_done_flag = SYS_I2C_STATUS_RXC;
-
-}
-
-void SYS_I2C_error_callback(struct i2c_m_async_desc *const i2c, int32_t error)
-{
-	printf("@");
-
-	i2c_m_async_send_stop(i2c);
-	sys_i2c_done_flag = SYS_I2C_STATUS_ERR;
-
-
-}
-
-uint32_t SYS_I2C_start(void)
-{
-
-	i2c_m_async_get_io_descriptor(&SYS_I2C, &SYS_I2C_io);
-
-	uint32_t ret = i2c_m_async_enable(&SYS_I2C);
-
-
-	i2c_m_async_register_callback(&SYS_I2C, I2C_M_ASYNC_TX_COMPLETE, (FUNC_PTR)SYS_I2C_tx_complete_callback);
-	i2c_m_async_register_callback(&SYS_I2C, I2C_M_ASYNC_RX_COMPLETE, (FUNC_PTR)SYS_I2C_rx_complete_callback);
-	i2c_m_async_register_callback(&SYS_I2C, I2C_M_ASYNC_ERROR, (FUNC_PTR)SYS_I2C_error_callback);
-
-	return ret;
-
-
-}
-
-
-// QSPI
-static uint8_t buf[16] = {0x0};
-
-static void qspi_xfer_complete_cb(struct _dma_resource *resource)
-{
-	/* Transfer completed */
-	printf("QSPI XFER DONE! ");
-
-	for (uint8_t i=0; i<16; i++){
-
-		printf("0x%02x ", buf[i]);
-	}
-	printf("\r\n");
-}
-
-/**
- * Example of using QSPI_INSTANCE to get N25Q256A status value,
- * and check bit 0 which indicate embedded operation is busy or not.
- */
-void qspi_test(void)
-{
-	struct _qspi_command cmd = {
-	    .inst_frame.bits.inst_en      = 1,
-	    .inst_frame.bits.data_en      = 1,
-	    .inst_frame.bits.addr_en      = 1,
-	    .inst_frame.bits.dummy_cycles = 8,
-	    .inst_frame.bits.tfr_type     = QSPI_READMEM_ACCESS,
-	    .instruction                  = 0x0B,
-	    .address                      = 0,
-	    .buf_len                      = 14,
-	    .rx_buf                       = buf,
-	};
-
-	qspi_dma_register_callback(&QSPI_INSTANCE, QSPI_DMA_CB_XFER_DONE, qspi_xfer_complete_cb);
-	qspi_dma_enable(&QSPI_INSTANCE);
-	qspi_dma_serial_run_command(&QSPI_INSTANCE, &cmd);
-	
-}
-
-
 static void button_on_SYNC1_pressed(void){
 	sync1_received++;
 }
@@ -559,9 +458,6 @@ static void button_on_SYNC2_pressed(void){
 int main(void)
 {
 
-	// boundary scan here
-	uint32_t boundary_result[4] = {0};
-	grid_d51_boundary_scan(boundary_result); // must run before atmel_start_init sets up gpio
 
 	atmel_start_init();	// this sets up gpio and printf
 	
@@ -571,33 +467,8 @@ int main(void)
 
 	grid_sys_init(&grid_sys_state);
 	grid_msg_init(&grid_msg_state);
-
-	grid_d51_boundary_scan_report(boundary_result);
-
-            
-	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
-
-		if (SYS_I2C_start() == ERR_NONE){
-			sys_i2c_enabled = 1;
-			printf("I2C init OK!\r\n");
-		}
-		else{
-			printf("I2C init FAILED!\r\n");
-		}
-
-	}
-	else{
-
-		printf("I2C UNSUPPORTED!\r\n");
-	}
-
-	printf("QSPI\r\n");
-	qspi_test();
-
+         
 	// grid_d51_nvm_erase_all(&grid_d51_nvm_state);
-
-	
-
 		
 	printf("Hardware test complete");
 
@@ -613,17 +484,7 @@ int main(void)
 	host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
 
 
-	audiodf_midi_init();
-
-	composite_device_start();
-
-
-
 	grid_d51_usb_init(); // requires hostport
-
-	grid_usb_midi_buffer_init();
-
-	grid_usb_keyboard_buffer_init(&grid_keyboard_state);
 
 	
 	grid_lua_init(&grid_lua_state);
@@ -633,9 +494,6 @@ int main(void)
 
 	grid_d51_led_init(&grid_d51_led_state, &grid_led_state);
 
-	if (sys_i2c_enabled){
-		uint8_t id = grid_fusb302_read_id(SYS_I2C_io);
-	}
 
 	printf("Start TOC init\r\n");
 	grid_d51_nvm_toc_init(&grid_d51_nvm_state);
@@ -675,21 +533,6 @@ int main(void)
 	ext_irq_register(PIN_GRID_SYNC_2, button_on_SYNC2_pressed);
 
 	while (1) {
-
-
-		// struct _qspi_command cmd = {
-		// 	.inst_frame.bits.inst_en      = 1,
-		// 	.inst_frame.bits.data_en      = 1,
-		// 	.inst_frame.bits.addr_en      = 1,
-		// 	.inst_frame.bits.dummy_cycles = 8,
-		// 	.inst_frame.bits.tfr_type     = QSPI_READMEM_ACCESS,
-		// 	.instruction                  = 0x0B,
-		// 	.address                      = 0,
-		// 	.buf_len                      = 14,
-		// 	.rx_buf                       = buf,
-		// };
-
-		// qspi_dma_serial_run_command(&QSPI_INSTANCE, &cmd);
 
 
 		
@@ -734,12 +577,6 @@ int main(void)
 			grid_d51_nvic_debug_priorities();
 		}
 
-		//Touch Chip
-		if (sys_i2c_enabled && loopcounter%100 == 0){
-			grid_mxt144u_read_id(SYS_I2C_io);
-			//grid_fusb302_read_id(SYS_I2C_io);
-		}
-		
 
 		usb_task_inner();
 	
