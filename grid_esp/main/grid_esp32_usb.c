@@ -74,12 +74,15 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event)
     size_t rx_size = 0;
 
     /* read */
-    esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
-
-
+    esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);    
+    
     for (uint16_t i=0; i<rx_size; i++){
 
-		GRID_PORT_H->rx_double_buffer[grid_usb_rx_double_buffer_index] = buf[i];
+        struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
+
+
+
+		host_port->rx_double_buffer[grid_usb_rx_double_buffer_index] = buf[i];
 
 		
 		grid_usb_rx_double_buffer_index++;

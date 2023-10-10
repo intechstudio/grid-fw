@@ -1040,7 +1040,6 @@ uint8_t	grid_decode_config_to_ui(char* header, char* chunk){
 
 	uint8_t error = 0;
 
-
 	uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);	
 
 
@@ -1146,8 +1145,6 @@ uint8_t	grid_decode_config_to_ui(char* header, char* chunk){
 
 	}
 	else if (msg_instr == GRID_INSTR_FETCH_code){
-	
-		//grid_platform_printf("CONFIG FETCH\r\n\r\n");
 				
 		uint8_t pagenumber = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
 		uint8_t elementnumber = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);

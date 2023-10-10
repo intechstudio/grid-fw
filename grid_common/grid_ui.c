@@ -10,11 +10,9 @@
 
 struct grid_ui_model grid_ui_state;
 
-void grid_ui_model_init(struct grid_ui_model* mod, struct grid_port* port, uint8_t element_list_length){
+void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length){
 	
 	mod->lua_ui_init_callback = NULL;
-
-	mod->port = port;
 
 	mod->status = GRID_UI_STATUS_INITIALIZED;
 
@@ -1881,18 +1879,13 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui){
 		
 	uint32_t message_length = grid_msg_packet_get_length(&message_local);
 		
-
-
+	struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
+	
 	// Put the packet into the UI_TX buffer
-	if (grid_buffer_write_size(&ui->port->tx_buffer) >= message_length){
+	if (grid_buffer_write_size(&ui_port->tx_buffer) >= message_length){
 
-		grid_buffer_write_from_packet(&ui->port->tx_buffer, &message_local);
+		grid_buffer_write_from_packet(&ui_port->tx_buffer, &message_local);
 		
-// 			uint8_t debug_string[200] = {0};
-// 			sprintf(debug_string, "Space: RX: %d/%d  TX: %d/%d", grid_buffer_get_space(&ui->port->rx_buffer), GRID_BUFFER_SIZE, grid_buffer_get_space(&ui->port->tx_buffer), GRID_BUFFER_SIZE);
-// 			grid_port_debug_print_text(debug_string);
-
-
 	}
 	else{
 		// LOG UNABLE TO WRITE EVENT
@@ -1976,10 +1969,11 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui){
 	uint32_t length = grid_msg_packet_get_length(&message);
 	
 
+	struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
 	// Put the packet into the UI_RX buffer
-	if (grid_buffer_write_size(&ui->port->rx_buffer) >= length){
+	if (grid_buffer_write_size(&ui_port->rx_buffer) >= length){
 
-		grid_buffer_write_from_packet(&ui->port->rx_buffer, &message);
+		grid_buffer_write_from_packet(&ui_port->rx_buffer, &message);
 		
 	}
 	else{

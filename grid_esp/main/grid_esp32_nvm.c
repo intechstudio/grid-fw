@@ -351,6 +351,8 @@ void grid_esp32_nvm_task(void *arg)
             uint64_t time_start = grid_platform_rtc_get_micros();
             uint32_t counter = 0;
 
+            struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
+
             do{
             
                 // NVM BULK STORE
@@ -366,7 +368,7 @@ void grid_esp32_nvm_task(void *arg)
                     
                     grid_ui_bulk_pageclear_next(&grid_ui_state);
                 }
-                else if (GRID_PORT_U->rx_double_buffer_status == 0 && grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
+                else if (ui_port->rx_double_buffer_status == 0 && grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
 
                     uint32_t c0 = 0;
                     uint32_t c1 = 0;

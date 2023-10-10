@@ -14,8 +14,15 @@
 
 
 #include "grid_msg.h"
+#include "grid_port.h"
+#include "grid_port.h"
 
 #include "usb/class/midi/device/audiodf_midi.h"
+
+static volatile struct grid_port* uart_port_array[4] = {0};
+static volatile struct grid_port* host_port = NULL;
+static volatile struct grid_port* ui_port = NULL;
+
 
 volatile uint32_t globaltest = 0;
 
@@ -59,8 +66,7 @@ static void usb_task_inner(){
 	
 	
 	// SERIAL READ 
-
-	grid_port_receive_task(GRID_PORT_H); // USB
+	grid_port_receive_task(host_port); // USB
 
 }
 
@@ -106,7 +112,8 @@ static void nvm_task_inner(){
 
 
 	// NVM BULK READ
-	if (GRID_PORT_U->rx_double_buffer_status == 0){
+
+	if (ui_port->rx_double_buffer_status == 0){
 		
 		if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
 			
@@ -126,39 +133,45 @@ static void nvm_task_inner(){
 	}
 	// NVM READ
 
-	uint32_t nvmlength = GRID_PORT_U->rx_double_buffer_status;
+	uint32_t nvmlength = ui_port->rx_double_buffer_status;
 						
 	if (nvmlength){
 			
-		GRID_PORT_U->rx_double_buffer_status = 1;
-		GRID_PORT_U->rx_double_buffer_read_start_index = 0;
-		GRID_PORT_U->rx_double_buffer_seek_start_index = nvmlength-1; //-3
+		ui_port->rx_double_buffer_status = 1;
+		ui_port->rx_double_buffer_read_start_index = 0;
+		ui_port->rx_double_buffer_seek_start_index = nvmlength-1; //-3
 			
 		// GETS HERE	
-		//grid_port_receive_decode(GRID_PORT_U, 0, nvmlength-1);		
-		grid_port_receive_task(GRID_PORT_U);	
+		//grid_port_receive_decode(ui_port, 0, nvmlength-1);		
+		grid_port_receive_task(ui_port);	
 	}	
 		
 	//clear buffer
 	for (uint32_t i=0; i<GRID_D51_NVM_PAGE_SIZE; i++)
 	{
-		GRID_PORT_U->rx_double_buffer[i] = 0;
+		ui_port->rx_double_buffer[i] = 0;
 	}
 
 }
 
 static void receive_task_inner(){
 
-	grid_port_receive_task(GRID_PORT_N);
-	grid_port_receive_task(GRID_PORT_E);
-	grid_port_receive_task(GRID_PORT_S);
-	grid_port_receive_task(GRID_PORT_W);	
+	for(uint8_t i=0; i<4; i++){
+
+
+		struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
+
+		grid_port_receive_task(port);
+
+	}
+
 		
 
 }
 
 static void ui_task_inner(){
 	
+
 
 	// every other entry of the superloop
 	if (loopcount%4==0){
@@ -177,12 +190,12 @@ static void ui_task_inner(){
 
 		// Bandwidth Limiter for Broadcast messages
 		
-		if (grid_ui_state.port->cooldown > 0){
-			grid_ui_state.port->cooldown--;
+		if (ui_port->cooldown > 0){
+			ui_port->cooldown--;
 		}
 		
 		
-		if (grid_ui_state.port->cooldown > 5){
+		if (ui_port->cooldown > 5){
 
 
 		}
@@ -196,7 +209,7 @@ static void ui_task_inner(){
 
 				if (grid_ui_event_count_istriggered(&grid_ui_state)){
 
-					grid_ui_state.port->cooldown += 3;	
+					ui_port->cooldown += 3;	
 
 					CRITICAL_SECTION_ENTER()
 					grid_port_process_ui_UNSAFE(&grid_ui_state); 
@@ -220,14 +233,21 @@ static void inbound_task_inner(){
 
 	
 	// Copy data from UI_RX to HOST_TX & north TX AND STUFF
-	grid_port_process_inbound(GRID_PORT_U); // Loopback
+
+	grid_port_process_inbound(ui_port); // Loopback
 	
-	grid_port_process_inbound(GRID_PORT_N);		
-	grid_port_process_inbound(GRID_PORT_E);		
-	grid_port_process_inbound(GRID_PORT_S);
-	grid_port_process_inbound(GRID_PORT_W);
+
+
+	for(uint8_t i=0; i<4; i++){
+
+
+		struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
+		grid_port_process_inbound(port);	
+
+	}
 	
-	grid_port_process_inbound(GRID_PORT_H);	// USB	
+
+	grid_port_process_inbound(host_port);	// USB	
 
 
 
@@ -239,16 +259,23 @@ static void outbound_task_inner(){
 	/* ========================= GRID OUTBOUND TASK ============================= */	
 	
 	// If previous xfer is completed and new data is available then move data from txbuffer to txdoublebuffer and start new xfer.
-	grid_port_process_outbound_usart(GRID_PORT_N);
-	grid_port_process_outbound_usart(GRID_PORT_E);
-	grid_port_process_outbound_usart(GRID_PORT_S);
-	grid_port_process_outbound_usart(GRID_PORT_W);
+
+
+
+	for(uint8_t i=0; i<4; i++){
+
+		struct grid_port* port = uart_port_array[i];
+
+		grid_port_process_outbound_usart(port);	
+		
+
+
+	}
+
+	grid_port_process_outbound_ui(ui_port);	
+	grid_port_process_outbound_usb(host_port);	
 	
-	// Translate grid messages to usb messages and xfer them to the host
-	grid_port_process_outbound_usb(GRID_PORT_H);
-	
-	// Translate grid messages to ui commands (LED)
-	grid_port_process_outbound_ui(GRID_PORT_U);
+
 
 }
 
@@ -296,22 +323,7 @@ void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 {
 
 	pingflag++;
-	
-	switch (pingflag%4)
-	{
-		case 0:
-			GRID_PORT_N->ping_flag = 1;
-			break;
-		case 1:
-			GRID_PORT_E->ping_flag = 1;
-			break;
-		case 2:
-			GRID_PORT_S->ping_flag = 1;
-			break;
-		case 3:
-			GRID_PORT_W->ping_flag = 1;
-			break;
-	}
+	uart_port_array[pingflag%4]->ping_flag = 1;
 	
 }
 
@@ -589,7 +601,16 @@ int main(void)
 		
 	printf("Hardware test complete");
 
+	//  x/512xb 0x80000
+	grid_module_common_init();
 
+	uart_port_array[0] = grid_transport_get_port(&grid_transport_state, 0);
+    uart_port_array[1] = grid_transport_get_port(&grid_transport_state, 1);
+    uart_port_array[2] = grid_transport_get_port(&grid_transport_state, 2);
+    uart_port_array[3] = grid_transport_get_port(&grid_transport_state, 3);
+
+	ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
+	host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
 
 
 	audiodf_midi_init();
@@ -598,15 +619,11 @@ int main(void)
 
 
 
-	grid_d51_usb_init();
+	grid_d51_usb_init(); // requires hostport
 
 	grid_usb_midi_buffer_init();
 
 	grid_usb_keyboard_buffer_init(&grid_keyboard_state);
-		
-
-	//  x/512xb 0x80000
-	grid_module_common_init();
 
 	
 	grid_lua_init(&grid_lua_state);

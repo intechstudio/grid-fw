@@ -88,6 +88,8 @@ static uint8_t DRAM_ATTR rx_flag = 0;
 
 static char DRAM_ATTR rx_str[500] = {0};
 
+static struct grid_port* DRAM_ATTR uart_port_array[4] = {0};
+
 static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
 
@@ -129,11 +131,10 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     uint8_t ready_flags = ((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
 
-    
-    struct grid_port* port_array[4] = {GRID_PORT_N, GRID_PORT_E, GRID_PORT_S, GRID_PORT_W};
+
 
     for (uint8_t i=0; i<4; i++){
-        struct grid_port* por = port_array[i];
+        struct grid_port* por = uart_port_array[i];
 
         if ((ready_flags&(0b00000001<<i))){
 
@@ -160,19 +161,19 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
 
     if ((source_flags&0b00000001)){
-        por = GRID_PORT_N;
+        por = uart_port_array[0];
     }
 
     if ((source_flags&0b00000010)){
-        por = GRID_PORT_E;
+        por = uart_port_array[1];
     }
 
     if ((source_flags&0b00000100)){
-        por = GRID_PORT_S;
+        por = uart_port_array[2];
     }
 
     if ((source_flags&0b00001000)){
-        por = GRID_PORT_W;
+        por = uart_port_array[3];
     }   
 
     if (por != NULL){
@@ -267,19 +268,17 @@ static void plot_port_debug(){
 
     uint16_t plot[20] = {0};
 
-    plot[0] = grid_buffer_get_space(&GRID_PORT_N->tx_buffer);
-    plot[1] = grid_buffer_get_space(&GRID_PORT_E->tx_buffer);
-    plot[2] = grid_buffer_get_space(&GRID_PORT_S->tx_buffer);
-    plot[3] = grid_buffer_get_space(&GRID_PORT_W->tx_buffer);
-    plot[4] = grid_buffer_get_space(&GRID_PORT_U->tx_buffer);
-    plot[5] = grid_buffer_get_space(&GRID_PORT_H->tx_buffer);
 
-    plot[6] = grid_buffer_get_space(&GRID_PORT_N->rx_buffer);
-    plot[7] = grid_buffer_get_space(&GRID_PORT_E->rx_buffer);
-    plot[8] = grid_buffer_get_space(&GRID_PORT_S->rx_buffer);
-    plot[9] = grid_buffer_get_space(&GRID_PORT_W->rx_buffer);
-    plot[10] = grid_buffer_get_space(&GRID_PORT_U->rx_buffer);
-    plot[11] = grid_buffer_get_space(&GRID_PORT_H->rx_buffer);
+    uint8_t port_list_length = grid_transport_get_port_array_length(&grid_transport_state);
+
+    for (uint8_t i = 0; i<port_list_length; i++){
+
+        struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
+
+        plot[i+0] = grid_buffer_get_space(&por->tx_buffer);
+        plot[i+6] = grid_buffer_get_space(&por->rx_buffer);
+    }
+
 
     for(uint8_t i=0; i<12; i++){
 
@@ -369,10 +368,10 @@ static void periodic_ping_heartbeat_handler_cb(void *arg)
 
         if (xSemaphoreTake(nvm_or_port, 0) == pdTRUE){
 
-            GRID_PORT_N->ping_flag = 1;
-            GRID_PORT_E->ping_flag = 1;
-            GRID_PORT_S->ping_flag = 1;
-            GRID_PORT_W->ping_flag = 1;
+            uart_port_array[0]->ping_flag = 1;
+            uart_port_array[1]->ping_flag = 1;
+            uart_port_array[2]->ping_flag = 1;
+            uart_port_array[3]->ping_flag = 1;
 
             grid_port_ping_try_everywhere();
 
@@ -400,7 +399,10 @@ void grid_esp32_port_task(void *arg)
 
     nvm_or_port = (SemaphoreHandle_t)arg;
 
-
+    uart_port_array[0] = grid_transport_get_port(&grid_transport_state, 0);
+    uart_port_array[1] = grid_transport_get_port(&grid_transport_state, 1);
+    uart_port_array[2] = grid_transport_get_port(&grid_transport_state, 2);
+    uart_port_array[3] = grid_transport_get_port(&grid_transport_state, 3);
 
 
     uint8_t n=0;
@@ -439,15 +441,17 @@ void grid_esp32_port_task(void *arg)
     WORD_ALIGNED_ATTR char sendbuf[GRID_PARAMETER_SPI_TRANSACTION_length+1]={0};
     WORD_ALIGNED_ATTR char recvbuf[GRID_PARAMETER_SPI_TRANSACTION_length+1]={0};
     
-    struct grid_port* port_list[4] = {GRID_PORT_N, GRID_PORT_E, GRID_PORT_S, GRID_PORT_W};
+
 
     for (uint8_t i = 0; i<4; i++){
+
+        struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
 
         //Set up a transaction of GRID_PARAMETER_SPI_TRANSACTION_length bytes to send/receive
 
         memset(&outbnound_transaction[i], 0, sizeof(outbnound_transaction[i]));
         outbnound_transaction[i].length = GRID_PARAMETER_SPI_TRANSACTION_length*8;
-        outbnound_transaction[i].tx_buffer=port_list[i]->tx_double_buffer;
+        outbnound_transaction[i].tx_buffer=port->tx_double_buffer;
         outbnound_transaction[i].rx_buffer=recvbuf;
     }
 
@@ -458,14 +462,6 @@ void grid_esp32_port_task(void *arg)
     spi_empty_transaction.tx_buffer=empty_tx_buffer;
     spi_empty_transaction.rx_buffer=recvbuf;
 
-
-
-
-
-    //GRID_PORT_N->partner_status = 1; // force connected
-    //GRID_PORT_E->partner_status = 1; // force connected
-    //GRID_PORT_S->partner_status = 1; // force connected
-    //GRID_PORT_W->partner_status = 1; // force connected
 
     static uint32_t loopcounter = 0;
 
@@ -502,7 +498,6 @@ void grid_esp32_port_task(void *arg)
 
     gpio_set_direction(47, GPIO_MODE_OUTPUT);
 
-    struct grid_port* port_array[4] = {GRID_PORT_N, GRID_PORT_E, GRID_PORT_S, GRID_PORT_W};
 
     while (1) {
 
@@ -544,16 +539,15 @@ void grid_esp32_port_task(void *arg)
 
 
             uint32_t c0, c1;
-            
 
-            for (uint8_t i = 0; i<4*(4); i++){
+            uint8_t port_list_length = grid_transport_get_port_array_length(&grid_transport_state);
+            // TRY TO RECEIVE UP TO 4 packets on UART PORTS            
+            for (uint8_t i=0; i<port_list_length*4; i++){
+                struct grid_port* port = grid_transport_get_port(&grid_transport_state, i%port_list_length);
 
-                struct grid_port* por = port_array[i%4]; // try to decode multiple packets from each ports
-
-                //portENTER_CRITICAL(&spinlock);
-                grid_port_receive_task(por);
-                //portEXIT_CRITICAL(&spinlock);
-
+                if (port->type == GRID_PORT_TYPE_USART){
+                    grid_port_receive_task(port);
+                }
             }
 
 
@@ -607,33 +601,32 @@ void grid_esp32_port_task(void *arg)
 
                 }
 
-
-
-
-
             }
-
-
 
             c1 = grid_platform_get_cycles();
 
-
             grid_midi_rx_pop(); // send_everywhere pushes to UI->RX_BUFFER
             
-            grid_port_receive_task(GRID_PORT_H); // USB
-            
-            grid_port_receive_task(GRID_PORT_U); // UI
+            struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
+            struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
+            grid_port_receive_task(host_port); // USB
+            grid_port_receive_task(ui_port); // UI
             
 
 
             // INBOUND
-            grid_port_process_inbound(GRID_PORT_U); // Loopback , put rx_buffer content to each CONNECTED port's tx_buffer
-            grid_port_process_inbound(GRID_PORT_H);
 
-            grid_port_process_inbound(GRID_PORT_N);
-            grid_port_process_inbound(GRID_PORT_E);
-            grid_port_process_inbound(GRID_PORT_S);
-            grid_port_process_inbound(GRID_PORT_W);
+
+
+            for (uint8_t i=0; i<port_list_length; i++){
+
+                struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
+                
+
+                grid_port_process_inbound(por);
+
+            }
+
 
 
             //plot_port_debug();
@@ -659,14 +652,17 @@ void grid_esp32_port_task(void *arg)
 
 
 
-            grid_port_process_outbound_usb(GRID_PORT_H); // WRITE TO USB SERIAL
+            grid_port_process_outbound_usb(host_port); // WRITE TO USB SERIAL
 
-            grid_port_process_outbound_ui(GRID_PORT_U);
+            grid_port_process_outbound_ui(ui_port);
 
 
-            for (uint8_t i=0; i<4; i++){
-                struct grid_port* port = port_list[i];
-                grid_port_process_outbound_usart(port);
+            for (uint8_t i=0; i<port_list_length; i++){
+                struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
+
+                if (port->type == GRID_PORT_TYPE_USART){
+                    grid_port_process_outbound_usart(port);
+                }
             }
 
         

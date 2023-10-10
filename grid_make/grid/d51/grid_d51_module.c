@@ -1,29 +1,6 @@
 #include "grid_d51_module.h"
 
 
-
-static volatile struct grid_port PORT_N;
-static volatile struct grid_port PORT_E;
-static volatile struct grid_port PORT_S;
-static volatile struct grid_port PORT_W;
-static volatile struct grid_port PORT_U;
-static volatile struct grid_port PORT_H;
-
-static volatile char PORT_N_TX[GRID_BUFFER_SIZE] = {0};
-static volatile char PORT_N_RX[GRID_BUFFER_SIZE] = {0};
-static volatile char PORT_E_TX[GRID_BUFFER_SIZE] = {0};
-static volatile char PORT_E_RX[GRID_BUFFER_SIZE] = {0};
-static volatile char PORT_S_TX[GRID_BUFFER_SIZE] = {0};
-static volatile char PORT_S_RX[GRID_BUFFER_SIZE] = {0};
-static volatile char PORT_W_TX[GRID_BUFFER_SIZE] = {0};
-static volatile char PORT_W_RX[GRID_BUFFER_SIZE] = {0};
-
-static volatile char PORT_U_TX[GRID_BUFFER_SIZE] = {0};
-static volatile char PORT_U_RX[GRID_BUFFER_SIZE] = {0};
-
-static volatile char PORT_H_TX[GRID_BUFFER_SIZE] = {0};
-static volatile char PORT_H_RX[GRID_BUFFER_SIZE] = {0};
-
 // Define all of the peripheral interrupt callbacks
 
 	
@@ -32,26 +9,16 @@ static volatile char PORT_H_RX[GRID_BUFFER_SIZE] = {0};
 
 void grid_module_common_init(void){
 
-	GRID_PORT_N = &PORT_N;
-	GRID_PORT_E = &PORT_E;
-	GRID_PORT_S = &PORT_S;
-	GRID_PORT_W = &PORT_W;
-	GRID_PORT_U = &PORT_U;
-	GRID_PORT_H = &PORT_H;
 
-	GRID_PORT_N->tx_buffer.buffer_storage = PORT_N_TX;
-	GRID_PORT_N->rx_buffer.buffer_storage = PORT_N_RX;
-	GRID_PORT_E->tx_buffer.buffer_storage = PORT_E_TX;
-	GRID_PORT_E->rx_buffer.buffer_storage = PORT_E_RX;
-	GRID_PORT_S->tx_buffer.buffer_storage = PORT_S_TX;
-	GRID_PORT_S->rx_buffer.buffer_storage = PORT_S_RX;
-	GRID_PORT_W->tx_buffer.buffer_storage = PORT_W_TX;
-	GRID_PORT_W->rx_buffer.buffer_storage = PORT_W_RX;
-
-	GRID_PORT_U->tx_buffer.buffer_storage = PORT_U_TX;
-	GRID_PORT_U->rx_buffer.buffer_storage = PORT_U_RX;
-	GRID_PORT_H->tx_buffer.buffer_storage = PORT_H_TX;
-	GRID_PORT_H->rx_buffer.buffer_storage = PORT_H_RX;
+  	grid_transport_init(&grid_transport_state);
+	
+	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_NORTH, 0);
+	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_EAST, 0);
+	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_SOUTH, 0);
+	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_WEST, 0);
+	
+	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_UI, 0, 1);
+	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USB, 0, 0);	
 
 	
 	printf("Common init done\r\n");	
@@ -106,13 +73,7 @@ void grid_module_common_init(void){
 
 	printf("Model init done\r\n");
 
-
-	
-
-    grid_transport_init(&grid_transport_state);
-
-	grid_port_init_all();
-	grid_d51_uart_init();
+	grid_d51_uart_init(); // uart init after port and transport
 
 	grid_sys_set_bank(&grid_sys_state, 0);
 

@@ -7,17 +7,6 @@
 
 #include "grid_port.h"
 
-
-
-struct grid_port volatile * GRID_PORT_N;
-struct grid_port volatile * GRID_PORT_E;
-struct grid_port volatile * GRID_PORT_S;
-struct grid_port volatile * GRID_PORT_W;
-
-struct grid_port volatile * GRID_PORT_U;
-struct grid_port volatile * GRID_PORT_H;
-
-
 struct grid_transport_model grid_transport_state;
 
 void grid_transport_init(struct grid_transport_model* transport){
@@ -33,6 +22,30 @@ void grid_transport_register_port(struct grid_transport_model* transport, struct
 
 }
 
+
+
+struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_model* transport, uint8_t type){
+
+	for (uint8_t i=0; i<transport->port_array_length; i++){
+
+		if (transport->port_array[i]->type == type){
+
+			return transport->port_array[i];
+		}
+
+	}
+
+	return NULL;
+
+}
+
+uint8_t grid_transport_get_port_array_length(struct grid_transport_model* transport){
+	return transport->port_array_length;
+}
+
+struct grid_port* grid_transport_get_port(struct grid_transport_model* transport, uint8_t index){
+	return transport->port_array[index];
+}
 
 char grid_port_get_name_char(struct grid_port* por){
 
@@ -182,7 +195,6 @@ void grid_port_receive_task(struct grid_port* por){
 	else{
 		length = GRID_DOUBLE_BUFFER_RX_SIZE + por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
 	}
-	
 
 	grid_port_receive_decode(por, length);
 	
@@ -437,7 +449,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len){
 		return;
 
 	}
-	
+
 	// checksum validator
 	uint8_t checksum_received = grid_msg_string_checksum_read(message, length);
 	uint8_t checksum_calculated = grid_msg_string_calculate_checksum_of_packet_string(message, length);
@@ -492,8 +504,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por){
 		return 0;
 	}
 			
-	const uint8_t port_count = 6;
-	struct grid_port* default_port_array[] = {GRID_PORT_N, GRID_PORT_E, GRID_PORT_S, GRID_PORT_W, GRID_PORT_U, GRID_PORT_H};
+	const uint8_t port_count = grid_transport_get_port_array_length(&grid_transport_state);
 		
 	struct grid_port* target_port_array[port_count];
 
@@ -501,7 +512,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por){
 	
 	for(uint8_t i=0; i<port_count; i++){
 
-		struct grid_port* next_port = default_port_array[i];
+		struct grid_port* next_port = grid_transport_get_port(&grid_transport_state, i);
 
 		if (next_port->partner_status == 0){
 			continue;
@@ -527,7 +538,6 @@ uint8_t grid_port_process_inbound(struct grid_port* por){
 	char buffer[packet_size];
 	grid_buffer_read_to_chunk(&por->rx_buffer, buffer, packet_size);
 
-
 	// Copy packet from temp array to target port buffer	
 	for (uint8_t i=0; i<target_port_count; i++)
 	{
@@ -543,7 +553,19 @@ uint8_t grid_port_process_inbound(struct grid_port* por){
 }
 
 
+struct grid_port* grid_port_allocate(void){
 
+	struct grid_port* por = (struct grid_port*) grid_platform_allocate_volatile(sizeof(struct grid_port));
+	
+	por->tx_buffer.buffer_storage = (char*) grid_platform_allocate_volatile(GRID_BUFFER_SIZE);
+	memset(por->tx_buffer.buffer_storage, 0, GRID_BUFFER_SIZE);
+
+	por->rx_buffer.buffer_storage = (char*) grid_platform_allocate_volatile(GRID_BUFFER_SIZE);
+	memset(por->rx_buffer.buffer_storage, 0, GRID_BUFFER_SIZE);
+
+	return  por;
+
+}
 
 
 
@@ -578,6 +600,8 @@ void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir, uint8_t in
 	}
 	
 	por->partner_fi = 0;
+	por->dx = 0;
+	por->dy = 0;
 	
 	por->partner_hwcfg = 0;
 	por->partner_status = 1;
@@ -624,20 +648,6 @@ void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir, uint8_t in
 	}
 	
 }
-
-void grid_port_init_all(void){
-
-	
-	grid_port_init(GRID_PORT_N, GRID_PORT_TYPE_USART, GRID_CONST_NORTH, 0);
-	grid_port_init(GRID_PORT_E,  GRID_PORT_TYPE_USART, GRID_CONST_EAST, 0);
-	grid_port_init(GRID_PORT_S, GRID_PORT_TYPE_USART, GRID_CONST_SOUTH, 0);
-	grid_port_init(GRID_PORT_W,  GRID_PORT_TYPE_USART, GRID_CONST_WEST, 0);
-	
-	grid_port_init(GRID_PORT_U, GRID_PORT_TYPE_UI, 0, 1);
-	grid_port_init(GRID_PORT_H, GRID_PORT_TYPE_USB, 0, 0);	
-	
-}
-
 
 
 uint8_t grid_port_process_outbound_usart(struct grid_port* por){
@@ -792,11 +802,6 @@ void grid_port_receiver_hardreset(struct grid_port* por){
 
 	grid_platform_printf("HARD: ");
 
-	if (por == GRID_PORT_E){
-
-		grid_platform_printf("*");
-	}
-
 
 	grid_platform_disable_grid_transmitter(por->direction);
 
@@ -893,9 +898,11 @@ uint8_t	grid_port_packet_send_everywhere(struct grid_msg_packet* msg){
 	
 	uint32_t message_length = grid_msg_packet_get_length(msg);
 	
-	if (grid_buffer_write_size(&GRID_PORT_U->rx_buffer) >= message_length){
+	struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
 
-		grid_buffer_write_from_packet(&GRID_PORT_U->rx_buffer, msg);
+	if (grid_buffer_write_size(&ui_port->rx_buffer) >= message_length){
+
+		grid_buffer_write_from_packet(&ui_port->rx_buffer, msg);
 
 		return 1;
 	}
@@ -912,11 +919,10 @@ uint8_t	grid_port_packet_send_everywhere(struct grid_msg_packet* msg){
 void grid_port_ping_try_everywhere(void){
 
 	//NEW PING
-	struct grid_port* port[4] = {GRID_PORT_N, GRID_PORT_E, GRID_PORT_S, GRID_PORT_W};
 
 	for (uint8_t i = 0; i<4; i++){
 
-		struct grid_port* next_port = port[i];
+		struct grid_port* next_port = grid_transport_get_port(&grid_transport_state, i);
 		
 		if (next_port->ping_flag == 0){
 			// no need to ping yet!
@@ -1097,9 +1103,14 @@ void grid_protocol_nvm_defrag_succcess_callback(){
 void grid_protocol_send_heartbeat(){
 
 	
+	uint8_t portstate = 0;
 
-	uint8_t portstate = (GRID_PORT_N->partner_status<<0) | (GRID_PORT_E->partner_status<<1) | (GRID_PORT_S->partner_status<<2) | (GRID_PORT_W->partner_status<<3);
+	for (uint8_t i=0; i<4; i++){
 
+		portstate |= ((grid_transport_get_port(&grid_transport_state, i)->partner_status)<<i) ;
+
+
+	}
 
 
 	struct grid_msg_packet response;

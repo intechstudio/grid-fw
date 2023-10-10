@@ -97,15 +97,9 @@ extern struct grid_transport_model grid_transport_state;
 
 void grid_transport_init(struct grid_transport_model* transport);
 void grid_transport_register_port(struct grid_transport_model* transport, struct grid_port* port);
-
-
-extern struct grid_port volatile * GRID_PORT_N;
-extern struct grid_port volatile * GRID_PORT_E;
-extern struct grid_port volatile * GRID_PORT_S;
-extern struct grid_port volatile * GRID_PORT_W;
-
-extern struct grid_port volatile * GRID_PORT_U;
-extern struct grid_port volatile * GRID_PORT_H;
+struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_model* transport, uint8_t type);
+uint8_t grid_transport_get_port_array_length(struct grid_transport_model* transport);
+struct grid_port* grid_transport_get_port(struct grid_transport_model* transport, uint8_t index);
 
 
 void grid_port_receive_task(struct grid_port* por);
@@ -119,7 +113,7 @@ char grid_port_get_name_char(struct grid_port* por);
 
 
 void grid_port_init_all(void);
-
+struct grid_port* grid_port_allocate(void);
 void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir, uint8_t inbound_loopback);
 
 

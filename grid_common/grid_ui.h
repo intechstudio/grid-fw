@@ -121,8 +121,6 @@ struct grid_ui_element
 struct grid_ui_model
 {
 
-	struct grid_port* port;
-
 	enum grid_ui_status_t status;
 	
 	uint8_t page_activepage;
@@ -169,7 +167,7 @@ struct grid_ui_model
 extern struct grid_ui_model grid_ui_state;
 
 
-void grid_ui_model_init(struct grid_ui_model* mod, struct grid_port* port, uint8_t element_list_length);
+void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length);
 
 
 

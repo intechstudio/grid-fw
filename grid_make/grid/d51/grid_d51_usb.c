@@ -8,6 +8,8 @@
 #include "grid_d51_usb.h"
 
 
+static volatile struct grid_port* host_port = NULL;
+
 static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
 
@@ -31,7 +33,7 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
 		// 	printf(" ...");
 		// }
 
-		GRID_PORT_H->rx_double_buffer[grid_usb_rx_double_buffer_index] = grid_usb_serial_rx_buffer[i];
+		host_port->rx_double_buffer[grid_usb_rx_double_buffer_index] = grid_usb_serial_rx_buffer[i];
 
 		//printf("%d, ", grid_usb_serial_rx_buffer[i]);
 		
@@ -138,6 +140,8 @@ static bool grid_usb_midi_installed_cb(const uint8_t ep, const enum usb_xfer_cod
 
 
 void grid_d51_usb_init(void){
+
+	host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
 
 	//audiodf_midi_register_callback(AUDIODF_MIDI_CB_READ, (FUNC_PTR)midi_in_handler);
 	//audiodf_midi_register_callback(AUDIODF_MIDI_CB_WRITE, (FUNC_PTR)midi_out_handler);
