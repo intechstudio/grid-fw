@@ -30,7 +30,7 @@
 #include "grid_esp32_module_tek2.h"
 #include "grid_esp32_led.h"
 
-
+#include "grid_esp32_trace.h"
 
 #define MODULE_TASK_PRIORITY 4
 #define LED_TASK_PRIORITY 2
@@ -125,6 +125,9 @@ void system_init_core_2_task(void *arg)
 
 void app_main(void)
 {
+
+
+    esp_log_level_set("*", ESP_LOG_INFO);
 
     SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
     xSemaphoreGive(nvm_or_port);
@@ -305,8 +308,6 @@ void app_main(void)
     // ================== FINISH: grid_module_pbf4_init() ================== //
 
 
-
-
     //Create the class driver task
 
 
@@ -315,6 +316,7 @@ void app_main(void)
 
     TaskHandle_t port_task_hdl;
 
+    
 
     //Create the class driver task
     xTaskCreatePinnedToCore(grid_esp32_port_task,
@@ -328,6 +330,7 @@ void app_main(void)
 
 
 
+    ESP_LOGI(TAG, "===== PORT TASK DONE =====");
     
     //Create the class driver task
 
@@ -342,6 +345,8 @@ void app_main(void)
 
     TaskHandle_t housekeeping_task_hdl;
 
+    ESP_LOGI(TAG, "===== NVM TASK DONE =====");
+
     //Create the class driver task
     xTaskCreatePinnedToCore(grid_esp32_housekeeping_task,
                             "housekeeping",
@@ -352,6 +357,21 @@ void app_main(void)
                             0);
 
 
+    TaskHandle_t grid_trace_report_task_hdl;
+
+
+    ESP_LOGI(TAG, "===== HOUSE TASK DONE =====");
+
+    xTaskCreatePinnedToCore(grid_trace_report_task,
+                            "housekeeping",
+                            1024*4,
+                            (void *)signaling_sem,
+                            6,
+                            &grid_trace_report_task_hdl,
+                            0);                            
+
+
+    ESP_LOGI(TAG, "===== REPORT TASK DONE =====");
 
 
     esp_timer_create_args_t periodic_rtc_ms_args = {
@@ -363,9 +383,12 @@ void app_main(void)
    ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 10000));
 
+
+
+    esp_timer_deinit();
+
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
 
-    esp_log_level_set("*", ESP_LOG_INFO);
     ESP_LOGI(TAG, "===== INIT COMPLETE =====");
 
 

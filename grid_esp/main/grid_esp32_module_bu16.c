@@ -18,10 +18,13 @@ void grid_esp32_module_bu16_task(void *arg)
     static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, 10, 8, 11, 9, 14, 12, 15, 13};
     static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     const uint8_t multiplexer_overflow = 8;
-
+    ESP_LOGI("IN", "0");
     grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);
-    grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
-    grid_esp32_adc_start(&grid_esp32_adc_state);
+    ESP_LOGI("IN", "1");
+    grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);    
+    ESP_LOGI("IN", "2");
+    grid_esp32_adc_start(&grid_esp32_adc_state);    
+    ESP_LOGI("IN", "3");
 
     while (1) {
 
@@ -49,9 +52,11 @@ void grid_esp32_module_bu16_task(void *arg)
             }
         }
 
+        //ESP_LOGI("IN", "END");
 
+        taskYIELD();
 
-        vTaskDelay(pdMS_TO_TICKS(GRID_ESP32_ADC_PROCESS_TASK_DELAY_MS));
+        vTaskDelay(pdMS_TO_TICKS(GRID_ESP32_ADC_PROCESS_TASK_DELAY_MS*10));
 
 
     }

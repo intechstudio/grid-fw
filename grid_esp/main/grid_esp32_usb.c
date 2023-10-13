@@ -336,8 +336,8 @@ void grid_esp32_usb_task(void *arg)
     ESP_LOGD(TAG, "tinyusb task started");
     while (1) { // RTOS forever loop
         tud_task();
+        taskYIELD();
     }
-
 
 }
 

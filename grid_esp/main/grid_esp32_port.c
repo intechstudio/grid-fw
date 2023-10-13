@@ -689,7 +689,7 @@ void grid_esp32_port_task(void *arg)
             ets_delay_us(50);
         }
 
-
+        vTaskDelay(2);
 
 
     }

@@ -24,9 +24,6 @@ static volatile struct grid_port* host_port = NULL;
 static volatile struct grid_port* ui_port = NULL;
 
 
-volatile uint32_t globaltest = 0;
-
-
 volatile uint32_t loopcounter = 1;
 volatile uint32_t loopcount = 0;
 
@@ -57,8 +54,6 @@ static void usb_task_inner(){
 
 	}   
 	
-
-
 
 
 	// Forward midi from Host to Grid!

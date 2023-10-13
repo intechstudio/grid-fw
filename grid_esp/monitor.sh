@@ -1,0 +1,1 @@
+idf.py -p $(ls /dev/ttyUSB0) monitor
