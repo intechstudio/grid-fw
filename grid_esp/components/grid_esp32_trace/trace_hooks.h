@@ -38,6 +38,9 @@ extern "C" {
 
 #define traceTASK_SWITCHED_IN()                                                    	\
     grid_trace_task_switched_in();
+    
+#define traceTASK_SWITCHED_OUT()                                                    	\
+    grid_trace_task_switched_out();
 
 
 

@@ -47,6 +47,7 @@ void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
 
                 uint8_t core = xTaskGetAffinity(pxTaskStatusArray[ x ].xHandle);
 
+                uint8_t priority = uxTaskPriorityGet(pxTaskStatusArray[ x ].xHandle);
 
                 /* Inspect our own high water mark on entering the task. */
                 unsigned long uxHighWaterMark = uxTaskGetStackHighWaterMark( pxTaskStatusArray[ x ].xHandle );
@@ -73,7 +74,7 @@ void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
                 }
 
       
-                sprintf( pcWriteBuffer, "%c-%s\t\t%lu\t\t%lu pcnt (%lu/%lu)\r\n", core_char,  taskName, uxHighWaterMark, ulStatsAsPercentage, runtime,  ulTotalRunTime);
+                sprintf( pcWriteBuffer, "%c-%s\t\t%lu\t\t%d\t\t%lu pcnt (%lu/%lu)\r\n", core_char,  taskName, uxHighWaterMark, priority, ulStatsAsPercentage, runtime,  ulTotalRunTime);
                     
                 
 
@@ -185,7 +186,7 @@ void vTaskGetRunTimeStats3( char *pcWriteBuffer ){
                             uint32_t debug_var = ulStatsAsPercentage;
 
                             // As Percentage (string)
-                            sprintf( pcWriteBuffer, "\"c%c %02lu %s\": \"%lu%%%%\", ", core_char, taskNumber,  taskName, debug_var);
+                            sprintf( pcWriteBuffer, "\"c%c %02lu %s %lx\": \"%lu%%%%\", ", core_char, taskNumber,  taskName, (long unsigned int)pxTaskStatusArray[ x ].xHandle  , debug_var);
 
                             // As Integer (string)
                             //sprintf( pcWriteBuffer, "\"c%c %02lu %s\": \"%lu\", ", core_char, taskNumber,  taskName, debug_var);
@@ -237,16 +238,16 @@ void grid_esp32_housekeeping_task(void *arg)
     char stats[3000] = {0};
 
 
-    while (0) {
+    while (1) {
 
 
-        vTaskGetRunTimeStats3(stats);
+        vTaskGetRunTimeStats2(stats);
         
-        grid_port_debug_print_text(stats);
+        //grid_port_debug_print_text(stats);
 
-        //ets_printf("%s\r\n", stats);
+        ets_printf("%s\r\n", stats);
 
-        vTaskDelay(pdMS_TO_TICKS(250));
+        vTaskDelay(pdMS_TO_TICKS(1000));
      
 
 

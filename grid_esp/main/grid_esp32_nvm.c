@@ -404,7 +404,7 @@ void grid_esp32_nvm_task(void *arg)
 	
     
 
-        vTaskDelay(pdMS_TO_TICKS(5));
+        vTaskDelay(pdMS_TO_TICKS(15));
 
 
     }
