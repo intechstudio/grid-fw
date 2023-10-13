@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
 
       - name: List files
         run: |
