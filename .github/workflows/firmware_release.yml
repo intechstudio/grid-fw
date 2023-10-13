@@ -16,10 +16,11 @@ jobs:
       - name: Checkout repo and submodules
         uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          ref: ${{ github.ref }}
       
-      - name: List files
+      - name: Echo ref, List files
         run: |
+          echo ${{ github.ref }}
           ls
           
       - name: Install GNU Arm Embedded Toolchain (arm-none-eabi-gcc)
