@@ -84,16 +84,6 @@ static void periodic_rtc_ms_cb(void *arg)
 {
 
     grid_ui_rtc_ms_tick_time(&grid_ui_state);
-    grid_ui_rtc_ms_tick_time(&grid_ui_state);
-    grid_ui_rtc_ms_tick_time(&grid_ui_state);
-    grid_ui_rtc_ms_tick_time(&grid_ui_state);
-    grid_ui_rtc_ms_tick_time(&grid_ui_state);
-    
-    grid_ui_rtc_ms_tick_time(&grid_ui_state);
-    grid_ui_rtc_ms_tick_time(&grid_ui_state);
-    grid_ui_rtc_ms_tick_time(&grid_ui_state);
-    grid_ui_rtc_ms_tick_time(&grid_ui_state);
-    grid_ui_rtc_ms_tick_time(&grid_ui_state);	
 
 
     if (gpio_get_level(GRID_ESP32_PINS_MAPMODE)){
@@ -363,12 +353,12 @@ void app_main(void)
     ESP_LOGI(TAG, "===== HOUSE TASK DONE =====");
 
     xTaskCreatePinnedToCore(grid_trace_report_task,
-                            "housekeeping",
+                            "trace",
                             1024*4,
                             (void *)signaling_sem,
                             6,
                             &grid_trace_report_task_hdl,
-                            0);                            
+                            1);                            
 
 
     ESP_LOGI(TAG, "===== REPORT TASK DONE =====");
@@ -381,7 +371,7 @@ void app_main(void)
 
    esp_timer_handle_t periodic_rtc_ms_timer;
    ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
-   ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 10000));
+   ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 1000));
 
 
 

@@ -74,7 +74,7 @@ void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
                 }
 
       
-                sprintf( pcWriteBuffer, "%c-%s\t\t%lu\t\t%d\t\t%lu pcnt (%lu/%lu)\r\n", core_char,  taskName, uxHighWaterMark, priority, ulStatsAsPercentage, runtime,  ulTotalRunTime);
+                sprintf( pcWriteBuffer, "%c-%s\t\t0x%lx\t\t%lu\t\t%d\t\t%lu pcnt (%lu/%lu)\r\n", core_char,  taskName, (unsigned long int) pxTaskStatusArray[ x ].xHandle, uxHighWaterMark, priority, ulStatsAsPercentage, runtime,  ulTotalRunTime);
                     
                 
 
