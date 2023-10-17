@@ -49,6 +49,7 @@
 #include "grid_esp32_usb.h"
 
 
+#include "driver/uart.h"
 #include "esp_log.h"
 #include "esp_check.h"
 #include "rom/ets_sys.h" // For ets_printf
@@ -110,11 +111,20 @@ void system_init_core_2_task(void *arg)
 
 
 
+#include "esp_sysview_trace.h"  
+
+#include "esp_app_trace.h"  
+
+#include "SEGGER_SYSVIEW.h"  
 
 
 
 void app_main(void)
 {
+
+    // set console baud rate
+    ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
+    
 
 
     esp_log_level_set("*", ESP_LOG_INFO);
@@ -375,11 +385,44 @@ void app_main(void)
 
 
 
-    esp_timer_deinit();
 
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
 
     ESP_LOGI(TAG, "===== INIT COMPLETE =====");
 
+
+
+
+    // TRACE CONFIG GPIO 40, 41, 4Mbaud, 
+
+    //esp_apptrace_init();
+
+    // SEGGER_SYSVIEW_RecordSystime();
+    // SEGGER_SYSVIEW_SendTaskList();
+    // SEGGER_SYSVIEW_SendNumModules();
+
+    //SEGGER_SYSVIEW_Start();
+
+    gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
+    gpio_pullup_en(GPIO_NUM_0);    
+    
+
+    while(1){
+
+        //esp_sysview_flush(ESP_APPTRACE_TMO_INFINITE);
+
+        if (gpio_get_level(GPIO_NUM_0) == 0){
+
+           //SEGGER_SYSVIEW_Stop();
+
+            //esp_sysview_flush(ESP_APPTRACE_TMO_INFINITE);
+            break;
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(50));
+
+    }
+
+    ESP_LOGI(TAG, "===== MAIN COMPLETE =====");
 
 }

@@ -30,6 +30,8 @@ sed -i '10s|.*|#include "../../../../../../../../../project/grid_esp/components/
 extern "C" {
 #endif
 
+/*
+
 #define gridUSE_TRACE 1
 
 #define configUSE_TRACE_FACILITY 1
@@ -42,6 +44,8 @@ extern "C" {
 #define traceTASK_SWITCHED_OUT()                                                    	\
     grid_trace_task_switched_out();
 
+
+*/
 
 
 #ifdef __cplusplus

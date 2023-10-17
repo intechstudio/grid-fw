@@ -110,7 +110,10 @@
         "grid_d51_module.h": "c",
         "grid_module_d51_pbf4.h": "c",
         "grid_module.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "uart.h": "c",
+        "esp_app_trace_util.h": "c",
+        "esp_app_trace_port.h": "c"
     },   
     "files.exclude": {
         ".archive": true,
