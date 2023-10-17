@@ -212,34 +212,8 @@ static uint8_t * const s_trax_blocks[] = {
 
 esp_apptrace_hw_t *esp_apptrace_jtag_hw_get(void **data)
 {
-#if CONFIG_APPTRACE_DEST_JTAG
-    static esp_apptrace_membufs_proto_hw_t s_trax_proto_hw = {
-        .swap_start = esp_apptrace_trax_buffer_swap_start,
-        .swap = esp_apptrace_trax_buffer_swap,
-        .swap_end = esp_apptrace_trax_buffer_swap_end,
-        .host_data_pending = esp_apptrace_trax_host_data_pending,
-    };
-    static esp_apptrace_trax_data_t s_trax_hw_data = {
-        .membufs = {
-            .hw = &s_trax_proto_hw,
-        },
-    };
-    static esp_apptrace_hw_t s_trax_hw = {
-        .init = (esp_err_t (*)(void *))esp_apptrace_trax_init,
-        .get_up_buffer = (uint8_t *(*)(void *, uint32_t, esp_apptrace_tmo_t *))esp_apptrace_trax_up_buffer_get,
-        .put_up_buffer = (esp_err_t (*)(void *, uint8_t *, esp_apptrace_tmo_t *))esp_apptrace_trax_up_buffer_put,
-        .flush_up_buffer_nolock = (esp_err_t (*)(void *, uint32_t, esp_apptrace_tmo_t *))esp_apptrace_trax_flush_nolock,
-        .flush_up_buffer = (esp_err_t (*)(void *, esp_apptrace_tmo_t *))esp_apptrace_trax_flush,
-        .down_buffer_config = (void (*)(void *, uint8_t *, uint32_t ))esp_apptrace_trax_down_buffer_config,
-        .get_down_buffer = (uint8_t *(*)(void *, uint32_t *, esp_apptrace_tmo_t *))esp_apptrace_trax_down_buffer_get,
-        .put_down_buffer = (esp_err_t (*)(void *, uint8_t *, esp_apptrace_tmo_t *))esp_apptrace_trax_down_buffer_put,
-        .host_is_connected = (bool (*)(void *))esp_apptrace_trax_host_is_connected,
-    };
-    *data = &s_trax_hw_data;
-    return &s_trax_hw;
-#else
+
     return NULL;
-#endif
 }
 
 static esp_err_t esp_apptrace_trax_lock(esp_apptrace_trax_data_t *hw_data, esp_apptrace_tmo_t *tmo)
@@ -278,19 +252,11 @@ static inline void esp_apptrace_trax_hw_init(void)
 static inline void esp_apptrace_trax_select_memory_block(int block_num)
 {
     // select memory block to be exposed to the TRAX module (accessed by host)
-#if CONFIG_IDF_TARGET_ESP32
-    DPORT_WRITE_PERI_REG(DPORT_TRACEMEM_MUX_MODE_REG, block_num ? TRACEMEM_MUX_BLK0_ONLY : TRACEMEM_MUX_BLK1_ONLY);
-#elif CONFIG_IDF_TARGET_ESP32S2
-    WRITE_PERI_REG(DPORT_PMS_OCCUPY_3_REG, block_num ? BIT(TRACEMEM_MUX_BLK0_NUM-4) : BIT(TRACEMEM_MUX_BLK1_NUM-4));
-#elif CONFIG_IDF_TARGET_ESP32S3
-    // select memory block to be exposed to the TRAX module (accessed by host)
-    uint32_t block_bits = block_num ? TRACEMEM_CORE0_MUX_BLK_BITS(TRACEMEM_MUX_BLK0_NUM)
-                        : TRACEMEM_CORE0_MUX_BLK_BITS(TRACEMEM_MUX_BLK1_NUM);
-    block_bits |= block_num ? TRACEMEM_CORE1_MUX_BLK_BITS(TRACEMEM_MUX_BLK0_NUM)
-                        : TRACEMEM_CORE1_MUX_BLK_BITS(TRACEMEM_MUX_BLK1_NUM);
+    uint32_t block_bits = block_num ? TRACEMEM_CORE0_MUX_BLK_BITS(TRACEMEM_MUX_BLK0_NUM) : TRACEMEM_CORE0_MUX_BLK_BITS(TRACEMEM_MUX_BLK1_NUM);
+    block_bits |= block_num ? TRACEMEM_CORE1_MUX_BLK_BITS(TRACEMEM_MUX_BLK0_NUM) : TRACEMEM_CORE1_MUX_BLK_BITS(TRACEMEM_MUX_BLK1_NUM);
     ESP_EARLY_LOGV(TAG, "Select block %d @ %p (bits 0x%x)", block_num, s_trax_blocks[block_num], block_bits);
     DPORT_WRITE_PERI_REG(SENSITIVE_INTERNAL_SRAM_USAGE_2_REG, block_bits);
-#endif
+
 }
 
 static inline void esp_apptrace_trax_memory_enable(void)
