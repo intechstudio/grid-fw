@@ -176,7 +176,8 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
  */
 const uint8_t hid_report_descriptor[] = {
     TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(HID_ITF_PROTOCOL_KEYBOARD) ),
-    TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(HID_ITF_PROTOCOL_MOUSE) )
+    TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(HID_ITF_PROTOCOL_MOUSE) ),
+    TUD_HID_REPORT_DESC_GAMEPAD(HID_REPORT_ID(3))
 };
 
 /********* TinyUSB HID callbacks ***************/
