@@ -664,32 +664,32 @@ uint8_t grid_port_process_outbound_usart(struct grid_port* por){
 		
 		// NO PACKET IN RX BUFFER
 		return 0;
-	}else{
-		
-		// Let's transfer the packet to local memory
-		grid_buffer_read_init(&por->tx_buffer);
-		
-		por->tx_double_buffer_status = packet_size;
-		
-		for (uint16_t i = 0; i<packet_size; i++){
-			
-			uint8_t character = grid_buffer_read_character(&por->tx_buffer);
-			por->tx_double_buffer[i] = character;
-			
-		}
-	
-
-		// Let's acknowledge the transaction
-		grid_buffer_read_acknowledge(&por->tx_buffer);
-		
-		//grid_platform_printf("%d %d ", por->tx_double_buffer_status, packet_size);
-		
-		grid_platform_send_grid_message(por->direction, por->tx_double_buffer, packet_size);
-		
-		
-		return 1;
 	}
+
+		
+	// Let's transfer the packet to local memory
+	grid_buffer_read_init(&por->tx_buffer);
 	
+	por->tx_double_buffer_status = packet_size;
+	
+	for (uint16_t i = 0; i<packet_size; i++){
+		
+		uint8_t character = grid_buffer_read_character(&por->tx_buffer);
+		por->tx_double_buffer[i] = character;
+		
+	}
+
+
+	// Let's acknowledge the transaction
+	grid_buffer_read_acknowledge(&por->tx_buffer);
+	
+	grid_platform_printf("%d %d \r\n", por->tx_double_buffer_status, packet_size);
+	
+	grid_platform_send_grid_message(por->direction, por->tx_double_buffer, packet_size);
+	
+	
+	return 1;
+
 
 	
 }

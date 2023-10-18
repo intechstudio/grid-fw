@@ -16,9 +16,10 @@
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
-#include "freertos/task.h"
+#include "task.h"
 #include "esp_log.h"
 
+#include "esp_freertos_hooks.h"
 
 #include "tinyusb.h"
 #include "driver/gpio.h"

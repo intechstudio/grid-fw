@@ -6,7 +6,7 @@
 
 #include "grid_esp32_port.h"
 
-
+static TaskHandle_t xTaskToNotify = NULL;
 
 static const char *TAG = "PORT";
 
@@ -62,7 +62,6 @@ void ets_debug_string(char* tag, char* str){
 
 static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t *trans) {
     //printf("$\r\n");
-    gpio_ll_set_level(&GPIO, 47, 1);
 
 
 
@@ -79,7 +78,6 @@ static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t *trans) {
     }
     portEXIT_CRITICAL(&spinlock);
 
-    gpio_ll_set_level(&GPIO, 47, 0);
 }
 
 
@@ -176,46 +174,33 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
         por = uart_port_array[3];
     }   
 
-    if (por != NULL){
+
+    if (por == NULL){
+        // no message to copy to rx_double_buffer
+        return;
+    }
+
+    
+    
+    for (uint16_t i = 0; true; i++){
+    
+        por->rx_double_buffer[por->rx_double_buffer_write_index] = ((char*)trans->rx_buffer)[i];
 
 
-        rx_debug = (void*) por;
 
-        if (((char*)trans->rx_buffer)[1] == GRID_CONST_BRC){
-
-            uint8_t error;
-            
-            //uint8_t id = grid_msg_string_get_parameter((char*)trans->rx_buffer, 6, 2, &error);
-
-            //ets_printf("RX %d: %d\r\n", por->direction, id);
-            
-        //ets_printf("RX: %s\r\n", trans->rx_buffer);
-        }
-        else{
-            
-
+        if (((char*)trans->rx_buffer)[i] == '\0'){
+            break;
         }
 
-        
-        for (uint16_t i = 0; true; i++){
-        
-            por->rx_double_buffer[por->rx_double_buffer_write_index] = ((char*)trans->rx_buffer)[i];
-
-
-
-            if (((char*)trans->rx_buffer)[i] == '\0'){
-                break;
-            }
-
-            por->rx_double_buffer_write_index++;
-            por->rx_double_buffer_write_index%=GRID_DOUBLE_BUFFER_RX_SIZE;
-
-        }
+        por->rx_double_buffer_write_index++;
+        por->rx_double_buffer_write_index%=GRID_DOUBLE_BUFFER_RX_SIZE;
 
     }
 
-
 }
+
+
+
 
 static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
 
@@ -323,7 +308,6 @@ static void plot_port_debug(){
 }
 
 
-
 SemaphoreHandle_t nvm_or_port;
 
 static uint64_t last_ping_timestamp = 0;
@@ -393,8 +377,15 @@ static void periodic_ping_heartbeat_handler_cb(void *arg)
 }
 
 
+bool idle_hook(void){
+
+    portYIELD();
+    return 0;
+}
+
 void grid_esp32_port_task(void *arg)
 {
+    esp_register_freertos_idle_hook_for_cpu(idle_hook, 1);
 
 
     nvm_or_port = (SemaphoreHandle_t)arg;
@@ -500,6 +491,8 @@ void grid_esp32_port_task(void *arg)
 
 
     while (1) {
+
+        gpio_ll_set_level(&GPIO, 47, 1);
 
         portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
         portENTER_CRITICAL(&spinlock);
@@ -681,16 +674,15 @@ void grid_esp32_port_task(void *arg)
             //NVM task is in progress, let it run!
             //vTaskDelay(pdMS_TO_TICKS(10));
         }
-
-        //vTaskDelay(pdMS_TO_TICKS(1));
        
-        for (uint8_t i=0; i<10; i++){
-            taskYIELD();
-            ets_delay_us(50);
+
+        gpio_ll_set_level(&GPIO, 47, 0);
+
+        for (uint8_t i=0; i<1; i++){
+            portYIELD();
+            // IN THE BEGINING OF LOOP MUST NOTIFY TAKE TO PREEMPT IDLE TASK. GIVE NOTIFY FROM SPI RXC ISR!
+            // RTOS TICK FREQ IS 100 HZ
         }
-
-        vTaskDelay(2);
-
 
     }
 
