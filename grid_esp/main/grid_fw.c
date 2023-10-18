@@ -32,11 +32,15 @@
 
 #include "grid_esp32_trace.h"
 
-#define MODULE_TASK_PRIORITY 4
+// module task priority must be the lowest to ma it run most of the time
+#define MODULE_TASK_PRIORITY 0
+
 #define LED_TASK_PRIORITY 2
 
 // NVM must not be preemted by Port task
 #define NVM_TASK_PRIORITY configMAX_PRIORITIES-1
+
+// module task priority must be the lowest to ma it run most of the time
 #define PORT_TASK_PRIORITY 0 //same as idle 
 
 #include "driver/ledc.h"
@@ -117,6 +121,12 @@ void system_init_core_2_task(void *arg)
 
 #include "SEGGER_SYSVIEW.h"  
 
+
+bool idle_hook(void){
+
+    portYIELD();
+    return 0;
+}
 
 
 void app_main(void)
@@ -392,6 +402,12 @@ void app_main(void)
 
 
 
+    // Register idle hook to force yield from idle task to lowest priority task
+    esp_register_freertos_idle_hook_for_cpu(idle_hook, 0);
+    esp_register_freertos_idle_hook_for_cpu(idle_hook, 1);
+
+    ESP_LOGI(TAG, "===== TRACE START =====");
+
 
     // TRACE CONFIG GPIO 40, 41, 4Mbaud, 
 
@@ -421,7 +437,9 @@ void app_main(void)
 
         vTaskDelay(pdMS_TO_TICKS(50));
 
+
     }
+
 
     ESP_LOGI(TAG, "===== MAIN COMPLETE =====");
 

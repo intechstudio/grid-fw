@@ -377,15 +377,9 @@ static void periodic_ping_heartbeat_handler_cb(void *arg)
 }
 
 
-bool idle_hook(void){
-
-    portYIELD();
-    return 0;
-}
 
 void grid_esp32_port_task(void *arg)
 {
-    esp_register_freertos_idle_hook_for_cpu(idle_hook, 1);
 
 
     nvm_or_port = (SemaphoreHandle_t)arg;
@@ -487,12 +481,12 @@ void grid_esp32_port_task(void *arg)
 
 
 
-    gpio_set_direction(47, GPIO_MODE_OUTPUT);
+    //gpio_set_direction(47, GPIO_MODE_OUTPUT);
 
 
     while (1) {
 
-        gpio_ll_set_level(&GPIO, 47, 1);
+        //gpio_ll_set_level(&GPIO, 47, 1);
 
         portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
         portENTER_CRITICAL(&spinlock);
@@ -676,13 +670,10 @@ void grid_esp32_port_task(void *arg)
         }
        
 
-        gpio_ll_set_level(&GPIO, 47, 0);
+        //gpio_ll_set_level(&GPIO, 47, 0);
 
-        for (uint8_t i=0; i<1; i++){
-            portYIELD();
-            // IN THE BEGINING OF LOOP MUST NOTIFY TAKE TO PREEMPT IDLE TASK. GIVE NOTIFY FROM SPI RXC ISR!
-            // RTOS TICK FREQ IS 100 HZ
-        }
+
+        portYIELD();
 
     }
 

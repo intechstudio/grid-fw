@@ -683,7 +683,7 @@ uint8_t grid_port_process_outbound_usart(struct grid_port* por){
 	// Let's acknowledge the transaction
 	grid_buffer_read_acknowledge(&por->tx_buffer);
 	
-	grid_platform_printf("%d %d \r\n", por->tx_double_buffer_status, packet_size);
+	//grid_platform_printf("%d %d \r\n", por->tx_double_buffer_status, packet_size);
 	
 	grid_platform_send_grid_message(por->direction, por->tx_double_buffer, packet_size);
 	

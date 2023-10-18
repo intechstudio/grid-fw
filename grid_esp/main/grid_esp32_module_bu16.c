@@ -26,6 +26,8 @@ void grid_esp32_module_bu16_task(void *arg)
     grid_esp32_adc_start(&grid_esp32_adc_state);    
     ESP_LOGI("IN", "3");
 
+
+
     while (1) {
 
         for (uint16_t i = 0; i<10; i++){
@@ -56,10 +58,9 @@ void grid_esp32_module_bu16_task(void *arg)
 
         taskYIELD();
 
-        vTaskDelay(pdMS_TO_TICKS(GRID_ESP32_ADC_PROCESS_TASK_DELAY_MS*10));
-
 
     }
+
 
 
     //Wait to be deleted

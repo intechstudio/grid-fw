@@ -93,7 +93,7 @@ void grid_esp32_module_en16_task(void *arg)
 
 
 
-        vTaskDelay(pdMS_TO_TICKS(GRID_ESP32_ADC_PROCESS_TASK_DELAY_MS));
+        taskYIELD();
 
 
     }
