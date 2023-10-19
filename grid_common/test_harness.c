@@ -1,5 +1,5 @@
 // fuzz_target.cc
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
+int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
 
   // Simulate a simple condition where the fuzzer sometimes fails.
