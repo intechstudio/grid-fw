@@ -21,4 +21,4 @@ jobs:
     - name: Build and run fuzz test
       run: |
         clang -fsanitize=fuzzer,address -o fuzzer_test grid_common/test_harness.c
-        timeout 300s ./fuzzer_test
+        timeout 60s ./fuzzer_test

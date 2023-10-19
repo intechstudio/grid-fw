@@ -10,7 +10,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   if (Size % 1000 == 0) {
       // Fail the input.
       printf("Size error\r\n");
-      return -1;
+      return 1;
   }
 
   // Initialize the random number generator.
@@ -20,14 +20,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   if (rand() % 2 == 0) {
       // Fail the input.
       printf("Random error\r\n");
-      return -1;
+      return 1;
   }
 
   // Pass the input.
 
   if (Data[0] == 0){
     printf("Data error\r\n");
-    return -1;
+    return 1;
   }
 
   // Pass the input.
