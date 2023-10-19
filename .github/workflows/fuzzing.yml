@@ -1,0 +1,26 @@
+name: Fuzz Testing
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  fuzzing:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Clang
+      uses: egor-tensin/setup-clang@v1
+      with:
+        version: latest
+        platform: x64
+
+
+    - name: Build and run fuzz test
+      run: |
+        clang -fsanitize=fuzzer,address -o fuzzer_test grid_common/test_harness.c timeout 60s
+        ./fuzzer_test
