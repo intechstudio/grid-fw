@@ -1,4 +1,7 @@
 // fuzz_target.cc
+#include <stdint.h>
+#include <stddef.h>
+
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
 
