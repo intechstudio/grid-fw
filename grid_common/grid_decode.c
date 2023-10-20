@@ -859,23 +859,15 @@ uint8_t	grid_decode_pagediscard_to_ui(char* header, char* chunk){
 
 }
 
-
-#include "rom/ets_sys.h" // For ets_printf
-
 uint8_t	grid_decode_pagestore_to_ui(char* header, char* chunk){	
 
 
 	uint8_t dx = grid_msg_string_get_parameter(header, GRID_BRC_DX_offset, GRID_BRC_DX_length, NULL);
 	uint8_t dy = grid_msg_string_get_parameter(header, GRID_BRC_DY_offset, GRID_BRC_DY_length, NULL);
 
-	ets_printf("Test1 %d %d\r\n", dx, dy);
-
 	if(grid_check_destination(header, GRID_DESTINATION_IS_ME|GRID_DESTINATION_IS_GLOBAL) == false){
 		return 1;
 	}
-	
-	ets_printf("Test2\r\n");
-
 
 	uint8_t error = 0;
 
