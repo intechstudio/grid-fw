@@ -97,9 +97,6 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset();
 void grid_platform_system_reset();
 void grid_platform_nvm_defrag();
 
-int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
-
-int32_t grid_platform_usb_midi_write_status(void);
 
 uint8_t grid_platform_get_adc_bit_depth();
 
@@ -115,15 +112,6 @@ uint32_t grid_platform_get_cycles_per_us();
 
 void* grid_platform_allocate_volatile(size_t size);
 
-
-int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type);
-int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis);
-
-
-int32_t grid_platform_usb_gamepad_axis_move(int8_t position, uint8_t axis);
-
-
-int32_t grid_platform_usb_keyboard_keys_state_change(void* keys_desc, uint8_t keys_count);
 
 #ifdef __cplusplus
 }

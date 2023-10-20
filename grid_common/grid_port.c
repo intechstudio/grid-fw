@@ -304,7 +304,7 @@ void grid_msg_string_transform_brc_params(char* message, int8_t dx, int8_t dy, u
 	uint8_t updated_msgage = received_msgage+1;
 	
 
-	if (grid_msg_is_position_transformable(updated_dx, updated_dy)){
+	if (grid_msg_is_position_transformable(received_dx, received_dy)){
 		
 		// Update message with the new values
 		grid_msg_string_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
@@ -312,7 +312,7 @@ void grid_msg_string_transform_brc_params(char* message, int8_t dx, int8_t dy, u
 
 	}
 	
-	if (grid_msg_is_position_transformable(updated_sx, updated_sy)){
+	if (grid_msg_is_position_transformable(received_sx, received_sy)){
 		
 		// Update message with the new values
 		grid_msg_string_set_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, updated_sx, &error);
@@ -975,7 +975,7 @@ void grid_protocol_nvm_erase_succcess_callback(){
 
 
 		
-	grid_keyboard_enable(&grid_keyboard_state);
+	grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
 	grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 
@@ -1038,7 +1038,7 @@ void grid_protocol_nvm_read_succcess_callback(){
 
 
 
-	grid_keyboard_enable(&grid_keyboard_state);
+	grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
 
 	// phase out the animation
@@ -1073,7 +1073,7 @@ void grid_protocol_nvm_store_succcess_callback(){
 
 
 	//enable keyboard
-	grid_keyboard_enable(&grid_keyboard_state);
+	grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
 	// phase out the animation
 	grid_alert_all_set_timeout_automatic(&grid_led_state);

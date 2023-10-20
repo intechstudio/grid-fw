@@ -20,7 +20,7 @@
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
 #define GRID_PROTOCOL_VERSION_MINOR 2
-#define GRID_PROTOCOL_VERSION_PATCH 23
+#define GRID_PROTOCOL_VERSION_PATCH 26
 
 
 
@@ -230,7 +230,7 @@
 
 #define GRID_LUA_FNC_G_KEYBOARD_SEND_short 		"gks"
 #define GRID_LUA_FNC_G_KEYBOARD_SEND_human 		"keyboard_send"
-#define GRID_LUA_FNC_G_KEYBOARD_SEND_fnptr 		l_grid_keyboard_send
+#define GRID_LUA_FNC_G_KEYBOARD_SEND_fnptr 		l_grid_usb_keyboard_send
 
 #define GRID_LUA_FNC_G_MOUSEMOVE_SEND_short 	"gmms"
 #define GRID_LUA_FNC_G_MOUSEMOVE_SEND_human 	"mouse_move_send"

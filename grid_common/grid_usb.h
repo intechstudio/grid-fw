@@ -6,12 +6,12 @@
  */ 
 
 
+
 #ifndef GRID_USB_H_
 #define GRID_USB_H_
 
 #include "grid_port.h"
 #include "grid_sys.h"
-#include "grid_led.h"
 
 #include <stdbool.h>
 
@@ -25,7 +25,8 @@ extern int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_
 extern int32_t grid_platform_usb_midi_write_status(void);
 extern int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type);
 extern int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis);
-extern int32_t grid_platform_usb_keyboard_keys_state_change(void* keys_desc, uint8_t keys_count);
+
+
 
 
 extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
@@ -37,17 +38,7 @@ void grid_usb_midi_buffer_init();
 
 
 
-enum grid_kb_key_state { GRID_KB_KEY_UP, GRID_KB_KEY_DOWN };
-
-/** Describes the USB HID Keyboard Key descriptors. */
-struct grid_kb_key_descriptors {
-	/* HID Key Value, defined in usb_protocol_hid.h */
-	uint8_t key_id;
-	/* Flag whether it is a modifier key */
-	bool b_modifier;
-	/* Key State */
-	enum grid_kb_key_state state;
-};
+enum grid_usb_keyboard_key_state_t { GRID_USB_KEYBOARD_KEY_STATEUP, GRID_USB_KEYBOARD_KEY_STATEDOWN };
 
 
 struct grid_midi_event_desc {
@@ -85,7 +76,7 @@ void grid_midi_rx_pop();
 
 
 
-struct grid_keyboard_event_desc {
+struct grid_usb_keyboard_event_desc {
 	
 	uint8_t keycode;
 	uint8_t ismodifier;
@@ -94,52 +85,58 @@ struct grid_keyboard_event_desc {
 
 };
 
-extern uint16_t grid_keyboard_tx_write_index;
-extern uint16_t grid_keyboard_tx_read_index;
-extern uint64_t grid_keyboard_tx_rtc_lasttimestamp;
 
-
-
-
-
-
-
-#define GRID_KEYBOARD_TX_BUFFER_length 101
-
-extern struct grid_keyboard_event_desc grid_keyboard_tx_buffer[GRID_KEYBOARD_TX_BUFFER_length];
-
-void grid_keyboard_buffer_init(struct grid_keyboard_event_desc* buf, uint16_t length);
-
-uint8_t grid_keyboard_tx_push(struct grid_keyboard_event_desc keyboard_event);
-void grid_keyboard_tx_pop();
-
-
-
+/** Describes the USB HID Keyboard Key descriptors. */
+struct grid_usb_hid_kb_desc {
+	/* HID Key Value, defined in usb_protocol_hid.h */
+	uint8_t key_id;
+	/* Flag whether it is a modifier key */
+	bool b_modifier;
+	/* Key State */
+	enum grid_usb_keyboard_key_state_t state;
+};
 
 
 #define GRID_KEYBOARD_KEY_maxcount 6
 
-struct grid_keyboard_model{
+
+struct grid_usb_keyboard_model{
+
+	uint8_t tx_buffer_length;
+	struct grid_usb_keyboard_event_desc* tx_buffer;
+
+    uint16_t tx_write_index;
+    uint16_t tx_read_index;
+    uint64_t tx_rtc_lasttimestamp;
 	
-	struct grid_kb_key_descriptors hid_key_array[GRID_KEYBOARD_KEY_maxcount]; 
-	struct  grid_keyboard_event_desc key_list[GRID_KEYBOARD_KEY_maxcount];
-	uint8_t key_active_count;
+	struct  grid_usb_keyboard_event_desc active_key_list[GRID_KEYBOARD_KEY_maxcount];
+	uint8_t active_key_count;
     
     uint8_t isenabled;
 	
 };
 
-extern struct grid_keyboard_model grid_keyboard_state;
 
-void grid_usb_keyboard_buffer_init(struct grid_keyboard_model* kb);
 
-uint8_t grid_keyboard_cleanup(struct grid_keyboard_model* kb);
+uint8_t grid_usb_keyboard_tx_push(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc keyboard_event);
+void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb);
 
-void grid_keyboard_keychange(struct grid_keyboard_model* kb, struct grid_keyboard_event_desc* key);
 
-void grid_keyboard_enable(struct grid_keyboard_model* kb);
-void grid_keyboard_disable(struct grid_keyboard_model* kb);
-uint8_t grid_keyboard_isenabled(struct grid_keyboard_model* kb);
+
+
+
+
+extern struct grid_usb_keyboard_model grid_usb_keyboard_state;
+
+void grid_usb_keyboard_model_init(struct grid_usb_keyboard_model* kb, uint8_t buffer_length);
+
+uint8_t grid_usb_keyboard_cleanup(struct grid_usb_keyboard_model* kb);
+
+void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc* key);
+
+void grid_usb_keyboard_enable(struct grid_usb_keyboard_model* kb);
+void grid_usb_keyboard_disable(struct grid_usb_keyboard_model* kb);
+uint8_t grid_usb_keyboard_isenabled(struct grid_usb_keyboard_model* kb);
 
 
 

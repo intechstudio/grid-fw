@@ -44,7 +44,7 @@ extern uint64_t grid_platform_rtc_get_micros(void);
 static void usb_task_inner(){
 
 
-	grid_keyboard_tx_pop();
+	grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
 	
 	// Send midi from Grid to Host!
 

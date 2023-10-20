@@ -165,7 +165,7 @@ void grid_d51_usb_init(void){
 
 	grid_usb_midi_buffer_init();
 
-	grid_usb_keyboard_buffer_init(&grid_keyboard_state);
+	grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
     
 }
 
@@ -195,7 +195,16 @@ int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis){
 
 
 
-int32_t grid_platform_usb_keyboard_keys_state_change(void* keys_desc, uint8_t keys_count){
+int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_event_desc* active_key_list, uint8_t keys_count){
 
-    return hiddf_keyboard_keys_state_change(keys_desc, keys_count);
+	struct grid_usb_hid_kb_desc hid_key_array[GRID_KEYBOARD_KEY_maxcount]; 
+	for(uint8_t i=0; i<GRID_KEYBOARD_KEY_maxcount; i++){
+	
+		hid_key_array[i].b_modifier = active_key_list[i].ismodifier;
+		hid_key_array[i].key_id = active_key_list[i].keycode;
+		hid_key_array[i].state = active_key_list[i].ispressed;
+	
+	}
+
+    return hiddf_keyboard_keys_state_change(hid_key_array, keys_count);
 }

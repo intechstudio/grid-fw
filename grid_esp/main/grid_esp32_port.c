@@ -623,17 +623,13 @@ void grid_esp32_port_task(void *arg)
             // NEED DELAY BETWEEN REQUESTING USB TRANSACTIONS (MIDI, HID, SERIAL etc)
             for (uint8_t i=0; i<4; i++){
 
-                if (grid_keyboard_tx_read_index != grid_keyboard_tx_write_index){
-                    grid_keyboard_tx_pop();
-                    ets_delay_us(20);
-                }
 
+                grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
+                ets_delay_us(20);
 
-
-                if (grid_midi_tx_read_index != grid_midi_tx_write_index){
-                    grid_midi_tx_pop();
-                    ets_delay_us(20);
-                }
+                grid_midi_tx_pop();
+                ets_delay_us(20);
+                
 
             }
 

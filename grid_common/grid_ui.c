@@ -573,7 +573,7 @@ void grid_ui_page_load_success_callback(void){
 
 
 	//grid_platform_printf("LOAD SUCCESS\r\n");
-	grid_keyboard_enable(&grid_keyboard_state);
+	grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
 
 	// phase out the animation

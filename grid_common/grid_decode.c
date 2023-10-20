@@ -182,14 +182,14 @@ uint8_t	grid_decode_mousebutton_to_usb(char* header, char* chunk){
 
 	//grid_port_debug_printf("MouseButton: %d %d", state, button);	
 
-	struct grid_keyboard_event_desc key;
+	struct grid_usb_keyboard_event_desc key;
 
 	key.ismodifier 	= 3; // 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
 	key.ispressed 	= state;
 	key.keycode 	= button;
 	key.delay 		= 1;
 
-	if (0 != grid_keyboard_tx_push(key)){
+	if (0 != grid_usb_keyboard_tx_push(&grid_usb_keyboard_state, key)){
 		grid_port_debug_printf("MOUSE: Packet Dropped!");
 	};			
 	
@@ -210,14 +210,14 @@ uint8_t	grid_decode_mousemove_to_usb(char* header, char* chunk){
 
 	int8_t position = position_raw - 128;
 
-	struct grid_keyboard_event_desc key;
+	struct grid_usb_keyboard_event_desc key;
 
 	key.ismodifier 	= 2; // 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
 	key.ispressed 	= position_raw;
 	key.keycode 	= axis;
 	key.delay 		= 1;
 
-	if (0 != grid_keyboard_tx_push(key)){
+	if (0 != grid_usb_keyboard_tx_push(&grid_usb_keyboard_state, key)){
 		grid_port_debug_printf("MOUSE: Packet Dropped!");
 	};
 
@@ -247,7 +247,7 @@ uint8_t	grid_decode_keyboard_to_usb(char* header, char* chunk){
 		uint8_t key_code =			grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_KEYCODE_offset+j,		GRID_CLASS_HIDKEYBOARD_KEYCODE_length, &error);
 
 
-		struct grid_keyboard_event_desc key;
+		struct grid_usb_keyboard_event_desc key;
 
 		
 		if (key_ismodifier == 0 || key_ismodifier == 1){
@@ -260,14 +260,14 @@ uint8_t	grid_decode_keyboard_to_usb(char* header, char* chunk){
 			if (key_state == 2){ // combined press and release
 
 				key.ispressed 	= 1;
-				number_of_packets_dropped += grid_keyboard_tx_push(key);
+				number_of_packets_dropped += grid_usb_keyboard_tx_push(&grid_usb_keyboard_state, key);
 				key.ispressed 	= 0;
-				number_of_packets_dropped += grid_keyboard_tx_push(key);
+				number_of_packets_dropped += grid_usb_keyboard_tx_push(&grid_usb_keyboard_state, key);
 
 			}
 			else{ // single press or release
 
-				number_of_packets_dropped += grid_keyboard_tx_push(key);
+				number_of_packets_dropped += grid_usb_keyboard_tx_push(&grid_usb_keyboard_state, key);
 
 			}
 
@@ -282,7 +282,7 @@ uint8_t	grid_decode_keyboard_to_usb(char* header, char* chunk){
 			key.keycode 	= 0;
 			key.delay 		= delay;
 
-			number_of_packets_dropped += grid_keyboard_tx_push(key);
+			number_of_packets_dropped += grid_usb_keyboard_tx_push(&grid_usb_keyboard_state, key);
 
 		}
 		else{
@@ -859,12 +859,24 @@ uint8_t	grid_decode_pagediscard_to_ui(char* header, char* chunk){
 
 }
 
+
+#include "rom/ets_sys.h" // For ets_printf
+
 uint8_t	grid_decode_pagestore_to_ui(char* header, char* chunk){	
+
+
+	uint8_t dx = grid_msg_string_get_parameter(header, GRID_BRC_DX_offset, GRID_BRC_DX_length, NULL);
+	uint8_t dy = grid_msg_string_get_parameter(header, GRID_BRC_DY_offset, GRID_BRC_DY_length, NULL);
+
+	ets_printf("Test1 %d %d\r\n", dx, dy);
 
 	if(grid_check_destination(header, GRID_DESTINATION_IS_ME|GRID_DESTINATION_IS_GLOBAL) == false){
 		return 1;
 	}
 	
+	ets_printf("Test2\r\n");
+
+
 	uint8_t error = 0;
 
 	uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);							
@@ -1050,7 +1062,7 @@ uint8_t	grid_decode_config_to_ui(char* header, char* chunk){
 		grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_CONFIG_INDEX, id);
 		
 		// disable hid automatically
-		grid_keyboard_disable(&grid_keyboard_state);          
+		grid_usb_keyboard_disable(&grid_usb_keyboard_state);          
 		//grid_port_debug_print_text("Disabling KB");
 
 		uint8_t vmajor = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
@@ -1230,10 +1242,10 @@ uint8_t	grid_decode_hidkeystatus_to_ui(char* header, char* chunk){
 	if (msg_instr == GRID_INSTR_EXECUTE_code){
 
 		if (isenabled){
-			grid_keyboard_enable(&grid_keyboard_state);
+			grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 		}
 		else{
-			grid_keyboard_disable(&grid_keyboard_state);
+			grid_usb_keyboard_disable(&grid_usb_keyboard_state);
 		}
 
 		
@@ -1244,7 +1256,7 @@ uint8_t	grid_decode_hidkeystatus_to_ui(char* header, char* chunk){
 
 		grid_msg_packet_body_append_printf(&response, GRID_CLASS_HIDKEYSTATUS_frame);
 
-		grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, grid_keyboard_isenabled(&grid_keyboard_state));
+		grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, grid_usb_keyboard_isenabled(&grid_usb_keyboard_state));
 
 		grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 

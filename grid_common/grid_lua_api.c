@@ -382,7 +382,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
 
 
-/*static*/ int l_grid_keyboard_send(lua_State* L) {
+/*static*/ int l_grid_usb_keyboard_send(lua_State* L) {
 
     int nargs = lua_gettop(L);
 
