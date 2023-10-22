@@ -29,3 +29,9 @@ jobs:
         ls
         cat $(ls crash-*)
         find . -name "crash-*" -exec cat {} \;
+    
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: Fuzzing Binary
+        path: fuzzer_test
