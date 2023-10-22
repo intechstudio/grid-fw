@@ -140,6 +140,13 @@
                 "command": "git clean -dxf",
             },
             {
+                "name": "Fuzzer Docker",
+                "color": "white",
+                "singleInstance": true,
+                "command": "podman run --privileged -it -v $PWD:/project -w /project mozillasecurity/libfuzzer bash",
+                // make nightly
+            },
+            {
                 "name": "D51 Docker",
                 "color": "white",
                 "singleInstance": true,
