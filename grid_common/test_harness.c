@@ -9,7 +9,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
   // Pass the input.
 
-  if (Data[10] == 0){
+  if (Data[0] == 'H' && Data[1] == 'I'){
     printf("Data error %s\r\n", Data);
     return -1;
   }

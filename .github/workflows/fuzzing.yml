@@ -20,14 +20,14 @@ jobs:
 
     - name: Build and run fuzz test
       run: |
-        clang -fsanitize=fuzzer -o fuzzer_test grid_common/test_harness.c
+        clang -fsanitize=fuzzer,address -o fuzzer_test grid_common/test_harness.c
         timeout 60s ./fuzzer_test -max-len=128 -timeout=10
         
     - name: Crash log
       if: always()
       run: |
         ls
-        cat $(ls crash-*)
+        cat $(ls crash-*) | xxd
         find . -name "crash-*" -exec cat {} \;
     
     - uses: actions/upload-artifact@v3
