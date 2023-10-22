@@ -24,6 +24,6 @@ jobs:
         timeout 60s ./fuzzer_test -max-len=128 -timeout=10
         
     - name: Crash log
+      if: always()
       run: |
         cat $(ls crash-*)
-        
