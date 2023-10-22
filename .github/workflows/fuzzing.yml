@@ -26,4 +26,5 @@ jobs:
     - name: Crash log
       if: always()
       run: |
+        ls
         cat $(ls crash-*)
