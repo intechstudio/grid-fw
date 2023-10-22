@@ -26,12 +26,17 @@ jobs:
     - name: Crash log
       if: always()
       run: |
+        cp $(ls crash-*) input.bin
         ls
+        echo "cat:"
+        cat input.bin
+        echo "xxd:"
         cat $(ls crash-*) | xxd
-        find . -name "crash-*" -exec cat {} \;
     
     - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: Fuzzing Binary
-        path: fuzzer_test
+        path: |
+          fuzzer_test
+          input.bin
