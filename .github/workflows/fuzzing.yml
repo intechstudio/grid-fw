@@ -22,3 +22,4 @@ jobs:
       run: |
         clang -fsanitize=fuzzer,address -o fuzzer_test grid_common/test_harness.c
         timeout 60s ./fuzzer_test -max-len=128 -timeout=10
+        cat $(ls crash-*)
