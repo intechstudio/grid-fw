@@ -12,9 +12,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size<10){
     return 0;
   }
-  else{
-    return 0;
-  }
 
   if (size > 0 && data[0] == 'H')
     if (size > 1 && data[1] == 'I')
