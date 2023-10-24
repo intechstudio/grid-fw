@@ -20,8 +20,13 @@
 
 uint8_t	grid_decode_midi_to_usb(char* header, char* chunk);
 uint8_t	grid_decode_sysex_to_usb(char* header, char* chunk);
+
 uint8_t	grid_decode_mousebutton_to_usb(char* header, char* chunk);
 uint8_t	grid_decode_mousemove_to_usb(char* header, char* chunk);
+
+uint8_t	grid_decode_gamepadmove_to_usb(char* header, char* chunk);
+uint8_t	grid_decode_gamepadbutton_to_usb(char* header, char* chunk);
+
 uint8_t	grid_decode_keyboard_to_usb(char* header, char* chunk);
 
 // =================== UI OUTBOUND ================= //

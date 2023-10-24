@@ -240,6 +240,14 @@
 #define GRID_LUA_FNC_G_MOUSEBUTTON_SEND_human 	"mouse_button_send"
 #define GRID_LUA_FNC_G_MOUSEBUTTON_SEND_fnptr 	l_grid_mousebutton_send
 
+#define GRID_LUA_FNC_G_GAMEPADMOVE_SEND_short 	"ggms"
+#define GRID_LUA_FNC_G_GAMEPADMOVE_SEND_human 	"gamepad_move_send"
+#define GRID_LUA_FNC_G_GAMEPADMOVE_SEND_fnptr 	l_grid_gamepadmove_send
+
+#define GRID_LUA_FNC_G_GAMEPADBUTTON_SEND_short "ggbs"
+#define GRID_LUA_FNC_G_GAMEPADBUTTON_SEND_human "gamepad_button_send"
+#define GRID_LUA_FNC_G_GAMEPADBUTTON_SEND_fnptr l_grid_gamepadbutton_send
+
 #define GRID_LUA_FNC_G_RANDOM_short 			"grnd"
 #define GRID_LUA_FNC_G_RANDOM_human 			"random"
 #define GRID_LUA_FNC_G_RANDOM_fnptr 			l_grid_random
@@ -1080,6 +1088,27 @@ enum grid_ui_event_t
 #define GRID_CLASS_HIDMOUSEBUTTON_BUTTON_offset 7
 #define GRID_CLASS_HIDMOUSEBUTTON_BUTTON_length 2
 
+
+// 094 HID GAMEPAD MOVE (X, Y ...)
+#define GRID_CLASS_HIDGAMEPADMOVE_code 0x094
+#define GRID_CLASS_HIDGAMEPADMOVE_frame "%c%03x_....%c", GRID_CONST_STX, GRID_CLASS_HIDGAMEPADMOVE_code, GRID_CONST_ETX
+
+#define GRID_CLASS_HIDGAMEPADMOVE_AXIS_offset 5
+#define GRID_CLASS_HIDGAMEPADMOVE_AXIS_length 2
+
+#define GRID_CLASS_HIDGAMEPADMOVE_POSITION_offset 7
+#define GRID_CLASS_HIDGAMEPADMOVE_POSITION_length 2
+
+
+// 095 HID GAMEPAD BUTTON (0, 1 ... 31)
+#define GRID_CLASS_HIDGAMEPADBUTTON_code 0x095
+#define GRID_CLASS_HIDGAMEPADBUTTON_frame "%c%03x_....%c", GRID_CONST_STX, GRID_CLASS_HIDGAMEPADBUTTON_code, GRID_CONST_ETX
+
+#define GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_offset 5
+#define GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_length 2
+
+#define GRID_CLASS_HIDGAMEPADBUTTON_STATE_offset 7
+#define GRID_CLASS_HIDGAMEPADBUTTON_STATE_length 2
 
 
 

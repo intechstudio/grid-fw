@@ -751,6 +751,18 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por){
 			grid_decode_mousemove_to_usb(header, chunk);
 												
 		}
+		else if (msg_class == GRID_CLASS_HIDGAMEPADBUTTON_code){
+				
+		
+			grid_decode_gamepadbutton_to_usb(header, chunk);
+												
+		}
+		else if (msg_class == GRID_CLASS_HIDGAMEPADMOVE_code){
+										
+
+			grid_decode_gamepadmove_to_usb(header, chunk);
+												
+		}
 		else if (msg_class == GRID_CLASS_HIDKEYBOARD_code){
 			
 

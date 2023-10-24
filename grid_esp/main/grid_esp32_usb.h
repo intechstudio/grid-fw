@@ -72,8 +72,8 @@ int32_t grid_platform_usb_midi_write_status(void);
 int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type);
 int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis);
 
-
-int32_t grid_platform_usb_gamepad_axis_move(int8_t position, uint8_t axis);
+int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value);
+int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value);
 
 
 #ifdef __cplusplus

@@ -193,6 +193,17 @@ int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis){
     return hiddf_mouse_move(position, axis);
 }
 
+int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value){
+
+	grid_port_debug_printf("Gamepad Not Supported");
+
+}
+
+int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value){
+
+	grid_port_debug_printf("Gamepad Not Supported");
+
+}
 
 
 int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_event_desc* active_key_list, uint8_t keys_count){

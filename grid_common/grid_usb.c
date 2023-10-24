@@ -484,6 +484,16 @@ void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb){
 
 }
 
+void grid_usb_gamepad_axis_move(uint8_t axis, int32_t move){
+
+	grid_platform_usb_gamepad_axis_move(axis, move);
+}
+
+void grid_usb_gamepad_button_change(uint8_t button, uint8_t value){
+
+	grid_platform_usb_gamepad_button_change(button, value);
+}
+
 
 void grid_usb_keyboard_enable(struct grid_usb_keyboard_model* kb){
 

@@ -224,6 +224,44 @@ uint8_t	grid_decode_mousemove_to_usb(char* header, char* chunk){
 	return 0; //OK
 }
 
+uint8_t	grid_decode_gamepadmove_to_usb(char* header, char* chunk){
+
+	uint8_t error = 0;
+	
+	uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+	if (msg_instr != GRID_INSTR_EXECUTE_code){
+		return 1;
+	}
+
+	uint8_t axis = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDGAMEPADMOVE_AXIS_offset ,	GRID_CLASS_HIDGAMEPADMOVE_AXIS_length, &error);
+	uint8_t position_raw = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDGAMEPADMOVE_POSITION_offset, GRID_CLASS_HIDGAMEPADMOVE_POSITION_length, &error);
+
+	int8_t position = position_raw - 128;
+
+	//printf("%d %d %d\r\n", axis, position_raw, position);
+
+	grid_usb_gamepad_axis_move(axis, position);
+
+	return 0; //OK
+}
+
+uint8_t	grid_decode_gamepadbutton_to_usb(char* header, char* chunk){
+
+	uint8_t error = 0;
+	
+	uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+	if (msg_instr != GRID_INSTR_EXECUTE_code){
+		return 1;
+	}
+
+	uint8_t button = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_offset ,	GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_length, &error);
+	uint8_t state = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDGAMEPADBUTTON_STATE_offset, GRID_CLASS_HIDGAMEPADBUTTON_STATE_length, &error);
+
+	grid_usb_gamepad_button_change(button, state);
+
+	return 0; //OK
+}
+
 uint8_t	grid_decode_keyboard_to_usb(char* header, char* chunk){
 
 	uint8_t error = 0;

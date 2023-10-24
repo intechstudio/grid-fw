@@ -439,16 +439,16 @@ int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis){
     return 1;
 }
 
-int32_t grid_platform_usb_gamepad_axis_move(int8_t position, uint8_t axis){
+int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value){
 
     switch (axis)
     {
-        case GAMEPAD_AXIS_X: hid_gamepad_axis_x = position; break;   
-        case GAMEPAD_AXIS_Y: hid_gamepad_axis_y = position; break;   
-        case GAMEPAD_AXIS_Z: hid_gamepad_axis_z = position; break;   
-        case GAMEPAD_AXIS_RX: hid_gamepad_axis_rx = position; break;   
-        case GAMEPAD_AXIS_RY: hid_gamepad_axis_ry = position; break;   
-        case GAMEPAD_AXIS_RZ: hid_gamepad_axis_rz = position; break;    
+        case GAMEPAD_AXIS_X: hid_gamepad_axis_x = value; break;   
+        case GAMEPAD_AXIS_Y: hid_gamepad_axis_y = value; break;   
+        case GAMEPAD_AXIS_Z: hid_gamepad_axis_z = value; break;   
+        case GAMEPAD_AXIS_RX: hid_gamepad_axis_rx = value; break;   
+        case GAMEPAD_AXIS_RY: hid_gamepad_axis_ry = value; break;   
+        case GAMEPAD_AXIS_RZ: hid_gamepad_axis_rz = value; break;    
         default: ets_printf("INVALID AXIS\r\n"); return 0;
     }
 
@@ -457,6 +457,22 @@ int32_t grid_platform_usb_gamepad_axis_move(int8_t position, uint8_t axis){
     return 1;
 }
 
+
+
+int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value){
+
+
+    if (value){
+        hid_gamepad_button_state |= (1<<button);
+    }
+    else{
+        hid_gamepad_button_state &= ~(1<<button);
+    }
+
+    tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y, hid_gamepad_axis_z, hid_gamepad_axis_rx, hid_gamepad_axis_ry, hid_gamepad_axis_rz, hid_gamepad_hat, hid_gamepad_button_state);
+    
+    return 1;
+}
 
 int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_event_desc* active_key_list, uint8_t keys_count){
 

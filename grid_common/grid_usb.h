@@ -27,6 +27,8 @@ extern int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t ty
 extern int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis);
 
 
+int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value);
+int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value);
 
 
 extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
@@ -133,6 +135,11 @@ void grid_usb_keyboard_model_init(struct grid_usb_keyboard_model* kb, uint8_t bu
 uint8_t grid_usb_keyboard_cleanup(struct grid_usb_keyboard_model* kb);
 
 void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc* key);
+
+
+
+void grid_usb_gamepad_axis_move(uint8_t axis, int32_t move);
+void grid_usb_gamepad_button_change(uint8_t button, uint8_t value);
 
 void grid_usb_keyboard_enable(struct grid_usb_keyboard_model* kb);
 void grid_usb_keyboard_disable(struct grid_usb_keyboard_model* kb);

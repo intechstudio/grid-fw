@@ -592,6 +592,122 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 }
 
 
+
+/*static*/ int l_grid_gamepadmove_send(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=2){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    int32_t param[2] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    uint8_t axis_raw = param[0];
+    int32_t position_raw = param[1]+128;
+
+    
+    uint8_t position;
+    uint8_t axis;
+
+    if (position_raw>255){
+        position = 255;
+        strcat(grid_lua_state.stde, "#positionOutOfRange");
+    }
+    else if (position_raw<0){
+        position = 0;
+        strcat(grid_lua_state.stde, "#positionOutOfRange");
+    }
+    else{
+        position = position_raw;
+    }
+
+    if (axis_raw > 5){
+        strcat(grid_lua_state.stde, "#axisOutOfRange");
+        axis = 5;
+    }
+    else{
+        axis = axis_raw;
+    }
+
+    char frame[20] = {0};
+
+    sprintf(frame, GRID_CLASS_HIDGAMEPADMOVE_frame);
+
+    grid_msg_string_set_parameter(frame, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+
+    grid_msg_string_set_parameter(frame, GRID_CLASS_HIDGAMEPADMOVE_AXIS_offset, GRID_CLASS_HIDGAMEPADMOVE_AXIS_length, axis, NULL);
+    grid_msg_string_set_parameter(frame, GRID_CLASS_HIDGAMEPADMOVE_POSITION_offset, GRID_CLASS_HIDGAMEPADMOVE_POSITION_length, position, NULL);
+
+    strcat(grid_lua_state.stdo, frame);
+
+    return 1;
+}
+
+/*static*/ int l_grid_gamepadbutton_send(lua_State* L) {
+
+    int nargs = lua_gettop(L);
+
+    if (nargs!=2){
+        // error
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+    }
+
+    uint8_t param[2] = {0};
+
+    for (int i=1; i <= nargs; ++i) {
+        param[i-1] = lua_tointeger(L, i);
+    }
+
+    uint8_t button_raw = param[0];
+    int32_t state_raw = param[1];
+
+    
+    uint8_t state;
+    uint8_t button;
+
+    if (state_raw>1){
+        state = 1;
+        strcat(grid_lua_state.stde, "#stateOutOfRange");
+    }
+    else if (state_raw<0){
+        state = 0;
+        strcat(grid_lua_state.stde, "#stateOutOfRange");
+    }
+    else{
+        state = state_raw;
+    }
+
+    if (button_raw > 31){
+        strcat(grid_lua_state.stde, "#buttonOutOfRange");
+        button = 31;
+    }
+    else{
+        button = button_raw;
+    }
+
+    char frame[20] = {0};
+
+    sprintf(frame, GRID_CLASS_HIDGAMEPADBUTTON_frame);
+
+    grid_msg_string_set_parameter(frame, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+
+    grid_msg_string_set_parameter(frame, GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_offset, GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_length, button, NULL);
+    grid_msg_string_set_parameter(frame, GRID_CLASS_HIDGAMEPADBUTTON_STATE_offset, GRID_CLASS_HIDGAMEPADBUTTON_STATE_length, state, NULL);
+
+    strcat(grid_lua_state.stdo, frame);
+
+    return 1;
+}
+
+
 /*static*/ int l_grid_send(lua_State* L) {
 
     int nargs = lua_gettop(L);
@@ -1625,6 +1741,9 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
     {GRID_LUA_FNC_G_MOUSEMOVE_SEND_short,   GRID_LUA_FNC_G_MOUSEMOVE_SEND_fnptr},
     {GRID_LUA_FNC_G_MOUSEBUTTON_SEND_short, GRID_LUA_FNC_G_MOUSEBUTTON_SEND_fnptr},
+
+    {GRID_LUA_FNC_G_GAMEPADMOVE_SEND_short,   GRID_LUA_FNC_G_GAMEPADMOVE_SEND_fnptr},
+    {GRID_LUA_FNC_G_GAMEPADBUTTON_SEND_short, GRID_LUA_FNC_G_GAMEPADBUTTON_SEND_fnptr},
 
     {GRID_LUA_FNC_G_VERSION_MAJOR_short,    GRID_LUA_FNC_G_VERSION_MAJOR_fnptr},
     {GRID_LUA_FNC_G_VERSION_MINOR_short,    GRID_LUA_FNC_G_VERSION_MINOR_fnptr},
