@@ -21,7 +21,7 @@ jobs:
     - name: Build and run fuzz test
       run: |
         clang -fsanitize=fuzzer,address -o fuzzer_test grid_common/test_harness.c
-        ./fuzzer_test -timeout=10 -max_len=128 -timeout_exitcode=0
+        timeout --preserve-status 60s ./fuzzer_test -max_len=128
         
     - name: Crash log
       if: always()
