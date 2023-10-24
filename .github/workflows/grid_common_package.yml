@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set Date
-        run: echo "action_date=$(date +v1.%Y%m%d.%H%M | sed 's/\.0\([0-9]\)/.\1/')" >> $GITHUB_ENV
+        run: echo "action_date=$(date +v%Y.%-m.%-d%H%M)" >> $GITHUB_ENV
 
       - name: Check Date
         run: echo ${{ env.action_date }}
