@@ -9,6 +9,7 @@
 
 static const char *TAG = "module_pbf4";
 
+#include "rom/ets_sys.h" // For ets_printf
 void grid_esp32_module_pbf4_task(void *arg)
 {
 
@@ -22,52 +23,44 @@ void grid_esp32_module_pbf4_task(void *arg)
     grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
     grid_esp32_adc_start(&grid_esp32_adc_state);
 
+    gpio_set_direction(47, GPIO_MODE_OUTPUT);
+
+
 
     while (1) {
 
-        for (uint16_t i = 0; i<10; i++){
 
-            size_t size = 0;
+        size_t size = 0;
 
-            struct grid_esp32_adc_result* result;
-            result = (struct grid_esp32_adc_result*) xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle , &size, 0);
+        struct grid_esp32_adc_result* result;
+        result = (struct grid_esp32_adc_result*) xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle , &size, 10);
 
-            if (result!=NULL){
+        if (result!=NULL){
 
-                uint8_t lookup_index = result->mux_state*2 + result->channel;
+            uint8_t lookup_index = result->mux_state*2 + result->channel;
 
-                if (invert_result_lookup[lookup_index]){
-                    result->value = 4095-result->value;
-                }
-
-                if (multiplexer_lookup[lookup_index] < 8){
-                    
-                    grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12); 
-                
-                }
-                else if (multiplexer_lookup[lookup_index] < 12){
-                    
-                    grid_ui_button_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12); 
-                
-                }
-
-                vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , result);
-
-
-            }      
-            else{
-                break;
+            if (invert_result_lookup[lookup_index]){
+                result->value = 4095-result->value;
             }
-        }
 
+            if (multiplexer_lookup[lookup_index] < 8){
+                
+                grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);
+            
+            }
+            else if (multiplexer_lookup[lookup_index] < 12){
+                
+                grid_ui_button_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12); 
+            
+            }
 
+            vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , result);
 
+        }      
+      
         taskYIELD();
 
-
     }
-
-
 
     //Wait to be deleted
     vTaskSuspend(NULL);

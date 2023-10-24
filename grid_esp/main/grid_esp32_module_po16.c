@@ -25,29 +25,23 @@ void grid_esp32_module_po16_task(void *arg)
 
     while (1) {
 
-        for (uint16_t i = 0; i<10; i++){
+        size_t size = 0;
 
-            size_t size = 0;
+        struct grid_esp32_adc_result* result;
+        result = (struct grid_esp32_adc_result*) xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle , &size, 0);
 
-            struct grid_esp32_adc_result* result;
-            result = (struct grid_esp32_adc_result*) xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle , &size, 0);
+        if (result!=NULL){
 
-            if (result!=NULL){
+            uint8_t lookup_index = result->mux_state*2 + result->channel;
 
-                uint8_t lookup_index = result->mux_state*2 + result->channel;
-
-                if (invert_result_lookup[lookup_index]){
-                    result->value = 4095-result->value;
-                }
-
-                grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12); 
-                vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , result);
-
-            }      
-            else{
-                break;
+            if (invert_result_lookup[lookup_index]){
+                result->value = 4095-result->value;
             }
-        }
+
+            grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12); 
+            vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , result);
+
+        }      
 
         taskYIELD();
 

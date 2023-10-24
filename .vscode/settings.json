@@ -114,7 +114,9 @@
         "uart.h": "c",
         "esp_app_trace_util.h": "c",
         "esp_app_trace_port.h": "c",
-        "initializer_list": "c"
+        "initializer_list": "c",
+        "ets_sys.h": "c",
+        "valarray": "c"
     },   
     "files.exclude": {
         ".archive": true,

@@ -238,9 +238,13 @@ void IRAM_ATTR grid_esp32_adc_convert(void)
 {
 
 
+
     struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
 
-    if (xSemaphoreTakeFromISR(adc->nvm_semaphore, NULL) == pdTRUE){
+    // if (xSemaphoreTakeFromISR(adc->nvm_semaphore, NULL) == pdTRUE){
+
+
+        gpio_ll_set_level(&GPIO, 47, 1);
 
         ulp_riscv_lock_t *lock = (ulp_riscv_lock_t*)&ulp_lock;
 
@@ -277,8 +281,11 @@ void IRAM_ATTR grid_esp32_adc_convert(void)
 
         ulp_riscv_lock_release(lock);
 
-        xSemaphoreGiveFromISR(adc->nvm_semaphore, NULL);
-    }
+
+        gpio_ll_set_level(&GPIO, 47, 0);
+
+    //     xSemaphoreGiveFromISR(adc->nvm_semaphore, NULL);
+    // }
 
 
 

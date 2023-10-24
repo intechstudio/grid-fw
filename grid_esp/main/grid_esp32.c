@@ -246,11 +246,11 @@ void grid_esp32_housekeeping_task(void *arg)
         //axis_psition++;
 
 
-        vTaskGetRunTimeStats2(stats);
+        //vTaskGetRunTimeStats2(stats);
         
         //grid_port_debug_print_text(stats);
 
-        ets_printf("%s\r\n", stats);
+        //ets_printf("%s\r\n", stats);
 
         vTaskDelay(pdMS_TO_TICKS(1000));
      

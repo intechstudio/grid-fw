@@ -36,56 +36,50 @@ void grid_esp32_module_tek2_task(void *arg)
     while (1) {
 
 
-        for (uint16_t i = 0; i<10; i++){
+        size_t size = 0;
 
-            size_t size = 0;
+        struct grid_esp32_adc_result* result;
+        result = (struct grid_esp32_adc_result*) xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle , &size, 0);
 
-            struct grid_esp32_adc_result* result;
-            result = (struct grid_esp32_adc_result*) xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle , &size, 0);
+        if (result!=NULL){
 
-            if (result!=NULL){
+            uint8_t lookup_index = result->mux_state*2 + result->channel;
 
-                uint8_t lookup_index = result->mux_state*2 + result->channel;
+            if (multiplexer_lookup[lookup_index] < 8){
 
-                if (multiplexer_lookup[lookup_index] < 8){
+                grid_ui_button_store_input(multiplexer_lookup[lookup_index], &button_last_real_time[multiplexer_lookup[lookup_index]], result->value, 12); 
 
-                    grid_ui_button_store_input(multiplexer_lookup[lookup_index], &button_last_real_time[multiplexer_lookup[lookup_index]], result->value, 12); 
-
-                }
-                else if(multiplexer_lookup[lookup_index] < 10){ //8, 9
-
-                    uint8_t endlesspot_index = multiplexer_lookup[lookup_index]%2;
-                    current_endlesspot_state[endlesspot_index].phase_a_value = result->value;
-
-                }
-                else if(multiplexer_lookup[lookup_index] < 12){ //10, 11
-                    
-                    uint8_t endlesspot_index = multiplexer_lookup[lookup_index]%2;
-                    current_endlesspot_state[endlesspot_index].phase_b_value = result->value;
-                    //ets_printf("%d \r\n", result->value);
-
-                }
-                else if(multiplexer_lookup[lookup_index] < 14){ //12, 13
-                    
-                    uint8_t endlesspot_index = multiplexer_lookup[lookup_index]%2;
-                    current_endlesspot_state[endlesspot_index].button_value = result->value;
-
-                    grid_ui_endlesspot_store_input(8+endlesspot_index, &endlesspot_encoder_last_real_time[endlesspot_index], &endlesspot_button_last_real_time[endlesspot_index], &last_endlesspot_state[endlesspot_index], &current_endlesspot_state[endlesspot_index], 12);
- 
-
-                    last_endlesspot_state[endlesspot_index].phase_a_value = current_endlesspot_state[endlesspot_index].phase_a_value;
-                    last_endlesspot_state[endlesspot_index].phase_b_value = current_endlesspot_state[endlesspot_index].phase_b_value;
-                    last_endlesspot_state[endlesspot_index].button_value = current_endlesspot_state[endlesspot_index].button_value;
-
-                }
-
-                vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , result);
-
-            }      
-            else{
-                break;
             }
-        }
+            else if(multiplexer_lookup[lookup_index] < 10){ //8, 9
+
+                uint8_t endlesspot_index = multiplexer_lookup[lookup_index]%2;
+                current_endlesspot_state[endlesspot_index].phase_a_value = result->value;
+
+            }
+            else if(multiplexer_lookup[lookup_index] < 12){ //10, 11
+                
+                uint8_t endlesspot_index = multiplexer_lookup[lookup_index]%2;
+                current_endlesspot_state[endlesspot_index].phase_b_value = result->value;
+                //ets_printf("%d \r\n", result->value);
+
+            }
+            else if(multiplexer_lookup[lookup_index] < 14){ //12, 13
+                
+                uint8_t endlesspot_index = multiplexer_lookup[lookup_index]%2;
+                current_endlesspot_state[endlesspot_index].button_value = result->value;
+
+                grid_ui_endlesspot_store_input(8+endlesspot_index, &endlesspot_encoder_last_real_time[endlesspot_index], &endlesspot_button_last_real_time[endlesspot_index], &last_endlesspot_state[endlesspot_index], &current_endlesspot_state[endlesspot_index], 12);
+
+
+                last_endlesspot_state[endlesspot_index].phase_a_value = current_endlesspot_state[endlesspot_index].phase_a_value;
+                last_endlesspot_state[endlesspot_index].phase_b_value = current_endlesspot_state[endlesspot_index].phase_b_value;
+                last_endlesspot_state[endlesspot_index].button_value = current_endlesspot_state[endlesspot_index].button_value;
+
+            }
+
+            vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , result);
+
+        }      
 
 
 

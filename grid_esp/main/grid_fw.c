@@ -294,10 +294,10 @@ void app_main(void)
         xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024*3, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD ){
-        xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*2, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*4, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}	
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
-        xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*2, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+        xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*4, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}		
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD ){
         xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024*4, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);

@@ -59,70 +59,59 @@ void grid_esp32_module_ef44_task(void *arg)
 
     while (1) {
 
-        for (uint16_t i = 0; i<10; i++){
 
-            size_t size = 0;
+        size_t adc_result_size = 0;
 
-            struct grid_esp32_adc_result* result;
-            result = (struct grid_esp32_adc_result*) xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle , &size, 0);
-            
+        struct grid_esp32_adc_result* adc_result;
+        adc_result = (struct grid_esp32_adc_result*) xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle , &adc_result_size, 0);
+        
 
-            if (result!=NULL){
+        if (adc_result!=NULL){
 
-                uint8_t lookup_index = result->mux_state*2 + result->channel;
+            uint8_t lookup_index = adc_result->mux_state*2 + adc_result->channel;
 
-                if (invert_result_lookup[lookup_index]){
-                    result->value = 4095-result->value;
-                }
-
-                grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12); 
-                vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , result);
-
-            }      
-            else{
-                break;
+            if (invert_result_lookup[lookup_index]){
+                adc_result->value = 4095-adc_result->value;
             }
-        }
+
+            grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], adc_result->value, 12); 
+            vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , adc_result);
+
+        }      
 
 
 
-        for (uint16_t i = 0; i<10; i++){
+        size_t size = 0;
 
-            size_t size = 0;
+        struct grid_esp32_encoder_result* result;
+        result = (struct grid_esp32_encoder_result*) xRingbufferReceive(grid_esp32_encoder_state.ringbuffer_handle , &size, 0);
+        
 
-            struct grid_esp32_encoder_result* result;
-            result = (struct grid_esp32_encoder_result*) xRingbufferReceive(grid_esp32_encoder_state.ringbuffer_handle , &size, 0);
-            
+        if (result!=NULL){
 
-            if (result!=NULL){
-
-                uint8_t encoder_position_lookup[4] = {2, 3, 0, 1} ;
-                //uint8_t encoder_position_lookup[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1} ;
+            uint8_t encoder_position_lookup[4] = {2, 3, 0, 1} ;
+            //uint8_t encoder_position_lookup[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1} ;
 
 
-                // Buffer is only 8 bytes but we check all 16 encoders separately
-                for (uint8_t j=0; j<4; j++){
+            // Buffer is only 8 bytes but we check all 16 encoders separately
+            for (uint8_t j=0; j<4; j++){
 
-                    uint8_t new_value = (result->bytes[j/2]>>(4*(j%2)))&0x0F;
-                    uint8_t old_value = grid_esp32_encoder_state.rx_buffer_previous[j];
+                uint8_t new_value = (result->bytes[j/2]>>(4*(j%2)))&0x0F;
+                uint8_t old_value = grid_esp32_encoder_state.rx_buffer_previous[j];
 
-                    grid_esp32_encoder_state.rx_buffer_previous[j] = new_value;
+                grid_esp32_encoder_state.rx_buffer_previous[j] = new_value;
 
+                
+                uint8_t i = encoder_position_lookup[j];
+
+                grid_ui_encoder_store_input(i, &encoder_last_real_time[i], &button_last_real_time[i], old_value, new_value, &phase_change_lock_array[i]);
                     
-                    uint8_t i = encoder_position_lookup[j];
-
-                    grid_ui_encoder_store_input(i, &encoder_last_real_time[i], &button_last_real_time[i], old_value, new_value, &phase_change_lock_array[i]);
-                        
-                }
-
-
-                vRingbufferReturnItem(grid_esp32_encoder_state.ringbuffer_handle , result);
-
-            }      
-            else{
-                break;
             }
-        }
+
+
+            vRingbufferReturnItem(grid_esp32_encoder_state.ringbuffer_handle , result);
+
+        }      
 
 
 
