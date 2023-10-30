@@ -49,6 +49,7 @@ void grid_esp32_module_tek2_task(void *arg)
 
                 grid_ui_button_store_input(multiplexer_lookup[lookup_index], &button_last_real_time[multiplexer_lookup[lookup_index]], result->value, 12); 
 
+
             }
             else if(multiplexer_lookup[lookup_index] < 10){ //8, 9
 
@@ -67,13 +68,10 @@ void grid_esp32_module_tek2_task(void *arg)
                 
                 uint8_t endlesspot_index = multiplexer_lookup[lookup_index]%2;
                 current_endlesspot_state[endlesspot_index].button_value = result->value;
+                grid_ui_button_store_input(8+endlesspot_index,  &endlesspot_button_last_real_time[endlesspot_index], result->value, 12); 
 
-                grid_ui_endlesspot_store_input(8+endlesspot_index, &endlesspot_encoder_last_real_time[endlesspot_index], &endlesspot_button_last_real_time[endlesspot_index], &last_endlesspot_state[endlesspot_index], &current_endlesspot_state[endlesspot_index], 12);
 
-
-                last_endlesspot_state[endlesspot_index].phase_a_value = current_endlesspot_state[endlesspot_index].phase_a_value;
-                last_endlesspot_state[endlesspot_index].phase_b_value = current_endlesspot_state[endlesspot_index].phase_b_value;
-                last_endlesspot_state[endlesspot_index].button_value = current_endlesspot_state[endlesspot_index].button_value;
+                grid_ui_endlesspot_store_input(8+endlesspot_index, &endlesspot_encoder_last_real_time[endlesspot_index], &last_endlesspot_state[endlesspot_index], &current_endlesspot_state[endlesspot_index], 12);
 
             }
 

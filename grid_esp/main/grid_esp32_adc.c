@@ -234,6 +234,33 @@ void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc){
 
 #include "ulp_riscv_lock.h"
 
+
+static float restrictToRange(float value) {
+    if (value < 0.0) {
+        return 0.0;
+    } else if (value > 1.0) {
+        return 1.0;
+    } else {
+        return value;
+    }
+}
+
+static uint32_t grid_esp32_adc_cal(uint32_t input){
+
+    // parameter 1: center offset
+    int32_t parameter_1 = +32*4.5;
+    uint32_t ADC_MAX = ((1<<12)-1);
+
+    // (-abs(x-128)+96)/64
+    // normalized: (-abs(x-0.5)+0.375)/0.25
+    // (-abs(x-0.5))*2.4+ 1.1
+
+    float strength = restrictToRange((-abs(input  -  0.5*ADC_MAX))  *  2.4/ADC_MAX  +  1.1);
+
+    return input+parameter_1*strength;
+
+}
+
 void IRAM_ATTR grid_esp32_adc_convert(void)
 {
 
@@ -244,8 +271,6 @@ void IRAM_ATTR grid_esp32_adc_convert(void)
     // if (xSemaphoreTakeFromISR(adc->nvm_semaphore, NULL) == pdTRUE){
 
 
-        gpio_ll_set_level(&GPIO, 47, 1);
-
         ulp_riscv_lock_t *lock = (ulp_riscv_lock_t*)&ulp_lock;
 
         ulp_riscv_lock_acquire(lock);
@@ -255,12 +280,12 @@ void IRAM_ATTR grid_esp32_adc_convert(void)
             struct grid_esp32_adc_result result_0;
             result_0.channel = 0;
             result_0.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
-            result_0.value = ulp_adc_value_1;
+            result_0.value = grid_esp32_adc_cal(ulp_adc_value_1);
 
             struct grid_esp32_adc_result result_1;
             result_1.channel = 1;
             result_1.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
-            result_1.value = ulp_adc_value_2;
+            result_1.value = grid_esp32_adc_cal(ulp_adc_value_2);
 
 
             xRingbufferSendFromISR(adc->ringbuffer_handle , &result_0, sizeof(struct grid_esp32_adc_result), NULL);
@@ -281,8 +306,6 @@ void IRAM_ATTR grid_esp32_adc_convert(void)
 
         ulp_riscv_lock_release(lock);
 
-
-        gpio_ll_set_level(&GPIO, 47, 0);
 
     //     xSemaphoreGiveFromISR(adc->nvm_semaphore, NULL);
     // }
