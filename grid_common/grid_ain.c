@@ -159,6 +159,7 @@ uint16_t grid_ain_get_average(struct grid_ain_model* mod, uint8_t channel){
 
 }
 
+extern void grid_platform_printf(char const *fmt, ...);
 
 int32_t grid_ain_get_average_scaled(struct grid_ain_model* mod, uint8_t channel, uint8_t source_resolution, uint8_t result_resolution, int32_t min, int32_t max){
 
@@ -167,9 +168,14 @@ int32_t grid_ain_get_average_scaled(struct grid_ain_model* mod, uint8_t channel,
 	instance->result_changed = 0;
 
 
-	uint16_t range_max = ((1<<source_resolution) - 1) - (1<<(source_resolution-result_resolution));
+	int16_t range_max = ((1<<source_resolution) - 1) - (1<<(source_resolution-result_resolution));
 
+	
 	int32_t next = instance->result_value * (max - min) / range_max + min;
+
+	if (next>max){
+		next = max;
+	}
 
 	return next;
 
