@@ -52,12 +52,28 @@ def generate_package_json(output_file_name, package_file_name):
     with open(package_file_name, 'w') as file:
         json.dump(package_data, file, indent=2)
 
+
+def build_python_code(file_name='grid_common/grid_protocol.h', output_file='lists.py'):
+    data = {}
+    for line in get_lines(file_name):
+        key, value = get_macro_key_value(line)
+        if key:
+            data[key] = value
+
+
+# Call the function to build the Python code and write it to lists.py
+build_python_code()
+
 def generate_lists_py(output_file_name, data):
 
     print(f"Creating file: '{output_file_name}' with definitions.")
 
-    with open(output_file_name, 'w+') as fp:
-        json.dump(data, fp, indent=4)
+    # Writing Python code to the output_file
+    with open(output_file_name, 'w') as python_file:
+        python_file.write("# Generated Python code from JSON\n\n")
+
+        for key, value in data.items():
+            python_file.write(f"{key} = {json.dumps(value, indent=4)}\n")
 
 
 if __name__ == '__main__':
