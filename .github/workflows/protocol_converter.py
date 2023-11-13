@@ -67,7 +67,7 @@ if __name__ == '__main__':
     input_file = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else 'out.json'
     package_file = sys.argv[3] if len(sys.argv) > 3 else 'package.json'
-    constlist_file = sys.argv[3] if len(sys.argv) > 3 else 'lists.py'
+    constlist_file = sys.argv[4] if len(sys.argv) > 3 else 'lists.py'
     print('input:', input_file)
     print('output:', output_file)
     convert(input_file, output_file)
