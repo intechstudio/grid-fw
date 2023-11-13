@@ -54,6 +54,8 @@ def generate_package_json(output_file_name, package_file_name):
 
 def generate_lists_py(output_file_name, data):
 
+    print(f"Creating file: '{output_file_name}' with definitions.")
+
     with open(output_file_name, 'w+') as fp:
         json.dump(data, fp, indent=4)
 
