@@ -52,6 +52,11 @@ def generate_package_json(output_file_name, package_file_name):
     with open(package_file_name, 'w') as file:
         json.dump(package_data, file, indent=2)
 
+def generate_lists_py(output_file_name, data):
+
+    with open(output_file_name, 'w+') as fp:
+        json.dump(data, fp, indent=4)
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -60,7 +65,9 @@ if __name__ == '__main__':
     input_file = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else 'out.json'
     package_file = sys.argv[3] if len(sys.argv) > 3 else 'package.json'
+    constlist_file = sys.argv[3] if len(sys.argv) > 3 else 'lists.py'
     print('input:', input_file)
     print('output:', output_file)
     convert(input_file, output_file)
     generate_package_json(output_file, package_file)
+    generate_lists_py(constlist_file, build_json(input_file))
