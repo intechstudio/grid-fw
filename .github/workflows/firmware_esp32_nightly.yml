@@ -40,6 +40,7 @@ jobs:
           cd main
           xxd -i main.bin > pico_firmware.h
           sed -i '1i\const \\' pico_firmware.h
+          sed -i 's/main_bin/pico_firmware/g' pico_firmware.h
           cat pico_firmware.h
           cp pico_firmware.h ../../../grid_esp/main/pico_firmware.h
 
