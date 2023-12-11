@@ -37,11 +37,11 @@ jobs:
           cd build
           cmake ..
           make
-          ls
-          cd ..
-          ../grid_esp/pico_header.sh
-          cd ../grid_esp
-          cat ./main/pico_firmware.h
+          cd main
+          xxd -i main.bin > pico_firmware.h
+          sed -i '1i\const \\' pico_firmware.h
+          cat pico_firmware.h
+          cp pico_firmware.h ../../../grid_esp/main/pico_firmware.h
 
       - name: esp-idf build
         uses: espressif/esp-idf-ci-action@v1
