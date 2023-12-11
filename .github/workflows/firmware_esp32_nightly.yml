@@ -31,7 +31,7 @@ jobs:
           git submodule update --init
           cd ..
           export PICO_SDK_PATH=/pico-sdk/
-
+          echo "The Path: $PICO_SDK_PATH"
           cd grid_pico/
           mkdir -p build
           cd build
