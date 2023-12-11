@@ -40,7 +40,7 @@ jobs:
           ls
           cd ..
           ../grid_esp/pico_header.sh
-          cd ../../grid_esp
+          cd ../grid_esp
           cat ./main/pico_firmware.h
 
       - name: esp-idf build
