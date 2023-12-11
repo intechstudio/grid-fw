@@ -113,15 +113,6 @@ void system_init_core_2_task(void *arg)
     vTaskSuspend(NULL);
 }
 
-
-
-#include "esp_sysview_trace.h"  
-
-#include "esp_app_trace.h"  
-
-#include "SEGGER_SYSVIEW.h"  
-
-
 bool idle_hook(void){
 
     portYIELD();
