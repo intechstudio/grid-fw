@@ -38,9 +38,8 @@ jobs:
           cmake ..
           make
           ls
-          
+          ../../grid_esp/pico_header.sh
           cd ../../grid_esp
-          ./pico_header.sh
           cat ./main/pico_firmware.h
 
       - name: esp-idf build
