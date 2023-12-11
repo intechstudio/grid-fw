@@ -22,6 +22,26 @@ jobs:
         run: |
           ls
 
+      - name: Install RP2040 SDK adn build co-processor firmware
+        run: |
+          apt update
+          apt install -y git python3 cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential
+          git clone https://github.com/raspberrypi/pico-sdk.git --branch master
+          cd pico-sdk/
+          git submodule update --init
+          cd ..
+          export PICO_SDK_PATH=/pico-sdk/
+
+          cd grid_pico/
+          mkdir -p build
+          cd build
+          cmake ..
+          make
+          ls
+          
+          cd ../../grid_esp
+          ./pico_header.sh
+
       - name: esp-idf build
         uses: espressif/esp-idf-ci-action@v1
         with:
