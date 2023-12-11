@@ -22,7 +22,7 @@ jobs:
         run: |
           ls
 
-      - name: Install RP2040 SDK adn build co-processor firmware
+      - name: Install RP2040 SDK and build co-processor firmware
         run: |
           sudo apt update
           sudo apt install -y git python3 cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential
@@ -30,7 +30,7 @@ jobs:
           cd pico-sdk/
           git submodule update --init
           cd ..
-          export PICO_SDK_PATH=/pico-sdk/
+          export PICO_SDK_PATH=$(pwd)/pico-sdk/
           echo "The Path: $PICO_SDK_PATH"
           cd grid_pico/
           mkdir -p build
