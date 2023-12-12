@@ -13,7 +13,6 @@ idf_component_register(
         "grid_esp32_port.c"
         "grid_esp32_nvm.c"
         "grid_esp32_usb.c"
-        "grid_esp32_encoder.c"
 
     INCLUDE_DIRS 
         "."
