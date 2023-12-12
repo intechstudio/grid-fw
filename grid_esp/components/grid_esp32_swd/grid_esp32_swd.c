@@ -6,6 +6,15 @@
 
 #include "grid_esp32_swd.h"
 
+
+#include "driver/gpio.h"
+
+#include "esp_rom_gpio.h"
+#include "hal/gpio_ll.h"
+
+#include "driver/ledc.h" // for pwm based pico system clock generation
+#include "rom/ets_sys.h"
+
 static const char *TAG = "grid_esp32_swd";
 
 static uint8_t swd_pin_swdio;
@@ -1078,28 +1087,6 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
     // program_sram
     if (1){
 
-         // reandom idle
-/*
-
-        swd_linereset();
-        swd_idle();
-        swd_target_select(0); swd_dummy_clock();
-        swd_read_idcode(); swd_dummy_clock();
-        swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_dlcr();            swd_dummy_clock(); //0x00000001 
-        swd_read_ap0();            swd_dummy_clock(); //0x00000000
-        swd_read_buff();                swd_dummy_clock(); //0x30003
-
-        swd_linereset();
-        swd_idle();
-        swd_target_select(1); swd_dummy_clock();
-        swd_read_idcode(); swd_dummy_clock();
-        swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_dlcr();            swd_dummy_clock(); //0x10000001 
-        swd_read_ap0();            swd_dummy_clock(); //0x00000000
-        swd_read_buff();                swd_dummy_clock(); //0x00040001
-*/
-
         // start programming
 
         swd_linereset();
@@ -1152,36 +1139,6 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
 
         }
 
-        /*
-
-        swd_write_select(0x00000003);   swd_dummy_clock();
-        for(uint32_t i = 0; i<BIN_SIZE+BURST_SIZE; i+=4*BURST_SIZE) {
-
-            uint8_t buffer[4*BURST_SIZE] = {0};
-            esp_flash_read(NULL, buffer, 0x450000 + i, 4*BURST_SIZE);  
-
-            // select next page
-            swd_write_ap4(0x20000000+i);      swd_dummy_clock();
-
-            printf("\r\n\r\n%08lx :: \r\n", i);
-
-            for (uint32_t j=0; j<BURST_SIZE; j++){
-
-                if (i + j*4<BIN_SIZE){ // BIN_SIZE
-
-                    uint32_t word = *(uint32_t*)(buffer+j*4);
-                    swd_write_apc(word); // 0x491c481b
-                    //printf(" %08lx", word);
-
-                }
-
-
-            }
-
-
-
-        }
-        */
 
         //printf("\r\n END OF DUMP \r\n");
 

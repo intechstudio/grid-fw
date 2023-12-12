@@ -43,7 +43,6 @@ void grid_esp32_module_tek2_task(void *arg)
 
     while (1) {
 
-
         size_t size = 0;
 
         struct grid_esp32_adc_result* result;

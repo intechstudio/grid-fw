@@ -1,24 +1,9 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
 
-#ifndef __INCLUDE_GRID_ESP_SWD_H
-#define __INCLUDE_GRID_ESP_SWD_H
 
 #pragma once
 
 #include <stdint.h>
 
-#include "driver/gpio.h"
-
-#include "esp_rom_gpio.h"
-#include "hal/gpio_ll.h"
-
-#include "driver/ledc.h"
-
-#include "rom/ets_sys.h" // For ets_printf
 
 #ifdef __cplusplus
 extern "C" {
@@ -90,8 +75,4 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
 
 #ifdef __cplusplus
 }
-#endif
-
-
-
 #endif
