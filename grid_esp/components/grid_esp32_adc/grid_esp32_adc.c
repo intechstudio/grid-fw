@@ -7,6 +7,31 @@
 #include "grid_esp32_adc.h"
 
 
+
+#include "esp_check.h"
+
+
+#include <stdlib.h>
+#include <string.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
+#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_continuous.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
+
+#include "esp_timer.h"
+
+#include "rom/ets_sys.h" // For ets_printf
+
+#include "grid_esp32_pins.h"
+
+#include "freertos/ringbuf.h"
+#include "freertos/semphr.h"
+#include "esp_heap_caps.h"
+
 #include "ulp_grid_esp32_adc.h"
 #include "ulp_riscv.h"
 #include "ulp_riscv_adc.h"
@@ -161,32 +186,6 @@ static void adc_init(struct grid_esp32_adc_model* adc){
     init_ulp_program();
 
 
-    // //-------------ADC1 Init---------------//
-    // adc_oneshot_unit_init_cfg_t init_config1 = {
-    //     .unit_id = ADC_UNIT_1,
-    // };
-    // ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc->adc_handle_0));
-
-    // //-------------ADC1 Config---------------//
-    // adc_oneshot_chan_cfg_t config1 = {
-    //     .bitwidth = ADC_BITWIDTH_DEFAULT,
-    //     .atten = ADC_ATTEN_DB_11,
-    // };
-    // ESP_ERROR_CHECK(adc_oneshot_config_channel(adc->adc_handle_0, ADC_CHANNEL_1, &config1));
-   
-    // //-------------ADC2 Init---------------//
-    // adc_oneshot_unit_init_cfg_t init_config2 = {
-    //     .unit_id = ADC_UNIT_2,
-    // };
-    // ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config2, &adc->adc_handle_1));
-
-    // //-------------ADC2 Config---------------//
-    // adc_oneshot_chan_cfg_t config2 = {
-    //     .bitwidth = ADC_BITWIDTH_DEFAULT,
-    //     .atten = ADC_ATTEN_DB_11,
-    // };
-    // ESP_ERROR_CHECK(adc_oneshot_config_channel(adc->adc_handle_1, ADC_CHANNEL_7, &config2));
-
 }
 
 
@@ -194,10 +193,6 @@ static void adc_init(struct grid_esp32_adc_model* adc){
 void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, SemaphoreHandle_t nvm_semaphore){
 
     adc->nvm_semaphore = nvm_semaphore;
-
-    adc->adc_handle_0 = NULL;
-    adc->adc_handle_1 = NULL;
-
 
     adc->buffer_struct = (StaticRingbuffer_t *)heap_caps_malloc(sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     adc->buffer_storage = (struct grid_esp32_adc_result *)heap_caps_malloc(sizeof(struct grid_esp32_adc_result)*ADC_BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);

@@ -7,31 +7,12 @@
 
 #include <stdint.h>
 
-
-#include "esp_check.h"
-
-
 #include <stdlib.h>
 #include <string.h>
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-
-#include "esp_adc/adc_oneshot.h"
-#include "esp_adc/adc_continuous.h"
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_cali_scheme.h"
-
-#include "esp_timer.h"
-
-#include "rom/ets_sys.h" // For ets_printf
-
-#include "grid_esp32_pins.h"
 
 #include "freertos/ringbuf.h"
-#include "freertos/semphr.h"
-#include "esp_heap_caps.h"
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,9 +30,6 @@ extern "C" {
 
 struct grid_esp32_adc_model
 {
-
-    adc_oneshot_unit_handle_t adc_handle_0;
-    adc_oneshot_unit_handle_t adc_handle_1;
 
 
     uint8_t mux_index;    
@@ -76,14 +54,11 @@ struct grid_esp32_adc_result {
 };
 
 
-extern esp_err_t adc_oneshot_read_isr(adc_oneshot_unit_handle_t handle, adc_channel_t chan, int *out_raw);
-
 extern struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
 void IRAM_ATTR grid_esp32_adc_convert(void);
 
 void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, SemaphoreHandle_t nvm_semaphore);
-void grid_esp32_adc_register_callback(struct grid_esp32_adc_model* adc, void (*callback)(adc_continuous_handle_t, const adc_continuous_evt_data_t*, void*));
 
 void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overflow);
 

@@ -7,9 +7,18 @@
 
 #include "grid_esp32_module_pbf4.h"
 
+#include <stdint.h>
+
+
+#include "grid_module.h"
+#include "grid_ain.h"
+#include "grid_ui.h"
+
+#include "grid_esp32_adc.h"
+
 static const char *TAG = "module_pbf4";
 
-#include "rom/ets_sys.h" // For ets_printf
+
 void grid_esp32_module_pbf4_task(void *arg)
 {
 
@@ -22,10 +31,6 @@ void grid_esp32_module_pbf4_task(void *arg)
     grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);
     grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
     grid_esp32_adc_start(&grid_esp32_adc_state);
-
-    gpio_set_direction(47, GPIO_MODE_OUTPUT);
-
-
 
     while (1) {
 

@@ -7,6 +7,14 @@
 
 #include "grid_esp32_module_tek2.h"
 
+#include <stdint.h>
+
+
+#include "grid_module.h"
+#include "grid_ain.h"
+#include "grid_ui.h"
+
+#include "grid_esp32_adc.h"
 
 static const char *TAG = "module_tek2";
 
