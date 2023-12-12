@@ -6,6 +6,33 @@
 
 #include "grid_esp32_port.h"
 
+
+
+#include "esp_check.h"
+
+#include "rom/ets_sys.h" // For ets_printf
+
+#include <stdlib.h>
+#include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "esp_log.h"
+
+#include "esp_freertos_hooks.h"
+
+#include "tinyusb.h"
+#include "driver/gpio.h"
+
+#include "esp_rom_gpio.h"
+#include "hal/gpio_ll.h"
+
+
+#include "grid_port.h"
+#include "grid_sys.h"
+
+
+#include "driver/spi_slave.h"
+
 static TaskHandle_t xTaskToNotify = NULL;
 
 static const char *TAG = "PORT";

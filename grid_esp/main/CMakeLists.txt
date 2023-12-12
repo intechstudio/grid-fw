@@ -3,9 +3,6 @@ idf_component_register(
         "grid_fw.c" 
         "grid_esp32.c"
         "pico_firmware.h"
-        "grid_esp32_port.c"
-        "grid_esp32_nvm.c"
-        "grid_esp32_usb.c"
 
     INCLUDE_DIRS 
         "."

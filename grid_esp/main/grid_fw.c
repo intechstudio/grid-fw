@@ -7,6 +7,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "esp_freertos_hooks.h"
+
 #include "esp_log.h"
 #include "esp_intr_alloc.h"
 #include "usb/usb_host.h"

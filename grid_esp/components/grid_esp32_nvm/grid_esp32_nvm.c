@@ -6,6 +6,38 @@
 
 #include "grid_esp32_nvm.h"
 
+#include "rom/ets_sys.h" // For ets_printf
+
+
+#include <sys/unistd.h>
+#include <sys/stat.h>
+#include "esp_system.h"
+#include "esp_chip_info.h"
+
+#include <string.h>
+
+#include "esp_flash.h"
+
+
+#include "esp_log.h"
+#include "esp_check.h"
+#include "rom/ets_sys.h" // For ets_printf
+
+#include "esp_littlefs.h"
+
+#include <sys/types.h>
+#include <dirent.h>
+
+#include <stdlib.h>
+#include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "freertos/task.h"
+#include "esp_log.h"
+
+#include "grid_ui.h"
+
+
 static const char *TAG = "grid_esp32_nvm";
  
 struct grid_esp32_nvm_model grid_esp32_nvm_state;
