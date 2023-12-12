@@ -22,9 +22,6 @@
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 
-#include "esp_rom_gpio.h"
-#include "hal/gpio_ll.h"
-
 #include "esp_timer.h"
 
 #include "rom/ets_sys.h" // For ets_printf

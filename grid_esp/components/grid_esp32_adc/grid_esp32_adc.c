@@ -7,13 +7,19 @@
 #include "grid_esp32_adc.h"
 
 
-#include "ulp_main.h"
+#include "ulp_grid_esp32_adc.h"
 #include "ulp_riscv.h"
 #include "ulp_riscv_adc.h"
 #include "esp_check.h"
 
-extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
-extern const uint8_t ulp_main_bin_end[]   asm("_binary_ulp_main_bin_end");
+
+#include "esp_rom_gpio.h"
+#include "hal/gpio_ll.h"
+#include "driver/gpio.h"
+
+
+extern const uint8_t ulp_grid_esp32_adc_bin_start[] asm("_binary_ulp_grid_esp32_adc_bin_start");
+extern const uint8_t ulp_grid_esp32_adc_bin_end[]   asm("_binary_ulp_grid_esp32_adc_bin_end");
 
 static void init_ulp_program(void);
 
@@ -21,6 +27,8 @@ extern uint32_t ulp_adc_value_1;
 extern uint32_t ulp_adc_value_2;
 
 extern uint32_t ulp_adc_result_ready;
+
+extern uint32_t ulp_lock;
 
 struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
@@ -73,7 +81,7 @@ uint8_t IRAM_ATTR grid_esp32_adc_mux_get_index(struct grid_esp32_adc_model* adc)
 
 static void init_ulp_program(void)
 {
-    esp_err_t err = ulp_riscv_load_binary(ulp_main_bin_start, (ulp_main_bin_end - ulp_main_bin_start));
+    esp_err_t err = ulp_riscv_load_binary(ulp_grid_esp32_adc_bin_start, (ulp_grid_esp32_adc_bin_end - ulp_grid_esp32_adc_bin_start));
     ESP_ERROR_CHECK(err);
 
     /* The first argument is the period index, which is not used by the ULP-RISC-V timer

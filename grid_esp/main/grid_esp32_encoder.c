@@ -7,6 +7,7 @@
 #include "grid_esp32_encoder.h"
 
 
+#include "driver/gpio.h"
 
 struct grid_esp32_encoder_model DRAM_ATTR grid_esp32_encoder_state;
 

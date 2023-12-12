@@ -116,7 +116,11 @@
         "esp_app_trace_port.h": "c",
         "initializer_list": "c",
         "ets_sys.h": "c",
-        "valarray": "c"
+        "valarray": "c",
+        "pico_firmware.h": "c",
+        "esp_sysview_trace.h": "c",
+        "gpio_ll.h": "c",
+        "ulp_grid_esp32_adc.h": "c"
     },   
     "files.exclude": {
         ".archive": true,

@@ -5,11 +5,6 @@
  */
 #pragma once
 
-#include <stdint.h>
-#include "driver/rmt_encoder.h"
-
-#include "driver/gpio.h"
-#include "esp_check.h"
 
 #ifdef __cplusplus
 extern "C" {
