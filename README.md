@@ -16,7 +16,13 @@ This tutorial will walk you through the following steps:
  - Update the bootloader if it is outdated
  - Upload the new application firmware
 
- 
+## Building firmware (ESP32)
+```
+cd grid_esp
+idf.py build
+./uf2convert.sh
+# uf2 file is generated (output/grid_fw.uf2)
+```
  
 ## Enumerating the bootloader
 
