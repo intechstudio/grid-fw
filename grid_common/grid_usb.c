@@ -3,7 +3,7 @@
  *
  * Created: 7/6/2020 12:07:54 PM
  *  Author: suku
- */ 
+ */
 
 #include "grid_usb.h"
 
@@ -29,13 +29,13 @@ void grid_usb_midi_buffer_init()
 	grid_midi_rx_write_index = 0;
 	grid_midi_rx_read_index = 0;
 	grid_midi_buffer_init(grid_midi_rx_buffer, GRID_MIDI_RX_BUFFER_length);
-		
+
 
 
 }
 
 void grid_usb_keyboard_model_init(struct grid_usb_keyboard_model* kb, uint8_t buffer_length){
-    
+
 	kb->tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
 	kb->tx_write_index = 0;
 	kb->tx_read_index = 0;
@@ -53,69 +53,69 @@ void grid_usb_keyboard_model_init(struct grid_usb_keyboard_model* kb, uint8_t bu
 		kb->tx_buffer[i].delay = 0;
 	}
 
-    
-	
+
+
 	for (uint8_t i=0; i<GRID_KEYBOARD_KEY_maxcount; i++)
 	{
 
-		
-		
+
+
 		kb->active_key_list[i].ismodifier = 0;
 		kb->active_key_list[i].keycode = 255;
 		kb->active_key_list[i].ispressed = 0;
-		
+
 	}
-	
+
 	kb->active_key_count = 0;
-    
+
     kb->isenabled = 1;
-	
+
 }
 
 uint8_t grid_usb_keyboard_cleanup(struct grid_usb_keyboard_model* kb){
-	
+
 	uint8_t changed_flag = 0;
-	
+
 	// Remove all inactive (released) keys
 	for(uint8_t i=0; i<kb->active_key_count; i++){
-		
+
 		if (kb->active_key_list[i].ispressed == false){
-			
+
 			changed_flag = 1;
-			
+
 			kb->active_key_list[i].ismodifier = 0;
 			kb->active_key_list[i].ispressed = 0;
-			kb->active_key_list[i].keycode = 255;	
-					
+			kb->active_key_list[i].keycode = 255;
+
 			// Pop item, move each remaining after this forvard one index
 			for (uint8_t j=i+1; j<kb->active_key_count; j++){
-				
+
 				kb->active_key_list[j-1] = kb->active_key_list[j];
-				
+
 				kb->active_key_list[j].ismodifier = 0;
 				kb->active_key_list[j].ispressed = 0;
 				kb->active_key_list[j].keycode = 255;
-				
+
 			}
-			
+
 			kb->active_key_count--;
 			i--; // Retest this index, because it now points to a new item
 		}
-		
+
 	}
-	
+
 	if (changed_flag == 1){
-			
+
 //		uint8_t debugtext[100] = {0};
 //		snprintf(debugtext, 99, "count: %d | activekeys: %d, %d, %d, %d, %d, %d", kb->active_key_count, kb->active_key_list[0].keycode, kb->active_key_list[1].keycode, kb->active_key_list[2].keycode, kb->active_key_list[3].keycode, kb->active_key_list[4].keycode, kb->active_key_list[5].keycode);
 //		grid_port_debug_print_text(debugtext);
-			
-			
+
+
 		// USB SEND
 	}
-	
+
 	return changed_flag;
-	
+
 }
 
 
@@ -123,22 +123,22 @@ extern int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyb
 
 
 void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc* key){
-	
+
 	uint8_t item_index = 255;
 	uint8_t changed_flag = 0;
-	
+
 
 	grid_usb_keyboard_cleanup(kb);
-	
+
 
 	for(uint8_t i=0; i<kb->active_key_count; i++){
-		
+
 		if (kb->active_key_list[i].keycode == key->keycode && kb->active_key_list[i].ismodifier == key->ismodifier){
 			// key is already in the list
 			item_index = i;
-			
+
 			if (kb->active_key_list[i].ispressed == true){
-				
+
 				if (key->ispressed == true){
 					// OK nothing to do here
 				}
@@ -147,53 +147,53 @@ void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid
 					kb->active_key_list[i].ispressed = false;
 					changed_flag = 1;
 				}
-				
+
 			}
-			
+
 		}
-		
+
 	}
-	
-	
+
+
 	grid_usb_keyboard_cleanup(kb);
-	
-	
+
+
 	if (item_index == 255){
-		
+
 		// item not in list
-		
+
 		if (kb->active_key_count< GRID_KEYBOARD_KEY_maxcount){
-			
+
 			if (key->ispressed == true){
-				
+
 				kb->active_key_list[kb->active_key_count] = *key;
 				kb->active_key_count++;
 				changed_flag = 1;
-				
+
 			}
-		
+
 		}
 		else{
 			//grid_port_debug_print_text("activekeys limit hit!");
 		}
-		
+
 	}
-	
-	
+
+
 	if (changed_flag == 1){
-		
+
         if (kb->isenabled){
-            
 
-			
 
-    		grid_platform_usb_keyboard_keys_state_change(kb->active_key_list, kb->active_key_count);    
-        
+
+
+    		grid_platform_usb_keyboard_keys_state_change(kb->active_key_list, kb->active_key_count);
+
         }
         else{
-        
+
             grid_port_debug_print_text("KB IS DISABLED");
-                   
+
             // Generate ACKNOWLEDGE RESPONSE
             struct grid_msg_packet message;
 
@@ -202,22 +202,22 @@ void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid
 			grid_msg_packet_body_append_printf(&message, GRID_CLASS_HIDKEYSTATUS_frame);
 			grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
 			grid_msg_packet_body_append_parameter(&message, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, kb->isenabled);
-			
+
             grid_msg_packet_close(&grid_msg_state, &message);
             grid_port_packet_send_everywhere(&message);
-            
+
         }
 
 		// USB SEND
 	}
-	
+
 }
 
 
 
 void grid_midi_buffer_init(struct grid_midi_event_desc* buf, uint16_t length){
-	
-	
+
+
 	for (uint16_t i=0; i<length; i++)
 	{
 		buf[i].byte0 = 0;
@@ -225,7 +225,7 @@ void grid_midi_buffer_init(struct grid_midi_event_desc* buf, uint16_t length){
 		buf[i].byte2 = 0;
 		buf[i].byte3 = 0;
 	}
-	
+
 }
 
 uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event){
@@ -253,21 +253,21 @@ uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event){
 void grid_midi_tx_pop(){
 
 	if (grid_midi_tx_read_index != grid_midi_tx_write_index){
-		
+
 		if (grid_platform_usb_midi_write_status() != 1){
 
 			uint8_t byte0 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte0;
 			uint8_t byte1 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte1;
 			uint8_t byte2 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte2;
 			uint8_t byte3 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte3;
-			
+
 			grid_midi_tx_read_index = (grid_midi_tx_read_index+1)%GRID_MIDI_TX_BUFFER_length;
 			grid_platform_usb_midi_write(byte0, byte1, byte2, byte3);
 
 
 
 		}
-		
+
 	}
 
 }
@@ -304,7 +304,7 @@ void grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 
 	}
 
-	
+
 
 	// recude commandchange time resolution HERE!!
 
@@ -348,7 +348,7 @@ void grid_midi_rx_pop(){
 
 
 		//grid_port_debug_printf("POP: %d %d", grid_midi_rx_write_index, grid_midi_rx_read_index);
-			
+
 		// Combine multiple midi messages into one packet if possible
 
 		// SX SY Global, DX DY Global
@@ -368,7 +368,7 @@ void grid_midi_rx_pop(){
 
 				grid_msg_packet_body_append_printf(&message, GRID_CLASS_MIDI_frame);
 				grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-				
+
 				grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, byte0);
 				grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, byte1);
 				grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, byte2);
@@ -382,7 +382,7 @@ void grid_midi_rx_pop(){
 		grid_msg_packet_close(&grid_msg_state, &message);
 		grid_port_packet_send_everywhere(&message);
 
-		
+
 	}
 	else{
 
@@ -423,24 +423,24 @@ uint8_t grid_usb_keyboard_tx_push(struct grid_usb_keyboard_model* kb, struct gri
 void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb){
 
 	if (kb->tx_read_index != kb->tx_write_index){
-		
-        
-        
+
+
+
         uint32_t elapsed = grid_platform_rtc_get_elapsed_time(kb->tx_rtc_lasttimestamp);
-        
-        
+
+
 		if (elapsed > kb->tx_buffer[kb->tx_read_index].delay*MS_TO_US){
-			
+
 
             struct grid_usb_keyboard_event_desc key;
-            
+
             key.ismodifier = kb->tx_buffer[kb->tx_read_index].ismodifier;
             key.keycode =    kb->tx_buffer[kb->tx_read_index].keycode;
             key.ispressed =  kb->tx_buffer[kb->tx_read_index].ispressed;
             key.delay = 0;
 
 			kb->tx_read_index = (kb->tx_read_index+1)%kb->tx_buffer_length;
- 
+
 			kb->tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
 
 			// 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
@@ -451,35 +451,35 @@ void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb){
 			}
 			else if(key.ismodifier == 2){ // mousemove
 
-				uint8_t axis = key.keycode; 
+				uint8_t axis = key.keycode;
 				int8_t position = key.ispressed - 128;
 				grid_platform_usb_mouse_move(position, axis);
 
 
-				// grid_port_debug_printf("MouseMove: %d %d", position, axis);	
+				// grid_port_debug_printf("MouseMove: %d %d", position, axis);
 
 			}
 			else if(key.ismodifier == 3){
 
-										
+
 				uint8_t state = key.ispressed;
 				uint8_t button = key.keycode;
 				grid_platform_usb_mouse_button_change(state, button);
-			
-				// grid_port_debug_printf("MouseButton: %d %d", state, button);	
-				
+
+				// grid_port_debug_printf("MouseButton: %d %d", state, button);
+
 
 			}
 			else if(key.ismodifier == 0xf){
 				// delay, nothing to do here
 			}
 			else{
-				//printf("Keyboard Mouse Invalid\r\n");	
+				//printf("Keyboard Mouse Invalid\r\n");
 			}
 
 
 		}
-		
+
 	}
 
 }
@@ -504,7 +504,7 @@ void grid_usb_keyboard_enable(struct grid_usb_keyboard_model* kb){
 void grid_usb_keyboard_disable(struct grid_usb_keyboard_model* kb){
 
 	kb->isenabled = 0;
-	
+
 }
 
 
@@ -513,4 +513,3 @@ uint8_t grid_usb_keyboard_isenabled(struct grid_usb_keyboard_model* kb){
 	return kb->isenabled;
 
 }
-

@@ -5,7 +5,7 @@
  * Here typically goes a more extensive explanation of what the header
  * defines. Doxygens tags are words preceeded by either a backslash @\
  * or by an at symbol @@.
- * 
+ *
  * \author Suku Wc (Intech Studio)
  * \see https://intech.studio/
  * \see https://github.com/intechstudio/grid-fw/
@@ -47,7 +47,7 @@
 // D51
 #define GRID_MODULE_PBF4_RevA 64
 // ESP32
-#define GRID_MODULE_PBF4_RevD 65 
+#define GRID_MODULE_PBF4_RevD 65
 
 #define GRID_MODULE_EN16_RevA 192
 #define GRID_MODULE_EN16_RevD 193

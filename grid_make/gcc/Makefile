@@ -633,7 +633,7 @@ $(OUTPUT_FILE_PATH): $(OBJS)
 	"arm-none-eabi-objdump" -h -S "$(OUTPUT_FILE_NAME).elf" > "$(OUTPUT_FILE_NAME).lss"
 	"arm-none-eabi-size" "$(OUTPUT_FILE_NAME).elf"
 
-	
+
 
 # Compiler targets
 
@@ -694,7 +694,7 @@ nightly: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) nightly_post
 else
 nightly: $(SUB_DIRS) $(OUTPUT_FILE_PATH) nightly_post
 endif
-nightly_post: 
+nightly_post:
 	@echo "nightly" > lastconfig.txt
 	mkdir -p ./../../binary
 	python3 ./uf2conv.py -c -b 0x4000 -o ./../../binary/grid_nightly.uf2 ./$(OUTPUT_FILE_NAME).bin
@@ -707,7 +707,7 @@ debug: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) debug_post
 else
 debug: $(SUB_DIRS) $(OUTPUT_FILE_PATH) debug_post
 endif
-debug_post: 
+debug_post:
 	@echo "debug" > lastconfig.txt
 	arm-none-eabi-gdb -iex "target extended-remote localhost:3333" $(OUTPUT_FILE_NAME).elf
 
@@ -726,7 +726,7 @@ release_post:
 # ================== NIGHTLY FOR AUTOMATION =================
 nightly_automation: GRID_DEFINES = -DGRID_BUILD_NIGHTLY
 nightly_automation: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) nightly_automation_post
-nightly_automation_post: 
+nightly_automation_post:
 	mkdir -p ./../../binary
 	python3 ./uf2conv.py -c -b 0x4000 -o ./../../binary/grid_nightly.uf2 ./$(OUTPUT_FILE_NAME).bin
 

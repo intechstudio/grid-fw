@@ -55,15 +55,15 @@ void tud_midi_rx_cb(uint8_t itf){
         read = tud_midi_packet_read(packet);
         if (read) {
             //ets_printf("Read, Data: %02x %02x %02x %02x\r\n", packet[0], packet[1], packet[2], packet[3]);
-        
-        
+
+
             uint8_t channel = packet[1] & 0x0f;
             uint8_t command = packet[1] & 0xf0;
             uint8_t param1 = packet[2];
             uint8_t param2 = packet[3];
 
             //grid_port_debug_printf("decoded: %d %d %d %d", channel, command, param1, param2);
-            
+
             struct grid_midi_event_desc midi_ev;
 
             midi_ev.byte0 = channel;
@@ -80,10 +80,10 @@ void tud_midi_rx_cb(uint8_t itf){
 
 
 		    grid_midi_rx_push(midi_ev);
-        
+
         }
     }
-    
+
 }
 
 
@@ -94,8 +94,8 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event)
     size_t rx_size = 0;
 
     /* read */
-    esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);    
-    
+    esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
+
     for (uint16_t i=0; i<rx_size; i++){
 
         struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
@@ -104,7 +104,7 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event)
 
 		host_port->rx_double_buffer[grid_usb_rx_double_buffer_index] = buf[i];
 
-		
+
 		grid_usb_rx_double_buffer_index++;
 		grid_usb_rx_double_buffer_index%=GRID_DOUBLE_BUFFER_RX_SIZE;
 
@@ -149,9 +149,9 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
 
         //ets_printf("$\r\n");
 
-    
+
         usb_tx_ready = 0;
-   
+
         uint32_t queued = tinyusb_cdcacm_write_queue(0, (const uint8_t*) buffer, length);
 
 
@@ -159,7 +159,7 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
             ets_printf("CDC QUEUE ERROR: %d %d\r\n", queued, length);
             tinyusb_cdcacm_write_flush(0,  0);
         }
-        else{        
+        else{
             status = tinyusb_cdcacm_write_flush(0, 0);
             //ets_printf("$ %d\r\n", status);
         }
@@ -176,7 +176,7 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length){
             ets_printf("READY\r\n");
             usb_tx_ready = 1;
         }
-        
+
 
     }
 
@@ -303,12 +303,12 @@ static uint8_t s_cfg_desc[] = {
     #if CFG_TUD_MIDI
     // Interface number, string index, EP Out & EP In address, EP size
     TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 64),
-    #endif   
-  
+    #endif
+
     #if CFG_TUD_HID
     // Interface number, string index, boot protocol, report descriptor len, EP In address, size & polling interval
     TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, false, sizeof(hid_report_descriptor), (0x80 | EPNUM_HID), 16, 10),
-    #endif      
+    #endif
 
 
 };
@@ -379,12 +379,12 @@ int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2
 
 
         //tud_midi_stream_write(0, &buffer[1], 3);
-        
+
         //ets_printf("MIDI\r\n");
     }
 
     return 0;
-   
+
 
 }
 
@@ -428,7 +428,7 @@ int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type){
 	}
 
 
-    // report_id, buttons, dx, dy, wheel, pan 
+    // report_id, buttons, dx, dy, wheel, pan
     tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, 0, 0, 0, 0);
 
     return 1;
@@ -437,10 +437,10 @@ int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type){
 
 
 int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis){
-    
+
     int8_t delta_x = 0;
     int8_t delta_y = 0;
-    int8_t wheel = 0; 
+    int8_t wheel = 0;
     int8_t pan = 0; // not used
 
  	if (axis == X_AXIS_MV) {
@@ -451,9 +451,9 @@ int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis){
 		wheel = position;
 	} else {
         return 0;
-	}   
-    
-    // report_id, buttons, dx, dy, wheel, pan 
+	}
+
+    // report_id, buttons, dx, dy, wheel, pan
     tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, delta_x, delta_y, wheel, pan);
 
     return 1;
@@ -463,12 +463,12 @@ int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value){
 
     switch (axis)
     {
-        case GAMEPAD_AXIS_X: hid_gamepad_axis_x = value; break;   
-        case GAMEPAD_AXIS_Y: hid_gamepad_axis_y = value; break;   
-        case GAMEPAD_AXIS_Z: hid_gamepad_axis_z = value; break;   
-        case GAMEPAD_AXIS_RX: hid_gamepad_axis_rx = value; break;   
-        case GAMEPAD_AXIS_RY: hid_gamepad_axis_ry = value; break;   
-        case GAMEPAD_AXIS_RZ: hid_gamepad_axis_rz = value; break;    
+        case GAMEPAD_AXIS_X: hid_gamepad_axis_x = value; break;
+        case GAMEPAD_AXIS_Y: hid_gamepad_axis_y = value; break;
+        case GAMEPAD_AXIS_Z: hid_gamepad_axis_z = value; break;
+        case GAMEPAD_AXIS_RX: hid_gamepad_axis_rx = value; break;
+        case GAMEPAD_AXIS_RY: hid_gamepad_axis_ry = value; break;
+        case GAMEPAD_AXIS_RZ: hid_gamepad_axis_rz = value; break;
         default: ets_printf("INVALID AXIS\r\n"); return 0;
     }
 
@@ -490,19 +490,19 @@ int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value){
     }
 
     tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y, hid_gamepad_axis_z, hid_gamepad_axis_rx, hid_gamepad_axis_ry, hid_gamepad_axis_rz, hid_gamepad_hat, hid_gamepad_button_state);
-    
+
     return 1;
 }
 
 int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_event_desc* active_key_list, uint8_t keys_count){
 
-	struct grid_usb_hid_kb_desc key_descriptor_array[GRID_KEYBOARD_KEY_maxcount]; 
+	struct grid_usb_hid_kb_desc key_descriptor_array[GRID_KEYBOARD_KEY_maxcount];
 	for(uint8_t i=0; i<GRID_KEYBOARD_KEY_maxcount; i++){
-	
+
 		key_descriptor_array[i].b_modifier = active_key_list[i].ismodifier;
 		key_descriptor_array[i].key_id = active_key_list[i].keycode;
 		key_descriptor_array[i].state = active_key_list[i].ispressed;
-	
+
 	}
 
 
@@ -540,4 +540,3 @@ int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_ev
     return 0;
 
 }
-

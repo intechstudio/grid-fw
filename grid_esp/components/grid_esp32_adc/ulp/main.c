@@ -63,7 +63,7 @@ int main (void)
 
 
 
-    while(1) {    
+    while(1) {
 
 
         uint32_t value_1 = ulp_riscv_adc_read_channel(ADC_UNIT_1, ADC_CHANNEL_1);
@@ -79,7 +79,7 @@ int main (void)
 
         }
 
-    
+
 
         if (adc_result_ready < UINT32_MAX/2){
 
@@ -104,7 +104,6 @@ int main (void)
 
 
         //ulp_riscv_delay_cycles(1 * ULP_RISCV_CYCLES_PER_MS);
-        
+
     }
 }
-

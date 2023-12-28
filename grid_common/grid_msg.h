@@ -3,7 +3,7 @@
  *
  * Created: 9/23/2020 2:36:14 PM
  *  Author: suku
- */ 
+ */
 
 
 #ifndef GRID_MSG_H_
@@ -54,19 +54,19 @@ enum grid_msg_lastheader_index_t{
 
 struct grid_msg_model
 {
-	
+
 
 	uint64_t editor_heartbeat_lastrealtime;
 	uint8_t heartbeat_type;
 
 	uint32_t recent_messages[GRID_MSG_RECENT_FINGERPRINT_BUFFER_LENGTH];
 	GRID_MSG_RECENT_FINGERPRINT_BUFFER_INDEX_T recent_messages_index;
-	
+
     uint8_t sessionid;
 	uint8_t next_broadcast_message_id;
-	
 
-	
+
+
 	struct grid_lastheader lastheader[GRID_MSG_LASTHEADER_INDEX_COUNT];
 
 };
@@ -75,11 +75,11 @@ struct grid_msg_model
 extern struct grid_msg_model grid_msg_state;
 
 struct grid_msg_packet{
-	
+
 	char header[grid_msg_packet_header_maxlength];
 	char body[grid_msg_packet_body_maxlength];
 	char footer[GRID_MSG_FOOTER_maxlength];
-	
+
 	uint32_t header_length;
 	uint32_t body_length;
 	uint32_t footer_length;

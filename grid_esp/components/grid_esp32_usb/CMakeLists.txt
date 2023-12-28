@@ -1,7 +1,7 @@
 idf_component_register(
-    SRCS 
+    SRCS
         "grid_esp32_usb.c"
-    INCLUDE_DIRS 
+    INCLUDE_DIRS
         "."
     REQUIRES
         "driver" "grid_common" "esp_tinyusb"

@@ -1613,7 +1613,7 @@ var app = (function () {
     	try {
     		const serial = await fetch("/api/fuser/kill", { method: "GET" }).then(res => res.json());
     	} catch(error) {
-    		
+
     	} //console.log(serial)
     }
 
@@ -1621,7 +1621,7 @@ var app = (function () {
     	try {
     		const serial = await fetch("/api/openocd/start", { method: "GET" }).then(res => res.json());
     	} catch(error) {
-    		
+
     	} //console.log(serial)
     }
 
@@ -1629,7 +1629,7 @@ var app = (function () {
     	try {
     		const serial = await fetch("/api/openocd/stop", { method: "GET" }).then(res => res.json());
     	} catch(error) {
-    		
+
     	} //console.log(serial)
     }
 
@@ -1637,7 +1637,7 @@ var app = (function () {
     	try {
     		const serial = await fetch("/api/telnet/start", { method: "GET" }).then(res => res.json());
     	} catch(error) {
-    		
+
     	} //console.log(serial)
     }
 
@@ -1645,7 +1645,7 @@ var app = (function () {
     	try {
     		const serial = await fetch("/api/telnet/stop", { method: "GET" }).then(res => res.json());
     	} catch(error) {
-    		
+
     	} //console.log(serial)
     }
 
@@ -1703,7 +1703,7 @@ var app = (function () {
     				return;
     			});
     		} catch(error) {
-    			
+
     		}
     	}
 
@@ -1724,7 +1724,7 @@ var app = (function () {
     				return;
     			});
     		} catch(error) {
-    			
+
     		}
     	}
 
@@ -1781,7 +1781,7 @@ var app = (function () {
     				}
     			});
     		} catch(error) {
-    			
+
     		}
     	}
 

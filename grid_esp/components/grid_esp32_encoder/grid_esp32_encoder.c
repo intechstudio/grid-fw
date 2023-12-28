@@ -82,8 +82,8 @@ void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, void (*po
     memset(encoder->rx_buffer,          0, GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
     memset(encoder->tx_buffer,          0, GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
 
-    
-    
+
+
     memset(&encoder->transaction, 0, sizeof(encoder->transaction));
 
     encoder->transaction.tx_buffer = encoder->tx_buffer;
@@ -151,7 +151,7 @@ void grid_esp32_encoder_start(struct grid_esp32_encoder_model* encoder){
 
     ESP_ERROR_CHECK(gptimer_enable(gptimer));
     ESP_ERROR_CHECK(gptimer_start(gptimer));
-    
+
 }
 
 

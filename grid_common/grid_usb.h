@@ -3,7 +3,7 @@
  *
  * Created: 7/6/2020 12:07:42 PM
  *  Author: suku
- */ 
+ */
 
 
 
@@ -44,7 +44,7 @@ enum grid_usb_keyboard_key_state_t { GRID_USB_KEYBOARD_KEY_STATEUP, GRID_USB_KEY
 
 
 struct grid_midi_event_desc {
-	
+
 	uint8_t byte0;
 	uint8_t byte1;
 	uint8_t byte2;
@@ -79,7 +79,7 @@ void grid_midi_rx_pop();
 
 
 struct grid_usb_keyboard_event_desc {
-	
+
 	uint8_t keycode;
 	uint8_t ismodifier;
 	uint8_t ispressed;
@@ -110,12 +110,12 @@ struct grid_usb_keyboard_model{
     uint16_t tx_write_index;
     uint16_t tx_read_index;
     uint64_t tx_rtc_lasttimestamp;
-	
+
 	struct  grid_usb_keyboard_event_desc active_key_list[GRID_KEYBOARD_KEY_maxcount];
 	uint8_t active_key_count;
-    
+
     uint8_t isenabled;
-	
+
 };
 
 

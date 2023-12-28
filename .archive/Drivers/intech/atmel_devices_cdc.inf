@@ -1,23 +1,23 @@
 ; Windows 2000, XP, Vista, 7 and 8 (x32 and x64) setup file for Atmel CDC Devices
 ; Copyright (c) 2000-2013 ATMEL, Inc.
 
-[Version] 
-Signature   = "$Windows NT$" 
-Class       = Ports 
-ClassGuid   = {4D36E978-E325-11CE-BFC1-08002BE10318} 
+[Version]
+Signature   = "$Windows NT$"
+Class       = Ports
+ClassGuid   = {4D36E978-E325-11CE-BFC1-08002BE10318}
 
-Provider    = %Manufacturer% 
-LayoutFile  = layout.inf 
+Provider    = %Manufacturer%
+LayoutFile  = layout.inf
 CatalogFile = atmel_devices_cdc.cat
-DriverVer   = 01/08/2013,6.0.0.0 
+DriverVer   = 01/08/2013,6.0.0.0
 
 ;----------------------------------------------------------
 ; Targets
 ;----------------------------------------------------------
-[Manufacturer] 
-%Manufacturer%=DeviceList, NTAMD64, NTIA64, NT 
+[Manufacturer]
+%Manufacturer%=DeviceList, NTAMD64, NTIA64, NT
 
-[DeviceList] 
+[DeviceList]
 
 %INTECH_STUDIO_GRID%=DriverInstall, USB\VID_03EB&PID_ECAD&MI_00
 
@@ -39,36 +39,36 @@ DriverVer   = 01/08/2013,6.0.0.0
 ;----------------------------------------------------------
 ; Windows 2000, XP, Vista, Windows 7, Windows 8 - 32bit
 ;----------------------------------------------------------
-[Reader_Install.NTx86] 
+[Reader_Install.NTx86]
 
 
-[DestinationDirs] 
-DefaultDestDir=12 
-DriverInstall.NT.Copy=12 
+[DestinationDirs]
+DefaultDestDir=12
+DriverInstall.NT.Copy=12
 
-[DriverInstall.NT] 
+[DriverInstall.NT]
 include=mdmcpq.inf
-CopyFiles=DriverInstall.NT.Copy 
-AddReg=DriverInstall.NT.AddReg 
+CopyFiles=DriverInstall.NT.Copy
+AddReg=DriverInstall.NT.AddReg
 
-[DriverInstall.NT.Copy] 
-usbser.sys 
+[DriverInstall.NT.Copy]
+usbser.sys
 
 [DriverInstall.NT.AddReg]
-HKR,,DevLoader,,*ntkern 
-HKR,,NTMPDriver,,usbser.sys 
-HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider" 
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,usbser.sys
+HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider"
 
-[DriverInstall.NT.Services] 
-AddService = usbser, 0x00000002, DriverService.NT 
+[DriverInstall.NT.Services]
+AddService = usbser, 0x00000002, DriverService.NT
 
-[DriverService.NT] 
-DisplayName = %Serial.SvcDesc% 
-ServiceType = 1 ; SERVICE_KERNEL_DRIVER 
-StartType = 3 ; SERVICE_DEMAND_START 
-ErrorControl = 1 ; SERVICE_ERROR_NORMAL 
-ServiceBinary = %12%\usbser.sys 
-LoadOrderGroup = Base 
+[DriverService.NT]
+DisplayName = %Serial.SvcDesc%
+ServiceType = 1 ; SERVICE_KERNEL_DRIVER
+StartType = 3 ; SERVICE_DEMAND_START
+ErrorControl = 1 ; SERVICE_ERROR_NORMAL
+ServiceBinary = %12%\usbser.sys
+LoadOrderGroup = Base
 
 ;----------------------------------------------------------
 ; Windows XP, Vista, Windows 7, Windows 8 - 64bit
@@ -101,10 +101,9 @@ ServiceBinary=%12%\usbser.sys
 ; String
 ;----------------------------------------------------------
 
-[Strings] 
-Manufacturer = "Intech Studio ltd." 
+[Strings]
+Manufacturer = "Intech Studio ltd."
 INTECH_STUDIO_GRID = "Intech Studio: Grid (COM)"
 
 
-Serial.SvcDesc = "USB Serial emulation driver" 
-
+Serial.SvcDesc = "USB Serial emulation driver"

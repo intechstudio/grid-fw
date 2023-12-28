@@ -1,7 +1,7 @@
 idf_component_register(
-    SRCS 
+    SRCS
         "grid_esp32_module_en16.c"
-    INCLUDE_DIRS 
+    INCLUDE_DIRS
         "."
     REQUIRES
         "grid_esp32_encoder" "grid_common"

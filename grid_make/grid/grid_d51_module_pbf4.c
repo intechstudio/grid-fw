@@ -8,30 +8,30 @@ static const uint8_t multiplexer_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6
 static uint64_t last_real_time[16] = {0};
 
 static void hardware_start_transfer(void){
-	
+
 	adc_async_start_conversion(&ADC_0);
 	adc_async_start_conversion(&ADC_1);
-	
+
 }
 
 static void adc_transfer_complete_cb(void){
-	
+
 	if (adc_complete_count == 0){
 		adc_complete_count++;
 		return;
-	}	
-	
+	}
+
 	/* Read conversion results */
-	
+
 	uint16_t adcresult_0 = 0;
 	uint16_t adcresult_1 = 0;
-	
+
 	uint8_t adc_index_0 = multiplexer_lookup[multiplexer_index+8];
 	uint8_t adc_index_1 = multiplexer_lookup[multiplexer_index+0];
 
 	adc_async_read_channel(&ADC_0, 0, &adcresult_0, 2);
 	adc_async_read_channel(&ADC_1, 0, &adcresult_1, 2);
-	
+
 	/* Update the multiplexer */
 
 	multiplexer_index++;
@@ -40,14 +40,14 @@ static void adc_transfer_complete_cb(void){
 	gpio_set_pin_level(MUX_A, multiplexer_index/1%2);
 	gpio_set_pin_level(MUX_B, multiplexer_index/2%2);
 	gpio_set_pin_level(MUX_C, multiplexer_index/4%2);
-	
+
 	// FAKE CALIBRATION to compensate oversampling and decimation
 	uint32_t input_0 = adcresult_0*1.03;
 	if (input_0 > (1<<16)-1){
 		input_0 = (1<<16)-1;
 	}
 	adcresult_0 = input_0;
-	
+
 	uint32_t input_1 = adcresult_1*1.03;
 	if (input_1 > (1<<16)-1){
 		input_1 = (1<<16)-1;
@@ -58,12 +58,12 @@ static void adc_transfer_complete_cb(void){
 	if (adc_index_0<8 || adc_index_0>13){
 		//mux position is valid
 
-		if (adc_index_0>13) { 
+		if (adc_index_0>13) {
 
 			// adjust button index
 			adc_index_0 -=4;
 			adc_index_1 -=4;
-		
+
 		}
 
 		if (adc_index_0<4){
@@ -91,17 +91,17 @@ static void adc_transfer_complete_cb(void){
 
 
 	}
-	
+
 	adc_complete_count = 0;
 	hardware_start_transfer();
 }
 
 
 static void hardware_init(void){
-	
+
 	adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
 	adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
-	
+
 	adc_async_enable_channel(&ADC_0, 0);
 	adc_async_enable_channel(&ADC_1, 0);
 
@@ -109,11 +109,11 @@ static void hardware_init(void){
 
 
 void grid_module_pbf4_init(){
-	
-	
+
+
 	grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 
 	hardware_init();
 	hardware_start_transfer();
-	
+
 }

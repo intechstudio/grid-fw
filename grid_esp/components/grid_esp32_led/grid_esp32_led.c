@@ -77,7 +77,7 @@ static void led_init(rmt_encoder_handle_t* led_encoder, rmt_channel_handle_t* le
     led_strip_encoder_config_t encoder_config = {
         .resolution = RMT_LED_STRIP_RESOLUTION_HZ,
     };
-    
+
     ESP_ERROR_CHECK(rmt_new_led_strip_encoder(&encoder_config, led_encoder));
     ESP_ERROR_CHECK(rmt_enable(*led_chan));
 
@@ -92,7 +92,7 @@ void grid_esp32_led_task(void *arg)
 
     uint8_t led_pin =  grid_led_get_pin(&grid_led_state);
 
-    
+
 
     rmt_channel_handle_t led_chan = NULL;
     rmt_encoder_handle_t led_encoder = NULL;

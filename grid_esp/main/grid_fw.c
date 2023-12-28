@@ -43,7 +43,7 @@
 #define NVM_TASK_PRIORITY configMAX_PRIORITIES-1
 
 // module task priority must be the lowest to ma it run most of the time
-#define PORT_TASK_PRIORITY 0 //same as idle 
+#define PORT_TASK_PRIORITY 0 //same as idle
 
 #include "driver/ledc.h"
 #include <esp_timer.h>
@@ -99,7 +99,7 @@ static void periodic_rtc_ms_cb(void *arg)
     else{
         grid_ui_rtc_ms_mapmode_handler(&grid_ui_state, 1);
     }
-		
+
 
 }
 
@@ -127,7 +127,7 @@ void app_main(void)
 
     // set console baud rate
     ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
-    
+
 
 
     esp_log_level_set("*", ESP_LOG_INFO);
@@ -147,26 +147,26 @@ void app_main(void)
 
     ESP_LOGI(TAG, "===== UI INIT =====");
 	if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD){
-		grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
+		grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD ){
-		grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
-	}	
+		grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD){
-        grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
+        grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD ){
-		grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
-	}	
+		grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
-		grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
-	}		
+		grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD ){
-		grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
-	}		
+		grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA ){
-		grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);		
-	}	
+		grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+	}
 	else{
 		ets_printf("Init Module: Unknown Module\r\n");
 	}
@@ -237,7 +237,7 @@ void app_main(void)
 
     // ================== START: grid_module_pbf4_init() ================== //
 
-	
+
     ESP_LOGI(TAG, "===== PORT INIT =====");
 
 
@@ -247,13 +247,13 @@ void app_main(void)
 	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_EAST, 0);
 	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_SOUTH, 0);
 	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_WEST, 0);
-	
+
 	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_UI, 0, 1);
-	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USB, 0, 0);	
+	grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USB, 0, 0);
 
 
 
-    
+
     ESP_LOGI(TAG, "===== BANK INIT =====");
     grid_sys_set_bank(&grid_sys_state, 0);
     ets_delay_us(2000);
@@ -267,12 +267,12 @@ void app_main(void)
     // {
     //     grid_ui_bulk_pageread_next(&grid_ui_state);
     // }
-        
+
 
 
     SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
-    
+
 
     ESP_LOGI(TAG, "===== UI TASK INIT =====");
 
@@ -282,29 +282,29 @@ void app_main(void)
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD ){
         xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024*3, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
-	}	
+	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD){
         xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024*3, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
 	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD ){
         xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*4, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
-	}	
+	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ){
         xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024*4, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
-	}		
+	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD ){
         xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024*4, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
-	}		
+	}
 	else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA ){
         xTaskCreatePinnedToCore(grid_esp32_module_tek2_task, "tek2", 1024*4, (void *)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
-	}	
+	}
 	else{
 		printf("Init Module: Unknown Module\r\n");
 	}
 
 
     ESP_LOGI(TAG, "===== UI TASK DONE =====");
-    
+
 
 
     grid_ui_state.ui_interaction_enabled = 1;
@@ -319,7 +319,7 @@ void app_main(void)
 
     TaskHandle_t port_task_hdl;
 
-    
+
 
     //Create the class driver task
     xTaskCreatePinnedToCore(grid_esp32_port_task,
@@ -334,7 +334,7 @@ void app_main(void)
 
 
     ESP_LOGI(TAG, "===== PORT TASK DONE =====");
-    
+
     //Create the class driver task
 
     xTaskCreatePinnedToCore(grid_esp32_nvm_task,
@@ -371,7 +371,7 @@ void app_main(void)
                             (void *)signaling_sem,
                             6,
                             &grid_trace_report_task_hdl,
-                            1);                            
+                            1);
 
 
     ESP_LOGI(TAG, "===== REPORT TASK DONE =====");
@@ -402,7 +402,7 @@ void app_main(void)
     ESP_LOGI(TAG, "===== TRACE START =====");
 
 
-    // TRACE CONFIG GPIO 40, 41, 4Mbaud, 
+    // TRACE CONFIG GPIO 40, 41, 4Mbaud,
 
     //esp_apptrace_init();
 
@@ -413,8 +413,8 @@ void app_main(void)
     //SEGGER_SYSVIEW_Start();
 
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
-    gpio_pullup_en(GPIO_NUM_0);    
-    
+    gpio_pullup_en(GPIO_NUM_0);
+
 
     while(1){
 

@@ -17,14 +17,14 @@ struct AIN_Channel
 
 	uint16_t* buffer;
 	uint8_t buffer_depth;
-	
+
 
 	uint8_t  result_format;
 	uint8_t  result_resolution;
 	uint16_t result_value;
 	uint16_t result_average;
 	uint16_t result_changed;
-	
+
 };
 
 struct grid_ain_model{

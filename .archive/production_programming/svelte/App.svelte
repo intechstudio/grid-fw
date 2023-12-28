@@ -22,7 +22,7 @@
 		if (e.keyCode === 13) {
   			e.preventDefault();
 			telnet_send();
-		}	
+		}
 		if (e.keyCode === 38) {
 
 			if (telnet_history_index < telnet_history.length){
@@ -32,7 +32,7 @@
 
 			telnet_input_field = telnet_history[telnet_history.length-(telnet_history_index-1)-1];
 
-		}	
+		}
 		if (e.keyCode === 40) {
 
 			if (telnet_history_index > 0){
@@ -42,7 +42,7 @@
 			telnet_input_field = telnet_history[telnet_history.length-(telnet_history_index)];
 
 
-		}	
+		}
 	}
 
 	async function fuser_kill(){
@@ -50,7 +50,7 @@
 			const serial = await fetch('/api/fuser/kill', {method: 'GET'}).then((res)=>res.json());
 			//console.log(serial)
 		} catch (error) {
-			
+
 		}
 	}
 	async function openocd_start(){
@@ -58,7 +58,7 @@
 			const serial = await fetch('/api/openocd/start', {method: 'GET'}).then((res)=>res.json());
 			//console.log(serial)
 		} catch (error) {
-			
+
 		}
 	}
 	async function openocd_stop(){
@@ -66,7 +66,7 @@
 			const serial = await fetch('/api/openocd/stop', {method: 'GET'}).then((res)=>res.json());
 			//console.log(serial)
 		} catch (error) {
-			
+
 		}
 	}
 	async function telnet_start(){
@@ -74,7 +74,7 @@
 			const serial = await fetch('/api/telnet/start', {method: 'GET'}).then((res)=>res.json());
 			//console.log(serial)
 		} catch (error) {
-			
+
 		}
 	}
 	async function telnet_stop(){
@@ -82,7 +82,7 @@
 			const serial = await fetch('/api/telnet/stop', {method: 'GET'}).then((res)=>res.json());
 			//console.log(serial)
 		} catch (error) {
-			
+
 		}
 	}
 	async function telnet_send(){
@@ -92,8 +92,8 @@
 
 		try {
 			const serial = await fetch('/api/telnet/send', {
-				method: 'POST', 
-				body: JSON.stringify({data: telnet_input_field}), 
+				method: 'POST',
+				body: JSON.stringify({data: telnet_input_field}),
 				headers: {
 					'Accept': 'application/json',
 					'Content-Type': 'application/json'
@@ -102,12 +102,12 @@
 				console.log(res)
 				telnet_input_field = "";
 				return;
-				
+
 			});
-			
+
 
 		} catch (error) {
-			
+
 		}
 
 
@@ -118,8 +118,8 @@
 
 		try {
 			const serial = await fetch('/api/uart/send', {
-				method: 'POST', 
-				body: JSON.stringify({data: uart_input_field}), 
+				method: 'POST',
+				body: JSON.stringify({data: uart_input_field}),
 				headers: {
 					'Accept': 'application/json',
 					'Content-Type': 'application/json'
@@ -128,12 +128,12 @@
 				console.log(res)
 				uart_input_field = "";
 				return;
-				
+
 			});
-			
+
 
 		} catch (error) {
-			
+
 		}
 
 
@@ -142,10 +142,10 @@
 	async function consolePoll(){
 
 		let serial = []
-	
+
 		try {
 			 serial = await fetch('/api/console', {method: 'GET'}).then((res)=>res.json());
-			
+
 			 serial.forEach(element => {
 				//var str = String.fromCharCode.apply(null, element.data);
 				console.log(element);
@@ -166,7 +166,7 @@
 						console.log("Boundary Test Result is Here!");
 						console.log(parseInt(str.substring(14,15)));
 						console.log(test_result);
-						
+
 
 
 						var indices = [];
@@ -181,24 +181,24 @@
 							mcu_pins[side][indices[i]].class += "pinerror"
 
 						}
-						
-						
+
+
 					}
 					else if(str.startsWith("test.hwcfg.")){
-						
+
 						grid.hwcfg = parseInt(str.substring(11,str.length));
 
 						if(grid.hwcfg == 192){grid.model = "EN16 RevA"; grid.hwcfgstatus = "OK";}
 
 					}
 					else if(str.startsWith("test.serialno.")){
-						
+
 						grid.serialno = (str.substring(14,str.length)).split(" ");
 
 
 					}
 					else if(str.startsWith("test.mcu.")){
-						
+
 						grid.mcu = str.split(".")[2];
 
 						if (grid.mcu == "ATSAMD51N20A"){
@@ -207,23 +207,23 @@
 
 					}
 
-					
+
 				}
 
 
 				});
-			
+
 
 		} catch (error) {
-			
+
 		}
 
 	}
-		
+
 
 
 	onMount(()=>{
-	
+
 		setInterval(consolePoll, 1000)
 
 	})
@@ -349,7 +349,7 @@
 			{number: '99', function: '99', class: ''},
 			{number: '100', function: '100', class: ''}
 		]
-	
+
 	];
 
 </script>
@@ -365,7 +365,7 @@
 
 					<tr>
 						<td>MCU: </td><td>{grid.mcu}</td><td>{grid.mcustatus}</td>
-					</tr>	
+					</tr>
 
 					<tr>
 						<td>HWCFG:</td><td>{grid.hwcfg}</td><td>{grid.hwcfgstatus}</td>
@@ -414,7 +414,7 @@
 
 
 
-	
+
 	<div class="serial_container">
 		<div class="serial_console">
 			{#each ui_console as entry}
@@ -430,7 +430,7 @@
 				{#if entry.context == "fuser" }
 					<div class="consoleline {entry.context}">{entry.data}</div>
 				{/if}
-			{/each}	
+			{/each}
 		</div>
 	</div>
 
@@ -438,8 +438,8 @@
 
 	<div>
 
-		
-	
+
+
 		<input type="button" on:click={fuser_kill} value="Reset Ports">
 
 		<input type="button" on:click={openocd_start} value="OpenOCD Start">
@@ -460,17 +460,17 @@
 		<input name="openocd_enable" id="openocd_enable" type="checkbox" bind:checked={openocd_console_enabled}><label for="openocd_enable">OpenOCD</label>
 		<input name="telnet_enable" id="telnet_enable" type="checkbox" bind:checked={telnet_console_enabled}><label for="telnet_enable">Telnet</label>
 		<input name="telnet_autosend" id="telnet_autosend" type="checkbox" bind:checked={telnet_autosend}><label for="telnet_autosend">Autosend</label>
-	
+
 	</div>
 	<div>
-		Chip: 
+		Chip:
 		<input type="button" on:click={function(){telnet_input_field = "reset"; if (telnet_autosend) telnet_send();}} value="reset">
 		<input type="button" on:click={function(){telnet_input_field = "reset init"; if (telnet_autosend) telnet_send();}} value="reset init">
 		<input type="button" on:click={function(){telnet_input_field = "atsame5 chip-erase"; if (telnet_autosend) telnet_send();}} value="erase">
 
 	</div>
 	<div>
-		Bootloader: 
+		Bootloader:
 		<input type="button" on:click={function(){telnet_input_field = "atsame5 bootloader"; if (telnet_autosend) telnet_send();}} value="check">
 		<input type="button" on:click={function(){telnet_input_field = "atsame5 bootloader 16384"; if (telnet_autosend) telnet_send();}} value="lock">
 		<input type="button" on:click={function(){telnet_input_field = "atsame5 bootloader 0"; if (telnet_autosend) telnet_send();}} value="unlock">
@@ -478,7 +478,7 @@
 
 	</div>
 	<div>
-		Firmware: 
+		Firmware:
 		<input type="button" on:click={function(){telnet_input_field = "program ../grid_make/gcc/AtmelStart.bin verify 0x4000"; if (telnet_autosend) telnet_send();}} value="install">
 
 	</div>
@@ -508,7 +508,7 @@
 		display:flex;
 		flex-direction:column;
 		height: 400px;
-		width: calc(100% - 450px);	
+		width: calc(100% - 450px);
 	}
 
 	.serial_console{
@@ -519,7 +519,7 @@
 		flex-direction:column-reverse;
 		height: 100%;
 		width: 100%;
-		overflow: auto;			
+		overflow: auto;
 	}
 
 
@@ -557,17 +557,17 @@
 		background-color: rgba(127,0,0,0.4);
 		height: 10px;
 		margin-left: -6px;
-	}	
-	
+	}
+
 	.rot0 > .pinerror{
 		border-left: 8px solid red;
-	}	
+	}
 	.rot90 > .pinerror{
 		border-left: 8px solid red;
-	}	
+	}
 	.rot180 > .pinerror{
 		border-right: 8px solid red;
-	}	
+	}
 	.rot270 > .pinerror{
 		border-right: 8px solid red;
 	}
@@ -593,28 +593,28 @@
 	.rot180 > .pin{
 		transform: rotate(-180deg);
 	}
-	
+
 	.rot270 > .pin{
 		transform: rotate(-180deg);
 	}
 
 	.side{
-		
+
 		width: 50px;
 		height: 302px;
 		position: absolute;
-		
+
 
 	}
 
 	.chip{
-		
+
 		background-color:rgb(62, 71, 80);
 		color: white;
 		width: 300px;
 		height: 300px;
 		position: relative;
-		
+
 		z-index: 1;
 		top: 50px;
 		border-radius: 8px;

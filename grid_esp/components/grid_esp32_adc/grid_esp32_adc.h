@@ -32,8 +32,8 @@ struct grid_esp32_adc_model
 {
 
 
-    uint8_t mux_index;    
-    uint8_t mux_overflow;    
+    uint8_t mux_index;
+    uint8_t mux_overflow;
 
 
 

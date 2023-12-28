@@ -42,8 +42,8 @@ void swd_write_raw(uint32_t data, uint8_t length){
         ets_delay_us(SWD_CLOCK_PERIOD);
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
         ets_delay_us(SWD_CLOCK_PERIOD);
- 
-    }    
+
+    }
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
 
     gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
@@ -71,8 +71,8 @@ void swd_write(uint32_t data, uint8_t length){
         ets_delay_us(SWD_CLOCK_PERIOD);
         gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
         ets_delay_us(SWD_CLOCK_PERIOD);
- 
-    }    
+
+    }
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
 
 
@@ -161,7 +161,7 @@ void swd_turnround_target_next(){
 }
 
 void swd_turnround_host_next(){
-    
+
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
     ets_delay_us(SWD_CLOCK_PERIOD);
     gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
@@ -205,27 +205,27 @@ void swd_target_select(uint8_t core_id){
 
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
     // ets_delay_us(SWD_CLOCK_PERIOD);
-    
+
     // gpio_ll_set_level(&GPIO, swd_pin_swdio, 0);
 
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
     // ets_delay_us(SWD_CLOCK_PERIOD);
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    // ets_delay_us(SWD_CLOCK_PERIOD);    
+    // ets_delay_us(SWD_CLOCK_PERIOD);
 
 
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
     // ets_delay_us(SWD_CLOCK_PERIOD);
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    // ets_delay_us(SWD_CLOCK_PERIOD);    
+    // ets_delay_us(SWD_CLOCK_PERIOD);
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
     // ets_delay_us(SWD_CLOCK_PERIOD);
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    // ets_delay_us(SWD_CLOCK_PERIOD);    
+    // ets_delay_us(SWD_CLOCK_PERIOD);
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 1);
     // ets_delay_us(SWD_CLOCK_PERIOD);
     // gpio_ll_set_level(&GPIO, swd_pin_swclk, 0);
-    // ets_delay_us(SWD_CLOCK_PERIOD);    
+    // ets_delay_us(SWD_CLOCK_PERIOD);
 
     swd_turnround_target_next();
     swd_read_acknowledge();
@@ -235,7 +235,7 @@ void swd_target_select(uint8_t core_id){
     #define RP2040_CORE0_ID 0x01002927 // this is reversed
     #define RP2040_CORE1_ID 0x11002927 // parity = 1
 
-    if (core_id == 0){     
+    if (core_id == 0){
         swd_write(RP2040_CORE0_ID, 32);
     }
     else{
@@ -294,7 +294,7 @@ uint32_t swd_read_idcode(){
 
 
     swd_turnround_host_next();
-    
+
 
     return idcode;
 
@@ -317,7 +317,7 @@ uint32_t swd_read_dlcr(){
 
 
     swd_turnround_host_next();
-    
+
 
     return dlcr;
 
@@ -408,7 +408,7 @@ uint32_t swd_read_ctrlstat(){
 
 
     swd_turnround_host_next();
-    
+
 
     return ctrlstat;
 
@@ -428,7 +428,7 @@ uint32_t swd_read_buff(){
 
 
     swd_turnround_host_next();
-    
+
 
     return buff;
 
@@ -448,7 +448,7 @@ uint32_t swd_read_apc(){
 
 
     swd_turnround_host_next();
-    
+
 
     return apc;
 
@@ -469,7 +469,7 @@ uint32_t swd_read_ap0(){
 
 
     swd_turnround_host_next();
-    
+
 
     return ap0;
 
@@ -489,7 +489,7 @@ uint32_t swd_read_ap4(){
 
 
     swd_turnround_host_next();
-    
+
 
     return ap4;
 
@@ -509,7 +509,7 @@ uint32_t swd_read_ap8(){
 
 
     swd_turnround_host_next();
-    
+
 
     return ap8;
 
@@ -528,7 +528,7 @@ void swd_idle(){
         ets_delay_us(SWD_CLOCK_PERIOD);
 
     }
-    
+
 
     swd_dummy_clock();
 
@@ -604,17 +604,17 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_write_raw(0b10101001, 8);
         swd_write_raw(0b10110100, 8);
         swd_write_raw(0b10100001, 8);
-        
+
         swd_write_raw(0b01100001, 8);
         swd_write_raw(0b10010111, 8);
         swd_write_raw(0b11110101, 8);
         swd_write_raw(0b10111011, 8);
-        
+
         swd_write_raw(0b11000111, 8);
         swd_write_raw(0b01000101, 8);
         swd_write_raw(0b01110000, 8);
         swd_write_raw(0b00111101, 8);
-        
+
         swd_write_raw(0b10011000, 8);
         swd_write_raw(0b00000101, 8);
         swd_write_raw(0b10001111, 8);
@@ -648,7 +648,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
             ets_delay_us(SWD_CLOCK_PERIOD);
 
         }
-        
+
 
         swd_dummy_clock();
         swd_target_select(0);
@@ -656,7 +656,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
 
         swd_read_idcode();
         swd_dummy_clock();
-        
+
         swd_write_abort(0x0000001e);
         swd_dummy_clock();
 
@@ -685,8 +685,8 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_dummy_clock();
 
         swd_read_ctrlstat();
-        swd_dummy_clock();  
-            
+        swd_dummy_clock();
+
         swd_write_ctrlstat(0x50000001);
         swd_dummy_clock();
 
@@ -706,7 +706,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(0); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001
         swd_read_ap0();                 swd_dummy_clock(); //0x0
         swd_read_buff();                swd_dummy_clock(); //0x40001
 
@@ -715,7 +715,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(1); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001
         swd_read_ap0();                 swd_dummy_clock(); //0x0
         swd_read_buff();                swd_dummy_clock(); //0x40001
 
@@ -724,11 +724,11 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(0); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001
         swd_write_select(0x000000f3);   swd_dummy_clock();
-        swd_read_apc();                
+        swd_read_apc();
         swd_idle();
-        swd_read_buff();                swd_dummy_clock(); //0x04770031 
+        swd_read_buff();                swd_dummy_clock(); //0x04770031
         swd_write_select(0x00000003);   swd_dummy_clock();
         swd_write_ap0(0xa2000020);      swd_dummy_clock();
         swd_write_ap4(0x00000000);      swd_dummy_clock();
@@ -743,11 +743,11 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(1); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_dlcr();                swd_dummy_clock(); //0x10000001 
+        swd_read_dlcr();                swd_dummy_clock(); //0x10000001
         swd_write_select(0x000000f3);   swd_dummy_clock();
-        swd_read_apc();                
+        swd_read_apc();
         swd_idle();
-        swd_read_buff();                swd_dummy_clock(); //0x04770031 
+        swd_read_buff();                swd_dummy_clock(); //0x04770031
         swd_write_select(0x00000003);   swd_dummy_clock();
         swd_write_ap0(0xa2000020);      swd_dummy_clock();
         swd_write_ap4(0x00000000);      swd_dummy_clock();
@@ -762,12 +762,12 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(0); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_dlcr();                swd_dummy_clock(); //0x00000001 
+        swd_read_dlcr();                swd_dummy_clock(); //0x00000001
         swd_write_select(0x00000003);   swd_dummy_clock();
         swd_write_ap0(0xa2000022);      swd_dummy_clock();
         swd_write_ap4(0xe000edf0);      swd_dummy_clock();
         swd_write_select(0x00000013);   swd_dummy_clock();
-        swd_read_ap0();                 swd_dummy_clock(); //0x00 
+        swd_read_ap0();                 swd_dummy_clock(); //0x00
         swd_read_buff();                swd_dummy_clock(); //0x40001
         swd_write_ap0(0xa05f0003);      swd_dummy_clock();
         swd_write_ap8(0x00000000);      swd_dummy_clock();
@@ -787,7 +787,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_write_select(0x00000013);   swd_dummy_clock();
         swd_write_apc(0x05fa0004);      swd_dummy_clock();
         swd_write_select(0x00000010);   swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000041 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000041
         swd_write_select(0x00000000);   swd_dummy_clock();
         swd_write_ctrlstat(0x50000020); swd_dummy_clock();
         swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000040
@@ -800,7 +800,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_write_ap0(0xa2000002);      swd_dummy_clock();
         swd_write_ap4(0xe000ed00);      swd_dummy_clock();
         swd_write_select(0x00000010);   swd_dummy_clock();
-        swd_read_apc();                 
+        swd_read_apc();
         swd_idle();
         swd_read_buff();                swd_dummy_clock(); //0xfa050000
         //END OF FIRST BIG BLOCK
@@ -810,12 +810,12 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(1); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_dlcr();                swd_dummy_clock(); //0x10000001 
+        swd_read_dlcr();                swd_dummy_clock(); //0x10000001
         swd_write_select(0x00000003);   swd_dummy_clock();
         swd_write_ap0(0xa2000022);      swd_dummy_clock();
         swd_write_ap4(0xe000edf0);      swd_dummy_clock();
         swd_write_select(0x00000013);   swd_dummy_clock();
-        swd_read_ap0();                 swd_dummy_clock(); //0x00 
+        swd_read_ap0();                 swd_dummy_clock(); //0x00
         swd_read_buff();                swd_dummy_clock(); //0x40001
         swd_write_ap0(0xa05f0003);      swd_dummy_clock();
         swd_write_ap8(0x00000000);      swd_dummy_clock();
@@ -835,7 +835,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_write_select(0x00000013);   swd_dummy_clock();
         swd_write_apc(0x05fa0004);      swd_dummy_clock();
         swd_write_select(0x00000010);   swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000041 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000041
         swd_write_select(0x00000000);   swd_dummy_clock();
         swd_write_ctrlstat(0x50000020); swd_dummy_clock();
         swd_read_ctrlstat();            swd_dummy_clock(); //0xf0000040
@@ -848,7 +848,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_write_ap0(0xa2000002);      swd_dummy_clock();
         swd_write_ap4(0xe000ed00);      swd_dummy_clock();
         swd_write_select(0x00000010);   swd_dummy_clock();
-        swd_read_apc();                 
+        swd_read_apc();
         swd_idle();
         swd_read_buff();                swd_dummy_clock(); //0xfa050000
         //END OF SECOND BIG BLOCK
@@ -859,7 +859,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
         swd_write_select(0x00000013);   swd_dummy_clock();
-        swd_read_dlcr();                swd_dummy_clock(); //0x00000001 
+        swd_read_dlcr();                swd_dummy_clock(); //0x00000001
         swd_write_select(0x00000003);   swd_dummy_clock();
         swd_write_ap4(0xe000edf0);      swd_dummy_clock();
         swd_write_select(0x00000013);   swd_dummy_clock();
@@ -872,7 +872,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
         swd_write_select(0x00000013);   swd_dummy_clock();
-        swd_read_dlcr();                swd_dummy_clock(); //0x10000001 
+        swd_read_dlcr();                swd_dummy_clock(); //0x10000001
         swd_write_select(0x00000003);   swd_dummy_clock();
         swd_write_ap4(0xe000edf0);      swd_dummy_clock();
         swd_write_select(0x00000013);   swd_dummy_clock();
@@ -885,11 +885,11 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(0); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_dlcr();                swd_dummy_clock(); //0x00000001 
+        swd_read_dlcr();                swd_dummy_clock(); //0x00000001
         swd_read_ap0();                 swd_dummy_clock(); //0x00
         swd_read_buff();                swd_dummy_clock(); //0x00040001
-        swd_read_apc();             
-        swd_idle();           
+        swd_read_apc();
+        swd_idle();
         swd_read_buff();                swd_dummy_clock(); //0x0x01000000
         swd_write_ap8(0x00000000);      swd_dummy_clock();
         swd_read_ap0();                 swd_dummy_clock(); //0xe00ff003
@@ -900,8 +900,8 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_write_ap4(0xe0002000);      swd_dummy_clock();
         swd_write_apc(0x00000003);      swd_dummy_clock();
         swd_write_ap4(0xe0002000);      swd_dummy_clock();
-        swd_read_apc();             
-        swd_idle();           
+        swd_read_apc();
+        swd_idle();
         swd_read_buff();                swd_dummy_clock(); //0x00000041
         swd_write_ap4(0xe0002008);      swd_dummy_clock();
         swd_write_apc(0x00000000);      swd_dummy_clock();
@@ -926,11 +926,11 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(1); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_dlcr();                swd_dummy_clock(); //0x10000001 
+        swd_read_dlcr();                swd_dummy_clock(); //0x10000001
         swd_read_ap0();                 swd_dummy_clock(); //0x00
         swd_read_buff();                swd_dummy_clock(); //0x00040001
-        swd_read_apc();             
-        swd_idle();           
+        swd_read_apc();
+        swd_idle();
         swd_read_buff();                swd_dummy_clock(); //0x0x01000000
         swd_write_ap8(0x00000000);      swd_dummy_clock();
         swd_read_ap0();                 swd_dummy_clock(); //0xe00ff003
@@ -941,8 +941,8 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_write_ap4(0xe0002000);      swd_dummy_clock();
         swd_write_apc(0x00000003);      swd_dummy_clock();
         swd_write_ap4(0xe0002000);      swd_dummy_clock();
-        swd_read_apc();             
-        swd_idle();           
+        swd_read_apc();
+        swd_idle();
         swd_read_buff();                swd_dummy_clock(); //0x00000041
         swd_write_ap4(0xe0002008);      swd_dummy_clock();
         swd_write_apc(0x00000000);      swd_dummy_clock();
@@ -965,7 +965,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
 
 
     }
-   
+
     ets_delay_us(5000ul);
 
     // halt
@@ -975,7 +975,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(0); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001
         swd_read_ap0();                 swd_dummy_clock(); //0x0
         swd_read_buff();                swd_dummy_clock(); //0x40001
 
@@ -984,7 +984,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(1); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001
         swd_read_ap0();                 swd_dummy_clock(); //0x0
         swd_read_buff();                swd_dummy_clock(); //0x40001
 
@@ -993,7 +993,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(0); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001
         swd_write_ap0(0xa05f0003);      swd_dummy_clock();
         swd_read_ap0();                 swd_dummy_clock(); //0x00
         swd_read_buff();                swd_dummy_clock(); //0x01030003
@@ -1004,9 +1004,9 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_read_ap0();                 swd_dummy_clock(); //0x00
         swd_read_buff();                swd_dummy_clock(); //0x01
         swd_write_ap0(0x00000001);      swd_dummy_clock();
-        swd_write_select(0x00000003);   swd_dummy_clock();    
+        swd_write_select(0x00000003);   swd_dummy_clock();
         swd_write_ap4(0xe000edf0);      swd_dummy_clock();
-        swd_write_select(0x00000013);   swd_dummy_clock();    
+        swd_write_select(0x00000013);   swd_dummy_clock();
         swd_read_ap0();                 swd_dummy_clock(); //0x00
         swd_read_buff();                swd_dummy_clock(); //0x00030003
         swd_write_ap4(0x00000000);      swd_dummy_clock();
@@ -1094,7 +1094,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(0); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001
         swd_read_ap0();            swd_dummy_clock(); //0x00000000
         swd_read_buff();                swd_dummy_clock(); //0x30003
 
@@ -1103,7 +1103,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(1); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001
         swd_read_ap0();            swd_dummy_clock(); //0x00000000
         swd_read_buff();                swd_dummy_clock(); //0x00040001
 
@@ -1112,7 +1112,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(0); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001
         swd_write_select(0x00000003);   swd_dummy_clock();
         swd_write_ap4(0x20000000);      swd_dummy_clock();
 
@@ -1154,7 +1154,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(1); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_dlcr();            swd_dummy_clock(); //0x10000001 
+        swd_read_dlcr();            swd_dummy_clock(); //0x10000001
         swd_read_ap0();            swd_dummy_clock(); //0x00000000
         swd_read_buff();                swd_dummy_clock(); //0x00040001
 
@@ -1162,7 +1162,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
 
 
     ets_delay_us(5000ul);
-    
+
 
 
     // resume 0x200000000
@@ -1172,7 +1172,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(0); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x00000001
         swd_read_ap0();                 swd_dummy_clock(); //0x0
         swd_read_buff();                swd_dummy_clock(); //0x30003
 
@@ -1183,7 +1183,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(1); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001
         swd_read_ap0();                 swd_dummy_clock(); //0x0
         swd_read_buff();                swd_dummy_clock(); //0x30003
 
@@ -1205,7 +1205,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(1); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x10000001
         swd_write_ap0(0xa05f0001);      swd_dummy_clock();
 
         // 5th
@@ -1215,7 +1215,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint
         swd_target_select(0); swd_dummy_clock();
         swd_read_idcode(); swd_dummy_clock();
         swd_write_abort(0x00000010);    swd_dummy_clock();
-        swd_read_ctrlstat();            swd_dummy_clock(); //0x01 
+        swd_read_ctrlstat();            swd_dummy_clock(); //0x01
         swd_write_ap0(0xa05f0001);      swd_dummy_clock();
     }
 

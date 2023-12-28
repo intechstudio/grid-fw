@@ -2,21 +2,21 @@
 
 
 void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui){
-	
+
 	// 16 pot, depth of 5, 14bit internal, 7bit result;
 	grid_ain_init(ain, 16, 5);
-	grid_led_init(led, 16);	
-	
+	grid_led_init(led, 16);
+
 	grid_ui_model_init(ui, 16+1); // +1 for the system element
 
 	for(uint8_t j=0; j<16; j++){
-			
+
 		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_POTENTIOMETER);
-	
-	}	
+
+	}
 
 	grid_ui_element_init(ui, ui->element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
-	
+
 	ui->lua_ui_init_callback = grid_lua_ui_init_po16;
 
 }
@@ -26,7 +26,7 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_tim
 
 	const uint16_t adc_max_value = (1<<adc_bit_depth) - 1;
 
-	int32_t* template_parameter_list = grid_ui_state.element_list[input_channel].template_parameter_list;	
+	int32_t* template_parameter_list = grid_ui_state.element_list[input_channel].template_parameter_list;
 
 
 	int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
@@ -43,7 +43,7 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_tim
 	if (grid_ain_get_changed(&grid_ain_state, input_channel)){
 
 		// update lastrealtime
-		*last_real_time = grid_platform_rtc_get_micros(); 
+		*last_real_time = grid_platform_rtc_get_micros();
 		template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] = elapsed_time/MS_TO_US;
 
 		int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
@@ -67,11 +67,11 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_tim
 
 
 		struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_UI_EVENT_AC);
-		
+
 		if (grid_ui_state.ui_interaction_enabled){
-			grid_ui_event_trigger(eve);	
-		}	
-		
+			grid_ui_event_trigger(eve);
+		}
+
 	}
 
 }
@@ -80,21 +80,21 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_tim
 
 
 void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui){
-	
+
 	// 16 pot, depth of 5, 14bit internal, 7bit result;
 	grid_ain_init(ain, 16, 5);
-	grid_led_init(led, 16);	
-	
+	grid_led_init(led, 16);
+
 	grid_ui_model_init(ui, 16+1); // +1 for the system element
 
 	for(uint8_t j=0; j<16; j++){
-			
+
 		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_BUTTON);
-	
-	}	
+
+	}
 
 	grid_ui_element_init(ui, ui->element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
-	
+
 	ui->lua_ui_init_callback = grid_lua_ui_init_bu16;
 }
 
@@ -103,7 +103,7 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
 
 	const uint16_t adc_max_value = (1<<adc_bit_depth) - 1;
 
-	int32_t* template_parameter_list = grid_ui_state.element_list[input_channel].template_parameter_list;	
+	int32_t* template_parameter_list = grid_ui_state.element_list[input_channel].template_parameter_list;
 
 	// limit lastrealtime
 	uint32_t elapsed_time = grid_platform_rtc_get_elapsed_time(*last_real_time);
@@ -134,27 +134,27 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
 
 
 
-	// value is the same as it was last time 
+	// value is the same as it was last time
 	if (value == template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index]){
 		return;
 	}
 
 	// button change happened
 	template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = value;
-	
+
 	// update lastrealtime
-	*last_real_time = grid_platform_rtc_get_micros(); 
+	*last_real_time = grid_platform_rtc_get_micros();
 	template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] = elapsed_time/MS_TO_US;
 
 
 	if (value != 0){ // Button Press Event
 
 		if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
-			
-			// Button ABS					
+
+			// Button ABS
 			int32_t max = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
 			template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = max;
-		
+
 		}
 		else{
 
@@ -175,102 +175,102 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
 			template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = next;
 
 		}
-		
+
 		struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_UI_EVENT_BC);
-		
+
 		if (grid_ui_state.ui_interaction_enabled){
-			grid_ui_event_trigger(eve);	
+			grid_ui_event_trigger(eve);
 		}
-		
+
 	}
 	else{  // Button Release Event
 
 		if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0){
-			
-			// Button ABS						
+
+			// Button ABS
 			int32_t min = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
 			template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = min;
-		
+
 		}
 		else{
 
 			// Toggle
 
-		}               
-				
+		}
+
 		struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_UI_EVENT_BC);
-		
+
 		if (grid_ui_state.ui_interaction_enabled){
-			grid_ui_event_trigger(eve);	
+			grid_ui_event_trigger(eve);
 		}
 
 	}
-		
+
 
 }
 
 
 
 void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui){
-	
+
 	// 16 pot, depth of 5, 14bit internal, 7bit result;
 	grid_ain_init(ain, 16, 5);
-	grid_led_init(led, 12);	
-	
+	grid_led_init(led, 12);
+
 	grid_ui_model_init(ui, 12+1); // +1 for the system element
 
 	for(uint8_t j=0; j<8; j++){
-			
+
 		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_POTENTIOMETER);
-	
-	}	
+
+	}
 
 	for(uint8_t j=8; j<12; j++){
-			
+
 		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_BUTTON);
-	
-	}		
+
+	}
 
 
 	grid_ui_element_init(ui, ui->element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
-	
+
 	ui->lua_ui_init_callback = grid_lua_ui_init_pbf4;
 }
 
 
 void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui){
-	
+
 	// should be 4 but indexing is bad at grid_element_potmeter_template_parameter_init
 	grid_ain_init(&grid_ain_state, 8, 5);
 
 	grid_led_init(&grid_led_state, 8);
-	
-	grid_ui_model_init(ui, 8+1); // +1 for the system element	
-		
+
+	grid_ui_model_init(ui, 8+1); // +1 for the system element
+
 	for(uint8_t j=0; j<4; j++){
-	
+
 		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_ENCODER);
 
-	}		
+	}
 
 	for(uint8_t j=4; j<8; j++){
-	
+
 		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_POTENTIOMETER);
 
-	}				
+	}
 
 
 	grid_ui_element_init(ui, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
 
 
-	
+
 	ui->lua_ui_init_callback = grid_lua_ui_init_ef44;
 
 
 }
 
 void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui){
-	
+
 	// 16 pot, depth of 5, 14bit internal, 7bit result;
 	grid_ain_init(ain, 16, 5); // TODO: 12 ain for TEK2
 	grid_led_init(led, 18);	 // TODO: 18 led for TEK2
@@ -278,11 +278,11 @@ void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 	uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9};
 
 	grid_led_lookup_init(led, led_lookup); // initialize the optional led index lookup table for array remapping
-	
+
 	grid_ui_model_init(ui, 10+1); // 10+1 for the system element on TEK2
 
 	for(uint8_t j=0; j<10; j++){
-			
+
 		if (j<8){
 
 			grid_ui_element_init(ui, j, GRID_UI_ELEMENT_BUTTON);
@@ -290,17 +290,17 @@ void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 		else if (j<10){
 			grid_ui_element_init(ui, j, GRID_UI_ELEMENT_ENCODER);
 		}
-	
-	}	
+
+	}
 
 	grid_ui_element_init(ui, ui->element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
-	
+
 	ui->lua_ui_init_callback = grid_lua_ui_init_tek2;
 }
 
 
 int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value){
-	
+
 	// lookup table, of state machine of the combination of old encoder AB and new encoder AB
 	static int8_t encoder_heading[] = { 0, 1, -1, 0, -1, 0, 0, 1, 1, 0, 0, -1, 0, -1, 1, };
 	uint8_t encoder_state = (old_value & 0b11) <<2 | (new_value & 0b11);
@@ -334,9 +334,9 @@ void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button
 
 	// BUTTON CHANGE
 	// update lastrealtime
-	*button_last_real_time = grid_platform_rtc_get_micros(); 
+	*button_last_real_time = grid_platform_rtc_get_micros();
 
-	int32_t* template_parameter_list = ele->template_parameter_list;	
+	int32_t* template_parameter_list = ele->template_parameter_list;
 	template_parameter_list[GRID_LUA_FNC_E_BUTTON_ELAPSED_index] = button_elapsed_time/MS_TO_US;
 
 	if (new_button_value == 0){ // Button Press
@@ -367,16 +367,16 @@ void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button
 
 			template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = next;
 		}
-			
+
 		struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_BC);
-		
+
 		if (grid_ui_state.ui_interaction_enabled){
-			grid_ui_event_trigger(eve);	
-		}	
+			grid_ui_event_trigger(eve);
+		}
 
 	}
 	else{  // Button Release
-	
+
 		template_parameter_list[GRID_LUA_FNC_E_BUTTON_STATE_index] = 0;
 
 		// Button ABS
@@ -390,13 +390,13 @@ void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button
 			// IMPLEMENT STEP TOGGLE HERE
 
 		}
-					
+
 		struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_BC);
-	
+
 		if (grid_ui_state.ui_interaction_enabled){
-			grid_ui_event_trigger(eve);	
-		}	
-		
+			grid_ui_event_trigger(eve);
+		}
+
 	}
 
 
@@ -410,15 +410,15 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 		*encoder_last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
 		encoder_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT*MS_TO_US;
 	}
-	
-	if (delta == 0){		
+
+	if (delta == 0){
 		//nothing left to do
 		return 0; // did not trigger
 	}
 
 
 	// update lastrealtime
-	*encoder_last_real_time = grid_platform_rtc_get_micros(); 
+	*encoder_last_real_time = grid_platform_rtc_get_micros();
 	int32_t* template_parameter_list = ele->template_parameter_list;
 	template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] = encoder_elapsed_time/MS_TO_US;
 
@@ -431,22 +431,22 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 	if (elapsed_ms>25){
 		elapsed_ms = 25;
 	}
-	
+
 	if (elapsed_ms<1){
 		elapsed_ms = 1;
 	}
 
-	double minmaxscale = (max-min)/128.0;	
-	
+	double minmaxscale = (max-min)/128.0;
+
 	double velocityparam = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VELOCITY_index]/100.0;
-			
-		
-	// implement configurable velocity parameters here	
-	double velocityfactor = ((25*25-elapsed_ms*elapsed_ms)/75.0)*minmaxscale*velocityparam + 1.0;	
+
+
+	// implement configurable velocity parameters here
+	double velocityfactor = ((25*25-elapsed_ms*elapsed_ms)/75.0)*minmaxscale*velocityparam + 1.0;
 
 	if (is_endless_pot){
 		velocityfactor = minmaxscale*velocityparam/15.0;
-	}	
+	}
 
 	int32_t delta_velocity = delta * velocityfactor;
 
@@ -458,7 +458,7 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 
 			return 0; // did not trigger
 		}
-		
+
 	}else{
 		template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] += delta_velocity;
 	}
@@ -476,8 +476,8 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 		}
 		else{
 			new_value = old_value + delta_velocity;
-		}	
-		
+		}
+
 		template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_value;
 
 	}
@@ -493,17 +493,17 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 		}
 		else{
 			new_value = old_value + delta_velocity;
-		}	
-		
+		}
+
 		template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_value;
-		
+
 	}
 	else if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 2){ // Relative 2's complement
 
 		// Two's complement magic 7 bit signed variable
-	
+
 		int32_t old_twoscomplement = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
-		
+
 		uint8_t old_8bit_extended_twoscomplement = old_twoscomplement;
 
 		//Limit to signed -64 +63 range
@@ -513,7 +513,7 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 		if (old_twoscomplement<0){
 			old_8bit_extended_twoscomplement = 0;
 		}
-		
+
 		if (old_twoscomplement > 63){ // extend sign bit to 8 bit size
 			old_8bit_extended_twoscomplement+=128;
 		}
@@ -521,7 +521,7 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 		int8_t old_signed;
 
 		if (old_8bit_extended_twoscomplement>127){ // negative number
-			old_signed = -( (~old_8bit_extended_twoscomplement) + 1 + 256);	
+			old_signed = -( (~old_8bit_extended_twoscomplement) + 1 + 256);
 		}
 		else{ // positive number
 			old_signed = -(~old_8bit_extended_twoscomplement) - 1;
@@ -530,7 +530,7 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 
 		int16_t new_signed = old_signed - delta_velocity;
 
-	
+
 		//Limit to signed -64 +63 range
 		if (new_signed<-64){
 			new_signed = -64;
@@ -544,25 +544,25 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 
 		// Two's complement magic
 		uint8_t new_twoscomplement = (~new_signed_8bit)+1;
-				
+
 		// reduce the result to 7 bit length
 		uint8_t new_7bit_twoscomplement = new_twoscomplement & 127;
 
 		template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_7bit_twoscomplement;
-		
+
 	}
 
 
 
 	struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_EC);
-	
+
 	if (grid_ui_state.ui_interaction_enabled){
-		grid_ui_event_trigger(eve);	
-	}	
+		grid_ui_event_trigger(eve);
+	}
 
 
 	return 1; // did trigger
-			
+
 }
 
 
@@ -574,7 +574,7 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 		return;
 	}
 
-		
+
 	int16_t delta = grid_ui_encoder_rotation_delta(old_value, new_value); // delta can be -1, 0 or 1
 
 	// shift register bits arrangement: MSB to LSB
@@ -592,12 +592,12 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 
 
 uint16_t grid_ui_endlesspot_calculate_angle(uint16_t phase_a, uint16_t phase_b, uint8_t adc_bit_depth){
-	
+
 	uint16_t value_degrees = 0;
 
 	// calculate absolute angle based on phase_a and phase_b
 	// .....
-	
+
 	double phase_a_norm = (double)phase_a / ((1<<adc_bit_depth) - 1) ;
 	double phase_b_norm = (double)phase_b / ((1<<adc_bit_depth) - 1) ;
 
@@ -651,7 +651,7 @@ uint16_t grid_ui_endlesspot_calculate_angle(uint16_t phase_a, uint16_t phase_b, 
 
 
 void grid_ui_endlesspot_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, struct grid_module_endlesspot_state* old_value, struct grid_module_endlesspot_state* new_value,  uint8_t adc_bit_depth){
-	
+
 
 	if (!memcmp(old_value, new_value, sizeof(struct grid_module_endlesspot_state))){
 		// no change
@@ -660,7 +660,7 @@ void grid_ui_endlesspot_store_input(uint8_t input_channel, uint64_t* encoder_las
 
 
 	struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, input_channel);
-	int32_t* template_parameter_list = ele->template_parameter_list;	
+	int32_t* template_parameter_list = ele->template_parameter_list;
 
 	uint16_t value_degrees_new = grid_ui_endlesspot_calculate_angle(new_value->phase_a_value, new_value->phase_b_value, 12);
 	uint16_t value_degrees_old = grid_ui_endlesspot_calculate_angle(old_value->phase_a_value, old_value->phase_b_value, 12);
@@ -677,7 +677,7 @@ void grid_ui_endlesspot_store_input(uint8_t input_channel, uint64_t* encoder_las
 	grid_ain_add_sample(&grid_ain_state, input_channel, value_degrees_new, 12, (uint8_t) resolution);
 
 	if (grid_ain_get_changed(&grid_ain_state, input_channel)){
-		
+
 		int16_t delta = (value_degrees_new-value_degrees_old);
 
 		if (delta<-1800){
@@ -690,7 +690,7 @@ void grid_ui_endlesspot_store_input(uint8_t input_channel, uint64_t* encoder_las
 		if (abs(delta)>10){
 
 			template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] = value_degrees_new/20;
-			uint8_t has_triggered = grid_ui_encoder_update_trigger(ele, encoder_last_real_time, delta, 1);		
+			uint8_t has_triggered = grid_ui_encoder_update_trigger(ele, encoder_last_real_time, delta, 1);
 
 			if (has_triggered){
 				old_value->phase_a_value = new_value->phase_a_value;
@@ -709,20 +709,19 @@ void grid_ui_endlesspot_store_input(uint8_t input_channel, uint64_t* encoder_las
 
 
 void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui){
-	
+
 	grid_led_init(&grid_led_state, 16);
-	
-	grid_ui_model_init(ui, 16+1); // +1 for the system element	
-		
+
+	grid_ui_model_init(ui, 16+1); // +1 for the system element
+
 	for(uint8_t j=0; j<16; j++){
-	
+
 		grid_ui_element_init(ui, j, GRID_UI_ELEMENT_ENCODER);
 
-	}		
+	}
 
 
 	grid_ui_element_init(ui, grid_ui_state.element_list_length-1, GRID_UI_ELEMENT_SYSTEM);
-		
+
 	ui->lua_ui_init_callback = grid_lua_ui_init_en16;
 }
-

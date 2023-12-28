@@ -3,26 +3,26 @@
  *
  * Created: 9/15/2020 3:41:44 PM
  *  Author: suku
- */ 
+ */
 
 
 #include "grid_d51_nvm.h"
 
 
 void grid_d51_nvm_init(struct grid_d51_nvm_model* nvm, struct flash_descriptor* flash_instance){
-	
+
 	nvm->toc_count = 0;
 	nvm->toc_head = NULL;
 
 	nvm->next_write_offset = 0;
 
-	
+
 	nvm->flash = flash_instance;
-	
+
 	nvm->status = 1;
-	
+
 	uint32_t erase_bulk_address;
-	
+
 
 }
 
@@ -65,11 +65,11 @@ uint32_t grid_d51_nvm_toc_defragment(struct grid_d51_nvm_model* nvm){
 
 			// read as much as we can fit into the current block
 			CRITICAL_SECTION_ENTER()
-			flash_read(nvm->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset, &block_buffer[write_ptr], part1_length);		
+			flash_read(nvm->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset, &block_buffer[write_ptr], part1_length);
 			// write the current block to flash
 			flash_erase(nvm->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_D51_NVM_BLOCK_SIZE, GRID_D51_NVM_BLOCK_SIZE/GRID_D51_NVM_PAGE_SIZE);
 			flash_append(nvm->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_D51_NVM_BLOCK_SIZE, block_buffer, GRID_D51_NVM_BLOCK_SIZE);
-			CRITICAL_SECTION_LEAVE()	
+			CRITICAL_SECTION_LEAVE()
 
 
 			// update the write_ptr and block_count
@@ -82,9 +82,9 @@ uint32_t grid_d51_nvm_toc_defragment(struct grid_d51_nvm_model* nvm){
 			}
 
 			// read the rest of the configuration
-			CRITICAL_SECTION_ENTER()	
+			CRITICAL_SECTION_ENTER()
 			flash_read(nvm->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + current->config_string_offset + part1_length, &block_buffer[write_ptr], part2_length);
-			CRITICAL_SECTION_LEAVE()	
+			CRITICAL_SECTION_LEAVE()
 
 			// update the write_ptr
 			write_ptr += part2_length;
@@ -95,18 +95,18 @@ uint32_t grid_d51_nvm_toc_defragment(struct grid_d51_nvm_model* nvm){
 		}
 
 		current->config_string_offset = GRID_D51_NVM_BLOCK_SIZE * block_count + write_ptr - current->config_string_length;
-		
+
 
 		if (current->next == NULL){
 
 			// no more elements in the list, write last partial block to NVM
-			//CRITICAL_SECTION_ENTER()	
+			//CRITICAL_SECTION_ENTER()
 			flash_erase(nvm->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_D51_NVM_BLOCK_SIZE, GRID_D51_NVM_BLOCK_SIZE/GRID_D51_NVM_PAGE_SIZE);
 			flash_append(nvm->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_D51_NVM_BLOCK_SIZE, block_buffer, write_ptr);
-			//CRITICAL_SECTION_LEAVE()	
+			//CRITICAL_SECTION_LEAVE()
 
 			break;
-		
+
 		}
 		else{
 			// jump to next and run the loop again
@@ -125,16 +125,16 @@ uint32_t grid_d51_nvm_toc_defragment(struct grid_d51_nvm_model* nvm){
 
 	while(GRID_D51_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_D51_NVM_BLOCK_SIZE < GRID_D51_NVM_LOCAL_END_ADDRESS){
 
-		CRITICAL_SECTION_ENTER()	
+		CRITICAL_SECTION_ENTER()
 		flash_erase(nvm->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + block_count*GRID_D51_NVM_BLOCK_SIZE, GRID_D51_NVM_BLOCK_SIZE/GRID_D51_NVM_PAGE_SIZE);
-		CRITICAL_SECTION_LEAVE()	
-	
+		CRITICAL_SECTION_LEAVE()
+
 		block_count++;
 	}
-	
+
 
 	struct grid_msg_packet response;
-		
+
 	grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
 	// acknowledge
@@ -142,10 +142,10 @@ uint32_t grid_d51_nvm_toc_defragment(struct grid_d51_nvm_model* nvm){
 	grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 
 	// debugtext
-	grid_msg_packet_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);		
+	grid_msg_packet_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_start);
 	grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-	grid_msg_packet_body_append_printf(&response, "xdefrag complete 0x%x", GRID_D51_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);		
-	grid_msg_packet_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);	
+	grid_msg_packet_body_append_printf(&response, "xdefrag complete 0x%x", GRID_D51_NVM_LOCAL_BASE_ADDRESS + nvm->next_write_offset);
+	grid_msg_packet_body_append_printf(&response, GRID_CLASS_DEBUGTEXT_frame_end);
 
 	grid_msg_packet_close(&grid_msg_state, &response);
 
@@ -153,7 +153,7 @@ uint32_t grid_d51_nvm_toc_defragment(struct grid_d51_nvm_model* nvm){
 
 
 	grid_d51_nvm_toc_debug(nvm);
-	
+
 }
 
 uint32_t grid_d51_nvm_append(struct grid_d51_nvm_model* mod, uint8_t* buffer, uint16_t length){
@@ -161,7 +161,7 @@ uint32_t grid_d51_nvm_append(struct grid_d51_nvm_model* mod, uint8_t* buffer, ui
 	// before append pad to 8 byte words
 
 	//printf("APPEND START len: %d\r\n", length);
-	uint32_t append_length = length + (8 - length%8)%8; 
+	uint32_t append_length = length + (8 - length%8)%8;
 
 
 	uint8_t append_buffer[append_length];
@@ -191,9 +191,9 @@ uint32_t grid_d51_nvm_append(struct grid_d51_nvm_model* mod, uint8_t* buffer, ui
 
 
 	// APPEND
-	CRITICAL_SECTION_ENTER()	
+	CRITICAL_SECTION_ENTER()
 	flash_append(mod->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, append_buffer, append_length);
-	CRITICAL_SECTION_LEAVE()		
+	CRITICAL_SECTION_LEAVE()
 
 	// CREATE VERIFY BUFFER
 	uint8_t verify_buffer[append_length];
@@ -203,9 +203,9 @@ uint32_t grid_d51_nvm_append(struct grid_d51_nvm_model* mod, uint8_t* buffer, ui
 	}
 
 	// VERIFY FLASH CONTENT
-	CRITICAL_SECTION_ENTER()	
+	CRITICAL_SECTION_ENTER()
 	flash_read(mod->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, verify_buffer, append_length);
-	CRITICAL_SECTION_LEAVE()		
+	CRITICAL_SECTION_LEAVE()
 	uint8_t failed_flag = 0;
 
 	for (uint16_t i=0; i<append_length; i++){
@@ -220,7 +220,7 @@ uint32_t grid_d51_nvm_append(struct grid_d51_nvm_model* mod, uint8_t* buffer, ui
 	if (failed_flag){
 		grid_port_debug_printf("Attempt to fix flash content");
 
-		CRITICAL_SECTION_ENTER()	
+		CRITICAL_SECTION_ENTER()
 		flash_write(mod->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, append_buffer, append_length);
 		CRITICAL_SECTION_LEAVE()
 
@@ -232,9 +232,9 @@ uint32_t grid_d51_nvm_append(struct grid_d51_nvm_model* mod, uint8_t* buffer, ui
 		}
 
 		// VERIFY FLASH CONTENT
-		CRITICAL_SECTION_ENTER()	
+		CRITICAL_SECTION_ENTER()
 		flash_read(mod->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + mod->next_write_offset, verify_buffer, append_length);
-		CRITICAL_SECTION_LEAVE()			
+		CRITICAL_SECTION_LEAVE()
 
 		uint8_t failed_flag = 0;
 
@@ -262,8 +262,8 @@ uint32_t grid_d51_nvm_append(struct grid_d51_nvm_model* mod, uint8_t* buffer, ui
 uint32_t grid_d51_nvm_clear(struct grid_d51_nvm_model* mod, uint32_t offset, uint16_t length){
 
 
-	uint16_t clear_length = length + (8 - length%8)%8; 
-	
+	uint16_t clear_length = length + (8 - length%8)%8;
+
 	uint8_t clear_buffer[clear_length];
 	uint8_t verify_buffer[clear_length];
 
@@ -271,7 +271,7 @@ uint32_t grid_d51_nvm_clear(struct grid_d51_nvm_model* mod, uint32_t offset, uin
 
 		clear_buffer[i] = 0x00;
 		verify_buffer[i] = 0x00;
-		
+
 
 	}
 
@@ -290,13 +290,13 @@ uint32_t grid_d51_nvm_clear(struct grid_d51_nvm_model* mod, uint32_t offset, uin
 	// 			uint8_t chunk[8] = {0};
 	// 			flash_append(mod->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + offset + (i/8)*8, &chunk, 8);
 	// 			flash_read(mod->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + offset + (i/8)*8, &chunk, 8);
-				
+
 	// 			uint8_t failed_count = 0;
 
 	// 			for (uint8_t k = 0; k<8; k++){
 
 	// 				if (chunk[k] != 0x00){
-					
+
 	// 					failed_count++;
 	// 				}
 	// 			}
@@ -313,16 +313,16 @@ uint32_t grid_d51_nvm_clear(struct grid_d51_nvm_model* mod, uint32_t offset, uin
 
 	// 	}
 	// }
-	
+
 
 }
 
 uint32_t grid_d51_nvm_erase_all(struct grid_d51_nvm_model* mod){
 
 	//printf("\r\n\r\nFlash Erase\r\n\r\n");
-	CRITICAL_SECTION_ENTER()	
+	CRITICAL_SECTION_ENTER()
 	flash_erase(mod->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS, (GRID_D51_NVM_LOCAL_END_ADDRESS-GRID_D51_NVM_LOCAL_BASE_ADDRESS)/GRID_D51_NVM_PAGE_SIZE);
-	CRITICAL_SECTION_LEAVE()	
+	CRITICAL_SECTION_LEAVE()
 
 	//printf("\r\n\r\nFlash Verify\r\n\r\n");
 	uint32_t address = GRID_D51_NVM_LOCAL_BASE_ADDRESS;
@@ -333,9 +333,9 @@ uint32_t grid_d51_nvm_erase_all(struct grid_d51_nvm_model* mod){
 	{
 
 		uint8_t verify_buffer[GRID_D51_NVM_PAGE_SIZE] = {0};
-		CRITICAL_SECTION_ENTER()	
+		CRITICAL_SECTION_ENTER()
 		flash_read(mod->flash, address, verify_buffer, GRID_D51_NVM_PAGE_SIZE);
-		CRITICAL_SECTION_LEAVE()	
+		CRITICAL_SECTION_LEAVE()
 
 		for(uint16_t i=0; i<GRID_D51_NVM_PAGE_SIZE; i++){
 
@@ -349,7 +349,7 @@ uint32_t grid_d51_nvm_erase_all(struct grid_d51_nvm_model* mod){
 		run++;
 		address += GRID_D51_NVM_PAGE_OFFSET;
 	}
-	
+
 	//printf("\r\n\r\nFlash Done, Run: %d Fail: %d\r\n\r\n", run, fail_count);
 
 	return fail_count;
@@ -389,9 +389,9 @@ void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm){
 	// check first byte of every page to see if there is any useful data
 	for (uint32_t i=0; i<GRID_D51_NVM_LOCAL_PAGE_COUNT; i++){
 
-		CRITICAL_SECTION_ENTER()	
+		CRITICAL_SECTION_ENTER()
 		flash_read(grid_d51_nvm_state.flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + i*GRID_D51_NVM_PAGE_OFFSET, flash_read_buffer, 1);
-		CRITICAL_SECTION_LEAVE()	
+		CRITICAL_SECTION_LEAVE()
 
 		if (flash_read_buffer[0] != 0xff){ // zero index because only first byt of the page was read
 
@@ -406,7 +406,7 @@ void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm){
 	}
 
 	// read the last page that has actual data
-	flash_read(grid_d51_nvm_state.flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + last_used_page_offset*GRID_D51_NVM_PAGE_OFFSET, flash_read_buffer, GRID_D51_NVM_PAGE_SIZE);	
+	flash_read(grid_d51_nvm_state.flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + last_used_page_offset*GRID_D51_NVM_PAGE_OFFSET, flash_read_buffer, GRID_D51_NVM_PAGE_SIZE);
 
 	for(uint32_t i = 0; i<GRID_D51_NVM_PAGE_SIZE; i+=8){ // +=8 because we want to keep the offset aligned
 
@@ -416,7 +416,7 @@ void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm){
 		else{
 
 			break;
-		}	
+		}
 	}
 
 
@@ -427,13 +427,13 @@ void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm){
 
 
 	uint8_t config_header[6] = {0};
-	snprintf(config_header, 5, GRID_CLASS_CONFIG_frame_start); 
+	snprintf(config_header, 5, GRID_CLASS_CONFIG_frame_start);
 
 	for (uint32_t i=0; i<=last_used_page_offset; i++){ // <= because we want to check the last_used_page too
 
-		CRITICAL_SECTION_ENTER()	
+		CRITICAL_SECTION_ENTER()
 		flash_read(nvm->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + i*GRID_D51_NVM_PAGE_SIZE, flash_read_buffer, GRID_D51_NVM_PAGE_SIZE);
-		CRITICAL_SECTION_LEAVE()	
+		CRITICAL_SECTION_LEAVE()
 
 		for (uint16_t j=0; j<GRID_D51_NVM_PAGE_SIZE; j++){
 
@@ -449,10 +449,10 @@ void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm){
 				if (j>GRID_D51_NVM_PAGE_SIZE-20){
 					// read from flash, because the whole header is not in the page
 
-					CRITICAL_SECTION_ENTER()	
+					CRITICAL_SECTION_ENTER()
 					flash_read(nvm->flash, GRID_D51_NVM_LOCAL_BASE_ADDRESS + current_offset, temp_buffer, 32);
-					CRITICAL_SECTION_LEAVE()	
-	
+					CRITICAL_SECTION_LEAVE()
+
 				}
 				else{
 					current_header = &flash_read_buffer[j];
@@ -469,9 +469,9 @@ void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm){
 					uint8_t vmajor = grid_msg_string_get_parameter(current_header, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
 					uint8_t vminor = grid_msg_string_get_parameter(current_header, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, NULL);
 					uint8_t vpatch = grid_msg_string_get_parameter(current_header, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, NULL);
-								
+
 					if (vmajor == GRID_PROTOCOL_VERSION_MAJOR && vminor == GRID_PROTOCOL_VERSION_MINOR && vpatch == GRID_PROTOCOL_VERSION_PATCH){
-						// version ok	
+						// version ok
 					}
 					else{
 						//grid_port_debug_printf("error.nvm.config version mismatch\r\n");
@@ -486,7 +486,7 @@ void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm){
 
 
 					if (config_length == 0){
-						
+
 						//printf("\r\nLENGTH 0: %s\r\n\r\n", temp_buffer);
 					}
 
@@ -497,7 +497,7 @@ void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm){
 						// this is default config
 						struct grid_d51_nvm_toc_entry* entry = NULL;
 						entry = grid_d51_nvm_toc_entry_find(nvm, page_number, element_number,event_type);
-						
+
 						if (entry != NULL){
 							grid_d51_nvm_toc_entry_remove(nvm, entry);
 						}
@@ -511,15 +511,15 @@ void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm){
 
 					}
 
-			
-					
+
+
 				}
 
 			}
 
 
-		}	
-	
+		}
+
 	}
 
 
@@ -576,7 +576,7 @@ uint32_t grid_d51_nvm_config_mock(struct grid_d51_nvm_model* mod){
 
 	uint8_t mock_length = rand_sync_read8(&RAND_0)%128; // 0...127 is the mock length
 
-	for (uint8_t i=0; i<mock_length; i++){ 
+	for (uint8_t i=0; i<mock_length; i++){
 
 		buf[len+i] = 'a' + i%26;
 
@@ -600,13 +600,13 @@ uint32_t grid_d51_nvm_config_store(struct grid_d51_nvm_model* nvm, uint8_t page_
 	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR, NULL);
 	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, GRID_PROTOCOL_VERSION_MINOR, NULL);
 	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, GRID_PROTOCOL_VERSION_PATCH, NULL);
-	
+
 	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, page_number, NULL);
 	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, element_number, NULL);
 	grid_msg_string_set_parameter(buf, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, event_type, NULL);
 
 	len = strlen(buf);
-	
+
 	strcpy(&buf[len], actionstring);
 
 	len = strlen(buf);
@@ -646,13 +646,13 @@ uint32_t grid_d51_nvm_config_store(struct grid_d51_nvm_model* nvm, uint8_t page_
 		else{
 
 			//printf("UPDATE %d %d %d :  0x%x to 0x%x %d\r\n", entry->page_id, entry->element_id, entry->event_type, entry->config_string_offset, append_offset, config_length);
-		
+
 			// actually we don't want to clear previous, to preserve config history
 			//grid_d51_nvm_clear(mod, entry->config_string_offset, entry->config_string_length);
 
 
 			grid_d51_nvm_toc_entry_update(entry, append_offset, config_length);
-			
+
 		}
 
 	}
@@ -673,10 +673,10 @@ uint8_t grid_d51_nvm_toc_entry_create(struct grid_d51_nvm_model* mod, uint8_t pa
 
 	while(1){
 
-		uint32_t next_sort = -1; 
+		uint32_t next_sort = -1;
 
 		if (next != NULL){
-			
+
 			next_sort = (next->page_id<<16) + (next->element_id<<8) + (next->event_type);
 		}
 
@@ -722,7 +722,7 @@ uint8_t grid_d51_nvm_toc_entry_create(struct grid_d51_nvm_model* mod, uint8_t pa
 
 			entry->next = next;
 			entry->prev = prev;
-			
+
 			if (prev == NULL){
 				// this is first element
 				mod->toc_head = entry;
@@ -757,7 +757,7 @@ uint8_t grid_d51_nvm_toc_entry_create(struct grid_d51_nvm_model* mod, uint8_t pa
 
 		printf("error.nvm.malloc failed\r\n");
 		return 255;
-	
+
 	}
 
 }
@@ -779,7 +779,7 @@ struct grid_d51_nvm_toc_entry* grid_d51_nvm_toc_entry_find(struct grid_d51_nvm_m
 
 		current = current->next;
 	}
-	
+
 	return NULL;
 }
 
@@ -837,7 +837,7 @@ uint8_t grid_d51_nvm_toc_entry_remove(struct grid_d51_nvm_model* nvm, struct gri
 
 	return 0;
 
-	
+
 }
 
 

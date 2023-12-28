@@ -23,9 +23,9 @@ extern uint8_t grid_platform_get_reset_cause();
 
 struct grid_sys_model
 {
-	
+
 	uint8_t reset_cause;
-	
+
 	uint8_t editor_connected;
 
 	uint8_t midirx_any_enabled;
@@ -33,46 +33,46 @@ struct grid_sys_model
 
 
 
-	
+
 	uint8_t bank_activebank_number;
 
 	uint8_t mapmodestate;
-	
+
 	uint32_t uniqueid_array[4];
-	
+
 	uint8_t bank_active_changed;
-	
+
 	uint8_t bank_setting_changed_flag;
-	
+
 	uint8_t bank_enabled[GRID_SYS_BANK_MAXNUMBER];
-	
+
 	uint8_t bank_color_r[GRID_SYS_BANK_MAXNUMBER];
 	uint8_t bank_color_g[GRID_SYS_BANK_MAXNUMBER];
 	uint8_t bank_color_b[GRID_SYS_BANK_MAXNUMBER];
-	
+
 	uint8_t bank_activebank_valid;
-	
+
 	uint8_t bank_activebank_color_r;
 	uint8_t bank_activebank_color_g;
 	uint8_t bank_activebank_color_b;
-	
+
 	uint8_t bank_init_flag;
-	
+
 
 
 	uint32_t hwfcg;
-	
+
 	int8_t module_x;
 	int8_t module_y;
 	uint8_t module_rot;
 
-	
+
 };
 
 extern struct grid_sys_model grid_sys_state;
 
 
-void grid_sys_init(struct grid_sys_model* mod); 
+void grid_sys_init(struct grid_sys_model* mod);
 
 
 

@@ -40,7 +40,7 @@ void grid_trace_init(struct grid_trace_model* trace, uint8_t core_id){
 }
 
 
-    
+
 void grid_trace_ignore_task(struct grid_trace_model* trace, void* task_handle){
 
     ets_printf("IGNORING %lx\r\n", (long unsigned int) task_handle);
@@ -89,7 +89,7 @@ void grid_trace_task_switched_in(void)
 
     trace->trace_buffer_write_ptr = (trace->trace_buffer_write_ptr+1)%1000;
 
- 
+
 
 }
 
@@ -115,7 +115,7 @@ void grid_trace_report_task(void *arg)
 
     grid_trace_init(&grid_trace_state_core0, 0);
     grid_trace_init(&grid_trace_state_core1, 1);
-    
+
     grid_trace_ignore_task(&grid_trace_state_core0, xTaskGetHandle( "esp_timer" ));
 
     char stats[3000] = {0};
@@ -148,4 +148,3 @@ void grid_trace_report_task(void *arg)
     //Wait to be deleted
     vTaskSuspend(NULL);
 }
-

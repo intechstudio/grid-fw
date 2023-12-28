@@ -44,14 +44,14 @@ def create_class_database(input_file_name):
     new_obj = {}
     index = 0
 
-    for line in get_lines(input_file_name): 
+    for line in get_lines(input_file_name):
         regex_string = '^#define\s+GRID_CLASS_(?P<key>[0-9A-Z]*)_code\s+"?(?P<value>[0-9A-Za-z]*)"?'
         m = re.search(regex_string, line)
 
         if m != None:
             key = m.group('key')
             value = m.group('value')
-            
+
             print("Current line: " + line)
             print("Matching with: " + regex_string)
             print(bcolors.OKGREEN + "Matched value: " + value + bcolors.ENDC)
@@ -66,7 +66,7 @@ def create_class_database(input_file_name):
             database[key]["class_params"]["INSTRUCTION"] = {}
             database[key]["class_params"]["INSTRUCTION"]["offset"] = 3
             database[key]["class_params"]["INSTRUCTION"]["length"] = 1
-             
+
         regex_string = '^#define\s+GRID_CLASS_(?P<key>[0-9A-Z]*)_(?P<param>[0-9A-Z]*)_(?P<attr>\w+)\s+"?(?P<value>[0-9A-Za-z]*)"?'
         m = re.search(regex_string, line)
 
@@ -75,8 +75,8 @@ def create_class_database(input_file_name):
             param = m.group('param')
             attr = m.group('attr')
             value = m.group('value')
-            
-            
+
+
             print("Current line: " + line)
             print("Matching with: " + regex_string)
             print(bcolors.OKGREEN + "Matched value: " + value + bcolors.ENDC)
@@ -88,7 +88,7 @@ def create_class_database(input_file_name):
 
 
             database[key]["class_params"][param][attr] = int(value)
-                         
+
 
     return database
 
@@ -97,14 +97,14 @@ def create_character_lookup(input_file_name):
 
     database = {}
 
-    for line in get_lines(input_file_name): 
+    for line in get_lines(input_file_name):
         regex_string = '^#define\s+GRID_CONST_(?P<key>[0-9A-Z]*)\s+"?(?P<value>[0-9A-Za-z]*)"?'
         m = re.search(regex_string, line)
 
         if m != None:
             key = m.group('key')
             value = m.group('value')
-            
+
             print("Current line: " + line)
             print("Matching with: " + regex_string)
             print(bcolors.OKGREEN + "Matched value: " + value + bcolors.ENDC)
@@ -112,7 +112,7 @@ def create_character_lookup(input_file_name):
             if key in database:
                 print("OK")
             else:
-                database[int(value, 16)] = key                    
+                database[int(value, 16)] = key
 
     return database
 

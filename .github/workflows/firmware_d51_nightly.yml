@@ -42,7 +42,7 @@ jobs:
 
       - name: Set Date
         run: echo "action_date=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
-        
+
       - name: Copy and rename the artifact
         run: |
           ls

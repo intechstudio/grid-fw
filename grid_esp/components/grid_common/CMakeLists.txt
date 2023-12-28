@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS 
+    SRCS
 
 
         "../../../grid_common/grid_protocol.c"
@@ -14,7 +14,7 @@ idf_component_register(
         "../../../grid_common/grid_ui.c"
         "../../../grid_common/grid_module.c"
         "../../../grid_common/grid_lua_api.c"
-        
+
         "../../../grid_common/lua-5.4.3/src/lapi.c"
         "../../../grid_common/lua-5.4.3/src/lctype.c"
         "../../../grid_common/lua-5.4.3/src/lfunc.c"
@@ -49,7 +49,7 @@ idf_component_register(
         "../../../grid_common/lua-5.4.3/src/lcorolib.c"
 
 
-    INCLUDE_DIRS 
+    INCLUDE_DIRS
         "."
         "../../../grid_common"
         "../../../grid_common/lua-5.4.3/src"

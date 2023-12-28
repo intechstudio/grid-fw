@@ -31,19 +31,19 @@
 
 
 uint8_t grid_msg_string_calculate_checksum_of_packet_string(char* str, uint32_t length){
-	
+
 	uint8_t checksum = 0;
 	for (uint32_t i=0; i<length-3; i++){
 		checksum ^= str[i];
 	}
-	
+
 	return checksum;
-	
+
 }
 uint8_t grid_msg_string_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
-		
+
 	uint8_t result = 0;
-	
+
 	if (ascii>47 && ascii<58){
 		result = ascii-48;
 	}
@@ -56,18 +56,18 @@ uint8_t grid_msg_string_read_hex_char_value(uint8_t ascii, uint8_t* error_flag){
 			*error_flag = ascii;
 		}
 	}
-	
-	return result;	
+
+	return result;
 }
 uint32_t grid_msg_string_read_hex_string_value(char* start_location, uint8_t length, uint8_t* error_flag){
-	
+
 	uint32_t result  = 0;
-	
+
 	for(uint8_t i=0; i<length; i++){
-		
+
 		result += grid_msg_string_read_hex_char_value(start_location[i], error_flag) << (length-i-1)*4;
 
-		
+
 	}
 
 	return result;
@@ -82,7 +82,7 @@ uint8_t grid_msg_string_checksum_read(char* str, uint32_t length){
 #define BUCKET_ARRAY_LENGTH 50
 
 uint dma_tx;
-uint dma_rx; 
+uint dma_rx;
 
 
 static uint8_t txbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
@@ -93,7 +93,7 @@ const uint CS_PIN = 17; // was 13
 uint8_t ready_flags = 255;
 
 
-// PIO SETUP CONSTANTS    
+// PIO SETUP CONSTANTS
 const uint SERIAL_BAUD = 2000000UL;
 
 const PIO GRID_TX_PIO = pio0;
@@ -131,7 +131,7 @@ void dma_handler() {
 }
 
 enum grid_bucket_status_t{
-    
+
     GRID_BUCKET_STATUS_EMPTY,
     GRID_BUCKET_STATUS_RECEIVING,
     GRID_BUCKET_STATUS_FULL,
@@ -170,7 +170,7 @@ struct grid_bucket bucket_array[BUCKET_ARRAY_LENGTH];
 
 
 
-struct grid_port port_array[4]; 
+struct grid_port port_array[4];
 
 struct grid_port* NORTH = &port_array[0];
 struct grid_port* EAST  = &port_array[1];
@@ -183,7 +183,7 @@ void grid_port_init(struct grid_port* port, uint8_t index){
     port->port_index = index;
 
     for (uint16_t i=0; i<512; i++){
-        port->tx_buffer[i] = 0;   
+        port->tx_buffer[i] = 0;
     }
 
     port->tx_index = 0;
@@ -214,7 +214,7 @@ struct grid_bucket* grid_bucket_find_next_match(struct grid_bucket* previous_buc
     // if no previous bucket was given then start from the end of the array (+1 will make this the beginning of the array later)
     if (previous_bucket == NULL){
         previous_bucket = &bucket_array[bucket_array_length-1];
-    } 
+    }
 
     for (uint8_t i=0; i<bucket_array_length; i++){
 
@@ -227,7 +227,7 @@ struct grid_bucket* grid_bucket_find_next_match(struct grid_bucket* previous_buc
         }
 
     }
-    
+
     //printf("No bucket 4 u :(\r\n");
     return NULL;
 }
@@ -239,9 +239,9 @@ struct grid_bucket* spi_previous_bucket = NULL;
 void grid_bucket_put_character(struct grid_bucket* bucket, char next_char){
 
     if (bucket == NULL){
-        
+
         printf("PUTC\n");
-        return; 
+        return;
     }
 
     if (bucket->buffer_index < BUCKET_BUFFER_LENGTH){
@@ -351,7 +351,7 @@ void uart_try_send_all(void){
     // iterate through all the ports
     for (uint8_t i = 0; i<4; i++){
 
-        struct grid_port* port = &port_array[i]; 
+        struct grid_port* port = &port_array[i];
 
         // if trasmission is in progress then send the next character
         if (port->tx_is_busy){
@@ -380,7 +380,7 @@ void uart_try_send_all(void){
 void fifo_try_receive(void){
 
 
-    
+
         uint32_t data = 0;
         uint32_t status = 0;
         //continue;
@@ -414,7 +414,7 @@ void fifo_try_receive(void){
                     grid_bucket_init(port->active_bucket, port->active_bucket->index);
                     port->active_bucket == NULL;
                     grid_port_attach_bucket(port);
-                    
+
 
                 }
 
@@ -452,7 +452,7 @@ void core_1_main_entry(){
 
     while(1){
 
-        
+
 
         uint32_t packed_chars = 0;
 
@@ -473,7 +473,7 @@ void core_1_main_entry(){
                 printf("F\n");
 
             }
-        }   
+        }
 
     }
 
@@ -523,7 +523,7 @@ void spi_txbuffer_set_sync_state(uint8_t* buff){
     }
 }
 
-int main() 
+int main()
 {
 
     stdio_init_all();
@@ -567,7 +567,7 @@ int main()
     uart_rx_program_init(GRID_RX_PIO, 1, offset_rx, GRID_EAST_RX_PIN, SERIAL_BAUD);
     uart_rx_program_init(GRID_RX_PIO, 2, offset_rx, GRID_SOUTH_RX_PIN, SERIAL_BAUD);
     uart_rx_program_init(GRID_RX_PIO, 3, offset_rx, GRID_WEST_RX_PIN, SERIAL_BAUD);
-    
+
 
 
 
@@ -607,14 +607,14 @@ int main()
     }
 
     uint8_t grid_task_should_run_now(struct grid_task* task){
-        
+
         if (time_us_32() - task->start_timestamp > task->interval){
-        
+
             task->start_timestamp = time_us_32();
-            
+
             // should run now!
             return 1;
-        
+
         }
         else{
 
@@ -639,9 +639,9 @@ int main()
     irq_set_exclusive_handler(SIO_IRQ_PROC0, core0_interrupt_handler);
     irq_set_enabled(SIO_IRQ_PROC0, true);
 
-  
 
-    while (1) 
+
+    while (1)
     {
 
         // TRY TO RECEIVE FROM SPI
@@ -662,11 +662,11 @@ int main()
                     gpio_set_dir(SYNC1_PIN, GPIO_OUT);
                     gpio_put(SYNC1_PIN, 1);
                     //set_drive_mode(SYNC1_PIN, GPIO_DRIVE_MODE_OPEN_DRAIN);
-                    
+
 
                 }
-                else if (sync1_drive){          
-                    gpio_set_dir(SYNC1_PIN, GPIO_IN);  
+                else if (sync1_drive){
+                    gpio_set_dir(SYNC1_PIN, GPIO_IN);
                     sync1_drive = 0;
                 }
 
@@ -677,7 +677,7 @@ int main()
                 // iterate through all the ports
                 for (uint8_t i = 0; i<4; i++){
 
-                    struct grid_port* port = &port_array[i]; 
+                    struct grid_port* port = &port_array[i];
 
                     // copy message to the addressed port and set it to busy!
                     if ((destination_flags&(1<<port->port_index))){
@@ -718,7 +718,7 @@ int main()
 
                 if (spi_active_bucket == NULL){
 
-                    spi_active_bucket = grid_bucket_find_next_match(spi_previous_bucket, GRID_BUCKET_STATUS_FULL);        
+                    spi_active_bucket = grid_bucket_find_next_match(spi_previous_bucket, GRID_BUCKET_STATUS_FULL);
 
                     // found full bucket, send it through SPI
                     if (spi_active_bucket != NULL) {
@@ -728,7 +728,7 @@ int main()
                         spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
                         spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<(spi_active_bucket->source_port_index));
 
-                        
+
 
 
                         //printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
@@ -737,8 +737,8 @@ int main()
                         uint8_t error;
 
                         uint16_t length = strlen(spi_active_bucket->buffer);
-                        uint16_t received_length = grid_msg_string_read_hex_string_value(&spi_active_bucket->buffer[GRID_BRC_LEN_offset], 4, &error);                            
-                        
+                        uint16_t received_length = grid_msg_string_read_hex_string_value(&spi_active_bucket->buffer[GRID_BRC_LEN_offset], 4, &error);
+
                         uint8_t calculated_checksum = grid_msg_string_calculate_checksum_of_packet_string(spi_active_bucket->buffer, length);
                         uint8_t received_checksum = grid_msg_string_checksum_read(spi_active_bucket->buffer, length);
 
@@ -753,11 +753,11 @@ int main()
                                 error_count++;
                             }
 
-                       
+
                         }
 
                         if (calculated_checksum != received_checksum){
-                            
+
                             //printf("C %d %d ", calculated_checksum, received_checksum);
                             error_count++;
                         }
@@ -768,14 +768,14 @@ int main()
 
                             //printf("SKIP\r\n");
                             printf("S\n");
-                            
+
                             // send empty packet with status flags
 
                             txbuf[0] = 0;
                             sprintf(txbuf, "DUMMY ERROR");
                             txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
                             txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
-                            
+
                             spi_txbuffer_set_sync_state(txbuf);
                             spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
                         }
@@ -788,7 +788,7 @@ int main()
 
                         }
 
-                        
+
 
                     }
                     else{
@@ -802,13 +802,13 @@ int main()
 
                         spi_txbuffer_set_sync_state(txbuf);
                         spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
-                                
+
                     }
 
 
                 }
 
-                
+
 
             }
 
@@ -831,8 +831,8 @@ int main()
 
         // iterate through all the ports
         uart_try_send_all();
-        
-        
+
+
         /* ==================================  UART RECEIVE  =================================*/
 
         //fifo_try_receive();

@@ -1,8 +1,8 @@
 idf_component_register(
-    SRCS 
+    SRCS
         "grid_esp32_led.c"
         "led_strip_encoder.c"
-    INCLUDE_DIRS 
+    INCLUDE_DIRS
         "."
     REQUIRES
         "driver"

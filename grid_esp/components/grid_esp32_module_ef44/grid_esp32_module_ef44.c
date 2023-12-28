@@ -40,7 +40,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_transaction_t *trans) {
 
     xRingbufferSendFromISR(grid_esp32_encoder_state.ringbuffer_handle , &result, sizeof(struct grid_esp32_encoder_result), NULL);
 
-    //grid_esp32_encoder_spi_start_transfer(&grid_esp32_encoder_state);    
+    //grid_esp32_encoder_spi_start_transfer(&grid_esp32_encoder_state);
     //portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
     //portENTER_CRITICAL(&spinlock);
     //spi_device_queue_trans(grid_esp32_encoder_state.spi_device_handle, &grid_esp32_encoder_state.transaction, 0);
@@ -73,7 +73,7 @@ void grid_esp32_module_ef44_task(void *arg)
 
         struct grid_esp32_adc_result* adc_result;
         adc_result = (struct grid_esp32_adc_result*) xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle , &adc_result_size, 0);
-        
+
 
         if (adc_result!=NULL){
 
@@ -83,10 +83,10 @@ void grid_esp32_module_ef44_task(void *arg)
                 adc_result->value = 4095-adc_result->value;
             }
 
-            grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], adc_result->value, 12); 
+            grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], adc_result->value, 12);
             vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , adc_result);
 
-        }      
+        }
 
 
 
@@ -94,7 +94,7 @@ void grid_esp32_module_ef44_task(void *arg)
 
         struct grid_esp32_encoder_result* result;
         result = (struct grid_esp32_encoder_result*) xRingbufferReceive(grid_esp32_encoder_state.ringbuffer_handle , &size, 0);
-        
+
 
         if (result!=NULL){
 
@@ -110,17 +110,17 @@ void grid_esp32_module_ef44_task(void *arg)
 
                 grid_esp32_encoder_state.rx_buffer_previous[j] = new_value;
 
-                
+
                 uint8_t i = encoder_position_lookup[j];
 
                 grid_ui_encoder_store_input(i, &encoder_last_real_time[i], &button_last_real_time[i], old_value, new_value, &phase_change_lock_array[i]);
-                    
+
             }
 
 
             vRingbufferReturnItem(grid_esp32_encoder_state.ringbuffer_handle , result);
 
-        }      
+        }
 
 
 

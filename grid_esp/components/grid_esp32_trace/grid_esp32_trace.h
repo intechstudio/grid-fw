@@ -43,7 +43,7 @@ extern struct grid_trace_model grid_trace_state_core0;
 extern struct grid_trace_model grid_trace_state_core1;
 
 void grid_trace_init(struct grid_trace_model* trace, uint8_t core_id);
-    
+
 void grid_trace_ignore_task(struct grid_trace_model* trace, void* task_handle);
 
 void grid_trace_task_switched_in(void);

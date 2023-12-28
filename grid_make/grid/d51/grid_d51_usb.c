@@ -3,7 +3,7 @@
  *
  * Created: 6/3/2020 5:02:14 PM
  *  Author: WPC-User
- */ 
+ */
 
 #include "grid_d51_usb.h"
 
@@ -36,7 +36,7 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
 		host_port->rx_double_buffer[grid_usb_rx_double_buffer_index] = grid_usb_serial_rx_buffer[i];
 
 		//printf("%d, ", grid_usb_serial_rx_buffer[i]);
-		
+
 		grid_usb_rx_double_buffer_index++;
 		grid_usb_rx_double_buffer_index%=GRID_DOUBLE_BUFFER_RX_SIZE;
 
@@ -58,14 +58,14 @@ static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code
 
 	//grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
 
-	
+
 	return false;                                                                                 /* No error. */
 }
 static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state)
 {
-	
+
 	//grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
-	
+
 	//printf("\r\n### USB SERIAL STATE CHANGE %d ###\r\n", sizeof(grid_usb_serial_rx_buffer));
 
 	if (state.rs232.DTR || 1) {
@@ -91,7 +91,7 @@ static uint8_t midi_rx_buffer[4] = {0};
 
 static bool grid_usb_midi_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
-	
+
 	struct grid_midi_event_desc midi_ev;
 
 	midi_ev.byte0 = midi_rx_buffer[1] & 0x0f; // channel
@@ -141,7 +141,7 @@ static bool grid_usb_midi_installed_cb(const uint8_t ep, const enum usb_xfer_cod
 
 void grid_d51_usb_init(void){
 
-	
+
 	audiodf_midi_init();
 	composite_device_start();
 
@@ -166,7 +166,7 @@ void grid_d51_usb_init(void){
 	grid_usb_midi_buffer_init();
 
 	grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
-    
+
 }
 
 int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3){
@@ -189,7 +189,7 @@ int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type){
 }
 
 int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis){
- 
+
     return hiddf_mouse_move(position, axis);
 }
 
@@ -208,13 +208,13 @@ int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value){
 
 int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_event_desc* active_key_list, uint8_t keys_count){
 
-	struct grid_usb_hid_kb_desc hid_key_array[GRID_KEYBOARD_KEY_maxcount]; 
+	struct grid_usb_hid_kb_desc hid_key_array[GRID_KEYBOARD_KEY_maxcount];
 	for(uint8_t i=0; i<GRID_KEYBOARD_KEY_maxcount; i++){
-	
+
 		hid_key_array[i].b_modifier = active_key_list[i].ismodifier;
 		hid_key_array[i].key_id = active_key_list[i].keycode;
 		hid_key_array[i].state = active_key_list[i].ispressed;
-	
+
 	}
 
     return hiddf_keyboard_keys_state_change(hid_key_array, keys_count);

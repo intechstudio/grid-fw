@@ -70,7 +70,7 @@ end"
 #define GRID_LUA_STDE_LENGTH    100
 
 struct grid_lua_model{
-    
+
     lua_State *L;
 
     uint32_t stdo_len;

@@ -11,7 +11,7 @@
 			let message = JSON.parse(event.data);
 
 			let temp = serialParser(message.data);
-			if (temp != undefined){			
+			if (temp != undefined){
 				serial = [...serial, {type: message.type, data: temp}];
 				if (serial.length > 30){
 					serial.shift();
@@ -47,9 +47,9 @@
 	let dy = '0';
 	let command = '';
 
-	
+
 	function hexdump(buffer, blockSize) {
-		
+
 		if(typeof buffer === 'string'){
 			//console.log("buffer is string");
 			//do nothing
@@ -66,8 +66,8 @@
 			//console.log("Error: buffer is unknown...");
 			return false;
 		}
-		
-		
+
+
 		blockSize = blockSize || 16;
 		var lines = [];
 		var lines_addr = [];
@@ -102,7 +102,7 @@
 	function create_chart(cw, ch, minValue, maxValue){
 
 		var new_chart = {
-		
+
 		chartwidth: cw,
 			chartheight: ch,
 			minvalue: minValue,
@@ -148,7 +148,7 @@
 
 
 	function serialParser(serial){
-		
+
 
 
 		let stx = String.fromCharCode(2);
@@ -191,13 +191,13 @@
 		else{
 
 			//console.log("no");
-		
+
 			let temp = String.fromCharCode.apply(String, serial);
 			//console.log(temp)
-			
+
 		    return hexdump( serial , 16 );
 
-			
+
 		}
 
 
@@ -220,7 +220,7 @@
 	onMount(()=>{
 		start(url);
 
-		
+
 	})
 
 
@@ -253,7 +253,7 @@
 	</div>
 
 	<div class="debug">
-		
+
 		{#each [...serial].reverse() as entry}
 			<div style="display: flex; margin-bottom:10px;"
 				class:heartbeat="{entry.type == 'heartbeat'}"
@@ -264,7 +264,7 @@
 				<div class="dump codes">{entry.data[1]}</div>
 				<div class="dump chars">{entry.data[2]}</div>
 
-				
+
 			</div>
 		{/each}
 	</div>
@@ -279,19 +279,19 @@
 				stroke="#00d974"
 				stroke-width="1"
 				points="{entry.points[0]}"/>
-		
+
 				<polyline id="chart_testchart_1"
 				fill="none"
 				stroke="#0074d9"
 				stroke-width="1"
 				points="{entry.points[1]}"/>
-		
+
 				<polyline id="chart_testchart_2"
 				fill="none"
 				stroke="#d97400"
 				stroke-width="1"
 				points="{entry.points[2]}"/>
-		
+
 				<text class="name" x="0" y="15" fill="black">{entry.name}</text>
 				<text class="max" x="0" y="25%" fill="red">{entry.max}</text>
 				<text class="avg" x="0" y="50%" fill="red">{entry.avg}</text>
@@ -331,14 +331,14 @@
 		width: 40px;
 		margin-right: 20px;
 
-	}	
+	}
 	.codes{
 		display:flex;
 		flex-direction: column;
 		/* background: #37b642; */
 		width: 360px;
 
-	}	
+	}
 	.chars{
 		display:flex;
 		flex-direction: column;

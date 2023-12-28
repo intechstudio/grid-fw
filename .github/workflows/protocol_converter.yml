@@ -37,10 +37,10 @@ jobs:
           git config --global user.name "Intech Bot"
           git clone https://${{ secrets.PERSONALACCESSTOKEN }}@github.com/intechstudio/grid-protocol.git
           ls
-      
+
       - uses: actions/setup-python@v2
       - name: Setup python
-        run: | 
+        run: |
           python ./.github/workflows/protocol_converter.py grid_common/grid_protocol.h grid-protocol/grid_protocol_bot.json grid-protocol/package.json grid-protocol/grid-protocol/lists.py
 
       - name: Check file
@@ -48,7 +48,7 @@ jobs:
           cd grid-protocol
           cat -v grid_protocol_bot.json
           if [[ `git status --porcelain` ]]; then
-            # Changes           
+            # Changes
             git add -A
             git commit -m "BOT protocol file synced from grid-fw repo"
             git push
@@ -58,29 +58,28 @@ jobs:
             echo "changed=false" >> $GITHUB_ENV
           fi
           echo "CHANGED:  ${{ env.changed }}"
-          
+
       - uses: tsickert/discord-webhook@v4.0.0
         if: env.changed == 'true'
         with:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
           content: "Hello, I just updated the GRID_PROTOCOL.json file! Please update the Submodules in the grid-editor repository!"
-          
+
       - name: Clone documentation
         run: |
           git clone https://github.com/intechstudio/grid-documentation.git
           sh ./.github/workflows/documentation_validator.sh >> report.txt
           { echo '{"content": "'; head -1 report.txt; echo '", "filename": "report.txt"}';} | tr "\n" " " > report.json
-          cat report.json          
+          cat report.json
           cat report.txt
-            
+
       - uses: tsickert/discord-webhook@v4.0.0
         with:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
           content: Here is your Grid API Documentation report!
           filename: report.txt
-          
+
       - uses: tsickert/discord-webhook@v4.0.0
         with:
           webhook-url: ${{ secrets.WEBHOOK_URL }}
           raw-data: report.json
-

@@ -52,7 +52,7 @@ app.get('/api/console', function (req, res) {
 app.post('/api/uart/send', function (req, res) {
 
   console.log(req.body.data);
-  
+
   uart.write(req.body.data);
 
   consoleData.push({context:"uart", data: req.body.data});
@@ -76,19 +76,19 @@ app.get('/api/openocd/start', function (req, res) {
     console.log(`openocd::stdout: ${data}`);
     consoleData.push({context:"openocd", data:data});
   });
-  
+
   openocd.stderr.on('data', (data) => {
     //console.error(`openocd::stderr: ${data}`);
     console.log(String.fromCharCode(...data));
     consoleData.push({context:"openocd", data:String.fromCharCode(...data)});
   });
-  
+
   openocd.on('close', (code) => {
     console.log(`openocd exited with code ${code}`);
     consoleData.push({context:"openocd", data:`openocd exited with code ${code}`});
   });
-  
-}) 
+
+})
 
 app.get('/api/fuser/kill', function (req, res) {
   consoleData.push({context:"fuser", data:"fuser kill!"});
@@ -98,17 +98,17 @@ app.get('/api/fuser/kill', function (req, res) {
   fuser.stdout.on('data', (data) => {
     consoleData.push({context:"fuser", data:data});
   });
-  
+
   fuser.stderr.on('data', (data) => {
     consoleData.push({context:"fuser", data:String.fromCharCode(...data)});
   });
-  
+
   fuser.on('close', (code) => {
     console.log(`fuser exited with code ${code}`);
     consoleData.push({context:"fuser", data:`fuser exited with code ${code}`});
   });
-  
-}) 
+
+})
 
 app.get('/api/openocd/stop', function (req, res) {
 
@@ -120,7 +120,7 @@ app.get('/api/openocd/stop', function (req, res) {
     }
   }
 
-}) 
+})
 
 
 app.get('/api/telnet/start', function (req, res) {
@@ -133,20 +133,20 @@ app.get('/api/telnet/start', function (req, res) {
     //console.log(`openocd::stdout: ${data}`);
     consoleData.push({context:"telnet", data:String.fromCharCode(...data)});
   });
-  
+
   telnet.stderr.on('data', (data) => {
     //console.error(`openocd::stderr: ${data}`);
     //console.log(...data);
     consoleData.push({context:"telnet", data:String.fromCharCode(...data)});
   });
-  
+
   telnet.on('close', (code) => {
     //console.log(`openocd exited with code ${code}`);
     consoleData.push({context:"telnet", data:`telnet exited with code ${code}`});
   });
-  
 
-}) 
+
+})
 
 app.get('/api/telnet/stop', function (req, res) {
 
@@ -158,11 +158,11 @@ app.get('/api/telnet/stop', function (req, res) {
     }
   }
 
-}) 
+})
 
 app.post('/api/telnet/send', function (req, res) {
 
-  
+
   if (telnet!=undefined){
     if (!telnet.killed){
       if(telnet) telnet.stdin.write(req.body.data+"\n");
@@ -192,4 +192,3 @@ app.get('*', (req, res) => {
 app.listen(localhostport, '0.0.0.0', () => {
   console.log(`Example app listening at http://localhost:${localhostport}`)
 })
- 

@@ -1,7 +1,7 @@
 idf_component_register(
-    SRCS 
+    SRCS
         "grid_esp32_encoder.c"
-    INCLUDE_DIRS 
+    INCLUDE_DIRS
         "."
     REQUIRES
         "driver" "grid_esp32_pins"

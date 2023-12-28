@@ -3,91 +3,91 @@
  *
  * Created: 6/3/2020 5:02:14 PM
  *  Author: WPC-User
- */ 
+ */
 
 #include "grid_d51.h"
 
 
 void grid_d51_bitmap_write_bit(uint8_t* buffer, uint8_t offset, uint8_t value, uint8_t* changed){
-	
+
 	uint8_t index = offset/8;
 	uint8_t bit = offset%8;
-	
+
 	if (value){ // SET BIT
 
 		if ((buffer[index] & (1<<bit)) == 0){
-			
+
 			buffer[index] |= (1<<bit);
 			*changed = 1;
 		}
 		else{
-			
+
 			// no change needed
 		}
-		
-		
+
+
 		}else{ // CLEAR BIT
-		
+
 		if ((buffer[index] & (1<<bit)) == (1<<bit)){
-			
+
 			buffer[index] &= ~(1<<bit);
 			*changed = 1;
 		}
 		else{
-			
+
 			// no change needed
 		}
-		
-		
-		
+
+
+
 	}
-	
-	
+
+
 }
 
 
 
 void grid_d51_init(){
 
-	rand_sync_enable(&RAND_0); 
+	rand_sync_enable(&RAND_0);
 
 	grid_d51_dwt_enable(); // debug watch for counting cpu cycles
 
 
-			
+
 	#ifdef UNITTEST
 
-	
+
 	#else
 	#endif
-	
+
 	//#define HARDWARETEST
 
 	#ifdef HARDWARETEST
-	
+
 	#include "grid/grid_hardwaretest.h"
 
 	//grid_d51_nvm_init(&grid_d51_nvm_state, &FLASH_0);
 
-    
+
 	grid_interface_hardwaretest_main();
-	
-	
+
+
 	#else
-	
+
 	#endif
-		
+
 }
 
 void grid_d51_verify_user_row(){
-	
-	
+
+
 	uint8_t user_area_buffer[512];
 	uint8_t user_area_changed_flag = 0;
-		
-		
+
+
 	_user_area_read(GRID_D51_USER_ROW_BASE, 0, user_area_buffer, 512);
-		
+
 
 
 	printf("Reading User Row\r\n");
@@ -97,10 +97,10 @@ void grid_d51_verify_user_row(){
 	//BOD33 characteristics datasheet page 1796
 
 	printf("Verifying User Row\r\n");
-		
+
 	// BOD33 Disable Bit => Set 0
 	grid_d51_bitmap_write_bit(user_area_buffer, 0, 0, &user_area_changed_flag);
-		
+
 	// BOD33 Level => Set 225 = b11100001
 	grid_d51_bitmap_write_bit(user_area_buffer, 1, 1, &user_area_changed_flag);
 	grid_d51_bitmap_write_bit(user_area_buffer, 2, 0, &user_area_changed_flag);
@@ -110,7 +110,7 @@ void grid_d51_verify_user_row(){
 	grid_d51_bitmap_write_bit(user_area_buffer, 6, 1, &user_area_changed_flag);
 	grid_d51_bitmap_write_bit(user_area_buffer, 7, 1, &user_area_changed_flag);
 	grid_d51_bitmap_write_bit(user_area_buffer, 8, 1, &user_area_changed_flag);
-		
+
 	// BOD33 Action => Reset = b01
 	grid_d51_bitmap_write_bit(user_area_buffer, 9, 1, &user_area_changed_flag);
 	grid_d51_bitmap_write_bit(user_area_buffer, 10, 0, &user_area_changed_flag);
@@ -120,28 +120,28 @@ void grid_d51_verify_user_row(){
 	grid_d51_bitmap_write_bit(user_area_buffer, 12, 1, &user_area_changed_flag);
 	grid_d51_bitmap_write_bit(user_area_buffer, 13, 1, &user_area_changed_flag);
 	grid_d51_bitmap_write_bit(user_area_buffer, 14, 1, &user_area_changed_flag);
-		
+
 	// BOOTPROTECT 16kB
 	grid_d51_bitmap_write_bit(user_area_buffer, 26, 1, &user_area_changed_flag);
 	grid_d51_bitmap_write_bit(user_area_buffer, 27, 0, &user_area_changed_flag);
 	grid_d51_bitmap_write_bit(user_area_buffer, 28, 1, &user_area_changed_flag);
 	grid_d51_bitmap_write_bit(user_area_buffer, 29, 1, &user_area_changed_flag);
-		
-		
-		
+
+
+
 	if (user_area_changed_flag == 1){
-			
+
 		printf("Updating User Row\r\n");
 		_user_area_write(GRID_D51_USER_ROW_BASE, 0, user_area_buffer, 512);
-			
+
 		printf("System Reset\r\n");
 		NVIC_SystemReset();
-			
+
 	}else{
-			
+
 		printf("Unchanged User Row\r\n");
 	}
-	
+
 }
 
 
@@ -172,7 +172,7 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 	uint8_t PIN_CORE = 248;
 	uint8_t PIN_VSW = 247;
 
-	uint8_t SPECIAL_CODES = 240; 
+	uint8_t SPECIAL_CODES = 240;
 
 
 
@@ -304,7 +304,7 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 	// END OF GRID MODULE SPECIFIC PIN DEFINITIONS
 
 
-	// TEST ALL OF THE GPIOs 
+	// TEST ALL OF THE GPIOs
 	for (uint8_t i=0; i<100; i++){
 
 		uint8_t pin_failed = false;
@@ -340,34 +340,34 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 				if (gpio_get_pin_level(pin_this) != true){
 					pin_failed = true;
 				}
-								
+
 				gpio_set_pin_direction(pin_this, GPIO_DIRECTION_OFF);
 				gpio_set_pin_pull_mode(pin_this, GPIO_PULL_OFF);
 			}
 
-			// TEST PREV 
+			// TEST PREV
 			if (!pin_failed){
-				
+
 				if (pin_prev < SPECIAL_CODES){
 
 					// SET THIS PIN AS INPUT, PULLDOWN
 					gpio_set_pin_direction(pin_this, GPIO_DIRECTION_IN);
-					gpio_set_pin_pull_mode(pin_this, GPIO_PULL_DOWN);	
+					gpio_set_pin_pull_mode(pin_this, GPIO_PULL_DOWN);
 
 					// SET PREVIOUS AS OUTPUT, HIGH
 					gpio_set_pin_direction(pin_prev, GPIO_DIRECTION_OUT);
-					gpio_set_pin_level(pin_prev, true);	
-					// READ THISPIN				
+					gpio_set_pin_level(pin_prev, true);
+					// READ THISPIN
 					if (gpio_get_pin_level(pin_this) != false){
 						pin_failed = true;
 					}
 
-					// SET THIS PIN AS INPUT, PULLUP					
+					// SET THIS PIN AS INPUT, PULLUP
 					gpio_set_pin_direction(pin_this, GPIO_DIRECTION_IN);
-					gpio_set_pin_pull_mode(pin_this, GPIO_PULL_UP);	
+					gpio_set_pin_pull_mode(pin_this, GPIO_PULL_UP);
 					// SET PREVIOUS AS OUTPUT, LOW
 					gpio_set_pin_direction(pin_prev, GPIO_DIRECTION_OUT);
-					gpio_set_pin_level(pin_prev, false);						
+					gpio_set_pin_level(pin_prev, false);
 					// READ THISPIN
 					if (gpio_get_pin_level(pin_this) != true){
 						pin_failed = true;
@@ -377,33 +377,33 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 					gpio_set_pin_direction(pin_this, GPIO_DIRECTION_OFF);
 					gpio_set_pin_direction(pin_prev, GPIO_DIRECTION_OFF);
 					gpio_set_pin_pull_mode(pin_this, GPIO_PULL_OFF);
-					gpio_set_pin_level(pin_prev, false);			
+					gpio_set_pin_level(pin_prev, false);
 				}
 			}
 
 			// TEST NEXT
 			if (!pin_failed){
-				
+
 				if (pin_next < SPECIAL_CODES){
 
 					// SET THIS PIN AS INPUT, PULLDOWN
 					gpio_set_pin_direction(pin_this, GPIO_DIRECTION_IN);
-					gpio_set_pin_pull_mode(pin_this, GPIO_PULL_DOWN);	
+					gpio_set_pin_pull_mode(pin_this, GPIO_PULL_DOWN);
 
 					// SET NEXT AS OUTPUT, HIGH
 					gpio_set_pin_direction(pin_next, GPIO_DIRECTION_OUT);
-					gpio_set_pin_level(pin_next, true);	
-					// READ THISPIN				
+					gpio_set_pin_level(pin_next, true);
+					// READ THISPIN
 					if (gpio_get_pin_level(pin_this) != false){
 						pin_failed = true;
 					}
 
-					// SET THIS PIN AS INPUT, PULLUP					
+					// SET THIS PIN AS INPUT, PULLUP
 					gpio_set_pin_direction(pin_this, GPIO_DIRECTION_IN);
-					gpio_set_pin_pull_mode(pin_this, GPIO_PULL_UP);	
+					gpio_set_pin_pull_mode(pin_this, GPIO_PULL_UP);
 					// SET NEXT AS OUTPUT, LOW
 					gpio_set_pin_direction(pin_next, GPIO_DIRECTION_OUT);
-					gpio_set_pin_level(pin_next, false);						
+					gpio_set_pin_level(pin_next, false);
 					// READ THISPIN
 					if (gpio_get_pin_level(pin_this) != true){
 						pin_failed = true;
@@ -413,12 +413,12 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap){
 					gpio_set_pin_direction(pin_this, GPIO_DIRECTION_OFF);
 					gpio_set_pin_direction(pin_next, GPIO_DIRECTION_OFF);
 					gpio_set_pin_pull_mode(pin_this, GPIO_PULL_OFF);
-					gpio_set_pin_level(pin_next, false);		
+					gpio_set_pin_level(pin_next, false);
 				}
 			}
 
 			//RESET THIS PIN TO DEFAULT STATE
-		
+
 			if (pin_failed){
 				//Sorry, pin failed
 
@@ -448,7 +448,7 @@ void grid_d51_boundary_scan_report(uint32_t* result_bitmap){
 	printf("test.hwcfg.%d\r\n", grid_platform_get_hwcfg(&grid_sys_state));
 
 	uint32_t uniqueid[4] = {0};
-	grid_platform_get_id(uniqueid);	
+	grid_platform_get_id(uniqueid);
 
 	printf("test.serialno.%08x %08x %08x %08x\r\n", uniqueid[0], uniqueid[1], uniqueid[2], uniqueid[3]);
 
@@ -479,7 +479,7 @@ uint32_t grid_d51_dwt_enable(){
 
     if (GRID_D51_DWT_CTRL != 0) {                  // See if DWT is available
         GRID_D51_DEMCR      |= 1 << 24;            // Set bit 24
-        GRID_D51_DWT_CYCCNT  = 0;                
+        GRID_D51_DWT_CYCCNT  = 0;
         GRID_D51_DWT_CTRL   |= 1 << 0;             // Set bit 0
 
     }
@@ -565,7 +565,7 @@ uint8_t grid_fusb302_read_id(struct io_descriptor * i2c_io){
 		uint8_t buffer[2] = {0x01, 0x00};
 
 		if (1){
-			
+
 			i2c_m_async_set_slaveaddr(&SYS_I2C, 0x22, I2C_M_SEVEN);
 
 			const uint16_t n = 1;
@@ -595,7 +595,7 @@ uint8_t grid_fusb302_read_id(struct io_descriptor * i2c_io){
 				;
 			}
 
-			msg.flags  = I2C_M_RD | I2C_M_STOP;		
+			msg.flags  = I2C_M_RD | I2C_M_STOP;
 			ret = i2c_m_async_transfer(&i2c->device, &msg);
 
 			if (ret != 0) {
@@ -624,7 +624,7 @@ uint8_t grid_mxt144u_read_id(struct io_descriptor * i2c_io){
 		uint8_t buffer[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 		if (1){
-			
+
 			i2c_m_async_set_slaveaddr(&SYS_I2C, 0x4a, I2C_M_SEVEN);
 
 			struct i2c_m_async_desc *i2c = &SYS_I2C;
@@ -648,7 +648,7 @@ uint8_t grid_mxt144u_read_id(struct io_descriptor * i2c_io){
 			}
 
 			msg.len    = 7;
-			msg.flags  = I2C_M_RD | I2C_M_STOP;		
+			msg.flags  = I2C_M_RD | I2C_M_STOP;
 			ret = i2c_m_async_transfer(&i2c->device, &msg);
 
 			if (ret != 0) {
@@ -679,68 +679,68 @@ void grid_platform_printf(char const *fmt, ...){
 }
 
 uint32_t grid_platform_get_id(uint32_t* return_array){
-			
+
 	return_array[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);
 	return_array[1] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_1);
 	return_array[2] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_2);
 	return_array[3] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_3);
-	
+
 	return 1;
-	
+
 }
 
 uint32_t grid_platform_get_hwcfg(){
-	
+
 	// Read the register for the first time, then later just return the saved value
 
 
 	gpio_set_pin_direction(HWCFG_SHIFT, GPIO_DIRECTION_OUT);
 	gpio_set_pin_direction(HWCFG_CLOCK, GPIO_DIRECTION_OUT);
 	gpio_set_pin_direction(HWCFG_DATA, GPIO_DIRECTION_IN);
-		
+
 	// LOAD DATA
 	gpio_set_pin_level(HWCFG_SHIFT, 0);
 	delay_ms(1);
 	gpio_set_pin_level(HWCFG_SHIFT, 1);
 	delay_ms(1);
 	gpio_set_pin_level(HWCFG_SHIFT, 0);
-		
-		
-		
-		
+
+
+
+
 	uint8_t hwcfg_value = 0;
-		
-		
+
+
 	for(uint8_t i = 0; i<8; i++){ // now we need to shift in the remaining 7 values
-			
+
 		// SHIFT DATA
 		gpio_set_pin_level(HWCFG_SHIFT, 1); //This outputs the first value to HWCFG_DATA
 		delay_ms(1);
-			
-			
+
+
 		if(gpio_get_pin_level(HWCFG_DATA)){
-				
+
 			hwcfg_value |= (1<<i);
-				
+
 			}else{
-				
-				
+
+
 		}
-			
+
 		if(i!=7){
-				
+
 			// Clock rise
 			gpio_set_pin_level(HWCFG_CLOCK, 1);
-				
+
 			delay_ms(1);
-				
+
 			gpio_set_pin_level(HWCFG_CLOCK, 0);
 		}
-						
+
 	}
 
 	return hwcfg_value;
-	
+
 
 
 }
@@ -790,7 +790,7 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
 	}
 
 
-	io_write(io_descr, buffer, length);		
+	io_write(io_descr, buffer, length);
 
 
 
@@ -885,7 +885,7 @@ uint8_t grid_platform_get_actionstring_file_has_size(void* file_pointer){
 
 
 void grid_platform_close_actionstring_file(void* file_pointer){
-    
+
 	// no need to close files on this platform
 	return;
 
@@ -1034,11 +1034,11 @@ void* grid_platform_allocate_volatile(size_t size){
 
     void* handle =  malloc(size);
     if (handle == NULL){
-        
+
         printf("MALLOC FAILED");
 
         while(1){
-            
+
         }
     }
 

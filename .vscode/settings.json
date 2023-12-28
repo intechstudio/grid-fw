@@ -122,7 +122,7 @@
         "gpio_ll.h": "c",
         "ulp_grid_esp32_adc.h": "c",
         "spi_flash_mmap.h": "c"
-    },   
+    },
     "files.exclude": {
         ".archive": true,
         "Documentation": true,
@@ -146,6 +146,12 @@
                 "color": "white",
                 "singleInstance": true,
                 "command": "git clean -dxf",
+            },
+            {
+                "name": "pre-commit formatting",
+                "color": "white",
+                "singleInstance": true,
+                "command": "pre-commit run --show-diff-on-failure --color=always --all-files",
             },
             {
                 "name": "Fuzzer Docker",

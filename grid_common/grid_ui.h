@@ -41,14 +41,14 @@ enum grid_ui_status_t {
 	GRID_UI_STATUS_UNDEFINED,
 	GRID_UI_STATUS_INITIALIZED,
 	GRID_UI_STATUS_TRAP,
-	
+
 	GRID_UI_STATUS_OK,
-	
+
 	GRID_UI_STATUS_READY,
 	GRID_UI_STATUS_TRIGGERED,
-            
+
 	GRID_UI_STATUS_TRIGGERED_LOCAL
-	
+
 };
 
 
@@ -56,15 +56,15 @@ enum grid_ui_status_t {
 struct grid_ui_event
 {
 
-	enum grid_ui_status_t status;	
-	
+	enum grid_ui_status_t status;
+
 	struct grid_ui_element* parent;
 	uint8_t index;
-	
+
 	enum grid_ui_status_t trigger;
-	
+
 	enum grid_ui_event_t type;
-	
+
 	uint16_t action_string_length;
 
 	char* action_string;
@@ -74,7 +74,7 @@ struct grid_ui_event
 	uint8_t cfg_changed_flag;
 	uint8_t cfg_default_flag;
 	uint8_t cfg_flashempty_flag;
-	
+
 };
 
 
@@ -95,10 +95,10 @@ struct grid_ui_element
 
  	uint8_t timer_source_is_midi;
  	uint32_t timer_event_helper;
-	
+
 	struct grid_ui_model* parent;
 	uint8_t index;
-	
+
 	enum grid_ui_element_t type;
 
 	void (*template_initializer)(struct grid_ui_template_buffer*);
@@ -113,7 +113,7 @@ struct grid_ui_element
 
 	uint8_t						event_list_length;
 	struct grid_ui_event*		event_list;
-	
+
 };
 
 
@@ -122,7 +122,7 @@ struct grid_ui_model
 {
 
 	enum grid_ui_status_t status;
-	
+
 	uint8_t page_activepage;
 	uint8_t page_count;
 
@@ -134,16 +134,16 @@ struct grid_ui_model
 
 	uint8_t						element_list_length;
 	struct	grid_ui_element*	element_list;
-	
+
 
 	/// BULK OPERATIONS ///
 	uint8_t read_bulk_status;
 	uint8_t read_bulk_last_element;
 	uint8_t read_bulk_last_event;
-	
+
 	uint8_t erase_bulk_status;
 
-    
+
 	uint8_t store_bulk_status;
 
 	uint8_t clear_bulk_status;
@@ -206,7 +206,7 @@ void	 	grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstr
 uint32_t 	grid_ui_event_render_action(struct grid_ui_event* eve, char* target_string);
 void 		grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type, char* targetstring);
 
-// grid ui event trigger 
+// grid ui event trigger
 void 		grid_ui_event_trigger(struct grid_ui_event* eve);
 void 		grid_ui_event_trigger_local(struct grid_ui_event* eve);
 void 		grid_ui_event_reset(struct grid_ui_event* eve);

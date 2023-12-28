@@ -29,8 +29,8 @@ void grid_esp32_module_bu16_task(void *arg)
     const uint8_t multiplexer_overflow = 8;
 
     grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);
-    grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);    
-    grid_esp32_adc_start(&grid_esp32_adc_state);    
+    grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
+    grid_esp32_adc_start(&grid_esp32_adc_state);
 
 
 
@@ -49,10 +49,10 @@ void grid_esp32_module_bu16_task(void *arg)
                 result->value = 4095-result->value;
             }
 
-            grid_ui_button_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12); 
+            grid_ui_button_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);
             vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , result);
 
-        }      
+        }
 
         taskYIELD();
 

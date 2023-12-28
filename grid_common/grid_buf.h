@@ -14,7 +14,7 @@ extern void grid_platform_printf(char const *fmt, ...);
 
 extern uint32_t grid_buffer_error_count;
 extern uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
-extern void* grid_platform_allocate_volatile(size_t size); 
+extern void* grid_platform_allocate_volatile(size_t size);
 
 
 #define GRID_BUFFER_SIZE	2000 //1000 this is the buffer for internal routing
@@ -26,20 +26,20 @@ extern void* grid_platform_allocate_volatile(size_t size);
 
 
 struct grid_buffer{
-	
+
 	uint16_t buffer_length;
 	char* buffer_storage;
-	
+
 	uint16_t read_start;
 	uint16_t read_stop;
 	uint16_t read_active;
-	
+
 	uint16_t read_length;
-	
+
 	uint16_t write_start;
 	uint16_t write_stop;
 	uint16_t write_active;
-	
+
 };
 
 

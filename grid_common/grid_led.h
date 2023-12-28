@@ -38,7 +38,7 @@ struct LED_layer
 	struct LED_color color_min;
 	struct LED_color color_mid;
 	struct LED_color color_max;
-	
+
 	uint8_t pha; //PHASE
 	uint8_t fre; //FREQUENCY
 	uint8_t sha; //SHAPE

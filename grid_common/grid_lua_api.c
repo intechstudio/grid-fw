@@ -83,7 +83,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
     if (luaL_loadstring(mod->L, code) == LUA_OK){
 
         if (( lua_pcall(mod->L, 0, LUA_MULTRET, 0)) == LUA_OK) {
-            // If it was executed successfuly we 
+            // If it was executed successfuly we
             // remove the code from the stack
 
         }
@@ -94,7 +94,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
         }
 
         lua_pop(mod->L, lua_gettop(mod->L));
-    
+
     }
     else{
         //grid_platform_printf("LUA not OK:  %s\r\n", code);
@@ -176,7 +176,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     for (int i=1; i <= nargs; ++i) {
 
         if (lua_type(L, i) == LUA_TSTRING){
-            
+
             grid_port_debug_printf("%s", lua_tostring(L, i));
 		    //grid_platform_printf(" str: %s ", lua_tostring(L, i));
         }
@@ -224,7 +224,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     for (int i=1; i <= nargs; ++i) {
 
         if (lua_type(L, i) == LUA_TSTRING){
-            
+
             strcat(message, lua_tostring(L, i));
 		    //grid_platform_printf(" str: %s ", lua_tostring(L, i));
         }
@@ -245,7 +245,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
                 if (message[index_helper-i-1] == '0'){
 
                     message[index_helper-i-1] = '\0';
-                    
+
                 }
                 else if (message[index_helper-i-1] == '.'){
 
@@ -317,19 +317,19 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
             // MUST BE SENT OUT IMEDIATELY (NOT THROUGH STDO) BECAUSE IT MUST BE SENT OUT EVEN AFTER LOCAL TRIGGER (CONFIG)
             // struct grid_msg_packet response;
-                                    
+
             // grid_msg_packet_init(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);
 
             // uint8_t response_payload[50] = {0};
 
             // grid_msg_packet_body_append_grid_platform_printf(&response, GRID_CLASS_ELEMENTNAME_frame_start);
-                
-            // grid_msg_packet_body_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);	
-            // grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_ELEMENTNAME_NUM_offset, GRID_CLASS_ELEMENTNAME_NUM_length, number);	
-            // grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_ELEMENTNAME_LENGTH_offset, GRID_CLASS_ELEMENTNAME_LENGTH_length, strlen(string));					
+
+            // grid_msg_packet_body_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+            // grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_ELEMENTNAME_NUM_offset, GRID_CLASS_ELEMENTNAME_NUM_length, number);
+            // grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_ELEMENTNAME_LENGTH_offset, GRID_CLASS_ELEMENTNAME_LENGTH_length, strlen(string));
 
             // grid_msg_packet_body_append_grid_platform_printf(&response, "%s", string);
-            // grid_msg_packet_body_append_grid_platform_printf(&response, GRID_CLASS_ELEMENTNAME_frame_end);    
+            // grid_msg_packet_body_append_grid_platform_printf(&response, GRID_CLASS_ELEMENTNAME_frame_end);
 
             // grid_msg_packet_close(&grid_msg_state, &response);
             // grid_port_packet_send_everywhere(&response);
@@ -360,7 +360,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         if (lua_type(L, 1) == LUA_TNUMBER && lua_type(L, 2) == LUA_TSTRING){
 
             uint32_t pointer = (uint32_t)lua_tointeger(L, 1);
-            
+
             char* string = (char*) pointer;
 
             strcpy(string, lua_tostring(L, 2));
@@ -423,9 +423,9 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
             if (delay > 4095) delay = 4095;
             if (delay < 0) delay = 0;
-    
+
             grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, modifier, NULL);
-            grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_DELAY_offset, GRID_CLASS_HIDKEYBOARD_DELAY_length, delay, NULL);   
+            grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_DELAY_offset, GRID_CLASS_HIDKEYBOARD_DELAY_length, delay, NULL);
             cursor += 4;
 
         }
@@ -438,25 +438,25 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
             grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, modifier, NULL);
             grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset, GRID_CLASS_HIDKEYBOARD_KEYSTATE_length, keystate, NULL);
-            grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYCODE_offset, GRID_CLASS_HIDKEYBOARD_KEYCODE_length, keycode, NULL);   
+            grid_msg_string_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYCODE_offset, GRID_CLASS_HIDKEYBOARD_KEYCODE_length, keycode, NULL);
 
         }
         else{
 
             continue;
         }
-    
+
 
 
     }
 
     grid_msg_string_set_parameter(temp, GRID_CLASS_HIDKEYBOARD_LENGTH_offset, GRID_CLASS_HIDKEYBOARD_LENGTH_length, cursor/4+1, NULL);
-         
+
     temp[strlen(temp)] = GRID_CONST_ETX;
 
     if (cursor != 1){
         strcat(grid_lua_state.stdo, temp);
-        //grid_platform_printf("keyboard: %s\r\n", temp); 
+        //grid_platform_printf("keyboard: %s\r\n", temp);
     }
     else{
         grid_platform_printf("invalid args!\r\n");
@@ -488,7 +488,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     uint8_t axis_raw = param[0];
     int32_t position_raw = param[1]+128;
 
-    
+
     uint8_t position;
     uint8_t axis;
 
@@ -549,7 +549,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     uint8_t button_raw = param[0];
     int32_t state_raw = param[1];
 
-    
+
     uint8_t state;
     uint8_t button;
 
@@ -612,7 +612,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     uint8_t axis_raw = param[0];
     int32_t position_raw = param[1]+128;
 
-    
+
     uint8_t position;
     uint8_t axis;
 
@@ -669,7 +669,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     uint8_t button_raw = param[0];
     int32_t state_raw = param[1];
 
-    
+
     uint8_t state;
     uint8_t button;
 
@@ -713,7 +713,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     int nargs = lua_gettop(L);
 
     char start_of_text[2] = {GRID_CONST_STX, 0};
-    
+
     strcat(grid_lua_state.stdo, start_of_text);
 
     for (int i=1; i <= nargs; ++i) {
@@ -744,15 +744,15 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     for (int i=1; i <= nargs; ++i) {
 
         if (lua_isnumber(L, i)){
-            param[i-1] = lua_tointeger(L, i);  
+            param[i-1] = lua_tointeger(L, i);
         }
 
-        
+
     }
 
     grid_sys_set_midirx_any_state(&grid_sys_state, (uint8_t) param[0]);
 
-    
+
     return 1;
 }
 
@@ -772,14 +772,14 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     for (int i=1; i <= nargs; ++i) {
 
         if (lua_isnumber(L, i)){
-            param[i-1] = lua_tointeger(L, i);  
+            param[i-1] = lua_tointeger(L, i);
         }
 
-        
+
     }
-    
+
     grid_sys_set_midirx_sync_state(&grid_sys_state, (uint8_t) param[0]);
-    
+
     return 1;
 }
 
@@ -817,8 +817,8 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     grid_msg_string_set_parameter(midiframe, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, command, NULL);
     grid_msg_string_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, param1, NULL);
     grid_msg_string_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2, NULL);
-    
-    //grid_platform_printf("MIDI: %s\r\n", midiframe);  
+
+    //grid_platform_printf("MIDI: %s\r\n", midiframe);
     strcat(grid_lua_state.stdo, midiframe);
 
     return 1;
@@ -851,7 +851,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
     sprintf(&midiframe[strlen(midiframe)], GRID_CLASS_MIDISYSEX_frame_end);
 
-    //grid_platform_printf("MIDI: %s\r\n", midiframe);  
+    //grid_platform_printf("MIDI: %s\r\n", midiframe);
     strcat(grid_lua_state.stdo, midiframe);
 
     return 1;
@@ -935,7 +935,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     int nargs = lua_gettop(L);
 
     if (nargs==5){
-        
+
         uint8_t param[5] = {0};
 
         for (int i=1; i <= nargs; ++i) {
@@ -998,7 +998,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
 /*static*/ int l_grid_led_layer_shape(lua_State* L) {
 
-    
+
 
     int nargs = lua_gettop(L);
 
@@ -1088,7 +1088,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         int32_t var =  param[0];
         grid_sys_set_bank_red(&grid_sys_state, var);
     }
-    
+
     return 1;
 }
 /*static*/ int l_led_default_green(lua_State* L) {
@@ -1131,7 +1131,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         int32_t var =  param[0];
         grid_sys_set_bank_gre(&grid_sys_state, var);
     }
-    
+
     return 1;
 }
 /*static*/ int l_led_default_blue(lua_State* L) {
@@ -1174,7 +1174,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         int32_t var =  param[0];
         grid_sys_set_bank_blu(&grid_sys_state, var);
     }
-    
+
     return 1;
 }
 
@@ -1191,7 +1191,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     }
 
     lua_pushinteger(L, GRID_PROTOCOL_VERSION_MAJOR);
-    
+
     return 1;
 }
 
@@ -1207,7 +1207,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     }
 
     lua_pushinteger(L, GRID_PROTOCOL_VERSION_MINOR);
-    
+
     return 1;
 }
 
@@ -1222,7 +1222,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     }
 
     lua_pushinteger(L, GRID_PROTOCOL_VERSION_PATCH);
-    
+
     return 1;
 }
 
@@ -1237,7 +1237,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     }
 
     lua_pushinteger(L, grid_sys_get_hwcfg(&grid_sys_state));
-    
+
     return 1;
 }
 
@@ -1255,7 +1255,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     uint8_t random = grid_platform_get_random_8();
 
     lua_pushinteger(L, random);
-    
+
     return 1;
 }
 
@@ -1271,7 +1271,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
 
     lua_pushinteger(L, grid_sys_get_module_x(&grid_sys_state));
-    
+
     return 1;
 }
 
@@ -1286,7 +1286,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     }
 
     lua_pushinteger(L, grid_sys_get_module_y(&grid_sys_state));
-    
+
     return 1;
 }
 
@@ -1301,7 +1301,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     }
 
     lua_pushinteger(L, grid_sys_get_module_rot(&grid_sys_state));
-    
+
     return 1;
 }
 
@@ -1323,10 +1323,10 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     for (int i=1; i <= nargs; ++i) {
 
         if (lua_isnumber(L, i)){
-            param[i-1] = lua_tointeger(L, i);  
+            param[i-1] = lua_tointeger(L, i);
         }
 
-        
+
     }
 
     if (nargs == 3){
@@ -1350,13 +1350,13 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
             if (ele_type == GRID_UI_ELEMENT_POTENTIOMETER){
 
 
-                
+
                 min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_P_POTMETER_MIN_index);
                 max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_P_POTMETER_MAX_index);
                 val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_P_POTMETER_VALUE_index);
             }
             else if (ele_type == GRID_UI_ELEMENT_ENCODER){
-                
+
                 min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MIN_index);
                 max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MAX_index);
                 val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index);
@@ -1381,13 +1381,13 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         int32_t var = grid_led_get_layer_phase(&grid_led_state, param[0], param[1]);
         lua_pushinteger(L, var);
     }
-    
+
     return 1;
 }
 
 /*static*/ int l_grid_led_layer_pfs(lua_State* L) {
 
-    
+
 
     int nargs = lua_gettop(L);
 
@@ -1432,7 +1432,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     for (int i=1; i <= nargs; ++i) {
 
         if (lua_isinteger(L, i)){
-            
+
         }
         else if (lua_isnil(L, i)){
             // grid_platform_printf(" %d : NIL ", i);
@@ -1447,8 +1447,8 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
     struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, param[0]);
 
-    if (ele != NULL){    
-        
+    if (ele != NULL){
+
         uint8_t template_index = param[1];
 
 
@@ -1464,7 +1464,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
             grid_ui_element_set_template_parameter(ele, template_index, var);
 
         }
-    
+
 
     }
 
@@ -1480,11 +1480,11 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         strcat(grid_lua_state.stde, "#GTV.invalidParams");
         return 0;
     }
-    
-    
+
+
     uint8_t page = grid_ui_page_get_next(&grid_ui_state);
     lua_pushinteger(L, page);
-    
+
     return 1;
 }
 
@@ -1497,11 +1497,11 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         strcat(grid_lua_state.stde, "#GTV.invalidParams");
         return 0;
     }
-           
-           
+
+
     uint8_t page = grid_ui_page_get_prev(&grid_ui_state);
     lua_pushinteger(L, page);
-    
+
     return 1;
 }
 
@@ -1514,10 +1514,10 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         strcat(grid_lua_state.stde, "#GTV.invalidParams");
         return 0;
     }
-           
+
     uint8_t page = grid_ui_page_get_activepage(&grid_ui_state);
     lua_pushinteger(L, page);
-    
+
     return 1;
 }
 /*static*/ int l_grid_page_load(lua_State* L) {
@@ -1537,7 +1537,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     }
 
     uint8_t page = param[0];
-   
+
     if (grid_ui_page_change_is_enabled(&grid_ui_state)){
 
         if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state) == 0){
@@ -1588,7 +1588,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
         grid_ui_element_timer_set(ele, param[1]);
 
-    }  
+    }
     else{
 
         strcat(grid_lua_state.stde, "#invalidRange");
@@ -1623,7 +1623,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
         grid_ui_element_timer_set(ele, 0);
 
-    }  
+    }
     else{
 
         strcat(grid_lua_state.stde, "#invalidRange");
@@ -1655,7 +1655,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
 
         grid_ui_element_timer_source(ele, param[1]);
 
-    }  
+    }
     else{
 
         strcat(grid_lua_state.stde, "#invalidRange");
@@ -1696,10 +1696,10 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         else{
             strcat(grid_lua_state.stde, "#invalidEvent");
             sprintf(&grid_lua_state.stde[strlen(grid_lua_state.stde)-1], "%ld %ld", param[0], param[1]);
-            
+
         }
 
-    }  
+    }
     else{
 
         strcat(grid_lua_state.stde, "#invalidRange");
@@ -1773,9 +1773,9 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
     {GRID_LUA_FNC_G_WEBSOCKET_SEND_short, GRID_LUA_FNC_G_WEBSOCKET_SEND_fnptr},
 
     {"print", l_my_print},
-  
+
     {"gtv", l_grid_template_variable},
-  
+
     {NULL, NULL} /* end of array */
 };
 
@@ -1843,7 +1843,7 @@ void grid_lua_ui_init_pbf4(struct grid_lua_model* mod){
     grid_lua_dostring(mod, "for i=8, 11 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
     grid_lua_dostring(mod, "for i=8, 11 do  setmetatable("GRID_LUA_KW_ELEMENT_short"[i], button_meta)  end");
 
-  
+
     grid_lua_gc_try_collect(mod);
 
     //initialize the system element
@@ -1891,7 +1891,7 @@ void grid_lua_ui_init_ef44(struct grid_lua_model* mod){
     grid_lua_dostring(mod, "for i=4, 7 do "GRID_LUA_KW_ELEMENT_short"[i] = {index = i} end");
     grid_lua_dostring(mod, "for i=4, 7 do  setmetatable("GRID_LUA_KW_ELEMENT_short"[i], potmeter_meta)  end");
 
-  
+
     grid_lua_gc_try_collect(mod);
 
     //initialize the system element
@@ -1978,13 +1978,13 @@ void grid_lua_start_vm(struct grid_lua_model* mod){
         luaL_requiref(mod->L, lib->name, lib->func, 1);
         lua_pop(mod->L, 1);  /* remove lib */
     }
-    
+
 
 
     grid_lua_debug_memory_stats(mod, "Openlibs");
 
     grid_lua_dostring(mod, GRID_LUA_GLUT_source);
-    grid_lua_dostring(mod, GRID_LUA_GLIM_source);    
+    grid_lua_dostring(mod, GRID_LUA_GLIM_source);
     grid_lua_dostring(mod, GRID_LUA_GEN_source);
     grid_lua_dostring(mod, "midi_fifo = {}");
     grid_lua_dostring(mod, "midi_fifo_highwater = 0");
@@ -1995,7 +1995,7 @@ void grid_lua_start_vm(struct grid_lua_model* mod){
     grid_lua_dostring(mod, "mouse = {}");
     grid_lua_dostring(mod, "mouse.send_axis_move = function (self,p,a) "GRID_LUA_FNC_G_MOUSEMOVE_SEND_short"(p,a) end");
     grid_lua_dostring(mod, "mouse.send_button_change = function (self,s,b) "GRID_LUA_FNC_G_MOUSEBUTTON_SEND_short"(s,b) end");
- 
+
     grid_lua_dostring(mod, "keyboard = {}");
     grid_lua_dostring(mod, "keyboard.send_macro = function (self,...) "GRID_LUA_FNC_G_KEYBOARD_SEND_short"(...) end");
 
@@ -2021,4 +2021,3 @@ void grid_lua_stop_vm(struct grid_lua_model* mod){
 
     }
 }
-

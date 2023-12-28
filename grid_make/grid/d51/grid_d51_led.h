@@ -3,7 +3,7 @@
  *
  * Created: 6/3/2020 5:02:04 PM
  *  Author: WPC-User
- */ 
+ */
 
 
 #ifndef GRID_D51_LED_H_
@@ -23,7 +23,7 @@
  // * One LED uses 12 bytes of memory
  // * The reset pulse uses 24 bytes of memory (50us reset)
  // * The reset pulse uses 144 bytes of memory (300us reset) for WS2812-2020
- */ 
+ */
 #define GRID_D51_LED_RESET_LENGTH 144
 
 
@@ -35,7 +35,7 @@
 // Frame format => | RESET | LED1:G | LED1:R | LED1:B | LED2:G | LED2:R | LED2:B | LED3:G | LED3:R | LED3:B | IDLE  |
 // Frame timing => | 60us  | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | N/A   |
 
-// this is need for types like uint8_t 
+// this is need for types like uint8_t
 
 
 // Two symbols are encoded in one byte, the 4 possible combinations are defined here.

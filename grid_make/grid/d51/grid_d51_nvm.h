@@ -3,7 +3,7 @@
  *
  * Created: 9/15/2020 3:41:53 PM
  *  Author: suku
- */ 
+ */
 
 
 #ifndef GRID_D51_NVM_H_
@@ -54,7 +54,7 @@ struct grid_d51_nvm_model{
 	uint8_t status;
 
 
-	
+
 
 	uint32_t next_write_offset;
 	struct grid_d51_nvm_toc_entry* toc_head;

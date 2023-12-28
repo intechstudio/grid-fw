@@ -122,10 +122,10 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     //ets_printf(" %d ", queue_state);
     rx_flag = 1;
-    
+
     if (((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]){
         strcpy(rx_str, (char*) trans->rx_buffer);
-        
+
     }
 
 
@@ -134,7 +134,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     if (((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SYNC1_STATE_index]){
         sync1_received++;
-    }    
+    }
     if (((uint8_t*) trans->rx_buffer)[GRID_PARAMETER_SPI_SYNC2_STATE_index]){
         sync2_received++;
     }
@@ -167,11 +167,11 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
             if (por->tx_double_buffer_status == UINT16_MAX){
 
-                por->tx_double_buffer_status = 0;  
+                por->tx_double_buffer_status = 0;
 
             }else if (por->tx_double_buffer_status > 0){
 
-                por->tx_double_buffer_status = UINT16_MAX;  
+                por->tx_double_buffer_status = UINT16_MAX;
 
             }
 
@@ -199,7 +199,7 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
 
     if ((source_flags&0b00001000)){
         por = uart_port_array[3];
-    }   
+    }
 
 
     if (por == NULL){
@@ -207,10 +207,10 @@ static void IRAM_ATTR  my_post_trans_cb(spi_slave_transaction_t *trans) {
         return;
     }
 
-    
-    
+
+
     for (uint16_t i = 0; true; i++){
-    
+
         por->rx_double_buffer[por->rx_double_buffer_write_index] = ((char*)trans->rx_buffer)[i];
 
 
@@ -254,7 +254,7 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
     //ets_printf("#");
 
     portENTER_CRITICAL(&spinlock);
-    
+
     esp_err_t ret = spi_slave_queue_trans(RCV_HOST, t, 0);
     if (ret == ESP_OK){
         queue_state++;
@@ -327,7 +327,7 @@ static void plot_port_debug(){
         }
 
         //ets_printf(" ");
-        
+
     }
 
     //ets_printf("\r\n");
@@ -345,12 +345,12 @@ static void periodic_ping_heartbeat_handler_cb(void *arg)
 
     // Check if USB is connected and start animation
     if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()){
-    
+
         printf("USB CONNECTED\r\n\r\n");
 
-        grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
-        grid_alert_all_set_frequency(&grid_led_state, -2);	
-        grid_alert_all_set_phase(&grid_led_state, 200);	
+        grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);
+        grid_alert_all_set_frequency(&grid_led_state, -2);
+        grid_alert_all_set_phase(&grid_led_state, 200);
         grid_msg_set_heartbeat_type(&grid_msg_state, 1);
 
     }
@@ -397,7 +397,7 @@ static void periodic_ping_heartbeat_handler_cb(void *arg)
         }
 
 
-        
+
     }
 
 
@@ -452,7 +452,7 @@ void grid_esp32_port_task(void *arg)
 
     WORD_ALIGNED_ATTR char sendbuf[GRID_PARAMETER_SPI_TRANSACTION_length+1]={0};
     WORD_ALIGNED_ATTR char recvbuf[GRID_PARAMETER_SPI_TRANSACTION_length+1]={0};
-    
+
 
 
     for (uint8_t i = 0; i<4; i++){
@@ -490,7 +490,7 @@ void grid_esp32_port_task(void *arg)
         queue_state++;
     }
     portEXIT_CRITICAL(&spinlock);
-    
+
 
     uint8_t firstprint = 1;
 
@@ -555,7 +555,7 @@ void grid_esp32_port_task(void *arg)
             uint32_t c0, c1;
 
             uint8_t port_list_length = grid_transport_get_port_array_length(&grid_transport_state);
-            // TRY TO RECEIVE UP TO 4 packets on UART PORTS            
+            // TRY TO RECEIVE UP TO 4 packets on UART PORTS
             for (uint8_t i=0; i<port_list_length*4; i++){
                 struct grid_port* port = grid_transport_get_port(&grid_transport_state, i%port_list_length);
 
@@ -591,7 +591,7 @@ void grid_esp32_port_task(void *arg)
                         xTaskResumeAll();
                         //CRITICAL_SECTION_LEAVE()
                     }
-                
+
                 }
                 else{
 
@@ -602,11 +602,11 @@ void grid_esp32_port_task(void *arg)
 
                         if (grid_ui_event_count_istriggered(&grid_ui_state)){
 
-                            cooldown += 3;	
+                            cooldown += 3;
 
                             //CRITICAL_SECTION_ENTER()
                             vTaskSuspendAll();
-                            grid_port_process_ui_UNSAFE(&grid_ui_state); 
+                            grid_port_process_ui_UNSAFE(&grid_ui_state);
                             xTaskResumeAll();
                             //CRITICAL_SECTION_LEAVE()
                         }
@@ -620,12 +620,12 @@ void grid_esp32_port_task(void *arg)
             c1 = grid_platform_get_cycles();
 
             grid_midi_rx_pop(); // send_everywhere pushes to UI->RX_BUFFER
-            
+
             struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
             struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
             grid_port_receive_task(host_port); // USB
             grid_port_receive_task(ui_port); // UI
-            
+
 
 
             // INBOUND
@@ -635,7 +635,7 @@ void grid_esp32_port_task(void *arg)
             for (uint8_t i=0; i<port_list_length; i++){
 
                 struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
-                
+
 
                 grid_port_process_inbound(por);
 
@@ -656,7 +656,7 @@ void grid_esp32_port_task(void *arg)
 
                 grid_midi_tx_pop();
                 ets_delay_us(20);
-                
+
 
             }
 
@@ -675,7 +675,7 @@ void grid_esp32_port_task(void *arg)
                 }
             }
 
-        
+
 
             uint32_t delta = c1-c0;
 
@@ -691,7 +691,7 @@ void grid_esp32_port_task(void *arg)
             //NVM task is in progress, let it run!
             //vTaskDelay(pdMS_TO_TICKS(10));
         }
-       
+
 
         //gpio_ll_set_level(&GPIO, 47, 0);
 

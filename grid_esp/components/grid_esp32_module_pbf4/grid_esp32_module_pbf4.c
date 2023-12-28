@@ -49,20 +49,20 @@ void grid_esp32_module_pbf4_task(void *arg)
             }
 
             if (multiplexer_lookup[lookup_index] < 8){
-                
+
                 grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);
-            
+
             }
             else if (multiplexer_lookup[lookup_index] < 12){
-                
-                grid_ui_button_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12); 
-            
+
+                grid_ui_button_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);
+
             }
 
             vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle , result);
 
-        }      
-      
+        }
+
         taskYIELD();
 
     }

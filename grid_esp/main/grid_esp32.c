@@ -74,10 +74,10 @@ void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
                     core_char = '1';
                 }
 
-      
+
                 sprintf( pcWriteBuffer, "%c-%s\t\t0x%lx\t\t%lu\t\t%d\t\t%lu pcnt (%lu/%lu)\r\n", core_char,  taskName, (unsigned long int) pxTaskStatusArray[ x ].xHandle, uxHighWaterMark, priority, ulStatsAsPercentage, runtime,  ulTotalRunTime);
-                    
-                
+
+
 
                 pcWriteBuffer += strlen( ( char * ) pcWriteBuffer );
             }
@@ -85,7 +85,7 @@ void vTaskGetRunTimeStats2( char *pcWriteBuffer ){
 
         // The array is no longer needed, free the memory it consumes.
         vPortFree( pxTaskStatusArray );
-    
+
     }
 }
 
@@ -138,7 +138,7 @@ void vTaskGetRunTimeStats3( char *pcWriteBuffer ){
                     uint32_t taskNumber = pxTaskStatusArray[ x ].xTaskNumber;
 
                     if (taskNumber == i){
-                        
+
                         char taskName[10] = ".........\0";
                         snprintf(taskName, 6, pxTaskStatusArray[ x ].pcTaskName);
 
@@ -161,7 +161,7 @@ void vTaskGetRunTimeStats3( char *pcWriteBuffer ){
                         ulStatsAsPercentage = (taskElapsedTime*100) / (totalElapsedTime);
 
                         lastRunTimeCounter[taskNumber] = pxTaskStatusArray[ x ].ulRunTimeCounter;
-                    
+
 
 
 
@@ -182,7 +182,7 @@ void vTaskGetRunTimeStats3( char *pcWriteBuffer ){
                         }
 
                         if (skip_list[i] == 0){
-                            
+
 
                             uint32_t debug_var = ulStatsAsPercentage;
 
@@ -206,8 +206,8 @@ void vTaskGetRunTimeStats3( char *pcWriteBuffer ){
                             }
 
                         }
-                            
-                        
+
+
 
                         pcWriteBuffer += strlen( ( char * ) pcWriteBuffer );
 
@@ -227,7 +227,7 @@ void vTaskGetRunTimeStats3( char *pcWriteBuffer ){
 
         // The array is no longer needed, free the memory it consumes.
         vPortFree( pxTaskStatusArray );
-    
+
     }
 }
 
@@ -247,13 +247,13 @@ void grid_esp32_housekeeping_task(void *arg)
 
 
         //vTaskGetRunTimeStats2(stats);
-        
+
         //grid_port_debug_print_text(stats);
 
         //ets_printf("%s\r\n", stats);
 
         vTaskDelay(pdMS_TO_TICKS(1000));
-     
+
 
 
     }
@@ -279,31 +279,31 @@ uint32_t grid_platform_get_hwcfg(){
     uint8_t hwcfg_value = 0;
 
     for(uint8_t i = 0; i<8; i++){ // now we need to shift in the remaining 7 values
-            
+
         // SHIFT DATA
         gpio_set_level(GRID_ESP32_PINS_HWCFG_SHIFT, 1); //This outputs the first value to HWCFG_DATA
         ets_delay_us(1000);
-            
-            
+
+
         if(gpio_get_level(GRID_ESP32_PINS_HWCFG_DATA)){
-                
+
             hwcfg_value |= (1<<i);
-                
+
             }else{
-                
-                
+
+
         }
-            
+
         if(i!=7){
-                
+
             // Clock rise
             gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 1);
-                
+
             ets_delay_us(1000);
-                
+
             gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 0);
         }
-                        
+
     }
 
     ESP_LOGI(TAG, "HWCFG value: %d", hwcfg_value);
@@ -331,7 +331,7 @@ uint32_t grid_platform_get_id(uint32_t* return_array){
 
     if (ESP_OK == esp_efuse_read_block(EFUSE_BLK1, block, 0, 6*8)){
         ESP_LOGI(TAG, "CPUID OK");
- 
+
     }
 
     uint8_t* mac_address = &block[0];
@@ -403,13 +403,13 @@ uint8_t grid_platform_disable_grid_transmitter(uint8_t direction){
 }
 
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction){
-    
+
     //ets_printf("grid_platform_reset_grid_transmitter NOT IMPLEMENTED!!!\r\n");
     return 1;
 }
 
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction){
-    
+
     ets_printf("grid_platform_enable_grid_transmitter NOT IMPLEMENTED!!!\r\n");
     return 1;
 }
@@ -426,8 +426,8 @@ void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_
 
 
 void grid_platform_close_actionstring_file(void* file_pointer){
-    
-    
+
+
     fclose(file_pointer);
     //ets_printf("CLOSE_FILE\r\n");
 
@@ -459,10 +459,10 @@ uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, char*
 
 
     //ets_printf("READ FILE \r\n");
-  
-  
+
+
     grid_esp32_nvm_read_config(&grid_esp32_nvm_state, file_pointer, targetstring);
-    
+
 
     return 0;
 }
@@ -507,7 +507,7 @@ void grid_platform_delete_actionstring_files_all(){
 uint8_t grid_platform_erase_nvm_next(){
 
     ets_printf("ERASE WAS ALREADY DONE ON INIT!!!\r\n");
-    
+
     return 0; // done
 
 }
@@ -574,15 +574,14 @@ void* grid_platform_allocate_volatile(size_t size){
     //ets_printf("ADDRESS: %lx\r\n", handle);
 
     if (handle == NULL){
-        
+
         ets_printf("MALLOC FAILED");
 
         while(1){
-            
+
         }
     }
 
     return handle;
 
 }
-

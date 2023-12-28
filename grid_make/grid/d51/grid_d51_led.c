@@ -3,7 +3,7 @@
  *
  * Created: 6/3/2020 5:02:14 PM
  *  Author: WPC-User
- */ 
+ */
 
 #include "grid_d51_led.h"
 
@@ -35,23 +35,23 @@ void grid_d51_led_init(struct grid_d51_led_model* d51_mod, struct grid_led_model
 	//	* G7 ... G0 R7 ... R0 B7 ... B0 ;
 
 	for(uint16_t i=0; i<256; i++){
-	
+
 		uint32_t temp = 0;
-	
+
 		temp |= (i/1%2)   ? (GRID_D51_LED_CODE_O<<24) : (GRID_D51_LED_CODE_Z<<24);
 		temp |= (i/2%2)   ? (GRID_D51_LED_CODE_O<<28) : (GRID_D51_LED_CODE_Z<<28);
-	
+
 		temp |= (i/4%2)   ? (GRID_D51_LED_CODE_O<<16) : (GRID_D51_LED_CODE_Z<<16);
 		temp |= (i/8%2)   ? (GRID_D51_LED_CODE_O<<20) : (GRID_D51_LED_CODE_Z<<20);
-	
+
 		temp |= (i/16%2)  ? (GRID_D51_LED_CODE_O<<8)  : (GRID_D51_LED_CODE_Z<<8);
 		temp |= (i/32%2)  ? (GRID_D51_LED_CODE_O<<12) : (GRID_D51_LED_CODE_Z<<12);
 		temp |= (i/64%2)  ? (GRID_D51_LED_CODE_O<<0)  : (GRID_D51_LED_CODE_Z<<0);
 		temp |= (i/128%2) ? (GRID_D51_LED_CODE_O<<4)  : (GRID_D51_LED_CODE_Z<<4);
-	
+
 		grid_led_color_code[i] = temp;
 	}
-	
+
 
 
 
@@ -120,7 +120,7 @@ void grid_d51_led_start_transfer(struct grid_d51_led_model* mod){
 	spi_m_dma_get_io_descriptor(&GRID_LED, &io_descr);
 	io_write(io_descr, mod->framebuffer, mod->framebuffer_size);
 
-	
+
 }
 
 
@@ -129,54 +129,51 @@ void grid_led_startup_animation(struct grid_d51_led_model* mod){
 	return;
 
 	uint8_t grid_module_reset_cause = hri_rstc_read_RCAUSE_reg(RSTC);
-	
+
 	uint8_t color_r   = 1;
 	uint8_t color_g   = 1;
 	uint8_t color_b   = 1;
 	uint8_t s		  = 1;
-	
+
 	if (grid_module_reset_cause == RESET_REASON_WDT){
-		
+
 		color_r = 1;
 		color_g = 0;
 		color_b = 0;
 		s= 2;
 
 	}else if (grid_module_reset_cause == RESET_REASON_SYST){
-		
+
 		color_r = 0;
 		color_g = 0;
 		color_b = 1;
 		s= 2;
-		
+
 	}
-	
-	
-	
+
+
+
 	for (uint8_t i = 0; i<255; i++){
-	
+
 		// SEND DATA TO LEDs
-		
+
 
 		for (uint8_t j=0; j<mod->led_count; j++){
 			//grid_led_lowlevel_set_color(i, 0, 255, 0);
 			grid_d51_led_set_color(mod, j, (color_r*i*s%256)/2, (color_g*i*s%256)/2, (color_b*i*s%256)/2); // This is not an alert, this is low level shit
-			
-			
+
+
 		}
-		
+
 		grid_d51_led_start_transfer(mod);
 
-		
+
 		delay_us(500);
-		
+
 	}
-	
 
-	
 
-	
+
+
+
 }
-
-
-

@@ -27,7 +27,7 @@ extern int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
 
 extern void grid_platform_printf(char const *fmt, ...);
 
-extern void* grid_platform_allocate_volatile(size_t size); 
+extern void* grid_platform_allocate_volatile(size_t size);
 
 extern void grid_platform_system_reset();
 extern void grid_platform_nvm_defrag();
@@ -42,48 +42,48 @@ extern void grid_platform_nvm_defrag();
 
 
 struct grid_port{
-	
+
 	uint32_t cooldown;
 
 	uint8_t type;     // 0 undefined, 1 usart, 2 usb, 3 ui, 4 telemetry
 	uint8_t direction;
 	uint8_t usart_error_flag;
-	
+
 	volatile uint16_t tx_double_buffer_status;
 	volatile uint32_t tx_double_buffer_ack_fingerprint;
 	volatile uint32_t tx_double_buffer_ack_timeout;
-	
+
 	volatile uint64_t rx_double_buffer_timestamp; // is packet ready for verification
 	volatile uint32_t rx_double_buffer_status; // is packet ready for verification
 	volatile uint32_t rx_double_buffer_seek_start_index; // offset of next received byte in buffer
 	volatile uint32_t rx_double_buffer_read_start_index;
 	volatile uint32_t rx_double_buffer_write_index;
-	
+
 	volatile char tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE];
 	volatile char rx_double_buffer[GRID_DOUBLE_BUFFER_RX_SIZE];
-	
+
 	struct grid_buffer tx_buffer;
 	struct grid_buffer rx_buffer;
-	
+
 	uint32_t partner_hwcfg;
 	uint8_t partner_fi;
-	
+
 	uint8_t ping_local_token;
 	uint8_t ping_partner_token;
-	
+
 	char ping_packet[20];
 	uint8_t ping_packet_length;
-	
+
 	uint8_t ping_flag;
-		
+
 	uint8_t inbound_loopback;
-	
-	
+
+
 	int8_t dx;
 	int8_t dy;
-	
+
 	uint8_t partner_status;
-	
+
 };
 
 
@@ -118,7 +118,7 @@ void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir, uint8_t in
 
 
 uint8_t grid_port_process_outbound_usart(struct grid_port* por);
-uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por);  // dependency: USB ACM 
+uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por);  // dependency: USB ACM
 
 void grid_port_receiver_softreset(struct grid_port* por);
 void grid_port_receiver_hardreset(struct grid_port* por);

@@ -39,7 +39,7 @@
 
 
 static const char *TAG = "grid_esp32_nvm";
- 
+
 struct grid_esp32_nvm_model grid_esp32_nvm_state;
 
 
@@ -212,7 +212,7 @@ void grid_esp32_nvm_list_files(struct grid_esp32_nvm_model* nvm, char* path){
     }
 
     return;
-   
+
 }
 
 void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model* nvm, uint8_t page, uint8_t element, uint8_t event, char* actionstring){
@@ -241,7 +241,7 @@ void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model* nvm, uint8_t page, 
     FILE * fp;
 
     fp = fopen (fname, "w");
-    
+
     if (fp){
 
         printf("FILE OK\r\n");
@@ -270,7 +270,7 @@ void grid_esp32_nvm_read_config(struct grid_esp32_nvm_model* nvm, void* fp, char
     }else{
 
 
-        ESP_LOGD(TAG, "FREAD NO FILE \r\n");        
+        ESP_LOGD(TAG, "FREAD NO FILE \r\n");
     }
 
 
@@ -386,18 +386,18 @@ void grid_esp32_nvm_task(void *arg)
             struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
 
             do{
-            
+
                 // NVM BULK STORE
                 if (grid_ui_bulk_pagestore_is_in_progress(&grid_ui_state)){
-                    
+
                     grid_ui_bulk_pagestore_next(&grid_ui_state);
                 }
                 else if (grid_ui_bulk_nvmerase_is_in_progress(&grid_ui_state)){
-                    
+
                     grid_ui_bulk_nvmerase_next(&grid_ui_state);
                 }
                 else if (grid_ui_bulk_pageclear_is_in_progress(&grid_ui_state)){
-                    
+
                     grid_ui_bulk_pageclear_next(&grid_ui_state);
                 }
                 else if (ui_port->rx_double_buffer_status == 0 && grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
@@ -414,7 +414,7 @@ void grid_esp32_nvm_task(void *arg)
                     uint32_t delta = c1-c0;
 
 				    //grid_platform_printf("(%ld)us\r\n", delta/grid_platform_get_cycles_per_us());
-                        
+
                 }
                 else{
                     break;
@@ -433,8 +433,8 @@ void grid_esp32_nvm_task(void *arg)
             xSemaphoreGive(nvm_or_port);
 
         }
-	
-    
+
+
 
         vTaskDelay(pdMS_TO_TICKS(15));
 

@@ -113,7 +113,7 @@ static void init_ulp_program(void)
      * The second argument is the period in microseconds, which gives a wakeup time period of: 20ms
      */
     ulp_set_wakeup_period(0, 1);
-    
+
 
     /* Start the program */
     //err = ulp_riscv_run();
@@ -139,7 +139,7 @@ static esp_err_t ulp_riscv_adc_init2(void)
         .atten   = ADC_ATTEN_DB_11,
     };
 
-        
+
     const ulp_riscv_adc_cfg_t *cfg = &cfg_in;
 
     esp_err_t ret = ESP_OK;
@@ -181,7 +181,7 @@ static void adc_init(struct grid_esp32_adc_model* adc){
 
 
     ESP_ERROR_CHECK(ulp_riscv_adc_init2());
-    
+
 
     init_ulp_program();
 
@@ -293,7 +293,7 @@ void IRAM_ATTR grid_esp32_adc_convert(void)
 
             xRingbufferSendFromISR(adc->ringbuffer_handle , &result_0, sizeof(struct grid_esp32_adc_result), NULL);
             xRingbufferSendFromISR(adc->ringbuffer_handle , &result_1, sizeof(struct grid_esp32_adc_result), NULL);
-                
+
             //ets_printf("%d\r\n", ulp_adc_result_ready);
 
             ulp_adc_result_ready = UINT32_MAX; // start new conversion
@@ -303,8 +303,8 @@ void IRAM_ATTR grid_esp32_adc_convert(void)
 
 
         }
-        else{            
-            
+        else{
+
         }
 
         ulp_riscv_lock_release(lock);
@@ -315,6 +315,5 @@ void IRAM_ATTR grid_esp32_adc_convert(void)
 
 
 
-    
-}
 
+}
