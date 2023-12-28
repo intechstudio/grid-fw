@@ -485,8 +485,8 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         param[i-1] = lua_tointeger(L, i);
     }
 
-    int32_t position_raw = param[0]+128;
-    uint8_t axis_raw = param[1];
+    uint8_t axis_raw = param[0];
+    int32_t position_raw = param[1]+128;
 
     
     uint8_t position;
@@ -546,8 +546,8 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
         param[i-1] = lua_tointeger(L, i);
     }
 
-    int32_t state_raw = param[0];
-    uint8_t button_raw = param[1];
+    uint8_t button_raw = param[0];
+    int32_t state_raw = param[1];
 
     
     uint8_t state;
