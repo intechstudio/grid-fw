@@ -371,7 +371,7 @@ GRID_D51_NVM_TOC : Table of Contents
  - when remaining memory is low, run defagment the memory:
 	* copy the 4 pages worth of valid configuration to SRAM
 	* clear the first 4 pages and store the config rom SRAM
-	* do this until everything is stored in the begining of the memory space
+	* do this until everything is stored in the beginning of the memory space
 
 3. When appending new configuration, make sure to update the toc in SRAM as well!
 4. When appending new configuration, make sure to clear previous version to 0x00 in FLASH

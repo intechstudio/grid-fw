@@ -29,7 +29,7 @@ idf.py build
 Holding down the mapmode button on the side of the controller while plugging in the USB C cable will boot the device in bootloader mode. All of the LEDs on the user interface should display a dim red color. This means that the device booted successfully, but the host computer has not recognized the device yet. You can release the mapmode button. Once the device is configured on the host, all of the LEDs turn green. On the host computer the grid controller now shows up as a removable storage device named "GRID".
 
 ## Checking the bootloader version
-Once the controller succesfully enumerated as a removable storage device, you can check the version of the bootloader. If you browse the device you will find 3 files on it:
+Once the controller successfully enumerated as a removable storage device, you can check the version of the bootloader. If you browse the device you will find 3 files on it:
 - CURRENT.UF2 is the binary image file of the current firmware
 - INDEX.HTM is a readme file that redirects to this instruction page
 - INFO_UF2.TXT contains the bootloader version and other basic information about the controller
@@ -61,7 +61,7 @@ Download the firmware image from the repository and unzip the archive. The firmw
 - Reconnect the module, it should work fine now.
 
 ## Stable Build
-Here you can download the latest stable relese. Plese visit the [releases](https://github.com/intechstudio/grid-fw/releases)
+Here you can download the latest stable release. Please visit the [releases](https://github.com/intechstudio/grid-fw/releases)
 page for more information.
 
 [![GitHub version](https://badge.fury.io/gh/intechstudio%2Fgrid-fw.svg)](https://github.com/intechstudio/grid-fw/releases/latest)

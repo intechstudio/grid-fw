@@ -135,7 +135,7 @@ void assert_triggered(const char *file, uint32_t line);
 #define configUSE_TRACE_FACILITY 1
 #endif
 
-// <q> Use statistics formating functions
+// <q> Use statistics formatting functions
 // <id> freertos_use_stats_formatting_functions
 #ifndef configUSE_STATS_FORMATTING_FUNCTIONS
 #define configUSE_STATS_FORMATTING_FUNCTIONS 1

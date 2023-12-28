@@ -37,7 +37,7 @@
 #define CDCDF_ACM_COMM_EP_INDEX 0
 #define CDCDF_ACM_DATA_EP_INDEX 1
 
-/** USB Device CDC ACM Fucntion Specific Data */
+/** USB Device CDC ACM Function Specific Data */
 struct cdcdf_acm_func_data {
 	/** CDC Device ACM Interface information */
 	uint8_t func_iface[2];

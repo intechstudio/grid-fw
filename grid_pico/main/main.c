@@ -353,7 +353,7 @@ void uart_try_send_all(void){
 
         struct grid_port* port = &port_array[i];
 
-        // if trasmission is in progress then send the next character
+        // if transmission is in progress then send the next character
         if (port->tx_is_busy){
 
 

@@ -322,7 +322,7 @@ struct scsi_mode_param_header10 {
  */
 struct scsi_mode_page_0_header {
 	uint8_t page_code;
-#define SCSI_PAGE_CODE_PS (1 << 7)  /**< Parameters Savable */
+#define SCSI_PAGE_CODE_PS (1 << 7)  /**< Parameters Saveable */
 #define SCSI_PAGE_CODE_SPF (1 << 6) /**< SubPage Format */
 	uint8_t page_length;            /**< Number of bytes after this */
 #define SCSI_MS_PAGE_LEN(total) ((total)-2)

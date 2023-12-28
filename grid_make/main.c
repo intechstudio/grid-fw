@@ -75,7 +75,7 @@ static void nvm_task_inner(){
 		if (grid_d51_nvic_get_interrupt_priority_mask() == 1){
 			// nvm just entered ready state
 
-			// lets reenable ui interrupts
+			// lets re-enable ui interrupts
 			grid_d51_nvic_set_interrupt_priority_mask(0);
 		}
 	}

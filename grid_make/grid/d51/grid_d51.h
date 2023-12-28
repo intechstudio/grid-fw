@@ -25,7 +25,7 @@
 #define  GRID_D51_DWT_CYCCNT (*(uint32_t *)0xE0001004)
 
 
-/* ==================== Reading MCU Unique Serial Nuber ====================== */
+/* ==================== Reading MCU Unique Serial Number ====================== */
 // Word 0: 0x008061FC	Word 1: 0x00806010	Word 2: 0x00806014	Word 3: 0x00806018
 
 #define GRID_D51_UNIQUE_ID_ADDRESS_0 0x008061FC
