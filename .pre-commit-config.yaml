@@ -11,13 +11,23 @@ repos:
     exclude: |
       (?x)^(
         grid_common/lua-5.4.3/|
-        grid_make/thirdparty/
+        grid_make/thirdparty/|
+        grid_make/hal/|
+        grid_make/hpl/|
+        grid_make/hri/|
+        grid_make/stdio_redirect/|
+        grid_make/CMSIS/
       )
   - id: end-of-file-fixer
     exclude: |
       (?x)^(
         grid_common/lua-5.4.3/|
-        grid_make/thirdparty/
+        grid_make/thirdparty/|
+        grid_make/hal/|
+        grid_make/hpl/|
+        grid_make/hri/|
+        grid_make/stdio_redirect/|
+        grid_make/CMSIS/
       )
 
 - repo: https://github.com/codespell-project/codespell
@@ -28,5 +38,10 @@ repos:
     exclude: |
       (?x)^(
         grid_common/lua-5.4.3/|
-        grid_make/thirdparty/
+        grid_make/thirdparty/|
+        grid_make/hal/|
+        grid_make/hpl/|
+        grid_make/hri/|
+        grid_make/stdio_redirect/|
+        grid_make/CMSIS/
       )
