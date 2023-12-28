@@ -856,7 +856,7 @@ void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstrin
 	//grid_platform_printf("TO  %x -> %s\r\n", result, result);
 
 	if (0 == grid_lua_dostring(&grid_lua_state, temp)){
-		grid_port_debug_printf("LUA not OK, Failed to retreive action! EL: %d EV: %d", eve->parent->index, eve->type);
+		grid_port_debug_printf("LUA not OK, Failed to retrieve action! EL: %d EV: %d", eve->parent->index, eve->type);
 
 
 	};

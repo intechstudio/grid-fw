@@ -83,7 +83,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code){
     if (luaL_loadstring(mod->L, code) == LUA_OK){
 
         if (( lua_pcall(mod->L, 0, LUA_MULTRET, 0)) == LUA_OK) {
-            // If it was executed successfuly we
+            // If it was executed successfully we
             // remove the code from the stack
 
         }
@@ -315,7 +315,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message){
             strcat(grid_lua_state.stdo, frame);
 
 
-            // MUST BE SENT OUT IMEDIATELY (NOT THROUGH STDO) BECAUSE IT MUST BE SENT OUT EVEN AFTER LOCAL TRIGGER (CONFIG)
+            // MUST BE SENT OUT IMMEDIATELY (NOT THROUGH STDO) BECAUSE IT MUST BE SENT OUT EVEN AFTER LOCAL TRIGGER (CONFIG)
             // struct grid_msg_packet response;
 
             // grid_msg_packet_init(&grid_msg_state, &response, GRID_SYS_GLOBAL_POSITION, GRID_SYS_GLOBAL_POSITION);

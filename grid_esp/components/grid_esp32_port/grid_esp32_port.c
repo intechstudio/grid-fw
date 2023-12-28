@@ -243,7 +243,7 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
     spi_slave_transaction_t* t = &outbnound_transaction[dir_index];
 
 
-    ((uint8_t*)t->tx_buffer)[length] = 0; // termination zero fter the message
+    ((uint8_t*)t->tx_buffer)[length] = 0; // termination zero after the message
     ((uint8_t*)t->tx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1<<dir_index);
 
 
@@ -494,7 +494,7 @@ void grid_esp32_port_task(void *arg)
 
     uint8_t firstprint = 1;
 
-    // Create a periodic timer for thread safe miscallenous tasks
+    // Create a periodic timer for thread safe miscellaneous tasks
 
     esp_timer_create_args_t periodic_ping_heartbeat_args = {
         .callback = &periodic_ping_heartbeat_handler_cb,

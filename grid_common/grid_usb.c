@@ -239,7 +239,7 @@ uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event){
 
 	if (space_in_buffer == 0){
 		return_packet_was_dropped = 1;
-		//Increment teh read index to drop latest packet and make space for a new one.
+		//Increment the read index to drop latest packet and make space for a new one.
 		grid_midi_tx_read_index = (grid_midi_tx_read_index+1)%GRID_MIDI_TX_BUFFER_length;
 	}
 
@@ -285,19 +285,19 @@ void grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 	if (grid_sys_get_midirx_sync_state(&grid_sys_state) == 0){
 
 		if (midi_event.byte0 == 8 && midi_event.byte1 == 240){
-			// midi clock message was recieved
+			// midi clock message was received
 			return;
 
 		}
 
 		if (midi_event.byte0 == 10 && midi_event.byte1 == 240){
-			// midi start message was recieved
+			// midi start message was received
 			return;
 
 		}
 
 		if (midi_event.byte0 == 12 && midi_event.byte1 == 240){
-			// midi stop message was recieved
+			// midi stop message was received
 			return;
 
 		}
@@ -306,7 +306,7 @@ void grid_midi_rx_push(struct grid_midi_event_desc midi_event){
 
 
 
-	// recude commandchange time resolution HERE!!
+	// reduce commandchange time resolution HERE!!
 
 	//       W              R
 	//[0][1][2][3][4][5][6][7][8][9][10]
@@ -408,7 +408,7 @@ uint8_t grid_usb_keyboard_tx_push(struct grid_usb_keyboard_model* kb, struct gri
 
 	if (space_in_buffer == 0){
 		return_packet_was_dropped = 1;
-		//Increment teh read index to drop latest packet and make space for a new one.
+		//Increment the read index to drop latest packet and make space for a new one.
 		kb->tx_read_index = (kb->tx_read_index+1)%kb->tx_buffer_length;
 	}
 

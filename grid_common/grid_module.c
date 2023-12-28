@@ -126,7 +126,7 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
 		result_valid = 1;
 	}
 
-	// schmitt trigger test faild, result not valid
+	// schmitt trigger test failed, result not valid
 	if (result_valid == 0){
 		return;
 	}

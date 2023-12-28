@@ -74,7 +74,7 @@ int32_t cdcdf_acm_read(uint8_t *buf, uint32_t size);
 int32_t cdcdf_acm_write(uint8_t *buf, uint32_t size);
 
 /**
- * \brief USB CDC ACM Stop the currnet data transfer
+ * \brief USB CDC ACM Stop the current data transfer
  */
 void cdcdf_acm_stop_xfer(void);
 

@@ -36,7 +36,7 @@ static uint8_t grid_check_destination(char* header, uint8_t target_destination_b
 
 
 	if ((header_destination_bm&target_destination_bm) != 0){
-		//at least one of the match pattersn fit
+		//at least one of the match patterns fit
 		return true;
 
 	}
@@ -486,13 +486,13 @@ uint8_t	grid_decode_imediate_to_ui(char* header, char* chunk){
 
 		if (0 != strncmp(lua_script, "<?lua ", 6) ){
 			// incorrect opening tag
-			printf("IMEDIATE NOT OK %d: %s\r\n", length, lua_script);
+			printf("IMMEDIATE NOT OK %d: %s\r\n", length, lua_script);
 			return 1; //NOT OK
 		}
 
 		if (0 != strncmp(&lua_script[length-3], " ?>", 3)){
 			// incorrect closing tag
-			printf("IMEDIATE NOT OK %d: %s\r\n", length, lua_script);
+			printf("IMMEDIATE NOT OK %d: %s\r\n", length, lua_script);
 			return 1; //NOT OK
 
 		}
@@ -500,7 +500,7 @@ uint8_t	grid_decode_imediate_to_ui(char* header, char* chunk){
 
 		lua_script[length-3] = '\0'; // add terminating zero
 
-		printf("IMEDIATE %d: %s\r\n", length, lua_script);
+		printf("IMMEDIATE %d: %s\r\n", length, lua_script);
 
 		grid_lua_dostring(&grid_lua_state, &lua_script[6]);
 
@@ -882,8 +882,8 @@ uint8_t	grid_decode_pagediscard_to_ui(char* header, char* chunk){
 		grid_msg_packet_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, id);
 
 
-		uint8_t acknowlege = (state==0)?GRID_INSTR_ACKNOWLEDGE_code:GRID_INSTR_NACKNOWLEDGE_code;
-		grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowlege);
+		uint8_t acknowledge = (state==0)?GRID_INSTR_ACKNOWLEDGE_code:GRID_INSTR_NACKNOWLEDGE_code;
+		grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowledge);
 
 		grid_msg_packet_close(&grid_msg_state, &response);
 		grid_port_packet_send_everywhere(&response);
@@ -936,8 +936,8 @@ uint8_t	grid_decode_pagestore_to_ui(char* header, char* chunk){
 		grid_msg_packet_body_append_printf(&response, GRID_CLASS_PAGESTORE_frame);
 		grid_msg_packet_body_append_parameter(&response, GRID_CLASS_PAGESTORE_LASTHEADER_offset, GRID_CLASS_PAGESTORE_LASTHEADER_length, id);
 
-		uint8_t acknowlege = (state==0)?GRID_INSTR_ACKNOWLEDGE_code:GRID_INSTR_NACKNOWLEDGE_code;
-		grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowlege);
+		uint8_t acknowledge = (state==0)?GRID_INSTR_ACKNOWLEDGE_code:GRID_INSTR_NACKNOWLEDGE_code;
+		grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowledge);
 
 		grid_msg_packet_close(&grid_msg_state, &response);
 		grid_port_packet_send_everywhere(&response);
@@ -978,8 +978,8 @@ uint8_t	grid_decode_pageclear_to_ui(char* header, char* chunk){
 		grid_msg_packet_body_append_printf(&response, GRID_CLASS_PAGECLEAR_frame);
 		grid_msg_packet_body_append_parameter(&response, GRID_CLASS_PAGECLEAR_LASTHEADER_offset, GRID_CLASS_PAGECLEAR_LASTHEADER_length, id);
 
-		uint8_t acknowlege = (state==0)?GRID_INSTR_ACKNOWLEDGE_code:GRID_INSTR_NACKNOWLEDGE_code;
-		grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowlege);
+		uint8_t acknowledge = (state==0)?GRID_INSTR_ACKNOWLEDGE_code:GRID_INSTR_NACKNOWLEDGE_code;
+		grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowledge);
 
 		grid_msg_packet_close(&grid_msg_state, &response);
 		grid_port_packet_send_everywhere(&response);
@@ -1031,8 +1031,8 @@ uint8_t	grid_decode_nvmerase_to_ui(char* header, char* chunk){
 		grid_msg_packet_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
 		grid_msg_packet_body_append_parameter(&response, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, id);
 
-		uint8_t acknowlege = (state==0)?GRID_INSTR_ACKNOWLEDGE_code:GRID_INSTR_NACKNOWLEDGE_code;
-		grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowlege);
+		uint8_t acknowledge = (state==0)?GRID_INSTR_ACKNOWLEDGE_code:GRID_INSTR_NACKNOWLEDGE_code;
+		grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowledge);
 
 		grid_msg_packet_close(&grid_msg_state, &response);
 		grid_port_packet_send_everywhere(&response);

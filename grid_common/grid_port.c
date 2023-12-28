@@ -405,7 +405,7 @@ void grid_port_receive_direct_message(struct grid_port* por, char* message, uint
 
 		uint8_t error=0;
 
-		// reset timout counter
+		// reset timeout counter
 		por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
 
 		if (por->partner_status == 0){
@@ -1244,7 +1244,7 @@ void grid_port_process_outbound_ui(struct grid_port* por){
 		}
 		else if (msg_class == GRID_CLASS_IMEDIATE_code){
 
-			// run <?lua ... ?> style imediate script
+			// run <?lua ... ?> style immediate script
 			grid_decode_imediate_to_ui(header, chunk);
 
 		}

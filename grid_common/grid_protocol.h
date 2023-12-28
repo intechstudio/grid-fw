@@ -1026,7 +1026,7 @@ enum grid_ui_event_t
 
 
 
-// RUN imediate
+// RUN immediate
 #define GRID_CLASS_IMEDIATE_code 0x085
 #define GRID_CLASS_IMEDIATE_frame_start "%c%03x_....", GRID_CONST_STX, GRID_CLASS_IMEDIATE_code
 #define GRID_CLASS_IMEDIATE_frame_end "%c", GRID_CONST_ETX
