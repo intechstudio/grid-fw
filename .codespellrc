@@ -7,4 +7,4 @@ exclude-file = tools/codespell/exclude-file.txt
 check-filenames =
 check-hidden =
 count =
-skip = .git,./lib
+skip = .git,./grid_common/lua-5.4.3/,./grid_make/thirdparty/
