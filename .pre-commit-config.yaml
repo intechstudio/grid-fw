@@ -11,7 +11,9 @@ repos:
     exclude: |
       (?x)^(
         grid_common/lua-5.4.3/|
+        grid_esp/bootloader/|
         grid_make/thirdparty/|
+        grid_make/samd51a/|
         grid_make/hal/|
         grid_make/hpl/|
         grid_make/hri/|
@@ -22,7 +24,9 @@ repos:
     exclude: |
       (?x)^(
         grid_common/lua-5.4.3/|
+        grid_esp/bootloader/|
         grid_make/thirdparty/|
+        grid_make/samd51a/|
         grid_make/hal/|
         grid_make/hpl/|
         grid_make/hri/|
@@ -38,7 +42,9 @@ repos:
     exclude: |
       (?x)^(
         grid_common/lua-5.4.3/|
+        grid_esp/bootloader/|
         grid_make/thirdparty/|
+        grid_make/samd51a/|
         grid_make/hal/|
         grid_make/hpl/|
         grid_make/hri/|
