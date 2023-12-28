@@ -197,7 +197,7 @@
 	0x05, 0x25, 0x01, 0x01, 0x01,																						\
 																														\
 	0x09, 0x05, CONF_USB_COMPOSITE_AUDIO_MIDI_BULKIN_EPADDR,  0x02, 0x40, 0x00, 0x00, 0x00, 0x00, /* EP BULK IN */		\
-	0x05, 0x25, 0x01, 0x01, 0x03, 
+	0x05, 0x25, 0x01, 0x01, 0x03,
 
 #else
 	#define CONF_AUDIO_MIDI_IFC_LEN 0
@@ -266,21 +266,21 @@
 	CONF_HID_GENERIC_IFC_DESC                                                                                          \
 	CONF_MSC_IFC_DESC_HS																							   \
 	CONF_AUDIO_MIDI_IFC_DESC // SUKU: Midi descriptor added
-	
-	
+
+
 // SUKU: Custom string descriptors
 
 
 #define CONF_USB_COMPOSITE_AUDIOCONTROL_STR_DESC                                                                           \
 	40, 0x03, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00, 'c', 0x00, 'h', 0x00, ' ', 0x00, 'S', 0x00, 't', 0x00, 'u',  \
 	    0x00, 'd', 0x00, 'i', 0x00, 'o', 0x00, ':', 0x00, ' ', 0x00, 'A', 0x00, 'C', 0x00, ' ', 0x00, ' ', 0x00,
-		
+
 #define CONF_USB_COMPOSITE_MIDISTREAMING_STR_DESC                                                                           \
 	40, 0x03, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00, 'c', 0x00, 'h', 0x00, ' ', 0x00, 'S', 0x00, 't', 0x00, 'u',  \
 	    0x00, 'd', 0x00, 'i', 0x00, 'o', 0x00, ':', 0x00, ' ', 0x00, 'M', 0x00, 'S', 0x00, ' ', 0x00, ' ', 0x00,
-		
 
-	
+
+
 #define COMPOSITE_STR_DESCESS                                                                                          \
 	CONF_USB_COMPOSITE_LANGID_DESC                                                                                     \
 	CONF_USB_COMPOSITE_IMANUFACT_STR_DESC                                                                              \

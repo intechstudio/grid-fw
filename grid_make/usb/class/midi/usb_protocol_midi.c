@@ -3,7 +3,7 @@
  *
  * Created: 9/30/2019 2:31:56 PM
  *  Author: WPC-User
- */ 
+ */
 #ifndef _USB_PROTOCOL_AUDIO_H_
 #define _USB_PROTOCOL_AUDIO_H_
 

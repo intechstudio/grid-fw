@@ -45,22 +45,22 @@ static void usb_task_inner(){
 
 
 	grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
-	
+
 	// Send midi from Grid to Host!
 
 	for (uint8_t i=0; i<5; i++){
-		
-		grid_midi_tx_pop();     
 
-	}   
-	
+		grid_midi_tx_pop();
+
+	}
+
 
 
 	// Forward midi from Host to Grid!
 	grid_midi_rx_pop();
-	
-	
-	// SERIAL READ 
+
+
+	// SERIAL READ
 	grid_port_receive_task(host_port); // USB
 
 }
@@ -74,34 +74,34 @@ static void nvm_task_inner(){
 	else{
 		if (grid_d51_nvic_get_interrupt_priority_mask() == 1){
 			// nvm just entered ready state
-			
+
 			// lets reenable ui interrupts
 			grid_d51_nvic_set_interrupt_priority_mask(0);
 		}
 	}
 
-	
+
 	// NVM BULK ERASE
 	if (grid_ui_bulk_nvmerase_is_in_progress(&grid_ui_state)){
-		
+
 		grid_ui_bulk_nvmerase_next(&grid_ui_state);
 	}
-	
+
 	// NVM BULK STORE
 	if (grid_ui_bulk_pagestore_is_in_progress(&grid_ui_state)){
-		
+
 		// START: NEW
 		uint32_t cycles_limit = 5000*120;  // 5ms
 		uint32_t cycles_start = grid_d51_dwt_cycles_read();
 
 		while(grid_d51_dwt_cycles_read() - cycles_start < cycles_limit){
 			grid_ui_bulk_pagestore_next(&grid_ui_state);
-		}		
+		}
 	}
-	
+
 	// NVM BULK CLEAR
 	if (grid_ui_bulk_pageclear_is_in_progress(&grid_ui_state)){
-		
+
 		grid_ui_bulk_pageclear_next(&grid_ui_state);
 	}
 
@@ -109,10 +109,10 @@ static void nvm_task_inner(){
 	// NVM BULK READ
 
 	if (ui_port->rx_double_buffer_status == 0){
-		
+
 		if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)){
-			
-			
+
+
 
 			// START: NEW
 			uint32_t cycles_limit = 5000*120;  // 5ms
@@ -120,27 +120,27 @@ static void nvm_task_inner(){
 
 			while(grid_d51_dwt_cycles_read() - cycles_start < cycles_limit){
 				grid_ui_bulk_pageread_next(&grid_ui_state);
-			}		
+			}
 
 
-			
-		}	
+
+		}
 	}
 	// NVM READ
 
 	uint32_t nvmlength = ui_port->rx_double_buffer_status;
-						
+
 	if (nvmlength){
-			
+
 		ui_port->rx_double_buffer_status = 1;
 		ui_port->rx_double_buffer_read_start_index = 0;
 		ui_port->rx_double_buffer_seek_start_index = nvmlength-1; //-3
-			
-		// GETS HERE	
-		//grid_port_receive_decode(ui_port, 0, nvmlength-1);		
-		grid_port_receive_task(ui_port);	
-	}	
-		
+
+		// GETS HERE
+		//grid_port_receive_decode(ui_port, 0, nvmlength-1);
+		grid_port_receive_task(ui_port);
+	}
+
 	//clear buffer
 	for (uint32_t i=0; i<GRID_D51_NVM_PAGE_SIZE; i++)
 	{
@@ -160,12 +160,12 @@ static void receive_task_inner(){
 
 	}
 
-		
+
 
 }
 
 static void ui_task_inner(){
-	
+
 
 
 	// every other entry of the superloop
@@ -179,24 +179,24 @@ static void ui_task_inner(){
 			CRITICAL_SECTION_ENTER()
 			grid_port_process_ui_local_UNSAFE(&grid_ui_state); // COOLDOWN DELAY IMPLEMENTED INSIDE
 			CRITICAL_SECTION_LEAVE()
-		
+
 		}
 
 
 		// Bandwidth Limiter for Broadcast messages
-		
+
 		if (ui_port->cooldown > 0){
 			ui_port->cooldown--;
 		}
-		
-		
+
+
 		if (ui_port->cooldown > 5){
 
 
 		}
 		else{
 
-			// if there are still unprocessed locally triggered events then must not serve global events yet! 
+			// if there are still unprocessed locally triggered events then must not serve global events yet!
 			if (grid_ui_event_count_istriggered_local(&grid_ui_state)){
 				return;
 			}
@@ -204,10 +204,10 @@ static void ui_task_inner(){
 
 				if (grid_ui_event_count_istriggered(&grid_ui_state)){
 
-					ui_port->cooldown += 3;	
+					ui_port->cooldown += 3;
 
 					CRITICAL_SECTION_ENTER()
-					grid_port_process_ui_UNSAFE(&grid_ui_state); 
+					grid_port_process_ui_UNSAFE(&grid_ui_state);
 					CRITICAL_SECTION_LEAVE()
 				}
 
@@ -223,36 +223,36 @@ static void ui_task_inner(){
 
 
 static void inbound_task_inner(){
-		
-	/* ========================= GRID INBOUND TASK ============================= */						
 
-	
+	/* ========================= GRID INBOUND TASK ============================= */
+
+
 	// Copy data from UI_RX to HOST_TX & north TX AND STUFF
 
 	grid_port_process_inbound(ui_port); // Loopback
-	
+
 
 
 	for(uint8_t i=0; i<4; i++){
 
 
 		struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
-		grid_port_process_inbound(port);	
+		grid_port_process_inbound(port);
 
 	}
-	
 
-	grid_port_process_inbound(host_port);	// USB	
+
+	grid_port_process_inbound(host_port);	// USB
 
 
 
 }
 
 static void outbound_task_inner(){
-	
-		
-	/* ========================= GRID OUTBOUND TASK ============================= */	
-	
+
+
+	/* ========================= GRID OUTBOUND TASK ============================= */
+
 	// If previous xfer is completed and new data is available then move data from txbuffer to txdoublebuffer and start new xfer.
 
 
@@ -261,15 +261,15 @@ static void outbound_task_inner(){
 
 		struct grid_port* port = uart_port_array[i];
 
-		grid_port_process_outbound_usart(port);	
-		
+		grid_port_process_outbound_usart(port);
+
 
 
 	}
 
-	grid_port_process_outbound_ui(ui_port);	
-	grid_port_process_outbound_usb(host_port);	
-	
+	grid_port_process_outbound_ui(ui_port);
+	grid_port_process_outbound_usb(host_port);
+
 
 
 }
@@ -281,19 +281,19 @@ static void led_task_inner(){
 
 
 	if (10 * 1000 < grid_platform_rtc_get_elapsed_time(led_lastrealtime)){
-	
+
 		led_lastrealtime = grid_platform_rtc_get_micros();
 
 		grid_led_tick(&grid_led_state);
-		
-		grid_led_render_framebuffer(&grid_led_state);	
+
+		grid_led_render_framebuffer(&grid_led_state);
 
 		grid_d51_led_generate_frame(&grid_d51_led_state, &grid_led_state);
 
 		grid_d51_led_start_transfer(&grid_d51_led_state);
 
 	}
-	
+
 
 }
 
@@ -319,7 +319,7 @@ void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task)
 
 	pingflag++;
 	uart_port_array[pingflag%4]->ping_flag = 1;
-	
+
 }
 
 #define RTC1SEC 16384
@@ -337,8 +337,8 @@ void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task)
 void RTC_Scheduler_realtime_millisecond_cb(const struct timer_task *const timer_task)
 {
 
-	grid_ui_rtc_ms_tick_time(&grid_ui_state);	
-	grid_ui_rtc_ms_mapmode_handler(&grid_ui_state, !gpio_get_pin_level(MAP_MODE));	
+	grid_ui_rtc_ms_tick_time(&grid_ui_state);
+	grid_ui_rtc_ms_mapmode_handler(&grid_ui_state, !gpio_get_pin_level(MAP_MODE));
 
 }
 
@@ -373,11 +373,11 @@ void RTC_Scheduler_grid_sync_cb(const struct timer_task *const timer_task)
 		gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
 		gpio_set_pin_level(PIN_GRID_SYNC_1, 1);
 		//set_drive_mode(SYNC1_PIN, GPIO_DRIVE_MODE_OPEN_DRAIN);
-		
+
 
 	}
-	else if (sync1_drive){          
-		gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_IN);  
+	else if (sync1_drive){
+		gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_IN);
 		sync1_drive = 0;
 	}
 
@@ -402,15 +402,15 @@ void RTC_Scheduler_report_cb(const struct timer_task *const timer_task)
 
 void init_timer(void)
 {
-	
+
 	RTC_Scheduler_ping.interval = RTC1MS*GRID_PARAMETER_PING_interval;
 	RTC_Scheduler_ping.cb       = RTC_Scheduler_ping_cb;
 	RTC_Scheduler_ping.mode     = TIMER_TASK_REPEAT;
-	
+
 	RTC_Scheduler_heartbeat.interval = RTC1MS*GRID_PARAMETER_HEARTBEAT_interval;
 	RTC_Scheduler_heartbeat.cb       = RTC_Scheduler_heartbeat_cb;
 	RTC_Scheduler_heartbeat.mode     = TIMER_TASK_REPEAT;
-	
+
 	RTC_Scheduler_realtime.interval = 1;
 	RTC_Scheduler_realtime.cb       = RTC_Scheduler_realtime_cb;
 	RTC_Scheduler_realtime.mode     = TIMER_TASK_REPEAT;
@@ -433,9 +433,9 @@ void init_timer(void)
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime_ms);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_grid_sync);
 	timer_add_task(&RTC_Scheduler, &RTC_Scheduler_report);
-	
+
 	timer_start(&RTC_Scheduler);
-	
+
 }
 
 //====================== USB TEST =====================//
@@ -455,16 +455,16 @@ int main(void)
 
 
 	atmel_start_init();	// this sets up gpio and printf
-	
+
    	grid_platform_printf("Start Initialized %d %s\r\n", 123, "Cool!");
 
 	grid_d51_init(); // Check User Row
 
 	grid_sys_init(&grid_sys_state);
 	grid_msg_init(&grid_msg_state);
-         
+
 	// grid_d51_nvm_erase_all(&grid_d51_nvm_state);
-		
+
 	printf("Hardware test complete");
 
 	//  x/512xb 0x80000
@@ -481,7 +481,7 @@ int main(void)
 
 	grid_d51_usb_init(); // requires hostport
 
-	
+
 	grid_lua_init(&grid_lua_state);
     grid_lua_set_memory_target(&grid_lua_state, 80); //80kb
 	grid_lua_start_vm(&grid_lua_state);
@@ -500,9 +500,9 @@ int main(void)
 	{
 		grid_ui_bulk_pageread_next(&grid_ui_state);
 	}
-	
+
 	//grid_d51_nvm_toc_debug(&grid_d51_nvm_state);
-	
+
 	init_timer();
 
 	uint32_t loopstart = 0;
@@ -530,32 +530,32 @@ int main(void)
 	while (1) {
 
 
-		
+
 		if (usb_d_get_frame_num() != 0){
-			
+
 			if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1){
-			
+
 
 				printf("USB CONNECTED\r\n\r\n");
 				printf("HWCFG %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
 
-				grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);	
-				grid_alert_all_set_frequency(&grid_led_state, -2);	
-				grid_alert_all_set_phase(&grid_led_state, 200);	
-				
+				grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);
+				grid_alert_all_set_frequency(&grid_led_state, -2);
+				grid_alert_all_set_phase(&grid_led_state, 200);
+
 				grid_msg_set_heartbeat_type(&grid_msg_state, 1);
 
 
 				printf("Register MIDI callbacks\r\n\r\n");
 				//grid_d51_usb_midi_register_callbacks();
 
-		
+
 			}
 
 		}
-			
+
 		//printf("WTF\r\n\r\n");
-		
+
 		loopcounter++;
 		loopcount++;
 
@@ -574,10 +574,10 @@ int main(void)
 
 
 		usb_task_inner();
-	
-	
+
+
 		nvm_task_inner();
-		
+
 		receive_task_inner();
 
 		//lua_gc(grid_lua_state.L, LUA_GCSTOP);
@@ -605,11 +605,11 @@ int main(void)
 
 		}
 
-		
+
 
 		if (grid_sys_get_editor_connected_state(&grid_sys_state) == 1){
 
-			
+
 
 			if (grid_platform_rtc_get_elapsed_time(grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state))>2000*MS_TO_US){ // 2 sec
 
