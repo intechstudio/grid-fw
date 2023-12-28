@@ -472,7 +472,7 @@ int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value){
         default: ets_printf("INVALID AXIS\r\n"); return 0;
     }
 
-    tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y, hid_gamepad_axis_z, hid_gamepad_axis_rx, hid_gamepad_axis_ry, hid_gamepad_axis_rz, hid_gamepad_hat, hid_gamepad_button_state);
+    tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y, hid_gamepad_axis_z, hid_gamepad_axis_rz, hid_gamepad_axis_rx, hid_gamepad_axis_ry, hid_gamepad_hat, hid_gamepad_button_state);
 
     return 1;
 }
