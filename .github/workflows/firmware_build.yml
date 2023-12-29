@@ -28,6 +28,14 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
+      - name: Install GNU Arm Embedded Toolchain (arm-none-eabi-gcc) and build firmware
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '9-2020-q2' # <-- The compiler release to use
+        run: |
+          arm-none-eabi-gcc -v
+          cd grid_make/gcc && make release_automation
+
       - name: Install RP2040 SDK and build co-processor firmware
         run: |
           sudo apt update
@@ -50,27 +58,14 @@ jobs:
           cat pico_firmware.h
           cp pico_firmware.h ../../../grid_esp/main/pico_firmware.h
 
-      - name: Install GNU Arm Embedded Toolchain (arm-none-eabi-gcc)
-        uses: carlosperate/arm-none-eabi-gcc-action@v1
-        with:
-          release: '9-2020-q2' # <-- The compiler release to use
-
-      - name: Test ARM GCC and build D51 firmware variant
-        run: |
-          arm-none-eabi-gcc -v
-          cd grid_make/gcc && make release_automation
-
-      - name: esp-idf build
+      - name: esp-idf build & convert firmware to UF2
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v5.1.2
           target: esp32s3
-          path: 'grid_esp'
-          command: idf.py build
-
-      - name: Convert ESP firmware to UF2
         run: |
           cd ./grid_esp
+          idf.py build
           mkdir ./output
           python3 ./tools/uf2conv.py -f ESP32S3 ./build/grid_fw.bin -b 0x0 -c -o ./output/grid_fw.uf2
 
@@ -78,30 +73,29 @@ jobs:
         shell: bash
         run: |
           echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "action_date=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
-
-      - name: See env
-        run: echo "${{ env.RELEASE_VERSION }}"
+          echo "ACTION_DATE=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
 
       - name: Copy and rename the artifacts
         run: |
           ls
-          cp binary/grid_release.uf2 grid_d51_release_${{ env.action_date }}.uf2
-          cp grid_esp/output/grid_fw.uf2 grid_esp32_release_${{ env.action_date }}.uf2
-          cp binary/grid_release.uf2 grid_d51_nightly_${{ env.action_date }}.uf2
-          cp grid_esp/output/grid_fw.uf2 grid_esp32_nightly_${{ env.action_date }}.uf2
+          cp binary/grid_release.uf2 grid_d51_release_${{ env.ACTION_DATE }}.uf2
+          cp grid_esp/output/grid_fw.uf2 grid_esp32_release_${{ env.ACTION_DATE }}.uf2
+          cp binary/grid_release.uf2 grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
+          cp grid_esp/output/grid_fw.uf2 grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
           cp .github/workflows/INSTRUCTIONS.txt INSTRUCTIONS__USE_D51_VERSION_IF_UNSURE.txt
 
       - uses: actions/upload-artifact@v3
         with:
           name: ESP32 Nightly
-          path: grid_esp32_nightly_${{ env.action_date }}.uf2
+          path: |
+            grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
+            grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
 
       - name: Zipping artifacts for Github Release
         uses: vimtor/action-zip@v1
         if: ${{ github.event_name == 'tag' }}
         with:
-          files: grid_d51_release_${{ env.action_date }}.uf2 grid_esp32_release_${{ env.action_date }}.uf2 INSTRUCTIONS__USE_D51_VERSION_IF_UNSURE.txt
+          files: grid_d51_release_${{ env.ACTION_DATE }}.uf2 grid_esp32_release_${{ env.ACTION_DATE }}.uf2 INSTRUCTIONS__USE_D51_VERSION_IF_UNSURE.txt
           dest: grid_release.zip
 
       - name: Release
@@ -109,7 +103,7 @@ jobs:
         if: ${{ github.event_name == 'tag' }}
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
-          name: Grid  ${{ env.RELEASE_VERSION }} (${{ env.action_date }})
+          name: Grid  ${{ env.RELEASE_VERSION }} (${{ env.ACTION_DATE }})
           files: grid_release.zip
           draft: true
         env:
