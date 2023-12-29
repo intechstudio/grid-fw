@@ -88,16 +88,27 @@ jobs:
             grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
             grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
 
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          if git tag --contains $GITHUB_SHA | grep -q '^your_tag_name$'; then
+            echo "Tag found, proceeding with the release..."
+            echo "::set-output name=run_release::true"
+          else
+            echo "No tag found, skipping the release."
+            echo "::set-output name=run_release::false"
+          fi
+
       - name: Zipping artifacts for Github Release
         uses: vimtor/action-zip@v1
-        if: ${{ github.event_name == 'tag' }}
+        if: steps.check_tag.outputs.run_release == 'true'
         with:
           files: grid_d51_release_${{ env.ACTION_DATE }}.uf2 grid_esp32_release_${{ env.ACTION_DATE }}.uf2 INSTRUCTIONS__USE_D51_VERSION_IF_UNSURE.txt
           dest: grid_release.zip
 
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: ${{ github.event_name == 'tag' }}
+        if: steps.check_tag.outputs.run_release == 'true'
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
           name: Grid  ${{ env.RELEASE_VERSION }} (${{ env.ACTION_DATE }})
