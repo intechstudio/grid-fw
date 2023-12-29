@@ -22,7 +22,6 @@ extern "C" {
 #include <hal_sleep.h>
 
 #include <hal_adc_async.h>
-#include <hal_adc_async.h>
 
 #include <hal_crc_sync.h>
 
@@ -33,7 +32,6 @@ extern "C" {
 #include <hal_qspi_dma.h>
 
 #include <hal_timer.h>
-#include <hal_usart_async.h>
 #include <hal_usart_async.h>
 
 #include <hal_usart_sync.h>
@@ -49,12 +47,6 @@ extern "C" {
 #include <hal_delay.h>
 #include <hal_timer.h>
 #include <hpl_tc_base.h>
-#include <hal_timer.h>
-#include <hpl_tc_base.h>
-#include <hal_timer.h>
-#include <hpl_tc_base.h>
-#include <hal_timer.h>
-#include <hpl_tc_base.h>
 
 #include <hal_ext_irq.h>
 
@@ -66,12 +58,12 @@ extern "C" {
 
 extern struct adc_async_descriptor ADC_0;
 extern struct adc_async_descriptor ADC_1;
-extern struct crc_sync_descriptor  CRC_0;
+extern struct crc_sync_descriptor CRC_0;
 
 extern struct flash_descriptor FLASH_0;
 
-extern struct qspi_dma_descriptor    QSPI_INSTANCE;
-extern struct timer_descriptor       RTC_Scheduler;
+extern struct qspi_dma_descriptor QSPI_INSTANCE;
+extern struct timer_descriptor RTC_Scheduler;
 extern struct usart_async_descriptor USART_EAST;
 extern struct usart_async_descriptor USART_NORTH;
 
@@ -80,7 +72,7 @@ extern struct usart_sync_descriptor GRID_AUX;
 extern struct spi_m_async_descriptor UI_SPI;
 extern struct usart_async_descriptor USART_WEST;
 
-extern struct i2c_m_async_desc       SYS_I2C;
+extern struct i2c_m_async_desc SYS_I2C;
 extern struct usart_async_descriptor USART_SOUTH;
 
 extern struct spi_m_dma_descriptor GRID_LED;

@@ -66,5 +66,7 @@ repos:
         grid_make/hri/|
         grid_make/stdio_redirect/|
         grid_make/CMSIS/|
-        grid_make/usb/
+        grid_make/usb/|
+        grid_make/config/
+        grid_make/examples/
       )

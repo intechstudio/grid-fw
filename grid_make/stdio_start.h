@@ -2,8 +2,8 @@
  * Code generated from Atmel Start.
  *
  * This file will be overwritten when reconfiguring your Atmel Start project.
- * Please copy examples or other code you want to keep to a separate file or main.c
- * to avoid losing it when reconfiguring.
+ * Please copy examples or other code you want to keep to a separate file or
+ * main.c to avoid losing it when reconfiguring.
  */
 #ifndef STDIO_MAIN_H
 #define STDIO_MAIN_H
