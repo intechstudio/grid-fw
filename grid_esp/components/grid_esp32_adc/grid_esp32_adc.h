@@ -11,7 +11,7 @@
 #include <string.h>
 
 #include "freertos/FreeRTOS.h"
-
+#include "freertos/semphr.h"
 #include "freertos/ringbuf.h"
 
 #ifdef __cplusplus
