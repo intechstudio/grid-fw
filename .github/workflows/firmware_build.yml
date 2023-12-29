@@ -11,8 +11,8 @@ on:
       - 'grid_make/**'
       - 'grid_pico/**'
       - '.github/workflows/**'
-  tags:
-    - 'v*.*.*'
+    tags:
+      - 'v*.*.*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
