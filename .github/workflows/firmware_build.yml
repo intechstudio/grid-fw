@@ -5,15 +5,6 @@ name: Combined Firmware Workflow
 on:
   workflow_dispatch:
   push:
-    paths:
-      - 'grid_common/**'
-      - 'grid_esp/**'
-      - 'grid_make/**'
-      - 'grid_pico/**'
-      - '.github/workflows/**'
-  push:
-    tags:
-      - 'v*.*.*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
