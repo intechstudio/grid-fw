@@ -3,12 +3,6 @@
 
 #include "grid_d51_module.h"
 
-
-
-
 void grid_module_bu16_init(void);
-
-
-
 
 #endif

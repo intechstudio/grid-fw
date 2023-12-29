@@ -3,9 +3,6 @@
 
 #include "grid_d51_module.h"
 
-
 void grid_module_pbf4_init(void);
-
-
 
 #endif

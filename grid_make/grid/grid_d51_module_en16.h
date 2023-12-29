@@ -5,6 +5,4 @@
 
 void grid_module_en16_init(void);
 
-
-
 #endif

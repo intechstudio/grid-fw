@@ -5,6 +5,4 @@
 
 void grid_module_po16_init(void);
 
-
-
 #endif
