@@ -1,36 +1,41 @@
-
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.183.0/containers/ubuntu
-{
-  /* A name for the dev container displayed in the UI */
-  "name": "ESP-Toolchain",
-  /* container name when creating container */
-  "image": "espressif/idf:latest",
-  /* mount the local folder to /workspaces folder of docker image */
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces,type=bind",
-  /* the path of workspace folder, that means this folder will be opened after container is running
-   */
-  "workspaceFolder": "/workspaces",
-  /* mount the vscode extensions to the target path, and then they don't need to install again when rebuilding the container
-   */
-  "mounts": [
-    "source=extensionCache,target=/root/.vscode-server/extensions,type=volume"
-  ],
-  /* Machine specific settings that should be copied into the container
-   */
-  "customizations": {
-    "vscode": {
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash",
+    // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+    // https://github.com/microsoft/vscode-dev-containers/tree/v0.183.0/containers/ubuntu
+    {
+      /* A name for the dev container displayed in the UI */
+      "name": "ESP-Toolchain",
+      /* container name when creating container */
+      "image": "espressif/idf:latest",
+      /* mount the local folder to /workspaces folder of docker image */
+      "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces,type=bind",
+      /* the path of workspace folder, that means this folder will be opened after container is running
+       */
+      "workspaceFolder": "/workspaces",
+      /* mount the vscode extensions to the target path, and then they don't need to install again when rebuilding the container
+       */
+      "mounts": [
+        "source=extensionCache,target=/root/.vscode-server/extensions,type=volume"
+      ],
+      /* Machine specific settings that should be copied into the container
+       */
+      "customizations": {
+        "vscode": {
+          "settings": {
+            "terminal.integrated.defaultProfile.linux": "bash",
+          },
+          /* An array of extensions that should be installed into the container. */
+          "extensions": [
+            "ms-vscode.cpptools"
+          ],
+          /* start the container with privileged mode, else the devices cannot be accessed on the docker image.
+           */
+        }
       },
-      /* An array of extensions that should be installed into the container. */
-      "extensions": ["ms-vscode.cpptools"],
-      /* start the container with privileged mode, else the devices cannot be accessed on the docker image.
-      */
+      "overrideCommand": false,
+      "runArgs": [
+        "--privileged",
+        "-it"
+      ],
+      "remoteEnv": {
+        "PATH": "${containerEnv:PATH}:/some/other/path:/opt/esp/idf/components/espcoredump:/opt/esp/idf/components/partition_table:/opt/esp/idf/components/app_update:/opt/esp/tools/xtensa-esp-elf-gdb/12.1_20221002/xtensa-esp-elf-gdb/bin:/opt/esp/tools/riscv32-esp-elf-gdb/12.1_20221002/riscv32-esp-elf-gdb/bin:/opt/esp/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin:/opt/esp/tools/xtensa-esp32s2-elf/esp-12.2.0_20230208/xtensa-esp32s2-elf/bin:/opt/esp/tools/xtensa-esp32s3-elf/esp-12.2.0_20230208/xtensa-esp32s3-elf/bin:/opt/esp/tools/riscv32-esp-elf/esp-12.2.0_20230208/riscv32-esp-elf/bin:/opt/esp/tools/esp32ulp-elf/2.35_20220830/esp32ulp-elf/bin:/opt/esp/tools/cmake/3.24.0/bin:/opt/esp/tools/openocd-esp32/v0.12.0-esp32-20230419/openocd-esp32/bin:/opt/esp/python_env/idf5.2_py3.8_env/bin:/opt/esp/idf/tools"
+      }
     }
-  },
-  "overrideCommand": false,
-  "runArgs": ["--privileged", "-it"],
-  "remoteEnv": {
-    "PATH": "${containerEnv:PATH}:/some/other/path:/opt/esp/idf/components/espcoredump:/opt/esp/idf/components/partition_table:/opt/esp/idf/components/app_update:/opt/esp/tools/xtensa-esp-elf-gdb/12.1_20221002/xtensa-esp-elf-gdb/bin:/opt/esp/tools/riscv32-esp-elf-gdb/12.1_20221002/riscv32-esp-elf-gdb/bin:/opt/esp/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin:/opt/esp/tools/xtensa-esp32s2-elf/esp-12.2.0_20230208/xtensa-esp32s2-elf/bin:/opt/esp/tools/xtensa-esp32s3-elf/esp-12.2.0_20230208/xtensa-esp32s3-elf/bin:/opt/esp/tools/riscv32-esp-elf/esp-12.2.0_20230208/riscv32-esp-elf/bin:/opt/esp/tools/esp32ulp-elf/2.35_20220830/esp32ulp-elf/bin:/opt/esp/tools/cmake/3.24.0/bin:/opt/esp/tools/openocd-esp32/v0.12.0-esp32-20230419/openocd-esp32/bin:/opt/esp/python_env/idf5.2_py3.8_env/bin:/opt/esp/idf/tools"}
-}
