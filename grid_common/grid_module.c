@@ -620,7 +620,7 @@ uint16_t grid_ui_endlesspot_calculate_angle(uint16_t phase_a, uint16_t phase_b, 
 		phase_b_degrees = (uint16_t)((1800-phase_b_norm*1800) + 1800 + 2700)%3600;
 	}
 
-	// if one of the phasees are close to 0 and the outher is close to 360 then averaging will not work directly
+	// if one of the phasees are close to 0 and the other is close to 360 then averaging will not work directly
 	if (phase_b_degrees>3000 && phase_a_degrees<600){
 		phase_a_degrees += 3600;
 	}

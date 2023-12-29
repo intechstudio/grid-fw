@@ -39,7 +39,7 @@
 /** HID Mouse Class Button State Type */
 enum hiddf_mouse_button_state { HID_MOUSE_BTN_UP, HID_MOUSE_BTN_DOWN };
 
-/* HID Mosue Class Button Type */
+/* HID Mouse Class Button Type */
 enum hiddf_mouse_button_type { HID_MOUSE_LEFT_BTN = 0x01, HID_MOUSE_RIGHT_BTN = 0x02, HID_MOUSE_MIDDLE_BTN = 0x04 };
 
 /* HID Mouse Class Pointer Move Type */

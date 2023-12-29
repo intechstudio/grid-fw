@@ -523,15 +523,15 @@ void grid_d51_nvic_debug_priorities(void){
 
 void grid_d51_nvic_set_interrupt_priority(IRQn_Type irqn, uint32_t priority){
 
-	ASSERT(irqn < 136+1); // Fron D51 Datasheet
-	ASSERT(priority < (1<<__NVIC_PRIO_BITS)); // Fron D51 Datasheet
+	ASSERT(irqn < 136+1); // From D51 Datasheet
+	ASSERT(priority < (1<<__NVIC_PRIO_BITS)); // From D51 Datasheet
 
 	NVIC_SetPriority(irqn, priority);
 }
 
 uint32_t grid_d51_nvic_get_interrupt_priority(IRQn_Type irqn){
 
-	ASSERT(irqn < 136+1); // Fron D51 Datasheet
+	ASSERT(irqn < 136+1); // From D51 Datasheet
 
 	return NVIC_GetPriority(irqn);
 }
