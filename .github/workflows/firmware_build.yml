@@ -28,10 +28,12 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Install GNU Arm Embedded Toolchain (arm-none-eabi-gcc) and build firmware
+      - name: Install GNU Arm Embedded Toolchain (arm-none-eabi-gcc)
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
           release: '9-2020-q2' # <-- The compiler release to use
+
+      - name: Test ARM GCC and build D51 firmware variant
         run: |
           arm-none-eabi-gcc -v
           cd grid_make/gcc && make release_automation
@@ -58,14 +60,17 @@ jobs:
           cat pico_firmware.h
           cp pico_firmware.h ../../../grid_esp/main/pico_firmware.h
 
-      - name: esp-idf build & convert firmware to UF2
+      - name: esp-idf build
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v5.1.2
           target: esp32s3
+          path: 'grid_esp'
+          command: idf.py build
+
+      - name: Convert ESP firmware to UF2
         run: |
           cd ./grid_esp
-          idf.py build
           mkdir ./output
           python3 ./tools/uf2conv.py -f ESP32S3 ./build/grid_fw.bin -b 0x0 -c -o ./output/grid_fw.uf2
 
