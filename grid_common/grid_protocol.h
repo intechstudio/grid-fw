@@ -3,7 +3,7 @@
  * \brief This file defines the communictaion classes and protocol constants of Grid.
  *
  * Here typically goes a more extensive explanation of what the header
- * defines. Doxygens tags are words preceeded by either a backslash @\
+ * defines. Doxygens tags are words preceded by either a backslash @\
  * or by an at symbol @@.
  *
  * \author Suku Wc (Intech Studio)
