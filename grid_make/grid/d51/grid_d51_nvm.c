@@ -319,8 +319,8 @@ uint32_t grid_d51_nvm_clear(struct grid_d51_nvm_model *mod, uint32_t offset,
   // 	if (verify_buffer[i] != 0x00){
   // 		printf("\r\n\r\nerror.nvm.clear verify failed at 0x%x cb:%d
   // vb:%d", GRID_D51_NVM_LOCAL_BASE_ADDRESS + offset + i, clear_buffer[i],
-  // verify_buffer[i]); 		grid_port_debug_printf("clear verify failed");
-  // 		for(uint8_t j=0; j<10; j++){ // retry max 10 times
+  // verify_buffer[i]); 		grid_port_debug_printf("clear verify
+  // failed"); 		for(uint8_t j=0; j<10; j++){ // retry max 10 times
 
   // 			// try again chunk
   // 			uint8_t chunk[8] = {0};

@@ -24,7 +24,7 @@ void grid_d51_led_init(struct grid_d51_led_model *d51_mod,
   //  LEDs.
   //
   //	* Calculating the lookup table during startup saves program memory at
-  //the expense of RAM
+  // the expense of RAM
   //  * Memory usage: 256*32bit -> 1kbyte
   //
   //	* Input: 8bit intensity;
