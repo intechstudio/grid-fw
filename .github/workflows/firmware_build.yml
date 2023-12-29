@@ -70,7 +70,9 @@ jobs:
         shell: bash
         run: |
           echo "ACTION_DATE=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
-          if git tag --contains $GITHUB_SHA | grep -q '^your_tag_name$'; then
+          git tag --contains ${{ github.sha }}
+          echo ${GITHUB_REF#refs/tags/}
+          if git tag --contains ${{ github.sha }} | grep -q '^${GITHUB_REF#refs/tags/}$'; then
             echo "Tag found, proceeding with the release..."
             echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           else
