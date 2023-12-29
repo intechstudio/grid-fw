@@ -70,7 +70,7 @@ jobs:
         shell: bash
         run: |
           echo "ACTION_DATE=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
-          echo "RELEASE_VERSION=${git tag --contains ${{ github.sha }}}" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$(git tag --contains ${{ github.sha }})" >> $GITHUB_ENV
 
       - name: Copy and rename the artifacts
         run: |
