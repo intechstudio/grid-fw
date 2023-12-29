@@ -51,3 +51,18 @@ repos:
         grid_make/stdio_redirect/|
         grid_make/CMSIS/
       )
+- repo: https://github.com/pre-commit/mirrors-clang-format
+  rev: v11.0
+  hooks:
+  - id: clang-format
+    exclude: |
+      (?x)^(
+        grid_common/lua-5.4.3/|
+        grid_esp/bootloader/|
+        grid_make/thirdparty/|
+        grid_make/samd51a/|
+        grid_make/hal/|
+        grid_make/hpl/|
+        grid_make/hri/|
+        grid_make/stdio_redirect/|
+        grid_make/CMSIS/
