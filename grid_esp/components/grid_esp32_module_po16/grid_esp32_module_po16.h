@@ -5,15 +5,11 @@
  */
 #pragma once
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
 void grid_esp32_module_po16_task(void *arg);
-
-
 
 #ifdef __cplusplus
 }

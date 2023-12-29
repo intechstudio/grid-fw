@@ -5,24 +5,25 @@
  */
 #pragma once
 
-
 #ifndef __ASSEMBLER__
 
 #include "grid_esp32_trace.h"
 
 #endif /* def __ASSEMBLER__ */
 
-
 /*
 Patch instructions
 
 apt update && apt install nano
 nano /opt/esp/idf/components/freertos/config/include/freertos/FreeRTOSConfig.h
-#include "../../../../../../../../../project/grid_esp/components/grid_esp32_trace/trace_hooks.h"
+#include
+"../../../../../../../../../project/grid_esp/components/grid_esp32_trace/trace_hooks.h"
 
 OR
 
-sed -i '10s|.*|#include "../../../../../../../../../project/grid_esp/components/grid_esp32_trace/trace_hooks.h"|' /opt/esp/idf/components/freertos/config/include/freertos/FreeRTOSConfig.h
+sed -i '10s|.*|#include
+"../../../../../../../../../project/grid_esp/components/grid_esp32_trace/trace_hooks.h"|'
+/opt/esp/idf/components/freertos/config/include/freertos/FreeRTOSConfig.h
 
 */
 
@@ -38,15 +39,12 @@ extern "C" {
 #define configUSE_STATS_FORMATTING_FUNCTIONS 1
 
 
-#define traceTASK_SWITCHED_IN()                                                    	\
-    grid_trace_task_switched_in();
+#define traceTASK_SWITCHED_IN() \ grid_trace_task_switched_in();
 
-#define traceTASK_SWITCHED_OUT()                                                    	\
-    grid_trace_task_switched_out();
+#define traceTASK_SWITCHED_OUT() \ grid_trace_task_switched_out();
 
 
 */
-
 
 #ifdef __cplusplus
 }

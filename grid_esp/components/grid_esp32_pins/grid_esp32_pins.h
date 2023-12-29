@@ -5,7 +5,6 @@
  */
 #pragma once
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -15,14 +14,11 @@ extern "C" {
  */
 #define GRID_ESP32_PINS_HWCFG_SHIFT 10
 #define GRID_ESP32_PINS_HWCFG_CLOCK 11
-#define GRID_ESP32_PINS_HWCFG_DATA  12
-
+#define GRID_ESP32_PINS_HWCFG_DATA 12
 
 #define GRID_ESP32_PINS_RP_SWDIO 13
 #define GRID_ESP32_PINS_RP_SWCLK 14
 #define GRID_ESP32_PINS_RP_CLOCK 15
-
-
 
 #define GRID_ESP32_PINS_MUX_0_A 37
 #define GRID_ESP32_PINS_MUX_0_B 36
@@ -36,9 +32,7 @@ extern "C" {
 
 #define GRID_ESP32_PINS_MUX_1_Z 2
 
-
 #define GRID_ESP32_PINS_MAPMODE 38
-
 
 #ifdef __cplusplus
 }
