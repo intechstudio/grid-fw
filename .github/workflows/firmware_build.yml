@@ -11,6 +11,7 @@ on:
       - 'grid_make/**'
       - 'grid_pico/**'
       - '.github/workflows/**'
+  push:
     tags:
       - 'v*.*.*'
 
@@ -91,7 +92,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: ESP32 Nightly
+          name: grid-fw nightly
           path: |
             grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
             grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
