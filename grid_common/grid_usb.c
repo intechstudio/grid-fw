@@ -94,9 +94,10 @@ uint8_t grid_usb_keyboard_cleanup(struct grid_usb_keyboard_model *kb) {
     //		uint8_t debugtext[100] = {0};
     //		snprintf(debugtext, 99, "count: %d | activekeys: %d, %d, %d, %d,
     //%d, %d", kb->active_key_count, kb->active_key_list[0].keycode,
-    //kb->active_key_list[1].keycode, kb->active_key_list[2].keycode,
-    //kb->active_key_list[3].keycode, kb->active_key_list[4].keycode,
-    //kb->active_key_list[5].keycode); 		grid_port_debug_print_text(debugtext);
+    // kb->active_key_list[1].keycode, kb->active_key_list[2].keycode,
+    // kb->active_key_list[3].keycode, kb->active_key_list[4].keycode,
+    // kb->active_key_list[5].keycode);
+    // grid_port_debug_print_text(debugtext);
 
     // USB SEND
   }

@@ -5,16 +5,15 @@
  */
 #pragma once
 
-#include <stdint.h>
 #include "driver/rmt_encoder.h"
+#include <stdint.h>
 
 #include "driver/gpio.h"
-#include "grid_esp32_pins.h"
-#include "grid_esp32_nvm.h"
 #include "esp_check.h"
-#include "rom/ets_sys.h" // For ets_printf
 #include "esp_efuse.h"
-
+#include "grid_esp32_nvm.h"
+#include "grid_esp32_pins.h"
+#include "rom/ets_sys.h" // For ets_printf
 
 #include "bootloader_random.h"
 #include "esp_random.h"
@@ -36,7 +35,6 @@ extern struct tskTaskControlBlock;
 
 void grid_esp32_housekeeping_task(void *arg);
 
-
 /**
  * @brief Read HWCFG register value on ESP32 based module
  *
@@ -54,13 +52,11 @@ uint32_t grid_platform_get_hwcfg();
  *      - 64-bit unsigned value of CPUID register
  */
 
-
-
 void grid_platform_printf(char const *fmt, ...);
 
-uint32_t grid_platform_get_id(uint32_t* return_array);
+uint32_t grid_platform_get_id(uint32_t *return_array);
 
-uint32_t grid_platform_get_id(uint32_t* return_array);
+uint32_t grid_platform_get_id(uint32_t *return_array);
 uint32_t grid_platform_get_hwcfg();
 uint8_t grid_platform_get_random_8();
 void grid_platform_delay_ms(uint32_t delay_milliseconds);
@@ -70,37 +66,33 @@ uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
 
+void grid_platform_close_actionstring_file(void *file_pointer);
 
-void grid_platform_close_actionstring_file(void* file_pointer);
+void *grid_platform_find_actionstring_file(uint8_t page, uint8_t element,
+                                           uint8_t event_type);
+uint16_t grid_platform_get_actionstring_file_size(void *file_pointer);
+uint8_t grid_platform_get_actionstring_file_has_size(void *file_pointer);
 
-void* grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type);
-uint16_t grid_platform_get_actionstring_file_size(void* file_pointer);
-uint8_t grid_platform_get_actionstring_file_has_size(void* file_pointer);
-
-uint32_t grid_platform_read_actionstring_file_contents(void* file_pointer, char* targetstring);
-void grid_platform_delete_actionstring_file(void* file_pointer);
-void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
+uint32_t grid_platform_read_actionstring_file_contents(void *file_pointer,
+                                                       char *targetstring);
+void grid_platform_delete_actionstring_file(void *file_pointer);
+void grid_platform_write_actionstring_file(uint8_t page, uint8_t element,
+                                           uint8_t event_type, char *buffer,
+                                           uint16_t length);
 
 uint8_t grid_platform_get_nvm_state();
 
-
-void	grid_platform_clear_actionstring_files_from_page(uint8_t page);
+void grid_platform_clear_actionstring_files_from_page(uint8_t page);
 void grid_platform_delete_actionstring_files_all();
 
-
 uint8_t grid_platform_erase_nvm_next();
-
-
 
 uint32_t grid_plaform_get_nvm_nextwriteoffset();
 
 void grid_platform_system_reset();
 void grid_platform_nvm_defrag();
 
-
 uint8_t grid_platform_get_adc_bit_depth();
-
-
 
 uint64_t grid_platform_rtc_get_micros(void);
 
@@ -110,8 +102,7 @@ uint32_t grid_platform_get_cycles();
 
 uint32_t grid_platform_get_cycles_per_us();
 
-void* grid_platform_allocate_volatile(size_t size);
-
+void *grid_platform_allocate_volatile(size_t size);
 
 #ifdef __cplusplus
 }
