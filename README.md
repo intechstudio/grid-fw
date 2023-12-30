@@ -43,8 +43,12 @@ Board-ID: SAMD51N20A-GRID
 ```
 
 ## Updating the bootloader
-Please verify the Bootloader version before before uploading a new firmware image to your controller. The bootloader is maintained in a separate repository:
-[grid-uf2](https://github.com/intechstudio/grid-uf2/releases/tag/v4.3.3-8)
+Please verify the Bootloader version before before uploading a new firmware image to your controller.The bootloader is maintained in a separate architecture specific repositories:
+
+[D51: grid-uf2](https://github.com/intechstudio/grid-uf2/releases/latest)
+
+[ESP32: tinyuf2](https://github.com/intechstudio/tinyuf2/releases/latest)
+
 Download the bootloader image from the repository and unzip the archive. The bootloader binary is contained in a single update-bootloader***.uf2 file. Once the controller is enumerated in bootloader mode, copy the .uf2 image to the removable storage device called GRID. After a successful update, the controller will disconnect from USB turn off. Unplug the usb cable and repeat this step for all of your Grid modules.
 
 ## Updating the firmware
@@ -64,17 +68,8 @@ Download the firmware image from the repository and unzip the archive. The firmw
 Here you can download the latest stable release. Please visit the [releases](https://github.com/intechstudio/grid-fw/releases)
 page for more information.
 
-[![GitHub version](https://badge.fury.io/gh/intechstudio%2Fgrid-fw.svg)](https://github.com/intechstudio/grid-fw/releases/latest)
-[![Only 32 Kb](https://badge-size.herokuapp.com/intechstudio/grid-fw/master/binary/grid_release.uf2)](https://github.com/intechstudio/grid-fw/tree/master/binary/grid_release.uf2)
-
 ## Nightly Build
 Nightly builds of the Grid firmware are available for those who wish to experiment with the latest features.
 Please check the related commit messages to learn more about the current build.
 
-[![Only 32 Kb](https://badge-size.herokuapp.com/intechstudio/grid-fw/master/binary/grid_nightly.uf2)](https://github.com/intechstudio/grid-fw/tree/master/binary/grid_nightly.uf2)
-
-
-## Recovery Firmware
-This version erases all configuration from the Grid. Use this version of the firmware to recover from faulty configuration state or if the module cannot boot properly.
-
-[![Only 32 Kb](https://badge-size.herokuapp.com/intechstudio/grid-fw/master/binary/grid_nvm_hardware_test.uf2)](https://github.com/intechstudio/grid-fw/tree/master/binary/grid_nvm_hardware_test.uf2)
+_This will soon be available on the preview branch_
