@@ -32,6 +32,9 @@ void grid_module_ef44_ui_init(struct grid_ain_model *ain,
 void grid_module_tek2_ui_init(struct grid_ain_model *ain,
                               struct grid_led_model *led,
                               struct grid_ui_model *ui);
+void grid_module_pb44_ui_init(struct grid_ain_model *ain,
+                              struct grid_led_model *led,
+                              struct grid_ui_model *ui);
 
 struct grid_module_endlesspot_state {
 

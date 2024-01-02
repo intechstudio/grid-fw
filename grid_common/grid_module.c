@@ -227,6 +227,31 @@ void grid_module_pbf4_ui_init(struct grid_ain_model *ain,
   ui->lua_ui_init_callback = grid_lua_ui_init_pbf4;
 }
 
+void grid_module_pb44_ui_init(struct grid_ain_model *ain,
+                              struct grid_led_model *led,
+                              struct grid_ui_model *ui) {
+
+  // 16 pot, depth of 5, 14bit internal, 7bit result;
+  grid_ain_init(ain, 16, 5);
+  grid_led_init(led, 16);
+
+  grid_ui_model_init(ui, 16 + 1); // +1 for the system element
+
+  for (uint8_t j = 0; j < 8; j++) {
+
+    grid_ui_element_init(ui, j, GRID_UI_ELEMENT_POTENTIOMETER);
+  }
+
+  for (uint8_t j = 8; j < 16; j++) {
+
+    grid_ui_element_init(ui, j, GRID_UI_ELEMENT_BUTTON);
+  }
+
+  grid_ui_element_init(ui, ui->element_list_length - 1, GRID_UI_ELEMENT_SYSTEM);
+
+  ui->lua_ui_init_callback = grid_lua_ui_init_pb44;
+}
+
 void grid_module_ef44_ui_init(struct grid_ain_model *ain,
                               struct grid_led_model *led,
                               struct grid_ui_model *ui) {

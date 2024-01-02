@@ -29,6 +29,7 @@
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
 #include "grid_esp32_module_tek2.h"
+#include "grid_esp32_module_pb44.h"
 #include "pico_firmware.h"
 
 #include "grid_esp32_trace.h"
@@ -143,6 +144,8 @@ void app_main(void) {
     grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA) {
     grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
+    grid_module_pb44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else {
     ets_printf("Init Module: Unknown Module\r\n");
   }
@@ -249,6 +252,10 @@ void app_main(void) {
                             &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA) {
     xTaskCreatePinnedToCore(grid_esp32_module_tek2_task, "tek2", 1024 * 4,
+                            (void *)nvm_or_port, MODULE_TASK_PRIORITY,
+                            &module_task_hdl, 0);
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
+    xTaskCreatePinnedToCore(grid_esp32_module_pb44_task, "pb44", 1024 * 3,
                             (void *)nvm_or_port, MODULE_TASK_PRIORITY,
                             &module_task_hdl, 0);
   } else {

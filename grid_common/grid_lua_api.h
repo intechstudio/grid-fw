@@ -183,6 +183,7 @@ void grid_lua_ui_init_pbf4(struct grid_lua_model *mod);
 void grid_lua_ui_init_en16(struct grid_lua_model *mod);
 void grid_lua_ui_init_ef44(struct grid_lua_model *mod);
 void grid_lua_ui_init_tek2(struct grid_lua_model *mod);
+void grid_lua_ui_init_pb44(struct grid_lua_model *mod);
 
 void grid_lua_ui_init(struct grid_lua_model *lua, struct grid_ui_model *ui);
 

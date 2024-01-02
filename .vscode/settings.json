@@ -121,7 +121,10 @@
     "esp_sysview_trace.h": "c",
     "gpio_ll.h": "c",
     "ulp_grid_esp32_adc.h": "c",
-    "spi_flash_mmap.h": "c"
+    "spi_flash_mmap.h": "c",
+    "grid_esp32_module_pb44.h": "c",
+    "grid_esp32_module_tek2.h": "c",
+    "grid_esp32_trace.h": "c"
   },
   "files.exclude": {
     ".archive": true,
