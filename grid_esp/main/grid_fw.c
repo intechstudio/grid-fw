@@ -26,10 +26,10 @@
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_ef44.h"
 #include "grid_esp32_module_en16.h"
+#include "grid_esp32_module_pb44.h"
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
 #include "grid_esp32_module_tek2.h"
-#include "grid_esp32_module_pb44.h"
 #include "pico_firmware.h"
 
 #include "grid_esp32_trace.h"
