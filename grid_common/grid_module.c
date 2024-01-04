@@ -316,7 +316,7 @@ int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value) {
   // lookup table, of state machine of the combination of old encoder AB and new
   // encoder AB
   static int8_t encoder_heading[] = {
-      0, 1, -1, 0, -1, 0, 0, 1, 1, 0, 0, -1, 0, -1, 1,
+      0, 1, -1, 0, -1, 0, 0, 1, 1, 0, 0, -1, 0, -1, 1, 0
   };
   uint8_t encoder_state = (old_value & 0b11) << 2 | (new_value & 0b11);
   int16_t delta = encoder_heading[encoder_state];
