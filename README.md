@@ -74,4 +74,3 @@ Please check the related commit messages to learn more about the current build.
 
 [ESP32 nightly](https://github.com/intechstudio/grid-fw/raw/preview/Preview/Firmware/grid_esp32_nightly.uf2)
 [D51 nightly](https://github.com/intechstudio/grid-fw/raw/preview/Preview/Firmware/grid_d51_nightly.uf2)
-
