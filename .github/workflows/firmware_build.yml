@@ -112,7 +112,7 @@ jobs:
 
   deploy-results:
     runs-on: ubuntu-latest
-    needs: generate-artifacts    
+    needs: build
     steps:
       - uses: actions/checkout@v2
         with:
@@ -139,9 +139,9 @@ jobs:
           done
 
       - name: Commit the files
-        run: |        
+        run: |
           git config --global user.name ${{ github.actor }}
-          git config --global user.email ${{ github.actor }}@users.noreply.github.com  
+          git config --global user.email ${{ github.actor }}@users.noreply.github.com
           git add Preview/*
           git commit -m "BOT ${{ github.workflow }} ${{ github.sha }}"
           git push
