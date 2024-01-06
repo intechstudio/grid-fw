@@ -78,20 +78,19 @@ jobs:
           cp binary/grid_release.uf2 grid_d51_release_${{ env.ACTION_DATE }}.uf2
           cp grid_esp/output/grid_fw.uf2 grid_esp32_release_${{ env.ACTION_DATE }}.uf2
           cp binary/grid_release.uf2 grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
+          cp binary/grid_release.uf2 grid_d51_nightly.uf2
           cp grid_esp/output/grid_fw.uf2 grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
+          cp grid_esp/output/grid_fw.uf2 grid_esp32_nightly.uf2
           cp .github/workflows/INSTRUCTIONS.txt INSTRUCTIONS__USE_D51_VERSION_IF_UNSURE.txt
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: grid-fw nightly
           path: |
             grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
             grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
-
-      - name: Check if tag exists
-        id: check_tag
-        run: |
-
+            grid_esp32_nightly.uf2
+            grid_d51_nightly.uf2
 
       - name: Zipping artifacts for Github Release
         uses: vimtor/action-zip@v1
