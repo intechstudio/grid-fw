@@ -69,7 +69,9 @@ Here you can download the latest stable release. Please visit the [releases](htt
 page for more information.
 
 ## Nightly Build
-Nightly builds of the Grid firmware are available for those who wish to experiment with the latest features.
+Architecture specific nightly builds of the Grid firmware are available for those who wish to experiment with the latest features.
 Please check the related commit messages to learn more about the current build.
 
-_This will soon be available on the preview branch_
+[ESP32 nightly](https://github.com/intechstudio/grid-fw/raw/preview/Preview/Firmware/grid_esp32_nightly.uf2)
+[D51 nightly](https://github.com/intechstudio/grid-fw/raw/preview/Preview/Firmware/grid_d51_nightly.uf2)
+
