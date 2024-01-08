@@ -296,6 +296,8 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model *nvm, uint8_t page) {
   }
 }
 
+#include "grid_esp32_port.h"
+
 void grid_esp32_nvm_task(void *arg) {
 
   SemaphoreHandle_t nvm_or_port = (SemaphoreHandle_t)arg;
@@ -345,6 +347,8 @@ void grid_esp32_nvm_task(void *arg) {
         } else {
           break;
         }
+
+        //grid_esp32_port_periodic_ping_heartbeat_handler_cb(NULL);
 
         counter++;
 

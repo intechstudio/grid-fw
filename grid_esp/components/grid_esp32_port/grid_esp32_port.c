@@ -289,18 +289,8 @@ SemaphoreHandle_t nvm_or_port;
 static uint64_t last_ping_timestamp = 0;
 static uint64_t last_heartbeat_timestamp = 0;
 
-static void periodic_ping_heartbeat_handler_cb(void *arg) {
+void grid_esp32_port_periodic_ping_heartbeat_handler_cb(void *arg) {
 
-  // Check if USB is connected and start animation
-  if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()) {
-
-    printf("USB CONNECTED\r\n\r\n");
-
-    grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);
-    grid_alert_all_set_frequency(&grid_led_state, -2);
-    grid_alert_all_set_phase(&grid_led_state, 200);
-    grid_msg_set_heartbeat_type(&grid_msg_state, 1);
-  }
 
   // Send heartbeat when it's time
   if (grid_platform_rtc_get_elapsed_time(last_heartbeat_timestamp) >
@@ -324,10 +314,10 @@ static void periodic_ping_heartbeat_handler_cb(void *arg) {
 
     if (xSemaphoreTake(nvm_or_port, 0) == pdTRUE) {
 
-      uart_port_array[0]->ping_flag = 1;
-      uart_port_array[1]->ping_flag = 1;
-      uart_port_array[2]->ping_flag = 1;
-      uart_port_array[3]->ping_flag = 1;
+      if (uart_port_array[0] != NULL) uart_port_array[0]->ping_flag = 1;
+      if (uart_port_array[1] != NULL) uart_port_array[1]->ping_flag = 1;
+      if (uart_port_array[2] != NULL) uart_port_array[2]->ping_flag = 1;
+      if (uart_port_array[3] != NULL) uart_port_array[3]->ping_flag = 1;
 
       grid_port_ping_try_everywhere();
 
@@ -423,7 +413,7 @@ void grid_esp32_port_task(void *arg) {
   // Create a periodic timer for thread safe miscellaneous tasks
 
   esp_timer_create_args_t periodic_ping_heartbeat_args = {
-      .callback = &periodic_ping_heartbeat_handler_cb, .name = "ping"};
+      .callback = &grid_esp32_port_periodic_ping_heartbeat_handler_cb, .name = "ping"};
 
   esp_timer_handle_t periodic_ping_heartbeat_timer;
   ESP_ERROR_CHECK(esp_timer_create(&periodic_ping_heartbeat_args,
@@ -433,6 +423,18 @@ void grid_esp32_port_task(void *arg) {
   // gpio_set_direction(47, GPIO_MODE_OUTPUT);
 
   while (1) {
+
+    // Check if USB is connected and start animation
+    if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()) {
+
+      printf("USB CONNECTED\r\n\r\n");
+
+      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);
+      grid_alert_all_set_frequency(&grid_led_state, -2);
+      grid_alert_all_set_phase(&grid_led_state, 200);
+      grid_msg_set_heartbeat_type(&grid_msg_state, 1);
+    }
+
 
     // gpio_ll_set_level(&GPIO, 47, 1);
 
