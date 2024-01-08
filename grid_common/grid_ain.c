@@ -166,7 +166,8 @@ int32_t grid_ain_get_average_scaled(struct grid_ain_model *mod, uint8_t channel,
 
   instance->result_changed = 0;
 
-  int16_t range_max = ((1 << source_resolution) - 1) -
+  // source_resolution on D51 architecture is 16, so int16 is not big enough
+  int32_t range_max = ((1 << source_resolution) - 1) -
                       (1 << (source_resolution - result_resolution));
 
   int32_t next = instance->result_value * (max - min) / range_max + min;
