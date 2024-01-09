@@ -291,7 +291,6 @@ static uint64_t last_heartbeat_timestamp = 0;
 
 void grid_esp32_port_periodic_ping_heartbeat_handler_cb(void *arg) {
 
-
   // Send heartbeat when it's time
   if (grid_platform_rtc_get_elapsed_time(last_heartbeat_timestamp) >
       GRID_PARAMETER_HEARTBEAT_interval * 1000) {
@@ -314,10 +313,14 @@ void grid_esp32_port_periodic_ping_heartbeat_handler_cb(void *arg) {
 
     if (xSemaphoreTake(nvm_or_port, 0) == pdTRUE) {
 
-      if (uart_port_array[0] != NULL) uart_port_array[0]->ping_flag = 1;
-      if (uart_port_array[1] != NULL) uart_port_array[1]->ping_flag = 1;
-      if (uart_port_array[2] != NULL) uart_port_array[2]->ping_flag = 1;
-      if (uart_port_array[3] != NULL) uart_port_array[3]->ping_flag = 1;
+      if (uart_port_array[0] != NULL)
+        uart_port_array[0]->ping_flag = 1;
+      if (uart_port_array[1] != NULL)
+        uart_port_array[1]->ping_flag = 1;
+      if (uart_port_array[2] != NULL)
+        uart_port_array[2]->ping_flag = 1;
+      if (uart_port_array[3] != NULL)
+        uart_port_array[3]->ping_flag = 1;
 
       grid_port_ping_try_everywhere();
 
@@ -413,7 +416,8 @@ void grid_esp32_port_task(void *arg) {
   // Create a periodic timer for thread safe miscellaneous tasks
 
   esp_timer_create_args_t periodic_ping_heartbeat_args = {
-      .callback = &grid_esp32_port_periodic_ping_heartbeat_handler_cb, .name = "ping"};
+      .callback = &grid_esp32_port_periodic_ping_heartbeat_handler_cb,
+      .name = "ping"};
 
   esp_timer_handle_t periodic_ping_heartbeat_timer;
   ESP_ERROR_CHECK(esp_timer_create(&periodic_ping_heartbeat_args,
@@ -434,7 +438,6 @@ void grid_esp32_port_task(void *arg) {
       grid_alert_all_set_phase(&grid_led_state, 200);
       grid_msg_set_heartbeat_type(&grid_msg_state, 1);
     }
-
 
     // gpio_ll_set_level(&GPIO, 47, 1);
 

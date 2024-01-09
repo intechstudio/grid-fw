@@ -348,7 +348,7 @@ void grid_esp32_nvm_task(void *arg) {
           break;
         }
 
-        //grid_esp32_port_periodic_ping_heartbeat_handler_cb(NULL);
+        // grid_esp32_port_periodic_ping_heartbeat_handler_cb(NULL);
 
         counter++;
 
