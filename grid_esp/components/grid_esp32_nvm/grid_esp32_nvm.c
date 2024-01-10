@@ -271,7 +271,6 @@ void grid_esp32_nvm_erase(struct grid_esp32_nvm_model *nvm) {
 
 void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model *nvm, uint8_t page) {
 
-
   for (uint8_t i = 0; i < 17; i++) { // elements
 
     for (uint8_t j = 0; j < 10; j++) { // events
@@ -294,8 +293,9 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model *nvm, uint8_t page) {
   }
 }
 
-uint8_t grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nvm, uint8_t page) {
-
+uint8_t
+grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nvm,
+                                         uint8_t page) {
 
   char path[15] = {0};
   sprintf(path, "/littlefs/%02x", page);
@@ -304,12 +304,13 @@ uint8_t grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nv
   struct dirent *dir;
   d = opendir(path);
 
-  if (!d){
+  if (!d) {
     // Directory not found
     return 1;
   }
 
-  // treverse filesystem with depth of two directories to quickly find first file to be deleted!
+  // treverse filesystem with depth of two directories to quickly find first
+  // file to be deleted!
   while ((dir = readdir(d)) != NULL) {
     printf("  %s\n", dir->d_name);
     char path2[300] = {0};
@@ -318,7 +319,7 @@ uint8_t grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nv
     struct dirent *dir2;
     d2 = opendir(path2);
 
-    if (d2){
+    if (d2) {
       while ((dir2 = readdir(d2)) != NULL) {
         printf("    %s\n", dir2->d_name);
         char fname[600] = {0};
@@ -329,18 +330,14 @@ uint8_t grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nv
         closedir(d2);
         closedir(d);
         return 0;
-      }  
+      }
       closedir(d2);
     }
-
   }
   closedir(d);
 
   return 1;
-
 }
-
-
 
 #include "grid_esp32_port.h"
 
@@ -352,7 +349,7 @@ void grid_esp32_nvm_task(void *arg) {
 
   while (1) {
 
-    if (false == grid_ui_bluk_anything_is_in_progress(&grid_ui_state)){
+    if (false == grid_ui_bluk_anything_is_in_progress(&grid_ui_state)) {
 
       vTaskDelay(pdMS_TO_TICKS(15));
       continue;
@@ -360,7 +357,7 @@ void grid_esp32_nvm_task(void *arg) {
 
     if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
 
-      uint64_t time_max_duration = 50 * 1000; // in microseconds
+      uint64_t time_max_duration = 150 * 1000; // in microseconds
       uint64_t time_start = grid_platform_rtc_get_micros();
       uint32_t counter = 0;
 
@@ -397,7 +394,7 @@ void grid_esp32_nvm_task(void *arg) {
       xSemaphoreGive(nvm_or_port);
     }
 
-    vTaskDelay(pdMS_TO_TICKS(25));
+    vTaskDelay(pdMS_TO_TICKS(15));
   }
 
   ESP_LOGI(TAG, "Deinit NVM");

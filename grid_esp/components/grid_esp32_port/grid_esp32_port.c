@@ -291,12 +291,10 @@ static uint64_t last_heartbeat_timestamp = 0;
 
 void grid_esp32_port_periodic_ping_heartbeat_handler_cb(void *arg) {
 
-
   if (grid_platform_rtc_get_elapsed_time(last_ping_timestamp) <
       GRID_PARAMETER_PING_interval * 1000) {
     return;
   }
-
 
   if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
 
@@ -317,10 +315,6 @@ void grid_esp32_port_periodic_ping_heartbeat_handler_cb(void *arg) {
 
     xSemaphoreGive(nvm_or_port);
   }
-
-
-
-
 }
 
 void grid_esp32_port_task(void *arg) {

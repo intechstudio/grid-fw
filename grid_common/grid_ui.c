@@ -1523,12 +1523,12 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model *ui) {
     return;
   }
 
-  uint8_t was_last_one = grid_platform_clear_next_actionstring_file_from_page(ui->page_activepage);
+  uint8_t was_last_one =
+      grid_platform_clear_next_actionstring_file_from_page(ui->page_activepage);
 
-  if (!was_last_one){
+  if (!was_last_one) {
     return;
   }
-  
 
   grid_platform_printf("DONE\r\n");
 
