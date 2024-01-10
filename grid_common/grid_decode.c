@@ -1051,6 +1051,11 @@ uint8_t grid_decode_pageclear_to_ui(char *header, char *chunk) {
 
     grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX,
                               id);
+
+    // start animation (it will be stopped in the callback function)
+    grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);
+    grid_alert_all_set_frequency(&grid_led_state, -4);
+
     grid_ui_bulk_pageclear_init(&grid_ui_state,
                                 &grid_protocol_nvm_clear_succcess_callback);
 

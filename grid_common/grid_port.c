@@ -1006,6 +1006,9 @@ void grid_protocol_nvm_clear_succcess_callback() {
   grid_msg_packet_close(&grid_msg_state, &response);
   grid_port_packet_send_everywhere(&response);
 
+  // phase out the animation
+  grid_alert_all_set_timeout_automatic(&grid_led_state);
+  
   // clear template variable after clear command
   grid_ui_page_clear_template_parameters(
       &grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));

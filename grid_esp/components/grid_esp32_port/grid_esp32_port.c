@@ -291,48 +291,36 @@ static uint64_t last_heartbeat_timestamp = 0;
 
 void grid_esp32_port_periodic_ping_heartbeat_handler_cb(void *arg) {
 
-  // Send heartbeat when it's time
-  if (grid_platform_rtc_get_elapsed_time(last_heartbeat_timestamp) >
-      GRID_PARAMETER_HEARTBEAT_interval * 1000) {
 
-    if (xSemaphoreTake(nvm_or_port, 0) == pdTRUE) {
-
-      grid_protocol_send_heartbeat(); // Put heartbeat into UI rx_buffer
-      last_heartbeat_timestamp = grid_platform_rtc_get_micros();
-
-      xSemaphoreGive(nvm_or_port);
-    } else {
-      // printf("H BLOCKED\r\n\r\n");
-    }
-  }
-
-  // Send ping when it's time
-  if (grid_platform_rtc_get_elapsed_time(last_ping_timestamp) >
+  if (grid_platform_rtc_get_elapsed_time(last_ping_timestamp) <
       GRID_PARAMETER_PING_interval * 1000) {
-    // ets_printf("TRY PING\r\n");
-
-    if (xSemaphoreTake(nvm_or_port, 0) == pdTRUE) {
-
-      if (uart_port_array[0] != NULL)
-        uart_port_array[0]->ping_flag = 1;
-      if (uart_port_array[1] != NULL)
-        uart_port_array[1]->ping_flag = 1;
-      if (uart_port_array[2] != NULL)
-        uart_port_array[2]->ping_flag = 1;
-      if (uart_port_array[3] != NULL)
-        uart_port_array[3]->ping_flag = 1;
-
-      grid_port_ping_try_everywhere();
-
-      last_ping_timestamp = grid_platform_rtc_get_micros();
-
-      // ets_printf("Ping\r\n");
-
-      xSemaphoreGive(nvm_or_port);
-    } else {
-      // printf("P BLOCKED\r\n\r\n");
-    }
+    return;
   }
+
+
+  if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
+
+    grid_protocol_send_heartbeat(); // Put heartbeat into UI rx_buffer
+    last_heartbeat_timestamp = grid_platform_rtc_get_micros();
+
+    if (uart_port_array[0] != NULL)
+      uart_port_array[0]->ping_flag = 1;
+    if (uart_port_array[1] != NULL)
+      uart_port_array[1]->ping_flag = 1;
+    if (uart_port_array[2] != NULL)
+      uart_port_array[2]->ping_flag = 1;
+    if (uart_port_array[3] != NULL)
+      uart_port_array[3]->ping_flag = 1;
+
+    grid_port_ping_try_everywhere();
+    last_ping_timestamp = grid_platform_rtc_get_micros();
+
+    xSemaphoreGive(nvm_or_port);
+  }
+
+
+
+
 }
 
 void grid_esp32_port_task(void *arg) {
