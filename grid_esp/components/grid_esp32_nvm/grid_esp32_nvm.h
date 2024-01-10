@@ -34,6 +34,7 @@ uint16_t grid_esp32_nvm_get_file_size(struct grid_esp32_nvm_model *nvm,
                                       void *fp);
 void grid_esp32_nvm_erase(struct grid_esp32_nvm_model *nvm);
 void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model *nvm, uint8_t page);
+uint8_t grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nvm, uint8_t page);
 
 #ifdef __cplusplus
 }

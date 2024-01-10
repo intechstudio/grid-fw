@@ -816,7 +816,7 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset() {
   return grid_d51_nvm_state.next_write_offset;
 }
 
-void grid_platform_clear_actionstring_files_from_page(uint8_t page) {
+void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
 
   struct grid_d51_nvm_toc_entry *current = grid_d51_nvm_state.toc_head;
 
@@ -828,6 +828,24 @@ void grid_platform_clear_actionstring_files_from_page(uint8_t page) {
 
     current = current->next;
   }
+}
+
+
+uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page) {
+
+  struct grid_d51_nvm_toc_entry *current = grid_d51_nvm_state.toc_head;
+
+  while (current != NULL) {
+    if (current->page_id == page) {
+
+      grid_d51_nvm_toc_entry_destroy(&grid_d51_nvm_state, current);
+      return 0;
+    }
+
+    current = current->next;
+  }
+
+  return 1;
 }
 
 void grid_platform_delete_actionstring_files_all() {

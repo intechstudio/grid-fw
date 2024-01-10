@@ -429,11 +429,18 @@ uint8_t grid_platform_get_nvm_state() {
   return 1; // ready, always ready
 }
 
-void grid_platform_clear_actionstring_files_from_page(uint8_t page) {
+void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
 
   grid_esp32_nvm_clear_page(&grid_esp32_nvm_state, page);
   return;
 };
+
+
+uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page) {
+
+  return grid_esp32_nvm_clear_next_file_from_page(&grid_esp32_nvm_state, page);
+};
+
 void grid_platform_delete_actionstring_files_all() {
 
   grid_esp32_nvm_erase(&grid_esp32_nvm_state);

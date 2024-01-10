@@ -271,8 +271,6 @@ void grid_esp32_nvm_erase(struct grid_esp32_nvm_model *nvm) {
 
 void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model *nvm, uint8_t page) {
 
-  printf("BEFORE: \r\n");
-  grid_esp32_nvm_list_files(NULL, "/littlefs");
 
   for (uint8_t i = 0; i < 17; i++) { // elements
 
@@ -296,6 +294,54 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model *nvm, uint8_t page) {
   }
 }
 
+uint8_t grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nvm, uint8_t page) {
+
+
+  char path[15] = {0};
+  sprintf(path, "/littlefs/%02x", page);
+
+  DIR *d;
+  struct dirent *dir;
+  d = opendir(path);
+
+  if (!d){
+    // Directory not found
+    return 1;
+  }
+
+  // treverse filesystem with depth of two directories to quickly find first file to be deleted!
+  while ((dir = readdir(d)) != NULL) {
+    printf("  %s\n", dir->d_name);
+    char path2[300] = {0};
+    sprintf(path2, "%s/%s", path, dir->d_name);
+    DIR *d2;
+    struct dirent *dir2;
+    d2 = opendir(path2);
+
+    if (d2){
+      while ((dir2 = readdir(d2)) != NULL) {
+        printf("    %s\n", dir2->d_name);
+        char fname[600] = {0};
+        sprintf(fname, "%s/%s", path2, dir2->d_name);
+        printf("Delete: %s\n", fname);
+        unlink(fname);
+
+        closedir(d2);
+        closedir(d);
+        return 0;
+      }  
+      closedir(d2);
+    }
+
+  }
+  closedir(d);
+
+  return 1;
+
+}
+
+
+
 #include "grid_esp32_port.h"
 
 void grid_esp32_nvm_task(void *arg) {
@@ -305,6 +351,12 @@ void grid_esp32_nvm_task(void *arg) {
   static uint32_t loopcounter = 0;
 
   while (1) {
+
+    if (false == grid_ui_bluk_anything_is_in_progress(&grid_ui_state)){
+
+      vTaskDelay(pdMS_TO_TICKS(15));
+      continue;
+    }
 
     if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
 
@@ -329,20 +381,7 @@ void grid_esp32_nvm_task(void *arg) {
           grid_ui_bulk_pageclear_next(&grid_ui_state);
         } else if (ui_port->rx_double_buffer_status == 0 &&
                    grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)) {
-
-          uint32_t c0 = 0;
-          uint32_t c1 = 0;
-
-          c0 = grid_platform_get_cycles();
-
           grid_ui_bulk_pageread_next(&grid_ui_state);
-
-          c1 = grid_platform_get_cycles();
-
-          uint32_t delta = c1 - c0;
-
-          // grid_platform_printf("(%ld)us\r\n",
-          // delta/grid_platform_get_cycles_per_us());
 
         } else {
           break;
@@ -355,15 +394,10 @@ void grid_esp32_nvm_task(void *arg) {
       } while (grid_platform_rtc_get_elapsed_time(time_start) <
                time_max_duration);
 
-      if (counter > 0) {
-
-        // ets_printf("Loops: %d\r\n", counter);
-      }
-
       xSemaphoreGive(nvm_or_port);
     }
 
-    vTaskDelay(pdMS_TO_TICKS(15));
+    vTaskDelay(pdMS_TO_TICKS(25));
   }
 
   ESP_LOGI(TAG, "Deinit NVM");
