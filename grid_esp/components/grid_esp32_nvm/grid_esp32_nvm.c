@@ -23,7 +23,6 @@
 
 #include "esp_littlefs.h"
 
-#include <dirent.h>
 #include <sys/types.h>
 
 #include "esp_log.h"
@@ -32,6 +31,8 @@
 #include "freertos/task.h"
 #include <stdlib.h>
 #include <string.h>
+
+#include <dirent.h>
 
 #include "grid_ui.h"
 
@@ -293,48 +294,180 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model *nvm, uint8_t page) {
   }
 }
 
-uint8_t
-grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nvm,
-                                         uint8_t page) {
+static int scandir2(const char *dirname, struct dirent ***namelist,
+                    int (*select)(struct dirent *),
+                    int (*dcomp)(const void *, const void *)) {
 
-  char path[15] = {0};
-  sprintf(path, "/littlefs/%02x", page);
+  struct dirent *d, *p, **names = NULL;
+  size_t nitems = 0;
+  struct stat stb;
+  long arraysz;
+  DIR *dirp;
 
-  DIR *d;
-  struct dirent *dir;
-  d = opendir(path);
+  if ((dirp = opendir(dirname)) == NULL)
+    return (-1);
 
-  if (!d) {
-    // Directory not found
-    return 1;
+  /*
+   * estimate the array size by taking the size of the directory file
+   * and dividing it by a multiple of the minimum size entry.
+   */
+
+  arraysz = (20);
+  names = (struct dirent **)malloc(arraysz * sizeof(struct dirent *));
+  if (names == NULL)
+    goto fail;
+
+  while ((d = readdir(dirp)) != NULL) {
+    if (select != NULL && !(*select)(d))
+      continue; /* just selected names */
+    /*
+     * Make a minimum size copy of the data
+     */
+    p = (struct dirent *)malloc(sizeof(struct dirent));
+    if (p == NULL)
+      goto fail;
+    p->d_type = d->d_type;
+
+    bcopy(d->d_name, p->d_name, 255 + 1);
+    /*
+     * Check to make sure the array has space left and
+     * realloc the maximum size.
+     */
+    if (nitems >= arraysz) {
+      const int inc = 10; /* increase by this much */
+      struct dirent **names2;
+
+      names2 = (struct dirent **)realloc(
+          (char *)names, (arraysz + inc) * sizeof(struct dirent *));
+      if (names2 == NULL) {
+        free(p);
+        goto fail;
+      }
+      names = names2;
+      arraysz += inc;
+    }
+    names[nitems++] = p;
+  }
+  closedir(dirp);
+  if (nitems && dcomp != NULL)
+    qsort(names, nitems, sizeof(struct dirent *), dcomp);
+  *namelist = names;
+  return (nitems);
+
+fail:
+  while (nitems > 0)
+    free(names[--nitems]);
+  free(names);
+  closedir(dirp);
+  return -1;
+}
+
+/*
+ * Alphabetic order comparison routine for those who want it.
+ */
+static int my_alphasort(d1, d2) const void *d1;
+const void *d2;
+{
+  return (
+      strcmp((*(struct dirent **)d1)->d_name, (*(struct dirent **)d2)->d_name));
+}
+
+static int find_next_file(char *path, char *file_name_fmt,
+                          int *last_file_number) {
+
+  uint8_t file_found_already = false;
+
+  struct dirent **entries;
+  int entries_length;
+  entries_length = scandir2(path, &entries, NULL, my_alphasort);
+
+  for (uint8_t i = 0; i < entries_length; i++) {
+
+    int element;
+    int element_match = sscanf(entries[i]->d_name, "%02x", &element);
+    free(entries[i]);
+
+    if (file_found_already) {
+      continue;
+    }
+
+    if (element_match != 1) {
+      continue;
+    }
+
+    if (element <= *last_file_number) {
+      continue;
+    }
+
+    // MATCH
+    file_found_already = true;
+    *last_file_number = element;
   }
 
-  // treverse filesystem with depth of two directories to quickly find first
-  // file to be deleted!
-  while ((dir = readdir(d)) != NULL) {
-    printf("  %s\n", dir->d_name);
-    char path2[300] = {0};
-    sprintf(path2, "%s/%s", path, dir->d_name);
-    DIR *d2;
-    struct dirent *dir2;
-    d2 = opendir(path2);
+  free(entries);
 
-    if (d2) {
-      while ((dir2 = readdir(d2)) != NULL) {
-        printf("    %s\n", dir2->d_name);
-        char fname[600] = {0};
-        sprintf(fname, "%s/%s", path2, dir2->d_name);
-        printf("Delete: %s\n", fname);
-        unlink(fname);
+  if (file_found_already) {
+    return 0;
+  }
 
-        closedir(d2);
-        closedir(d);
-        return 0;
+  *last_file_number =
+      -1; // indicating that search is completed and no more files are available
+
+  return 1;
+}
+
+int grid_esp32_nvm_find_next_file_from_page(struct grid_esp32_nvm_model *nvm,
+                                            uint8_t page, int *last_element,
+                                            int *last_event) {
+
+  while (true) {
+
+    printf("loop\r\n");
+    if (*last_event == -1) {
+
+      // try to find valid element
+      char path[25] = {0};
+      sprintf(path, "/littlefs/%02x", page);
+      find_next_file(path, "%02x", last_element);
+
+      if (*last_element == -1) {
+        // no more element is found, traversal is over
+        printf("no more element is found\r\n");
+        return 1;
       }
-      closedir(d2);
+    }
+
+    // try to find valid event
+    char path[25] = {0};
+    sprintf(path, "/littlefs/%02x/%02x", page, *last_element);
+    printf("try path: %s\r\n", path);
+    find_next_file(path, "%02x.cfg", last_event);
+
+    if (*last_event != -1) {
+      // valid event is found, return success
+
+      printf("valid event is found %d %d\r\n", *last_element, *last_event);
+      return 0;
     }
   }
-  closedir(d);
+}
+
+uint8_t
+grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nvm,
+                                         uint8_t page, int *last_element,
+                                         int *last_event) {
+
+  if (0 == grid_esp32_nvm_find_next_file_from_page(nvm, page, last_element,
+                                                   last_event)) {
+
+    char fname[50] = {0};
+    sprintf(fname, "/littlefs/%02x/%02x/%02x.cfg", page, *last_element,
+            *last_event);
+    printf("Delete: %s\n", fname);
+    unlink(fname);
+
+    return 0;
+  }
 
   return 1;
 }

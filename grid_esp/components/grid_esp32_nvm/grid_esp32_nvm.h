@@ -36,7 +36,8 @@ void grid_esp32_nvm_erase(struct grid_esp32_nvm_model *nvm);
 void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model *nvm, uint8_t page);
 uint8_t
 grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nvm,
-                                         uint8_t page);
+                                         uint8_t page, int *last_element,
+                                         int *last_event);
 
 #ifdef __cplusplus
 }

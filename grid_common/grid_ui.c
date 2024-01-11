@@ -1504,6 +1504,9 @@ void grid_ui_bulk_pageclear_init(struct grid_ui_model *ui,
 
   ui->clear_success_callback = success_cb;
 
+  ui->clear_bulk_last_element = -1;
+  ui->clear_bulk_last_event = -1;
+
   ui->clear_bulk_status = 1;
 }
 
@@ -1523,8 +1526,9 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model *ui) {
     return;
   }
 
-  uint8_t was_last_one =
-      grid_platform_clear_next_actionstring_file_from_page(ui->page_activepage);
+  uint8_t was_last_one = grid_platform_clear_next_actionstring_file_from_page(
+      ui->page_activepage, &ui->clear_bulk_last_element,
+      &ui->clear_bulk_last_event);
 
   if (!was_last_one) {
     return;

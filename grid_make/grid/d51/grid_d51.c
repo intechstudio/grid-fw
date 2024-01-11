@@ -830,7 +830,9 @@ void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
   }
 }
 
-uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page) {
+uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page,
+                                                             int *last_element,
+                                                             int *last_event) {
 
   struct grid_d51_nvm_toc_entry *current = grid_d51_nvm_state.toc_head;
 

@@ -124,7 +124,12 @@
     "spi_flash_mmap.h": "c",
     "grid_esp32_module_pb44.h": "c",
     "grid_esp32_module_tek2.h": "c",
-    "grid_esp32_trace.h": "c"
+    "grid_esp32_trace.h": "c",
+    "scandir.h": "c",
+    "dirent.h": "c",
+    "esp_littlefs.h": "c",
+    "stdio.h": "c",
+    "types.h": "c"
   },
   "files.exclude": {
     ".archive": true,
