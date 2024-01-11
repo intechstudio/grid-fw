@@ -1336,22 +1336,10 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model *ui) {
       // file pointer
       void *entry = NULL;
 
-      uint32_t t0, t1;
-
-      t0 = grid_platform_get_cycles();
-
       entry = grid_platform_find_actionstring_file(ui->page_activepage,
                                                    ele->index, eve->type);
 
-      t1 = grid_platform_get_cycles();
-
-      // grid_platform_printf("Find: %ld ",
-      // (t1-t0)/grid_platform_get_cycles_per_us());
-
       if (entry != NULL) {
-
-        uint32_t t0, t1;
-        t0 = grid_platform_get_cycles();
 
         // grid_platform_printf("Page Load: FOUND %d %d %d 0x%x (+%d)!\r\n",
         // entry->page_id, entry->element_id, entry->event_type,
@@ -1372,10 +1360,6 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model *ui) {
           grid_platform_close_actionstring_file(entry);
         }
 
-        t1 = grid_platform_get_cycles();
-        // grid_platform_printf(" Read: %ld\r\n",
-        // (t1-t0)/grid_platform_get_cycles_per_us());
-
       } else {
 
         // grid_platform_printf("Page Load: NOT FOUND, Set default!\r\n");
@@ -1384,17 +1368,10 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model *ui) {
 
         uint32_t t0, t1;
 
-        t0 = grid_platform_get_cycles();
-
         grid_ui_event_generate_actionstring(eve, temp);
         grid_ui_event_register_actionstring(eve, temp);
 
         eve->cfg_changed_flag = 0; // clear changed flag
-
-        t1 = grid_platform_get_cycles();
-
-        // grid_platform_printf("Gen:  %ld\r\n",
-        // (t1-t0)/grid_platform_get_cycles_per_us());
       }
 
       if (eve->type == GRID_UI_EVENT_INIT) {
