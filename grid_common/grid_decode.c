@@ -774,6 +774,7 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
     } else {
       grid_ui_bulk_pageread_init(&grid_ui_state, &grid_protocol_nvm_read_succcess_callback);
     }
+
   } else if (msg_instr == GRID_INSTR_CHECK_code) {
 
     uint8_t state = grid_msg_get_lastheader_state(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX);

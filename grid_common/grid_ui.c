@@ -3,7 +3,6 @@
 extern void grid_platform_printf(char const* fmt, ...);
 extern int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle);
 extern uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle);
-extern uint8_t grid_platform_get_actionstring_file_has_size(union grid_ui_file_handle* file_handle);
 extern uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char* targetstring);
 extern void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle);
 extern void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
@@ -1227,9 +1226,9 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
         // entry->page_id, entry->element_id, entry->event_type,
         // entry->config_string_offset, entry->config_string_length);
 
-        uint16_t size_is_not_zero = grid_platform_get_actionstring_file_has_size(&file_handle);
+        uint16_t size = grid_platform_get_actionstring_file_size(&file_handle);
 
-        if (size_is_not_zero) {
+        if (size > 0) {
           char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
           grid_platform_read_actionstring_file_contents(&file_handle, temp);

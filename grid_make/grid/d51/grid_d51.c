@@ -728,17 +728,6 @@ uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* fil
   return entry->config_string_length;
 }
 
-uint8_t grid_platform_get_actionstring_file_has_size(union grid_ui_file_handle* file_handle) {
-
-  struct grid_d51_nvm_toc_entry* entry = (struct grid_d51_nvm_toc_entry*)file_handle->toc_ptr;
-
-  if (entry->config_string_length) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
 uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char* targetstring) {
   return grid_d51_nvm_toc_generate_actionstring(&grid_d51_nvm_state, (struct grid_d51_nvm_toc_entry*)file_handle->toc_ptr, targetstring);
 }
