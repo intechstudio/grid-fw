@@ -399,15 +399,6 @@ int grid_esp32_nvm_find_next_file_from_page(struct grid_esp32_nvm_model* nvm, ui
   }
 }
 
-uint8_t grid_platform_get_actionstring_file_has_size(union grid_ui_file_handle* file_handle) {
-
-  if (strlen(file_handle->fname) != 0) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
 void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle) {
 
   unlink(file_handle->fname);
