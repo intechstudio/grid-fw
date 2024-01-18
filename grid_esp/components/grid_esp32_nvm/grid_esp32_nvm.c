@@ -215,16 +215,18 @@ void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model *nvm, uint8_t page,
   }
 }
 
-int grid_platform_find_actionstring_file(uint8_t page, uint8_t element,
-                                           uint8_t event_type, union grid_ui_file_handle* file_handle) {
+int grid_platform_find_actionstring_file(
+    uint8_t page, uint8_t element, uint8_t event_type,
+    union grid_ui_file_handle *file_handle) {
 
-  sprintf(file_handle->fname, "/littlefs/%02x/%02x/%02x.cfg", page, element, event_type);
+  sprintf(file_handle->fname, "/littlefs/%02x/%02x/%02x.cfg", page, element,
+          event_type);
 
   // check if file exists
   FILE *fp;
   fp = fopen(file_handle->fname, "r");
 
-  if (fp != NULL){
+  if (fp != NULL) {
     fclose(fp);
     return 0;
   }
@@ -233,7 +235,6 @@ int grid_platform_find_actionstring_file(uint8_t page, uint8_t element,
   memset(file_handle, 0, sizeof(union grid_ui_file_handle));
   return 1;
 }
-
 
 void grid_esp32_nvm_erase(struct grid_esp32_nvm_model *nvm) {
 
@@ -250,7 +251,8 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model *nvm, uint8_t page) {
     for (uint8_t j = 0; j < 10; j++) { // events
 
       union grid_ui_file_handle file_handle = {0};
-      int status = grid_platform_find_actionstring_file(page, i, j, &file_handle);
+      int status =
+          grid_platform_find_actionstring_file(page, i, j, &file_handle);
 
       if (status == 0) {
 
@@ -419,7 +421,8 @@ int grid_esp32_nvm_find_next_file_from_page(struct grid_esp32_nvm_model *nvm,
   }
 }
 
-uint8_t grid_platform_get_actionstring_file_has_size(union grid_ui_file_handle* file_handle){
+uint8_t grid_platform_get_actionstring_file_has_size(
+    union grid_ui_file_handle *file_handle) {
 
   if (strlen(file_handle->fname) != 0) {
     return 1;
@@ -428,7 +431,8 @@ uint8_t grid_platform_get_actionstring_file_has_size(union grid_ui_file_handle* 
   }
 }
 
-void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle) {
+void grid_platform_delete_actionstring_file(
+    union grid_ui_file_handle *file_handle) {
 
   unlink(file_handle->fname);
   return;
@@ -454,18 +458,15 @@ grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nvm,
   return 1;
 }
 
+int grid_platform_find_next_actionstring_file(
+    uint8_t page, int *last_element, int *last_event,
+    union grid_ui_file_handle *file_handle) {
 
-int grid_platform_find_next_actionstring_file(uint8_t page,
-                                                int *last_element,
-                                                int *last_event, 
-                                                union grid_ui_file_handle* file_handle) {
+  if (0 == grid_esp32_nvm_find_next_file_from_page(&grid_esp32_nvm_state, page,
+                                                   last_element, last_event)) {
 
-  
-  if (0 == grid_esp32_nvm_find_next_file_from_page(&grid_esp32_nvm_state, page, last_element,
-                                                   last_event)) {
-
-    sprintf(file_handle->fname, "/littlefs/%02x/%02x/%02x.cfg", page, *last_element,
-            *last_event);
+    sprintf(file_handle->fname, "/littlefs/%02x/%02x/%02x.cfg", page,
+            *last_element, *last_event);
 
     return 0;
   }
@@ -473,34 +474,32 @@ int grid_platform_find_next_actionstring_file(uint8_t page,
   return 1;
 }
 
+uint16_t grid_platform_get_actionstring_file_size(
+    union grid_ui_file_handle *file_handle) {
 
+  FILE *fp = fopen(file_handle->fname, "r");
 
-uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle) {
-
-  FILE* fp = fopen(file_handle->fname, "r");
-  
   if (fp) {
 
     fseek(fp, 0, SEEK_END);    // seek to end of file
     uint32_t size = ftell(fp); // get current file pointer
     fseek(fp, 0, SEEK_SET);    // seek back to beginning of file
-    
+
     fclose(fp);
 
     return size;
   }
-  
+
   ets_printf("INVALID FP\r\n");
   return 0;
-  
 }
 
-
-uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char *targetstring) {
+uint32_t grid_platform_read_actionstring_file_contents(
+    union grid_ui_file_handle *file_handle, char *targetstring) {
 
   // ets_printf("READ FILE \r\n");
 
-  FILE* fp = fopen(file_handle->fname, "r");
+  FILE *fp = fopen(file_handle->fname, "r");
 
   if (fp) {
 
@@ -514,8 +513,6 @@ uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle
 
   return 0;
 }
-
-
 
 void grid_platform_write_actionstring_file(uint8_t page, uint8_t element,
                                            uint8_t event_type, char *buffer,
@@ -565,7 +562,6 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset() {
   ets_printf("grid_plaform_get_nvm_nextwriteoffset NOT IMPLEMENTED!!!\r\n");
   return 0; // done
 }
-
 
 #include "grid_esp32_port.h"
 

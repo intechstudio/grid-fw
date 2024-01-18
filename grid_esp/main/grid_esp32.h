@@ -66,7 +66,6 @@ uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
 
-
 void grid_platform_system_reset();
 void grid_platform_nvm_defrag();
 

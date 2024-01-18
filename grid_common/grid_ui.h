@@ -11,18 +11,13 @@
 #include <string.h>
 
 #include "grid_ain.h"
-#include "grid_ain.h"
 #include "grid_lua_api.h"
 #include "grid_protocol.h"
 
-union grid_ui_file_handle
-{
+union grid_ui_file_handle {
   char fname[50];
-  void* toc_ptr;
+  void *toc_ptr;
 };
-
-
-
 
 enum grid_ui_status_t {
   GRID_UI_STATUS_UNDEFINED,

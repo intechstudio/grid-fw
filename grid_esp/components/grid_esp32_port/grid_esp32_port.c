@@ -6,8 +6,6 @@
 
 #include "grid_esp32_port.h"
 
-
-
 #include "esp_check.h"
 
 #include "rom/ets_sys.h" // For ets_printf
