@@ -48,9 +48,7 @@ static void spi_transfer_complete_cb(void) {
 
     uint8_t i = encoder_position_lookup[j];
 
-    grid_ui_encoder_store_input(i, &encoder_last_real_time[i],
-                                &button_last_real_time[i], old_value, new_value,
-                                &phase_change_lock_array[i]);
+    grid_ui_encoder_store_input(i, &encoder_last_real_time[i], &button_last_real_time[i], old_value, new_value, &phase_change_lock_array[i]);
   }
 
   hardware_spi_start_transfer();
@@ -96,10 +94,8 @@ static void adc_transfer_complete_cb(void) {
   }
   adcresult_1 = input_1;
 
-  grid_ui_potmeter_store_input(adc_index_0 + 4, &last_real_time[adc_index_0],
-                               adcresult_0, 16); // 16 bit analog values
-  grid_ui_potmeter_store_input(adc_index_1 + 4, &last_real_time[adc_index_1],
-                               adcresult_1, 16);
+  grid_ui_potmeter_store_input(adc_index_0 + 4, &last_real_time[adc_index_0], adcresult_0, 16); // 16 bit analog values
+  grid_ui_potmeter_store_input(adc_index_1 + 4, &last_real_time[adc_index_1], adcresult_1, 16);
 
   adc_complete_count = 0;
   hardware_adc_start_transfer();
@@ -114,13 +110,10 @@ static void hardware_init(void) {
   spi_m_async_set_baudrate(&UI_SPI,
                            1000000); // was 400000 check clock div setting
 
-  spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER,
-                                spi_transfer_complete_cb);
+  spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, spi_transfer_complete_cb);
 
-  adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB,
-                              adc_transfer_complete_cb);
-  adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB,
-                              adc_transfer_complete_cb);
+  adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
+  adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
 
   adc_async_enable_channel(&ADC_0, 0);
   adc_async_enable_channel(&ADC_1, 0);

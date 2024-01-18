@@ -6,12 +6,11 @@
 
 #include "grid_esp32_led.h"
 
-#define RMT_LED_STRIP_RESOLUTION_HZ                                            \
+#define RMT_LED_STRIP_RESOLUTION_HZ                                                                                                                                                                    \
   10000000 // 10MHz resolution, 1 tick = 0.1us (led strip needs a high
            // resolution)
 
-void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r,
-                       uint32_t *g, uint32_t *b) {
+void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t* r, uint32_t* g, uint32_t* b) {
   h %= 360; // h -> [0,360]
   uint32_t rgb_max = v * 2.55f;
   uint32_t rgb_min = rgb_max * (100 - s) / 100.0f;
@@ -56,10 +55,9 @@ void led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r,
   }
 }
 
-static const char *TAG = "LED";
+static const char* TAG = "LED";
 
-static void led_init(rmt_encoder_handle_t *led_encoder,
-                     rmt_channel_handle_t *led_chan, uint8_t led_gpio) {
+static void led_init(rmt_encoder_handle_t* led_encoder, rmt_channel_handle_t* led_chan, uint8_t led_gpio) {
 
   ESP_LOGI(TAG, "Led Pin: %d", led_gpio);
 
@@ -83,7 +81,7 @@ static void led_init(rmt_encoder_handle_t *led_encoder,
   ESP_ERROR_CHECK(rmt_enable(*led_chan));
 }
 
-void grid_esp32_led_task(void *arg) {
+void grid_esp32_led_task(void* arg) {
 
   uint8_t led_pin = grid_led_get_pin(&grid_led_state);
 
@@ -102,17 +100,14 @@ void grid_esp32_led_task(void *arg) {
     grid_led_tick(&grid_led_state);
     grid_led_render_framebuffer(&grid_led_state);
 
-    const uint8_t *frame_buffer =
-        grid_led_get_framebuffer_pointer(&grid_led_state);
-    const uint32_t frame_buffer_size =
-        grid_led_get_framebuffer_size(&grid_led_state);
+    const uint8_t* frame_buffer = grid_led_get_framebuffer_pointer(&grid_led_state);
+    const uint32_t frame_buffer_size = grid_led_get_framebuffer_size(&grid_led_state);
 
     rmt_transmit_config_t tx_config = {
         .loop_count = 0, // no transfer loop
     };
 
-    ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, frame_buffer,
-                                 frame_buffer_size, &tx_config));
+    ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder, frame_buffer, frame_buffer_size, &tx_config));
 
     vTaskDelay(pdMS_TO_TICKS(10));
   }

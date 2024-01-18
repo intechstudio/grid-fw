@@ -15,9 +15,9 @@
 
 #include "usb/class/midi/device/audiodf_midi.h"
 
-static volatile struct grid_port *uart_port_array[4] = {0};
-static volatile struct grid_port *host_port = NULL;
-static volatile struct grid_port *ui_port = NULL;
+static volatile struct grid_port* uart_port_array[4] = {0};
+static volatile struct grid_port* host_port = NULL;
+static volatile struct grid_port* ui_port = NULL;
 
 volatile uint32_t loopcounter = 1;
 volatile uint32_t loopcount = 0;
@@ -128,7 +128,7 @@ static void receive_task_inner() {
 
   for (uint8_t i = 0; i < 4; i++) {
 
-    struct grid_port *port = grid_transport_get_port(&grid_transport_state, i);
+    struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
 
     grid_port_receive_task(port);
   }
@@ -145,8 +145,7 @@ static void ui_task_inner() {
     if (grid_ui_event_count_istriggered_local(&grid_ui_state)) {
 
       CRITICAL_SECTION_ENTER()
-      grid_port_process_ui_local_UNSAFE(
-          &grid_ui_state); // COOLDOWN DELAY IMPLEMENTED INSIDE
+      grid_port_process_ui_local_UNSAFE(&grid_ui_state); // COOLDOWN DELAY IMPLEMENTED INSIDE
       CRITICAL_SECTION_LEAVE()
     }
 
@@ -157,7 +156,6 @@ static void ui_task_inner() {
     }
 
     if (ui_port->cooldown > 5) {
-
     } else {
 
       // if there are still unprocessed locally triggered events then must not
@@ -190,7 +188,7 @@ static void inbound_task_inner() {
 
   for (uint8_t i = 0; i < 4; i++) {
 
-    struct grid_port *port = grid_transport_get_port(&grid_transport_state, i);
+    struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
     grid_port_process_inbound(port);
   }
 
@@ -207,7 +205,7 @@ static void outbound_task_inner() {
 
   for (uint8_t i = 0; i < 4; i++) {
 
-    struct grid_port *port = uart_port_array[i];
+    struct grid_port* port = uart_port_array[i];
 
     grid_port_process_outbound_usart(port);
   }
@@ -248,7 +246,7 @@ static struct timer_task RTC_Scheduler_grid_sync;
 static struct timer_task RTC_Scheduler_heartbeat;
 static struct timer_task RTC_Scheduler_report;
 
-void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task) {
+void RTC_Scheduler_ping_cb(const struct timer_task* const timer_task) {
 
   pingflag++;
   uart_port_array[pingflag % 4]->ping_flag = 1;
@@ -257,21 +255,20 @@ void RTC_Scheduler_ping_cb(const struct timer_task *const timer_task) {
 #define RTC1SEC 16384
 #define RTC1MS (RTC1SEC / 1000)
 
-void RTC_Scheduler_realtime_cb(const struct timer_task *const timer_task) {
+void RTC_Scheduler_realtime_cb(const struct timer_task* const timer_task) {
 
   uint64_t micros = grid_platform_rtc_get_micros();
   micros += 1000000 / RTC1SEC; // 1 000 000 us / 16384TICK/SEC = 1 TICK
   grid_platform_rtc_set_micros(micros);
 }
 
-void RTC_Scheduler_realtime_millisecond_cb(
-    const struct timer_task *const timer_task) {
+void RTC_Scheduler_realtime_millisecond_cb(const struct timer_task* const timer_task) {
 
   grid_ui_rtc_ms_tick_time(&grid_ui_state);
   grid_ui_rtc_ms_mapmode_handler(&grid_ui_state, !gpio_get_pin_level(MAP_MODE));
 }
 
-void RTC_Scheduler_grid_sync_cb(const struct timer_task *const timer_task) {
+void RTC_Scheduler_grid_sync_cb(const struct timer_task* const timer_task) {
   CRITICAL_SECTION_ENTER()
 
   while (sync1_received) {
@@ -302,7 +299,6 @@ void RTC_Scheduler_grid_sync_cb(const struct timer_task *const timer_task) {
     gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_OUT);
     gpio_set_pin_level(PIN_GRID_SYNC_1, 1);
     // set_drive_mode(SYNC1_PIN, GPIO_DRIVE_MODE_OPEN_DRAIN);
-
   } else if (sync1_drive) {
     gpio_set_pin_direction(PIN_GRID_SYNC_1, GPIO_DIRECTION_IN);
     sync1_drive = 0;
@@ -311,14 +307,9 @@ void RTC_Scheduler_grid_sync_cb(const struct timer_task *const timer_task) {
   CRITICAL_SECTION_LEAVE()
 }
 
-void RTC_Scheduler_heartbeat_cb(const struct timer_task *const timer_task) {
+void RTC_Scheduler_heartbeat_cb(const struct timer_task* const timer_task) { heartbeatflag = 1; }
 
-  heartbeatflag = 1;
-}
-
-void RTC_Scheduler_report_cb(const struct timer_task *const timer_task) {
-  reportflag = 1;
-}
+void RTC_Scheduler_report_cb(const struct timer_task* const timer_task) { reportflag = 1; }
 
 void init_timer(void) {
 
@@ -385,10 +376,8 @@ int main(void) {
   uart_port_array[2] = grid_transport_get_port(&grid_transport_state, 2);
   uart_port_array[3] = grid_transport_get_port(&grid_transport_state, 3);
 
-  ui_port = grid_transport_get_port_first_of_type(&grid_transport_state,
-                                                  GRID_PORT_TYPE_UI);
-  host_port = grid_transport_get_port_first_of_type(&grid_transport_state,
-                                                    GRID_PORT_TYPE_USB);
+  ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
+  host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
 
   grid_d51_usb_init(); // requires hostport
 
@@ -494,9 +483,7 @@ int main(void) {
 
     if (grid_sys_get_editor_connected_state(&grid_sys_state) == 1) {
 
-      if (grid_platform_rtc_get_elapsed_time(
-              grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state)) >
-          2000 * MS_TO_US) { // 2 sec
+      if (grid_platform_rtc_get_elapsed_time(grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state)) > 2000 * MS_TO_US) { // 2 sec
 
         printf("EDITOR timeout\r\n");
         grid_port_debug_print_text("EDITOR timeout");

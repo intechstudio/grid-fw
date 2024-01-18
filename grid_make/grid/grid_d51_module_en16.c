@@ -27,8 +27,7 @@ static void spi_transfer_complete_cb(void) {
   // issued
   gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 
-  uint8_t encoder_position_lookup[16] = {14, 15, 10, 11, 6, 7, 2, 3,
-                                         12, 13, 8,  9,  4, 5, 0, 1};
+  uint8_t encoder_position_lookup[16] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1};
 
   // Buffer is only 8 bytes but we check all 16 encoders separately
   for (uint8_t j = 0; j < 16; j++) {
@@ -40,9 +39,7 @@ static void spi_transfer_complete_cb(void) {
 
     uint8_t i = encoder_position_lookup[j];
 
-    grid_ui_encoder_store_input(i, &encoder_last_real_time[i],
-                                &button_last_real_time[i], old_value, new_value,
-                                &phase_change_lock_array[i]);
+    grid_ui_encoder_store_input(i, &encoder_last_real_time[i], &button_last_real_time[i], old_value, new_value, &phase_change_lock_array[i]);
   }
 
   hardware_start_transfer();
@@ -57,8 +54,7 @@ static void hardware_init(void) {
   spi_m_async_set_baudrate(&UI_SPI,
                            1000000); // was 400000 check clock div setting
 
-  spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER,
-                                spi_transfer_complete_cb);
+  spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, spi_transfer_complete_cb);
 }
 
 void grid_module_en16_init() {

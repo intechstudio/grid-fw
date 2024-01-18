@@ -28,7 +28,7 @@
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 
-static const char *TAG = "USB example";
+static const char* TAG = "USB example";
 
 static uint8_t buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE + 1];
 
@@ -65,8 +65,7 @@ void tud_midi_rx_cb(uint8_t itf) {
       midi_ev.byte2 = param1;
       midi_ev.byte3 = param2;
 
-      if ((midi_ev.byte0 == 8 || midi_ev.byte0 == 10 || midi_ev.byte0 == 12) &&
-          midi_ev.byte1 == 240) {
+      if ((midi_ev.byte0 == 8 || midi_ev.byte0 == 10 || midi_ev.byte0 == 12) && midi_ev.byte1 == 240) {
         // if element's timer clock source is midi then decrement timer_helper
         grid_platform_sync1_pulse_send();
       }
@@ -76,18 +75,16 @@ void tud_midi_rx_cb(uint8_t itf) {
   }
 }
 
-void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event) {
+void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
   /* initialization */
   size_t rx_size = 0;
 
   /* read */
-  esp_err_t ret =
-      tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
+  esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
 
   for (uint16_t i = 0; i < rx_size; i++) {
 
-    struct grid_port *host_port = grid_transport_get_port_first_of_type(
-        &grid_transport_state, GRID_PORT_TYPE_USB);
+    struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
 
     host_port->rx_double_buffer[grid_usb_rx_double_buffer_index] = buf[i];
 
@@ -100,11 +97,10 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event) {
 
 static uint8_t DRAM_ATTR usb_tx_ready = 0;
 
-void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event) {
+void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t* event) {
   int dtr = event->line_state_changed_data.dtr;
   int rts = event->line_state_changed_data.rts;
-  ESP_LOGI(TAG, "Line state changed on channel %d: DTR:%d, RTS:%d", itf, dtr,
-           rts);
+  ESP_LOGI(TAG, "Line state changed on channel %d: DTR:%d, RTS:%d", itf, dtr, rts);
 
   usb_tx_ready = 1;
 }
@@ -117,7 +113,7 @@ void tud_cdc_tx_complete_cb(uint8_t itf) {
   // ets_printf("# %d\r\n", status);
 }
 
-int32_t grid_platform_usb_serial_write(char *buffer, uint32_t length) {
+int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) {
 
   // portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
   // portENTER_CRITICAL(&spinlock);
@@ -131,8 +127,7 @@ int32_t grid_platform_usb_serial_write(char *buffer, uint32_t length) {
 
     usb_tx_ready = 0;
 
-    uint32_t queued =
-        tinyusb_cdcacm_write_queue(0, (const uint8_t *)buffer, length);
+    uint32_t queued = tinyusb_cdcacm_write_queue(0, (const uint8_t*)buffer, length);
 
     if (queued != length) {
       ets_printf("CDC QUEUE ERROR: %d %d\r\n", queued, length);
@@ -141,7 +136,6 @@ int32_t grid_platform_usb_serial_write(char *buffer, uint32_t length) {
       status = tinyusb_cdcacm_write_flush(0, 0);
       // ets_printf("$ %d\r\n", status);
     }
-
   } else {
 
     status = tinyusb_cdcacm_write_flush(0, 0);
@@ -167,17 +161,15 @@ int32_t grid_platform_usb_serial_write(char *buffer, uint32_t length) {
  * In this example we implement Keyboard + Mouse HID device,
  * so we must define both report descriptors
  */
-const uint8_t hid_report_descriptor[] = {
-    TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(HID_ITF_PROTOCOL_KEYBOARD)),
-    TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(HID_ITF_PROTOCOL_MOUSE)),
-    TUD_HID_REPORT_DESC_GAMEPAD(HID_REPORT_ID(3))};
+const uint8_t hid_report_descriptor[] = {TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(HID_ITF_PROTOCOL_KEYBOARD)), TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(HID_ITF_PROTOCOL_MOUSE)),
+                                         TUD_HID_REPORT_DESC_GAMEPAD(HID_REPORT_ID(3))};
 
 /********* TinyUSB HID callbacks ***************/
 
 // Invoked when received GET HID REPORT DESCRIPTOR request
 // Application return pointer to descriptor, whose contents must exist long
 // enough for transfer to complete
-uint8_t const *tud_hid_descriptor_report_cb(uint8_t instance) {
+uint8_t const* tud_hid_descriptor_report_cb(uint8_t instance) {
   // We use only one interface and one HID report descriptor, so we can ignore
   // parameter 'instance'
   return hid_report_descriptor;
@@ -186,9 +178,7 @@ uint8_t const *tud_hid_descriptor_report_cb(uint8_t instance) {
 // Invoked when received GET_REPORT control request
 // Application must fill buffer report's content and return its length.
 // Return zero will cause the stack to STALL request
-uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id,
-                               hid_report_type_t report_type, uint8_t *buffer,
-                               uint16_t reqlen) {
+uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen) {
   (void)instance;
   (void)report_id;
   (void)report_type;
@@ -200,9 +190,7 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id,
 
 // Invoked when received SET_REPORT control request or
 // received data on OUT endpoint ( Report ID = 0, Type = 0 )
-void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
-                           hid_report_type_t report_type, uint8_t const *buffer,
-                           uint16_t bufsize) {}
+void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {}
 
 // Interface counter
 enum interface_count {
@@ -242,14 +230,12 @@ enum usb_endpoints {
 
 /** TinyUSB descriptors **/
 
-#define TUSB_DESCRIPTOR_TOTAL_LEN                                              \
-  (TUD_CONFIG_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN +                      \
-   CFG_TUD_MIDI * TUD_MIDI_DESC_LEN + CFG_TUD_HID * TUD_HID_DESC_LEN)
+#define TUSB_DESCRIPTOR_TOTAL_LEN (TUD_CONFIG_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN + CFG_TUD_MIDI * TUD_MIDI_DESC_LEN + CFG_TUD_HID * TUD_HID_DESC_LEN)
 
 /**
  * @brief String descriptor
  */
-static const char *s_str_desc[6] = {
+static const char* s_str_desc[6] = {
     // array of pointer to string descriptors
     (char[]){0x09, 0x04},      // 0: is supported language is English (0x0409)
     "Intech Studio",           // 1: Manufacturer
@@ -271,8 +257,7 @@ static uint8_t s_cfg_desc[] = {
     TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESCRIPTOR_TOTAL_LEN, 0, 500),
 
 #if CFG_TUD_CDC
-    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_NOTIFY, 5, (0x80 | EPNUM_CDC_NOTIFY), 64,
-                       EPNUM_CDC_DATA, (0x80 | EPNUM_CDC_DATA), 64),
+    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_NOTIFY, 5, (0x80 | EPNUM_CDC_NOTIFY), 64, EPNUM_CDC_DATA, (0x80 | EPNUM_CDC_DATA), 64),
 #endif
 
 #if CFG_TUD_MIDI
@@ -283,8 +268,7 @@ static uint8_t s_cfg_desc[] = {
 #if CFG_TUD_HID
     // Interface number, string index, boot protocol, report descriptor len, EP
     // In address, size & polling interval
-    TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, false, sizeof(hid_report_descriptor),
-                       (0x80 | EPNUM_HID), 16, 10),
+    TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, false, sizeof(hid_report_descriptor), (0x80 | EPNUM_HID), 16, 10),
 #endif
 
 };
@@ -301,26 +285,22 @@ void grid_esp32_usb_init() {
 
   ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 
-  tinyusb_config_cdcacm_t acm_cfg = {
-      .usb_dev = TINYUSB_USBDEV_0,
-      .cdc_port = TINYUSB_CDC_ACM_0,
-      .rx_unread_buf_sz = 64,
-      .callback_rx =
-          &tinyusb_cdc_rx_callback, // the first way to register a callback
-      .callback_rx_wanted_char = NULL,
-      .callback_line_state_changed = NULL,
-      .callback_line_coding_changed = NULL};
+  tinyusb_config_cdcacm_t acm_cfg = {.usb_dev = TINYUSB_USBDEV_0,
+                                     .cdc_port = TINYUSB_CDC_ACM_0,
+                                     .rx_unread_buf_sz = 64,
+                                     .callback_rx = &tinyusb_cdc_rx_callback, // the first way to register a callback
+                                     .callback_rx_wanted_char = NULL,
+                                     .callback_line_state_changed = NULL,
+                                     .callback_line_coding_changed = NULL};
 
   ESP_ERROR_CHECK(tusb_cdc_acm_init(&acm_cfg));
   /* the second way to register a callback */
-  ESP_ERROR_CHECK(tinyusb_cdcacm_register_callback(
-      TINYUSB_CDC_ACM_0, CDC_EVENT_LINE_STATE_CHANGED,
-      &tinyusb_cdc_line_state_changed_callback));
+  ESP_ERROR_CHECK(tinyusb_cdcacm_register_callback(TINYUSB_CDC_ACM_0, CDC_EVENT_LINE_STATE_CHANGED, &tinyusb_cdc_line_state_changed_callback));
 
   // END OF USB
 }
 
-void grid_esp32_usb_task(void *arg) {
+void grid_esp32_usb_task(void* arg) {
 
   grid_esp32_usb_init();
   grid_usb_midi_buffer_init();
@@ -335,8 +315,7 @@ void grid_esp32_usb_task(void *arg) {
 
 // ========================= PLATFORM =============================== //
 
-int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1,
-                                     uint8_t byte2, uint8_t byte3) {
+int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
   const uint8_t buffer[] = {byte0, byte1, byte2, byte3};
 
@@ -359,11 +338,7 @@ int32_t grid_platform_usb_midi_write_status(void) {
   return 0;
 }
 
-static enum mouse_button_type {
-  LEFT_BTN = 0x01,
-  RIGHT_BTN = 0x02,
-  MIDDLE_BTN = 0x04
-};
+static enum mouse_button_type { LEFT_BTN = 0x01, RIGHT_BTN = 0x02, MIDDLE_BTN = 0x04 };
 
 static uint8_t hid_mouse_button_state = 0;
 
@@ -388,8 +363,7 @@ int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type) {
   }
 
   // report_id, buttons, dx, dy, wheel, pan
-  tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, 0, 0, 0,
-                       0);
+  tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, 0, 0, 0, 0);
 
   return 1;
 }
@@ -412,8 +386,7 @@ int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis) {
   }
 
   // report_id, buttons, dx, dy, wheel, pan
-  tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, delta_x,
-                       delta_y, wheel, pan);
+  tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, delta_x, delta_y, wheel, pan);
 
   return 1;
 }
@@ -444,10 +417,7 @@ int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value) {
     return 0;
   }
 
-  tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y,
-                         hid_gamepad_axis_z, hid_gamepad_axis_rz,
-                         hid_gamepad_axis_ry, hid_gamepad_axis_rx,
-                         hid_gamepad_hat, hid_gamepad_button_state);
+  tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y, hid_gamepad_axis_z, hid_gamepad_axis_rz, hid_gamepad_axis_ry, hid_gamepad_axis_rx, hid_gamepad_hat, hid_gamepad_button_state);
 
   return 1;
 }
@@ -460,16 +430,12 @@ int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value) {
     hid_gamepad_button_state &= ~(1 << button);
   }
 
-  tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y,
-                         hid_gamepad_axis_z, hid_gamepad_axis_rx,
-                         hid_gamepad_axis_ry, hid_gamepad_axis_rz,
-                         hid_gamepad_hat, hid_gamepad_button_state);
+  tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y, hid_gamepad_axis_z, hid_gamepad_axis_rx, hid_gamepad_axis_ry, hid_gamepad_axis_rz, hid_gamepad_hat, hid_gamepad_button_state);
 
   return 1;
 }
 
-int32_t grid_platform_usb_keyboard_keys_state_change(
-    struct grid_usb_keyboard_event_desc *active_key_list, uint8_t keys_count) {
+int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_event_desc* active_key_list, uint8_t keys_count) {
 
   struct grid_usb_hid_kb_desc key_descriptor_array[GRID_KEYBOARD_KEY_maxcount];
   for (uint8_t i = 0; i < GRID_KEYBOARD_KEY_maxcount; i++) {
@@ -491,15 +457,12 @@ int32_t grid_platform_usb_keyboard_keys_state_change(
 
   for (uint8_t i = 0; i < keys_count; i++) {
 
-    ESP_LOGD(TAG, "IsMod: %d, KeyCode: %d, State: %d",
-             key_descriptor_array[i].b_modifier, key_descriptor_array[i].key_id,
-             key_descriptor_array[i].state);
+    ESP_LOGD(TAG, "IsMod: %d, KeyCode: %d, State: %d", key_descriptor_array[i].b_modifier, key_descriptor_array[i].key_id, key_descriptor_array[i].state);
 
     if (key_descriptor_array[i].b_modifier) {
 
       modifier |= key_descriptor_array[i].key_id;
-    } else if (key_descriptor_array[i].state &&
-               key_descriptor_array[i].key_id != 255) {
+    } else if (key_descriptor_array[i].state && key_descriptor_array[i].key_id != 255) {
 
       keycode[keys_count] = key_descriptor_array[i].key_id;
       keys_count++;

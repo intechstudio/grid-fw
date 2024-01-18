@@ -16,7 +16,7 @@
 DRAM_ATTR struct grid_trace_model grid_trace_state_core0;
 DRAM_ATTR struct grid_trace_model grid_trace_state_core1;
 
-void grid_trace_init(struct grid_trace_model *trace, uint8_t core_id) {
+void grid_trace_init(struct grid_trace_model* trace, uint8_t core_id) {
 
   trace->core_id = core_id;
 
@@ -37,7 +37,7 @@ void grid_trace_init(struct grid_trace_model *trace, uint8_t core_id) {
   ets_printf("IDLE TASK %lx\r\n", trace->idle_handle);
 }
 
-void grid_trace_ignore_task(struct grid_trace_model *trace, void *task_handle) {
+void grid_trace_ignore_task(struct grid_trace_model* trace, void* task_handle) {
 
   ets_printf("IGNORING %lx\r\n", (long unsigned int)task_handle);
 
@@ -45,7 +45,7 @@ void grid_trace_ignore_task(struct grid_trace_model *trace, void *task_handle) {
 }
 
 void grid_trace_task_switched_in(void) {
-  struct grid_trace_model *trace = NULL;
+  struct grid_trace_model* trace = NULL;
   const uint32_t current_task = (uint32_t)xTaskGetCurrentTaskHandle();
   const uint8_t current_core = xTaskGetAffinity(current_task);
 
@@ -70,20 +70,16 @@ void grid_trace_task_switched_in(void) {
 
   // ets_printf("%lx\r\n", (unsigned long int) current_task);
 
-  trace->trace_buffer[trace->trace_buffer_write_ptr].event_type =
-      (uint32_t)(current_task == trace->idle_handle); // switched in
-  trace->trace_buffer[trace->trace_buffer_write_ptr].event_context =
-      (uint32_t)current_task; // task handle
-  trace->trace_buffer[trace->trace_buffer_write_ptr].timestamp =
-      (uint32_t)esp_timer_get_time(); // timestamp
-  trace->trace_buffer[trace->trace_buffer_write_ptr].event_value =
-      0; // no value
+  trace->trace_buffer[trace->trace_buffer_write_ptr].event_type = (uint32_t)(current_task == trace->idle_handle); // switched in
+  trace->trace_buffer[trace->trace_buffer_write_ptr].event_context = (uint32_t)current_task;                      // task handle
+  trace->trace_buffer[trace->trace_buffer_write_ptr].timestamp = (uint32_t)esp_timer_get_time();                  // timestamp
+  trace->trace_buffer[trace->trace_buffer_write_ptr].event_value = 0;                                             // no value
 
   trace->trace_buffer_write_ptr = (trace->trace_buffer_write_ptr + 1) % 1000;
 }
 
 void grid_trace_task_switched_out(void) {
-  struct grid_trace_model *trace = &grid_trace_state_core0;
+  struct grid_trace_model* trace = &grid_trace_state_core0;
   TaskHandle_t current_task = xTaskGetCurrentTaskHandle();
   // ets_printf("%lx\r\n", (unsigned long int) current_task);
   // trace->switch_out_count++;
@@ -91,7 +87,7 @@ void grid_trace_task_switched_out(void) {
   //
 }
 
-void grid_trace_report_task(void *arg) {
+void grid_trace_report_task(void* arg) {
 
 #ifndef gridUSE_TRACE
   vTaskSuspend(NULL);
@@ -109,7 +105,7 @@ void grid_trace_report_task(void *arg) {
 
     for (uint32_t i = 0; i < 500; i++) {
 
-      struct grid_trace_model *trace = &grid_trace_state_core0;
+      struct grid_trace_model* trace = &grid_trace_state_core0;
 
       if (trace->trace_buffer_read_ptr == trace->trace_buffer_write_ptr) {
         break;
@@ -120,13 +116,11 @@ void grid_trace_report_task(void *arg) {
       uint32_t context = trace->trace_buffer[index].event_context;
       uint32_t event_type = trace->trace_buffer[index].event_type;
 
-      ets_printf("%d %ldms 0x%lx %d\r\n", index, timestamp, context,
-                 event_type);
+      ets_printf("%d %ldms 0x%lx %d\r\n", index, timestamp, context, event_type);
       trace->trace_buffer_read_ptr = (index + 1) % 1000;
     }
 
-    ets_printf("Switch: %d %d\r\n", grid_trace_state_core0.switch_in_count,
-               grid_trace_state_core1.switch_in_count);
+    ets_printf("Switch: %d %d\r\n", grid_trace_state_core0.switch_in_count, grid_trace_state_core1.switch_in_count);
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 

@@ -37,18 +37,13 @@
 #include "usbdc.h"
 
 /** CDC ACM Class Callback Type */
-enum cdcdf_acm_cb_type {
-  CDCDF_ACM_CB_READ,
-  CDCDF_ACM_CB_WRITE,
-  CDCDF_ACM_CB_LINE_CODING_C,
-  CDCDF_ACM_CB_STATE_C
-};
+enum cdcdf_acm_cb_type { CDCDF_ACM_CB_READ, CDCDF_ACM_CB_WRITE, CDCDF_ACM_CB_LINE_CODING_C, CDCDF_ACM_CB_STATE_C };
 
 /** CDC ACM Notify Line State Callback. */
 typedef void (*cdcdf_acm_notify_state_t)(uint16_t);
 
 /** CDC ACM Set Line Coding Callback. */
-typedef bool (*cdcdf_acm_set_line_coding_t)(struct usb_cdc_line_coding *);
+typedef bool (*cdcdf_acm_set_line_coding_t)(struct usb_cdc_line_coding*);
 
 /**
  * \brief Initialize the USB CDC ACM Function Driver
@@ -68,7 +63,7 @@ void cdcdf_acm_deinit(void);
  * \param[in] size the size of data to be received
  * \return Operation status.
  */
-int32_t cdcdf_acm_read(uint8_t *buf, uint32_t size);
+int32_t cdcdf_acm_read(uint8_t* buf, uint32_t size);
 
 /**
  * \brief USB CDC ACM Function Write Data
@@ -76,7 +71,7 @@ int32_t cdcdf_acm_read(uint8_t *buf, uint32_t size);
  * \param[in] size the size of data to be sent
  * \return Operation status.
  */
-int32_t cdcdf_acm_write(uint8_t *buf, uint32_t size);
+int32_t cdcdf_acm_write(uint8_t* buf, uint32_t size);
 
 /**
  * \brief USB CDC ACM Stop the current data transfer
@@ -89,8 +84,7 @@ void cdcdf_acm_stop_xfer(void);
  * \param[in] func Pointer to callback function
  * \return Operation status.
  */
-int32_t cdcdf_acm_register_callback(enum cdcdf_acm_cb_type cb_type,
-                                    FUNC_PTR func);
+int32_t cdcdf_acm_register_callback(enum cdcdf_acm_cb_type cb_type, FUNC_PTR func);
 
 /**
  * \brief Check whether CDC ACM Function is enabled
@@ -104,7 +98,7 @@ bool cdcdf_acm_is_enabled(void);
  * \brief Return the CDC ACM line coding structure start address
  * \return Pointer to USB CDC ACM line coding data.
  */
-const struct usb_cdc_line_coding *cdcdf_acm_get_line_coding(void);
+const struct usb_cdc_line_coding* cdcdf_acm_get_line_coding(void);
 
 /**
  * \brief Return version

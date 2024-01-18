@@ -24,11 +24,10 @@ static uint8_t multi_desc_bytes[] = {
     COMPOSITE_DESCES_LS_FS};
 #endif
 
-static struct usbd_descriptors multi_desc[] = {
-    {multi_desc_bytes, multi_desc_bytes + sizeof(multi_desc_bytes)}
+static struct usbd_descriptors multi_desc[] = {{multi_desc_bytes, multi_desc_bytes + sizeof(multi_desc_bytes)}
 #if CONF_USBD_HS_SP
-    ,
-    {multi_desc_bytes_hs, multi_desc_bytes_hs + sizeof(multi_desc_bytes_hs)}
+                                               ,
+                                               {multi_desc_bytes_hs, multi_desc_bytes_hs + sizeof(multi_desc_bytes_hs)}
 #endif
 };
 
@@ -36,37 +35,28 @@ static struct usbd_descriptors multi_desc[] = {
 static uint8_t ctrl_buffer[64];
 
 #if CONF_USB_COMPOSITE_CDC_ECHO_DEMO
-static uint8_t *cdcdf_demo_buf;
-static bool cdcdf_demo_cb_bulk_out(const uint8_t ep,
-                                   const enum usb_xfer_code rc,
-                                   const uint32_t count) {
+static uint8_t* cdcdf_demo_buf;
+static bool cdcdf_demo_cb_bulk_out(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {
   cdcdf_acm_write(cdcdf_demo_buf, count); /* Echo data */
   return false;                           /* No error. */
 }
-static bool cdcdf_demo_cb_bulk_in(const uint8_t ep, const enum usb_xfer_code rc,
-                                  const uint32_t count) {
-  cdcdf_acm_read(
-      (uint8_t *)cdcdf_demo_buf,
-      CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS); /* Another read */
-  return false;                                           /* No error. */
+static bool cdcdf_demo_cb_bulk_in(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {
+  cdcdf_acm_read((uint8_t*)cdcdf_demo_buf, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS); /* Another read */
+  return false;                                                                                /* No error. */
 }
 static bool cdcdf_demo_cb_state_c(usb_cdc_control_signal_t state) {
   if (state.rs232.DTR) {
     /* After connection the R/W callbacks can be registered */
-    cdcdf_acm_register_callback(CDCDF_ACM_CB_READ,
-                                (FUNC_PTR)cdcdf_demo_cb_bulk_out);
-    cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE,
-                                (FUNC_PTR)cdcdf_demo_cb_bulk_in);
+    cdcdf_acm_register_callback(CDCDF_ACM_CB_READ, (FUNC_PTR)cdcdf_demo_cb_bulk_out);
+    cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)cdcdf_demo_cb_bulk_in);
     /* Start Rx */
-    cdcdf_acm_read((uint8_t *)cdcdf_demo_buf,
-                   CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);
+    cdcdf_acm_read((uint8_t*)cdcdf_demo_buf, CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ_HS);
   }
   return false; /* No error. */
 }
-void cdcdf_acm_demo_init(uint8_t *bulk_packet_buffer) {
+void cdcdf_acm_demo_init(uint8_t* bulk_packet_buffer) {
   cdcdf_demo_buf = bulk_packet_buffer;
-  cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C,
-                              (FUNC_PTR)cdcdf_demo_cb_state_c);
+  cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C, (FUNC_PTR)cdcdf_demo_cb_state_c);
 }
 #endif /* CONF_USB_COMPOSITE_CDC_ECHO_DEMO */
 
@@ -111,15 +101,14 @@ static void hiddf_demo_sof_event(void) {
   (void)pin_btn2;
   (void)pin_btn3;
 }
-static struct usbdc_handler hiddf_demo_sof_event_h = {
-    NULL, (FUNC_PTR)hiddf_demo_sof_event};
+static struct usbdc_handler hiddf_demo_sof_event_h = {NULL, (FUNC_PTR)hiddf_demo_sof_event};
 void hiddf_demo_init(uint32_t btn1, uint32_t btn2, uint32_t btn3) {
   pin_btn1 = btn1;
   pin_btn2 = btn2;
   pin_btn3 = btn3;
   usbdc_register_handler(USBDC_HDL_SOF, &hiddf_demo_sof_event_h);
 }
-#endif /* #if CONF_USB_COMPOSITE_HID_MOUSE_DEMO ||                             \
+#endif /* #if CONF_USB_COMPOSITE_HID_MOUSE_DEMO ||                                                                                                                                                     \
           CONF_USB_COMPOSITE_HID_KEYBOARD_DEMO */
 
 void composite_device_init(void) {

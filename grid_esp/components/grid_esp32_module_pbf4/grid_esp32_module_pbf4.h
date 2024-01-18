@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-void grid_esp32_module_pbf4_task(void *arg);
+void grid_esp32_module_pbf4_task(void* arg);
 
 #ifdef __cplusplus
 }

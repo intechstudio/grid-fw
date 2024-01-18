@@ -36,6 +36,7 @@
         "-it"
       ],
       "remoteEnv": {
-        "PATH": "${containerEnv:PATH}:/some/other/path:/opt/esp/idf/components/espcoredump:/opt/esp/idf/components/partition_table:/opt/esp/idf/components/app_update:/opt/esp/tools/xtensa-esp-elf-gdb/12.1_20221002/xtensa-esp-elf-gdb/bin:/opt/esp/tools/riscv32-esp-elf-gdb/12.1_20221002/riscv32-esp-elf-gdb/bin:/opt/esp/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin:/opt/esp/tools/xtensa-esp32s2-elf/esp-12.2.0_20230208/xtensa-esp32s2-elf/bin:/opt/esp/tools/xtensa-esp32s3-elf/esp-12.2.0_20230208/xtensa-esp32s3-elf/bin:/opt/esp/tools/riscv32-esp-elf/esp-12.2.0_20230208/riscv32-esp-elf/bin:/opt/esp/tools/esp32ulp-elf/2.35_20220830/esp32ulp-elf/bin:/opt/esp/tools/cmake/3.24.0/bin:/opt/esp/tools/openocd-esp32/v0.12.0-esp32-20230419/openocd-esp32/bin:/opt/esp/python_env/idf5.2_py3.8_env/bin:/opt/esp/idf/tools"
+        "PATH":
+            "${containerEnv:PATH}:/some/other/path:/opt/esp/idf/components/espcoredump:/opt/esp/idf/components/partition_table:/opt/esp/idf/components/app_update:/opt/esp/tools/xtensa-esp-elf-gdb/12.1_20221002/xtensa-esp-elf-gdb/bin:/opt/esp/tools/riscv32-esp-elf-gdb/12.1_20221002/riscv32-esp-elf-gdb/bin:/opt/esp/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin:/opt/esp/tools/xtensa-esp32s2-elf/esp-12.2.0_20230208/xtensa-esp32s2-elf/bin:/opt/esp/tools/xtensa-esp32s3-elf/esp-12.2.0_20230208/xtensa-esp32s3-elf/bin:/opt/esp/tools/riscv32-esp-elf/esp-12.2.0_20230208/riscv32-esp-elf/bin:/opt/esp/tools/esp32ulp-elf/2.35_20220830/esp32ulp-elf/bin:/opt/esp/tools/cmake/3.24.0/bin:/opt/esp/tools/openocd-esp32/v0.12.0-esp32-20230419/openocd-esp32/bin:/opt/esp/python_env/idf5.2_py3.8_env/bin:/opt/esp/idf/tools"
       }
     }

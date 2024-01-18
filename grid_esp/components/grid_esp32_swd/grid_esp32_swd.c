@@ -14,7 +14,7 @@
 #include "driver/ledc.h" // for pwm based pico system clock generation
 #include "rom/ets_sys.h"
 
-static const char *TAG = "grid_esp32_swd";
+static const char* TAG = "grid_esp32_swd";
 
 static uint8_t swd_pin_swdio;
 static uint8_t swd_pin_swclk;
@@ -462,40 +462,28 @@ void swd_idle() {
   swd_dummy_clock();
 }
 
-void grid_esp32_swd_pico_pins_init(uint8_t swclk_pin, uint8_t swdio_pin,
-                                   uint8_t clock_pin) {
+void grid_esp32_swd_pico_pins_init(uint8_t swclk_pin, uint8_t swdio_pin, uint8_t clock_pin) {
 
   swd_pin_swdio = swdio_pin;
   swd_pin_swclk = swclk_pin;
   swd_pin_sysclk = clock_pin;
 }
 
-void grid_esp32_swd_pico_clock_init(uint8_t timer_instance,
-                                    uint8_t channel_instance) {
+void grid_esp32_swd_pico_clock_init(uint8_t timer_instance, uint8_t channel_instance) {
 
-  ledc_timer_config_t pwm_config = {.speed_mode = LEDC_LOW_SPEED_MODE,
-                                    .timer_num = timer_instance,
-                                    .freq_hz = 12000000,
-                                    .duty_resolution = LEDC_TIMER_2_BIT,
-                                    .clk_cfg = LEDC_AUTO_CLK};
+  ledc_timer_config_t pwm_config = {.speed_mode = LEDC_LOW_SPEED_MODE, .timer_num = timer_instance, .freq_hz = 12000000, .duty_resolution = LEDC_TIMER_2_BIT, .clk_cfg = LEDC_AUTO_CLK};
 
   ESP_ERROR_CHECK(ledc_timer_config(&pwm_config));
 
-  ledc_channel_config_t ledc_channel = {.speed_mode = LEDC_LOW_SPEED_MODE,
-                                        .channel = channel_instance,
-                                        .timer_sel = timer_instance,
-                                        .intr_type = LEDC_INTR_DISABLE,
-                                        .gpio_num = swd_pin_sysclk,
-                                        .duty = 0,
-                                        .hpoint = 0};
+  ledc_channel_config_t ledc_channel = {
+      .speed_mode = LEDC_LOW_SPEED_MODE, .channel = channel_instance, .timer_sel = timer_instance, .intr_type = LEDC_INTR_DISABLE, .gpio_num = swd_pin_sysclk, .duty = 0, .hpoint = 0};
   ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 
   ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 2));
   ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0));
 }
 
-void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin,
-                                      uint8_t *buffer, uint32_t length) {
+void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint8_t* buffer, uint32_t length) {
 
   gpio_set_direction(swclk_pin, GPIO_MODE_OUTPUT);
   gpio_ll_set_level(&GPIO, swclk_pin, 0);
@@ -1360,7 +1348,7 @@ void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin,
         // printf("\r\n\r\n%08lx :: \r\n", i);
       }
 
-      uint32_t word = *(uint32_t *)(buffer + i);
+      uint32_t word = *(uint32_t*)(buffer + i);
       swd_write_apc(word); // 0x491c481b
 
       // printf(" %08lx", word);

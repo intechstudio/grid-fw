@@ -62,12 +62,9 @@ uint32_t swd_read_ap8();
 
 void swd_idle();
 
-void grid_esp32_swd_pico_pins_init(uint8_t swclk_pin, uint8_t swdio_pin,
-                                   uint8_t clock_pin);
-void grid_esp32_swd_pico_clock_init(uint8_t timer_instance,
-                                    uint8_t channel_instance);
-void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin,
-                                      uint8_t *buffer, uint32_t length);
+void grid_esp32_swd_pico_pins_init(uint8_t swclk_pin, uint8_t swdio_pin, uint8_t clock_pin);
+void grid_esp32_swd_pico_clock_init(uint8_t timer_instance, uint8_t channel_instance);
+void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint8_t* buffer, uint32_t length);
 
 #ifdef __cplusplus
 }

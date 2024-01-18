@@ -3,8 +3,7 @@
 static volatile uint8_t adc_complete_count = 0;
 
 static volatile uint8_t multiplexer_index = 0;
-static volatile uint8_t multiplexer_lookup[16] = {0, 1, 4, 5, 8,  9,  12, 13,
-                                                  2, 3, 6, 7, 10, 11, 14, 15};
+static volatile uint8_t multiplexer_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15};
 
 static uint64_t last_real_time[16] = {0};
 
@@ -54,10 +53,8 @@ static void adc_transfer_complete_cb(void) {
   }
   adcresult_1 = input_1;
 
-  grid_ui_button_store_input(adc_index_0, &last_real_time[adc_index_0],
-                             adcresult_0, 16); // 16 bit analog values
-  grid_ui_button_store_input(adc_index_1, &last_real_time[adc_index_1],
-                             adcresult_1, 16);
+  grid_ui_button_store_input(adc_index_0, &last_real_time[adc_index_0], adcresult_0, 16); // 16 bit analog values
+  grid_ui_button_store_input(adc_index_1, &last_real_time[adc_index_1], adcresult_1, 16);
 
   adc_complete_count = 0;
   hardware_start_transfer();
@@ -65,10 +62,8 @@ static void adc_transfer_complete_cb(void) {
 
 static void hardware_init(void) {
 
-  adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB,
-                              adc_transfer_complete_cb);
-  adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB,
-                              adc_transfer_complete_cb);
+  adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
+  adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
 
   adc_async_enable_channel(&ADC_0, 0);
   adc_async_enable_channel(&ADC_1, 0);

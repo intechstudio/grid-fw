@@ -36,7 +36,7 @@
 
 #include "grid_ui.h"
 
-static const char *TAG = "grid_esp32_nvm";
+static const char* TAG = "grid_esp32_nvm";
 
 struct grid_esp32_nvm_model grid_esp32_nvm_state;
 
@@ -45,17 +45,14 @@ void grid_esp32_nvm_print_chip_info() {
   /* Print chip information */
   esp_chip_info_t chip_info;
   esp_chip_info(&chip_info);
-  printf("This is %s chip with %d CPU cores, WiFi%s%s, ", CONFIG_IDF_TARGET,
-         chip_info.cores, (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
+  printf("This is %s chip with %d CPU cores, WiFi%s%s, ", CONFIG_IDF_TARGET, chip_info.cores, (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
          (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
 
   printf("silicon revision %d, ", chip_info.revision);
 
   uint32_t size_flash_chip = 0;
   esp_flash_get_size(NULL, &size_flash_chip);
-  printf("%uMB %s flash\n", (unsigned int)size_flash_chip >> 20,
-         (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded"
-                                                       : "external");
+  printf("%uMB %s flash\n", (unsigned int)size_flash_chip >> 20, (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
 
   printf("Free heap: %u\n", (unsigned int)esp_get_free_heap_size());
 }
@@ -87,8 +84,7 @@ void grid_esp32_nvm_mount() {
   size_t total = 0, used = 0;
   ret = esp_littlefs_info(conf.partition_label, &total, &used);
   if (ret != ESP_OK) {
-    ESP_LOGE(TAG, "Failed to get LittleFS partition information (%s)",
-             esp_err_to_name(ret));
+    ESP_LOGE(TAG, "Failed to get LittleFS partition information (%s)", esp_err_to_name(ret));
   } else {
     ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
   }
@@ -101,7 +97,7 @@ void grid_esp32_nvm_read_write_test() {
   // Use POSIX and C standard library functions to work with files.
   // First create a file.
   ESP_LOGI(TAG, "Opening file");
-  FILE *f = fopen("/littlefs/hello.txt", "w");
+  FILE* f = fopen("/littlefs/hello.txt", "w");
   if (f == NULL) {
     ESP_LOGE(TAG, "Failed to open file for writing");
     return;
@@ -139,7 +135,7 @@ void grid_esp32_nvm_read_write_test() {
   fgets(line, sizeof(line), f);
   fclose(f);
   // strip newline
-  char *pos = strchr(line, '\n');
+  char* pos = strchr(line, '\n');
   if (pos) {
     *pos = '\0';
   }
@@ -148,7 +144,7 @@ void grid_esp32_nvm_read_write_test() {
   grid_esp32_nvm_list_files(NULL, "/littlefs");
 }
 
-void grid_esp32_nvm_init(struct grid_esp32_nvm_model *nvm) {
+void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm) {
 
   // grid_esp32_nvm_print_chip_info();
 
@@ -161,12 +157,12 @@ void grid_esp32_nvm_init(struct grid_esp32_nvm_model *nvm) {
   // grid_esp32_nvm_read_write_test();
 }
 
-void grid_esp32_nvm_list_files(struct grid_esp32_nvm_model *nvm, char *path) {
+void grid_esp32_nvm_list_files(struct grid_esp32_nvm_model* nvm, char* path) {
 
   ESP_LOGI(TAG, "Print Directory: %s", path);
 
-  DIR *d;
-  struct dirent *dir;
+  DIR* d;
+  struct dirent* dir;
   d = opendir(path);
 
   if (d) {
@@ -179,9 +175,7 @@ void grid_esp32_nvm_list_files(struct grid_esp32_nvm_model *nvm, char *path) {
   return;
 }
 
-void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model *nvm, uint8_t page,
-                                uint8_t element, uint8_t event,
-                                char *actionstring) {
+void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model* nvm, uint8_t page, uint8_t element, uint8_t event, char* actionstring) {
 
   char fname[30] = {0};
 
@@ -201,7 +195,7 @@ void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model *nvm, uint8_t page,
 
   ESP_LOGD(TAG, "%s : %s", fname, actionstring);
 
-  FILE *fp;
+  FILE* fp;
 
   fp = fopen(fname, "w");
 
@@ -215,15 +209,12 @@ void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model *nvm, uint8_t page,
   }
 }
 
-int grid_platform_find_actionstring_file(
-    uint8_t page, uint8_t element, uint8_t event_type,
-    union grid_ui_file_handle *file_handle) {
+int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle) {
 
-  sprintf(file_handle->fname, "/littlefs/%02x/%02x/%02x.cfg", page, element,
-          event_type);
+  sprintf(file_handle->fname, "/littlefs/%02x/%02x/%02x.cfg", page, element, event_type);
 
   // check if file exists
-  FILE *fp;
+  FILE* fp;
   fp = fopen(file_handle->fname, "r");
 
   if (fp != NULL) {
@@ -236,7 +227,7 @@ int grid_platform_find_actionstring_file(
   return 1;
 }
 
-void grid_esp32_nvm_erase(struct grid_esp32_nvm_model *nvm) {
+void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm) {
 
   grid_esp32_nvm_clear_page(nvm, 0);
   grid_esp32_nvm_clear_page(nvm, 1);
@@ -244,15 +235,14 @@ void grid_esp32_nvm_erase(struct grid_esp32_nvm_model *nvm) {
   grid_esp32_nvm_clear_page(nvm, 3);
 }
 
-void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model *nvm, uint8_t page) {
+void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page) {
 
   for (uint8_t i = 0; i < 17; i++) { // elements
 
     for (uint8_t j = 0; j < 10; j++) { // events
 
       union grid_ui_file_handle file_handle = {0};
-      int status =
-          grid_platform_find_actionstring_file(page, i, j, &file_handle);
+      int status = grid_platform_find_actionstring_file(page, i, j, &file_handle);
 
       if (status == 0) {
 
@@ -263,15 +253,13 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model *nvm, uint8_t page) {
   }
 }
 
-static int scandir2(const char *dirname, struct dirent ***namelist,
-                    int (*select)(struct dirent *),
-                    int (*dcomp)(const void *, const void *)) {
+static int scandir2(const char* dirname, struct dirent*** namelist, int (*select)(struct dirent*), int (*dcomp)(const void*, const void*)) {
 
   struct dirent *d, *p, **names = NULL;
   size_t nitems = 0;
   struct stat stb;
   long arraysz;
-  DIR *dirp;
+  DIR* dirp;
 
   if ((dirp = opendir(dirname)) == NULL)
     return (-1);
@@ -282,7 +270,7 @@ static int scandir2(const char *dirname, struct dirent ***namelist,
    */
 
   arraysz = (20);
-  names = (struct dirent **)malloc(arraysz * sizeof(struct dirent *));
+  names = (struct dirent**)malloc(arraysz * sizeof(struct dirent*));
   if (names == NULL)
     goto fail;
 
@@ -292,7 +280,7 @@ static int scandir2(const char *dirname, struct dirent ***namelist,
     /*
      * Make a minimum size copy of the data
      */
-    p = (struct dirent *)malloc(sizeof(struct dirent));
+    p = (struct dirent*)malloc(sizeof(struct dirent));
     if (p == NULL)
       goto fail;
     p->d_type = d->d_type;
@@ -304,10 +292,9 @@ static int scandir2(const char *dirname, struct dirent ***namelist,
      */
     if (nitems >= arraysz) {
       const int inc = 10; /* increase by this much */
-      struct dirent **names2;
+      struct dirent** names2;
 
-      names2 = (struct dirent **)realloc(
-          (char *)names, (arraysz + inc) * sizeof(struct dirent *));
+      names2 = (struct dirent**)realloc((char*)names, (arraysz + inc) * sizeof(struct dirent*));
       if (names2 == NULL) {
         free(p);
         goto fail;
@@ -319,7 +306,7 @@ static int scandir2(const char *dirname, struct dirent ***namelist,
   }
   closedir(dirp);
   if (nitems && dcomp != NULL)
-    qsort(names, nitems, sizeof(struct dirent *), dcomp);
+    qsort(names, nitems, sizeof(struct dirent*), dcomp);
   *namelist = names;
   return (nitems);
 
@@ -334,19 +321,13 @@ fail:
 /*
  * Alphabetic order comparison routine for those who want it.
  */
-static int my_alphasort(d1, d2) const void *d1;
-const void *d2;
-{
-  return (
-      strcmp((*(struct dirent **)d1)->d_name, (*(struct dirent **)d2)->d_name));
-}
+static int my_alphasort(const void* d1, const void* d2) { return (strcmp((*(struct dirent**)d1)->d_name, (*(struct dirent**)d2)->d_name)); }
 
-static int find_next_file(char *path, char *file_name_fmt,
-                          int *last_file_number) {
+static int find_next_file(char* path, char* file_name_fmt, int* last_file_number) {
 
   uint8_t file_found_already = false;
 
-  struct dirent **entries;
+  struct dirent** entries;
   int entries_length;
   entries_length = scandir2(path, &entries, NULL, my_alphasort);
 
@@ -379,15 +360,12 @@ static int find_next_file(char *path, char *file_name_fmt,
     return 0;
   }
 
-  *last_file_number =
-      -1; // indicating that search is completed and no more files are available
+  *last_file_number = -1; // indicating that search is completed and no more files are available
 
   return 1;
 }
 
-int grid_esp32_nvm_find_next_file_from_page(struct grid_esp32_nvm_model *nvm,
-                                            uint8_t page, int *last_element,
-                                            int *last_event) {
+int grid_esp32_nvm_find_next_file_from_page(struct grid_esp32_nvm_model* nvm, uint8_t page, int* last_element, int* last_event) {
 
   while (true) {
 
@@ -421,8 +399,7 @@ int grid_esp32_nvm_find_next_file_from_page(struct grid_esp32_nvm_model *nvm,
   }
 }
 
-uint8_t grid_platform_get_actionstring_file_has_size(
-    union grid_ui_file_handle *file_handle) {
+uint8_t grid_platform_get_actionstring_file_has_size(union grid_ui_file_handle* file_handle) {
 
   if (strlen(file_handle->fname) != 0) {
     return 1;
@@ -431,24 +408,18 @@ uint8_t grid_platform_get_actionstring_file_has_size(
   }
 }
 
-void grid_platform_delete_actionstring_file(
-    union grid_ui_file_handle *file_handle) {
+void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle) {
 
   unlink(file_handle->fname);
   return;
 }
 
-uint8_t
-grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nvm,
-                                         uint8_t page, int *last_element,
-                                         int *last_event) {
+uint8_t grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model* nvm, uint8_t page, int* last_element, int* last_event) {
 
-  if (0 == grid_esp32_nvm_find_next_file_from_page(nvm, page, last_element,
-                                                   last_event)) {
+  if (0 == grid_esp32_nvm_find_next_file_from_page(nvm, page, last_element, last_event)) {
 
     char fname[50] = {0};
-    sprintf(fname, "/littlefs/%02x/%02x/%02x.cfg", page, *last_element,
-            *last_event);
+    sprintf(fname, "/littlefs/%02x/%02x/%02x.cfg", page, *last_element, *last_event);
     printf("Delete: %s\n", fname);
     unlink(fname);
 
@@ -458,15 +429,11 @@ grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model *nvm,
   return 1;
 }
 
-int grid_platform_find_next_actionstring_file(
-    uint8_t page, int *last_element, int *last_event,
-    union grid_ui_file_handle *file_handle) {
+int grid_platform_find_next_actionstring_file(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle) {
 
-  if (0 == grid_esp32_nvm_find_next_file_from_page(&grid_esp32_nvm_state, page,
-                                                   last_element, last_event)) {
+  if (0 == grid_esp32_nvm_find_next_file_from_page(&grid_esp32_nvm_state, page, last_element, last_event)) {
 
-    sprintf(file_handle->fname, "/littlefs/%02x/%02x/%02x.cfg", page,
-            *last_element, *last_event);
+    sprintf(file_handle->fname, "/littlefs/%02x/%02x/%02x.cfg", page, *last_element, *last_event);
 
     return 0;
   }
@@ -474,10 +441,9 @@ int grid_platform_find_next_actionstring_file(
   return 1;
 }
 
-uint16_t grid_platform_get_actionstring_file_size(
-    union grid_ui_file_handle *file_handle) {
+uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle) {
 
-  FILE *fp = fopen(file_handle->fname, "r");
+  FILE* fp = fopen(file_handle->fname, "r");
 
   if (fp) {
 
@@ -494,18 +460,16 @@ uint16_t grid_platform_get_actionstring_file_size(
   return 0;
 }
 
-uint32_t grid_platform_read_actionstring_file_contents(
-    union grid_ui_file_handle *file_handle, char *targetstring) {
+uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char* targetstring) {
 
   // ets_printf("READ FILE \r\n");
 
-  FILE *fp = fopen(file_handle->fname, "r");
+  FILE* fp = fopen(file_handle->fname, "r");
 
   if (fp) {
 
     fgets(targetstring, GRID_PARAMETER_ACTIONSTRING_maxlength, fp);
     fclose(fp);
-
   } else {
 
     ESP_LOGD(TAG, "FREAD NO FILE \r\n");
@@ -514,18 +478,13 @@ uint32_t grid_platform_read_actionstring_file_contents(
   return 0;
 }
 
-void grid_platform_write_actionstring_file(uint8_t page, uint8_t element,
-                                           uint8_t event_type, char *buffer,
-                                           uint16_t length) {
-
-  grid_esp32_nvm_save_config(&grid_esp32_nvm_state, page, element, event_type,
-                             buffer);
+void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length) {
+  grid_esp32_nvm_save_config(&grid_esp32_nvm_state, page, element, event_type, buffer);
 
   return;
 }
 
 uint8_t grid_platform_get_nvm_state() {
-
   return 1; // ready, always ready
 }
 
@@ -535,12 +494,8 @@ void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
   return;
 };
 
-uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page,
-                                                             int *last_element,
-                                                             int *last_event) {
-
-  return grid_esp32_nvm_clear_next_file_from_page(&grid_esp32_nvm_state, page,
-                                                  last_element, last_event);
+uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page, int* last_element, int* last_event) {
+  return grid_esp32_nvm_clear_next_file_from_page(&grid_esp32_nvm_state, page, last_element, last_event);
 };
 
 void grid_platform_delete_actionstring_files_all() {
@@ -565,7 +520,7 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset() {
 
 #include "grid_esp32_port.h"
 
-void grid_esp32_nvm_task(void *arg) {
+void grid_esp32_nvm_task(void* arg) {
 
   SemaphoreHandle_t nvm_or_port = (SemaphoreHandle_t)arg;
 
@@ -585,8 +540,7 @@ void grid_esp32_nvm_task(void *arg) {
       uint64_t time_start = grid_platform_rtc_get_micros();
       uint32_t counter = 0;
 
-      struct grid_port *ui_port = grid_transport_get_port_first_of_type(
-          &grid_transport_state, GRID_PORT_TYPE_UI);
+      struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
 
       do {
 
@@ -600,10 +554,8 @@ void grid_esp32_nvm_task(void *arg) {
         } else if (grid_ui_bulk_pageclear_is_in_progress(&grid_ui_state)) {
 
           grid_ui_bulk_pageclear_next(&grid_ui_state);
-        } else if (ui_port->rx_double_buffer_status == 0 &&
-                   grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)) {
+        } else if (ui_port->rx_double_buffer_status == 0 && grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)) {
           grid_ui_bulk_pageread_next(&grid_ui_state);
-
         } else {
           break;
         }
@@ -612,8 +564,7 @@ void grid_esp32_nvm_task(void *arg) {
 
         counter++;
 
-      } while (grid_platform_rtc_get_elapsed_time(time_start) <
-               time_max_duration);
+      } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration);
 
       xSemaphoreGive(nvm_or_port);
     }

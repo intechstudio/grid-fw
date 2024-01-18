@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-void grid_esp32_led_task(void *arg);
+void grid_esp32_led_task(void* arg);
 
 #ifdef __cplusplus
 }

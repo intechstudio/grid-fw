@@ -7,8 +7,7 @@
 
 #include "grid_d51.h"
 
-void grid_d51_bitmap_write_bit(uint8_t *buffer, uint8_t offset, uint8_t value,
-                               uint8_t *changed) {
+void grid_d51_bitmap_write_bit(uint8_t* buffer, uint8_t offset, uint8_t value, uint8_t* changed) {
 
   uint8_t index = offset / 8;
   uint8_t bit = offset % 8;
@@ -23,7 +22,6 @@ void grid_d51_bitmap_write_bit(uint8_t *buffer, uint8_t offset, uint8_t value,
 
       // no change needed
     }
-
   } else { // CLEAR BIT
 
     if ((buffer[index] & (1 << bit)) == (1 << bit)) {
@@ -113,14 +111,13 @@ void grid_d51_verify_user_row() {
 
     printf("System Reset\r\n");
     NVIC_SystemReset();
-
   } else {
 
     printf("Unchanged User Row\r\n");
   }
 }
 
-uint8_t grid_d51_boundary_scan(uint32_t *result_bitmap) {
+uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap) {
 
   result_bitmap[0] = 0;
   result_bitmap[1] = 0;
@@ -399,7 +396,7 @@ uint8_t grid_d51_boundary_scan(uint32_t *result_bitmap) {
   }
 }
 
-void grid_d51_boundary_scan_report(uint32_t *result_bitmap) {
+void grid_d51_boundary_scan_report(uint32_t* result_bitmap) {
 
   printf("test.mcu.ATSAMD51N20A\r\n");
   printf("test.hwcfg.%d\r\n", grid_platform_get_hwcfg(&grid_sys_state));
@@ -407,8 +404,7 @@ void grid_d51_boundary_scan_report(uint32_t *result_bitmap) {
   uint32_t uniqueid[4] = {0};
   grid_platform_get_id(uniqueid);
 
-  printf("test.serialno.%08x %08x %08x %08x\r\n", uniqueid[0], uniqueid[1],
-         uniqueid[2], uniqueid[3]);
+  printf("test.serialno.%08x %08x %08x %08x\r\n", uniqueid[0], uniqueid[1], uniqueid[2], uniqueid[3]);
 
   for (uint8_t i = 0; i < 4; i++) {
 
@@ -434,7 +430,6 @@ uint32_t grid_d51_dwt_enable() {
     GRID_D51_DEMCR |= 1 << 24;  // Set bit 24
     GRID_D51_DWT_CYCCNT = 0;
     GRID_D51_DWT_CTRL |= 1 << 0; // Set bit 0
-
   } else {
     printf("Debug Watch and Trace not supported!\r\n");
   }
@@ -446,49 +441,30 @@ void grid_d51_nvic_debug_priorities(void) {
 
   printf("Pri MASK    %d\r\n", grid_d51_nvic_get_interrupt_priority_mask());
 
-  printf("USB_0       %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(USB_0_IRQn));
-  printf("USB_1       %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(USB_1_IRQn));
-  printf("USB_2       %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(USB_2_IRQn));
-  printf("USB_3       %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(USB_3_IRQn));
+  printf("USB_0       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_0_IRQn));
+  printf("USB_1       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_1_IRQn));
+  printf("USB_2       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_2_IRQn));
+  printf("USB_3       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_3_IRQn));
 
-  printf("ADC0_0      %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(ADC0_0_IRQn));
-  printf("ADC0_1      %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(ADC0_1_IRQn));
+  printf("ADC0_0      %d\r\n", grid_d51_nvic_get_interrupt_priority(ADC0_0_IRQn));
+  printf("ADC0_1      %d\r\n", grid_d51_nvic_get_interrupt_priority(ADC0_1_IRQn));
 
-  printf("ADC1_0      %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(ADC1_0_IRQn));
-  printf("ADC1_1      %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(ADC1_1_IRQn));
+  printf("ADC1_0      %d\r\n", grid_d51_nvic_get_interrupt_priority(ADC1_0_IRQn));
+  printf("ADC1_1      %d\r\n", grid_d51_nvic_get_interrupt_priority(ADC1_1_IRQn));
 
-  printf("DMAC_0      %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(DMAC_0_IRQn));
-  printf("DMAC_1      %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(DMAC_1_IRQn));
-  printf("DMAC_2      %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(DMAC_2_IRQn));
-  printf("DMAC_3      %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(DMAC_3_IRQn));
-  printf("DMAC_4..31  %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(DMAC_4_IRQn));
+  printf("DMAC_0      %d\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_0_IRQn));
+  printf("DMAC_1      %d\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_1_IRQn));
+  printf("DMAC_2      %d\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_2_IRQn));
+  printf("DMAC_3      %d\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_3_IRQn));
+  printf("DMAC_4..31  %d\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_4_IRQn));
 
-  printf("SERCOM3 2   %d\r\n", grid_d51_nvic_get_interrupt_priority(
-                                   SERCOM3_2_IRQn)); // SPI_UI transfer complete
+  printf("SERCOM3 2   %d\r\n", grid_d51_nvic_get_interrupt_priority(SERCOM3_2_IRQn)); // SPI_UI transfer complete
 
-  printf("EVSYS_0     %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(EVSYS_0_IRQn));
-  printf("EVSYS_1     %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(EVSYS_1_IRQn));
-  printf("EVSYS_2     %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(EVSYS_2_IRQn));
-  printf("EVSYS_3     %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(EVSYS_3_IRQn));
-  printf("EVSYS_4..11 %d\r\n",
-         grid_d51_nvic_get_interrupt_priority(EVSYS_4_IRQn));
+  printf("EVSYS_0     %d\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_0_IRQn));
+  printf("EVSYS_1     %d\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_1_IRQn));
+  printf("EVSYS_2     %d\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_2_IRQn));
+  printf("EVSYS_3     %d\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_3_IRQn));
+  printf("EVSYS_4..11 %d\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_4_IRQn));
 }
 
 void grid_d51_nvic_set_interrupt_priority(IRQn_Type irqn, uint32_t priority) {
@@ -506,19 +482,13 @@ uint32_t grid_d51_nvic_get_interrupt_priority(IRQn_Type irqn) {
   return NVIC_GetPriority(irqn);
 }
 
-void grid_d51_nvic_set_interrupt_priority_mask(uint32_t priority) {
+void grid_d51_nvic_set_interrupt_priority_mask(uint32_t priority) { __set_BASEPRI(priority << (8 - __NVIC_PRIO_BITS)); }
 
-  __set_BASEPRI(priority << (8 - __NVIC_PRIO_BITS));
-}
-
-uint32_t grid_d51_nvic_get_interrupt_priority_mask(void) {
-
-  return __get_BASEPRI() >> (8 - __NVIC_PRIO_BITS);
-}
+uint32_t grid_d51_nvic_get_interrupt_priority_mask(void) { return __get_BASEPRI() >> (8 - __NVIC_PRIO_BITS); }
 
 uint32_t grid_d51_dwt_cycles_read() { return GRID_D51_DWT_CYCCNT; }
 
-uint8_t grid_fusb302_read_id(struct io_descriptor *i2c_io) {
+uint8_t grid_fusb302_read_id(struct io_descriptor* i2c_io) {
 
   printf("fusb start\r\n");
 
@@ -530,7 +500,7 @@ uint8_t grid_fusb302_read_id(struct io_descriptor *i2c_io) {
 
     const uint16_t n = 1;
 
-    struct i2c_m_async_desc *i2c = &SYS_I2C;
+    struct i2c_m_async_desc* i2c = &SYS_I2C;
     struct _i2c_m_msg msg;
     int32_t ret;
 
@@ -567,7 +537,7 @@ uint8_t grid_fusb302_read_id(struct io_descriptor *i2c_io) {
   }
 }
 
-uint8_t grid_mxt144u_read_id(struct io_descriptor *i2c_io) {
+uint8_t grid_mxt144u_read_id(struct io_descriptor* i2c_io) {
 
   printf("mxt start\r\n");
 
@@ -577,7 +547,7 @@ uint8_t grid_mxt144u_read_id(struct io_descriptor *i2c_io) {
 
     i2c_m_async_set_slaveaddr(&SYS_I2C, 0x4a, I2C_M_SEVEN);
 
-    struct i2c_m_async_desc *i2c = &SYS_I2C;
+    struct i2c_m_async_desc* i2c = &SYS_I2C;
     struct _i2c_m_msg msg;
     int32_t ret;
 
@@ -609,12 +579,11 @@ uint8_t grid_mxt144u_read_id(struct io_descriptor *i2c_io) {
       ;
     }
 
-    printf("I2C: %d %d %d %d %d %d %d %d \r\n", buffer[0], buffer[1], buffer[2],
-           buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
+    printf("I2C: %d %d %d %d %d %d %d %d \r\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
   }
 }
 
-void grid_platform_printf(char const *fmt, ...) {
+void grid_platform_printf(char const* fmt, ...) {
 
   va_list ap;
   va_start(ap, fmt);
@@ -622,12 +591,12 @@ void grid_platform_printf(char const *fmt, ...) {
   va_end(ap);
 }
 
-uint32_t grid_platform_get_id(uint32_t *return_array) {
+uint32_t grid_platform_get_id(uint32_t* return_array) {
 
-  return_array[0] = *(uint32_t *)(GRID_D51_UNIQUE_ID_ADDRESS_0);
-  return_array[1] = *(uint32_t *)(GRID_D51_UNIQUE_ID_ADDRESS_1);
-  return_array[2] = *(uint32_t *)(GRID_D51_UNIQUE_ID_ADDRESS_2);
-  return_array[3] = *(uint32_t *)(GRID_D51_UNIQUE_ID_ADDRESS_3);
+  return_array[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);
+  return_array[1] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_1);
+  return_array[2] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_2);
+  return_array[3] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_3);
 
   return 1;
 }
@@ -650,8 +619,7 @@ uint32_t grid_platform_get_hwcfg() {
 
   uint8_t hwcfg_value = 0;
 
-  for (uint8_t i = 0; i < 8;
-       i++) { // now we need to shift in the remaining 7 values
+  for (uint8_t i = 0; i < 8; i++) { // now we need to shift in the remaining 7 values
 
     // SHIFT DATA
     gpio_set_pin_level(HWCFG_SHIFT,
@@ -661,7 +629,6 @@ uint32_t grid_platform_get_hwcfg() {
     if (gpio_get_pin_level(HWCFG_DATA)) {
 
       hwcfg_value |= (1 << i);
-
     } else {
     }
 
@@ -681,19 +648,13 @@ uint32_t grid_platform_get_hwcfg() {
 
 uint8_t grid_platform_get_random_8() { return rand_sync_read8(&RAND_0); }
 
-void grid_platform_delay_ms(uint32_t delay_milliseconds) {
-  delay_ms(delay_milliseconds);
-}
+void grid_platform_delay_ms(uint32_t delay_milliseconds) { delay_ms(delay_milliseconds); }
 
-uint8_t grid_platform_get_reset_cause() {
+uint8_t grid_platform_get_reset_cause() { return hri_rstc_read_RCAUSE_reg(RSTC); }
 
-  return hri_rstc_read_RCAUSE_reg(RSTC);
-}
+uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length) {
 
-uint8_t grid_platform_send_grid_message(uint8_t direction, char *buffer,
-                                        uint16_t length) {
-
-  struct io_descriptor *io_descr;
+  struct io_descriptor* io_descr;
 
   if (direction == GRID_CONST_NORTH) {
     usart_async_get_io_descriptor(&USART_NORTH, &io_descr);
@@ -751,12 +712,9 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
   }
 }
 
-int grid_platform_find_actionstring_file(
-    uint8_t page, uint8_t element, uint8_t event_type,
-    union grid_ui_file_handle *file_handle) {
+int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle) {
 
-  file_handle->toc_ptr = grid_d51_nvm_toc_entry_find(&grid_d51_nvm_state, page,
-                                                     element, event_type);
+  file_handle->toc_ptr = grid_d51_nvm_toc_entry_find(&grid_d51_nvm_state, page, element, event_type);
   if (file_handle->toc_ptr != NULL) {
     return 0; // success
   }
@@ -764,19 +722,15 @@ int grid_platform_find_actionstring_file(
   return 1; // not found
 }
 
-uint16_t grid_platform_get_actionstring_file_size(
-    union grid_ui_file_handle *file_handle) {
+uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle) {
 
-  struct grid_d51_nvm_toc_entry *entry =
-      (struct grid_d51_nvm_toc_entry *)file_handle->toc_ptr;
+  struct grid_d51_nvm_toc_entry* entry = (struct grid_d51_nvm_toc_entry*)file_handle->toc_ptr;
   return entry->config_string_length;
 }
 
-uint8_t grid_platform_get_actionstring_file_has_size(
-    union grid_ui_file_handle *file_handle) {
+uint8_t grid_platform_get_actionstring_file_has_size(union grid_ui_file_handle* file_handle) {
 
-  struct grid_d51_nvm_toc_entry *entry =
-      (struct grid_d51_nvm_toc_entry *)file_handle->toc_ptr;
+  struct grid_d51_nvm_toc_entry* entry = (struct grid_d51_nvm_toc_entry*)file_handle->toc_ptr;
 
   if (entry->config_string_length) {
     return 1;
@@ -785,43 +739,27 @@ uint8_t grid_platform_get_actionstring_file_has_size(
   }
 }
 
-uint32_t grid_platform_read_actionstring_file_contents(
-    union grid_ui_file_handle *file_handle, char *targetstring) {
-
-  return grid_d51_nvm_toc_generate_actionstring(
-      &grid_d51_nvm_state,
-      (struct grid_d51_nvm_toc_entry *)file_handle->toc_ptr, targetstring);
+uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char* targetstring) {
+  return grid_d51_nvm_toc_generate_actionstring(&grid_d51_nvm_state, (struct grid_d51_nvm_toc_entry*)file_handle->toc_ptr, targetstring);
 }
 
-void grid_platform_delete_actionstring_file(
-    union grid_ui_file_handle *file_handle) {
+void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle) {
 
-  struct grid_d51_nvm_toc_entry *entry =
-      (struct grid_d51_nvm_toc_entry *)file_handle->toc_ptr;
-  grid_d51_nvm_config_store(&grid_d51_nvm_state, entry->page_id,
-                            entry->element_id, entry->event_type, "");
+  struct grid_d51_nvm_toc_entry* entry = (struct grid_d51_nvm_toc_entry*)file_handle->toc_ptr;
+  grid_d51_nvm_config_store(&grid_d51_nvm_state, entry->page_id, entry->element_id, entry->event_type, "");
 }
 
-void grid_platform_write_actionstring_file(uint8_t page, uint8_t element,
-                                           uint8_t event_type, char *buffer,
-                                           uint16_t length) {
-
-  grid_d51_nvm_config_store(&grid_d51_nvm_state, page, element, event_type,
-                            buffer);
+void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length) {
+  grid_d51_nvm_config_store(&grid_d51_nvm_state, page, element, event_type, buffer);
 }
 
-uint8_t grid_platform_get_nvm_state() {
+uint8_t grid_platform_get_nvm_state() { return grid_d51_nvm_is_ready(&grid_d51_nvm_state); }
 
-  return grid_d51_nvm_is_ready(&grid_d51_nvm_state);
-}
-
-uint32_t grid_plaform_get_nvm_nextwriteoffset() {
-  return grid_d51_nvm_state.next_write_offset;
-}
+uint32_t grid_plaform_get_nvm_nextwriteoffset() { return grid_d51_nvm_state.next_write_offset; }
 
 void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
 
-  struct grid_d51_nvm_toc_entry *current = grid_d51_nvm_state.toc_head;
+  struct grid_d51_nvm_toc_entry* current = grid_d51_nvm_state.toc_head;
 
   while (current != NULL) {
     if (current->page_id == page) {
@@ -833,11 +771,9 @@ void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
   }
 }
 
-uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page,
-                                                             int *last_element,
-                                                             int *last_event) {
+uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page, int* last_element, int* last_event) {
 
-  struct grid_d51_nvm_toc_entry *current = grid_d51_nvm_state.toc_head;
+  struct grid_d51_nvm_toc_entry* current = grid_d51_nvm_state.toc_head;
 
   while (current != NULL) {
     if (current->page_id == page) {
@@ -856,7 +792,7 @@ void grid_platform_delete_actionstring_files_all() {
 
   grid_d51_nvm_state.erase_bulk_address = GRID_D51_NVM_LOCAL_BASE_ADDRESS;
 
-  struct grid_d51_nvm_toc_entry *current = grid_d51_nvm_state.toc_head;
+  struct grid_d51_nvm_toc_entry* current = grid_d51_nvm_state.toc_head;
 
   while (current != NULL) {
     grid_d51_nvm_toc_entry_destroy(&grid_d51_nvm_state, current);
@@ -866,18 +802,15 @@ void grid_platform_delete_actionstring_files_all() {
 
 uint8_t grid_platform_erase_nvm_next() {
 
-  if (grid_d51_nvm_state.erase_bulk_address <
-      GRID_D51_NVM_LOCAL_END_ADDRESS) { // erase is in progress
+  if (grid_d51_nvm_state.erase_bulk_address < GRID_D51_NVM_LOCAL_END_ADDRESS) { // erase is in progress
 
     // CRITICAL_SECTION_ENTER()
-    flash_erase(grid_d51_nvm_state.flash, grid_d51_nvm_state.erase_bulk_address,
-                GRID_D51_NVM_BLOCK_SIZE / GRID_D51_NVM_PAGE_SIZE);
+    flash_erase(grid_d51_nvm_state.flash, grid_d51_nvm_state.erase_bulk_address, GRID_D51_NVM_BLOCK_SIZE / GRID_D51_NVM_PAGE_SIZE);
     // CRITICAL_SECTION_LEAVE()
 
     grid_d51_nvm_state.erase_bulk_address += GRID_D51_NVM_BLOCK_SIZE;
 
     return 1;
-
   } else {
 
     return 0;
@@ -886,10 +819,7 @@ uint8_t grid_platform_erase_nvm_next() {
 
 void grid_platform_system_reset() { NVIC_SystemReset(); }
 
-void grid_platform_nvm_defrag() {
-
-  grid_d51_nvm_toc_defragment(&grid_d51_nvm_state);
-}
+void grid_platform_nvm_defrag() { grid_d51_nvm_toc_defragment(&grid_d51_nvm_state); }
 
 uint8_t grid_platform_get_adc_bit_depth() { return 16; }
 
@@ -899,18 +829,15 @@ void grid_platform_rtc_set_micros(uint64_t mic) { micros = mic; }
 
 uint64_t grid_platform_rtc_get_micros(void) { return micros; }
 
-uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) {
-
-  return grid_platform_rtc_get_micros() - told;
-}
+uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) { return grid_platform_rtc_get_micros() - told; }
 
 uint32_t grid_platform_get_cycles() { return grid_d51_dwt_cycles_read(); }
 
 uint32_t grid_platform_get_cycles_per_us() { return 120; }
 
-void *grid_platform_allocate_volatile(size_t size) {
+void* grid_platform_allocate_volatile(size_t size) {
 
-  void *handle = malloc(size);
+  void* handle = malloc(size);
   if (handle == NULL) {
 
     printf("MALLOC FAILED");

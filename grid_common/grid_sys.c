@@ -9,7 +9,7 @@
 
 struct grid_sys_model grid_sys_state;
 
-void grid_sys_init(struct grid_sys_model *mod) {
+void grid_sys_init(struct grid_sys_model* mod) {
 
   // PLATFORM SPECIFIC INITIALIZERS
 
@@ -70,62 +70,30 @@ void grid_sys_init(struct grid_sys_model *mod) {
   mod->editor_connected = 0;
 }
 
-uint8_t grid_sys_get_bank_num(struct grid_sys_model *mod) {
+uint8_t grid_sys_get_bank_num(struct grid_sys_model* mod) { return mod->bank_activebank_number; }
 
-  return mod->bank_activebank_number;
-}
+uint8_t grid_sys_get_editor_connected_state(struct grid_sys_model* mod) { return mod->editor_connected; }
+void grid_sys_set_editor_connected_state(struct grid_sys_model* mod, uint8_t state) { mod->editor_connected = state; }
 
-uint8_t grid_sys_get_editor_connected_state(struct grid_sys_model *mod) {
-  return mod->editor_connected;
-}
-void grid_sys_set_editor_connected_state(struct grid_sys_model *mod,
-                                         uint8_t state) {
-  mod->editor_connected = state;
-}
+uint8_t grid_sys_get_midirx_any_state(struct grid_sys_model* mod) { return mod->midirx_any_enabled; }
+uint8_t grid_sys_get_midirx_sync_state(struct grid_sys_model* mod) { return mod->midirx_sync_enabled; }
 
-uint8_t grid_sys_get_midirx_any_state(struct grid_sys_model *mod) {
-  return mod->midirx_any_enabled;
-}
-uint8_t grid_sys_get_midirx_sync_state(struct grid_sys_model *mod) {
-  return mod->midirx_sync_enabled;
-}
+void grid_sys_set_midirx_any_state(struct grid_sys_model* mod, uint8_t state) { mod->midirx_any_enabled = state; }
+void grid_sys_set_midirx_sync_state(struct grid_sys_model* mod, uint8_t state) { mod->midirx_sync_enabled = state; }
 
-void grid_sys_set_midirx_any_state(struct grid_sys_model *mod, uint8_t state) {
-  mod->midirx_any_enabled = state;
-}
-void grid_sys_set_midirx_sync_state(struct grid_sys_model *mod, uint8_t state) {
-  mod->midirx_sync_enabled = state;
-}
+uint8_t grid_sys_get_module_x(struct grid_sys_model* mod) { return mod->module_x; }
+uint8_t grid_sys_get_module_y(struct grid_sys_model* mod) { return mod->module_y; }
+uint8_t grid_sys_get_module_rot(struct grid_sys_model* mod) { return mod->module_rot; }
 
-uint8_t grid_sys_get_module_x(struct grid_sys_model *mod) {
-  return mod->module_x;
-}
-uint8_t grid_sys_get_module_y(struct grid_sys_model *mod) {
-  return mod->module_y;
-}
-uint8_t grid_sys_get_module_rot(struct grid_sys_model *mod) {
-  return mod->module_rot;
-}
+void grid_sys_set_module_x(struct grid_sys_model* mod, uint8_t x) { mod->module_x = x; }
+void grid_sys_set_module_y(struct grid_sys_model* mod, uint8_t y) { mod->module_y = y; }
+void grid_sys_set_module_rot(struct grid_sys_model* mod, uint8_t rot) { mod->module_rot = rot; }
 
-void grid_sys_set_module_x(struct grid_sys_model *mod, uint8_t x) {
-  mod->module_x = x;
-}
-void grid_sys_set_module_y(struct grid_sys_model *mod, uint8_t y) {
-  mod->module_y = y;
-}
-void grid_sys_set_module_rot(struct grid_sys_model *mod, uint8_t rot) {
-  mod->module_rot = rot;
-}
-
-void grid_sys_set_module_absolute_position(struct grid_sys_model *mod,
-                                           uint8_t sx, uint8_t sy, uint8_t rot,
-                                           uint8_t portrot) {
+void grid_sys_set_module_absolute_position(struct grid_sys_model* mod, uint8_t sx, uint8_t sy, uint8_t rot, uint8_t portrot) {
 
   // from usb connected module
-  int8_t received_sx =
-      sx - GRID_PARAMETER_DEFAULT_POSITION; // convert to signed ind
-  int8_t received_sy =
-      sy - GRID_PARAMETER_DEFAULT_POSITION; // convert to signed ind
+  int8_t received_sx = sx - GRID_PARAMETER_DEFAULT_POSITION; // convert to signed ind
+  int8_t received_sy = sy - GRID_PARAMETER_DEFAULT_POSITION; // convert to signed ind
   int8_t rotated_sx = 0;
   int8_t rotated_sy = 0;
 
@@ -158,35 +126,17 @@ void grid_sys_set_module_absolute_position(struct grid_sys_model *mod,
   grid_sys_set_module_rot(&grid_sys_state, rot);
 }
 
-uint8_t grid_sys_get_bank_red(struct grid_sys_model *mod) {
+uint8_t grid_sys_get_bank_red(struct grid_sys_model* mod) { return mod->bank_activebank_color_r; }
 
-  return mod->bank_activebank_color_r;
-}
+uint8_t grid_sys_get_bank_gre(struct grid_sys_model* mod) { return mod->bank_activebank_color_g; }
 
-uint8_t grid_sys_get_bank_gre(struct grid_sys_model *mod) {
+uint8_t grid_sys_get_bank_blu(struct grid_sys_model* mod) { return mod->bank_activebank_color_b; }
 
-  return mod->bank_activebank_color_g;
-}
+void grid_sys_set_bank_red(struct grid_sys_model* mod, uint8_t red) { mod->bank_activebank_color_r = red; }
+void grid_sys_set_bank_gre(struct grid_sys_model* mod, uint8_t gre) { mod->bank_activebank_color_g = gre; }
+void grid_sys_set_bank_blu(struct grid_sys_model* mod, uint8_t blu) { mod->bank_activebank_color_b = blu; }
 
-uint8_t grid_sys_get_bank_blu(struct grid_sys_model *mod) {
-
-  return mod->bank_activebank_color_b;
-}
-
-void grid_sys_set_bank_red(struct grid_sys_model *mod, uint8_t red) {
-
-  mod->bank_activebank_color_r = red;
-}
-void grid_sys_set_bank_gre(struct grid_sys_model *mod, uint8_t gre) {
-
-  mod->bank_activebank_color_g = gre;
-}
-void grid_sys_set_bank_blu(struct grid_sys_model *mod, uint8_t blu) {
-
-  mod->bank_activebank_color_b = blu;
-}
-
-uint8_t grid_sys_get_bank_next(struct grid_sys_model *mod) {
+uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod) {
 
   uint8_t current_active = grid_sys_get_bank_num(mod);
 
@@ -203,7 +153,7 @@ uint8_t grid_sys_get_bank_next(struct grid_sys_model *mod) {
   return current_active;
 }
 
-void grid_sys_set_bank(struct grid_sys_model *mod, uint8_t banknumber) {
+void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t banknumber) {
 
   if (banknumber == 255) {
 
@@ -215,7 +165,6 @@ void grid_sys_set_bank(struct grid_sys_model *mod, uint8_t banknumber) {
     mod->bank_activebank_color_r = 127;
     mod->bank_activebank_color_g = 127;
     mod->bank_activebank_color_b = 127;
-
   } else if (banknumber < GRID_SYS_BANK_MAXNUMBER) {
 
     mod->bank_init_flag = 1;
@@ -227,27 +176,22 @@ void grid_sys_set_bank(struct grid_sys_model *mod, uint8_t banknumber) {
 
       mod->bank_active_changed = 1;
 
-      mod->bank_activebank_color_r =
-          mod->bank_color_r[mod->bank_activebank_number];
-      mod->bank_activebank_color_g =
-          mod->bank_color_g[mod->bank_activebank_number];
-      mod->bank_activebank_color_b =
-          mod->bank_color_b[mod->bank_activebank_number];
-
+      mod->bank_activebank_color_r = mod->bank_color_r[mod->bank_activebank_number];
+      mod->bank_activebank_color_g = mod->bank_color_g[mod->bank_activebank_number];
+      mod->bank_activebank_color_b = mod->bank_color_b[mod->bank_activebank_number];
     } else {
 
       // grid_debug_print_text("NOT ENABLED");
     }
-
   } else {
 
     // grid_debug_print_text("Invalid Bank Number");
   }
 }
 
-uint32_t grid_sys_get_hwcfg(struct grid_sys_model *mod) { return mod->hwfcg; }
+uint32_t grid_sys_get_hwcfg(struct grid_sys_model* mod) { return mod->hwfcg; }
 
-uint32_t grid_sys_get_id(struct grid_sys_model *mod, uint32_t *return_array) {
+uint32_t grid_sys_get_id(struct grid_sys_model* mod, uint32_t* return_array) {
 
   return_array[0] = mod->uniqueid_array[0];
   return_array[1] = mod->uniqueid_array[1];

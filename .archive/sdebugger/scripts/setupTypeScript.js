@@ -23,24 +23,16 @@ const {argv} = require("process")
 const projectRoot = argv[2] || path.join(__dirname, "..")
 
 // Add deps to pkg.json
-const packageJSON =
-    JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"))
-packageJSON.devDependencies = Object.assign(packageJSON.devDependencies, {
-  "svelte-check" : "^1.0.0",
-  "svelte-preprocess" : "^4.0.0",
-  "@rollup/plugin-typescript" : "^6.0.0",
-  "typescript" : "^3.9.3",
-  "tslib" : "^2.0.0",
-  "@tsconfig/svelte" : "^1.0.0"
-})
+const packageJSON = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"))
+packageJSON.devDependencies =
+    Object.assign(packageJSON.devDependencies,
+                  {"svelte-check" : "^1.0.0", "svelte-preprocess" : "^4.0.0", "@rollup/plugin-typescript" : "^6.0.0", "typescript" : "^3.9.3", "tslib" : "^2.0.0", "@tsconfig/svelte" : "^1.0.0"})
 
 // Add script for checking
-packageJSON.scripts =
-    Object.assign(packageJSON.scripts, {"validate" : "svelte-check"})
+packageJSON.scripts = Object.assign(packageJSON.scripts, {"validate" : "svelte-check"})
 
 // Write the package JSON
-fs.writeFileSync(path.join(projectRoot, "package.json"),
-                 JSON.stringify(packageJSON, null, "  "))
+fs.writeFileSync(path.join(projectRoot, "package.json"), JSON.stringify(packageJSON, null, "  "))
 
 // mv src/main.js to main.ts - note, we need to edit rollup.config.js for this
 // too
@@ -60,8 +52,7 @@ const rollupConfigPath = path.join(projectRoot, "rollup.config.js")
 let rollupConfig = fs.readFileSync(rollupConfigPath, "utf8")
 
 // Edit imports
-rollupConfig =
-    rollupConfig.replace(`'rollup-plugin-terser';`, `'rollup-plugin-terser';
+rollupConfig = rollupConfig.replace(`'rollup-plugin-terser';`, `'rollup-plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
 import typescript from '@rollup/plugin-typescript';`)
 
@@ -69,14 +60,10 @@ import typescript from '@rollup/plugin-typescript';`)
 rollupConfig = rollupConfig.replace(`'src/main.js'`, `'src/main.ts'`)
 
 // Add preprocessor
-rollupConfig = rollupConfig.replace(
-    'compilerOptions:',
-    'preprocess: sveltePreprocess({ sourceMap: !production }),\n\t\t\tcompilerOptions:');
+rollupConfig = rollupConfig.replace('compilerOptions:', 'preprocess: sveltePreprocess({ sourceMap: !production }),\n\t\t\tcompilerOptions:');
 
 // Add TypeScript
-rollupConfig = rollupConfig.replace(
-    'commonjs(),',
-    'commonjs(),\n\t\ttypescript({\n\t\t\tsourceMap: !production,\n\t\t\tinlineSources: !production\n\t\t}),');
+rollupConfig = rollupConfig.replace('commonjs(),', 'commonjs(),\n\t\ttypescript({\n\t\t\tsourceMap: !production,\n\t\t\tinlineSources: !production\n\t\t}),');
 fs.writeFileSync(rollupConfigPath, rollupConfig)
 
 // Add TSConfig
@@ -117,6 +104,5 @@ fs.writeFileSync(path.join(projectRoot, ".vscode", "extensions.json"), `{
 console.log("Converted to TypeScript.")
 
 if (fs.existsSync(path.join(projectRoot, "node_modules"))) {
-  console.log(
-      "\nYou will need to re-run your dependency manager to get started.")
+  console.log("\nYou will need to re-run your dependency manager to get started.")
 }

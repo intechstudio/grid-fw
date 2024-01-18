@@ -76,12 +76,12 @@
 #include "../../grid_common/lua-5.4.3/src/lua.h"
 #include "../../grid_common/lua-5.4.3/src/lualib.h"
 
-static const char *TAG = "main";
+static const char* TAG = "main";
 
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 
-static void periodic_rtc_ms_cb(void *arg) {
+static void periodic_rtc_ms_cb(void* arg) {
 
   grid_ui_rtc_ms_tick_time(&grid_ui_state);
 
@@ -92,15 +92,11 @@ static void periodic_rtc_ms_cb(void *arg) {
   }
 }
 
-void system_init_core_2_task(void *arg) {
+void system_init_core_2_task(void* arg) {
 
-  grid_esp32_swd_pico_pins_init(GRID_ESP32_PINS_RP_SWCLK,
-                                GRID_ESP32_PINS_RP_SWDIO,
-                                GRID_ESP32_PINS_RP_CLOCK);
+  grid_esp32_swd_pico_pins_init(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, GRID_ESP32_PINS_RP_CLOCK);
   grid_esp32_swd_pico_clock_init(LEDC_TIMER_0, LEDC_CHANNEL_0);
-  grid_esp32_swd_pico_program_sram(GRID_ESP32_PINS_RP_SWCLK,
-                                   GRID_ESP32_PINS_RP_SWDIO, pico_firmware,
-                                   pico_firmware_len);
+  grid_esp32_swd_pico_program_sram(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, pico_firmware, pico_firmware_len);
 
   vTaskSuspend(NULL);
 }
@@ -155,16 +151,13 @@ void app_main(void) {
   grid_led_set_pin(&grid_led_state, led_pin);
 
   TaskHandle_t led_task_hdl;
-  xTaskCreatePinnedToCore(grid_esp32_led_task, "led", 1024 * 3, NULL,
-                          LED_TASK_PRIORITY, &led_task_hdl, 0);
+  xTaskCreatePinnedToCore(grid_esp32_led_task, "led", 1024 * 3, NULL, LED_TASK_PRIORITY, &led_task_hdl, 0);
 
   TaskHandle_t usb_task_hdl;
-  xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6,
-                          &usb_task_hdl, 1);
+  xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6, &usb_task_hdl, 1);
 
   TaskHandle_t core2_task_hdl;
-  xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024 * 3, NULL,
-                          4, &core2_task_hdl, 1);
+  xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024 * 3, NULL, 4, &core2_task_hdl, 1);
 
   // GRID MODULE INITIALIZATION SEQUENCE
 
@@ -198,14 +191,10 @@ void app_main(void) {
 
   grid_transport_init(&grid_transport_state);
 
-  grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_NORTH,
-                 0);
-  grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_EAST,
-                 0);
-  grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_SOUTH,
-                 0);
-  grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_WEST,
-                 0);
+  grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_NORTH, 0);
+  grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_EAST, 0);
+  grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_SOUTH, 0);
+  grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USART, GRID_CONST_WEST, 0);
 
   grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_UI, 0, 1);
   grid_port_init(grid_port_allocate(), GRID_PORT_TYPE_USB, 0, 0);
@@ -227,37 +216,21 @@ void app_main(void) {
 
   TaskHandle_t module_task_hdl;
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD) {
-    xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024 * 4,
-                            (void *)nvm_or_port, MODULE_TASK_PRIORITY,
-                            &module_task_hdl, 0);
+    xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024 * 4, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD) {
-    xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024 * 3,
-                            (void *)nvm_or_port, MODULE_TASK_PRIORITY,
-                            &module_task_hdl, 0);
+    xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024 * 3, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD) {
-    xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024 * 3,
-                            (void *)nvm_or_port, MODULE_TASK_PRIORITY,
-                            &module_task_hdl, 0);
+    xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024 * 3, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD) {
-    xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024 * 4,
-                            (void *)nvm_or_port, MODULE_TASK_PRIORITY,
-                            &module_task_hdl, 0);
+    xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024 * 4, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD) {
-    xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024 * 4,
-                            (void *)nvm_or_port, MODULE_TASK_PRIORITY,
-                            &module_task_hdl, 0);
+    xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024 * 4, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD) {
-    xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024 * 4,
-                            (void *)nvm_or_port, MODULE_TASK_PRIORITY,
-                            &module_task_hdl, 0);
+    xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024 * 4, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA) {
-    xTaskCreatePinnedToCore(grid_esp32_module_tek2_task, "tek2", 1024 * 4,
-                            (void *)nvm_or_port, MODULE_TASK_PRIORITY,
-                            &module_task_hdl, 0);
+    xTaskCreatePinnedToCore(grid_esp32_module_tek2_task, "tek2", 1024 * 4, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
-    xTaskCreatePinnedToCore(grid_esp32_module_pb44_task, "pb44", 1024 * 3,
-                            (void *)nvm_or_port, MODULE_TASK_PRIORITY,
-                            &module_task_hdl, 0);
+    xTaskCreatePinnedToCore(grid_esp32_module_pb44_task, "pb44", 1024 * 3, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else {
     printf("Init Module: Unknown Module\r\n");
   }
@@ -274,43 +247,33 @@ void app_main(void) {
   TaskHandle_t port_task_hdl;
 
   // Create the class driver task
-  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 4096 * 10,
-                          (void *)nvm_or_port, PORT_TASK_PRIORITY,
-                          &port_task_hdl, 1);
+  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 4096 * 10, (void*)nvm_or_port, PORT_TASK_PRIORITY, &port_task_hdl, 1);
 
   ESP_LOGI(TAG, "===== PORT TASK DONE =====");
 
   // Create the class driver task
 
-  xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 5,
-                          (void *)nvm_or_port, NVM_TASK_PRIORITY, &nvm_task_hdl,
-                          0);
+  xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 5, (void*)nvm_or_port, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
 
   TaskHandle_t housekeeping_task_hdl;
 
   ESP_LOGI(TAG, "===== NVM TASK DONE =====");
 
   // Create the class driver task
-  xTaskCreatePinnedToCore(grid_esp32_housekeeping_task, "housekeeping",
-                          1024 * 6, (void *)signaling_sem, 6,
-                          &housekeeping_task_hdl, 0);
+  xTaskCreatePinnedToCore(grid_esp32_housekeeping_task, "housekeeping", 1024 * 6, (void*)signaling_sem, 6, &housekeeping_task_hdl, 0);
 
   TaskHandle_t grid_trace_report_task_hdl;
 
   ESP_LOGI(TAG, "===== HOUSE TASK DONE =====");
 
-  xTaskCreatePinnedToCore(grid_trace_report_task, "trace", 1024 * 4,
-                          (void *)signaling_sem, 6, &grid_trace_report_task_hdl,
-                          1);
+  xTaskCreatePinnedToCore(grid_trace_report_task, "trace", 1024 * 4, (void*)signaling_sem, 6, &grid_trace_report_task_hdl, 1);
 
   ESP_LOGI(TAG, "===== REPORT TASK DONE =====");
 
-  esp_timer_create_args_t periodic_rtc_ms_args = {
-      .callback = &periodic_rtc_ms_cb, .name = "rtc millisecond"};
+  esp_timer_create_args_t periodic_rtc_ms_args = {.callback = &periodic_rtc_ms_cb, .name = "rtc millisecond"};
 
   esp_timer_handle_t periodic_rtc_ms_timer;
-  ESP_ERROR_CHECK(
-      esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
+  ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
   ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 1000));
 
   grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);

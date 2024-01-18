@@ -38,10 +38,8 @@
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
-extern const uint8_t
-    ulp_grid_esp32_adc_bin_start[] asm("_binary_ulp_grid_esp32_adc_bin_start");
-extern const uint8_t
-    ulp_grid_esp32_adc_bin_end[] asm("_binary_ulp_grid_esp32_adc_bin_end");
+extern const uint8_t ulp_grid_esp32_adc_bin_start[] asm("_binary_ulp_grid_esp32_adc_bin_start");
+extern const uint8_t ulp_grid_esp32_adc_bin_end[] asm("_binary_ulp_grid_esp32_adc_bin_end");
 
 static void init_ulp_program(void);
 
@@ -54,8 +52,7 @@ extern uint32_t ulp_lock;
 
 struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
-void grid_esp32_adc_mux_init(struct grid_esp32_adc_model *adc,
-                             uint8_t mux_overflow) {
+void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overflow) {
 
   gpio_set_direction(GRID_ESP32_PINS_MUX_0_A, GPIO_MODE_OUTPUT);
   gpio_set_direction(GRID_ESP32_PINS_MUX_0_B, GPIO_MODE_OUTPUT);
@@ -76,12 +73,12 @@ void grid_esp32_adc_mux_init(struct grid_esp32_adc_model *adc,
   adc->mux_overflow = mux_overflow;
 }
 
-void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model *adc) {
+void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc) {
   adc->mux_index++;
   adc->mux_index %= adc->mux_overflow;
 }
 
-void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model *adc) {
+void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc) {
 
   gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_A, adc->mux_index / 1 % 2);
   gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_B, adc->mux_index / 2 % 2);
@@ -92,15 +89,10 @@ void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model *adc) {
   gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_C, adc->mux_index / 4 % 2);
 }
 
-uint8_t IRAM_ATTR
-grid_esp32_adc_mux_get_index(struct grid_esp32_adc_model *adc) {
-  return adc->mux_index;
-}
+uint8_t IRAM_ATTR grid_esp32_adc_mux_get_index(struct grid_esp32_adc_model* adc) { return adc->mux_index; }
 
 static void init_ulp_program(void) {
-  esp_err_t err = ulp_riscv_load_binary(
-      ulp_grid_esp32_adc_bin_start,
-      (ulp_grid_esp32_adc_bin_end - ulp_grid_esp32_adc_bin_start));
+  esp_err_t err = ulp_riscv_load_binary(ulp_grid_esp32_adc_bin_start, (ulp_grid_esp32_adc_bin_end - ulp_grid_esp32_adc_bin_start));
   ESP_ERROR_CHECK(err);
 
   /* The first argument is the period index, which is not used by the ULP-RISC-V
@@ -131,15 +123,14 @@ static esp_err_t ulp_riscv_adc_init2(void) {
       .atten = ADC_ATTEN_DB_11,
   };
 
-  const ulp_riscv_adc_cfg_t *cfg = &cfg_in;
+  const ulp_riscv_adc_cfg_t* cfg = &cfg_in;
 
   esp_err_t ret = ESP_OK;
 
-  const char *TAG = "ulp_riscv_adc2";
+  const char* TAG = "ulp_riscv_adc2";
 
   ESP_GOTO_ON_FALSE(cfg, ESP_ERR_INVALID_ARG, err, TAG, "cfg == NULL");
-  ESP_GOTO_ON_FALSE(cfg->adc_n == ADC_UNIT_1, ESP_ERR_INVALID_ARG, err, TAG,
-                    "Only ADC_UNIT_1 is supported for now");
+  ESP_GOTO_ON_FALSE(cfg->adc_n == ADC_UNIT_1, ESP_ERR_INVALID_ARG, err, TAG, "Only ADC_UNIT_1 is supported for now");
 
   //-------------ADC1 Init---------------//
   adc_oneshot_unit_handle_t adc1_handle;
@@ -154,11 +145,9 @@ static esp_err_t ulp_riscv_adc_init2(void) {
       .bitwidth = cfg->width,
       .atten = cfg->atten,
   };
-  ESP_ERROR_CHECK(
-      adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_0, &config));
+  ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_0, &config));
 
-  ESP_ERROR_CHECK(
-      adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_1, &config));
+  ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_1, &config));
 
   // Calibrate the ADC
   adc_set_hw_calibration_code(cfg->adc_n, cfg->atten);
@@ -168,39 +157,32 @@ err:
   return ret;
 }
 
-static void adc_init(struct grid_esp32_adc_model *adc) {
+static void adc_init(struct grid_esp32_adc_model* adc) {
 
   ESP_ERROR_CHECK(ulp_riscv_adc_init2());
 
   init_ulp_program();
 }
 
-void grid_esp32_adc_init(struct grid_esp32_adc_model *adc,
-                         SemaphoreHandle_t nvm_semaphore) {
+void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, SemaphoreHandle_t nvm_semaphore) {
 
   adc->nvm_semaphore = nvm_semaphore;
 
-  adc->buffer_struct = (StaticRingbuffer_t *)heap_caps_malloc(
-      sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-  adc->buffer_storage = (struct grid_esp32_adc_result *)heap_caps_malloc(
-      sizeof(struct grid_esp32_adc_result) * ADC_BUFFER_SIZE,
-      MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+  adc->buffer_struct = (StaticRingbuffer_t*)heap_caps_malloc(sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+  adc->buffer_storage = (struct grid_esp32_adc_result*)heap_caps_malloc(sizeof(struct grid_esp32_adc_result) * ADC_BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 
-  adc->ringbuffer_handle =
-      xRingbufferCreateStatic(ADC_BUFFER_SIZE, ADC_BUFFER_TYPE,
-                              adc->buffer_storage, adc->buffer_struct);
+  adc->ringbuffer_handle = xRingbufferCreateStatic(ADC_BUFFER_SIZE, ADC_BUFFER_TYPE, adc->buffer_storage, adc->buffer_struct);
 
   adc_init(adc);
 
   adc->mux_index = 0;
 }
 
-void grid_esp32_adc_start(struct grid_esp32_adc_model *adc) {
+void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
   //  start periodic task
 
-  esp_timer_create_args_t periodic_adc_args = {
-      .callback = &grid_esp32_adc_convert, .name = "adc millisecond"};
+  esp_timer_create_args_t periodic_adc_args = {.callback = &grid_esp32_adc_convert, .name = "adc millisecond"};
 
   esp_timer_handle_t periodic_adc_timer;
   ESP_ERROR_CHECK(esp_timer_create(&periodic_adc_args, &periodic_adc_timer));
@@ -210,7 +192,7 @@ void grid_esp32_adc_start(struct grid_esp32_adc_model *adc) {
   ESP_ERROR_CHECK(err);
 }
 
-void grid_esp32_adc_stop(struct grid_esp32_adc_model *adc) {}
+void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc) {}
 
 #include "ulp_riscv_lock.h"
 
@@ -234,19 +216,18 @@ static uint32_t grid_esp32_adc_cal(uint32_t input) {
   // normalized: (-abs(x-0.5)+0.375)/0.25
   // (-abs(x-0.5))*2.4+ 1.1
 
-  float strength =
-      restrictToRange((-abs(input - 0.5 * ADC_MAX)) * 2.4 / ADC_MAX + 1.1);
+  float strength = restrictToRange((-abs(input - 0.5 * ADC_MAX)) * 2.4 / ADC_MAX + 1.1);
 
   return input + parameter_1 * strength;
 }
 
 void IRAM_ATTR grid_esp32_adc_convert(void) {
 
-  struct grid_esp32_adc_model *adc = &grid_esp32_adc_state;
+  struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
 
   // if (xSemaphoreTakeFromISR(adc->nvm_semaphore, NULL) == pdTRUE){
 
-  ulp_riscv_lock_t *lock = (ulp_riscv_lock_t *)&ulp_lock;
+  ulp_riscv_lock_t* lock = (ulp_riscv_lock_t*)&ulp_lock;
 
   ulp_riscv_lock_acquire(lock);
 
@@ -262,10 +243,8 @@ void IRAM_ATTR grid_esp32_adc_convert(void) {
     result_1.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
     result_1.value = grid_esp32_adc_cal(ulp_adc_value_2);
 
-    xRingbufferSendFromISR(adc->ringbuffer_handle, &result_0,
-                           sizeof(struct grid_esp32_adc_result), NULL);
-    xRingbufferSendFromISR(adc->ringbuffer_handle, &result_1,
-                           sizeof(struct grid_esp32_adc_result), NULL);
+    xRingbufferSendFromISR(adc->ringbuffer_handle, &result_0, sizeof(struct grid_esp32_adc_result), NULL);
+    xRingbufferSendFromISR(adc->ringbuffer_handle, &result_1, sizeof(struct grid_esp32_adc_result), NULL);
 
     // ets_printf("%d\r\n", ulp_adc_result_ready);
 
@@ -273,7 +252,6 @@ void IRAM_ATTR grid_esp32_adc_convert(void) {
 
     grid_esp32_adc_mux_increment(&grid_esp32_adc_state);
     grid_esp32_adc_mux_update(&grid_esp32_adc_state);
-
   } else {
   }
 

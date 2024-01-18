@@ -62,10 +62,8 @@ static cdcdf_acm_set_line_coding_t cdcdf_acm_set_line_coding = NULL;
  * \param[in] desc Pointer to USB interface descriptor
  * \return Operation status.
  */
-static int32_t cdcdf_acm_enable(struct usbdf_driver *drv,
-                                struct usbd_descriptors *desc) {
-  struct cdcdf_acm_func_data *func_data =
-      (struct cdcdf_acm_func_data *)(drv->func_data);
+static int32_t cdcdf_acm_enable(struct usbdf_driver* drv, struct usbd_descriptors* desc) {
+  struct cdcdf_acm_func_data* func_data = (struct cdcdf_acm_func_data*)(drv->func_data);
 
   usb_ep_desc_t ep_desc;
   usb_iface_desc_t ifc_desc;
@@ -81,10 +79,8 @@ static int32_t cdcdf_acm_enable(struct usbdf_driver *drv,
     ifc_desc.bInterfaceNumber = ifc[2];
     ifc_desc.bInterfaceClass = ifc[5];
 
-    if ((CDC_CLASS_COMM == ifc_desc.bInterfaceClass) ||
-        (CDC_CLASS_DATA == ifc_desc.bInterfaceClass)) {
-      if (func_data->func_iface[i] ==
-          ifc_desc.bInterfaceNumber) { // Initialized
+    if ((CDC_CLASS_COMM == ifc_desc.bInterfaceClass) || (CDC_CLASS_DATA == ifc_desc.bInterfaceClass)) {
+      if (func_data->func_iface[i] == ifc_desc.bInterfaceNumber) { // Initialized
         return ERR_ALREADY_INITIALIZED;
       } else if (func_data->func_iface[i] != 0xFF) { // Occupied
         return ERR_NO_RESOURCE;
@@ -101,8 +97,7 @@ static int32_t cdcdf_acm_enable(struct usbdf_driver *drv,
       ep_desc.bEndpointAddress = ep[2];
       ep_desc.bmAttributes = ep[3];
       ep_desc.wMaxPacketSize = usb_get_u16(ep + 4);
-      if (usb_d_ep_init(ep_desc.bEndpointAddress, ep_desc.bmAttributes,
-                        ep_desc.wMaxPacketSize)) {
+      if (usb_d_ep_init(ep_desc.bEndpointAddress, ep_desc.bmAttributes, ep_desc.wMaxPacketSize)) {
         return ERR_NOT_INITIALIZED;
       }
       if (ep_desc.bEndpointAddress & USB_EP_DIR_IN) {
@@ -128,10 +123,8 @@ static int32_t cdcdf_acm_enable(struct usbdf_driver *drv,
  * \param[in] desc Pointer to USB device descriptor
  * \return Operation status.
  */
-static int32_t cdcdf_acm_disable(struct usbdf_driver *drv,
-                                 struct usbd_descriptors *desc) {
-  struct cdcdf_acm_func_data *func_data =
-      (struct cdcdf_acm_func_data *)(drv->func_data);
+static int32_t cdcdf_acm_disable(struct usbdf_driver* drv, struct usbd_descriptors* desc) {
+  struct cdcdf_acm_func_data* func_data = (struct cdcdf_acm_func_data*)(drv->func_data);
 
   usb_iface_desc_t ifc_desc;
   uint8_t i;
@@ -139,8 +132,7 @@ static int32_t cdcdf_acm_disable(struct usbdf_driver *drv,
   if (desc) {
     ifc_desc.bInterfaceClass = desc->sod[5];
     // Check interface
-    if ((ifc_desc.bInterfaceClass != CDC_CLASS_COMM) &&
-        (ifc_desc.bInterfaceClass != CDC_CLASS_DATA)) {
+    if ((ifc_desc.bInterfaceClass != CDC_CLASS_COMM) && (ifc_desc.bInterfaceClass != CDC_CLASS_DATA)) {
       return ERR_NOT_FOUND;
     }
   }
@@ -173,14 +165,13 @@ static int32_t cdcdf_acm_disable(struct usbdf_driver *drv,
  * \param[in] param Parameter pointer
  * \return Operation status.
  */
-static int32_t cdcdf_acm_ctrl(struct usbdf_driver *drv, enum usbdf_control ctrl,
-                              void *param) {
+static int32_t cdcdf_acm_ctrl(struct usbdf_driver* drv, enum usbdf_control ctrl, void* param) {
   switch (ctrl) {
   case USBDF_ENABLE:
-    return cdcdf_acm_enable(drv, (struct usbd_descriptors *)param);
+    return cdcdf_acm_enable(drv, (struct usbd_descriptors*)param);
 
   case USBDF_DISABLE:
-    return cdcdf_acm_disable(drv, (struct usbd_descriptors *)param);
+    return cdcdf_acm_disable(drv, (struct usbd_descriptors*)param);
 
   case USBDF_GET_IFACE:
     return ERR_UNSUPPORTED_OP;
@@ -196,11 +187,10 @@ static int32_t cdcdf_acm_ctrl(struct usbdf_driver *drv, enum usbdf_control ctrl,
  * \param[in] req Pointer to the request.
  * \return Operation status.
  */
-static int32_t cdcdf_acm_set_req(uint8_t ep, struct usb_req *req,
-                                 enum usb_ctrl_stage stage) {
+static int32_t cdcdf_acm_set_req(uint8_t ep, struct usb_req* req, enum usb_ctrl_stage stage) {
   struct usb_cdc_line_coding line_coding_tmp;
   uint16_t len = req->wLength;
-  uint8_t *ctrl_buf = usbdc_get_ctrl_buffer();
+  uint8_t* ctrl_buf = usbdc_get_ctrl_buffer();
 
   switch (req->bRequest) {
   case USB_REQ_CDC_SET_LINE_CODING:
@@ -211,8 +201,7 @@ static int32_t cdcdf_acm_set_req(uint8_t ep, struct usb_req *req,
       return usbdc_xfer(ep, ctrl_buf, len, false);
     } else {
       memcpy(&line_coding_tmp, ctrl_buf, sizeof(struct usb_cdc_line_coding));
-      if ((NULL == cdcdf_acm_set_line_coding) ||
-          (true == cdcdf_acm_set_line_coding(&line_coding_tmp))) {
+      if ((NULL == cdcdf_acm_set_line_coding) || (true == cdcdf_acm_set_line_coding(&line_coding_tmp))) {
         usbd_cdc_line_coding = line_coding_tmp;
       }
       return ERR_NONE;
@@ -234,8 +223,7 @@ static int32_t cdcdf_acm_set_req(uint8_t ep, struct usb_req *req,
  * \param[in] req Pointer to the request.
  * \return Operation status.
  */
-static int32_t cdcdf_acm_get_req(uint8_t ep, struct usb_req *req,
-                                 enum usb_ctrl_stage stage) {
+static int32_t cdcdf_acm_get_req(uint8_t ep, struct usb_req* req, enum usb_ctrl_stage stage) {
   uint16_t len = req->wLength;
 
   if (USB_DATA_STAGE == stage) {
@@ -247,7 +235,7 @@ static int32_t cdcdf_acm_get_req(uint8_t ep, struct usb_req *req,
     if (sizeof(struct usb_cdc_line_coding) != len) {
       return ERR_INVALID_DATA;
     }
-    return usbdc_xfer(ep, (uint8_t *)&usbd_cdc_line_coding, len, false);
+    return usbdc_xfer(ep, (uint8_t*)&usbd_cdc_line_coding, len, false);
   default:
     return ERR_INVALID_ARG;
   }
@@ -259,13 +247,11 @@ static int32_t cdcdf_acm_get_req(uint8_t ep, struct usb_req *req,
  * \param[in] req Pointer to the request.
  * \return Operation status.
  */
-static int32_t cdcdf_acm_req(uint8_t ep, struct usb_req *req,
-                             enum usb_ctrl_stage stage) {
+static int32_t cdcdf_acm_req(uint8_t ep, struct usb_req* req, enum usb_ctrl_stage stage) {
   if (0x01 != ((req->bmRequestType >> 5) & 0x03)) { // class request
     return ERR_NOT_FOUND;
   }
-  if ((req->wIndex == _cdcdf_acm_funcd.func_iface[0]) ||
-      (req->wIndex == _cdcdf_acm_funcd.func_iface[1])) {
+  if ((req->wIndex == _cdcdf_acm_funcd.func_iface[0]) || (req->wIndex == _cdcdf_acm_funcd.func_iface[1])) {
     if (req->bmRequestType & USB_EP_DIR_IN) {
       return cdcdf_acm_get_req(ep, req, stage);
     } else {
@@ -307,7 +293,7 @@ void cdcdf_acm_deinit(void) {
 /**
  * \brief USB CDC ACM Function Read Data
  */
-int32_t cdcdf_acm_read(uint8_t *buf, uint32_t size) {
+int32_t cdcdf_acm_read(uint8_t* buf, uint32_t size) {
   if (!cdcdf_acm_is_enabled()) {
     return ERR_DENIED;
   }
@@ -317,12 +303,11 @@ int32_t cdcdf_acm_read(uint8_t *buf, uint32_t size) {
 /**
  * \brief USB CDC ACM Function Write Data
  */
-int32_t cdcdf_acm_write(uint8_t *buf, uint32_t size) {
+int32_t cdcdf_acm_write(uint8_t* buf, uint32_t size) {
   if (!cdcdf_acm_is_enabled()) {
     return ERR_DENIED;
   }
-  return usbdc_xfer(_cdcdf_acm_funcd.func_ep_in[CDCDF_ACM_DATA_EP_INDEX], buf,
-                    size, true);
+  return usbdc_xfer(_cdcdf_acm_funcd.func_ep_in[CDCDF_ACM_DATA_EP_INDEX], buf, size, true);
 }
 
 /**
@@ -337,17 +322,13 @@ void cdcdf_acm_stop_xfer(void) {
 /**
  * \brief USB CDC ACM Function Register Callback
  */
-int32_t cdcdf_acm_register_callback(enum cdcdf_acm_cb_type cb_type,
-                                    FUNC_PTR func) {
+int32_t cdcdf_acm_register_callback(enum cdcdf_acm_cb_type cb_type, FUNC_PTR func) {
   switch (cb_type) {
   case CDCDF_ACM_CB_READ:
-    usb_d_ep_register_callback(_cdcdf_acm_funcd.func_ep_out, USB_D_EP_CB_XFER,
-                               func);
+    usb_d_ep_register_callback(_cdcdf_acm_funcd.func_ep_out, USB_D_EP_CB_XFER, func);
     break;
   case CDCDF_ACM_CB_WRITE:
-    usb_d_ep_register_callback(
-        _cdcdf_acm_funcd.func_ep_in[CDCDF_ACM_DATA_EP_INDEX], USB_D_EP_CB_XFER,
-        func);
+    usb_d_ep_register_callback(_cdcdf_acm_funcd.func_ep_in[CDCDF_ACM_DATA_EP_INDEX], USB_D_EP_CB_XFER, func);
     break;
   case CDCDF_ACM_CB_LINE_CODING_C:
     cdcdf_acm_set_line_coding = (cdcdf_acm_set_line_coding_t)func;
@@ -369,9 +350,7 @@ bool cdcdf_acm_is_enabled(void) { return _cdcdf_acm_funcd.enabled; }
 /**
  * \brief Return the CDC ACM line coding structure start address
  */
-const struct usb_cdc_line_coding *cdcdf_acm_get_line_coding(void) {
-  return (const struct usb_cdc_line_coding *)&usbd_cdc_line_coding;
-}
+const struct usb_cdc_line_coding* cdcdf_acm_get_line_coding(void) { return (const struct usb_cdc_line_coding*)&usbd_cdc_line_coding; }
 
 /**
  * \brief Return version

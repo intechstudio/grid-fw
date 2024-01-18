@@ -61,22 +61,19 @@ struct grid_d51_led_model {
 
   uint32_t led_count;
   uint32_t framebuffer_size;
-  uint8_t *framebuffer;
+  uint8_t* framebuffer;
 };
 
 extern uint32_t grid_led_color_code[256];
 extern struct grid_d51_led_model grid_d51_led_state;
 
-void grid_d51_led_init(struct grid_d51_led_model *d51_mod,
-                       struct grid_led_model *led_mod);
+void grid_d51_led_init(struct grid_d51_led_model* d51_mod, struct grid_led_model* led_mod);
 
-void grid_d51_led_generate_frame(struct grid_d51_led_model *d51_mod,
-                                 struct grid_led_model *led_mod);
-void grid_d51_led_start_transfer(struct grid_d51_led_model *d51_mod);
+void grid_d51_led_generate_frame(struct grid_d51_led_model* d51_mod, struct grid_led_model* led_mod);
+void grid_d51_led_start_transfer(struct grid_d51_led_model* d51_mod);
 
-void grid_d51_led_set_color(struct grid_d51_led_model *mod, uint32_t led_index,
-                            uint8_t r, uint8_t g, uint8_t b);
+void grid_d51_led_set_color(struct grid_d51_led_model* mod, uint32_t led_index, uint8_t r, uint8_t g, uint8_t b);
 
-void grid_led_startup_animation(struct grid_d51_led_model *mod);
+void grid_led_startup_animation(struct grid_d51_led_model* mod);
 
 #endif /* GRID_D51_LED_H_ */

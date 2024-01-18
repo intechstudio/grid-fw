@@ -19,7 +19,7 @@ static SemaphoreHandle_t disp_mutex;
  * \param[in] p The void pointer for OS task Standard model.
  *
  */
-static void example_task(void *p) {
+static void example_task(void* p) {
   (void)p;
   while (1) {
     if (xSemaphoreTake(disp_mutex, ~0)) {
@@ -42,8 +42,7 @@ void FREERTOS_V1000_0_example(void) {
     }
   }
 
-  if (xTaskCreate(example_task, "Example", TASK_EXAMPLE_STACK_SIZE, NULL,
-                  TASK_EXAMPLE_STACK_PRIORITY, xCreatedExampleTask) != pdPASS) {
+  if (xTaskCreate(example_task, "Example", TASK_EXAMPLE_STACK_SIZE, NULL, TASK_EXAMPLE_STACK_PRIORITY, xCreatedExampleTask) != pdPASS) {
     while (1) {
       ;
     }

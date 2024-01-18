@@ -4,8 +4,7 @@ if (l.getElementById('livereloadscript'))
   return;
 r = l.createElement('script');
 r.async = 1;
-r.src = '//' + (window.location.host || 'localhost').split(':')[0] +
-        ':35729/livereload.js?snipver=1';
+r.src = '//' + (window.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1';
 r.id = 'livereloadscript';
 l.getElementsByTagName('head')[0].appendChild(r)
 })(window.document);
@@ -13,24 +12,16 @@ var app = (function() {
   'use strict';
 
   function noop() {}
-  function add_location(element, file, line, column, char) {
-    element.__svelte_meta = {loc : {file, line, column, char}};
-  }
+  function add_location(element, file, line, column, char) { element.__svelte_meta = {loc : {file, line, column, char}}; }
   function run(fn) { return fn(); }
   function blank_object() { return Object.create(null); }
   function run_all(fns) { fns.forEach(run); }
   function is_function(thing) { return typeof thing === 'function'; }
-  function safe_not_equal(a, b) {
-    return a != a ? b == b
-                  : a !== b || ((a && typeof a === 'object') ||
-                                typeof a === 'function');
-  }
+  function safe_not_equal(a, b) { return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function'); }
   function is_empty(obj) { return Object.keys(obj).length === 0; }
 
   function append(target, node) { target.appendChild(node); }
-  function insert(target, node, anchor) {
-    target.insertBefore(node, anchor || null);
-  }
+  function insert(target, node, anchor) { target.insertBefore(node, anchor || null); }
   function detach(node) { node.parentNode.removeChild(node); }
   function destroy_each(iterations, detaching) {
     for (let i = 0; i < iterations.length; i += 1) {
@@ -53,9 +44,7 @@ var app = (function() {
       node.setAttribute(attribute, value);
   }
   function children(element) { return Array.from(element.childNodes); }
-  function set_input_value(input, value) {
-    input.value = value == null ? '' : value;
-  }
+  function set_input_value(input, value) { input.value = value == null ? '' : value; }
   function custom_event(type, detail) {
     const e = document.createEvent('CustomEvent');
     e.initCustomEvent(type, false, false, detail);
@@ -140,9 +129,7 @@ var app = (function() {
     }
   }
 
-  const globals = (typeof window !== 'undefined'       ? window
-                   : typeof globalThis !== 'undefined' ? globalThis
-                                                       : global);
+  const globals = (typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : global);
   function mount_component(component, target, anchor, customElement) {
     const {fragment, on_mount, on_destroy, after_update} = component.$$;
     fragment && fragment.m(target, anchor);
@@ -181,8 +168,7 @@ var app = (function() {
     }
     component.$$.dirty[(i / 31) | 0] |= (1 << (i % 31));
   }
-  function init(component, options, instance, create_fragment, not_equal, props,
-                dirty = [ -1 ]) {
+  function init(component, options, instance, create_fragment, not_equal, props, dirty = [ -1 ]) {
     const parent_component = current_component;
     set_current_component(component);
     const $$ = component.$$ = {
@@ -206,19 +192,16 @@ var app = (function() {
       skip_bound : false
     };
     let ready = false;
-    $$.ctx = instance ? instance(component, options.props || {},
-                                 (i, ret, ...rest) => {
-                                   const value = rest.length ? rest[0] : ret;
-                                   if ($$.ctx && not_equal($$.ctx[i],
-                                                           $$.ctx[i] = value)) {
-                                     if (!$$.skip_bound && $$.bound[i])
-                                       $$.bound[i](value);
-                                     if (ready)
-                                       make_dirty(component, i);
-                                   }
-                                   return ret;
-                                 })
-                      : [];
+    $$.ctx = instance ? instance(component, options.props || {}, (i, ret, ...rest) => {
+      const value = rest.length ? rest[0] : ret;
+      if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
+        if (!$$.skip_bound && $$.bound[i])
+          $$.bound[i](value);
+        if (ready)
+          make_dirty(component, i);
+      }
+      return ret;
+    }) : [];
     $$.update();
     ready = true;
     run_all($$.before_update);
@@ -236,8 +219,7 @@ var app = (function() {
       }
       if (options.intro)
         transition_in(component.$$.fragment);
-      mount_component(component, options.target, options.anchor,
-                      options.customElement);
+      mount_component(component, options.target, options.anchor, options.customElement);
       flush();
     }
     set_current_component(parent_component);
@@ -251,8 +233,7 @@ var app = (function() {
       this.$destroy = noop;
     }
     $on(type, callback) {
-      const callbacks =
-          (this.$$.callbacks[type] || (this.$$.callbacks[type] = []));
+      const callbacks = (this.$$.callbacks[type] || (this.$$.callbacks[type] = []));
       callbacks.push(callback);
       return () => {
         const index = callbacks.indexOf(callback);
@@ -269,10 +250,7 @@ var app = (function() {
     }
   }
 
-  function dispatch_dev(type, detail) {
-    document.dispatchEvent(
-        custom_event(type, Object.assign({version : '3.35.0'}, detail)));
-  }
+  function dispatch_dev(type, detail) { document.dispatchEvent(custom_event(type, Object.assign({version : '3.35.0'}, detail))); }
   function append_dev(target, node) {
     dispatch_dev('SvelteDOMInsert', {target, node});
     append(target, node);
@@ -285,21 +263,16 @@ var app = (function() {
     dispatch_dev('SvelteDOMRemove', {node});
     detach(node);
   }
-  function listen_dev(node, event, handler, options, has_prevent_default,
-                      has_stop_propagation) {
-    const modifiers = options === true ? [ 'capture' ]
-                      : options        ? Array.from(Object.keys(options))
-                                       : [];
+  function listen_dev(node, event, handler, options, has_prevent_default, has_stop_propagation) {
+    const modifiers = options === true ? [ 'capture' ] : options ? Array.from(Object.keys(options)) : [];
     if (has_prevent_default)
       modifiers.push('preventDefault');
     if (has_stop_propagation)
       modifiers.push('stopPropagation');
-    dispatch_dev('SvelteDOMAddEventListener',
-                 {node, event, handler, modifiers});
+    dispatch_dev('SvelteDOMAddEventListener', {node, event, handler, modifiers});
     const dispose = listen(node, event, handler, options);
     return () => {
-      dispatch_dev('SvelteDOMRemoveEventListener',
-                   {node, event, handler, modifiers});
+      dispatch_dev('SvelteDOMRemoveEventListener', {node, event, handler, modifiers});
       dispose();
     };
   }
@@ -318,8 +291,7 @@ var app = (function() {
     text.data = data;
   }
   function validate_each_argument(arg) {
-    if (typeof arg !== 'string' &&
-        !(arg && typeof arg === 'object' && 'length' in arg)) {
+    if (typeof arg !== 'string' && !(arg && typeof arg === 'object' && 'length' in arg)) {
       let msg = '{#each} only iterates over array-like objects.';
       if (typeof Symbol === 'function' && arg && Symbol.iterator in arg) {
         msg += ' You can use a spread to convert this iterable into an array.';
@@ -402,9 +374,7 @@ var app = (function() {
       c : function create() {
         div = element("div");
         t = text(t_value);
-        attr_dev(div, "class",
-                 div_class_value =
-                     "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
+        attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
         add_location(div, file, 391, 4, 10246);
       },
       m : function mount(target, anchor) {
@@ -412,14 +382,10 @@ var app = (function() {
         append_dev(div, t);
       },
       p : function update(ctx, dirty) {
-        if (dirty[0] & /*mcu_pins*/ 256 &&
-            t_value !== (t_value = /*pin*/ ctx[33].function + ""))
+        if (dirty[0] & /*mcu_pins*/ 256 && t_value !== (t_value = /*pin*/ ctx[33].function + ""))
           set_data_dev(t, t_value);
 
-        if (dirty[0] & /*mcu_pins*/ 256 &&
-            div_class_value !==
-                (div_class_value =
-                     "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
+        if (dirty[0] & /*mcu_pins*/ 256 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
           attr_dev(div, "class", div_class_value);
         }
       },
@@ -429,13 +395,7 @@ var app = (function() {
       }
     };
 
-    dispatch_dev("SvelteRegisterBlock", {
-      block,
-      id : create_each_block_4.name,
-      type : "each",
-      source : "(391:3) {#each mcu_pins[0] as pin}",
-      ctx
-    });
+    dispatch_dev("SvelteRegisterBlock", {block, id : create_each_block_4.name, type : "each", source : "(391:3) {#each mcu_pins[0] as pin}", ctx});
 
     return block;
   }
@@ -451,9 +411,7 @@ var app = (function() {
       c : function create() {
         div = element("div");
         t = text(t_value);
-        attr_dev(div, "class",
-                 div_class_value =
-                     "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
+        attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
         add_location(div, file, 396, 3, 10375);
       },
       m : function mount(target, anchor) {
@@ -461,14 +419,10 @@ var app = (function() {
         append_dev(div, t);
       },
       p : function update(ctx, dirty) {
-        if (dirty[0] & /*mcu_pins*/ 256 &&
-            t_value !== (t_value = /*pin*/ ctx[33].function + ""))
+        if (dirty[0] & /*mcu_pins*/ 256 && t_value !== (t_value = /*pin*/ ctx[33].function + ""))
           set_data_dev(t, t_value);
 
-        if (dirty[0] & /*mcu_pins*/ 256 &&
-            div_class_value !==
-                (div_class_value =
-                     "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
+        if (dirty[0] & /*mcu_pins*/ 256 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
           attr_dev(div, "class", div_class_value);
         }
       },
@@ -478,13 +432,7 @@ var app = (function() {
       }
     };
 
-    dispatch_dev("SvelteRegisterBlock", {
-      block,
-      id : create_each_block_3.name,
-      type : "each",
-      source : "(396:2) {#each mcu_pins[1] as pin}",
-      ctx
-    });
+    dispatch_dev("SvelteRegisterBlock", {block, id : create_each_block_3.name, type : "each", source : "(396:2) {#each mcu_pins[1] as pin}", ctx});
 
     return block;
   }
@@ -500,9 +448,7 @@ var app = (function() {
       c : function create() {
         div = element("div");
         t = text(t_value);
-        attr_dev(div, "class",
-                 div_class_value =
-                     "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
+        attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
         add_location(div, file, 403, 4, 10509);
       },
       m : function mount(target, anchor) {
@@ -510,14 +456,10 @@ var app = (function() {
         append_dev(div, t);
       },
       p : function update(ctx, dirty) {
-        if (dirty[0] & /*mcu_pins*/ 256 &&
-            t_value !== (t_value = /*pin*/ ctx[33].function + ""))
+        if (dirty[0] & /*mcu_pins*/ 256 && t_value !== (t_value = /*pin*/ ctx[33].function + ""))
           set_data_dev(t, t_value);
 
-        if (dirty[0] & /*mcu_pins*/ 256 &&
-            div_class_value !==
-                (div_class_value =
-                     "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
+        if (dirty[0] & /*mcu_pins*/ 256 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
           attr_dev(div, "class", div_class_value);
         }
       },
@@ -527,13 +469,7 @@ var app = (function() {
       }
     };
 
-    dispatch_dev("SvelteRegisterBlock", {
-      block,
-      id : create_each_block_2.name,
-      type : "each",
-      source : "(403:3) {#each mcu_pins[2] as pin}",
-      ctx
-    });
+    dispatch_dev("SvelteRegisterBlock", {block, id : create_each_block_2.name, type : "each", source : "(403:3) {#each mcu_pins[2] as pin}", ctx});
 
     return block;
   }
@@ -549,9 +485,7 @@ var app = (function() {
       c : function create() {
         div = element("div");
         t = text(t_value);
-        attr_dev(div, "class",
-                 div_class_value =
-                     "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
+        attr_dev(div, "class", div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm");
         add_location(div, file, 408, 4, 10641);
       },
       m : function mount(target, anchor) {
@@ -559,14 +493,10 @@ var app = (function() {
         append_dev(div, t);
       },
       p : function update(ctx, dirty) {
-        if (dirty[0] & /*mcu_pins*/ 256 &&
-            t_value !== (t_value = /*pin*/ ctx[33].function + ""))
+        if (dirty[0] & /*mcu_pins*/ 256 && t_value !== (t_value = /*pin*/ ctx[33].function + ""))
           set_data_dev(t, t_value);
 
-        if (dirty[0] & /*mcu_pins*/ 256 &&
-            div_class_value !==
-                (div_class_value =
-                     "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
+        if (dirty[0] & /*mcu_pins*/ 256 && div_class_value !== (div_class_value = "pin " + /*pin*/ ctx[33].class + " svelte-16idiwm")) {
           attr_dev(div, "class", div_class_value);
         }
       },
@@ -576,13 +506,7 @@ var app = (function() {
       }
     };
 
-    dispatch_dev("SvelteRegisterBlock", {
-      block,
-      id : create_each_block_1.name,
-      type : "each",
-      source : "(408:3) {#each mcu_pins[3] as pin}",
-      ctx
-    });
+    dispatch_dev("SvelteRegisterBlock", {block, id : create_each_block_1.name, type : "each", source : "(408:3) {#each mcu_pins[3] as pin}", ctx});
 
     return block;
   }
@@ -598,9 +522,7 @@ var app = (function() {
       c : function create() {
         div = element("div");
         t = text(t_value);
-        attr_dev(div, "class",
-                 div_class_value = "consoleline " + /*entry*/ ctx[30].context +
-                                   " svelte-16idiwm");
+        attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm");
         add_location(div, file, 421, 5, 10882);
       },
       m : function mount(target, anchor) {
@@ -608,14 +530,10 @@ var app = (function() {
         append_dev(div, t);
       },
       p : function update(ctx, dirty) {
-        if (dirty[0] & /*ui_console*/ 64 &&
-            t_value !== (t_value = /*entry*/ ctx[30].data + ""))
+        if (dirty[0] & /*ui_console*/ 64 && t_value !== (t_value = /*entry*/ ctx[30].data + ""))
           set_data_dev(t, t_value);
 
-        if (dirty[0] & /*ui_console*/ 64 &&
-            div_class_value !==
-                (div_class_value = "consoleline " + /*entry*/ ctx[30].context +
-                                   " svelte-16idiwm")) {
+        if (dirty[0] & /*ui_console*/ 64 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm")) {
           attr_dev(div, "class", div_class_value);
         }
       },
@@ -625,14 +543,7 @@ var app = (function() {
       }
     };
 
-    dispatch_dev("SvelteRegisterBlock", {
-      block,
-      id : create_if_block_3.name,
-      type : "if",
-      source :
-          "(421:4) {#if entry.context == \\\"uart\\\" && uart_console_enabled}",
-      ctx
-    });
+    dispatch_dev("SvelteRegisterBlock", {block, id : create_if_block_3.name, type : "if", source : "(421:4) {#if entry.context == \\\"uart\\\" && uart_console_enabled}", ctx});
 
     return block;
   }
@@ -648,9 +559,7 @@ var app = (function() {
       c : function create() {
         div = element("div");
         t = text(t_value);
-        attr_dev(div, "class",
-                 div_class_value = "consoleline " + /*entry*/ ctx[30].context +
-                                   " svelte-16idiwm");
+        attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm");
         add_location(div, file, 424, 5, 11021);
       },
       m : function mount(target, anchor) {
@@ -658,14 +567,10 @@ var app = (function() {
         append_dev(div, t);
       },
       p : function update(ctx, dirty) {
-        if (dirty[0] & /*ui_console*/ 64 &&
-            t_value !== (t_value = /*entry*/ ctx[30].data + ""))
+        if (dirty[0] & /*ui_console*/ 64 && t_value !== (t_value = /*entry*/ ctx[30].data + ""))
           set_data_dev(t, t_value);
 
-        if (dirty[0] & /*ui_console*/ 64 &&
-            div_class_value !==
-                (div_class_value = "consoleline " + /*entry*/ ctx[30].context +
-                                   " svelte-16idiwm")) {
+        if (dirty[0] & /*ui_console*/ 64 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm")) {
           attr_dev(div, "class", div_class_value);
         }
       },
@@ -675,14 +580,7 @@ var app = (function() {
       }
     };
 
-    dispatch_dev("SvelteRegisterBlock", {
-      block,
-      id : create_if_block_2.name,
-      type : "if",
-      source :
-          "(424:4) {#if entry.context == \\\"openocd\\\" && openocd_console_enabled}",
-      ctx
-    });
+    dispatch_dev("SvelteRegisterBlock", {block, id : create_if_block_2.name, type : "if", source : "(424:4) {#if entry.context == \\\"openocd\\\" && openocd_console_enabled}", ctx});
 
     return block;
   }
@@ -698,9 +596,7 @@ var app = (function() {
       c : function create() {
         div = element("div");
         t = text(t_value);
-        attr_dev(div, "class",
-                 div_class_value = "consoleline " + /*entry*/ ctx[30].context +
-                                   " svelte-16idiwm");
+        attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm");
         add_location(div, file, 427, 5, 11158);
       },
       m : function mount(target, anchor) {
@@ -708,14 +604,10 @@ var app = (function() {
         append_dev(div, t);
       },
       p : function update(ctx, dirty) {
-        if (dirty[0] & /*ui_console*/ 64 &&
-            t_value !== (t_value = /*entry*/ ctx[30].data + ""))
+        if (dirty[0] & /*ui_console*/ 64 && t_value !== (t_value = /*entry*/ ctx[30].data + ""))
           set_data_dev(t, t_value);
 
-        if (dirty[0] & /*ui_console*/ 64 &&
-            div_class_value !==
-                (div_class_value = "consoleline " + /*entry*/ ctx[30].context +
-                                   " svelte-16idiwm")) {
+        if (dirty[0] & /*ui_console*/ 64 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm")) {
           attr_dev(div, "class", div_class_value);
         }
       },
@@ -725,14 +617,7 @@ var app = (function() {
       }
     };
 
-    dispatch_dev("SvelteRegisterBlock", {
-      block,
-      id : create_if_block_1.name,
-      type : "if",
-      source :
-          "(427:4) {#if entry.context == \\\"telnet\\\" && telnet_console_enabled}",
-      ctx
-    });
+    dispatch_dev("SvelteRegisterBlock", {block, id : create_if_block_1.name, type : "if", source : "(427:4) {#if entry.context == \\\"telnet\\\" && telnet_console_enabled}", ctx});
 
     return block;
   }
@@ -748,9 +633,7 @@ var app = (function() {
       c : function create() {
         div = element("div");
         t = text(t_value);
-        attr_dev(div, "class",
-                 div_class_value = "consoleline " + /*entry*/ ctx[30].context +
-                                   " svelte-16idiwm");
+        attr_dev(div, "class", div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm");
         add_location(div, file, 430, 5, 11269);
       },
       m : function mount(target, anchor) {
@@ -758,14 +641,10 @@ var app = (function() {
         append_dev(div, t);
       },
       p : function update(ctx, dirty) {
-        if (dirty[0] & /*ui_console*/ 64 &&
-            t_value !== (t_value = /*entry*/ ctx[30].data + ""))
+        if (dirty[0] & /*ui_console*/ 64 && t_value !== (t_value = /*entry*/ ctx[30].data + ""))
           set_data_dev(t, t_value);
 
-        if (dirty[0] & /*ui_console*/ 64 &&
-            div_class_value !==
-                (div_class_value = "consoleline " + /*entry*/ ctx[30].context +
-                                   " svelte-16idiwm")) {
+        if (dirty[0] & /*ui_console*/ 64 && div_class_value !== (div_class_value = "consoleline " + /*entry*/ ctx[30].context + " svelte-16idiwm")) {
           attr_dev(div, "class", div_class_value);
         }
       },
@@ -775,13 +654,7 @@ var app = (function() {
       }
     };
 
-    dispatch_dev("SvelteRegisterBlock", {
-      block,
-      id : create_if_block.name,
-      type : "if",
-      source : "(430:4) {#if entry.context == \\\"fuser\\\" }",
-      ctx
-    });
+    dispatch_dev("SvelteRegisterBlock", {block, id : create_if_block.name, type : "if", source : "(430:4) {#if entry.context == \\\"fuser\\\" }", ctx});
 
     return block;
   }
@@ -795,8 +668,7 @@ var app = (function() {
     let if_block0 = /*entry*/ ctx[30].context == "uart" &&
                     /*uart_console_enabled*/ ctx[2] && create_if_block_3(ctx);
     let if_block1 = /*entry*/ ctx[30].context == "openocd" &&
-                    /*openocd_console_enabled*/ ctx[3] &&
-                    create_if_block_2(ctx);
+                    /*openocd_console_enabled*/ ctx[3] && create_if_block_2(ctx);
     let if_block2 = /*entry*/ ctx[30].context == "telnet" &&
                     /*telnet_console_enabled*/ ctx[4] && create_if_block_1(ctx);
     let if_block3 =
@@ -907,13 +779,7 @@ var app = (function() {
       }
     };
 
-    dispatch_dev("SvelteRegisterBlock", {
-      block,
-      id : create_each_block.name,
-      type : "each",
-      source : "(420:3) {#each ui_console as entry}",
-      ctx
-    });
+    dispatch_dev("SvelteRegisterBlock", {block, id : create_each_block.name, type : "each", source : "(420:3) {#each ui_console as entry}", ctx});
 
     return block;
   }
@@ -1038,8 +904,7 @@ var app = (function() {
     let each_blocks_4 = [];
 
     for (let i = 0; i < each_value_4.length; i += 1) {
-      each_blocks_4[i] =
-          create_each_block_4(get_each_context_4(ctx, each_value_4, i));
+      each_blocks_4[i] = create_each_block_4(get_each_context_4(ctx, each_value_4, i));
     }
 
     let each_value_3 = /*mcu_pins*/ ctx[8][1];
@@ -1047,8 +912,7 @@ var app = (function() {
     let each_blocks_3 = [];
 
     for (let i = 0; i < each_value_3.length; i += 1) {
-      each_blocks_3[i] =
-          create_each_block_3(get_each_context_3(ctx, each_value_3, i));
+      each_blocks_3[i] = create_each_block_3(get_each_context_3(ctx, each_value_3, i));
     }
 
     let each_value_2 = /*mcu_pins*/ ctx[8][2];
@@ -1056,8 +920,7 @@ var app = (function() {
     let each_blocks_2 = [];
 
     for (let i = 0; i < each_value_2.length; i += 1) {
-      each_blocks_2[i] =
-          create_each_block_2(get_each_context_2(ctx, each_value_2, i));
+      each_blocks_2[i] = create_each_block_2(get_each_context_2(ctx, each_value_2, i));
     }
 
     let each_value_1 = /*mcu_pins*/ ctx[8][3];
@@ -1065,8 +928,7 @@ var app = (function() {
     let each_blocks_1 = [];
 
     for (let i = 0; i < each_value_1.length; i += 1) {
-      each_blocks_1[i] =
-          create_each_block_1(get_each_context_1(ctx, each_value_1, i));
+      each_blocks_1[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
     }
 
     let each_value = /*ui_console*/ ctx[6];
@@ -1344,10 +1206,7 @@ var app = (function() {
         attr_dev(main, "class", "svelte-16idiwm");
         add_location(main, file, 356, 0, 9569);
       },
-      l : function claim(nodes) {
-        throw new Error(
-            "options.hydrate only works if the component was compiled with the `hydratable: true` option");
-      },
+      l : function claim(nodes) { throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option"); },
       m : function mount(target, anchor) {
         insert_dev(target, main, anchor);
         append_dev(main, div6);
@@ -1492,65 +1351,45 @@ var app = (function() {
             listen_dev(input3, "click", telnet_start, false, false, false),
             listen_dev(input4, "click", telnet_stop, false, false, false),
             listen_dev(input5, "input", /*input5_input_handler*/ ctx[13]),
-            listen_dev(input6, "click", /*uart_send*/ ctx[11], false, false,
-                       false),
-            listen_dev(input7, "keyup", /*keyup_telnet*/ ctx[9], false, false,
-                       false),
+            listen_dev(input6, "click", /*uart_send*/ ctx[11], false, false, false),
+            listen_dev(input7, "keyup", /*keyup_telnet*/ ctx[9], false, false, false),
             listen_dev(input7, "input", /*input7_input_handler*/ ctx[14]),
-            listen_dev(input8, "click", /*telnet_send*/ ctx[10], false, false,
-                       false),
+            listen_dev(input8, "click", /*telnet_send*/ ctx[10], false, false, false),
             listen_dev(input9, "change", /*input9_change_handler*/ ctx[15]),
             listen_dev(input10, "change", /*input10_change_handler*/ ctx[16]),
             listen_dev(input11, "change", /*input11_change_handler*/ ctx[17]),
             listen_dev(input12, "change", /*input12_change_handler*/ ctx[18]),
-            listen_dev(input13, "click", /*click_handler*/ ctx[19], false,
-                       false, false),
-            listen_dev(input14, "click", /*click_handler_1*/ ctx[20], false,
-                       false, false),
-            listen_dev(input15, "click", /*click_handler_2*/ ctx[21], false,
-                       false, false),
-            listen_dev(input16, "click", /*click_handler_3*/ ctx[22], false,
-                       false, false),
-            listen_dev(input17, "click", /*click_handler_4*/ ctx[23], false,
-                       false, false),
-            listen_dev(input18, "click", /*click_handler_5*/ ctx[24], false,
-                       false, false),
-            listen_dev(input19, "click", /*click_handler_6*/ ctx[25], false,
-                       false, false),
-            listen_dev(input20, "click", /*click_handler_7*/ ctx[26], false,
-                       false, false)
+            listen_dev(input13, "click", /*click_handler*/ ctx[19], false, false, false),
+            listen_dev(input14, "click", /*click_handler_1*/ ctx[20], false, false, false),
+            listen_dev(input15, "click", /*click_handler_2*/ ctx[21], false, false, false),
+            listen_dev(input16, "click", /*click_handler_3*/ ctx[22], false, false, false),
+            listen_dev(input17, "click", /*click_handler_4*/ ctx[23], false, false, false),
+            listen_dev(input18, "click", /*click_handler_5*/ ctx[24], false, false, false),
+            listen_dev(input19, "click", /*click_handler_6*/ ctx[25], false, false, false),
+            listen_dev(input20, "click", /*click_handler_7*/ ctx[26], false, false, false)
           ];
 
           mounted = true;
         }
       },
       p : function update(ctx, dirty) {
-        if (dirty[0] & /*grid*/ 128 &&
-            t1_value !== (t1_value = /*grid*/ ctx[7].mcu + ""))
+        if (dirty[0] & /*grid*/ 128 && t1_value !== (t1_value = /*grid*/ ctx[7].mcu + ""))
           set_data_dev(t1, t1_value);
-        if (dirty[0] & /*grid*/ 128 &&
-            t2_value !== (t2_value = /*grid*/ ctx[7].mcustatus + ""))
+        if (dirty[0] & /*grid*/ 128 && t2_value !== (t2_value = /*grid*/ ctx[7].mcustatus + ""))
           set_data_dev(t2, t2_value);
-        if (dirty[0] & /*grid*/ 128 &&
-            t5_value !== (t5_value = /*grid*/ ctx[7].hwcfg + ""))
+        if (dirty[0] & /*grid*/ 128 && t5_value !== (t5_value = /*grid*/ ctx[7].hwcfg + ""))
           set_data_dev(t5, t5_value);
-        if (dirty[0] & /*grid*/ 128 &&
-            t6_value !== (t6_value = /*grid*/ ctx[7].hwcfgstatus + ""))
+        if (dirty[0] & /*grid*/ 128 && t6_value !== (t6_value = /*grid*/ ctx[7].hwcfgstatus + ""))
           set_data_dev(t6, t6_value);
-        if (dirty[0] & /*grid*/ 128 &&
-            t9_value !== (t9_value = /*grid*/ ctx[7].model + ""))
+        if (dirty[0] & /*grid*/ 128 && t9_value !== (t9_value = /*grid*/ ctx[7].model + ""))
           set_data_dev(t9, t9_value);
-        if (dirty[0] & /*grid*/ 128 &&
-            t12_value !== (t12_value = /*grid*/ ctx[7].serialno[0] + ""))
+        if (dirty[0] & /*grid*/ 128 && t12_value !== (t12_value = /*grid*/ ctx[7].serialno[0] + ""))
           set_data_dev(t12, t12_value);
-        if (dirty[0] & /*grid*/ 128 &&
-            t13_value !== (t13_value = /*grid*/ ctx[7].serialno[1] + ""))
+        if (dirty[0] & /*grid*/ 128 && t13_value !== (t13_value = /*grid*/ ctx[7].serialno[1] + ""))
           set_data_dev(t13, t13_value);
-        if (dirty[0] & /*grid*/ 128 &&
-            t15_value !== (t15_value = /*grid*/ ctx[7].serialno[2] + ""))
+        if (dirty[0] & /*grid*/ 128 && t15_value !== (t15_value = /*grid*/ ctx[7].serialno[2] + ""))
           set_data_dev(t15, t15_value);
-        if (dirty[0] & /*grid*/ 128 &&
-            t16_value !== (t16_value = /*grid*/ ctx[7].serialno[3] + ""))
+        if (dirty[0] & /*grid*/ 128 && t16_value !== (t16_value = /*grid*/ ctx[7].serialno[3] + ""))
           set_data_dev(t16, t16_value);
 
         if (dirty[0] & /*mcu_pins*/ 256) {
@@ -1675,13 +1514,11 @@ var app = (function() {
           each_blocks.length = each_value.length;
         }
 
-        if (dirty[0] & /*uart_input_field*/ 1 &&
-            input5.value !== /*uart_input_field*/ ctx[0]) {
+        if (dirty[0] & /*uart_input_field*/ 1 && input5.value !== /*uart_input_field*/ ctx[0]) {
           set_input_value(input5, /*uart_input_field*/ ctx[0]);
         }
 
-        if (dirty[0] & /*telnet_input_field*/ 2 &&
-            input7.value !== /*telnet_input_field*/ ctx[1]) {
+        if (dirty[0] & /*telnet_input_field*/ 2 && input7.value !== /*telnet_input_field*/ ctx[1]) {
           set_input_value(input7, /*telnet_input_field*/ ctx[1]);
         }
 
@@ -1716,22 +1553,14 @@ var app = (function() {
       }
     };
 
-    dispatch_dev("SvelteRegisterBlock", {
-      block,
-      id : create_fragment.name,
-      type : "component",
-      source : "",
-      ctx
-    });
+    dispatch_dev("SvelteRegisterBlock", {block, id : create_fragment.name, type : "component", source : "", ctx});
 
     return block;
   }
 
   async function fuser_kill() {
     try {
-      const serial = await fetch("/api/fuser/kill", {
-                       method : "GET"
-                     }).then(res => res.json());
+      const serial = await fetch("/api/fuser/kill", {method : "GET"}).then(res => res.json());
     } catch (error) {
 
     } // console.log(serial)
@@ -1739,9 +1568,7 @@ var app = (function() {
 
   async function openocd_start() {
     try {
-      const serial = await fetch("/api/openocd/start", {
-                       method : "GET"
-                     }).then(res => res.json());
+      const serial = await fetch("/api/openocd/start", {method : "GET"}).then(res => res.json());
     } catch (error) {
 
     } // console.log(serial)
@@ -1749,9 +1576,7 @@ var app = (function() {
 
   async function openocd_stop() {
     try {
-      const serial = await fetch("/api/openocd/stop", {
-                       method : "GET"
-                     }).then(res => res.json());
+      const serial = await fetch("/api/openocd/stop", {method : "GET"}).then(res => res.json());
     } catch (error) {
 
     } // console.log(serial)
@@ -1759,9 +1584,7 @@ var app = (function() {
 
   async function telnet_start() {
     try {
-      const serial = await fetch("/api/telnet/start", {
-                       method : "GET"
-                     }).then(res => res.json());
+      const serial = await fetch("/api/telnet/start", {method : "GET"}).then(res => res.json());
     } catch (error) {
 
     } // console.log(serial)
@@ -1769,9 +1592,7 @@ var app = (function() {
 
   async function telnet_stop() {
     try {
-      const serial = await fetch("/api/telnet/stop", {
-                       method : "GET"
-                     }).then(res => res.json());
+      const serial = await fetch("/api/telnet/stop", {method : "GET"}).then(res => res.json());
     } catch (error) {
 
     } // console.log(serial)
@@ -1801,9 +1622,7 @@ var app = (function() {
           telnet_history_index++;
         }
 
-        $$invalidate(1, telnet_input_field =
-                            telnet_history[telnet_history.length -
-                                           (telnet_history_index - 1) - 1]);
+        $$invalidate(1, telnet_input_field = telnet_history[telnet_history.length - (telnet_history_index - 1) - 1]);
       }
 
       if (e.keyCode === 40) {
@@ -1811,10 +1630,7 @@ var app = (function() {
           telnet_history_index--;
         }
 
-        $$invalidate(
-            1,
-            telnet_input_field =
-                telnet_history[telnet_history.length - telnet_history_index]);
+        $$invalidate(1, telnet_input_field = telnet_history[telnet_history.length - telnet_history_index]);
       }
     }
 
@@ -1823,18 +1639,13 @@ var app = (function() {
       telnet_history_index = 0;
 
       try {
-        const serial = await fetch("/api/telnet/send", {
-                         method : "POST",
-                         body : JSON.stringify({data : telnet_input_field}),
-                         headers : {
-                           "Accept" : "application/json",
-                           "Content-Type" : "application/json"
-                         }
-                       }).then(res => {
-          console.log(res);
-          $$invalidate(1, telnet_input_field = "");
-          return;
-        });
+        const serial =
+            await fetch("/api/telnet/send", {method : "POST", body : JSON.stringify({data : telnet_input_field}), headers : {"Accept" : "application/json", "Content-Type" : "application/json"}})
+                .then(res => {
+                  console.log(res);
+                  $$invalidate(1, telnet_input_field = "");
+                  return;
+                });
       } catch (error) {
       }
     }
@@ -1843,18 +1654,13 @@ var app = (function() {
       console.log(uart_input_field);
 
       try {
-        const serial = await fetch("/api/uart/send", {
-                         method : "POST",
-                         body : JSON.stringify({data : uart_input_field}),
-                         headers : {
-                           "Accept" : "application/json",
-                           "Content-Type" : "application/json"
-                         }
-                       }).then(res => {
-          console.log(res);
-          $$invalidate(0, uart_input_field = "");
-          return;
-        });
+        const serial =
+            await fetch("/api/uart/send", {method : "POST", body : JSON.stringify({data : uart_input_field}), headers : {"Accept" : "application/json", "Content-Type" : "application/json"}})
+                .then(res => {
+                  console.log(res);
+                  $$invalidate(0, uart_input_field = "");
+                  return;
+                });
       } catch (error) {
       }
     }
@@ -1863,9 +1669,7 @@ var app = (function() {
       let serial = [];
 
       try {
-        serial = await fetch("/api/console", {
-                   method : "GET"
-                 }).then(res => res.json());
+        serial = await fetch("/api/console", {method : "GET"}).then(res => res.json());
 
         serial.forEach(element => {
           // var str = String.fromCharCode.apply(null, element.data);
@@ -1894,22 +1698,17 @@ var app = (function() {
 
               for (var i = 0; i < indices.length; i++) {
                 let side = parseInt(str.substring(14, 15));
-                $$invalidate(8, mcu_pins[side][indices[i]].class += "pinerror",
-                             mcu_pins);
+                $$invalidate(8, mcu_pins[side][indices[i]].class += "pinerror", mcu_pins);
               }
             } else if (str.startsWith("test.hwcfg.")) {
-              $$invalidate(7,
-                           grid.hwcfg = parseInt(str.substring(11, str.length)),
-                           grid);
+              $$invalidate(7, grid.hwcfg = parseInt(str.substring(11, str.length)), grid);
 
               if (grid.hwcfg == 192) {
                 $$invalidate(7, grid.model = "EN16 RevA", grid);
                 $$invalidate(7, grid.hwcfgstatus = "OK", grid);
               }
             } else if (str.startsWith("test.serialno.")) {
-              $$invalidate(
-                  7, grid.serialno = str.substring(14, str.length).split(" "),
-                  grid);
+              $$invalidate(7, grid.serialno = str.substring(14, str.length).split(" "), grid);
             } else if (str.startsWith("test.mcu.")) {
               $$invalidate(7, grid.mcu = str.split(".")[2], grid);
 
@@ -1925,126 +1724,53 @@ var app = (function() {
 
     onMount(() => { setInterval(consolePoll, 1000); });
 
-    let ui_console = [
-      {context : "uart", data : "123"}, {context : "telnet", data : "456"}
-    ];
+    let ui_console = [ {context : "uart", data : "123"}, {context : "telnet", data : "456"} ];
 
-    let grid = {
-      hwcfg : "???",
-      hwcfgstatus : "?",
-      mcu : "?",
-      mcustatus : "?",
-      model : "???",
-      serialno : [ "?", "?", "?", "?" ]
-    };
+    let grid = {hwcfg : "???", hwcfgstatus : "?", mcu : "?", mcustatus : "?", model : "???", serialno : [ "?", "?", "?", "?" ]};
 
     let mcu_pins = [
       [
-        {number : "1", function : "1", class : ""},
-        {number : "2", function : "2", class : ""},
-        {number : "3", function : "3", class : ""},
-        {number : "4", function : "4", class : ""},
-        {number : "5", function : "5", class : ""},
-        {number : "6", function : "6", class : ""},
-        {number : "7", function : "7", class : ""},
-        {number : "8", function : "8", class : ""},
-        {number : "9", function : "9", class : ""},
-        {number : "10", function : "10", class : ""},
-        {number : "11", function : "GND", class : "pingnd"},
-        {number : "12", function : "VDD", class : "pinpwr"},
-        {number : "13", function : "13", class : ""},
-        {number : "14", function : "SYNC2", class : ""},
-        {number : "15", function : "WEST TX", class : ""},
-        {number : "16", function : "WEST RX", class : ""},
-        {number : "17", function : "17", class : ""},
-        {number : "18", function : "18", class : ""},
-        {number : "19", function : "19", class : ""},
-        {number : "20", function : "20", class : ""},
-        {number : "21", function : "21", class : ""},
-        {number : "22", function : "22", class : ""},
-        {number : "23", function : "23", class : ""},
-        {number : "24", function : "GND", class : "pingnd"},
+        {number : "1", function : "1", class : ""},         {number : "2", function : "2", class : ""},          {number : "3", function : "3", class : ""},
+        {number : "4", function : "4", class : ""},         {number : "5", function : "5", class : ""},          {number : "6", function : "6", class : ""},
+        {number : "7", function : "7", class : ""},         {number : "8", function : "8", class : ""},          {number : "9", function : "9", class : ""},
+        {number : "10", function : "10", class : ""},       {number : "11", function : "GND", class : "pingnd"}, {number : "12", function : "VDD", class : "pinpwr"},
+        {number : "13", function : "13", class : ""},       {number : "14", function : "SYNC2", class : ""},     {number : "15", function : "WEST TX", class : ""},
+        {number : "16", function : "WEST RX", class : ""},  {number : "17", function : "17", class : ""},        {number : "18", function : "18", class : ""},
+        {number : "19", function : "19", class : ""},       {number : "20", function : "20", class : ""},        {number : "21", function : "21", class : ""},
+        {number : "22", function : "22", class : ""},       {number : "23", function : "23", class : ""},        {number : "24", function : "GND", class : "pingnd"},
         {number : "25", function : "VDD", class : "pinpwr"}
       ],
       [
-        {number : "26", function : "QSPI IO 0", class : ""},
-        {number : "27", function : "QSPI IO 1", class : ""},
-        {number : "28", function : "QSPI IO 2", class : ""},
-        {number : "29", function : "QSPI IO 3", class : ""},
-        {number : "30", function : "VDD", class : "pinpwr"},
-        {number : "31", function : "GND", class : "pingnd"},
-        {number : "32", function : "QSPI SCK", class : ""},
-        {number : "33", function : "QSPI CE", class : ""},
-        {number : "34", function : "34", class : ""},
-        {number : "35", function : "HWC SH", class : ""},
-        {number : "36", function : "HWC CLK", class : ""},
-        {number : "37", function : "HWC DAT", class : ""},
-        {number : "38", function : "GND", class : "pingnd"},
-        {number : "39", function : "VDD", class : "pinpwr"},
-        {number : "40", function : "40", class : ""},
-        {number : "41", function : "MAPMODE", class : ""},
-        {number : "42", function : "SOUTH RX", class : ""},
-        {number : "43", function : "SOUTH TX", class : ""},
-        {number : "44", function : "UI PWR EN", class : ""},
-        {number : "45", function : "45", class : ""},
-        {number : "46", function : "46", class : ""},
-        {number : "47", function : "47", class : ""},
-        {number : "48", function : "48", class : ""},
-        {number : "49", function : "49", class : ""},
+        {number : "26", function : "QSPI IO 0", class : ""}, {number : "27", function : "QSPI IO 1", class : ""}, {number : "28", function : "QSPI IO 2", class : ""},
+        {number : "29", function : "QSPI IO 3", class : ""}, {number : "30", function : "VDD", class : "pinpwr"}, {number : "31", function : "GND", class : "pingnd"},
+        {number : "32", function : "QSPI SCK", class : ""},  {number : "33", function : "QSPI CE", class : ""},   {number : "34", function : "34", class : ""},
+        {number : "35", function : "HWC SH", class : ""},    {number : "36", function : "HWC CLK", class : ""},   {number : "37", function : "HWC DAT", class : ""},
+        {number : "38", function : "GND", class : "pingnd"}, {number : "39", function : "VDD", class : "pinpwr"}, {number : "40", function : "40", class : ""},
+        {number : "41", function : "MAPMODE", class : ""},   {number : "42", function : "SOUTH RX", class : ""},  {number : "43", function : "SOUTH TX", class : ""},
+        {number : "44", function : "UI PWR EN", class : ""}, {number : "45", function : "45", class : ""},        {number : "46", function : "46", class : ""},
+        {number : "47", function : "47", class : ""},        {number : "48", function : "48", class : ""},        {number : "49", function : "49", class : ""},
         {number : "50", function : "GND", class : "pingnd"}
       ],
       [
-        {number : "51", function : "VDD", class : "pinpwr"},
-        {number : "52", function : "52", class : ""},
-        {number : "53", function : "53", class : ""},
-        {number : "54", function : "54", class : ""},
-        {number : "55", function : "55", class : ""},
-        {number : "56", function : "EAST RX", class : ""},
-        {number : "57", function : "EAST TX", class : ""},
-        {number : "58", function : "SYNC1", class : ""},
-        {number : "59", function : "59", class : ""},
-        {number : "60", function : "60", class : ""},
-        {number : "61", function : "61", class : ""},
-        {number : "62", function : "62", class : "pingnd"},
-        {number : "63", function : "63", class : "pinpwr"},
-        {number : "64", function : "64", class : ""},
-        {number : "65", function : "65", class : ""},
-        {number : "66", function : "66", class : ""},
-        {number : "67", function : "67", class : ""},
-        {number : "68", function : "68", class : ""},
-        {number : "69", function : "69", class : ""},
-        {number : "70", function : "70", class : ""},
-        {number : "71", function : "71", class : ""},
-        {number : "72", function : "SYS SCL", class : ""},
-        {number : "73", function : "SYS SDA", class : ""},
-        {number : "74", function : "USB DN", class : ""},
+        {number : "51", function : "VDD", class : "pinpwr"}, {number : "52", function : "52", class : ""},      {number : "53", function : "53", class : ""},
+        {number : "54", function : "54", class : ""},        {number : "55", function : "55", class : ""},      {number : "56", function : "EAST RX", class : ""},
+        {number : "57", function : "EAST TX", class : ""},   {number : "58", function : "SYNC1", class : ""},   {number : "59", function : "59", class : ""},
+        {number : "60", function : "60", class : ""},        {number : "61", function : "61", class : ""},      {number : "62", function : "62", class : "pingnd"},
+        {number : "63", function : "63", class : "pinpwr"},  {number : "64", function : "64", class : ""},      {number : "65", function : "65", class : ""},
+        {number : "66", function : "66", class : ""},        {number : "67", function : "67", class : ""},      {number : "68", function : "68", class : ""},
+        {number : "69", function : "69", class : ""},        {number : "70", function : "70", class : ""},      {number : "71", function : "71", class : ""},
+        {number : "72", function : "SYS SCL", class : ""},   {number : "73", function : "SYS SDA", class : ""}, {number : "74", function : "USB DN", class : ""},
         {number : "75", function : "USB DP", class : ""}
       ],
       [
-        {number : "76", function : "GND", class : "pingnd"},
-        {number : "77", function : "PWR", class : "pinpwr"},
-        {number : "78", function : "78", class : ""},
-        {number : "79", function : "79", class : ""},
-        {number : "80", function : "DBG RX", class : ""},
-        {number : "81", function : "DBG TX", class : ""},
-        {number : "82", function : "SYS INT 0", class : ""},
-        {number : "83", function : "83", class : ""},
-        {number : "84", function : "84", class : ""},
-        {number : "85", function : "NORTH TX", class : ""},
-        {number : "86", function : "NORTH RX", class : ""},
-        {number : "87", function : "87", class : ""},
-        {number : "88", function : "RESET", class : "pinrst"},
-        {number : "89", function : "CORE", class : "pinpwr"},
-        {number : "90", function : "GND", class : "pingnd"},
-        {number : "91", function : "VSW", class : "pinpwr"},
-        {number : "92", function : "VDD", class : "pinpwr"},
-        {number : "93", function : "SWCLK", class : ""},
-        {number : "94", function : "SWDIO", class : ""},
-        {number : "95", function : "SWO LED", class : ""},
-        {number : "96", function : "96", class : ""},
-        {number : "97", function : "97", class : ""},
-        {number : "98", function : "98", class : ""},
-        {number : "99", function : "99", class : ""},
+        {number : "76", function : "GND", class : "pingnd"},   {number : "77", function : "PWR", class : "pinpwr"},  {number : "78", function : "78", class : ""},
+        {number : "79", function : "79", class : ""},          {number : "80", function : "DBG RX", class : ""},     {number : "81", function : "DBG TX", class : ""},
+        {number : "82", function : "SYS INT 0", class : ""},   {number : "83", function : "83", class : ""},         {number : "84", function : "84", class : ""},
+        {number : "85", function : "NORTH TX", class : ""},    {number : "86", function : "NORTH RX", class : ""},   {number : "87", function : "87", class : ""},
+        {number : "88", function : "RESET", class : "pinrst"}, {number : "89", function : "CORE", class : "pinpwr"}, {number : "90", function : "GND", class : "pingnd"},
+        {number : "91", function : "VSW", class : "pinpwr"},   {number : "92", function : "VDD", class : "pinpwr"},  {number : "93", function : "SWCLK", class : ""},
+        {number : "94", function : "SWDIO", class : ""},       {number : "95", function : "SWO LED", class : ""},    {number : "96", function : "96", class : ""},
+        {number : "97", function : "97", class : ""},          {number : "98", function : "98", class : ""},         {number : "99", function : "99", class : ""},
         {number : "100", function : "100", class : ""}
       ]
     ];
@@ -2123,18 +1849,13 @@ var app = (function() {
     };
 
     const click_handler_6 = function() {
-      $$invalidate(
-          1,
-          telnet_input_field =
-              "program bootloader-intech_grid-v3.3.0-8-g945e9ec-dirty.elf verify");
+      $$invalidate(1, telnet_input_field = "program bootloader-intech_grid-v3.3.0-8-g945e9ec-dirty.elf verify");
       if (telnet_autosend)
         telnet_send();
     };
 
     const click_handler_7 = function() {
-      $$invalidate(1,
-                   telnet_input_field =
-                       "program ../grid_make/gcc/AtmelStart.bin verify 0x4000");
+      $$invalidate(1, telnet_input_field = "program ../grid_make/gcc/AtmelStart.bin verify 0x4000");
       if (telnet_autosend)
         telnet_send();
     };
@@ -2184,11 +1905,9 @@ var app = (function() {
       if ("uart_console_enabled" in $$props)
         $$invalidate(2, uart_console_enabled = $$props.uart_console_enabled);
       if ("openocd_console_enabled" in $$props)
-        $$invalidate(3,
-                     openocd_console_enabled = $$props.openocd_console_enabled);
+        $$invalidate(3, openocd_console_enabled = $$props.openocd_console_enabled);
       if ("telnet_console_enabled" in $$props)
-        $$invalidate(4,
-                     telnet_console_enabled = $$props.telnet_console_enabled);
+        $$invalidate(4, telnet_console_enabled = $$props.telnet_console_enabled);
       if ("telnet_autosend" in $$props)
         $$invalidate(5, telnet_autosend = $$props.telnet_autosend);
       if ("ui_console" in $$props)
@@ -2237,15 +1956,9 @@ var app = (function() {
   class App extends SvelteComponentDev {
     constructor(options) {
       super(options);
-      init(this, options, instance, create_fragment, safe_not_equal,
-           {name : 12}, [ -1, -1 ]);
+      init(this, options, instance, create_fragment, safe_not_equal, {name : 12}, [ -1, -1 ]);
 
-      dispatch_dev("SvelteRegisterComponent", {
-        component : this,
-        tagName : "App",
-        options,
-        id : create_fragment.name
-      });
+      dispatch_dev("SvelteRegisterComponent", {component : this, tagName : "App", options, id : create_fragment.name});
 
       const {ctx} = this.$$;
       const props = options.props || {};
@@ -2255,15 +1968,9 @@ var app = (function() {
       }
     }
 
-    get name() {
-      throw new Error(
-          "<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    }
+    get name() { throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"); }
 
-    set name(value) {
-      throw new Error(
-          "<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    }
+    set name(value) { throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"); }
   }
 
   const app = new App({target : document.body, props : {name : 'world'}});

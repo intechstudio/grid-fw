@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc < 2) {
     fprintf(stderr, "USAGE: %s file.bin [file.uf2]\n", argv[0]);
     return 1;
   }
-  FILE *f = fopen(argv[1], "rb");
+  FILE* f = fopen(argv[1], "rb");
   if (!f) {
     fprintf(stderr, "No such file: %s\n", argv[1]);
     return 1;
@@ -17,9 +17,9 @@ int main(int argc, char **argv) {
   uint32_t sz = ftell(f);
   fseek(f, 0L, SEEK_SET);
 
-  const char *outname = argc > 2 ? argv[2] : "flash.uf2";
+  const char* outname = argc > 2 ? argv[2] : "flash.uf2";
 
-  FILE *fout = fopen(outname, "wb");
+  FILE* fout = fopen(outname, "wb");
 
   UF2_Block bl;
   memset(&bl, 0, sizeof(bl));

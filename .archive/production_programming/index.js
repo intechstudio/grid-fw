@@ -68,14 +68,12 @@ app.get('/api/openocd/start', function(req, res) {
   openocd.stderr.on('data', (data) => {
     // console.error(`openocd::stderr: ${data}`);
     console.log(String.fromCharCode(...data));
-    consoleData.push(
-        {context : "openocd", data : String.fromCharCode(...data)});
+    consoleData.push({context : "openocd", data : String.fromCharCode(...data)});
   });
 
   openocd.on('close', (code) => {
     console.log(`openocd exited with code ${code}`);
-    consoleData.push(
-        {context : "openocd", data : `openocd exited with code ${code}`});
+    consoleData.push({context : "openocd", data : `openocd exited with code ${code}`});
   });
 })
 
@@ -91,18 +89,13 @@ app.get('/api/fuser/kill', function(req, res) {
     '3333/tcp',
   ]);
 
-  fuser.stdout.on(
-      'data',
-      (data) => { consoleData.push({context : "fuser", data : data}); });
+  fuser.stdout.on('data', (data) => { consoleData.push({context : "fuser", data : data}); });
 
-  fuser.stderr.on('data', (data) => {
-    consoleData.push({context : "fuser", data : String.fromCharCode(...data)});
-  });
+  fuser.stderr.on('data', (data) => { consoleData.push({context : "fuser", data : String.fromCharCode(...data)}); });
 
   fuser.on('close', (code) => {
     console.log(`fuser exited with code ${code}`);
-    consoleData.push(
-        {context : "fuser", data : `fuser exited with code ${code}`});
+    consoleData.push({context : "fuser", data : `fuser exited with code ${code}`});
   });
 })
 
@@ -133,8 +126,7 @@ app.get('/api/telnet/start', function(req, res) {
 
   telnet.on('close', (code) => {
     // console.log(`openocd exited with code ${code}`);
-    consoleData.push(
-        {context : "telnet", data : `telnet exited with code ${code}`});
+    consoleData.push({context : "telnet", data : `telnet exited with code ${code}`});
   });
 })
 
@@ -156,8 +148,7 @@ app.post('/api/telnet/send', function(req, res) {
     }
   }
 
-  consoleData.push(
-      {context : "telnet", data : "Telnet: try >> " + req.body.data});
+  consoleData.push({context : "telnet", data : "Telnet: try >> " + req.body.data});
 
   // consoleData.push({context:"telnet", data: req.body.data});
 
@@ -171,11 +162,6 @@ app.post('/api/telnet/send', function(req, res) {
 // app.use('/static', express.static('public'))
 
 app.use(express.static('public'));
-app.get(
-    '*',
-    (req,
-     res) => { res.sendFile(path.resolve(__dirname, 'public', 'index.html')); })
+app.get('*', (req, res) => { res.sendFile(path.resolve(__dirname, 'public', 'index.html')); })
 
-app.listen(localhostport, '0.0.0.0',
-           () => {console.log(
-               `Example app listening at http://localhost:${localhostport}`)})
+app.listen(localhostport, '0.0.0.0', () => {console.log(`Example app listening at http://localhost:${localhostport}`)})

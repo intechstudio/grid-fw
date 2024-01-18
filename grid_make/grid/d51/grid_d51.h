@@ -17,9 +17,9 @@
 
 #define GRID_D51_USER_ROW_BASE 0x804000
 
-#define GRID_D51_DEMCR (*(uint32_t *)0xE000EDFC)
-#define GRID_D51_DWT_CTRL (*(uint32_t *)0xE0001000)
-#define GRID_D51_DWT_CYCCNT (*(uint32_t *)0xE0001004)
+#define GRID_D51_DEMCR (*(uint32_t*)0xE000EDFC)
+#define GRID_D51_DWT_CTRL (*(uint32_t*)0xE0001000)
+#define GRID_D51_DWT_CYCCNT (*(uint32_t*)0xE0001004)
 
 /* ==================== Reading MCU Unique Serial Number ======================
  */
@@ -35,14 +35,14 @@ void grid_d51_init();
 
 void grid_d51_verify_user_row();
 
-uint8_t grid_d51_boundary_scan(uint32_t *result_bitmap);
-void grid_d51_boundary_scan_report(uint32_t *result_bitmap);
+uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap);
+void grid_d51_boundary_scan_report(uint32_t* result_bitmap);
 
 uint32_t grid_d51_dwt_enable();
 uint32_t grid_d51_dwt_cycles_read();
 
-uint8_t grid_fusb302_read_id(struct io_descriptor *i2c_io);
-uint8_t grid_mxt144u_read_id(struct io_descriptor *i2c_io);
+uint8_t grid_fusb302_read_id(struct io_descriptor* i2c_io);
+uint8_t grid_mxt144u_read_id(struct io_descriptor* i2c_io);
 
 void grid_d51_nvic_debug_priorities(void);
 
@@ -54,16 +54,15 @@ uint32_t grid_d51_nvic_get_interrupt_priority(IRQn_Type irqn);
 void grid_d51_nvic_set_interrupt_priority_mask(uint32_t priority);
 uint32_t grid_d51_nvic_get_interrupt_priority_mask(void);
 
-void grid_platform_printf(char const *fmt, ...);
+void grid_platform_printf(char const* fmt, ...);
 
-uint32_t grid_platform_get_id(uint32_t *return_array);
+uint32_t grid_platform_get_id(uint32_t* return_array);
 uint32_t grid_platform_get_hwcfg();
 uint8_t grid_platform_get_random_8();
 void grid_platform_delay_ms(uint32_t delay_milliseconds);
 uint8_t grid_platform_get_reset_cause();
 
-uint8_t grid_platform_send_grid_message(uint8_t direction, char *buffer,
-                                        uint16_t length);
+uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
 uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
@@ -73,9 +72,7 @@ uint8_t grid_platform_get_nvm_state();
 uint32_t grid_plaform_get_nvm_nextwriteoffset();
 
 void grid_platform_clear_all_actionstring_files_from_page(uint8_t page);
-uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page,
-                                                             int *last_element,
-                                                             int *last_event);
+uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page, int* last_element, int* last_event);
 void grid_platform_delete_actionstring_files_all();
 
 uint8_t grid_platform_erase_nvm_next();
@@ -94,6 +91,6 @@ uint32_t grid_platform_get_cycles();
 
 uint32_t grid_platform_get_cycles_per_us();
 
-void *grid_platform_allocate_volatile(size_t size);
+void* grid_platform_allocate_volatile(size_t size);
 
 #endif /* GRID_D51_H_ */

@@ -33,7 +33,7 @@ extern uint32_t grid_platform_get_cycles(void);
 
 static TaskHandle_t xTaskToNotify = NULL;
 
-static const char *TAG = "PORT";
+static const char* TAG = "PORT";
 
 #define GPIO_MOSI 8
 #define GPIO_MISO 6
@@ -42,8 +42,7 @@ static const char *TAG = "PORT";
 #define RCV_HOST SPI2_HOST
 
 uint8_t DRAM_ATTR empty_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
-uint8_t DRAM_ATTR message_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {
-    0};
+uint8_t DRAM_ATTR message_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
 spi_slave_transaction_t DRAM_ATTR outbnound_transaction[4];
 spi_slave_transaction_t DRAM_ATTR spi_empty_transaction;
@@ -58,7 +57,7 @@ void grid_platform_sync1_pulse_send() { sync1_state++; }
 SemaphoreHandle_t queue_state_sem;
 SemaphoreHandle_t spi_ready_sem;
 
-void ets_debug_string(char *tag, char *str) {
+void ets_debug_string(char* tag, char* str) {
 
   return;
 
@@ -77,46 +76,45 @@ void ets_debug_string(char *tag, char *str) {
   // ets_printf("\r\n");
 };
 
-static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t *trans) {
+static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t* trans) {
   // printf("$\r\n");
 
   portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
   portENTER_CRITICAL(&spinlock);
 
-  ((uint8_t *)trans->tx_buffer)[GRID_PARAMETER_SPI_SYNC1_STATE_index] = 0;
+  ((uint8_t*)trans->tx_buffer)[GRID_PARAMETER_SPI_SYNC1_STATE_index] = 0;
 
   if (sync1_state) {
 
-    ((uint8_t *)trans->tx_buffer)[GRID_PARAMETER_SPI_SYNC1_STATE_index] =
-        sync1_state;
+    ((uint8_t*)trans->tx_buffer)[GRID_PARAMETER_SPI_SYNC1_STATE_index] = sync1_state;
     sync1_state--;
   }
   portEXIT_CRITICAL(&spinlock);
 }
 
-static void *DRAM_ATTR rx_debug = 0;
+static void* DRAM_ATTR rx_debug = 0;
 static uint8_t DRAM_ATTR rx_flag = 0;
 
 static char DRAM_ATTR rx_str[500] = {0};
 
-static struct grid_port *DRAM_ATTR uart_port_array[4] = {0};
+static struct grid_port* DRAM_ATTR uart_port_array[4] = {0};
 
-static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t *trans) {
+static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
   // ets_printf(" %d ", queue_state);
   rx_flag = 1;
 
-  if (((uint8_t *)trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]) {
-    strcpy(rx_str, (char *)trans->rx_buffer);
+  if (((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]) {
+    strcpy(rx_str, (char*)trans->rx_buffer);
   }
 
   portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
   portENTER_CRITICAL(&spinlock);
 
-  if (((uint8_t *)trans->rx_buffer)[GRID_PARAMETER_SPI_SYNC1_STATE_index]) {
+  if (((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_SYNC1_STATE_index]) {
     sync1_received++;
   }
-  if (((uint8_t *)trans->rx_buffer)[GRID_PARAMETER_SPI_SYNC2_STATE_index]) {
+  if (((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_SYNC2_STATE_index]) {
     sync2_received++;
   }
 
@@ -132,11 +130,10 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t *trans) {
 
   portEXIT_CRITICAL(&spinlock);
 
-  uint8_t ready_flags =
-      ((uint8_t *)trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
+  uint8_t ready_flags = ((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
 
   for (uint8_t i = 0; i < 4; i++) {
-    struct grid_port *por = uart_port_array[i];
+    struct grid_port* por = uart_port_array[i];
 
     if ((ready_flags & (0b00000001 << i))) {
 
@@ -145,7 +142,6 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t *trans) {
       if (por->tx_double_buffer_status == UINT16_MAX) {
 
         por->tx_double_buffer_status = 0;
-
       } else if (por->tx_double_buffer_status > 0) {
 
         por->tx_double_buffer_status = UINT16_MAX;
@@ -153,9 +149,8 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t *trans) {
     }
   }
 
-  struct grid_port *por = NULL;
-  uint8_t source_flags =
-      ((uint8_t *)trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
+  struct grid_port* por = NULL;
+  uint8_t source_flags = ((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
 
   if ((source_flags & 0b00000001)) {
     por = uart_port_array[0];
@@ -180,10 +175,9 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t *trans) {
 
   for (uint16_t i = 0; true; i++) {
 
-    por->rx_double_buffer[por->rx_double_buffer_write_index] =
-        ((char *)trans->rx_buffer)[i];
+    por->rx_double_buffer[por->rx_double_buffer_write_index] = ((char*)trans->rx_buffer)[i];
 
-    if (((char *)trans->rx_buffer)[i] == '\0') {
+    if (((char*)trans->rx_buffer)[i] == '\0') {
       break;
     }
 
@@ -194,18 +188,16 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t *trans) {
 
 static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
 
-uint8_t grid_platform_send_grid_message(uint8_t direction, char *buffer,
-                                        uint16_t length) {
+uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length) {
 
   // grid_platform_printf("-> %d ", length);
 
   uint8_t dir_index = direction - GRID_CONST_NORTH;
 
-  spi_slave_transaction_t *t = &outbnound_transaction[dir_index];
+  spi_slave_transaction_t* t = &outbnound_transaction[dir_index];
 
-  ((uint8_t *)t->tx_buffer)[length] = 0; // termination zero after the message
-  ((uint8_t *)t->tx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] =
-      (1 << dir_index);
+  ((uint8_t*)t->tx_buffer)[length] = 0; // termination zero after the message
+  ((uint8_t*)t->tx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << dir_index);
 
   // ets_printf("%02x %02x %02x %02x ... len: %d\r\n",
   // ((uint8_t*)t->tx_buffer)[0], ((uint8_t*)t->tx_buffer)[1],
@@ -239,12 +231,11 @@ static void plot_port_debug() {
 
   uint16_t plot[20] = {0};
 
-  uint8_t port_list_length =
-      grid_transport_get_port_array_length(&grid_transport_state);
+  uint8_t port_list_length = grid_transport_get_port_array_length(&grid_transport_state);
 
   for (uint8_t i = 0; i < port_list_length; i++) {
 
-    struct grid_port *por = grid_transport_get_port(&grid_transport_state, i);
+    struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
 
     plot[i + 0] = grid_buffer_get_space(&por->tx_buffer);
     plot[i + 6] = grid_buffer_get_space(&por->rx_buffer);
@@ -291,10 +282,9 @@ SemaphoreHandle_t nvm_or_port;
 static uint64_t last_ping_timestamp = 0;
 static uint64_t last_heartbeat_timestamp = 0;
 
-void grid_esp32_port_periodic_ping_heartbeat_handler_cb(void *arg) {
+void grid_esp32_port_periodic_ping_heartbeat_handler_cb(void* arg) {
 
-  if (grid_platform_rtc_get_elapsed_time(last_ping_timestamp) <
-      GRID_PARAMETER_PING_interval * 1000) {
+  if (grid_platform_rtc_get_elapsed_time(last_ping_timestamp) < GRID_PARAMETER_PING_interval * 1000) {
     return;
   }
 
@@ -319,7 +309,7 @@ void grid_esp32_port_periodic_ping_heartbeat_handler_cb(void *arg) {
   }
 }
 
-void grid_esp32_port_task(void *arg) {
+void grid_esp32_port_task(void* arg) {
 
   nvm_or_port = (SemaphoreHandle_t)arg;
 
@@ -332,20 +322,10 @@ void grid_esp32_port_task(void *arg) {
   esp_err_t ret;
 
   // Configuration for the SPI bus
-  spi_bus_config_t buscfg = {.mosi_io_num = GPIO_MOSI,
-                             .miso_io_num = GPIO_MISO,
-                             .sclk_io_num = GPIO_SCLK,
-                             .quadwp_io_num = -1,
-                             .quadhd_io_num = -1,
-                             .intr_flags = ESP_INTR_FLAG_IRAM};
+  spi_bus_config_t buscfg = {.mosi_io_num = GPIO_MOSI, .miso_io_num = GPIO_MISO, .sclk_io_num = GPIO_SCLK, .quadwp_io_num = -1, .quadhd_io_num = -1, .intr_flags = ESP_INTR_FLAG_IRAM};
 
   // Configuration for the SPI slave interface
-  spi_slave_interface_config_t slvcfg = {.mode = 0,
-                                         .spics_io_num = GPIO_CS,
-                                         .queue_size = 6,
-                                         .flags = 0,
-                                         .post_setup_cb = my_post_setup_cb,
-                                         .post_trans_cb = my_post_trans_cb};
+  spi_slave_interface_config_t slvcfg = {.mode = 0, .spics_io_num = GPIO_CS, .queue_size = 6, .flags = 0, .post_setup_cb = my_post_setup_cb, .post_trans_cb = my_post_trans_cb};
 
   // Enable pull-ups on SPI lines so we don't detect rogue pulses when no master
   // is connected.
@@ -357,14 +337,12 @@ void grid_esp32_port_task(void *arg) {
   ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
   assert(ret == ESP_OK);
 
-  WORD_ALIGNED_ATTR char sendbuf[GRID_PARAMETER_SPI_TRANSACTION_length + 1] = {
-      0};
-  WORD_ALIGNED_ATTR char recvbuf[GRID_PARAMETER_SPI_TRANSACTION_length + 1] = {
-      0};
+  WORD_ALIGNED_ATTR char sendbuf[GRID_PARAMETER_SPI_TRANSACTION_length + 1] = {0};
+  WORD_ALIGNED_ATTR char recvbuf[GRID_PARAMETER_SPI_TRANSACTION_length + 1] = {0};
 
   for (uint8_t i = 0; i < 4; i++) {
 
-    struct grid_port *port = grid_transport_get_port(&grid_transport_state, i);
+    struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
 
     // Set up a transaction of GRID_PARAMETER_SPI_TRANSACTION_length bytes to
     // send/receive
@@ -399,13 +377,10 @@ void grid_esp32_port_task(void *arg) {
 
   // Create a periodic timer for thread safe miscellaneous tasks
 
-  esp_timer_create_args_t periodic_ping_heartbeat_args = {
-      .callback = &grid_esp32_port_periodic_ping_heartbeat_handler_cb,
-      .name = "ping"};
+  esp_timer_create_args_t periodic_ping_heartbeat_args = {.callback = &grid_esp32_port_periodic_ping_heartbeat_handler_cb, .name = "ping"};
 
   esp_timer_handle_t periodic_ping_heartbeat_timer;
-  ESP_ERROR_CHECK(esp_timer_create(&periodic_ping_heartbeat_args,
-                                   &periodic_ping_heartbeat_timer));
+  ESP_ERROR_CHECK(esp_timer_create(&periodic_ping_heartbeat_args, &periodic_ping_heartbeat_timer));
   ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_ping_heartbeat_timer, 10));
 
   // gpio_set_direction(47, GPIO_MODE_OUTPUT);
@@ -459,12 +434,10 @@ void grid_esp32_port_task(void *arg) {
 
       uint32_t c0, c1;
 
-      uint8_t port_list_length =
-          grid_transport_get_port_array_length(&grid_transport_state);
+      uint8_t port_list_length = grid_transport_get_port_array_length(&grid_transport_state);
       // TRY TO RECEIVE UP TO 4 packets on UART PORTS
       for (uint8_t i = 0; i < port_list_length * 4; i++) {
-        struct grid_port *port = grid_transport_get_port(&grid_transport_state,
-                                                         i % port_list_length);
+        struct grid_port* port = grid_transport_get_port(&grid_transport_state, i % port_list_length);
 
         if (port->type == GRID_PORT_TYPE_USART) {
           grid_port_receive_task(port);
@@ -495,7 +468,6 @@ void grid_esp32_port_task(void *arg) {
             xTaskResumeAll();
             // CRITICAL_SECTION_LEAVE()
           }
-
         } else {
 
           if (grid_ui_bluk_anything_is_in_progress(&grid_ui_state)) {
@@ -520,10 +492,8 @@ void grid_esp32_port_task(void *arg) {
 
       grid_midi_rx_pop(); // send_everywhere pushes to UI->RX_BUFFER
 
-      struct grid_port *host_port = grid_transport_get_port_first_of_type(
-          &grid_transport_state, GRID_PORT_TYPE_USB);
-      struct grid_port *ui_port = grid_transport_get_port_first_of_type(
-          &grid_transport_state, GRID_PORT_TYPE_UI);
+      struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
+      struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
       grid_port_receive_task(host_port); // USB
       grid_port_receive_task(ui_port);   // UI
 
@@ -531,8 +501,7 @@ void grid_esp32_port_task(void *arg) {
 
       for (uint8_t i = 0; i < port_list_length; i++) {
 
-        struct grid_port *por =
-            grid_transport_get_port(&grid_transport_state, i);
+        struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
 
         grid_port_process_inbound(por);
       }
@@ -556,8 +525,7 @@ void grid_esp32_port_task(void *arg) {
       grid_port_process_outbound_ui(ui_port);
 
       for (uint8_t i = 0; i < port_list_length; i++) {
-        struct grid_port *port =
-            grid_transport_get_port(&grid_transport_state, i);
+        struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
 
         if (port->type == GRID_PORT_TYPE_USART) {
           grid_port_process_outbound_usart(port);
@@ -570,7 +538,6 @@ void grid_esp32_port_task(void *arg) {
       // delta/grid_platform_get_cycles_per_us());
 
       xSemaphoreGive(nvm_or_port);
-
     } else {
 
       // ets_printf("NO TAKE\r\n");

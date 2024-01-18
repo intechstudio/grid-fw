@@ -85,8 +85,7 @@ struct rand_sync_desc RAND_0;
 struct wdt_descriptor WDT_0;
 
 void EXTERNAL_IRQ_0_init(void) {
-  hri_gclk_write_PCHCTRL_reg(GCLK, EIC_GCLK_ID,
-                             CONF_GCLK_EIC_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, EIC_GCLK_ID, CONF_GCLK_EIC_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
   hri_mclk_set_APBAMASK_EIC_bit(MCLK);
 
   // Set pin direction to input
@@ -126,10 +125,8 @@ void EXTERNAL_IRQ_0_init(void) {
 void ADC_0_init(void) {
 
   hri_mclk_set_APBDMASK_ADC0_bit(MCLK);
-  hri_gclk_write_PCHCTRL_reg(GCLK, ADC0_GCLK_ID,
-                             CONF_GCLK_ADC0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-  adc_async_init(&ADC_0, ADC0, ADC_0_map, ADC_0_CH_MAX, ADC_0_CH_AMOUNT,
-                 &ADC_0_ch[0], (void *)NULL);
+  hri_gclk_write_PCHCTRL_reg(GCLK, ADC0_GCLK_ID, CONF_GCLK_ADC0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  adc_async_init(&ADC_0, ADC0, ADC_0_map, ADC_0_CH_MAX, ADC_0_CH_AMOUNT, &ADC_0_ch[0], (void*)NULL);
   adc_async_register_channel_buffer(&ADC_0, 0, ADC_0_buffer, ADC_0_BUFFER_SIZE);
 
   // Disable digital pin circuitry
@@ -145,10 +142,8 @@ void ADC_0_init(void) {
  */
 void ADC_1_init(void) {
   hri_mclk_set_APBDMASK_ADC1_bit(MCLK);
-  hri_gclk_write_PCHCTRL_reg(GCLK, ADC1_GCLK_ID,
-                             CONF_GCLK_ADC1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-  adc_async_init(&ADC_1, ADC1, ADC_1_map, ADC_1_CH_MAX, ADC_1_CH_AMOUNT,
-                 &ADC_1_ch[0], (void *)NULL);
+  hri_gclk_write_PCHCTRL_reg(GCLK, ADC1_GCLK_ID, CONF_GCLK_ADC1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  adc_async_init(&ADC_1, ADC1, ADC_1_map, ADC_1_CH_MAX, ADC_1_CH_AMOUNT, &ADC_1_ch[0], (void*)NULL);
   adc_async_register_channel_buffer(&ADC_1, 0, ADC_1_buffer, ADC_1_BUFFER_SIZE);
 
   // Disable digital pin circuitry
@@ -168,18 +163,10 @@ void CRC_0_init(void) {
 }
 
 void EVENT_SYSTEM_0_init(void) {
-  hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_0,
-                             CONF_GCLK_EVSYS_CHANNEL_0_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
-  hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_1,
-                             CONF_GCLK_EVSYS_CHANNEL_1_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
-  hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_2,
-                             CONF_GCLK_EVSYS_CHANNEL_2_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
-  hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_3,
-                             CONF_GCLK_EVSYS_CHANNEL_3_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_0, CONF_GCLK_EVSYS_CHANNEL_0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_1, CONF_GCLK_EVSYS_CHANNEL_1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_2, CONF_GCLK_EVSYS_CHANNEL_2_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, EVSYS_GCLK_ID_3, CONF_GCLK_EVSYS_CHANNEL_3_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   hri_mclk_set_APBBMASK_EVSYS_bit(MCLK);
 
@@ -231,26 +218,25 @@ void QSPI_INSTANCE_PORT_init(void) {
                          // <GPIO_PULL_DOWN"> Pull-down
                          GPIO_PULL_OFF);
 
-  gpio_set_pin_function(
-      PA08,
-      // <y> Pin function
-      // <id> pad_function
-      // <i> Auto : use driver pinmux if signal is imported by driver, else turn
-      // off function <PINMUX_PA08H_QSPI_DATA0"> Auto <GPIO_PIN_FUNCTION_OFF">
-      // Off <GPIO_PIN_FUNCTION_A"> A <GPIO_PIN_FUNCTION_B"> B
-      // <GPIO_PIN_FUNCTION_C"> C
-      // <GPIO_PIN_FUNCTION_D"> D
-      // <GPIO_PIN_FUNCTION_E"> E
-      // <GPIO_PIN_FUNCTION_F"> F
-      // <GPIO_PIN_FUNCTION_G"> G
-      // <GPIO_PIN_FUNCTION_H"> H
-      // <GPIO_PIN_FUNCTION_I"> I
-      // <GPIO_PIN_FUNCTION_J"> J
-      // <GPIO_PIN_FUNCTION_K"> K
-      // <GPIO_PIN_FUNCTION_L"> L
-      // <GPIO_PIN_FUNCTION_M"> M
-      // <GPIO_PIN_FUNCTION_N"> N
-      PINMUX_PA08H_QSPI_DATA0);
+  gpio_set_pin_function(PA08,
+                        // <y> Pin function
+                        // <id> pad_function
+                        // <i> Auto : use driver pinmux if signal is imported by driver, else turn
+                        // off function <PINMUX_PA08H_QSPI_DATA0"> Auto <GPIO_PIN_FUNCTION_OFF">
+                        // Off <GPIO_PIN_FUNCTION_A"> A <GPIO_PIN_FUNCTION_B"> B
+                        // <GPIO_PIN_FUNCTION_C"> C
+                        // <GPIO_PIN_FUNCTION_D"> D
+                        // <GPIO_PIN_FUNCTION_E"> E
+                        // <GPIO_PIN_FUNCTION_F"> F
+                        // <GPIO_PIN_FUNCTION_G"> G
+                        // <GPIO_PIN_FUNCTION_H"> H
+                        // <GPIO_PIN_FUNCTION_I"> I
+                        // <GPIO_PIN_FUNCTION_J"> J
+                        // <GPIO_PIN_FUNCTION_K"> K
+                        // <GPIO_PIN_FUNCTION_L"> L
+                        // <GPIO_PIN_FUNCTION_M"> M
+                        // <GPIO_PIN_FUNCTION_N"> N
+                        PINMUX_PA08H_QSPI_DATA0);
 
   gpio_set_pin_direction(PA09,
                          // <y> Pin direction
@@ -275,26 +261,25 @@ void QSPI_INSTANCE_PORT_init(void) {
                          // <GPIO_PULL_DOWN"> Pull-down
                          GPIO_PULL_OFF);
 
-  gpio_set_pin_function(
-      PA09,
-      // <y> Pin function
-      // <id> pad_function
-      // <i> Auto : use driver pinmux if signal is imported by driver, else turn
-      // off function <PINMUX_PA09H_QSPI_DATA1"> Auto <GPIO_PIN_FUNCTION_OFF">
-      // Off <GPIO_PIN_FUNCTION_A"> A <GPIO_PIN_FUNCTION_B"> B
-      // <GPIO_PIN_FUNCTION_C"> C
-      // <GPIO_PIN_FUNCTION_D"> D
-      // <GPIO_PIN_FUNCTION_E"> E
-      // <GPIO_PIN_FUNCTION_F"> F
-      // <GPIO_PIN_FUNCTION_G"> G
-      // <GPIO_PIN_FUNCTION_H"> H
-      // <GPIO_PIN_FUNCTION_I"> I
-      // <GPIO_PIN_FUNCTION_J"> J
-      // <GPIO_PIN_FUNCTION_K"> K
-      // <GPIO_PIN_FUNCTION_L"> L
-      // <GPIO_PIN_FUNCTION_M"> M
-      // <GPIO_PIN_FUNCTION_N"> N
-      PINMUX_PA09H_QSPI_DATA1);
+  gpio_set_pin_function(PA09,
+                        // <y> Pin function
+                        // <id> pad_function
+                        // <i> Auto : use driver pinmux if signal is imported by driver, else turn
+                        // off function <PINMUX_PA09H_QSPI_DATA1"> Auto <GPIO_PIN_FUNCTION_OFF">
+                        // Off <GPIO_PIN_FUNCTION_A"> A <GPIO_PIN_FUNCTION_B"> B
+                        // <GPIO_PIN_FUNCTION_C"> C
+                        // <GPIO_PIN_FUNCTION_D"> D
+                        // <GPIO_PIN_FUNCTION_E"> E
+                        // <GPIO_PIN_FUNCTION_F"> F
+                        // <GPIO_PIN_FUNCTION_G"> G
+                        // <GPIO_PIN_FUNCTION_H"> H
+                        // <GPIO_PIN_FUNCTION_I"> I
+                        // <GPIO_PIN_FUNCTION_J"> J
+                        // <GPIO_PIN_FUNCTION_K"> K
+                        // <GPIO_PIN_FUNCTION_L"> L
+                        // <GPIO_PIN_FUNCTION_M"> M
+                        // <GPIO_PIN_FUNCTION_N"> N
+                        PINMUX_PA09H_QSPI_DATA1);
 
   gpio_set_pin_direction(PA10,
                          // <y> Pin direction
@@ -319,26 +304,25 @@ void QSPI_INSTANCE_PORT_init(void) {
                          // <GPIO_PULL_DOWN"> Pull-down
                          GPIO_PULL_OFF);
 
-  gpio_set_pin_function(
-      PA10,
-      // <y> Pin function
-      // <id> pad_function
-      // <i> Auto : use driver pinmux if signal is imported by driver, else turn
-      // off function <PINMUX_PA10H_QSPI_DATA2"> Auto <GPIO_PIN_FUNCTION_OFF">
-      // Off <GPIO_PIN_FUNCTION_A"> A <GPIO_PIN_FUNCTION_B"> B
-      // <GPIO_PIN_FUNCTION_C"> C
-      // <GPIO_PIN_FUNCTION_D"> D
-      // <GPIO_PIN_FUNCTION_E"> E
-      // <GPIO_PIN_FUNCTION_F"> F
-      // <GPIO_PIN_FUNCTION_G"> G
-      // <GPIO_PIN_FUNCTION_H"> H
-      // <GPIO_PIN_FUNCTION_I"> I
-      // <GPIO_PIN_FUNCTION_J"> J
-      // <GPIO_PIN_FUNCTION_K"> K
-      // <GPIO_PIN_FUNCTION_L"> L
-      // <GPIO_PIN_FUNCTION_M"> M
-      // <GPIO_PIN_FUNCTION_N"> N
-      PINMUX_PA10H_QSPI_DATA2);
+  gpio_set_pin_function(PA10,
+                        // <y> Pin function
+                        // <id> pad_function
+                        // <i> Auto : use driver pinmux if signal is imported by driver, else turn
+                        // off function <PINMUX_PA10H_QSPI_DATA2"> Auto <GPIO_PIN_FUNCTION_OFF">
+                        // Off <GPIO_PIN_FUNCTION_A"> A <GPIO_PIN_FUNCTION_B"> B
+                        // <GPIO_PIN_FUNCTION_C"> C
+                        // <GPIO_PIN_FUNCTION_D"> D
+                        // <GPIO_PIN_FUNCTION_E"> E
+                        // <GPIO_PIN_FUNCTION_F"> F
+                        // <GPIO_PIN_FUNCTION_G"> G
+                        // <GPIO_PIN_FUNCTION_H"> H
+                        // <GPIO_PIN_FUNCTION_I"> I
+                        // <GPIO_PIN_FUNCTION_J"> J
+                        // <GPIO_PIN_FUNCTION_K"> K
+                        // <GPIO_PIN_FUNCTION_L"> L
+                        // <GPIO_PIN_FUNCTION_M"> M
+                        // <GPIO_PIN_FUNCTION_N"> N
+                        PINMUX_PA10H_QSPI_DATA2);
 
   gpio_set_pin_direction(PA11,
                          // <y> Pin direction
@@ -363,26 +347,25 @@ void QSPI_INSTANCE_PORT_init(void) {
                          // <GPIO_PULL_DOWN"> Pull-down
                          GPIO_PULL_OFF);
 
-  gpio_set_pin_function(
-      PA11,
-      // <y> Pin function
-      // <id> pad_function
-      // <i> Auto : use driver pinmux if signal is imported by driver, else turn
-      // off function <PINMUX_PA11H_QSPI_DATA3"> Auto <GPIO_PIN_FUNCTION_OFF">
-      // Off <GPIO_PIN_FUNCTION_A"> A <GPIO_PIN_FUNCTION_B"> B
-      // <GPIO_PIN_FUNCTION_C"> C
-      // <GPIO_PIN_FUNCTION_D"> D
-      // <GPIO_PIN_FUNCTION_E"> E
-      // <GPIO_PIN_FUNCTION_F"> F
-      // <GPIO_PIN_FUNCTION_G"> G
-      // <GPIO_PIN_FUNCTION_H"> H
-      // <GPIO_PIN_FUNCTION_I"> I
-      // <GPIO_PIN_FUNCTION_J"> J
-      // <GPIO_PIN_FUNCTION_K"> K
-      // <GPIO_PIN_FUNCTION_L"> L
-      // <GPIO_PIN_FUNCTION_M"> M
-      // <GPIO_PIN_FUNCTION_N"> N
-      PINMUX_PA11H_QSPI_DATA3);
+  gpio_set_pin_function(PA11,
+                        // <y> Pin function
+                        // <id> pad_function
+                        // <i> Auto : use driver pinmux if signal is imported by driver, else turn
+                        // off function <PINMUX_PA11H_QSPI_DATA3"> Auto <GPIO_PIN_FUNCTION_OFF">
+                        // Off <GPIO_PIN_FUNCTION_A"> A <GPIO_PIN_FUNCTION_B"> B
+                        // <GPIO_PIN_FUNCTION_C"> C
+                        // <GPIO_PIN_FUNCTION_D"> D
+                        // <GPIO_PIN_FUNCTION_E"> E
+                        // <GPIO_PIN_FUNCTION_F"> F
+                        // <GPIO_PIN_FUNCTION_G"> G
+                        // <GPIO_PIN_FUNCTION_H"> H
+                        // <GPIO_PIN_FUNCTION_I"> I
+                        // <GPIO_PIN_FUNCTION_J"> J
+                        // <GPIO_PIN_FUNCTION_K"> K
+                        // <GPIO_PIN_FUNCTION_L"> L
+                        // <GPIO_PIN_FUNCTION_M"> M
+                        // <GPIO_PIN_FUNCTION_N"> N
+                        PINMUX_PA11H_QSPI_DATA3);
 
   // Set pin direction to input
   gpio_set_pin_direction(PB10, GPIO_DIRECTION_IN);
@@ -427,12 +410,8 @@ static void RTC_Scheduler_init(void) {
  */
 void USART_EAST_CLOCK_init() {
 
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM0_GCLK_ID_CORE,
-                             CONF_GCLK_SERCOM0_CORE_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM0_GCLK_ID_SLOW,
-                             CONF_GCLK_SERCOM0_SLOW_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM0_GCLK_ID_CORE, CONF_GCLK_SERCOM0_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM0_GCLK_ID_SLOW, CONF_GCLK_SERCOM0_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   hri_mclk_set_APBAMASK_SERCOM0_bit(MCLK);
 }
@@ -456,8 +435,7 @@ void USART_EAST_PORT_init() {
  */
 void USART_EAST_init(void) {
   USART_EAST_CLOCK_init();
-  usart_async_init(&USART_EAST, SERCOM0, USART_EAST_buffer,
-                   USART_EAST_BUFFER_SIZE, (void *)NULL);
+  usart_async_init(&USART_EAST, SERCOM0, USART_EAST_buffer, USART_EAST_BUFFER_SIZE, (void*)NULL);
   USART_EAST_PORT_init();
 }
 
@@ -468,12 +446,8 @@ void USART_EAST_init(void) {
  */
 void USART_NORTH_CLOCK_init() {
 
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM1_GCLK_ID_CORE,
-                             CONF_GCLK_SERCOM1_CORE_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM1_GCLK_ID_SLOW,
-                             CONF_GCLK_SERCOM1_SLOW_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM1_GCLK_ID_CORE, CONF_GCLK_SERCOM1_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM1_GCLK_ID_SLOW, CONF_GCLK_SERCOM1_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   hri_mclk_set_APBAMASK_SERCOM1_bit(MCLK);
 }
@@ -497,8 +471,7 @@ void USART_NORTH_PORT_init() {
  */
 void USART_NORTH_init(void) {
   USART_NORTH_CLOCK_init();
-  usart_async_init(&USART_NORTH, SERCOM1, USART_NORTH_buffer,
-                   USART_NORTH_BUFFER_SIZE, (void *)NULL);
+  usart_async_init(&USART_NORTH, SERCOM1, USART_NORTH_buffer, USART_NORTH_BUFFER_SIZE, (void*)NULL);
   USART_NORTH_PORT_init();
 }
 
@@ -510,19 +483,15 @@ void GRID_AUX_PORT_init(void) {
 }
 
 void GRID_AUX_CLOCK_init(void) {
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_CORE,
-                             CONF_GCLK_SERCOM2_CORE_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_SLOW,
-                             CONF_GCLK_SERCOM2_SLOW_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_CORE, CONF_GCLK_SERCOM2_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_SLOW, CONF_GCLK_SERCOM2_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   hri_mclk_set_APBBMASK_SERCOM2_bit(MCLK);
 }
 
 void GRID_AUX_init(void) {
   GRID_AUX_CLOCK_init();
-  usart_sync_init(&GRID_AUX, SERCOM2, (void *)NULL);
+  usart_sync_init(&GRID_AUX, SERCOM2, (void*)NULL);
   GRID_AUX_PORT_init();
 }
 
@@ -567,12 +536,8 @@ void UI_SPI_PORT_init(void) {
 }
 
 void UI_SPI_CLOCK_init(void) {
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM3_GCLK_ID_CORE,
-                             CONF_GCLK_SERCOM3_CORE_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM3_GCLK_ID_SLOW,
-                             CONF_GCLK_SERCOM3_SLOW_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM3_GCLK_ID_CORE, CONF_GCLK_SERCOM3_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM3_GCLK_ID_SLOW, CONF_GCLK_SERCOM3_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   hri_mclk_set_APBBMASK_SERCOM3_bit(MCLK);
 }
@@ -590,12 +555,8 @@ void UI_SPI_init(void) {
  */
 void USART_WEST_CLOCK_init() {
 
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM4_GCLK_ID_CORE,
-                             CONF_GCLK_SERCOM4_CORE_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM4_GCLK_ID_SLOW,
-                             CONF_GCLK_SERCOM4_SLOW_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM4_GCLK_ID_CORE, CONF_GCLK_SERCOM4_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM4_GCLK_ID_SLOW, CONF_GCLK_SERCOM4_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   hri_mclk_set_APBDMASK_SERCOM4_bit(MCLK);
 }
@@ -619,8 +580,7 @@ void USART_WEST_PORT_init() {
  */
 void USART_WEST_init(void) {
   USART_WEST_CLOCK_init();
-  usart_async_init(&USART_WEST, SERCOM4, USART_WEST_buffer,
-                   USART_WEST_BUFFER_SIZE, (void *)NULL);
+  usart_async_init(&USART_WEST, SERCOM4, USART_WEST_buffer, USART_WEST_BUFFER_SIZE, (void*)NULL);
   USART_WEST_PORT_init();
 }
 
@@ -648,12 +608,8 @@ void SYS_I2C_PORT_init(void) {
 }
 
 void SYS_I2C_CLOCK_init(void) {
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM5_GCLK_ID_CORE,
-                             CONF_GCLK_SERCOM5_CORE_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM5_GCLK_ID_SLOW,
-                             CONF_GCLK_SERCOM5_SLOW_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM5_GCLK_ID_CORE, CONF_GCLK_SERCOM5_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM5_GCLK_ID_SLOW, CONF_GCLK_SERCOM5_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   hri_mclk_set_APBDMASK_SERCOM5_bit(MCLK);
 }
@@ -671,12 +627,8 @@ void SYS_I2C_init(void) {
  */
 void USART_SOUTH_CLOCK_init() {
 
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM6_GCLK_ID_CORE,
-                             CONF_GCLK_SERCOM6_CORE_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM6_GCLK_ID_SLOW,
-                             CONF_GCLK_SERCOM6_SLOW_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM6_GCLK_ID_CORE, CONF_GCLK_SERCOM6_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM6_GCLK_ID_SLOW, CONF_GCLK_SERCOM6_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   hri_mclk_set_APBDMASK_SERCOM6_bit(MCLK);
 }
@@ -700,8 +652,7 @@ void USART_SOUTH_PORT_init() {
  */
 void USART_SOUTH_init(void) {
   USART_SOUTH_CLOCK_init();
-  usart_async_init(&USART_SOUTH, SERCOM6, USART_SOUTH_buffer,
-                   USART_SOUTH_BUFFER_SIZE, (void *)NULL);
+  usart_async_init(&USART_SOUTH, SERCOM6, USART_SOUTH_buffer, USART_SOUTH_BUFFER_SIZE, (void*)NULL);
   USART_SOUTH_PORT_init();
 }
 
@@ -746,12 +697,8 @@ void GRID_LED_PORT_init(void) {
 }
 
 void GRID_LED_CLOCK_init(void) {
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM7_GCLK_ID_CORE,
-                             CONF_GCLK_SERCOM7_CORE_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
-  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM7_GCLK_ID_SLOW,
-                             CONF_GCLK_SERCOM7_SLOW_SRC |
-                                 (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM7_GCLK_ID_CORE, CONF_GCLK_SERCOM7_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM7_GCLK_ID_SLOW, CONF_GCLK_SERCOM7_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   hri_mclk_set_APBDMASK_SERCOM7_bit(MCLK);
 }
@@ -771,8 +718,7 @@ void delay_driver_init(void) { delay_init(SysTick); }
  */
 static void TIMER_0_init(void) {
   hri_mclk_set_APBAMASK_TC0_bit(MCLK);
-  hri_gclk_write_PCHCTRL_reg(GCLK, TC0_GCLK_ID,
-                             CONF_GCLK_TC0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, TC0_GCLK_ID, CONF_GCLK_TC0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   timer_init(&TIMER_0, TC0, _tc_get_timer());
 }
@@ -784,8 +730,7 @@ static void TIMER_0_init(void) {
  */
 static void TIMER_1_init(void) {
   hri_mclk_set_APBAMASK_TC1_bit(MCLK);
-  hri_gclk_write_PCHCTRL_reg(GCLK, TC1_GCLK_ID,
-                             CONF_GCLK_TC1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, TC1_GCLK_ID, CONF_GCLK_TC1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   timer_init(&TIMER_1, TC1, _tc_get_timer());
 }
@@ -797,8 +742,7 @@ static void TIMER_1_init(void) {
  */
 static void TIMER_2_init(void) {
   hri_mclk_set_APBBMASK_TC2_bit(MCLK);
-  hri_gclk_write_PCHCTRL_reg(GCLK, TC2_GCLK_ID,
-                             CONF_GCLK_TC2_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, TC2_GCLK_ID, CONF_GCLK_TC2_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   timer_init(&TIMER_2, TC2, _tc_get_timer());
 }
@@ -810,8 +754,7 @@ static void TIMER_2_init(void) {
  */
 static void TIMER_3_init(void) {
   hri_mclk_set_APBBMASK_TC3_bit(MCLK);
-  hri_gclk_write_PCHCTRL_reg(GCLK, TC3_GCLK_ID,
-                             CONF_GCLK_TC3_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, TC3_GCLK_ID, CONF_GCLK_TC3_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
   timer_init(&TIMER_3, TC3, _tc_get_timer());
 }
@@ -918,15 +861,13 @@ void USB_DEVICE_INSTANCE_PORT_init(void) {
 
 /* The USB module requires a GCLK_USB of 48 MHz ~ 0.25% clock
  * for low speed and full speed operation. */
-#if (CONF_GCLK_USB_FREQUENCY > (48000000 + 48000000 / 400)) ||                 \
-    (CONF_GCLK_USB_FREQUENCY < (48000000 - 48000000 / 400))
+#if (CONF_GCLK_USB_FREQUENCY > (48000000 + 48000000 / 400)) || (CONF_GCLK_USB_FREQUENCY < (48000000 - 48000000 / 400))
 #warning USB clock should be 48MHz ~ 0.25% clock, check your configuration!
 #endif
 
 void USB_DEVICE_INSTANCE_CLOCK_init(void) {
 
-  hri_gclk_write_PCHCTRL_reg(GCLK, USB_GCLK_ID,
-                             CONF_GCLK_USB_SRC | GCLK_PCHCTRL_CHEN);
+  hri_gclk_write_PCHCTRL_reg(GCLK, USB_GCLK_ID, CONF_GCLK_USB_SRC | GCLK_PCHCTRL_CHEN);
   hri_mclk_set_AHBMASK_USB_bit(MCLK);
   hri_mclk_set_APBBMASK_USB_bit(MCLK);
 }

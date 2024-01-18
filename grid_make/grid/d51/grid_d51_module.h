@@ -41,6 +41,6 @@ enum grid_sync_mode { GRID_SYNC_INITIAL, GRID_SYNC_MASTER, GRID_SYNC_SLAVE };
 
 void grid_module_common_init(void);
 
-void grid_module_init_animation(struct grid_led_model *mod);
+void grid_module_init_animation(struct grid_led_model* mod);
 
 #endif

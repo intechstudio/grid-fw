@@ -25,7 +25,7 @@ struct grid_trace_model {
   uint32_t switch_out_count;
   uint32_t last_active_handle;
   uint32_t idle_handle;
-  void *ignored_task;
+  void* ignored_task;
 
   uint32_t trace_buffer_write_ptr;
   uint32_t trace_buffer_read_ptr;
@@ -35,11 +35,11 @@ struct grid_trace_model {
 extern struct grid_trace_model grid_trace_state_core0;
 extern struct grid_trace_model grid_trace_state_core1;
 
-void grid_trace_init(struct grid_trace_model *trace, uint8_t core_id);
+void grid_trace_init(struct grid_trace_model* trace, uint8_t core_id);
 
-void grid_trace_ignore_task(struct grid_trace_model *trace, void *task_handle);
+void grid_trace_ignore_task(struct grid_trace_model* trace, void* task_handle);
 
 void grid_trace_task_switched_in(void);
 void grid_trace_task_switched_out(void);
 
-void grid_trace_report_task(void *arg);
+void grid_trace_report_task(void* arg);

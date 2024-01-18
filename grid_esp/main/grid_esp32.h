@@ -33,7 +33,7 @@ extern "C" {
 
 extern struct tskTaskControlBlock;
 
-void grid_esp32_housekeeping_task(void *arg);
+void grid_esp32_housekeeping_task(void* arg);
 
 /**
  * @brief Read HWCFG register value on ESP32 based module
@@ -52,11 +52,11 @@ uint32_t grid_platform_get_hwcfg();
  *      - 64-bit unsigned value of CPUID register
  */
 
-void grid_platform_printf(char const *fmt, ...);
+void grid_platform_printf(char const* fmt, ...);
 
-uint32_t grid_platform_get_id(uint32_t *return_array);
+uint32_t grid_platform_get_id(uint32_t* return_array);
 
-uint32_t grid_platform_get_id(uint32_t *return_array);
+uint32_t grid_platform_get_id(uint32_t* return_array);
 uint32_t grid_platform_get_hwcfg();
 uint8_t grid_platform_get_random_8();
 void grid_platform_delay_ms(uint32_t delay_milliseconds);
@@ -79,7 +79,7 @@ uint32_t grid_platform_get_cycles();
 
 uint32_t grid_platform_get_cycles_per_us();
 
-void *grid_platform_allocate_volatile(size_t size);
+void* grid_platform_allocate_volatile(size_t size);
 
 #ifdef __cplusplus
 }

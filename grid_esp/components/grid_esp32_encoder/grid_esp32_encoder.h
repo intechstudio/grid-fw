@@ -39,8 +39,7 @@ extern "C" {
 #define SPI_ENCODER_HOST SPI3_HOST
 #define GRID_ESP32_ENCODER_BUFFER_SIZE 14
 
-#define ENCODER_BUFFER_SIZE                                                    \
-  GRID_ESP32_ENCODER_BUFFER_SIZE * 24 // 32-bit aligned size
+#define ENCODER_BUFFER_SIZE GRID_ESP32_ENCODER_BUFFER_SIZE * 24 // 32-bit aligned size
 #define ENCODER_BUFFER_TYPE RINGBUF_TYPE_NOSPLIT
 
 struct grid_esp32_encoder_result {
@@ -54,12 +53,12 @@ struct grid_esp32_encoder_model {
   spi_device_handle_t spi_device_handle;
   spi_transaction_t transaction;
 
-  uint8_t *rx_buffer_previous;
-  uint8_t *rx_buffer;
-  uint8_t *tx_buffer;
+  uint8_t* rx_buffer_previous;
+  uint8_t* rx_buffer;
+  uint8_t* tx_buffer;
 
-  StaticRingbuffer_t *buffer_struct;
-  uint8_t *buffer_storage;
+  StaticRingbuffer_t* buffer_struct;
+  uint8_t* buffer_storage;
   RingbufHandle_t ringbuffer_handle;
 };
 
@@ -68,17 +67,12 @@ extern struct grid_esp32_encoder_model DRAM_ATTR grid_esp32_encoder_state;
 void grid_esp32_encoder_pins_init(void);
 void IRAM_ATTR grid_esp32_encoder_latch_data(void);
 
-void grid_esp32_encoder_spi_init(struct grid_esp32_encoder_model *encoder,
-                                 void (*post_setup_cb)(spi_transaction_t *),
-                                 void (*post_trans_cb)(spi_transaction_t *));
-void grid_esp32_encoder_init(struct grid_esp32_encoder_model *encoder,
-                             void (*post_setup_cb)(spi_transaction_t *),
-                             void (*post_trans_cb)(spi_transaction_t *));
+void grid_esp32_encoder_spi_init(struct grid_esp32_encoder_model* encoder, void (*post_setup_cb)(spi_transaction_t*), void (*post_trans_cb)(spi_transaction_t*));
+void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, void (*post_setup_cb)(spi_transaction_t*), void (*post_trans_cb)(spi_transaction_t*));
 
-void grid_esp32_encoder_start(struct grid_esp32_encoder_model *encoder);
+void grid_esp32_encoder_start(struct grid_esp32_encoder_model* encoder);
 
-void IRAM_ATTR
-grid_esp32_encoder_spi_start_transfer(struct grid_esp32_encoder_model *encoder);
+void IRAM_ATTR grid_esp32_encoder_spi_start_transfer(struct grid_esp32_encoder_model* encoder);
 
 #ifdef __cplusplus
 }

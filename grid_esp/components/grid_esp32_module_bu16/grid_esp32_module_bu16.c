@@ -14,15 +14,13 @@
 
 #include "grid_esp32_adc.h"
 
-static const char *TAG = "module_bu16";
+static const char* TAG = "module_bu16";
 
-void grid_esp32_module_bu16_task(void *arg) {
+void grid_esp32_module_bu16_task(void* arg) {
 
   uint64_t potmeter_last_real_time[16] = {0};
-  static const uint8_t multiplexer_lookup[16] = {2,  0, 3,  1, 6,  4,  7,  5,
-                                                 10, 8, 11, 9, 14, 12, 15, 13};
-  static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0,
-                                                   0, 0, 0, 0, 0, 0, 0, 0};
+  static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, 10, 8, 11, 9, 14, 12, 15, 13};
+  static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   const uint8_t multiplexer_overflow = 8;
 
   grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);
@@ -33,9 +31,8 @@ void grid_esp32_module_bu16_task(void *arg) {
 
     size_t size = 0;
 
-    struct grid_esp32_adc_result *result;
-    result = (struct grid_esp32_adc_result *)xRingbufferReceive(
-        grid_esp32_adc_state.ringbuffer_handle, &size, 0);
+    struct grid_esp32_adc_result* result;
+    result = (struct grid_esp32_adc_result*)xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle, &size, 0);
 
     if (result != NULL) {
 
@@ -45,9 +42,7 @@ void grid_esp32_module_bu16_task(void *arg) {
         result->value = 4095 - result->value;
       }
 
-      grid_ui_button_store_input(multiplexer_lookup[lookup_index],
-                                 &potmeter_last_real_time[lookup_index],
-                                 result->value, 12);
+      grid_ui_button_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
     }
 

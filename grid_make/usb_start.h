@@ -40,7 +40,7 @@ void composite_device_example(void);
  * \brief Initialize CDC ACM Echo demo
  * \param[in] bulk_packet_buffer Pointer to buffer for a bulk packet
  */
-void cdcdf_acm_demo_init(uint8_t *bulk_packet_buffer);
+void cdcdf_acm_demo_init(uint8_t* bulk_packet_buffer);
 
 /**
  * \brief Initialize HID Demo

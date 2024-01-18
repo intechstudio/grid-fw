@@ -6,11 +6,11 @@
 
 #include "grid_esp32.h"
 
-static const char *TAG = "grid_esp32";
+static const char* TAG = "grid_esp32";
 
-void vTaskGetRunTimeStats2(char *pcWriteBuffer) {
+void vTaskGetRunTimeStats2(char* pcWriteBuffer) {
 
-  TaskStatus_t *pxTaskStatusArray;
+  TaskStatus_t* pxTaskStatusArray;
   volatile UBaseType_t uxArraySize, x;
   uint32_t ulTotalRunTime, ulStatsAsPercentage;
 
@@ -27,8 +27,7 @@ void vTaskGetRunTimeStats2(char *pcWriteBuffer) {
 
   if (pxTaskStatusArray != NULL) {
     // Generate raw status information about each task.
-    uxArraySize =
-        uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, &ulTotalRunTime);
+    uxArraySize = uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, &ulTotalRunTime);
 
     // grid_platform_printf("Task Count : %d Core: %d\r\n\r\n", uxArraySize,
     // xPortGetCoreID());
@@ -47,14 +46,12 @@ void vTaskGetRunTimeStats2(char *pcWriteBuffer) {
         uint8_t priority = uxTaskPriorityGet(pxTaskStatusArray[x].xHandle);
 
         /* Inspect our own high water mark on entering the task. */
-        unsigned long uxHighWaterMark =
-            uxTaskGetStackHighWaterMark(pxTaskStatusArray[x].xHandle);
+        unsigned long uxHighWaterMark = uxTaskGetStackHighWaterMark(pxTaskStatusArray[x].xHandle);
 
         // What percentage of the total run time has the task used?
         // This will always be rounded down to the nearest integer.
         // ulTotalRunTimeDiv100 has already been divided by 100.
-        ulStatsAsPercentage =
-            pxTaskStatusArray[x].ulRunTimeCounter / (ulTotalRunTime / 100);
+        ulStatsAsPercentage = pxTaskStatusArray[x].ulRunTimeCounter / (ulTotalRunTime / 100);
 
         uint32_t runtime = pxTaskStatusArray[x].ulRunTimeCounter;
 
@@ -68,14 +65,10 @@ void vTaskGetRunTimeStats2(char *pcWriteBuffer) {
           core_char = '1';
         }
 
-        sprintf(pcWriteBuffer,
-                "%c-%s\t\t0x%lx\t\t%lu\t\t%d\t\t%lu pcnt (%lu/%lu)\r\n",
-                core_char, taskName,
-                (unsigned long int)pxTaskStatusArray[x].xHandle,
-                uxHighWaterMark, priority, ulStatsAsPercentage, runtime,
-                ulTotalRunTime);
+        sprintf(pcWriteBuffer, "%c-%s\t\t0x%lx\t\t%lu\t\t%d\t\t%lu pcnt (%lu/%lu)\r\n", core_char, taskName, (unsigned long int)pxTaskStatusArray[x].xHandle, uxHighWaterMark, priority,
+                ulStatsAsPercentage, runtime, ulTotalRunTime);
 
-        pcWriteBuffer += strlen((char *)pcWriteBuffer);
+        pcWriteBuffer += strlen((char*)pcWriteBuffer);
       }
     }
 
@@ -89,12 +82,11 @@ void vTaskGetRunTimeStats2(char *pcWriteBuffer) {
 uint32_t lastRunTimeCounter[MAX_TASK_ID] = {0};
 uint32_t lastTotalRunTime = 0;
 
-uint8_t skip_list[MAX_TASK_ID] = {0, 1, 1, 1, 0, 0, 0, 1,
-                                  1, 0, 0, 0, 0, 1, 1, 0};
+uint8_t skip_list[MAX_TASK_ID] = {0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0};
 
-void vTaskGetRunTimeStats3(char *pcWriteBuffer) {
+void vTaskGetRunTimeStats3(char* pcWriteBuffer) {
 
-  TaskStatus_t *pxTaskStatusArray;
+  TaskStatus_t* pxTaskStatusArray;
   volatile UBaseType_t uxArraySize, x;
   uint32_t ulTotalRunTime, ulStatsAsPercentage;
 
@@ -111,8 +103,7 @@ void vTaskGetRunTimeStats3(char *pcWriteBuffer) {
 
   if (pxTaskStatusArray != NULL) {
     // Generate raw status information about each task.
-    uxArraySize =
-        uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, &ulTotalRunTime);
+    uxArraySize = uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, &ulTotalRunTime);
 
     // grid_platform_printf("Task Count : %d Core: %d\r\n\r\n", uxArraySize,
     // xPortGetCoreID());
@@ -138,20 +129,17 @@ void vTaskGetRunTimeStats3(char *pcWriteBuffer) {
             uint8_t core = xTaskGetAffinity(pxTaskStatusArray[x].xHandle);
 
             /* Inspect our own high water mark on entering the task. */
-            unsigned long uxHighWaterMark =
-                uxTaskGetStackHighWaterMark(pxTaskStatusArray[x].xHandle);
+            unsigned long uxHighWaterMark = uxTaskGetStackHighWaterMark(pxTaskStatusArray[x].xHandle);
 
             // What percentage of the total run time has the task used?
             // This will always be rounded down to the nearest integer.
 
-            uint32_t taskElapsedTime = pxTaskStatusArray[x].ulRunTimeCounter -
-                                       lastRunTimeCounter[taskNumber];
+            uint32_t taskElapsedTime = pxTaskStatusArray[x].ulRunTimeCounter - lastRunTimeCounter[taskNumber];
             uint32_t totalElapsedTime = (ulTotalRunTime - lastTotalRunTime);
 
             ulStatsAsPercentage = (taskElapsedTime * 100) / (totalElapsedTime);
 
-            lastRunTimeCounter[taskNumber] =
-                pxTaskStatusArray[x].ulRunTimeCounter;
+            lastRunTimeCounter[taskNumber] = pxTaskStatusArray[x].ulRunTimeCounter;
 
             uint32_t runtime = pxTaskStatusArray[x].ulRunTimeCounter;
 
@@ -170,10 +158,7 @@ void vTaskGetRunTimeStats3(char *pcWriteBuffer) {
               uint32_t debug_var = ulStatsAsPercentage;
 
               // As Percentage (string)
-              sprintf(pcWriteBuffer, "\"c%c %02lu %s %lx\": \"%lu%%%%\", ",
-                      core_char, taskNumber, taskName,
-                      (long unsigned int)pxTaskStatusArray[x].xHandle,
-                      debug_var);
+              sprintf(pcWriteBuffer, "\"c%c %02lu %s %lx\": \"%lu%%%%\", ", core_char, taskNumber, taskName, (long unsigned int)pxTaskStatusArray[x].xHandle, debug_var);
 
               // As Integer (string)
               // sprintf( pcWriteBuffer, "\"c%c %02lu %s\": \"%lu\", ",
@@ -182,7 +167,6 @@ void vTaskGetRunTimeStats3(char *pcWriteBuffer) {
               // As Integer (number)
               // sprintf( pcWriteBuffer, "\"c%c %02lu %s\": %lu, ", core_char,
               // taskNumber,  taskName, debug_var);
-
             } else {
 
               // first run
@@ -192,7 +176,7 @@ void vTaskGetRunTimeStats3(char *pcWriteBuffer) {
               }
             }
 
-            pcWriteBuffer += strlen((char *)pcWriteBuffer);
+            pcWriteBuffer += strlen((char*)pcWriteBuffer);
           }
         }
       }
@@ -206,7 +190,7 @@ void vTaskGetRunTimeStats3(char *pcWriteBuffer) {
   }
 }
 
-void grid_esp32_housekeeping_task(void *arg) {
+void grid_esp32_housekeeping_task(void* arg) {
 
   char stats[3000] = {0};
 
@@ -243,8 +227,7 @@ uint32_t grid_platform_get_hwcfg() {
 
   uint8_t hwcfg_value = 0;
 
-  for (uint8_t i = 0; i < 8;
-       i++) { // now we need to shift in the remaining 7 values
+  for (uint8_t i = 0; i < 8; i++) { // now we need to shift in the remaining 7 values
 
     // SHIFT DATA
     gpio_set_level(GRID_ESP32_PINS_HWCFG_SHIFT,
@@ -254,7 +237,6 @@ uint32_t grid_platform_get_hwcfg() {
     if (gpio_get_level(GRID_ESP32_PINS_HWCFG_DATA)) {
 
       hwcfg_value |= (1 << i);
-
     } else {
     }
 
@@ -273,7 +255,7 @@ uint32_t grid_platform_get_hwcfg() {
   return hwcfg_value;
 }
 
-uint32_t grid_platform_get_id(uint32_t *return_array) {
+uint32_t grid_platform_get_id(uint32_t* return_array) {
 
   /*
 
@@ -292,11 +274,9 @@ uint32_t grid_platform_get_id(uint32_t *return_array) {
     ESP_LOGI(TAG, "CPUID OK");
   }
 
-  uint8_t *mac_address = &block[0];
+  uint8_t* mac_address = &block[0];
 
-  ESP_LOGI(TAG, "MAC: %02x:%02x:%02x:%02x:%02x:%02x", mac_address[0],
-           mac_address[1], mac_address[2], mac_address[3], mac_address[4],
-           mac_address[5]);
+  ESP_LOGI(TAG, "MAC: %02x:%02x:%02x:%02x:%02x:%02x", mac_address[0], mac_address[1], mac_address[2], mac_address[3], mac_address[4], mac_address[5]);
 
   uint64_t cpuid = 0;
 
@@ -308,7 +288,7 @@ uint32_t grid_platform_get_id(uint32_t *return_array) {
 
   ESP_LOGI(TAG, "CPUID: %016llx", cpuid);
 
-  uint8_t *array = (uint8_t *)return_array;
+  uint8_t* array = (uint8_t*)return_array;
   array[0] = mac_address[0];
   array[1] = mac_address[1];
   array[2] = mac_address[2];
@@ -324,13 +304,11 @@ uint8_t grid_platform_get_random_8() {
   return random_number % 256;
 }
 
-void grid_platform_delay_ms(uint32_t delay_milliseconds) {
-  ets_delay_us(delay_milliseconds * 1000);
-}
+void grid_platform_delay_ms(uint32_t delay_milliseconds) { ets_delay_us(delay_milliseconds * 1000); }
 
 uint8_t grid_platform_get_reset_cause() { return 0; }
 
-void grid_platform_printf(char const *fmt, ...) {
+void grid_platform_printf(char const* fmt, ...) {
 
   va_list ap;
 
@@ -363,32 +341,23 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
   return 1;
 }
 
-void grid_platform_system_reset() {
+void grid_platform_system_reset() { ets_printf("grid_platform_system_reset NOT IMPLEMENTED!!!\r\n"); }
 
-  ets_printf("grid_platform_system_reset NOT IMPLEMENTED!!!\r\n");
-}
-
-void grid_platform_nvm_defrag() {
-
-  ets_printf("grid_platform_nvm_defrag NOT IMPLEMENTED!!!\r\n");
-}
+void grid_platform_nvm_defrag() { ets_printf("grid_platform_nvm_defrag NOT IMPLEMENTED!!!\r\n"); }
 
 uint8_t grid_platform_get_adc_bit_depth() { return 12; }
 
 uint64_t grid_platform_rtc_get_micros(void) { return esp_timer_get_time(); }
 
-uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) {
-
-  return grid_platform_rtc_get_micros() - told;
-}
+uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) { return grid_platform_rtc_get_micros() - told; }
 
 uint32_t grid_platform_get_cycles() { return cpu_hal_get_cycle_count(); }
 
 uint32_t grid_platform_get_cycles_per_us() { return 240; }
 
-void *grid_platform_allocate_volatile(size_t size) {
+void* grid_platform_allocate_volatile(size_t size) {
 
-  void *handle = heap_caps_malloc(size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+  void* handle = heap_caps_malloc(size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 
   // ets_printf("ADDRESS: %lx\r\n", handle);
 

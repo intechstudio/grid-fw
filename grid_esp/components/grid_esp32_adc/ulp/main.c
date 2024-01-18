@@ -42,8 +42,7 @@ static ulp_riscv_uart_t s_print_uart;
 uint32_t adc_value_1 = 0;
 uint32_t adc_value_2 = 0;
 
-volatile uint32_t adc_result_ready =
-    0; // volatile otherwise compiler optimizes away external access
+volatile uint32_t adc_result_ready = 0; // volatile otherwise compiler optimizes away external access
 volatile uint32_t ready_state = 0;
 
 uint32_t sum_1 = 0;
@@ -79,7 +78,6 @@ int main(void) {
       adc_result_ready++;
       adc_value_1 = sum_1 / adc_result_ready;
       adc_value_2 = sum_2 / adc_result_ready;
-
     } else { // result was read during the conversion, drop the latest sample
 
       ulp_riscv_gpio_output_level(cfg.tx_pin, 1);

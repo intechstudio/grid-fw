@@ -9,7 +9,7 @@
 
 uint32_t grid_buffer_error_count = 0;
 
-uint8_t grid_buffer_init(struct grid_buffer *buf, uint16_t length) {
+uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length) {
 
   buf->buffer_length = length;
 
@@ -30,7 +30,7 @@ uint8_t grid_buffer_init(struct grid_buffer *buf, uint16_t length) {
   return 1;
 }
 
-uint16_t grid_buffer_write_size(struct grid_buffer *buf) {
+uint16_t grid_buffer_write_size(struct grid_buffer* buf) {
 
   uint16_t space = 0;
 
@@ -43,7 +43,7 @@ uint16_t grid_buffer_write_size(struct grid_buffer *buf) {
   return space;
 }
 
-uint16_t grid_buffer_get_space(struct grid_buffer *buf) {
+uint16_t grid_buffer_get_space(struct grid_buffer* buf) {
 
   uint16_t space = 0;
 
@@ -56,7 +56,7 @@ uint16_t grid_buffer_get_space(struct grid_buffer *buf) {
   return space;
 }
 
-uint16_t grid_buffer_write_init(struct grid_buffer *buf, uint16_t length) {
+uint16_t grid_buffer_write_init(struct grid_buffer* buf, uint16_t length) {
 
   uint16_t space = grid_buffer_get_space(buf);
 
@@ -72,8 +72,7 @@ uint16_t grid_buffer_write_init(struct grid_buffer *buf, uint16_t length) {
   }
 }
 
-uint8_t grid_buffer_write_character(struct grid_buffer *buf,
-                                    uint8_t character) {
+uint8_t grid_buffer_write_character(struct grid_buffer* buf, uint8_t character) {
 
   buf->buffer_storage[buf->write_active] = character;
 
@@ -83,13 +82,12 @@ uint8_t grid_buffer_write_character(struct grid_buffer *buf,
   return 1;
 }
 
-uint8_t grid_buffer_write_acknowledge(struct grid_buffer *buf) {
+uint8_t grid_buffer_write_acknowledge(struct grid_buffer* buf) {
 
   if (buf->write_active == buf->write_stop) {
 
     buf->write_start = buf->write_active;
     return 1;
-
   } else {
 
     grid_buffer_error_count++;
@@ -97,7 +95,7 @@ uint8_t grid_buffer_write_acknowledge(struct grid_buffer *buf) {
   }
 }
 
-uint8_t grid_buffer_write_cancel(struct grid_buffer *buf) {
+uint8_t grid_buffer_write_cancel(struct grid_buffer* buf) {
 
   buf->write_active = buf->write_start;
   buf->write_stop = buf->write_start;
@@ -105,7 +103,7 @@ uint8_t grid_buffer_write_cancel(struct grid_buffer *buf) {
   return 1;
 }
 
-uint16_t grid_buffer_read_size(struct grid_buffer *buf) {
+uint16_t grid_buffer_read_size(struct grid_buffer* buf) {
 
   // Seek message end character
   for (uint16_t i = 0; i < buf->buffer_length; i++) {
@@ -125,8 +123,7 @@ uint16_t grid_buffer_read_size(struct grid_buffer *buf) {
   return 0;
 }
 
-uint8_t grid_buffer_write_from_chunk(struct grid_buffer *buf, char *chunk,
-                                     uint16_t length) {
+uint8_t grid_buffer_write_from_chunk(struct grid_buffer* buf, char* chunk, uint16_t length) {
 
   if (grid_buffer_write_init(buf, length)) {
 
@@ -144,8 +141,7 @@ uint8_t grid_buffer_write_from_chunk(struct grid_buffer *buf, char *chunk,
   }
 }
 
-uint8_t grid_buffer_write_from_packet(struct grid_buffer *buf,
-                                      struct grid_msg_packet *packet) {
+uint8_t grid_buffer_write_from_packet(struct grid_buffer* buf, struct grid_msg_packet* packet) {
 
   uint32_t message_length = grid_msg_packet_get_length(packet);
 
@@ -154,8 +150,7 @@ uint8_t grid_buffer_write_from_packet(struct grid_buffer *buf,
 
     for (uint32_t i = 0; i < message_length; i++) {
 
-      grid_buffer_write_character(buf,
-                                  grid_msg_packet_send_char_by_char(packet, i));
+      grid_buffer_write_character(buf, grid_msg_packet_send_char_by_char(packet, i));
     }
 
     grid_buffer_write_acknowledge(buf);
@@ -166,7 +161,7 @@ uint8_t grid_buffer_write_from_packet(struct grid_buffer *buf,
   }
 }
 
-uint16_t grid_buffer_read_init(struct grid_buffer *buf) {
+uint16_t grid_buffer_read_init(struct grid_buffer* buf) {
 
   // Seek message end character
   for (uint16_t i = 0; i < buf->buffer_length; i++) {
@@ -190,7 +185,7 @@ uint16_t grid_buffer_read_init(struct grid_buffer *buf) {
   return 0;
 }
 
-uint8_t grid_buffer_read_character(struct grid_buffer *buf) {
+uint8_t grid_buffer_read_character(struct grid_buffer* buf) {
 
   // Check if packet is not over
   if (buf->read_active != buf->read_stop) {
@@ -201,7 +196,6 @@ uint8_t grid_buffer_read_character(struct grid_buffer *buf) {
     buf->read_active %= buf->buffer_length;
 
     return character;
-
   } else {
 
     while (1) {
@@ -211,7 +205,7 @@ uint8_t grid_buffer_read_character(struct grid_buffer *buf) {
 }
 
 // TRANSMISSION WAS ACKNOWLEDGED, PACKET CAN BE DELETED
-uint8_t grid_buffer_read_acknowledge(struct grid_buffer *buf) {
+uint8_t grid_buffer_read_acknowledge(struct grid_buffer* buf) {
 
   // Check if packet is really over
   if (buf->read_active == buf->read_stop) {
@@ -226,7 +220,7 @@ uint8_t grid_buffer_read_acknowledge(struct grid_buffer *buf) {
 }
 
 // JUMP BACK TO THE BEGINNING OF THE PACKET
-uint8_t grid_buffer_read_nacknowledge(struct grid_buffer *buf) {
+uint8_t grid_buffer_read_nacknowledge(struct grid_buffer* buf) {
 
   buf->read_active = buf->read_start;
 
@@ -234,7 +228,7 @@ uint8_t grid_buffer_read_nacknowledge(struct grid_buffer *buf) {
 }
 
 // DISCARD PACKET
-uint8_t grid_buffer_read_cancel(struct grid_buffer *buf) {
+uint8_t grid_buffer_read_cancel(struct grid_buffer* buf) {
 
   buf->read_active = buf->read_stop;
   buf->read_start = buf->read_stop;
@@ -242,8 +236,7 @@ uint8_t grid_buffer_read_cancel(struct grid_buffer *buf) {
   return 1;
 }
 
-uint8_t grid_buffer_read_to_chunk(struct grid_buffer *buf, char *chunk,
-                                  uint16_t length) {
+uint8_t grid_buffer_read_to_chunk(struct grid_buffer* buf, char* chunk, uint16_t length) {
 
   grid_buffer_read_init(buf);
 
@@ -256,9 +249,7 @@ uint8_t grid_buffer_read_to_chunk(struct grid_buffer *buf, char *chunk,
   return 1;
 }
 
-uint8_t grid_buffer_read_to_packet(struct grid_buffer *buf,
-                                   struct grid_msg_packet *packet,
-                                   uint16_t length) {
+uint8_t grid_buffer_read_to_packet(struct grid_buffer* buf, struct grid_msg_packet* packet, uint16_t length) {
 
   grid_buffer_read_init(buf);
 
