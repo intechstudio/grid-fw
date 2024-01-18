@@ -1,11 +1,27 @@
-/*
- * grid_ui.c
- *
- * Created: 4/12/2019 5:27:13 PM
- * Author : SUKU WC
- */
-
 #include "grid_ui.h"
+
+
+extern void grid_platform_printf(char const *fmt, ...);
+extern int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle);
+extern uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle);
+extern uint8_t grid_platform_get_actionstring_file_has_size(union grid_ui_file_handle* file_handle);
+extern uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char *targetstring);
+extern void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle);
+extern void grid_platform_write_actionstring_file(uint8_t page, uint8_t element,
+                                                  uint8_t event_type,
+                                                  char *buffer,
+                                                  uint16_t length);
+extern uint32_t grid_platform_get_cycles();
+extern uint32_t grid_platform_get_cycles_per_us();
+extern void grid_platform_clear_all_actionstring_files_from_page(uint8_t page);
+extern uint8_t grid_platform_clear_next_actionstring_file_from_page(
+    uint8_t page, int *last_element, int *last_event);
+extern void grid_platform_delete_actionstring_files_all();
+extern uint8_t grid_platform_get_nvm_state();
+extern uint8_t grid_platform_erase_nvm_next();
+extern uint8_t grid_platform_get_adc_bit_depth();
+
+
 
 struct grid_ui_model grid_ui_state;
 
@@ -971,15 +987,13 @@ void grid_ui_event_recall_configuration(struct grid_ui_model *ui, uint8_t page,
     // grid_platform_printf("!!!!! PAGE IS NOT ACTIVE\r\n");
     //  use nvm_toc to find the configuration to be sent
 
-    // file pointer
-    void *entry = NULL;
-    entry = grid_platform_find_actionstring_file(page, element, event_type);
+    union grid_ui_file_handle file_handle = {0};
+    int status = grid_platform_find_actionstring_file(page, element, event_type, &file_handle);
 
-    if (entry != NULL) {
+    if (status == 0) { // file found
 
       uint32_t len =
-          grid_platform_read_actionstring_file_contents(entry, targetstring);
-      grid_platform_close_actionstring_file(entry);
+          grid_platform_read_actionstring_file_contents(&file_handle, targetstring);
 
     } else {
       // grid_platform_printf("NOT FOUND, Send default!\r\n");
@@ -1334,30 +1348,28 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model *ui) {
       struct grid_ui_event *eve = &ele->event_list[j];
 
       // file pointer
-      void *entry = NULL;
+      union grid_ui_file_handle file_handle = {0};
 
-      entry = grid_platform_find_actionstring_file(ui->page_activepage,
-                                                   ele->index, eve->type);
+      int status = grid_platform_find_actionstring_file(ui->page_activepage,
+                                                   ele->index, eve->type, &file_handle);
 
-      if (entry != NULL) {
+      if (status == 0) { // file found
 
         // grid_platform_printf("Page Load: FOUND %d %d %d 0x%x (+%d)!\r\n",
         // entry->page_id, entry->element_id, entry->event_type,
         // entry->config_string_offset, entry->config_string_length);
 
-        uint16_t length = grid_platform_get_actionstring_file_has_size(entry);
+        uint16_t size_is_not_zero = grid_platform_get_actionstring_file_has_size(&file_handle);
 
-        if (length) {
+        if (size_is_not_zero) {
           char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
-          grid_platform_read_actionstring_file_contents(entry, temp);
-          grid_platform_close_actionstring_file(entry);
+          grid_platform_read_actionstring_file_contents(&file_handle, temp);
           grid_ui_event_register_actionstring(eve, temp);
 
           eve->cfg_changed_flag = 0; // clear changed flag
         } else {
           // grid_platform_printf("Page Load: NULL length\r\n");
-          grid_platform_close_actionstring_file(entry);
         }
 
       } else {
@@ -1429,14 +1441,15 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model *ui) {
 
         if (eve->cfg_default_flag) {
 
-          void *entry = grid_platform_find_actionstring_file(
-              ele->parent->page_activepage, ele->index, eve->type);
+          union grid_ui_file_handle file_handle = {0};
+          int status = grid_platform_find_actionstring_file(
+              ele->parent->page_activepage, ele->index, eve->type, &file_handle);
 
-          if (entry != NULL) {
+          if (status == 0) { // file found
             // grid_platform_printf("DEFAULT, FOUND - SO DESTROY! %d %d\r\n",
             // ele->index, eve->index);
 
-            grid_platform_delete_actionstring_file(entry);
+            grid_platform_delete_actionstring_file(&file_handle);
 
           } else {
 

@@ -6,6 +6,8 @@
 
 #include "grid_esp32_port.h"
 
+
+
 #include "esp_check.h"
 
 #include "rom/ets_sys.h" // For ets_printf
@@ -28,6 +30,8 @@
 #include "grid_sys.h"
 
 #include "driver/spi_slave.h"
+
+extern uint32_t grid_platform_get_cycles(void);
 
 static TaskHandle_t xTaskToNotify = NULL;
 

@@ -11,37 +11,18 @@
 #include <string.h>
 
 #include "grid_ain.h"
+#include "grid_ain.h"
 #include "grid_lua_api.h"
 #include "grid_protocol.h"
 
-extern void grid_platform_printf(char const *fmt, ...);
+union grid_ui_file_handle
+{
+  char fname[50];
+  void* toc_ptr;
+};
 
-extern void grid_platform_close_actionstring_file(void *file_pointer);
-extern void *grid_platform_find_actionstring_file(uint8_t page, uint8_t element,
-                                                  uint8_t event_type);
-extern uint16_t grid_platform_get_actionstring_file_size(void *file_pointer);
-extern uint8_t grid_platform_get_actionstring_file_has_size(void *file_pointer);
-extern uint32_t
-grid_platform_read_actionstring_file_contents(void *file_pointer,
-                                              char *targetstring);
-extern void grid_platform_delete_actionstring_file(void *file_pointer);
-extern void grid_platform_write_actionstring_file(uint8_t page, uint8_t element,
-                                                  uint8_t event_type,
-                                                  char *buffer,
-                                                  uint16_t length);
 
-extern uint32_t grid_platform_get_cycles();
-extern uint32_t grid_platform_get_cycles_per_us();
 
-extern void grid_platform_clear_all_actionstring_files_from_page(uint8_t page);
-extern uint8_t grid_platform_clear_next_actionstring_file_from_page(
-    uint8_t page, int *last_element, int *last_event);
-extern void grid_platform_delete_actionstring_files_all();
-
-extern uint8_t grid_platform_get_nvm_state();
-extern uint8_t grid_platform_erase_nvm_next();
-
-extern uint8_t grid_platform_get_adc_bit_depth();
 
 enum grid_ui_status_t {
   GRID_UI_STATUS_UNDEFINED,

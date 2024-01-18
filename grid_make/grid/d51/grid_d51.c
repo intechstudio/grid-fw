@@ -751,24 +751,29 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
   }
 }
 
-void *grid_platform_find_actionstring_file(uint8_t page, uint8_t element,
-                                           uint8_t event_type) {
+int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle) {
 
-  return (void *)grid_d51_nvm_toc_entry_find(&grid_d51_nvm_state, page, element,
+  file_handle->toc_ptr = grid_d51_nvm_toc_entry_find(&grid_d51_nvm_state, page, element,
                                              event_type);
+  if (file_handle->toc_ptr != NULL){
+    return 0; // success
+  }
+
+  return 1; // not found
+
 }
 
-uint16_t grid_platform_get_actionstring_file_size(void *file_pointer) {
+uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle) {
 
   struct grid_d51_nvm_toc_entry *entry =
-      (struct grid_d51_nvm_toc_entry *)file_pointer;
+      (struct grid_d51_nvm_toc_entry *)file_handle->toc_ptr;
   return entry->config_string_length;
 }
 
-uint8_t grid_platform_get_actionstring_file_has_size(void *file_pointer) {
+uint8_t grid_platform_get_actionstring_file_has_size(union grid_ui_file_handle* file_handle) {
 
   struct grid_d51_nvm_toc_entry *entry =
-      (struct grid_d51_nvm_toc_entry *)file_pointer;
+      (struct grid_d51_nvm_toc_entry *)file_handle->toc_ptr;
 
   if (entry->config_string_length) {
     return 1;
@@ -777,24 +782,19 @@ uint8_t grid_platform_get_actionstring_file_has_size(void *file_pointer) {
   }
 }
 
-void grid_platform_close_actionstring_file(void *file_pointer) {
 
-  // no need to close files on this platform
-  return;
-}
 
-uint32_t grid_platform_read_actionstring_file_contents(void *file_pointer,
-                                                       char *targetstring) {
+uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char *targetstring) {
 
   return grid_d51_nvm_toc_generate_actionstring(
-      &grid_d51_nvm_state, (struct grid_d51_nvm_toc_entry *)file_pointer,
+      &grid_d51_nvm_state, (struct grid_d51_nvm_toc_entry *)file_handle->toc_ptr,
       targetstring);
 }
 
-void grid_platform_delete_actionstring_file(void *file_pointer) {
+void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle) {
 
   struct grid_d51_nvm_toc_entry *entry =
-      (struct grid_d51_nvm_toc_entry *)file_pointer;
+      (struct grid_d51_nvm_toc_entry *)file_handle->toc_ptr;
   grid_d51_nvm_config_store(&grid_d51_nvm_state, entry->page_id,
                             entry->element_id, entry->event_type, "");
 }
