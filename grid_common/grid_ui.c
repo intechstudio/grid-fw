@@ -6,10 +6,10 @@ extern uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_hand
 extern uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char* targetstring);
 extern void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle);
 extern void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
+extern int grid_platform_find_next_actionstring_file(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle);
 extern uint32_t grid_platform_get_cycles();
 extern uint32_t grid_platform_get_cycles_per_us();
 extern void grid_platform_clear_all_actionstring_files_from_page(uint8_t page);
-extern uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page, int* last_element, int* last_event);
 extern void grid_platform_delete_actionstring_files_all();
 extern uint8_t grid_platform_get_nvm_state();
 extern uint8_t grid_platform_erase_nvm_next();
@@ -1369,9 +1369,12 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui) {
     return;
   }
 
-  uint8_t was_last_one = grid_platform_clear_next_actionstring_file_from_page(ui->page_activepage, &ui->clear_bulk_last_element, &ui->clear_bulk_last_event);
+  union grid_ui_file_handle file_handle = {0};
+  uint8_t was_last_one = grid_platform_find_next_actionstring_file(ui->page_activepage, &ui->clear_bulk_last_element, &ui->clear_bulk_last_event, &file_handle);
 
   if (!was_last_one) {
+
+    grid_platform_delete_actionstring_file(&file_handle);
     return;
   }
 

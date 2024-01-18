@@ -681,6 +681,34 @@ uint8_t grid_d51_nvm_toc_entry_create(struct grid_d51_nvm_model* mod, uint8_t pa
   }
 }
 
+struct grid_d51_nvm_toc_entry* grid_d51_nvm_toc_entry_find_next_on_page(struct grid_d51_nvm_model* mod, uint8_t page_id, int* last_element, int* last_event) {
+
+  struct grid_d51_nvm_toc_entry* current = mod->toc_head;
+
+  while (current != NULL) {
+    if (current->page_id == page_id) {
+
+      if (current->element_id == *last_element && current->event_type > *last_event) {
+        *last_element = current->element_id;
+        *last_event = current->event_type;
+        return current;
+      } else if (current->element_id > *last_element) {
+        *last_element = current->element_id;
+        *last_event = current->event_type;
+        return current;
+      }
+
+      // Found the list item that we were looking for
+    }
+
+    current = current->next;
+  }
+
+  *last_element = -1;
+  *last_event = -1;
+  return NULL;
+}
+
 struct grid_d51_nvm_toc_entry* grid_d51_nvm_toc_entry_find(struct grid_d51_nvm_model* mod, uint8_t page_id, uint8_t element_id, uint8_t event_type) {
 
   struct grid_d51_nvm_toc_entry* current = mod->toc_head;

@@ -405,21 +405,6 @@ void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_hand
   return;
 }
 
-uint8_t grid_esp32_nvm_clear_next_file_from_page(struct grid_esp32_nvm_model* nvm, uint8_t page, int* last_element, int* last_event) {
-
-  if (0 == grid_esp32_nvm_find_next_file_from_page(nvm, page, last_element, last_event)) {
-
-    char fname[50] = {0};
-    sprintf(fname, "/littlefs/%02x/%02x/%02x.cfg", page, *last_element, *last_event);
-    printf("Delete: %s\n", fname);
-    unlink(fname);
-
-    return 0;
-  }
-
-  return 1;
-}
-
 int grid_platform_find_next_actionstring_file(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle) {
 
   if (0 == grid_esp32_nvm_find_next_file_from_page(&grid_esp32_nvm_state, page, last_element, last_event)) {
@@ -483,10 +468,6 @@ void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
 
   grid_esp32_nvm_clear_page(&grid_esp32_nvm_state, page);
   return;
-};
-
-uint8_t grid_platform_clear_next_actionstring_file_from_page(uint8_t page, int* last_element, int* last_event) {
-  return grid_esp32_nvm_clear_next_file_from_page(&grid_esp32_nvm_state, page, last_element, last_event);
 };
 
 void grid_platform_delete_actionstring_files_all() {

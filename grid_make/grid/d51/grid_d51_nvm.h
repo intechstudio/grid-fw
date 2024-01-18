@@ -55,6 +55,8 @@ struct grid_d51_nvm_model {
 
 void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm);
 uint8_t grid_d51_nvm_toc_entry_create(struct grid_d51_nvm_model* nvm, uint8_t page_id, uint8_t element_id, uint8_t event_type, uint32_t config_string_offset, uint16_t config_string_length);
+
+struct grid_d51_nvm_toc_entry* grid_d51_nvm_toc_entry_find_next_on_page(struct grid_d51_nvm_model* mod, uint8_t page_id, int* last_element, int* last_event);
 struct grid_d51_nvm_toc_entry* grid_d51_nvm_toc_entry_find(struct grid_d51_nvm_model* nvm, uint8_t page_id, uint8_t element_id, uint8_t event_type);
 uint8_t grid_d51_nvm_toc_entry_update(struct grid_d51_nvm_toc_entry* entry, uint32_t config_string_offset, uint16_t config_string_length);
 
