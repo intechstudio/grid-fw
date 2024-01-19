@@ -471,6 +471,9 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
   grid_lua_start_vm(&grid_lua_state);
   grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
 
+  grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, -1);
+  grid_alert_all_set_frequency(&grid_led_state, -4);
+
   grid_ui_bulk_pageread_init(ui, &grid_ui_page_load_success_callback);
 }
 
@@ -480,7 +483,7 @@ void grid_ui_page_load_success_callback(void) {
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
   // phase out the animation
-  grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+  // grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
   grid_alert_all_set_timeout_automatic(&grid_led_state);
 }
 
@@ -1253,7 +1256,7 @@ void grid_ui_bulk_pageread_next_old(struct grid_ui_model* ui) {
         }
       } else {
 
-        grid_platform_printf("Page Load: NOT FOUND, Set default!\r\n");
+        // grid_platform_printf("Page Load: NOT FOUND, Set default!\r\n");
 
         char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
@@ -1331,7 +1334,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
     return;
   }
 
-  grid_platform_printf("step3\r\n");
+  // grid_platform_printf("step3\r\n");
 
   // step 3: fill all of the remaining default events with default actionstrings
 
@@ -1345,19 +1348,15 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
 
       if (eve->cfg_default_flag == 1) {
 
-        grid_platform_printf("Ele eve: %d %d\r\n", eve->parent->index, eve->type);
-
         char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
         grid_ui_event_generate_actionstring(eve, temp);
-
-        grid_platform_printf("Register : \r\n", temp);
         grid_ui_event_register_actionstring(eve, temp);
       }
     }
   }
 
-  grid_platform_printf("step4\r\n");
+  // grid_platform_printf("step4\r\n");
 
   // step 4: trigger all init events
   for (uint8_t i = 0; i < ui->element_list_length; i++) {
