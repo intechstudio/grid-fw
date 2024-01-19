@@ -110,14 +110,13 @@ struct grid_ui_model {
   int read_bulk_last_element;
   int read_bulk_last_event;
 
+  uint8_t clear_bulk_status;
   int clear_bulk_last_element;
   int clear_bulk_last_event;
 
   uint8_t erase_bulk_status;
 
   uint8_t store_bulk_status;
-
-  uint8_t clear_bulk_status;
 
   uint8_t bulk_nvmdefrag_status;
   uint8_t bulk_nvmdefrag_stage; // 0: move, 1: erase
@@ -165,7 +164,7 @@ uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, char* target_stri
 void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* targetstring);
 void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstring);
 uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, char* target_string);
-void grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type, char* targetstring);
+int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type, char* targetstring);
 
 // grid ui event trigger
 void grid_ui_event_trigger(struct grid_ui_event* eve);

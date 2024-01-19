@@ -261,8 +261,11 @@ static int scandir2(const char* dirname, struct dirent*** namelist, int (*select
   long arraysz;
   DIR* dirp;
 
-  if ((dirp = opendir(dirname)) == NULL)
+  if ((dirp = opendir(dirname)) == NULL) {
+
+    printf("OPENDIR FAILED\r\n");
     return (-1);
+  }
 
   /*
    * estimate the array size by taking the size of the directory file
@@ -327,11 +330,13 @@ static int find_next_file(char* path, char* file_name_fmt, int* last_file_number
 
   uint8_t file_found_already = false;
 
-  struct dirent** entries;
+  struct dirent** entries = NULL; // must init with null to avoid freeing random memory;
   int entries_length;
   entries_length = scandir2(path, &entries, NULL, my_alphasort);
 
   for (uint8_t i = 0; i < entries_length; i++) {
+
+    printf("files: %s\r\n", entries[i]->d_name);
 
     int element;
     int element_match = sscanf(entries[i]->d_name, "%02x", &element);
@@ -354,7 +359,9 @@ static int find_next_file(char* path, char* file_name_fmt, int* last_file_number
     *last_file_number = element;
   }
 
-  free(entries);
+  if (entries != NULL) {
+    free(entries);
+  }
 
   if (file_found_already) {
     return 0;
@@ -366,6 +373,9 @@ static int find_next_file(char* path, char* file_name_fmt, int* last_file_number
 }
 
 int grid_esp32_nvm_find_next_file_from_page(struct grid_esp32_nvm_model* nvm, uint8_t page, int* last_element, int* last_event) {
+
+  grid_esp32_nvm_list_files(nvm, "/littlefs/");
+  grid_esp32_nvm_list_files(nvm, "/littlefs/00/");
 
   while (true) {
 

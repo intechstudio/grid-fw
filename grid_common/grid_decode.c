@@ -1051,11 +1051,11 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
 
     char temp[GRID_PARAMETER_ACTIONSTRING_maxlength] = {0};
 
-    grid_ui_event_recall_configuration(&grid_ui_state, pagenumber, elementnumber, eventtype, temp);
+    int status = grid_ui_event_recall_configuration(&grid_ui_state, pagenumber, elementnumber, eventtype, temp);
 
     // grid_platform_printf("CONFIG: %s\r\n\r\n", temp);
 
-    if (strlen(temp) != 0) {
+    if (status == 0 && strlen(temp) > 0) {
 
       struct grid_msg_packet message;
 

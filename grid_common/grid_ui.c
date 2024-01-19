@@ -858,7 +858,12 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, char* target_str
   return length - total_substituted_length;
 }
 
-void grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type, char* targetstring) {
+int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, enum grid_ui_event_t event_type, char* targetstring) {
+
+  if (grid_ui_bluk_anything_is_in_progress(ui)) {
+    grid_platform_printf("FETCH WHILE NVM BUSY\r\n");
+    return 1;
+  }
 
   struct grid_ui_element* ele = &ui->element_list[element];
 
@@ -868,7 +873,7 @@ void grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, 
 
     grid_platform_printf("warning."__FILE__
                          ".event does not exist!\r\n");
-    return;
+    return 1;
   }
 
   // Event actually exists
@@ -903,6 +908,8 @@ void grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, 
 
     // if no toc entry is found but page exists then send efault configuration
   }
+
+  return 0;
 }
 
 void grid_ui_event_trigger(struct grid_ui_event* eve) {
@@ -1166,7 +1173,7 @@ void grid_ui_bulk_pageread_init(struct grid_ui_model* ui, void (*success_cb)()) 
 
   ui->read_success_callback = success_cb;
 
-  ui->read_bulk_last_element = 0;
+  ui->read_bulk_last_element = -1;
   ui->read_bulk_last_event = -1;
 
   ui->read_bulk_status = 1;
@@ -1174,7 +1181,7 @@ void grid_ui_bulk_pageread_init(struct grid_ui_model* ui, void (*success_cb)()) 
 
 uint8_t grid_ui_bulk_pageread_is_in_progress(struct grid_ui_model* ui) { return ui->read_bulk_status; }
 
-void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
+void grid_ui_bulk_pageread_next_old(struct grid_ui_model* ui) {
 
   if (!grid_ui_bulk_pageread_is_in_progress(ui)) {
     return;
@@ -1184,6 +1191,12 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
     return;
   }
 
+  // step 1: first run compatibility patch
+  if (ui->read_bulk_last_element == -1 && ui->read_bulk_last_event == -1) {
+    ui->read_bulk_last_element = 0;
+  }
+
+  grid_platform_printf("Page grid_ui_bulk_pageread_next\r\n");
   // grid_lua_gc_collect(&grid_lua_state);
 
   uint8_t last_element_helper = ui->read_bulk_last_element;
@@ -1240,11 +1253,9 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
         }
       } else {
 
-        // grid_platform_printf("Page Load: NOT FOUND, Set default!\r\n");
+        grid_platform_printf("Page Load: NOT FOUND, Set default!\r\n");
 
         char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
-
-        uint32_t t0, t1;
 
         grid_ui_event_generate_actionstring(eve, temp);
         grid_ui_event_register_actionstring(eve, temp);
@@ -1269,6 +1280,110 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
   }
 
   ui->read_bulk_status = 0;
+}
+
+void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
+
+  if (!grid_ui_bulk_pageread_is_in_progress(ui)) {
+    return;
+  }
+
+  if (!grid_platform_get_nvm_state()) {
+    return;
+  }
+
+  // step 1: mark all action strings as default
+  if (ui->read_bulk_last_element == -1 && ui->read_bulk_last_event == -1) {
+
+    for (uint8_t i = 0; i < ui->element_list_length; i++) {
+
+      struct grid_ui_element* ele = &ui->element_list[i];
+
+      for (uint8_t j = 0; j < ele->event_list_length; j++) {
+
+        struct grid_ui_event* eve = &ele->event_list[j];
+
+        eve->cfg_default_flag = 1;
+      }
+    }
+  }
+
+  // step 2: we register all custom actionstring files from FS or TOC
+  union grid_ui_file_handle file_handle = {0};
+  uint8_t was_last_one = grid_platform_find_next_actionstring_file(ui->page_activepage, &ui->read_bulk_last_element, &ui->read_bulk_last_event, &file_handle);
+
+  if (!was_last_one) {
+
+    grid_platform_printf("!was_last_one %d %d\r\n", ui->read_bulk_last_element, ui->read_bulk_last_event);
+
+    struct grid_ui_event* eve = &ui->element_list[ui->read_bulk_last_element].event_list[ui->read_bulk_last_event];
+
+    uint16_t size = grid_platform_get_actionstring_file_size(&file_handle);
+
+    if (size > 0) {
+      char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
+
+      grid_platform_read_actionstring_file_contents(&file_handle, temp);
+      grid_ui_event_register_actionstring(eve, temp);
+      eve->cfg_changed_flag = 0; // clear changed flag
+    }
+
+    return;
+  }
+
+  grid_platform_printf("step3\r\n");
+
+  // step 3: fill all of the remaining default events with default actionstrings
+
+  for (uint8_t i = 0; i < ui->element_list_length; i++) {
+
+    struct grid_ui_element* ele = &ui->element_list[i];
+
+    for (uint8_t j = 0; j < ele->event_list_length; j++) {
+
+      struct grid_ui_event* eve = &ele->event_list[j];
+
+      if (eve->cfg_default_flag == 1) {
+
+        grid_platform_printf("Ele eve: %d %d\r\n", eve->parent->index, eve->type);
+
+        char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
+
+        grid_ui_event_generate_actionstring(eve, temp);
+
+        grid_platform_printf("Register : \r\n", temp);
+        grid_ui_event_register_actionstring(eve, temp);
+      }
+    }
+  }
+
+  grid_platform_printf("step4\r\n");
+
+  // step 4: trigger all init events
+  for (uint8_t i = 0; i < ui->element_list_length; i++) {
+
+    struct grid_ui_element* ele = &ui->element_list[i];
+
+    for (uint8_t j = 0; j < ele->event_list_length; j++) {
+
+      struct grid_ui_event* eve = &ele->event_list[j];
+
+      if (eve->type == GRID_UI_EVENT_INIT) {
+        grid_ui_event_trigger_local(eve);
+      }
+    }
+  }
+
+  // step 5: run the success callback if available
+
+  if (ui->read_success_callback != NULL) {
+    ui->read_success_callback();
+    ui->read_success_callback = NULL;
+  }
+
+  ui->read_bulk_status = 0;
+
+  return;
 }
 
 void grid_ui_bulk_pagestore_init(struct grid_ui_model* ui, void (*success_cb)()) {

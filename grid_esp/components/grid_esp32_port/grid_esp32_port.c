@@ -457,34 +457,23 @@ void grid_esp32_port_task(void* arg) {
         // pending local events must be evaluated first
         // local events are only triggered when configuration changes!
         // WARNING: all init events are triggered as local after pagechange!
-        if (grid_ui_event_count_istriggered_local(&grid_ui_state)) {
+        if (grid_ui_event_count_istriggered_local(&grid_ui_state) && !grid_ui_bluk_anything_is_in_progress(&grid_ui_state)) {
 
-          // deliberately slow down evaluation of local events to avoid
-          // overloading the Grid network
-          if (loopcounter % 8 == 0) {
-            // CRITICAL_SECTION_ENTER()
-            vTaskSuspendAll();
-            grid_port_process_ui_local_UNSAFE(&grid_ui_state);
-            xTaskResumeAll();
-            // CRITICAL_SECTION_LEAVE()
-          }
-        } else {
+          // CRITICAL_SECTION_ENTER()
+          vTaskSuspendAll();
+          grid_port_process_ui_local_UNSAFE(&grid_ui_state);
+          xTaskResumeAll();
+          // CRITICAL_SECTION_LEAVE()
 
-          if (grid_ui_bluk_anything_is_in_progress(&grid_ui_state)) {
-            // SKIP
-          } else {
+        } else if (grid_ui_event_count_istriggered(&grid_ui_state) && !grid_ui_bluk_anything_is_in_progress(&grid_ui_state)) {
 
-            if (grid_ui_event_count_istriggered(&grid_ui_state)) {
+          cooldown += 3;
 
-              cooldown += 3;
-
-              // CRITICAL_SECTION_ENTER()
-              vTaskSuspendAll();
-              grid_port_process_ui_UNSAFE(&grid_ui_state);
-              xTaskResumeAll();
-              // CRITICAL_SECTION_LEAVE()
-            }
-          }
+          // CRITICAL_SECTION_ENTER()
+          vTaskSuspendAll();
+          grid_port_process_ui_UNSAFE(&grid_ui_state);
+          xTaskResumeAll();
+          // CRITICAL_SECTION_LEAVE()
         }
       }
 
