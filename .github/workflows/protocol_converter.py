@@ -22,15 +22,34 @@ def build_json(file_name):
             data[key] = value
     return data
 
-def get_lines(file_name):
+def get_lines_old(file_name):
     with open(file_name) as fp:
         for line in fp:
             yield line
 
+def get_lines(file_name):
+    with open(file_name) as fp:
+        line_buffer = ""
+        for line in fp:
+            # Handle escaped newlines
+            if line.endswith("\\\n"):
+                line_buffer += line.rstrip("\\\n")
+            else:
+                line_buffer += line
+                line_buffer = line_buffer.rstrip("\n")
+                pattern = re.compile(r'"\s*"')
+                yield pattern.sub('', line_buffer)
+                line_buffer = ""
+
 def get_macro_key_value(line):
-    m = re.search('^#define\s+(?P<key>\w+)\s+"?(?P<value>[\w\.,%]+)"?', line);
+    # m = re.search('^#define\s+(?P<key>\w+)\s+"?(?P<value>[\w\.,%]+)"?', line);
+    m = re.search(r'^#define\s+(?P<key>\w+)\s+"(?P<value>.*?)"\s*$', line);
+
     if m is None:
-        return (None, None)
+        m = re.search(r'^#define\s+(?P<key>\w+)\s+(?P<value>.*?)\s*$', line);
+        if m is None:
+          return (None, None)
+
     return (m.group('key'), m.group('value'));
 
 def write_output(data, file_name):
@@ -171,10 +190,10 @@ if __name__ == '__main__':
     convert(input_file, output_file)
 
     class_databse = create_class_database(input_file)
-    print(json.dumps(class_databse, indent=2))
+    # print(json.dumps(class_databse, indent=2))
 
     character_lookup = create_character_lookup(input_file)
-    print(json.dumps(character_lookup, indent=2))
+    # print(json.dumps(character_lookup, indent=2))
 
     if len(sys.argv)>3:
         generate_package_json(output_file, package_file)
