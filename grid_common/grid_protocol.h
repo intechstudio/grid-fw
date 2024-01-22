@@ -77,26 +77,25 @@
 // SPECIAL CHARACTERS
 
 #define GRID_CONST_NUL 0x00
+#define GRID_CONST_SOH 0x01
+#define GRID_CONST_STX 0x02
+#define GRID_CONST_ETX 0x03
+#define GRID_CONST_EOB 0x17
+#define GRID_CONST_EOT 0x04
 
-#define GRID_CONST_SOH 0x01 // start of header
-#define GRID_CONST_STX 0x02 // start of text
-#define GRID_CONST_ETX 0x03 // end of text
-#define GRID_CONST_EOB 0x17 // end of block
-#define GRID_CONST_EOT 0x04 // end of transmission
+#define GRID_CONST_LF 0x0A
 
-#define GRID_CONST_LF 0x0A // linefeed, newline
+#define GRID_CONST_ACK 0x06
+#define GRID_CONST_NAK 0x15
+#define GRID_CONST_CAN 0x18
 
-#define GRID_CONST_ACK 0x06 // acknowledge
-#define GRID_CONST_NAK 0x15 // nacknowledge
-#define GRID_CONST_CAN 0x18 // cancel
+#define GRID_CONST_NORTH 0x11
+#define GRID_CONST_EAST 0x12
+#define GRID_CONST_SOUTH 0x13
+#define GRID_CONST_WEST 0x14 
 
-#define GRID_CONST_NORTH 0x11 // Device Control 1
-#define GRID_CONST_EAST 0x12  // Device Control 2
-#define GRID_CONST_SOUTH 0x13 // Device Control 3
-#define GRID_CONST_WEST 0x14  // Device Control 4
-
-#define GRID_CONST_DCT 0x0E // Shift In = Direct
-#define GRID_CONST_BRC 0x0F // Shift Out = Broadcast
+#define GRID_CONST_DCT 0x0E
+#define GRID_CONST_BRC 0x0F
 
 #define GRID_CONST_BELL 0x07
 
