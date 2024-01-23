@@ -18,7 +18,7 @@ void grid_d51_nvm_init(struct grid_d51_nvm_model* nvm, struct flash_descriptor* 
 
   nvm->status = 1;
 
-  uint32_t erase_bulk_address;
+  nvm->erase_bulk_address = GRID_D51_NVM_LOCAL_BASE_ADDRESS;
 }
 
 uint32_t grid_d51_nvm_toc_defragment(struct grid_d51_nvm_model* nvm) {

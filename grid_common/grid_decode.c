@@ -761,32 +761,29 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
   }
 
   uint8_t error = 0;
-
   uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
-    grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX, id);
-
-    if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)) {
-    } else {
-      grid_ui_bulk_pageread_init(&grid_ui_state, &grid_protocol_nvm_read_succcess_callback);
+    if (!grid_ui_bulk_pageread_init(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_read_succcess_callback)){
+      return 1;
     }
 
   } else if (msg_instr == GRID_INSTR_CHECK_code) {
-
-    uint8_t state = grid_msg_get_lastheader_state(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX);
-    uint8_t id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX);
 
     struct grid_msg_packet response;
     grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
     grid_msg_packet_body_append_printf(&response, GRID_CLASS_PAGEDISCARD_frame);
     grid_msg_packet_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, id);
 
-    uint8_t acknowledge = (state == 0) ? GRID_INSTR_ACKNOWLEDGE_code : GRID_INSTR_NACKNOWLEDGE_code;
-    grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowledge);
+    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)){
+      grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+    }
+    else{
+      grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+    }
 
     grid_msg_packet_close(&grid_msg_state, &response);
     grid_port_packet_send_everywhere(&response);
@@ -805,32 +802,32 @@ uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
   }
 
   uint8_t error = 0;
-
   uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
-
-    grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX, id);
+    if (!grid_ui_bulk_pagestore_init(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_store_succcess_callback)){
+      return 1;
+    }
 
     // start animation (it will be stopped in the callback function)
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);
     grid_alert_all_set_frequency(&grid_led_state, -4);
 
-    grid_ui_bulk_pagestore_init(&grid_ui_state, &grid_protocol_nvm_store_succcess_callback);
   } else if (msg_instr == GRID_INSTR_CHECK_code) {
-
-    uint8_t state = grid_msg_get_lastheader_state(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX);
-    uint8_t id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX);
 
     struct grid_msg_packet response;
     grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
     grid_msg_packet_body_append_printf(&response, GRID_CLASS_PAGESTORE_frame);
     grid_msg_packet_body_append_parameter(&response, GRID_CLASS_PAGESTORE_LASTHEADER_offset, GRID_CLASS_PAGESTORE_LASTHEADER_length, id);
 
-    uint8_t acknowledge = (state == 0) ? GRID_INSTR_ACKNOWLEDGE_code : GRID_INSTR_NACKNOWLEDGE_code;
-    grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowledge);
+    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)){
+      grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+    }
+    else{
+      grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+    }
 
     grid_msg_packet_close(&grid_msg_state, &response);
     grid_port_packet_send_everywhere(&response);
@@ -846,32 +843,33 @@ uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
   }
 
   uint8_t error = 0;
-
   uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+    if (!grid_ui_bulk_pageclear_init(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_clear_succcess_callback)){
+      return 1;
+    }
 
-    grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX, id);
 
     // start animation (it will be stopped in the callback function)
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);
     grid_alert_all_set_frequency(&grid_led_state, -4);
 
-    grid_ui_bulk_pageclear_init(&grid_ui_state, &grid_protocol_nvm_clear_succcess_callback);
   } else if (msg_instr == GRID_INSTR_CHECK_code) {
-
-    uint8_t state = grid_msg_get_lastheader_state(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX);
-    uint8_t id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX);
 
     struct grid_msg_packet response;
     grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
     grid_msg_packet_body_append_printf(&response, GRID_CLASS_PAGECLEAR_frame);
     grid_msg_packet_body_append_parameter(&response, GRID_CLASS_PAGECLEAR_LASTHEADER_offset, GRID_CLASS_PAGECLEAR_LASTHEADER_length, id);
 
-    uint8_t acknowledge = (state == 0) ? GRID_INSTR_ACKNOWLEDGE_code : GRID_INSTR_NACKNOWLEDGE_code;
-    grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowledge);
+    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)){
+      grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+    }
+    else{
+      grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+    }
 
     grid_msg_packet_close(&grid_msg_state, &response);
     grid_port_packet_send_everywhere(&response);
@@ -887,15 +885,14 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
   }
 
   uint8_t error = 0;
-
   uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
-
-    grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX, id);
-    grid_ui_bulk_nvmerase_init(&grid_ui_state, &grid_protocol_nvm_erase_succcess_callback);
+    if (!grid_ui_bulk_nvmerase_init(&grid_ui_state, id, &grid_protocol_nvm_erase_succcess_callback)){
+      return 1;
+    }
 
     // start animation (it will be stopped in the callback function)
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);
@@ -906,16 +903,17 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
     }
   } else if (msg_instr == GRID_INSTR_CHECK_code) {
 
-    uint8_t state = grid_msg_get_lastheader_state(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
-    uint8_t id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
-
     struct grid_msg_packet response;
     grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
     grid_msg_packet_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
     grid_msg_packet_body_append_parameter(&response, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, id);
 
-    uint8_t acknowledge = (state == 0) ? GRID_INSTR_ACKNOWLEDGE_code : GRID_INSTR_NACKNOWLEDGE_code;
-    grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, acknowledge);
+    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)){
+      grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+    }
+    else{
+      grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
+    }
 
     grid_msg_packet_close(&grid_msg_state, &response);
     grid_port_packet_send_everywhere(&response);
@@ -956,8 +954,6 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
     uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
-
-    grid_msg_store_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_CONFIG_INDEX, id);
 
     // disable hid automatically
     grid_usb_keyboard_disable(&grid_usb_keyboard_state);
@@ -1027,8 +1023,6 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
     grid_msg_packet_body_append_printf(&response, GRID_CLASS_CONFIG_frame_check);
 
     grid_msg_packet_body_append_parameter(&response, GRID_CLASS_CONFIG_LASTHEADER_offset, GRID_CLASS_CONFIG_LASTHEADER_length, id);
-
-    grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_CONFIG_INDEX);
 
     grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, ack);
     grid_port_debug_printf("Config %01x %d", ack, id);

@@ -53,7 +53,7 @@ static void usb_task_inner() {
 
 static void nvm_task_inner() {
 
-  if (grid_ui_bluk_anything_is_in_progress(&grid_ui_state)) {
+  if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
     grid_d51_nvic_set_interrupt_priority_mask(1);
   } else {
     if (grid_d51_nvic_get_interrupt_priority_mask() == 1) {
@@ -62,66 +62,28 @@ static void nvm_task_inner() {
       // lets re-enable ui interrupts
       grid_d51_nvic_set_interrupt_priority_mask(0);
     }
+
+    return;
   }
 
-  // NVM BULK ERASE
-  if (grid_ui_bulk_nvmerase_is_in_progress(&grid_ui_state)) {
 
-    grid_ui_bulk_nvmerase_next(&grid_ui_state);
-  }
+  uint64_t time_max_duration = 5 * 1000; // in microseconds
+  uint64_t time_start = grid_platform_rtc_get_micros();
+  
+  do {
 
-  // NVM BULK STORE
-  if (grid_ui_bulk_pagestore_is_in_progress(&grid_ui_state)) {
-
-    // START: NEW
-    uint32_t cycles_limit = 5000 * 120; // 5ms
-    uint32_t cycles_start = grid_d51_dwt_cycles_read();
-
-    while (grid_d51_dwt_cycles_read() - cycles_start < cycles_limit) {
-      grid_ui_bulk_pagestore_next(&grid_ui_state);
+    switch (grid_ui_get_bulk_status(&grid_ui_state))
+    {
+      case GRID_UI_BULK_READ_PROGRESS: grid_ui_bulk_pageread_next(&grid_ui_state); break;
+      case GRID_UI_BULK_STORE_PROGRESS: grid_ui_bulk_pagestore_next(&grid_ui_state); break;
+      case GRID_UI_BULK_CLEAR_PROGRESS: grid_ui_bulk_pageclear_next(&grid_ui_state); break;
+      case GRID_UI_BULK_ERASE_PROGRESS: grid_ui_bulk_nvmerase_next(&grid_ui_state); break;
+      default: break;
     }
-  }
 
-  // NVM BULK CLEAR
-  if (grid_ui_bulk_pageclear_is_in_progress(&grid_ui_state)) {
+  } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration && grid_ui_bulk_anything_is_in_progress(&grid_ui_state));
 
-    grid_ui_bulk_pageclear_next(&grid_ui_state);
-  }
 
-  // NVM BULK READ
-
-  if (ui_port->rx_double_buffer_status == 0) {
-
-    if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)) {
-
-      // START: NEW
-      uint32_t cycles_limit = 5000 * 120; // 5ms
-      uint32_t cycles_start = grid_d51_dwt_cycles_read();
-
-      while (grid_d51_dwt_cycles_read() - cycles_start < cycles_limit) {
-        grid_ui_bulk_pageread_next(&grid_ui_state);
-      }
-    }
-  }
-  // NVM READ
-
-  uint32_t nvmlength = ui_port->rx_double_buffer_status;
-
-  if (nvmlength) {
-
-    ui_port->rx_double_buffer_status = 1;
-    ui_port->rx_double_buffer_read_start_index = 0;
-    ui_port->rx_double_buffer_seek_start_index = nvmlength - 1; //-3
-
-    // GETS HERE
-    // grid_port_receive_decode(ui_port, 0, nvmlength-1);
-    grid_port_receive_task(ui_port);
-  }
-
-  // clear buffer
-  for (uint32_t i = 0; i < GRID_D51_NVM_PAGE_SIZE; i++) {
-    ui_port->rx_double_buffer[i] = 0;
-  }
 }
 
 static void receive_task_inner() {
@@ -394,7 +356,7 @@ int main(void) {
   printf("Done TOC init\r\n");
   grid_ui_page_load(&grid_ui_state, 0); // load page 0
 
-  while (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)) {
+  while (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
     grid_ui_bulk_pageread_next(&grid_ui_state);
   }
 

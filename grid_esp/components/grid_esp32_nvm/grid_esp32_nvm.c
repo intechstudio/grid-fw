@@ -336,7 +336,7 @@ static int find_next_file(char* path, char* file_name_fmt, int* last_file_number
 
   for (uint8_t i = 0; i < entries_length; i++) {
 
-    printf("files: %s\r\n", entries[i]->d_name);
+    //printf("files: %s\r\n", entries[i]->d_name);
 
     int element;
     int element_match = sscanf(entries[i]->d_name, "%02x", &element);
@@ -374,12 +374,8 @@ static int find_next_file(char* path, char* file_name_fmt, int* last_file_number
 
 int grid_esp32_nvm_find_next_file_from_page(struct grid_esp32_nvm_model* nvm, uint8_t page, int* last_element, int* last_event) {
 
-  grid_esp32_nvm_list_files(nvm, "/littlefs/");
-  grid_esp32_nvm_list_files(nvm, "/littlefs/00/");
-
   while (true) {
 
-    printf("loop\r\n");
     if (*last_event == -1) {
 
       // try to find valid element
@@ -389,7 +385,6 @@ int grid_esp32_nvm_find_next_file_from_page(struct grid_esp32_nvm_model* nvm, ui
 
       if (*last_element == -1) {
         // no more element is found, traversal is over
-        printf("no more element is found\r\n");
         return 1;
       }
     }
@@ -397,13 +392,10 @@ int grid_esp32_nvm_find_next_file_from_page(struct grid_esp32_nvm_model* nvm, ui
     // try to find valid event
     char path[25] = {0};
     sprintf(path, "/littlefs/%02x/%02x", page, *last_element);
-    printf("try path: %s\r\n", path);
     find_next_file(path, "%02x.cfg", last_event);
 
     if (*last_event != -1) {
       // valid event is found, return success
-
-      printf("valid event is found %d %d\r\n", *last_element, *last_event);
       return 0;
     }
   }
@@ -415,7 +407,7 @@ void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_hand
   return;
 }
 
-int grid_platform_find_next_actionstring_file(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle) {
+int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle) {
 
   if (0 == grid_esp32_nvm_find_next_file_from_page(&grid_esp32_nvm_state, page, last_element, last_event)) {
 
@@ -491,7 +483,7 @@ uint8_t grid_platform_erase_nvm_next() {
 
   ets_printf("ERASE WAS ALREADY DONE ON INIT!!!\r\n");
 
-  return 0; // done
+  return 1; // done
 }
 
 uint32_t grid_plaform_get_nvm_nextwriteoffset() {
@@ -502,15 +494,19 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset() {
 
 #include "grid_esp32_port.h"
 
+#include "driver/gpio.h"
+
 void grid_esp32_nvm_task(void* arg) {
 
   SemaphoreHandle_t nvm_or_port = (SemaphoreHandle_t)arg;
 
   static uint32_t loopcounter = 0;
 
+  //gpio_set_direction(47, GPIO_MODE_OUTPUT);
+
   while (1) {
 
-    if (false == grid_ui_bluk_anything_is_in_progress(&grid_ui_state)) {
+    if (false == grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
 
       vTaskDelay(pdMS_TO_TICKS(15));
       continue;
@@ -518,35 +514,27 @@ void grid_esp32_nvm_task(void* arg) {
 
     if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
 
+
+      //gpio_set_level(47, 1);
+
       uint64_t time_max_duration = 150 * 1000; // in microseconds
       uint64_t time_start = grid_platform_rtc_get_micros();
-      uint32_t counter = 0;
-
-      struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
 
       do {
 
-        // NVM BULK STORE
-        if (grid_ui_bulk_pagestore_is_in_progress(&grid_ui_state)) {
-
-          grid_ui_bulk_pagestore_next(&grid_ui_state);
-        } else if (grid_ui_bulk_nvmerase_is_in_progress(&grid_ui_state)) {
-
-          grid_ui_bulk_nvmerase_next(&grid_ui_state);
-        } else if (grid_ui_bulk_pageclear_is_in_progress(&grid_ui_state)) {
-
-          grid_ui_bulk_pageclear_next(&grid_ui_state);
-        } else if (ui_port->rx_double_buffer_status == 0 && grid_ui_bulk_pageread_is_in_progress(&grid_ui_state)) {
-          grid_ui_bulk_pageread_next(&grid_ui_state);
-        } else {
-          break;
+        switch (grid_ui_get_bulk_status(&grid_ui_state))
+        {
+          case GRID_UI_BULK_READ_PROGRESS: grid_ui_bulk_pageread_next(&grid_ui_state); break;
+          case GRID_UI_BULK_STORE_PROGRESS: grid_ui_bulk_pagestore_next(&grid_ui_state); break;
+          case GRID_UI_BULK_CLEAR_PROGRESS: grid_ui_bulk_pageclear_next(&grid_ui_state); break;
+          case GRID_UI_BULK_ERASE_PROGRESS: grid_ui_bulk_nvmerase_next(&grid_ui_state); break;
+          default: break;
         }
 
-        // grid_esp32_port_periodic_ping_heartbeat_handler_cb(NULL);
+      } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration && grid_ui_bulk_anything_is_in_progress(&grid_ui_state));
 
-        counter++;
 
-      } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration);
+      //gpio_set_level(47, 0);
 
       xSemaphoreGive(nvm_or_port);
     }

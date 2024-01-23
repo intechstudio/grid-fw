@@ -712,7 +712,7 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
   }
 }
 
-int grid_platform_find_next_actionstring_file(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle) {
+int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle) {
 
   file_handle->toc_ptr = grid_d51_nvm_toc_entry_find_next_on_page(&grid_d51_nvm_state, page, last_element, last_event);
 
@@ -795,11 +795,11 @@ uint8_t grid_platform_erase_nvm_next() {
 
     grid_d51_nvm_state.erase_bulk_address += GRID_D51_NVM_BLOCK_SIZE;
 
-    return 1;
-  } else {
-
     return 0;
   }
+
+  grid_d51_nvm_state.erase_bulk_address = GRID_D51_NVM_LOCAL_BASE_ADDRESS;
+  return 1;
 }
 
 void grid_platform_system_reset() { NVIC_SystemReset(); }

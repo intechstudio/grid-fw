@@ -457,7 +457,7 @@ void grid_esp32_port_task(void* arg) {
         // pending local events must be evaluated first
         // local events are only triggered when configuration changes!
         // WARNING: all init events are triggered as local after pagechange!
-        if (grid_ui_event_count_istriggered_local(&grid_ui_state) && !grid_ui_bluk_anything_is_in_progress(&grid_ui_state)) {
+        if (grid_ui_event_count_istriggered_local(&grid_ui_state) && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
 
           // CRITICAL_SECTION_ENTER()
           vTaskSuspendAll();
@@ -465,7 +465,7 @@ void grid_esp32_port_task(void* arg) {
           xTaskResumeAll();
           // CRITICAL_SECTION_LEAVE()
 
-        } else if (grid_ui_event_count_istriggered(&grid_ui_state) && !grid_ui_bluk_anything_is_in_progress(&grid_ui_state)) {
+        } else if (grid_ui_event_count_istriggered(&grid_ui_state) && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
 
           cooldown += 3;
 

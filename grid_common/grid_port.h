@@ -120,11 +120,10 @@ uint8_t grid_port_packet_send_everywhere(struct grid_msg_packet* msg);
 
 void grid_port_ping_try_everywhere(void);
 
-void grid_protocol_nvm_erase_succcess_callback();
-void grid_protocol_nvm_clear_succcess_callback();
-void grid_protocol_nvm_read_succcess_callback();
-void grid_protocol_nvm_store_succcess_callback();
-void grid_protocol_nvm_defrag_succcess_callback();
+void grid_protocol_nvm_erase_succcess_callback(uint8_t lastheader_id);
+void grid_protocol_nvm_clear_succcess_callback(uint8_t lastheader_id);
+void grid_protocol_nvm_read_succcess_callback(uint8_t lastheader_id);
+void grid_protocol_nvm_store_succcess_callback(uint8_t lastheader_id);
 
 void grid_protocol_send_heartbeat();
 

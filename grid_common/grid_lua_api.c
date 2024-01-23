@@ -1368,7 +1368,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message) {
 
   if (grid_ui_page_change_is_enabled(&grid_ui_state)) {
 
-    if (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state) == 0) {
+    if (grid_ui_bulk_is_in_progress(&grid_ui_state, GRID_UI_BULK_READ_PROGRESS) == 0) {
 
       grid_port_debug_printf("page request: %d", page);
       char response[20] = {0};

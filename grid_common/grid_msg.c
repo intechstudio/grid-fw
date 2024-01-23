@@ -12,11 +12,6 @@ struct grid_msg_model grid_msg_state;
 void grid_msg_init(struct grid_msg_model* mod) {
 
   mod->sessionid = grid_platform_get_random_8();
-
-  for (uint8_t i = 0; i < GRID_MSG_LASTHEADER_INDEX_COUNT; i++) {
-    grid_msg_store_lastheader(mod, i, 0);
-  }
-
   mod->editor_heartbeat_lastrealtime = 0;
   mod->heartbeat_type = 0;
 }
@@ -25,20 +20,7 @@ void grid_msg_set_heartbeat_type(struct grid_msg_model* mod, uint8_t type) { mod
 
 uint8_t grid_msg_get_heartbeat_type(struct grid_msg_model* mod) { return mod->heartbeat_type; }
 
-void grid_msg_store_lastheader(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index, uint8_t value) {
 
-  mod->lastheader[index].id = value;
-  mod->lastheader[index].state = -1; // -1 means not completed operation
-}
-
-uint8_t grid_msg_get_lastheader_state(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index) { return mod->lastheader[index].state; }
-
-uint8_t grid_msg_get_lastheader_id(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index) { return mod->lastheader[index].id; }
-
-void grid_msg_clear_lastheader(struct grid_msg_model* mod, enum grid_msg_lastheader_index_t index) {
-
-  mod->lastheader[index].state = 0; // 0 means operation completed
-}
 
 void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* mod, uint64_t timestamp) { mod->editor_heartbeat_lastrealtime = timestamp; }
 

@@ -805,11 +805,7 @@ void grid_port_ping_try_everywhere(void) {
   }
 }
 
-void grid_protocol_nvm_erase_succcess_callback() {
-
-  uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
-
-  grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
+void grid_protocol_nvm_erase_succcess_callback(uint8_t lastheader_id) {
 
   // Generate ACKNOWLEDGE RESPONSE
   struct grid_msg_packet response;
@@ -836,10 +832,7 @@ void grid_protocol_nvm_erase_succcess_callback() {
   grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 }
 
-void grid_protocol_nvm_clear_succcess_callback() {
-
-  uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX);
-  grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_CLEAR_INDEX);
+void grid_protocol_nvm_clear_succcess_callback(uint8_t lastheader_id) {
 
   struct grid_msg_packet response;
 
@@ -868,10 +861,7 @@ void grid_protocol_nvm_clear_succcess_callback() {
   grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 }
 
-void grid_protocol_nvm_read_succcess_callback() {
-
-  uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX);
-  grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_DISCARD_INDEX);
+void grid_protocol_nvm_read_succcess_callback(uint8_t lastheader_id) {
 
   // Generate ACKNOWLEDGE RESPONSE
   struct grid_msg_packet response;
@@ -895,10 +885,7 @@ void grid_protocol_nvm_read_succcess_callback() {
   grid_alert_all_set_timeout_automatic(&grid_led_state);
 }
 
-void grid_protocol_nvm_store_succcess_callback() {
-
-  uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX);
-  grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_STORE_INDEX);
+void grid_protocol_nvm_store_succcess_callback(uint8_t lastheader_id) {
 
   struct grid_msg_packet response;
 
@@ -931,13 +918,6 @@ void grid_protocol_nvm_store_succcess_callback() {
   // reload configuration
 
   grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
-}
-
-void grid_protocol_nvm_defrag_succcess_callback() {
-
-  uint8_t lastheader_id = grid_msg_get_lastheader_id(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
-
-  grid_msg_clear_lastheader(&grid_msg_state, GRID_MSG_LASTHEADER_ERASE_INDEX);
 }
 
 void grid_protocol_send_heartbeat() {
