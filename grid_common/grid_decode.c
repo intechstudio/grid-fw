@@ -766,8 +766,7 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-
-    if (!grid_ui_bulk_pageread_init(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_read_succcess_callback)){
+    if (!grid_ui_bulk_pageread_init(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_read_succcess_callback)) {
       return 1;
     }
 
@@ -778,10 +777,9 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
     grid_msg_packet_body_append_printf(&response, GRID_CLASS_PAGEDISCARD_frame);
     grid_msg_packet_body_append_parameter(&response, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, id);
 
-    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)){
+    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
       grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-    }
-    else{
+    } else {
       grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
     }
 
@@ -807,7 +805,7 @@ uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    if (!grid_ui_bulk_pagestore_init(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_store_succcess_callback)){
+    if (!grid_ui_bulk_pagestore_init(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_store_succcess_callback)) {
       return 1;
     }
 
@@ -822,10 +820,9 @@ uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
     grid_msg_packet_body_append_printf(&response, GRID_CLASS_PAGESTORE_frame);
     grid_msg_packet_body_append_parameter(&response, GRID_CLASS_PAGESTORE_LASTHEADER_offset, GRID_CLASS_PAGESTORE_LASTHEADER_length, id);
 
-    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)){
+    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
       grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-    }
-    else{
+    } else {
       grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
     }
 
@@ -848,10 +845,9 @@ uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    if (!grid_ui_bulk_pageclear_init(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_clear_succcess_callback)){
+    if (!grid_ui_bulk_pageclear_init(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_clear_succcess_callback)) {
       return 1;
     }
-
 
     // start animation (it will be stopped in the callback function)
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);
@@ -864,10 +860,9 @@ uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
     grid_msg_packet_body_append_printf(&response, GRID_CLASS_PAGECLEAR_frame);
     grid_msg_packet_body_append_parameter(&response, GRID_CLASS_PAGECLEAR_LASTHEADER_offset, GRID_CLASS_PAGECLEAR_LASTHEADER_length, id);
 
-    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)){
+    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
       grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-    }
-    else{
+    } else {
       grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
     }
 
@@ -890,7 +885,7 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    if (!grid_ui_bulk_nvmerase_init(&grid_ui_state, id, &grid_protocol_nvm_erase_succcess_callback)){
+    if (!grid_ui_bulk_nvmerase_init(&grid_ui_state, id, &grid_protocol_nvm_erase_succcess_callback)) {
       return 1;
     }
 
@@ -908,10 +903,9 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
     grid_msg_packet_body_append_printf(&response, GRID_CLASS_NVMERASE_frame);
     grid_msg_packet_body_append_parameter(&response, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, id);
 
-    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)){
+    if (grid_ui_bulk_get_lastheader(&grid_ui_state) == id && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
       grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
-    }
-    else{
+    } else {
       grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_NACKNOWLEDGE_code);
     }
 

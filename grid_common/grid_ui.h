@@ -89,13 +89,7 @@ struct grid_ui_element {
   struct grid_ui_event* event_list;
 };
 
-enum grid_ui_bluk_status_t{
-  GRID_UI_BULK_READY = 0,
-  GRID_UI_BULK_READ_PROGRESS,
-  GRID_UI_BULK_STORE_PROGRESS,
-  GRID_UI_BULK_CLEAR_PROGRESS,
-  GRID_UI_BULK_ERASE_PROGRESS
-};
+enum grid_ui_bluk_status_t { GRID_UI_BULK_READY = 0, GRID_UI_BULK_READ_PROGRESS, GRID_UI_BULK_STORE_PROGRESS, GRID_UI_BULK_CLEAR_PROGRESS, GRID_UI_BULK_ERASE_PROGRESS };
 
 struct grid_ui_model {
 
@@ -120,10 +114,7 @@ struct grid_ui_model {
   int bulk_last_element;
   int bulk_last_event;
 
-
-
   void (*lua_ui_init_callback)(struct grid_lua_model*);
-
 };
 
 extern struct grid_ui_model grid_ui_state;
@@ -207,7 +198,6 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui);
 
 int grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui);
-
 
 void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui);
 

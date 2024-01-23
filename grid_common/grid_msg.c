@@ -20,8 +20,6 @@ void grid_msg_set_heartbeat_type(struct grid_msg_model* mod, uint8_t type) { mod
 
 uint8_t grid_msg_get_heartbeat_type(struct grid_msg_model* mod) { return mod->heartbeat_type; }
 
-
-
 void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* mod, uint64_t timestamp) { mod->editor_heartbeat_lastrealtime = timestamp; }
 
 uint32_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* mod) { return mod->editor_heartbeat_lastrealtime; }

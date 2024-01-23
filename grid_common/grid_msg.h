@@ -30,7 +30,6 @@ extern uint8_t grid_platform_get_random_8();
 #define GRID_MSG_RECENT_FINGERPRINT_BUFFER_LENGTH 32
 #define GRID_MSG_RECENT_FINGERPRINT_BUFFER_INDEX_T uint8_t
 
-
 struct grid_msg_model {
 
   uint64_t editor_heartbeat_lastrealtime;
@@ -41,7 +40,6 @@ struct grid_msg_model {
 
   uint8_t sessionid;
   uint8_t next_broadcast_message_id;
-
 };
 
 extern struct grid_msg_model grid_msg_state;
@@ -63,7 +61,6 @@ void grid_msg_init(struct grid_msg_model* mod);
 
 void grid_msg_set_heartbeat_type(struct grid_msg_model* mod, uint8_t type);
 uint8_t grid_msg_get_heartbeat_type(struct grid_msg_model* mod);
-
 
 void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* mod, uint64_t timestamp);
 uint32_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* mod);

@@ -336,7 +336,7 @@ static int find_next_file(char* path, char* file_name_fmt, int* last_file_number
 
   for (uint8_t i = 0; i < entries_length; i++) {
 
-    //printf("files: %s\r\n", entries[i]->d_name);
+    // printf("files: %s\r\n", entries[i]->d_name);
 
     int element;
     int element_match = sscanf(entries[i]->d_name, "%02x", &element);
@@ -502,7 +502,7 @@ void grid_esp32_nvm_task(void* arg) {
 
   static uint32_t loopcounter = 0;
 
-  //gpio_set_direction(47, GPIO_MODE_OUTPUT);
+  // gpio_set_direction(47, GPIO_MODE_OUTPUT);
 
   while (1) {
 
@@ -514,27 +514,33 @@ void grid_esp32_nvm_task(void* arg) {
 
     if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
 
-
-      //gpio_set_level(47, 1);
+      // gpio_set_level(47, 1);
 
       uint64_t time_max_duration = 150 * 1000; // in microseconds
       uint64_t time_start = grid_platform_rtc_get_micros();
 
       do {
 
-        switch (grid_ui_get_bulk_status(&grid_ui_state))
-        {
-          case GRID_UI_BULK_READ_PROGRESS: grid_ui_bulk_pageread_next(&grid_ui_state); break;
-          case GRID_UI_BULK_STORE_PROGRESS: grid_ui_bulk_pagestore_next(&grid_ui_state); break;
-          case GRID_UI_BULK_CLEAR_PROGRESS: grid_ui_bulk_pageclear_next(&grid_ui_state); break;
-          case GRID_UI_BULK_ERASE_PROGRESS: grid_ui_bulk_nvmerase_next(&grid_ui_state); break;
-          default: break;
+        switch (grid_ui_get_bulk_status(&grid_ui_state)) {
+        case GRID_UI_BULK_READ_PROGRESS:
+          grid_ui_bulk_pageread_next(&grid_ui_state);
+          break;
+        case GRID_UI_BULK_STORE_PROGRESS:
+          grid_ui_bulk_pagestore_next(&grid_ui_state);
+          break;
+        case GRID_UI_BULK_CLEAR_PROGRESS:
+          grid_ui_bulk_pageclear_next(&grid_ui_state);
+          break;
+        case GRID_UI_BULK_ERASE_PROGRESS:
+          grid_ui_bulk_nvmerase_next(&grid_ui_state);
+          break;
+        default:
+          break;
         }
 
       } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration && grid_ui_bulk_anything_is_in_progress(&grid_ui_state));
 
-
-      //gpio_set_level(47, 0);
+      // gpio_set_level(47, 0);
 
       xSemaphoreGive(nvm_or_port);
     }
