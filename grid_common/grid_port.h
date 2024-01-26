@@ -97,6 +97,9 @@ struct grid_port* grid_transport_get_port(struct grid_transport_model* transport
 void grid_port_receive_task(struct grid_port* por);
 void grid_port_receive_decode(struct grid_port* por, uint16_t len);
 
+void grid_port_receive_broadcast_message(struct grid_port* por, char* message, uint16_t length);
+void grid_port_receive_direct_message(struct grid_port* por, char* message, uint16_t length);
+
 uint8_t grid_port_process_inbound(struct grid_port* por);
 
 char grid_port_get_name_char(struct grid_port* por);
