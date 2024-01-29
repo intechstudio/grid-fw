@@ -447,7 +447,6 @@ void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir, uint8_t in
   grid_buffer_init(&por->tx_buffer, GRID_BUFFER_SIZE);
   grid_buffer_init(&por->rx_buffer, GRID_BUFFER_SIZE);
 
-  por->cooldown = 0;
   por->inbound_loopback = inbound_loopback;
 
   por->direction = dir;

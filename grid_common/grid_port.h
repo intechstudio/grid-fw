@@ -35,8 +35,6 @@ enum grid_port_type { GRID_PORT_TYPE_UNDEFINED = 0, GRID_PORT_TYPE_USART, GRID_P
 
 struct grid_port {
 
-  uint32_t cooldown;
-
   enum grid_port_type type;
   uint8_t direction;
 

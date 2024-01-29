@@ -116,7 +116,7 @@ static void receive_task_inner(uint8_t* partner_connected) {
   }
 }
 
-static void ui_task_inner() {
+static void ui_task_inner(uint8_t* ui_port_cooldown) {
 
   // every other entry of the superloop
   if (loopcount % 4 == 0) {
@@ -133,11 +133,11 @@ static void ui_task_inner() {
 
     // Bandwidth Limiter for Broadcast messages
 
-    if (ui_port->cooldown > 0) {
-      ui_port->cooldown--;
+    if (*ui_port_cooldown > 0) {
+      *ui_port_cooldown--;
     }
 
-    if (ui_port->cooldown > 5) {
+    if (*ui_port_cooldown > 5) {
     } else {
 
       // if there are still unprocessed locally triggered events then must not
@@ -148,7 +148,7 @@ static void ui_task_inner() {
 
         if (grid_ui_event_count_istriggered(&grid_ui_state)) {
 
-          ui_port->cooldown += 3;
+          *ui_port_cooldown += 3;
 
           CRITICAL_SECTION_ENTER()
           grid_port_process_ui_UNSAFE(&grid_ui_state);
@@ -406,6 +406,8 @@ int main(void) {
   uint8_t partner_connected[grid_transport_get_port_array_length(&grid_transport_state)];
   memset(partner_connected, 0, grid_transport_get_port_array_length(&grid_transport_state));
 
+  uint8_t ui_port_cooldown = 0;
+
   while (1) {
 
     if (usb_d_get_frame_num() != 0) {
@@ -452,7 +454,7 @@ int main(void) {
 
     // lua_gc(grid_lua_state.L, LUA_GCSTOP);
 
-    ui_task_inner();
+    ui_task_inner(&ui_port_cooldown);
 
     outbound_task_inner();
 
