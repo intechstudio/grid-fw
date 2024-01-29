@@ -19,6 +19,9 @@ static volatile struct grid_port* uart_port_array[4] = {0};
 static volatile struct grid_port* host_port = NULL;
 static volatile struct grid_port* ui_port = NULL;
 
+static struct grid_doublebuffer* volatile uart_doublebuffer_tx_array[4] = {0};
+static struct grid_doublebuffer* volatile uart_doublebuffer_rx_array[4] = {0};
+
 volatile uint32_t loopcounter = 1;
 volatile uint32_t loopcount = 0;
 
@@ -51,7 +54,11 @@ static void usb_task_inner(struct grid_msg_recent_buffer* rec) {
 
   char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
   uint16_t length = 0;
-  grid_port_rxdobulebuffer_to_linear(host_port, temp, &length); // USB
+
+  struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, 5);
+  struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, 5);
+
+  grid_port_rxdobulebuffer_to_linear(host_port, doublebuffer_tx, doublebuffer_rx, temp, &length); // USB
   grid_port_receive_decode(host_port, rec, temp, length);
 }
 
@@ -100,6 +107,8 @@ static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recen
   for (uint8_t i = 0; i < 4; i++) {
 
     struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
+    struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, i);
+    struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i);
 
     if (partner_connected[i] < port->partner_status) {
       // connect
@@ -118,9 +127,9 @@ static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recen
 
     char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
     uint16_t length = 0;
-    grid_port_rxdobulebuffer_to_linear(port, temp, &length);
+    grid_port_rxdobulebuffer_to_linear(port, doublebuffer_tx, doublebuffer_rx, temp, &length);
     grid_port_receive_decode(port, rec, temp, length);
-    grid_port_try_uart_timeout_disconect(port); // try disconnect for uart port
+    grid_port_try_uart_timeout_disconect(port, doublebuffer_tx, doublebuffer_rx); // try disconnect for uart port
   }
 }
 
@@ -196,12 +205,15 @@ static void outbound_task_inner() {
   for (uint8_t i = 0; i < 4; i++) {
 
     struct grid_port* port = uart_port_array[i];
+    struct grid_doublebuffer* doublebuffer_tx = uart_doublebuffer_tx_array[i];
 
-    grid_port_process_outbound_usart(port);
+    grid_port_process_outbound_usart(port, doublebuffer_tx);
   }
 
   grid_port_process_outbound_ui(ui_port);
-  grid_port_process_outbound_usb(host_port);
+
+  struct grid_doublebuffer* host_doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, 5);
+  grid_port_process_outbound_usb(host_port, host_doublebuffer_tx);
 }
 
 static uint64_t led_lastrealtime = 0;
@@ -365,6 +377,16 @@ int main(void) {
   uart_port_array[1] = grid_transport_get_port(&grid_transport_state, 1);
   uart_port_array[2] = grid_transport_get_port(&grid_transport_state, 2);
   uart_port_array[3] = grid_transport_get_port(&grid_transport_state, 3);
+
+  uart_doublebuffer_tx_array[0] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 0);
+  uart_doublebuffer_tx_array[1] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 1);
+  uart_doublebuffer_tx_array[2] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 2);
+  uart_doublebuffer_tx_array[3] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 3);
+
+  uart_doublebuffer_rx_array[0] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 0);
+  uart_doublebuffer_rx_array[1] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 1);
+  uart_doublebuffer_rx_array[2] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 2);
+  uart_doublebuffer_rx_array[3] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 3);
 
   ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
   host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);

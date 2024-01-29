@@ -13,6 +13,13 @@ void grid_transport_register_port(struct grid_transport_model* transport, struct
   transport->port_array_length++;
 }
 
+void grid_transport_register_doublebuffer(struct grid_transport_model* transport, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx) {
+
+  transport->doublebuffer_tx_array[transport->doublebuffer_array_length] = doublebuffer_tx;
+  transport->doublebuffer_rx_array[transport->doublebuffer_array_length] = doublebuffer_rx;
+  transport->doublebuffer_array_length++;
+}
+
 struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_model* transport, enum grid_port_type type) {
 
   for (uint8_t i = 0; i < transport->port_array_length; i++) {
@@ -29,6 +36,8 @@ struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_mo
 uint8_t grid_transport_get_port_array_length(struct grid_transport_model* transport) { return transport->port_array_length; }
 
 struct grid_port* grid_transport_get_port(struct grid_transport_model* transport, uint8_t index) { return transport->port_array[index]; }
+struct grid_doublebuffer* grid_transport_get_doublebuffer_tx(struct grid_transport_model* transport, uint8_t index) { return transport->doublebuffer_tx_array[index]; }
+struct grid_doublebuffer* grid_transport_get_doublebuffer_rx(struct grid_transport_model* transport, uint8_t index) { return transport->doublebuffer_rx_array[index]; }
 
 char grid_port_get_name_char(struct grid_port* por) {
 
@@ -39,7 +48,7 @@ char grid_port_get_name_char(struct grid_port* por) {
   return direction_lookup[direction_index];
 }
 
-void grid_port_try_uart_timeout_disconect(struct grid_port* por) {
+void grid_port_try_uart_timeout_disconect(struct grid_port* por, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx) {
 
   if (por->type != GRID_PORT_TYPE_USART) {
     return;
@@ -50,34 +59,34 @@ void grid_port_try_uart_timeout_disconect(struct grid_port* por) {
     return;
   }
 
-  if (por->partner_status == 0 && por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0) {
+  if (por->partner_status == 0 && doublebuffer_rx->read_start_index == 0 && doublebuffer_rx->seek_start_index == 0) {
     // was already reset, ready to receive
     return;
   }
 
   por->partner_status = 0;
-  grid_port_receiver_softreset(por);
+  grid_port_receiver_softreset(por, doublebuffer_tx, doublebuffer_rx);
 }
 
-static uint8_t grid_port_rxdobulebuffer_check_overrun(struct grid_port* por) {
+static uint8_t grid_port_rxdobulebuffer_check_overrun(struct grid_doublebuffer* doublebuffer_rx) {
 
-  uint8_t overrun_condition_1 = (por->rx_double_buffer_seek_start_index == por->rx_double_buffer_read_start_index - 1);
-  uint8_t overrun_condition_2 = (por->rx_double_buffer_seek_start_index == GRID_DOUBLE_BUFFER_RX_SIZE - 1 && por->rx_double_buffer_read_start_index == 0);
-  uint8_t overrun_condition_3 = (por->rx_double_buffer[(por->rx_double_buffer_read_start_index + GRID_DOUBLE_BUFFER_RX_SIZE - 1) % GRID_DOUBLE_BUFFER_RX_SIZE] != 0);
+  uint8_t overrun_condition_1 = (doublebuffer_rx->seek_start_index == doublebuffer_rx->read_start_index - 1);
+  uint8_t overrun_condition_2 = (doublebuffer_rx->seek_start_index == doublebuffer_rx->buffer_size - 1 && doublebuffer_rx->read_start_index == 0);
+  uint8_t overrun_condition_3 = (doublebuffer_rx->buffer_storage[(doublebuffer_rx->read_start_index + doublebuffer_rx->buffer_size - 1) % doublebuffer_rx->buffer_size] != 0);
 
   return (overrun_condition_1 || overrun_condition_2 || overrun_condition_3);
 }
 
-static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por) {
+static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx) {
 
   for (uint16_t i = 0; i < 490; i++) { // 490 is the max processing length
 
-    if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 10) { // \n
+    if (doublebuffer_rx->buffer_storage[doublebuffer_rx->seek_start_index] == 10) { // \n
 
-      por->rx_double_buffer_status = 1;
+      doublebuffer_rx->status = 1;
 
       break;
-    } else if (por->rx_double_buffer[por->rx_double_buffer_seek_start_index] == 0) {
+    } else if (doublebuffer_rx->buffer_storage[doublebuffer_rx->seek_start_index] == 0) {
 
       break;
     }
@@ -86,9 +95,9 @@ static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por) {
     if (grid_port_rxdobulebuffer_check_overrun(por)) {
 
       grid_platform_printf("Overrun%d\r\n", por->direction);
-      grid_platform_printf("R%d S%d W%d\r\n", por->rx_double_buffer_read_start_index, por->rx_double_buffer_seek_start_index, por->rx_double_buffer_write_index);
+      grid_platform_printf("R%d S%d W%d\r\n", doublebuffer_rx->read_start_index, doublebuffer_rx->seek_start_index, doublebuffer_rx->write_index);
 
-      grid_port_receiver_hardreset(por);
+      grid_port_receiver_hardreset(por, doublebuffer_tx, doublebuffer_rx);
 
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
       grid_alert_all_set_frequency(&grid_led_state, -2);
@@ -97,52 +106,52 @@ static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por) {
     }
 
     // Increment seek pointer
-    if (por->rx_double_buffer_seek_start_index < GRID_DOUBLE_BUFFER_RX_SIZE - 1) {
+    if (doublebuffer_rx->seek_start_index < doublebuffer_rx->buffer_size - 1) {
 
-      por->rx_double_buffer_seek_start_index++;
+      doublebuffer_rx->seek_start_index++;
     } else {
 
-      por->rx_double_buffer_seek_start_index = 0;
+      doublebuffer_rx->seek_start_index = 0;
     }
   }
 }
 
-void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, char* message, uint16_t* length) {
+void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx, char* message, uint16_t* length) {
 
   // set double buffer status to 1 if newline is found
-  grid_port_rxdobulebuffer_seek_newline(por);
+  grid_port_rxdobulebuffer_seek_newline(por, doublebuffer_tx, doublebuffer_rx);
 
   // No complete message in buffer
-  if (por->rx_double_buffer_status == 0) {
+  if (doublebuffer_rx->status == 0) {
     return;
   }
 
   uint16_t len = 0;
 
-  if (por->rx_double_buffer_read_start_index < por->rx_double_buffer_seek_start_index) {
-    len = por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
+  if (doublebuffer_rx->read_start_index < doublebuffer_rx->seek_start_index) {
+    len = doublebuffer_rx->seek_start_index - doublebuffer_rx->read_start_index + 1;
   } else {
-    len = GRID_DOUBLE_BUFFER_RX_SIZE + por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
+    len = doublebuffer_rx->buffer_size + doublebuffer_rx->seek_start_index - doublebuffer_rx->read_start_index + 1;
   }
 
   // Store message in temporary buffer
   for (uint16_t i = 0; i < len; i++) {
-    message[i] = por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i) % GRID_DOUBLE_BUFFER_RX_SIZE];
-    por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i) % GRID_DOUBLE_BUFFER_RX_SIZE] = 0;
+    message[i] = doublebuffer_rx->buffer_storage[(doublebuffer_rx->read_start_index + i) % doublebuffer_rx->buffer_size];
+    doublebuffer_rx->buffer_storage[(doublebuffer_rx->read_start_index + i) % doublebuffer_rx->buffer_size] = 0;
   }
   message[len] = 0;
 
   // Clear data from rx double buffer
   for (uint16_t i = 0; i < len; i++) {
-    por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i) % GRID_DOUBLE_BUFFER_RX_SIZE] = 0;
+    doublebuffer_rx->buffer_storage[(doublebuffer_rx->read_start_index + i) % doublebuffer_rx->buffer_size] = 0;
   }
 
-  uint32_t readstartindex = por->rx_double_buffer_read_start_index;
+  uint32_t readstartindex = doublebuffer_rx->read_start_index;
 
-  por->rx_double_buffer_read_start_index = (por->rx_double_buffer_read_start_index + len) % GRID_DOUBLE_BUFFER_RX_SIZE;
-  por->rx_double_buffer_seek_start_index = por->rx_double_buffer_read_start_index;
+  doublebuffer_rx->read_start_index = (doublebuffer_rx->read_start_index + len) % doublebuffer_rx->buffer_size;
+  doublebuffer_rx->seek_start_index = doublebuffer_rx->read_start_index;
 
-  por->rx_double_buffer_status = 0;
+  doublebuffer_rx->status = 0;
 
   *length = len;
 }
@@ -253,26 +262,26 @@ void grid_msg_string_transform_brc_params(char* message, int8_t dx, int8_t dy, u
   grid_msg_string_checksum_write(message, length, grid_msg_string_calculate_checksum_of_packet_string(message, length));
 }
 
-static void grid_port_rxdobulebuffer_receive_to_buffer(struct grid_port* por, char* buffer, uint16_t length) {
+static void grid_port_rxdobulebuffer_receive_to_buffer(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx, char* buffer, uint16_t length) {
 
   // Store message in temporary buffer (MAXMSGLEN = 250 character)
   for (uint16_t i = 0; i < length; i++) {
-    buffer[i] = por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i) % GRID_DOUBLE_BUFFER_RX_SIZE];
-    por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i) % GRID_DOUBLE_BUFFER_RX_SIZE] = 0;
+    buffer[i] = doublebuffer_rx->buffer_storage[(doublebuffer_rx->read_start_index + i) % doublebuffer_rx->buffer_size];
+    doublebuffer_rx->buffer_storage[(doublebuffer_rx->read_start_index + i) % doublebuffer_rx->buffer_size] = 0;
   }
   buffer[length] = 0;
 
   // Clear data from rx double buffer
   for (uint16_t i = 0; i < length; i++) {
-    por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i) % GRID_DOUBLE_BUFFER_RX_SIZE] = 0;
+    doublebuffer_rx->buffer_storage[(doublebuffer_rx->read_start_index + i) % doublebuffer_rx->buffer_size] = 0;
   }
 
-  uint32_t readstartindex = por->rx_double_buffer_read_start_index;
+  uint32_t readstartindex = doublebuffer_rx->read_start_index;
 
-  por->rx_double_buffer_read_start_index = (por->rx_double_buffer_read_start_index + length) % GRID_DOUBLE_BUFFER_RX_SIZE;
-  por->rx_double_buffer_seek_start_index = por->rx_double_buffer_read_start_index;
+  doublebuffer_rx->read_start_index = (doublebuffer_rx->read_start_index + length) % doublebuffer_rx->buffer_size;
+  doublebuffer_rx->seek_start_index = doublebuffer_rx->read_start_index;
 
-  por->rx_double_buffer_status = 0;
+  doublebuffer_rx->status = 0;
 }
 
 void grid_port_receive_broadcast_message(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length) {
@@ -422,7 +431,9 @@ uint8_t grid_port_process_inbound(struct grid_port* por) {
   return 1;
 }
 
-struct grid_port* grid_port_allocate(void) {
+struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir, uint8_t inbound_loopback) {
+
+  // PART 1: ALLOCATE
 
   struct grid_port* por = (struct grid_port*)grid_platform_allocate_volatile(sizeof(struct grid_port));
 
@@ -432,12 +443,7 @@ struct grid_port* grid_port_allocate(void) {
   por->rx_buffer.buffer_storage = (char*)grid_platform_allocate_volatile(GRID_BUFFER_SIZE);
   memset(por->rx_buffer.buffer_storage, 0, GRID_BUFFER_SIZE);
 
-  return por;
-}
-
-void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir, uint8_t inbound_loopback) {
-
-  grid_transport_register_port(&grid_transport_state, por);
+  // PART 2: INIT
 
   grid_buffer_init(&por->tx_buffer, GRID_BUFFER_SIZE);
   grid_buffer_init(&por->rx_buffer, GRID_BUFFER_SIZE);
@@ -447,19 +453,6 @@ void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir, uint8_t in
   por->direction = dir;
 
   por->type = type;
-
-  por->tx_double_buffer_status = 0;
-  por->rx_double_buffer_status = 0;
-  por->rx_double_buffer_read_start_index = 0;
-  por->rx_double_buffer_seek_start_index = 0;
-  por->rx_double_buffer_write_index = 0;
-
-  for (uint32_t i = 0; i < GRID_DOUBLE_BUFFER_TX_SIZE; i++) {
-    por->tx_double_buffer[i] = 0;
-  }
-  for (uint32_t i = 0; i < GRID_DOUBLE_BUFFER_RX_SIZE; i++) {
-    por->rx_double_buffer[i] = 0;
-  }
 
   por->partner_fi = 0;
   por->dx = 0;
@@ -500,11 +493,33 @@ void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir, uint8_t in
   } else {
     por->partner_status = 1; // UI AND USB are considered to be connected by default
   }
+
+  return por;
 }
 
-uint8_t grid_port_process_outbound_usart(struct grid_port* por) {
+enum grid_doublebuffer_type {
+  GRID_DOBULEBUFFER_TYPE_TX = 0,
+  GRID_DOBULEBUFFER_TYPE_RX,
+};
 
-  if (por->tx_double_buffer_status != 0) {
+struct grid_doublebuffer* grid_doublebuffer_allocate_init(size_t length) {
+
+  struct grid_doublebuffer* doublebuffer = (struct grid_doublebuffer*)grid_platform_allocate_volatile(sizeof(struct grid_doublebuffer));
+  memset(doublebuffer, 0, sizeof(struct grid_doublebuffer));
+
+  char* storage = (char*)grid_platform_allocate_volatile(length * sizeof(char));
+  memset(storage, 0, length * sizeof(char));
+
+  doublebuffer->buffer_storage = storage;
+  doublebuffer->buffer_size = length;
+  memset(&doublebuffer->buffer_storage, 0, length);
+
+  return doublebuffer;
+}
+
+uint8_t grid_port_process_outbound_usart(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer) {
+
+  if (tx_doublebuffer->status != 0) {
     // port is busy, a transmission is already in progress!
     return 0;
   }
@@ -520,26 +535,23 @@ uint8_t grid_port_process_outbound_usart(struct grid_port* por) {
   // Let's transfer the packet to local memory
   grid_buffer_read_init(&por->tx_buffer);
 
-  por->tx_double_buffer_status = packet_size;
+  tx_doublebuffer->status = packet_size;
 
   for (uint16_t i = 0; i < packet_size; i++) {
 
     uint8_t character = grid_buffer_read_character(&por->tx_buffer);
-    por->tx_double_buffer[i] = character;
+    tx_doublebuffer->buffer_storage[i] = character;
   }
 
   // Let's acknowledge the transaction
   grid_buffer_read_acknowledge(&por->tx_buffer);
 
-  // grid_platform_printf("%d %d \r\n", por->tx_double_buffer_status,
-  // packet_size);
-
-  grid_platform_send_grid_message(por->direction, por->tx_double_buffer, packet_size);
+  grid_platform_send_grid_message(por->direction, tx_doublebuffer->buffer_storage, packet_size);
 
   return 1;
 }
 
-uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por) {
+uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer) {
 
   uint16_t length = grid_buffer_read_size(&por->tx_buffer);
 
@@ -549,11 +561,11 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por) {
   }
 
   // Clear the tx double buffer
-  for (uint16_t i = 0; i < GRID_DOUBLE_BUFFER_TX_SIZE; i++) {
-    por->tx_double_buffer[i] = 0;
+  for (uint16_t i = 0; i < tx_doublebuffer->buffer_size; i++) {
+    tx_doublebuffer->buffer_storage[i] = 0;
   }
 
-  grid_buffer_read_to_chunk(&por->tx_buffer, por->tx_double_buffer, length);
+  grid_buffer_read_to_chunk(&por->tx_buffer, tx_doublebuffer->buffer_storage, length);
 
   // GRID-2-HOST TRANSLATOR
 
@@ -561,15 +573,15 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por) {
 
   for (uint16_t i = 0; i < length; i++) {
 
-    if (por->tx_double_buffer[i] != GRID_CONST_STX) {
+    if (tx_doublebuffer->buffer_storage[i] != GRID_CONST_STX) {
 
       continue;
     }
 
     // chunk is the specific part of the usb tx doublebuffer that we are
     // currently trying to decode
-    char* chunk = &por->tx_double_buffer[i];
-    char* header = &por->tx_double_buffer[0];
+    char* chunk = &tx_doublebuffer->buffer_storage[i];
+    char* header = &tx_doublebuffer->buffer_storage[0];
 
     uint8_t msg_class = grid_msg_string_get_parameter(chunk, GRID_PARAMETER_CLASSCODE_offset, GRID_PARAMETER_CLASSCODE_length, &error);
     uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
@@ -597,40 +609,36 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por) {
 
       grid_decode_keyboard_to_usb(header, chunk);
     } else {
-
-      // sprintf(&por->tx_double_buffer[output_cursor], "[UNKNOWN] -> Protocol:
-      // %d\n", msg_protocol); output_cursor +=
-      // strlen(&por->tx_double_buffer[output_cursor]);
     }
   }
 
   // Let's send the packet through USB
-  grid_platform_usb_serial_write(por->tx_double_buffer, length);
+  grid_platform_usb_serial_write(tx_doublebuffer->buffer_storage, length);
 
   return 0;
 }
 
-void grid_port_receiver_softreset(struct grid_port* por) {
+void grid_port_receiver_softreset(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer, struct grid_doublebuffer* rx_doublebuffer) {
 
   por->partner_status = 0;
   por->partner_last_timestamp = grid_platform_rtc_get_micros();
 
-  por->rx_double_buffer_seek_start_index = 0;
-  por->rx_double_buffer_read_start_index = 0;
-  por->rx_double_buffer_write_index = 0;
+  rx_doublebuffer->seek_start_index = 0;
+  rx_doublebuffer->read_start_index = 0;
+  rx_doublebuffer->write_index = 0;
 
   grid_platform_reset_grid_transmitter(por->direction);
 
-  for (uint16_t i = 0; i < GRID_DOUBLE_BUFFER_RX_SIZE; i++) {
-    por->rx_double_buffer[i] = 0;
+  for (uint16_t i = 0; i < rx_doublebuffer->buffer_size; i++) {
+    rx_doublebuffer->buffer_storage[i] = 0;
   }
 
-  for (uint16_t i = 0; i < GRID_DOUBLE_BUFFER_TX_SIZE; i++) {
-    por->tx_double_buffer[i] = 0;
+  for (uint16_t i = 0; i < tx_doublebuffer->buffer_size; i++) {
+    tx_doublebuffer->buffer_storage[i] = 0;
   }
 }
 
-void grid_port_receiver_hardreset(struct grid_port* por) {
+void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer, struct grid_doublebuffer* rx_doublebuffer) {
 
   grid_platform_printf("HARD: ");
 
@@ -645,20 +653,7 @@ void grid_port_receiver_hardreset(struct grid_port* por) {
   grid_msg_string_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
   grid_msg_string_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_string_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 
-  por->partner_last_timestamp = grid_platform_rtc_get_micros();
-  grid_platform_reset_grid_transmitter(por->direction);
-
-  por->rx_double_buffer_seek_start_index = 0;
-  por->rx_double_buffer_read_start_index = 0;
-  por->rx_double_buffer_write_index = 0;
-
-  for (uint16_t i = 0; i < GRID_DOUBLE_BUFFER_RX_SIZE; i++) {
-    por->rx_double_buffer[i] = 0;
-  }
-
-  for (uint16_t i = 0; i < GRID_DOUBLE_BUFFER_TX_SIZE; i++) {
-    por->tx_double_buffer[i] = 0;
-  }
+  grid_port_receiver_softreset(por, tx_doublebuffer, rx_doublebuffer);
 
   grid_platform_enable_grid_transmitter(por->direction);
 }

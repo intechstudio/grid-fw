@@ -30,10 +30,6 @@
 
 static const char* TAG = "USB example";
 
-static uint8_t buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE + 1];
-
-volatile uint16_t grid_usb_rx_double_buffer_index = 0;
-
 void tud_midi_rx_cb(uint8_t itf) {
 
   // ets_printf("MIDI RX: %d\n", itf);
@@ -77,19 +73,21 @@ void tud_midi_rx_cb(uint8_t itf) {
 
 void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
   /* initialization */
-  size_t rx_size = 0;
 
   /* read */
+  size_t rx_size = 0;
+  uint8_t buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE + 1];
   esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
 
   for (uint16_t i = 0; i < rx_size; i++) {
 
     struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
+    struct grid_doublebuffer* doublebuffer_rx = &grid_transport_state.doublebuffer_rx_array[5];
 
-    host_port->rx_double_buffer[grid_usb_rx_double_buffer_index] = buf[i];
+    doublebuffer_rx->buffer_storage[doublebuffer_rx->write_index] = buf[i];
 
-    grid_usb_rx_double_buffer_index++;
-    grid_usb_rx_double_buffer_index %= GRID_DOUBLE_BUFFER_RX_SIZE;
+    doublebuffer_rx->write_index++;
+    doublebuffer_rx->write_index %= doublebuffer_rx->buffer_size;
   }
 
   // ESP_LOGI(TAG, "Data from channel %d len: %d", itf, rx_size);

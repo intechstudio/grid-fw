@@ -33,21 +33,24 @@ extern void grid_platform_nvm_defrag();
 
 enum grid_port_type { GRID_PORT_TYPE_UNDEFINED = 0, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USB, GRID_PORT_TYPE_UI };
 
+// double buffer for ciclical use
+struct grid_doublebuffer {
+
+  uint16_t status;           // is packet ready for verification
+  uint16_t seek_start_index; // offset of next received byte in buffer
+  uint16_t read_start_index; // beginning of current packet
+  uint16_t write_index;
+  char* buffer_storage;
+  size_t buffer_size;
+};
+
 struct grid_port {
 
   enum grid_port_type type;
   uint8_t direction;
 
-  volatile uint16_t tx_double_buffer_status;
-
-  volatile uint32_t rx_double_buffer_status;           // is packet ready for verification
-  volatile uint32_t rx_double_buffer_seek_start_index; // offset of next received byte in
-                                                       // buffer
-  volatile uint32_t rx_double_buffer_read_start_index;
-  volatile uint32_t rx_double_buffer_write_index;
-
-  volatile char tx_double_buffer[GRID_DOUBLE_BUFFER_TX_SIZE];
-  volatile char rx_double_buffer[GRID_DOUBLE_BUFFER_RX_SIZE];
+  volatile struct grid_doublebuffer tx_doublebuffer;
+  volatile struct grid_doublebuffer rx_doublebuffer;
 
   struct grid_buffer tx_buffer;
   struct grid_buffer rx_buffer;
@@ -75,19 +78,28 @@ struct grid_port {
 struct grid_transport_model {
   uint8_t port_array_length;
   struct grid_port* port_array[10];
+
+  uint8_t doublebuffer_array_length;
+  struct grid_doublebuffer* doublebuffer_tx_array[10];
+  struct grid_doublebuffer* doublebuffer_rx_array[10];
 };
 
-void grid_port_try_uart_timeout_disconect(struct grid_port* por);
+void grid_port_try_uart_timeout_disconect(struct grid_port* por, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx);
 
 extern struct grid_transport_model grid_transport_state;
 
 void grid_transport_init(struct grid_transport_model* transport);
+
 void grid_transport_register_port(struct grid_transport_model* transport, struct grid_port* port);
+void grid_transport_register_doublebuffer(struct grid_transport_model* transport, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx);
+
 struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_model* transport, enum grid_port_type type);
 uint8_t grid_transport_get_port_array_length(struct grid_transport_model* transport);
 struct grid_port* grid_transport_get_port(struct grid_transport_model* transport, uint8_t index);
+struct grid_doublebuffer* grid_transport_get_doublebuffer_tx(struct grid_transport_model* transport, uint8_t index);
+struct grid_doublebuffer* grid_transport_get_doublebuffer_rx(struct grid_transport_model* transport, uint8_t index);
 
-void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, char* message, uint16_t* length);
+void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx, char* message, uint16_t* length);
 void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length);
 
 void grid_port_receive_broadcast_message(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length);
@@ -97,15 +109,14 @@ uint8_t grid_port_process_inbound(struct grid_port* por);
 
 char grid_port_get_name_char(struct grid_port* por);
 
-void grid_port_init_all(void);
-struct grid_port* grid_port_allocate(void);
-void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir, uint8_t inbound_loopback);
+struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir, uint8_t inbound_loopback);
+struct grid_doublebuffer* grid_doublebuffer_allocate_init(size_t length);
 
-uint8_t grid_port_process_outbound_usart(struct grid_port* por);
-uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por); // dependency: USB ACM
+uint8_t grid_port_process_outbound_usart(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer);
+uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer);
 
-void grid_port_receiver_softreset(struct grid_port* por);
-void grid_port_receiver_hardreset(struct grid_port* por);
+void grid_port_receiver_softreset(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer, struct grid_doublebuffer* rx_doublebuffer);
+void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer, struct grid_doublebuffer* rx_doublebuffer);
 
 void grid_port_debug_print_text(char* str);
 void grid_port_websocket_print_text(char* str);

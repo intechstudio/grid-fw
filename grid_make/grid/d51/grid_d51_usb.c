@@ -28,12 +28,13 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
     // 	printf(" ...");
     // }
 
-    host_port->rx_double_buffer[grid_usb_rx_double_buffer_index] = grid_usb_serial_rx_buffer[i];
+    struct grid_doublebuffer* doublebuffer_rx = &grid_transport_state.doublebuffer_rx_array[5];
+    doublebuffer_rx->buffer_storage[doublebuffer_rx->write_index] = grid_usb_serial_rx_buffer[i];
 
     // printf("%d, ", grid_usb_serial_rx_buffer[i]);
 
-    grid_usb_rx_double_buffer_index++;
-    grid_usb_rx_double_buffer_index %= GRID_DOUBLE_BUFFER_RX_SIZE;
+    doublebuffer_rx->write_index++;
+    doublebuffer_rx->write_index %= doublebuffer_rx->buffer_size;
   }
 
   // CLEAR THE ENTIRE BUFFER

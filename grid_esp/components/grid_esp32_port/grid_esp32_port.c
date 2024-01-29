@@ -98,6 +98,8 @@ static uint8_t DRAM_ATTR rx_flag = 0;
 static char DRAM_ATTR rx_str[500] = {0};
 
 static struct grid_port* DRAM_ATTR uart_port_array[4] = {0};
+static struct grid_doublebuffer* DRAM_ATTR uart_doublebuffer_tx_array[4] = {0};
+static struct grid_doublebuffer* DRAM_ATTR uart_doublebuffer_rx_array[4] = {0};
 
 static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
@@ -134,38 +136,44 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
   for (uint8_t i = 0; i < 4; i++) {
     struct grid_port* por = uart_port_array[i];
+    struct grid_doublebuffer* doublebuffer_tx = uart_doublebuffer_tx_array[i];
+    struct grid_doublebuffer* doublebuffer_rx = uart_doublebuffer_rx_array[i];
 
     if ((ready_flags & (0b00000001 << i))) {
 
-      // por->tx_double_buffer_status = 0;
+      if (doublebuffer_tx->status == UINT16_MAX) {
 
-      if (por->tx_double_buffer_status == UINT16_MAX) {
+        doublebuffer_tx->status = 0;
+      } else if (doublebuffer_tx->status > 0) {
 
-        por->tx_double_buffer_status = 0;
-      } else if (por->tx_double_buffer_status > 0) {
-
-        por->tx_double_buffer_status = UINT16_MAX;
+        doublebuffer_tx->status = UINT16_MAX;
       }
     }
   }
 
   struct grid_port* por = NULL;
+  struct grid_doublebuffer* doublebuffer_rx = NULL;
+
   uint8_t source_flags = ((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
 
   if ((source_flags & 0b00000001)) {
     por = uart_port_array[0];
+    doublebuffer_rx = uart_doublebuffer_rx_array[0];
   }
 
   if ((source_flags & 0b00000010)) {
     por = uart_port_array[1];
+    doublebuffer_rx = uart_doublebuffer_rx_array[1];
   }
 
   if ((source_flags & 0b00000100)) {
     por = uart_port_array[2];
+    doublebuffer_rx = uart_doublebuffer_rx_array[2];
   }
 
   if ((source_flags & 0b00001000)) {
     por = uart_port_array[3];
+    doublebuffer_rx = uart_doublebuffer_rx_array[3];
   }
 
   if (por == NULL) {
@@ -175,14 +183,14 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
   for (uint16_t i = 0; true; i++) {
 
-    por->rx_double_buffer[por->rx_double_buffer_write_index] = ((char*)trans->rx_buffer)[i];
+    doublebuffer_rx->buffer_storage[doublebuffer_rx->write_index] = ((char*)trans->rx_buffer)[i];
 
     if (((char*)trans->rx_buffer)[i] == '\0') {
       break;
     }
 
-    por->rx_double_buffer_write_index++;
-    por->rx_double_buffer_write_index %= GRID_DOUBLE_BUFFER_RX_SIZE;
+    doublebuffer_rx->write_index++;
+    doublebuffer_rx->write_index %= doublebuffer_rx->buffer_size;
   }
 }
 
@@ -318,6 +326,16 @@ void grid_esp32_port_task(void* arg) {
   uart_port_array[2] = grid_transport_get_port(&grid_transport_state, 2);
   uart_port_array[3] = grid_transport_get_port(&grid_transport_state, 3);
 
+  uart_doublebuffer_tx_array[0] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 0);
+  uart_doublebuffer_tx_array[1] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 1);
+  uart_doublebuffer_tx_array[2] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 2);
+  uart_doublebuffer_tx_array[3] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 3);
+
+  uart_doublebuffer_rx_array[0] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 0);
+  uart_doublebuffer_rx_array[1] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 1);
+  uart_doublebuffer_rx_array[2] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 2);
+  uart_doublebuffer_rx_array[3] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 3);
+
   uint8_t n = 0;
   esp_err_t ret;
 
@@ -343,13 +361,15 @@ void grid_esp32_port_task(void* arg) {
   for (uint8_t i = 0; i < 4; i++) {
 
     struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
+    struct grid_doublebuffer* doublebuffer_tx = uart_doublebuffer_tx_array[i];
+    struct grid_doublebuffer* doublebuffer_rx = uart_doublebuffer_rx_array[i];
 
     // Set up a transaction of GRID_PARAMETER_SPI_TRANSACTION_length bytes to
     // send/receive
 
     memset(&outbnound_transaction[i], 0, sizeof(outbnound_transaction[i]));
     outbnound_transaction[i].length = GRID_PARAMETER_SPI_TRANSACTION_length * 8;
-    outbnound_transaction[i].tx_buffer = port->tx_double_buffer;
+    outbnound_transaction[i].tx_buffer = doublebuffer_tx->buffer_storage;
     outbnound_transaction[i].rx_buffer = recvbuf;
   }
 
@@ -445,6 +465,8 @@ void grid_esp32_port_task(void* arg) {
       // TRY TO RECEIVE UP TO 4 packets on UART PORTS
       for (uint8_t i = 0; i < port_list_length * 4; i++) {
         struct grid_port* port = grid_transport_get_port(&grid_transport_state, i % port_list_length);
+        struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, i % port_list_length);
+        struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i % port_list_length);
 
         if (port->type == GRID_PORT_TYPE_USART) {
 
@@ -465,9 +487,9 @@ void grid_esp32_port_task(void* arg) {
 
           char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
           uint16_t length = 0;
-          grid_port_rxdobulebuffer_to_linear(port, temp, &length);
+          grid_port_rxdobulebuffer_to_linear(port, doublebuffer_tx, doublebuffer_rx, temp, &length);
           grid_port_receive_decode(port, &recent_messages, temp, length);
-          grid_port_try_uart_timeout_disconect(port); // try disconnect for uart port
+          grid_port_try_uart_timeout_disconect(port, doublebuffer_tx, doublebuffer_rx); // try disconnect for uart port
         }
       }
 
@@ -511,10 +533,13 @@ void grid_esp32_port_task(void* arg) {
       struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
       struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
 
+      struct grid_doublebuffer* host_doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, 5);
+      struct grid_doublebuffer* host_doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, 5);
+
       {
         char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
         uint16_t length = 0;
-        grid_port_rxdobulebuffer_to_linear(host_port, temp, &length); // USB
+        grid_port_rxdobulebuffer_to_linear(host_port, host_doublebuffer_tx, host_doublebuffer_rx, temp, &length); // USB
         grid_port_receive_decode(host_port, &recent_messages, temp, length);
       }
 
@@ -541,15 +566,16 @@ void grid_esp32_port_task(void* arg) {
         ets_delay_us(20);
       }
 
-      grid_port_process_outbound_usb(host_port); // WRITE TO USB SERIAL
+      grid_port_process_outbound_usb(host_port, host_doublebuffer_tx); // WRITE TO USB SERIAL
 
       grid_port_process_outbound_ui(ui_port);
 
       for (uint8_t i = 0; i < port_list_length; i++) {
         struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
+        struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, i);
 
         if (port->type == GRID_PORT_TYPE_USART) {
-          grid_port_process_outbound_usart(port);
+          grid_port_process_outbound_usart(port, doublebuffer_tx);
         }
       }
 

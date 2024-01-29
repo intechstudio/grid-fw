@@ -39,13 +39,13 @@ static void tx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr)
 static void tx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr);
 static void tx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr);
 static void tx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr);
-static void tx_cb_USART_GRID(struct grid_port* const por);
+static void tx_cb_USART_GRID(struct grid_doublebuffer* const doublebuffer_tx);
 
 static void rx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr);
 static void rx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr);
 static void rx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr);
 static void rx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr);
-static void rx_cb_USART_GRID(struct grid_port* const por);
+static void rx_cb_USART_GRID(struct grid_doublebuffer* const doublebuffer_rx);
 
 static void dma_transfer_complete_n_cb(struct _dma_resource* resource);
 static void dma_transfer_complete_e_cb(struct _dma_resource* resource);
