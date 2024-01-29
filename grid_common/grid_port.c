@@ -13,7 +13,7 @@ void grid_transport_register_port(struct grid_transport_model* transport, struct
   transport->port_array_length++;
 }
 
-struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_model* transport, uint8_t type) {
+struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_model* transport, enum grid_port_type type) {
 
   for (uint8_t i = 0; i < transport->port_array_length; i++) {
 
@@ -41,7 +41,7 @@ char grid_port_get_name_char(struct grid_port* por) {
 
 static void grid_port_timeout_try_disconect(struct grid_port* por) {
 
-  if (grid_platform_rtc_get_elapsed_time(por->rx_double_buffer_timestamp) < 1000 * 1000) {
+  if (grid_platform_rtc_get_elapsed_time(por->partner_last_timestamp) < 1000 * 1000) {
     // no need to disconnect yet!
     return;
   }
@@ -325,7 +325,7 @@ void grid_port_receive_direct_message(struct grid_port* por, char* message, uint
     uint8_t error = 0;
 
     // reset timeout counter
-    por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
+    por->partner_last_timestamp = grid_platform_rtc_get_micros();
 
     if (por->partner_status == 0) {
 
@@ -634,7 +634,7 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por) {
 void grid_port_receiver_softreset(struct grid_port* por) {
 
   por->partner_status = 0;
-  por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
+  por->partner_last_timestamp = grid_platform_rtc_get_micros();
 
   por->rx_double_buffer_seek_start_index = 0;
   por->rx_double_buffer_read_start_index = 0;
@@ -666,7 +666,7 @@ void grid_port_receiver_hardreset(struct grid_port* por) {
   grid_msg_string_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
   grid_msg_string_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_string_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 
-  por->rx_double_buffer_timestamp = grid_platform_rtc_get_micros();
+  por->partner_last_timestamp = grid_platform_rtc_get_micros();
   grid_platform_reset_grid_transmitter(por->direction);
 
   por->rx_double_buffer_seek_start_index = 0;

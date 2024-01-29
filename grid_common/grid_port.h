@@ -31,25 +31,18 @@ extern void* grid_platform_allocate_volatile(size_t size);
 extern void grid_platform_system_reset();
 extern void grid_platform_nvm_defrag();
 
-#define GRID_PORT_TYPE_UNDEFINED 0
-#define GRID_PORT_TYPE_USART 1
-#define GRID_PORT_TYPE_USB 2
-#define GRID_PORT_TYPE_UI 3
-#define GRID_PORT_TYPE_TELEMETRY 4
+enum grid_port_type { GRID_PORT_TYPE_UNDEFINED = 0, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USB, GRID_PORT_TYPE_UI };
 
 struct grid_port {
 
   uint32_t cooldown;
 
-  uint8_t type; // 0 undefined, 1 usart, 2 usb, 3 ui, 4 telemetry
+  enum grid_port_type type;
   uint8_t direction;
   uint8_t usart_error_flag;
 
   volatile uint16_t tx_double_buffer_status;
-  volatile uint32_t tx_double_buffer_ack_fingerprint;
-  volatile uint32_t tx_double_buffer_ack_timeout;
 
-  volatile uint64_t rx_double_buffer_timestamp;        // is packet ready for verification
   volatile uint32_t rx_double_buffer_status;           // is packet ready for verification
   volatile uint32_t rx_double_buffer_seek_start_index; // offset of next received byte in
                                                        // buffer
@@ -62,8 +55,11 @@ struct grid_port {
   struct grid_buffer tx_buffer;
   struct grid_buffer rx_buffer;
 
+  uint8_t partner_status;
   uint32_t partner_hwcfg;
   uint8_t partner_fi;
+
+  uint64_t partner_last_timestamp;
 
   uint8_t ping_local_token;
   uint8_t ping_partner_token;
@@ -77,8 +73,6 @@ struct grid_port {
 
   int8_t dx;
   int8_t dy;
-
-  uint8_t partner_status;
 };
 
 struct grid_transport_model {
@@ -90,7 +84,7 @@ extern struct grid_transport_model grid_transport_state;
 
 void grid_transport_init(struct grid_transport_model* transport);
 void grid_transport_register_port(struct grid_transport_model* transport, struct grid_port* port);
-struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_model* transport, uint8_t type);
+struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_model* transport, enum grid_port_type type);
 uint8_t grid_transport_get_port_array_length(struct grid_transport_model* transport);
 struct grid_port* grid_transport_get_port(struct grid_transport_model* transport, uint8_t index);
 
