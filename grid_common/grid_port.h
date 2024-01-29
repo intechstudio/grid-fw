@@ -85,10 +85,10 @@ struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_mo
 uint8_t grid_transport_get_port_array_length(struct grid_transport_model* transport);
 struct grid_port* grid_transport_get_port(struct grid_transport_model* transport, uint8_t index);
 
-void grid_port_receive_task(struct grid_port* por);
-void grid_port_receive_decode(struct grid_port* por, uint16_t len);
+void grid_port_receive_task(struct grid_port* por, struct grid_msg_recent_buffer* rec);
+void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buffer* rec, uint16_t len);
 
-void grid_port_receive_broadcast_message(struct grid_port* por, char* message, uint16_t length);
+void grid_port_receive_broadcast_message(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length);
 void grid_port_receive_direct_message(struct grid_port* por, char* message, uint16_t length);
 
 uint8_t grid_port_process_inbound(struct grid_port* por);

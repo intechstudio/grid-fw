@@ -33,7 +33,7 @@ void grid_platform_sync1_pulse_send() { sync1_state++; }
 extern void grid_platform_rtc_set_micros(uint64_t mic);
 extern uint64_t grid_platform_rtc_get_micros(void);
 
-static void usb_task_inner() {
+static void usb_task_inner(struct grid_msg_recent_buffer* rec) {
 
   grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
 
@@ -48,7 +48,7 @@ static void usb_task_inner() {
   grid_midi_rx_pop();
 
   // SERIAL READ
-  grid_port_receive_task(host_port); // USB
+  grid_port_receive_task(host_port, rec); // USB
 }
 
 static void nvm_task_inner() {
@@ -91,7 +91,7 @@ static void nvm_task_inner() {
   } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration && grid_ui_bulk_anything_is_in_progress(&grid_ui_state));
 }
 
-static void receive_task_inner(uint8_t* partner_connected) {
+static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recent_buffer* rec) {
 
   for (uint8_t i = 0; i < 4; i++) {
 
@@ -112,7 +112,7 @@ static void receive_task_inner(uint8_t* partner_connected) {
       grid_alert_all_set_phase(&grid_led_state, 100);
     }
 
-    grid_port_receive_task(port);
+    grid_port_receive_task(port, rec);
   }
 }
 
@@ -406,6 +406,9 @@ int main(void) {
   uint8_t partner_connected[grid_transport_get_port_array_length(&grid_transport_state)];
   memset(partner_connected, 0, grid_transport_get_port_array_length(&grid_transport_state));
 
+  struct grid_msg_recent_buffer recent_messages;
+  grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
+
   uint8_t ui_port_cooldown = 0;
 
   while (1) {
@@ -446,11 +449,11 @@ int main(void) {
       grid_d51_nvic_debug_priorities();
     }
 
-    usb_task_inner();
+    usb_task_inner(&recent_messages);
 
     nvm_task_inner();
 
-    receive_task_inner(partner_connected);
+    receive_task_inner(partner_connected, &recent_messages);
 
     // lua_gc(grid_lua_state.L, LUA_GCSTOP);
 

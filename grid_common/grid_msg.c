@@ -332,11 +332,34 @@ void grid_msg_packet_close(struct grid_msg_model* mod, struct grid_msg_packet* m
 
 // RECENT MESSAGES
 
-uint8_t grid_msg_recent_fingerprint_find(struct grid_msg_model* model, uint32_t fingerprint) {
+void grid_msg_recent_fingerprint_buffer_init(struct grid_msg_recent_buffer* rec, uint8_t length) {
 
-  for (GRID_MSG_RECENT_FINGERPRINT_BUFFER_INDEX_T i = 0; i < GRID_MSG_RECENT_FINGERPRINT_BUFFER_LENGTH; i++) {
+  rec->fingerprint_array_length = length;
+  rec->fingerprint_array_index = 0;
 
-    if (model->recent_messages[i % GRID_MSG_RECENT_FINGERPRINT_BUFFER_LENGTH] == fingerprint) {
+  rec->fingerprint_array = (grid_fingerprint_t*)malloc(rec->fingerprint_array_length * sizeof(grid_fingerprint_t));
+  memset(rec->fingerprint_array, 0, rec->fingerprint_array_length);
+}
+
+grid_fingerprint_t grid_msg_recent_fingerprint_calculate(char* message) {
+
+  uint8_t error = 0;
+
+  uint8_t received_id = grid_msg_string_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+  uint8_t received_session = grid_msg_string_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
+  int8_t updated_sx = grid_msg_string_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+  int8_t updated_sy = grid_msg_string_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+
+  grid_fingerprint_t fingerprint = received_id * 256 * 256 * 256 + updated_sx * 256 * 256 + updated_sy * 256 + received_session;
+
+  return fingerprint;
+}
+
+uint8_t grid_msg_recent_fingerprint_find(struct grid_msg_recent_buffer* rec, grid_fingerprint_t fingerprint) {
+
+  for (uint8_t i = 0; i < rec->fingerprint_array_length; i++) {
+
+    if (rec->fingerprint_array[i % rec->fingerprint_array_length] == fingerprint) {
 
       return 1;
     }
@@ -345,12 +368,12 @@ uint8_t grid_msg_recent_fingerprint_find(struct grid_msg_model* model, uint32_t 
   return 0;
 }
 
-void grid_msg_recent_fingerprint_store(struct grid_msg_model* model, uint32_t fingerprint) {
+void grid_msg_recent_fingerprint_store(struct grid_msg_recent_buffer* rec, grid_fingerprint_t fingerprint) {
 
-  model->recent_messages_index += 1;
-  model->recent_messages_index %= GRID_MSG_RECENT_FINGERPRINT_BUFFER_LENGTH;
+  rec->fingerprint_array_index += 1;
+  rec->fingerprint_array_index %= rec->fingerprint_array_length;
 
-  model->recent_messages[model->recent_messages_index] = fingerprint;
+  rec->fingerprint_array[rec->fingerprint_array_index] = fingerprint;
 }
 
 uint8_t grid_msg_string_calculate_checksum_of_packet_string(char* str, uint32_t length) {

@@ -27,17 +27,25 @@ extern uint8_t grid_platform_get_random_8();
 
 #define grid_msg_packet_body_maxlength GRID_PARAMETER_PACKET_maxlength - grid_msg_packet_header_maxlength - GRID_MSG_FOOTER_maxlength
 
-#define GRID_MSG_RECENT_FINGERPRINT_BUFFER_LENGTH 32
-#define GRID_MSG_RECENT_FINGERPRINT_BUFFER_INDEX_T uint8_t
+typedef uint32_t grid_fingerprint_t;
+
+struct grid_msg_recent_buffer {
+  grid_fingerprint_t* fingerprint_array;
+  uint8_t fingerprint_array_index;
+  uint8_t fingerprint_array_length;
+};
+
+// RECENT FINGERPRINT FUNCTIONS
+
+void grid_msg_recent_fingerprint_buffer_init(struct grid_msg_recent_buffer* rec, uint8_t length);
+grid_fingerprint_t grid_msg_recent_fingerprint_calculate(char* message);
+uint8_t grid_msg_recent_fingerprint_find(struct grid_msg_recent_buffer* rec, grid_fingerprint_t fingerprint);
+void grid_msg_recent_fingerprint_store(struct grid_msg_recent_buffer* rec, grid_fingerprint_t fingerprint);
 
 struct grid_msg_model {
 
   uint64_t editor_heartbeat_lastrealtime;
   uint8_t heartbeat_type;
-
-  uint32_t recent_messages[GRID_MSG_RECENT_FINGERPRINT_BUFFER_LENGTH];
-  GRID_MSG_RECENT_FINGERPRINT_BUFFER_INDEX_T recent_messages_index;
-
   uint8_t sessionid;
   uint8_t next_broadcast_message_id;
 };
@@ -116,12 +124,6 @@ uint8_t grid_msg_packet_send_char_by_char(struct grid_msg_packet* msg, uint32_t 
 
 void grid_msg_packet_init(struct grid_msg_model* mod, struct grid_msg_packet* msg, uint8_t dx, uint8_t dy);
 void grid_msg_packet_close(struct grid_msg_model* mod, struct grid_msg_packet* msg);
-
-// RECENT FINGERPRINT FUNCTIONS
-
-uint8_t grid_msg_recent_fingerprint_find(struct grid_msg_model* mod, uint32_t fingerprint);
-
-void grid_msg_recent_fingerprint_store(struct grid_msg_model* mod, uint32_t fingerprint);
 
 // STRING FUNCTIONS
 

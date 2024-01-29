@@ -103,7 +103,7 @@ static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por) {
   }
 }
 
-void grid_port_receive_task(struct grid_port* por) {
+void grid_port_receive_task(struct grid_port* por, struct grid_msg_recent_buffer* rec) {
 
   ///////////////////// PART 1 Old receive task
 
@@ -132,7 +132,7 @@ void grid_port_receive_task(struct grid_port* por) {
     length = GRID_DOUBLE_BUFFER_RX_SIZE + por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
   }
 
-  grid_port_receive_decode(por, length);
+  grid_port_receive_decode(por, rec, length);
 
   por->rx_double_buffer_status = 0;
 }
@@ -243,20 +243,6 @@ void grid_msg_string_transform_brc_params(char* message, int8_t dx, int8_t dy, u
   grid_msg_string_checksum_write(message, length, grid_msg_string_calculate_checksum_of_packet_string(message, length));
 }
 
-uint32_t grid_msg_recent_fingerprint_calculate(char* message) {
-
-  uint8_t error = 0;
-
-  uint8_t received_id = grid_msg_string_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
-  uint8_t received_session = grid_msg_string_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
-  int8_t updated_sx = grid_msg_string_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-  int8_t updated_sy = grid_msg_string_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-
-  uint32_t fingerprint = received_id * 256 * 256 * 256 + updated_sx * 256 * 256 + updated_sy * 256 + received_session;
-
-  return fingerprint;
-}
-
 static void grid_port_rxdobulebuffer_receive_to_buffer(struct grid_port* por, char* buffer, uint16_t length) {
 
   // Store message in temporary buffer (MAXMSGLEN = 250 character)
@@ -279,7 +265,7 @@ static void grid_port_rxdobulebuffer_receive_to_buffer(struct grid_port* por, ch
   por->rx_double_buffer_status = 0;
 }
 
-void grid_port_receive_broadcast_message(struct grid_port* por, char* message, uint16_t length) {
+void grid_port_receive_broadcast_message(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length) {
 
   uint8_t error = 0;
 
@@ -288,7 +274,7 @@ void grid_port_receive_broadcast_message(struct grid_port* por, char* message, u
 
   uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(message);
 
-  if (grid_msg_recent_fingerprint_find(&grid_msg_state, fingerprint)) {
+  if (grid_msg_recent_fingerprint_find(rec, fingerprint)) {
     // WE HAVE NOT HEARD THIS MESSAGE BEFORE
     // grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 20);
     return;
@@ -299,7 +285,7 @@ void grid_port_receive_broadcast_message(struct grid_port* por, char* message, u
 
     grid_buffer_write_from_chunk(&por->rx_buffer, message, length);
 
-    grid_msg_recent_fingerprint_store(&grid_msg_state, fingerprint);
+    grid_msg_recent_fingerprint_store(rec, fingerprint);
   }
 }
 
@@ -322,7 +308,7 @@ void grid_port_receive_direct_message(struct grid_port* por, char* message, uint
   }
 }
 
-void grid_port_receive_decode(struct grid_port* por, uint16_t len) {
+void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buffer* rec, uint16_t len) {
 
   uint16_t length = len;
   char message[length + 1];
@@ -357,7 +343,7 @@ void grid_port_receive_decode(struct grid_port* por, uint16_t len) {
 
   if (message[1] == GRID_CONST_BRC) { // Broadcast message
 
-    grid_port_receive_broadcast_message(por, message, length);
+    grid_port_receive_broadcast_message(por, rec, message, length);
   } else if (message[1] == GRID_CONST_DCT) { // Direct Message
 
     grid_port_receive_direct_message(por, message, length);

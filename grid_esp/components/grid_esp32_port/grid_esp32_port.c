@@ -389,6 +389,9 @@ void grid_esp32_port_task(void* arg) {
   uint8_t partner_connected[grid_transport_get_port_array_length(&grid_transport_state)];
   memset(partner_connected, 0, grid_transport_get_port_array_length(&grid_transport_state));
 
+  struct grid_msg_recent_buffer recent_messages;
+  grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
+
   while (1) {
 
     // Check if USB is connected and start animation
@@ -460,7 +463,7 @@ void grid_esp32_port_task(void* arg) {
             grid_alert_all_set_phase(&grid_led_state, 100);
           }
 
-          grid_port_receive_task(port);
+          grid_port_receive_task(port, &recent_messages);
         }
       }
 
@@ -503,8 +506,8 @@ void grid_esp32_port_task(void* arg) {
 
       struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
       struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
-      grid_port_receive_task(host_port); // USB
-      grid_port_receive_task(ui_port);   // UI
+      grid_port_receive_task(host_port, &recent_messages); // USB
+      grid_port_receive_task(ui_port, &recent_messages);   // UI
 
       // INBOUND
 
