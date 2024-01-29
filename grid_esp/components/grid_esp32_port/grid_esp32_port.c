@@ -463,7 +463,11 @@ void grid_esp32_port_task(void* arg) {
             grid_alert_all_set_phase(&grid_led_state, 100);
           }
 
-          grid_port_receive_task(port, &recent_messages);
+          char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
+          uint16_t length = 0;
+          grid_port_rxdobulebuffer_to_linear(port, temp, &length);
+          grid_port_receive_decode(port, &recent_messages, temp, length);
+          grid_port_try_uart_timeout_disconect(port); // try disconnect for uart port
         }
       }
 
@@ -506,8 +510,13 @@ void grid_esp32_port_task(void* arg) {
 
       struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
       struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
-      grid_port_receive_task(host_port, &recent_messages); // USB
-      grid_port_receive_task(ui_port, &recent_messages);   // UI
+
+      {
+        char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
+        uint16_t length = 0;
+        grid_port_rxdobulebuffer_to_linear(host_port, temp, &length); // USB
+        grid_port_receive_decode(host_port, &recent_messages, temp, length);
+      }
 
       // INBOUND
 

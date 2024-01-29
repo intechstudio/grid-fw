@@ -48,7 +48,11 @@ static void usb_task_inner(struct grid_msg_recent_buffer* rec) {
   grid_midi_rx_pop();
 
   // SERIAL READ
-  grid_port_receive_task(host_port, rec); // USB
+
+  char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
+  uint16_t length = 0;
+  grid_port_rxdobulebuffer_to_linear(host_port, temp, &length); // USB
+  grid_port_receive_decode(host_port, rec, temp, length);
 }
 
 static void nvm_task_inner() {
@@ -112,7 +116,11 @@ static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recen
       grid_alert_all_set_phase(&grid_led_state, 100);
     }
 
-    grid_port_receive_task(port, rec);
+    char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
+    uint16_t length = 0;
+    grid_port_rxdobulebuffer_to_linear(port, temp, &length);
+    grid_port_receive_decode(port, rec, temp, length);
+    grid_port_try_uart_timeout_disconect(port); // try disconnect for uart port
   }
 }
 

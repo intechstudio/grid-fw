@@ -39,7 +39,11 @@ char grid_port_get_name_char(struct grid_port* por) {
   return direction_lookup[direction_index];
 }
 
-static void grid_port_timeout_try_disconect(struct grid_port* por) {
+void grid_port_try_uart_timeout_disconect(struct grid_port* por) {
+
+  if (por->type != GRID_PORT_TYPE_USART) {
+    return;
+  }
 
   if (grid_platform_rtc_get_elapsed_time(por->partner_last_timestamp) < 1000 * 1000) {
     // no need to disconnect yet!
@@ -103,38 +107,44 @@ static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por) {
   }
 }
 
-void grid_port_receive_task(struct grid_port* por, struct grid_msg_recent_buffer* rec) {
+void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, char* message, uint16_t* length) {
 
-  ///////////////////// PART 1 Old receive task
-
-  if (por->rx_double_buffer_status == 0) {
-
-    if (por->type == GRID_PORT_TYPE_USART) { // This is GRID usart port
-
-      grid_port_timeout_try_disconect(por);
-    }
-
-    grid_port_rxdobulebuffer_seek_newline(por);
-  }
-
-  ////////////////// PART 2
+  // set double buffer status to 1 if newline is found
+  grid_port_rxdobulebuffer_seek_newline(por);
 
   // No complete message in buffer
   if (por->rx_double_buffer_status == 0) {
     return;
   }
 
-  uint32_t length = 0;
+  uint16_t len = 0;
 
   if (por->rx_double_buffer_read_start_index < por->rx_double_buffer_seek_start_index) {
-    length = por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
+    len = por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
   } else {
-    length = GRID_DOUBLE_BUFFER_RX_SIZE + por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
+    len = GRID_DOUBLE_BUFFER_RX_SIZE + por->rx_double_buffer_seek_start_index - por->rx_double_buffer_read_start_index + 1;
   }
 
-  grid_port_receive_decode(por, rec, length);
+  // Store message in temporary buffer
+  for (uint16_t i = 0; i < len; i++) {
+    message[i] = por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i) % GRID_DOUBLE_BUFFER_RX_SIZE];
+    por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i) % GRID_DOUBLE_BUFFER_RX_SIZE] = 0;
+  }
+  message[len] = 0;
+
+  // Clear data from rx double buffer
+  for (uint16_t i = 0; i < len; i++) {
+    por->rx_double_buffer[(por->rx_double_buffer_read_start_index + i) % GRID_DOUBLE_BUFFER_RX_SIZE] = 0;
+  }
+
+  uint32_t readstartindex = por->rx_double_buffer_read_start_index;
+
+  por->rx_double_buffer_read_start_index = (por->rx_double_buffer_read_start_index + len) % GRID_DOUBLE_BUFFER_RX_SIZE;
+  por->rx_double_buffer_seek_start_index = por->rx_double_buffer_read_start_index;
 
   por->rx_double_buffer_status = 0;
+
+  *length = len;
 }
 
 uint8_t grid_msg_is_position_transformable(int8_t received_x, int8_t received_y) {
@@ -308,13 +318,12 @@ void grid_port_receive_direct_message(struct grid_port* por, char* message, uint
   }
 }
 
-void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buffer* rec, uint16_t len) {
+void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length) {
 
-  uint16_t length = len;
-  char message[length + 1];
-
-  // Copy data from cyrcular buffer to temporary linear array;
-  grid_port_rxdobulebuffer_receive_to_buffer(por, message, length);
+  if (length == 0) {
+    // no message
+    return;
+  }
 
   // close the message string with terminating zero character
   message[length] = '\0';
