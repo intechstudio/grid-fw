@@ -385,6 +385,10 @@ void grid_esp32_port_task(void* arg) {
 
   // gpio_set_direction(47, GPIO_MODE_OUTPUT);
 
+  // partner_connected array holds the last state. This is used for checking changes and triggering led effects accordingly
+  uint8_t partner_connected[grid_transport_get_port_array_length(&grid_transport_state)];
+  memset(partner_connected, 0, grid_transport_get_port_array_length(&grid_transport_state));
+
   while (1) {
 
     // Check if USB is connected and start animation
@@ -440,6 +444,22 @@ void grid_esp32_port_task(void* arg) {
         struct grid_port* port = grid_transport_get_port(&grid_transport_state, i % port_list_length);
 
         if (port->type == GRID_PORT_TYPE_USART) {
+
+          if (partner_connected[i] < port->partner_status) {
+            // connect
+            partner_connected[i] = 1;
+            grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 50);
+            grid_alert_all_set_frequency(&grid_led_state, -2);
+            grid_alert_all_set_phase(&grid_led_state, 100);
+          } else if (partner_connected[i] > port->partner_status) {
+
+            // Disconnect
+            partner_connected[i] = 0;
+            grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
+            grid_alert_all_set_frequency(&grid_led_state, -2);
+            grid_alert_all_set_phase(&grid_led_state, 100);
+          }
+
           grid_port_receive_task(port);
         }
       }

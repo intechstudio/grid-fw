@@ -91,11 +91,26 @@ static void nvm_task_inner() {
   } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration && grid_ui_bulk_anything_is_in_progress(&grid_ui_state));
 }
 
-static void receive_task_inner() {
+static void receive_task_inner(uint8_t* partner_connected) {
 
   for (uint8_t i = 0; i < 4; i++) {
 
     struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
+
+    if (partner_connected[i] < port->partner_status) {
+      // connect
+      partner_connected[i] = 1;
+      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 50);
+      grid_alert_all_set_frequency(&grid_led_state, -2);
+      grid_alert_all_set_phase(&grid_led_state, 100);
+    } else if (partner_connected[i] > port->partner_status) {
+
+      // Disconnect
+      partner_connected[i] = 0;
+      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
+      grid_alert_all_set_frequency(&grid_led_state, -2);
+      grid_alert_all_set_phase(&grid_led_state, 100);
+    }
 
     grid_port_receive_task(port);
   }
@@ -387,6 +402,10 @@ int main(void) {
   ext_irq_register(PIN_GRID_SYNC_1, button_on_SYNC1_pressed);
   ext_irq_register(PIN_GRID_SYNC_2, button_on_SYNC2_pressed);
 
+  // partner_connected array holds the last state. This is used for checking changes and triggering led effects accordingly
+  uint8_t partner_connected[grid_transport_get_port_array_length(&grid_transport_state)];
+  memset(partner_connected, 0, grid_transport_get_port_array_length(&grid_transport_state));
+
   while (1) {
 
     if (usb_d_get_frame_num() != 0) {
@@ -429,7 +448,7 @@ int main(void) {
 
     nvm_task_inner();
 
-    receive_task_inner();
+    receive_task_inner(partner_connected);
 
     // lua_gc(grid_lua_state.L, LUA_GCSTOP);
 

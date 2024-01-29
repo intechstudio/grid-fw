@@ -1,10 +1,3 @@
-/*
- * grid_port.c
- *
- * Created: 4/12/2019 5:27:13 PM
- * Author : SUKU WC
- */
-
 #include "grid_port.h"
 
 struct grid_transport_model grid_transport_state;
@@ -53,30 +46,13 @@ static void grid_port_timeout_try_disconect(struct grid_port* por) {
     return;
   }
 
-  if (por->partner_status == 1) {
-
-    // Print Direction for debugging
-    grid_platform_printf("Disconnect %c\r\n", grid_port_get_name_char(por));
-
-    grid_port_receiver_softreset(por);
-
-    grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
-    grid_alert_all_set_frequency(&grid_led_state, -2);
-    grid_alert_all_set_phase(&grid_led_state, 100);
-  } else {
-
-    if (por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0) {
-      // Ready to receive
-      // grid_platform_printf("RtR\r\n");
-      grid_port_receiver_softreset(por);
-    } else {
-
-      // Print Direction for debugging
-      grid_platform_printf("Timeout Disconnect 2 %c (R%d S%d W%d)\r\n", grid_port_get_name_char(por), por->rx_double_buffer_read_start_index, por->rx_double_buffer_seek_start_index,
-                           por->rx_double_buffer_write_index);
-      grid_port_receiver_softreset(por);
-    }
+  if (por->partner_status == 0 && por->rx_double_buffer_read_start_index == 0 && por->rx_double_buffer_seek_start_index == 0) {
+    // was already reset, ready to receive
+    return;
   }
+
+  por->partner_status = 0;
+  grid_port_receiver_softreset(por);
 }
 
 static uint8_t grid_port_rxdobulebuffer_check_overrun(struct grid_port* por) {
@@ -357,16 +333,7 @@ void grid_port_receive_direct_message(struct grid_port* por, char* message, uint
       por->partner_fi = (message[3] - por->direction + 6) % 4;
       por->partner_hwcfg = grid_msg_string_read_hex_string_value(&message[length - 10], 2, &error);
       por->partner_status = 1;
-
-      // Print Direction for debugging
-      grid_platform_printf("Connect %c\r\n", grid_port_get_name_char(por));
-
-      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 50);
-      grid_alert_all_set_frequency(&grid_led_state, -2);
-      grid_alert_all_set_phase(&grid_led_state, 100);
     }
-  } else {
-    grid_port_debug_printf("Unknown dirct message sub-type\r\n");
   }
 }
 
