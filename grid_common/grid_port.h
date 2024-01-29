@@ -39,7 +39,6 @@ struct grid_port {
 
   enum grid_port_type type;
   uint8_t direction;
-  uint8_t usart_error_flag;
 
   volatile uint16_t tx_double_buffer_status;
 

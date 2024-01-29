@@ -76,7 +76,6 @@ static void err_cb_USART_GRID_W(const struct usart_async_descriptor* const descr
 
 static void err_cb_USART_GRID(struct grid_port* const por) {
 
-  por->usart_error_flag = 1;
   // uint8_t character = (((Sercom
   // *)((*por->usart).device.hw))->USART.DATA.reg);
 

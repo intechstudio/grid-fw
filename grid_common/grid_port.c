@@ -105,21 +105,6 @@ static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por) {
 
 void grid_port_receive_task(struct grid_port* por) {
 
-  // parity error
-
-  if (por->usart_error_flag == 1) {
-
-    por->usart_error_flag = 0;
-
-    grid_platform_printf("Parity\r\n");
-    grid_port_receiver_hardreset(por);
-    grid_port_debug_printf("Parity error");
-
-    grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
-    grid_alert_all_set_frequency(&grid_led_state, -2);
-    grid_alert_all_set_phase(&grid_led_state, 100);
-  }
-
   ///////////////////// PART 1 Old receive task
 
   if (por->rx_double_buffer_status == 0) {
