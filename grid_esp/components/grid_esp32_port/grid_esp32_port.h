@@ -15,8 +15,6 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
 void grid_platform_sync1_pulse_send(void);
 void grid_esp32_port_task(void* arg);
 
-void grid_esp32_port_periodic_ping_heartbeat_handler_cb(void* arg);
-
 #ifdef __cplusplus
 }
 #endif

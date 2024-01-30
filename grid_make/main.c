@@ -130,14 +130,37 @@ static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recen
   }
 }
 
-static void ui_task_inner(uint8_t* ui_port_cooldown) {
+static uint64_t cooldown_lastrealtime = 0;
+static uint64_t ping_lastrealtime = 0;
+static uint64_t heartbeat_lastrealtime = 0;
 
-  // every other entry of the superloop
-  if (loopcount % 4 != 0) {
-    return;
+static void ui_task_inner() {
+
+  if (grid_platform_rtc_get_elapsed_time(ping_lastrealtime) > GRID_PARAMETER_PINGINTERVAL_us) {
+
+    ping_lastrealtime = grid_platform_rtc_get_micros();
+
+    if (uart_port_array[0] != NULL)
+      uart_port_array[0]->ping_flag = 1;
+    if (uart_port_array[1] != NULL)
+      uart_port_array[1]->ping_flag = 1;
+    if (uart_port_array[2] != NULL)
+      uart_port_array[2]->ping_flag = 1;
+    if (uart_port_array[3] != NULL)
+      uart_port_array[3]->ping_flag = 1;
+
+    grid_port_ping_try_everywhere();
   }
 
-  grid_port_ping_try_everywhere();
+  if (grid_platform_rtc_get_elapsed_time(heartbeat_lastrealtime) > GRID_PARAMETER_HEARTBEATINTERVAL_us) {
+
+    heartbeat_lastrealtime = grid_platform_rtc_get_micros();
+    grid_protocol_send_heartbeat();
+  }
+
+  if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
+    return;
+  }
 
   // IF LOCAL MESSAGE IS AVAILABLE
   if (grid_ui_event_count_istriggered_local(&grid_ui_state)) {
@@ -147,29 +170,22 @@ static void ui_task_inner(uint8_t* ui_port_cooldown) {
     CRITICAL_SECTION_LEAVE()
   }
 
-  // Bandwidth Limiter for Broadcast messages
-
-  if (*ui_port_cooldown > 0) {
-    (*ui_port_cooldown)--;
-  }
-
-  if (*ui_port_cooldown > 5) {
-    return;
-  }
-
   // if there are still unprocessed locally triggered events then must not
   // serve global events yet!
   if (grid_ui_event_count_istriggered_local(&grid_ui_state)) {
     return;
   }
 
-  if (grid_ui_event_count_istriggered(&grid_ui_state)) {
+  if (grid_platform_rtc_get_elapsed_time(cooldown_lastrealtime) > GRID_PARAMETER_UICOOLDOWN_us) {
 
-    *ui_port_cooldown += 3;
+    if (grid_ui_event_count_istriggered(&grid_ui_state)) {
 
-    CRITICAL_SECTION_ENTER()
-    grid_port_process_ui_UNSAFE(&grid_ui_state);
-    CRITICAL_SECTION_LEAVE()
+      cooldown_lastrealtime = grid_platform_rtc_get_micros();
+
+      CRITICAL_SECTION_ENTER()
+      grid_port_process_ui_UNSAFE(&grid_ui_state);
+      CRITICAL_SECTION_LEAVE()
+    }
   }
 }
 
@@ -235,7 +251,6 @@ volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
 volatile uint8_t reportflag = 0;
-volatile uint8_t heartbeatflag = 0;
 
 static struct timer_task RTC_Scheduler_rx_task;
 static struct timer_task RTC_Scheduler_ping;
@@ -244,12 +259,6 @@ static struct timer_task RTC_Scheduler_realtime_ms;
 static struct timer_task RTC_Scheduler_grid_sync;
 static struct timer_task RTC_Scheduler_heartbeat;
 static struct timer_task RTC_Scheduler_report;
-
-void RTC_Scheduler_ping_cb(const struct timer_task* const timer_task) {
-
-  pingflag++;
-  uart_port_array[pingflag % 4]->ping_flag = 1;
-}
 
 #define RTC1SEC 16384
 #define RTC1MS (RTC1SEC / 1000)
@@ -306,19 +315,9 @@ void RTC_Scheduler_grid_sync_cb(const struct timer_task* const timer_task) {
   CRITICAL_SECTION_LEAVE()
 }
 
-void RTC_Scheduler_heartbeat_cb(const struct timer_task* const timer_task) { heartbeatflag = 1; }
-
 void RTC_Scheduler_report_cb(const struct timer_task* const timer_task) { reportflag = 1; }
 
 void init_timer(void) {
-
-  RTC_Scheduler_ping.interval = RTC1MS * GRID_PARAMETER_PING_interval;
-  RTC_Scheduler_ping.cb = RTC_Scheduler_ping_cb;
-  RTC_Scheduler_ping.mode = TIMER_TASK_REPEAT;
-
-  RTC_Scheduler_heartbeat.interval = RTC1MS * GRID_PARAMETER_HEARTBEAT_interval;
-  RTC_Scheduler_heartbeat.cb = RTC_Scheduler_heartbeat_cb;
-  RTC_Scheduler_heartbeat.mode = TIMER_TASK_REPEAT;
 
   RTC_Scheduler_realtime.interval = 1;
   RTC_Scheduler_realtime.cb = RTC_Scheduler_realtime_cb;
@@ -336,8 +335,6 @@ void init_timer(void) {
   RTC_Scheduler_report.cb = RTC_Scheduler_report_cb;
   RTC_Scheduler_report.mode = TIMER_TASK_REPEAT;
 
-  timer_add_task(&RTC_Scheduler, &RTC_Scheduler_ping);
-  timer_add_task(&RTC_Scheduler, &RTC_Scheduler_heartbeat);
   timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime);
   timer_add_task(&RTC_Scheduler, &RTC_Scheduler_realtime_ms);
   timer_add_task(&RTC_Scheduler, &RTC_Scheduler_grid_sync);
@@ -426,8 +423,6 @@ int main(void) {
   struct grid_msg_recent_buffer recent_messages;
   grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
 
-  uint8_t ui_port_cooldown = 0;
-
   while (1) {
 
     if (usb_d_get_frame_num() != 0) {
@@ -474,20 +469,13 @@ int main(void) {
 
     // lua_gc(grid_lua_state.L, LUA_GCSTOP);
 
-    ui_task_inner(&ui_port_cooldown);
+    ui_task_inner();
 
     outbound_task_inner();
 
     inbound_task_inner();
 
     led_task_inner();
-
-    if (heartbeatflag) {
-
-      heartbeatflag = 0;
-
-      grid_protocol_send_heartbeat();
-    }
 
     if (grid_sys_get_editor_connected_state(&grid_sys_state) == 1) {
 

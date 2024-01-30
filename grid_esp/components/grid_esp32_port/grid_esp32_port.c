@@ -287,33 +287,42 @@ static void plot_port_debug() {
 
 SemaphoreHandle_t nvm_or_port;
 
-static uint64_t last_ping_timestamp = 0;
-static uint64_t last_heartbeat_timestamp = 0;
+static uint64_t ping_lastrealtime = 0;
+static uint64_t heartbeat_lastrealtime = 0;
+static uint64_t cooldown_lastrealtime = 0;
 
-void grid_esp32_port_periodic_ping_heartbeat_handler_cb(void* arg) {
+static void try_send_heartbeat_and_ping_blocking(void) {
 
-  if (grid_platform_rtc_get_elapsed_time(last_ping_timestamp) < GRID_PARAMETER_PING_interval * 1000) {
-    return;
+  if (grid_platform_rtc_get_elapsed_time(ping_lastrealtime) > GRID_PARAMETER_PINGINTERVAL_us) {
+
+    if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
+
+      ping_lastrealtime = grid_platform_rtc_get_micros();
+
+      if (uart_port_array[0] != NULL)
+        uart_port_array[0]->ping_flag = 1;
+      if (uart_port_array[1] != NULL)
+        uart_port_array[1]->ping_flag = 1;
+      if (uart_port_array[2] != NULL)
+        uart_port_array[2]->ping_flag = 1;
+      if (uart_port_array[3] != NULL)
+        uart_port_array[3]->ping_flag = 1;
+
+      grid_port_ping_try_everywhere();
+
+      xSemaphoreGive(nvm_or_port);
+    }
   }
 
-  if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
+  if (grid_platform_rtc_get_elapsed_time(heartbeat_lastrealtime) > GRID_PARAMETER_HEARTBEATINTERVAL_us) {
 
-    grid_protocol_send_heartbeat(); // Put heartbeat into UI rx_buffer
-    last_heartbeat_timestamp = grid_platform_rtc_get_micros();
+    if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
 
-    if (uart_port_array[0] != NULL)
-      uart_port_array[0]->ping_flag = 1;
-    if (uart_port_array[1] != NULL)
-      uart_port_array[1]->ping_flag = 1;
-    if (uart_port_array[2] != NULL)
-      uart_port_array[2]->ping_flag = 1;
-    if (uart_port_array[3] != NULL)
-      uart_port_array[3]->ping_flag = 1;
+      heartbeat_lastrealtime = grid_platform_rtc_get_micros();
+      grid_protocol_send_heartbeat(); // Put heartbeat into UI rx_buffer
 
-    grid_port_ping_try_everywhere();
-    last_ping_timestamp = grid_platform_rtc_get_micros();
-
-    xSemaphoreGive(nvm_or_port);
+      xSemaphoreGive(nvm_or_port);
+    }
   }
 }
 
@@ -379,10 +388,6 @@ void grid_esp32_port_task(void* arg) {
   spi_empty_transaction.tx_buffer = empty_tx_buffer;
   spi_empty_transaction.rx_buffer = recvbuf;
 
-  static uint32_t loopcounter = 0;
-
-  static uint32_t cooldown = 0;
-
   SemaphoreHandle_t spi_ready_sem = xSemaphoreCreateBinary();
 
   portENTER_CRITICAL(&spinlock);
@@ -395,14 +400,6 @@ void grid_esp32_port_task(void* arg) {
 
   uint8_t firstprint = 1;
 
-  // Create a periodic timer for thread safe miscellaneous tasks
-
-  esp_timer_create_args_t periodic_ping_heartbeat_args = {.callback = &grid_esp32_port_periodic_ping_heartbeat_handler_cb, .name = "ping"};
-
-  esp_timer_handle_t periodic_ping_heartbeat_timer;
-  ESP_ERROR_CHECK(esp_timer_create(&periodic_ping_heartbeat_args, &periodic_ping_heartbeat_timer));
-  ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_ping_heartbeat_timer, 10));
-
   // gpio_set_direction(47, GPIO_MODE_OUTPUT);
 
   // partner_connected array holds the last state. This is used for checking changes and triggering led effects accordingly
@@ -413,6 +410,8 @@ void grid_esp32_port_task(void* arg) {
   grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
 
   while (1) {
+
+    try_send_heartbeat_and_ping_blocking();
 
     // Check if USB is connected and start animation
     if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()) {
@@ -493,30 +492,22 @@ void grid_esp32_port_task(void* arg) {
         }
       }
 
-      loopcounter++;
-
       c0 = grid_platform_get_cycles();
 
-      if (cooldown > 0) {
-        cooldown--;
+      if (grid_ui_event_count_istriggered_local(&grid_ui_state) && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
+
+        // CRITICAL_SECTION_ENTER()
+        vTaskSuspendAll();
+        grid_port_process_ui_local_UNSAFE(&grid_ui_state);
+        xTaskResumeAll();
+        // CRITICAL_SECTION_LEAVE()
       }
 
-      if (loopcounter % 2 == 0 && cooldown == 0) {
+      if (grid_platform_rtc_get_elapsed_time(cooldown_lastrealtime) > GRID_PARAMETER_UICOOLDOWN_us) {
 
-        // pending local events must be evaluated first
-        // local events are only triggered when configuration changes!
-        // WARNING: all init events are triggered as local after pagechange!
-        if (grid_ui_event_count_istriggered_local(&grid_ui_state) && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
+        if (!grid_ui_event_count_istriggered_local(&grid_ui_state) && grid_ui_event_count_istriggered(&grid_ui_state) && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
 
-          // CRITICAL_SECTION_ENTER()
-          vTaskSuspendAll();
-          grid_port_process_ui_local_UNSAFE(&grid_ui_state);
-          xTaskResumeAll();
-          // CRITICAL_SECTION_LEAVE()
-
-        } else if (grid_ui_event_count_istriggered(&grid_ui_state) && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
-
-          cooldown += 3;
+          cooldown_lastrealtime = grid_platform_rtc_get_micros();
 
           // CRITICAL_SECTION_ENTER()
           vTaskSuspendAll();

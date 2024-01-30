@@ -407,7 +407,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por) {
 
     if (packet_size > grid_buffer_write_size(&next_port->tx_buffer)) {
       // one of the targetports do not have enough space to store the packet
-      grid_platform_printf("Buffer Error: %d/%d \r\n", i, target_port_count);
+      grid_platform_printf("Buffer Error: %d | %d | %d \r\n", i, target_port_count, next_port->direction);
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_BLUE, 128);
       return 0;
     }
