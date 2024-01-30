@@ -512,7 +512,6 @@ struct grid_doublebuffer* grid_doublebuffer_allocate_init(size_t length) {
 
   doublebuffer->buffer_storage = storage;
   doublebuffer->buffer_size = length;
-  memset(&doublebuffer->buffer_storage, 0, length);
 
   return doublebuffer;
 }
