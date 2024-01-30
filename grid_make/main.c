@@ -19,9 +19,6 @@ static volatile struct grid_port* uart_port_array[4] = {0};
 static volatile struct grid_port* host_port = NULL;
 static volatile struct grid_port* ui_port = NULL;
 
-static struct grid_doublebuffer* volatile uart_doublebuffer_tx_array[4] = {0};
-static struct grid_doublebuffer* volatile uart_doublebuffer_rx_array[4] = {0};
-
 volatile uint32_t loopcounter = 1;
 volatile uint32_t loopcount = 0;
 
@@ -136,43 +133,43 @@ static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recen
 static void ui_task_inner(uint8_t* ui_port_cooldown) {
 
   // every other entry of the superloop
-  if (loopcount % 4 == 0) {
+  if (loopcount % 4 != 0) {
+    return;
+  }
 
-    grid_port_ping_try_everywhere();
+  grid_port_ping_try_everywhere();
 
-    // IF LOCAL MESSAGE IS AVAILABLE
-    if (grid_ui_event_count_istriggered_local(&grid_ui_state)) {
+  // IF LOCAL MESSAGE IS AVAILABLE
+  if (grid_ui_event_count_istriggered_local(&grid_ui_state)) {
 
-      CRITICAL_SECTION_ENTER()
-      grid_port_process_ui_local_UNSAFE(&grid_ui_state); // COOLDOWN DELAY IMPLEMENTED INSIDE
-      CRITICAL_SECTION_LEAVE()
-    }
+    CRITICAL_SECTION_ENTER()
+    grid_port_process_ui_local_UNSAFE(&grid_ui_state); // COOLDOWN DELAY IMPLEMENTED INSIDE
+    CRITICAL_SECTION_LEAVE()
+  }
 
-    // Bandwidth Limiter for Broadcast messages
+  // Bandwidth Limiter for Broadcast messages
 
-    if (*ui_port_cooldown > 0) {
-      *ui_port_cooldown--;
-    }
+  if (*ui_port_cooldown > 0) {
+    (*ui_port_cooldown)--;
+  }
 
-    if (*ui_port_cooldown > 5) {
-    } else {
+  if (*ui_port_cooldown > 5) {
+    return;
+  }
 
-      // if there are still unprocessed locally triggered events then must not
-      // serve global events yet!
-      if (grid_ui_event_count_istriggered_local(&grid_ui_state)) {
-        return;
-      } else {
+  // if there are still unprocessed locally triggered events then must not
+  // serve global events yet!
+  if (grid_ui_event_count_istriggered_local(&grid_ui_state)) {
+    return;
+  }
 
-        if (grid_ui_event_count_istriggered(&grid_ui_state)) {
+  if (grid_ui_event_count_istriggered(&grid_ui_state)) {
 
-          *ui_port_cooldown += 3;
+    *ui_port_cooldown += 3;
 
-          CRITICAL_SECTION_ENTER()
-          grid_port_process_ui_UNSAFE(&grid_ui_state);
-          CRITICAL_SECTION_LEAVE()
-        }
-      }
-    }
+    CRITICAL_SECTION_ENTER()
+    grid_port_process_ui_UNSAFE(&grid_ui_state);
+    CRITICAL_SECTION_LEAVE()
   }
 }
 
@@ -205,7 +202,7 @@ static void outbound_task_inner() {
   for (uint8_t i = 0; i < 4; i++) {
 
     struct grid_port* port = uart_port_array[i];
-    struct grid_doublebuffer* doublebuffer_tx = uart_doublebuffer_tx_array[i];
+    struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, i);
 
     grid_port_process_outbound_usart(port, doublebuffer_tx);
   }
@@ -377,16 +374,6 @@ int main(void) {
   uart_port_array[1] = grid_transport_get_port(&grid_transport_state, 1);
   uart_port_array[2] = grid_transport_get_port(&grid_transport_state, 2);
   uart_port_array[3] = grid_transport_get_port(&grid_transport_state, 3);
-
-  uart_doublebuffer_tx_array[0] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 0);
-  uart_doublebuffer_tx_array[1] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 1);
-  uart_doublebuffer_tx_array[2] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 2);
-  uart_doublebuffer_tx_array[3] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 3);
-
-  uart_doublebuffer_rx_array[0] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 0);
-  uart_doublebuffer_rx_array[1] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 1);
-  uart_doublebuffer_rx_array[2] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 2);
-  uart_doublebuffer_rx_array[3] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 3);
 
   ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
   host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);

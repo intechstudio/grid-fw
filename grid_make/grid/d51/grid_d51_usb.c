@@ -19,6 +19,32 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
     // printf("halfpacket");
   }
 
+  struct grid_doublebuffer* doublebuffer_rx = grid_transport_state.doublebuffer_rx_array[5];
+
+  if (host_port == NULL) {
+    // port not initialized
+    grid_platform_printf("host_port == NULL\r\n");
+    return;
+  }
+
+  if (doublebuffer_rx == NULL) {
+    // doublebuffer not initialized
+    grid_platform_printf("doublebuffer_rx == NULL\r\n");
+    return;
+  }
+
+  if (doublebuffer_rx->buffer_storage == NULL) {
+    grid_platform_printf("buffer_storage == NULL\r\n");
+    // doublebuffer not initialized
+    return;
+  }
+
+  if (doublebuffer_rx->buffer_size < 64) {
+    grid_platform_printf("buffer_size < 64\r\n");
+    // doublebuffer not initialized
+    return;
+  }
+
   for (uint16_t i = 0; i < count; i++) {
 
     // if (halfpacket && (i<10 || i>count-10)){
@@ -28,7 +54,6 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
     // 	printf(" ...");
     // }
 
-    struct grid_doublebuffer* doublebuffer_rx = &grid_transport_state.doublebuffer_rx_array[5];
     doublebuffer_rx->buffer_storage[doublebuffer_rx->write_index] = grid_usb_serial_rx_buffer[i];
 
     // printf("%d, ", grid_usb_serial_rx_buffer[i]);
