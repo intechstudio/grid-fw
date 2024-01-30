@@ -92,7 +92,7 @@ static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por, struct 
     }
 
     // Buffer overrun error 1, 2, 3
-    if (grid_port_rxdobulebuffer_check_overrun(por)) {
+    if (grid_port_rxdobulebuffer_check_overrun(doublebuffer_rx)) {
 
       grid_platform_printf("Overrun%d\r\n", por->direction);
       grid_platform_printf("R%d S%d W%d\r\n", doublebuffer_rx->read_start_index, doublebuffer_rx->seek_start_index, doublebuffer_rx->write_index);
@@ -507,10 +507,9 @@ struct grid_doublebuffer* grid_doublebuffer_allocate_init(size_t length) {
   struct grid_doublebuffer* doublebuffer = (struct grid_doublebuffer*)grid_platform_allocate_volatile(sizeof(struct grid_doublebuffer));
   memset(doublebuffer, 0, sizeof(struct grid_doublebuffer));
 
-  char* storage = (char*)grid_platform_allocate_volatile(length * sizeof(char));
-  memset(storage, 0, length * sizeof(char));
+  doublebuffer->buffer_storage = (char*)grid_platform_allocate_volatile(length * sizeof(char));
+  memset(doublebuffer->buffer_storage, 0, length * sizeof(char));
 
-  doublebuffer->buffer_storage = storage;
   doublebuffer->buffer_size = length;
 
   return doublebuffer;

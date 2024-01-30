@@ -79,10 +79,34 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
   uint8_t buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE + 1];
   esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
 
-  for (uint16_t i = 0; i < rx_size; i++) {
+  struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
+  struct grid_doublebuffer* doublebuffer_rx = grid_transport_state.doublebuffer_rx_array[5];
 
-    struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
-    struct grid_doublebuffer* doublebuffer_rx = &grid_transport_state.doublebuffer_rx_array[5];
+  if (host_port == NULL) {
+    // port not initialized
+    grid_platform_printf("host_port == NULL\r\n");
+    return;
+  }
+
+  if (doublebuffer_rx == NULL) {
+    // doublebuffer not initialized
+    grid_platform_printf("doublebuffer_rx == NULL\r\n");
+    return;
+  }
+
+  if (doublebuffer_rx->buffer_storage == NULL) {
+    grid_platform_printf("buffer_storage == NULL\r\n");
+    // doublebuffer not initialized
+    return;
+  }
+
+  if (doublebuffer_rx->buffer_size < 64) {
+    grid_platform_printf("buffer_size < 64\r\n");
+    // doublebuffer not initialized
+    return;
+  }
+
+  for (uint16_t i = 0; i < rx_size; i++) {
 
     doublebuffer_rx->buffer_storage[doublebuffer_rx->write_index] = buf[i];
 
