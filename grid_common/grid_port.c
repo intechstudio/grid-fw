@@ -77,32 +77,22 @@ static uint8_t grid_port_rxdobulebuffer_check_overrun(struct grid_doublebuffer* 
   return (overrun_condition_1 || overrun_condition_2 || overrun_condition_3);
 }
 
-static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx) {
+int grid_port_rxdobulebuffer_seek_newline(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx) {
 
-  for (uint16_t i = 0; i < 490; i++) { // 490 is the max processing length
+  while (true) {
 
     if (doublebuffer_rx->buffer_storage[doublebuffer_rx->seek_start_index] == 10) { // \n
 
       doublebuffer_rx->status = 1;
-
-      break;
+      return 0;
     } else if (doublebuffer_rx->buffer_storage[doublebuffer_rx->seek_start_index] == 0) {
 
-      break;
+      return 0;
     }
 
     // Buffer overrun error 1, 2, 3
     if (grid_port_rxdobulebuffer_check_overrun(doublebuffer_rx)) {
-
-      grid_platform_printf("Overrun%d\r\n", por->direction);
-      grid_platform_printf("R%d S%d W%d\r\n", doublebuffer_rx->read_start_index, doublebuffer_rx->seek_start_index, doublebuffer_rx->write_index);
-
-      grid_port_receiver_hardreset(por, doublebuffer_rx);
-
-      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
-      grid_alert_all_set_frequency(&grid_led_state, -2);
-      grid_alert_all_set_phase(&grid_led_state, 100);
-      return;
+      return 1;
     }
 
     // Increment seek pointer
@@ -119,7 +109,16 @@ static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por, struct 
 void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx, char* message, uint16_t* length) {
 
   // set double buffer status to 1 if newline is found
-  grid_port_rxdobulebuffer_seek_newline(por, doublebuffer_rx);
+  int ret_status = grid_port_rxdobulebuffer_seek_newline(por, doublebuffer_rx);
+  if (ret_status != 0) {
+    // overrun happend
+
+    grid_port_receiver_hardreset(por, doublebuffer_rx);
+
+    grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
+    grid_alert_all_set_frequency(&grid_led_state, -2);
+    grid_alert_all_set_phase(&grid_led_state, 100);
+  }
 
   // No complete message in buffer
   if (doublebuffer_rx->status == 0) {
