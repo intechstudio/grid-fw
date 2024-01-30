@@ -80,7 +80,7 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
   esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
 
   struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
-  struct grid_doublebuffer* doublebuffer_rx = grid_transport_state.doublebuffer_rx_array[5];
+  struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, 5);
 
   if (host_port == NULL) {
     // port not initialized

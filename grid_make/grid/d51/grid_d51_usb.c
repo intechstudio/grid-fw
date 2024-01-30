@@ -19,7 +19,7 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
     // printf("halfpacket");
   }
 
-  struct grid_doublebuffer* doublebuffer_rx = grid_transport_state.doublebuffer_rx_array[5];
+  struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, 5);
 
   if (host_port == NULL) {
     // port not initialized

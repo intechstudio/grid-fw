@@ -464,7 +464,6 @@ void grid_esp32_port_task(void* arg) {
       // TRY TO RECEIVE UP TO 4 packets on UART PORTS
       for (uint8_t i = 0; i < port_list_length * 4; i++) {
         struct grid_port* port = grid_transport_get_port(&grid_transport_state, i % port_list_length);
-        struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, i % port_list_length);
         struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i % port_list_length);
 
         if (port->type == GRID_PORT_TYPE_USART) {
@@ -486,9 +485,9 @@ void grid_esp32_port_task(void* arg) {
 
           char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
           uint16_t length = 0;
-          grid_port_rxdobulebuffer_to_linear(port, doublebuffer_tx, doublebuffer_rx, temp, &length);
+          grid_port_rxdobulebuffer_to_linear(port, doublebuffer_rx, temp, &length);
           grid_port_receive_decode(port, &recent_messages, temp, length);
-          grid_port_try_uart_timeout_disconect(port, doublebuffer_tx, doublebuffer_rx); // try disconnect for uart port
+          grid_port_try_uart_timeout_disconect(port, doublebuffer_rx); // try disconnect for uart port
         }
       }
 
@@ -530,7 +529,7 @@ void grid_esp32_port_task(void* arg) {
       {
         char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
         uint16_t length = 0;
-        grid_port_rxdobulebuffer_to_linear(host_port, host_doublebuffer_tx, host_doublebuffer_rx, temp, &length); // USB
+        grid_port_rxdobulebuffer_to_linear(host_port, host_doublebuffer_rx, temp, &length); // USB
         grid_port_receive_decode(host_port, &recent_messages, temp, length);
       }
 

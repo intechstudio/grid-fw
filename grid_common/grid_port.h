@@ -84,7 +84,7 @@ struct grid_transport_model {
   struct grid_doublebuffer* doublebuffer_rx_array[10];
 };
 
-void grid_port_try_uart_timeout_disconect(struct grid_port* por, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx);
+void grid_port_try_uart_timeout_disconect(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx);
 
 extern struct grid_transport_model grid_transport_state;
 
@@ -99,7 +99,7 @@ struct grid_port* grid_transport_get_port(struct grid_transport_model* transport
 struct grid_doublebuffer* grid_transport_get_doublebuffer_tx(struct grid_transport_model* transport, uint8_t index);
 struct grid_doublebuffer* grid_transport_get_doublebuffer_rx(struct grid_transport_model* transport, uint8_t index);
 
-void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx, char* message, uint16_t* length);
+void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx, char* message, uint16_t* length);
 void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length);
 
 void grid_port_receive_broadcast_message(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length);
@@ -115,8 +115,8 @@ struct grid_doublebuffer* grid_doublebuffer_allocate_init(size_t length);
 uint8_t grid_port_process_outbound_usart(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer);
 uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer);
 
-void grid_port_receiver_softreset(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer, struct grid_doublebuffer* rx_doublebuffer);
-void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer, struct grid_doublebuffer* rx_doublebuffer);
+void grid_port_receiver_softreset(struct grid_port* por, struct grid_doublebuffer* rx_doublebuffer);
+void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffer* rx_doublebuffer);
 
 void grid_port_debug_print_text(char* str);
 void grid_port_websocket_print_text(char* str);

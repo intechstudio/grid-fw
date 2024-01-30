@@ -52,10 +52,9 @@ static void usb_task_inner(struct grid_msg_recent_buffer* rec) {
   char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
   uint16_t length = 0;
 
-  struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, 5);
   struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, 5);
 
-  grid_port_rxdobulebuffer_to_linear(host_port, doublebuffer_tx, doublebuffer_rx, temp, &length); // USB
+  grid_port_rxdobulebuffer_to_linear(host_port, doublebuffer_rx, temp, &length); // USB
   grid_port_receive_decode(host_port, rec, temp, length);
 }
 
@@ -104,7 +103,6 @@ static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recen
   for (uint8_t i = 0; i < 4; i++) {
 
     struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
-    struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, i);
     struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i);
 
     if (partner_connected[i] < port->partner_status) {
@@ -124,9 +122,9 @@ static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recen
 
     char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
     uint16_t length = 0;
-    grid_port_rxdobulebuffer_to_linear(port, doublebuffer_tx, doublebuffer_rx, temp, &length);
+    grid_port_rxdobulebuffer_to_linear(port, doublebuffer_rx, temp, &length);
     grid_port_receive_decode(port, rec, temp, length);
-    grid_port_try_uart_timeout_disconect(port, doublebuffer_tx, doublebuffer_rx); // try disconnect for uart port
+    grid_port_try_uart_timeout_disconect(port, doublebuffer_rx); // try disconnect for uart port
   }
 }
 

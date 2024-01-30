@@ -48,7 +48,7 @@ char grid_port_get_name_char(struct grid_port* por) {
   return direction_lookup[direction_index];
 }
 
-void grid_port_try_uart_timeout_disconect(struct grid_port* por, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx) {
+void grid_port_try_uart_timeout_disconect(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx) {
 
   if (por->type != GRID_PORT_TYPE_USART) {
     return;
@@ -65,7 +65,7 @@ void grid_port_try_uart_timeout_disconect(struct grid_port* por, struct grid_dou
   }
 
   por->partner_status = 0;
-  grid_port_receiver_softreset(por, doublebuffer_tx, doublebuffer_rx);
+  grid_port_receiver_softreset(por, doublebuffer_rx);
 }
 
 static uint8_t grid_port_rxdobulebuffer_check_overrun(struct grid_doublebuffer* doublebuffer_rx) {
@@ -77,7 +77,7 @@ static uint8_t grid_port_rxdobulebuffer_check_overrun(struct grid_doublebuffer* 
   return (overrun_condition_1 || overrun_condition_2 || overrun_condition_3);
 }
 
-static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx) {
+static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx) {
 
   for (uint16_t i = 0; i < 490; i++) { // 490 is the max processing length
 
@@ -97,7 +97,7 @@ static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por, struct 
       grid_platform_printf("Overrun%d\r\n", por->direction);
       grid_platform_printf("R%d S%d W%d\r\n", doublebuffer_rx->read_start_index, doublebuffer_rx->seek_start_index, doublebuffer_rx->write_index);
 
-      grid_port_receiver_hardreset(por, doublebuffer_tx, doublebuffer_rx);
+      grid_port_receiver_hardreset(por, doublebuffer_rx);
 
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
       grid_alert_all_set_frequency(&grid_led_state, -2);
@@ -116,10 +116,10 @@ static void grid_port_rxdobulebuffer_seek_newline(struct grid_port* por, struct 
   }
 }
 
-void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx, char* message, uint16_t* length) {
+void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx, char* message, uint16_t* length) {
 
   // set double buffer status to 1 if newline is found
-  grid_port_rxdobulebuffer_seek_newline(por, doublebuffer_tx, doublebuffer_rx);
+  grid_port_rxdobulebuffer_seek_newline(por, doublebuffer_rx);
 
   // No complete message in buffer
   if (doublebuffer_rx->status == 0) {
@@ -262,7 +262,7 @@ void grid_msg_string_transform_brc_params(char* message, int8_t dx, int8_t dy, u
   grid_msg_string_checksum_write(message, length, grid_msg_string_calculate_checksum_of_packet_string(message, length));
 }
 
-static void grid_port_rxdobulebuffer_receive_to_buffer(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx, char* buffer, uint16_t length) {
+void grid_port_rxdobulebuffer_receive_to_buffer(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx, char* buffer, uint16_t length) {
 
   // Store message in temporary buffer (MAXMSGLEN = 250 character)
   for (uint16_t i = 0; i < length; i++) {
@@ -616,7 +616,7 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por, struct gr
   return 0;
 }
 
-void grid_port_receiver_softreset(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer, struct grid_doublebuffer* rx_doublebuffer) {
+void grid_port_receiver_softreset(struct grid_port* por, struct grid_doublebuffer* rx_doublebuffer) {
 
   por->partner_status = 0;
   por->partner_last_timestamp = grid_platform_rtc_get_micros();
@@ -630,13 +630,9 @@ void grid_port_receiver_softreset(struct grid_port* por, struct grid_doublebuffe
   for (uint16_t i = 0; i < rx_doublebuffer->buffer_size; i++) {
     rx_doublebuffer->buffer_storage[i] = 0;
   }
-
-  for (uint16_t i = 0; i < tx_doublebuffer->buffer_size; i++) {
-    tx_doublebuffer->buffer_storage[i] = 0;
-  }
 }
 
-void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer, struct grid_doublebuffer* rx_doublebuffer) {
+void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffer* rx_doublebuffer) {
 
   grid_platform_printf("HARD: ");
 
@@ -651,7 +647,7 @@ void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffe
   grid_msg_string_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
   grid_msg_string_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_string_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 
-  grid_port_receiver_softreset(por, tx_doublebuffer, rx_doublebuffer);
+  grid_port_receiver_softreset(por, rx_doublebuffer);
 
   grid_platform_enable_grid_transmitter(por->direction);
 }
