@@ -111,7 +111,7 @@ void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doubl
   // set double buffer status to 1 if newline is found
   int ret_status = grid_port_rxdobulebuffer_seek_newline(por, doublebuffer_rx);
   if (ret_status != 0) {
-    // overrun happend
+    // overrun happened
 
     grid_port_receiver_hardreset(por, doublebuffer_rx);
 
