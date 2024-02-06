@@ -10,7 +10,6 @@
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
 
-#include "hardware/dma.h"
 #include "hardware/irq.h"
 #include "hardware/spi.h"
 
@@ -22,100 +21,29 @@
 #include "pico/multicore.h"
 
 #include "../../grid_common/grid_protocol.h"
+#include "../../grid_common/grid_msg.h"
 
 #include <string.h>
 
 #include "pico/time.h"
 
-uint8_t grid_msg_string_calculate_checksum_of_packet_string(char* str, uint32_t length) {
+#include "grid_pico_pins.h"
+#include "grid_pico_spi.h"
 
-  uint8_t checksum = 0;
-  for (uint32_t i = 0; i < length - 3; i++) {
-    checksum ^= str[i];
-  }
 
-  return checksum;
-}
-uint8_t grid_msg_string_read_hex_char_value(uint8_t ascii, uint8_t* error_flag) {
-
-  uint8_t result = 0;
-
-  if (ascii > 47 && ascii < 58) {
-    result = ascii - 48;
-  } else if (ascii > 96 && ascii < 103) {
-    result = ascii - 97 + 10;
-  } else {
-    // wrong input
-    if (error_flag != 0) {
-      *error_flag = ascii;
-    }
-  }
-
-  return result;
-}
-uint32_t grid_msg_string_read_hex_string_value(char* start_location, uint8_t length, uint8_t* error_flag) {
-
-  uint32_t result = 0;
-
-  for (uint8_t i = 0; i < length; i++) {
-
-    result += grid_msg_string_read_hex_char_value(start_location[i], error_flag) << (length - i - 1) * 4;
-  }
-
-  return result;
-}
-uint8_t grid_msg_string_checksum_read(char* str, uint32_t length) {
-  uint8_t error_flag;
-  return grid_msg_string_read_hex_string_value(&str[length - 3], 2, &error_flag);
-}
+#include "hardware/dma.h"
 
 #define BUCKET_BUFFER_LENGTH 500
 #define BUCKET_ARRAY_LENGTH 50
 
-uint dma_tx;
-uint dma_rx;
+static uint8_t grid_pico_spi_txbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
+static uint8_t grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
 
-static uint8_t txbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
-static uint8_t rxbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
-
-const uint CS_PIN = 17; // was 13
 
 uint8_t ready_flags = 255;
 
-// PIO SETUP CONSTANTS
-const uint SERIAL_BAUD = 2000000UL;
-
 const PIO GRID_TX_PIO = pio0;
 const PIO GRID_RX_PIO = pio1;
-
-// GRID UART PIN CONNECTIONS
-const uint GRID_NORTH_TX_PIN = 23;
-const uint GRID_NORTH_RX_PIN = 6;
-
-const uint GRID_EAST_TX_PIN = 26;
-const uint GRID_EAST_RX_PIN = 24;
-
-const uint GRID_SOUTH_TX_PIN = 2;
-const uint GRID_SOUTH_RX_PIN = 27;
-
-const uint GRID_WEST_TX_PIN = 5;
-const uint GRID_WEST_RX_PIN = 3;
-
-// GRID SYNC PIN CONNECTIONS
-const uint LED_PIN = 15; // was 25 =  PICO_DEFAULT_LED_PIN
-const uint SYNC1_PIN = 25;
-const uint SYNC2_PIN = 4;
-
-volatile uint8_t spi_dma_done = false;
-
-void dma_handler() {
-
-  spi_dma_done = true;
-  gpio_put(CS_PIN, 1);
-  dma_hw->ints0 = 1u << dma_rx;
-
-  // printf("FINISH %d\n", txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
-}
 
 enum grid_bucket_status_t {
 
@@ -136,7 +64,8 @@ struct grid_bucket {
   uint16_t buffer_index;
 };
 
-struct grid_port {
+// this is a doublebuffer
+struct grid_pico_uart_txbuffer {
 
   uint8_t port_index;
   uint8_t tx_buffer[512];
@@ -149,25 +78,25 @@ struct grid_port {
 uint8_t bucket_array_length = BUCKET_ARRAY_LENGTH;
 struct grid_bucket bucket_array[BUCKET_ARRAY_LENGTH];
 
-struct grid_port port_array[4];
+struct grid_pico_uart_txbuffer txbuffer_array[4];
 
-struct grid_port* NORTH = &port_array[0];
-struct grid_port* EAST = &port_array[1];
-struct grid_port* SOUTH = &port_array[2];
-struct grid_port* WEST = &port_array[3];
+struct grid_pico_uart_txbuffer* txbuffer_N = &txbuffer_array[0];
+struct grid_pico_uart_txbuffer* txbuffer_E = &txbuffer_array[1];
+struct grid_pico_uart_txbuffer* txbuffer_S = &txbuffer_array[2];
+struct grid_pico_uart_txbuffer* txbuffer_W = &txbuffer_array[3];
 
-void grid_port_init(struct grid_port* port, uint8_t index) {
+void grid_pico_uart_txbuffer_init(struct grid_pico_uart_txbuffer* txbuffer, uint8_t index) {
 
-  port->port_index = index;
+  txbuffer->port_index = index;
 
   for (uint16_t i = 0; i < 512; i++) {
-    port->tx_buffer[i] = 0;
+    txbuffer->tx_buffer[i] = 0;
   }
 
-  port->tx_index = 0;
-  port->tx_is_busy = false;
+  txbuffer->tx_index = 0;
+  txbuffer->tx_is_busy = false;
 
-  port->active_bucket = NULL;
+  txbuffer->active_bucket = NULL;
 }
 
 void grid_bucket_init(struct grid_bucket* bucket, uint8_t index) {
@@ -228,72 +157,16 @@ void grid_bucket_put_character(struct grid_bucket* bucket, char next_char) {
   }
 }
 
-void spi_start_transfer(uint tx_channel, uint rx_channel, uint8_t* tx_buffer, uint8_t* rx_buffer, irq_handler_t callback) {
 
-  spi_dma_done = false;
-  gpio_put(CS_PIN, 0);
 
-  dma_channel_config c = dma_channel_get_default_config(tx_channel);
-  channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-  channel_config_set_dreq(&c, spi_get_dreq(spi_default, true));
-  dma_channel_configure(tx_channel, &c,
-                        &spi_get_hw(spi_default)->dr,          // write address
-                        tx_buffer,                             // read address
-                        GRID_PARAMETER_SPI_TRANSACTION_length, // element count (each element is
-                                                               // of size transfer_data_size)
-                        false);                                // don't start yet
+void grid_txbuffer_attach_bucket(struct grid_pico_uart_txbuffer* txbuffer) {
 
-  c = dma_channel_get_default_config(rx_channel);
-  channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-  channel_config_set_dreq(&c, spi_get_dreq(spi_default, false));
-  channel_config_set_read_increment(&c, false);
-  channel_config_set_write_increment(&c, true);
-  dma_channel_configure(rx_channel, &c,
-                        rx_buffer,                             // write address
-                        &spi_get_hw(spi_default)->dr,          // read address
-                        GRID_PARAMETER_SPI_TRANSACTION_length, // element count (each element is
-                                                               // of size transfer_data_size)
-                        false);                                // don't start yet
+  txbuffer->active_bucket = grid_bucket_find_next_match(txbuffer->active_bucket, GRID_BUCKET_STATUS_EMPTY);
 
-  if (callback != NULL) {
-    dma_channel_set_irq0_enabled(rx_channel, true);
-    irq_set_exclusive_handler(DMA_IRQ_0, callback);
-    irq_set_enabled(DMA_IRQ_0, true);
-  }
+  if (txbuffer->active_bucket != NULL) {
 
-  dma_start_channel_mask((1u << tx_channel) | (1u << rx_channel));
-}
-
-void spi_interface_init() {
-  // SPI INIT
-
-  // Setup COMMON stuff
-  gpio_init(CS_PIN);
-  gpio_set_dir(CS_PIN, GPIO_OUT);
-  gpio_put(CS_PIN, 1);
-
-  uint baudrate = spi_init(spi_default, 31250 * 1000);
-  printf("BAUD: %d", baudrate);
-
-  gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
-  gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
-  gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
-
-  // Force loopback for testing (I don't have an SPI device handy)
-  // hw_set_bits(&spi_get_hw(spi_default)->cr1, SPI_SSPCR1_LBM_BITS);
-
-  dma_tx = dma_claim_unused_channel(true);
-  dma_rx = dma_claim_unused_channel(true);
-}
-
-void grid_port_attach_bucket(struct grid_port* port) {
-
-  port->active_bucket = grid_bucket_find_next_match(port->active_bucket, GRID_BUCKET_STATUS_EMPTY);
-
-  if (port->active_bucket != NULL) {
-
-    port->active_bucket->status = GRID_BUCKET_STATUS_RECEIVING;
-    port->active_bucket->source_port_index = port->port_index;
+    txbuffer->active_bucket->status = GRID_BUCKET_STATUS_RECEIVING;
+    txbuffer->active_bucket->source_port_index = txbuffer->port_index;
   } else {
 
     printf("NULL BUCKET\r\n");
@@ -302,23 +175,23 @@ void grid_port_attach_bucket(struct grid_port* port) {
 
 void uart_try_send_all(void) {
 
-  // iterate through all the ports
+  // iterate through all the txbuffers
   for (uint8_t i = 0; i < 4; i++) {
 
-    struct grid_port* port = &port_array[i];
+    struct grid_pico_uart_txbuffer* txbuffer = &txbuffer_array[i];
 
     // if transmission is in progress then send the next character
-    if (port->tx_is_busy) {
+    if (txbuffer->tx_is_busy) {
 
-      char c = port->tx_buffer[port->tx_index];
-      port->tx_index++;
+      char c = txbuffer->tx_buffer[txbuffer->tx_index];
+      txbuffer->tx_index++;
 
-      uart_tx_program_putc(GRID_TX_PIO, port->port_index, c);
+      uart_tx_program_putc(GRID_TX_PIO, txbuffer->port_index, c);
 
       if (c == '\n') {
 
-        port->tx_is_busy = 0;
-        ready_flags |= (1 << port->port_index);
+        txbuffer->tx_is_busy = 0;
+        ready_flags |= (1 << txbuffer->port_index);
       }
     }
   }
@@ -344,43 +217,43 @@ void fifo_try_receive(void) {
         continue;
       }
 
-      struct grid_port* port = &port_array[i];
+      struct grid_pico_uart_txbuffer* txbuffer = &txbuffer_array[i];
 
-      if (port->active_bucket == NULL) {
-        grid_port_attach_bucket(port);
+      if (txbuffer->active_bucket == NULL) {
+        grid_txbuffer_attach_bucket(txbuffer);
       }
 
-      if (c == 0x01 && port->active_bucket->buffer_index > 0) { // Start of Header character received in the
+      if (c == 0x01 && txbuffer->active_bucket->buffer_index > 0) { // Start of Header character received in the
                                                                 // middle of a trasmisdsion
 
         printf("E\n");
 
         // clear the current active bucet, and attach to a new bucket to start
         // receiving packet
-        grid_bucket_init(port->active_bucket, port->active_bucket->index);
-        port->active_bucket == NULL;
-        grid_port_attach_bucket(port);
+        grid_bucket_init(txbuffer->active_bucket, txbuffer->active_bucket->index);
+        txbuffer->active_bucket == NULL;
+        grid_txbuffer_attach_bucket(txbuffer);
       }
 
-      grid_bucket_put_character(port->active_bucket, c);
+      grid_bucket_put_character(txbuffer->active_bucket, c);
 
       // printf("%c", c);
 
       if (c == '\n') {
 
         // end of message, put termination zero character
-        grid_bucket_put_character(port->active_bucket, '\0');
+        grid_bucket_put_character(txbuffer->active_bucket, '\0');
 
-        // printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
-        if (port->active_bucket->buffer[1] == GRID_CONST_BRC) {
-          // printf("BR%d %c%c\r\n", port->active_bucket->index,
-          // port->active_bucket->buffer[6], port->active_bucket->buffer[7]);
+        // printf("BUCKET READY %s\r\n", txbuffer->active_bucket->buffer);
+        if (txbuffer->active_bucket->buffer[1] == GRID_CONST_BRC) {
+          // printf("BR%d %c%c\r\n", txbuffer->active_bucket->index,
+          // txbuffer->active_bucket->buffer[6], txbuffer->active_bucket->buffer[7]);
         }
-        port->active_bucket->status = GRID_BUCKET_STATUS_FULL;
-        port->active_bucket->buffer_index = 0;
+        txbuffer->active_bucket->status = GRID_BUCKET_STATUS_FULL;
+        txbuffer->active_bucket->buffer_index = 0;
         // clear bucket
 
-        grid_port_attach_bucket(port);
+        grid_txbuffer_attach_bucket(txbuffer);
       }
     }
   }
@@ -394,7 +267,7 @@ void core_1_main_entry() {
 
     uint32_t packed_chars = 0;
 
-    // iterate through all the ports and pack available characters
+    // iterate through all the txbuffers and pack available characters
     for (uint8_t i = 0; i < 4; i++) {
       if (uart_rx_program_is_available(GRID_RX_PIO, i)) {
 
@@ -426,10 +299,10 @@ volatile uint8_t sync2_interrupt = 0;
 
 void gpio_sync_pin_callback(uint gpio, uint32_t events) {
 
-  if (gpio == SYNC1_PIN) {
+  if (gpio == GRID_PICO_PIN_SYNC1) {
 
     sync1_interrupt = 1;
-  } else if (gpio == SYNC2_PIN) {
+  } else if (gpio == GRID_PICO_PIN_SYNC2) {
 
     sync2_interrupt = 1;
   }
@@ -459,13 +332,13 @@ int main() {
   uint offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_program);
 
   // setup gpio sync interrupts
-  gpio_set_irq_enabled_with_callback(SYNC1_PIN, GPIO_IRQ_EDGE_RISE, true, &gpio_sync_pin_callback);
-  gpio_set_irq_enabled(SYNC2_PIN, GPIO_IRQ_EDGE_RISE, true);
+  gpio_set_irq_enabled_with_callback(GRID_PICO_PIN_SYNC1, GPIO_IRQ_EDGE_RISE, true, &gpio_sync_pin_callback);
+  gpio_set_irq_enabled(GRID_PICO_PIN_SYNC2, GPIO_IRQ_EDGE_RISE, true);
 
-  grid_port_init(NORTH, 0);
-  grid_port_init(EAST, 1);
-  grid_port_init(SOUTH, 2);
-  grid_port_init(WEST, 3);
+  grid_pico_uart_txbuffer_init(txbuffer_N, 0);
+  grid_pico_uart_txbuffer_init(txbuffer_E, 1);
+  grid_pico_uart_txbuffer_init(txbuffer_S, 2);
+  grid_pico_uart_txbuffer_init(txbuffer_W, 3);
 
   for (uint8_t i = 0; i < bucket_array_length; i++) {
     grid_bucket_init(&bucket_array[i], i);
@@ -473,32 +346,32 @@ int main() {
 
   for (uint8_t i = 0; i < 4; i++) {
 
-    struct grid_port* port = &port_array[i];
+    struct grid_pico_uart_txbuffer* txbuffer = &txbuffer_array[i];
 
-    grid_port_attach_bucket(port);
+    grid_txbuffer_attach_bucket(txbuffer);
   }
 
-  uart_tx_program_init(GRID_TX_PIO, 0, offset_tx, GRID_NORTH_TX_PIN, SERIAL_BAUD);
-  uart_tx_program_init(GRID_TX_PIO, 1, offset_tx, GRID_EAST_TX_PIN, SERIAL_BAUD);
-  uart_tx_program_init(GRID_TX_PIO, 2, offset_tx, GRID_SOUTH_TX_PIN, SERIAL_BAUD);
-  uart_tx_program_init(GRID_TX_PIO, 3, offset_tx, GRID_WEST_TX_PIN, SERIAL_BAUD);
+  uart_tx_program_init(GRID_TX_PIO, 0, offset_tx, GRID_PICO_PIN_NORTH_TX, GRID_PARAMETER_UART_baudrate);
+  uart_tx_program_init(GRID_TX_PIO, 1, offset_tx, GRID_PICO_PIN_EAST_TX, GRID_PARAMETER_UART_baudrate);
+  uart_tx_program_init(GRID_TX_PIO, 2, offset_tx, GRID_PICO_PIN_SOUTH_TX, GRID_PARAMETER_UART_baudrate);
+  uart_tx_program_init(GRID_TX_PIO, 3, offset_tx, GRID_PICO_PIN_WEST_TX, GRID_PARAMETER_UART_baudrate);
 
-  uart_rx_program_init(GRID_RX_PIO, 0, offset_rx, GRID_NORTH_RX_PIN, SERIAL_BAUD);
-  uart_rx_program_init(GRID_RX_PIO, 1, offset_rx, GRID_EAST_RX_PIN, SERIAL_BAUD);
-  uart_rx_program_init(GRID_RX_PIO, 2, offset_rx, GRID_SOUTH_RX_PIN, SERIAL_BAUD);
-  uart_rx_program_init(GRID_RX_PIO, 3, offset_rx, GRID_WEST_RX_PIN, SERIAL_BAUD);
+  uart_rx_program_init(GRID_RX_PIO, 0, offset_rx, GRID_PICO_PIN_NORTH_RX, GRID_PARAMETER_UART_baudrate);
+  uart_rx_program_init(GRID_RX_PIO, 1, offset_rx, GRID_PICO_PIN_EAST_RX, GRID_PARAMETER_UART_baudrate);
+  uart_rx_program_init(GRID_RX_PIO, 2, offset_rx, GRID_PICO_PIN_SOUTH_RX, GRID_PARAMETER_UART_baudrate);
+  uart_rx_program_init(GRID_RX_PIO, 3, offset_rx, GRID_PICO_PIN_WEST_RX, GRID_PARAMETER_UART_baudrate);
 
-  gpio_init(SYNC1_PIN);
-  gpio_init(SYNC2_PIN);
+  gpio_init(GRID_PICO_PIN_SYNC1);
+  gpio_init(GRID_PICO_PIN_SYNC2);
 
   // Setup COMMON stuff
-  gpio_init(LED_PIN);
-  gpio_set_dir(LED_PIN, GPIO_OUT);
+  gpio_init(GRID_PICO_PIN_LED);
+  gpio_set_dir(GRID_PICO_PIN_LED, GPIO_OUT);
 
-  spi_interface_init();
+  grid_pico_spi_init();
 
   for (uint i = 0; i < GRID_PARAMETER_SPI_TRANSACTION_length; i++) {
-    txbuf[i] = 0;
+    grid_pico_spi_txbuf[i] = 0;
   }
 
   uint32_t loopcouter = 0;
@@ -553,41 +426,41 @@ int main() {
       if (spi_dma_done) {
 
         spi_dma_done = false;
-        uint8_t destination_flags = rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
+        uint8_t destination_flags = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
 
-        uint8_t sync1_state = rxbuf[GRID_PARAMETER_SPI_SYNC1_STATE_index];
+        uint8_t sync1_state = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_SYNC1_STATE_index];
 
         if (sync1_state) {
 
-          gpio_pull_down(SYNC1_PIN);
+          gpio_pull_down(GRID_PICO_PIN_SYNC1);
           sync1_drive = 1;
-          gpio_set_dir(SYNC1_PIN, GPIO_OUT);
-          gpio_put(SYNC1_PIN, 1);
-          // set_drive_mode(SYNC1_PIN, GPIO_DRIVE_MODE_OPEN_DRAIN);
+          gpio_set_dir(GRID_PICO_PIN_SYNC1, GPIO_OUT);
+          gpio_put(GRID_PICO_PIN_SYNC1, 1);
+          // set_drive_mode(GRID_PICO_PIN_SYNC1, GPIO_DRIVE_MODE_OPEN_DRAIN);
         } else if (sync1_drive) {
-          gpio_set_dir(SYNC1_PIN, GPIO_IN);
+          gpio_set_dir(GRID_PICO_PIN_SYNC1, GPIO_IN);
           sync1_drive = 0;
         }
 
         // printf("%d\r\n", destination_flags);
 
-        // iterate through all the ports
+        // iterate through all the txbuffers
         for (uint8_t i = 0; i < 4; i++) {
 
-          struct grid_port* port = &port_array[i];
+          struct grid_pico_uart_txbuffer* txbuffer = &txbuffer_array[i];
 
-          // copy message to the addressed port and set it to busy!
-          if ((destination_flags & (1 << port->port_index))) {
+          // copy message to the addressed txbuffer and set it to busy!
+          if ((destination_flags & (1 << txbuffer->port_index))) {
 
-            port->tx_is_busy = 1;
-            port->tx_index = 0;
-            strcpy(port->tx_buffer, rxbuf);
-            // printf("SPI receive: %s\r\n", rxbuf);
+            txbuffer->tx_is_busy = 1;
+            txbuffer->tx_index = 0;
+            strcpy(txbuffer->tx_buffer, grid_pico_spi_rxbuf);
+            // printf("SPI receive: %s\r\n", grid_pico_spi_rxbuf);
 
-            // printf("%02x %02x %02x %02x ...\r\n", rxbuf[0], rxbuf[1],
-            // rxbuf[2], rxbuf[3]);
+            // printf("%02x %02x %02x %02x ...\r\n", grid_pico_spi_rxbuf[0], grid_pico_spi_rxbuf[1],
+            // grid_pico_spi_rxbuf[2], grid_pico_spi_rxbuf[3]);
 
-            ready_flags &= ~(1 << port->port_index); // clear ready
+            ready_flags &= ~(1 << txbuffer->port_index); // clear ready
           }
         }
 
@@ -603,9 +476,9 @@ int main() {
     // TRY TO SEND THROUGH SPI
     if (grid_task_should_run_now(&spi_start_transfer_task)) {
 
-      if (!dma_channel_is_busy(dma_rx)) {
+      if (!dma_channel_is_busy(grid_pico_spi_dma_rx_channel)) {
 
-        // printf("START %d\n", txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
+        // printf("START %d\n", grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
 
         // try to send bucket content through SPI
 
@@ -621,7 +494,7 @@ int main() {
             spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
             spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << (spi_active_bucket->source_port_index));
 
-            // printf("BUCKET READY %s\r\n", port->active_bucket->buffer);
+            // printf("BUCKET READY %s\r\n", txbuffer->active_bucket->buffer);
 
             // validate packet
             uint8_t error;
@@ -659,30 +532,30 @@ int main() {
 
               // send empty packet with status flags
 
-              txbuf[0] = 0;
-              sprintf(txbuf, "DUMMY ERROR");
-              txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
-              txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
+              grid_pico_spi_txbuf[0] = 0;
+              sprintf(grid_pico_spi_txbuf, "DUMMY ERROR");
+              grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+              grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
 
-              spi_txbuffer_set_sync_state(txbuf);
-              spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
+              spi_txbuffer_set_sync_state(grid_pico_spi_txbuf);
+              spi_start_transfer(grid_pico_spi_dma_tx_channel, grid_pico_spi_dma_rx_channel, grid_pico_spi_txbuf, grid_pico_spi_rxbuf, grid_pico_spi_dma_xfer_complete_cb);
             } else {
 
               printf("%d\n", spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
 
               spi_txbuffer_set_sync_state(spi_active_bucket->buffer);
-              spi_start_transfer(dma_tx, dma_rx, spi_active_bucket->buffer, rxbuf, dma_handler);
+              spi_start_transfer(grid_pico_spi_dma_tx_channel, grid_pico_spi_dma_rx_channel, spi_active_bucket->buffer, grid_pico_spi_rxbuf, grid_pico_spi_dma_xfer_complete_cb);
             }
           } else {
             // send empty packet with status flags
 
-            txbuf[0] = 0;
-            sprintf(txbuf, "DUMMY OK");
-            txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
-            txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
+            grid_pico_spi_txbuf[0] = 0;
+            sprintf(grid_pico_spi_txbuf, "DUMMY OK");
+            grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+            grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
 
-            spi_txbuffer_set_sync_state(txbuf);
-            spi_start_transfer(dma_tx, dma_rx, txbuf, rxbuf, dma_handler);
+            spi_txbuffer_set_sync_state(grid_pico_spi_txbuf);
+            spi_start_transfer(grid_pico_spi_dma_tx_channel, grid_pico_spi_dma_rx_channel, grid_pico_spi_txbuf, grid_pico_spi_rxbuf, grid_pico_spi_dma_xfer_complete_cb);
           }
         }
       }
@@ -691,11 +564,11 @@ int main() {
     loopcouter++;
 
     if (loopcouter > 500) {
-      gpio_put(LED_PIN, 1);
+      gpio_put(GRID_PICO_PIN_LED, 1);
     }
     if (loopcouter > 3000) {
       loopcouter = 0;
-      gpio_put(LED_PIN, 0);
+      gpio_put(GRID_PICO_PIN_LED, 0);
     }
 
     /* ==================================  UART TRANSMIT

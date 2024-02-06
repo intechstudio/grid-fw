@@ -129,7 +129,8 @@
     "dirent.h": "c",
     "esp_littlefs.h": "c",
     "stdio.h": "c",
-    "types.h": "c"
+    "types.h": "c",
+    "dma.h": "c"
   },
   "files.exclude": {
     ".archive": true,

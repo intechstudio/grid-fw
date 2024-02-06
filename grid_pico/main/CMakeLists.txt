@@ -1,6 +1,8 @@
 add_executable(main
-         main.c
-         )
+    main.c
+    grid_pico_spi.c
+    ../../grid_common/grid_msg.c
+)
 
 pico_generate_pio_header(main ${CMAKE_CURRENT_LIST_DIR}/uart_tx.pio)
 
