@@ -15,8 +15,8 @@ static uint8_t grid_check_destination(char* header, uint8_t target_destination_b
   uint8_t position_is_global = 0;
   uint8_t position_is_local = 0;
 
-  uint8_t dx = grid_msg_string_get_parameter(header, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
-  uint8_t dy = grid_msg_string_get_parameter(header, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
+  uint8_t dx = grid_str_get_parameter(header, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
+  uint8_t dy = grid_str_get_parameter(header, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
 
   uint8_t header_destination_bm = 0;
 
@@ -45,15 +45,15 @@ uint8_t grid_decode_midi_to_usb(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
   if (msg_instr != GRID_INSTR_EXECUTE_code) {
     return 1;
   }
 
-  uint8_t midi_channel = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, &error);
-  uint8_t midi_command = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, &error);
-  uint8_t midi_param1 = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, &error);
-  uint8_t midi_param2 = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
+  uint8_t midi_channel = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, &error);
+  uint8_t midi_command = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, &error);
+  uint8_t midi_param1 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, &error);
+  uint8_t midi_param2 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
 
   // grid_platform_printf("midi: %d %d %d %d \r\n", midi_channel, midi_command,
   // midi_param1, midi_param2);
@@ -76,12 +76,12 @@ uint8_t grid_decode_sysex_to_usb(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
   if (msg_instr != GRID_INSTR_EXECUTE_code) {
     return 1;
   }
 
-  uint16_t length = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDISYSEX_LENGTH_offset, GRID_CLASS_MIDISYSEX_LENGTH_length, &error);
+  uint16_t length = grid_str_get_parameter(chunk, GRID_CLASS_MIDISYSEX_LENGTH_offset, GRID_CLASS_MIDISYSEX_LENGTH_length, &error);
 
   // grid_platform_printf("midi: %d %d %d %d \r\n", midi_channel, midi_command,
   // midi_param1, midi_param2);
@@ -91,8 +91,8 @@ uint8_t grid_decode_sysex_to_usb(char* header, char* chunk) {
   // https://www.usb.org/sites/default/files/midi10.pdf page 17 Table 4-2:
   // Examples of Parsed MIDI Events in 32 -bit USB-MIDI Event Packets
 
-  uint8_t first = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
-  uint8_t last = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + (length - 1) * 2, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
+  uint8_t first = grid_str_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
+  uint8_t last = grid_str_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + (length - 1) * 2, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
 
   if (first != 0xF0 || last != 0xF7) {
     grid_port_debug_printf("Sysex invalid: %d %d", first, last);
@@ -108,14 +108,14 @@ uint8_t grid_decode_sysex_to_usb(char* header, char* chunk) {
     midievent.byte2 = 0;
     midievent.byte3 = 0;
 
-    midievent.byte1 = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i * 2, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
+    midievent.byte1 = grid_str_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i * 2, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
     i++;
     if (i < length) {
-      midievent.byte2 = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i * 2, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
+      midievent.byte2 = grid_str_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i * 2, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
       i++;
     }
     if (i < length) {
-      midievent.byte3 = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i * 2, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
+      midievent.byte3 = grid_str_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i * 2, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
       i++;
     }
 
@@ -157,13 +157,13 @@ uint8_t grid_decode_mousebutton_to_usb(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
   if (msg_instr != GRID_INSTR_EXECUTE_code) {
     return 1;
   }
 
-  uint8_t state = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDMOUSEBUTTON_STATE_offset, GRID_CLASS_HIDMOUSEBUTTON_STATE_length, &error);
-  uint8_t button = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_offset, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_length, &error);
+  uint8_t state = grid_str_get_parameter(chunk, GRID_CLASS_HIDMOUSEBUTTON_STATE_offset, GRID_CLASS_HIDMOUSEBUTTON_STATE_length, &error);
+  uint8_t button = grid_str_get_parameter(chunk, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_offset, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_length, &error);
 
   // grid_port_debug_printf("MouseButton: %d %d", state, button);
 
@@ -185,13 +185,13 @@ uint8_t grid_decode_mousemove_to_usb(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
   if (msg_instr != GRID_INSTR_EXECUTE_code) {
     return 1;
   }
 
-  uint8_t position_raw = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDMOUSEMOVE_POSITION_offset, GRID_CLASS_HIDMOUSEMOVE_POSITION_length, &error);
-  uint8_t axis = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDMOUSEMOVE_AXIS_offset, GRID_CLASS_HIDMOUSEMOVE_AXIS_length, &error);
+  uint8_t position_raw = grid_str_get_parameter(chunk, GRID_CLASS_HIDMOUSEMOVE_POSITION_offset, GRID_CLASS_HIDMOUSEMOVE_POSITION_length, &error);
+  uint8_t axis = grid_str_get_parameter(chunk, GRID_CLASS_HIDMOUSEMOVE_AXIS_offset, GRID_CLASS_HIDMOUSEMOVE_AXIS_length, &error);
 
   int8_t position = position_raw - 128;
 
@@ -213,13 +213,13 @@ uint8_t grid_decode_gamepadmove_to_usb(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
   if (msg_instr != GRID_INSTR_EXECUTE_code) {
     return 1;
   }
 
-  uint8_t axis = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDGAMEPADMOVE_AXIS_offset, GRID_CLASS_HIDGAMEPADMOVE_AXIS_length, &error);
-  uint8_t position_raw = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDGAMEPADMOVE_POSITION_offset, GRID_CLASS_HIDGAMEPADMOVE_POSITION_length, &error);
+  uint8_t axis = grid_str_get_parameter(chunk, GRID_CLASS_HIDGAMEPADMOVE_AXIS_offset, GRID_CLASS_HIDGAMEPADMOVE_AXIS_length, &error);
+  uint8_t position_raw = grid_str_get_parameter(chunk, GRID_CLASS_HIDGAMEPADMOVE_POSITION_offset, GRID_CLASS_HIDGAMEPADMOVE_POSITION_length, &error);
 
   int8_t position = position_raw - 128;
 
@@ -234,13 +234,13 @@ uint8_t grid_decode_gamepadbutton_to_usb(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
   if (msg_instr != GRID_INSTR_EXECUTE_code) {
     return 1;
   }
 
-  uint8_t button = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_offset, GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_length, &error);
-  uint8_t state = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDGAMEPADBUTTON_STATE_offset, GRID_CLASS_HIDGAMEPADBUTTON_STATE_length, &error);
+  uint8_t button = grid_str_get_parameter(chunk, GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_offset, GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_length, &error);
+  uint8_t state = grid_str_get_parameter(chunk, GRID_CLASS_HIDGAMEPADBUTTON_STATE_offset, GRID_CLASS_HIDGAMEPADBUTTON_STATE_length, &error);
 
   grid_usb_gamepad_button_change(button, state);
 
@@ -251,22 +251,22 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
   if (msg_instr != GRID_INSTR_EXECUTE_code) {
     return 1;
   }
 
-  uint16_t length = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_LENGTH_offset, GRID_CLASS_HIDKEYBOARD_LENGTH_length, &error);
+  uint16_t length = grid_str_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_LENGTH_offset, GRID_CLASS_HIDKEYBOARD_LENGTH_length, &error);
 
-  uint8_t default_delay = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_offset, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_length, &error);
+  uint8_t default_delay = grid_str_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_offset, GRID_CLASS_HIDKEYBOARD_DEFAULTDELAY_length, &error);
 
   uint32_t number_of_packets_dropped = 0;
 
   for (uint16_t j = 0; j < length * 4; j += 4) {
 
-    uint8_t key_ismodifier = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset + j, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, &error);
-    uint8_t key_state = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset + j, GRID_CLASS_HIDKEYBOARD_KEYSTATE_length, &error);
-    uint8_t key_code = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_KEYCODE_offset + j, GRID_CLASS_HIDKEYBOARD_KEYCODE_length, &error);
+    uint8_t key_ismodifier = grid_str_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset + j, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, &error);
+    uint8_t key_state = grid_str_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset + j, GRID_CLASS_HIDKEYBOARD_KEYSTATE_length, &error);
+    uint8_t key_code = grid_str_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_KEYCODE_offset + j, GRID_CLASS_HIDKEYBOARD_KEYCODE_length, &error);
 
     struct grid_usb_keyboard_event_desc key;
 
@@ -290,7 +290,7 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk) {
     } else if (key_ismodifier == 0xf) {
       // Special delay event
 
-      uint16_t delay = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_DELAY_offset + j, GRID_CLASS_HIDKEYBOARD_DELAY_length, &error);
+      uint16_t delay = grid_str_get_parameter(chunk, GRID_CLASS_HIDKEYBOARD_DELAY_offset + j, GRID_CLASS_HIDKEYBOARD_DELAY_length, &error);
 
       key.ismodifier = key_ismodifier;
       key.ispressed = 0;
@@ -318,8 +318,8 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
-  uint8_t page = grid_msg_string_get_parameter(chunk, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t page = grid_str_get_parameter(chunk, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) { // SET BANK
 
@@ -337,8 +337,8 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
       return 0;
     }
 
-    uint8_t sx = grid_msg_string_get_parameter(header, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
-    uint8_t sy = grid_msg_string_get_parameter(header, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
+    uint8_t sx = grid_str_get_parameter(header, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
+    uint8_t sy = grid_str_get_parameter(header, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
 
     if (sx == GRID_PARAMETER_DEFAULT_POSITION && sy == GRID_PARAMETER_DEFAULT_POSITION) {
       // the report originates from this module, no action is needed!
@@ -361,7 +361,7 @@ uint8_t grid_decode_pagecount_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
   if (msg_instr == GRID_INSTR_FETCH_code) {
 
@@ -384,14 +384,14 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
   if (msg_instr == GRID_INSTR_REPORT_code) {
 
-    uint8_t midi_channel = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, &error);
-    uint8_t midi_command = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, &error);
-    uint8_t midi_param1 = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, &error);
-    uint8_t midi_param2 = grid_msg_string_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
+    uint8_t midi_channel = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, &error);
+    uint8_t midi_command = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, &error);
+    uint8_t midi_param1 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, &error);
+    uint8_t midi_param2 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
 
     // printf("M: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1,
     // midi_param2);
@@ -431,11 +431,11 @@ uint8_t grid_decode_imediate_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    uint16_t length = grid_msg_string_get_parameter(chunk, GRID_CLASS_IMEDIATE_ACTIONLENGTH_offset, GRID_CLASS_IMEDIATE_ACTIONLENGTH_length, &error);
+    uint16_t length = grid_str_get_parameter(chunk, GRID_CLASS_IMEDIATE_ACTIONLENGTH_offset, GRID_CLASS_IMEDIATE_ACTIONLENGTH_length, &error);
 
     char* lua_script = &chunk[GRID_CLASS_IMEDIATE_ACTIONSTRING_offset];
 
@@ -467,7 +467,7 @@ uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t type = grid_msg_string_get_parameter(chunk, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, &error);
+  uint8_t type = grid_str_get_parameter(chunk, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, &error);
 
   uint8_t editor_connected_now = 0;
 
@@ -478,10 +478,10 @@ uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk) {
     // Heartbeat is from USB connected module, let's calculate absolute position
     // based on that!
 
-    uint8_t sx = grid_msg_string_get_parameter(header, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
-    uint8_t sy = grid_msg_string_get_parameter(header, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
-    uint8_t rot = grid_msg_string_get_parameter(header, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
-    uint8_t portrot = grid_msg_string_get_parameter(header, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, &error);
+    uint8_t sx = grid_str_get_parameter(header, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
+    uint8_t sy = grid_str_get_parameter(header, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
+    uint8_t rot = grid_str_get_parameter(header, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
+    uint8_t portrot = grid_str_get_parameter(header, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, &error);
 
     grid_sys_set_module_absolute_position(&grid_sys_state, sx, sy, rot, portrot);
   } else if (type > 127) { // editor
@@ -641,7 +641,7 @@ uint8_t grid_decode_serialmuber_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
   if (msg_instr == GRID_INSTR_FETCH_code) {
 
@@ -678,7 +678,7 @@ uint8_t grid_decode_uptime_to_ui(char* header, char* chunk) {
   }
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
   if (msg_instr == GRID_INSTR_FETCH_code) {
 
@@ -715,7 +715,7 @@ uint8_t grid_decode_resetcause_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
   if (msg_instr == GRID_INSTR_FETCH_code) {
 
@@ -744,7 +744,7 @@ uint8_t grid_decode_reset_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
@@ -761,8 +761,8 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
   }
 
   uint8_t error = 0;
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
-  uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t id = grid_str_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
@@ -792,16 +792,16 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
 
 uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
 
-  uint8_t dx = grid_msg_string_get_parameter(header, GRID_BRC_DX_offset, GRID_BRC_DX_length, NULL);
-  uint8_t dy = grid_msg_string_get_parameter(header, GRID_BRC_DY_offset, GRID_BRC_DY_length, NULL);
+  uint8_t dx = grid_str_get_parameter(header, GRID_BRC_DX_offset, GRID_BRC_DX_length, NULL);
+  uint8_t dy = grid_str_get_parameter(header, GRID_BRC_DY_offset, GRID_BRC_DY_length, NULL);
 
   if (grid_check_destination(header, GRID_DESTINATION_IS_ME | GRID_DESTINATION_IS_GLOBAL) == false) {
     return 1;
   }
 
   uint8_t error = 0;
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
-  uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t id = grid_str_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
@@ -840,8 +840,8 @@ uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
   }
 
   uint8_t error = 0;
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
-  uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t id = grid_str_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
@@ -880,8 +880,8 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
   }
 
   uint8_t error = 0;
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
-  uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t id = grid_str_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
@@ -924,7 +924,7 @@ uint8_t grid_decode_nvmdefrag_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
@@ -943,24 +943,24 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    uint8_t id = grid_msg_string_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+    uint8_t id = grid_str_get_parameter(header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
     // disable hid automatically
     grid_usb_keyboard_disable(&grid_usb_keyboard_state);
     // grid_port_debug_print_text("Disabling KB");
 
-    uint8_t vmajor = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
-    uint8_t vminor = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, NULL);
-    uint8_t vpatch = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, NULL);
+    uint8_t vmajor = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
+    uint8_t vminor = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, NULL);
+    uint8_t vpatch = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, NULL);
 
-    uint8_t pagenumber = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
-    uint8_t elementnumber = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
-    uint8_t eventtype = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
-    uint16_t actionlength = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
+    uint8_t pagenumber = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
+    uint8_t elementnumber = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
+    uint8_t eventtype = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
+    uint16_t actionlength = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_ACTIONLENGTH_offset, GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
 
     if (elementnumber == 255) {
 
@@ -1025,10 +1025,10 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
     grid_port_packet_send_everywhere(&response);
   } else if (msg_instr == GRID_INSTR_FETCH_code) {
 
-    uint8_t pagenumber = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
-    uint8_t elementnumber = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
-    uint8_t eventtype = grid_msg_string_get_parameter(chunk, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
-    // uint16_t actionlength = grid_msg_string_get_parameter(chunk,
+    uint8_t pagenumber = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
+    uint8_t elementnumber = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);
+    uint8_t eventtype = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_EVENTTYPE_offset, GRID_CLASS_CONFIG_EVENTTYPE_length, NULL);
+    // uint16_t actionlength = grid_str_get_parameter(chunk,
     // GRID_CLASS_CONFIG_ACTIONLENGTH_offset,
     // GRID_CLASS_CONFIG_ACTIONLENGTH_length, NULL);
 
@@ -1090,9 +1090,9 @@ uint8_t grid_decode_hidkeystatus_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
-  uint8_t isenabled = grid_msg_string_get_parameter(chunk, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, &error);
+  uint8_t isenabled = grid_str_get_parameter(chunk, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, &error);
 
-  uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 

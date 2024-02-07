@@ -224,13 +224,17 @@ void grid_pico_uart_port_receive_character(struct grid_pico_uart_port* uart_port
     // end of message, put termination zero character
     grid_bucket_put_character(uart_port->rx_bucket, '\0');
 
-    // printf("BUCKET READY %s\r\n", uart_port->rx_bucket->buffer);
-    if (uart_port->rx_bucket->buffer[1] == GRID_CONST_BRC) {
-      // printf("BR%d %c%c\r\n", uart_port->rx_bucket->index,
-      // uart_port->rx_bucket->buffer[6], uart_port->rx_bucket->buffer[7]);
+    int status = grid_str_verify_frame((char*)uart_port->rx_bucket->buffer);
+
+    if (status == 0) {
+
+      // bucket content verified, close bucket and set it full to indicate that it is ready to be sent through to ESP32 via SPI
+      uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL;
+      uart_port->rx_bucket->buffer_index = 0;
+
+    } else {
+      grid_bucket_clear(uart_port->rx_bucket);
     }
-    uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL;
-    uart_port->rx_bucket->buffer_index = 0;
 
     // attack new bucket for receiving the next packet
     grid_uart_port_attach_rx_bucket(uart_port);
@@ -396,40 +400,6 @@ void grid_pico_spi_receive_task_inner(void) {
   }
 }
 
-int grid_bucket_verify_frame(struct grid_bucket* bucket) {
-
-  // validate packet
-  uint8_t error_count = 0;
-
-  uint16_t length = strlen(bucket->buffer);
-  uint8_t error_flag = 0;
-  uint8_t calculated_checksum = grid_msg_string_calculate_checksum_of_packet_string(bucket->buffer, length);
-  uint8_t received_checksum = grid_msg_string_checksum_read(bucket->buffer, length);
-
-  if (bucket->buffer[1] == GRID_CONST_BRC) {
-
-    // BRC packets contain length parameter. Check this against actual string length in buffer
-
-    uint16_t received_length = grid_msg_string_read_hex_string_value(&bucket->buffer[GRID_BRC_LEN_offset], GRID_BRC_LEN_length, &error_flag);
-
-    if (length - 3 != received_length) {
-
-      // printf("L%d %d ", length-3, received_length);
-      error_count++;
-    }
-  }
-
-  if (calculated_checksum != received_checksum) {
-
-    // printf("C %d %d ", calculated_checksum, received_checksum);
-    error_count++;
-  }
-  // printf("BR%d %c%c\r\n", spi_active_bucket->index,
-  // spi_active_bucket->buffer[6], spi_active_bucket->buffer[7]);
-
-  return error_count;
-}
-
 void grid_pico_spi_transmit_task_inner(void) {
 
   if (grid_pico_get_elapsed_time(spi_transmit_lastrealtime) < spi_transmit_interval_us) {
@@ -472,29 +442,10 @@ void grid_pico_spi_transmit_task_inner(void) {
   spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = grid_pico_uart_tx_ready_bitmap;
   spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << (spi_active_bucket->source_port_index));
 
-  uint8_t error_count = grid_bucket_verify_frame(spi_active_bucket);
+  printf("%d\n", spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
 
-  if (error_count > 0) {
-
-    // printf("SKIP\r\n");
-    printf("S\n");
-
-    // send empty packet with status flags
-
-    grid_pico_spi_txbuf[0] = 0;
-    sprintf(grid_pico_spi_txbuf, "DUMMY ERROR");
-    grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = grid_pico_uart_tx_ready_bitmap;
-    grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
-
-    spi_uart_port_set_sync_state(grid_pico_spi_txbuf);
-    grid_pico_spi_transfer(grid_pico_spi_txbuf, grid_pico_spi_rxbuf);
-  } else {
-
-    printf("%d\n", spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
-
-    spi_uart_port_set_sync_state(spi_active_bucket->buffer);
-    grid_pico_spi_transfer(spi_active_bucket->buffer, grid_pico_spi_rxbuf);
-  }
+  spi_uart_port_set_sync_state(spi_active_bucket->buffer);
+  grid_pico_spi_transfer(spi_active_bucket->buffer, grid_pico_spi_rxbuf);
 }
 
 int main() {

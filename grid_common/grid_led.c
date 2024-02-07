@@ -520,10 +520,10 @@ uint16_t grid_protocol_led_change_report_generate(struct grid_led_model* mod, ui
 
       if (length + 8 <= maxlength) {
 
-        grid_msg_string_set_parameter(&output[length], 0, 2, index, NULL);
-        grid_msg_string_set_parameter(&output[length], 2, 2, mod->led_frame_buffer[i * 3 + 1], NULL);
-        grid_msg_string_set_parameter(&output[length], 4, 2, mod->led_frame_buffer[i * 3 + 0], NULL);
-        grid_msg_string_set_parameter(&output[length], 6, 2, mod->led_frame_buffer[i * 3 + 2], NULL);
+        grid_str_set_parameter(&output[length], 0, 2, index, NULL);
+        grid_str_set_parameter(&output[length], 2, 2, mod->led_frame_buffer[i * 3 + 1], NULL);
+        grid_str_set_parameter(&output[length], 4, 2, mod->led_frame_buffer[i * 3 + 0], NULL);
+        grid_str_set_parameter(&output[length], 6, 2, mod->led_frame_buffer[i * 3 + 2], NULL);
 
         mod->led_changed_flag_array[i] = 0;
 

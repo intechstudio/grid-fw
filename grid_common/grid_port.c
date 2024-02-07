@@ -173,22 +173,22 @@ uint8_t grid_msg_is_position_transformable(int8_t received_x, int8_t received_y)
   }
 }
 
-void grid_msg_string_transform_brc_params(char* message, int8_t dx, int8_t dy, uint8_t partner_fi) {
+void grid_str_transform_brc_params(char* message, int8_t dx, int8_t dy, uint8_t partner_fi) {
 
   uint8_t error = 0;
 
-  uint8_t received_session = grid_msg_string_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
-  uint8_t received_msgage = grid_msg_string_get_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
+  uint8_t received_session = grid_str_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
+  uint8_t received_msgage = grid_str_get_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
 
   // Read the received destination X Y values (SIGNED INT)
-  int8_t received_dx = grid_msg_string_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-  int8_t received_dy = grid_msg_string_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+  int8_t received_dx = grid_str_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+  int8_t received_dy = grid_str_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
 
   // Read the received source X Y values (SIGNED INT)
-  int8_t received_sx = grid_msg_string_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-  int8_t received_sy = grid_msg_string_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+  int8_t received_sx = grid_str_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+  int8_t received_sy = grid_str_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
 
-  uint8_t received_rot = grid_msg_string_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
+  uint8_t received_rot = grid_str_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
 
   // DO THE DX DY AGE calculations
 
@@ -241,24 +241,24 @@ void grid_msg_string_transform_brc_params(char* message, int8_t dx, int8_t dy, u
   if (grid_msg_is_position_transformable(received_dx, received_dy)) {
 
     // Update message with the new values
-    grid_msg_string_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
-    grid_msg_string_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
+    grid_str_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
+    grid_str_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
   }
 
   if (grid_msg_is_position_transformable(received_sx, received_sy)) {
 
     // Update message with the new values
-    grid_msg_string_set_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, updated_sx, &error);
-    grid_msg_string_set_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, updated_sy, &error);
+    grid_str_set_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, updated_sx, &error);
+    grid_str_set_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, updated_sy, &error);
   }
 
-  grid_msg_string_set_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, updated_msgage, &error);
-  grid_msg_string_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);
-  grid_msg_string_set_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, partner_fi, &error);
+  grid_str_set_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, updated_msgage, &error);
+  grid_str_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);
+  grid_str_set_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, partner_fi, &error);
 
   // Recalculate and update the checksum
   uint16_t length = strlen(message);
-  grid_msg_string_checksum_write(message, length, grid_msg_string_calculate_checksum_of_packet_string(message, length));
+  grid_str_checksum_write(message, length, grid_str_calculate_checksum_of_packet_string(message, length));
 }
 
 void grid_port_rxdobulebuffer_receive_to_buffer(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx, char* buffer, uint16_t length) {
@@ -288,7 +288,7 @@ void grid_port_receive_broadcast_message(struct grid_port* por, struct grid_msg_
   uint8_t error = 0;
 
   // update age, sx, sy, dx, dy, rot etc...
-  grid_msg_string_transform_brc_params(message, por->dx, por->dy, por->partner_fi);
+  grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi);
 
   uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(message);
 
@@ -320,7 +320,7 @@ void grid_port_receive_direct_message(struct grid_port* por, char* message, uint
 
       // CONNECT
       por->partner_fi = (message[3] - por->direction + 6) % 4;
-      por->partner_hwcfg = grid_msg_string_read_hex_string_value(&message[length - 10], 2, &error);
+      por->partner_hwcfg = grid_str_read_hex_string_value(&message[length - 10], 2, &error);
       por->partner_status = 1;
     }
   }
@@ -336,25 +336,10 @@ void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buff
   // close the message string with terminating zero character
   message[length] = '\0';
 
-  // frame validator
-  if (message[0] != GRID_CONST_SOH || message[length - 1] != GRID_CONST_LF) {
+  int status = grid_str_verify_frame(message);
 
-    grid_port_debug_printf("Frame Error %d ", length);
-    return;
-  }
-
-  // checksum validator
-  uint8_t checksum_received = grid_msg_string_checksum_read(message, length);
-  uint8_t checksum_calculated = grid_msg_string_calculate_checksum_of_packet_string(message, length);
-
-  if (checksum_calculated != checksum_received) {
-
-    // INVALID CHECKSUM
-    uint8_t error = 0;
-
-    uint16_t packet_length = grid_msg_string_get_parameter(message, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, &error);
-    grid_platform_printf("##CHK %d %d\r\n", packet_length, length);
-    grid_port_debug_printf("Checksum %02x %02x", checksum_calculated, checksum_received);
+  if (status != 0) {
+    // message has invalid fram or checksum, cannot be decoded safely
     return;
   }
 
@@ -474,7 +459,7 @@ struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir, uint8_t inb
 
     por->ping_packet_length = strlen((char*)por->ping_packet);
 
-    grid_msg_string_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_string_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
+    grid_str_checksum_write(por->ping_packet, por->ping_packet_length, grid_str_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 
     if (por->direction == GRID_CONST_NORTH) {
       por->dx = 0;
@@ -580,8 +565,8 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por, struct gr
     char* chunk = &tx_doublebuffer->buffer_storage[i];
     char* header = &tx_doublebuffer->buffer_storage[0];
 
-    uint8_t msg_class = grid_msg_string_get_parameter(chunk, GRID_PARAMETER_CLASSCODE_offset, GRID_PARAMETER_CLASSCODE_length, &error);
-    uint8_t msg_instr = grid_msg_string_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+    uint8_t msg_class = grid_str_get_parameter(chunk, GRID_PARAMETER_CLASSCODE_offset, GRID_PARAMETER_CLASSCODE_length, &error);
+    uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
     if (msg_class == GRID_CLASS_MIDI_code) {
 
@@ -642,9 +627,9 @@ void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffe
   por->ping_partner_token = 255;
   por->ping_local_token = 255;
 
-  grid_msg_string_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
-  grid_msg_string_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
-  grid_msg_string_checksum_write(por->ping_packet, por->ping_packet_length, grid_msg_string_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
+  grid_str_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
+  grid_str_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
+  grid_str_checksum_write(por->ping_packet, por->ping_packet_length, grid_str_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 
   grid_port_receiver_softreset(por, rx_doublebuffer);
 
@@ -914,16 +899,16 @@ void grid_port_process_outbound_ui(struct grid_port* por) {
 
   uint8_t error = 0;
 
-  uint8_t id = grid_msg_string_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+  uint8_t id = grid_str_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
-  uint8_t dx = grid_msg_string_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
-  uint8_t dy = grid_msg_string_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
+  uint8_t dx = grid_str_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
+  uint8_t dy = grid_str_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
 
-  uint8_t sx = grid_msg_string_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
-  uint8_t sy = grid_msg_string_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
+  uint8_t sx = grid_str_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
+  uint8_t sy = grid_str_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
 
-  uint8_t rot = grid_msg_string_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
-  uint8_t portrot = grid_msg_string_get_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, &error);
+  uint8_t rot = grid_str_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
+  uint8_t portrot = grid_str_get_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, &error);
 
   uint8_t position_is_me = 0;
   uint8_t position_is_global = 0;
@@ -946,7 +931,7 @@ void grid_port_process_outbound_ui(struct grid_port* por) {
     char* header = &message[0];
     char* chunk = &message[i];
 
-    uint8_t msg_class = grid_msg_string_get_parameter(chunk, GRID_PARAMETER_CLASSCODE_offset, GRID_PARAMETER_CLASSCODE_length, &error);
+    uint8_t msg_class = grid_str_get_parameter(chunk, GRID_PARAMETER_CLASSCODE_offset, GRID_PARAMETER_CLASSCODE_length, &error);
 
     if (msg_class == GRID_CLASS_PAGEACTIVE_code) { // dont check address!
 

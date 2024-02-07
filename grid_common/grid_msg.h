@@ -119,15 +119,17 @@ void grid_msg_packet_close(struct grid_msg_model* mod, struct grid_msg_packet* m
 
 // STRING FUNCTIONS
 
-uint32_t grid_msg_string_get_parameter(char* message, uint16_t offset, uint8_t length, uint8_t* error);
-void grid_msg_string_set_parameter(char* message, uint16_t offset, uint8_t length, uint32_t value, uint8_t* error);
+uint32_t grid_str_get_parameter(char* message, uint16_t offset, uint8_t length, uint8_t* error);
+void grid_str_set_parameter(char* message, uint16_t offset, uint8_t length, uint32_t value, uint8_t* error);
 
-uint8_t grid_msg_string_calculate_checksum_of_packet_string(char* str, uint32_t length);
-uint8_t grid_msg_string_calculate_checksum_of_string(char* str, uint32_t length);
+uint8_t grid_str_calculate_checksum_of_packet_string(char* str, uint32_t length);
+uint8_t grid_str_calculate_checksum_of_string(char* str, uint32_t length);
 
-uint8_t grid_msg_string_checksum_read(char* str, uint32_t length);
-void grid_msg_string_checksum_write(char* message, uint32_t length, uint8_t checksum);
+uint8_t grid_str_checksum_read(char* str, uint32_t length);
+void grid_str_checksum_write(char* message, uint32_t length, uint8_t checksum);
 
-uint8_t grid_msg_string_read_hex_char_value(uint8_t ascii, uint8_t* error_flag);
-uint32_t grid_msg_string_read_hex_string_value(char* start_location, uint8_t length, uint8_t* error_flag);
-void grid_msg_string_write_hex_string_value(char* start_location, uint8_t size, uint32_t value);
+uint8_t grid_str_read_hex_char_value(uint8_t ascii, uint8_t* error_flag);
+uint32_t grid_str_read_hex_string_value(char* start_location, uint8_t length, uint8_t* error_flag);
+void grid_str_write_hex_string_value(char* start_location, uint8_t size, uint32_t value);
+
+int grid_str_verify_frame(char* message);
