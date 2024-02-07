@@ -63,38 +63,38 @@ struct grid_bucket {
 };
 
 // this is a doublebuffer
-struct grid_pico_uart_txbuffer {
+struct grid_pico_uart_port {
 
   uint8_t port_index;
   uint8_t tx_buffer[512];
   uint8_t tx_is_busy;
   uint16_t tx_index;
 
-  struct grid_bucket* active_bucket;
+  struct grid_bucket* rx_bucket;
 };
 
 uint8_t bucket_array_length = BUCKET_ARRAY_LENGTH;
 struct grid_bucket bucket_array[BUCKET_ARRAY_LENGTH];
 
-struct grid_pico_uart_txbuffer txbuffer_array[4];
+struct grid_pico_uart_port uart_port_array[4];
 
-struct grid_pico_uart_txbuffer* txbuffer_N = &txbuffer_array[0];
-struct grid_pico_uart_txbuffer* txbuffer_E = &txbuffer_array[1];
-struct grid_pico_uart_txbuffer* txbuffer_S = &txbuffer_array[2];
-struct grid_pico_uart_txbuffer* txbuffer_W = &txbuffer_array[3];
+struct grid_pico_uart_port* uart_port_N = &uart_port_array[0];
+struct grid_pico_uart_port* uart_port_E = &uart_port_array[1];
+struct grid_pico_uart_port* uart_port_S = &uart_port_array[2];
+struct grid_pico_uart_port* uart_port_W = &uart_port_array[3];
 
-void grid_pico_uart_txbuffer_init(struct grid_pico_uart_txbuffer* txbuffer, uint8_t index) {
+void grid_pico_uart_uart_port_init(struct grid_pico_uart_port* uart_port, uint8_t index) {
 
-  txbuffer->port_index = index;
+  uart_port->port_index = index;
 
   for (uint16_t i = 0; i < 512; i++) {
-    txbuffer->tx_buffer[i] = 0;
+    uart_port->tx_buffer[i] = 0;
   }
 
-  txbuffer->tx_index = 0;
-  txbuffer->tx_is_busy = false;
+  uart_port->tx_index = 0;
+  uart_port->tx_is_busy = false;
 
-  txbuffer->active_bucket = NULL;
+  uart_port->rx_bucket = NULL;
 }
 
 void grid_bucket_init(struct grid_bucket* bucket, uint8_t index) {
@@ -155,14 +155,14 @@ void grid_bucket_put_character(struct grid_bucket* bucket, char next_char) {
   }
 }
 
-void grid_txbuffer_attach_bucket(struct grid_pico_uart_txbuffer* txbuffer) {
+void grid_uart_port_attach_bucket(struct grid_pico_uart_port* uart_port) {
 
-  txbuffer->active_bucket = grid_bucket_find_next_match(txbuffer->active_bucket, GRID_BUCKET_STATUS_EMPTY);
+  uart_port->rx_bucket = grid_bucket_find_next_match(uart_port->rx_bucket, GRID_BUCKET_STATUS_EMPTY);
 
-  if (txbuffer->active_bucket != NULL) {
+  if (uart_port->rx_bucket != NULL) {
 
-    txbuffer->active_bucket->status = GRID_BUCKET_STATUS_RECEIVING;
-    txbuffer->active_bucket->source_port_index = txbuffer->port_index;
+    uart_port->rx_bucket->status = GRID_BUCKET_STATUS_RECEIVING;
+    uart_port->rx_bucket->source_port_index = uart_port->port_index;
   } else {
 
     printf("NULL BUCKET\r\n");
@@ -171,23 +171,23 @@ void grid_txbuffer_attach_bucket(struct grid_pico_uart_txbuffer* txbuffer) {
 
 void grid_pico_uart_transmit_task_inner(void) {
 
-  // iterate through all the txbuffers
+  // iterate through all the uart_ports
   for (uint8_t i = 0; i < 4; i++) {
 
-    struct grid_pico_uart_txbuffer* txbuffer = &txbuffer_array[i];
+    struct grid_pico_uart_port* uart_port = &uart_port_array[i];
 
     // if transmission is in progress then send the next character
-    if (txbuffer->tx_is_busy) {
+    if (uart_port->tx_is_busy) {
 
-      char c = txbuffer->tx_buffer[txbuffer->tx_index];
-      txbuffer->tx_index++;
+      char c = uart_port->tx_buffer[uart_port->tx_index];
+      uart_port->tx_index++;
 
-      uart_tx_program_putc(GRID_TX_PIO, txbuffer->port_index, c);
+      uart_tx_program_putc(GRID_TX_PIO, uart_port->port_index, c);
 
       if (c == '\n') {
 
-        txbuffer->tx_is_busy = 0;
-        ready_flags |= (1 << txbuffer->port_index);
+        uart_port->tx_is_busy = 0;
+        ready_flags |= (1 << uart_port->port_index);
       }
     }
   }
@@ -204,7 +204,8 @@ void fifo_try_receive(void) {
     data = multicore_fifo_pop_blocking();
 
     // printf("POP");
-
+    // direction is based on the position of the caracter in the uint32_t
+    // i==0 is north...i==3 is west
     for (uint8_t i = 0; i < 4; i++) {
 
       uint8_t c = (data >> (8 * i)) & 0x000000FF;
@@ -213,43 +214,43 @@ void fifo_try_receive(void) {
         continue;
       }
 
-      struct grid_pico_uart_txbuffer* txbuffer = &txbuffer_array[i];
+      struct grid_pico_uart_port* uart_port = &uart_port_array[i];
 
-      if (txbuffer->active_bucket == NULL) {
-        grid_txbuffer_attach_bucket(txbuffer);
+      if (uart_port->rx_bucket == NULL) {
+        grid_uart_port_attach_bucket(uart_port);
       }
 
-      if (c == 0x01 && txbuffer->active_bucket->buffer_index > 0) { // Start of Header character received in the
+      if (c == GRID_CONST_SOH && uart_port->rx_bucket->buffer_index > 0) { // Start of Header character received in the
                                                                     // middle of a trasmisdsion
 
         printf("E\n");
 
         // clear the current active bucet, and attach to a new bucket to start
         // receiving packet
-        grid_bucket_init(txbuffer->active_bucket, txbuffer->active_bucket->index);
-        txbuffer->active_bucket == NULL;
-        grid_txbuffer_attach_bucket(txbuffer);
+        grid_bucket_init(uart_port->rx_bucket, uart_port->rx_bucket->index);
+        uart_port->rx_bucket == NULL;
+        grid_uart_port_attach_bucket(uart_port);
       }
 
-      grid_bucket_put_character(txbuffer->active_bucket, c);
+      grid_bucket_put_character(uart_port->rx_bucket, c);
 
       // printf("%c", c);
 
       if (c == '\n') {
 
         // end of message, put termination zero character
-        grid_bucket_put_character(txbuffer->active_bucket, '\0');
+        grid_bucket_put_character(uart_port->rx_bucket, '\0');
 
-        // printf("BUCKET READY %s\r\n", txbuffer->active_bucket->buffer);
-        if (txbuffer->active_bucket->buffer[1] == GRID_CONST_BRC) {
-          // printf("BR%d %c%c\r\n", txbuffer->active_bucket->index,
-          // txbuffer->active_bucket->buffer[6], txbuffer->active_bucket->buffer[7]);
+        // printf("BUCKET READY %s\r\n", uart_port->rx_bucket->buffer);
+        if (uart_port->rx_bucket->buffer[1] == GRID_CONST_BRC) {
+          // printf("BR%d %c%c\r\n", uart_port->rx_bucket->index,
+          // uart_port->rx_bucket->buffer[6], uart_port->rx_bucket->buffer[7]);
         }
-        txbuffer->active_bucket->status = GRID_BUCKET_STATUS_FULL;
-        txbuffer->active_bucket->buffer_index = 0;
+        uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL;
+        uart_port->rx_bucket->buffer_index = 0;
         // clear bucket
 
-        grid_txbuffer_attach_bucket(txbuffer);
+        grid_uart_port_attach_bucket(uart_port);
       }
     }
   }
@@ -263,7 +264,7 @@ void core_1_main_entry() {
 
     uint32_t packed_chars = 0;
 
-    // iterate through all the txbuffers and pack available characters
+    // iterate through all the uart_ports and pack available characters
     for (uint8_t i = 0; i < 4; i++) {
       if (uart_rx_program_is_available(GRID_RX_PIO, i)) {
 
@@ -304,7 +305,7 @@ void gpio_sync_pin_callback(uint gpio, uint32_t events) {
   }
 }
 
-void spi_txbuffer_set_sync_state(uint8_t* buff) {
+void spi_uart_port_set_sync_state(uint8_t* buff) {
 
   buff[GRID_PARAMETER_SPI_SYNC1_STATE_index] = 0;
   buff[GRID_PARAMETER_SPI_SYNC2_STATE_index] = 0;
@@ -358,23 +359,23 @@ void grid_pico_spi_receive_task_inner(void) {
 
   // printf("%d\r\n", destination_flags);
 
-  // iterate through all the txbuffers
+  // iterate through all the uart_ports
   for (uint8_t i = 0; i < 4; i++) {
 
-    struct grid_pico_uart_txbuffer* txbuffer = &txbuffer_array[i];
+    struct grid_pico_uart_port* uart_port = &uart_port_array[i];
 
-    // copy message to the addressed txbuffer and set it to busy!
-    if ((destination_flags & (1 << txbuffer->port_index))) {
+    // copy message to the addressed uart_port and set it to busy!
+    if ((destination_flags & (1 << uart_port->port_index))) {
 
-      txbuffer->tx_is_busy = 1;
-      txbuffer->tx_index = 0;
-      strcpy(txbuffer->tx_buffer, grid_pico_spi_rxbuf);
+      uart_port->tx_is_busy = 1;
+      uart_port->tx_index = 0;
+      strcpy(uart_port->tx_buffer, grid_pico_spi_rxbuf);
       // printf("SPI receive: %s\r\n", grid_pico_spi_rxbuf);
 
       // printf("%02x %02x %02x %02x ...\r\n", grid_pico_spi_rxbuf[0], grid_pico_spi_rxbuf[1],
       // grid_pico_spi_rxbuf[2], grid_pico_spi_rxbuf[3]);
 
-      ready_flags &= ~(1 << txbuffer->port_index); // clear ready
+      ready_flags &= ~(1 << uart_port->port_index); // clear ready
     }
   }
 
@@ -415,7 +416,7 @@ void grid_pico_spi_transmit_task_inner(void) {
     grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
     grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
 
-    spi_txbuffer_set_sync_state(grid_pico_spi_txbuf);
+    spi_uart_port_set_sync_state(grid_pico_spi_txbuf);
     grid_pico_spi_transfer(grid_pico_spi_txbuf, grid_pico_spi_rxbuf);
 
     return;
@@ -428,7 +429,7 @@ void grid_pico_spi_transmit_task_inner(void) {
   spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
   spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << (spi_active_bucket->source_port_index));
 
-  // printf("BUCKET READY %s\r\n", txbuffer->active_bucket->buffer);
+  // printf("BUCKET READY %s\r\n", uart_port->rx_bucket->buffer);
 
   // validate packet
   uint8_t error;
@@ -471,13 +472,13 @@ void grid_pico_spi_transmit_task_inner(void) {
     grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
     grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
 
-    spi_txbuffer_set_sync_state(grid_pico_spi_txbuf);
+    spi_uart_port_set_sync_state(grid_pico_spi_txbuf);
     grid_pico_spi_transfer(grid_pico_spi_txbuf, grid_pico_spi_rxbuf);
   } else {
 
     printf("%d\n", spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
 
-    spi_txbuffer_set_sync_state(spi_active_bucket->buffer);
+    spi_uart_port_set_sync_state(spi_active_bucket->buffer);
     grid_pico_spi_transfer(spi_active_bucket->buffer, grid_pico_spi_rxbuf);
   }
 }
@@ -494,10 +495,10 @@ int main() {
   gpio_set_irq_enabled_with_callback(GRID_PICO_PIN_SYNC1, GPIO_IRQ_EDGE_RISE, true, &gpio_sync_pin_callback);
   gpio_set_irq_enabled(GRID_PICO_PIN_SYNC2, GPIO_IRQ_EDGE_RISE, true);
 
-  grid_pico_uart_txbuffer_init(txbuffer_N, 0);
-  grid_pico_uart_txbuffer_init(txbuffer_E, 1);
-  grid_pico_uart_txbuffer_init(txbuffer_S, 2);
-  grid_pico_uart_txbuffer_init(txbuffer_W, 3);
+  grid_pico_uart_uart_port_init(uart_port_N, 0);
+  grid_pico_uart_uart_port_init(uart_port_E, 1);
+  grid_pico_uart_uart_port_init(uart_port_S, 2);
+  grid_pico_uart_uart_port_init(uart_port_W, 3);
 
   for (uint8_t i = 0; i < bucket_array_length; i++) {
     grid_bucket_init(&bucket_array[i], i);
@@ -505,9 +506,9 @@ int main() {
 
   for (uint8_t i = 0; i < 4; i++) {
 
-    struct grid_pico_uart_txbuffer* txbuffer = &txbuffer_array[i];
+    struct grid_pico_uart_port* uart_port = &uart_port_array[i];
 
-    grid_txbuffer_attach_bucket(txbuffer);
+    grid_uart_port_attach_bucket(uart_port);
   }
 
   uart_tx_program_init(GRID_TX_PIO, 0, offset_tx, GRID_PICO_PIN_NORTH_TX, GRID_PARAMETER_UART_baudrate);
