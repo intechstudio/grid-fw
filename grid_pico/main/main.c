@@ -20,8 +20,8 @@
 
 #include "pico/multicore.h"
 
-#include "../../grid_common/grid_protocol.h"
 #include "../../grid_common/grid_msg.h"
+#include "../../grid_common/grid_protocol.h"
 
 #include <string.h>
 
@@ -30,7 +30,6 @@
 #include "grid_pico_pins.h"
 #include "grid_pico_spi.h"
 
-
 #include "hardware/dma.h"
 
 #define BUCKET_BUFFER_LENGTH 500
@@ -38,7 +37,6 @@
 
 static uint8_t grid_pico_spi_txbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
 static uint8_t grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
-
 
 uint8_t ready_flags = 255;
 
@@ -157,8 +155,6 @@ void grid_bucket_put_character(struct grid_bucket* bucket, char next_char) {
   }
 }
 
-
-
 void grid_txbuffer_attach_bucket(struct grid_pico_uart_txbuffer* txbuffer) {
 
   txbuffer->active_bucket = grid_bucket_find_next_match(txbuffer->active_bucket, GRID_BUCKET_STATUS_EMPTY);
@@ -173,7 +169,7 @@ void grid_txbuffer_attach_bucket(struct grid_pico_uart_txbuffer* txbuffer) {
   }
 }
 
-void uart_try_send_all(void) {
+void grid_pico_uart_transmit_task_inner(void) {
 
   // iterate through all the txbuffers
   for (uint8_t i = 0; i < 4; i++) {
@@ -224,7 +220,7 @@ void fifo_try_receive(void) {
       }
 
       if (c == 0x01 && txbuffer->active_bucket->buffer_index > 0) { // Start of Header character received in the
-                                                                // middle of a trasmisdsion
+                                                                    // middle of a trasmisdsion
 
         printf("E\n");
 
@@ -323,6 +319,169 @@ void spi_txbuffer_set_sync_state(uint8_t* buff) {
   }
 }
 
+uint32_t grid_pico_get_time() { return time_us_32(); }
+
+uint32_t grid_pico_get_elapsed_time(uint32_t t_old) { return time_us_32() - t_old; }
+
+static uint32_t spi_receive_lastrealtime = 0;
+static uint32_t spi_transmit_lastrealtime = 0;
+
+static uint32_t spi_receive_interval_us = 100;
+static uint32_t spi_transmit_interval_us = 500;
+
+void grid_pico_spi_receive_task_inner(void) {
+
+  if (grid_pico_get_elapsed_time(spi_receive_lastrealtime) < spi_receive_interval_us) {
+    return;
+  }
+  spi_receive_lastrealtime = grid_pico_get_time();
+
+  if (!grid_pico_spi_is_rx_data_available()) {
+    return;
+  }
+  grid_pico_spi_clear_rx_data_available_flag();
+
+  uint8_t destination_flags = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
+  uint8_t sync1_state = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_SYNC1_STATE_index];
+
+  if (sync1_state) {
+
+    gpio_pull_down(GRID_PICO_PIN_SYNC1);
+    sync1_drive = 1;
+    gpio_set_dir(GRID_PICO_PIN_SYNC1, GPIO_OUT);
+    gpio_put(GRID_PICO_PIN_SYNC1, 1);
+    // set_drive_mode(GRID_PICO_PIN_SYNC1, GPIO_DRIVE_MODE_OPEN_DRAIN);
+  } else if (sync1_drive) {
+    gpio_set_dir(GRID_PICO_PIN_SYNC1, GPIO_IN);
+    sync1_drive = 0;
+  }
+
+  // printf("%d\r\n", destination_flags);
+
+  // iterate through all the txbuffers
+  for (uint8_t i = 0; i < 4; i++) {
+
+    struct grid_pico_uart_txbuffer* txbuffer = &txbuffer_array[i];
+
+    // copy message to the addressed txbuffer and set it to busy!
+    if ((destination_flags & (1 << txbuffer->port_index))) {
+
+      txbuffer->tx_is_busy = 1;
+      txbuffer->tx_index = 0;
+      strcpy(txbuffer->tx_buffer, grid_pico_spi_rxbuf);
+      // printf("SPI receive: %s\r\n", grid_pico_spi_rxbuf);
+
+      // printf("%02x %02x %02x %02x ...\r\n", grid_pico_spi_rxbuf[0], grid_pico_spi_rxbuf[1],
+      // grid_pico_spi_rxbuf[2], grid_pico_spi_rxbuf[3]);
+
+      ready_flags &= ~(1 << txbuffer->port_index); // clear ready
+    }
+  }
+
+  if (spi_active_bucket != NULL) {
+    // clear the bucket after use
+    grid_bucket_init(spi_active_bucket, spi_active_bucket->index);
+    spi_previous_bucket = spi_active_bucket;
+    spi_active_bucket = NULL;
+  }
+}
+
+void grid_pico_spi_transmit_task_inner(void) {
+
+  if (grid_pico_get_elapsed_time(spi_transmit_lastrealtime) < spi_transmit_interval_us) {
+    return;
+  }
+  spi_transmit_lastrealtime = grid_pico_get_time();
+
+  if (!grid_pico_spi_isready()) {
+    return;
+  }
+
+  if (spi_active_bucket != NULL) {
+    // previous transfer's rx task has not run yet
+    return;
+  }
+
+  // try to send bucket content through SPI
+
+  spi_active_bucket = grid_bucket_find_next_match(spi_previous_bucket, GRID_BUCKET_STATUS_FULL);
+
+  if (spi_active_bucket == NULL) {
+    // No fully bucket is received from uart yet
+    // send empty packet with status flags
+
+    grid_pico_spi_txbuf[0] = 0;
+    sprintf(grid_pico_spi_txbuf, "DUMMY OK");
+    grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+    grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
+
+    spi_txbuffer_set_sync_state(grid_pico_spi_txbuf);
+    grid_pico_spi_transfer(grid_pico_spi_txbuf, grid_pico_spi_rxbuf);
+
+    return;
+  }
+
+  // found full bucket, send it through SPI
+
+  // printf("SPI send: %s\r\n", spi_active_bucket->buffer);
+
+  spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+  spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << (spi_active_bucket->source_port_index));
+
+  // printf("BUCKET READY %s\r\n", txbuffer->active_bucket->buffer);
+
+  // validate packet
+  uint8_t error;
+
+  uint16_t length = strlen(spi_active_bucket->buffer);
+  uint16_t received_length = grid_msg_string_read_hex_string_value(&spi_active_bucket->buffer[GRID_BRC_LEN_offset], 4, &error);
+
+  uint8_t calculated_checksum = grid_msg_string_calculate_checksum_of_packet_string(spi_active_bucket->buffer, length);
+  uint8_t received_checksum = grid_msg_string_checksum_read(spi_active_bucket->buffer, length);
+
+  uint8_t error_count = 0;
+
+  if (spi_active_bucket->buffer[1] == GRID_CONST_BRC) {
+
+    if (length - 3 != received_length) {
+
+      // printf("L%d %d ", length-3, received_length);
+
+      error_count++;
+    }
+  }
+
+  if (calculated_checksum != received_checksum) {
+
+    // printf("C %d %d ", calculated_checksum, received_checksum);
+    error_count++;
+  }
+  // printf("BR%d %c%c\r\n", spi_active_bucket->index,
+  // spi_active_bucket->buffer[6], spi_active_bucket->buffer[7]);
+
+  if (error_count > 0) {
+
+    // printf("SKIP\r\n");
+    printf("S\n");
+
+    // send empty packet with status flags
+
+    grid_pico_spi_txbuf[0] = 0;
+    sprintf(grid_pico_spi_txbuf, "DUMMY ERROR");
+    grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+    grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
+
+    spi_txbuffer_set_sync_state(grid_pico_spi_txbuf);
+    grid_pico_spi_transfer(grid_pico_spi_txbuf, grid_pico_spi_rxbuf);
+  } else {
+
+    printf("%d\n", spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
+
+    spi_txbuffer_set_sync_state(spi_active_bucket->buffer);
+    grid_pico_spi_transfer(spi_active_bucket->buffer, grid_pico_spi_rxbuf);
+  }
+}
+
 int main() {
 
   stdio_init_all();
@@ -377,40 +536,6 @@ int main() {
   uint32_t loopcouter = 0;
   uint8_t spi_counter = 0;
 
-  struct grid_task {
-
-    uint32_t start_timestamp;
-    uint32_t interval;
-  };
-
-  void grid_task_init(struct grid_task * task, uint32_t interval) {
-
-    task->interval = interval;
-    task->start_timestamp = time_us_32();
-  }
-
-  uint8_t grid_task_should_run_now(struct grid_task * task) {
-
-    if (time_us_32() - task->start_timestamp > task->interval) {
-
-      task->start_timestamp = time_us_32();
-
-      // should run now!
-      return 1;
-    } else {
-
-      // should not run yet
-      return 0;
-    }
-  }
-
-  struct grid_task spi_receive_transfer_task;
-  grid_task_init(&spi_receive_transfer_task, 100); // 1 ms interval
-
-  struct grid_task spi_start_transfer_task;
-  grid_task_init(&spi_start_transfer_task,
-                 500); // 5 ms interval -> 1 ms -> 500us
-
   multicore_reset_core1();
   multicore_launch_core1(core_1_main_entry);
 
@@ -420,166 +545,18 @@ int main() {
 
   while (1) {
 
-    // TRY TO RECEIVE FROM SPI
-    if (grid_task_should_run_now(&spi_receive_transfer_task)) {
+    grid_pico_spi_receive_task_inner();
 
-      if (spi_dma_done) {
+    grid_pico_spi_transmit_task_inner();
 
-        spi_dma_done = false;
-        uint8_t destination_flags = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
-
-        uint8_t sync1_state = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_SYNC1_STATE_index];
-
-        if (sync1_state) {
-
-          gpio_pull_down(GRID_PICO_PIN_SYNC1);
-          sync1_drive = 1;
-          gpio_set_dir(GRID_PICO_PIN_SYNC1, GPIO_OUT);
-          gpio_put(GRID_PICO_PIN_SYNC1, 1);
-          // set_drive_mode(GRID_PICO_PIN_SYNC1, GPIO_DRIVE_MODE_OPEN_DRAIN);
-        } else if (sync1_drive) {
-          gpio_set_dir(GRID_PICO_PIN_SYNC1, GPIO_IN);
-          sync1_drive = 0;
-        }
-
-        // printf("%d\r\n", destination_flags);
-
-        // iterate through all the txbuffers
-        for (uint8_t i = 0; i < 4; i++) {
-
-          struct grid_pico_uart_txbuffer* txbuffer = &txbuffer_array[i];
-
-          // copy message to the addressed txbuffer and set it to busy!
-          if ((destination_flags & (1 << txbuffer->port_index))) {
-
-            txbuffer->tx_is_busy = 1;
-            txbuffer->tx_index = 0;
-            strcpy(txbuffer->tx_buffer, grid_pico_spi_rxbuf);
-            // printf("SPI receive: %s\r\n", grid_pico_spi_rxbuf);
-
-            // printf("%02x %02x %02x %02x ...\r\n", grid_pico_spi_rxbuf[0], grid_pico_spi_rxbuf[1],
-            // grid_pico_spi_rxbuf[2], grid_pico_spi_rxbuf[3]);
-
-            ready_flags &= ~(1 << txbuffer->port_index); // clear ready
-          }
-        }
-
-        if (spi_active_bucket != NULL) {
-          // clear the bucket after use
-          grid_bucket_init(spi_active_bucket, spi_active_bucket->index);
-          spi_previous_bucket = spi_active_bucket;
-          spi_active_bucket = NULL;
-        }
-      }
-    }
-
-    // TRY TO SEND THROUGH SPI
-    if (grid_task_should_run_now(&spi_start_transfer_task)) {
-
-      if (!dma_channel_is_busy(grid_pico_spi_dma_rx_channel)) {
-
-        // printf("START %d\n", grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
-
-        // try to send bucket content through SPI
-
-        if (spi_active_bucket == NULL) {
-
-          spi_active_bucket = grid_bucket_find_next_match(spi_previous_bucket, GRID_BUCKET_STATUS_FULL);
-
-          // found full bucket, send it through SPI
-          if (spi_active_bucket != NULL) {
-
-            // printf("SPI send: %s\r\n", spi_active_bucket->buffer);
-
-            spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
-            spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << (spi_active_bucket->source_port_index));
-
-            // printf("BUCKET READY %s\r\n", txbuffer->active_bucket->buffer);
-
-            // validate packet
-            uint8_t error;
-
-            uint16_t length = strlen(spi_active_bucket->buffer);
-            uint16_t received_length = grid_msg_string_read_hex_string_value(&spi_active_bucket->buffer[GRID_BRC_LEN_offset], 4, &error);
-
-            uint8_t calculated_checksum = grid_msg_string_calculate_checksum_of_packet_string(spi_active_bucket->buffer, length);
-            uint8_t received_checksum = grid_msg_string_checksum_read(spi_active_bucket->buffer, length);
-
-            uint8_t error_count = 0;
-
-            if (spi_active_bucket->buffer[1] == GRID_CONST_BRC) {
-
-              if (length - 3 != received_length) {
-
-                // printf("L%d %d ", length-3, received_length);
-
-                error_count++;
-              }
-            }
-
-            if (calculated_checksum != received_checksum) {
-
-              // printf("C %d %d ", calculated_checksum, received_checksum);
-              error_count++;
-            }
-            // printf("BR%d %c%c\r\n", spi_active_bucket->index,
-            // spi_active_bucket->buffer[6], spi_active_bucket->buffer[7]);
-
-            if (error_count > 0) {
-
-              // printf("SKIP\r\n");
-              printf("S\n");
-
-              // send empty packet with status flags
-
-              grid_pico_spi_txbuf[0] = 0;
-              sprintf(grid_pico_spi_txbuf, "DUMMY ERROR");
-              grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
-              grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
-
-              spi_txbuffer_set_sync_state(grid_pico_spi_txbuf);
-              spi_start_transfer(grid_pico_spi_dma_tx_channel, grid_pico_spi_dma_rx_channel, grid_pico_spi_txbuf, grid_pico_spi_rxbuf, grid_pico_spi_dma_xfer_complete_cb);
-            } else {
-
-              printf("%d\n", spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
-
-              spi_txbuffer_set_sync_state(spi_active_bucket->buffer);
-              spi_start_transfer(grid_pico_spi_dma_tx_channel, grid_pico_spi_dma_rx_channel, spi_active_bucket->buffer, grid_pico_spi_rxbuf, grid_pico_spi_dma_xfer_complete_cb);
-            }
-          } else {
-            // send empty packet with status flags
-
-            grid_pico_spi_txbuf[0] = 0;
-            sprintf(grid_pico_spi_txbuf, "DUMMY OK");
-            grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
-            grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
-
-            spi_txbuffer_set_sync_state(grid_pico_spi_txbuf);
-            spi_start_transfer(grid_pico_spi_dma_tx_channel, grid_pico_spi_dma_rx_channel, grid_pico_spi_txbuf, grid_pico_spi_rxbuf, grid_pico_spi_dma_xfer_complete_cb);
-          }
-        }
-      }
-    }
+    grid_pico_uart_transmit_task_inner();
 
     loopcouter++;
 
-    if (loopcouter > 500) {
+    if (loopcouter % 1000 == 0) {
       gpio_put(GRID_PICO_PIN_LED, 1);
-    }
-    if (loopcouter > 3000) {
-      loopcouter = 0;
+    } else {
       gpio_put(GRID_PICO_PIN_LED, 0);
     }
-
-    /* ==================================  UART TRANSMIT
-     * =================================*/
-
-    // iterate through all the ports
-    uart_try_send_all();
-
-    /* ==================================  UART RECEIVE
-     * =================================*/
-
-    // fifo_try_receive();
   }
 }

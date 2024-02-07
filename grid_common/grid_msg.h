@@ -1,12 +1,4 @@
-/*
- * grid_msg.h
- *
- * Created: 9/23/2020 2:36:14 PM
- *  Author: suku
- */
-
-#ifndef GRID_MSG_H_
-#define GRID_MSG_H_
+#pragma once
 
 #include "grid_protocol.h"
 
@@ -139,5 +131,3 @@ void grid_msg_string_checksum_write(char* message, uint32_t length, uint8_t chec
 uint8_t grid_msg_string_read_hex_char_value(uint8_t ascii, uint8_t* error_flag);
 uint32_t grid_msg_string_read_hex_string_value(char* start_location, uint8_t length, uint8_t* error_flag);
 void grid_msg_string_write_hex_string_value(char* start_location, uint8_t size, uint32_t value);
-
-#endif /* GRID_MSG_H_ */
