@@ -132,14 +132,14 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
   portEXIT_CRITICAL(&spinlock);
 
-  uint8_t ready_flags = ((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
+  uint8_t grid_pico_uart_tx_ready_bitmap = ((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
 
   for (uint8_t i = 0; i < 4; i++) {
     struct grid_port* por = uart_port_array[i];
     struct grid_doublebuffer* doublebuffer_tx = uart_doublebuffer_tx_array[i];
     struct grid_doublebuffer* doublebuffer_rx = uart_doublebuffer_rx_array[i];
 
-    if ((ready_flags & (0b00000001 << i))) {
+    if ((grid_pico_uart_tx_ready_bitmap & (0b00000001 << i))) {
 
       if (doublebuffer_tx->status == UINT16_MAX) {
 

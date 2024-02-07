@@ -38,7 +38,7 @@
 static uint8_t grid_pico_spi_txbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
 static uint8_t grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
 
-uint8_t ready_flags = 255;
+uint8_t grid_pico_uart_tx_ready_bitmap = 255;
 
 const PIO GRID_TX_PIO = pio0;
 const PIO GRID_RX_PIO = pio1;
@@ -58,7 +58,7 @@ struct grid_bucket {
   enum grid_bucket_status_t status;
   uint8_t index;
   uint8_t source_port_index;
-  uint8_t buffer[512];
+  uint8_t buffer[GRID_PARAMETER_SPI_TRANSACTION_length];
   uint16_t buffer_index;
 };
 
@@ -66,7 +66,7 @@ struct grid_bucket {
 struct grid_pico_uart_port {
 
   uint8_t port_index;
-  uint8_t tx_buffer[512];
+  uint8_t tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length];
   uint8_t tx_is_busy;
   uint16_t tx_index;
 
@@ -87,7 +87,7 @@ void grid_pico_uart_uart_port_init(struct grid_pico_uart_port* uart_port, uint8_
 
   uart_port->port_index = index;
 
-  for (uint16_t i = 0; i < 512; i++) {
+  for (uint16_t i = 0; i < GRID_PARAMETER_SPI_TRANSACTION_length; i++) {
     uart_port->tx_buffer[i] = 0;
   }
 
@@ -97,18 +97,23 @@ void grid_pico_uart_uart_port_init(struct grid_pico_uart_port* uart_port, uint8_
   uart_port->rx_bucket = NULL;
 }
 
-void grid_bucket_init(struct grid_bucket* bucket, uint8_t index) {
+void grid_bucket_clear(struct grid_bucket* bucket) {
 
   bucket->status = GRID_BUCKET_STATUS_EMPTY;
-  bucket->index = index;
 
   bucket->source_port_index = 255;
 
-  // for (uint16_t i=0; i<512; i++){
+  // for (uint16_t i=0; i<GRID_PARAMETER_SPI_TRANSACTION_length; i++){
   //     bucket->buffer[i] = 0;
   // }
 
   bucket->buffer_index = 0;
+}
+
+void grid_bucket_init(struct grid_bucket* bucket, uint8_t index) {
+
+  bucket->index = index;
+  grid_bucket_clear(bucket);
 }
 
 // find next bucket, so UART can safely receive data into it
@@ -155,7 +160,7 @@ void grid_bucket_put_character(struct grid_bucket* bucket, char next_char) {
   }
 }
 
-void grid_uart_port_attach_bucket(struct grid_pico_uart_port* uart_port) {
+void grid_uart_port_attach_rx_bucket(struct grid_pico_uart_port* uart_port) {
 
   uart_port->rx_bucket = grid_bucket_find_next_match(uart_port->rx_bucket, GRID_BUCKET_STATUS_EMPTY);
 
@@ -187,13 +192,52 @@ void grid_pico_uart_transmit_task_inner(void) {
       if (c == '\n') {
 
         uart_port->tx_is_busy = 0;
-        ready_flags |= (1 << uart_port->port_index);
+        grid_pico_uart_tx_ready_bitmap |= (1 << uart_port->port_index);
       }
     }
   }
 }
 
-void fifo_try_receive(void) {
+void grid_pico_uart_port_receive_character(struct grid_pico_uart_port* uart_port, uint8_t character) {
+
+  if (uart_port->rx_bucket == NULL) {
+    grid_uart_port_attach_rx_bucket(uart_port);
+  }
+
+  if (character == GRID_CONST_SOH && uart_port->rx_bucket->buffer_index > 0) {
+    // Start of Header character received in the middle of a transmission this typically happens when a partner is disconnected and reconnected
+    printf("E\n");
+
+    // clear the current active bucket, and attach to a new bucket to start
+    // receiving packet
+    grid_bucket_clear(uart_port->rx_bucket);
+
+    grid_uart_port_attach_rx_bucket(uart_port);
+  }
+
+  grid_bucket_put_character(uart_port->rx_bucket, character);
+
+  // printf("%c", character);
+
+  if (character == '\n') {
+
+    // end of message, put termination zero character
+    grid_bucket_put_character(uart_port->rx_bucket, '\0');
+
+    // printf("BUCKET READY %s\r\n", uart_port->rx_bucket->buffer);
+    if (uart_port->rx_bucket->buffer[1] == GRID_CONST_BRC) {
+      // printf("BR%d %c%c\r\n", uart_port->rx_bucket->index,
+      // uart_port->rx_bucket->buffer[6], uart_port->rx_bucket->buffer[7]);
+    }
+    uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL;
+    uart_port->rx_bucket->buffer_index = 0;
+
+    // attack new bucket for receiving the next packet
+    grid_uart_port_attach_rx_bucket(uart_port);
+  }
+}
+
+void fifo_try_receive_characters(void) {
 
   uint32_t data = 0;
   uint32_t status = 0;
@@ -214,44 +258,7 @@ void fifo_try_receive(void) {
         continue;
       }
 
-      struct grid_pico_uart_port* uart_port = &uart_port_array[i];
-
-      if (uart_port->rx_bucket == NULL) {
-        grid_uart_port_attach_bucket(uart_port);
-      }
-
-      if (c == GRID_CONST_SOH && uart_port->rx_bucket->buffer_index > 0) { // Start of Header character received in the
-                                                                           // middle of a trasmisdsion
-
-        printf("E\n");
-
-        // clear the current active bucet, and attach to a new bucket to start
-        // receiving packet
-        grid_bucket_init(uart_port->rx_bucket, uart_port->rx_bucket->index);
-        uart_port->rx_bucket == NULL;
-        grid_uart_port_attach_bucket(uart_port);
-      }
-
-      grid_bucket_put_character(uart_port->rx_bucket, c);
-
-      // printf("%c", c);
-
-      if (c == '\n') {
-
-        // end of message, put termination zero character
-        grid_bucket_put_character(uart_port->rx_bucket, '\0');
-
-        // printf("BUCKET READY %s\r\n", uart_port->rx_bucket->buffer);
-        if (uart_port->rx_bucket->buffer[1] == GRID_CONST_BRC) {
-          // printf("BR%d %c%c\r\n", uart_port->rx_bucket->index,
-          // uart_port->rx_bucket->buffer[6], uart_port->rx_bucket->buffer[7]);
-        }
-        uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL;
-        uart_port->rx_bucket->buffer_index = 0;
-        // clear bucket
-
-        grid_uart_port_attach_bucket(uart_port);
-      }
+      grid_pico_uart_port_receive_character(&uart_port_array[i], c);
     }
   }
 }
@@ -273,20 +280,22 @@ void core_1_main_entry() {
       }
     }
 
-    if (packed_chars != 0) {
+    // try again if no characters were packed
+    if (packed_chars == 0) {
+      continue;
+    }
 
-      uint8_t ok = multicore_fifo_push_timeout_us(packed_chars, 0);
+    uint8_t ok = multicore_fifo_push_timeout_us(packed_chars, 0);
 
-      if (!ok) {
-        printf("F\n");
-      }
+    if (!ok) {
+      printf("F\n");
     }
   }
 }
 
 void core0_interrupt_handler(void) {
 
-  fifo_try_receive();
+  fifo_try_receive_characters();
   multicore_fifo_clear_irq();
 }
 
@@ -375,16 +384,50 @@ void grid_pico_spi_receive_task_inner(void) {
       // printf("%02x %02x %02x %02x ...\r\n", grid_pico_spi_rxbuf[0], grid_pico_spi_rxbuf[1],
       // grid_pico_spi_rxbuf[2], grid_pico_spi_rxbuf[3]);
 
-      ready_flags &= ~(1 << uart_port->port_index); // clear ready
+      grid_pico_uart_tx_ready_bitmap &= ~(1 << uart_port->port_index); // clear ready
     }
   }
 
   if (spi_active_bucket != NULL) {
     // clear the bucket after use
-    grid_bucket_init(spi_active_bucket, spi_active_bucket->index);
+    grid_bucket_clear(spi_active_bucket);
     spi_previous_bucket = spi_active_bucket;
     spi_active_bucket = NULL;
   }
+}
+
+int grid_bucket_verify_frame(struct grid_bucket* bucket) {
+
+  // validate packet
+  uint8_t error_count = 0;
+
+  uint16_t length = strlen(bucket->buffer);
+  uint8_t error_flag = 0;
+  uint8_t calculated_checksum = grid_msg_string_calculate_checksum_of_packet_string(bucket->buffer, length);
+  uint8_t received_checksum = grid_msg_string_checksum_read(bucket->buffer, length);
+
+  if (bucket->buffer[1] == GRID_CONST_BRC) {
+
+    // BRC packets contain length parameter. Check this against actual string length in buffer
+
+    uint16_t received_length = grid_msg_string_read_hex_string_value(&bucket->buffer[GRID_BRC_LEN_offset], GRID_BRC_LEN_length, &error_flag);
+
+    if (length - 3 != received_length) {
+
+      // printf("L%d %d ", length-3, received_length);
+      error_count++;
+    }
+  }
+
+  if (calculated_checksum != received_checksum) {
+
+    // printf("C %d %d ", calculated_checksum, received_checksum);
+    error_count++;
+  }
+  // printf("BR%d %c%c\r\n", spi_active_bucket->index,
+  // spi_active_bucket->buffer[6], spi_active_bucket->buffer[7]);
+
+  return error_count;
 }
 
 void grid_pico_spi_transmit_task_inner(void) {
@@ -413,7 +456,7 @@ void grid_pico_spi_transmit_task_inner(void) {
 
     grid_pico_spi_txbuf[0] = 0;
     sprintf(grid_pico_spi_txbuf, "DUMMY OK");
-    grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+    grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = grid_pico_uart_tx_ready_bitmap;
     grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
 
     spi_uart_port_set_sync_state(grid_pico_spi_txbuf);
@@ -426,39 +469,10 @@ void grid_pico_spi_transmit_task_inner(void) {
 
   // printf("SPI send: %s\r\n", spi_active_bucket->buffer);
 
-  spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+  spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = grid_pico_uart_tx_ready_bitmap;
   spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << (spi_active_bucket->source_port_index));
 
-  // printf("BUCKET READY %s\r\n", uart_port->rx_bucket->buffer);
-
-  // validate packet
-  uint8_t error;
-
-  uint16_t length = strlen(spi_active_bucket->buffer);
-  uint16_t received_length = grid_msg_string_read_hex_string_value(&spi_active_bucket->buffer[GRID_BRC_LEN_offset], 4, &error);
-
-  uint8_t calculated_checksum = grid_msg_string_calculate_checksum_of_packet_string(spi_active_bucket->buffer, length);
-  uint8_t received_checksum = grid_msg_string_checksum_read(spi_active_bucket->buffer, length);
-
-  uint8_t error_count = 0;
-
-  if (spi_active_bucket->buffer[1] == GRID_CONST_BRC) {
-
-    if (length - 3 != received_length) {
-
-      // printf("L%d %d ", length-3, received_length);
-
-      error_count++;
-    }
-  }
-
-  if (calculated_checksum != received_checksum) {
-
-    // printf("C %d %d ", calculated_checksum, received_checksum);
-    error_count++;
-  }
-  // printf("BR%d %c%c\r\n", spi_active_bucket->index,
-  // spi_active_bucket->buffer[6], spi_active_bucket->buffer[7]);
+  uint8_t error_count = grid_bucket_verify_frame(spi_active_bucket);
 
   if (error_count > 0) {
 
@@ -469,7 +483,7 @@ void grid_pico_spi_transmit_task_inner(void) {
 
     grid_pico_spi_txbuf[0] = 0;
     sprintf(grid_pico_spi_txbuf, "DUMMY ERROR");
-    grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = ready_flags;
+    grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = grid_pico_uart_tx_ready_bitmap;
     grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
 
     spi_uart_port_set_sync_state(grid_pico_spi_txbuf);
@@ -508,7 +522,7 @@ int main() {
 
     struct grid_pico_uart_port* uart_port = &uart_port_array[i];
 
-    grid_uart_port_attach_bucket(uart_port);
+    grid_uart_port_attach_rx_bucket(uart_port);
   }
 
   uart_tx_program_init(GRID_TX_PIO, 0, offset_tx, GRID_PICO_PIN_NORTH_TX, GRID_PARAMETER_UART_baudrate);
