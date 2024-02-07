@@ -204,7 +204,7 @@ void fifo_try_receive(void) {
     data = multicore_fifo_pop_blocking();
 
     // printf("POP");
-    // direction is based on the position of the caracter in the uint32_t
+    // direction is based on the position of the character in the uint32_t
     // i==0 is north...i==3 is west
     for (uint8_t i = 0; i < 4; i++) {
 
@@ -221,7 +221,7 @@ void fifo_try_receive(void) {
       }
 
       if (c == GRID_CONST_SOH && uart_port->rx_bucket->buffer_index > 0) { // Start of Header character received in the
-                                                                    // middle of a trasmisdsion
+                                                                           // middle of a trasmisdsion
 
         printf("E\n");
 
