@@ -58,9 +58,6 @@ struct grid_port {
 
   uint64_t partner_last_timestamp;
 
-  uint8_t ping_local_token;
-  uint8_t ping_partner_token;
-
   char ping_packet[20];
   uint8_t ping_packet_length;
 

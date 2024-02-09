@@ -441,9 +441,6 @@ struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
   por->partner_hwcfg = 0;
   por->partner_status = 1;
 
-  por->ping_local_token = 255;
-  por->ping_partner_token = 255;
-
   por->ping_flag = 0;
 
   if (type == GRID_PORT_TYPE_USART) {
@@ -620,11 +617,6 @@ void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffe
 
   por->partner_status = 0;
 
-  por->ping_partner_token = 255;
-  por->ping_local_token = 255;
-
-  grid_str_write_hex_string_value(&por->ping_packet[8], 2, por->ping_partner_token);
-  grid_str_write_hex_string_value(&por->ping_packet[6], 2, por->ping_local_token);
   grid_str_checksum_write(por->ping_packet, por->ping_packet_length, grid_str_calculate_checksum_of_packet_string(por->ping_packet, por->ping_packet_length));
 
   grid_port_receiver_softreset(por, rx_doublebuffer);
