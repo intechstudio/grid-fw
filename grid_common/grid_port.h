@@ -66,8 +66,6 @@ struct grid_port {
 
   uint8_t ping_flag;
 
-  uint8_t inbound_loopback;
-
   int8_t dx;
   int8_t dy;
 };
@@ -106,7 +104,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por);
 
 char grid_port_get_name_char(struct grid_port* por);
 
-struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir, uint8_t inbound_loopback);
+struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir);
 struct grid_doublebuffer* grid_doublebuffer_allocate_init(size_t length);
 
 uint8_t grid_port_process_outbound_usart(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer);

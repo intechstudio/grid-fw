@@ -362,8 +362,6 @@ void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buff
 
 uint8_t grid_port_process_inbound(struct grid_port* por) {
 
-  uint8_t loopback = por->inbound_loopback;
-
   uint16_t packet_size = grid_buffer_read_size(&por->rx_buffer);
 
   if (packet_size == 0) {
@@ -385,7 +383,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por) {
       continue;
     }
 
-    if (next_port == por && loopback == false) {
+    if (next_port == por && por->type != GRID_PORT_TYPE_UI) { // inbound_loopback only when GRID_PORT_TYPE_UI
       continue;
     }
 
@@ -415,7 +413,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por) {
   return 1;
 }
 
-struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir, uint8_t inbound_loopback) {
+struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
 
   // PART 1: ALLOCATE
 
@@ -431,8 +429,6 @@ struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir, uint8_t inb
 
   grid_buffer_init(&por->tx_buffer, GRID_BUFFER_SIZE);
   grid_buffer_init(&por->rx_buffer, GRID_BUFFER_SIZE);
-
-  por->inbound_loopback = inbound_loopback;
 
   por->direction = dir;
 
