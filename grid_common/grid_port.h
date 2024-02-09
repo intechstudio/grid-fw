@@ -49,9 +49,6 @@ struct grid_port {
   enum grid_port_type type;
   uint8_t direction;
 
-  volatile struct grid_doublebuffer tx_doublebuffer;
-  volatile struct grid_doublebuffer rx_doublebuffer;
-
   struct grid_buffer tx_buffer;
   struct grid_buffer rx_buffer;
 
