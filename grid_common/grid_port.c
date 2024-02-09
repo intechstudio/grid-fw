@@ -3,17 +3,48 @@
 struct grid_transport_model grid_transport_state;
 
 void grid_transport_init(struct grid_transport_model* transport) {
+
   transport->port_array_length = 0;
   memset(transport->port_array, 0, sizeof(transport->port_array));
+
+  transport->buffer_array_length = 0;
+  memset(transport->buffer_tx_array, 0, sizeof(transport->buffer_tx_array));
+  memset(transport->buffer_rx_array, 0, sizeof(transport->buffer_rx_array));
+
+  transport->port_array_length = 0;
+  memset(transport->doublebuffer_tx_array, 0, sizeof(transport->doublebuffer_tx_array));
+  memset(transport->doublebuffer_rx_array, 0, sizeof(transport->doublebuffer_rx_array));
 }
 
 void grid_transport_register_port(struct grid_transport_model* transport, struct grid_port* port) {
+
+  port->index = transport->port_array_length;
+  port->parent = transport;
 
   transport->port_array[transport->port_array_length] = port;
   transport->port_array_length++;
 }
 
+void grid_transport_register_buffer(struct grid_transport_model* transport, struct grid_buffer* buffer_tx, struct grid_buffer* buffer_rx) {
+
+  buffer_tx->index = transport->buffer_array_length;
+  buffer_tx->parent = transport;
+
+  buffer_rx->index = transport->buffer_array_length;
+  buffer_rx->parent = transport;
+
+  transport->buffer_tx_array[transport->buffer_array_length] = buffer_tx;
+  transport->buffer_rx_array[transport->buffer_array_length] = buffer_rx;
+  transport->buffer_array_length++;
+}
+
 void grid_transport_register_doublebuffer(struct grid_transport_model* transport, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx) {
+
+  doublebuffer_tx->index = transport->doublebuffer_array_length;
+  doublebuffer_tx->parent = transport;
+
+  doublebuffer_rx->index = transport->doublebuffer_array_length;
+  doublebuffer_rx->parent = transport;
 
   transport->doublebuffer_tx_array[transport->doublebuffer_array_length] = doublebuffer_tx;
   transport->doublebuffer_rx_array[transport->doublebuffer_array_length] = doublebuffer_rx;
@@ -36,6 +67,8 @@ struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_mo
 uint8_t grid_transport_get_port_array_length(struct grid_transport_model* transport) { return transport->port_array_length; }
 
 struct grid_port* grid_transport_get_port(struct grid_transport_model* transport, uint8_t index) { return transport->port_array[index]; }
+struct grid_buffer* grid_transport_get_buffer_tx(struct grid_transport_model* transport, uint8_t index) { return transport->buffer_tx_array[index]; }
+struct grid_buffer* grid_transport_get_buffer_rx(struct grid_transport_model* transport, uint8_t index) { return transport->buffer_rx_array[index]; }
 struct grid_doublebuffer* grid_transport_get_doublebuffer_tx(struct grid_transport_model* transport, uint8_t index) { return transport->doublebuffer_tx_array[index]; }
 struct grid_doublebuffer* grid_transport_get_doublebuffer_rx(struct grid_transport_model* transport, uint8_t index) { return transport->doublebuffer_rx_array[index]; }
 
@@ -283,7 +316,7 @@ void grid_port_rxdobulebuffer_receive_to_buffer(struct grid_port* por, struct gr
   doublebuffer_rx->status = 0;
 }
 
-void grid_port_receive_broadcast_message(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length) {
+void grid_port_receive_broadcast_message(struct grid_port* por, struct grid_buffer* rx_buffer, struct grid_msg_recent_buffer* rec, char* message, uint16_t length) {
 
   uint8_t error = 0;
 
@@ -299,9 +332,9 @@ void grid_port_receive_broadcast_message(struct grid_port* por, struct grid_msg_
   }
 
   // Check if we can store the message in rx buffer
-  if (grid_buffer_write_size(&por->rx_buffer) >= length) {
+  if (grid_buffer_write_size(rx_buffer) >= length) {
 
-    grid_buffer_write_from_chunk(&por->rx_buffer, message, length);
+    grid_buffer_write_from_chunk(rx_buffer, message, length);
 
     grid_msg_recent_fingerprint_store(rec, fingerprint);
   }
@@ -345,7 +378,8 @@ void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buff
 
   if (message[1] == GRID_CONST_BRC) { // Broadcast message
 
-    grid_port_receive_broadcast_message(por, rec, message, length);
+    struct grid_buffer* rx_buffer = grid_transport_get_buffer_rx(por->parent, por->index);
+    grid_port_receive_broadcast_message(por, rx_buffer, rec, message, length);
   } else if (message[1] == GRID_CONST_DCT) { // Direct Message
 
     grid_port_receive_direct_message(por, message, length);
@@ -360,9 +394,9 @@ void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buff
 //=============================== PROCESS INBOUND
 //==============================//
 
-uint8_t grid_port_process_inbound(struct grid_port* por) {
+uint8_t grid_port_process_inbound(struct grid_port* por, struct grid_buffer* rx_buffer) {
 
-  uint16_t packet_size = grid_buffer_read_size(&por->rx_buffer);
+  uint16_t packet_size = grid_buffer_read_size(rx_buffer);
 
   if (packet_size == 0) {
     // NO PACKET IN RX BUFFER
@@ -378,6 +412,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por) {
   for (uint8_t i = 0; i < port_count; i++) {
 
     struct grid_port* next_port = grid_transport_get_port(&grid_transport_state, i);
+    struct grid_buffer* next_tx_buffer = grid_transport_get_buffer_tx(&grid_transport_state, i);
 
     if (next_port->partner_status == 0) {
       continue;
@@ -387,7 +422,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por) {
       continue;
     }
 
-    if (packet_size > grid_buffer_write_size(&next_port->tx_buffer)) {
+    if (packet_size > grid_buffer_write_size(next_tx_buffer)) {
       // one of the targetports do not have enough space to store the packet
       grid_platform_printf("Buffer Error: %d | %d | %d \r\n", i, target_port_count, next_port->direction);
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_BLUE, 128);
@@ -401,13 +436,15 @@ uint8_t grid_port_process_inbound(struct grid_port* por) {
   // Copy packet from source buffer to temp array
 
   char buffer[packet_size];
-  grid_buffer_read_to_chunk(&por->rx_buffer, buffer, packet_size);
+  grid_buffer_read_to_chunk(rx_buffer, buffer, packet_size);
 
   // Copy packet from temp array to target port buffer
   for (uint8_t i = 0; i < target_port_count; i++) {
 
     struct grid_port* target_port = target_port_array[i];
-    grid_buffer_write_from_chunk(&target_port->tx_buffer, buffer, packet_size);
+    struct grid_buffer* target_tx_buffer = grid_transport_get_buffer_tx(target_port->parent, target_port->index);
+
+    grid_buffer_write_from_chunk(target_tx_buffer, buffer, packet_size);
   }
 
   return 1;
@@ -418,17 +455,9 @@ struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
   // PART 1: ALLOCATE
 
   struct grid_port* por = (struct grid_port*)grid_platform_allocate_volatile(sizeof(struct grid_port));
-
-  por->tx_buffer.buffer_storage = (char*)grid_platform_allocate_volatile(GRID_BUFFER_SIZE);
-  memset(por->tx_buffer.buffer_storage, 0, GRID_BUFFER_SIZE);
-
-  por->rx_buffer.buffer_storage = (char*)grid_platform_allocate_volatile(GRID_BUFFER_SIZE);
-  memset(por->rx_buffer.buffer_storage, 0, GRID_BUFFER_SIZE);
+  memset(por, 0, sizeof(struct grid_port));
 
   // PART 2: INIT
-
-  grid_buffer_init(&por->tx_buffer, GRID_BUFFER_SIZE);
-  grid_buffer_init(&por->rx_buffer, GRID_BUFFER_SIZE);
 
   por->direction = dir;
 
@@ -479,6 +508,19 @@ enum grid_doublebuffer_type {
   GRID_DOBULEBUFFER_TYPE_RX,
 };
 
+struct grid_buffer* grid_buffer_allocate_init(size_t length) {
+
+  struct grid_buffer* buffer = (struct grid_buffer*)malloc(sizeof(struct grid_buffer));
+  memset(buffer, 0, sizeof(struct grid_buffer));
+
+  buffer->buffer_storage = (struct grid_buffer*)malloc(length * sizeof(char));
+  memset(buffer->buffer_storage, 0, length * sizeof(char));
+
+  grid_buffer_init(buffer, length);
+
+  return buffer;
+}
+
 struct grid_doublebuffer* grid_doublebuffer_allocate_init(size_t length) {
 
   struct grid_doublebuffer* doublebuffer = (struct grid_doublebuffer*)grid_platform_allocate_volatile(sizeof(struct grid_doublebuffer));
@@ -492,14 +534,14 @@ struct grid_doublebuffer* grid_doublebuffer_allocate_init(size_t length) {
   return doublebuffer;
 }
 
-uint8_t grid_port_process_outbound_usart(struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer) {
+uint8_t grid_port_process_outbound_usart(struct grid_port* por, struct grid_buffer* tx_buffer, struct grid_doublebuffer* tx_doublebuffer) {
 
   if (tx_doublebuffer->status != 0) {
     // port is busy, a transmission is already in progress!
     return 0;
   }
 
-  uint16_t packet_size = grid_buffer_read_size(&por->tx_buffer);
+  uint16_t packet_size = grid_buffer_read_size(tx_buffer);
 
   if (!packet_size) {
 
@@ -508,27 +550,27 @@ uint8_t grid_port_process_outbound_usart(struct grid_port* por, struct grid_doub
   }
 
   // Let's transfer the packet to local memory
-  grid_buffer_read_init(&por->tx_buffer);
+  grid_buffer_read_init(tx_buffer);
 
   tx_doublebuffer->status = packet_size;
 
   for (uint16_t i = 0; i < packet_size; i++) {
 
-    uint8_t character = grid_buffer_read_character(&por->tx_buffer);
+    uint8_t character = grid_buffer_read_character(tx_buffer);
     tx_doublebuffer->buffer_storage[i] = character;
   }
 
   // Let's acknowledge the transaction
-  grid_buffer_read_acknowledge(&por->tx_buffer);
+  grid_buffer_read_acknowledge(tx_buffer);
 
   grid_platform_send_grid_message(por->direction, tx_doublebuffer->buffer_storage, packet_size);
 
   return 1;
 }
 
-uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por, struct grid_doublebuffer* tx_doublebuffer) {
+uint8_t grid_port_process_outbound_usb(struct grid_port* por, struct grid_buffer* tx_buffer, struct grid_doublebuffer* tx_doublebuffer) {
 
-  uint16_t length = grid_buffer_read_size(&por->tx_buffer);
+  uint16_t length = grid_buffer_read_size(tx_buffer);
 
   if (!length) {
     // NO PACKET IN RX BUFFER
@@ -540,7 +582,7 @@ uint8_t grid_port_process_outbound_usb(volatile struct grid_port* por, struct gr
     tx_doublebuffer->buffer_storage[i] = 0;
   }
 
-  grid_buffer_read_to_chunk(&por->tx_buffer, tx_doublebuffer->buffer_storage, length);
+  grid_buffer_read_to_chunk(tx_buffer, tx_doublebuffer->buffer_storage, length);
 
   // GRID-2-HOST TRANSLATOR
 
@@ -676,10 +718,11 @@ uint8_t grid_port_packet_send_everywhere(struct grid_msg_packet* msg) {
   uint32_t message_length = grid_msg_packet_get_length(msg);
 
   struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
+  struct grid_buffer* ui_rx_buffer = grid_transport_get_buffer_rx(ui_port->parent, ui_port->index);
 
-  if (grid_buffer_write_size(&ui_port->rx_buffer) >= message_length) {
+  if (grid_buffer_write_size(ui_rx_buffer) >= message_length) {
 
-    grid_buffer_write_from_packet(&ui_port->rx_buffer, msg);
+    grid_buffer_write_from_packet(ui_rx_buffer, msg);
 
     return 1;
   } else {
@@ -695,18 +738,19 @@ void grid_port_ping_try_everywhere(void) {
   for (uint8_t i = 0; i < 4; i++) {
 
     struct grid_port* next_port = grid_transport_get_port(&grid_transport_state, i);
+    struct grid_buffer* next_tx_buffer = grid_transport_get_buffer_tx(next_port->parent, next_port->index);
 
     if (next_port->ping_flag == 0) {
       // no need to ping yet!
       continue;
     }
 
-    if (grid_buffer_write_size(&next_port->tx_buffer) < next_port->ping_packet_length) {
+    if (grid_buffer_write_size(next_tx_buffer) < next_port->ping_packet_length) {
       // not enough space in buffer!
       continue;
     }
 
-    grid_buffer_write_from_chunk(&next_port->tx_buffer, next_port->ping_packet, next_port->ping_packet_length);
+    grid_buffer_write_from_chunk(next_tx_buffer, next_port->ping_packet, next_port->ping_packet_length);
 
     next_port->ping_flag = 0;
   }
@@ -869,9 +913,9 @@ void grid_protocol_send_heartbeat() {
 //=============================== PROCESS OUTBOUND
 //==============================//
 
-void grid_port_process_outbound_ui(struct grid_port* por) {
+void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx_buffer) {
 
-  uint16_t length = grid_buffer_read_size(&por->tx_buffer);
+  uint16_t length = grid_buffer_read_size(tx_buffer);
 
   if (length == 0) {
     // NO PACKET IN RX BUFFER
@@ -881,7 +925,7 @@ void grid_port_process_outbound_ui(struct grid_port* por) {
   char message[GRID_PARAMETER_PACKET_maxlength] = {0};
 
   // Let's transfer the packet to local memory
-  grid_buffer_read_to_chunk(&por->tx_buffer, message, length);
+  grid_buffer_read_to_chunk(tx_buffer, message, length);
 
   // GRID-2-UI TRANSLATOR
 

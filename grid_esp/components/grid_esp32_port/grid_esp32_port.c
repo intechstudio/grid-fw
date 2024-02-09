@@ -243,10 +243,11 @@ static void plot_port_debug() {
 
   for (uint8_t i = 0; i < port_list_length; i++) {
 
-    struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
+    struct grid_buffer* tx_buffer = grid_transport_get_buffer_tx(&grid_transport_state, i);
+    struct grid_buffer* rx_buffer = grid_transport_get_buffer_rx(&grid_transport_state, i);
 
-    plot[i + 0] = grid_buffer_get_space(&por->tx_buffer);
-    plot[i + 6] = grid_buffer_get_space(&por->rx_buffer);
+    plot[i + 0] = grid_buffer_get_space(tx_buffer);
+    plot[i + 6] = grid_buffer_get_space(rx_buffer);
   }
 
   for (uint8_t i = 0; i < 12; i++) {
@@ -538,8 +539,9 @@ void grid_esp32_port_task(void* arg) {
       for (uint8_t i = 0; i < port_list_length; i++) {
 
         struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
+        struct grid_buffer* rx_buffer = grid_transport_get_buffer_rx(por->parent, por->index);
 
-        grid_port_process_inbound(por);
+        grid_port_process_inbound(por, rx_buffer);
       }
 
       // plot_port_debug();
@@ -556,16 +558,19 @@ void grid_esp32_port_task(void* arg) {
         ets_delay_us(20);
       }
 
-      grid_port_process_outbound_usb(host_port, host_doublebuffer_tx); // WRITE TO USB SERIAL
+      struct grid_buffer* host_tx_buffer = grid_transport_get_buffer_tx(host_port->parent, host_port->index);
+      grid_port_process_outbound_usb(host_port, host_tx_buffer, host_doublebuffer_tx); // WRITE TO USB SERIAL
 
-      grid_port_process_outbound_ui(ui_port);
+      struct grid_buffer* ui_tx_buffer = grid_transport_get_buffer_tx(ui_port->parent, ui_port->index);
+      grid_port_process_outbound_ui(ui_port, ui_tx_buffer);
 
       for (uint8_t i = 0; i < port_list_length; i++) {
         struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
         struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, i);
 
         if (port->type == GRID_PORT_TYPE_USART) {
-          grid_port_process_outbound_usart(port, doublebuffer_tx);
+          struct grid_buffer* port_tx_buffer = grid_transport_get_buffer_tx(port->parent, port->index);
+          grid_port_process_outbound_usart(port, port_tx_buffer, doublebuffer_tx);
         }
       }
 

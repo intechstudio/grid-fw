@@ -1575,11 +1575,12 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui) {
   uint32_t message_length = grid_msg_packet_get_length(&message_local);
 
   struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
+  struct grid_buffer* ui_tx_buffer = grid_transport_get_buffer_tx(ui_port->parent, ui_port->index);
 
   // Put the packet into the UI_TX buffer
-  if (grid_buffer_write_size(&ui_port->tx_buffer) >= message_length) {
+  if (grid_buffer_write_size(ui_tx_buffer) >= message_length) {
 
-    grid_buffer_write_from_packet(&ui_port->tx_buffer, &message_local);
+    grid_buffer_write_from_packet(ui_tx_buffer, &message_local);
   } else {
     // LOG UNABLE TO WRITE EVENT
   }
@@ -1646,10 +1647,12 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
   uint32_t length = grid_msg_packet_get_length(&message);
 
   struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
-  // Put the packet into the UI_RX buffer
-  if (grid_buffer_write_size(&ui_port->rx_buffer) >= length) {
+  struct grid_buffer* ui_rx_buffer = grid_transport_get_buffer_rx(ui_port->parent, ui_port->index);
 
-    grid_buffer_write_from_packet(&ui_port->rx_buffer, &message);
+  // Put the packet into the UI_RX buffer
+  if (grid_buffer_write_size(ui_rx_buffer) >= length) {
+
+    grid_buffer_write_from_packet(ui_rx_buffer, &message);
   } else {
     // LOG UNABLE TO WRITE EVENT
   }

@@ -194,15 +194,18 @@ static void inbound_task_inner() {
 
   // Copy data from UI_RX to HOST_TX & north TX AND STUFF
 
-  grid_port_process_inbound(ui_port); // Loopback
+  struct grid_buffer* ui_rx_buffer = grid_transport_get_buffer_rx(ui_port->parent, ui_port->index);
+  grid_port_process_inbound(ui_port, ui_rx_buffer); // Loopback
 
   for (uint8_t i = 0; i < 4; i++) {
 
     struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
-    grid_port_process_inbound(port);
+    struct grid_buffer* port_rx_buffer = grid_transport_get_buffer_rx(port->parent, port->index);
+    grid_port_process_inbound(port, port_rx_buffer);
   }
 
-  grid_port_process_inbound(host_port); // USB
+  struct grid_buffer* host_rx_buffer = grid_transport_get_buffer_rx(host_port->parent, host_port->index);
+  grid_port_process_inbound(host_port, host_rx_buffer); // USB
 }
 
 static void outbound_task_inner() {
@@ -218,13 +221,16 @@ static void outbound_task_inner() {
     struct grid_port* port = uart_port_array[i];
     struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, i);
 
-    grid_port_process_outbound_usart(port, doublebuffer_tx);
+    struct grid_buffer* port_tx_buffer = grid_transport_get_buffer_tx(port->parent, port->index);
+    grid_port_process_outbound_usart(port, port_tx_buffer, doublebuffer_tx);
   }
 
-  grid_port_process_outbound_ui(ui_port);
+  struct grid_buffer* ui_tx_buffer = grid_transport_get_buffer_tx(ui_port->parent, ui_port->index);
+  grid_port_process_outbound_ui(ui_port, ui_tx_buffer);
 
-  struct grid_doublebuffer* host_doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, 5);
-  grid_port_process_outbound_usb(host_port, host_doublebuffer_tx);
+  struct grid_buffer* host_tx_buffer = grid_transport_get_buffer_tx(host_port->parent, host_port->index);
+  struct grid_doublebuffer* host_doublebuffer_tx = grid_transport_get_doublebuffer_tx(host_port->parent, host_port->index);
+  grid_port_process_outbound_usb(host_port, host_tx_buffer, host_doublebuffer_tx);
 }
 
 static uint64_t led_lastrealtime = 0;

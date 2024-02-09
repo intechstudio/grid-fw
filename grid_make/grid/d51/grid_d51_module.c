@@ -17,6 +17,14 @@ void grid_module_common_init(void) {
   grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_UI, 0));
   grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USB, 0));
 
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+
   grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
   grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
   grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));

@@ -209,6 +209,16 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "Port done");
 
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
+
+  ESP_LOGI(TAG, "Buffer done");
+
   grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
   grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
   grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));

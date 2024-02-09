@@ -23,6 +23,9 @@ extern void* grid_platform_allocate_volatile(size_t size);
 
 struct grid_buffer {
 
+  uint8_t index;
+  struct grid_transport* parent;
+
   uint16_t buffer_length;
   char* buffer_storage;
 
