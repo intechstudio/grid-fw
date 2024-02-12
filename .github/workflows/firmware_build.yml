@@ -30,35 +30,11 @@ jobs:
           arm-none-eabi-gcc -v
           cd grid_make/gcc && make release_automation
 
-      - name: Install RP2040 SDK and build co-processor firmware
-        run: |
-          sudo apt update
-          sudo apt install -y git python3 cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential
-          git clone https://github.com/raspberrypi/pico-sdk.git --branch master
-          cd pico-sdk/
-          git submodule update --init
-          cd ..
-          export PICO_SDK_PATH=$(pwd)/pico-sdk/
-          echo "The Path: $PICO_SDK_PATH"
-          cd grid_pico/
-          mkdir -p build
-          cd build
-          cmake ..
-          make
-          cd main
-          xxd -i main.bin > pico_firmware.h
-          sed -i '1i\const \\' pico_firmware.h
-          sed -i 's/main_bin/pico_firmware/g' pico_firmware.h
-          cat pico_firmware.h
-          cp pico_firmware.h ../../../grid_esp/main/pico_firmware.h
+      - name: Build Docker image containing both IDF and PICOSDK
+        run: docker build -t my-image .
 
-      - name: esp-idf build
-        uses: espressif/esp-idf-ci-action@v1
-        with:
-          esp_idf_version: v5.1.2
-          target: esp32s3
-          path: 'grid_esp'
-          command: idf.py build
+      - name: Run script in Docker container
+        run: docker run -v $PWD:/project -w /project/ my-image sh -c "./esp_build_firmware.sh"
 
       - name: Convert ESP firmware to UF2
         run: |
