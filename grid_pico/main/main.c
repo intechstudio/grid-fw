@@ -21,6 +21,7 @@
 #include "pico/multicore.h"
 
 #include "../../grid_common/grid_msg.h"
+#include "../../grid_common/grid_port.h"
 #include "../../grid_common/grid_protocol.h"
 
 #include <string.h>
@@ -31,6 +32,24 @@
 #include "grid_pico_spi.h"
 
 #include "hardware/dma.h"
+
+uint64_t grid_platform_rtc_get_micros(void) { return time_us_64(); }
+
+uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) { return time_us_64() - told; }
+
+void* grid_platform_allocate_volatile(size_t size) {
+
+  void* handle = malloc(size);
+  if (handle == NULL) {
+
+    printf("MALLOC FAILED");
+
+    while (1) {
+    }
+  }
+
+  return handle;
+}
 
 #define BUCKET_BUFFER_LENGTH 500
 #define BUCKET_ARRAY_LENGTH 50
@@ -224,9 +243,18 @@ void grid_pico_uart_port_receive_character(struct grid_pico_uart_port* uart_port
     // end of message, put termination zero character
     grid_bucket_put_character(uart_port->rx_bucket, '\0');
 
-    int status = grid_str_verify_frame((char*)uart_port->rx_bucket->buffer);
+    char* message = (char*)uart_port->rx_bucket->buffer;
+    uint16_t length = strlen(message);
+
+    int status = grid_str_verify_frame(message);
 
     if (status == 0) {
+
+      struct grid_port* por = grid_transport_get_port(&grid_transport_state, uart_port->port_index);
+
+      grid_port_decode_direct_message(por, message, length);
+
+      grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
 
       // bucket content verified, close bucket and set it full to indicate that it is ready to be sent through to ESP32 via SPI
       uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL;
@@ -453,6 +481,12 @@ int main() {
   stdio_init_all();
   printf("RP2040 START\r\n");
 
+  grid_transport_init(&grid_transport_state);
+  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_NORTH));
+  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_EAST));
+  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_SOUTH));
+  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_WEST));
+
   uint offset_tx = pio_add_program(GRID_TX_PIO, &uart_tx_program);
   uint offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_program);
 
@@ -516,6 +550,16 @@ int main() {
     grid_pico_spi_transmit_task_inner();
 
     grid_pico_uart_transmit_task_inner();
+
+    for (uint8_t i = 0; i < 4; i++) {
+
+      struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
+
+      if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
+        por->partner_status = 0;
+        // grid_port_receiver_softreset(por, doublebuffer_rx);
+      }
+    }
 
     loopcouter++;
 

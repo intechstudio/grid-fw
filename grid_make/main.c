@@ -129,7 +129,10 @@ static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recen
     grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
     grid_port_receive_decode(por, rec, message, length);
 
-    grid_port_try_uart_timeout_disconect(por, doublebuffer_rx); // try disconnect for uart port
+    if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
+      por->partner_status = 0;
+      grid_port_receiver_softreset(por, doublebuffer_rx);
+    }
   }
 }
 
@@ -158,7 +161,7 @@ static void ui_task_inner() {
   if (grid_platform_rtc_get_elapsed_time(heartbeat_lastrealtime) > GRID_PARAMETER_HEARTBEATINTERVAL_us) {
 
     heartbeat_lastrealtime = grid_platform_rtc_get_micros();
-    grid_protocol_send_heartbeat();
+    grid_protocol_send_heartbeat(grid_msg_get_heartbeat_type(&grid_msg_state), grid_sys_get_hwcfg(&grid_sys_state));
   }
 
   if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {

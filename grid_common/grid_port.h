@@ -1,5 +1,4 @@
-#ifndef GRID_PORT_H_INCLUDED
-#define GRID_PORT_H_INCLUDED
+#pragma once
 
 #include "grid_buf.h"
 #include "grid_decode.h"
@@ -56,7 +55,6 @@ struct grid_port {
   uint8_t direction;
 
   uint8_t partner_status;
-  uint32_t partner_hwcfg;
   uint8_t partner_fi;
 
   uint64_t partner_last_timestamp;
@@ -83,7 +81,7 @@ struct grid_transport_model {
   struct grid_buffer* buffer_rx_array[10];
 };
 
-void grid_port_try_uart_timeout_disconect(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx);
+int grid_port_should_uart_timeout_disconect_now(struct grid_port* por);
 
 extern struct grid_transport_model grid_transport_state;
 
@@ -136,8 +134,6 @@ void grid_protocol_nvm_clear_succcess_callback(uint8_t lastheader_id);
 void grid_protocol_nvm_read_succcess_callback(uint8_t lastheader_id);
 void grid_protocol_nvm_store_succcess_callback(uint8_t lastheader_id);
 
-void grid_protocol_send_heartbeat();
+void grid_protocol_send_heartbeat(uint8_t heartbeat_type, uint32_t hwcfg);
 
 void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx_buffer); // dependency: UI Page Load
-
-#endif

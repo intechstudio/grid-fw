@@ -320,7 +320,7 @@ static void try_send_heartbeat_and_ping_blocking(void) {
     if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
 
       heartbeat_lastrealtime = grid_platform_rtc_get_micros();
-      grid_protocol_send_heartbeat(); // Put heartbeat into UI rx_buffer
+      grid_protocol_send_heartbeat(grid_msg_get_heartbeat_type(&grid_msg_state), grid_sys_get_hwcfg(&grid_sys_state)); // Put heartbeat into UI rx_buffer
 
       xSemaphoreGive(nvm_or_port);
     }
@@ -488,10 +488,13 @@ void grid_esp32_port_task(void* arg) {
           uint16_t length = 0;
           grid_port_rxdobulebuffer_to_linear(por, doublebuffer_rx, message, &length);
 
-          grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
+          // TRANSFORM DONE IN COPROCESSOR grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
           grid_port_receive_decode(por, &recent_messages, message, length);
 
-          grid_port_try_uart_timeout_disconect(por, doublebuffer_rx); // try disconnect for uart port
+          if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
+            por->partner_status = 0;
+            grid_port_receiver_softreset(por, doublebuffer_rx);
+          }
         }
       }
 

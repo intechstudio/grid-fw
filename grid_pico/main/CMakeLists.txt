@@ -2,6 +2,7 @@ add_executable(main
     main.c
     grid_pico_spi.c
     ../../grid_common/grid_msg.c
+    ../../grid_common/grid_port.c
 )
 
 pico_generate_pio_header(main ${CMAKE_CURRENT_LIST_DIR}/uart_tx.pio)

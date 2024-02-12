@@ -81,24 +81,23 @@ char grid_port_get_name_char(struct grid_port* por) {
   return direction_lookup[direction_index];
 }
 
-void grid_port_try_uart_timeout_disconect(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx) {
+int grid_port_should_uart_timeout_disconect_now(struct grid_port* por) {
 
   if (por->type != GRID_PORT_TYPE_USART) {
-    return;
+    return 0;
   }
 
-  if (grid_platform_rtc_get_elapsed_time(por->partner_last_timestamp) < 1000 * 1000) {
+  if (grid_platform_rtc_get_elapsed_time(por->partner_last_timestamp) < GRID_PARAMETER_DISCONNECTTIMEOUT_us) {
     // no need to disconnect yet!
-    return;
+    return 0;
   }
 
-  if (por->partner_status == 0 && doublebuffer_rx->read_start_index == 0 && doublebuffer_rx->seek_start_index == 0) {
+  if (por->partner_status == 0) {
     // was already reset, ready to receive
-    return;
+    return 0;
   }
 
-  por->partner_status = 0;
-  grid_port_receiver_softreset(por, doublebuffer_rx);
+  return 1;
 }
 
 static uint8_t grid_port_rxdobulebuffer_check_overrun(struct grid_doublebuffer* doublebuffer_rx) {
@@ -355,7 +354,6 @@ void grid_port_decode_direct_message(struct grid_port* por, char* message, uint1
 
       // CONNECT
       por->partner_fi = (message[3] - por->direction + 6) % 4; // 0, 1, 2, 3 base on relative rotation of the modules
-      por->partner_hwcfg = grid_str_read_hex_string_value(&message[length - 10], 2, &error);
       por->partner_status = 1;
     }
   }
@@ -465,8 +463,7 @@ struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
   por->dx = 0;
   por->dy = 0;
 
-  por->partner_hwcfg = 0;
-
+  por->partner_status = 1; // UI AND USB are considered to be connected by default
   por->ping_flag = 0;
 
   if (type == GRID_PORT_TYPE_USART) {
@@ -474,7 +471,7 @@ struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
     por->partner_status = 0;
     por->partner_fi = 0;
 
-    sprintf((char*)por->ping_packet, "%c%c%c%c%02lx%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, por->direction, grid_sys_get_hwcfg(&grid_sys_state), 255, 255, GRID_CONST_EOT);
+    sprintf((char*)por->ping_packet, "%c%c%c%c%02x%02x%02x%c00\n", GRID_CONST_SOH, GRID_CONST_DCT, GRID_CONST_BELL, por->direction, 255, 255, 255, GRID_CONST_EOT);
 
     por->ping_packet_length = strlen((char*)por->ping_packet);
 
@@ -493,8 +490,6 @@ struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
       por->dx = -1;
       por->dy = 0;
     }
-  } else {
-    por->partner_status = 1; // UI AND USB are considered to be connected by default
   }
 
   return por;
@@ -868,7 +863,7 @@ void grid_protocol_nvm_store_succcess_callback(uint8_t lastheader_id) {
   grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 }
 
-void grid_protocol_send_heartbeat() {
+void grid_protocol_send_heartbeat(uint8_t heartbeat_type, uint32_t hwcfg) {
 
   uint8_t portstate = 0;
 
@@ -885,15 +880,15 @@ void grid_protocol_send_heartbeat() {
 
   grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
 
-  grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, grid_msg_get_heartbeat_type(&grid_msg_state));
-  grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, grid_sys_get_hwcfg(&grid_sys_state));
+  grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, heartbeat_type);
+  grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, hwcfg);
   grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
   grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
   grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
 
   grid_msg_packet_body_append_parameter(&response, GRID_CLASS_HEARTBEAT_PORTSTATE_offset, GRID_CLASS_HEARTBEAT_PORTSTATE_length, portstate);
 
-  if (grid_msg_get_heartbeat_type(&grid_msg_state) == 1) { // I am usb connected deevice
+  if (heartbeat_type == 1) { // I am usb connected deevice
 
     grid_msg_packet_body_append_printf(&response, GRID_CLASS_PAGEACTIVE_frame);
     grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
