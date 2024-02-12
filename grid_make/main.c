@@ -49,13 +49,15 @@ static void usb_task_inner(struct grid_msg_recent_buffer* rec) {
 
   // SERIAL READ
 
-  char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
+  char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
   uint16_t length = 0;
 
-  struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, 5);
+  struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(host_port->parent, host_port->index);
 
-  grid_port_rxdobulebuffer_to_linear(host_port, doublebuffer_rx, temp, &length); // USB
-  grid_port_receive_decode(host_port, rec, temp, length);
+  grid_port_rxdobulebuffer_to_linear(host_port, doublebuffer_rx, message, &length); // USB
+
+  grid_str_transform_brc_params(message, host_port->dx, host_port->dy, host_port->partner_fi); // update age, sx, sy, dx, dy, rot etc...
+  grid_port_receive_decode(host_port, rec, message, length);
 }
 
 static void nvm_task_inner() {
@@ -102,16 +104,16 @@ static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recen
 
   for (uint8_t i = 0; i < 4; i++) {
 
-    struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
+    struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
     struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i);
 
-    if (partner_connected[i] < port->partner_status) {
+    if (partner_connected[i] < por->partner_status) {
       // connect
       partner_connected[i] = 1;
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 50);
       grid_alert_all_set_frequency(&grid_led_state, -2);
       grid_alert_all_set_phase(&grid_led_state, 100);
-    } else if (partner_connected[i] > port->partner_status) {
+    } else if (partner_connected[i] > por->partner_status) {
 
       // Disconnect
       partner_connected[i] = 0;
@@ -120,11 +122,14 @@ static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recen
       grid_alert_all_set_phase(&grid_led_state, 100);
     }
 
-    char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
+    char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
     uint16_t length = 0;
-    grid_port_rxdobulebuffer_to_linear(port, doublebuffer_rx, temp, &length);
-    grid_port_receive_decode(port, rec, temp, length);
-    grid_port_try_uart_timeout_disconect(port, doublebuffer_rx); // try disconnect for uart port
+    grid_port_rxdobulebuffer_to_linear(por, doublebuffer_rx, message, &length);
+
+    grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
+    grid_port_receive_decode(por, rec, message, length);
+
+    grid_port_try_uart_timeout_disconect(por, doublebuffer_rx); // try disconnect for uart port
   }
 }
 

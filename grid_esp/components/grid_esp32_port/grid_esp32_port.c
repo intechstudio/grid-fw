@@ -403,9 +403,9 @@ void grid_esp32_port_task(void* arg) {
 
   // gpio_set_direction(47, GPIO_MODE_OUTPUT);
 
-  // partner_connected array holds the last state. This is used for checking changes and triggering led effects accordingly
-  uint8_t partner_connected[grid_transport_get_port_array_length(&grid_transport_state)];
-  memset(partner_connected, 0, grid_transport_get_port_array_length(&grid_transport_state));
+  // partner_last_status array holds the last state. This is used for checking changes and triggering led effects accordingly
+  uint8_t partner_last_status[grid_transport_get_port_array_length(&grid_transport_state)];
+  memset(partner_last_status, 0, grid_transport_get_port_array_length(&grid_transport_state));
 
   struct grid_msg_recent_buffer recent_messages;
   grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
@@ -464,31 +464,34 @@ void grid_esp32_port_task(void* arg) {
       uint8_t port_list_length = grid_transport_get_port_array_length(&grid_transport_state);
       // TRY TO RECEIVE UP TO 4 packets on UART PORTS
       for (uint8_t i = 0; i < port_list_length * 4; i++) {
-        struct grid_port* port = grid_transport_get_port(&grid_transport_state, i % port_list_length);
+        struct grid_port* por = grid_transport_get_port(&grid_transport_state, i % port_list_length);
         struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i % port_list_length);
 
-        if (port->type == GRID_PORT_TYPE_USART) {
+        if (por->type == GRID_PORT_TYPE_USART) {
 
-          if (partner_connected[i] < port->partner_status) {
+          if (partner_last_status[i] < por->partner_status) { // ONLY USE FOR LED EFFECT
             // connect
-            partner_connected[i] = 1;
+            partner_last_status[i] = 1;
             grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 50);
             grid_alert_all_set_frequency(&grid_led_state, -2);
             grid_alert_all_set_phase(&grid_led_state, 100);
-          } else if (partner_connected[i] > port->partner_status) {
+          } else if (partner_last_status[i] > por->partner_status) { // ONLY USE FOR LED EFFECT
 
             // Disconnect
-            partner_connected[i] = 0;
+            partner_last_status[i] = 0;
             grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
             grid_alert_all_set_frequency(&grid_led_state, -2);
             grid_alert_all_set_phase(&grid_led_state, 100);
           }
 
-          char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
+          char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
           uint16_t length = 0;
-          grid_port_rxdobulebuffer_to_linear(port, doublebuffer_rx, temp, &length);
-          grid_port_receive_decode(port, &recent_messages, temp, length);
-          grid_port_try_uart_timeout_disconect(port, doublebuffer_rx); // try disconnect for uart port
+          grid_port_rxdobulebuffer_to_linear(por, doublebuffer_rx, message, &length);
+
+          grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
+          grid_port_receive_decode(por, &recent_messages, message, length);
+
+          grid_port_try_uart_timeout_disconect(por, doublebuffer_rx); // try disconnect for uart port
         }
       }
 
@@ -528,10 +531,12 @@ void grid_esp32_port_task(void* arg) {
       struct grid_doublebuffer* host_doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, 5);
 
       {
-        char temp[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
+        char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
         uint16_t length = 0;
-        grid_port_rxdobulebuffer_to_linear(host_port, host_doublebuffer_rx, temp, &length); // USB
-        grid_port_receive_decode(host_port, &recent_messages, temp, length);
+        grid_port_rxdobulebuffer_to_linear(host_port, host_doublebuffer_rx, message, &length); // USB
+
+        grid_str_transform_brc_params(message, host_port->dx, host_port->dy, host_port->partner_fi); // update age, sx, sy, dx, dy, rot etc...
+        grid_port_receive_decode(host_port, &recent_messages, message, length);
       }
 
       // INBOUND

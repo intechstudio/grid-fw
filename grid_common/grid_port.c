@@ -171,7 +171,6 @@ void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doubl
     message[i] = doublebuffer_rx->buffer_storage[(doublebuffer_rx->read_start_index + i) % doublebuffer_rx->buffer_size];
     doublebuffer_rx->buffer_storage[(doublebuffer_rx->read_start_index + i) % doublebuffer_rx->buffer_size] = 0;
   }
-  message[len] = 0;
 
   // Clear data from rx double buffer
   for (uint16_t i = 0; i < len; i++) {
@@ -185,6 +184,7 @@ void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doubl
 
   doublebuffer_rx->status = 0;
 
+  message[len] = '\0';
   *length = len;
 }
 
@@ -207,6 +207,10 @@ uint8_t grid_msg_is_position_transformable(int8_t received_x, int8_t received_y)
 }
 
 void grid_str_transform_brc_params(char* message, int8_t dx, int8_t dy, uint8_t partner_fi) {
+
+  if (message[1] != GRID_CONST_BRC) {
+    return;
+  }
 
   uint8_t error = 0;
 
@@ -316,31 +320,29 @@ void grid_port_rxdobulebuffer_receive_to_buffer(struct grid_port* por, struct gr
   doublebuffer_rx->status = 0;
 }
 
-void grid_port_receive_broadcast_message(struct grid_port* por, struct grid_buffer* rx_buffer, struct grid_msg_recent_buffer* rec, char* message, uint16_t length) {
-
-  uint8_t error = 0;
-
-  // update age, sx, sy, dx, dy, rot etc...
-  grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi);
+int grid_port_receive_broadcast_message(struct grid_port* por, struct grid_buffer* rx_buffer, struct grid_msg_recent_buffer* rec, char* message, uint16_t length) {
 
   uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(message);
 
   if (grid_msg_recent_fingerprint_find(rec, fingerprint)) {
-    // WE HAVE NOT HEARD THIS MESSAGE BEFORE
+    // WE HAVE HEARD THIS MESSAGE BEFORE
     // grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 20);
-    return;
+    return 1;
   }
 
   // Check if we can store the message in rx buffer
-  if (grid_buffer_write_size(rx_buffer) >= length) {
-
-    grid_buffer_write_from_chunk(rx_buffer, message, length);
-
-    grid_msg_recent_fingerprint_store(rec, fingerprint);
+  if (grid_buffer_write_size(rx_buffer) < length) {
+    // Insufficient space in buffer
+    return 1;
   }
+
+  grid_buffer_write_from_chunk(rx_buffer, message, length);
+  grid_msg_recent_fingerprint_store(rec, fingerprint);
+
+  return 0; // success
 }
 
-void grid_port_receive_direct_message(struct grid_port* por, char* message, uint16_t length) {
+void grid_port_decode_direct_message(struct grid_port* por, char* message, uint16_t length) {
 
   if (message[2] == GRID_CONST_BELL) {
 
@@ -352,7 +354,7 @@ void grid_port_receive_direct_message(struct grid_port* por, char* message, uint
     if (por->partner_status == 0) {
 
       // CONNECT
-      por->partner_fi = (message[3] - por->direction + 6) % 4;
+      por->partner_fi = (message[3] - por->direction + 6) % 4; // 0, 1, 2, 3 base on relative rotation of the modules
       por->partner_hwcfg = grid_str_read_hex_string_value(&message[length - 10], 2, &error);
       por->partner_status = 1;
     }
@@ -361,28 +363,24 @@ void grid_port_receive_direct_message(struct grid_port* por, char* message, uint
 
 void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length) {
 
-  if (length == 0) {
-    // no message
-    return;
-  }
-
-  // close the message string with terminating zero character
-  message[length] = '\0';
-
-  int status = grid_str_verify_frame(message);
-
-  if (status != 0) {
+  if (0 != grid_str_verify_frame(message)) {
     // message has invalid fram or checksum, cannot be decoded safely
     return;
   }
 
   if (message[1] == GRID_CONST_BRC) { // Broadcast message
 
+    if (por->partner_status == 0) {
+      // dont allow message to reach rx_buffer if we are not connected because partner_phi based transform will be invalid!
+      return;
+    }
+
     struct grid_buffer* rx_buffer = grid_transport_get_buffer_rx(por->parent, por->index);
     grid_port_receive_broadcast_message(por, rx_buffer, rec, message, length);
+
   } else if (message[1] == GRID_CONST_DCT) { // Direct Message
 
-    grid_port_receive_direct_message(por, message, length);
+    grid_port_decode_direct_message(por, message, length);
   } else { // Unknown Message Type
 
     grid_port_debug_printf("Unknown message type\r\n");
@@ -468,7 +466,6 @@ struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
   por->dy = 0;
 
   por->partner_hwcfg = 0;
-  por->partner_status = 1;
 
   por->ping_flag = 0;
 

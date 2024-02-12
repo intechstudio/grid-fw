@@ -102,10 +102,11 @@ struct grid_doublebuffer* grid_transport_get_doublebuffer_tx(struct grid_transpo
 struct grid_doublebuffer* grid_transport_get_doublebuffer_rx(struct grid_transport_model* transport, uint8_t index);
 
 void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx, char* message, uint16_t* length);
+void grid_str_transform_brc_params(char* message, int8_t dx, int8_t dy, uint8_t partner_fi);
 void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length);
 
-void grid_port_receive_broadcast_message(struct grid_port* por, struct grid_buffer* rx_buffer, struct grid_msg_recent_buffer* rec, char* message, uint16_t length);
-void grid_port_receive_direct_message(struct grid_port* por, char* message, uint16_t length);
+int grid_port_receive_broadcast_message(struct grid_port* por, struct grid_buffer* rx_buffer, struct grid_msg_recent_buffer* rec, char* message, uint16_t length);
+void grid_port_decode_direct_message(struct grid_port* por, char* message, uint16_t length);
 
 uint8_t grid_port_process_inbound(struct grid_port* por, struct grid_buffer* rx_buffer);
 

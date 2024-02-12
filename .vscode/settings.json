@@ -130,7 +130,8 @@
     "esp_littlefs.h": "c",
     "stdio.h": "c",
     "types.h": "c",
-    "dma.h": "c"
+    "dma.h": "c",
+    "*.ipp": "c"
   },
   "files.exclude": {
     ".archive": true,
