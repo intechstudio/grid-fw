@@ -141,40 +141,21 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
     if ((grid_pico_uart_tx_ready_bitmap & (0b00000001 << i))) {
 
-      if (doublebuffer_tx->status == UINT16_MAX) {
+      if (doublebuffer_tx->status == UINT16_MAX) { // magic constant
 
         doublebuffer_tx->status = 0;
       } else if (doublebuffer_tx->status > 0) {
 
-        doublebuffer_tx->status = UINT16_MAX;
+        doublebuffer_tx->status = UINT16_MAX; // magic constant
       }
     }
   }
 
-  struct grid_port* por = NULL;
-  struct grid_doublebuffer* doublebuffer_rx = NULL;
-
   uint8_t source_flags = ((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
+  uint8_t index = __builtin_ctz(source_flags); // count trailing zeros
 
-  if ((source_flags & 0b00000001)) {
-    por = uart_port_array[0];
-    doublebuffer_rx = uart_doublebuffer_rx_array[0];
-  }
-
-  if ((source_flags & 0b00000010)) {
-    por = uart_port_array[1];
-    doublebuffer_rx = uart_doublebuffer_rx_array[1];
-  }
-
-  if ((source_flags & 0b00000100)) {
-    por = uart_port_array[2];
-    doublebuffer_rx = uart_doublebuffer_rx_array[2];
-  }
-
-  if ((source_flags & 0b00001000)) {
-    por = uart_port_array[3];
-    doublebuffer_rx = uart_doublebuffer_rx_array[3];
-  }
+  struct grid_port* por = por = index < 4 ? uart_port_array[index] : NULL;
+  struct grid_doublebuffer* doublebuffer_rx = doublebuffer_rx = index < 4 ? uart_doublebuffer_rx_array[index] : NULL;
 
   if (por == NULL) {
     // no message to copy to rx_double_buffer

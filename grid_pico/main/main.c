@@ -452,14 +452,8 @@ void grid_pico_spi_receive_task_inner(void) {
 
   // iterate through all the uart_ports
 
-  struct grid_pico_uart_port* uart_port = NULL;
-
-  for (uint8_t i = 0; i < 4; i++) {
-    // copy message to the addressed uart_port and set it to busy!
-    if ((destination_flags & (1 << uart_port_array[i].port_index))) {
-      uart_port = &uart_port_array[i];
-    }
-  }
+  uint8_t index = __builtin_ctz(destination_flags);
+  struct grid_pico_uart_port* uart_port = index < 4 ? &uart_port_array[index] : NULL;
 
   spi_message_to_bucket(uart_port, grid_pico_spi_rxbuf);
 
