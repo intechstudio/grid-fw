@@ -37,6 +37,8 @@
 #define BUCKET_BUFFER_LENGTH 500
 #define BUCKET_ARRAY_LENGTH 50
 
+struct grid_msg_recent_buffer recent_messages;
+
 static uint8_t grid_pico_spi_txbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
 static uint8_t grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
 
@@ -238,6 +240,45 @@ void grid_pico_uart_transmit_task_inner(struct grid_pico_uart_port* uart_port) {
   }
 }
 
+int grid_uart_rx_process_bucket(struct grid_pico_uart_port* uart_port) {
+
+  char* message = (char*)uart_port->rx_bucket->buffer;
+  uint16_t length = strlen(message);
+
+  int status = grid_str_verify_frame(message);
+
+  if (status != 0) {
+    grid_bucket_clear(uart_port->rx_bucket);
+    return 1;
+  }
+
+  struct grid_port* por = grid_transport_get_port(&grid_transport_state, uart_port->port_index);
+
+  if (message[1] != GRID_CONST_BRC) {
+    grid_port_decode_direct_message(por, message, length);
+    uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
+    return 1;
+  }
+
+  grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
+
+  // check if message is alreadys in recent messages buffer
+  uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(message);
+  if (grid_msg_recent_fingerprint_find(&recent_messages, fingerprint)) {
+    // Already heard this message
+    printf("H\r\n");
+    grid_bucket_clear(uart_port->rx_bucket);
+    return 1;
+  }
+
+  grid_msg_recent_fingerprint_store(&recent_messages, fingerprint);
+
+  // bucket content verified, close bucket and set it full to indicate that it is ready to be sent through to ESP32 via SPI
+  uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
+
+  return 0;
+}
+
 void grid_pico_uart_port_receive_character(struct grid_pico_uart_port* uart_port, uint8_t character) {
 
   if (uart_port->rx_bucket == NULL) {
@@ -264,26 +305,7 @@ void grid_pico_uart_port_receive_character(struct grid_pico_uart_port* uart_port
     // end of message, put termination zero character
     grid_bucket_put_character(uart_port->rx_bucket, '\0');
 
-    char* message = (char*)uart_port->rx_bucket->buffer;
-    uint16_t length = strlen(message);
-
-    int status = grid_str_verify_frame(message);
-
-    if (status == 0) {
-
-      struct grid_port* por = grid_transport_get_port(&grid_transport_state, uart_port->port_index);
-
-      grid_port_decode_direct_message(por, message, length);
-
-      grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
-
-      // bucket content verified, close bucket and set it full to indicate that it is ready to be sent through to ESP32 via SPI
-      uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
-      uart_port->rx_bucket->buffer_index = 0;
-
-    } else {
-      grid_bucket_clear(uart_port->rx_bucket);
-    }
+    grid_uart_rx_process_bucket(uart_port);
 
     // attack new bucket for receiving the next packet
     grid_uart_port_attach_rx_bucket(uart_port);
@@ -338,7 +360,7 @@ void core_1_main_entry() {
       continue;
     }
 
-    uint8_t ok = multicore_fifo_push_timeout_us(packed_chars, 0);
+    uint8_t ok = multicore_fifo_push_timeout_us(packed_chars, 1);
 
     if (!ok) {
       printf("F\n");
@@ -501,13 +523,13 @@ void grid_pico_spi_transmit_task_inner(void) {
   }
 
   // found full bucket, send it through SPI
-
+  spi_tx_active_bucket->buffer_index = 0;
   // printf("SPI send: %s\r\n", spi_tx_active_bucket->buffer);
 
   spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = grid_pico_uart_tx_ready_bitmap;
   spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << (spi_tx_active_bucket->source_port_index));
 
-  printf("%d\n", spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
+  // printf("%d\n", spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
 
   spi_uart_port_set_sync_state(spi_tx_active_bucket->buffer);
   grid_pico_spi_transfer(spi_tx_active_bucket->buffer, grid_pico_spi_rxbuf);
@@ -515,8 +537,13 @@ void grid_pico_spi_transmit_task_inner(void) {
 
 int main() {
 
+  set_sys_clock_khz(250000, true); // 2x overclock for RP2040. This is required because UART rx processing is not fast enough and I get lots of "F\n" in console otherwise
   stdio_init_all();
+  uart_init(uart0, 2000000);
+
   printf("RP2040 START\r\n");
+
+  grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
 
   grid_transport_init(&grid_transport_state);
   grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_NORTH));
