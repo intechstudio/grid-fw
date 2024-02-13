@@ -511,8 +511,8 @@ void grid_esp32_port_task(void* arg) {
       struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
       struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
 
-      struct grid_doublebuffer* host_doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, 5);
-      struct grid_doublebuffer* host_doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, 5);
+      struct grid_doublebuffer* host_doublebuffer_tx = grid_transport_get_doublebuffer_tx(host_port->parent, host_port->index);
+      struct grid_doublebuffer* host_doublebuffer_rx = grid_transport_get_doublebuffer_rx(host_port->parent, host_port->index);
 
       {
         char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
