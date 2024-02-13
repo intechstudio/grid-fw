@@ -66,7 +66,11 @@ enum grid_bucket_status_t {
 
   GRID_BUCKET_STATUS_EMPTY,
   GRID_BUCKET_STATUS_RECEIVING,
-  GRID_BUCKET_STATUS_FULL,
+  GRID_BUCKET_STATUS_FULL_SEND_TO_SPI,
+  GRID_BUCKET_STATUS_FULL_SEND_TO_NORTH,
+  GRID_BUCKET_STATUS_FULL_SEND_TO_EAST,
+  GRID_BUCKET_STATUS_FULL_SEND_TO_SOUTH,
+  GRID_BUCKET_STATUS_FULL_SEND_TO_WEST,
   GRID_BUCKET_STATUS_TRANSMITTING,
   GRID_BUCKET_STATUS_DONE,
 
@@ -86,10 +90,12 @@ struct grid_pico_uart_port {
 
   uint8_t port_index;
   uint8_t tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length];
-  uint8_t tx_is_busy;
-  uint16_t tx_index;
 
   struct grid_bucket* rx_bucket;
+
+  struct grid_bucket* tx_active_bucket;
+  struct grid_bucket* tx_lastinserted_bucket;
+  struct grid_bucket* tx_previous_bucket;
 };
 
 uint8_t bucket_array_length = BUCKET_ARRAY_LENGTH;
@@ -110,10 +116,11 @@ void grid_pico_uart_uart_port_init(struct grid_pico_uart_port* uart_port, uint8_
     uart_port->tx_buffer[i] = 0;
   }
 
-  uart_port->tx_index = 0;
-  uart_port->tx_is_busy = false;
-
   uart_port->rx_bucket = NULL;
+
+  uart_port->tx_active_bucket = NULL;
+  uart_port->tx_previous_bucket = NULL;
+  uart_port->tx_lastinserted_bucket = NULL;
 }
 
 void grid_bucket_clear(struct grid_bucket* bucket) {
@@ -159,8 +166,8 @@ struct grid_bucket* grid_bucket_find_next_match(struct grid_bucket* previous_buc
   return NULL;
 }
 
-struct grid_bucket* spi_active_bucket = NULL;
-struct grid_bucket* spi_previous_bucket = NULL;
+struct grid_bucket* spi_tx_active_bucket = NULL;
+struct grid_bucket* spi_rx_previous_bucket = NULL;
 
 void grid_bucket_put_character(struct grid_bucket* bucket, char next_char) {
 
@@ -179,41 +186,72 @@ void grid_bucket_put_character(struct grid_bucket* bucket, char next_char) {
   }
 }
 
-void grid_uart_port_attach_rx_bucket(struct grid_pico_uart_port* uart_port) {
+char grid_bucket_get_character(struct grid_bucket* bucket) {
 
-  uart_port->rx_bucket = grid_bucket_find_next_match(uart_port->rx_bucket, GRID_BUCKET_STATUS_EMPTY);
-
-  if (uart_port->rx_bucket != NULL) {
-
-    uart_port->rx_bucket->status = GRID_BUCKET_STATUS_RECEIVING;
-    uart_port->rx_bucket->source_port_index = uart_port->port_index;
-  } else {
-
-    printf("NULL BUCKET\r\n");
+  if (bucket == NULL) {
+    return 0;
   }
+
+  char c = bucket->buffer[bucket->buffer_index];
+  bucket->buffer_index++;
+  return c;
 }
 
-void grid_pico_uart_transmit_task_inner(void) {
+void grid_uart_port_attach_rx_bucket(struct grid_pico_uart_port* uart_port) {
 
-  // iterate through all the uart_ports
-  for (uint8_t i = 0; i < 4; i++) {
+  struct grid_bucket* bucket = grid_bucket_find_next_match(uart_port->rx_bucket, GRID_BUCKET_STATUS_EMPTY);
 
-    struct grid_pico_uart_port* uart_port = &uart_port_array[i];
+  if (bucket == NULL) {
+    return;
+  }
 
-    // if transmission is in progress then send the next character
-    if (uart_port->tx_is_busy) {
+  uart_port->rx_bucket = bucket;
 
-      char c = uart_port->tx_buffer[uart_port->tx_index];
-      uart_port->tx_index++;
+  uart_port->rx_bucket->status = GRID_BUCKET_STATUS_RECEIVING;
+  uart_port->rx_bucket->source_port_index = uart_port->port_index;
+}
 
-      uart_tx_program_putc(GRID_TX_PIO, uart_port->port_index, c);
+void grid_uart_port_attach_tx_bucket(struct grid_pico_uart_port* uart_port) {
 
-      if (c == '\n') {
+  struct grid_bucket* bucket = grid_bucket_find_next_match(uart_port->tx_previous_bucket, GRID_BUCKET_STATUS_FULL_SEND_TO_NORTH + uart_port->port_index);
 
-        uart_port->tx_is_busy = 0;
-        grid_pico_uart_tx_ready_bitmap |= (1 << uart_port->port_index);
-      }
-    }
+  if (bucket == NULL) {
+    // no more message, ready to receive more
+    grid_pico_uart_tx_ready_bitmap |= (1 << uart_port->port_index);
+    return;
+  }
+
+  bucket->buffer_index = 0;
+  bucket->status = GRID_BUCKET_STATUS_TRANSMITTING;
+
+  uart_port->tx_active_bucket = bucket;
+}
+
+void grid_uart_port_deattach_tx_bucket(struct grid_pico_uart_port* uart_port) {
+
+  grid_bucket_clear(uart_port->tx_active_bucket);
+  uart_port->tx_previous_bucket = uart_port->tx_active_bucket;
+  uart_port->tx_active_bucket = NULL;
+}
+
+void grid_pico_uart_transmit_task_inner(struct grid_pico_uart_port* uart_port) {
+
+  if (uart_port == NULL) {
+    return;
+  }
+
+  if (uart_port->tx_active_bucket == NULL) {
+    grid_uart_port_attach_tx_bucket(uart_port);
+    return;
+  }
+
+  // if transmission is in progress then send the next character
+  char c = grid_bucket_get_character(uart_port->tx_active_bucket);
+  uart_tx_program_putc(GRID_TX_PIO, uart_port->port_index, c);
+
+  if (c == '\n') {
+
+    grid_uart_port_deattach_tx_bucket(uart_port);
   }
 }
 
@@ -257,7 +295,7 @@ void grid_pico_uart_port_receive_character(struct grid_pico_uart_port* uart_port
       grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
 
       // bucket content verified, close bucket and set it full to indicate that it is ready to be sent through to ESP32 via SPI
-      uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL;
+      uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
       uart_port->rx_bucket->buffer_index = 0;
 
     } else {
@@ -371,6 +409,35 @@ static uint32_t spi_transmit_lastrealtime = 0;
 static uint32_t spi_receive_interval_us = 100;
 static uint32_t spi_transmit_interval_us = 500;
 
+int spi_message_to_bucket(struct grid_pico_uart_port* uart_port, char* message) {
+
+  if (uart_port == NULL) {
+    return 1;
+  }
+
+  struct grid_bucket* bucket = grid_bucket_find_next_match(uart_port->tx_lastinserted_bucket, GRID_BUCKET_STATUS_EMPTY);
+
+  if (bucket == NULL) {
+    return 1;
+  }
+
+  for (uint16_t i = 0; i < GRID_PARAMETER_SPI_TRANSACTION_length; i++) {
+    char c = grid_pico_spi_rxbuf[i];
+    grid_bucket_put_character(bucket, c);
+
+    if (c == '\n') {
+      break;
+    }
+  }
+
+  bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_NORTH + uart_port->port_index;
+
+  // set bucket as last inserted
+  uart_port->tx_lastinserted_bucket = bucket;
+
+  grid_pico_uart_tx_ready_bitmap &= ~(1 << uart_port->port_index); // clear ready
+}
+
 void grid_pico_spi_receive_task_inner(void) {
 
   if (grid_pico_get_elapsed_time(spi_receive_lastrealtime) < spi_receive_interval_us) {
@@ -401,30 +468,23 @@ void grid_pico_spi_receive_task_inner(void) {
   // printf("%d\r\n", destination_flags);
 
   // iterate through all the uart_ports
+
+  struct grid_pico_uart_port* uart_port = NULL;
+
   for (uint8_t i = 0; i < 4; i++) {
-
-    struct grid_pico_uart_port* uart_port = &uart_port_array[i];
-
     // copy message to the addressed uart_port and set it to busy!
-    if ((destination_flags & (1 << uart_port->port_index))) {
-
-      uart_port->tx_is_busy = 1;
-      uart_port->tx_index = 0;
-      strcpy(uart_port->tx_buffer, grid_pico_spi_rxbuf);
-      // printf("SPI receive: %s\r\n", grid_pico_spi_rxbuf);
-
-      // printf("%02x %02x %02x %02x ...\r\n", grid_pico_spi_rxbuf[0], grid_pico_spi_rxbuf[1],
-      // grid_pico_spi_rxbuf[2], grid_pico_spi_rxbuf[3]);
-
-      grid_pico_uart_tx_ready_bitmap &= ~(1 << uart_port->port_index); // clear ready
+    if ((destination_flags & (1 << uart_port_array[i].port_index))) {
+      uart_port = &uart_port_array[i];
     }
   }
 
-  if (spi_active_bucket != NULL) {
+  spi_message_to_bucket(uart_port, grid_pico_spi_rxbuf);
+
+  if (spi_tx_active_bucket != NULL) {
     // clear the bucket after use
-    grid_bucket_clear(spi_active_bucket);
-    spi_previous_bucket = spi_active_bucket;
-    spi_active_bucket = NULL;
+    grid_bucket_clear(spi_tx_active_bucket);
+    spi_rx_previous_bucket = spi_tx_active_bucket;
+    spi_tx_active_bucket = NULL;
   }
 }
 
@@ -439,16 +499,16 @@ void grid_pico_spi_transmit_task_inner(void) {
     return;
   }
 
-  if (spi_active_bucket != NULL) {
+  if (spi_tx_active_bucket != NULL) {
     // previous transfer's rx task has not run yet
     return;
   }
 
   // try to send bucket content through SPI
 
-  spi_active_bucket = grid_bucket_find_next_match(spi_previous_bucket, GRID_BUCKET_STATUS_FULL);
+  spi_tx_active_bucket = grid_bucket_find_next_match(spi_rx_previous_bucket, GRID_BUCKET_STATUS_FULL_SEND_TO_SPI);
 
-  if (spi_active_bucket == NULL) {
+  if (spi_tx_active_bucket == NULL) {
     // No fully bucket is received from uart yet
     // send empty packet with status flags
 
@@ -465,15 +525,15 @@ void grid_pico_spi_transmit_task_inner(void) {
 
   // found full bucket, send it through SPI
 
-  // printf("SPI send: %s\r\n", spi_active_bucket->buffer);
+  // printf("SPI send: %s\r\n", spi_tx_active_bucket->buffer);
 
-  spi_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = grid_pico_uart_tx_ready_bitmap;
-  spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << (spi_active_bucket->source_port_index));
+  spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = grid_pico_uart_tx_ready_bitmap;
+  spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << (spi_tx_active_bucket->source_port_index));
 
-  printf("%d\n", spi_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
+  printf("%d\n", spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
 
-  spi_uart_port_set_sync_state(spi_active_bucket->buffer);
-  grid_pico_spi_transfer(spi_active_bucket->buffer, grid_pico_spi_rxbuf);
+  spi_uart_port_set_sync_state(spi_tx_active_bucket->buffer);
+  grid_pico_spi_transfer(spi_tx_active_bucket->buffer, grid_pico_spi_rxbuf);
 }
 
 int main() {
@@ -549,7 +609,10 @@ int main() {
 
     grid_pico_spi_transmit_task_inner();
 
-    grid_pico_uart_transmit_task_inner();
+    // iterate through all the uart_ports
+    for (uint8_t i = 0; i < 4; i++) {
+      grid_pico_uart_transmit_task_inner(&uart_port_array[i]);
+    }
 
     for (uint8_t i = 0; i < 4; i++) {
 
