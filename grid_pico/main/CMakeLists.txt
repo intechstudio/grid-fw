@@ -1,6 +1,7 @@
 add_executable(main
     main.c
     grid_pico_spi.c
+    grid_pico_platform.c
     ../../grid_common/grid_msg.c
     ../../grid_common/grid_port.c
 )

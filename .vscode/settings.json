@@ -131,7 +131,10 @@
     "stdio.h": "c",
     "types.h": "c",
     "dma.h": "c",
-    "*.ipp": "c"
+    "*.ipp": "c",
+    "grid_pico_platform.h": "c",
+    "grid_pico_spi.h": "c",
+    "stddef.h": "c"
   },
   "files.exclude": {
     ".archive": true,
