@@ -255,7 +255,24 @@ int grid_uart_rx_process_bucket(struct grid_pico_uart_port* uart_port) {
   struct grid_port* por = grid_transport_get_port(&grid_transport_state, uart_port->port_index);
 
   if (message[1] != GRID_CONST_BRC) {
-    grid_port_decode_direct_message(por, message, length);
+
+    if (message[2] == GRID_CONST_BELL) {
+
+      uint8_t error = 0;
+
+      // reset timeout counter
+      por->partner_last_timestamp = grid_platform_rtc_get_micros();
+
+      if (por->partner_status == 0) {
+
+        printf("C\n");
+
+        // CONNECT
+        por->partner_fi = (message[3] - por->direction + 6) % 4; // 0, 1, 2, 3 base on relative rotation of the modules
+        por->partner_status = 1;
+      }
+    }
+
     uart_port->rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
     return 1;
   }
@@ -624,6 +641,7 @@ int main() {
       struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
 
       if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
+        printf("D\n");
         por->partner_status = 0;
         // grid_port_receiver_softreset(por, doublebuffer_rx);
       }
