@@ -340,7 +340,9 @@ void grid_msg_recent_fingerprint_buffer_init(struct grid_msg_recent_buffer* rec,
   rec->fingerprint_array_length = length;
   rec->fingerprint_array_index = 0;
 
-  rec->fingerprint_array = (grid_fingerprint_t*)malloc(rec->fingerprint_array_length * sizeof(grid_fingerprint_t));
+  
+
+  rec->fingerprint_array = (grid_fingerprint_t*)grid_platform_allocate_volatile(rec->fingerprint_array_length * sizeof(grid_fingerprint_t));
   memset(rec->fingerprint_array, 0, rec->fingerprint_array_length);
 }
 

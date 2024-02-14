@@ -24,12 +24,15 @@
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
+#include "grid_buf.h"
+#include "grid_esp32_platform.h"
 #include "grid_port.h"
 #include "grid_sys.h"
 
 #include "driver/spi_slave.h"
 
 extern uint32_t grid_platform_get_cycles(void);
+struct grid_msg_recent_buffer DRAM_ATTR recent_messages;
 
 static TaskHandle_t xTaskToNotify = NULL;
 
@@ -98,6 +101,8 @@ static uint8_t DRAM_ATTR rx_flag = 0;
 static char DRAM_ATTR rx_str[500] = {0};
 
 static struct grid_port* DRAM_ATTR uart_port_array[4] = {0};
+static struct grid_buffer* DRAM_ATTR uart_buffer_tx_array[4] = {0};
+static struct grid_buffer* DRAM_ATTR uart_buffer_rx_array[4] = {0};
 static struct grid_doublebuffer* DRAM_ATTR uart_doublebuffer_tx_array[4] = {0};
 static struct grid_doublebuffer* DRAM_ATTR uart_doublebuffer_rx_array[4] = {0};
 
@@ -136,6 +141,8 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
   for (uint8_t i = 0; i < 4; i++) {
     struct grid_port* por = uart_port_array[i];
+    struct grid_buffer* buffer_tx = uart_buffer_tx_array[i];
+    struct grid_buffer* buffer_rx = uart_buffer_rx_array[i];
     struct grid_doublebuffer* doublebuffer_tx = uart_doublebuffer_tx_array[i];
     struct grid_doublebuffer* doublebuffer_rx = uart_doublebuffer_rx_array[i];
 
@@ -162,6 +169,47 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
     return;
   }
 
+#if GRID_ESP32_PLATFORM_FEATURE_NO_RXDOUBLEBUFFER_ON_UART
+
+  //grid_port_receive_decode(por, &recent_messages, trans->rx_buffer, strlen(trans->rx_buffer));
+
+  char* message = (char*)trans->rx_buffer;
+  uint16_t length = strlen(trans->rx_buffer);
+
+  // if (0 != grid_str_verify_frame(message)) {
+  //   // message has invalid fram or checksum, cannot be decoded safely
+  //   return;
+  // }
+
+  if (message[1] == GRID_CONST_BRC) { // Broadcast message
+
+    if (por->partner_status == 0) {
+      // dont allow message to reach rx_buffer if we are not connected because partner_phi based transform will be invalid!
+      return;
+    }
+
+    struct grid_buffer* rx_buffer = uart_buffer_rx_array[por->index];
+    grid_buffer_write_from_chunk(rx_buffer, message, length);
+
+  } else if (message[1] == GRID_CONST_DCT) { // Direct Message
+
+    if (message[2] == GRID_CONST_BELL) {
+
+    uint8_t error = 0;
+
+    // reset timeout counter
+    por->partner_last_timestamp = grid_platform_rtc_get_micros();
+
+    if (por->partner_status == 0) {
+
+      // CONNECT
+      por->partner_fi = (message[3] - por->direction + 6) % 4; // 0, 1, 2, 3 base on relative rotation of the modules
+      por->partner_status = 1;
+    }
+  }
+  }
+
+#else
   for (uint16_t i = 0; true; i++) {
 
     doublebuffer_rx->buffer_storage[doublebuffer_rx->write_index] = ((char*)trans->rx_buffer)[i];
@@ -173,6 +221,7 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
     doublebuffer_rx->write_index++;
     doublebuffer_rx->write_index %= doublebuffer_rx->buffer_size;
   }
+#endif
 }
 
 static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
@@ -317,6 +366,17 @@ void grid_esp32_port_task(void* arg) {
   uart_port_array[2] = grid_transport_get_port(&grid_transport_state, 2);
   uart_port_array[3] = grid_transport_get_port(&grid_transport_state, 3);
 
+
+  uart_buffer_tx_array[0] = grid_transport_get_buffer_tx(&grid_transport_state, 0);
+  uart_buffer_tx_array[1] = grid_transport_get_buffer_tx(&grid_transport_state, 1);
+  uart_buffer_tx_array[2] = grid_transport_get_buffer_tx(&grid_transport_state, 2);
+  uart_buffer_tx_array[3] = grid_transport_get_buffer_tx(&grid_transport_state, 3);
+
+  uart_buffer_rx_array[0] = grid_transport_get_buffer_rx(&grid_transport_state, 0);
+  uart_buffer_rx_array[1] = grid_transport_get_buffer_rx(&grid_transport_state, 1);
+  uart_buffer_rx_array[2] = grid_transport_get_buffer_rx(&grid_transport_state, 2);
+  uart_buffer_rx_array[3] = grid_transport_get_buffer_rx(&grid_transport_state, 3);
+
   uart_doublebuffer_tx_array[0] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 0);
   uart_doublebuffer_tx_array[1] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 1);
   uart_doublebuffer_tx_array[2] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 2);
@@ -388,7 +448,6 @@ void grid_esp32_port_task(void* arg) {
   uint8_t partner_last_status[grid_transport_get_port_array_length(&grid_transport_state)];
   memset(partner_last_status, 0, grid_transport_get_port_array_length(&grid_transport_state));
 
-  struct grid_msg_recent_buffer recent_messages;
   grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
 
   while (1) {
@@ -444,7 +503,7 @@ void grid_esp32_port_task(void* arg) {
 
       uint8_t port_list_length = grid_transport_get_port_array_length(&grid_transport_state);
       // TRY TO RECEIVE UP TO 4 packets on UART PORTS
-      for (uint8_t i = 0; i < port_list_length * 4; i++) {
+      for (uint8_t i = 0; i < port_list_length * 1; i++) {
         struct grid_port* por = grid_transport_get_port(&grid_transport_state, i % port_list_length);
         struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i % port_list_length);
 
@@ -465,19 +524,31 @@ void grid_esp32_port_task(void* arg) {
             grid_alert_all_set_phase(&grid_led_state, 100);
           }
 
-          char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
-          uint16_t length = 0;
-          grid_port_rxdobulebuffer_to_linear(por, doublebuffer_rx, message, &length);
-
-          // TRANSFORM DONE IN COPROCESSOR grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
-          grid_port_receive_decode(por, &recent_messages, message, length);
-
           if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
             por->partner_status = 0;
             grid_port_receiver_softreset(por, doublebuffer_rx);
           }
         }
       }
+
+#if GRID_ESP32_PLATFORM_FEATURE_NO_RXDOUBLEBUFFER_ON_UART
+
+#else
+      for (uint8_t i = 0; i < port_list_length * 4; i++) {
+        struct grid_port* por = grid_transport_get_port(&grid_transport_state, i % port_list_length);
+        struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i % port_list_length);
+
+        if (por->type == GRID_PORT_TYPE_USART) {
+
+          char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
+          uint16_t length = 0;
+          grid_port_rxdobulebuffer_to_linear(por, doublebuffer_rx, message, &length);
+
+          // TRANSFORM DONE IN COPROCESSOR grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
+          grid_port_receive_decode(por, &recent_messages, message, length);
+        }
+      }
+#endif
 
       c0 = grid_platform_get_cycles();
 

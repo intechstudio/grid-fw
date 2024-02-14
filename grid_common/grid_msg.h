@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 
+extern void* grid_platform_allocate_volatile(size_t size);
 extern uint8_t grid_platform_get_random_8();
 
 #define grid_msg_packet_header_maxlength 26
