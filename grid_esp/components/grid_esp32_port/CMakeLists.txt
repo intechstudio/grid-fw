@@ -4,5 +4,5 @@ idf_component_register(
     INCLUDE_DIRS
         "."
     REQUIRES
-        "driver" "grid_common" "esp_tinyusb" "grid_esp32_platform" 
+        "driver" "grid_common" "esp_tinyusb" "grid_esp32_platform"
 )

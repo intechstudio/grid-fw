@@ -79,7 +79,6 @@ uint32_t grid_platform_get_cycles();
 
 uint32_t grid_platform_get_cycles_per_us();
 
-
 #ifdef __cplusplus
 }
 #endif

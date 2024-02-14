@@ -542,6 +542,7 @@ int main() {
   uart_init(uart0, 2000000);
 
   printf("RP2040 START\r\n");
+  printf("Build date and time: %s %s\n", __DATE__, __TIME__);
 
   grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
 

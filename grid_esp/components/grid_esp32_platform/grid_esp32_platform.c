@@ -14,9 +14,6 @@
 #include "driver/ledc.h" // for pwm based pico system clock generation
 #include "rom/ets_sys.h"
 
-
-
-
 #include "driver/gpio.h"
 #include "esp_check.h"
 #include "rom/ets_sys.h" // For ets_printf
@@ -29,10 +26,7 @@
 
 #include "hal/cpu_hal.h"
 
-
 static const char* TAG = "grid_esp32_platform";
-
-
 
 void* grid_platform_allocate_volatile(size_t size) {
 

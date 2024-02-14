@@ -171,7 +171,7 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
 #if GRID_ESP32_PLATFORM_FEATURE_NO_RXDOUBLEBUFFER_ON_UART
 
-  //grid_port_receive_decode(por, &recent_messages, trans->rx_buffer, strlen(trans->rx_buffer));
+  // grid_port_receive_decode(por, &recent_messages, trans->rx_buffer, strlen(trans->rx_buffer));
 
   char* message = (char*)trans->rx_buffer;
   uint16_t length = strlen(trans->rx_buffer);
@@ -195,18 +195,18 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
     if (message[2] == GRID_CONST_BELL) {
 
-    uint8_t error = 0;
+      uint8_t error = 0;
 
-    // reset timeout counter
-    por->partner_last_timestamp = grid_platform_rtc_get_micros();
+      // reset timeout counter
+      por->partner_last_timestamp = grid_platform_rtc_get_micros();
 
-    if (por->partner_status == 0) {
+      if (por->partner_status == 0) {
 
-      // CONNECT
-      por->partner_fi = (message[3] - por->direction + 6) % 4; // 0, 1, 2, 3 base on relative rotation of the modules
-      por->partner_status = 1;
+        // CONNECT
+        por->partner_fi = (message[3] - por->direction + 6) % 4; // 0, 1, 2, 3 base on relative rotation of the modules
+        por->partner_status = 1;
+      }
     }
-  }
   }
 
 #else
@@ -365,7 +365,6 @@ void grid_esp32_port_task(void* arg) {
   uart_port_array[1] = grid_transport_get_port(&grid_transport_state, 1);
   uart_port_array[2] = grid_transport_get_port(&grid_transport_state, 2);
   uart_port_array[3] = grid_transport_get_port(&grid_transport_state, 3);
-
 
   uart_buffer_tx_array[0] = grid_transport_get_buffer_tx(&grid_transport_state, 0);
   uart_buffer_tx_array[1] = grid_transport_get_buffer_tx(&grid_transport_state, 1);
