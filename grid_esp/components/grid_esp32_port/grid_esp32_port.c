@@ -101,6 +101,8 @@ static uint8_t DRAM_ATTR rx_flag = 0;
 static char DRAM_ATTR rx_str[500] = {0};
 
 static struct grid_port* DRAM_ATTR uart_port_array[4] = {0};
+static struct grid_buffer* DRAM_ATTR ui_buffer_tx = NULL;
+static struct grid_buffer* DRAM_ATTR host_buffer_tx = NULL;
 static struct grid_buffer* DRAM_ATTR uart_buffer_tx_array[4] = {0};
 static struct grid_buffer* DRAM_ATTR uart_buffer_rx_array[4] = {0};
 static struct grid_doublebuffer* DRAM_ATTR uart_doublebuffer_tx_array[4] = {0};
@@ -188,8 +190,11 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
       return;
     }
 
-    struct grid_buffer* rx_buffer = uart_buffer_rx_array[por->index];
-    grid_buffer_write_from_chunk(rx_buffer, message, length);
+    // struct grid_buffer* rx_buffer = uart_buffer_rx_array[por->index];
+    // grid_buffer_write_from_chunk(rx_buffer, message, length);
+
+    grid_buffer_write_from_chunk(ui_buffer_tx, message, length);
+    grid_buffer_write_from_chunk(host_buffer_tx, message, length);
 
   } else if (message[1] == GRID_CONST_DCT) { // Direct Message
 
@@ -360,6 +365,12 @@ static void try_send_heartbeat_and_ping_blocking(void) {
 void grid_esp32_port_task(void* arg) {
 
   nvm_or_port = (SemaphoreHandle_t)arg;
+
+  struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
+  struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
+
+  ui_buffer_tx = grid_transport_get_buffer_tx(ui_port->parent, ui_port->index);
+  host_buffer_tx = grid_transport_get_buffer_tx(host_port->parent, host_port->index);
 
   uart_port_array[0] = grid_transport_get_port(&grid_transport_state, 0);
   uart_port_array[1] = grid_transport_get_port(&grid_transport_state, 1);
