@@ -6,23 +6,11 @@
 
 #include "grid_esp32_platform.h"
 
-#include "driver/gpio.h"
+#include "esp_heap_caps.h"
 
-#include "esp_rom_gpio.h"
-#include "hal/gpio_ll.h"
-
-#include "driver/ledc.h" // for pwm based pico system clock generation
-#include "rom/ets_sys.h"
-
-#include "driver/gpio.h"
-#include "esp_check.h"
 #include "rom/ets_sys.h" // For ets_printf
 
-#include "esp_random.h"
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-#include "freertos/task.h"
+#include "esp_timer.h"
 
 #include "hal/cpu_hal.h"
 
