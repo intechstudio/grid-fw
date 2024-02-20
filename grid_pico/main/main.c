@@ -241,6 +241,26 @@ void grid_pico_uart_transmit_task_inner(struct grid_pico_uart_port* uart_port) {
   }
 }
 
+int grid_bucket_create_uart_tx_clone(struct grid_pico_uart_port* uart_port, struct grid_bucket* source_bucket) {
+
+  if (uart_port == NULL) {
+    return 1;
+  }
+
+  if (source_bucket == NULL) {
+    return 1;
+  }
+
+  struct grid_bucket* bucket = grid_bucket_find_next_match(uart_port->tx_lastinserted_bucket, GRID_BUCKET_STATUS_EMPTY);
+
+  if (bucket == NULL) {
+    return 1;
+  }
+
+  strcpy(bucket->buffer, source_bucket->buffer);
+  bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_NORTH + uart_port->port_index;
+}
+
 int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
 
   if (rx_bucket == NULL) {
@@ -294,6 +314,15 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
   }
 
   grid_msg_recent_fingerprint_store(&recent_messages, fingerprint);
+
+  // for (uint8_t i = 0; i < 4; i++) {
+  //   struct grid_pico_uart_port* uart_port = &uart_port_array[i];
+  //   if (uart_port->port_index != rx_bucket->source_port_index) {
+  //     grid_bucket_create_uart_tx_clone(uart_port, rx_bucket);
+  //     break;
+  //   }
+
+  // }
 
   // bucket content verified, close bucket and set it full to indicate that it is ready to be sent through to ESP32 via SPI
   rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
@@ -455,6 +484,7 @@ int spi_message_to_bucket(struct grid_pico_uart_port* uart_port, char* message) 
     grid_bucket_put_character(bucket, c);
 
     if (c == '\n') {
+      grid_bucket_put_character(bucket, '\0');
       break;
     }
   }
