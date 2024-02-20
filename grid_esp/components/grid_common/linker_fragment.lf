@@ -1,0 +1,4 @@
+[mapping:grid_common]
+archive: grid_common.a
+entries:
+    grid_buf (noflash)     # places all code/read-only data under IRAM/DRAM

@@ -1,4 +1,8 @@
 idf_component_register(
+
+    LDFRAGMENTS
+        "linker_fragment.lf"
+
     SRCS
 
 
