@@ -335,6 +335,10 @@
 #define GRID_LUA_FNC_G_WEBSOCKET_SEND_human "websocket_send"
 #define GRID_LUA_FNC_G_WEBSOCKET_SEND_fnptr l_grid_websocket_send
 
+#define GRID_LUA_FNC_G_PACKAGE_SEND_short "gps"
+#define GRID_LUA_FNC_G_PACKAGE_SEND_human "package_send"
+#define GRID_LUA_FNC_G_PACKAGE_SEND_fnptr l_grid_package_send
+
 #define GRID_LUA_INIT_SCRIPT_1 "print('Hardware: ', ghwcfg(), ' Version: ', gvmaj(), gvmin(), gvpat())"
 #define GRID_LUA_INIT_SCRIPT_2 "print('Random: ', grnd(), grnd(), grnd(), grnd())"
 #define GRID_LUA_INIT_SCRIPT_3 "print('X, Y, Rot: ', gmx(), gmy(), gmr())"
@@ -883,6 +887,14 @@ enum grid_ui_event_t {
 
 #define GRID_CLASS_WEBSOCKET_TEXT_offset 5
 #define GRID_CLASS_WEBSOCKET_TEXT_length 0
+
+// PACKAGE
+#define GRID_CLASS_PACKAGE_code 0x023
+#define GRID_CLASS_PACKAGE_frame_start "%c%03x_", GRID_CONST_STX, GRID_CLASS_PACKAGE_code
+#define GRID_CLASS_PACKAGE_frame_end "%c", GRID_CONST_ETX
+
+#define GRID_CLASS_PACKAGE_TEXT_offset 5
+#define GRID_CLASS_PACKAGE_TEXT_length 0
 
 // PAGEACTIVE
 #define GRID_CLASS_PAGEACTIVE_code 0x030

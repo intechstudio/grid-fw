@@ -122,6 +122,7 @@ void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffe
 
 void grid_port_debug_print_text(char* str);
 void grid_port_websocket_print_text(char* str);
+void grid_port_package_print_text(char* str);
 
 void grid_port_debug_printf(char const* fmt, ...);
 

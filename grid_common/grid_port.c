@@ -688,6 +688,21 @@ void grid_port_websocket_print_text(char* debug_string) {
   grid_port_packet_send_everywhere(&message);
 }
 
+void grid_port_package_print_text(char* debug_string) {
+
+  struct grid_msg_packet message;
+
+  grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+  grid_msg_packet_body_append_printf(&message, GRID_CLASS_PACKAGE_frame_start);
+  grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+  grid_msg_packet_body_append_printf(&message, debug_string);
+  grid_msg_packet_body_append_printf(&message, GRID_CLASS_PACKAGE_frame_end);
+
+  grid_msg_packet_close(&grid_msg_state, &message);
+  grid_port_packet_send_everywhere(&message);
+}
+
 void grid_port_debug_printf(char const* fmt, ...) {
 
   va_list ap;
