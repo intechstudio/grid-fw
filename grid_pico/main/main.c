@@ -318,10 +318,10 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
   // for (uint8_t i = 0; i < 4; i++) {
   //   struct grid_pico_uart_port* uart_port = &uart_port_array[i];
   //   if (uart_port->port_index != rx_bucket->source_port_index) {
-  //     grid_bucket_create_uart_tx_clone(uart_port, rx_bucket);
-  //     break;
+  //     continue;
   //   }
 
+  //   grid_bucket_create_uart_tx_clone(uart_port, rx_bucket);
   // }
 
   // bucket content verified, close bucket and set it full to indicate that it is ready to be sent through to ESP32 via SPI
