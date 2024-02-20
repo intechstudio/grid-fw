@@ -71,14 +71,6 @@ void grid_platform_nvm_defrag();
 
 uint8_t grid_platform_get_adc_bit_depth();
 
-uint64_t grid_platform_rtc_get_micros(void);
-
-uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
-
-uint32_t grid_platform_get_cycles();
-
-uint32_t grid_platform_get_cycles_per_us();
-
 #ifdef __cplusplus
 }
 #endif

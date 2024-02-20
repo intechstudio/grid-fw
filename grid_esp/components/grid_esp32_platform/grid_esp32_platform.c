@@ -44,3 +44,11 @@ void* grid_platform_allocate_volatile(size_t size) {
 
   return handle;
 }
+
+uint64_t IRAM_ATTR grid_platform_rtc_get_micros(void) { return esp_timer_get_time(); }
+
+uint64_t IRAM_ATTR grid_platform_rtc_get_elapsed_time(uint64_t told) { return grid_platform_rtc_get_micros() - told; }
+
+uint32_t IRAM_ATTR grid_platform_get_cycles() { return cpu_hal_get_cycle_count(); }
+
+uint32_t IRAM_ATTR grid_platform_get_cycles_per_us() { return 240; }

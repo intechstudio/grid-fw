@@ -346,11 +346,3 @@ void grid_platform_system_reset() { ets_printf("grid_platform_system_reset NOT I
 void grid_platform_nvm_defrag() { ets_printf("grid_platform_nvm_defrag NOT IMPLEMENTED!!!\r\n"); }
 
 uint8_t grid_platform_get_adc_bit_depth() { return 12; }
-
-uint64_t grid_platform_rtc_get_micros(void) { return esp_timer_get_time(); }
-
-uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) { return grid_platform_rtc_get_micros() - told; }
-
-uint32_t grid_platform_get_cycles() { return cpu_hal_get_cycle_count(); }
-
-uint32_t grid_platform_get_cycles_per_us() { return 240; }
