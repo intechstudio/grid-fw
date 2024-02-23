@@ -34,7 +34,7 @@ jobs:
         run: docker build -t my-image .
 
       - name: Run script in Docker container
-        run: docker run -v $PWD:/project -w /project/ my-image sh -c "./esp_build_firmware.sh"
+        run: docker run -v $PWD:/project -w /project/ my-image sh -c "./pico_build_firmware.sh && ./esp_build_firmware.sh"
 
       - name: Convert ESP firmware to UF2
         run: |
