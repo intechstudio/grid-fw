@@ -437,11 +437,12 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message) {
       int32_t keycode = lua_tonumber(L, i + 2);
 
       // 01234567890123456789012grid_platform_printf("%d-%d ", cnt, keycode);
-      cursor += 4;
 
       grid_str_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_offset, GRID_CLASS_HIDKEYBOARD_KEYISMODIFIER_length, modifier, NULL);
       grid_str_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYSTATE_offset, GRID_CLASS_HIDKEYBOARD_KEYSTATE_length, keystate, NULL);
       grid_str_set_parameter(&temp[cursor], GRID_CLASS_HIDKEYBOARD_KEYCODE_offset, GRID_CLASS_HIDKEYBOARD_KEYCODE_length, keycode, NULL);
+      cursor += 4;
+
     } else {
 
       continue;
