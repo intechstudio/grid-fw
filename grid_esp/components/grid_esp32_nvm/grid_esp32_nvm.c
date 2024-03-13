@@ -493,7 +493,6 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset() {
   return 0; // done
 }
 
-
 void grid_esp32_nvm_task(void* arg) {
 
   SemaphoreHandle_t nvm_or_port = (SemaphoreHandle_t)arg;
