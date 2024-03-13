@@ -34,6 +34,7 @@
 
 #include <dirent.h>
 
+#include "driver/gpio.h"
 #include "grid_ui.h"
 
 static const char* TAG = "grid_esp32_nvm";
@@ -492,9 +493,6 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset() {
   return 0; // done
 }
 
-#include "grid_esp32_port.h"
-
-#include "driver/gpio.h"
 
 void grid_esp32_nvm_task(void* arg) {
 

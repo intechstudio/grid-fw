@@ -7,7 +7,7 @@ on:
     paths:
       - 'grid_common/**'
       - 'grid_esp/components/**'
-      - '.github/workflows/grid_common_package.yml'
+      - '.github/workflows/idf_repository_package_update.yml'
 jobs:
   upload_components:
     runs-on: ubuntu-latest
@@ -35,5 +35,14 @@ jobs:
           directories: "grid_esp/components/grid_esp32_led"
           namespace: "sukuwc"
           name: "grid_esp32_led"
+          version: ${{ env.action_date }}
+          api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
+
+      - name: Upload components to the component registry
+        uses: espressif/upload-components-ci-action@v1
+        with:
+          directories: "grid_esp/components/grid_esp32_nvm"
+          namespace: "sukuwc"
+          name: "grid_esp32_nvm"
           version: ${{ env.action_date }}
           api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}

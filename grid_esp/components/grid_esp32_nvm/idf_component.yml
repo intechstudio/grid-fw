@@ -1,0 +1,5 @@
+description: Grid Esp32 Nvm library
+version: "1.0.0"
+url: https://github.com/intechstudio/grid-fw
+dependencies:
+  idf: ">=5.0"
