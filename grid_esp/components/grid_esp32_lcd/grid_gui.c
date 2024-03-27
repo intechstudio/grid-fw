@@ -50,6 +50,8 @@ int grid_gui_draw_rectangle_filled(struct grid_gui_model* gui, uint16_t x1, uint
       grid_gui_draw_pixel(gui, i, j, color);
     }
   }
+
+  return 0;
 }
 
 int grid_gui_draw_rectangle(struct grid_gui_model* gui, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, grid_color_t color) {
@@ -76,6 +78,8 @@ int grid_gui_draw_rectangle(struct grid_gui_model* gui, uint16_t x1, uint16_t y1
     grid_gui_draw_pixel(gui, x1, j, color);
     grid_gui_draw_pixel(gui, x2, j, color);
   }
+
+  return 0;
 }
 
 void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t loopcounter) {
@@ -87,4 +91,9 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t loopcounter) {
       grid_gui_draw_pixel(gui, i, j, grid_gui_color_from_rgb(loopcounter, 0, 0));
     }
   }
+
+  grid_gui_draw_rectangle(&grid_gui_state, 10, 10, 40, 40, grid_gui_color_from_rgb(0, 0, 255));
+  grid_gui_draw_rectangle_filled(&grid_gui_state, 100, 100, 140, 140, grid_gui_color_from_rgb(0, 255, 0));
+
+  grid_gui_draw_rectangle_filled(&grid_gui_state, 120, 120, 140, 140, grid_gui_color_from_rgb(255, 0, 0));
 }

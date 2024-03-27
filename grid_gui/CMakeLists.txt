@@ -20,5 +20,3 @@ set(CMAKE_EXECUTABLE_SUFFIX ".html")
 set_target_properties(index PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
-
-

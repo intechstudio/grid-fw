@@ -71,8 +71,6 @@ void loop(void) {
   loopcounter++;
   grid_gui_draw_demo(&grid_gui_state, loopcounter);
 
-  grid_gui_draw_rectangle(&grid_gui_state, 10, 10, 20, 20, grid_gui_color_from_rgb(0, 0, 255));
-
   draw_screen(&grid_gui_state);
 
   printf("loop %d\n", loopcounter);
