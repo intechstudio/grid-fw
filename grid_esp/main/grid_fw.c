@@ -22,14 +22,6 @@
 #include "esp_flash.h"
 #include "esp_task_wdt.h"
 
-#include "driver/spi_common.h"
-#include "driver/spi_master.h"
-#include "esp_lcd_panel_io.h"
-#include "esp_lcd_panel_ops.h"
-#include "esp_lcd_panel_rgb.h"
-#include "esp_lcd_panel_vendor.h"
-#include "esp_lcd_types.h"
-
 #include "grid_esp32_led.h"
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_ef44.h"
@@ -57,10 +49,12 @@
 #include <esp_timer.h>
 
 #include "grid_esp32.h"
+#include "grid_esp32_lcd.h"
 #include "grid_esp32_nvm.h"
 #include "grid_esp32_port.h"
 #include "grid_esp32_swd.h"
 #include "grid_esp32_usb.h"
+#include "grid_gui.h"
 
 #include "driver/uart.h"
 #include "esp_check.h"
@@ -88,162 +82,6 @@ static const char* TAG = "main";
 
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
-
-#define LCD_SPI_HOST SPI3_HOST
-#define LCD_BK_LIGHT_ON_LEVEL 1
-#define LCD_BK_LIGHT_OFF_LEVEL (!LCD_BK_LIGHT_ON_LEVEL)
-#define PIN_NUM_MOSI 2
-#define PIN_NUM_CLK 1
-#define PIN_NUM_CS 5
-#define PIN_NUM_DC 4
-#define PIN_NUM_RST 3
-#define PIN_NUM_BCKL 6
-#define LCD_PANEL esp_lcd_new_panel_st7789
-#define LCD_HRES 320
-#define LCD_VRES 240
-#define LCD_COLOR_SPACE LCD_RGB_ELEMENT_ORDER_RGB
-#define LCD_PIXEL_CLOCK_HZ (80 * 1000 * 1000)
-#define LCD_GAP_X 0
-#define LCD_GAP_Y 0
-#define LCD_MIRROR_X false
-#define LCD_MIRROR_Y true
-#define LCD_INVERT_COLOR true
-#define LCD_SWAP_XY true
-#define LCD_TRANSFER_SIZE (320 * 240 * 3)
-#define LCD_FLUSH_CALLBACK lcd_flush_ready
-
-// global so it can be used after init
-esp_lcd_panel_handle_t lcd_handle;
-
-// initialize the screen using the esp lcd panel API
-void lcd_panel_init() {
-#ifdef PIN_NUM_BCKL
-  // pinMode(PIN_NUM_BCKL, OUTPUT);
-#endif              // PIN_NUM_BCKL
-#ifdef LCD_SPI_HOST // 1-bit SPI
-  spi_bus_config_t bus_config;
-  memset(&bus_config, 0, sizeof(bus_config));
-  bus_config.sclk_io_num = PIN_NUM_CLK;
-  bus_config.mosi_io_num = PIN_NUM_MOSI;
-#ifdef PIN_NUM_MISO
-  bus_config.miso_io_num = PIN_NUM_MISO;
-#else
-  bus_config.miso_io_num = -1;
-#endif // PIN_NUM_MISO
-#ifdef PIN_NUM_QUADWP
-  bus_config.quadwp_io_num = PIN_NUM_QUADWP;
-#else
-  bus_config.quadwp_io_num = -1;
-#endif
-#ifdef PIN_NUM_QUADHD
-  bus_config.quadhd_io_num = PIN_NUM_QUADHD;
-#else
-  bus_config.quadhd_io_num = -1;
-#endif
-  bus_config.max_transfer_sz = LCD_TRANSFER_SIZE + 8;
-
-  // Initialize the SPI bus on LCD_SPI_HOST
-  spi_bus_initialize(LCD_SPI_HOST, &bus_config, SPI_DMA_CH_AUTO);
-
-  esp_lcd_panel_io_handle_t io_handle = NULL;
-  esp_lcd_panel_io_spi_config_t io_config;
-  memset(&io_config, 0, sizeof(io_config));
-  io_config.dc_gpio_num = PIN_NUM_DC, io_config.cs_gpio_num = PIN_NUM_CS, io_config.pclk_hz = LCD_PIXEL_CLOCK_HZ, io_config.lcd_cmd_bits = 8, io_config.lcd_param_bits = 8, io_config.spi_mode = 0,
-  io_config.trans_queue_depth = 10, io_config.on_color_trans_done = NULL;
-  // Attach the LCD to the SPI bus
-  esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_SPI_HOST, &io_config, &io_handle);
-#elif defined(PIN_NUM_D07) // 8 or 16-bit i8080
-  pinMode(PIN_NUM_RD, OUTPUT);
-  digitalWrite(PIN_NUM_RD, HIGH);
-  esp_lcd_i80_bus_handle_t i80_bus = NULL;
-  esp_lcd_i80_bus_config_t bus_config;
-  memset(&bus_config, 0, sizeof(bus_config));
-  bus_config.clk_src = LCD_CLK_SRC_PLL160M;
-  bus_config.dc_gpio_num = PIN_NUM_RS;
-  bus_config.wr_gpio_num = PIN_NUM_WR;
-  bus_config.data_gpio_nums[0] = PIN_NUM_D00;
-  bus_config.data_gpio_nums[1] = PIN_NUM_D01;
-  bus_config.data_gpio_nums[2] = PIN_NUM_D02;
-  bus_config.data_gpio_nums[3] = PIN_NUM_D03;
-  bus_config.data_gpio_nums[4] = PIN_NUM_D04;
-  bus_config.data_gpio_nums[5] = PIN_NUM_D05;
-  bus_config.data_gpio_nums[6] = PIN_NUM_D06;
-  bus_config.data_gpio_nums[7] = PIN_NUM_D07;
-#ifdef PIN_NUM_D15
-  bus_config.data_gpio_nums[8] = PIN_NUM_D08;
-  bus_config.data_gpio_nums[9] = PIN_NUM_D09;
-  bus_config.data_gpio_nums[10] = PIN_NUM_D10;
-  bus_config.data_gpio_nums[11] = PIN_NUM_D11;
-  bus_config.data_gpio_nums[12] = PIN_NUM_D12;
-  bus_config.data_gpio_nums[13] = PIN_NUM_D13;
-  bus_config.data_gpio_nums[14] = PIN_NUM_D14;
-  bus_config.data_gpio_nums[15] = PIN_NUM_D15;
-  bus_config.bus_width = 16;
-#else
-  bus_config.bus_width = 8;
-#endif // PIN_NUM_D15
-  bus_config.max_transfer_bytes = LCD_TRANSFER_SIZE;
-
-  esp_lcd_new_i80_bus(&bus_config, &i80_bus);
-
-  esp_lcd_panel_io_handle_t io_handle = NULL;
-
-  esp_lcd_panel_io_i80_config_t io_config;
-  memset(&io_config, 0, sizeof(io_config));
-  io_config.cs_gpio_num = PIN_NUM_CS;
-  io_config.pclk_hz = LCD_PIXEL_CLOCK_HZ;
-  io_config.trans_queue_depth = 20;
-  io_config.dc_levels.dc_idle_level = 0;
-  io_config.dc_levels.dc_idle_level = 0;
-  io_config.dc_levels.dc_cmd_level = 0;
-  io_config.dc_levels.dc_dummy_level = 0;
-  io_config.dc_levels.dc_data_level = 1;
-  io_config.lcd_cmd_bits = 8;
-  io_config.lcd_param_bits = 8;
-  io_config.on_color_trans_done = LCD_FLUSH_CALLBACK;
-  io_config.user_ctx = nullptr;
-  io_config.flags.swap_color_bytes = true;
-  io_config.flags.cs_active_high = false;
-  io_config.flags.reverse_color_bits = false;
-  esp_lcd_new_panel_io_i80(i80_bus, &io_config, &io_handle);
-#endif // PIN_NUM_D15
-  lcd_handle = NULL;
-  esp_lcd_panel_dev_config_t panel_config;
-  memset(&panel_config, 0, sizeof(panel_config));
-#ifdef PIN_NUM_RST
-  panel_config.reset_gpio_num = PIN_NUM_RST;
-#else
-  panel_config.reset_gpio_num = -1;
-#endif
-  panel_config.color_space = LCD_COLOR_SPACE;
-  panel_config.bits_per_pixel = 18; // 6 bit per pixel
-
-  // Initialize the LCD configuration
-  LCD_PANEL(io_handle, &panel_config, &lcd_handle);
-
-#ifdef PIN_NUM_BCKL
-  // Turn off backlight to avoid unpredictable display on
-  // the LCD screen while initializing
-  // the LCD panel driver. (Different LCD screens may need different levels)
-  // digitalWrite(PIN_NUM_BCKL, LCD_BK_LIGHT_OFF_LEVEL);
-#endif // PIN_NUM_BCKL
-  // Reset the display
-  esp_lcd_panel_reset(lcd_handle);
-
-  // Initialize LCD panel
-  esp_lcd_panel_init(lcd_handle);
-
-  esp_lcd_panel_swap_xy(lcd_handle, LCD_SWAP_XY);
-  esp_lcd_panel_set_gap(lcd_handle, LCD_GAP_X, LCD_GAP_Y);
-  esp_lcd_panel_mirror(lcd_handle, LCD_MIRROR_X, LCD_MIRROR_Y);
-  esp_lcd_panel_invert_color(lcd_handle, LCD_INVERT_COLOR);
-  // Turn on the screen
-  esp_lcd_panel_disp_off(lcd_handle, false);
-#ifdef PIN_NUM_BCKL
-  // Turn on backlight (Different LCD screens may need different levels)
-  // digitalWrite(PIN_NUM_BCKL, LCD_BK_LIGHT_ON_LEVEL);
-#endif // PIN_NUM_BCKL
-}
 
 static void periodic_rtc_ms_cb(void* arg) {
 
@@ -277,28 +115,30 @@ static void check_heap(void) {
   ESP_LOGI(TAG, "free RAM is %d. Integrity: %d", freeRAM, heap_caps_check_integrity_all(true));
 }
 
-uint8_t arr[320 * 240 * 3] = {0};
+uint8_t framebuffer[320 * 240 * 3] = {0};
 
 void app_main(void) {
 
   // set console baud rate
   ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
 
-  lcd_panel_init();
+  grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
+  grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state);
+
+  grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuffer, sizeof(framebuffer), 24, 320, 240);
 
   esp_log_level_set("*", ESP_LOG_INFO);
   uint8_t loopcounter = 0;
 
   while (1) {
 
-    for (int i = 0; i < 320 * 240 * 3; i += 3) {
-      arr[i] = loopcounter;
-      arr[i + 1] = 0;
-      arr[i + 2] = 0;
-    }
+    grid_gui_draw_demo(&grid_gui_state, loopcounter);
 
-    esp_lcd_panel_draw_bitmap(lcd_handle, 0, 0, 320, 240, arr);
-    ESP_LOGI(TAG, "Loop: %d", loopcounter++);
+    // memset(framebuffer, 255, sizeof(framebuffer));
+
+    grid_esp32_lcd_draw_bitmap(&grid_esp32_lcd_state, 0, 0, 320, 240, framebuffer);
+
+    ESP_LOGI(TAG, "Loop2: %d", loopcounter++);
     vTaskDelay(pdMS_TO_TICKS(10));
   }
 
