@@ -49,10 +49,12 @@
 #include <esp_timer.h>
 
 #include "grid_esp32.h"
+#include "grid_esp32_lcd.h"
 #include "grid_esp32_nvm.h"
 #include "grid_esp32_port.h"
 #include "grid_esp32_swd.h"
 #include "grid_esp32_usb.h"
+#include "grid_gui.h"
 
 #include "driver/uart.h"
 #include "esp_check.h"
@@ -113,10 +115,34 @@ static void check_heap(void) {
   ESP_LOGI(TAG, "free RAM is %d. Integrity: %d", freeRAM, heap_caps_check_integrity_all(true));
 }
 
+uint8_t framebuffer[320 * 240 * 3] = {0};
+
 void app_main(void) {
 
   // set console baud rate
   ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
+
+  grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
+  grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state);
+
+  grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuffer, sizeof(framebuffer), 24, 320, 240);
+
+  esp_log_level_set("*", ESP_LOG_INFO);
+  uint8_t loopcounter = 0;
+
+  while (1) {
+
+    grid_gui_draw_demo(&grid_gui_state, loopcounter);
+
+    // memset(framebuffer, 255, sizeof(framebuffer));
+
+    grid_esp32_lcd_draw_bitmap(&grid_esp32_lcd_state, 0, 0, 320, 240, framebuffer);
+
+    ESP_LOGI(TAG, "Loop2: %d", loopcounter++);
+    vTaskDelay(pdMS_TO_TICKS(10));
+  }
+
+  // grid_lcd_hardware_init();
 
   esp_log_level_set("*", ESP_LOG_INFO);
 
