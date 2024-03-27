@@ -1,50 +1,90 @@
 #include "grid_gui.h"
 struct grid_gui_model grid_gui_state;
 
-
+uint8_t grid_gui_color_to_red(grid_color_t color) { return (color >> 16) & 0xFF; }
+uint8_t grid_gui_color_to_green(grid_color_t color) { return (color >> 8) & 0xFF; }
+uint8_t grid_gui_color_to_blue(grid_color_t color) { return (color) & 0xFF; }
+grid_color_t grid_gui_color_from_rgb(uint8_t r, uint8_t g, uint8_t b) { return (r << 16) | (g << 8) | b; }
 
 int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* framebuffer, uint32_t framebuffer_size, uint8_t bits_per_pixel, uint16_t width, uint16_t height) {
-    grid_gui_state.screen_handle = screen_handle;
-    grid_gui_state.framebuffer = framebuffer;
-    grid_gui_state.framebuffer_size = framebuffer_size;
-    grid_gui_state.bits_per_pixel = bits_per_pixel;
-    grid_gui_state.width = width;
-    grid_gui_state.height = height;
-    return 0;
+  grid_gui_state.screen_handle = screen_handle;
+  grid_gui_state.framebuffer = framebuffer;
+  grid_gui_state.framebuffer_size = framebuffer_size;
+  grid_gui_state.bits_per_pixel = bits_per_pixel;
+  grid_gui_state.width = width;
+  grid_gui_state.height = height;
+  return 0;
 }
 
-int grid_gui_draw_pixel(struct grid_gui_model* gui, uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b) {
+int grid_gui_draw_pixel(struct grid_gui_model* gui, uint16_t x, uint16_t y, grid_color_t color) {
 
+  if (x >= gui->width || y >= gui->height) {
 
-    if (x >= gui->width || y >= gui->height){
+    return 1; // out of bounds
+  }
 
-        return 1; // out of bounds
+  uint8_t* pixel = gui->framebuffer + ((gui->width * y + x) * gui->bits_per_pixel / 8);
+  pixel[0] = grid_gui_color_to_red(color);
+  pixel[1] = grid_gui_color_to_green(color);
+  pixel[2] = grid_gui_color_to_blue(color);
+
+  return 0;
+}
+
+int grid_gui_draw_rectangle_filled(struct grid_gui_model* gui, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, grid_color_t color) {
+
+  if (x1 > x2) {
+    uint16_t tmp = x1;
+    x1 = x2;
+    x2 = tmp;
+  }
+
+  if (y1 > y2) {
+    uint16_t tmp = y1;
+    y1 = y2;
+    y2 = tmp;
+  }
+
+  for (int i = x1; i <= x2; i++) {
+    for (int j = y1; j <= y2; j++) {
+      grid_gui_draw_pixel(gui, i, j, color);
     }
-
-
-    uint8_t* pixel = gui->framebuffer + ((gui->width * y + x) * gui->bits_per_pixel / 8);
-    pixel[0] = r;
-    pixel[1] = g;
-    pixel[2] = b;
-
-    return 0;
-
+  }
 }
 
+int grid_gui_draw_rectangle(struct grid_gui_model* gui, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, grid_color_t color) {
+
+  if (x1 > x2) {
+    uint16_t tmp = x1;
+    x1 = x2;
+    x2 = tmp;
+  }
+
+  if (y1 > y2) {
+    uint16_t tmp = y1;
+    y1 = y2;
+    y2 = tmp;
+  }
+
+  for (int i = x1; i <= x2; i++) {
+
+    grid_gui_draw_pixel(gui, i, y1, color);
+    grid_gui_draw_pixel(gui, i, y2, color);
+  }
+
+  for (int j = y1; j <= y2; j++) {
+    grid_gui_draw_pixel(gui, x1, j, color);
+    grid_gui_draw_pixel(gui, x2, j, color);
+  }
+}
 
 void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t loopcounter) {
-
-  
 
   for (int i = 0; i < 320; i++) {
 
     for (int j = 0; j < 240; j++) {
 
-        grid_gui_draw_pixel(gui, i, j, loopcounter, 0, 0);
+      grid_gui_draw_pixel(gui, i, j, grid_gui_color_from_rgb(loopcounter, 0, 0));
     }
-
   }
-
-    
-
 }

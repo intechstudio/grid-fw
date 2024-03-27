@@ -17,7 +17,6 @@
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_types.h"
 
-
 #define LCD_SPI_HOST SPI3_HOST
 #define LCD_BK_LIGHT_ON_LEVEL 1
 #define LCD_BK_LIGHT_OFF_LEVEL (!LCD_BK_LIGHT_ON_LEVEL)
@@ -46,17 +45,9 @@ esp_lcd_panel_handle_t lcd_handle;
 
 struct grid_esp32_lcd_model grid_esp32_lcd_state;
 
-
-void grid_esp32_lcd_model_init(struct grid_esp32_lcd_model* lcd) {
-
-  lcd->foo = 255;
-
-}
-
+void grid_esp32_lcd_model_init(struct grid_esp32_lcd_model* lcd) { lcd->foo = 255; }
 
 void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd) {
-
-
 
   // pinMode(PIN_NUM_BCKL, OUTPUT);
   spi_bus_config_t bus_config;
@@ -78,7 +69,6 @@ void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd) {
   io_config.trans_queue_depth = 10, io_config.on_color_trans_done = NULL;
   // Attach the LCD to the SPI bus
   esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_SPI_HOST, &io_config, &io_handle);
- 
 
   lcd_handle = NULL;
   esp_lcd_panel_dev_config_t panel_config;
@@ -91,7 +81,6 @@ void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd) {
 
   // Initialize the LCD configuration
   LCD_PANEL(io_handle, &panel_config, &lcd_handle);
-
 
   // Turn off backlight to avoid unpredictable display on
   // the LCD screen while initializing
@@ -114,16 +103,12 @@ void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd) {
   // Turn on backlight (Different LCD screens may need different levels)
   // digitalWrite(PIN_NUM_BCKL, LCD_BK_LIGHT_ON_LEVEL);
 
-
-  lcd->lcd_handle = (void*) lcd_handle;
-
+  lcd->lcd_handle = (void*)lcd_handle;
 }
-
 
 int grid_esp32_lcd_draw_bitmap(struct grid_esp32_lcd_model* lcd, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void* framebuffer) {
 
-
-  esp_lcd_panel_draw_bitmap((esp_lcd_panel_handle_t) lcd->lcd_handle, x, y, width, height, framebuffer);
+  esp_lcd_panel_draw_bitmap((esp_lcd_panel_handle_t)lcd->lcd_handle, x, y, width, height, framebuffer);
 
   return 0;
 }
