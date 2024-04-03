@@ -162,7 +162,7 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) {
 
     status = tinyusb_cdcacm_write_flush(0, 0);
 
-    ets_printf("SKIP %d\r\n", status);
+    //ets_printf("SKIP %d\r\n", status);
 
     if (status == ESP_OK) {
       ets_printf("READY\r\n");
