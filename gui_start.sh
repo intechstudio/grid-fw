@@ -1,1 +1,1 @@
-python3 -m http.server --directory grid_gui/build
+python3 ./gui_server.py

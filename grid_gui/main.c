@@ -53,7 +53,6 @@ void draw_screen(struct grid_gui_model* gui) {
 
       uint32_t index_in_buffer = (j * gui->width + i) * 3;
       uint32_t index_out_buffer = (j * gui->width + i) * 4;
-      ;
       ((uint8_t*)screen->pixels)[index_out_buffer] = gui->framebuffer[index_in_buffer];
       ((uint8_t*)screen->pixels)[index_out_buffer + 1] = gui->framebuffer[index_in_buffer + 1];
       ((uint8_t*)screen->pixels)[index_out_buffer + 2] = gui->framebuffer[index_in_buffer + 2];
