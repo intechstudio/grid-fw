@@ -23,10 +23,10 @@ append_timestamp() {
 }
 
 # Replace /dev/ttyUSB0, /dev/ttyUSB1, etc. with your actual serial port names
-socat -u /dev/ttyUSB0,raw,b${BAUD_RATE},echo=0 - | append_timestamp | sed "s/^/$(printf ${COLOR_0})Port 1: $(printf ${COLOR_NONE})/" & 
-socat -u /dev/ttyUSB1,raw,b${BAUD_RATE},echo=0 - | append_timestamp | sed "s/^/$(printf ${COLOR_1})Port 2: $(printf ${COLOR_NONE})/" & 
-socat -u /dev/ttyUSB2,raw,b${BAUD_RATE},echo=0 - | sed "s/^/$(printf ${COLOR_2})Port 3: $(printf ${COLOR_NONE})/" & 
-socat -u /dev/ttyUSB3,raw,b${BAUD_RATE},echo=0 - | sed "s/^/$(printf ${COLOR_3})Port 4: $(printf ${COLOR_NONE})/" & 
+socat -u /dev/ttyUSB0,raw,b${BAUD_RATE},echo=0 - | append_timestamp | sed "s/^/$(printf ${COLOR_0})Port 1: $(printf ${COLOR_NONE})/" &
+socat -u /dev/ttyUSB1,raw,b${BAUD_RATE},echo=0 - | append_timestamp | sed "s/^/$(printf ${COLOR_1})Port 2: $(printf ${COLOR_NONE})/" &
+socat -u /dev/ttyUSB2,raw,b${BAUD_RATE},echo=0 - | sed "s/^/$(printf ${COLOR_2})Port 3: $(printf ${COLOR_NONE})/" &
+socat -u /dev/ttyUSB3,raw,b${BAUD_RATE},echo=0 - | sed "s/^/$(printf ${COLOR_3})Port 4: $(printf ${COLOR_NONE})/" &
 
 # You can add more ports as needed
 
