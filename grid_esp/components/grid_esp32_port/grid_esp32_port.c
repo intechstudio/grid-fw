@@ -44,6 +44,9 @@ static const char* TAG = "PORT";
 #define GPIO_CS 7
 #define RCV_HOST SPI2_HOST
 
+volatile uint8_t DRAM_ATTR rolling_id_last_sent = 255;
+volatile uint8_t DRAM_ATTR rolling_id_last_received = 255;
+
 uint8_t DRAM_ATTR empty_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 uint8_t DRAM_ATTR message_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
@@ -62,21 +65,19 @@ SemaphoreHandle_t spi_ready_sem;
 
 void ets_debug_string(char* tag, char* str) {
 
-  return;
-
   uint16_t length = strlen(str);
 
-  // ets_printf("%s: ", tag);
+  ets_printf("%s: ", tag);
   for (uint8_t i = 0; i < length; i++) {
 
     if (str[i] < 32) {
 
-      // ets_printf("[%x] ", str[i]);
+      ets_printf("[%x] ", str[i]);
     } else {
-      // ets_printf("%c ", str[i]);
+      ets_printf("%c ", str[i]);
     }
   }
-  // ets_printf("\r\n");
+  ets_printf("\r\n");
 };
 
 static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t* trans) {
@@ -112,6 +113,14 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
   // ets_printf(" %d ", queue_state);
   rx_flag = 1;
+
+  uint8_t rolling_id_now_received = ((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_ROLLING_ID_index];
+  // ets_printf("ID: %d\n",  rolling_id_now_received);
+  if (rolling_id_now_received != (rolling_id_last_received + 1) % GRID_PARAMETER_SPI_ROLLING_ID_maximum) {
+    // ets_printf("ERROR: %d != %d\r\n", rolling_id_now_received, rolling_id_last_received+1);
+    // ets_debug_string("STR: ", (char*)trans->rx_buffer);
+  }
+  rolling_id_last_received = rolling_id_now_received;
 
   if (((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]) {
     strcpy(rx_str, (char*)trans->rx_buffer);

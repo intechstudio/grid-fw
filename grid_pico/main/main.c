@@ -555,6 +555,9 @@ void grid_pico_spi_receive_task_inner(void) {
   }
 }
 
+volatile uint8_t rolling_id_last_sent = 255;
+volatile uint8_t rolling_id_last_received = 255;
+
 void grid_pico_spi_transmit_task_inner(void) {
 
   if (grid_pico_get_elapsed_time(spi_transmit_lastrealtime) < spi_transmit_interval_us) {
@@ -581,6 +584,9 @@ void grid_pico_spi_transmit_task_inner(void) {
 
     grid_pico_spi_txbuf[0] = 0;
     sprintf(grid_pico_spi_txbuf, "DUMMY OK");
+
+    rolling_id_last_sent = (rolling_id_last_sent + 1) % GRID_PARAMETER_SPI_ROLLING_ID_maximum;
+    grid_pico_spi_txbuf[GRID_PARAMETER_SPI_ROLLING_ID_index] = rolling_id_last_sent; // not received from any of the ports
     grid_pico_spi_txbuf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = grid_pico_uart_tx_ready_bitmap;
     grid_pico_spi_txbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // not received from any of the ports
 
@@ -594,6 +600,8 @@ void grid_pico_spi_transmit_task_inner(void) {
   spi_tx_active_bucket->buffer_index = 0;
   // printf("SPI send: %s\r\n", spi_tx_active_bucket->buffer);
 
+  rolling_id_last_sent = (rolling_id_last_sent + 1) % GRID_PARAMETER_SPI_ROLLING_ID_maximum;
+  spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_ROLLING_ID_index] = rolling_id_last_sent; // not received from any of the ports
   spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = grid_pico_uart_tx_ready_bitmap;
   spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << (spi_tx_active_bucket->source_port_index));
 

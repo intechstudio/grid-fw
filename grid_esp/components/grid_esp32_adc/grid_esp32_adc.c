@@ -164,9 +164,7 @@ static void adc_init(struct grid_esp32_adc_model* adc) {
   init_ulp_program();
 }
 
-void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, SemaphoreHandle_t nvm_semaphore) {
-
-  adc->nvm_semaphore = nvm_semaphore;
+void grid_esp32_adc_init(struct grid_esp32_adc_model* adc) {
 
   adc->buffer_struct = (StaticRingbuffer_t*)heap_caps_malloc(sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
   adc->buffer_storage = (struct grid_esp32_adc_result*)heap_caps_malloc(sizeof(struct grid_esp32_adc_result) * ADC_BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
@@ -225,8 +223,6 @@ void IRAM_ATTR grid_esp32_adc_convert(void) {
 
   struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
 
-  // if (xSemaphoreTakeFromISR(adc->nvm_semaphore, NULL) == pdTRUE){
-
   ulp_riscv_lock_t* lock = (ulp_riscv_lock_t*)&ulp_lock;
 
   ulp_riscv_lock_acquire(lock);
@@ -256,7 +252,4 @@ void IRAM_ATTR grid_esp32_adc_convert(void) {
   }
 
   ulp_riscv_lock_release(lock);
-
-  //     xSemaphoreGiveFromISR(adc->nvm_semaphore, NULL);
-  // }
 }

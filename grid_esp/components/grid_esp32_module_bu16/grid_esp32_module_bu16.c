@@ -23,7 +23,7 @@ void grid_esp32_module_bu16_task(void* arg) {
   static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   const uint8_t multiplexer_overflow = 8;
 
-  grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);
+  grid_esp32_adc_init(&grid_esp32_adc_state);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
   grid_esp32_adc_start(&grid_esp32_adc_state);
 
