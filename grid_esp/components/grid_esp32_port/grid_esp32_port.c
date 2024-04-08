@@ -183,8 +183,6 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
     return;
   }
 
-#if GRID_ESP32_PLATFORM_FEATURE_NO_RXDOUBLEBUFFER_ON_UART
-
   // grid_port_receive_decode(por, &recent_messages, trans->rx_buffer, strlen(trans->rx_buffer));
 
   char* message = (char*)trans->rx_buffer;
@@ -225,20 +223,6 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
       }
     }
   }
-
-#else
-  for (uint16_t i = 0; true; i++) {
-
-    doublebuffer_rx->buffer_storage[doublebuffer_rx->write_index] = ((char*)trans->rx_buffer)[i];
-
-    if (((char*)trans->rx_buffer)[i] == '\0') {
-      break;
-    }
-
-    doublebuffer_rx->write_index++;
-    doublebuffer_rx->write_index %= doublebuffer_rx->buffer_size;
-  }
-#endif
 }
 
 static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
@@ -544,25 +528,6 @@ void grid_esp32_port_task(void* arg) {
           }
         }
       }
-
-#if GRID_ESP32_PLATFORM_FEATURE_NO_RXDOUBLEBUFFER_ON_UART
-
-#else
-      for (uint8_t i = 0; i < port_list_length * 4; i++) {
-        struct grid_port* por = grid_transport_get_port(&grid_transport_state, i % port_list_length);
-        struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i % port_list_length);
-
-        if (por->type == GRID_PORT_TYPE_USART) {
-
-          char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
-          uint16_t length = 0;
-          grid_port_rxdobulebuffer_to_linear(por, doublebuffer_rx, message, &length);
-
-          // TRANSFORM DONE IN COPROCESSOR grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
-          grid_port_receive_decode(por, &recent_messages, message, length);
-        }
-      }
-#endif
 
       c0 = grid_platform_get_cycles();
 
