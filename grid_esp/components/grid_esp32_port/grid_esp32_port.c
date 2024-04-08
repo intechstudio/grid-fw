@@ -371,6 +371,37 @@ void handle_sync_ticks(void) {
   portEXIT_CRITICAL(&spinlock);
 }
 
+void handle_connect_disconnect_effect(uint8_t* partner_last_status) {
+  for (uint8_t i = 0; i < 4; i++) {
+    struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
+    struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i);
+
+    if (por->type != GRID_PORT_TYPE_USART) {
+      abort();
+    }
+
+    if (partner_last_status[i] < por->partner_status) { // ONLY USE FOR LED EFFECT
+      // connect
+      partner_last_status[i] = 1;
+      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 50);
+      grid_alert_all_set_frequency(&grid_led_state, -2);
+      grid_alert_all_set_phase(&grid_led_state, 100);
+    } else if (partner_last_status[i] > por->partner_status) { // ONLY USE FOR LED EFFECT
+
+      // Disconnect
+      partner_last_status[i] = 0;
+      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
+      grid_alert_all_set_frequency(&grid_led_state, -2);
+      grid_alert_all_set_phase(&grid_led_state, 100);
+    }
+
+    if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
+      por->partner_status = 0;
+      grid_port_receiver_softreset(por, doublebuffer_rx);
+    }
+  }
+}
+
 void grid_esp32_port_task(void* arg) {
 
   nvm_or_port = (SemaphoreHandle_t)arg;
@@ -495,41 +526,11 @@ void grid_esp32_port_task(void* arg) {
 
     handle_sync_ticks();
 
+    handle_connect_disconnect_effect(partner_last_status);
+
     if (xSemaphoreTake(nvm_or_port, pdMS_TO_TICKS(4)) == pdTRUE) {
 
-      uint32_t c0, c1;
-
       uint8_t port_list_length = grid_transport_get_port_array_length(&grid_transport_state);
-      // TRY TO RECEIVE UP TO 4 packets on UART PORTS
-      for (uint8_t i = 0; i < port_list_length * 1; i++) {
-        struct grid_port* por = grid_transport_get_port(&grid_transport_state, i % port_list_length);
-        struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i % port_list_length);
-
-        if (por->type == GRID_PORT_TYPE_USART) {
-
-          if (partner_last_status[i] < por->partner_status) { // ONLY USE FOR LED EFFECT
-            // connect
-            partner_last_status[i] = 1;
-            grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 50);
-            grid_alert_all_set_frequency(&grid_led_state, -2);
-            grid_alert_all_set_phase(&grid_led_state, 100);
-          } else if (partner_last_status[i] > por->partner_status) { // ONLY USE FOR LED EFFECT
-
-            // Disconnect
-            partner_last_status[i] = 0;
-            grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
-            grid_alert_all_set_frequency(&grid_led_state, -2);
-            grid_alert_all_set_phase(&grid_led_state, 100);
-          }
-
-          if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
-            por->partner_status = 0;
-            grid_port_receiver_softreset(por, doublebuffer_rx);
-          }
-        }
-      }
-
-      c0 = grid_platform_get_cycles();
 
       if (grid_ui_event_count_istriggered_local(&grid_ui_state) && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
 
@@ -553,8 +554,6 @@ void grid_esp32_port_task(void* arg) {
           // CRITICAL_SECTION_LEAVE()
         }
       }
-
-      c1 = grid_platform_get_cycles();
 
       grid_midi_rx_pop(); // send_everywhere pushes to UI->RX_BUFFER
 
@@ -613,17 +612,7 @@ void grid_esp32_port_task(void* arg) {
         }
       }
 
-      uint32_t delta = c1 - c0;
-
-      // grid_platform_printf("(%ld)us\r\n",
-      // delta/grid_platform_get_cycles_per_us());
-
       xSemaphoreGive(nvm_or_port);
-    } else {
-
-      // ets_printf("NO TAKE\r\n");
-      // NVM task is in progress, let it run!
-      // vTaskDelay(pdMS_TO_TICKS(10));
     }
 
     // gpio_ll_set_level(&GPIO, 47, 0);
