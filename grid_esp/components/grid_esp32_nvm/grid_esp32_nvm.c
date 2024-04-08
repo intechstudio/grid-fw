@@ -495,8 +495,6 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset() {
 
 void grid_esp32_nvm_task(void* arg) {
 
-  SemaphoreHandle_t nvm_or_port = (SemaphoreHandle_t)arg;
-
   static uint32_t loopcounter = 0;
 
   // gpio_set_direction(47, GPIO_MODE_OUTPUT);
@@ -543,6 +541,5 @@ void grid_esp32_nvm_task(void* arg) {
   ESP_LOGI(TAG, "Deinit NVM");
 
   // Wait to be deleted
-  xSemaphoreGive(nvm_or_port);
   vTaskSuspend(NULL);
 }

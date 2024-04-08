@@ -317,8 +317,6 @@ static void plot_port_debug() {
   // ets_printf("\r\n");
 }
 
-SemaphoreHandle_t nvm_or_port;
-
 static uint64_t ping_lastrealtime = 0;
 static uint64_t heartbeat_lastrealtime = 0;
 static uint64_t cooldown_lastrealtime = 0;
@@ -457,8 +455,6 @@ void process_ui_normal() {
 }
 
 void grid_esp32_port_task(void* arg) {
-
-  nvm_or_port = (SemaphoreHandle_t)arg;
 
   struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
   struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);

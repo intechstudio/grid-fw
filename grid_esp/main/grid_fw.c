@@ -133,9 +133,6 @@ void app_main(void) {
 
   void lua_busy_semaphore_release_fn(void* arg) { xSemaphoreGive((SemaphoreHandle_t)arg); }
 
-  SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
-  xSemaphoreGive(nvm_or_port);
-
   ESP_LOGI(TAG, "===== MAIN START =====");
 
   gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
@@ -181,7 +178,6 @@ void app_main(void) {
   // GRID MODULE INITIALIZATION SEQUENCE
 
   ESP_LOGI(TAG, "===== NVM START =====");
-  xSemaphoreTake(nvm_or_port, 0);
   grid_esp32_nvm_init(&grid_esp32_nvm_state);
 
   if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0) {
@@ -191,8 +187,6 @@ void app_main(void) {
     grid_esp32_nvm_erase(&grid_esp32_nvm_state);
     vTaskDelay(pdMS_TO_TICKS(600));
   }
-
-  xSemaphoreGive(nvm_or_port);
 
   ESP_LOGI(TAG, "===== MSG START =====");
   grid_msg_init(&grid_msg_state); // setup session id, last message buffer init
@@ -292,13 +286,13 @@ void app_main(void) {
   TaskHandle_t port_task_hdl;
 
   // Create the class driver task
-  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 4096 * 10, (void*)nvm_or_port, PORT_TASK_PRIORITY, &port_task_hdl, 1);
+  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 4096 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
 
   ESP_LOGI(TAG, "===== PORT TASK DONE =====");
 
   // Create the class driver task
 
-  xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 10, (void*)nvm_or_port, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
+  xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 10, NULL, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
 
   TaskHandle_t housekeeping_task_hdl;
 
