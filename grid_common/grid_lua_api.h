@@ -75,6 +75,11 @@ struct grid_lua_model {
   uint32_t stdo_len;
   uint32_t stdi_len;
 
+  void* busy_semaphore;
+
+  void (*busy_semaphore_lock_fn)(void*);
+  void (*busy_semaphore_release_fn)(void*);
+
   uint32_t stde_len;
 
   char stdo[GRID_LUA_STDO_LENGTH];
@@ -91,6 +96,10 @@ extern struct grid_lua_model grid_lua_state;
 
 void grid_lua_init(struct grid_lua_model* mod);
 void grid_lua_deinit(struct grid_lua_model* mod);
+
+void grid_lua_semaphore_init(struct grid_lua_model* mod, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
+void grid_lua_semaphore_lock(struct grid_lua_model* mod);
+void grid_lua_semaphore_release(struct grid_lua_model* mod);
 
 void grid_lua_set_memory_target(struct grid_lua_model* mod, uint8_t target_kilobytes);
 uint8_t grid_lua_get_memory_target(struct grid_lua_model* mod);

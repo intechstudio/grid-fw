@@ -402,6 +402,60 @@ void handle_connect_disconnect_effect(uint8_t* partner_last_status) {
   }
 }
 
+void process_ui_local(void) {
+
+  if (grid_lua_state.L == NULL) {
+    grid_platform_printf("NO LUA VM\n");
+    return;
+  }
+
+  if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
+    return; // cannot process because nvm is busy
+  }
+
+  if (0 == grid_ui_event_count_istriggered_local(&grid_ui_state)) {
+    return; // no local trigger found
+  }
+
+  // CRITICAL_SECTION_ENTER()
+  vTaskSuspendAll();
+  grid_port_process_ui_local_UNSAFE(&grid_ui_state);
+  xTaskResumeAll();
+  // CRITICAL_SECTION_LEAVE()
+}
+
+void process_ui_normal() {
+
+  if (grid_lua_state.L == NULL) {
+    grid_platform_printf("NO LUA VM\n");
+    return;
+  }
+
+  if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
+    return; // cannot process because nvm is busy
+  }
+
+  if (0 < grid_ui_event_count_istriggered_local(&grid_ui_state)) {
+    return; // local trigger found, should service that first
+  }
+
+  if (0 == grid_ui_event_count_istriggered(&grid_ui_state)) {
+    return; // no normal trigger found
+  }
+
+  if (grid_platform_rtc_get_elapsed_time(cooldown_lastrealtime) < GRID_PARAMETER_UICOOLDOWN_us) {
+    return; // cooldown is not completed
+  }
+
+  cooldown_lastrealtime = grid_platform_rtc_get_micros();
+
+  // CRITICAL_SECTION_ENTER()
+  vTaskSuspendAll();
+  grid_port_process_ui_UNSAFE(&grid_ui_state);
+  xTaskResumeAll();
+  // CRITICAL_SECTION_LEAVE()
+}
+
 void grid_esp32_port_task(void* arg) {
 
   nvm_or_port = (SemaphoreHandle_t)arg;
@@ -528,91 +582,68 @@ void grid_esp32_port_task(void* arg) {
 
     handle_connect_disconnect_effect(partner_last_status);
 
-    if (xSemaphoreTake(nvm_or_port, pdMS_TO_TICKS(4)) == pdTRUE) {
+    // PORT PROCESS UI
 
-      uint8_t port_list_length = grid_transport_get_port_array_length(&grid_transport_state);
+    process_ui_local();
+    process_ui_normal();
 
-      if (grid_ui_event_count_istriggered_local(&grid_ui_state) && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
+    uint8_t port_list_length = grid_transport_get_port_array_length(&grid_transport_state);
 
-        // CRITICAL_SECTION_ENTER()
-        vTaskSuspendAll();
-        grid_port_process_ui_local_UNSAFE(&grid_ui_state);
-        xTaskResumeAll();
-        // CRITICAL_SECTION_LEAVE()
+    grid_midi_rx_pop(); // send_everywhere pushes to UI->RX_BUFFER
+
+    struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
+    struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
+
+    struct grid_doublebuffer* host_doublebuffer_tx = grid_transport_get_doublebuffer_tx(host_port->parent, host_port->index);
+    struct grid_doublebuffer* host_doublebuffer_rx = grid_transport_get_doublebuffer_rx(host_port->parent, host_port->index);
+
+    {
+      char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
+      uint16_t length = 0;
+      grid_port_rxdobulebuffer_to_linear(host_port, host_doublebuffer_rx, message, &length); // USB
+
+      grid_str_transform_brc_params(message, host_port->dx, host_port->dy, host_port->partner_fi); // update age, sx, sy, dx, dy, rot etc...
+      grid_port_receive_decode(host_port, &recent_messages, message, length);
+    }
+
+    // INBOUND
+
+    for (uint8_t i = 0; i < port_list_length; i++) {
+
+      struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
+      struct grid_buffer* rx_buffer = grid_transport_get_buffer_rx(por->parent, por->index);
+
+      grid_port_process_inbound(por, rx_buffer);
+    }
+
+    // plot_port_debug();
+
+    // OUTBOUND
+
+    // NEED DELAY BETWEEN REQUESTING USB TRANSACTIONS (MIDI, HID, SERIAL etc)
+    for (uint8_t i = 0; i < 4; i++) {
+
+      grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
+      ets_delay_us(20);
+
+      grid_midi_tx_pop();
+      ets_delay_us(20);
+    }
+
+    struct grid_buffer* host_tx_buffer = grid_transport_get_buffer_tx(host_port->parent, host_port->index);
+    grid_port_process_outbound_usb(host_port, host_tx_buffer, host_doublebuffer_tx); // WRITE TO USB SERIAL
+
+    struct grid_buffer* ui_tx_buffer = grid_transport_get_buffer_tx(ui_port->parent, ui_port->index);
+    grid_port_process_outbound_ui(ui_port, ui_tx_buffer);
+
+    for (uint8_t i = 0; i < port_list_length; i++) {
+      struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
+      struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, i);
+
+      if (port->type == GRID_PORT_TYPE_USART) {
+        struct grid_buffer* port_tx_buffer = grid_transport_get_buffer_tx(port->parent, port->index);
+        grid_port_process_outbound_usart(port, port_tx_buffer, doublebuffer_tx);
       }
-
-      if (grid_platform_rtc_get_elapsed_time(cooldown_lastrealtime) > GRID_PARAMETER_UICOOLDOWN_us) {
-
-        if (!grid_ui_event_count_istriggered_local(&grid_ui_state) && grid_ui_event_count_istriggered(&grid_ui_state) && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
-
-          cooldown_lastrealtime = grid_platform_rtc_get_micros();
-
-          // CRITICAL_SECTION_ENTER()
-          vTaskSuspendAll();
-          grid_port_process_ui_UNSAFE(&grid_ui_state);
-          xTaskResumeAll();
-          // CRITICAL_SECTION_LEAVE()
-        }
-      }
-
-      grid_midi_rx_pop(); // send_everywhere pushes to UI->RX_BUFFER
-
-      struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
-      struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
-
-      struct grid_doublebuffer* host_doublebuffer_tx = grid_transport_get_doublebuffer_tx(host_port->parent, host_port->index);
-      struct grid_doublebuffer* host_doublebuffer_rx = grid_transport_get_doublebuffer_rx(host_port->parent, host_port->index);
-
-      {
-        char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
-        uint16_t length = 0;
-        grid_port_rxdobulebuffer_to_linear(host_port, host_doublebuffer_rx, message, &length); // USB
-
-        grid_str_transform_brc_params(message, host_port->dx, host_port->dy, host_port->partner_fi); // update age, sx, sy, dx, dy, rot etc...
-        grid_port_receive_decode(host_port, &recent_messages, message, length);
-      }
-
-      // INBOUND
-
-      for (uint8_t i = 0; i < port_list_length; i++) {
-
-        struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
-        struct grid_buffer* rx_buffer = grid_transport_get_buffer_rx(por->parent, por->index);
-
-        grid_port_process_inbound(por, rx_buffer);
-      }
-
-      // plot_port_debug();
-
-      // OUTBOUND
-
-      // NEED DELAY BETWEEN REQUESTING USB TRANSACTIONS (MIDI, HID, SERIAL etc)
-      for (uint8_t i = 0; i < 4; i++) {
-
-        grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
-        ets_delay_us(20);
-
-        grid_midi_tx_pop();
-        ets_delay_us(20);
-      }
-
-      struct grid_buffer* host_tx_buffer = grid_transport_get_buffer_tx(host_port->parent, host_port->index);
-      grid_port_process_outbound_usb(host_port, host_tx_buffer, host_doublebuffer_tx); // WRITE TO USB SERIAL
-
-      struct grid_buffer* ui_tx_buffer = grid_transport_get_buffer_tx(ui_port->parent, ui_port->index);
-      grid_port_process_outbound_ui(ui_port, ui_tx_buffer);
-
-      for (uint8_t i = 0; i < port_list_length; i++) {
-        struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
-        struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, i);
-
-        if (port->type == GRID_PORT_TYPE_USART) {
-          struct grid_buffer* port_tx_buffer = grid_transport_get_buffer_tx(port->parent, port->index);
-          grid_port_process_outbound_usart(port, port_tx_buffer, doublebuffer_tx);
-        }
-      }
-
-      xSemaphoreGive(nvm_or_port);
     }
 
     // gpio_ll_set_level(&GPIO, 47, 0);

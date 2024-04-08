@@ -1188,6 +1188,8 @@ uint8_t grid_ui_bulk_get_lastheader(struct grid_ui_model* ui) { return ui->bulk_
 
 int grid_ui_bulk_pageread_init(struct grid_ui_model* ui, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
+  grid_platform_printf("NVM: Read init\r\n");
+
   // update lastheader_id even if busy (during retry)
   ui->bulk_lastheader_id = lastheader_id;
 
@@ -1207,6 +1209,7 @@ int grid_ui_bulk_pageread_init(struct grid_ui_model* ui, uint8_t page, uint8_t l
 
 int grid_ui_bulk_pagestore_init(struct grid_ui_model* ui, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
+  grid_platform_printf("NVM: Store init\r\n");
   // update lastheader_id even if busy (during retry)
   ui->bulk_lastheader_id = lastheader_id;
 
@@ -1226,6 +1229,7 @@ int grid_ui_bulk_pagestore_init(struct grid_ui_model* ui, uint8_t page, uint8_t 
 
 int grid_ui_bulk_pageclear_init(struct grid_ui_model* ui, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
+  grid_platform_printf("NVM: Clear init\r\n");
   // update lastheader_id even if busy (during retry)
   ui->bulk_lastheader_id = lastheader_id;
 
@@ -1245,6 +1249,7 @@ int grid_ui_bulk_pageclear_init(struct grid_ui_model* ui, uint8_t page, uint8_t 
 
 int grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
+  grid_platform_printf("NVM: Erase init\r\n");
   // update lastheader_id even if busy (during retry)
   ui->bulk_lastheader_id = lastheader_id;
 
@@ -1264,6 +1269,7 @@ int grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, uint8_t lastheader_id, 
 
 void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
 
+  grid_platform_printf("NVM: Read next\r\n");
   if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_READ_PROGRESS)) {
     return;
   }
@@ -1351,6 +1357,8 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
 
   // step 5: run the success callback if available
 
+  grid_platform_printf("NVM: Read done\r\n");
+
   // Set ready before callback so callback can start new nvm operation
   ui->bulk_status = GRID_UI_BULK_READY;
 
@@ -1364,6 +1372,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
 
 void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui) {
 
+  grid_platform_printf("NVM: Store next\r\n");
   if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_STORE_PROGRESS)) {
     return;
   }
@@ -1422,6 +1431,8 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui) {
   // Set ready before callback so callback can start new nvm operation
   ui->bulk_status = GRID_UI_BULK_READY;
 
+  grid_platform_printf("NVM: Store done\r\n");
+
   if (ui->bulk_success_callback != NULL) {
     ui->bulk_success_callback(ui->bulk_lastheader_id);
     ui->bulk_success_callback = NULL;
@@ -1430,6 +1441,7 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui) {
 
 void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui) {
 
+  grid_platform_printf("NVM: Clear next\r\n");
   if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CLEAR_PROGRESS)) {
     return;
   }
@@ -1450,6 +1462,8 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui) {
   // Set ready before callback so callback can start new nvm operation
   ui->bulk_status = GRID_UI_BULK_READY;
 
+  grid_platform_printf("NVM: Clear done\r\n");
+
   if (ui->bulk_success_callback != NULL) {
 
     ui->bulk_success_callback(ui->bulk_lastheader_id);
@@ -1459,6 +1473,7 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui) {
 
 void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui) {
 
+  grid_platform_printf("NVM: Erase next\r\n");
   if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_ERASE_PROGRESS)) {
     return;
   }
@@ -1496,6 +1511,7 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui) {
   // Set ready before callback so callback can start new nvm operation
   ui->bulk_status = GRID_UI_BULK_READY;
 
+  grid_platform_printf("NVM: Erase done\r\n");
   // call success callback
   if (ui->bulk_success_callback != NULL) {
 

@@ -509,38 +509,33 @@ void grid_esp32_nvm_task(void* arg) {
       continue;
     }
 
-    if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
+    // gpio_set_level(47, 1);
 
-      // gpio_set_level(47, 1);
+    uint64_t time_max_duration = 150 * 1000; // in microseconds
+    uint64_t time_start = grid_platform_rtc_get_micros();
 
-      uint64_t time_max_duration = 150 * 1000; // in microseconds
-      uint64_t time_start = grid_platform_rtc_get_micros();
+    do {
 
-      do {
+      switch (grid_ui_get_bulk_status(&grid_ui_state)) {
+      case GRID_UI_BULK_READ_PROGRESS:
+        grid_ui_bulk_pageread_next(&grid_ui_state);
+        break;
+      case GRID_UI_BULK_STORE_PROGRESS:
+        grid_ui_bulk_pagestore_next(&grid_ui_state);
+        break;
+      case GRID_UI_BULK_CLEAR_PROGRESS:
+        grid_ui_bulk_pageclear_next(&grid_ui_state);
+        break;
+      case GRID_UI_BULK_ERASE_PROGRESS:
+        grid_ui_bulk_nvmerase_next(&grid_ui_state);
+        break;
+      default:
+        break;
+      }
 
-        switch (grid_ui_get_bulk_status(&grid_ui_state)) {
-        case GRID_UI_BULK_READ_PROGRESS:
-          grid_ui_bulk_pageread_next(&grid_ui_state);
-          break;
-        case GRID_UI_BULK_STORE_PROGRESS:
-          grid_ui_bulk_pagestore_next(&grid_ui_state);
-          break;
-        case GRID_UI_BULK_CLEAR_PROGRESS:
-          grid_ui_bulk_pageclear_next(&grid_ui_state);
-          break;
-        case GRID_UI_BULK_ERASE_PROGRESS:
-          grid_ui_bulk_nvmerase_next(&grid_ui_state);
-          break;
-        default:
-          break;
-        }
+    } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration && grid_ui_bulk_anything_is_in_progress(&grid_ui_state));
 
-      } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration && grid_ui_bulk_anything_is_in_progress(&grid_ui_state));
-
-      // gpio_set_level(47, 0);
-
-      xSemaphoreGive(nvm_or_port);
-    }
+    // gpio_set_level(47, 0);
 
     vTaskDelay(pdMS_TO_TICKS(15));
   }

@@ -15,6 +15,10 @@ void grid_lua_init(struct grid_lua_model* mod) {
   mod->stdi_len = GRID_LUA_STDI_LENGTH;
   mod->stde_len = GRID_LUA_STDE_LENGTH;
 
+  mod->busy_semaphore = NULL;
+  mod->busy_semaphore_lock_fn = NULL;
+  mod->busy_semaphore_release_fn = NULL;
+
   grid_lua_clear_stdo(mod);
   grid_lua_clear_stdi(mod);
   grid_lua_clear_stde(mod);
@@ -24,6 +28,42 @@ void grid_lua_init(struct grid_lua_model* mod) {
   mod->L = NULL;
 
   mod->target_memory_usage_kilobytes = 70; // 70kb
+}
+
+void grid_lua_semaphore_init(struct grid_lua_model* mod, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*)) {
+
+  mod->busy_semaphore = lua_busy_semaphore;
+  mod->busy_semaphore_lock_fn = lock_fn;
+  mod->busy_semaphore_release_fn = release_fn;
+}
+void grid_lua_semaphore_lock(struct grid_lua_model* mod) {
+
+  if (mod->L == NULL) {
+    grid_platform_printf("LUA model not initialized\n");
+    return;
+  }
+
+  if (mod->busy_semaphore == NULL) {
+    return;
+  }
+
+  if (mod->busy_semaphore_lock_fn == NULL) {
+    return;
+  }
+
+  mod->busy_semaphore_lock_fn(mod->busy_semaphore);
+}
+void grid_lua_semaphore_release(struct grid_lua_model* mod) {
+
+  if (mod->busy_semaphore == NULL) {
+    return;
+  }
+
+  if (mod->busy_semaphore_lock_fn == NULL) {
+    return;
+  }
+
+  mod->busy_semaphore_release_fn(mod->busy_semaphore);
 }
 
 void grid_lua_deinit(struct grid_lua_model* mod) {}
@@ -55,6 +95,8 @@ char* grid_lua_get_error_string(struct grid_lua_model* mod) { return mod->stde; 
 
 uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code) {
 
+  grid_lua_semaphore_lock(mod);
+
   mod->dostring_count++;
 
   uint32_t is_ok = 1;
@@ -77,6 +119,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code) {
     is_ok = 0;
   }
 
+  grid_lua_semaphore_release(mod);
   grid_lua_gc_try_collect(mod);
 
   return is_ok;
@@ -88,6 +131,13 @@ uint8_t grid_lua_get_memory_target(struct grid_lua_model* mod) { return mod->tar
 
 void grid_lua_gc_try_collect(struct grid_lua_model* mod) {
 
+  if (mod->L == NULL) {
+    grid_platform_printf("LUA model not initialized\n");
+    return;
+  }
+
+  grid_lua_semaphore_lock(mod);
+
   uint8_t target_kilobytes = grid_lua_get_memory_target(mod);
 
   if (lua_gc(mod->L, LUA_GCCOUNT) > target_kilobytes) {
@@ -96,12 +146,18 @@ void grid_lua_gc_try_collect(struct grid_lua_model* mod) {
 
     char message[10] = {0};
     // sprintf(message, "gc %dkb", target_kilobytes);
-    grid_lua_debug_memory_stats(mod, message);
+    // grid_lua_debug_memory_stats(mod, message);
     mod->dostring_count = 0;
   }
+
+  grid_lua_semaphore_release(mod);
 }
 
-void grid_lua_gc_collect(struct grid_lua_model* mod) { lua_gc(mod->L, LUA_GCCOLLECT); }
+void grid_lua_gc_collect(struct grid_lua_model* mod) {
+  grid_lua_semaphore_lock(mod);
+  lua_gc(mod->L, LUA_GCCOLLECT);
+  grid_lua_semaphore_release(mod);
+}
 
 void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message) {
 
@@ -1824,16 +1880,18 @@ void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui) {
 
   ui->lua_ui_init_callback(lua);
 
-  grid_lua_debug_memory_stats(lua, "Ui init");
+  // grid_lua_debug_memory_stats(lua, "Ui init");
 }
 
 void grid_lua_start_vm(struct grid_lua_model* mod) {
+
+  grid_platform_printf("START VM\n");
 
   mod->L = luaL_newstate();
 
   lua_atpanic(mod->L, &grid_lua_panic);
 
-  grid_lua_debug_memory_stats(mod, "Init");
+  // grid_lua_debug_memory_stats(mod, "Init");
 
   // luaL_openlibs(mod->L);
 
@@ -1856,8 +1914,9 @@ void grid_lua_start_vm(struct grid_lua_model* mod) {
     lua_pop(mod->L, 1); /* remove lib */
   }
 
-  grid_lua_debug_memory_stats(mod, "Openlibs");
+  // grid_lua_debug_memory_stats(mod, "Openlibs");
 
+  grid_lua_semaphore_release(mod);
   grid_lua_dostring(mod, GRID_LUA_GLUT_source);
   grid_lua_dostring(mod, GRID_LUA_GLIM_source);
   grid_lua_dostring(mod, GRID_LUA_GEN_source);
@@ -1878,14 +1937,21 @@ void grid_lua_start_vm(struct grid_lua_model* mod) {
   grid_lua_dostring(mod, "keyboard.send_macro = function "
                          "(self,...) " GRID_LUA_FNC_G_KEYBOARD_SEND_short "(...) end");
 
+  grid_lua_semaphore_lock(mod);
+
   lua_getglobal(mod->L, "_G");
   luaL_setfuncs(mod->L, printlib, 0);
 
   lua_pop(mod->L, 1);
-  grid_lua_debug_memory_stats(mod, "Printlib");
+  // grid_lua_debug_memory_stats(mod, "Printlib");
+
+  grid_lua_semaphore_release(mod);
 }
 
 void grid_lua_stop_vm(struct grid_lua_model* mod) {
+
+  grid_lua_semaphore_lock(mod);
+  grid_platform_printf("STOP VM\n");
 
   if (mod->L != NULL) {
 

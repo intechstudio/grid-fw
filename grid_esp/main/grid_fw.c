@@ -120,6 +120,19 @@ void app_main(void) {
 
   esp_log_level_set("*", ESP_LOG_INFO);
 
+  SemaphoreHandle_t lua_busy_semaphore = xSemaphoreCreateBinary();
+  // xSemaphoreGive(lua_busy_semaphore);
+
+  void lua_busy_semaphore_lock_fn(void* arg) {
+
+    while (xSemaphoreTake((SemaphoreHandle_t)arg, 0) != pdTRUE) {
+      // spin
+      portYIELD();
+    };
+  }
+
+  void lua_busy_semaphore_release_fn(void* arg) { xSemaphoreGive((SemaphoreHandle_t)arg); }
+
   SemaphoreHandle_t nvm_or_port = xSemaphoreCreateBinary();
   xSemaphoreGive(nvm_or_port);
 
@@ -186,6 +199,8 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "===== LUA INIT =====");
   grid_lua_init(&grid_lua_state);
+  grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, lua_busy_semaphore_lock_fn, lua_busy_semaphore_release_fn);
+
   grid_lua_set_memory_target(&grid_lua_state, 80); // 80kb
 
   grid_lua_start_vm(&grid_lua_state);
