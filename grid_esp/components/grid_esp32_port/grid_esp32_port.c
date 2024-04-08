@@ -47,6 +47,8 @@ static const char* TAG = "PORT";
 volatile uint8_t DRAM_ATTR rolling_id_last_sent = 255;
 volatile uint8_t DRAM_ATTR rolling_id_last_received = 255;
 
+volatile uint8_t DRAM_ATTR rolling_id_error_count = 0;
+
 uint8_t DRAM_ATTR empty_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 uint8_t DRAM_ATTR message_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
@@ -93,11 +95,12 @@ static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t* trans) {
     ((uint8_t*)trans->tx_buffer)[GRID_PARAMETER_SPI_SYNC1_STATE_index] = sync1_state;
     sync1_state--;
   }
+
+  rolling_id_last_sent = (rolling_id_last_sent + 1) % GRID_PARAMETER_SPI_ROLLING_ID_maximum;
+  ((uint8_t*)trans->tx_buffer)[GRID_PARAMETER_SPI_ROLLING_ID_index] = rolling_id_last_sent; // not received from any of the ports
+
   portEXIT_CRITICAL(&spinlock);
 }
-
-static void* DRAM_ATTR rx_debug = 0;
-static uint8_t DRAM_ATTR rx_flag = 0;
 
 static char DRAM_ATTR rx_str[500] = {0};
 
@@ -111,14 +114,14 @@ static struct grid_doublebuffer* DRAM_ATTR uart_doublebuffer_rx_array[4] = {0};
 
 static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
-  // ets_printf(" %d ", queue_state);
-  rx_flag = 1;
-
   uint8_t rolling_id_now_received = ((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_ROLLING_ID_index];
   // ets_printf("ID: %d\n",  rolling_id_now_received);
   if (rolling_id_now_received != (rolling_id_last_received + 1) % GRID_PARAMETER_SPI_ROLLING_ID_maximum) {
     // ets_printf("ERROR: %d != %d\r\n", rolling_id_now_received, rolling_id_last_received+1);
     // ets_debug_string("STR: ", (char*)trans->rx_buffer);
+    if (rolling_id_error_count < 255) {
+      rolling_id_error_count++;
+    }
   }
   rolling_id_last_received = rolling_id_now_received;
 
@@ -336,39 +339,52 @@ static uint64_t ping_lastrealtime = 0;
 static uint64_t heartbeat_lastrealtime = 0;
 static uint64_t cooldown_lastrealtime = 0;
 
-static void try_send_heartbeat_and_ping_blocking(void) {
+static void try_send_ping(void) {
 
-  if (grid_platform_rtc_get_elapsed_time(ping_lastrealtime) > GRID_PARAMETER_PINGINTERVAL_us) {
-
-    if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
-
-      ping_lastrealtime = grid_platform_rtc_get_micros();
-
-      if (uart_port_array[0] != NULL)
-        uart_port_array[0]->ping_flag = 1;
-      if (uart_port_array[1] != NULL)
-        uart_port_array[1]->ping_flag = 1;
-      if (uart_port_array[2] != NULL)
-        uart_port_array[2]->ping_flag = 1;
-      if (uart_port_array[3] != NULL)
-        uart_port_array[3]->ping_flag = 1;
-
-      grid_port_ping_try_everywhere();
-
-      xSemaphoreGive(nvm_or_port);
-    }
+  if (grid_platform_rtc_get_elapsed_time(ping_lastrealtime) < GRID_PARAMETER_PINGINTERVAL_us) {
+    return;
   }
 
-  if (grid_platform_rtc_get_elapsed_time(heartbeat_lastrealtime) > GRID_PARAMETER_HEARTBEATINTERVAL_us) {
+  ping_lastrealtime = grid_platform_rtc_get_micros();
 
-    if (xSemaphoreTake(nvm_or_port, portMAX_DELAY) == pdTRUE) {
+  if (uart_port_array[0] != NULL)
+    uart_port_array[0]->ping_flag = 1;
+  if (uart_port_array[1] != NULL)
+    uart_port_array[1]->ping_flag = 1;
+  if (uart_port_array[2] != NULL)
+    uart_port_array[2]->ping_flag = 1;
+  if (uart_port_array[3] != NULL)
+    uart_port_array[3]->ping_flag = 1;
 
-      heartbeat_lastrealtime = grid_platform_rtc_get_micros();
-      grid_protocol_send_heartbeat(grid_msg_get_heartbeat_type(&grid_msg_state), grid_sys_get_hwcfg(&grid_sys_state)); // Put heartbeat into UI rx_buffer
+  grid_port_ping_try_everywhere();
+}
 
-      xSemaphoreGive(nvm_or_port);
-    }
+static void try_send_heartbeat(void) {
+
+  if (grid_platform_rtc_get_elapsed_time(heartbeat_lastrealtime) < GRID_PARAMETER_HEARTBEATINTERVAL_us) {
+    return;
   }
+
+  heartbeat_lastrealtime = grid_platform_rtc_get_micros();
+  grid_protocol_send_heartbeat(grid_msg_get_heartbeat_type(&grid_msg_state), grid_sys_get_hwcfg(&grid_sys_state)); // Put heartbeat into UI rx_buffer
+}
+
+void handle_sync_ticks(void) {
+
+  portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+  portENTER_CRITICAL(&spinlock);
+
+  while (sync1_received) {
+    grid_ui_midi_sync_tick_time(&grid_ui_state);
+    sync1_received--;
+  }
+
+  while (sync2_received) {
+    grid_ui_midi_sync_tick_time(&grid_ui_state);
+    sync2_received--;
+  }
+
+  portEXIT_CRITICAL(&spinlock);
 }
 
 void grid_esp32_port_task(void* arg) {
@@ -471,7 +487,14 @@ void grid_esp32_port_task(void* arg) {
 
   while (1) {
 
-    try_send_heartbeat_and_ping_blocking();
+    if (rolling_id_error_count > 0) {
+      rolling_id_error_count = 0;
+      ets_printf("ERROR: Rolling ID\n");
+    }
+
+    try_send_ping();
+
+    try_send_heartbeat();
 
     // Check if USB is connected and start animation
     if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()) {
@@ -486,37 +509,9 @@ void grid_esp32_port_task(void* arg) {
 
     // gpio_ll_set_level(&GPIO, 47, 1);
 
-    portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
-    portENTER_CRITICAL(&spinlock);
-
-    while (sync1_received) {
-      grid_ui_midi_sync_tick_time(&grid_ui_state);
-      sync1_received--;
-    }
-
-    while (sync2_received) {
-      grid_ui_midi_sync_tick_time(&grid_ui_state);
-      sync2_received--;
-    }
-
-    portEXIT_CRITICAL(&spinlock);
+    handle_sync_ticks();
 
     if (xSemaphoreTake(nvm_or_port, pdMS_TO_TICKS(4)) == pdTRUE) {
-
-      if (rx_flag != 0) {
-
-        if (rx_debug != 0) {
-
-          // ets_printf("\r\n%c> %s\r\n", grid_port_get_name_char((struct
-          // grid_port*) rx_debug), rx_str);
-
-          rx_debug = 0;
-        } else {
-          // ets_printf("#");
-        }
-
-        rx_flag = 0;
-      }
 
       uint32_t c0, c1;
 

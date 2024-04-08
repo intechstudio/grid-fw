@@ -44,6 +44,10 @@ static uint8_t grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_TRANSACTION_length];
 
 uint8_t grid_pico_uart_tx_ready_bitmap = 255;
 
+volatile uint8_t rolling_id_last_sent = 255;
+volatile uint8_t rolling_id_last_received = 255;
+volatile uint8_t rolling_id_error_count = 0;
+
 const PIO GRID_TX_PIO = pio0;
 const PIO GRID_RX_PIO = pio1;
 
@@ -298,6 +302,7 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
       }
     }
 
+    por->partner_last_timestamp = grid_platform_rtc_get_micros();
     rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
     return 1;
   }
@@ -308,7 +313,7 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
   uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(message);
   if (grid_msg_recent_fingerprint_find(&recent_messages, fingerprint)) {
     // Already heard this message
-    printf("H\r\n");
+    printf("H %s\r\n", rx_bucket);
     grid_bucket_clear(rx_bucket);
     return 1;
   }
@@ -523,6 +528,16 @@ void grid_pico_spi_receive_task_inner(void) {
   }
   grid_pico_spi_clear_rx_data_available_flag();
 
+  uint8_t rolling_id_now_received = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_ROLLING_ID_index];
+
+  if (rolling_id_now_received != (rolling_id_last_received + 1) % GRID_PARAMETER_SPI_ROLLING_ID_maximum) {
+
+    if (rolling_id_error_count < 255) {
+      rolling_id_error_count++;
+    }
+  }
+  rolling_id_last_received = rolling_id_now_received;
+
   uint8_t destination_flags = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
   uint8_t sync1_state = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_SYNC1_STATE_index];
 
@@ -554,9 +569,6 @@ void grid_pico_spi_receive_task_inner(void) {
     spi_tx_active_bucket = NULL;
   }
 }
-
-volatile uint8_t rolling_id_last_sent = 255;
-volatile uint8_t rolling_id_last_received = 255;
 
 void grid_pico_spi_transmit_task_inner(void) {
 
@@ -691,6 +703,11 @@ int main() {
     grid_pico_spi_receive_task_inner();
 
     grid_pico_spi_transmit_task_inner();
+
+    if (rolling_id_error_count > 0) {
+      rolling_id_error_count = 0;
+      printf("$\n");
+    }
 
     // iterate through all the uart_ports
     for (uint8_t i = 0; i < 4; i++) {
