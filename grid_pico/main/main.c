@@ -313,7 +313,15 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
   uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(message);
   if (grid_msg_recent_fingerprint_find(&recent_messages, fingerprint)) {
     // Already heard this message
-    printf("H %s\r\n", rx_bucket);
+    printf("H ");
+    for (uint8_t i = 0; i < 14; i++) {
+      if (message[i] < 32) {
+        printf("[%d] ", message[i]);
+      } else {
+        printf("%c ", message[i]);
+      }
+    }
+    printf("...\n");
     grid_bucket_clear(rx_bucket);
     return 1;
   }

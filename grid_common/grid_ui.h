@@ -95,6 +95,11 @@ struct grid_ui_model {
 
   enum grid_ui_status_t status;
 
+  void* busy_semaphore;
+
+  void (*busy_semaphore_lock_fn)(void*);
+  void (*busy_semaphore_release_fn)(void*);
+
   uint8_t page_activepage;
   uint8_t page_count;
 
@@ -120,6 +125,10 @@ struct grid_ui_model {
 extern struct grid_ui_model grid_ui_state;
 
 void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length);
+
+void grid_ui_semaphore_init(struct grid_ui_model* mod, void* busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
+void grid_ui_semaphore_lock(struct grid_ui_model* mod);
+void grid_ui_semaphore_release(struct grid_ui_model* mod);
 
 void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid_ui_element_t element_type);
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui_event_t event_type);

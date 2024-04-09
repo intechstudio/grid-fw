@@ -327,7 +327,11 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
       return 0;
     }
 
-    // The set page request was valid, change page now!
+    // The page is already active
+    if (grid_ui_page_get_activepage(&grid_ui_state) == page) {
+      return 0;
+    }
+
     grid_ui_page_load(&grid_ui_state, page);
     grid_sys_set_bank(&grid_sys_state, page);
   } else if (msg_instr == GRID_INSTR_REPORT_code) { // REPORT BANK
@@ -346,6 +350,12 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
     }
 
     grid_ui_state.page_negotiated = true;
+
+    // The page is already active
+    if (grid_ui_page_get_activepage(&grid_ui_state) == page) {
+      return 0;
+    }
+
     grid_ui_page_load(&grid_ui_state, page);
     grid_sys_set_bank(&grid_sys_state, page);
   }

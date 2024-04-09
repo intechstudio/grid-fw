@@ -121,9 +121,10 @@ void app_main(void) {
   esp_log_level_set("*", ESP_LOG_INFO);
 
   SemaphoreHandle_t lua_busy_semaphore = xSemaphoreCreateBinary();
+  SemaphoreHandle_t ui_busy_semaphore = xSemaphoreCreateBinary();
   // xSemaphoreGive(lua_busy_semaphore);
 
-  void lua_busy_semaphore_lock_fn(void* arg) {
+  void grid_common_semaphore_lock_fn(void* arg) {
 
     while (xSemaphoreTake((SemaphoreHandle_t)arg, 0) != pdTRUE) {
       // spin
@@ -131,7 +132,7 @@ void app_main(void) {
     };
   }
 
-  void lua_busy_semaphore_release_fn(void* arg) { xSemaphoreGive((SemaphoreHandle_t)arg); }
+  void grid_common_semaphore_release_fn(void* arg) { xSemaphoreGive((SemaphoreHandle_t)arg); }
 
   ESP_LOGI(TAG, "===== MAIN START =====");
 
@@ -161,6 +162,8 @@ void app_main(void) {
   } else {
     ets_printf("Init Module: Unknown Module\r\n");
   }
+
+  grid_ui_semaphore_init(&grid_ui_state, (void*)ui_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
   uint8_t led_pin = 21;
 
@@ -193,12 +196,9 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "===== LUA INIT =====");
   grid_lua_init(&grid_lua_state);
-  grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, lua_busy_semaphore_lock_fn, lua_busy_semaphore_release_fn);
+  grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
   grid_lua_set_memory_target(&grid_lua_state, 80); // 80kb
-
-  grid_lua_start_vm(&grid_lua_state);
-  grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
 
   // ================== START: grid_module_pbf4_init() ================== //
 
@@ -242,6 +242,7 @@ void app_main(void) {
   grid_sys_set_bank(&grid_sys_state, 0);
   ets_delay_us(2000);
 
+  xSemaphoreGive(ui_busy_semaphore);
   grid_ui_page_load(&grid_ui_state, 0); // load page 0
 
   // while (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state))
@@ -284,8 +285,8 @@ void app_main(void) {
   TaskHandle_t nvm_task_hdl;
 
   TaskHandle_t port_task_hdl;
+  TaskHandle_t ui_task_hdl;
 
-  // Create the class driver task
   xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 4096 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
 
   ESP_LOGI(TAG, "===== PORT TASK DONE =====");

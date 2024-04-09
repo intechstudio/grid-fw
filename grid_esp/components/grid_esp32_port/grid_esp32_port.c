@@ -225,6 +225,78 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
   }
 }
 
+static uint64_t cooldown_lastrealtime = 0;
+static uint64_t ping_lastrealtime = 0;
+static uint64_t heartbeat_lastrealtime = 0;
+
+static void try_send_ping(void) {
+
+  if (grid_platform_rtc_get_elapsed_time(ping_lastrealtime) < GRID_PARAMETER_PINGINTERVAL_us) {
+    return;
+  }
+
+  ping_lastrealtime = grid_platform_rtc_get_micros();
+
+  for (uint8_t i = 0; i < 4; i++) {
+
+    struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
+
+    if (port == NULL) {
+      return; // no ports initialized
+    }
+
+    port->ping_flag = 1;
+  }
+
+  grid_port_ping_try_everywhere();
+}
+
+static void try_send_heartbeat(void) {
+
+  if (grid_platform_rtc_get_elapsed_time(heartbeat_lastrealtime) < GRID_PARAMETER_HEARTBEATINTERVAL_us) {
+    return;
+  }
+
+  heartbeat_lastrealtime = grid_platform_rtc_get_micros();
+  grid_protocol_send_heartbeat(grid_msg_get_heartbeat_type(&grid_msg_state), grid_sys_get_hwcfg(&grid_sys_state)); // Put heartbeat into UI rx_buffer
+}
+
+void process_ui_local(void) {
+
+  if (0 == grid_ui_event_count_istriggered_local(&grid_ui_state)) {
+    return; // no local trigger found
+  }
+
+  // CRITICAL_SECTION_ENTER()
+  vTaskSuspendAll();
+  grid_port_process_ui_local_UNSAFE(&grid_ui_state);
+  xTaskResumeAll();
+  // CRITICAL_SECTION_LEAVE()
+}
+
+void process_ui_normal(void) {
+
+  if (0 < grid_ui_event_count_istriggered_local(&grid_ui_state)) {
+    return; // local trigger found, should service that first
+  }
+
+  if (0 == grid_ui_event_count_istriggered(&grid_ui_state)) {
+    return; // no normal trigger found
+  }
+
+  if (grid_platform_rtc_get_elapsed_time(cooldown_lastrealtime) < GRID_PARAMETER_UICOOLDOWN_us) {
+    return; // cooldown is not completed
+  }
+
+  cooldown_lastrealtime = grid_platform_rtc_get_micros();
+
+  // CRITICAL_SECTION_ENTER()
+  vTaskSuspendAll();
+  grid_port_process_ui_UNSAFE(&grid_ui_state);
+  xTaskResumeAll();
+  // CRITICAL_SECTION_LEAVE()
+}
+
 static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
 
 uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length) {
@@ -317,40 +389,6 @@ static void plot_port_debug() {
   // ets_printf("\r\n");
 }
 
-static uint64_t ping_lastrealtime = 0;
-static uint64_t heartbeat_lastrealtime = 0;
-static uint64_t cooldown_lastrealtime = 0;
-
-static void try_send_ping(void) {
-
-  if (grid_platform_rtc_get_elapsed_time(ping_lastrealtime) < GRID_PARAMETER_PINGINTERVAL_us) {
-    return;
-  }
-
-  ping_lastrealtime = grid_platform_rtc_get_micros();
-
-  if (uart_port_array[0] != NULL)
-    uart_port_array[0]->ping_flag = 1;
-  if (uart_port_array[1] != NULL)
-    uart_port_array[1]->ping_flag = 1;
-  if (uart_port_array[2] != NULL)
-    uart_port_array[2]->ping_flag = 1;
-  if (uart_port_array[3] != NULL)
-    uart_port_array[3]->ping_flag = 1;
-
-  grid_port_ping_try_everywhere();
-}
-
-static void try_send_heartbeat(void) {
-
-  if (grid_platform_rtc_get_elapsed_time(heartbeat_lastrealtime) < GRID_PARAMETER_HEARTBEATINTERVAL_us) {
-    return;
-  }
-
-  heartbeat_lastrealtime = grid_platform_rtc_get_micros();
-  grid_protocol_send_heartbeat(grid_msg_get_heartbeat_type(&grid_msg_state), grid_sys_get_hwcfg(&grid_sys_state)); // Put heartbeat into UI rx_buffer
-}
-
 void handle_sync_ticks(void) {
 
   portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
@@ -398,60 +436,6 @@ void handle_connect_disconnect_effect(uint8_t* partner_last_status) {
       grid_port_receiver_softreset(por, doublebuffer_rx);
     }
   }
-}
-
-void process_ui_local(void) {
-
-  if (grid_lua_state.L == NULL) {
-    grid_platform_printf("NO LUA VM\n");
-    return;
-  }
-
-  if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
-    return; // cannot process because nvm is busy
-  }
-
-  if (0 == grid_ui_event_count_istriggered_local(&grid_ui_state)) {
-    return; // no local trigger found
-  }
-
-  // CRITICAL_SECTION_ENTER()
-  vTaskSuspendAll();
-  grid_port_process_ui_local_UNSAFE(&grid_ui_state);
-  xTaskResumeAll();
-  // CRITICAL_SECTION_LEAVE()
-}
-
-void process_ui_normal() {
-
-  if (grid_lua_state.L == NULL) {
-    grid_platform_printf("NO LUA VM\n");
-    return;
-  }
-
-  if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
-    return; // cannot process because nvm is busy
-  }
-
-  if (0 < grid_ui_event_count_istriggered_local(&grid_ui_state)) {
-    return; // local trigger found, should service that first
-  }
-
-  if (0 == grid_ui_event_count_istriggered(&grid_ui_state)) {
-    return; // no normal trigger found
-  }
-
-  if (grid_platform_rtc_get_elapsed_time(cooldown_lastrealtime) < GRID_PARAMETER_UICOOLDOWN_us) {
-    return; // cooldown is not completed
-  }
-
-  cooldown_lastrealtime = grid_platform_rtc_get_micros();
-
-  // CRITICAL_SECTION_ENTER()
-  vTaskSuspendAll();
-  grid_port_process_ui_UNSAFE(&grid_ui_state);
-  xTaskResumeAll();
-  // CRITICAL_SECTION_LEAVE()
 }
 
 void grid_esp32_port_task(void* arg) {
@@ -550,6 +534,9 @@ void grid_esp32_port_task(void* arg) {
 
   grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
 
+  uint8_t watchdog_rolling_id_last_received = rolling_id_last_received;
+  uint64_t watchdog_rolling_id_lastrealtime = grid_platform_rtc_get_micros();
+
   while (1) {
 
     if (rolling_id_error_count > 0) {
@@ -557,9 +544,16 @@ void grid_esp32_port_task(void* arg) {
       ets_printf("ERROR: Rolling ID\n");
     }
 
-    try_send_ping();
+    if (rolling_id_last_received != watchdog_rolling_id_last_received) {
+      watchdog_rolling_id_lastrealtime = grid_platform_rtc_get_micros();
+      watchdog_rolling_id_last_received = rolling_id_last_received;
+    }
 
-    try_send_heartbeat();
+    if (grid_platform_rtc_get_elapsed_time(watchdog_rolling_id_lastrealtime) > 100 * 1000) { // 100 ms
+
+      watchdog_rolling_id_lastrealtime = grid_platform_rtc_get_micros();
+      ets_printf("ERROR: SPI frozen\n");
+    }
 
     // Check if USB is connected and start animation
     if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()) {
@@ -577,11 +571,6 @@ void grid_esp32_port_task(void* arg) {
     handle_sync_ticks();
 
     handle_connect_disconnect_effect(partner_last_status);
-
-    // PORT PROCESS UI
-
-    process_ui_local();
-    process_ui_normal();
 
     uint8_t port_list_length = grid_transport_get_port_array_length(&grid_transport_state);
 
@@ -643,6 +632,15 @@ void grid_esp32_port_task(void* arg) {
     }
 
     // gpio_ll_set_level(&GPIO, 47, 0);
+    try_send_ping();
+    try_send_heartbeat();
+
+    // PORT PROCESS UI
+    if (grid_lua_state.L != NULL && !grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
+
+      process_ui_local();
+      process_ui_normal();
+    }
 
     portYIELD();
   }
