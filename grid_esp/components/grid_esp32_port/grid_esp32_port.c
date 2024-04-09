@@ -553,6 +553,10 @@ void grid_esp32_port_task(void* arg) {
 
       watchdog_rolling_id_lastrealtime = grid_platform_rtc_get_micros();
       ets_printf("ERROR: SPI frozen\n");
+
+      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 50);
+      grid_alert_all_set_frequency(&grid_led_state, -4);
+      grid_alert_all_set_phase(&grid_led_state, 100);
     }
 
     // Check if USB is connected and start animation
