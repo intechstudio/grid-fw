@@ -13,6 +13,8 @@
 #include "hardware/irq.h"
 #include "hardware/spi.h"
 
+#include "hardware/pwm.h"
+
 #include "uart_rx.pio.h"
 #include "uart_tx.pio.h"
 
@@ -36,6 +38,113 @@
 
 #define BUCKET_BUFFER_LENGTH 500
 #define BUCKET_ARRAY_LENGTH 50
+
+static uint slice_num = 0;
+
+static void grid_str_transform_brc_params2(char* message, int8_t dx, int8_t dy, uint8_t partner_fi) {
+
+  if (message[1] != GRID_CONST_BRC) {
+    return;
+  }
+
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 2);
+
+  uint8_t error = 0;
+
+  uint8_t received_session = grid_str_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
+  uint8_t received_msgage = grid_str_get_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
+
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 3);
+  // Read the received destination X Y values (SIGNED INT)
+  int8_t received_dx = grid_str_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+  int8_t received_dy = grid_str_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 4);
+  // Read the received source X Y values (SIGNED INT)
+  int8_t received_sx = grid_str_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+  int8_t received_sy = grid_str_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
+
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 5);
+
+  uint8_t received_rot = grid_str_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
+
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 6);
+
+  // DO THE DX DY AGE calculations
+
+  int8_t rotated_dx = 0;
+  int8_t rotated_dy = 0;
+
+  int8_t rotated_sx = 0;
+  int8_t rotated_sy = 0;
+
+  uint8_t updated_rot = (received_rot + partner_fi) % 4;
+
+  // APPLY THE 2D ROTATION MATRIX
+
+  if (partner_fi == 0) { // 0 deg
+    rotated_dx += received_dx;
+    rotated_dy += received_dy;
+
+    rotated_sx += received_sx;
+    rotated_sy += received_sy;
+  } else if (partner_fi == 1) { // 90 deg
+    rotated_dx -= received_dy;
+    rotated_dy += received_dx;
+
+    rotated_sx -= received_sy;
+    rotated_sy += received_sx;
+  } else if (partner_fi == 2) { // 180 deg
+    rotated_dx -= received_dx;
+    rotated_dy -= received_dy;
+
+    rotated_sx -= received_sx;
+    rotated_sy -= received_sy;
+  } else if (partner_fi == 3) { // 270 deg
+    rotated_dx += received_dy;
+    rotated_dy -= received_dx;
+
+    rotated_sx += received_sy;
+    rotated_sy -= received_sx;
+  } else {
+    // TRAP INVALID MESSAGE
+  }
+
+  uint8_t updated_dx = rotated_dx + GRID_PARAMETER_DEFAULT_POSITION + dx;
+  uint8_t updated_dy = rotated_dy + GRID_PARAMETER_DEFAULT_POSITION + dy;
+
+  uint8_t updated_sx = rotated_sx + GRID_PARAMETER_DEFAULT_POSITION + dx;
+  uint8_t updated_sy = rotated_sy + GRID_PARAMETER_DEFAULT_POSITION + dy;
+
+  uint8_t updated_msgage = received_msgage + 1;
+
+  if (grid_msg_is_position_transformable(received_dx, received_dy)) {
+
+    // Update message with the new values
+    grid_str_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
+    grid_str_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
+  }
+
+  if (grid_msg_is_position_transformable(received_sx, received_sy)) {
+
+    // Update message with the new values
+    grid_str_set_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, updated_sx, &error);
+    grid_str_set_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, updated_sy, &error);
+  }
+
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 5);
+
+  grid_str_set_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, updated_msgage, &error);
+  grid_str_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);
+  grid_str_set_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, partner_fi, &error);
+
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 6);
+  // Recalculate and update the checksum
+  uint16_t length = strlen(message);
+
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 7);
+  grid_str_checksum_write(message, length, grid_str_calculate_checksum_of_packet_string(message, length));
+}
 
 struct grid_msg_recent_buffer recent_messages;
 
@@ -277,14 +386,24 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
   int status = grid_str_verify_frame(message);
 
   if (status != 0) {
+
     grid_bucket_clear(rx_bucket);
+
     return 1;
   }
 
   struct grid_port* por = grid_transport_get_port(&grid_transport_state, rx_bucket->source_port_index);
 
+  if (por == NULL) {
+
+    printf("PORT NOT FOUND\n");
+    grid_bucket_clear(rx_bucket);
+    return;
+  }
+
   if (message[1] != GRID_CONST_BRC) {
 
+    pwm_set_chan_level(slice_num, PWM_CHAN_A, 1);
     if (message[2] == GRID_CONST_BELL) {
 
       uint8_t error = 0;
@@ -307,8 +426,9 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
     return 1;
   }
 
-  grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
+  grid_str_transform_brc_params2(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
 
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 9);
   // check if message is alreadys in recent messages buffer
   uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(message);
   if (grid_msg_recent_fingerprint_find(&recent_messages, fingerprint)) {
@@ -326,6 +446,8 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
     return 1;
   }
 
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 7);
+
   grid_msg_recent_fingerprint_store(&recent_messages, fingerprint);
 
   for (uint8_t i = 0; i < 4; i++) {
@@ -337,6 +459,8 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
 
     grid_bucket_create_uart_tx_clone(uart_port, rx_bucket);
   }
+
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 8);
 
   // bucket content verified, close bucket and set it full to indicate that it is ready to be sent through to ESP32 via SPI
   rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
@@ -521,6 +645,7 @@ void grid_pico_uart_receive_task_inner(void) {
 
   struct grid_bucket* last_uart_rx_processed_bucket = NULL;
   struct grid_bucket* bucket = grid_bucket_find_next_match(last_uart_rx_processed_bucket, GRID_BUCKET_STATUS_RECEIVE_COMPLETED);
+
   grid_uart_rx_process_bucket(bucket);
 }
 
@@ -534,6 +659,7 @@ void grid_pico_spi_receive_task_inner(void) {
   if (!grid_pico_spi_is_rx_data_available()) {
     return;
   }
+
   grid_pico_spi_clear_rx_data_available_flag();
 
   uint8_t rolling_id_now_received = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_ROLLING_ID_index];
@@ -688,6 +814,33 @@ int main() {
   gpio_init(GRID_PICO_PIN_LED);
   gpio_set_dir(GRID_PICO_PIN_LED, GPIO_OUT);
 
+  // gpio_init(GRID_PICO_PIN_INTERRUPT);
+  // gpio_set_dir(GRID_PICO_PIN_INTERRUPT, GPIO_OUT);
+
+  gpio_init(GRID_PICO_PIN_INTERRUPT);
+  gpio_set_dir(GRID_PICO_PIN_INTERRUPT, GPIO_OUT);
+  gpio_set_function(GRID_PICO_PIN_INTERRUPT, GPIO_FUNC_PWM);
+
+  // Find out which PWM slice is connected to GPIO 0 (it's slice 0)
+  slice_num = pwm_gpio_to_slice_num(GRID_PICO_PIN_INTERRUPT);
+
+  // Set period of 4 cycles (0 to 3 inclusive)
+  pwm_set_wrap(slice_num, 9);
+  // Set channel A output high for one cycle before dropping
+  pwm_set_chan_level(slice_num, PWM_CHAN_A, 0);
+  // Set the PWM running
+  pwm_set_enabled(slice_num, true);
+
+  pwm_set_clkdiv(slice_num, 32);
+
+  // while(1) {
+  //     // Generate PWM signal with varying duty cycle
+  //     for (uint8_t i=0; i<=9; i++) {
+  //         pwm_set_chan_level(slice_num, PWM_CHAN_A, i);
+  //         sleep_ms(500); // Wait for 500 milliseconds
+  //     }
+  // }
+
   grid_pico_spi_init();
 
   for (uint i = 0; i < GRID_PARAMETER_SPI_TRANSACTION_length; i++) {
@@ -705,6 +858,8 @@ int main() {
   irq_set_enabled(SIO_IRQ_PROC0, true);
 
   while (1) {
+
+    pwm_set_chan_level(slice_num, PWM_CHAN_A, 0);
 
     grid_pico_uart_receive_task_inner();
 
