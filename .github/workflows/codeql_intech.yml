@@ -77,6 +77,9 @@ jobs:
           codeql database create /project/codeql-db --language=cpp --command=./pico_build_firmware.sh \
           && codeql database analyze /project/codeql-db --format=sarif-latest --sarif-category=true --output=/project/codeql-db/codeql-sarif"
 
+    - run: |
+        ls
+        ls codeql-db
 
     # Filter out rules with low severity or high false positive rate
     # Also filter out warnings in third-party code
@@ -98,19 +101,19 @@ jobs:
           -**:cpp/unsigned-comparison-zero
           -**/cmake*/Modules/**
         input: codeql-db/codeql-sarif
-        output: codeql-db/codeql-sarif
+        output: codeql-db/codeql-sarif2
 
     # Upload CodeQL results as an artifact
     - name: Upload CodeQL results
       uses: actions/upload-artifact@v2
       with:
         name: codeql-results
-        path: codeql-db/codeql-sarif
+        path: codeql-db/codeql-sarif2
 
     - name: Upload CodeQL results to code scanning
       uses: github/codeql-action/upload-sarif@v2
       with:
-        sarif_file: codeql-db/codeql-sarif
+        sarif_file: codeql-db/codeql-sarif2
         category: "/language:${{matrix.language}}"
 
     - name: Upload CodeQL results as an artifact
@@ -118,5 +121,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: codeql-results
-        path: codeql-db/codeql-sarif
+        path: codeql-db/codeql-sarif2
         retention-days: 5
