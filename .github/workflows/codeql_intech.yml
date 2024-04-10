@@ -75,7 +75,7 @@ jobs:
         docker build -t my-image .
         docker run -v $PWD:/project -w /project/ my-image sh -c "\
           codeql database create /project/codeql-db --language=cpp --command=./pico_build_firmware.sh \
-          && codeql database analyze /project/codeql-db --format=sarif-latest --sarif-category=true --output=/project/codeql-db/codeql-sarif \"
+          && codeql database analyze /project/codeql-db --format=sarif-latest --sarif-category=true --output=/project/codeql-db/codeql-sarif"
 
 
     # Filter out rules with low severity or high false positive rate
