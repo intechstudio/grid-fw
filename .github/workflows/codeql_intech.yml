@@ -101,19 +101,19 @@ jobs:
           -**:cpp/unsigned-comparison-zero
           -**/cmake*/Modules/**
         input: codeql-db/codeql-sarif
-        output: codeql-db/codeql-sarif2
+        output: codeql-sarif
 
     # Upload CodeQL results as an artifact
     - name: Upload CodeQL results
       uses: actions/upload-artifact@v2
       with:
         name: codeql-results
-        path: codeql-db/codeql-sarif2
+        path: codeql-sarif
 
     - name: Upload CodeQL results to code scanning
       uses: github/codeql-action/upload-sarif@v2
       with:
-        sarif_file: codeql-db/codeql-sarif2
+        sarif_file: codeql-sarif
         category: "/language:${{matrix.language}}"
 
     - name: Upload CodeQL results as an artifact
@@ -121,5 +121,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: codeql-results
-        path: codeql-db/codeql-sarif2
+        path: codeql-sarif
         retention-days: 5
