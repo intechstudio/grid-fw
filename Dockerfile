@@ -28,6 +28,8 @@ RUN mkdir -p ${CODEQL_HOME} && \
     rm ${CODEQL_HOME}/codeql.zip && \
     codeql --version
 
+RUN cd ${CODEQL_HOME} && git clone --recursive https://github.com/github/codeql.git codeql-repo
+
 RUN apt update && \
     apt install -y socat
 
