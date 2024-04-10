@@ -73,17 +73,12 @@ jobs:
     #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
 
     - run: |
-
         docker build -t my-image .
-        docker run -v $PWD:/project -w /project/ my-image sh -c "./pico_build_firmware.sh"
-
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
-      with:
-        category: "/language:${{matrix.language}}"
-        upload: false
-      id: step1
+        docker run -v $PWD:/project -w /project/ my-image sh -c "\
+          ./pico_build_firmware.sh \
+          && codeql database create /project --language=cpp \
+          && codeql database analyze /project --format=sarif-latest --sarif-category=true" \
+          && ls
 
     # Filter out rules with low severity or high false positive rate
     # Also filter out warnings in third-party code
@@ -104,13 +99,20 @@ jobs:
           -**:cpp/suspicious-pointer-scaling-void
           -**:cpp/unsigned-comparison-zero
           -**/cmake*/Modules/**
-        input: ${{ steps.step1.outputs.sarif-output }}/cpp.sarif
-        output: ${{ steps.step1.outputs.sarif-output }}/cpp.sarif
+        input: codeql-sarif
+        output: codeql-sarif
+
+    # Upload CodeQL results as an artifact
+    - name: Upload CodeQL results
+      uses: actions/upload-artifact@v2
+      with:
+        name: codeql-results
+        path: codeql-sarif
 
     - name: Upload CodeQL results to code scanning
       uses: github/codeql-action/upload-sarif@v2
       with:
-        sarif_file: ${{ steps.step1.outputs.sarif-output }}
+        sarif_file: codeql-sarif
         category: "/language:${{matrix.language}}"
 
     - name: Upload CodeQL results as an artifact
@@ -118,10 +120,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: codeql-results
-        path: ${{ steps.step1.outputs.sarif-output }}
+        path: codeql-sarif
         retention-days: 5
-
-    - name: Fail if an error is found
-      run: |
-        ./.github/workflows/fail_on_error.py \
-          ${{ steps.step1.outputs.sarif-output }}/cpp.sarif

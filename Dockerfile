@@ -12,9 +12,24 @@ RUN apt update && \
     cd ..
 
 # Set working directory
+
 WORKDIR /
 
 ENV PICO_SDK_PATH=/pico/pico-sdk
+
+# Set up environment variables
+ENV CODEQL_HOME=/opt/codeql
+ENV PATH="${CODEQL_HOME}/codeql:${PATH}"
+
+# Install CodeQL CLI tools
+RUN mkdir -p ${CODEQL_HOME} && \
+    curl -L https://github.com/github/codeql-cli-binaries/releases/latest/download/codeql-linux64.zip -o ${CODEQL_HOME}/codeql.zip && \
+    unzip ${CODEQL_HOME}/codeql.zip -d ${CODEQL_HOME} && \
+    rm ${CODEQL_HOME}/codeql.zip && \
+    codeql --version
+
+RUN apt update && \
+    apt install -y socat
 
 # Define default command
 CMD ["bash"]
