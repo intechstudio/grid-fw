@@ -71,14 +71,13 @@ jobs:
 
     #   If the Autobuild fails above, remove it and uncomment the following three lines.
     #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
-
     - run: |
         docker build -t my-image .
         docker run -v $PWD:/project -w /project/ my-image sh -c "\
-          ./pico_build_firmware.sh \
-          && codeql database create /project/codeql-db --language=cpp \
-          && codeql database analyze /project/codeql-db --format=sarif-latest --sarif-category=true" \
-          && ls /project/codeql-db
+          codeql database create /project/codeql-db --language=cpp \
+          && ./pico_build_firmware.sh \
+          && codeql database analyze /project/codeql-db --format=sarif-latest --sarif-category=true"
+
 
     # Filter out rules with low severity or high false positive rate
     # Also filter out warnings in third-party code
