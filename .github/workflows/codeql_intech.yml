@@ -74,7 +74,7 @@ jobs:
     - run: |
         docker build -t my-image .
         docker run -v $PWD:/project -w /project/ my-image sh -c "\
-          codeql database create /project/codeql-db --language=cpp \
+          codeql database create /project/codeql-db --language=cpp --build-mode=manual \
           && ./pico_build_firmware.sh \
           && codeql database analyze /project/codeql-db --format=sarif-latest --sarif-category=true"
 
