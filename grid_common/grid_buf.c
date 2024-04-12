@@ -7,8 +7,6 @@
 
 #include "grid_buf.h"
 
-uint32_t grid_buffer_error_count = 0;
-
 uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length) {
 
   buf->buffer_length = length;
@@ -22,6 +20,9 @@ uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length) {
   buf->write_start = 0;
   buf->write_stop = 0;
   buf->write_active = 0;
+
+  buf->write_init_error_count = 0;
+  buf->write_acknowledge_error_count = 0;
 
   for (uint16_t i = 0; i < buf->buffer_length; i++) {
     buf->buffer_storage[i] = 0;
@@ -67,7 +68,7 @@ uint16_t grid_buffer_write_init(struct grid_buffer* buf, uint16_t length) {
     return length;
   } else {
 
-    grid_buffer_error_count++;
+    buf->write_init_error_count++;
     return 0; // failed
   }
 }
@@ -90,7 +91,7 @@ uint8_t grid_buffer_write_acknowledge(struct grid_buffer* buf) {
     return 1;
   } else {
 
-    grid_buffer_error_count++;
+    buf->write_acknowledge_error_count++;
     return 0;
   }
 }

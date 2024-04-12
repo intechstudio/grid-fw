@@ -324,13 +324,11 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
   if (msg_instr == GRID_INSTR_EXECUTE_code) { // SET BANK
 
     if (grid_ui_state.page_change_enabled == false) {
-      grid_platform_printf("Page change disabled!\n");
       return 0;
     }
 
     // The page is already active
     if (grid_ui_page_get_activepage(&grid_ui_state) == page) {
-      grid_platform_printf("Page already loaded!\n");
       return 0;
     }
 

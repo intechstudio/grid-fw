@@ -13,8 +13,6 @@
 #include "hardware/irq.h"
 #include "hardware/spi.h"
 
-#include "hardware/pwm.h"
-
 #include "uart_rx.pio.h"
 #include "uart_tx.pio.h"
 
@@ -36,114 +34,140 @@
 
 #include "hardware/dma.h"
 
-#define BUCKET_BUFFER_LENGTH 500
+#include "hardware/watchdog.h"
+
+volatile int context __attribute__((section(".uninitialized_data")));  // no initializer; it won't work!
+volatile int line __attribute__((section(".uninitialized_data")));     // no initializer; it won't work!
+volatile int userdata __attribute__((section(".uninitialized_data"))); // no initializer; it won't work!
+
 #define BUCKET_ARRAY_LENGTH 50
+
+#define PRINT_FIFO_BUFFER_LENGTH 100
+
+struct print_fifo {
+  char data[PRINT_FIFO_BUFFER_LENGTH];
+  uint8_t read_index;
+  uint8_t write_index;
+};
+
+// #define PRINT_FIFO_DISABLED
+
+int print_fifo_put(struct print_fifo* q, char c) {
+#ifdef PRINT_FIFO_DISABLED
+  return 0;
+#endif
+  if ((q->write_index + 1) % PRINT_FIFO_BUFFER_LENGTH == q->read_index) {
+    return 1;
+  }
+
+  q->data[q->write_index] = c;
+  q->write_index = (q->write_index + 1) % PRINT_FIFO_BUFFER_LENGTH;
+
+  return 0;
+}
+
+int print_fifo_put_str(struct print_fifo* q, char* str) {
+
+#ifdef PRINT_FIFO_DISABLED
+  return 0;
+#endif
+
+  uint8_t len = strlen(str);
+
+  for (int i = 0; i < len; i++) {
+    if (print_fifo_put(q, str[i])) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+int print_fifo_put_str_format(struct print_fifo* q, char* format, ...) {
+
+#ifdef PRINT_FIFO_DISABLED
+  return 0;
+#endif
+
+  char temp[PRINT_FIFO_BUFFER_LENGTH] = {0};
+  va_list args;
+  va_start(args, format);
+  int ret = vsnprintf(temp, PRINT_FIFO_BUFFER_LENGTH, format, args);
+  va_end(args);
+  return print_fifo_put_str(q, temp);
+}
+
+char print_fifo_get(struct print_fifo* q) {
+#ifdef PRINT_FIFO_DISABLED
+  return 0;
+#endif
+
+  if (q->write_index == q->read_index) {
+    return '\0';
+  }
+
+  char ret = q->data[q->read_index];
+  q->read_index = (q->read_index + 1) % PRINT_FIFO_BUFFER_LENGTH;
+  return ret;
+}
+
+struct print_fifo message_queue = {0};
 
 static uint slice_num = 0;
 
-static void grid_str_transform_brc_params2(char* message, int8_t dx, int8_t dy, uint8_t partner_fi) {
+int grid_str_verify_frame2(char* message) {
 
-  if (message[1] != GRID_CONST_BRC) {
-    return;
-  }
+  context = 211, line = __LINE__, userdata = 0;
 
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 2);
-
-  uint8_t error = 0;
-
-  uint8_t received_session = grid_str_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
-  uint8_t received_msgage = grid_str_get_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
-
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 3);
-  // Read the received destination X Y values (SIGNED INT)
-  int8_t received_dx = grid_str_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-  int8_t received_dy = grid_str_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 4);
-  // Read the received source X Y values (SIGNED INT)
-  int8_t received_sx = grid_str_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-  int8_t received_sy = grid_str_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 5);
-
-  uint8_t received_rot = grid_str_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
-
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 6);
-
-  // DO THE DX DY AGE calculations
-
-  int8_t rotated_dx = 0;
-  int8_t rotated_dy = 0;
-
-  int8_t rotated_sx = 0;
-  int8_t rotated_sy = 0;
-
-  uint8_t updated_rot = (received_rot + partner_fi) % 4;
-
-  // APPLY THE 2D ROTATION MATRIX
-
-  if (partner_fi == 0) { // 0 deg
-    rotated_dx += received_dx;
-    rotated_dy += received_dy;
-
-    rotated_sx += received_sx;
-    rotated_sy += received_sy;
-  } else if (partner_fi == 1) { // 90 deg
-    rotated_dx -= received_dy;
-    rotated_dy += received_dx;
-
-    rotated_sx -= received_sy;
-    rotated_sy += received_sx;
-  } else if (partner_fi == 2) { // 180 deg
-    rotated_dx -= received_dx;
-    rotated_dy -= received_dy;
-
-    rotated_sx -= received_sx;
-    rotated_sy -= received_sy;
-  } else if (partner_fi == 3) { // 270 deg
-    rotated_dx += received_dy;
-    rotated_dy -= received_dx;
-
-    rotated_sx += received_sy;
-    rotated_sy -= received_sx;
-  } else {
-    // TRAP INVALID MESSAGE
-  }
-
-  uint8_t updated_dx = rotated_dx + GRID_PARAMETER_DEFAULT_POSITION + dx;
-  uint8_t updated_dy = rotated_dy + GRID_PARAMETER_DEFAULT_POSITION + dy;
-
-  uint8_t updated_sx = rotated_sx + GRID_PARAMETER_DEFAULT_POSITION + dx;
-  uint8_t updated_sy = rotated_sy + GRID_PARAMETER_DEFAULT_POSITION + dy;
-
-  uint8_t updated_msgage = received_msgage + 1;
-
-  if (grid_msg_is_position_transformable(received_dx, received_dy)) {
-
-    // Update message with the new values
-    grid_str_set_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, updated_dx, &error);
-    grid_str_set_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, updated_dy, &error);
-  }
-
-  if (grid_msg_is_position_transformable(received_sx, received_sy)) {
-
-    // Update message with the new values
-    grid_str_set_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, updated_sx, &error);
-    grid_str_set_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, updated_sy, &error);
-  }
-
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 5);
-
-  grid_str_set_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, updated_msgage, &error);
-  grid_str_set_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, updated_rot, &error);
-  grid_str_set_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, partner_fi, &error);
-
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 6);
-  // Recalculate and update the checksum
   uint16_t length = strlen(message);
+  uint8_t error_flag = 0;
 
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 7);
-  grid_str_checksum_write(message, length, grid_str_calculate_checksum_of_packet_string(message, length));
+  // frame validator
+  if (message[0] != GRID_CONST_SOH || message[length - 1] != GRID_CONST_LF) {
+    return 1;
+  }
+
+  context = 212, line = __LINE__, userdata = length;
+
+  // checksum validator
+  uint8_t calculated_checksum = grid_str_calculate_checksum_of_packet_string(message, length);
+
+  context = 213, line = __LINE__, userdata = 0;
+
+  uint8_t received_checksum = grid_str_checksum_read(message, length);
+
+  context = 214, line = __LINE__, userdata = 0;
+
+  if (calculated_checksum != received_checksum) {
+    // printf("C %d %d ", calculated_checksum, received_checksum);
+    return 1;
+  }
+
+  context = 215, line = __LINE__, userdata = 0;
+
+  // brc length parameter validator
+  if (message[1] == GRID_CONST_BRC) {
+
+    context = 216, line = __LINE__, userdata = 0;
+
+    // BRC packets contain length parameter. Check this against actual string length in message
+
+    uint16_t received_length = grid_str_read_hex_string_value(&message[GRID_BRC_LEN_offset], GRID_BRC_LEN_length, &error_flag);
+
+    context = 217, line = __LINE__, userdata = 0;
+
+    if (length - 3 != received_length) {
+
+      // printf("L%d %d ", length-3, received_length);
+
+      context = 218, line = __LINE__, userdata = 0;
+
+      return 1;
+    }
+  }
+
+  context = 219, line = __LINE__, userdata = 0;
+
+  return 0;
 }
 
 struct grid_msg_recent_buffer recent_messages;
@@ -256,12 +280,12 @@ struct grid_bucket* grid_bucket_find_next_match(struct grid_bucket* previous_buc
 
     if (bucket_array[next_index].status == expected_status) {
 
-      // printf("Bucket 4 u : %d\r\n", next_index);
+      // print_fifo_put_str_format(&message_queue, "Bucket 4 u : %d\r\n", next_index);
       return &bucket_array[next_index];
     }
   }
 
-  // printf("No bucket 4 u :(\r\n");
+  // print_fifo_put_str(&message_queue, "No bucket 4 u :(\r\n");
   return NULL;
 }
 
@@ -272,16 +296,16 @@ void grid_bucket_put_character(struct grid_bucket* bucket, char next_char) {
 
   if (bucket == NULL) {
 
-    printf("PUTC\n");
+    print_fifo_put_str(&message_queue, "PUTC\n");
     return;
   }
 
-  if (bucket->buffer_index < BUCKET_BUFFER_LENGTH) {
+  if (bucket->buffer_index < GRID_PARAMETER_SPI_TRANSACTION_length) {
 
     bucket->buffer[bucket->buffer_index] = next_char;
     bucket->buffer_index++;
   } else {
-    printf("PUTC: no more space");
+    print_fifo_put_str(&message_queue, "PUTC: no more space");
   }
 }
 
@@ -380,10 +404,20 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
     return 1;
   }
 
+  context = 21, line = __LINE__, userdata = 0;
+
   char* message = (char*)rx_bucket->buffer;
   uint16_t length = strlen(message);
 
+  if (length < 14) {
+    printf("ERROR: length = %d\n", length);
+    grid_bucket_clear(rx_bucket);
+    return 1;
+  }
+
   int status = grid_str_verify_frame(message);
+
+  context = 22, line = __LINE__, userdata = 0;
 
   if (status != 0) {
 
@@ -392,63 +426,84 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
     return 1;
   }
 
+  context = 23, line = __LINE__, userdata = 0;
+
   struct grid_port* por = grid_transport_get_port(&grid_transport_state, rx_bucket->source_port_index);
 
   if (por == NULL) {
 
-    printf("PORT NOT FOUND\n");
+    print_fifo_put_str(&message_queue, "PORT NOT FOUND\n");
     grid_bucket_clear(rx_bucket);
     return;
   }
 
+  context = 24, line = __LINE__, userdata = length;
+
   if (message[1] != GRID_CONST_BRC) {
 
-    pwm_set_chan_level(slice_num, PWM_CHAN_A, 1);
     if (message[2] == GRID_CONST_BELL) {
+
+      context = 25, line = __LINE__, userdata = length;
 
       uint8_t error = 0;
 
       // reset timeout counter
       por->partner_last_timestamp = grid_platform_rtc_get_micros();
 
+      context = 251, line = __LINE__, userdata = length;
+
       if (por->partner_status == 0) {
 
-        printf("C\n");
+        context = 252, line = __LINE__, userdata = length;
+        print_fifo_put_str(&message_queue, "C\n");
 
-        // CONNECT
-        por->partner_fi = (message[3] - por->direction + 6) % 4; // 0, 1, 2, 3 base on relative rotation of the modules
-        por->partner_status = 1;
+        context = 253, line = __LINE__, userdata = length;
       }
+      // CONNECT
+      context = 254, line = __LINE__, userdata = length;
+      por->partner_fi = (message[3] - por->direction + 6) % 4; // 0, 1, 2, 3 base on relative rotation of the modules
+
+      context = 255, line = __LINE__, userdata = length;
+      por->partner_status = 1;
+
+      rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
+
+      context = 256, line = __LINE__, userdata = length;
+      return 1;
+
+    } else {
+      grid_bucket_clear(rx_bucket);
+      return;
     }
 
-    por->partner_last_timestamp = grid_platform_rtc_get_micros();
-    rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
-    return 1;
+    /// this cannot be reached
+    return;
   }
 
-  grid_str_transform_brc_params2(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
+  grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
 
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 9);
+  context = 26, line = __LINE__, userdata = 0;
+
   // check if message is alreadys in recent messages buffer
   uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(message);
   if (grid_msg_recent_fingerprint_find(&recent_messages, fingerprint)) {
     // Already heard this message
-    printf("H ");
+    print_fifo_put_str(&message_queue, "H ");
     for (uint8_t i = 0; i < 14; i++) {
       if (message[i] < 32) {
-        printf("[%d] ", message[i]);
+        print_fifo_put_str_format(&message_queue, "[%d] ", message[i]);
       } else {
-        printf("%c ", message[i]);
+        print_fifo_put_str_format(&message_queue, "%c ", message[i]);
       }
     }
-    printf("...\n");
+    print_fifo_put_str(&message_queue, "...\n");
     grid_bucket_clear(rx_bucket);
     return 1;
   }
 
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 7);
-
   grid_msg_recent_fingerprint_store(&recent_messages, fingerprint);
+
+  context = 27, line = __LINE__, userdata = 0;
 
   for (uint8_t i = 0; i < 4; i++) {
     struct grid_pico_uart_port* uart_port = &uart_port_array[i];
@@ -457,10 +512,10 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
       continue;
     }
 
+    context = 28, line = __LINE__, userdata = 0;
+
     grid_bucket_create_uart_tx_clone(uart_port, rx_bucket);
   }
-
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 8);
 
   // bucket content verified, close bucket and set it full to indicate that it is ready to be sent through to ESP32 via SPI
   rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
@@ -476,7 +531,7 @@ void grid_pico_uart_port_receive_character(struct grid_pico_uart_port* uart_port
 
   if (character == GRID_CONST_SOH && uart_port->rx_bucket->buffer_index > 0) {
     // Start of Header character received in the middle of a transmission this typically happens when a partner is disconnected and reconnected
-    printf("E\n");
+    print_fifo_put_str(&message_queue, "E\n");
 
     // clear the current active bucket, and attach to a new bucket to start
     // receiving packet
@@ -487,13 +542,27 @@ void grid_pico_uart_port_receive_character(struct grid_pico_uart_port* uart_port
 
   grid_bucket_put_character(uart_port->rx_bucket, character);
 
-  // printf("%c", character);
-
   if (character == '\n') {
 
     // end of message, put termination zero character
     grid_bucket_put_character(uart_port->rx_bucket, '\0');
+
     uart_port->rx_bucket->status = GRID_BUCKET_STATUS_RECEIVE_COMPLETED;
+
+    if (uart_port->rx_bucket->buffer_index < 12) { // 12 is the minimum length of a ping packet
+      printf("WARNING\n");
+      for (uint8_t i = 0; i < uart_port->rx_bucket->buffer_index; i++) {
+        if (uart_port->rx_bucket->buffer[i] < 32) {
+          printf("[%d] ", uart_port->rx_bucket->buffer[i]);
+
+        } else {
+
+          printf("%c ", uart_port->rx_bucket->buffer[i]);
+        }
+      }
+
+      printf("\n");
+    }
 
     // attack new bucket for receiving the next packet
     grid_uart_port_attach_rx_bucket(uart_port);
@@ -510,7 +579,7 @@ void fifo_try_receive_characters(void) {
 
     data = multicore_fifo_pop_blocking();
 
-    // printf("POP");
+    // print_fifo_put_str(&message_queue, "POP");
     // direction is based on the position of the character in the uint32_t
     // i==0 is north...i==3 is west
     for (uint8_t i = 0; i < 4; i++) {
@@ -528,7 +597,7 @@ void fifo_try_receive_characters(void) {
 
 void core_1_main_entry() {
 
-  printf("Core 1 init\r\n");
+  print_fifo_put_str(&message_queue, "Core 1 init\r\n");
 
   while (1) {
 
@@ -551,7 +620,7 @@ void core_1_main_entry() {
     uint8_t ok = multicore_fifo_push_timeout_us(packed_chars, 1);
 
     if (!ok) {
-      printf("F\n");
+      print_fifo_put_str(&message_queue, "F\n");
     }
   }
 }
@@ -687,7 +756,7 @@ void grid_pico_spi_receive_task_inner(void) {
     sync1_drive = 0;
   }
 
-  // printf("%d\r\n", destination_flags);
+  // print_fifo_put_str_format(&message_queue, "%d\r\n", destination_flags);
 
   // iterate through all the uart_ports
 
@@ -744,14 +813,14 @@ void grid_pico_spi_transmit_task_inner(void) {
 
   // found full bucket, send it through SPI
   spi_tx_active_bucket->buffer_index = 0;
-  // printf("SPI send: %s\r\n", spi_tx_active_bucket->buffer);
+  // print_fifo_put_str_format(&message_queue, "SPI send: %s\r\n", spi_tx_active_bucket->buffer);
 
   rolling_id_last_sent = (rolling_id_last_sent + 1) % GRID_PARAMETER_SPI_ROLLING_ID_maximum;
   spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_ROLLING_ID_index] = rolling_id_last_sent; // not received from any of the ports
   spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = grid_pico_uart_tx_ready_bitmap;
   spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = (1 << (spi_tx_active_bucket->source_port_index));
 
-  // printf("%d\n", spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
+  // print_fifo_put_str_format(&message_queue, "%d\n", spi_tx_active_bucket->buffer[GRID_PARAMETER_SPI_SOURCE_FLAGS_index]);
 
   spi_uart_port_set_sync_state(spi_tx_active_bucket->buffer);
   grid_pico_spi_transfer(spi_tx_active_bucket->buffer, grid_pico_spi_rxbuf);
@@ -763,8 +832,23 @@ int main() {
   stdio_init_all();
   uart_init(uart0, 2000000);
 
-  printf("RP2040 START\r\n");
-  printf("Build date and time: %s %s\n", __DATE__, __TIME__);
+  if (watchdog_caused_reboot()) {
+
+    printf("Rebooted by Watchdog!\n");
+
+    printf("Context: %d, line: %d, userdata: %d\n", context, line, userdata);
+
+  } else {
+    printf("Clean boot\n");
+    printf("Context: %d, line: %d, userdata: %d\n", context, line, userdata);
+  }
+
+  context = 0;
+  line = 0;
+  userdata = 0;
+
+  print_fifo_put_str(&message_queue, "RP2040 START\r\n");
+  print_fifo_put_str_format(&message_queue, "Build date and time: %s %s\n", __DATE__, __TIME__);
 
   grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
 
@@ -821,26 +905,6 @@ int main() {
   gpio_set_dir(GRID_PICO_PIN_INTERRUPT, GPIO_OUT);
   gpio_set_function(GRID_PICO_PIN_INTERRUPT, GPIO_FUNC_PWM);
 
-  // Find out which PWM slice is connected to GPIO 0 (it's slice 0)
-  slice_num = pwm_gpio_to_slice_num(GRID_PICO_PIN_INTERRUPT);
-
-  // Set period of 4 cycles (0 to 3 inclusive)
-  pwm_set_wrap(slice_num, 9);
-  // Set channel A output high for one cycle before dropping
-  pwm_set_chan_level(slice_num, PWM_CHAN_A, 0);
-  // Set the PWM running
-  pwm_set_enabled(slice_num, true);
-
-  pwm_set_clkdiv(slice_num, 32);
-
-  // while(1) {
-  //     // Generate PWM signal with varying duty cycle
-  //     for (uint8_t i=0; i<=9; i++) {
-  //         pwm_set_chan_level(slice_num, PWM_CHAN_A, i);
-  //         sleep_ms(500); // Wait for 500 milliseconds
-  //     }
-  // }
-
   grid_pico_spi_init();
 
   for (uint i = 0; i < GRID_PARAMETER_SPI_TRANSACTION_length; i++) {
@@ -857,19 +921,38 @@ int main() {
   irq_set_exclusive_handler(SIO_IRQ_PROC0, core0_interrupt_handler);
   irq_set_enabled(SIO_IRQ_PROC0, true);
 
+  watchdog_enable(100, 1);
+
+  printf("Hello, World!\n");
+
   while (1) {
 
-    pwm_set_chan_level(slice_num, PWM_CHAN_A, 0);
+    watchdog_update();
+
+    context = 1;
+
+    char c = '\0';
+    while (c = print_fifo_get(&message_queue)) {
+      printf("%c", c);
+    }
+
+    context = 2;
 
     grid_pico_uart_receive_task_inner();
 
+    context = 3;
+
     grid_pico_spi_receive_task_inner();
+
+    context = 4;
 
     grid_pico_spi_transmit_task_inner();
 
+    context = 5;
+
     if (rolling_id_error_count > 0) {
       rolling_id_error_count = 0;
-      printf("$\n");
+      print_fifo_put_str(&message_queue, "$\n");
     }
 
     // iterate through all the uart_ports
@@ -877,12 +960,14 @@ int main() {
       grid_pico_uart_transmit_task_inner(&uart_port_array[i]);
     }
 
+    context = 6;
+
     for (uint8_t i = 0; i < 4; i++) {
 
       struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
 
       if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
-        printf("D\n");
+        print_fifo_put_str(&message_queue, "D\n");
         por->partner_status = 0;
         // grid_port_receiver_softreset(por, doublebuffer_rx);
       }

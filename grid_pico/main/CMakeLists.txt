@@ -13,7 +13,7 @@ pico_generate_pio_header(main ${CMAKE_CURRENT_LIST_DIR}/uart_rx.pio)
 target_sources(main PRIVATE)
 
  # Import pico_stdlib which imports commonly used features
- target_link_libraries(main PRIVATE pico_stdlib pico_multicore hardware_pio hardware_dma hardware_spi hardware_pwm)
+ target_link_libraries(main PRIVATE pico_stdlib pico_multicore hardware_pio hardware_dma hardware_spi hardware_watchdog)
 
 
  # Create map/bin/hex file etc.

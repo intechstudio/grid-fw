@@ -49,6 +49,11 @@ volatile uint8_t DRAM_ATTR rolling_id_last_received = 255;
 
 volatile uint8_t DRAM_ATTR rolling_id_error_count = 0;
 
+volatile uint8_t DRAM_ATTR status_ui_error_count = 0;
+volatile uint8_t DRAM_ATTR status_host_error_count = 0;
+
+volatile uint8_t DRAM_ATTR invalid_partner_status_count = 0;
+
 uint8_t DRAM_ATTR empty_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 uint8_t DRAM_ATTR message_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
@@ -197,14 +202,23 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
     if (por->partner_status == 0) {
       // dont allow message to reach rx_buffer if we are not connected because partner_phi based transform will be invalid!
+      invalid_partner_status_count++;
       return;
     }
 
     // struct grid_buffer* rx_buffer = uart_buffer_rx_array[por->index];
     // grid_buffer_write_from_chunk(rx_buffer, message, length);
 
-    grid_buffer_write_from_chunk(ui_buffer_tx, message, length);
-    grid_buffer_write_from_chunk(host_buffer_tx, message, length);
+    int status_ui = grid_buffer_write_from_chunk(ui_buffer_tx, message, length);
+    int status_host = grid_buffer_write_from_chunk(host_buffer_tx, message, length);
+
+    if (status_ui == 0) {
+      status_ui_error_count++;
+    }
+
+    if (status_host == 0) {
+      status_host_error_count++;
+    }
 
   } else if (message[1] == GRID_CONST_DCT) { // Direct Message
 
@@ -215,12 +229,8 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
       // reset timeout counter
       por->partner_last_timestamp = grid_platform_rtc_get_micros();
 
-      if (por->partner_status == 0) {
-
-        // CONNECT
-        por->partner_fi = (message[3] - por->direction + 6) % 4; // 0, 1, 2, 3 base on relative rotation of the modules
-        por->partner_status = 1;
-      }
+      por->partner_fi = (message[3] - por->direction + 6) % 4; // 0, 1, 2, 3 base on relative rotation of the modules
+      por->partner_status = 1;
     }
   }
 }
@@ -539,6 +549,43 @@ void grid_esp32_port_task(void* arg) {
 
   while (1) {
 
+    for (uint8_t i = 0; i < 2; i++) {
+
+      struct grid_buffer* buf = host_buffer_tx;
+
+      if (i == 0) {
+
+        buf = host_buffer_tx;
+      } else {
+        buf = ui_buffer_tx;
+      }
+
+      if (buf->write_init_error_count > 0) {
+        buf->write_init_error_count = 0;
+        ets_printf("ERROR: GRID BUFFER WRITE INIT %d\n", i);
+      }
+
+      if (buf->write_acknowledge_error_count > 0) {
+        buf->write_acknowledge_error_count = 0;
+        ets_printf("ERROR: GRID BUFFER WRITE ACKNOWLEDGE %d\n", i);
+      }
+    }
+
+    if (invalid_partner_status_count > 0) {
+      invalid_partner_status_count = 0;
+      ets_printf("ERROR: INVALID PARTNER STATUS\n");
+    }
+
+    if (status_ui_error_count > 0) {
+      status_ui_error_count = 0;
+      ets_printf("ERROR: UI BUFFER\n");
+    }
+
+    if (status_host_error_count > 0) {
+      status_host_error_count = 0;
+      ets_printf("ERROR: HOST BUFFER\n");
+    }
+
     if (rolling_id_error_count > 0) {
       rolling_id_error_count = 0;
       ets_printf("ERROR: Rolling ID\n");
@@ -597,6 +644,11 @@ void grid_esp32_port_task(void* arg) {
 
     // INBOUND
 
+    portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+    portENTER_CRITICAL(&spinlock);
+    // Critical section to make sure that SPI interrupt cannot run while we are processing inbound messages
+    // to protect UI_TX_BUFFER and HOST_TX_BUFFER
+    // todo: move process_inbount for these buffers into SPI ISR
     for (uint8_t i = 0; i < port_list_length; i++) {
 
       struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
@@ -604,6 +656,8 @@ void grid_esp32_port_task(void* arg) {
 
       grid_port_process_inbound(por, rx_buffer);
     }
+
+    portEXIT_CRITICAL(&spinlock);
 
     // plot_port_debug();
 

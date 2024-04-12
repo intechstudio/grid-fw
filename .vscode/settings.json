@@ -135,7 +135,9 @@
     "grid_pico_platform.h": "c",
     "grid_pico_spi.h": "c",
     "stddef.h": "c",
-    "grid_esp32_platform.h": "c"
+    "grid_esp32_platform.h": "c",
+    "timer.h": "c",
+    "watchdog.h": "c"
   },
   "files.exclude": {
     ".archive": true,
