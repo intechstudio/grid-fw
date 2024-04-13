@@ -36,9 +36,12 @@
 
 #include "hardware/watchdog.h"
 
-volatile int context __attribute__((section(".uninitialized_data")));  // no initializer; it won't work!
-volatile int line __attribute__((section(".uninitialized_data")));     // no initializer; it won't work!
-volatile int userdata __attribute__((section(".uninitialized_data"))); // no initializer; it won't work!
+volatile int context __attribute__((section(".uninitialized_data")));        // no initializer; it won't work!
+volatile uint32_t line __attribute__((section(".uninitialized_data")));      // no initializer; it won't work!
+volatile uint32_t userdata0 __attribute__((section(".uninitialized_data"))); // no initializer; it won't work!
+volatile uint32_t userdata1 __attribute__((section(".uninitialized_data"))); // no initializer; it won't work!
+volatile uint32_t userdata2 __attribute__((section(".uninitialized_data"))); // no initializer; it won't work!
+volatile uint32_t userdata3 __attribute__((section(".uninitialized_data"))); // no initializer; it won't work!
 
 #define BUCKET_ARRAY_LENGTH 50
 
@@ -113,62 +116,6 @@ char print_fifo_get(struct print_fifo* q) {
 struct print_fifo message_queue = {0};
 
 static uint slice_num = 0;
-
-int grid_str_verify_frame2(char* message) {
-
-  context = 211, line = __LINE__, userdata = 0;
-
-  uint16_t length = strlen(message);
-  uint8_t error_flag = 0;
-
-  // frame validator
-  if (message[0] != GRID_CONST_SOH || message[length - 1] != GRID_CONST_LF) {
-    return 1;
-  }
-
-  context = 212, line = __LINE__, userdata = length;
-
-  // checksum validator
-  uint8_t calculated_checksum = grid_str_calculate_checksum_of_packet_string(message, length);
-
-  context = 213, line = __LINE__, userdata = 0;
-
-  uint8_t received_checksum = grid_str_checksum_read(message, length);
-
-  context = 214, line = __LINE__, userdata = 0;
-
-  if (calculated_checksum != received_checksum) {
-    // printf("C %d %d ", calculated_checksum, received_checksum);
-    return 1;
-  }
-
-  context = 215, line = __LINE__, userdata = 0;
-
-  // brc length parameter validator
-  if (message[1] == GRID_CONST_BRC) {
-
-    context = 216, line = __LINE__, userdata = 0;
-
-    // BRC packets contain length parameter. Check this against actual string length in message
-
-    uint16_t received_length = grid_str_read_hex_string_value(&message[GRID_BRC_LEN_offset], GRID_BRC_LEN_length, &error_flag);
-
-    context = 217, line = __LINE__, userdata = 0;
-
-    if (length - 3 != received_length) {
-
-      // printf("L%d %d ", length-3, received_length);
-
-      context = 218, line = __LINE__, userdata = 0;
-
-      return 1;
-    }
-  }
-
-  context = 219, line = __LINE__, userdata = 0;
-
-  return 0;
-}
 
 struct grid_msg_recent_buffer recent_messages;
 
@@ -404,20 +351,27 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
     return 1;
   }
 
-  context = 21, line = __LINE__, userdata = 0;
+  context = 21, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = 0;
 
   char* message = (char*)rx_bucket->buffer;
   uint16_t length = strlen(message);
 
   if (length < 14) {
-    printf("ERROR: length = %d\n", length);
+    print_fifo_put_str_format(&message_queue, "ERROR: length = %d\n", length);
+    grid_bucket_clear(rx_bucket);
+    return 1;
+  }
+
+  if (rx_bucket->source_port_index > 3) {
+    // 0-3 are the only valid values
+    print_fifo_put_str_format(&message_queue, "ERROR: source_port_index = %d\n", rx_bucket->source_port_index);
     grid_bucket_clear(rx_bucket);
     return 1;
   }
 
   int status = grid_str_verify_frame(message);
 
-  context = 22, line = __LINE__, userdata = 0;
+  context = 22, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = 0;
 
   if (status != 0) {
 
@@ -426,7 +380,7 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
     return 1;
   }
 
-  context = 23, line = __LINE__, userdata = 0;
+  context = 23, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = 0;
 
   struct grid_port* por = grid_transport_get_port(&grid_transport_state, rx_bucket->source_port_index);
 
@@ -437,41 +391,42 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
     return;
   }
 
-  context = 24, line = __LINE__, userdata = length;
+  context = 24, line = rx_bucket->source_port_index, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = length;
 
   if (message[1] != GRID_CONST_BRC) {
 
+    context = 241, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = length;
     if (message[2] == GRID_CONST_BELL) {
 
-      context = 25, line = __LINE__, userdata = length;
-
-      uint8_t error = 0;
+      context = 25, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = length;
 
       // reset timeout counter
-      por->partner_last_timestamp = grid_platform_rtc_get_micros();
+      // por->partner_last_timestamp = grid_platform_rtc_get_micros();
 
-      context = 251, line = __LINE__, userdata = length;
+      context = 251, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = length;
 
-      if (por->partner_status == 0) {
+      // if (por->partner_status == 0) {
 
-        context = 252, line = __LINE__, userdata = length;
-        print_fifo_put_str(&message_queue, "C\n");
+      //   context = 252, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = length;
+      //   print_fifo_put_str(&message_queue, "C\n");
 
-        context = 253, line = __LINE__, userdata = length;
-      }
+      //   context = 253, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = length;
+      // }
       // CONNECT
-      context = 254, line = __LINE__, userdata = length;
+      context = 254, userdata0 = por, userdata1 = message[3], userdata2 = por->direction, userdata3 = length;
       por->partner_fi = (message[3] - por->direction + 6) % 4; // 0, 1, 2, 3 base on relative rotation of the modules
 
-      context = 255, line = __LINE__, userdata = length;
+      context = 255, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = length;
       por->partner_status = 1;
 
       rx_bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_SPI;
 
-      context = 256, line = __LINE__, userdata = length;
+      context = 256, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = length;
       return 1;
 
     } else {
+
+      context = 242, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = length;
       grid_bucket_clear(rx_bucket);
       return;
     }
@@ -479,10 +434,12 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
     /// this cannot be reached
     return;
   }
+  context = 240, userdata0 = 6, userdata1 = 6, userdata2 = 6, userdata3 = 6;
 
+  context = 243, userdata0 = por, userdata1 = (por->dx) + 10, userdata2 = (por->dy) + 10, userdata3 = length;
   grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
 
-  context = 26, line = __LINE__, userdata = 0;
+  context = 26, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = 0;
 
   // check if message is alreadys in recent messages buffer
   uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(message);
@@ -503,7 +460,7 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
 
   grid_msg_recent_fingerprint_store(&recent_messages, fingerprint);
 
-  context = 27, line = __LINE__, userdata = 0;
+  context = 27, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = 0;
 
   for (uint8_t i = 0; i < 4; i++) {
     struct grid_pico_uart_port* uart_port = &uart_port_array[i];
@@ -512,7 +469,7 @@ int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
       continue;
     }
 
-    context = 28, line = __LINE__, userdata = 0;
+    context = 28, userdata0 = 0, userdata1 = 0, userdata2 = 0, userdata3 = 0;
 
     grid_bucket_create_uart_tx_clone(uart_port, rx_bucket);
   }
@@ -550,18 +507,18 @@ void grid_pico_uart_port_receive_character(struct grid_pico_uart_port* uart_port
     uart_port->rx_bucket->status = GRID_BUCKET_STATUS_RECEIVE_COMPLETED;
 
     if (uart_port->rx_bucket->buffer_index < 12) { // 12 is the minimum length of a ping packet
-      printf("WARNING\n");
+      print_fifo_put_str(&message_queue, "WARNING\n");
       for (uint8_t i = 0; i < uart_port->rx_bucket->buffer_index; i++) {
         if (uart_port->rx_bucket->buffer[i] < 32) {
-          printf("[%d] ", uart_port->rx_bucket->buffer[i]);
+          print_fifo_put_str_format(&message_queue, "[%d] ", uart_port->rx_bucket->buffer[i]);
 
         } else {
 
-          printf("%c ", uart_port->rx_bucket->buffer[i]);
+          print_fifo_put_str_format(&message_queue, "%c ", uart_port->rx_bucket->buffer[i]);
         }
       }
 
-      printf("\n");
+      print_fifo_put_str(&message_queue, "\n");
     }
 
     // attack new bucket for receiving the next packet
@@ -836,16 +793,19 @@ int main() {
 
     printf("Rebooted by Watchdog!\n");
 
-    printf("Context: %d, line: %d, userdata: %d\n", context, line, userdata);
+    printf("Context: %d, line: %d, userdata: %d %d %d %d\n", context, line, userdata0, userdata1, userdata2, userdata3);
 
   } else {
     printf("Clean boot\n");
-    printf("Context: %d, line: %d, userdata: %d\n", context, line, userdata);
+    printf("Context: %d, line: %d, userdata: %d %d %d %d\n", context, line, userdata0, userdata1, userdata2, userdata3);
   }
 
   context = 0;
   line = 0;
-  userdata = 0;
+  userdata0 = 0;
+  userdata1 = 0;
+  userdata2 = 0;
+  userdata3 = 0;
 
   print_fifo_put_str(&message_queue, "RP2040 START\r\n");
   print_fifo_put_str_format(&message_queue, "Build date and time: %s %s\n", __DATE__, __TIME__);
@@ -853,6 +813,7 @@ int main() {
   grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
 
   grid_transport_init(&grid_transport_state);
+
   grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_NORTH));
   grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_EAST));
   grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_SOUTH));
@@ -923,8 +884,6 @@ int main() {
 
   watchdog_enable(100, 1);
 
-  printf("Hello, World!\n");
-
   while (1) {
 
     watchdog_update();
@@ -962,16 +921,16 @@ int main() {
 
     context = 6;
 
-    for (uint8_t i = 0; i < 4; i++) {
+    // for (uint8_t i = 0; i < 4; i++) {
 
-      struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
+    //   struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
 
-      if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
-        print_fifo_put_str(&message_queue, "D\n");
-        por->partner_status = 0;
-        // grid_port_receiver_softreset(por, doublebuffer_rx);
-      }
-    }
+    //   if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
+    //     print_fifo_put_str(&message_queue, "D\n");
+    //     por->partner_status = 0;
+    //     // grid_port_receiver_softreset(por, doublebuffer_rx);
+    //   }
+    // }
 
     loopcouter++;
 
