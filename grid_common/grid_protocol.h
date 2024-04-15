@@ -333,6 +333,12 @@
 #define GRID_LUA_FNC_G_LIMIT_short "glim"
 #define GRID_LUA_FNC_G_LIMIT_human "limit"
 
+#define GRID_LUA_FNC_G_MAPSAT_short "gmaps"
+#define GRID_LUA_FNC_G_MAPSAT_human "map_saturate"
+
+#define GRID_LUA_FNC_G_SEGCALC_short "gsc"
+#define GRID_LUA_FNC_G_SEGCALC_human "segment_calculate"
+
 #define GRID_LUA_FNC_G_WEBSOCKET_SEND_short "gwss"
 #define GRID_LUA_FNC_G_WEBSOCKET_SEND_human "websocket_send"
 #define GRID_LUA_FNC_G_WEBSOCKET_SEND_fnptr l_grid_websocket_send
@@ -380,6 +386,9 @@ stored config date
 
 #define GRID_LUA_FNC_ACTION_MIDIRX_short "mrx"
 #define GRID_LUA_FNC_ACTION_MIDIRX_human "midirx"
+
+#define GRID_LUA_FNC_ACTION_ENDLESSPOTCHANGE_short "epotc"
+#define GRID_LUA_FNC_ACTION_ENDLESSPOTCHANGE_human "endlesspot_change"
 
 // ========================= ENCODER =========================== //
 
@@ -507,6 +516,142 @@ stored config date
   \
   " GRID_LUA_FNC_ACTION_INIT_short " = function (self) print('undefined action') end,\
   " GRID_LUA_FNC_ACTION_ENCODERCHANGE_short " = function (self) print('undefined action') end,\
+  " GRID_LUA_FNC_ACTION_BUTTONCHANGE_short " = function (self) print('undefined action') end,\
+  " GRID_LUA_FNC_ACTION_TIMER_short " = function (self) print('undefined action') end,\
+  \
+  gtt = function (self,a) " GRID_LUA_FNC_G_TIMER_START_short "(self.index,a) end,\
+  gtp = function (self) " GRID_LUA_FNC_G_TIMER_STOP_short "(self.index) end,\
+  get = function (self,a) " GRID_LUA_FNC_G_EVENT_TRIGGER_short "(self.index,a) end,\
+  gen = function (self,a) return gen(self.index,a) end\
+  \
+    }}"
+
+// ========================= ENDLESS POTEMETER =========================== //
+
+#define GRID_LUA_FNC_EPOT_ELEMENT_INDEX_index 0
+#define GRID_LUA_FNC_EPOT_ELEMENT_INDEX_helper "0"
+#define GRID_LUA_FNC_EPOT_ELEMENT_INDEX_short "ind"
+#define GRID_LUA_FNC_EPOT_ELEMENT_INDEX_human "element_index"
+
+#define GRID_LUA_FNC_EPOT_BUTTON_NUMBER_index 1
+#define GRID_LUA_FNC_EPOT_BUTTON_NUMBER_helper "1"
+#define GRID_LUA_FNC_EPOT_BUTTON_NUMBER_short "bnu"
+#define GRID_LUA_FNC_EPOT_BUTTON_NUMBER_human "button_number"
+
+#define GRID_LUA_FNC_EPOT_BUTTON_VALUE_index 2
+#define GRID_LUA_FNC_EPOT_BUTTON_VALUE_helper "2"
+#define GRID_LUA_FNC_EPOT_BUTTON_VALUE_short "bva"
+#define GRID_LUA_FNC_EPOT_BUTTON_VALUE_human "button_value"
+
+#define GRID_LUA_FNC_EPOT_BUTTON_MIN_index 3
+#define GRID_LUA_FNC_EPOT_BUTTON_MIN_helper "3"
+#define GRID_LUA_FNC_EPOT_BUTTON_MIN_short "bmi"
+#define GRID_LUA_FNC_EPOT_BUTTON_MIN_human "button_min"
+
+#define GRID_LUA_FNC_EPOT_BUTTON_MAX_index 4
+#define GRID_LUA_FNC_EPOT_BUTTON_MAX_helper "4"
+#define GRID_LUA_FNC_EPOT_BUTTON_MAX_short "bma"
+#define GRID_LUA_FNC_EPOT_BUTTON_MAX_human "button_max"
+
+#define GRID_LUA_FNC_EPOT_BUTTON_MODE_index 5
+#define GRID_LUA_FNC_EPOT_BUTTON_MODE_helper "5"
+#define GRID_LUA_FNC_EPOT_BUTTON_MODE_short "bmo"
+#define GRID_LUA_FNC_EPOT_BUTTON_MODE_human "button_mode"
+
+#define GRID_LUA_FNC_EPOT_BUTTON_ELAPSED_index 6
+#define GRID_LUA_FNC_EPOT_BUTTON_ELAPSED_helper "6"
+#define GRID_LUA_FNC_EPOT_BUTTON_ELAPSED_short "bel"
+#define GRID_LUA_FNC_EPOT_BUTTON_ELAPSED_human "button_elapsed_time"
+
+#define GRID_LUA_FNC_EPOT_BUTTON_STATE_index 7
+#define GRID_LUA_FNC_EPOT_BUTTON_STATE_helper "7"
+#define GRID_LUA_FNC_EPOT_BUTTON_STATE_short "bst"
+#define GRID_LUA_FNC_EPOT_BUTTON_STATE_human "button_state"
+
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_NUMBER_index 8
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_NUMBER_helper "8"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_NUMBER_short "epnu"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_NUMBER_human "endlesspot_number"
+
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_index 9
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_helper "9"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_short "epva"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_human "endlesspot_value"
+
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MIN_index 10
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MIN_helper "10"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MIN_short "epmi"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MIN_human "endlesspot_min"
+
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MAX_index 11
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MAX_helper "11"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MAX_short "epma"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MAX_human "endlesspot_max"
+
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_index 12
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_helper "12"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_short "epmo"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_human "endlesspot_mode"
+
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_ELAPSED_index 13
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_ELAPSED_helper "13"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_ELAPSED_short "epel"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_ELAPSED_human "endlesspot_elapsed_time"
+
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_STATE_index 14
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_STATE_helper "14"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_STATE_short "epst"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_STATE_human "endlesspot_state"
+
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_VELOCITY_index 15
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_VELOCITY_helper "15"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_VELOCITY_short "epv0"
+#define GRID_LUA_FNC_EPOT_ENDLESSPOT_VELOCITY_human "endlesspot_velocity"
+
+// Endless potentiometer parameters
+#define GRID_LUA_FNC_EPOT_LIST_length 16
+
+// Endless potentiometer init function
+#define GRID_LUA_EPOT_META_init                                                                                                                                                                        \
+  "endlesspot_meta = { __index = { \
+   \
+  " GRID_LUA_FNC_EPOT_ELEMENT_INDEX_short "=function (self,a) return "                                                                                                                                 \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_ELEMENT_INDEX_helper ", a) end, \
+  \
+  " GRID_LUA_FNC_EPOT_BUTTON_NUMBER_short "=function (self,a) return "                                                                                                                                 \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_BUTTON_NUMBER_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_BUTTON_VALUE_short "=function (self,a) return "                                                                                                                                  \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_BUTTON_VALUE_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_BUTTON_MIN_short "=function (self,a) return "                                                                                                                                    \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_BUTTON_MIN_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_BUTTON_MAX_short "=function (self,a) return "                                                                                                                                    \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_BUTTON_MAX_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_BUTTON_MODE_short "=function (self,a) return "                                                                                                                                   \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_BUTTON_MODE_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_BUTTON_ELAPSED_short "=function (self,a) return "                                                                                                                                \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_BUTTON_ELAPSED_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_BUTTON_STATE_short "=function (self,a) return "                                                                                                                                  \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_BUTTON_STATE_helper ", a) end, \
+  \
+  " GRID_LUA_FNC_EPOT_ENDLESSPOT_NUMBER_short "=function (self,a) return "                                                                                                                             \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_ENDLESSPOT_NUMBER_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_short "=function (self,a) return "                                                                                                                              \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_ENDLESSPOT_MIN_short "=function (self,a) return "                                                                                                                                \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_ENDLESSPOT_MIN_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_ENDLESSPOT_MAX_short "=function (self,a) return "                                                                                                                                \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_ENDLESSPOT_MAX_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_short "=function (self,a) return "                                                                                                                               \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_ENDLESSPOT_ELAPSED_short "=function (self,a) return "                                                                                                                            \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_ENDLESSPOT_ELAPSED_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_ENDLESSPOT_STATE_short "=function (self,a) return "                                                                                                                              \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_ENDLESSPOT_STATE_helper ", a) end, \
+  " GRID_LUA_FNC_EPOT_ENDLESSPOT_VELOCITY_short "=function (self,a) return "                                                                                                                           \
+  "gtv(self.index, " GRID_LUA_FNC_EPOT_ENDLESSPOT_VELOCITY_helper ", a) end, \
+  \
+  " GRID_LUA_FNC_ACTION_INIT_short " = function (self) print('undefined action') end,\
+  " GRID_LUA_FNC_ACTION_ENDLESSPOTCHANGE_short " = function (self) print('undefined action') end,\
   " GRID_LUA_FNC_ACTION_BUTTONCHANGE_short " = function (self) print('undefined action') end,\
   " GRID_LUA_FNC_ACTION_TIMER_short " = function (self) print('undefined action') end,\
   \
@@ -702,6 +847,7 @@ enum grid_ui_element_t {
   GRID_UI_ELEMENT_POTENTIOMETER,
   GRID_UI_ELEMENT_BUTTON,
   GRID_UI_ELEMENT_ENCODER,
+  GRID_UI_ELEMENT_ENDLESSPOT,
 
 };
 
@@ -709,6 +855,7 @@ enum grid_ui_element_t {
 #define GRID_PARAMETER_ELEMENTTYPE_POTENTIOMETER_code "01"
 #define GRID_PARAMETER_ELEMENTTYPE_BUTTON_code "02"
 #define GRID_PARAMETER_ELEMENTTYPE_ENCODER_code "03"
+#define GRID_PARAMETER_ELEMENTTYPE_ENDLESSPOT_code "04"
 
 // dont change the order because it will break existing profile files
 
@@ -722,6 +869,7 @@ enum grid_ui_event_t {
   GRID_UI_EVENT_MAPMODE_CHANGE,
   GRID_UI_EVENT_MIDIRX,
   GRID_UI_EVENT_TIMER,
+  GRID_UI_EVENT_EPOTC,
 
 };
 
@@ -733,6 +881,7 @@ enum grid_ui_event_t {
 #define GRID_EVENT_MAP "04"
 #define GRID_EVENT_MIDIRX "05"
 #define GRID_EVENT_TIMER "06"
+#define GRID_EVENT_EPOT "07"
 
 // BANK + ELEMENT NUMBER + EVENT TYPE + PARAMETER
 
@@ -764,6 +913,10 @@ enum grid_ui_event_t {
   "glc(num,2,red,gre,blu)--[[@glp]] glp(num,1,bval)--[[@glp]] "                                                                                                                                        \
   "glp(num,2,eval) ?>"
 
+#define GRID_ACTIONSTRING_INIT_EPOT                                                                                                                                                                    \
+  "<?lua --[[@l]] local num,val,red,gre,blu=self:ind(),self:bva(),glr(),glg(),glb()--[[@for]] for i=1,5,1 do--[[@glc]] glc(num+i*2-2,1,red,gre,blu,0)--[[@glc]] "                                      \
+  "glc(num+i*2-2,2,red,gre,blu,1)--[[@glp]] glp(num+i*2-2,1,0)--[[@glp]] glp(num+i*2-2,2,0)--[[@enl]] end--[[@cb]] self:ema(16383)self:emi(0) ?>"
+
 // new dynamic midi based on x y and activepage
 #define GRID_ACTIONSTRING_AC                                                                                                                                                                           \
   "<?lua --[[@l]] local "                                                                                                                                                                              \
@@ -780,6 +933,13 @@ enum grid_ui_event_t {
 
 #define GRID_ACTIONSTRING_PAGE_INIT "<?lua --[[@cb]] --[[page init]] ?>"
 #define GRID_ACTIONSTRING_MAPMODE_CHANGE "<?lua --[[@cb]] gpl(gpn()) ?>"
+
+#define GRID_ACTIONSTRING_EPOTC                                                                                                                                                                        \
+  "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:epva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128--[[@for]] for i=1,5,1 do--[[@glp]] "                                                      \
+  "glp(num+i*2-2,2,gsc(i-1,val,self:epmi(),self:epma()))--[[@enl]] end--[[@gmsh]] gms(ch,176,cc,val//128) gms(ch,176,cc+32,val%128) ?>"
+#define GRID_ACTIONSTRING_EPOTC_BC                                                                                                                                                                     \
+  "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128--[[@for]] for i=1,5,1 do--[[@glp]] glp(num+i*2-2,1,val)--[[@enl]] end--[[@gms]] "        \
+  "gms(ch,144,note,val) ?>"
 
 // ================== MIDI CLASS =================== //
 #define GRID_CLASS_MIDI_code 0x000

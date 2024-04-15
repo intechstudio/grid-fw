@@ -63,6 +63,25 @@ end"
  end \
 end"
 
+#define GRID_LUA_MAPSAT_source                                                                                                                                                                         \
+  "function " GRID_LUA_FNC_G_MAPSAT_short "(x, in_min, in_max, o_min, o_max) \
+	local n = (x - in_min) * (o_max - o_min) / (in_max - in_min) + o_min \
+	if n > o_max then \
+		return o_max \
+	elseif n < o_min then \
+		return o_min \
+	else \
+		return n \
+	end \
+end"
+
+#define GRID_LUA_SEGCALC_source                                                                                                                                                                        \
+  "function " GRID_LUA_FNC_G_SEGCALC_short "(seg, enc_val, enc_min, enc_max) \
+	local s_min = enc_min + (enc_max - enc_min) / 5 * seg; \
+	local s_max = enc_min + (enc_max - enc_min) / 5 * (seg + 1) \
+	return " GRID_LUA_FNC_G_MAPSAT_short "(enc_val, s_min, s_max, 0, 127) // 1 \
+end"
+
 #define GRID_LUA_STDO_LENGTH 100
 #define GRID_LUA_STDI_LENGTH 100
 

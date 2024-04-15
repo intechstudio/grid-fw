@@ -266,7 +266,7 @@ void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
       grid_ui_element_init(ui, j, GRID_UI_ELEMENT_BUTTON);
     } else if (j < 10) {
-      grid_ui_element_init(ui, j, GRID_UI_ELEMENT_ENCODER);
+      grid_ui_element_init(ui, j, GRID_UI_ELEMENT_ENDLESSPOT);
     }
   }
 
@@ -536,6 +536,147 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
   grid_ui_encoder_update_trigger(ele, encoder_last_real_time, delta, 0);
 }
 
+uint8_t grid_ui_endlesspot_update_trigger(struct grid_ui_element* ele, uint64_t* endlesspot_last_real_time, int16_t delta, uint8_t is_endless_pot) {
+
+  uint32_t encoder_elapsed_time = grid_platform_rtc_get_elapsed_time(*endlesspot_last_real_time);
+  if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(*endlesspot_last_real_time)) {
+    *endlesspot_last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
+    encoder_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
+  }
+
+  if (delta == 0) {
+    // nothing left to do
+    return 0; // did not trigger
+  }
+
+  // update lastrealtime
+  *endlesspot_last_real_time = grid_platform_rtc_get_micros();
+  int32_t* template_parameter_list = ele->template_parameter_list;
+  template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_ELAPSED_index] = encoder_elapsed_time / MS_TO_US;
+
+  int32_t min = template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MIN_index];
+  int32_t max = template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MAX_index];
+
+  double elapsed_ms = encoder_elapsed_time / MS_TO_US;
+
+  if (elapsed_ms > 25) {
+    elapsed_ms = 25;
+  }
+
+  if (elapsed_ms < 1) {
+    elapsed_ms = 1;
+  }
+
+  double minmaxscale = (max - min) / 128.0;
+
+  double velocityparam = template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_VELOCITY_index] / 100.0;
+
+  // implement configurable velocity parameters here
+  double velocityfactor = ((25 * 25 - elapsed_ms * elapsed_ms) / 75.0) * minmaxscale * velocityparam + 1.0;
+
+  if (is_endless_pot) {
+    velocityfactor = minmaxscale * velocityparam / 15.0;
+  }
+
+  int32_t delta_velocity = delta * velocityfactor;
+
+  int32_t old_value = template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_index];
+
+  if (is_endless_pot) {
+
+    if (delta_velocity == 0) {
+
+      return 0; // did not trigger
+    }
+  } else {
+    template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_STATE_index] += delta_velocity;
+  }
+
+  if (template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_index] == 0) { // Absolute
+
+    int32_t new_value = 0;
+
+    if (old_value + delta_velocity < min) {
+      new_value = min;
+    } else if (old_value + delta_velocity > max) {
+      new_value = max;
+    } else {
+      new_value = old_value + delta_velocity;
+    }
+
+    template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_index] = new_value;
+  } else if (template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_index] == 1) { // Relative
+
+    int32_t new_value = 0;
+
+    if (old_value + delta_velocity < min) {
+      new_value = min;
+    } else if (old_value + delta_velocity > max) {
+      new_value = max;
+    } else {
+      new_value = old_value + delta_velocity;
+    }
+
+    template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_index] = new_value;
+  } else if (template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_index] == 2) { // Relative 2's complement
+
+    // Two's complement magic 7 bit signed variable
+
+    int32_t old_twoscomplement = template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_index];
+
+    uint8_t old_8bit_extended_twoscomplement = old_twoscomplement;
+
+    // Limit to signed -64 +63 range
+    if (old_twoscomplement > 127) {
+      old_8bit_extended_twoscomplement = 127;
+    }
+    if (old_twoscomplement < 0) {
+      old_8bit_extended_twoscomplement = 0;
+    }
+
+    if (old_twoscomplement > 63) { // extend sign bit to 8 bit size
+      old_8bit_extended_twoscomplement += 128;
+    }
+
+    int8_t old_signed;
+
+    if (old_8bit_extended_twoscomplement > 127) { // negative number
+      old_signed = -((~old_8bit_extended_twoscomplement) + 1 + 256);
+    } else { // positive number
+      old_signed = -(~old_8bit_extended_twoscomplement) - 1;
+    }
+
+    int16_t new_signed = old_signed - delta_velocity;
+
+    // Limit to signed -64 +63 range
+    if (new_signed < -64) {
+      new_signed = -64;
+    }
+
+    if (new_signed > 63) {
+      new_signed = 63;
+    }
+
+    int8_t new_signed_8bit = new_signed;
+
+    // Two's complement magic
+    uint8_t new_twoscomplement = (~new_signed_8bit) + 1;
+
+    // reduce the result to 7 bit length
+    uint8_t new_7bit_twoscomplement = new_twoscomplement & 127;
+
+    template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_index] = new_7bit_twoscomplement;
+  }
+
+  struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_EPOTC);
+
+  if (grid_ui_state.ui_interaction_enabled) {
+    grid_ui_event_trigger(eve);
+  }
+
+  return 1; // did trigger
+}
+
 uint16_t grid_ui_endlesspot_calculate_angle(uint16_t phase_a, uint16_t phase_b, uint8_t adc_bit_depth) {
 
   uint16_t value_degrees = 0;
@@ -591,7 +732,7 @@ uint16_t grid_ui_endlesspot_calculate_angle(uint16_t phase_a, uint16_t phase_b, 
   return value_degrees;
 }
 
-void grid_ui_endlesspot_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, struct grid_module_endlesspot_state* old_value, struct grid_module_endlesspot_state* new_value,
+void grid_ui_endlesspot_store_input(uint8_t input_channel, uint64_t* endlesspot_last_real_time, struct grid_module_endlesspot_state* old_value, struct grid_module_endlesspot_state* new_value,
                                     uint8_t adc_bit_depth) {
 
   if (!memcmp(old_value, new_value, sizeof(struct grid_module_endlesspot_state))) {
@@ -627,8 +768,8 @@ void grid_ui_endlesspot_store_input(uint8_t input_channel, uint64_t* encoder_las
 
     if (abs(delta) > 10) {
 
-      template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] = value_degrees_new / 20;
-      uint8_t has_triggered = grid_ui_encoder_update_trigger(ele, encoder_last_real_time, delta, 1);
+      template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_STATE_index] = value_degrees_new / 20;
+      uint8_t has_triggered = grid_ui_endlesspot_update_trigger(ele, endlesspot_last_real_time, delta, 1);
 
       if (has_triggered) {
         old_value->phase_a_value = new_value->phase_a_value;

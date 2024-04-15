@@ -181,12 +181,16 @@ int32_t grid_ui_element_get_template_parameter(struct grid_ui_element* ele, uint
 void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf);
 void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buffer* buf);
 void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf);
+void grid_ui_element_endlesspot_template_parameter_init(struct grid_ui_template_buffer* buf);
 
 void grid_ui_element_button_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
 void grid_ui_element_encoder_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
+
+void grid_ui_element_endlesspot_event_clear_cb(struct grid_ui_event* eve);
+void grid_ui_element_endlesspot_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
 void grid_ui_element_potmeter_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);

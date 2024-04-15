@@ -1334,6 +1334,11 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message) {
         min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MIN_index);
         max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MAX_index);
         val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index);
+      } else if (ele_type == GRID_UI_ELEMENT_ENDLESSPOT) {
+
+        min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EPOT_ENDLESSPOT_MIN_index);
+        max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EPOT_ENDLESSPOT_MAX_index);
+        val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_index);
       } else {
 
         strcat(grid_lua_state.stde, "#elementNotSupported");
@@ -1849,7 +1854,7 @@ void grid_lua_ui_init_tek2(struct grid_lua_model* mod) {
   // define encoder_init_function
 
   grid_lua_dostring(mod, GRID_LUA_B_META_init);
-  grid_lua_dostring(mod, GRID_LUA_E_META_init);
+  grid_lua_dostring(mod, GRID_LUA_EPOT_META_init);
 
   // create element array
   grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "= {} ");
@@ -1860,7 +1865,7 @@ void grid_lua_ui_init_tek2(struct grid_lua_model* mod) {
 
   // initialize 2 endless potentiometers as encoders
   grid_lua_dostring(mod, "for i=8, 9  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=8, 9  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], encoder_meta)  end");
+  grid_lua_dostring(mod, "for i=8, 9  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], endlesspot_meta)  end");
 
   grid_lua_gc_try_collect(mod);
 
@@ -1920,6 +1925,8 @@ void grid_lua_start_vm(struct grid_lua_model* mod) {
   grid_lua_dostring(mod, GRID_LUA_GLUT_source);
   grid_lua_dostring(mod, GRID_LUA_GLIM_source);
   grid_lua_dostring(mod, GRID_LUA_GEN_source);
+  grid_lua_dostring(mod, GRID_LUA_MAPSAT_source);
+  grid_lua_dostring(mod, GRID_LUA_SEGCALC_source);
   grid_lua_dostring(mod, "midi_fifo = {}");
   grid_lua_dostring(mod, "midi_fifo_highwater = 0");
   grid_lua_dostring(mod, "midi_fifo_retriggercount = 0");
