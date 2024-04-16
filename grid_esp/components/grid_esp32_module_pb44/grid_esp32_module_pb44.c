@@ -12,6 +12,10 @@
 #include "grid_module.h"
 #include "grid_ui.h"
 
+#include "grid_ui_button.h"
+#include "grid_ui_potmeter.h"
+#include "grid_ui_system.h"
+
 #include "grid_esp32_adc.h"
 
 static const char* TAG = "module_pb44";

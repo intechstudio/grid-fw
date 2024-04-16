@@ -40,6 +40,8 @@ struct grid_ui_event {
   struct grid_ui_element* parent;
   uint8_t index;
 
+  char* default_actionstring;
+
   enum grid_ui_status_t trigger;
 
   enum grid_ui_event_t type;
@@ -130,8 +132,8 @@ void grid_ui_semaphore_init(struct grid_ui_model* mod, void* busy_semaphore, voi
 void grid_ui_semaphore_lock(struct grid_ui_model* mod);
 void grid_ui_semaphore_release(struct grid_ui_model* mod);
 
-void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid_ui_element_t element_type);
-void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui_event_t event_type);
+struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index);
+void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui_event_t event_type, char* function_name, char* default_actionstring);
 
 void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui);
 void grid_ui_midi_sync_tick_time(struct grid_ui_model* ui);
@@ -177,23 +179,6 @@ void grid_ui_element_timer_set(struct grid_ui_element* ele, uint32_t duration);
 void grid_ui_element_timer_source(struct grid_ui_element* ele, uint8_t source);
 void grid_ui_element_set_template_parameter(struct grid_ui_element* ele, uint8_t template_index, int32_t value);
 int32_t grid_ui_element_get_template_parameter(struct grid_ui_element* ele, uint8_t template_index);
-
-void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf);
-void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buffer* buf);
-void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf);
-void grid_ui_element_endlesspot_template_parameter_init(struct grid_ui_template_buffer* buf);
-
-void grid_ui_element_button_event_clear_cb(struct grid_ui_event* eve);
-void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
-
-void grid_ui_element_encoder_event_clear_cb(struct grid_ui_event* eve);
-void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
-
-void grid_ui_element_endlesspot_event_clear_cb(struct grid_ui_event* eve);
-void grid_ui_element_endlesspot_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
-
-void grid_ui_element_potmeter_event_clear_cb(struct grid_ui_event* eve);
-void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
 enum grid_ui_bluk_status_t grid_ui_get_bulk_status(struct grid_ui_model* ui);
 int grid_ui_bulk_anything_is_in_progress(struct grid_ui_model* ui);

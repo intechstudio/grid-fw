@@ -1,4 +1,5 @@
 #include "grid_ui.h"
+#include "grid_ui_button.h"
 
 extern void grid_platform_printf(char const* fmt, ...);
 extern int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle);
@@ -80,12 +81,20 @@ void grid_ui_semaphore_release(struct grid_ui_model* mod) {
   mod->busy_semaphore_release_fn(mod->busy_semaphore);
 }
 
-void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid_ui_element_t element_type) {
+struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index) {
+
+  if (parent == NULL) {
+    return NULL;
+  }
+
+  if (index >= parent->element_list_length) {
+    return NULL;
+  }
 
   struct grid_ui_element* ele = &parent->element_list[index];
 
-  parent->element_list[index].event_clear_cb = NULL;
-  parent->element_list[index].page_change_cb = NULL;
+  ele->event_clear_cb = NULL;
+  ele->page_change_cb = NULL;
 
   ele->parent = parent;
   ele->index = index;
@@ -97,106 +106,20 @@ void grid_ui_element_init(struct grid_ui_model* parent, uint8_t index, enum grid
 
   ele->status = GRID_UI_STATUS_INITIALIZED;
 
-  ele->type = element_type;
-
   ele->timer_event_helper = 0;
   ele->timer_source_is_midi = 0;
 
-  if (element_type == GRID_UI_ELEMENT_SYSTEM) {
-
-    ele->event_list_length = 4;
-
-    ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
-    grid_ui_event_init(ele, 0,
-                       GRID_UI_EVENT_INIT);                   // Element Initialization Event
-    grid_ui_event_init(ele, 1, GRID_UI_EVENT_MAPMODE_CHANGE); // Mapmode change
-    grid_ui_event_init(ele, 2, GRID_UI_EVENT_MIDIRX);         // Midi Receive
-    grid_ui_event_init(ele, 3, GRID_UI_EVENT_TIMER);
-
-    ele->template_initializer = NULL;
-    ele->template_parameter_list_length = 0;
-
-    ele->event_clear_cb = NULL;
-    ele->page_change_cb = NULL;
-  } else if (element_type == GRID_UI_ELEMENT_POTENTIOMETER) {
-
-    ele->event_list_length = 3;
-
-    ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
-
-    grid_ui_event_init(ele, 0,
-                       GRID_UI_EVENT_INIT); // Element Initialization Event
-    grid_ui_event_init(ele, 1,
-                       GRID_UI_EVENT_AC); // Absolute Value Change (7bit)
-    grid_ui_event_init(ele, 2, GRID_UI_EVENT_TIMER);
-
-    ele->template_initializer = &grid_ui_element_potmeter_template_parameter_init;
-    ele->template_parameter_list_length = GRID_LUA_FNC_P_LIST_length;
-
-    ele->event_clear_cb = &grid_ui_element_potmeter_event_clear_cb;
-    ele->page_change_cb = &grid_ui_element_potmeter_page_change_cb;
-  } else if (element_type == GRID_UI_ELEMENT_BUTTON) {
-
-    ele->event_list_length = 3;
-
-    ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
-
-    grid_ui_event_init(ele, 0,
-                       GRID_UI_EVENT_INIT);       // Element Initialization Event
-    grid_ui_event_init(ele, 1, GRID_UI_EVENT_BC); // Button Change
-    grid_ui_event_init(ele, 2, GRID_UI_EVENT_TIMER);
-
-    ele->template_initializer = &grid_ui_element_button_template_parameter_init;
-    ele->template_parameter_list_length = GRID_LUA_FNC_B_LIST_length;
-
-    ele->event_clear_cb = &grid_ui_element_button_event_clear_cb;
-    ele->page_change_cb = &grid_ui_element_button_page_change_cb;
-  } else if (element_type == GRID_UI_ELEMENT_ENCODER) {
-
-    ele->event_list_length = 4;
-
-    ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
-
-    grid_ui_event_init(ele, 0,
-                       GRID_UI_EVENT_INIT);       // Element Initialization Event
-    grid_ui_event_init(ele, 1, GRID_UI_EVENT_EC); // Encoder Change
-    grid_ui_event_init(ele, 2, GRID_UI_EVENT_BC); // Button Change
-    grid_ui_event_init(ele, 3, GRID_UI_EVENT_TIMER);
-
-    ele->template_initializer = &grid_ui_element_encoder_template_parameter_init;
-    ele->template_parameter_list_length = GRID_LUA_FNC_E_LIST_length;
-
-    ele->event_clear_cb = &grid_ui_element_encoder_event_clear_cb;
-    ele->page_change_cb = &grid_ui_element_encoder_page_change_cb;
-  } else if (element_type == GRID_UI_ELEMENT_ENDLESSPOT) {
-
-    ele->event_list_length = 4;
-
-    ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
-
-    grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT);  // Element Initialization Event
-    grid_ui_event_init(ele, 1, GRID_UI_EVENT_EPOTC); // Endlesspot Change
-    grid_ui_event_init(ele, 2, GRID_UI_EVENT_BC);    // Button Change
-    grid_ui_event_init(ele, 3, GRID_UI_EVENT_TIMER);
-
-    ele->template_initializer = &grid_ui_element_endlesspot_template_parameter_init;
-    ele->template_parameter_list_length = GRID_LUA_FNC_EPOT_LIST_length;
-
-    ele->event_clear_cb = &grid_ui_element_endlesspot_event_clear_cb;
-    ele->page_change_cb = &grid_ui_element_endlesspot_page_change_cb;
-  } else {
-    // UNKNOWN ELEMENT TYPE
-    // grid_platform_printf("error.unknown_element_type\r\n");
-    ele->template_initializer = NULL;
-  }
+  return ele;
 }
 
-void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui_event_t event_type) {
+void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui_event_t event_type, char* function_name, char* default_actionstring) {
 
   struct grid_ui_event* eve = &ele->event_list[index];
 
   eve->parent = ele;
   eve->index = index;
+
+  eve->default_actionstring = default_actionstring;
 
   eve->cfg_changed_flag = 0;
 
@@ -205,28 +128,7 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, enum grid_ui
   eve->type = event_type;
   eve->status = GRID_UI_STATUS_READY;
 
-  if (event_type == GRID_UI_EVENT_INIT) {
-    strcpy(eve->function_name, GRID_LUA_FNC_ACTION_INIT_short);
-  } else if (event_type == GRID_UI_EVENT_AC) {
-    strcpy(eve->function_name, GRID_LUA_FNC_ACTION_POTMETERCHANGE_short);
-  } else if (event_type == GRID_UI_EVENT_EC) {
-    strcpy(eve->function_name, GRID_LUA_FNC_ACTION_ENCODERCHANGE_short);
-  } else if (event_type == GRID_UI_EVENT_BC) {
-    strcpy(eve->function_name, GRID_LUA_FNC_ACTION_BUTTONCHANGE_short);
-  } else if (event_type == GRID_UI_EVENT_MAPMODE_CHANGE) {
-    strcpy(eve->function_name, GRID_LUA_FNC_ACTION_MAPMODE_short);
-  } else if (event_type == GRID_UI_EVENT_MIDIRX) {
-    strcpy(eve->function_name, GRID_LUA_FNC_ACTION_MIDIRX_short);
-  } else if (event_type == GRID_UI_EVENT_TIMER) {
-    strcpy(eve->function_name, GRID_LUA_FNC_ACTION_TIMER_short);
-  } else if (event_type == GRID_UI_EVENT_EPOTC) {
-    strcpy(eve->function_name, GRID_LUA_FNC_ACTION_ENDLESSPOTCHANGE_short);
-  } else {
-
-    // grid_platform_printf("TRAP: Unknown Event "__FILE__"\r\n");
-    while (1) {
-    }
-  }
+  strcpy(eve->function_name, function_name);
 
   eve->cfg_changed_flag = 0;
   eve->cfg_default_flag = 1;
@@ -552,100 +454,7 @@ uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* ac
 
   struct grid_ui_element* ele = eve->parent;
 
-  // ENCODER - INIT
-  if (ele->type == GRID_UI_ELEMENT_ENCODER && eve->type == GRID_UI_EVENT_INIT) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_INIT_ENC) == 0);
-  }
-
-  // ENCODER - BUTTON CHANGE
-  if (ele->type == GRID_UI_ELEMENT_ENCODER && eve->type == GRID_UI_EVENT_BC) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_BC) == 0);
-  }
-
-  // ENCODER - ENCODER CHANGE
-  if (ele->type == GRID_UI_ELEMENT_ENCODER && eve->type == GRID_UI_EVENT_EC) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_EC) == 0);
-  }
-
-  // ENCODER - TIMER
-  if (ele->type == GRID_UI_ELEMENT_ENCODER && eve->type == GRID_UI_EVENT_TIMER) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_TIMER) == 0);
-  }
-
-  // POTMETER - INIT
-  if (ele->type == GRID_UI_ELEMENT_POTENTIOMETER && eve->type == GRID_UI_EVENT_INIT) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_INIT_POT) == 0);
-  }
-
-  // POTMETER - ANALOG CHANGE
-  if (ele->type == GRID_UI_ELEMENT_POTENTIOMETER && eve->type == GRID_UI_EVENT_AC) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_AC) == 0);
-  }
-
-  // POTMETER - TIMER
-  if (ele->type == GRID_UI_ELEMENT_POTENTIOMETER && eve->type == GRID_UI_EVENT_TIMER) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_TIMER) == 0);
-  }
-
-  // BUTTON - INIT
-  if (ele->type == GRID_UI_ELEMENT_BUTTON && eve->type == GRID_UI_EVENT_INIT) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_INIT_BUT) == 0);
-  }
-
-  // BUTTON - ANALOG CHANGE
-  if (ele->type == GRID_UI_ELEMENT_BUTTON && eve->type == GRID_UI_EVENT_BC) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_BC) == 0);
-  }
-
-  // BUTTON - TIMER
-  if (ele->type == GRID_UI_ELEMENT_BUTTON && eve->type == GRID_UI_EVENT_TIMER) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_TIMER) == 0);
-  }
-
-  // SYSTEM - INIT
-  if (ele->type == GRID_UI_ELEMENT_SYSTEM && eve->type == GRID_UI_EVENT_INIT) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_PAGE_INIT) == 0);
-  }
-
-  // SYSTEM - MAPMODE
-  if (ele->type == GRID_UI_ELEMENT_SYSTEM && eve->type == GRID_UI_EVENT_MAPMODE_CHANGE) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_MAPMODE_CHANGE) == 0);
-  }
-
-  // SYSTEM - MIDIRX
-  if (ele->type == GRID_UI_ELEMENT_SYSTEM && eve->type == GRID_UI_EVENT_MIDIRX) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_MIDIRX) == 0);
-  }
-
-  // SYSTEM - TIMER
-  if (ele->type == GRID_UI_ELEMENT_SYSTEM && eve->type == GRID_UI_EVENT_TIMER) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_TIMER) == 0);
-  }
-
-  // ENDLESSPOT - INIT
-  if (ele->type == GRID_UI_ELEMENT_ENDLESSPOT && eve->type == GRID_UI_EVENT_INIT) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_INIT_EPOT) == 0);
-  }
-
-  // ENDLESSPOT - BUTTON CHANGE
-  if (ele->type == GRID_UI_ELEMENT_ENDLESSPOT && eve->type == GRID_UI_EVENT_BC) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_EPOTC_BC) == 0);
-  }
-
-  // ENDLESSPOT - ENDLESSPOT CHANGE
-  if (ele->type == GRID_UI_ELEMENT_ENDLESSPOT && eve->type == GRID_UI_EVENT_EPOTC) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_EPOTC) == 0);
-  }
-
-  // ENDLESSPOT - TIMER
-  if (ele->type == GRID_UI_ELEMENT_ENDLESSPOT && eve->type == GRID_UI_EVENT_TIMER) {
-    return (strcmp(action_string, GRID_ACTIONSTRING_TIMER) == 0);
-  }
-
-  grid_platform_printf("TRAP: Unknown Element or Event "__FILE__
-                       "\r\n");
-  while (1) {
-  }
+  return (strcmp(action_string, eve->default_actionstring) == 0);
 }
 
 void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action_string) {
@@ -716,94 +525,7 @@ uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, char* target_stri
   return strlen(target_string);
 }
 
-void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* targetstring) {
-
-  if (eve->parent->type == GRID_UI_ELEMENT_SYSTEM) {
-
-    switch (eve->type) {
-    case GRID_UI_EVENT_INIT:
-      strcpy(targetstring, GRID_ACTIONSTRING_PAGE_INIT);
-      break;
-    case GRID_UI_EVENT_MAPMODE_CHANGE:
-      strcpy(targetstring, GRID_ACTIONSTRING_MAPMODE_CHANGE);
-      break;
-    case GRID_UI_EVENT_MIDIRX:
-      strcpy(targetstring, GRID_ACTIONSTRING_MIDIRX);
-      break;
-    case GRID_UI_EVENT_TIMER:
-      strcpy(targetstring, GRID_ACTIONSTRING_TIMER);
-      break;
-    default:
-      break;
-    }
-  } else if (eve->parent->type == GRID_UI_ELEMENT_BUTTON) {
-
-    switch (eve->type) {
-    case GRID_UI_EVENT_INIT:
-      strcpy(targetstring, GRID_ACTIONSTRING_INIT_BUT);
-      break;
-    case GRID_UI_EVENT_BC:
-      strcpy(targetstring, GRID_ACTIONSTRING_BC);
-      break;
-    case GRID_UI_EVENT_TIMER:
-      strcpy(targetstring, GRID_ACTIONSTRING_TIMER);
-      break;
-    default:
-      break;
-    }
-  } else if (eve->parent->type == GRID_UI_ELEMENT_POTENTIOMETER) {
-
-    switch (eve->type) {
-    case GRID_UI_EVENT_INIT:
-      strcpy(targetstring, GRID_ACTIONSTRING_INIT_POT);
-      break;
-    case GRID_UI_EVENT_AC:
-      strcpy(targetstring, GRID_ACTIONSTRING_AC);
-      break;
-    case GRID_UI_EVENT_TIMER:
-      strcpy(targetstring, GRID_ACTIONSTRING_TIMER);
-      break;
-    default:
-      break;
-    }
-  } else if (eve->parent->type == GRID_UI_ELEMENT_ENCODER) {
-
-    switch (eve->type) {
-    case GRID_UI_EVENT_INIT:
-      strcpy(targetstring, GRID_ACTIONSTRING_INIT_ENC);
-      break;
-    case GRID_UI_EVENT_EC:
-      strcpy(targetstring, GRID_ACTIONSTRING_EC);
-      break;
-    case GRID_UI_EVENT_BC:
-      strcpy(targetstring, GRID_ACTIONSTRING_BC);
-      break;
-    case GRID_UI_EVENT_TIMER:
-      strcpy(targetstring, GRID_ACTIONSTRING_TIMER);
-      break;
-    default:
-      break;
-    }
-  } else if (eve->parent->type == GRID_UI_ELEMENT_ENDLESSPOT) {
-
-    switch (eve->type) {
-    case GRID_UI_EVENT_INIT:
-      strcpy(targetstring, GRID_ACTIONSTRING_INIT_EPOT);
-      break;
-    case GRID_UI_EVENT_EPOTC:
-      strcpy(targetstring, GRID_ACTIONSTRING_EPOTC);
-      break;
-    case GRID_UI_EVENT_BC:
-      strcpy(targetstring, GRID_ACTIONSTRING_EPOTC_BC);
-      break;
-    case GRID_UI_EVENT_TIMER:
-      strcpy(targetstring, GRID_ACTIONSTRING_TIMER);
-      break;
-    default:
-      break;
-    }
-  }
-}
+void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* targetstring) { strcpy(targetstring, eve->default_actionstring); }
 
 void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstring) {
 
@@ -1098,208 +820,6 @@ int32_t grid_ui_element_get_template_parameter(struct grid_ui_element* ele, uint
   } else {
     return 0;
   }
-}
-
-void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf) {
-
-  uint8_t element_index = buf->parent->index;
-  int32_t* template_parameter_list = buf->template_parameter_list;
-
-  template_parameter_list[GRID_LUA_FNC_P_ELEMENT_INDEX_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_P_POTMETER_NUMBER_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index] = 127;
-  template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index] = 7;
-  template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = 0;
-
-  // Load AIN value to VALUE register
-
-  int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
-
-  if (resolution < 1) {
-    resolution = 1;
-  } else if (resolution > 12) {
-    resolution = 12;
-  }
-
-  int32_t min = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index];
-  int32_t max = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index];
-
-  int32_t next = grid_ain_get_average_scaled(&grid_ain_state, element_index, 16, resolution, min, max);
-  template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
-}
-
-void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buffer* buf) {
-
-  uint8_t element_index = buf->parent->index;
-  int32_t* template_parameter_list = buf->template_parameter_list;
-
-  template_parameter_list[GRID_LUA_FNC_B_ELEMENT_INDEX_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_B_BUTTON_NUMBER_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index] = 127;
-  template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 0;
-}
-
-void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf) {
-
-  // printf("template parameter init\r\n");
-
-  uint8_t element_index = buf->parent->index;
-  int32_t* template_parameter_list = buf->template_parameter_list;
-
-  template_parameter_list[GRID_LUA_FNC_E_ELEMENT_INDEX_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_E_BUTTON_NUMBER_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_E_BUTTON_MIN_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_E_BUTTON_MAX_index] = 127;
-  template_parameter_list[GRID_LUA_FNC_E_BUTTON_MODE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_E_BUTTON_ELAPSED_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_E_BUTTON_STATE_index] = 0;
-
-  template_parameter_list[GRID_LUA_FNC_E_ENCODER_NUMBER_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index] = 128 - 1;
-  template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] = 64;
-  template_parameter_list[GRID_LUA_FNC_E_ENCODER_VELOCITY_index] = 50;
-}
-
-void grid_ui_element_endlesspot_template_parameter_init(struct grid_ui_template_buffer* buf) {
-
-  // printf("template parameter init\r\n");
-
-  uint8_t element_index = buf->parent->index;
-  int32_t* template_parameter_list = buf->template_parameter_list;
-
-  template_parameter_list[GRID_LUA_FNC_EPOT_ELEMENT_INDEX_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_EPOT_BUTTON_NUMBER_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_EPOT_BUTTON_VALUE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_EPOT_BUTTON_MIN_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_EPOT_BUTTON_MAX_index] = 127;
-  template_parameter_list[GRID_LUA_FNC_EPOT_BUTTON_MODE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_EPOT_BUTTON_ELAPSED_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_EPOT_BUTTON_STATE_index] = 0;
-
-  template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_NUMBER_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MIN_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MAX_index] = 128 - 1;
-  template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_ELAPSED_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_STATE_index] = 64;
-  template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_VELOCITY_index] = 50;
-}
-
-void grid_ui_element_button_event_clear_cb(struct grid_ui_event* eve) {}
-
-void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new) {
-
-  // for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
-
-  // 	struct grid_ui_event* eve = NULL;
-
-  // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_UI_EVENT_INIT); 	grid_ui_event_trigger_local(eve);
-
-  // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_UI_EVENT_BC); 	grid_ui_event_trigger_local(eve);
-  // }
-}
-
-void grid_ui_element_encoder_event_clear_cb(struct grid_ui_event* eve) {
-
-  int32_t* template_parameter_list = eve->parent->template_parameter_list;
-
-  template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] = 64;
-
-  if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 1) { // relative
-
-    int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
-    int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
-
-    template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = ((max + 1) - min) / 2;
-  } else if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 2) {
-
-    template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = 0;
-  }
-}
-
-void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new) {
-
-  // for (uint8_t i = 0; i<16; i++)
-  // {
-
-  // 	struct grid_ui_event* eve = NULL;
-
-  // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_UI_EVENT_INIT); 	grid_ui_event_trigger_local(eve);
-
-  // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_UI_EVENT_EC); 	grid_ui_event_trigger_local(eve);
-  // }
-}
-
-void grid_ui_element_endlesspot_event_clear_cb(struct grid_ui_event* eve) {
-
-  int32_t* template_parameter_list = eve->parent->template_parameter_list;
-
-  template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_STATE_index] = 64;
-
-  if (template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_index] == 1) { // relative
-
-    int32_t min = template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MIN_index];
-    int32_t max = template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MAX_index];
-
-    template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_index] = ((max + 1) - min) / 2;
-  } else if (template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_MODE_index] == 2) {
-
-    template_parameter_list[GRID_LUA_FNC_EPOT_ENDLESSPOT_VALUE_index] = 0;
-  }
-}
-
-void grid_ui_element_endlesspot_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new) {
-
-  // for (uint8_t i = 0; i<16; i++)
-  // {
-
-  // 	struct grid_ui_event* eve = NULL;
-
-  // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_UI_EVENT_INIT); 	grid_ui_event_trigger_local(eve);
-
-  // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_UI_EVENT_EC); 	grid_ui_event_trigger_local(eve);
-  // }
-}
-
-void grid_ui_element_potmeter_event_clear_cb(struct grid_ui_event* eve) {}
-
-void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new) {
-
-  uint8_t element_index = ele->index;
-  int32_t* template_parameter_list = ele->template_parameter_list;
-
-  int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
-
-  if (resolution < 1) {
-    resolution = 1;
-  } else if (resolution > 12) {
-    resolution = 12;
-  }
-
-  int32_t min = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index];
-  int32_t max = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index];
-
-  int32_t next = grid_ain_get_average_scaled(&grid_ain_state, element_index, grid_platform_get_adc_bit_depth(), resolution, min, max);
-  template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
 }
 
 enum grid_ui_bluk_status_t grid_ui_get_bulk_status(struct grid_ui_model* ui) { return ui->bulk_status; }

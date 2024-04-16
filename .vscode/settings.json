@@ -137,7 +137,13 @@
     "stddef.h": "c",
     "grid_esp32_platform.h": "c",
     "timer.h": "c",
-    "watchdog.h": "c"
+    "watchdog.h": "c",
+    "grid_ui.h": "c",
+    "grid_ui_button.h": "c",
+    "grid_d51_module_ef44.h": "c",
+    "grid_d51_module_en16.h": "c",
+    "grid_ui_potmeter.h": "c",
+    "grid_ui_encoder.h": "c"
   },
   "files.exclude": {
     ".archive": true,

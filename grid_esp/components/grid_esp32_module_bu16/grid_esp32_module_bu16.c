@@ -6,6 +6,9 @@
 
 #include "grid_esp32_module_bu16.h"
 
+#include "grid_ui_button.h"
+#include "grid_ui_system.h"
+
 #include <stdint.h>
 
 #include "grid_ain.h"

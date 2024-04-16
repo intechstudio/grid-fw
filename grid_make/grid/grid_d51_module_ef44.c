@@ -1,5 +1,9 @@
 #include "grid_d51_module_ef44.h"
 
+#include "grid_ui_encoder.h"
+#include "grid_ui_potmeter.h"
+#include "grid_ui_system.h"
+
 static volatile uint8_t adc_complete_count = 0;
 static volatile uint8_t multiplexer_index = 0;
 

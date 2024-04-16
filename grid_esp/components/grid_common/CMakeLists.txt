@@ -16,6 +16,11 @@ idf_component_register(
         "../../../grid_common/grid_port.c"
         "../../../grid_common/grid_usb.c"
         "../../../grid_common/grid_ui.c"
+        "../../../grid_common/grid_ui_button.c"
+        "../../../grid_common/grid_ui_encoder.c"
+        "../../../grid_common/grid_ui_endless.c"
+        "../../../grid_common/grid_ui_potmeter.c"
+        "../../../grid_common/grid_ui_system.c"
         "../../../grid_common/grid_module.c"
         "../../../grid_common/grid_lua_api.c"
 

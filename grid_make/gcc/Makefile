@@ -22,6 +22,11 @@ usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_port.o \
 ../grid_common/grid_usb.o \
 ../grid_common/grid_ui.o \
+../grid_common/grid_ui_button.o \
+../grid_common/grid_ui_encoder.o \
+../grid_common/grid_ui_endless.o \
+../grid_common/grid_ui_potmeter.o \
+../grid_common/grid_ui_system.o \
 ../grid_common/grid_module.o \
 ../grid_common/grid_lua_api.o \
 grid/d51/grid_d51.o \
@@ -88,6 +93,11 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_port.o" \
 "../grid_common/grid_usb.o" \
 "../grid_common/grid_ui.o" \
+"../grid_common/grid_ui_button.o" \
+"../grid_common/grid_ui_encoder.o" \
+"../grid_common/grid_ui_endless.o" \
+"../grid_common/grid_ui_potmeter.o" \
+"../grid_common/grid_ui_system.o" \
 "../grid_common/grid_module.o" \
 "../grid_common/grid_lua_api.o" \
 "grid/d51/grid_d51.o" \
@@ -166,6 +176,11 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_port.d" \
 "../grid_common/grid_usb.d" \
 "../grid_common/grid_ui.d" \
+"../grid_common/grid_ui_button.d" \
+"../grid_common/grid_ui_encoder.d" \
+"../grid_common/grid_ui_endless.d" \
+"../grid_common/grid_ui_potmeter.d" \
+"../grid_common/grid_ui_system.d" \
 "../grid_common/grid_module.d" \
 "../grid_common/grid_lua_api.d" \
 "grid/d51/grid_d51.d" \

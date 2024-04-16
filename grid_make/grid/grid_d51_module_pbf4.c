@@ -1,5 +1,9 @@
 #include "grid_d51_module_pbf4.h"
 
+#include "grid_ui_button.h"
+#include "grid_ui_potmeter.h"
+#include "grid_ui_system.h"
+
 static volatile uint8_t adc_complete_count = 0;
 
 static uint8_t multiplexer_index = 0;
