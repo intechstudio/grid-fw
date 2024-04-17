@@ -143,7 +143,8 @@
     "grid_d51_module_ef44.h": "c",
     "grid_d51_module_en16.h": "c",
     "grid_ui_potmeter.h": "c",
-    "grid_ui_encoder.h": "c"
+    "grid_ui_encoder.h": "c",
+    "unordered_map": "c"
   },
   "files.exclude": {
     ".archive": true,

@@ -1,11 +1,13 @@
 #include "grid_ui_encoder.h"
 #include "grid_ui_button.h"
 
-#include <stdint.h>
-#include "grid_ui.h"
+#include "grid_ui_system.h"
+
 #include "grid_ain.h"
 #include "grid_lua_api.h"
 #include "grid_protocol.h"
+#include "grid_ui.h"
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -13,29 +15,28 @@ extern uint8_t grid_platform_get_adc_bit_depth();
 
 extern void grid_platform_printf(char const* fmt, ...);
 
+const char grid_ui_encoder_init_actionstring[] = GRID_ACTIONSTRING_ENCODER_INIT;
+const char grid_ui_encoder_encoderchange_actionstring[] = GRID_ACTIONSTRING_ENCODER_ENCODER;
+const char grid_ui_encoder_buttonchange_actionstring[] = GRID_ACTIONSTRING_BUTTON_BUTTON;
+const char grid_ui_encoder_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
-const char grid_ui_encoder_init_actionstring[] = GRID_ACTIONSTRING_INIT_ENC;
-const char grid_ui_encoder_encoderchange_actionstring[] = GRID_ACTIONSTRING_EC;
-const char grid_ui_encoder_buttonchange_actionstring[] = GRID_ACTIONSTRING_BC;
-const char grid_ui_encoder_timer_actionstring[] = GRID_ACTIONSTRING_TIMER;
+void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
 
-void grid_ui_element_encoder_init(struct grid_ui_element* ele){
-
-  ele->type = GRID_UI_ELEMENT_ENCODER;
-
+  ele->type = GRID_PARAMETER_ELEMENT_ENCODER;
 
   ele->event_list_length = 4;
 
   ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
 
-  grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT, GRID_LUA_FNC_ACTION_INIT_short, grid_ui_encoder_init_actionstring);       // Element Initialization Event
-  grid_ui_event_init(ele, 1, GRID_UI_EVENT_EC, GRID_LUA_FNC_ACTION_ENCODERCHANGE_short, grid_ui_encoder_encoderchange_actionstring); // Encoder Change
-  grid_ui_event_init(ele, 2, GRID_UI_EVENT_BC, GRID_LUA_FNC_ACTION_BUTTONCHANGE_short, grid_ui_encoder_buttonchange_actionstring); // Button Change
-  grid_ui_event_init(ele, 3, GRID_UI_EVENT_TIMER, GRID_LUA_FNC_ACTION_TIMER_short, grid_ui_encoder_timer_actionstring);
-
+  grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_encoder_init_actionstring);                      // Element Initialization Event
+  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_ENCODER, GRID_LUA_FNC_A_ENCODERCHANGE_short, grid_ui_encoder_encoderchange_actionstring); // Encoder Change
+  grid_ui_event_init(ele, 2, GRID_PARAMETER_EVENT_BUTTON, GRID_LUA_FNC_A_BUTTONCHANGE_short, grid_ui_encoder_buttonchange_actionstring);    // Button Change
+  grid_ui_event_init(ele, 3, GRID_PARAMETER_EVENT_TIMER, GRID_LUA_FNC_A_TIMER_short, grid_ui_encoder_timer_actionstring);
 
   ele->template_initializer = &grid_ui_element_encoder_template_parameter_init;
   ele->template_parameter_list_length = GRID_LUA_FNC_E_LIST_length;
+  ele->template_parameter_element_position_index_1 = GRID_LUA_FNC_E_BUTTON_STATE_index;
+  ele->template_parameter_element_position_index_2 = GRID_LUA_FNC_E_ENCODER_STATE_index;
 
   ele->event_clear_cb = &grid_ui_element_encoder_event_clear_cb;
   ele->page_change_cb = &grid_ui_element_encoder_page_change_cb;
@@ -93,10 +94,10 @@ void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t
   // 	struct grid_ui_event* eve = NULL;
 
   // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_UI_EVENT_INIT); 	grid_ui_event_trigger_local(eve);
+  // GRID_PARAMETER_EVENT_INIT); 	grid_ui_event_trigger_local(eve);
 
   // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_UI_EVENT_EC); 	grid_ui_event_trigger_local(eve);
+  // GRID_PARAMETER_EVENT_ENCODER); 	grid_ui_event_trigger_local(eve);
   // }
 }
 
@@ -254,7 +255,7 @@ static uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint6
     template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_7bit_twoscomplement;
   }
 
-  struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_UI_EVENT_EC);
+  struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENCODER);
 
   if (grid_ui_state.ui_interaction_enabled) {
     grid_ui_event_trigger(eve);
@@ -262,7 +263,6 @@ static uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint6
 
   return 1; // did trigger
 }
-
 
 void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, uint64_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock) {
 

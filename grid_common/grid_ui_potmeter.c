@@ -1,10 +1,12 @@
 #include "grid_ui_potmeter.h"
 
-#include <stdint.h>
-#include "grid_ui.h"
+#include "grid_ui_system.h"
+
 #include "grid_ain.h"
 #include "grid_lua_api.h"
 #include "grid_protocol.h"
+#include "grid_ui.h"
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -12,32 +14,30 @@ extern uint8_t grid_platform_get_adc_bit_depth();
 
 extern void grid_platform_printf(char const* fmt, ...);
 
+const char grid_ui_potmeter_init_actionstring[] = GRID_ACTIONSTRING_POTMETER_INIT;
+const char grid_ui_potmeter_potmeterchange_actionstring[] = GRID_ACTIONSTRING_POTMETER_POTMETER;
+const char grid_ui_potmeter_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
-const char grid_ui_potmeter_init_actionstring[] = GRID_ACTIONSTRING_INIT_POT;
-const char grid_ui_potmeter_potmeterchange_actionstring[] = GRID_ACTIONSTRING_AC;
-const char grid_ui_potmeter_timer_actionstring[] = GRID_ACTIONSTRING_TIMER;
+void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
 
-void grid_ui_element_potentiometer_init(struct grid_ui_element* ele){
-
-  ele->type = GRID_UI_ELEMENT_POTENTIOMETER;
+  ele->type = GRID_PARAMETER_ELEMENT_POTMETER;
 
   ele->event_list_length = 3;
 
   ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
 
-  grid_ui_event_init(ele, 0, GRID_UI_EVENT_INIT, GRID_LUA_FNC_ACTION_INIT_short, grid_ui_potmeter_init_actionstring); // Element Initialization Event
-  grid_ui_event_init(ele, 1, GRID_UI_EVENT_AC, GRID_LUA_FNC_ACTION_POTMETERCHANGE_short, grid_ui_potmeter_potmeterchange_actionstring); // Absolute Value Change (7bit)
-  grid_ui_event_init(ele, 2, GRID_UI_EVENT_TIMER, GRID_LUA_FNC_ACTION_TIMER_short, grid_ui_potmeter_timer_actionstring);
+  grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_potmeter_init_actionstring);                         // Element Initialization Event
+  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_POTMETER, GRID_LUA_FNC_A_POTMETERCHANGE_short, grid_ui_potmeter_potmeterchange_actionstring); // Absolute Value Change (7bit)
+  grid_ui_event_init(ele, 2, GRID_PARAMETER_EVENT_TIMER, GRID_LUA_FNC_A_TIMER_short, grid_ui_potmeter_timer_actionstring);
 
   ele->template_initializer = &grid_ui_element_potmeter_template_parameter_init;
   ele->template_parameter_list_length = GRID_LUA_FNC_P_LIST_length;
+  ele->template_parameter_element_position_index_1 = GRID_LUA_FNC_P_POTMETER_STATE_index;
+  ele->template_parameter_element_position_index_2 = GRID_LUA_FNC_P_POTMETER_STATE_index;
 
   ele->event_clear_cb = &grid_ui_element_potmeter_event_clear_cb;
   ele->page_change_cb = &grid_ui_element_potmeter_page_change_cb;
-
-
 }
-
 
 void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf) {
 
@@ -92,8 +92,6 @@ void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_
   template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
 }
 
-
-
 void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth) {
 
   const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
@@ -135,7 +133,7 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_tim
     int32_t state = grid_ain_get_average_scaled(&grid_ain_state, input_channel, adc_bit_depth, resolution, 0, 127);
     template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
 
-    struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_UI_EVENT_AC);
+    struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_PARAMETER_EVENT_POTMETER);
 
     if (grid_ui_state.ui_interaction_enabled) {
       grid_ui_event_trigger(eve);

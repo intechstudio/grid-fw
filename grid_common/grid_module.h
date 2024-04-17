@@ -11,6 +11,7 @@
 
 #include "grid_ain.h"
 #include "grid_led.h"
+#include "grid_lua_api.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
 
