@@ -83,7 +83,7 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
   "gtv(self.index, " GRID_LUA_FNC_B_BUTTON_STATE_helper ", a) end, \
   \
   " GRID_LUA_FNC_A_INIT_short " = function (self) print('undefined action') end, \
-  " GRID_LUA_FNC_A_BUTTONCHANGE_short " = function (self) print('undefined action') end,\
+  " GRID_LUA_FNC_A_BUTTON_short " = function (self) print('undefined action') end,\
   " GRID_LUA_FNC_A_TIMER_short " = function (self) print('undefined action') end,\
   \
   gtt = function (self,a) " GRID_LUA_FNC_G_TIMER_START_short "(self.index,a) end,\

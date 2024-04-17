@@ -82,7 +82,7 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_tim
   "gtv(self.index, " GRID_LUA_FNC_P_POTMETER_STATE_helper ", a) end, \
   \
   " GRID_LUA_FNC_A_INIT_short " = function (self) print('undefined action') end,\
-  " GRID_LUA_FNC_A_POTMETERCHANGE_short " = function (self) print('undefined action') end,\
+  " GRID_LUA_FNC_A_POTMETER_short " = function (self) print('undefined action') end,\
   " GRID_LUA_FNC_A_TIMER_short " = function (self) print('undefined action') end,\
   \
   gtt = function (self,a) " GRID_LUA_FNC_G_TIMER_START_short "(self.index,a) end,\

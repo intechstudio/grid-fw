@@ -139,8 +139,8 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
   "gtv(self.index, " GRID_LUA_FNC_E_ENCODER_VELOCITY_helper ", a) end, \
   \
   " GRID_LUA_FNC_A_INIT_short " = function (self) print('undefined action') end,\
-  " GRID_LUA_FNC_A_ENCODERCHANGE_short " = function (self) print('undefined action') end,\
-  " GRID_LUA_FNC_A_BUTTONCHANGE_short " = function (self) print('undefined action') end,\
+  " GRID_LUA_FNC_A_ENCODER_short " = function (self) print('undefined action') end,\
+  " GRID_LUA_FNC_A_BUTTON_short " = function (self) print('undefined action') end,\
   " GRID_LUA_FNC_A_TIMER_short " = function (self) print('undefined action') end,\
   \
   gtt = function (self,a) " GRID_LUA_FNC_G_TIMER_START_short "(self.index,a) end,\

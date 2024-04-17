@@ -26,8 +26,8 @@ void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
 
   ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
 
-  grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_potmeter_init_actionstring);                         // Element Initialization Event
-  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_POTMETER, GRID_LUA_FNC_A_POTMETERCHANGE_short, grid_ui_potmeter_potmeterchange_actionstring); // Absolute Value Change (7bit)
+  grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_potmeter_init_actionstring);                   // Element Initialization Event
+  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_POTMETER, GRID_LUA_FNC_A_POTMETER_short, grid_ui_potmeter_potmeterchange_actionstring); // Absolute Value Change (7bit)
   grid_ui_event_init(ele, 2, GRID_PARAMETER_EVENT_TIMER, GRID_LUA_FNC_A_TIMER_short, grid_ui_potmeter_timer_actionstring);
 
   ele->template_initializer = &grid_ui_element_potmeter_template_parameter_init;

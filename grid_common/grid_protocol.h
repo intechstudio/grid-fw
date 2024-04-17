@@ -17,7 +17,7 @@
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
 #define GRID_PROTOCOL_VERSION_MINOR 2
-#define GRID_PROTOCOL_VERSION_PATCH 33
+#define GRID_PROTOCOL_VERSION_PATCH 34
 
 // must not change because it would break profiles
 #define GRID_PARAMETER_ELEMENT_SYSTEM 0
@@ -369,28 +369,28 @@
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 
 #define GRID_LUA_FNC_A_INIT_short "ini"
-#define GRID_LUA_FNC_A_INIT_human "initialize"
+#define GRID_LUA_FNC_A_INIT_human "init_handler"
 
-#define GRID_LUA_FNC_A_ENCODERCHANGE_short "ec"
-#define GRID_LUA_FNC_A_ENCODERCHANGE_human "encoder_change"
+#define GRID_LUA_FNC_A_ENCODER_short "ec"
+#define GRID_LUA_FNC_A_ENCODER_human "encoder_handler"
 
-#define GRID_LUA_FNC_A_BUTTONCHANGE_short "bc"
-#define GRID_LUA_FNC_A_BUTTONCHANGE_human "button_change"
+#define GRID_LUA_FNC_A_BUTTON_short "bc"
+#define GRID_LUA_FNC_A_BUTTON_human "button_handler"
 
-#define GRID_LUA_FNC_A_POTMETERCHANGE_short "pc"
-#define GRID_LUA_FNC_A_POTMETERCHANGE_human "potmeter_change"
+#define GRID_LUA_FNC_A_POTMETER_short "pc"
+#define GRID_LUA_FNC_A_POTMETER_human "potmeter_handler"
 
 #define GRID_LUA_FNC_A_TIMER_short "tim"
-#define GRID_LUA_FNC_A_TIMER_human "timer"
+#define GRID_LUA_FNC_A_TIMER_human "timer_handler"
 
 #define GRID_LUA_FNC_A_MAPMODE_short "map"
-#define GRID_LUA_FNC_A_MAPMODE_human "mapmode"
+#define GRID_LUA_FNC_A_MAPMODE_human "mapmode_handler"
 
 #define GRID_LUA_FNC_A_MIDIRX_short "mrx"
 #define GRID_LUA_FNC_A_MIDIRX_human "midirx"
 
-#define GRID_LUA_FNC_A_ENDLESSPOTCHANGE_short "epc"
-#define GRID_LUA_FNC_A_ENDLESSPOTCHANGE_human "endless_change"
+#define GRID_LUA_FNC_A_ENDLESS_short "epc"
+#define GRID_LUA_FNC_A_ENDLESS_human "endless_handler"
 
 #define GRID_LUA_KW_ELEMENT_short "ele"
 #define GRID_LUA_KW_ELEMENT_human "element"

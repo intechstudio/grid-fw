@@ -148,8 +148,8 @@ void grid_ui_endless_store_input(uint8_t input_channel, uint64_t* encoder_last_r
   "gtv(self.index, " GRID_LUA_FNC_EP_ENDLESS_VELOCITY_helper ", a) end, \
   \
   " GRID_LUA_FNC_A_INIT_short " = function (self) print('undefined action') end,\
-  " GRID_LUA_FNC_A_ENDLESSPOTCHANGE_short " = function (self) print('undefined action') end,\
-  " GRID_LUA_FNC_A_BUTTONCHANGE_short " = function (self) print('undefined action') end,\
+  " GRID_LUA_FNC_A_ENDLESS_short " = function (self) print('undefined action') end,\
+  " GRID_LUA_FNC_A_BUTTON_short " = function (self) print('undefined action') end,\
   " GRID_LUA_FNC_A_TIMER_short " = function (self) print('undefined action') end,\
   \
   gtt = function (self,a) " GRID_LUA_FNC_G_TIMER_START_short "(self.index,a) end,\
@@ -160,8 +160,9 @@ void grid_ui_endless_store_input(uint8_t input_channel, uint64_t* encoder_last_r
     }}"
 
 #define GRID_ACTIONSTRING_ENDLESS_INIT                                                                                                                                                                 \
-  "<?lua --[[@l]] local num,val,red,gre,blu=self:ind(),self:bva(),glr(),glg(),glb()--[[@for]] for i=1,5,1 do--[[@glc]] glc(num+i*2-2,1,red,gre,blu,0)--[[@glc]] "                                      \
-  "glc(num+i*2-2,2,red,gre,blu,1)--[[@glp]] glp(num+i*2-2,1,0)--[[@glp]] glp(num+i*2-2,2,gsc(i-1,val,self:epmi(),self:epma()))--[[@enl]] end--[[@cb]] self:ema(16383)self:emi(0) ?>"
+  "<?lua --[[@l]] local num,val,red,gre,blu=self:ind(),self:bva(),glr(),glg(),glb()--[[@cb]] self:epma(16383)self:epmi(0)--[[@for]] for i=1,5,1 do--[[@glc]] "                                         \
+  "glc(num+i*2-2,1,red,gre,blu,0)--[[@glc]] "                                                                                                                                                          \
+  "glc(num+i*2-2,2,red,gre,blu,1)--[[@glp]] glp(num+i*2-2,1,0)--[[@glp]] glp(num+i*2-2,2,gsc(i-1,val,self:epmi(),self:epma()))--[[@enl]] end ?>"
 
 #define GRID_ACTIONSTRING_ENDLESS_ENDLESS                                                                                                                                                              \
   "<?lua --[[@l]] local num,val,ch,cc=self:ind(),self:epva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128--[[@for]] for i=1,5,1 do--[[@glp]] "                                                      \
