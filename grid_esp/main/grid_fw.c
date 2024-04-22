@@ -130,6 +130,8 @@ void app_main(void) {
   esp_log_level_set("*", ESP_LOG_INFO);
   uint8_t loopcounter = 0;
 
+  TaskHandle_t core2_task_hdl;
+  xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024 * 3, NULL, 4, &core2_task_hdl, 1);
   while (1) {
 
     grid_gui_draw_demo(&grid_gui_state, loopcounter);
@@ -187,9 +189,6 @@ void app_main(void) {
 
   TaskHandle_t usb_task_hdl;
   xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6, &usb_task_hdl, 1);
-
-  TaskHandle_t core2_task_hdl;
-  xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024 * 3, NULL, 4, &core2_task_hdl, 1);
 
   // GRID MODULE INITIALIZATION SEQUENCE
 

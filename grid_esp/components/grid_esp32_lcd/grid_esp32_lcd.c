@@ -20,12 +20,12 @@
 #define LCD_SPI_HOST SPI3_HOST
 #define LCD_BK_LIGHT_ON_LEVEL 1
 #define LCD_BK_LIGHT_OFF_LEVEL (!LCD_BK_LIGHT_ON_LEVEL)
-#define PIN_NUM_MOSI 2
-#define PIN_NUM_CLK 1
-#define PIN_NUM_CS 5
-#define PIN_NUM_DC 4
-#define PIN_NUM_RST 3
-#define PIN_NUM_BCKL 6
+#define PIN_NUM_MOSI 48 /*2*/
+#define PIN_NUM_CLK 47  /*1*/
+#define PIN_NUM_CS 33   /*5*/
+#define PIN_NUM_DC 34   /*4*/
+#define PIN_NUM_RST -1  /*1*/
+#define PIN_NUM_BCKL -1 /*6*/
 #define LCD_PANEL esp_lcd_new_panel_st7789
 #define LCD_HRES 320
 #define LCD_VRES 240
