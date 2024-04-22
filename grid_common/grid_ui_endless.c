@@ -31,7 +31,7 @@ void grid_ui_element_endless_init(struct grid_ui_element* ele) {
   ele->template_initializer = &grid_ui_element_endless_template_parameter_init;
   ele->template_parameter_list_length = GRID_LUA_FNC_EP_LIST_length;
   ele->template_parameter_element_position_index_1 = GRID_LUA_FNC_EP_BUTTON_STATE_index;
-  ele->template_parameter_element_position_index_2 = GRID_LUA_FNC_EP_ENDLESS_STATE_index;
+  ele->template_parameter_element_position_index_2 = GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index;
 
   ele->event_clear_cb = &grid_ui_element_endless_event_clear_cb;
   ele->page_change_cb = &grid_ui_element_endless_page_change_cb;
@@ -56,11 +56,13 @@ void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buf
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_NUMBER_index] = element_index;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index] = 128 - 1;
+  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index] = 16384 - 1;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MODE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_ELAPSED_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_STATE_index] = 64;
-  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] = 50;
+  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] = 0;
+  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = -1;
+  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] = 50;
 }
 
 void grid_ui_element_endless_event_clear_cb(struct grid_ui_event* eve) {
@@ -129,7 +131,7 @@ static uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint6
 
   double minmaxscale = (max - min) / 128.0;
 
-  double velocityparam = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] / 100.0;
+  double velocityparam = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] / 100.0;
 
   // implement configurable velocity parameters here
   double velocityfactor = ((25 * 25 - elapsed_ms * elapsed_ms) / 75.0) * minmaxscale * velocityparam + 1.0;
@@ -148,9 +150,9 @@ static uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint6
 
       return 0; // did not trigger
     }
-  } else {
-    template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_STATE_index] += delta_velocity;
   }
+
+  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_STATE_index] += delta_velocity;
 
   if (template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MODE_index] == 0) { // Absolute
 
@@ -328,7 +330,7 @@ void grid_ui_endless_store_input(uint8_t input_channel, uint64_t* endless_last_r
 
     if (abs(delta) > 10) {
 
-      template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_STATE_index] = value_degrees_new / 20;
+      template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = value_degrees_new / 20;
       uint8_t has_triggered = grid_ui_endless_update_trigger(ele, endless_last_real_time, delta, 1);
 
       if (has_triggered) {

@@ -199,7 +199,7 @@ void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
       grid_ui_element_encoder_init(ele);
     } else {
 
-      grid_ui_element_encoder_init(ele);
+      grid_ui_element_system_init(ele);
     }
   }
 
