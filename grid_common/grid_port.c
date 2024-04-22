@@ -446,13 +446,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, struct grid_buffer* rx_
   return 1;
 }
 
-struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
-
-  // PART 1: ALLOCATE
-
-  struct grid_port* por = (struct grid_port*)grid_platform_allocate_volatile(sizeof(struct grid_port));
-  memset(por, 0, sizeof(struct grid_port));
-
+void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir) {
   // PART 2: INIT
 
   por->direction = dir;
@@ -491,6 +485,16 @@ struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
       por->dy = 0;
     }
   }
+}
+
+struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
+
+  // PART 1: ALLOCATE
+
+  struct grid_port* por = (struct grid_port*)grid_platform_allocate_volatile(sizeof(struct grid_port));
+  memset(por, 0, sizeof(struct grid_port));
+
+  grid_port_init(por, type, dir);
 
   return por;
 }

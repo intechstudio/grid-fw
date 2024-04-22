@@ -110,6 +110,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, struct grid_buffer* rx_
 
 char grid_port_get_name_char(struct grid_port* por);
 
+void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir);
 struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir);
 struct grid_buffer* grid_buffer_allocate_init(size_t length);
 struct grid_doublebuffer* grid_doublebuffer_allocate_init(size_t length);

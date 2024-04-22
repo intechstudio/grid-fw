@@ -145,7 +145,8 @@
     "grid_ui_potmeter.h": "c",
     "grid_ui_encoder.h": "c",
     "unordered_map": "c",
-    "grid_ui_endless.h": "c"
+    "grid_ui_endless.h": "c",
+    "audiodf_midi.h": "c"
   },
   "files.exclude": {
     ".archive": true,

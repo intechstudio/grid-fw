@@ -15,6 +15,9 @@
 
 #include "usb/class/midi/device/audiodf_midi.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 static volatile struct grid_port* uart_port_array[4] = {0};
 static volatile struct grid_port* host_port = NULL;
 static volatile struct grid_port* ui_port = NULL;
