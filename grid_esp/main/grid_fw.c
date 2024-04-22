@@ -122,7 +122,6 @@ void app_main(void) {
 
   SemaphoreHandle_t lua_busy_semaphore = xSemaphoreCreateBinary();
   SemaphoreHandle_t ui_busy_semaphore = xSemaphoreCreateBinary();
-  // xSemaphoreGive(lua_busy_semaphore);
 
   void grid_common_semaphore_lock_fn(void* arg) {
 
