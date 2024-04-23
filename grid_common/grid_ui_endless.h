@@ -108,7 +108,7 @@ void grid_ui_endless_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 #define GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index 16
 #define GRID_LUA_FNC_EP_ENDLESS_DIRECTION_helper "16"
 #define GRID_LUA_FNC_EP_ENDLESS_DIRECTION_short "epdir"
-#define GRID_LUA_FNC_EP_ENDLESS_DIRECTION_human "endless_state"
+#define GRID_LUA_FNC_EP_ENDLESS_DIRECTION_human "endless_direction"
 
 #define GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index 17
 #define GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_helper "17"
