@@ -129,11 +129,11 @@ struct grid_ui_model {
 
 extern struct grid_ui_model grid_ui_state;
 
-void grid_ui_model_init(struct grid_ui_model* mod, uint8_t element_list_length);
+void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length);
 
-void grid_ui_semaphore_init(struct grid_ui_model* mod, void* busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
-void grid_ui_semaphore_lock(struct grid_ui_model* mod);
-void grid_ui_semaphore_release(struct grid_ui_model* mod);
+void grid_ui_semaphore_init(struct grid_ui_model* ui, void* busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
+void grid_ui_semaphore_lock(struct grid_ui_model* ui);
+void grid_ui_semaphore_release(struct grid_ui_model* ui);
 
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index);
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, char* default_actionstring);

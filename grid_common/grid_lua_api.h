@@ -113,29 +113,29 @@ struct grid_lua_model {
 
 extern struct grid_lua_model grid_lua_state;
 
-void grid_lua_init(struct grid_lua_model* mod);
-void grid_lua_deinit(struct grid_lua_model* mod);
+void grid_lua_init(struct grid_lua_model* lua);
+void grid_lua_deinit(struct grid_lua_model* lua);
 
-void grid_lua_semaphore_init(struct grid_lua_model* mod, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
-void grid_lua_semaphore_lock(struct grid_lua_model* mod);
-void grid_lua_semaphore_release(struct grid_lua_model* mod);
+void grid_lua_semaphore_init(struct grid_lua_model* lua, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
+void grid_lua_semaphore_lock(struct grid_lua_model* lua);
+void grid_lua_semaphore_release(struct grid_lua_model* lua);
 
-void grid_lua_set_memory_target(struct grid_lua_model* mod, uint8_t target_kilobytes);
-uint8_t grid_lua_get_memory_target(struct grid_lua_model* mod);
+void grid_lua_set_memory_target(struct grid_lua_model* lua, uint8_t target_kilobytes);
+uint8_t grid_lua_get_memory_target(struct grid_lua_model* lua);
 
-void grid_lua_clear_stdi(struct grid_lua_model* mod);
-void grid_lua_clear_stdo(struct grid_lua_model* mod);
-void grid_lua_clear_stde(struct grid_lua_model* mod);
+void grid_lua_clear_stdi(struct grid_lua_model* lua);
+void grid_lua_clear_stdo(struct grid_lua_model* lua);
+void grid_lua_clear_stde(struct grid_lua_model* lua);
 
-char* grid_lua_get_output_string(struct grid_lua_model* mod);
-char* grid_lua_get_error_string(struct grid_lua_model* mod);
+char* grid_lua_get_output_string(struct grid_lua_model* lua);
+char* grid_lua_get_error_string(struct grid_lua_model* lua);
 
-uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code);
+uint32_t grid_lua_dostring(struct grid_lua_model* lua, char* code);
 
-void grid_lua_gc_try_collect(struct grid_lua_model* mod);
-void grid_lua_gc_collect(struct grid_lua_model* mod);
+void grid_lua_gc_try_collect(struct grid_lua_model* lua);
+void grid_lua_gc_collect(struct grid_lua_model* lua);
 
-void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message);
+void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message);
 
 /*static*/ int grid_lua_panic(lua_State* L);
 
@@ -204,8 +204,8 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message);
 
 void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui);
 
-void grid_lua_start_vm(struct grid_lua_model* mod);
+void grid_lua_start_vm(struct grid_lua_model* lua);
 
-void grid_lua_stop_vm(struct grid_lua_model* mod);
+void grid_lua_stop_vm(struct grid_lua_model* lua);
 
 #endif /* GRID_LUA_API_H_INCLUDED */
