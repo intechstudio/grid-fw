@@ -125,7 +125,7 @@ void app_main(void) {
   grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
   grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state);
 
-  grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuffer, sizeof(framebuffer), 24, 320, 240);
+  grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuffer, sizeof(framebuffer), 6, 320, 240);
 
   esp_log_level_set("*", ESP_LOG_INFO);
   uint8_t loopcounter = 0;
@@ -138,7 +138,12 @@ void app_main(void) {
 
     // memset(framebuffer, 255, sizeof(framebuffer));
 
-    grid_esp32_lcd_draw_bitmap(&grid_esp32_lcd_state, 0, 0, 320, 240, framebuffer);
+    for(int i = 0; i < 240; i++) {
+
+      grid_esp32_lcd_draw_bitmap(&grid_esp32_lcd_state, 0, 0, 320, i, framebuffer + i * 320 * 3);
+
+      
+    }
 
     ESP_LOGI(TAG, "Loop2: %d", loopcounter++);
     vTaskDelay(pdMS_TO_TICKS(10));

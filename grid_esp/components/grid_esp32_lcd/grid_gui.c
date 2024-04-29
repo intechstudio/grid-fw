@@ -4,7 +4,11 @@ struct grid_gui_model grid_gui_state;
 uint8_t grid_gui_color_to_red(grid_color_t color) { return (color >> 16) & 0xFF; }
 uint8_t grid_gui_color_to_green(grid_color_t color) { return (color >> 8) & 0xFF; }
 uint8_t grid_gui_color_to_blue(grid_color_t color) { return (color) & 0xFF; }
-grid_color_t grid_gui_color_from_rgb(uint8_t r, uint8_t g, uint8_t b) { return (r << 16) | (g << 8) | b; }
+grid_color_t grid_gui_color_from_rgb(uint8_t r, uint8_t g, uint8_t b) {
+  
+  return (r << 16) | (g << 8) | b;
+
+}
 
 int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* framebuffer, uint32_t framebuffer_size, uint8_t bits_per_pixel, uint16_t width, uint16_t height) {
   grid_gui_state.screen_handle = screen_handle;
@@ -23,10 +27,20 @@ int grid_gui_draw_pixel(struct grid_gui_model* gui, uint16_t x, uint16_t y, grid
     return 1; // out of bounds
   }
 
-  uint8_t* pixel = gui->framebuffer + ((gui->width * y + x) * gui->bits_per_pixel / 8);
-  pixel[0] = grid_gui_color_to_red(color);
-  pixel[1] = grid_gui_color_to_green(color);
-  pixel[2] = grid_gui_color_to_blue(color);
+  if (gui->bits_per_pixel == 24) {
+
+    uint8_t* pixel = gui->framebuffer + ((gui->width * y + x) * 3);
+    pixel[0] = grid_gui_color_to_red(color);
+    pixel[1] = grid_gui_color_to_green(color);
+    pixel[2] = grid_gui_color_to_blue(color);
+
+  }else if (gui->bits_per_pixel == 6) {
+
+    uint8_t* pixel = gui->framebuffer + ((gui->width * y + x) * 1);
+    pixel[0] = (grid_gui_color_to_red(color)/64) << 4 | (grid_gui_color_to_green(color)/64) << 2 | (grid_gui_color_to_blue(color)/64);
+
+  }
+
 
   return 0;
 }
