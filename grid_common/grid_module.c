@@ -197,21 +197,25 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   grid_ui_model_init(ui, 10 + 1); // 10+1 for the system element on TEK2
 
-  for (uint8_t j = 0; j < 10; j++) {
+  for (uint8_t j = 0; j < 10 + 1; j++) {
+
+    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
 
     if (j < 8) {
 
-      grid_ui_element_init(ui, j, GRID_UI_ELEMENT_BUTTON);
+      grid_ui_element_button_init(ele);
+
     } else if (j < 10) {
-      grid_ui_element_init(ui, j, GRID_UI_ELEMENT_ENCODER);
+
+      grid_ui_element_endless_init(ele);
+
+    } else {
+      grid_ui_element_system_init(ele);
     }
   }
 
-  grid_ui_element_init(ui, ui->element_list_length - 1, GRID_UI_ELEMENT_SYSTEM);
-
   ui->lua_ui_init_callback = grid_lua_ui_init_tek2;
 }
-
 void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   grid_led_init(&grid_led_state, 16);

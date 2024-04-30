@@ -12,6 +12,10 @@
 #include "grid_module.h"
 #include "grid_ui.h"
 
+#include "grid_ui_button.h"
+#include "grid_ui_endless.h"
+#include "grid_ui_system.h"
+
 #include "grid_esp32_lcd.h"
 #include "grid_font.h"
 #include "grid_gui.h"
@@ -19,7 +23,6 @@
 #include "grid_esp32_adc.h"
 
 static const char* TAG = "module_tek1";
-
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 128
@@ -32,7 +35,6 @@ uint8_t framebuffer[SCREEN_WIDTH * SCREEN_HEIGHT * FRAMEBUFFER_BYTES_PER_PIXEL] 
 #define TRANSFERBUFFER_BITS_PER_PIXEL 24
 #define TRANSFERBUFFER_LINES 4
 uint8_t hw_framebuffer[SCREEN_WIDTH * TRANSFERBUFFER_LINES * TRANSFERBUFFER_BYTES_PER_PIXEL] = {0};
-
 
 void grid_esp32_module_tek1_task(void* arg) {
 
@@ -49,21 +51,19 @@ void grid_esp32_module_tek1_task(void* arg) {
   // 0, 0, 0, 0, 0, 0, 0};
   const uint8_t multiplexer_overflow = 8;
 
-  grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);
+  grid_esp32_adc_init(&grid_esp32_adc_state);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
   grid_esp32_adc_start(&grid_esp32_adc_state);
 
-  struct grid_module_endlesspot_state current_endlesspot_state[2] = {0};
-  struct grid_module_endlesspot_state last_endlesspot_state[2] = {0};
-
-
+  struct grid_module_endless_state current_endlesspot_state[2] = {0};
+  struct grid_module_endless_state last_endlesspot_state[2] = {0};
 
   grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
   grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state);
   grid_font_init(&grid_font_state);
   grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuffer, sizeof(framebuffer), FRAMEBUFFER_BITS_PER_PIXEL, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-uint8_t loopcounter = 0;
+  uint8_t loopcounter = 0;
 
   while (1) {
 
@@ -103,11 +103,9 @@ uint8_t loopcounter = 0;
       grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
     }
 
-    //ESP_LOGI(TAG, "Loop2: %d", loopcounter++);
+    // ESP_LOGI(TAG, "Loop2: %d", loopcounter++);
     vTaskDelay(pdMS_TO_TICKS(10));
   }
-
-
 
   while (1) {
 
@@ -138,8 +136,8 @@ uint8_t loopcounter = 0;
         current_endlesspot_state[endlesspot_index].button_value = result->value;
         grid_ui_button_store_input(8 + endlesspot_index, &endlesspot_button_last_real_time[endlesspot_index], result->value, 12);
 
-        grid_ui_endlesspot_store_input(8 + endlesspot_index, &endlesspot_encoder_last_real_time[endlesspot_index], &last_endlesspot_state[endlesspot_index],
-                                       &current_endlesspot_state[endlesspot_index], 12);
+        grid_ui_endless_store_input(8 + endlesspot_index, &endlesspot_encoder_last_real_time[endlesspot_index], &last_endlesspot_state[endlesspot_index], &current_endlesspot_state[endlesspot_index],
+                                    12);
       }
 
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
