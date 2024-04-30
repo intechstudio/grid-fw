@@ -1,4 +1,6 @@
 #include "grid_gui.h"
+#include "grid_font.h"
+#include <stdio.h>
 struct grid_gui_model grid_gui_state;
 
 uint8_t grid_gui_color_to_red(grid_color_t color) { return (color >> 16) & 0xFF; }
@@ -104,4 +106,18 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t loopcounter) {
   grid_gui_draw_rectangle_filled(&grid_gui_state, 100, 100, 140, 140, grid_gui_color_from_rgb(0, 255, 0));
 
   grid_gui_draw_rectangle_filled(&grid_gui_state, 120, 120, 140, 140, grid_gui_color_from_rgb(255, 0, 0));
+
+  uint16_t x = 10;
+  uint16_t y = 50;
+  int cursor = 0;
+
+  char temp[10] = {0};
+  sprintf(temp, "%d", loopcounter);
+
+  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, '$', &cursor);
+  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[0], &cursor);
+  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[1], &cursor);
+  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[2], &cursor);
+  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[3], &cursor);
+  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[4], &cursor);
 }

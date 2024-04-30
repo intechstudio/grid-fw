@@ -54,6 +54,7 @@
 #include "grid_esp32_port.h"
 #include "grid_esp32_swd.h"
 #include "grid_esp32_usb.h"
+#include "grid_font.h"
 #include "grid_gui.h"
 
 #include "driver/uart.h"
@@ -135,6 +136,7 @@ void app_main(void) {
   grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
   grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state);
 
+  grid_font_init(&grid_font_state);
   grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuffer, sizeof(framebuffer), FRAMEBUFFER_BITS_PER_PIXEL, SCREEN_WIDTH, SCREEN_HEIGHT);
 
   esp_log_level_set("*", ESP_LOG_INFO);

@@ -3,10 +3,10 @@
 // University of Illinois/NCSA Open Source License.  Both these licenses can be
 // found in the LICENSE file.
 
+#include "../grid_esp/components/grid_esp32_lcd/grid_font.h"
 #include "../grid_esp/components/grid_esp32_lcd/grid_gui.h"
 #include <SDL/SDL.h>
 #include <stdio.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 
@@ -92,6 +92,7 @@ int main(int argc, char** argv) {
   struct grid_gui_model* gui = &grid_gui_state;
   struct grid_vlcd_model* vlcd = &grid_vlcd_state;
 
+  grid_font_init(&grid_font_state);
   grid_gui_init(gui, vlcd, framebuffer, sizeof(framebuffer), 6, 320, 240);
 
   printf("hello, world!\n");
@@ -101,7 +102,7 @@ int main(int argc, char** argv) {
   SDL_Init(SDL_INIT_VIDEO);
   vlcd->screen = SDL_SetVideoMode(gui->width, gui->height, 32, SDL_SWSURFACE);
 
-  emscripten_set_main_loop(loop, 30, 1);
+  emscripten_set_main_loop(loop, 1, 1);
 
   printf("you should see a smoothly-colored square - no sharp lines but the square borders!\n");
   printf("and here is some text that should be HTML-friendly: amp: |&| double-quote: |\"| quote: |'| less-than, greater-than, html-like tags: |<cheez></cheez>|\nanother line.\n");

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(GridGUI)
 
 # Add your C source file
-add_executable(index main.c ../grid_esp/components/grid_esp32_lcd/grid_gui.c)
+add_executable(index main.c ../grid_esp/components/grid_esp32_lcd/grid_gui.c ../grid_esp/components/grid_esp32_lcd/grid_font.c ../grid_esp/components/grid_esp32_lcd/ubuntu_font.c)
 
 # Specify Emscripten as the compiler
 set(CMAKE_C_COMPILER emcc)
