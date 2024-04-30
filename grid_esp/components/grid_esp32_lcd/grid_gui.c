@@ -114,10 +114,12 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t loopcounter) {
   char temp[10] = {0};
   sprintf(temp, "%d", loopcounter);
 
-  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, '$', &cursor);
-  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[0], &cursor);
-  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[1], &cursor);
-  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[2], &cursor);
-  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[3], &cursor);
-  grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[4], &cursor);
+  if (loopcounter > 30) {
+    grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, '$', &cursor);
+    grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[0], &cursor);
+    grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[1], &cursor);
+    grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[2], &cursor);
+    grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[3], &cursor);
+    grid_font_draw_character(&grid_font_state, gui, x + cursor, y, 60, temp[4], &cursor);
+  }
 }

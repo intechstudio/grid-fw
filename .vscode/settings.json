@@ -137,7 +137,8 @@
     "stddef.h": "c",
     "grid_esp32_platform.h": "c",
     "grid_esp32_lcd.h": "c",
-    "grid_gui.h": "c"
+    "grid_gui.h": "c",
+    "grid_font.h": "c"
   },
   "files.exclude": {
     ".archive": true,

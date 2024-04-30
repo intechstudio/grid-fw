@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
   SDL_Init(SDL_INIT_VIDEO);
   vlcd->screen = SDL_SetVideoMode(gui->width, gui->height, 32, SDL_SWSURFACE);
 
-  emscripten_set_main_loop(loop, 1, 1);
+  emscripten_set_main_loop(loop, 30, 1);
 
   printf("you should see a smoothly-colored square - no sharp lines but the square borders!\n");
   printf("and here is some text that should be HTML-friendly: amp: |&| double-quote: |\"| quote: |'| less-than, greater-than, html-like tags: |<cheez></cheez>|\nanother line.\n");

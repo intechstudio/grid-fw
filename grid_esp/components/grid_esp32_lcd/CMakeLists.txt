@@ -3,7 +3,7 @@ idf_component_register(
         "grid_esp32_lcd.c"
         "grid_gui.c"
         "grid_font.c"
-        "ubuntu_font.c"
+        "inter_font.c"
     INCLUDE_DIRS
         "."
     REQUIRES

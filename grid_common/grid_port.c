@@ -446,13 +446,7 @@ uint8_t grid_port_process_inbound(struct grid_port* por, struct grid_buffer* rx_
   return 1;
 }
 
-struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
-
-  // PART 1: ALLOCATE
-
-  struct grid_port* por = (struct grid_port*)grid_platform_allocate_volatile(sizeof(struct grid_port));
-  memset(por, 0, sizeof(struct grid_port));
-
+void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir) {
   // PART 2: INIT
 
   por->direction = dir;
@@ -491,6 +485,16 @@ struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
       por->dy = 0;
     }
   }
+}
+
+struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir) {
+
+  // PART 1: ALLOCATE
+
+  struct grid_port* por = (struct grid_port*)grid_platform_allocate_volatile(sizeof(struct grid_port));
+  memset(por, 0, sizeof(struct grid_port));
+
+  grid_port_init(por, type, dir);
 
   return por;
 }
@@ -925,6 +929,7 @@ void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx
   uint16_t length = grid_buffer_read_size(tx_buffer);
 
   if (length == 0) {
+
     // NO PACKET IN RX BUFFER
     return;
   }
@@ -975,13 +980,11 @@ void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx
     if (msg_class == GRID_CLASS_PAGEACTIVE_code) { // dont check address!
 
       grid_decode_pageactive_to_ui(header, chunk);
-    }
-    if (msg_class == GRID_CLASS_PAGECOUNT_code) {
+    } else if (msg_class == GRID_CLASS_PAGECOUNT_code) {
 
       // get page count
       grid_decode_pagecount_to_ui(header, chunk);
-    }
-    if (msg_class == GRID_CLASS_MIDI_code) {
+    } else if (msg_class == GRID_CLASS_MIDI_code) {
 
       // midi rx to lua
       grid_decode_midi_to_ui(header, chunk);
@@ -1006,9 +1009,7 @@ void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx
 
       // request immediate system reset
       grid_decode_reset_to_ui(header, chunk);
-    }
-
-    else if (msg_class == GRID_CLASS_PAGEDISCARD_code) {
+    } else if (msg_class == GRID_CLASS_PAGEDISCARD_code) {
 
       grid_decode_pagediscard_to_ui(header, chunk);
     } else if (msg_class == GRID_CLASS_PAGESTORE_code) {
@@ -1033,6 +1034,7 @@ void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx
       grid_decode_hidkeystatus_to_ui(header, chunk);
     } else {
       // SORRY
+      // grid_platform_printf("UNKNOWN CLASS TO UI: %03x\n", msg_class);
     }
   }
 }

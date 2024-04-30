@@ -29,6 +29,7 @@
 #include "grid_esp32_module_pb44.h"
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
+#include "grid_esp32_module_tek1.h"
 #include "grid_esp32_module_tek2.h"
 #include "pico_firmware.h"
 
@@ -48,18 +49,15 @@
 #include "driver/ledc.h"
 #include <esp_timer.h>
 
+#include "driver/uart.h"
+#include "esp_check.h"
+#include "esp_log.h"
 #include "grid_esp32.h"
 #include "grid_esp32_lcd.h"
 #include "grid_esp32_nvm.h"
 #include "grid_esp32_port.h"
 #include "grid_esp32_swd.h"
 #include "grid_esp32_usb.h"
-#include "grid_font.h"
-#include "grid_gui.h"
-
-#include "driver/uart.h"
-#include "esp_check.h"
-#include "esp_log.h"
 #include "rom/ets_sys.h" // For ets_printf
 
 #include "../../grid_common/grid_ain.h"
@@ -116,74 +114,30 @@ static void check_heap(void) {
   ESP_LOGI(TAG, "free RAM is %d. Integrity: %d", freeRAM, heap_caps_check_integrity_all(true));
 }
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 240
+struct grid_port grid_port_array[6] = {0};
 
-#define FRAMEBUFFER_BYTES_PER_PIXEL 1
-#define FRAMEBUFFER_BITS_PER_PIXEL 6
-uint8_t framebuffer[SCREEN_WIDTH * SCREEN_HEIGHT * FRAMEBUFFER_BYTES_PER_PIXEL] = {0};
+struct grid_buffer grid_buffer_tx_array[6] = {0};
+struct grid_buffer grid_buffer_rx_array[6] = {0};
 
-#define TRANSFERBUFFER_BYTES_PER_PIXEL 3
-#define TRANSFERBUFFER_BITS_PER_PIXEL 24
-#define TRANSFERBUFFER_LINES 4
-uint8_t hw_framebuffer[SCREEN_WIDTH * TRANSFERBUFFER_LINES * TRANSFERBUFFER_BYTES_PER_PIXEL] = {0};
+char grid_buffer_tx_memory_array[6][GRID_BUFFER_SIZE] = {0};
+char grid_buffer_rx_memory_array[6][GRID_BUFFER_SIZE] = {0};
+
+struct grid_doublebuffer grid_doublebuffer_tx_array[6] = {0};
+struct grid_doublebuffer grid_doublebuffer_rx_array[6] = {0};
+
+char grid_doublebuffer_tx_memory_array[6][GRID_DOUBLE_BUFFER_TX_SIZE] = {0};
+char grid_doublebuffer_rx_memory_array[6][GRID_DOUBLE_BUFFER_RX_SIZE] = {0};
 
 void app_main(void) {
 
   // set console baud rate
   ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
 
-  grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
-  grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state);
-
-  grid_font_init(&grid_font_state);
-  grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuffer, sizeof(framebuffer), FRAMEBUFFER_BITS_PER_PIXEL, SCREEN_WIDTH, SCREEN_HEIGHT);
-
   esp_log_level_set("*", ESP_LOG_INFO);
   uint8_t loopcounter = 0;
 
   TaskHandle_t core2_task_hdl;
   xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024 * 3, NULL, 4, &core2_task_hdl, 1);
-  while (1) {
-
-    struct grid_gui_model* gui = &grid_gui_state;
-
-    grid_gui_draw_demo(&grid_gui_state, loopcounter);
-
-    // memset(framebuffer, 255, sizeof(framebuffer));
-
-    for (int i = 0; i < SCREEN_HEIGHT; i += TRANSFERBUFFER_LINES) {
-
-      if (FRAMEBUFFER_BITS_PER_PIXEL == 24 && TRANSFERBUFFER_BITS_PER_PIXEL == 24) {
-        memcpy(hw_framebuffer, gui->framebuffer + i * SCREEN_WIDTH * FRAMEBUFFER_BYTES_PER_PIXEL, (SCREEN_WIDTH * TRANSFERBUFFER_LINES * TRANSFERBUFFER_BYTES_PER_PIXEL));
-      } else if (FRAMEBUFFER_BITS_PER_PIXEL == 6 && TRANSFERBUFFER_BITS_PER_PIXEL == 24) {
-
-        for (int y = i; y < i + TRANSFERBUFFER_LINES; y++) {
-          for (int x = 0; x < gui->width; x++) {
-
-            uint32_t index_in_buffer = (y * gui->width + x) * 1;
-            if (x == y) {
-              gui->framebuffer[index_in_buffer] = 255;
-            }
-
-            uint32_t index_out_buffer = ((y - i) * gui->width + x) * TRANSFERBUFFER_BYTES_PER_PIXEL;
-            hw_framebuffer[index_out_buffer] = ((gui->framebuffer[index_in_buffer] >> 4) & 0b00000011) * 85;
-            hw_framebuffer[index_out_buffer + 1] = ((gui->framebuffer[index_in_buffer] >> 2) & 0b00000011) * 85;
-            hw_framebuffer[index_out_buffer + 2] = ((gui->framebuffer[index_in_buffer] >> 0) & 0b00000011) * 85;
-
-            // hw_framebuffer[index_out_buffer+1] = 255;
-          }
-        }
-      } else {
-        abort();
-      }
-
-      grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
-    }
-
-    ESP_LOGI(TAG, "Loop2: %d", loopcounter++);
-    vTaskDelay(pdMS_TO_TICKS(10));
-  }
 
   // grid_lcd_hardware_init();
 
@@ -215,6 +169,8 @@ void app_main(void) {
     grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA) {
     grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA) {
+    grid_module_tek1_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
     grid_module_pb44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else {
@@ -254,61 +210,67 @@ void app_main(void) {
   grid_lua_init(&grid_lua_state);
   grid_lua_set_memory_target(&grid_lua_state, 80); // 80kb
 
-  grid_lua_start_vm(&grid_lua_state);
-  grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
-
   // ================== START: grid_module_pbf4_init() ================== //
 
   ESP_LOGI(TAG, "===== PORT INIT =====");
+  for (uint8_t i = 0; i < 6; i++) {
+    uint8_t types[6] = {GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_UI, GRID_PORT_TYPE_USB};
+    uint8_t directions[6] = {GRID_CONST_NORTH, GRID_CONST_EAST, GRID_CONST_SOUTH, GRID_CONST_WEST, 0, 0};
+    grid_port_init(&grid_port_array[i], types[i], directions[i]);
+
+    grid_buffer_tx_array[i].buffer_length = sizeof(grid_buffer_tx_memory_array[i]);
+    grid_buffer_tx_array[i].buffer_storage = grid_buffer_tx_memory_array[i];
+    grid_buffer_init(&grid_buffer_tx_array[i], sizeof(grid_buffer_tx_memory_array[i]));
+
+    grid_buffer_rx_array[i].buffer_length = sizeof(grid_buffer_rx_memory_array[i]);
+    grid_buffer_rx_array[i].buffer_storage = grid_buffer_rx_memory_array[i];
+    grid_buffer_init(&grid_buffer_rx_array[i], sizeof(grid_buffer_rx_memory_array[i]));
+
+    grid_doublebuffer_tx_array[i].buffer_size = sizeof(grid_doublebuffer_tx_memory_array[i]);
+    grid_doublebuffer_tx_array[i].buffer_storage = &grid_doublebuffer_tx_memory_array[i];
+
+    grid_doublebuffer_rx_array[i].buffer_size = sizeof(grid_doublebuffer_rx_memory_array[i]);
+    grid_doublebuffer_rx_array[i].buffer_storage = &grid_doublebuffer_rx_memory_array[i];
+  }
 
   grid_transport_init(&grid_transport_state);
 
-  ESP_LOGI(TAG, "Transport done");
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[0]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[1]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[2]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[3]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[4]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[5]);
 
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_NORTH));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_EAST));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_SOUTH));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_WEST));
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[0], &grid_buffer_rx_array[0]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[1], &grid_buffer_rx_array[1]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[2], &grid_buffer_rx_array[2]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[3], &grid_buffer_rx_array[3]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[4], &grid_buffer_rx_array[4]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[5], &grid_buffer_rx_array[5]);
 
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_UI, 0));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USB, 0));
-
-  ESP_LOGI(TAG, "Port done");
-
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-
-  ESP_LOGI(TAG, "Buffer done");
-
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-
-  ESP_LOGI(TAG, "Doublebuffer done");
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[0], &grid_doublebuffer_rx_array[0]);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[1], &grid_doublebuffer_rx_array[1]);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[2], &grid_doublebuffer_rx_array[2]);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[3], &grid_doublebuffer_rx_array[3]);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[4], &grid_doublebuffer_rx_array[4]);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[5], &grid_doublebuffer_rx_array[5]);
 
   ESP_LOGI(TAG, "===== BANK INIT =====");
   grid_sys_set_bank(&grid_sys_state, 0);
   ets_delay_us(2000);
 
-  grid_ui_page_load(&grid_ui_state, 0); // load page 0
+  check_heap();
 
-  // while (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state))
-  // {
-  //     grid_ui_bulk_pageread_next(&grid_ui_state);
-  // }
+  if (grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_TEK1_RevA) {
+    grid_ui_page_load(&grid_ui_state, 0); // load page 0
+  }
 
   SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
   ESP_LOGI(TAG, "===== UI TASK INIT =====");
+
+  check_heap();
 
   TaskHandle_t module_task_hdl;
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD) {
@@ -325,6 +287,8 @@ void app_main(void) {
     xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024 * 4, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA) {
     xTaskCreatePinnedToCore(grid_esp32_module_tek2_task, "tek2", 1024 * 4, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA) {
+    xTaskCreatePinnedToCore(grid_esp32_module_tek1_task, "tek1", 1024 * 4, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
     xTaskCreatePinnedToCore(grid_esp32_module_pb44_task, "pb44", 1024 * 3, (void*)nvm_or_port, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else {

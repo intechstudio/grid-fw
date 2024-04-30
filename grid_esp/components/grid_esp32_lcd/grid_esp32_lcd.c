@@ -37,7 +37,7 @@
 #define LCD_MIRROR_Y false
 #define LCD_INVERT_COLOR true
 #define LCD_SWAP_XY true
-#define LCD_TRANSFER_SIZE (320 * 240 * 3)
+#define LCD_TRANSFER_SIZE (320 * 4 * 3)
 #define LCD_FLUSH_CALLBACK lcd_flush_ready
 
 volatile int lcd_flush_ready = 0;

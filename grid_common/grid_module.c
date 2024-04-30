@@ -275,6 +275,34 @@ void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   ui->lua_ui_init_callback = grid_lua_ui_init_tek2;
 }
 
+void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  // 16 pot, depth of 5, 14bit internal, 7bit result;
+  grid_ain_init(ain, 16, 5); // TODO: 12 ain for TEK2
+  grid_led_init(led, 18);    // TODO: 18 led for TEK2
+
+  uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9};
+
+  grid_led_lookup_init(led, led_lookup); // initialize the optional led index
+                                         // lookup table for array remapping
+
+  grid_ui_model_init(ui, 10 + 1); // 10+1 for the system element on TEK2
+
+  for (uint8_t j = 0; j < 10; j++) {
+
+    if (j < 8) {
+
+      grid_ui_element_init(ui, j, GRID_UI_ELEMENT_BUTTON);
+    } else if (j < 10) {
+      grid_ui_element_init(ui, j, GRID_UI_ELEMENT_ENCODER);
+    }
+  }
+
+  grid_ui_element_init(ui, ui->element_list_length - 1, GRID_UI_ELEMENT_SYSTEM);
+
+  ui->lua_ui_init_callback = grid_lua_ui_init_tek2;
+}
+
 int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value) {
 
   // lookup table, of state machine of the combination of old encoder AB and new
