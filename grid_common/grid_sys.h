@@ -56,41 +56,41 @@ struct grid_sys_model {
 
 extern struct grid_sys_model grid_sys_state;
 
-void grid_sys_init(struct grid_sys_model* mod);
+void grid_sys_init(struct grid_sys_model* sys);
 
-uint8_t grid_sys_get_bank_num(struct grid_sys_model* mod);
-uint8_t grid_sys_get_bank_next(struct grid_sys_model* mod);
+uint8_t grid_sys_get_bank_num(struct grid_sys_model* sys);
+uint8_t grid_sys_get_bank_next(struct grid_sys_model* sys);
 
-uint8_t grid_sys_get_editor_connected_state(struct grid_sys_model* mod);
-void grid_sys_set_editor_connected_state(struct grid_sys_model* mod, uint8_t state);
+uint8_t grid_sys_get_editor_connected_state(struct grid_sys_model* sys);
+void grid_sys_set_editor_connected_state(struct grid_sys_model* sys, uint8_t state);
 
-uint8_t grid_sys_get_midirx_any_state(struct grid_sys_model* mod);
-uint8_t grid_sys_get_midirx_sync_state(struct grid_sys_model* mod);
+uint8_t grid_sys_get_midirx_any_state(struct grid_sys_model* sys);
+uint8_t grid_sys_get_midirx_sync_state(struct grid_sys_model* sys);
 
-void grid_sys_set_midirx_any_state(struct grid_sys_model* mod, uint8_t state);
-void grid_sys_set_midirx_sync_state(struct grid_sys_model* mod, uint8_t state);
+void grid_sys_set_midirx_any_state(struct grid_sys_model* sys, uint8_t state);
+void grid_sys_set_midirx_sync_state(struct grid_sys_model* sys, uint8_t state);
 
-uint8_t grid_sys_get_module_x(struct grid_sys_model* mod);
-uint8_t grid_sys_get_module_y(struct grid_sys_model* mod);
-uint8_t grid_sys_get_module_rot(struct grid_sys_model* mod);
+uint8_t grid_sys_get_module_x(struct grid_sys_model* sys);
+uint8_t grid_sys_get_module_y(struct grid_sys_model* sys);
+uint8_t grid_sys_get_module_rot(struct grid_sys_model* sys);
 
-void grid_sys_set_module_x(struct grid_sys_model* mod, uint8_t x);
-void grid_sys_set_module_y(struct grid_sys_model* mod, uint8_t y);
-void grid_sys_set_module_rot(struct grid_sys_model* mod, uint8_t rot);
+void grid_sys_set_module_x(struct grid_sys_model* sys, uint8_t x);
+void grid_sys_set_module_y(struct grid_sys_model* sys, uint8_t y);
+void grid_sys_set_module_rot(struct grid_sys_model* sys, uint8_t rot);
 
-void grid_sys_set_module_absolute_position(struct grid_sys_model* mod, uint8_t sx, uint8_t sy, uint8_t rot, uint8_t portrot);
+void grid_sys_set_module_absolute_position(struct grid_sys_model* sys, uint8_t sx, uint8_t sy, uint8_t rot, uint8_t portrot);
 
-uint8_t grid_sys_get_bank_red(struct grid_sys_model* mod);
-uint8_t grid_sys_get_bank_gre(struct grid_sys_model* mod);
-uint8_t grid_sys_get_bank_blu(struct grid_sys_model* mod);
+uint8_t grid_sys_get_bank_red(struct grid_sys_model* sys);
+uint8_t grid_sys_get_bank_gre(struct grid_sys_model* sys);
+uint8_t grid_sys_get_bank_blu(struct grid_sys_model* sys);
 
-void grid_sys_set_bank_red(struct grid_sys_model* mod, uint8_t red);
-void grid_sys_set_bank_gre(struct grid_sys_model* mod, uint8_t gre);
-void grid_sys_set_bank_blu(struct grid_sys_model* mod, uint8_t blu);
+void grid_sys_set_bank_red(struct grid_sys_model* sys, uint8_t red);
+void grid_sys_set_bank_gre(struct grid_sys_model* sys, uint8_t gre);
+void grid_sys_set_bank_blu(struct grid_sys_model* sys, uint8_t blu);
 
-void grid_sys_set_bank(struct grid_sys_model* mod, uint8_t value);
+void grid_sys_set_bank(struct grid_sys_model* sys, uint8_t value);
 
-uint32_t grid_sys_get_hwcfg(struct grid_sys_model* mod);
-uint32_t grid_sys_get_id(struct grid_sys_model* mod, uint32_t* return_array);
+uint32_t grid_sys_get_hwcfg(struct grid_sys_model* sys);
+uint32_t grid_sys_get_id(struct grid_sys_model* sys, uint32_t* return_array);
 
 #endif

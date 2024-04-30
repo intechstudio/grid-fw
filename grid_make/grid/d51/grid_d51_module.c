@@ -5,33 +5,64 @@
 /* ============================== GRID_MODULE_INIT()
  * ================================ */
 
+struct grid_port grid_port_array[6] = {0};
+
+struct grid_buffer grid_buffer_tx_array[6] = {0};
+struct grid_buffer grid_buffer_rx_array[6] = {0};
+
+char grid_buffer_tx_memory_array[6][GRID_BUFFER_SIZE] = {0};
+char grid_buffer_rx_memory_array[6][GRID_BUFFER_SIZE] = {0};
+
+struct grid_doublebuffer grid_doublebuffer_tx_array[6] = {0};
+struct grid_doublebuffer grid_doublebuffer_rx_array[6] = {0};
+
+char grid_doublebuffer_tx_memory_array[6][GRID_DOUBLE_BUFFER_TX_SIZE] = {0};
+char grid_doublebuffer_rx_memory_array[6][GRID_DOUBLE_BUFFER_RX_SIZE] = {0};
+
 void grid_module_common_init(void) {
+
+  for (uint8_t i = 0; i < 6; i++) {
+    uint8_t types[6] = {GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_UI, GRID_PORT_TYPE_USB};
+    uint8_t directions[6] = {GRID_CONST_NORTH, GRID_CONST_EAST, GRID_CONST_SOUTH, GRID_CONST_WEST, 0, 0};
+    grid_port_init(&grid_port_array[i], types[i], directions[i]);
+
+    grid_buffer_tx_array[i].buffer_length = sizeof(grid_buffer_tx_memory_array[i]);
+    grid_buffer_tx_array[i].buffer_storage = grid_buffer_tx_memory_array[i];
+    grid_buffer_init(&grid_buffer_tx_array[i], sizeof(grid_buffer_tx_memory_array[i]));
+
+    grid_buffer_rx_array[i].buffer_length = sizeof(grid_buffer_rx_memory_array[i]);
+    grid_buffer_rx_array[i].buffer_storage = grid_buffer_rx_memory_array[i];
+    grid_buffer_init(&grid_buffer_rx_array[i], sizeof(grid_buffer_rx_memory_array[i]));
+
+    grid_doublebuffer_tx_array[i].buffer_size = sizeof(grid_doublebuffer_tx_memory_array[i]);
+    grid_doublebuffer_tx_array[i].buffer_storage = &grid_doublebuffer_tx_memory_array[i];
+
+    grid_doublebuffer_rx_array[i].buffer_size = sizeof(grid_doublebuffer_rx_memory_array[i]);
+    grid_doublebuffer_rx_array[i].buffer_storage = &grid_doublebuffer_rx_memory_array[i];
+  }
 
   grid_transport_init(&grid_transport_state);
 
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_NORTH));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_EAST));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_SOUTH));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_WEST));
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[0]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[1]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[2]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[3]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[4]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[5]);
 
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_UI, 0));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USB, 0));
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[0], &grid_buffer_rx_array[0]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[1], &grid_buffer_rx_array[1]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[2], &grid_buffer_rx_array[2]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[3], &grid_buffer_rx_array[3]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[4], &grid_buffer_rx_array[4]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[5], &grid_buffer_rx_array[5]);
 
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[0], &grid_doublebuffer_rx_array[0]);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[1], &grid_doublebuffer_rx_array[1]);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[2], &grid_doublebuffer_rx_array[2]);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[3], &grid_doublebuffer_rx_array[3]);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[4], &grid_doublebuffer_rx_array[4]);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[5], &grid_doublebuffer_rx_array[5]);
 
   printf("Common init done\r\n");
 

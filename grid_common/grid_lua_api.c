@@ -1,67 +1,106 @@
-/*
- * grid_lua.c
- *
- * Created: 4/12/2019 5:27:13 PM
- * Author : SUKU WC
- */
-
 #include "grid_lua_api.h"
+
+#include "grid_ui_encoder.h"
+#include "grid_ui_endless.h"
+#include "grid_ui_potmeter.h"
 
 struct grid_lua_model grid_lua_state;
 
-void grid_lua_init(struct grid_lua_model* mod) {
+void grid_lua_init(struct grid_lua_model* lua) {
 
-  mod->stdo_len = GRID_LUA_STDO_LENGTH;
-  mod->stdi_len = GRID_LUA_STDI_LENGTH;
-  mod->stde_len = GRID_LUA_STDE_LENGTH;
+  lua->stdo_len = GRID_LUA_STDO_LENGTH;
+  lua->stdi_len = GRID_LUA_STDI_LENGTH;
+  lua->stde_len = GRID_LUA_STDE_LENGTH;
 
-  grid_lua_clear_stdo(mod);
-  grid_lua_clear_stdi(mod);
-  grid_lua_clear_stde(mod);
+  lua->busy_semaphore = NULL;
+  lua->busy_semaphore_lock_fn = NULL;
+  lua->busy_semaphore_release_fn = NULL;
 
-  mod->dostring_count = 0;
+  grid_lua_clear_stdo(lua);
+  grid_lua_clear_stdi(lua);
+  grid_lua_clear_stde(lua);
 
-  mod->L = NULL;
+  lua->dostring_count = 0;
 
-  mod->target_memory_usage_kilobytes = 70; // 70kb
+  lua->L = NULL;
+
+  lua->target_memory_usage_kilobytes = 70; // 70kb
 }
 
-void grid_lua_deinit(struct grid_lua_model* mod) {}
+void grid_lua_semaphore_init(struct grid_lua_model* lua, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*)) {
 
-void grid_lua_clear_stdi(struct grid_lua_model* mod) {
+  lua->busy_semaphore = lua_busy_semaphore;
+  lua->busy_semaphore_lock_fn = lock_fn;
+  lua->busy_semaphore_release_fn = release_fn;
+}
+void grid_lua_semaphore_lock(struct grid_lua_model* lua) {
 
-  for (uint32_t i = 0; i < mod->stdi_len; i++) {
-    mod->stdi[i] = 0;
+  if (lua->L == NULL) {
+    grid_platform_printf("LUA model not initialized\n");
+    return;
+  }
+
+  if (lua->busy_semaphore == NULL) {
+    return;
+  }
+
+  if (lua->busy_semaphore_lock_fn == NULL) {
+    return;
+  }
+
+  lua->busy_semaphore_lock_fn(lua->busy_semaphore);
+}
+void grid_lua_semaphore_release(struct grid_lua_model* lua) {
+
+  if (lua->busy_semaphore == NULL) {
+    return;
+  }
+
+  if (lua->busy_semaphore_lock_fn == NULL) {
+    return;
+  }
+
+  lua->busy_semaphore_release_fn(lua->busy_semaphore);
+}
+
+void grid_lua_deinit(struct grid_lua_model* lua) {}
+
+void grid_lua_clear_stdi(struct grid_lua_model* lua) {
+
+  for (uint32_t i = 0; i < lua->stdi_len; i++) {
+    lua->stdi[i] = 0;
   }
 }
 
-void grid_lua_clear_stdo(struct grid_lua_model* mod) {
+void grid_lua_clear_stdo(struct grid_lua_model* lua) {
 
-  for (uint32_t i = 0; i < mod->stdo_len; i++) {
-    mod->stdo[i] = 0;
+  for (uint32_t i = 0; i < lua->stdo_len; i++) {
+    lua->stdo[i] = 0;
   }
 }
 
-void grid_lua_clear_stde(struct grid_lua_model* mod) {
+void grid_lua_clear_stde(struct grid_lua_model* lua) {
 
-  for (uint32_t i = 0; i < mod->stde_len; i++) {
-    mod->stde[i] = 0;
+  for (uint32_t i = 0; i < lua->stde_len; i++) {
+    lua->stde[i] = 0;
   }
 }
 
-char* grid_lua_get_output_string(struct grid_lua_model* mod) { return mod->stdo; }
+char* grid_lua_get_output_string(struct grid_lua_model* lua) { return lua->stdo; }
 
-char* grid_lua_get_error_string(struct grid_lua_model* mod) { return mod->stde; }
+char* grid_lua_get_error_string(struct grid_lua_model* lua) { return lua->stde; }
 
-uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code) {
+uint32_t grid_lua_dostring(struct grid_lua_model* lua, char* code) {
 
-  mod->dostring_count++;
+  grid_lua_semaphore_lock(lua);
+
+  lua->dostring_count++;
 
   uint32_t is_ok = 1;
 
-  if (luaL_loadstring(mod->L, code) == LUA_OK) {
+  if (luaL_loadstring(lua->L, code) == LUA_OK) {
 
-    if ((lua_pcall(mod->L, 0, LUA_MULTRET, 0)) == LUA_OK) {
+    if ((lua_pcall(lua->L, 0, LUA_MULTRET, 0)) == LUA_OK) {
       // If it was executed successfully we
       // remove the code from the stack
     } else {
@@ -70,40 +109,54 @@ uint32_t grid_lua_dostring(struct grid_lua_model* mod, char* code) {
       is_ok = 0;
     }
 
-    lua_pop(mod->L, lua_gettop(mod->L));
+    lua_pop(lua->L, lua_gettop(lua->L));
   } else {
     // grid_platform_printf("LUA not OK:  %s\r\n", code);
     // grid_port_debug_printf("LUA not OK");
     is_ok = 0;
   }
 
-  grid_lua_gc_try_collect(mod);
+  grid_lua_semaphore_release(lua);
+  grid_lua_gc_try_collect(lua);
 
   return is_ok;
 }
 
-void grid_lua_set_memory_target(struct grid_lua_model* mod, uint8_t target_kilobytes) { mod->target_memory_usage_kilobytes = target_kilobytes; }
+void grid_lua_set_memory_target(struct grid_lua_model* lua, uint8_t target_kilobytes) { lua->target_memory_usage_kilobytes = target_kilobytes; }
 
-uint8_t grid_lua_get_memory_target(struct grid_lua_model* mod) { return mod->target_memory_usage_kilobytes; }
+uint8_t grid_lua_get_memory_target(struct grid_lua_model* lua) { return lua->target_memory_usage_kilobytes; }
 
-void grid_lua_gc_try_collect(struct grid_lua_model* mod) {
+void grid_lua_gc_try_collect(struct grid_lua_model* lua) {
 
-  uint8_t target_kilobytes = grid_lua_get_memory_target(mod);
+  if (lua->L == NULL) {
+    grid_platform_printf("LUA model not initialized\n");
+    return;
+  }
 
-  if (lua_gc(mod->L, LUA_GCCOUNT) > target_kilobytes) {
+  grid_lua_semaphore_lock(lua);
 
-    lua_gc(mod->L, LUA_GCCOLLECT);
+  uint8_t target_kilobytes = grid_lua_get_memory_target(lua);
+
+  if (lua_gc(lua->L, LUA_GCCOUNT) > target_kilobytes) {
+
+    lua_gc(lua->L, LUA_GCCOLLECT);
 
     char message[10] = {0};
     // sprintf(message, "gc %dkb", target_kilobytes);
-    grid_lua_debug_memory_stats(mod, message);
-    mod->dostring_count = 0;
+    // grid_lua_debug_memory_stats(lua, message);
+    lua->dostring_count = 0;
   }
+
+  grid_lua_semaphore_release(lua);
 }
 
-void grid_lua_gc_collect(struct grid_lua_model* mod) { lua_gc(mod->L, LUA_GCCOLLECT); }
+void grid_lua_gc_collect(struct grid_lua_model* lua) {
+  grid_lua_semaphore_lock(lua);
+  lua_gc(lua->L, LUA_GCCOLLECT);
+  grid_lua_semaphore_release(lua);
+}
 
-void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message) {
+void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message) {
 
   uint32_t memusage = lua_gc(grid_lua_state.L, LUA_GCCOUNT) * 1024 + lua_gc(grid_lua_state.L, LUA_GCCOUNTB);
   grid_platform_printf("LUA mem usage: %d(%s)\r\n", memusage, message);
@@ -1260,7 +1313,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message) {
              // min-max values
 
       struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, param[0]);
-      enum grid_ui_element_t ele_type = ele->type;
+      uint8_t ele_type = ele->type;
 
       int32_t min = 0;
       int32_t max = 0;
@@ -1268,16 +1321,21 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message) {
 
       // grid_platform_printf("Param0: %d ", param[0]);
 
-      if (ele_type == GRID_UI_ELEMENT_POTENTIOMETER) {
+      if (ele_type == GRID_PARAMETER_ELEMENT_POTMETER) {
 
         min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_P_POTMETER_MIN_index);
         max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_P_POTMETER_MAX_index);
         val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_P_POTMETER_VALUE_index);
-      } else if (ele_type == GRID_UI_ELEMENT_ENCODER) {
+      } else if (ele_type == GRID_PARAMETER_ELEMENT_ENCODER) {
 
         min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MIN_index);
         max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MAX_index);
         val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index);
+      } else if (ele_type == GRID_PARAMETER_ELEMENT_ENDLESS) {
+
+        min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_MIN_index);
+        max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_MAX_index);
+        val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_VALUE_index);
       } else {
 
         strcat(grid_lua_state.stde, "#elementNotSupported");
@@ -1651,169 +1709,6 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* mod, char* message) {
 
 /* ====================  MODULE SPECIFIC INITIALIZERS  ====================*/
 
-void grid_lua_ui_init_po16(struct grid_lua_model* mod) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring(mod, GRID_LUA_P_META_init);
-
-  // create element array
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 16 potmeter
-  grid_lua_dostring(mod, "for i=0, 15 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=0, 15 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], potmeter_meta) end");
-
-  grid_lua_gc_try_collect(mod);
-
-  // initialize the system element
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "[16] = {index = 16}");
-  grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-  grid_lua_dostring(mod, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[16], system_meta)");
-}
-
-void grid_lua_ui_init_bu16(struct grid_lua_model* mod) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring(mod, GRID_LUA_B_META_init);
-
-  // create element array
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 16 buttons
-  grid_lua_dostring(mod, "for i=0, 15 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=0, 15 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
-
-  grid_lua_gc_try_collect(mod);
-
-  // initialize the system element
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "[16] = {index = 16}");
-  grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-  grid_lua_dostring(mod, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[16], system_meta)");
-}
-
-void grid_lua_ui_init_pbf4(struct grid_lua_model* mod) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring(mod, GRID_LUA_P_META_init);
-  grid_lua_dostring(mod, GRID_LUA_B_META_init);
-
-  // create element array
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 8 potmeters and 8 buttons
-  grid_lua_dostring(mod, "for i=0, 7  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=0, 7  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], potmeter_meta)  end");
-
-  grid_lua_dostring(mod, "for i=8, 11 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=8, 11 do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta)  end");
-
-  grid_lua_gc_try_collect(mod);
-
-  // initialize the system element
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "[12] = {index = 12}");
-  grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-  grid_lua_dostring(mod, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[12], system_meta)");
-}
-
-void grid_lua_ui_init_pb44(struct grid_lua_model* mod) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring(mod, GRID_LUA_P_META_init);
-  grid_lua_dostring(mod, GRID_LUA_B_META_init);
-
-  // create element array
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 8 potmeters and 8 buttons
-  grid_lua_dostring(mod, "for i=0, 7  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=0, 7  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], potmeter_meta)  end");
-
-  grid_lua_dostring(mod, "for i=8, 15 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=8, 15 do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta)  end");
-
-  grid_lua_gc_try_collect(mod);
-
-  // initialize the system element
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "[16] = {index = 16}");
-  grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-  grid_lua_dostring(mod, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[16], system_meta)");
-}
-
-void grid_lua_ui_init_en16(struct grid_lua_model* mod) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring(mod, GRID_LUA_E_META_init);
-
-  // create element array
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 16 encoders
-  grid_lua_dostring(mod, "for i=0, 15 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=0, 15 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], encoder_meta) end");
-
-  grid_lua_gc_try_collect(mod);
-
-  // initialize the system element
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "[16] = {index = 16}");
-  grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-  grid_lua_dostring(mod, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[16], system_meta)");
-}
-
-void grid_lua_ui_init_ef44(struct grid_lua_model* mod) {
-  // define encoder_init_function
-
-  grid_lua_dostring(mod, GRID_LUA_E_META_init);
-  grid_lua_dostring(mod, GRID_LUA_P_META_init);
-
-  // create element array
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 4 encoders and 4 faders
-  grid_lua_dostring(mod, "for i=0, 3  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=0, 3  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], encoder_meta)  end");
-
-  grid_lua_dostring(mod, "for i=4, 7 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=4, 7 do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], potmeter_meta)  end");
-
-  grid_lua_gc_try_collect(mod);
-
-  // initialize the system element
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "[8] = {index = 8}");
-  grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-  grid_lua_dostring(mod, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[8], system_meta)");
-}
-
-void grid_lua_ui_init_tek2(struct grid_lua_model* mod) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring(mod, GRID_LUA_B_META_init);
-  grid_lua_dostring(mod, GRID_LUA_E_META_init);
-
-  // create element array
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 8 buttons
-  grid_lua_dostring(mod, "for i=0, 7 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=0, 7 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
-
-  // initialize 2 endless potentiometers as encoders
-  grid_lua_dostring(mod, "for i=8, 9  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(mod, "for i=8, 9  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], encoder_meta)  end");
-
-  grid_lua_gc_try_collect(mod);
-
-  // initialize the system element
-  grid_lua_dostring(mod, GRID_LUA_KW_ELEMENT_short "[10] = {index = 10}");
-  grid_lua_dostring(mod, GRID_LUA_SYS_META_init);
-  grid_lua_dostring(mod, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[10], system_meta)");
-}
-
 void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui) {
 
   if (ui->lua_ui_init_callback == NULL) {
@@ -1824,18 +1719,20 @@ void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui) {
 
   ui->lua_ui_init_callback(lua);
 
-  grid_lua_debug_memory_stats(lua, "Ui init");
+  // grid_lua_debug_memory_stats(lua, "Ui init");
 }
 
-void grid_lua_start_vm(struct grid_lua_model* mod) {
+void grid_lua_start_vm(struct grid_lua_model* lua) {
 
-  mod->L = luaL_newstate();
+  grid_platform_printf("START VM\n");
 
-  lua_atpanic(mod->L, &grid_lua_panic);
+  lua->L = luaL_newstate();
 
-  grid_lua_debug_memory_stats(mod, "Init");
+  lua_atpanic(lua->L, &grid_lua_panic);
 
-  // luaL_openlibs(mod->L);
+  // grid_lua_debug_memory_stats(lua, "Init");
+
+  // luaL_openlibs(lua->L);
 
   static const luaL_Reg loadedlibs[] = {{LUA_GNAME, luaopen_base},
                                         //{LUA_LOADLIBNAME, luaopen_package},
@@ -1852,44 +1749,54 @@ void grid_lua_start_vm(struct grid_lua_model* mod) {
   const luaL_Reg* lib;
   /* "require" functions from 'loadedlibs' and set results to global table */
   for (lib = loadedlibs; lib->func; lib++) {
-    luaL_requiref(mod->L, lib->name, lib->func, 1);
-    lua_pop(mod->L, 1); /* remove lib */
+    luaL_requiref(lua->L, lib->name, lib->func, 1);
+    lua_pop(lua->L, 1); /* remove lib */
   }
 
-  grid_lua_debug_memory_stats(mod, "Openlibs");
+  // grid_lua_debug_memory_stats(lua, "Openlibs");
 
-  grid_lua_dostring(mod, GRID_LUA_GLUT_source);
-  grid_lua_dostring(mod, GRID_LUA_GLIM_source);
-  grid_lua_dostring(mod, GRID_LUA_GEN_source);
-  grid_lua_dostring(mod, "midi_fifo = {}");
-  grid_lua_dostring(mod, "midi_fifo_highwater = 0");
-  grid_lua_dostring(mod, "midi_fifo_retriggercount = 0");
-  grid_lua_dostring(mod, "midi = {}");
-  grid_lua_dostring(mod, "midi.send_packet = function "
+  grid_lua_semaphore_release(lua);
+  grid_lua_dostring(lua, GRID_LUA_GLUT_source);
+  grid_lua_dostring(lua, GRID_LUA_GLIM_source);
+  grid_lua_dostring(lua, GRID_LUA_GEN_source);
+  grid_lua_dostring(lua, GRID_LUA_MAPSAT_source);
+  grid_lua_dostring(lua, GRID_LUA_SEGCALC_source);
+  grid_lua_dostring(lua, "midi_fifo = {}");
+  grid_lua_dostring(lua, "midi_fifo_highwater = 0");
+  grid_lua_dostring(lua, "midi_fifo_retriggercount = 0");
+  grid_lua_dostring(lua, "midi = {}");
+  grid_lua_dostring(lua, "midi.send_packet = function "
                          "(self,ch,cmd,p1,p2) " GRID_LUA_FNC_G_MIDI_SEND_short "(ch,cmd,p1,p2) end");
 
-  grid_lua_dostring(mod, "mouse = {}");
-  grid_lua_dostring(mod, "mouse.send_axis_move = function "
+  grid_lua_dostring(lua, "mouse = {}");
+  grid_lua_dostring(lua, "mouse.send_axis_move = function "
                          "(self,p,a) " GRID_LUA_FNC_G_MOUSEMOVE_SEND_short "(p,a) end");
-  grid_lua_dostring(mod, "mouse.send_button_change = function "
+  grid_lua_dostring(lua, "mouse.send_button_change = function "
                          "(self,s,b) " GRID_LUA_FNC_G_MOUSEBUTTON_SEND_short "(s,b) end");
 
-  grid_lua_dostring(mod, "keyboard = {}");
-  grid_lua_dostring(mod, "keyboard.send_macro = function "
+  grid_lua_dostring(lua, "keyboard = {}");
+  grid_lua_dostring(lua, "keyboard.send_macro = function "
                          "(self,...) " GRID_LUA_FNC_G_KEYBOARD_SEND_short "(...) end");
 
-  lua_getglobal(mod->L, "_G");
-  luaL_setfuncs(mod->L, printlib, 0);
+  grid_lua_semaphore_lock(lua);
 
-  lua_pop(mod->L, 1);
-  grid_lua_debug_memory_stats(mod, "Printlib");
+  lua_getglobal(lua->L, "_G");
+  luaL_setfuncs(lua->L, printlib, 0);
+
+  lua_pop(lua->L, 1);
+  // grid_lua_debug_memory_stats(lua, "Printlib");
+
+  grid_lua_semaphore_release(lua);
 }
 
-void grid_lua_stop_vm(struct grid_lua_model* mod) {
+void grid_lua_stop_vm(struct grid_lua_model* lua) {
 
-  if (mod->L != NULL) {
+  grid_lua_semaphore_lock(lua);
+  grid_platform_printf("STOP VM\n");
 
-    lua_close(mod->L);
-    mod->L = NULL;
+  if (lua->L != NULL) {
+
+    lua_close(lua->L);
+    lua->L = NULL;
   }
 }

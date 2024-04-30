@@ -14,32 +14,28 @@ class bcolors:
     UNDERLINE = '\033[4m'
     GRAY = '\033[37m'
 
-def build_json(file_name):
-    data = {};
-    for line in get_lines(file_name):
+def build_json(input_string):
+    data = {}
+    for line in get_lines(input_string):
         key, value = get_macro_key_value(line)
         if key:
             data[key] = value
     return data
 
-def get_lines_old(file_name):
-    with open(file_name) as fp:
-        for line in fp:
-            yield line
+def get_lines(input_string):
+    line_buffer = ""
 
-def get_lines(file_name):
-    with open(file_name) as fp:
+    # Handle escaped newlines
+    input_string = re.sub(r'\\\n', '', input_string)
+
+
+    for line in input_string.split('\n'):
+
+        line_buffer += line
+        line_buffer = line_buffer.rstrip("\n")
+        pattern = re.compile(r'"\s*"')
+        yield pattern.sub('', line_buffer)
         line_buffer = ""
-        for line in fp:
-            # Handle escaped newlines
-            if line.endswith("\\\n"):
-                line_buffer += line.rstrip("\\\n")
-            else:
-                line_buffer += line
-                line_buffer = line_buffer.rstrip("\n")
-                pattern = re.compile(r'"\s*"')
-                yield pattern.sub('', line_buffer)
-                line_buffer = ""
 
 def get_macro_key_value(line):
     # m = re.search('^#define\s+(?P<key>\w+)\s+"?(?P<value>[\w\.,%]+)"?', line);
@@ -56,14 +52,14 @@ def write_output(data, file_name):
     with open(file_name, 'w+') as fp:
         json.dump(data, fp, indent=4)
 
-def create_class_database(input_file_name):
+def create_class_database(input_string):
 
     database = {}
     debug = 1
     new_obj = {}
     index = 0
 
-    for line in get_lines(input_file_name):
+    for line in get_lines(input_string):
         regex_string = '^#define\s+GRID_CLASS_(?P<key>[0-9A-Z]*)_code\s+"?(?P<value>[0-9A-Za-z]*)"?'
         m = re.search(regex_string, line)
 
@@ -112,11 +108,11 @@ def create_class_database(input_file_name):
     return database
 
 
-def create_character_lookup(input_file_name):
+def create_character_lookup(input_string):
 
     database = {}
 
-    for line in get_lines(input_file_name):
+    for line in get_lines(input_string):
         regex_string = '^#define\s+GRID_CONST_(?P<key>[0-9A-Z]*)\s+"?(?P<value>[0-9A-Za-z]*)"?'
         m = re.search(regex_string, line)
 
@@ -135,10 +131,6 @@ def create_character_lookup(input_file_name):
 
     return database
 
-
-
-def convert(input_file_name, output_file_name):
-    write_output(build_json(input_file_name), output_file_name)
 
 def generate_package_json(output_file_name, package_file_name):
 
@@ -177,22 +169,35 @@ def generate_lists_py(output_file_name, character_lookup, class_database):
         python_file.write("\n# Generated Python code from JSON\n\n")
         python_file.write("class_database = "+json.dumps(class_database, indent=2))
 
+def read_input_files_to_string(input_files):
+    input = ""
+    for input_file in input_files:
+        with open(input_file, 'r') as file:
+            input += file.read()
+            input += '\n'
+    return input
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print('Provide input file name as first argument')
+        print('Provide input file(s) name as first argument')
 
-    input_file = sys.argv[1] if len(sys.argv) > 1 else 'grid_common/grid_protocol.h'
+    input_files_comma_separated = sys.argv[1] if len(sys.argv) > 1 else 'grid_common/grid_protocol.h'
     output_file = sys.argv[2] if len(sys.argv) > 2 else 'out.json'
     package_file = sys.argv[3] if len(sys.argv) > 3 else 'package.json'
     constlist_file = sys.argv[4] if len(sys.argv) > 4 else 'lists.py'
-    print('input:', input_file)
-    print('output:', output_file)
-    convert(input_file, output_file)
 
-    class_databse = create_class_database(input_file)
+    input_files = input_files_comma_separated.split(',')
+
+    print('input:', input_files)
+    print('output:', output_file)
+    input_string = read_input_files_to_string(input_files)
+
+    write_output(build_json(input_string), output_file)
+
+    class_databse = create_class_database(input_string)
     # print(json.dumps(class_databse, indent=2))
 
-    character_lookup = create_character_lookup(input_file)
+    character_lookup = create_character_lookup(input_string)
     # print(json.dumps(character_lookup, indent=2))
 
     if len(sys.argv)>3:

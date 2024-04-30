@@ -12,205 +12,205 @@
 
 struct grid_msg_model grid_msg_state;
 
-void grid_msg_init(struct grid_msg_model* mod) {
+void grid_msg_init(struct grid_msg_model* msg) {
 
-  mod->sessionid = grid_platform_get_random_8();
-  mod->editor_heartbeat_lastrealtime = 0;
-  mod->heartbeat_type = 0;
+  msg->sessionid = grid_platform_get_random_8();
+  msg->editor_heartbeat_lastrealtime = 0;
+  msg->heartbeat_type = 0;
 }
 
-void grid_msg_set_heartbeat_type(struct grid_msg_model* mod, uint8_t type) { mod->heartbeat_type = type; }
+void grid_msg_set_heartbeat_type(struct grid_msg_model* msg, uint8_t type) { msg->heartbeat_type = type; }
 
-uint8_t grid_msg_get_heartbeat_type(struct grid_msg_model* mod) { return mod->heartbeat_type; }
+uint8_t grid_msg_get_heartbeat_type(struct grid_msg_model* msg) { return msg->heartbeat_type; }
 
-void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* mod, uint64_t timestamp) { mod->editor_heartbeat_lastrealtime = timestamp; }
+void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* msg, uint64_t timestamp) { msg->editor_heartbeat_lastrealtime = timestamp; }
 
-uint32_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* mod) { return mod->editor_heartbeat_lastrealtime; }
+uint32_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* msg) { return msg->editor_heartbeat_lastrealtime; }
 
 // ======================= GRID MSG LEN ======================//
-void grid_msg_header_set_len(struct grid_msg_packet* msg, uint16_t len) {
+void grid_msg_header_set_len(struct grid_msg_packet* packet, uint16_t len) {
 
   uint8_t error = 0;
-  grid_str_set_parameter(msg->header, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, len, &error);
+  grid_str_set_parameter(packet->header, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, len, &error);
 }
 
-uint16_t grid_msg_header_get_len(struct grid_msg_packet* msg) {
+uint16_t grid_msg_header_get_len(struct grid_msg_packet* packet) {
 
   uint8_t error = 0;
-  return grid_str_get_parameter(msg->header, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, &error);
+  return grid_str_get_parameter(packet->header, GRID_BRC_LEN_offset, GRID_BRC_LEN_length, &error);
 }
 
 // ======================= GRID MSG ID ======================//
-void grid_msg_header_set_id(struct grid_msg_packet* msg, uint8_t id) {
+void grid_msg_header_set_id(struct grid_msg_packet* packet, uint8_t id) {
 
   uint8_t error = 0;
-  grid_str_set_parameter(msg->header, GRID_BRC_ID_offset, GRID_BRC_ID_length, id, &error);
+  grid_str_set_parameter(packet->header, GRID_BRC_ID_offset, GRID_BRC_ID_length, id, &error);
 }
 
-uint8_t grid_msg_header_get_id(struct grid_msg_packet* msg) {
+uint8_t grid_msg_header_get_id(struct grid_msg_packet* packet) {
 
   uint8_t error = 0;
-  return grid_str_get_parameter(msg->header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+  return grid_str_get_parameter(packet->header, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 }
 
 // ======================= GRID MSG DX ======================//
-void grid_msg_header_set_dx(struct grid_msg_packet* msg, uint8_t dx) {
+void grid_msg_header_set_dx(struct grid_msg_packet* packet, uint8_t dx) {
 
   uint8_t error = 0;
-  grid_str_set_parameter(msg->header, GRID_BRC_DX_offset, GRID_BRC_DX_length, dx, &error);
+  grid_str_set_parameter(packet->header, GRID_BRC_DX_offset, GRID_BRC_DX_length, dx, &error);
 }
 
-uint8_t grid_msg_header_get_dx(struct grid_msg_packet* msg) {
+uint8_t grid_msg_header_get_dx(struct grid_msg_packet* packet) {
 
   uint8_t error = 0;
-  return grid_str_get_parameter(msg->header, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
+  return grid_str_get_parameter(packet->header, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
 }
 
 // ======================= GRID MSG DY ======================//
-void grid_msg_header_set_dy(struct grid_msg_packet* msg, uint8_t dy) {
+void grid_msg_header_set_dy(struct grid_msg_packet* packet, uint8_t dy) {
 
   uint8_t error = 0;
-  grid_str_set_parameter(msg->header, GRID_BRC_DY_offset, GRID_BRC_DY_length, dy, &error);
+  grid_str_set_parameter(packet->header, GRID_BRC_DY_offset, GRID_BRC_DY_length, dy, &error);
 }
 
-uint8_t grid_msg_header_get_dy(struct grid_msg_packet* msg) {
+uint8_t grid_msg_header_get_dy(struct grid_msg_packet* packet) {
 
   uint8_t error = 0;
-  return grid_str_get_parameter(msg->header, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
+  return grid_str_get_parameter(packet->header, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
 }
 
 // ======================= GRID MSG SX ======================//
-void grid_msg_header_set_sx(struct grid_msg_packet* msg, uint8_t sx) {
+void grid_msg_header_set_sx(struct grid_msg_packet* packet, uint8_t sx) {
 
   uint8_t error = 0;
-  grid_str_set_parameter(msg->header, GRID_BRC_SX_offset, GRID_BRC_SX_length, sx, &error);
+  grid_str_set_parameter(packet->header, GRID_BRC_SX_offset, GRID_BRC_SX_length, sx, &error);
 }
 
-uint8_t grid_msg_header_get_sx(struct grid_msg_packet* msg) {
+uint8_t grid_msg_header_get_sx(struct grid_msg_packet* packet) {
 
   uint8_t error = 0;
-  return grid_str_get_parameter(msg->header, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
+  return grid_str_get_parameter(packet->header, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
 }
 
 // ======================= GRID MSG SY ======================//
-void grid_msg_header_set_sy(struct grid_msg_packet* msg, uint8_t sy) {
+void grid_msg_header_set_sy(struct grid_msg_packet* packet, uint8_t sy) {
 
   uint8_t error = 0;
-  grid_str_set_parameter(msg->header, GRID_BRC_SY_offset, GRID_BRC_SY_length, sy, &error);
+  grid_str_set_parameter(packet->header, GRID_BRC_SY_offset, GRID_BRC_SY_length, sy, &error);
 }
 
-uint8_t grid_msg_header_get_sy(struct grid_msg_packet* msg) {
+uint8_t grid_msg_header_get_sy(struct grid_msg_packet* packet) {
 
   uint8_t error = 0;
-  return grid_str_get_parameter(msg->header, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
+  return grid_str_get_parameter(packet->header, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
 }
 
 // ======================= GRID MSG ROT ======================//
-void grid_msg_header_set_rot(struct grid_msg_packet* msg, uint8_t rot) {
+void grid_msg_header_set_rot(struct grid_msg_packet* packet, uint8_t rot) {
 
   uint8_t error = 0;
-  grid_str_set_parameter(msg->header, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, rot, &error);
+  grid_str_set_parameter(packet->header, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, rot, &error);
 }
 
-uint8_t grid_msg_header_get_rot(struct grid_msg_packet* msg) {
+uint8_t grid_msg_header_get_rot(struct grid_msg_packet* packet) {
 
   uint8_t error = 0;
-  return grid_str_get_parameter(msg->header, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
+  return grid_str_get_parameter(packet->header, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
 }
 
 // ======================= GRID MSG AGE ======================//
-void grid_msg_header_set_age(struct grid_msg_packet* msg, uint8_t age) {
+void grid_msg_header_set_age(struct grid_msg_packet* packet, uint8_t age) {
 
   uint8_t error = 0;
-  grid_str_set_parameter(msg->header, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, age, &error);
+  grid_str_set_parameter(packet->header, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, age, &error);
 }
 
-uint8_t grid_msg_header_get_age(struct grid_msg_packet* msg) {
+uint8_t grid_msg_header_get_age(struct grid_msg_packet* packet) {
 
   uint8_t error = 0;
-  return grid_str_get_parameter(msg->header, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
+  return grid_str_get_parameter(packet->header, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
 }
 
 // ======================= GRID MSG session ======================//
-void grid_msg_header_set_session(struct grid_msg_packet* msg, uint8_t session) {
+void grid_msg_header_set_session(struct grid_msg_packet* packet, uint8_t session) {
 
   uint8_t error = 0;
-  grid_str_set_parameter(msg->header, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, session, &error);
+  grid_str_set_parameter(packet->header, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, session, &error);
 }
 
-uint8_t grid_msg_header_get_session(struct grid_msg_packet* msg) {
+uint8_t grid_msg_header_get_session(struct grid_msg_packet* packet) {
 
   uint8_t error = 0;
-  return grid_str_get_parameter(msg->header, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
+  return grid_str_get_parameter(packet->header, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
 }
 
 // ======================= MSG GET PACKET LENGTH ======================//
-uint32_t grid_msg_packet_get_length(struct grid_msg_packet* msg) { return (msg->header_length + msg->body_length + msg->footer_length); }
+uint32_t grid_msg_packet_get_length(struct grid_msg_packet* packet) { return (packet->header_length + packet->body_length + packet->footer_length); }
 
 // ======================= MSG GET HEADER LENGTH ======================//
-uint32_t grid_msg_packet_header_get_length(struct grid_msg_packet* msg) { return (msg->header_length); }
+uint32_t grid_msg_packet_header_get_length(struct grid_msg_packet* packet) { return (packet->header_length); }
 
 // ======================= MSG GET BODY LENGTH ======================//
-uint32_t grid_msg_packet_body_get_length(struct grid_msg_packet* msg) { return (msg->body_length); }
+uint32_t grid_msg_packet_body_get_length(struct grid_msg_packet* packet) { return (packet->body_length); }
 
 // ======================= MSG GET FOOTER LENGTH ======================//
-uint32_t grid_msg_packet_footer_get_length(struct grid_msg_packet* msg) { return (msg->footer_length); }
+uint32_t grid_msg_packet_footer_get_length(struct grid_msg_packet* packet) { return (packet->footer_length); }
 
-void grid_msg_packet_body_append_text(struct grid_msg_packet* msg, char* str) {
+void grid_msg_packet_body_append_text(struct grid_msg_packet* packet, char* str) {
 
   uint32_t len = strlen((char*)str);
 
   for (uint32_t i = 0; i < len; i++) {
 
-    msg->body[msg->body_length + i] = str[i];
+    packet->body[packet->body_length + i] = str[i];
   }
 
-  msg->body_length += len;
-  msg->last_appended_length += len;
+  packet->body_length += len;
+  packet->last_appended_length += len;
 }
 
-void grid_msg_packet_body_append_printf(struct grid_msg_packet* msg, char const* fmt, ...) {
+void grid_msg_packet_body_append_printf(struct grid_msg_packet* packet, char const* fmt, ...) {
 
   va_list ap;
 
   va_start(ap, fmt);
 
-  vsprintf((char*)&msg->body[msg->body_length], fmt, ap);
+  vsprintf((char*)&packet->body[packet->body_length], fmt, ap);
 
   va_end(ap);
 
-  msg->last_appended_length = strlen((char*)&msg->body[msg->body_length]);
+  packet->last_appended_length = strlen((char*)&packet->body[packet->body_length]);
 
-  msg->body_length += msg->last_appended_length;
+  packet->body_length += packet->last_appended_length;
 
   return;
 }
-void grid_msg_packet_body_append_parameter(struct grid_msg_packet* msg, uint8_t parameter_offset, uint8_t parameter_length, uint32_t value) {
+void grid_msg_packet_body_append_parameter(struct grid_msg_packet* packet, uint8_t parameter_offset, uint8_t parameter_length, uint32_t value) {
 
-  uint8_t text_start_offset = msg->body_length - msg->last_appended_length;
+  uint8_t text_start_offset = packet->body_length - packet->last_appended_length;
 
-  grid_msg_packet_body_set_parameter(msg, text_start_offset, parameter_offset, parameter_length, value);
+  grid_msg_packet_body_set_parameter(packet, text_start_offset, parameter_offset, parameter_length, value);
 }
 
-uint32_t grid_msg_packet_body_get_parameter(struct grid_msg_packet* msg, uint32_t text_start_offset, uint8_t parameter_offset, uint8_t parameter_length) {
+uint32_t grid_msg_packet_body_get_parameter(struct grid_msg_packet* packet, uint32_t text_start_offset, uint8_t parameter_offset, uint8_t parameter_length) {
 
   uint8_t error = 0;
 
-  return grid_str_read_hex_string_value(&msg->body[text_start_offset + parameter_offset], parameter_length, &error);
+  return grid_str_read_hex_string_value(&packet->body[text_start_offset + parameter_offset], parameter_length, &error);
 }
 
-void grid_msg_packet_body_set_parameter(struct grid_msg_packet* msg, uint32_t text_start_offset, uint8_t parameter_offset, uint8_t parameter_length, uint32_t value) {
-  return grid_str_write_hex_string_value(&msg->body[text_start_offset + parameter_offset], parameter_length, value);
+void grid_msg_packet_body_set_parameter(struct grid_msg_packet* packet, uint32_t text_start_offset, uint8_t parameter_offset, uint8_t parameter_length, uint32_t value) {
+  return grid_str_write_hex_string_value(&packet->body[text_start_offset + parameter_offset], parameter_length, value);
 }
 
 // ======================= MSG INIT HEADER======================//
 
-void grid_msg_packet_init(struct grid_msg_model* mod, struct grid_msg_packet* msg, uint8_t dx, uint8_t dy) {
+void grid_msg_packet_init(struct grid_msg_model* msg, struct grid_msg_packet* packet, uint8_t dx, uint8_t dy) {
 
-  msg->header_length = 0;
-  msg->body_length = 0;
-  msg->last_appended_length = 0;
-  msg->footer_length = 0;
+  packet->header_length = 0;
+  packet->body_length = 0;
+  packet->last_appended_length = 0;
+  packet->footer_length = 0;
 
   // No need to initialize array
 
@@ -229,10 +229,10 @@ void grid_msg_packet_init(struct grid_msg_model* mod, struct grid_msg_packet* ms
   // 	msg->footer[i] = 0;
   // }
 
-  uint8_t session = mod->sessionid;
+  uint8_t session = msg->sessionid;
 
-  sprintf((char*)msg->header, GRID_BRC_frame_quick, GRID_CONST_SOH, GRID_CONST_BRC, session, dx, dy, GRID_CONST_EOB);
-  msg->header_length = strlen((char*)msg->header);
+  sprintf((char*)packet->header, GRID_BRC_frame_quick, GRID_CONST_SOH, GRID_CONST_BRC, session, dx, dy, GRID_CONST_EOB);
+  packet->header_length = strlen((char*)packet->header);
 
   // grid_msg_header_set_dx(msg, dx);
   // grid_msg_header_set_dy(msg, dy);
@@ -245,92 +245,92 @@ void grid_msg_packet_init(struct grid_msg_model* mod, struct grid_msg_packet* ms
   // grid_msg_header_set_session(msg, session);
 }
 
-void grid_msg_packet_to_chunk(struct grid_msg_packet* msg, char* chunk) {
+void grid_msg_packet_to_chunk(struct grid_msg_packet* packet, char* chunk) {
 
-  uint16_t length = grid_msg_packet_get_length(msg);
+  uint16_t length = grid_msg_packet_get_length(packet);
 
   for (uint16_t i = 0; i < length; i++) {
 
-    chunk[i] = grid_msg_packet_send_char_by_char(msg, i);
+    chunk[i] = grid_msg_packet_send_char_by_char(packet, i);
   }
 
   chunk[length] = '\0';
 }
 
 // ======================= MSG RECEIVE CHAR ======================//
-void grid_msg_packet_receive_char_by_char(struct grid_msg_packet* msg, uint8_t nextchar) {
+void grid_msg_packet_receive_char_by_char(struct grid_msg_packet* packet, uint8_t nextchar) {
 
-  if (msg->body_length == 0) {
+  if (packet->body_length == 0) {
 
     if (nextchar != GRID_CONST_EOB) {
-      msg->header[msg->header_length] = nextchar;
-      msg->header_length++;
+      packet->header[packet->header_length] = nextchar;
+      packet->header_length++;
     } else {
-      msg->body[msg->body_length] = nextchar;
-      msg->body_length++;
+      packet->body[packet->body_length] = nextchar;
+      packet->body_length++;
     }
-  } else if (msg->footer_length == 0) {
+  } else if (packet->footer_length == 0) {
 
     if (nextchar != GRID_CONST_EOT) {
-      msg->body[msg->body_length] = nextchar;
-      msg->body_length++;
+      packet->body[packet->body_length] = nextchar;
+      packet->body_length++;
     } else {
-      msg->footer[msg->footer_length] = nextchar;
-      msg->footer_length++;
+      packet->footer[packet->footer_length] = nextchar;
+      packet->footer_length++;
     }
   } else {
 
-    msg->footer[msg->footer_length] = nextchar;
-    msg->footer_length++;
+    packet->footer[packet->footer_length] = nextchar;
+    packet->footer_length++;
   }
 }
 
 // ======================= GRID MSG SEND CHAR ======================//
 
-uint8_t grid_msg_packet_send_char_by_char(struct grid_msg_packet* msg, uint32_t charindex) {
+uint8_t grid_msg_packet_send_char_by_char(struct grid_msg_packet* packet, uint32_t charindex) {
 
-  if (charindex < msg->header_length) {
+  if (charindex < packet->header_length) {
 
-    return msg->header[charindex];
-  } else if (charindex < msg->body_length + msg->header_length) {
+    return packet->header[charindex];
+  } else if (charindex < packet->body_length + packet->header_length) {
 
-    return msg->body[charindex - msg->header_length];
-  } else if (charindex < msg->footer_length + msg->body_length + msg->header_length) {
+    return packet->body[charindex - packet->header_length];
+  } else if (charindex < packet->footer_length + packet->body_length + packet->header_length) {
 
-    return msg->footer[charindex - msg->header_length - msg->body_length];
+    return packet->footer[charindex - packet->header_length - packet->body_length];
   } else {
     // OVERRUN
     return -1;
   }
 }
 
-void grid_msg_packet_close(struct grid_msg_model* mod, struct grid_msg_packet* msg) {
+void grid_msg_packet_close(struct grid_msg_model* msg, struct grid_msg_packet* packet) {
 
-  sprintf((char*)&msg->footer[msg->footer_length], "%c", GRID_CONST_EOT);
-  msg->footer_length += strlen((char*)&msg->footer[msg->footer_length]);
+  sprintf((char*)&packet->footer[packet->footer_length], "%c", GRID_CONST_EOT);
+  packet->footer_length += strlen((char*)&packet->footer[packet->footer_length]);
 
-  grid_msg_header_set_len(msg, msg->header_length + msg->body_length + msg->footer_length);
-  grid_msg_header_set_session(msg, mod->sessionid);
-  grid_msg_header_set_id(msg, mod->next_broadcast_message_id);
+  grid_msg_header_set_len(packet, packet->header_length + packet->body_length + packet->footer_length);
+  grid_msg_header_set_session(packet, msg->sessionid);
+  grid_msg_header_set_id(packet, msg->next_broadcast_message_id);
 
-  mod->next_broadcast_message_id++;
+  msg->next_broadcast_message_id++;
 
   uint8_t checksum = 0;
 
-  for (uint32_t i = 0; i < msg->header_length; i++) {
-    checksum ^= msg->header[i];
+  for (uint32_t i = 0; i < packet->header_length; i++) {
+    checksum ^= packet->header[i];
   }
 
-  for (uint32_t i = 0; i < msg->body_length; i++) {
-    checksum ^= msg->body[i];
+  for (uint32_t i = 0; i < packet->body_length; i++) {
+    checksum ^= packet->body[i];
   }
 
-  for (uint32_t i = 0; i < msg->footer_length; i++) {
-    checksum ^= msg->footer[i];
+  for (uint32_t i = 0; i < packet->footer_length; i++) {
+    checksum ^= packet->footer[i];
   }
 
-  sprintf((char*)&msg->footer[msg->footer_length], "%02x\n", checksum);
-  msg->footer_length += strlen((char*)&msg->footer[msg->footer_length]);
+  sprintf((char*)&packet->footer[packet->footer_length], "%02x\n", checksum);
+  packet->footer_length += strlen((char*)&packet->footer[packet->footer_length]);
 }
 
 // RECENT MESSAGES

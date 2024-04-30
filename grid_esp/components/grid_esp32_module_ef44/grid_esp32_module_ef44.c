@@ -10,7 +10,12 @@
 
 #include "grid_ain.h"
 #include "grid_module.h"
+
 #include "grid_ui.h"
+
+#include "grid_ui_encoder.h"
+#include "grid_ui_potmeter.h"
+#include "grid_ui_system.h"
 
 #include "grid_esp32_adc.h"
 #include "grid_esp32_encoder.h"
@@ -54,7 +59,7 @@ void grid_esp32_module_ef44_task(void* arg) {
   static const uint8_t invert_result_lookup[4] = {0, 0, 0, 0};
   const uint8_t multiplexer_overflow = 2;
 
-  grid_esp32_adc_init(&grid_esp32_adc_state, (SemaphoreHandle_t)arg);
+  grid_esp32_adc_init(&grid_esp32_adc_state);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
   grid_esp32_adc_start(&grid_esp32_adc_state);
 

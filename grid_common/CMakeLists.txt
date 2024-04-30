@@ -12,6 +12,11 @@ idf_component_register(
         "grid_port.c"
         "grid_usb.c"
         "grid_ui.c"
+        "grid_ui_button.c"
+        "grid_ui_encoder.c"
+        "grid_ui_endless.c"
+        "grid_ui_potmeter.c"
+        "grid_ui_system.c"
         "grid_module.c"
         "grid_lua_api.c"
 

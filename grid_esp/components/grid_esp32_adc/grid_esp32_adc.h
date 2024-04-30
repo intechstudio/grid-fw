@@ -35,8 +35,6 @@ struct grid_esp32_adc_model {
   StaticRingbuffer_t* buffer_struct;
   uint8_t* buffer_storage;
   RingbufHandle_t ringbuffer_handle;
-
-  SemaphoreHandle_t nvm_semaphore;
 };
 
 struct grid_esp32_adc_result {
@@ -50,7 +48,7 @@ extern struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
 void IRAM_ATTR grid_esp32_adc_convert(void);
 
-void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, SemaphoreHandle_t nvm_semaphore);
+void grid_esp32_adc_init(struct grid_esp32_adc_model* adc);
 
 void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overflow);
 

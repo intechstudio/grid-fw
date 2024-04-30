@@ -30,18 +30,18 @@ struct grid_ain_model {
 
 extern struct grid_ain_model grid_ain_state;
 
-uint8_t grid_ain_channel_init(struct grid_ain_model* mod, uint8_t channel, uint8_t buffer_depth);
+uint8_t grid_ain_channel_init(struct grid_ain_model* ain, uint8_t channel, uint8_t buffer_depth);
 
-uint8_t grid_ain_channel_deinit(struct grid_ain_model* mod, uint8_t channel);
+uint8_t grid_ain_channel_deinit(struct grid_ain_model* ain, uint8_t channel);
 
 /** Initialize ain buffer for a given number of analog channels */
-uint8_t grid_ain_init(struct grid_ain_model* mod, uint8_t length, uint8_t depth);
-uint8_t grid_ain_add_sample(struct grid_ain_model* mod, uint8_t channel, uint16_t value, uint8_t source_resolution, uint8_t result_resolution);
+uint8_t grid_ain_init(struct grid_ain_model* ain, uint8_t length, uint8_t depth);
+uint8_t grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t source_resolution, uint8_t result_resolution);
 
-uint8_t grid_ain_get_changed(struct grid_ain_model* mod, uint8_t channel);
-uint16_t grid_ain_get_average(struct grid_ain_model* mod, uint8_t channel);
+uint8_t grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel);
+uint16_t grid_ain_get_average(struct grid_ain_model* ain, uint8_t channel);
 
-int32_t grid_ain_get_average_scaled(struct grid_ain_model* mod, uint8_t channel, uint8_t source_resolution, uint8_t result_resolution, int32_t min, int32_t max);
+int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel, uint8_t source_resolution, uint8_t result_resolution, int32_t min, int32_t max);
 
 uint32_t grid_ain_abs(int32_t value);
 

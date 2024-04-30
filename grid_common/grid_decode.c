@@ -1,5 +1,8 @@
 #include "grid_decode.h"
 
+#include "grid_ui_encoder.h"
+#include "grid_ui_potmeter.h"
+
 static enum GRID_DESTINATION {
 
   GRID_DESTINATION_IS_ME = 1,
@@ -327,7 +330,11 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
       return 0;
     }
 
-    // The set page request was valid, change page now!
+    // The page is already active
+    if (grid_ui_page_get_activepage(&grid_ui_state) == page) {
+      return 0;
+    }
+
     grid_ui_page_load(&grid_ui_state, page);
     grid_sys_set_bank(&grid_sys_state, page);
   } else if (msg_instr == GRID_INSTR_REPORT_code) { // REPORT BANK
@@ -346,6 +353,12 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
     }
 
     grid_ui_state.page_negotiated = true;
+
+    // The page is already active
+    if (grid_ui_page_get_activepage(&grid_ui_state) == page) {
+      return 0;
+    }
+
     grid_ui_page_load(&grid_ui_state, page);
     grid_sys_set_bank(&grid_sys_state, page);
   }
@@ -413,7 +426,7 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
     struct grid_ui_element* ele = &grid_ui_state.element_list[grid_ui_state.element_list_length - 1];
     struct grid_ui_event* eve = NULL;
 
-    eve = grid_ui_event_find(ele, GRID_UI_EVENT_MIDIRX);
+    eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_MIDIRX);
     if (eve != NULL) {
 
       grid_ui_event_trigger(eve);
@@ -525,10 +538,10 @@ uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk) {
         uint8_t element_num = ele->index;
         uint8_t element_value = 0;
 
-        if (ele->type == GRID_UI_ELEMENT_POTENTIOMETER) {
+        if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
 
           element_value = ele->template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index];
-        } else if (ele->type == GRID_UI_ELEMENT_ENCODER) {
+        } else if (ele->type == GRID_PARAMETER_ELEMENT_ENCODER) {
 
           element_value = ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
         }

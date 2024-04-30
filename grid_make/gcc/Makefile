@@ -16,12 +16,18 @@ usb/class/midi/device/audiodf_midi.o \
 usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_ain.o \
 ../grid_common/grid_sys.o \
+../grid_common/grid_allocator.o \
 ../grid_common/grid_msg.o \
 ../grid_common/grid_decode.o \
 ../grid_common/grid_buf.o \
 ../grid_common/grid_port.o \
 ../grid_common/grid_usb.o \
 ../grid_common/grid_ui.o \
+../grid_common/grid_ui_button.o \
+../grid_common/grid_ui_encoder.o \
+../grid_common/grid_ui_endless.o \
+../grid_common/grid_ui_potmeter.o \
+../grid_common/grid_ui_system.o \
 ../grid_common/grid_module.o \
 ../grid_common/grid_lua_api.o \
 grid/d51/grid_d51.o \
@@ -82,12 +88,18 @@ OBJS_AS_ARGS +=  \
 "usb/class/midi/usb_protocol_midi.o" \
 "../grid_common/grid_ain.o" \
 "../grid_common/grid_sys.o" \
+"../grid_common/grid_allocator.o" \
 "../grid_common/grid_msg.o" \
 "../grid_common/grid_decode.o" \
 "../grid_common/grid_buf.o" \
 "../grid_common/grid_port.o" \
 "../grid_common/grid_usb.o" \
 "../grid_common/grid_ui.o" \
+"../grid_common/grid_ui_button.o" \
+"../grid_common/grid_ui_encoder.o" \
+"../grid_common/grid_ui_endless.o" \
+"../grid_common/grid_ui_potmeter.o" \
+"../grid_common/grid_ui_system.o" \
 "../grid_common/grid_module.o" \
 "../grid_common/grid_lua_api.o" \
 "grid/d51/grid_d51.o" \
@@ -160,12 +172,18 @@ DEPS_AS_ARGS +=  \
 "usb/class/midi/usb_protocol_midi.d" \
 "../grid_common/grid_ain.d" \
 "../grid_common/grid_sys.d" \
+"../grid_common/grid_allocator.d" \
 "../grid_common/grid_msg.d" \
 "../grid_common/grid_decode.d" \
 "../grid_common/grid_buf.d" \
 "../grid_common/grid_port.d" \
 "../grid_common/grid_usb.d" \
 "../grid_common/grid_ui.d" \
+"../grid_common/grid_ui_button.d" \
+"../grid_common/grid_ui_encoder.d" \
+"../grid_common/grid_ui_endless.d" \
+"../grid_common/grid_ui_potmeter.d" \
+"../grid_common/grid_ui_system.d" \
 "../grid_common/grid_module.d" \
 "../grid_common/grid_lua_api.d" \
 "grid/d51/grid_d51.d" \
@@ -617,7 +635,7 @@ $(OUTPUT_FILE_PATH): $(OBJS)
 	@echo Building target: $@
 	@echo Invoking: ARM/GNU Linker
 	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -o $(OUTPUT_FILE_NAME).elf $(OBJS_AS_ARGS) -Wl,--start-group -lm -Wl,--end-group -mthumb \
--Wl,-Map="$(OUTPUT_FILE_NAME).map" --specs=nano.specs -Wl,--gc-sections -mcpu=cortex-m4 -u _printf_float\
+-Wl,-Map="$(OUTPUT_FILE_NAME).map" --specs=nano.specs -Wl,--gc-sections -Wl,--print-memory-usage -mcpu=cortex-m4 -u _printf_float\
  \
 -T"../grid/samd51n20a_flash_bootloader.ld" \
 -L"../samd51a/gcc/gcc" \

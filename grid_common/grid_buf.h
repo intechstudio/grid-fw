@@ -11,7 +11,6 @@
 
 extern void grid_platform_printf(char const* fmt, ...);
 
-extern uint32_t grid_buffer_error_count;
 extern uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length);
 extern void* grid_platform_allocate_volatile(size_t size);
 
@@ -38,6 +37,9 @@ struct grid_buffer {
   uint16_t write_start;
   uint16_t write_stop;
   uint16_t write_active;
+
+  uint32_t write_init_error_count;
+  uint32_t write_acknowledge_error_count;
 };
 
 uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length);
