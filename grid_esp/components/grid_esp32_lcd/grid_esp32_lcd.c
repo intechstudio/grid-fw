@@ -33,12 +33,31 @@
 #define LCD_PIXEL_CLOCK_HZ (80 * 1000 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
-#define LCD_MIRROR_X false
-#define LCD_MIRROR_Y true
+#define LCD_MIRROR_X true
+#define LCD_MIRROR_Y false
 #define LCD_INVERT_COLOR true
 #define LCD_SWAP_XY true
 #define LCD_TRANSFER_SIZE (320 * 240 * 3)
 #define LCD_FLUSH_CALLBACK lcd_flush_ready
+
+volatile int lcd_flush_ready = 0;
+
+bool ready_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t* edata, void* user_ctx) {
+  lcd_flush_ready = 1;
+  return 1;
+}
+
+esp_lcd_panel_io_callbacks_t lcd_callbacks = {.on_color_trans_done = ready_cb};
+
+int grid_esp32_lcd_draw_bitmap_blocking(struct grid_esp32_lcd_model* lcd, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void* framebuffer) {
+
+  lcd_flush_ready = 0;
+  esp_lcd_panel_draw_bitmap((esp_lcd_panel_handle_t)lcd->lcd_handle, x, y, x + width, y + height, framebuffer);
+  while (!lcd_flush_ready)
+    ;
+
+  return 0;
+}
 
 // global so it can be used after init
 esp_lcd_panel_handle_t lcd_handle;
@@ -103,12 +122,7 @@ void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd) {
   // Turn on backlight (Different LCD screens may need different levels)
   // digitalWrite(PIN_NUM_BCKL, LCD_BK_LIGHT_ON_LEVEL);
 
+  esp_lcd_panel_io_register_event_callbacks(io_handle, &lcd_callbacks, NULL);
+
   lcd->lcd_handle = (void*)lcd_handle;
-}
-
-int grid_esp32_lcd_draw_bitmap(struct grid_esp32_lcd_model* lcd, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void* framebuffer) {
-
-  esp_lcd_panel_draw_bitmap((esp_lcd_panel_handle_t)lcd->lcd_handle, x, y, width, height, framebuffer);
-
-  return 0;
 }
