@@ -3,17 +3,19 @@
 
 struct grid_font_model grid_font_state;
 
+static char memory[60000] = {0};
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define STBTT_malloc(x, u)                                                                                                                                                                             \
   (printf("Allocating %lu bytes to ", (unsigned long)(x)), ({                                                                                                                                          \
-     void* ptr = malloc(x);                                                                                                                                                                            \
+     void* ptr = (x>50000?memory:malloc(x));                                                                                                                                                                            \
      printf(" %p\n", (void*)ptr);                                                                                                                                                                      \
      ptr;                                                                                                                                                                                              \
    }))
 
-#define STBTT_free(x, u) (printf("Freeing %p\n", (void*)(x)), free(x))
+#define STBTT_free(x, u) (printf("Freeing %p\n", (void*)(x)), (x!=memory?free(x):0))
 
 #define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
 #include "stb_truetype.h"

@@ -24,8 +24,8 @@
 
 static const char* TAG = "module_tek1";
 
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 128
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
 
 #define FRAMEBUFFER_BYTES_PER_PIXEL 1
 #define FRAMEBUFFER_BITS_PER_PIXEL 6
