@@ -57,6 +57,15 @@ int grid_gui_draw_pixel(struct grid_gui_model* gui, uint16_t x, uint16_t y, grid
 
     uint8_t* pixel = gui->framebuffer + ((gui->width * y + x) * 1);
 
+    if (alpha == 0) {
+      return 0;
+    }
+
+    if (alpha == 255) {
+      pixel[0] = (r / 64) << 4 | (g / 64) << 2 | (b / 64);
+      return 0;
+    }
+
     uint8_t r_old = ((pixel[0] >> 4) & 0b11) * 85;
     uint8_t g_old = ((pixel[0] >> 2) & 0b11) * 85;
     uint8_t b_old = ((pixel[0] >> 0) & 0b11) * 85;
