@@ -24,14 +24,32 @@
 
 static const char* TAG = "module_tek1";
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 240 / 2
+#define COLOR_MODE_1BIT_MONOCHROME
 
+#ifdef COLOR_MODE_24BIT_TRUECOLOR
+#define SCREEN_WIDTH 320 / 4
+#define SCREEN_HEIGHT 240 / 2
+#define FRAMEBUFFER_BYTES_PER_PIXEL 3
+#define FRAMEBUFFER_BITS_PER_PIXEL 24
+#endif
+
+#ifdef COLOR_MODE_6BIT_RRGGBB
+#define SCREEN_WIDTH 320 / 2
+#define SCREEN_HEIGHT 240 / 2
 #define FRAMEBUFFER_BYTES_PER_PIXEL 1
 #define FRAMEBUFFER_BITS_PER_PIXEL 6
+#endif
+
+#ifdef COLOR_MODE_1BIT_MONOCHROME
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
+#define FRAMEBUFFER_BYTES_PER_PIXEL 1 / 8
+#define FRAMEBUFFER_BITS_PER_PIXEL 1
+#endif
 
 uint8_t framebuffer[SCREEN_WIDTH * SCREEN_HEIGHT * FRAMEBUFFER_BYTES_PER_PIXEL] = {0};
 
+// This is specific to the ST6678 driver
 #define TRANSFERBUFFER_BYTES_PER_PIXEL 3
 #define TRANSFERBUFFER_BITS_PER_PIXEL 24
 #define TRANSFERBUFFER_LINES 4
@@ -114,7 +132,7 @@ void grid_esp32_module_tek1_task(void* arg) {
     for (int i = 0; i < SCREEN_HEIGHT; i += TRANSFERBUFFER_LINES) {
 
       if (FRAMEBUFFER_BITS_PER_PIXEL == 24 && TRANSFERBUFFER_BITS_PER_PIXEL == 24) {
-        memcpy(hw_framebuffer, gui->framebuffer + i * SCREEN_WIDTH * FRAMEBUFFER_BYTES_PER_PIXEL, (SCREEN_WIDTH * TRANSFERBUFFER_LINES * TRANSFERBUFFER_BYTES_PER_PIXEL));
+        memcpy(hw_framebuffer, gui->framebuffer + i * SCREEN_WIDTH * 3, (SCREEN_WIDTH * TRANSFERBUFFER_LINES * TRANSFERBUFFER_BYTES_PER_PIXEL));
       } else if (FRAMEBUFFER_BITS_PER_PIXEL == 6 && TRANSFERBUFFER_BITS_PER_PIXEL == 24) {
 
         for (int y = i; y < i + TRANSFERBUFFER_LINES; y++) {
@@ -129,6 +147,24 @@ void grid_esp32_module_tek1_task(void* arg) {
             hw_framebuffer[index_out_buffer] = ((gui->framebuffer[index_in_buffer] >> 4) & 0b00000011) * 85;
             hw_framebuffer[index_out_buffer + 1] = ((gui->framebuffer[index_in_buffer] >> 2) & 0b00000011) * 85;
             hw_framebuffer[index_out_buffer + 2] = ((gui->framebuffer[index_in_buffer] >> 0) & 0b00000011) * 85;
+
+            // hw_framebuffer[index_out_buffer+1] = 255;
+          }
+        }
+      } else if (gui->bits_per_pixel == 1) {
+        for (int y = i; y < i + TRANSFERBUFFER_LINES; y++) {
+          for (int x = 0; x < gui->width; x++) {
+
+            uint32_t index_in_buffer = (y * gui->width + x) / 8;
+            uint32_t offset_in_buffer = (y * gui->width + x) % 8;
+
+            uint32_t index_out_buffer = ((y - i) * gui->width + x) * TRANSFERBUFFER_BYTES_PER_PIXEL;
+
+            uint8_t intensity = ((gui->framebuffer[index_in_buffer] >> (offset_in_buffer)) & 0b00000001) * 255;
+
+            hw_framebuffer[index_out_buffer + 0] = intensity;
+            hw_framebuffer[index_out_buffer + 1] = intensity;
+            hw_framebuffer[index_out_buffer + 2] = intensity;
 
             // hw_framebuffer[index_out_buffer+1] = 255;
           }

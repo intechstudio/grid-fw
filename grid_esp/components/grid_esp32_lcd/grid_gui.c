@@ -75,6 +75,18 @@ int grid_gui_draw_pixel(struct grid_gui_model* gui, uint16_t x, uint16_t y, grid
     uint8_t b_new = b * alpha / 255 + b_old * (255 - alpha) / 255;
 
     pixel[0] = (r_new / 64) << 4 | (g_new / 64) << 2 | (b_new / 64);
+  } else if (gui->bits_per_pixel == 1) {
+
+    uint8_t* pixel = gui->framebuffer + ((gui->width * y + x) * 1) / 8;
+    uint8_t offset = ((gui->width * y + x) * 1) % 8;
+
+    if (alpha < 128) {
+      return 0;
+    } else {
+      uint8_t value = ((r / 3 + g / 3 + b / 3) > 40);
+      pixel[0] = (pixel[0] & ~(1 << offset)) | (value << offset);
+      return 0;
+    }
   }
 
   return 0;

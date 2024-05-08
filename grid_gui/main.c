@@ -66,6 +66,17 @@ void draw_screen(struct grid_gui_model* gui) {
         ((uint8_t*)screen->pixels)[index_out_buffer + 1] = ((gui->framebuffer[index_in_buffer] >> 2) & 0b00000011) * 85;
         ((uint8_t*)screen->pixels)[index_out_buffer + 2] = ((gui->framebuffer[index_in_buffer] >> 0) & 0b00000011) * 85;
         ((uint8_t*)screen->pixels)[index_out_buffer + 3] = 255;
+      } else if (gui->bits_per_pixel == 1) {
+        uint32_t index_in_buffer = (k * gui->width + j) / 8;
+        uint8_t offset_in_buffer = (k * gui->width + j) % 8;
+
+        uint32_t index_out_buffer = (k * gui->width + j) * 4;
+
+        uint8_t intensity = ((gui->framebuffer[index_in_buffer] >> (offset_in_buffer)) & 0b00000001) * 255;
+        ((uint8_t*)screen->pixels)[index_out_buffer + 0] = intensity;
+        ((uint8_t*)screen->pixels)[index_out_buffer + 1] = intensity;
+        ((uint8_t*)screen->pixels)[index_out_buffer + 2] = intensity;
+        ((uint8_t*)screen->pixels)[index_out_buffer + 3] = 255;
       }
     }
   }
@@ -93,7 +104,7 @@ int main(int argc, char** argv) {
   struct grid_vlcd_model* vlcd = &grid_vlcd_state;
 
   grid_font_init(&grid_font_state);
-  grid_gui_init(gui, vlcd, framebuffer, sizeof(framebuffer), 6, 320, 240);
+  grid_gui_init(gui, vlcd, framebuffer, sizeof(framebuffer), 1, 320, 240);
 
   printf("hello, world!\n");
 
