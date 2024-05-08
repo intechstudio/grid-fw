@@ -33,7 +33,7 @@ uint8_t framebuffer[SCREEN_WIDTH * SCREEN_HEIGHT * FRAMEBUFFER_BYTES_PER_PIXEL] 
 
 #define TRANSFERBUFFER_BYTES_PER_PIXEL 3
 #define TRANSFERBUFFER_BITS_PER_PIXEL 24
-#define TRANSFERBUFFER_LINES 4
+#define TRANSFERBUFFER_LINES 24
 uint8_t hw_framebuffer[SCREEN_WIDTH * TRANSFERBUFFER_LINES * TRANSFERBUFFER_BYTES_PER_PIXEL] = {0};
 
 void grid_esp32_module_tek1_task(void* arg) {
@@ -104,7 +104,8 @@ void grid_esp32_module_tek1_task(void* arg) {
     }
 
     // ESP_LOGI(TAG, "Loop2: %d", loopcounter++);
-    vTaskDelay(pdMS_TO_TICKS(10));
+    //vTaskDelay(pdMS_TO_TICKS(10));
+    portYIELD();
   }
 
   while (1) {
