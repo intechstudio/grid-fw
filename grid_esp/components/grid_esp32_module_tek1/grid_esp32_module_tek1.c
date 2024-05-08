@@ -104,7 +104,7 @@ void grid_esp32_module_tek1_task(void* arg) {
     }
 
     // ESP_LOGI(TAG, "Loop2: %d", loopcounter++);
-    //vTaskDelay(pdMS_TO_TICKS(10));
+    // vTaskDelay(pdMS_TO_TICKS(10));
     portYIELD();
   }
 
