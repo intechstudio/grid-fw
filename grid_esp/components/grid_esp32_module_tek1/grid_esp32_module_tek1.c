@@ -25,15 +25,16 @@
 static const char* TAG = "module_tek1";
 
 #define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 240
+#define SCREEN_HEIGHT 240 / 2
 
 #define FRAMEBUFFER_BYTES_PER_PIXEL 1
 #define FRAMEBUFFER_BITS_PER_PIXEL 6
+
 uint8_t framebuffer[SCREEN_WIDTH * SCREEN_HEIGHT * FRAMEBUFFER_BYTES_PER_PIXEL] = {0};
 
 #define TRANSFERBUFFER_BYTES_PER_PIXEL 3
 #define TRANSFERBUFFER_BITS_PER_PIXEL 24
-#define TRANSFERBUFFER_LINES 24
+#define TRANSFERBUFFER_LINES 4
 uint8_t hw_framebuffer[SCREEN_WIDTH * TRANSFERBUFFER_LINES * TRANSFERBUFFER_BYTES_PER_PIXEL] = {0};
 
 void grid_esp32_module_tek1_task(void* arg) {
@@ -64,49 +65,6 @@ void grid_esp32_module_tek1_task(void* arg) {
   grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuffer, sizeof(framebuffer), FRAMEBUFFER_BITS_PER_PIXEL, SCREEN_WIDTH, SCREEN_HEIGHT);
 
   uint8_t loopcounter = 0;
-
-  while (1) {
-
-    loopcounter++;
-    struct grid_gui_model* gui = &grid_gui_state;
-
-    grid_gui_draw_demo(&grid_gui_state, loopcounter);
-
-    // memset(framebuffer, 255, sizeof(framebuffer));
-
-    for (int i = 0; i < SCREEN_HEIGHT; i += TRANSFERBUFFER_LINES) {
-
-      if (FRAMEBUFFER_BITS_PER_PIXEL == 24 && TRANSFERBUFFER_BITS_PER_PIXEL == 24) {
-        memcpy(hw_framebuffer, gui->framebuffer + i * SCREEN_WIDTH * FRAMEBUFFER_BYTES_PER_PIXEL, (SCREEN_WIDTH * TRANSFERBUFFER_LINES * TRANSFERBUFFER_BYTES_PER_PIXEL));
-      } else if (FRAMEBUFFER_BITS_PER_PIXEL == 6 && TRANSFERBUFFER_BITS_PER_PIXEL == 24) {
-
-        for (int y = i; y < i + TRANSFERBUFFER_LINES; y++) {
-          for (int x = 0; x < gui->width; x++) {
-
-            uint32_t index_in_buffer = (y * gui->width + x) * 1;
-            if (x == y) {
-              gui->framebuffer[index_in_buffer] = 255;
-            }
-
-            uint32_t index_out_buffer = ((y - i) * gui->width + x) * TRANSFERBUFFER_BYTES_PER_PIXEL;
-            hw_framebuffer[index_out_buffer] = ((gui->framebuffer[index_in_buffer] >> 4) & 0b00000011) * 85;
-            hw_framebuffer[index_out_buffer + 1] = ((gui->framebuffer[index_in_buffer] >> 2) & 0b00000011) * 85;
-            hw_framebuffer[index_out_buffer + 2] = ((gui->framebuffer[index_in_buffer] >> 0) & 0b00000011) * 85;
-
-            // hw_framebuffer[index_out_buffer+1] = 255;
-          }
-        }
-      } else {
-        abort();
-      }
-
-      grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
-    }
-
-    // ESP_LOGI(TAG, "Loop2: %d", loopcounter++);
-    // vTaskDelay(pdMS_TO_TICKS(10));
-    portYIELD();
-  }
 
   while (1) {
 
@@ -142,6 +100,44 @@ void grid_esp32_module_tek1_task(void* arg) {
       }
 
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
+    }
+
+    // DO GUI THINGS
+
+    loopcounter++;
+    struct grid_gui_model* gui = &grid_gui_state;
+
+    grid_gui_draw_demo(&grid_gui_state, loopcounter);
+
+    // memset(framebuffer, 255, sizeof(framebuffer));
+
+    for (int i = 0; i < SCREEN_HEIGHT; i += TRANSFERBUFFER_LINES) {
+
+      if (FRAMEBUFFER_BITS_PER_PIXEL == 24 && TRANSFERBUFFER_BITS_PER_PIXEL == 24) {
+        memcpy(hw_framebuffer, gui->framebuffer + i * SCREEN_WIDTH * FRAMEBUFFER_BYTES_PER_PIXEL, (SCREEN_WIDTH * TRANSFERBUFFER_LINES * TRANSFERBUFFER_BYTES_PER_PIXEL));
+      } else if (FRAMEBUFFER_BITS_PER_PIXEL == 6 && TRANSFERBUFFER_BITS_PER_PIXEL == 24) {
+
+        for (int y = i; y < i + TRANSFERBUFFER_LINES; y++) {
+          for (int x = 0; x < gui->width; x++) {
+
+            uint32_t index_in_buffer = (y * gui->width + x) * 1;
+            if (x == y) {
+              gui->framebuffer[index_in_buffer] = 255;
+            }
+
+            uint32_t index_out_buffer = ((y - i) * gui->width + x) * TRANSFERBUFFER_BYTES_PER_PIXEL;
+            hw_framebuffer[index_out_buffer] = ((gui->framebuffer[index_in_buffer] >> 4) & 0b00000011) * 85;
+            hw_framebuffer[index_out_buffer + 1] = ((gui->framebuffer[index_in_buffer] >> 2) & 0b00000011) * 85;
+            hw_framebuffer[index_out_buffer + 2] = ((gui->framebuffer[index_in_buffer] >> 0) & 0b00000011) * 85;
+
+            // hw_framebuffer[index_out_buffer+1] = 255;
+          }
+        }
+      } else {
+        abort();
+      }
+
+      grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
     }
 
     taskYIELD();

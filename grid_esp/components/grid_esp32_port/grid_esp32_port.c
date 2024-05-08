@@ -115,7 +115,6 @@ static struct grid_buffer* DRAM_ATTR host_buffer_tx = NULL;
 static struct grid_buffer* DRAM_ATTR uart_buffer_tx_array[4] = {0};
 static struct grid_buffer* DRAM_ATTR uart_buffer_rx_array[4] = {0};
 static struct grid_doublebuffer* DRAM_ATTR uart_doublebuffer_tx_array[4] = {0};
-static struct grid_doublebuffer* DRAM_ATTR uart_doublebuffer_rx_array[4] = {0};
 
 static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
@@ -163,7 +162,6 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
     struct grid_buffer* buffer_tx = uart_buffer_tx_array[i];
     struct grid_buffer* buffer_rx = uart_buffer_rx_array[i];
     struct grid_doublebuffer* doublebuffer_tx = uart_doublebuffer_tx_array[i];
-    struct grid_doublebuffer* doublebuffer_rx = uart_doublebuffer_rx_array[i];
 
     if ((grid_pico_uart_tx_ready_bitmap & (0b00000001 << i))) {
 
@@ -181,7 +179,6 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
   uint8_t index = __builtin_ctz(source_flags); // count trailing zeros
 
   struct grid_port* por = por = index < 4 ? uart_port_array[index] : NULL;
-  struct grid_doublebuffer* doublebuffer_rx = doublebuffer_rx = index < 4 ? uart_doublebuffer_rx_array[index] : NULL;
 
   if (por == NULL) {
     // no message to copy to rx_double_buffer
@@ -420,7 +417,6 @@ void handle_sync_ticks(void) {
 void handle_connect_disconnect_effect(uint8_t* partner_last_status) {
   for (uint8_t i = 0; i < 4; i++) {
     struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
-    struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i);
 
     if (por->type != GRID_PORT_TYPE_USART) {
       abort();
@@ -443,7 +439,7 @@ void handle_connect_disconnect_effect(uint8_t* partner_last_status) {
 
     if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
       por->partner_status = 0;
-      grid_port_receiver_softreset(por, doublebuffer_rx);
+      grid_port_receiver_softreset(por, NULL);
     }
   }
 }
@@ -476,11 +472,6 @@ void grid_esp32_port_task(void* arg) {
   uart_doublebuffer_tx_array[2] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 2);
   uart_doublebuffer_tx_array[3] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 3);
 
-  uart_doublebuffer_rx_array[0] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 0);
-  uart_doublebuffer_rx_array[1] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 1);
-  uart_doublebuffer_rx_array[2] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 2);
-  uart_doublebuffer_rx_array[3] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 3);
-
   uint8_t n = 0;
   esp_err_t ret;
 
@@ -507,7 +498,6 @@ void grid_esp32_port_task(void* arg) {
 
     struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
     struct grid_doublebuffer* doublebuffer_tx = uart_doublebuffer_tx_array[i];
-    struct grid_doublebuffer* doublebuffer_rx = uart_doublebuffer_rx_array[i];
 
     // Set up a transaction of GRID_PARAMETER_SPI_TRANSACTION_length bytes to
     // send/receive
@@ -636,6 +626,12 @@ void grid_esp32_port_task(void* arg) {
     {
       char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
       uint16_t length = 0;
+
+      if (host_doublebuffer_rx == NULL) {
+        grid_platform_printf("NO USB RX DOUBLE BUFFER\n");
+        abort();
+      }
+
       grid_port_rxdobulebuffer_to_linear(host_port, host_doublebuffer_rx, message, &length); // USB
 
       grid_str_transform_brc_params(message, host_port->dx, host_port->dy, host_port->partner_fi); // update age, sx, sy, dx, dy, rot etc...

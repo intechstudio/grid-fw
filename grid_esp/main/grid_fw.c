@@ -35,7 +35,7 @@
 
 #include "grid_esp32_trace.h"
 
-// module task priority must be the lowest to ma it run most of the time
+// module task priority must be the lowest to make it run most of the time
 #define MODULE_TASK_PRIORITY 0
 
 #define LED_TASK_PRIORITY 2
@@ -125,8 +125,8 @@ char grid_buffer_rx_memory_array[6][GRID_BUFFER_SIZE] = {0};
 struct grid_doublebuffer grid_doublebuffer_tx_array[6] = {0};
 struct grid_doublebuffer grid_doublebuffer_rx_array[6] = {0};
 
-char grid_doublebuffer_tx_memory_array[6][GRID_DOUBLE_BUFFER_TX_SIZE] = {0};
-char grid_doublebuffer_rx_memory_array[6][GRID_DOUBLE_BUFFER_RX_SIZE] = {0};
+char grid_doublebuffer_tx_memory_array[5][GRID_DOUBLE_BUFFER_TX_SIZE] = {0};
+char grid_doublebuffer_rx_memory_array[2][GRID_DOUBLE_BUFFER_RX_SIZE] = {0};
 
 void app_main(void) {
 
@@ -237,11 +237,24 @@ void app_main(void) {
     grid_buffer_rx_array[i].buffer_storage = grid_buffer_rx_memory_array[i];
     grid_buffer_init(&grid_buffer_rx_array[i], sizeof(grid_buffer_rx_memory_array[i]));
 
-    grid_doublebuffer_tx_array[i].buffer_size = sizeof(grid_doublebuffer_tx_memory_array[i]);
-    grid_doublebuffer_tx_array[i].buffer_storage = &grid_doublebuffer_tx_memory_array[i];
+    grid_doublebuffer_tx_array[i].buffer_size = 0;
+    grid_doublebuffer_tx_array[i].buffer_storage = NULL;
 
-    grid_doublebuffer_rx_array[i].buffer_size = sizeof(grid_doublebuffer_rx_memory_array[i]);
-    grid_doublebuffer_rx_array[i].buffer_storage = &grid_doublebuffer_rx_memory_array[i];
+    if (i < 4) {
+      // UART
+      grid_doublebuffer_tx_array[i].buffer_size = sizeof(grid_doublebuffer_tx_memory_array[i]);
+      grid_doublebuffer_tx_array[i].buffer_storage = &grid_doublebuffer_tx_memory_array[i];
+    }
+
+    if (i == 5) {
+      // USB
+
+      grid_doublebuffer_tx_array[i].buffer_size = sizeof(grid_doublebuffer_tx_memory_array[i - 1]);
+      grid_doublebuffer_tx_array[i].buffer_storage = &grid_doublebuffer_tx_memory_array[i - 1];
+
+      grid_doublebuffer_rx_array[i].buffer_size = sizeof(grid_doublebuffer_rx_memory_array[0]);
+      grid_doublebuffer_rx_array[i].buffer_storage = &grid_doublebuffer_rx_memory_array[0];
+    }
   }
 
   grid_transport_init(&grid_transport_state);
@@ -260,12 +273,12 @@ void app_main(void) {
   grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[4], &grid_buffer_rx_array[4]);
   grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[5], &grid_buffer_rx_array[5]);
 
-  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[0], &grid_doublebuffer_rx_array[0]);
-  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[1], &grid_doublebuffer_rx_array[1]);
-  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[2], &grid_doublebuffer_rx_array[2]);
-  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[3], &grid_doublebuffer_rx_array[3]);
-  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[4], &grid_doublebuffer_rx_array[4]);
-  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[5], &grid_doublebuffer_rx_array[5]);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[0], NULL);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[1], NULL);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[2], NULL);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[3], NULL);
+  grid_transport_register_doublebuffer(&grid_transport_state, NULL, NULL);                                                     // UI
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[5], &grid_doublebuffer_rx_array[5]); // USB
 
   ESP_LOGI(TAG, "===== BANK INIT =====");
   grid_sys_set_bank(&grid_sys_state, 0);
@@ -275,9 +288,8 @@ void app_main(void) {
   xSemaphoreGive(ui_busy_semaphore);
 
   if (grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_TEK1_RevA) {
-    grid_ui_page_load(&grid_ui_state, 0); // load page 0
   }
-
+  grid_ui_page_load(&grid_ui_state, 0); // load page 0
   SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
   ESP_LOGI(TAG, "===== UI TASK INIT =====");

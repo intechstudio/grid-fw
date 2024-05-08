@@ -3,7 +3,7 @@
 
 struct grid_font_model grid_font_state;
 
-static char memory[60000] = {0};
+static char memory[57000] = {0};
 
 #include <stdint.h>
 #include <stdio.h>
@@ -11,13 +11,13 @@ static char memory[60000] = {0};
 
 #ifndef EMSCRIPTEN
 #define STBTT_malloc(x, u)                                                                                                                                                                             \
-  (printf("Allocating %lu bytes to ", (unsigned long)(x)), ({                                                                                                                                          \
-     void* ptr = (x > 50000 ? memory : malloc(x));                                                                                                                                                     \
-     printf(" %p\n", (void*)ptr);                                                                                                                                                                      \
-     ptr;                                                                                                                                                                                              \
-   }))
+  (/*printf("Allocating %lu bytes to ", (unsigned long)(x)),*/ ({                                                                                                                                      \
+    void* ptr = (x > 50000 ? memory : malloc(x));                                                                                                                                                      \
+    /*printf(" %p\n", (void*)ptr);    */                                                                                                                                                               \
+    ptr;                                                                                                                                                                                               \
+  }))
 
-#define STBTT_free(x, u) (printf("Freeing %p\n", (void*)(x)), (x != memory ? free(x) : 0))
+#define STBTT_free(x, u) (/*printf("Freeing %p\n", (void*)(x)), */ (x != memory ? free(x) : 0))
 #endif
 
 #define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
