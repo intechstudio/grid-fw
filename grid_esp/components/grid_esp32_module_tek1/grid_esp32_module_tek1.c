@@ -57,14 +57,14 @@ uint8_t hw_framebuffer[SCREEN_WIDTH * TRANSFERBUFFER_LINES * TRANSFERBUFFER_BYTE
 
 void grid_esp32_module_tek1_task(void* arg) {
 
-  uint64_t button_last_real_time[8] = {0};
+  uint64_t button_last_real_time[15] = {0};
 
   uint64_t endlesspot_button_last_real_time[2] = {0};
   uint64_t endlesspot_encoder_last_real_time[2] = {0};
 
   // static const uint8_t multiplexer_lookup[16] = {10, 8, 11, 9, 14, 12, 15,
   // 13, 2, 0, 3, 1, 6, 4, 7, 5};
-  static const uint8_t multiplexer_lookup[16] = {9, 8, 11, 10, 13, 12, -1, -1, 2, 0, 3, 1, 6, 4, 7, 5};
+  static const uint8_t multiplexer_lookup[16] = {9, 8, 11, 10, 13, 12, -1, 14, 2, 0, 3, 1, 6, 4, 7, 5};
 
   // static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0,
   // 0, 0, 0, 0, 0, 0, 0};
@@ -77,15 +77,7 @@ void grid_esp32_module_tek1_task(void* arg) {
   struct grid_module_endless_state current_endlesspot_state[2] = {0};
   struct grid_module_endless_state last_endlesspot_state[2] = {0};
 
-  grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
-  grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state);
-  grid_font_init(&grid_font_state);
-  grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuffer, sizeof(framebuffer), FRAMEBUFFER_BITS_PER_PIXEL, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  uint8_t loopcounter = 0;
-
-  while (1) {
-
+  void process_analog(void) {
     size_t size = 0;
 
     struct grid_esp32_adc_result* result;
@@ -94,31 +86,45 @@ void grid_esp32_module_tek1_task(void* arg) {
     if (result != NULL) {
 
       uint8_t lookup_index = result->mux_state * 2 + result->channel;
+      uint8_t mux_position = multiplexer_lookup[lookup_index];
 
-      if (multiplexer_lookup[lookup_index] < 8) {
+      if (mux_position < 8) {
 
-        grid_ui_button_store_input(multiplexer_lookup[lookup_index], &button_last_real_time[multiplexer_lookup[lookup_index]], result->value, 12);
-      } else if (multiplexer_lookup[lookup_index] < 10) { // 8, 9
+        grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
 
-        uint8_t endlesspot_index = multiplexer_lookup[lookup_index] % 2;
-        current_endlesspot_state[endlesspot_index].phase_a_value = result->value;
-      } else if (multiplexer_lookup[lookup_index] < 12) { // 10, 11
+      } else if (mux_position == 9) { // 8, 9
 
-        uint8_t endlesspot_index = multiplexer_lookup[lookup_index] % 2;
-        current_endlesspot_state[endlesspot_index].phase_b_value = result->value;
+        current_endlesspot_state[0].phase_a_value = result->value;
+      } else if (mux_position == 11) { // 10, 11
+
+        current_endlesspot_state[0].phase_b_value = result->value;
         // ets_printf("%d \r\n", result->value);
-      } else if (multiplexer_lookup[lookup_index] < 14) { // 12, 13
+      } else if (mux_position == 13) { // 12, 13
 
-        uint8_t endlesspot_index = multiplexer_lookup[lookup_index] % 2;
-        current_endlesspot_state[endlesspot_index].button_value = result->value;
-        grid_ui_button_store_input(8 + endlesspot_index, &endlesspot_button_last_real_time[endlesspot_index], result->value, 12);
+        current_endlesspot_state[0].button_value = result->value;
+        grid_ui_button_store_input(8, &endlesspot_button_last_real_time[0], result->value, 12);
+        grid_ui_endless_store_input(8, &endlesspot_encoder_last_real_time[0], &last_endlesspot_state[0], &current_endlesspot_state[0], 12);
+      } else if (mux_position == 8 || mux_position == 10 || mux_position == 12 || mux_position == 14) {
 
-        grid_ui_endless_store_input(8 + endlesspot_index, &endlesspot_encoder_last_real_time[endlesspot_index], &last_endlesspot_state[endlesspot_index], &current_endlesspot_state[endlesspot_index],
-                                    12);
+        uint8_t btn_num = ((mux_position - 8) / 2) % 4;
+        if (result->value < 500) {
+          grid_platform_printf("BTN %d\n", btn_num);
+        }
+        grid_ui_button_store_input(btn_num + 8 + 1, &button_last_real_time[btn_num + 8 + 1], result->value, 12);
       }
 
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
     }
+  }
+
+  grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
+  grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state);
+  grid_font_init(&grid_font_state);
+  grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuffer, sizeof(framebuffer), FRAMEBUFFER_BITS_PER_PIXEL, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  uint8_t loopcounter = 0;
+
+  while (1) {
 
     // DO GUI THINGS
 
@@ -130,6 +136,8 @@ void grid_esp32_module_tek1_task(void* arg) {
     // memset(framebuffer, 255, sizeof(framebuffer));
 
     for (int i = 0; i < SCREEN_HEIGHT; i += TRANSFERBUFFER_LINES) {
+
+      process_analog();
 
       if (FRAMEBUFFER_BITS_PER_PIXEL == 24 && TRANSFERBUFFER_BITS_PER_PIXEL == 24) {
         memcpy(hw_framebuffer, gui->framebuffer + i * SCREEN_WIDTH * 3, (SCREEN_WIDTH * TRANSFERBUFFER_LINES * TRANSFERBUFFER_BYTES_PER_PIXEL));
