@@ -124,6 +124,8 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   uint8_t loopcounter = 0;
 
+  grid_gui_draw_demo(&grid_gui_state, loopcounter);
+
   while (1) {
 
     // DO GUI THINGS
@@ -131,9 +133,14 @@ void grid_esp32_module_tek1_task(void* arg) {
     loopcounter++;
     struct grid_gui_model* gui = &grid_gui_state;
 
-    grid_gui_draw_demo(&grid_gui_state, loopcounter);
-
     // memset(framebuffer, 255, sizeof(framebuffer));
+
+    if (grid_gui_state.framebuffer_changed_flag == 0) {
+      taskYIELD();
+      continue;
+    }
+
+    grid_gui_state.framebuffer_changed_flag = 0;
 
     for (int i = 0; i < SCREEN_HEIGHT; i += TRANSFERBUFFER_LINES) {
 

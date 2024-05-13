@@ -16,6 +16,7 @@ struct grid_gui_model {
   void* screen_handle;
   uint8_t* framebuffer;
   uint32_t framebuffer_size;
+  uint8_t framebuffer_changed_flag;
   uint8_t bits_per_pixel;
   uint16_t width;
   uint16_t height;

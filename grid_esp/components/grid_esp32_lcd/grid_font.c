@@ -1,7 +1,7 @@
 #include "grid_font.h"
 #include "grid_gui.h"
 
-struct grid_font_model grid_font_state;
+struct grid_font_model grid_font_state = {0};
 
 static char memory[57000] = {0};
 
@@ -35,6 +35,7 @@ int grid_font_init(struct grid_font_model* font) {
   stbtt_InitFont(font->font_handle, ttf_buffer, stbtt_GetFontOffsetForIndex(ttf_buffer, 0));
   printf("stbtt_InitFont\n");
 
+  font->initialized = 1;
   return 0;
 }
 
@@ -80,7 +81,7 @@ int grid_font_draw_character(struct grid_font_model* font, struct grid_gui_model
 
       // grid_gui_draw_pixel(gui, x + i + xoff, y + j + yoff+size/2, grid_gui_color_apply_alpha(color, bitmap[j * w + i]));
 
-      grid_gui_draw_pixel(gui, x + i + xoff, y + j + yoff + size / 2, grid_gui_color_from_rgba(255, 0, 0, bitmap[j * w + i]));
+      grid_gui_draw_pixel(gui, x + i + xoff, y + j + yoff + size / 2, grid_gui_color_apply_alpha(color, bitmap[j * w + i]));
     }
 
     // putchar('\n');

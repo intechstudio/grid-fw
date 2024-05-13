@@ -16,7 +16,7 @@ typedef uint32_t grid_color_t;
 struct grid_font_model {
 
   void* font_handle;
-  uint8_t foo;
+  uint8_t initialized;
 };
 
 extern struct grid_font_model grid_font_state;

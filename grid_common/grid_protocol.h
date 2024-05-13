@@ -366,6 +366,22 @@
 #define GRID_LUA_FNC_G_PACKAGE_SEND_human "package_send"
 #define GRID_LUA_FNC_G_PACKAGE_SEND_fnptr l_grid_package_send
 
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "ggdp"
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_human "gui_draw_pixel"
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr l_grid_gui_draw_pixel
+
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short "ggdr"
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_human "gui_draw_rectangle"
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_fnptr l_grid_gui_draw_rectangle
+
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "ggdrf"
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_human "gui_draw_rectangle_filled"
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_fnptr l_grid_gui_draw_rectangle_filled
+
+#define GRID_LUA_FNC_G_GUI_DRAW_TEXT_short "ggdt"
+#define GRID_LUA_FNC_G_GUI_DRAW_TEXT_human "gui_draw_text"
+#define GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr l_grid_gui_draw_text
+
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 
 #define GRID_LUA_FNC_A_INIT_short "ini"

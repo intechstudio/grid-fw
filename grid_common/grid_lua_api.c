@@ -1709,6 +1709,18 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message) {
 
 /* ====================  MODULE SPECIFIC INITIALIZERS  ====================*/
 
+int grid_lua_vm_register_functions(struct grid_lua_model* lua, struct luaL_Reg* lua_lib) {
+
+  grid_lua_semaphore_lock(lua);
+
+  lua_getglobal(lua->L, "_G");
+  luaL_setfuncs(lua->L, lua_lib, 0);
+  lua_pop(lua->L, 1);
+
+  grid_lua_semaphore_release(lua);
+  return 0;
+}
+
 void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui) {
 
   if (ui->lua_ui_init_callback == NULL) {
@@ -1778,14 +1790,9 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, "keyboard.send_macro = function "
                          "(self,...) " GRID_LUA_FNC_G_KEYBOARD_SEND_short "(...) end");
 
+  grid_lua_vm_register_functions(lua, printlib);
+
   grid_lua_semaphore_lock(lua);
-
-  lua_getglobal(lua->L, "_G");
-  luaL_setfuncs(lua->L, printlib, 0);
-
-  lua_pop(lua->L, 1);
-  // grid_lua_debug_memory_stats(lua, "Printlib");
-
   grid_lua_semaphore_release(lua);
 }
 

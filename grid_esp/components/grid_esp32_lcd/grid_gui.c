@@ -1,7 +1,7 @@
 #include "grid_gui.h"
 #include "grid_font.h"
 #include <stdio.h>
-struct grid_gui_model grid_gui_state;
+struct grid_gui_model grid_gui_state = {0};
 
 uint8_t grid_gui_color_to_red(grid_color_t color) { return (color >> 24) & 0xFF; }
 uint8_t grid_gui_color_to_green(grid_color_t color) { return (color >> 16) & 0xFF; }
@@ -16,16 +16,19 @@ grid_color_t grid_gui_color_apply_alpha(grid_color_t color, uint8_t alpha) {
 }
 
 int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* framebuffer, uint32_t framebuffer_size, uint8_t bits_per_pixel, uint16_t width, uint16_t height) {
-  grid_gui_state.screen_handle = screen_handle;
-  grid_gui_state.framebuffer = framebuffer;
-  grid_gui_state.framebuffer_size = framebuffer_size;
-  grid_gui_state.bits_per_pixel = bits_per_pixel;
-  grid_gui_state.width = width;
-  grid_gui_state.height = height;
+  gui->screen_handle = screen_handle;
+  gui->framebuffer = framebuffer;
+  gui->framebuffer_size = framebuffer_size;
+  gui->bits_per_pixel = bits_per_pixel;
+  gui->width = width;
+  gui->height = height;
+  gui->framebuffer_changed_flag = 0;
   return 0;
 }
 
 int grid_gui_draw_pixel(struct grid_gui_model* gui, uint16_t x, uint16_t y, grid_color_t color) {
+
+  gui->framebuffer_changed_flag = 1;
 
   uint8_t alpha = grid_gui_color_to_alpha(color);
   uint8_t r = grid_gui_color_to_red(color);
@@ -165,7 +168,9 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t loopcounter) {
   char temp[10] = {0};
   sprintf(temp, "%d", loopcounter);
 
-  grid_font_draw_string(&grid_font_state, gui, 0, 1, 60, "hello", &cursor, grid_gui_color_from_rgb(0, 0, 255));
+  if (grid_font_state.initialized) {
+    grid_font_draw_string(&grid_font_state, gui, 0, 1, 60, "hello", &cursor, grid_gui_color_from_rgb(0, 0, 255));
+  }
 
   if (loopcounter > 30) {
 

@@ -9,6 +9,14 @@
 #include "freertos/semphr.h"
 #include "freertos/task.h"
 
+#include "grid_ui.h"
+
+#include "grid_ui_button.h"
+#include "grid_ui_encoder.h"
+#include "grid_ui_endless.h"
+#include "grid_ui_potmeter.h"
+#include "grid_ui_system.h"
+
 #include "esp_intr_alloc.h"
 #include "esp_log.h"
 #include "usb/usb_host.h"
@@ -127,6 +135,88 @@ struct grid_doublebuffer grid_doublebuffer_rx_array[6] = {0};
 
 char grid_doublebuffer_tx_memory_array[5][GRID_DOUBLE_BUFFER_TX_SIZE] = {0};
 char grid_doublebuffer_rx_memory_array[2][GRID_DOUBLE_BUFFER_RX_SIZE] = {0};
+
+#include "grid_lua_api_gui.h"
+extern const struct luaL_Reg grid_lua_api_gui_lib[];
+
+void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
+
+  // define encoder_init_function
+
+  grid_lua_vm_register_functions(lua, grid_lua_api_gui_lib);
+
+  grid_lua_dostring(lua, GRID_LUA_B_META_init);
+  grid_lua_dostring(lua, GRID_LUA_EP_META_init);
+
+  // create element array
+  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
+
+  // initialize 8 buttons
+  grid_lua_dostring(lua, "for i=0, 7 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=0, 7 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
+
+  // initialize 2 endless potentiometers as encoders
+  grid_lua_dostring(lua, "for i=8, 8  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=8, 8  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], endless_meta)  end");
+
+  grid_lua_dostring(lua, "for i=9, 12 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=9, 12 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
+
+  grid_lua_gc_try_collect(lua);
+
+  // initialize the system element
+  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "[13] = {index = 13}");
+  grid_lua_dostring(lua, GRID_LUA_SYS_META_init);
+  grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[13], system_meta)");
+
+  grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[13], system_meta)");
+
+  grid_platform_printf("TEST GUI\r\n");
+  grid_lua_dostring(lua, "print(0, 0, {255, 255, 255})");
+  grid_lua_dostring(lua, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "(160, 10, {255, 255, 255})");
+  grid_lua_dostring(lua, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "(160, 12, {255, 255, 255})");
+  grid_lua_dostring(lua, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short "(180, 10, 200, 20, {255, 255, 255})");
+  grid_lua_dostring(lua, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "(180, 30, 200, 40, {255, 255, 255})");
+  grid_lua_dostring(lua, GRID_LUA_FNC_G_GUI_DRAW_TEXT_short "(\"Hello, world!\", 100, 50, 20, {255, 255, 255})");
+}
+
+void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  // 16 pot, depth of 5, 14bit internal, 7bit result;
+  grid_ain_init(ain, 16, 5);  // TODO: 12 ain for TEK2
+  grid_led_init(led, 13 + 5); // TODO: 18 led for TEK2
+
+  uint8_t led_lookup[18] = {5, 6, 7, 8, 9, 10, 11, 12, 0, 17, 1, 17, 2, 17, 3, 17, 4, 17};
+
+  grid_led_lookup_init(led, led_lookup); // initialize the optional led index
+                                         // lookup table for array remapping
+
+  grid_ui_model_init(ui, 13 + 1); // 10+1 for the system element on TEK2
+
+  for (uint8_t j = 0; j < 13 + 1; j++) {
+
+    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+    if (j < 8) {
+
+      grid_ui_element_button_init(ele);
+
+    } else if (j < 9) {
+
+      grid_ui_element_endless_init(ele);
+
+    } else if (j < 13) {
+
+      grid_ui_element_button_init(ele);
+
+    } else {
+      grid_ui_element_system_init(ele);
+    }
+  }
+
+  ui->lua_ui_init_callback = grid_lua_ui_init_tek1;
+}
+
 
 void app_main(void) {
 
