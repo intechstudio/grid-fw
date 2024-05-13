@@ -170,14 +170,6 @@ void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[13], system_meta)");
 
   grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[13], system_meta)");
-
-  grid_platform_printf("TEST GUI\r\n");
-  grid_lua_dostring(lua, "print(0, 0, {255, 255, 255})");
-  grid_lua_dostring(lua, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "(160, 10, {255, 255, 255})");
-  grid_lua_dostring(lua, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "(160, 12, {255, 255, 255})");
-  grid_lua_dostring(lua, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short "(180, 10, 200, 20, {255, 255, 255})");
-  grid_lua_dostring(lua, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "(180, 30, 200, 40, {255, 255, 255})");
-  grid_lua_dostring(lua, GRID_LUA_FNC_G_GUI_DRAW_TEXT_short "(\"Hello, world!\", 100, 50, 20, {255, 255, 255})");
 }
 
 void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
@@ -216,7 +208,6 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   ui->lua_ui_init_callback = grid_lua_ui_init_tek1;
 }
-
 
 void app_main(void) {
 

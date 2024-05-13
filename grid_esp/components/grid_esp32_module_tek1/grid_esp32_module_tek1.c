@@ -107,9 +107,7 @@ void grid_esp32_module_tek1_task(void* arg) {
       } else if (mux_position == 8 || mux_position == 10 || mux_position == 12 || mux_position == 14) {
 
         uint8_t btn_num = ((mux_position - 8) / 2) % 4;
-        if (result->value < 500) {
-          grid_platform_printf("BTN %d\n", btn_num);
-        }
+
         grid_ui_button_store_input(btn_num + 8 + 1, &button_last_real_time[btn_num + 8 + 1], result->value, 12);
       }
 
@@ -134,7 +132,7 @@ void grid_esp32_module_tek1_task(void* arg) {
     struct grid_gui_model* gui = &grid_gui_state;
 
     // memset(framebuffer, 255, sizeof(framebuffer));
-
+    process_analog();
     if (grid_gui_state.framebuffer_changed_flag == 0) {
       taskYIELD();
       continue;
