@@ -20,6 +20,8 @@
 #include "grid_font.h"
 #include "grid_gui.h"
 
+#include "grid_lua_api.h"
+
 #include "grid_esp32_adc.h"
 
 static const char* TAG = "module_tek1";
@@ -124,12 +126,17 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   grid_gui_draw_demo(&grid_gui_state, loopcounter);
 
+  uint64_t gui_lastrealtime = 0;
+  struct grid_gui_model* gui = &grid_gui_state;
+
   while (1) {
+
+#define USE_SEMAPHORE
+#define USE_FRAMELIMIT
 
     // DO GUI THINGS
 
     loopcounter++;
-    struct grid_gui_model* gui = &grid_gui_state;
 
     // memset(framebuffer, 255, sizeof(framebuffer));
     process_analog();
@@ -137,6 +144,19 @@ void grid_esp32_module_tek1_task(void* arg) {
       taskYIELD();
       continue;
     }
+
+#ifdef USE_FRAMELIMIT
+    if (grid_platform_rtc_get_elapsed_time(gui_lastrealtime) < 30000) {
+      taskYIELD();
+      continue;
+    }
+#endif
+
+#ifdef USE_SEMAPHORE
+    grid_lua_semaphore_lock(&grid_lua_state);
+#endif
+
+    gui_lastrealtime = grid_platform_rtc_get_micros();
 
     grid_gui_state.framebuffer_changed_flag = 0;
 
@@ -188,6 +208,10 @@ void grid_esp32_module_tek1_task(void* arg) {
 
       grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
     }
+
+#ifdef USE_SEMAPHORE
+    grid_lua_semaphore_release(&grid_lua_state);
+#endif
 
     taskYIELD();
   }

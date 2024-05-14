@@ -19,7 +19,7 @@
 extern void grid_platform_printf(char const* fmt, ...);
 int l_grid_gui_draw_pixel(lua_State* L) {
 
-  grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
+  // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
 
   int x = luaL_checknumber(L, 1);
   int y = luaL_checknumber(L, 2);
@@ -33,7 +33,7 @@ int l_grid_gui_draw_pixel(lua_State* L) {
     lua_rawgeti(L, 3, 3);
     int b = luaL_checknumber(L, -1);
     // Use r, g, b values to set color
-    printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
+    // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
     grid_gui_draw_pixel(&grid_gui_state, x, y, grid_gui_color_from_rgb(r, g, b));
   }
@@ -45,7 +45,7 @@ int l_grid_gui_draw_pixel(lua_State* L) {
 
 int l_grid_gui_draw_rectangle(lua_State* L) {
 
-  grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
+  // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
 
   int x1 = luaL_checknumber(L, 1);
   int y1 = luaL_checknumber(L, 2);
@@ -61,7 +61,7 @@ int l_grid_gui_draw_rectangle(lua_State* L) {
     lua_rawgeti(L, 5, 3);
     int b = luaL_checknumber(L, -1);
     // Use r, g, b values to set color
-    grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
+    // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
     grid_gui_draw_rectangle(&grid_gui_state, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
   }
@@ -73,7 +73,7 @@ int l_grid_gui_draw_rectangle(lua_State* L) {
 
 int l_grid_gui_draw_rectangle_filled(lua_State* L) {
 
-  grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
+  // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
 
   int x1 = luaL_checknumber(L, 1);
   int y1 = luaL_checknumber(L, 2);
@@ -89,7 +89,7 @@ int l_grid_gui_draw_rectangle_filled(lua_State* L) {
     lua_rawgeti(L, 5, 3);
     int b = luaL_checknumber(L, -1);
     // Use r, g, b values to set color
-    grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
+    // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
     grid_gui_draw_rectangle_filled(&grid_gui_state, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
   }
@@ -121,13 +121,13 @@ int l_grid_gui_draw_text(lua_State* L) {
     b = luaL_checknumber(L, -1);
   }
   // Draw the text at (x, y) with optional font size and color
-  grid_platform_printf("Drawing text: \"%s\" at (%d, %d) with font size %d and color R=%d, G=%d, B=%d\n", text, x, y, font_size, r, g, b);
+  // grid_platform_printf("Drawing text: \"%s\" at (%d, %d) with font size %d and color R=%d, G=%d, B=%d\n", text, x, y, font_size, r, g, b);
   int cursor = 0;
 
   if (grid_font_state.initialized) {
     grid_font_draw_string(&grid_font_state, &grid_gui_state, x, y, font_size, text, &cursor, grid_gui_color_from_rgb(r, g, b));
   } else {
-    grid_platform_printf("NOT INITIALIZED\n");
+    // grid_platform_printf("NOT INITIALIZED\n");
   }
 
   return 0;

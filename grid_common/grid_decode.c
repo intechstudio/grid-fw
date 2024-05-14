@@ -454,19 +454,19 @@ uint8_t grid_decode_imediate_to_ui(char* header, char* chunk) {
 
     if (0 != strncmp(lua_script, "<?lua ", 6)) {
       // incorrect opening tag
-      printf("IMMEDIATE NOT OK %d: %s\r\n", length, lua_script);
+      // printf("IMMEDIATE NOT OK %d: %s\r\n", length, lua_script);
       return 1; // NOT OK
     }
 
     if (0 != strncmp(&lua_script[length - 3], " ?>", 3)) {
       // incorrect closing tag
-      printf("IMMEDIATE NOT OK %d: %s\r\n", length, lua_script);
+      // printf("IMMEDIATE NOT OK %d: %s\r\n", length, lua_script);
       return 1; // NOT OK
     }
 
     lua_script[length - 3] = '\0'; // add terminating zero
 
-    printf("IMMEDIATE %d: %s\r\n", length, lua_script);
+    // printf("IMMEDIATE %d: %s\r\n", length, lua_script);
 
     grid_lua_dostring(&grid_lua_state, &lua_script[6]);
 
