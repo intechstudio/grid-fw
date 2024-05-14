@@ -996,7 +996,7 @@ void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx
 
       // midi rx to lua
       grid_decode_midi_to_ui(header, chunk);
-    } else if (msg_class == GRID_CLASS_IMEDIATE_code) {
+    } else if (msg_class == GRID_CLASS_IMMEDIATE_code) {
 
       // run <?lua ... ?> style immediate script
       grid_decode_imediate_to_ui(header, chunk);

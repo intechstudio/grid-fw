@@ -448,9 +448,9 @@ uint8_t grid_decode_imediate_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    uint16_t length = grid_str_get_parameter(chunk, GRID_CLASS_IMEDIATE_ACTIONLENGTH_offset, GRID_CLASS_IMEDIATE_ACTIONLENGTH_length, &error);
+    uint16_t length = grid_str_get_parameter(chunk, GRID_CLASS_IMMEDIATE_ACTIONLENGTH_offset, GRID_CLASS_IMMEDIATE_ACTIONLENGTH_length, &error);
 
-    char* lua_script = &chunk[GRID_CLASS_IMEDIATE_ACTIONSTRING_offset];
+    char* lua_script = &chunk[GRID_CLASS_IMMEDIATE_ACTIONSTRING_offset];
 
     if (0 != strncmp(lua_script, "<?lua ", 6)) {
       // incorrect opening tag

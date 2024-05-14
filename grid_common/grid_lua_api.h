@@ -147,6 +147,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message);
 
 /*static*/ int l_grid_websocket_send(lua_State* L);
 /*static*/ int l_grid_package_send(lua_State* L);
+/*static*/ int l_grid_immediate_send(lua_State* L);
 /*static*/ int l_grid_elementname_send(lua_State* L);
 /*static*/ int l_grid_string_get(lua_State* L);
 
