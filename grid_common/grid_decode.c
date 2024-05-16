@@ -399,12 +399,16 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
   uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
-  if (msg_instr == GRID_INSTR_REPORT_code) {
+  uint8_t midi_channel = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, &error);
+  uint8_t midi_command = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, &error);
+  uint8_t midi_param1 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, &error);
+  uint8_t midi_param2 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
 
-    uint8_t midi_channel = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, &error);
-    uint8_t midi_command = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, &error);
-    uint8_t midi_param1 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, &error);
-    uint8_t midi_param2 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
+  char rx_cb_source[100] = {0};
+  sprintf(rx_cb_source, "if midirx_cb and type(midirx_cb) == 'function' then midirx_cb(%d, %d, %d, %d) end", midi_channel, midi_command, midi_param1, midi_param2);
+  grid_lua_dostring(&grid_lua_state, rx_cb_source);
+
+  if (msg_instr == GRID_INSTR_REPORT_code) {
 
     // printf("M: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1,
     // midi_param2);
