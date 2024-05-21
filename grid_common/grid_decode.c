@@ -397,6 +397,9 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
   uint8_t error = 0;
 
+  uint8_t sx = grid_str_get_parameter(header, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
+  uint8_t sy = grid_str_get_parameter(header, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
+
   uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
   uint8_t midi_channel = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, &error);
@@ -405,8 +408,8 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
   uint8_t midi_param2 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
 
   char rx_cb_source[200] = {0};
-  sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.midirx_cb and type(el.midirx_cb) == 'function' then el:midirx_cb(%d, %d, %d, %d) end end", midi_channel, midi_command, midi_param1,
-          midi_param2);
+  sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.midirx_cb and type(el.midirx_cb) == 'function' then el:midirx_cb({%d, %d, %d, %d}, {%d, %d, %d}) end end", midi_channel, midi_command,
+          midi_param1, midi_param2, msg_instr, sx, sy);
   grid_lua_dostring(&grid_lua_state, rx_cb_source);
 
   if (msg_instr == GRID_INSTR_REPORT_code) {

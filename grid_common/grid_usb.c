@@ -297,7 +297,10 @@ void grid_midi_rx_pop() {
 
     // SX SY Global, DX DY Global
     struct grid_msg_packet message;
-    grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
+    grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+    grid_msg_header_set_sx(&message, GRID_PARAMETER_GLOBAL_POSITION);
+    grid_msg_header_set_sy(&message, GRID_PARAMETER_GLOBAL_POSITION);
 
     // combine up to 6 midi messages into a packet
     for (uint8_t i = 0; i < 6; i++) {

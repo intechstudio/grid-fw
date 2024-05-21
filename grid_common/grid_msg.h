@@ -70,31 +70,31 @@ uint32_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* msg);
 
 uint32_t grid_msg_packet_get_length(struct grid_msg_packet* packet);
 
-void grid_msg_packet_header_set_len(struct grid_msg_packet* packet, uint16_t len);
+void grid_msg_header_set_len(struct grid_msg_packet* packet, uint16_t len);
 uint16_t grid_msg_packet_header_get_len(struct grid_msg_packet* packet);
 
-void grid_msg_packet_header_set_id(struct grid_msg_packet* packet, uint8_t id);
+void grid_msg_header_set_id(struct grid_msg_packet* packet, uint8_t id);
 uint8_t grid_msg_packet_header_get_id(struct grid_msg_packet* packet);
 
-void grid_msg_packet_header_set_dx(struct grid_msg_packet* packet, uint8_t dx);
+void grid_msg_header_set_dx(struct grid_msg_packet* packet, uint8_t dx);
 uint8_t grid_msg_packet_header_get_dx(struct grid_msg_packet* packet);
 
-void grid_msg_packet_header_set_dy(struct grid_msg_packet* packet, uint8_t dy);
+void grid_msg_header_set_dy(struct grid_msg_packet* packet, uint8_t dy);
 uint8_t grid_msg_packet_header_get_dy(struct grid_msg_packet* packet);
 
-void grid_msg_packet_header_set_sx(struct grid_msg_packet* packet, uint8_t sx);
+void grid_msg_header_set_sx(struct grid_msg_packet* packet, uint8_t sx);
 uint8_t grid_msg_packet_header_get_sx(struct grid_msg_packet* packet);
 
-void grid_msg_packet_header_set_sy(struct grid_msg_packet* packet, uint8_t sy);
+void grid_msg_header_set_sy(struct grid_msg_packet* packet, uint8_t sy);
 uint8_t grid_msg_packet_header_get_sy(struct grid_msg_packet* packet);
 
-void grid_msg_packet_header_set_rot(struct grid_msg_packet* packet, uint8_t rot);
+void grid_msg_header_set_rot(struct grid_msg_packet* packet, uint8_t rot);
 uint8_t grid_msg_packet_header_get_rot(struct grid_msg_packet* packet);
 
-void grid_msg_packet_header_set_age(struct grid_msg_packet* packet, uint8_t age);
+void grid_msg_header_set_age(struct grid_msg_packet* packet, uint8_t age);
 uint8_t grid_msg_packet_header_get_age(struct grid_msg_packet* packet);
 
-void grid_msg_packet_header_set_session(struct grid_msg_packet* packet, uint8_t session);
+void grid_msg_header_set_session(struct grid_msg_packet* packet, uint8_t session);
 uint8_t grid_msg_packet_header_get_session(struct grid_msg_packet* packet);
 
 uint32_t grid_msg_packet_header_get_length(struct grid_msg_packet* packet);
