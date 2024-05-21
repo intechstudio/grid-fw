@@ -32,6 +32,7 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk);
 uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk);
 uint8_t grid_decode_pagecount_to_ui(char* header, char* chunk);
 uint8_t grid_decode_midi_to_ui(char* header, char* chunk);
+uint8_t grid_decode_sysex_to_ui(char* header, char* chunk);
 uint8_t grid_decode_imediate_to_ui(char* header, char* chunk);
 uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk);
 

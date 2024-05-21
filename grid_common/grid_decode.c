@@ -444,6 +444,37 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
   return 0; // OK
 }
 
+uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
+
+  uint8_t error = 0;
+
+  uint8_t sx = grid_str_get_parameter(header, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
+  uint8_t sy = grid_str_get_parameter(header, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
+
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+
+  uint16_t length = grid_str_get_parameter(chunk, GRID_CLASS_MIDISYSEX_LENGTH_offset, GRID_CLASS_MIDISYSEX_LENGTH_length, &error);
+  uint8_t first = grid_str_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
+  uint8_t last = grid_str_get_parameter(chunk, GRID_CLASS_MIDISYSEX_PAYLOAD_offset + (length - 1) * 2, GRID_CLASS_MIDISYSEX_PAYLOAD_length, &error);
+
+  char sysex_string[100] = {0};
+
+  for (int i = 0; i < length * GRID_CLASS_MIDISYSEX_PAYLOAD_length; i++) {
+
+    sysex_string[i] = chunk[GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i];
+  }
+
+  if (first != 0xF0 || last != 0xF7) {
+    grid_port_debug_printf("Sysex invalid: %d %d", first, last);
+  }
+
+  char rx_cb_source[300] = {0};
+  sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.sysexrx_cb and type(el.sysexrx_cb) == 'function' then el:sysexrx_cb('%s', {%d, %d, %d}) end end", sysex_string, msg_instr, sx, sy);
+  grid_lua_dostring(&grid_lua_state, rx_cb_source);
+
+  return 0;
+}
+
 uint8_t grid_decode_imediate_to_ui(char* header, char* chunk) {
 
   if (grid_check_destination(header, GRID_DESTINATION_IS_ME | GRID_DESTINATION_IS_GLOBAL | GRID_DESTINATION_IS_LOCAL) == false) {
