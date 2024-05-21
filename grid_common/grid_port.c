@@ -40,11 +40,15 @@ void grid_transport_register_buffer(struct grid_transport_model* transport, stru
 
 void grid_transport_register_doublebuffer(struct grid_transport_model* transport, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx) {
 
-  doublebuffer_tx->index = transport->doublebuffer_array_length;
-  doublebuffer_tx->parent = transport;
+  if (doublebuffer_tx != NULL) {
+    doublebuffer_tx->index = transport->doublebuffer_array_length;
+    doublebuffer_tx->parent = transport;
+  }
 
-  doublebuffer_rx->index = transport->doublebuffer_array_length;
-  doublebuffer_rx->parent = transport;
+  if (doublebuffer_rx != NULL) {
+    doublebuffer_rx->index = transport->doublebuffer_array_length;
+    doublebuffer_rx->parent = transport;
+  }
 
   transport->doublebuffer_tx_array[transport->doublebuffer_array_length] = doublebuffer_tx;
   transport->doublebuffer_rx_array[transport->doublebuffer_array_length] = doublebuffer_rx;
@@ -636,11 +640,15 @@ void grid_port_receiver_softreset(struct grid_port* por, struct grid_doublebuffe
   por->partner_status = 0;
   por->partner_last_timestamp = grid_platform_rtc_get_micros();
 
+  grid_platform_reset_grid_transmitter(por->direction);
+
+  if (rx_doublebuffer == NULL) {
+    return;
+  }
+
   rx_doublebuffer->seek_start_index = 0;
   rx_doublebuffer->read_start_index = 0;
   rx_doublebuffer->write_index = 0;
-
-  grid_platform_reset_grid_transmitter(por->direction);
 
   for (uint16_t i = 0; i < rx_doublebuffer->buffer_size; i++) {
     rx_doublebuffer->buffer_storage[i] = 0;
@@ -988,7 +996,7 @@ void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx
 
       // midi rx to lua
       grid_decode_midi_to_ui(header, chunk);
-    } else if (msg_class == GRID_CLASS_IMEDIATE_code) {
+    } else if (msg_class == GRID_CLASS_IMMEDIATE_code) {
 
       // run <?lua ... ?> style immediate script
       grid_decode_imediate_to_ui(header, chunk);

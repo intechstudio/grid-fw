@@ -399,12 +399,16 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
   uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
 
-  if (msg_instr == GRID_INSTR_REPORT_code) {
+  uint8_t midi_channel = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, &error);
+  uint8_t midi_command = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, &error);
+  uint8_t midi_param1 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, &error);
+  uint8_t midi_param2 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
 
-    uint8_t midi_channel = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, &error);
-    uint8_t midi_command = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, &error);
-    uint8_t midi_param1 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, &error);
-    uint8_t midi_param2 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
+  char rx_cb_source[100] = {0};
+  sprintf(rx_cb_source, "if midirx_cb and type(midirx_cb) == 'function' then midirx_cb(%d, %d, %d, %d) end", midi_channel, midi_command, midi_param1, midi_param2);
+  grid_lua_dostring(&grid_lua_state, rx_cb_source);
+
+  if (msg_instr == GRID_INSTR_REPORT_code) {
 
     // printf("M: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1,
     // midi_param2);
@@ -448,25 +452,25 @@ uint8_t grid_decode_imediate_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    uint16_t length = grid_str_get_parameter(chunk, GRID_CLASS_IMEDIATE_ACTIONLENGTH_offset, GRID_CLASS_IMEDIATE_ACTIONLENGTH_length, &error);
+    uint16_t length = grid_str_get_parameter(chunk, GRID_CLASS_IMMEDIATE_ACTIONLENGTH_offset, GRID_CLASS_IMMEDIATE_ACTIONLENGTH_length, &error);
 
-    char* lua_script = &chunk[GRID_CLASS_IMEDIATE_ACTIONSTRING_offset];
+    char* lua_script = &chunk[GRID_CLASS_IMMEDIATE_ACTIONSTRING_offset];
 
     if (0 != strncmp(lua_script, "<?lua ", 6)) {
       // incorrect opening tag
-      printf("IMMEDIATE NOT OK %d: %s\r\n", length, lua_script);
+      // printf("IMMEDIATE NOT OK %d: %s\r\n", length, lua_script);
       return 1; // NOT OK
     }
 
     if (0 != strncmp(&lua_script[length - 3], " ?>", 3)) {
       // incorrect closing tag
-      printf("IMMEDIATE NOT OK %d: %s\r\n", length, lua_script);
+      // printf("IMMEDIATE NOT OK %d: %s\r\n", length, lua_script);
       return 1; // NOT OK
     }
 
     lua_script[length - 3] = '\0'; // add terminating zero
 
-    printf("IMMEDIATE %d: %s\r\n", length, lua_script);
+    // printf("IMMEDIATE %d: %s\r\n", length, lua_script);
 
     grid_lua_dostring(&grid_lua_state, &lua_script[6]);
 

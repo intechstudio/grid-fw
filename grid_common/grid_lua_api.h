@@ -147,6 +147,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message);
 
 /*static*/ int l_grid_websocket_send(lua_State* L);
 /*static*/ int l_grid_package_send(lua_State* L);
+/*static*/ int l_grid_immediate_send(lua_State* L);
 /*static*/ int l_grid_elementname_send(lua_State* L);
 /*static*/ int l_grid_string_get(lua_State* L);
 
@@ -201,6 +202,8 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message);
 /*static*/ int l_grid_timer_start(lua_State* L);
 /*static*/ int l_grid_timer_stop(lua_State* L);
 /*static*/ int l_grid_event_trigger(lua_State* L);
+
+int grid_lua_vm_register_functions(struct grid_lua_model* lua, struct luaL_Reg* lua_lib);
 
 void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui);
 

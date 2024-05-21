@@ -4,8 +4,6 @@ idf_component_register(
         "linker_fragment.lf"
 
     SRCS
-
-
         "../../../grid_common/grid_protocol.c"
         "../../../grid_common/grid_ain.c"
         "../../../grid_common/grid_led.c"

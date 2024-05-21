@@ -9,6 +9,14 @@
 #include "freertos/semphr.h"
 #include "freertos/task.h"
 
+#include "grid_ui.h"
+
+#include "grid_ui_button.h"
+#include "grid_ui_encoder.h"
+#include "grid_ui_endless.h"
+#include "grid_ui_potmeter.h"
+#include "grid_ui_system.h"
+
 #include "esp_intr_alloc.h"
 #include "esp_log.h"
 #include "usb/usb_host.h"
@@ -29,12 +37,13 @@
 #include "grid_esp32_module_pb44.h"
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
+#include "grid_esp32_module_tek1.h"
 #include "grid_esp32_module_tek2.h"
 #include "pico_firmware.h"
 
 #include "grid_esp32_trace.h"
 
-// module task priority must be the lowest to ma it run most of the time
+// module task priority must be the lowest to make it run most of the time
 #define MODULE_TASK_PRIORITY 0
 
 #define LED_TASK_PRIORITY 2
@@ -48,15 +57,15 @@
 #include "driver/ledc.h"
 #include <esp_timer.h>
 
+#include "driver/uart.h"
+#include "esp_check.h"
+#include "esp_log.h"
 #include "grid_esp32.h"
+#include "grid_esp32_lcd.h"
 #include "grid_esp32_nvm.h"
 #include "grid_esp32_port.h"
 #include "grid_esp32_swd.h"
 #include "grid_esp32_usb.h"
-
-#include "driver/uart.h"
-#include "esp_check.h"
-#include "esp_log.h"
 #include "rom/ets_sys.h" // For ets_printf
 
 #include "../../grid_common/grid_ain.h"
@@ -113,10 +122,105 @@ static void check_heap(void) {
   ESP_LOGI(TAG, "free RAM is %d. Integrity: %d", freeRAM, heap_caps_check_integrity_all(true));
 }
 
+struct grid_port grid_port_array[6] = {0};
+
+struct grid_buffer grid_buffer_tx_array[6] = {0};
+struct grid_buffer grid_buffer_rx_array[6] = {0};
+
+char grid_buffer_tx_memory_array[6][GRID_BUFFER_SIZE] = {0};
+char grid_buffer_rx_memory_array[6][GRID_BUFFER_SIZE] = {0};
+
+struct grid_doublebuffer grid_doublebuffer_tx_array[6] = {0};
+struct grid_doublebuffer grid_doublebuffer_rx_array[6] = {0};
+
+char grid_doublebuffer_tx_memory_array[5][GRID_DOUBLE_BUFFER_TX_SIZE] = {0};
+char grid_doublebuffer_rx_memory_array[2][GRID_DOUBLE_BUFFER_RX_SIZE] = {0};
+
+#include "grid_lua_api_gui.h"
+extern const struct luaL_Reg grid_lua_api_gui_lib[];
+
+void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
+
+  // define encoder_init_function
+
+  grid_lua_vm_register_functions(lua, grid_lua_api_gui_lib);
+
+  grid_lua_dostring(lua, GRID_LUA_B_META_init);
+  grid_lua_dostring(lua, GRID_LUA_EP_META_init);
+
+  // create element array
+  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
+
+  // initialize 8 buttons
+  grid_lua_dostring(lua, "for i=0, 7 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=0, 7 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
+
+  // initialize 2 endless potentiometers as encoders
+  grid_lua_dostring(lua, "for i=8, 8  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=8, 8  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], endless_meta)  end");
+
+  grid_lua_dostring(lua, "for i=9, 12 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=9, 12 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
+
+  grid_lua_gc_try_collect(lua);
+
+  // initialize the system element
+  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "[13] = {index = 13}");
+  grid_lua_dostring(lua, GRID_LUA_SYS_META_init);
+  grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[13], system_meta)");
+
+  grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[13], system_meta)");
+}
+
+void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  // 16 pot, depth of 5, 14bit internal, 7bit result;
+  grid_ain_init(ain, 16, 5);  // TODO: 12 ain for TEK2
+  grid_led_init(led, 13 + 5); // TODO: 18 led for TEK2
+
+  uint8_t led_lookup[18] = {5, 6, 7, 8, 9, 10, 11, 12, 0, 17, 1, 17, 2, 17, 3, 17, 4, 17};
+
+  grid_led_lookup_init(led, led_lookup); // initialize the optional led index
+                                         // lookup table for array remapping
+
+  grid_ui_model_init(ui, 13 + 1); // 10+1 for the system element on TEK2
+
+  for (uint8_t j = 0; j < 13 + 1; j++) {
+
+    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+    if (j < 8) {
+
+      grid_ui_element_button_init(ele);
+
+    } else if (j < 9) {
+
+      grid_ui_element_endless_init(ele);
+
+    } else if (j < 13) {
+
+      grid_ui_element_button_init(ele);
+
+    } else {
+      grid_ui_element_system_init(ele);
+    }
+  }
+
+  ui->lua_ui_init_callback = grid_lua_ui_init_tek1;
+}
+
 void app_main(void) {
 
   // set console baud rate
   ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
+
+  esp_log_level_set("*", ESP_LOG_INFO);
+  uint8_t loopcounter = 0;
+
+  TaskHandle_t core2_task_hdl;
+  xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024 * 3, NULL, 4, &core2_task_hdl, 1);
+
+  // grid_lcd_hardware_init();
 
   esp_log_level_set("*", ESP_LOG_INFO);
 
@@ -156,6 +260,8 @@ void app_main(void) {
     grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA) {
     grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA) {
+    grid_module_tek1_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
     grid_module_pb44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else {
@@ -173,9 +279,6 @@ void app_main(void) {
 
   TaskHandle_t usb_task_hdl;
   xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6, &usb_task_hdl, 1);
-
-  TaskHandle_t core2_task_hdl;
-  xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024 * 3, NULL, 4, &core2_task_hdl, 1);
 
   // GRID MODULE INITIALIZATION SEQUENCE
 
@@ -202,56 +305,77 @@ void app_main(void) {
   // ================== START: grid_module_pbf4_init() ================== //
 
   ESP_LOGI(TAG, "===== PORT INIT =====");
+  for (uint8_t i = 0; i < 6; i++) {
+    uint8_t types[6] = {GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_UI, GRID_PORT_TYPE_USB};
+    uint8_t directions[6] = {GRID_CONST_NORTH, GRID_CONST_EAST, GRID_CONST_SOUTH, GRID_CONST_WEST, 0, 0};
+    grid_port_init(&grid_port_array[i], types[i], directions[i]);
+
+    grid_buffer_tx_array[i].buffer_length = sizeof(grid_buffer_tx_memory_array[i]);
+    grid_buffer_tx_array[i].buffer_storage = grid_buffer_tx_memory_array[i];
+    grid_buffer_init(&grid_buffer_tx_array[i], sizeof(grid_buffer_tx_memory_array[i]));
+
+    grid_buffer_rx_array[i].buffer_length = sizeof(grid_buffer_rx_memory_array[i]);
+    grid_buffer_rx_array[i].buffer_storage = grid_buffer_rx_memory_array[i];
+    grid_buffer_init(&grid_buffer_rx_array[i], sizeof(grid_buffer_rx_memory_array[i]));
+
+    grid_doublebuffer_tx_array[i].buffer_size = 0;
+    grid_doublebuffer_tx_array[i].buffer_storage = NULL;
+
+    if (i < 4) {
+      // UART
+      grid_doublebuffer_tx_array[i].buffer_size = sizeof(grid_doublebuffer_tx_memory_array[i]);
+      grid_doublebuffer_tx_array[i].buffer_storage = &grid_doublebuffer_tx_memory_array[i];
+    }
+
+    if (i == 5) {
+      // USB
+
+      grid_doublebuffer_tx_array[i].buffer_size = sizeof(grid_doublebuffer_tx_memory_array[i - 1]);
+      grid_doublebuffer_tx_array[i].buffer_storage = &grid_doublebuffer_tx_memory_array[i - 1];
+
+      grid_doublebuffer_rx_array[i].buffer_size = sizeof(grid_doublebuffer_rx_memory_array[0]);
+      grid_doublebuffer_rx_array[i].buffer_storage = &grid_doublebuffer_rx_memory_array[0];
+    }
+  }
 
   grid_transport_init(&grid_transport_state);
 
-  ESP_LOGI(TAG, "Transport done");
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[0]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[1]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[2]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[3]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[4]);
+  grid_transport_register_port(&grid_transport_state, &grid_port_array[5]);
 
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_NORTH));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_EAST));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_SOUTH));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_WEST));
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[0], &grid_buffer_rx_array[0]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[1], &grid_buffer_rx_array[1]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[2], &grid_buffer_rx_array[2]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[3], &grid_buffer_rx_array[3]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[4], &grid_buffer_rx_array[4]);
+  grid_transport_register_buffer(&grid_transport_state, &grid_buffer_tx_array[5], &grid_buffer_rx_array[5]);
 
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_UI, 0));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USB, 0));
-
-  ESP_LOGI(TAG, "Port done");
-
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-  grid_transport_register_buffer(&grid_transport_state, grid_buffer_allocate_init(GRID_BUFFER_SIZE), grid_buffer_allocate_init(GRID_BUFFER_SIZE));
-
-  ESP_LOGI(TAG, "Buffer done");
-
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-  grid_transport_register_doublebuffer(&grid_transport_state, grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_TX_SIZE), grid_doublebuffer_allocate_init(GRID_DOUBLE_BUFFER_RX_SIZE));
-
-  ESP_LOGI(TAG, "Doublebuffer done");
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[0], NULL);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[1], NULL);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[2], NULL);
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[3], NULL);
+  grid_transport_register_doublebuffer(&grid_transport_state, NULL, NULL);                                                     // UI
+  grid_transport_register_doublebuffer(&grid_transport_state, &grid_doublebuffer_tx_array[5], &grid_doublebuffer_rx_array[5]); // USB
 
   ESP_LOGI(TAG, "===== BANK INIT =====");
   grid_sys_set_bank(&grid_sys_state, 0);
   ets_delay_us(2000);
 
+  check_heap();
   xSemaphoreGive(ui_busy_semaphore);
+
+  if (grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_TEK1_RevA) {
+  }
   grid_ui_page_load(&grid_ui_state, 0); // load page 0
-
-  // while (grid_ui_bulk_pageread_is_in_progress(&grid_ui_state))
-  // {
-  //     grid_ui_bulk_pageread_next(&grid_ui_state);
-  // }
-
   SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
   ESP_LOGI(TAG, "===== UI TASK INIT =====");
+
+  check_heap();
 
   TaskHandle_t module_task_hdl;
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD) {
@@ -268,6 +392,8 @@ void app_main(void) {
     xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA) {
     xTaskCreatePinnedToCore(grid_esp32_module_tek2_task, "tek2", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA) {
+    xTaskCreatePinnedToCore(grid_esp32_module_tek1_task, "tek1", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
     xTaskCreatePinnedToCore(grid_esp32_module_pb44_task, "pb44", 1024 * 3, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else {

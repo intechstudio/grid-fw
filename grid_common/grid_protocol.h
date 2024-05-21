@@ -366,6 +366,26 @@
 #define GRID_LUA_FNC_G_PACKAGE_SEND_human "package_send"
 #define GRID_LUA_FNC_G_PACKAGE_SEND_fnptr l_grid_package_send
 
+#define GRID_LUA_FNC_G_IMMEDIATE_SEND_short "gis"
+#define GRID_LUA_FNC_G_IMMEDIATE_SEND_human "immediate_send"
+#define GRID_LUA_FNC_G_IMMEDIATE_SEND_fnptr l_grid_immediate_send
+
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "ggdp"
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_human "gui_draw_pixel"
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr l_grid_gui_draw_pixel
+
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short "ggdr"
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_human "gui_draw_rectangle"
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_fnptr l_grid_gui_draw_rectangle
+
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "ggdrf"
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_human "gui_draw_rectangle_filled"
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_fnptr l_grid_gui_draw_rectangle_filled
+
+#define GRID_LUA_FNC_G_GUI_DRAW_TEXT_short "ggdt"
+#define GRID_LUA_FNC_G_GUI_DRAW_TEXT_human "gui_draw_text"
+#define GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr l_grid_gui_draw_text
+
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 
 #define GRID_LUA_FNC_A_INIT_short "ini"
@@ -665,15 +685,15 @@
 #define GRID_CLASS_NVMDEFRAG_LASTHEADER_length 2
 
 // RUN immediate
-#define GRID_CLASS_IMEDIATE_code 0x085
-#define GRID_CLASS_IMEDIATE_frame_start "%c%03x_....", GRID_CONST_STX, GRID_CLASS_IMEDIATE_code
-#define GRID_CLASS_IMEDIATE_frame_end "%c", GRID_CONST_ETX
+#define GRID_CLASS_IMMEDIATE_code 0x085
+#define GRID_CLASS_IMMEDIATE_frame_start "%c%03x_....", GRID_CONST_STX, GRID_CLASS_IMMEDIATE_code
+#define GRID_CLASS_IMMEDIATE_frame_end "%c", GRID_CONST_ETX
 
-#define GRID_CLASS_IMEDIATE_ACTIONLENGTH_offset 5
-#define GRID_CLASS_IMEDIATE_ACTIONLENGTH_length 4
+#define GRID_CLASS_IMMEDIATE_ACTIONLENGTH_offset 5
+#define GRID_CLASS_IMMEDIATE_ACTIONLENGTH_length 4
 
-#define GRID_CLASS_IMEDIATE_ACTIONSTRING_offset 9
-#define GRID_CLASS_IMEDIATE_ACTIONSTRING_length 0
+#define GRID_CLASS_IMMEDIATE_ACTIONSTRING_offset 9
+#define GRID_CLASS_IMMEDIATE_ACTIONSTRING_length 0
 
 // 090 HID KEYBOARD STATUS
 

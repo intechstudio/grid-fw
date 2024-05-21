@@ -859,6 +859,13 @@ int main() {
   gpio_init(GRID_PICO_PIN_LED);
   gpio_set_dir(GRID_PICO_PIN_LED, GPIO_OUT);
 
+  gpio_init(GRID_PICO_LCD_RESET_PIN);
+  gpio_put(GRID_PICO_LCD_RESET_PIN, 1);
+  gpio_set_dir(GRID_PICO_LCD_RESET_PIN, GPIO_OUT);
+
+  gpio_init(GRID_PICO_LCD_BACKLIGHT_PIN);
+  gpio_set_dir(GRID_PICO_LCD_BACKLIGHT_PIN, GPIO_OUT);
+  gpio_put(GRID_PICO_LCD_BACKLIGHT_PIN, 0);
   // gpio_init(GRID_PICO_PIN_INTERRUPT);
   // gpio_set_dir(GRID_PICO_PIN_INTERRUPT, GPIO_OUT);
 
