@@ -66,6 +66,7 @@ void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buf
   template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] = 0;
   template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] = 64;
   template_parameter_list[GRID_LUA_FNC_E_ENCODER_VELOCITY_index] = 50;
+  template_parameter_list[GRID_LUA_FNC_E_ENCODER_SENSITIVITY_index] = 100;
 }
 
 void grid_ui_element_encoder_event_clear_cb(struct grid_ui_event* eve) {

@@ -96,8 +96,13 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 #define GRID_LUA_FNC_E_ENCODER_VELOCITY_short "ev0"
 #define GRID_LUA_FNC_E_ENCODER_VELOCITY_human "encoder_velocity"
 
+#define GRID_LUA_FNC_E_ENCODER_SENSITIVITY_index 16
+#define GRID_LUA_FNC_E_ENCODER_SENSITIVITY_helper "16"
+#define GRID_LUA_FNC_E_ENCODER_SENSITIVITY_short "ese"
+#define GRID_LUA_FNC_E_ENCODER_SENSITIVITY_human "encoder_sensitivity"
+
 // Encoder parameters
-#define GRID_LUA_FNC_E_LIST_length 16
+#define GRID_LUA_FNC_E_LIST_length 17
 
 // Encoder init function
 #define GRID_LUA_E_META_init                                                                                                                                                                           \
@@ -137,6 +142,8 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
   "gtv(self.index, " GRID_LUA_FNC_E_ENCODER_STATE_helper ", a) end, \
   " GRID_LUA_FNC_E_ENCODER_VELOCITY_short "=function (self,a) return "                                                                                                                                 \
   "gtv(self.index, " GRID_LUA_FNC_E_ENCODER_VELOCITY_helper ", a) end, \
+  " GRID_LUA_FNC_E_ENCODER_SENSITIVITY_short "=function (self,a) return "                                                                                                                                 \
+  "gtv(self.index, " GRID_LUA_FNC_E_ENCODER_SENSITIVITY_helper ", a) end, \
   \
   " GRID_LUA_FNC_A_INIT_short " = function (self) print('undefined action') end,\
   " GRID_LUA_FNC_A_ENCODER_short " = function (self) print('undefined action') end,\
