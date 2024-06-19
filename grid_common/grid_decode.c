@@ -745,7 +745,7 @@ uint8_t grid_decode_uptime_to_ui(char* header, char* chunk) {
 
     uint64_t uptime = grid_platform_rtc_get_micros();
 
-    grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_UPTIME_UPTIME_offset, GRID_CLASS_UPTIME_UPTIME_length, (uint32_t)uptime);
+    grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_UPTIME_UPTIME_offset, GRID_CLASS_UPTIME_UPTIME_length, uptime);
 
     uint32_t milliseconds = uptime / MS_TO_US % 1000;
     uint32_t seconds = uptime / MS_TO_US / 1000 % 60;

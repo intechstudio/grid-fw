@@ -135,7 +135,6 @@ void grid_esp32_module_tek1_task(void* arg) {
 #define USE_FRAMELIMIT
 
     // DO GUI THINGS
-
     loopcounter++;
 
     // memset(framebuffer, 255, sizeof(framebuffer));
