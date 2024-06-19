@@ -142,7 +142,7 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
   "gtv(self.index, " GRID_LUA_FNC_E_ENCODER_STATE_helper ", a) end, \
   " GRID_LUA_FNC_E_ENCODER_VELOCITY_short "=function (self,a) return "                                                                                                                                 \
   "gtv(self.index, " GRID_LUA_FNC_E_ENCODER_VELOCITY_helper ", a) end, \
-  " GRID_LUA_FNC_E_ENCODER_SENSITIVITY_short "=function (self,a) return "                                                                                                                                 \
+  " GRID_LUA_FNC_E_ENCODER_SENSITIVITY_short "=function (self,a) return "                                                                                                                              \
   "gtv(self.index, " GRID_LUA_FNC_E_ENCODER_SENSITIVITY_helper ", a) end, \
   \
   " GRID_LUA_FNC_A_INIT_short " = function (self) print('undefined action') end,\
