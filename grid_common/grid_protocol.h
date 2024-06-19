@@ -237,6 +237,7 @@
 
 #define GRID_LUA_FNC_G_MIDI_SEND_short "gms"
 #define GRID_LUA_FNC_G_MIDI_SEND_human "midi_send"
+#define GRID_LUA_FNC_G_MIDI_SEND_usage "midi_send(int channel, int command, int parameter1, int parameter2) Sends standard MIDI message"
 #define GRID_LUA_FNC_G_MIDI_SEND_fnptr l_grid_midi_send
 
 #define GRID_LUA_FNC_G_MIDISYSEX_SEND_short "gmss"
