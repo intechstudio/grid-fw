@@ -49,12 +49,12 @@ uint32_t sum_1 = 0;
 uint32_t sum_2 = 0;
 
 int main(void) {
-  ulp_riscv_uart_cfg_t cfg = {
-      .tx_pin = 16,
-  };
+  // ulp_riscv_uart_cfg_t cfg = {
+  //     .tx_pin = 16,
+  // };
 
-  ulp_riscv_uart_init(&s_print_uart, &cfg);
-  ulp_riscv_print_install((putc_fn_t)ulp_riscv_uart_putc, &s_print_uart);
+  // ulp_riscv_uart_init(&s_print_uart, &cfg);
+  // ulp_riscv_print_install((putc_fn_t)ulp_riscv_uart_putc, &s_print_uart);
 
   int cnt = 0;
 
@@ -73,14 +73,14 @@ int main(void) {
 
     if (adc_result_ready < UINT32_MAX / 2) {
 
-      ulp_riscv_gpio_output_level(cfg.tx_pin, 0);
+      // ulp_riscv_gpio_output_level(cfg.tx_pin, 0);
 
       adc_result_ready++;
       adc_value_1 = sum_1 / adc_result_ready;
       adc_value_2 = sum_2 / adc_result_ready;
     } else { // result was read during the conversion, drop the latest sample
 
-      ulp_riscv_gpio_output_level(cfg.tx_pin, 1);
+      // ulp_riscv_gpio_output_level(cfg.tx_pin, 1);
 
       adc_result_ready++;
       sum_1 = 0;

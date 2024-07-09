@@ -131,6 +131,7 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   while (1) {
 
+    grid_gui_draw_demo(&grid_gui_state, loopcounter);
 #define USE_SEMAPHORE
 #define USE_FRAMELIMIT
 

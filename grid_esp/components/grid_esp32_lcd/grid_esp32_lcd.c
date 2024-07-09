@@ -84,8 +84,8 @@ void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd) {
   esp_lcd_panel_io_handle_t io_handle = NULL;
   esp_lcd_panel_io_spi_config_t io_config;
   memset(&io_config, 0, sizeof(io_config));
-  io_config.dc_gpio_num = PIN_NUM_DC, io_config.cs_gpio_num = PIN_NUM_CS, io_config.pclk_hz = LCD_PIXEL_CLOCK_HZ, io_config.lcd_cmd_bits = 8, io_config.lcd_param_bits = 8, io_config.spi_mode = 0,
-  io_config.trans_queue_depth = 10, io_config.on_color_trans_done = NULL;
+  io_config.dc_gpio_num = PIN_NUM_DC, io_config.cs_gpio_num = (false ? 16 : PIN_NUM_CS), io_config.pclk_hz = LCD_PIXEL_CLOCK_HZ, io_config.lcd_cmd_bits = 8, io_config.lcd_param_bits = 8,
+  io_config.spi_mode = 0, io_config.trans_queue_depth = 10, io_config.on_color_trans_done = NULL;
   // Attach the LCD to the SPI bus
   esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_SPI_HOST, &io_config, &io_handle);
 

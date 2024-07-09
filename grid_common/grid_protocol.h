@@ -17,7 +17,7 @@
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
 #define GRID_PROTOCOL_VERSION_MINOR 2
-#define GRID_PROTOCOL_VERSION_PATCH 36
+#define GRID_PROTOCOL_VERSION_PATCH 37
 
 // must not change because it would break profiles
 #define GRID_PARAMETER_ELEMENT_SYSTEM 0
@@ -66,6 +66,10 @@
 
 #define GRID_MODULE_TEK1_RevA 225
 #define GRID_MODULE_TEK2_RevA 17
+
+#define GRID_MODULE_VSN1_RevA 81
+#define GRID_MODULE_VSN1R_RevA 49
+#define GRID_MODULE_VSN2_RevA 113
 
 #define GRID_MODULE_PB44_RevA 145
 
