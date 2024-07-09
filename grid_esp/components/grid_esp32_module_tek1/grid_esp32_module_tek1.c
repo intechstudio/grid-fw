@@ -118,7 +118,15 @@ void grid_esp32_module_tek1_task(void* arg) {
   }
 
   grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
-  grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state);
+
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
+    grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state, 0);
+  }
+
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
+    grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state, 1);
+  }
+
   grid_font_init(&grid_font_state);
   grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuffer, sizeof(framebuffer), FRAMEBUFFER_BITS_PER_PIXEL, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -206,7 +214,8 @@ void grid_esp32_module_tek1_task(void* arg) {
         abort();
       }
 
-      grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
+      grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 0, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
+      grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 1, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
     }
 
 #ifdef USE_SEMAPHORE

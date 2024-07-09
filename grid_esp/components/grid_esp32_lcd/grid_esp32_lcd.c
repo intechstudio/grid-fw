@@ -49,10 +49,14 @@ bool ready_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t*
 
 esp_lcd_panel_io_callbacks_t lcd_callbacks = {.on_color_trans_done = ready_cb};
 
-int grid_esp32_lcd_draw_bitmap_blocking(struct grid_esp32_lcd_model* lcd, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void* framebuffer) {
+int grid_esp32_lcd_draw_bitmap_blocking(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void* framebuffer) {
+
+  if (lcd->lcd_handle[lcd_index] == NULL) {
+    return 1;
+  }
 
   lcd_flush_ready = 0;
-  esp_lcd_panel_draw_bitmap((esp_lcd_panel_handle_t)lcd->lcd_handle, x, y, x + width, y + height, framebuffer);
+  esp_lcd_panel_draw_bitmap((esp_lcd_panel_handle_t)lcd->lcd_handle[lcd_index], x, y, x + width, y + height, framebuffer);
   while (!lcd_flush_ready)
     ;
 
@@ -60,13 +64,14 @@ int grid_esp32_lcd_draw_bitmap_blocking(struct grid_esp32_lcd_model* lcd, uint16
 }
 
 // global so it can be used after init
-esp_lcd_panel_handle_t lcd_handle;
 
-struct grid_esp32_lcd_model grid_esp32_lcd_state;
+struct grid_esp32_lcd_model grid_esp32_lcd_state = {0};
 
 void grid_esp32_lcd_model_init(struct grid_esp32_lcd_model* lcd) { lcd->foo = 255; }
 
-void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd) {
+void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index) {
+
+  esp_lcd_panel_handle_t lcd_handle;
 
   // pinMode(PIN_NUM_BCKL, OUTPUT);
   spi_bus_config_t bus_config;
@@ -84,7 +89,7 @@ void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd) {
   esp_lcd_panel_io_handle_t io_handle = NULL;
   esp_lcd_panel_io_spi_config_t io_config;
   memset(&io_config, 0, sizeof(io_config));
-  io_config.dc_gpio_num = PIN_NUM_DC, io_config.cs_gpio_num = (false ? 16 : PIN_NUM_CS), io_config.pclk_hz = LCD_PIXEL_CLOCK_HZ, io_config.lcd_cmd_bits = 8, io_config.lcd_param_bits = 8,
+  io_config.dc_gpio_num = PIN_NUM_DC, io_config.cs_gpio_num = (lcd_index ? 16 : PIN_NUM_CS), io_config.pclk_hz = LCD_PIXEL_CLOCK_HZ, io_config.lcd_cmd_bits = 8, io_config.lcd_param_bits = 8,
   io_config.spi_mode = 0, io_config.trans_queue_depth = 10, io_config.on_color_trans_done = NULL;
   // Attach the LCD to the SPI bus
   esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_SPI_HOST, &io_config, &io_handle);
@@ -114,7 +119,7 @@ void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd) {
 
   esp_lcd_panel_swap_xy(lcd_handle, LCD_SWAP_XY);
   esp_lcd_panel_set_gap(lcd_handle, LCD_GAP_X, LCD_GAP_Y);
-  esp_lcd_panel_mirror(lcd_handle, LCD_MIRROR_X, LCD_MIRROR_Y);
+  esp_lcd_panel_mirror(lcd_handle, lcd_index ? !LCD_MIRROR_X : LCD_MIRROR_X, lcd_index ? !LCD_MIRROR_Y : LCD_MIRROR_Y);
   esp_lcd_panel_invert_color(lcd_handle, LCD_INVERT_COLOR);
   // Turn on the screen
   esp_lcd_panel_disp_off(lcd_handle, false);
@@ -124,5 +129,5 @@ void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd) {
 
   esp_lcd_panel_io_register_event_callbacks(io_handle, &lcd_callbacks, NULL);
 
-  lcd->lcd_handle = (void*)lcd_handle;
+  lcd->lcd_handle[lcd_index] = (void*)lcd_handle;
 }
