@@ -51,7 +51,7 @@ jobs:
       - name: Check file
         run: |
           cd grid-protocol
-          cat -v grid_protocol_bot.json
+          cat -v src/grid_protocol_bot.json
           if [[ `git status --porcelain` ]]; then
             # Changes
             git add -A
