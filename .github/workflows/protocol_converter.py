@@ -201,7 +201,6 @@ if __name__ == '__main__':
     # print(json.dumps(character_lookup, indent=2))
 
     generate_lists_py(constlist_file, character_lookup, class_databse)
-    
+
     if len(sys.argv)>4:
         generate_package_json(output_file, package_file)
-
