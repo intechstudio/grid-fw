@@ -1807,6 +1807,7 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, GRID_LUA_GLIM_source);
   grid_lua_dostring(lua, GRID_LUA_GEN_source);
   grid_lua_dostring(lua, GRID_LUA_MAPSAT_source);
+  grid_lua_dostring(lua, GRID_LUA_SIGN_source);
   grid_lua_dostring(lua, GRID_LUA_SEGCALC_source);
   grid_lua_dostring(lua, "midi_fifo = {}");
   grid_lua_dostring(lua, "midi_fifo_highwater = 0");

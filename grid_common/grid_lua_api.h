@@ -75,6 +75,17 @@ end"
 	end \
 end"
 
+#define GRID_LUA_SIGN_source                                                                                                                                                                           \
+  "function " GRID_LUA_FNC_G_SIGN_short "(x) \
+    if x > 0 then \
+        return 1 \
+    elseif x < 0 then \
+        return -1 \
+    else \
+        return 0 \
+    end \
+end"
+
 #define GRID_LUA_SEGCALC_source                                                                                                                                                                        \
   "function " GRID_LUA_FNC_G_SEGCALC_short "(seg, enc_val, enc_min, enc_max) \
 	local s_min = enc_min + (enc_max - enc_min) / 5 * seg; \

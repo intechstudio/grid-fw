@@ -360,6 +360,9 @@
 #define GRID_LUA_FNC_G_MAPSAT_short "gmaps"
 #define GRID_LUA_FNC_G_MAPSAT_human "map_saturate"
 
+#define GRID_LUA_FNC_G_SIGN_short "sign"
+#define GRID_LUA_FNC_G_SIGN_human "sgn"
+
 #define GRID_LUA_FNC_G_SEGCALC_short "gsc"
 #define GRID_LUA_FNC_G_SEGCALC_human "segment_calculate"
 
