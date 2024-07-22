@@ -285,9 +285,9 @@ void grid_esp32_module_tek1_task(void* arg) {
 
             uint8_t intensity = ((gui->framebuffer[index_in_buffer] >> (offset_in_buffer)) & 0b00000001) * 255;
 
-            hw_framebuffer[index_out_buffer + 0] = intensity;
-            hw_framebuffer[index_out_buffer + 1] = intensity;
-            hw_framebuffer[index_out_buffer + 2] = intensity;
+            hw_framebuffer[index_out_buffer + 0] = intensity * grid_sys_state.bank_activebank_color_r / 255;
+            hw_framebuffer[index_out_buffer + 1] = intensity * grid_sys_state.bank_activebank_color_g / 255;
+            hw_framebuffer[index_out_buffer + 2] = intensity * grid_sys_state.bank_activebank_color_b / 255;
 
             // hw_framebuffer[index_out_buffer+1] = 255;
           }
