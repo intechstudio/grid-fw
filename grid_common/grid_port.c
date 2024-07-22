@@ -892,6 +892,10 @@ void grid_protocol_nvm_store_succcess_callback(uint8_t lastheader_id) {
 
 void grid_protocol_send_heartbeat(uint8_t heartbeat_type, uint32_t hwcfg) {
 
+  if (hwcfg == GRID_MODULE_VSN1_RevA || hwcfg == GRID_MODULE_VSN1R_RevA || GRID_MODULE_VSN2_RevA) {
+    hwcfg = GRID_MODULE_TEK1_RevA;
+  }
+
   uint8_t portstate = 0;
 
   for (uint8_t i = 0; i < 4; i++) {

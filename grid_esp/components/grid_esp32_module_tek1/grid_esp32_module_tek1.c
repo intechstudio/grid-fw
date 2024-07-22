@@ -66,7 +66,7 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   // static const uint8_t multiplexer_lookup[16] = {10, 8, 11, 9, 14, 12, 15,
   // 13, 2, 0, 3, 1, 6, 4, 7, 5};
-  static const uint8_t multiplexer_lookup[16] = {9, 8, 11, 10, 13, 12, -1, 14, 2, 0, 3, 1, 6, 4, 7, 5};
+  static const uint8_t multiplexer_lookup[16] = {9, 8, 11, 10, 13, 12, 15, 14, 2, 0, 3, 1, 6, 4, 7, 5};
 
   // static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0,
   // 0, 0, 0, 0, 0, 0, 0};
@@ -173,12 +173,12 @@ void grid_esp32_module_tek1_task(void* arg) {
 
         uint8_t btn_num = ((mux_position - 8) / 2) % 4;
 
-        grid_ui_button_store_input(btn_num + 8 + 1, &button_last_real_time[btn_num + 8 + 1], result->value, 12);
+        grid_ui_button_store_input(btn_num + 8, &button_last_real_time[btn_num + 8], result->value, 12);
       } else if (mux_position == 9 || mux_position == 11 || mux_position == 13 || mux_position == 15) {
 
-        uint8_t btn_num = ((mux_position - 8) / 2) % 4;
+        uint8_t btn_num = ((mux_position - 8 - 1) / 2) % 4;
 
-        grid_ui_button_store_input(btn_num + 8 + 1, &button_last_real_time[btn_num + 8 + 1], result->value, 12);
+        grid_ui_button_store_input(btn_num + 8 + 4, &button_last_real_time[btn_num + 8], result->value, 12);
       }
 
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
@@ -190,8 +190,13 @@ void grid_esp32_module_tek1_task(void* arg) {
     if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA) {
 
       vsn1_process_analog();
-    } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA)
+    } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA) {
+
       vsn1r_process_analog();
+    } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
+
+      vsn2_process_analog();
+    }
   }
 
   grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
@@ -212,10 +217,11 @@ void grid_esp32_module_tek1_task(void* arg) {
   uint64_t gui_lastrealtime = 0;
   struct grid_gui_model* gui = &grid_gui_state;
 
+  // grid_gui_draw_demo(&grid_gui_state, loopcounter);
+  grid_gui_draw_clear(&grid_gui_state);
+
   while (1) {
 
-    // grid_gui_draw_demo(&grid_gui_state, loopcounter);
-    grid_gui_draw_clear(&grid_gui_state);
 #define USE_SEMAPHORE
 #define USE_FRAMELIMIT
 
@@ -290,8 +296,15 @@ void grid_esp32_module_tek1_task(void* arg) {
         abort();
       }
 
-      grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 0, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
-      grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 1, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
+      if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA ||
+          grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
+
+        grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 0, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
+      }
+
+      if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
+        grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 1, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
+      }
     }
 
 #ifdef USE_SEMAPHORE

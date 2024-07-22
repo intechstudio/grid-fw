@@ -173,6 +173,32 @@ void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[13], system_meta)");
 }
 
+void grid_lua_ui_init_vsn2(struct grid_lua_model* lua) {
+
+  // define encoder_init_function
+
+  grid_lua_vm_register_functions(lua, grid_lua_api_gui_lib);
+
+  grid_lua_dostring(lua, GRID_LUA_B_META_init);
+
+  // create element array
+  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
+
+  // initialize 8 buttons
+  grid_lua_dostring(lua, "for i=0, 7 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=0, 7 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
+
+  grid_lua_dostring(lua, "for i=8, 15 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=8, 15 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
+
+  grid_lua_gc_try_collect(lua);
+
+  // initialize the system element
+  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "[16] = {index = 16}");
+  grid_lua_dostring(lua, GRID_LUA_SYS_META_init);
+  grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[16], system_meta)");
+}
+
 void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui, uint8_t hwcfg) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
@@ -196,37 +222,61 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
 
+    grid_platform_printf("VSN2\n");
     uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9}; // set unused to -1
     grid_led_lookup_init(led, led_lookup);
-
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA) {
-    // to be implemented
   }
 
-  grid_ui_model_init(ui, 13 + 1); // 10+1 for the system element on TEK2
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA) {
 
-  for (uint8_t j = 0; j < 13 + 1; j++) {
+    grid_ui_model_init(ui, 13 + 1);
 
-    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+    for (uint8_t j = 0; j < 13 + 1; j++) {
 
-    if (j < 8) {
+      struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
 
-      grid_ui_element_button_init(ele);
+      if (j < 8) {
 
-    } else if (j < 9) {
+        grid_ui_element_button_init(ele);
 
-      grid_ui_element_endless_init(ele);
+      } else if (j < 9) {
 
-    } else if (j < 13) {
+        grid_ui_element_endless_init(ele);
 
-      grid_ui_element_button_init(ele);
+      } else if (j < 13) {
 
-    } else {
-      grid_ui_element_system_init(ele);
+        grid_ui_element_button_init(ele);
+
+      } else {
+        grid_ui_element_system_init(ele);
+      }
     }
-  }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_tek1;
+    ui->lua_ui_init_callback = grid_lua_ui_init_tek1;
+
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
+
+    grid_platform_printf("VSN2\n");
+    grid_ui_model_init(ui, 16 + 1);
+    for (uint8_t j = 0; j < 16 + 1; j++) {
+
+      struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+      if (j < 8) {
+
+        grid_ui_element_button_init(ele);
+
+      } else if (j < 16) {
+
+        grid_ui_element_button_init(ele);
+
+      } else {
+        grid_ui_element_system_init(ele);
+      }
+    }
+
+    ui->lua_ui_init_callback = grid_lua_ui_init_vsn2;
+  }
 }
 
 void app_main(void) {

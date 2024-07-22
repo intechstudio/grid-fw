@@ -17,6 +17,7 @@ void grid_lua_ui_init_en16(struct grid_lua_model* lua);
 void grid_lua_ui_init_ef44(struct grid_lua_model* lua);
 void grid_lua_ui_init_tek2(struct grid_lua_model* lua);
 void grid_lua_ui_init_tek1(struct grid_lua_model* lua);
+void grid_lua_ui_init_vsn2(struct grid_lua_model* lua);
 void grid_lua_ui_init_pb44(struct grid_lua_model* lua);
 
 void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
