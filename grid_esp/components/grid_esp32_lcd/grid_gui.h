@@ -40,6 +40,7 @@ int grid_gui_draw_rectangle(struct grid_gui_model* gui, uint16_t x1, uint16_t y1
 
 int grid_gui_draw_rectangle_filled(struct grid_gui_model* gui, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, grid_color_t color);
 
+void grid_gui_draw_clear(struct grid_gui_model* gui);
 void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t loopcounter);
 
 #ifdef __cplusplus

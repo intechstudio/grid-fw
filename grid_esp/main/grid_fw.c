@@ -173,16 +173,35 @@ void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[13], system_meta)");
 }
 
-void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui, uint8_t hwcfg) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
   grid_ain_init(ain, 16, 5);  // TODO: 12 ain for TEK2
   grid_led_init(led, 13 + 5); // TODO: 18 led for TEK2
 
-  uint8_t led_lookup[18] = {5, 6, 7, 8, 9, 10, 11, 12, 0, 17, 1, 17, 2, 17, 3, 17, 4, 17};
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA) {
 
-  grid_led_lookup_init(led, led_lookup); // initialize the optional led index
-                                         // lookup table for array remapping
+    uint8_t led_lookup[18] = {5, 6, 7, 8, 9, 10, 11, 12, 0, 17, 1, 17, 2, 17, 3, 17, 4, 17}; // set unused to -1
+    grid_led_lookup_init(led, led_lookup);
+
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA) {
+
+    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 5, 0, 6, 1, 7, 2, 8, 3, 9, 4}; // set unused to -1
+    grid_led_lookup_init(led, led_lookup);
+
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA) {
+
+    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9}; // set unused to -1
+    grid_led_lookup_init(led, led_lookup);
+
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
+
+    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9}; // set unused to -1
+    grid_led_lookup_init(led, led_lookup);
+
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA) {
+    // to be implemented
+  }
 
   grid_ui_model_init(ui, 13 + 1); // 10+1 for the system element on TEK2
 
@@ -270,7 +289,7 @@ void app_main(void) {
     grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
-    grid_module_tek1_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+    grid_module_tek1_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, grid_sys_get_hwcfg(&grid_sys_state));
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
     grid_module_pb44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else {

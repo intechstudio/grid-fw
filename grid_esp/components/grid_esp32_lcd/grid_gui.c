@@ -146,6 +146,17 @@ int grid_gui_draw_rectangle(struct grid_gui_model* gui, uint16_t x1, uint16_t y1
   return 0;
 }
 
+void grid_gui_draw_clear(struct grid_gui_model* gui) {
+
+  for (int i = 0; i < 320; i++) {
+
+    for (int j = 0; j < 240; j++) {
+
+      grid_gui_draw_pixel(gui, i, j, grid_gui_color_from_rgb(0, 0, 0));
+    }
+  }
+}
+
 void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t loopcounter) {
 
   for (int i = 0; i < 320; i++) {
