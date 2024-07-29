@@ -21,6 +21,7 @@ idf_component_register(
         "../../../grid_common/grid_ui_potmeter.c"
         "../../../grid_common/grid_ui_system.c"
         "../../../grid_common/grid_module.c"
+        "../../../grid_common/grid_lua.c"
         "../../../grid_common/grid_lua_api.c"
 
         "../../../grid_common/lua-5.4.3/src/lapi.c"

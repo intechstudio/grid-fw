@@ -392,9 +392,10 @@ int main(void) {
 
   grid_d51_usb_init(); // requires hostport
 
-  grid_lua_init(&grid_lua_state);
+  grid_lua_init(&grid_lua_state, NULL, NULL);
   grid_lua_set_memory_target(&grid_lua_state, 80); // 80kb
   grid_lua_start_vm(&grid_lua_state);
+  grid_lua_vm_register_functions(&grid_lua_state, grid_lua_api_generic_lib_reference);
   grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
 
   grid_d51_led_init(&grid_d51_led_state, &grid_led_state);

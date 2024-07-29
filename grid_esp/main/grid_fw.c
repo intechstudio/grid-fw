@@ -138,13 +138,12 @@ char grid_doublebuffer_tx_memory_array[5][GRID_DOUBLE_BUFFER_TX_SIZE] = {0};
 char grid_doublebuffer_rx_memory_array[2][GRID_DOUBLE_BUFFER_RX_SIZE] = {0};
 
 #include "grid_lua_api_gui.h"
-extern const struct luaL_Reg grid_lua_api_gui_lib[];
 
 void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
 
   // define encoder_init_function
 
-  grid_lua_vm_register_functions(lua, grid_lua_api_gui_lib);
+  grid_lua_vm_register_functions(lua, grid_lua_api_gui_lib_reference);
 
   grid_lua_dostring(lua, GRID_LUA_B_META_init);
   grid_lua_dostring(lua, GRID_LUA_EP_META_init);
@@ -177,7 +176,7 @@ void grid_lua_ui_init_vsn2(struct grid_lua_model* lua) {
 
   // define encoder_init_function
 
-  grid_lua_vm_register_functions(lua, grid_lua_api_gui_lib);
+  grid_lua_vm_register_functions(lua, grid_lua_api_gui_lib_reference);
 
   grid_lua_dostring(lua, GRID_LUA_B_META_init);
 
@@ -375,7 +374,7 @@ void app_main(void) {
   grid_msg_init(&grid_msg_state); // setup session id, last message buffer init
 
   ESP_LOGI(TAG, "===== LUA INIT =====");
-  grid_lua_init(&grid_lua_state);
+  grid_lua_init(&grid_lua_state, NULL, NULL);
   grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
   grid_lua_set_memory_target(&grid_lua_state, 80); // 80kb

@@ -406,6 +406,8 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
   grid_lua_stop_vm(&grid_lua_state);
   // grid_platform_printf("START\r\n");
   grid_lua_start_vm(&grid_lua_state);
+  grid_lua_vm_register_functions(&grid_lua_state, grid_lua_api_generic_lib_reference);
+
   grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
 
   grid_ui_semaphore_release(ui);

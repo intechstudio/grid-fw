@@ -5,11 +5,21 @@
 
 #include "grid_font.h"
 #include "grid_gui.h"
+#include "grid_lua.h"
 #include "grid_lua_api_gui.h"
 
 #include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
+
+void grid_platform_delay_ms(uint32_t delay_milliseconds) { return; }
+void grid_platform_printf(char const* fmt, ...) {
+
+  va_list ap;
+  va_start(ap, fmt);
+  vprintf(fmt, ap);
+  va_end(ap);
+}
 
 #define ARENA_SIZE (10000 * 1024) // 100 KB
 
@@ -65,8 +75,6 @@ static void* custom_lua_allocator(void* ud, void* ptr, size_t osize, size_t nsiz
     return new_ptr;
   }
 }
-
-lua_State* L;
 
 #include <SDL/SDL.h>
 #include <stdio.h>
@@ -153,7 +161,7 @@ void loop(void) {
 
   loopcounter++;
   // grid_gui_draw_demo(&grid_gui_state, loopcounter);
-  grid_gui_lua_draw_demo(L, loopcounter);
+  grid_gui_lua_draw_demo(grid_lua_state.L, loopcounter);
 
   draw_screen(&grid_gui_state);
 
@@ -166,16 +174,10 @@ int main(int argc, char** argv) {
 
   arena_init(&inst);
 
-  L = lua_newstate(custom_lua_allocator, &inst);
+  grid_lua_init(&grid_lua_state, custom_lua_allocator, &inst);
 
-  // L = luaL_newstate();
-  printf("L pointer: %p\n", L);
-
-  luaL_openlibs(L);
-
-  lua_getglobal(L, "_G");
-  luaL_setfuncs(L, grid_lua_api_gui_lib_reference, 0);
-  lua_pop(L, 1);
+  grid_lua_start_vm(&grid_lua_state);
+  grid_lua_vm_register_functions(&grid_lua_state, grid_lua_api_gui_lib_reference);
 
   struct grid_gui_model* gui = &grid_gui_state;
   struct grid_vlcd_model* vlcd = &grid_vlcd_state;
