@@ -382,6 +382,10 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_human "gui_draw_pixel"
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr l_grid_gui_draw_pixel
 
+#define GRID_LUA_FNC_G_GUI_DRAW_LINE_short "ggdl"
+#define GRID_LUA_FNC_G_GUI_DRAW_LINE_human "gui_draw_line"
+#define GRID_LUA_FNC_G_GUI_DRAW_LINE_fnptr l_grid_gui_draw_line
+
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short "ggdr"
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_human "gui_draw_rectangle"
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_fnptr l_grid_gui_draw_rectangle

@@ -3,8 +3,71 @@
 // University of Illinois/NCSA Open Source License.  Both these licenses can be
 // found in the LICENSE file.
 
-#include "../grid_esp/components/grid_esp32_lcd/grid_font.h"
-#include "../grid_esp/components/grid_esp32_lcd/grid_gui.h"
+#include "grid_font.h"
+#include "grid_gui.h"
+#include "grid_lua_api_gui.h"
+
+#include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
+
+#define ARENA_SIZE (10000 * 1024) // 100 KB
+
+struct ArenaAllocator {
+  size_t size;
+  size_t offset;
+  uint8_t memory[ARENA_SIZE];
+};
+
+struct ArenaAllocator inst = {0};
+
+void arena_init(struct ArenaAllocator* arena) {
+  arena->size = ARENA_SIZE;
+  arena->offset = 0;
+}
+
+void* arena_malloc(struct ArenaAllocator* arena, size_t size) {
+  if (arena->offset + size > arena->size) {
+    printf("Out of memory\n");
+    return NULL; // Out of memory
+  }
+  // printf("Offset: %ld\n", (arena->offset)/1000);
+  void* ptr = arena->memory + arena->offset;
+  arena->offset += size;
+  return ptr;
+}
+
+void arena_reset(struct ArenaAllocator* arena) { arena->offset = 0; }
+
+void arena_free(struct ArenaAllocator* arena, void* ptr) {
+  // This simple allocator does not support freeing individual allocations
+  // It only supports resetting the entire arena.
+}
+
+static void* custom_lua_allocator(void* ud, void* ptr, size_t osize, size_t nsize) {
+  struct ArenaAllocator* arena = (struct ArenaAllocator*)ud;
+
+  if (nsize == 0) {
+    // Lua requests to free the memory
+    arena_free(arena, ptr);
+    return NULL;
+  } else if (ptr == NULL) {
+    // Lua requests to allocate new memory
+    return arena_malloc(arena, nsize);
+  } else {
+    // Lua requests to reallocate memory
+    // Simple implementation: allocate new block and do not free old block
+    void* new_ptr = arena_malloc(arena, nsize);
+    if (new_ptr && osize > 0) {
+      // Copy old data to new block
+      memcpy(new_ptr, ptr, osize < nsize ? osize : nsize);
+    }
+    return new_ptr;
+  }
+}
+
+lua_State* L;
+
 #include <SDL/SDL.h>
 #include <stdio.h>
 #ifdef __EMSCRIPTEN__
@@ -89,7 +152,8 @@ void draw_screen(struct grid_gui_model* gui) {
 void loop(void) {
 
   loopcounter++;
-  grid_gui_draw_demo(&grid_gui_state, loopcounter);
+  // grid_gui_draw_demo(&grid_gui_state, loopcounter);
+  grid_gui_lua_draw_demo(L, loopcounter);
 
   draw_screen(&grid_gui_state);
 
@@ -100,11 +164,24 @@ uint8_t framebuffer[320 * 240 * 3] = {0};
 
 int main(int argc, char** argv) {
 
+  arena_init(&inst);
+
+  L = lua_newstate(custom_lua_allocator, &inst);
+
+  // L = luaL_newstate();
+  printf("L pointer: %p\n", L);
+
+  luaL_openlibs(L);
+
+  lua_getglobal(L, "_G");
+  luaL_setfuncs(L, grid_lua_api_gui_lib_reference, 0);
+  lua_pop(L, 1);
+
   struct grid_gui_model* gui = &grid_gui_state;
   struct grid_vlcd_model* vlcd = &grid_vlcd_state;
 
   grid_font_init(&grid_font_state);
-  grid_gui_init(gui, vlcd, framebuffer, sizeof(framebuffer), 1, 320, 240);
+  grid_gui_init(gui, vlcd, framebuffer, sizeof(framebuffer), 24, 320, 240);
 
   printf("hello, world!\n");
 

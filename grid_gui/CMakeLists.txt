@@ -1,8 +1,30 @@
 cmake_minimum_required(VERSION 3.10)
 project(GridGUI)
 
-# Add your C source file
-add_executable(index main.c ../grid_esp/components/grid_esp32_lcd/grid_gui.c ../grid_esp/components/grid_esp32_lcd/grid_font.c ../grid_esp/components/grid_esp32_lcd/inter_font.c)
+
+include_directories(${CMAKE_SOURCE_DIR}/../grid_esp/components/grid_esp32_lcd)
+include_directories(${CMAKE_SOURCE_DIR}/../grid_common/lua-5.4.3/src/)
+include_directories(${CMAKE_SOURCE_DIR}/../grid_common/)
+
+
+
+set(SRC_FILES)
+list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/grid_gui.c)
+list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/grid_font.c)
+list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/inter_font.c)
+list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/grid_lua_api_gui.c)
+
+add_executable(index main.c ${SRC_FILES})
+
+# Add Lua source files
+file(GLOB LUA_SOURCE_FILES ../grid_common/lua-5.4.3/src/*.c)
+list(FILTER LUA_SOURCE_FILES EXCLUDE REGEX "lua.c|luac.c")
+target_sources(index PRIVATE ${LUA_SOURCE_FILES})
+
+
+# Exclude a specific file
+
+
 
 # Specify Emscripten as the compiler
 set(CMAKE_C_COMPILER emcc)
