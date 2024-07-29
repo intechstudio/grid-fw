@@ -2,7 +2,7 @@
 
 struct grid_lua_model grid_lua_state;
 
-void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t),  void* custom_allocator_instance) {
+void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance) {
 
   lua->stdo_len = GRID_LUA_STDO_LENGTH;
   lua->stdi_len = GRID_LUA_STDI_LENGTH;
@@ -203,10 +203,9 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
 
   grid_platform_printf("START VM\n");
 
-  if (lua->custom_allocator == NULL){
+  if (lua->custom_allocator == NULL) {
     lua->L = luaL_newstate();
-  }
-  else{
+  } else {
     lua->L = lua_newstate(lua->custom_allocator, lua->custom_allocator_instance);
   }
 
@@ -260,7 +259,6 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, "keyboard = {}");
   grid_lua_dostring(lua, "keyboard.send_macro = function "
                          "(self,...) " GRID_LUA_FNC_G_KEYBOARD_SEND_short "(...) end");
-
 
   grid_lua_semaphore_lock(lua);
   grid_lua_semaphore_release(lua);

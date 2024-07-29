@@ -95,7 +95,7 @@ struct grid_lua_model {
 
   lua_State* L;
 
-  void* (*custom_allocator)(void*, void*, size_t, size_t) ;
+  void* (*custom_allocator)(void*, void*, size_t, size_t);
   void* custom_allocator_instance;
 
   uint32_t stdo_len;
