@@ -394,6 +394,14 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_human "gui_draw_rectangle_filled"
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_fnptr l_grid_gui_draw_rectangle_filled
 
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short "ggdp"
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_human "gui_draw_polygon"
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_fnptr l_grid_gui_draw_polygon
+
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "ggdpf"
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_human "gui_draw_polygon_filled"
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr l_grid_gui_draw_polygon_filled
+
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_short "ggdt"
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_human "gui_draw_text"
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr l_grid_gui_draw_text

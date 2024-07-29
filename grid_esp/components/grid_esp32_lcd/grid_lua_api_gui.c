@@ -36,6 +36,8 @@ void grid_gui_lua_draw_demo(lua_State* L, uint8_t loopcounter) {
     printf("NO FONT\n");
   }
 
+  luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "({100, 200, 200, 100},{100, 200, 100, 200},{0,255,0})");
+
   // uint16_t x_points[] = {100, 200, 200, 100};
   // uint16_t y_points[] = {100, 200, 100, 200};
   // size_t num_points = sizeof(x_points) / sizeof(x_points[0]);
@@ -153,6 +155,128 @@ int l_grid_gui_draw_rectangle_filled(lua_State* L) {
   return 0;
 }
 
+int l_grid_gui_draw_polygon(lua_State* L) {
+
+  // The C function that will be called from Lua
+  // Check that the first argument is a table
+  if (!lua_istable(L, 1)) {
+    return luaL_error(L, "Expected a table as the argument");
+  }
+
+  // Get the length of the table
+  size_t num_points = lua_rawlen(L, 1);
+  uint16_t x_points[num_points];
+  uint16_t y_points[num_points];
+
+  // Iterate over the table and print the numbers
+  for (size_t i = 0; i < num_points; i++) {
+    // Push the index onto the stack
+    lua_pushnumber(L, i + 1);
+
+    // Get the value at the given index in the table
+    lua_gettable(L, 1);
+
+    // Get the number
+    x_points[i] = lua_tonumber(L, -1);
+
+    // printf("x[%d]=%d", i, x_points[i]);
+    //  Pop the value off the stack
+    lua_pop(L, 1);
+  }
+
+  // Iterate over the table and print the numbers
+  for (size_t i = 0; i < num_points; i++) {
+    // Push the index onto the stack
+    lua_pushnumber(L, i + 1);
+
+    // Get the value at the given index in the table
+    lua_gettable(L, 2);
+
+    // Get the number
+    y_points[i] = lua_tonumber(L, -1);
+    // printf("x[%d]=%d", i, y_points[i]);
+
+    // Pop the value off the stack
+    lua_pop(L, 1);
+  }
+
+  int r = 0, g = 0, b = 0; // Default color: black
+  if (lua_gettop(L) >= 3) {
+    luaL_checktype(L, 3, LUA_TTABLE);
+    lua_rawgeti(L, 3, 1);
+    r = luaL_checknumber(L, -1);
+    lua_rawgeti(L, 3, 2);
+    g = luaL_checknumber(L, -1);
+    lua_rawgeti(L, 3, 3);
+    b = luaL_checknumber(L, -1);
+  }
+
+  grid_gui_draw_polygon(&grid_gui_state, x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
+
+  return 0; // Number of return values
+}
+
+int l_grid_gui_draw_polygon_filled(lua_State* L) {
+
+  // The C function that will be called from Lua
+  // Check that the first argument is a table
+  if (!lua_istable(L, 1)) {
+    return luaL_error(L, "Expected a table as the argument");
+  }
+
+  // Get the length of the table
+  size_t num_points = lua_rawlen(L, 1);
+  uint16_t x_points[num_points];
+  uint16_t y_points[num_points];
+
+  // Iterate over the table and print the numbers
+  for (size_t i = 0; i < num_points; i++) {
+    // Push the index onto the stack
+    lua_pushnumber(L, i + 1);
+
+    // Get the value at the given index in the table
+    lua_gettable(L, 1);
+
+    // Get the number
+    x_points[i] = lua_tonumber(L, -1);
+
+    // printf("x[%d]=%d", i, x_points[i]);
+    //  Pop the value off the stack
+    lua_pop(L, 1);
+  }
+
+  // Iterate over the table and print the numbers
+  for (size_t i = 0; i < num_points; i++) {
+    // Push the index onto the stack
+    lua_pushnumber(L, i + 1);
+
+    // Get the value at the given index in the table
+    lua_gettable(L, 2);
+
+    // Get the number
+    y_points[i] = lua_tonumber(L, -1);
+    // printf("x[%d]=%d", i, y_points[i]);
+
+    // Pop the value off the stack
+    lua_pop(L, 1);
+  }
+
+  int r = 0, g = 0, b = 0; // Default color: black
+  if (lua_gettop(L) >= 3) {
+    luaL_checktype(L, 3, LUA_TTABLE);
+    lua_rawgeti(L, 3, 1);
+    r = luaL_checknumber(L, -1);
+    lua_rawgeti(L, 3, 2);
+    g = luaL_checknumber(L, -1);
+    lua_rawgeti(L, 3, 3);
+    b = luaL_checknumber(L, -1);
+  }
+
+  grid_gui_draw_polygon_filled(&grid_gui_state, x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
+
+  return 0; // Number of return values
+}
+
 // Function to draw text
 int l_grid_gui_draw_text(lua_State* L) {
   const char* text = luaL_checkstring(L, 1);
@@ -190,6 +314,7 @@ int l_grid_gui_draw_text(lua_State* L) {
 /*static*/ struct luaL_Reg grid_lua_api_gui_lib[] = {
     {GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr},         {GRID_LUA_FNC_G_GUI_DRAW_LINE_short, GRID_LUA_FNC_G_GUI_DRAW_LINE_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_fnptr}, {GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_fnptr},     {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr},           {NULL, NULL} /* end of array */
 };
 
