@@ -1171,3 +1171,50 @@ uint8_t grid_decode_hidkeystatus_to_ui(char* header, char* chunk) {
 
   return 0; // OK
 }
+
+int grid_port_decode_class(struct grid_decoder_collection* decoder_collection, uint16_t class, char* header, char* chunk) {
+
+  for (uint8_t i = 0; decoder_collection[i].process != NULL; i++) {
+
+    if (class == decoder_collection[i].class) {
+      decoder_collection[i].process(header, chunk);
+      // Successfully decoded
+      return 0;
+    }
+  }
+
+  // Could not find decoder
+  return 1;
+}
+
+struct grid_decoder_collection grid_decoder_to_ui[] = {{GRID_CLASS_PAGEACTIVE_code, grid_decode_pageactive_to_ui},
+                                                       {GRID_CLASS_PAGECOUNT_code, grid_decode_pagecount_to_ui},
+                                                       {GRID_CLASS_MIDI_code, grid_decode_midi_to_ui},
+                                                       {GRID_CLASS_MIDISYSEX_code, grid_decode_sysex_to_ui},
+                                                       {GRID_CLASS_IMMEDIATE_code, grid_decode_imediate_to_ui},
+                                                       {GRID_CLASS_HEARTBEAT_code, grid_decode_heartbeat_to_ui},
+                                                       {GRID_CLASS_SERIALNUMBER_code, grid_decode_serialmuber_to_ui},
+                                                       {GRID_CLASS_UPTIME_code, grid_decode_uptime_to_ui},
+                                                       {GRID_CLASS_RESETCAUSE_code, grid_decode_resetcause_to_ui},
+                                                       {GRID_CLASS_RESET_code, grid_decode_reset_to_ui}, // && (position_is_me)
+                                                       {GRID_CLASS_PAGEDISCARD_code, grid_decode_pagediscard_to_ui},
+                                                       {GRID_CLASS_PAGESTORE_code, grid_decode_pagestore_to_ui},
+                                                       {GRID_CLASS_PAGECLEAR_code, grid_decode_pageclear_to_ui},
+                                                       {GRID_CLASS_NVMERASE_code, grid_decode_nvmerase_to_ui},
+                                                       {GRID_CLASS_NVMDEFRAG_code, grid_decode_nvmdefrag_to_ui},
+                                                       {GRID_CLASS_CONFIG_code, grid_decode_config_to_ui},
+                                                       {GRID_CLASS_HIDKEYSTATUS_code, grid_decode_hidkeystatus_to_ui},
+                                                       {NULL, NULL}};
+
+struct grid_decoder_collection* grid_decoder_to_ui_reference = grid_decoder_to_ui;
+
+struct grid_decoder_collection grid_decoder_to_usb[] = {{GRID_CLASS_MIDI_code, grid_decode_midi_to_usb},
+                                                        {GRID_CLASS_MIDISYSEX_code, grid_decode_sysex_to_usb},
+                                                        {GRID_CLASS_HIDMOUSEBUTTON_code, grid_decode_mousebutton_to_usb},
+                                                        {GRID_CLASS_HIDMOUSEMOVE_code, grid_decode_mousemove_to_usb},
+                                                        {GRID_CLASS_HIDGAMEPADBUTTON_code, grid_decode_gamepadbutton_to_usb},
+                                                        {GRID_CLASS_HIDGAMEPADMOVE_code, grid_decode_gamepadmove_to_usb},
+                                                        {GRID_CLASS_HIDKEYBOARD_code, grid_decode_keyboard_to_usb},
+                                                        {NULL, NULL}};
+
+struct grid_decoder_collection* grid_decoder_to_usb_reference = grid_decoder_to_usb;

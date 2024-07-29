@@ -14,6 +14,17 @@
 #include <stdint.h>
 #include <string.h>
 
+struct grid_decoder_collection {
+
+  uint8_t class;
+  uint8_t (*process)(char* header, char* chunk);
+};
+
+extern struct grid_decoder_collection* grid_decoder_to_ui_reference;
+extern struct grid_decoder_collection* grid_decoder_to_usb_reference;
+
+int grid_port_decode_class(struct grid_decoder_collection* decoder_collection, uint16_t class, char* header, char* chunk);
+
 // =================== USB OUTBOUND ================= //
 
 uint8_t grid_decode_midi_to_usb(char* header, char* chunk);

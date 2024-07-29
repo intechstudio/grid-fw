@@ -20,23 +20,25 @@ extern void grid_platform_printf(char const* fmt, ...);
 
 void grid_gui_lua_draw_demo(lua_State* L, uint8_t loopcounter) {
 
-  luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "(0,0,320,240,{0,0,0})");
-  luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short "(10,10,40,40,{0,0,255})");
+  int foo = 0;
 
-  luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_LINE_short "(150,100,40,40,{0,0,255})");
-  luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "(200,200,220,220,{0,255,0})");
-  luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "(120,120,140,140,{255,0,0})");
+  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "(0,0,320,240,{0,0,0})");
+  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short "(10,10,40,40,{0,0,255})");
+
+  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_LINE_short "(150,100,40,40,{0,0,255})");
+  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "(200,200,220,220,{0,255,0})");
+  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "(120,120,140,140,{255,0,0})");
 
   if (grid_font_state.initialized) {
 
     char temp[100] = {0};
     sprintf(temp, GRID_LUA_FNC_G_GUI_DRAW_TEXT_short "('hello $%d',10,100,60, {255,255,255})", loopcounter);
-    luaL_dostring(L, temp);
+    foo = luaL_dostring(L, temp);
   } else {
     printf("NO FONT\n");
   }
 
-  luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "({100, 200, 200, 100},{100, 200, 100, 200},{0,255,0})");
+  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "({100, 200, 200, 100},{100, 200, 100, 200},{0,255,0})");
 
   // uint16_t x_points[] = {100, 200, 200, 100};
   // uint16_t y_points[] = {100, 200, 100, 200};
