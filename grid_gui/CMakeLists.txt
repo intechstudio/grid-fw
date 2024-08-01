@@ -34,7 +34,7 @@ set(CMAKE_C_COMPILER emcc)
 # Set Emscripten compiler options
 set_target_properties(index PROPERTIES
     COMPILE_FLAGS "-s NO_EXIT_RUNTIME=1"
-    LINK_FLAGS "-s 'EXPORTED_RUNTIME_METHODS=[\"ccall\"]'"
+    LINK_FLAGS "-s 'EXPORTED_RUNTIME_METHODS=[\"ccall\"]' --shell-file ${CMAKE_SOURCE_DIR}/shell_minimal.html"
 )
 
 # Set Emscripten-specific flags

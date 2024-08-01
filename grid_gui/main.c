@@ -76,6 +76,10 @@ static void* custom_lua_allocator(void* ud, void* ptr, size_t osize, size_t nsiz
   }
 }
 
+uint8_t config_changed = 0;
+char grid_lua_init_script[1024] = {0};
+char grid_lua_loop_script[1024] = {0};
+
 #include <SDL/SDL.h>
 #include <stdio.h>
 #ifdef __EMSCRIPTEN__
@@ -85,18 +89,49 @@ EM_JS(void, captureInput, (), {
   console.log('hello world!');
   // JavaScript code
 
-  document.addEventListener(
-      'keydown', function(event) {
-        // Pass the key code to the C function
+  // document.addEventListener('keydown', function(event) {
+  //   // Pass the key code to the C function
 
-        console.log('!');
-        Module.ccall('handleInput', 'void', ['number'], [event.keyCode]);
-      });
+  //   console.log('!');
+  //   Module.ccall('handleInput', 'void', ['number'], [event.keyCode]);
+  // });
+
+  Module.doNotCaptureKeyboard = true;
+
+  window.addEventListener('keydown',
+                          function(event){
+                              // event.stopImmediatePropagation();
+                          },
+                          true);
+
+  window.addEventListener('keyup',
+                          function(event){
+                              // event.stopImmediatePropagation();
+                          },
+                          true);
+
+  var button = document.querySelector('#loadScriptButton');
+
+  // Add an event listener to the button
+  button.addEventListener('click', function(){
+
+                                   });
 });
 
 void EMSCRIPTEN_KEEPALIVE handleInput(int keyCode) {
   // Print the captured key code
   printf("Key pressed: %d\n", keyCode);
+  // loopcounter = keyCode;
+}
+
+void EMSCRIPTEN_KEEPALIVE loadScript(char* setup, char* loop) {
+  // Print the captured key code
+  strcpy(grid_lua_init_script, setup);
+  strcpy(grid_lua_loop_script, loop);
+
+  // printf("loadScript %s |||||| %s\n", grid_lua_init_script, grid_lua_loop_script);
+
+  config_changed = 1;
   // loopcounter = keyCode;
 }
 #endif
@@ -159,13 +194,20 @@ void draw_screen(struct grid_gui_model* gui) {
 
 void loop(void) {
 
+  if (config_changed) {
+    config_changed = 0;
+    grid_lua_dostring(&grid_lua_state, grid_lua_init_script);
+  }
+
+  grid_lua_dostring(&grid_lua_state, grid_lua_loop_script);
+
   loopcounter++;
   // grid_gui_draw_demo(&grid_gui_state, loopcounter);
-  grid_gui_lua_draw_demo(grid_lua_state.L, loopcounter);
+  // grid_gui_lua_draw_demo(grid_lua_state.L, loopcounter);
 
   draw_screen(&grid_gui_state);
 
-  printf("loop %d\n", loopcounter);
+  // printf("loop %d\n", loopcounter);
 }
 
 uint8_t framebuffer[320 * 240 * 3] = {0};
