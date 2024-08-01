@@ -34,7 +34,7 @@ jobs:
         run: docker build -t my-image .
 
       - name: Run script in Docker container
-        run: docker run -v $PWD:/project -w /project/ my-image sh -c "./pico_build_firmware.sh && ./esp_build_firmware.sh"
+        run: docker run -v $PWD:/project -w /project/ my-image sh -c "./pico_build_firmware.sh && ./esp_build_firmware.sh && ./gui_build.sh"
 
       - name: Convert ESP firmware to UF2
         run: |
@@ -67,6 +67,9 @@ jobs:
             grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
             grid_esp32_nightly.uf2
             grid_d51_nightly.uf2
+            grid_gui/build/index.html
+            grid_gui/build/index.js
+            grid_gui/build/index.wasm
 
       - name: Zipping artifacts for Github Release
         uses: vimtor/action-zip@v1
@@ -85,6 +88,32 @@ jobs:
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-simulator:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Download reports' artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: download
+
+      - name: Collecting files
+        run: |
+          cd download
+          ls
+
+        with:
+          # Upload entire repository
+          path: './download'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
 
   deploy-results:
     runs-on: ubuntu-latest
