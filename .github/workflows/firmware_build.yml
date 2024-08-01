@@ -58,6 +58,9 @@ jobs:
           cp grid_esp/output/grid_fw.uf2 grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
           cp grid_esp/output/grid_fw.uf2 grid_esp32_nightly.uf2
           cp .github/workflows/INSTRUCTIONS.txt INSTRUCTIONS__USE_D51_VERSION_IF_UNSURE.txt
+          cp grid_gui/build/index.html index.html
+          cp grid_gui/build/index.js index.js
+          cp grid_gui/build/index.wasm index.wasm
 
       - uses: actions/upload-artifact@v4
         with:
@@ -67,9 +70,9 @@ jobs:
             grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
             grid_esp32_nightly.uf2
             grid_d51_nightly.uf2
-            grid_gui/build/index.html
-            grid_gui/build/index.js
-            grid_gui/build/index.wasm
+            index.html
+            index.js
+            index.wasm
 
       - name: Zipping artifacts for Github Release
         uses: vimtor/action-zip@v1
