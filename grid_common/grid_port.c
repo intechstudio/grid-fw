@@ -603,7 +603,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por, struct grid_buffer
 
     uint16_t msg_class = grid_str_get_parameter(chunk, GRID_PARAMETER_CLASSCODE_offset, GRID_PARAMETER_CLASSCODE_length, &error);
     uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
-    grid_port_decode_class(grid_decoder_to_ui_reference, msg_class, header, chunk);
+    grid_port_decode_class(grid_decoder_to_usb_reference, msg_class, header, chunk);
   }
 
   // Let's send the packet through USB
