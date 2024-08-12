@@ -79,7 +79,49 @@ ggdt('hello '..loopcounter, 10, 100, 60, {255,255,255})
     </textarea>
     <button id="loadScriptButton" onclick="Module.ccall('loadScript', 'void', ['string', 'string'], [document.getElementById('init_script').value, document.getElementById('loop_script').value]);">Load Script</button>
     <hr>
+
+      <script type='text/javascript'>
+        // Function to get query parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Function to update query parameters in the URL
+        function updateQueryParam(param, value) {
+            const url = new URL(window.location.href);
+            url.searchParams.set(param, value);
+            window.history.replaceState(null, '', url);
+        }
+
+        // Load the 'text' query parameter into the textarea
+        const init_textarea = document.getElementById('init_script');
+        const init_queryParamValue = getQueryParam('init');
+        if (init_queryParamValue) {
+            init_textarea.value = decodeURIComponent(init_queryParamValue);
+        }
+
+        // Update the query parameter when the textarea is updated
+        init_textarea.addEventListener('input', () => {
+            const value = encodeURIComponent(init_textarea.value);
+            updateQueryParam('init', value);
+        });
+
+        // Load the 'text' query parameter into the textarea
+        const loop_textarea = document.getElementById('loop_script');
+        const loop_queryParamValue = getQueryParam('loop');
+        if (loop_queryParamValue) {
+            loop_textarea.value = decodeURIComponent(loop_queryParamValue);
+        }
+
+        // Update the query parameter when the textarea is updated
+        loop_textarea.addEventListener('input', () => {
+            const value = encodeURIComponent(loop_textarea.value);
+            updateQueryParam('loop', value);
+        });
+    </script>
     <script type='text/javascript'>
+
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
       var spinnerElement = document.getElementById('spinner');
