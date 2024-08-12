@@ -19,6 +19,15 @@ RUN apt update && \
     . ./emsdk_env.sh && \
     cd ..
 
+# Install necessary packages for getting the latest CMAKE including software-properties-common
+RUN apt-get update && \
+    apt-get install -y wget gpg software-properties-common && \
+    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add - && \
+    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
+    apt-get update && \
+    apt-get install -y cmake
+
+
 # Set working directory
 
 WORKDIR /
