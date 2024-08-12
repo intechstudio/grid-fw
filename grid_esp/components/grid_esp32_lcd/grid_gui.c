@@ -502,6 +502,150 @@ int grid_gui_draw_rectangle(struct grid_gui_model* gui, uint16_t x1, uint16_t y1
   return 0;
 }
 
+#include <math.h>
+
+int grid_gui_draw_rectangle_rounded(struct grid_gui_model* gui, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t radius, grid_color_t color) {
+
+  // Ensure x1 < x2 and y1 < y2
+  if (x1 > x2) {
+    uint16_t tmp = x1;
+    x1 = x2;
+    x2 = tmp;
+  }
+
+  if (y1 > y2) {
+    uint16_t tmp = y1;
+    y1 = y2;
+    y2 = tmp;
+  }
+
+  // Calculate width and height
+  uint16_t width = x2 - x1;
+  uint16_t height = y2 - y1;
+
+  // Limit the radius to half the width or height
+  if (radius > width / 2) {
+    radius = width / 2;
+  }
+  if (radius > height / 2) {
+    radius = height / 2;
+  }
+
+  // Draw the four corners using quarter circles
+  for (int i = 0; i <= radius; i++) {
+    int j = (int)(sqrt(radius * radius - i * i) + 0.5);
+
+    // Top-left corner
+    grid_gui_draw_pixel(gui, x1 + radius - i, y1 + radius - j, color);
+    grid_gui_draw_pixel(gui, x1 + radius - j, y1 + radius - i, color);
+
+    // Top-right corner
+    grid_gui_draw_pixel(gui, x2 - radius + i, y1 + radius - j, color);
+    grid_gui_draw_pixel(gui, x2 - radius + j, y1 + radius - i, color);
+
+    // Bottom-left corner
+    grid_gui_draw_pixel(gui, x1 + radius - i, y2 - radius + j, color);
+    grid_gui_draw_pixel(gui, x1 + radius - j, y2 - radius + i, color);
+
+    // Bottom-right corner
+    grid_gui_draw_pixel(gui, x2 - radius + i, y2 - radius + j, color);
+    grid_gui_draw_pixel(gui, x2 - radius + j, y2 - radius + i, color);
+  }
+
+  // Draw the four edges (excluding the corners)
+  for (int i = x1 + radius; i <= x2 - radius; i++) {
+    grid_gui_draw_pixel(gui, i, y1, color);
+    grid_gui_draw_pixel(gui, i, y2, color);
+  }
+
+  for (int j = y1 + radius; j <= y2 - radius; j++) {
+    grid_gui_draw_pixel(gui, x1, j, color);
+    grid_gui_draw_pixel(gui, x2, j, color);
+  }
+
+  return 0;
+}
+
+// Function to draw a filled rounded rectangle
+int grid_gui_draw_rectangle_rounded_filled(struct grid_gui_model* gui, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t radius, grid_color_t color) {
+  // Ensure x1 < x2 and y1 < y2
+  if (x1 > x2) {
+    uint16_t tmp = x1;
+    x1 = x2;
+    x2 = tmp;
+  }
+
+  if (y1 > y2) {
+    uint16_t tmp = y1;
+    y1 = y2;
+    y2 = tmp;
+  }
+
+  // Calculate width and height
+  uint16_t width = x2 - x1;
+  uint16_t height = y2 - y1;
+
+  // Limit the radius to half the width or height
+  if (radius > width / 2) {
+    radius = width / 2;
+  }
+  if (radius > height / 2) {
+    radius = height / 2;
+  }
+
+  // Draw the filled rectangle (excluding corners)
+  for (int y = y1; y <= y2; y++) {
+    for (int x = x1; x <= x2; x++) {
+      // Check if the current pixel is inside the rounded corners
+      if (x - x1 < radius && y - y1 < radius && (x - x1 - radius) * (x - x1 - radius) + (y - y1 - radius) * (y - y1 - radius) > radius * radius) {
+        continue;
+      } else if (x - x2 > -radius && y - y1 < radius && (x - x2 + radius) * (x - x2 + radius) + (y - y1 - radius) * (y - y1 - radius) > radius * radius) {
+        continue;
+      } else if (x - x1 < radius && y - y2 > -radius && (x - x1 - radius) * (x - x1 - radius) + (y - y2 + radius) * (y - y2 + radius) > radius * radius) {
+        continue;
+      } else if (x - x2 > -radius && y - y2 > -radius && (x - x2 + radius) * (x - x2 + radius) + (y - y2 + radius) * (y - y2 + radius) > radius * radius) {
+        continue;
+      }
+      grid_gui_draw_pixel(gui, x, y, color);
+    }
+  }
+
+  // // Draw the rounded corners
+  // for (int i = 0; i <= radius; i++) {
+  //     int j = (int)(sqrt(radius * radius - i * i) + 0.5);
+
+  //     // Top-left corner
+  //     for (int yi = y1; yi <= y1 + radius - i; yi++) {
+  //         for (int xi = x1; xi <= x1 + radius - j; xi++) {
+  //             grid_gui_draw_pixel(gui, xi, yi, color);
+  //         }
+  //     }
+
+  //     // Top-right corner
+  //     for (int yi = y1; yi <= y1 + radius - i; yi++) {
+  //         for (int xi = x2 - radius + j; xi <= x2; xi++) {
+  //             grid_gui_draw_pixel(gui, xi, yi, color);
+  //         }
+  //     }
+
+  //     // Bottom-left corner
+  //     for (int yi = y2 - radius + j; yi <= y2; yi++) {
+  //         for (int xi = x1; xi <= x1 + radius - j; xi++) {
+  //             grid_gui_draw_pixel(gui, xi, yi, color);
+  //         }
+  //     }
+
+  //     // Bottom-right corner
+  //     for (int yi = y2 - radius + j; yi <= y2; yi++) {
+  //         for (int xi = x2 - radius + j; xi <= x2; xi++) {
+  //             grid_gui_draw_pixel(gui, xi, yi, color);
+  //         }
+  //     }
+  // }
+
+  return 0;
+}
+
 void grid_gui_draw_clear(struct grid_gui_model* gui) {
 
   for (int i = 0; i < 320; i++) {

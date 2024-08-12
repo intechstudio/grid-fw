@@ -10,6 +10,8 @@ int l_grid_gui_draw_pixel(lua_State* L);
 int l_grid_gui_draw_line(lua_State* L);
 int l_grid_gui_draw_rectangle(lua_State* L);
 int l_grid_gui_draw_rectangle_filled(lua_State* L);
+int l_grid_gui_draw_rectangle_rounded(lua_State* L);
+int l_grid_gui_draw_rectangle_rounded_filled(lua_State* L);
 int l_grid_gui_draw_polygon(lua_State* L);
 int l_grid_gui_draw_polygon_filled(lua_State* L);
 int l_grid_gui_draw_text(lua_State* L);

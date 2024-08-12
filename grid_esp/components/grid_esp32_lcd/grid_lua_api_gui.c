@@ -157,6 +157,63 @@ int l_grid_gui_draw_rectangle_filled(lua_State* L) {
   return 0;
 }
 
+int l_grid_gui_draw_rectangle_rounded(lua_State* L) {
+
+  // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
+
+  int x1 = luaL_checknumber(L, 1);
+  int y1 = luaL_checknumber(L, 2);
+  int x2 = luaL_checknumber(L, 3);
+  int y2 = luaL_checknumber(L, 4);
+  int radius = luaL_checknumber(L, 5);
+  // Optional color parameter
+  if (lua_gettop(L) >= 6) {
+    luaL_checktype(L, 6, LUA_TTABLE);
+    lua_rawgeti(L, 6, 1);
+    int r = luaL_checknumber(L, -1);
+    lua_rawgeti(L, 6, 2);
+    int g = luaL_checknumber(L, -1);
+    lua_rawgeti(L, 6, 3);
+    int b = luaL_checknumber(L, -1);
+    // Use r, g, b values to set color
+
+    grid_gui_draw_rectangle_rounded(&grid_gui_state, x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
+  }
+  // Draw the pixel at (x, y)
+
+  // Draw the line from (x1, y1) to (x2, y2) with optional color
+  return 0;
+}
+
+int l_grid_gui_draw_rectangle_rounded_filled(lua_State* L) {
+
+  // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
+
+  int x1 = luaL_checknumber(L, 1);
+  int y1 = luaL_checknumber(L, 2);
+  int x2 = luaL_checknumber(L, 3);
+  int y2 = luaL_checknumber(L, 4);
+  int radius = luaL_checknumber(L, 5);
+  // Optional color parameter
+  if (lua_gettop(L) >= 6) {
+    luaL_checktype(L, 6, LUA_TTABLE);
+    lua_rawgeti(L, 6, 1);
+    int r = luaL_checknumber(L, -1);
+    lua_rawgeti(L, 6, 2);
+    int g = luaL_checknumber(L, -1);
+    lua_rawgeti(L, 6, 3);
+    int b = luaL_checknumber(L, -1);
+    // Use r, g, b values to set color
+    // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
+
+    grid_gui_draw_rectangle_rounded_filled(&grid_gui_state, x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
+  }
+  // Draw the pixel at (x, y)
+
+  // Draw the line from (x1, y1) to (x2, y2) with optional color
+  return 0;
+}
+
 int l_grid_gui_draw_polygon(lua_State* L) {
 
   // The C function that will be called from Lua
@@ -314,10 +371,16 @@ int l_grid_gui_draw_text(lua_State* L) {
 }
 
 /*static*/ struct luaL_Reg grid_lua_api_gui_lib[] = {
-    {GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr},         {GRID_LUA_FNC_G_GUI_DRAW_LINE_short, GRID_LUA_FNC_G_GUI_DRAW_LINE_fnptr},
-    {GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_fnptr}, {GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_fnptr},
-    {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_fnptr},     {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr},
-    {GRID_LUA_FNC_G_GUI_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr},           {NULL, NULL} /* end of array */
+    {GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_LINE_short, GRID_LUA_FNC_G_GUI_DRAW_LINE_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_FILLED_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr},
+    {NULL, NULL} /* end of array */
 };
 
 struct luaL_Reg* grid_lua_api_gui_lib_reference = grid_lua_api_gui_lib;
