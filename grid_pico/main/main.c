@@ -343,6 +343,8 @@ int grid_bucket_create_uart_tx_clone(struct grid_pico_uart_port* uart_port, stru
 
   strcpy(bucket->buffer, source_bucket->buffer);
   bucket->status = GRID_BUCKET_STATUS_FULL_SEND_TO_NORTH + uart_port->port_index;
+
+  return 0;
 }
 
 int grid_uart_rx_process_bucket(struct grid_bucket* rx_bucket) {
