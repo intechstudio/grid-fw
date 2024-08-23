@@ -102,7 +102,7 @@ void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t
   // }
 }
 
-static int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value) {
+int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value) {
 
   // lookup table, of state machine of the combination of old encoder AB and new
   // encoder AB
@@ -124,7 +124,7 @@ static int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_val
   return delta;
 }
 
-static uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta, uint8_t is_endless_pot) {
+uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta, uint8_t is_endless_pot) {
 
   uint32_t encoder_elapsed_time = grid_platform_rtc_get_elapsed_time(*encoder_last_real_time);
   if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(*encoder_last_real_time)) {

@@ -225,58 +225,55 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_el
 
   if (this == NULL) {
     grid_platform_printf("error.ui.MallocFailed1\r\n");
-  } else {
-
-    this->status = 0;
-    this->next = NULL;
-    this->page_number = 0;
-    this->parent = ele;
-
-    uint8_t allocation_length = ele->template_parameter_list_length;
-
-    if (allocation_length == 0) {
-      // always allocate at least one element (ESP malloc returns NULL for zero
-      // length allocation on system element)
-      allocation_length = 1;
-    }
-
-    this->template_parameter_list = malloc(allocation_length * sizeof(int32_t));
-
-    // grid_platform_printf("malloc %d %lx\r\n",
-    // ele->template_parameter_list_length, this->template_parameter_list);
-
-    if (this->template_parameter_list == NULL) {
-      grid_platform_printf("error.ui.MallocFailed2\r\n");
-      // grid_platform_delay_ms(100);
-    } else {
-
-      if (ele->template_initializer != NULL) {
-        ele->template_initializer(this);
-      }
-
-      // grid_platform_printf("LIST\r\n");
-
-      if (prev != NULL) {
-
-        while (prev->next != NULL) {
-
-          this->page_number++;
-          prev = prev->next;
-        }
-
-        prev->next = this;
-        return this;
-      } else {
-
-        this->parent->template_buffer_list_head = this;
-        return this;
-        // this is the first item in the list
-      }
-    }
+    return NULL;
   }
 
-  // FAILED
-  return NULL;
+  this->status = 0;
+  this->next = NULL;
+  this->page_number = 0;
+  this->parent = ele;
+
+  uint8_t allocation_length = ele->template_parameter_list_length;
+
+  if (allocation_length == 0) {
+    // always allocate at least one element (ESP malloc returns NULL for zero
+    // length allocation on system element)
+    allocation_length = 1;
+  }
+
+  this->template_parameter_list = malloc(allocation_length * sizeof(int32_t));
+
+  // grid_platform_printf("malloc %d %lx\r\n",
+  // ele->template_parameter_list_length, this->template_parameter_list);
+
+  if (this->template_parameter_list == NULL) {
+    grid_platform_printf("error.ui.MallocFailed2\r\n");
+    return NULL;
+    // grid_platform_delay_ms(100);
+  }
+
+  if (ele->template_initializer != NULL) {
+    ele->template_initializer(this);
+  }
+
+  // grid_platform_printf("LIST\r\n");
+
+  if (prev != NULL) {
+
+    while (prev->next != NULL) {
+
+      this->page_number++;
+      prev = prev->next;
+    }
+
+    prev->next = this;
+    return this;
+  } else {
+
+    this->parent->template_buffer_list_head = this;
+    return this;
+    // this is the first item in the list
+  }
 }
 
 uint8_t grid_ui_template_buffer_list_length(struct grid_ui_element* ele) {

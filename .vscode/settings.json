@@ -142,7 +142,8 @@
     "grid_lua_api.h": "c",
     "lauxlib.h": "c",
     "grid_lua_api_gui.h": "c",
-    "grid_d51.h": "c"
+    "grid_d51.h": "c",
+    "grid_ui_encoder.h": "c"
   },
   "files.exclude": {
     ".archive": true,

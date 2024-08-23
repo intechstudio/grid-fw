@@ -12,6 +12,9 @@ void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buf
 void grid_ui_element_encoder_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
+int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value);
+uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta, uint8_t is_endless_pot);
+
 void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, uint64_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock);
 
 // ========================= ENCODER =========================== //
