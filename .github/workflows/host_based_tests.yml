@@ -1,4 +1,4 @@
-name: Fuzz Testing
+name: Host Based Testing
 
 on:
   push:
@@ -11,16 +11,20 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+
     - name: Set up Clang
       uses: egor-tensin/setup-clang@v1
       with:
         version: latest
         platform: x64
 
+    - name: Run host based tests
+      run: |
+        ./host_test.sh
 
     - name: Build and run fuzz test
       run: |
-        ./fuzz.sh
+        ./host_fuzz.sh
 
     - uses: actions/upload-artifact@v3
       if: always()
@@ -29,3 +33,4 @@ jobs:
         path: |
           fuzzer_test
           input.bin
+
