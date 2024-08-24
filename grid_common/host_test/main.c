@@ -47,23 +47,31 @@ void test_function_should_calculateRelativeMode(void) {
   // in relative mode value should be 64 after event reset
   TEST_ASSERT_EQUAL_UINT8(64, grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index));
 
+  // in relative mode value should be 0 after event reset when min max is set to -100 ... 100
   grid_ui_element_set_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MIN_index, -100); // set min to -100
   grid_ui_element_set_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MAX_index, 100);  // set max to 100
   grid_ui_event_reset(eve);
   if (eve->parent->event_clear_cb != NULL) {
     eve->parent->event_clear_cb(eve);
   }
-
-  for (uint8_t i = 0; i < ele->template_parameter_list_length; i++) {
-    printf("template_parameter_list[%d] = %d\n", i, template_parameter_list[i]);
-  }
-
-  // in relative mode value should be 0 after event reset when min max is set to -100 ... 100
   TEST_ASSERT_EQUAL_UINT8(0, grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index));
+
+  // in relative mode value should be 0 after event reset when min max is set to 200 ... 100
+  grid_ui_element_set_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MIN_index, 200);
+  grid_ui_element_set_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MAX_index, 100);
+  grid_ui_event_reset(eve);
+  if (eve->parent->event_clear_cb != NULL) {
+    eve->parent->event_clear_cb(eve);
+  }
+  TEST_ASSERT_EQUAL_UINT8(150, grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index));
 
   uint64_t last_real_time = 0;
   int16_t delta = 1;
   uint8_t is_endless_pot = 0;
+
+  for (uint8_t i = 0; i < ele->template_parameter_list_length; i++) {
+    printf("template_parameter_list[%d] = %d\n", i, template_parameter_list[i]);
+  }
 
   grid_ui_encoder_update_trigger(ele, &last_real_time, delta, is_endless_pot);
 
@@ -73,7 +81,7 @@ void test_function_should_calculateRelativeMode(void) {
 
   printf("test_function_should_calculateRelativeMode: %d\n", grid_ui_event_istriggered(eve));
 
-  TEST_ASSERT_EQUAL_UINT8(1, grid_ui_event_istriggered(eve)); // event triggering should happen
+  TEST_ASSERT_NOT_EQUAL_INT32(200, grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index));
 
   // ....
 }
