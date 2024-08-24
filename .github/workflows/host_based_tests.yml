@@ -33,4 +33,3 @@ jobs:
         path: |
           fuzzer_test
           input.bin
-
