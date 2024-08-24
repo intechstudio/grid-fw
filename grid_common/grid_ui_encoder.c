@@ -127,7 +127,7 @@ int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value) {
   return delta;
 }
 
-uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta, uint8_t is_endless_pot) {
+uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta) {
 
   uint32_t encoder_elapsed_time = grid_platform_rtc_get_elapsed_time(*encoder_last_real_time);
   if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(*encoder_last_real_time)) {
@@ -175,23 +175,15 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
   // implement configurable velocity parameters here
   double velocityfactor = ((25 * 25 - elapsed_ms * elapsed_ms) / 75.0) * minmaxscale * velocityparam + (1.0 * template_parameter_list[GRID_LUA_FNC_E_ENCODER_SENSITIVITY_index] / 100.0);
 
-  if (is_endless_pot) {
-    velocityfactor = minmaxscale * velocityparam / 15.0;
-  }
-
   int32_t delta_velocity = delta * velocityfactor;
+
+  if (delta_velocity == 0) {
+    return 0; // did not trigger
+  }
 
   int32_t old_value = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
 
-  if (is_endless_pot) {
-
-    if (delta_velocity == 0) {
-
-      return 0; // did not trigger
-    }
-  } else {
-    template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] += delta_velocity;
-  }
+  template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] += delta_velocity;
 
   if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 0) { // Absolute
 
@@ -296,5 +288,5 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
 
   // Evaluate the results
   grid_ui_button_update_trigger(ele, button_last_real_time, old_button_value, new_button_value);
-  grid_ui_encoder_update_trigger(ele, encoder_last_real_time, delta, 0);
+  grid_ui_encoder_update_trigger(ele, encoder_last_real_time, delta);
 }

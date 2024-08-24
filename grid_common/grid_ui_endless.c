@@ -98,7 +98,7 @@ void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t
   // }
 }
 
-static uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint64_t* endless_last_real_time, int16_t delta, uint8_t is_endless_pot) {
+uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint64_t* endless_last_real_time, int16_t delta) {
 
   uint32_t encoder_elapsed_time = grid_platform_rtc_get_elapsed_time(*endless_last_real_time);
   if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(*endless_last_real_time)) {
@@ -119,6 +119,14 @@ static uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint6
   int32_t min = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index];
   int32_t max = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index];
 
+  // inver range if min is greater then max
+  if (min > max) {
+    delta = -delta;
+    int32_t tmp = min;
+    min = max;
+    max = tmp;
+  }
+
   double elapsed_ms = encoder_elapsed_time / MS_TO_US;
 
   if (elapsed_ms > 25) {
@@ -131,26 +139,18 @@ static uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint6
 
   double minmaxscale = (max - min) / 128.0;
 
-  double velocityparam = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] / 100.0;
+  double velocityparam = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] / 100.0;
 
   // implement configurable velocity parameters here
-  double velocityfactor = ((25 * 25 - elapsed_ms * elapsed_ms) / 75.0) * minmaxscale * velocityparam + 1.0;
-
-  if (is_endless_pot) {
-    velocityfactor = minmaxscale * velocityparam / 15.0;
-  }
+  double velocityfactor = ((25 * 25 - elapsed_ms * elapsed_ms) / 75.0) * minmaxscale * velocityparam + (1.0 * template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] / 100.0);
 
   int32_t delta_velocity = delta * velocityfactor;
 
-  int32_t old_value = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index];
-
-  if (is_endless_pot) {
-
-    if (delta_velocity == 0) {
-
-      return 0; // did not trigger
-    }
+  if (delta_velocity == 0) {
+    return 0; // did not trigger
   }
+
+  int32_t old_value = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index];
 
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_STATE_index] += delta_velocity;
 
