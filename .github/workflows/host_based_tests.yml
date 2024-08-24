@@ -20,6 +20,7 @@ jobs:
 
     - name: Run host based tests
       run: |
+        sudo apt-get install gcc g++ libfoo-dev  # Install any required libraries
         ./host_test.sh
 
     - name: Build and run fuzz test
