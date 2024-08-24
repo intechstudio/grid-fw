@@ -76,7 +76,7 @@ void grid_ui_element_endless_event_clear_cb(struct grid_ui_event* eve) {
     int32_t min = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index];
     int32_t max = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index];
 
-    template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = ((max + 1) - min) / 2;
+    template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = ((max + 1) + min) / 2;
   } else if (template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MODE_index] == 2) {
 
     template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = 0;
