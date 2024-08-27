@@ -67,13 +67,12 @@ void test_function_should_calculateRelativeMode(void) {
 
   uint64_t last_real_time = 0;
   int16_t delta = 1;
-  uint8_t is_endless_pot = 0;
 
   for (uint8_t i = 0; i < ele->template_parameter_list_length; i++) {
     printf("template_parameter_list[%d] = %d\n", i, template_parameter_list[i]);
   }
 
-  grid_ui_encoder_update_trigger(ele, &last_real_time, delta, is_endless_pot);
+  grid_ui_encoder_update_trigger(ele, &last_real_time, delta);
 
   for (uint8_t i = 0; i < ele->template_parameter_list_length; i++) {
     printf("template_parameter_list[%d] = %d\n", i, template_parameter_list[i]);
