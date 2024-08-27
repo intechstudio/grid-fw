@@ -60,7 +60,7 @@ void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buf
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MODE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_ELAPSED_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_STATE_index] = 64;
-  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] = 0;
+  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] = 50;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = -1;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] = 50;
 }
@@ -141,8 +141,10 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint64_t* en
 
   double velocityparam = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] / 100.0;
 
+  double rate_of_change = abs(delta) / elapsed_ms;
+
   // implement configurable velocity parameters here
-  double velocityfactor = ((25 * 25 - elapsed_ms * elapsed_ms) / 75.0) * minmaxscale * velocityparam + (1.0 * template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] / 100.0);
+  double velocityfactor = ((rate_of_change * rate_of_change) / 2000.0) * minmaxscale * velocityparam + (5.0 * template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] / 100.0);
 
   int32_t delta_velocity = delta * velocityfactor;
 
@@ -331,7 +333,7 @@ void grid_ui_endless_store_input(uint8_t input_channel, uint64_t* endless_last_r
     if (abs(delta) > 10) {
 
       template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = value_degrees_new / 20;
-      uint8_t has_triggered = grid_ui_endless_update_trigger(ele, endless_last_real_time, delta, 1);
+      uint8_t has_triggered = grid_ui_endless_update_trigger(ele, endless_last_real_time, delta);
 
       if (has_triggered) {
         old_value->phase_a_value = new_value->phase_a_value;
