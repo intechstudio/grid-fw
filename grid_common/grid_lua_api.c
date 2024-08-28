@@ -18,6 +18,8 @@
 
       grid_port_debug_printf("%s", lua_tostring(L, i));
       // grid_platform_printf(" str: %s ", lua_tostring(L, i));
+    } else if (lua_type(L, i) == LUA_TBOOLEAN) {
+      lua_toboolean(L, i) ? grid_port_debug_printf("true") : grid_port_debug_printf("false");
     } else if (lua_type(L, i) == LUA_TNUMBER) {
 
       lua_Number lnum = lua_tonumber(L, i);
@@ -124,6 +126,19 @@
       strcat(message, lua_tostring(L, i));
       strcat(message, "\"");
       // grid_platform_printf(" str: %s ", lua_tostring(L, i));
+    } else if (lua_type(L, i) == LUA_TBOOLEAN) {
+      bool b = lua_toboolean(L, i);
+      if (strlen(message) > 0) {
+
+        strcat(message, ",");
+      }
+      if (b) {
+
+        strcat(message, "true");
+      } else {
+
+        strcat(message, "false");
+      }
     } else if (lua_type(L, i) == LUA_TNUMBER) {
 
       if (strlen(message) > 0) {
