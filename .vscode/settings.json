@@ -144,7 +144,8 @@
     "grid_lua_api_gui.h": "c",
     "grid_d51.h": "c",
     "grid_ui_encoder.h": "c",
-    "grid_ui_endless.h": "c"
+    "grid_ui_endless.h": "c",
+    "bit": "c"
   },
   "files.exclude": {
     ".archive": true,
