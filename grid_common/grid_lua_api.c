@@ -196,8 +196,8 @@
   // grid_platform_printf("LUA PRINT: ");
   if (nargs == 3) {
 
-    uint8_t x = GRID_PARAMETER_DEFAULT_POSITION;
-    uint8_t y = GRID_PARAMETER_DEFAULT_POSITION;
+    uint8_t x = GRID_PARAMETER_GLOBAL_POSITION;
+    uint8_t y = GRID_PARAMETER_GLOBAL_POSITION;
 
     if (lua_type(L, 1) == LUA_TNUMBER && lua_type(L, 2) == LUA_TNUMBER) {
       x = lua_tonumber(L, 1) + GRID_PARAMETER_DEFAULT_POSITION;
