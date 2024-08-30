@@ -194,17 +194,25 @@
 
   int nargs = lua_gettop(L);
   // grid_platform_printf("LUA PRINT: ");
-  if (nargs == 1) {
+  if (nargs == 3) {
 
-    if (lua_type(L, 1) == LUA_TSTRING) {
+    uint8_t x = GRID_PARAMETER_DEFAULT_POSITION;
+    uint8_t y = GRID_PARAMETER_DEFAULT_POSITION;
 
-      char* str = lua_tostring(L, 1);
+    if (lua_type(L, 1) == LUA_TNUMBER && lua_type(L, 2) == LUA_TNUMBER) {
+      x = lua_tonumber(L, 1) + GRID_PARAMETER_DEFAULT_POSITION;
+      y = lua_tonumber(L, 2) + GRID_PARAMETER_DEFAULT_POSITION;
+    }
+
+    if (lua_type(L, 3) == LUA_TSTRING) {
+
+      char* str = lua_tostring(L, 3);
 
       // MUST BE SENT OUT IMMEDIATELY (NOT THROUGH STDO) BECAUSE IT MUST BE SENT
       // OUT EVEN AFTER LOCAL TRIGGER (CONFIG) struct grid_msg_packet response;
 
       struct grid_msg_packet response;
-      grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+      grid_msg_packet_init(&grid_msg_state, &response, x, y);
 
       grid_msg_packet_body_append_printf(&response, GRID_CLASS_IMMEDIATE_frame_start);
       grid_msg_packet_body_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
@@ -216,10 +224,10 @@
       grid_port_packet_send_everywhere(&response);
 
     } else {
-      grid_port_debug_printf("Invalid args");
+      grid_port_debug_printf("Invalid arguments! %s", GRID_LUA_FNC_G_IMMEDIATE_SEND_usage);
     }
   } else {
-    grid_port_debug_printf("Invalid args");
+    grid_port_debug_printf("Invalid arguments! %s", GRID_LUA_FNC_G_IMMEDIATE_SEND_usage);
   }
 
   return 0;

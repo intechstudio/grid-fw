@@ -478,6 +478,7 @@ uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
 uint8_t grid_decode_imediate_to_ui(char* header, char* chunk) {
 
   if (grid_check_destination(header, GRID_DESTINATION_IS_ME | GRID_DESTINATION_IS_GLOBAL | GRID_DESTINATION_IS_LOCAL) == false) {
+
     return 1;
   }
 
@@ -506,10 +507,26 @@ uint8_t grid_decode_imediate_to_ui(char* header, char* chunk) {
     lua_script[length - 3] = '\0'; // add terminating zero
 
     // printf("IMMEDIATE %d: %s\r\n", length, lua_script);
-
+    grid_lua_clear_stdo(&grid_lua_state);
     grid_lua_dostring(&grid_lua_state, &lua_script[6]);
 
     lua_script[length - 3] = ' '; // restore packet!
+
+    // Prepare packet header GLOBAL
+    struct grid_msg_packet message_global;
+    grid_msg_packet_init(&grid_msg_state, &message_global, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
+    char payload_global[GRID_PARAMETER_PACKET_maxlength] = {0};
+    uint32_t offset_global = 0;
+
+    strcat(payload_global, grid_lua_get_output_string(&grid_lua_state));
+    grid_lua_clear_stdo(&grid_lua_state);
+
+    if (strlen(payload_global) > 0) {
+
+      grid_msg_packet_body_append_text(&message_global, payload_global);
+      grid_msg_packet_close(&grid_msg_state, &message_global);
+      grid_port_packet_send_everywhere(&message_global);
+    }
   }
 
   return 0; // OK
