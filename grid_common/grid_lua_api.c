@@ -1573,6 +1573,23 @@
   return 1;
 }
 
+/*static*/ int l_grid_element_count(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 0) {
+    // error
+    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    return 0;
+  }
+
+  uint8_t element_count = grid_ui_state.element_list_length;
+
+  lua_pushinteger(L, element_count);
+
+  return 1;
+}
+
 /*static*/ const struct luaL_Reg grid_lua_api_generic_lib[] = {
     {"print", l_my_print},
     {"grid_send", l_grid_send},
@@ -1633,6 +1650,8 @@
     {GRID_LUA_FNC_G_WEBSOCKET_SEND_short, GRID_LUA_FNC_G_WEBSOCKET_SEND_fnptr},
     {GRID_LUA_FNC_G_PACKAGE_SEND_short, GRID_LUA_FNC_G_PACKAGE_SEND_fnptr},
     {GRID_LUA_FNC_G_IMMEDIATE_SEND_short, GRID_LUA_FNC_G_IMMEDIATE_SEND_fnptr},
+
+    {GRID_LUA_FNC_G_ELEMENT_COUNT_short, GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr},
 
     {"print", l_my_print},
 
