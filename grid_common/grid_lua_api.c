@@ -9,25 +9,63 @@
 /* ==================== LUA C API REGISTERED FUNCTIONS  ====================*/
 
 /*static*/ int l_my_print(lua_State* L) {
+  char message[500] = {0};
 
   int nargs = lua_gettop(L);
   // grid_platform_printf("LUA PRINT: ");
   for (int i = 1; i <= nargs; ++i) {
 
     if (lua_type(L, i) == LUA_TSTRING) {
+      if (strlen(message) > 0) {
 
-      grid_port_debug_printf("%s", lua_tostring(L, i));
+        strcat(message, ", ");
+      }
+      strcat(message, "\"");
+      strcat(message, lua_tostring(L, i));
+      strcat(message, "\"");
       // grid_platform_printf(" str: %s ", lua_tostring(L, i));
     } else if (lua_type(L, i) == LUA_TBOOLEAN) {
-      lua_toboolean(L, i) ? grid_port_debug_printf("true") : grid_port_debug_printf("false");
+      bool b = lua_toboolean(L, i);
+      if (strlen(message) > 0) {
+
+        strcat(message, ", ");
+      }
+      if (b) {
+
+        strcat(message, "true");
+      } else {
+
+        strcat(message, "false");
+      }
     } else if (lua_type(L, i) == LUA_TNUMBER) {
 
+      if (strlen(message) > 0) {
+
+        strcat(message, ", ");
+      }
       lua_Number lnum = lua_tonumber(L, i);
       lua_Integer lint;
       lua_numbertointeger(lnum, &lint);
       // int32_t num = lua_tonumber
 
-      grid_port_debug_printf("%d", (int)lnum);
+      sprintf(&message[strlen(message)], "%lf", lnum);
+
+      // remove unnesesery trailing zeros
+      uint8_t index_helper = strlen(message);
+      for (uint8_t i = 0; i < 8; i++) {
+
+        if (message[index_helper - i - 1] == '0') {
+
+          message[index_helper - i - 1] = '\0';
+        } else if (message[index_helper - i - 1] == '.') {
+
+          message[index_helper - i - 1] = '\0';
+          break;
+        } else {
+          break;
+        }
+      }
+
       // grid_platform_printf(" num: %d ", (int)lnum);
     } else if (lua_type(L, i) == LUA_TNIL) {
       // grid_platform_printf(" nil ");
@@ -38,6 +76,11 @@
     } else {
       // grid_platform_printf(" unknown data type ");
     }
+  }
+
+  if (strlen(message) > 0) {
+
+    grid_port_debug_print_text(message);
   }
 
   if (nargs == 0) {
@@ -61,6 +104,8 @@
 
       strcat(message, lua_tostring(L, i));
       // grid_platform_printf(" str: %s ", lua_tostring(L, i));
+    } else if (lua_type(L, i) == LUA_TBOOLEAN) {
+      lua_toboolean(L, i) ? grid_port_debug_printf("true") : grid_port_debug_printf("false");
     } else if (lua_type(L, i) == LUA_TNUMBER) {
 
       lua_Number lnum = lua_tonumber(L, i);
