@@ -89,7 +89,7 @@ end"
 #define GRID_LUA_STDO_LENGTH 100
 #define GRID_LUA_STDI_LENGTH 100
 
-#define GRID_LUA_STDE_LENGTH 100
+#define GRID_LUA_STDE_LENGTH 400
 
 struct grid_lua_model {
 

@@ -104,7 +104,8 @@ uint32_t grid_lua_dostring(struct grid_lua_model* lua, char* code) {
       // remove the code from the stack
     } else {
       // grid_platform_printf("LUA not OK: %s \r\n", code);
-      stpncpy(lua->stde, lua_tostring(lua->L, -1), lua->stde_len);
+      grid_lua_clear_stde(lua);
+      stpncpy(lua->stde, lua_tostring(lua->L, -1), lua->stde_len - 1);
       is_ok = 0;
     }
 
@@ -113,7 +114,8 @@ uint32_t grid_lua_dostring(struct grid_lua_model* lua, char* code) {
     // grid_platform_printf("LUA not OK:  %s\r\n", code);
     // grid_port_debug_printf("LUA not OK 2");
 
-    stpncpy(lua->stde, lua_tostring(lua->L, -1), lua->stde_len);
+    grid_lua_clear_stde(lua);
+    stpncpy(lua->stde, lua_tostring(lua->L, -1), lua->stde_len - 1);
     is_ok = 0;
 
     lua_pop(lua->L, 1); // Remove error message from the stack

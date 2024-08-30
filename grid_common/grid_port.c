@@ -696,7 +696,7 @@ void grid_port_debug_printf(char const* fmt, ...) {
 
   va_list ap;
 
-  const int len = 150;
+  const int len = 300;
   const char truncation[] = " ... (message truncated)";
 
   char temp[len];

@@ -604,7 +604,9 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, char* target_str
 
         if (0 == grid_lua_dostring(&grid_lua_state, &temp[code_start + 6])) {
           grid_port_debug_printf("LUA not OK! EL: %d EV: %d MSG: %s", eve->parent->index, eve->type, grid_lua_get_error_string(&grid_lua_state));
-        };
+          grid_platform_printf("LUA not OK! EL: %d EV: %d MSG: %s\r\n", eve->parent->index, eve->type, grid_lua_get_error_string(&grid_lua_state));
+          grid_lua_clear_stde(&grid_lua_state);
+        }
 
         uint32_t code_stdo_length = strlen(grid_lua_get_output_string(&grid_lua_state));
 
