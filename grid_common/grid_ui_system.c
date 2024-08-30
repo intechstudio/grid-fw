@@ -29,9 +29,19 @@ void grid_ui_element_system_init(struct grid_ui_element* ele) {
   grid_ui_event_init(ele, 2, GRID_PARAMETER_EVENT_MIDIRX, GRID_LUA_FNC_A_MIDIRX_short, grid_ui_system_midirx_actionstring);          // Midi Receive
   grid_ui_event_init(ele, 3, GRID_PARAMETER_EVENT_TIMER, GRID_LUA_FNC_A_TIMER_short, grid_ui_system_timer_actionstring);
 
-  ele->template_initializer = NULL;
-  ele->template_parameter_list_length = 0;
+  ele->template_initializer = &grid_ui_element_system_template_parameter_init;
+  ele->template_parameter_list_length = GRID_LUA_FNC_S_LIST_length;
 
   ele->event_clear_cb = NULL;
   ele->page_change_cb = NULL;
+}
+
+void grid_ui_element_system_template_parameter_init(struct grid_ui_template_buffer* buf) {
+
+  // printf("template parameter init\r\n");
+
+  uint8_t element_index = buf->parent->index;
+  int32_t* template_parameter_list = buf->template_parameter_list;
+
+  template_parameter_list[GRID_LUA_FNC_S_ELEMENT_INDEX_index] = element_index;
 }
