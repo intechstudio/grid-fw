@@ -69,7 +69,7 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 /*static*/ int l_grid_version_minor(lua_State* L);
 /*static*/ int l_grid_version_patch(lua_State* L);
 /*static*/ int l_grid_hwcfg(lua_State* L);
-/*static*/ int l_grid_random(lua_State* L);
+/*static*/ int l_grid_random8(lua_State* L);
 /*static*/ int l_grid_position_x(lua_State* L);
 /*static*/ int l_grid_position_y(lua_State* L);
 /*static*/ int l_grid_rotation(lua_State* L);

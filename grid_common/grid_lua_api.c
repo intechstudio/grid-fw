@@ -1108,7 +1108,7 @@
   return 1;
 }
 
-/*static*/ int l_grid_random(lua_State* L) {
+/*static*/ int l_grid_random8(lua_State* L) {
 
   int nargs = lua_gettop(L);
 

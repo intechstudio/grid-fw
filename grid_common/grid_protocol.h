@@ -269,8 +269,8 @@
 #define GRID_LUA_FNC_G_GAMEPADBUTTON_SEND_fnptr l_grid_gamepadbutton_send
 
 #define GRID_LUA_FNC_G_RANDOM_short "grnd"
-#define GRID_LUA_FNC_G_RANDOM_human "random"
-#define GRID_LUA_FNC_G_RANDOM_fnptr l_grid_random
+#define GRID_LUA_FNC_G_RANDOM_human "random8"
+#define GRID_LUA_FNC_G_RANDOM_fnptr l_grid_random8
 
 #define GRID_LUA_FNC_G_HWCFG_short "ghwcfg"
 #define GRID_LUA_FNC_G_HWCFG_human "hardware_configuration"
