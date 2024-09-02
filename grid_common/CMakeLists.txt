@@ -17,6 +17,7 @@ idf_component_register(
         "grid_ui_endless.c"
         "grid_ui_potmeter.c"
         "grid_ui_system.c"
+        "grid_ui_lcd.c"
         "grid_module.c"
         "grid_lua_api.c"
 

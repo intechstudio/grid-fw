@@ -25,6 +25,7 @@
 #define GRID_PARAMETER_ELEMENT_BUTTON 2
 #define GRID_PARAMETER_ELEMENT_ENCODER 3
 #define GRID_PARAMETER_ELEMENT_ENDLESS 4
+#define GRID_PARAMETER_ELEMENT_LCD 5
 
 // must not change because it would break profiles
 #define GRID_PARAMETER_EVENT_INIT 0
