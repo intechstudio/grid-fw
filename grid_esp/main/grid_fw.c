@@ -138,6 +138,7 @@ char grid_doublebuffer_tx_memory_array[5][GRID_DOUBLE_BUFFER_TX_SIZE] = {0};
 char grid_doublebuffer_rx_memory_array[2][GRID_DOUBLE_BUFFER_RX_SIZE] = {0};
 
 #include "grid_lua_api_gui.h"
+#include "grid_ui_lcd.h"
 
 void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
 
@@ -147,6 +148,7 @@ void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
 
   grid_lua_dostring(lua, GRID_LUA_B_META_init);
   grid_lua_dostring(lua, GRID_LUA_EP_META_init);
+  grid_lua_dostring(lua, GRID_LUA_L_META_init);
 
   // create element array
   grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
@@ -155,21 +157,22 @@ void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, "for i=0, 7 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
   grid_lua_dostring(lua, "for i=0, 7 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
 
-  // initialize 2 endless potentiometers as encoders
+  // initialize 1 endless potentiometer
   grid_lua_dostring(lua, "for i=8, 8  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
   grid_lua_dostring(lua, "for i=8, 8  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], endless_meta)  end");
 
   grid_lua_dostring(lua, "for i=9, 12 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
   grid_lua_dostring(lua, "for i=9, 12 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
 
+  grid_lua_dostring(lua, "for i=13, 13  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=13, 13  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], endless_meta)  end");
+
   grid_lua_gc_try_collect(lua);
 
   // initialize the system element
-  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "[13] = {index = 13}");
+  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "[14] = {index = 14}");
   grid_lua_dostring(lua, GRID_LUA_SYS_META_init);
-  grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[13], system_meta)");
-
-  grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[13], system_meta)");
+  grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[14], system_meta)");
 }
 
 void grid_lua_ui_init_vsn2(struct grid_lua_model* lua) {
@@ -179,6 +182,7 @@ void grid_lua_ui_init_vsn2(struct grid_lua_model* lua) {
   grid_lua_vm_register_functions(lua, grid_lua_api_gui_lib_reference);
 
   grid_lua_dostring(lua, GRID_LUA_B_META_init);
+  grid_lua_dostring(lua, GRID_LUA_L_META_init);
 
   // create element array
   grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
@@ -187,15 +191,24 @@ void grid_lua_ui_init_vsn2(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, "for i=0, 7 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
   grid_lua_dostring(lua, "for i=0, 7 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
 
-  grid_lua_dostring(lua, "for i=8, 15 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(lua, "for i=8, 15 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
+  grid_lua_dostring(lua, "for i=8, 11 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=8, 11 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
+
+  grid_lua_dostring(lua, "for i=12, 12 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=12, 12 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], lcd_meta) end");
+
+  grid_lua_dostring(lua, "for i=13, 16 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=13, 16 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
+
+  grid_lua_dostring(lua, "for i=17, 17 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=17, 17 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], lcd_meta) end");
 
   grid_lua_gc_try_collect(lua);
 
   // initialize the system element
-  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "[16] = {index = 16}");
+  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "[18] = {index = 18}");
   grid_lua_dostring(lua, GRID_LUA_SYS_META_init);
-  grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[16], system_meta)");
+  grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[18], system_meta)");
 }
 
 void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui, uint8_t hwcfg) {
@@ -228,9 +241,9 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA) {
 
-    grid_ui_model_init(ui, 13 + 1);
+    grid_ui_model_init(ui, 14 + 1);
 
-    for (uint8_t j = 0; j < 13 + 1; j++) {
+    for (uint8_t j = 0; j < 14 + 1; j++) {
 
       struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
 
@@ -246,6 +259,9 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
         grid_ui_element_button_init(ele);
 
+      } else if (j < 14) {
+
+        grid_ui_element_lcd_init(ele);
       } else {
         grid_ui_element_system_init(ele);
       }
@@ -256,8 +272,8 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
 
     grid_platform_printf("VSN2\n");
-    grid_ui_model_init(ui, 16 + 1);
-    for (uint8_t j = 0; j < 16 + 1; j++) {
+    grid_ui_model_init(ui, 18 + 1);
+    for (uint8_t j = 0; j < 18 + 1; j++) {
 
       struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
 
@@ -265,10 +281,20 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
         grid_ui_element_button_init(ele);
 
-      } else if (j < 16) {
+      } else if (j < 12) {
 
         grid_ui_element_button_init(ele);
 
+      } else if (j < 13) {
+
+        grid_ui_element_lcd_init(ele);
+      } else if (j < 17) {
+
+        grid_ui_element_button_init(ele);
+
+      } else if (j < 18) {
+
+        grid_ui_element_lcd_init(ele);
       } else {
         grid_ui_element_system_init(ele);
       }

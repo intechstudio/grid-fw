@@ -18,7 +18,7 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 #define GRID_LUA_FNC_L_LIST_length 1
 
 // LCD init function
-#define GRID_LUA_LCD_META_init                                                                                                                                                                         \
+#define GRID_LUA_L_META_init                                                                                                                                                                           \
   "lcd_meta = { __index = { \
   \
   " GRID_LUA_FNC_L_ELEMENT_INDEX_short "=function (self,a) return "                                                                                                                                    \

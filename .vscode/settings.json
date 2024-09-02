@@ -146,7 +146,9 @@
     "grid_ui_encoder.h": "c",
     "grid_ui_endless.h": "c",
     "bit": "c",
-    "grid_ui_system.h": "c"
+    "grid_ui_system.h": "c",
+    "grid_esp32_module_tek1.h": "c",
+    "grid_ui_lcd.h": "c"
   },
   "files.exclude": {
     ".archive": true,

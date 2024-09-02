@@ -20,6 +20,7 @@ idf_component_register(
         "../../../grid_common/grid_ui_endless.c"
         "../../../grid_common/grid_ui_potmeter.c"
         "../../../grid_common/grid_ui_system.c"
+        "../../../grid_common/grid_ui_lcd.c"
         "../../../grid_common/grid_module.c"
         "../../../grid_common/grid_lua.c"
         "../../../grid_common/grid_lua_api.c"
