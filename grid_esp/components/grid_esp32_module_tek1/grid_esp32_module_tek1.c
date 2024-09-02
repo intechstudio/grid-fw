@@ -191,7 +191,7 @@ void grid_esp32_module_tek1_task(void* arg) {
     if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA) {
 
       vsn1_process_analog();
-    } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSNR_RevA) {
+    } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA) {
 
       vsn1r_process_analog();
     } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
@@ -206,7 +206,7 @@ void grid_esp32_module_tek1_task(void* arg) {
     grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state, 0);
   }
 
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSNR_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
     grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state, 1);
   }
 
@@ -303,7 +303,7 @@ void grid_esp32_module_tek1_task(void* arg) {
         grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 0, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
       }
 
-      if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSNR_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
+      if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
         grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 1, 0, i, SCREEN_WIDTH, TRANSFERBUFFER_LINES, hw_framebuffer);
       }
     }
