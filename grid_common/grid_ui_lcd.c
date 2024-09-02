@@ -21,7 +21,7 @@ void grid_ui_element_lcd_init(struct grid_ui_element* ele) {
   ele->event_list_length = 1;
 
   ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
-  grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_lcd_init_actionstring);                // Element Initialization Event
+  grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_lcd_init_actionstring); // Element Initialization Event
 
   ele->template_initializer = &grid_ui_element_lcd_template_parameter_init;
   ele->template_parameter_list_length = GRID_LUA_FNC_L_LIST_length;
