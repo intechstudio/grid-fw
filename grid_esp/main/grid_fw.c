@@ -227,7 +227,7 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 5, 0, 6, 1, 7, 2, 8, 3, 9, 4}; // set unused to -1
     grid_led_lookup_init(led, led_lookup);
 
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSNR_RevA) {
 
     uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9}; // set unused to -1
     grid_led_lookup_init(led, led_lookup);
@@ -239,7 +239,7 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     grid_led_lookup_init(led, led_lookup);
   }
 
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA) {
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSNR_RevA) {
 
     grid_ui_model_init(ui, 14 + 1);
 
@@ -363,7 +363,7 @@ void app_main(void) {
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA) {
     grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA ||
-             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSNR_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
     grid_module_tek1_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, grid_sys_get_hwcfg(&grid_sys_state));
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
     grid_module_pb44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
@@ -496,7 +496,7 @@ void app_main(void) {
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA) {
     xTaskCreatePinnedToCore(grid_esp32_module_tek2_task, "tek2", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA ||
-             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSNR_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA) {
     xTaskCreatePinnedToCore(grid_esp32_module_tek1_task, "tek1", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
     xTaskCreatePinnedToCore(grid_esp32_module_pb44_task, "pb44", 1024 * 3, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
