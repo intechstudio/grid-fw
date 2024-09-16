@@ -55,6 +55,9 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
 #define GRID_LUA_FNC_B_BUTTON_STATE_short "bst"
 #define GRID_LUA_FNC_B_BUTTON_STATE_human "button_state"
 
+#define GRID_LUA_FNC_B_BUTTON_STEP_short "bstp"
+#define GRID_LUA_FNC_B_BUTTON_STEP_human "button_step"
+
 // Button parameters
 #define GRID_LUA_FNC_B_LIST_length 8
 
@@ -81,6 +84,12 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
   "gtv(self.index, " GRID_LUA_FNC_B_BUTTON_ELAPSED_helper ", a) end, \
   " GRID_LUA_FNC_B_BUTTON_STATE_short "=function (self,a) return "                                                                                                                                     \
   "gtv(self.index, " GRID_LUA_FNC_B_BUTTON_STATE_helper ", a) end, \
+  \
+  " GRID_LUA_FNC_B_BUTTON_STEP_short " =function (self) "                                                                                                                                              \
+  "local steps, min, max, value = self:" GRID_LUA_FNC_B_BUTTON_MODE_short "(), self:" GRID_LUA_FNC_B_BUTTON_MIN_short "(), self:" GRID_LUA_FNC_B_BUTTON_MAX_short                                      \
+  "(), self:" GRID_LUA_FNC_B_BUTTON_VALUE_short "() "                                                                                                                                                  \
+  "return value // ((max - min) // steps) "                                                                                                                                                            \
+  "end, \
   \
   " GRID_LUA_FNC_A_INIT_short " = function (self) print('undefined action') end, \
   " GRID_LUA_FNC_A_BUTTON_short " = function (self) print('undefined action') end,\
