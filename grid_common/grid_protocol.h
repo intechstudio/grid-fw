@@ -17,7 +17,7 @@
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
 #define GRID_PROTOCOL_VERSION_MINOR 2
-#define GRID_PROTOCOL_VERSION_PATCH 37
+#define GRID_PROTOCOL_VERSION_PATCH 38
 
 // must not change because it would break profiles
 #define GRID_PARAMETER_ELEMENT_SYSTEM 0
