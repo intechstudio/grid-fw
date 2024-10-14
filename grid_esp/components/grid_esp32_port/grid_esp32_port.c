@@ -25,6 +25,7 @@
 #include "hal/gpio_ll.h"
 
 #include "grid_buf.h"
+#include "grid_esp32_pins.h"
 #include "grid_esp32_platform.h"
 #include "grid_port.h"
 #include "grid_sys.h"
@@ -38,10 +39,6 @@ static TaskHandle_t xTaskToNotify = NULL;
 
 static const char* TAG = "PORT";
 
-#define GPIO_MOSI 8
-#define GPIO_MISO 6
-#define GPIO_SCLK 9
-#define GPIO_CS 7
 #define RCV_HOST SPI2_HOST
 
 volatile uint8_t DRAM_ATTR rolling_id_last_sent = 255;
@@ -476,16 +473,21 @@ void grid_esp32_port_task(void* arg) {
   esp_err_t ret;
 
   // Configuration for the SPI bus
-  spi_bus_config_t buscfg = {.mosi_io_num = GPIO_MOSI, .miso_io_num = GPIO_MISO, .sclk_io_num = GPIO_SCLK, .quadwp_io_num = -1, .quadhd_io_num = -1, .intr_flags = ESP_INTR_FLAG_IRAM};
+  spi_bus_config_t buscfg = {.mosi_io_num = GRID_ESP32_PINS_RP_MOSI,
+                             .miso_io_num = GRID_ESP32_PINS_RP_MISO,
+                             .sclk_io_num = GRID_ESP32_PINS_RP_SCLK,
+                             .quadwp_io_num = -1,
+                             .quadhd_io_num = -1,
+                             .intr_flags = ESP_INTR_FLAG_IRAM};
 
   // Configuration for the SPI slave interface
-  spi_slave_interface_config_t slvcfg = {.mode = 0, .spics_io_num = GPIO_CS, .queue_size = 6, .flags = 0, .post_setup_cb = my_post_setup_cb, .post_trans_cb = my_post_trans_cb};
+  spi_slave_interface_config_t slvcfg = {.mode = 0, .spics_io_num = GRID_ESP32_PINS_RP_CS, .queue_size = 6, .flags = 0, .post_setup_cb = my_post_setup_cb, .post_trans_cb = my_post_trans_cb};
 
   // Enable pull-ups on SPI lines so we don't detect rogue pulses when no master
   // is connected.
-  gpio_set_pull_mode(GPIO_MOSI, GPIO_PULLUP_ONLY);
-  gpio_set_pull_mode(GPIO_SCLK, GPIO_PULLUP_ONLY);
-  gpio_set_pull_mode(GPIO_CS, GPIO_PULLUP_ONLY);
+  gpio_set_pull_mode(GRID_ESP32_PINS_RP_MOSI, GPIO_PULLUP_ONLY);
+  gpio_set_pull_mode(GRID_ESP32_PINS_RP_SCLK, GPIO_PULLUP_ONLY);
+  gpio_set_pull_mode(GRID_ESP32_PINS_RP_CS, GPIO_PULLUP_ONLY);
 
   // Initialize SPI slave interface
   ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);

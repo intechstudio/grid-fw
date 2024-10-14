@@ -119,7 +119,7 @@ bool idle_hook(void) {
 
 static void check_heap(void) {
 
-  uint freeRAM = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+  int freeRAM = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
   ESP_LOGI(TAG, "free RAM is %d. Integrity: %d", freeRAM, heap_caps_check_integrity_all(true));
 }
 
