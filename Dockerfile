@@ -20,12 +20,36 @@ RUN apt update && \
     cd ..
 
 # Install necessary packages for getting the latest CMAKE including software-properties-common
-RUN apt-get update && \
-    apt-get install -y wget gpg software-properties-common && \
-    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add - && \
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
-    apt-get update && \
-    apt-get install -y cmake
+# 3. Update the package list and install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libtool \
+    autoconf \
+    unzip \
+    wget \
+    && apt-get clean
+
+# 4. Set variables for CMake version and build
+ENV CMAKE_VERSION=3.28 \
+    CMAKE_BUILD=1
+
+# 5. Create a temporary directory and download CMake
+RUN mkdir /temp && cd /temp \
+    && wget https://cmake.org/files/v$CMAKE_VERSION/cmake-$CMAKE_VERSION.$CMAKE_BUILD.tar.gz \
+    && tar -xzvf cmake-$CMAKE_VERSION.$CMAKE_BUILD.tar.gz
+
+# 6. Build and install CMake
+RUN cd /temp/cmake-$CMAKE_VERSION.$CMAKE_BUILD \
+    && ./bootstrap \
+    && make -j$(nproc) \
+    && make install
+
+# 7. Verify CMake installation
+RUN cmake --version
+
+# 8. Clean up temporary files
+RUN rm -rf /temp
+
 
 
 # Set working directory
