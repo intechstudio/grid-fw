@@ -149,7 +149,8 @@
     "grid_ui_system.h": "c",
     "grid_esp32_module_tek1.h": "c",
     "grid_ui_lcd.h": "c",
-    "semaphore": "c"
+    "semaphore": "c",
+    "grid_ui_button.h": "c"
   },
   "files.exclude": {
     ".archive": true,

@@ -4,10 +4,12 @@
  * SPDX-License-Identifier: Unlicense OR CC0-1.0
  */
 
-#include "esp_freertos_hooks.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
+
+// must be last freertos relevant header to avoid #error
+#include "esp_freertos_hooks.h"
 
 #include "grid_ui.h"
 
