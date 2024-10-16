@@ -22,12 +22,8 @@ var ENVIRONMENT_IS_WEB = typeof window == 'object';
 var ENVIRONMENT_IS_WORKER = typeof importScripts == 'function';
 // N.b. Electron.js environment is simultaneously a NODE-environment, but
 // also a web environment.
-var ENVIRONMENT_IS_NODE = typeof process == 'object' && typeof process.versions == 'object' && typeof process.versions.node == 'string';
+var ENVIRONMENT_IS_NODE = typeof process == 'object' && typeof process.versions == 'object' && typeof process.versions.node == 'string' && process.type != 'renderer';
 var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
-
-if (Module['ENVIRONMENT']) {
-  throw new Error('Module.ENVIRONMENT has been deprecated. To force the environment, use the ENVIRONMENT compile-time option (for example, -sENVIRONMENT=web or -sENVIRONMENT=node)');
-}
 
 if (ENVIRONMENT_IS_NODE) {
   // `require()` is no-op in an ESM module, use `createRequire()` to construct
@@ -384,11 +380,10 @@ var __ATPOSTRUN__ = []; // functions called after the main() is called
 var runtimeInitialized = false;
 
 function preRun() {
-  if (Module['preRun']) {
-    if (typeof Module['preRun'] == 'function') Module['preRun'] = [Module['preRun']];
-    while (Module['preRun'].length) {
-      addOnPreRun(Module['preRun'].shift());
-    }
+  var preRuns = Module['preRun'];
+  if (preRuns) {
+    if (typeof preRuns == 'function') preRuns = [preRuns];
+    preRuns.forEach(addOnPreRun);
   }
   callRuntimeCallbacks(__ATPRERUN__);
 }
@@ -417,11 +412,10 @@ function preMain() {
 function postRun() {
   checkStackCookie();
 
-  if (Module['postRun']) {
-    if (typeof Module['postRun'] == 'function') Module['postRun'] = [Module['postRun']];
-    while (Module['postRun'].length) {
-      addOnPostRun(Module['postRun'].shift());
-    }
+  var postRuns = Module['postRun'];
+  if (postRuns) {
+    if (typeof postRuns == 'function') postRuns = [postRuns];
+    postRuns.forEach(addOnPostRun);
   }
 
   callRuntimeCallbacks(__ATPOSTRUN__);
@@ -756,7 +750,7 @@ function createWasm() {
     }
   }
 
-  if (!wasmBinaryFile) wasmBinaryFile = findWasmBinary();
+  wasmBinaryFile ??= findWasmBinary();
 
   instantiateAsync(wasmBinary, wasmBinaryFile, info, receiveInstantiationResult);
   return {}; // no exports yet; we'll fill them in later
@@ -774,6 +768,10 @@ var tempI64;
   h16[0] = 0x6373;
   if (h8[0] !== 0x73 || h8[1] !== 0x63) throw 'Runtime error: expected the system to be little-endian! (Run with -sSUPPORT_BIG_ENDIAN to bypass)';
 })();
+
+if (Module['ENVIRONMENT']) {
+  throw new Error('Module.ENVIRONMENT has been deprecated. To force the environment, use the ENVIRONMENT compile-time option (for example, -sENVIRONMENT=web or -sENVIRONMENT=node)');
+}
 
 function legacyModuleProp(prop, newName, incoming=true) {
   if (!Object.getOwnPropertyDescriptor(Module, prop)) {
@@ -807,45 +805,51 @@ function isExportedByForceFilesystem(name) {
          name === 'removeRunDependency';
 }
 
-function missingGlobal(sym, msg) {
-  if (typeof globalThis != 'undefined') {
+/**
+ * Intercept access to a global symbol.  This enables us to give informative
+ * warnings/errors when folks attempt to use symbols they did not include in
+ * their build, or no symbols that no longer exist.
+ */
+function hookGlobalSymbolAccess(sym, func) {
+  if (typeof globalThis != 'undefined' && !Object.getOwnPropertyDescriptor(globalThis, sym)) {
     Object.defineProperty(globalThis, sym, {
       configurable: true,
       get() {
-        warnOnce(`\`${sym}\` is not longer defined by emscripten. ${msg}`);
+        func();
         return undefined;
       }
     });
   }
 }
 
+function missingGlobal(sym, msg) {
+  hookGlobalSymbolAccess(sym, () => {
+    warnOnce(`\`${sym}\` is not longer defined by emscripten. ${msg}`);
+  });
+}
+
 missingGlobal('buffer', 'Please use HEAP8.buffer or wasmMemory.buffer');
 missingGlobal('asm', 'Please use wasmExports instead');
 
 function missingLibrarySymbol(sym) {
-  if (typeof globalThis != 'undefined' && !Object.getOwnPropertyDescriptor(globalThis, sym)) {
-    Object.defineProperty(globalThis, sym, {
-      configurable: true,
-      get() {
-        // Can't `abort()` here because it would break code that does runtime
-        // checks.  e.g. `if (typeof SDL === 'undefined')`.
-        var msg = `\`${sym}\` is a library symbol and not included by default; add it to your library.js __deps or to DEFAULT_LIBRARY_FUNCS_TO_INCLUDE on the command line`;
-        // DEFAULT_LIBRARY_FUNCS_TO_INCLUDE requires the name as it appears in
-        // library.js, which means $name for a JS name with no prefix, or name
-        // for a JS name like _name.
-        var librarySymbol = sym;
-        if (!librarySymbol.startsWith('_')) {
-          librarySymbol = '$' + sym;
-        }
-        msg += ` (e.g. -sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE='${librarySymbol}')`;
-        if (isExportedByForceFilesystem(sym)) {
-          msg += '. Alternatively, forcing filesystem support (-sFORCE_FILESYSTEM) can export this for you';
-        }
-        warnOnce(msg);
-        return undefined;
-      }
-    });
-  }
+  hookGlobalSymbolAccess(sym, () => {
+    // Can't `abort()` here because it would break code that does runtime
+    // checks.  e.g. `if (typeof SDL === 'undefined')`.
+    var msg = `\`${sym}\` is a library symbol and not included by default; add it to your library.js __deps or to DEFAULT_LIBRARY_FUNCS_TO_INCLUDE on the command line`;
+    // DEFAULT_LIBRARY_FUNCS_TO_INCLUDE requires the name as it appears in
+    // library.js, which means $name for a JS name with no prefix, or name
+    // for a JS name like _name.
+    var librarySymbol = sym;
+    if (!librarySymbol.startsWith('_')) {
+      librarySymbol = '$' + sym;
+    }
+    msg += ` (e.g. -sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE='${librarySymbol}')`;
+    if (isExportedByForceFilesystem(sym)) {
+      msg += '. Alternatively, forcing filesystem support (-sFORCE_FILESYSTEM) can export this for you';
+    }
+    warnOnce(msg);
+  });
+
   // Any symbol that is not included from the JS library is also (by definition)
   // not exported on the Module object.
   unexportedRuntimeSymbol(sym);
@@ -888,10 +892,8 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
     }
 
   var callRuntimeCallbacks = (callbacks) => {
-      while (callbacks.length > 0) {
-        // Pass the module as the first argument.
-        callbacks.shift()(Module);
-      }
+      // Pass the module as the first argument.
+      callbacks.forEach((f) => f(Module));
     };
 
   
@@ -1026,72 +1028,23 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   join2:(l, r) => PATH.normalize(l + '/' + r),
   };
   
-  var _emscripten_set_main_loop_timing = (mode, value) => {
-      Browser.mainLoop.timingMode = mode;
-      Browser.mainLoop.timingValue = value;
-  
-      if (!Browser.mainLoop.func) {
-        err('emscripten_set_main_loop_timing: Cannot set timing mode for main loop since a main loop does not exist! Call emscripten_set_main_loop first to set one up.');
-        return 1; // Return non-zero on failure, can't set timing mode when there is no main loop.
+  var handleException = (e) => {
+      // Certain exception types we do not treat as errors since they are used for
+      // internal control flow.
+      // 1. ExitStatus, which is thrown by exit()
+      // 2. "unwind", which is thrown by emscripten_unwind_to_js_event_loop() and others
+      //    that wish to return to JS event loop.
+      if (e instanceof ExitStatus || e == 'unwind') {
+        return EXITSTATUS;
       }
-  
-      if (!Browser.mainLoop.running) {
-        
-        Browser.mainLoop.running = true;
-      }
-      if (mode == 0) {
-        Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setTimeout() {
-          var timeUntilNextTick = Math.max(0, Browser.mainLoop.tickStartTime + value - _emscripten_get_now())|0;
-          setTimeout(Browser.mainLoop.runner, timeUntilNextTick); // doing this each time means that on exception, we stop
-        };
-        Browser.mainLoop.method = 'timeout';
-      } else if (mode == 1) {
-        Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_rAF() {
-          Browser.requestAnimationFrame(Browser.mainLoop.runner);
-        };
-        Browser.mainLoop.method = 'rAF';
-      } else if (mode == 2) {
-        if (typeof Browser.setImmediate == 'undefined') {
-          if (typeof setImmediate == 'undefined') {
-            // Emulate setImmediate. (note: not a complete polyfill, we don't emulate clearImmediate() to keep code size to minimum, since not needed)
-            var setImmediates = [];
-            var emscriptenMainLoopMessageId = 'setimmediate';
-            /** @param {Event} event */
-            var Browser_setImmediate_messageHandler = (event) => {
-              // When called in current thread or Worker, the main loop ID is structured slightly different to accommodate for --proxy-to-worker runtime listening to Worker events,
-              // so check for both cases.
-              if (event.data === emscriptenMainLoopMessageId || event.data.target === emscriptenMainLoopMessageId) {
-                event.stopPropagation();
-                setImmediates.shift()();
-              }
-            };
-            addEventListener("message", Browser_setImmediate_messageHandler, true);
-            Browser.setImmediate = /** @type{function(function(): ?, ...?): number} */((func) => {
-              setImmediates.push(func);
-              if (ENVIRONMENT_IS_WORKER) {
-                Module['setImmediates'] ??= [];
-                Module['setImmediates'].push(func);
-                postMessage({target: emscriptenMainLoopMessageId}); // In --proxy-to-worker, route the message via proxyClient.js
-              } else postMessage(emscriptenMainLoopMessageId, "*"); // On the main thread, can just send the message to itself.
-            });
-          } else {
-            Browser.setImmediate = setImmediate;
-          }
+      checkStackCookie();
+      if (e instanceof WebAssembly.RuntimeError) {
+        if (_emscripten_stack_get_current() <= 0) {
+          err('Stack overflow detected.  You can try increasing -sSTACK_SIZE (currently set to 65536)');
         }
-        Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setImmediate() {
-          Browser.setImmediate(Browser.mainLoop.runner);
-        };
-        Browser.mainLoop.method = 'immediate';
       }
-      return 0;
+      quit_(1, e);
     };
-  
-  var _emscripten_get_now;
-      // Modern environment where performance.now() is supported:
-      // N.B. a shorter form "_emscripten_get_now = performance.now;" is
-      // unfortunately not allowed even in current browsers (e.g. FF Nightly 75).
-      _emscripten_get_now = () => performance.now();
-  ;
   
   
   var runtimeKeepaliveCounter = 0;
@@ -1122,23 +1075,6 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
     };
   var _exit = exitJS;
   
-  var handleException = (e) => {
-      // Certain exception types we do not treat as errors since they are used for
-      // internal control flow.
-      // 1. ExitStatus, which is thrown by exit()
-      // 2. "unwind", which is thrown by emscripten_unwind_to_js_event_loop() and others
-      //    that wish to return to JS event loop.
-      if (e instanceof ExitStatus || e == 'unwind') {
-        return EXITSTATUS;
-      }
-      checkStackCookie();
-      if (e instanceof WebAssembly.RuntimeError) {
-        if (_emscripten_stack_get_current() <= 0) {
-          err('Stack overflow detected.  You can try increasing -sSTACK_SIZE (currently set to 65536)');
-        }
-      }
-      quit_(1, e);
-    };
   
   var maybeExit = () => {
       if (!keepRuntimeAlive()) {
@@ -1149,122 +1085,6 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         }
       }
     };
-  
-  
-    /**
-     * @param {number=} arg
-     * @param {boolean=} noSetTiming
-     */
-  var setMainLoop = (browserIterationFunc, fps, simulateInfiniteLoop, arg, noSetTiming) => {
-      assert(!Browser.mainLoop.func, 'emscripten_set_main_loop: there can only be one main loop function at once: call emscripten_cancel_main_loop to cancel the previous one before setting a new one with different parameters.');
-      Browser.mainLoop.func = browserIterationFunc;
-      Browser.mainLoop.arg = arg;
-  
-      // Closure compiler bug(?): Closure does not see that the assignment
-      //   var thisMainLoopId = Browser.mainLoop.currentlyRunningMainloop
-      // is a value copy of a number (even with the JSDoc @type annotation)
-      // but optimizeis the code as if the assignment was a reference assignment,
-      // which results in Browser.mainLoop.pause() not working. Hence use a
-      // workaround to make Closure believe this is a value copy that should occur:
-      // (TODO: Minimize this down to a small test case and report - was unable
-      // to reproduce in a small written test case)
-      /** @type{number} */
-      var thisMainLoopId = (() => Browser.mainLoop.currentlyRunningMainloop)();
-      function checkIsRunning() {
-        if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) {
-          
-          maybeExit();
-          return false;
-        }
-        return true;
-      }
-  
-      // We create the loop runner here but it is not actually running until
-      // _emscripten_set_main_loop_timing is called (which might happen a
-      // later time).  This member signifies that the current runner has not
-      // yet been started so that we can call runtimeKeepalivePush when it
-      // gets it timing set for the first time.
-      Browser.mainLoop.running = false;
-      Browser.mainLoop.runner = function Browser_mainLoop_runner() {
-        if (ABORT) return;
-        if (Browser.mainLoop.queue.length > 0) {
-          var start = Date.now();
-          var blocker = Browser.mainLoop.queue.shift();
-          blocker.func(blocker.arg);
-          if (Browser.mainLoop.remainingBlockers) {
-            var remaining = Browser.mainLoop.remainingBlockers;
-            var next = remaining%1 == 0 ? remaining-1 : Math.floor(remaining);
-            if (blocker.counted) {
-              Browser.mainLoop.remainingBlockers = next;
-            } else {
-              // not counted, but move the progress along a tiny bit
-              next = next + 0.5; // do not steal all the next one's progress
-              Browser.mainLoop.remainingBlockers = (8*remaining + next)/9;
-            }
-          }
-          Browser.mainLoop.updateStatus();
-  
-          // catches pause/resume main loop from blocker execution
-          if (!checkIsRunning()) return;
-  
-          setTimeout(Browser.mainLoop.runner, 0);
-          return;
-        }
-  
-        // catch pauses from non-main loop sources
-        if (!checkIsRunning()) return;
-  
-        // Implement very basic swap interval control
-        Browser.mainLoop.currentFrameNumber = Browser.mainLoop.currentFrameNumber + 1 | 0;
-        if (Browser.mainLoop.timingMode == 1 && Browser.mainLoop.timingValue > 1 && Browser.mainLoop.currentFrameNumber % Browser.mainLoop.timingValue != 0) {
-          // Not the scheduled time to render this frame - skip.
-          Browser.mainLoop.scheduler();
-          return;
-        } else if (Browser.mainLoop.timingMode == 0) {
-          Browser.mainLoop.tickStartTime = _emscripten_get_now();
-        }
-  
-        // Signal GL rendering layer that processing of a new frame is about to start. This helps it optimize
-        // VBO double-buffering and reduce GPU stalls.
-  
-        if (Browser.mainLoop.method === 'timeout' && Module.ctx) {
-          warnOnce('Looks like you are rendering without using requestAnimationFrame for the main loop. You should use 0 for the frame rate in emscripten_set_main_loop in order to use requestAnimationFrame, as that can greatly improve your frame rates!');
-          Browser.mainLoop.method = ''; // just warn once per call to set main loop
-        }
-  
-        Browser.mainLoop.runIter(browserIterationFunc);
-  
-        checkStackCookie();
-  
-        // catch pauses from the main loop itself
-        if (!checkIsRunning()) return;
-  
-        // Queue new audio data. This is important to be right after the main loop invocation, so that we will immediately be able
-        // to queue the newest produced audio samples.
-        // TODO: Consider adding pre- and post- rAF callbacks so that GL.newRenderingFrameStarted() and SDL.audio.queueNewAudioData()
-        //       do not need to be hardcoded into this function, but can be more generic.
-        if (typeof SDL == 'object') SDL.audio?.queueNewAudioData?.();
-  
-        Browser.mainLoop.scheduler();
-      }
-  
-      if (!noSetTiming) {
-        if (fps && fps > 0) {
-          _emscripten_set_main_loop_timing(0, 1000.0 / fps);
-        } else {
-          // Do rAF by rendering each frame (no decimating)
-          _emscripten_set_main_loop_timing(1, 1);
-        }
-  
-        Browser.mainLoop.scheduler();
-      }
-  
-      if (simulateInfiniteLoop) {
-        throw 'unwind';
-      }
-    };
-  
-  
   var callUserCallback = (func) => {
       if (ABORT) {
         err('user callback triggered after runtime exited or application aborted.  Ignoring.');
@@ -1288,65 +1108,9 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
     };
   
   
-  
   var preloadPlugins = Module['preloadPlugins'] || [];
   
   var Browser = {
-  mainLoop:{
-  running:false,
-  scheduler:null,
-  method:"",
-  currentlyRunningMainloop:0,
-  func:null,
-  arg:0,
-  timingMode:0,
-  timingValue:0,
-  currentFrameNumber:0,
-  queue:[],
-  pause() {
-          Browser.mainLoop.scheduler = null;
-          // Incrementing this signals the previous main loop that it's now become old, and it must return.
-          Browser.mainLoop.currentlyRunningMainloop++;
-        },
-  resume() {
-          Browser.mainLoop.currentlyRunningMainloop++;
-          var timingMode = Browser.mainLoop.timingMode;
-          var timingValue = Browser.mainLoop.timingValue;
-          var func = Browser.mainLoop.func;
-          Browser.mainLoop.func = null;
-          // do not set timing and call scheduler, we will do it on the next lines
-          setMainLoop(func, 0, false, Browser.mainLoop.arg, true);
-          _emscripten_set_main_loop_timing(timingMode, timingValue);
-          Browser.mainLoop.scheduler();
-        },
-  updateStatus() {
-          if (Module['setStatus']) {
-            var message = Module['statusMessage'] || 'Please wait...';
-            var remaining = Browser.mainLoop.remainingBlockers;
-            var expected = Browser.mainLoop.expectedBlockers;
-            if (remaining) {
-              if (remaining < expected) {
-                Module['setStatus'](`{message} ({expected - remaining}/{expected})`);
-              } else {
-                Module['setStatus'](message);
-              }
-            } else {
-              Module['setStatus']('');
-            }
-          }
-        },
-  runIter(func) {
-          if (ABORT) return;
-          if (Module['preMainLoop']) {
-            var preRet = Module['preMainLoop']();
-            if (preRet === false) {
-              return; // |return false| skips a frame
-            }
-          }
-          callUserCallback(func);
-          Module['postMainLoop']?.();
-        },
-  },
   useWebGL:false,
   isFullscreen:false,
   pointerLock:false,
@@ -1622,40 +1386,11 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         CFS.apply(document, []);
         return true;
       },
-  nextRAF:0,
-  fakeRequestAnimationFrame(func) {
-        // try to keep 60fps between calls to here
-        var now = Date.now();
-        if (Browser.nextRAF === 0) {
-          Browser.nextRAF = now + 1000/60;
-        } else {
-          while (now + 2 >= Browser.nextRAF) { // fudge a little, to avoid timer jitter causing us to do lots of delay:0
-            Browser.nextRAF += 1000/60;
-          }
-        }
-        var delay = Math.max(Browser.nextRAF - now, 0);
-        setTimeout(func, delay);
-      },
-  requestAnimationFrame(func) {
-        if (typeof requestAnimationFrame == 'function') {
-          requestAnimationFrame(func);
-          return;
-        }
-        var RAF = Browser.fakeRequestAnimationFrame;
-        RAF(func);
-      },
   safeSetTimeout(func, timeout) {
         // Legacy function, this is used by the SDL2 port so we need to keep it
         // around at least until that is updated.
         // See https://github.com/libsdl-org/SDL/pull/6304
         return safeSetTimeout(func, timeout);
-      },
-  safeRequestAnimationFrame(func) {
-        
-        return Browser.requestAnimationFrame(() => {
-          
-          callUserCallback(func);
-        });
       },
   getMimetype(name) {
         return {
@@ -1948,6 +1683,250 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   
       return 0;
     };
+  
+  
+  var _emscripten_set_main_loop_timing = (mode, value) => {
+      MainLoop.timingMode = mode;
+      MainLoop.timingValue = value;
+  
+      if (!MainLoop.func) {
+        err('emscripten_set_main_loop_timing: Cannot set timing mode for main loop since a main loop does not exist! Call emscripten_set_main_loop first to set one up.');
+        return 1; // Return non-zero on failure, can't set timing mode when there is no main loop.
+      }
+  
+      if (!MainLoop.running) {
+        
+        MainLoop.running = true;
+      }
+      if (mode == 0) {
+        MainLoop.scheduler = function MainLoop_scheduler_setTimeout() {
+          var timeUntilNextTick = Math.max(0, MainLoop.tickStartTime + value - _emscripten_get_now())|0;
+          setTimeout(MainLoop.runner, timeUntilNextTick); // doing this each time means that on exception, we stop
+        };
+        MainLoop.method = 'timeout';
+      } else if (mode == 1) {
+        MainLoop.scheduler = function MainLoop_scheduler_rAF() {
+          MainLoop.requestAnimationFrame(MainLoop.runner);
+        };
+        MainLoop.method = 'rAF';
+      } else if (mode == 2) {
+        if (typeof MainLoop.setImmediate == 'undefined') {
+          if (typeof setImmediate == 'undefined') {
+            // Emulate setImmediate. (note: not a complete polyfill, we don't emulate clearImmediate() to keep code size to minimum, since not needed)
+            var setImmediates = [];
+            var emscriptenMainLoopMessageId = 'setimmediate';
+            /** @param {Event} event */
+            var MainLoop_setImmediate_messageHandler = (event) => {
+              // When called in current thread or Worker, the main loop ID is structured slightly different to accommodate for --proxy-to-worker runtime listening to Worker events,
+              // so check for both cases.
+              if (event.data === emscriptenMainLoopMessageId || event.data.target === emscriptenMainLoopMessageId) {
+                event.stopPropagation();
+                setImmediates.shift()();
+              }
+            };
+            addEventListener("message", MainLoop_setImmediate_messageHandler, true);
+            MainLoop.setImmediate = /** @type{function(function(): ?, ...?): number} */((func) => {
+              setImmediates.push(func);
+              if (ENVIRONMENT_IS_WORKER) {
+                Module['setImmediates'] ??= [];
+                Module['setImmediates'].push(func);
+                postMessage({target: emscriptenMainLoopMessageId}); // In --proxy-to-worker, route the message via proxyClient.js
+              } else postMessage(emscriptenMainLoopMessageId, "*"); // On the main thread, can just send the message to itself.
+            });
+          } else {
+            MainLoop.setImmediate = setImmediate;
+          }
+        }
+        MainLoop.scheduler = function MainLoop_scheduler_setImmediate() {
+          MainLoop.setImmediate(MainLoop.runner);
+        };
+        MainLoop.method = 'immediate';
+      }
+      return 0;
+    };
+  
+  var _emscripten_get_now = () => performance.now();
+  
+  
+    /**
+     * @param {number=} arg
+     * @param {boolean=} noSetTiming
+     */
+  var setMainLoop = (iterFunc, fps, simulateInfiniteLoop, arg, noSetTiming) => {
+      assert(!MainLoop.func, 'emscripten_set_main_loop: there can only be one main loop function at once: call emscripten_cancel_main_loop to cancel the previous one before setting a new one with different parameters.');
+      MainLoop.func = iterFunc;
+      MainLoop.arg = arg;
+  
+      var thisMainLoopId = MainLoop.currentlyRunningMainloop;
+      function checkIsRunning() {
+        if (thisMainLoopId < MainLoop.currentlyRunningMainloop) {
+          
+          maybeExit();
+          return false;
+        }
+        return true;
+      }
+  
+      // We create the loop runner here but it is not actually running until
+      // _emscripten_set_main_loop_timing is called (which might happen a
+      // later time).  This member signifies that the current runner has not
+      // yet been started so that we can call runtimeKeepalivePush when it
+      // gets it timing set for the first time.
+      MainLoop.running = false;
+      MainLoop.runner = function MainLoop_runner() {
+        if (ABORT) return;
+        if (MainLoop.queue.length > 0) {
+          var start = Date.now();
+          var blocker = MainLoop.queue.shift();
+          blocker.func(blocker.arg);
+          if (MainLoop.remainingBlockers) {
+            var remaining = MainLoop.remainingBlockers;
+            var next = remaining%1 == 0 ? remaining-1 : Math.floor(remaining);
+            if (blocker.counted) {
+              MainLoop.remainingBlockers = next;
+            } else {
+              // not counted, but move the progress along a tiny bit
+              next = next + 0.5; // do not steal all the next one's progress
+              MainLoop.remainingBlockers = (8*remaining + next)/9;
+            }
+          }
+          MainLoop.updateStatus();
+  
+          // catches pause/resume main loop from blocker execution
+          if (!checkIsRunning()) return;
+  
+          setTimeout(MainLoop.runner, 0);
+          return;
+        }
+  
+        // catch pauses from non-main loop sources
+        if (!checkIsRunning()) return;
+  
+        // Implement very basic swap interval control
+        MainLoop.currentFrameNumber = MainLoop.currentFrameNumber + 1 | 0;
+        if (MainLoop.timingMode == 1 && MainLoop.timingValue > 1 && MainLoop.currentFrameNumber % MainLoop.timingValue != 0) {
+          // Not the scheduled time to render this frame - skip.
+          MainLoop.scheduler();
+          return;
+        } else if (MainLoop.timingMode == 0) {
+          MainLoop.tickStartTime = _emscripten_get_now();
+        }
+  
+        if (MainLoop.method === 'timeout' && Module.ctx) {
+          warnOnce('Looks like you are rendering without using requestAnimationFrame for the main loop. You should use 0 for the frame rate in emscripten_set_main_loop in order to use requestAnimationFrame, as that can greatly improve your frame rates!');
+          MainLoop.method = ''; // just warn once per call to set main loop
+        }
+  
+        MainLoop.runIter(iterFunc);
+  
+        // catch pauses from the main loop itself
+        if (!checkIsRunning()) return;
+  
+        MainLoop.scheduler();
+      }
+  
+      if (!noSetTiming) {
+        if (fps && fps > 0) {
+          _emscripten_set_main_loop_timing(0, 1000.0 / fps);
+        } else {
+          // Do rAF by rendering each frame (no decimating)
+          _emscripten_set_main_loop_timing(1, 1);
+        }
+  
+        MainLoop.scheduler();
+      }
+  
+      if (simulateInfiniteLoop) {
+        throw 'unwind';
+      }
+    };
+  
+  
+  var MainLoop = {
+  running:false,
+  scheduler:null,
+  method:"",
+  currentlyRunningMainloop:0,
+  func:null,
+  arg:0,
+  timingMode:0,
+  timingValue:0,
+  currentFrameNumber:0,
+  queue:[],
+  preMainLoop:[],
+  postMainLoop:[],
+  pause() {
+        MainLoop.scheduler = null;
+        // Incrementing this signals the previous main loop that it's now become old, and it must return.
+        MainLoop.currentlyRunningMainloop++;
+      },
+  resume() {
+        MainLoop.currentlyRunningMainloop++;
+        var timingMode = MainLoop.timingMode;
+        var timingValue = MainLoop.timingValue;
+        var func = MainLoop.func;
+        MainLoop.func = null;
+        // do not set timing and call scheduler, we will do it on the next lines
+        setMainLoop(func, 0, false, MainLoop.arg, true);
+        _emscripten_set_main_loop_timing(timingMode, timingValue);
+        MainLoop.scheduler();
+      },
+  updateStatus() {
+        if (Module['setStatus']) {
+          var message = Module['statusMessage'] || 'Please wait...';
+          var remaining = MainLoop.remainingBlockers ?? 0;
+          var expected = MainLoop.expectedBlockers ?? 0;
+          if (remaining) {
+            if (remaining < expected) {
+              Module['setStatus'](`{message} ({expected - remaining}/{expected})`);
+            } else {
+              Module['setStatus'](message);
+            }
+          } else {
+            Module['setStatus']('');
+          }
+        }
+      },
+  init() {
+        Module['preMainLoop'] && MainLoop.preMainLoop.push(Module['preMainLoop']);
+        Module['postMainLoop'] && MainLoop.postMainLoop.push(Module['postMainLoop']);
+      },
+  runIter(func) {
+        if (ABORT) return;
+        for (var pre of MainLoop.preMainLoop) {
+          if (pre() === false) {
+            return; // |return false| skips a frame
+          }
+        }
+        callUserCallback(func);
+        for (var post of MainLoop.postMainLoop) {
+          post();
+        }
+        checkStackCookie();
+      },
+  nextRAF:0,
+  fakeRequestAnimationFrame(func) {
+        // try to keep 60fps between calls to here
+        var now = Date.now();
+        if (MainLoop.nextRAF === 0) {
+          MainLoop.nextRAF = now + 1000/60;
+        } else {
+          while (now + 2 >= MainLoop.nextRAF) { // fudge a little, to avoid timer jitter causing us to do lots of delay:0
+            MainLoop.nextRAF += 1000/60;
+          }
+        }
+        var delay = Math.max(MainLoop.nextRAF - now, 0);
+        setTimeout(func, delay);
+      },
+  requestAnimationFrame(func) {
+        if (typeof requestAnimationFrame == 'function') {
+          requestAnimationFrame(func);
+          return;
+        }
+        var RAF = MainLoop.fakeRequestAnimationFrame;
+        RAF(func);
+      },
+  };
   
   var lengthBytesUTF8 = (str) => {
       var len = 0;
@@ -2258,10 +2237,10 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   },
   loadRect(rect) {
         return {
-          x: HEAP32[((rect + 0)>>2)],
-          y: HEAP32[((rect + 4)>>2)],
-          w: HEAP32[((rect + 8)>>2)],
-          h: HEAP32[((rect + 12)>>2)]
+          x: HEAP32[((rect)>>2)],
+          y: HEAP32[(((rect)+(4))>>2)],
+          w: HEAP32[(((rect)+(8))>>2)],
+          h: HEAP32[(((rect)+(12))>>2)]
         };
       },
   updateRect(rect, r) {
@@ -2415,7 +2394,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         for (var y = startY; y < endY; ++y) {
           var base = y * fullWidth;
           for (var x = startX; x < endX; ++x) {
-            data32[base + x] = colors32[HEAPU8[buffer + base + x]];
+            data32[base + x] = colors32[HEAPU8[(buffer)+(base + x)]];
           }
         }
       },
@@ -2729,10 +2708,10 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
             event.preventDefault();
             break;
           case 'unload':
-            if (Browser.mainLoop.runner) {
+            if (MainLoop.runner) {
               SDL.events.push(event);
               // Force-run a main event loop, since otherwise this event will never be caught!
-              Browser.mainLoop.runner();
+              MainLoop.runner();
             }
             return;
           case 'resize':
@@ -3245,10 +3224,6 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
       // backing the page canvas element
     };
 
-  var zeroMemory = (address, size) => {
-      HEAPU8.fill(0, address, address + size);
-      return address;
-    };
   
   
   /** @param{number} initFlags */
@@ -3268,8 +3243,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
       }
   
       window.addEventListener("unload", SDL.receiveEvent);
-      SDL.keyboardState = _malloc(0x10000); // Our SDL needs 512, but 64K is safe for older SDLs
-      zeroMemory(SDL.keyboardState, 0x10000);
+      SDL.keyboardState = _calloc(0x10000, 1); // Our SDL needs 512, but 64K is safe for older SDLs
       // Initialize this structure carefully for closure
       SDL.DOMEventToSDLEvent['keydown']    = 0x300  /* SDL_KEYDOWN */;
       SDL.DOMEventToSDLEvent['keyup']      = 0x301  /* SDL_KEYUP */;
@@ -3407,18 +3381,18 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
      * array that contains uint8 values, returns a copy of that string as a
      * Javascript String object.
      * heapOrArray is either a regular array, or a JavaScript typed array view.
-     * @param {number} idx
+     * @param {number=} idx
      * @param {number=} maxBytesToRead
      * @return {string}
      */
-  var UTF8ArrayToString = (heapOrArray, idx, maxBytesToRead) => {
+  var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead = NaN) => {
       var endIdx = idx + maxBytesToRead;
       var endPtr = idx;
       // TextDecoder needs to know the byte length in advance, it doesn't stop on
       // null terminator by itself.  Also, use the length info to avoid running tiny
       // strings through TextDecoder, since .subarray() allocates garbage.
       // (As a tiny code save trick, compare endPtr against endIdx using a negation,
-      // so that undefined means Infinity)
+      // so that undefined/NaN means Infinity)
       while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
   
       if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
@@ -4028,7 +4002,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         },
   put_char(tty, val) {
           if (val === null || val === 10) {
-            out(UTF8ArrayToString(tty.output, 0));
+            out(UTF8ArrayToString(tty.output));
             tty.output = [];
           } else {
             if (val != 0) tty.output.push(val); // val == 0 would cut text output off in the middle.
@@ -4036,7 +4010,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         },
   fsync(tty) {
           if (tty.output && tty.output.length > 0) {
-            out(UTF8ArrayToString(tty.output, 0));
+            out(UTF8ArrayToString(tty.output));
             tty.output = [];
           }
         },
@@ -4065,7 +4039,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   default_tty1_ops:{
   put_char(tty, val) {
           if (val === null || val === 10) {
-            err(UTF8ArrayToString(tty.output, 0));
+            err(UTF8ArrayToString(tty.output));
             tty.output = [];
           } else {
             if (val != 0) tty.output.push(val);
@@ -4073,7 +4047,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         },
   fsync(tty) {
           if (tty.output && tty.output.length > 0) {
-            err(UTF8ArrayToString(tty.output, 0));
+            err(UTF8ArrayToString(tty.output));
             tty.output = [];
           }
         },
@@ -4081,6 +4055,9 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   };
   
   
+  var zeroMemory = (address, size) => {
+      HEAPU8.fill(0, address, address + size);
+    };
   
   var alignMemory = (size, alignment) => {
       assert(alignment, "alignment argument is required");
@@ -4673,6 +4650,8 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   },
   filesystems:null,
   syncFSRequests:0,
+  readFiles:{
+  },
   FSStream:class {
         constructor() {
           // TODO(https://github.com/emscripten-core/emscripten/issues/21414):
@@ -5572,7 +5551,6 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
           stream.stream_ops.open(stream);
         }
         if (Module['logReadFiles'] && !(flags & 1)) {
-          if (!FS.readFiles) FS.readFiles = {};
           if (!(path in FS.readFiles)) {
             FS.readFiles[path] = 1;
           }
@@ -5737,7 +5715,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         var buf = new Uint8Array(length);
         FS.read(stream, buf, 0, length, 0);
         if (opts.encoding === 'utf8') {
-          ret = UTF8ArrayToString(buf, 0);
+          ret = UTF8ArrayToString(buf);
         } else if (opts.encoding === 'binary') {
           ret = buf;
         }
@@ -5993,7 +5971,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   createDevice(parent, name, input, output) {
         var path = PATH.join2(typeof parent == 'string' ? parent : FS.getPath(parent), name);
         var mode = FS_getMode(!!input, !!output);
-        if (!FS.createDevice.major) FS.createDevice.major = 64;
+        FS.createDevice.major ??= 64;
         var dev = FS.makedev(FS.createDevice.major++, 0);
         // Create a fake device that a set of stream ops to emulate
         // the old behavior.
@@ -6523,10 +6501,9 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
     };
 
   
-  
   var _emscripten_set_main_loop = (func, fps, simulateInfiniteLoop) => {
-      var browserIterationFunc = getWasmTableEntry(func);
-      setMainLoop(browserIterationFunc, fps, simulateInfiniteLoop);
+      var iterFunc = getWasmTableEntry(func);
+      setMainLoop(iterFunc, fps, simulateInfiniteLoop);
     };
 
   function _fd_close(fd) {
@@ -6676,7 +6653,6 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         'string': (str) => {
           var ret = 0;
           if (str !== null && str !== undefined && str !== 0) { // null string
-            // at most 4 bytes per UTF-8 code point, +1 for the trailing '\0'
             ret = stringToUTF8OnStack(str);
           }
           return ret;
@@ -6724,14 +6700,16 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
       // exports
       Module["requestFullscreen"] = Browser.requestFullscreen;
       Module["requestFullScreen"] = Browser.requestFullScreen;
-      Module["requestAnimationFrame"] = Browser.requestAnimationFrame;
       Module["setCanvasSize"] = Browser.setCanvasSize;
-      Module["pauseMainLoop"] = Browser.mainLoop.pause;
-      Module["resumeMainLoop"] = Browser.mainLoop.resume;
       Module["getUserMedia"] = Browser.getUserMedia;
       Module["createContext"] = Browser.createContext;
       var preloadedImages = {};
       var preloadedAudios = {};;
+
+      Module["requestAnimationFrame"] = MainLoop.requestAnimationFrame;
+      Module["pauseMainLoop"] = MainLoop.pause;
+      Module["resumeMainLoop"] = MainLoop.resume;
+      MainLoop.init();;
 
   FS.createPreloadedFile = FS_createPreloadedFile;
   FS.staticInit();
@@ -6796,6 +6774,7 @@ var _malloc = createExportWrapper('malloc', 1);
 var _free = createExportWrapper('free', 1);
 var _strerror = createExportWrapper('strerror', 1);
 var _fflush = createExportWrapper('fflush', 1);
+var _calloc = createExportWrapper('calloc', 2);
 var _setThrew = createExportWrapper('setThrew', 2);
 var __emscripten_tempret_set = createExportWrapper('_emscripten_tempret_set', 1);
 var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();
@@ -6937,6 +6916,8 @@ var missingLibrarySymbols = [
   'setImmediateWrapped',
   'clearImmediateWrapped',
   'polyfillSetImmediate',
+  'registerPostMainLoop',
+  'registerPreMainLoop',
   'getPromise',
   'makePromise',
   'idsToPromises',
@@ -6944,6 +6925,7 @@ var missingLibrarySymbols = [
   'ExceptionInfo',
   'findMatchingCatch',
   'Browser_asyncPrepareDataCounter',
+  'safeRequestAnimationFrame',
   'isLeapYear',
   'ydayFromDate',
   'arraySum',
@@ -7058,7 +7040,6 @@ var unexportedSymbols = [
   'exceptionLast',
   'exceptionCaught',
   'Browser',
-  'setMainLoop',
   'getPreloadedImageData__data',
   'wget',
   'MONTH_DAYS_REGULAR',
@@ -7110,6 +7091,7 @@ unexportedSymbols.forEach(unexportedRuntimeSymbol);
 
 
 var calledRun;
+var calledPrerun;
 
 dependenciesFulfilled = function runCaller() {
   // If run has never been called, and we should call run (INVOKE_RUN is true, and Module.noInitialRun is not false)
@@ -7119,7 +7101,7 @@ dependenciesFulfilled = function runCaller() {
 
 function callMain(args = []) {
   assert(runDependencies == 0, 'cannot call main when async dependencies remain! (listen on Module["onRuntimeInitialized"])');
-  assert(__ATPRERUN__.length == 0, 'cannot call main when preRun functions remain to be called');
+  assert(calledPrerun, 'cannot call main without calling preRun first');
 
   var entryFunction = _main;
 
@@ -7164,19 +7146,22 @@ function run(args = arguments_) {
 
     stackCheckInit();
 
-  preRun();
+  if (!calledPrerun) {
+    calledPrerun = 1;
+    preRun();
 
-  // a preRun added a dependency, run will be called later
-  if (runDependencies > 0) {
-    return;
+    // a preRun added a dependency, run will be called later
+    if (runDependencies > 0) {
+      return;
+    }
   }
 
   function doRun() {
     // run may have just been called through dependencies being fulfilled just in this very frame,
     // or while the async setStatus time below was happening
     if (calledRun) return;
-    calledRun = true;
-    Module['calledRun'] = true;
+    calledRun = 1;
+    Module['calledRun'] = 1;
 
     if (ABORT) return;
 
