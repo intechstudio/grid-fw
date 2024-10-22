@@ -202,6 +202,8 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
 
+  vTaskDelay(pdMS_TO_TICKS(500)); // wait for coprocessor to deactivate LCD reset pin
+
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
     grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state, 0);
