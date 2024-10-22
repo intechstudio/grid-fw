@@ -703,6 +703,8 @@ void grid_pico_spi_receive_task_inner(void) {
   uint8_t destination_flags = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
   uint8_t sync1_state = grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_SYNC1_STATE_index];
 
+  gpio_put(GRID_PICO_LCD_BACKLIGHT_PIN, grid_pico_spi_rxbuf[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index]);
+
   if (sync1_state) {
 
     gpio_pull_down(GRID_PICO_PIN_SYNC1);

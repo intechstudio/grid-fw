@@ -101,6 +101,13 @@ static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t* trans) {
   rolling_id_last_sent = (rolling_id_last_sent + 1) % GRID_PARAMETER_SPI_ROLLING_ID_maximum;
   ((uint8_t*)trans->tx_buffer)[GRID_PARAMETER_SPI_ROLLING_ID_index] = rolling_id_last_sent; // not received from any of the ports
 
+  if (grid_hwcfg_module_is_vsnx_rev_a(&grid_sys_state)) {
+
+    ((uint8_t*)trans->tx_buffer)[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index] = 0;
+  } else {
+    ((uint8_t*)trans->tx_buffer)[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index] = 1;
+  }
+
   portEXIT_CRITICAL(&spinlock);
 }
 

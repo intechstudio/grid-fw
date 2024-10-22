@@ -6,6 +6,7 @@
 
 #include "grid_esp32_lcd.h"
 #include "grid_gui.h"
+#include "grid_sys.h"
 
 #include "driver/gpio.h"
 
@@ -22,7 +23,8 @@
 #define LCD_BK_LIGHT_OFF_LEVEL (!LCD_BK_LIGHT_ON_LEVEL)
 #define PIN_NUM_MOSI 48 /*2*/
 #define PIN_NUM_CLK 47  /*1*/
-#define PIN_NUM_CS 33   /*5*/
+#define PIN_NUM_CS0 18  /*5*/
+#define PIN_NUM_CS1 16  /*5*/
 #define PIN_NUM_DC 34   /*4*/
 #define PIN_NUM_RST -1  /*1*/
 #define PIN_NUM_BCKL -1 /*6*/
@@ -89,8 +91,16 @@ void grid_esp32_lcd_hardware_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_
   esp_lcd_panel_io_handle_t io_handle = NULL;
   esp_lcd_panel_io_spi_config_t io_config;
   memset(&io_config, 0, sizeof(io_config));
-  io_config.dc_gpio_num = PIN_NUM_DC, io_config.cs_gpio_num = (lcd_index ? 16 : PIN_NUM_CS), io_config.pclk_hz = LCD_PIXEL_CLOCK_HZ, io_config.lcd_cmd_bits = 8, io_config.lcd_param_bits = 8,
-  io_config.spi_mode = 0, io_config.trans_queue_depth = 10, io_config.on_color_trans_done = NULL;
+
+  if (grid_hwcfg_module_is_vsnx_rev_a(&grid_sys_state)) {
+    io_config.dc_gpio_num = PIN_NUM_DC, io_config.cs_gpio_num = (lcd_index ? 16 : 33), io_config.pclk_hz = LCD_PIXEL_CLOCK_HZ, io_config.lcd_cmd_bits = 8, io_config.lcd_param_bits = 8,
+    io_config.spi_mode = 0, io_config.trans_queue_depth = 10, io_config.on_color_trans_done = NULL;
+
+  } else {
+    io_config.dc_gpio_num = PIN_NUM_DC, io_config.cs_gpio_num = (lcd_index ? PIN_NUM_CS1 : PIN_NUM_CS0), io_config.pclk_hz = LCD_PIXEL_CLOCK_HZ, io_config.lcd_cmd_bits = 8,
+    io_config.lcd_param_bits = 8, io_config.spi_mode = 0, io_config.trans_queue_depth = 10, io_config.on_color_trans_done = NULL;
+  }
+
   // Attach the LCD to the SPI bus
   esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_SPI_HOST, &io_config, &io_handle);
 

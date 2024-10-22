@@ -193,3 +193,39 @@ uint32_t grid_sys_get_id(struct grid_sys_model* sys, uint32_t* return_array) {
 
   return 1;
 }
+
+int grid_hwcfg_module_is_vsnx_rev_a(struct grid_sys_model* sys) {
+
+  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_TEK1_RevA) {
+    return 1;
+  }
+  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1_RevA) {
+    return 1;
+  }
+  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1R_RevA) {
+    return 1;
+  }
+  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN2_RevA) {
+    return 1;
+  }
+
+  return 0;
+}
+
+int grid_hwcfg_module_is_vsnx_rev_b(struct grid_sys_model* sys) {
+
+  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN0_RevB) {
+    return 1;
+  }
+  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1_RevB) {
+    return 1;
+  }
+  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1R_RevB) {
+    return 1;
+  }
+  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN2_RevB) {
+    return 1;
+  }
+
+  return 0;
+}
