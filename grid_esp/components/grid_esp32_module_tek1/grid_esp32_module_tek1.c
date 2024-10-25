@@ -231,7 +231,7 @@ void grid_esp32_module_tek1_task(void* arg) {
 
     // DO GUI THINGS
     loopcounter++;
-    //grid_gui_draw_demo(&grid_gui_state, loopcounter);
+    // grid_gui_draw_demo(&grid_gui_state, loopcounter);
 
     // memset(framebuffer, 255, sizeof(framebuffer));
     any_process_analog();
