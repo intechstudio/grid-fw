@@ -423,10 +423,7 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
     // add the received midi message to the dynamic fifo and set the high water
     // mark if necessary
-    sprintf(temp,
-            "table.insert(midi_fifo, {%d, %d, %d, %d}) if #midi_fifo > "
-            "midi_fifo_highwater then midi_fifo_highwater = #midi_fifo end",
-            midi_channel, midi_command, midi_param1, midi_param2);
+    sprintf(temp, "table.insert(midi_fifo, {%d, %d, %d, %d})", midi_channel, midi_command, midi_param1, midi_param2);
     grid_lua_dostring(&grid_lua_state, temp);
 
     grid_lua_clear_stdo(&grid_lua_state);
