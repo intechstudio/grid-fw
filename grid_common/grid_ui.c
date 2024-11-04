@@ -1318,7 +1318,8 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
           // (table)
           if (eve->type == GRID_PARAMETER_EVENT_MIDIRX) {
 
-            grid_lua_dostring(&grid_lua_state, "local FOO = table.remove(midi_fifo, 1) midi.ch = FOO[1] "
+            grid_lua_dostring(&grid_lua_state, "if #midi_fifo > midi_fifo_highwater then midi_fifo_highwater = #midi_fifo end"
+                                               "local FOO = table.remove(midi_fifo, 1) midi.ch = FOO[1] "
                                                "midi.cmd = FOO[2] midi.p1 = FOO[3] midi.p2 = FOO[4]");
           }
 
