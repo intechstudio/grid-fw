@@ -3,7 +3,7 @@ FROM docker.io/espressif/idf:v5.3.1
 
 # Install pico sdk required dependencies
 RUN apt update && \
-    apt install -y git python3 cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential xxd && \
+    apt install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential xxd && \
     mkdir -p pico && \
     cd pico && \
     git clone https://github.com/raspberrypi/pico-sdk.git --branch master && \
@@ -41,6 +41,16 @@ RUN cd ${CODEQL_HOME} && git clone --recursive https://github.com/github/codeql.
 
 RUN apt update && \
     apt install -y socat
+
+# Install pre-commit from pip
+RUN python3 -m pip install pre-commit
+RUN pre-commit --version
+
+# Copy pre-commit hooks and create a git directory,
+# to allow missing environments of hooks to be installed
+COPY ./.pre-commit-config.yaml /
+RUN git init
+RUN pre-commit install-hooks
 
 # Define default command
 CMD ["bash"]
