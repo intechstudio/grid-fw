@@ -54,7 +54,7 @@ void grid_usb_keyboard_model_init(struct grid_usb_keyboard_model* kb, uint8_t bu
 
   kb->active_key_count = 0;
 
-  kb->isenabled = 1;
+  grid_usb_keyboard_enable(kb);
 }
 
 uint8_t grid_usb_keyboard_cleanup(struct grid_usb_keyboard_model* kb) {
@@ -152,7 +152,7 @@ void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid
 
   if (changed_flag == 1) {
 
-    if (kb->isenabled) {
+    if (grid_usb_keyboard_isenabled(kb)) {
 
       grid_platform_usb_keyboard_keys_state_change(kb->active_key_list, kb->active_key_count);
     } else {
