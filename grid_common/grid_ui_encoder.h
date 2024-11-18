@@ -6,16 +6,22 @@
 #include "grid_ui.h"
 #include <stdint.h>
 
+struct grid_ui_encoder_state {
+  uint64_t encoder_last_real_time;
+  uint64_t button_last_real_time;
+  int8_t encoder_last_leave_dir;
+};
+
 void grid_ui_element_encoder_init(struct grid_ui_element* ele);
 void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf);
 
 void grid_ui_element_encoder_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
-int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value);
+int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uint8_t detent, int8_t* dir_lock);
 uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta);
 
-void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, uint64_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock);
+void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, uint8_t input_channel, uint8_t old_value, uint8_t new_value, uint8_t detent);
 
 // ========================= ENCODER =========================== //
 
