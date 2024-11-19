@@ -695,7 +695,6 @@ function getWasmImports() {
 // Create the wasm instance.
 // Receives the wasm imports, returns the exports.
 function createWasm() {
-  var info = getWasmImports();
   // Load the wasm module and create an instance of using native support in the JS engine.
   // handle a generated wasm instance, receiving its exports and
   // performing other necessary setup
@@ -736,6 +735,8 @@ function createWasm() {
     // When the regression is fixed, can restore the above PTHREADS-enabled path.
     receiveInstance(result['instance']);
   }
+
+  var info = getWasmImports();
 
   // User shell pages can write their own Module.instantiateWasm = function(imports, successCallback) callback
   // to manually instantiate the Wasm module themselves. This allows pages to
@@ -1122,6 +1123,10 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   pointerLock:false,
   moduleContextCreatedCallbacks:[],
   workers:[],
+  preloadedImages:{
+  },
+  preloadedAudios:{
+  },
   init() {
         if (Browser.initted) return;
         Browser.initted = true;
@@ -1154,7 +1159,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
             canvas.height = img.height;
             var ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0);
-            preloadedImages[name] = canvas;
+            Browser.preloadedImages[name] = canvas;
             URL.revokeObjectURL(url);
             onload?.(byteArray);
           };
@@ -1175,13 +1180,13 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
           function finish(audio) {
             if (done) return;
             done = true;
-            preloadedAudios[name] = audio;
+            Browser.preloadedAudios[name] = audio;
             onload?.(byteArray);
           }
           function fail() {
             if (done) return;
             done = true;
-            preloadedAudios[name] = new Audio(); // empty shim
+            Browser.preloadedAudios[name] = new Audio(); // empty shim
             onerror?.();
           }
           var b = new Blob([byteArray], { type: Browser.getMimetype(name) });
@@ -1268,7 +1273,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         }
       },
   createContext(/** @type {HTMLCanvasElement} */ canvas, useWebGL, setInModule, webGLContextAttributes) {
-        if (useWebGL && Module.ctx && canvas == Module.canvas) return Module.ctx; // no need to recreate GL context if it's already been created for this canvas.
+        if (useWebGL && Module.ctx && canvas == Module['canvas']) return Module.ctx; // no need to recreate GL context if it's already been created for this canvas.
   
         var ctx;
         var contextHandle;
@@ -1663,7 +1668,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   
       if (SDL.defaults.copyOnLock && !SDL.defaults.discardOnLock) {
         // Copy pixel data to somewhere accessible to 'C/C++'
-        if (surfData.isFlagSet(0x00200000 /* SDL_HWPALETTE */)) {
+        if (surfData.isFlagSet(2097152)) {
           // If this is needed then
           // we should compact the data from 32bpp to 8bpp index.
           // I think best way to implement this is use
@@ -2022,8 +2027,10 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
       var func = wasmTableMirror[funcPtr];
       if (!func) {
         if (funcPtr >= wasmTableMirror.length) wasmTableMirror.length = funcPtr + 1;
+        /** @suppress {checkTypes} */
         wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr);
       }
+      /** @suppress {checkTypes} */
       assert(wasmTable.get(funcPtr) == func, 'JavaScript-side Wasm function table mirror is out of date!');
       return func;
     };
@@ -2289,13 +2296,13 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         'rgba(' + (r&0xff) + ',' + (g&0xff) + ',' + (b&0xff) + ',' + (a&0xff)/255 + ')',
   translateRGBAToColor:(r, g, b, a) => r | g << 8 | b << 16 | a << 24,
   makeSurface(width, height, flags, usePageCanvas, source, rmask, gmask, bmask, amask) {
-        var is_SDL_HWSURFACE = flags & 0x00000001;
-        var is_SDL_HWPALETTE = flags & 0x00200000;
-        var is_SDL_OPENGL = flags & 0x04000000;
+        var is_SDL_HWSURFACE = flags & 134217729;
+        var is_SDL_HWPALETTE = flags & 2097152;
+        var is_SDL_OPENGL = flags & 67108864;
   
         var surf = _malloc(60);
         var pixelFormat = _malloc(44);
-        //surface with SDL_HWPALETTE flag is 8bpp surface (1 byte)
+        // surface with SDL_HWPALETTE flag is 8bpp surface (1 byte)
         var bpp = is_SDL_HWPALETTE ? 1 : 4;
         var buffer = 0;
   
@@ -2346,10 +2353,10 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         }
   
         var webGLContextAttributes = {
-          antialias: ((SDL.glAttributes[13 /*SDL_GL_MULTISAMPLEBUFFERS*/] != 0) && (SDL.glAttributes[14 /*SDL_GL_MULTISAMPLESAMPLES*/] > 1)),
-          depth: (SDL.glAttributes[6 /*SDL_GL_DEPTH_SIZE*/] > 0),
-          stencil: (SDL.glAttributes[7 /*SDL_GL_STENCIL_SIZE*/] > 0),
-          alpha: (SDL.glAttributes[3 /*SDL_GL_ALPHA_SIZE*/] > 0)
+          antialias: ((SDL.glAttributes[13] != 0) && (SDL.glAttributes[14] > 1)),
+          depth: (SDL.glAttributes[6] > 0),
+          stencil: (SDL.glAttributes[7] > 0),
+          alpha: (SDL.glAttributes[3] > 0)
         };
   
         var ctx = Browser.createContext(canvas, is_SDL_OPENGL, usePageCanvas, webGLContextAttributes);
@@ -2477,15 +2484,16 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   receiveEvent(event) {
         function unpressAllPressedKeys() {
           // Un-press all pressed keys: TODO
-          for (var code in SDL.keyboardMap) {
+          for (var keyCode of Object.values(SDL.keyboardMap)) {
             SDL.events.push({
               type: 'keyup',
-              keyCode: SDL.keyboardMap[code]
+              keyCode,
             });
           }
         };
         switch (event.type) {
-          case 'touchstart': case 'touchmove': {
+          case 'touchstart':
+          case 'touchmove': {
             event.preventDefault();
   
             var touches = [];
@@ -2561,7 +2569,9 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
             };
             break;
           }
-          case 'DOMMouseScroll': case 'mousewheel': case 'wheel':
+          case 'DOMMouseScroll':
+          case 'mousewheel':
+          case 'wheel':
             // Flip the wheel direction to translate from browser wheel direction
             // (+:down) to SDL direction (+:up)
             var delta = -Browser.getMouseWheelDelta(event);
@@ -2570,7 +2580,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   
             // Simulate old-style SDL events representing mouse wheel input as buttons
             // Subtract one since JS->C marshalling is defined to add one back.
-            var button = delta > 0 ? 3 /*SDL_BUTTON_WHEELUP-1*/ : 4 /*SDL_BUTTON_WHEELDOWN-1*/;
+            var button = (delta > 0 ? 4 : 5) - 1;
             SDL.events.push({ type: 'mousedown', button, pageX: event.pageX, pageY: event.pageY });
             SDL.events.push({ type: 'mouseup', button, pageX: event.pageX, pageY: event.pageY });
   
@@ -2608,12 +2618,16 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
               }
             }
             // fall through
-          case 'keydown': case 'keyup': case 'keypress': case 'mousedown': case 'mouseup':
+          case 'keydown':
+          case 'keyup':
+          case 'keypress':
+          case 'mousedown':
+          case 'mouseup':
             // If we preventDefault on keydown events, the subsequent keypress events
             // won't fire. However, it's fine (and in some cases necessary) to
             // preventDefault for keys that don't generate a character. Otherwise,
             // preventDefault is the right thing to do in general.
-            if (event.type !== 'keydown' || (!SDL.unicode && !SDL.textInput) || (event.keyCode === 8 /* backspace */ || event.keyCode === 9 /* tab */)) {
+            if (event.type !== 'keydown' || (!SDL.unicode && !SDL.textInput) || (event.key == 'Backspace' || event.key == 'Tab')) {
               event.preventDefault();
             }
   
@@ -2739,10 +2753,13 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
       },
   lookupKeyCodeForEvent(event) {
         var code = event.keyCode;
-        if (code >= 65 && code <= 90) {
+        if (code >= 65 && code <= 90) { // ASCII A-Z
           code += 32; // make lowercase for SDL
         } else {
-          code = SDL.keyCodes[event.keyCode] || event.keyCode;
+          // Look up DOM code in the keyCodes table with fallback for ASCII codes
+          // which can match between DOM codes and SDL keycodes (allows keyCodes
+          // to be smaller).
+          code = SDL.keyCodes[code] || (code < 128 ? code : 0);
           // If this is one of the modifier keys (224 | 1<<10 - 227 | 1<<10), and the event specifies that it is
           // a right key, add 4 to get the right key SDL key code.
           if (event.location === 2 /*KeyboardEvent.DOM_KEY_LOCATION_RIGHT*/ && code >= (224 | 1<<10) && code <= (227 | 1<<10)) {
@@ -2756,25 +2773,31 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         event.handled = true;
   
         switch (event.type) {
-          case 'touchstart': case 'touchend': case 'touchmove': {
+          case 'touchstart':
+          case 'touchend':
+          case 'touchmove': {
             Browser.calculateMouseEvent(event);
             break;
           }
-          case 'keydown': case 'keyup': {
+          case 'keydown':
+          case 'keyup': {
             var down = event.type === 'keydown';
             var code = SDL.lookupKeyCodeForEvent(event);
+            // Ignore key events that we don't (yet) map to SDL keys
+            if (!code) return;
             // Assigning a boolean to HEAP8, that's alright but Closure would like to warn about it.
             // TODO(https://github.com/emscripten-core/emscripten/issues/16311):
             // This is kind of ugly hack.  Perhaps we can find a better way?
             /** @suppress{checkTypes} */
             HEAP8[(SDL.keyboardState)+(code)] = down;
             // TODO: lmeta, rmeta, numlock, capslock, KMOD_MODE, KMOD_RESERVED
-            SDL.modState = (HEAP8[(SDL.keyboardState)+(1248)] ? 0x0040 : 0) | // KMOD_LCTRL
-              (HEAP8[(SDL.keyboardState)+(1249)] ? 0x0001 : 0) | // KMOD_LSHIFT
-              (HEAP8[(SDL.keyboardState)+(1250)] ? 0x0100 : 0) | // KMOD_LALT
-              (HEAP8[(SDL.keyboardState)+(1252)] ? 0x0080 : 0) | // KMOD_RCTRL
-              (HEAP8[(SDL.keyboardState)+(1253)] ? 0x0002 : 0) | // KMOD_RSHIFT
-              (HEAP8[(SDL.keyboardState)+(1254)] ? 0x0200 : 0); //  KMOD_RALT
+            SDL.modState =
+              (HEAP8[(SDL.keyboardState)+(1248)] ? 64 : 0) |
+              (HEAP8[(SDL.keyboardState)+(1249)] ? 1 : 0) |
+              (HEAP8[(SDL.keyboardState)+(1250)] ? 256 : 0) |
+              (HEAP8[(SDL.keyboardState)+(1252)] ? 128 : 0) |
+              (HEAP8[(SDL.keyboardState)+(1253)] ? 2 : 0) |
+              (HEAP8[(SDL.keyboardState)+(1254)] ? 512 : 0);
             if (down) {
               SDL.keyboardMap[code] = event.keyCode; // save the DOM input, which we can use to unpress it during blur
             } else {
@@ -2783,7 +2806,8 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   
             break;
           }
-          case 'mousedown': case 'mouseup':
+          case 'mousedown':
+          case 'mouseup':
             if (event.type == 'mousedown') {
               // SDL_BUTTON(x) is defined as (1 << ((x)-1)).  SDL buttons are 1-3,
               // and DOM buttons are 0-2, so this means that the below formula is
@@ -2807,7 +2831,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         }
       },
   pollEvent(ptr) {
-        if (SDL.initFlags & 0x200 && SDL.joystickEventState) {
+        if (SDL.initFlags & 512 && SDL.joystickEventState) {
           // If SDL_INIT_JOYSTICK was supplied AND the joystick system is configured
           // to automatically query for events, query for joystick events.
           SDL.queryJoysticks();
@@ -2835,8 +2859,9 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         switch (event.type) {
           case 'keydown': case 'keyup': {
             var down = event.type === 'keydown';
-            //dbg('Received key event: ' + event.keyCode);
             var key = SDL.lookupKeyCodeForEvent(event);
+            // Ignore key events that we don't (yet) map to SDL keys
+            if (!key) return false;
             var scan;
             if (key >= 1024) {
               scan = key - 1024;
@@ -2948,23 +2973,19 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
             break;
           }
           case 'focus': {
-            var SDL_WINDOWEVENT_FOCUS_GAINED = 12 /* SDL_WINDOWEVENT_FOCUS_GAINED */;
             HEAP32[((ptr)>>2)] = SDL.DOMEventToSDLEvent[event.type];
             HEAP32[(((ptr)+(4))>>2)] = 0;
-            HEAP8[(ptr)+(8)] = SDL_WINDOWEVENT_FOCUS_GAINED;
+            HEAP8[(ptr)+(8)] = 12;
             break;
           }
           case 'blur': {
-            var SDL_WINDOWEVENT_FOCUS_LOST = 13 /* SDL_WINDOWEVENT_FOCUS_LOST */;
             HEAP32[((ptr)>>2)] = SDL.DOMEventToSDLEvent[event.type];
             HEAP32[(((ptr)+(4))>>2)] = 0;
-            HEAP8[(ptr)+(8)] = SDL_WINDOWEVENT_FOCUS_LOST;
+            HEAP8[(ptr)+(8)] = 13;
             break;
           }
           case 'visibilitychange': {
-            var SDL_WINDOWEVENT_SHOWN  = 1 /* SDL_WINDOWEVENT_SHOWN */;
-            var SDL_WINDOWEVENT_HIDDEN = 2 /* SDL_WINDOWEVENT_HIDDEN */;
-            var visibilityEventID = event.visible ? SDL_WINDOWEVENT_SHOWN : SDL_WINDOWEVENT_HIDDEN;
+            var visibilityEventID = event.visible ? 1 : 2;
             HEAP32[((ptr)>>2)] = SDL.DOMEventToSDLEvent[event.type];
             HEAP32[(((ptr)+(4))>>2)] = 0;
             HEAP8[(ptr)+(8)] = visibilityEventID;
@@ -3251,28 +3272,28 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
       window.addEventListener("unload", SDL.receiveEvent);
       SDL.keyboardState = _calloc(0x10000, 1); // Our SDL needs 512, but 64K is safe for older SDLs
       // Initialize this structure carefully for closure
-      SDL.DOMEventToSDLEvent['keydown']    = 0x300  /* SDL_KEYDOWN */;
-      SDL.DOMEventToSDLEvent['keyup']      = 0x301  /* SDL_KEYUP */;
-      SDL.DOMEventToSDLEvent['keypress']   = 0x303  /* SDL_TEXTINPUT */;
-      SDL.DOMEventToSDLEvent['mousedown']  = 0x401  /* SDL_MOUSEBUTTONDOWN */;
-      SDL.DOMEventToSDLEvent['mouseup']    = 0x402  /* SDL_MOUSEBUTTONUP */;
-      SDL.DOMEventToSDLEvent['mousemove']  = 0x400  /* SDL_MOUSEMOTION */;
-      SDL.DOMEventToSDLEvent['wheel']      = 0x403  /* SDL_MOUSEWHEEL */;
-      SDL.DOMEventToSDLEvent['touchstart'] = 0x700  /* SDL_FINGERDOWN */;
-      SDL.DOMEventToSDLEvent['touchend']   = 0x701  /* SDL_FINGERUP */;
-      SDL.DOMEventToSDLEvent['touchmove']  = 0x702  /* SDL_FINGERMOTION */;
-      SDL.DOMEventToSDLEvent['unload']     = 0x100  /* SDL_QUIT */;
-      SDL.DOMEventToSDLEvent['resize']     = 0x7001 /* SDL_VIDEORESIZE/SDL_EVENT_COMPAT2 */;
-      SDL.DOMEventToSDLEvent['visibilitychange'] = 0x200 /* SDL_WINDOWEVENT */;
-      SDL.DOMEventToSDLEvent['focus']      = 0x200 /* SDL_WINDOWEVENT */;
-      SDL.DOMEventToSDLEvent['blur']       = 0x200 /* SDL_WINDOWEVENT */;
+      SDL.DOMEventToSDLEvent['keydown']    = 768;
+      SDL.DOMEventToSDLEvent['keyup']      = 769;
+      SDL.DOMEventToSDLEvent['keypress']   = 771;
+      SDL.DOMEventToSDLEvent['mousedown']  = 1025;
+      SDL.DOMEventToSDLEvent['mouseup']    = 1026;
+      SDL.DOMEventToSDLEvent['mousemove']  = 1024;
+      SDL.DOMEventToSDLEvent['wheel']      = 1027;
+      SDL.DOMEventToSDLEvent['touchstart'] = 1792;
+      SDL.DOMEventToSDLEvent['touchend']   = 1793;
+      SDL.DOMEventToSDLEvent['touchmove']  = 1794;
+      SDL.DOMEventToSDLEvent['unload']     = 256;
+      SDL.DOMEventToSDLEvent['resize']     = 28673;
+      SDL.DOMEventToSDLEvent['visibilitychange'] = 512;
+      SDL.DOMEventToSDLEvent['focus']      = 512;
+      SDL.DOMEventToSDLEvent['blur']       = 512;
   
       // These are not technically DOM events; the HTML gamepad API is poll-based.
       // However, we define them here, as the rest of the SDL code assumes that
       // all SDL events originate as DOM events.
-      SDL.DOMEventToSDLEvent['joystick_axis_motion'] = 0x600 /* SDL_JOYAXISMOTION */;
-      SDL.DOMEventToSDLEvent['joystick_button_down'] = 0x603 /* SDL_JOYBUTTONDOWN */;
-      SDL.DOMEventToSDLEvent['joystick_button_up'] = 0x604 /* SDL_JOYBUTTONUP */;
+      SDL.DOMEventToSDLEvent['joystick_axis_motion'] = 1536;
+      SDL.DOMEventToSDLEvent['joystick_button_down'] = 1539;
+      SDL.DOMEventToSDLEvent['joystick_button_up'] = 1540;
       return 0; // success
     };
 
@@ -3641,11 +3662,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         SDL.addedResizeListener = true;
         Browser.resizeListeners.push((w, h) => {
           if (!SDL.settingVideoMode) {
-            SDL.receiveEvent({
-              type: 'resize',
-              w,
-              h
-            });
+            SDL.receiveEvent({ type: 'resize', w, h });
           }
         });
       }
@@ -3660,7 +3677,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         assert(!SDL.screen);
       }
   
-      if (SDL.GL) flags = flags | 0x04000000; // SDL_OPENGL - if we are using GL, then later calls to SetVideoMode may not mention GL, but we do need it. Once in GL mode, we never leave it.
+      if (SDL.GL) flags = flags | 67108864; // if we are using GL, then later calls to SetVideoMode may not mention GL, but we do need it. Once in GL mode, we never leave it.
   
       SDL.screen = SDL.makeSurface(width, height, flags, true, 'screen');
   
@@ -3677,7 +3694,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
       }
   
       // Copy pixel data to image
-      if (surfData.isFlagSet(0x00200000 /* SDL_HWPALETTE */)) {
+      if (surfData.isFlagSet(2097152)) {
         SDL.copyIndexedColorData(surfData);
       } else if (!surfData.colors) {
         var data = surfData.image.data;
@@ -4230,7 +4247,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
           }
         },
   lookup(parent, name) {
-          throw FS.genericErrors[44];
+          throw new FS.ErrnoError(44);
         },
   mknod(parent, name, mode, dev) {
           return MEMFS.createNode(parent, name, mode, dev);
@@ -4650,8 +4667,6 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
           }
         }
       },
-  genericErrors:{
-  },
   filesystems:null,
   syncFSRequests:0,
   readFiles:{
@@ -5763,6 +5778,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         FS.registerDevice(FS.makedev(1, 3), {
           read: () => 0,
           write: (stream, buffer, offset, length, pos) => length,
+          llseek: () => 0,
         });
         FS.mkdev('/dev/null', FS.makedev(1, 3));
         // setup /dev/tty and /dev/tty1
@@ -5848,12 +5864,6 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         assert(stderr.fd === 2, `invalid handle for stderr (${stderr.fd})`);
       },
   staticInit() {
-        // Some errors may happen quite a bit, to avoid overhead we reuse them (and suffer a lack of stack info)
-        [44].forEach((code) => {
-          FS.genericErrors[code] = new FS.ErrnoError(code);
-          FS.genericErrors[code].stack = '<generic error, no stack>';
-        });
-  
         FS.nameTable = new Array(4096);
   
         FS.mount(MEMFS, {}, '/');
@@ -6701,8 +6711,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
       Module["setCanvasSize"] = Browser.setCanvasSize;
       Module["getUserMedia"] = Browser.getUserMedia;
       Module["createContext"] = Browser.createContext;
-      var preloadedImages = {};
-      var preloadedAudios = {};;
+    ;
 
       Module["requestAnimationFrame"] = MainLoop.requestAnimationFrame;
       Module["pauseMainLoop"] = MainLoop.pause;
@@ -6910,8 +6919,8 @@ var missingLibrarySymbols = [
   'checkWasiClock',
   'wasiRightsToMuslOFlags',
   'wasiOFlagsToMuslOFlags',
-  'createDyncallWrapper',
   'setImmediateWrapped',
+  'safeRequestAnimationFrame',
   'clearImmediateWrapped',
   'polyfillSetImmediate',
   'registerPostMainLoop',
@@ -6923,7 +6932,6 @@ var missingLibrarySymbols = [
   'ExceptionInfo',
   'findMatchingCatch',
   'Browser_asyncPrepareDataCounter',
-  'safeRequestAnimationFrame',
   'isLeapYear',
   'ydayFromDate',
   'arraySum',
