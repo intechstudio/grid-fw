@@ -6,13 +6,9 @@
 static uint8_t UI_SPI_TX_BUFFER[14] = {0};
 static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 
-static volatile uint8_t UI_SPI_RX_BUFFER_LAST[16] = {0};
-
 #define GRID_MODULE_EN16_ENC_NUM 16
 
-static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EN16_ENC_NUM];
-
-static uint8_t detent;
+static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EN16_ENC_NUM] = {0};
 
 static void hardware_start_transfer(void) {
 
@@ -37,13 +33,10 @@ static void spi_transfer_complete_cb(void) {
   for (uint8_t j = 0; j < GRID_MODULE_EN16_ENC_NUM; j++) {
 
     uint8_t new_value = (UI_SPI_RX_BUFFER[j / 2] >> (4 * (j % 2))) & 0x0F;
-    uint8_t old_value = UI_SPI_RX_BUFFER_LAST[j];
-
-    UI_SPI_RX_BUFFER_LAST[j] = new_value;
 
     uint8_t i = encoder_position_lookup[j];
 
-    grid_ui_encoder_store_input(&ui_encoder_state[i], i, old_value, new_value, detent);
+    grid_ui_encoder_store_input(&ui_encoder_state[i], i, new_value);
   }
 
   hardware_start_transfer();
@@ -65,7 +58,10 @@ void grid_module_en16_init() {
 
   grid_module_en16_ui_init(NULL, &grid_led_state, &grid_ui_state);
 
-  detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD;
+  uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD;
+  for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
+    grid_ui_encoder_state_init(&ui_encoder_state[i], detent);
+  }
 
   hardware_init();
 

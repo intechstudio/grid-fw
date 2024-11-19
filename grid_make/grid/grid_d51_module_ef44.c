@@ -12,13 +12,9 @@ static uint64_t last_real_time[4] = {0};
 static uint8_t UI_SPI_TX_BUFFER[14] = {0};
 static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 
-static volatile uint8_t UI_SPI_RX_BUFFER_LAST[16] = {0};
-
 #define GRID_MODULE_EF44_ENC_NUM 4
 
-static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EF44_ENC_NUM];
-
-static uint8_t detent;
+static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EF44_ENC_NUM] = {0};
 
 static void hardware_spi_start_transfer(void) {
 
@@ -47,13 +43,10 @@ static void spi_transfer_complete_cb(void) {
   for (uint8_t j = 0; j < GRID_MODULE_EF44_ENC_NUM; j++) {
 
     uint8_t new_value = (UI_SPI_RX_BUFFER[j / 2] >> (4 * (j % 2))) & 0x0F;
-    uint8_t old_value = UI_SPI_RX_BUFFER_LAST[j];
-
-    UI_SPI_RX_BUFFER_LAST[j] = new_value;
 
     uint8_t i = encoder_position_lookup[j];
 
-    grid_ui_encoder_store_input(&ui_encoder_state[i], i, old_value, new_value, detent);
+    grid_ui_encoder_store_input(&ui_encoder_state[i], i, new_value);
   }
 
   hardware_spi_start_transfer();
@@ -128,7 +121,10 @@ void grid_module_ef44_init() {
 
   grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 
-  detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EF44_ND_RevD;
+  uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EF44_ND_RevD;
+  for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
+    grid_ui_encoder_state_init(&ui_encoder_state[i], detent);
+  }
 
   hardware_init();
 

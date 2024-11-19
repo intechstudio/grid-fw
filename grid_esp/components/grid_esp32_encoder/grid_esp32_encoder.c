@@ -64,11 +64,9 @@ void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, void (*po
   encoder->spi_host = SPI_ENCODER_HOST;
   encoder->spi_device_handle = NULL;
 
-  encoder->rx_buffer_previous = (uint8_t*)malloc(GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
   encoder->rx_buffer = (uint8_t*)malloc(GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
   encoder->tx_buffer = (uint8_t*)malloc(GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
 
-  memset(encoder->rx_buffer_previous, 0, GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
   memset(encoder->rx_buffer, 0, GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
   memset(encoder->tx_buffer, 0, GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
 

@@ -21,9 +21,7 @@ static const char* TAG = "module_en16";
 
 #define GRID_MODULE_EN16_ENC_NUM 16
 
-static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EN16_ENC_NUM];
-
-static uint8_t detent;
+static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EN16_ENC_NUM] = {0};
 
 static void IRAM_ATTR my_post_setup_cb(spi_transaction_t* trans) {
   // printf("$\r\n");
@@ -46,7 +44,10 @@ static void IRAM_ATTR my_post_trans_cb(spi_transaction_t* trans) {
 void grid_esp32_module_en16_task(void* arg) {
   grid_esp32_encoder_init(&grid_esp32_encoder_state, my_post_setup_cb, my_post_trans_cb);
   grid_esp32_encoder_start(&grid_esp32_encoder_state);
-  detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD;
+  uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD;
+  for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
+    grid_ui_encoder_state_init(&ui_encoder_state[i], detent);
+  }
 
   while (1) {
 
@@ -63,13 +64,10 @@ void grid_esp32_module_en16_task(void* arg) {
       for (uint8_t j = 0; j < GRID_MODULE_EN16_ENC_NUM; j++) {
 
         uint8_t new_value = (result->bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
-        uint8_t old_value = grid_esp32_encoder_state.rx_buffer_previous[j];
-
-        grid_esp32_encoder_state.rx_buffer_previous[j] = new_value;
 
         uint8_t i = encoder_position_lookup[j];
 
-        grid_ui_encoder_store_input(&ui_encoder_state[i], i, old_value, new_value, detent);
+        grid_ui_encoder_store_input(&ui_encoder_state[i], i, new_value);
       }
 
       vRingbufferReturnItem(grid_esp32_encoder_state.ringbuffer_handle, result);
