@@ -703,7 +703,6 @@ $(SUB_DIRS):
 	$(MK_DIR) "$@"
 
 clean:
-	rm -f lastconfig.txt
 	rm -f $(OBJS_AS_ARGS)
 	rm -f $(OUTPUT_FILE_PATH)
 	rm -f $(DEPS_AS_ARGS)
@@ -711,52 +710,15 @@ clean:
         $(OUTPUT_FILE_NAME).lss $(OUTPUT_FILE_NAME).eep $(OUTPUT_FILE_NAME).map \
         $(OUTPUT_FILE_NAME).srec
 
-# ================== NIGHTLY WITH AUTOUPLOAD =================
-nightly: GRID_DEFINES = -DGRID_BUILD_NIGHTLY
-ifneq (nightly, $(file < lastconfig.txt))
-nightly: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) nightly_post
-else
-nightly: $(SUB_DIRS) $(OUTPUT_FILE_PATH) nightly_post
-endif
-nightly_post:
-	@echo "nightly" > lastconfig.txt
-	mkdir -p ./../../binary
-	python3 ./uf2conv.py -c -b 0x4000 -o ./../../binary/grid_nightly.uf2 ./$(OUTPUT_FILE_NAME).bin
-	cp ./../../binary/grid_nightly.uf2 /media/${shell whoami}/GRID
-
 # ================== DEBUG WITH AUTOGDB =================
 debug: GRID_DEFINES = -DGRID_BUILD_DEBUG
-ifneq (debug, $(file < lastconfig.txt))
-debug: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) debug_post
-else
 debug: $(SUB_DIRS) $(OUTPUT_FILE_PATH) debug_post
-endif
 debug_post:
-	@echo "debug" > lastconfig.txt
 	arm-none-eabi-gdb -iex "target extended-remote localhost:3333" $(OUTPUT_FILE_NAME).elf
 
-# ================== RELEASE =================
-release: GRID_DEFINES = -DGRID_BUILD_RELEASE
-ifneq (release, $(file < lastconfig.txt))
-release: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
-else
-release: $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
-endif
-release_post:
-	@echo "release" > lastconfig.txt
-	mkdir -p ./../../binary
-	python3 ./uf2conv.py -c -b 0x4000 -o ./../../binary/grid_release.uf2 ./$(OUTPUT_FILE_NAME).bin
-
-# ================== NIGHTLY FOR AUTOMATION =================
-nightly_automation: GRID_DEFINES = -DGRID_BUILD_NIGHTLY
-nightly_automation: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) nightly_automation_post
-nightly_automation_post:
-	mkdir -p ./../../binary
-	python3 ./uf2conv.py -c -b 0x4000 -o ./../../binary/grid_nightly.uf2 ./$(OUTPUT_FILE_NAME).bin
-
 # ================== RELEASE FOR AUTOMATION =================
-release_automation: GRID_DEFINES = -DGRID_BUILD_RELEASE
-release_automation: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_automation_post
-release_automation_post:
+release: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
+release: GRID_DEFINES = -DGRID_BUILD_RELEASE
+release_post:
 	mkdir -p ./../../binary
 	python3 ./uf2conv.py -c -b 0x4000 -o ./../../binary/grid_release.uf2 ./$(OUTPUT_FILE_NAME).bin

@@ -25,18 +25,11 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Install GNU Arm Embedded Toolchain (arm-none-eabi-gcc)
-        uses: carlosperate/arm-none-eabi-gcc-action@v1
-        with:
-          release: '9-2020-q2' # <-- The compiler release to use
-
-      - name: Test ARM GCC and build D51 firmware variant
-        run: |
-          arm-none-eabi-gcc -v
-          cd grid_make/gcc && make release_automation
-
       - name: Build Docker image containing both IDF and PICOSDK
         run: docker build -t my-image .
+
+      - name: Run script in Docker container
+        run: docker run -v $PWD:/project -w /project/ my-image sh -c "arm-none-eabi-gcc -v && ./d51_build_firmware.sh"
 
       - name: Run script in Docker container
         run: docker run -v $PWD:/project -w /project/ my-image sh -c "./pico_build_firmware.sh && ./esp_build_firmware.sh && ./gui_build.sh"
