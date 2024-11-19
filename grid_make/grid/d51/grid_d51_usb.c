@@ -7,6 +7,11 @@
 
 #include "grid_d51_usb.h"
 
+volatile uint8_t grid_usb_serial_rx_buffer[CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ];
+
+volatile uint8_t grid_usb_serial_rx_flag;
+volatile uint16_t grid_usb_serial_rx_size;
+
 static volatile struct grid_port* host_port = NULL;
 
 static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {

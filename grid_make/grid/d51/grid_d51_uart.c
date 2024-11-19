@@ -20,6 +20,11 @@ void grid_d51_uart_port_reset_dma(uint8_t dma_channel) {
 //=============================== USART TX COMPLETE
 //==============================//
 
+struct io_descriptor* grid_sys_north_io;
+struct io_descriptor* grid_sys_east_io;
+struct io_descriptor* grid_sys_south_io;
+struct io_descriptor* grid_sys_west_io;
+
 static void tx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(uart_doublebuffer_tx_array[0]); }
 
 static void tx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(uart_doublebuffer_tx_array[1]); }
