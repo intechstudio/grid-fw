@@ -80,7 +80,7 @@ uint32_t grid_d51_nvm_erase_all(struct grid_d51_nvm_model* mod);
 
 void grid_d51_nvm_toc_debug(struct grid_d51_nvm_model* mod);
 
-struct grid_d51_nvm_model grid_d51_nvm_state;
+extern struct grid_d51_nvm_model grid_d51_nvm_state;
 
 void grid_d51_nvm_init(struct grid_d51_nvm_model* mod, struct flash_descriptor* flash_instance);
 

@@ -22,10 +22,10 @@
 
 extern void grid_platform_sync1_pulse_send();
 
-volatile uint8_t grid_usb_serial_rx_buffer[CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ];
+extern volatile uint8_t grid_usb_serial_rx_buffer[CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ];
 
-volatile uint8_t grid_usb_serial_rx_flag;
-volatile uint16_t grid_usb_serial_rx_size;
+extern volatile uint8_t grid_usb_serial_rx_flag;
+extern volatile uint16_t grid_usb_serial_rx_size;
 
 static uint8_t* cdcdf_demo_buf;
 

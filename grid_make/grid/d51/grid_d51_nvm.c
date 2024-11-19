@@ -7,6 +7,8 @@
 
 #include "grid_d51_nvm.h"
 
+struct grid_d51_nvm_model grid_d51_nvm_state;
+
 void grid_d51_nvm_init(struct grid_d51_nvm_model* nvm, struct flash_descriptor* flash_instance) {
 
   nvm->toc_count = 0;
