@@ -419,9 +419,6 @@ int main(void) {
 #ifdef GRID_BUILD_UNKNOWN
   printf("\r\n##Build: Unknown##\r\n\r\n");
 #endif
-#ifdef GRID_BUILD_NIGHTLY
-  printf("\r\n##Build: Nightly##\r\n\r\n");
-#endif
 #ifdef GRID_BUILD_DEBUG
   printf("\r\n##Build: Debug##\r\n\r\n");
 #endif
