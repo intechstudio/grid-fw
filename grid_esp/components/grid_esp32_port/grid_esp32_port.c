@@ -41,6 +41,8 @@ static const char* TAG = "PORT";
 
 #define RCV_HOST SPI2_HOST
 
+volatile uint8_t DRAM_ATTR is_vsn_rev_a = 0;
+
 volatile uint8_t DRAM_ATTR rolling_id_last_sent = 255;
 volatile uint8_t DRAM_ATTR rolling_id_last_received = 255;
 
@@ -101,7 +103,7 @@ static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t* trans) {
   rolling_id_last_sent = (rolling_id_last_sent + 1) % GRID_PARAMETER_SPI_ROLLING_ID_maximum;
   ((uint8_t*)trans->tx_buffer)[GRID_PARAMETER_SPI_ROLLING_ID_index] = rolling_id_last_sent; // not received from any of the ports
 
-  if (grid_hwcfg_module_is_vsnx_rev_a(&grid_sys_state)) {
+  if (is_vsn_rev_a) {
 
     ((uint8_t*)trans->tx_buffer)[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index] = 0;
   } else {
@@ -522,6 +524,8 @@ void grid_esp32_port_task(void* arg) {
   spi_empty_transaction.length = GRID_PARAMETER_SPI_TRANSACTION_length * 8;
   spi_empty_transaction.tx_buffer = empty_tx_buffer;
   spi_empty_transaction.rx_buffer = recvbuf;
+
+  is_vsn_rev_a = grid_hwcfg_module_is_vsnx_rev_a(&grid_sys_state);
 
   SemaphoreHandle_t spi_ready_sem = xSemaphoreCreateBinary();
 
