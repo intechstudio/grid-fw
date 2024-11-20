@@ -98,7 +98,7 @@ void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t
   // }
 }
 
-uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint64_t* endless_last_real_time, int16_t delta) {
+uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint64_t* endless_last_real_time, int16_t delta, double* delta_vel_frac) {
 
   uint32_t encoder_elapsed_time = grid_platform_rtc_get_elapsed_time(*endless_last_real_time);
   if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(*endless_last_real_time)) {
@@ -137,20 +137,26 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint64_t* en
     elapsed_ms = 1;
   }
 
-  double minmaxscale = (max - min) / 128.0;
+  double minmaxscale = (max - min) / 16384.0;
 
   double velocityparam = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] / 100.0;
+  double sensitivityparam = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] / 100.0;
 
   double rate_of_change = abs(delta) / elapsed_ms;
 
   // implement configurable velocity parameters here
-  double velocityfactor = ((rate_of_change * rate_of_change) / 2000.0) * minmaxscale * velocityparam + (5.0 * template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] / 100.0);
+  double velocityfactor = (((rate_of_change * rate_of_change) / 2000.0) * velocityparam + (5.0 * sensitivityparam)) * minmaxscale;
 
-  int32_t delta_velocity = delta * velocityfactor;
+  double delta_velocity_full = delta * velocityfactor + *delta_vel_frac;
+
+  int32_t delta_velocity = delta_velocity_full;
 
   if (delta_velocity == 0) {
     return 0; // did not trigger
   }
+
+  // store the fraction of the delta that cannot be emitted as part of the trigger
+  *delta_vel_frac = delta_velocity_full - delta_velocity;
 
   int32_t old_value = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index];
 
@@ -333,12 +339,14 @@ void grid_ui_endless_store_input(uint8_t input_channel, uint64_t* endless_last_r
     if (abs(delta) > 10) {
 
       template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = value_degrees_new / 20;
-      uint8_t has_triggered = grid_ui_endless_update_trigger(ele, endless_last_real_time, delta);
+      double delta_vel_frac = old_value->delta_vel_frac;
+      uint8_t has_triggered = grid_ui_endless_update_trigger(ele, endless_last_real_time, delta, &delta_vel_frac);
 
       if (has_triggered) {
         old_value->phase_a_value = new_value->phase_a_value;
         old_value->phase_b_value = new_value->phase_b_value;
         old_value->knob_angle = new_value->knob_angle;
+        old_value->delta_vel_frac = delta_vel_frac;
       }
     }
   }

@@ -12,6 +12,7 @@ struct grid_module_endless_state {
   uint16_t phase_b_value;
   uint16_t button_value;
   uint16_t knob_angle;
+  double delta_vel_frac;
 };
 
 void grid_ui_element_endless_init(struct grid_ui_element* ele);
@@ -23,7 +24,7 @@ void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t
 void grid_ui_endless_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, struct grid_module_endless_state* old_value, struct grid_module_endless_state* new_value,
                                  uint8_t adc_bit_depth);
 
-uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint64_t* endless_last_real_time, int16_t delta);
+uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint64_t* endless_last_real_time, int16_t delta, double* delta_frac);
 
 // ========================= ENDLESS POTEMETER =========================== //
 
