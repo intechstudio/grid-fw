@@ -27,6 +27,8 @@
 
 static const char* TAG = "module_tek1";
 
+#define GRID_MODULE_TEK1_POT_NUM 2
+
 #define COLOR_MODE_1BIT_MONOCHROME
 
 #ifdef COLOR_MODE_24BIT_TRUECOLOR
@@ -77,8 +79,8 @@ void grid_esp32_module_tek1_task(void* arg) {
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
   grid_esp32_adc_start(&grid_esp32_adc_state);
 
-  struct grid_module_endless_state current_endlesspot_state[2] = {0};
-  struct grid_module_endless_state last_endlesspot_state[2] = {0};
+  struct grid_ui_endless_state new_endless_state[GRID_MODULE_TEK1_POT_NUM] = {0};
+  struct grid_ui_endless_state old_endless_state[GRID_MODULE_TEK1_POT_NUM] = {0};
 
   void vsn1_process_analog(void) {
     size_t size = 0;
@@ -97,16 +99,16 @@ void grid_esp32_module_tek1_task(void* arg) {
 
       } else if (mux_position == 9) { // 8, 9
 
-        current_endlesspot_state[0].phase_a_value = result->value;
+        new_endless_state[0].phase_a = result->value;
       } else if (mux_position == 11) { // 10, 11
 
-        current_endlesspot_state[0].phase_b_value = result->value;
+        new_endless_state[0].phase_b = result->value;
         // ets_printf("%d \r\n", result->value);
       } else if (mux_position == 13) { // 12, 13
 
-        current_endlesspot_state[0].button_value = result->value;
-        grid_ui_button_store_input(8, &endlesspot_button_last_real_time[0], result->value, 12);
-        grid_ui_endless_store_input(8, &endlesspot_encoder_last_real_time[0], &last_endlesspot_state[0], &current_endlesspot_state[0], 12);
+        new_endless_state[0].button_value = result->value;
+        grid_ui_button_store_input(8, &old_endless_state[0].button_last_real_time, result->value, 12);
+        grid_ui_endless_store_input(8, 12, &new_endless_state[0], &old_endless_state[0]);
       } else if (mux_position == 8 || mux_position == 10 || mux_position == 12 || mux_position == 14) {
 
         uint8_t btn_num = ((mux_position - 8) / 2) % 4;
@@ -134,16 +136,16 @@ void grid_esp32_module_tek1_task(void* arg) {
 
       } else if (mux_position == 8) { // 8, 9
 
-        current_endlesspot_state[0].phase_a_value = result->value;
+        new_endless_state[0].phase_a = result->value;
       } else if (mux_position == 10) { // 10, 11
 
-        current_endlesspot_state[0].phase_b_value = result->value;
+        new_endless_state[0].phase_b = result->value;
         // ets_printf("%d \r\n", result->value);
       } else if (mux_position == 12) { // 12, 13
 
-        current_endlesspot_state[0].button_value = result->value;
-        grid_ui_button_store_input(8, &endlesspot_button_last_real_time[0], result->value, 12);
-        grid_ui_endless_store_input(8, &endlesspot_encoder_last_real_time[0], &last_endlesspot_state[0], &current_endlesspot_state[0], 12);
+        new_endless_state[0].button_value = result->value;
+        grid_ui_button_store_input(8, &old_endless_state[0].button_last_real_time, result->value, 12);
+        grid_ui_endless_store_input(8, 12, &new_endless_state[0], &old_endless_state[0]);
       } else if (mux_position == 9 || mux_position == 11 || mux_position == 13 || mux_position == 15) {
 
         uint8_t btn_num = ((mux_position - 8) / 2) % 4;

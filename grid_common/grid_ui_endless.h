@@ -6,12 +6,12 @@
 #include "grid_ui.h"
 #include <stdint.h>
 
-struct grid_module_endless_state {
-
-  uint16_t phase_a_value;
-  uint16_t phase_b_value;
+struct grid_ui_endless_state {
+  uint16_t phase_a;
+  uint16_t phase_b;
   uint16_t button_value;
-  uint16_t knob_angle;
+  uint64_t button_last_real_time;
+  uint64_t encoder_last_real_time;
   double delta_vel_frac;
 };
 
@@ -21,10 +21,9 @@ void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buf
 void grid_ui_element_endless_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
-void grid_ui_endless_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, struct grid_module_endless_state* old_value, struct grid_module_endless_state* new_value,
-                                 uint8_t adc_bit_depth);
+void grid_ui_endless_store_input(uint8_t input_channel, uint8_t adc_bit_depth, struct grid_ui_endless_state* new_value, struct grid_ui_endless_state* old_value);
 
-uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint64_t* endless_last_real_time, int16_t delta, double* delta_frac);
+uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int16_t delta, uint64_t* endless_last_real_time, double* delta_vel_frac);
 
 // ========================= ENDLESS POTEMETER =========================== //
 
