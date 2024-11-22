@@ -53,7 +53,6 @@ struct grid_esp32_encoder_model {
   spi_device_handle_t spi_device_handle;
   spi_transaction_t transaction;
 
-  uint8_t* rx_buffer_previous;
   uint8_t* rx_buffer;
   uint8_t* tx_buffer;
 
