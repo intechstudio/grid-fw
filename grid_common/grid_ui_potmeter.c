@@ -92,11 +92,28 @@ void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_
   template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
 }
 
-void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth) {
+double restrict_to_range(double x, double min, double max) {
+  const double t = x < min ? min : x;
+  return t > max ? max : t;
+}
+
+uint16_t potmeter_centered(uint16_t value, uint16_t center, uint16_t max) {
+
+  const double offset = center / (double)max - 0.5;
+  const double x = value / (double)max;
+  const double tmp = 2.0 * x - 1.0;
+  const double result = (x - (1.0 - tmp * tmp) * offset);
+
+  return restrict_to_range(result, 0.0, 1.0) * max;
+}
+
+void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint16_t center, uint8_t adc_bit_depth) {
 
   const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
 
   int32_t* template_parameter_list = grid_ui_state.element_list[input_channel].template_parameter_list;
+
+  value = potmeter_centered(value, center, adc_max_value);
 
   int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
 

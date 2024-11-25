@@ -1590,6 +1590,87 @@
   return 1;
 }
 
+/*static*/ int l_grid_potmeter_calibration_get(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 0) {
+    // error
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  lua_newtable(L);
+
+  uint8_t element_count = grid_ui_state.element_list_length;
+
+  uint8_t element_idx = 0;
+  for(uint8_t i = 0; i < element_count; ++i) {
+
+    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
+
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+
+      int32_t value = grid_cal_state.value[element_idx];
+
+      lua_pushinteger(L, i + 1);
+      lua_pushinteger(L, value);
+      lua_settable(L, -3);
+
+      ++element_idx;
+    }
+  }
+
+  grid_platform_printf("potmeter_calibration_get()\n");
+
+  return 1;
+}
+
+/*static*/ int l_grid_potmeter_calibration_set(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 1) {
+    // error
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (!lua_istable(L, -1)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  uint8_t element_count = grid_ui_state.element_list_length;
+
+  uint8_t element_idx = 0;
+  for(uint8_t i = 0; i < element_count; ++i) {
+
+    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
+
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+
+      lua_pushinteger(L, element_idx + 1);
+      lua_gettable(L, -2);
+
+      if (!lua_isinteger(L, -1)) {
+        strcat(grid_lua_state.stde, "#invalidParams");
+        return 0;
+      }
+
+      int32_t value = lua_tointeger(L, -1);
+      lua_pop(L, 1);
+      grid_cal_state.center[element_idx] = value;
+
+      ++element_idx;
+    }
+  }
+
+  grid_platform_printf("potmeter_calibration_set()\n");
+
+  return 0;
+}
+
 /*static*/ const struct luaL_Reg grid_lua_api_generic_lib[] = {
     {"print", l_my_print},
     {"grid_send", l_grid_send},
@@ -1652,6 +1733,8 @@
     {GRID_LUA_FNC_G_IMMEDIATE_SEND_short, GRID_LUA_FNC_G_IMMEDIATE_SEND_fnptr},
 
     {GRID_LUA_FNC_G_ELEMENT_COUNT_short, GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr},
+    {GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_fnptr},
+    {GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr},
 
     {"print", l_my_print},
 

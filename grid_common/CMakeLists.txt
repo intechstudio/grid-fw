@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 idf_component_register(
     SRCS
         "grid_protocol.c"
+        "grid_cal.c"
         "grid_ain.c"
         "grid_led.c"
         "grid_sys.c"

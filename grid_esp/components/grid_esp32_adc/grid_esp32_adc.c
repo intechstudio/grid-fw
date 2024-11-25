@@ -194,6 +194,7 @@ void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc) {}
 
 #include "ulp_riscv_lock.h"
 
+/*
 static float restrictToRange(float value) {
   if (value < 0.0) {
     return 0.0;
@@ -218,6 +219,7 @@ static uint32_t grid_esp32_adc_cal(uint32_t input) {
 
   return input + parameter_1 * strength;
 }
+*/
 
 void IRAM_ATTR grid_esp32_adc_convert(void) {
 
@@ -232,12 +234,14 @@ void IRAM_ATTR grid_esp32_adc_convert(void) {
     struct grid_esp32_adc_result result_0;
     result_0.channel = 0;
     result_0.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
-    result_0.value = grid_esp32_adc_cal(ulp_adc_value_1);
+    //result_0.value = grid_esp32_adc_cal(ulp_adc_value_1);
+    result_0.value = ulp_adc_value_1;
 
     struct grid_esp32_adc_result result_1;
     result_1.channel = 1;
     result_1.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
-    result_1.value = grid_esp32_adc_cal(ulp_adc_value_2);
+    //result_1.value = grid_esp32_adc_cal(ulp_adc_value_2);
+    result_1.value = ulp_adc_value_2;
 
     xRingbufferSendFromISR(adc->ringbuffer_handle, &result_0, sizeof(struct grid_esp32_adc_result), NULL);
     xRingbufferSendFromISR(adc->ringbuffer_handle, &result_1, sizeof(struct grid_esp32_adc_result), NULL);

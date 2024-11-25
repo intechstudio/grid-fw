@@ -46,7 +46,7 @@ void grid_esp32_module_po16_task(void* arg) {
         result->value = 4095 - result->value;
       }
 
-      grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);
+      //grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
     }
 
