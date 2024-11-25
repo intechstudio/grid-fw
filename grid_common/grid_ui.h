@@ -10,8 +10,8 @@
 
 #include <string.h>
 
-#include "grid_cal.h"
 #include "grid_ain.h"
+#include "grid_cal.h"
 #include "grid_lua_api.h"
 #include "grid_protocol.h"
 

@@ -234,13 +234,13 @@ void IRAM_ATTR grid_esp32_adc_convert(void) {
     struct grid_esp32_adc_result result_0;
     result_0.channel = 0;
     result_0.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
-    //result_0.value = grid_esp32_adc_cal(ulp_adc_value_1);
+    // result_0.value = grid_esp32_adc_cal(ulp_adc_value_1);
     result_0.value = ulp_adc_value_1;
 
     struct grid_esp32_adc_result result_1;
     result_1.channel = 1;
     result_1.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
-    //result_1.value = grid_esp32_adc_cal(ulp_adc_value_2);
+    // result_1.value = grid_esp32_adc_cal(ulp_adc_value_2);
     result_1.value = ulp_adc_value_2;
 
     xRingbufferSendFromISR(adc->ringbuffer_handle, &result_0, sizeof(struct grid_esp32_adc_result), NULL);

@@ -78,7 +78,7 @@ void grid_esp32_module_ef44_task(void* arg) {
         adc_result->value = 4095 - adc_result->value;
       }
 
-      //grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], adc_result->value, 12);
+      // grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], adc_result->value, 12);
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, adc_result);
     }
 

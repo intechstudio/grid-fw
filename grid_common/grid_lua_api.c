@@ -1605,7 +1605,7 @@
   uint8_t element_count = grid_ui_state.element_list_length;
 
   uint8_t element_idx = 0;
-  for(uint8_t i = 0; i < element_count; ++i) {
+  for (uint8_t i = 0; i < element_count; ++i) {
 
     struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
 
@@ -1644,7 +1644,7 @@
   uint8_t element_count = grid_ui_state.element_list_length;
 
   uint8_t element_idx = 0;
-  for(uint8_t i = 0; i < element_count; ++i) {
+  for (uint8_t i = 0; i < element_count; ++i) {
 
     struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
 
