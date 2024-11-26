@@ -44,7 +44,9 @@ uint8_t grid_cal_enable_range(struct grid_cal_model* cal, uint8_t start, uint8_t
 
 uint8_t grid_cal_center_set(struct grid_cal_model* cal, uint8_t channel, uint16_t center) {
 
-  if (!cal->enable[channel]) { return 1; }
+  if (!cal->enable[channel]) {
+    return 1;
+  }
 
   cal->center[channel] = center;
 
@@ -53,7 +55,9 @@ uint8_t grid_cal_center_set(struct grid_cal_model* cal, uint8_t channel, uint16_
 
 uint16_t grid_cal_value_get(struct grid_cal_model* cal, uint8_t channel) {
 
-  if (!cal->enable[channel]) { return 0; }
+  if (!cal->enable[channel]) {
+    return 0;
+  }
 
   return cal->value[channel];
 }
@@ -61,7 +65,7 @@ uint16_t grid_cal_value_get(struct grid_cal_model* cal, uint8_t channel) {
 uint16_t restrict_to_range(uint16_t x, uint16_t min, uint16_t max) {
 
   const uint16_t t = x < min ? min : x;
-  
+
   return t > max ? max : t;
 }
 
@@ -77,7 +81,9 @@ uint16_t quadratic_error_centering(uint16_t value, uint16_t center, uint16_t max
 
 uint16_t grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t value) {
 
-  if (!cal->enable[channel]) { return value; }
+  if (!cal->enable[channel]) {
+    return value;
+  }
 
   cal->value[channel] = value;
 
