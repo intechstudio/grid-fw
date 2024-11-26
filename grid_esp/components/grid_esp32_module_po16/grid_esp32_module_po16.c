@@ -49,8 +49,9 @@ void grid_esp32_module_po16_task(void* arg) {
         result->value = 4095 - result->value;
       }
 
-      uint16_t value = grid_cal_next(&grid_cal_state, multiplexer_lookup[lookup_index], result->value);
-      grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], value, 12);
+      uint16_t calibrated;
+      grid_cal_next(&grid_cal_state, multiplexer_lookup[lookup_index], result->value, &calibrated);
+      grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], calibrated, 12);
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
     }
 

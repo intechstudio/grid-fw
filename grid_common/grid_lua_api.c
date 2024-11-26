@@ -1606,9 +1606,23 @@
 
     struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
 
-    int32_t value = 0;
-    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      value = grid_cal_value_get(&grid_cal_state, i);
+    uint8_t enabled = 0;
+    if (grid_cal_enable_get(&grid_cal_state, i, &enabled) != 0) {
+
+      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      return 0;
+    }
+
+    uint16_t value = 0;
+
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER && enabled) {
+
+      if (grid_cal_value_get(&grid_cal_state, i, &value) != 0) {
+
+        strcat(grid_lua_state.stde, "#indexOutOfRange");
+        lua_pop(L, 1);
+        return 0;
+      }
     }
 
     lua_pushinteger(L, i + 1);
@@ -1640,6 +1654,17 @@
 
     struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
 
+    uint8_t enabled = 0;
+    if (grid_cal_enable_get(&grid_cal_state, i, &enabled) != 0) {
+
+      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      return 0;
+    }
+
+    if (!enabled) {
+      continue;
+    }
+
     lua_pushinteger(L, i + 1);
     lua_gettable(L, -2);
 
@@ -1649,13 +1674,18 @@
     }
 
     int32_t value = 0;
+
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
       value = lua_tointeger(L, -1);
     }
 
-    grid_cal_center_set(&grid_cal_state, i, value);
-
     lua_pop(L, 1);
+
+    if (grid_cal_center_set(&grid_cal_state, i, value) != 0) {
+
+      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      return 0;
+    }
   }
 
   grid_platform_printf("potmeter_calibration_set()\n");
