@@ -65,6 +65,8 @@
 #define GRID_MODULE_EF44_RevA 32
 #define GRID_MODULE_EF44_RevD 33
 
+#define GRID_MODULE_EF44_ND_RevD 41
+
 #define GRID_MODULE_TEK1_RevA 225
 #define GRID_MODULE_TEK2_RevA 17
 

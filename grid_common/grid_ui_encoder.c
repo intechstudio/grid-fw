@@ -20,6 +20,15 @@ const char grid_ui_encoder_encoderchange_actionstring[] = GRID_ACTIONSTRING_ENCO
 const char grid_ui_encoder_buttonchange_actionstring[] = GRID_ACTIONSTRING_BUTTON_BUTTON;
 const char grid_ui_encoder_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
+void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent) {
+
+  state->encoder_last_real_time = 0;
+  state->button_last_real_time = 0;
+  state->last_nibble = 0;
+  state->detent = detent;
+  state->encoder_last_leave_dir = 0;
+}
+
 void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_ENCODER;
@@ -105,23 +114,37 @@ void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t
   // }
 }
 
-int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value) {
+int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uint8_t detent, int8_t* last_leave_dir) {
 
-  // lookup table, of state machine of the combination of old encoder AB and new
-  // encoder AB
+  // lookup table indexed by a combination of old and new encoder output AB
   static int8_t encoder_heading[] = {
       0, 1, -1, 0, -1, 0, 0, 1, 1, 0, 0, -1, 0, -1, 1, 0,
   };
-  uint8_t encoder_state = (old_value & 0b11) << 2 | (new_value & 0b11);
-  int16_t delta = encoder_heading[encoder_state];
 
-  // Only non-detent modules want updates every quadrature phase.
-  if (grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD) {
-    if ((new_value & 0b11) != 0b11) { // we haven't landed on the detent
-      // override delta to ignore in-between movement of the encoder for
-      // detented modules
-      delta = 0;
+  // 4-bit state value holding old and new 2-bit encoder quadratures
+  uint8_t combined_state = (old_value & 0b11) << 2 | (new_value & 0b11);
+
+  int16_t delta = 0;
+
+  // non-detent encoders should produce deltas upon every quadrature change
+  if (!detent) {
+    delta = encoder_heading[combined_state];
+  }
+  // detent encoders here should only a produce delta upon entering a detent,
+  // and only if the would-be delta matches the direction lock
+  else {
+
+    int16_t dir = encoder_heading[combined_state];
+
+    // leaving a detent into either neighboring quadrature sets direction lock
+    static uint8_t update_lock[] = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0,
+    };
+    if (update_lock[combined_state]) {
+      *last_leave_dir = dir;
     }
+
+    delta = ((new_value & 0b11) == 0b11 && dir == *last_leave_dir) * dir;
   }
 
   return delta;
@@ -270,14 +293,18 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
   return 1; // did trigger
 }
 
-void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_real_time, uint64_t* button_last_real_time, uint8_t old_value, uint8_t new_value, uint8_t* phase_change_lock) {
+void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, uint8_t input_channel, uint8_t new_value) {
+
+  // extract old value from state, rewrite state with new
+  uint8_t old_value = state->last_nibble;
+  state->last_nibble = new_value;
 
   if (old_value == new_value) {
     // no change since the last time we read the shift register
     return;
   }
 
-  int16_t delta = grid_ui_encoder_rotation_delta(old_value, new_value); // delta can be -1, 0 or 1
+  int16_t delta = grid_ui_encoder_rotation_delta(old_value, new_value, state->detent, &state->encoder_last_leave_dir); // delta can be -1, 0 or 1
 
   // shift register bits arrangement: MSB to LSB
   // GND Button PhaseB PhaseA
@@ -287,6 +314,6 @@ void grid_ui_encoder_store_input(uint8_t input_channel, uint64_t* encoder_last_r
   struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, input_channel);
 
   // Evaluate the results
-  grid_ui_button_update_trigger(ele, button_last_real_time, old_button_value, new_button_value);
-  grid_ui_encoder_update_trigger(ele, encoder_last_real_time, delta);
+  grid_ui_button_update_trigger(ele, &state->button_last_real_time, old_button_value, new_button_value);
+  grid_ui_encoder_update_trigger(ele, &state->encoder_last_real_time, delta);
 }
