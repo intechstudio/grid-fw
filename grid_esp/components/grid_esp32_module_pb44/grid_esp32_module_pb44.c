@@ -49,7 +49,7 @@ void grid_esp32_module_pb44_task(void* arg) {
 
       if (multiplexer_lookup[lookup_index] < 8) {
 
-        // grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);
+        grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);
       } else if (multiplexer_lookup[lookup_index] < 16) {
 
         grid_ui_button_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);

@@ -21,16 +21,16 @@
 
 static const char* TAG = "module_pbf4";
 
-#define GRID_MODULE_PBF4_POT_NUM 8
-
 void grid_esp32_module_pbf4_task(void* arg) {
 
-  grid_cal_init(&grid_cal_state, GRID_MODULE_PBF4_POT_NUM, 12);
   uint64_t potmeter_last_real_time[16] = {0};
   static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, -1, -1, -1, -1, 10, 8, 11, 9};
 
   static const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   const uint8_t multiplexer_overflow = 8;
+
+  grid_cal_init(&grid_cal_state, 12, grid_ui_state.element_list_length);
+  grid_cal_enable_range(&grid_cal_state, 0, 4);
 
   grid_esp32_adc_init(&grid_esp32_adc_state);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
@@ -53,9 +53,8 @@ void grid_esp32_module_pbf4_task(void* arg) {
 
       if (multiplexer_lookup[lookup_index] < 8) {
 
-        grid_cal_state.value[multiplexer_lookup[lookup_index]] = result->value;
-        uint16_t center = grid_cal_state.center[multiplexer_lookup[lookup_index]];
-        grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, center, 12);
+        uint16_t value = grid_cal_next(&grid_cal_state, multiplexer_lookup[lookup_index], result->value);
+        grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], value, 12);
       } else if (multiplexer_lookup[lookup_index] < 12) {
 
         grid_ui_button_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);

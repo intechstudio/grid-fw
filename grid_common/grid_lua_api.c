@@ -1602,23 +1602,18 @@
 
   lua_newtable(L);
 
-  uint8_t element_count = grid_ui_state.element_list_length;
-
-  uint8_t element_idx = 0;
-  for (uint8_t i = 0; i < element_count; ++i) {
+  for (uint8_t i = 0; i < grid_ui_state.element_list_length; ++i) {
 
     struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
 
+    int32_t value = 0;
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-
-      int32_t value = grid_cal_state.value[element_idx];
-
-      lua_pushinteger(L, i + 1);
-      lua_pushinteger(L, value);
-      lua_settable(L, -3);
-
-      ++element_idx;
+      value = grid_cal_value_get(&grid_cal_state, i);
     }
+
+    lua_pushinteger(L, i + 1);
+    lua_pushinteger(L, value);
+    lua_settable(L, -3);
   }
 
   grid_platform_printf("potmeter_calibration_get()\n");
@@ -1641,29 +1636,26 @@
     return 0;
   }
 
-  uint8_t element_count = grid_ui_state.element_list_length;
-
-  uint8_t element_idx = 0;
-  for (uint8_t i = 0; i < element_count; ++i) {
+  for (uint8_t i = 0; i < grid_ui_state.element_list_length; ++i) {
 
     struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
 
-    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+    lua_pushinteger(L, i + 1);
+    lua_gettable(L, -2);
 
-      lua_pushinteger(L, element_idx + 1);
-      lua_gettable(L, -2);
-
-      if (!lua_isinteger(L, -1)) {
-        strcat(grid_lua_state.stde, "#invalidParams");
-        return 0;
-      }
-
-      int32_t value = lua_tointeger(L, -1);
-      lua_pop(L, 1);
-      grid_cal_state.center[element_idx] = value;
-
-      ++element_idx;
+    if (!lua_isinteger(L, -1)) {
+      strcat(grid_lua_state.stde, "#invalidParams");
+      return 0;
     }
+
+    int32_t value = 0;
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+      value = lua_tointeger(L, -1);
+    }
+
+    grid_cal_center_set(&grid_cal_state, i, value);
+
+    lua_pop(L, 1);
   }
 
   grid_platform_printf("potmeter_calibration_set()\n");
