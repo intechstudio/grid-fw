@@ -18,7 +18,7 @@ int grid_cal_init(struct grid_cal_model* cal, uint8_t resolution, uint8_t length
 
   cal->value = (uint16_t*)malloc(cal->length * sizeof(uint16_t));
   cal->center = (uint16_t*)malloc(cal->length * sizeof(uint16_t));
-  cal->enable = (uint16_t*)malloc(cal->length * sizeof(uint8_t));
+  cal->enable = (uint8_t*)malloc(cal->length * sizeof(uint8_t));
 
   const uint16_t half_value = cal->maximum / 2;
 
@@ -93,21 +93,24 @@ int grid_cal_enable_get(struct grid_cal_model* cal, uint8_t channel, uint8_t* en
   return 0;
 }
 
-static uint16_t restrict_to_range(uint16_t x, uint16_t min, uint16_t max) {
-
-  const uint16_t t = x < min ? min : x;
-
-  return t > max ? max : t;
+static float lerp(float a, float b, float x) {
+  return a * (1.0 - x) + (b * x);
 }
 
-static uint16_t quadratic_error_centering(uint16_t value, uint16_t center, uint16_t max) {
+static int32_t inverse_error_centering(int32_t a, int32_t b, float x, float c, uint8_t iter) {
 
-  const double offset = center / (double)max - 0.5;
-  const double x = value / (double)max;
-  const double tmp = 2.0 * x - 1.0;
-  const double result = (x - (1.0 - tmp * tmp) * offset);
+  for (uint8_t i = 0; i < iter; ++i) {
+    
+    if (x < c) {
+      b = (a + b) / 2;
+      x = x / c;
+    } else {
+      a = (a + b) / 2;
+      x = (x - c) / (1.0 - c);
+    }
+  }
 
-  return restrict_to_range(result * max, 0, max);
+  return lerp(a, b, x);
 }
 
 int grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in, uint16_t* out) {
@@ -122,7 +125,9 @@ int grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in, uint
 
   cal->value[channel] = in;
 
-  *out = quadratic_error_centering(in, cal->center[channel], cal->maximum);
+  float in_norm = in / (float)cal->maximum;
+  float center_norm = cal->center[channel] / (float)cal->maximum;
+  *out = inverse_error_centering(0, cal->maximum, in_norm, center_norm, 2);
 
   return 0;
 }
