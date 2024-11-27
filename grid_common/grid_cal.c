@@ -93,14 +93,12 @@ int grid_cal_enable_get(struct grid_cal_model* cal, uint8_t channel, uint8_t* en
   return 0;
 }
 
-static float lerp(float a, float b, float x) {
-  return a * (1.0 - x) + (b * x);
-}
+static float lerp(float a, float b, float x) { return a * (1.0 - x) + (b * x); }
 
 static int32_t inverse_error_centering(int32_t a, int32_t b, float x, float c, uint8_t iter) {
 
   for (uint8_t i = 0; i < iter; ++i) {
-    
+
     if (x < c) {
       b = (a + b) / 2;
       x = x / c;
