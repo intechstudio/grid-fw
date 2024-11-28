@@ -29,6 +29,9 @@ void grid_esp32_module_pbf4_task(void* arg) {
   static const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   const uint8_t multiplexer_overflow = 8;
 
+  grid_cal_init(&grid_cal_state, 12, grid_ui_state.element_list_length);
+  grid_cal_enable_range(&grid_cal_state, 0, 4);
+
   grid_esp32_adc_init(&grid_esp32_adc_state);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
   grid_esp32_adc_start(&grid_esp32_adc_state);
@@ -50,7 +53,9 @@ void grid_esp32_module_pbf4_task(void* arg) {
 
       if (multiplexer_lookup[lookup_index] < 8) {
 
-        grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);
+        uint16_t calibrated;
+        grid_cal_next(&grid_cal_state, multiplexer_lookup[lookup_index], result->value, &calibrated);
+        grid_ui_potmeter_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], calibrated, 12);
       } else if (multiplexer_lookup[lookup_index] < 12) {
 
         grid_ui_button_store_input(multiplexer_lookup[lookup_index], &potmeter_last_real_time[lookup_index], result->value, 12);

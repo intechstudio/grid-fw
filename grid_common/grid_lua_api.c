@@ -1590,6 +1590,109 @@
   return 1;
 }
 
+/*static*/ int l_grid_potmeter_calibration_get(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 0) {
+    // error
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  lua_newtable(L);
+
+  for (uint8_t i = 0; i < grid_ui_state.element_list_length; ++i) {
+
+    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
+
+    uint8_t enabled = 0;
+    if (grid_cal_enable_get(&grid_cal_state, i, &enabled) != 0) {
+
+      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      return 0;
+    }
+
+    uint16_t value = 0;
+
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER && enabled) {
+
+      if (grid_cal_value_get(&grid_cal_state, i, &value) != 0) {
+
+        strcat(grid_lua_state.stde, "#indexOutOfRange");
+        lua_pop(L, 1);
+        return 0;
+      }
+    }
+
+    lua_pushinteger(L, i + 1);
+    lua_pushinteger(L, value);
+    lua_settable(L, -3);
+  }
+
+  grid_platform_printf("potmeter_calibration_get()\n");
+
+  return 1;
+}
+
+/*static*/ int l_grid_potmeter_calibration_set(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 1) {
+    // error
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (!lua_istable(L, -1)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  for (uint8_t i = 0; i < grid_ui_state.element_list_length; ++i) {
+
+    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
+
+    uint8_t enabled = 0;
+    if (grid_cal_enable_get(&grid_cal_state, i, &enabled) != 0) {
+
+      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      return 0;
+    }
+
+    if (!enabled) {
+      continue;
+    }
+
+    lua_pushinteger(L, i + 1);
+    lua_gettable(L, -2);
+
+    if (!lua_isinteger(L, -1)) {
+      strcat(grid_lua_state.stde, "#invalidParams");
+      return 0;
+    }
+
+    int32_t value = 0;
+
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+      value = lua_tointeger(L, -1);
+    }
+
+    lua_pop(L, 1);
+
+    if (grid_cal_center_set(&grid_cal_state, i, value) != 0) {
+
+      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      return 0;
+    }
+  }
+
+  grid_platform_printf("potmeter_calibration_set()\n");
+
+  return 0;
+}
+
 /*static*/ const struct luaL_Reg grid_lua_api_generic_lib[] = {
     {"print", l_my_print},
     {"grid_send", l_grid_send},
@@ -1652,6 +1755,8 @@
     {GRID_LUA_FNC_G_IMMEDIATE_SEND_short, GRID_LUA_FNC_G_IMMEDIATE_SEND_fnptr},
 
     {GRID_LUA_FNC_G_ELEMENT_COUNT_short, GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr},
+    {GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_fnptr},
+    {GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr},
 
     {"print", l_my_print},
 

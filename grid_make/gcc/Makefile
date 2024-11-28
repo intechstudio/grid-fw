@@ -14,6 +14,7 @@ OBJS +=  \
 \
 usb/class/midi/device/audiodf_midi.o \
 usb/class/midi/usb_protocol_midi.o \
+../grid_common/grid_cal.o \
 ../grid_common/grid_ain.o \
 ../grid_common/grid_sys.o \
 ../grid_common/grid_allocator.o \
@@ -88,6 +89,7 @@ OBJS_AS_ARGS +=  \
 \
 "usb/class/midi/device/audiodf_midi.o" \
 "usb/class/midi/usb_protocol_midi.o" \
+"../grid_common/grid_cal.o" \
 "../grid_common/grid_ain.o" \
 "../grid_common/grid_sys.o" \
 "../grid_common/grid_allocator.o" \
@@ -174,6 +176,7 @@ DEPS_AS_ARGS +=  \
 \
 "usb/class/midi/device/audiodf_midi.d" \
 "usb/class/midi/usb_protocol_midi.d" \
+"../grid_common/grid_cal.d" \
 "../grid_common/grid_ain.d" \
 "../grid_common/grid_sys.d" \
 "../grid_common/grid_allocator.d" \
