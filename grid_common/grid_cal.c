@@ -118,7 +118,8 @@ int grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in, uint
   }
 
   if (!cal->enable[channel]) {
-    return 1;
+    *out = in;
+    return 0;
   }
 
   cal->value[channel] = in;
