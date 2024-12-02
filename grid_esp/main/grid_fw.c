@@ -327,6 +327,7 @@ void app_main(void) {
 
   SemaphoreHandle_t lua_busy_semaphore = xSemaphoreCreateBinary();
   SemaphoreHandle_t ui_busy_semaphore = xSemaphoreCreateBinary();
+  SemaphoreHandle_t ui_bulk_semaphore = xSemaphoreCreateBinary();
 
   void grid_common_semaphore_lock_fn(void* arg) {
 
@@ -375,7 +376,8 @@ void app_main(void) {
     ets_printf("Init Module: Unknown Module\r\n");
   }
 
-  grid_ui_semaphore_init(&grid_ui_state, (void*)ui_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
+  grid_ui_semaphore_init(&grid_ui_state.busy_semaphore, (void*)ui_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
+  grid_ui_semaphore_init(&grid_ui_state.bulk_semaphore, (void*)ui_bulk_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
   uint8_t led_pin = 21;
 
@@ -474,6 +476,7 @@ void app_main(void) {
 
   check_heap();
   xSemaphoreGive(ui_busy_semaphore);
+  xSemaphoreGive(ui_bulk_semaphore);
 
   if (grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_TEK1_RevA) {
   }

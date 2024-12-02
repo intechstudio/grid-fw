@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 idf_component_register(
     SRCS
         "grid_protocol.c"
+        "grid_config.c"
         "grid_cal.c"
         "grid_ain.c"
         "grid_led.c"
@@ -56,6 +57,7 @@ idf_component_register(
         "lua-5.4.3/src/lvm.c"
         "lua-5.4.3/src/lzio.c"
 
+        "tomlc99/toml.c"
 
     INCLUDE_DIRS
         "."

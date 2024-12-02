@@ -5,6 +5,7 @@ idf_component_register(
 
     SRCS
         "../../../grid_common/grid_protocol.c"
+        "../../../grid_common/grid_config.c"
         "../../../grid_common/grid_cal.c"
         "../../../grid_common/grid_ain.c"
         "../../../grid_common/grid_led.c"
@@ -59,6 +60,7 @@ idf_component_register(
         "../../../grid_common/lua-5.4.3/src/lstrlib.c"
         "../../../grid_common/lua-5.4.3/src/lcorolib.c"
 
+        "../../../grid_common/tomlc99/toml.c"
 
     INCLUDE_DIRS
         "."
