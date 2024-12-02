@@ -85,7 +85,7 @@ void toml_cat_bare_key(char* dest, char* name) {
 int grid_config_generate_cal(struct grid_cal_model* cal, char* dest) {
 
   toml_cat_table_header(dest, "calibration");
-  
+
   toml_cat_bare_key(dest, "centers");
 
   strcat(dest, "[ ");
