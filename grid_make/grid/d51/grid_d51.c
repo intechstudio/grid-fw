@@ -755,6 +755,12 @@ void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_
   grid_d51_nvm_config_store(&grid_d51_nvm_state, page, element, event_type, buffer);
 }
 
+int grid_platform_find_file(char* path, union grid_ui_file_handle* file_handle) { return 1; }
+uint16_t grid_platform_get_file_size(union grid_ui_file_handle* file_handle) { return 0; }
+int grid_platform_read_file(union grid_ui_file_handle* file_handle, uint8_t* buffer, uint16_t size) { return 1; }
+int grid_platform_write_file(char* path, uint8_t* buffer, uint16_t size) { return 1; }
+int grid_platform_delete_file(union grid_ui_file_handle* file_handle) { return 1; }
+
 uint8_t grid_platform_get_nvm_state() { return grid_d51_nvm_is_ready(&grid_d51_nvm_state); }
 
 uint32_t grid_plaform_get_nvm_nextwriteoffset() { return grid_d51_nvm_state.next_write_offset; }
