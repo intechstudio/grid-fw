@@ -257,7 +257,7 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page) {
 }
 
 void grid_esp32_nvm_clear_conf(const char* path) {
-  
+
   int status;
 
   union grid_ui_file_handle file_handle = {0};
