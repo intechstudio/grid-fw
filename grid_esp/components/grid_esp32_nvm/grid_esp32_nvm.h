@@ -30,6 +30,7 @@ int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t 
 
 void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm);
 void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page);
+void grid_esp32_nvm_clear_conf(const char* path);
 
 void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle);
 

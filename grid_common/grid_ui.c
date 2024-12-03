@@ -1164,7 +1164,7 @@ int confread_parse_from_file(struct grid_ui_model* ui) {
 
   union grid_ui_file_handle file_handle = {0};
 
-  status = grid_platform_find_file("config.toml", &file_handle);
+  status = grid_platform_find_file(GRID_UI_CONFIG_PATH, &file_handle);
   if (status) {
     grid_platform_printf("grid_platform_find_file returned %d\n", status);
     return 1;
@@ -1245,7 +1245,7 @@ int confstore_generate_to_file(struct grid_ui_model* ui) {
     return 1;
   }
 
-  status = grid_platform_write_file("config.toml", (uint8_t*)config, strlen(config) + 1);
+  status = grid_platform_write_file(GRID_UI_CONFIG_PATH, (uint8_t*)config, strlen(config) + 1);
   if (status) {
     grid_platform_printf("grid_platform_write_file returned %d\n", status);
     free(config);
@@ -1324,7 +1324,7 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui) {
 
     union grid_ui_file_handle file_handle = {0};
 
-    if (grid_platform_find_file("config.toml", &file_handle) == 0) {
+    if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &file_handle) == 0) {
       grid_platform_delete_file(&file_handle);
     }
 

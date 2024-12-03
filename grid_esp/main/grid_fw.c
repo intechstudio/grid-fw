@@ -386,9 +386,6 @@ void app_main(void) {
   TaskHandle_t led_task_hdl;
   xTaskCreatePinnedToCore(grid_esp32_led_task, "led", 1024 * 3, NULL, LED_TASK_PRIORITY, &led_task_hdl, 0);
 
-  TaskHandle_t usb_task_hdl;
-  xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6, &usb_task_hdl, 1);
-
   // GRID MODULE INITIALIZATION SEQUENCE
 
   ESP_LOGI(TAG, "===== NVM START =====");
@@ -410,6 +407,9 @@ void app_main(void) {
   grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
   grid_lua_set_memory_target(&grid_lua_state, 80); // 80kb
+
+  TaskHandle_t usb_task_hdl;
+  xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6, &usb_task_hdl, 1);
 
   // ================== START: grid_module_pbf4_init() ================== //
 
@@ -478,8 +478,6 @@ void app_main(void) {
   xSemaphoreGive(ui_busy_semaphore);
   xSemaphoreGive(ui_bulk_semaphore);
 
-  if (grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_TEK1_RevA) {
-  }
   grid_ui_page_load(&grid_ui_state, 0); // load page 0
   SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
@@ -518,26 +516,20 @@ void app_main(void) {
   grid_ui_state.ui_interaction_enabled = 1;
   // ================== FINISH: grid_module_pbf4_init() ================== //
 
-  // Create the class driver task
-
-  TaskHandle_t nvm_task_hdl;
-
   TaskHandle_t port_task_hdl;
-  TaskHandle_t ui_task_hdl;
 
   xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 4096 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
 
   ESP_LOGI(TAG, "===== PORT TASK DONE =====");
 
-  // Create the class driver task
+  TaskHandle_t nvm_task_hdl;
 
   xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 10, NULL, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
 
-  TaskHandle_t housekeeping_task_hdl;
-
   ESP_LOGI(TAG, "===== NVM TASK DONE =====");
 
-  // Create the class driver task
+  TaskHandle_t housekeeping_task_hdl;
+
   xTaskCreatePinnedToCore(grid_esp32_housekeeping_task, "housekeeping", 1024 * 6, (void*)signaling_sem, 6, &housekeeping_task_hdl, 0);
 
   TaskHandle_t grid_trace_report_task_hdl;

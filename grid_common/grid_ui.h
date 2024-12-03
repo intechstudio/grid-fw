@@ -213,6 +213,8 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui);
 void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui);
 void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui);
 
+#define GRID_UI_CONFIG_PATH "config.toml"
+
 int grid_ui_bulk_conf_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 
 void grid_ui_bulk_confread_next(struct grid_ui_model* ui);

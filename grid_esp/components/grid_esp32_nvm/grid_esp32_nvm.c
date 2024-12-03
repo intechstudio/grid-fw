@@ -234,6 +234,8 @@ void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm) {
   grid_esp32_nvm_clear_page(nvm, 1);
   grid_esp32_nvm_clear_page(nvm, 2);
   grid_esp32_nvm_clear_page(nvm, 3);
+
+  grid_esp32_nvm_clear_conf(GRID_UI_CONFIG_PATH);
 }
 
 void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page) {
@@ -251,6 +253,18 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page) {
         ets_printf("DELETE: %s\r\n", file_handle.fname);
       }
     }
+  }
+}
+
+void grid_esp32_nvm_clear_conf(const char* path) {
+  
+  int status;
+
+  union grid_ui_file_handle file_handle = {0};
+
+  status = grid_platform_find_file(path, &file_handle);
+  if (status == 0) {
+    grid_platform_delete_file(&file_handle);
   }
 }
 
