@@ -98,7 +98,7 @@ void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t
   // }
 }
 
-uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int16_t delta, uint64_t* endless_last_real_time, double* delta_vel_frac) {
+uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint64_t* endless_last_real_time, double* delta_vel_frac) {
 
   uint32_t encoder_elapsed_time = grid_platform_rtc_get_elapsed_time(*endless_last_real_time);
   if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(*endless_last_real_time)) {
@@ -240,11 +240,11 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int16_t delt
 
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENDLESS);
 
-  if (grid_ui_state.ui_interaction_enabled) {
+  if (stabilized) {
     grid_ui_event_trigger(eve);
   }
 
-  return 1; // did trigger
+  return 1;
 }
 
 static uint16_t grid_ui_endless_calculate_angle(uint16_t phase_a, uint16_t phase_b, uint8_t adc_bit_depth) {
@@ -338,9 +338,10 @@ void grid_ui_endless_store_input(uint8_t input_channel, uint8_t adc_bit_depth, s
     if (abs(delta) > 10) {
 
       template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = value_degrees_new / 20;
-      uint8_t has_triggered = grid_ui_endless_update_trigger(ele, delta, &old_value->encoder_last_real_time, &old_value->delta_vel_frac);
+      int stabilized = grid_ain_stabilized(&grid_ain_state, input_channel);
+      uint8_t update = grid_ui_endless_update_trigger(ele, stabilized, delta, &old_value->encoder_last_real_time, &old_value->delta_vel_frac);
 
-      if (has_triggered) {
+      if (update) {
         old_value->phase_a = new_value->phase_a;
         old_value->phase_b = new_value->phase_b;
       }

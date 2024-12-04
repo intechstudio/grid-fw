@@ -22,6 +22,8 @@ uint8_t grid_ain_channel_init(struct grid_ain_model* ain, uint8_t channel, uint8
 
   ain->channel_buffer[channel].buffer_depth = buffer_depth;
 
+  ain->channel_buffer[channel].buffer_samples = 0;
+
   ain->channel_buffer[channel].result_average = 0;
 
   ain->channel_buffer[channel].buffer = malloc(ain->channel_buffer[channel].buffer_depth * sizeof(uint16_t));
@@ -61,6 +63,8 @@ uint8_t grid_ain_init(struct grid_ain_model* ain, uint8_t length, uint8_t depth)
 uint8_t grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t source_resolution, uint8_t result_resolution) {
 
   struct AIN_Channel* instance = &ain->channel_buffer[channel];
+
+  instance->buffer_samples += (instance->buffer_samples < instance->buffer_depth * 2);
 
   uint32_t sum = 0;
   uint16_t minimum = -1; // -1 trick to get the largest possible number
@@ -125,6 +129,13 @@ uint8_t grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_
   } else {
     return 0;
   }
+}
+
+int grid_ain_stabilized(struct grid_ain_model* ain, uint8_t channel) {
+
+  struct AIN_Channel* instance = &ain->channel_buffer[channel];
+
+  return instance->buffer_samples >= instance->buffer_depth * 2;
 }
 
 uint8_t grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel) {

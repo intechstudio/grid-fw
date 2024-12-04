@@ -135,7 +135,7 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_tim
 
     struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_PARAMETER_EVENT_POTMETER);
 
-    if (grid_ui_state.ui_interaction_enabled) {
+    if (grid_ain_stabilized(&grid_ain_state, input_channel)) {
       grid_ui_event_trigger(eve);
     }
   }

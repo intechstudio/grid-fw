@@ -12,6 +12,7 @@ struct grid_ui_encoder_state {
   uint8_t last_nibble;
   uint8_t detent;
   int8_t encoder_last_leave_dir;
+  uint8_t stabilized;
 };
 
 void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent);

@@ -469,8 +469,6 @@ int main(void) {
 
     if (loopcounter == 1000) {
 
-      grid_ui_state.ui_interaction_enabled = 1;
-
       grid_d51_nvic_debug_priorities();
     }
 
