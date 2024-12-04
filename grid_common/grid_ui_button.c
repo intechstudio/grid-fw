@@ -122,9 +122,7 @@ void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button
 
     struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_BUTTON);
 
-    if (grid_ui_state.ui_interaction_enabled) {
-      grid_ui_event_trigger(eve);
-    }
+    grid_ui_event_trigger(eve);
   } else { // Button Release
 
     template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 0;
@@ -141,9 +139,7 @@ void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button
 
     struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_BUTTON);
 
-    if (grid_ui_state.ui_interaction_enabled) {
-      grid_ui_event_trigger(eve);
-    }
+    grid_ui_event_trigger(eve);
   }
 }
 
@@ -215,9 +211,7 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
 
     struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_PARAMETER_EVENT_BUTTON);
 
-    if (grid_ui_state.ui_interaction_enabled) {
-      grid_ui_event_trigger(eve);
-    }
+    grid_ui_event_trigger(eve);
   } else { // Button Release Event
 
     if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0) {
@@ -232,8 +226,6 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
 
     struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_PARAMETER_EVENT_BUTTON);
 
-    if (grid_ui_state.ui_interaction_enabled) {
-      grid_ui_event_trigger(eve);
-    }
+    grid_ui_event_trigger(eve);
   }
 }

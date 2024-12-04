@@ -27,6 +27,7 @@ void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t det
   state->last_nibble = 0;
   state->detent = detent;
   state->encoder_last_leave_dir = 0;
+  state->stabilized = 0;
 }
 
 void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
@@ -286,9 +287,7 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENCODER);
 
-  if (grid_ui_state.ui_interaction_enabled) {
-    grid_ui_event_trigger(eve);
-  }
+  grid_ui_event_trigger(eve);
 
   return 1; // did trigger
 }
@@ -314,6 +313,10 @@ void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, uint8_t in
   struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, input_channel);
 
   // Evaluate the results
-  grid_ui_button_update_trigger(ele, &state->button_last_real_time, old_button_value, new_button_value);
-  grid_ui_encoder_update_trigger(ele, &state->encoder_last_real_time, delta);
+  if (state->stabilized >= 2) {
+    grid_ui_button_update_trigger(ele, &state->button_last_real_time, old_button_value, new_button_value);
+    grid_ui_encoder_update_trigger(ele, &state->encoder_last_real_time, delta);
+  }
+
+  state->stabilized += (state->stabilized < 2);
 }

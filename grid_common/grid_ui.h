@@ -111,7 +111,6 @@ struct grid_ui_model {
 
   uint8_t page_change_enabled;
   uint8_t page_negotiated;
-  uint8_t ui_interaction_enabled;
 
   uint8_t mapmode_state;
 

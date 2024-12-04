@@ -512,7 +512,6 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "===== UI TASK DONE =====");
 
-  grid_ui_state.ui_interaction_enabled = 1;
   // ================== FINISH: grid_module_pbf4_init() ================== //
 
   // Create the class driver task
