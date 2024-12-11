@@ -162,10 +162,10 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
 
   uint8_t result_valid = 0;
 
-  if (value > adc_max_value * 0.9) {
+  if (value > adc_max_value * 0.7) {
     value = 0;
     result_valid = 1;
-  } else if (value < adc_max_value * 0.01) {
+  } else if (value < adc_max_value * 0.6) {
     value = 127;
     result_valid = 1;
   }
