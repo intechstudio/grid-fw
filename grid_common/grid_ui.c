@@ -42,8 +42,6 @@ void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
 
   ui->page_negotiated = 0;
 
-  ui->ui_interaction_enabled = 0;
-
   ui->mapmode_state = 0;
 
   ui->bulk_status = GRID_UI_BULK_READY;

@@ -14,6 +14,7 @@ struct AIN_Channel {
 
   uint16_t* buffer;
   uint8_t buffer_depth;
+  uint8_t buffer_samples;
 
   uint8_t result_format;
   uint8_t result_resolution;
@@ -37,6 +38,7 @@ uint8_t grid_ain_channel_deinit(struct grid_ain_model* ain, uint8_t channel);
 /** Initialize ain buffer for a given number of analog channels */
 uint8_t grid_ain_init(struct grid_ain_model* ain, uint8_t length, uint8_t depth);
 uint8_t grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t source_resolution, uint8_t result_resolution);
+int grid_ain_stabilized(struct grid_ain_model* ain, uint8_t channel);
 
 uint8_t grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel);
 uint16_t grid_ain_get_average(struct grid_ain_model* ain, uint8_t channel);
