@@ -30,6 +30,13 @@ void grid_esp32_module_po16_task(void* arg) {
   grid_cal_init(&grid_cal_state, 12, grid_ui_state.element_list_length);
   grid_cal_enable_range(&grid_cal_state, 0, 16);
 
+  grid_config_init(&grid_config_state, &grid_cal_state);
+
+  grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL);
+  while (grid_ui_state.bulk_status == GRID_UI_BULK_CONFREAD_PROGRESS) {
+    taskYIELD();
+  }
+
   grid_esp32_adc_init(&grid_esp32_adc_state);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
   grid_esp32_adc_start(&grid_esp32_adc_state);
