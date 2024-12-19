@@ -70,6 +70,7 @@
     <textarea class="emscripten" id="init_script" rows="8">
 loopcounter = 0
 print('init completed')
+print('slider'..sliderValue)
     </textarea>
     <textarea class="emscripten" id="loop_script" rows="8">
 loopcounter = loopcounter+1
@@ -77,8 +78,15 @@ print('loopcounter '..loopcounter)
 ggdrf(0,0,320,240,{0,0,0})
 ggdt('hello '..loopcounter, 10, 100, 60, {255,255,255})
     </textarea>
-    <button id="loadScriptButton" onclick="Module.ccall('loadScript', 'void', ['string', 'string'], [document.getElementById('init_script').value, document.getElementById('loop_script').value]);">Load Script</button>
+    <button id="loadScriptButton" onclick="Module.ccall('loadScript', 'void', ['string', 'string'], [slider_script + document.getElementById('init_script').value, document.getElementById('loop_script').value]);">Load Script</button>
     <hr>
+    <div class="emscripten">
+      <label for="slider">Adjust Value:</label>
+      <input type="range" id="slider" min="0" max="255" value="50">
+    </div>
+    <textarea class="emscripten" id="slider_value" rows="1">
+sliderValue = 50
+    </textarea>
 
       <script type='text/javascript'>
         // Function to get query parameters
@@ -130,6 +138,17 @@ ggdt('hello '..loopcounter, 10, 100, 60, {255,255,255})
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
       var spinnerElement = document.getElementById('spinner');
+
+      var sliderElement = document.getElementById('slider');
+      var slider_text_area = document.getElementById("slider_value");
+      var slider_script = ""
+
+      sliderElement.addEventListener('input', function () {
+        var sliderValue = sliderElement.value;
+        slider_script = `sliderValue = ${sliderValue}\n`
+        slider_text_area.innerText = slider_script
+        loadScriptButton.click()
+      });
 
       var Module = {
         print: (function() {
