@@ -4,7 +4,13 @@ add_executable(main
     grid_pico_platform.c
     ../../grid_common/grid_msg.c
     ../../grid_common/grid_port.c
+    pico_pool.c
+    pico_swsr.c
+    vmp/vmp_def.c
+    ../../vmp/vmp.c
 )
+
+target_include_directories(main PRIVATE ../../vmp)
 
 pico_generate_pio_header(main ${CMAKE_CURRENT_LIST_DIR}/uart_tx.pio)
 

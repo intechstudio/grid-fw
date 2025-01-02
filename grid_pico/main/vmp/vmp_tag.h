@@ -1,0 +1,19 @@
+#ifndef VMP_TAG_H
+#define VMP_TAG_H
+
+#include "vmp.h"
+
+enum {
+  MAIN = 0,
+  UART_RX,
+  UART_TX,
+  SPI_RX,
+  SPI_TX,
+  VMP_UID_COUNT,
+};
+
+char* VMP_ASSOC[] = {
+    VMP_NAME_EQ_STR_ENTRY(MAIN), VMP_NAME_EQ_STR_ENTRY(UART_RX), VMP_NAME_EQ_STR_ENTRY(UART_TX), VMP_NAME_EQ_STR_ENTRY(SPI_RX), VMP_NAME_EQ_STR_ENTRY(SPI_TX),
+};
+
+#endif /* VMP_TAG_H */

@@ -209,6 +209,9 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
       return;
     }
 
+    // reset timeout counter
+    por->partner_last_timestamp = grid_platform_rtc_get_micros();
+
     // struct grid_buffer* rx_buffer = uart_buffer_rx_array[por->index];
     // grid_buffer_write_from_chunk(rx_buffer, message, length);
 
