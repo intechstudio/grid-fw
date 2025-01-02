@@ -609,10 +609,10 @@ int main() {
       .fwrite = vmp_fwrite,
   };
 
-  //bool vmp_flushed = false;
+  // bool vmp_flushed = false;
   while (1) {
 
-    //vmp_push(MAIN);
+    // vmp_push(MAIN);
 
     for (int i = 0; i < 4; ++i) {
       grid_pico_task_uart_tx(&uart_ports[i], &timer_uart_tx[i]);
