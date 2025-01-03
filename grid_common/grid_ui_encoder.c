@@ -191,12 +191,13 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
     elapsed_ms = 1;
   }
 
-  double minmaxscale = (max - min) / 128.0;
+  double minmaxscale = (max - min + 1) / 128.0;
 
   double velocityparam = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VELOCITY_index] / 100.0;
+  double sensitivityparam = template_parameter_list[GRID_LUA_FNC_E_ENCODER_SENSITIVITY_index] / 100.0;
 
   // implement configurable velocity parameters here
-  double velocityfactor = ((25 * 25 - elapsed_ms * elapsed_ms) / 75.0) * minmaxscale * velocityparam + (1.0 * template_parameter_list[GRID_LUA_FNC_E_ENCODER_SENSITIVITY_index] / 100.0);
+  double velocityfactor = (((25 * 25 - elapsed_ms * elapsed_ms) / 75.0) * velocityparam + sensitivityparam) * minmaxscale;
 
   int32_t delta_velocity = delta * velocityfactor;
 
