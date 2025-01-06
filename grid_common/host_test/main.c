@@ -22,7 +22,6 @@ void test_function_should_calculateRelativeMode(void) {
   struct grid_ui_model* ui = &grid_ui_state;
 
   grid_ui_model_init(ui, 1);
-  ui->ui_interaction_enabled = 1;
   struct grid_ui_element* ele = &ui->element_list[0];
   grid_ui_element_encoder_init(ele);
 
