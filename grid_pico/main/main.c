@@ -536,6 +536,15 @@ int main() {
 
   uart_init(uart0, 2000000);
 
+  // Setup common stuff
+  gpio_init(GRID_PICO_LCD_RESET_PIN);
+  gpio_put(GRID_PICO_LCD_RESET_PIN, 1);
+  gpio_set_dir(GRID_PICO_LCD_RESET_PIN, GPIO_OUT);
+
+  gpio_init(GRID_PICO_LCD_BACKLIGHT_PIN);
+  gpio_set_dir(GRID_PICO_LCD_BACKLIGHT_PIN, GPIO_OUT);
+  gpio_put(GRID_PICO_LCD_BACKLIGHT_PIN, 0);
+
   // Reset and launch second core
   multicore_reset_core1();
   multicore_launch_core1(core_1_main_entry);
