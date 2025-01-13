@@ -341,8 +341,8 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "===== MAIN START =====");
 
-  // size_t psram_size = esp_psram_get_size();
-  // ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
+  size_t psram_size = esp_psram_get_size();
+  ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
 
   gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
   gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
