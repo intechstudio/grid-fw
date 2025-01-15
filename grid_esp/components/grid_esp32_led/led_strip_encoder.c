@@ -5,8 +5,8 @@
  */
 
 #include "led_strip_encoder.h"
-#include "esp_check.h"
 #include "esp_attr.h"
+#include "esp_check.h"
 
 static const char* TAG = "led_encoder";
 

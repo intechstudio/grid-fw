@@ -370,6 +370,24 @@ int l_grid_gui_draw_text(lua_State* L) {
   return 0;
 }
 
+int l_grid_gui_draw_demo(lua_State* L) {
+
+  int counter = luaL_checknumber(L, 1);
+
+  grid_gui_draw_demo(&grid_gui_state, counter);
+
+  return 0;
+}
+
+int l_grid_gui_draw_demo_image(lua_State* L) {
+
+  int count = luaL_checknumber(L, 1);
+
+  grid_gui_draw_demo_image(&grid_gui_state, count);
+
+  return 0;
+}
+
 /*static*/ struct luaL_Reg grid_lua_api_gui_lib[] = {
     {GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_LINE_short, GRID_LUA_FNC_G_GUI_DRAW_LINE_fnptr},
@@ -380,6 +398,8 @@ int l_grid_gui_draw_text(lua_State* L) {
     {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_DEMO_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_DEMO_IMAGE_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_IMAGE_fnptr},
     {NULL, NULL} /* end of array */
 };
 

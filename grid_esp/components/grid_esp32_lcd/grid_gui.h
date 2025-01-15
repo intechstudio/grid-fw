@@ -1,11 +1,11 @@
 
 #pragma once
 
+#include <limits.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <limits.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,19 +28,14 @@ struct grid_rgba_t {
   uint8_t a;
 };
 
-#define grid_unpack_rgba(color) (struct grid_rgba_t){ \
-  .r = ((color) >> 24) & 0xff, \
-  .g = ((color) >> 16) & 0xff, \
-  .b = ((color) >>  8) & 0xff, \
-  .a = ((color) >>  0) & 0xff, \
-}
+#define grid_unpack_rgba(color)                                                                                                                                                                        \
+  (struct grid_rgba_t) { .r = ((color) >> 24) & 0xff, .g = ((color) >> 16) & 0xff, .b = ((color) >> 8) & 0xff, .a = ((color) >> 0) & 0xff, }
 
 enum grid_gui_colmod_t {
   COLMOD_RGB888 = 0,
 };
 
 #define COLMOD_RGB888_BYTES 3
-
 
 struct grid_gui_model {
   void* screen_handle;
@@ -49,6 +44,8 @@ struct grid_gui_model {
   uint32_t width;
   uint32_t height;
   uint8_t delta;
+  grid_color_t** hardwire_matrices;
+  int hardwire_count;
 };
 
 extern struct grid_gui_model grid_gui_state;
@@ -56,6 +53,7 @@ extern struct grid_gui_model grid_gui_state;
 int grid_gui_pack_colmod(struct grid_gui_model* gui, uint32_t x, uint32_t y, uint32_t pixels, uint8_t* dest, enum grid_gui_colmod_t colmod);
 
 int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* buffer, uint32_t size, uint32_t width, uint32_t height);
+int grid_gui_clear(struct grid_gui_model* gui, grid_color_t color);
 
 int grid_gui_draw_pixel(struct grid_gui_model* gui, uint16_t x, uint16_t y, grid_color_t color);
 int grid_gui_draw_array(struct grid_gui_model* gui, uint16_t x, uint16_t y, uint16_t xs, grid_color_t* colors);
@@ -75,6 +73,7 @@ int grid_gui_draw_rectangle_filled(struct grid_gui_model* gui, uint16_t x1, uint
 
 void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t counter);
 void grid_gui_draw_demo_matrix(struct grid_gui_model* gui, uint8_t counter, grid_color_t* matrix);
+void grid_gui_draw_demo_image(struct grid_gui_model* gui, int count);
 
 #ifdef __cplusplus
 }

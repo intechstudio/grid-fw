@@ -25,7 +25,14 @@
 
 #include "grid_esp32_adc.h"
 
-#include "earth_moon.c"
+#include "imgtoc.c"
+
+void imgtoc_rgb888_to_grid_color(uint8_t* src, size_t size, grid_color_t* dest) {
+
+  for (size_t i = 0; i < size; i += 3) {
+    dest[i / 3] = ((src[i + 0] << 24) | (src[i + 1] << 16) | (src[i + 2] << 8) | (0xff << 0));
+  }
+}
 
 static const char* TAG = "module_tek1";
 
@@ -173,7 +180,7 @@ void grid_esp32_module_tek1_task(void* arg) {
     }
   }
 
-  //Initialize LCD
+  // Initialize LCD
   grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
 
   // Wait for the coprocessor to pull the LCD reset pin high
@@ -191,7 +198,7 @@ void grid_esp32_module_tek1_task(void* arg) {
     grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state, 1);
   }
 
-  //Initialize font
+  // Initialize font
   grid_font_init(&grid_font_state);
 
   // Initialize GUI
@@ -213,19 +220,24 @@ void grid_esp32_module_tek1_task(void* arg) {
   uint64_t gui_lastrealtime = 0;
 #endif
 
-  grid_color_t* matrix = heap_caps_malloc(width * height * sizeof(grid_color_t), MALLOC_CAP_SPIRAM);
-  
-  size_t pic_size = sizeof(earth_moon_map) / sizeof(earth_moon_map[0]);
-  for (size_t i = 0; i < width * height * 3; ++i) {
-    matrix[i / 3] = (
-      (earth_moon_map[i + 0] << 24) |
-      (earth_moon_map[i + 2] << 16) |
-      (earth_moon_map[i + 1] << 8) |
-      (0xff << 0)
-    );
+  grid_color_t* matrices[imgtoc_count];
+
+  for (int i = 0; i < imgtoc_count; ++i) {
+
+    matrices[i] = heap_caps_malloc(320 * 240 * 4, MALLOC_CAP_SPIRAM);
+
+    if (!matrices[i]) {
+      continue;
+    }
+
+    imgtoc_rgb888_to_grid_color(imgtoc[i], 320 * 240 * 3, matrices[i]);
   }
 
-  grid_gui_draw_matrix(&grid_gui_state, 0, 0, width, height, matrix);
+  grid_gui_state.hardwire_matrices = matrices;
+  grid_gui_state.hardwire_count = imgtoc_count;
+
+  grid_color_t black = 0x000000ff;
+  grid_gui_clear(&grid_gui_state, black);
 
   uint8_t counter = 0;
   while (1) {
@@ -239,7 +251,6 @@ void grid_esp32_module_tek1_task(void* arg) {
     }
 #endif
 
-    //grid_gui_draw_demo(&grid_gui_state, counter);
     ++counter;
 
 #ifdef USE_SEMAPHORE

@@ -24,16 +24,16 @@ int grid_gui_pack_colmod(struct grid_gui_model* gui, uint32_t x, uint32_t y, uin
     return 1;
   }
 
-  switch(colmod){
-    case COLMOD_RGB888: {
+  switch (colmod) {
+  case COLMOD_RGB888: {
 
-      uint32_t offset = (gui->width * y + x) * GRID_GUI_BYTES_PPX;
-      memcpy(dest, gui->buffer + offset, pixels * GRID_GUI_BYTES_PPX);
+    uint32_t offset = (gui->width * y + x) * GRID_GUI_BYTES_PPX;
+    memcpy(dest, gui->buffer + offset, pixels * GRID_GUI_BYTES_PPX);
 
-    } break;
-    default: {
-      return 1;
-    }
+  } break;
+  default: {
+    return 1;
+  }
   }
 
   return 0;
@@ -51,6 +51,15 @@ int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* buff
   gui->width = width;
   gui->height = height;
   gui->delta = 0;
+
+  return 0;
+}
+
+int grid_gui_clear(struct grid_gui_model* gui, grid_color_t color) {
+
+  for (uint16_t i = 0; i < gui->height; ++i) {
+    grid_gui_draw_horizontal_line(gui, 0, i, gui->width - 1, color);
+  }
 
   return 0;
 }
@@ -469,8 +478,8 @@ int grid_gui_draw_rectangle_filled(struct grid_gui_model* gui, uint16_t x1, uint
     y2 = tmp;
   }
 
-  for (int i = x1; i <= x2; i++) {
-    for (int j = y1; j <= y2; j++) {
+  for (int j = y1; j <= y2; j++) {
+    for (int i = x1; i <= x2; i++) {
       grid_gui_draw_pixel(gui, i, j, color);
     }
   }
@@ -482,12 +491,7 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t counter) {
   for (uint32_t y = 0; y < gui->height; ++y) {
     for (uint32_t x = 0; x < gui->width; ++x) {
 
-      grid_color_t col = (
-        ((counter * 8 + y) << 24) |
-        ((counter * 8 + x) << 16) |
-        ((0x0) << 8) |
-        ((0xff) << 0)
-      );
+      grid_color_t col = ((((uint8_t)(counter * 8 + y * 2)) << 24) | (((uint8_t)(counter * 8 + x * 2)) << 16) | (((uint8_t)(0x00)) << 8) | ((0xff) << 0));
       grid_gui_draw_pixel(gui, x, y, col);
     }
   }
@@ -506,8 +510,8 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t counter) {
   grid_gui_draw_rectangle_rounded(&grid_gui_state, 280, 10, 280 + 30, 10 + 30, 10, white);
   grid_gui_draw_rectangle_rounded_filled(&grid_gui_state, 10, 200, 10 + 30, 200 + 30, 10, white);
 
-  uint16_t x_pts[4] = { 160 - 45, 160, 160 + 45, 160 };
-  uint16_t y_pts[4] = { 120, 120 + 45, 120, 120 - 45 };
+  uint16_t x_pts[4] = {160 - 45, 160, 160 + 45, 160};
+  uint16_t y_pts[4] = {120, 120 + 45, 120, 120 - 45};
 
   grid_gui_draw_polygon(gui, x_pts, y_pts, 4, white);
 
@@ -543,15 +547,19 @@ void grid_gui_draw_demo_matrix(struct grid_gui_model* gui, uint8_t counter, grid
   for (uint32_t y = 0; y < gui->height; ++y) {
     for (uint32_t x = 0; x < gui->width; ++x) {
 
-      grid_color_t col = (
-        ((counter * 8 + y) << 24) |
-        ((counter * 8 + x) << 16) |
-        ((0x0) << 8) |
-        ((0xff) << 0)
-      );
+      grid_color_t col = (((counter * 8 + y) << 24) | ((counter * 8 + x) << 16) | ((0x0) << 8) | ((0xff) << 0));
       matrix[y * gui->width + x] = col;
     }
   }
 
   grid_gui_draw_matrix(gui, 0, 0, 320, 240, matrix);
+}
+
+void grid_gui_draw_demo_image(struct grid_gui_model* gui, int count) {
+
+  if (!(count >= 0 && count < gui->hardwire_count)) {
+    return;
+  }
+
+  grid_gui_draw_matrix(gui, 0, 0, 320, 240, gui->hardwire_matrices[count]);
 }
