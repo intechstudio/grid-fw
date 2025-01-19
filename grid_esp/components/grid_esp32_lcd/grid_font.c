@@ -23,16 +23,33 @@ static char memory[57000] = {0};
 #define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
 #include "stb_truetype.h"
 
-extern const char interdisplay_medium_webfont_ttf[];
-extern const int interdisplay_medium_webfont_ttf_len;
+extern const char generated_fonts_interdisplay_regular_ttf[];
+extern const int generated_fonts_interdisplay_regular_ttf_len;
 
-unsigned char* ttf_buffer = interdisplay_medium_webfont_ttf;
+extern const char generated_fonts_spacemono_regular_ttf[];
+extern const int generated_fonts_spacemono_regular_ttf_len;
+
+extern const char generated_fonts_spacemono_bold_ttf[];
+extern const int generated_fonts_spacemono_bold_ttf_len;
+
+struct grid_font_table {
+  char* name[30];
+  unsigned char* data;
+  int* size
+};
+
+struct grid_font_table font_list[] = {{.name = "interdisplay_regular", .data = (unsigned char*)generated_fonts_interdisplay_regular_ttf, .size = &generated_fonts_interdisplay_regular_ttf_len},
+                                      {.name = "spacemono_regular", .data = (unsigned char*)generated_fonts_spacemono_regular_ttf, .size = &generated_fonts_spacemono_regular_ttf_len},
+                                      {.name = "spacemono_bold", .data = (unsigned char*)generated_fonts_spacemono_bold_ttf, .size = &generated_fonts_spacemono_bold_ttf_len}};
 
 int grid_font_init(struct grid_font_model* font) {
-  printf("Ubuntu font size: %d\n", interdisplay_medium_webfont_ttf_len);
+
+  struct grid_font_table* selected_font = &font_list[1];
+
+  printf("%s font size: %d\n", selected_font->name, *selected_font->size);
   font->font_handle = malloc(sizeof(stbtt_fontinfo));
 
-  stbtt_InitFont(font->font_handle, ttf_buffer, stbtt_GetFontOffsetForIndex(ttf_buffer, 0));
+  stbtt_InitFont(font->font_handle, selected_font->data, stbtt_GetFontOffsetForIndex(selected_font->data, 0));
   printf("stbtt_InitFont\n");
 
   font->initialized = 1;
