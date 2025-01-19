@@ -109,3 +109,29 @@ int grid_font_draw_character(struct grid_font_model* font, struct grid_gui_model
 
   return 0;
 }
+
+// ThreeByteType is needed because internal framebuffer is 3 bytes per pixel
+typedef struct __attribute__((packed)) {
+  uint8_t byte1;
+  uint8_t byte2;
+  uint8_t byte3;
+} ThreeByteType;
+
+ThreeByteType BG_COLOR = {0, 0, 0};
+
+#define blit32_MACRO_INLINE
+#define blit_pixel ThreeByteType
+#define blit_background BG_COLOR
+#include "blit32.h"
+
+int grid_font_draw_string_fast(struct grid_gui_model* gui, uint16_t x, uint16_t y, unsigned char* str, grid_color_t color) {
+
+  unsigned char* buffer = gui->framebuffer;
+
+  uint8_t r = grid_gui_color_to_red(color);
+  uint8_t g = grid_gui_color_to_green(color);
+  uint8_t b = grid_gui_color_to_blue(color);
+
+  ThreeByteType three_byte_color = {r, g, b};
+  int ret = blit32_TextExplicit(buffer, three_byte_color, 4, 320, 240, 1, x, y, str);
+}
