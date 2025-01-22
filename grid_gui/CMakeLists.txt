@@ -13,7 +13,9 @@ list(APPEND SRC_FILES ../grid_common/grid_lua.c)
 
 list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/grid_gui.c)
 list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/grid_font.c)
-list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/inter_font.c)
+list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/generated_fonts/interdisplay_regular.c)
+list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/generated_fonts/spacemono_regular.c)
+list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/generated_fonts/spacemono_bold.c)
 list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/grid_lua_api_gui.c)
 
 add_executable(index main.c ${SRC_FILES})
