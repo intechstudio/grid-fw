@@ -33,7 +33,7 @@ extern const char generated_fonts_spacemono_bold_ttf[];
 extern const int generated_fonts_spacemono_bold_ttf_len;
 
 struct grid_font_table {
-  char* name[30];
+  char name[30];
   unsigned char* data;
   int* size
 };
@@ -124,7 +124,7 @@ ThreeByteType BG_COLOR = {0, 0, 0};
 #define blit_background BG_COLOR
 #include "blit32.h"
 
-int grid_font_draw_string_fast(struct grid_gui_model* gui, uint16_t x, uint16_t y, unsigned char* str, grid_color_t color) {
+int grid_font_draw_string_fast(struct grid_gui_model* gui, uint16_t x, uint16_t y, char* str, grid_color_t color) {
 
   unsigned char* buffer = gui->framebuffer;
 
@@ -134,4 +134,6 @@ int grid_font_draw_string_fast(struct grid_gui_model* gui, uint16_t x, uint16_t 
 
   ThreeByteType three_byte_color = {r, g, b};
   int ret = blit32_TextExplicit(buffer, three_byte_color, 4, 320, 240, 1, x, y, str);
+
+  return 0;
 }
