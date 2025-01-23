@@ -21,10 +21,9 @@ int grid_cal_init(struct grid_cal_model* cal, uint8_t resolution, uint8_t length
   cal->enable = (uint8_t*)malloc(cal->length * sizeof(uint8_t));
 
   const uint16_t half_value = cal->maximum / 2;
-
   const uint16_t default_offset = +32 * 4.5;
 
-  for (uint8_t i = 0; i < length; ++i) {
+  for (uint8_t i = 0; i < cal->length; ++i) {
     cal->value[i] = half_value + default_offset;
     cal->center[i] = cal->value[i];
     cal->enable[i] = 0;
@@ -47,6 +46,21 @@ int grid_cal_enable_range(struct grid_cal_model* cal, uint8_t start, uint8_t len
 
   for (uint8_t i = start; i < end; ++i) {
     cal->enable[i] = 1;
+  }
+
+  return 0;
+}
+
+int grid_cal_center_get(struct grid_cal_model* cal, uint8_t channel, uint16_t* center) {
+
+  if (!(channel < cal->length)) {
+    return 1;
+  }
+
+  if (cal->enable[channel]) {
+    *center = cal->center[channel];
+  } else {
+    *center = 0;
   }
 
   return 0;
