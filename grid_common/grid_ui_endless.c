@@ -145,7 +145,7 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   double rate_of_change = abs(delta) / elapsed_ms;
 
   // implement configurable velocity parameters here
-  double velocityfactor = (((rate_of_change * rate_of_change) / 2000.0) * velocityparam + (5.0 * sensitivityparam)) * minmaxscale;
+  double velocityfactor = (((rate_of_change * rate_of_change * 128.0) / 2000.0) * velocityparam + (5.0 * sensitivityparam)) * minmaxscale;
 
   double delta_velocity_full = delta * velocityfactor + *delta_vel_frac;
 
