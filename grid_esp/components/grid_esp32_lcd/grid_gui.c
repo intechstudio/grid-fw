@@ -100,9 +100,9 @@ int grid_gui_draw_array(struct grid_gui_model* gui, uint16_t x, uint16_t y, uint
     uint8_t* pixel = pixels + i * GRID_GUI_BYTES_PPX;
 
     uint8_t inv_alpha = 255 - c.a;
-    pixel[0] = c.r * c.a / 255 + pixel[0] * inv_alpha / 255;
-    pixel[1] = c.g * c.a / 255 + pixel[1] * inv_alpha / 255;
-    pixel[2] = c.b * c.a / 255 + pixel[2] * inv_alpha / 255;
+    pixel[0] = (c.r * c.a + pixel[0] * inv_alpha) / 255;
+    pixel[1] = (c.g * c.a + pixel[1] * inv_alpha) / 255;
+    pixel[2] = (c.b * c.a + pixel[2] * inv_alpha) / 255;
   }
 
   return 0;

@@ -25,12 +25,83 @@
 
 #include "grid_esp32_adc.h"
 
+uint16_t vmp_get_scanline() {
+
+    uint16_t scan;
+    grid_esp32_lcd_get_scanline(&grid_esp32_lcd_state, 0, 14, &scan);
+    return scan;
+}
+
+#include "vmp_def.h"
+#include "vmp_tag.h"
+
 #include "imgtoc.c"
 
 void imgtoc_rgb888_to_grid_color(uint8_t* src, size_t size, grid_color_t* dest) {
 
   for (size_t i = 0; i < size; i += 3) {
     dest[i / 3] = ((src[i + 0] << 24) | (src[i + 1] << 16) | (src[i + 2] << 8) | (0xff << 0));
+  }
+}
+
+uint8_t* hw_colbufs[3] = {0};
+uint8_t counter = 0;
+
+void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcd, int lines, int tx_lines, int ready_len) {
+
+  bool active[2] = {
+    grid_esp32_lcd_panel_active(lcd, 0),
+    grid_esp32_lcd_panel_active(lcd, 1),
+  };
+
+  bool done[2] = { !active[0], !active[1] };
+
+  int index = 2;
+
+  uint16_t scan;
+
+  int columns = grid_gui_state.height;
+
+  while (!(done[0] && done[1])) {
+
+    if (index >= 2) {
+
+      uint16_t scans[2];
+      bool ready[2] = { false, false };
+      for (int i = 0; i < 2; ++i) {
+
+        if (!done[i]) {
+
+          grid_esp32_lcd_get_scanline(lcd, i, 14, &scans[i]);
+          ready[i] = grid_esp32_lcd_scan_in_range(lines + 1, tx_lines, ready_len, scans[i]);
+        }
+      }
+
+      if (ready[0] && ready[1]) {
+        index = scans[0] < scans[1] ? 1 : 0;
+      } else
+      if (ready[0] || ready[1]) {
+        index = ready[0] ? 0 : 1;
+      }
+
+    } else {
+
+      uint8_t rates[3] = { 0x1d, 0x1e, 0x1f };
+      for (int i = 0; i < lines; i += tx_lines) {
+
+        grid_esp32_lcd_get_scanline(lcd, index, 14, &scan);
+        while (grid_esp32_lcd_scan_in_range(lines + 1, i, tx_lines, scan)) {
+          grid_esp32_lcd_get_scanline(lcd, index, 14, &scan);
+        }
+
+        uint8_t* buf = hw_colbufs[counter % 3];
+        grid_esp32_lcd_draw_bitmap_blocking(lcd, index, i, 0, tx_lines, columns / 1, buf);
+      }
+
+      done[index] = true;
+
+      index = 2;
+    }
   }
 }
 
@@ -181,21 +252,27 @@ void grid_esp32_module_tek1_task(void* arg) {
   }
 
   // Initialize LCD
-  grid_esp32_lcd_model_init(&grid_esp32_lcd_state);
+  grid_esp32_lcd_spi_bus_init(&grid_esp32_lcd_state);
 
   // Wait for the coprocessor to pull the LCD reset pin high
   vTaskDelay(pdMS_TO_TICKS(500));
 
-  // Initialize LCD at index 0, if necessary
+  // Initialize LCD panel at index 0, if necessary
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
-    grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state, 0);
+    grid_esp32_lcd_panel_init(&grid_esp32_lcd_state, 0, GRID_LCD_CLK_SLOW);
+    grid_esp32_lcd_panel_init(&grid_esp32_lcd_state, 0, GRID_LCD_CLK_FAST);
+    grid_esp32_lcd_panel_reset(&grid_esp32_lcd_state, 0);
+    grid_esp32_lcd_set_frctrl2(&grid_esp32_lcd_state, 0, 0x1e);
   }
 
-  // Initialize LCD at index 1, if necessary
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA ||
-      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
-    grid_esp32_lcd_hardware_init(&grid_esp32_lcd_state, 1);
+  // Initialize LCD panel at index 1, if necessary
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
+    grid_esp32_lcd_panel_init(&grid_esp32_lcd_state, 1, GRID_LCD_CLK_SLOW);
+    grid_esp32_lcd_panel_init(&grid_esp32_lcd_state, 1, GRID_LCD_CLK_FAST);
+    grid_esp32_lcd_panel_reset(&grid_esp32_lcd_state, 1);
+    grid_esp32_lcd_set_frctrl2(&grid_esp32_lcd_state, 1, 0x1e);
   }
 
   // Initialize font
@@ -204,14 +281,28 @@ void grid_esp32_module_tek1_task(void* arg) {
   // Initialize GUI
   uint32_t width = 320;
   uint32_t height = 240;
+  uint32_t lines = width;
   uint32_t size = width * height * GRID_GUI_BYTES_PPX;
   uint8_t* framebuf = heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
   grid_gui_init(&grid_gui_state, &grid_esp32_lcd_state, framebuf, size, width, height);
 
   // Allocate transfer buffer
-  uint32_t lcd_tx_lines = 4;
-  uint32_t lcd_tx_bytes = width * lcd_tx_lines * COLMOD_RGB888_BYTES;
-  uint8_t* hw_framebuf = malloc(lcd_tx_bytes);
+  uint32_t lcd_tx_lines = 8;
+  uint32_t lcd_tx_bytes = height * lcd_tx_lines * COLMOD_RGB888_BYTES;
+
+  hw_colbufs[0] = heap_caps_malloc(lcd_tx_bytes, MALLOC_CAP_SPIRAM);
+  hw_colbufs[1] = heap_caps_malloc(lcd_tx_bytes, MALLOC_CAP_SPIRAM);
+  hw_colbufs[2] = heap_caps_malloc(lcd_tx_bytes, MALLOC_CAP_SPIRAM);
+  grid_color_t cols[3] = { 0xff0000ff, 0x00ff00ff, 0x0000ffff };
+  for (int i = 0; i < 3; ++i) {
+
+      grid_platform_printf("hw_colbufs[%d]: %p\n", i, hw_colbufs[i]);
+      for (int j = 0; j < lcd_tx_bytes; j += COLMOD_RGB888_BYTES) {
+        hw_colbufs[i][j + 0] = (cols[i] >> 24) & 0xff;
+        hw_colbufs[i][j + 1] = (cols[i] >> 16) & 0xff;
+        hw_colbufs[i][j + 2] = (cols[i] >> 8) & 0xff;
+      }
+  }
 
 #define USE_SEMAPHORE
 #define USE_FRAMELIMIT
@@ -239,17 +330,38 @@ void grid_esp32_module_tek1_task(void* arg) {
   grid_color_t black = 0x000000ff;
   grid_gui_clear(&grid_gui_state, black);
 
-  uint8_t counter = 0;
+  // Allocate profiler & assign its interface
+  vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
+  struct vmp_reg_t reg = {
+      .evt_serialized_size = vmp_evt_serialized_size,
+      .evt_serialize = vmp_evt_serialize,
+      .fwrite = vmp_fwrite,
+  };
+
+  bool vmp_flushed = false;
+  struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_state;
   while (1) {
 
-    any_process_analog();
+    //vmp_push(MAIN);
 
-#ifdef USE_FRAMELIMIT
-    if (grid_platform_rtc_get_elapsed_time(gui_lastrealtime) < 1000000) {
-      taskYIELD();
-      continue;
+    if (!vmp_flushed && vmp.size == vmp.capacity) {
+
+      portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+      portENTER_CRITICAL(&spinlock);
+
+      vmp_serialize_start(&reg);
+      vmp_buf_serialize_and_write(&vmp, &reg);
+      vmp_uid_str_serialize_and_write(VMP_UID_COUNT, VMP_ASSOC, &reg);
+      vmp_serialize_close(&reg);
+
+      portEXIT_CRITICAL(&spinlock);
+
+      //vmp_buf_free(&vmp);
+
+      vmp_flushed = true;
     }
-#endif
+
+    any_process_analog();
 
     ++counter;
 
@@ -257,28 +369,7 @@ void grid_esp32_module_tek1_task(void* arg) {
     grid_lua_semaphore_lock(&grid_lua_state);
 #endif
 
-    for (int i = 0; i < grid_gui_state.height; i += lcd_tx_lines) {
-
-      any_process_analog();
-
-      grid_gui_pack_colmod(&grid_gui_state, 0, i, lcd_tx_bytes / COLMOD_RGB888_BYTES, hw_framebuf, COLMOD_RGB888);
-
-      if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA ||
-          grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA ||
-          grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
-
-        grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 0, 0, i, width, lcd_tx_lines, hw_framebuf);
-      }
-
-      if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
-          grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
-        grid_esp32_lcd_draw_bitmap_blocking(&grid_esp32_lcd_state, 1, 0, i, width, lcd_tx_lines, hw_framebuf);
-      }
-    }
-
-#ifdef USE_FRAMELIMIT
-    gui_lastrealtime = grid_platform_rtc_get_micros();
-#endif
+    grid_esp32_module_vsn_lcd_refresh(lcd, lines, lcd_tx_lines, width / 4);
 
 #ifdef USE_SEMAPHORE
     grid_lua_semaphore_release(&grid_lua_state);
@@ -290,5 +381,3 @@ void grid_esp32_module_tek1_task(void* arg) {
   // Wait to be deleted
   vTaskSuspend(NULL);
 }
-
-// || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB)
