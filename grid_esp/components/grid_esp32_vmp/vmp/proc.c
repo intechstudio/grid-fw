@@ -22,8 +22,7 @@ int main() {
   for (int i = 0; i < vmp_vis.capacity; ++i) {
     struct vmp_vis_t* vis = VMP_VIS(vmp_buf_get(&(vmp_vis), i));
     struct vmp_evt_t* evt = &vis->evt;
-    printf("%02u id, %6u abs, %6u rel, %6u pre, %3u scl, %4u:%s,\n",
-      evt->uid, evt->time, vis->time_abs, vis->time_rel, evt->scln, evt->line, uid_str.strs[evt->uid]);
+    printf("%02u id, %6u abs, %6u rel, %6u pre, %3u scl, %4u:%s,\n", evt->uid, evt->time, vis->time_abs, vis->time_rel, evt->scln, evt->line, uid_str.strs[evt->uid]);
   }
 
   vmp_buf_free(&vmp_vis);

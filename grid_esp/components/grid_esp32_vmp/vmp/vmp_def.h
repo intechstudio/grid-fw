@@ -26,8 +26,8 @@ struct vmp_evt_t {
   {                                                                                                                                                                                                    \
     VMP_EVT(ptr)->uid = (id);                                                                                                                                                                          \
     VMP_EVT(ptr)->line = __LINE__;                                                                                                                                                                     \
-    VMP_EVT(ptr)->time = grid_platform_rtc_get_micros();                                                                                                                                                             \
-    VMP_EVT(ptr)->scln = 0/*vmp_get_scanline()*/;                                                                                                                                                             \
+    VMP_EVT(ptr)->time = grid_platform_rtc_get_micros();                                                                                                                                               \
+    VMP_EVT(ptr)->scln = 0 /*vmp_get_scanline()*/;                                                                                                                                                     \
   }
 
 size_t vmp_evt_serialize(void* evt, uint8_t* dest);

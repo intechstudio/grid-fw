@@ -16,12 +16,12 @@
 
 #include "driver/spi_common.h"
 #include "driver/spi_master.h"
+#include "esp_lcd_panel_commands.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_rgb.h"
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_types.h"
-#include "esp_lcd_panel_commands.h"
 
 #ifdef __cplusplus
 extern "C" {

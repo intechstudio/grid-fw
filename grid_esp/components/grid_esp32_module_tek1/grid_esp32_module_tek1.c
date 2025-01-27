@@ -27,9 +27,9 @@
 
 uint16_t vmp_get_scanline() {
 
-    uint16_t scan;
-    grid_esp32_lcd_get_scanline(&grid_esp32_lcd_state, 0, 14, &scan);
-    return scan;
+  uint16_t scan;
+  grid_esp32_lcd_get_scanline(&grid_esp32_lcd_state, 0, 14, &scan);
+  return scan;
 }
 
 #include "vmp_def.h"
@@ -44,17 +44,19 @@ void imgtoc_rgb888_to_grid_color(uint8_t* src, size_t size, grid_color_t* dest) 
   }
 }
 
-uint8_t* hw_colbufs[3] = {0};
+#define SZ_COLBUFS 6
+uint8_t* hw_colbufs[SZ_COLBUFS] = {0};
+uint8_t* hw_colbuf = NULL;
 uint8_t counter = 0;
 
 void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcd, int lines, int tx_lines, int ready_len) {
 
   bool active[2] = {
-    grid_esp32_lcd_panel_active(lcd, 0),
-    grid_esp32_lcd_panel_active(lcd, 1),
+      grid_esp32_lcd_panel_active(lcd, 0),
+      grid_esp32_lcd_panel_active(lcd, 1),
   };
 
-  bool done[2] = { !active[0], !active[1] };
+  bool done[2] = {!active[0], !active[1]};
 
   int index = 2;
 
@@ -67,7 +69,7 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcd, int lin
     if (index >= 2) {
 
       uint16_t scans[2];
-      bool ready[2] = { false, false };
+      bool ready[2] = {false, false};
       for (int i = 0; i < 2; ++i) {
 
         if (!done[i]) {
@@ -79,22 +81,31 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcd, int lin
 
       if (ready[0] && ready[1]) {
         index = scans[0] < scans[1] ? 1 : 0;
-      } else
-      if (ready[0] || ready[1]) {
+      } else if (ready[0] || ready[1]) {
         index = ready[0] ? 0 : 1;
+      }
+
+      if (index == 0 && (active[0] && active[1])) {
+
+        uint8_t frctrl = grid_esp32_lcd_scan_in_range(lines + 1, scans[0], 334 / 2, scans[1]) ? 0x1f : 0x1d;
+        grid_esp32_lcd_set_frctrl2(lcd, 1, frctrl);
       }
 
     } else {
 
-      uint8_t rates[3] = { 0x1d, 0x1e, 0x1f };
       for (int i = 0; i < lines; i += tx_lines) {
+
+        uint8_t mod = counter % SZ_COLBUFS;
+        vmp_push(TOP);
+        memcpy(hw_colbuf, hw_colbufs[mod], tx_lines * columns * COLMOD_RGB888_BYTES);
+        vmp_push(BOT);
 
         grid_esp32_lcd_get_scanline(lcd, index, 14, &scan);
         while (grid_esp32_lcd_scan_in_range(lines + 1, i, tx_lines, scan)) {
           grid_esp32_lcd_get_scanline(lcd, index, 14, &scan);
         }
 
-        uint8_t* buf = hw_colbufs[counter % 3];
+        uint8_t* buf = hw_colbuf;
         grid_esp32_lcd_draw_bitmap_blocking(lcd, index, i, 0, tx_lines, columns / 1, buf);
       }
 
@@ -290,19 +301,20 @@ void grid_esp32_module_tek1_task(void* arg) {
   uint32_t lcd_tx_lines = 8;
   uint32_t lcd_tx_bytes = height * lcd_tx_lines * COLMOD_RGB888_BYTES;
 
-  hw_colbufs[0] = heap_caps_malloc(lcd_tx_bytes, MALLOC_CAP_SPIRAM);
-  hw_colbufs[1] = heap_caps_malloc(lcd_tx_bytes, MALLOC_CAP_SPIRAM);
-  hw_colbufs[2] = heap_caps_malloc(lcd_tx_bytes, MALLOC_CAP_SPIRAM);
-  grid_color_t cols[3] = { 0xff0000ff, 0x00ff00ff, 0x0000ffff };
-  for (int i = 0; i < 3; ++i) {
+  grid_color_t cols[SZ_COLBUFS] = {
+      0xff0000ff, 0x00ff00ff, 0x0000ffff, 0xff0000ff, 0x00ff00ff, 0x0000ffff,
+  };
+  for (int i = 0; i < SZ_COLBUFS; ++i) {
 
-      grid_platform_printf("hw_colbufs[%d]: %p\n", i, hw_colbufs[i]);
-      for (int j = 0; j < lcd_tx_bytes; j += COLMOD_RGB888_BYTES) {
-        hw_colbufs[i][j + 0] = (cols[i] >> 24) & 0xff;
-        hw_colbufs[i][j + 1] = (cols[i] >> 16) & 0xff;
-        hw_colbufs[i][j + 2] = (cols[i] >> 8) & 0xff;
-      }
+    hw_colbufs[i] = heap_caps_malloc(lcd_tx_bytes, MALLOC_CAP_SPIRAM);
+    grid_platform_printf("hw_colbufs[%d]: %p\n", i, hw_colbufs[i]);
+    for (int j = 0; j < lcd_tx_bytes; j += COLMOD_RGB888_BYTES) {
+      hw_colbufs[i][j + 0] = (cols[i] >> 24) & 0xff;
+      hw_colbufs[i][j + 1] = (cols[i] >> 16) & 0xff;
+      hw_colbufs[i][j + 2] = (cols[i] >> 8) & 0xff;
+    }
   }
+  hw_colbuf = malloc(lcd_tx_bytes);
 
 #define USE_SEMAPHORE
 #define USE_FRAMELIMIT
@@ -342,7 +354,7 @@ void grid_esp32_module_tek1_task(void* arg) {
   struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_state;
   while (1) {
 
-    //vmp_push(MAIN);
+    // vmp_push(MAIN);
 
     if (!vmp_flushed && vmp.size == vmp.capacity) {
 
@@ -356,7 +368,7 @@ void grid_esp32_module_tek1_task(void* arg) {
 
       portEXIT_CRITICAL(&spinlock);
 
-      //vmp_buf_free(&vmp);
+      // vmp_buf_free(&vmp);
 
       vmp_flushed = true;
     }
@@ -364,6 +376,9 @@ void grid_esp32_module_tek1_task(void* arg) {
     any_process_analog();
 
     ++counter;
+    if (counter >= SZ_COLBUFS) {
+      counter = 0;
+    }
 
 #ifdef USE_SEMAPHORE
     grid_lua_semaphore_lock(&grid_lua_state);

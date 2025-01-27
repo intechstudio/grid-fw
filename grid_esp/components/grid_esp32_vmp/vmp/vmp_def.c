@@ -69,7 +69,7 @@ size_t vmp_fwrite(void* ptr, size_t size) {
   size_t s = 0;
   for (int i = 0; i < size; ++i) {
     uint8_to_hex(u8[i], hex);
-    //s += printf("%c%c", hex[0], hex[1]);
+    // s += printf("%c%c", hex[0], hex[1]);
     grid_platform_printf("%c%c", hex[0], hex[1]);
     grid_platform_delay_us(10);
     ++s;
@@ -90,7 +90,7 @@ size_t vmp_fread(void* ptr, size_t size) {
     u8[i] = hex_to_uint8(hex);
   }
 
-  //assert(s % 2 == 0);
+  // assert(s % 2 == 0);
 
   return s;
 }
