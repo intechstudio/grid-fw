@@ -2,7 +2,7 @@
 #include "grid_font.h"
 #include <stdio.h>
 
-struct grid_gui_model grid_gui_state = {0};
+struct grid_gui_model grid_gui_states[2] = {0};
 
 grid_color_t grid_gui_color_from_rgb(uint8_t r, uint8_t g, uint8_t b) { return (r << 24) | (g << 16) | (b << 8) | 255; }
 grid_color_t grid_gui_color_from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { return (r << 24) | (g << 16) | (b << 8) | a; }
@@ -72,32 +72,32 @@ int grid_gui_draw_pixel(struct grid_gui_model* gui, uint16_t x, uint16_t y, grid
 
   struct grid_rgba_t c = grid_unpack_rgba(color);
 
-  uint8_t* pixel = gui->buffer + (gui->width * y + x) * GRID_GUI_BYTES_PPX;
+  uint8_t* pixel = gui->buffer + (gui->height * x + y) * GRID_GUI_BYTES_PPX;
 
   uint8_t inv_alpha = 255 - c.a;
-  pixel[0] = c.r * c.a / 255 + pixel[0] * inv_alpha / 255;
-  pixel[1] = c.g * c.a / 255 + pixel[1] * inv_alpha / 255;
-  pixel[2] = c.b * c.a / 255 + pixel[2] * inv_alpha / 255;
+  pixel[0] = (c.r * c.a + pixel[0] * inv_alpha) / 255;
+  pixel[1] = (c.g * c.a + pixel[1] * inv_alpha) / 255;
+  pixel[2] = (c.b * c.a + pixel[2] * inv_alpha) / 255;
 
   return 0;
 }
 
-int grid_gui_draw_array(struct grid_gui_model* gui, uint16_t x, uint16_t y, uint16_t xs, grid_color_t* colors) {
+int grid_gui_draw_array(struct grid_gui_model* gui, uint16_t x, uint16_t y, uint16_t ys, grid_color_t* colors) {
 
   if (x >= gui->width || y >= gui->height) {
     return 1;
   }
 
-  uint32_t xmin = x;
-  uint32_t xmax = x + xs < gui->width ? x + xs : gui->width;
-  uint32_t xlen = xmax - xmin;
+  uint32_t ymin = y;
+  uint32_t ymax = y + ys < gui->height ? y + ys : gui->height;
+  uint32_t ylen = ymax - ymin;
 
-  uint8_t* pixels = gui->buffer + (gui->width * y + x) * GRID_GUI_BYTES_PPX;
+  uint8_t* pixels = gui->buffer + (gui->height * x + y) * GRID_GUI_BYTES_PPX;
 
-  for (uint32_t i = 0; i < xlen; ++i) {
+  for (uint32_t i = 0; i < ylen; ++i) {
 
     struct grid_rgba_t c = grid_unpack_rgba(colors[i]);
-    uint8_t* pixel = pixels + i * GRID_GUI_BYTES_PPX;
+    uint8_t* pixel = &pixels[i * GRID_GUI_BYTES_PPX];
 
     uint8_t inv_alpha = 255 - c.a;
     pixel[0] = (c.r * c.a + pixel[0] * inv_alpha) / 255;
@@ -110,8 +110,8 @@ int grid_gui_draw_array(struct grid_gui_model* gui, uint16_t x, uint16_t y, uint
 
 int grid_gui_draw_matrix(struct grid_gui_model* gui, uint16_t x, uint16_t y, uint16_t xs, uint16_t ys, grid_color_t* colors) {
 
-  for (uint16_t i = 0; i < ys; ++i) {
-    grid_gui_draw_array(gui, x, y + i, xs, &colors[i * xs]);
+  for (uint16_t i = 0; i < xs; ++i) {
+    grid_gui_draw_array(gui, x + i, y, ys, &colors[i * ys]);
   }
 
   return 0;
@@ -498,17 +498,17 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t counter) {
 
   grid_color_t white = grid_gui_color_from_rgb(255, 255, 255);
 
-  grid_gui_draw_line(&grid_gui_state, 160, 120, 40, 40, white);
-  grid_gui_draw_rectangle(&grid_gui_state, 10, 10, 10 + 30, 10 + 30, white);
+  grid_gui_draw_line(gui, 160, 120, 40, 40, white);
+  grid_gui_draw_rectangle(gui, 10, 10, 10 + 30, 10 + 30, white);
 
-  grid_gui_draw_line(&grid_gui_state, 160, 120, 280, 200, white);
-  grid_gui_draw_rectangle_filled(&grid_gui_state, 280, 200, 280 + 30, 200 + 30, white);
+  grid_gui_draw_line(gui, 160, 120, 280, 200, white);
+  grid_gui_draw_rectangle_filled(gui, 280, 200, 280 + 30, 200 + 30, white);
 
   grid_gui_draw_horizontal_line(gui, 160 - 30, 10, 160 + 30, white);
   grid_gui_draw_horizontal_line(gui, 160 - 30, 230, 160 + 30, white);
 
-  grid_gui_draw_rectangle_rounded(&grid_gui_state, 280, 10, 280 + 30, 10 + 30, 10, white);
-  grid_gui_draw_rectangle_rounded_filled(&grid_gui_state, 10, 200, 10 + 30, 200 + 30, 10, white);
+  grid_gui_draw_rectangle_rounded(gui, 280, 10, 280 + 30, 10 + 30, 10, white);
+  grid_gui_draw_rectangle_rounded_filled(gui, 10, 200, 10 + 30, 200 + 30, 10, white);
 
   uint16_t x_pts[4] = {160 - 45, 160, 160 + 45, 160};
   uint16_t y_pts[4] = {120, 120 + 45, 120, 120 - 45};
@@ -562,4 +562,16 @@ void grid_gui_draw_demo_image(struct grid_gui_model* gui, int count) {
   }
 
   grid_gui_draw_matrix(gui, 0, 0, 320, 240, gui->hardwire_matrices[count]);
+}
+
+void grid_gui_draw_demo_rgb(struct grid_gui_model* gui, uint8_t counter) {
+
+  grid_color_t colors[3] = {0xff0000ff, 0x00ff00ff, 0x0000ffff};
+
+  for (uint32_t x = 0; x < gui->width; ++x) {
+    for (uint32_t y = 0; y < gui->height; ++y) {
+
+      grid_gui_draw_pixel(gui, x, y, colors[counter % 3]);
+    }
+  }
 }

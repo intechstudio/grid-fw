@@ -27,6 +27,15 @@
 extern "C" {
 #endif
 
+#define LCD_FRCTRL_39HZ 0x1f
+#define LCD_FRCTRL_40HZ 0x1e
+#define LCD_FRCTRL_41HZ 0x1d
+#define LCD_HRES 320
+#define LCD_VRES 240
+#define LCD_LINES LCD_HRES
+#define LCD_SCAN_OFFSET 14
+#define LCD_SCAN_VALUES (LCD_LINES + LCD_SCAN_OFFSET)
+
 enum grid_lcd_clock_t {
   GRID_LCD_CLK_SLOW = 0,
   GRID_LCD_CLK_FAST,
@@ -43,7 +52,7 @@ struct grid_esp32_lcd_model {
 
 extern struct grid_esp32_lcd_model grid_esp32_lcd_state;
 
-void grid_esp32_lcd_spi_bus_init(struct grid_esp32_lcd_model* lcd);
+void grid_esp32_lcd_spi_bus_init(struct grid_esp32_lcd_model* lcd, size_t max_color_sz);
 void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, enum grid_lcd_clock_t);
 bool grid_esp32_lcd_panel_active(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index);
 void grid_esp32_lcd_panel_reset(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index);

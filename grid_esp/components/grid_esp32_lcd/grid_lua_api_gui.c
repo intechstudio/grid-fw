@@ -65,7 +65,7 @@ int l_grid_gui_draw_pixel(lua_State* L) {
     // Use r, g, b values to set color
     // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
-    grid_gui_draw_pixel(&grid_gui_state, x, y, grid_gui_color_from_rgb(r, g, b));
+    grid_gui_draw_pixel(&grid_gui_states[0], x, y, grid_gui_color_from_rgb(r, g, b));
   }
   // Draw the pixel at (x, y)
 
@@ -93,7 +93,7 @@ int l_grid_gui_draw_line(lua_State* L) {
     // Use r, g, b values to set color
     // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
-    grid_gui_draw_line(&grid_gui_state, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
+    grid_gui_draw_line(&grid_gui_states[0], x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
   }
   // Draw the pixel at (x, y)
 
@@ -121,7 +121,7 @@ int l_grid_gui_draw_rectangle(lua_State* L) {
     // Use r, g, b values to set color
     // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
-    grid_gui_draw_rectangle(&grid_gui_state, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
+    grid_gui_draw_rectangle(&grid_gui_states[0], x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
   }
   // Draw the pixel at (x, y)
 
@@ -149,7 +149,7 @@ int l_grid_gui_draw_rectangle_filled(lua_State* L) {
     // Use r, g, b values to set color
     // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
-    grid_gui_draw_rectangle_filled(&grid_gui_state, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
+    grid_gui_draw_rectangle_filled(&grid_gui_states[0], x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
   }
   // Draw the pixel at (x, y)
 
@@ -177,7 +177,7 @@ int l_grid_gui_draw_rectangle_rounded(lua_State* L) {
     int b = luaL_checknumber(L, -1);
     // Use r, g, b values to set color
 
-    grid_gui_draw_rectangle_rounded(&grid_gui_state, x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
+    grid_gui_draw_rectangle_rounded(&grid_gui_states[0], x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
   }
   // Draw the pixel at (x, y)
 
@@ -206,7 +206,7 @@ int l_grid_gui_draw_rectangle_rounded_filled(lua_State* L) {
     // Use r, g, b values to set color
     // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
-    grid_gui_draw_rectangle_rounded_filled(&grid_gui_state, x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
+    grid_gui_draw_rectangle_rounded_filled(&grid_gui_states[0], x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
   }
   // Draw the pixel at (x, y)
 
@@ -270,7 +270,7 @@ int l_grid_gui_draw_polygon(lua_State* L) {
     b = luaL_checknumber(L, -1);
   }
 
-  grid_gui_draw_polygon(&grid_gui_state, x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
+  grid_gui_draw_polygon(&grid_gui_states[0], x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
 
   return 0; // Number of return values
 }
@@ -331,7 +331,7 @@ int l_grid_gui_draw_polygon_filled(lua_State* L) {
     b = luaL_checknumber(L, -1);
   }
 
-  grid_gui_draw_polygon_filled(&grid_gui_state, x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
+  grid_gui_draw_polygon_filled(&grid_gui_states[0], x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
 
   return 0; // Number of return values
 }
@@ -362,7 +362,7 @@ int l_grid_gui_draw_text(lua_State* L) {
   int cursor = 0;
 
   if (grid_font_state.initialized) {
-    grid_font_draw_string(&grid_font_state, &grid_gui_state, x, y, font_size, text, &cursor, grid_gui_color_from_rgb(r, g, b));
+    grid_font_draw_string(&grid_font_state, &grid_gui_states[0], x, y, font_size, text, &cursor, grid_gui_color_from_rgb(r, g, b));
   } else {
     // grid_platform_printf("NOT INITIALIZED\n");
   }
@@ -374,7 +374,7 @@ int l_grid_gui_draw_demo(lua_State* L) {
 
   int counter = luaL_checknumber(L, 1);
 
-  grid_gui_draw_demo(&grid_gui_state, counter);
+  grid_gui_draw_demo(&grid_gui_states[0], counter);
 
   return 0;
 }
@@ -383,7 +383,7 @@ int l_grid_gui_draw_demo_image(lua_State* L) {
 
   int count = luaL_checknumber(L, 1);
 
-  grid_gui_draw_demo_image(&grid_gui_state, count);
+  grid_gui_draw_demo_image(&grid_gui_states[0], count);
 
   return 0;
 }

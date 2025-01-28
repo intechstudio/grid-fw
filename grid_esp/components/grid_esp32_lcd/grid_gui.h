@@ -48,7 +48,7 @@ struct grid_gui_model {
   int hardwire_count;
 };
 
-extern struct grid_gui_model grid_gui_state;
+extern struct grid_gui_model grid_gui_states[2];
 
 int grid_gui_pack_colmod(struct grid_gui_model* gui, uint32_t x, uint32_t y, uint32_t pixels, uint8_t* dest, enum grid_gui_colmod_t colmod);
 
@@ -56,7 +56,7 @@ int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* buff
 int grid_gui_clear(struct grid_gui_model* gui, grid_color_t color);
 
 int grid_gui_draw_pixel(struct grid_gui_model* gui, uint16_t x, uint16_t y, grid_color_t color);
-int grid_gui_draw_array(struct grid_gui_model* gui, uint16_t x, uint16_t y, uint16_t xs, grid_color_t* colors);
+int grid_gui_draw_array(struct grid_gui_model* gui, uint16_t x, uint16_t y, uint16_t ys, grid_color_t* colors);
 int grid_gui_draw_matrix(struct grid_gui_model* gui, uint16_t x, uint16_t y, uint16_t xs, uint16_t ys, grid_color_t* colors);
 
 int grid_gui_draw_line(struct grid_gui_model* gui, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, grid_color_t color);
@@ -74,6 +74,7 @@ int grid_gui_draw_rectangle_filled(struct grid_gui_model* gui, uint16_t x1, uint
 void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t counter);
 void grid_gui_draw_demo_matrix(struct grid_gui_model* gui, uint8_t counter, grid_color_t* matrix);
 void grid_gui_draw_demo_image(struct grid_gui_model* gui, int count);
+void grid_gui_draw_demo_rgb(struct grid_gui_model* gui, uint8_t counter);
 
 #ifdef __cplusplus
 }

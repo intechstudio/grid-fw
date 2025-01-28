@@ -17,17 +17,13 @@
 #define PIN_NUM_RST -1  /*1*/
 #define PIN_NUM_BCKL -1 /*6*/
 #define LCD_NEW_PANEL esp_lcd_new_panel_st7789
-#define LCD_HRES 320
-#define LCD_VRES 240
-#define LCD_LINES LCD_HRES
 #define LCD_COLOR_SPACE LCD_RGB_ELEMENT_ORDER_RGB
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
 #define LCD_MIRROR_X true
 #define LCD_MIRROR_Y false
 #define LCD_INVERT_COLOR true
-#define LCD_SWAP_XY true
-#define LCD_TRANSFER_SIZE (320 * 4 * 3)
+#define LCD_SWAP_XY false
 #define LCD_FLUSH_CALLBACK lcd_flush_ready
 
 struct grid_esp32_lcd_model grid_esp32_lcd_state = {0};
@@ -46,7 +42,7 @@ bool color_trans_done_1(void* panel_io, void* edata, void* user_ctx) {
   return true;
 }
 
-void grid_esp32_lcd_spi_bus_init(struct grid_esp32_lcd_model* lcd) {
+void grid_esp32_lcd_spi_bus_init(struct grid_esp32_lcd_model* lcd, size_t max_color_sz) {
 
   spi_bus_config_t bus_config;
   memset(&bus_config, 0, sizeof(bus_config));
@@ -55,7 +51,7 @@ void grid_esp32_lcd_spi_bus_init(struct grid_esp32_lcd_model* lcd) {
   bus_config.miso_io_num = -1;
   bus_config.quadwp_io_num = -1;
   bus_config.quadhd_io_num = -1;
-  bus_config.max_transfer_sz = LCD_TRANSFER_SIZE + 8;
+  bus_config.max_transfer_sz = max_color_sz + 8;
 
   // Initialize the SPI bus
   ESP_ERROR_CHECK(spi_bus_initialize(LCD_SPI_HOST, &bus_config, SPI_DMA_CH_AUTO));
@@ -88,7 +84,7 @@ void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_ind
 
   switch (clock) {
   case GRID_LCD_CLK_SLOW: {
-    io_config.pclk_hz = 4 * 1000 * 1000;
+    io_config.pclk_hz = 5 * 1000 * 1000;
   } break;
   case GRID_LCD_CLK_FAST: {
     io_config.pclk_hz = 65 * 1000 * 1000;
@@ -161,7 +157,7 @@ void grid_esp32_lcd_panel_reset(struct grid_esp32_lcd_model* lcd, uint8_t lcd_in
   bool mirror_x = lcd_index ? !LCD_MIRROR_X : LCD_MIRROR_X;
   bool mirror_y = lcd_index ? !LCD_MIRROR_Y : LCD_MIRROR_Y;
   gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
-  // esp_lcd_panel_mirror(handle, mirror_x, mirror_y);
+  esp_lcd_panel_mirror(handle, mirror_x, mirror_y);
   gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
 
   gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
