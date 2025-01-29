@@ -331,8 +331,8 @@ void grid_esp32_module_tek1_task(void* arg) {
   }
 
   // Initialize LCD panel at index 1, if necessary
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB ||
-      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
     grid_esp32_lcd_panel_init(&grid_esp32_lcd_state, 1, GRID_LCD_CLK_SLOW);
     grid_esp32_lcd_panel_init(&grid_esp32_lcd_state, 1, GRID_LCD_CLK_FAST);
     grid_esp32_lcd_panel_reset(&grid_esp32_lcd_state, 1);
@@ -358,7 +358,7 @@ void grid_esp32_module_tek1_task(void* arg) {
   }
 
   // Initialize GUI panel at index 1, if necessary
-  if (hwcfg == GRID_MODULE_TEK1_RevA || hwcfg == GRID_MODULE_VSN1_RevA || hwcfg == GRID_MODULE_VSN1_RevB || hwcfg == GRID_MODULE_VSN2_RevA || hwcfg == GRID_MODULE_VSN2_RevB) {
+  if (hwcfg == GRID_MODULE_VSN1R_RevA || hwcfg == GRID_MODULE_VSN1R_RevB || hwcfg == GRID_MODULE_VSN2_RevA || hwcfg == GRID_MODULE_VSN2_RevB) {
     uint8_t* buf = heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
     grid_gui_init(&guis[1], &grid_esp32_lcd_state, buf, size, width, height);
   }
@@ -428,11 +428,11 @@ void grid_esp32_module_tek1_task(void* arg) {
     any_process_analog();
 
     // vmp_push(TOP);
-    grid_gui_draw_demo(&guis[0], counter);
+    // grid_gui_draw_demo(&guis[0], counter);
     // grid_gui_draw_demo_image(&guis[0], 0);
     // grid_gui_draw_demo_rgb(&guis[0], counter);
     // vmp_push(BOT);
-    grid_gui_draw_demo(&guis[1], 255 - counter);
+    // grid_gui_draw_demo(&guis[1], 255 - counter);
     // grid_gui_draw_demo_image(&guis[1], 0);
     // grid_gui_draw_demo_rgb(&guis[1], counter);
 
@@ -444,6 +444,13 @@ void grid_esp32_module_tek1_task(void* arg) {
     }
     */
 
+#ifdef USE_FRAMELIMIT
+    if (grid_platform_rtc_get_elapsed_time(gui_lastrealtime) < 500000) {
+      taskYIELD();
+      continue;
+    }
+#endif
+
 #ifdef USE_SEMAPHORE
     grid_lua_semaphore_lock(&grid_lua_state);
 #endif
@@ -452,6 +459,10 @@ void grid_esp32_module_tek1_task(void* arg) {
 
 #ifdef USE_SEMAPHORE
     grid_lua_semaphore_release(&grid_lua_state);
+#endif
+
+#ifdef USE_FRAMELIMIT
+    gui_lastrealtime = grid_platform_rtc_get_micros();
 #endif
 
     taskYIELD();

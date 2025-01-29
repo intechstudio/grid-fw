@@ -374,7 +374,7 @@ int l_grid_gui_draw_demo(lua_State* L) {
 
   int counter = luaL_checknumber(L, 1);
 
-  grid_gui_draw_demo(&grid_gui_states[0], counter);
+  grid_gui_draw_demo(&grid_gui_states[1], counter);
 
   return 0;
 }
@@ -383,7 +383,7 @@ int l_grid_gui_draw_demo_image(lua_State* L) {
 
   int count = luaL_checknumber(L, 1);
 
-  grid_gui_draw_demo_image(&grid_gui_states[0], count);
+  grid_gui_draw_demo_image(&grid_gui_states[1], count);
 
   return 0;
 }
