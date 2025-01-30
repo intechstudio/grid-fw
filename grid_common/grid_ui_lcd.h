@@ -30,10 +30,11 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 #define GRID_LUA_FNC_L_SCREEN_HEIGHT_short "lsh"
 #define GRID_LUA_FNC_L_SCREEN_HEIGHT_human "screen_height"
 
+#define GRID_LUA_FNC_L_LIST_length 4
+
 #define GRID_LUA_FNC_L_DRAW_PIXEL_short "ldp"
 #define GRID_LUA_FNC_L_DRAW_PIXEL_human "draw_pixel"
 
-#define GRID_LUA_FNC_L_LIST_length 1
 
 // LCD init function
 #define GRID_LUA_L_META_init                                                                                                                                                                           \
