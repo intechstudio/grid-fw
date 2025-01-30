@@ -110,7 +110,7 @@ jobs:
 
     # Upload CodeQL results as an artifact
     - name: Upload CodeQL results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: codeql-results
         path: codeql-sarif
@@ -123,7 +123,7 @@ jobs:
 
     - name: Upload CodeQL results as an artifact
       if: success() || failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: codeql-results
         path: codeql-sarif
