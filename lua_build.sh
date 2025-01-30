@@ -1,13 +1,7 @@
 #!/bin/bash
 
-# Check if the directory is provided as an argument
-if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 <directory>"
-    exit 1
-fi
-
 # Get the directory from the argument
-directory="$1"
+directory="grid_common/lua_src/"
 
 # Check if the provided argument is a directory
 if [ ! -d "$directory" ]; then
@@ -31,18 +25,33 @@ for lua_file in "$directory"/*.lua; do
 
     # Start writing to the header file
     {
-        echo "#ifndef ${base_name^^}_H"
-        echo "#define ${base_name^^}_H"
+        echo "#ifndef GRID_LUA_${base_name^^}_H"
+        echo "#define GRID_LUA_${base_name^^}_H"
         echo ""
-        echo "const char* ${base_name}_lua = "
-
-        # Use xxd to convert the .lua file to a C string literal
-        xxd -i "$lua_file" | sed 's/unsigned char/const char/' >> "$header_file"
-
+    } > "$header_file"
+        # Use xxd to convert the .lua file to a C string literal and add a terminating zero byte
+        (xxd -i "$lua_file") >> "$header_file"
+    {
         # Close the header guard
         echo ""
-        echo "#endif // ${base_name^^}_H"
-    } > "$header_file"
+        echo "#endif // GRID_LUA_${base_name^^}_H"
+    } >> "$header_file"
+
+
+    # Change variable type to const char
+    sed -i 's/unsigned char/const char/' "$header_file"
+
+    # Change variable name
+    sed -i "s/grid_common_lua_src__glut_lua/grid_lua_${base_name}/" "$header_file"
+
+    # Add terminating zero byte
+    sed -i "s/};/, 0x00};/" "$header_file"
+
+    # Remove newline before the terminating zero byte
+    sed -i ':a;N;$!ba;s/\n,/,/g' "$header_file"
+
+    # Add +1 to the thength integer
+    sed -i ':a;N;$!ba;s/;\n\n/+1;\n\n/g' "$header_file"
 
     echo "Converted $lua_file to $header_file"
 done
