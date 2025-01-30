@@ -15,6 +15,24 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 #define GRID_LUA_FNC_L_ELEMENT_INDEX_short "ind"
 #define GRID_LUA_FNC_L_ELEMENT_INDEX_human "element_index"
 
+#define GRID_LUA_FNC_L_SCREEN_INDEX_index 1
+#define GRID_LUA_FNC_L_SCREEN_INDEX_helper "1"
+#define GRID_LUA_FNC_L_SCREEN_INDEX_short "lin"
+#define GRID_LUA_FNC_L_SCREEN_INDEX_human "screen_index"
+
+#define GRID_LUA_FNC_L_SCREEN_WIDTH_index 2
+#define GRID_LUA_FNC_L_SCREEN_WIDTH_helper "2"
+#define GRID_LUA_FNC_L_SCREEN_WIDTH_short "lsw"
+#define GRID_LUA_FNC_L_SCREEN_WIDTH_human "screen_width"
+
+#define GRID_LUA_FNC_L_SCREEN_HEIGHT_index 3
+#define GRID_LUA_FNC_L_SCREEN_HEIGHT_helper "3"
+#define GRID_LUA_FNC_L_SCREEN_HEIGHT_short "lsh"
+#define GRID_LUA_FNC_L_SCREEN_HEIGHT_human "screen_height"
+
+#define GRID_LUA_FNC_L_DRAW_PIXEL_short "ldp"
+#define GRID_LUA_FNC_L_DRAW_PIXEL_human "draw_pixel"
+
 #define GRID_LUA_FNC_L_LIST_length 1
 
 // LCD init function
@@ -23,8 +41,22 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   \
   " GRID_LUA_FNC_L_ELEMENT_INDEX_short "=function (self,a) return "                                                                                                                                    \
   "gtv(self.index, " GRID_LUA_FNC_L_ELEMENT_INDEX_helper ", a) end, \
+  " GRID_LUA_FNC_L_SCREEN_INDEX_short "=function (self,a) return "                                                                                                                                     \
+  "gtv(self.index, " GRID_LUA_FNC_L_SCREEN_INDEX_helper ", a) end, \
+  " GRID_LUA_FNC_L_SCREEN_WIDTH_short "=function (self,a) return "                                                                                                                                     \
+  "gtv(self.index, " GRID_LUA_FNC_L_SCREEN_WIDTH_helper ", a) end, \
+  " GRID_LUA_FNC_L_SCREEN_HEIGHT_short "=function (self,a) return "                                                                                                                                    \
+  "gtv(self.index, " GRID_LUA_FNC_L_SCREEN_HEIGHT_helper ", a) end, \
   \
   " GRID_LUA_FNC_A_INIT_short " = function (self) print('undefined action') end, \
+  \
+  \
+  " GRID_LUA_FNC_L_DRAW_PIXEL_short " =function (self, ...) "                                                                                                                                          \
+  "local screen_index = "                                                                                                                                                                              \
+  "self"                                                                                                                                                                                               \
+  ":" GRID_LUA_FNC_L_SCREEN_INDEX_short "() "                                                                                                                                                          \
+  "print('screen_index: ', screen_index) " GRID_LUA_FNC_G_GUI_DRAW_PIXEL2_short "(screen_indexm ...)"                                                                                                  \
+  "end, \
   \
   gtt = function (self,a) " GRID_LUA_FNC_G_TIMER_START_short "(self.index,a) end,\
   gtp = function (self) " GRID_LUA_FNC_G_TIMER_STOP_short "(self.index) end,\

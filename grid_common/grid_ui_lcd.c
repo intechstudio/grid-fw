@@ -38,4 +38,7 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   int32_t* template_parameter_list = buf->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_L_ELEMENT_INDEX_index] = element_index;
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_INDEX_index] = element_index % 2; // TODO:implement proper logic here
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_WIDTH_index] = 320;
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_HEIGHT_index] = 240;
 }

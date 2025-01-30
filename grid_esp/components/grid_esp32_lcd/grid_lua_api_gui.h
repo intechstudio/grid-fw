@@ -6,6 +6,7 @@
 
 void grid_gui_lua_draw_demo(lua_State* L, uint8_t loopcounter);
 
+int l_grid_gui_draw_pixel2(lua_State* L);
 int l_grid_gui_draw_pixel(lua_State* L);
 int l_grid_gui_draw_line(lua_State* L);
 int l_grid_gui_draw_rectangle(lua_State* L);

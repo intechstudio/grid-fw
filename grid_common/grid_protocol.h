@@ -408,6 +408,11 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr l_grid_gui_draw_pixel
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_usage "grid_gui_draw_pixel(x, y, {r, g, b}) Draws a pixel at (x, y) with the specified 8-bit color channels."
 
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL2_short "ggdp2"
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL2_human "gui_draw_pixel2"
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL2_fnptr l_grid_gui_draw_pixel2
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL2_usage "grid_gui_draw_pixel(screen_index, x, y, {r, g, b}) Draws a pixel at (x, y) with the specified 8-bit color channels."
+
 #define GRID_LUA_FNC_G_GUI_DRAW_LINE_short "ggdl"
 #define GRID_LUA_FNC_G_GUI_DRAW_LINE_human "gui_draw_line"
 #define GRID_LUA_FNC_G_GUI_DRAW_LINE_fnptr l_grid_gui_draw_line
