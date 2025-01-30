@@ -35,7 +35,6 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 #define GRID_LUA_FNC_L_DRAW_PIXEL_short "ldp"
 #define GRID_LUA_FNC_L_DRAW_PIXEL_human "draw_pixel"
 
-
 // LCD init function
 #define GRID_LUA_L_META_init                                                                                                                                                                           \
   "lcd_meta = { __index = { \
