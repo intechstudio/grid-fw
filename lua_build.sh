@@ -35,7 +35,7 @@ for lua_file in "$directory"/*.lua; do
         echo "#define ${base_name^^}_H"
         echo ""
         echo "const char* ${base_name}_lua = "
-        
+
         # Use xxd to convert the .lua file to a C string literal
         xxd -i "$lua_file" | sed 's/unsigned char/const char/' >> "$header_file"
 
