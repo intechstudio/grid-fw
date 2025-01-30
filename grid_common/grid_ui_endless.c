@@ -151,12 +151,12 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
 
   int32_t delta_velocity = delta_velocity_full;
 
+  // store the fraction of the delta that cannot be emitted as part of a trigger
+  *delta_vel_frac = delta_velocity_full - delta_velocity;
+
   if (delta_velocity == 0) {
     return 0; // did not trigger
   }
-
-  // store the fraction of the delta that cannot be emitted as part of the trigger
-  *delta_vel_frac = delta_velocity_full - delta_velocity;
 
   int32_t old_value = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index];
 
