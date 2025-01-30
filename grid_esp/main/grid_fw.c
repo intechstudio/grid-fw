@@ -142,6 +142,7 @@ char grid_doublebuffer_rx_memory_array[2][GRID_DOUBLE_BUFFER_RX_SIZE] = {0};
 #include "grid_lua_api_gui.h"
 #include "grid_ui_lcd.h"
 
+// TODO: LCD META IS NEVER USED
 void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
 
   // define encoder_init_function
