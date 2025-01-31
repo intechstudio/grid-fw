@@ -55,7 +55,7 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   "local screen_index = "                                                                                                                                                                              \
   "self"                                                                                                                                                                                               \
   ":" GRID_LUA_FNC_L_SCREEN_INDEX_short "() "                                                                                                                                                          \
-  "print('screen_index: ', screen_index) " GRID_LUA_FNC_G_GUI_DRAW_PIXEL2_short "(screen_indexm ...)"                                                                                                  \
+  "print('screen_index: ', screen_index) " GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "(screen_index, ...)"                                                                                                   \
   "end, \
   \
   gtt = function (self,a) " GRID_LUA_FNC_G_TIMER_START_short "(self.index,a) end,\
