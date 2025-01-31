@@ -35,131 +35,6 @@ uint16_t vmp_get_scanline() {
 #include "vmp_def.h"
 #include "vmp_tag.h"
 
-#include "imgtoc.c"
-
-void imgtoc_rgb888_to_grid_color(uint8_t* src, size_t size, size_t w, size_t h, grid_color_t* dest) {
-
-  for (size_t x = 0; x < w; ++x) {
-    for (size_t y = 0; y < h; ++y) {
-      uint8_t* pixel = &src[(y * w + x) * COLMOD_RGB888_BYTES];
-      dest[h * x + y] = (pixel[0] << 24) | (pixel[1] << 16) | (pixel[2] << 8) | (0xff << 0);
-    }
-  }
-}
-
-int grid_esp32_module_vsn_lcd_wait_scan_top(struct grid_esp32_lcd_model* lcd, bool active[2], int lines, int tx_lines, int ready_len, uint16_t scans[2]) {
-
-  // Whether the scanline is in the allowable range
-  bool ready[2] = {false, false};
-
-  // Wait for an active panel's scanline
-  while (true) {
-
-    // Check scanlines for the active panels
-    for (int i = 0; i < 2; ++i) {
-
-      if (!active[i]) {
-        continue;
-      }
-
-      grid_esp32_lcd_get_scanline(lcd, i, LCD_SCAN_OFFSET, &scans[i]);
-
-      // A panel is ready when its scanline enters the allowable range
-      ready[i] = grid_esp32_lcd_scan_in_range(lines + 1, tx_lines, ready_len, scans[i]);
-    }
-
-    // If both panels are ready
-    if (ready[0] && ready[1]) {
-
-      // Choose the panel whose scanline has progressed further
-      return scans[0] < scans[1] ? 1 : 0;
-
-    } else
-      // If only a single panel is ready
-      if (ready[0] || ready[1]) {
-
-        // Choose that panel
-        return ready[0] ? 0 : 1;
-      }
-  }
-}
-
-void grid_esp32_module_vsn_lcd_sync_before_push(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, int lines, bool scans[2]) {
-
-  bool active[2] = {
-      grid_esp32_lcd_panel_active(lcd, 0),
-      grid_esp32_lcd_panel_active(lcd, 1),
-  };
-
-  if (!(active[0] && active[1])) {
-    return;
-  }
-
-  // At the moment, synchronize only before the first panel is pushed
-  if (lcd_index == 0) {
-
-    // Whether the other scanline is in the next half cycle
-    int half = LCD_SCAN_VALUES / 2;
-    bool currhalf = grid_esp32_lcd_scan_in_range(lines + 1, scans[0], half, scans[1]);
-
-    // Frequency control byte
-    uint8_t frctrl = currhalf ? LCD_FRCTRL_39HZ : LCD_FRCTRL_41HZ;
-
-    // Slow down the second panel when it is in the current half cycle,
-    // speed it up when it is in the next half cycle, with the aim of
-    // keeping the two scanlines synchronized
-    grid_esp32_lcd_set_frctrl2(lcd, 1, frctrl);
-  }
-}
-
-void grid_esp32_module_vsn_lcd_push_trailing(struct grid_esp32_lcd_model* lcd, int lcd_index, int lines, int columns, int tx_lines, uint8_t* frame, uint8_t* xferbuf) {
-
-  uint16_t scan;
-
-  // Transfer all lines, n lines at a time
-  for (int i = 0; i < lines; i += tx_lines) {
-
-    int row = (lcd_index == 0) ? i : lines - tx_lines - i;
-
-    // Copy n lines into a transfer buffer
-    uint8_t* src = &frame[row * columns * COLMOD_RGB888_BYTES];
-    memcpy(xferbuf, src, tx_lines * columns * COLMOD_RGB888_BYTES);
-
-    // Wait while the scanline is in the region to be transferred,
-    // to make sure our writes are always trailing it
-    grid_esp32_lcd_get_scanline(lcd, lcd_index, LCD_SCAN_OFFSET, &scan);
-    while (grid_esp32_lcd_scan_in_range(lines + 1, i, tx_lines, scan)) {
-      grid_esp32_lcd_get_scanline(lcd, lcd_index, LCD_SCAN_OFFSET, &scan);
-    }
-
-    // Transfer n lines
-    grid_esp32_lcd_draw_bitmap_blocking(lcd, lcd_index, 0, row, columns / 1, tx_lines, xferbuf);
-  }
-}
-
-void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcd, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf) {
-
-  bool waiting[2] = {
-      grid_esp32_lcd_panel_active(lcd, 0),
-      grid_esp32_lcd_panel_active(lcd, 1),
-  };
-
-  while (waiting[0] || waiting[1]) {
-
-    uint16_t scans[2];
-
-    int lcd_index = grid_esp32_module_vsn_lcd_wait_scan_top(lcd, waiting, lines, tx_lines, ready_len, scans);
-
-    // grid_esp32_module_vsn_lcd_sync_before_push(lcd, lcd_index, lines, scans);
-
-    vmp_push(TOP);
-    grid_esp32_module_vsn_lcd_push_trailing(lcd, lcd_index, lines, columns, tx_lines, guis[lcd_index].buffer, xferbuf);
-    vmp_push(BOT);
-
-    waiting[lcd_index] = false;
-  }
-}
-
 static const char* TAG = "module_tek1";
 
 #define GRID_MODULE_TEK1_POT_NUM 2
@@ -363,35 +238,25 @@ void grid_esp32_module_tek1_task(void* arg) {
     grid_gui_init(&guis[1], &grid_esp32_lcd_state, buf, size, width, height);
   }
 
-  grid_color_t* matrices[imgtoc_count];
-
-  for (int i = 0; i < imgtoc_count; ++i) {
-
-    matrices[i] = heap_caps_malloc(320 * 240 * 4, MALLOC_CAP_SPIRAM);
-
-    if (!matrices[i]) {
-      continue;
-    }
-
-    imgtoc_rgb888_to_grid_color(imgtoc[i], 320 * 240 * 3, 320, 240, matrices[i]);
-  }
-
+  // Clear active panels
   for (int i = 0; i < 2; ++i) {
-    grid_gui_states[i].hardwire_matrices = matrices;
-    grid_gui_states[i].hardwire_count = imgtoc_count;
+
+    if (grid_esp32_lcd_panel_active(lcd, i)) {
+
+      grid_color_t clear = grid_gui_color_from_rgb(0, 0, 0);
+      grid_gui_clear(&guis[i], clear);
+    }
   }
 
-#define USE_SEMAPHORE
+  // Mark the LCD as ready
+  grid_esp32_lcd_set_ready(&grid_esp32_lcd_state, true);
+
+#undef USE_SEMAPHORE
 #define USE_FRAMELIMIT
 
 #ifdef USE_FRAMELIMIT
   uint64_t gui_lastrealtime = 0;
 #endif
-
-  for (int i = 0; i < 2; ++i) {
-    grid_color_t clear = grid_gui_color_from_rgb(0, 0, 0);
-    grid_gui_clear(&guis[i], clear);
-  }
 
   // Allocate profiler & assign its interface
   vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
@@ -426,44 +291,6 @@ void grid_esp32_module_tek1_task(void* arg) {
     }
 
     any_process_analog();
-
-    // vmp_push(TOP);
-    // grid_gui_draw_demo(&guis[0], counter);
-    // grid_gui_draw_demo_image(&guis[0], 0);
-    // grid_gui_draw_demo_rgb(&guis[0], counter);
-    // vmp_push(BOT);
-    // grid_gui_draw_demo(&guis[1], 255 - counter);
-    // grid_gui_draw_demo_image(&guis[1], 0);
-    // grid_gui_draw_demo_rgb(&guis[1], counter);
-
-    ++counter;
-
-    /*
-    if (counter >= SZ_COLBUFS) {
-      counter = 0;
-    }
-    */
-
-#ifdef USE_FRAMELIMIT
-    if (grid_platform_rtc_get_elapsed_time(gui_lastrealtime) < 500000) {
-      taskYIELD();
-      continue;
-    }
-#endif
-
-#ifdef USE_SEMAPHORE
-    grid_lua_semaphore_lock(&grid_lua_state);
-#endif
-
-    grid_esp32_module_vsn_lcd_refresh(lcd, guis, lines, columns, lcd_tx_lines, width / 16, xferbuf);
-
-#ifdef USE_SEMAPHORE
-    grid_lua_semaphore_release(&grid_lua_state);
-#endif
-
-#ifdef USE_FRAMELIMIT
-    gui_lastrealtime = grid_platform_rtc_get_micros();
-#endif
 
     taskYIELD();
   }

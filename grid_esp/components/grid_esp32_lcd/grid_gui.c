@@ -561,7 +561,7 @@ void grid_gui_draw_demo_image(struct grid_gui_model* gui, int count) {
     return;
   }
 
-  grid_gui_draw_matrix(gui, 0, 0, 320, 240, gui->hardwire_matrices[count]);
+  //grid_gui_draw_matrix(gui, 0, 0, 320, 240, gui->hardwire_matrices[count]);
 }
 
 void grid_gui_draw_demo_rgb(struct grid_gui_model* gui, uint8_t counter) {

@@ -8,9 +8,14 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
+#include "esp_log.h"
 
 #include "grid_gui.h"
 #include "grid_sys.h"
+#include "grid_lua.h"
+#include "grid_font.h"
 
 #include "driver/gpio.h"
 
@@ -33,6 +38,7 @@ extern "C" {
 #define LCD_HRES 320
 #define LCD_VRES 240
 #define LCD_LINES LCD_HRES
+#define LCD_COLUMNS LCD_VRES
 #define LCD_SCAN_OFFSET 14
 #define LCD_SCAN_VALUES (LCD_LINES + LCD_SCAN_OFFSET)
 
@@ -44,6 +50,7 @@ enum grid_lcd_clock_t {
 
 struct grid_esp32_lcd_model {
 
+  bool ready;
   esp_lcd_panel_handle_t panel[2][GRID_LCD_CLK_COUNT];
   esp_lcd_panel_io_handle_t panel_io[2][GRID_LCD_CLK_COUNT];
   int cs_gpio_num[2];
@@ -52,6 +59,7 @@ struct grid_esp32_lcd_model {
 
 extern struct grid_esp32_lcd_model grid_esp32_lcd_state;
 
+void grid_esp32_lcd_set_ready(struct grid_esp32_lcd_model* lcd, bool active);
 void grid_esp32_lcd_spi_bus_init(struct grid_esp32_lcd_model* lcd, size_t max_color_sz);
 void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, enum grid_lcd_clock_t);
 bool grid_esp32_lcd_panel_active(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index);
@@ -63,6 +71,8 @@ int grid_esp32_lcd_set_frctrl2(struct grid_esp32_lcd_model* lcd, uint8_t lcd_ind
 int grid_esp32_lcd_get_scanline(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, uint16_t offset, uint16_t* scanline);
 
 bool grid_esp32_lcd_scan_in_range(int max_excl, int start, int length, int x);
+
+void grid_esp32_lcd_task(void* arg);
 
 #ifdef __cplusplus
 }

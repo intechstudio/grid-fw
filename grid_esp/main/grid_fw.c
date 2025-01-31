@@ -545,6 +545,12 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "===== REPORT TASK DONE =====");
 
+  TaskHandle_t lcd_task_hdl;
+
+  xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
+
+  ESP_LOGI(TAG, "===== LCD TASK DONE =====");
+
   esp_timer_create_args_t periodic_rtc_ms_args = {.callback = &periodic_rtc_ms_cb, .name = "rtc millisecond"};
 
   esp_timer_handle_t periodic_rtc_ms_timer;

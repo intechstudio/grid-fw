@@ -6,6 +6,12 @@
 
 #include "grid_esp32_lcd.h"
 
+extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
+
+extern void grid_platform_printf(char const* fmt, ...);
+
+static const char* TAG = "LCD";
+
 #define LCD_SPI_HOST SPI3_HOST
 #define LCD_BK_LIGHT_ON_LEVEL 1
 #define LCD_BK_LIGHT_OFF_LEVEL (!LCD_BK_LIGHT_ON_LEVEL)
@@ -40,6 +46,11 @@ bool color_trans_done_1(void* panel_io, void* edata, void* user_ctx) {
   grid_esp32_lcd_state.tx_ready[1] = 1;
 
   return true;
+}
+
+void grid_esp32_lcd_set_ready(struct grid_esp32_lcd_model* lcd, bool ready) {
+
+  lcd->ready = ready;
 }
 
 void grid_esp32_lcd_spi_bus_init(struct grid_esp32_lcd_model* lcd, size_t max_color_sz) {
@@ -300,3 +311,136 @@ static bool in_range_ahead_excl(int min, int max, int a, int len, int x) {
 }
 
 bool grid_esp32_lcd_scan_in_range(int max_excl, int start, int length, int x) { return in_range_ahead_excl(0, max_excl, start, length, x); }
+
+int grid_esp32_module_vsn_lcd_wait_scan_top(struct grid_esp32_lcd_model* lcd, bool active[2], int lines, int tx_lines, int ready_len, uint16_t scans[2]) {
+
+  // Whether the scanline is in the allowable range
+  bool ready[2] = {false, false};
+
+  // Wait for an active panel's scanline
+  while (true) {
+
+    // Check scanlines for the active panels
+    for (int i = 0; i < 2; ++i) {
+
+      if (!active[i]) {
+        continue;
+      }
+
+      grid_esp32_lcd_get_scanline(lcd, i, LCD_SCAN_OFFSET, &scans[i]);
+
+      // A panel is ready when its scanline enters the allowable range
+      ready[i] = grid_esp32_lcd_scan_in_range(lines + 1, tx_lines, ready_len, scans[i]);
+    }
+
+    // If both panels are ready
+    if (ready[0] && ready[1]) {
+
+      // Choose the panel whose scanline has progressed further
+      return scans[0] < scans[1] ? 1 : 0;
+
+    } else
+
+      // If only a single panel is ready
+      if (ready[0] || ready[1]) {
+
+        // Choose that panel
+        return ready[0] ? 0 : 1;
+      }
+  }
+}
+
+void grid_esp32_module_vsn_lcd_push_trailing(struct grid_esp32_lcd_model* lcd, int lcd_index, int lines, int columns, int tx_lines, uint8_t* frame, uint8_t* xferbuf) {
+
+  uint16_t scan;
+
+  // Transfer all lines, n lines at a time
+  for (int i = 0; i < lines; i += tx_lines) {
+
+    int row = (lcd_index == 0) ? i : lines - tx_lines - i;
+
+    // Copy n lines into a transfer buffer
+    uint8_t* src = &frame[row * columns * COLMOD_RGB888_BYTES];
+    memcpy(xferbuf, src, tx_lines * columns * COLMOD_RGB888_BYTES);
+
+    // Wait while the scanline is in the region to be transferred,
+    // to make sure our writes are always trailing it
+    grid_esp32_lcd_get_scanline(lcd, lcd_index, LCD_SCAN_OFFSET, &scan);
+    while (grid_esp32_lcd_scan_in_range(lines + 1, i, tx_lines, scan)) {
+      grid_esp32_lcd_get_scanline(lcd, lcd_index, LCD_SCAN_OFFSET, &scan);
+    }
+
+    // Transfer n lines
+    grid_esp32_lcd_draw_bitmap_blocking(lcd, lcd_index, 0, row, columns / 1, tx_lines, xferbuf);
+  }
+}
+
+void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcd, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf) {
+
+  bool waiting[2] = {
+      grid_esp32_lcd_panel_active(lcd, 0),
+      grid_esp32_lcd_panel_active(lcd, 1),
+  };
+
+  while (waiting[0] || waiting[1]) {
+
+    uint16_t scans[2];
+
+    int lcd_index = grid_esp32_module_vsn_lcd_wait_scan_top(lcd, waiting, lines, tx_lines, ready_len, scans);
+
+    grid_esp32_module_vsn_lcd_push_trailing(lcd, lcd_index, lines, columns, tx_lines, guis[lcd_index].buffer, xferbuf);
+
+    waiting[lcd_index] = false;
+  }
+}
+
+#undef USE_SEMAPHORE
+
+void grid_esp32_lcd_task(void* arg) {
+
+  struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_state;
+  struct grid_gui_model* guis = grid_gui_states;
+
+  uint32_t lcd_tx_lines = 16;
+  uint32_t lcd_tx_bytes = LCD_VRES * lcd_tx_lines * COLMOD_RGB888_BYTES;
+  uint8_t* xferbuf = malloc(lcd_tx_bytes);
+
+  uint64_t lastrealtime = 0;
+
+  uint8_t counter = 0;
+
+  // Wait for another task to mark the LCD state as ready
+  while (!lcd->ready) {
+    vTaskDelay(1);
+  }
+
+  while (1) {
+
+    if (grid_platform_rtc_get_elapsed_time(lastrealtime) < 200000) {
+      taskYIELD();
+      continue;
+    }
+
+    ++counter;
+
+#ifdef USE_SEMAPHORE
+    grid_lua_semaphore_lock(&grid_lua_state);
+#endif
+
+    grid_esp32_module_vsn_lcd_refresh(lcd, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf);
+
+#ifdef USE_SEMAPHORE
+    grid_lua_semaphore_release(&grid_lua_state);
+#endif
+
+    lastrealtime = grid_platform_rtc_get_micros();
+
+    //taskYIELD();
+    vTaskDelay(1);
+  }
+
+  ESP_LOGI(TAG, "Deinit LCD");
+
+  // Wait to be deleted
+  vTaskSuspend(NULL);
+}
