@@ -5,17 +5,17 @@
  */
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "esp_log.h"
 
-#include "grid_gui.h"
-#include "grid_sys.h"
-#include "grid_lua.h"
 #include "grid_font.h"
+#include "grid_gui.h"
+#include "grid_lua.h"
+#include "grid_sys.h"
 
 #include "driver/gpio.h"
 

@@ -48,10 +48,7 @@ bool color_trans_done_1(void* panel_io, void* edata, void* user_ctx) {
   return true;
 }
 
-void grid_esp32_lcd_set_ready(struct grid_esp32_lcd_model* lcd, bool ready) {
-
-  lcd->ready = ready;
-}
+void grid_esp32_lcd_set_ready(struct grid_esp32_lcd_model* lcd, bool ready) { lcd->ready = ready; }
 
 void grid_esp32_lcd_spi_bus_init(struct grid_esp32_lcd_model* lcd, size_t max_color_sz) {
 
@@ -435,7 +432,7 @@ void grid_esp32_lcd_task(void* arg) {
 
     lastrealtime = grid_platform_rtc_get_micros();
 
-    //taskYIELD();
+    // taskYIELD();
     vTaskDelay(1);
   }
 
