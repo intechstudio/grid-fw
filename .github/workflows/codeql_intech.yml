@@ -12,10 +12,7 @@
 name: "CodeQL"
 
 on:
-  push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: '*'
+  workflow_dispatch:
 
 jobs:
   analyze:
@@ -110,20 +107,20 @@ jobs:
 
     # Upload CodeQL results as an artifact
     - name: Upload CodeQL results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: codeql-results
         path: codeql-sarif
 
     - name: Upload CodeQL results to code scanning
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: codeql-sarif
         category: "/language:${{matrix.language}}"
 
     - name: Upload CodeQL results as an artifact
       if: success() || failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: codeql-results
         path: codeql-sarif
