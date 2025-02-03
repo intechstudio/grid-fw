@@ -121,8 +121,8 @@ enum vmp_err_t vmp_uid_str_free(struct vmp_uid_str_t* uid_str) {
   return VMP_ERR_NONE;
 }
 
-size_t vmp_write_u8_str(vmp_fwrite_t write, char* s) {
-  size_t len = strlen(s);
+size_t vmp_write_u8_str(vmp_fwrite_t write, char* s, size_t maxlen) {
+  size_t len = strnlen(s, maxlen);
   if (len > VMP_UID_STR_MAX - 1) {
     return 0;
   }
@@ -165,7 +165,7 @@ size_t vmp_uid_str_serialize_and_write(int uids, char** strs, struct vmp_reg_t* 
   size += reg->fwrite(&u32, sizeof(uint32_t));
 
   for (int i = 0; i < uids; ++i) {
-    size += vmp_write_u8_str(reg->fwrite, strs[i]);
+    size += vmp_write_u8_str(reg->fwrite, strs[i], VMP_UID_STR_MAX);
   }
 
   return size;
@@ -203,7 +203,7 @@ size_t vmp_serialize_start(struct vmp_reg_t* reg) {
     return 0;
   }
 
-  return reg->fwrite(VMP_START, strlen(VMP_START));
+  return reg->fwrite(VMP_START, strnlen(VMP_START, sizeof(VMP_START)));
 }
 
 size_t vmp_serialize_close(struct vmp_reg_t* reg) {
@@ -211,7 +211,7 @@ size_t vmp_serialize_close(struct vmp_reg_t* reg) {
     return 0;
   }
 
-  return reg->fwrite(VMP_CLOSE, strlen(VMP_CLOSE));
+  return reg->fwrite(VMP_CLOSE, strnlen(VMP_CLOSE, sizeof(VMP_CLOSE)));
 }
 
 enum vmp_err_t vmp_evt_to_vis(struct vmp_buf_t* src, struct vmp_buf_t* dest) {

@@ -491,7 +491,7 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t counter) {
   for (uint32_t y = 0; y < gui->height; ++y) {
     for (uint32_t x = 0; x < gui->width; ++x) {
 
-      grid_color_t col = ((((uint8_t)(counter * 8 + y * 2)) << 24) | (((uint8_t)(counter * 8 + x * 2)) << 16) | (((uint8_t)(0x00)) << 8) | ((0xff) << 0));
+      grid_color_t col = ((((uint8_t)(counter * 8 + y * 2)) << 24) | (((uint8_t)(counter * 8 + x * 2)) << 16) | ((0xff) << 0));
       grid_gui_draw_pixel(gui, x, y, col);
     }
   }
@@ -547,7 +547,7 @@ void grid_gui_draw_demo_matrix(struct grid_gui_model* gui, uint8_t counter, grid
   for (uint32_t y = 0; y < gui->height; ++y) {
     for (uint32_t x = 0; x < gui->width; ++x) {
 
-      grid_color_t col = (((counter * 8 + y) << 24) | ((counter * 8 + x) << 16) | ((0x0) << 8) | ((0xff) << 0));
+      grid_color_t col = (((counter * 8 + y) << 24) | ((counter * 8 + x) << 16) | ((0xff) << 0));
       matrix[y * gui->width + x] = col;
     }
   }
