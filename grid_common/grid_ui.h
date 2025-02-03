@@ -152,7 +152,7 @@ uint8_t grid_ui_page_get_next(struct grid_ui_model* ui);
 uint8_t grid_ui_page_get_prev(struct grid_ui_model* ui);
 
 void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page);
-void grid_ui_page_load_success_callback(void);
+void grid_ui_page_load_success_callback(uint8_t lastheader_id);
 
 void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t page);
 uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui);
