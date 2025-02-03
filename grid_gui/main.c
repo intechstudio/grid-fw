@@ -183,6 +183,12 @@ void loop(void) {
 
   grid_lua_dostring(&grid_lua_state, grid_lua_loop_script);
 
+  char buffer[1024] = {0};
+  snprintf(buffer, 1024, "loopcounter %d", loopcounter);
+  grid_font_draw_string_fast(&grid_gui_state, 0, 20, (unsigned char*)buffer, grid_gui_color_from_rgb(255, 0, 0));
+
+  grid_font_draw_string_fast(&grid_gui_state, 0, 0, (unsigned char*)"hello", grid_gui_color_from_rgb(255, 0, 0));
+
   loopcounter++;
   // grid_gui_lua_draw_demo(grid_lua_state.L, loopcounter);
 

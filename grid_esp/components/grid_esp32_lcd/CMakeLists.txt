@@ -4,7 +4,9 @@ idf_component_register(
         "grid_gui.c"
         "grid_lua_api_gui.c"
         "grid_font.c"
-        "inter_font.c"
+        "./generated_fonts/interdisplay_regular.c"
+        "./generated_fonts/spacemono_regular.c"
+        "./generated_fonts/spacemono_bold.c"
     INCLUDE_DIRS
         "."
     REQUIRES

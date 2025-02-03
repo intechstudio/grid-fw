@@ -361,7 +361,6 @@ void grid_pico_task_spi_rx(struct grid_pico_task_timer* timer) {
 
   // Control LCD backlight
   gpio_put(GRID_PICO_LCD_BACKLIGHT_PIN, spi_rx_buf[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index]);
-
   // The number of trailing zeroes in the destination flag
   // indexes the destination UART port of the message
   uint8_t dest_flags = spi_rx_buf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
@@ -619,6 +618,15 @@ int main() {
   };
 
   // bool vmp_flushed = false;
+
+  gpio_init(GRID_PICO_LCD_RESET_PIN);
+  gpio_put(GRID_PICO_LCD_RESET_PIN, 1);
+  gpio_set_dir(GRID_PICO_LCD_RESET_PIN, GPIO_OUT);
+
+  gpio_init(GRID_PICO_LCD_BACKLIGHT_PIN);
+  gpio_set_dir(GRID_PICO_LCD_BACKLIGHT_PIN, GPIO_OUT);
+  gpio_put(GRID_PICO_LCD_BACKLIGHT_PIN, 0);
+
   while (1) {
 
     // vmp_push(MAIN);
