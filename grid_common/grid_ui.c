@@ -410,7 +410,9 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
   grid_ui_bulk_pageread_init(ui, grid_ui_page_get_activepage(&grid_ui_state), 0, grid_ui_page_load_success_callback);
 }
 
-void grid_ui_page_load_success_callback(void) {
+void grid_ui_page_load_success_callback(uint8_t lastheader_id) {
+
+  (void)lastheader_id;
 
   // grid_platform_printf("LOAD SUCCESS\r\n");
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
