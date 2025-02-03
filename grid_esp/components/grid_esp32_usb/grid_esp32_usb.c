@@ -165,7 +165,7 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) {
     // ets_printf("SKIP %d\r\n", status);
 
     if (status == ESP_OK) {
-      ets_printf("READY\r\n");
+      // ets_printf("READY\r\n");
       usb_tx_ready = 1;
     }
   }

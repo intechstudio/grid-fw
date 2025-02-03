@@ -407,7 +407,7 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
 
   grid_ui_semaphore_release(ui);
 
-  grid_ui_bulk_pageread_init(ui, grid_ui_page_get_activepage(&grid_ui_state), 0, &grid_ui_page_load_success_callback);
+  grid_ui_bulk_pageread_init(ui, grid_ui_page_get_activepage(&grid_ui_state), 0, grid_ui_page_load_success_callback);
 }
 
 void grid_ui_page_load_success_callback(uint8_t lastheader) {
