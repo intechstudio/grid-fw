@@ -167,7 +167,7 @@ void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, "for i=9, 12 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
 
   grid_lua_dostring(lua, "for i=13, 13  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(lua, "for i=13, 13  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], endless_meta)  end");
+  grid_lua_dostring(lua, "for i=13, 13  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], lcd_meta)  end");
 
   grid_lua_gc_try_collect(lua);
 

@@ -51,25 +51,30 @@ int l_grid_gui_draw_pixel(lua_State* L) {
 
   // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
 
-  int x = luaL_checknumber(L, 1);
-  int y = luaL_checknumber(L, 2);
+  int screen_index = luaL_checknumber(L, 1);
+
+  int x = luaL_checknumber(L, 2);
+  int y = luaL_checknumber(L, 3);
   // Optional color parameter
-  if (lua_gettop(L) >= 3) {
-    luaL_checktype(L, 3, LUA_TTABLE);
-    lua_rawgeti(L, 3, 1);
+  if (lua_gettop(L) >= 4) {
+    luaL_checktype(L, 4, LUA_TTABLE);
+    lua_rawgeti(L, 4, 1);
     int r = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 3, 2);
+    lua_rawgeti(L, 4, 2);
     int g = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 3, 3);
+    lua_rawgeti(L, 4, 3);
     int b = luaL_checknumber(L, -1);
     // Use r, g, b values to set color
     // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
-    grid_gui_draw_pixel(&grid_gui_state, x, y, grid_gui_color_from_rgb(r, g, b));
-  }
-  // Draw the pixel at (x, y)
+    // TODO: select the screen using the proper grid_gui_state
+    if (screen_index == 0) {
+      grid_gui_draw_pixel(&grid_gui_state, x, y, grid_gui_color_from_rgb(r, g, b));
 
-  // Draw the line from (x1, y1) to (x2, y2) with optional color
+    } else {
+      grid_gui_draw_pixel(&grid_gui_state, x, y, grid_gui_color_from_rgb(r, g, b));
+    }
+  }
   return 0;
 }
 
