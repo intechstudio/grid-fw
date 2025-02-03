@@ -412,8 +412,6 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
 
 void grid_ui_page_load_success_callback(uint8_t lastheader) {
 
-  (void)lastheader;
-
   // grid_platform_printf("LOAD SUCCESS\r\n");
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
