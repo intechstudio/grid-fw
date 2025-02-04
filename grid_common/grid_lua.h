@@ -14,49 +14,49 @@
 #include "lua-5.4.3/src/lua.h"
 #include "lua-5.4.3/src/lualib.h"
 
-#include "grid_ui.h"
+#include "grid_protocol.h"
 
 extern void grid_platform_printf(char const* fmt, ...);
 extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 
 // GRID LOOKUP TABLE
-#define GRID_LUA_GLUT_source                                                                                                                                                                           \
-  "function glut (a, ...)      \
- local t = table.pack(...)   \
- for i = 1, t.n//2*2 do      \
-  if i%2 == 1 then           \
-   if t[i] == a then         \
-    return t[i+1]            \
-   end                       \
-  end                        \
- end                         \
- return nil                  \
+#define GRID_LUA_GLUT_source \
+  "function glut (a, ...) \
+ local t = table.pack(...) \
+ for i = 1, t.n//2*2 do \
+  if i%2 == 1 then \
+   if t[i] == a then \
+    return t[i+1] \
+   end \
+  end \
+ end \
+ return nil \
 end"
 
 // GRID LIMIT
-#define GRID_LUA_GLIM_source                                                                                                                                                                           \
-  "function glim (a, min, max)  \
+#define GRID_LUA_GLIM_source \
+  "function glim (a, min, max) \
  if a>max then return max end \
  if a<min then return min end \
  return a \
 end"
 
 // GRID ELEMENT NAME
-#define GRID_LUA_GEN_source                                                                                                                                                                            \
+#define GRID_LUA_GEN_source \
   "function gen (a, b)  \
  if b==nil then \
-  if ele[a].sn==nil then\
-   return ''\
-  else\
+  if ele[a].sn==nil then \
+   return '' \
+  else \
    return ele[a].sn \
-  end\
+  end \
  else \
   ele[a].sn=b \
   gens(a,b) \
  end \
 end"
 
-#define GRID_LUA_MAPSAT_source                                                                                                                                                                         \
+#define GRID_LUA_MAPSAT_source \
   "function " GRID_LUA_FNC_G_MAPSAT_short "(x, in_min, in_max, o_min, o_max) \
 	local n = (x - in_min) * (o_max - o_min) / (in_max - in_min) + o_min \
   local o_max2, o_min2 = o_max, o_min \
@@ -72,7 +72,7 @@ end"
 	end \
 end"
 
-#define GRID_LUA_SIGN_source                                                                                                                                                                           \
+#define GRID_LUA_SIGN_source \
   "function " GRID_LUA_FNC_G_SIGN_short "(x) \
     if x > 0 then \
         return 1 \
@@ -83,7 +83,7 @@ end"
     end \
 end"
 
-#define GRID_LUA_SEGCALC_source                                                                                                                                                                        \
+#define GRID_LUA_SEGCALC_source \
   "function " GRID_LUA_FNC_G_SEGCALC_short "(seg, enc_val, enc_min, enc_max) \
 	local s_min = enc_min + (enc_max - enc_min) / 5 * seg; \
 	local s_max = enc_min + (enc_max - enc_min) / 5 * (seg + 1) \
@@ -122,6 +122,8 @@ struct grid_lua_model {
   uint8_t target_memory_usage_kilobytes;
 };
 
+typedef void (*lua_ui_init_callback_t)(struct grid_lua_model*);
+
 extern struct grid_lua_model grid_lua_state;
 
 void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance);
@@ -152,7 +154,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message);
 
 int grid_lua_vm_register_functions(struct grid_lua_model* lua, struct luaL_Reg* lua_lib);
 
-void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui);
+void grid_lua_ui_init(struct grid_lua_model* lua, lua_ui_init_callback_t callback);
 
 void grid_lua_start_vm(struct grid_lua_model* lua);
 

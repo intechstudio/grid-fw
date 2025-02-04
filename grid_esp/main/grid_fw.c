@@ -313,7 +313,6 @@ void app_main(void) {
   ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
 
   esp_log_level_set("*", ESP_LOG_INFO);
-  uint8_t loopcounter = 0;
 
   TaskHandle_t core2_task_hdl;
   xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024 * 3, NULL, 4, &core2_task_hdl, 1);
@@ -432,17 +431,17 @@ void app_main(void) {
     if (i < 4) {
       // UART
       grid_doublebuffer_tx_array[i].buffer_size = sizeof(grid_doublebuffer_tx_memory_array[i]);
-      grid_doublebuffer_tx_array[i].buffer_storage = &grid_doublebuffer_tx_memory_array[i];
+      grid_doublebuffer_tx_array[i].buffer_storage = grid_doublebuffer_tx_memory_array[i];
     }
 
     if (i == 5) {
       // USB
 
       grid_doublebuffer_tx_array[i].buffer_size = sizeof(grid_doublebuffer_tx_memory_array[i - 1]);
-      grid_doublebuffer_tx_array[i].buffer_storage = &grid_doublebuffer_tx_memory_array[i - 1];
+      grid_doublebuffer_tx_array[i].buffer_storage = grid_doublebuffer_tx_memory_array[i - 1];
 
       grid_doublebuffer_rx_array[i].buffer_size = sizeof(grid_doublebuffer_rx_memory_array[0]);
-      grid_doublebuffer_rx_array[i].buffer_storage = &grid_doublebuffer_rx_memory_array[0];
+      grid_doublebuffer_rx_array[i].buffer_storage = grid_doublebuffer_rx_memory_array[0];
     }
   }
 
@@ -517,16 +516,15 @@ void app_main(void) {
 
   // Create the class driver task
 
-  TaskHandle_t nvm_task_hdl;
-
   TaskHandle_t port_task_hdl;
-  TaskHandle_t ui_task_hdl;
 
   xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 4096 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
 
   ESP_LOGI(TAG, "===== PORT TASK DONE =====");
 
   // Create the class driver task
+
+  TaskHandle_t nvm_task_hdl;
 
   xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 10, NULL, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
 

@@ -514,7 +514,7 @@ struct grid_buffer* grid_buffer_allocate_init(size_t length) {
   struct grid_buffer* buffer = (struct grid_buffer*)malloc(sizeof(struct grid_buffer));
   memset(buffer, 0, sizeof(struct grid_buffer));
 
-  buffer->buffer_storage = (struct grid_buffer*)malloc(length * sizeof(char));
+  buffer->buffer_storage = (char*)malloc(length * sizeof(char));
   memset(buffer->buffer_storage, 0, length * sizeof(char));
 
   grid_buffer_init(buffer, length);

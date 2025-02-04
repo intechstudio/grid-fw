@@ -96,6 +96,7 @@ blit32_glyph blit32_Glyphs[blit_NUM_GLYPHS] =
     blit32_DESCENDER,
     blit32_ADVANCE,
     blit32_ROW_ADVANCE,
+    {0},
 #endif /*blit32_ARRAY_ONLY*/
 };
 
@@ -169,7 +170,9 @@ int blit32_TextNExplicit(blit_pixel* Buffer, blit_pixel Value, int Scale, int Bu
         break; /* tab: add 4 spaces */
       case '\n':
         y += DrawDir * Scale * blit32_ROW_ADVANCE;
-        ++LinesPrinted; /* new line; fallthrough */
+        ++LinesPrinted; /* new line */
+        x = StartX;
+        break; /* carriage return */
       case '\r':
         x = StartX;
         break; /* carriage return */

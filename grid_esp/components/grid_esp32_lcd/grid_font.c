@@ -17,7 +17,7 @@ static char memory[57000] = {0};
     ptr;                                                                                                                                                                                               \
   }))
 
-#define STBTT_free(x, u) (/*printf("Freeing %p\n", (void*)(x)), */ (x != memory ? free(x) : 0))
+#define STBTT_free(x, u) (/*printf("Freeing %p\n", (void*)(x)), */ ((void*)x != (void*)memory ? free(x) : 0))
 #endif
 
 #define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
@@ -35,12 +35,12 @@ extern const int generated_fonts_spacemono_bold_ttf_len;
 struct grid_font_table {
   char name[30];
   unsigned char* data;
-  int* size
+  int* size;
 };
 
-struct grid_font_table font_list[] = {{.name = "interdisplay_regular", .data = (unsigned char*)generated_fonts_interdisplay_regular_ttf, .size = &generated_fonts_interdisplay_regular_ttf_len},
-                                      {.name = "spacemono_regular", .data = (unsigned char*)generated_fonts_spacemono_regular_ttf, .size = &generated_fonts_spacemono_regular_ttf_len},
-                                      {.name = "spacemono_bold", .data = (unsigned char*)generated_fonts_spacemono_bold_ttf, .size = &generated_fonts_spacemono_bold_ttf_len}};
+struct grid_font_table font_list[] = {{.name = "interdisplay_regular", .data = (unsigned char*)generated_fonts_interdisplay_regular_ttf, .size = (int*)&generated_fonts_interdisplay_regular_ttf_len},
+                                      {.name = "spacemono_regular", .data = (unsigned char*)generated_fonts_spacemono_regular_ttf, .size = (int*)&generated_fonts_spacemono_regular_ttf_len},
+                                      {.name = "spacemono_bold", .data = (unsigned char*)generated_fonts_spacemono_bold_ttf, .size = (int*)&generated_fonts_spacemono_bold_ttf_len}};
 
 int grid_font_init(struct grid_font_model* font) {
 
@@ -133,7 +133,7 @@ int grid_font_draw_string_fast(struct grid_gui_model* gui, uint16_t x, uint16_t 
   uint8_t b = grid_gui_color_to_blue(color);
 
   ThreeByteType three_byte_color = {r, g, b};
-  int ret = blit32_TextExplicit(buffer, three_byte_color, 4, 320, 240, 1, x, y, str);
+  blit32_TextExplicit((blit_pixel*)buffer, three_byte_color, 4, 320, 240, 1, x, y, str);
 
   return 0;
 }

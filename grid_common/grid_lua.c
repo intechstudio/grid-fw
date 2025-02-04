@@ -192,15 +192,15 @@ int grid_lua_vm_register_functions(struct grid_lua_model* lua, struct luaL_Reg* 
   return 0;
 }
 
-void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui) {
+void grid_lua_ui_init(struct grid_lua_model* lua, lua_ui_init_callback_t callback) {
 
-  if (ui->lua_ui_init_callback == NULL) {
+  if (callback == NULL) {
 
-    grid_platform_printf("LUA UI INIT FAILED: ui->lua_ui_init_callback not registered\r\n");
+    grid_platform_printf("LUA UI INIT FAILED: callback not registered\r\n");
     return;
   }
 
-  ui->lua_ui_init_callback(lua);
+  callback(lua);
 
   // grid_lua_debug_memory_stats(lua, "Ui init");
 }
