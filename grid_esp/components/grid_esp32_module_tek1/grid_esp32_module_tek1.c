@@ -25,13 +25,6 @@
 
 #include "grid_esp32_adc.h"
 
-uint16_t vmp_get_scanline() {
-
-  uint16_t scan;
-  grid_esp32_lcd_get_scanline(&grid_esp32_lcd_state, 0, 14, &scan);
-  return scan;
-}
-
 #include "vmp_def.h"
 #include "vmp_tag.h"
 
@@ -181,7 +174,7 @@ void grid_esp32_module_tek1_task(void* arg) {
     }
   }
 
-  struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_state;
+  struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
 
   // Allocate transfer buffer
   uint32_t width = LCD_HRES;
@@ -191,7 +184,7 @@ void grid_esp32_module_tek1_task(void* arg) {
   uint8_t* xferbuf = malloc(lcd_tx_bytes);
 
   // Initialize LCD
-  grid_esp32_lcd_spi_bus_init(&grid_esp32_lcd_state, lcd_tx_bytes);
+  grid_esp32_lcd_spi_bus_init(lcd_tx_bytes);
 
   // Wait for the coprocessor to pull the LCD reset pin high
   vTaskDelay(pdMS_TO_TICKS(500));
@@ -199,19 +192,23 @@ void grid_esp32_module_tek1_task(void* arg) {
   // Initialize LCD panel at index 0, if necessary
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
-    grid_esp32_lcd_panel_init(&grid_esp32_lcd_state, 0, GRID_LCD_CLK_SLOW);
-    grid_esp32_lcd_panel_init(&grid_esp32_lcd_state, 0, GRID_LCD_CLK_FAST);
-    grid_esp32_lcd_panel_reset(&grid_esp32_lcd_state, 0);
-    grid_esp32_lcd_set_frctrl2(&grid_esp32_lcd_state, 0, LCD_FRCTRL_40HZ);
+
+    struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[0];
+    grid_esp32_lcd_panel_init(lcd, 0, GRID_LCD_CLK_SLOW);
+    grid_esp32_lcd_panel_init(lcd, 0, GRID_LCD_CLK_FAST);
+    grid_esp32_lcd_panel_reset(lcd);
+    grid_esp32_lcd_panel_set_frctrl2(lcd, LCD_FRCTRL_40HZ);
   }
 
   // Initialize LCD panel at index 1, if necessary
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
-    grid_esp32_lcd_panel_init(&grid_esp32_lcd_state, 1, GRID_LCD_CLK_SLOW);
-    grid_esp32_lcd_panel_init(&grid_esp32_lcd_state, 1, GRID_LCD_CLK_FAST);
-    grid_esp32_lcd_panel_reset(&grid_esp32_lcd_state, 1);
-    grid_esp32_lcd_set_frctrl2(&grid_esp32_lcd_state, 1, LCD_FRCTRL_40HZ);
+
+    struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[1];
+    grid_esp32_lcd_panel_init(lcd, 1, GRID_LCD_CLK_SLOW);
+    grid_esp32_lcd_panel_init(lcd, 1, GRID_LCD_CLK_FAST);
+    grid_esp32_lcd_panel_reset(lcd);
+    grid_esp32_lcd_panel_set_frctrl2(lcd, LCD_FRCTRL_40HZ);
   }
 
   // Initialize font
@@ -229,19 +226,19 @@ void grid_esp32_module_tek1_task(void* arg) {
   // Initialize GUI at index 0, if necessary
   if (hwcfg == GRID_MODULE_TEK1_RevA || hwcfg == GRID_MODULE_VSN1_RevA || hwcfg == GRID_MODULE_VSN1_RevB || hwcfg == GRID_MODULE_VSN2_RevA || hwcfg == GRID_MODULE_VSN2_RevB) {
     uint8_t* buf = heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
-    grid_gui_init(&guis[0], &grid_esp32_lcd_state, buf, size, width, height);
+    grid_gui_init(&guis[0], &lcds[0], buf, size, width, height);
   }
 
   // Initialize GUI panel at index 1, if necessary
   if (hwcfg == GRID_MODULE_VSN1R_RevA || hwcfg == GRID_MODULE_VSN1R_RevB || hwcfg == GRID_MODULE_VSN2_RevA || hwcfg == GRID_MODULE_VSN2_RevB) {
     uint8_t* buf = heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
-    grid_gui_init(&guis[1], &grid_esp32_lcd_state, buf, size, width, height);
+    grid_gui_init(&guis[1], &lcds[1], buf, size, width, height);
   }
 
   // Clear active panels
   for (int i = 0; i < 2; ++i) {
 
-    if (grid_esp32_lcd_panel_active(lcd, i)) {
+    if (grid_esp32_lcd_panel_active(&lcds[i])) {
 
       grid_color_t clear = grid_gui_color_from_rgb(0, 0, 0);
       grid_gui_clear(&guis[i], clear);
@@ -249,7 +246,7 @@ void grid_esp32_module_tek1_task(void* arg) {
   }
 
   // Mark the LCD as ready
-  grid_esp32_lcd_set_ready(&grid_esp32_lcd_state, true);
+  grid_esp32_lcd_set_ready(true);
 
 #undef USE_SEMAPHORE
 #define USE_FRAMELIMIT

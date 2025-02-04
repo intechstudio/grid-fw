@@ -50,26 +50,29 @@ enum grid_lcd_clock_t {
 
 struct grid_esp32_lcd_model {
 
-  bool ready;
-  esp_lcd_panel_handle_t panel[2][GRID_LCD_CLK_COUNT];
-  esp_lcd_panel_io_handle_t panel_io[2][GRID_LCD_CLK_COUNT];
-  int cs_gpio_num[2];
-  uint8_t tx_ready[2];
+  bool mirrors[2];
+  esp_lcd_panel_handle_t panel[GRID_LCD_CLK_COUNT];
+  esp_lcd_panel_io_handle_t panel_io[GRID_LCD_CLK_COUNT];
+  int cs_gpio_num;
+  uint8_t tx_ready;
 };
 
-extern struct grid_esp32_lcd_model grid_esp32_lcd_state;
+extern struct grid_esp32_lcd_model grid_esp32_lcd_states[2];
 
-void grid_esp32_lcd_set_ready(struct grid_esp32_lcd_model* lcd, bool active);
-void grid_esp32_lcd_spi_bus_init(struct grid_esp32_lcd_model* lcd, size_t max_color_sz);
-void grid_esp32_lcd_panel_chipsel(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, uint8_t value);
+extern bool grid_esp32_lcd_ready;
+
+void grid_esp32_lcd_set_ready(bool active);
+bool grid_esp32_lcd_get_ready();
+void grid_esp32_lcd_spi_bus_init(size_t max_color_sz);
+
+void grid_esp32_lcd_panel_chipsel(struct grid_esp32_lcd_model* lcd, uint8_t value);
 void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, enum grid_lcd_clock_t);
-bool grid_esp32_lcd_panel_active(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index);
-void grid_esp32_lcd_panel_reset(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index);
-bool grid_esp32_lcd_panel_tx_ready(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index);
-int grid_esp32_lcd_draw_bitmap_blocking(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void* framebuffer);
-int grid_esp32_lcd_set_madctl(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, uint8_t madctl);
-int grid_esp32_lcd_set_frctrl2(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, uint8_t frctrl);
-int grid_esp32_lcd_get_scanline(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, uint16_t offset, uint16_t* scanline);
+bool grid_esp32_lcd_panel_active(struct grid_esp32_lcd_model* lcd);
+void grid_esp32_lcd_panel_reset(struct grid_esp32_lcd_model* lcd);
+bool grid_esp32_lcd_panel_tx_ready(struct grid_esp32_lcd_model* lcd);
+int grid_esp32_lcd_panel_draw_bitmap_blocking(struct grid_esp32_lcd_model* lcd, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void* framebuffer);
+int grid_esp32_lcd_panel_set_frctrl2(struct grid_esp32_lcd_model* lcd, uint8_t frctrl);
+int grid_esp32_lcd_panel_get_scanline(struct grid_esp32_lcd_model* lcd, uint16_t offset, uint16_t* scanline);
 
 bool grid_esp32_lcd_scan_in_range(int max_excl, int start, int length, int x);
 
