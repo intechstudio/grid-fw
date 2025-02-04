@@ -183,11 +183,13 @@ void loop(void) {
 
   grid_lua_dostring(&grid_lua_state, grid_lua_loop_script);
 
+  lua_pushinteger(grid_lua_state.L, loopcounter);
+  l_grid_gui_draw_demo(grid_lua_state.L);
+
   char buffer[1024] = {0};
   snprintf(buffer, 1024, "loopcounter %d", loopcounter);
 
   loopcounter++;
-  // grid_gui_lua_draw_demo(grid_lua_state.L, loopcounter);
 
   draw_screen(&grid_gui_states[0]);
 

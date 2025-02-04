@@ -460,11 +460,6 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr l_grid_gui_draw_demo
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_usage "gui_draw_demo(n) Draws the n-th iteration of the demo."
 
-#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_IMAGE_short "ggddi"
-#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_IMAGE_human "gui_draw_demo_image"
-#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_IMAGE_fnptr l_grid_gui_draw_demo_image
-#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_IMAGE_usage "gui_draw_demo_image(n) Draws the n-th hardcoded image out of six, indexed from zero."
-
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 
 #define GRID_LUA_FNC_A_INIT_short "ini"

@@ -18,8 +18,6 @@
 
 extern void grid_platform_printf(char const* fmt, ...);
 
-void grid_gui_lua_draw_demo(lua_State* L, uint8_t loopcounter) { grid_gui_draw_demo(&grid_gui_states[0], loopcounter); }
-
 int l_grid_gui_draw_pixel(lua_State* L) {
 
   // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
@@ -347,16 +345,7 @@ int l_grid_gui_draw_demo(lua_State* L) {
 
   int counter = luaL_checknumber(L, 1);
 
-  grid_gui_draw_demo(&grid_gui_states[1], counter);
-
-  return 0;
-}
-
-int l_grid_gui_draw_demo_image(lua_State* L) {
-
-  int count = luaL_checknumber(L, 1);
-
-  grid_gui_draw_demo_image(&grid_gui_states[1], count);
+  grid_gui_draw_demo(&grid_gui_states[0], counter);
 
   return 0;
 }
@@ -372,7 +361,6 @@ int l_grid_gui_draw_demo_image(lua_State* L) {
     {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_DEMO_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr},
-    {GRID_LUA_FNC_G_GUI_DRAW_DEMO_IMAGE_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_IMAGE_fnptr},
     {NULL, NULL} /* end of array */
 };
 

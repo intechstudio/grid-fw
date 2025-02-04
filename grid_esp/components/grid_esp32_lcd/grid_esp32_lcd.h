@@ -61,6 +61,7 @@ extern struct grid_esp32_lcd_model grid_esp32_lcd_state;
 
 void grid_esp32_lcd_set_ready(struct grid_esp32_lcd_model* lcd, bool active);
 void grid_esp32_lcd_spi_bus_init(struct grid_esp32_lcd_model* lcd, size_t max_color_sz);
+void grid_esp32_lcd_panel_chipsel(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, uint8_t value);
 void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, enum grid_lcd_clock_t);
 bool grid_esp32_lcd_panel_active(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index);
 void grid_esp32_lcd_panel_reset(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index);

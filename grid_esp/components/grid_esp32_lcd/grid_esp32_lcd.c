@@ -65,6 +65,11 @@ void grid_esp32_lcd_spi_bus_init(struct grid_esp32_lcd_model* lcd, size_t max_co
   ESP_ERROR_CHECK(spi_bus_initialize(LCD_SPI_HOST, &bus_config, SPI_DMA_CH_AUTO));
 }
 
+void grid_esp32_lcd_panel_chipsel(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, uint8_t value) {
+
+  gpio_set_level(lcd->cs_gpio_num[lcd_index], value != 0);
+}
+
 void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, enum grid_lcd_clock_t clock) {
 
   assert(lcd_index < 2);
@@ -82,7 +87,7 @@ void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_ind
   }
 
   gpio_set_direction(lcd->cs_gpio_num[lcd_index], GPIO_MODE_OUTPUT);
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 
   // Panel starts out ready for transmission
   lcd->tx_ready[lcd_index] = 1;
@@ -146,35 +151,35 @@ void grid_esp32_lcd_panel_reset(struct grid_esp32_lcd_model* lcd, uint8_t lcd_in
 
   esp_lcd_panel_handle_t handle = lcd->panel[lcd_index][GRID_LCD_CLK_FAST];
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 0);
   esp_lcd_panel_reset(handle);
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 0);
   esp_lcd_panel_init(handle);
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 0);
   esp_lcd_panel_swap_xy(handle, LCD_SWAP_XY);
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 0);
   esp_lcd_panel_set_gap(handle, LCD_GAP_X, LCD_GAP_Y);
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 
   bool mirror_x = lcd_index ? !LCD_MIRROR_X : LCD_MIRROR_X;
   bool mirror_y = lcd_index ? !LCD_MIRROR_Y : LCD_MIRROR_Y;
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 0);
   esp_lcd_panel_mirror(handle, mirror_x, mirror_y);
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 0);
   esp_lcd_panel_invert_color(handle, LCD_INVERT_COLOR);
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 0);
   esp_lcd_panel_disp_off(handle, false);
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 }
 
 bool grid_esp32_lcd_panel_tx_ready(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index) { return lcd->tx_ready[lcd_index]; }
@@ -189,7 +194,7 @@ int grid_esp32_lcd_draw_bitmap_blocking(struct grid_esp32_lcd_model* lcd, uint8_
 
   lcd->tx_ready[lcd_index] = 0;
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 0);
 
   esp_err_t err = esp_lcd_panel_draw_bitmap(handle, x, y, x + width, y + height, framebuffer);
   if (err != ESP_OK) {
@@ -200,7 +205,7 @@ int grid_esp32_lcd_draw_bitmap_blocking(struct grid_esp32_lcd_model* lcd, uint8_
   while (lcd->tx_ready[lcd_index] == 0) {
   }
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 
   return 0;
 }
@@ -213,14 +218,14 @@ int grid_esp32_lcd_set_madctl(struct grid_esp32_lcd_model* lcd, uint8_t lcd_inde
     return 1;
   }
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 0);
 
   uint8_t tx[1] = {
       madctl,
   };
   esp_err_t err = esp_lcd_panel_io_tx_param(handle, LCD_CMD_MADCTL, tx, 1);
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 
   return err != ESP_OK;
 }
@@ -233,14 +238,14 @@ int grid_esp32_lcd_set_frctrl2(struct grid_esp32_lcd_model* lcd, uint8_t lcd_ind
     return 1;
   }
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 0);
 
   uint8_t tx[1] = {
       frctrl,
   };
   esp_err_t err = esp_lcd_panel_io_tx_param(handle, 0xc6, tx, 1);
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 
   return err != ESP_OK;
 }
@@ -255,12 +260,12 @@ int grid_esp32_lcd_get_scanline(struct grid_esp32_lcd_model* lcd, uint8_t lcd_in
 
   assert(lcd->tx_ready[lcd_index]);
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 0);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 0);
 
   uint8_t rx[3] = {0};
   esp_err_t err = esp_lcd_panel_io_rx_param(handle, LCD_CMD_GDCAN, rx, 3);
 
-  gpio_set_level(lcd->cs_gpio_num[lcd_index], 1);
+  grid_esp32_lcd_panel_chipsel(lcd, lcd_index, 1);
 
   if (err != ESP_OK) {
     return 1;

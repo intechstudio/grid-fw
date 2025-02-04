@@ -14,31 +14,6 @@ grid_color_t grid_gui_color_apply_alpha(grid_color_t color, uint8_t alpha) {
   return col_rgb | ((alpha * old_alpha) / 255);
 }
 
-int grid_gui_pack_colmod(struct grid_gui_model* gui, uint32_t x, uint32_t y, uint32_t pixels, uint8_t* dest, enum grid_gui_colmod_t colmod) {
-
-  if (x >= gui->width || y >= gui->height) {
-    return 1;
-  }
-
-  if (y * gui->width + x + pixels > gui->width * gui->height) {
-    return 1;
-  }
-
-  switch (colmod) {
-  case COLMOD_RGB888: {
-
-    uint32_t offset = (gui->width * y + x) * GRID_GUI_BYTES_PPX;
-    memcpy(dest, gui->buffer + offset, pixels * GRID_GUI_BYTES_PPX);
-
-  } break;
-  default: {
-    return 1;
-  }
-  }
-
-  return 0;
-}
-
 int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* buffer, uint32_t size, uint32_t width, uint32_t height) {
 
   if (size != width * height * GRID_GUI_BYTES_PPX) {
@@ -526,7 +501,7 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t counter) {
   if (grid_font_state.initialized) {
 
     int cursor = 0;
-    grid_font_draw_string(&grid_font_state, gui, 220, 105, 60, "hello", &cursor, white);
+    grid_font_draw_string(&grid_font_state, gui, 220, 105, 60, "vsnx", &cursor, white);
   }
 
   uint16_t x = 10;
@@ -534,7 +509,7 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t counter) {
   int cursor = 0;
 
   char temp[4] = {0};
-  sprintf(temp, "%hhu", counter);
+  sprintf(temp, "%3hhu", counter);
 
   struct grid_font_model* font = &grid_font_state;
   grid_font_draw_character(font, gui, x + cursor, y, 60, temp[0], &cursor, white);
@@ -553,15 +528,6 @@ void grid_gui_draw_demo_matrix(struct grid_gui_model* gui, uint8_t counter, grid
   }
 
   grid_gui_draw_matrix(gui, 0, 0, 320, 240, matrix);
-}
-
-void grid_gui_draw_demo_image(struct grid_gui_model* gui, int count) {
-
-  if (!(count >= 0 && count < gui->hardwire_count)) {
-    return;
-  }
-
-  // grid_gui_draw_matrix(gui, 0, 0, 320, 240, gui->hardwire_matrices[count]);
 }
 
 void grid_gui_draw_demo_rgb(struct grid_gui_model* gui, uint8_t counter) {
