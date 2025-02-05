@@ -126,13 +126,11 @@ ThreeByteType BG_COLOR = {0, 0, 0};
 
 int grid_font_draw_string_fast(struct grid_gui_model* gui, uint16_t x, uint16_t y, char* str, grid_color_t color) {
 
-  unsigned char* buffer = gui->framebuffer;
+  unsigned char* buffer = gui->buffer;
 
-  uint8_t r = grid_gui_color_to_red(color);
-  uint8_t g = grid_gui_color_to_green(color);
-  uint8_t b = grid_gui_color_to_blue(color);
+  struct grid_rgba_t c = grid_unpack_rgba(color);
 
-  ThreeByteType three_byte_color = {r, g, b};
+  ThreeByteType three_byte_color = {c.r, c.g, c.b};
   int ret = blit32_TextExplicit(buffer, three_byte_color, 4, 320, 240, 1, x, y, str);
 
   return 0;

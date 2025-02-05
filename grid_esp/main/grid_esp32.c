@@ -306,6 +306,8 @@ uint8_t grid_platform_get_random_8() {
 
 void grid_platform_delay_ms(uint32_t delay_milliseconds) { ets_delay_us(delay_milliseconds * 1000); }
 
+void grid_platform_delay_us(uint32_t delay_microseconds) { ets_delay_us(delay_microseconds); }
+
 uint8_t grid_platform_get_reset_cause() { return 0; }
 
 void grid_platform_printf(char const* fmt, ...) {
