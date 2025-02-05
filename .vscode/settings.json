@@ -150,7 +150,8 @@
     "grid_esp32_module_tek1.h": "c",
     "grid_ui_lcd.h": "c",
     "semaphore": "c",
-    "grid_ui_button.h": "c"
+    "grid_ui_button.h": "c",
+    "blit32.h": "c"
   },
   "files.exclude": {
     ".archive": true,

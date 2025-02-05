@@ -6,12 +6,15 @@
 #include "grid_ui.h"
 #include <stdint.h>
 
+#define GRID_UI_ENCODER_INIT_SAMPLES 2
+
 struct grid_ui_encoder_state {
   uint64_t encoder_last_real_time;
   uint64_t button_last_real_time;
   uint8_t last_nibble;
   uint8_t detent;
   int8_t encoder_last_leave_dir;
+  uint8_t initial_samples;
 };
 
 void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent);

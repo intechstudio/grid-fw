@@ -77,8 +77,8 @@
 #define GRID_MODULE_PB44_RevA 145
 
 #define GRID_MODULE_VSN0_RevB 25
-#define GRID_MODULE_VSN1_RevB 89
-#define GRID_MODULE_VSN1R_RevB 57
+#define GRID_MODULE_VSN1_RevB 57
+#define GRID_MODULE_VSN1R_RevB 89
 #define GRID_MODULE_VSN2_RevB 121
 
 #define GRID_PARAMETER_HEARTBEATINTERVAL_us 250000
@@ -406,38 +406,59 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "ggdp"
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_human "gui_draw_pixel"
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr l_grid_gui_draw_pixel
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_usage "grid_gui_draw_pixel(x, y, {r, g, b}) Draws a pixel at (x, y) with the specified 8-bit color channels."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_LINE_short "ggdl"
 #define GRID_LUA_FNC_G_GUI_DRAW_LINE_human "gui_draw_line"
 #define GRID_LUA_FNC_G_GUI_DRAW_LINE_fnptr l_grid_gui_draw_line
+#define GRID_LUA_FNC_G_GUI_DRAW_LINE_usage "grid_gui_draw_line(x1, y1, x2, y2, {r, g, b}) Draws a line between (x1, y1) and (x2, y2) points with the specified 8-bit color channels."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short "ggdr"
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_human "gui_draw_rectangle"
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_fnptr l_grid_gui_draw_rectangle
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_usage "grid_gui_draw_rectangle(x1, y1, x2, y2, {r, g, b}) Draws a rectangle between (x1, y1) and (x2, y2) points with the specified 8-bit color channels."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "ggdrf"
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_human "gui_draw_rectangle_filled"
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_fnptr l_grid_gui_draw_rectangle_filled
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_usage                                                                                                                                                 \
+  "grid_gui_draw_rectangle_filled(x1, y1, x2, y2, {r, g, b}) Draws a filled rectangle between (x1, y1) and (x2, y2) points with the specified 8-bit color channels."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_short "ggdrr"
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_human "gui_draw_rectangle_rounded"
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_fnptr l_grid_gui_draw_rectangle_rounded
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_usage                                                                                                                                                \
+  "grid_gui_draw_rectangle_rounded(x1, y1, x2, y2, radius, {r, g, b}) Draws a rounded rectangle between (x1, y1) and (x2, y2) points using pixel based radius with the specified 8-bit color "         \
+  "channels."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_FILLED_short "ggdrrf"
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_FILLED_human "gui_draw_rectangle_rounded_filled"
 #define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_FILLED_fnptr l_grid_gui_draw_rectangle_rounded_filled
+#define GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_FILLED_usage                                                                                                                                         \
+  "grid_gui_draw_rectangle_rounded_filled(x1, y1, x2, y2, radius, {r, g, b}) Draws a filled rounded rectangle between (x1, y1) and (x2, y2) points using pixel based radius with the specified 8-bit " \
+  "color channels."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short "ggdp"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_human "gui_draw_polygon"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_fnptr l_grid_gui_draw_polygon
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_usage                                                                                                                                                          \
+  "grid_gui_draw_polygon({x1, x2, x3 ...}, {y1, y2, y3 ...}, {r, g, b}) Draws a polygon using the x and y coordinate pairs with the specified 8-bit color channels."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "ggdpf"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_human "gui_draw_polygon_filled"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr l_grid_gui_draw_polygon_filled
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_usage                                                                                                                                                   \
+  "grid_gui_draw_polygon_filled({x1, x2, x3 ...}, {y1, y2, y3 ...}, {r, g, b}) Draws a filled polygon using the x and y coordinate pairs with the specified 8-bit color channels."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_short "ggdt"
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_human "gui_draw_text"
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr l_grid_gui_draw_text
+#define GRID_LUA_FNC_G_GUI_DRAW_TEXT_usage "gui_draw_text('text', x, y, size, {r, g, b}) Draws the specified text at (x, y) with the specified font size and 8-bit color channels."
+
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_short "ggdd"
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_human "gui_draw_demo"
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr l_grid_gui_draw_demo
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_usage "gui_draw_demo(n) Draws the n-th iteration of the demo."
 
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 

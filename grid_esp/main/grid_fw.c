@@ -241,7 +241,8 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     grid_led_lookup_init(led, led_lookup);
   }
 
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA) {
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB) {
 
     grid_ui_model_init(ui, 14 + 1);
 
@@ -341,8 +342,8 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "===== MAIN START =====");
 
-  // size_t psram_size = esp_psram_get_size();
-  // ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
+  size_t psram_size = esp_psram_get_size();
+  ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
 
   gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
   gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
@@ -513,7 +514,6 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "===== UI TASK DONE =====");
 
-  grid_ui_state.ui_interaction_enabled = 1;
   // ================== FINISH: grid_module_pbf4_init() ================== //
 
   TaskHandle_t port_task_hdl;
@@ -539,6 +539,12 @@ void app_main(void) {
   xTaskCreatePinnedToCore(grid_trace_report_task, "trace", 1024 * 4, (void*)signaling_sem, 6, &grid_trace_report_task_hdl, 1);
 
   ESP_LOGI(TAG, "===== REPORT TASK DONE =====");
+
+  TaskHandle_t lcd_task_hdl;
+
+  xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
+
+  ESP_LOGI(TAG, "===== LCD TASK DONE =====");
 
   esp_timer_create_args_t periodic_rtc_ms_args = {.callback = &periodic_rtc_ms_cb, .name = "rtc millisecond"};
 

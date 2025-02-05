@@ -76,8 +76,6 @@ void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
 
   ui->page_negotiated = 0;
 
-  ui->ui_interaction_enabled = 0;
-
   ui->mapmode_state = 0;
 
   ui->bulk_status = GRID_UI_BULK_READY;
@@ -421,10 +419,10 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
   grid_ui_bulk_semaphore_release(ui);
   grid_ui_busy_semaphore_release(ui);
 
-  grid_ui_bulk_page_init(ui, GRID_UI_BULK_READ_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), 0, &grid_ui_page_load_success_callback);
+  grid_ui_bulk_page_init(ui, GRID_UI_BULK_READ_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), 0, grid_ui_page_load_success_callback);
 }
 
-void grid_ui_page_load_success_callback(void) {
+void grid_ui_page_load_success_callback(uint8_t lastheader) {
 
   // grid_platform_printf("LOAD SUCCESS\r\n");
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);

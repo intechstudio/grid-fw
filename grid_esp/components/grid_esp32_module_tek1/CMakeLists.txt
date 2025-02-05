@@ -4,5 +4,5 @@ idf_component_register(
     INCLUDE_DIRS
         "."
     REQUIRES
-        "grid_esp32_adc" "grid_esp32_lcd" "grid_common"
+        "grid_esp32_adc" "grid_esp32_lcd" "grid_common" "grid_esp32_vmp"
 )
