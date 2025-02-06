@@ -19,11 +19,20 @@ RUN apt update && \
     . ./emsdk_env.sh && \
     cd ..
 
-# Set working directory
-
 WORKDIR /
 
 ENV PICO_SDK_PATH=/pico/pico-sdk
+
+# Install picotool
+RUN apt install libusb-1.0-0-dev
+RUN git clone --depth 1 --branch 2.1.0 https://github.com/raspberrypi/picotool.git
+RUN mkdir -p picotool/build
+WORKDIR /picotool
+RUN cmake . -B build
+WORKDIR /picotool/build
+RUN make && cmake --install .
+
+WORKDIR /
 
 ENV EMSDK=/emsdk EM_CONFIG=/emsdk/.emscripten EMSDK_NODE=/emsdk/node/14.18.2_64bit/bin/node PATH=/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/14.18.2_64bit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # Set up environment variables
@@ -51,6 +60,9 @@ RUN pre-commit --version
 COPY ./.pre-commit-config.yaml /
 RUN git init
 RUN pre-commit install-hooks
+
+# Add /project as a safe git repository
+RUN git config --global --add safe.directory /project
 
 # Define default command
 CMD ["bash"]
