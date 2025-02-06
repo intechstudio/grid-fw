@@ -6,7 +6,7 @@
 #include "grid_ui.h"
 #include <stdint.h>
 
-void grid_ui_element_lcd_init(struct grid_ui_element* ele);
+void grid_ui_element_lcd_init(struct grid_ui_element* ele, template_init_t initializer);
 
 void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer* buf);
 
