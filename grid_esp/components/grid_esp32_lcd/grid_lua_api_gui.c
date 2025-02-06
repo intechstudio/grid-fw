@@ -18,35 +18,6 @@
 
 extern void grid_platform_printf(char const* fmt, ...);
 
-void grid_gui_lua_draw_demo(lua_State* L, uint8_t loopcounter) {
-
-  int foo = 0;
-
-  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "(0,0,320,240,{0,0,0})");
-  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short "(10,10,40,40,{0,0,255})");
-
-  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_LINE_short "(150,100,40,40,{0,0,255})");
-  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "(200,200,220,220,{0,255,0})");
-  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short "(120,120,140,140,{255,0,0})");
-
-  if (grid_font_state.initialized) {
-
-    char temp[100] = {0};
-    sprintf(temp, GRID_LUA_FNC_G_GUI_DRAW_TEXT_short "('hello $%d',10,100,60, {255,255,255})", loopcounter);
-    foo = luaL_dostring(L, temp);
-  } else {
-    printf("NO FONT\n");
-  }
-
-  foo = luaL_dostring(L, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "({100, 200, 200, 100},{100, 200, 100, 200},{0,255,0})");
-
-  // uint16_t x_points[] = {100, 200, 200, 100};
-  // uint16_t y_points[] = {100, 200, 100, 200};
-  // size_t num_points = sizeof(x_points) / sizeof(x_points[0]);
-
-  // grid_gui_draw_polygon_filled(gui, x_points, y_points, num_points, color);
-}
-
 int l_grid_gui_draw_pixel(lua_State* L) {
 
   // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
@@ -67,14 +38,9 @@ int l_grid_gui_draw_pixel(lua_State* L) {
     // Use r, g, b values to set color
     // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
-    // TODO: select the screen using the proper grid_gui_state
-    if (screen_index == 0) {
-      grid_gui_draw_pixel(&grid_gui_state, x, y, grid_gui_color_from_rgb(r, g, b));
-
-    } else {
-      grid_gui_draw_pixel(&grid_gui_state, x, y, grid_gui_color_from_rgb(r, g, b));
-    }
+    grid_gui_draw_pixel(&grid_gui_states[0], x, y, grid_gui_color_from_rgb(r, g, b));
   }
+
   return 0;
 }
 
@@ -98,7 +64,7 @@ int l_grid_gui_draw_line(lua_State* L) {
     // Use r, g, b values to set color
     // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
-    grid_gui_draw_line(&grid_gui_state, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
+    grid_gui_draw_line(&grid_gui_states[0], x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
   }
   // Draw the pixel at (x, y)
 
@@ -126,7 +92,7 @@ int l_grid_gui_draw_rectangle(lua_State* L) {
     // Use r, g, b values to set color
     // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
-    grid_gui_draw_rectangle(&grid_gui_state, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
+    grid_gui_draw_rectangle(&grid_gui_states[0], x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
   }
   // Draw the pixel at (x, y)
 
@@ -154,7 +120,7 @@ int l_grid_gui_draw_rectangle_filled(lua_State* L) {
     // Use r, g, b values to set color
     // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
-    grid_gui_draw_rectangle_filled(&grid_gui_state, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
+    grid_gui_draw_rectangle_filled(&grid_gui_states[0], x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
   }
   // Draw the pixel at (x, y)
 
@@ -182,7 +148,7 @@ int l_grid_gui_draw_rectangle_rounded(lua_State* L) {
     int b = luaL_checknumber(L, -1);
     // Use r, g, b values to set color
 
-    grid_gui_draw_rectangle_rounded(&grid_gui_state, x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
+    grid_gui_draw_rectangle_rounded(&grid_gui_states[0], x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
   }
   // Draw the pixel at (x, y)
 
@@ -211,7 +177,7 @@ int l_grid_gui_draw_rectangle_rounded_filled(lua_State* L) {
     // Use r, g, b values to set color
     // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
 
-    grid_gui_draw_rectangle_rounded_filled(&grid_gui_state, x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
+    grid_gui_draw_rectangle_rounded_filled(&grid_gui_states[0], x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
   }
   // Draw the pixel at (x, y)
 
@@ -275,7 +241,7 @@ int l_grid_gui_draw_polygon(lua_State* L) {
     b = luaL_checknumber(L, -1);
   }
 
-  grid_gui_draw_polygon(&grid_gui_state, x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
+  grid_gui_draw_polygon(&grid_gui_states[0], x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
 
   return 0; // Number of return values
 }
@@ -336,7 +302,7 @@ int l_grid_gui_draw_polygon_filled(lua_State* L) {
     b = luaL_checknumber(L, -1);
   }
 
-  grid_gui_draw_polygon_filled(&grid_gui_state, x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
+  grid_gui_draw_polygon_filled(&grid_gui_states[0], x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
 
   return 0; // Number of return values
 }
@@ -367,10 +333,19 @@ int l_grid_gui_draw_text(lua_State* L) {
   int cursor = 0;
 
   if (grid_font_state.initialized) {
-    grid_font_draw_string(&grid_font_state, &grid_gui_state, x, y, font_size, text, &cursor, grid_gui_color_from_rgb(r, g, b));
+    grid_font_draw_string(&grid_font_state, &grid_gui_states[0], x, y, font_size, text, &cursor, grid_gui_color_from_rgb(r, g, b));
   } else {
     // grid_platform_printf("NOT INITIALIZED\n");
   }
+
+  return 0;
+}
+
+int l_grid_gui_draw_demo(lua_State* L) {
+
+  int counter = luaL_checknumber(L, 1);
+
+  grid_gui_draw_demo(&grid_gui_states[0], counter);
 
   return 0;
 }
@@ -385,6 +360,7 @@ int l_grid_gui_draw_text(lua_State* L) {
     {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_DEMO_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr},
     {NULL, NULL} /* end of array */
 };
 
