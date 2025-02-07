@@ -28,8 +28,35 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 
 #define GRID_LUA_FNC_L_LIST_length 4
 
-#define GRID_LUA_FNC_L_DRAW_PIXEL_short "ldp"
+#define GRID_LUA_FNC_L_DRAW_PIXEL_short "ldpx"
 #define GRID_LUA_FNC_L_DRAW_PIXEL_human "draw_pixel"
+
+#define GRID_LUA_FNC_L_DRAW_LINE_short "ldl"
+#define GRID_LUA_FNC_L_DRAW_LINE_human "draw_line"
+
+#define GRID_LUA_FNC_L_DRAW_RECTANGLE_short "ldr"
+#define GRID_LUA_FNC_L_DRAW_RECTANGLE_human "draw_rectangle"
+
+#define GRID_LUA_FNC_L_DRAW_RECTANGLE_FILLED_short "ldrf"
+#define GRID_LUA_FNC_L_DRAW_RECTANGLE_FILLED_human "draw_rectangle_filled"
+
+#define GRID_LUA_FNC_L_DRAW_RECTANGLE_ROUNDED_short "ldrr"
+#define GRID_LUA_FNC_L_DRAW_RECTANGLE_ROUNDED_human "draw_rectangle_rounded"
+
+#define GRID_LUA_FNC_L_DRAW_RECTANGLE_ROUNDED_FILLED_short "ldrrf"
+#define GRID_LUA_FNC_L_DRAW_RECTANGLE_ROUNDED_FILLED_human "draw_rectangle_rounded_filled"
+
+#define GRID_LUA_FNC_L_DRAW_POLYGON_short "ldp"
+#define GRID_LUA_FNC_L_DRAW_POLYGON_human "draw_polygon"
+
+#define GRID_LUA_FNC_L_DRAW_POLYGON_FILLED_short "ldpf"
+#define GRID_LUA_FNC_L_DRAW_POLYGON_FILLED_human "draw_polygon_filled"
+
+#define GRID_LUA_FNC_L_DRAW_TEXT_short "ldt"
+#define GRID_LUA_FNC_L_DRAW_TEXT_human "draw_text"
+
+#define GRID_LUA_FNC_L_DRAW_DEMO_short "ldd"
+#define GRID_LUA_FNC_L_DRAW_DEMO_human "draw_demo"
 
 #define GRID_LUA_FNC_ASSIGN_META_DRAW(key, val)                                                                                                                                                        \
   key " = function (self, ...) "                                                                                                                                                                       \
@@ -52,6 +79,15 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   GRID_LUA_FNC_ASSIGN_META_PAR1("get", GRID_LUA_FNC_G_EVENT_TRIGGER_short) "," \
   \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_PIXEL_short, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_LINE_short, GRID_LUA_FNC_G_GUI_DRAW_LINE_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_RECTANGLE_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_RECTANGLE_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_FILLED_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_RECTANGLE_ROUNDED_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_RECTANGLE_ROUNDED_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_FILLED_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_POLYGON_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_POLYGON_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_DEMO_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_short) "," \
   \
   "}}"
 // clang-format on

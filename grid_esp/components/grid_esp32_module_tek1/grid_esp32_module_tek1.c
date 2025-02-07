@@ -34,7 +34,7 @@ static const char* TAG = "module_tek1";
 
 void grid_esp32_module_tek1_task(void* arg) {
 
-  //verify if 17 is necessary or 16 is enough, used to be 15 at some point
+  // verify if 17 is necessary or 16 is enough, used to be 15 at some point
   uint64_t button_last_real_time[17] = {0};
 
   uint64_t endlesspot_button_last_real_time[2] = {0};
@@ -72,20 +72,20 @@ void grid_esp32_module_tek1_task(void* arg) {
       } else if (mux_position < 9) {
 
         switch (lookup_index) {
-          case 0: {
+        case 0: {
 
-            new_endless_state[0].phase_a = result->value;
-          } break;
-          case 2: {
+          new_endless_state[0].phase_a = result->value;
+        } break;
+        case 2: {
 
-            new_endless_state[0].phase_b = result->value;
-          } break;
-          case 4: {
+          new_endless_state[0].phase_b = result->value;
+        } break;
+        case 4: {
 
-            new_endless_state[0].button_value = result->value;
-            grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
-            grid_ui_endless_store_input(mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
-          } break;
+          new_endless_state[0].button_value = result->value;
+          grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
+          grid_ui_endless_store_input(mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
+        } break;
         }
 
       } else if (mux_position < 13) {
@@ -99,7 +99,7 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   void vsn1r_process_analog(void) {
 
-    static const uint8_t multiplexer_lookup[16] = {9, 8, 10, 8, 11, 8, 12 -1, 2, 0, 3, 1, 6, 4, 7, 5};
+    static const uint8_t multiplexer_lookup[16] = {9, 8, 10, 8, 11, 8, 12 - 1, 2, 0, 3, 1, 6, 4, 7, 5};
 
     size_t size = 0;
 
@@ -118,20 +118,20 @@ void grid_esp32_module_tek1_task(void* arg) {
       } else if (mux_position < 9) {
 
         switch (lookup_index) {
-          case 1: {
+        case 1: {
 
-            new_endless_state[0].phase_a = result->value;
-          } break;
-          case 3: {
+          new_endless_state[0].phase_a = result->value;
+        } break;
+        case 3: {
 
-            new_endless_state[0].phase_b = result->value;
-          } break;
-          case 5: {
+          new_endless_state[0].phase_b = result->value;
+        } break;
+        case 5: {
 
-            new_endless_state[0].button_value = result->value;
-            grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
-            grid_ui_endless_store_input(mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
-          } break;
+          new_endless_state[0].button_value = result->value;
+          grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
+          grid_ui_endless_store_input(mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
+        } break;
         }
 
       } else if (mux_position < 13) {
@@ -161,7 +161,7 @@ void grid_esp32_module_tek1_task(void* arg) {
 
         grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
 
-      } else  {
+      } else {
 
         grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
       }
