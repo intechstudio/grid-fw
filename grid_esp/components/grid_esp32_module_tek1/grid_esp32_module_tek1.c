@@ -34,14 +34,11 @@ static const char* TAG = "module_tek1";
 
 void grid_esp32_module_tek1_task(void* arg) {
 
-  uint64_t button_last_real_time[15] = {0};
+  //verify if 17 is necessary or 16 is enough, used to be 15 at some point
+  uint64_t button_last_real_time[17] = {0};
 
   uint64_t endlesspot_button_last_real_time[2] = {0};
   uint64_t endlesspot_encoder_last_real_time[2] = {0};
-
-  // static const uint8_t multiplexer_lookup[16] = {10, 8, 11, 9, 14, 12, 15,
-  // 13, 2, 0, 3, 1, 6, 4, 7, 5};
-  static const uint8_t multiplexer_lookup[16] = {9, 8, 11, 10, 13, 12, 15, 14, 2, 0, 3, 1, 6, 4, 7, 5};
 
   // static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0,
   // 0, 0, 0, 0, 0, 0, 0};
@@ -55,6 +52,9 @@ void grid_esp32_module_tek1_task(void* arg) {
   struct grid_ui_endless_state old_endless_state[GRID_MODULE_TEK1_POT_NUM] = {0};
 
   void vsn1_process_analog(void) {
+
+    static const uint8_t multiplexer_lookup[16] = {8, 9, 8, 10, 8, 11, -1, 12, 2, 0, 3, 1, 6, 4, 7, 5};
+
     size_t size = 0;
 
     struct grid_esp32_adc_result* result;
@@ -69,29 +69,38 @@ void grid_esp32_module_tek1_task(void* arg) {
 
         grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
 
-      } else if (mux_position == 9) { // 8, 9
+      } else if (mux_position < 9) {
 
-        new_endless_state[0].phase_a = result->value;
-      } else if (mux_position == 11) { // 10, 11
+        switch (lookup_index) {
+          case 0: {
 
-        new_endless_state[0].phase_b = result->value;
-        // ets_printf("%d \r\n", result->value);
-      } else if (mux_position == 13) { // 12, 13
+            new_endless_state[0].phase_a = result->value;
+          } break;
+          case 2: {
 
-        new_endless_state[0].button_value = result->value;
-        grid_ui_button_store_input(8, &old_endless_state[0].button_last_real_time, result->value, 12);
-        grid_ui_endless_store_input(8, 12, &new_endless_state[0], &old_endless_state[0]);
-      } else if (mux_position == 8 || mux_position == 10 || mux_position == 12 || mux_position == 14) {
+            new_endless_state[0].phase_b = result->value;
+          } break;
+          case 4: {
 
-        uint8_t btn_num = ((mux_position - 8) / 2) % 4;
+            new_endless_state[0].button_value = result->value;
+            grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
+            grid_ui_endless_store_input(mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
+          } break;
+        }
 
-        grid_ui_button_store_input(btn_num + 8 + 1, &button_last_real_time[btn_num + 8 + 1], result->value, 12);
+      } else if (mux_position < 13) {
+
+        grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
       }
 
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
     }
   }
+
   void vsn1r_process_analog(void) {
+
+    static const uint8_t multiplexer_lookup[16] = {9, 8, 10, 8, 11, 8, 12 -1, 2, 0, 3, 1, 6, 4, 7, 5};
+
     size_t size = 0;
 
     struct grid_esp32_adc_result* result;
@@ -106,23 +115,28 @@ void grid_esp32_module_tek1_task(void* arg) {
 
         grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
 
-      } else if (mux_position == 8) { // 8, 9
+      } else if (mux_position < 9) {
 
-        new_endless_state[0].phase_a = result->value;
-      } else if (mux_position == 10) { // 10, 11
+        switch (lookup_index) {
+          case 1: {
 
-        new_endless_state[0].phase_b = result->value;
-        // ets_printf("%d \r\n", result->value);
-      } else if (mux_position == 12) { // 12, 13
+            new_endless_state[0].phase_a = result->value;
+          } break;
+          case 3: {
 
-        new_endless_state[0].button_value = result->value;
-        grid_ui_button_store_input(8, &old_endless_state[0].button_last_real_time, result->value, 12);
-        grid_ui_endless_store_input(8, 12, &new_endless_state[0], &old_endless_state[0]);
-      } else if (mux_position == 9 || mux_position == 11 || mux_position == 13 || mux_position == 15) {
+            new_endless_state[0].phase_b = result->value;
+          } break;
+          case 5: {
 
-        uint8_t btn_num = ((mux_position - 8) / 2) % 4;
+            new_endless_state[0].button_value = result->value;
+            grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
+            grid_ui_endless_store_input(mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
+          } break;
+        }
 
-        grid_ui_button_store_input(btn_num + 8 + 1, &button_last_real_time[btn_num + 8 + 1], result->value, 12);
+      } else if (mux_position < 13) {
+
+        grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
       }
 
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
@@ -130,6 +144,9 @@ void grid_esp32_module_tek1_task(void* arg) {
   }
 
   void vsn2_process_analog(void) {
+
+    static const uint8_t multiplexer_lookup[16] = {13, 8, 14, 9, 15, 10, 16, 11, 2, 0, 3, 1, 6, 4, 7, 5};
+
     size_t size = 0;
 
     struct grid_esp32_adc_result* result;
@@ -144,16 +161,9 @@ void grid_esp32_module_tek1_task(void* arg) {
 
         grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
 
-      } else if (mux_position == 8 || mux_position == 10 || mux_position == 12 || mux_position == 14) {
+      } else  {
 
-        uint8_t btn_num = ((mux_position - 8) / 2) % 4;
-
-        grid_ui_button_store_input(btn_num + 8, &button_last_real_time[btn_num + 8], result->value, 12);
-      } else if (mux_position == 9 || mux_position == 11 || mux_position == 13 || mux_position == 15) {
-
-        uint8_t btn_num = ((mux_position - 8 - 1) / 2) % 4;
-
-        grid_ui_button_store_input(btn_num + 8 + 4, &button_last_real_time[btn_num + 8], result->value, 12);
+        grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
       }
 
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
