@@ -20,8 +20,8 @@
 
 #include "sign.h"
 #define GRID_LUA_FNC_G_SIGN_source grid_lua_src_sign_lua
-#define GRID_LUA_FNC_G_SIGN_short "sign"
-#define GRID_LUA_FNC_G_SIGN_human "sgn"
+#define GRID_LUA_FNC_G_SIGN_short "sgn"
+#define GRID_LUA_FNC_G_SIGN_human "sign"
 
 #include "segmentcalc.h"
 #define GRID_LUA_FNC_G_SEGCALC_source grid_lua_src_segmentcalc_lua
