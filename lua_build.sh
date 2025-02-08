@@ -25,8 +25,8 @@ for lua_file in "$directory"/*.lua; do
 
     # Start writing to the header file
     {
-        echo "#ifndef GRID_LUA_${base_name^^}_H"
-        echo "#define GRID_LUA_${base_name^^}_H"
+        echo "#ifndef GRID_LUA_SRC_${base_name^^}_H"
+        echo "#define GRID_LUA_SRC_${base_name^^}_H"
         echo ""
     } > "$header_file"
         # Use xxd to convert the .lua file to a C string literal and add a terminating zero byte
@@ -34,7 +34,7 @@ for lua_file in "$directory"/*.lua; do
     {
         # Close the header guard
         echo ""
-        echo "#endif // GRID_LUA_${base_name^^}_H"
+        echo "#endif // GRID_LUA_SRC_${base_name^^}_H"
     } >> "$header_file"
 
 
@@ -42,7 +42,7 @@ for lua_file in "$directory"/*.lua; do
     sed -i 's/unsigned char/const char/' "$header_file"
 
     # Change variable name
-    sed -i "s/grid_common_lua_src__glut_lua/grid_lua_${base_name}/" "$header_file"
+    sed -i "s/grid_common_lua_src__${base_name}/grid_lua_src_${base_name}/" "$header_file"
 
     # Add terminating zero byte
     sed -i "s/};/, 0x00};/" "$header_file"
