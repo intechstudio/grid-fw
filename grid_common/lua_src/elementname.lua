@@ -6,8 +6,8 @@ function gen (a, b)
     else
       return ele[a].sn
     end
-  else 
-    ele[a].sn=b 
-    gens(a,b) 
-  end 
+  else
+    ele[a].sn=b
+    gens(a,b)
+  end
 end
