@@ -437,6 +437,11 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr l_grid_gui_draw_text
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_usage "gui_draw_text('text', x, y, size, {r, g, b}) Draws the specified text at (x, y) with the specified font size and 8-bit color channels."
 
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_short "ggdd"
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_human "gui_draw_demo"
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr l_grid_gui_draw_demo
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_usage "gui_draw_demo(n) Draws the n-th iteration of the demo."
+
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 
 #define GRID_LUA_FNC_A_INIT_short "ini"

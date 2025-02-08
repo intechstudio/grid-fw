@@ -672,6 +672,107 @@ CONFIG_ESP_ERR_TO_NAME_LOOKUP=y
 # end of Common ESP-related
 
 #
+# ESP-Driver:GPIO Configurations
+#
+# CONFIG_GPIO_CTRL_FUNC_IN_IRAM is not set
+# end of ESP-Driver:GPIO Configurations
+
+#
+# ESP-Driver:GPTimer Configurations
+#
+CONFIG_GPTIMER_ISR_HANDLER_IN_IRAM=y
+# CONFIG_GPTIMER_CTRL_FUNC_IN_IRAM is not set
+# CONFIG_GPTIMER_ISR_IRAM_SAFE is not set
+# CONFIG_GPTIMER_ENABLE_DEBUG_LOG is not set
+# end of ESP-Driver:GPTimer Configurations
+
+#
+# ESP-Driver:I2C Configurations
+#
+# CONFIG_I2C_ISR_IRAM_SAFE is not set
+# CONFIG_I2C_ENABLE_DEBUG_LOG is not set
+# end of ESP-Driver:I2C Configurations
+
+#
+# ESP-Driver:I2S Configurations
+#
+# CONFIG_I2S_ISR_IRAM_SAFE is not set
+# CONFIG_I2S_ENABLE_DEBUG_LOG is not set
+# end of ESP-Driver:I2S Configurations
+
+#
+# ESP-Driver:LEDC Configurations
+#
+# CONFIG_LEDC_CTRL_FUNC_IN_IRAM is not set
+# end of ESP-Driver:LEDC Configurations
+
+#
+# ESP-Driver:MCPWM Configurations
+#
+# CONFIG_MCPWM_ISR_IRAM_SAFE is not set
+# CONFIG_MCPWM_CTRL_FUNC_IN_IRAM is not set
+# CONFIG_MCPWM_ENABLE_DEBUG_LOG is not set
+# end of ESP-Driver:MCPWM Configurations
+
+#
+# ESP-Driver:PCNT Configurations
+#
+# CONFIG_PCNT_CTRL_FUNC_IN_IRAM is not set
+# CONFIG_PCNT_ISR_IRAM_SAFE is not set
+# CONFIG_PCNT_ENABLE_DEBUG_LOG is not set
+# end of ESP-Driver:PCNT Configurations
+
+#
+# ESP-Driver:RMT Configurations
+#
+CONFIG_RMT_ISR_IRAM_SAFE=y
+# CONFIG_RMT_RECV_FUNC_IN_IRAM is not set
+# CONFIG_RMT_ENABLE_DEBUG_LOG is not set
+# end of ESP-Driver:RMT Configurations
+
+#
+# ESP-Driver:Sigma Delta Modulator Configurations
+#
+# CONFIG_SDM_CTRL_FUNC_IN_IRAM is not set
+# CONFIG_SDM_ENABLE_DEBUG_LOG is not set
+# end of ESP-Driver:Sigma Delta Modulator Configurations
+
+#
+# ESP-Driver:SPI Configurations
+#
+CONFIG_SPI_MASTER_IN_IRAM=y
+CONFIG_SPI_MASTER_ISR_IN_IRAM=y
+CONFIG_SPI_SLAVE_IN_IRAM=y
+CONFIG_SPI_SLAVE_ISR_IN_IRAM=y
+# end of ESP-Driver:SPI Configurations
+
+#
+# ESP-Driver:Touch Sensor Configurations
+#
+# CONFIG_TOUCH_CTRL_FUNC_IN_IRAM is not set
+# CONFIG_TOUCH_ISR_IRAM_SAFE is not set
+# CONFIG_TOUCH_ENABLE_DEBUG_LOG is not set
+# end of ESP-Driver:Touch Sensor Configurations
+
+#
+# ESP-Driver:Temperature Sensor Configurations
+#
+# CONFIG_TEMP_SENSOR_ENABLE_DEBUG_LOG is not set
+# end of ESP-Driver:Temperature Sensor Configurations
+
+#
+# ESP-Driver:UART Configurations
+#
+# CONFIG_UART_ISR_IN_IRAM is not set
+# end of ESP-Driver:UART Configurations
+
+#
+# ESP-Driver:USB Serial/JTAG Configuration
+#
+CONFIG_USJ_ENABLE_USB_SERIAL_JTAG=y
+# end of ESP-Driver:USB Serial/JTAG Configuration
+
+#
 # Ethernet
 #
 CONFIG_ETH_ENABLED=y
@@ -887,13 +988,13 @@ CONFIG_SPIRAM_SPEED_120M=y
 # CONFIG_SPIRAM_SPEED_80M is not set
 # CONFIG_SPIRAM_SPEED_40M is not set
 CONFIG_SPIRAM_SPEED=120
-# CONFIG_SPIRAM_BOOT_INIT is not set
+CONFIG_SPIRAM_BOOT_INIT=y
+CONFIG_SPIRAM_IGNORE_NOTFOUND=y
 # CONFIG_SPIRAM_USE_MEMMAP is not set
-# CONFIG_SPIRAM_USE_CAPS_ALLOC is not set
-CONFIG_SPIRAM_USE_MALLOC=y
-CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=16384
+CONFIG_SPIRAM_USE_CAPS_ALLOC=y
+# CONFIG_SPIRAM_USE_MALLOC is not set
+# CONFIG_SPIRAM_MEMTEST is not set
 # CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP is not set
-CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=32768
 # CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY is not set
 # end of SPI RAM config
 # end of ESP PSRAM
@@ -1049,6 +1150,7 @@ CONFIG_ESP_WIFI_ENABLED=y
 CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=10
 CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=32
 CONFIG_ESP_WIFI_STATIC_TX_BUFFER=y
+# CONFIG_ESP_WIFI_DYNAMIC_TX_BUFFER is not set
 CONFIG_ESP_WIFI_TX_BUFFER_TYPE=0
 CONFIG_ESP_WIFI_STATIC_TX_BUFFER_NUM=16
 CONFIG_ESP_WIFI_CACHE_TX_BUFFER_NUM=32
@@ -2043,6 +2145,7 @@ CONFIG_ESP32_WIFI_ENABLED=y
 CONFIG_ESP32_WIFI_STATIC_RX_BUFFER_NUM=10
 CONFIG_ESP32_WIFI_DYNAMIC_RX_BUFFER_NUM=32
 CONFIG_ESP32_WIFI_STATIC_TX_BUFFER=y
+# CONFIG_ESP32_WIFI_DYNAMIC_TX_BUFFER is not set
 CONFIG_ESP32_WIFI_TX_BUFFER_TYPE=0
 CONFIG_ESP32_WIFI_STATIC_TX_BUFFER_NUM=16
 CONFIG_ESP32_WIFI_CACHE_TX_BUFFER_NUM=32
