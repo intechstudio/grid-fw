@@ -158,4 +158,28 @@ void grid_lua_start_vm(struct grid_lua_model* lua);
 
 void grid_lua_stop_vm(struct grid_lua_model* lua);
 
+// clang-format off
+
+// Double stringize trick
+#define XSTRINGIZE(s) STRINGIZE(s)
+#define STRINGIZE(s) #s
+
+#define GRID_LUA_FNC_ASSIGN_META_GTV(key, index) \
+  key " = function (self, a) " \
+  "return gtv(self.index, " XSTRINGIZE(index) ", a) end"
+
+#define GRID_LUA_FNC_ASSIGN_META_UNDEF(key) \
+  key " = function (self) print('undefined action') end"
+
+#define GRID_LUA_FNC_ASSIGN_META_PAR0(key, val) \
+  key " = function (self) " val "(self.index) end"
+
+#define GRID_LUA_FNC_ASSIGN_META_PAR1(key, val) \
+  key " = function (self, a) " val "(self.index, a) end"
+
+#define GRID_LUA_FNC_ASSIGN_META_PAR1_RET(key, val) \
+  key " = function (self, a) return " val "(self.index, a) end"
+
+// clang-format on
+
 #endif

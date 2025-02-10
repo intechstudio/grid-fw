@@ -67,6 +67,8 @@ struct grid_ui_template_buffer {
   struct grid_ui_template_buffer* next;
 };
 
+typedef void (*template_init_t)(struct grid_ui_template_buffer*);
+
 struct grid_ui_element {
   enum grid_ui_status_t status;
 

@@ -20,181 +20,162 @@ extern void grid_platform_printf(char const* fmt, ...);
 
 int l_grid_gui_draw_pixel(lua_State* L) {
 
-  // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
+  int screen_index = luaL_checknumber(L, 1);
 
-  int x = luaL_checknumber(L, 1);
-  int y = luaL_checknumber(L, 2);
-  // Optional color parameter
-  if (lua_gettop(L) >= 3) {
-    luaL_checktype(L, 3, LUA_TTABLE);
-    lua_rawgeti(L, 3, 1);
-    int r = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 3, 2);
-    int g = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 3, 3);
-    int b = luaL_checknumber(L, -1);
-    // Use r, g, b values to set color
-    // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
-    grid_gui_draw_pixel(&grid_gui_states[0], x, y, grid_gui_color_from_rgb(r, g, b));
-  }
-  // Draw the pixel at (x, y)
+  int x = luaL_checknumber(L, 2);
+  int y = luaL_checknumber(L, 3);
 
-  // Draw the line from (x1, y1) to (x2, y2) with optional color
+  luaL_checktype(L, 4, LUA_TTABLE);
+  lua_rawgeti(L, 4, 1);
+  int r = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 4, 2);
+  int g = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 4, 3);
+  int b = luaL_checknumber(L, -1);
+
+  grid_gui_draw_pixel(gui, x, y, grid_gui_color_from_rgb(r, g, b));
+
   return 0;
 }
 
 int l_grid_gui_draw_line(lua_State* L) {
 
-  // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
+  int screen_index = luaL_checknumber(L, 1);
 
-  int x1 = luaL_checknumber(L, 1);
-  int y1 = luaL_checknumber(L, 2);
-  int x2 = luaL_checknumber(L, 3);
-  int y2 = luaL_checknumber(L, 4);
-  // Optional color parameter
-  if (lua_gettop(L) >= 5) {
-    luaL_checktype(L, 5, LUA_TTABLE);
-    lua_rawgeti(L, 5, 1);
-    int r = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 5, 2);
-    int g = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 5, 3);
-    int b = luaL_checknumber(L, -1);
-    // Use r, g, b values to set color
-    // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
-    grid_gui_draw_line(&grid_gui_states[0], x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
-  }
-  // Draw the pixel at (x, y)
+  int x1 = luaL_checknumber(L, 2);
+  int y1 = luaL_checknumber(L, 3);
+  int x2 = luaL_checknumber(L, 4);
+  int y2 = luaL_checknumber(L, 5);
 
-  // Draw the line from (x1, y1) to (x2, y2) with optional color
+  luaL_checktype(L, 6, LUA_TTABLE);
+  lua_rawgeti(L, 6, 1);
+  int r = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 6, 2);
+  int g = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 6, 3);
+  int b = luaL_checknumber(L, -1);
+
+  grid_gui_draw_line(gui, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
+
   return 0;
 }
 
 int l_grid_gui_draw_rectangle(lua_State* L) {
 
-  // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
+  int screen_index = luaL_checknumber(L, 1);
 
-  int x1 = luaL_checknumber(L, 1);
-  int y1 = luaL_checknumber(L, 2);
-  int x2 = luaL_checknumber(L, 3);
-  int y2 = luaL_checknumber(L, 4);
-  // Optional color parameter
-  if (lua_gettop(L) >= 5) {
-    luaL_checktype(L, 5, LUA_TTABLE);
-    lua_rawgeti(L, 5, 1);
-    int r = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 5, 2);
-    int g = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 5, 3);
-    int b = luaL_checknumber(L, -1);
-    // Use r, g, b values to set color
-    // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
-    grid_gui_draw_rectangle(&grid_gui_states[0], x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
-  }
-  // Draw the pixel at (x, y)
+  int x1 = luaL_checknumber(L, 2);
+  int y1 = luaL_checknumber(L, 3);
+  int x2 = luaL_checknumber(L, 4);
+  int y2 = luaL_checknumber(L, 5);
 
-  // Draw the line from (x1, y1) to (x2, y2) with optional color
+  luaL_checktype(L, 6, LUA_TTABLE);
+  lua_rawgeti(L, 6, 1);
+  int r = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 6, 2);
+  int g = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 6, 3);
+  int b = luaL_checknumber(L, -1);
+
+  grid_gui_draw_rectangle(gui, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
+
   return 0;
 }
 
 int l_grid_gui_draw_rectangle_filled(lua_State* L) {
 
-  // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
+  int screen_index = luaL_checknumber(L, 1);
 
-  int x1 = luaL_checknumber(L, 1);
-  int y1 = luaL_checknumber(L, 2);
-  int x2 = luaL_checknumber(L, 3);
-  int y2 = luaL_checknumber(L, 4);
-  // Optional color parameter
-  if (lua_gettop(L) >= 5) {
-    luaL_checktype(L, 5, LUA_TTABLE);
-    lua_rawgeti(L, 5, 1);
-    int r = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 5, 2);
-    int g = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 5, 3);
-    int b = luaL_checknumber(L, -1);
-    // Use r, g, b values to set color
-    // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
-    grid_gui_draw_rectangle_filled(&grid_gui_states[0], x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
-  }
-  // Draw the pixel at (x, y)
+  int x1 = luaL_checknumber(L, 2);
+  int y1 = luaL_checknumber(L, 3);
+  int x2 = luaL_checknumber(L, 4);
+  int y2 = luaL_checknumber(L, 5);
 
-  // Draw the line from (x1, y1) to (x2, y2) with optional color
+  luaL_checktype(L, 6, LUA_TTABLE);
+  lua_rawgeti(L, 6, 1);
+  int r = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 6, 2);
+  int g = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 6, 3);
+  int b = luaL_checknumber(L, -1);
+
+  grid_gui_draw_rectangle_filled(gui, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
+
   return 0;
 }
 
 int l_grid_gui_draw_rectangle_rounded(lua_State* L) {
 
-  // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
+  int screen_index = luaL_checknumber(L, 1);
 
-  int x1 = luaL_checknumber(L, 1);
-  int y1 = luaL_checknumber(L, 2);
-  int x2 = luaL_checknumber(L, 3);
-  int y2 = luaL_checknumber(L, 4);
-  int radius = luaL_checknumber(L, 5);
-  // Optional color parameter
-  if (lua_gettop(L) >= 6) {
-    luaL_checktype(L, 6, LUA_TTABLE);
-    lua_rawgeti(L, 6, 1);
-    int r = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 6, 2);
-    int g = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 6, 3);
-    int b = luaL_checknumber(L, -1);
-    // Use r, g, b values to set color
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
-    grid_gui_draw_rectangle_rounded(&grid_gui_states[0], x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
-  }
-  // Draw the pixel at (x, y)
+  int x1 = luaL_checknumber(L, 2);
+  int y1 = luaL_checknumber(L, 3);
+  int x2 = luaL_checknumber(L, 4);
+  int y2 = luaL_checknumber(L, 5);
+  int radius = luaL_checknumber(L, 6);
 
-  // Draw the line from (x1, y1) to (x2, y2) with optional color
+  luaL_checktype(L, 7, LUA_TTABLE);
+  lua_rawgeti(L, 7, 1);
+  int r = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 7, 2);
+  int g = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 7, 3);
+  int b = luaL_checknumber(L, -1);
+
+  grid_gui_draw_rectangle_rounded(gui, x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
+
   return 0;
 }
 
 int l_grid_gui_draw_rectangle_rounded_filled(lua_State* L) {
 
-  // grid_platform_printf("TEST GUI: l_grid_gui_draw_pixel\r\n");
+  int screen_index = luaL_checknumber(L, 1);
 
-  int x1 = luaL_checknumber(L, 1);
-  int y1 = luaL_checknumber(L, 2);
-  int x2 = luaL_checknumber(L, 3);
-  int y2 = luaL_checknumber(L, 4);
-  int radius = luaL_checknumber(L, 5);
-  // Optional color parameter
-  if (lua_gettop(L) >= 6) {
-    luaL_checktype(L, 6, LUA_TTABLE);
-    lua_rawgeti(L, 6, 1);
-    int r = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 6, 2);
-    int g = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 6, 3);
-    int b = luaL_checknumber(L, -1);
-    // Use r, g, b values to set color
-    // grid_platform_printf("Received color: R=%d, G=%d, B=%d\n", r, g, b);
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
-    grid_gui_draw_rectangle_rounded_filled(&grid_gui_states[0], x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
-  }
-  // Draw the pixel at (x, y)
+  int x1 = luaL_checknumber(L, 2);
+  int y1 = luaL_checknumber(L, 3);
+  int x2 = luaL_checknumber(L, 4);
+  int y2 = luaL_checknumber(L, 5);
+  int radius = luaL_checknumber(L, 6);
 
-  // Draw the line from (x1, y1) to (x2, y2) with optional color
+  luaL_checktype(L, 7, LUA_TTABLE);
+  lua_rawgeti(L, 7, 1);
+  int r = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 7, 2);
+  int g = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 7, 3);
+  int b = luaL_checknumber(L, -1);
+
+  grid_gui_draw_rectangle_rounded_filled(gui, x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
+
   return 0;
 }
 
 int l_grid_gui_draw_polygon(lua_State* L) {
 
+  int screen_index = luaL_checknumber(L, 1);
+
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+
   // The C function that will be called from Lua
   // Check that the first argument is a table
-  if (!lua_istable(L, 1)) {
+  if (!lua_istable(L, 2)) {
     return luaL_error(L, "Expected a table as the argument");
   }
 
   // Get the length of the table
-  size_t num_points = lua_rawlen(L, 1);
+  size_t num_points = lua_rawlen(L, 2);
   uint16_t x_points[num_points];
   uint16_t y_points[num_points];
 
@@ -204,7 +185,7 @@ int l_grid_gui_draw_polygon(lua_State* L) {
     lua_pushnumber(L, i + 1);
 
     // Get the value at the given index in the table
-    lua_gettable(L, 1);
+    lua_gettable(L, 2);
 
     // Get the number
     x_points[i] = lua_tonumber(L, -1);
@@ -220,7 +201,7 @@ int l_grid_gui_draw_polygon(lua_State* L) {
     lua_pushnumber(L, i + 1);
 
     // Get the value at the given index in the table
-    lua_gettable(L, 2);
+    lua_gettable(L, 3);
 
     // Get the number
     y_points[i] = lua_tonumber(L, -1);
@@ -231,31 +212,35 @@ int l_grid_gui_draw_polygon(lua_State* L) {
   }
 
   int r = 0, g = 0, b = 0; // Default color: black
-  if (lua_gettop(L) >= 3) {
-    luaL_checktype(L, 3, LUA_TTABLE);
-    lua_rawgeti(L, 3, 1);
+  if (lua_gettop(L) >= 4) {
+    luaL_checktype(L, 4, LUA_TTABLE);
+    lua_rawgeti(L, 4, 1);
     r = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 3, 2);
+    lua_rawgeti(L, 4, 2);
     g = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 3, 3);
+    lua_rawgeti(L, 4, 3);
     b = luaL_checknumber(L, -1);
   }
 
-  grid_gui_draw_polygon(&grid_gui_states[0], x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
+  grid_gui_draw_polygon(gui, x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
 
   return 0; // Number of return values
 }
 
 int l_grid_gui_draw_polygon_filled(lua_State* L) {
 
+  int screen_index = luaL_checknumber(L, 1);
+
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+
   // The C function that will be called from Lua
   // Check that the first argument is a table
-  if (!lua_istable(L, 1)) {
+  if (!lua_istable(L, 2)) {
     return luaL_error(L, "Expected a table as the argument");
   }
 
   // Get the length of the table
-  size_t num_points = lua_rawlen(L, 1);
+  size_t num_points = lua_rawlen(L, 2);
   uint16_t x_points[num_points];
   uint16_t y_points[num_points];
 
@@ -265,7 +250,7 @@ int l_grid_gui_draw_polygon_filled(lua_State* L) {
     lua_pushnumber(L, i + 1);
 
     // Get the value at the given index in the table
-    lua_gettable(L, 1);
+    lua_gettable(L, 2);
 
     // Get the number
     x_points[i] = lua_tonumber(L, -1);
@@ -281,7 +266,7 @@ int l_grid_gui_draw_polygon_filled(lua_State* L) {
     lua_pushnumber(L, i + 1);
 
     // Get the value at the given index in the table
-    lua_gettable(L, 2);
+    lua_gettable(L, 3);
 
     // Get the number
     y_points[i] = lua_tonumber(L, -1);
@@ -292,40 +277,45 @@ int l_grid_gui_draw_polygon_filled(lua_State* L) {
   }
 
   int r = 0, g = 0, b = 0; // Default color: black
-  if (lua_gettop(L) >= 3) {
-    luaL_checktype(L, 3, LUA_TTABLE);
-    lua_rawgeti(L, 3, 1);
+  if (lua_gettop(L) >= 4) {
+    luaL_checktype(L, 4, LUA_TTABLE);
+    lua_rawgeti(L, 4, 1);
     r = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 3, 2);
+    lua_rawgeti(L, 4, 2);
     g = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 3, 3);
+    lua_rawgeti(L, 4, 3);
     b = luaL_checknumber(L, -1);
   }
 
-  grid_gui_draw_polygon_filled(&grid_gui_states[0], x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
+  grid_gui_draw_polygon_filled(gui, x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
 
   return 0; // Number of return values
 }
 
 // Function to draw text
 int l_grid_gui_draw_text(lua_State* L) {
-  const char* text = luaL_checkstring(L, 1);
-  int x = luaL_checknumber(L, 2);
-  int y = luaL_checknumber(L, 3);
+
+  int screen_index = luaL_checknumber(L, 1);
+
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+
+  const char* text = luaL_checkstring(L, 2);
+  int x = luaL_checknumber(L, 3);
+  int y = luaL_checknumber(L, 4);
   // Optional font_size parameter
   int font_size = 12; // Default font size
-  if (lua_gettop(L) >= 4) {
-    font_size = luaL_checknumber(L, 4);
+  if (lua_gettop(L) >= 5) {
+    font_size = luaL_checknumber(L, 5);
   }
   // Optional color parameter
   int r = 0, g = 0, b = 0; // Default color: black
-  if (lua_gettop(L) >= 5) {
-    luaL_checktype(L, 5, LUA_TTABLE);
-    lua_rawgeti(L, 5, 1);
+  if (lua_gettop(L) >= 6) {
+    luaL_checktype(L, 6, LUA_TTABLE);
+    lua_rawgeti(L, 6, 1);
     r = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 5, 2);
+    lua_rawgeti(L, 6, 2);
     g = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 5, 3);
+    lua_rawgeti(L, 6, 3);
     b = luaL_checknumber(L, -1);
   }
   // Draw the text at (x, y) with optional font size and color
@@ -333,7 +323,7 @@ int l_grid_gui_draw_text(lua_State* L) {
   int cursor = 0;
 
   if (grid_font_state.initialized) {
-    grid_font_draw_string(&grid_font_state, &grid_gui_states[0], x, y, font_size, text, &cursor, grid_gui_color_from_rgb(r, g, b));
+    grid_font_draw_string(&grid_font_state, gui, x, y, font_size, text, &cursor, grid_gui_color_from_rgb(r, g, b));
   } else {
     // grid_platform_printf("NOT INITIALIZED\n");
   }
@@ -343,9 +333,13 @@ int l_grid_gui_draw_text(lua_State* L) {
 
 int l_grid_gui_draw_demo(lua_State* L) {
 
-  int counter = luaL_checknumber(L, 1);
+  int screen_index = luaL_checknumber(L, 1);
 
-  grid_gui_draw_demo(&grid_gui_states[0], counter);
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+
+  int counter = luaL_checknumber(L, 2);
+
+  grid_gui_draw_demo(gui, counter);
 
   return 0;
 }
