@@ -19,7 +19,7 @@ jobs:
 
     - name: Run host based tests
       run: |
-        ./host_test.sh
+        ./lua_build.sh && ./host_test.sh
 
   # Second Job: Fuzzing
   fuzzing:
