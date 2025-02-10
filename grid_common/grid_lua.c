@@ -205,8 +205,6 @@ void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui) {
   // grid_lua_debug_memory_stats(lua, "Ui init");
 }
 
-#include "lua_src/lua_source_collection.h"
-
 void grid_lua_start_vm(struct grid_lua_model* lua) {
 
   grid_platform_printf("START VM\n");

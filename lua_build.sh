@@ -38,8 +38,11 @@ for lua_file in "$directory"/*.lua; do
     } >> "$header_file"
 
 
-    # Change variable type to const char
-    sed -i 's/unsigned char/const char/' "$header_file"
+    # Change variable type to static const char
+    sed -i 's/unsigned char/static const char/' "$header_file"
+
+    # Change variable type to static unsigned int
+    sed -i 's/unsigned int/static const unsigned int/' "$header_file"
 
     # Change variable name
     sed -i "s/grid_common_lua_src__${base_name}/grid_lua_src_${base_name}/" "$header_file"

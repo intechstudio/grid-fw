@@ -16,6 +16,8 @@
 
 #include "grid_ui.h"
 
+#include "lua_src/lua_source_collection.h"
+
 extern void grid_platform_printf(char const* fmt, ...);
 extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 

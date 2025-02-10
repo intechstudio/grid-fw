@@ -1,3 +1,6 @@
+#ifndef LUA_SOURCE_COLLECTION_H_INCLUDED
+#define LUA_SOURCE_COLLECTION_H_INCLUDED
+
 #include "lookup.h"
 #define GRID_LUA_FNC_G_LOOKUP_source grid_lua_src_lookup_lua
 #define GRID_LUA_FNC_G_LOOKUP_short "glut"
@@ -27,3 +30,5 @@
 #define GRID_LUA_FNC_G_SEGCALC_source grid_lua_src_segmentcalc_lua
 #define GRID_LUA_FNC_G_SEGCALC_short "gsc"
 #define GRID_LUA_FNC_G_SEGCALC_human "segment_calculate"
+
+#endif
