@@ -94,6 +94,5 @@ uint32_t grid_sys_get_hwcfg(struct grid_sys_model* sys);
 uint32_t grid_sys_get_id(struct grid_sys_model* sys, uint32_t* return_array);
 
 int grid_hwcfg_module_is_vsnx_rev_a(struct grid_sys_model* sys);
-int grid_hwcfg_module_is_vsnx_rev_b(struct grid_sys_model* sys);
 
 #endif

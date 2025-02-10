@@ -385,7 +385,8 @@ void app_main(void) {
     grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_ND_RevD) {
     grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN0_RevB) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN0_RevB ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN0_RevH) {
     grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA ||
@@ -520,7 +521,8 @@ void app_main(void) {
     xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_ND_RevD) {
     xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN0_RevB) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN0_RevB ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN0_RevH) {
     xTaskCreatePinnedToCore(grid_esp32_module_tek2_task, "tek2", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA ||
