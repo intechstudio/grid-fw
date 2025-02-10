@@ -308,15 +308,6 @@ var HEAP,
 
 var runtimeInitialized = false;
 
-// Prefix of data URIs emitted by SINGLE_FILE and related options.
-var dataURIPrefix = 'data:application/octet-stream;base64,';
-
-/**
- * Indicates whether filename is a base64 data URI.
- * @noinline
- */
-var isDataURI = (filename) => filename.startsWith(dataURIPrefix);
-
 /**
  * Indicates whether filename is delivered via file protocol (as opposed to http/https)
  * @noinline
@@ -509,12 +500,6 @@ assert(typeof Int32Array != 'undefined' && typeof Float64Array !== 'undefined' &
 assert(!Module['wasmMemory'], 'Use of `wasmMemory` detected.  Use -sIMPORTED_MEMORY to define wasmMemory externally');
 assert(!Module['INITIAL_MEMORY'], 'Detected runtime INITIAL_MEMORY setting.  Use -sIMPORTED_MEMORY to define wasmMemory dynamically');
 
-var __ATPRERUN__  = []; // functions called before the runtime is initialized
-var __ATINIT__    = []; // functions called during startup
-var __ATMAIN__    = []; // functions called when main() is to be run
-var __ATEXIT__    = []; // functions called during shutdown
-var __ATPOSTRUN__ = []; // functions called after the main() is called
-
 function preRun() {
   if (Module['preRun']) {
     if (typeof Module['preRun'] == 'function') Module['preRun'] = [Module['preRun']];
@@ -522,7 +507,7 @@ function preRun() {
       addOnPreRun(Module['preRun'].shift());
     }
   }
-  callRuntimeCallbacks(__ATPRERUN__);
+  callRuntimeCallbacks(onPreRuns);
 }
 
 function initRuntime() {
@@ -531,19 +516,17 @@ function initRuntime() {
 
   checkStackCookie();
 
-  
-if (!Module['noFSInit'] && !FS.initialized)
-  FS.init();
-FS.ignorePermissions = false;
-
+  if (!Module['noFSInit'] && !FS.initialized) FS.init();
 TTY.init();
-  callRuntimeCallbacks(__ATINIT__);
+
+  wasmExports['__wasm_call_ctors']();
+
+  FS.ignorePermissions = false;
 }
 
 function preMain() {
   checkStackCookie();
   
-  callRuntimeCallbacks(__ATMAIN__);
 }
 
 function postRun() {
@@ -556,26 +539,7 @@ function postRun() {
     }
   }
 
-  callRuntimeCallbacks(__ATPOSTRUN__);
-}
-
-function addOnPreRun(cb) {
-  __ATPRERUN__.unshift(cb);
-}
-
-function addOnInit(cb) {
-  __ATINIT__.unshift(cb);
-}
-
-function addOnPreMain(cb) {
-  __ATMAIN__.unshift(cb);
-}
-
-function addOnExit(cb) {
-}
-
-function addOnPostRun(cb) {
-  __ATPOSTRUN__.unshift(cb);
+  callRuntimeCallbacks(onPostRuns);
 }
 
 // A counter of dependencies for calling run(). If we need to
@@ -702,11 +666,7 @@ function createExportWrapper(name, nargs) {
 
 var wasmBinaryFile;
 function findWasmBinary() {
-    var f = 'index.wasm';
-    if (!isDataURI(f)) {
-      return locateFile(f);
-    }
-    return f;
+    return locateFile('index.wasm');
 }
 
 function getBinarySync(file) {
@@ -752,9 +712,7 @@ async function instantiateArrayBuffer(binaryFile, imports) {
 }
 
 async function instantiateAsync(binary, binaryFile, imports) {
-  if (!binary &&
-      typeof WebAssembly.instantiateStreaming == 'function' &&
-      !isDataURI(binaryFile)
+  if (!binary && typeof WebAssembly.instantiateStreaming == 'function'
       // Don't use streaming for file:// delivered objects in a webview, fetch them synchronously.
       && !isFileURI(binaryFile)
       // Avoid instantiateStreaming() on Node.js environment for now, as while
@@ -809,8 +767,6 @@ async function createWasm() {
     
     assert(wasmTable, 'table not found in wasm exports');
 
-    addOnInit(wasmExports['__wasm_call_ctors']);
-
     removeRunDependency('wasm-instantiate');
     return wasmExports;
   }
@@ -841,12 +797,17 @@ async function createWasm() {
   // Also pthreads and wasm workers initialize the wasm instance through this
   // path.
   if (Module['instantiateWasm']) {
-    try {
-      return Module['instantiateWasm'](info, receiveInstance);
-    } catch(e) {
-      err(`Module.instantiateWasm callback failed with error: ${e}`);
-        return false;
-    }
+    return new Promise((resolve, reject) => {
+      try {
+        Module['instantiateWasm'](info, (mod, inst) => {
+          receiveInstance(mod, inst);
+          resolve(mod.exports);
+        });
+      } catch(e) {
+        err(`Module.instantiateWasm callback failed with error: ${e}`);
+        reject(e);
+      }
+    });
   }
 
   wasmBinaryFile ??= findWasmBinary();
@@ -877,6 +838,12 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         callbacks.shift()(Module);
       }
     };
+  var onPostRuns = [];
+  var addOnPostRun = (cb) => onPostRuns.unshift(cb);
+
+  var onPreRuns = [];
+  var addOnPreRun = (cb) => onPreRuns.unshift(cb);
+
 
   
     /**
@@ -1095,6 +1062,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   },
   preloadedAudios:{
   },
+  getCanvas:() => Module['canvas'],
   init() {
         if (Browser.initted) return;
         Browser.initted = true;
@@ -1203,12 +1171,13 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         // Canvas event setup
   
         function pointerLockChange() {
-          Browser.pointerLock = document['pointerLockElement'] === Module['canvas'] ||
-                                document['mozPointerLockElement'] === Module['canvas'] ||
-                                document['webkitPointerLockElement'] === Module['canvas'] ||
-                                document['msPointerLockElement'] === Module['canvas'];
+          var canvas = Browser.getCanvas();
+          Browser.pointerLock = document['pointerLockElement'] === canvas ||
+                                document['mozPointerLockElement'] === canvas ||
+                                document['webkitPointerLockElement'] === canvas ||
+                                document['msPointerLockElement'] === canvas;
         }
-        var canvas = Module['canvas'];
+        var canvas = Browser.getCanvas();
         if (canvas) {
           // forced aspect ratio can be enabled by defining 'forcedAspectRatio' on Module
           // Module['forcedAspectRatio'] = 4 / 3;
@@ -1232,8 +1201,8 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   
           if (Module['elementPointerLock']) {
             canvas.addEventListener("click", (ev) => {
-              if (!Browser.pointerLock && Module['canvas'].requestPointerLock) {
-                Module['canvas'].requestPointerLock();
+              if (!Browser.pointerLock && Browser.getCanvas().requestPointerLock) {
+                Browser.getCanvas().requestPointerLock();
                 ev.preventDefault();
               }
             }, false);
@@ -1241,7 +1210,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         }
       },
   createContext(/** @type {HTMLCanvasElement} */ canvas, useWebGL, setInModule, webGLContextAttributes) {
-        if (useWebGL && Module['ctx'] && canvas == Module['canvas']) return Module['ctx']; // no need to recreate GL context if it's already been created for this canvas.
+        if (useWebGL && Module['ctx'] && canvas == Browser.getCanvas()) return Module['ctx']; // no need to recreate GL context if it's already been created for this canvas.
   
         var ctx;
         var contextHandle;
@@ -1293,7 +1262,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         if (typeof Browser.lockPointer == 'undefined') Browser.lockPointer = true;
         if (typeof Browser.resizeCanvas == 'undefined') Browser.resizeCanvas = false;
   
-        var canvas = Module['canvas'];
+        var canvas = Browser.getCanvas();
         function fullscreenChange() {
           Browser.isFullscreen = false;
           var canvasContainer = canvas.parentNode;
@@ -1445,9 +1414,8 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   calculateMouseCoords(pageX, pageY) {
         // Calculate the movement based on the changes
         // in the coordinates.
-        var rect = Module["canvas"].getBoundingClientRect();
-        var cw = Module["canvas"].width;
-        var ch = Module["canvas"].height;
+        var canvas = Browser.getCanvas();
+        var rect = canvas.getBoundingClientRect();
   
         // Neither .scrollX or .pageXOffset are defined in a spec, but
         // we prefer .scrollX because it is currently in a spec draft.
@@ -1463,8 +1431,8 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         // the canvas might be CSS-scaled compared to its backbuffer;
         // SDL-using content will want mouse coordinates in terms
         // of backbuffer units.
-        adjustedX = adjustedX * (cw / rect.width);
-        adjustedY = adjustedY * (ch / rect.height);
+        adjustedX = adjustedX * (canvas.width / rect.width);
+        adjustedY = adjustedY * (canvas.height / rect.height);
   
         return { x: adjustedX, y: adjustedY };
       },
@@ -1517,11 +1485,11 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
       },
   resizeListeners:[],
   updateResizeListeners() {
-        var canvas = Module['canvas'];
+        var canvas = Browser.getCanvas();
         Browser.resizeListeners.forEach((listener) => listener(canvas.width, canvas.height));
       },
   setCanvasSize(width, height, noUpdates) {
-        var canvas = Module['canvas'];
+        var canvas = Browser.getCanvas();
         Browser.updateCanvasDimensions(canvas, width, height);
         if (!noUpdates) Browser.updateResizeListeners();
       },
@@ -1534,7 +1502,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
           flags = flags | 0x00800000; // set SDL_FULLSCREEN flag
           HEAP32[((SDL.screen)>>2)] = flags;
         }
-        Browser.updateCanvasDimensions(Module['canvas']);
+        Browser.updateCanvasDimensions(Browser.getCanvas());
         Browser.updateResizeListeners();
       },
   setWindowedCanvasSize() {
@@ -1544,7 +1512,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
           flags = flags & ~0x00800000; // clear SDL_FULLSCREEN flag
           HEAP32[((SDL.screen)>>2)] = flags;
         }
-        Browser.updateCanvasDimensions(Module['canvas']);
+        Browser.updateCanvasDimensions(Browser.getCanvas());
         Browser.updateResizeListeners();
       },
   updateCanvasDimensions(canvas, wNative, hNative) {
@@ -2288,10 +2256,11 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
                                                                                           // since that is what ImageData gives us in browsers
         HEAPU32[(((surf)+(20))>>2)] = buffer;
   
+        var canvas = Browser.getCanvas();
         HEAP32[(((surf)+(36))>>2)] = 0;
         HEAP32[(((surf)+(40))>>2)] = 0;
-        HEAP32[(((surf)+(44))>>2)] = Module["canvas"].width;
-        HEAP32[(((surf)+(48))>>2)] = Module["canvas"].height;
+        HEAP32[(((surf)+(44))>>2)] = canvas.width;
+        HEAP32[(((surf)+(48))>>2)] = canvas.height;
   
         HEAP32[(((surf)+(56))>>2)] = 1;
   
@@ -2307,7 +2276,6 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
   
         // Decide if we want to use WebGL or not
         SDL.GL = SDL.GL || is_SDL_OPENGL;
-        var canvas;
         if (!usePageCanvas) {
           if (SDL.canvasPool.length > 0) {
             canvas = SDL.canvasPool.pop();
@@ -2316,8 +2284,6 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
           }
           canvas.width = width;
           canvas.height = height;
-        } else {
-          canvas = Module['canvas'];
         }
   
         var webGLContextAttributes = {
@@ -2355,8 +2321,9 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
           return;
         }
   
-        var fullWidth  = Module['canvas'].width;
-        var fullHeight = Module['canvas'].height;
+        var canvas = Browser.getCanvas();
+        var fullWidth  = canvas.width;
+        var fullHeight = canvas.height;
   
         var startX  = rX || 0;
         var startY  = rY || 0;
@@ -2890,12 +2857,11 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
           case 'touchstart': case 'touchend': case 'touchmove': {
             var touch = event.touch;
             if (!Browser.touches[touch.identifier]) break;
-            var w = Module['canvas'].width;
-            var h = Module['canvas'].height;
-            var x = Browser.touches[touch.identifier].x / w;
-            var y = Browser.touches[touch.identifier].y / h;
-            var lx = Browser.lastTouches[touch.identifier].x / w;
-            var ly = Browser.lastTouches[touch.identifier].y / h;
+            var canvas = Browser.getCanvas();
+            var x = Browser.touches[touch.identifier].x / canvas.width;
+            var y = Browser.touches[touch.identifier].y / canvas.height;
+            var lx = Browser.lastTouches[touch.identifier].x / canvas.width;
+            var ly = Browser.lastTouches[touch.identifier].y / canvas.height;
             var dx = x - lx;
             var dy = y - ly;
             if (touch['deviceID'] === undefined) touch.deviceID = SDL.TOUCH_DEFAULT_ID;
@@ -3570,7 +3536,7 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
         }
         // Make sure the canvas object no longer refers to the context object so
         // there are no GC surprises.
-        if (GL.contexts[contextHandle]?.GLctx?.canvas) {
+        if (GL.contexts[contextHandle]?.GLctx.canvas) {
           GL.contexts[contextHandle].GLctx.canvas.GLctxObject = undefined;
         }
         GL.contexts[contextHandle] = null;
@@ -3618,12 +3584,11 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
        'mousedown', 'mouseup', 'mousemove',
        'mousewheel', 'wheel', 'mouseout',
        'DOMMouseScroll',
-      ].forEach((e) => Module['canvas'].addEventListener(e, SDL.receiveEvent, true));
-  
-      var canvas = Module['canvas'];
+      ].forEach((e) => Browser.getCanvas().addEventListener(e, SDL.receiveEvent, true));
   
       // (0,0) means 'use fullscreen' in native; in Emscripten, use the current canvas size.
       if (width == 0 && height == 0) {
+        var canvas = Browser.getCanvas();
         width = canvas.width;
         height = canvas.height;
       }
@@ -3736,8 +3701,9 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
           }
         }
       } else {
-        var width = Module['canvas'].width;
-        var height = Module['canvas'].height;
+        var canvas = Browser.getCanvas();
+        var width = canvas.width;
+        var height = canvas.height;
         var s = surfData.buffer;
         var data = surfData.image.data;
         var colors = surfData.colors; // TODO: optimize using colors32
@@ -6757,16 +6723,16 @@ function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboa
     };
 
       // exports
-      Module["requestFullscreen"] = Browser.requestFullscreen;
-      Module["requestFullScreen"] = Browser.requestFullScreen;
-      Module["setCanvasSize"] = Browser.setCanvasSize;
-      Module["getUserMedia"] = Browser.getUserMedia;
-      Module["createContext"] = Browser.createContext;
+      Module['requestFullscreen'] = Browser.requestFullscreen;
+      Module['requestFullScreen'] = Browser.requestFullScreen;
+      Module['setCanvasSize'] = Browser.setCanvasSize;
+      Module['getUserMedia'] = Browser.getUserMedia;
+      Module['createContext'] = Browser.createContext;
     ;
 
-      Module["requestAnimationFrame"] = MainLoop.requestAnimationFrame;
-      Module["pauseMainLoop"] = MainLoop.pause;
-      Module["resumeMainLoop"] = MainLoop.resume;
+      Module['requestAnimationFrame'] = MainLoop.requestAnimationFrame;
+      Module['pauseMainLoop'] = MainLoop.pause;
+      Module['resumeMainLoop'] = MainLoop.resume;
       MainLoop.init();;
 
   FS.createPreloadedFile = FS_createPreloadedFile;
@@ -6892,6 +6858,10 @@ var missingLibrarySymbols = [
   'asmjsMangle',
   'HandleAllocator',
   'getNativeTypeSize',
+  'addOnInit',
+  'addOnPostCtor',
+  'addOnPreMain',
+  'addOnExit',
   'STACK_SIZE',
   'STACK_ALIGN',
   'POINTER_SIZE',
@@ -7017,11 +6987,6 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
 
 var unexportedSymbols = [
   'run',
-  'addOnPreRun',
-  'addOnInit',
-  'addOnPreMain',
-  'addOnExit',
-  'addOnPostRun',
   'addRunDependency',
   'removeRunDependency',
   'out',
@@ -7062,6 +7027,8 @@ var unexportedSymbols = [
   'mmapAlloc',
   'wasmTable',
   'noExitRuntime',
+  'addOnPreRun',
+  'addOnPostRun',
   'getCFunc',
   'freeTableIndexes',
   'functionsInTableMap',
@@ -7154,7 +7121,7 @@ var calledRun;
 
 function callMain(args = []) {
   assert(runDependencies == 0, 'cannot call main when async dependencies remain! (listen on Module["onRuntimeInitialized"])');
-  assert(__ATPRERUN__.length == 0, 'cannot call main when preRun functions remain to be called');
+  assert(typeof onPreRuns === 'undefined' || onPreRuns.length == 0, 'cannot call main when preRun functions remain to be called');
 
   var entryFunction = _main;
 
