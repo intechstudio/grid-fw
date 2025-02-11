@@ -513,6 +513,18 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "===== UI TASK DONE =====");
 
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
+
+    TaskHandle_t lcd_task_hdl;
+
+    xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
+
+    ESP_LOGI(TAG, "===== LCD TASK DONE =====");
+  }
+
   // ================== FINISH: grid_module_pbf4_init() ================== //
 
   // Create the class driver task
@@ -544,12 +556,6 @@ void app_main(void) {
   xTaskCreatePinnedToCore(grid_trace_report_task, "trace", 1024 * 4, (void*)signaling_sem, 6, &grid_trace_report_task_hdl, 1);
 
   ESP_LOGI(TAG, "===== REPORT TASK DONE =====");
-
-  TaskHandle_t lcd_task_hdl;
-
-  xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
-
-  ESP_LOGI(TAG, "===== LCD TASK DONE =====");
 
   esp_timer_create_args_t periodic_rtc_ms_args = {.callback = &periodic_rtc_ms_cb, .name = "rtc millisecond"};
 

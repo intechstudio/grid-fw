@@ -6,3 +6,5 @@ idf_component_register(
     REQUIRES
         "driver" "grid_esp32_pins"
 )
+
+set_target_properties(${COMPONENT_LIB} PROPERTIES COMPILE_FLAGS -Wno-incompatible-pointer-types)

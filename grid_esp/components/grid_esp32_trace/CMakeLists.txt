@@ -6,3 +6,5 @@ idf_component_register(
     REQUIRES
         "driver"
 )
+
+set_target_properties(${COMPONENT_LIB} PROPERTIES COMPILE_FLAGS -Wno-int-conversion)

@@ -7,6 +7,8 @@ idf_component_register(
         "driver" "hal" "esp_adc" "ulp" "grid_esp32_pins"
 )
 
+set_target_properties(${COMPONENT_LIB} PROPERTIES COMPILE_FLAGS "-Wno-incompatible-pointer-types -Wno-implicit-function-declaration")
+
 #
 # ULP support additions to component CMakeLists.txt.
 #

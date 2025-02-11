@@ -65,3 +65,5 @@ idf_component_register(
         "../../../grid_common"
         "../../../grid_common/lua-5.4.3/src"
 )
+
+set_target_properties(${COMPONENT_LIB} PROPERTIES COMPILE_FLAGS -Wno-incompatible-pointer-types)

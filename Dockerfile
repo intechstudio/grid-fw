@@ -1,5 +1,5 @@
 # Use the base image
-FROM docker.io/espressif/idf:v5.3.1
+FROM docker.io/espressif/idf:v5.4
 
 # Install pico sdk required dependencies
 RUN apt update && \
@@ -52,14 +52,14 @@ RUN apt update && \
     apt install -y socat
 
 # Install pre-commit from pip
-RUN python3 -m pip install pre-commit
-RUN pre-commit --version
+#RUN python3 -m pip install pre-commit
+#RUN pre-commit --version
 
 # Copy pre-commit hooks and create a git directory,
 # to allow missing environments of hooks to be installed
-COPY ./.pre-commit-config.yaml /
-RUN git init
-RUN pre-commit install-hooks
+#COPY ./.pre-commit-config.yaml /
+#RUN git init
+#RUN pre-commit install-hooks
 
 # Add /project as a safe git repository
 RUN git config --global --add safe.directory /project

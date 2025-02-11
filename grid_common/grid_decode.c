@@ -1218,7 +1218,7 @@ struct grid_decoder_collection grid_decoder_to_ui[] = {{GRID_CLASS_PAGEACTIVE_co
                                                        {GRID_CLASS_NVMDEFRAG_code, grid_decode_nvmdefrag_to_ui},
                                                        {GRID_CLASS_CONFIG_code, grid_decode_config_to_ui},
                                                        {GRID_CLASS_HIDKEYSTATUS_code, grid_decode_hidkeystatus_to_ui},
-                                                       {NULL, NULL}};
+                                                       {(unsigned char)NULL, NULL}};
 
 struct grid_decoder_collection* grid_decoder_to_ui_reference = grid_decoder_to_ui;
 
@@ -1229,6 +1229,6 @@ struct grid_decoder_collection grid_decoder_to_usb[] = {{GRID_CLASS_MIDI_code, g
                                                         {GRID_CLASS_HIDGAMEPADBUTTON_code, grid_decode_gamepadbutton_to_usb},
                                                         {GRID_CLASS_HIDGAMEPADMOVE_code, grid_decode_gamepadmove_to_usb},
                                                         {GRID_CLASS_HIDKEYBOARD_code, grid_decode_keyboard_to_usb},
-                                                        {NULL, NULL}};
+                                                        {(unsigned char)NULL, NULL}};
 
 struct grid_decoder_collection* grid_decoder_to_usb_reference = grid_decoder_to_usb;
