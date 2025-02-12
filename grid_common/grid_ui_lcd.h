@@ -28,6 +28,9 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 
 #define GRID_LUA_FNC_L_LIST_length 4
 
+#define GRID_LUA_FNC_L_DRAW_SWAP_short "ldsw"
+#define GRID_LUA_FNC_L_DRAW_SWAP_human "draw_swap"
+
 #define GRID_LUA_FNC_L_DRAW_PIXEL_short "ldpx"
 #define GRID_LUA_FNC_L_DRAW_PIXEL_human "draw_pixel"
 
@@ -78,6 +81,7 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   GRID_LUA_FNC_ASSIGN_META_PAR0("gtp", GRID_LUA_FNC_G_TIMER_STOP_short) "," \
   GRID_LUA_FNC_ASSIGN_META_PAR1("get", GRID_LUA_FNC_G_EVENT_TRIGGER_short) "," \
   \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_SWAP_short, GRID_LUA_FNC_G_GUI_DRAW_SWAP_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_PIXEL_short, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_LINE_short, GRID_LUA_FNC_G_GUI_DRAW_LINE_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_RECTANGLE_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short) "," \

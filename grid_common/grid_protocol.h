@@ -403,6 +403,11 @@
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr l_grid_potmeter_calibration_set
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_usage "potmeter_calibration_set({ int c1, ... }) Sets potentiometer calibration centers from an array of integers."
 
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_short "ggdsw"
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_human "gui_draw_swap"
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_fnptr l_grid_gui_draw_swap
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_usage "grid_gui_draw_swap(screen_index) Updates the screen with the contents of the background buffer."
+
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "ggdpx"
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_human "gui_draw_pixel"
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr l_grid_gui_draw_pixel

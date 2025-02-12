@@ -7,6 +7,7 @@ idf_component_register(
         "grid_ain.c"
         "grid_led.c"
         "grid_sys.c"
+        "grid_swsr.c"
         "grid_msg.c"
         "grid_buf.c"
         "grid_decode.c"

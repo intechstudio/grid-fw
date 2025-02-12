@@ -26,6 +26,9 @@ int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* buff
   gui->width = width;
   gui->height = height;
   gui->delta = 0;
+  gui->swap = 0;
+
+  assert(grid_swsr_malloc(&gui->swsr, 1024) == 0);
 
   return 0;
 }
@@ -35,6 +38,58 @@ int grid_gui_clear(struct grid_gui_model* gui, grid_color_t color) {
   for (uint16_t i = 0; i < gui->height; ++i) {
     grid_gui_draw_horizontal_line(gui, 0, i, gui->width - 1, color);
   }
+
+  return 0;
+}
+
+int grid_gui_queue_push(struct grid_gui_model* gui, grid_gui_draw_handler_t handler, size_t size) {
+
+  // The destination must be able to receive the entire packet
+  if (!grid_swsr_writable(&gui->swsr, size)) {
+    return 1;
+  }
+
+  // Address of packet handler function
+  grid_swsr_write(&gui->swsr, &handler, sizeof(grid_gui_draw_handler_t));
+
+  // Packet size
+  grid_swsr_write(&gui->swsr, &size, sizeof(size_t));
+
+  return 0;
+}
+
+int grid_gui_queue_step(struct grid_gui_model* gui) {
+
+  // To process a packet, at least the header must be readable
+  if (!grid_swsr_readable(&gui->swsr, sizeof(GRID_GUI_DRAW_HEADER_SIZE))) {
+    return 0;
+  }
+
+  // Address of packet handler function
+  grid_gui_draw_handler_t handler = NULL;
+  assert(grid_swsr_readable(&gui->swsr, sizeof(grid_gui_draw_handler_t)));
+  grid_swsr_read(&gui->swsr, &handler, sizeof(grid_gui_draw_handler_t));
+  assert(handler);
+
+  // Packet size
+  size_t size = 0;
+  assert(grid_swsr_readable(&gui->swsr, sizeof(size_t)));
+  grid_swsr_read(&gui->swsr, &size, sizeof(size_t));
+  assert(size >= GRID_GUI_DRAW_HEADER_SIZE);
+
+  // After reading the header, the bytes of the body should become readable
+  size_t body = size - GRID_GUI_DRAW_HEADER_SIZE;
+  while (!grid_swsr_readable(&gui->swsr, body)) {
+  }
+
+  handler(gui, &gui->swsr);
+
+  return 0;
+}
+
+int grid_gui_draw_swap(struct grid_gui_model* gui) {
+
+  gui->swap = 1;
 
   return 0;
 }
