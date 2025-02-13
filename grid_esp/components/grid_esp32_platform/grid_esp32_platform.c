@@ -12,9 +12,11 @@
 
 #include "esp_timer.h"
 
-#include "hal/cpu_hal.h"
+// #include "hal/cpu_hal.h"
 
-static const char* TAG = "grid_esp32_platform";
+#include "esp_cpu.h"
+
+// static const char* TAG = "grid_esp32_platform";
 
 void* grid_platform_allocate_volatile(size_t size) {
 
@@ -33,10 +35,10 @@ void* grid_platform_allocate_volatile(size_t size) {
   return handle;
 }
 
-uint64_t IRAM_ATTR grid_platform_rtc_get_micros(void) { return esp_timer_get_time(); }
+uint64_t grid_platform_rtc_get_micros(void) { return esp_timer_get_time(); }
 
-uint64_t IRAM_ATTR grid_platform_rtc_get_elapsed_time(uint64_t told) { return grid_platform_rtc_get_micros() - told; }
+uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) { return grid_platform_rtc_get_micros() - told; }
 
-uint32_t IRAM_ATTR grid_platform_get_cycles() { return cpu_hal_get_cycle_count(); }
+uint32_t grid_platform_get_cycles() { return esp_cpu_get_cycle_count(); }
 
-uint32_t IRAM_ATTR grid_platform_get_cycles_per_us() { return 240; }
+uint32_t grid_platform_get_cycles_per_us() { return 240; }
