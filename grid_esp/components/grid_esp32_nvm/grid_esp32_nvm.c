@@ -258,7 +258,7 @@ static int scandir2(const char* dirname, struct dirent*** namelist, int (*select
 
   struct dirent *d, *p, **names = NULL;
   size_t nitems = 0;
-  struct stat stb;
+  // struct stat stb;
   long arraysz;
   DIR* dirp;
 
@@ -495,7 +495,7 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset() {
 
 void grid_esp32_nvm_task(void* arg) {
 
-  static uint32_t loopcounter = 0;
+  // static uint32_t loopcounter = 0;
 
   // gpio_set_direction(47, GPIO_MODE_OUTPUT);
 
