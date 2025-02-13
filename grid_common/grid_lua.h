@@ -20,7 +20,7 @@ extern void grid_platform_printf(char const* fmt, ...);
 extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 
 // GRID LOOKUP TABLE
-#define GRID_LUA_GLUT_source \
+#define GRID_LUA_GLUT_source                                                                                                                                                                           \
   "function glut (a, ...) \
  local t = table.pack(...) \
  for i = 1, t.n//2*2 do \
@@ -34,7 +34,7 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 end"
 
 // GRID LIMIT
-#define GRID_LUA_GLIM_source \
+#define GRID_LUA_GLIM_source                                                                                                                                                                           \
   "function glim (a, min, max) \
  if a>max then return max end \
  if a<min then return min end \
@@ -42,7 +42,7 @@ end"
 end"
 
 // GRID ELEMENT NAME
-#define GRID_LUA_GEN_source \
+#define GRID_LUA_GEN_source                                                                                                                                                                            \
   "function gen (a, b)  \
  if b==nil then \
   if ele[a].sn==nil then \
@@ -56,7 +56,7 @@ end"
  end \
 end"
 
-#define GRID_LUA_MAPSAT_source \
+#define GRID_LUA_MAPSAT_source                                                                                                                                                                         \
   "function " GRID_LUA_FNC_G_MAPSAT_short "(x, in_min, in_max, o_min, o_max) \
 	local n = (x - in_min) * (o_max - o_min) / (in_max - in_min) + o_min \
   local o_max2, o_min2 = o_max, o_min \
@@ -72,7 +72,7 @@ end"
 	end \
 end"
 
-#define GRID_LUA_SIGN_source \
+#define GRID_LUA_SIGN_source                                                                                                                                                                           \
   "function " GRID_LUA_FNC_G_SIGN_short "(x) \
     if x > 0 then \
         return 1 \
@@ -83,7 +83,7 @@ end"
     end \
 end"
 
-#define GRID_LUA_SEGCALC_source \
+#define GRID_LUA_SEGCALC_source                                                                                                                                                                        \
   "function " GRID_LUA_FNC_G_SEGCALC_short "(seg, enc_val, enc_min, enc_max) \
 	local s_min = enc_min + (enc_max - enc_min) / 5 * seg; \
 	local s_max = enc_min + (enc_max - enc_min) / 5 * (seg + 1) \

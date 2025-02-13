@@ -97,7 +97,7 @@ struct grid_ui_element {
 
 enum grid_ui_bluk_status_t { GRID_UI_BULK_READY = 0, GRID_UI_BULK_READ_PROGRESS, GRID_UI_BULK_STORE_PROGRESS, GRID_UI_BULK_CLEAR_PROGRESS, GRID_UI_BULK_ERASE_PROGRESS };
 
-//struct grid_lua_model;
+// struct grid_lua_model;
 
 struct grid_ui_model {
 
@@ -126,7 +126,7 @@ struct grid_ui_model {
   int bulk_last_element;
   int bulk_last_event;
 
-  //void (*lua_ui_init_callback)(struct grid_lua_model*);
+  // void (*lua_ui_init_callback)(struct grid_lua_model*);
   lua_ui_init_callback_t lua_ui_init_callback;
 };
 
