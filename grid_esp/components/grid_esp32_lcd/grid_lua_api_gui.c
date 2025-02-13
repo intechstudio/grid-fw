@@ -131,154 +131,261 @@ int l_grid_gui_draw_line(lua_State* L) {
   return 0;
 }
 
-int l_grid_gui_draw_rectangle(lua_State* L) {
+enum {
+  GRID_GUI_STYLE_RECTANGLE_BASE = 0,
+  GRID_GUI_STYLE_RECTANGLE_FILLED,
+  GRID_GUI_STYLE_RECTANGLE_ROUNDED,
+  GRID_GUI_STYLE_RECTANGLE_ROUNDED_FILLED,
+};
 
-  int screen_index = luaL_checknumber(L, 1);
+inline size_t ggdr_size() { return GRID_GUI_DRAW_HEADER_SIZE + sizeof(uint16_t) * 4 + sizeof(uint8_t) * 3; }
 
-  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+void ggdr_formatter(struct grid_swsr_t* swsr, bool dir, uint16_t* x1, uint16_t* y1, uint16_t* x2, uint16_t* y2, uint8_t* r, uint8_t* g, uint8_t* b) {
 
-  int x1 = luaL_checknumber(L, 2);
-  int y1 = luaL_checknumber(L, 3);
-  int x2 = luaL_checknumber(L, 4);
-  int y2 = luaL_checknumber(L, 5);
+  void (*access)(struct grid_swsr_t*, void*, int) = dir ? grid_swsr_write : grid_swsr_read;
 
-  luaL_checktype(L, 6, LUA_TTABLE);
-  lua_rawgeti(L, 6, 1);
-  int r = luaL_checknumber(L, -1);
-  lua_rawgeti(L, 6, 2);
-  int g = luaL_checknumber(L, -1);
-  lua_rawgeti(L, 6, 3);
-  int b = luaL_checknumber(L, -1);
+  access(swsr, x1, sizeof(uint16_t));
+  access(swsr, y1, sizeof(uint16_t));
+  access(swsr, x2, sizeof(uint16_t));
+  access(swsr, y2, sizeof(uint16_t));
+
+  access(swsr, r, sizeof(uint8_t));
+  access(swsr, g, sizeof(uint8_t));
+  access(swsr, b, sizeof(uint8_t));
+}
+
+void ggdr_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
+
+  uint16_t x1, y1, x2, y2;
+  uint8_t r, g, b;
+
+  ggdr_formatter(swsr, FORMATTER_READ, &x1, &y1, &x2, &y2, &r, &g, &b);
 
   grid_gui_draw_rectangle(gui, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
-
-  return 0;
 }
 
-int l_grid_gui_draw_rectangle_filled(lua_State* L) {
+void ggdrf_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
+
+  uint16_t x1, y1, x2, y2;
+  uint8_t r, g, b;
+
+  ggdr_formatter(swsr, FORMATTER_READ, &x1, &y1, &x2, &y2, &r, &g, &b);
+
+  grid_gui_draw_rectangle_filled(gui, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
+}
+
+int l_grid_gui_draw_rectangle_style(lua_State* L, int style) {
 
   int screen_index = luaL_checknumber(L, 1);
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
-  int x1 = luaL_checknumber(L, 2);
-  int y1 = luaL_checknumber(L, 3);
-  int x2 = luaL_checknumber(L, 4);
-  int y2 = luaL_checknumber(L, 5);
+  uint16_t x1 = luaL_checknumber(L, 2);
+  uint16_t y1 = luaL_checknumber(L, 3);
+  uint16_t x2 = luaL_checknumber(L, 4);
+  uint16_t y2 = luaL_checknumber(L, 5);
 
   luaL_checktype(L, 6, LUA_TTABLE);
   lua_rawgeti(L, 6, 1);
-  int r = luaL_checknumber(L, -1);
+  uint8_t r = luaL_checknumber(L, -1);
   lua_rawgeti(L, 6, 2);
-  int g = luaL_checknumber(L, -1);
+  uint8_t g = luaL_checknumber(L, -1);
   lua_rawgeti(L, 6, 3);
-  int b = luaL_checknumber(L, -1);
+  uint8_t b = luaL_checknumber(L, -1);
 
-  grid_gui_draw_rectangle_filled(gui, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
-
-  return 0;
-}
-
-int l_grid_gui_draw_rectangle_rounded(lua_State* L) {
-
-  int screen_index = luaL_checknumber(L, 1);
-
-  struct grid_gui_model* gui = &grid_gui_states[screen_index];
-
-  int x1 = luaL_checknumber(L, 2);
-  int y1 = luaL_checknumber(L, 3);
-  int x2 = luaL_checknumber(L, 4);
-  int y2 = luaL_checknumber(L, 5);
-  int radius = luaL_checknumber(L, 6);
-
-  luaL_checktype(L, 7, LUA_TTABLE);
-  lua_rawgeti(L, 7, 1);
-  int r = luaL_checknumber(L, -1);
-  lua_rawgeti(L, 7, 2);
-  int g = luaL_checknumber(L, -1);
-  lua_rawgeti(L, 7, 3);
-  int b = luaL_checknumber(L, -1);
-
-  grid_gui_draw_rectangle_rounded(gui, x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
-
-  return 0;
-}
-
-int l_grid_gui_draw_rectangle_rounded_filled(lua_State* L) {
-
-  int screen_index = luaL_checknumber(L, 1);
-
-  struct grid_gui_model* gui = &grid_gui_states[screen_index];
-
-  int x1 = luaL_checknumber(L, 2);
-  int y1 = luaL_checknumber(L, 3);
-  int x2 = luaL_checknumber(L, 4);
-  int y2 = luaL_checknumber(L, 5);
-  int radius = luaL_checknumber(L, 6);
-
-  luaL_checktype(L, 7, LUA_TTABLE);
-  lua_rawgeti(L, 7, 1);
-  int r = luaL_checknumber(L, -1);
-  lua_rawgeti(L, 7, 2);
-  int g = luaL_checknumber(L, -1);
-  lua_rawgeti(L, 7, 3);
-  int b = luaL_checknumber(L, -1);
-
-  grid_gui_draw_rectangle_rounded_filled(gui, x1, y1, x2, y2, radius, grid_gui_color_from_rgb(r, g, b));
-
-  return 0;
-}
-
-int l_grid_gui_draw_polygon(lua_State* L) {
-
-  int screen_index = luaL_checknumber(L, 1);
-
-  struct grid_gui_model* gui = &grid_gui_states[screen_index];
-
-  // The C function that will be called from Lua
-  // Check that the first argument is a table
-  if (!lua_istable(L, 2)) {
-    return luaL_error(L, "Expected a table as the argument");
+  grid_gui_draw_handler_t handler = NULL;
+  switch (style) {
+  case GRID_GUI_STYLE_RECTANGLE_BASE: {
+    handler = ggdr_handler;
+  } break;
+  case GRID_GUI_STYLE_RECTANGLE_FILLED: {
+    handler = ggdrf_handler;
+  } break;
   }
 
-  // Get the length of the table
-  size_t num_points = lua_rawlen(L, 2);
-  uint16_t x_points[num_points];
-  uint16_t y_points[num_points];
+  assert(handler);
 
-  // Iterate over the table and print the numbers
-  for (size_t i = 0; i < num_points; i++) {
-    // Push the index onto the stack
+  size_t bytes = ggdr_size();
+  if (grid_gui_queue_push(gui, handler, bytes) != 0) {
+    return 1;
+  }
+
+  ggdr_formatter(&gui->swsr, FORMATTER_WRITE, &x1, &y1, &x2, &y2, &r, &g, &b);
+
+  return 0;
+}
+
+int l_grid_gui_draw_rectangle(lua_State* L) { return l_grid_gui_draw_rectangle_style(L, GRID_GUI_STYLE_RECTANGLE_BASE); }
+
+int l_grid_gui_draw_rectangle_filled(lua_State* L) { return l_grid_gui_draw_rectangle_style(L, GRID_GUI_STYLE_RECTANGLE_FILLED); }
+
+inline size_t ggdrr_size() { return GRID_GUI_DRAW_HEADER_SIZE + sizeof(uint16_t) * 5 + sizeof(uint8_t) * 3; }
+
+void ggdrr_formatter(struct grid_swsr_t* swsr, bool dir, uint16_t* x1, uint16_t* y1, uint16_t* x2, uint16_t* y2, uint16_t* rad, uint8_t* r, uint8_t* g, uint8_t* b) {
+
+  void (*access)(struct grid_swsr_t*, void*, int) = dir ? grid_swsr_write : grid_swsr_read;
+
+  access(swsr, x1, sizeof(uint16_t));
+  access(swsr, y1, sizeof(uint16_t));
+  access(swsr, x2, sizeof(uint16_t));
+  access(swsr, y2, sizeof(uint16_t));
+  access(swsr, rad, sizeof(uint16_t));
+
+  access(swsr, r, sizeof(uint8_t));
+  access(swsr, g, sizeof(uint8_t));
+  access(swsr, b, sizeof(uint8_t));
+}
+
+void ggdrr_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
+
+  uint16_t x1, y1, x2, y2, rad;
+  uint8_t r, g, b;
+
+  ggdrr_formatter(swsr, FORMATTER_READ, &x1, &y1, &x2, &y2, &rad, &r, &g, &b);
+
+  grid_gui_draw_rectangle_rounded(gui, x1, y1, x2, y2, rad, grid_gui_color_from_rgb(r, g, b));
+}
+
+void ggdrrf_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
+
+  uint16_t x1, y1, x2, y2, rad;
+  uint8_t r, g, b;
+
+  ggdrr_formatter(swsr, FORMATTER_READ, &x1, &y1, &x2, &y2, &rad, &r, &g, &b);
+
+  grid_gui_draw_rectangle_rounded_filled(gui, x1, y1, x2, y2, rad, grid_gui_color_from_rgb(r, g, b));
+}
+
+int l_grid_gui_draw_rectangle_rounded_style(lua_State* L, int style) {
+
+  int screen_index = luaL_checknumber(L, 1);
+
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+
+  uint16_t x1 = luaL_checknumber(L, 2);
+  uint16_t y1 = luaL_checknumber(L, 3);
+  uint16_t x2 = luaL_checknumber(L, 4);
+  uint16_t y2 = luaL_checknumber(L, 5);
+  uint16_t rad = luaL_checknumber(L, 6);
+
+  luaL_checktype(L, 7, LUA_TTABLE);
+  lua_rawgeti(L, 7, 1);
+  uint8_t r = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 7, 2);
+  uint8_t g = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 7, 3);
+  uint8_t b = luaL_checknumber(L, -1);
+
+  grid_gui_draw_handler_t handler = NULL;
+  switch (style) {
+  case GRID_GUI_STYLE_RECTANGLE_ROUNDED: {
+    handler = ggdrr_handler;
+  } break;
+  case GRID_GUI_STYLE_RECTANGLE_ROUNDED_FILLED: {
+    handler = ggdrrf_handler;
+  } break;
+  }
+
+  assert(handler);
+
+  size_t bytes = ggdrr_size();
+  if (grid_gui_queue_push(gui, handler, bytes) != 0) {
+    return 1;
+  }
+
+  ggdrr_formatter(&gui->swsr, FORMATTER_WRITE, &x1, &y1, &x2, &y2, &rad, &r, &g, &b);
+
+  return 0;
+}
+
+int l_grid_gui_draw_rectangle_rounded(lua_State* L) { return l_grid_gui_draw_rectangle_rounded_style(L, GRID_GUI_STYLE_RECTANGLE_ROUNDED); }
+
+int l_grid_gui_draw_rectangle_rounded_filled(lua_State* L) { return l_grid_gui_draw_rectangle_rounded_style(L, GRID_GUI_STYLE_RECTANGLE_ROUNDED_FILLED); }
+
+enum {
+  GRID_GUI_STYLE_POLYGON_BASE = 0,
+  GRID_GUI_STYLE_POLYGON_FILLED,
+};
+
+inline size_t ggdpo_size(size_t points_count) { return GRID_GUI_DRAW_HEADER_SIZE + sizeof(uint16_t) * 2 * points_count + sizeof(uint8_t) * 3; }
+
+void ggdpo_formatter(struct grid_swsr_t* swsr, bool dir, size_t points, uint16_t* xs, uint16_t* ys, uint8_t* r, uint8_t* g, uint8_t* b) {
+
+  void (*access)(struct grid_swsr_t*, void*, int) = dir ? grid_swsr_write : grid_swsr_read;
+
+  if (dir) {
+    access(swsr, &points, sizeof(size_t));
+  }
+
+  access(swsr, xs, sizeof(uint16_t) * points);
+  access(swsr, ys, sizeof(uint16_t) * points);
+
+  access(swsr, r, sizeof(uint8_t));
+  access(swsr, g, sizeof(uint8_t));
+  access(swsr, b, sizeof(uint8_t));
+}
+
+void ggdpo_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
+
+  size_t points;
+
+  grid_swsr_read(swsr, &points, sizeof(size_t));
+
+  uint16_t xs[points];
+  uint16_t ys[points];
+  uint8_t r, g, b;
+
+  ggdpo_formatter(swsr, FORMATTER_READ, points, &xs, &ys, &r, &g, &b);
+
+  grid_gui_draw_polygon(gui, xs, ys, points, grid_gui_color_from_rgb(r, g, b));
+}
+
+void ggdpf_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
+
+  size_t points;
+
+  grid_swsr_read(swsr, &points, sizeof(size_t));
+
+  uint16_t xs[points];
+  uint16_t ys[points];
+  uint8_t r, g, b;
+
+  ggdpo_formatter(swsr, FORMATTER_READ, points, &xs, &ys, &r, &g, &b);
+
+  grid_gui_draw_polygon_filled(gui, xs, ys, points, grid_gui_color_from_rgb(r, g, b));
+}
+
+int l_grid_gui_draw_polygon_style(lua_State* L, int style) {
+
+  int screen_index = luaL_checknumber(L, 1);
+
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+
+  luaL_checktype(L, 2, LUA_TTABLE);
+
+  size_t points = lua_rawlen(L, 2);
+
+  uint16_t xs[points];
+  uint16_t ys[points];
+
+  for (size_t i = 0; i < points; i++) {
+
     lua_pushnumber(L, i + 1);
-
-    // Get the value at the given index in the table
     lua_gettable(L, 2);
-
-    // Get the number
-    x_points[i] = lua_tonumber(L, -1);
-
-    // printf("x[%d]=%d", i, x_points[i]);
-    //  Pop the value off the stack
+    xs[i] = lua_tonumber(L, -1);
     lua_pop(L, 1);
   }
 
-  // Iterate over the table and print the numbers
-  for (size_t i = 0; i < num_points; i++) {
-    // Push the index onto the stack
+  for (size_t i = 0; i < points; i++) {
+
     lua_pushnumber(L, i + 1);
-
-    // Get the value at the given index in the table
     lua_gettable(L, 3);
-
-    // Get the number
-    y_points[i] = lua_tonumber(L, -1);
-    // printf("x[%d]=%d", i, y_points[i]);
-
-    // Pop the value off the stack
+    ys[i] = lua_tonumber(L, -1);
     lua_pop(L, 1);
   }
 
-  int r = 0, g = 0, b = 0; // Default color: black
+  // Default color is black
+  uint8_t r = 0, g = 0, b = 0;
   if (lua_gettop(L) >= 4) {
     luaL_checktype(L, 4, LUA_TTABLE);
     lua_rawgeti(L, 4, 1);
@@ -289,93 +396,97 @@ int l_grid_gui_draw_polygon(lua_State* L) {
     b = luaL_checknumber(L, -1);
   }
 
-  grid_gui_draw_polygon(gui, x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
+  grid_gui_draw_handler_t handler = NULL;
+  switch (style) {
+  case GRID_GUI_STYLE_POLYGON_BASE: {
+    handler = ggdpo_handler;
+  } break;
+  case GRID_GUI_STYLE_POLYGON_FILLED: {
+    handler = ggdpf_handler;
+  } break;
+  }
 
-  return 0; // Number of return values
+  assert(handler);
+
+  size_t bytes = ggdpo_size(points);
+  if (grid_gui_queue_push(gui, handler, bytes) != 0) {
+    return 1;
+  }
+
+  ggdpo_formatter(&gui->swsr, FORMATTER_WRITE, points, xs, ys, &r, &g, &b);
+
+  return 0;
 }
 
-int l_grid_gui_draw_polygon_filled(lua_State* L) {
+int l_grid_gui_draw_polygon(lua_State* L) { return l_grid_gui_draw_polygon_style(L, GRID_GUI_STYLE_POLYGON_BASE); }
 
-  int screen_index = luaL_checknumber(L, 1);
+int l_grid_gui_draw_polygon_filled(lua_State* L) { return l_grid_gui_draw_polygon_style(L, GRID_GUI_STYLE_POLYGON_FILLED); }
 
-  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+inline size_t ggdt_size(size_t length) { return GRID_GUI_DRAW_HEADER_SIZE + sizeof(size_t) + sizeof(char) * length + sizeof(uint16_t) * 3 + sizeof(uint8_t) * 3; }
 
-  // The C function that will be called from Lua
-  // Check that the first argument is a table
-  if (!lua_istable(L, 2)) {
-    return luaL_error(L, "Expected a table as the argument");
+void ggdt_formatter(struct grid_swsr_t* swsr, bool dir, size_t length, char* str, uint16_t* fontsize, uint16_t* x, uint16_t* y, uint8_t* r, uint8_t* g, uint8_t* b) {
+
+  void (*access)(struct grid_swsr_t*, void*, int) = dir ? grid_swsr_write : grid_swsr_read;
+
+  if (dir) {
+    access(swsr, &length, sizeof(size_t));
   }
 
-  // Get the length of the table
-  size_t num_points = lua_rawlen(L, 2);
-  uint16_t x_points[num_points];
-  uint16_t y_points[num_points];
+  access(swsr, str, sizeof(char) * length);
 
-  // Iterate over the table and print the numbers
-  for (size_t i = 0; i < num_points; i++) {
-    // Push the index onto the stack
-    lua_pushnumber(L, i + 1);
+  access(swsr, fontsize, sizeof(uint16_t));
 
-    // Get the value at the given index in the table
-    lua_gettable(L, 2);
+  access(swsr, x, sizeof(uint16_t));
+  access(swsr, y, sizeof(uint16_t));
 
-    // Get the number
-    x_points[i] = lua_tonumber(L, -1);
-
-    // printf("x[%d]=%d", i, x_points[i]);
-    //  Pop the value off the stack
-    lua_pop(L, 1);
-  }
-
-  // Iterate over the table and print the numbers
-  for (size_t i = 0; i < num_points; i++) {
-    // Push the index onto the stack
-    lua_pushnumber(L, i + 1);
-
-    // Get the value at the given index in the table
-    lua_gettable(L, 3);
-
-    // Get the number
-    y_points[i] = lua_tonumber(L, -1);
-    // printf("x[%d]=%d", i, y_points[i]);
-
-    // Pop the value off the stack
-    lua_pop(L, 1);
-  }
-
-  int r = 0, g = 0, b = 0; // Default color: black
-  if (lua_gettop(L) >= 4) {
-    luaL_checktype(L, 4, LUA_TTABLE);
-    lua_rawgeti(L, 4, 1);
-    r = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 4, 2);
-    g = luaL_checknumber(L, -1);
-    lua_rawgeti(L, 4, 3);
-    b = luaL_checknumber(L, -1);
-  }
-
-  grid_gui_draw_polygon_filled(gui, x_points, y_points, num_points, grid_gui_color_from_rgb(r, g, b));
-
-  return 0; // Number of return values
+  access(swsr, r, sizeof(uint8_t));
+  access(swsr, g, sizeof(uint8_t));
+  access(swsr, b, sizeof(uint8_t));
 }
 
-// Function to draw text
+void ggdt_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
+
+  size_t length;
+
+  grid_swsr_read(swsr, &length, sizeof(size_t));
+
+  char str[length + 1];
+  uint16_t fontsize;
+  uint16_t x;
+  uint16_t y;
+  uint8_t r, g, b;
+
+  ggdt_formatter(swsr, FORMATTER_READ, length, str, &fontsize, &x, &y, &r, &g, &b);
+
+  str[length] = '\0';
+
+  if (grid_font_state.initialized) {
+
+    int cursor = 0;
+    grid_font_draw_string(&grid_font_state, gui, x, y, fontsize, str, &cursor, grid_gui_color_from_rgb(r, g, b));
+  }
+}
+
 int l_grid_gui_draw_text(lua_State* L) {
 
   int screen_index = luaL_checknumber(L, 1);
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
-  const char* text = luaL_checkstring(L, 2);
-  int x = luaL_checknumber(L, 3);
-  int y = luaL_checknumber(L, 4);
-  // Optional font_size parameter
-  int font_size = 12; // Default font size
+  const char* str = luaL_checkstring(L, 2);
+  size_t length = strlen(str);
+
+  uint16_t x = luaL_checknumber(L, 3);
+  uint16_t y = luaL_checknumber(L, 4);
+
+  // Default font size is 12
+  uint16_t fontsize = 12;
   if (lua_gettop(L) >= 5) {
-    font_size = luaL_checknumber(L, 5);
+    fontsize = luaL_checknumber(L, 5);
   }
-  // Optional color parameter
-  int r = 0, g = 0, b = 0; // Default color: black
+
+  // Default color is black
+  uint8_t r = 0, g = 0, b = 0;
   if (lua_gettop(L) >= 6) {
     luaL_checktype(L, 6, LUA_TTABLE);
     lua_rawgeti(L, 6, 1);
@@ -385,15 +496,13 @@ int l_grid_gui_draw_text(lua_State* L) {
     lua_rawgeti(L, 6, 3);
     b = luaL_checknumber(L, -1);
   }
-  // Draw the text at (x, y) with optional font size and color
-  // grid_platform_printf("Drawing text: \"%s\" at (%d, %d) with font size %d and color R=%d, G=%d, B=%d\n", text, x, y, font_size, r, g, b);
-  int cursor = 0;
 
-  if (grid_font_state.initialized) {
-    grid_font_draw_string(&grid_font_state, gui, x, y, font_size, text, &cursor, grid_gui_color_from_rgb(r, g, b));
-  } else {
-    // grid_platform_printf("NOT INITIALIZED\n");
+  size_t bytes = ggdt_size(length);
+  if (grid_gui_queue_push(gui, ggdt_handler, bytes) != 0) {
+    return 1;
   }
+
+  ggdt_formatter(&gui->swsr, FORMATTER_WRITE, length, str, &fontsize, &x, &y, &r, &g, &b);
 
   return 0;
 }

@@ -443,13 +443,13 @@
   "grid_gui_draw_rectangle_rounded_filled(x1, y1, x2, y2, radius, {r, g, b}) Draws a filled rounded rectangle between (x1, y1) and (x2, y2) points using pixel based radius with the specified 8-bit " \
   "color channels."
 
-#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short "ggdp"
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short "ggdpo"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_human "gui_draw_polygon"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_fnptr l_grid_gui_draw_polygon
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_usage                                                                                                                                                          \
   "grid_gui_draw_polygon({x1, x2, x3 ...}, {y1, y2, y3 ...}, {r, g, b}) Draws a polygon using the x and y coordinate pairs with the specified 8-bit color channels."
 
-#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "ggdpf"
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "ggdpof"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_human "gui_draw_polygon_filled"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr l_grid_gui_draw_polygon_filled
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_usage                                                                                                                                                   \

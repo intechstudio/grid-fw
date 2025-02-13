@@ -27,8 +27,6 @@ int l_grid_gui_draw_polygon_filled(lua_State* L);
 int l_grid_gui_draw_text(lua_State* L);
 int l_grid_gui_draw_demo(lua_State* L);
 
-// void grid_gui_draw_pixel_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr);
-
 extern struct luaL_Reg* grid_lua_api_gui_lib_reference;
 
 #endif /* GRID_LUA_API_GUI_H */
