@@ -8,6 +8,8 @@
 #include "grid_lua.h"
 #include "grid_lua_api_gui.h"
 
+#include "tinyalloc/tinyalloc.h"
+
 #include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
@@ -19,6 +21,33 @@ void grid_platform_printf(char const* fmt, ...) {
   va_start(ap, fmt);
   vprintf(fmt, ap);
   va_end(ap);
+}
+
+const size_t LUA_MEM_SIZE = 100000;
+static uint8_t LUA_MEM[LUA_MEM_SIZE];
+
+const size_t IN_BUF_SIZE = 512;
+static char IN_BUF[IN_BUF_SIZE];
+
+void* allocator(void* ud, void* ptr, size_t osize, size_t nsize) {
+  // Free
+  if (nsize == 0) {
+    ta_free(ptr);
+    return NULL;
+  }
+  // Realloc
+  else if (ptr != NULL && nsize > osize) {
+    void* new_ptr = ta_alloc(nsize);
+    memcpy(new_ptr, ptr, osize);
+    ta_free(ptr);
+    return new_ptr;
+  }
+  // Malloc
+  else if (ptr == NULL && nsize > 0) {
+    return ta_alloc(nsize);
+  } else {
+    return ptr;
+  }
 }
 
 #define ARENA_SIZE (10000 * 1024) // 100 KB
@@ -202,7 +231,9 @@ int main(int argc, char** argv) {
 
   arena_init(&inst);
 
-  grid_lua_init(&grid_lua_state, custom_lua_allocator, &inst);
+  ta_init(LUA_MEM, LUA_MEM + LUA_MEM_SIZE - 1, 512, 16, 4);
+
+  grid_lua_init(&grid_lua_state, allocator, &inst);
 
   grid_lua_start_vm(&grid_lua_state);
   grid_lua_vm_register_functions(&grid_lua_state, grid_lua_api_gui_lib_reference);

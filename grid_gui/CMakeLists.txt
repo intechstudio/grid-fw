@@ -18,6 +18,9 @@ list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/generated_fonts/spac
 list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/generated_fonts/spacemono_bold.c)
 list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/grid_lua_api_gui.c)
 
+
+list(APPEND SRC_FILES ../grid_common/tinyalloc/tinyalloc.c)
+
 add_executable(index main.c ${SRC_FILES})
 
 # Add Lua source files
