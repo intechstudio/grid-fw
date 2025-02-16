@@ -267,13 +267,15 @@ int grid_font_draw_character_fast(struct grid_font_model* font, struct grid_gui_
     return 1;
   }
 
-  int w = 8;
-  int h = 8;
+  uint8_t scale = (size - 1) / 8 + 1;
+
+  int w = 8 * scale;
+  int h = 8 * scale;
 
   for (int j = 0; j < h; ++j) {
     for (int i = 0; i < w; ++i) {
 
-      if (font8x8_basic[character][j] & (1 << i)) {
+      if (font8x8_basic[character][j / scale] & (1 << (i / scale))) {
         grid_gui_draw_pixel(gui, x + i, y + j, color);
       } else {
         grid_gui_draw_pixel(gui, x + i, y + j, grid_gui_color_from_rgb(0, 0, 0));
