@@ -319,8 +319,9 @@ int l_grid_gui_draw_text_fast(lua_State* L) {
   }
   // Draw the text at (x, y) with optional font size and color
   // grid_platform_printf("Drawing text: \"%s\" at (%d, %d) with font size %d and color R=%d, G=%d, B=%d\n", text, x, y, font_size, r, g, b);
+  int cursor = 0;
+  grid_font_draw_string_fast(&grid_font_state, gui, x, y, font_size, text, &cursor, grid_gui_color_from_rgb(r, g, b));
 
-  grid_font_draw_string_fast(gui, x, y, text, grid_gui_color_from_rgb(r, g, b));
   return 0;
 }
 
