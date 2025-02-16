@@ -819,7 +819,7 @@ async function createWasm() {
 
 // === Body ===
 
-function captureInput() { console.log('hello world!'); Module.doNotCaptureKeyboard = true; window.addEventListener('keydown', function(event){ }, true); window.addEventListener('keyup', function(event){ }, true); var button = document.querySelector('#loadScriptButton'); button.addEventListener('click', function(){ }); }
+function captureInput() { console.log('hello world!'); document.addEventListener( 'keydown', function(event) { console.log('!'); Module.ccall('handleInput', 'void', ['number'], [event.keyCode]); }); Module.doNotCaptureKeyboard = true; window.addEventListener('keydown', function(event){ }, true); window.addEventListener('keyup', function(event){ }, true); var button = document.querySelector('#loadScriptButton'); button.addEventListener('click', function(){ }); }
 
 // end include: preamble.js
 
