@@ -131,7 +131,7 @@ int grid_font_draw_string_fast(struct grid_gui_model* gui, uint16_t x, uint16_t 
   struct grid_rgba_t c = grid_unpack_rgba(color);
 
   ThreeByteType three_byte_color = {c.r, c.g, c.b};
-  int ret = blit32_TextExplicit(buffer, three_byte_color, 4, 320, 240, 1, x, y, str);
+  int ret = blit32_TextExplicit(buffer, three_byte_color, 1, 320, 240, 1, x, y, str);
 
   return 0;
 }
