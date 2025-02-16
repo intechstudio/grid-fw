@@ -334,12 +334,11 @@ int l_grid_gui_draw_text(lua_State* L) {
 int l_grid_gui_draw_demo(lua_State* L) {
 
   int screen_index = luaL_checknumber(L, 1);
+  int loopcounter = luaL_checknumber(L, 2);
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
-  int counter = luaL_checknumber(L, 2);
-
-  grid_gui_draw_demo(gui, counter);
+  grid_gui_draw_demo(gui, loopcounter);
 
   return 0;
 }

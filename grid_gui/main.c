@@ -23,11 +23,8 @@ void grid_platform_printf(char const* fmt, ...) {
   va_end(ap);
 }
 
-const size_t LUA_MEM_SIZE = 100000;
+const size_t LUA_MEM_SIZE = 200000;
 static uint8_t LUA_MEM[LUA_MEM_SIZE];
-
-const size_t IN_BUF_SIZE = 512;
-static char IN_BUF[IN_BUF_SIZE];
 
 void* allocator(void* ud, void* ptr, size_t osize, size_t nsize) {
   // Free
@@ -38,19 +35,26 @@ void* allocator(void* ud, void* ptr, size_t osize, size_t nsize) {
   // Realloc
   else if (ptr != NULL && nsize > osize) {
     void* new_ptr = ta_alloc(nsize);
+    if (new_ptr == NULL) {
+      printf("Out of memory 1\n");
+    }
     memcpy(new_ptr, ptr, osize);
     ta_free(ptr);
     return new_ptr;
   }
   // Malloc
   else if (ptr == NULL && nsize > 0) {
-    return ta_alloc(nsize);
+    void* new_ptr = ta_alloc(nsize);
+    if (new_ptr == NULL) {
+      printf("Out of memory 2\n");
+    }
+    return new_ptr;
   } else {
     return ptr;
   }
 }
 
-#define ARENA_SIZE (10000 * 1024) // 100 KB
+#define ARENA_SIZE (100 * 1024) // 100 KB
 
 struct ArenaAllocator {
   size_t size;
@@ -158,7 +162,7 @@ void EMSCRIPTEN_KEEPALIVE loadScript(char* setup, char* loop) {
   strcpy(grid_lua_init_script, setup);
   strcpy(grid_lua_loop_script, loop);
 
-  // printf("loadScript %s |||||| %s\n", grid_lua_init_script, grid_lua_loop_script);
+  printf("loadScript len %d |||||| %d\n", strlen(grid_lua_init_script), strlen(grid_lua_loop_script));
 
   config_changed = 1;
   // loopcounter = keyCode;
@@ -212,8 +216,8 @@ void loop(void) {
 
   grid_lua_dostring(&grid_lua_state, grid_lua_loop_script);
 
-  lua_pushinteger(grid_lua_state.L, loopcounter);
-  l_grid_gui_draw_demo(grid_lua_state.L);
+  // lua_pushinteger(grid_lua_state.L, 0);
+  // l_grid_gui_draw_demo(grid_lua_state.L);
 
   char buffer[1024] = {0};
   snprintf(buffer, 1024, "loopcounter %d", loopcounter);
@@ -231,7 +235,7 @@ int main(int argc, char** argv) {
 
   arena_init(&inst);
 
-  ta_init(LUA_MEM, LUA_MEM + LUA_MEM_SIZE - 1, 512, 16, 4);
+  ta_init(LUA_MEM, LUA_MEM + LUA_MEM_SIZE - 1, 2048, 16, 4);
 
   grid_lua_init(&grid_lua_state, allocator, &inst);
 
