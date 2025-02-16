@@ -122,12 +122,13 @@ EM_JS(void, captureInput, (), {
   console.log('hello world!');
   // JavaScript code
 
-  // document.addEventListener('keydown', function(event) {
-  //   // Pass the key code to the C function
+  document.addEventListener(
+      'keydown', function(event) {
+        // Pass the key code to the C function
 
-  //   console.log('!');
-  //   Module.ccall('handleInput', 'void', ['number'], [event.keyCode]);
-  // });
+        console.log('!');
+        Module.ccall('handleInput', 'void', ['number'], [event.keyCode]);
+      });
 
   Module.doNotCaptureKeyboard = true;
 
