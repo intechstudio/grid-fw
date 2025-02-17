@@ -18,6 +18,9 @@ list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/generated_fonts/spac
 list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/generated_fonts/spacemono_bold.c)
 list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/grid_lua_api_gui.c)
 
+
+list(APPEND SRC_FILES ../grid_common/tinyalloc/tinyalloc.c)
+
 add_executable(index main.c ${SRC_FILES})
 
 # Add Lua source files
@@ -35,7 +38,7 @@ set(CMAKE_C_COMPILER emcc)
 
 # Set Emscripten compiler options
 set_target_properties(index PROPERTIES
-    COMPILE_FLAGS "-s NO_EXIT_RUNTIME=1"
+    COMPILE_FLAGS "-s NO_EXIT_RUNTIME=1 -sSTACK_SIZE=2000000"
     LINK_FLAGS "-s 'EXPORTED_RUNTIME_METHODS=[\"ccall\"]' --shell-file ${CMAKE_SOURCE_DIR}/shell_minimal.html"
 )
 

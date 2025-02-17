@@ -292,6 +292,39 @@ int l_grid_gui_draw_polygon_filled(lua_State* L) {
   return 0; // Number of return values
 }
 
+int l_grid_gui_draw_text_fast(lua_State* L) {
+
+  int screen_index = luaL_checknumber(L, 1);
+
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+
+  const char* text = luaL_checkstring(L, 2);
+  int x = luaL_checknumber(L, 3);
+  int y = luaL_checknumber(L, 4);
+  // Optional font_size parameter
+  int font_size = 12; // Default font size
+  if (lua_gettop(L) >= 5) {
+    font_size = luaL_checknumber(L, 5);
+  }
+  // Optional color parameter
+  int r = 0, g = 0, b = 0; // Default color: black
+  if (lua_gettop(L) >= 6) {
+    luaL_checktype(L, 6, LUA_TTABLE);
+    lua_rawgeti(L, 6, 1);
+    r = luaL_checknumber(L, -1);
+    lua_rawgeti(L, 6, 2);
+    g = luaL_checknumber(L, -1);
+    lua_rawgeti(L, 6, 3);
+    b = luaL_checknumber(L, -1);
+  }
+  // Draw the text at (x, y) with optional font size and color
+  // grid_platform_printf("Drawing text: \"%s\" at (%d, %d) with font size %d and color R=%d, G=%d, B=%d\n", text, x, y, font_size, r, g, b);
+  int cursor = 0;
+  grid_font_draw_string_fast(&grid_font_state, gui, x, y, font_size, text, &cursor, grid_gui_color_from_rgb(r, g, b));
+
+  return 0;
+}
+
 // Function to draw text
 int l_grid_gui_draw_text(lua_State* L) {
 
@@ -334,12 +367,11 @@ int l_grid_gui_draw_text(lua_State* L) {
 int l_grid_gui_draw_demo(lua_State* L) {
 
   int screen_index = luaL_checknumber(L, 1);
+  int loopcounter = luaL_checknumber(L, 2);
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
-  int counter = luaL_checknumber(L, 2);
-
-  grid_gui_draw_demo(gui, counter);
+  grid_gui_draw_demo(gui, loopcounter);
 
   return 0;
 }
@@ -353,6 +385,7 @@ int l_grid_gui_draw_demo(lua_State* L) {
     {GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_ROUNDED_FILLED_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_short, GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_DEMO_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr},
     {NULL, NULL} /* end of array */
