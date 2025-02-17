@@ -10,6 +10,8 @@
 
 #include <string.h>
 
+struct grid_gui_model;
+
 #include "grid_font.h"
 #include "grid_gui.h"
 #include "grid_protocol.h"

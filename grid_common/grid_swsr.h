@@ -1,6 +1,7 @@
 #ifndef GRID_SWSR_H
 #define GRID_SWSR_H
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
