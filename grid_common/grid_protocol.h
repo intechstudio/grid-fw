@@ -357,24 +357,6 @@
 #define GRID_LUA_FNC_G_STRING_GET_human "string_get"
 #define GRID_LUA_FNC_G_STRING_GET_fnptr l_grid_string_get
 
-#define GRID_LUA_FNC_G_ELEMENTNAME_short "gen"
-#define GRID_LUA_FNC_G_ELEMENTNAME_human "element_name"
-
-#define GRID_LUA_FNC_G_LOOKUP_short "glut"
-#define GRID_LUA_FNC_G_LOOKUP_human "lookup"
-
-#define GRID_LUA_FNC_G_LIMIT_short "glim"
-#define GRID_LUA_FNC_G_LIMIT_human "limit"
-
-#define GRID_LUA_FNC_G_MAPSAT_short "gmaps"
-#define GRID_LUA_FNC_G_MAPSAT_human "map_saturate"
-
-#define GRID_LUA_FNC_G_SIGN_short "sign"
-#define GRID_LUA_FNC_G_SIGN_human "sgn"
-
-#define GRID_LUA_FNC_G_SEGCALC_short "gsc"
-#define GRID_LUA_FNC_G_SEGCALC_human "segment_calculate"
-
 #define GRID_LUA_FNC_G_WEBSOCKET_SEND_short "gwss"
 #define GRID_LUA_FNC_G_WEBSOCKET_SEND_human "websocket_send"
 #define GRID_LUA_FNC_G_WEBSOCKET_SEND_fnptr l_grid_websocket_send
@@ -459,6 +441,11 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_human "gui_draw_text"
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr l_grid_gui_draw_text
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_usage "gui_draw_text('text', x, y, size, {r, g, b}) Draws the specified text at (x, y) with the specified font size and 8-bit color channels."
+
+#define GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_short "ggdft"
+#define GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_human "gui_draw_fasttext"
+#define GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_fnptr l_grid_gui_draw_text_fast
+#define GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_usage "gui_draw_fasttext('text', x, y, size, {r, g, b}) Draws the specified text at (x, y) with the specified font size and 8-bit color channels."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_short "ggdd"
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_human "gui_draw_demo"

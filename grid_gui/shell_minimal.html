@@ -75,8 +75,10 @@ print('slider'..sliderValue)
     <textarea class="emscripten" id="loop_script" rows="8">
 loopcounter = loopcounter+1
 print('loopcounter '..loopcounter)
-ggdrf(0,0,320,240,{0,0,0})
-ggdt('hello '..loopcounter, 10, 100, 60, {255,255,255})
+ggdrf(0,0,0,320,240,{0,0,0})
+ggdd(0,loopcounter)
+ggdft(0,'hello '..loopcounter, 10, 10, 8, {255,255,255})
+ggdt(0,'hello '..loopcounter, 10, 20, 24, {255,255,255})
     </textarea>
     <button id="loadScriptButton" onclick="Module.ccall('loadScript', 'void', ['string', 'string'], [slider_script + document.getElementById('init_script').value, document.getElementById('loop_script').value]);">Load Script</button>
     <hr>

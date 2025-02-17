@@ -570,6 +570,8 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t counter) {
   grid_font_draw_character(font, gui, x + cursor, y, 60, temp[0], &cursor, white);
   grid_font_draw_character(font, gui, x + cursor, y, 60, temp[1], &cursor, white);
   grid_font_draw_character(font, gui, x + cursor, y, 60, temp[2], &cursor, white);
+
+  // grid_font_draw_string_fast(gui, 0, 0, "hello", white);
 }
 
 void grid_gui_draw_demo_matrix(struct grid_gui_model* gui, uint8_t counter, grid_color_t* matrix) {

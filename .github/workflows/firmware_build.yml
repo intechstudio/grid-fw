@@ -29,10 +29,10 @@ jobs:
         run: docker build -t my-image .
 
       - name: Run script in Docker container
-        run: docker run -v $PWD:/project -w /project/ my-image sh -c "arm-none-eabi-gcc -v && ./d51_build_firmware.sh"
+        run: docker run -v $PWD:/project -w /project/ my-image sh -c "arm-none-eabi-gcc -v && ./lua_build.sh && ./d51_build_firmware.sh"
 
       - name: Run script in Docker container
-        run: docker run -v $PWD:/project -w /project/ my-image sh -c "./pico_build_firmware.sh && ./esp_build_firmware.sh && ./gui_build.sh"
+        run: docker run -v $PWD:/project -w /project/ my-image sh -c "./lua_build.sh && ./pico_build_firmware.sh && ./esp_build_firmware.sh && ./gui_build.sh"
 
       - name: Convert ESP firmware to UF2
         run: |
