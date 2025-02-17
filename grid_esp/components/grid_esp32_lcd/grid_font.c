@@ -66,6 +66,27 @@ int grid_font_draw_string(struct grid_font_model* font, struct grid_gui_model* g
     return 1;
   }
 
+  int total_width = 0;
+  for (int i = 0; string[i] != 0; i++) {
+    char character = string[i];
+
+    int advance_width = 0;
+    int left_side_bearing = 0;
+
+    stbtt_GetCodepointHMetrics(font->font_handle, character, &advance_width, &left_side_bearing);
+    float scale = stbtt_ScaleForPixelHeight(font->font_handle, size);
+    total_width += scale * advance_width;
+  }
+
+  uint8_t horizontal_align_center = false;
+  if (horizontal_align_center) {
+    x -= (total_width / 2);
+  }
+  uint8_t vertical_align_center = false;
+  if (vertical_align_center) {
+    y -= (size / 4);
+  }
+
   int cursor = 0;
 
   for (int i = 0; string[i] != 0; i++) {
@@ -86,10 +107,15 @@ int grid_font_draw_character(struct grid_font_model* font, struct grid_gui_model
     return 1;
   }
 
-  int spaceing = size / 20;
   int w, h;
   int xoff, yoff;
   unsigned char* bitmap;
+
+  int advance_width = 0;
+  int left_side_bearing = 0;
+  stbtt_GetCodepointHMetrics(font->font_handle, character, &advance_width, &left_side_bearing);
+  float scale = stbtt_ScaleForPixelHeight(font->font_handle, size);
+
   bitmap = stbtt_GetCodepointBitmap(font->font_handle, 0, stbtt_ScaleForPixelHeight(font->font_handle, size), character, &w, &h, &xoff, &yoff);
 
   for (int j = 0; j < h; ++j) {
@@ -98,13 +124,13 @@ int grid_font_draw_character(struct grid_font_model* font, struct grid_gui_model
 
       // grid_gui_draw_pixel(gui, x + i + xoff, y + j + yoff+size/2, grid_gui_color_apply_alpha(color, bitmap[j * w + i]));
 
-      grid_gui_draw_pixel(gui, x + i + xoff, y + j + yoff + size / 2, grid_gui_color_apply_alpha(color, bitmap[j * w + i]));
+      grid_gui_draw_pixel(gui, x + i + scale * left_side_bearing + xoff, y + j + yoff + size / 2, grid_gui_color_apply_alpha(color, bitmap[j * w + i]));
     }
 
     // putchar('\n');
   }
 
-  *cursor_jump += w + spaceing;
+  *cursor_jump += scale * advance_width;
   stbtt_FreeBitmap(bitmap, NULL);
 
   return 0;
