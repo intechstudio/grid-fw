@@ -32,6 +32,8 @@
 #include "esp_flash.h"
 #include "esp_task_wdt.h"
 
+#include "esp_private/esp_psram_extram.h"
+
 #include "grid_esp32_led.h"
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_ef44.h"
@@ -333,6 +335,7 @@ void app_main(void) {
 
   // set console baud rate
   ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
+  vTaskDelay(1);
 
   esp_log_level_set("*", ESP_LOG_INFO);
   uint8_t loopcounter = 0;
@@ -363,14 +366,28 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "===== MAIN START =====");
 
-  size_t psram_size = esp_psram_get_size();
-  ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
-
   gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
   gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
 
   ESP_LOGI(TAG, "===== SYS START =====");
   grid_sys_init(&grid_sys_state);
+
+  ESP_LOGI(TAG, "===== PSRAM INIT =====");
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
+
+    ESP_ERROR_CHECK(esp_psram_init());
+
+    esp_err_t r = esp_psram_extram_add_to_heap_allocator();
+    if (r != ESP_OK) {
+      ESP_LOGE(TAG, "app_main() failed to add external RAM to heap");
+      abort();
+    }
+  }
+
+  size_t psram_size = esp_psram_get_size();
+  ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
 
   ESP_LOGI(TAG, "===== UI INIT =====");
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD) {
