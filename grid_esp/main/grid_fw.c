@@ -378,9 +378,18 @@ void app_main(void) {
   grid_sys_init(&grid_sys_state);
 
   ESP_LOGI(TAG, "===== PSRAM INIT =====");
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA ||
-      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
-      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || 
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || 
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || 
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevH || 
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB || 
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB || 
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
+
+
+    ESP_LOGI(TAG, "===== PSRAM SCREEN MODULE =====");
 
     ESP_ERROR_CHECK(esp_psram_init());
 
