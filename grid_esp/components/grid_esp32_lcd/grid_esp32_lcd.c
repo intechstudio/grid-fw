@@ -365,8 +365,8 @@ void grid_esp32_module_vsn_lcd_push_trailing(struct grid_esp32_lcd_model* lcds, 
 void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf) {
 
   bool waiting[2] = {
-      grid_esp32_lcd_panel_active(&lcds[0]) && guis[0].swap,
-      grid_esp32_lcd_panel_active(&lcds[1]) && guis[1].swap,
+      grid_esp32_lcd_panel_active(&lcds[0]) && grid_gui_swap_get(&guis[0]),
+      grid_esp32_lcd_panel_active(&lcds[1]) && grid_gui_swap_get(&guis[1]),
   };
 
   while (waiting[0] || waiting[1]) {
@@ -379,7 +379,7 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
 
     waiting[lcd_index] = false;
 
-    guis[lcd_index].swap = 0;
+    grid_gui_swap_set(&guis[lcd_index], false);
   }
 }
 
@@ -409,7 +409,7 @@ void grid_esp32_lcd_task(void* arg) {
 
       if (grid_esp32_lcd_panel_active(&lcds[i])) {
 
-        while (grid_swsr_size(&guis[i].swsr) && !guis[i].swap) {
+        while (grid_swsr_size(&guis[i].swsr) && !grid_gui_swap_get(&guis[i])) {
 
           grid_gui_queue_step(&guis[i]);
         }

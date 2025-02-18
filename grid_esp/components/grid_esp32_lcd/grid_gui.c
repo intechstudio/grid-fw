@@ -61,7 +61,7 @@ int grid_gui_queue_push(struct grid_gui_model* gui, grid_gui_draw_handler_t hand
 int grid_gui_queue_step(struct grid_gui_model* gui) {
 
   // To process a packet, at least the header must be readable
-  if (!grid_swsr_readable(&gui->swsr, sizeof(GRID_GUI_DRAW_HEADER_SIZE))) {
+  if (!grid_swsr_readable(&gui->swsr, sizeof(GRID_GUI_CALL_HEADER_SIZE))) {
     return 0;
   }
 
@@ -75,10 +75,10 @@ int grid_gui_queue_step(struct grid_gui_model* gui) {
   size_t size = 0;
   assert(grid_swsr_readable(&gui->swsr, sizeof(size_t)));
   grid_swsr_read(&gui->swsr, &size, sizeof(size_t));
-  assert(size >= GRID_GUI_DRAW_HEADER_SIZE);
+  assert(size >= GRID_GUI_CALL_HEADER_SIZE);
 
   // After reading the header, the bytes of the body should become readable
-  size_t body = size - GRID_GUI_DRAW_HEADER_SIZE;
+  size_t body = size - GRID_GUI_CALL_HEADER_SIZE;
   while (!grid_swsr_readable(&gui->swsr, body)) {
   }
 
@@ -87,12 +87,9 @@ int grid_gui_queue_step(struct grid_gui_model* gui) {
   return 0;
 }
 
-int grid_gui_draw_swap(struct grid_gui_model* gui) {
+void grid_gui_swap_set(struct grid_gui_model* gui, bool x) { gui->swap = x; }
 
-  gui->swap = 1;
-
-  return 0;
-}
+bool grid_gui_swap_get(struct grid_gui_model* gui) { return gui->swap; }
 
 int grid_gui_draw_pixel(struct grid_gui_model* gui, uint16_t x, uint16_t y, grid_color_t color) {
 

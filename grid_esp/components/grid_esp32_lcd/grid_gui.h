@@ -45,7 +45,7 @@ enum grid_gui_colmod_t {
 typedef void (*grid_gui_draw_handler_t)(struct grid_gui_model*, struct grid_swsr_t*);
 
 enum {
-  GRID_GUI_DRAW_HEADER_SIZE = sizeof(grid_gui_draw_handler_t) + sizeof(size_t),
+  GRID_GUI_CALL_HEADER_SIZE = sizeof(grid_gui_draw_handler_t) + sizeof(size_t),
 };
 
 struct grid_gui_model {
@@ -66,7 +66,8 @@ int grid_gui_clear(struct grid_gui_model* gui, grid_color_t color);
 int grid_gui_queue_push(struct grid_gui_model* gui, grid_gui_draw_handler_t handler, size_t size);
 int grid_gui_queue_step(struct grid_gui_model* gui);
 
-int grid_gui_draw_swap(struct grid_gui_model* gui);
+void grid_gui_swap_set(struct grid_gui_model* gui, bool x);
+bool grid_gui_swap_get(struct grid_gui_model* gui);
 
 int grid_gui_draw_pixel(struct grid_gui_model* gui, uint16_t x, uint16_t y, grid_color_t color);
 int grid_gui_draw_array(struct grid_gui_model* gui, uint16_t x, uint16_t y, uint16_t ys, grid_color_t* colors);

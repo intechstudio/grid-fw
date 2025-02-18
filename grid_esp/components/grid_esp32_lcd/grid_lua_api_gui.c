@@ -2,14 +2,35 @@
 
 extern void grid_platform_printf(char const* fmt, ...);
 
+/* grid_lua_api_gui.c
+
+The API functions defined in this file are built according to a specific
+approach, and new functions should also follow this approach to fit into the
+system as a whole.
+
+Each API function should parse the arguments it received through a lua state
+first, and compute the total serialized size of a packet that encodes those
+parameters. Then, after checking that the call queue of the target GUI has
+enough space to hold the entire packet, it should first push its header.
+
+The 8-byte header consists of a handler address and the total packet size.
+
+The handler function should deserialize the parameters from a call queue, and
+invoke the GUI function that actually reifies the effect provided by the API.
+
+Each function should have a read-write formatter defined for it, which takes
+the parameters representing a call, and deserializes or serializes them to a
+binary single-writer, single-reader circular buffer.
+*/
+
 enum {
   FORMATTER_READ = 0,
   FORMATTER_WRITE = 1,
 };
 
-size_t ggdsw_size() { return GRID_GUI_DRAW_HEADER_SIZE; }
+size_t ggdsw_size() { return GRID_GUI_CALL_HEADER_SIZE; }
 
-void ggdsw_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) { grid_gui_draw_swap(gui); }
+void ggdsw_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) { grid_gui_swap_set(gui, true); }
 
 int l_grid_gui_draw_swap(lua_State* L) {
 
@@ -25,7 +46,7 @@ int l_grid_gui_draw_swap(lua_State* L) {
   return 0;
 }
 
-size_t ggdpx_size() { return GRID_GUI_DRAW_HEADER_SIZE + sizeof(uint16_t) * 2 + sizeof(uint8_t) * 3; }
+size_t ggdpx_size() { return GRID_GUI_CALL_HEADER_SIZE + sizeof(uint16_t) * 2 + sizeof(uint8_t) * 3; }
 
 void ggdpx_formatter(struct grid_swsr_t* swsr, bool dir, uint16_t* x, uint16_t* y, uint8_t* r, uint8_t* g, uint8_t* b) {
 
@@ -76,7 +97,7 @@ int l_grid_gui_draw_pixel(lua_State* L) {
   return 0;
 }
 
-size_t ggdl_size() { return GRID_GUI_DRAW_HEADER_SIZE + sizeof(uint16_t) * 4 + sizeof(uint8_t) * 3; }
+size_t ggdl_size() { return GRID_GUI_CALL_HEADER_SIZE + sizeof(uint16_t) * 4 + sizeof(uint8_t) * 3; }
 
 void ggdl_formatter(struct grid_swsr_t* swsr, bool dir, uint16_t* x1, uint16_t* y1, uint16_t* x2, uint16_t* y2, uint8_t* r, uint8_t* g, uint8_t* b) {
 
@@ -138,7 +159,7 @@ enum {
   GRID_GUI_STYLE_RECTANGLE_ROUNDED_FILLED,
 };
 
-size_t ggdr_size() { return GRID_GUI_DRAW_HEADER_SIZE + sizeof(uint16_t) * 4 + sizeof(uint8_t) * 3; }
+size_t ggdr_size() { return GRID_GUI_CALL_HEADER_SIZE + sizeof(uint16_t) * 4 + sizeof(uint8_t) * 3; }
 
 void ggdr_formatter(struct grid_swsr_t* swsr, bool dir, uint16_t* x1, uint16_t* y1, uint16_t* x2, uint16_t* y2, uint8_t* r, uint8_t* g, uint8_t* b) {
 
@@ -219,7 +240,7 @@ int l_grid_gui_draw_rectangle(lua_State* L) { return l_grid_gui_draw_rectangle_s
 
 int l_grid_gui_draw_rectangle_filled(lua_State* L) { return l_grid_gui_draw_rectangle_style(L, GRID_GUI_STYLE_RECTANGLE_FILLED); }
 
-size_t ggdrr_size() { return GRID_GUI_DRAW_HEADER_SIZE + sizeof(uint16_t) * 5 + sizeof(uint8_t) * 3; }
+size_t ggdrr_size() { return GRID_GUI_CALL_HEADER_SIZE + sizeof(uint16_t) * 5 + sizeof(uint8_t) * 3; }
 
 void ggdrr_formatter(struct grid_swsr_t* swsr, bool dir, uint16_t* x1, uint16_t* y1, uint16_t* x2, uint16_t* y2, uint16_t* rad, uint8_t* r, uint8_t* g, uint8_t* b) {
 
@@ -307,7 +328,7 @@ enum {
   GRID_GUI_STYLE_POLYGON_FILLED,
 };
 
-size_t ggdpo_size(size_t points_count) { return GRID_GUI_DRAW_HEADER_SIZE + sizeof(uint16_t) * 2 * points_count + sizeof(uint8_t) * 3; }
+size_t ggdpo_size(size_t points_count) { return GRID_GUI_CALL_HEADER_SIZE + sizeof(uint16_t) * 2 * points_count + sizeof(uint8_t) * 3; }
 
 void ggdpo_formatter(struct grid_swsr_t* swsr, bool dir, size_t points, uint16_t* xs, uint16_t* ys, uint8_t* r, uint8_t* g, uint8_t* b) {
 
@@ -427,7 +448,7 @@ enum {
   GRID_GUI_STYLE_TEXT_FAST,
 };
 
-size_t ggdt_size(size_t length) { return GRID_GUI_DRAW_HEADER_SIZE + sizeof(size_t) + sizeof(char) * length + sizeof(uint16_t) * 3 + sizeof(uint8_t) * 3; }
+size_t ggdt_size(size_t length) { return GRID_GUI_CALL_HEADER_SIZE + sizeof(size_t) + sizeof(char) * length + sizeof(uint16_t) * 3 + sizeof(uint8_t) * 3; }
 
 void ggdt_formatter(struct grid_swsr_t* swsr, bool dir, size_t length, char* str, uint16_t* fontsize, uint16_t* x, uint16_t* y, uint8_t* r, uint8_t* g, uint8_t* b) {
 
@@ -548,7 +569,7 @@ int l_grid_gui_draw_text(lua_State* L) { return l_grid_gui_draw_text_style(L, GR
 
 int l_grid_gui_draw_text_fast(lua_State* L) { return l_grid_gui_draw_text_style(L, GRID_GUI_STYLE_TEXT_FAST); }
 
-size_t ggdd_size() { return GRID_GUI_DRAW_HEADER_SIZE + sizeof(uint8_t); }
+size_t ggdd_size() { return GRID_GUI_CALL_HEADER_SIZE + sizeof(uint8_t); }
 
 void ggdd_formatter(struct grid_swsr_t* swsr, bool dir, uint8_t* counter) {
 
