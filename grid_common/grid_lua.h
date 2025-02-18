@@ -16,79 +16,10 @@
 
 #include "grid_protocol.h"
 
+#include "lua_src/lua_source_collection.h"
+
 extern void grid_platform_printf(char const* fmt, ...);
 extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
-
-// GRID LOOKUP TABLE
-#define GRID_LUA_GLUT_source                                                                                                                                                                           \
-  "function glut (a, ...) \
- local t = table.pack(...) \
- for i = 1, t.n//2*2 do \
-  if i%2 == 1 then \
-   if t[i] == a then \
-    return t[i+1] \
-   end \
-  end \
- end \
- return nil \
-end"
-
-// GRID LIMIT
-#define GRID_LUA_GLIM_source                                                                                                                                                                           \
-  "function glim (a, min, max) \
- if a>max then return max end \
- if a<min then return min end \
- return a \
-end"
-
-// GRID ELEMENT NAME
-#define GRID_LUA_GEN_source                                                                                                                                                                            \
-  "function gen (a, b)  \
- if b==nil then \
-  if ele[a].sn==nil then \
-   return '' \
-  else \
-   return ele[a].sn \
-  end \
- else \
-  ele[a].sn=b \
-  gens(a,b) \
- end \
-end"
-
-#define GRID_LUA_MAPSAT_source                                                                                                                                                                         \
-  "function " GRID_LUA_FNC_G_MAPSAT_short "(x, in_min, in_max, o_min, o_max) \
-	local n = (x - in_min) * (o_max - o_min) / (in_max - in_min) + o_min \
-  local o_max2, o_min2 = o_max, o_min \
-  if o_min > o_max then \
-    o_max2, o_min2 = o_min, o_max \
-  end \
-	if n > o_max2 then \
-		return o_max2 \
-	elseif n < o_min2 then \
-		return o_min2 \
-	else \
-		return n \
-	end \
-end"
-
-#define GRID_LUA_SIGN_source                                                                                                                                                                           \
-  "function " GRID_LUA_FNC_G_SIGN_short "(x) \
-    if x > 0 then \
-        return 1 \
-    elseif x < 0 then \
-        return -1 \
-    else \
-        return 0 \
-    end \
-end"
-
-#define GRID_LUA_SEGCALC_source                                                                                                                                                                        \
-  "function " GRID_LUA_FNC_G_SEGCALC_short "(seg, enc_val, enc_min, enc_max) \
-	local s_min = enc_min + (enc_max - enc_min) / 5 * seg; \
-	local s_max = enc_min + (enc_max - enc_min) / 5 * (seg + 1) \
-	return " GRID_LUA_FNC_G_MAPSAT_short "(enc_val, s_min, s_max, 0, 127) // 1 \
-end"
 
 #define GRID_LUA_STDO_LENGTH 100
 #define GRID_LUA_STDI_LENGTH 100
@@ -159,5 +90,29 @@ void grid_lua_ui_init(struct grid_lua_model* lua, lua_ui_init_callback_t callbac
 void grid_lua_start_vm(struct grid_lua_model* lua);
 
 void grid_lua_stop_vm(struct grid_lua_model* lua);
+
+// clang-format off
+
+// Double stringize trick
+#define XSTRINGIZE(s) STRINGIZE(s)
+#define STRINGIZE(s) #s
+
+#define GRID_LUA_FNC_ASSIGN_META_GTV(key, index) \
+  key " = function (self, a) " \
+  "return gtv(self.index, " XSTRINGIZE(index) ", a) end"
+
+#define GRID_LUA_FNC_ASSIGN_META_UNDEF(key) \
+  key " = function (self) print('undefined action') end"
+
+#define GRID_LUA_FNC_ASSIGN_META_PAR0(key, val) \
+  key " = function (self) " val "(self.index) end"
+
+#define GRID_LUA_FNC_ASSIGN_META_PAR1(key, val) \
+  key " = function (self, a) " val "(self.index, a) end"
+
+#define GRID_LUA_FNC_ASSIGN_META_PAR1_RET(key, val) \
+  key " = function (self, a) return " val "(self.index, a) end"
+
+// clang-format on
 
 #endif

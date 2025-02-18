@@ -32,6 +32,8 @@
 #include "esp_flash.h"
 #include "esp_task_wdt.h"
 
+#include "esp_private/esp_psram_extram.h"
+
 #include "grid_esp32_led.h"
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_ef44.h"
@@ -167,7 +169,7 @@ void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, "for i=9, 12 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
 
   grid_lua_dostring(lua, "for i=13, 13  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring(lua, "for i=13, 13  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], endless_meta)  end");
+  grid_lua_dostring(lua, "for i=13, 13  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], lcd_meta)  end");
 
   grid_lua_gc_try_collect(lua);
 
@@ -211,6 +213,28 @@ void grid_lua_ui_init_vsn2(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "[18] = {index = 18}");
   grid_lua_dostring(lua, GRID_LUA_SYS_META_init);
   grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[18], system_meta)");
+}
+
+void grid_ui_element_lcd_template_parameter_init_vsn_left(struct grid_ui_template_buffer* buf) {
+
+  grid_ui_element_lcd_template_parameter_init(buf);
+
+  int32_t* template_parameter_list = buf->template_parameter_list;
+
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_INDEX_index] = 0;
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_WIDTH_index] = 320;
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_HEIGHT_index] = 240;
+}
+
+void grid_ui_element_lcd_template_parameter_init_vsn_right(struct grid_ui_template_buffer* buf) {
+
+  grid_ui_element_lcd_template_parameter_init(buf);
+
+  int32_t* template_parameter_list = buf->template_parameter_list;
+
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_INDEX_index] = 1;
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_WIDTH_index] = 320;
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_HEIGHT_index] = 240;
 }
 
 void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui, uint8_t hwcfg) {
@@ -264,7 +288,7 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
       } else if (j < 14) {
 
-        grid_ui_element_lcd_init(ele);
+        grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_left);
       } else {
         grid_ui_element_system_init(ele);
       }
@@ -290,14 +314,14 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
       } else if (j < 13) {
 
-        grid_ui_element_lcd_init(ele);
+        grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_left);
       } else if (j < 17) {
 
         grid_ui_element_button_init(ele);
 
       } else if (j < 18) {
 
-        grid_ui_element_lcd_init(ele);
+        grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_right);
       } else {
         grid_ui_element_system_init(ele);
       }
@@ -311,6 +335,7 @@ void app_main(void) {
 
   // set console baud rate
   ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
+  vTaskDelay(1);
 
   esp_log_level_set("*", ESP_LOG_INFO);
 
@@ -340,14 +365,28 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "===== MAIN START =====");
 
-  // size_t psram_size = esp_psram_get_size();
-  // ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
-
   gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
   gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
 
   ESP_LOGI(TAG, "===== SYS START =====");
   grid_sys_init(&grid_sys_state);
+
+  ESP_LOGI(TAG, "===== PSRAM INIT =====");
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
+
+    ESP_ERROR_CHECK(esp_psram_init());
+
+    esp_err_t r = esp_psram_extram_add_to_heap_allocator();
+    if (r != ESP_OK) {
+      ESP_LOGE(TAG, "app_main() failed to add external RAM to heap");
+      abort();
+    }
+  }
+
+  size_t psram_size = esp_psram_get_size();
+  ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
 
   ESP_LOGI(TAG, "===== UI INIT =====");
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD) {
@@ -504,6 +543,9 @@ void app_main(void) {
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
     xTaskCreatePinnedToCore(grid_esp32_module_tek1_task, "tek1", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+    while (!grid_esp32_lcd_get_ready()) {
+      vTaskDelay(1);
+    }
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
     xTaskCreatePinnedToCore(grid_esp32_module_pb44_task, "pb44", 1024 * 3, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else {
@@ -511,6 +553,17 @@ void app_main(void) {
   }
 
   ESP_LOGI(TAG, "===== UI TASK DONE =====");
+
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
+
+    TaskHandle_t lcd_task_hdl;
+
+    xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
+
+    ESP_LOGI(TAG, "===== LCD TASK DONE =====");
+  }
 
   // ================== FINISH: grid_module_pbf4_init() ================== //
 

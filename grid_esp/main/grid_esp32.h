@@ -58,6 +58,7 @@ uint32_t grid_platform_get_id(uint32_t* return_array);
 uint32_t grid_platform_get_hwcfg();
 uint8_t grid_platform_get_random_8();
 void grid_platform_delay_ms(uint32_t delay_milliseconds);
+void grid_platform_delay_us(uint32_t delay_microseconds);
 uint8_t grid_platform_get_reset_cause();
 
 uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);

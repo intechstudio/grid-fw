@@ -238,9 +238,9 @@ void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm) {
 
 void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page) {
 
-  for (uint8_t i = 0; i < 17; i++) { // elements
+  for (uint8_t i = 0; i < 18 + 1 /* upkeep */; i++) { // elements
 
-    for (uint8_t j = 0; j < 10; j++) { // events
+    for (uint8_t j = 0; j < 10 /* upkeep */; j++) { // events
 
       union grid_ui_file_handle file_handle = {0};
       int status = grid_platform_find_actionstring_file(page, i, j, &file_handle);

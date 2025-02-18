@@ -8,6 +8,8 @@
 #include "grid_lua.h"
 #include "grid_lua_api_gui.h"
 
+#include "tinyalloc/tinyalloc.h"
+
 #include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
@@ -21,7 +23,38 @@ void grid_platform_printf(char const* fmt, ...) {
   va_end(ap);
 }
 
-#define ARENA_SIZE (10000 * 1024) // 100 KB
+const size_t LUA_MEM_SIZE = 200000;
+static uint8_t LUA_MEM[LUA_MEM_SIZE];
+
+void* allocator(void* ud, void* ptr, size_t osize, size_t nsize) {
+  // Free
+  if (nsize == 0) {
+    ta_free(ptr);
+    return NULL;
+  }
+  // Realloc
+  else if (ptr != NULL && nsize > osize) {
+    void* new_ptr = ta_alloc(nsize);
+    if (new_ptr == NULL) {
+      printf("Out of memory 1\n");
+    }
+    memcpy(new_ptr, ptr, osize);
+    ta_free(ptr);
+    return new_ptr;
+  }
+  // Malloc
+  else if (ptr == NULL && nsize > 0) {
+    void* new_ptr = ta_alloc(nsize);
+    if (new_ptr == NULL) {
+      printf("Out of memory 2\n");
+    }
+    return new_ptr;
+  } else {
+    return ptr;
+  }
+}
+
+#define ARENA_SIZE (100 * 1024) // 100 KB
 
 struct ArenaAllocator {
   size_t size;
@@ -89,12 +122,13 @@ EM_JS(void, captureInput, (), {
   console.log('hello world!');
   // JavaScript code
 
-  // document.addEventListener('keydown', function(event) {
-  //   // Pass the key code to the C function
+  document.addEventListener(
+      'keydown', function(event) {
+        // Pass the key code to the C function
 
-  //   console.log('!');
-  //   Module.ccall('handleInput', 'void', ['number'], [event.keyCode]);
-  // });
+        console.log('!');
+        Module.ccall('handleInput', 'void', ['number'], [event.keyCode]);
+      });
 
   Module.doNotCaptureKeyboard = true;
 
@@ -129,7 +163,7 @@ void EMSCRIPTEN_KEEPALIVE loadScript(char* setup, char* loop) {
   strcpy(grid_lua_init_script, setup);
   strcpy(grid_lua_loop_script, loop);
 
-  // printf("loadScript %s |||||| %s\n", grid_lua_init_script, grid_lua_loop_script);
+  printf("loadScript len %d |||||| %d\n", strlen(grid_lua_init_script), strlen(grid_lua_loop_script));
 
   config_changed = 1;
   // loopcounter = keyCode;
@@ -154,38 +188,20 @@ void draw_screen(struct grid_gui_model* gui) {
   if (SDL_MUSTLOCK(screen))
     SDL_LockSurface(screen);
 
-  for (int j = 0; j < gui->width; j++) {
-    for (int k = 0; k < gui->height; k++) {
+  uint8_t* dest = screen->pixels;
+  uint8_t* src = gui->buffer;
 
-      if (gui->bits_per_pixel == 24) {
-        uint32_t index_in_buffer = (k * gui->width + j) * 3;
-        uint32_t index_out_buffer = (k * gui->width + j) * 4;
-        ((uint8_t*)screen->pixels)[index_out_buffer] = gui->framebuffer[index_in_buffer];
-        ((uint8_t*)screen->pixels)[index_out_buffer + 1] = gui->framebuffer[index_in_buffer + 1];
-        ((uint8_t*)screen->pixels)[index_out_buffer + 2] = gui->framebuffer[index_in_buffer + 2];
-        ((uint8_t*)screen->pixels)[index_out_buffer + 3] = 255;
-
-      } else if (gui->bits_per_pixel == 6) {
-        uint32_t index_in_buffer = (k * gui->width + j) * 1;
-        uint32_t index_out_buffer = (k * gui->width + j) * 4;
-        ((uint8_t*)screen->pixels)[index_out_buffer] = ((gui->framebuffer[index_in_buffer] >> 4) & 0b00000011) * 85;
-        ((uint8_t*)screen->pixels)[index_out_buffer + 1] = ((gui->framebuffer[index_in_buffer] >> 2) & 0b00000011) * 85;
-        ((uint8_t*)screen->pixels)[index_out_buffer + 2] = ((gui->framebuffer[index_in_buffer] >> 0) & 0b00000011) * 85;
-        ((uint8_t*)screen->pixels)[index_out_buffer + 3] = 255;
-      } else if (gui->bits_per_pixel == 1) {
-        uint32_t index_in_buffer = (k * gui->width + j) / 8;
-        uint8_t offset_in_buffer = (k * gui->width + j) % 8;
-
-        uint32_t index_out_buffer = (k * gui->width + j) * 4;
-
-        uint8_t intensity = ((gui->framebuffer[index_in_buffer] >> (offset_in_buffer)) & 0b00000001) * 255;
-        ((uint8_t*)screen->pixels)[index_out_buffer + 0] = intensity;
-        ((uint8_t*)screen->pixels)[index_out_buffer + 1] = intensity;
-        ((uint8_t*)screen->pixels)[index_out_buffer + 2] = intensity;
-        ((uint8_t*)screen->pixels)[index_out_buffer + 3] = 255;
-      }
+  for (int x = 0; x < gui->width; ++x) {
+    for (int y = 0; y < gui->height; ++y) {
+      uint32_t index_in = (x * gui->height + y) * 3;
+      uint32_t index_out = (y * gui->width + x) * 4;
+      dest[index_out + 0] = src[index_in + 0];
+      dest[index_out + 1] = src[index_in + 1];
+      dest[index_out + 2] = src[index_in + 2];
+      dest[index_out + 3] = 255;
     }
   }
+
   if (SDL_MUSTLOCK(screen))
     SDL_UnlockSurface(screen);
 
@@ -201,17 +217,22 @@ void loop(void) {
 
   grid_lua_dostring(&grid_lua_state, grid_lua_loop_script);
 
+  struct grid_gui_model* guis = grid_gui_states;
+
+  while (grid_swsr_size(&guis[0].swsr)) {
+
+    grid_gui_queue_step(&guis[0]);
+  }
+
+  // lua_pushinteger(grid_lua_state.L, 0);
+  // l_grid_gui_draw_demo(grid_lua_state.L);
+
   char buffer[1024] = {0};
   snprintf(buffer, 1024, "loopcounter %d", loopcounter);
-  grid_font_draw_string_fast(&grid_gui_state, 0, 20, (unsigned char*)buffer, grid_gui_color_from_rgb(255, 0, 0));
-
-  grid_font_draw_string_fast(&grid_gui_state, 0, 0, (unsigned char*)"hello", grid_gui_color_from_rgb(255, 0, 0));
 
   loopcounter++;
-  // grid_gui_draw_demo(&grid_gui_state, loopcounter);
-  // grid_gui_lua_draw_demo(grid_lua_state.L, loopcounter);
 
-  draw_screen(&grid_gui_state);
+  draw_screen(&guis[0]);
 
   // printf("loop %d\n", loopcounter);
 }
@@ -222,16 +243,18 @@ int main(int argc, char** argv) {
 
   arena_init(&inst);
 
-  grid_lua_init(&grid_lua_state, custom_lua_allocator, &inst);
+  ta_init(LUA_MEM, LUA_MEM + LUA_MEM_SIZE - 1, 2048, 16, 4);
+
+  grid_lua_init(&grid_lua_state, allocator, &inst);
 
   grid_lua_start_vm(&grid_lua_state);
   grid_lua_vm_register_functions(&grid_lua_state, grid_lua_api_gui_lib_reference);
 
-  struct grid_gui_model* gui = &grid_gui_state;
+  struct grid_gui_model* gui = &grid_gui_states[0];
   struct grid_vlcd_model* vlcd = &grid_vlcd_state;
 
   grid_font_init(&grid_font_state);
-  grid_gui_init(gui, vlcd, framebuffer, sizeof(framebuffer), 24, 320, 240);
+  grid_gui_init(gui, vlcd, framebuffer, sizeof(framebuffer), 320, 240);
 
   printf("hello, world!\n");
 

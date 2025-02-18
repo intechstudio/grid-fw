@@ -357,24 +357,6 @@
 #define GRID_LUA_FNC_G_STRING_GET_human "string_get"
 #define GRID_LUA_FNC_G_STRING_GET_fnptr l_grid_string_get
 
-#define GRID_LUA_FNC_G_ELEMENTNAME_short "gen"
-#define GRID_LUA_FNC_G_ELEMENTNAME_human "element_name"
-
-#define GRID_LUA_FNC_G_LOOKUP_short "glut"
-#define GRID_LUA_FNC_G_LOOKUP_human "lookup"
-
-#define GRID_LUA_FNC_G_LIMIT_short "glim"
-#define GRID_LUA_FNC_G_LIMIT_human "limit"
-
-#define GRID_LUA_FNC_G_MAPSAT_short "gmaps"
-#define GRID_LUA_FNC_G_MAPSAT_human "map_saturate"
-
-#define GRID_LUA_FNC_G_SIGN_short "sign"
-#define GRID_LUA_FNC_G_SIGN_human "sgn"
-
-#define GRID_LUA_FNC_G_SEGCALC_short "gsc"
-#define GRID_LUA_FNC_G_SEGCALC_human "segment_calculate"
-
 #define GRID_LUA_FNC_G_WEBSOCKET_SEND_short "gwss"
 #define GRID_LUA_FNC_G_WEBSOCKET_SEND_human "websocket_send"
 #define GRID_LUA_FNC_G_WEBSOCKET_SEND_fnptr l_grid_websocket_send
@@ -403,10 +385,15 @@
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr l_grid_potmeter_calibration_set
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_usage "potmeter_calibration_set({ int c1, ... }) Sets potentiometer calibration centers from an array of integers."
 
-#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "ggdp"
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_short "ggdsw"
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_human "gui_draw_swap"
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_fnptr l_grid_gui_draw_swap
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_usage "grid_gui_draw_swap(screen_index) Updates the screen with the contents of the background buffer."
+
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "ggdpx"
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_human "gui_draw_pixel"
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr l_grid_gui_draw_pixel
-#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_usage "grid_gui_draw_pixel(x, y, {r, g, b}) Draws a pixel at (x, y) with the specified 8-bit color channels."
+#define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_usage "grid_gui_draw_pixel(screen_index, x, y, {r, g, b}) Draws a pixel at (x, y) with the specified 8-bit color channels."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_LINE_short "ggdl"
 #define GRID_LUA_FNC_G_GUI_DRAW_LINE_human "gui_draw_line"
@@ -438,13 +425,13 @@
   "grid_gui_draw_rectangle_rounded_filled(x1, y1, x2, y2, radius, {r, g, b}) Draws a filled rounded rectangle between (x1, y1) and (x2, y2) points using pixel based radius with the specified 8-bit " \
   "color channels."
 
-#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short "ggdp"
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short "ggdpo"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_human "gui_draw_polygon"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_fnptr l_grid_gui_draw_polygon
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_usage                                                                                                                                                          \
   "grid_gui_draw_polygon({x1, x2, x3 ...}, {y1, y2, y3 ...}, {r, g, b}) Draws a polygon using the x and y coordinate pairs with the specified 8-bit color channels."
 
-#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "ggdpf"
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "ggdpof"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_human "gui_draw_polygon_filled"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr l_grid_gui_draw_polygon_filled
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_usage                                                                                                                                                   \
@@ -454,6 +441,16 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_human "gui_draw_text"
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr l_grid_gui_draw_text
 #define GRID_LUA_FNC_G_GUI_DRAW_TEXT_usage "gui_draw_text('text', x, y, size, {r, g, b}) Draws the specified text at (x, y) with the specified font size and 8-bit color channels."
+
+#define GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_short "ggdft"
+#define GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_human "gui_draw_fasttext"
+#define GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_fnptr l_grid_gui_draw_text_fast
+#define GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_usage "gui_draw_fasttext('text', x, y, size, {r, g, b}) Draws the specified text at (x, y) with the specified font size and 8-bit color channels."
+
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_short "ggdd"
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_human "gui_draw_demo"
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr l_grid_gui_draw_demo
+#define GRID_LUA_FNC_G_GUI_DRAW_DEMO_usage "gui_draw_demo(n) Draws the n-th iteration of the demo."
 
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 

@@ -17,42 +17,34 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_tim
 // ========================= POTMETER =========================== //
 
 #define GRID_LUA_FNC_P_ELEMENT_INDEX_index 0
-#define GRID_LUA_FNC_P_ELEMENT_INDEX_helper "0"
 #define GRID_LUA_FNC_P_ELEMENT_INDEX_short "ind"
 #define GRID_LUA_FNC_P_ELEMENT_INDEX_human "element_index"
 
 #define GRID_LUA_FNC_P_POTMETER_NUMBER_index 1
-#define GRID_LUA_FNC_P_POTMETER_NUMBER_helper "1"
 #define GRID_LUA_FNC_P_POTMETER_NUMBER_short "pnu"
 #define GRID_LUA_FNC_P_POTMETER_NUMBER_human "potmeter_number"
 
 #define GRID_LUA_FNC_P_POTMETER_VALUE_index 2
-#define GRID_LUA_FNC_P_POTMETER_VALUE_helper "2"
 #define GRID_LUA_FNC_P_POTMETER_VALUE_short "pva"
 #define GRID_LUA_FNC_P_POTMETER_VALUE_human "potmeter_value"
 
 #define GRID_LUA_FNC_P_POTMETER_MIN_index 3
-#define GRID_LUA_FNC_P_POTMETER_MIN_helper "3"
 #define GRID_LUA_FNC_P_POTMETER_MIN_short "pmi"
 #define GRID_LUA_FNC_P_POTMETER_MIN_human "potmeter_min"
 
 #define GRID_LUA_FNC_P_POTMETER_MAX_index 4
-#define GRID_LUA_FNC_P_POTMETER_MAX_helper "4"
 #define GRID_LUA_FNC_P_POTMETER_MAX_short "pma"
 #define GRID_LUA_FNC_P_POTMETER_MAX_human "potmeter_max"
 
 #define GRID_LUA_FNC_P_POTMETER_MODE_index 5
-#define GRID_LUA_FNC_P_POTMETER_MODE_helper "5"
 #define GRID_LUA_FNC_P_POTMETER_MODE_short "pmo"
 #define GRID_LUA_FNC_P_POTMETER_MODE_human "potmeter_resolution"
 
 #define GRID_LUA_FNC_P_POTMETER_ELAPSED_index 6
-#define GRID_LUA_FNC_P_POTMETER_ELAPSED_helper "6"
 #define GRID_LUA_FNC_P_POTMETER_ELAPSED_short "pel"
 #define GRID_LUA_FNC_P_POTMETER_ELAPSED_human "potmeter_elapsed_time"
 
 #define GRID_LUA_FNC_P_POTMETER_STATE_index 7
-#define GRID_LUA_FNC_P_POTMETER_STATE_helper "7"
 #define GRID_LUA_FNC_P_POTMETER_STATE_short "pst"
 #define GRID_LUA_FNC_P_POTMETER_STATE_human "potmeter_state"
 
@@ -60,36 +52,30 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_tim
 #define GRID_LUA_FNC_P_LIST_length 8
 
 // Potmeter init function
+// clang-format off
 #define GRID_LUA_P_META_init                                                                                                                                                                           \
-  "potmeter_meta = { __index = { \
-   \
-  " GRID_LUA_FNC_P_ELEMENT_INDEX_short "=function (self,a) return "                                                                                                                                    \
-  "gtv(self.index, " GRID_LUA_FNC_P_ELEMENT_INDEX_helper ", a) end, \
+  "potmeter_meta = { __index = {" \
   \
-  " GRID_LUA_FNC_P_POTMETER_NUMBER_short "=function (self,a) return "                                                                                                                                  \
-  "gtv(self.index, " GRID_LUA_FNC_P_POTMETER_NUMBER_helper ", a) end, \
-  " GRID_LUA_FNC_P_POTMETER_VALUE_short "=function (self,a) return "                                                                                                                                   \
-  "gtv(self.index, " GRID_LUA_FNC_P_POTMETER_VALUE_helper ", a) end, \
-  " GRID_LUA_FNC_P_POTMETER_MIN_short "=function (self,a) return "                                                                                                                                     \
-  "gtv(self.index, " GRID_LUA_FNC_P_POTMETER_MIN_helper ", a) end, \
-  " GRID_LUA_FNC_P_POTMETER_MAX_short "=function (self,a) return "                                                                                                                                     \
-  "gtv(self.index, " GRID_LUA_FNC_P_POTMETER_MAX_helper ", a) end, \
-  " GRID_LUA_FNC_P_POTMETER_MODE_short "=function (self,a) return "                                                                                                                                    \
-  "gtv(self.index, " GRID_LUA_FNC_P_POTMETER_MODE_helper ", a) end, \
-  " GRID_LUA_FNC_P_POTMETER_ELAPSED_short "=function (self,a) return "                                                                                                                                 \
-  "gtv(self.index, " GRID_LUA_FNC_P_POTMETER_ELAPSED_helper ", a) end, \
-  " GRID_LUA_FNC_P_POTMETER_STATE_short "=function (self,a) return "                                                                                                                                   \
-  "gtv(self.index, " GRID_LUA_FNC_P_POTMETER_STATE_helper ", a) end, \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_ELEMENT_INDEX_short, GRID_LUA_FNC_P_ELEMENT_INDEX_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_POTMETER_NUMBER_short, GRID_LUA_FNC_P_POTMETER_NUMBER_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_POTMETER_VALUE_short, GRID_LUA_FNC_P_POTMETER_VALUE_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_POTMETER_MIN_short, GRID_LUA_FNC_P_POTMETER_MIN_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_POTMETER_MAX_short, GRID_LUA_FNC_P_POTMETER_MAX_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_POTMETER_MODE_short, GRID_LUA_FNC_P_POTMETER_MODE_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_POTMETER_ELAPSED_short, GRID_LUA_FNC_P_POTMETER_ELAPSED_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_POTMETER_STATE_short, GRID_LUA_FNC_P_POTMETER_STATE_index) "," \
   \
-  " GRID_LUA_FNC_A_INIT_short " = function (self) print('undefined action') end,\
-  " GRID_LUA_FNC_A_POTMETER_short " = function (self) print('undefined action') end,\
-  " GRID_LUA_FNC_A_TIMER_short " = function (self) print('undefined action') end,\
+  GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_INIT_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_TIMER_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_POTMETER_short) "," \
   \
-  gtt = function (self,a) " GRID_LUA_FNC_G_TIMER_START_short "(self.index,a) end,\
-  gtp = function (self) " GRID_LUA_FNC_G_TIMER_STOP_short "(self.index) end,\
-  get = function (self,a) " GRID_LUA_FNC_G_EVENT_TRIGGER_short "(self.index,a) end,\
-  gen = function (self,a) return gen(self.index,a) end\
-    }}"
+  GRID_LUA_FNC_ASSIGN_META_PAR1("gtt", GRID_LUA_FNC_G_TIMER_START_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_PAR0("gtp", GRID_LUA_FNC_G_TIMER_STOP_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_PAR1("get", GRID_LUA_FNC_G_EVENT_TRIGGER_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) "," \
+  \
+  "}}"
+// clang-format on
 
 #define GRID_ACTIONSTRING_POTMETER_INIT                                                                                                                                                                \
   "<?lua --[[@l]] local "                                                                                                                                                                              \
