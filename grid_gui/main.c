@@ -217,6 +217,13 @@ void loop(void) {
 
   grid_lua_dostring(&grid_lua_state, grid_lua_loop_script);
 
+  struct grid_gui_model* guis = grid_gui_states;
+
+  while (grid_swsr_size(&guis[0].swsr)) {
+
+    grid_gui_queue_step(&guis[0]);
+  }
+
   // lua_pushinteger(grid_lua_state.L, 0);
   // l_grid_gui_draw_demo(grid_lua_state.L);
 
@@ -225,7 +232,7 @@ void loop(void) {
 
   loopcounter++;
 
-  draw_screen(&grid_gui_states[0]);
+  draw_screen(&guis[0]);
 
   // printf("loop %d\n", loopcounter);
 }

@@ -365,8 +365,8 @@ void grid_esp32_module_vsn_lcd_push_trailing(struct grid_esp32_lcd_model* lcds, 
 void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf) {
 
   bool waiting[2] = {
-      grid_esp32_lcd_panel_active(&lcds[0]),
-      grid_esp32_lcd_panel_active(&lcds[1]),
+      grid_esp32_lcd_panel_active(&lcds[0]) && grid_gui_swap_get(&guis[0]),
+      grid_esp32_lcd_panel_active(&lcds[1]) && grid_gui_swap_get(&guis[1]),
   };
 
   while (waiting[0] || waiting[1]) {
@@ -378,6 +378,8 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
     grid_esp32_module_vsn_lcd_push_trailing(lcds, lcd_index, lines, columns, tx_lines, guis[lcd_index].buffer, xferbuf);
 
     waiting[lcd_index] = false;
+
+    grid_gui_swap_set(&guis[lcd_index], false);
   }
 }
 
@@ -400,7 +402,21 @@ void grid_esp32_lcd_task(void* arg) {
 
   while (1) {
 
-    if (grid_platform_rtc_get_elapsed_time(lastrealtime) < 200000) {
+    struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
+    struct grid_gui_model* guis = grid_gui_states;
+
+    for (int i = 0; i < 2; ++i) {
+
+      if (grid_esp32_lcd_panel_active(&lcds[i])) {
+
+        while (grid_swsr_size(&guis[i].swsr) && !grid_gui_swap_get(&guis[i])) {
+
+          grid_gui_queue_step(&guis[i]);
+        }
+      }
+    }
+
+    if (grid_platform_rtc_get_elapsed_time(lastrealtime) < 125000) {
       taskYIELD();
       continue;
     }
@@ -411,9 +427,6 @@ void grid_esp32_lcd_task(void* arg) {
     grid_lua_semaphore_lock(&grid_lua_state);
 #endif
 
-    struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
-    struct grid_gui_model* guis = grid_gui_states;
-
     grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf);
 
 #ifdef USE_SEMAPHORE
@@ -422,8 +435,8 @@ void grid_esp32_lcd_task(void* arg) {
 
     lastrealtime = grid_platform_rtc_get_micros();
 
-    // taskYIELD();
-    vTaskDelay(1);
+    taskYIELD();
+    // vTaskDelay(1);
   }
 
   ESP_LOGI(TAG, "Deinit LCD");

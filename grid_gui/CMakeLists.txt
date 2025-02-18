@@ -10,6 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}/../grid_common/)
 
 set(SRC_FILES)
 list(APPEND SRC_FILES ../grid_common/grid_lua.c)
+list(APPEND SRC_FILES ../grid_common/grid_swsr.c)
 
 list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/grid_gui.c)
 list(APPEND SRC_FILES ../grid_esp/components/grid_esp32_lcd/grid_font.c)

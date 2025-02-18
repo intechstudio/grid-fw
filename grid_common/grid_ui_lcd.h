@@ -28,6 +28,9 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 
 #define GRID_LUA_FNC_L_LIST_length 4
 
+#define GRID_LUA_FNC_L_DRAW_SWAP_short "ldsw"
+#define GRID_LUA_FNC_L_DRAW_SWAP_human "draw_swap"
+
 #define GRID_LUA_FNC_L_DRAW_PIXEL_short "ldpx"
 #define GRID_LUA_FNC_L_DRAW_PIXEL_human "draw_pixel"
 
@@ -46,10 +49,10 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 #define GRID_LUA_FNC_L_DRAW_RECTANGLE_ROUNDED_FILLED_short "ldrrf"
 #define GRID_LUA_FNC_L_DRAW_RECTANGLE_ROUNDED_FILLED_human "draw_rectangle_rounded_filled"
 
-#define GRID_LUA_FNC_L_DRAW_POLYGON_short "ldp"
+#define GRID_LUA_FNC_L_DRAW_POLYGON_short "ldpo"
 #define GRID_LUA_FNC_L_DRAW_POLYGON_human "draw_polygon"
 
-#define GRID_LUA_FNC_L_DRAW_POLYGON_FILLED_short "ldpf"
+#define GRID_LUA_FNC_L_DRAW_POLYGON_FILLED_short "ldpof"
 #define GRID_LUA_FNC_L_DRAW_POLYGON_FILLED_human "draw_polygon_filled"
 
 #define GRID_LUA_FNC_L_DRAW_TEXT_short "ldt"
@@ -58,9 +61,14 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 #define GRID_LUA_FNC_L_DRAW_DEMO_short "ldd"
 #define GRID_LUA_FNC_L_DRAW_DEMO_human "draw_demo"
 
-#define GRID_LUA_FNC_ASSIGN_META_DRAW(key, val)                                                                                                                                                        \
-  key " = function (self, ...) "                                                                                                                                                                       \
-      "local screen_idx = self:" GRID_LUA_FNC_L_SCREEN_INDEX_short "(); " val "(screen_idx, ...) end"
+// clang-format off
+
+#define GRID_LUA_FNC_ASSIGN_META_DRAW(key, val) \
+  key " = function (self, ...) " \
+  "local screen_idx = self:" GRID_LUA_FNC_L_SCREEN_INDEX_short "(); " \
+  val "(screen_idx, ...) end"
+
+// clang-format on
 
 // LCD init function
 // clang-format off
@@ -78,6 +86,7 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   GRID_LUA_FNC_ASSIGN_META_PAR0("gtp", GRID_LUA_FNC_G_TIMER_STOP_short) "," \
   GRID_LUA_FNC_ASSIGN_META_PAR1("get", GRID_LUA_FNC_G_EVENT_TRIGGER_short) "," \
   \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_SWAP_short, GRID_LUA_FNC_G_GUI_DRAW_SWAP_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_PIXEL_short, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_LINE_short, GRID_LUA_FNC_G_GUI_DRAW_LINE_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_RECTANGLE_short, GRID_LUA_FNC_G_GUI_DRAW_RECTANGLE_short) "," \

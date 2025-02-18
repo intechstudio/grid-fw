@@ -258,6 +258,7 @@ void grid_esp32_module_tek1_task(void* arg) {
 
       grid_color_t clear = grid_gui_color_from_rgb(0, 0, 0);
       grid_gui_clear(&guis[i], clear);
+      grid_gui_swap_set(&guis[i], true);
     }
   }
 

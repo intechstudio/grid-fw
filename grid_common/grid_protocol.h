@@ -390,6 +390,11 @@
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr l_grid_potmeter_calibration_set
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_usage "potmeter_calibration_set({ int c1, ... }) Sets potentiometer calibration centers from an array of integers."
 
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_short "ggdsw"
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_human "gui_draw_swap"
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_fnptr l_grid_gui_draw_swap
+#define GRID_LUA_FNC_G_GUI_DRAW_SWAP_usage "grid_gui_draw_swap(screen_index) Updates the screen with the contents of the background buffer."
+
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short "ggdpx"
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_human "gui_draw_pixel"
 #define GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr l_grid_gui_draw_pixel
@@ -425,13 +430,13 @@
   "grid_gui_draw_rectangle_rounded_filled(x1, y1, x2, y2, radius, {r, g, b}) Draws a filled rounded rectangle between (x1, y1) and (x2, y2) points using pixel based radius with the specified 8-bit " \
   "color channels."
 
-#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short "ggdp"
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_short "ggdpo"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_human "gui_draw_polygon"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_fnptr l_grid_gui_draw_polygon
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_usage                                                                                                                                                          \
   "grid_gui_draw_polygon({x1, x2, x3 ...}, {y1, y2, y3 ...}, {r, g, b}) Draws a polygon using the x and y coordinate pairs with the specified 8-bit color channels."
 
-#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "ggdpf"
+#define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short "ggdpof"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_human "gui_draw_polygon_filled"
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr l_grid_gui_draw_polygon_filled
 #define GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_usage                                                                                                                                                   \
