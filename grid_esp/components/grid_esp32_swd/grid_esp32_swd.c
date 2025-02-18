@@ -14,7 +14,7 @@
 #include "driver/ledc.h" // for pwm based pico system clock generation
 #include "rom/ets_sys.h"
 
-static const char* TAG = "grid_esp32_swd";
+// static const char* TAG = "grid_esp32_swd";
 
 static uint8_t swd_pin_swdio;
 static uint8_t swd_pin_swclk;
