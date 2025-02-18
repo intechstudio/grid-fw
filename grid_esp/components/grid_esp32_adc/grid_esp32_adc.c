@@ -120,7 +120,7 @@ static esp_err_t ulp_riscv_adc_init2(void) {
       .adc_n = ADC_UNIT_1,
       .channel = ADC_CHANNEL_1,
       .width = ADC_BITWIDTH_DEFAULT,
-      .atten = ADC_ATTEN_DB_11,
+      .atten = ADC_ATTEN_DB_12,
   };
 
   const ulp_riscv_adc_cfg_t* cfg = &cfg_in;
@@ -167,7 +167,7 @@ static void adc_init(struct grid_esp32_adc_model* adc) {
 void grid_esp32_adc_init(struct grid_esp32_adc_model* adc) {
 
   adc->buffer_struct = (StaticRingbuffer_t*)heap_caps_malloc(sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-  adc->buffer_storage = (struct grid_esp32_adc_result*)heap_caps_malloc(sizeof(struct grid_esp32_adc_result) * ADC_BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+  adc->buffer_storage = (uint8_t*)heap_caps_malloc(sizeof(struct grid_esp32_adc_result) * ADC_BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 
   adc->ringbuffer_handle = xRingbufferCreateStatic(ADC_BUFFER_SIZE, ADC_BUFFER_TYPE, adc->buffer_storage, adc->buffer_struct);
 
@@ -221,7 +221,7 @@ static uint32_t grid_esp32_adc_cal(uint32_t input) {
 }
 */
 
-void IRAM_ATTR grid_esp32_adc_convert(void) {
+void IRAM_ATTR grid_esp32_adc_convert(void*) {
 
   struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
 
