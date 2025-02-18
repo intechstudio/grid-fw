@@ -268,9 +268,8 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     grid_led_lookup_init(led, led_lookup);
   }
 
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA ||
-      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevH || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
-      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevH) {
 
     grid_ui_model_init(ui, 14 + 1);
 
@@ -293,6 +292,37 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
       } else if (j < 14) {
 
         grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_left);
+      } else {
+        grid_ui_element_system_init(ele);
+      }
+    }
+
+    ui->lua_ui_init_callback = grid_lua_ui_init_tek1;
+
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
+
+    grid_ui_model_init(ui, 14 + 1);
+
+    for (uint8_t j = 0; j < 14 + 1; j++) {
+
+      struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+      if (j < 8) {
+
+        grid_ui_element_button_init(ele);
+
+      } else if (j < 9) {
+
+        grid_ui_element_endless_init(ele);
+
+      } else if (j < 13) {
+
+        grid_ui_element_button_init(ele);
+
+      } else if (j < 14) {
+
+        grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_right);
       } else {
         grid_ui_element_system_init(ele);
       }
@@ -567,8 +597,9 @@ void app_main(void) {
   ESP_LOGI(TAG, "===== UI TASK DONE =====");
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA ||
-      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
-      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB) {
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevH ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
 
     TaskHandle_t lcd_task_hdl;
 

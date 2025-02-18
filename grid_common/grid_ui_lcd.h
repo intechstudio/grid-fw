@@ -101,8 +101,6 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   "}}"
 // clang-format on
 
-#define GRID_ACTIONSTRING_LCD_INIT                                                                                                                                                                     \
-  "<?lua --[[@cb]] x = {0, 0, 38, 64, 64, 65, 104, 130, 130, 131, 170, 183, 183, 145, 119, 119, 118, 79, 53, 53, 52, 13} y = {42, 38, 0, 0, 39, 39, 0, 0, 39, 39, 0, 0, 4, 42, 42, 3, 3, 42, 42, 3, "  \
-  "3, 42} self:ldrf(0,0,320,240,{0,0,0}) self:ldsw() ?>"
+#define GRID_ACTIONSTRING_LCD_INIT "<?lua self:ldrf(30,30,40,40,{255,255,255}) self:ldsw() ?>"
 
 #endif
