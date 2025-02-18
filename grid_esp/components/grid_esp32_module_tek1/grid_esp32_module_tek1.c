@@ -25,7 +25,7 @@
 
 #include "grid_esp32_adc.h"
 
-static const char* TAG = "module_tek1";
+// static const char* TAG = "module_tek1";
 
 #define GRID_MODULE_TEK1_POT_NUM 2
 
@@ -64,8 +64,8 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   uint64_t button_last_real_time[15] = {0};
 
-  uint64_t endlesspot_button_last_real_time[2] = {0};
-  uint64_t endlesspot_encoder_last_real_time[2] = {0};
+  // uint64_t endlesspot_button_last_real_time[2] = {0};
+  // uint64_t endlesspot_encoder_last_real_time[2] = {0};
 
   // static const uint8_t multiplexer_lookup[16] = {10, 8, 11, 9, 14, 12, 15,
   // 13, 2, 0, 3, 1, 6, 4, 7, 5};
