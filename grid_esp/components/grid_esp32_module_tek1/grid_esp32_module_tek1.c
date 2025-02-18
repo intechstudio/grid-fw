@@ -191,7 +191,7 @@ void grid_esp32_module_tek1_task(void* arg) {
   uint32_t height = LCD_VRES;
   uint32_t lcd_tx_lines = 16;
   uint32_t lcd_tx_bytes = height * lcd_tx_lines * COLMOD_RGB888_BYTES;
-  uint8_t* xferbuf = malloc(lcd_tx_bytes);
+  // uint8_t* xferbuf = malloc(lcd_tx_bytes);
 
   // Initialize LCD
   grid_esp32_lcd_spi_bus_init(lcd_tx_bytes);
@@ -227,8 +227,8 @@ void grid_esp32_module_tek1_task(void* arg) {
   uint32_t hwcfg = grid_sys_get_hwcfg(&grid_sys_state);
 
   // Initialize GUIs
-  uint32_t lines = width;
-  uint32_t columns = height;
+  // uint32_t lines = width;
+  // uint32_t columns = height;
   uint32_t size = width * height * GRID_GUI_BYTES_PPX;
 
   struct grid_gui_model* guis = grid_gui_states;
@@ -260,11 +260,7 @@ void grid_esp32_module_tek1_task(void* arg) {
   grid_esp32_lcd_set_ready(true);
 
 #undef USE_SEMAPHORE
-#define USE_FRAMELIMIT
-
-#ifdef USE_FRAMELIMIT
-  uint64_t gui_lastrealtime = 0;
-#endif
+#undef USE_FRAMELIMIT
 
   // Allocate profiler & assign its interface
   vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
@@ -274,7 +270,7 @@ void grid_esp32_module_tek1_task(void* arg) {
       .fwrite = vmp_fwrite,
   };
 
-  uint8_t counter = 0;
+  // uint8_t counter = 0;
 
   bool vmp_flushed = false;
   while (1) {
@@ -305,4 +301,7 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   // Wait to be deleted
   vTaskSuspend(NULL);
+
+  (void)VMP_ALLOC;
+  (void)VMP_DEALLOC;
 }
