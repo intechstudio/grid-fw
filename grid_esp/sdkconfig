@@ -2131,12 +2131,6 @@ CONFIG_TINYUSB_DFU_MODE_NONE=y
 # CONFIG_TINYUSB_NET_MODE_NCM is not set
 CONFIG_TINYUSB_NET_MODE_NONE=y
 # end of Network driver (ECM/NCM/RNDIS)
-
-#
-# Vendor Specific Interface
-#
-CONFIG_TINYUSB_VENDOR_COUNT=0
-# end of Vendor Specific Interface
 # end of TinyUSB Stack
 
 #
