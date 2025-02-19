@@ -20,14 +20,16 @@ const char grid_ui_button_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
 void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_bit_depth, double threshold, double hysteresis) {
 
-  assert(adc_bit_depth >= 3 && adc_bit_depth < 16);
+  assert(adc_bit_depth >= 1 && adc_bit_depth < 16);
   assert(threshold >= 0. && threshold <= 1.);
   assert(hysteresis >= 0. && hysteresis <= 1.);
+
+  uint8_t min_range_depth = adc_bit_depth > 3 ? adc_bit_depth - 3 : 1;
 
   state->last_real_time = 0;
   state->min_value = UINT16_MAX;
   state->max_value = 0;
-  state->min_range = (1 << (adc_bit_depth - 3));
+  state->min_range = (1 << (min_range_depth)) - 1;
   state->max_range = (1 << adc_bit_depth);
   state->threshold = threshold;
   state->hysteresis = hysteresis;
@@ -35,7 +37,7 @@ void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_b
 
 bool grid_ui_button_state_range_valid(struct grid_ui_button_state* state) {
 
-  if (state->min_value > state->max_value) {
+  if (!(state->min_value < state->max_value)) {
     return false;
   }
 
@@ -72,7 +74,7 @@ uint16_t grid_ui_button_state_get_high_trigger(struct grid_ui_button_state* stat
 
   assert(curr_threshold >= 0. && curr_threshold <= 1.);
 
-  return lerp(state->min_value, state->max_value, curr_threshold);
+  return lerp(state->min_value, state->max_value, curr_threshold) + 1;
 }
 
 void grid_ui_element_button_init(struct grid_ui_element* ele) {
@@ -220,10 +222,10 @@ void grid_ui_button_store_input(struct grid_ui_button_state* state, uint8_t inpu
 
   uint8_t result_valid = 0;
 
-  if (value > grid_ui_button_state_get_high_trigger(state)) {
+  if (value >= grid_ui_button_state_get_high_trigger(state)) {
     value = 0;
     result_valid = 1;
-  } else if (value < grid_ui_button_state_get_low_trigger(state)) {
+  } else if (value <= grid_ui_button_state_get_low_trigger(state)) {
     value = 127;
     result_valid = 1;
   }
