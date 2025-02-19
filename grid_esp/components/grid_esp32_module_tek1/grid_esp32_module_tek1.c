@@ -172,8 +172,8 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   void any_process_analog(void) {
 
-    if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB ||
-        grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevH) {
+    if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA ||
+        grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
 
       vsn1_process_analog();
     } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
@@ -203,8 +203,8 @@ void grid_esp32_module_tek1_task(void* arg) {
   vTaskDelay(pdMS_TO_TICKS(500));
 
   // Initialize LCD panel at index 0, if necessary
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevB ||
-      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1_RevH || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
 
     struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[0];
@@ -238,7 +238,7 @@ void grid_esp32_module_tek1_task(void* arg) {
   struct grid_gui_model* guis = grid_gui_states;
 
   // Initialize GUI at index 0, if necessary
-  if (hwcfg == GRID_MODULE_TEK1_RevA || hwcfg == GRID_MODULE_VSN1_RevA || hwcfg == GRID_MODULE_VSN1_RevB || hwcfg == GRID_MODULE_VSN1_RevH || hwcfg == GRID_MODULE_VSN2_RevA ||
+  if (hwcfg == GRID_MODULE_TEK1_RevA || hwcfg == GRID_MODULE_VSN1L_RevA || hwcfg == GRID_MODULE_VSN1L_RevB || hwcfg == GRID_MODULE_VSN1L_RevH || hwcfg == GRID_MODULE_VSN2_RevA ||
       hwcfg == GRID_MODULE_VSN2_RevB || hwcfg == GRID_MODULE_VSN2_RevH) {
     uint8_t* buf = heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
     grid_gui_init(&guis[0], &lcds[0], buf, size, width, height);

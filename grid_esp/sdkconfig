@@ -2058,6 +2058,14 @@ CONFIG_WIFI_PROV_STA_ALL_CHANNEL_SCAN=y
 # TinyUSB Stack
 #
 CONFIG_TINYUSB_DEBUG_LEVEL=1
+CONFIG_TINYUSB_RHPORT_FS=y
+
+#
+# TinyUSB DCD
+#
+# CONFIG_TINYUSB_MODE_SLAVE is not set
+CONFIG_TINYUSB_MODE_DMA=y
+# end of TinyUSB DCD
 
 #
 # TinyUSB task configuration
@@ -2131,6 +2139,12 @@ CONFIG_TINYUSB_DFU_MODE_NONE=y
 # CONFIG_TINYUSB_NET_MODE_NCM is not set
 CONFIG_TINYUSB_NET_MODE_NONE=y
 # end of Network driver (ECM/NCM/RNDIS)
+
+#
+# Vendor Specific Interface
+#
+CONFIG_TINYUSB_VENDOR_COUNT=0
+# end of Vendor Specific Interface
 # end of TinyUSB Stack
 
 #
