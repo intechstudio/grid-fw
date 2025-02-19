@@ -25,7 +25,7 @@ ENV PICO_SDK_PATH=/pico/pico-sdk
 
 # Install picotool
 RUN apt install libusb-1.0-0-dev
-RUN git clone --depth 1 --branch 2.1.0 https://github.com/raspberrypi/picotool.git
+RUN git clone --depth 1 --branch 2.1.1 https://github.com/raspberrypi/picotool.git
 RUN mkdir -p picotool/build
 WORKDIR /picotool
 RUN cmake . -B build

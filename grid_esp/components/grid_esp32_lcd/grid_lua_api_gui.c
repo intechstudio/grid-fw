@@ -35,6 +35,9 @@ void ggdsw_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) { grid_
 int l_grid_gui_draw_swap(lua_State* L) {
 
   int screen_index = luaL_checknumber(L, 1);
+  if (!grid_gui_index_active(screen_index)) {
+    return 1;
+  }
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
@@ -73,6 +76,9 @@ void ggdpx_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
 int l_grid_gui_draw_pixel(lua_State* L) {
 
   int screen_index = luaL_checknumber(L, 1);
+  if (!grid_gui_index_active(screen_index)) {
+    return 1;
+  }
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
@@ -126,6 +132,9 @@ void ggdl_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
 int l_grid_gui_draw_line(lua_State* L) {
 
   int screen_index = luaL_checknumber(L, 1);
+  if (!grid_gui_index_active(screen_index)) {
+    return 1;
+  }
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
@@ -198,6 +207,9 @@ void ggdrf_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
 int l_grid_gui_draw_rectangle_style(lua_State* L, int style) {
 
   int screen_index = luaL_checknumber(L, 1);
+  if (!grid_gui_index_active(screen_index)) {
+    return 1;
+  }
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
@@ -280,6 +292,9 @@ void ggdrrf_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
 int l_grid_gui_draw_rectangle_rounded_style(lua_State* L, int style) {
 
   int screen_index = luaL_checknumber(L, 1);
+  if (!grid_gui_index_active(screen_index)) {
+    return 1;
+  }
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
@@ -379,6 +394,9 @@ void ggdpf_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
 int l_grid_gui_draw_polygon_style(lua_State* L, int style) {
 
   int screen_index = luaL_checknumber(L, 1);
+  if (!grid_gui_index_active(screen_index)) {
+    return 1;
+  }
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
@@ -516,6 +534,9 @@ void ggdft_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
 int l_grid_gui_draw_text_style(lua_State* L, int style) {
 
   int screen_index = luaL_checknumber(L, 1);
+  if (!grid_gui_index_active(screen_index)) {
+    return 1;
+  }
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 
@@ -590,6 +611,10 @@ void ggdd_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
 int l_grid_gui_draw_demo(lua_State* L) {
 
   int screen_index = luaL_checknumber(L, 1);
+  if (!grid_gui_index_active(screen_index)) {
+    return 1;
+  }
+
   int loopcounter = luaL_checknumber(L, 2);
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
