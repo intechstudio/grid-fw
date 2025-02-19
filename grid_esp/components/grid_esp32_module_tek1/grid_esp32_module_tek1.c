@@ -99,7 +99,7 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   void vsn1r_process_analog(void) {
 
-    static const uint8_t multiplexer_lookup[16] = {9, 8, 10, 8, 11, 8, 12 - 1, 2, 0, 3, 1, 6, 4, 7, 5};
+    static const uint8_t multiplexer_lookup[16] = {9, 8, 10, 8, 11, 8, 12, -1, 2, 0, 3, 1, 6, 4, 7, 5};
 
     size_t size = 0;
 
