@@ -42,9 +42,6 @@ void grid_esp32_module_tek1_task(void* arg) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
   }
 
-  // verify if 17 is necessary or 16 is enough, used to be 15 at some point
-  uint64_t button_last_real_time[17] = {0};
-
   uint64_t endlesspot_button_last_real_time[2] = {0};
   uint64_t endlesspot_encoder_last_real_time[2] = {0};
 
