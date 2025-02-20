@@ -89,7 +89,7 @@ char* grid_lua_get_output_string(struct grid_lua_model* lua) { return lua->stdo;
 
 char* grid_lua_get_error_string(struct grid_lua_model* lua) { return lua->stde; }
 
-uint32_t grid_lua_dostring(struct grid_lua_model* lua, char* code) {
+uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code) {
 
   grid_lua_semaphore_lock(lua);
 
