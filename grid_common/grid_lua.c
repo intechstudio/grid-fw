@@ -146,7 +146,7 @@ void grid_lua_gc_try_collect(struct grid_lua_model* lua) {
 
     lua_gc(lua->L, LUA_GCCOLLECT);
 
-    char message[10] = {0};
+    // char message[10] = {0};
     // sprintf(message, "gc %dkb", target_kilobytes);
     // grid_lua_debug_memory_stats(lua, message);
     lua->dostring_count = 0;
