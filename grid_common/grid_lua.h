@@ -83,7 +83,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message);
 
 /*static*/ int grid_lua_panic(lua_State* L);
 
-int grid_lua_vm_register_functions(struct grid_lua_model* lua, struct luaL_Reg* lua_lib);
+int grid_lua_vm_register_functions(struct grid_lua_model* lua, const struct luaL_Reg* lua_lib);
 
 void grid_lua_ui_init(struct grid_lua_model* lua, lua_ui_init_callback_t callback);
 

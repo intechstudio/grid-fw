@@ -180,7 +180,7 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message) {
 
 /* ====================  MODULE SPECIFIC INITIALIZERS  ====================*/
 
-int grid_lua_vm_register_functions(struct grid_lua_model* lua, struct luaL_Reg* lua_lib) {
+int grid_lua_vm_register_functions(struct grid_lua_model* lua, const struct luaL_Reg* lua_lib) {
 
   grid_lua_semaphore_lock(lua);
 
