@@ -251,7 +251,7 @@
 
     if (lua_type(L, 3) == LUA_TSTRING) {
 
-      char* str = lua_tostring(L, 3);
+      const char* str = lua_tostring(L, 3);
 
       // MUST BE SENT OUT IMMEDIATELY (NOT THROUGH STDO) BECAUSE IT MUST BE SENT
       // OUT EVEN AFTER LOCAL TRIGGER (CONFIG) struct grid_msg_packet response;
@@ -698,7 +698,7 @@
   }
 
   int32_t param[1] = {0};
-  uint8_t isgetter = 0;
+  // uint8_t isgetter = 0;
 
   for (int i = 1; i <= nargs; ++i) {
 
@@ -723,7 +723,7 @@
   }
 
   int32_t param[1] = {0};
-  uint8_t isgetter = 0;
+  // uint8_t isgetter = 0;
 
   for (int i = 1; i <= nargs; ++i) {
 
@@ -1226,7 +1226,7 @@
   }
 
   int32_t param[3] = {0};
-  uint8_t isgetter = 0;
+  // uint8_t isgetter = 0;
 
   for (int i = 1; i <= nargs; ++i) {
 
@@ -1765,4 +1765,4 @@
     {NULL, NULL} /* end of array */
 };
 
-struct luaL_Reg* grid_lua_api_generic_lib_reference = grid_lua_api_generic_lib;
+const struct luaL_Reg* grid_lua_api_generic_lib_reference = grid_lua_api_generic_lib;
