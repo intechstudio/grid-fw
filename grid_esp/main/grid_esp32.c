@@ -41,7 +41,7 @@ void vTaskGetRunTimeStats2(char* pcWriteBuffer) {
         char taskName[10] = ".........\0";
         snprintf(taskName, 6, pxTaskStatusArray[x].pcTaskName);
 
-        uint8_t core = xTaskGetAffinity(pxTaskStatusArray[x].xHandle);
+        uint8_t core = xTaskGetCoreID(pxTaskStatusArray[x].xHandle);
 
         uint8_t priority = uxTaskPriorityGet(pxTaskStatusArray[x].xHandle);
 
@@ -55,7 +55,7 @@ void vTaskGetRunTimeStats2(char* pcWriteBuffer) {
 
         uint32_t runtime = pxTaskStatusArray[x].ulRunTimeCounter;
 
-        TaskHandle_t task = pxTaskStatusArray[x].xHandle;
+        // TaskHandle_t task = pxTaskStatusArray[x].xHandle;
 
         char core_char = 'X';
 
@@ -126,10 +126,10 @@ void vTaskGetRunTimeStats3(char* pcWriteBuffer) {
             char taskName[10] = ".........\0";
             snprintf(taskName, 6, pxTaskStatusArray[x].pcTaskName);
 
-            uint8_t core = xTaskGetAffinity(pxTaskStatusArray[x].xHandle);
+            uint8_t core = xTaskGetCoreID(pxTaskStatusArray[x].xHandle);
 
             /* Inspect our own high water mark on entering the task. */
-            unsigned long uxHighWaterMark = uxTaskGetStackHighWaterMark(pxTaskStatusArray[x].xHandle);
+            // unsigned long uxHighWaterMark = uxTaskGetStackHighWaterMark(pxTaskStatusArray[x].xHandle);
 
             // What percentage of the total run time has the task used?
             // This will always be rounded down to the nearest integer.
@@ -141,9 +141,9 @@ void vTaskGetRunTimeStats3(char* pcWriteBuffer) {
 
             lastRunTimeCounter[taskNumber] = pxTaskStatusArray[x].ulRunTimeCounter;
 
-            uint32_t runtime = pxTaskStatusArray[x].ulRunTimeCounter;
+            // uint32_t runtime = pxTaskStatusArray[x].ulRunTimeCounter;
 
-            TaskHandle_t task = pxTaskStatusArray[x].xHandle;
+            // TaskHandle_t task = pxTaskStatusArray[x].xHandle;
 
             char core_char = 'X';
 
@@ -192,9 +192,9 @@ void vTaskGetRunTimeStats3(char* pcWriteBuffer) {
 
 void grid_esp32_housekeeping_task(void* arg) {
 
-  char stats[3000] = {0};
+  // char stats[3000] = {0};
 
-  int8_t axis_psition = 0;
+  // int8_t axis_psition = 0;
 
   while (1) {
 
