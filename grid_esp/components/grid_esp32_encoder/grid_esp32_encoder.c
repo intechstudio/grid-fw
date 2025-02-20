@@ -81,7 +81,7 @@ void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, void (*po
   grid_esp32_encoder_spi_init(encoder, post_setup_cb, post_trans_cb);
 
   encoder->buffer_struct = (StaticRingbuffer_t*)heap_caps_malloc(sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-  encoder->buffer_storage = (struct grid_esp32_encoder_result*)heap_caps_malloc(sizeof(struct grid_esp32_encoder_result) * ENCODER_BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+  encoder->buffer_storage = (uint8_t*)heap_caps_malloc(sizeof(struct grid_esp32_encoder_result) * ENCODER_BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
   encoder->ringbuffer_handle = xRingbufferCreateStatic(ENCODER_BUFFER_SIZE, ENCODER_BUFFER_TYPE, encoder->buffer_storage, encoder->buffer_struct);
 
   return;
