@@ -61,7 +61,10 @@ struct grid_gui_model {
 
 extern struct grid_gui_model grid_gui_states[2];
 
+bool grid_gui_index_active(size_t index);
+
 int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* buffer, uint32_t size, uint32_t width, uint32_t height);
+bool grid_gui_active(struct grid_gui_model* gui);
 int grid_gui_clear(struct grid_gui_model* gui, grid_color_t color);
 int grid_gui_queue_push(struct grid_gui_model* gui, grid_gui_draw_handler_t handler, size_t size);
 int grid_gui_queue_step(struct grid_gui_model* gui);

@@ -4,6 +4,15 @@
 
 struct grid_gui_model grid_gui_states[2] = {0};
 
+bool grid_gui_index_active(size_t index) {
+
+  if (index >= 2) {
+    return false;
+  }
+
+  return grid_gui_active(&grid_gui_states[index]);
+}
+
 grid_color_t grid_gui_color_from_rgb(uint8_t r, uint8_t g, uint8_t b) { return (r << 24) | (g << 16) | (b << 8) | 255; }
 grid_color_t grid_gui_color_from_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { return (r << 24) | (g << 16) | (b << 8) | a; }
 
@@ -15,6 +24,8 @@ grid_color_t grid_gui_color_apply_alpha(grid_color_t color, uint8_t alpha) {
 }
 
 int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* buffer, uint32_t size, uint32_t width, uint32_t height) {
+
+  assert(size);
 
   if (size != width * height * GRID_GUI_BYTES_PPX) {
     return 1;
@@ -32,6 +43,8 @@ int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* buff
 
   return 0;
 }
+
+bool grid_gui_active(struct grid_gui_model* gui) { return gui->size != 0; }
 
 int grid_gui_clear(struct grid_gui_model* gui, grid_color_t color) {
 
