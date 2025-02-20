@@ -26,7 +26,7 @@ void grid_trace_init(struct grid_trace_model* trace, uint8_t core_id) {
   trace->switch_out_count = 0;
 
   trace->last_active_handle = 0;
-  trace->idle_handle = (uint32_t)xTaskGetIdleTaskHandleForCPU(core_id);
+  trace->idle_handle = (uint32_t)xTaskGetIdleTaskHandleForCore(core_id);
 
   memset(trace->trace_buffer, 0, sizeof(trace->trace_buffer));
   trace->trace_buffer_write_ptr = 0;
@@ -47,7 +47,7 @@ void grid_trace_ignore_task(struct grid_trace_model* trace, void* task_handle) {
 void grid_trace_task_switched_in(void) {
   struct grid_trace_model* trace = NULL;
   const void* current_task = xTaskGetCurrentTaskHandle();
-  const uint8_t current_core = xTaskGetAffinity((void*)current_task);
+  const uint8_t current_core = xTaskGetCoreID((void*)current_task);
 
   if (current_core == 0) {
     trace = &grid_trace_state_core0;
