@@ -343,7 +343,7 @@ enum {
   GRID_GUI_STYLE_POLYGON_FILLED,
 };
 
-size_t ggdpo_size(size_t points_count) { return GRID_GUI_CALL_HEADER_SIZE + sizeof(uint16_t) * 2 * points_count + sizeof(uint8_t) * 3; }
+size_t ggdpo_size(size_t points_count) { return GRID_GUI_CALL_HEADER_SIZE + sizeof(size_t) + sizeof(uint16_t) * 2 * points_count + sizeof(uint8_t) * 3; }
 
 void ggdpo_formatter(struct grid_swsr_t* swsr, bool dir, size_t points, uint16_t* xs, uint16_t* ys, uint8_t* r, uint8_t* g, uint8_t* b) {
 
@@ -371,7 +371,7 @@ void ggdpo_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
   uint16_t ys[points];
   uint8_t r, g, b;
 
-  ggdpo_formatter(swsr, FORMATTER_READ, points, &xs, &ys, &r, &g, &b);
+  ggdpo_formatter(swsr, FORMATTER_READ, points, xs, ys, &r, &g, &b);
 
   grid_gui_draw_polygon(gui, xs, ys, points, grid_gui_color_from_rgb(r, g, b));
 }
@@ -386,7 +386,7 @@ void ggdpf_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
   uint16_t ys[points];
   uint8_t r, g, b;
 
-  ggdpo_formatter(swsr, FORMATTER_READ, points, &xs, &ys, &r, &g, &b);
+  ggdpo_formatter(swsr, FORMATTER_READ, points, xs, ys, &r, &g, &b);
 
   grid_gui_draw_polygon_filled(gui, xs, ys, points, grid_gui_color_from_rgb(r, g, b));
 }

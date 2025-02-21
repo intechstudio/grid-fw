@@ -74,7 +74,7 @@ int grid_gui_queue_push(struct grid_gui_model* gui, grid_gui_draw_handler_t hand
 int grid_gui_queue_step(struct grid_gui_model* gui) {
 
   // To process a packet, at least the header must be readable
-  if (!grid_swsr_readable(&gui->swsr, sizeof(GRID_GUI_CALL_HEADER_SIZE))) {
+  if (!grid_swsr_readable(&gui->swsr, GRID_GUI_CALL_HEADER_SIZE)) {
     return 0;
   }
 
