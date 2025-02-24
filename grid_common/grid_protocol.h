@@ -456,6 +456,11 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_usage                                                                                                                                                         \
   "gui_draw_fasttext(screen_index, 'text', x, y, size, {r, g, b}) Draws the specified text at (x, y) with the specified font size and 8-bit color channels."
 
+#define GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_short "ggdaf"
+#define GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_human "gui_draw_area_filled"
+#define GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_fnptr l_grid_gui_draw_area_filled
+#define GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_usage "gui_draw_area_filled(screen_index, x1, y1, x2, y2, {r, g, b}) Fills an area with the specified color, without alpha blending."
+
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_short "ggdd"
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_human "gui_draw_demo"
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr l_grid_gui_draw_demo

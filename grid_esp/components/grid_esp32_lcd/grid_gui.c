@@ -526,6 +526,40 @@ int grid_gui_draw_rectangle_filled(struct grid_gui_model* gui, uint16_t x1, uint
   return 0;
 }
 
+uint32_t clampu32(uint32_t x, uint32_t a, uint32_t b) {
+
+  const uint32_t t = x < a ? a : x;
+  return t > b ? b : t;
+}
+
+int grid_gui_draw_area_filled(struct grid_gui_model* gui, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, grid_color_t color) {
+
+  x1 = clampu32(x1, 0, gui->width);
+  x2 = clampu32(x2, x1, gui->width);
+  y1 = clampu32(y1, 0, gui->height);
+  y2 = clampu32(y2, y1, gui->height);
+
+  struct grid_rgba_t c = grid_unpack_rgba(color);
+
+  uint8_t* pixels = gui->buffer + (gui->height * x1 + y1) * GRID_GUI_BYTES_PPX;
+
+  for (uint16_t y = 0; y < y2 - y1; ++y) {
+
+    uint8_t* pixel = &pixels[y * GRID_GUI_BYTES_PPX];
+    pixel[0] = c.r;
+    pixel[1] = c.g;
+    pixel[2] = c.b;
+  }
+
+  for (uint16_t x = 0; x < x2 - x1 - 1; ++x) {
+
+    uint8_t* pixel = &pixels[gui->height * (x + 1) * GRID_GUI_BYTES_PPX];
+    memcpy(pixel, pixels, (y2 - y1) * GRID_GUI_BYTES_PPX);
+  }
+
+  return 0;
+}
+
 void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t counter) {
 
   for (uint32_t y = 0; y < gui->height; ++y) {

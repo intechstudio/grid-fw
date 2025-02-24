@@ -590,6 +590,64 @@ int l_grid_gui_draw_text(lua_State* L) { return l_grid_gui_draw_text_style(L, GR
 
 int l_grid_gui_draw_text_fast(lua_State* L) { return l_grid_gui_draw_text_style(L, GRID_GUI_STYLE_TEXT_FAST); }
 
+size_t ggdaf_size() { return GRID_GUI_CALL_HEADER_SIZE + sizeof(uint16_t) * 4 + sizeof(uint8_t) * 3; }
+
+void ggdaf_formatter(struct grid_swsr_t* swsr, bool dir, uint16_t* x1, uint16_t* y1, uint16_t* x2, uint16_t* y2, uint8_t* r, uint8_t* g, uint8_t* b) {
+
+  void (*access)(struct grid_swsr_t*, void*, int) = dir ? grid_swsr_write : grid_swsr_read;
+
+  access(swsr, x1, sizeof(uint16_t));
+  access(swsr, y1, sizeof(uint16_t));
+  access(swsr, x2, sizeof(uint16_t));
+  access(swsr, y2, sizeof(uint16_t));
+
+  access(swsr, r, sizeof(uint8_t));
+  access(swsr, g, sizeof(uint8_t));
+  access(swsr, b, sizeof(uint8_t));
+}
+
+void ggdaf_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
+
+  uint16_t x1, y1, x2, y2;
+  uint8_t r, g, b;
+
+  ggdaf_formatter(swsr, FORMATTER_READ, &x1, &y1, &x2, &y2, &r, &g, &b);
+
+  grid_gui_draw_area_filled(gui, x1, y1, x2, y2, grid_gui_color_from_rgb(r, g, b));
+}
+
+int l_grid_gui_draw_area_filled(lua_State* L) {
+
+  int screen_index = luaL_checknumber(L, 1);
+  if (!grid_gui_index_active(screen_index)) {
+    return 1;
+  }
+
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+
+  uint16_t x1 = luaL_checknumber(L, 2);
+  uint16_t y1 = luaL_checknumber(L, 3);
+  uint16_t x2 = luaL_checknumber(L, 4);
+  uint16_t y2 = luaL_checknumber(L, 5);
+
+  luaL_checktype(L, 6, LUA_TTABLE);
+  lua_rawgeti(L, 6, 1);
+  uint8_t r = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 6, 2);
+  uint8_t g = luaL_checknumber(L, -1);
+  lua_rawgeti(L, 6, 3);
+  uint8_t b = luaL_checknumber(L, -1);
+
+  size_t bytes = ggdaf_size();
+  if (grid_gui_queue_push(gui, ggdaf_handler, bytes) != 0) {
+    return 1;
+  }
+
+  ggdaf_formatter(&gui->swsr, FORMATTER_WRITE, &x1, &y1, &x2, &y2, &r, &g, &b);
+
+  return 0;
+}
+
 size_t ggdd_size() { return GRID_GUI_CALL_HEADER_SIZE + sizeof(uint8_t); }
 
 void ggdd_formatter(struct grid_swsr_t* swsr, bool dir, uint8_t* counter) {
@@ -643,6 +701,7 @@ int l_grid_gui_draw_demo(lua_State* L) {
     {GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_short, GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_DEMO_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr},
     {NULL, NULL} /* end of array */
 };
