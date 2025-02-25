@@ -132,6 +132,7 @@ struct grid_ui_model {
 extern struct grid_ui_model grid_ui_state;
 
 void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length);
+struct grid_ui_element* grid_ui_model_get_elements(struct grid_ui_model* ui);
 
 void grid_ui_semaphore_init(struct grid_ui_model* ui, void* busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
 void grid_ui_semaphore_lock(struct grid_ui_model* ui);
@@ -180,6 +181,7 @@ uint16_t grid_ui_event_count_istriggered_local(struct grid_ui_model* ui);
 
 struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t element_number);
 
+void grid_ui_element_malloc_events(struct grid_ui_element* ele, int capacity);
 void grid_ui_element_timer_set(struct grid_ui_element* ele, uint32_t duration);
 void grid_ui_element_timer_source(struct grid_ui_element* ele, uint8_t source);
 void grid_ui_element_set_template_parameter(struct grid_ui_element* ele, uint8_t template_index, int32_t value);

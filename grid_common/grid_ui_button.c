@@ -22,9 +22,7 @@ void grid_ui_element_button_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_BUTTON;
 
-  ele->event_list_length = 3;
-
-  ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
+  grid_ui_element_malloc_events(ele, 3);
 
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_button_init_actionstring);       // Element Initialization Event
   grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_BUTTON, GRID_LUA_FNC_A_BUTTON_short, grid_ui_button_change_actionstring); // Button Change
@@ -143,11 +141,13 @@ void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button
   }
 }
 
-void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth) {
+void grid_ui_button_store_input(struct grid_ui_element* ele, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth) {
 
   const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
 
-  int32_t* template_parameter_list = grid_ui_state.element_list[input_channel].template_parameter_list;
+  assert(ele);
+
+  int32_t* template_parameter_list = ele->template_parameter_list;
 
   // limit lastrealtime
   uint32_t elapsed_time = grid_platform_rtc_get_elapsed_time(*last_real_time);
@@ -209,7 +209,7 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
       template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = next;
     }
 
-    struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_PARAMETER_EVENT_BUTTON);
+    struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_BUTTON);
 
     grid_ui_event_trigger(eve);
   } else { // Button Release Event
@@ -224,7 +224,7 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
       // Toggle
     }
 
-    struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_PARAMETER_EVENT_BUTTON);
+    struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_BUTTON);
 
     grid_ui_event_trigger(eve);
   }

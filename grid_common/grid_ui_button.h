@@ -13,7 +13,7 @@ void grid_ui_element_button_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
 void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button_last_real_time, uint8_t old_button_value, uint8_t new_button_value);
-void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
+void grid_ui_button_store_input(struct grid_ui_element* ele, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
 
 #define GRID_LUA_FNC_B_ELEMENT_INDEX_index 0
 #define GRID_LUA_FNC_B_ELEMENT_INDEX_short "ind"

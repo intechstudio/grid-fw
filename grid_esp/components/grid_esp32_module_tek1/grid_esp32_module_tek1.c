@@ -32,10 +32,67 @@ static const char* TAG = "module_tek1";
 
 #define GRID_MODULE_TEK1_POT_NUM 2
 
+#define GRID_MODULE_TEK1_BUT_NUM 17
+
+uint64_t* DRAM_ATTR button_last_real_time = NULL;
+struct grid_ui_endless_state* DRAM_ATTR new_endless_state = NULL;
+struct grid_ui_endless_state* DRAM_ATTR old_endless_state = NULL;
+struct grid_ui_element* DRAM_ATTR elements = NULL;
+
+/*
+uint64_t button_last_real_time[GRID_MODULE_TEK1_BUT_NUM] = {0};
+struct grid_ui_endless_state new_endless_state[GRID_MODULE_TEK1_POT_NUM] = {0};
+struct grid_ui_endless_state old_endless_state[GRID_MODULE_TEK1_POT_NUM] = {0};
+*/
+
+void IRAM_ATTR vsn1_process_analog(void* user) {
+
+  static const uint8_t multiplexer_lookup[16] = {8, 9, 8, 10, 8, 11, -1, 12, 2, 0, 3, 1, 6, 4, 7, 5};
+
+  assert(user);
+
+  struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
+
+  size_t size = 0;
+
+  uint8_t lookup_index = result->mux_state * 2 + result->channel;
+  uint8_t mux_position = multiplexer_lookup[lookup_index];
+  struct grid_ui_element* ele = &elements[mux_position];
+
+  if (mux_position < 8) {
+
+    grid_ui_button_store_input(ele, &button_last_real_time[mux_position], result->value, 12);
+
+  } else if (mux_position < 9) {
+
+    switch (lookup_index) {
+    case 0: {
+
+      new_endless_state[0].phase_a = result->value;
+    } break;
+    case 2: {
+
+      new_endless_state[0].phase_b = result->value;
+    } break;
+    case 4: {
+
+      new_endless_state[0].button_value = result->value;
+      grid_ui_button_store_input(ele, &button_last_real_time[mux_position], result->value, 12);
+      grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
+    } break;
+    }
+
+  } else if (mux_position < 13) {
+
+    grid_ui_button_store_input(ele, &button_last_real_time[mux_position], result->value, 12);
+  }
+}
+
 void grid_esp32_module_tek1_task(void* arg) {
 
-  // verify if 17 is necessary or 16 is enough, used to be 15 at some point
-  uint64_t button_last_real_time[17] = {0};
+  button_last_real_time = grid_platform_allocate_volatile(GRID_MODULE_TEK1_BUT_NUM * sizeof(uint64_t));
+  new_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
+  old_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
 
   uint64_t endlesspot_button_last_real_time[2] = {0};
   uint64_t endlesspot_encoder_last_real_time[2] = {0};
@@ -44,61 +101,25 @@ void grid_esp32_module_tek1_task(void* arg) {
   // 0, 0, 0, 0, 0, 0, 0};
   const uint8_t multiplexer_overflow = 8;
 
-  grid_esp32_adc_init(&grid_esp32_adc_state);
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
+
+    grid_esp32_adc_init2(&grid_esp32_adc_state, vsn1_process_analog);
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
+
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
+  }
+
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
   grid_esp32_adc_start(&grid_esp32_adc_state);
 
-  struct grid_ui_endless_state new_endless_state[GRID_MODULE_TEK1_POT_NUM] = {0};
-  struct grid_ui_endless_state old_endless_state[GRID_MODULE_TEK1_POT_NUM] = {0};
-
-  void vsn1_process_analog(void) {
-
-    static const uint8_t multiplexer_lookup[16] = {8, 9, 8, 10, 8, 11, -1, 12, 2, 0, 3, 1, 6, 4, 7, 5};
-
-    size_t size = 0;
-
-    struct grid_esp32_adc_result* result;
-    result = (struct grid_esp32_adc_result*)xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle, &size, 0);
-
-    if (result != NULL) {
-
-      uint8_t lookup_index = result->mux_state * 2 + result->channel;
-      uint8_t mux_position = multiplexer_lookup[lookup_index];
-
-      if (mux_position < 8) {
-
-        grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
-
-      } else if (mux_position < 9) {
-
-        switch (lookup_index) {
-        case 0: {
-
-          new_endless_state[0].phase_a = result->value;
-        } break;
-        case 2: {
-
-          new_endless_state[0].phase_b = result->value;
-        } break;
-        case 4: {
-
-          new_endless_state[0].button_value = result->value;
-          grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
-          grid_ui_endless_store_input(mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
-        } break;
-        }
-
-      } else if (mux_position < 13) {
-
-        grid_ui_button_store_input(mux_position, &button_last_real_time[mux_position], result->value, 12);
-      }
-
-      vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
-    }
-  }
+  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   void vsn1r_process_analog(void) {
 
+    /*
     static const uint8_t multiplexer_lookup[16] = {9, 8, 10, 8, 11, 8, 12, -1, 2, 0, 3, 1, 6, 4, 7, 5};
 
     size_t size = 0;
@@ -141,10 +162,12 @@ void grid_esp32_module_tek1_task(void* arg) {
 
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
     }
+    */
   }
 
   void vsn2_process_analog(void) {
 
+    /*
     static const uint8_t multiplexer_lookup[16] = {13, 8, 14, 9, 15, 10, 16, 11, 2, 0, 3, 1, 6, 4, 7, 5};
 
     size_t size = 0;
@@ -168,10 +191,12 @@ void grid_esp32_module_tek1_task(void* arg) {
 
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
     }
+    */
   }
 
   void any_process_analog(void) {
 
+    /*
     if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA ||
         grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
 
@@ -185,6 +210,7 @@ void grid_esp32_module_tek1_task(void* arg) {
 
       vsn2_process_analog();
     }
+    */
   }
 
   struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;

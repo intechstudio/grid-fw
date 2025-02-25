@@ -38,6 +38,8 @@
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
+void* grid_platform_allocate_volatile(size_t size);
+
 extern const uint8_t ulp_grid_esp32_adc_bin_start[] asm("_binary_ulp_grid_esp32_adc_bin_start");
 extern const uint8_t ulp_grid_esp32_adc_bin_end[] asm("_binary_ulp_grid_esp32_adc_bin_end");
 
@@ -176,6 +178,20 @@ void grid_esp32_adc_init(struct grid_esp32_adc_model* adc) {
   adc->mux_index = 0;
 }
 
+void grid_esp32_adc_init2(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog) {
+
+  assert(process_analog);
+
+  adc->process_analog = process_analog;
+
+  adc->buffer_struct = grid_platform_allocate_volatile(sizeof(StaticRingbuffer_t));
+  adc->buffer_storage = grid_platform_allocate_volatile(sizeof(struct grid_esp32_adc_result) * ADC_BUFFER_SIZE);
+
+  adc_init(adc);
+
+  adc->mux_index = 0;
+}
+
 void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
   //  start periodic task
@@ -184,7 +200,7 @@ void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
   esp_timer_handle_t periodic_adc_timer;
   ESP_ERROR_CHECK(esp_timer_create(&periodic_adc_args, &periodic_adc_timer));
-  ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_adc_timer, 1000));
+  ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_adc_timer, ADC_TIMER_PERIOD_USEC));
 
   esp_err_t err = ulp_riscv_run();
   ESP_ERROR_CHECK(err);
@@ -225,6 +241,10 @@ void IRAM_ATTR grid_esp32_adc_convert(void) {
 
   struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
 
+  if (!adc->process_analog) {
+    return;
+  }
+
   ulp_riscv_lock_t* lock = (ulp_riscv_lock_t*)&ulp_lock;
 
   ulp_riscv_lock_acquire(lock);
@@ -243,8 +263,8 @@ void IRAM_ATTR grid_esp32_adc_convert(void) {
     // result_1.value = grid_esp32_adc_cal(ulp_adc_value_2);
     result_1.value = ulp_adc_value_2;
 
-    xRingbufferSendFromISR(adc->ringbuffer_handle, &result_0, sizeof(struct grid_esp32_adc_result), NULL);
-    xRingbufferSendFromISR(adc->ringbuffer_handle, &result_1, sizeof(struct grid_esp32_adc_result), NULL);
+    adc->process_analog(&result_0);
+    adc->process_analog(&result_1);
 
     // ets_printf("%d\r\n", ulp_adc_result_ready);
 

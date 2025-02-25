@@ -19,9 +19,7 @@ void grid_ui_element_endless_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_ENDLESS;
 
-  ele->event_list_length = 4;
-
-  ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
+  grid_ui_element_malloc_events(ele, 4);
 
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_endless_init_actionstring);                // Element Initialization Event
   grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_ENDLESS, GRID_LUA_FNC_A_ENDLESS_short, grid_ui_endless_endlesschange_actionstring); // Endlesspot Change
@@ -302,14 +300,15 @@ static uint16_t grid_ui_endless_calculate_angle(uint16_t phase_a, uint16_t phase
   return value_degrees;
 }
 
-void grid_ui_endless_store_input(uint8_t input_channel, uint8_t adc_bit_depth, struct grid_ui_endless_state* new_value, struct grid_ui_endless_state* old_value) {
+void grid_ui_endless_store_input(struct grid_ui_element* ele, uint8_t input_channel, uint8_t adc_bit_depth, struct grid_ui_endless_state* new_value, struct grid_ui_endless_state* old_value) {
+
+  assert(ele);
 
   if (!memcmp(old_value, new_value, sizeof(struct grid_ui_endless_state))) {
     // no change
     return;
   }
 
-  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, input_channel);
   int32_t* template_parameter_list = ele->template_parameter_list;
 
   uint16_t value_degrees_new = grid_ui_endless_calculate_angle(new_value->phase_a, new_value->phase_b, 12);

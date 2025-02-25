@@ -69,7 +69,7 @@ void grid_esp32_module_tek2_task(void* arg) {
         new_endless_state[endless_index].button_value = result->value;
         grid_ui_button_store_input(8 + endless_index, &old_endless_state[endless_index].button_last_real_time, result->value, 12);
 
-        grid_ui_endless_store_input(8 + endless_index, 12, &new_endless_state[endless_index], &old_endless_state[endless_index]);
+        // grid_ui_endless_store_input(8 + endless_index, 12, &new_endless_state[endless_index], &old_endless_state[endless_index]);
       }
 
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);

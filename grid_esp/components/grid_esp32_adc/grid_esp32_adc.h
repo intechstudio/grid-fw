@@ -27,10 +27,16 @@ extern "C" {
 #define ADC_BUFFER_SIZE 4 * 25 // 32-bit aligned size
 #define ADC_BUFFER_TYPE RINGBUF_TYPE_NOSPLIT
 
+#define ADC_TIMER_PERIOD_USEC 2000
+
+typedef void (*grid_process_analog_t)(void* user);
+
 struct grid_esp32_adc_model {
 
   uint8_t mux_index;
   uint8_t mux_overflow;
+
+  grid_process_analog_t process_analog;
 
   StaticRingbuffer_t* buffer_struct;
   uint8_t* buffer_storage;
@@ -48,7 +54,9 @@ extern struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
 void IRAM_ATTR grid_esp32_adc_convert(void);
 
+// TODO collapse into one
 void grid_esp32_adc_init(struct grid_esp32_adc_model* adc);
+void grid_esp32_adc_init2(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog);
 
 void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overflow);
 
