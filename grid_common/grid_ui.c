@@ -622,15 +622,13 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, char* target_str
 
         if (strlen(grid_lua_get_error_string(&grid_lua_state))) {
 
-          char errorbuffer[100] = {0};
+          char* dest = &target_string[code_start - total_substituted_length + code_stdo_length];
 
-          sprintf(errorbuffer, GRID_CLASS_DEBUGTEXT_frame_start);
-          strcat(errorbuffer, grid_lua_get_error_string(&grid_lua_state));
-          sprintf(&errorbuffer[strlen(errorbuffer)], GRID_CLASS_DEBUGTEXT_frame_end);
+          sprintf(dest, GRID_CLASS_DEBUGTEXT_frame_start);
+          strcat(dest, grid_lua_get_error_string(&grid_lua_state));
+          sprintf(&dest[strlen(dest)], GRID_CLASS_DEBUGTEXT_frame_end);
 
-          errorlen = strlen(errorbuffer);
-
-          strcpy(&target_string[code_start - total_substituted_length + code_stdo_length], errorbuffer);
+          errorlen = strlen(dest);
 
           grid_lua_clear_stde(&grid_lua_state);
         }
