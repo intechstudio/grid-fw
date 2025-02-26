@@ -24,12 +24,14 @@ void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_b
   assert(threshold >= 0. && threshold <= 1.);
   assert(hysteresis >= 0. && hysteresis <= 1.);
 
-  uint8_t min_range_depth = adc_bit_depth > 3 ? adc_bit_depth - 3 : 1;
+  // The minimum observed bit depth is an eighth of the maximum by default,
+  // or just 1 LSB if the input bit depth is 3 bits or less
+  uint8_t min_range_depth = adc_bit_depth > 3 ? adc_bit_depth - 3 : 0;
 
   state->last_real_time = 0;
   state->min_value = UINT16_MAX;
   state->max_value = 0;
-  state->min_range = (1 << (min_range_depth)) - 1;
+  state->min_range = (1 << min_range_depth);
   state->max_range = (1 << adc_bit_depth);
   state->threshold = threshold;
   state->hysteresis = hysteresis;
@@ -46,7 +48,7 @@ bool grid_ui_button_state_range_valid(struct grid_ui_button_state* state) {
   return curr_range >= state->min_range;
 }
 
-void grid_ui_button_state_store_input(struct grid_ui_button_state* state, uint16_t value) {
+void grid_ui_button_state_range_update(struct grid_ui_button_state* state, uint16_t value) {
 
   if (value < state->min_value) {
     state->min_value = value;
@@ -204,7 +206,7 @@ void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button
 
 void grid_ui_button_store_input(struct grid_ui_button_state* state, uint8_t input_channel, uint16_t value, uint8_t adc_bit_depth) {
 
-  grid_ui_button_state_store_input(state, value);
+  grid_ui_button_state_range_update(state, value);
   if (!grid_ui_button_state_range_valid(state)) {
     return;
   }
