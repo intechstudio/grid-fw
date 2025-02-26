@@ -47,8 +47,7 @@ void IRAM_ATTR tek2_process_analog(void* user) {
   if (mux_position < 8) {
 
     grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
-  }
-  else if (mux_position < 10) {
+  } else if (mux_position < 10) {
 
     switch (lookup_index) {
     case 0:
