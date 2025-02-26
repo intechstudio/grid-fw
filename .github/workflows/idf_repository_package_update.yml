@@ -20,6 +20,9 @@ jobs:
       - name: Check Date
         run: echo ${{ env.action_date }}
 
+      - name: Convert native lua source to C header
+        run: ./lua_build.sh
+
       - name: Upload components to the component registry
         uses: espressif/upload-components-ci-action@v1
         with:
