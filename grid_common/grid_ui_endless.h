@@ -11,7 +11,6 @@ struct grid_ui_endless_state {
   uint16_t phase_a;
   uint16_t phase_b;
   uint16_t button_value;
-  uint64_t button_last_real_time;
   uint64_t encoder_last_real_time;
   double delta_vel_frac;
 };

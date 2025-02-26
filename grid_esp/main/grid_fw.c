@@ -430,9 +430,9 @@ void app_main(void) {
   ESP_LOGI(TAG, "===== UI INIT =====");
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD) {
     grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevH) {
     grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevH) {
     grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD) {
     grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
@@ -567,9 +567,9 @@ void app_main(void) {
   TaskHandle_t module_task_hdl;
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD) {
     xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevH) {
     xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024 * 3, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevH) {
     xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024 * 3, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD) {
     xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);

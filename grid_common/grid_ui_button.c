@@ -18,6 +18,67 @@ const char grid_ui_button_init_actionstring[] = GRID_ACTIONSTRING_BUTTON_INIT;
 const char grid_ui_button_change_actionstring[] = GRID_ACTIONSTRING_BUTTON_BUTTON;
 const char grid_ui_button_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
+void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_bit_depth, double threshold, double hysteresis) {
+
+  assert(adc_bit_depth >= 1 && adc_bit_depth < 16);
+  assert(threshold >= 0. && threshold <= 1.);
+  assert(hysteresis >= 0. && hysteresis <= 1.);
+
+  // The minimum observed bit depth is an eighth of the maximum by default,
+  // or just 1 LSB if the input bit depth is 3 bits or less
+  uint8_t min_range_depth = adc_bit_depth > 3 ? adc_bit_depth - 3 : 0;
+
+  state->last_real_time = 0;
+  state->min_value = UINT16_MAX;
+  state->max_value = 0;
+  state->min_range = (1 << min_range_depth);
+  state->max_range = (1 << adc_bit_depth);
+  state->threshold = threshold;
+  state->hysteresis = hysteresis;
+}
+
+bool grid_ui_button_state_range_valid(struct grid_ui_button_state* state) {
+
+  if (!(state->min_value < state->max_value)) {
+    return false;
+  }
+
+  uint16_t curr_range = state->max_value - state->min_value;
+
+  return curr_range >= state->min_range;
+}
+
+void grid_ui_button_state_range_update(struct grid_ui_button_state* state, uint16_t value) {
+
+  if (value < state->min_value) {
+    state->min_value = value;
+  }
+
+  if (value > state->max_value) {
+    state->max_value = value;
+  }
+}
+
+static float lerp(float a, float b, float x) { return a * (1.0 - x) + (b * x); }
+
+uint16_t grid_ui_button_state_get_low_trigger(struct grid_ui_button_state* state) {
+
+  double curr_threshold = state->threshold - state->hysteresis / 2;
+
+  assert(curr_threshold >= 0. && curr_threshold <= 1.);
+
+  return lerp(state->min_value, state->max_value, curr_threshold);
+}
+
+uint16_t grid_ui_button_state_get_high_trigger(struct grid_ui_button_state* state) {
+
+  double curr_threshold = state->threshold + state->hysteresis / 2;
+
+  assert(curr_threshold >= 0. && curr_threshold <= 1.);
+
+  return lerp(state->min_value, state->max_value, curr_threshold) + 1;
+}
+
 void grid_ui_element_button_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_BUTTON;
@@ -143,25 +204,30 @@ void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button
   }
 }
 
-void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth) {
+void grid_ui_button_store_input(struct grid_ui_button_state* state, uint8_t input_channel, uint16_t value, uint8_t adc_bit_depth) {
+
+  grid_ui_button_state_range_update(state, value);
+  if (!grid_ui_button_state_range_valid(state)) {
+    return;
+  }
 
   const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
 
   int32_t* template_parameter_list = grid_ui_state.element_list[input_channel].template_parameter_list;
 
   // limit lastrealtime
-  uint32_t elapsed_time = grid_platform_rtc_get_elapsed_time(*last_real_time);
-  if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(*last_real_time)) {
-    *last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
+  uint32_t elapsed_time = grid_platform_rtc_get_elapsed_time(state->last_real_time);
+  if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(state->last_real_time)) {
+    state->last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
     elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
   }
 
   uint8_t result_valid = 0;
 
-  if (value > adc_max_value * 0.7) {
+  if (value >= grid_ui_button_state_get_high_trigger(state)) {
     value = 0;
     result_valid = 1;
-  } else if (value < adc_max_value * 0.6) {
+  } else if (value <= grid_ui_button_state_get_low_trigger(state)) {
     value = 127;
     result_valid = 1;
   }
@@ -180,7 +246,7 @@ void grid_ui_button_store_input(uint8_t input_channel, uint64_t* last_real_time,
   template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = value;
 
   // update lastrealtime
-  *last_real_time = grid_platform_rtc_get_micros();
+  state->last_real_time = grid_platform_rtc_get_micros();
   template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] = elapsed_time / MS_TO_US;
 
   if (value != 0) { // Button Press Event
