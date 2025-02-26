@@ -1212,7 +1212,7 @@ void grid_ui_bulk_confread_next(struct grid_ui_model* ui) {
   grid_ui_busy_semaphore_lock(ui);
   grid_ui_bulk_semaphore_lock(ui);
 
-  int status = confread_parse_from_file(ui);
+  /*int status = */confread_parse_from_file(ui);
 
   ui->bulk_status = GRID_UI_BULK_READY;
 
@@ -1268,7 +1268,7 @@ void grid_ui_bulk_confstore_next(struct grid_ui_model* ui) {
   grid_ui_busy_semaphore_lock(ui);
   grid_ui_bulk_semaphore_lock(ui);
 
-  int status = confstore_generate_to_file(ui);
+  /*int status = */confstore_generate_to_file(ui);
 
   ui->bulk_status = GRID_UI_BULK_READY;
 

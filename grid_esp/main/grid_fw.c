@@ -618,8 +618,6 @@ void app_main(void) {
 
   TaskHandle_t nvm_task_hdl;
 
-  TaskHandle_t nvm_task_hdl;
-
   xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 10, NULL, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
 
   ESP_LOGI(TAG, "===== NVM TASK DONE =====");

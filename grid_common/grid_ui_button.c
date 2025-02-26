@@ -211,7 +211,7 @@ void grid_ui_button_store_input(struct grid_ui_button_state* state, uint8_t inpu
     return;
   }
 
-  const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
+  // const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
 
   int32_t* template_parameter_list = grid_ui_state.element_list[input_channel].template_parameter_list;
 

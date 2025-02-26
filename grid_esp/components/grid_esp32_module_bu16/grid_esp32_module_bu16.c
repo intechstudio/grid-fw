@@ -29,7 +29,7 @@ void grid_esp32_module_bu16_task(void* arg) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
   }
 
-  uint64_t potmeter_last_real_time[16] = {0};
+  // uint64_t potmeter_last_real_time[16] = {0};
   static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, 10, 8, 11, 9, 14, 12, 15, 13};
   static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   const uint8_t multiplexer_overflow = 8;

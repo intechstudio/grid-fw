@@ -340,7 +340,7 @@ void grid_ui_endless_store_input(uint8_t input_channel, uint8_t adc_bit_depth, s
 
       template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = value_degrees_new / 20;
       int stabilized = grid_ain_stabilized(&grid_ain_state, input_channel);
-      uint8_t update = grid_ui_endless_update_trigger(ele, stabilized, delta, &old_value->encoder_last_real_time, &old_value->delta_vel_frac);
+      grid_ui_endless_update_trigger(ele, stabilized, delta, &old_value->encoder_last_real_time, &old_value->delta_vel_frac);
 
       old_value->phase_a = new_value->phase_a;
       old_value->phase_b = new_value->phase_b;
