@@ -30,8 +30,6 @@
 
 static const char* TAG = "module_tek1";
 
-#define GRID_MODULE_TEK1_BUT_NUM 17
-
 #define GRID_MODULE_TEK1_POT_NUM 2
 
 #define GRID_MODULE_TEK1_BUT_NUM 17
