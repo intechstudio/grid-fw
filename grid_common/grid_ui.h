@@ -12,8 +12,19 @@
 
 #include "grid_ain.h"
 #include "grid_cal.h"
+#include "grid_config.h"
 #include "grid_lua_api.h"
 #include "grid_protocol.h"
+
+struct grid_ui_semaphore {
+  void* handle;
+  void (*lock_fn)(void*);
+  void (*release_fn)(void*);
+};
+
+void grid_ui_semaphore_init(struct grid_ui_semaphore* semaphore, void* handle, void (*lock_fn)(void*), void (*release_fn)(void*));
+void grid_ui_semaphore_lock(struct grid_ui_semaphore* semaphore);
+void grid_ui_semaphore_release(struct grid_ui_semaphore* semaphore);
 
 union grid_ui_file_handle {
   char fname[50];
@@ -97,16 +108,22 @@ struct grid_ui_element {
   struct grid_ui_event* event_list;
 };
 
-enum grid_ui_bluk_status_t { GRID_UI_BULK_READY = 0, GRID_UI_BULK_READ_PROGRESS, GRID_UI_BULK_STORE_PROGRESS, GRID_UI_BULK_CLEAR_PROGRESS, GRID_UI_BULK_ERASE_PROGRESS };
+enum grid_ui_bulk_status_t {
+  GRID_UI_BULK_READY = 0,
+  GRID_UI_BULK_READ_PROGRESS,
+  GRID_UI_BULK_STORE_PROGRESS,
+  GRID_UI_BULK_CLEAR_PROGRESS,
+  GRID_UI_BULK_CONFREAD_PROGRESS,
+  GRID_UI_BULK_CONFSTORE_PROGRESS,
+  GRID_UI_BULK_ERASE_PROGRESS
+};
 
 struct grid_ui_model {
 
   enum grid_ui_status_t status;
 
-  void* busy_semaphore;
-
-  void (*busy_semaphore_lock_fn)(void*);
-  void (*busy_semaphore_release_fn)(void*);
+  struct grid_ui_semaphore busy_semaphore;
+  struct grid_ui_semaphore bulk_semaphore;
 
   uint8_t page_activepage;
   uint8_t page_count;
@@ -119,7 +136,7 @@ struct grid_ui_model {
   uint8_t element_list_length;
   struct grid_ui_element* element_list;
 
-  enum grid_ui_bluk_status_t bulk_status;
+  enum grid_ui_bulk_status_t bulk_status;
   void (*bulk_success_callback)(uint8_t);
   uint8_t bulk_lastheader_id;
   int bulk_last_page;
@@ -134,9 +151,10 @@ extern struct grid_ui_model grid_ui_state;
 void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length);
 struct grid_ui_element* grid_ui_model_get_elements(struct grid_ui_model* ui);
 
-void grid_ui_semaphore_init(struct grid_ui_model* ui, void* busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
-void grid_ui_semaphore_lock(struct grid_ui_model* ui);
-void grid_ui_semaphore_release(struct grid_ui_model* ui);
+void grid_ui_busy_semaphore_lock(struct grid_ui_model* ui);
+void grid_ui_busy_semaphore_release(struct grid_ui_model* ui);
+void grid_ui_bulk_semaphore_lock(struct grid_ui_model* ui);
+void grid_ui_bulk_semaphore_release(struct grid_ui_model* ui);
 
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index);
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, char* default_actionstring);
@@ -187,19 +205,23 @@ void grid_ui_element_timer_source(struct grid_ui_element* ele, uint8_t source);
 void grid_ui_element_set_template_parameter(struct grid_ui_element* ele, uint8_t template_index, int32_t value);
 int32_t grid_ui_element_get_template_parameter(struct grid_ui_element* ele, uint8_t template_index);
 
-enum grid_ui_bluk_status_t grid_ui_get_bulk_status(struct grid_ui_model* ui);
+enum grid_ui_bulk_status_t grid_ui_get_bulk_status(struct grid_ui_model* ui);
 int grid_ui_bulk_anything_is_in_progress(struct grid_ui_model* ui);
-int grid_ui_bulk_is_in_progress(struct grid_ui_model* ui, enum grid_ui_bluk_status_t);
+int grid_ui_bulk_is_in_progress(struct grid_ui_model* ui, enum grid_ui_bulk_status_t);
 uint8_t grid_ui_bulk_get_lastheader(struct grid_ui_model* ui);
 
-int grid_ui_bulk_pageread_init(struct grid_ui_model* ui, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
+int grid_ui_bulk_page_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
+
 void grid_ui_bulk_pageread_next(struct grid_ui_model* ui);
-
-int grid_ui_bulk_pagestore_init(struct grid_ui_model* ui, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui);
-
-int grid_ui_bulk_pageclear_init(struct grid_ui_model* ui, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui);
+
+#define GRID_UI_CONFIG_PATH "config.toml"
+
+int grid_ui_bulk_conf_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t lastheader_id, void (*success_cb)(uint8_t));
+
+void grid_ui_bulk_confread_next(struct grid_ui_model* ui);
+void grid_ui_bulk_confstore_next(struct grid_ui_model* ui);
 
 int grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui);
