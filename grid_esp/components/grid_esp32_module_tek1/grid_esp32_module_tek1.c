@@ -37,7 +37,6 @@ static const char* TAG = "module_tek1";
 #define GRID_MODULE_TEK1_BUT_NUM 17
 
 static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
-static uint64_t* DRAM_ATTR button_last_real_time = NULL;
 static struct grid_ui_endless_state* DRAM_ATTR new_endless_state = NULL;
 static struct grid_ui_endless_state* DRAM_ATTR old_endless_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
@@ -155,20 +154,15 @@ void IRAM_ATTR vsn2_process_analog(void* user) {
 void grid_esp32_module_tek1_task(void* arg) {
 
   ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
-  button_last_real_time = grid_platform_allocate_volatile(GRID_MODULE_TEK1_BUT_NUM * sizeof(uint64_t));
   new_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
   old_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
   memset(ui_button_state, 0, GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
-  memset(button_last_real_time, 0, GRID_MODULE_TEK1_BUT_NUM * sizeof(uint64_t));
   memset(new_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
   memset(old_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
 
   for (int i = 0; i < GRID_MODULE_TEK1_BUT_NUM; ++i) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
   }
-
-  uint64_t endlesspot_button_last_real_time[2] = {0};
-  uint64_t endlesspot_encoder_last_real_time[2] = {0};
 
   // static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0,
   // 0, 0, 0, 0, 0, 0, 0};
