@@ -28,6 +28,7 @@ int l_grid_gui_draw_polygon(lua_State* L);
 int l_grid_gui_draw_polygon_filled(lua_State* L);
 int l_grid_gui_draw_text_fast(lua_State* L);
 int l_grid_gui_draw_text(lua_State* L);
+int l_grid_gui_draw_area_filled(lua_State* L);
 int l_grid_gui_draw_demo(lua_State* L);
 
 extern struct luaL_Reg* grid_lua_api_gui_lib_reference;

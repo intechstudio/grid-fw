@@ -22,9 +22,17 @@ static const char* TAG = "module_tek2";
 
 #define GRID_MODULE_TEK2_POT_NUM 2
 
+#define GRID_MODULE_TEK2_BUT_NUM 10
+
+static struct grid_ui_element* DRAM_ATTR elements = NULL;
+
 void grid_esp32_module_tek2_task(void* arg) {
 
-  uint64_t button_last_real_time[8] = {0};
+  static struct grid_ui_button_state ui_button_state[GRID_MODULE_TEK2_BUT_NUM] = {0};
+
+  for (int i = 0; i < GRID_MODULE_TEK2_BUT_NUM; ++i) {
+    grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
+  }
 
   // static const uint8_t multiplexer_lookup[16] = {10, 8, 11, 9, 14, 12, 15,
   // 13, 2, 0, 3, 1, 6, 4, 7, 5};
@@ -37,6 +45,8 @@ void grid_esp32_module_tek2_task(void* arg) {
   grid_esp32_adc_init(&grid_esp32_adc_state);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
   grid_esp32_adc_start(&grid_esp32_adc_state);
+
+  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   struct grid_ui_endless_state new_endless_state[GRID_MODULE_TEK2_POT_NUM] = {0};
   struct grid_ui_endless_state old_endless_state[GRID_MODULE_TEK2_POT_NUM] = {0};
@@ -51,23 +61,25 @@ void grid_esp32_module_tek2_task(void* arg) {
     if (result != NULL) {
 
       uint8_t lookup_index = result->mux_state * 2 + result->channel;
+      uint8_t mux_position = multiplexer_lookup[lookup_index];
+      struct grid_ui_element* ele = &elements[mux_position];
 
-      if (multiplexer_lookup[lookup_index] < 8) {
+      if (mux_position < 8) {
 
-        grid_ui_button_store_input(multiplexer_lookup[lookup_index], &button_last_real_time[multiplexer_lookup[lookup_index]], result->value, 12);
-      } else if (multiplexer_lookup[lookup_index] < 10) { // 8, 9
+        grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
+      } else if (mux_position < 10) { // 8, 9
 
-        uint8_t endless_index = multiplexer_lookup[lookup_index] % 2;
+        uint8_t endless_index = mux_position % 2;
         new_endless_state[endless_index].phase_a = result->value;
-      } else if (multiplexer_lookup[lookup_index] < 12) { // 10, 11
+      } else if (mux_position < 12) { // 10, 11
 
-        uint8_t endless_index = multiplexer_lookup[lookup_index] % 2;
+        uint8_t endless_index = mux_position % 2;
         new_endless_state[endless_index].phase_b = result->value;
-      } else if (multiplexer_lookup[lookup_index] < 14) { // 12, 13
+      } else if (mux_position < 14) { // 12, 13
 
-        uint8_t endless_index = multiplexer_lookup[lookup_index] % 2;
+        uint8_t endless_index = mux_position % 2;
         new_endless_state[endless_index].button_value = result->value;
-        grid_ui_button_store_input(8 + endless_index, &old_endless_state[endless_index].button_last_real_time, result->value, 12);
+        grid_ui_button_store_input(ele, &ui_button_state[8 + endless_index], result->value, 12);
 
         // grid_ui_endless_store_input(8 + endless_index, 12, &new_endless_state[endless_index], &old_endless_state[endless_index]);
       }

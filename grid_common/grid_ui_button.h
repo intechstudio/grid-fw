@@ -6,6 +6,18 @@
 #include "grid_ui.h"
 #include <stdint.h>
 
+struct grid_ui_button_state {
+  uint64_t last_real_time;
+  uint16_t min_value;
+  uint16_t max_value;
+  uint16_t min_range;
+  uint16_t max_range;
+  double threshold;
+  double hysteresis;
+};
+
+void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_bit_depth, double threshold, double hysteresis);
+
 void grid_ui_element_button_init(struct grid_ui_element* ele);
 void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buffer* buf);
 
@@ -13,7 +25,7 @@ void grid_ui_element_button_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
 void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button_last_real_time, uint8_t old_button_value, uint8_t new_button_value);
-void grid_ui_button_store_input(struct grid_ui_element* ele, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
+void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_button_state* state, uint16_t value, uint8_t adc_bit_depth);
 
 #define GRID_LUA_FNC_B_ELEMENT_INDEX_index 0
 #define GRID_LUA_FNC_B_ELEMENT_INDEX_short "ind"
