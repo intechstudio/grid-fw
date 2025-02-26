@@ -154,6 +154,9 @@ void grid_esp32_module_tek1_task(void* arg) {
   button_last_real_time = grid_platform_allocate_volatile(GRID_MODULE_TEK1_BUT_NUM * sizeof(uint64_t));
   new_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
   old_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
+  memset(button_last_real_time, 0, GRID_MODULE_TEK1_BUT_NUM * sizeof(uint64_t));
+  memset(new_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
+  memset(old_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
 
   uint64_t endlesspot_button_last_real_time[2] = {0};
   uint64_t endlesspot_encoder_last_real_time[2] = {0};
