@@ -234,6 +234,8 @@ void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm) {
   grid_esp32_nvm_clear_page(nvm, 1);
   grid_esp32_nvm_clear_page(nvm, 2);
   grid_esp32_nvm_clear_page(nvm, 3);
+
+  grid_esp32_nvm_clear_conf(GRID_UI_CONFIG_PATH);
 }
 
 void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page) {
@@ -251,6 +253,18 @@ void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page) {
         ets_printf("DELETE: %s\r\n", file_handle.fname);
       }
     }
+  }
+}
+
+void grid_esp32_nvm_clear_conf(const char* path) {
+
+  int status;
+
+  union grid_ui_file_handle file_handle = {0};
+
+  status = grid_platform_find_file(path, &file_handle);
+  if (status == 0) {
+    grid_platform_delete_file(&file_handle);
   }
 }
 
@@ -463,6 +477,99 @@ void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_
   return;
 }
 
+int grid_esp32_nvm_build_path(char* path, uint16_t out_size, char* out) {
+
+  char prefix[] = "/littlefs/";
+
+  if (strlen(prefix) + strlen(path) + 1 > out_size) {
+    return 1;
+  }
+
+  sprintf(out, "%s%s", prefix, path);
+
+  return 0;
+}
+
+int grid_platform_find_file(char* path, union grid_ui_file_handle* file_handle) {
+
+  grid_esp32_nvm_build_path(path, 50, file_handle->fname);
+
+  FILE* fp = fopen(file_handle->fname, "r");
+
+  if (!fp) {
+    printf("FILE FIND ERROR\r\n");
+    memset(file_handle, 0, sizeof(union grid_ui_file_handle));
+    return 1;
+  }
+
+  fclose(fp);
+
+  return 0;
+}
+
+uint16_t grid_platform_get_file_size(union grid_ui_file_handle* file_handle) {
+
+  FILE* fp = fopen(file_handle->fname, "r");
+
+  if (!fp) {
+    return 0;
+  }
+
+  fseek(fp, 0, SEEK_END);
+  uint32_t size = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+
+  fclose(fp);
+
+  return size;
+}
+
+int grid_platform_read_file(union grid_ui_file_handle* file_handle, uint8_t* buffer, uint16_t size) {
+
+  FILE* fp = fopen(file_handle->fname, "r");
+
+  if (!fp) {
+    return 1;
+  }
+
+  int ret = fread(buffer, size, 1, fp);
+
+  fclose(fp);
+
+  if (ret != 1) {
+    printf("FILE READ ERROR\r\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+int grid_platform_write_file(char* path, uint8_t* buffer, uint16_t size) {
+
+  char fname[50] = {0};
+
+  grid_esp32_nvm_build_path(path, 50, fname);
+
+  FILE* fp = fopen(fname, "w");
+
+  if (!fp) {
+    return 1;
+  }
+
+  int ret = fwrite(buffer, size, 1, fp);
+
+  fclose(fp);
+
+  if (ret != 1) {
+    printf("FILE WRITE ERROR\r\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+int grid_platform_delete_file(union grid_ui_file_handle* file_handle) { return unlink(file_handle->fname); }
+
 uint8_t grid_platform_get_nvm_state() {
   return 1; // ready, always ready
 }
@@ -523,6 +630,12 @@ void grid_esp32_nvm_task(void* arg) {
         break;
       case GRID_UI_BULK_CLEAR_PROGRESS:
         grid_ui_bulk_pageclear_next(&grid_ui_state);
+        break;
+      case GRID_UI_BULK_CONFREAD_PROGRESS:
+        grid_ui_bulk_confread_next(&grid_ui_state);
+        break;
+      case GRID_UI_BULK_CONFSTORE_PROGRESS:
+        grid_ui_bulk_confstore_next(&grid_ui_state);
         break;
       case GRID_UI_BULK_ERASE_PROGRESS:
         grid_ui_bulk_nvmerase_next(&grid_ui_state);

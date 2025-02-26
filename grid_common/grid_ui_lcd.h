@@ -81,6 +81,10 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 #define GRID_LUA_FNC_L_DRAW_FASTTEXT_human "draw_text_fast"
 #define GRID_LUA_FNC_L_DRAW_FASTTEXT_usage "lcd:draw_text_fast('text', x, y, size, {r, g, b}) Draws the specified text at (x, y) with the specified font size and 8-bit color channels."
 
+#define GRID_LUA_FNC_L_DRAW_AREA_FILLED_short "ldaf"
+#define GRID_LUA_FNC_L_DRAW_AREA_FILLED_human "draw_area_filled"
+#define GRID_LUA_FNC_L_DRAW_AREA_FILLED_usage "lcd:draw_area_filled(x1, y1, x2, y2, {r, g, b}) Fills an area with the specified color, without alpha blending."
+
 #define GRID_LUA_FNC_L_DRAW_DEMO_short "ldd"
 #define GRID_LUA_FNC_L_DRAW_DEMO_human "draw_demo"
 #define GRID_LUA_FNC_L_DRAW_DEMO_usage "lcd:draw_demo(n) Draws the n-th iteration of the demo."
@@ -109,6 +113,7 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   GRID_LUA_FNC_ASSIGN_META_PAR1("gtt", GRID_LUA_FNC_G_TIMER_START_short) "," \
   GRID_LUA_FNC_ASSIGN_META_PAR0("gtp", GRID_LUA_FNC_G_TIMER_STOP_short) "," \
   GRID_LUA_FNC_ASSIGN_META_PAR1("get", GRID_LUA_FNC_G_EVENT_TRIGGER_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) "," \
   \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_SWAP_short, GRID_LUA_FNC_G_GUI_DRAW_SWAP_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_PIXEL_short, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short) "," \
@@ -121,6 +126,7 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_POLYGON_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_POLYGON_FILLED_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_FASTTEXT_short, GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_AREA_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_DEMO_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_short) "," \
   \
   "}}"

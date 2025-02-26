@@ -98,7 +98,7 @@ void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t
   // }
 }
 
-uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint64_t* endless_last_real_time, double* delta_vel_frac) {
+uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint64_t* endless_last_real_time, double* delta_frac) {
 
   uint32_t encoder_elapsed_time = grid_platform_rtc_get_elapsed_time(*endless_last_real_time);
   if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(*endless_last_real_time)) {
@@ -106,10 +106,12 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
     encoder_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
   }
 
+  /*
   if (delta == 0) {
     // nothing left to do
     return 0; // did not trigger
   }
+  */
 
   // update lastrealtime
   *endless_last_real_time = grid_platform_rtc_get_micros();
@@ -137,26 +139,25 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
     elapsed_ms = 1;
   }
 
-  double minmaxscale = (max - min) / 16384.0;
+  double minmaxscale = (max - min) / 3600.0;
 
-  double velocityparam = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] / 100.0;
-  double sensitivityparam = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] / 100.0;
+  double vel_param = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] / 100.0;
+  double sen_param = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] / 100.0;
 
   double rate_of_change = abs(delta) / elapsed_ms;
+  double vel_comp = ((rate_of_change * rate_of_change * 28.125) / 2000.0) * vel_param;
+  double sen_comp = sen_param;
+  double factor = (vel_comp + sen_comp) * minmaxscale;
 
-  // implement configurable velocity parameters here
-  double velocityfactor = (((rate_of_change * rate_of_change) / 2000.0) * velocityparam + (5.0 * sensitivityparam)) * minmaxscale;
+  double delta_full = delta * factor + *delta_frac;
 
-  double delta_velocity_full = delta * velocityfactor + *delta_vel_frac;
+  int32_t delta_velocity = ((delta_full > 0) * 2 - 1) * (int32_t)fabs(delta_full);
 
-  int32_t delta_velocity = delta_velocity_full;
+  *delta_frac = delta_full - delta_velocity;
 
   if (delta_velocity == 0) {
     return 0; // did not trigger
   }
-
-  // store the fraction of the delta that cannot be emitted as part of the trigger
-  *delta_vel_frac = delta_velocity_full - delta_velocity;
 
   int32_t old_value = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index];
 
@@ -341,10 +342,8 @@ void grid_ui_endless_store_input(uint8_t input_channel, uint8_t adc_bit_depth, s
       int stabilized = grid_ain_stabilized(&grid_ain_state, input_channel);
       uint8_t update = grid_ui_endless_update_trigger(ele, stabilized, delta, &old_value->encoder_last_real_time, &old_value->delta_vel_frac);
 
-      if (update) {
-        old_value->phase_a = new_value->phase_a;
-        old_value->phase_b = new_value->phase_b;
-      }
+      old_value->phase_a = new_value->phase_a;
+      old_value->phase_b = new_value->phase_b;
     }
   }
 }

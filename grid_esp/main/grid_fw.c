@@ -387,6 +387,7 @@ void app_main(void) {
 
   SemaphoreHandle_t lua_busy_semaphore = xSemaphoreCreateBinary();
   SemaphoreHandle_t ui_busy_semaphore = xSemaphoreCreateBinary();
+  SemaphoreHandle_t ui_bulk_semaphore = xSemaphoreCreateBinary();
 
   void grid_common_semaphore_lock_fn(void* arg) {
 
@@ -428,9 +429,9 @@ void app_main(void) {
   ESP_LOGI(TAG, "===== UI INIT =====");
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD) {
     grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevH) {
     grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevH) {
     grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD) {
     grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
@@ -453,7 +454,8 @@ void app_main(void) {
     ets_printf("Init Module: Unknown Module\r\n");
   }
 
-  grid_ui_semaphore_init(&grid_ui_state, (void*)ui_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
+  grid_ui_semaphore_init(&grid_ui_state.busy_semaphore, (void*)ui_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
+  grid_ui_semaphore_init(&grid_ui_state.bulk_semaphore, (void*)ui_bulk_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
   uint8_t led_pin = 21;
 
@@ -461,9 +463,6 @@ void app_main(void) {
 
   TaskHandle_t led_task_hdl;
   xTaskCreatePinnedToCore(grid_esp32_led_task, "led", 1024 * 3, NULL, LED_TASK_PRIORITY, &led_task_hdl, 0);
-
-  TaskHandle_t usb_task_hdl;
-  xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6, &usb_task_hdl, 1);
 
   // GRID MODULE INITIALIZATION SEQUENCE
 
@@ -486,6 +485,9 @@ void app_main(void) {
   grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
   grid_lua_set_memory_target(&grid_lua_state, 80); // 80kb
+
+  TaskHandle_t usb_task_hdl;
+  xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6, &usb_task_hdl, 1);
 
   // ================== START: grid_module_pbf4_init() ================== //
 
@@ -552,9 +554,8 @@ void app_main(void) {
 
   check_heap();
   xSemaphoreGive(ui_busy_semaphore);
+  xSemaphoreGive(ui_bulk_semaphore);
 
-  if (grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_TEK1_RevA) {
-  }
   grid_ui_page_load(&grid_ui_state, 0); // load page 0
   SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
@@ -565,9 +566,9 @@ void app_main(void) {
   TaskHandle_t module_task_hdl;
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD) {
     xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevH) {
     xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024 * 3, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevH) {
     xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024 * 3, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD) {
     xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
@@ -609,25 +610,22 @@ void app_main(void) {
 
   // ================== FINISH: grid_module_pbf4_init() ================== //
 
-  // Create the class driver task
-
   TaskHandle_t port_task_hdl;
 
   xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 4096 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
 
   ESP_LOGI(TAG, "===== PORT TASK DONE =====");
 
-  // Create the class driver task
+  TaskHandle_t nvm_task_hdl;
 
   TaskHandle_t nvm_task_hdl;
 
   xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 10, NULL, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
 
-  TaskHandle_t housekeeping_task_hdl;
-
   ESP_LOGI(TAG, "===== NVM TASK DONE =====");
 
-  // Create the class driver task
+  TaskHandle_t housekeeping_task_hdl;
+
   xTaskCreatePinnedToCore(grid_esp32_housekeeping_task, "housekeeping", 1024 * 6, (void*)signaling_sem, 6, &housekeeping_task_hdl, 0);
 
   TaskHandle_t grid_trace_report_task_hdl;

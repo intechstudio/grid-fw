@@ -1630,8 +1630,6 @@
     lua_settable(L, -3);
   }
 
-  grid_platform_printf("potmeter_calibration_get()\n");
-
   return 1;
 }
 
@@ -1688,7 +1686,7 @@
     }
   }
 
-  grid_platform_printf("potmeter_calibration_set()\n");
+  grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFSTORE_PROGRESS, 0, NULL);
 
   return 0;
 }
@@ -1755,6 +1753,7 @@
     {GRID_LUA_FNC_G_IMMEDIATE_SEND_short, GRID_LUA_FNC_G_IMMEDIATE_SEND_fnptr},
 
     {GRID_LUA_FNC_G_ELEMENT_COUNT_short, GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr},
+
     {GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_fnptr},
     {GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr},
 
