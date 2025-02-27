@@ -3,7 +3,6 @@
 #ifndef GRID_UI_H_INCLUDED
 #define GRID_UI_H_INCLUDED
 
-#include <assert.h>
 // only for uint definitions
 #include <stdint.h>
 // only for malloc

@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "grid_ui.h"
 #include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
