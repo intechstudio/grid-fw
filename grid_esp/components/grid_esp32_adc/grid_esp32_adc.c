@@ -208,35 +208,6 @@ void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
 void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc) {}
 
-#include "ulp_riscv_lock.h"
-
-/*
-static float restrictToRange(float value) {
-  if (value < 0.0) {
-    return 0.0;
-  } else if (value > 1.0) {
-    return 1.0;
-  } else {
-    return value;
-  }
-}
-
-static uint32_t grid_esp32_adc_cal(uint32_t input) {
-
-  // parameter 1: center offset
-  int32_t parameter_1 = +32 * 4.5;
-  uint32_t ADC_MAX = ((1 << 12) - 1);
-
-  // (-abs(x-128)+96)/64
-  // normalized: (-abs(x-0.5)+0.375)/0.25
-  // (-abs(x-0.5))*2.4+ 1.1
-
-  float strength = restrictToRange((-abs(input - 0.5 * ADC_MAX)) * 2.4 / ADC_MAX + 1.1);
-
-  return input + parameter_1 * strength;
-}
-*/
-
 void IRAM_ATTR grid_esp32_adc_convert(void) {
 
   struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
@@ -245,35 +216,25 @@ void IRAM_ATTR grid_esp32_adc_convert(void) {
     return;
   }
 
-  ulp_riscv_lock_t* lock = (ulp_riscv_lock_t*)&ulp_lock;
-
-  ulp_riscv_lock_acquire(lock);
-
-  if (ulp_adc_result_ready > 0 && ulp_adc_result_ready < UINT32_MAX / 2) {
-
-    struct grid_esp32_adc_result result_0;
-    result_0.channel = 0;
-    result_0.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
-    // result_0.value = grid_esp32_adc_cal(ulp_adc_value_1);
-    result_0.value = ulp_adc_value_1;
-
-    struct grid_esp32_adc_result result_1;
-    result_1.channel = 1;
-    result_1.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
-    // result_1.value = grid_esp32_adc_cal(ulp_adc_value_2);
-    result_1.value = ulp_adc_value_2;
-
-    adc->process_analog(&result_0);
-    adc->process_analog(&result_1);
-
-    // ets_printf("%d\r\n", ulp_adc_result_ready);
-
-    ulp_adc_result_ready = UINT32_MAX; // start new conversion
-
-    grid_esp32_adc_mux_increment(&grid_esp32_adc_state);
-    grid_esp32_adc_mux_update(&grid_esp32_adc_state);
-  } else {
+  if (ulp_adc_result_ready < ulp_adc_oversample) {
+    return;
   }
 
-  ulp_riscv_lock_release(lock);
+  uint8_t mux_state = grid_esp32_adc_mux_get_index(adc);
+  grid_esp32_adc_mux_increment(adc);
+  grid_esp32_adc_mux_update(adc);
+
+  for (int i = 0; i < 2; ++i) {
+
+    struct grid_esp32_adc_result result;
+    result.channel = i;
+    result.mux_state = mux_state;
+    result.value = (&ulp_adc_value)[i];
+
+    adc->process_analog(&result);
+  }
+
+  (&ulp_sum_value)[0] = 0;
+  (&ulp_sum_value)[1] = 0;
+  ulp_adc_result_ready = 0;
 }

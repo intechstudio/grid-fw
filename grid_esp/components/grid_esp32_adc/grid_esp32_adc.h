@@ -27,7 +27,7 @@ extern "C" {
 #define ADC_BUFFER_SIZE 4 * 25 // 32-bit aligned size
 #define ADC_BUFFER_TYPE RINGBUF_TYPE_NOSPLIT
 
-#define ADC_TIMER_PERIOD_USEC 2000
+#define ADC_TIMER_PERIOD_USEC 1000
 
 typedef void (*grid_process_analog_t)(void* user);
 
