@@ -18,7 +18,7 @@
 
 #include "grid_esp32_adc.h"
 
-static const char* TAG = "module_pb44";
+// static const char* TAG = "module_pb44";
 
 #define GRID_MODULE_PB44_BUT_NUM 8
 

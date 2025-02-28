@@ -94,7 +94,7 @@ void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_
 
 void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth) {
 
-  const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
+  // const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
 
   int32_t* template_parameter_list = grid_ui_state.element_list[input_channel].template_parameter_list;
 

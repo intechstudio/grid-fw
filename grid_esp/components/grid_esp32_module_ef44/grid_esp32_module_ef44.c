@@ -20,7 +20,7 @@
 #include "grid_esp32_adc.h"
 #include "grid_esp32_encoder.h"
 
-static const char* TAG = "module_ef44";
+// static const char* TAG = "module_ef44";
 
 #define GRID_MODULE_EF44_ENC_NUM 4
 
@@ -32,7 +32,7 @@ static void IRAM_ATTR my_post_setup_cb(spi_transaction_t* trans) {
 
 static void IRAM_ATTR my_post_trans_cb(spi_transaction_t* trans) {
 
-  uint8_t* spi_rx_buffer = &trans->rx_buffer[1]; // SKIP HWCFG BYTE
+  uint8_t* spi_rx_buffer = &((uint8_t*)trans->rx_buffer)[1]; // SKIP HWCFG BYTE
 
   struct grid_esp32_encoder_result result = {0};
 

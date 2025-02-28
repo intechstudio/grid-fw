@@ -36,7 +36,7 @@ enum grid_port_type { GRID_PORT_TYPE_UNDEFINED = 0, GRID_PORT_TYPE_USART, GRID_P
 struct grid_doublebuffer {
 
   uint8_t index;
-  struct grid_transport* parent;
+  struct grid_transport_model* parent;
 
   uint16_t status;           // is packet ready for verification
   uint16_t seek_start_index; // offset of next received byte in buffer
@@ -49,7 +49,7 @@ struct grid_doublebuffer {
 struct grid_port {
 
   uint8_t index;
-  struct grid_transport* parent;
+  struct grid_transport_model* parent;
 
   enum grid_port_type type;
   uint8_t direction;

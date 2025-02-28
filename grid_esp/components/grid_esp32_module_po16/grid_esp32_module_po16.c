@@ -18,7 +18,7 @@
 
 #include "grid_esp32_adc.h"
 
-static const char* TAG = "module_po16";
+// static const char* TAG = "module_po16";
 
 void grid_esp32_module_po16_task(void* arg) {
 

@@ -18,7 +18,7 @@
 
 #include "grid_esp32_adc.h"
 
-static const char* TAG = "module_tek2";
+// static const char* TAG = "module_tek2";
 
 #define GRID_MODULE_TEK2_POT_NUM 2
 
