@@ -17,6 +17,7 @@
 #include "grid_ui_system.h"
 
 #include "grid_esp32_adc.h"
+#include "grid_esp32_codec.h"
 
 static const char* TAG = "module_tek2";
 
@@ -47,7 +48,18 @@ void grid_esp32_module_tek2_task(void* arg) {
   struct grid_ui_endless_state new_endless_state[GRID_MODULE_TEK2_POT_NUM] = {0};
   struct grid_ui_endless_state old_endless_state[GRID_MODULE_TEK2_POT_NUM] = {0};
 
+  grid_esp32_codec_init();
+
+  uint32_t loopcounter = 0;
+
   while (1) {
+
+    loopcounter++;
+    if (loopcounter < 250) {
+      loopcounter++;
+    } else {
+      grid_esp32_codec_disable();
+    }
 
     size_t size = 0;
 
@@ -77,6 +89,15 @@ void grid_esp32_module_tek2_task(void* arg) {
         grid_ui_button_store_input(&ui_button_state[8 + endless_index], 8 + endless_index, result->value, 12);
 
         grid_ui_endless_store_input(8 + endless_index, 12, &new_endless_state[endless_index], &old_endless_state[endless_index]);
+
+        struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, 8 + endless_index);
+        struct grid_ui_element* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENDLESS);
+
+        if (grid_ui_event_istriggered(eve)) {
+
+          grid_esp32_codec_enable();
+          loopcounter = 0;
+        }
       }
 
       vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
