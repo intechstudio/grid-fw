@@ -168,13 +168,13 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
-    grid_esp32_adc_init2(&grid_esp32_adc_state, vsn1l_process_analog);
+    grid_esp32_adc_init(&grid_esp32_adc_state, vsn1l_process_analog);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
-    grid_esp32_adc_init2(&grid_esp32_adc_state, vsn1r_process_analog);
+    grid_esp32_adc_init(&grid_esp32_adc_state, vsn1r_process_analog);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
-    grid_esp32_adc_init2(&grid_esp32_adc_state, vsn2_process_analog);
+    grid_esp32_adc_init(&grid_esp32_adc_state, vsn2_process_analog);
   }
 
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);

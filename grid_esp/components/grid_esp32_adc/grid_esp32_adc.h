@@ -37,10 +37,6 @@ struct grid_esp32_adc_model {
   uint8_t mux_overflow;
 
   grid_process_analog_t process_analog;
-
-  StaticRingbuffer_t* buffer_struct;
-  uint8_t* buffer_storage;
-  RingbufHandle_t ringbuffer_handle;
 };
 
 struct grid_esp32_adc_result {
@@ -54,9 +50,7 @@ extern struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
 void IRAM_ATTR grid_esp32_adc_convert(void);
 
-// TODO collapse into one
-void grid_esp32_adc_init(struct grid_esp32_adc_model* adc);
-void grid_esp32_adc_init2(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog);
+void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog);
 
 void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overflow);
 

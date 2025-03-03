@@ -133,19 +133,7 @@ static void adc_init_ulp(struct grid_esp32_adc_model* adc) {
   ESP_ERROR_CHECK(ulp_riscv_load_binary(binary, size));
 }
 
-void grid_esp32_adc_init(struct grid_esp32_adc_model* adc) {
-
-  adc->buffer_struct = (StaticRingbuffer_t*)heap_caps_malloc(sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-  adc->buffer_storage = (struct grid_esp32_adc_result*)heap_caps_malloc(sizeof(struct grid_esp32_adc_result) * ADC_BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-
-  adc->ringbuffer_handle = xRingbufferCreateStatic(ADC_BUFFER_SIZE, ADC_BUFFER_TYPE, adc->buffer_storage, adc->buffer_struct);
-
-  adc_init_ulp(adc);
-
-  adc->mux_index = 0;
-}
-
-void grid_esp32_adc_init2(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog) {
+void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog) {
 
   assert(process_analog);
 

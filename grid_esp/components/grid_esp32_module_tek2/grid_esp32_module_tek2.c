@@ -85,7 +85,7 @@ void grid_esp32_module_tek2_task(void* arg) {
   // 0, 0, 0, 0, 0, 0, 0};
   const uint8_t multiplexer_overflow = 8;
 
-  grid_esp32_adc_init2(&grid_esp32_adc_state, tek2_process_analog);
+  grid_esp32_adc_init(&grid_esp32_adc_state, tek2_process_analog);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
   grid_esp32_adc_start(&grid_esp32_adc_state);
 

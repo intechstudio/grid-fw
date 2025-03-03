@@ -34,9 +34,7 @@ void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_ENCODER;
 
-  ele->event_list_length = 4;
-
-  ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
+  grid_ui_element_malloc_events(ele, 4);
 
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_encoder_init_actionstring);                // Element Initialization Event
   grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_ENCODER, GRID_LUA_FNC_A_ENCODER_short, grid_ui_encoder_encoderchange_actionstring); // Encoder Change
