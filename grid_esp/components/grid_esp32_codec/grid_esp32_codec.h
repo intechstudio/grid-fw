@@ -15,7 +15,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
-
 #include "rom/ets_sys.h" // For ets_printf
 
 #include "grid_esp32_pins.h"
