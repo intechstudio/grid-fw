@@ -40,7 +40,7 @@ static void i2s_example_init_tdm_simplex(void) {
               .mclk = I2S_GPIO_UNUSED, // some codecs may require mclk signal, this example doesn't need it
               .bclk = EXAMPLE_TDM_BCLK_IO1,
               .ws = EXAMPLE_TDM_WS_IO1,
-              .doubt = EXAMPLE_TDM_DOUT_IO1,
+              .dout = EXAMPLE_TDM_DOUT_IO1,
               .din = EXAMPLE_TDM_DIN_IO1,
               .invert_flags =
                   {
