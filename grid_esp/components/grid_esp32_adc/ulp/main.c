@@ -17,8 +17,10 @@
 // volatile, to avoid being optimized away
 volatile uint32_t adc_oversample = 8;
 volatile uint32_t adc_result_ready = 0;
-volatile uint32_t adc_value[2] = {0};
-volatile uint32_t sum_value[2] = {0};
+volatile uint32_t adc_value_0 = 0;
+volatile uint32_t adc_value_1 = 0;
+volatile uint32_t sum_value_0 = 0;
+volatile uint32_t sum_value_1 = 0;
 
 uint32_t ADC_CHANNELS[2] = {
     ADC_CHANNEL_1,
@@ -41,11 +43,11 @@ int main(void) {
       continue;
     }
 
-    sum_value[0] += value[0];
-    sum_value[1] += value[1];
+    sum_value_0 += value[0];
+    sum_value_1 += value[1];
 
-    adc_value[0] = sum_value[0] / (adc_result_ready + 1);
-    adc_value[1] = sum_value[1] / (adc_result_ready + 1);
+    adc_value_0 = sum_value_0 / (adc_result_ready + 1);
+    adc_value_1 = sum_value_1 / (adc_result_ready + 1);
 
     ++adc_result_ready;
   }
