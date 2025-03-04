@@ -14,7 +14,11 @@ static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 
 #define GRID_MODULE_EF44_ENC_NUM 4
 
+#define GRID_MODULE_EF44_POT_NUM 4
+
 static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EF44_ENC_NUM] = {0};
+static uint64_t potmeter_last_real_time[GRID_MODULE_EF44_POT_NUM] = {0};
+static struct grid_ui_element* elements = NULL;
 
 static void hardware_spi_start_transfer(void) {
 
@@ -92,8 +96,13 @@ static void adc_transfer_complete_cb(void) {
   }
   adcresult_1 = input_1;
 
-  grid_ui_potmeter_store_input(adc_index_0 + 4, &last_real_time[adc_index_0], adcresult_0, 16); // 16 bit analog values
-  grid_ui_potmeter_store_input(adc_index_1 + 4, &last_real_time[adc_index_1], adcresult_1, 16);
+  struct grid_ui_element* ele_0 = &elements[adc_index_0 + 4];
+
+  grid_ui_potmeter_store_input(ele_0, adc_index_0, &potmeter_last_real_time[adc_index_0], adcresult_0, 16);
+
+  struct grid_ui_element* ele_1 = &elements[adc_index_1 + 4];
+
+  grid_ui_potmeter_store_input(ele_1, adc_index_1, &potmeter_last_real_time[adc_index_1], adcresult_1, 16);
 
   adc_complete_count = 0;
   hardware_adc_start_transfer();
@@ -125,6 +134,8 @@ void grid_module_ef44_init() {
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent);
   }
+
+  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   hardware_init();
 
