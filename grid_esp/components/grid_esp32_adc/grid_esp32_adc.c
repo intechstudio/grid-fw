@@ -178,7 +178,7 @@ void IRAM_ATTR grid_esp32_adc_convert(void*) {
   grid_esp32_adc_mux_increment(adc);
   grid_esp32_adc_mux_update(adc);
 
-  uint32_t adc_value[2] = { ulp_adc_value_0, ulp_adc_value_1 };
+  uint32_t adc_value[2] = {ulp_adc_value_0, ulp_adc_value_1};
 
   for (int i = 0; i < 2; ++i) {
 
