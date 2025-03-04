@@ -47,8 +47,6 @@ void IRAM_ATTR vsn1l_process_analog(void* user) {
 
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
 
-  size_t size = 0;
-
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
   uint8_t mux_position = multiplexer_lookup[lookup_index];
   struct grid_ui_element* ele = &elements[mux_position];
@@ -90,8 +88,6 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
 
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
 
-  size_t size = 0;
-
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
   uint8_t mux_position = multiplexer_lookup[lookup_index];
   struct grid_ui_element* ele = &elements[mux_position];
@@ -132,8 +128,6 @@ void IRAM_ATTR vsn2_process_analog(void* user) {
   assert(user);
 
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
-
-  size_t size = 0;
 
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
   uint8_t mux_position = multiplexer_lookup[lookup_index];
