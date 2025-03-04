@@ -14,7 +14,7 @@
 #include "driver/ledc.h" // for pwm based pico system clock generation
 #include "rom/ets_sys.h"
 
-static const char* TAG = "grid_esp32_swd";
+// static const char* TAG = "grid_esp32_swd";
 
 static uint8_t swd_pin_swdio;
 static uint8_t swd_pin_swclk;
@@ -483,7 +483,7 @@ void grid_esp32_swd_pico_clock_init(uint8_t timer_instance, uint8_t channel_inst
   ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0));
 }
 
-void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, uint8_t* buffer, uint32_t length) {
+void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, const uint8_t* buffer, uint32_t length) {
 
   gpio_set_direction(swclk_pin, GPIO_MODE_OUTPUT);
   gpio_ll_set_level(&GPIO, swclk_pin, 0);

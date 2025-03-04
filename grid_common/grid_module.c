@@ -126,9 +126,7 @@ void grid_module_pb44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
-  // should be 4 but indexing is bad at
-  // grid_element_potmeter_template_parameter_init
-  grid_ain_init(&grid_ain_state, 8, 5);
+  grid_ain_init(&grid_ain_state, 4, 5);
 
   grid_led_init(&grid_led_state, 8);
 

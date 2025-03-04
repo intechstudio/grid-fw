@@ -17,6 +17,8 @@ uint64_t grid_platform_rtc_get_micros(void) { return 0; }
 
 uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) { return 10 - told; }
 
+void* grid_platform_allocate_volatile(size_t size) { return malloc(size); }
+
 void test_function_should_calculateRelativeMode(void) {
 
   struct grid_ui_model* ui = &grid_ui_state;

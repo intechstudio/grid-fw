@@ -9,6 +9,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+extern uint64_t grid_platform_rtc_get_micros(void);
+
 extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
 
 extern void grid_platform_printf(char const* fmt, ...);

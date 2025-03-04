@@ -93,7 +93,7 @@ void grid_esp32_led_task(void* arg) {
 
   // Use semaphore to delay the usage of LED until UI is properly initialized
 
-  static uint32_t loopcounter = 0;
+  // static uint32_t loopcounter = 0;
 
   while (1) {
 
