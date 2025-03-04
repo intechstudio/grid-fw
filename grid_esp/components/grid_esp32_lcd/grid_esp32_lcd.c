@@ -393,8 +393,6 @@ void grid_esp32_lcd_task(void* arg) {
   uint32_t lcd_tx_bytes = LCD_VRES * lcd_tx_lines * COLMOD_RGB888_BYTES;
   uint8_t* xferbuf = malloc(lcd_tx_bytes);
 
-  uint64_t lastrealtime = 0;
-
   uint8_t counter = 0;
 
   // Wait for another task to mark the LCD state as ready
@@ -418,11 +416,6 @@ void grid_esp32_lcd_task(void* arg) {
       }
     }
 
-    if (grid_platform_rtc_get_elapsed_time(lastrealtime) < 125000) {
-      taskYIELD();
-      continue;
-    }
-
     ++counter;
 
 #ifdef USE_SEMAPHORE
@@ -434,8 +427,6 @@ void grid_esp32_lcd_task(void* arg) {
 #ifdef USE_SEMAPHORE
     grid_lua_semaphore_release(&grid_lua_state);
 #endif
-
-    lastrealtime = grid_platform_rtc_get_micros();
 
     taskYIELD();
     // vTaskDelay(1);

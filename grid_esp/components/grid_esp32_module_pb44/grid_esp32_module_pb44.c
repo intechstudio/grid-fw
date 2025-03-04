@@ -22,50 +22,56 @@
 
 #define GRID_MODULE_PB44_BUT_NUM 8
 
+#define GRID_MODULE_PB44_POT_NUM 8
+
+static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
+static uint64_t* DRAM_ATTR potmeter_last_real_time = NULL;
+static struct grid_ui_element* DRAM_ATTR elements = NULL;
+
+void IRAM_ATTR pb44_process_analog(void* user) {
+
+  static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, 10, 8, 11, 9, 14, 12, 15, 13};
+  static const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+
+  assert(user);
+
+  struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
+
+  uint8_t lookup_index = result->mux_state * 2 + result->channel;
+  uint8_t mux_position = multiplexer_lookup[lookup_index];
+  struct grid_ui_element* ele = &elements[mux_position];
+
+  if (invert_result_lookup[lookup_index]) {
+    result->value = 4095 - result->value;
+  }
+
+  if (mux_position < 8) {
+
+    grid_ui_potmeter_store_input(ele, mux_position, &potmeter_last_real_time[mux_position], result->value, 12);
+  } else if (mux_position < 16) {
+
+    grid_ui_button_store_input(ele, &ui_button_state[mux_position - 8], result->value, 12);
+  }
+}
+
 void grid_esp32_module_pb44_task(void* arg) {
 
-  static struct grid_ui_button_state ui_button_state[GRID_MODULE_PB44_BUT_NUM] = {0};
+  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_PB44_BUT_NUM * sizeof(struct grid_ui_button_state));
+  potmeter_last_real_time = grid_platform_allocate_volatile(GRID_MODULE_PB44_POT_NUM * sizeof(uint64_t));
+  memset(ui_button_state, 0, GRID_MODULE_PB44_BUT_NUM * sizeof(struct grid_ui_button_state));
+  memset(potmeter_last_real_time, 0, GRID_MODULE_PB44_POT_NUM * sizeof(uint64_t));
 
   for (int i = 0; i < GRID_MODULE_PB44_BUT_NUM; ++i) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
   }
 
-  uint64_t potmeter_last_real_time[16] = {0};
-  static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, 10, 8, 11, 9, 14, 12, 15, 13};
-
-  static const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
-  const uint8_t multiplexer_overflow = 8;
-
-  grid_esp32_adc_init(&grid_esp32_adc_state);
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
+  grid_esp32_adc_init(&grid_esp32_adc_state, pb44_process_analog);
+  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
   grid_esp32_adc_start(&grid_esp32_adc_state);
 
+  elements = grid_ui_model_get_elements(&grid_ui_state);
+
   while (1) {
-
-    size_t size = 0;
-
-    struct grid_esp32_adc_result* result;
-    result = (struct grid_esp32_adc_result*)xRingbufferReceive(grid_esp32_adc_state.ringbuffer_handle, &size, 10);
-
-    if (result != NULL) {
-
-      uint8_t lookup_index = result->mux_state * 2 + result->channel;
-      uint8_t mux_position = multiplexer_lookup[lookup_index];
-
-      if (invert_result_lookup[lookup_index]) {
-        result->value = 4095 - result->value;
-      }
-
-      if (mux_position < 8) {
-
-        grid_ui_potmeter_store_input(mux_position, &potmeter_last_real_time[lookup_index], result->value, 12);
-      } else if (mux_position < 16) {
-
-        grid_ui_button_store_input(&ui_button_state[mux_position - 8], mux_position, result->value, 12);
-      }
-
-      vRingbufferReturnItem(grid_esp32_adc_state.ringbuffer_handle, result);
-    }
 
     taskYIELD();
   }
