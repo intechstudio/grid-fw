@@ -14,6 +14,8 @@
 #include "freertos/ringbuf.h"
 #include "freertos/semphr.h"
 
+#include "driver/gptimer.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
