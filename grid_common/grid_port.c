@@ -1,5 +1,4 @@
 #include "grid_port.h"
-#include "grid_decode.h"
 
 struct grid_transport_model grid_transport_state;
 

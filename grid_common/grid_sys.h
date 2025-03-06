@@ -1,14 +1,10 @@
-#ifndef GRID_SYS_H_INCLUDED
-#define GRID_SYS_H_INCLUDED
-
-#include "grid_protocol.h"
+#ifndef GRID_SYS_H
+#define GRID_SYS_H
 
 #include <stdint.h>
 
-extern uint32_t grid_platform_get_id(uint32_t* return_array);
-extern uint32_t grid_platform_get_hwcfg();
-extern uint8_t grid_platform_get_random_8();
-extern uint8_t grid_platform_get_reset_cause();
+#include "grid_platform.h"
+#include "grid_protocol.h"
 
 #define MS_TO_US 1000
 
@@ -95,4 +91,4 @@ uint32_t grid_sys_get_id(struct grid_sys_model* sys, uint32_t* return_array);
 
 int grid_hwcfg_module_is_vsnx_rev_a(struct grid_sys_model* sys);
 
-#endif
+#endif /* GRID_SYS_H */

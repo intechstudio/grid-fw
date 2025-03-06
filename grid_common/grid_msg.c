@@ -7,9 +7,6 @@
 
 #include "grid_msg.h"
 
-// malloc
-#include <stdlib.h>
-
 struct grid_msg_model grid_msg_state;
 
 void grid_msg_init(struct grid_msg_model* msg) {

@@ -1,16 +1,12 @@
-#pragma once
+#ifndef GRID_MSG_H
+#define GRID_MSG_H
 
-#include "grid_protocol.h"
-
-// for variable argument lists
 #include <stdarg.h>
-
-// only for uint definitions
 #include <stdint.h>
-
-// for sprintf and strlen
 #include <stdio.h>
 #include <string.h>
+
+#include "grid_protocol.h"
 
 extern void* grid_platform_allocate_volatile(size_t size);
 extern uint8_t grid_platform_get_random_8();
@@ -134,3 +130,5 @@ uint32_t grid_str_read_hex_string_value(char* start_location, uint8_t length, ui
 void grid_str_write_hex_string_value(char* start_location, uint8_t size, uint32_t value);
 
 int grid_str_verify_frame(char* message);
+
+#endif /* GRID_MSG_H */

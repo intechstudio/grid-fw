@@ -1,10 +1,15 @@
-#pragma once
+#ifndef GRID_UI_BUTTON_H
+#define GRID_UI_BUTTON_H
 
-#ifndef GRID_UI_BUTTON_H_INCLUDED
-#define GRID_UI_BUTTON_H_INCLUDED
-
-#include "grid_ui.h"
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_ain.h"
+#include "grid_lua_api.h"
+#include "grid_protocol.h"
+#include "grid_ui.h"
+#include "grid_ui_system.h"
 
 struct grid_ui_button_state {
   uint64_t last_real_time;
@@ -110,4 +115,4 @@ void grid_ui_button_store_input(struct grid_ui_button_state* state, uint8_t inpu
   "num,val,ch,note=self:ind(),self:bva(),(gmy()*4+gpc())%16,(32+gmx()*16+"                                                                                                                             \
   "self:ind())%128--[[@gms]] gms(ch,144,note,val)--[[@glp]] glp(num,1,val) ?>"
 
-#endif
+#endif /* GRID_UI_BUTTON_H */

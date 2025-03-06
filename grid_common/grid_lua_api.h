@@ -1,11 +1,7 @@
-#pragma once
+#ifndef GRID_LUA_API_H
+#define GRID_LUA_API_H
 
-#ifndef GRID_LUA_API_H_INCLUDED
-#define GRID_LUA_API_H_INCLUDED
-
-// only for uint definitions
 #include <stdint.h>
-// only for malloc
 #include <stdlib.h>
 
 #include <string.h>
@@ -17,6 +13,9 @@
 #include "grid_protocol.h"
 #include "grid_sys.h"
 #include "grid_ui.h"
+#include "grid_ui_encoder.h"
+#include "grid_ui_endless.h"
+#include "grid_ui_potmeter.h"
 
 extern struct grid_led_model grid_led_state;
 
@@ -92,4 +91,4 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 
 extern struct luaL_Reg* grid_lua_api_generic_lib_reference;
 
-#endif /* GRID_LUA_API_H_INCLUDED */
+#endif /* GRID_LUA_API_H */

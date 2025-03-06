@@ -1,8 +1,6 @@
 
-
 #include "grid_allocator.h"
-#include <stdio.h>
-#include <stdlib.h>
+
 #define malloc malloc
 #define free free
 

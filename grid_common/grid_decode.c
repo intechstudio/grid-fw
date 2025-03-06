@@ -1,8 +1,5 @@
 #include "grid_decode.h"
 
-#include "grid_ui_encoder.h"
-#include "grid_ui_potmeter.h"
-
 static enum GRID_DESTINATION {
 
   GRID_DESTINATION_IS_ME = 1,

@@ -1,10 +1,15 @@
-#pragma once
+#ifndef GRID_UI_POTMETER_H
+#define GRID_UI_POTMETER_H
 
-#ifndef GRID_UI_POTMETER_H_INCLUDED
-#define GRID_UI_POTMETER_H_INCLUDED
-
-#include "grid_ui.h"
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_ain.h"
+#include "grid_lua_api.h"
+#include "grid_protocol.h"
+#include "grid_ui.h"
+#include "grid_ui_system.h"
 
 void grid_ui_element_potmeter_init(struct grid_ui_element* ele);
 void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf);
@@ -88,4 +93,4 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_tim
   "num,val,ch,cc=self:ind(),self:pva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:"                                                                                                                          \
   "ind())%128--[[@gms]] gms(ch,176,cc,val)--[[@glp]] glp(num,1,val) ?>"
 
-#endif
+#endif /* GRID_UI_POTMETER_H */

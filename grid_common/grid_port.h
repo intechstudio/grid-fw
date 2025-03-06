@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRID_PORT_H
+#define GRID_PORT_H
 
 #include "grid_buf.h"
 #include "grid_decode.h"
@@ -139,3 +140,5 @@ void grid_protocol_nvm_store_succcess_callback(uint8_t lastheader_id);
 void grid_protocol_send_heartbeat(uint8_t heartbeat_type, uint32_t hwcfg);
 
 void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx_buffer); // dependency: UI Page Load
+
+#endif /* GRID_PORT_H */

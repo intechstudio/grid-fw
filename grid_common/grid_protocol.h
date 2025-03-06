@@ -12,8 +12,8 @@
  * \see https://github.com/intechstudio/grid-fw/
  */
 
-#ifndef GRID_PROTOCOL_H_INCLUDED
-#define GRID_PROTOCOL_H_INCLUDED
+#ifndef GRID_PROTOCOL_H
+#define GRID_PROTOCOL_H
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
 #define GRID_PROTOCOL_VERSION_MINOR 2
@@ -850,4 +850,4 @@
 #define GRID_CLASS_HIDGAMEPADBUTTON_STATE_offset 7
 #define GRID_CLASS_HIDGAMEPADBUTTON_STATE_length 2
 
-#endif /* GRID_PROTOCOL_H_INCLUDED */
+#endif /* GRID_PROTOCOL_H */

@@ -1,10 +1,17 @@
-#pragma once
+#ifndef GRID_UI_ENCODER_H
+#define GRID_UI_ENCODER_H
 
-#ifndef GRID_UI_ENCODER_H_INCLUDED
-#define GRID_UI_ENCODER_H_INCLUDED
-
-#include "grid_ui.h"
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_ain.h"
+#include "grid_lua_api.h"
+#include "grid_platform.h"
+#include "grid_protocol.h"
+#include "grid_ui.h"
+#include "grid_ui_button.h"
+#include "grid_ui_system.h"
 
 #define GRID_UI_ENCODER_INIT_SAMPLES 2
 
@@ -167,4 +174,4 @@ void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, uint8_t in
   "num,val,ch,cc=self:ind(),self:eva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:"                                                                                                                          \
   "ind())%128--[[@gms]] gms(ch,176,cc,val)--[[@glp]] glp(num,2,val) ?>"
 
-#endif
+#endif /* GRID_UI_ENCODER_H */
