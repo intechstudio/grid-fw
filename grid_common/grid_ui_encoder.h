@@ -103,7 +103,7 @@ void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, uint8_t in
 #define GRID_LUA_FNC_E_BUTTON_STEP_short "bstp"
 #define GRID_LUA_FNC_E_BUTTON_STEP_human "button_step"
 
-#define GRID_LUA_FNC_E_LED_COLOR_short "elc"
+#define GRID_LUA_FNC_E_LED_COLOR_short "glc"
 #define GRID_LUA_FNC_E_LED_COLOR_human "led_color"
 
 // Encoder parameters
