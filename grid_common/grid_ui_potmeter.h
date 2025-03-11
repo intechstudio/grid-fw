@@ -12,7 +12,7 @@ void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_bu
 void grid_ui_element_potmeter_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
-void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
+void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
 
 // ========================= POTMETER =========================== //
 

@@ -35,7 +35,7 @@
 extern uint32_t grid_platform_get_cycles(void);
 struct grid_msg_recent_buffer DRAM_ATTR recent_messages;
 
-static TaskHandle_t xTaskToNotify = NULL;
+// static TaskHandle_t xTaskToNotify = NULL;
 
 static const char* TAG = "PORT";
 
@@ -164,9 +164,9 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
   uint8_t grid_pico_uart_tx_ready_bitmap = ((uint8_t*)trans->rx_buffer)[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
 
   for (uint8_t i = 0; i < 4; i++) {
-    struct grid_port* por = uart_port_array[i];
-    struct grid_buffer* buffer_tx = uart_buffer_tx_array[i];
-    struct grid_buffer* buffer_rx = uart_buffer_rx_array[i];
+    // struct grid_port* por = uart_port_array[i];
+    // struct grid_buffer* buffer_tx = uart_buffer_tx_array[i];
+    // struct grid_buffer* buffer_rx = uart_buffer_rx_array[i];
     struct grid_doublebuffer* doublebuffer_tx = uart_doublebuffer_tx_array[i];
 
     if ((grid_pico_uart_tx_ready_bitmap & (0b00000001 << i))) {
@@ -230,7 +230,7 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
     if (message[2] == GRID_CONST_BELL) {
 
-      uint8_t error = 0;
+      // uint8_t error = 0;
 
       // reset timeout counter
       por->partner_last_timestamp = grid_platform_rtc_get_micros();
@@ -354,6 +354,7 @@ uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_
   return 0; // done
 }
 
+/*
 static void plot_port_debug() {
 
   uint16_t plot[20] = {0};
@@ -404,6 +405,7 @@ static void plot_port_debug() {
 
   // ets_printf("\r\n");
 }
+*/
 
 void handle_sync_ticks(void) {
 
@@ -481,7 +483,7 @@ void grid_esp32_port_task(void* arg) {
   uart_doublebuffer_tx_array[2] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 2);
   uart_doublebuffer_tx_array[3] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 3);
 
-  uint8_t n = 0;
+  // uint8_t n = 0;
   esp_err_t ret;
 
   // Configuration for the SPI bus
@@ -505,12 +507,12 @@ void grid_esp32_port_task(void* arg) {
   ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
   assert(ret == ESP_OK);
 
-  WORD_ALIGNED_ATTR char sendbuf[GRID_PARAMETER_SPI_TRANSACTION_length + 1] = {0};
+  // WORD_ALIGNED_ATTR char sendbuf[GRID_PARAMETER_SPI_TRANSACTION_length + 1] = {0};
   WORD_ALIGNED_ATTR char recvbuf[GRID_PARAMETER_SPI_TRANSACTION_length + 1] = {0};
 
   for (uint8_t i = 0; i < 4; i++) {
 
-    struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
+    // struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
     struct grid_doublebuffer* doublebuffer_tx = uart_doublebuffer_tx_array[i];
 
     // Set up a transaction of GRID_PARAMETER_SPI_TRANSACTION_length bytes to
@@ -530,7 +532,7 @@ void grid_esp32_port_task(void* arg) {
 
   is_vsn_rev_a = grid_hwcfg_module_is_vsnx_rev_a(&grid_sys_state);
 
-  SemaphoreHandle_t spi_ready_sem = xSemaphoreCreateBinary();
+  // SemaphoreHandle_t spi_ready_sem = xSemaphoreCreateBinary();
 
   portENTER_CRITICAL(&spinlock);
   ret = spi_slave_queue_trans(RCV_HOST, &spi_empty_transaction, 0);
@@ -540,7 +542,7 @@ void grid_esp32_port_task(void* arg) {
   }
   portEXIT_CRITICAL(&spinlock);
 
-  uint8_t firstprint = 1;
+  // uint8_t firstprint = 1;
 
   // gpio_set_direction(47, GPIO_MODE_OUTPUT);
 

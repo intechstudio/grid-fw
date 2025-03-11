@@ -11,17 +11,10 @@
 extern "C" {
 #endif
 
-//------------- CLASS -------------//
-#define CFG_TUD_CDC 1
-#define CFG_TUD_HID 1
-#define CFG_TUD_MIDI 1
-#define CFG_TUD_MSC 0
-#define CFG_TUD_VENDOR 0
-
 /* HID Mouse Class Pointer Move Type */
-static enum mouse_move_type { X_AXIS_MV = 0x01, Y_AXIS_MV = 0x02, SCROLL_MV = 0x03 };
+enum mouse_move_type { X_AXIS_MV = 0x01, Y_AXIS_MV = 0x02, SCROLL_MV = 0x03 };
 
-static enum gamepad_axis_t { GAMEPAD_AXIS_X = 0, GAMEPAD_AXIS_Y, GAMEPAD_AXIS_Z, GAMEPAD_AXIS_RX, GAMEPAD_AXIS_RY, GAMEPAD_AXIS_RZ };
+enum gamepad_axis_t { GAMEPAD_AXIS_X = 0, GAMEPAD_AXIS_Y, GAMEPAD_AXIS_Z, GAMEPAD_AXIS_RX, GAMEPAD_AXIS_RY, GAMEPAD_AXIS_RZ };
 
 /** Helper defines **/
 
