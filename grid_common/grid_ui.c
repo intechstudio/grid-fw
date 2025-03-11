@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "grid_ui.h"
 #include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
@@ -72,7 +74,7 @@ void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
 
   ui->element_list_length = element_list_length;
 
-  ui->element_list = malloc(element_list_length * sizeof(struct grid_ui_element));
+  ui->element_list = grid_platform_allocate_volatile(element_list_length * sizeof(struct grid_ui_element));
 
   ui->page_negotiated = 0;
 
@@ -83,6 +85,13 @@ void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
   ui->bulk_last_page = -1;
   ui->bulk_last_element = -1;
   ui->bulk_last_event = -1;
+}
+
+struct grid_ui_element* grid_ui_model_get_elements(struct grid_ui_model* ui) {
+
+  assert(ui->element_list);
+
+  return ui->element_list;
 }
 
 void grid_ui_busy_semaphore_lock(struct grid_ui_model* ui) { grid_ui_semaphore_lock(&ui->busy_semaphore); }
@@ -128,21 +137,17 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
 
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, char* default_actionstring) {
 
+  assert(index < ele->event_list_length);
+
   struct grid_ui_event* eve = &ele->event_list[index];
 
   eve->parent = ele;
   eve->index = index;
-
+  eve->type = event_type;
+  strcpy(eve->function_name, function_name);
   eve->default_actionstring = default_actionstring;
 
-  eve->cfg_changed_flag = 0;
-
-  eve->status = GRID_UI_STATUS_INITIALIZED;
-
-  eve->type = event_type;
   eve->status = GRID_UI_STATUS_READY;
-
-  strcpy(eve->function_name, function_name);
 
   eve->cfg_changed_flag = 0;
   eve->cfg_default_flag = 1;
@@ -250,7 +255,7 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_el
     allocation_length = 1;
   }
 
-  this->template_parameter_list = malloc(allocation_length * sizeof(int32_t));
+  this->template_parameter_list = grid_platform_allocate_volatile(allocation_length * sizeof(int32_t));
 
   // grid_platform_printf("malloc %d %lx\r\n",
   // ele->template_parameter_list_length, this->template_parameter_list);
@@ -631,15 +636,13 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, char* target_str
 
         if (strlen(grid_lua_get_error_string(&grid_lua_state))) {
 
-          char errorbuffer[100] = {0};
+          char* dest = &target_string[code_start - total_substituted_length + code_stdo_length];
 
-          sprintf(errorbuffer, GRID_CLASS_DEBUGTEXT_frame_start);
-          strcat(errorbuffer, grid_lua_get_error_string(&grid_lua_state));
-          sprintf(&errorbuffer[strlen(errorbuffer)], GRID_CLASS_DEBUGTEXT_frame_end);
+          sprintf(dest, GRID_CLASS_DEBUGTEXT_frame_start);
+          strcat(dest, grid_lua_get_error_string(&grid_lua_state));
+          sprintf(&dest[strlen(dest)], GRID_CLASS_DEBUGTEXT_frame_end);
 
-          errorlen = strlen(errorbuffer);
-
-          strcpy(&target_string[code_start - total_substituted_length + code_stdo_length], errorbuffer);
+          errorlen = strlen(dest);
 
           grid_lua_clear_stde(&grid_lua_state);
         }
@@ -807,6 +810,16 @@ struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t e
   } else {
     return NULL;
   }
+}
+
+void grid_ui_element_malloc_events(struct grid_ui_element* ele, int capacity) {
+
+  assert(capacity > 0);
+
+  ele->event_list = grid_platform_allocate_volatile(capacity * sizeof(struct grid_ui_event));
+  assert(ele->event_list);
+
+  ele->event_list_length = capacity;
 }
 
 void grid_ui_element_timer_set(struct grid_ui_element* ele, uint32_t duration) { ele->timer_event_helper = duration; }
