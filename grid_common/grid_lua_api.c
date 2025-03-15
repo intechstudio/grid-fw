@@ -1,5 +1,6 @@
 #include "grid_lua_api.h"
 
+#include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
 #include "grid_ui_endless.h"
 #include "grid_ui_potmeter.h"
@@ -811,19 +812,35 @@
 
   int nargs = lua_gettop(L);
 
-  if (nargs != 5) {
+  if (nargs != 5 && nargs != 6) {
     // error
     strcat(grid_lua_state.stde, "#invalidParams");
     return 0;
   }
 
-  uint8_t param[5] = {0};
+  uint8_t num, layer, red, green, blue;
 
-  for (int i = 1; i <= nargs; ++i) {
-    param[i - 1] = lua_tointeger(L, i);
+  uint8_t* param[5] = {&num, &layer, &red, &green, &blue};
+
+  for (int i = 0; i < 5; ++i) {
+    *(param[i]) = lua_tointeger(L, i + 1);
   }
 
-  grid_led_set_layer_min(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+  if (nargs == 6) {
+    double alpha = lua_tonumber(L, nargs);
+    if (alpha > 1.0) {
+      alpha = 1.0;
+    }
+    if (alpha < 0.0) {
+      alpha = 0.0;
+    }
+
+    red = (uint8_t)(red * alpha);
+    green = (uint8_t)(green * alpha);
+    blue = (uint8_t)(blue * alpha);
+  }
+
+  grid_led_set_layer_min(&grid_led_state, num, layer, red, green, blue);
 
   return 0;
 }
@@ -832,19 +849,35 @@
 
   int nargs = lua_gettop(L);
 
-  if (nargs != 5) {
+  if (nargs != 5 && nargs != 6) {
     // error
     strcat(grid_lua_state.stde, "#invalidParams");
     return 0;
   }
 
-  uint8_t param[5] = {0};
+  uint8_t num, layer, red, green, blue;
 
-  for (int i = 1; i <= nargs; ++i) {
-    param[i - 1] = lua_tointeger(L, i);
+  uint8_t* param[5] = {&num, &layer, &red, &green, &blue};
+
+  for (int i = 0; i < 5; ++i) {
+    *(param[i]) = lua_tointeger(L, i + 1);
   }
 
-  grid_led_set_layer_mid(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+  if (nargs == 6) {
+    double alpha = lua_tonumber(L, nargs);
+    if (alpha > 1.0) {
+      alpha = 1.0;
+    }
+    if (alpha < 0.0) {
+      alpha = 0.0;
+    }
+
+    red = (uint8_t)(red * alpha);
+    green = (uint8_t)(green * alpha);
+    blue = (uint8_t)(blue * alpha);
+  }
+
+  grid_led_set_layer_mid(&grid_led_state, num, layer, red, green, blue);
 
   return 0;
 }
@@ -853,19 +886,35 @@
 
   int nargs = lua_gettop(L);
 
-  if (nargs != 5) {
+  if (nargs != 5 && nargs != 6) {
     // error
     strcat(grid_lua_state.stde, "#invalidParams");
     return 0;
   }
 
-  uint8_t param[5] = {0};
+  uint8_t num, layer, red, green, blue;
 
-  for (int i = 1; i <= nargs; ++i) {
-    param[i - 1] = lua_tointeger(L, i);
+  uint8_t* param[5] = {&num, &layer, &red, &green, &blue};
+
+  for (int i = 0; i < 5; ++i) {
+    *(param[i]) = lua_tointeger(L, i + 1);
   }
 
-  grid_led_set_layer_max(&grid_led_state, param[0], param[1], param[2], param[3], param[4]);
+  if (nargs == 6) {
+    double alpha = lua_tonumber(L, nargs);
+    if (alpha > 1.0) {
+      alpha = 1.0;
+    }
+    if (alpha < 0.0) {
+      alpha = 0.0;
+    }
+
+    red = (uint8_t)(red * alpha);
+    green = (uint8_t)(green * alpha);
+    blue = (uint8_t)(blue * alpha);
+  }
+
+  grid_led_set_layer_max(&grid_led_state, num, layer, red, green, blue);
 
   return 0;
 }
@@ -1269,6 +1318,11 @@
         min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_MIN_index);
         max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_MAX_index);
         val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_VALUE_index);
+      } else if (ele_type == GRID_PARAMETER_ELEMENT_BUTTON) {
+
+        min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_B_BUTTON_MIN_index);
+        max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_B_BUTTON_MAX_index);
+        val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_B_BUTTON_VALUE_index);
       } else {
 
         strcat(grid_lua_state.stde, "#elementNotSupported");
