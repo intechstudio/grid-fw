@@ -38,7 +38,7 @@ if (ENVIRONMENT_IS_NODE) {
 // we collect those properties and reapply _after_ we configure
 // the current environment's defaults to avoid having to be so
 // defensive during initialization.
-var moduleOverrides = Object.assign({}, Module);
+var moduleOverrides = {...Module};
 
 var arguments_ = [];
 var thisProgram = './this.program';
@@ -477,8 +477,11 @@ function unexportedRuntimeSymbol(sym) {
   }
 }
 
+var runtimeDebug = true; // Switch to false at runtime to disable logging at the right times
+
 // Used by XXXXX_DEBUG settings to output debug messages.
 function dbg(...args) {
+  if (!runtimeDebug && typeof runtimeDebug != 'undefined') return;
   // TODO(sbc): Make this configurable somehow.  Its not always convenient for
   // logging to show up as warnings.
   console.warn(...args);
@@ -679,6 +682,7 @@ function createExportWrapper(name, nargs) {
 }
 
 var wasmBinaryFile;
+
 function findWasmBinary() {
     return locateFile('index.wasm');
 }
@@ -825,17 +829,14 @@ async function createWasm() {
   }
 
   wasmBinaryFile ??= findWasmBinary();
-
     var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info);
     var exports = receiveInstantiationResult(result);
     return exports;
 }
 
-// === Body ===
-
-function captureInput() { console.log('hello world!'); document.addEventListener( 'keydown', function(event) { console.log('!'); Module.ccall('handleInput', 'void', ['number'], [event.keyCode]); }); Module.doNotCaptureKeyboard = true; window.addEventListener('keydown', function(event){ }, true); window.addEventListener('keyup', function(event){ }, true); var button = document.querySelector('#loadScriptButton'); button.addEventListener('click', function(){ }); }
-
 // end include: preamble.js
+
+// Begin JS library code
 
 
   class ExitStatus {
@@ -1976,7 +1977,6 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   var getWasmTableEntry = (funcPtr) => {
       var func = wasmTableMirror[funcPtr];
       if (!func) {
-        if (funcPtr >= wasmTableMirror.length) wasmTableMirror.length = funcPtr + 1;
         /** @suppress {checkTypes} */
         wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr);
       }
@@ -2449,8 +2449,7 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   
             // Clear out any touchstart events that we've already processed
             if (event.type === 'touchstart') {
-              for (var i = 0; i < event.touches.length; i++) {
-                var touch = event.touches[i];
+              for (var touch of event.touches) {
                 if (SDL.downFingers[touch.identifier] != true) {
                   SDL.downFingers[touch.identifier] = true;
                   touches.push(touch);
@@ -2479,8 +2478,7 @@ function captureInput() { console.log('hello world!'); document.addEventListener
               SDL.events.push(mouseEvent);
             }
   
-            for (var i = 0; i < touches.length; i++) {
-              var touch = touches[i];
+            for (var touch of touches) {
               SDL.events.push({
                 type: event.type,
                 touch
@@ -2493,8 +2491,7 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   
             // Remove the entry in the SDL.downFingers hash
             // because the finger is no longer down.
-            for (var i = 0; i < event.changedTouches.length; i++) {
-              var touch = event.changedTouches[i];
+            for (var touch of event.changedTouches) {
               if (SDL.downFingers[touch.identifier] === true) {
                 delete SDL.downFingers[touch.identifier];
               }
@@ -2509,8 +2506,7 @@ function captureInput() { console.log('hello world!'); document.addEventListener
             SDL.DOMButtons[0] = 0;
             SDL.events.push(mouseEvent);
   
-            for (var i = 0; i < event.changedTouches.length; i++) {
-              var touch = event.changedTouches[i];
+            for (var touch of event.changedTouches) {
               SDL.events.push({
                 type: 'touchend',
                 touch
@@ -3111,9 +3107,9 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   },
   recordJoystickState(joystick, state) {
         // Standardize button state.
-        var buttons = new Array(state.buttons.length);
-        for (var i = 0; i < state.buttons.length; i++) {
-          buttons[i] = SDL.getJoystickButtonState(state.buttons[i]);
+        var buttons = [];
+        for (var button of state.buttons) {
+          buttons.push(SDL.getJoystickButtonState(button));
         }
   
         SDL.lastJoystickState[joystick] = {
@@ -4006,9 +4002,7 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   };
   
   
-  var zeroMemory = (address, size) => {
-      HEAPU8.fill(0, address, address + size);
-    };
+  var zeroMemory = (ptr, size) => HEAPU8.fill(0, ptr, ptr + size);
   
   var alignMemory = (size, alignment) => {
       assert(alignment, "alignment argument is required");
@@ -4053,7 +4047,6 @@ function captureInput() { console.log('hello world!'); document.addEventListener
               llseek: MEMFS.stream_ops.llseek,
               read: MEMFS.stream_ops.read,
               write: MEMFS.stream_ops.write,
-              allocate: MEMFS.stream_ops.allocate,
               mmap: MEMFS.stream_ops.mmap,
               msync: MEMFS.stream_ops.msync
             }
@@ -4289,10 +4282,6 @@ function captureInput() { console.log('hello world!'); document.addEventListener
             throw new FS.ErrnoError(28);
           }
           return position;
-        },
-  allocate(stream, offset, length) {
-          MEMFS.expandFileStorage(stream.node, offset + length);
-          stream.node.usedBytes = Math.max(stream.node.usedBytes, offset + length);
         },
   mmap(stream, length, position, prot, flags) {
           if (!FS.isFile(stream.node.mode)) {
@@ -5165,9 +5154,9 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   mkdirTree(path, mode) {
         var dirs = path.split('/');
         var d = '';
-        for (var i = 0; i < dirs.length; ++i) {
-          if (!dirs[i]) continue;
-          d += '/' + dirs[i];
+        for (var dir of dirs) {
+          if (!dir) continue;
+          d += '/' + dir;
           try {
             FS.mkdir(d, mode);
           } catch(e) {
@@ -5646,24 +5635,6 @@ function captureInput() { console.log('hello world!'); document.addEventListener
         if (!seeking) stream.position += bytesWritten;
         return bytesWritten;
       },
-  allocate(stream, offset, length) {
-        if (FS.isClosed(stream)) {
-          throw new FS.ErrnoError(8);
-        }
-        if (offset < 0 || length <= 0) {
-          throw new FS.ErrnoError(28);
-        }
-        if ((stream.flags & 2097155) === 0) {
-          throw new FS.ErrnoError(8);
-        }
-        if (!FS.isFile(stream.node.mode) && !FS.isDir(stream.node.mode)) {
-          throw new FS.ErrnoError(43);
-        }
-        if (!stream.stream_ops.allocate) {
-          throw new FS.ErrnoError(138);
-        }
-        stream.stream_ops.allocate(stream, offset, length);
-      },
   mmap(stream, length, position, prot, flags) {
         // User requests writing to file (prot & PROT_WRITE != 0).
         // Checking if we have permissions to write to the file unless
@@ -5885,12 +5856,10 @@ function captureInput() { console.log('hello world!'); document.addEventListener
         // force-flush all streams, so we get musl std streams printed out
         _fflush(0);
         // close all of our streams
-        for (var i = 0; i < FS.streams.length; i++) {
-          var stream = FS.streams[i];
-          if (!stream) {
-            continue;
+        for (var stream of FS.streams) {
+          if (stream) {
+            FS.close(stream);
           }
-          FS.close(stream);
         }
       },
   findObject(path, dontResolveLastLink) {
@@ -6612,7 +6581,7 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   function __gmtime_js(time, tmPtr) {
     time = bigintToI53Checked(time);
   
-    
+  
       var date = new Date(time * 1000);
       HEAP32[((tmPtr)>>2)] = date.getUTCSeconds();
       HEAP32[(((tmPtr)+(4))>>2)] = date.getUTCMinutes();
@@ -6643,7 +6612,7 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   function __localtime_js(time, tmPtr) {
     time = bigintToI53Checked(time);
   
-    
+  
       var date = new Date(time*1000);
       HEAP32[((tmPtr)>>2)] = date.getSeconds();
       HEAP32[(((tmPtr)+(4))>>2)] = date.getMinutes();
@@ -6669,7 +6638,7 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   
   var __mktime_js = function(tmPtr) {
   
-    var ret = (() => { 
+  var ret = (() => { 
       var date = new Date(HEAP32[(((tmPtr)+(20))>>2)] + 1900,
                           HEAP32[(((tmPtr)+(16))>>2)],
                           HEAP32[(((tmPtr)+(12))>>2)],
@@ -6715,7 +6684,7 @@ function captureInput() { console.log('hello world!'); document.addEventListener
       // Return time in microseconds
       return timeMs / 1000;
      })();
-    return BigInt(ret);
+  return BigInt(ret);
   };
 
   
@@ -6782,7 +6751,7 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   function _clock_time_get(clk_id, ignored_precision, ptime) {
     ignored_precision = bigintToI53Checked(ignored_precision);
   
-    
+  
       if (!checkWasiClock(clk_id)) {
         return 28;
       }
@@ -6938,7 +6907,7 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   function _fd_seek(fd, offset, whence, newOffset) {
     offset = bigintToI53Checked(offset);
   
-    
+  
   try {
   
       if (isNaN(offset)) return 61;
@@ -7090,9 +7059,12 @@ function captureInput() { console.log('hello world!'); document.addEventListener
   FS.staticInit();
   // Set module methods based on EXPORTED_RUNTIME_METHODS
   ;
+// End JS library code
+
 function checkIncomingModuleAPI() {
   ignoredModuleProp('fetchSettings');
 }
+function captureInput() { console.log('hello world!'); document.addEventListener( 'keydown', function(event) { console.log('!'); Module.ccall('handleInput', 'void', ['number'], [event.keyCode]); }); Module.doNotCaptureKeyboard = true; window.addEventListener('keydown', function(event){ }, true); window.addEventListener('keyup', function(event){ }, true); var button = document.querySelector('#loadScriptButton'); button.addEventListener('click', function(){ }); }
 var wasmImports = {
   /** @export */
   SDL_Flip: _SDL_Flip,
