@@ -99,7 +99,7 @@ void grid_esp32_codec_write(void) {
 
   /* Write i2s data */
   if (i2s_channel_write(tx_chan, w_buf, EXAMPLE_BUFF_SIZE, &w_bytes, 1000) == ESP_OK) {
-    printf("Write Task: i2s write %d bytes\n", w_bytes);
+    printf("Write Task: i2s write %zu bytes\n", w_bytes);
   } else {
     printf("Write Task: i2s write failed\n");
   }
