@@ -169,7 +169,7 @@ void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid
       grid_msg_packet_body_append_parameter(&message, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, kb->isenabled);
 
       grid_msg_packet_close(&grid_msg_state, &message);
-      grid_port_packet_send_everywhere(&message);
+      grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
     }
 
     // USB SEND
@@ -325,10 +325,7 @@ void grid_midi_rx_pop() {
     }
 
     grid_msg_packet_close(&grid_msg_state, &message);
-    grid_port_packet_send_everywhere(&message);
-  } else {
-
-    // no message in fifo
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
   }
 }
 

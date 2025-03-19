@@ -35,6 +35,9 @@ usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_module.o \
 ../grid_common/grid_lua.o \
 ../grid_common/grid_lua_api.o \
+../grid_common/grid_transport.o \
+../grid_common/grid_rollid.o \
+../grid_common/grid_utask.o \
 grid/d51/grid_d51.o \
 grid/d51/grid_d51_led.o \
 grid/d51/grid_d51_uart.o \
@@ -112,6 +115,9 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_module.o" \
 "../grid_common/grid_lua.o" \
 "../grid_common/grid_lua_api.o" \
+"../grid_common/grid_transport.o" \
+"../grid_common/grid_rollid.o" \
+"../grid_common/grid_utask.o" \
 "grid/d51/grid_d51.o" \
 "grid/d51/grid_d51_led.o" \
 "grid/d51/grid_d51_uart.o" \
@@ -201,6 +207,9 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_module.d" \
 "../grid_common/grid_lua.d" \
 "../grid_common/grid_lua_api.d" \
+"../grid_common/grid_transport.d" \
+"../grid_common/grid_rollid.d" \
+"../grid_common/grid_utask.d" \
 "grid/d51/grid_d51.d" \
 "grid/d51/grid_d51_led.d" \
 "grid/d51/grid_d51_uart.d" \

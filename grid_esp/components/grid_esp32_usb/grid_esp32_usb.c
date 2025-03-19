@@ -21,6 +21,7 @@
 #include "tinyusb.h"
 
 // #include "../../grid_common/grid_port.h"
+#include "grid_transport.h"
 #include "grid_usb.h"
 // #include "../../grid_common/grid_sys.h"
 
@@ -71,50 +72,44 @@ void tud_midi_rx_cb(uint8_t itf) {
   }
 }
 
-void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
-  /* initialization */
+struct grid_swsr_t cdc_rx;
 
-  /* read */
+void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
+
   size_t rx_size = 0;
   uint8_t buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE + 1];
-  esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
+  esp_err_t err = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
 
-  struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
-  struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(host_port->parent, host_port->index);
-
-  if (host_port == NULL) {
-    // port not initialized
-    grid_platform_printf("host_port == NULL\r\n");
+  if (err != ESP_OK) {
     return;
   }
 
-  if (doublebuffer_rx == NULL) {
-    // doublebuffer not initialized
-    grid_platform_printf("doublebuffer_rx == NULL\r\n");
+  struct grid_swsr_t* rx = &cdc_rx;
+
+  if (grid_swsr_writable(rx, rx_size)) {
+    grid_swsr_write(rx, buf, rx_size);
+  } else {
+    grid_swsr_read(rx, NULL, grid_swsr_size(rx));
+  }
+
+  int ret = grid_swsr_cspn(rx, '\n');
+
+  if (ret < 0) {
     return;
   }
 
-  if (doublebuffer_rx->buffer_storage == NULL) {
-    grid_platform_printf("buffer_storage == NULL\r\n");
-    // doublebuffer not initialized
+  assert(ret < GRID_PARAMETER_SPI_TRANSACTION_length);
+  uint8_t temp[GRID_PARAMETER_SPI_TRANSACTION_length + 1];
+
+  assert(grid_swsr_readable(rx, ret + 1));
+  grid_swsr_read(rx, temp, ret + 1);
+  temp[ret + 1] = '\0';
+
+  if (grid_str_verify_frame((char*)temp)) {
     return;
   }
 
-  if (doublebuffer_rx->buffer_size < 64) {
-    grid_platform_printf("buffer_size < 64\r\n");
-    // doublebuffer not initialized
-    return;
-  }
-
-  for (uint16_t i = 0; i < rx_size; i++) {
-
-    doublebuffer_rx->buffer_storage[doublebuffer_rx->write_index] = buf[i];
-
-    doublebuffer_rx->write_index++;
-    doublebuffer_rx->write_index %= doublebuffer_rx->buffer_size;
-  }
-
-  // ESP_LOGI(TAG, "Data from channel %d len: %d", itf, rx_size);
+  grid_transport_recv_usb(&grid_transport_state, temp, ret + 1);
 }
 
 static uint8_t DRAM_ATTR usb_tx_ready = 0;
@@ -318,6 +313,10 @@ void grid_esp32_usb_init() {
   ESP_ERROR_CHECK(tusb_cdc_acm_init(&acm_cfg));
   /* the second way to register a callback */
   ESP_ERROR_CHECK(tinyusb_cdcacm_register_callback(TINYUSB_CDC_ACM_0, CDC_EVENT_LINE_STATE_CHANGED, &tinyusb_cdc_line_state_changed_callback));
+
+  // Allocate CDC RX buffer
+  int capacity = GRID_PARAMETER_SPI_TRANSACTION_length * 2;
+  assert(grid_swsr_malloc(&cdc_rx, capacity) == 0);
 
   // END OF USB
 }

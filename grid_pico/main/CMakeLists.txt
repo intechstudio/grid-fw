@@ -4,6 +4,9 @@ add_executable(main
     grid_pico_platform.c
     ../../grid_common/grid_msg.c
     ../../grid_common/grid_port.c
+    ../../grid_common/grid_transport.c
+    ../../grid_common/grid_rollid.c
+    ../../grid_common/grid_utask.c
     pico_pool.c
     pico_swsr.c
     vmp/vmp_def.c

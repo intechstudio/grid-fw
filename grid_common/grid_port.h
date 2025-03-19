@@ -1,144 +1,93 @@
 #ifndef GRID_PORT_H
 #define GRID_PORT_H
 
-#include "grid_buf.h"
-#include "grid_decode.h"
-#include "grid_led.h"
-#include "grid_lua_api.h"
-#include "grid_msg.h"
-#include "grid_protocol.h"
-#include "grid_sys.h"
-#include "grid_ui.h"
-#include "grid_usb.h"
-
-#include <stdarg.h>
+#include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
+#include <stdio.h>
 
-extern uint64_t grid_platform_rtc_get_micros(void);
+#include "grid_decode.h"
+#include "grid_msg.h"
+#include "grid_platform.h"
+#include "grid_protocol.h"
+#include "grid_swsr.h"
 
-extern uint8_t grid_platform_disable_grid_transmitter(uint8_t direction);
-extern uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
-extern uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
-extern uint32_t grid_plaform_get_nvm_nextwriteoffset();
-
-extern int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
-
-extern void grid_platform_printf(char const* fmt, ...);
-
-extern void* grid_platform_allocate_volatile(size_t size);
-
-extern void grid_platform_system_reset();
-extern void grid_platform_nvm_defrag();
-
-enum grid_port_type { GRID_PORT_TYPE_UNDEFINED = 0, GRID_PORT_TYPE_USART, GRID_PORT_TYPE_USB, GRID_PORT_TYPE_UI };
-
-// double buffer for ciclical use
-struct grid_doublebuffer {
-
-  uint8_t index;
-  struct grid_transport* parent;
-
-  uint16_t status;           // is packet ready for verification
-  uint16_t seek_start_index; // offset of next received byte in buffer
-  uint16_t read_start_index; // beginning of current packet
-  uint16_t write_index;
-  char* buffer_storage;
-  size_t buffer_size;
+enum grid_port_type {
+  GRID_PORT_UNDEFINED = 0, // TODO necessary?
+  GRID_PORT_USART,
+  GRID_PORT_USB,
+  GRID_PORT_UI,
+  GRID_PORT_TYPE_COUNT,
 };
+/*
+enum grid_port_txrx {
+  GRID_PORT_TX = 0,
+  GRID_PORT_RX,
+};
+*/
+enum grid_port_dir {
+  GRID_PORT_NORTH = 0,
+  GRID_PORT_EAST,
+  GRID_PORT_SOUTH,
+  GRID_PORT_WEST,
+  GRID_PORT_DIR_COUNT,
+};
+
+char grid_port_dir_to_code(enum grid_port_dir dir);
+
+struct grid_ping {
+  uint8_t data[15];
+  size_t size;
+};
+
+void grid_ping_init(struct grid_ping* ping, enum grid_port_dir dir);
+
+struct grid_partner {
+  uint64_t last_time;
+  uint64_t timeout;
+  enum grid_port_dir rot;
+  bool connected;
+  bool connected_prev;
+};
+
+void grid_partner_init(struct grid_partner* partner);
+void grid_partner_set_rot(struct grid_partner* partner, enum grid_port_dir rot);
 
 struct grid_port {
 
-  uint8_t index;
-  struct grid_transport* parent;
-
   enum grid_port_type type;
-  uint8_t direction;
-
-  uint8_t partner_status;
-  uint8_t partner_fi;
-
-  uint64_t partner_last_timestamp;
-
-  char ping_packet[20];
-  uint8_t ping_packet_length;
-
-  uint8_t ping_flag;
-
+  // enum grid_port_txrx txrx;
+  enum grid_port_dir dir;
+  struct grid_partner partner;
+  struct grid_ping ping;
+  struct grid_swsr_t tx;
+  struct grid_swsr_t rx;
   int8_t dx;
   int8_t dy;
 };
 
-struct grid_transport_model {
-  uint8_t port_array_length;
-  struct grid_port* port_array[10];
+void grid_port_malloc(struct grid_port* port, int swsr_capa);
+void grid_port_free(struct grid_port* port);
+void grid_port_init(struct grid_port* port, enum grid_port_type type, enum grid_port_dir dir);
+struct grid_swsr_t* grid_port_get_tx(struct grid_port* port);
+struct grid_swsr_t* grid_port_get_rx(struct grid_port* port);
 
-  uint8_t doublebuffer_array_length;
-  struct grid_doublebuffer* doublebuffer_tx_array[10];
-  struct grid_doublebuffer* doublebuffer_rx_array[10];
+bool grid_port_connected(struct grid_port* port);
+bool grid_port_disconnected(struct grid_port* port);
+void grid_port_connect(struct grid_port* port);
+bool grid_port_connected_changed(struct grid_port* port);
+void grid_port_connected_update(struct grid_port* port);
 
-  uint8_t buffer_array_length;
-  struct grid_buffer* buffer_tx_array[10];
-  struct grid_buffer* buffer_rx_array[10];
-};
+void grid_port_softreset(struct grid_port* port);
 
-int grid_port_should_uart_timeout_disconect_now(struct grid_port* por);
-
-extern struct grid_transport_model grid_transport_state;
-
-void grid_transport_init(struct grid_transport_model* transport);
-
-void grid_transport_register_port(struct grid_transport_model* transport, struct grid_port* port);
-void grid_transport_register_buffer(struct grid_transport_model* transport, struct grid_buffer* buffer_tx, struct grid_buffer* buffer_rx);
-void grid_transport_register_doublebuffer(struct grid_transport_model* transport, struct grid_doublebuffer* doublebuffer_tx, struct grid_doublebuffer* doublebuffer_rx);
-
-struct grid_port* grid_transport_get_port_first_of_type(struct grid_transport_model* transport, enum grid_port_type type);
-uint8_t grid_transport_get_port_array_length(struct grid_transport_model* transport);
-struct grid_port* grid_transport_get_port(struct grid_transport_model* transport, uint8_t index);
-struct grid_buffer* grid_transport_get_buffer_tx(struct grid_transport_model* transport, uint8_t index);
-struct grid_buffer* grid_transport_get_buffer_rx(struct grid_transport_model* transport, uint8_t index);
-struct grid_doublebuffer* grid_transport_get_doublebuffer_tx(struct grid_transport_model* transport, uint8_t index);
-struct grid_doublebuffer* grid_transport_get_doublebuffer_rx(struct grid_transport_model* transport, uint8_t index);
-
-void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doublebuffer* doublebuffer_rx, char* message, uint16_t* length);
-void grid_str_transform_brc_params(char* message, int8_t dx, int8_t dy, uint8_t partner_fi);
-void grid_port_receive_decode(struct grid_port* por, struct grid_msg_recent_buffer* rec, char* message, uint16_t length);
-
-int grid_port_receive_broadcast_message(struct grid_port* por, struct grid_buffer* rx_buffer, struct grid_msg_recent_buffer* rec, char* message, uint16_t length);
-void grid_port_decode_direct_message(struct grid_port* por, char* message, uint16_t length);
-
-uint8_t grid_port_process_inbound(struct grid_port* por, struct grid_buffer* rx_buffer);
-
-char grid_port_get_name_char(struct grid_port* por);
-
-void grid_port_init(struct grid_port* por, uint8_t type, uint8_t dir);
-struct grid_port* grid_port_allocate_init(uint8_t type, uint8_t dir);
-struct grid_buffer* grid_buffer_allocate_init(size_t length);
-struct grid_doublebuffer* grid_doublebuffer_allocate_init(size_t length);
-
-uint8_t grid_port_process_outbound_usart(struct grid_port* por, struct grid_buffer* tx_buffer, struct grid_doublebuffer* tx_doublebuffer);
-uint8_t grid_port_process_outbound_usb(struct grid_port* por, struct grid_buffer* tx_buffer, struct grid_doublebuffer* tx_doublebuffer);
-
-void grid_port_receiver_softreset(struct grid_port* por, struct grid_doublebuffer* rx_doublebuffer);
-void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffer* rx_doublebuffer);
+void grid_port_recv_msg_direct(struct grid_port* port, uint8_t* msg, size_t size);
+void grid_port_recv_msg_broadcast(struct grid_port* port, uint8_t* msg, size_t size);
+void grid_port_send_usart(struct grid_port* port);
+void grid_port_send_usb(struct grid_port* port);
+void grid_port_send_ui(struct grid_port* port);
 
 void grid_port_debug_print_text(char* str);
+void grid_port_debug_printf(const char* fmt, ...);
 void grid_port_websocket_print_text(char* str);
 void grid_port_package_print_text(char* str);
-
-void grid_port_debug_printf(char const* fmt, ...);
-
-uint8_t grid_port_packet_send_everywhere(struct grid_msg_packet* msg);
-
-void grid_port_ping_try_everywhere(void);
-
-void grid_protocol_nvm_erase_succcess_callback(uint8_t lastheader_id);
-void grid_protocol_nvm_clear_succcess_callback(uint8_t lastheader_id);
-void grid_protocol_nvm_read_succcess_callback(uint8_t lastheader_id);
-void grid_protocol_nvm_store_succcess_callback(uint8_t lastheader_id);
-
-void grid_protocol_send_heartbeat(uint8_t heartbeat_type, uint32_t hwcfg);
-
-void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx_buffer); // dependency: UI Page Load
 
 #endif /* GRID_PORT_H */

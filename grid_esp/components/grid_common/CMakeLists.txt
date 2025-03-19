@@ -27,6 +27,9 @@ idf_component_register(
         "../../../grid_common/grid_module.c"
         "../../../grid_common/grid_lua.c"
         "../../../grid_common/grid_lua_api.c"
+        "../../../grid_common/grid_transport.c"
+        "../../../grid_common/grid_rollid.c"
+        "../../../grid_common/grid_utask.c"
 
         "../../../grid_common/lua-5.4.3/src/lapi.c"
         "../../../grid_common/lua-5.4.3/src/lctype.c"

@@ -384,7 +384,7 @@ uint8_t grid_decode_pagecount_to_ui(char* header, char* chunk) {
     grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_PAGECOUNT_PAGENUMBER_offset, GRID_CLASS_PAGECOUNT_PAGENUMBER_length, grid_ui_state.page_count);
 
     grid_msg_packet_close(&grid_msg_state, &response);
-    grid_port_packet_send_everywhere(&response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
   }
 
   return 0; // OK
@@ -519,7 +519,7 @@ uint8_t grid_decode_imediate_to_ui(char* header, char* chunk) {
 
       grid_msg_packet_body_append_text(&message_global, payload_global);
       grid_msg_packet_close(&grid_msg_state, &message_global);
-      grid_port_packet_send_everywhere(&message_global);
+      grid_transport_send_msg_packet_to_all(&grid_transport_state, &message_global);
     }
   }
 
@@ -617,7 +617,7 @@ uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk) {
       grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_EVENTPREVIEW_LENGTH_offset, GRID_CLASS_EVENTPREVIEW_LENGTH_length, report_length);
 
       grid_msg_packet_close(&grid_msg_state, &response);
-      grid_port_packet_send_everywhere(&response);
+      grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
 
       // printf(response.body);
       // printf("\r\n");
@@ -649,7 +649,7 @@ uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk) {
       }
 
       grid_msg_packet_close(&grid_msg_state, &response);
-      grid_port_packet_send_everywhere(&response);
+      grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
 
       // printf(response.body);
       // printf("\r\n");
@@ -685,7 +685,7 @@ uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk) {
       grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
 
       grid_msg_packet_close(&grid_msg_state, &response);
-      grid_port_packet_send_everywhere(&response);
+      grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
     }
 
     // from editor
@@ -728,7 +728,7 @@ uint8_t grid_decode_serialmuber_to_ui(char* header, char* chunk) {
     grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_SERIALNUMBER_WORD3_offset, GRID_CLASS_SERIALNUMBER_WORD3_length, uniqueid[3]);
 
     grid_msg_packet_close(&grid_msg_state, &response);
-    grid_port_packet_send_everywhere(&response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
   }
 
   return 0; // OK
@@ -764,7 +764,7 @@ uint8_t grid_decode_uptime_to_ui(char* header, char* chunk) {
     uint32_t hours = uptime / MS_TO_US / 1000 / 60 / 60 % 60;
 
     grid_msg_packet_close(&grid_msg_state, &response);
-    grid_port_packet_send_everywhere(&response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
   }
 
   return 0; // OK
@@ -793,7 +793,7 @@ uint8_t grid_decode_resetcause_to_ui(char* header, char* chunk) {
     grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_RESETCAUSE_CAUSE_offset, GRID_CLASS_RESETCAUSE_CAUSE_length, grid_platform_get_reset_cause());
 
     grid_msg_packet_close(&grid_msg_state, &response);
-    grid_port_packet_send_everywhere(&response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
   }
 
   return 0; // OK
@@ -817,6 +817,35 @@ uint8_t grid_decode_reset_to_ui(char* header, char* chunk) {
   return 0; // OK
 }
 
+void grid_msg_packet_append_debugtext(struct grid_msg_packet* pkt, const char* text) {
+
+  grid_msg_packet_body_append_printf(pkt, GRID_CLASS_DEBUGTEXT_frame_start);
+  grid_msg_packet_body_append_parameter(pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+  grid_msg_packet_body_append_printf(pkt, text);
+  grid_msg_packet_body_append_printf(pkt, GRID_CLASS_DEBUGTEXT_frame_end);
+}
+
+void grid_protocol_nvm_read_success_callback(uint8_t lastheader_id) {
+
+  struct grid_msg_packet pkt;
+
+  grid_msg_packet_init(&grid_msg_state, &pkt, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_PAGEDISCARD_frame);
+  grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+  grid_msg_packet_body_append_parameter(&pkt, GRID_CLASS_PAGEDISCARD_LASTHEADER_offset, GRID_CLASS_PAGEDISCARD_LASTHEADER_length, lastheader_id);
+
+  grid_msg_packet_append_debugtext(&pkt, "xxread complete");
+
+  grid_msg_packet_close(&grid_msg_state, &pkt);
+  grid_transport_send_msg_packet_to_all(&grid_transport_state, &pkt);
+
+  grid_usb_keyboard_enable(&grid_usb_keyboard_state);
+
+  grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
+  grid_alert_all_set_timeout_automatic(&grid_led_state);
+}
+
 uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
 
   if (grid_check_destination(header, GRID_DESTINATION_IS_ME | GRID_DESTINATION_IS_GLOBAL) == false) {
@@ -829,7 +858,7 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    if (!grid_ui_bulk_page_init(&grid_ui_state, GRID_UI_BULK_READ_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_read_succcess_callback)) {
+    if (!grid_ui_bulk_page_init(&grid_ui_state, GRID_UI_BULK_READ_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_read_success_callback)) {
       return 1;
     }
 
@@ -847,10 +876,37 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
     }
 
     grid_msg_packet_close(&grid_msg_state, &response);
-    grid_port_packet_send_everywhere(&response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
   }
 
   return 0; // OK
+}
+
+void grid_protocol_nvm_store_success_callback(uint8_t lastheader_id) {
+
+  struct grid_msg_packet pkt;
+
+  grid_msg_packet_init(&grid_msg_state, &pkt, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_PAGESTORE_frame);
+  grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+  grid_msg_packet_body_append_parameter(&pkt, GRID_CLASS_PAGESTORE_LASTHEADER_offset, GRID_CLASS_PAGESTORE_LASTHEADER_length, lastheader_id);
+
+  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_DEBUGTEXT_frame_start);
+  grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+  grid_msg_packet_body_append_printf(&pkt, "xxstore complete offset 0x%x", grid_plaform_get_nvm_nextwriteoffset());
+  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_DEBUGTEXT_frame_end);
+
+  grid_msg_packet_close(&grid_msg_state, &pkt);
+  grid_transport_send_msg_packet_to_all(&grid_transport_state, &pkt);
+
+  grid_usb_keyboard_enable(&grid_usb_keyboard_state);
+
+  grid_alert_all_set_timeout_automatic(&grid_led_state);
+
+  grid_ui_page_clear_template_parameters(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
+
+  grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 }
 
 uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
@@ -868,7 +924,7 @@ uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    if (!grid_ui_bulk_page_init(&grid_ui_state, GRID_UI_BULK_STORE_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_store_succcess_callback)) {
+    if (!grid_ui_bulk_page_init(&grid_ui_state, GRID_UI_BULK_STORE_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_store_success_callback)) {
       return 1;
     }
 
@@ -890,10 +946,32 @@ uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
     }
 
     grid_msg_packet_close(&grid_msg_state, &response);
-    grid_port_packet_send_everywhere(&response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
   }
 
   return 0; // OK
+}
+
+void grid_protocol_nvm_clear_success_callback(uint8_t lastheader_id) {
+
+  struct grid_msg_packet pkt;
+
+  grid_msg_packet_init(&grid_msg_state, &pkt, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_PAGECLEAR_frame);
+  grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+  grid_msg_packet_body_append_parameter(&pkt, GRID_CLASS_PAGECLEAR_LASTHEADER_offset, GRID_CLASS_PAGECLEAR_LASTHEADER_length, lastheader_id);
+
+  grid_msg_packet_append_debugtext(&pkt, "xxclear complete");
+
+  grid_msg_packet_close(&grid_msg_state, &pkt);
+  grid_transport_send_msg_packet_to_all(&grid_transport_state, &pkt);
+
+  grid_alert_all_set_timeout_automatic(&grid_led_state);
+
+  grid_ui_page_clear_template_parameters(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
+
+  grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 }
 
 uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
@@ -908,7 +986,7 @@ uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    if (!grid_ui_bulk_page_init(&grid_ui_state, GRID_UI_BULK_CLEAR_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_clear_succcess_callback)) {
+    if (!grid_ui_bulk_page_init(&grid_ui_state, GRID_UI_BULK_CLEAR_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_clear_success_callback)) {
       return 1;
     }
 
@@ -930,10 +1008,30 @@ uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
     }
 
     grid_msg_packet_close(&grid_msg_state, &response);
-    grid_port_packet_send_everywhere(&response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
   }
 
   return 0; // OK
+}
+
+void grid_protocol_nvm_erase_success_callback(uint8_t lastheader_id) {
+
+  struct grid_msg_packet pkt;
+
+  grid_msg_packet_init(&grid_msg_state, &pkt, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_NVMERASE_frame);
+  grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
+  grid_msg_packet_body_append_parameter(&pkt, GRID_CLASS_NVMERASE_LASTHEADER_offset, GRID_CLASS_NVMERASE_LASTHEADER_length, lastheader_id);
+
+  grid_msg_packet_append_debugtext(&pkt, "xxerase complete");
+
+  grid_msg_packet_close(&grid_msg_state, &pkt);
+  grid_transport_send_msg_packet_to_all(&grid_transport_state, &pkt);
+
+  grid_usb_keyboard_enable(&grid_usb_keyboard_state);
+
+  grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 }
 
 uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
@@ -948,7 +1046,7 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    if (!grid_ui_bulk_nvmerase_init(&grid_ui_state, id, &grid_protocol_nvm_erase_succcess_callback)) {
+    if (!grid_ui_bulk_nvmerase_init(&grid_ui_state, id, &grid_protocol_nvm_erase_success_callback)) {
       return 1;
     }
 
@@ -973,7 +1071,7 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
     }
 
     grid_msg_packet_close(&grid_msg_state, &response);
-    grid_port_packet_send_everywhere(&response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
   }
 
   return 0; // OK
@@ -1085,7 +1183,8 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
     grid_port_debug_printf("Config %01x %d", ack, id);
 
     grid_msg_packet_close(&grid_msg_state, &response);
-    grid_port_packet_send_everywhere(&response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
+
   } else if (msg_instr == GRID_INSTR_FETCH_code) {
 
     uint8_t pagenumber = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
@@ -1138,7 +1237,7 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
 
       // printf("CFG: %s\r\n", message.body);
       grid_msg_packet_close(&grid_msg_state, &message);
-      grid_port_packet_send_everywhere(&message);
+      grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
     }
   }
 
@@ -1177,55 +1276,58 @@ uint8_t grid_decode_hidkeystatus_to_ui(char* header, char* chunk) {
     grid_msg_packet_body_append_parameter(&response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_ACKNOWLEDGE_code);
 
     grid_msg_packet_close(&grid_msg_state, &response);
-    grid_port_packet_send_everywhere(&response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
   }
 
   return 0; // OK
 }
 
-int grid_port_decode_class(struct grid_decoder_collection* decoder_collection, uint16_t class, char* header, char* chunk) {
+int grid_port_decode_class(struct grid_decoder_collection* coll, uint16_t class, char* header, char* chunk) {
 
-  for (uint8_t i = 0; decoder_collection[i].process != NULL; i++) {
+  for (uint8_t i = 0; coll[i].process != NULL; ++i) {
 
-    if (class == decoder_collection[i].class) {
-      decoder_collection[i].process(header, chunk);
-      // Successfully decoded
+    if (class == coll[i].class) {
+
+      coll[i].process(header, chunk);
       return 0;
     }
   }
 
-  // Could not find decoder
   return 1;
 }
 
-struct grid_decoder_collection grid_decoder_to_ui[] = {{GRID_CLASS_PAGEACTIVE_code, grid_decode_pageactive_to_ui},
-                                                       {GRID_CLASS_PAGECOUNT_code, grid_decode_pagecount_to_ui},
-                                                       {GRID_CLASS_MIDI_code, grid_decode_midi_to_ui},
-                                                       {GRID_CLASS_MIDISYSEX_code, grid_decode_sysex_to_ui},
-                                                       {GRID_CLASS_IMMEDIATE_code, grid_decode_imediate_to_ui},
-                                                       {GRID_CLASS_HEARTBEAT_code, grid_decode_heartbeat_to_ui},
-                                                       {GRID_CLASS_SERIALNUMBER_code, grid_decode_serialmuber_to_ui},
-                                                       {GRID_CLASS_UPTIME_code, grid_decode_uptime_to_ui},
-                                                       {GRID_CLASS_RESETCAUSE_code, grid_decode_resetcause_to_ui},
-                                                       {GRID_CLASS_RESET_code, grid_decode_reset_to_ui}, // && (position_is_me)
-                                                       {GRID_CLASS_PAGEDISCARD_code, grid_decode_pagediscard_to_ui},
-                                                       {GRID_CLASS_PAGESTORE_code, grid_decode_pagestore_to_ui},
-                                                       {GRID_CLASS_PAGECLEAR_code, grid_decode_pageclear_to_ui},
-                                                       {GRID_CLASS_NVMERASE_code, grid_decode_nvmerase_to_ui},
-                                                       {GRID_CLASS_NVMDEFRAG_code, grid_decode_nvmdefrag_to_ui},
-                                                       {GRID_CLASS_CONFIG_code, grid_decode_config_to_ui},
-                                                       {GRID_CLASS_HIDKEYSTATUS_code, grid_decode_hidkeystatus_to_ui},
-                                                       {NULL, NULL}};
+struct grid_decoder_collection grid_decoder_to_ui[] = {
+    {GRID_CLASS_PAGEACTIVE_code, grid_decode_pageactive_to_ui},
+    {GRID_CLASS_PAGECOUNT_code, grid_decode_pagecount_to_ui},
+    {GRID_CLASS_MIDI_code, grid_decode_midi_to_ui},
+    {GRID_CLASS_MIDISYSEX_code, grid_decode_sysex_to_ui},
+    {GRID_CLASS_IMMEDIATE_code, grid_decode_imediate_to_ui},
+    {GRID_CLASS_HEARTBEAT_code, grid_decode_heartbeat_to_ui},
+    {GRID_CLASS_SERIALNUMBER_code, grid_decode_serialmuber_to_ui},
+    {GRID_CLASS_UPTIME_code, grid_decode_uptime_to_ui},
+    {GRID_CLASS_RESETCAUSE_code, grid_decode_resetcause_to_ui},
+    {GRID_CLASS_RESET_code, grid_decode_reset_to_ui}, // && (position_is_me)
+    {GRID_CLASS_PAGEDISCARD_code, grid_decode_pagediscard_to_ui},
+    {GRID_CLASS_PAGESTORE_code, grid_decode_pagestore_to_ui},
+    {GRID_CLASS_PAGECLEAR_code, grid_decode_pageclear_to_ui},
+    {GRID_CLASS_NVMERASE_code, grid_decode_nvmerase_to_ui},
+    {GRID_CLASS_NVMDEFRAG_code, grid_decode_nvmdefrag_to_ui},
+    {GRID_CLASS_CONFIG_code, grid_decode_config_to_ui},
+    {GRID_CLASS_HIDKEYSTATUS_code, grid_decode_hidkeystatus_to_ui},
+    {NULL, NULL},
+};
 
 struct grid_decoder_collection* grid_decoder_to_ui_reference = grid_decoder_to_ui;
 
-struct grid_decoder_collection grid_decoder_to_usb[] = {{GRID_CLASS_MIDI_code, grid_decode_midi_to_usb},
-                                                        {GRID_CLASS_MIDISYSEX_code, grid_decode_sysex_to_usb},
-                                                        {GRID_CLASS_HIDMOUSEBUTTON_code, grid_decode_mousebutton_to_usb},
-                                                        {GRID_CLASS_HIDMOUSEMOVE_code, grid_decode_mousemove_to_usb},
-                                                        {GRID_CLASS_HIDGAMEPADBUTTON_code, grid_decode_gamepadbutton_to_usb},
-                                                        {GRID_CLASS_HIDGAMEPADMOVE_code, grid_decode_gamepadmove_to_usb},
-                                                        {GRID_CLASS_HIDKEYBOARD_code, grid_decode_keyboard_to_usb},
-                                                        {NULL, NULL}};
+struct grid_decoder_collection grid_decoder_to_usb[] = {
+    {GRID_CLASS_MIDI_code, grid_decode_midi_to_usb},
+    {GRID_CLASS_MIDISYSEX_code, grid_decode_sysex_to_usb},
+    {GRID_CLASS_HIDMOUSEBUTTON_code, grid_decode_mousebutton_to_usb},
+    {GRID_CLASS_HIDMOUSEMOVE_code, grid_decode_mousemove_to_usb},
+    {GRID_CLASS_HIDGAMEPADBUTTON_code, grid_decode_gamepadbutton_to_usb},
+    {GRID_CLASS_HIDGAMEPADMOVE_code, grid_decode_gamepadmove_to_usb},
+    {GRID_CLASS_HIDKEYBOARD_code, grid_decode_keyboard_to_usb},
+    {NULL, NULL},
+};
 
 struct grid_decoder_collection* grid_decoder_to_usb_reference = grid_decoder_to_usb;

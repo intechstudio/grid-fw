@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "grid_msg.h"
 #include "grid_port.h"
 #include "grid_sys.h"
 

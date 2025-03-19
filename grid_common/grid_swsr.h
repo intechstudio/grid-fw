@@ -30,5 +30,7 @@ bool grid_swsr_writable(struct grid_swsr_t* swsr, int size);
 bool grid_swsr_readable(struct grid_swsr_t* swsr, int size);
 void grid_swsr_write(struct grid_swsr_t* swsr, void* src, int size);
 void grid_swsr_read(struct grid_swsr_t* swsr, void* dest, int size);
+void grid_swsr_copy(struct grid_swsr_t* src, struct grid_swsr_t* dest, size_t size);
+int grid_swsr_cspn(struct grid_swsr_t* swsr, char reject);
 
 #endif /* GRID_SWSR_H */

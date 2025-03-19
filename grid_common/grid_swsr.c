@@ -65,7 +65,7 @@ bool grid_swsr_in_range_excl(struct grid_swsr_t* swsr, int a, int b, int x) {
 
 bool grid_swsr_writable(struct grid_swsr_t* swsr, int size) {
 
-  if (size > swsr->capacity - 2) {
+  if (size < 0 || size > swsr->capacity - 2) {
     return false;
   }
 
@@ -75,7 +75,7 @@ bool grid_swsr_writable(struct grid_swsr_t* swsr, int size) {
 
 bool grid_swsr_readable(struct grid_swsr_t* swsr, int size) {
 
-  if (size > swsr->capacity - 2) {
+  if (size < 0 || size > swsr->capacity - 2) {
     return false;
   }
 
@@ -106,6 +106,11 @@ void grid_swsr_read(struct grid_swsr_t* swsr, void* dest, int size) {
 
   assert(grid_swsr_readable(swsr, size));
 
+  if (!dest) {
+    swsr->read = (swsr->read + size) % swsr->capacity;
+    return;
+  }
+
   int first = (swsr->read + 1) % swsr->capacity;
 
   int until_capa = swsr->capacity - first;
@@ -121,4 +126,43 @@ void grid_swsr_read(struct grid_swsr_t* swsr, void* dest, int size) {
   memcpy(&dest[lengths[0]], &swsr->data[starts[1]], lengths[1]);
 
   swsr->read = (swsr->read + size) % swsr->capacity;
+}
+
+void grid_swsr_copy(struct grid_swsr_t* src, struct grid_swsr_t* dest, size_t size) {
+
+  assert(grid_swsr_readable(src, size));
+  assert(grid_swsr_writable(dest, size));
+
+  struct grid_swsr_t* swsr = src;
+
+  int first = (swsr->read + 1) % swsr->capacity;
+
+  int until_capa = swsr->capacity - first;
+  bool wraps = size > until_capa;
+
+  int starts[2] = {first, 0};
+  int lengths[2] = {
+      wraps ? until_capa : size,
+      wraps ? size - until_capa : 0,
+  };
+
+  grid_swsr_write(dest, &swsr->data[starts[0]], lengths[0]);
+  grid_swsr_write(dest, &swsr->data[starts[1]], lengths[1]);
+}
+
+int grid_swsr_cspn(struct grid_swsr_t* swsr, char reject) {
+
+  int i = 0;
+
+  int first = (swsr->read + 1) % swsr->capacity;
+  int j = first + 0;
+
+  int write = swsr->write;
+  while (j != write && swsr->data[j] != reject) {
+    j = ((++i) + first) % swsr->capacity;
+  }
+
+  bool found = j != write && swsr->data[j] == reject;
+
+  return found ? i : -1;
 }

@@ -5,6 +5,7 @@
 #include "grid_led.h"
 #include "grid_lua_api.h"
 #include "grid_msg.h"
+#include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_sys.h"
 #include "grid_ui.h"
