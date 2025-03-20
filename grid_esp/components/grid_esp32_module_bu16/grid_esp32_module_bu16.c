@@ -59,7 +59,7 @@ void grid_esp32_module_bu16_task(void* arg) {
 
   while (1) {
 
-    taskYIELD();
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 
   // Wait to be deleted

@@ -289,7 +289,7 @@ void grid_esp32_module_tek1_task(void* arg) {
       vmp_flushed = true;
     }
 
-    taskYIELD();
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 
   // Wait to be deleted

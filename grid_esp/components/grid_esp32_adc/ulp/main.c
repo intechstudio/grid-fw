@@ -37,7 +37,7 @@ int main(void) {
     value[0] = ulp_riscv_adc_read_channel(ADC_UNIT_1, ADC_CHANNELS[0]);
     value[1] = ulp_riscv_adc_read_channel(ADC_UNIT_1, ADC_CHANNELS[1]);
 
-    if (!(value[0] != -1 && value[1] != -1)) {
+    if (value[0] == -1 || value[1] == -1) {
       continue;
     }
 
