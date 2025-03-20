@@ -50,23 +50,26 @@ void IRAM_ATTR ef44_process_analog(void* user) {
   }
 }
 
-static void IRAM_ATTR my_post_setup_cb(spi_transaction_t* trans) {
-  // printf("$\r\n");
-}
+void IRAM_ATTR ef44_process_encoder(spi_transaction_t* trans) {
 
-static void IRAM_ATTR my_post_trans_cb(spi_transaction_t* trans) {
+  static uint8_t encoder_lookup[GRID_MODULE_EF44_ENC_NUM] = {2, 3, 0, 1};
 
-  uint8_t* spi_rx_buffer = &((uint8_t*)trans->rx_buffer)[1]; // SKIP HWCFG BYTE
+  // Skip hwcfg byte
+  uint8_t* spi_rx_buffer = &((uint8_t*)trans->rx_buffer)[1];
 
   struct grid_esp32_encoder_result result = {0};
-
-  for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM / 2; i++) {
-
+  for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM / 2; ++i) {
     result.bytes[i] = spi_rx_buffer[i];
   }
 
-  RingbufHandle_t handle = grid_esp32_encoder_state.ringbuffer_handle;
-  xRingbufferSendFromISR(handle, &result, sizeof(struct grid_esp32_encoder_result), NULL);
+  for (uint8_t j = 0; j < GRID_MODULE_EF44_ENC_NUM; ++j) {
+
+    uint8_t value = (result.bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
+    uint8_t idx = encoder_lookup[j];
+    struct grid_ui_element* ele = &elements[idx];
+
+    grid_ui_encoder_store_input(ele, &ui_encoder_state[idx], value);
+  }
 }
 
 void grid_esp32_module_ef44_task(void* arg) {
@@ -76,7 +79,7 @@ void grid_esp32_module_ef44_task(void* arg) {
   memset(ui_encoder_state, 0, GRID_MODULE_EF44_ENC_NUM * sizeof(struct grid_ui_encoder_state));
   memset(potmeter_last_real_time, 0, GRID_MODULE_EF44_POT_NUM * sizeof(uint64_t));
 
-  grid_esp32_encoder_init(&grid_esp32_encoder_state, my_post_setup_cb, my_post_trans_cb);
+  grid_esp32_encoder_init(&grid_esp32_encoder_state, ef44_process_encoder);
   grid_esp32_encoder_start(&grid_esp32_encoder_state);
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EF44_ND_RevD;
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
@@ -91,27 +94,7 @@ void grid_esp32_module_ef44_task(void* arg) {
 
   while (1) {
 
-    size_t size = 0;
-    RingbufHandle_t handle = grid_esp32_encoder_state.ringbuffer_handle;
-    struct grid_esp32_encoder_result* result = xRingbufferReceive(handle, &size, 0);
-
-    if (result != NULL) {
-
-      uint8_t encoder_lookup[GRID_MODULE_EF44_ENC_NUM] = {2, 3, 0, 1};
-
-      for (uint8_t j = 0; j < GRID_MODULE_EF44_ENC_NUM; ++j) {
-
-        uint8_t value = (result->bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
-
-        uint8_t i = encoder_lookup[j];
-
-        grid_ui_encoder_store_input(&ui_encoder_state[i], i, value);
-      }
-
-      vRingbufferReturnItem(grid_esp32_encoder_state.ringbuffer_handle, result);
-    }
-
-    taskYIELD();
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 
   // Wait to be deleted

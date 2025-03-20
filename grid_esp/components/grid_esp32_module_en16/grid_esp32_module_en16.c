@@ -22,58 +22,44 @@
 #define GRID_MODULE_EN16_ENC_NUM 16
 
 static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EN16_ENC_NUM] = {0};
+static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
-static void IRAM_ATTR my_post_setup_cb(spi_transaction_t* trans) {
-  // printf("$\r\n");
-}
+void IRAM_ATTR en16_process_encoder(spi_transaction_t* trans) {
 
-static void IRAM_ATTR my_post_trans_cb(spi_transaction_t* trans) {
+  static uint8_t encoder_lookup[GRID_MODULE_EN16_ENC_NUM] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1};
 
-  uint8_t* spi_rx_buffer = &((uint8_t*)trans->rx_buffer)[1]; // SKIP HWCFG BYTE
+  // Skip hwcfg byte
+  uint8_t* spi_rx_buffer = &((uint8_t*)trans->rx_buffer)[1];
 
   struct grid_esp32_encoder_result result = {0};
-
-  for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM / 2; i++) {
-
+  for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM / 2; ++i) {
     result.bytes[i] = spi_rx_buffer[i];
   }
 
-  xRingbufferSendFromISR(grid_esp32_encoder_state.ringbuffer_handle, &result, sizeof(struct grid_esp32_encoder_result), NULL);
+  for (uint8_t j = 0; j < GRID_MODULE_EN16_ENC_NUM; ++j) {
+
+    uint8_t value = (result.bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
+    uint8_t idx = encoder_lookup[j];
+    struct grid_ui_element* ele = &elements[idx];
+
+    grid_ui_encoder_store_input(ele, &ui_encoder_state[idx], value);
+  }
 }
 
 void grid_esp32_module_en16_task(void* arg) {
-  grid_esp32_encoder_init(&grid_esp32_encoder_state, my_post_setup_cb, my_post_trans_cb);
+
+  grid_esp32_encoder_init(&grid_esp32_encoder_state, en16_process_encoder);
   grid_esp32_encoder_start(&grid_esp32_encoder_state);
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD;
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent);
   }
 
+  elements = grid_ui_model_get_elements(&grid_ui_state);
+
   while (1) {
 
-    size_t size = 0;
-
-    struct grid_esp32_encoder_result* result;
-    result = (struct grid_esp32_encoder_result*)xRingbufferReceive(grid_esp32_encoder_state.ringbuffer_handle, &size, 0);
-
-    if (result != NULL) {
-
-      uint8_t encoder_position_lookup[GRID_MODULE_EN16_ENC_NUM] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1};
-
-      // Buffer is only 8 bytes but we check all 16 encoders separately
-      for (uint8_t j = 0; j < GRID_MODULE_EN16_ENC_NUM; j++) {
-
-        uint8_t new_value = (result->bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
-
-        uint8_t i = encoder_position_lookup[j];
-
-        grid_ui_encoder_store_input(&ui_encoder_state[i], i, new_value);
-      }
-
-      vRingbufferReturnItem(grid_esp32_encoder_state.ringbuffer_handle, result);
-    }
-
-    taskYIELD();
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 
   // Wait to be deleted

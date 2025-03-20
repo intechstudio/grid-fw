@@ -58,7 +58,7 @@ void grid_ui_button_state_range_update(struct grid_ui_button_state* state, uint1
   }
 }
 
-static float lerp(float a, float b, float x) { return a * (1.0 - x) + (b * x); }
+static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }
 
 uint16_t grid_ui_button_state_get_low_trigger(struct grid_ui_button_state* state) {
 

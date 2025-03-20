@@ -707,7 +707,7 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
     if (status == 0) { // file found
 
-      // uint32_t len = grid_platform_read_actionstring_file_contents(&file_handle, targetstring);
+      /* uint32_t len = */ grid_platform_read_actionstring_file_contents(&file_handle, targetstring);
     } else {
       // grid_platform_printf("NOT FOUND, Send default!\r\n");
       grid_ui_event_generate_actionstring(eve, targetstring);

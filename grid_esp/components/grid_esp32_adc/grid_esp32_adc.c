@@ -17,8 +17,6 @@
 #include "esp_adc/adc_continuous.h"
 #include "esp_adc/adc_oneshot.h"
 
-#include "esp_timer.h"
-
 #include "rom/ets_sys.h"
 
 #include "grid_esp32_pins.h"
@@ -144,17 +142,38 @@ void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t
   adc->mux_index = 0;
 }
 
+static bool IRAM_ATTR grid_esp32_adc_alarm_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t* edata, void* user_ctx) {
+
+  grid_esp32_adc_convert();
+
+  return true;
+}
+
 void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
-  esp_timer_create_args_t timer_args_adc = {
-      .callback = &grid_esp32_adc_convert,
-      .name = "adc millisecond",
+  ESP_LOGI("ADC", "Create timer handle");
+  gptimer_handle_t gptimer = NULL;
+  gptimer_config_t timer_config = {
+      .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+      .direction = GPTIMER_COUNT_UP,
+      .resolution_hz = 1000000, // 1MHz, 1 tick=1us
   };
+  ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
 
-  esp_timer_handle_t timer_adc;
-  ESP_ERROR_CHECK(esp_timer_create(&timer_args_adc, &timer_adc));
+  gptimer_event_callbacks_t cbs = {
+      .on_alarm = grid_esp32_adc_alarm_cb, // register user callback
+  };
+  ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, NULL));
 
-  ESP_ERROR_CHECK(esp_timer_start_periodic(timer_adc, ADC_TIMER_PERIOD_USEC));
+  gptimer_alarm_config_t alarm_config = {
+      .reload_count = 0,                  // counter will reload with 0 on alarm event
+      .alarm_count = 1000,                // period = 1s @resolution 1MHz
+      .flags.auto_reload_on_alarm = true, // enable auto-reload
+  };
+  ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
+
+  ESP_ERROR_CHECK(gptimer_enable(gptimer));
+  ESP_ERROR_CHECK(gptimer_start(gptimer));
 
   // Configure the ULP with defaults and run the program loaded into RTC memory
   ESP_ERROR_CHECK(ulp_riscv_run());
@@ -162,7 +181,7 @@ void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
 void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc) { assert(0); }
 
-void IRAM_ATTR grid_esp32_adc_convert(void*) {
+void IRAM_ATTR grid_esp32_adc_convert() {
 
   struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
 
