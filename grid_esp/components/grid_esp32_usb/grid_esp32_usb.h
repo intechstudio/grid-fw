@@ -11,6 +11,18 @@
 extern "C" {
 #endif
 
+#undef CFG_TUD_CDC
+#undef CFG_TUD_HID
+#undef CFG_TUD_MIDI
+#undef CFG_TUD_MSC
+#undef CFG_TUD_VENDOR
+
+#define CFG_TUD_CDC 1
+#define CFG_TUD_HID 1
+#define CFG_TUD_MIDI 1
+#define CFG_TUD_MSC 0
+#define CFG_TUD_VENDOR 0
+
 /* HID Mouse Class Pointer Move Type */
 enum mouse_move_type { X_AXIS_MV = 0x01, Y_AXIS_MV = 0x02, SCROLL_MV = 0x03 };
 

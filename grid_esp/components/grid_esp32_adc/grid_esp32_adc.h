@@ -51,7 +51,7 @@ struct grid_esp32_adc_result {
 
 extern struct grid_esp32_adc_model grid_esp32_adc_state;
 
-void grid_esp32_adc_convert(void*);
+void grid_esp32_adc_convert();
 
 void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog);
 

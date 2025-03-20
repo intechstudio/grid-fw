@@ -181,7 +181,7 @@ void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
 void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc) { assert(0); }
 
-void IRAM_ATTR grid_esp32_adc_convert(void*) {
+void IRAM_ATTR grid_esp32_adc_convert() {
 
   struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
 
