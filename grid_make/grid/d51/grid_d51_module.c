@@ -93,13 +93,17 @@ void grid_module_common_init(void) {
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevA) {
     printf("Init Module: PBF4\r\n");
     grid_module_pbf4_init();
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevH) {
     printf("Init Module: EN16\r\n");
     grid_module_en16_init();
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevH) {
     printf("Init Module: EN16 ND\r\n");
     grid_module_en16_init();
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevH || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_ND_RevD ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_ND_RevH) {
     printf("Init Module: EF44\r\n");
     grid_module_ef44_init();
   } else {
