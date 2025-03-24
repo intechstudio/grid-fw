@@ -9,8 +9,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include "rom/ets_sys.h"
-
 extern uint64_t grid_platform_rtc_get_micros(void);
 
 extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
@@ -212,7 +210,6 @@ int grid_esp32_lcd_panel_draw_bitmap_blocking(struct grid_esp32_lcd_model* lcd, 
   }
 
   while (lcd->tx_ready == 0) {
-    ets_delay_us(1);
   }
 
   grid_esp32_lcd_panel_chipsel(lcd, 1);
