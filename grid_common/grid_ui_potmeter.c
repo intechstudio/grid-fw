@@ -94,7 +94,7 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
 
   assert(ele);
 
-  const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
+  // const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
 
   int32_t* template_parameter_list = ele->template_parameter_list;
 

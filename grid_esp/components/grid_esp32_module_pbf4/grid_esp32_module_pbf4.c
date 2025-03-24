@@ -19,7 +19,7 @@
 
 #include "grid_esp32_adc.h"
 
-static const char* TAG = "module_pbf4";
+// static const char* TAG = "module_pbf4";
 
 #define GRID_MODULE_PBF4_BUT_NUM 4
 

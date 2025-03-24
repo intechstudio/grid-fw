@@ -581,7 +581,7 @@ int l_grid_gui_draw_text_style(lua_State* L, int style) {
     return 1;
   }
 
-  ggdt_formatter(&gui->swsr, FORMATTER_WRITE, length, str, &fontsize, &x, &y, &r, &g, &b);
+  ggdt_formatter(&gui->swsr, FORMATTER_WRITE, length, (char*)str, &fontsize, &x, &y, &r, &g, &b);
 
   return 0;
 }
@@ -672,8 +672,6 @@ int l_grid_gui_draw_demo(lua_State* L) {
   if (!grid_gui_index_active(screen_index)) {
     return 1;
   }
-
-  int loopcounter = luaL_checknumber(L, 2);
 
   struct grid_gui_model* gui = &grid_gui_states[screen_index];
 

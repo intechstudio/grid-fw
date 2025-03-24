@@ -92,7 +92,7 @@ static esp_err_t ulp_riscv_adc_init2(void) {
       .adc_n = ADC_UNIT_1,
       .channel = ADC_CHANNEL_1,
       .width = ADC_BITWIDTH_DEFAULT,
-      .atten = ADC_ATTEN_DB_11,
+      .atten = ADC_ATTEN_DB_12,
   };
 
   ESP_GOTO_ON_FALSE(cfg.adc_n == ADC_UNIT_1, ESP_ERR_INVALID_ARG, err, TAG, "Only ADC_UNIT_1 is supported for now");
@@ -181,7 +181,7 @@ void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
 void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc) { assert(0); }
 
-void IRAM_ATTR grid_esp32_adc_convert(void) {
+void IRAM_ATTR grid_esp32_adc_convert() {
 
   struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
 

@@ -135,7 +135,7 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   return ele;
 }
 
-void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, char* default_actionstring) {
+void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_actionstring) {
 
   assert(index < ele->event_list_length);
 
@@ -419,7 +419,7 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
   grid_lua_start_vm(&grid_lua_state);
   grid_lua_vm_register_functions(&grid_lua_state, grid_lua_api_generic_lib_reference);
 
-  grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
+  grid_lua_ui_init(&grid_lua_state, grid_ui_state.lua_ui_init_callback);
 
   grid_ui_bulk_semaphore_release(ui);
   grid_ui_busy_semaphore_release(ui);
@@ -458,7 +458,7 @@ struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t ev
     return NULL;
   }
 
-  uint8_t event_index = 255;
+  // uint8_t event_index = 255;
 
   for (uint8_t i = 0; i < ele->event_list_length; i++) {
     if (ele->event_list[i].type == event_type) {
@@ -471,7 +471,7 @@ struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t ev
 
 uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* action_string) {
 
-  struct grid_ui_element* ele = eve->parent;
+  // struct grid_ui_element* ele = eve->parent;
 
   return (strcmp(action_string, eve->default_actionstring) == 0);
 }
@@ -707,7 +707,7 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
     if (status == 0) { // file found
 
-      uint32_t len = grid_platform_read_actionstring_file_contents(&file_handle, targetstring);
+      /* uint32_t len = */ grid_platform_read_actionstring_file_contents(&file_handle, targetstring);
     } else {
       // grid_platform_printf("NOT FOUND, Send default!\r\n");
       grid_ui_event_generate_actionstring(eve, targetstring);
@@ -1225,7 +1225,7 @@ void grid_ui_bulk_confread_next(struct grid_ui_model* ui) {
   grid_ui_busy_semaphore_lock(ui);
   grid_ui_bulk_semaphore_lock(ui);
 
-  int status = confread_parse_from_file(ui);
+  /*int status = */ confread_parse_from_file(ui);
 
   ui->bulk_status = GRID_UI_BULK_READY;
 
@@ -1281,7 +1281,7 @@ void grid_ui_bulk_confstore_next(struct grid_ui_model* ui) {
   grid_ui_busy_semaphore_lock(ui);
   grid_ui_bulk_semaphore_lock(ui);
 
-  int status = confstore_generate_to_file(ui);
+  /*int status = */ confstore_generate_to_file(ui);
 
   ui->bulk_status = GRID_UI_BULK_READY;
 

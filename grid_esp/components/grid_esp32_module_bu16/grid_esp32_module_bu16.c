@@ -17,7 +17,7 @@
 
 #include "grid_esp32_adc.h"
 
-static const char* TAG = "module_bu16";
+// static const char* TAG = "module_bu16";
 
 #define GRID_MODULE_BU16_BUT_NUM 16
 

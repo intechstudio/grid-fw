@@ -18,7 +18,7 @@
 
 #include "grid_esp32_adc.h"
 
-static const char* TAG = "module_po16";
+// static const char* TAG = "module_po16";
 
 #define GRID_MODULE_PO16_POT_NUM 16
 

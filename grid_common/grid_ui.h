@@ -52,7 +52,7 @@ struct grid_ui_event {
   struct grid_ui_element* parent;
   uint8_t index;
 
-  char* default_actionstring;
+  const char* default_actionstring;
 
   enum grid_ui_status_t trigger;
 
@@ -118,6 +118,8 @@ enum grid_ui_bulk_status_t {
   GRID_UI_BULK_ERASE_PROGRESS
 };
 
+// struct grid_lua_model;
+
 struct grid_ui_model {
 
   enum grid_ui_status_t status;
@@ -143,7 +145,8 @@ struct grid_ui_model {
   int bulk_last_element;
   int bulk_last_event;
 
-  void (*lua_ui_init_callback)(struct grid_lua_model*);
+  // void (*lua_ui_init_callback)(struct grid_lua_model*);
+  lua_ui_init_callback_t lua_ui_init_callback;
 };
 
 extern struct grid_ui_model grid_ui_state;
@@ -157,7 +160,7 @@ void grid_ui_bulk_semaphore_lock(struct grid_ui_model* ui);
 void grid_ui_bulk_semaphore_release(struct grid_ui_model* ui);
 
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index);
-void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, char* default_actionstring);
+void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_actionstring);
 
 void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui);
 void grid_ui_midi_sync_tick_time(struct grid_ui_model* ui);

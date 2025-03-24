@@ -181,7 +181,7 @@ void grid_port_rxdobulebuffer_to_linear(struct grid_port* por, struct grid_doubl
     doublebuffer_rx->buffer_storage[(doublebuffer_rx->read_start_index + i) % doublebuffer_rx->buffer_size] = 0;
   }
 
-  uint32_t readstartindex = doublebuffer_rx->read_start_index;
+  // uint32_t readstartindex = doublebuffer_rx->read_start_index;
 
   doublebuffer_rx->read_start_index = (doublebuffer_rx->read_start_index + len) % doublebuffer_rx->buffer_size;
   doublebuffer_rx->seek_start_index = doublebuffer_rx->read_start_index;
@@ -218,7 +218,7 @@ void grid_str_transform_brc_params(char* message, int8_t dx, int8_t dy, uint8_t 
 
   uint8_t error = 0;
 
-  uint8_t received_session = grid_str_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
+  // uint8_t received_session = grid_str_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
   uint8_t received_msgage = grid_str_get_parameter(message, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
 
   // Read the received destination X Y values (SIGNED INT)
@@ -316,7 +316,7 @@ void grid_port_rxdobulebuffer_receive_to_buffer(struct grid_port* por, struct gr
     doublebuffer_rx->buffer_storage[(doublebuffer_rx->read_start_index + i) % doublebuffer_rx->buffer_size] = 0;
   }
 
-  uint32_t readstartindex = doublebuffer_rx->read_start_index;
+  // uint32_t readstartindex = doublebuffer_rx->read_start_index;
 
   doublebuffer_rx->read_start_index = (doublebuffer_rx->read_start_index + length) % doublebuffer_rx->buffer_size;
   doublebuffer_rx->seek_start_index = doublebuffer_rx->read_start_index;
@@ -350,7 +350,7 @@ void grid_port_decode_direct_message(struct grid_port* por, char* message, uint1
 
   if (message[2] == GRID_CONST_BELL) {
 
-    uint8_t error = 0;
+    // uint8_t error = 0;
 
     // reset timeout counter
     por->partner_last_timestamp = grid_platform_rtc_get_micros();
@@ -514,7 +514,7 @@ struct grid_buffer* grid_buffer_allocate_init(size_t length) {
   struct grid_buffer* buffer = (struct grid_buffer*)malloc(sizeof(struct grid_buffer));
   memset(buffer, 0, sizeof(struct grid_buffer));
 
-  buffer->buffer_storage = (struct grid_buffer*)malloc(length * sizeof(char));
+  buffer->buffer_storage = (char*)malloc(length * sizeof(char));
   memset(buffer->buffer_storage, 0, length * sizeof(char));
 
   grid_buffer_init(buffer, length);
@@ -602,7 +602,7 @@ uint8_t grid_port_process_outbound_usb(struct grid_port* por, struct grid_buffer
     char* header = &tx_doublebuffer->buffer_storage[0];
 
     uint16_t msg_class = grid_str_get_parameter(chunk, GRID_PARAMETER_CLASSCODE_offset, GRID_PARAMETER_CLASSCODE_length, &error);
-    uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+    // uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
     grid_port_decode_class(grid_decoder_to_usb_reference, msg_class, header, chunk);
   }
 
@@ -936,17 +936,18 @@ void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx
 
   uint8_t error = 0;
 
-  uint8_t id = grid_str_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+  // uint8_t id = grid_str_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
 
-  uint8_t dx = grid_str_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
-  uint8_t dy = grid_str_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
+  // uint8_t dx = grid_str_get_parameter(message, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
+  // uint8_t dy = grid_str_get_parameter(message, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
 
-  uint8_t sx = grid_str_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
-  uint8_t sy = grid_str_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
+  // uint8_t sx = grid_str_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
+  // uint8_t sy = grid_str_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
 
-  uint8_t rot = grid_str_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
-  uint8_t portrot = grid_str_get_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, &error);
+  // uint8_t rot = grid_str_get_parameter(message, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
+  // uint8_t portrot = grid_str_get_parameter(message, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, &error);
 
+  /*
   uint8_t position_is_me = 0;
   uint8_t position_is_global = 0;
   uint8_t position_is_local = 0;
@@ -958,6 +959,7 @@ void grid_port_process_outbound_ui(struct grid_port* por, struct grid_buffer* tx
   } else if (dx == GRID_PARAMETER_LOCAL_POSITION && dy == GRID_PARAMETER_LOCAL_POSITION) {
     position_is_local = 1;
   }
+  */
 
   for (uint16_t i = 0; i < length; i++) {
 

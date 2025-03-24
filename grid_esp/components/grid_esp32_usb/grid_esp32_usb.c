@@ -77,7 +77,7 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
   /* read */
   size_t rx_size = 0;
   uint8_t buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE + 1];
-  esp_err_t ret = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
+  /*esp_err_t ret = */ tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
 
   struct grid_port* host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
   struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(host_port->parent, host_port->index);
@@ -129,7 +129,7 @@ void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t* event) {
 
 void tud_cdc_tx_complete_cb(uint8_t itf) {
   // ets_printf("CDC TXC\r\n");
-  esp_err_t status = tinyusb_cdcacm_write_flush(0, 0);
+  /*esp_err_t status = */ tinyusb_cdcacm_write_flush(0, 0);
 
   usb_tx_ready = 1;
   // ets_printf("# %d\r\n", status);
@@ -360,7 +360,7 @@ int32_t grid_platform_usb_midi_write_status(void) {
   return 0;
 }
 
-static enum mouse_button_type { LEFT_BTN = 0x01, RIGHT_BTN = 0x02, MIDDLE_BTN = 0x04 };
+enum mouse_button_type { LEFT_BTN = 0x01, RIGHT_BTN = 0x02, MIDDLE_BTN = 0x04 };
 
 static uint8_t hid_mouse_button_state = 0;
 
@@ -474,8 +474,6 @@ int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_ev
   if (keys_count == 0) {
     ESP_LOGD(TAG, "No Key Is Pressed");
   }
-
-  uint8_t key_count = 0;
 
   for (uint8_t i = 0; i < keys_count; i++) {
 

@@ -272,7 +272,7 @@ static int scandir2(const char* dirname, struct dirent*** namelist, int (*select
 
   struct dirent *d, *p, **names = NULL;
   size_t nitems = 0;
-  struct stat stb;
+  // struct stat stb;
   long arraysz;
   DIR* dirp;
 
@@ -477,7 +477,7 @@ void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_
   return;
 }
 
-int grid_esp32_nvm_build_path(char* path, uint16_t out_size, char* out) {
+int grid_esp32_nvm_build_path(const char* path, uint16_t out_size, char* out) {
 
   char prefix[] = "/littlefs/";
 
@@ -490,7 +490,7 @@ int grid_esp32_nvm_build_path(char* path, uint16_t out_size, char* out) {
   return 0;
 }
 
-int grid_platform_find_file(char* path, union grid_ui_file_handle* file_handle) {
+int grid_platform_find_file(const char* path, union grid_ui_file_handle* file_handle) {
 
   grid_esp32_nvm_build_path(path, 50, file_handle->fname);
 
@@ -602,7 +602,7 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset() {
 
 void grid_esp32_nvm_task(void* arg) {
 
-  static uint32_t loopcounter = 0;
+  // static uint32_t loopcounter = 0;
 
   // gpio_set_direction(47, GPIO_MODE_OUTPUT);
 

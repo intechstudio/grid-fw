@@ -208,7 +208,7 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
     return;
   }
 
-  const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
+  // const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
 
   assert(ele);
 

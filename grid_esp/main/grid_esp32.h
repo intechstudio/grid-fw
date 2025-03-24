@@ -31,8 +31,6 @@
 extern "C" {
 #endif
 
-extern struct tskTaskControlBlock;
-
 void grid_esp32_housekeeping_task(void* arg);
 
 /**
