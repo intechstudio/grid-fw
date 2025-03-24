@@ -7,6 +7,8 @@
 
 #include "grid_ain.h"
 
+void* grid_platform_allocate_volatile(size_t size);
+
 struct grid_ain_model grid_ain_state;
 
 uint32_t grid_ain_abs(int32_t value) {
@@ -26,7 +28,7 @@ uint8_t grid_ain_channel_init(struct grid_ain_model* ain, uint8_t channel, uint8
 
   ain->channel_buffer[channel].result_average = 0;
 
-  ain->channel_buffer[channel].buffer = malloc(ain->channel_buffer[channel].buffer_depth * sizeof(uint16_t));
+  ain->channel_buffer[channel].buffer = grid_platform_allocate_volatile(ain->channel_buffer[channel].buffer_depth * sizeof(uint16_t));
 
   // Init the whole buffer with zeros
   for (uint8_t i = 0; i < ain->channel_buffer[channel].buffer_depth; i++) {
@@ -50,7 +52,7 @@ uint8_t grid_ain_channel_deinit(struct grid_ain_model* ain, uint8_t channel) {
 uint8_t grid_ain_init(struct grid_ain_model* ain, uint8_t length, uint8_t depth) {
 
   // 2D buffer, example: 16 potentiometers, last 32 samples stored for each
-  ain->channel_buffer = (struct AIN_Channel*)malloc(length * sizeof(struct AIN_Channel));
+  ain->channel_buffer = grid_platform_allocate_volatile(length * sizeof(struct AIN_Channel));
   ain->channel_buffer_length = length;
 
   for (uint8_t i = 0; i < length; i++) {

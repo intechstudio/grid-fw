@@ -14,6 +14,8 @@
 #include "freertos/ringbuf.h"
 #include "freertos/semphr.h"
 
+#include "driver/gptimer.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,14 +29,16 @@ extern "C" {
 #define ADC_BUFFER_SIZE 4 * 25 // 32-bit aligned size
 #define ADC_BUFFER_TYPE RINGBUF_TYPE_NOSPLIT
 
+#define ADC_TIMER_PERIOD_USEC 1000
+
+typedef void (*grid_process_analog_t)(void* user);
+
 struct grid_esp32_adc_model {
 
   uint8_t mux_index;
   uint8_t mux_overflow;
 
-  StaticRingbuffer_t* buffer_struct;
-  uint8_t* buffer_storage;
-  RingbufHandle_t ringbuffer_handle;
+  grid_process_analog_t process_analog;
 };
 
 struct grid_esp32_adc_result {
@@ -48,7 +52,7 @@ extern struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
 void IRAM_ATTR grid_esp32_adc_convert(void);
 
-void grid_esp32_adc_init(struct grid_esp32_adc_model* adc);
+void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog);
 
 void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overflow);
 
