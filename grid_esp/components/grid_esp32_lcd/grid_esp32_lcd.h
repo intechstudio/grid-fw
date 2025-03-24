@@ -54,7 +54,7 @@ struct grid_esp32_lcd_model {
   esp_lcd_panel_handle_t panel[GRID_LCD_CLK_COUNT];
   esp_lcd_panel_io_handle_t panel_io[GRID_LCD_CLK_COUNT];
   int cs_gpio_num;
-  uint8_t tx_ready;
+  volatile uint8_t tx_ready;
 };
 
 extern struct grid_esp32_lcd_model grid_esp32_lcd_states[2];

@@ -197,17 +197,19 @@ void IRAM_ATTR grid_esp32_adc_convert() {
   grid_esp32_adc_mux_increment(adc);
   grid_esp32_adc_mux_update(adc);
 
+  uint32_t adc_value[2] = {ulp_adc_value_0, ulp_adc_value_1};
+
   for (int i = 0; i < 2; ++i) {
 
     struct grid_esp32_adc_result result;
     result.channel = i;
     result.mux_state = mux_state;
-    result.value = (&ulp_adc_value)[i];
+    result.value = adc_value[i];
 
     adc->process_analog(&result);
   }
 
-  (&ulp_sum_value)[0] = 0;
-  (&ulp_sum_value)[1] = 0;
+  ulp_sum_value_0 = 0;
+  ulp_sum_value_1 = 0;
   ulp_adc_result_ready = 0;
 }
