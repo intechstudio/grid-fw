@@ -166,3 +166,89 @@ int grid_swsr_cspn(struct grid_swsr_t* swsr, char reject) {
 
   return found ? i : -1;
 }
+
+int grid_uwsr_malloc(struct grid_uwsr_t* uwsr, int capacity) {
+
+  if (capacity < 1) {
+    return 1;
+  }
+
+  char* data = malloc(capacity);
+
+  if (!data) {
+    return 1;
+  }
+
+  uwsr->capacity = capacity;
+  uwsr->data = data;
+
+  grid_uwsr_init(uwsr);
+
+  return 0;
+}
+
+void grid_uwsr_free(struct grid_uwsr_t* uwsr) {
+
+  free(uwsr->data);
+
+  uwsr->data = NULL;
+}
+
+void grid_uwsr_init(struct grid_uwsr_t* uwsr) {
+
+  uwsr->read = uwsr->capacity - 1;
+
+  memset(uwsr->data, 0, uwsr->capacity);
+}
+
+int grid_uwsr_cspn(struct grid_uwsr_t* uwsr, char reject) {
+
+  int i = 0;
+
+  int first = (uwsr->read + 1) % uwsr->capacity;
+  int j = first + 0;
+
+  int read = uwsr->read;
+  while (j != read && uwsr->data[j] != reject) {
+    j = ((++i) + first) % uwsr->capacity;
+  }
+
+  bool found = j != read && uwsr->data[j] == reject;
+
+  return found ? i : -1;
+}
+
+bool grid_uwsr_readable(struct grid_uwsr_t* uwsr, int size) {
+
+  if (size < 0 || size > uwsr->capacity) {
+    return false;
+  }
+
+  return true;
+}
+
+void grid_uwsr_read(struct grid_uwsr_t* uwsr, void* dest, int size) {
+
+  assert(grid_uwsr_readable(uwsr, size));
+
+  int first = (uwsr->read + 1) % uwsr->capacity;
+
+  int until_capa = uwsr->capacity - first;
+  bool wraps = size > until_capa;
+
+  int starts[2] = {first, 0};
+  int lengths[2] = {
+      wraps ? until_capa : size,
+      wraps ? size - until_capa : 0,
+  };
+
+  if (dest) {
+    memcpy(dest, &uwsr->data[starts[0]], lengths[0]);
+    memcpy(&dest[lengths[0]], &uwsr->data[starts[1]], lengths[1]);
+  }
+
+  memset(&uwsr->data[starts[0]], 0, lengths[0]);
+  memset(&uwsr->data[starts[1]], 0, lengths[1]);
+
+  uwsr->read = (uwsr->read + size) % uwsr->capacity;
+}

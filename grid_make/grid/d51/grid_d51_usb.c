@@ -24,6 +24,7 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
     // printf("halfpacket");
   }
 
+  /*
   if (host_port == NULL) {
     // port not initialized
     grid_platform_printf("host_port == NULL\r\n");
@@ -73,6 +74,7 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
   }
 
   cdcdf_acm_read((uint8_t*)grid_usb_serial_rx_buffer, sizeof(grid_usb_serial_rx_buffer));
+  */
 
   // cdcdf_acm_write(cdcdf_demo_buf, count); /* Echo data */
   return false; /* No error. */
@@ -152,7 +154,7 @@ void grid_d51_usb_init(void) {
   audiodf_midi_init();
   composite_device_start();
 
-  host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
+  // host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
 
   // audiodf_midi_register_callback(AUDIODF_MIDI_CB_READ,
   // (FUNC_PTR)midi_in_handler);

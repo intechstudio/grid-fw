@@ -54,17 +54,7 @@ void grid_transport_recv_usart(struct grid_transport* transport, uint8_t* msg, s
 
   struct grid_port* port = grid_transport_get_port(transport, tz, GRID_PORT_USART, tz);
 
-  switch (msg[1]) {
-  case GRID_CONST_DCT: {
-
-    grid_port_recv_msg_direct(port, msg, size);
-
-  } break;
-  case GRID_CONST_BRC: {
-
-    grid_port_recv_msg_broadcast(port, msg, size);
-  }
-  }
+  grid_port_recv_msg(port, msg, size);
 }
 
 void grid_transport_recv_usb(struct grid_transport* transport, uint8_t* msg, size_t size) {

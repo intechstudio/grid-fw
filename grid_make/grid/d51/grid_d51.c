@@ -469,15 +469,15 @@ void grid_d51_nvic_debug_priorities(void) {
 
 void grid_d51_nvic_set_interrupt_priority(IRQn_Type irqn, uint32_t priority) {
 
-  ASSERT(irqn < 136 + 1);                     // From D51 Datasheet
-  ASSERT(priority < (1 << __NVIC_PRIO_BITS)); // From D51 Datasheet
+  assert(irqn < 136 + 1);                     // From D51 Datasheet
+  assert(priority < (1 << __NVIC_PRIO_BITS)); // From D51 Datasheet
 
   NVIC_SetPriority(irqn, priority);
 }
 
 uint32_t grid_d51_nvic_get_interrupt_priority(IRQn_Type irqn) {
 
-  ASSERT(irqn < 136 + 1); // From D51 Datasheet
+  assert(irqn < 136 + 1); // From D51 Datasheet
 
   return NVIC_GetPriority(irqn);
 }
@@ -652,22 +652,46 @@ void grid_platform_delay_ms(uint32_t delay_milliseconds) { delay_ms(delay_millis
 
 uint8_t grid_platform_get_reset_cause() { return hri_rstc_read_RCAUSE_reg(RSTC); }
 
-uint8_t grid_platform_send_grid_message(uint8_t direction, char* buffer, uint16_t length) {
+uint32_t grid_platform_get_frame_len(uint8_t dir) {
+
+  assert(dir < GRID_PORT_DIR_COUNT);
+
+  return usart_tx_ready[dir] == 0;
+}
+
+void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir) {
+
+  assert(swsr);
+  assert(size > 0);
+  assert(size <= GRID_PARAMETER_SPI_TRANSACTION_length - 1);
+  assert(dir < GRID_PORT_DIR_COUNT);
+  assert(grid_swsr_readable(swsr, size));
+  assert(usart_tx_ready[dir]);
+
+  struct grid_swsr_t* tx = (struct grid_swsr_t*)swsr;
+
+  grid_swsr_read(tx, usart_tx_buf[dir], size);
 
   struct io_descriptor* io_descr;
 
-  if (direction == GRID_CONST_NORTH) {
+  switch (dir) {
+  case GRID_PORT_NORTH: {
     usart_async_get_io_descriptor(&USART_NORTH, &io_descr);
-  } else if (direction == GRID_CONST_EAST) {
+  } break;
+  case GRID_PORT_EAST: {
     usart_async_get_io_descriptor(&USART_EAST, &io_descr);
-  } else if (direction == GRID_CONST_SOUTH) {
+  } break;
+  case GRID_PORT_SOUTH: {
     usart_async_get_io_descriptor(&USART_SOUTH, &io_descr);
-  } else if (direction == GRID_CONST_WEST) {
+  } break;
+  case GRID_PORT_WEST: {
     usart_async_get_io_descriptor(&USART_WEST, &io_descr);
-  } else {
+  } break;
+  default:
+    assert(0);
   }
 
-  io_write(io_descr, buffer, length);
+  io_write(io_descr, usart_tx_buf[dir], size);
 }
 
 uint8_t grid_platform_disable_grid_transmitter(uint8_t direction) {

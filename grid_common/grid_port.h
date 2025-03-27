@@ -79,6 +79,7 @@ void grid_port_connected_update(struct grid_port* port);
 
 void grid_port_softreset(struct grid_port* port);
 
+void grid_port_recv_msg(struct grid_port* port, uint8_t* msg, size_t size);
 void grid_port_recv_msg_direct(struct grid_port* port, uint8_t* msg, size_t size);
 void grid_port_recv_msg_broadcast(struct grid_port* port, uint8_t* msg, size_t size);
 void grid_port_send_usart(struct grid_port* port);

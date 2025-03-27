@@ -120,9 +120,15 @@ bool grid_port_disconnected(struct grid_port* port) {
   return port->partner.connected && !grid_port_connected(port);
 }
 
-void grid_port_connect(struct grid_port* port) {
+void grid_port_keepalive(struct grid_port* port) {
 
   port->partner.last_time = grid_platform_rtc_get_micros();
+}
+
+void grid_port_connect(struct grid_port* port) {
+
+  grid_port_keepalive(port);
+
   port->partner.connected = true;
 }
 
@@ -148,6 +154,25 @@ void grid_port_softreset(struct grid_port* port) {
   grid_platform_reset_grid_transmitter(port->dir);
 }
 
+void grid_port_recv_msg(struct grid_port* port, uint8_t* msg, size_t size) {
+
+  switch (msg[1]) {
+  case GRID_CONST_DCT: {
+
+    grid_port_recv_msg_direct(port, msg, size);
+
+  } break;
+  case GRID_CONST_BRC: {
+
+    if (!grid_port_connected(port)) {
+      return;
+    }
+
+    grid_port_recv_msg_broadcast(port, msg, size);
+  }
+  }
+}
+
 void grid_port_recv_msg_direct(struct grid_port* port, uint8_t* msg, size_t size) {
 
   assert(msg[1] == GRID_CONST_DCT);
@@ -167,7 +192,7 @@ void grid_port_recv_msg_broadcast(struct grid_port* port, uint8_t* msg, size_t s
 
   assert(msg[1] == GRID_CONST_BRC);
 
-  grid_port_connect(port);
+  grid_port_keepalive(port);
 
   struct grid_swsr_t* rx = grid_port_get_rx(port);
 
@@ -210,7 +235,10 @@ void grid_port_send_usb(struct grid_port* port) {
   }
 
   assert(ret < GRID_PARAMETER_SPI_TRANSACTION_length);
-  char temp[GRID_PARAMETER_SPI_TRANSACTION_length + 1];
+  
+  // Allocated statically due to the implementation of usb serial writes
+  // sometimes requiring their buffer to live until the transfer completes
+  static char temp[GRID_PARAMETER_SPI_TRANSACTION_length + 1];
 
   assert(grid_swsr_readable(tx, ret + 1));
   grid_swsr_read(tx, temp, ret + 1);
