@@ -176,6 +176,7 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
     vTaskSuspendAll();
     grid_port_process_ui_local_UNSAFE(&grid_ui_state);
     xTaskResumeAll();
+    return;
   }
 
   if (!grid_utask_timer_elapsed(timer)) {

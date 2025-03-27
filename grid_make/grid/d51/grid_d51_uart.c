@@ -22,10 +22,7 @@ static void tx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr)
 static void tx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(2); }
 static void tx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(3); }
 
-void tx_cb_USART_GRID(uint8_t dir) {
-
-  usart_tx_ready[dir] = 1;
-}
+void tx_cb_USART_GRID(uint8_t dir) { usart_tx_ready[dir] = 1; }
 
 static void rx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr) {}
 static void rx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr) {}
