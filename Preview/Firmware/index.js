@@ -1970,6 +1970,7 @@ async function createWasm() {
   
   
   
+  
   var wasmTableMirror = [];
   
   /** @type {WebAssembly.Table} */
@@ -3202,7 +3203,6 @@ async function createWasm() {
     };
 
   
-  
   /** @param{number} initFlags */
   var _SDL_Init = (initFlags) => {
       SDL.startTime = Date.now();
@@ -4002,12 +4002,6 @@ async function createWasm() {
   };
   
   
-  var zeroMemory = (ptr, size) => HEAPU8.fill(0, ptr, ptr + size);
-  
-  var alignMemory = (size, alignment) => {
-      assert(alignment, "alignment argument is required");
-      return Math.ceil(size / alignment) * alignment;
-    };
   var mmapAlloc = (size) => {
       abort('internal error: mmapAlloc called but `emscripten_builtin_memalign` native symbol not exported');
     };
@@ -5156,7 +5150,8 @@ async function createWasm() {
         var d = '';
         for (var dir of dirs) {
           if (!dir) continue;
-          d += '/' + dir;
+          if (d || PATH.isAbs(path)) d += '/';
+          d += dir;
           try {
             FS.mkdir(d, mode);
           } catch(e) {
@@ -6772,10 +6767,6 @@ async function createWasm() {
   }
 
 
-  var getHeapMax = () =>
-      HEAPU8.length;
-  
-  
   var abortOnCannotGrowMemory = (requestedSize) => {
       abort(`Cannot enlarge memory arrays to size ${requestedSize} bytes (OOM). Either (1) compile with -sINITIAL_MEMORY=X with X higher than the current value ${HEAP8.length}, (2) compile with -sALLOW_MEMORY_GROWTH which allows increasing the size at runtime, or (3) if you want malloc to return NULL (0) instead of this abort, compile with -sABORTING_MALLOC=0`);
     };
@@ -7185,6 +7176,8 @@ var missingLibrarySymbols = [
   'convertU32PairToI53',
   'getTempRet0',
   'setTempRet0',
+  'zeroMemory',
+  'getHeapMax',
   'growMemory',
   'inetPton4',
   'inetNtop4',
@@ -7202,6 +7195,7 @@ var missingLibrarySymbols = [
   'runtimeKeepalivePush',
   'runtimeKeepalivePop',
   'asmjsMangle',
+  'alignMemory',
   'HandleAllocator',
   'getNativeTypeSize',
   'addOnInit',
@@ -7321,7 +7315,6 @@ var missingLibrarySymbols = [
   'allocate',
   'writeStringToMemory',
   'writeAsciiToMemory',
-  'setErrNo',
   'demangle',
   'stackTrace',
 ];
@@ -7346,9 +7339,7 @@ var unexportedSymbols = [
   'stackRestore',
   'stackAlloc',
   'ptrToString',
-  'zeroMemory',
   'exitJS',
-  'getHeapMax',
   'abortOnCannotGrowMemory',
   'ENV',
   'ERRNO_CODES',
@@ -7366,7 +7357,6 @@ var unexportedSymbols = [
   'callUserCallback',
   'maybeExit',
   'asyncLoad',
-  'alignMemory',
   'mmapAlloc',
   'wasmTable',
   'noExitRuntime',
