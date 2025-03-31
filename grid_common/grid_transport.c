@@ -61,6 +61,8 @@ void grid_transport_recv_usb(struct grid_transport* transport, uint8_t* msg, siz
 
   struct grid_port* port = grid_transport_get_port(transport, 5, GRID_PORT_USB, 0);
 
+  grid_str_transform_brc_params(msg, port->dx, port->dy, port->partner.rot);
+
   struct grid_swsr_t* rx = grid_port_get_rx(port);
 
   if (!grid_swsr_writable(rx, size)) {

@@ -359,7 +359,7 @@ uint8_t grid_msg_recent_fingerprint_find(struct grid_msg_recent_buffer* rec, gri
 
   for (uint8_t i = 0; i < rec->fingerprint_array_length; i++) {
 
-    if (rec->fingerprint_array[i % rec->fingerprint_array_length] == fingerprint) {
+    if (rec->fingerprint_array[i] == fingerprint) {
 
       return 1;
     }

@@ -326,7 +326,7 @@ static void button_on_SYNC1_pressed(void) { sync1_received++; }
 
 static void button_on_SYNC2_pressed(void) { sync2_received++; }
 
-void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr) {
+void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_msg_recent_buffer* recent) {
 
   int ret = grid_uwsr_cspn(uwsr, '\n');
 
@@ -349,6 +349,17 @@ void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr) {
   }
 
   grid_str_transform_brc_params(temp, port->dx, port->dy, port->partner.rot);
+
+  uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(temp);
+
+  if (temp[1] == GRID_CONST_BRC) {
+
+    if (grid_msg_recent_fingerprint_find(recent, fingerprint)) {
+      return;
+    }
+
+    grid_msg_recent_fingerprint_store(recent, fingerprint);
+  }
 
   grid_port_recv_msg(port, temp, ret + 1);
 }
@@ -459,6 +470,8 @@ int main(void) {
       grid_msg_set_heartbeat_type(&grid_msg_state, 1);
     }
 
+    grid_midi_rx_pop();
+
     // NVM task
     nvm_task_inner();
 
@@ -468,7 +481,7 @@ int main(void) {
       struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
       struct grid_uwsr_t* uwsr = &usart_uwsr[i];
 
-      grid_d51_port_recv_uwsr(port, uwsr);
+      grid_d51_port_recv_uwsr(port, uwsr, &recent_messages);
     }
 
     struct grid_port* port_ui = grid_transport_get_port(xport, 4, GRID_PORT_UI, 0);

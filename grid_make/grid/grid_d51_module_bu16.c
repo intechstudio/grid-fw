@@ -76,6 +76,8 @@ void grid_module_bu16_init() {
 
   grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 
+  /*
   hardware_init();
   hardware_start_transfer();
+  */
 };
