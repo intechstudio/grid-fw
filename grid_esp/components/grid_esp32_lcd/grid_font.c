@@ -17,7 +17,7 @@ static char memory[57000] = {0};
     ptr;                                                                                                                                                                                               \
   }))
 
-#define STBTT_free(x, u) (/*printf("Freeing %p\n", (void*)(x)), */ (x != memory ? free(x) : 0))
+#define STBTT_free(x, u) (/*printf("Freeing %p\n", (void*)(x)), */ ((void*)x != (void*)memory ? free(x) : 0))
 #endif
 
 #define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
@@ -35,12 +35,12 @@ extern const int generated_fonts_spacemono_bold_ttf_len;
 struct grid_font_table {
   char name[30];
   unsigned char* data;
-  int* size
+  int* size;
 };
 
-struct grid_font_table font_list[] = {{.name = "interdisplay_regular", .data = (unsigned char*)generated_fonts_interdisplay_regular_ttf, .size = &generated_fonts_interdisplay_regular_ttf_len},
-                                      {.name = "spacemono_regular", .data = (unsigned char*)generated_fonts_spacemono_regular_ttf, .size = &generated_fonts_spacemono_regular_ttf_len},
-                                      {.name = "spacemono_bold", .data = (unsigned char*)generated_fonts_spacemono_bold_ttf, .size = &generated_fonts_spacemono_bold_ttf_len}};
+struct grid_font_table font_list[] = {{.name = "interdisplay_regular", .data = (unsigned char*)generated_fonts_interdisplay_regular_ttf, .size = (int*)&generated_fonts_interdisplay_regular_ttf_len},
+                                      {.name = "spacemono_regular", .data = (unsigned char*)generated_fonts_spacemono_regular_ttf, .size = (int*)&generated_fonts_spacemono_regular_ttf_len},
+                                      {.name = "spacemono_bold", .data = (unsigned char*)generated_fonts_spacemono_bold_ttf, .size = (int*)&generated_fonts_spacemono_bold_ttf_len}};
 
 int grid_font_init(struct grid_font_model* font) {
 

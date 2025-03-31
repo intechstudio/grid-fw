@@ -107,9 +107,9 @@ int grid_cal_enable_get(struct grid_cal_model* cal, uint8_t channel, uint8_t* en
   return 0;
 }
 
-static float lerp(float a, float b, float x) { return a * (1.0 - x) + (b * x); }
+static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }
 
-static int32_t inverse_error_centering(int32_t a, int32_t b, float x, float c, uint8_t iter) {
+static int32_t inverse_error_centering(int32_t a, int32_t b, double x, double c, uint8_t iter) {
 
   for (uint8_t i = 0; i < iter; ++i) {
 
@@ -138,8 +138,8 @@ int grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in, uint
 
   cal->value[channel] = in;
 
-  float in_norm = in / (float)cal->maximum;
-  float center_norm = cal->center[channel] / (float)cal->maximum;
+  double in_norm = in / (double)cal->maximum;
+  double center_norm = cal->center[channel] / (double)cal->maximum;
   *out = inverse_error_centering(0, cal->maximum, in_norm, center_norm, 2);
 
   return 0;

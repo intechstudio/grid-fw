@@ -40,7 +40,7 @@ uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle
 
 void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
 
-int grid_platform_find_file(char* path, union grid_ui_file_handle* file_handle);
+int grid_platform_find_file(const char* path, union grid_ui_file_handle* file_handle);
 uint16_t grid_platform_get_file_size(union grid_ui_file_handle* file_handle);
 int grid_platform_read_file(union grid_ui_file_handle* file_handle, uint8_t* buffer, uint16_t size);
 int grid_platform_write_file(char* path, uint8_t* buffer, uint16_t size);

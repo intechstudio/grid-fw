@@ -96,8 +96,8 @@ void grid_swsr_write(struct grid_swsr_t* swsr, void* src, int size) {
       wraps ? size - until_capa : 0,
   };
 
-  memcpy(&swsr->data[starts[0]], src, lengths[0]);
-  memcpy(&swsr->data[starts[1]], &src[lengths[0]], lengths[1]);
+  memcpy(&swsr->data[starts[0]], (char*)src, lengths[0]);
+  memcpy(&swsr->data[starts[1]], &((char*)src)[lengths[0]], lengths[1]);
 
   swsr->write = (swsr->write + size) % swsr->capacity;
 }
@@ -122,8 +122,8 @@ void grid_swsr_read(struct grid_swsr_t* swsr, void* dest, int size) {
       wraps ? size - until_capa : 0,
   };
 
-  memcpy(dest, &swsr->data[starts[0]], lengths[0]);
-  memcpy(&dest[lengths[0]], &swsr->data[starts[1]], lengths[1]);
+  memcpy((char*)dest, &swsr->data[starts[0]], lengths[0]);
+  memcpy(&((char*)dest)[lengths[0]], &swsr->data[starts[1]], lengths[1]);
 
   swsr->read = (swsr->read + size) % swsr->capacity;
 }

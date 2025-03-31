@@ -2,6 +2,7 @@
 archive: grid_common.a
 entries:
     grid_buf (noflash)       # places all code/read-only data under IRAM/DRAM
+    grid_ain (noflash)       # places all code/read-only data under IRAM/DRAM
     grid_rollid (noflash)    # places all code/read-only data under IRAM/DRAM
     grid_transport (noflash) # places all code/read-only data under IRAM/DRAM
     grid_port (noflash)      # places all code/read-only data under IRAM/DRAM

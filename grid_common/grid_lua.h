@@ -9,7 +9,7 @@
 #include "lua-5.4.3/src/lua.h"
 #include "lua-5.4.3/src/lualib.h"
 
-#include "grid_ui.h"
+#include "grid_protocol.h"
 
 #include "lua_src/lua_source_collection.h"
 
@@ -48,6 +48,8 @@ struct grid_lua_model {
   uint8_t target_memory_usage_kilobytes;
 };
 
+typedef void (*lua_ui_init_callback_t)(struct grid_lua_model*);
+
 extern struct grid_lua_model grid_lua_state;
 
 void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance);
@@ -67,7 +69,7 @@ void grid_lua_clear_stde(struct grid_lua_model* lua);
 char* grid_lua_get_output_string(struct grid_lua_model* lua);
 char* grid_lua_get_error_string(struct grid_lua_model* lua);
 
-uint32_t grid_lua_dostring(struct grid_lua_model* lua, char* code);
+uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code);
 
 void grid_lua_gc_try_collect(struct grid_lua_model* lua);
 void grid_lua_gc_collect(struct grid_lua_model* lua);
@@ -76,9 +78,9 @@ void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message);
 
 /*static*/ int grid_lua_panic(lua_State* L);
 
-int grid_lua_vm_register_functions(struct grid_lua_model* lua, struct luaL_Reg* lua_lib);
+int grid_lua_vm_register_functions(struct grid_lua_model* lua, const struct luaL_Reg* lua_lib);
 
-void grid_lua_ui_init(struct grid_lua_model* lua, struct grid_ui_model* ui);
+void grid_lua_ui_init(struct grid_lua_model* lua, lua_ui_init_callback_t callback);
 
 void grid_lua_start_vm(struct grid_lua_model* lua);
 

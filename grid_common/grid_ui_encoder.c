@@ -23,9 +23,7 @@ void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_ENCODER;
 
-  ele->event_list_length = 4;
-
-  ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
+  grid_ui_element_malloc_events(ele, 4);
 
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_encoder_init_actionstring);                // Element Initialization Event
   grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_ENCODER, GRID_LUA_FNC_A_ENCODER_short, grid_ui_encoder_encoderchange_actionstring); // Encoder Change
@@ -281,7 +279,7 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
   return 1; // did trigger
 }
 
-void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, uint8_t input_channel, uint8_t new_value) {
+void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_encoder_state* state, uint8_t new_value) {
 
   // extract old value from state, rewrite state with new
   uint8_t old_value = state->last_nibble;
@@ -298,8 +296,6 @@ void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, uint8_t in
   // GND Button PhaseB PhaseA
   uint8_t new_button_value = (new_value & 0b00000100) ? 1 : 0;
   uint8_t old_button_value = (old_value & 0b00000100) ? 1 : 0;
-
-  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, input_channel);
 
   // Evaluate the results
   if (state->initial_samples >= GRID_UI_ENCODER_INIT_SAMPLES) {

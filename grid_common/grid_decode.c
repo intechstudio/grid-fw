@@ -1,6 +1,6 @@
 #include "grid_decode.h"
 
-static enum GRID_DESTINATION {
+enum GRID_DESTINATION {
 
   GRID_DESTINATION_IS_ME = 1,
   GRID_DESTINATION_IS_GLOBAL = 2,
@@ -11,9 +11,9 @@ static uint8_t grid_check_destination(char* header, uint8_t target_destination_b
 
   uint8_t error = 0;
 
-  uint8_t position_is_me = 0;
-  uint8_t position_is_global = 0;
-  uint8_t position_is_local = 0;
+  // uint8_t position_is_me = 0;
+  // uint8_t position_is_global = 0;
+  // uint8_t position_is_local = 0;
 
   uint8_t dx = grid_str_get_parameter(header, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error);
   uint8_t dy = grid_str_get_parameter(header, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error);
@@ -193,7 +193,7 @@ uint8_t grid_decode_mousemove_to_usb(char* header, char* chunk) {
   uint8_t position_raw = grid_str_get_parameter(chunk, GRID_CLASS_HIDMOUSEMOVE_POSITION_offset, GRID_CLASS_HIDMOUSEMOVE_POSITION_length, &error);
   uint8_t axis = grid_str_get_parameter(chunk, GRID_CLASS_HIDMOUSEMOVE_AXIS_offset, GRID_CLASS_HIDMOUSEMOVE_AXIS_length, &error);
 
-  int8_t position = position_raw - 128;
+  // int8_t position = position_raw - 128;
 
   struct grid_usb_keyboard_event_desc key;
 
@@ -510,7 +510,7 @@ uint8_t grid_decode_imediate_to_ui(char* header, char* chunk) {
     struct grid_msg_packet message_global;
     grid_msg_packet_init(&grid_msg_state, &message_global, GRID_PARAMETER_DEFAULT_POSITION, GRID_PARAMETER_DEFAULT_POSITION);
     char payload_global[GRID_PARAMETER_PACKET_maxlength] = {0};
-    uint32_t offset_global = 0;
+    // uint32_t offset_global = 0;
 
     strcat(payload_global, grid_lua_get_output_string(&grid_lua_state));
     grid_lua_clear_stdo(&grid_lua_state);
@@ -567,7 +567,7 @@ uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk) {
       // printf("254\r\n");
     }
 
-    uint8_t ui_report_valid = 0;
+    // uint8_t ui_report_valid = 0;
 
     if (editor_connected_now) {
 
@@ -602,7 +602,7 @@ uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk) {
 
         // grid_led_state.led_lowlevel_changed[j] = 0;
 
-        ui_report_valid = 1;
+        // ui_report_valid = 1;
 
         sprintf(&response_payload[len], "%02x%02x", element_num, element_value);
         len += strlen(&response_payload[len]);
@@ -626,7 +626,7 @@ uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk) {
     // report stringnames
     if (editor_connected_now) {
 
-      uint16_t report_length = 0;
+      // uint16_t report_length = 0;
       struct grid_msg_packet response;
 
       grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
@@ -634,9 +634,9 @@ uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk) {
       // -1 to exclude system element
       for (uint8_t j = 0; j < grid_ui_state.element_list_length - 1; j++) {
 
-        struct grid_ui_element* ele = &grid_ui_state.element_list[j];
+        // struct grid_ui_element* ele = &grid_ui_state.element_list[j];
 
-        uint8_t number = j;
+        // uint8_t number = j;
         char command[26] = {0};
 
         sprintf(command, "gens(%d,ele[%d]:gen())", j, j);
@@ -758,10 +758,10 @@ uint8_t grid_decode_uptime_to_ui(char* header, char* chunk) {
 
     grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_UPTIME_UPTIME_offset, GRID_CLASS_UPTIME_UPTIME_length, uptime);
 
-    uint32_t milliseconds = uptime / MS_TO_US % 1000;
-    uint32_t seconds = uptime / MS_TO_US / 1000 % 60;
-    uint32_t minutes = uptime / MS_TO_US / 1000 / 60 % 60;
-    uint32_t hours = uptime / MS_TO_US / 1000 / 60 / 60 % 60;
+    // uint32_t milliseconds = uptime / MS_TO_US % 1000;
+    // uint32_t seconds = uptime / MS_TO_US / 1000 % 60;
+    // uint32_t minutes = uptime / MS_TO_US / 1000 / 60 % 60;
+    // uint32_t hours = uptime / MS_TO_US / 1000 / 60 / 60 % 60;
 
     grid_msg_packet_close(&grid_msg_state, &response);
     grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
@@ -911,8 +911,8 @@ void grid_protocol_nvm_store_success_callback(uint8_t lastheader_id) {
 
 uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
 
-  uint8_t dx = grid_str_get_parameter(header, GRID_BRC_DX_offset, GRID_BRC_DX_length, NULL);
-  uint8_t dy = grid_str_get_parameter(header, GRID_BRC_DY_offset, GRID_BRC_DY_length, NULL);
+  // uint8_t dx = grid_str_get_parameter(header, GRID_BRC_DX_offset, GRID_BRC_DX_length, NULL);
+  // uint8_t dy = grid_str_get_parameter(header, GRID_BRC_DY_offset, GRID_BRC_DY_length, NULL);
 
   if (grid_check_destination(header, GRID_DESTINATION_IS_ME | GRID_DESTINATION_IS_GLOBAL) == false) {
     return 1;
@@ -1114,9 +1114,9 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
     grid_usb_keyboard_disable(&grid_usb_keyboard_state);
     // grid_port_debug_print_text("Disabling KB");
 
-    uint8_t vmajor = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
-    uint8_t vminor = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, NULL);
-    uint8_t vpatch = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, NULL);
+    // uint8_t vmajor = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONMAJOR_offset, GRID_CLASS_CONFIG_VERSIONMAJOR_length, NULL);
+    // uint8_t vminor = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONMINOR_offset, GRID_CLASS_CONFIG_VERSIONMINOR_length, NULL);
+    // uint8_t vpatch = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_VERSIONPATCH_offset, GRID_CLASS_CONFIG_VERSIONPATCH_length, NULL);
 
     uint8_t pagenumber = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_PAGENUMBER_offset, GRID_CLASS_CONFIG_PAGENUMBER_length, NULL);
     uint8_t elementnumber = grid_str_get_parameter(chunk, GRID_CLASS_CONFIG_ELEMENTNUMBER_offset, GRID_CLASS_CONFIG_ELEMENTNUMBER_length, NULL);

@@ -6,8 +6,6 @@
 
 #include "grid_esp32_adc.h"
 
-#include "esp_check.h"
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,9 +17,7 @@
 #include "esp_adc/adc_continuous.h"
 #include "esp_adc/adc_oneshot.h"
 
-#include "esp_timer.h"
-
-#include "rom/ets_sys.h" // For ets_printf
+#include "rom/ets_sys.h"
 
 #include "grid_esp32_pins.h"
 
@@ -30,6 +26,8 @@
 #include "freertos/semphr.h"
 
 #include "esp_check.h"
+#include "esp_err.h"
+#include "esp_log.h"
 #include "ulp_grid_esp32_adc.h"
 #include "ulp_riscv.h"
 #include "ulp_riscv_adc.h"
@@ -38,17 +36,10 @@
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
+void* grid_platform_allocate_volatile(size_t size);
+
 extern const uint8_t ulp_grid_esp32_adc_bin_start[] asm("_binary_ulp_grid_esp32_adc_bin_start");
 extern const uint8_t ulp_grid_esp32_adc_bin_end[] asm("_binary_ulp_grid_esp32_adc_bin_end");
-
-static void init_ulp_program(void);
-
-extern uint32_t ulp_adc_value_1;
-extern uint32_t ulp_adc_value_2;
-
-extern uint32_t ulp_adc_result_ready;
-
-extern uint32_t ulp_lock;
 
 struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
@@ -73,10 +64,7 @@ void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overf
   adc->mux_overflow = mux_overflow;
 }
 
-void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc) {
-  adc->mux_index++;
-  adc->mux_index %= adc->mux_overflow;
-}
+void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc) { adc->mux_index = (adc->mux_index + 1) % adc->mux_overflow; }
 
 void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc) {
 
@@ -91,169 +79,137 @@ void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc) {
 
 uint8_t IRAM_ATTR grid_esp32_adc_mux_get_index(struct grid_esp32_adc_model* adc) { return adc->mux_index; }
 
-static void init_ulp_program(void) {
-  esp_err_t err = ulp_riscv_load_binary(ulp_grid_esp32_adc_bin_start, (ulp_grid_esp32_adc_bin_end - ulp_grid_esp32_adc_bin_start));
-  ESP_ERROR_CHECK(err);
-
-  /* The first argument is the period index, which is not used by the ULP-RISC-V
-   * timer The second argument is the period in microseconds, which gives a
-   * wakeup time period of: 20ms
-   */
-  ulp_set_wakeup_period(0, 1);
-
-  /* Start the program */
-  // err = ulp_riscv_run();
-  // ESP_ERROR_CHECK(err);
-}
-
-#include "esp_adc/adc_oneshot.h"
-#include "esp_check.h"
-#include "esp_err.h"
-#include "esp_log.h"
 #include "esp_private/adc_share_hw_ctrl.h"
 #include "esp_private/esp_sleep_internal.h"
 #include "hal/adc_hal_common.h"
 
 static esp_err_t ulp_riscv_adc_init2(void) {
 
-  ulp_riscv_adc_cfg_t cfg_in = {
+  const char* TAG = "ulp_riscv_adc2";
+  esp_err_t ret = ESP_OK;
+
+  const ulp_riscv_adc_cfg_t cfg = {
       .adc_n = ADC_UNIT_1,
       .channel = ADC_CHANNEL_1,
       .width = ADC_BITWIDTH_DEFAULT,
-      .atten = ADC_ATTEN_DB_11,
+      .atten = ADC_ATTEN_DB_12,
   };
 
-  const ulp_riscv_adc_cfg_t* cfg = &cfg_in;
+  ESP_GOTO_ON_FALSE(cfg.adc_n == ADC_UNIT_1, ESP_ERR_INVALID_ARG, err, TAG, "Only ADC_UNIT_1 is supported for now");
 
-  esp_err_t ret = ESP_OK;
-
-  const char* TAG = "ulp_riscv_adc2";
-
-  ESP_GOTO_ON_FALSE(cfg, ESP_ERR_INVALID_ARG, err, TAG, "cfg == NULL");
-  ESP_GOTO_ON_FALSE(cfg->adc_n == ADC_UNIT_1, ESP_ERR_INVALID_ARG, err, TAG, "Only ADC_UNIT_1 is supported for now");
-
-  //-------------ADC1 Init---------------//
+  // Initialize ADC1
   adc_oneshot_unit_handle_t adc1_handle;
   adc_oneshot_unit_init_cfg_t init_config1 = {
-      .unit_id = cfg->adc_n,
+      .unit_id = cfg.adc_n,
       .ulp_mode = ADC_ULP_MODE_RISCV,
   };
   ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
 
-  //-------------ADC1 Config---------------//
+  // Configure ADC1
   adc_oneshot_chan_cfg_t config = {
-      .bitwidth = cfg->width,
-      .atten = cfg->atten,
+      .bitwidth = cfg.width,
+      .atten = cfg.atten,
   };
   ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_0, &config));
-
   ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_1, &config));
 
   // Calibrate the ADC
-  adc_set_hw_calibration_code(cfg->adc_n, cfg->atten);
+  adc_set_hw_calibration_code(cfg.adc_n, cfg.atten);
   esp_sleep_enable_adc_tsens_monitor(true);
 
 err:
   return ret;
 }
 
-static void adc_init(struct grid_esp32_adc_model* adc) {
+static void adc_init_ulp(struct grid_esp32_adc_model* adc) {
 
   ESP_ERROR_CHECK(ulp_riscv_adc_init2());
 
-  init_ulp_program();
+  // Load ULP-RISC-V program binary into RTC memory
+  const uint8_t* binary = ulp_grid_esp32_adc_bin_start;
+  size_t size = ulp_grid_esp32_adc_bin_end - binary;
+  ESP_ERROR_CHECK(ulp_riscv_load_binary(binary, size));
 }
 
-void grid_esp32_adc_init(struct grid_esp32_adc_model* adc) {
+void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog) {
 
-  adc->buffer_struct = (StaticRingbuffer_t*)heap_caps_malloc(sizeof(StaticRingbuffer_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-  adc->buffer_storage = (struct grid_esp32_adc_result*)heap_caps_malloc(sizeof(struct grid_esp32_adc_result) * ADC_BUFFER_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+  assert(process_analog);
 
-  adc->ringbuffer_handle = xRingbufferCreateStatic(ADC_BUFFER_SIZE, ADC_BUFFER_TYPE, adc->buffer_storage, adc->buffer_struct);
+  adc->process_analog = process_analog;
 
-  adc_init(adc);
+  adc_init_ulp(adc);
 
   adc->mux_index = 0;
 }
 
+static bool IRAM_ATTR grid_esp32_adc_alarm_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t* edata, void* user_ctx) {
+
+  grid_esp32_adc_convert();
+
+  return true;
+}
+
 void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
-  //  start periodic task
+  ESP_LOGI("ADC", "Create timer handle");
+  gptimer_handle_t gptimer = NULL;
+  gptimer_config_t timer_config = {
+      .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+      .direction = GPTIMER_COUNT_UP,
+      .resolution_hz = 1000000, // 1MHz, 1 tick=1us
+  };
+  ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
 
-  esp_timer_create_args_t periodic_adc_args = {.callback = &grid_esp32_adc_convert, .name = "adc millisecond"};
+  gptimer_event_callbacks_t cbs = {
+      .on_alarm = grid_esp32_adc_alarm_cb, // register user callback
+  };
+  ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, NULL));
 
-  esp_timer_handle_t periodic_adc_timer;
-  ESP_ERROR_CHECK(esp_timer_create(&periodic_adc_args, &periodic_adc_timer));
-  ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_adc_timer, 1000));
+  gptimer_alarm_config_t alarm_config = {
+      .reload_count = 0,                  // counter will reload with 0 on alarm event
+      .alarm_count = 1000,                // period = 1s @resolution 1MHz
+      .flags.auto_reload_on_alarm = true, // enable auto-reload
+  };
+  ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
 
-  esp_err_t err = ulp_riscv_run();
-  ESP_ERROR_CHECK(err);
+  ESP_ERROR_CHECK(gptimer_enable(gptimer));
+  ESP_ERROR_CHECK(gptimer_start(gptimer));
+
+  // Configure the ULP with defaults and run the program loaded into RTC memory
+  ESP_ERROR_CHECK(ulp_riscv_run());
 }
 
-void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc) {}
+void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc) { assert(0); }
 
-#include "ulp_riscv_lock.h"
-
-/*
-static float restrictToRange(float value) {
-  if (value < 0.0) {
-    return 0.0;
-  } else if (value > 1.0) {
-    return 1.0;
-  } else {
-    return value;
-  }
-}
-
-static uint32_t grid_esp32_adc_cal(uint32_t input) {
-
-  // parameter 1: center offset
-  int32_t parameter_1 = +32 * 4.5;
-  uint32_t ADC_MAX = ((1 << 12) - 1);
-
-  // (-abs(x-128)+96)/64
-  // normalized: (-abs(x-0.5)+0.375)/0.25
-  // (-abs(x-0.5))*2.4+ 1.1
-
-  float strength = restrictToRange((-abs(input - 0.5 * ADC_MAX)) * 2.4 / ADC_MAX + 1.1);
-
-  return input + parameter_1 * strength;
-}
-*/
-
-void IRAM_ATTR grid_esp32_adc_convert(void) {
+void IRAM_ATTR grid_esp32_adc_convert() {
 
   struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
 
-  ulp_riscv_lock_t* lock = (ulp_riscv_lock_t*)&ulp_lock;
-
-  ulp_riscv_lock_acquire(lock);
-
-  if (ulp_adc_result_ready > 0 && ulp_adc_result_ready < UINT32_MAX / 2) {
-
-    struct grid_esp32_adc_result result_0;
-    result_0.channel = 0;
-    result_0.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
-    // result_0.value = grid_esp32_adc_cal(ulp_adc_value_1);
-    result_0.value = ulp_adc_value_1;
-
-    struct grid_esp32_adc_result result_1;
-    result_1.channel = 1;
-    result_1.mux_state = grid_esp32_adc_mux_get_index(&grid_esp32_adc_state);
-    // result_1.value = grid_esp32_adc_cal(ulp_adc_value_2);
-    result_1.value = ulp_adc_value_2;
-
-    xRingbufferSendFromISR(adc->ringbuffer_handle, &result_0, sizeof(struct grid_esp32_adc_result), NULL);
-    xRingbufferSendFromISR(adc->ringbuffer_handle, &result_1, sizeof(struct grid_esp32_adc_result), NULL);
-
-    // ets_printf("%d\r\n", ulp_adc_result_ready);
-
-    ulp_adc_result_ready = UINT32_MAX; // start new conversion
-
-    grid_esp32_adc_mux_increment(&grid_esp32_adc_state);
-    grid_esp32_adc_mux_update(&grid_esp32_adc_state);
-  } else {
+  if (!adc->process_analog) {
+    return;
   }
 
-  ulp_riscv_lock_release(lock);
+  if (ulp_adc_result_ready < ulp_adc_oversample) {
+    return;
+  }
+
+  uint8_t mux_state = grid_esp32_adc_mux_get_index(adc);
+  grid_esp32_adc_mux_increment(adc);
+  grid_esp32_adc_mux_update(adc);
+
+  uint32_t adc_value[2] = {ulp_adc_value_0, ulp_adc_value_1};
+
+  for (int i = 0; i < 2; ++i) {
+
+    struct grid_esp32_adc_result result;
+    result.channel = i;
+    result.mux_state = mux_state;
+    result.value = adc_value[i];
+
+    adc->process_analog(&result);
+  }
+
+  ulp_sum_value_0 = 0;
+  ulp_sum_value_1 = 0;
+  ulp_adc_result_ready = 0;
 }

@@ -12,9 +12,7 @@ void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_POTMETER;
 
-  ele->event_list_length = 3;
-
-  ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
+  grid_ui_element_malloc_events(ele, 3);
 
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_potmeter_init_actionstring);                   // Element Initialization Event
   grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_POTMETER, GRID_LUA_FNC_A_POTMETER_short, grid_ui_potmeter_potmeterchange_actionstring); // Absolute Value Change (7bit)
@@ -82,11 +80,13 @@ void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_
   template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = next;
 }
 
-void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth) {
+void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth) {
 
-  const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
+  assert(ele);
 
-  int32_t* template_parameter_list = grid_ui_state.element_list[input_channel].template_parameter_list;
+  // const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
+
+  int32_t* template_parameter_list = ele->template_parameter_list;
 
   int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
 
@@ -123,7 +123,7 @@ void grid_ui_potmeter_store_input(uint8_t input_channel, uint64_t* last_real_tim
     int32_t state = grid_ain_get_average_scaled(&grid_ain_state, input_channel, adc_bit_depth, resolution, 0, 127);
     template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
 
-    struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_PARAMETER_EVENT_POTMETER);
+    struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_POTMETER);
 
     if (grid_ain_stabilized(&grid_ain_state, input_channel)) {
       grid_ui_event_trigger(eve);

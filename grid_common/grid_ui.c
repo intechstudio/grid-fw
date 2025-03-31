@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "grid_ui.h"
 
 extern void grid_platform_printf(char const* fmt, ...);
@@ -68,7 +70,7 @@ void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
 
   ui->element_list_length = element_list_length;
 
-  ui->element_list = malloc(element_list_length * sizeof(struct grid_ui_element));
+  ui->element_list = grid_platform_allocate_volatile(element_list_length * sizeof(struct grid_ui_element));
 
   ui->page_negotiated = 0;
 
@@ -79,6 +81,13 @@ void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
   ui->bulk_last_page = -1;
   ui->bulk_last_element = -1;
   ui->bulk_last_event = -1;
+}
+
+struct grid_ui_element* grid_ui_model_get_elements(struct grid_ui_model* ui) {
+
+  assert(ui->element_list);
+
+  return ui->element_list;
 }
 
 void grid_ui_busy_semaphore_lock(struct grid_ui_model* ui) { grid_ui_semaphore_lock(&ui->busy_semaphore); }
@@ -122,23 +131,19 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   return ele;
 }
 
-void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, char* default_actionstring) {
+void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_actionstring) {
+
+  assert(index < ele->event_list_length);
 
   struct grid_ui_event* eve = &ele->event_list[index];
 
   eve->parent = ele;
   eve->index = index;
-
+  eve->type = event_type;
+  strcpy(eve->function_name, function_name);
   eve->default_actionstring = default_actionstring;
 
-  eve->cfg_changed_flag = 0;
-
-  eve->status = GRID_UI_STATUS_INITIALIZED;
-
-  eve->type = event_type;
   eve->status = GRID_UI_STATUS_READY;
-
-  strcpy(eve->function_name, function_name);
 
   eve->cfg_changed_flag = 0;
   eve->cfg_default_flag = 1;
@@ -246,7 +251,7 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_el
     allocation_length = 1;
   }
 
-  this->template_parameter_list = malloc(allocation_length * sizeof(int32_t));
+  this->template_parameter_list = grid_platform_allocate_volatile(allocation_length * sizeof(int32_t));
 
   // grid_platform_printf("malloc %d %lx\r\n",
   // ele->template_parameter_list_length, this->template_parameter_list);
@@ -410,7 +415,7 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
   grid_lua_start_vm(&grid_lua_state);
   grid_lua_vm_register_functions(&grid_lua_state, grid_lua_api_generic_lib_reference);
 
-  grid_lua_ui_init(&grid_lua_state, &grid_ui_state);
+  grid_lua_ui_init(&grid_lua_state, grid_ui_state.lua_ui_init_callback);
 
   grid_ui_bulk_semaphore_release(ui);
   grid_ui_busy_semaphore_release(ui);
@@ -449,7 +454,7 @@ struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t ev
     return NULL;
   }
 
-  uint8_t event_index = 255;
+  // uint8_t event_index = 255;
 
   for (uint8_t i = 0; i < ele->event_list_length; i++) {
     if (ele->event_list[i].type == event_type) {
@@ -462,7 +467,7 @@ struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t ev
 
 uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* action_string) {
 
-  struct grid_ui_element* ele = eve->parent;
+  // struct grid_ui_element* ele = eve->parent;
 
   return (strcmp(action_string, eve->default_actionstring) == 0);
 }
@@ -627,15 +632,13 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, char* target_str
 
         if (strlen(grid_lua_get_error_string(&grid_lua_state))) {
 
-          char errorbuffer[100] = {0};
+          char* dest = &target_string[code_start - total_substituted_length + code_stdo_length];
 
-          sprintf(errorbuffer, GRID_CLASS_DEBUGTEXT_frame_start);
-          strcat(errorbuffer, grid_lua_get_error_string(&grid_lua_state));
-          sprintf(&errorbuffer[strlen(errorbuffer)], GRID_CLASS_DEBUGTEXT_frame_end);
+          sprintf(dest, GRID_CLASS_DEBUGTEXT_frame_start);
+          strcat(dest, grid_lua_get_error_string(&grid_lua_state));
+          sprintf(&dest[strlen(dest)], GRID_CLASS_DEBUGTEXT_frame_end);
 
-          errorlen = strlen(errorbuffer);
-
-          strcpy(&target_string[code_start - total_substituted_length + code_stdo_length], errorbuffer);
+          errorlen = strlen(dest);
 
           grid_lua_clear_stde(&grid_lua_state);
         }
@@ -700,7 +703,7 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
     if (status == 0) { // file found
 
-      uint32_t len = grid_platform_read_actionstring_file_contents(&file_handle, targetstring);
+      /* uint32_t len = */ grid_platform_read_actionstring_file_contents(&file_handle, targetstring);
     } else {
       // grid_platform_printf("NOT FOUND, Send default!\r\n");
       grid_ui_event_generate_actionstring(eve, targetstring);
@@ -803,6 +806,16 @@ struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t e
   } else {
     return NULL;
   }
+}
+
+void grid_ui_element_malloc_events(struct grid_ui_element* ele, int capacity) {
+
+  assert(capacity > 0);
+
+  ele->event_list = grid_platform_allocate_volatile(capacity * sizeof(struct grid_ui_event));
+  assert(ele->event_list);
+
+  ele->event_list_length = capacity;
 }
 
 void grid_ui_element_timer_set(struct grid_ui_element* ele, uint32_t duration) { ele->timer_event_helper = duration; }
@@ -1208,7 +1221,7 @@ void grid_ui_bulk_confread_next(struct grid_ui_model* ui) {
   grid_ui_busy_semaphore_lock(ui);
   grid_ui_bulk_semaphore_lock(ui);
 
-  int status = confread_parse_from_file(ui);
+  /*int status = */ confread_parse_from_file(ui);
 
   ui->bulk_status = GRID_UI_BULK_READY;
 
@@ -1264,7 +1277,7 @@ void grid_ui_bulk_confstore_next(struct grid_ui_model* ui) {
   grid_ui_busy_semaphore_lock(ui);
   grid_ui_bulk_semaphore_lock(ui);
 
-  int status = confstore_generate_to_file(ui);
+  /*int status = */ confstore_generate_to_file(ui);
 
   ui->bulk_status = GRID_UI_BULK_READY;
 
@@ -1463,7 +1476,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
           // (table)
           if (eve->type == GRID_PARAMETER_EVENT_MIDIRX) {
 
-            grid_lua_dostring(&grid_lua_state, "if #midi_fifo > midi_fifo_highwater then midi_fifo_highwater = #midi_fifo end"
+            grid_lua_dostring(&grid_lua_state, "if #midi_fifo > midi_fifo_highwater then midi_fifo_highwater = #midi_fifo end "
                                                "local FOO = table.remove(midi_fifo, 1) midi.ch = FOO[1] "
                                                "midi.cmd = FOO[2] midi.p1 = FOO[3] midi.p2 = FOO[4]");
           }

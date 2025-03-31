@@ -22,7 +22,6 @@ void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_b
   state->min_value = UINT16_MAX;
   state->max_value = 0;
   state->min_range = (1 << min_range_depth);
-  state->max_range = (1 << adc_bit_depth);
   state->threshold = threshold;
   state->hysteresis = hysteresis;
 }
@@ -49,7 +48,7 @@ void grid_ui_button_state_range_update(struct grid_ui_button_state* state, uint1
   }
 }
 
-static float lerp(float a, float b, float x) { return a * (1.0 - x) + (b * x); }
+static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }
 
 uint16_t grid_ui_button_state_get_low_trigger(struct grid_ui_button_state* state) {
 
@@ -73,9 +72,7 @@ void grid_ui_element_button_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_BUTTON;
 
-  ele->event_list_length = 3;
-
-  ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
+  grid_ui_element_malloc_events(ele, 3);
 
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_button_init_actionstring);       // Element Initialization Event
   grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_BUTTON, GRID_LUA_FNC_A_BUTTON_short, grid_ui_button_change_actionstring); // Button Change
@@ -194,16 +191,18 @@ void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button
   }
 }
 
-void grid_ui_button_store_input(struct grid_ui_button_state* state, uint8_t input_channel, uint16_t value, uint8_t adc_bit_depth) {
+void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_button_state* state, uint16_t value, uint8_t adc_bit_depth) {
 
   grid_ui_button_state_range_update(state, value);
   if (!grid_ui_button_state_range_valid(state)) {
     return;
   }
 
-  const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
+  // const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
 
-  int32_t* template_parameter_list = grid_ui_state.element_list[input_channel].template_parameter_list;
+  assert(ele);
+
+  int32_t* template_parameter_list = ele->template_parameter_list;
 
   // limit lastrealtime
   uint32_t elapsed_time = grid_platform_rtc_get_elapsed_time(state->last_real_time);
@@ -265,7 +264,7 @@ void grid_ui_button_store_input(struct grid_ui_button_state* state, uint8_t inpu
       template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = next;
     }
 
-    struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_PARAMETER_EVENT_BUTTON);
+    struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_BUTTON);
 
     grid_ui_event_trigger(eve);
   } else { // Button Release Event
@@ -280,7 +279,7 @@ void grid_ui_button_store_input(struct grid_ui_button_state* state, uint8_t inpu
       // Toggle
     }
 
-    struct grid_ui_event* eve = grid_ui_event_find(&grid_ui_state.element_list[input_channel], GRID_PARAMETER_EVENT_BUTTON);
+    struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_BUTTON);
 
     grid_ui_event_trigger(eve);
   }

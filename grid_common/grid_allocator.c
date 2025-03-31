@@ -1,7 +1,9 @@
 
 #include "grid_allocator.h"
 
+#undef malloc
 #define malloc malloc
+#undef free
 #define free free
 
 // Function pointers to the original malloc and free functions
