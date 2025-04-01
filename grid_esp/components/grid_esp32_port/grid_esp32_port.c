@@ -173,9 +173,7 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
   // Service local triggers first and as fast as possible
   if (grid_ui_event_count_istriggered_local(&grid_ui_state) > 0) {
 
-    vTaskSuspendAll();
     grid_port_process_ui_local_UNSAFE(&grid_ui_state);
-    xTaskResumeAll();
     return;
   }
 
@@ -185,9 +183,7 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
 
   if (grid_ui_event_count_istriggered(&grid_ui_state) > 0) {
 
-    vTaskSuspendAll();
     grid_port_process_ui_UNSAFE(&grid_ui_state);
-    xTaskResumeAll();
   }
 }
 
