@@ -31,4 +31,7 @@
 #define GRID_LUA_FNC_G_SEGCALC_short "gsc"
 #define GRID_LUA_FNC_G_SEGCALC_human "segment_calculate"
 
+#include "toml.h"
+#define GRID_LUA_FNC_G_TOML_source grid_lua_src_toml_lua
+
 #endif

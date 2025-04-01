@@ -284,10 +284,10 @@ void process_ui_local(void) {
   }
 
   // CRITICAL_SECTION_ENTER()
-  vTaskSuspendAll();
+  // vTaskSuspendAll();
   grid_port_process_ui_local_UNSAFE(&grid_ui_state);
-  xTaskResumeAll();
-  // CRITICAL_SECTION_LEAVE()
+  // xTaskResumeAll();
+  //  CRITICAL_SECTION_LEAVE()
 }
 
 void process_ui_normal(void) {
@@ -307,10 +307,10 @@ void process_ui_normal(void) {
   cooldown_lastrealtime = grid_platform_rtc_get_micros();
 
   // CRITICAL_SECTION_ENTER()
-  vTaskSuspendAll();
+  // vTaskSuspendAll();
   grid_port_process_ui_UNSAFE(&grid_ui_state);
-  xTaskResumeAll();
-  // CRITICAL_SECTION_LEAVE()
+  // xTaskResumeAll();
+  //  CRITICAL_SECTION_LEAVE()
 }
 
 static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
