@@ -9,6 +9,7 @@ static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 #define GRID_MODULE_EN16_ENC_NUM 16
 
 static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EN16_ENC_NUM] = {0};
+static struct grid_ui_element* elements = NULL;
 
 static void hardware_start_transfer(void) {
 
@@ -36,7 +37,9 @@ static void spi_transfer_complete_cb(void) {
 
     uint8_t i = encoder_position_lookup[j];
 
-    grid_ui_encoder_store_input(&ui_encoder_state[i], i, new_value);
+    struct grid_ui_element* ele = &elements[i];
+
+    grid_ui_encoder_store_input(ele, &ui_encoder_state[i], new_value);
   }
 
   hardware_start_transfer();
@@ -62,6 +65,8 @@ void grid_module_en16_init() {
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent);
   }
+
+  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   hardware_init();
 
