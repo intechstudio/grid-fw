@@ -105,7 +105,7 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
   grid_swsr_read(rx, temp, ret + 1);
   temp[ret + 1] = '\0';
 
-  if (grid_str_verify_frame((char*)temp)) {
+  if (grid_str_verify_frame((char*)temp, ret + 1)) {
     return;
   }
 

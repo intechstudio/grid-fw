@@ -178,6 +178,10 @@ void grid_port_recv_msg_direct(struct grid_port* port, uint8_t* msg, size_t size
     return;
   }
 
+  if (!(msg[3] >= GRID_CONST_NORTH && msg[3] <= GRID_CONST_WEST)) {
+    return;
+  }
+
   grid_port_connect(port);
 
   enum grid_port_dir dir = grid_port_code_to_dir(msg[3]);
@@ -340,10 +344,11 @@ void grid_str_transform_brc_params(char* msg, int8_t dx, int8_t dy, uint8_t part
   int8_t sign_x[4] = {1, -1, -1, 1};
   int8_t sign_y[4] = {1, 1, -1, -1};
 
-  int8_t rot_dx = sign_x[partner_rot] * recv_dx;
-  int8_t rot_dy = sign_y[partner_rot] * recv_dy;
-  int8_t rot_sx = sign_x[partner_rot] * recv_sx;
-  int8_t rot_sy = sign_y[partner_rot] * recv_sy;
+  uint8_t cross = partner_rot % 2;
+  int8_t rot_dx = sign_x[partner_rot] * (recv_dx * !cross + recv_dy * cross);
+  int8_t rot_dy = sign_y[partner_rot] * (recv_dy * !cross + recv_dx * cross);
+  int8_t rot_sx = sign_x[partner_rot] * (recv_sx * !cross + recv_sy * cross);
+  int8_t rot_sy = sign_y[partner_rot] * (recv_sy * !cross + recv_sx * cross);
 
   uint8_t new_dx = rot_dx + GRID_PARAMETER_DEFAULT_POSITION + dx;
   uint8_t new_dy = rot_dy + GRID_PARAMETER_DEFAULT_POSITION + dy;

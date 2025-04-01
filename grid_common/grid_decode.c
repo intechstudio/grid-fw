@@ -65,7 +65,7 @@ uint8_t grid_decode_midi_to_usb(char* header, char* chunk) {
   midievent.byte3 = midi_param2;
 
   if (grid_midi_tx_push(midievent)) {
-    grid_port_debug_print_text("MIDI TX: Packet Dropped!");
+    // grid_port_debug_print_text("MIDI TX: Packet Dropped!");
   };
   // grid_midi_tx_pop(midievent);
 

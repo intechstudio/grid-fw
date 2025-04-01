@@ -38,6 +38,18 @@ struct grid_port* grid_transport_get_port(struct grid_transport* transport, size
   return port;
 }
 
+uint8_t trailing_zeroes(uint8_t x) {
+
+  uint8_t res = 0;
+
+  while (x > 0 && !(x & 1)) {
+    ++res;
+    x >>= 1;
+  }
+
+  return res;
+}
+
 void grid_transport_recv_usart(struct grid_transport* transport, uint8_t* msg, size_t size) {
 
   assert(size <= GRID_PARAMETER_SPI_TRANSACTION_length);
@@ -45,7 +57,7 @@ void grid_transport_recv_usart(struct grid_transport* transport, uint8_t* msg, s
   // The number of trailing zeroes in the source flag
   // indexes the destination UART port of the message
   uint8_t src_flags = msg[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
-  uint8_t tz = __builtin_ctz(src_flags);
+  uint8_t tz = trailing_zeroes(src_flags);
 
   // If the trailing zeroes indicate an invalid port, return early
   if (tz >= 4) {
@@ -61,7 +73,7 @@ void grid_transport_recv_usb(struct grid_transport* transport, uint8_t* msg, siz
 
   struct grid_port* port = grid_transport_get_port(transport, 5, GRID_PORT_USB, 0);
 
-  grid_str_transform_brc_params(msg, port->dx, port->dy, port->partner.rot);
+  grid_str_transform_brc_params((char*)msg, port->dx, port->dy, port->partner.rot);
 
   struct grid_swsr_t* rx = grid_port_get_rx(port);
 
@@ -182,6 +194,7 @@ void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct gri
     struct grid_swsr_t* tx = grid_port_get_tx(next);
 
     if (!grid_swsr_writable(tx, rx_size)) {
+      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_BLUE, 128);
       continue;
     }
 

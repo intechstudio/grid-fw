@@ -42,7 +42,7 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
   grid_swsr_read(rx, temp, ret + 1);
   temp[ret + 1] = '\0';
 
-  if (grid_str_verify_frame((char*)temp)) {
+  if (grid_str_verify_frame((char*)temp, ret + 1)) {
     goto bulkout_cb_end;
   }
 

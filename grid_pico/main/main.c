@@ -221,7 +221,7 @@ enum pico_bkt_state_t grid_uart_rx_process_bkt(struct grid_pico_uart_port* port,
     return PICO_BKT_STATE_EMPTY;
   }
 
-  int status = grid_str_verify_frame(msg);
+  int status = grid_str_verify_frame(msg, len);
 
   if (status != 0) {
     return PICO_BKT_STATE_EMPTY;

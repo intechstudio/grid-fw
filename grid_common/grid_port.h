@@ -86,6 +86,8 @@ void grid_port_send_usart(struct grid_port* port);
 void grid_port_send_usb(struct grid_port* port);
 void grid_port_send_ui(struct grid_port* port);
 
+void grid_str_transform_brc_params(char* msg, int8_t dx, int8_t dy, uint8_t partner_rot);
+
 void grid_port_debug_print_text(char* str);
 void grid_port_debug_printf(const char* fmt, ...);
 void grid_port_websocket_print_text(char* str);

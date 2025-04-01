@@ -206,14 +206,14 @@ int grid_uwsr_cspn(struct grid_uwsr_t* uwsr, char reject) {
   int i = 0;
 
   int first = (uwsr->read + 1) % uwsr->capacity;
-  int j = first + 0;
+  int j = first + i;
 
   int read = uwsr->read;
   while (j != read && uwsr->data[j] != reject) {
     j = ((++i) + first) % uwsr->capacity;
   }
 
-  bool found = j != read && uwsr->data[j] == reject;
+  bool found = j != read && uwsr->data[j] == reject /* && uwsr->data[(j + 1) % uwsr->capacity]*/;
 
   return found ? i : -1;
 }

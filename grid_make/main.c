@@ -335,6 +335,9 @@ void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, s
   }
 
   if (ret >= GRID_PARAMETER_SPI_TRANSACTION_length) {
+
+    grid_uwsr_read(uwsr, NULL, ret + 1);
+
     return;
   }
 
@@ -344,7 +347,7 @@ void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, s
 
   temp[ret + 1] = '\0';
 
-  if (grid_str_verify_frame(temp) != 0) {
+  if (grid_str_verify_frame(temp, ret + 1) != 0) {
     return;
   }
 
@@ -421,8 +424,8 @@ int main(void) {
   ext_irq_register(PIN_GRID_SYNC_1, button_on_SYNC1_pressed);
   ext_irq_register(PIN_GRID_SYNC_2, button_on_SYNC2_pressed);
 
-  struct grid_msg_recent_buffer recent_messages;
-  grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
+  struct grid_msg_recent_buffer recent;
+  grid_msg_recent_fingerprint_buffer_init(&recent, 64);
 
   // Configure task timers
   timer_ping = (struct grid_utask_timer){
@@ -481,7 +484,7 @@ int main(void) {
       struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
       struct grid_uwsr_t* uwsr = &usart_uwsr[i];
 
-      grid_d51_port_recv_uwsr(port, uwsr, &recent_messages);
+      grid_d51_port_recv_uwsr(port, uwsr, &recent);
     }
 
     struct grid_port* port_ui = grid_transport_get_port(xport, 4, GRID_PORT_UI, 0);
@@ -519,74 +522,6 @@ int main(void) {
     }
 
     handle_connection_effect();
-
-    // ui_task_inner();
-
-    /*
-    if (usb_d_get_frame_num() != 0) {
-
-      if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1) {
-
-        printf("USB CONNECTED\r\n\r\n");
-        printf("HWCFG %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
-
-        grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);
-        grid_alert_all_set_frequency(&grid_led_state, -2);
-        grid_alert_all_set_phase(&grid_led_state, 200);
-
-        grid_msg_set_heartbeat_type(&grid_msg_state, 1);
-
-        printf("Register MIDI callbacks\r\n\r\n");
-        // grid_d51_usb_midi_register_callbacks();
-      }
-    }
-
-    // printf("WTF\r\n\r\n");
-
-    loopcounter++;
-    loopcount++;
-
-    if (reportflag) {
-
-      reportflag = 0;
-      loopcount = 0;
-    }
-
-    if (loopcounter == 1000) {
-
-      grid_d51_nvic_debug_priorities();
-    }
-
-    usb_task_inner(&recent_messages);
-
-    nvm_task_inner();
-
-    // receive_task_inner(partner_connected, &recent_messages);
-
-    // lua_gc(grid_lua_state.L, LUA_GCSTOP);
-
-    ui_task_inner();
-
-    outbound_task_inner();
-
-    inbound_task_inner();
-
-    led_task_inner();
-
-    if (grid_sys_get_editor_connected_state(&grid_sys_state) == 1) {
-
-      if (grid_platform_rtc_get_elapsed_time(grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state)) > 2000 * MS_TO_US) { // 2 sec
-
-        printf("EDITOR timeout\r\n");
-        grid_port_debug_print_text("EDITOR timeout");
-
-        grid_sys_set_editor_connected_state(&grid_sys_state, 0);
-
-        grid_ui_state.page_change_enabled = 1;
-      }
-    }
-    */
-
   } // WHILE
 
 } // MAIN
