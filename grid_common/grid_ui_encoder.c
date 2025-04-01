@@ -296,6 +296,8 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
   uint8_t old_value = state->last_nibble;
   state->last_nibble = new_value;
 
+  state->initial_samples += (state->initial_samples <= GRID_UI_ENCODER_INIT_SAMPLES);
+
   if (old_value == new_value) {
     // no change since the last time we read the shift register
     return;
@@ -309,10 +311,8 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
   uint8_t old_button_value = (old_value & 0b00000100) ? 1 : 0;
 
   // Evaluate the results
-  if (state->initial_samples >= GRID_UI_ENCODER_INIT_SAMPLES) {
+  if (state->initial_samples > GRID_UI_ENCODER_INIT_SAMPLES) {
     grid_ui_button_update_trigger(ele, &state->button_last_real_time, old_button_value, new_button_value);
     grid_ui_encoder_update_trigger(ele, &state->encoder_last_real_time, delta);
   }
-
-  state->initial_samples += (state->initial_samples < GRID_UI_ENCODER_INIT_SAMPLES);
 }
