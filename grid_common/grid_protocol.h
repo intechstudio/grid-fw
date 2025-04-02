@@ -44,6 +44,7 @@
 
 // ESP
 #define GRID_MODULE_PO16_RevD 1
+#define GRID_MODULE_PO16_RevH 3
 
 #define GRID_MODULE_BU16_RevB 128
 #define GRID_MODULE_BU16_RevC 136
