@@ -149,7 +149,20 @@ static bool IRAM_ATTR grid_esp32_adc_alarm_cb(gptimer_handle_t timer, const gpti
   return true;
 }
 
-void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
+static bool IRAM_ATTR grid_esp32_adc_alarm_independent_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t* edata, void* user_ctx) {
+
+  grid_esp32_adc_convert_independent();
+
+  return true;
+}
+
+void grid_esp32_adc_start(struct grid_esp32_adc_model* adc, uint8_t multiplexer_overflow, bool independent) {
+
+  if (independent) {
+    ulp_mux_logic_activated = 1;
+  } else {
+    grid_esp32_adc_mux_init(adc, multiplexer_overflow);
+  }
 
   ESP_LOGI("ADC", "Create timer handle");
   gptimer_handle_t gptimer = NULL;
@@ -161,7 +174,7 @@ void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
   ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
 
   gptimer_event_callbacks_t cbs = {
-      .on_alarm = grid_esp32_adc_alarm_cb, // register user callback
+      .on_alarm = independent ? grid_esp32_adc_alarm_independent_cb : grid_esp32_adc_alarm_cb, // register user callback
   };
   ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, NULL));
 
@@ -196,6 +209,37 @@ void IRAM_ATTR grid_esp32_adc_convert() {
   uint8_t mux_state = grid_esp32_adc_mux_get_index(adc);
   grid_esp32_adc_mux_increment(adc);
   grid_esp32_adc_mux_update(adc);
+
+  uint32_t adc_value[2] = {ulp_adc_value_0, ulp_adc_value_1};
+
+  for (int i = 0; i < 2; ++i) {
+
+    struct grid_esp32_adc_result result;
+    result.channel = i;
+    result.mux_state = mux_state;
+    result.value = adc_value[i];
+
+    adc->process_analog(&result);
+  }
+
+  ulp_sum_value_0 = 0;
+  ulp_sum_value_1 = 0;
+  ulp_adc_result_ready = 0;
+}
+
+void IRAM_ATTR grid_esp32_adc_convert_independent() {
+
+  struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
+
+  if (!adc->process_analog) {
+    return;
+  }
+
+  if (ulp_adc_result_ready < ulp_adc_oversample) {
+    return;
+  }
+
+  uint8_t mux_state = ulp_mux_index;
 
   uint32_t adc_value[2] = {ulp_adc_value_0, ulp_adc_value_1};
 
