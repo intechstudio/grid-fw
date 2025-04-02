@@ -36,6 +36,8 @@ typedef void (*grid_process_analog_t)(void* user);
 
 struct grid_esp32_adc_model {
 
+  SemaphoreHandle_t ulp_isr_sem;
+
   uint8_t mux_index;
   uint8_t mux_overflow;
 

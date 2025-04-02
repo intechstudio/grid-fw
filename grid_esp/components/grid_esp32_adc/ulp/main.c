@@ -40,7 +40,7 @@ void grid_ulp_adc_mux_update(void) {
   ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_C, mux_index / 4 % 2);
 }
 
-volatile uint32_t adc_oversample = 8;
+volatile uint32_t adc_oversample = 1;
 volatile uint32_t adc_result_ready = 0;
 volatile uint32_t adc_value_0 = 0;
 volatile uint32_t adc_value_1 = 0;
@@ -60,10 +60,16 @@ int main(void) {
 
   while (1) {
 
+    if (mux_logic_activated && adc_result_ready >= adc_oversample) {
+      ulp_riscv_wakeup_main_processor(); // wake up main processor
+    }
+
     while (adc_result_ready >= adc_oversample) {
+      // wait for main processor to process sample data
       continue;
     }
-    if (mux_logic_activated && adc_result_ready == 0) { // just quit the busy loop
+    if (mux_logic_activated && adc_result_ready == 0) {
+      // increment mux after data is processed if independent mode is active
       grid_ulp_adc_mux_increment();
       grid_ulp_adc_mux_update();
     }
