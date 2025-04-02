@@ -41,26 +41,6 @@ void grid_platform_sync1_pulse_send() { sync1_state++; }
 extern void grid_platform_rtc_set_micros(uint64_t mic);
 extern uint64_t grid_platform_rtc_get_micros(void);
 
-static void usb_task_inner(struct grid_msg_recent_buffer* rec) {
-
-  /*
-  // Forward midi from Host to Grid!
-  grid_midi_rx_pop();
-
-  // SERIAL READ
-
-  char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
-  uint16_t length = 0;
-
-  struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(host_port->parent, host_port->index);
-
-  grid_port_rxdobulebuffer_to_linear(host_port, doublebuffer_rx, message, &length); // USB
-
-  grid_str_transform_brc_params(message, host_port->dx, host_port->dy, host_port->partner_fi); // update age, sx, sy, dx, dy, rot etc...
-  grid_port_receive_decode(host_port, rec, message, length);
-  */
-}
-
 static void nvm_task_inner() {
 
   if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
@@ -453,7 +433,6 @@ int main(void) {
 
     if (loopcounter == 10000) {
 
-      // TODO display
       // grid_d51_nvic_debug_priorities();
     }
 
