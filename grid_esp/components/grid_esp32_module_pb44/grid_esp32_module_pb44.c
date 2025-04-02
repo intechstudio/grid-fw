@@ -66,8 +66,10 @@ void grid_esp32_module_pb44_task(void* arg) {
   }
 
   grid_esp32_adc_init(&grid_esp32_adc_state, pb44_process_analog);
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
-  grid_esp32_adc_start(&grid_esp32_adc_state);
+
+  const uint8_t multiplexer_overflow = 8;
+
+  grid_esp32_adc_start(&grid_esp32_adc_state, multiplexer_overflow, grid_hwcfg_module_is_rev_h(&grid_sys_state));
 
   elements = grid_ui_model_get_elements(&grid_ui_state);
 

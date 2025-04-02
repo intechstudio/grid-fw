@@ -36,6 +36,8 @@ typedef void (*grid_process_analog_t)(void* user);
 
 struct grid_esp32_adc_model {
 
+  SemaphoreHandle_t ulp_isr_sem;
+
   uint8_t mux_index;
   uint8_t mux_overflow;
 
@@ -52,6 +54,7 @@ struct grid_esp32_adc_result {
 extern struct grid_esp32_adc_model grid_esp32_adc_state;
 
 void grid_esp32_adc_convert();
+void grid_esp32_adc_convert_independent();
 
 void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog);
 
@@ -61,7 +64,7 @@ void grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc);
 void grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc);
 uint8_t grid_esp32_adc_mux_get_index(struct grid_esp32_adc_model* adc);
 
-void grid_esp32_adc_start(struct grid_esp32_adc_model* adc);
+void grid_esp32_adc_start(struct grid_esp32_adc_model* adc, uint8_t multiplexer_overflow, bool independent);
 void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc);
 
 #ifdef __cplusplus

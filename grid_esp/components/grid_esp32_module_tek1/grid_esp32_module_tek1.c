@@ -171,8 +171,7 @@ void grid_esp32_module_tek1_task(void* arg) {
     grid_esp32_adc_init(&grid_esp32_adc_state, vsn2_process_analog);
   }
 
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
-  grid_esp32_adc_start(&grid_esp32_adc_state);
+  grid_esp32_adc_start(&grid_esp32_adc_state, multiplexer_overflow, grid_hwcfg_module_is_rev_h(&grid_sys_state));
 
   elements = grid_ui_model_get_elements(&grid_ui_state);
 

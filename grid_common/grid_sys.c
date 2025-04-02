@@ -211,3 +211,21 @@ int grid_hwcfg_module_is_vsnx_rev_a(struct grid_sys_model* sys) {
 
   return 0;
 }
+
+int grid_hwcfg_module_is_rev_h(struct grid_sys_model* sys) {
+
+  // clang-format off
+  switch (grid_sys_get_hwcfg(sys)) {
+    case GRID_MODULE_PO16_RevH: return 1;
+    case GRID_MODULE_BU16_RevH: return 1;
+    case GRID_MODULE_PBF4_RevH: return 1;
+    case GRID_MODULE_EN16_RevH: return 1;
+    case GRID_MODULE_EF44_RevH: return 1;
+    case GRID_MODULE_TEK2_RevH: return 1;
+    case GRID_MODULE_VSN1L_RevH: return 1;
+    case GRID_MODULE_VSN1R_RevH: return 1;
+    case GRID_MODULE_VSN2_RevH: return 1;
+    default: return 0;
+  }
+  // clang-format on
+}

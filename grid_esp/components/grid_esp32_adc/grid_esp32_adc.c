@@ -36,6 +36,9 @@
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
+#include "driver/rtc_cntl.h"
+#include "soc/rtc_cntl_reg.h"
+
 void* grid_platform_allocate_volatile(size_t size);
 
 extern const uint8_t ulp_grid_esp32_adc_bin_start[] asm("_binary_ulp_grid_esp32_adc_bin_start");
@@ -137,6 +140,9 @@ void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t
 
   adc->process_analog = process_analog;
 
+  adc->ulp_isr_sem = xSemaphoreCreateBinary();
+  assert(adc->ulp_isr_sem);
+
   adc_init_ulp(adc);
 
   adc->mux_index = 0;
@@ -149,7 +155,28 @@ static bool IRAM_ATTR grid_esp32_adc_alarm_cb(gptimer_handle_t timer, const gpti
   return true;
 }
 
-void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
+#include "rom/ets_sys.h" // For ets_printf
+
+static void ulp_isr(void* arg) {
+  SemaphoreHandle_t done = (SemaphoreHandle_t)arg;
+  // xSemaphoreGiveFromISR(done);
+  // printf("Interrupt from ULP\n");
+  grid_esp32_adc_convert_independent();
+}
+
+void grid_esp32_adc_start(struct grid_esp32_adc_model* adc, uint8_t multiplexer_overflow, bool independent) {
+
+  if (independent) {
+    ulp_mux_logic_activated = 1;
+    esp_err_t err = rtc_isr_register(&ulp_isr, (void*)adc->ulp_isr_sem, RTC_CNTL_COCPU_INT_ST_M, RTC_INTR_FLAG_IRAM);
+    ESP_ERROR_CHECK(err);
+    REG_SET_BIT(RTC_CNTL_INT_ENA_REG, RTC_CNTL_COCPU_INT_ST_M);
+
+    ESP_ERROR_CHECK(ulp_riscv_run());
+    return;
+  }
+
+  grid_esp32_adc_mux_init(adc, multiplexer_overflow);
 
   ESP_LOGI("ADC", "Create timer handle");
   gptimer_handle_t gptimer = NULL;
@@ -212,4 +239,41 @@ void IRAM_ATTR grid_esp32_adc_convert() {
   ulp_sum_value_0 = 0;
   ulp_sum_value_1 = 0;
   ulp_adc_result_ready = 0;
+}
+
+#include "esp_timer.h"
+
+void IRAM_ATTR grid_esp32_adc_convert_independent() {
+
+  struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
+
+  if (!adc->process_analog) {
+    return;
+  }
+
+  if (ulp_adc_result_ready < ulp_adc_oversample) {
+    return;
+  }
+
+  uint8_t mux_state = ulp_mux_index;
+
+  uint32_t adc_value[2] = {ulp_adc_value_0, ulp_adc_value_1};
+
+  for (int i = 0; i < 2; ++i) {
+
+    struct grid_esp32_adc_result result;
+    result.channel = i;
+    result.mux_state = mux_state;
+    result.value = adc_value[i];
+
+    adc->process_analog(&result);
+  }
+
+  ulp_sum_value_0 = 0;
+  ulp_sum_value_1 = 0;
+  ulp_adc_result_ready = 0;
+
+  if (mux_state == 7 && adc_value[0] < 2500) {
+    ets_printf("Processed %d %u\n", adc_value[0], esp_timer_get_time());
+  }
 }
