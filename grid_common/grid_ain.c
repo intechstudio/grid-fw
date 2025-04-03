@@ -144,13 +144,7 @@ uint8_t grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel) {
 
   struct AIN_Channel* instance = &ain->channel_buffer[channel];
 
-  if (instance->result_changed) {
-
-    return 1;
-  } else {
-
-    return 0;
-  }
+  return instance->result_changed != 0;
 }
 
 uint16_t grid_ain_get_average(struct grid_ain_model* ain, uint8_t channel) {
@@ -162,16 +156,19 @@ uint16_t grid_ain_get_average(struct grid_ain_model* ain, uint8_t channel) {
   return instance->result_value;
 }
 
+static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }
+
 int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel, uint8_t source_resolution, uint8_t result_resolution, int32_t min, int32_t max) {
 
   struct AIN_Channel* instance = &ain->channel_buffer[channel];
 
   instance->result_changed = 0;
 
-  // source_resolution on D51 architecture is 16, so int16 is not big enough
-  int32_t range_max = ((1 << source_resolution) - 1) - (1 << (source_resolution - result_resolution));
+  int bits_diff = source_resolution - result_resolution;
 
-  int32_t next = instance->result_value * (max - min) / range_max + min;
+  uint16_t value = instance->result_value >> bits_diff;
+
+  int32_t next = lerp(min, max + 1, value / (double)(1 << result_resolution));
 
   if (next > max) {
     next = max;
