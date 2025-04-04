@@ -90,4 +90,5 @@ void assert(const bool condition, const char *const file, const int line);
 #ifdef __cplusplus
 }
 #endif
+
 #endif /* _ASSERT_H_INCLUDED */

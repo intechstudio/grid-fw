@@ -136,7 +136,7 @@ uint32_t grid_d51_nvm_toc_defragment(struct grid_d51_nvm_model* nvm) {
 
   grid_msg_packet_close(&grid_msg_state, &response);
 
-  grid_port_packet_send_everywhere(&response);
+  grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
 
   grid_d51_nvm_toc_debug(nvm);
 }

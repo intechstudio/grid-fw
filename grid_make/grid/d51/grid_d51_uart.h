@@ -18,6 +18,10 @@
 #define DMA_SOUTH_RX_CHANNEL 2
 #define DMA_WEST_RX_CHANNEL 3
 
+extern struct grid_uwsr_t usart_uwsr[4];
+extern uint8_t usart_tx_ready[4];
+extern uint8_t usart_tx_buf[4][GRID_PARAMETER_SPI_TRANSACTION_length];
+
 void grid_d51_uart_port_reset_dma(uint8_t dma_channel);
 
 void grid_d51_uart_init();
@@ -39,13 +43,11 @@ static void tx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr)
 static void tx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr);
 static void tx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr);
 static void tx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr);
-static void tx_cb_USART_GRID(struct grid_doublebuffer* const doublebuffer_tx);
 
 static void rx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr);
 static void rx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr);
 static void rx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr);
 static void rx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr);
-static void rx_cb_USART_GRID(struct grid_doublebuffer* const doublebuffer_rx);
 
 static void dma_transfer_complete_n_cb(struct _dma_resource* resource);
 static void dma_transfer_complete_e_cb(struct _dma_resource* resource);

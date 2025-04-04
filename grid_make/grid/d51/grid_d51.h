@@ -14,6 +14,8 @@
 #include "sam.h"
 
 #include "grid_d51_led.h"
+#include "grid_d51_nvm.h"
+#include "grid_d51_uart.h"
 
 #define GRID_D51_USER_ROW_BASE 0x804000
 

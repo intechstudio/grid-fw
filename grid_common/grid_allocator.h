@@ -1,8 +1,7 @@
-#ifndef GRID_ALLOCATOR_H_INCLUDED
-#define GRID_ALLOCATOR_H_INCLUDED
+#ifndef GRID_ALLOCATOR_H
+#define GRID_ALLOCATOR_H
 
-#pragma once
-
+#include <stdio.h>
 #include <stdlib.h>
 
 #define malloc(x) my_malloc(x, __FILE__, __LINE__)
@@ -11,4 +10,4 @@
 void* my_malloc(size_t size, char* file, int line);
 void my_free(void* ptr);
 
-#endif
+#endif /* GRID_ALLOCATOR_H */

@@ -1,13 +1,5 @@
 #include "grid_ui_system.h"
 
-#include "grid_ain.h"
-#include "grid_lua_api.h"
-#include "grid_protocol.h"
-#include "grid_ui.h"
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-
 extern uint8_t grid_platform_get_adc_bit_depth();
 
 extern void grid_platform_printf(char const* fmt, ...);

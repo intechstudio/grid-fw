@@ -24,6 +24,9 @@ idf_component_register(
         "grid_module.c"
         "grid_lua_api.c"
         "grid_lua.c"
+        "grid_transport.c"
+        "grid_rollid.c"
+        "grid_utask.c"
 
         "lua-5.4.3/src/lapi.c"
         "lua-5.4.3/src/lauxlib.c"

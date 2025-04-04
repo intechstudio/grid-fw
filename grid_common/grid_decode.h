@@ -1,13 +1,16 @@
-#ifndef GRID_DECODE_H_INCLUDED
-#define GRID_DECODE_H_INCLUDED
+#ifndef GRID_DECODE_H
+#define GRID_DECODE_H
 
 #include "grid_buf.h"
 #include "grid_led.h"
 #include "grid_lua_api.h"
 #include "grid_msg.h"
+#include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_sys.h"
 #include "grid_ui.h"
+#include "grid_ui_encoder.h"
+#include "grid_ui_potmeter.h"
 #include "grid_usb.h"
 
 #include <stdarg.h>
@@ -63,4 +66,4 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk);
 
 uint8_t grid_decode_hidkeystatus_to_ui(char* header, char* chunk);
 
-#endif
+#endif /* GRID_DECODE_H */

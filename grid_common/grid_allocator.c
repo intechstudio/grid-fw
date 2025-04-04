@@ -1,8 +1,5 @@
 
-
 #include "grid_allocator.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 #undef malloc
 #define malloc malloc

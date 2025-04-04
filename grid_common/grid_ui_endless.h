@@ -1,11 +1,16 @@
-#pragma once
+#ifndef GRID_UI_ENDLESS_H
+#define GRID_UI_ENDLESS_H
 
-#ifndef GRID_UI_ENDLESS_H_INCLUDED
-#define GRID_UI_ENDLESS_H_INCLUDED
-
-#include "grid_ui.h"
 #include <math.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_ain.h"
+#include "grid_lua_api.h"
+#include "grid_protocol.h"
+#include "grid_ui.h"
+#include "grid_ui_system.h"
 
 struct grid_ui_endless_state {
   uint16_t phase_a;
@@ -152,4 +157,4 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128--[[@gms]] gms(ch,144,note,val)--[[@for]] for i=1,5,1 do--[[@l]] local "                  \
   "lednum=num+i*2-2--[[@glp]] glp(lednum,1,val)--[[@enl]] end ?>"
 
-#endif
+#endif /* GRID_UI_ENDLESS_H */
