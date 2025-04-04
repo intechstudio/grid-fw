@@ -74,48 +74,31 @@ uint8_t grid_sys_get_midirx_sync_state(struct grid_sys_model* sys) { return sys-
 void grid_sys_set_midirx_any_state(struct grid_sys_model* sys, uint8_t state) { sys->midirx_any_enabled = state; }
 void grid_sys_set_midirx_sync_state(struct grid_sys_model* sys, uint8_t state) { sys->midirx_sync_enabled = state; }
 
-uint8_t grid_sys_get_module_x(struct grid_sys_model* sys) { return sys->module_x; }
-uint8_t grid_sys_get_module_y(struct grid_sys_model* sys) { return sys->module_y; }
+int8_t grid_sys_get_module_x(struct grid_sys_model* sys) { return sys->module_x; }
+int8_t grid_sys_get_module_y(struct grid_sys_model* sys) { return sys->module_y; }
 uint8_t grid_sys_get_module_rot(struct grid_sys_model* sys) { return sys->module_rot; }
 
-void grid_sys_set_module_x(struct grid_sys_model* sys, uint8_t x) { sys->module_x = x; }
-void grid_sys_set_module_y(struct grid_sys_model* sys, uint8_t y) { sys->module_y = y; }
+void grid_sys_set_module_x(struct grid_sys_model* sys, int8_t x) { sys->module_x = x; }
+void grid_sys_set_module_y(struct grid_sys_model* sys, int8_t y) { sys->module_y = y; }
 void grid_sys_set_module_rot(struct grid_sys_model* sys, uint8_t rot) { sys->module_rot = rot; }
 
 void grid_sys_set_module_absolute_position(struct grid_sys_model* sys, uint8_t sx, uint8_t sy, uint8_t rot, uint8_t portrot) {
 
-  // from usb connected module
-  int8_t received_sx = sx - GRID_PARAMETER_DEFAULT_POSITION; // convert to signed ind
-  int8_t received_sy = sy - GRID_PARAMETER_DEFAULT_POSITION; // convert to signed ind
-  int8_t rotated_sx = 0;
-  int8_t rotated_sy = 0;
+  assert(portrot < 4);
 
-  // APPLY THE 2D ROTATION MATRIX
+  // Convert to signed int
+  int8_t recv_sx = sx - GRID_PARAMETER_DEFAULT_POSITION;
+  int8_t recv_sy = sy - GRID_PARAMETER_DEFAULT_POSITION;
 
-  // printf("Protrot %d \r\n", portrot);
+  int8_t sign_x[4] = {-1, -1, 1, 1};
+  int8_t sign_y[4] = {-1, 1, 1, -1};
 
-  if (portrot == 0) { // 0 deg
+  uint8_t cross = portrot % 2;
+  int8_t rot_sx = sign_x[portrot] * (recv_sx * !cross + recv_sy * cross);
+  int8_t rot_sy = sign_x[portrot] * (recv_sy * !cross + recv_sx * cross);
 
-    rotated_sx -= received_sx;
-    rotated_sy -= received_sy;
-  } else if (portrot == 1) { // 90 deg
-
-    rotated_sx -= received_sy;
-    rotated_sy += received_sx;
-  } else if (portrot == 2) { // 180 deg
-
-    rotated_sx += received_sx;
-    rotated_sy += received_sy;
-  } else if (portrot == 3) { // 270 deg
-
-    rotated_sx += received_sy;
-    rotated_sy -= received_sx;
-  } else {
-    // TRAP INVALID MESSAGE
-  }
-
-  grid_sys_set_module_x(&grid_sys_state, rotated_sx);
-  grid_sys_set_module_y(&grid_sys_state, rotated_sy);
+  grid_sys_set_module_x(&grid_sys_state, rot_sx);
+  grid_sys_set_module_y(&grid_sys_state, rot_sy);
   grid_sys_set_module_rot(&grid_sys_state, rot);
 }
 
