@@ -194,7 +194,11 @@ void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct gri
     struct grid_swsr_t* tx = grid_port_get_tx(next);
 
     if (!grid_swsr_writable(tx, rx_size)) {
-      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_BLUE, 128);
+
+      if (type == GRID_PORT_USART) {
+        grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_BLUE, 128);
+      }
+
       continue;
     }
 

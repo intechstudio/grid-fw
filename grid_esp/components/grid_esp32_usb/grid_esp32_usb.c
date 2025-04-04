@@ -130,6 +130,8 @@ void tud_cdc_tx_complete_cb(uint8_t itf) {
   // ets_printf("# %d\r\n", status);
 }
 
+int32_t grid_platform_usb_serial_ready() { return usb_tx_ready; }
+
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) {
 
   // portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;

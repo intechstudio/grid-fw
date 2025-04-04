@@ -60,6 +60,8 @@ static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code
 
   return false; /* No error. */
 }
+static uint8_t usb_tx_ready = 0;
+
 static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state) {
 
   // grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
@@ -73,10 +75,14 @@ static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state) {
     cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)grid_usb_serial_bulkin_cb);
     /* Start Rx */
     cdcdf_acm_read((uint8_t*)grid_usb_serial_rx_buffer, sizeof(grid_usb_serial_rx_buffer));
+
+    usb_tx_ready = 1;
   }
 
   return false; /* No error. */
 }
+
+int32_t grid_platform_usb_serial_ready() { return usb_tx_ready; }
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) { return cdcdf_acm_write((uint8_t*)buffer, length); }
 
