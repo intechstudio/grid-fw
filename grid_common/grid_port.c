@@ -46,12 +46,13 @@ void grid_partner_set_rot(struct grid_partner* partner, enum grid_port_dir rot) 
   partner->rot = rot;
 }
 
-void grid_port_malloc(struct grid_port* port, int swsr_capa) {
+void grid_port_malloc(struct grid_port* port, int rx_capa, int tx_capa) {
 
-  assert(swsr_capa > 0);
+  assert(rx_capa > 0);
+  assert(tx_capa > 0);
 
-  assert(grid_swsr_malloc(&port->tx, swsr_capa) == 0);
-  assert(grid_swsr_malloc(&port->rx, swsr_capa) == 0);
+  assert(grid_swsr_malloc(&port->rx, rx_capa) == 0);
+  assert(grid_swsr_malloc(&port->tx, tx_capa) == 0);
 }
 
 void grid_port_free(struct grid_port* port) {

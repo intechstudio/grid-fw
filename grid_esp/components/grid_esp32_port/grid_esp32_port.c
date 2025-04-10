@@ -45,7 +45,7 @@ volatile uint8_t DRAM_ATTR is_vsn_rev_a = 0;
 uint8_t DRAM_ATTR empty_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 uint8_t DRAM_ATTR message_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
-spi_slave_transaction_t DRAM_ATTR spitra_empty;
+spi_slave_transaction_t DRAM_ATTR spitra_empty = {0};
 uint8_t DRAM_ATTR spitra_empty_tx_buf[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
 spi_slave_transaction_t DRAM_ATTR spitra_usart[4] = {0};
@@ -59,63 +59,131 @@ struct grid_rollid DRAM_ATTR rollid = {0};
 
 void grid_platform_sync1_pulse_send() {}
 
+portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+
 static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t* trans) {
 
   uint8_t* spi_tx_buf = (uint8_t*)trans->tx_buffer;
-
-  portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
-  portENTER_CRITICAL(&spinlock);
 
   uint8_t rollid_send = grid_rollid_send(&rollid);
   spi_tx_buf[GRID_PARAMETER_SPI_ROLLING_ID_index] = rollid_send;
 
   spi_tx_buf[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index] = is_vsn_rev_a == 0;
-
-  portEXIT_CRITICAL(&spinlock);
 }
 
-uint8_t DRAM_ATTR spi_queue_count = 0;
+uint8_t IRAM_ATTR spitra_to_dir(spi_slave_transaction_t* trans) {
 
-void IRAM_ATTR spi_custom_trans_tx(spi_slave_transaction_t* trans) {
+  uint8_t dir = (trans == &spitra_usart[0]) * 0 + (trans == &spitra_usart[1]) * 1 + (trans == &spitra_usart[2]) * 2 + (trans == &spitra_usart[3]) * 3;
 
-  esp_err_t err = spi_slave_queue_trans(RCV_HOST, trans, 0);
+  assert(dir < 4);
 
-  spi_queue_count += err == ESP_OK;
+  return dir;
 }
 
-void IRAM_ATTR spi_custom_trans_rx(spi_slave_transaction_t* empty) {
+struct esp32_pico_spi_t {
 
-  spi_queue_count -= spi_queue_count > 0;
+  struct grid_swsr_t queue;
+  uint8_t in_queue[4];
+  uint8_t cooldown[4];
+};
 
-  if (spi_queue_count == 0) {
-    ++spi_queue_count;
-    ESP_ERROR_CHECK(spi_slave_queue_trans(RCV_HOST, empty, 0));
+struct esp32_pico_spi_t DRAM_ATTR esp32_pico_spi;
+
+void esp32_pico_spi_malloc(struct esp32_pico_spi_t* espico, int capacity) {
+
+  assert(capacity > 0);
+
+  assert(grid_swsr_malloc(&espico->queue, capacity * sizeof(void*)) == 0);
+
+  memset(espico->in_queue, 0, 4 * sizeof(uint8_t));
+  memset(espico->cooldown, 0, 4 * sizeof(uint8_t));
+}
+
+void IRAM_ATTR esp32_pico_spi_enqueue(struct esp32_pico_spi_t* espico, spi_slave_transaction_t* trans, uint8_t dir) {
+
+  assert(dir < 4);
+
+  assert(grid_swsr_writable(&espico->queue, sizeof(void*)));
+
+  grid_swsr_write(&espico->queue, &trans, sizeof(void*));
+
+  ++espico->in_queue[dir];
+}
+
+spi_slave_transaction_t* IRAM_ATTR esp32_pico_spi_dequeue(struct esp32_pico_spi_t* espico) {
+
+  assert(grid_swsr_readable(&espico->queue, sizeof(void*)));
+
+  spi_slave_transaction_t* trans;
+
+  grid_swsr_read(&espico->queue, &trans, sizeof(void*));
+
+  uint8_t dir = spitra_to_dir(trans);
+
+  espico->in_queue[dir] -= espico->in_queue[dir] > 0;
+
+  // Set a predefined cooldown for that port:
+  // +1 to process the status_flags of the previous transaction,
+  // +1 to process the status_flags of the current transaction,
+  // after that point, the status_flags is valid for that direction
+  espico->cooldown[dir] = 2;
+
+  return trans;
+}
+
+uint8_t IRAM_ATTR esp32_pico_spi_dir_free(struct esp32_pico_spi_t* espico, uint8_t dir) {
+
+  assert(dir < 4);
+
+  return espico->in_queue[dir] == 0 && espico->cooldown[dir] == 0;
+}
+
+void IRAM_ATTR esp32_pico_spi_cooldown(struct esp32_pico_spi_t* espico) {
+
+  for (int i = 0; i < 4; ++i) {
+
+    espico->cooldown[i] -= espico->cooldown[i] > 0;
   }
 }
 
 static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
 
+  spi_slave_transaction_t* spitra = &spitra_empty;
+
+  if (grid_swsr_readable(&esp32_pico_spi.queue, sizeof(void*))) {
+
+    portENTER_CRITICAL(&spinlock);
+    spitra = esp32_pico_spi_dequeue(&esp32_pico_spi);
+    portEXIT_CRITICAL(&spinlock);
+  }
+
+  // Queue next SPI transaction
+  spi_slave_queue_trans(RCV_HOST, spitra, 0);
+
   uint8_t* spi_rx_buf = (uint8_t*)trans->rx_buffer;
 
   grid_rollid_recv(&rollid, spi_rx_buf[GRID_PARAMETER_SPI_ROLLING_ID_index]);
 
-  portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
-  portENTER_CRITICAL(&spinlock);
-  spi_custom_trans_rx(&spitra_empty);
-  portEXIT_CRITICAL(&spinlock);
-
   size_t length = strnlen((const char*)spi_rx_buf, GRID_PARAMETER_SPI_TRANSACTION_length);
   grid_transport_recv_usart(&grid_transport_state, spi_rx_buf, length);
 
-  uint8_t status_flags = spi_rx_buf[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
+  portENTER_CRITICAL(&spinlock);
+  {
+    uint8_t status_flags = spi_rx_buf[GRID_PARAMETER_SPI_STATUS_FLAGS_index];
 
-  for (uint8_t i = 0; i < 4; ++i) {
+    for (int i = 0; i < 4; ++i) {
 
-    if ((status_flags >> i) & 0x1) {
+      uint8_t flag = (status_flags >> i) & 0x1;
 
-      spitra_usart_tx_len[i] = 0;
+      if (esp32_pico_spi_dir_free(&esp32_pico_spi, i) && flag) {
+
+        spitra_usart_tx_len[i] = 0;
+      }
     }
+
+    esp32_pico_spi_cooldown(&esp32_pico_spi);
   }
+  portEXIT_CRITICAL(&spinlock);
 }
 
 struct grid_utask_timer timer_ping;
@@ -187,8 +255,6 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
   }
 }
 
-static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
-
 // TODO direction should possibly remain in character-space, not [0, 4)
 // or rewrite d51 as well.
 
@@ -197,6 +263,10 @@ static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
 uint32_t grid_platform_get_frame_len(uint8_t dir) {
 
   assert(dir < GRID_PORT_DIR_COUNT);
+
+  if (!grid_swsr_writable(&esp32_pico_spi.queue, sizeof(void*))) {
+    return 1;
+  }
 
   return spitra_usart_tx_len[dir];
 }
@@ -209,6 +279,7 @@ void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir) {
   assert(dir < GRID_PORT_DIR_COUNT);
   assert(grid_swsr_readable(swsr, size));
   assert(spitra_usart_tx_len[dir] == 0);
+  assert(grid_swsr_writable(&esp32_pico_spi.queue, sizeof(void*)));
 
   spitra_usart_tx_len[dir] = size;
 
@@ -222,9 +293,8 @@ void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir) {
   spi_tx_buf[size] = '\0';
   spi_tx_buf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 1 << dir;
 
-  static portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
   portENTER_CRITICAL(&spinlock);
-  spi_custom_trans_tx(spitra);
+  esp32_pico_spi_enqueue(&esp32_pico_spi, spitra, dir);
   portEXIT_CRITICAL(&spinlock);
 }
 
@@ -260,6 +330,8 @@ void handle_connection_effect() {
   }
 }
 
+bool grid_esp32_broadcast_between(enum grid_port_type t1, enum grid_port_type t2) { return !(t1 == GRID_PORT_USART && t2 == GRID_PORT_USART); }
+
 void grid_esp32_port_task(void* arg) {
 
   // Set up "outbound usart" spi transactions
@@ -273,7 +345,7 @@ void grid_esp32_port_task(void* arg) {
 
   // Set up empty transaction
   memset(&spitra_empty, 0, sizeof(spi_slave_transaction_t));
-  spitra_empty.length = GRID_PARAMETER_SPI_TRANSACTION_length * 8;
+  spitra_empty.length = spitra_usart_bits;
   spitra_empty.tx_buffer = spitra_empty_tx_buf;
   spitra_empty.rx_buffer = spitra_rx_buf;
 
@@ -292,10 +364,8 @@ void grid_esp32_port_task(void* arg) {
 
   // Configuration for the SPI slave interface
   spi_slave_interface_config_t slvcfg = {
-      .mode = 0,
       .spics_io_num = GRID_ESP32_PINS_RP_CS,
-      .queue_size = 6,
-      .flags = 0,
+      .queue_size = 1,
       .post_setup_cb = my_post_setup_cb,
       .post_trans_cb = my_post_trans_cb,
   };
@@ -316,10 +386,12 @@ void grid_esp32_port_task(void* arg) {
   uint8_t watchdog_rollid_last_recv = rollid.last_recv;
   uint64_t watchdog_rollid_last_time = grid_platform_rtc_get_micros();
 
+  // Allocate custom SPI transaction queue
+  esp32_pico_spi_malloc(&esp32_pico_spi, 6);
+
   // Queue an empty transaction initially
-  portENTER_CRITICAL(&spinlock);
-  spi_custom_trans_tx(&spitra_empty);
-  portEXIT_CRITICAL(&spinlock);
+  // TODO detect if transactions stopped for any reason and restart
+  spi_slave_queue_trans(RCV_HOST, &spitra_empty, 0);
 
   // Configure task timers
   timer_ping = (struct grid_utask_timer){
@@ -338,8 +410,6 @@ void grid_esp32_port_task(void* arg) {
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_UICOOLDOWN_us,
   };
-
-  // TODO handle recent fingerprint buffer
 
   struct grid_transport* xport = &grid_transport_state;
 
@@ -385,10 +455,10 @@ void grid_esp32_port_task(void* arg) {
 
       struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
 
-      grid_transport_rx_broadcast_tx(xport, port);
+      grid_transport_rx_broadcast_tx(xport, port, grid_esp32_broadcast_between);
     }
-    grid_transport_rx_broadcast_tx(xport, port_ui);
-    grid_transport_rx_broadcast_tx(xport, port_usb);
+    grid_transport_rx_broadcast_tx(xport, port_ui, grid_esp32_broadcast_between);
+    grid_transport_rx_broadcast_tx(xport, port_usb, grid_esp32_broadcast_between);
 
     // Run microtasks
     grid_utask_ping(&timer_ping);
@@ -403,12 +473,9 @@ void grid_esp32_port_task(void* arg) {
     grid_port_send_ui(port_ui);
 
     // Outbound USART
-    for (uint8_t i = 0; i < 4; ++i) {
+    grid_transport_send_usart_cyclic_offset(xport);
 
-      struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
-
-      grid_port_send_usart(port);
-    }
+    // ets_delay_us(100);
 
     handle_connection_effect();
 

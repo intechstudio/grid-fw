@@ -11,8 +11,10 @@ void grid_transport_malloc(struct grid_transport* transport, size_t port_count) 
   transport->ports = malloc(transport->port_count * sizeof(struct grid_port));
 
   for (size_t i = 0; i < transport->port_count; ++i) {
-    grid_port_malloc(&transport->ports[i], GRID_PORT_SWSR_SIZE);
+    grid_port_malloc(&transport->ports[i], GRID_PORT_SWSR_SIZE, GRID_PORT_SWSR_SIZE * 2);
   }
+
+  transport->usart_send_offset = 0;
 }
 
 void grid_transport_free(struct grid_transport* transport) {
@@ -100,6 +102,20 @@ void grid_transport_ping_all(struct grid_transport* transport) {
   }
 }
 
+void grid_transport_send_usart_cyclic_offset(struct grid_transport* transport) {
+
+  for (uint8_t i = 0; i < 4; ++i) {
+
+    uint8_t j = (transport->usart_send_offset + i) % 4;
+
+    struct grid_port* port = grid_transport_get_port(transport, j, GRID_PORT_USART, j);
+
+    grid_port_send_usart(port);
+  }
+
+  transport->usart_send_offset = (transport->usart_send_offset + 1) % 4;
+}
+
 void grid_msg_packet_to_swsr(struct grid_msg_packet* pkt, struct grid_swsr_t* swsr) {
 
   grid_swsr_write(swsr, pkt->header, pkt->header_length);
@@ -158,7 +174,7 @@ void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, ui
   grid_transport_send_msg_packet_to_all(transport, &pkt);
 }
 
-void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct grid_port* port) {
+void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct grid_port* port, grid_brc_between_t between) {
 
   if (!grid_port_connected(port)) {
     return;
@@ -183,6 +199,10 @@ void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct gri
     struct grid_port* next = grid_transport_get_port(transport, i, type, dir);
 
     if (!grid_port_connected(next)) {
+      continue;
+    }
+
+    if (between && !between(port->type, type)) {
       continue;
     }
 

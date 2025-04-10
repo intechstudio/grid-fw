@@ -2,6 +2,7 @@
 #define GRID_TRANSPORT_H
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -11,12 +12,15 @@
 
 enum { GRID_PORT_SWSR_SIZE = GRID_PARAMETER_SPI_TRANSACTION_length * 2 };
 
+typedef bool (*grid_brc_between_t)(enum grid_port_type t1, enum grid_port_type t2);
+
 extern struct grid_transport grid_transport_state;
 
 struct grid_transport {
 
   size_t port_count;
   struct grid_port* ports;
+  uint8_t usart_send_offset;
 };
 
 void grid_transport_malloc(struct grid_transport* transport, size_t port_count);
@@ -25,9 +29,10 @@ struct grid_port* grid_transport_get_port(struct grid_transport* transport, size
 void grid_transport_recv_usart(struct grid_transport* transport, uint8_t* msg, size_t size);
 void grid_transport_recv_usb(struct grid_transport* transport, uint8_t* msg, size_t size);
 void grid_transport_ping_all(struct grid_transport* transport);
+void grid_transport_send_usart_cyclic_offset(struct grid_transport* transport);
 void grid_msg_packet_to_swsr(struct grid_msg_packet* pkt, struct grid_swsr_t* swsr);
 void grid_transport_send_msg_packet_to_all(struct grid_transport* transport, struct grid_msg_packet* pkt);
 void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, uint32_t hwcfg, uint8_t activepage);
-void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct grid_port* port);
+void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct grid_port* port, grid_brc_between_t between);
 
 #endif /* GRID_TRANSPORT_H */

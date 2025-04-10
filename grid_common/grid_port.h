@@ -65,7 +65,7 @@ struct grid_port {
   int8_t dy;
 };
 
-void grid_port_malloc(struct grid_port* port, int swsr_capa);
+void grid_port_malloc(struct grid_port* port, int rx_capa, int tx_capa);
 void grid_port_free(struct grid_port* port);
 void grid_port_init(struct grid_port* port, enum grid_port_type type, enum grid_port_dir dir);
 struct grid_swsr_t* grid_port_get_tx(struct grid_port* port);

@@ -470,10 +470,10 @@ int main(void) {
 
       struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
 
-      grid_transport_rx_broadcast_tx(xport, port);
+      grid_transport_rx_broadcast_tx(xport, port, NULL);
     }
-    grid_transport_rx_broadcast_tx(xport, port_ui);
-    grid_transport_rx_broadcast_tx(xport, port_usb);
+    grid_transport_rx_broadcast_tx(xport, port_ui, NULL);
+    grid_transport_rx_broadcast_tx(xport, port_usb, NULL);
 
     // Run microtasks
     grid_utask_ping(&timer_ping);
@@ -489,14 +489,10 @@ int main(void) {
     grid_port_send_ui(port_ui);
 
     // Outbound USART
-    for (uint8_t i = 0; i < 4; ++i) {
-
-      struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
-
-      grid_port_send_usart(port);
-    }
+    grid_transport_send_usart_cyclic_offset(xport);
 
     handle_connection_effect();
+
   } // WHILE
 
 } // MAIN

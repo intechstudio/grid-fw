@@ -22,7 +22,6 @@ const PIO GRID_RX_PIO = pio1;
 
 #include "../../grid_common/grid_msg.h"
 #include "../../grid_common/grid_transport.h"
-#include "../../grid_common/grid_utask.h"
 
 #include "vmp/vmp_def.h"
 #include "vmp/vmp_tag.h"
@@ -31,6 +30,27 @@ const PIO GRID_RX_PIO = pio1;
 #include "pico_swsr.h"
 
 struct pico_pool_t pool;
+
+uint32_t grid_pico_time() { return time_us_32(); }
+uint32_t grid_pico_time_diff(uint32_t t1, uint32_t t2) { return t2 - t1; }
+
+struct grid_pico_task_timer {
+  uint32_t last;
+  uint32_t period;
+};
+
+bool grid_pico_task_timer_elapsed(struct grid_pico_task_timer* timer) {
+
+  uint32_t now = grid_pico_time();
+
+  bool ret = grid_pico_time_diff(timer->last, now) >= timer->period;
+
+  if (ret) {
+    timer->last = now;
+  }
+
+  return ret;
+}
 
 enum {
   ROLLING_MAX = GRID_PARAMETER_SPI_ROLLING_ID_maximum,
@@ -65,7 +85,6 @@ void grid_pico_rolling_send(volatile struct grid_pico_rolling* rolling) { rollin
 
 struct grid_pico_uart_port {
   uint8_t index;
-  uint8_t ready;
   struct pico_bkt_t* uart_tx_bucket;
   struct pico_bkt_t* uart_rx_bucket;
   struct pico_swsr_t swsr;
@@ -87,7 +106,6 @@ void grid_pico_uart_port_init(struct grid_pico_uart_port* port, uint8_t index) {
   assert(index >= 0 && index < 4);
 
   port->index = index;
-  port->ready = 1;
   port->uart_tx_bucket = NULL;
   port->uart_rx_bucket = NULL;
 }
@@ -142,11 +160,8 @@ void grid_pico_uart_port_attach_tx(struct grid_pico_uart_port* port) {
   struct pico_bkt_t* bkt = pico_pool_get_first(&pool, state);
 
   if (!bkt) {
-    port->ready = 1;
     return;
   }
-
-  port->ready = 0;
 
   port->uart_tx_bucket = bkt;
 
@@ -167,11 +182,11 @@ void grid_pico_uart_port_detach_tx(struct grid_pico_uart_port* port) {
   port->uart_tx_bucket = NULL;
 }
 
-struct grid_utask_timer timer_uart_tx[4];
+struct grid_pico_task_timer timer_uart_tx[4];
 
-void grid_pico_task_uart_tx(struct grid_pico_uart_port* port, struct grid_utask_timer* timer) {
+void grid_pico_task_uart_tx(struct grid_pico_uart_port* port, struct grid_pico_task_timer* timer) {
 
-  if (!grid_utask_timer_elapsed(timer)) {
+  if (!grid_pico_task_timer_elapsed(timer)) {
     return;
   }
 
@@ -269,11 +284,11 @@ enum pico_bkt_state_t grid_uart_rx_process_bkt(struct grid_pico_uart_port* port,
   return PICO_BKT_STATE_SPI_TX;
 }
 
-struct grid_utask_timer timer_uart_rx_full[4];
+struct grid_pico_task_timer timer_uart_rx_full[4];
 
-void grid_pico_task_uart_rx_full(struct grid_pico_uart_port* port, struct grid_utask_timer* timer) {
+void grid_pico_task_uart_rx_full(struct grid_pico_uart_port* port, struct grid_pico_task_timer* timer) {
 
-  if (!grid_utask_timer_elapsed(timer)) {
+  if (!grid_pico_task_timer_elapsed(timer)) {
     return;
   }
 
@@ -319,11 +334,11 @@ void grid_spi_msg_to_bkt(struct grid_pico_uart_port* port, char* msg) {
   // port->ready = 0;
 }
 
-struct grid_utask_timer timer_spi_rx;
+struct grid_pico_task_timer timer_spi_rx;
 
-void grid_pico_task_spi_rx(struct grid_utask_timer* timer) {
+void grid_pico_task_spi_rx(struct grid_pico_task_timer* timer) {
 
-  if (!grid_utask_timer_elapsed(timer)) {
+  if (!grid_pico_task_timer_elapsed(timer)) {
     return;
   }
 
@@ -366,11 +381,11 @@ void grid_pico_task_spi_rx(struct grid_utask_timer* timer) {
   }
 }
 
-struct grid_utask_timer timer_spi_tx;
+struct grid_pico_task_timer timer_spi_tx;
 
-void grid_pico_task_spi_tx(struct grid_utask_timer* timer) {
+void grid_pico_task_spi_tx(struct grid_pico_task_timer* timer) {
 
-  if (!grid_utask_timer_elapsed(timer)) {
+  if (!grid_pico_task_timer_elapsed(timer)) {
     return;
   }
 
@@ -392,7 +407,9 @@ void grid_pico_task_spi_tx(struct grid_utask_timer* timer) {
   // Construct the bitfield containing which ports are ready to transmit
   uint8_t tx_ready = 0;
   for (int i = 0; i < 4; ++i) {
-    tx_ready |= (uart_ports[i].ready != 0) << uart_ports[i].index;
+    enum pico_bkt_state_t state = PICO_BKT_STATE_UART_TX_NORTH + i;
+    struct pico_bkt_t* bkt = pico_pool_get_first(&pool, state);
+    tx_ready |= (bkt == NULL) << uart_ports[i].index;
   }
 
   // Increment rolling ID
@@ -454,11 +471,11 @@ void grid_pico_uart_port_rx_char(struct grid_pico_uart_port* port, char ch) {
   }
 }
 
-struct grid_utask_timer timer_uart_rx_0[4];
+struct grid_pico_task_timer timer_uart_rx_0[4];
 
-void grid_pico_task_uart_rx_0(struct grid_pico_uart_port* port, struct grid_utask_timer* timer) {
+void grid_pico_task_uart_rx_0(struct grid_pico_uart_port* port, struct grid_pico_task_timer* timer) {
 
-  if (!grid_utask_timer_elapsed(timer)) {
+  if (!grid_pico_task_timer_elapsed(timer)) {
     return;
   }
 
@@ -470,11 +487,11 @@ void grid_pico_task_uart_rx_0(struct grid_pico_uart_port* port, struct grid_utas
   grid_pico_uart_port_rx_char(port, c);
 }
 
-struct grid_utask_timer timer_uart_rx_1[4];
+struct grid_pico_task_timer timer_uart_rx_1[4];
 
-void grid_pico_task_uart_rx_1(struct grid_pico_uart_port* port, struct grid_utask_timer* timer) {
+void grid_pico_task_uart_rx_1(struct grid_pico_uart_port* port, struct grid_pico_task_timer* timer) {
 
-  if (!grid_utask_timer_elapsed(timer)) {
+  if (!grid_pico_task_timer_elapsed(timer)) {
     return;
   }
 
@@ -494,7 +511,7 @@ void core_1_main_entry() {
 
   // Configure task timers
   for (int i = 0; i < 4; ++i) {
-    timer_uart_rx_1[i] = (struct grid_utask_timer){
+    timer_uart_rx_1[i] = (struct grid_pico_task_timer){
         .last = grid_platform_rtc_get_micros(),
         .period = 5,
     };
@@ -530,7 +547,7 @@ int main() {
   multicore_launch_core1(core_1_main_entry);
 
   // Initialize fingerprint buffer
-  grid_msg_recent_fingerprint_buffer_init(&recent_msgs, 32);
+  grid_msg_recent_fingerprint_buffer_init(&recent_msgs, 64);
 
   // Initialize transport, used for some protocol mechanisms
   // such as keeping track of delta offsets and rotation
@@ -569,25 +586,25 @@ int main() {
 
   // Configure task timers
   for (int i = 0; i < 4; ++i) {
-    timer_uart_tx[i] = (struct grid_utask_timer){
-        .last = grid_platform_rtc_get_micros(),
+    timer_uart_tx[i] = (struct grid_pico_task_timer){
+        .last = grid_pico_time(),
         .period = 5,
     };
-    timer_uart_rx_full[i] = (struct grid_utask_timer){
-        .last = grid_platform_rtc_get_micros(),
+    timer_uart_rx_full[i] = (struct grid_pico_task_timer){
+        .last = grid_pico_time(),
         .period = 5,
     };
-    timer_uart_rx_0[i] = (struct grid_utask_timer){
-        .last = grid_platform_rtc_get_micros(),
+    timer_uart_rx_0[i] = (struct grid_pico_task_timer){
+        .last = grid_pico_time(),
         .period = 5,
     };
   }
-  timer_spi_rx = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
+  timer_spi_rx = (struct grid_pico_task_timer){
+      .last = grid_pico_time(),
       .period = 100,
   };
-  timer_spi_tx = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
+  timer_spi_tx = (struct grid_pico_task_timer){
+      .last = grid_pico_time(),
       .period = 500,
   };
 
