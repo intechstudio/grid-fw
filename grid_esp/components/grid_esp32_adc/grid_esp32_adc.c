@@ -86,7 +86,7 @@ uint8_t IRAM_ATTR grid_esp32_adc_mux_get_index(struct grid_esp32_adc_model* adc)
 #include "esp_private/esp_sleep_internal.h"
 #include "hal/adc_hal_common.h"
 
-static esp_err_t ulp_riscv_adc_init2(void) {
+static esp_err_t ulp_riscv_adc_init(void) {
 
   const char* TAG = "ulp_riscv_adc2";
   esp_err_t ret = ESP_OK;
@@ -107,7 +107,6 @@ static esp_err_t ulp_riscv_adc_init2(void) {
       .ulp_mode = ADC_ULP_MODE_RISCV,
   };
   ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
-
   // Configure ADC1
   adc_oneshot_chan_cfg_t config = {
       .bitwidth = cfg.width,
@@ -115,6 +114,8 @@ static esp_err_t ulp_riscv_adc_init2(void) {
   };
   ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_0, &config));
   ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_1, &config));
+
+
 
   // Calibrate the ADC
   adc_set_hw_calibration_code(cfg.adc_n, cfg.atten);
@@ -126,7 +127,7 @@ err:
 
 static void adc_init_ulp(struct grid_esp32_adc_model* adc) {
 
-  ESP_ERROR_CHECK(ulp_riscv_adc_init2());
+  ESP_ERROR_CHECK(ulp_riscv_adc_init());
 
   // Load ULP-RISC-V program binary into RTC memory
   const uint8_t* binary = ulp_grid_esp32_adc_bin_start;
