@@ -41,6 +41,7 @@
 #include "grid_esp32_module_pb44.h"
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
+#include "grid_esp32_module_soft.h"
 #include "grid_esp32_module_tek1.h"
 #include "grid_esp32_module_tek2.h"
 #include "pico_firmware.h"
@@ -143,6 +144,58 @@ char grid_doublebuffer_rx_memory_array[2][GRID_DOUBLE_BUFFER_RX_SIZE] = {0};
 
 #include "grid_lua_api_gui.h"
 #include "grid_ui_lcd.h"
+
+// initializer for special software defined module registered onto HWCFG 255
+void grid_lua_ui_init_soft(struct grid_lua_model* lua) {
+  // define encoder_init_function
+
+  grid_lua_dostring(lua, GRID_LUA_E_META_init);
+  grid_lua_dostring(lua, GRID_LUA_P_META_init);
+
+  // create element array
+  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
+
+  // initialize 4 encoders and 4 faders
+  grid_lua_dostring(lua, "for i=0, 3  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=0, 3  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], encoder_meta)  end");
+
+  grid_lua_dostring(lua, "for i=4, 7 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
+  grid_lua_dostring(lua, "for i=4, 7 do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], potmeter_meta)  end");
+
+  grid_lua_gc_try_collect(lua);
+
+  // initialize the system element
+  grid_lua_dostring(lua, GRID_LUA_KW_ELEMENT_short "[8] = {index = 8}");
+  grid_lua_dostring(lua, GRID_LUA_SYS_META_init);
+  grid_lua_dostring(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[8], system_meta)");
+}
+void grid_module_soft_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  grid_ain_init(&grid_ain_state, 4, 5);
+
+  grid_led_init(&grid_led_state, 8);
+
+  grid_ui_model_init(ui, 8 + 1); // +1 for the system element
+
+  for (uint8_t j = 0; j < 8 + 1; j++) {
+
+    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+    if (j < 4) {
+      grid_ui_element_encoder_init(ele);
+
+    } else if (j < 8) {
+      // fader
+      grid_ui_element_potmeter_init(ele);
+
+    } else {
+
+      grid_ui_element_system_init(ele);
+    }
+  }
+
+  ui->lua_ui_init_callback = grid_lua_ui_init_soft;
+}
 
 void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
 
@@ -451,6 +504,8 @@ void app_main(void) {
     grid_module_tek1_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, grid_sys_get_hwcfg(&grid_sys_state));
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
     grid_module_pb44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_SOFT_RevA) {
+    grid_module_soft_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else {
     ets_printf("UI Init failed: Unknown Module\r\n");
   }
@@ -592,6 +647,8 @@ void app_main(void) {
     }
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
     xTaskCreatePinnedToCore(grid_esp32_module_pb44_task, "pb44", 1024 * 3, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_SOFT_RevA) {
+    xTaskCreatePinnedToCore(grid_esp32_module_soft_task, "soft", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
   } else {
     ets_printf("Task Init failed: Unknown Module\r\n");
   }
