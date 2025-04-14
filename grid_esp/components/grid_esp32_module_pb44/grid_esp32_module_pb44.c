@@ -30,8 +30,8 @@ static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR pb44_process_analog(void* user) {
 
-  static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, 10, 8, 11, 9, 14, 12, 15, 13};
-  static const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, 10, 8, 11, 9, 14, 12, 15, 13};
+  static DRAM_ATTR const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
   assert(user);
 
