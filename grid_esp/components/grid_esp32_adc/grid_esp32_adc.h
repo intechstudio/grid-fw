@@ -38,6 +38,7 @@ struct grid_esp32_adc_model {
 
   uint8_t mux_index;
   uint8_t mux_overflow;
+  uint8_t mux_dependent;
 
   grid_process_analog_t process_analog;
 };
@@ -51,18 +52,18 @@ struct grid_esp32_adc_result {
 
 extern struct grid_esp32_adc_model grid_esp32_adc_state;
 
-void grid_esp32_adc_convert();
-
 void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog);
 
 void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overflow);
 
 void grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc);
 void grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc);
-uint8_t grid_esp32_adc_mux_get_index(struct grid_esp32_adc_model* adc);
 
-void grid_esp32_adc_start(struct grid_esp32_adc_model* adc);
+void grid_esp32_adc_start(struct grid_esp32_adc_model* adc, uint8_t mux_dependent);
 void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc);
+
+void grid_esp32_adc_conv_mux();
+void grid_esp32_adc_conv_nomux();
 
 #ifdef __cplusplus
 }

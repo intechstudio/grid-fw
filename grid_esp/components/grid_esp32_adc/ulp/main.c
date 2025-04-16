@@ -15,6 +15,7 @@
 #include "hal/adc_types.h"
 
 // volatile, to avoid being optimized away
+volatile uint32_t mux_dependent = 0;
 volatile uint32_t adc_oversample = 8;
 volatile uint32_t adc_result_ready = 0;
 volatile uint32_t adc_value_0 = 0;
@@ -28,6 +29,8 @@ uint32_t ADC_CHANNELS[2] = {
 };
 
 int main(void) {
+
+  (void)mux_dependent;
 
   while (1) {
 
@@ -50,5 +53,9 @@ int main(void) {
     adc_value_1 = sum_value_1 / (adc_result_ready + 1);
 
     ++adc_result_ready;
+
+    if (adc_result_ready >= adc_oversample) {
+      ulp_riscv_wakeup_main_processor();
+    }
   }
 }
