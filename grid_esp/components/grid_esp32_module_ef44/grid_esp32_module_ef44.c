@@ -32,7 +32,7 @@ static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR ef44_process_analog(void* user) {
 
-  static const uint8_t multiplexer_lookup[16] = {6, 4, 7, 5, -1, -1, -1, -1, -1, -1, -1, -1, 10, 8, 11, 9};
+  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {6, 4, 7, 5, -1, -1, -1, -1, -1, -1, -1, -1, 10, 8, 11, 9};
 
   assert(user);
 
@@ -52,7 +52,7 @@ void IRAM_ATTR ef44_process_analog(void* user) {
 
 void IRAM_ATTR ef44_process_encoder(spi_transaction_t* trans) {
 
-  static uint8_t encoder_lookup[GRID_MODULE_EF44_ENC_NUM] = {2, 3, 0, 1};
+  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_EF44_ENC_NUM] = {2, 3, 0, 1};
 
   // Skip hwcfg byte
   uint8_t* spi_rx_buffer = &((uint8_t*)trans->rx_buffer)[1];

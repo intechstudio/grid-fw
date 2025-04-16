@@ -1,5 +1,8 @@
 [mapping:grid_common]
 archive: grid_common.a
 entries:
-    grid_buf (noflash)     # places all code/read-only data under IRAM/DRAM
-    grid_ain (noflash)     # places all code/read-only data under IRAM/DRAM
+    grid_buf (noflash)         # places all code/read-only data under IRAM/DRAM
+    grid_ain (noflash)         # places all code/read-only data under IRAM/DRAM
+    grid_ui_button (noflash)   # places all code/read-only data under IRAM/DRAM
+    grid_ui_endless (noflash)  # places all code/read-only data under IRAM/DRAM
+    grid_ui_potmeter (noflash) # places all code/read-only data under IRAM/DRAM
