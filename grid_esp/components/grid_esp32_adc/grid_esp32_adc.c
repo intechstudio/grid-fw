@@ -60,6 +60,7 @@ void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overf
   grid_esp32_adc_mux_update(adc);
 
   adc->mux_overflow = mux_overflow;
+  ulp_mux_overflow = adc->mux_overflow;
 }
 
 void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc) { adc->mux_index = (adc->mux_index + 1) % adc->mux_overflow; }
@@ -147,8 +148,6 @@ static void IRAM_ATTR ulp_isr(void* arg) {
   }
 }
 
-#include "rom/ets_sys.h"
-
 void grid_esp32_adc_start(struct grid_esp32_adc_model* adc, uint8_t mux_dependent) {
 
   // Set flag for both processors indicating which one does mux addressing
@@ -169,8 +168,6 @@ void grid_esp32_adc_start(struct grid_esp32_adc_model* adc, uint8_t mux_dependen
 
 void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc) { assert(0); }
 
-#include "esp_cpu.h"
-
 void IRAM_ATTR grid_esp32_adc_conv_mux() {
 
   struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
@@ -179,15 +176,14 @@ void IRAM_ATTR grid_esp32_adc_conv_mux() {
     return;
   }
 
-  if (ulp_adc_result_ready < ulp_adc_oversample) {
-    return;
-  }
-
   uint8_t mux_state = adc->mux_index;
   grid_esp32_adc_mux_increment(adc);
   grid_esp32_adc_mux_update(adc);
 
-  uint32_t adc_value[2] = {ulp_adc_value_0, ulp_adc_value_1};
+  uint32_t adc_value[2];
+  memcpy(adc_value, &ulp_adc_value, sizeof(adc_value));
+
+  ulp_adc_result_taken = 1;
 
   for (int i = 0; i < 2; ++i) {
 
@@ -199,16 +195,34 @@ void IRAM_ATTR grid_esp32_adc_conv_mux() {
     adc->process_analog(&result);
   }
 
-  ulp_sum_value_0 = 0;
-  ulp_sum_value_1 = 0;
   ulp_adc_result_ready = 0;
-
-  if (adc->mux_index == 7) {
-    static uint32_t cycles_prev = 0;
-    uint32_t cycles = esp_cpu_get_cycle_count();
-    ets_printf("clocks %d\n", cycles - cycles_prev);
-    cycles_prev = cycles;
-  }
 }
 
-void IRAM_ATTR grid_esp32_adc_conv_nomux() {}
+void IRAM_ATTR grid_esp32_adc_conv_nomux() {
+
+  struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
+
+  if (!adc->process_analog) {
+    return;
+  }
+
+  uint32_t adc_value[8][2];
+  memcpy(adc_value, &ulp_adc_value, sizeof(adc_value));
+
+  ulp_adc_result_taken = 1;
+
+  for (int i = 0; i < 8; ++i) {
+
+    for (int j = 0; j < 2; ++j) {
+
+      struct grid_esp32_adc_result result;
+      result.channel = j;
+      result.mux_state = i;
+      result.value = adc_value[i][j];
+
+      adc->process_analog(&result);
+    }
+  }
+
+  ulp_adc_result_ready = 0;
+}
