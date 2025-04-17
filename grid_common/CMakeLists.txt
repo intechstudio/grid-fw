@@ -6,6 +6,7 @@ idf_component_register(
         "grid_config.c"
         "grid_cal.c"
         "grid_ain.c"
+        "grid_asc.c"
         "grid_led.c"
         "grid_sys.c"
         "grid_swsr.c"

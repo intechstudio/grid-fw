@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "grid_ain.h"
+#include "grid_asc.h"
 #include "grid_module.h"
 #include "grid_ui.h"
 
@@ -37,6 +38,7 @@
 static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
 static struct grid_ui_endless_state* DRAM_ATTR new_endless_state = NULL;
 static struct grid_ui_endless_state* DRAM_ATTR old_endless_state = NULL;
+static struct grid_asc* DRAM_ATTR asc_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR vsn1l_process_analog(void* user) {
@@ -50,6 +52,10 @@ void IRAM_ATTR vsn1l_process_analog(void* user) {
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
   uint8_t mux_position = multiplexer_lookup[lookup_index];
   struct grid_ui_element* ele = &elements[mux_position];
+
+  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+    return;
+  }
 
   if (mux_position < 8) {
 
@@ -92,6 +98,10 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
   uint8_t mux_position = multiplexer_lookup[lookup_index];
   struct grid_ui_element* ele = &elements[mux_position];
 
+  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+    return;
+  }
+
   if (mux_position < 8) {
 
     grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
@@ -133,6 +143,10 @@ void IRAM_ATTR vsn2_process_analog(void* user) {
   uint8_t mux_position = multiplexer_lookup[lookup_index];
   struct grid_ui_element* ele = &elements[mux_position];
 
+  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+    return;
+  }
+
   if (mux_position < 8) {
 
     grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
@@ -148,12 +162,19 @@ void grid_esp32_module_tek1_task(void* arg) {
   ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
   new_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
   old_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
+  asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
   memset(ui_button_state, 0, GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
   memset(new_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
   memset(old_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
+  memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
   for (int i = 0; i < GRID_MODULE_TEK1_BUT_NUM; ++i) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
+  }
+
+  grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
+  if (grid_hwcfg_module_is_rev_h(&grid_sys_state)) {
+    grid_asc_array_set_factors(asc_state, 16, 8, 8, 1);
   }
 
   // static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -285,13 +306,13 @@ void grid_esp32_module_tek1_task(void* arg) {
 
       portEXIT_CRITICAL(&spinlock);
 
-      // vmp_buf_free(&vmp);
-
       vmp_flushed = true;
     }
 
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
+
+  vmp_buf_free(&vmp);
 
   // Wait to be deleted
   vTaskSuspend(NULL);
