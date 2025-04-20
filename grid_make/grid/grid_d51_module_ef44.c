@@ -50,7 +50,9 @@ static void spi_transfer_complete_cb(void) {
 
     uint8_t i = encoder_position_lookup[j];
 
-    grid_ui_encoder_store_input(&ui_encoder_state[i], i, new_value);
+    struct grid_ui_element* ele = &elements[i];
+
+    grid_ui_encoder_store_input(ele, &ui_encoder_state[i], new_value);
   }
 
   hardware_spi_start_transfer();
