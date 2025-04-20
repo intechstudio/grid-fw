@@ -25,7 +25,7 @@ TOML.parse = function(toml, options)
 		nl = nl .. crlf
 	end
 	nl = nl .. "]"
-	
+
 	-- stores text data
 	local buffer = ""
 
@@ -277,7 +277,7 @@ TOML.parse = function(toml, options)
 	end
 
 	local parseArray, getValue
-	
+
 	function parseArray()
 		step() -- skip [
 		skipWhitespace()
@@ -310,7 +310,7 @@ TOML.parse = function(toml, options)
 
 				array = array or {}
 				table.insert(array, v.value)
-				
+
 				if char() == "," then
 					step()
 				end
@@ -411,7 +411,7 @@ TOML.parse = function(toml, options)
 
 	-- track whether the current key was quoted or not
 	local quotedKey = false
-	
+
 	-- parse the document!
 	while(cursor <= toml:len()) do
 
@@ -429,7 +429,7 @@ TOML.parse = function(toml, options)
 		if char() == "=" then
 			step()
 			skipWhitespace()
-			
+
 			-- trim key name
 			buffer = trim(buffer)
 
@@ -635,11 +635,10 @@ TOML.encode = function(tbl)
 			end
 		end
 	end
-	
+
 	parse(tbl)
-	
+
 	return toml:sub(1, -2)
 end
 
 return TOML
-
