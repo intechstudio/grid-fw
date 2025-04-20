@@ -381,6 +381,10 @@
 #define GRID_LUA_FNC_G_IMMEDIATE_SEND_fnptr l_grid_immediate_send
 #define GRID_LUA_FNC_G_IMMEDIATE_SEND_usage "immediate_send(int x, int y, string lua_code) Executes lua_code on the module addressed by x and y. Use x = nil and y = nil to trigger on all modules."
 
+#define GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_short "gfls"
+#define GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_human "readdir"
+#define GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_fnptr l_grid_list_dir
+
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_short "gec"
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_human "element_count"
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr l_grid_element_count
