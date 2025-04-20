@@ -385,6 +385,10 @@
 #define GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_human "readdir"
 #define GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_fnptr l_grid_list_dir
 
+#define GRID_LUA_FNC_G_FILESYSTEM_CAT_short "gfcat"
+#define GRID_LUA_FNC_G_FILESYSTEM_CAT_human "readfile"
+#define GRID_LUA_FNC_G_FILESYSTEM_CAT_fnptr l_grid_cat
+
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_short "gec"
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_human "element_count"
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr l_grid_element_count

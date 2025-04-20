@@ -173,9 +173,62 @@ void base64_encode(const unsigned char* input, size_t length, char* output) {
   return 1;
 }
 
+int l_grid_cat(lua_State* L) {
+  // Get the file path from the Lua stack (the first argument)
+  const char* filename = luaL_checkstring(L, 1);
+
+  // Open the file in binary mode (use "r" for text mode or "rb" for binary mode)
+  FILE* file = fopen(filename, "rb");
+  if (!file) {
+    // If the file cannot be opened, return nil and error message
+    lua_pushnil(L);
+    lua_pushfstring(L, "failed to open file: %s", filename);
+    return 2; // Return two values: nil and the error message
+  }
+
+  // Get the size of the file
+  fseek(file, 0, SEEK_END);
+  long file_size = ftell(file);
+  fseek(file, 0, SEEK_SET);
+
+  // Allocate buffer for the file contents
+  char* buffer = (char*)malloc(file_size + 1); // +1 for the null terminator
+  if (!buffer) {
+    // If memory allocation fails, return nil and error message
+    fclose(file);
+    lua_pushnil(L);
+    lua_pushstring(L, "memory allocation failed");
+    return 2;
+  }
+
+  // Read the file into the buffer
+  size_t bytes_read = fread(buffer, 1, file_size, file);
+  fclose(file);
+
+  // If reading fails, return nil and error message
+  if (bytes_read != file_size) {
+    free(buffer);
+    lua_pushnil(L);
+    lua_pushfstring(L, "failed to read file: %s", filename);
+    return 2;
+  }
+
+  // Null-terminate the buffer and push it to the Lua stack
+  buffer[bytes_read] = '\0';
+  grid_platform_printf("CAT FILE: %s\n%s\n", filename, buffer);
+  lua_pushstring(L, buffer);
+
+  // Free the buffer after pushing it to the Lua stack
+  free(buffer);
+
+  // Return 1 value (the file content as a Lua string)
+  return 1;
+}
+
 #else
 
 /*static*/ int l_grid_list_dir(lua_State* L) { return 1; }
+/*static*/ int l_grid_cat(lua_State* L) { return 1; }
 
 #endif
 
@@ -1898,6 +1951,7 @@ void base64_encode(const unsigned char* input, size_t length, char* output) {
     {GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr},
 
     {GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_short, GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_fnptr},
+    {GRID_LUA_FNC_G_FILESYSTEM_CAT_short, GRID_LUA_FNC_G_FILESYSTEM_CAT_fnptr},
     {"print", l_my_print},
 
     {"gtv", l_grid_template_variable},
