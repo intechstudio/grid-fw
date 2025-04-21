@@ -649,13 +649,16 @@ void grid_port_receiver_hardreset(struct grid_port* por, struct grid_doublebuffe
 
 void grid_port_debug_print_text(char* debug_string) {
 
+  char encoded_message[GRID_PARAMETER_SPI_TRANSACTION_length * 4 / 3 + 1] = {0}; // Buffer to store the Base64-encoded message
+  grid_str_base64_encode((unsigned char*)debug_string, strlen(debug_string), encoded_message);
+
   struct grid_msg_packet message;
 
   grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
   grid_msg_packet_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_start);
   grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-  grid_msg_packet_body_append_printf(&message, debug_string);
+  grid_msg_packet_body_append_printf(&message, encoded_message);
   grid_msg_packet_body_append_printf(&message, GRID_CLASS_DEBUGTEXT_frame_end);
 
   grid_msg_packet_close(&grid_msg_state, &message);

@@ -9,51 +9,8 @@
 
 /* ==================== LUA C API REGISTERED FUNCTIONS  ====================*/
 
-static const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-void base64_encode(const unsigned char* input, size_t length, char* output) {
-  int i = 0, j = 0;
-  unsigned char input3[3];
-  unsigned char output4[4];
-  size_t output_length = 0;
-
-  while (length--) {
-    input3[i++] = *(input++);
-    if (i == 3) {
-      output4[0] = (input3[0] & 0xfc) >> 2;
-      output4[1] = ((input3[0] & 0x03) << 4) | ((input3[1] & 0xf0) >> 4);
-      output4[2] = ((input3[1] & 0x0f) << 2) | ((input3[2] & 0xc0) >> 6);
-      output4[3] = input3[2] & 0x3f;
-
-      for (i = 0; i < 4; i++) {
-        output[output_length++] = base64_table[output4[i]];
-      }
-      i = 0;
-    }
-  }
-
-  if (i) {
-    for (j = i; j < 3; j++) {
-      input3[j] = '\0';
-    }
-
-    output4[0] = (input3[0] & 0xfc) >> 2;
-    output4[1] = ((input3[0] & 0x03) << 4) | ((input3[1] & 0xf0) >> 4);
-    output4[2] = ((input3[1] & 0x0f) << 2) | ((input3[2] & 0xc0) >> 6);
-    output4[3] = input3[2] & 0x3f;
-
-    for (j = 0; (j < i + 1); j++) {
-      output[output_length++] = base64_table[output4[j]];
-    }
-
-    while (i++ < 3) {
-      output[output_length++] = '=';
-    }
-  }
-  output[output_length] = '\0';
-}
 /*static*/ int l_my_print(lua_State* L) {
-  char message[500] = {0};
+  char message[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
   int msg_len = 0; // Tracks the current length of the message
 
   int nargs = lua_gettop(L);
@@ -101,9 +58,8 @@ void base64_encode(const unsigned char* input, size_t length, char* output) {
 
   // If there is any content to encode
   if (msg_len > 0) {
-    char encoded_message[700]; // Buffer to store the Base64-encoded message
-    base64_encode((unsigned char*)message, msg_len, encoded_message);
-    grid_port_debug_print_text(encoded_message); // Print the Base64-encoded message
+
+    grid_port_debug_print_text(message);
   }
 
   return 0;
@@ -234,7 +190,7 @@ int l_grid_cat(lua_State* L) {
 
 /*static*/ int l_grid_websocket_send(lua_State* L) {
 
-  char message[500] = {0};
+  char message[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
   int nargs = lua_gettop(L);
   // grid_platform_printf("LUA PRINT: ");
@@ -296,7 +252,7 @@ int l_grid_cat(lua_State* L) {
 
 /*static*/ int l_grid_package_send(lua_State* L) {
 
-  char message[500] = {0};
+  char message[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
   int nargs = lua_gettop(L);
   // grid_platform_printf("LUA PRINT: ");
@@ -925,7 +881,7 @@ int l_grid_cat(lua_State* L) {
     return 0;
   }
 
-  char midiframe[500] = {0};
+  char midiframe[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
   sprintf(midiframe, GRID_CLASS_MIDISYSEX_frame_start);
 
