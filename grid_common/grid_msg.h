@@ -134,3 +134,6 @@ uint32_t grid_str_read_hex_string_value(char* start_location, uint8_t length, ui
 void grid_str_write_hex_string_value(char* start_location, uint8_t size, uint32_t value);
 
 int grid_str_verify_frame(char* message);
+
+void grid_str_base64_encode(const unsigned char* input, size_t length, char* output);
+size_t grid_str_base64_decode(const char* input, unsigned char* output);

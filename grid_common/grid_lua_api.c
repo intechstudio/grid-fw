@@ -10,92 +10,187 @@
 /* ==================== LUA C API REGISTERED FUNCTIONS  ====================*/
 
 /*static*/ int l_my_print(lua_State* L) {
-  char message[500] = {0};
+  char message[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
+  int msg_len = 0; // Tracks the current length of the message
 
   int nargs = lua_gettop(L);
-  // grid_platform_printf("LUA PRINT: ");
+
   for (int i = 1; i <= nargs; ++i) {
-
     if (lua_type(L, i) == LUA_TSTRING) {
-      if (strlen(message) > 0) {
-
-        strcat(message, ", ");
-      }
-      strcat(message, "\"");
-      strcat(message, lua_tostring(L, i));
-      strcat(message, "\"");
-      // grid_platform_printf(" str: %s ", lua_tostring(L, i));
-    } else if (lua_type(L, i) == LUA_TBOOLEAN) {
-      bool b = lua_toboolean(L, i);
-      if (strlen(message) > 0) {
-
-        strcat(message, ", ");
-      }
-      if (b) {
-
-        strcat(message, "true");
+      if (msg_len > 0) {
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, ", %s", lua_tostring(L, i));
       } else {
-
-        strcat(message, "false");
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, "%s", lua_tostring(L, i));
+      }
+    } else if (lua_type(L, i) == LUA_TBOOLEAN) {
+      if (msg_len > 0) {
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, ", %s", lua_toboolean(L, i) ? "true" : "false");
+      } else {
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, "%s", lua_toboolean(L, i) ? "true" : "false");
       }
     } else if (lua_type(L, i) == LUA_TNUMBER) {
-
-      if (strlen(message) > 0) {
-
-        strcat(message, ", ");
-      }
       lua_Number lnum = lua_tonumber(L, i);
-      lua_Integer lint;
-      lua_numbertointeger(lnum, &lint);
-      // int32_t num = lua_tonumber
-
-      sprintf(&message[strlen(message)], "%lf", lnum);
-
-      // remove unnesesery trailing zeros
-      uint8_t index_helper = strlen(message);
-      for (uint8_t i = 0; i < 8; i++) {
-
-        if (message[index_helper - i - 1] == '0') {
-
-          message[index_helper - i - 1] = '\0';
-        } else if (message[index_helper - i - 1] == '.') {
-
-          message[index_helper - i - 1] = '\0';
-          break;
-        } else {
-          break;
-        }
+      if (msg_len > 0) {
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, ", %lf", lnum);
+      } else {
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, "%lf", lnum);
       }
-
-      // grid_platform_printf(" num: %d ", (int)lnum);
     } else if (lua_type(L, i) == LUA_TNIL) {
-      // grid_platform_printf(" nil ");
+      if (msg_len > 0) {
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, ", nil");
+      } else {
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, "nil");
+      }
     } else if (lua_type(L, i) == LUA_TFUNCTION) {
-      // grid_platform_printf(" fnc ");
+      if (msg_len > 0) {
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, ", function");
+      } else {
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, "function");
+      }
     } else if (lua_type(L, i) == LUA_TTABLE) {
-      // grid_platform_printf(" table ");
-    } else {
-      // grid_platform_printf(" unknown data type ");
+      if (msg_len > 0) {
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, ", table");
+      } else {
+        msg_len += snprintf(message + msg_len, sizeof(message) - msg_len, "table");
+      }
     }
   }
 
-  if (strlen(message) > 0) {
+  // If there is any content to encode
+  if (msg_len > 0) {
 
     grid_port_debug_print_text(message);
   }
 
-  if (nargs == 0) {
-    // grid_platform_printf(" no arguments ");
-  }
-
-  // grid_platform_printf("\r\n");
-
   return 0;
 }
 
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+
+#include <dirent.h>
+
+/*static*/ int l_grid_list_dir(lua_State* L) {
+  const char* path = luaL_checkstring(L, 1); // Get the path from Lua
+  DIR* dir = opendir(path);
+  if (!dir) {
+    lua_pushnil(L);
+    lua_pushfstring(L, "Cannot open directory: %s", path);
+    return 2;
+  }
+
+  struct dirent* entry;
+  size_t buffer_size = 1024;
+  size_t length = 0;
+  char* result = (char*)malloc(buffer_size);
+  if (!result) {
+    closedir(dir);
+    lua_pushnil(L);
+    lua_pushstring(L, "Memory allocation failed");
+    return 2;
+  }
+  result[0] = '\0'; // Empty string to start
+
+  while ((entry = readdir(dir)) != NULL) {
+    const char* name = entry->d_name;
+
+    // Skip "." and ".."
+    if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
+      continue;
+    }
+
+    size_t name_len = strlen(name);
+    if (length + name_len + 2 > buffer_size) {
+      buffer_size *= 2;
+      char* new_result = realloc(result, buffer_size);
+      if (!new_result) {
+        free(result);
+        closedir(dir);
+        lua_pushnil(L);
+        lua_pushstring(L, "Memory reallocation failed");
+        return 2;
+      }
+      result = new_result;
+    }
+
+    if (length > 0) {
+      result[length++] = '\n';
+      result[length] = '\0';
+    }
+
+    strcat(result, name);
+    length += name_len;
+  }
+
+  closedir(dir);
+
+  grid_platform_printf("LIST DIR: %s\n%s\n", path, result);
+  lua_pushstring(L, result);
+  free(result);
+  return 1;
+}
+
+int l_grid_cat(lua_State* L) {
+  // Get the file path from the Lua stack (the first argument)
+  const char* filename = luaL_checkstring(L, 1);
+
+  // Open the file in binary mode (use "r" for text mode or "rb" for binary mode)
+  FILE* file = fopen(filename, "rb");
+  if (!file) {
+    // If the file cannot be opened, return nil and error message
+    lua_pushnil(L);
+    lua_pushfstring(L, "failed to open file: %s", filename);
+    return 2; // Return two values: nil and the error message
+  }
+
+  // Get the size of the file
+  fseek(file, 0, SEEK_END);
+  long file_size = ftell(file);
+  fseek(file, 0, SEEK_SET);
+
+  // Allocate buffer for the file contents
+  char* buffer = (char*)malloc(file_size + 1); // +1 for the null terminator
+  if (!buffer) {
+    // If memory allocation fails, return nil and error message
+    fclose(file);
+    lua_pushnil(L);
+    lua_pushstring(L, "memory allocation failed");
+    return 2;
+  }
+
+  // Read the file into the buffer
+  size_t bytes_read = fread(buffer, 1, file_size, file);
+  fclose(file);
+
+  // If reading fails, return nil and error message
+  if (bytes_read != file_size) {
+    free(buffer);
+    lua_pushnil(L);
+    lua_pushfstring(L, "failed to read file: %s", filename);
+    return 2;
+  }
+
+  // Null-terminate the buffer and push it to the Lua stack
+  buffer[bytes_read] = '\0';
+  grid_platform_printf("CAT FILE: %s\n%s\n", filename, buffer);
+  lua_pushstring(L, buffer);
+
+  // Free the buffer after pushing it to the Lua stack
+  free(buffer);
+
+  // Return 1 value (the file content as a Lua string)
+  return 1;
+}
+
+#else
+
+/*static*/ int l_grid_list_dir(lua_State* L) { return 1; }
+/*static*/ int l_grid_cat(lua_State* L) { return 1; }
+
+#endif
+
 /*static*/ int l_grid_websocket_send(lua_State* L) {
 
-  char message[500] = {0};
+  char message[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
   int nargs = lua_gettop(L);
   // grid_platform_printf("LUA PRINT: ");
@@ -157,7 +252,7 @@
 
 /*static*/ int l_grid_package_send(lua_State* L) {
 
-  char message[500] = {0};
+  char message[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
   int nargs = lua_gettop(L);
   // grid_platform_printf("LUA PRINT: ");
@@ -786,7 +881,7 @@
     return 0;
   }
 
-  char midiframe[500] = {0};
+  char midiframe[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
   sprintf(midiframe, GRID_CLASS_MIDISYSEX_frame_start);
 
@@ -1811,6 +1906,8 @@
     {GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_fnptr},
     {GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr},
 
+    {GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_short, GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_fnptr},
+    {GRID_LUA_FNC_G_FILESYSTEM_CAT_short, GRID_LUA_FNC_G_FILESYSTEM_CAT_fnptr},
     {"print", l_my_print},
 
     {"gtv", l_grid_template_variable},
