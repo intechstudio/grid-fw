@@ -83,7 +83,9 @@ void grid_ui_element_encoder_event_clear_cb(struct grid_ui_event* eve) {
 
   } else if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 2) {
 
-    template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = 0;
+    int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
+
+    template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = min;
   }
 }
 
@@ -136,6 +138,12 @@ int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uin
   }
 
   return delta;
+}
+
+int32_t clampi32(int32_t x, int32_t a, int32_t b) {
+
+  const int32_t t = x < a ? a : x;
+  return t > b ? b : t;
 }
 
 uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta) {
@@ -196,80 +204,34 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 
   template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] += delta_velocity;
 
-  if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 0) { // Absolute
+  switch (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index]) {
+  case 0:
+  case 1: {
 
-    int32_t new_value = 0;
-
-    if (old_value + delta_velocity < min) {
-      new_value = min;
-    } else if (old_value + delta_velocity > max) {
-      new_value = max;
-    } else {
-      new_value = old_value + delta_velocity;
-    }
+    int32_t new_value = clampi32(old_value + delta_velocity, min, max);
 
     template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_value;
-  } else if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 1) { // Relative
 
-    int32_t new_value = 0;
+  } break;
+  case 2: {
 
-    if (old_value + delta_velocity < min) {
-      new_value = min;
-    } else if (old_value + delta_velocity > max) {
-      new_value = max;
-    } else {
-      new_value = old_value + delta_velocity;
-    }
+    int32_t range = max - min + 1;
 
-    template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_value;
-  } else if (template_parameter_list[GRID_LUA_FNC_E_ENCODER_MODE_index] == 2) { // Relative 2's complement
+    int32_t halfr = range / 2;
 
-    // Two's complement magic 7 bit signed variable
+    int32_t old_twos = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
 
-    int32_t old_twoscomplement = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
+    int8_t old_signed = old_twos - min - (old_twos >= halfr) * range;
 
-    uint8_t old_8bit_extended_twoscomplement = old_twoscomplement;
+    int8_t delta_signed = clampi32(delta_velocity, -halfr, halfr - 1);
 
-    // Limit to signed -64 +63 range
-    if (old_twoscomplement > 127) {
-      old_8bit_extended_twoscomplement = 127;
-    }
-    if (old_twoscomplement < 0) {
-      old_8bit_extended_twoscomplement = 0;
-    }
+    int32_t new_value = clampi32(old_signed + delta_signed, -halfr, halfr - 1);
 
-    if (old_twoscomplement > 63) { // extend sign bit to 8 bit size
-      old_8bit_extended_twoscomplement += 128;
-    }
+    int32_t new_twos = new_value + min + (new_value < 0) * range;
 
-    int8_t old_signed;
+    template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_twos;
 
-    if (old_8bit_extended_twoscomplement > 127) { // negative number
-      old_signed = -((~old_8bit_extended_twoscomplement) + 1 + 256);
-    } else { // positive number
-      old_signed = -(~old_8bit_extended_twoscomplement) - 1;
-    }
-
-    int16_t new_signed = old_signed - delta_velocity;
-
-    // Limit to signed -64 +63 range
-    if (new_signed < -64) {
-      new_signed = -64;
-    }
-
-    if (new_signed > 63) {
-      new_signed = 63;
-    }
-
-    int8_t new_signed_8bit = new_signed;
-
-    // Two's complement magic
-    uint8_t new_twoscomplement = (~new_signed_8bit) + 1;
-
-    // reduce the result to 7 bit length
-    uint8_t new_7bit_twoscomplement = new_twoscomplement & 127;
-
-    template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index] = new_7bit_twoscomplement;
+  } break;
   }
 
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENCODER);

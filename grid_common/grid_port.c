@@ -384,13 +384,16 @@ void grid_str_transform_brc_params(char* msg, int8_t dx, int8_t dy, uint8_t part
 
 void grid_port_debug_print_text(char* str) {
 
+  char encoded_str[GRID_PARAMETER_SPI_TRANSACTION_length * 4 / 3 + 1] = {0};
+  grid_str_base64_encode((unsigned char*)str, strlen(str), encoded_str);
+
   struct grid_msg_packet pkt;
 
   grid_msg_packet_init(&grid_msg_state, &pkt, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
   grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_DEBUGTEXT_frame_start);
   grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-  grid_msg_packet_body_append_printf(&pkt, str);
+  grid_msg_packet_body_append_printf(&pkt, encoded_str);
   grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_DEBUGTEXT_frame_end);
 
   grid_msg_packet_close(&grid_msg_state, &pkt);
