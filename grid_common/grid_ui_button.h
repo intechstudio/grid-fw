@@ -13,6 +13,8 @@ struct grid_ui_button_state {
   uint32_t full_range;
   uint16_t min_value;
   uint16_t max_value;
+  uint16_t trig_lo;
+  uint16_t trig_hi;
   uint16_t min_range;
   uint16_t prev_in;
   uint16_t curr_in;

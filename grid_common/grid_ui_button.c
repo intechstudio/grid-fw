@@ -32,6 +32,8 @@ void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_b
   state->full_range = 1 << adc_bit_depth;
   state->min_value = UINT16_MAX;
   state->max_value = 0;
+  state->trig_lo = state->min_value;
+  state->trig_hi = state->max_value;
   state->min_range = (1 << min_range_depth);
   state->threshold = threshold;
   state->hysteresis = hysteresis;
@@ -42,38 +44,19 @@ void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_b
 
 bool grid_ui_button_state_range_valid(struct grid_ui_button_state* state) {
 
-  if (!(state->min_value < state->max_value)) {
-    return false;
-  }
+  bool interval_valid = state->min_value < state->max_value;
 
   uint16_t eighth_range = state->full_range >> 3;
 
   // The minimum observed value should be sufficiently low
   // (currently, this helps with making the first-press velocity meaningful)
-  if (state->min_value > eighth_range * 3) {
-    return false;
-  }
+  bool three_eighths_less = state->min_value <= eighth_range * 3;
 
   uint16_t curr_range = state->max_value - state->min_value;
 
-  return curr_range >= state->min_range;
-}
+  bool range_valid = curr_range >= state->min_range;
 
-void grid_ui_button_state_value_update(struct grid_ui_button_state* state, uint16_t value) {
-
-  if (value < state->min_value) {
-    state->min_value = value;
-  }
-
-  if (value > state->max_value) {
-    state->max_value = value;
-  }
-
-  state->prev_time = state->curr_time;
-  state->curr_time = grid_platform_rtc_get_micros();
-
-  state->prev_in = state->curr_in;
-  state->curr_in = value;
+  return interval_valid && three_eighths_less && range_valid;
 }
 
 static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }
@@ -96,6 +79,31 @@ uint16_t grid_ui_button_state_get_high_trigger(struct grid_ui_button_state* stat
   return lerp(state->min_value, state->max_value, curr_threshold) + 1;
 }
 
+void grid_ui_button_state_value_update(struct grid_ui_button_state* state, uint16_t value, uint64_t now) {
+
+  if (value < state->min_value) {
+
+    state->min_value = value;
+
+    state->trig_lo = grid_ui_button_state_get_low_trigger(state);
+    state->trig_hi = grid_ui_button_state_get_high_trigger(state);
+  }
+
+  if (value > state->max_value) {
+
+    state->max_value = value;
+
+    state->trig_lo = grid_ui_button_state_get_low_trigger(state);
+    state->trig_hi = grid_ui_button_state_get_high_trigger(state);
+  }
+
+  state->prev_time = state->curr_time;
+  state->curr_time = now;
+
+  state->prev_in = state->curr_in;
+  state->curr_in = value;
+}
+
 double clampf64(double x, double a, double b) {
 
   const double t = x < a ? a : x;
@@ -108,7 +116,7 @@ double grid_ui_button_state_derivate(struct grid_ui_button_state* state) {
 
   uint64_t elapsed = state->curr_time - state->prev_time;
 
-  double run = elapsed / 1000.;
+  double run = elapsed / 1250.;
 
   double deriv = -1 * rise / run;
 
@@ -117,13 +125,13 @@ double grid_ui_button_state_derivate(struct grid_ui_button_state* state) {
 
 bool grid_ui_button_state_get_with_hysteresis(struct grid_ui_button_state* state, uint8_t* out) {
 
-  if (state->curr_in <= grid_ui_button_state_get_low_trigger(state)) {
+  if (state->curr_in <= state->trig_lo) {
 
     *out = 1;
     return true;
   }
 
-  if (state->curr_in >= grid_ui_button_state_get_high_trigger(state)) {
+  if (state->curr_in >= state->trig_hi) {
 
     *out = 0;
     return true;
@@ -136,22 +144,22 @@ bool grid_ui_button_state_process(struct grid_ui_button_state* state, int mode, 
 
   if (mode == -2) {
 
-    state->prev_out = state->prev_in;
-    state->curr_out = state->curr_in;
+    state->prev_out = state->curr_out;
+
+    if (abs(state->curr_out - (int32_t)state->curr_in) > 5) {
+
+      state->curr_out = state->curr_in;
+    }
 
   } else {
 
     state->prev_out = state->curr_out;
 
-    uint16_t trig_lo = grid_ui_button_state_get_low_trigger(state);
-
-    if (state->curr_in <= trig_lo && state->prev_out == 0) {
+    if (state->curr_in <= state->trig_lo && state->prev_out == 0) {
       state->curr_out = 1;
     }
 
-    uint16_t trig_hi = grid_ui_button_state_get_high_trigger(state);
-
-    if (state->curr_in >= trig_hi && state->prev_out == 1) {
+    if (state->curr_in >= state->trig_hi && state->prev_out == 1) {
       state->curr_out = 0;
     }
   }
@@ -294,16 +302,18 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 
   int32_t* template_parameter_list = ele->template_parameter_list;
 
-  grid_ui_button_state_value_update(state, value);
+  uint64_t now = grid_platform_rtc_get_micros();
+  grid_ui_button_state_value_update(state, value, now);
   if (!grid_ui_button_state_range_valid(state)) {
     return;
   }
 
   // limit lastrealtime
-  uint32_t elapsed_time = grid_platform_rtc_get_elapsed_time(state->last_real_time);
-  if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(state->last_real_time)) {
-    state->last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
-    elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
+  uint32_t elapsed_time = now - state->last_real_time;
+  uint32_t limit = GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
+  if (elapsed_time > limit) {
+    state->last_real_time = now - limit;
+    elapsed_time = limit;
   }
 
   int32_t mode = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index];
@@ -312,7 +322,7 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
   }
 
   // update lastrealtime
-  state->last_real_time = grid_platform_rtc_get_micros();
+  state->last_real_time = now;
   template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] = elapsed_time / MS_TO_US;
 
   // 1-bit output with hysteresis
