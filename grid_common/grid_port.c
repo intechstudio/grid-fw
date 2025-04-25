@@ -321,7 +321,7 @@ bool grid_msg_pos_transformable(int8_t recv_x, int8_t recv_y) {
   }
 
   // Grid-generated global message
-  if (x == 255 && y == 255) {
+  if (x == -1 && y == -1) {
     return false;
   }
 
@@ -338,7 +338,7 @@ void grid_str_transform_brc_params(char* msg, int8_t dx, int8_t dy, uint8_t part
 
   uint8_t error = 0;
 
-  uint8_t recv_session = grid_str_get_parameter(msg, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
+  // uint8_t recv_session = grid_str_get_parameter(msg, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
   uint8_t recv_age = grid_str_get_parameter(msg, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
   uint8_t new_age = recv_age + 1;
 
