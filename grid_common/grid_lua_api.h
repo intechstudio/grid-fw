@@ -9,9 +9,9 @@
 #include "grid_led.h"
 #include "grid_lua.h"
 #include "grid_msg.h"
-#include "grid_transport.h"
 #include "grid_protocol.h"
 #include "grid_sys.h"
+#include "grid_transport.h"
 #include "grid_ui.h"
 
 extern struct grid_led_model grid_led_state;

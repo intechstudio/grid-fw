@@ -13,8 +13,8 @@
 #include <stdlib.h>
 
 #include "grid_msg.h"
-#include "grid_transport.h"
 #include "grid_sys.h"
+#include "grid_transport.h"
 
 extern int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
 extern int32_t grid_platform_usb_midi_write_status(void);
