@@ -22,6 +22,8 @@ extern uint8_t grid_platform_get_nvm_state();
 extern uint8_t grid_platform_erase_nvm_next();
 extern uint8_t grid_platform_get_adc_bit_depth();
 
+extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
+
 void grid_ui_semaphore_init(struct grid_ui_semaphore* semaphore, void* handle, void (*lock_fn)(void*), void (*release_fn)(void*)) {
 
   semaphore->handle = handle;

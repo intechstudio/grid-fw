@@ -6,7 +6,6 @@
 #include <string.h>
 
 #include "grid_ain.h"
-#include "grid_lua_api.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
 #include "grid_ui_system.h"
@@ -30,44 +29,6 @@ void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t 
 
 void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button_last_real_time, uint8_t old_button_value, uint8_t new_button_value);
 void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_button_state* state, uint16_t value, uint8_t adc_bit_depth);
-
-#define GRID_LUA_FNC_B_ELEMENT_INDEX_index 0
-#define GRID_LUA_FNC_B_ELEMENT_INDEX_short "ind"
-#define GRID_LUA_FNC_B_ELEMENT_INDEX_human "element_index"
-
-#define GRID_LUA_FNC_B_BUTTON_NUMBER_index 1
-#define GRID_LUA_FNC_B_BUTTON_NUMBER_short "bnu"
-#define GRID_LUA_FNC_B_BUTTON_NUMBER_human "button_number"
-
-#define GRID_LUA_FNC_B_BUTTON_VALUE_index 2
-#define GRID_LUA_FNC_B_BUTTON_VALUE_short "bva"
-#define GRID_LUA_FNC_B_BUTTON_VALUE_human "button_value"
-
-#define GRID_LUA_FNC_B_BUTTON_MIN_index 3
-#define GRID_LUA_FNC_B_BUTTON_MIN_short "bmi"
-#define GRID_LUA_FNC_B_BUTTON_MIN_human "button_min"
-
-#define GRID_LUA_FNC_B_BUTTON_MAX_index 4
-#define GRID_LUA_FNC_B_BUTTON_MAX_short "bma"
-#define GRID_LUA_FNC_B_BUTTON_MAX_human "button_max"
-
-#define GRID_LUA_FNC_B_BUTTON_MODE_index 5
-#define GRID_LUA_FNC_B_BUTTON_MODE_short "bmo"
-#define GRID_LUA_FNC_B_BUTTON_MODE_human "button_mode"
-
-#define GRID_LUA_FNC_B_BUTTON_ELAPSED_index 6
-#define GRID_LUA_FNC_B_BUTTON_ELAPSED_short "bel"
-#define GRID_LUA_FNC_B_BUTTON_ELAPSED_human "button_elapsed_time"
-
-#define GRID_LUA_FNC_B_BUTTON_STATE_index 7
-#define GRID_LUA_FNC_B_BUTTON_STATE_short "bst"
-#define GRID_LUA_FNC_B_BUTTON_STATE_human "button_state"
-
-#define GRID_LUA_FNC_B_BUTTON_STEP_short "bstp"
-#define GRID_LUA_FNC_B_BUTTON_STEP_human "button_step"
-
-// Button parameters
-#define GRID_LUA_FNC_B_LIST_length 8
 
 // ========================= BUTTON =========================== //
 

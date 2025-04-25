@@ -8,7 +8,7 @@
 #include "grid_ain.h"
 #include "grid_cal.h"
 #include "grid_config.h"
-#include "grid_lua_api.h"
+#include "grid_lua.h"
 #include "grid_protocol.h"
 #include "grid_transport.h"
 #include "grid_usb.h"
@@ -142,7 +142,6 @@ struct grid_ui_model {
   int bulk_last_element;
   int bulk_last_event;
 
-  // void (*lua_ui_init_callback)(struct grid_lua_model*);
   lua_ui_init_callback_t lua_ui_init_callback;
 };
 

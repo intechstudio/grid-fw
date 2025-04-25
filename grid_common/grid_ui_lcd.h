@@ -6,34 +6,12 @@
 #include <string.h>
 
 #include "grid_ain.h"
-#include "grid_lua_api.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
 
 void grid_ui_element_lcd_init(struct grid_ui_element* ele, template_init_t initializer);
 
 void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer* buf);
-
-#define GRID_LUA_FNC_L_ELEMENT_INDEX_index 0
-#define GRID_LUA_FNC_L_ELEMENT_INDEX_short "ind"
-#define GRID_LUA_FNC_L_ELEMENT_INDEX_human "element_index"
-
-#define GRID_LUA_FNC_L_SCREEN_INDEX_index 1
-#define GRID_LUA_FNC_L_SCREEN_INDEX_short "lin"
-#define GRID_LUA_FNC_L_SCREEN_INDEX_human "screen_index"
-#define GRID_LUA_FNC_L_SCREEN_INDEX_usage "lcd:screen_index() Returns the screen index used by low-level APIs."
-
-#define GRID_LUA_FNC_L_SCREEN_WIDTH_index 2
-#define GRID_LUA_FNC_L_SCREEN_WIDTH_short "lsw"
-#define GRID_LUA_FNC_L_SCREEN_WIDTH_human "screen_width"
-#define GRID_LUA_FNC_L_SCREEN_WIDTH_usage "lcd:screen_width() Returns the screen width in pixels."
-
-#define GRID_LUA_FNC_L_SCREEN_HEIGHT_index 3
-#define GRID_LUA_FNC_L_SCREEN_HEIGHT_short "lsh"
-#define GRID_LUA_FNC_L_SCREEN_HEIGHT_human "screen_height"
-#define GRID_LUA_FNC_L_SCREEN_HEIGHT_usage "lcd:screen_height() Returns the screen height in pixels."
-
-#define GRID_LUA_FNC_L_LIST_length 4
 
 #define GRID_LUA_FNC_L_DRAW_SWAP_short "ldsw"
 #define GRID_LUA_FNC_L_DRAW_SWAP_human "draw_swap"

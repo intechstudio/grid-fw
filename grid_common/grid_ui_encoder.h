@@ -6,7 +6,6 @@
 #include <string.h>
 
 #include "grid_ain.h"
-#include "grid_lua_api.h"
 #include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
@@ -38,83 +37,6 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_encoder_state* state, uint8_t new_value);
 
 // ========================= ENCODER =========================== //
-
-#define GRID_LUA_FNC_E_ELEMENT_INDEX_index 0
-#define GRID_LUA_FNC_E_ELEMENT_INDEX_short "ind"
-#define GRID_LUA_FNC_E_ELEMENT_INDEX_human "element_index"
-
-#define GRID_LUA_FNC_E_BUTTON_NUMBER_index 1
-#define GRID_LUA_FNC_E_BUTTON_NUMBER_short "bnu"
-#define GRID_LUA_FNC_E_BUTTON_NUMBER_human "button_number"
-
-#define GRID_LUA_FNC_E_BUTTON_VALUE_index 2
-#define GRID_LUA_FNC_E_BUTTON_VALUE_short "bva"
-#define GRID_LUA_FNC_E_BUTTON_VALUE_human "button_value"
-
-#define GRID_LUA_FNC_E_BUTTON_MIN_index 3
-#define GRID_LUA_FNC_E_BUTTON_MIN_short "bmi"
-#define GRID_LUA_FNC_E_BUTTON_MIN_human "button_min"
-
-#define GRID_LUA_FNC_E_BUTTON_MAX_index 4
-#define GRID_LUA_FNC_E_BUTTON_MAX_short "bma"
-#define GRID_LUA_FNC_E_BUTTON_MAX_human "button_max"
-
-#define GRID_LUA_FNC_E_BUTTON_MODE_index 5
-#define GRID_LUA_FNC_E_BUTTON_MODE_short "bmo"
-#define GRID_LUA_FNC_E_BUTTON_MODE_human "button_mode"
-
-#define GRID_LUA_FNC_E_BUTTON_ELAPSED_index 6
-#define GRID_LUA_FNC_E_BUTTON_ELAPSED_short "bel"
-#define GRID_LUA_FNC_E_BUTTON_ELAPSED_human "button_elapsed_time"
-
-#define GRID_LUA_FNC_E_BUTTON_STATE_index 7
-#define GRID_LUA_FNC_E_BUTTON_STATE_short "bst"
-#define GRID_LUA_FNC_E_BUTTON_STATE_human "button_state"
-
-#define GRID_LUA_FNC_E_ENCODER_NUMBER_index 8
-#define GRID_LUA_FNC_E_ENCODER_NUMBER_short "enu"
-#define GRID_LUA_FNC_E_ENCODER_NUMBER_human "encoder_number"
-
-#define GRID_LUA_FNC_E_ENCODER_VALUE_index 9
-#define GRID_LUA_FNC_E_ENCODER_VALUE_short "eva"
-#define GRID_LUA_FNC_E_ENCODER_VALUE_human "encoder_value"
-
-#define GRID_LUA_FNC_E_ENCODER_MIN_index 10
-#define GRID_LUA_FNC_E_ENCODER_MIN_short "emi"
-#define GRID_LUA_FNC_E_ENCODER_MIN_human "encoder_min"
-
-#define GRID_LUA_FNC_E_ENCODER_MAX_index 11
-#define GRID_LUA_FNC_E_ENCODER_MAX_short "ema"
-#define GRID_LUA_FNC_E_ENCODER_MAX_human "encoder_max"
-
-#define GRID_LUA_FNC_E_ENCODER_MODE_index 12
-#define GRID_LUA_FNC_E_ENCODER_MODE_short "emo"
-#define GRID_LUA_FNC_E_ENCODER_MODE_human "encoder_mode"
-
-#define GRID_LUA_FNC_E_ENCODER_ELAPSED_index 13
-#define GRID_LUA_FNC_E_ENCODER_ELAPSED_short "eel"
-#define GRID_LUA_FNC_E_ENCODER_ELAPSED_human "encoder_elapsed_time"
-
-#define GRID_LUA_FNC_E_ENCODER_STATE_index 14
-#define GRID_LUA_FNC_E_ENCODER_STATE_short "est"
-#define GRID_LUA_FNC_E_ENCODER_STATE_human "encoder_state"
-
-#define GRID_LUA_FNC_E_ENCODER_VELOCITY_index 15
-#define GRID_LUA_FNC_E_ENCODER_VELOCITY_short "ev0"
-#define GRID_LUA_FNC_E_ENCODER_VELOCITY_human "encoder_velocity"
-
-#define GRID_LUA_FNC_E_ENCODER_SENSITIVITY_index 16
-#define GRID_LUA_FNC_E_ENCODER_SENSITIVITY_short "ese"
-#define GRID_LUA_FNC_E_ENCODER_SENSITIVITY_human "encoder_sensitivity"
-
-#define GRID_LUA_FNC_E_BUTTON_STEP_short "bstp"
-#define GRID_LUA_FNC_E_BUTTON_STEP_human "button_step"
-
-#define GRID_LUA_FNC_E_LED_COLOR_short "glc"
-#define GRID_LUA_FNC_E_LED_COLOR_human "led_color"
-
-// Encoder parameters
-#define GRID_LUA_FNC_E_LIST_length 17
 
 // Encoder init function
 // clang-format off

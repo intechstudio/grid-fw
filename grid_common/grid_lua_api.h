@@ -9,14 +9,10 @@
 #include "grid_led.h"
 #include "grid_lua.h"
 #include "grid_msg.h"
-#include "grid_port.h"
+#include "grid_transport.h"
 #include "grid_protocol.h"
 #include "grid_sys.h"
 #include "grid_ui.h"
-#include "grid_ui_button.h"
-#include "grid_ui_encoder.h"
-#include "grid_ui_endless.h"
-#include "grid_ui_potmeter.h"
 
 extern struct grid_led_model grid_led_state;
 

@@ -6,7 +6,6 @@
 #include <string.h>
 
 #include "grid_ain.h"
-#include "grid_lua_api.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
 #include "grid_ui_system.h"
@@ -20,41 +19,6 @@ void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_
 void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth);
 
 // ========================= POTMETER =========================== //
-
-#define GRID_LUA_FNC_P_ELEMENT_INDEX_index 0
-#define GRID_LUA_FNC_P_ELEMENT_INDEX_short "ind"
-#define GRID_LUA_FNC_P_ELEMENT_INDEX_human "element_index"
-
-#define GRID_LUA_FNC_P_POTMETER_NUMBER_index 1
-#define GRID_LUA_FNC_P_POTMETER_NUMBER_short "pnu"
-#define GRID_LUA_FNC_P_POTMETER_NUMBER_human "potmeter_number"
-
-#define GRID_LUA_FNC_P_POTMETER_VALUE_index 2
-#define GRID_LUA_FNC_P_POTMETER_VALUE_short "pva"
-#define GRID_LUA_FNC_P_POTMETER_VALUE_human "potmeter_value"
-
-#define GRID_LUA_FNC_P_POTMETER_MIN_index 3
-#define GRID_LUA_FNC_P_POTMETER_MIN_short "pmi"
-#define GRID_LUA_FNC_P_POTMETER_MIN_human "potmeter_min"
-
-#define GRID_LUA_FNC_P_POTMETER_MAX_index 4
-#define GRID_LUA_FNC_P_POTMETER_MAX_short "pma"
-#define GRID_LUA_FNC_P_POTMETER_MAX_human "potmeter_max"
-
-#define GRID_LUA_FNC_P_POTMETER_MODE_index 5
-#define GRID_LUA_FNC_P_POTMETER_MODE_short "pmo"
-#define GRID_LUA_FNC_P_POTMETER_MODE_human "potmeter_resolution"
-
-#define GRID_LUA_FNC_P_POTMETER_ELAPSED_index 6
-#define GRID_LUA_FNC_P_POTMETER_ELAPSED_short "pel"
-#define GRID_LUA_FNC_P_POTMETER_ELAPSED_human "potmeter_elapsed_time"
-
-#define GRID_LUA_FNC_P_POTMETER_STATE_index 7
-#define GRID_LUA_FNC_P_POTMETER_STATE_short "pst"
-#define GRID_LUA_FNC_P_POTMETER_STATE_human "potmeter_state"
-
-// Potmeter parameters
-#define GRID_LUA_FNC_P_LIST_length 8
 
 // Potmeter init function
 // clang-format off
