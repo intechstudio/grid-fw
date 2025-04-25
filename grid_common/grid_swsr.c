@@ -243,8 +243,8 @@ void grid_uwsr_read(struct grid_uwsr_t* uwsr, void* dest, int size) {
   };
 
   if (dest) {
-    memcpy(dest, &uwsr->data[starts[0]], lengths[0]);
-    memcpy(&dest[lengths[0]], &uwsr->data[starts[1]], lengths[1]);
+    memcpy((char*)dest, &uwsr->data[starts[0]], lengths[0]);
+    memcpy(&((char*)dest)[lengths[0]], &uwsr->data[starts[1]], lengths[1]);
   }
 
   memset(&uwsr->data[starts[0]], 0, lengths[0]);
