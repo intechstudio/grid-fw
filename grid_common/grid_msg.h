@@ -1,11 +1,9 @@
 #ifndef GRID_MSG_H
 #define GRID_MSG_H
 
-#include <assert.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 
 #include "grid_protocol.h"
 

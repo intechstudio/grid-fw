@@ -1,21 +1,9 @@
 #ifndef GRID_MODULE_H
 #define GRID_MODULE_H
 
-#include <math.h>
-#include <stdint.h>
-#include <stdlib.h>
-
 #include "grid_ain.h"
 #include "grid_led.h"
-#include "grid_lua_api.h"
-#include "grid_protocol.h"
 #include "grid_ui.h"
-#include "grid_ui_button.h"
-#include "grid_ui_encoder.h"
-#include "grid_ui_endless.h"
-#include "grid_ui_lcd.h"
-#include "grid_ui_potmeter.h"
-#include "grid_ui_system.h"
 
 void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui);
 void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui);

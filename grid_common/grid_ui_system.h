@@ -2,10 +2,7 @@
 #define GRID_UI_SYSTEM_H
 
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "grid_ain.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
 

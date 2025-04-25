@@ -1,5 +1,10 @@
 #include "grid_ui_lcd.h"
 
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_ain.h"
+
 extern uint8_t grid_platform_get_adc_bit_depth();
 
 extern void grid_platform_printf(char const* fmt, ...);

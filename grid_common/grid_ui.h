@@ -2,16 +2,8 @@
 #define GRID_UI_H
 
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "grid_ain.h"
-#include "grid_cal.h"
-#include "grid_config.h"
 #include "grid_lua.h"
-#include "grid_protocol.h"
-#include "grid_transport.h"
-#include "grid_usb.h"
 
 struct grid_ui_semaphore {
   void* handle;

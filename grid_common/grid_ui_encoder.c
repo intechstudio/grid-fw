@@ -1,5 +1,14 @@
 #include "grid_ui_encoder.h"
 
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_ain.h"
+#include "grid_platform.h"
+#include "grid_sys.h"
+#include "grid_ui_button.h"
+#include "grid_ui_system.h"
+
 extern uint8_t grid_platform_get_adc_bit_depth();
 
 extern void grid_platform_printf(char const* fmt, ...);

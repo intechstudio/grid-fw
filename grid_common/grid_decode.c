@@ -1,5 +1,17 @@
 #include "grid_decode.h"
 
+#include <stdarg.h>
+#include <string.h>
+
+#include "grid_buf.h"
+#include "grid_led.h"
+#include "grid_msg.h"
+#include "grid_platform.h"
+#include "grid_sys.h"
+#include "grid_ui_encoder.h"
+#include "grid_ui_potmeter.h"
+#include "grid_usb.h"
+
 extern struct grid_transport grid_transport_state;
 
 void grid_transport_send_msg_packet_to_all(struct grid_transport* transport, struct grid_msg_packet* pkt);

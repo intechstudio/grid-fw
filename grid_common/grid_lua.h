@@ -2,14 +2,10 @@
 #define GRID_LUA_H
 
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "lua-5.4.3/src/lauxlib.h"
 #include "lua-5.4.3/src/lua.h"
 #include "lua-5.4.3/src/lualib.h"
-
-#include "grid_protocol.h"
 
 #include "lua_src/lua_source_collection.h"
 

@@ -1,11 +1,6 @@
 #ifndef GRID_CONFIG_H
 #define GRID_CONFIG_H
 
-#include <stdio.h>
-#include <string.h>
-
-#include "tomlc99/toml.h"
-
 #include "grid_cal.h"
 
 #define GRID_CONFIG_MAX_UINT16_ARRAYELEM 7 // uint16_t + ',' + ' '

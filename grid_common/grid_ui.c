@@ -1,6 +1,13 @@
-#include <assert.h>
-
 #include "grid_ui.h"
+
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_config.h"
+#include "grid_protocol.h"
+#include "grid_transport.h"
+#include "grid_usb.h"
 
 extern void grid_platform_printf(char const* fmt, ...);
 extern int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle);

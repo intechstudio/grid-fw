@@ -1,5 +1,16 @@
 #include "grid_lua_api.h"
 
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_cal.h"
+#include "grid_led.h"
+#include "grid_msg.h"
+#include "grid_protocol.h"
+#include "grid_sys.h"
+#include "grid_transport.h"
+#include "grid_ui.h"
+
 /*static*/ int32_t grid_utility_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max) { return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min; }
 
 /* ==================== LUA C API REGISTERED FUNCTIONS  ====================*/

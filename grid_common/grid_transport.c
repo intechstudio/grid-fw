@@ -1,5 +1,9 @@
 #include "grid_transport.h"
 
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+
 struct grid_transport grid_transport_state;
 
 void grid_transport_malloc(struct grid_transport* transport, size_t port_count) {

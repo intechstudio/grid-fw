@@ -1,5 +1,18 @@
 #include "grid_module.h"
 
+#include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+#include "grid_lua_api.h"
+#include "grid_protocol.h"
+#include "grid_ui_button.h"
+#include "grid_ui_encoder.h"
+#include "grid_ui_endless.h"
+#include "grid_ui_lcd.h"
+#include "grid_ui_potmeter.h"
+#include "grid_ui_system.h"
+
 /* ====================  MODULE SPECIFIC INITIALIZERS  ====================*/
 
 void grid_lua_ui_init_po16(struct grid_lua_model* lua);

@@ -1,5 +1,13 @@
 #include "grid_port.h"
 
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+
+// #include "grid_decode.h"
+#include "grid_platform.h"
+#include "grid_protocol.h"
+
 extern struct grid_decoder_collection* grid_decoder_to_ui_reference;
 extern struct grid_decoder_collection* grid_decoder_to_usb_reference;
 

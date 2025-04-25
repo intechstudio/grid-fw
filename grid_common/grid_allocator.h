@@ -1,7 +1,6 @@
 #ifndef GRID_ALLOCATOR_H
 #define GRID_ALLOCATOR_H
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #define malloc(x) my_malloc(x, __FILE__, __LINE__)

@@ -3,12 +3,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
-// #include "grid_decode.h"
 #include "grid_msg.h"
-#include "grid_platform.h"
-#include "grid_protocol.h"
 #include "grid_swsr.h"
 
 enum grid_port_type {

@@ -1,21 +1,7 @@
 #ifndef GRID_DECODE_H
 #define GRID_DECODE_H
 
-#include "grid_buf.h"
-#include "grid_led.h"
-#include "grid_lua_api.h"
-#include "grid_msg.h"
-#include "grid_platform.h"
-#include "grid_protocol.h"
-#include "grid_sys.h"
-#include "grid_ui.h"
-#include "grid_ui_encoder.h"
-#include "grid_ui_potmeter.h"
-#include "grid_usb.h"
-
-#include <stdarg.h>
 #include <stdint.h>
-#include <string.h>
 
 struct grid_decoder_collection {
 

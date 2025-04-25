@@ -1,5 +1,10 @@
 #include "grid_lua.h"
 
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_protocol.h"
+
 struct grid_lua_model grid_lua_state;
 
 void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance) {

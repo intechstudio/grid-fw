@@ -7,6 +7,11 @@
 
 #include "grid_usb.h"
 
+#include <stdlib.h>
+
+#include "grid_msg.h"
+#include "grid_platform.h"
+
 struct grid_midi_event_desc grid_midi_tx_buffer[GRID_MIDI_TX_BUFFER_length];
 
 uint16_t grid_midi_tx_write_index;

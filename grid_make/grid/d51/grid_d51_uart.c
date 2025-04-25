@@ -7,6 +7,8 @@
 
 #include "grid_d51_uart.h"
 
+#include <assert.h>
+
 struct grid_port* usart_ports[4] = {0};
 struct grid_uwsr_t usart_uwsr[4];
 uint8_t usart_tx_ready[4];

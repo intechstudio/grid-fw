@@ -2,10 +2,8 @@
 #define GRID_BUF_H
 
 #include <stdint.h>
-#include <stdlib.h>
 
 #include "grid_msg.h"
-#include "grid_protocol.h"
 
 extern void grid_platform_printf(char const* fmt, ...);
 

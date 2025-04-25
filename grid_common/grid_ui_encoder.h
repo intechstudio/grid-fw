@@ -2,15 +2,9 @@
 #define GRID_UI_ENCODER_H
 
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "grid_ain.h"
-#include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
-#include "grid_ui_button.h"
-#include "grid_ui_system.h"
 
 #define GRID_UI_ENCODER_INIT_SAMPLES 2
 

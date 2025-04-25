@@ -2,13 +2,9 @@
 #define GRID_UI_BUTTON_H
 
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "grid_ain.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
-#include "grid_ui_system.h"
 
 struct grid_ui_button_state {
   uint64_t last_real_time;

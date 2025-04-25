@@ -1,11 +1,7 @@
 #ifndef GRID_SYS_H
 #define GRID_SYS_H
 
-#include <assert.h>
 #include <stdint.h>
-
-#include "grid_platform.h"
-#include "grid_protocol.h"
 
 #define MS_TO_US 1000
 

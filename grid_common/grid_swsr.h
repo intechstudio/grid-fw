@@ -1,10 +1,8 @@
 #ifndef GRID_SWSR_H
 #define GRID_SWSR_H
 
-#include <assert.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
 
 // Single writer, single reader ring buffer
 struct grid_swsr_t {

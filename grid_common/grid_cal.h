@@ -2,7 +2,6 @@
 #define GRID_CAL_H
 
 #include <stdint.h>
-#include <stdlib.h>
 
 struct grid_cal_model {
 

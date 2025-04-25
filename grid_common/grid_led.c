@@ -18,6 +18,12 @@
  // * The reset pulse uses 144 bytes of memory (300us reset) for WS2812-2020
  */
 
+#include "grid_led.h"
+
+#include <stdlib.h>
+
+#include "grid_msg.h"
+
 #define GRID_LED_RESET_LENGTH 144
 
 // FRAME FORMAT for WS2812B-Mini or WS2812-2020
@@ -30,9 +36,6 @@
 // Frame format => | RESET | LED1:G | LED1:R | LED1:B | LED2:G | LED2:R | LED2:B
 // | LED3:G | LED3:R | LED3:B | IDLE  | Frame timing => | 60us  | 10us   | 10us
 // | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | 10us   | N/A   |
-
-// this is need for types like uint8_t
-#include "grid_led.h"
 
 struct grid_led_model grid_led_state;
 

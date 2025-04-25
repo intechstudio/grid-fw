@@ -2,8 +2,7 @@
 #define GRID_UTASK_H
 
 #include <stdbool.h>
-
-#include "grid_platform.h"
+#include <stdint.h>
 
 struct grid_utask_timer {
   uint64_t last;

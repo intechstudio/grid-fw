@@ -2,9 +2,6 @@
 #define GRID_AIN_H
 
 #include <stdint.h>
-#include <stdlib.h>
-
-#include <stdio.h>
 
 struct AIN_Channel {
 

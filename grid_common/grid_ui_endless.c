@@ -1,5 +1,14 @@
 #include "grid_ui_endless.h"
 
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_ain.h"
+#include "grid_platform.h"
+#include "grid_sys.h"
+#include "grid_ui_system.h"
+
 const char grid_ui_endless_init_actionstring[] = GRID_ACTIONSTRING_ENDLESS_INIT;
 const char grid_ui_endless_endlesschange_actionstring[] = GRID_ACTIONSTRING_ENDLESS_ENDLESS;
 const char grid_ui_endless_buttonchange_actionstring[] = GRID_ACTIONSTRING_ENDLESS_BUTTON;

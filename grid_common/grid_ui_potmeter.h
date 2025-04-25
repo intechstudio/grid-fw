@@ -2,13 +2,9 @@
 #define GRID_UI_POTMETER_H
 
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "grid_ain.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
-#include "grid_ui_system.h"
 
 void grid_ui_element_potmeter_init(struct grid_ui_element* ele);
 void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf);

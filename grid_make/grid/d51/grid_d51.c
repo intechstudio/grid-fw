@@ -7,6 +7,8 @@
 
 #include "grid_d51.h"
 
+#include <assert.h>
+
 void grid_d51_bitmap_write_bit(uint8_t* buffer, uint8_t offset, uint8_t value, uint8_t* changed) {
 
   uint8_t index = offset / 8;

@@ -1,7 +1,6 @@
 #ifndef GRID_TRANSPORT_H
 #define GRID_TRANSPORT_H
 
-#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

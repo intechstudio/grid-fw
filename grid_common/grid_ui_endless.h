@@ -1,15 +1,10 @@
 #ifndef GRID_UI_ENDLESS_H
 #define GRID_UI_ENDLESS_H
 
-#include <math.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "grid_ain.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
-#include "grid_ui_system.h"
 
 struct grid_ui_endless_state {
   uint16_t phase_a;

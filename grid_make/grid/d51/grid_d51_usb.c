@@ -7,6 +7,8 @@
 
 #include "grid_d51_usb.h"
 
+#include <assert.h>
+
 volatile uint8_t grid_usb_serial_rx_buffer[CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ];
 
 volatile uint8_t grid_usb_serial_rx_flag;

@@ -2,9 +2,6 @@
 #define GRID_LED_H
 
 #include <stdint.h>
-#include <stdlib.h>
-
-#include "grid_msg.h"
 
 #define GRID_LED_LAYER_ALERT 0
 #define GRID_LED_LAYER_UI_A 1
