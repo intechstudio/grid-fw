@@ -20,6 +20,8 @@
 
 #include "usb/class/midi/device/audiodf_midi.h"
 
+extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
+
 #include <stdio.h>
 #include <stdlib.h>
 
