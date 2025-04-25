@@ -95,7 +95,7 @@ void grid_sys_set_module_absolute_position(struct grid_sys_model* sys, uint8_t s
 
   uint8_t cross = portrot % 2;
   int8_t rot_sx = sign_x[portrot] * (recv_sx * !cross + recv_sy * cross);
-  int8_t rot_sy = sign_x[portrot] * (recv_sy * !cross + recv_sx * cross);
+  int8_t rot_sy = sign_y[portrot] * (recv_sy * !cross + recv_sx * cross);
 
   grid_sys_set_module_x(&grid_sys_state, rot_sx);
   grid_sys_set_module_y(&grid_sys_state, rot_sy);
