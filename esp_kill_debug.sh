@@ -1,1 +1,1 @@
-kill -9 $(lsof -t /dev/ttyUSB0)
+kill $(lsof -t /dev/ttyUSB0)
