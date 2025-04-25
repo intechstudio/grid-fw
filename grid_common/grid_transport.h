@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "grid_led.h"
 #include "grid_port.h"
 #include "grid_protocol.h"
 #include "grid_swsr.h"

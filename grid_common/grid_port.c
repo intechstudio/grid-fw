@@ -1,5 +1,10 @@
 #include "grid_port.h"
 
+extern struct grid_decoder_collection* grid_decoder_to_ui_reference;
+extern struct grid_decoder_collection* grid_decoder_to_usb_reference;
+
+int grid_port_decode_class(struct grid_decoder_collection* decoder_collection, uint16_t class, char* header, char* chunk);
+
 char grid_port_dir_to_code(enum grid_port_dir dir) {
 
   assert(dir < GRID_PORT_DIR_COUNT);
@@ -380,75 +385,4 @@ void grid_str_transform_brc_params(char* msg, int8_t dx, int8_t dy, uint8_t part
   uint16_t length = strlen(msg);
   uint8_t chk = grid_str_calculate_checksum_of_packet_string(msg, length);
   grid_str_checksum_write(msg, length, chk);
-}
-
-void grid_port_debug_print_text(char* str) {
-
-  char encoded_str[GRID_PARAMETER_SPI_TRANSACTION_length * 4 / 3 + 1] = {0};
-  grid_str_base64_encode((unsigned char*)str, strlen(str), encoded_str);
-
-  struct grid_msg_packet pkt;
-
-  grid_msg_packet_init(&grid_msg_state, &pkt, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
-
-  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_DEBUGTEXT_frame_start);
-  grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-  grid_msg_packet_body_append_printf(&pkt, encoded_str);
-  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_DEBUGTEXT_frame_end);
-
-  grid_msg_packet_close(&grid_msg_state, &pkt);
-  grid_transport_send_msg_packet_to_all(&grid_transport_state, &pkt);
-}
-
-enum { PORT_PRINTF_MAX = 300 };
-
-#define PORT_PRINTF_TRUNCATION " ... (message truncated)"
-
-void grid_port_debug_printf(const char* fmt, ...) {
-
-  char temp[PORT_PRINTF_MAX];
-
-  va_list va;
-
-  static int truncation_len = sizeof(PORT_PRINTF_TRUNCATION) - 1;
-
-  va_start(va, fmt);
-  int ret = vsnprintf(temp, PORT_PRINTF_MAX - truncation_len, fmt, va);
-  va_end(va);
-
-  if (ret >= PORT_PRINTF_MAX - truncation_len) {
-    strcat(temp, PORT_PRINTF_TRUNCATION);
-  }
-
-  grid_port_debug_print_text(temp);
-}
-
-void grid_port_websocket_print_text(char* str) {
-
-  struct grid_msg_packet message;
-
-  grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
-
-  grid_msg_packet_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_start);
-  grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-  grid_msg_packet_body_append_printf(&message, str);
-  grid_msg_packet_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_end);
-
-  grid_msg_packet_close(&grid_msg_state, &message);
-  grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
-}
-
-void grid_port_package_print_text(char* str) {
-
-  struct grid_msg_packet message;
-
-  grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
-
-  grid_msg_packet_body_append_printf(&message, GRID_CLASS_PACKAGE_frame_start);
-  grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-  grid_msg_packet_body_append_printf(&message, str);
-  grid_msg_packet_body_append_printf(&message, GRID_CLASS_PACKAGE_frame_end);
-
-  grid_msg_packet_close(&grid_msg_state, &message);
-  grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
 }
