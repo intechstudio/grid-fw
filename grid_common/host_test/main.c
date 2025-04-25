@@ -4,6 +4,7 @@
 
 #include <memory.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void setUp(void) {
   // set stuff up here
