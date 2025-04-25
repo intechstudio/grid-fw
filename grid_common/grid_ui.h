@@ -11,10 +11,6 @@
 #include "grid_lua_api.h"
 #include "grid_protocol.h"
 #include "grid_transport.h"
-#include "grid_ui_button.h"
-#include "grid_ui_encoder.h"
-#include "grid_ui_endless.h"
-#include "grid_ui_potmeter.h"
 #include "grid_usb.h"
 
 struct grid_ui_semaphore {

@@ -1,5 +1,9 @@
 #include "grid_decode.h"
 
+extern struct grid_transport grid_transport_state;
+
+void grid_transport_send_msg_packet_to_all(struct grid_transport* transport, struct grid_msg_packet* pkt);
+
 enum GRID_DESTINATION {
 
   GRID_DESTINATION_IS_ME = 1,
