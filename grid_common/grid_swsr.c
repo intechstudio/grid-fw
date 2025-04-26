@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 int grid_swsr_malloc(struct grid_swsr_t* swsr, int capacity) {
 
