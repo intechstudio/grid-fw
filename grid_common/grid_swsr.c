@@ -1,8 +1,8 @@
 #include "grid_swsr.h"
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 int grid_swsr_malloc(struct grid_swsr_t* swsr, int capacity) {
 
