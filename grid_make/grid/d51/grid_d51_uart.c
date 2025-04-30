@@ -7,9 +7,36 @@
 
 #include "grid_d51_uart.h"
 
-static volatile struct grid_port* uart_port_array[4] = {0};
-static volatile struct grid_doublebuffer* uart_doublebuffer_tx_array[4] = {0};
-static volatile struct grid_doublebuffer* uart_doublebuffer_rx_array[4] = {0};
+#include <assert.h>
+
+struct grid_port* usart_ports[4] = {0};
+struct grid_uwsr_t usart_uwsr[4];
+uint8_t usart_tx_ready[4];
+uint8_t usart_tx_buf[4][GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
+
+struct io_descriptor* grid_sys_north_io;
+struct io_descriptor* grid_sys_east_io;
+struct io_descriptor* grid_sys_south_io;
+struct io_descriptor* grid_sys_west_io;
+
+static void tx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(0); }
+static void tx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(1); }
+static void tx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(2); }
+static void tx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(3); }
+
+void tx_cb_USART_GRID(uint8_t dir) { usart_tx_ready[dir] = 1; }
+
+static void rx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr) {}
+static void rx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr) {}
+static void rx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr) {}
+static void rx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr) {}
+
+volatile dmatest = 0;
+
+static void dma_transfer_complete_n_cb(struct _dma_resource* resource) { dma_transfer_complete(usart_ports[0]); }
+static void dma_transfer_complete_e_cb(struct _dma_resource* resource) { dma_transfer_complete(usart_ports[1]); }
+static void dma_transfer_complete_s_cb(struct _dma_resource* resource) { dma_transfer_complete(usart_ports[2]); }
+static void dma_transfer_complete_w_cb(struct _dma_resource* resource) { dma_transfer_complete(usart_ports[3]); }
 
 void grid_d51_uart_port_reset_dma(uint8_t dma_channel) {
 
@@ -17,70 +44,30 @@ void grid_d51_uart_port_reset_dma(uint8_t dma_channel) {
   _dma_enable_transaction(dma_channel, false);
 }
 
-//=============================== USART TX COMPLETE
-//==============================//
+static void dma_transfer_complete(struct grid_port* port) {
 
-struct io_descriptor* grid_sys_north_io;
-struct io_descriptor* grid_sys_east_io;
-struct io_descriptor* grid_sys_south_io;
-struct io_descriptor* grid_sys_west_io;
-
-static void tx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(uart_doublebuffer_tx_array[0]); }
-
-static void tx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(uart_doublebuffer_tx_array[1]); }
-
-static void tx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(uart_doublebuffer_tx_array[2]); }
-
-static void tx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(uart_doublebuffer_tx_array[3]); }
-
-void tx_cb_USART_GRID(struct grid_doublebuffer* const doublebuffer_tx) {
-
-  for (uint32_t i = 0; i < doublebuffer_tx->status; i++) {
-    doublebuffer_tx->buffer_storage[i] = 0;
-  }
-
-  doublebuffer_tx->status = 0;
-}
-
-static void rx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr) { rx_cb_USART_GRID(uart_doublebuffer_rx_array[0]); }
-
-static void rx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr) { rx_cb_USART_GRID(uart_doublebuffer_rx_array[1]); }
-
-static void rx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr) { rx_cb_USART_GRID(uart_doublebuffer_rx_array[2]); }
-
-static void rx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr) { rx_cb_USART_GRID(uart_doublebuffer_rx_array[3]); }
-
-void rx_cb_USART_GRID(struct grid_doublebuffer* const doublebuffer_rx) {}
-
-volatile dmatest = 0;
-
-static void dma_transfer_complete_n_cb(struct _dma_resource* resource) { dma_transfer_complete(uart_port_array[0]); }
-static void dma_transfer_complete_e_cb(struct _dma_resource* resource) { dma_transfer_complete(uart_port_array[1]); }
-static void dma_transfer_complete_s_cb(struct _dma_resource* resource) { dma_transfer_complete(uart_port_array[2]); }
-static void dma_transfer_complete_w_cb(struct _dma_resource* resource) { dma_transfer_complete(uart_port_array[3]); }
-static void dma_transfer_complete(struct grid_port* por) {
-
-  uint8_t direction = por->direction;
-
-  if (direction == GRID_CONST_NORTH) {
+  switch (port->dir) {
+  case GRID_PORT_NORTH: {
     grid_d51_uart_port_reset_dma(DMA_NORTH_RX_CHANNEL);
-  } else if (direction == GRID_CONST_EAST) {
+  } break;
+  case GRID_PORT_EAST: {
     grid_d51_uart_port_reset_dma(DMA_EAST_RX_CHANNEL);
-  } else if (direction == GRID_CONST_SOUTH) {
+  } break;
+  case GRID_PORT_SOUTH: {
     grid_d51_uart_port_reset_dma(DMA_SOUTH_RX_CHANNEL);
-  } else if (direction == GRID_CONST_WEST) {
+  } break;
+  case GRID_PORT_WEST: {
     grid_d51_uart_port_reset_dma(DMA_WEST_RX_CHANNEL);
-  } else {
+  } break;
+  default:
+    assert(0);
   }
 }
 
-static void err_cb_USART_GRID_N(const struct usart_async_descriptor* const descr) { err_cb_USART_GRID(uart_port_array[0]); }
-
-static void err_cb_USART_GRID_E(const struct usart_async_descriptor* const descr) { err_cb_USART_GRID(uart_port_array[1]); }
-
-static void err_cb_USART_GRID_S(const struct usart_async_descriptor* const descr) { err_cb_USART_GRID(uart_port_array[2]); }
-
-static void err_cb_USART_GRID_W(const struct usart_async_descriptor* const descr) { err_cb_USART_GRID(uart_port_array[3]); }
+static void err_cb_USART_GRID_N(const struct usart_async_descriptor* const descr) {}
+static void err_cb_USART_GRID_E(const struct usart_async_descriptor* const descr) {}
+static void err_cb_USART_GRID_S(const struct usart_async_descriptor* const descr) {}
+static void err_cb_USART_GRID_W(const struct usart_async_descriptor* const descr) {}
 
 static void err_cb_USART_GRID(struct grid_port* const por) {
 
@@ -94,20 +81,16 @@ static void err_cb_USART_GRID(struct grid_port* const por) {
 
 void grid_d51_uart_init() {
 
-  uart_port_array[0] = grid_transport_get_port(&grid_transport_state, 0);
-  uart_port_array[1] = grid_transport_get_port(&grid_transport_state, 1);
-  uart_port_array[2] = grid_transport_get_port(&grid_transport_state, 2);
-  uart_port_array[3] = grid_transport_get_port(&grid_transport_state, 3);
+  struct grid_transport* xport = &grid_transport_state;
 
-  uart_doublebuffer_tx_array[0] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 0);
-  uart_doublebuffer_tx_array[1] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 1);
-  uart_doublebuffer_tx_array[2] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 2);
-  uart_doublebuffer_tx_array[3] = grid_transport_get_doublebuffer_tx(&grid_transport_state, 3);
+  for (int i = 0; i < 4; ++i) {
 
-  uart_doublebuffer_rx_array[0] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 0);
-  uart_doublebuffer_rx_array[1] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 1);
-  uart_doublebuffer_rx_array[2] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 2);
-  uart_doublebuffer_rx_array[3] = grid_transport_get_doublebuffer_rx(&grid_transport_state, 3);
+    usart_ports[i] = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
+
+    usart_tx_ready[i] = 1;
+
+    assert(grid_uwsr_malloc(&usart_uwsr[i], GRID_PORT_SWSR_SIZE, '\n') == 0);
+  }
 
   // RX PULLUP
   gpio_set_pin_pull_mode(PC28, GPIO_PULL_UP);
@@ -139,12 +122,10 @@ void grid_d51_uart_init() {
   // err_cb_USART_GRID_S); usart_async_register_callback(&USART_WEST,
   // USART_ASYNC_ERROR_CB, err_cb_USART_GRID_W);
 
-  // 	usart_async_register_callback(&USART_NORTH, USART_ASYNC_RXC_CB,
-  // rx_cb_USART_GRID_N); 	usart_async_register_callback(&USART_EAST,
-  // USART_ASYNC_RXC_CB, rx_cb_USART_GRID_E);
-  // 	usart_async_register_callback(&USART_SOUTH, USART_ASYNC_RXC_CB,
-  // rx_cb_USART_GRID_S); 	usart_async_register_callback(&USART_WEST,
-  // USART_ASYNC_RXC_CB, rx_cb_USART_GRID_W);
+  // usart_async_register_callback(&USART_NORTH, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_N);
+  // usart_async_register_callback(&USART_EAST, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_E);
+  // usart_async_register_callback(&USART_SOUTH, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_S);
+  // usart_async_register_callback(&USART_WEST, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_W);
 
   usart_async_get_io_descriptor(&USART_NORTH, &grid_sys_north_io);
   usart_async_get_io_descriptor(&USART_EAST, &grid_sys_east_io);
@@ -178,10 +159,10 @@ void grid_d51_uart_dma_rx_init_one(struct usart_async_descriptor* usart, uint8_t
 
 void grid_d51_uart_dma_rx_init() {
 
-  grid_d51_uart_dma_rx_init_one(&USART_NORTH, DMA_NORTH_RX_CHANNEL, uart_doublebuffer_rx_array[0]->buffer_storage, uart_doublebuffer_rx_array[0]->buffer_size, dma_transfer_complete_n_cb);
-  grid_d51_uart_dma_rx_init_one(&USART_EAST, DMA_EAST_RX_CHANNEL, uart_doublebuffer_rx_array[1]->buffer_storage, uart_doublebuffer_rx_array[1]->buffer_size, dma_transfer_complete_e_cb);
-  grid_d51_uart_dma_rx_init_one(&USART_SOUTH, DMA_SOUTH_RX_CHANNEL, uart_doublebuffer_rx_array[2]->buffer_storage, uart_doublebuffer_rx_array[2]->buffer_size, dma_transfer_complete_s_cb);
-  grid_d51_uart_dma_rx_init_one(&USART_WEST, DMA_WEST_RX_CHANNEL, uart_doublebuffer_rx_array[3]->buffer_storage, uart_doublebuffer_rx_array[3]->buffer_size, dma_transfer_complete_w_cb);
+  grid_d51_uart_dma_rx_init_one(&USART_NORTH, DMA_NORTH_RX_CHANNEL, usart_uwsr[0].data, usart_uwsr[0].capacity, dma_transfer_complete_n_cb);
+  grid_d51_uart_dma_rx_init_one(&USART_EAST, DMA_EAST_RX_CHANNEL, usart_uwsr[1].data, usart_uwsr[1].capacity, dma_transfer_complete_e_cb);
+  grid_d51_uart_dma_rx_init_one(&USART_SOUTH, DMA_SOUTH_RX_CHANNEL, usart_uwsr[2].data, usart_uwsr[2].capacity, dma_transfer_complete_s_cb);
+  grid_d51_uart_dma_rx_init_one(&USART_WEST, DMA_WEST_RX_CHANNEL, usart_uwsr[3].data, usart_uwsr[3].capacity, dma_transfer_complete_w_cb);
 
   NVIC_SetPriority(DMAC_0_IRQn, 0);
   NVIC_SetPriority(DMAC_1_IRQn, 0);

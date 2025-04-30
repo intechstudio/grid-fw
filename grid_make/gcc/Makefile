@@ -7,6 +7,8 @@ usb/class/midi \
 grid/lua \
 grid \
 grid/d51 \
+grid/vmp \
+../vmp \
 ../grid_common/lua-5.4.3/src \
 \
 
@@ -35,6 +37,9 @@ usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_module.o \
 ../grid_common/grid_lua.o \
 ../grid_common/grid_lua_api.o \
+../grid_common/grid_transport.o \
+../grid_common/grid_rollid.o \
+../grid_common/grid_utask.o \
 grid/d51/grid_d51.o \
 grid/d51/grid_d51_led.o \
 grid/d51/grid_d51_uart.o \
@@ -81,6 +86,8 @@ grid/d51/grid_d51_lua.o \
 ../grid_common/lua-5.4.3/src/ldump.o \
 ../grid_common/lua-5.4.3/src/lstrlib.o \
 ../grid_common/lua-5.4.3/src/lcorolib.o \
+grid/vmp/vmp_def.o \
+../vmp/vmp.o \
 
 # ../grid_common/lua-5.4.3/src/luac.o \
 # ../grid_common/lua-5.4.3/src/lua.o \
@@ -112,6 +119,9 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_module.o" \
 "../grid_common/grid_lua.o" \
 "../grid_common/grid_lua_api.o" \
+"../grid_common/grid_transport.o" \
+"../grid_common/grid_rollid.o" \
+"../grid_common/grid_utask.o" \
 "grid/d51/grid_d51.o" \
 "grid/d51/grid_d51_led.o" \
 "grid/d51/grid_d51_uart.o" \
@@ -158,6 +168,8 @@ OBJS_AS_ARGS +=  \
 "../grid_common/lua-5.4.3/src/ldump.o" \
 "../grid_common/lua-5.4.3/src/lstrlib.o" \
 "../grid_common/lua-5.4.3/src/lcorolib.o" \
+"grid/vmp/vmp_def.o" \
+"../vmp/vmp.o" \
 
 # "../grid_common/lua-5.4.3/src/luac.o" \
 # "../grid_common/lua-5.4.3/src/lua.o" \
@@ -168,6 +180,8 @@ DIR_INCLUDES +=  \
 -I"../" \
 -I"../grid" \
 -I"../grid/d51" \
+-I"../grid/vmp" \
+-I"../../vmp" \
 -I"../usb/class/midi/" \
 -I"../usb/class/midi/device" \
 -I"../../grid_common" \
@@ -201,6 +215,9 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_module.d" \
 "../grid_common/grid_lua.d" \
 "../grid_common/grid_lua_api.d" \
+"../grid_common/grid_transport.d" \
+"../grid_common/grid_rollid.d" \
+"../grid_common/grid_utask.d" \
 "grid/d51/grid_d51.d" \
 "grid/d51/grid_d51_led.d" \
 "grid/d51/grid_d51_uart.d" \
@@ -247,6 +264,8 @@ DEPS_AS_ARGS +=  \
 "../grid_common/lua-5.4.3/src/ldump.d" \
 "../grid_common/lua-5.4.3/src/lstrlib.d" \
 "../grid_common/lua-5.4.3/src/lcorolib.d" \
+"grid/vmp/vmp_def.d" \
+"../vmp/vmp.d" \
 
 # "../grid_common/lua-5.4.3/src/luac.d" \
 # "../grid_common/lua-5.4.3/src/lua.d" \

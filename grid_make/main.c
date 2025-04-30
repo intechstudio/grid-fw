@@ -1,5 +1,9 @@
 #include "grid_d51_module.h"
 
+#include "grid_d51_led.h"
+#include "grid_d51_nvm.h"
+#include "grid_d51_uart.h"
+
 #include "atmel_start_pins.h"
 #include <atmel_start.h>
 
@@ -12,8 +16,14 @@
 
 #include "grid_msg.h"
 #include "grid_port.h"
+#include "grid_utask.h"
+
+#include "vmp_def.h"
+#include "vmp_tag.h"
 
 #include "usb/class/midi/device/audiodf_midi.h"
+
+extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,33 +45,6 @@ void grid_platform_sync1_pulse_send() { sync1_state++; }
 
 extern void grid_platform_rtc_set_micros(uint64_t mic);
 extern uint64_t grid_platform_rtc_get_micros(void);
-
-static void usb_task_inner(struct grid_msg_recent_buffer* rec) {
-
-  grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
-
-  // Send midi from Grid to Host!
-
-  for (uint8_t i = 0; i < 5; i++) {
-
-    grid_midi_tx_pop();
-  }
-
-  // Forward midi from Host to Grid!
-  grid_midi_rx_pop();
-
-  // SERIAL READ
-
-  char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
-  uint16_t length = 0;
-
-  struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(host_port->parent, host_port->index);
-
-  grid_port_rxdobulebuffer_to_linear(host_port, doublebuffer_rx, message, &length); // USB
-
-  grid_str_transform_brc_params(message, host_port->dx, host_port->dy, host_port->partner_fi); // update age, sx, sy, dx, dy, rot etc...
-  grid_port_receive_decode(host_port, rec, message, length);
-}
 
 static void nvm_task_inner() {
 
@@ -103,163 +86,123 @@ static void nvm_task_inner() {
   } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration && grid_ui_bulk_anything_is_in_progress(&grid_ui_state));
 }
 
-static void receive_task_inner(uint8_t* partner_connected, struct grid_msg_recent_buffer* rec) {
+void handle_connection_effect() {
 
-  for (uint8_t i = 0; i < 4; i++) {
+  struct grid_transport* transport = &grid_transport_state;
 
-    struct grid_port* por = grid_transport_get_port(&grid_transport_state, i);
-    struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(&grid_transport_state, i);
+  for (uint8_t i = 0; i < 4; ++i) {
 
-    if (partner_connected[i] < por->partner_status) {
-      // connect
-      partner_connected[i] = 1;
+    struct grid_port* port = grid_transport_get_port(transport, i, GRID_PORT_USART, i);
+
+    if (!grid_port_connected_changed(port)) {
+      continue;
+    }
+
+    if (grid_port_connected(port)) {
+
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 50);
       grid_alert_all_set_frequency(&grid_led_state, -2);
       grid_alert_all_set_phase(&grid_led_state, 100);
-    } else if (partner_connected[i] > por->partner_status) {
+    }
 
-      // Disconnect
-      partner_connected[i] = 0;
+    if (grid_port_disconnected(port)) {
+
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
       grid_alert_all_set_frequency(&grid_led_state, -2);
       grid_alert_all_set_phase(&grid_led_state, 100);
+
+      grid_port_softreset(port);
     }
 
-    char message[GRID_PARAMETER_PACKET_maxlength + 100] = {0};
-    uint16_t length = 0;
-    grid_port_rxdobulebuffer_to_linear(por, doublebuffer_rx, message, &length);
-
-    grid_str_transform_brc_params(message, por->dx, por->dy, por->partner_fi); // update age, sx, sy, dx, dy, rot etc...
-    grid_port_receive_decode(por, rec, message, length);
-
-    if (grid_port_should_uart_timeout_disconect_now(por)) { // try disconnect for uart port
-      por->partner_status = 0;
-      grid_port_receiver_softreset(por, doublebuffer_rx);
-    }
+    grid_port_connected_update(port);
   }
 }
 
-static uint64_t cooldown_lastrealtime = 0;
-static uint64_t ping_lastrealtime = 0;
-static uint64_t heartbeat_lastrealtime = 0;
+struct grid_utask_timer timer_ping;
 
-static void ui_task_inner() {
+void grid_utask_ping(struct grid_utask_timer* timer) {
 
-  if (grid_platform_rtc_get_elapsed_time(ping_lastrealtime) > GRID_PARAMETER_PINGINTERVAL_us) {
-
-    ping_lastrealtime = grid_platform_rtc_get_micros();
-
-    if (uart_port_array[0] != NULL)
-      uart_port_array[0]->ping_flag = 1;
-    if (uart_port_array[1] != NULL)
-      uart_port_array[1]->ping_flag = 1;
-    if (uart_port_array[2] != NULL)
-      uart_port_array[2]->ping_flag = 1;
-    if (uart_port_array[3] != NULL)
-      uart_port_array[3]->ping_flag = 1;
-
-    grid_port_ping_try_everywhere();
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
   }
 
-  if (grid_platform_rtc_get_elapsed_time(heartbeat_lastrealtime) > GRID_PARAMETER_HEARTBEATINTERVAL_us) {
+  grid_transport_ping_all(&grid_transport_state);
+}
 
-    heartbeat_lastrealtime = grid_platform_rtc_get_micros();
-    grid_protocol_send_heartbeat(grid_msg_get_heartbeat_type(&grid_msg_state), grid_sys_get_hwcfg(&grid_sys_state));
+struct grid_utask_timer timer_heart;
+
+void grid_utask_heart(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  uint8_t type = grid_msg_get_heartbeat_type(&grid_msg_state);
+  uint32_t hwcfg = grid_sys_get_hwcfg(&grid_sys_state);
+  uint8_t activepage = grid_ui_state.page_activepage;
+  grid_transport_heartbeat(&grid_transport_state, type, hwcfg, activepage);
+}
+
+struct grid_utask_timer timer_midi_and_keyboard_tx;
+
+void grid_utask_midi_and_keyboard_tx(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
+
+  for (uint8_t i = 0; i < 5; i++) {
+
+    grid_midi_tx_pop();
+  }
+}
+
+struct grid_utask_timer timer_process_ui;
+
+void grid_utask_process_ui(struct grid_utask_timer* timer) {
+
+  if (grid_lua_state.L == NULL) {
+    return;
   }
 
   if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
     return;
   }
 
-  // IF LOCAL MESSAGE IS AVAILABLE
-  if (grid_ui_event_count_istriggered_local(&grid_ui_state)) {
+  // Service local triggers first and as fast as possible
+  if (grid_ui_event_count_istriggered_local(&grid_ui_state) > 0) {
 
-    CRITICAL_SECTION_ENTER()
-    grid_port_process_ui_local_UNSAFE(&grid_ui_state); // COOLDOWN DELAY IMPLEMENTED INSIDE
-    CRITICAL_SECTION_LEAVE()
-  }
-
-  // if there are still unprocessed locally triggered events then must not
-  // serve global events yet!
-  if (grid_ui_event_count_istriggered_local(&grid_ui_state)) {
+    grid_port_process_ui_local_UNSAFE(&grid_ui_state);
     return;
   }
 
-  if (grid_platform_rtc_get_elapsed_time(cooldown_lastrealtime) > GRID_PARAMETER_UICOOLDOWN_us) {
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
 
-    if (grid_ui_event_count_istriggered(&grid_ui_state)) {
+  if (grid_ui_event_count_istriggered(&grid_ui_state) > 0) {
 
-      cooldown_lastrealtime = grid_platform_rtc_get_micros();
-
-      CRITICAL_SECTION_ENTER()
-      grid_port_process_ui_UNSAFE(&grid_ui_state);
-      CRITICAL_SECTION_LEAVE()
-    }
+    grid_port_process_ui_UNSAFE(&grid_ui_state);
   }
 }
 
-static void inbound_task_inner() {
+struct grid_utask_timer timer_led;
 
-  /* ========================= GRID INBOUND TASK =============================
-   */
+void grid_utask_led(struct grid_utask_timer* timer) {
 
-  // Copy data from UI_RX to HOST_TX & north TX AND STUFF
-
-  struct grid_buffer* ui_rx_buffer = grid_transport_get_buffer_rx(ui_port->parent, ui_port->index);
-  grid_port_process_inbound(ui_port, ui_rx_buffer); // Loopback
-
-  for (uint8_t i = 0; i < 4; i++) {
-
-    struct grid_port* port = grid_transport_get_port(&grid_transport_state, i);
-    struct grid_buffer* port_rx_buffer = grid_transport_get_buffer_rx(port->parent, port->index);
-    grid_port_process_inbound(port, port_rx_buffer);
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
   }
 
-  struct grid_buffer* host_rx_buffer = grid_transport_get_buffer_rx(host_port->parent, host_port->index);
-  grid_port_process_inbound(host_port, host_rx_buffer); // USB
-}
+  grid_led_tick(&grid_led_state);
 
-static void outbound_task_inner() {
+  grid_led_render_framebuffer(&grid_led_state);
 
-  /* ========================= GRID OUTBOUND TASK =============================
-   */
+  grid_d51_led_generate_frame(&grid_d51_led_state, &grid_led_state);
 
-  // If previous xfer is completed and new data is available then move data from
-  // txbuffer to txdoublebuffer and start new xfer.
-
-  for (uint8_t i = 0; i < 4; i++) {
-
-    struct grid_port* port = uart_port_array[i];
-    struct grid_doublebuffer* doublebuffer_tx = grid_transport_get_doublebuffer_tx(&grid_transport_state, i);
-
-    struct grid_buffer* port_tx_buffer = grid_transport_get_buffer_tx(port->parent, port->index);
-    grid_port_process_outbound_usart(port, port_tx_buffer, doublebuffer_tx);
-  }
-
-  struct grid_buffer* ui_tx_buffer = grid_transport_get_buffer_tx(ui_port->parent, ui_port->index);
-  grid_port_process_outbound_ui(ui_port, ui_tx_buffer);
-
-  struct grid_buffer* host_tx_buffer = grid_transport_get_buffer_tx(host_port->parent, host_port->index);
-  struct grid_doublebuffer* host_doublebuffer_tx = grid_transport_get_doublebuffer_tx(host_port->parent, host_port->index);
-  grid_port_process_outbound_usb(host_port, host_tx_buffer, host_doublebuffer_tx);
-}
-
-static uint64_t led_lastrealtime = 0;
-
-static void led_task_inner() {
-
-  if (10 * 1000 < grid_platform_rtc_get_elapsed_time(led_lastrealtime)) {
-
-    led_lastrealtime = grid_platform_rtc_get_micros();
-
-    grid_led_tick(&grid_led_state);
-
-    grid_led_render_framebuffer(&grid_led_state);
-
-    grid_d51_led_generate_frame(&grid_d51_led_state, &grid_led_state);
-
-    grid_d51_led_start_transfer(&grid_d51_led_state);
-  }
+  grid_d51_led_start_transfer(&grid_d51_led_state);
 }
 
 volatile uint8_t rxtimeoutselector = 0;
@@ -364,6 +307,54 @@ static void button_on_SYNC1_pressed(void) { sync1_received++; }
 
 static void button_on_SYNC2_pressed(void) { sync2_received++; }
 
+void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_msg_recent_buffer* recent) {
+
+  if (grid_uwsr_overflow(uwsr)) {
+
+    grid_uwsr_init(uwsr, uwsr->reject);
+
+    grid_platform_reset_grid_transmitter(grid_port_dir_to_code(port->dir));
+  }
+
+  int ret = grid_uwsr_cspn(uwsr);
+
+  if (ret < 0) {
+    return;
+  }
+
+  if (ret >= GRID_PARAMETER_SPI_TRANSACTION_length) {
+
+    grid_uwsr_read(uwsr, NULL, ret + 1);
+
+    return;
+  }
+
+  uint8_t temp[GRID_PARAMETER_SPI_TRANSACTION_length + 1];
+
+  grid_uwsr_read(uwsr, temp, ret + 1);
+
+  temp[ret + 1] = '\0';
+
+  if (grid_str_verify_frame(temp, ret + 1) != 0) {
+    return;
+  }
+
+  grid_str_transform_brc_params(temp, port->dx, port->dy, port->partner.rot);
+
+  uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(temp);
+
+  if (temp[1] == GRID_CONST_BRC) {
+
+    if (grid_msg_recent_fingerprint_find(recent, fingerprint)) {
+      return;
+    }
+
+    grid_msg_recent_fingerprint_store(recent, fingerprint);
+  }
+
+  grid_port_recv_msg(port, temp, ret + 1);
+}
+
 int main(void) {
 
   atmel_start_init(); // this sets up gpio and printf
@@ -377,18 +368,10 @@ int main(void) {
 
   // grid_d51_nvm_erase_all(&grid_d51_nvm_state);
 
-  printf("Hardware test complete");
+  printf("Hardware test complete\n");
 
   //  x/512xb 0x80000
   grid_module_common_init();
-
-  uart_port_array[0] = grid_transport_get_port(&grid_transport_state, 0);
-  uart_port_array[1] = grid_transport_get_port(&grid_transport_state, 1);
-  uart_port_array[2] = grid_transport_get_port(&grid_transport_state, 2);
-  uart_port_array[3] = grid_transport_get_port(&grid_transport_state, 3);
-
-  ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
-  host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
 
   grid_d51_usb_init(); // requires hostport
 
@@ -429,77 +412,125 @@ int main(void) {
   ext_irq_register(PIN_GRID_SYNC_1, button_on_SYNC1_pressed);
   ext_irq_register(PIN_GRID_SYNC_2, button_on_SYNC2_pressed);
 
-  // partner_connected array holds the last state. This is used for checking changes and triggering led effects accordingly
-  uint8_t partner_connected[grid_transport_get_port_array_length(&grid_transport_state)];
-  memset(partner_connected, 0, grid_transport_get_port_array_length(&grid_transport_state));
+  struct grid_msg_recent_buffer recent;
+  grid_msg_recent_fingerprint_buffer_init(&recent, 64);
 
-  struct grid_msg_recent_buffer recent_messages;
-  grid_msg_recent_fingerprint_buffer_init(&recent_messages, 32);
+  // Configure task timers
+  timer_ping = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_PINGINTERVAL_us,
+  };
+  timer_heart = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_HEARTBEATINTERVAL_us,
+  };
+  timer_midi_and_keyboard_tx = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 20,
+  };
+  timer_led = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 10000,
+  };
+  timer_process_ui = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_UICOOLDOWN_us,
+  };
+
+  struct grid_transport* xport = &grid_transport_state;
+
+  // Allocate profiler & assign its interface
+  vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
+  struct vmp_reg_t reg = {
+      .evt_serialized_size = vmp_evt_serialized_size,
+      .evt_serialize = vmp_evt_serialize,
+      .fwrite = vmp_fwrite,
+  };
+  bool vmp_flushed = false;
 
   while (1) {
 
-    if (usb_d_get_frame_num() != 0) {
+    // vmp_push(MAIN);
 
-      if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1) {
+    if (!vmp_flushed && vmp.size == vmp.capacity) {
 
-        printf("USB CONNECTED\r\n\r\n");
-        printf("HWCFG %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
+      CRITICAL_SECTION_ENTER();
 
-        grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);
-        grid_alert_all_set_frequency(&grid_led_state, -2);
-        grid_alert_all_set_phase(&grid_led_state, 200);
+      vmp_serialize_start(&reg);
+      vmp_buf_serialize_and_write(&vmp, &reg);
+      vmp_uid_str_serialize_and_write(VMP_UID_COUNT, VMP_ASSOC, &reg);
+      vmp_serialize_close(&reg);
 
-        grid_msg_set_heartbeat_type(&grid_msg_state, 1);
+      CRITICAL_SECTION_LEAVE();
 
-        printf("Register MIDI callbacks\r\n\r\n");
-        // grid_d51_usb_midi_register_callbacks();
-      }
+      // vmp_buf_free(&vmp);
+
+      vmp_flushed = true;
     }
-
-    // printf("WTF\r\n\r\n");
 
     loopcounter++;
-    loopcount++;
 
-    if (reportflag) {
+    if (loopcounter == 10000) {
 
-      reportflag = 0;
-      loopcount = 0;
+      // grid_d51_nvic_debug_priorities();
     }
 
-    if (loopcounter == 1000) {
+    // Check if USB is connected and start animation
+    if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && usb_d_get_frame_num()) {
 
-      grid_d51_nvic_debug_priorities();
+      grid_platform_printf("USB CONNECTED\n");
+
+      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 100);
+      grid_alert_all_set_frequency(&grid_led_state, -2);
+      grid_alert_all_set_phase(&grid_led_state, 200);
+
+      grid_msg_set_heartbeat_type(&grid_msg_state, 1);
     }
 
-    usb_task_inner(&recent_messages);
+    grid_midi_rx_pop();
 
+    // NVM task
     nvm_task_inner();
 
-    receive_task_inner(partner_connected, &recent_messages);
+    // Receive USART
+    for (uint8_t i = 0; i < 4; ++i) {
 
-    // lua_gc(grid_lua_state.L, LUA_GCSTOP);
+      struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
+      struct grid_uwsr_t* uwsr = &usart_uwsr[i];
 
-    ui_task_inner();
-
-    outbound_task_inner();
-
-    inbound_task_inner();
-
-    led_task_inner();
-
-    if (grid_sys_get_editor_connected_state(&grid_sys_state) == 1) {
-
-      if (grid_platform_rtc_get_elapsed_time(grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state)) > 2000 * MS_TO_US) { // 2 sec
-
-        printf("EDITOR timeout\r\n");
-        grid_port_debug_print_text("EDITOR timeout");
-
-        grid_sys_set_editor_connected_state(&grid_sys_state, 0);
-
-        grid_ui_state.page_change_enabled = 1;
-      }
+      grid_d51_port_recv_uwsr(port, uwsr, &recent);
     }
+
+    struct grid_port* port_ui = grid_transport_get_port(xport, 4, GRID_PORT_UI, 0);
+    struct grid_port* port_usb = grid_transport_get_port(xport, 5, GRID_PORT_USB, 0);
+
+    // Broadcast inbound to outbound
+    for (uint8_t i = 0; i < 4; ++i) {
+
+      struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
+
+      grid_transport_rx_broadcast_tx(xport, port, NULL);
+    }
+    grid_transport_rx_broadcast_tx(xport, port_ui, NULL);
+    grid_transport_rx_broadcast_tx(xport, port_usb, NULL);
+
+    // Run microtasks
+    grid_utask_ping(&timer_ping);
+    grid_utask_heart(&timer_heart);
+    grid_utask_midi_and_keyboard_tx(&timer_midi_and_keyboard_tx);
+    grid_utask_led(&timer_led);
+    grid_utask_process_ui(&timer_process_ui);
+
+    // Outbound USB
+    grid_port_send_usb(port_usb);
+
+    // Outbound UI
+    grid_port_send_ui(port_ui);
+
+    // Outbound USART
+    grid_transport_send_usart_cyclic_offset(xport);
+
+    handle_connection_effect();
 
   } // WHILE
 

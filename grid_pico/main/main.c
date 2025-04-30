@@ -21,8 +21,7 @@ const PIO GRID_RX_PIO = pio1;
 #include "grid_pico_pins.h"
 
 #include "../../grid_common/grid_msg.h"
-#include "../../grid_common/grid_port.h"
-#include "../../grid_common/grid_protocol.h"
+#include "../../grid_common/grid_transport.h"
 
 #include "vmp/vmp_def.h"
 #include "vmp/vmp_tag.h"
@@ -86,7 +85,6 @@ void grid_pico_rolling_send(volatile struct grid_pico_rolling* rolling) { rollin
 
 struct grid_pico_uart_port {
   uint8_t index;
-  uint8_t ready;
   struct pico_bkt_t* uart_tx_bucket;
   struct pico_bkt_t* uart_rx_bucket;
   struct pico_swsr_t swsr;
@@ -108,7 +106,6 @@ void grid_pico_uart_port_init(struct grid_pico_uart_port* port, uint8_t index) {
   assert(index >= 0 && index < 4);
 
   port->index = index;
-  port->ready = 1;
   port->uart_tx_bucket = NULL;
   port->uart_rx_bucket = NULL;
 }
@@ -163,11 +160,8 @@ void grid_pico_uart_port_attach_tx(struct grid_pico_uart_port* port) {
   struct pico_bkt_t* bkt = pico_pool_get_first(&pool, state);
 
   if (!bkt) {
-    port->ready = 1;
     return;
   }
-
-  port->ready = 0;
 
   port->uart_tx_bucket = bkt;
 
@@ -242,13 +236,15 @@ enum pico_bkt_state_t grid_uart_rx_process_bkt(struct grid_pico_uart_port* port,
     return PICO_BKT_STATE_EMPTY;
   }
 
-  int status = grid_str_verify_frame(msg);
+  int status = grid_str_verify_frame(msg, len);
 
   if (status != 0) {
     return PICO_BKT_STATE_EMPTY;
   }
 
-  struct grid_port* por = grid_transport_get_port(&grid_transport_state, port->index);
+  struct grid_transport* xport = &grid_transport_state;
+
+  struct grid_port* por = grid_transport_get_port(xport, port->index, GRID_PORT_USART, port->index);
 
   if (!por) {
     return PICO_BKT_STATE_EMPTY;
@@ -256,10 +252,9 @@ enum pico_bkt_state_t grid_uart_rx_process_bkt(struct grid_pico_uart_port* port,
 
   if (msg[1] != GRID_CONST_BRC) {
 
-    if (msg[2] == GRID_CONST_BELL) {
+    if (msg[1] == GRID_CONST_DCT) {
 
-      por->partner_fi = (msg[3] - por->direction + 6) % 4;
-      por->partner_status = 1;
+      grid_port_recv_msg_direct(por, msg, len);
 
       return PICO_BKT_STATE_SPI_TX;
     }
@@ -267,7 +262,7 @@ enum pico_bkt_state_t grid_uart_rx_process_bkt(struct grid_pico_uart_port* port,
     return PICO_BKT_STATE_EMPTY;
   }
 
-  grid_str_transform_brc_params(msg, por->dx, por->dy, por->partner_fi);
+  grid_str_transform_brc_params(msg, por->dx, por->dy, por->partner.rot);
 
   uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(msg);
 
@@ -361,6 +356,7 @@ void grid_pico_task_spi_rx(struct grid_pico_task_timer* timer) {
 
   // Control LCD backlight
   gpio_put(GRID_PICO_LCD_BACKLIGHT_PIN, spi_rx_buf[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index]);
+
   // The number of trailing zeroes in the destination flag
   // indexes the destination UART port of the message
   uint8_t dest_flags = spi_rx_buf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index];
@@ -411,7 +407,9 @@ void grid_pico_task_spi_tx(struct grid_pico_task_timer* timer) {
   // Construct the bitfield containing which ports are ready to transmit
   uint8_t tx_ready = 0;
   for (int i = 0; i < 4; ++i) {
-    tx_ready |= (uart_ports[i].ready != 0) << uart_ports[i].index;
+    enum pico_bkt_state_t state = PICO_BKT_STATE_UART_TX_NORTH + i;
+    struct pico_bkt_t* bkt = pico_pool_get_first(&pool, state);
+    tx_ready |= (bkt == NULL) << uart_ports[i].index;
   }
 
   // Increment rolling ID
@@ -514,7 +512,7 @@ void core_1_main_entry() {
   // Configure task timers
   for (int i = 0; i < 4; ++i) {
     timer_uart_rx_1[i] = (struct grid_pico_task_timer){
-        .last = grid_pico_time(),
+        .last = grid_platform_rtc_get_micros(),
         .period = 5,
     };
   }
@@ -549,16 +547,17 @@ int main() {
   multicore_launch_core1(core_1_main_entry);
 
   // Initialize fingerprint buffer
-  grid_msg_recent_fingerprint_buffer_init(&recent_msgs, 32);
+  grid_msg_recent_fingerprint_buffer_init(&recent_msgs, 64);
 
   // Initialize transport, used for some protocol mechanisms
   // such as keeping track of delta offsets and rotation
-  grid_transport_init(&grid_transport_state);
-  printf("grid_transport_register_port ALL\n");
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_NORTH));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_EAST));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_SOUTH));
-  grid_transport_register_port(&grid_transport_state, grid_port_allocate_init(GRID_PORT_TYPE_USART, GRID_CONST_WEST));
+  const int PORT_COUNT = 4;
+  grid_transport_malloc(&grid_transport_state, PORT_COUNT);
+
+  grid_port_init(&grid_transport_state.ports[0], GRID_PORT_USART, GRID_PORT_NORTH);
+  grid_port_init(&grid_transport_state.ports[1], GRID_PORT_USART, GRID_PORT_EAST);
+  grid_port_init(&grid_transport_state.ports[2], GRID_PORT_USART, GRID_PORT_SOUTH);
+  grid_port_init(&grid_transport_state.ports[3], GRID_PORT_USART, GRID_PORT_WEST);
 
   // Initialize UART ports
   for (int i = 0; i < 4; ++i) {

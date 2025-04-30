@@ -5,18 +5,14 @@
  *  Author: suku
  */
 
-#ifndef GRID_USB_H_
-#define GRID_USB_H_
-
-#include "grid_port.h"
-#include "grid_sys.h"
+#ifndef GRID_USB_H
+#define GRID_USB_H
 
 #include <stdbool.h>
-
-// only for uint definitions
 #include <stdint.h>
-// only for malloc
-#include <stdlib.h>
+
+#include "grid_sys.h"
+#include "grid_transport.h"
 
 extern int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
 extern int32_t grid_platform_usb_midi_write_status(void);
@@ -115,4 +111,4 @@ void grid_usb_keyboard_enable(struct grid_usb_keyboard_model* kb);
 void grid_usb_keyboard_disable(struct grid_usb_keyboard_model* kb);
 uint8_t grid_usb_keyboard_isenabled(struct grid_usb_keyboard_model* kb);
 
-#endif /* GRID_USB_H_ */
+#endif /* GRID_USB_H */

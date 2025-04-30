@@ -15,6 +15,8 @@
 #include "grid_ui_encoder.h"
 #include "grid_ui_system.h"
 
+#include "grid_sys.h"
+
 #include "grid_esp32_encoder.h"
 
 // static const char* TAG = "module_en16";

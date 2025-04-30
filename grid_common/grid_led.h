@@ -1,15 +1,7 @@
-#pragma once
+#ifndef GRID_LED_H
+#define GRID_LED_H
 
-#ifndef GRID_LED_H_INCLUDED
-#define GRID_LED_H_INCLUDED
-
-// only for uint definitions
 #include <stdint.h>
-// only for malloc
-#include <stdlib.h>
-
-// only for grid_protocol_... specific functions
-#include "grid_msg.h"
 
 #define GRID_LED_LAYER_ALERT 0
 #define GRID_LED_LAYER_UI_A 1
@@ -115,4 +107,4 @@ uint32_t grid_led_get_led_count(struct grid_led_model* led);
 uint16_t grid_protocol_led_change_report_length(struct grid_led_model* led);
 uint16_t grid_protocol_led_change_report_generate(struct grid_led_model* led, uint16_t maxlength, char* output);
 
-#endif /* GRID_LED_H_INCLUDED */
+#endif /* GRID_LED_H */

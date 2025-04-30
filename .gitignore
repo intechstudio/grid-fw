@@ -5,3 +5,8 @@ out.json
 codeql-db
 iperf
 vmp/build
+
+# Ignore vim files:
+*~
+*.swp
+*.swo

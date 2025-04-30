@@ -1,5 +1,10 @@
 #include "grid_lua.h"
 
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_protocol.h"
+
 struct grid_lua_model grid_lua_state;
 
 void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance) {
@@ -249,7 +254,7 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, GRID_LUA_FNC_G_MAPSAT_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SIGN_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SEGCALC_source);
-  grid_lua_dostring(lua, GRID_LUA_FNC_G_TOML_source);
+  // grid_lua_dostring(lua, GRID_LUA_FNC_G_TOML_source);
   grid_lua_dostring(lua, "midi_fifo = {}");
   grid_lua_dostring(lua, "midi_fifo_highwater = 0");
   grid_lua_dostring(lua, "midi_fifo_retriggercount = 0");

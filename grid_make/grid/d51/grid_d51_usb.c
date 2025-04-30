@@ -7,6 +7,8 @@
 
 #include "grid_d51_usb.h"
 
+#include <assert.h>
+
 volatile uint8_t grid_usb_serial_rx_buffer[CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ];
 
 volatile uint8_t grid_usb_serial_rx_flag;
@@ -14,68 +16,45 @@ volatile uint16_t grid_usb_serial_rx_size;
 
 static volatile struct grid_port* host_port = NULL;
 
+struct grid_swsr_t usb_rx;
+
 static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {
 
-  // printf("\r\n$ %d ", count);
+  size_t rx_size = count;
+  uint8_t* buf = grid_usb_serial_rx_buffer;
 
-  uint8_t halfpacket = 0;
-  if (grid_usb_serial_rx_buffer[0] != GRID_CONST_SOH || grid_usb_serial_rx_buffer[count - 1] != 10) {
-    halfpacket = 1;
-    // printf("halfpacket");
+  struct grid_swsr_t* rx = &usb_rx;
+
+  if (grid_swsr_writable(rx, rx_size)) {
+    grid_swsr_write(rx, buf, rx_size);
+  } else {
+    grid_swsr_read(rx, NULL, grid_swsr_size(rx));
   }
 
-  if (host_port == NULL) {
-    // port not initialized
-    grid_platform_printf("host_port == NULL\r\n");
-    return;
+  int ret = grid_swsr_cspn(rx, '\n');
+
+  if (ret < 0) {
+    goto bulkout_cb_end;
   }
 
-  struct grid_doublebuffer* doublebuffer_rx = grid_transport_get_doublebuffer_rx(host_port->parent, host_port->index);
+  assert(ret < GRID_PARAMETER_SPI_TRANSACTION_length);
+  uint8_t temp[GRID_PARAMETER_SPI_TRANSACTION_length + 1];
 
-  if (doublebuffer_rx == NULL) {
-    // doublebuffer not initialized
-    grid_platform_printf("doublebuffer_rx == NULL\r\n");
-    return;
+  assert(grid_swsr_readable(rx, ret + 1));
+  grid_swsr_read(rx, temp, ret + 1);
+  temp[ret + 1] = '\0';
+
+  if (grid_str_verify_frame((char*)temp, ret + 1)) {
+    goto bulkout_cb_end;
   }
 
-  if (doublebuffer_rx->buffer_storage == NULL) {
-    grid_platform_printf("buffer_storage == NULL\r\n");
-    // doublebuffer not initialized
-    return;
-  }
+  grid_transport_recv_usb(&grid_transport_state, temp, ret + 1);
 
-  if (doublebuffer_rx->buffer_size < 64) {
-    grid_platform_printf("buffer_size < 64\r\n");
-    // doublebuffer not initialized
-    return;
-  }
-
-  for (uint16_t i = 0; i < count; i++) {
-
-    // if (halfpacket && (i<10 || i>count-10)){
-    // 	printf(" %02x", grid_usb_serial_rx_buffer[i]);
-    // }
-    // else if (halfpacket && i == 10){
-    // 	printf(" ...");
-    // }
-
-    doublebuffer_rx->buffer_storage[doublebuffer_rx->write_index] = grid_usb_serial_rx_buffer[i];
-
-    // printf("%d, ", grid_usb_serial_rx_buffer[i]);
-
-    doublebuffer_rx->write_index++;
-    doublebuffer_rx->write_index %= doublebuffer_rx->buffer_size;
-  }
-
-  // CLEAR THE ENTIRE BUFFER
-  for (uint16_t i = 0; i < sizeof(grid_usb_serial_rx_buffer); i++) {
-    grid_usb_serial_rx_buffer[i] = 0;
-  }
+bulkout_cb_end:
 
   cdcdf_acm_read((uint8_t*)grid_usb_serial_rx_buffer, sizeof(grid_usb_serial_rx_buffer));
 
-  // cdcdf_acm_write(cdcdf_demo_buf, count); /* Echo data */
-  return false; /* No error. */
+  return false;
 }
 static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {
 
@@ -83,6 +62,8 @@ static bool grid_usb_serial_bulkin_cb(const uint8_t ep, const enum usb_xfer_code
 
   return false; /* No error. */
 }
+static uint8_t usb_tx_ready = 0;
+
 static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state) {
 
   // grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 255);
@@ -96,10 +77,14 @@ static bool grid_usb_serial_statechange_cb(usb_cdc_control_signal_t state) {
     cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)grid_usb_serial_bulkin_cb);
     /* Start Rx */
     cdcdf_acm_read((uint8_t*)grid_usb_serial_rx_buffer, sizeof(grid_usb_serial_rx_buffer));
+
+    usb_tx_ready = 1;
   }
 
   return false; /* No error. */
 }
+
+int32_t grid_platform_usb_serial_ready() { return usb_tx_ready; }
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) { return cdcdf_acm_write((uint8_t*)buffer, length); }
 
@@ -149,10 +134,14 @@ static bool grid_usb_midi_installed_cb(const uint8_t ep, const enum usb_xfer_cod
 
 void grid_d51_usb_init(void) {
 
+  // Allocate USB RX buffer
+  int capacity = GRID_PARAMETER_SPI_TRANSACTION_length * 2;
+  assert(grid_swsr_malloc(&usb_rx, capacity) == 0);
+
   audiodf_midi_init();
   composite_device_start();
 
-  host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
+  // host_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_USB);
 
   // audiodf_midi_register_callback(AUDIODF_MIDI_CB_READ,
   // (FUNC_PTR)midi_in_handler);

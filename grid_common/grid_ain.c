@@ -7,6 +7,9 @@
 
 #include "grid_ain.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 void* grid_platform_allocate_volatile(size_t size);
 
 struct grid_ain_model grid_ain_state;

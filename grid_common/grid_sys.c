@@ -1,5 +1,10 @@
 #include "grid_sys.h"
 
+#include <assert.h>
+
+#include "grid_platform.h"
+#include "grid_protocol.h"
+
 struct grid_sys_model grid_sys_state;
 
 void grid_sys_init(struct grid_sys_model* sys) {

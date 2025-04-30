@@ -1,20 +1,9 @@
-#pragma once
+#ifndef GRID_UI_H
+#define GRID_UI_H
 
-#ifndef GRID_UI_H_INCLUDED
-#define GRID_UI_H_INCLUDED
-
-// only for uint definitions
 #include <stdint.h>
-// only for malloc
-#include <stdlib.h>
 
-#include <string.h>
-
-#include "grid_ain.h"
-#include "grid_cal.h"
-#include "grid_config.h"
-#include "grid_lua_api.h"
-#include "grid_protocol.h"
+#include "grid_lua.h"
 
 struct grid_ui_semaphore {
   void* handle;
@@ -145,7 +134,6 @@ struct grid_ui_model {
   int bulk_last_element;
   int bulk_last_event;
 
-  // void (*lua_ui_init_callback)(struct grid_lua_model*);
   lua_ui_init_callback_t lua_ui_init_callback;
 };
 
@@ -233,4 +221,4 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui);
 
 void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui);
 
-#endif /* GRID_UI_H_INCLUDED */
+#endif /* GRID_UI_H */

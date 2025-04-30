@@ -7,8 +7,9 @@
 
 #include "grid_msg.h"
 
-// malloc
-#include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
 
 struct grid_msg_model grid_msg_state;
 
@@ -337,6 +338,8 @@ void grid_msg_packet_close(struct grid_msg_model* msg, struct grid_msg_packet* p
 
 void grid_msg_recent_fingerprint_buffer_init(struct grid_msg_recent_buffer* rec, uint8_t length) {
 
+  assert(length % 8 == 0);
+
   rec->fingerprint_array_length = length;
   rec->fingerprint_array_index = 0;
 
@@ -360,10 +363,13 @@ grid_fingerprint_t grid_msg_recent_fingerprint_calculate(char* message) {
 
 uint8_t grid_msg_recent_fingerprint_find(struct grid_msg_recent_buffer* rec, grid_fingerprint_t fingerprint) {
 
-  for (uint8_t i = 0; i < rec->fingerprint_array_length; i++) {
+  for (uint8_t i = 0; i < rec->fingerprint_array_length; i += 8) {
 
-    if (rec->fingerprint_array[i % rec->fingerprint_array_length] == fingerprint) {
+    int ret = rec->fingerprint_array[i + 0] == fingerprint || rec->fingerprint_array[i + 1] == fingerprint || rec->fingerprint_array[i + 2] == fingerprint ||
+              rec->fingerprint_array[i + 3] == fingerprint || rec->fingerprint_array[i + 4] == fingerprint || rec->fingerprint_array[i + 5] == fingerprint ||
+              rec->fingerprint_array[i + 6] == fingerprint || rec->fingerprint_array[i + 7] == fingerprint;
 
+    if (ret) {
       return 1;
     }
   }
@@ -463,13 +469,17 @@ void grid_str_write_hex_string_value(char* start_location, uint8_t size, uint32_
   }
 }
 
-int grid_str_verify_frame(char* message) {
+int grid_str_verify_frame(char* message, uint16_t length) {
 
-  uint16_t length = strlen(message);
   uint8_t error_flag = 0;
 
   // frame validator
   if (message[0] != GRID_CONST_SOH || message[length - 1] != GRID_CONST_LF) {
+    return 1;
+  }
+
+  // minimum length at which a checksum can be calculated
+  if (length < 4) {
     return 1;
   }
 

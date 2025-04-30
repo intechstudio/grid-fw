@@ -17,6 +17,9 @@
 #include "grid_ui_potmeter.h"
 #include "grid_ui_system.h"
 
+#include "grid_platform.h"
+#include "grid_sys.h"
+
 #include "grid_esp32_adc.h"
 #include "grid_esp32_encoder.h"
 

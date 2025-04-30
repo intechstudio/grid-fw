@@ -7,6 +7,11 @@
 
 #include "grid_config.h"
 
+#include <stdio.h>
+#include <string.h>
+
+#include "tomlc99/toml.h"
+
 extern void grid_platform_printf(char const* fmt, ...);
 
 struct grid_config_model grid_config_state;
