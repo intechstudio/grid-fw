@@ -13,6 +13,7 @@
 #include "grid_config.h"
 #include "grid_module.h"
 #include "grid_platform.h"
+#include "grid_sys.h"
 
 #include "grid_ui.h"
 

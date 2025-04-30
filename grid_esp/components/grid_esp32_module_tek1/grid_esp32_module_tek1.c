@@ -12,6 +12,7 @@
 #include "grid_asc.h"
 #include "grid_module.h"
 #include "grid_platform.h"
+#include "grid_sys.h"
 #include "grid_ui.h"
 
 #include "grid_ui_button.h"

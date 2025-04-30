@@ -14,6 +14,7 @@
 #include "grid_ain.h"
 #include "grid_module.h"
 #include "grid_platform.h"
+#include "grid_sys.h"
 #include "grid_ui.h"
 
 #include "grid_esp32_adc.h"
