@@ -17,4 +17,3 @@ double clampf64(double x, double a, double b) {
   const double t = x < a ? a : x;
   return t > b ? b : t;
 }
-
