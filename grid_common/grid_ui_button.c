@@ -5,8 +5,8 @@
 #include <string.h>
 
 #include "grid_ain.h"
-#include "grid_sys.h"
 #include "grid_platform.h"
+#include "grid_sys.h"
 #include "grid_ui_system.h"
 
 extern uint8_t grid_platform_get_adc_bit_depth();
