@@ -7,6 +7,10 @@
 
 #include "grid_buf.h"
 
+#include <stdlib.h>
+
+#include "grid_protocol.h"
+
 uint8_t grid_buffer_init(struct grid_buffer* buf, uint16_t length) {
 
   buf->buffer_length = length;

@@ -1,13 +1,9 @@
-#ifndef GRID_BUF_H_INCLUDED
-#define GRID_BUF_H_INCLUDED
+#ifndef GRID_BUF_H
+#define GRID_BUF_H
 
-// only for uint definitions
 #include <stdint.h>
-// only for malloc
-#include <stdlib.h>
 
 #include "grid_msg.h"
-#include "grid_protocol.h"
 
 extern void grid_platform_printf(char const* fmt, ...);
 
@@ -69,4 +65,4 @@ uint8_t grid_buffer_write_cancel(struct grid_buffer* buf);
 uint8_t grid_buffer_write_from_chunk(struct grid_buffer* buf, char* chunk, uint16_t length);
 uint8_t grid_buffer_write_from_packet(struct grid_buffer* buf, struct grid_msg_packet* packet);
 
-#endif
+#endif /* GRID_BUF_H */

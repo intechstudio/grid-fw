@@ -19,12 +19,16 @@ struct vmp_evt_t {
 
 #define VMP_EVT(ptr) ((struct vmp_evt_t*)(ptr))
 
-#define VMP_EVT_WRITE(ptr, id)                                                                                                                                                                         \
-  {                                                                                                                                                                                                    \
-    VMP_EVT(ptr)->uid = (id);                                                                                                                                                                          \
-    VMP_EVT(ptr)->line = __LINE__;                                                                                                                                                                     \
-    VMP_EVT(ptr)->time = grid_pico_time();                                                                                                                                                             \
-  }
+// clang-format off
+
+#define VMP_EVT_WRITE(ptr, id) \
+{ \
+  VMP_EVT(ptr)->uid = (id); \
+  VMP_EVT(ptr)->line = __LINE__; \
+  VMP_EVT(ptr)->time = grid_pico_time(); \
+}
+
+// clang-format on
 
 size_t vmp_evt_serialize(void* evt, uint8_t* dest);
 size_t vmp_evt_deserialize(uint8_t* src, void* evt);

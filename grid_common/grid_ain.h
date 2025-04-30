@@ -1,14 +1,7 @@
-#pragma once
+#ifndef GRID_AIN_H
+#define GRID_AIN_H
 
-#ifndef GRID_AIN_H_INCLUDED
-#define GRID_AIN_H_INCLUDED
-
-// only for uint definitions
 #include <stdint.h>
-// only for malloc
-#include <stdlib.h>
-
-#include <stdio.h>
 
 struct AIN_Channel {
 
@@ -47,4 +40,4 @@ int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel,
 
 uint32_t grid_ain_abs(int32_t value);
 
-#endif /* GRID_AIN_H_INCLUDED */
+#endif /* GRID_AIN_H */

@@ -1,20 +1,11 @@
-#pragma once
+#ifndef GRID_LUA_H
+#define GRID_LUA_H
 
-#ifndef GRID_LUA_H_INCLUDED
-#define GRID_LUA_H_INCLUDED
-
-// only for uint definitions
 #include <stdint.h>
-// only for malloc
-#include <stdlib.h>
-
-#include <string.h>
 
 #include "lua-5.4.3/src/lauxlib.h"
 #include "lua-5.4.3/src/lua.h"
 #include "lua-5.4.3/src/lualib.h"
-
-#include "grid_protocol.h"
 
 #include "lua_src/lua_source_collection.h"
 
@@ -115,4 +106,4 @@ void grid_lua_stop_vm(struct grid_lua_model* lua);
 
 // clang-format on
 
-#endif
+#endif /* GRID_LUA_H */

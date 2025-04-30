@@ -1,11 +1,10 @@
-#pragma once
+#ifndef GRID_UI_ENDLESS_H
+#define GRID_UI_ENDLESS_H
 
-#ifndef GRID_UI_ENDLESS_H_INCLUDED
-#define GRID_UI_ENDLESS_H_INCLUDED
-
-#include "grid_ui.h"
-#include <math.h>
 #include <stdint.h>
+
+#include "grid_protocol.h"
+#include "grid_ui.h"
 
 struct grid_ui_endless_state {
   uint16_t phase_a;
@@ -26,81 +25,6 @@ void grid_ui_endless_store_input(struct grid_ui_element* ele, uint8_t input_chan
 uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint64_t* endless_last_real_time, double* delta_frac);
 
 // ========================= ENDLESS POTEMETER =========================== //
-
-#define GRID_LUA_FNC_EP_ELEMENT_INDEX_index 0
-#define GRID_LUA_FNC_EP_ELEMENT_INDEX_short "ind"
-#define GRID_LUA_FNC_EP_ELEMENT_INDEX_human "element_index"
-
-#define GRID_LUA_FNC_EP_BUTTON_NUMBER_index 1
-#define GRID_LUA_FNC_EP_BUTTON_NUMBER_short "bnu"
-#define GRID_LUA_FNC_EP_BUTTON_NUMBER_human "button_number"
-
-#define GRID_LUA_FNC_EP_BUTTON_VALUE_index 2
-#define GRID_LUA_FNC_EP_BUTTON_VALUE_short "bva"
-#define GRID_LUA_FNC_EP_BUTTON_VALUE_human "button_value"
-
-#define GRID_LUA_FNC_EP_BUTTON_MIN_index 3
-#define GRID_LUA_FNC_EP_BUTTON_MIN_short "bmi"
-#define GRID_LUA_FNC_EP_BUTTON_MIN_human "button_min"
-
-#define GRID_LUA_FNC_EP_BUTTON_MAX_index 4
-#define GRID_LUA_FNC_EP_BUTTON_MAX_short "bma"
-#define GRID_LUA_FNC_EP_BUTTON_MAX_human "button_max"
-
-#define GRID_LUA_FNC_EP_BUTTON_MODE_index 5
-#define GRID_LUA_FNC_EP_BUTTON_MODE_short "bmo"
-#define GRID_LUA_FNC_EP_BUTTON_MODE_human "button_mode"
-
-#define GRID_LUA_FNC_EP_BUTTON_ELAPSED_index 6
-#define GRID_LUA_FNC_EP_BUTTON_ELAPSED_short "bel"
-#define GRID_LUA_FNC_EP_BUTTON_ELAPSED_human "button_elapsed_time"
-
-#define GRID_LUA_FNC_EP_BUTTON_STATE_index 7
-#define GRID_LUA_FNC_EP_BUTTON_STATE_short "bst"
-#define GRID_LUA_FNC_EP_BUTTON_STATE_human "button_state"
-
-#define GRID_LUA_FNC_EP_ENDLESS_NUMBER_index 8
-#define GRID_LUA_FNC_EP_ENDLESS_NUMBER_short "epnu"
-#define GRID_LUA_FNC_EP_ENDLESS_NUMBER_human "endless_number"
-
-#define GRID_LUA_FNC_EP_ENDLESS_VALUE_index 9
-#define GRID_LUA_FNC_EP_ENDLESS_VALUE_short "epva"
-#define GRID_LUA_FNC_EP_ENDLESS_VALUE_human "endless_value"
-
-#define GRID_LUA_FNC_EP_ENDLESS_MIN_index 10
-#define GRID_LUA_FNC_EP_ENDLESS_MIN_short "epmi"
-#define GRID_LUA_FNC_EP_ENDLESS_MIN_human "endless_min"
-
-#define GRID_LUA_FNC_EP_ENDLESS_MAX_index 11
-#define GRID_LUA_FNC_EP_ENDLESS_MAX_short "epma"
-#define GRID_LUA_FNC_EP_ENDLESS_MAX_human "endless_max"
-
-#define GRID_LUA_FNC_EP_ENDLESS_MODE_index 12
-#define GRID_LUA_FNC_EP_ENDLESS_MODE_short "epmo"
-#define GRID_LUA_FNC_EP_ENDLESS_MODE_human "endless_mode"
-
-#define GRID_LUA_FNC_EP_ENDLESS_ELAPSED_index 13
-#define GRID_LUA_FNC_EP_ENDLESS_ELAPSED_short "epel"
-#define GRID_LUA_FNC_EP_ENDLESS_ELAPSED_human "endless_elapsed_time"
-
-#define GRID_LUA_FNC_EP_ENDLESS_STATE_index 14
-#define GRID_LUA_FNC_EP_ENDLESS_STATE_short "epst"
-#define GRID_LUA_FNC_EP_ENDLESS_STATE_human "endless_state"
-
-#define GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index 15
-#define GRID_LUA_FNC_EP_ENDLESS_VELOCITY_short "epv0"
-#define GRID_LUA_FNC_EP_ENDLESS_VELOCITY_human "endless_velocity"
-
-#define GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index 16
-#define GRID_LUA_FNC_EP_ENDLESS_DIRECTION_short "epdir"
-#define GRID_LUA_FNC_EP_ENDLESS_DIRECTION_human "endless_direction"
-
-#define GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index 17
-#define GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_short "epse"
-#define GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_human "endless_sensitivity"
-
-// Endless potentiometer parameters
-#define GRID_LUA_FNC_EP_LIST_length 18
 
 // Endless potentiometer init function
 // clang-format off
@@ -152,4 +76,4 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128--[[@gms]] gms(ch,144,note,val)--[[@for]] for i=1,5,1 do--[[@l]] local "                  \
   "lednum=num+i*2-2--[[@glp]] glp(lednum,1,val)--[[@enl]] end ?>"
 
-#endif
+#endif /* GRID_UI_ENDLESS_H */

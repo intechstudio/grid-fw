@@ -1,7 +1,11 @@
 #include "grid_module.h"
 
-#include "grid_ui.h"
+#include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
 
+#include "grid_lua_api.h"
+#include "grid_protocol.h"
 #include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
 #include "grid_ui_endless.h"

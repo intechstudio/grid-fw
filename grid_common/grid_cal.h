@@ -1,12 +1,7 @@
-#pragma once
+#ifndef GRID_CAL_H
+#define GRID_CAL_H
 
-#ifndef GRID_CAL_H_INCLUDED
-#define GRID_CAL_H_INCLUDED
-
-// only for uint definitions
 #include <stdint.h>
-// only for malloc
-#include <stdlib.h>
 
 struct grid_cal_model {
 
@@ -28,4 +23,4 @@ int grid_cal_value_get(struct grid_cal_model* cal, uint8_t channel, uint16_t* va
 int grid_cal_enable_get(struct grid_cal_model* cal, uint8_t channel, uint8_t* enable);
 int grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in, uint16_t* out);
 
-#endif /* GRID_CAL_H_INCLUDED */
+#endif /* GRID_CAL_H */

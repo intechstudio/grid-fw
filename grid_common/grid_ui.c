@@ -1,10 +1,13 @@
-#include <assert.h>
-
 #include "grid_ui.h"
-#include "grid_ui_button.h"
-#include "grid_ui_encoder.h"
-#include "grid_ui_endless.h"
-#include "grid_ui_potmeter.h"
+
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_config.h"
+#include "grid_protocol.h"
+#include "grid_transport.h"
+#include "grid_usb.h"
 
 extern void grid_platform_printf(char const* fmt, ...);
 extern int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle);
@@ -25,6 +28,8 @@ extern void grid_platform_delete_actionstring_files_all();
 extern uint8_t grid_platform_get_nvm_state();
 extern uint8_t grid_platform_erase_nvm_next();
 extern uint8_t grid_platform_get_adc_bit_depth();
+
+extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 
 void grid_ui_semaphore_init(struct grid_ui_semaphore* semaphore, void* handle, void (*lock_fn)(void*), void (*release_fn)(void*)) {
 
@@ -1432,24 +1437,20 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui) {
 
     grid_msg_packet_body_append_text(&message_global, payload_global);
     grid_msg_packet_close(&grid_msg_state, &message_global);
-    grid_port_packet_send_everywhere(&message_global);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &message_global);
   }
 
   grid_msg_packet_body_append_text(&message_local, payload_local);
-
   grid_msg_packet_close(&grid_msg_state, &message_local);
 
   uint32_t message_length = grid_msg_packet_get_length(&message_local);
 
-  struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
-  struct grid_buffer* ui_tx_buffer = grid_transport_get_buffer_tx(ui_port->parent, ui_port->index);
+  struct grid_port* port = grid_transport_get_port(&grid_transport_state, 4, GRID_PORT_UI, 0);
 
-  // Put the packet into the UI_TX buffer
-  if (grid_buffer_write_size(ui_tx_buffer) >= message_length) {
+  struct grid_swsr_t* tx = grid_port_get_tx(port);
 
-    grid_buffer_write_from_packet(ui_tx_buffer, &message_local);
-  } else {
-    // LOG UNABLE TO WRITE EVENT
+  if (grid_swsr_writable(tx, message_length)) {
+    grid_msg_packet_to_swsr(&message_local, tx);
   }
 
   grid_ui_busy_semaphore_release(ui);
@@ -1496,6 +1497,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
           offset = grid_msg_packet_body_get_length(&message);
 
           message.body_length += grid_ui_event_render_action(eve, &message.body[offset]);
+
           grid_ui_event_reset(eve);
 
           // retrigger midiRX event automatically if midi_fifo is not empty
@@ -1516,18 +1518,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
   }
 
   grid_msg_packet_close(&grid_msg_state, &message);
-  uint32_t length = grid_msg_packet_get_length(&message);
-
-  struct grid_port* ui_port = grid_transport_get_port_first_of_type(&grid_transport_state, GRID_PORT_TYPE_UI);
-  struct grid_buffer* ui_rx_buffer = grid_transport_get_buffer_rx(ui_port->parent, ui_port->index);
-
-  // Put the packet into the UI_RX buffer
-  if (grid_buffer_write_size(ui_rx_buffer) >= length) {
-
-    grid_buffer_write_from_packet(ui_rx_buffer, &message);
-  } else {
-    // LOG UNABLE TO WRITE EVENT
-  }
+  grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
 
   // LEDREPORT
   if (grid_protocol_led_change_report_length(&grid_led_state) && grid_sys_get_editor_connected_state(&grid_sys_state)) {
@@ -1553,7 +1544,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
     grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_LEDPREVIEW_LENGTH_offset, GRID_CLASS_LEDPREVIEW_LENGTH_length, report_length);
 
     grid_msg_packet_close(&grid_msg_state, &response);
-    grid_port_packet_send_everywhere(&response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
   }
 
   grid_ui_busy_semaphore_release(ui);

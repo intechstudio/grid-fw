@@ -7,6 +7,8 @@
 
 #include "grid_cal.h"
 
+#include <stdlib.h>
+
 struct grid_cal_model grid_cal_state;
 
 int grid_cal_init(struct grid_cal_model* cal, uint8_t resolution, uint8_t length) {

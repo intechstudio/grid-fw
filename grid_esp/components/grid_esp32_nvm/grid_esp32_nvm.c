@@ -6,6 +6,9 @@
 
 #include "grid_esp32_nvm.h"
 
+#include "grid_platform.h"
+#include "grid_protocol.h"
+
 #include "rom/ets_sys.h" // For ets_printf
 
 #include "esp_chip_info.h"

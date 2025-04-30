@@ -1,20 +1,14 @@
-#pragma once
+#ifndef GRID_UI_SYSTEM_H
+#define GRID_UI_SYSTEM_H
 
-#ifndef GRID_UI_SYSTEM_H_INCLUDED
-#define GRID_UI_SYSTEM_H_INCLUDED
-
-#include "grid_ui.h"
 #include <stdint.h>
+
+#include "grid_protocol.h"
+#include "grid_ui.h"
 
 void grid_ui_element_system_init(struct grid_ui_element* ele);
 
 void grid_ui_element_system_template_parameter_init(struct grid_ui_template_buffer* buf);
-
-#define GRID_LUA_FNC_S_ELEMENT_INDEX_index 0
-#define GRID_LUA_FNC_S_ELEMENT_INDEX_short "ind"
-#define GRID_LUA_FNC_S_ELEMENT_INDEX_human "element_index"
-
-#define GRID_LUA_FNC_S_LIST_length 1
 
 // System init function
 // clang-format off
@@ -43,4 +37,4 @@ void grid_ui_element_system_template_parameter_init(struct grid_ui_template_buff
 
 #define GRID_ACTIONSTRING_SYSTEM_TIMER "<?lua --[[@cb]] print('tick') ?>"
 
-#endif
+#endif /* GRID_UI_SYSTEM_H */

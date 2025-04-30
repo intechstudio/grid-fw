@@ -1,12 +1,5 @@
-#pragma once
-
-#ifndef GRID_CONFIG_H_INCLUDED
-#define GRID_CONFIG_H_INCLUDED
-
-#include <stdio.h>
-#include <string.h>
-
-#include "tomlc99/toml.h"
+#ifndef GRID_CONFIG_H
+#define GRID_CONFIG_H
 
 #include "grid_cal.h"
 
@@ -27,4 +20,4 @@ int grid_config_parse(struct grid_config_model* config, char* src);
 int grid_config_generate(struct grid_config_model* config, char* dest);
 uint32_t grid_config_bytes(struct grid_config_model* config);
 
-#endif /* GRID_CONFIG_H_INCLUDED */
+#endif /* GRID_CONFIG_H */
