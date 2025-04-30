@@ -40,15 +40,22 @@ struct grid_uwsr_t {
   // Read index
   int read;
 
+  // Search character
+  char reject;
+
+  // Search offset
+  int seek;
+
   // Buffer contents
   char* data;
 };
 
-int grid_uwsr_malloc(struct grid_uwsr_t* uwsr, int capacity);
+int grid_uwsr_malloc(struct grid_uwsr_t* uwsr, int capacity, char reject);
 void grid_uwsr_free(struct grid_uwsr_t* uwsr);
-void grid_uwsr_init(struct grid_uwsr_t* uwsr);
-int grid_uwsr_cspn(struct grid_uwsr_t* uwsr, char reject);
+void grid_uwsr_init(struct grid_uwsr_t* uwsr, char reject);
+int grid_uwsr_cspn(struct grid_uwsr_t* uwsr);
 bool grid_uwsr_readable(struct grid_uwsr_t* uwsr, int size);
 void grid_uwsr_read(struct grid_uwsr_t* uwsr, void* dest, int size);
+bool grid_uwsr_overflow(struct grid_uwsr_t* uwsr);
 
 #endif /* GRID_SWSR_H */

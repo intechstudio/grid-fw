@@ -89,7 +89,7 @@ void grid_d51_uart_init() {
 
     usart_tx_ready[i] = 1;
 
-    assert(grid_uwsr_malloc(&usart_uwsr[i], GRID_PORT_SWSR_SIZE) == 0);
+    assert(grid_uwsr_malloc(&usart_uwsr[i], GRID_PORT_SWSR_SIZE, '\n') == 0);
   }
 
   // RX PULLUP
@@ -122,12 +122,10 @@ void grid_d51_uart_init() {
   // err_cb_USART_GRID_S); usart_async_register_callback(&USART_WEST,
   // USART_ASYNC_ERROR_CB, err_cb_USART_GRID_W);
 
-  // 	usart_async_register_callback(&USART_NORTH, USART_ASYNC_RXC_CB,
-  // rx_cb_USART_GRID_N); 	usart_async_register_callback(&USART_EAST,
-  // USART_ASYNC_RXC_CB, rx_cb_USART_GRID_E);
-  // 	usart_async_register_callback(&USART_SOUTH, USART_ASYNC_RXC_CB,
-  // rx_cb_USART_GRID_S); 	usart_async_register_callback(&USART_WEST,
-  // USART_ASYNC_RXC_CB, rx_cb_USART_GRID_W);
+  // usart_async_register_callback(&USART_NORTH, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_N);
+  // usart_async_register_callback(&USART_EAST, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_E);
+  // usart_async_register_callback(&USART_SOUTH, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_S);
+  // usart_async_register_callback(&USART_WEST, USART_ASYNC_RXC_CB, rx_cb_USART_GRID_W);
 
   usart_async_get_io_descriptor(&USART_NORTH, &grid_sys_north_io);
   usart_async_get_io_descriptor(&USART_EAST, &grid_sys_east_io);

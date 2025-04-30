@@ -1497,6 +1497,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
           offset = grid_msg_packet_body_get_length(&message);
 
           message.body_length += grid_ui_event_render_action(eve, &message.body[offset]);
+
           grid_ui_event_reset(eve);
 
           // retrigger midiRX event automatically if midi_fifo is not empty

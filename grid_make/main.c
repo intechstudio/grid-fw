@@ -18,6 +18,9 @@
 #include "grid_port.h"
 #include "grid_utask.h"
 
+#include "vmp_def.h"
+#include "vmp_tag.h"
+
 #include "usb/class/midi/device/audiodf_midi.h"
 
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
@@ -306,7 +309,14 @@ static void button_on_SYNC2_pressed(void) { sync2_received++; }
 
 void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_msg_recent_buffer* recent) {
 
-  int ret = grid_uwsr_cspn(uwsr, '\n');
+  if (grid_uwsr_overflow(uwsr)) {
+
+    grid_uwsr_init(uwsr, uwsr->reject);
+
+    grid_platform_reset_grid_transmitter(grid_port_dir_to_code(port->dir));
+  }
+
+  int ret = grid_uwsr_cspn(uwsr);
 
   if (ret < 0) {
     return;
@@ -429,7 +439,34 @@ int main(void) {
 
   struct grid_transport* xport = &grid_transport_state;
 
+  // Allocate profiler & assign its interface
+  vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
+  struct vmp_reg_t reg = {
+      .evt_serialized_size = vmp_evt_serialized_size,
+      .evt_serialize = vmp_evt_serialize,
+      .fwrite = vmp_fwrite,
+  };
+  bool vmp_flushed = false;
+
   while (1) {
+
+    // vmp_push(MAIN);
+
+    if (!vmp_flushed && vmp.size == vmp.capacity) {
+
+      CRITICAL_SECTION_ENTER();
+
+      vmp_serialize_start(&reg);
+      vmp_buf_serialize_and_write(&vmp, &reg);
+      vmp_uid_str_serialize_and_write(VMP_UID_COUNT, VMP_ASSOC, &reg);
+      vmp_serialize_close(&reg);
+
+      CRITICAL_SECTION_LEAVE();
+
+      // vmp_buf_free(&vmp);
+
+      vmp_flushed = true;
+    }
 
     loopcounter++;
 
