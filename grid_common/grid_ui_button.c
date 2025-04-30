@@ -4,6 +4,7 @@
 
 #include "grid_ain.h"
 #include "grid_lua_api.h"
+#include "grid_math.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
 #include <stdint.h>
@@ -102,12 +103,6 @@ void grid_ui_button_state_value_update(struct grid_ui_button_state* state, uint1
 
   state->prev_in = state->curr_in;
   state->curr_in = value;
-}
-
-double clampf64(double x, double a, double b) {
-
-  const double t = x < a ? a : x;
-  return t > b ? b : t;
 }
 
 double grid_ui_button_state_derivate(struct grid_ui_button_state* state) {
@@ -288,12 +283,6 @@ void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button
 
     grid_ui_event_trigger(eve);
   }
-}
-
-int32_t clampi32(int32_t x, int32_t a, int32_t b) {
-
-  const int32_t t = x < a ? a : x;
-  return t > b ? b : t;
 }
 
 void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_button_state* state, uint16_t value, uint8_t adc_bit_depth) {

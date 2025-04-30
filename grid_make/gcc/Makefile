@@ -17,6 +17,7 @@ usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_config.o \
 ../grid_common/grid_cal.o \
 ../grid_common/grid_ain.o \
+../grid_common/grid_math.o \
 ../grid_common/grid_sys.o \
 ../grid_common/grid_swsr.o \
 ../grid_common/grid_allocator.o \
@@ -94,6 +95,7 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_config.o" \
 "../grid_common/grid_cal.o" \
 "../grid_common/grid_ain.o" \
+"../grid_common/grid_math.o" \
 "../grid_common/grid_sys.o" \
 "../grid_common/grid_swsr.o" \
 "../grid_common/grid_allocator.o" \
@@ -183,6 +185,7 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_config.d" \
 "../grid_common/grid_cal.d" \
 "../grid_common/grid_ain.d" \
+"../grid_common/grid_math.d" \
 "../grid_common/grid_sys.d" \
 "../grid_common/grid_swsr.d" \
 "../grid_common/grid_allocator.d" \

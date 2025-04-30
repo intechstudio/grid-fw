@@ -10,6 +10,7 @@ idf_component_register(
         "../../../grid_common/grid_ain.c"
         "../../../grid_common/grid_asc.c"
         "../../../grid_common/grid_led.c"
+        "../../../grid_common/grid_math.c"
         "../../../grid_common/grid_sys.c"
         "../../../grid_common/grid_swsr.c"
         "../../../grid_common/grid_allocator.c"

@@ -1,5 +1,6 @@
 #include "grid_gui.h"
 #include "grid_font.h"
+#include "grid_math.h"
 #include <stdio.h>
 
 struct grid_gui_model grid_gui_states[2] = {0};
@@ -524,12 +525,6 @@ int grid_gui_draw_rectangle_filled(struct grid_gui_model* gui, uint16_t x1, uint
     }
   }
   return 0;
-}
-
-uint32_t clampu32(uint32_t x, uint32_t a, uint32_t b) {
-
-  const uint32_t t = x < a ? a : x;
-  return t > b ? b : t;
 }
 
 int grid_gui_draw_area_filled(struct grid_gui_model* gui, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, grid_color_t color) {
