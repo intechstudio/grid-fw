@@ -28,9 +28,6 @@
 
 #include "grid_esp32_adc.h"
 
-#include "vmp_def.h"
-#include "vmp_tag.h"
-
 // static const char* TAG = "module_tek1";
 
 #define GRID_MODULE_TEK1_POT_NUM 2
@@ -281,44 +278,11 @@ void grid_esp32_module_tek1_task(void* arg) {
 #undef USE_SEMAPHORE
 #undef USE_FRAMELIMIT
 
-  // Allocate profiler & assign its interface
-  vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
-  struct vmp_reg_t reg = {
-      .evt_serialized_size = vmp_evt_serialized_size,
-      .evt_serialize = vmp_evt_serialize,
-      .fwrite = vmp_fwrite,
-  };
-
-  // uint8_t counter = 0;
-
-  bool vmp_flushed = false;
   while (1) {
-
-    // vmp_push(MAIN);
-
-    if (!vmp_flushed && vmp.size == vmp.capacity) {
-
-      portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
-      portENTER_CRITICAL(&spinlock);
-
-      vmp_serialize_start(&reg);
-      vmp_buf_serialize_and_write(&vmp, &reg);
-      vmp_uid_str_serialize_and_write(VMP_UID_COUNT, VMP_ASSOC, &reg);
-      vmp_serialize_close(&reg);
-
-      portEXIT_CRITICAL(&spinlock);
-
-      vmp_flushed = true;
-    }
 
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 
-  vmp_buf_free(&vmp);
-
   // Wait to be deleted
   vTaskSuspend(NULL);
-
-  (void)VMP_ALLOC;
-  (void)VMP_DEALLOC;
 }

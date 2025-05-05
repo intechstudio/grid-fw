@@ -93,6 +93,9 @@
 #include "../../grid_common/lua-5.4.3/src/lua.h"
 #include "../../grid_common/lua-5.4.3/src/lualib.h"
 
+#include "vmp_def.h"
+#include "vmp_tag.h"
+
 static const char* TAG = "main";
 
 #include "tinyusb.h"
@@ -663,7 +666,32 @@ void app_main(void) {
   gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
   gpio_pullup_en(GPIO_NUM_0);
 
+  // Allocate profiler & assign its interface
+  vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
+  struct vmp_reg_t reg = {
+      .evt_serialized_size = vmp_evt_serialized_size,
+      .evt_serialize = vmp_evt_serialize,
+      .fwrite = vmp_fwrite,
+  };
+  bool vmp_flushed = false;
+
   while (1) {
+
+    // Flush the profiler output if it becomes full
+    if (!vmp_flushed && vmp.size == vmp.capacity) {
+
+      portMUX_TYPE spinlock = portMUX_INITIALIZER_UNLOCKED;
+      portENTER_CRITICAL(&spinlock);
+
+      vmp_serialize_start(&reg);
+      vmp_buf_serialize_and_write(&vmp, &reg);
+      vmp_uid_str_serialize_and_write(VMP_UID_COUNT, VMP_ASSOC, &reg);
+      vmp_serialize_close(&reg);
+
+      portEXIT_CRITICAL(&spinlock);
+
+      vmp_flushed = true;
+    }
 
     // esp_sysview_flush(ESP_APPTRACE_TMO_INFINITE);
 
@@ -677,6 +705,9 @@ void app_main(void) {
 
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
+
+  // Deallocate profiler
+  vmp_buf_free(&vmp);
 
   ESP_LOGI(TAG, "===== MAIN COMPLETE =====");
 }
