@@ -153,7 +153,7 @@ bool grid_ui_button_state_process(struct grid_ui_button_state* state, int mode, 
       state->curr_out = 1;
     }
 
-    if (state->curr_in >= state->trig_hi && state->prev_out == 1) {
+    if (state->curr_in >= state->trig_hi && state->prev_out != 0) {
       state->curr_out = 0;
     }
   }
