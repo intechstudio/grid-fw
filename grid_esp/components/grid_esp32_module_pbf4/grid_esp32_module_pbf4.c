@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "grid_ain.h"
+#include "grid_asc.h"
 #include "grid_cal.h"
 #include "grid_config.h"
 #include "grid_module.h"
@@ -31,6 +32,7 @@
 
 static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
 static uint64_t* DRAM_ATTR potmeter_last_real_time = NULL;
+static struct grid_asc* DRAM_ATTR asc_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR pbf4_process_analog(void* user) {
@@ -50,6 +52,10 @@ void IRAM_ATTR pbf4_process_analog(void* user) {
     result->value = 4095 - result->value;
   }
 
+  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+    return;
+  }
+
   if (mux_position < 8) {
 
     uint16_t calibrated;
@@ -65,8 +71,10 @@ void grid_esp32_module_pbf4_task(void* arg) {
 
   ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_PBF4_BUT_NUM * sizeof(struct grid_ui_button_state));
   potmeter_last_real_time = grid_platform_allocate_volatile(GRID_MODULE_PBF4_POT_NUM * sizeof(uint64_t));
+  asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
   memset(ui_button_state, 0, GRID_MODULE_PBF4_BUT_NUM * sizeof(struct grid_ui_button_state));
   memset(potmeter_last_real_time, 0, GRID_MODULE_PBF4_POT_NUM * sizeof(uint64_t));
+  memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
   for (int i = 0; i < GRID_MODULE_PBF4_BUT_NUM; ++i) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
@@ -74,6 +82,11 @@ void grid_esp32_module_pbf4_task(void* arg) {
 
   grid_cal_init(&grid_cal_state, 12, grid_ui_state.element_list_length);
   grid_cal_enable_range(&grid_cal_state, 0, 4);
+
+  grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
+  if (grid_hwcfg_module_is_rev_h(&grid_sys_state)) {
+    grid_asc_array_set_factors(asc_state, 16, 12, 4, 1);
+  }
 
   grid_config_init(&grid_config_state, &grid_cal_state);
 

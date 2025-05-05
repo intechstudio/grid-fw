@@ -4,6 +4,7 @@ entries:
     grid_buf (noflash)         # places all code/read-only data under IRAM/DRAM
     grid_ain (noflash)         # places all code/read-only data under IRAM/DRAM
     grid_asc (noflash)         # places all code/read-only data under IRAM/DRAM
+    grid_cal (noflash)         # places all code/read-only data under IRAM/DRAM
     grid_math (noflash)        # places all code/read-only data under IRAM/DRAM
     grid_ui_button (noflash)   # places all code/read-only data under IRAM/DRAM
     grid_ui_endless (noflash)  # places all code/read-only data under IRAM/DRAM
