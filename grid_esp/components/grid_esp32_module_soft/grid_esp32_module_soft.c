@@ -83,8 +83,9 @@ void grid_esp32_module_soft_task(void* arg) {
   grid_esp32_encoder_init(&grid_esp32_encoder_state, soft_process_encoder);
   grid_esp32_encoder_start(&grid_esp32_encoder_state);
   uint8_t detent = true;
+  int8_t direction = 1;
   for (uint8_t i = 0; i < GRID_MODULE_SOFT_ENC_NUM; i++) {
-    grid_ui_encoder_state_init(&ui_encoder_state[i], detent);
+    grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
 
   grid_esp32_adc_init(&grid_esp32_adc_state, soft_process_analog);

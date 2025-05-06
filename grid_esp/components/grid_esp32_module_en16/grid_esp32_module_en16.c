@@ -53,8 +53,9 @@ void grid_esp32_module_en16_task(void* arg) {
   grid_esp32_encoder_init(&grid_esp32_encoder_state, en16_process_encoder);
   grid_esp32_encoder_start(&grid_esp32_encoder_state);
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD;
+  int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
-    grid_ui_encoder_state_init(&ui_encoder_state[i], detent);
+    grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
 
   elements = grid_ui_model_get_elements(&grid_ui_state);

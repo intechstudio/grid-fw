@@ -208,7 +208,9 @@ int grid_hwcfg_module_is_rev_h(struct grid_sys_model* sys) {
     case GRID_MODULE_BU16_RevH: return 1;
     case GRID_MODULE_PBF4_RevH: return 1;
     case GRID_MODULE_EN16_RevH: return 1;
+    case GRID_MODULE_EN16_ND_RevH: return 1;
     case GRID_MODULE_EF44_RevH: return 1;
+    case GRID_MODULE_EF44_ND_RevH: return 1;
     case GRID_MODULE_TEK2_RevH: return 1;
     case GRID_MODULE_VSN1L_RevH: return 1;
     case GRID_MODULE_VSN1R_RevH: return 1;
@@ -217,3 +219,5 @@ int grid_hwcfg_module_is_rev_h(struct grid_sys_model* sys) {
   }
   // clang-format on
 }
+
+int grid_hwcfg_module_encoder_dir(struct grid_sys_model* sys) { return grid_hwcfg_module_is_rev_h(sys) ? -1 : 1; }

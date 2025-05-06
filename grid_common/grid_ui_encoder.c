@@ -18,7 +18,9 @@ const char grid_ui_encoder_encoderchange_actionstring[] = GRID_ACTIONSTRING_ENCO
 const char grid_ui_encoder_buttonchange_actionstring[] = GRID_ACTIONSTRING_BUTTON_BUTTON;
 const char grid_ui_encoder_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
-void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent) {
+void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent, int8_t direction) {
+
+  assert(direction == 1 || direction == -1);
 
   state->encoder_last_real_time = 0;
   state->button_last_real_time = 0;
@@ -26,6 +28,7 @@ void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t det
   state->detent = detent;
   state->encoder_last_leave_dir = 0;
   state->initial_samples = 0;
+  state->direction = direction;
 }
 
 void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
@@ -264,6 +267,8 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
   }
 
   int16_t delta = grid_ui_encoder_rotation_delta(old_value, new_value, state->detent, &state->encoder_last_leave_dir); // delta can be -1, 0 or 1
+
+  delta *= state->direction;
 
   // shift register bits arrangement: MSB to LSB
   // GND Button PhaseB PhaseA
