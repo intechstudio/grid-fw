@@ -15,9 +15,10 @@ struct grid_ui_encoder_state {
   uint8_t detent;
   int8_t encoder_last_leave_dir;
   uint8_t initial_samples;
+  int8_t direction;
 };
 
-void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent);
+void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent, int8_t direction);
 
 void grid_ui_element_encoder_init(struct grid_ui_element* ele);
 void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf);

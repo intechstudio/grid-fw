@@ -32,7 +32,7 @@ static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR tek2_process_analog(void* user) {
 
-  static const uint8_t multiplexer_lookup[16] = {9, 8, 9, 8, 9, 8, -1, -1, 2, 0, 3, 1, 6, 4, 7, 5};
+  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {9, 8, 9, 8, 9, 8, -1, -1, 2, 0, 3, 1, 6, 4, 7, 5};
 
   assert(user);
 
