@@ -49,6 +49,7 @@ jobs:
       - name: Copy and rename the artifacts
         run: |
           ls
+          cp grid_esp/build/grid_fw.bin grid_fw.bin
           cp binary/grid_release.uf2 grid_d51_release_${{ env.ACTION_DATE }}.uf2
           cp grid_esp/output/grid_fw.uf2 grid_esp32_release_${{ env.ACTION_DATE }}.uf2
           cp binary/grid_release.uf2 grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
@@ -68,6 +69,7 @@ jobs:
             grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
             grid_esp32_nightly.uf2
             grid_d51_nightly.uf2
+            grid_fw.bin
             index.html
             index.js
             index.wasm
