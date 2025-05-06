@@ -133,8 +133,9 @@ void grid_module_ef44_init() {
   grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EF44_ND_RevD;
+  int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
-    grid_ui_encoder_state_init(&ui_encoder_state[i], detent);
+    grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
 
   elements = grid_ui_model_get_elements(&grid_ui_state);

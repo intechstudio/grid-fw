@@ -85,8 +85,9 @@ void grid_esp32_module_ef44_task(void* arg) {
   grid_esp32_encoder_init(&grid_esp32_encoder_state, ef44_process_encoder);
   grid_esp32_encoder_start(&grid_esp32_encoder_state);
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EF44_ND_RevD;
+  int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
-    grid_ui_encoder_state_init(&ui_encoder_state[i], detent);
+    grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
 
   grid_esp32_adc_init(&grid_esp32_adc_state, ef44_process_analog);
