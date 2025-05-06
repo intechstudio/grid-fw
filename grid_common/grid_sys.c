@@ -219,8 +219,5 @@ int grid_hwcfg_module_is_rev_h(struct grid_sys_model* sys) {
   }
   // clang-format on
 }
-<<<<<<< HEAD
-=======
 
 int grid_hwcfg_module_encoder_dir(struct grid_sys_model* sys) { return grid_hwcfg_module_is_rev_h(sys) ? -1 : 1; }
->>>>>>> master
