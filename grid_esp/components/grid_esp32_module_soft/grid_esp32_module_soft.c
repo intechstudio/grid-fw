@@ -51,21 +51,16 @@ void IRAM_ATTR soft_process_analog(void* user) {
   }
 }
 
-void IRAM_ATTR soft_process_encoder(spi_transaction_t* trans) {
+void IRAM_ATTR soft_process_encoder(void* dma_buf) {
 
-  static uint8_t encoder_lookup[GRID_MODULE_SOFT_ENC_NUM] = {2, 3, 0, 1};
+  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_SOFT_ENC_NUM] = {2, 3, 0, 1};
 
   // Skip hwcfg byte
-  uint8_t* spi_rx_buffer = &((uint8_t*)trans->rx_buffer)[1];
-
-  struct grid_esp32_encoder_result result = {0};
-  for (uint8_t i = 0; i < GRID_MODULE_SOFT_ENC_NUM / 2; ++i) {
-    result.bytes[i] = spi_rx_buffer[i];
-  }
+  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
 
   for (uint8_t j = 0; j < GRID_MODULE_SOFT_ENC_NUM; ++j) {
 
-    uint8_t value = (result.bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
+    uint8_t value = (bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
     uint8_t idx = encoder_lookup[j];
     struct grid_ui_element* ele = &elements[idx];
 
@@ -80,13 +75,12 @@ void grid_esp32_module_soft_task(void* arg) {
   memset(ui_encoder_state, 0, GRID_MODULE_SOFT_ENC_NUM * sizeof(struct grid_ui_encoder_state));
   memset(potmeter_last_real_time, 0, GRID_MODULE_SOFT_POT_NUM * sizeof(uint64_t));
 
-  grid_esp32_encoder_init(&grid_esp32_encoder_state, soft_process_encoder);
-  grid_esp32_encoder_start(&grid_esp32_encoder_state);
-  uint8_t detent = true;
-  int8_t direction = 1;
-  for (uint8_t i = 0; i < GRID_MODULE_SOFT_ENC_NUM; i++) {
-    grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
-  }
+	grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, soft_process_encoder);
+	uint8_t detent = true;
+	int8_t direction = 1;
+	for (uint8_t i = 0; i < GRID_MODULE_SOFT_ENC_NUM; i++) {
+		grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
+	}
 
   grid_esp32_adc_init(&grid_esp32_adc_state, soft_process_analog);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, 2);

@@ -80,12 +80,8 @@ void grid_esp32_module_tek2_task(void* arg) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
   }
 
-  // static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0,
-  // 0, 0, 0, 0, 0, 0, 0};
-  const uint8_t multiplexer_overflow = 8;
-
   grid_esp32_adc_init(&grid_esp32_adc_state, tek2_process_analog);
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
+  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
   grid_esp32_adc_start(&grid_esp32_adc_state);
 
   elements = grid_ui_model_get_elements(&grid_ui_state);

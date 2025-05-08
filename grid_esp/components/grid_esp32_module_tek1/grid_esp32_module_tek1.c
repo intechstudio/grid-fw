@@ -25,6 +25,7 @@
 #include "grid_lua_api.h"
 
 #include "grid_esp32_adc.h"
+#include "grid_esp32_encoder.h"
 
 #include "vmp_def.h"
 #include "vmp_tag.h"
@@ -34,6 +35,8 @@
 #define GRID_MODULE_TEK1_POT_NUM 2
 
 #define GRID_MODULE_TEK1_BUT_NUM 17
+
+#define GRID_MODULE_TEK1_SMOL_BUT_NUM 8
 
 static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
 static struct grid_ui_endless_state* DRAM_ATTR new_endless_state = NULL;
@@ -74,10 +77,27 @@ void IRAM_ATTR vsn1l_process_analog(void* user) {
       grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
     } break;
     }
+  }
+}
 
-  } else if (mux_position < 13) {
+void IRAM_ATTR vsn1l_process_encoder(void* dma_buf) {
 
-    grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
+  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_TEK1_SMOL_BUT_NUM] = {9, 10, 11, 12, -1, -1, -1, -1};
+
+  // Skip hwcfg byte
+  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
+
+  for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
+
+    uint8_t bit = bytes[i / 8] & (1 << i);
+    uint16_t value = bit * (1 << (12 - 1));
+    uint8_t idx = encoder_lookup[i];
+    struct grid_ui_element* ele = &elements[idx];
+
+    if (idx >= 9 && idx < 13) {
+
+      grid_ui_button_store_input(ele, &ui_button_state[idx], value, 12);
+    }
   }
 }
 
@@ -115,10 +135,27 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
       grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
     } break;
     }
+  }
+}
 
-  } else if (mux_position < 13) {
+void IRAM_ATTR vsn1r_process_encoder(void* dma_buf) {
 
-    grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
+  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_TEK1_SMOL_BUT_NUM] = {-1, -1, -1, -1, 9, 10, 11, 12};
+
+  // Skip hwcfg byte
+  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
+
+  for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
+
+    uint8_t bit = bytes[i / 8] & (1 << i);
+    uint16_t value = (bit > 0) * (1 << (12 - 1));
+    uint8_t idx = encoder_lookup[i];
+    struct grid_ui_element* ele = &elements[idx];
+
+    if (idx >= 9 && idx < 13) {
+
+      grid_ui_button_store_input(ele, &ui_button_state[idx], value, 12);
+    }
   }
 }
 
@@ -144,6 +181,27 @@ void IRAM_ATTR vsn2_process_analog(void* user) {
   }
 }
 
+void IRAM_ATTR vsn2_process_encoder(void* dma_buf) {
+
+  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_TEK1_SMOL_BUT_NUM] = {9, 10, 11, 12, 13, 14, 15, 16};
+
+  // Skip hwcfg byte
+  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
+
+  for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
+
+    uint8_t bit = bytes[i / 8] & (1 << i);
+    uint16_t value = (bit > 0) * (1 << (12 - 1));
+    uint8_t idx = encoder_lookup[i];
+    struct grid_ui_element* ele = &elements[idx];
+
+    if (idx >= 9 && idx < 17) {
+
+      grid_ui_button_store_input(ele, &ui_button_state[idx], value, 12);
+    }
+  }
+}
+
 void grid_esp32_module_tek1_task(void* arg) {
 
   ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
@@ -163,12 +221,15 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
+    grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, vsn1l_process_encoder);
     grid_esp32_adc_init(&grid_esp32_adc_state, vsn1l_process_analog);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
+    grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, vsn1r_process_encoder);
     grid_esp32_adc_init(&grid_esp32_adc_state, vsn1r_process_analog);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
+    grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, vsn2_process_encoder);
     grid_esp32_adc_init(&grid_esp32_adc_state, vsn2_process_analog);
   }
 
