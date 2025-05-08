@@ -32,6 +32,8 @@
 
 // static const char* TAG = "module_tek1";
 
+static DRAM_ATTR uint8_t is_vsn_rev_h_8bit_hwcfg = 0;
+
 #define GRID_MODULE_TEK1_POT_NUM 2
 
 #define GRID_MODULE_TEK1_BUT_NUM 17
@@ -77,6 +79,9 @@ void IRAM_ATTR vsn1l_process_analog(void* user) {
       grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
     } break;
     }
+  } else if (mux_position < 13 && is_vsn_rev_h_8bit_hwcfg) {
+
+    grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
   }
 }
 
@@ -135,6 +140,9 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
       grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
     } break;
     }
+  } else if (mux_position < 13 && is_vsn_rev_h_8bit_hwcfg) {
+
+    grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
   }
 }
 
@@ -175,7 +183,7 @@ void IRAM_ATTR vsn2_process_analog(void* user) {
 
     grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
 
-  } else {
+  } else if (is_vsn_rev_h_8bit_hwcfg) {
 
     grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
   }
@@ -204,6 +212,8 @@ void IRAM_ATTR vsn2_process_encoder(void* dma_buf) {
 
 void grid_esp32_module_tek1_task(void* arg) {
 
+  is_vsn_rev_h_8bit_hwcfg = 1 - grid_platform_get_hwcfg_bit(16);
+
   ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
   new_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
   old_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
@@ -215,25 +225,28 @@ void grid_esp32_module_tek1_task(void* arg) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
   }
 
-  // static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0,
-  // 0, 0, 0, 0, 0, 0, 0};
-  const uint8_t multiplexer_overflow = 8;
+  grid_process_encoder_t process_encoder = NULL;
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
-    grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, vsn1l_process_encoder);
+    process_encoder = vsn1l_process_encoder;
     grid_esp32_adc_init(&grid_esp32_adc_state, vsn1l_process_analog);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
-    grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, vsn1r_process_encoder);
+    process_encoder = vsn1r_process_encoder;
     grid_esp32_adc_init(&grid_esp32_adc_state, vsn1r_process_analog);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
-    grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, vsn2_process_encoder);
+    process_encoder = vsn2_process_encoder;
     grid_esp32_adc_init(&grid_esp32_adc_state, vsn2_process_analog);
   }
 
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
+  if (!is_vsn_rev_h_8bit_hwcfg) {
+
+    grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, process_encoder);
+  }
+
+  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
   grid_esp32_adc_start(&grid_esp32_adc_state);
 
   elements = grid_ui_model_get_elements(&grid_ui_state);

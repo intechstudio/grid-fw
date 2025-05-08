@@ -214,6 +214,36 @@ void grid_esp32_housekeeping_task(void* arg) {
   vTaskSuspend(NULL);
 }
 
+uint32_t grid_platform_get_hwcfg_bit(uint8_t n) {
+
+  gpio_set_direction(GRID_ESP32_PINS_HWCFG_SHIFT, GPIO_MODE_OUTPUT);
+  gpio_set_direction(GRID_ESP32_PINS_HWCFG_CLOCK, GPIO_MODE_OUTPUT);
+  gpio_set_direction(GRID_ESP32_PINS_HWCFG_DATA, GPIO_MODE_INPUT);
+
+  gpio_set_level(GRID_ESP32_PINS_HWCFG_SHIFT, 0);
+  gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 1);
+
+  ets_delay_us(40);
+
+  gpio_set_level(GRID_ESP32_PINS_HWCFG_SHIFT, 1);
+
+  ets_delay_us(10);
+
+  uint8_t level = 0;
+  for (uint8_t i = 0; i < n + 1; ++i) {
+
+    gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 0);
+
+    level = gpio_get_level(GRID_ESP32_PINS_HWCFG_DATA);
+
+    ets_delay_us(10);
+    gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 1);
+    ets_delay_us(10);
+  }
+
+  return level > 0;
+}
+
 uint32_t grid_platform_get_hwcfg() {
 
   gpio_set_direction(GRID_ESP32_PINS_HWCFG_SHIFT, GPIO_MODE_OUTPUT);

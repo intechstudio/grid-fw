@@ -75,12 +75,12 @@ void grid_esp32_module_soft_task(void* arg) {
   memset(ui_encoder_state, 0, GRID_MODULE_SOFT_ENC_NUM * sizeof(struct grid_ui_encoder_state));
   memset(potmeter_last_real_time, 0, GRID_MODULE_SOFT_POT_NUM * sizeof(uint64_t));
 
-	grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, soft_process_encoder);
-	uint8_t detent = true;
-	int8_t direction = 1;
-	for (uint8_t i = 0; i < GRID_MODULE_SOFT_ENC_NUM; i++) {
-		grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
-	}
+  grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, soft_process_encoder);
+  uint8_t detent = true;
+  int8_t direction = 1;
+  for (uint8_t i = 0; i < GRID_MODULE_SOFT_ENC_NUM; i++) {
+    grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
+  }
 
   grid_esp32_adc_init(&grid_esp32_adc_state, soft_process_analog);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, 2);
