@@ -27,12 +27,17 @@
 #include "grid_lua_api.h"
 
 #include "grid_esp32_adc.h"
+#include "grid_esp32_encoder.h"
 
 // static const char* TAG = "module_tek1";
+
+static DRAM_ATTR uint8_t is_vsn_rev_h_8bit_hwcfg = 0;
 
 #define GRID_MODULE_TEK1_POT_NUM 2
 
 #define GRID_MODULE_TEK1_BUT_NUM 17
+
+#define GRID_MODULE_TEK1_SMOL_BUT_NUM 8
 
 static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
 static struct grid_ui_endless_state* DRAM_ATTR new_endless_state = NULL;
@@ -78,10 +83,30 @@ void IRAM_ATTR vsn1l_process_analog(void* user) {
       grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
     } break;
     }
-
-  } else if (mux_position < 13) {
+  } else if (mux_position < 13 && is_vsn_rev_h_8bit_hwcfg) {
 
     grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
+  }
+}
+
+void IRAM_ATTR vsn1l_process_encoder(void* dma_buf) {
+
+  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_TEK1_SMOL_BUT_NUM] = {9, 10, 11, 12, -1, -1, -1, -1};
+
+  // Skip hwcfg byte
+  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
+
+  for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
+
+    uint8_t bit = bytes[i / 8] & (1 << i);
+    uint16_t value = bit * (1 << (12 - 1));
+    uint8_t idx = encoder_lookup[i];
+    struct grid_ui_element* ele = &elements[idx];
+
+    if (idx >= 9 && idx < 13) {
+
+      grid_ui_button_store_input(ele, &ui_button_state[idx], value, 12);
+    }
   }
 }
 
@@ -123,10 +148,30 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
       grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
     } break;
     }
-
-  } else if (mux_position < 13) {
+  } else if (mux_position < 13 && is_vsn_rev_h_8bit_hwcfg) {
 
     grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
+  }
+}
+
+void IRAM_ATTR vsn1r_process_encoder(void* dma_buf) {
+
+  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_TEK1_SMOL_BUT_NUM] = {-1, -1, -1, -1, 9, 10, 11, 12};
+
+  // Skip hwcfg byte
+  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
+
+  for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
+
+    uint8_t bit = bytes[i / 8] & (1 << i);
+    uint16_t value = (bit > 0) * (1 << (12 - 1));
+    uint8_t idx = encoder_lookup[i];
+    struct grid_ui_element* ele = &elements[idx];
+
+    if (idx >= 9 && idx < 13) {
+
+      grid_ui_button_store_input(ele, &ui_button_state[idx], value, 12);
+    }
   }
 }
 
@@ -150,13 +195,36 @@ void IRAM_ATTR vsn2_process_analog(void* user) {
 
     grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
 
-  } else {
+  } else if (is_vsn_rev_h_8bit_hwcfg) {
 
     grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
   }
 }
 
+void IRAM_ATTR vsn2_process_encoder(void* dma_buf) {
+
+  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_TEK1_SMOL_BUT_NUM] = {9, 10, 11, 12, 13, 14, 15, 16};
+
+  // Skip hwcfg byte
+  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
+
+  for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
+
+    uint8_t bit = bytes[i / 8] & (1 << i);
+    uint16_t value = (bit > 0) * (1 << (12 - 1));
+    uint8_t idx = encoder_lookup[i];
+    struct grid_ui_element* ele = &elements[idx];
+
+    if (idx >= 9 && idx < 17) {
+
+      grid_ui_button_store_input(ele, &ui_button_state[idx], value, 12);
+    }
+  }
+}
+
 void grid_esp32_module_tek1_task(void* arg) {
+
+  is_vsn_rev_h_8bit_hwcfg = 1 - grid_platform_get_hwcfg_bit(16);
 
   ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
   new_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
@@ -176,22 +244,28 @@ void grid_esp32_module_tek1_task(void* arg) {
     grid_asc_array_set_factors(asc_state, 16, 8, 8, 1);
   }
 
-  // static const uint8_t invert_result_lookup[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0,
-  // 0, 0, 0, 0, 0, 0, 0};
-  const uint8_t multiplexer_overflow = 8;
+  grid_process_encoder_t process_encoder = NULL;
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
+    process_encoder = vsn1l_process_encoder;
     grid_esp32_adc_init(&grid_esp32_adc_state, vsn1l_process_analog);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
+    process_encoder = vsn1r_process_encoder;
     grid_esp32_adc_init(&grid_esp32_adc_state, vsn1r_process_analog);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
+    process_encoder = vsn2_process_encoder;
     grid_esp32_adc_init(&grid_esp32_adc_state, vsn2_process_analog);
   }
 
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, multiplexer_overflow);
+  if (!is_vsn_rev_h_8bit_hwcfg) {
+
+    grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, process_encoder);
+  }
+
+  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(&grid_sys_state);
   grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
 

@@ -214,6 +214,36 @@ void grid_esp32_housekeeping_task(void* arg) {
   vTaskSuspend(NULL);
 }
 
+uint32_t grid_platform_get_hwcfg_bit(uint8_t n) {
+
+  gpio_set_direction(GRID_ESP32_PINS_HWCFG_SHIFT, GPIO_MODE_OUTPUT);
+  gpio_set_direction(GRID_ESP32_PINS_HWCFG_CLOCK, GPIO_MODE_OUTPUT);
+  gpio_set_direction(GRID_ESP32_PINS_HWCFG_DATA, GPIO_MODE_INPUT);
+
+  gpio_set_level(GRID_ESP32_PINS_HWCFG_SHIFT, 0);
+  gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 1);
+
+  ets_delay_us(40);
+
+  gpio_set_level(GRID_ESP32_PINS_HWCFG_SHIFT, 1);
+
+  ets_delay_us(10);
+
+  uint8_t level = 0;
+  for (uint8_t i = 0; i < n + 1; ++i) {
+
+    gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 0);
+
+    level = gpio_get_level(GRID_ESP32_PINS_HWCFG_DATA);
+
+    ets_delay_us(10);
+    gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 1);
+    ets_delay_us(10);
+  }
+
+  return level > 0;
+}
+
 uint32_t grid_platform_get_hwcfg() {
 
   gpio_set_direction(GRID_ESP32_PINS_HWCFG_SHIFT, GPIO_MODE_OUTPUT);
@@ -221,38 +251,29 @@ uint32_t grid_platform_get_hwcfg() {
   gpio_set_direction(GRID_ESP32_PINS_HWCFG_DATA, GPIO_MODE_INPUT);
 
   gpio_set_level(GRID_ESP32_PINS_HWCFG_SHIFT, 0);
-  gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 0);
+  gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 1);
 
-  ets_delay_us(1000);
+  ets_delay_us(40);
 
-  uint8_t hwcfg_value = 0;
+  gpio_set_level(GRID_ESP32_PINS_HWCFG_SHIFT, 1);
 
-  for (uint8_t i = 0; i < 8; i++) { // now we need to shift in the remaining 7 values
+  ets_delay_us(10);
 
-    // SHIFT DATA
-    gpio_set_level(GRID_ESP32_PINS_HWCFG_SHIFT,
-                   1); // This outputs the first value to HWCFG_DATA
-    ets_delay_us(1000);
+  uint8_t hwcfg = 0;
+  for (uint8_t i = 0; i < 8; ++i) {
 
-    if (gpio_get_level(GRID_ESP32_PINS_HWCFG_DATA)) {
+    gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 0);
 
-      hwcfg_value |= (1 << i);
-    } else {
-    }
+    uint8_t level = gpio_get_level(GRID_ESP32_PINS_HWCFG_DATA);
+    hwcfg |= ((level > 0) << i);
 
-    if (i != 7) {
-
-      // Clock rise
-      gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 1);
-
-      ets_delay_us(1000);
-
-      gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 0);
-    }
+    ets_delay_us(10);
+    gpio_set_level(GRID_ESP32_PINS_HWCFG_CLOCK, 1);
+    ets_delay_us(10);
   }
 
-  ESP_LOGI(TAG, "HWCFG value: %d", hwcfg_value);
-  return hwcfg_value;
+  ESP_LOGI(TAG, "HWCFG value: %d", hwcfg);
+  return hwcfg;
 }
 
 uint32_t grid_platform_get_id(uint32_t* return_array) {

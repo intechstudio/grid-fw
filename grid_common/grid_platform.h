@@ -10,6 +10,8 @@ extern uint32_t grid_platform_get_id(uint32_t* return_array);
 
 extern uint32_t grid_platform_get_hwcfg();
 
+extern uint32_t grid_platform_get_hwcfg_bit(uint8_t n);
+
 extern uint8_t grid_platform_get_random_8();
 
 extern uint8_t grid_platform_get_reset_cause();
