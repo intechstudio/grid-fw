@@ -7,6 +7,7 @@
 #include "grid_gui.h"
 #include "grid_lua.h"
 #include "grid_lua_api_gui.h"
+#include "grid_math.h"
 
 #include "tinyalloc/tinyalloc.h"
 

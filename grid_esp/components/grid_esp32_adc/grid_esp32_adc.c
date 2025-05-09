@@ -36,6 +36,8 @@
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
+#include "esp_private/rtc_ctrl.h"
+
 void* grid_platform_allocate_volatile(size_t size);
 
 extern const uint8_t ulp_grid_esp32_adc_bin_start[] asm("_binary_ulp_grid_esp32_adc_bin_start");
@@ -53,31 +55,26 @@ void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overf
   gpio_set_direction(GRID_ESP32_PINS_MUX_1_B, GPIO_MODE_OUTPUT);
   gpio_set_direction(GRID_ESP32_PINS_MUX_1_C, GPIO_MODE_OUTPUT);
 
-  gpio_set_level(GRID_ESP32_PINS_MUX_0_A, 0);
-  gpio_set_level(GRID_ESP32_PINS_MUX_0_B, 0);
-  gpio_set_level(GRID_ESP32_PINS_MUX_0_C, 0);
+  adc->mux_index = 0;
 
-  gpio_set_level(GRID_ESP32_PINS_MUX_1_A, 0);
-  gpio_set_level(GRID_ESP32_PINS_MUX_1_B, 0);
-  gpio_set_level(GRID_ESP32_PINS_MUX_1_C, 0);
+  grid_esp32_adc_mux_update(adc);
 
   adc->mux_overflow = mux_overflow;
+  ulp_mux_overflow = adc->mux_overflow;
 }
 
 void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc) { adc->mux_index = (adc->mux_index + 1) % adc->mux_overflow; }
 
 void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc) {
 
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_A, adc->mux_index / 1 % 2);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_B, adc->mux_index / 2 % 2);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_C, adc->mux_index / 4 % 2);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_A, adc->mux_index >> 0 & 0x1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_B, adc->mux_index >> 1 & 0x1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_C, adc->mux_index >> 2 & 0x1);
 
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_A, adc->mux_index / 1 % 2);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_B, adc->mux_index / 2 % 2);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_C, adc->mux_index / 4 % 2);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_A, adc->mux_index >> 0 & 0x1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_B, adc->mux_index >> 1 & 0x1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_C, adc->mux_index >> 2 & 0x1);
 }
-
-uint8_t IRAM_ATTR grid_esp32_adc_mux_get_index(struct grid_esp32_adc_model* adc) { return adc->mux_index; }
 
 #include "esp_private/adc_share_hw_ctrl.h"
 #include "esp_private/esp_sleep_internal.h"
@@ -138,42 +135,32 @@ void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t
   adc->process_analog = process_analog;
 
   adc_init_ulp(adc);
-
-  adc->mux_index = 0;
 }
 
-static bool IRAM_ATTR grid_esp32_adc_alarm_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t* edata, void* user_ctx) {
+static void IRAM_ATTR ulp_isr(void* arg) {
 
-  grid_esp32_adc_convert();
+  struct grid_esp32_adc_model* adc = (struct grid_esp32_adc_model*)arg;
 
-  return true;
+  if (adc->mux_dependent) {
+    grid_esp32_adc_conv_mux();
+  } else {
+    grid_esp32_adc_conv_nomux();
+  }
 }
 
-void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
+void grid_esp32_adc_start(struct grid_esp32_adc_model* adc, uint8_t mux_dependent) {
 
-  ESP_LOGI("ADC", "Create timer handle");
-  gptimer_handle_t gptimer = NULL;
-  gptimer_config_t timer_config = {
-      .clk_src = GPTIMER_CLK_SRC_DEFAULT,
-      .direction = GPTIMER_COUNT_UP,
-      .resolution_hz = 1000000, // 1MHz, 1 tick=1us
-  };
-  ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
+  // Set flag for both processors indicating which one does mux addressing
+  adc->mux_dependent = mux_dependent != 0;
+  ulp_mux_dependent = adc->mux_dependent;
 
-  gptimer_event_callbacks_t cbs = {
-      .on_alarm = grid_esp32_adc_alarm_cb, // register user callback
-  };
-  ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, NULL));
+  // Register bit storing the status of the ULP-RISCV interrupt
+  uint32_t bit = RTC_CNTL_COCPU_INT_ST_M;
 
-  gptimer_alarm_config_t alarm_config = {
-      .reload_count = 0,                  // counter will reload with 0 on alarm event
-      .alarm_count = 1000,                // period = 1s @resolution 1MHz
-      .flags.auto_reload_on_alarm = true, // enable auto-reload
-  };
-  ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
+  // Register a handler for a specific RTC_CNTL interrupt
+  ESP_ERROR_CHECK(rtc_isr_register(ulp_isr, adc, bit, RTC_INTR_FLAG_IRAM));
 
-  ESP_ERROR_CHECK(gptimer_enable(gptimer));
-  ESP_ERROR_CHECK(gptimer_start(gptimer));
+  REG_SET_BIT(RTC_CNTL_INT_ENA_REG, bit);
 
   // Configure the ULP with defaults and run the program loaded into RTC memory
   ESP_ERROR_CHECK(ulp_riscv_run());
@@ -181,7 +168,7 @@ void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
 void grid_esp32_adc_stop(struct grid_esp32_adc_model* adc) { assert(0); }
 
-void IRAM_ATTR grid_esp32_adc_convert() {
+void IRAM_ATTR grid_esp32_adc_conv_mux() {
 
   struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
 
@@ -189,15 +176,14 @@ void IRAM_ATTR grid_esp32_adc_convert() {
     return;
   }
 
-  if (ulp_adc_result_ready < ulp_adc_oversample) {
-    return;
-  }
-
-  uint8_t mux_state = grid_esp32_adc_mux_get_index(adc);
+  uint8_t mux_state = adc->mux_index;
   grid_esp32_adc_mux_increment(adc);
   grid_esp32_adc_mux_update(adc);
 
-  uint32_t adc_value[2] = {ulp_adc_value_0, ulp_adc_value_1};
+  uint32_t adc_value[2];
+  memcpy(adc_value, &ulp_adc_value, sizeof(adc_value));
+
+  ulp_adc_result_taken = 1;
 
   for (int i = 0; i < 2; ++i) {
 
@@ -209,7 +195,34 @@ void IRAM_ATTR grid_esp32_adc_convert() {
     adc->process_analog(&result);
   }
 
-  ulp_sum_value_0 = 0;
-  ulp_sum_value_1 = 0;
+  ulp_adc_result_ready = 0;
+}
+
+void IRAM_ATTR grid_esp32_adc_conv_nomux() {
+
+  struct grid_esp32_adc_model* adc = &grid_esp32_adc_state;
+
+  if (!adc->process_analog) {
+    return;
+  }
+
+  uint32_t adc_value[8][2];
+  memcpy(adc_value, &ulp_adc_value, sizeof(adc_value));
+
+  ulp_adc_result_taken = 1;
+
+  for (int i = 0; i < 8; ++i) {
+
+    for (int j = 0; j < 2; ++j) {
+
+      struct grid_esp32_adc_result result;
+      result.channel = j;
+      result.mux_state = i;
+      result.value = adc_value[i][j];
+
+      adc->process_analog(&result);
+    }
+  }
+
   ulp_adc_result_ready = 0;
 }

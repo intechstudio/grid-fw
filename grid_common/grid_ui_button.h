@@ -10,9 +10,18 @@ struct grid_ui_button_state {
   uint64_t last_real_time;
   double threshold;
   double hysteresis;
+  uint32_t full_range;
   uint16_t min_value;
   uint16_t max_value;
+  uint16_t trig_lo;
+  uint16_t trig_hi;
   uint16_t min_range;
+  uint16_t prev_in;
+  uint16_t curr_in;
+  uint16_t prev_out;
+  uint16_t curr_out;
+  uint64_t prev_time;
+  uint64_t curr_time;
 };
 
 void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_bit_depth, double threshold, double hysteresis);

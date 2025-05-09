@@ -10,10 +10,6 @@ enum {
   VMP_UID_COUNT,
 };
 
-char* VMP_ASSOC[] = {
-    VMP_NAME_EQ_STR_ENTRY(MAIN),
-    VMP_NAME_EQ_STR_ENTRY(TOP),
-    VMP_NAME_EQ_STR_ENTRY(BOT),
-};
+extern char* VMP_ASSOC[];
 
 #endif /* VMP_TAG_H */
