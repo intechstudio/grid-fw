@@ -241,10 +241,6 @@ void grid_port_send_usb(struct grid_port* port) {
 
   assert(port->type == GRID_PORT_USB);
 
-  if (!grid_platform_usb_serial_ready()) {
-    return;
-  }
-
   struct grid_swsr_t* tx = grid_port_get_tx(port);
 
   int ret = grid_swsr_cspn(tx, '\n');
@@ -279,7 +275,10 @@ void grid_port_send_usb(struct grid_port* port) {
     grid_port_decode_class(dec_coll, class, temp, &temp[i]);
   }
 
-  grid_platform_usb_serial_write(temp, ret + 1);
+  if (grid_platform_usb_serial_ready()) {
+
+    grid_platform_usb_serial_write(temp, ret + 1);
+  }
 }
 
 void grid_port_send_ui(struct grid_port* port) {
