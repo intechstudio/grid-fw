@@ -86,7 +86,8 @@ void grid_esp32_module_ef44_task(void* arg) {
 
   grid_esp32_adc_init(&grid_esp32_adc_state, ef44_process_analog);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, 2);
-  grid_esp32_adc_start(&grid_esp32_adc_state);
+  uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(&grid_sys_state);
+  grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
 
   elements = grid_ui_model_get_elements(&grid_ui_state);
 

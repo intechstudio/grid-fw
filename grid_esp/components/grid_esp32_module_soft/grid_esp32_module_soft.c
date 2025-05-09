@@ -82,9 +82,12 @@ void grid_esp32_module_soft_task(void* arg) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
 
+  // TODO
+  uint8_t mux_dependent = 0;
+
   grid_esp32_adc_init(&grid_esp32_adc_state, soft_process_analog);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, 2);
-  grid_esp32_adc_start(&grid_esp32_adc_state);
+  grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
 
   elements = grid_ui_model_get_elements(&grid_ui_state);
 

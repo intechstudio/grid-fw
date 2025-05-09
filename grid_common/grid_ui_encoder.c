@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "grid_ain.h"
+#include "grid_math.h"
 #include "grid_platform.h"
 #include "grid_sys.h"
 #include "grid_ui_button.h"
@@ -151,12 +152,6 @@ int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uin
   }
 
   return delta;
-}
-
-int32_t clampi32(int32_t x, int32_t a, int32_t b) {
-
-  const int32_t t = x < a ? a : x;
-  return t > b ? b : t;
 }
 
 uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta) {

@@ -238,7 +238,7 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_el
   struct grid_ui_template_buffer* this = NULL;
   struct grid_ui_template_buffer* prev = ele->template_buffer_list_head;
 
-  this = malloc(sizeof(struct grid_ui_template_buffer));
+  this = grid_platform_allocate_volatile(sizeof(struct grid_ui_template_buffer));
 
   // grid_platform_printf("Template Buffer Create %x \r\n", this);
 
