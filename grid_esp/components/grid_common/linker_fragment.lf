@@ -8,11 +8,9 @@ entries:
     grid_math (noflash)        # places all code/read-only data under IRAM/DRAM
     grid_ui_button (noflash)   # places all code/read-only data under IRAM/DRAM
     grid_ui_endless (noflash)  # places all code/read-only data under IRAM/DRAM
+    grid_ui_encoder (noflash)  # places all code/read-only data under IRAM/DRAM
     grid_ui_potmeter (noflash) # places all code/read-only data under IRAM/DRAM
     grid_rollid (noflash)      # places all code/read-only data under IRAM/DRAM
     grid_transport (noflash)   # places all code/read-only data under IRAM/DRAM
     grid_port (noflash)        # places all code/read-only data under IRAM/DRAM
     grid_swsr (noflash)        # places all code/read-only data under IRAM/DRAM
-    grid_ui_button (noflash)   # places all code/read-only data under IRAM/DRAM
-    grid_ui_endless (noflash)  # places all code/read-only data under IRAM/DRAM
-    grid_ui_potmeter (noflash) # places all code/read-only data under IRAM/DRAM
