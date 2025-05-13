@@ -59,21 +59,16 @@ void IRAM_ATTR ef44_process_analog(void* user) {
   }
 }
 
-void IRAM_ATTR ef44_process_encoder(spi_transaction_t* trans) {
+void IRAM_ATTR ef44_process_encoder(void* dma_buf) {
 
   static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_EF44_ENC_NUM] = {2, 3, 0, 1};
 
   // Skip hwcfg byte
-  uint8_t* spi_rx_buffer = &((uint8_t*)trans->rx_buffer)[1];
-
-  struct grid_esp32_encoder_result result = {0};
-  for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM / 2; ++i) {
-    result.bytes[i] = spi_rx_buffer[i];
-  }
+  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
 
   for (uint8_t j = 0; j < GRID_MODULE_EF44_ENC_NUM; ++j) {
 
-    uint8_t value = (result.bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
+    uint8_t value = (bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
     uint8_t idx = encoder_lookup[j];
     struct grid_ui_element* ele = &elements[idx];
 
@@ -90,8 +85,7 @@ void grid_esp32_module_ef44_task(void* arg) {
   memset(potmeter_last_real_time, 0, GRID_MODULE_EF44_POT_NUM * sizeof(uint64_t));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
-  grid_esp32_encoder_init(&grid_esp32_encoder_state, ef44_process_encoder);
-  grid_esp32_encoder_start(&grid_esp32_encoder_state);
+  grid_esp32_encoder_init(&grid_esp32_encoder_state, 1, ef44_process_encoder);
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EF44_ND_RevD;
   int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {

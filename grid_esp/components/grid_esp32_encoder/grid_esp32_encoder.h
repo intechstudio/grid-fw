@@ -15,12 +15,12 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
-#include "driver/spi_master.h"
+#include "driver/i2s_tdm.h"
 
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
-#include "rom/ets_sys.h" // For ets_printf
+#include "rom/ets_sys.h"
 
 #include "driver/gptimer.h"
 #include "grid_esp32_pins.h"
@@ -36,38 +36,25 @@ extern "C" {
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
-#define SPI_ENCODER_HOST SPI3_HOST
-#define GRID_ESP32_ENCODER_BUFFER_SIZE 14
-
-#define ENCODER_BUFFER_SIZE GRID_ESP32_ENCODER_BUFFER_SIZE * 24 // 32-bit aligned size
-#define ENCODER_BUFFER_TYPE RINGBUF_TYPE_NOSPLIT
-
-struct grid_esp32_encoder_result {
-
-  uint8_t bytes[GRID_ESP32_ENCODER_BUFFER_SIZE];
+enum {
+  GRID_ESP32_ENCODER_I2S_SRATE = 2000,
 };
+
+typedef void (*grid_process_encoder_t)(void* user);
 
 struct grid_esp32_encoder_model {
 
-  spi_host_device_t spi_host;
-  spi_device_handle_t spi_device_handle;
-  spi_transaction_t transaction;
+  i2s_chan_handle_t rx_chan;
 
-  uint8_t* rx_buffer;
-  uint8_t* tx_buffer;
+  uint32_t dma_frame_div;
+  uint32_t dma_frame_count;
+
+  grid_process_encoder_t process_encoder;
 };
 
 extern struct grid_esp32_encoder_model grid_esp32_encoder_state;
 
-void grid_esp32_encoder_pins_init(void);
-void grid_esp32_encoder_latch_data(void);
-
-void grid_esp32_encoder_spi_init(struct grid_esp32_encoder_model* encoder, void (*post_trans_cb)(spi_transaction_t*));
-void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, void (*post_trans_cb)(spi_transaction_t*));
-
-void grid_esp32_encoder_start(struct grid_esp32_encoder_model* encoder);
-
-void grid_esp32_encoder_spi_start_transfer(struct grid_esp32_encoder_model* encoder);
+void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, uint32_t divider, grid_process_encoder_t process_encoder);
 
 #ifdef __cplusplus
 }

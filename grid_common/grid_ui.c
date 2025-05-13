@@ -457,23 +457,6 @@ void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t pa
 
 uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui) { return ui->page_change_enabled; }
 
-struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t event_type) {
-
-  if (ele == NULL) {
-    return NULL;
-  }
-
-  // uint8_t event_index = 255;
-
-  for (uint8_t i = 0; i < ele->event_list_length; i++) {
-    if (ele->event_list[i].type == event_type) {
-      return &ele->event_list[i];
-    }
-  }
-
-  return NULL;
-}
-
 uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* action_string) {
 
   // struct grid_ui_element* ele = eve->parent;
@@ -723,14 +706,6 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
   }
 
   return 0;
-}
-
-void grid_ui_event_trigger(struct grid_ui_event* eve) {
-
-  if (eve != NULL) {
-
-    eve->trigger = GRID_UI_STATUS_TRIGGERED;
-  }
 }
 
 void grid_ui_event_trigger_local(struct grid_ui_event* eve) {

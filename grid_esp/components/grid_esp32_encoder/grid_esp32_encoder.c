@@ -10,120 +10,68 @@
 
 struct grid_esp32_encoder_model DRAM_ATTR grid_esp32_encoder_state;
 
-void grid_esp32_encoder_pins_init(void) {
+static IRAM_ATTR bool i2s_recv_callback(i2s_chan_handle_t handle, i2s_event_data_t* event, void* user_ctx) {
 
-  gpio_set_pull_mode(GRID_ESP32_PINS_HWCFG_DATA, GPIO_PULLUP_ONLY);
-  gpio_set_pull_mode(GRID_ESP32_PINS_HWCFG_CLOCK, GPIO_PULLUP_ONLY);
+  struct grid_esp32_encoder_model* encoder = user_ctx;
 
-  gpio_set_direction(GRID_ESP32_PINS_HWCFG_CLOCK, GPIO_MODE_OUTPUT);
-  gpio_set_direction(GRID_ESP32_PINS_HWCFG_SHIFT, GPIO_MODE_OUTPUT);
-  gpio_set_direction(GRID_ESP32_PINS_HWCFG_DATA, GPIO_MODE_INPUT);
+  ++encoder->dma_frame_count;
+
+  if (encoder->dma_frame_count < encoder->dma_frame_div) {
+    return true;
+  }
+
+  encoder->dma_frame_count = 0;
+
+  encoder->process_encoder(event->dma_buf);
+
+  return true;
 }
 
-void grid_esp32_encoder_spi_init(struct grid_esp32_encoder_model* encoder, void (*post_trans_cb)(spi_transaction_t*)) {
+void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, uint32_t divider, grid_process_encoder_t process_encoder) {
 
-  const spi_bus_config_t buscfg = {
-      .mosi_io_num = -1, // unused pin
-      .miso_io_num = GRID_ESP32_PINS_HWCFG_DATA,
-      .sclk_io_num = GRID_ESP32_PINS_HWCFG_CLOCK,
-      .quadwp_io_num = -1,
-      .quadhd_io_num = -1,
+  assert(GRID_ESP32_ENCODER_I2S_SRATE % divider == 0);
+  encoder->dma_frame_div = divider;
+  encoder->dma_frame_count = 0;
+
+  assert(process_encoder);
+  encoder->process_encoder = process_encoder;
+
+  i2s_chan_config_t rx_chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
+  rx_chan_cfg.dma_frame_num = 1;
+
+  ESP_ERROR_CHECK(i2s_new_channel(&rx_chan_cfg, NULL, &encoder->rx_chan));
+
+  i2s_tdm_config_t rx_tdm_cfg = {
+      .clk_cfg = I2S_TDM_CLK_DEFAULT_CONFIG(GRID_ESP32_ENCODER_I2S_SRATE),
+      .slot_cfg = I2S_TDM_PCM_SHORT_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_STEREO, I2S_TDM_SLOT0 | I2S_TDM_SLOT1 | I2S_TDM_SLOT2 | I2S_TDM_SLOT3),
+      .gpio_cfg =
+          {
+              .mclk = I2S_GPIO_UNUSED,
+              .bclk = GRID_ESP32_PINS_HWCFG_CLOCK,
+              .ws = GRID_ESP32_PINS_HWCFG_SHIFT,
+              .dout = I2S_GPIO_UNUSED,
+              .din = GRID_ESP32_PINS_HWCFG_DATA,
+              .invert_flags =
+                  {
+                      .mclk_inv = false,
+                      .bclk_inv = true,
+                      .ws_inv = true,
+                  },
+          },
   };
 
-  const spi_device_interface_config_t devcfg = {
-      .command_bits = 0,
-      .address_bits = 0,
-      .dummy_bits = 0,
-      .clock_speed_hz = 4000000, // was 500k
-      .duty_cycle_pos = 128,     // 50% duty cycle
-      .mode = 2,
-      .spics_io_num = -1,
-      .cs_ena_posttrans = 3, // Keep the CS low 3 cycles after transaction, to stop slave from
-                             // missing the last bit when CS has less propagation delay than CLK
-      .queue_size = 3,
-      .post_cb = post_trans_cb,
-      .flags = ESP_INTR_FLAG_IRAM,
+  rx_tdm_cfg.slot_cfg.big_endian = true;
+
+  rx_tdm_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_512;
+  ESP_ERROR_CHECK(i2s_channel_init_tdm_mode(encoder->rx_chan, &rx_tdm_cfg));
+
+  i2s_event_callbacks_t cbs = {
+      .on_recv = i2s_recv_callback,
+      .on_recv_q_ovf = NULL,
+      .on_sent = NULL,
+      .on_send_q_ovf = NULL,
   };
+  ESP_ERROR_CHECK(i2s_channel_register_event_callback(encoder->rx_chan, &cbs, encoder));
 
-  esp_err_t ret = spi_bus_initialize(encoder->spi_host, &buscfg, SPI_DMA_CH_AUTO);
-  ESP_ERROR_CHECK(ret);
-
-  ret = spi_bus_add_device(encoder->spi_host, &devcfg, &encoder->spi_device_handle);
-  ESP_ERROR_CHECK(ret);
-
-  // Configuration for the SPI slave interface
-}
-
-void IRAM_ATTR grid_esp32_encoder_latch_data(void) {
-
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_HWCFG_SHIFT, 0);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_HWCFG_SHIFT, 1);
-}
-
-void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, void (*post_trans_cb)(spi_transaction_t*)) {
-
-  encoder->spi_host = SPI_ENCODER_HOST;
-  encoder->spi_device_handle = NULL;
-
-  encoder->rx_buffer = (uint8_t*)malloc(GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
-  encoder->tx_buffer = (uint8_t*)malloc(GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
-
-  memset(encoder->rx_buffer, 0, GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
-  memset(encoder->tx_buffer, 0, GRID_ESP32_ENCODER_BUFFER_SIZE * sizeof(uint8_t));
-
-  memset(&encoder->transaction, 0, sizeof(encoder->transaction));
-
-  encoder->transaction.tx_buffer = encoder->tx_buffer;
-  encoder->transaction.rx_buffer = encoder->rx_buffer;
-  encoder->transaction.length = GRID_ESP32_ENCODER_BUFFER_SIZE * 8;
-
-  grid_esp32_encoder_pins_init();
-
-  grid_esp32_encoder_spi_init(encoder, post_trans_cb);
-
-  return;
-}
-
-static bool IRAM_ATTR example_timer_on_alarm_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t* edata, void* user_ctx) {
-  BaseType_t high_task_awoken = pdFALSE;
-
-  struct grid_esp32_encoder_model* encoder = (struct grid_esp32_encoder_model*)user_ctx;
-  grid_esp32_encoder_spi_start_transfer(encoder);
-
-  return high_task_awoken == pdTRUE;
-}
-
-void grid_esp32_encoder_start(struct grid_esp32_encoder_model* encoder) {
-
-  // setup the periodic timer that will trigger the spi transaction
-
-  ESP_LOGI("ENC", "Create timer handle");
-  gptimer_handle_t gptimer = NULL;
-  gptimer_config_t timer_config = {
-      .clk_src = GPTIMER_CLK_SRC_DEFAULT,
-      .direction = GPTIMER_COUNT_UP,
-      .resolution_hz = 1000000, // 1MHz, 1 tick=1us
-  };
-  ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
-
-  gptimer_event_callbacks_t cbs = {
-      .on_alarm = example_timer_on_alarm_cb, // register user callback
-  };
-  ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, (void*)encoder));
-
-  gptimer_alarm_config_t alarm_config = {
-      .reload_count = 0,                  // counter will reload with 0 on alarm event
-      .alarm_count = 250,                 // period = 1s @resolution 1MHz
-      .flags.auto_reload_on_alarm = true, // enable auto-reload
-  };
-  ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
-
-  ESP_ERROR_CHECK(gptimer_enable(gptimer));
-  ESP_ERROR_CHECK(gptimer_start(gptimer));
-}
-
-void IRAM_ATTR grid_esp32_encoder_spi_start_transfer(struct grid_esp32_encoder_model* encoder) {
-
-  grid_esp32_encoder_latch_data();
-  spi_device_queue_trans(encoder->spi_device_handle, &encoder->transaction, 0);
+  ESP_ERROR_CHECK(i2s_channel_enable(encoder->rx_chan));
 }
