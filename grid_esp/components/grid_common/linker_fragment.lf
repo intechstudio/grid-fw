@@ -14,3 +14,4 @@ entries:
     grid_transport (noflash)   # places all code/read-only data under IRAM/DRAM
     grid_port (noflash)        # places all code/read-only data under IRAM/DRAM
     grid_swsr (noflash)        # places all code/read-only data under IRAM/DRAM
+    grid_noflash (noflash)     # places all code/read-only data under IRAM/DRAM
