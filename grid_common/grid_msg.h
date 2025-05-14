@@ -103,6 +103,7 @@ void grid_msg_packet_body_set_parameter(struct grid_msg_packet* packet, uint32_t
 void grid_msg_packet_body_append_text(struct grid_msg_packet* packet, char* string);
 
 void grid_msg_packet_body_append_printf(struct grid_msg_packet* packet, char const* fmt, ...);
+int grid_msg_packet_body_append_nprintf(struct grid_msg_packet* packet, char const* fmt, ...);
 void grid_msg_packet_body_append_parameter(struct grid_msg_packet* packet, uint8_t parameter_offset, uint8_t parameter_length, uint32_t value);
 
 void grid_msg_packet_to_chunk(struct grid_msg_packet* packet, char* chunk);
