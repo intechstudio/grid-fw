@@ -347,11 +347,6 @@ int l_grid_cat(lua_State* L) {
     return 0;
   }
 
-  if (lua_type(L, 1) != LUA_TNUMBER && lua_type(L, 1) != LUA_TNIL) {
-    grid_port_debug_printf("Invalid arguments! %s", GRID_LUA_FNC_G_IMMEDIATE_SEND_usage);
-    return 0;
-  }
-
   uint8_t x = GRID_PARAMETER_GLOBAL_POSITION;
   uint8_t y = GRID_PARAMETER_GLOBAL_POSITION;
 
