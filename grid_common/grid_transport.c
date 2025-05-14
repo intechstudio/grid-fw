@@ -243,8 +243,14 @@ void grid_port_debug_print_text(char* str) {
 
   grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_DEBUGTEXT_frame_start);
   grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-  grid_msg_packet_body_append_printf(&pkt, encoded_str);
-  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_DEBUGTEXT_frame_end);
+
+  if (grid_msg_packet_body_append_nprintf(&pkt, "%s", encoded_str) <= 0) {
+    return;
+  }
+
+  if (grid_msg_packet_body_append_nprintf(&pkt, GRID_CLASS_DEBUGTEXT_frame_end) <= 0) {
+    return;
+  }
 
   grid_msg_packet_close(&grid_msg_state, &pkt);
   grid_transport_send_msg_packet_to_all(&grid_transport_state, &pkt);
