@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "grid_ain.h"
+#include "grid_asc.h"
 #include "grid_module.h"
 
 #include "grid_ui.h"
@@ -31,6 +32,7 @@
 
 static struct grid_ui_encoder_state* DRAM_ATTR ui_encoder_state = NULL;
 static uint64_t* DRAM_ATTR potmeter_last_real_time = NULL;
+static struct grid_asc* DRAM_ATTR asc_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR ef44_process_analog(void* user) {
@@ -44,6 +46,10 @@ void IRAM_ATTR ef44_process_analog(void* user) {
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
   uint8_t mux_position = multiplexer_lookup[lookup_index];
   struct grid_ui_element* ele = &elements[mux_position];
+
+  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+    return;
+  }
 
   if (mux_position < 4) {
 
@@ -74,8 +80,10 @@ void grid_esp32_module_ef44_task(void* arg) {
 
   ui_encoder_state = grid_platform_allocate_volatile(GRID_MODULE_EF44_ENC_NUM * sizeof(struct grid_ui_encoder_state));
   potmeter_last_real_time = grid_platform_allocate_volatile(GRID_MODULE_EF44_POT_NUM * sizeof(uint64_t));
+  asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
   memset(ui_encoder_state, 0, GRID_MODULE_EF44_ENC_NUM * sizeof(struct grid_ui_encoder_state));
   memset(potmeter_last_real_time, 0, GRID_MODULE_EF44_POT_NUM * sizeof(uint64_t));
+  memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
   grid_esp32_encoder_init(&grid_esp32_encoder_state, 1, ef44_process_encoder);
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EF44_ND_RevD;
@@ -83,6 +91,8 @@ void grid_esp32_module_ef44_task(void* arg) {
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
+
+  grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
 
   grid_esp32_adc_init(&grid_esp32_adc_state, ef44_process_analog);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, 2);
