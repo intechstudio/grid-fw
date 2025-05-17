@@ -96,6 +96,170 @@
 #include "vmp_def.h"
 #include "vmp_tag.h"
 
+#include "../../grid_common/lua_src/lua_source_collection.h"
+#include "esp_vfs.h"
+
+char content[] = "hello bello labelo";
+char content2[] = "\
+local my_library = {} \
+function my_library.add(a, b) \
+    return a + b \
+end \
+return my_library";
+
+struct file_lookup {
+
+  char fname[100];
+  size_t size;
+  size_t offset;
+  void* ptr
+};
+
+struct file_lookup library[10] = {0};
+
+void debug(struct file_lookup* lib, int length) {
+
+  for (int i = 0; i < length; i++) {
+    printf("%d | %p | %zu | %s | %d\n", i, lib[i].ptr, lib[i].size, lib[i].fname, (lib[i].ptr) ? (((char*)lib[i].ptr)[0]) : -1);
+  }
+}
+
+ssize_t capture_fs_write(int fd, const void* data, size_t size) {
+
+  if (library[fd].size == 0) {
+    library[fd].ptr = data;
+  }
+
+  library[fd].size += size;
+
+  printf("Writing %zu bytes to fd %d\n", size, fd);
+  debug(library, 10);
+  return size;
+}
+
+ssize_t capture_fs_read(int fd, void* dst, size_t size) {
+  printf("Reading %zu bytes from fd %d (%s)\n", size, fd, library[fd].fname);
+  printf("dst: %p, offset: %d, size: %d\n", dst, library[fd].offset, library[fd].size);
+  debug(library, 10);
+
+  if (!dst || fd < 0 || !library[fd].ptr)
+    return -1;
+
+  size_t bytes_read = 0;
+  size_t available = library[fd].size - library[fd].offset;
+
+  size_t to_read = (size < available) ? size : available;
+
+  memcpy(dst, (uint8_t*)library[fd].ptr + library[fd].offset, to_read);
+
+  library[fd].offset += to_read;
+  return to_read;
+}
+
+int capture_fs_open(const char* path, int flags, int mode) {
+  debug(library, 10);
+  if (flags == 0) {
+    printf("open for read");
+    for (int i = 0; i < 10; i++) {
+
+      printf("compare: %s %s\n", &path[1], library[i].fname);
+      if (strcmp(&path[1], library[i].fname) == 0) {
+        printf("FOUND %d\n", i);
+        library[i].offset = 0;
+        return i;
+      }
+    }
+
+    printf("NOT FOUND:(\n");
+    return 0;
+  }
+
+  static int fd = 0;
+  fd++;
+  printf("Opening path %s, fd is %d flags %d\n", path, fd, flags);
+  sprintf(library[fd].fname, "%s", &path[1]);
+  debug(library, 10);
+  return fd;
+}
+
+int capture_fs_close(int fd) {
+  printf("Closing %d\n", fd);
+  debug(library, 10);
+  return 0;
+}
+
+off_t capture_fs_lseek(int fd, off_t offset, int whence) {
+  if (fd < 0)
+    return -1;
+
+  printf("\nTRY TO SEEK IN FILE\n\n");
+
+  size_t new_offset;
+  switch (whence) {
+  case SEEK_SET:
+    new_offset = offset;
+    break;
+  case SEEK_CUR:
+    new_offset = library[fd].offset + offset;
+    break;
+  case SEEK_END:
+    new_offset = library[fd].size + offset;
+    break;
+  default:
+    return -1;
+  }
+
+  if (new_offset > library[fd].size)
+    return -1;
+
+  library[fd].offset = new_offset;
+  return new_offset;
+}
+
+esp_vfs_t capture_fs = {
+  flags : ESP_VFS_FLAG_DEFAULT,
+  write : capture_fs_write, // Write function
+  lseek : capture_fs_lseek, // Seek function
+  read : capture_fs_read,   // Read function
+  pread : NULL,             // Not implemented
+  pwrite : NULL,            // Not implemented
+  open : capture_fs_open,   // Open function
+  close : capture_fs_close, // Close function
+  fstat : NULL,             // Below: not implemented
+  stat : NULL,
+  link : NULL,
+  unlink : NULL,
+  rename : NULL,
+  opendir : NULL,
+  readdir : NULL,
+  readdir_r : NULL,
+  telldir : NULL,
+  seekdir : NULL,
+  closedir : NULL,
+  mkdir : NULL,
+  rmdir : NULL,
+  fcntl : NULL,
+  ioctl : NULL,
+  fsync : NULL,
+  access : NULL,
+  truncate : NULL,
+  ftruncate : NULL,
+  utime : NULL,
+  tcsetattr : NULL,
+  tcgetattr : NULL,
+  tcdrain : NULL,
+  tcflush : NULL,
+  tcflow : NULL,
+  tcgetsid : NULL,
+  tcsendbreak : NULL,
+  start_select : NULL,
+  socket_select : NULL,
+  stop_socket_select : NULL,
+  stop_socket_select_isr : NULL,
+  get_socket_select_semaphore : NULL,
+  end_select : NULL
+};
+
 static const char* TAG = "main";
 
 #include "tinyusb.h"
@@ -674,6 +838,23 @@ void app_main(void) {
       .fwrite = vmp_fwrite,
   };
   bool vmp_flushed = false;
+
+  printf("Creating virtual FS\n");
+  ESP_ERROR_CHECK(esp_vfs_register("/capture", &capture_fs, NULL));
+
+  printf("Opening file\n");
+  FILE* capture = fopen("/capture/file.lua", "a+");
+
+  fputs(content2, capture);
+  uint8_t buf[1000] = {0};
+  fread(buf, 1, 1, capture);
+  // fclose(capture);
+  printf("The file was: \n%s\n", buf);
+
+  FILE* mylibrary = fopen("/capture/mylibrary.lua", "wb");
+  fwrite(GRID_LUA_FNC_G_MYLIBRARY_source, 1, GRID_LUA_FNC_G_MYLIBRARY_length - 1, mylibrary);
+  fflush(mylibrary);
+  // fclose(mylibrary);
 
   while (1) {
 
