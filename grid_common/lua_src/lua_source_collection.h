@@ -34,4 +34,8 @@
 #include "toml.h"
 #define GRID_LUA_FNC_G_TOML_source grid_lua_src_toml_lua
 
+#include "mylibrary.h"
+#define GRID_LUA_FNC_G_MYLIBRARY_source grid_lua_src_mylibrary_lua
+#define GRID_LUA_FNC_G_MYLIBRARY_length grid_lua_src_mylibrary_lua_len
+
 #endif

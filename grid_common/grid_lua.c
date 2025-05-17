@@ -111,6 +111,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code) {
       // grid_platform_printf("LUA not OK: %s \r\n", code);
       grid_lua_clear_stde(lua);
       stpncpy(lua->stde, lua_tostring(lua->L, -1), lua->stde_len - 1);
+      printf("%s\n", lua_tostring(lua->L, -1));
       is_ok = 0;
     }
 
@@ -121,6 +122,7 @@ uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code) {
 
     grid_lua_clear_stde(lua);
     stpncpy(lua->stde, lua_tostring(lua->L, -1), lua->stde_len - 1);
+    printf("%s\n", lua_tostring(lua->L, -1));
     is_ok = 0;
 
     lua_pop(lua->L, 1); // Remove error message from the stack
@@ -227,7 +229,7 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
   // luaL_openlibs(lua->L);
 
   static const luaL_Reg loadedlibs[] = {{LUA_GNAME, luaopen_base},
-                                        //{LUA_LOADLIBNAME, luaopen_package},
+                                        {LUA_LOADLIBNAME, luaopen_package},
                                         //{LUA_COLIBNAME, luaopen_coroutine},
                                         {LUA_TABLIBNAME, luaopen_table},
                                         {LUA_IOLIBNAME, luaopen_io},
@@ -248,6 +250,7 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
   // grid_lua_debug_memory_stats(lua, "Openlibs");
 
   grid_lua_semaphore_release(lua);
+  grid_lua_dostring(lua, "package.path = '/capture/?.lua'");
   grid_lua_dostring(lua, GRID_LUA_FNC_G_LOOKUP_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_LIMIT_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_ELEMENTNAME_source);

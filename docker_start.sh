@@ -11,4 +11,4 @@ else
     exit 1
 fi
 
-$CONTAINER_TOOL run --privileged --network=host -it -v /dev:/dev -v $PWD:/project -w /project/ idf-pico-merged
+$CONTAINER_TOOL run --group-add keep-groups --network=host -it -v /dev:/dev -v $PWD:/project -w /project/ idf-pico-merged
