@@ -49,7 +49,7 @@ void IRAM_ATTR po16_process_analog(void* user) {
   if (mux_position < 16) {
 
     uint16_t calibrated;
-    grid_cal_next(&grid_cal_state, mux_position, result->value, &calibrated);
+    grid_cal_pot_next(&grid_cal_state.potmeter, mux_position, result->value, &calibrated);
     grid_ui_potmeter_store_input(ele, mux_position, &potmeter_last_real_time[mux_position], calibrated, 12);
   }
 }
@@ -59,13 +59,17 @@ void grid_esp32_module_po16_task(void* arg) {
   potmeter_last_real_time = grid_platform_allocate_volatile(GRID_MODULE_PO16_POT_NUM * sizeof(uint64_t));
   memset(potmeter_last_real_time, 0, GRID_MODULE_PO16_POT_NUM * sizeof(uint64_t));
 
-  grid_cal_init(&grid_cal_state, 12, grid_ui_state.element_list_length);
-  grid_cal_enable_range(&grid_cal_state, 0, 16);
-
   grid_config_init(&grid_config_state, &grid_cal_state);
 
-  grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL);
-  while (grid_ui_state.bulk_status == GRID_UI_BULK_CONFREAD_PROGRESS) {
+  struct grid_cal_pot* cal_pot = &grid_cal_state.potmeter;
+  grid_cal_pot_init(cal_pot, 12, grid_ui_state.element_list_length);
+  grid_cal_pot_enable_range(cal_pot, 0, 16);
+
+  while (grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
+    taskYIELD();
+  }
+
+  while (grid_ui_bulk_is_in_progress(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS)) {
     taskYIELD();
   }
 
