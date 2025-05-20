@@ -1419,14 +1419,15 @@ int l_grid_cat(lua_State* L) {
     } else { // phase == -1 means it should be automatically calculated based on
              // min-max values
 
-      struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, param[0]);
+      uint8_t num = param[0];
+      uint8_t layer = param[1];
+
+      struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, num);
       uint8_t ele_type = ele->type;
 
       int32_t min = 0;
       int32_t max = 0;
       int32_t val = 0;
-
-      // grid_platform_printf("Param0: %d ", param[0]);
 
       if (ele_type == GRID_PARAMETER_ELEMENT_POTMETER) {
 
@@ -1435,9 +1436,16 @@ int l_grid_cat(lua_State* L) {
         val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_P_POTMETER_VALUE_index);
       } else if (ele_type == GRID_PARAMETER_ELEMENT_ENCODER) {
 
-        min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MIN_index);
-        max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MAX_index);
-        val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index);
+        if (layer == 1) {
+          // button layer
+          min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_B_BUTTON_MIN_index);
+          max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_B_BUTTON_MAX_index);
+          val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_B_BUTTON_VALUE_index);
+        } else {
+          min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MIN_index);
+          max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MAX_index);
+          val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index);
+        }
       } else if (ele_type == GRID_PARAMETER_ELEMENT_ENDLESS) {
 
         min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_MIN_index);
