@@ -188,38 +188,10 @@ int capture_fs_close(int fd) {
   return 0;
 }
 
-off_t capture_fs_lseek(int fd, off_t offset, int whence) {
-  if (fd < 0)
-    return -1;
-
-  printf("\nTRY TO SEEK IN FILE\n\n");
-
-  size_t new_offset;
-  switch (whence) {
-  case SEEK_SET:
-    new_offset = offset;
-    break;
-  case SEEK_CUR:
-    new_offset = library[fd].offset + offset;
-    break;
-  case SEEK_END:
-    new_offset = library[fd].size + offset;
-    break;
-  default:
-    return -1;
-  }
-
-  if (new_offset > library[fd].size)
-    return -1;
-
-  library[fd].offset = new_offset;
-  return new_offset;
-}
-
 esp_vfs_t capture_fs = {
   flags : ESP_VFS_FLAG_DEFAULT,
   write : capture_fs_write, // Write function
-  lseek : capture_fs_lseek, // Seek function
+  lseek : NULL,             // Not implemented
   read : capture_fs_read,   // Read function
   pread : NULL,             // Not implemented
   pwrite : NULL,            // Not implemented
