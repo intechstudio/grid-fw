@@ -36,10 +36,7 @@ struct grid_midi_event_desc {
   uint8_t byte3;
 };
 
-void grid_midi_buffer_init(struct grid_midi_event_desc* buf, uint16_t length);
-
-// Midi tx buffer
-#define GRID_MIDI_TX_BUFFER_length 100
+#define GRID_MIDI_TX_BUFFER_length 128
 
 extern struct grid_midi_event_desc grid_midi_tx_buffer[GRID_MIDI_TX_BUFFER_length];
 extern uint16_t grid_midi_tx_write_index;
@@ -48,8 +45,7 @@ extern uint16_t grid_midi_tx_read_index;
 uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event);
 void grid_midi_tx_pop();
 
-// Midi rx buffer
-#define GRID_MIDI_RX_BUFFER_length 100
+#define GRID_MIDI_RX_BUFFER_length 128
 
 extern struct grid_midi_event_desc grid_midi_rx_buffer[GRID_MIDI_RX_BUFFER_length];
 extern uint16_t grid_midi_rx_write_index;

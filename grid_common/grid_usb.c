@@ -11,26 +11,19 @@
 
 #include "grid_msg.h"
 #include "grid_platform.h"
+#include "grid_swsr.h"
 
-struct grid_midi_event_desc grid_midi_tx_buffer[GRID_MIDI_TX_BUFFER_length];
-
-uint16_t grid_midi_tx_write_index;
-uint16_t grid_midi_tx_read_index;
-
-struct grid_midi_event_desc grid_midi_rx_buffer[GRID_MIDI_RX_BUFFER_length];
-uint16_t grid_midi_rx_write_index;
-uint16_t grid_midi_rx_read_index;
+struct grid_swsr_t grid_midi_tx;
+struct grid_swsr_t grid_midi_rx;
 
 struct grid_usb_keyboard_model grid_usb_keyboard_state;
 
 void grid_usb_midi_buffer_init() {
-  grid_midi_tx_write_index = 0;
-  grid_midi_tx_read_index = 0;
-  grid_midi_buffer_init(grid_midi_tx_buffer, GRID_MIDI_TX_BUFFER_length);
 
-  grid_midi_rx_write_index = 0;
-  grid_midi_rx_read_index = 0;
-  grid_midi_buffer_init(grid_midi_rx_buffer, GRID_MIDI_RX_BUFFER_length);
+  size_t typesize = sizeof(struct grid_midi_event_desc);
+
+  assert(grid_swsr_malloc(&grid_midi_tx, GRID_MIDI_TX_BUFFER_length * typesize) == 0);
+  assert(grid_swsr_malloc(&grid_midi_rx, GRID_MIDI_RX_BUFFER_length * typesize) == 0);
 }
 
 void grid_usb_keyboard_model_init(struct grid_usb_keyboard_model* kb, uint8_t buffer_length) {
@@ -181,58 +174,42 @@ void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid
   }
 }
 
-void grid_midi_buffer_init(struct grid_midi_event_desc* buf, uint16_t length) {
-
-  for (uint16_t i = 0; i < length; i++) {
-    buf[i].byte0 = 0;
-    buf[i].byte1 = 0;
-    buf[i].byte2 = 0;
-    buf[i].byte3 = 0;
-  }
-}
-
 uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event) {
 
-  grid_midi_tx_buffer[grid_midi_tx_write_index] = midi_event;
-  grid_midi_tx_write_index = (grid_midi_tx_write_index + 1) % GRID_MIDI_TX_BUFFER_length;
+  uint8_t dropped = 0;
 
-  uint32_t space_in_buffer = (grid_midi_tx_read_index - grid_midi_tx_write_index + GRID_MIDI_TX_BUFFER_length) % GRID_MIDI_TX_BUFFER_length;
+  if (!grid_swsr_writable(&grid_midi_tx, sizeof(struct grid_midi_event_desc))) {
 
-  uint8_t return_packet_was_dropped = 0;
+    // Pop as many bytes as we would like to push, to make space
+    // (this modifies the read address, and is done under the assumption that
+    // there are no concurrent reads and writes in the context of midi tx)
+    grid_swsr_read(&grid_midi_tx, NULL, sizeof(struct grid_midi_event_desc));
 
-  if (space_in_buffer == 0) {
-    return_packet_was_dropped = 1;
-    // Increment the read index to drop latest packet and make space for a new
-    // one.
-    grid_midi_tx_read_index = (grid_midi_tx_read_index + 1) % GRID_MIDI_TX_BUFFER_length;
+    dropped = 1;
   }
 
-  // printf("W: %d %d : %d\r\n", grid_midi_tx_write_index,
-  // grid_midi_tx_read_index, space_in_buffer);
+  grid_swsr_write(&grid_midi_tx, &midi_event, sizeof(struct grid_midi_event_desc));
 
-  return return_packet_was_dropped;
+  return dropped;
 }
 
 void grid_midi_tx_pop() {
 
-  if (grid_midi_tx_read_index != grid_midi_tx_write_index) {
-
-    if (grid_platform_usb_midi_write_status() != 1) {
-
-      uint8_t byte0 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte0;
-      uint8_t byte1 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte1;
-      uint8_t byte2 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte2;
-      uint8_t byte3 = grid_midi_tx_buffer[grid_midi_tx_read_index].byte3;
-
-      grid_midi_tx_read_index = (grid_midi_tx_read_index + 1) % GRID_MIDI_TX_BUFFER_length;
-      grid_platform_usb_midi_write(byte0, byte1, byte2, byte3);
-    }
+  if (!grid_swsr_readable(&grid_midi_tx, sizeof(struct grid_midi_event_desc))) {
+    return;
   }
+
+  if (grid_platform_usb_midi_write_status() == 1) {
+    return;
+  }
+
+  struct grid_midi_event_desc event;
+  grid_swsr_read(&grid_midi_tx, &event, sizeof(struct grid_midi_event_desc));
+
+  grid_platform_usb_midi_write(event.byte0, event.byte1, event.byte2, event.byte3);
 }
 
 void grid_midi_rx_push(struct grid_midi_event_desc midi_event) {
-
-  // MIDI RX IS DISABLED
 
   if (grid_sys_get_midirx_any_state(&grid_sys_state) == 0) {
     return;
@@ -240,98 +217,65 @@ void grid_midi_rx_push(struct grid_midi_event_desc midi_event) {
 
   if (grid_sys_get_midirx_sync_state(&grid_sys_state) == 0) {
 
+    // midi clock message
     if (midi_event.byte0 == 8 && midi_event.byte1 == 240) {
-      // midi clock message was received
       return;
     }
 
+    // midi start message
     if (midi_event.byte0 == 10 && midi_event.byte1 == 240) {
-      // midi start message was received
       return;
     }
 
+    // midi stop message
     if (midi_event.byte0 == 12 && midi_event.byte1 == 240) {
-      // midi stop message was received
       return;
     }
   }
 
-  // reduce commandchange time resolution HERE!!
-
-  //       W              R
-  //[0][1][2][3][4][5][6][7][8][9][10]
-
-  // grid_port_debug_printf("PUSH: %d %d", grid_midi_rx_write_index,
-  // grid_midi_rx_read_index);
-
-  for (uint16_t i = 0; i < GRID_MIDI_RX_BUFFER_length; i++) {
-
-    if (grid_midi_rx_write_index - i == grid_midi_rx_read_index) {
-
-      grid_midi_rx_buffer[grid_midi_rx_write_index] = midi_event;
-      grid_midi_rx_write_index = (grid_midi_rx_write_index + 1) % GRID_MIDI_RX_BUFFER_length;
-      break; // return
-    }
-
-    if (grid_midi_rx_buffer[grid_midi_rx_write_index - i].byte2 != GRID_PARAMETER_MIDI_CONTROLCHANGE)
-      continue;
-
-    if (grid_midi_rx_buffer[grid_midi_rx_write_index - i].byte0 != midi_event.byte0)
-      continue;
-    if (grid_midi_rx_buffer[grid_midi_rx_write_index - i].byte1 != midi_event.byte1)
-      continue;
-    if (grid_midi_rx_buffer[grid_midi_rx_write_index - i].byte2 != midi_event.byte2)
-      continue;
-
-    // it's a match, update to the newer value!!
-    // grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 64);
-    grid_midi_rx_buffer[grid_midi_rx_write_index - i].byte3 = midi_event.byte3;
-
-    break; // return;
+  if (!grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
+    return;
   }
+
+  grid_swsr_write(&grid_midi_rx, &midi_event, sizeof(struct grid_midi_event_desc));
 }
 
 void grid_midi_rx_pop() {
 
-  if (grid_midi_rx_read_index != grid_midi_rx_write_index) {
+  if (!grid_swsr_readable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
+    return;
+  }
 
-    // grid_port_debug_printf("POP: %d %d", grid_midi_rx_write_index,
-    // grid_midi_rx_read_index);
+  uint8_t x = GRID_PARAMETER_GLOBAL_POSITION;
+  uint8_t y = GRID_PARAMETER_GLOBAL_POSITION;
 
-    // Combine multiple midi messages into one packet if possible
+  struct grid_msg_packet message;
+  grid_msg_packet_init(&grid_msg_state, &message, x, y);
 
-    // SX SY Global, DX DY Global
-    struct grid_msg_packet message;
-    grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+  grid_msg_header_set_sx(&message, x);
+  grid_msg_header_set_sy(&message, y);
 
-    grid_msg_header_set_sx(&message, GRID_PARAMETER_GLOBAL_POSITION);
-    grid_msg_header_set_sy(&message, GRID_PARAMETER_GLOBAL_POSITION);
+  // Combine up to 8 midi messages into a packet
+  for (uint8_t i = 0; i < 8; ++i) {
 
-    // combine up to 6 midi messages into a packet
-    for (uint8_t i = 0; i < 6; i++) {
-
-      if (grid_midi_rx_read_index != grid_midi_rx_write_index) {
-
-        uint8_t byte0 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte0;
-        uint8_t byte1 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte1;
-        uint8_t byte2 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte2;
-        uint8_t byte3 = grid_midi_rx_buffer[grid_midi_rx_read_index].byte3;
-
-        grid_msg_packet_body_append_printf(&message, GRID_CLASS_MIDI_frame);
-        grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-
-        grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, byte0);
-        grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, byte1);
-        grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, byte2);
-        grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, byte3);
-
-        grid_midi_rx_read_index = (grid_midi_rx_read_index + 1) % GRID_MIDI_RX_BUFFER_length;
-      }
+    if (!grid_swsr_readable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
+      break;
     }
 
-    grid_msg_packet_close(&grid_msg_state, &message);
-    grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
+    struct grid_midi_event_desc event;
+    grid_swsr_read(&grid_midi_rx, &event, sizeof(struct grid_midi_event_desc));
+
+    grid_msg_packet_body_append_printf(&message, GRID_CLASS_MIDI_frame);
+    grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+
+    grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, event.byte0);
+    grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, event.byte1);
+    grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, event.byte2);
+    grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, event.byte3);
   }
+
+  grid_msg_packet_close(&grid_msg_state, &message);
+  grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
 }
 
 uint8_t grid_usb_keyboard_tx_push(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc keyboard_event) {

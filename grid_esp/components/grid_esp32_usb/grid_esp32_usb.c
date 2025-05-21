@@ -44,8 +44,8 @@ void tud_midi_rx_cb(uint8_t itf) {
   while (tud_midi_available()) {
     read = tud_midi_packet_read(packet);
     if (read) {
-      // ets_printf("Read, Data: %02x %02x %02x %02x\r\n", packet[0], packet[1],
-      // packet[2], packet[3]);
+
+      // ets_printf("Read, Data: %02x %02x %02x %02x\r\n", packet[0], packet[1], packet[2], packet[3]);
 
       uint8_t channel = packet[1] & 0x0f;
       uint8_t command = packet[1] & 0xf0;
