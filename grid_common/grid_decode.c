@@ -420,33 +420,17 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
   uint8_t midi_param1 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, &error);
   uint8_t midi_param2 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
 
-  char rx_cb_source[200] = {0};
-  sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.midirx_cb and type(el.midirx_cb) == 'function' then el:midirx_cb({%d, %d, %d, %d}, {%d, %d, %d}) end end", midi_channel, midi_command,
-          midi_param1, midi_param2, msg_instr, sx, sy);
-  grid_lua_dostring(&grid_lua_state, rx_cb_source);
-
   if (msg_instr == GRID_INSTR_REPORT_code) {
 
-    // printf("M: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1,
-    // midi_param2);
-
-    char temp[130] = {0};
-
-    grid_lua_clear_stdo(&grid_lua_state);
-
-    // add the received midi message to the dynamic fifo and set the high water
-    // mark if necessary
-    sprintf(temp, "table.insert(midi_fifo, {%d, %d, %d, %d})", midi_channel, midi_command, midi_param1, midi_param2);
-    grid_lua_dostring(&grid_lua_state, temp);
-
-    grid_lua_clear_stdo(&grid_lua_state);
+    char rx_cb_source[200] = {0};
+    sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.midirx_cb and type(el.midirx_cb) == 'function' then el:midirx_cb({%d, %d, %d, %d}, {%d, %d, %d}) end end", midi_channel,
+            midi_command, midi_param1, midi_param2, msg_instr, sx, sy);
+    grid_lua_dostring(&grid_lua_state, rx_cb_source);
 
     struct grid_ui_element* ele = &grid_ui_state.element_list[grid_ui_state.element_list_length - 1];
-    struct grid_ui_event* eve = NULL;
+    struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_MIDIRX);
 
-    eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_MIDIRX);
     if (eve != NULL) {
-
       grid_ui_event_trigger(eve);
     }
   }

@@ -1456,15 +1456,6 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
 
         if (grid_ui_event_istriggered(eve)) {
 
-          // pop one midi rx messages from midi_fifo (array of tables) to midi
-          // (table)
-          if (eve->type == GRID_PARAMETER_EVENT_MIDIRX) {
-
-            grid_lua_dostring(&grid_lua_state, "if #midi_fifo > midi_fifo_highwater then midi_fifo_highwater = #midi_fifo end "
-                                               "local FOO = table.remove(midi_fifo, 1) midi.ch = FOO[1] "
-                                               "midi.cmd = FOO[2] midi.p1 = FOO[3] midi.p2 = FOO[4]");
-          }
-
           uint32_t offset = grid_msg_packet_body_get_length(&message);
 
           message.body_length += grid_ui_event_render_event(eve, &message.body[offset]);
@@ -1474,19 +1465,6 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
           message.body_length += grid_ui_event_render_action(eve, &message.body[offset]);
 
           grid_ui_event_reset(eve);
-
-          // retrigger midiRX event automatically if midi_fifo is not empty
-
-          if (eve->type == GRID_PARAMETER_EVENT_MIDIRX) {
-
-            char temp[110] = {0};
-
-            sprintf(temp,
-                    "if #midi_fifo > 0 then get(%d, %d) "
-                    "midi_fifo_retriggercount = midi_fifo_retriggercount+1 end",
-                    eve->parent->index, GRID_PARAMETER_EVENT_MIDIRX);
-            grid_lua_dostring(&grid_lua_state, temp);
-          }
         }
       }
     }
