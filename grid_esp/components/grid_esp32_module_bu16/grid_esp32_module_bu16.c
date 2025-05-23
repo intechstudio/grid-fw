@@ -13,6 +13,8 @@
 
 #include "grid_ain.h"
 #include "grid_asc.h"
+#include "grid_cal.h"
+#include "grid_config.h"
 #include "grid_module.h"
 #include "grid_platform.h"
 #include "grid_sys.h"
@@ -62,6 +64,25 @@ void grid_esp32_module_bu16_task(void* arg) {
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 1);
+
+  grid_config_init(&grid_config_state, &grid_cal_state);
+
+  if (grid_hwcfg_module_is_rev_h(&grid_sys_state)) {
+
+    struct grid_cal_but* cal_but = &grid_cal_state.button;
+    grid_cal_but_init(cal_but, grid_ui_state.element_list_length);
+    for (int i = 0; i < 16; ++i) {
+      grid_cal_but_enable_set(cal_but, i, &ui_button_state[i]);
+    }
+
+    while (grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
+      taskYIELD();
+    }
+
+    while (grid_ui_bulk_is_in_progress(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS)) {
+      taskYIELD();
+    }
+  }
 
   grid_esp32_adc_init(&grid_esp32_adc_state, bu16_process_analog);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);

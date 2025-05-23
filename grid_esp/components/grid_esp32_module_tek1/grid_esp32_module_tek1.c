@@ -10,6 +10,8 @@
 
 #include "grid_ain.h"
 #include "grid_asc.h"
+#include "grid_cal.h"
+#include "grid_config.h"
 #include "grid_module.h"
 #include "grid_platform.h"
 #include "grid_sys.h"
@@ -224,53 +226,6 @@ void IRAM_ATTR vsn2_process_encoder(void* dma_buf) {
 
 void grid_esp32_module_tek1_task(void* arg) {
 
-  is_vsn_rev_h_8bit_hwcfg = 1 - grid_platform_get_hwcfg_bit(16);
-
-  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
-  new_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
-  old_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
-  asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
-  memset(ui_button_state, 0, GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
-  memset(new_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
-  memset(old_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
-  memset(asc_state, 0, 16 * sizeof(struct grid_asc));
-
-  for (int i = 0; i < GRID_MODULE_TEK1_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
-  }
-
-  grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
-  if (grid_hwcfg_module_is_rev_h(&grid_sys_state)) {
-    grid_asc_array_set_factors(asc_state, 16, 8, 8, 1);
-  }
-
-  grid_process_encoder_t process_encoder = NULL;
-
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
-      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
-    process_encoder = vsn1l_process_encoder;
-    grid_esp32_adc_init(&grid_esp32_adc_state, vsn1l_process_analog);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
-             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
-    process_encoder = vsn1r_process_encoder;
-    grid_esp32_adc_init(&grid_esp32_adc_state, vsn1r_process_analog);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
-             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
-    process_encoder = vsn2_process_encoder;
-    grid_esp32_adc_init(&grid_esp32_adc_state, vsn2_process_analog);
-  }
-
-  if (!is_vsn_rev_h_8bit_hwcfg) {
-
-    grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, process_encoder);
-  }
-
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
-  uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(&grid_sys_state);
-  grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
-
-  elements = grid_ui_model_get_elements(&grid_ui_state);
-
   struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
 
   // Allocate transfer buffer
@@ -348,6 +303,72 @@ void grid_esp32_module_tek1_task(void* arg) {
 
   // Mark the LCD as ready
   grid_esp32_lcd_set_ready(true);
+
+  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
+  new_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
+  old_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
+  asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
+  memset(ui_button_state, 0, GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
+  memset(new_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
+  memset(old_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
+  memset(asc_state, 0, 16 * sizeof(struct grid_asc));
+
+  for (int i = 0; i < GRID_MODULE_TEK1_BUT_NUM; ++i) {
+    grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
+  }
+
+  grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
+  if (grid_hwcfg_module_is_rev_h(&grid_sys_state)) {
+    grid_asc_array_set_factors(asc_state, 16, 8, 8, 1);
+  }
+
+  elements = grid_ui_model_get_elements(&grid_ui_state);
+
+  grid_config_init(&grid_config_state, &grid_cal_state);
+
+  if (grid_hwcfg_module_is_rev_h(&grid_sys_state)) {
+
+    struct grid_cal_but* cal_but = &grid_cal_state.button;
+    grid_cal_but_init(cal_but, grid_ui_state.element_list_length);
+    for (int i = 0; i < 8; ++i) {
+      grid_cal_but_enable_set(cal_but, i, &ui_button_state[i]);
+    }
+
+    while (grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
+      taskYIELD();
+    }
+
+    while (grid_ui_bulk_is_in_progress(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS)) {
+      taskYIELD();
+    }
+  }
+
+  grid_process_encoder_t process_encoder = NULL;
+
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
+      grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
+    process_encoder = vsn1l_process_encoder;
+    grid_esp32_adc_init(&grid_esp32_adc_state, vsn1l_process_analog);
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
+    process_encoder = vsn1r_process_encoder;
+    grid_esp32_adc_init(&grid_esp32_adc_state, vsn1r_process_analog);
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
+    process_encoder = vsn2_process_encoder;
+    grid_esp32_adc_init(&grid_esp32_adc_state, vsn2_process_analog);
+  }
+
+  is_vsn_rev_h_8bit_hwcfg = 1 - grid_platform_get_hwcfg_bit(16);
+
+  if (!is_vsn_rev_h_8bit_hwcfg) {
+
+    grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, process_encoder);
+  }
+
+  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
+  uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(&grid_sys_state);
+  grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
 
 #undef USE_SEMAPHORE
 #undef USE_FRAMELIMIT

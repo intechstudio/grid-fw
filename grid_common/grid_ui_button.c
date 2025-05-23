@@ -79,6 +79,10 @@ uint16_t grid_ui_button_state_get_high_trigger(struct grid_ui_button_state* stat
   return lerp(state->min_value, state->max_value, curr_threshold) + 1;
 }
 
+uint16_t grid_ui_button_state_get_min(struct grid_ui_button_state* state) { return state->min_value; }
+
+uint16_t grid_ui_button_state_get_max(struct grid_ui_button_state* state) { return state->max_value; }
+
 void grid_ui_button_state_value_update(struct grid_ui_button_state* state, uint16_t value, uint64_t now) {
 
   if (value < state->min_value) {

@@ -5,6 +5,11 @@
 
 #define GRID_CONFIG_MAX_UINT16_ARRAYELEM 7 // uint16_t + ',' + ' '
 
+#define CAL_HEADER "calibration"
+#define CAL_POT_CENTERS_KEY "potmeter-centers"
+#define CAL_BUT_MINIMA_KEY "button-minima"
+#define CAL_BUT_MAXIMA_KEY "button-maxima"
+
 enum {
   GRID_CONFIG_ERRBUF = 256,
 };

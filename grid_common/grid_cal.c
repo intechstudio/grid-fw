@@ -9,9 +9,9 @@
 
 #include <stdlib.h>
 
-struct grid_cal_model grid_cal_state;
+struct grid_cal_model grid_cal_state = {0};
 
-int grid_cal_init(struct grid_cal_model* cal, uint8_t resolution, uint8_t length) {
+int grid_cal_pot_init(struct grid_cal_pot* cal, uint8_t resolution, uint8_t length) {
 
   cal->resolution = resolution;
   cal->length = length;
@@ -34,7 +34,7 @@ int grid_cal_init(struct grid_cal_model* cal, uint8_t resolution, uint8_t length
   return 0;
 }
 
-int grid_cal_enable_range(struct grid_cal_model* cal, uint8_t start, uint8_t length) {
+int grid_cal_pot_enable_range(struct grid_cal_pot* cal, uint8_t start, uint8_t length) {
 
   if (!(start < cal->length)) {
     return 1;
@@ -53,7 +53,18 @@ int grid_cal_enable_range(struct grid_cal_model* cal, uint8_t start, uint8_t len
   return 0;
 }
 
-int grid_cal_center_get(struct grid_cal_model* cal, uint8_t channel, uint16_t* center) {
+int grid_cal_pot_enable_get(struct grid_cal_pot* cal, uint8_t channel, uint8_t* enable) {
+
+  if (!(channel < cal->length)) {
+    return 1;
+  }
+
+  *enable = cal->enable[channel];
+
+  return 0;
+}
+
+int grid_cal_pot_center_get(struct grid_cal_pot* cal, uint8_t channel, uint16_t* center) {
 
   if (!(channel < cal->length)) {
     return 1;
@@ -68,7 +79,7 @@ int grid_cal_center_get(struct grid_cal_model* cal, uint8_t channel, uint16_t* c
   return 0;
 }
 
-int grid_cal_center_set(struct grid_cal_model* cal, uint8_t channel, uint16_t center) {
+int grid_cal_pot_center_set(struct grid_cal_pot* cal, uint8_t channel, uint16_t center) {
 
   if (!(channel < cal->length)) {
     return 1;
@@ -83,7 +94,7 @@ int grid_cal_center_set(struct grid_cal_model* cal, uint8_t channel, uint16_t ce
   return 0;
 }
 
-int grid_cal_value_get(struct grid_cal_model* cal, uint8_t channel, uint16_t* value) {
+int grid_cal_pot_value_get(struct grid_cal_pot* cal, uint8_t channel, uint16_t* value) {
 
   if (!(channel < cal->length)) {
     return 1;
@@ -94,17 +105,6 @@ int grid_cal_value_get(struct grid_cal_model* cal, uint8_t channel, uint16_t* va
   }
 
   *value = cal->value[channel];
-
-  return 0;
-}
-
-int grid_cal_enable_get(struct grid_cal_model* cal, uint8_t channel, uint8_t* enable) {
-
-  if (!(channel < cal->length)) {
-    return 1;
-  }
-
-  *enable = cal->enable[channel];
 
   return 0;
 }
@@ -127,7 +127,7 @@ static int32_t inverse_error_centering(int32_t a, int32_t b, double x, double c,
   return lerp(a, b, x);
 }
 
-int grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in, uint16_t* out) {
+int grid_cal_pot_next(struct grid_cal_pot* cal, uint8_t channel, uint16_t in, uint16_t* out) {
 
   if (!(channel < cal->length)) {
     return 1;
@@ -145,4 +145,106 @@ int grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in, uint
   *out = inverse_error_centering(0, cal->maximum, in_norm, center_norm, 2);
 
   return 0;
+}
+
+int grid_cal_but_init(struct grid_cal_but* cal, uint8_t length) {
+
+  cal->length = length;
+
+  cal->enable = (uint8_t*)malloc(cal->length * sizeof(uint8_t));
+  cal->states = (struct grid_ui_button_state**)malloc(cal->length * sizeof(struct grid_ui_button_state*));
+
+  for (uint8_t i = 0; i < cal->length; ++i) {
+    cal->enable[i] = 0;
+    cal->states[i] = NULL;
+  }
+
+  return 0;
+}
+
+int grid_cal_but_enable_get(struct grid_cal_but* cal, uint8_t channel, uint8_t* enable) {
+
+  if (!(channel < cal->length)) {
+    return 1;
+  }
+
+  *enable = cal->enable[channel];
+
+  return 0;
+}
+
+int grid_cal_but_enable_set(struct grid_cal_but* cal, uint8_t channel, struct grid_ui_button_state* state) {
+
+  if (!(channel < cal->length)) {
+    return 1;
+  }
+
+  cal->enable[channel] = 1;
+  cal->states[channel] = state;
+
+  return 0;
+}
+
+int grid_cal_but_minmax_get(struct grid_cal_but* cal, uint8_t channel, uint16_t* min, uint16_t* max) {
+
+  if (!(channel < cal->length)) {
+    return 1;
+  }
+
+  if (cal->enable[channel]) {
+
+    *min = grid_ui_button_state_get_min(cal->states[channel]);
+    *max = grid_ui_button_state_get_max(cal->states[channel]);
+  } else {
+
+    *min = 0;
+    *max = 0;
+  }
+
+  return 0;
+}
+
+int grid_cal_but_min_set(struct grid_cal_but* cal, uint8_t channel, uint16_t min) {
+
+  if (!(channel < cal->length)) {
+    return 1;
+  }
+
+  if (!cal->enable[channel]) {
+    return 1;
+  }
+
+  grid_ui_button_state_value_update(cal->states[channel], min, 0);
+
+  return 0;
+}
+
+int grid_cal_but_max_set(struct grid_cal_but* cal, uint8_t channel, uint16_t max) {
+
+  if (!(channel < cal->length)) {
+    return 1;
+  }
+
+  if (!cal->enable[channel]) {
+    return 1;
+  }
+
+  grid_ui_button_state_value_update(cal->states[channel], max, 0);
+
+  return 0;
+}
+
+struct grid_ui_button_state* grid_cal_but_state_get(struct grid_cal_but* cal, uint8_t channel) {
+
+  if (!(channel < cal->length)) {
+    return NULL;
+  }
+
+  if (!cal->enable[channel]) {
+    return NULL;
+  }
+
+  assert(cal->states[channel]);
+
+  return cal->states[channel];
 }
