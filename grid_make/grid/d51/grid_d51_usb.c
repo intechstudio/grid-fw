@@ -88,33 +88,40 @@ int32_t grid_platform_usb_serial_ready() { return usb_tx_ready; }
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) { return cdcdf_acm_write((uint8_t*)buffer, length); }
 
-static uint8_t midi_rx_buffer[4] = {0};
+enum { MIDI_RX_BUFFER_SIZE = 128 };
+
+static uint8_t midi_rx_buffer[MIDI_RX_BUFFER_SIZE] = {0};
 
 static bool grid_usb_midi_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {
 
-  struct grid_midi_event_desc midi_ev;
+  for (uint32_t i = 0; i < count; i += 4) {
 
-  midi_ev.byte0 = midi_rx_buffer[1] & 0x0f; // channel
-  midi_ev.byte1 = midi_rx_buffer[1] & 0xf0; // command
-  midi_ev.byte2 = midi_rx_buffer[2];        // param1
-  midi_ev.byte3 = midi_rx_buffer[3];        // param2
+    if (i >= MIDI_RX_BUFFER_SIZE) {
+      break;
+    }
 
-  // printf("MIDI OUT CB %d %d %d %d \n", midi_ev.byte0, midi_ev.byte1,
-  // midi_ev.byte2, midi_ev.byte3);
+    if (i + 3 >= count) {
+      break;
+    }
 
-  if ((midi_ev.byte0 == 8 || midi_ev.byte0 == 10 || midi_ev.byte0 == 12) && midi_ev.byte1 == 240) {
-    // if element's timer clock source is midi then decrement timer_helper
-    grid_platform_sync1_pulse_send();
+    struct grid_midi_event_desc midi_ev;
+
+    midi_ev.byte0 = midi_rx_buffer[i + 1] & 0x0f; // channel
+    midi_ev.byte1 = midi_rx_buffer[i + 1] & 0xf0; // command
+    midi_ev.byte2 = midi_rx_buffer[i + 2];        // param1
+    midi_ev.byte3 = midi_rx_buffer[i + 3];        // param2
+
+    if ((midi_ev.byte0 == 8 || midi_ev.byte0 == 10 || midi_ev.byte0 == 12) && midi_ev.byte1 == 240) {
+      // if element's timer clock source is midi then decrement timer_helper
+      grid_platform_sync1_pulse_send();
+    }
+
+    grid_midi_rx_push(midi_ev);
+
+    memset(&midi_rx_buffer[i], 0, 4);
   }
 
-  grid_midi_rx_push(midi_ev);
-
-  for (uint8_t i = 0; i < 4; i++) {
-
-    midi_rx_buffer[i] = 0;
-  }
-
-  audiodf_midi_read(midi_rx_buffer, 4);
+  audiodf_midi_read(midi_rx_buffer, MIDI_RX_BUFFER_SIZE);
 
   return false;
 }
@@ -128,7 +135,7 @@ static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code r
 static bool grid_usb_midi_installed_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {
 
   printf("MIDI INSTALLED CB\n");
-  audiodf_midi_read(midi_rx_buffer, 4);
+  audiodf_midi_read(midi_rx_buffer, MIDI_RX_BUFFER_SIZE);
   return false;
 }
 
