@@ -328,16 +328,14 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
     double deadzone = 0.02;
     double deadzoned = lerp(0 - deadzone, 1 + deadzone, normalized);
     int32_t new_value = clampi32(max - lerp(min, max, deadzoned), min, max);
+    int32_t new_state = clampi32(127 - lerp(0, 127, deadzoned), 0, 127);
 
     if (old_value == new_value) {
       return;
     }
 
     template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = new_value;
-
-    if (grid_ui_button_state_get_with_hysteresis(state, &hyst)) {
-      template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = hyst * 127;
-    }
+    template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = new_state;
 
   } else if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == -1) {
 
