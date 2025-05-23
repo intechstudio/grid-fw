@@ -6,7 +6,7 @@ if command -v docker &> /dev/null; then
     ARGS="--privileged"
 # Check if Podman is installed
 elif command -v podman &> /dev/null; then
-    CONTAINER_TOOL="podman" 
+    CONTAINER_TOOL="podman"
     ARGS="--group-add keep-groups"
 else
     echo "Neither Docker nor Podman found. Please install one of them to proceed."
