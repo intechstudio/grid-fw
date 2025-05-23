@@ -186,6 +186,26 @@ void grid_msg_packet_body_append_printf(struct grid_msg_packet* packet, char con
 
   return;
 }
+
+int grid_msg_packet_body_append_nprintf(struct grid_msg_packet* packet, char const* fmt, ...) {
+
+  va_list ap;
+
+  va_start(ap, fmt);
+
+  int remain = grid_msg_packet_body_maxlength - packet->body_length;
+
+  int n = vsnprintf((char*)&packet->body[packet->body_length], remain, fmt, ap);
+
+  va_end(ap);
+
+  packet->last_appended_length = strlen((char*)&packet->body[packet->body_length]);
+
+  packet->body_length += packet->last_appended_length;
+
+  return n >= remain ? -1 : n;
+}
+
 void grid_msg_packet_body_append_parameter(struct grid_msg_packet* packet, uint8_t parameter_offset, uint8_t parameter_length, uint32_t value) {
 
   uint8_t text_start_offset = packet->body_length - packet->last_appended_length;
@@ -512,6 +532,7 @@ int grid_str_verify_frame(char* message, uint16_t length) {
 static const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 void grid_str_base64_encode(const unsigned char* input, size_t length, char* output) {
+
   int i = 0, j = 0;
   unsigned char input3[3];
   unsigned char output4[4];
@@ -550,9 +571,12 @@ void grid_str_base64_encode(const unsigned char* input, size_t length, char* out
       output[output_length++] = '=';
     }
   }
+
   output[output_length] = '\0';
 }
+
 size_t grid_str_base64_decode(const char* input, unsigned char* output) {
+
   int i = 0, j = 0, padding = 0;
   unsigned char input4[4], output3[3];
   size_t output_length = 0;

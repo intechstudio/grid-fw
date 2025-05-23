@@ -341,42 +341,65 @@ int l_grid_cat(lua_State* L) {
 /*static*/ int l_grid_immediate_send(lua_State* L) {
 
   int nargs = lua_gettop(L);
-  // grid_platform_printf("LUA PRINT: ");
-  if (nargs == 3) {
 
-    uint8_t x = GRID_PARAMETER_GLOBAL_POSITION;
-    uint8_t y = GRID_PARAMETER_GLOBAL_POSITION;
-
-    if (lua_type(L, 1) == LUA_TNUMBER && lua_type(L, 2) == LUA_TNUMBER) {
-      x = lua_tonumber(L, 1) + GRID_PARAMETER_DEFAULT_POSITION;
-      y = lua_tonumber(L, 2) + GRID_PARAMETER_DEFAULT_POSITION;
-    }
-
-    if (lua_type(L, 3) == LUA_TSTRING) {
-
-      const char* str = lua_tostring(L, 3);
-
-      // MUST BE SENT OUT IMMEDIATELY (NOT THROUGH STDO) BECAUSE IT MUST BE SENT
-      // OUT EVEN AFTER LOCAL TRIGGER (CONFIG) struct grid_msg_packet response;
-
-      struct grid_msg_packet response;
-      grid_msg_packet_init(&grid_msg_state, &response, x, y);
-
-      grid_msg_packet_body_append_printf(&response, GRID_CLASS_IMMEDIATE_frame_start);
-      grid_msg_packet_body_set_parameter(&response, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-      grid_msg_packet_body_set_parameter(&response, 0, GRID_CLASS_IMMEDIATE_ACTIONLENGTH_offset, GRID_CLASS_IMMEDIATE_ACTIONLENGTH_length, strlen(str) + strlen("<?lua ") + strlen(" ?>"));
-      grid_msg_packet_body_append_printf(&response, "<?lua %s ?>", str);
-      grid_msg_packet_body_append_printf(&response, GRID_CLASS_IMMEDIATE_frame_end);
-
-      grid_msg_packet_close(&grid_msg_state, &response);
-      grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
-
-    } else {
-      grid_port_debug_printf("Invalid arguments! %s", GRID_LUA_FNC_G_IMMEDIATE_SEND_usage);
-    }
-  } else {
+  if (nargs != 3) {
     grid_port_debug_printf("Invalid arguments! %s", GRID_LUA_FNC_G_IMMEDIATE_SEND_usage);
+    return 0;
   }
+
+  uint8_t x = GRID_PARAMETER_GLOBAL_POSITION;
+  uint8_t y = GRID_PARAMETER_GLOBAL_POSITION;
+
+  if (lua_type(L, 1) == LUA_TNUMBER && lua_type(L, 2) == LUA_TNUMBER) {
+    x = lua_tonumber(L, 1) + GRID_PARAMETER_DEFAULT_POSITION;
+    y = lua_tonumber(L, 2) + GRID_PARAMETER_DEFAULT_POSITION;
+  }
+
+  if (lua_type(L, 3) != LUA_TSTRING) {
+    grid_port_debug_printf("Invalid arguments! %s", GRID_LUA_FNC_G_IMMEDIATE_SEND_usage);
+    return 0;
+  }
+
+  const char* str = lua_tostring(L, 3);
+
+  uint32_t strlength = strlen(str);
+
+  uint32_t base64nullterm = (strlength * 4) / 3 + 1;
+  if (base64nullterm > grid_msg_packet_body_maxlength) {
+    grid_port_debug_printf("Length of base64 encoding exceeds limit! %u", base64nullterm);
+    return 0;
+  }
+
+  char str_base64[grid_msg_packet_body_maxlength] = {0};
+  grid_str_base64_encode((unsigned char*)str, strlen(str), str_base64);
+
+  struct grid_msg_packet pkt;
+  grid_msg_packet_init(&grid_msg_state, &pkt, x, y);
+
+  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_IMMEDIATE_frame_start);
+  grid_msg_packet_body_set_parameter(&pkt, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
+
+  uint32_t base64length = strlen(str_base64);
+  uint32_t actionlength = base64length + strlen("<?lua ") + strlen(" ?>");
+  if (actionlength > grid_msg_packet_body_maxlength) {
+    grid_port_debug_printf("Length of message body exceeds limit! %u", actionlength);
+    return 0;
+  }
+
+  grid_msg_packet_body_set_parameter(&pkt, 0, GRID_CLASS_IMMEDIATE_ACTIONLENGTH_offset, GRID_CLASS_IMMEDIATE_ACTIONLENGTH_length, actionlength);
+
+  if (grid_msg_packet_body_append_nprintf(&pkt, "<?lua %s ?>", str_base64) <= 0) {
+    grid_port_debug_printf("Length of base64 encoding exceeds message! %u", actionlength);
+    return 0;
+  }
+
+  if (grid_msg_packet_body_append_nprintf(&pkt, GRID_CLASS_IMMEDIATE_frame_end) <= 0) {
+    grid_port_debug_printf("GRID_CLASS_IMMEDIATE_frame_end exceeds message!");
+    return 0;
+  }
+
+  grid_msg_packet_close(&grid_msg_state, &pkt);
+  grid_transport_send_msg_packet_to_all(&grid_transport_state, &pkt);
 
   return 0;
 }
@@ -1396,14 +1419,15 @@ int l_grid_cat(lua_State* L) {
     } else { // phase == -1 means it should be automatically calculated based on
              // min-max values
 
-      struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, param[0]);
+      uint8_t num = param[0];
+      uint8_t layer = param[1];
+
+      struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, num);
       uint8_t ele_type = ele->type;
 
       int32_t min = 0;
       int32_t max = 0;
       int32_t val = 0;
-
-      // grid_platform_printf("Param0: %d ", param[0]);
 
       if (ele_type == GRID_PARAMETER_ELEMENT_POTMETER) {
 
@@ -1412,9 +1436,16 @@ int l_grid_cat(lua_State* L) {
         val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_P_POTMETER_VALUE_index);
       } else if (ele_type == GRID_PARAMETER_ELEMENT_ENCODER) {
 
-        min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MIN_index);
-        max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MAX_index);
-        val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index);
+        if (layer == 1) {
+          // button layer
+          min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_B_BUTTON_MIN_index);
+          max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_B_BUTTON_MAX_index);
+          val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_B_BUTTON_VALUE_index);
+        } else {
+          min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MIN_index);
+          max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MAX_index);
+          val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index);
+        }
       } else if (ele_type == GRID_PARAMETER_ELEMENT_ENDLESS) {
 
         min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_MIN_index);

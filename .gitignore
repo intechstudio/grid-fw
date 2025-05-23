@@ -5,6 +5,7 @@ out.json
 codeql-db
 iperf
 vmp/build
+tags
 
 # Ignore vim files:
 *~
