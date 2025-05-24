@@ -21,8 +21,9 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
 #define GRID_LUA_P_META_init                                                                                                                                                                           \
   "potmeter_meta = { __index = {" \
   \
+  "type = 'potmeter', "\
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_ELEMENT_INDEX_short, GRID_LUA_FNC_P_ELEMENT_INDEX_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_POTMETER_NUMBER_short, GRID_LUA_FNC_P_POTMETER_NUMBER_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_LED_INDEX_short, GRID_LUA_FNC_P_LED_INDEX_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_POTMETER_VALUE_short, GRID_LUA_FNC_P_POTMETER_VALUE_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_POTMETER_MIN_short, GRID_LUA_FNC_P_POTMETER_MIN_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_P_POTMETER_MAX_short, GRID_LUA_FNC_P_POTMETER_MAX_index) "," \
