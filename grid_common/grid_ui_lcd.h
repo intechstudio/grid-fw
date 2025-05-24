@@ -82,6 +82,7 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 #define GRID_LUA_L_META_init                                                                                                                                                                           \
   "lcd_meta = { __index = {" \
   \
+  "type = 'lcd', "\
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_L_ELEMENT_INDEX_short, GRID_LUA_FNC_L_ELEMENT_INDEX_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_L_SCREEN_INDEX_short, GRID_LUA_FNC_L_SCREEN_INDEX_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_L_SCREEN_WIDTH_short, GRID_LUA_FNC_L_SCREEN_WIDTH_index) "," \

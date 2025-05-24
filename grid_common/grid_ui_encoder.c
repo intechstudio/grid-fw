@@ -61,7 +61,7 @@ void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buf
   int32_t* template_parameter_list = buf->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_E_ELEMENT_INDEX_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_E_BUTTON_NUMBER_index] = element_index;
+  template_parameter_list[GRID_LUA_FNC_E_LED_INDEX_index] = element_index;
   template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_E_BUTTON_MIN_index] = 0;
   template_parameter_list[GRID_LUA_FNC_E_BUTTON_MAX_index] = 127;
