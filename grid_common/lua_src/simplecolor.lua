@@ -16,7 +16,8 @@ init_endless_color = function(self)
             local ln = self:lix() + i * self:lof()
             local int = gsc(i, self:epva(), self:epmi(), self:epma())
             if l == 1 then
-                int = self:bst() * 2
+                local min, max, value = self:bmi(), self:bma(), self:bva()
+		int = gmaps(value, min, max, 0, 255)//1
             end
             glp(ln, l, int)
         end
