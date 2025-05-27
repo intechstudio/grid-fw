@@ -24,6 +24,8 @@ int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value);
 
 extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
 
+extern void grid_platform_sync1_pulse_send();
+
 void grid_usb_midi_buffer_init();
 
 enum grid_usb_keyboard_key_state_t { GRID_USB_KEYBOARD_KEY_STATEUP, GRID_USB_KEYBOARD_KEY_STATEDOWN };

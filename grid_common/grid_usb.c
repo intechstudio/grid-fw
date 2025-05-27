@@ -174,7 +174,7 @@ void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid
   }
 }
 
-uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event) {
+uint8_t grid_midi_tx_push(struct grid_midi_event_desc event) {
 
   uint8_t dropped = 0;
 
@@ -188,7 +188,7 @@ uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event) {
     dropped = 1;
   }
 
-  grid_swsr_write(&grid_midi_tx, &midi_event, sizeof(struct grid_midi_event_desc));
+  grid_swsr_write(&grid_midi_tx, &event, sizeof(struct grid_midi_event_desc));
 
   return dropped;
 }
@@ -209,7 +209,12 @@ void grid_midi_tx_pop() {
   grid_platform_usb_midi_write(event.byte0, event.byte1, event.byte2, event.byte3);
 }
 
-void grid_midi_rx_push(struct grid_midi_event_desc midi_event) {
+void grid_midi_rx_push(struct grid_midi_event_desc event) {
+
+  // Factored into here from calling contexts, even if part of a deprecated feature
+  if ((event.byte0 == 8 || event.byte0 == 10 || event.byte0 == 12) && event.byte1 == 240) {
+    grid_platform_sync1_pulse_send();
+  }
 
   if (grid_sys_get_midirx_any_state(&grid_sys_state) == 0) {
     return;
@@ -218,17 +223,17 @@ void grid_midi_rx_push(struct grid_midi_event_desc midi_event) {
   if (grid_sys_get_midirx_sync_state(&grid_sys_state) == 0) {
 
     // midi clock message
-    if (midi_event.byte0 == 8 && midi_event.byte1 == 240) {
+    if (event.byte0 == 8 && event.byte1 == 240) {
       return;
     }
 
     // midi start message
-    if (midi_event.byte0 == 10 && midi_event.byte1 == 240) {
+    if (event.byte0 == 10 && event.byte1 == 240) {
       return;
     }
 
     // midi stop message
-    if (midi_event.byte0 == 12 && midi_event.byte1 == 240) {
+    if (event.byte0 == 12 && event.byte1 == 240) {
       return;
     }
   }
@@ -237,7 +242,7 @@ void grid_midi_rx_push(struct grid_midi_event_desc midi_event) {
     return;
   }
 
-  grid_swsr_write(&grid_midi_rx, &midi_event, sizeof(struct grid_midi_event_desc));
+  grid_swsr_write(&grid_midi_rx, &event, sizeof(struct grid_midi_event_desc));
 }
 
 void grid_midi_rx_pop() {
