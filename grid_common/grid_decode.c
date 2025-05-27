@@ -420,19 +420,26 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
   uint8_t midi_param1 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, &error);
   uint8_t midi_param2 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
 
-  if (msg_instr == GRID_INSTR_REPORT_code) {
+  grid_lua_clear_stdo(&grid_lua_state);
 
-    char rx_cb_source[200] = {0};
-    sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.midirx_cb and type(el.midirx_cb) == 'function' then el:midirx_cb({%d, %d, %d, %d}, {%d, %d, %d}) end end", midi_channel,
-            midi_command, midi_param1, midi_param2, msg_instr, sx, sy);
-    grid_lua_dostring(&grid_lua_state, rx_cb_source);
+  char rx_cb_source[200] = {0};
+  sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.midirx_cb and type(el.midirx_cb) == 'function' then el:midirx_cb({%d, %d, %d, %d}, {%d, %d, %d}) end end", midi_channel, midi_command,
+          midi_param1, midi_param2, msg_instr, sx, sy);
+  grid_lua_dostring(&grid_lua_state, rx_cb_source);
 
-    struct grid_ui_element* ele = &grid_ui_state.element_list[grid_ui_state.element_list_length - 1];
-    struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_MIDIRX);
+  char* stdo = grid_lua_get_output_string(&grid_lua_state);
 
-    if (eve != NULL) {
-      grid_ui_event_trigger(eve);
-    }
+  if (strlen(stdo) > 0) {
+
+    struct grid_msg_packet response;
+    grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+    response.body_length += sprintf(response.body, "%s", stdo);
+
+    grid_msg_packet_close(&grid_msg_state, &response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
+
+    grid_lua_clear_stdo(&grid_lua_state);
   }
 
   return 0; // OK
