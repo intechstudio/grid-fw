@@ -1,6 +1,6 @@
 -- Updated infinite loop for the `setTimeout` example
 local timers = {}
-local timersNextId = 0 
+local timersNextId = 0
 
 function setTimeout(callback, delay)
     local timerId = timersNextId
@@ -24,10 +24,10 @@ function checkTimers()
             local retrigger = timer.callback(timer)
             if retrigger == true then
               print("Retriggering timer"..timerId.." now")
-              timers[timerId].time = timers[timerId].time + timers[timerId].interval 
+              timers[timerId].time = timers[timerId].time + timers[timerId].interval
             else
               print("Deleting timer"..timerId.." now")
-              timers[timerId] = nil              
+              timers[timerId] = nil
             end
         end
     end
