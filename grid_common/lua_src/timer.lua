@@ -2,7 +2,7 @@
 local timers = {}
 local timersNextId = 0
 
-function setTimeout(callback, delay)
+function set_timeout(callback, delay)
     local timerId = timersNextId
     timersNextId = timersNextId + 1
     local targetTime = os.clock() + delay
@@ -10,13 +10,13 @@ function setTimeout(callback, delay)
     return timerId
 end
 
-function clearTimeout(timerId)
+function clear_timeout(timerId)
     if timers[timerId] then
         timers[timerId] = nil
     end
 end
 
-function checkTimers()
+function check_timers()
     local now = os.clock()
     for timerId, timer in pairs(timers) do
         if now >= timer.time then
