@@ -260,8 +260,8 @@ void grid_midi_rx_pop() {
   grid_msg_header_set_sx(&message, x);
   grid_msg_header_set_sy(&message, y);
 
-  // Combine up to 8 midi messages into a packet
-  for (uint8_t i = 0; i < 8; ++i) {
+  // Combine up to 16 midi messages into a packet
+  for (uint8_t i = 0; i < 16; ++i) {
 
     if (!grid_swsr_readable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
       break;
