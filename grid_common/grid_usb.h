@@ -55,6 +55,7 @@ extern uint16_t grid_midi_rx_read_index;
 
 void grid_midi_rx_push(struct grid_midi_event_desc midi_event);
 void grid_midi_rx_pop();
+bool grid_midi_rx_writable();
 
 struct grid_usb_keyboard_event_desc {
 

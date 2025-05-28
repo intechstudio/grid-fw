@@ -283,6 +283,8 @@ void grid_midi_rx_pop() {
   grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
 }
 
+bool grid_midi_rx_writable() { return grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc)); }
+
 uint8_t grid_usb_keyboard_tx_push(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc keyboard_event) {
 
   // printf("R: %d, W: %d\r\n", grid_midi_tx_read_index,
