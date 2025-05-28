@@ -489,9 +489,9 @@
 #define GRID_LUA_FNC_B_ELEMENT_INDEX_short "ind"
 #define GRID_LUA_FNC_B_ELEMENT_INDEX_human "element_index"
 
-#define GRID_LUA_FNC_B_BUTTON_NUMBER_index 1
-#define GRID_LUA_FNC_B_BUTTON_NUMBER_short "bnu"
-#define GRID_LUA_FNC_B_BUTTON_NUMBER_human "button_number"
+#define GRID_LUA_FNC_B_LED_INDEX_index 1
+#define GRID_LUA_FNC_B_LED_INDEX_short "lix"
+#define GRID_LUA_FNC_B_LED_INDEX_human "led_index"
 
 #define GRID_LUA_FNC_B_BUTTON_VALUE_index 2
 #define GRID_LUA_FNC_B_BUTTON_VALUE_short "bva"
@@ -526,9 +526,9 @@
 #define GRID_LUA_FNC_E_ELEMENT_INDEX_short "ind"
 #define GRID_LUA_FNC_E_ELEMENT_INDEX_human "element_index"
 
-#define GRID_LUA_FNC_E_BUTTON_NUMBER_index 1
-#define GRID_LUA_FNC_E_BUTTON_NUMBER_short "bnu"
-#define GRID_LUA_FNC_E_BUTTON_NUMBER_human "button_number"
+#define GRID_LUA_FNC_E_LED_INDEX_index 1
+#define GRID_LUA_FNC_E_LED_INDEX_short "lix"
+#define GRID_LUA_FNC_E_LED_INDEX_human "led_index"
 
 #define GRID_LUA_FNC_E_BUTTON_VALUE_index 2
 #define GRID_LUA_FNC_E_BUTTON_VALUE_short "bva"
@@ -602,9 +602,9 @@
 #define GRID_LUA_FNC_EP_ELEMENT_INDEX_short "ind"
 #define GRID_LUA_FNC_EP_ELEMENT_INDEX_human "element_index"
 
-#define GRID_LUA_FNC_EP_BUTTON_NUMBER_index 1
-#define GRID_LUA_FNC_EP_BUTTON_NUMBER_short "bnu"
-#define GRID_LUA_FNC_EP_BUTTON_NUMBER_human "button_number"
+#define GRID_LUA_FNC_EP_LED_INDEX_index 1
+#define GRID_LUA_FNC_EP_LED_INDEX_short "lix"
+#define GRID_LUA_FNC_EP_LED_INDEX_human "led_index"
 
 #define GRID_LUA_FNC_EP_BUTTON_VALUE_index 2
 #define GRID_LUA_FNC_EP_BUTTON_VALUE_short "bva"
@@ -630,9 +630,9 @@
 #define GRID_LUA_FNC_EP_BUTTON_STATE_short "bst"
 #define GRID_LUA_FNC_EP_BUTTON_STATE_human "button_state"
 
-#define GRID_LUA_FNC_EP_ENDLESS_NUMBER_index 8
-#define GRID_LUA_FNC_EP_ENDLESS_NUMBER_short "epnu"
-#define GRID_LUA_FNC_EP_ENDLESS_NUMBER_human "endless_number"
+#define GRID_LUA_FNC_EP_LED_OFFSET_index 8
+#define GRID_LUA_FNC_EP_LED_OFFSET_short "lof"
+#define GRID_LUA_FNC_EP_LED_OFFSET_human "led_offset"
 
 #define GRID_LUA_FNC_EP_ENDLESS_VALUE_index 9
 #define GRID_LUA_FNC_EP_ENDLESS_VALUE_short "epva"
@@ -697,9 +697,9 @@
 #define GRID_LUA_FNC_P_ELEMENT_INDEX_short "ind"
 #define GRID_LUA_FNC_P_ELEMENT_INDEX_human "element_index"
 
-#define GRID_LUA_FNC_P_POTMETER_NUMBER_index 1
-#define GRID_LUA_FNC_P_POTMETER_NUMBER_short "pnu"
-#define GRID_LUA_FNC_P_POTMETER_NUMBER_human "potmeter_number"
+#define GRID_LUA_FNC_P_LED_INDEX_index 1
+#define GRID_LUA_FNC_P_LED_INDEX_short "lix"
+#define GRID_LUA_FNC_P_LED_INDEX_human "led_index"
 
 #define GRID_LUA_FNC_P_POTMETER_VALUE_index 2
 #define GRID_LUA_FNC_P_POTMETER_VALUE_short "pva"

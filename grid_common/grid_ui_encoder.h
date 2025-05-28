@@ -38,8 +38,9 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
 #define GRID_LUA_E_META_init                                                                                                                                                                           \
   "encoder_meta = { __index = {" \
   \
+  "type = 'encoder', "\
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_ELEMENT_INDEX_short, GRID_LUA_FNC_E_ELEMENT_INDEX_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_BUTTON_NUMBER_short, GRID_LUA_FNC_E_BUTTON_NUMBER_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_LED_INDEX_short, GRID_LUA_FNC_E_LED_INDEX_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_BUTTON_VALUE_short, GRID_LUA_FNC_E_BUTTON_VALUE_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_BUTTON_MIN_short, GRID_LUA_FNC_E_BUTTON_MIN_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_BUTTON_MAX_short, GRID_LUA_FNC_E_BUTTON_MAX_index) "," \
