@@ -88,38 +88,56 @@ int32_t grid_platform_usb_serial_ready() { return usb_tx_ready; }
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) { return cdcdf_acm_write((uint8_t*)buffer, length); }
 
-enum { MIDI_RX_BUFFER_SIZE = 128 };
+enum { MIDI_RX_BUFFER_SIZE = 64 };
 
 static uint8_t midi_rx_buffer[MIDI_RX_BUFFER_SIZE] = {0};
 
-static bool grid_usb_midi_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {
+struct grid_swsr_t midi_rx;
 
-  for (uint32_t i = 0; i < count; i += 4) {
+bool grid_d51_midi_bulkout_poll() {
 
-    if (i >= MIDI_RX_BUFFER_SIZE) {
-      break;
-    }
+  while (grid_swsr_readable(&midi_rx, 4) && grid_midi_rx_writable()) {
 
-    if (i + 3 >= count) {
-      break;
-    }
+    uint8_t event[4];
+    grid_swsr_read(&midi_rx, event, 4);
 
     struct grid_midi_event_desc midi_ev;
-
-    midi_ev.byte0 = midi_rx_buffer[i + 1] & 0x0f; // channel
-    midi_ev.byte1 = midi_rx_buffer[i + 1] & 0xf0; // command
-    midi_ev.byte2 = midi_rx_buffer[i + 2];        // param1
-    midi_ev.byte3 = midi_rx_buffer[i + 3];        // param2
+    midi_ev.byte0 = event[1] & 0x0f; // channel
+    midi_ev.byte1 = event[1] & 0xf0; // command
+    midi_ev.byte2 = event[2];        // param1
+    midi_ev.byte3 = event[3];        // param2
 
     grid_midi_rx_push(midi_ev);
 
-    memset(&midi_rx_buffer[i], 0, 4);
+    if (!grid_swsr_readable(&midi_rx, 4)) {
+
+      assert(!grid_swsr_readable(&midi_rx, 1));
+
+      audiodf_midi_read(midi_rx_buffer, MIDI_RX_BUFFER_SIZE);
+    }
+  }
+}
+
+static bool grid_usb_midi_bulkout_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {
+
+  uint32_t bytes = count;
+
+  if (bytes > MIDI_RX_BUFFER_SIZE) {
+    bytes = MIDI_RX_BUFFER_SIZE;
   }
 
-  audiodf_midi_read(midi_rx_buffer, MIDI_RX_BUFFER_SIZE);
+  bytes /= 4;
+  bytes *= 4;
+
+  assert(grid_swsr_writable(&midi_rx, MIDI_RX_BUFFER_SIZE));
+
+  grid_swsr_write(&midi_rx, midi_rx_buffer, bytes);
+
+  grid_d51_midi_bulkout_poll();
 
   return false;
 }
+
 static bool grid_usb_midi_bulkin_cb(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {
 
   // printf("MIDI IN CB\n");
@@ -139,6 +157,9 @@ void grid_d51_usb_init(void) {
   // Allocate USB RX buffer
   int capacity = GRID_PARAMETER_SPI_TRANSACTION_length * 2;
   assert(grid_swsr_malloc(&usb_rx, capacity) == 0);
+
+  // Allocate MIDI RX fifo
+  assert(grid_swsr_malloc(&midi_rx, MIDI_RX_BUFFER_SIZE) == 0);
 
   audiodf_midi_init();
   composite_device_start();

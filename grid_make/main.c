@@ -489,6 +489,8 @@ int main(void) {
 
     grid_midi_rx_pop();
 
+    grid_d51_midi_bulkout_poll();
+
     // NVM task
     nvm_task_inner();
 
