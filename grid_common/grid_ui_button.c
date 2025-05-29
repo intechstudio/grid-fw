@@ -324,11 +324,12 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
     int32_t old_value = template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index];
 
     uint16_t curr_range = state->max_value - state->min_value;
-    double normalized = (state->curr_out - state->min_value) / (double)curr_range;
+    int32_t reversed = curr_range - (state->curr_out - state->min_value);
+    double normalized = reversed / (double)curr_range;
     double deadzone = 0.02;
     double deadzoned = lerp(0 - deadzone, 1 + deadzone, normalized);
-    int32_t new_value = clampi32(max - lerp(min, max, deadzoned), min, max);
-    int32_t new_state = clampi32(127 - lerp(0, 127, deadzoned), 0, 127);
+    int32_t new_value = clampi32(lerp(min, max, deadzoned), min, max);
+    int32_t new_state = clampi32(lerp(0, 127, deadzoned), 0, 127);
 
     if (old_value == new_value) {
       return;
