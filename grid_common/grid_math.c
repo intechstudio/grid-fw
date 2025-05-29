@@ -17,3 +17,9 @@ double clampf64(double x, double a, double b) {
   const double t = x < a ? a : x;
   return t > b ? b : t;
 }
+
+int32_t mirrori32(int32_t x, int32_t a, int32_t b) {
+
+  const uint32_t range = b - a;
+  return (range - (x - a)) + a;
+}

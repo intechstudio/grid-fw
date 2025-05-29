@@ -316,10 +316,12 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
   // 1-bit output with hysteresis
   uint8_t hyst = 0;
 
-  if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == -2) {
+  int32_t tmin = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
+  int32_t tmax = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
+  int32_t min = MIN(tmin, tmax);
+  int32_t max = MAX(tmin, tmax);
 
-    int32_t min = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
-    int32_t max = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
+  if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == -2) {
 
     int32_t old_value = template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index];
 
@@ -331,6 +333,10 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
     int32_t new_value = clampi32(lerp(min, max, deadzoned), min, max);
     int32_t new_state = clampi32(lerp(0, 127, deadzoned), 0, 127);
 
+    if (tmin > tmax) {
+      new_value = mirrori32(new_value, min, max);
+    }
+
     if (old_value == new_value) {
       return;
     }
@@ -340,10 +346,7 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 
   } else if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == -1) {
 
-    int32_t min = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
-    int32_t max = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
-
-    int32_t old_dir = template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] != min;
+    int32_t old_dir = template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] != tmin;
 
     int32_t new_dir = state->curr_out;
 
@@ -352,9 +355,12 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
     }
 
     double derivate = grid_ui_button_state_derivate(state);
-    int32_t minmax_dir = (max - min >= 0) * 2 - 1;
-    int32_t velocity = clampi32(lerp(min, max, derivate), min + minmax_dir, max);
+    int32_t velocity = clampi32(lerp(min, max, derivate), min + 1, max);
     int32_t new_value = new_dir ? velocity : min;
+
+    if (tmin > tmax) {
+      new_value = mirrori32(new_value, min, max);
+    }
 
     template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = new_value;
 
@@ -364,12 +370,13 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 
   } else if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0) {
 
-    int32_t min = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
-    int32_t max = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
-
     int32_t old_value = template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index];
 
     int32_t new_value = state->curr_out ? max : min;
+
+    if (tmin > tmax) {
+      new_value = mirrori32(new_value, min, max);
+    }
 
     if (old_value == new_value) {
       return;
@@ -383,23 +390,32 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 
   } else {
 
-    int32_t new_value = state->curr_out;
-
-    if (!new_value) {
+    if (!state->curr_out) {
       return;
     }
 
-    int32_t min = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MIN_index];
-    int32_t max = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MAX_index];
     int32_t steps = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index];
     int32_t last = template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index];
-    int32_t next = last + (max - min) / steps;
 
-    if (next > max) {
-      next = min;
+    if (last == 0) {
+      last = tmin > tmax ? max : min;
     }
 
-    template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = next;
+    if (tmin > tmax) {
+      last = mirrori32(last, min, max);
+    }
+
+    int32_t new_value = last + (max - min) / steps;
+
+    if (new_value > max) {
+      new_value = min;
+    }
+
+    if (tmin > tmax) {
+      new_value = mirrori32(new_value, min, max);
+    }
+
+    template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = new_value;
     template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 127;
   }
 
