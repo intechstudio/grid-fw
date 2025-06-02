@@ -209,21 +209,6 @@ void grid_uwsr_init(struct grid_uwsr_t* uwsr, char reject) {
   memset(uwsr->data, 0, uwsr->capacity);
 }
 
-int grid_uwsr_cspn(struct grid_uwsr_t* uwsr) {
-
-  int first = uwsr->read + 1;
-  int j = (first + uwsr->seek) % uwsr->capacity;
-
-  int read = uwsr->read;
-  while (j != read && uwsr->data[j] != uwsr->reject && uwsr->data[j]) {
-    j = (first + (++uwsr->seek)) % uwsr->capacity;
-  }
-
-  bool found = j != read && uwsr->data[j] == uwsr->reject;
-
-  return found ? uwsr->seek : -1;
-}
-
 bool grid_uwsr_readable(struct grid_uwsr_t* uwsr, int size) {
 
   if (size < 0 || size > uwsr->capacity) {

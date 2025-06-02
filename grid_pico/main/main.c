@@ -182,6 +182,19 @@ void grid_pico_uart_port_detach_tx(struct grid_pico_uart_port* port) {
   port->uart_tx_bucket = NULL;
 }
 
+bool pico_bkt_terminated(struct pico_bkt_t* bkt) {
+
+  if (bkt->index < 4) {
+    return false;
+  }
+
+  bool ends_with_newline = bkt->buf[bkt->index - 1] == '\n';
+
+  bool eot_before_checksum = bkt->buf[bkt->index - 4] == GRID_CONST_EOT;
+
+  return ends_with_newline && eot_before_checksum;
+}
+
 struct grid_pico_task_timer timer_uart_tx[4];
 
 void grid_pico_task_uart_tx(struct grid_pico_uart_port* port, struct grid_pico_task_timer* timer) {
@@ -200,8 +213,10 @@ void grid_pico_task_uart_tx(struct grid_pico_uart_port* port, struct grid_pico_t
 
   if (c == '\n') {
 
-    grid_pico_uart_port_detach_tx(port);
-    // vmp_push(UART_TX);
+    if (pico_bkt_terminated(port->uart_tx_bucket)) {
+
+      grid_pico_uart_port_detach_tx(port);
+    }
   }
 }
 
