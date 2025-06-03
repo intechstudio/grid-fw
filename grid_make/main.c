@@ -317,7 +317,7 @@ int grid_uwsr_cspn_terminated(struct grid_uwsr_t* uwsr) {
     j = (first + (++uwsr->seek)) % uwsr->capacity;
   }
 
-  if (uwsr->seek < 4) {
+  if (uwsr->seek < 3) {
     return -1;
   }
 
