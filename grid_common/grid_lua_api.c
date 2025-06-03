@@ -362,34 +362,17 @@ int l_grid_cat(lua_State* L) {
 
   const char* str = lua_tostring(L, 3);
 
-  uint32_t strlength = strlen(str);
-
-  uint32_t base64nullterm = (strlength * 4) / 3 + 1;
-  if (base64nullterm > grid_msg_packet_body_maxlength) {
-    grid_port_debug_printf("Length of base64 encoding exceeds limit! %u", base64nullterm);
-    return 0;
-  }
-
-  char str_base64[grid_msg_packet_body_maxlength] = {0};
-  grid_str_base64_encode((unsigned char*)str, strlen(str), str_base64);
-
   struct grid_msg_packet pkt;
   grid_msg_packet_init(&grid_msg_state, &pkt, x, y);
 
   grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_IMMEDIATE_frame_start);
   grid_msg_packet_body_set_parameter(&pkt, 0, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
 
-  uint32_t base64length = strlen(str_base64);
-  uint32_t actionlength = base64length + strlen("<?lua ") + strlen(" ?>");
-  if (actionlength > grid_msg_packet_body_maxlength) {
-    grid_port_debug_printf("Length of message body exceeds limit! %u", actionlength);
-    return 0;
-  }
-
+  uint32_t actionlength = strlen(str) + strlen("<?lua ") + strlen(" ?>");
   grid_msg_packet_body_set_parameter(&pkt, 0, GRID_CLASS_IMMEDIATE_ACTIONLENGTH_offset, GRID_CLASS_IMMEDIATE_ACTIONLENGTH_length, actionlength);
 
-  if (grid_msg_packet_body_append_nprintf(&pkt, "<?lua %s ?>", str_base64) <= 0) {
-    grid_port_debug_printf("Length of base64 encoding exceeds message! %u", actionlength);
+  if (grid_msg_packet_body_append_nprintf(&pkt, "<?lua %s ?>", str) <= 0) {
+    grid_port_debug_printf("Length of actionstring exceeds message! %u", actionlength);
     return 0;
   }
 
