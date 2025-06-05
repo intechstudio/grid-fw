@@ -82,40 +82,15 @@ void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc) {
 
 static esp_err_t ulp_riscv_adc_init2(void) {
 
-  const char* TAG = "ulp_riscv_adc2";
-  esp_err_t ret = ESP_OK;
-
-  const ulp_riscv_adc_cfg_t cfg = {
+  const ulp_adc_cfg_t cfg = {
       .adc_n = ADC_UNIT_1,
-      .channel = ADC_CHANNEL_1,
+      .channel = ADC_CHANNEL_0,
       .width = ADC_BITWIDTH_DEFAULT,
       .atten = ADC_ATTEN_DB_12,
-  };
-
-  ESP_GOTO_ON_FALSE(cfg.adc_n == ADC_UNIT_1, ESP_ERR_INVALID_ARG, err, TAG, "Only ADC_UNIT_1 is supported for now");
-
-  // Initialize ADC1
-  adc_oneshot_unit_handle_t adc1_handle;
-  adc_oneshot_unit_init_cfg_t init_config1 = {
-      .unit_id = cfg.adc_n,
       .ulp_mode = ADC_ULP_MODE_RISCV,
   };
-  ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
 
-  // Configure ADC1
-  adc_oneshot_chan_cfg_t config = {
-      .bitwidth = cfg.width,
-      .atten = cfg.atten,
-  };
-  ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_0, &config));
-  ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_1, &config));
-
-  // Calibrate the ADC
-  adc_set_hw_calibration_code(cfg.adc_n, cfg.atten);
-  esp_sleep_enable_adc_tsens_monitor(true);
-
-err:
-  return ret;
+  return ulp_adc_init(&cfg);
 }
 
 static void adc_init_ulp(struct grid_esp32_adc_model* adc) {
@@ -154,13 +129,8 @@ void grid_esp32_adc_start(struct grid_esp32_adc_model* adc, uint8_t mux_dependen
   adc->mux_dependent = mux_dependent != 0;
   ulp_mux_dependent = adc->mux_dependent;
 
-  // Register bit storing the status of the ULP-RISCV interrupt
-  uint32_t bit = RTC_CNTL_COCPU_INT_ST_M;
-
-  // Register a handler for a specific RTC_CNTL interrupt
-  ESP_ERROR_CHECK(rtc_isr_register(ulp_isr, adc, bit, RTC_INTR_FLAG_IRAM));
-
-  REG_SET_BIT(RTC_CNTL_INT_ENA_REG, bit);
+  // Register ISR handler
+  ulp_riscv_isr_register(ulp_isr, adc, ULP_RISCV_SW_INT);
 
   // Configure the ULP with defaults and run the program loaded into RTC memory
   ESP_ERROR_CHECK(ulp_riscv_run());
