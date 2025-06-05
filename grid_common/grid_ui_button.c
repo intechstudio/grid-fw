@@ -397,22 +397,16 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
     int32_t steps = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index];
     int32_t last = template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index];
 
-    if (last == 0) {
-      last = tmin > tmax ? max : min;
-    }
+    last = clampi32(last, min, max);
 
-    if (tmin > tmax) {
-      last = mirrori32(last, min, max);
-    }
-
-    int32_t new_value = last + (max - min) / steps;
+    int32_t new_value = last + (tmax - tmin) / steps;
 
     if (new_value > max) {
       new_value = min;
     }
 
-    if (tmin > tmax) {
-      new_value = mirrori32(new_value, min, max);
+    if (new_value < min) {
+      new_value = max;
     }
 
     template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = new_value;
