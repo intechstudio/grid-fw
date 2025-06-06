@@ -307,28 +307,6 @@ static void button_on_SYNC1_pressed(void) { sync1_received++; }
 
 static void button_on_SYNC2_pressed(void) { sync2_received++; }
 
-int grid_uwsr_cspn_terminated(struct grid_uwsr_t* uwsr) {
-
-  int first = uwsr->read + 1;
-  int j = (first + uwsr->seek) % uwsr->capacity;
-
-  int read = uwsr->read;
-  while (j != read && uwsr->data[j] != uwsr->reject && uwsr->data[j]) {
-    j = (first + (++uwsr->seek)) % uwsr->capacity;
-  }
-
-  if (uwsr->seek < 3) {
-    return -1;
-  }
-
-  int eot_idx = (j - 3 + uwsr->capacity) % uwsr->capacity;
-  bool eot_before_checksum = uwsr->data[eot_idx] == GRID_CONST_EOT;
-
-  bool found = j != read && uwsr->data[j] == uwsr->reject && eot_before_checksum;
-
-  return found ? uwsr->seek : -1;
-}
-
 void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_msg_recent_buffer* recent) {
 
   if (grid_uwsr_overflow(uwsr)) {
@@ -338,7 +316,7 @@ void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, s
     grid_platform_reset_grid_transmitter(grid_port_dir_to_code(port->dir));
   }
 
-  int ret = grid_uwsr_cspn_terminated(uwsr);
+  int ret = grid_uwsr_until_msg_end(uwsr);
 
   if (ret < 0) {
     return;

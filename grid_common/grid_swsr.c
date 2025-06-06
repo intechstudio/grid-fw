@@ -154,21 +154,32 @@ void grid_swsr_copy(struct grid_swsr_t* src, struct grid_swsr_t* dest, size_t si
   grid_swsr_write(dest, &swsr->data[starts[1]], lengths[1]);
 }
 
-int grid_swsr_cspn(struct grid_swsr_t* swsr, char reject) {
+int grid_swsr_until_msg_end(struct grid_swsr_t* swsr) {
+
+  char fst = 0x04;
+  char snd = '\n';
+
+  int capa = swsr->capacity;
+  int write = swsr->write;
+  char* data = swsr->data;
 
   int i = 0;
 
-  int first = (swsr->read + 1) % swsr->capacity;
-  int j = first + 0;
+  int first = (swsr->read + 1) % capa;
+  int j = (first + 0) % capa;
+  int m = (j + 3) % capa;
 
-  int write = swsr->write;
-  while (j != write && swsr->data[j] != reject) {
-    j = ((++i) + first) % swsr->capacity;
+  while (j != write && !(data[j] == fst && data[m] == snd)) {
+    j = (first + (++i)) % capa;
+    m = (m + 1) % capa;
   }
 
-  bool found = j != write && swsr->data[j] == reject;
+  int k = (j + 1) % capa;
+  int l = (j + 2) % capa;
+  bool found = j != write && k != write && l != write && m != write;
+  found = found && data[j] == fst && data[m] == snd;
 
-  return found ? i : -1;
+  return found ? i + 3 : -1;
 }
 
 int grid_uwsr_malloc(struct grid_uwsr_t* uwsr, int capacity, char reject) {
@@ -246,3 +257,29 @@ void grid_uwsr_read(struct grid_uwsr_t* uwsr, void* dest, int size) {
 }
 
 bool grid_uwsr_overflow(struct grid_uwsr_t* uwsr) { return uwsr->data[uwsr->read] != 0; }
+
+int grid_uwsr_until_msg_end(struct grid_uwsr_t* uwsr) {
+
+  char fst = 0x04;
+  char snd = '\n';
+
+  int capa = uwsr->capacity;
+  int read = uwsr->read;
+  char* data = uwsr->data;
+
+  int first = read + 1;
+  int j = (first + uwsr->seek) % capa;
+  int m = (j + 3) % capa;
+
+  while (j != read && !(data[j] == fst && data[m] == snd) && data[j] && data[m]) {
+    j = (first + (++uwsr->seek)) % capa;
+    m = (m + 1) % capa;
+  }
+
+  int k = (j + 1) % capa;
+  int l = (j + 2) % capa;
+  bool found = data[j] && data[k] && data[l] && data[m];
+  found = found && data[j] == fst && data[m] == snd;
+
+  return found ? uwsr->seek + 3 : -1;
+}

@@ -186,7 +186,7 @@ void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct gri
 
   struct grid_swsr_t* rx = grid_port_get_rx(port);
 
-  int ret = grid_swsr_cspn(rx, '\n');
+  int ret = grid_swsr_until_msg_end(rx);
 
   if (ret < 0) {
     return;
