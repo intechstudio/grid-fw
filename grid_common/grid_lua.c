@@ -206,6 +206,7 @@ void grid_lua_ui_init(struct grid_lua_model* lua, lua_ui_init_callback_t callbac
   }
 
   callback(lua);
+  grid_lua_dostring(lua, "init_simple_color()");
 
   // grid_lua_debug_memory_stats(lua, "Ui init");
 }

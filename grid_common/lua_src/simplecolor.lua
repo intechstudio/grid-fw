@@ -79,3 +79,13 @@ init_element_color = function(self)
         glx(i, l, up(z))
     end
 end
+
+init_simple_color = function()
+  for i = 0, #ele do
+    if ele[i].type == 'endless' then
+      init_endless_color(ele[i])
+    else
+      init_element_color(ele[i])
+    end
+  end
+end
