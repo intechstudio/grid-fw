@@ -206,6 +206,7 @@ void grid_lua_ui_init(struct grid_lua_model* lua, lua_ui_init_callback_t callbac
   }
 
   callback(lua);
+  grid_lua_dostring(lua, "init_simple_color()");
 
   // grid_lua_debug_memory_stats(lua, "Ui init");
 }
@@ -254,8 +255,10 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, GRID_LUA_FNC_G_MAPSAT_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SIGN_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SEGCALC_source);
-  // grid_lua_dostring(lua, GRID_LUA_FNC_G_TOML_source);
+  grid_lua_dostring(lua, GRID_LUA_FNC_G_TIMER_source);
   grid_lua_dostring(lua, "midi_fifo = {}");
+  // grid_lua_dostring(lua, GRID_LUA_FNC_G_TOML_source);
+  grid_lua_dostring(lua, grid_lua_src_simplecolor_lua);
   grid_lua_dostring(lua, "midi_fifo_highwater = 0");
   grid_lua_dostring(lua, "midi_fifo_retriggercount = 0");
   grid_lua_dostring(lua, "midi = {}");
