@@ -92,7 +92,7 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
     grid_swsr_read(rx, NULL, grid_swsr_size(rx));
   }
 
-  int ret = grid_swsr_cspn(rx, '\n');
+  int ret = grid_swsr_until_msg_end(rx);
 
   if (ret < 0) {
     return;

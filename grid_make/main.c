@@ -316,7 +316,7 @@ void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, s
     grid_platform_reset_grid_transmitter(grid_port_dir_to_code(port->dir));
   }
 
-  int ret = grid_uwsr_cspn(uwsr);
+  int ret = grid_uwsr_until_msg_end(uwsr);
 
   if (ret < 0) {
     return;
