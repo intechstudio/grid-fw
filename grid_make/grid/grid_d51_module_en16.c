@@ -60,7 +60,7 @@ static void hardware_init(void) {
 
   spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
   spi_m_async_set_baudrate(&UI_SPI,
-                           1000000); // was 400000 check clock div setting
+                           100000); // was 400000 check clock div setting
 
   spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, spi_transfer_complete_cb);
 }
