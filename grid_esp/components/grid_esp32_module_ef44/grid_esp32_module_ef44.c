@@ -85,6 +85,10 @@ void grid_esp32_module_ef44_task(void* arg) {
   memset(potmeter_last_real_time, 0, GRID_MODULE_EF44_POT_NUM * sizeof(uint64_t));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
+  grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
+
+  elements = grid_ui_model_get_elements(&grid_ui_state);
+
   grid_esp32_encoder_init(&grid_esp32_encoder_state, 1, ef44_process_encoder);
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EF44_ND_RevD;
   int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
@@ -92,14 +96,10 @@ void grid_esp32_module_ef44_task(void* arg) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
 
-  grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
-
   grid_esp32_adc_init(&grid_esp32_adc_state, ef44_process_analog);
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, 2);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(&grid_sys_state);
   grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
-
-  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   while (1) {
 
