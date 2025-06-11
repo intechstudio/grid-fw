@@ -15,6 +15,7 @@
 #include "grid_ui_encoder.h"
 #include "grid_ui_system.h"
 
+#include "grid_platform.h"
 #include "grid_sys.h"
 
 #include "grid_esp32_encoder.h"
@@ -23,7 +24,7 @@
 
 #define GRID_MODULE_EN16_ENC_NUM 16
 
-static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EN16_ENC_NUM] = {0};
+static struct grid_ui_encoder_state* DRAM_ATTR ui_encoder_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR en16_process_encoder(void* dma_buf) {
@@ -44,6 +45,9 @@ void IRAM_ATTR en16_process_encoder(void* dma_buf) {
 }
 
 void grid_esp32_module_en16_task(void* arg) {
+
+  ui_encoder_state = grid_platform_allocate_volatile(GRID_MODULE_EN16_ENC_NUM * sizeof(struct grid_ui_encoder_state));
+  memset(ui_encoder_state, 0, GRID_MODULE_EN16_ENC_NUM * sizeof(struct grid_ui_encoder_state));
 
   grid_esp32_encoder_init(&grid_esp32_encoder_state, 1, en16_process_encoder);
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD;
