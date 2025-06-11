@@ -12,18 +12,23 @@
 #include "grid_module.h"
 #include "grid_ui.h"
 
+#include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
 #include "grid_ui_system.h"
 
+#include "grid_platform.h"
 #include "grid_sys.h"
 
 #include "grid_esp32_encoder.h"
 
 // static const char* TAG = "module_en16";
 
+#define GRID_MODULE_EN16_BUT_NUM 16
+
 #define GRID_MODULE_EN16_ENC_NUM 16
 
-static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EN16_ENC_NUM] = {0};
+static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
+static struct grid_ui_encoder_state* DRAM_ATTR ui_encoder_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR en16_process_encoder(void* dma_buf) {
@@ -40,10 +45,25 @@ void IRAM_ATTR en16_process_encoder(void* dma_buf) {
     struct grid_ui_element* ele = &elements[idx];
 
     grid_ui_encoder_store_input(ele, &ui_encoder_state[idx], value);
+
+    uint8_t button_value = value & 0b00000100;
+
+    grid_ui_button_store_input(ele, &ui_button_state[idx], button_value, 1);
   }
 }
 
 void grid_esp32_module_en16_task(void* arg) {
+
+  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_EN16_BUT_NUM * sizeof(struct grid_ui_button_state));
+  ui_encoder_state = grid_platform_allocate_volatile(GRID_MODULE_EN16_ENC_NUM * sizeof(struct grid_ui_encoder_state));
+  memset(ui_button_state, 0, GRID_MODULE_EN16_BUT_NUM * sizeof(struct grid_ui_button_state));
+  memset(ui_encoder_state, 0, GRID_MODULE_EN16_ENC_NUM * sizeof(struct grid_ui_encoder_state));
+
+  for (int i = 0; i < GRID_MODULE_EN16_BUT_NUM; ++i) {
+    grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
+  }
+
+  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   grid_esp32_encoder_init(&grid_esp32_encoder_state, 1, en16_process_encoder);
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD;
@@ -51,8 +71,6 @@ void grid_esp32_module_en16_task(void* arg) {
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
-
-  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   while (1) {
 
