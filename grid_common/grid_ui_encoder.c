@@ -258,14 +258,8 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
 
   delta *= state->direction;
 
-  // shift register bits arrangement: MSB to LSB
-  // GND Button PhaseB PhaseA
-  uint8_t new_button_value = (new_value & 0b00000100) ? 1 : 0;
-  uint8_t old_button_value = (old_value & 0b00000100) ? 1 : 0;
-
   // Evaluate the results
   if (state->initial_samples > GRID_UI_ENCODER_INIT_SAMPLES) {
-    grid_ui_button_update_trigger(ele, &state->button_last_real_time, old_button_value, new_button_value);
     grid_ui_encoder_update_trigger(ele, &state->encoder_last_real_time, delta);
   }
 }

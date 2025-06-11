@@ -1,13 +1,17 @@
 #include "grid_d51_module_en16.h"
 
+#include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
 #include "grid_ui_system.h"
 
 static uint8_t UI_SPI_TX_BUFFER[14] = {0};
 static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 
+#define GRID_MODULE_EN16_BUT_NUM 16
+
 #define GRID_MODULE_EN16_ENC_NUM 16
 
+static struct grid_ui_button_state ui_button_state[GRID_MODULE_EN16_BUT_NUM] = {0};
 static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EN16_ENC_NUM] = {0};
 static struct grid_ui_element* elements = NULL;
 
@@ -40,6 +44,10 @@ static void spi_transfer_complete_cb(void) {
     struct grid_ui_element* ele = &elements[i];
 
     grid_ui_encoder_store_input(ele, &ui_encoder_state[i], new_value);
+
+    uint8_t button_value = new_value & 0b00000100;
+
+    grid_ui_button_store_input(ele, &ui_button_state[i], button_value, 1);
   }
 
   hardware_start_transfer();
@@ -60,6 +68,10 @@ static void hardware_init(void) {
 void grid_module_en16_init() {
 
   grid_module_en16_ui_init(NULL, &grid_led_state, &grid_ui_state);
+
+  for (int i = 0; i < GRID_MODULE_EN16_BUT_NUM; ++i) {
+    grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
+  }
 
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD;
   int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
