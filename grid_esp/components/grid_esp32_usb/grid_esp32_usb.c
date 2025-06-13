@@ -33,6 +33,8 @@ static const char* TAG = "USB example";
 
 void tud_midi_rx_cb(uint8_t itf) {
 
+  (void)itf;
+
   // ets_printf("MIDI RX: %d\n", itf);
 
   // The MIDI interface always creates input and output port/jack descriptors
@@ -42,10 +44,14 @@ void tud_midi_rx_cb(uint8_t itf) {
   bool read = false;
 
   while (tud_midi_available()) {
-    read = tud_midi_packet_read(packet);
-    if (read) {
-      // ets_printf("Read, Data: %02x %02x %02x %02x\r\n", packet[0], packet[1],
-      // packet[2], packet[3]);
+
+    if (!grid_midi_rx_writable()) {
+      break;
+    }
+
+    if (tud_midi_packet_read(packet)) {
+
+      // ets_printf("Read, Data: %02x %02x %02x %02x\r\n", packet[0], packet[1], packet[2], packet[3]);
 
       uint8_t channel = packet[1] & 0x0f;
       uint8_t command = packet[1] & 0xf0;
@@ -61,11 +67,6 @@ void tud_midi_rx_cb(uint8_t itf) {
       midi_ev.byte1 = command;
       midi_ev.byte2 = param1;
       midi_ev.byte3 = param2;
-
-      if ((midi_ev.byte0 == 8 || midi_ev.byte0 == 10 || midi_ev.byte0 == 12) && midi_ev.byte1 == 240) {
-        // if element's timer clock source is midi then decrement timer_helper
-        grid_platform_sync1_pulse_send();
-      }
 
       grid_midi_rx_push(midi_ev);
     }
@@ -331,7 +332,13 @@ void grid_esp32_usb_task(void* arg) {
 
   ESP_LOGD(TAG, "tinyusb task started");
   while (1) { // RTOS forever loop
+
     tud_task();
+
+    // Duplicate midi rx callback used as a polling mechanism, as the
+    // actual callback may not necessarily process all available data
+    tud_midi_rx_cb(0);
+
     taskYIELD();
   }
 }

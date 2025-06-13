@@ -184,6 +184,8 @@ void grid_msg_packet_body_append_printf(struct grid_msg_packet* packet, char con
 
   packet->body_length += packet->last_appended_length;
 
+  assert(packet->body_length <= grid_msg_packet_body_maxlength);
+
   return;
 }
 

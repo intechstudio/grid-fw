@@ -255,6 +255,17 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
   }
 }
 
+struct grid_utask_timer timer_midi_rx;
+
+void grid_utask_midi_rx(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  grid_midi_rx_pop();
+}
+
 // TODO direction should possibly remain in character-space, not [0, 4)
 // or rewrite d51 as well.
 
@@ -410,6 +421,10 @@ void grid_esp32_port_task(void* arg) {
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_UICOOLDOWN_us,
   };
+  timer_midi_rx = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000,
+  };
 
   struct grid_transport* xport = &grid_transport_state;
 
@@ -445,8 +460,6 @@ void grid_esp32_port_task(void* arg) {
       grid_msg_set_heartbeat_type(&grid_msg_state, 1);
     }
 
-    grid_midi_rx_pop();
-
     struct grid_port* port_ui = grid_transport_get_port(xport, 4, GRID_PORT_UI, 0);
     struct grid_port* port_usb = grid_transport_get_port(xport, 5, GRID_PORT_USB, 0);
 
@@ -465,6 +478,7 @@ void grid_esp32_port_task(void* arg) {
     grid_utask_heart(&timer_heart);
     grid_utask_midi_and_keyboard_tx(&timer_midi_and_keyboard_tx);
     grid_utask_process_ui(&timer_process_ui);
+    grid_utask_midi_rx(&timer_midi_rx);
 
     // Outbound USB
     grid_port_send_usb(port_usb);

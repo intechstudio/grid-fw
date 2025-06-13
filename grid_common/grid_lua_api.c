@@ -867,7 +867,7 @@ int l_grid_cat(lua_State* L) {
   uint8_t param1 = param[2];
   uint8_t param2 = param[3];
 
-  char midiframe[20] = {0};
+  char midiframe[15] = {0};
 
   sprintf(midiframe, GRID_CLASS_MIDI_frame);
 
@@ -878,8 +878,10 @@ int l_grid_cat(lua_State* L) {
   grid_str_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, param1, NULL);
   grid_str_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2, NULL);
 
-  // grid_platform_printf("MIDI: %s\r\n", midiframe);
-  strcat(grid_lua_state.stdo, midiframe);
+  if (grid_lua_append_stdo(&grid_lua_state, midiframe)) {
+    strcat(grid_lua_state.stde, "#stdoFull");
+    return 0;
+  }
 
   return 1;
 }
