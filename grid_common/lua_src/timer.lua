@@ -20,13 +20,13 @@ function check_timers()
     local now = os.clock()
     for timerId, timer in pairs(timers) do
         if now >= timer.time then
-            print("Servicing timer"..timerId.." now")
+            --print("Servicing timer"..timerId.." now")
             local retrigger = timer.callback(timer)
             if retrigger == true then
-              print("Retriggering timer"..timerId.." now")
+              --print("Retriggering timer"..timerId.." now")
               timers[timerId].time = timers[timerId].time + timers[timerId].interval
             else
-              print("Deleting timer"..timerId.." now")
+              --print("Deleting timer"..timerId.." now")
               timers[timerId] = nil
             end
         end
