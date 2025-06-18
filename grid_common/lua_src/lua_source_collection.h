@@ -16,9 +16,6 @@
 #define GRID_LUA_FNC_G_LIMIT_short "glim"
 #define GRID_LUA_FNC_G_LIMIT_human "limit"
 
-#include "timer.h"
-#define GRID_LUA_FNC_G_TIMER_source grid_lua_src_timer_lua
-
 #include "mapsat.h"
 #define GRID_LUA_FNC_G_MAPSAT_source grid_lua_src_mapsat_lua
 #define GRID_LUA_FNC_G_MAPSAT_short "gmaps"
