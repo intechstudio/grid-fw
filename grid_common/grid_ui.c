@@ -1019,7 +1019,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
       struct grid_ui_event* eve = &ele->event_list[j];
 
       if (eve->type == GRID_PARAMETER_EVENT_INIT) {
-        // not needed, now handeled via post_init_cb from lua
+        // not needed, now handled via post_init_cb from lua
         // grid_ui_event_trigger_local(eve);
       }
     }
