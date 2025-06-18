@@ -286,7 +286,7 @@ void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button
 
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_BUTTON);
 
-  grid_ui_event_trigger(eve);
+  grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
 }
 
 void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_button_state* state, uint16_t value, uint8_t adc_bit_depth) {
@@ -420,5 +420,5 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_BUTTON);
 
-  grid_ui_event_trigger(eve);
+  grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
 }

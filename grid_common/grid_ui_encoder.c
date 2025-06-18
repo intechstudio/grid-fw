@@ -236,7 +236,7 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
 
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENCODER);
 
-  grid_ui_event_trigger(eve);
+  grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
 
   return 1; // did trigger
 }

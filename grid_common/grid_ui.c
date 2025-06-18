@@ -70,8 +70,6 @@ void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
 
   ui->lua_ui_init_callback = NULL;
 
-  ui->status = GRID_UI_STATUS_INITIALIZED;
-
   ui->page_activepage = 0;
   ui->page_count = 4;
 
@@ -132,8 +130,6 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   ele->template_parameter_element_position_index_1 = 0;
   ele->template_parameter_element_position_index_2 = 0;
 
-  ele->status = GRID_UI_STATUS_INITIALIZED;
-
   ele->timer_event_helper = 0;
   ele->timer_source_is_midi = 0;
 
@@ -147,16 +143,12 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t even
   struct grid_ui_event* eve = &ele->event_list[index];
 
   eve->parent = ele;
-  eve->index = index;
-  eve->type = event_type;
-  strcpy(eve->function_name, function_name);
+  eve->state = GRID_EVE_STATE_INIT;
   eve->default_actionstring = default_actionstring;
-
-  eve->status = GRID_UI_STATUS_READY;
-
   eve->cfg_changed_flag = 0;
   eve->cfg_default_flag = 1;
-  eve->cfg_flashempty_flag = 1;
+  eve->type = event_type;
+  strcpy(eve->function_name, function_name);
 }
 
 void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui) {
@@ -177,7 +169,7 @@ void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui) {
 
           if (eve != NULL) {
 
-            grid_ui_event_trigger(eve);
+            grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
           }
         }
       }
@@ -203,7 +195,7 @@ void grid_ui_midi_sync_tick_time(struct grid_ui_model* ui) {
 
           if (eve != NULL) {
 
-            grid_ui_event_trigger(eve);
+            grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
           }
         }
       }
@@ -228,7 +220,7 @@ void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmod
       } else {
       }
 
-      grid_ui_event_trigger(eve);
+      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
     }
   }
 }
@@ -369,7 +361,7 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
     for (uint8_t j = 0; j < ele->event_list_length; j++) {
       struct grid_ui_event* eve = &ele->event_list[j];
 
-      grid_ui_event_reset(eve);
+      grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }
 
     // if (ele->template_initializer!=NULL){
@@ -708,41 +700,9 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
   return 0;
 }
 
-void grid_ui_event_trigger_local(struct grid_ui_event* eve) {
+uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve) { return eve != NULL && eve->state == GRID_EVE_STATE_TRIG; }
 
-  if (eve != NULL) {
-
-    eve->trigger = GRID_UI_STATUS_TRIGGERED_LOCAL;
-  }
-}
-void grid_ui_event_reset(struct grid_ui_event* eve) {
-
-  if (eve != NULL) {
-    eve->trigger = GRID_UI_STATUS_READY;
-  }
-}
-
-uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve) {
-
-  if (eve != NULL && eve->trigger == GRID_UI_STATUS_TRIGGERED) {
-
-    return 1;
-  } else {
-
-    return 0;
-  }
-}
-
-uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve) {
-
-  if (eve != NULL && eve->trigger == GRID_UI_STATUS_TRIGGERED_LOCAL) {
-
-    return 1;
-  } else {
-
-    return 0;
-  }
-}
+uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve) { return eve != NULL && eve->state == GRID_EVE_STATE_TRIG_LOCAL; }
 
 uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui) {
 
@@ -1012,7 +972,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
       struct grid_ui_event* eve = &ele->event_list[j];
 
       if (eve->type == GRID_PARAMETER_EVENT_INIT) {
-        grid_ui_event_trigger_local(eve);
+        grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
       }
     }
   }
@@ -1389,7 +1349,7 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui) {
         if (grid_ui_event_istriggered_local(eve)) {
 
           offset_local += grid_ui_event_render_action(eve, &payload_local[offset_local]);
-          grid_ui_event_reset(eve);
+          grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
 
           // automatically report elementname after config
           if (ele->type != GRID_PARAMETER_ELEMENT_SYSTEM) {
@@ -1474,7 +1434,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
 
           message.body_length += grid_ui_event_render_action(eve, &message.body[offset]);
 
-          grid_ui_event_reset(eve);
+          grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
 
           // retrigger midiRX event automatically if midi_fifo is not empty
 

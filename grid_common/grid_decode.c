@@ -447,7 +447,7 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
     eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_MIDIRX);
     if (eve != NULL) {
 
-      grid_ui_event_trigger(eve);
+      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
     }
   }
 
@@ -1173,7 +1173,7 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
 
             // grid_port_debug_printf("autotrigger: %d", autotrigger);
 
-            grid_ui_event_trigger_local(eve);
+            grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
           }
         }
 
