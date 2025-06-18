@@ -587,18 +587,7 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, char* target_str
   strcpy(target_string, stdo);
   grid_lua_clear_stdo(&grid_lua_state);
 
-  char* stde = grid_lua_get_error_string(&grid_lua_state);
-
-  if (strlen(stde)) {
-
-    char* dest = &target_string[strlen(target_string)];
-
-    sprintf(dest, GRID_CLASS_DEBUGTEXT_frame_start);
-    strcat(dest, stde);
-    sprintf(&dest[strlen(dest)], GRID_CLASS_DEBUGTEXT_frame_end);
-
-    grid_lua_clear_stde(&grid_lua_state);
-  }
+  grid_lua_clear_stde(&grid_lua_state);
 
   // Call the event clear callback
   if (eve->parent->event_clear_cb) {
