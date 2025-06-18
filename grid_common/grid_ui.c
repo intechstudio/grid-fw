@@ -1525,3 +1525,28 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
 
   grid_ui_busy_semaphore_release(ui);
 }
+
+void grid_port_process_timer_UNSAFE(struct grid_ui_model* ui) {
+  grid_ui_busy_semaphore_lock(ui);
+
+  grid_lua_clear_stdo(&grid_lua_state);
+
+  grid_lua_dostring(&grid_lua_state, "check_timers()");
+
+  char* stdo = grid_lua_get_output_string(&grid_lua_state);
+
+  if (strlen(stdo) > 0) {
+
+    struct grid_msg_packet response;
+    grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+    response.body_length += sprintf(response.body, "%s", stdo);
+
+    grid_msg_packet_close(&grid_msg_state, &response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
+
+    grid_lua_clear_stdo(&grid_lua_state);
+  }
+
+  grid_ui_busy_semaphore_release(ui);
+}
