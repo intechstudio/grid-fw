@@ -564,86 +564,30 @@ uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, char* target_str
 
   char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
-  uint32_t i = 0;
+  sprintf(temp, "ele[%d]:%s(self)", eve->parent->index, eve->function_name);
 
-  sprintf(temp, "<?lua ele[%d]:%s(self) ?>", eve->parent->index, eve->function_name);
+  if (0 == grid_lua_dostring(&grid_lua_state, temp)) {
 
-  // new php style implementation
-  uint32_t code_start = 0;
-  uint32_t code_end = 0;
-  uint32_t code_length = 0;
-  uint32_t code_type = 0; // 0: nocode, 1: expr, 2: lua
-
-  uint32_t total_substituted_length = 0;
-
-  uint32_t length = strlen(temp);
-
-  for (i = 0; i < length; i++) {
-
-    target_string[i - total_substituted_length] = temp[i];
-
-    if (0 == strncmp(&temp[i], "<?lua ", 6)) {
-
-      // grid_platform_printf("<?lua \r\n");
-      code_start = i;
-      code_end = i;
-      code_type = 2; // 2=lua
-    } else if (0 == strncmp(&temp[i], " ?>", 3)) {
-
-      code_end = i + 3; // +3 because  ?>
-      // grid_platform_printf(" ?>\r\n");
-
-      if (code_type == 2) { // LUA
-
-        temp[i] = 0; // terminating zero for lua dostring
-
-        if (0 == grid_lua_dostring(&grid_lua_state, &temp[code_start + 6])) {
-          grid_port_debug_printf("LUA not OK! EL: %d EV: %d MSG: %s", eve->parent->index, eve->type, grid_lua_get_error_string(&grid_lua_state));
-          grid_platform_printf("LUA not OK! EL: %d EV: %d MSG: %s\r\n", eve->parent->index, eve->type, grid_lua_get_error_string(&grid_lua_state));
-          grid_lua_clear_stde(&grid_lua_state);
-        }
-
-        uint32_t code_stdo_length = strlen(grid_lua_get_output_string(&grid_lua_state));
-
-        temp[i] = ' '; // reverting terminating zero to space
-
-        i += 3 - 1; // +3 because  ?> -1 because i++
-        code_length = code_end - code_start;
-
-        strcpy(&target_string[code_start - total_substituted_length], grid_lua_get_output_string(&grid_lua_state));
-
-        uint8_t errorlen = 0;
-
-        if (strlen(grid_lua_get_error_string(&grid_lua_state))) {
-
-          char* dest = &target_string[code_start - total_substituted_length + code_stdo_length];
-
-          sprintf(dest, GRID_CLASS_DEBUGTEXT_frame_start);
-          strcat(dest, grid_lua_get_error_string(&grid_lua_state));
-          sprintf(&dest[strlen(dest)], GRID_CLASS_DEBUGTEXT_frame_end);
-
-          errorlen = strlen(dest);
-
-          grid_lua_clear_stde(&grid_lua_state);
-        }
-
-        total_substituted_length += code_length - code_stdo_length - errorlen;
-
-        // grid_lua_debug_memory_stats(&grid_lua_state, "Ui");
-        grid_lua_clear_stdo(&grid_lua_state);
-      }
-      code_type = 0;
-    }
+    char* stde = grid_lua_get_error_string(&grid_lua_state);
+    grid_port_debug_printf("LUA not OK! EL: %d EV: %d MSG: %s", eve->parent->index, eve->type, stde);
+    grid_platform_printf("LUA not OK! EL: %d EV: %d MSG: %s\r\n", eve->parent->index, eve->type, stde);
+    grid_lua_clear_stde(&grid_lua_state);
   }
 
-  // Call the event clear callback
+  char* stdo = grid_lua_get_output_string(&grid_lua_state);
+  size_t stdo_len = strlen(stdo);
+  strcpy(target_string, stdo);
+  grid_lua_clear_stdo(&grid_lua_state);
 
-  if (eve->parent->event_clear_cb != NULL) {
+  grid_lua_clear_stde(&grid_lua_state);
+
+  // Call the event clear callback
+  if (eve->parent->event_clear_cb) {
 
     eve->parent->event_clear_cb(eve);
   }
 
-  return length - total_substituted_length;
+  return strlen(target_string);
 }
 
 int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, uint8_t event_type, char* targetstring) {
