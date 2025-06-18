@@ -882,13 +882,14 @@ int grid_ui_bulk_conf_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t 
     return 1;
   }
 
-  grid_platform_printf("NVM: Config init\r\n");
   // update lastheader_id even if busy (during retry)
   ui->bulk_lastheader_id = lastheader_id;
 
   if (grid_ui_bulk_anything_is_in_progress(ui)) {
     return 1;
   }
+
+  grid_platform_printf("NVM: Config init\r\n");
 
   grid_ui_bulk_semaphore_lock(ui);
 

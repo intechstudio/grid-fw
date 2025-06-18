@@ -518,24 +518,9 @@ uint8_t grid_decode_imediate_to_ui(char* header, char* chunk) {
 
     // printf("IMMEDIATE %d: %s\r\n", length, lua_script);
     grid_lua_clear_stdo(&grid_lua_state);
-
-    char* message = &lua_script[6];
-    uint32_t message_length = strlen(message);
-
-    size_t decoded_length = 0;
-    char decoded_message[(message_length / 4) * 3 + 1]; // Allocate memory on the stack for decoded message
-
-    grid_platform_printf("Encoded message = %s\n", message);
-
-    decoded_length = grid_str_base64_decode(message, (unsigned char*)decoded_message);
-
-    decoded_message[decoded_length] = '\0'; // Null-terminate the decoded string
-    grid_platform_printf("Decoded length = %d\n", decoded_length);
-    grid_platform_printf("Contents = %s\n", decoded_message);
+    grid_lua_dostring(&grid_lua_state, &lua_script[6]);
 
     lua_script[length - 3] = ' '; // restore packet!
-
-    grid_lua_dostring(&grid_lua_state, decoded_message);
 
     // Prepare packet header GLOBAL
     struct grid_msg_packet message_global;

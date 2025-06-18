@@ -228,7 +228,7 @@ void grid_port_send_usart(struct grid_port* port) {
 
   struct grid_swsr_t* tx = grid_port_get_tx(port);
 
-  int ret = grid_swsr_cspn(tx, '\n');
+  int ret = grid_swsr_until_msg_end(tx);
 
   if (ret < 0) {
     return;
@@ -243,7 +243,7 @@ void grid_port_send_usb(struct grid_port* port) {
 
   struct grid_swsr_t* tx = grid_port_get_tx(port);
 
-  int ret = grid_swsr_cspn(tx, '\n');
+  int ret = grid_swsr_until_msg_end(tx);
 
   if (ret < 0) {
     return;
@@ -287,7 +287,7 @@ void grid_port_send_ui(struct grid_port* port) {
 
   struct grid_swsr_t* tx = grid_port_get_tx(port);
 
-  int ret = grid_swsr_cspn(tx, '\n');
+  int ret = grid_swsr_until_msg_end(tx);
 
   if (ret < 0) {
     return;

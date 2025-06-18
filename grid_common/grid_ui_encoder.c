@@ -174,26 +174,18 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* en
   int32_t* template_parameter_list = ele->template_parameter_list;
   template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] = encoder_elapsed_time / MS_TO_US;
 
-  int32_t min = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
-  int32_t max = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
+  int32_t tmin = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MIN_index];
+  int32_t tmax = template_parameter_list[GRID_LUA_FNC_E_ENCODER_MAX_index];
+  int32_t min = MIN(tmin, tmax);
+  int32_t max = MAX(tmin, tmax);
 
-  // inver range if min is greater then max
-  if (min > max) {
+  // invert delta if necessary
+  if (tmin > tmax) {
     delta = -delta;
-    int32_t tmp = min;
-    min = max;
-    max = tmp;
   }
 
   double elapsed_ms = encoder_elapsed_time / MS_TO_US;
-
-  if (elapsed_ms > 25) {
-    elapsed_ms = 25;
-  }
-
-  if (elapsed_ms < 1) {
-    elapsed_ms = 1;
-  }
+  elapsed_ms = clampf64(elapsed_ms, 1, 25);
 
   double minmaxscale = (max - min) / 128.0;
 

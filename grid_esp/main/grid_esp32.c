@@ -368,4 +368,4 @@ void grid_platform_system_reset() { ets_printf("grid_platform_system_reset NOT I
 
 void grid_platform_nvm_defrag() { ets_printf("grid_platform_nvm_defrag NOT IMPLEMENTED!!!\r\n"); }
 
-uint8_t grid_platform_get_adc_bit_depth() { return 12; }
+uint8_t IRAM_ATTR grid_platform_get_adc_bit_depth() { return 12; }
