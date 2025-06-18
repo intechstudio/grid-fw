@@ -34,8 +34,6 @@ struct grid_ui_event {
 
   const char* default_actionstring;
 
-  char* actionstring;
-
   uint8_t cfg_changed_flag;
   uint8_t cfg_default_flag;
 
