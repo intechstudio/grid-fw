@@ -54,7 +54,7 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_BUTTON_short) "," \
   GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_TIMER_short) "," \
   GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_ENDLESS_short) "," \
-  "post_init_cb = function (self) self:GRID_LUA_FNC_A_BUTTON_short() self:GRID_LUA_FNC_A_ENDLESS_short() end," \
+  "post_init_cb = function (self) self:"GRID_LUA_FNC_A_INIT_short"() self:"GRID_LUA_FNC_A_BUTTON_short"() self:"GRID_LUA_FNC_A_ENDLESS_short"() end," \
   \
   GRID_LUA_FNC_ASSIGN_META_PAR1("gtt", GRID_LUA_FNC_G_TIMER_START_short) "," \
   GRID_LUA_FNC_ASSIGN_META_PAR0("gtp", GRID_LUA_FNC_G_TIMER_STOP_short) "," \

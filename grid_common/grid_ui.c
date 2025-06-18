@@ -31,6 +31,12 @@ extern uint8_t grid_platform_get_adc_bit_depth();
 
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 
+void post_init_lua_hook(void) {
+
+  grid_lua_dostring(&grid_lua_state, "init_simple_color() ele[#ele]:post_init_cb() for i = 0, #ele-1 do ele[i]:post_init_cb() end");
+  grid_lua_clear_stdo(&grid_lua_state);
+}
+
 void grid_ui_semaphore_init(struct grid_ui_semaphore* semaphore, void* handle, void (*lock_fn)(void*), void (*release_fn)(void*)) {
 
   semaphore->handle = handle;
@@ -435,6 +441,7 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
 void grid_ui_page_load_success_callback(uint8_t lastheader) {
 
   // grid_platform_printf("LOAD SUCCESS\r\n");
+  post_init_lua_hook();
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
   // phase out the animation
@@ -1012,10 +1019,13 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
       struct grid_ui_event* eve = &ele->event_list[j];
 
       if (eve->type == GRID_PARAMETER_EVENT_INIT) {
-        grid_ui_event_trigger_local(eve);
+        // not needed, now handeled via post_init_cb from lua
+        // grid_ui_event_trigger_local(eve);
       }
     }
   }
+
+  post_init_lua_hook();
 
   // step 5: run the success callback if available
 
