@@ -288,6 +288,12 @@ void grid_ui_endless_store_input(struct grid_ui_element* ele, uint8_t input_chan
 
   int32_t* template_parameter_list = ele->template_parameter_list;
 
+  int stabilized = grid_ain_stabilized(&grid_ain_state, input_channel);
+
+  if (!stabilized) {
+    memcpy(old_value, new_value, sizeof(struct grid_ui_endless_state));
+  }
+
   uint16_t value_degrees_new = grid_ui_endless_calculate_angle(new_value->phase_a, new_value->phase_b, 12);
   uint16_t value_degrees_old = grid_ui_endless_calculate_angle(old_value->phase_a, old_value->phase_b, 12);
 
@@ -314,7 +320,6 @@ void grid_ui_endless_store_input(struct grid_ui_element* ele, uint8_t input_chan
     if (abs(delta) > 10) {
 
       template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = value_degrees_new / 20;
-      int stabilized = grid_ain_stabilized(&grid_ain_state, input_channel);
       grid_ui_endless_update_trigger(ele, stabilized, delta, &old_value->encoder_last_real_time, &old_value->delta_vel_frac);
 
       old_value->phase_a = new_value->phase_a;
