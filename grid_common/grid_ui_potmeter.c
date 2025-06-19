@@ -118,7 +118,7 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
     struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_POTMETER);
 
     if (grid_ain_stabilized(&grid_ain_state, input_channel)) {
-      grid_ui_event_trigger(eve);
+      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
     }
   }
 }

@@ -216,7 +216,7 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENDLESS);
 
   if (stabilized) {
-    grid_ui_event_trigger(eve);
+    grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
   }
 
   return 1;

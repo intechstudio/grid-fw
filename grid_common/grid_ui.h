@@ -20,70 +20,53 @@ union grid_ui_file_handle {
   void* toc_ptr;
 };
 
-enum grid_ui_status_t {
-  GRID_UI_STATUS_UNDEFINED,
-  GRID_UI_STATUS_INITIALIZED,
-  GRID_UI_STATUS_TRAP,
-
-  GRID_UI_STATUS_OK,
-
-  GRID_UI_STATUS_READY,
-  GRID_UI_STATUS_TRIGGERED,
-
-  GRID_UI_STATUS_TRIGGERED_LOCAL
-
+enum grid_eve_state_t {
+  GRID_EVE_STATE_INIT = 0,
+  GRID_EVE_STATE_TRIG,
+  GRID_EVE_STATE_TRIG_LOCAL,
 };
 
 struct grid_ui_event {
 
-  enum grid_ui_status_t status;
-
   struct grid_ui_element* parent;
-  uint8_t index;
+
+  enum grid_eve_state_t state;
 
   const char* default_actionstring;
 
-  enum grid_ui_status_t trigger;
+  uint8_t cfg_changed_flag;
+  uint8_t cfg_default_flag;
 
   uint8_t type;
 
-  uint16_t action_string_length;
-
-  char* action_string;
-
   char function_name[10];
-
-  uint8_t cfg_changed_flag;
-  uint8_t cfg_default_flag;
-  uint8_t cfg_flashempty_flag;
 };
+
+void grid_ui_event_state_set(struct grid_ui_event* eve, enum grid_eve_state_t state);
 
 struct grid_ui_template_buffer {
 
   struct grid_ui_element* parent;
-  uint8_t page_number;
-  uint8_t status;
-  int32_t* template_parameter_list;
+
   struct grid_ui_template_buffer* next;
+
+  int32_t* template_parameter_list;
 };
 
 typedef void (*template_init_t)(struct grid_ui_template_buffer*);
 
 struct grid_ui_element {
-  enum grid_ui_status_t status;
 
   uint8_t timer_source_is_midi;
   uint32_t timer_event_helper;
 
   struct grid_ui_model* parent;
   uint8_t index;
-
   uint8_t type;
 
-  void (*template_initializer)(struct grid_ui_template_buffer*);
+  template_init_t template_initializer;
 
   struct grid_ui_template_buffer* template_buffer_list_head;
-
   uint8_t template_parameter_list_length;
   int32_t* template_parameter_list;
 
@@ -110,8 +93,6 @@ enum grid_ui_bulk_status_t {
 // struct grid_lua_model;
 
 struct grid_ui_model {
-
-  enum grid_ui_status_t status;
 
   struct grid_ui_semaphore busy_semaphore;
   struct grid_ui_semaphore bulk_semaphore;
@@ -179,10 +160,6 @@ void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstrin
 uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, char* target_string);
 int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, uint8_t event_type, char* targetstring);
 
-// grid ui event trigger
-void grid_ui_event_trigger(struct grid_ui_event* eve);
-void grid_ui_event_trigger_local(struct grid_ui_event* eve);
-void grid_ui_event_reset(struct grid_ui_event* eve);
 uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve);
 uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve);
 uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui);

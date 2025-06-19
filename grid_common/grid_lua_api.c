@@ -1730,7 +1730,7 @@ int l_grid_cat(lua_State* L) {
 
     if (eve != NULL) {
 
-      grid_ui_event_trigger(eve);
+      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
     } else {
       strcat(grid_lua_state.stde, "#invalidEvent");
       sprintf(&grid_lua_state.stde[strlen(grid_lua_state.stde) - 1], "%ld %ld", param[0], param[1]);
