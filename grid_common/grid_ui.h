@@ -62,13 +62,11 @@ struct grid_ui_element {
 
   struct grid_ui_model* parent;
   uint8_t index;
-
   uint8_t type;
 
-  void (*template_initializer)(struct grid_ui_template_buffer*);
+  template_init_t template_initializer;
 
   struct grid_ui_template_buffer* template_buffer_list_head;
-
   uint8_t template_parameter_list_length;
   int32_t* template_parameter_list;
 

@@ -314,95 +314,75 @@ uint8_t grid_ui_page_get_prev(struct grid_ui_model* ui) { return (ui->page_activ
 
 void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
 
+  grid_ui_bulk_semaphore_lock(ui);
   grid_ui_busy_semaphore_lock(ui);
 
-  /*
-
-          Reset encoder mode
-          Reset button mode
-          Reset potmeter mode/reso
-          Reset led animations
-
-  */
-
-  // reset all of the state parameters of all leds
+  // Reset all state parameters of all leds
   grid_led_reset(&grid_led_state);
 
+  // Store old page index for the page change callback
   uint8_t oldpage = ui->page_activepage;
+
+  // Set active page
   ui->page_activepage = page;
-  // Call the page_change callback
 
-  // grid_platform_printf("LOAD PAGE: %d\r\n", page);
-
-  for (uint8_t i = 0; i < ui->element_list_length; i++) {
+  for (uint8_t i = 0; i < ui->element_list_length; ++i) {
 
     struct grid_ui_element* ele = grid_ui_element_find(ui, i);
 
     if (ele == NULL) {
-      grid_platform_printf("NULL ELEMENT\r\n");
+      grid_platform_printf("grid_ui_page_load ele NULL\r\n");
     }
 
-    ele->timer_event_helper = 0; // stop the event's timer
+    // Stop the event's timer
+    ele->timer_event_helper = 0;
 
-    // clear all of the pending events for the element
+    // Clear all pending/triggered events for the element
     for (uint8_t j = 0; j < ele->event_list_length; j++) {
-      struct grid_ui_event* eve = &ele->event_list[j];
-
-      grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
+      grid_ui_event_state_set(&ele->event_list[j], GRID_EVE_STATE_INIT);
     }
-
-    // if (ele->template_initializer!=NULL){
-    // 	ele->template_initializer(ele->template_buffer_list_head);
-    // }
 
     uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
 
-    // grid_platform_printf("Allocating i=%d len=%d\r\n", i,
-    // template_buffer_length);
-
-    // if (i==0) //grid_platform_printf("TB LEN: %d\r\n",
-    // template_buffer_length);
+    // Create new template buffers until they cover the index of the loaded page
     while (template_buffer_length < page + 1) {
 
-      // grid_platform_printf("$"); // emergency allocation
-      grid_ui_template_buffer_create(ele);
+      if (!grid_ui_template_buffer_create(ele)) {
+        grid_platform_printf("grid_ui_page_load failed to create template buffer\r\n");
+      }
 
       template_buffer_length = grid_ui_template_buffer_list_length(ele);
-
-      // if (i==0) //grid_platform_printf("CREATE NEW, LEN: %d\r\n",
-      // template_buffer_length);
     }
 
-    // struct grid_ui_template_buffer* buf =  grid_ui_template_buffer_find(ele,
-    // page==0?1:page);
     struct grid_ui_template_buffer* buf = grid_ui_template_buffer_find(ele, page);
 
-    if (buf == NULL) {
+    if (buf) {
 
-      grid_platform_printf("error.template buffer is invalid\r\n");
-      grid_port_debug_print_text("error.template buffer is invalid");
-    } else {
-
-      // load the template parameter list
+      // Load the template parameter list
       ele->template_parameter_list = buf->template_parameter_list;
 
-      if (buf->template_parameter_list == NULL) {
-        grid_port_debug_print_text("NULL");
+      if (!buf->template_parameter_list) {
+        grid_port_debug_print_text("grid_ui_page_load buf template param list NULL");
       }
+
+    } else {
+
+      grid_platform_printf("grid_ui_page_load template buffer is invalid\r\n");
+      grid_port_debug_print_text("grid_ui_page_load template buffer is invalid");
     }
 
-    if (ele->page_change_cb != NULL) {
-
+    // Invoke page change callback if necessary
+    if (ele->page_change_cb) {
       ele->page_change_cb(ele, oldpage, page);
     }
   }
 
-  // grid_platform_printf("STOP\r\n");
+  // Restart VM, register functions
   grid_lua_stop_vm(&grid_lua_state);
-  // grid_platform_printf("START\r\n");
   grid_lua_start_vm(&grid_lua_state);
   grid_lua_vm_register_functions(&grid_lua_state, grid_lua_api_generic_lib_reference);
 
+  // Invoke lua UI init callback
   grid_lua_ui_init(&grid_lua_state, grid_ui_state.lua_ui_init_callback);
 
   grid_ui_bulk_semaphore_release(ui);
