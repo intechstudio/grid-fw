@@ -47,10 +47,10 @@ void grid_ui_event_state_set(struct grid_ui_event* eve, enum grid_eve_state_t st
 struct grid_ui_template_buffer {
 
   struct grid_ui_element* parent;
-  uint8_t page_number;
-  uint8_t status;
-  int32_t* template_parameter_list;
+
   struct grid_ui_template_buffer* next;
+
+  int32_t* template_parameter_list;
 };
 
 typedef void (*template_init_t)(struct grid_ui_template_buffer*);
