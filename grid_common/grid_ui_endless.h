@@ -30,16 +30,16 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
 // clang-format off
 #define GRID_LUA_EP_META_init                                                                                                                                                                          \
   "endless_meta = { __index = {" \
-  \
+  "type = 'endless', "\
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_ELEMENT_INDEX_short, GRID_LUA_FNC_EP_ELEMENT_INDEX_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_BUTTON_NUMBER_short, GRID_LUA_FNC_EP_BUTTON_NUMBER_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_LED_INDEX_short, GRID_LUA_FNC_EP_LED_INDEX_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_BUTTON_VALUE_short, GRID_LUA_FNC_EP_BUTTON_VALUE_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_BUTTON_MIN_short, GRID_LUA_FNC_EP_BUTTON_MIN_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_BUTTON_MAX_short, GRID_LUA_FNC_EP_BUTTON_MAX_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_BUTTON_MODE_short, GRID_LUA_FNC_EP_BUTTON_MODE_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_BUTTON_ELAPSED_short, GRID_LUA_FNC_EP_BUTTON_ELAPSED_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_BUTTON_STATE_short, GRID_LUA_FNC_EP_BUTTON_STATE_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_ENDLESS_NUMBER_short, GRID_LUA_FNC_EP_ENDLESS_NUMBER_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_LED_OFFSET_short, GRID_LUA_FNC_EP_LED_OFFSET_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_ENDLESS_VALUE_short, GRID_LUA_FNC_EP_ENDLESS_VALUE_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_ENDLESS_MIN_short, GRID_LUA_FNC_EP_ENDLESS_MIN_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_ENDLESS_MAX_short, GRID_LUA_FNC_EP_ENDLESS_MAX_index) "," \
@@ -54,6 +54,11 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_BUTTON_short) "," \
   GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_TIMER_short) "," \
   GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_ENDLESS_short) "," \
+  "post_init_cb = function (self) " \
+  "self:"GRID_LUA_FNC_A_INIT_short"() " \
+  "self:"GRID_LUA_FNC_A_BUTTON_short"() " \
+  "self:"GRID_LUA_FNC_A_ENDLESS_short"() " \
+  "end," \
   \
   GRID_LUA_FNC_ASSIGN_META_PAR1("gtt", GRID_LUA_FNC_G_TIMER_START_short) "," \
   GRID_LUA_FNC_ASSIGN_META_PAR0("gtp", GRID_LUA_FNC_G_TIMER_STOP_short) "," \

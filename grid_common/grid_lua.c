@@ -37,6 +37,7 @@ void grid_lua_semaphore_init(struct grid_lua_model* lua, void* lua_busy_semaphor
   lua->busy_semaphore_lock_fn = lock_fn;
   lua->busy_semaphore_release_fn = release_fn;
 }
+
 void grid_lua_semaphore_lock(struct grid_lua_model* lua) {
 
   if (lua->L == NULL) {
@@ -68,6 +69,14 @@ void grid_lua_semaphore_release(struct grid_lua_model* lua) {
 }
 
 void grid_lua_deinit(struct grid_lua_model* lua) {}
+
+void grid_lua_post_init(struct grid_lua_model* lua) {
+
+  grid_lua_dostring(lua, "init_simple_color() "
+                         "ele[#ele]:post_init_cb() "
+                         "for i = 0, #ele-1 do ele[i]:post_init_cb() end");
+  grid_lua_clear_stdo(lua);
+}
 
 void grid_lua_clear_stdi(struct grid_lua_model* lua) {
 
@@ -254,8 +263,9 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, GRID_LUA_FNC_G_MAPSAT_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SIGN_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SEGCALC_source);
-  // grid_lua_dostring(lua, GRID_LUA_FNC_G_TOML_source);
   grid_lua_dostring(lua, "midi_fifo = {}");
+  // grid_lua_dostring(lua, GRID_LUA_FNC_G_TOML_source);
+  grid_lua_dostring(lua, GRID_LUA_FNC_G_SIMPLECOLOR_source);
   grid_lua_dostring(lua, "midi_fifo_highwater = 0");
   grid_lua_dostring(lua, "midi_fifo_retriggercount = 0");
   grid_lua_dostring(lua, "midi = {}");

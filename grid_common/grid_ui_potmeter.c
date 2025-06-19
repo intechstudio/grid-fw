@@ -61,7 +61,7 @@ void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_bu
   int32_t* template_parameter_list = buf->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_P_ELEMENT_INDEX_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_P_POTMETER_NUMBER_index] = element_index;
+  template_parameter_list[GRID_LUA_FNC_P_LED_INDEX_index] = element_index;
   template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index] = 0;
   template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index] = 127;
