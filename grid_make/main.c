@@ -205,6 +205,17 @@ void grid_utask_led(struct grid_utask_timer* timer) {
   grid_d51_led_start_transfer(&grid_d51_led_state);
 }
 
+struct grid_utask_timer timer_midi_rx;
+
+void grid_utask_midi_rx(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  grid_midi_rx_pop();
+}
+
 volatile uint8_t rxtimeoutselector = 0;
 
 volatile uint8_t pingflag = 0;
@@ -436,6 +447,10 @@ int main(void) {
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_UICOOLDOWN_us,
   };
+  timer_midi_rx = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000,
+  };
 
   struct grid_transport* xport = &grid_transport_state;
 
@@ -487,7 +502,7 @@ int main(void) {
       grid_msg_set_heartbeat_type(&grid_msg_state, 1);
     }
 
-    grid_midi_rx_pop();
+    grid_d51_midi_bulkout_poll();
 
     // NVM task
     nvm_task_inner();
@@ -520,6 +535,7 @@ int main(void) {
     grid_utask_midi_and_keyboard_tx(&timer_midi_and_keyboard_tx);
     grid_utask_led(&timer_led);
     grid_utask_process_ui(&timer_process_ui);
+    grid_utask_midi_rx(&timer_midi_rx);
 
     // Outbound USB
     grid_port_send_usb(port_usb);

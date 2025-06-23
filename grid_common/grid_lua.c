@@ -77,26 +77,27 @@ void grid_lua_post_init(struct grid_lua_model* lua) {
                          "for i = 0, #ele-1 do ele[i]:post_init_cb() end");
   grid_lua_clear_stdo(lua);
 }
+void grid_lua_clear_stdi(struct grid_lua_model* lua) { memset(lua->stdi, 0, lua->stdi_len); }
 
-void grid_lua_clear_stdi(struct grid_lua_model* lua) {
+void grid_lua_clear_stdo(struct grid_lua_model* lua) { memset(lua->stdo, 0, lua->stdo_len); }
 
-  for (uint32_t i = 0; i < lua->stdi_len; i++) {
-    lua->stdi[i] = 0;
+void grid_lua_clear_stde(struct grid_lua_model* lua) { memset(lua->stde, 0, lua->stde_len); }
+
+int grid_lua_append_stdo(struct grid_lua_model* lua, char* str) {
+
+  int curr = strlen(lua->stdo);
+
+  int add = strlen(str);
+
+  int remain = lua->stdo_len - 1 - curr;
+
+  if (add > remain) {
+    return 1;
   }
-}
 
-void grid_lua_clear_stdo(struct grid_lua_model* lua) {
+  strcat(lua->stdo, str);
 
-  for (uint32_t i = 0; i < lua->stdo_len; i++) {
-    lua->stdo[i] = 0;
-  }
-}
-
-void grid_lua_clear_stde(struct grid_lua_model* lua) {
-
-  for (uint32_t i = 0; i < lua->stde_len; i++) {
-    lua->stde[i] = 0;
-  }
+  return 0;
 }
 
 char* grid_lua_get_output_string(struct grid_lua_model* lua) { return lua->stdo; }
