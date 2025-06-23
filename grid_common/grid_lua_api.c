@@ -1407,7 +1407,7 @@ int l_grid_cat(lua_State* L) {
 
       struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, num);
       if (ele == NULL) {
-        return 1;
+        return 0;
       }
       uint8_t ele_type = ele->type;
 
