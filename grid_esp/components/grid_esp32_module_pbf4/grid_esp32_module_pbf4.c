@@ -85,6 +85,8 @@ void grid_esp32_module_pbf4_task(void* arg) {
     grid_asc_array_set_factors(asc_state, 16, 12, 4, 1);
   }
 
+  elements = grid_ui_model_get_elements(&grid_ui_state);
+
   grid_config_init(&grid_config_state, &grid_cal_state);
 
   struct grid_cal_pot* cal_pot = &grid_cal_state.potmeter;
@@ -112,8 +114,6 @@ void grid_esp32_module_pbf4_task(void* arg) {
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(&grid_sys_state);
   grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
-
-  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   while (1) {
 
