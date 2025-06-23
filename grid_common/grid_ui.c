@@ -1287,7 +1287,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
 
       message.body_length += grid_ui_event_render_action(eve, &message.body[offset]);
 
-      grid_ui_event_reset(eve);
+      grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }
   }
 
