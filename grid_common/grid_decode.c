@@ -420,35 +420,26 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
   uint8_t midi_param1 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, &error);
   uint8_t midi_param2 = grid_str_get_parameter(chunk, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, &error);
 
+  grid_lua_clear_stdo(&grid_lua_state);
+
   char rx_cb_source[200] = {0};
   sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.midirx_cb and type(el.midirx_cb) == 'function' then el:midirx_cb({%d, %d, %d, %d}, {%d, %d, %d}) end end", midi_channel, midi_command,
           midi_param1, midi_param2, msg_instr, sx, sy);
   grid_lua_dostring(&grid_lua_state, rx_cb_source);
 
-  if (msg_instr == GRID_INSTR_REPORT_code) {
+  char* stdo = grid_lua_get_output_string(&grid_lua_state);
 
-    // printf("M: %d %d %d %d \r\n", midi_channel, midi_command, midi_param1,
-    // midi_param2);
+  if (strlen(stdo) > 0) {
 
-    char temp[130] = {0};
+    struct grid_msg_packet response;
+    grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
 
-    grid_lua_clear_stdo(&grid_lua_state);
+    response.body_length += sprintf(response.body, "%s", stdo);
 
-    // add the received midi message to the dynamic fifo and set the high water
-    // mark if necessary
-    sprintf(temp, "table.insert(midi_fifo, {%d, %d, %d, %d})", midi_channel, midi_command, midi_param1, midi_param2);
-    grid_lua_dostring(&grid_lua_state, temp);
+    grid_msg_packet_close(&grid_msg_state, &response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
 
     grid_lua_clear_stdo(&grid_lua_state);
-
-    struct grid_ui_element* ele = &grid_ui_state.element_list[grid_ui_state.element_list_length - 1];
-    struct grid_ui_event* eve = NULL;
-
-    eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_MIDIRX);
-    if (eve != NULL) {
-
-      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
-    }
   }
 
   return 0; // OK

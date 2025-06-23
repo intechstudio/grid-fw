@@ -867,7 +867,7 @@ int l_grid_cat(lua_State* L) {
   uint8_t param1 = param[2];
   uint8_t param2 = param[3];
 
-  char midiframe[20] = {0};
+  char midiframe[15] = {0};
 
   sprintf(midiframe, GRID_CLASS_MIDI_frame);
 
@@ -878,8 +878,10 @@ int l_grid_cat(lua_State* L) {
   grid_str_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, param1, NULL);
   grid_str_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2, NULL);
 
-  // grid_platform_printf("MIDI: %s\r\n", midiframe);
-  strcat(grid_lua_state.stdo, midiframe);
+  if (grid_lua_append_stdo(&grid_lua_state, midiframe)) {
+    strcat(grid_lua_state.stde, "#stdoFull");
+    return 0;
+  }
 
   return 1;
 }
@@ -1406,6 +1408,9 @@ int l_grid_cat(lua_State* L) {
       uint8_t layer = param[1];
 
       struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, num);
+      if (ele == NULL) {
+        return 0;
+      }
       uint8_t ele_type = ele->type;
 
       int32_t min = 0;
@@ -1430,7 +1435,6 @@ int l_grid_cat(lua_State* L) {
           val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index);
         }
       } else if (ele_type == GRID_PARAMETER_ELEMENT_ENDLESS) {
-
         min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_MIN_index);
         max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_MAX_index);
         val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_VALUE_index);

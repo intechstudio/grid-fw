@@ -393,6 +393,8 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
 
 void grid_ui_page_load_success_callback(uint8_t lastheader) {
 
+  grid_lua_post_init(&grid_lua_state);
+
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
   // Phase out the animation
@@ -836,10 +838,13 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
       struct grid_ui_event* eve = &ele->event_list[j];
 
       if (eve->type == GRID_PARAMETER_EVENT_INIT) {
-        grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
+        // not needed, now handled via grid_lua_post_init
+        // grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
       }
     }
   }
+
+  grid_lua_post_init(&grid_lua_state);
 
   // step 5: run the success callback if available
 
@@ -1274,16 +1279,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
         continue;
       }
 
-      // pop one midi rx messages from midi_fifo (array of tables) to midi
-      // (table)
-      if (eve->type == GRID_PARAMETER_EVENT_MIDIRX) {
-
-        grid_lua_dostring(&grid_lua_state, "if #midi_fifo > midi_fifo_highwater then midi_fifo_highwater = #midi_fifo end "
-                                           "local FOO = table.remove(midi_fifo, 1) midi.ch = FOO[1] "
-                                           "midi.cmd = FOO[2] midi.p1 = FOO[3] midi.p2 = FOO[4]");
-      }
-
-      uint32_t offset = grid_msg_packet_body_get_length(&message);
+			uint32_t offset = grid_msg_packet_body_get_length(&message);
 
       message.body_length += grid_ui_event_render_event(eve, &message.body[offset]);
 
@@ -1291,20 +1287,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
 
       message.body_length += grid_ui_event_render_action(eve, &message.body[offset]);
 
-      grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
-
-      // retrigger midiRX event automatically if midi_fifo is not empty
-
-      if (eve->type == GRID_PARAMETER_EVENT_MIDIRX) {
-
-        char temp[110] = {0};
-
-        sprintf(temp,
-                "if #midi_fifo > 0 then get(%d, %d) "
-                "midi_fifo_retriggercount = midi_fifo_retriggercount+1 end",
-                eve->parent->index, GRID_PARAMETER_EVENT_MIDIRX);
-        grid_lua_dostring(&grid_lua_state, temp);
-      }
+			grid_ui_event_reset(eve);
     }
   }
 

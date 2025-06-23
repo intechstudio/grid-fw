@@ -61,7 +61,7 @@ void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buf
   int32_t* template_parameter_list = buf->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_E_ELEMENT_INDEX_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_E_BUTTON_NUMBER_index] = element_index;
+  template_parameter_list[GRID_LUA_FNC_E_LED_INDEX_index] = element_index;
   template_parameter_list[GRID_LUA_FNC_E_BUTTON_VALUE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_E_BUTTON_MIN_index] = 0;
   template_parameter_list[GRID_LUA_FNC_E_BUTTON_MAX_index] = 127;
@@ -258,14 +258,8 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
 
   delta *= state->direction;
 
-  // shift register bits arrangement: MSB to LSB
-  // GND Button PhaseB PhaseA
-  uint8_t new_button_value = (new_value & 0b00000100) ? 1 : 0;
-  uint8_t old_button_value = (old_value & 0b00000100) ? 1 : 0;
-
   // Evaluate the results
   if (state->initial_samples > GRID_UI_ENCODER_INIT_SAMPLES) {
-    grid_ui_button_update_trigger(ele, &state->button_last_real_time, old_button_value, new_button_value);
     grid_ui_encoder_update_trigger(ele, &state->encoder_last_real_time, delta);
   }
 }
