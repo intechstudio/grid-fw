@@ -48,6 +48,7 @@ extern struct grid_lua_model grid_lua_state;
 
 void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance);
 void grid_lua_deinit(struct grid_lua_model* lua);
+void grid_lua_post_init(struct grid_lua_model* lua);
 
 void grid_lua_semaphore_init(struct grid_lua_model* lua, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
 void grid_lua_semaphore_lock(struct grid_lua_model* lua);

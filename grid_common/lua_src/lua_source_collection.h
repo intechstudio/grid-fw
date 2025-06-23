@@ -34,4 +34,7 @@
 #include "toml.h"
 #define GRID_LUA_FNC_G_TOML_source grid_lua_src_toml_lua
 
+#include "simplecolor.h"
+#define GRID_LUA_FNC_G_SIMPLECOLOR_source grid_lua_src_simplecolor_lua
+
 #endif

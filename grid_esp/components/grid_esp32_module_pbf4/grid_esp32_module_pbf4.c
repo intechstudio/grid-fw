@@ -59,7 +59,7 @@ void IRAM_ATTR pbf4_process_analog(void* user) {
   if (mux_position < 8) {
 
     uint16_t calibrated;
-    grid_cal_next(&grid_cal_state, mux_position, result->value, &calibrated);
+    grid_cal_pot_next(&grid_cal_state.potmeter, mux_position, result->value, &calibrated);
     grid_ui_potmeter_store_input(ele, mux_position, &potmeter_last_real_time[mux_position], calibrated, 12);
   } else if (mux_position < 12) {
 
@@ -80,18 +80,33 @@ void grid_esp32_module_pbf4_task(void* arg) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
   }
 
-  grid_cal_init(&grid_cal_state, 12, grid_ui_state.element_list_length);
-  grid_cal_enable_range(&grid_cal_state, 0, 4);
-
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
   if (grid_hwcfg_module_is_rev_h(&grid_sys_state)) {
     grid_asc_array_set_factors(asc_state, 16, 12, 4, 1);
   }
 
+  elements = grid_ui_model_get_elements(&grid_ui_state);
+
   grid_config_init(&grid_config_state, &grid_cal_state);
 
-  grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL);
-  while (grid_ui_state.bulk_status == GRID_UI_BULK_CONFREAD_PROGRESS) {
+  struct grid_cal_pot* cal_pot = &grid_cal_state.potmeter;
+  grid_cal_pot_init(cal_pot, 12, grid_ui_state.element_list_length);
+  grid_cal_pot_enable_range(cal_pot, 0, 4);
+
+  if (grid_hwcfg_module_is_rev_h(&grid_sys_state)) {
+
+    struct grid_cal_but* cal_but = &grid_cal_state.button;
+    grid_cal_but_init(cal_but, grid_ui_state.element_list_length);
+    for (int i = 8; i < 12; ++i) {
+      grid_cal_but_enable_set(cal_but, i, &ui_button_state[i - 8]);
+    }
+  }
+
+  while (grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
+    taskYIELD();
+  }
+
+  while (grid_ui_bulk_is_in_progress(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS)) {
     taskYIELD();
   }
 
@@ -99,8 +114,6 @@ void grid_esp32_module_pbf4_task(void* arg) {
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(&grid_sys_state);
   grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
-
-  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   while (1) {
 

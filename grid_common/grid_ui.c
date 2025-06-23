@@ -435,6 +435,7 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
 void grid_ui_page_load_success_callback(uint8_t lastheader) {
 
   // grid_platform_printf("LOAD SUCCESS\r\n");
+  grid_lua_post_init(&grid_lua_state);
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
   // phase out the animation
@@ -882,13 +883,14 @@ int grid_ui_bulk_conf_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t 
     return 1;
   }
 
-  grid_platform_printf("NVM: Config init\r\n");
   // update lastheader_id even if busy (during retry)
   ui->bulk_lastheader_id = lastheader_id;
 
   if (grid_ui_bulk_anything_is_in_progress(ui)) {
     return 1;
   }
+
+  grid_platform_printf("NVM: Config init\r\n");
 
   grid_ui_bulk_semaphore_lock(ui);
 
@@ -1011,10 +1013,13 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
       struct grid_ui_event* eve = &ele->event_list[j];
 
       if (eve->type == GRID_PARAMETER_EVENT_INIT) {
-        grid_ui_event_trigger_local(eve);
+        // not needed, now handled via grid_lua_post_init
+        // grid_ui_event_trigger_local(eve);
       }
     }
   }
+
+  grid_lua_post_init(&grid_lua_state);
 
   // step 5: run the success callback if available
 

@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "grid_ain.h"
+#include "grid_math.h"
 #include "grid_platform.h"
 #include "grid_sys.h"
 #include "grid_ui_system.h"
@@ -42,7 +43,7 @@ void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buf
   int32_t* template_parameter_list = buf->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_EP_ELEMENT_INDEX_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_EP_BUTTON_NUMBER_index] = element_index;
+  template_parameter_list[GRID_LUA_FNC_EP_LED_INDEX_index] = element_index;
   template_parameter_list[GRID_LUA_FNC_EP_BUTTON_VALUE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_BUTTON_MIN_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_BUTTON_MAX_index] = 127;
@@ -50,7 +51,7 @@ void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buf
   template_parameter_list[GRID_LUA_FNC_EP_BUTTON_ELAPSED_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_BUTTON_STATE_index] = 0;
 
-  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_NUMBER_index] = element_index;
+  template_parameter_list[GRID_LUA_FNC_EP_LED_OFFSET_index] = 2;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index] = 16384 - 1;
@@ -115,26 +116,18 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   int32_t* template_parameter_list = ele->template_parameter_list;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_ELAPSED_index] = encoder_elapsed_time / MS_TO_US;
 
-  int32_t min = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index];
-  int32_t max = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index];
+  int32_t tmin = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index];
+  int32_t tmax = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index];
+  int32_t min = MIN(tmin, tmax);
+  int32_t max = MAX(tmin, tmax);
 
-  // inver range if min is greater then max
-  if (min > max) {
+  // invert delta if necessary
+  if (tmin > tmax) {
     delta = -delta;
-    int32_t tmp = min;
-    min = max;
-    max = tmp;
   }
 
   double elapsed_ms = encoder_elapsed_time / MS_TO_US;
-
-  if (elapsed_ms > 25) {
-    elapsed_ms = 25;
-  }
-
-  if (elapsed_ms < 1) {
-    elapsed_ms = 1;
-  }
+  elapsed_ms = clampf64(elapsed_ms, 1, 25);
 
   double minmaxscale = (max - min) / 3600.0;
 
@@ -162,30 +155,14 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
 
   if (template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MODE_index] == 0) { // Absolute
 
-    int32_t new_value = 0;
-
-    if (old_value + delta_velocity < min) {
-      new_value = min;
-    } else if (old_value + delta_velocity > max) {
-      new_value = max;
-    } else {
-      new_value = old_value + delta_velocity;
-    }
-
+    int32_t new_value = clampi32(old_value + delta_velocity, min, max);
     template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = new_value;
+
   } else if (template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MODE_index] == 1) { // Relative
 
-    int32_t new_value = 0;
-
-    if (old_value + delta_velocity < min) {
-      new_value = min;
-    } else if (old_value + delta_velocity > max) {
-      new_value = max;
-    } else {
-      new_value = old_value + delta_velocity;
-    }
-
+    int32_t new_value = clampi32(old_value + delta_velocity, min, max);
     template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = new_value;
+
   } else if (template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MODE_index] == 2) { // Relative 2's complement
 
     // Two's complement magic 7 bit signed variable
@@ -311,6 +288,12 @@ void grid_ui_endless_store_input(struct grid_ui_element* ele, uint8_t input_chan
 
   int32_t* template_parameter_list = ele->template_parameter_list;
 
+  int stabilized = grid_ain_stabilized(&grid_ain_state, input_channel);
+
+  if (!stabilized) {
+    memcpy(old_value, new_value, sizeof(struct grid_ui_endless_state));
+  }
+
   uint16_t value_degrees_new = grid_ui_endless_calculate_angle(new_value->phase_a, new_value->phase_b, 12);
   uint16_t value_degrees_old = grid_ui_endless_calculate_angle(old_value->phase_a, old_value->phase_b, 12);
 
@@ -337,7 +320,6 @@ void grid_ui_endless_store_input(struct grid_ui_element* ele, uint8_t input_chan
     if (abs(delta) > 10) {
 
       template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = value_degrees_new / 20;
-      int stabilized = grid_ain_stabilized(&grid_ain_state, input_channel);
       grid_ui_endless_update_trigger(ele, stabilized, delta, &old_value->encoder_last_real_time, &old_value->delta_vel_frac);
 
       old_value->phase_a = new_value->phase_a;

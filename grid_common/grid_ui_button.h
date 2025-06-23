@@ -32,7 +32,6 @@ void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buff
 void grid_ui_element_button_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
-void grid_ui_button_update_trigger(struct grid_ui_element* ele, uint64_t* button_last_real_time, uint8_t old_button_value, uint8_t new_button_value);
 void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_button_state* state, uint16_t value, uint8_t adc_bit_depth);
 
 // ========================= BUTTON =========================== //
@@ -42,8 +41,9 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 #define GRID_LUA_B_META_init                                                                                                                                                                           \
   "button_meta = { __index = {" \
    \
+  "type = 'button', "\
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_B_ELEMENT_INDEX_short, GRID_LUA_FNC_B_ELEMENT_INDEX_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_B_BUTTON_NUMBER_short, GRID_LUA_FNC_B_BUTTON_NUMBER_index) "," \
+  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_B_LED_INDEX_short, GRID_LUA_FNC_B_LED_INDEX_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_B_BUTTON_VALUE_short, GRID_LUA_FNC_B_BUTTON_VALUE_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_B_BUTTON_MIN_short, GRID_LUA_FNC_B_BUTTON_MIN_index) "," \
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_B_BUTTON_MAX_short, GRID_LUA_FNC_B_BUTTON_MAX_index) "," \
@@ -54,6 +54,10 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
   GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_INIT_short) "," \
   GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_BUTTON_short) "," \
   GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_TIMER_short) "," \
+  "post_init_cb = function (self) " \
+  "self:"GRID_LUA_FNC_A_INIT_short"() " \
+  "self:"GRID_LUA_FNC_A_BUTTON_short"() " \
+  "end," \
   \
   GRID_LUA_FNC_ASSIGN_META_PAR1("gtt", GRID_LUA_FNC_G_TIMER_START_short) "," \
   GRID_LUA_FNC_ASSIGN_META_PAR0("gtp", GRID_LUA_FNC_G_TIMER_STOP_short) "," \
