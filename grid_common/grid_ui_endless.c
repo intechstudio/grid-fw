@@ -43,7 +43,7 @@ void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buf
   int32_t* template_parameter_list = buf->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_EP_ELEMENT_INDEX_index] = element_index;
-  template_parameter_list[GRID_LUA_FNC_EP_BUTTON_NUMBER_index] = element_index;
+  template_parameter_list[GRID_LUA_FNC_EP_LED_INDEX_index] = element_index;
   template_parameter_list[GRID_LUA_FNC_EP_BUTTON_VALUE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_BUTTON_MIN_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_BUTTON_MAX_index] = 127;
@@ -51,7 +51,7 @@ void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buf
   template_parameter_list[GRID_LUA_FNC_EP_BUTTON_ELAPSED_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_BUTTON_STATE_index] = 0;
 
-  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_NUMBER_index] = element_index;
+  template_parameter_list[GRID_LUA_FNC_EP_LED_OFFSET_index] = 2;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index] = 0;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index] = 16384 - 1;

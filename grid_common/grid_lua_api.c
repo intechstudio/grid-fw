@@ -1406,6 +1406,9 @@ int l_grid_cat(lua_State* L) {
       uint8_t layer = param[1];
 
       struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, num);
+      if (ele == NULL) {
+        return 0;
+      }
       uint8_t ele_type = ele->type;
 
       int32_t min = 0;
@@ -1430,7 +1433,6 @@ int l_grid_cat(lua_State* L) {
           val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_VALUE_index);
         }
       } else if (ele_type == GRID_PARAMETER_ELEMENT_ENDLESS) {
-
         min = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_MIN_index);
         max = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_MAX_index);
         val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_EP_ENDLESS_VALUE_index);
