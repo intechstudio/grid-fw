@@ -2,23 +2,24 @@
 
 struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t event_type) {
 
-  if (ele == NULL) {
+  if (!ele) {
     return NULL;
   }
 
-  for (uint8_t i = 0; i < ele->event_list_length; i++) {
-    if (ele->event_list[i].type == event_type) {
-      return &ele->event_list[i];
-    }
+  uint8_t i = 0;
+  while (i < ele->event_list_length && ele->event_list[i].type != event_type) {
+    ++i;
   }
 
-  return NULL;
+  return i < ele->event_list_length ? &ele->event_list[i] : NULL;
 }
 
-void grid_ui_event_trigger(struct grid_ui_event* eve) {
+void grid_ui_event_state_set(struct grid_ui_event* eve, enum grid_eve_state_t state) {
 
-  if (eve != NULL) {
-
-    eve->trigger = GRID_UI_STATUS_TRIGGERED;
+  // TODO assert instead
+  if (!eve) {
+    return;
   }
+
+  eve->state = state;
 }
