@@ -809,7 +809,6 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
   }
 
   // step 3: fill all of the remaining default events with default actionstrings
-
   for (uint8_t i = 0; i < ui->element_list_length; i++) {
 
     struct grid_ui_element* ele = &ui->element_list[i];
@@ -829,21 +828,6 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
   }
 
   // step 4: trigger all init events
-  for (uint8_t i = 0; i < ui->element_list_length; i++) {
-
-    struct grid_ui_element* ele = &ui->element_list[i];
-
-    for (uint8_t j = 0; j < ele->event_list_length; j++) {
-
-      struct grid_ui_event* eve = &ele->event_list[j];
-
-      if (eve->type == GRID_PARAMETER_EVENT_INIT) {
-        // not needed, now handled via grid_lua_post_init
-        // grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
-      }
-    }
-  }
-
   grid_lua_post_init(&grid_lua_state);
 
   // step 5: run the success callback if available
