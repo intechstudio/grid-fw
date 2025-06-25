@@ -68,7 +68,7 @@ static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t* trans) {
   uint8_t rollid_send = grid_rollid_send(&rollid);
   spi_tx_buf[GRID_PARAMETER_SPI_ROLLING_ID_index] = rollid_send;
 
-  spi_tx_buf[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index] = is_vsn_rev_a == 0;
+  spi_tx_buf[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index] = 255 * (is_vsn_rev_a == 0);
 }
 
 uint8_t IRAM_ATTR spitra_to_dir(spi_slave_transaction_t* trans) {

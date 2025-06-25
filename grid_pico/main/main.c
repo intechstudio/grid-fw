@@ -8,6 +8,7 @@
 #include "hardware/clocks.h"
 #include "hardware/irq.h"
 #include "hardware/pio.h"
+#include "hardware/pwm.h"
 #include "hardware/spi.h"
 
 #include "grid_pico_spi.h"
@@ -349,6 +350,12 @@ void grid_spi_msg_to_bkt(struct grid_pico_uart_port* port, char* msg) {
   // port->ready = 0;
 }
 
+enum { LCD_PWM_PERIOD_EXCL = 1024 };
+enum { LCD_PWM_QUOTIENT = LCD_PWM_PERIOD_EXCL / 256 };
+enum { LCD_PWM_PERIOD_WRAP = LCD_PWM_PERIOD_EXCL - LCD_PWM_QUOTIENT - 1 };
+
+uint8_t LCD_PWM_SLICE = 0;
+
 struct grid_pico_task_timer timer_spi_rx;
 
 void grid_pico_task_spi_rx(struct grid_pico_task_timer* timer) {
@@ -369,8 +376,12 @@ void grid_pico_task_spi_rx(struct grid_pico_task_timer* timer) {
   uint8_t rolling_recv = spi_rx_buf[GRID_PARAMETER_SPI_ROLLING_ID_index];
   grid_pico_rolling_recv(&rolling, rolling_recv);
 
+  // For the sake of accuracy, the backlight period should be divisible by 256
+  assert(LCD_PWM_PERIOD_EXCL % 256 == 0);
+
   // Control LCD backlight
-  gpio_put(GRID_PICO_LCD_BACKLIGHT_PIN, spi_rx_buf[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index]);
+  uint8_t backlight = spi_rx_buf[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index];
+  pwm_set_chan_level(LCD_PWM_SLICE, PWM_CHAN_A, backlight * LCD_PWM_QUOTIENT);
 
   // The number of trailing zeroes in the destination flag
   // indexes the destination UART port of the message
@@ -553,9 +564,23 @@ int main() {
   gpio_put(GRID_PICO_LCD_RESET_PIN, 1);
   gpio_set_dir(GRID_PICO_LCD_RESET_PIN, GPIO_OUT);
 
-  gpio_init(GRID_PICO_LCD_BACKLIGHT_PIN);
-  gpio_set_dir(GRID_PICO_LCD_BACKLIGHT_PIN, GPIO_OUT);
-  gpio_put(GRID_PICO_LCD_BACKLIGHT_PIN, 0);
+  // Set backlight GPIO pin to function as a PWM pin
+  gpio_set_function(GRID_PICO_LCD_BACKLIGHT_PIN, GPIO_FUNC_PWM);
+
+  // Find out which PWM slice is connected to the backlight GPIO
+  LCD_PWM_SLICE = pwm_gpio_to_slice_num(GRID_PICO_LCD_BACKLIGHT_PIN);
+
+  // Set the wrapping point for the PWM counter (inclusive)
+  pwm_set_wrap(LCD_PWM_SLICE, LCD_PWM_PERIOD_WRAP);
+
+  // Set clock divider for the PWM counter
+  pwm_set_clkdiv_int_frac4(LCD_PWM_SLICE, 125, 0);
+
+  // Set the PWM channel to go high for zero cycles initially
+  pwm_set_chan_level(LCD_PWM_SLICE, PWM_CHAN_A, 0);
+
+  // Set the backlight PWM running
+  pwm_set_enabled(LCD_PWM_SLICE, true);
 
   // Reset and launch second core
   multicore_reset_core1();
@@ -636,10 +661,6 @@ int main() {
   gpio_init(GRID_PICO_LCD_RESET_PIN);
   gpio_put(GRID_PICO_LCD_RESET_PIN, 1);
   gpio_set_dir(GRID_PICO_LCD_RESET_PIN, GPIO_OUT);
-
-  gpio_init(GRID_PICO_LCD_BACKLIGHT_PIN);
-  gpio_set_dir(GRID_PICO_LCD_BACKLIGHT_PIN, GPIO_OUT);
-  gpio_put(GRID_PICO_LCD_BACKLIGHT_PIN, 0);
 
   while (1) {
 
