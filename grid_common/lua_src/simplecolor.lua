@@ -13,13 +13,18 @@ end
 init_endless_color = function(self)
     self.glp = function(self, l, v)
         for i = 0, 4, 1 do
+	    local int = 0
             local ln = self:lix() + i * self:lof()
-            local int = gsc(i, self:epva(), self:epmi(), self:epma())
             if l == 1 then
-                local min, max, value = self:bmi(), self:bma(), self:bva()
-		int = gmaps(value, min, max, 0, 255)//1
-            end
-            glp(ln, l, int)
+	      -- button
+	      if v == nil then int = gmaps(self:bva(), self:bmi(), self:bma(), 0, 255)//1
+              else int = v end
+	    else
+	      -- rotation
+	      if v == nil then int = gsc(i, self:epva(), self:epmi(), self:epma())
+              else int = gsc(i, v, 0, 255) end
+	    end
+	    glp(ln, l, int)
         end
     end
     self.glc = function(self, l, c)
@@ -37,12 +42,18 @@ end
 init_endless_nosegment_color = function(self)
     self.glp = function(self, l, v)
         for i = 0, 4, 1 do
+	    local int = v
             local ln = self:lix() + i * self:lof()
-            local min, max, value = self:epmi(), self:epma(), self:epva()
             if l == 1 then
-                min, max, value = self:bmi(), self:bma(), self:bva()
-            end
-            local int = gmaps(value, min, max, 0, 255) // 1
+	     -- button
+	        if v == nil then
+                int = gmaps(self:bva(), self:bmi(), self:bma(), 0, 255) // 1
+	        end
+	    else
+	     -- rotation
+	        if v == nil then
+                int = gmaps(self:epva(), self:epmi(), self:epma(), 0, 255) // 1
+	    end end
             glp(ln, l, int)
         end
     end
@@ -60,9 +71,14 @@ end
 
 
 init_element_color = function(self)
+
     self.glp = function(self, l, v)
+    if v == nil then
         glp(self:ind(), l, -1)
+    else
+        glp(self:ind(), l, v)
     end
+end
 
     self.glc = function(self, l, c)
         local up = table.unpack
