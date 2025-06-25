@@ -59,6 +59,10 @@ void grid_esp32_lcd_set_ready(bool ready) { grid_esp32_lcd_ready = ready; }
 
 bool grid_esp32_lcd_get_ready() { return grid_esp32_lcd_ready; }
 
+uint8_t DRAM_ATTR grid_esp32_lcd_backlight = 0;
+
+void grid_platform_lcd_set_backlight(uint8_t backlight) { grid_esp32_lcd_backlight = backlight; }
+
 void grid_esp32_lcd_spi_bus_init(size_t max_color_sz) {
 
   spi_bus_config_t bus_config;

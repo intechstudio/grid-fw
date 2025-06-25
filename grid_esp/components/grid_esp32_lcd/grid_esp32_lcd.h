@@ -63,6 +63,9 @@ extern bool grid_esp32_lcd_ready;
 
 void grid_esp32_lcd_set_ready(bool active);
 bool grid_esp32_lcd_get_ready();
+
+extern uint8_t grid_esp32_lcd_backlight;
+
 void grid_esp32_lcd_spi_bus_init(size_t max_color_sz);
 
 void grid_esp32_lcd_panel_chipsel(struct grid_esp32_lcd_model* lcd, uint8_t value);
