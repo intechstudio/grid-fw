@@ -37,8 +37,6 @@ static const char* TAG = "LCD";
 #define LCD_SWAP_XY false
 #define LCD_FLUSH_CALLBACK lcd_flush_ready
 
-bool grid_esp32_lcd_ready = 0;
-
 struct grid_esp32_lcd_model grid_esp32_lcd_states[2] = {0};
 
 bool color_trans_done_0(struct esp_lcd_panel_io_t* panel_io, esp_lcd_panel_io_event_data_t* edata, void* user_ctx) {
@@ -55,9 +53,17 @@ bool color_trans_done_1(struct esp_lcd_panel_io_t* panel_io, esp_lcd_panel_io_ev
   return true;
 }
 
+bool grid_esp32_lcd_ready = 0;
+
 void grid_esp32_lcd_set_ready(bool ready) { grid_esp32_lcd_ready = ready; }
 
 bool grid_esp32_lcd_get_ready() { return grid_esp32_lcd_ready; }
+
+bool DRAM_ATTR grid_esp32_lcd_drawn;
+
+void grid_esp32_lcd_set_drawn(bool drawn) { grid_esp32_lcd_drawn = drawn; }
+
+bool grid_esp32_lcd_get_drawn() { return grid_esp32_lcd_drawn; }
 
 uint8_t DRAM_ATTR grid_esp32_lcd_backlight = 0;
 
@@ -427,6 +433,16 @@ void grid_esp32_lcd_task(void* arg) {
 #endif
 
     grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf);
+
+    if (!grid_esp32_lcd_get_drawn()) {
+
+      // Wait for at least one frame time, currently 25 ms at 40 Hz
+      vTaskDelay(pdMS_TO_TICKS(30));
+
+      // Set flag indicating that fresh pixels appeared at least once,
+      // this is only true here if a clear & swap was queued initially
+      grid_esp32_lcd_set_drawn(true);
+    }
 
 #ifdef USE_SEMAPHORE
     grid_lua_semaphore_release(&grid_lua_state);

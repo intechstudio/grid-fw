@@ -64,6 +64,11 @@ extern bool grid_esp32_lcd_ready;
 void grid_esp32_lcd_set_ready(bool active);
 bool grid_esp32_lcd_get_ready();
 
+extern bool grid_esp32_lcd_drawn;
+
+void grid_esp32_lcd_set_drawn(bool drawn);
+bool grid_esp32_lcd_get_drawn();
+
 extern uint8_t grid_esp32_lcd_backlight;
 
 void grid_esp32_lcd_spi_bus_init(size_t max_color_sz);

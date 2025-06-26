@@ -69,7 +69,7 @@ static void IRAM_ATTR my_post_setup_cb(spi_slave_transaction_t* trans) {
   uint8_t rollid_send = grid_rollid_send(&rollid);
   spi_tx_buf[GRID_PARAMETER_SPI_ROLLING_ID_index] = rollid_send;
 
-  uint8_t pwm = grid_esp32_lcd_backlight;
+  uint8_t pwm = grid_esp32_lcd_drawn ? grid_esp32_lcd_backlight : 0;
   pwm = is_vsn_rev_a ? 255 - pwm : pwm;
   spi_tx_buf[GRID_PARAMETER_SPI_BACKLIGHT_PWM_index] = pwm;
 }
