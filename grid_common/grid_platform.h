@@ -38,4 +38,6 @@ extern uint32_t grid_plaform_get_nvm_nextwriteoffset();
 
 extern void* grid_platform_allocate_volatile(size_t size);
 
+extern void grid_platform_lcd_set_backlight(uint8_t backlight);
+
 #endif /* GRID_PLATFORM_H */

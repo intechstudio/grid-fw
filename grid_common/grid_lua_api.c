@@ -5,7 +5,9 @@
 
 #include "grid_cal.h"
 #include "grid_led.h"
+#include "grid_math.h"
 #include "grid_msg.h"
+#include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_sys.h"
 #include "grid_transport.h"
@@ -2001,6 +2003,31 @@ int l_grid_cat(lua_State* L) {
   return 0;
 }
 
+/*static*/ int l_grid_lcd_set_backlight(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 1) {
+    // error
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (!lua_isinteger(L, -1)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  int32_t backlight = lua_tointeger(L, -1);
+  lua_pop(L, 1);
+
+  backlight = clampi32(backlight, 0, 255);
+
+  grid_platform_lcd_set_backlight(backlight);
+
+  return 0;
+}
+
 /*static*/ const struct luaL_Reg grid_lua_api_generic_lib[] = {
     {"print", l_my_print},
     {"grid_send", l_grid_send},
@@ -2068,6 +2095,8 @@ int l_grid_cat(lua_State* L) {
     {GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr},
     {GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_short, GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_fnptr},
     {GRID_LUA_FNC_G_BUTTON_CALIBRATION_SET_short, GRID_LUA_FNC_G_BUTTON_CALIBRATION_SET_fnptr},
+
+    {GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_short, GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_fnptr},
 
     {GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_short, GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_fnptr},
     {GRID_LUA_FNC_G_FILESYSTEM_CAT_short, GRID_LUA_FNC_G_FILESYSTEM_CAT_fnptr},

@@ -493,6 +493,11 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr l_grid_gui_draw_demo
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_usage "gui_draw_demo(screen_index, n) Draws the n-th iteration of the demo."
 
+#define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_short "glsb"
+#define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_human "lcd_set_backlight"
+#define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_fnptr l_grid_lcd_set_backlight
+#define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_usage "lcd_set_backlight(strength) Sets the LCD backlight strength between 0 and 255."
+
 // ========================= UI ELEMENT VARIABLES =========================== //
 
 #define GRID_LUA_FNC_B_ELEMENT_INDEX_index 0
