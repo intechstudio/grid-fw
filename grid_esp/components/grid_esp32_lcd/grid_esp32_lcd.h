@@ -55,6 +55,7 @@ struct grid_esp32_lcd_model {
   esp_lcd_panel_io_handle_t panel_io[GRID_LCD_CLK_COUNT];
   int cs_gpio_num;
   volatile uint8_t tx_ready;
+  struct grid_ui_element* element;
 };
 
 extern struct grid_esp32_lcd_model grid_esp32_lcd_states[2];
@@ -74,7 +75,7 @@ extern uint8_t grid_esp32_lcd_backlight;
 void grid_esp32_lcd_spi_bus_init(size_t max_color_sz);
 
 void grid_esp32_lcd_panel_chipsel(struct grid_esp32_lcd_model* lcd, uint8_t value);
-void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, enum grid_lcd_clock_t);
+void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, struct grid_ui_element* element, uint8_t lcd_index, enum grid_lcd_clock_t);
 bool grid_esp32_lcd_panel_active(struct grid_esp32_lcd_model* lcd);
 void grid_esp32_lcd_panel_reset(struct grid_esp32_lcd_model* lcd);
 bool grid_esp32_lcd_panel_tx_ready(struct grid_esp32_lcd_model* lcd);

@@ -36,6 +36,7 @@
 #define GRID_PARAMETER_EVENT_MIDIRX 5
 #define GRID_PARAMETER_EVENT_TIMER 6
 #define GRID_PARAMETER_EVENT_ENDLESS 7
+#define GRID_PARAMETER_EVENT_DRAW 8
 
 // Module HWCFG definitions
 
@@ -101,6 +102,8 @@
 #define GRID_PARAMETER_DISCONNECTTIMEOUT_us 500000
 
 #define GRID_PARAMETER_UICOOLDOWN_us 10000
+
+#define GRID_PARAMETER_DRAWTRIGGER_us 12500
 
 #define GRID_PARAMETER_UART_baudrate 2000000ul
 
@@ -773,6 +776,9 @@
 
 #define GRID_LUA_FNC_A_ENDLESS_short "epc"
 #define GRID_LUA_FNC_A_ENDLESS_human "endless_handler"
+
+#define GRID_LUA_FNC_A_DRAW_short "ld"
+#define GRID_LUA_FNC_A_DRAW_human "draw_handler"
 
 #define GRID_LUA_KW_ELEMENT_short "ele"
 #define GRID_LUA_KW_ELEMENT_human "element"

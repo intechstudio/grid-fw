@@ -10,14 +10,16 @@ extern uint8_t grid_platform_get_adc_bit_depth();
 extern void grid_platform_printf(char const* fmt, ...);
 
 const char grid_ui_lcd_init_actionstring[] = GRID_ACTIONSTRING_LCD_INIT;
+const char grid_ui_lcd_draw_actionstring[] = GRID_ACTIONSTRING_LCD_DRAW;
 
 void grid_ui_element_lcd_init(struct grid_ui_element* ele, template_init_t initializer) {
 
   ele->type = GRID_PARAMETER_ELEMENT_LCD;
 
-  grid_ui_element_malloc_events(ele, 1);
+  grid_ui_element_malloc_events(ele, 2);
 
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_lcd_init_actionstring); // Element Initialization Event
+  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_DRAW, GRID_LUA_FNC_A_DRAW_short, grid_ui_lcd_draw_actionstring);
 
   template_init_t init_default = grid_ui_element_lcd_template_parameter_init;
   template_init_t init_actual = initializer ? initializer : init_default;

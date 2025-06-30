@@ -89,6 +89,7 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_L_SCREEN_HEIGHT_short, GRID_LUA_FNC_L_SCREEN_HEIGHT_index) "," \
   \
   GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_INIT_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_DRAW_short) "," \
   "post_init_cb = function (self) " \
   "self:"GRID_LUA_FNC_A_INIT_short"() " \
   "end," \
@@ -113,10 +114,20 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_DEMO_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_short) "," \
   \
   "}}"
-// clang-format on
 
-#define GRID_ACTIONSTRING_LCD_INIT                                                                                                                                                                     \
-  "<?lua --[[@cb]] local x={0,0,38,64,64,65,104,130,130,131,170,183,183,145,119,119,118,79,53,53,52,13}local "                                                                                         \
-  "y={42,38,0,0,39,39,0,0,39,39,0,0,4,42,42,3,3,42,42,3,3,42}self:ldrf(0,0,320,240,{0,0,0})self:ldpof(x,y,{200,200,200})self:ldt('Intech Studio',2,55,34,{160,160,160})self:ldsw()glsb(255) ?>"
+#define GRID_ACTIONSTRING_LCD_INIT \
+  "<?lua --[[@cb]] " \
+	"local x={0,0,38,64,64,65,104,130,130,131,170,183,183,145,119,119,118,79,53,53,52,13}" \
+	"local y={42,38,0,0,39,39,0,0,39,39,0,0,4,42,42,3,3,42,42,3,3,42}" \
+	"self:ldrf(0,0,320,240,{0,0,0})" \
+	"self:ldpof(x,y,{200,200,200})" \
+	"self:ldt('Intech Studio',2,55,34,{160,160,160})" \
+	"self:ldsw()" \
+	"glsb(255) ?>"
+
+#define GRID_ACTIONSTRING_LCD_DRAW \
+	"<?lua --[[@cb]] --[[draw]] ?>"
+
+// clang-format on
 
 #endif /* GRID_UI_LCD_H */

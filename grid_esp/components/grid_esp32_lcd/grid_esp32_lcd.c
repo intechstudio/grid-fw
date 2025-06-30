@@ -9,6 +9,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "grid_noflash.h"
+#include "grid_utask.h"
+
 extern uint64_t grid_platform_rtc_get_micros(void);
 
 extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
@@ -86,7 +89,13 @@ void grid_esp32_lcd_spi_bus_init(size_t max_color_sz) {
 
 void grid_esp32_lcd_panel_chipsel(struct grid_esp32_lcd_model* lcd, uint8_t value) { gpio_set_level(lcd->cs_gpio_num, value != 0); }
 
-void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, enum grid_lcd_clock_t clock) {
+void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, struct grid_ui_element* element, uint8_t lcd_index, enum grid_lcd_clock_t clock) {
+
+  assert(element);
+  assert(element->type == GRID_PARAMETER_ELEMENT_LCD);
+
+  // Store element pointer
+  lcd->element = element;
 
   assert(clock < GRID_LCD_CLK_COUNT);
 
@@ -392,12 +401,49 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
     waiting[lcd_index] = false;
 
     grid_gui_swap_set(&guis[lcd_index], false);
+
+    struct grid_ui_event* eve = grid_ui_event_find(lcds[lcd_index].element, GRID_PARAMETER_EVENT_DRAW);
+
+    grid_ui_event_trigger_local(eve);
+  }
+}
+
+struct grid_utask_timer timer_draw_trigger;
+
+void grid_utask_draw_trigger(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
+  struct grid_gui_model* guis = grid_gui_states;
+
+  for (int i = 0; i < 2; ++i) {
+
+    if (grid_esp32_lcd_panel_active(&lcds[i])) {
+
+      assert(lcds[i].element);
+
+      struct grid_ui_event* eve = grid_ui_event_find(lcds[i].element, GRID_PARAMETER_EVENT_DRAW);
+
+      if (eve->trigger == GRID_UI_STATUS_READY && grid_swsr_size(&guis[i].swsr) == 0) {
+
+        grid_ui_event_trigger_local(eve);
+      }
+    }
   }
 }
 
 #undef USE_SEMAPHORE
 
 void grid_esp32_lcd_task(void* arg) {
+
+  // Configure task timers
+  timer_draw_trigger = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = GRID_PARAMETER_DRAWTRIGGER_us,
+  };
 
   uint32_t lcd_tx_lines = 16;
   uint32_t lcd_tx_bytes = LCD_VRES * lcd_tx_lines * COLMOD_RGB888_BYTES;
@@ -443,6 +489,9 @@ void grid_esp32_lcd_task(void* arg) {
       // this is only true here if a clear & swap was queued initially
       grid_esp32_lcd_set_drawn(true);
     }
+
+    // Run microtasks
+    grid_utask_draw_trigger(&timer_draw_trigger);
 
 #ifdef USE_SEMAPHORE
     grid_lua_semaphore_release(&grid_lua_state);
