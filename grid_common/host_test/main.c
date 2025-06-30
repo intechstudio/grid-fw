@@ -41,7 +41,7 @@ void test_function_should_calculateRelativeMode(void) {
   }
 
   grid_ui_element_set_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MODE_index, 1); // set to relative mode
-  grid_ui_event_reset(eve);
+  grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
   if (eve->parent->event_clear_cb != NULL) {
     eve->parent->event_clear_cb(eve);
   }
@@ -52,7 +52,7 @@ void test_function_should_calculateRelativeMode(void) {
   // in relative mode value should be 0 after event reset when min max is set to -100 ... 100
   grid_ui_element_set_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MIN_index, -100); // set min to -100
   grid_ui_element_set_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MAX_index, 100);  // set max to 100
-  grid_ui_event_reset(eve);
+  grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
   if (eve->parent->event_clear_cb != NULL) {
     eve->parent->event_clear_cb(eve);
   }
@@ -61,7 +61,7 @@ void test_function_should_calculateRelativeMode(void) {
   // in relative mode value should be 0 after event reset when min max is set to 200 ... 100
   grid_ui_element_set_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MIN_index, 200);
   grid_ui_element_set_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MAX_index, 100);
-  grid_ui_event_reset(eve);
+  grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
   if (eve->parent->event_clear_cb != NULL) {
     eve->parent->event_clear_cb(eve);
   }
