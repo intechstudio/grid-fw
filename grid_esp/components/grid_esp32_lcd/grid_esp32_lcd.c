@@ -383,7 +383,8 @@ void grid_esp32_module_vsn_lcd_push_trailing(struct grid_esp32_lcd_model* lcds, 
   }
 }
 
-void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf) {
+void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf,
+                                       struct grid_utask_timer* timers) {
 
   bool waiting[2] = {
       grid_esp32_lcd_panel_active(&lcds[0]) && grid_gui_swap_get(&guis[0]),
@@ -405,10 +406,12 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
     struct grid_ui_event* eve = grid_ui_event_find(lcds[lcd_index].element, GRID_PARAMETER_EVENT_DRAW);
 
     grid_ui_event_trigger_local(eve);
+
+    grid_utask_timer_realign(&timers[lcd_index]);
   }
 }
 
-struct grid_utask_timer timer_draw_trigger;
+struct grid_utask_timer timer_draw_trigger[2];
 
 void grid_utask_draw_trigger(struct grid_utask_timer* timer) {
 
@@ -419,19 +422,17 @@ void grid_utask_draw_trigger(struct grid_utask_timer* timer) {
   struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
   struct grid_gui_model* guis = grid_gui_states;
 
-  for (int i = 0; i < 2; ++i) {
+  int i = timer - timer_draw_trigger;
 
-    if (grid_esp32_lcd_panel_active(&lcds[i])) {
+  assert(grid_esp32_lcd_panel_active(&lcds[i]));
 
-      assert(lcds[i].element);
+  assert(lcds[i].element);
 
-      struct grid_ui_event* eve = grid_ui_event_find(lcds[i].element, GRID_PARAMETER_EVENT_DRAW);
+  struct grid_ui_event* eve = grid_ui_event_find(lcds[i].element, GRID_PARAMETER_EVENT_DRAW);
 
-      if (eve->trigger == GRID_UI_STATUS_READY && grid_swsr_size(&guis[i].swsr) == 0) {
+  if (eve->trigger == GRID_UI_STATUS_READY && grid_swsr_size(&guis[i].swsr) == 0) {
 
-        grid_ui_event_trigger_local(eve);
-      }
-    }
+    grid_ui_event_trigger_local(eve);
   }
 }
 
@@ -440,10 +441,12 @@ void grid_utask_draw_trigger(struct grid_utask_timer* timer) {
 void grid_esp32_lcd_task(void* arg) {
 
   // Configure task timers
-  timer_draw_trigger = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = GRID_PARAMETER_DRAWTRIGGER_us,
-  };
+  for (int i = 0; i < 2; ++i) {
+    timer_draw_trigger[i] = (struct grid_utask_timer){
+        .last = grid_platform_rtc_get_micros(),
+        .period = GRID_PARAMETER_DRAWTRIGGER_us,
+    };
+  }
 
   uint32_t lcd_tx_lines = 16;
   uint32_t lcd_tx_bytes = LCD_VRES * lcd_tx_lines * COLMOD_RGB888_BYTES;
@@ -478,7 +481,7 @@ void grid_esp32_lcd_task(void* arg) {
     grid_lua_semaphore_lock(&grid_lua_state);
 #endif
 
-    grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf);
+    grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf, timer_draw_trigger);
 
     if (!grid_esp32_lcd_get_drawn()) {
 
@@ -491,7 +494,13 @@ void grid_esp32_lcd_task(void* arg) {
     }
 
     // Run microtasks
-    grid_utask_draw_trigger(&timer_draw_trigger);
+    for (int i = 0; i < 2; ++i) {
+
+      if (grid_esp32_lcd_panel_active(&lcds[i])) {
+
+        grid_utask_draw_trigger(&timer_draw_trigger[i]);
+      }
+    }
 
 #ifdef USE_SEMAPHORE
     grid_lua_semaphore_release(&grid_lua_state);
