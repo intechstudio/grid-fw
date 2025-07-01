@@ -405,7 +405,7 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
 
     struct grid_ui_event* eve = grid_ui_event_find(lcds[lcd_index].element, GRID_PARAMETER_EVENT_DRAW);
 
-    grid_ui_event_trigger_local(eve);
+    grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
 
     grid_utask_timer_realign(&timers[lcd_index]);
   }
@@ -430,9 +430,9 @@ void grid_utask_draw_trigger(struct grid_utask_timer* timer) {
 
   struct grid_ui_event* eve = grid_ui_event_find(lcds[i].element, GRID_PARAMETER_EVENT_DRAW);
 
-  if (eve->trigger == GRID_UI_STATUS_READY && grid_swsr_size(&guis[i].swsr) == 0) {
+  if (eve->state == GRID_EVE_STATE_INIT && grid_swsr_size(&guis[i].swsr) == 0) {
 
-    grid_ui_event_trigger_local(eve);
+    grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
   }
 }
 
