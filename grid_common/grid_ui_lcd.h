@@ -90,6 +90,7 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_L_SCREEN_HEIGHT_short, GRID_LUA_FNC_L_SCREEN_HEIGHT_index) "," \
   \
   GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_INIT_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_DRAW_short) "," \
   "post_init_cb = function (self) " \
   "self:"GRID_LUA_FNC_A_INIT_short"() " \
   "end," \

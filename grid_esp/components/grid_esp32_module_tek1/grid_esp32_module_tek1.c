@@ -247,8 +247,10 @@ void grid_esp32_module_tek1_task(void* arg) {
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
 
     struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[0];
-    grid_esp32_lcd_panel_init(lcd, 0, GRID_LCD_CLK_SLOW);
-    grid_esp32_lcd_panel_init(lcd, 0, GRID_LCD_CLK_FAST);
+    struct grid_ui_element* elements = grid_ui_model_get_elements(&grid_ui_state);
+
+    grid_esp32_lcd_panel_init(lcd, &elements[13], 0, GRID_LCD_CLK_SLOW);
+    grid_esp32_lcd_panel_init(lcd, &elements[13], 0, GRID_LCD_CLK_FAST);
     grid_esp32_lcd_panel_reset(lcd);
     grid_esp32_lcd_panel_set_frctrl2(lcd, LCD_FRCTRL_40HZ);
   }
@@ -258,8 +260,10 @@ void grid_esp32_module_tek1_task(void* arg) {
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
 
     struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[1];
-    grid_esp32_lcd_panel_init(lcd, 1, GRID_LCD_CLK_SLOW);
-    grid_esp32_lcd_panel_init(lcd, 1, GRID_LCD_CLK_FAST);
+    struct grid_ui_element* elements = grid_ui_model_get_elements(&grid_ui_state);
+
+    grid_esp32_lcd_panel_init(lcd, &elements[13], 1, GRID_LCD_CLK_SLOW);
+    grid_esp32_lcd_panel_init(lcd, &elements[13], 1, GRID_LCD_CLK_FAST);
     grid_esp32_lcd_panel_reset(lcd);
     grid_esp32_lcd_panel_set_frctrl2(lcd, LCD_FRCTRL_40HZ);
   }
