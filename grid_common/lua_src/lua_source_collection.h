@@ -11,6 +11,9 @@
 #define GRID_LUA_FNC_G_ELEMENTNAME_short "gen"
 #define GRID_LUA_FNC_G_ELEMENTNAME_human "element_name"
 
+#include "eventfname.h"
+#define GRID_LUA_FNC_G_EVENTFNAME_source grid_lua_src_eventfname_lua
+
 #include "limit.h"
 #define GRID_LUA_FNC_G_LIMIT_source grid_lua_src_limit_lua
 #define GRID_LUA_FNC_G_LIMIT_short "glim"

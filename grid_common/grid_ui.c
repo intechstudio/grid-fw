@@ -418,6 +418,22 @@ uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui) { return ui->pa
 
 uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* action_string) { return strcmp(action_string, eve->default_actionstring) == 0; }
 
+void grid_ui_actionstring_header(uint8_t index, char* function_name, char* dest) {
+
+  char fn_push[] = "local _efn = EFN; EFN = ";
+
+  sprintf(dest, "ele[%d].%s = function (self) %s\"%s\"; ", index, function_name, fn_push, function_name);
+}
+
+void grid_ui_actionstring_center(char* actionstring, char* dest) { sprintf(dest, "%s ", &actionstring[6]); }
+
+void grid_ui_actionstring_footer(char* dest) {
+
+  char fn_pop[] = "EFN = _efn";
+
+  sprintf(dest, "end %s", fn_pop);
+}
+
 void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action_string) {
 
   struct grid_ui_element* ele = eve->parent;
@@ -432,7 +448,9 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action
   char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
   action_string[len - 3] = '\0';
-  sprintf(temp, "ele[%d].%s = function (self) %s end", ele->index, eve->function_name, &action_string[6]);
+  grid_ui_actionstring_header(ele->index, eve->function_name, temp);
+  grid_ui_actionstring_center(action_string, &temp[strlen(temp)]);
+  grid_ui_actionstring_footer(&temp[strlen(temp)]);
   action_string[len - 3] = ' ';
 
   eve->cfg_default_flag = grid_ui_event_isdefault_actionstring(eve, action_string);
@@ -488,16 +506,22 @@ void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstrin
     grid_port_debug_printf("LUA not OK, Failed to retrieve action! EL: %d EV: %d", eve->parent->index, eve->type);
   };
 
-  sprintf(temp, "ele[%d].%s", eve->parent->index, eve->function_name);
+  char header[100] = {0};
+  char footer[100] = {0};
+
+  grid_ui_actionstring_header(eve->parent->index, eve->function_name, header);
+  grid_ui_actionstring_footer(footer);
+
+  size_t header_len = strlen(header);
+  size_t footer_len = strlen(footer);
 
   // Check if debug.getinfo is valid by checking for a known prefix
-  if (0 == strncmp(temp, result, strlen(temp))) {
+  if (0 == strncmp(header, result, header_len)) {
 
     // Transform result to an actionstring
-    sprintf(&result[strlen(result) - 4], " ?>");
-    uint8_t offset = 13 + strlen(temp);
-    sprintf(&result[offset], "<?lua");
-    result[offset + 5] = ' '; // replace '\0' with ' '
+    sprintf(&result[strlen(result) - footer_len], " ?>");
+    uint8_t offset = header_len - 6;
+    memcpy(&result[offset], "<?lua ", 6);
 
     strcpy(targetstring, &result[offset]);
 

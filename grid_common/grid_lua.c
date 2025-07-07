@@ -261,6 +261,7 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, GRID_LUA_FNC_G_LOOKUP_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_LIMIT_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_ELEMENTNAME_source);
+  grid_lua_dostring(lua, GRID_LUA_FNC_G_EVENTFNAME_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_MAPSAT_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SIGN_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SEGCALC_source);
