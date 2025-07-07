@@ -397,17 +397,20 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
 
     int lcd_index = grid_esp32_module_vsn_lcd_wait_scan_top(lcds, waiting, lines, tx_lines, ready_len, scans);
 
+    if (grid_swsr_size(&guis[lcd_index].swsr) == 0) {
+
+      struct grid_ui_event* eve = grid_ui_event_find(lcds[lcd_index].element, GRID_PARAMETER_EVENT_DRAW);
+
+      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
+
+      grid_utask_timer_realign(&timers[lcd_index]);
+    }
+
     grid_esp32_module_vsn_lcd_push_trailing(lcds, lcd_index, lines, columns, tx_lines, guis[lcd_index].buffer, xferbuf);
 
     waiting[lcd_index] = false;
 
     grid_gui_swap_set(&guis[lcd_index], false);
-
-    struct grid_ui_event* eve = grid_ui_event_find(lcds[lcd_index].element, GRID_PARAMETER_EVENT_DRAW);
-
-    grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
-
-    grid_utask_timer_realign(&timers[lcd_index]);
   }
 }
 
