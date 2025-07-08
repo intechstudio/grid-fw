@@ -20,6 +20,8 @@ int grid_cal_pot_init(struct grid_cal_pot* cal, uint8_t resolution, uint8_t leng
 
   cal->value = (uint16_t*)malloc(cal->length * sizeof(uint16_t));
   cal->center = (uint16_t*)malloc(cal->length * sizeof(uint16_t));
+  cal->detentlo = (uint16_t*)malloc(cal->length * sizeof(uint16_t));
+  cal->detenthi = (uint16_t*)malloc(cal->length * sizeof(uint16_t));
   cal->enable = (uint8_t*)malloc(cal->length * sizeof(uint8_t));
 
   const uint16_t half_value = cal->maximum / 2;
@@ -28,6 +30,8 @@ int grid_cal_pot_init(struct grid_cal_pot* cal, uint8_t resolution, uint8_t leng
   for (uint8_t i = 0; i < cal->length; ++i) {
     cal->value[i] = half_value + default_offset;
     cal->center[i] = cal->value[i];
+    cal->detentlo[i] = cal->maximum;
+    cal->detenthi[i] = 0;
     cal->enable[i] = 0;
   }
 
@@ -94,6 +98,23 @@ int grid_cal_pot_center_set(struct grid_cal_pot* cal, uint8_t channel, uint16_t 
   return 0;
 }
 
+int grid_cal_pot_detent_set(struct grid_cal_pot* cal, uint8_t channel, uint16_t detent, bool high) {
+
+  if (!(channel < cal->length)) {
+    return 1;
+  }
+
+  if (!cal->enable[channel]) {
+    return 1;
+  }
+
+  uint16_t* target = high ? cal->detenthi : cal->detentlo;
+
+  target[channel] = detent;
+
+  return 0;
+}
+
 int grid_cal_pot_value_get(struct grid_cal_pot* cal, uint8_t channel, uint16_t* value) {
 
   if (!(channel < cal->length)) {
@@ -127,6 +148,24 @@ static int32_t inverse_error_centering(int32_t a, int32_t b, double x, double c,
   return lerp(a, b, x);
 }
 
+static int32_t detent_center_deadzoning(int32_t a, int32_t b, double x, double lo, double hi) {
+
+  int32_t half_value = (a + b) / 2;
+
+  if (x < lo) {
+
+    return lerp(a, half_value, x / lo);
+  }
+
+  if (x > hi) {
+
+    // expand and simplify: lerp(half_value, b, (x - hi) / (1 - hi))
+    return (half_value * (x - 1) + b * (hi - x)) / (hi - 1);
+  }
+
+  return half_value;
+}
+
 int grid_cal_pot_next(struct grid_cal_pot* cal, uint8_t channel, uint16_t in, uint16_t* out) {
 
   if (!(channel < cal->length)) {
@@ -140,9 +179,22 @@ int grid_cal_pot_next(struct grid_cal_pot* cal, uint8_t channel, uint16_t in, ui
 
   cal->value[channel] = in;
 
-  double in_norm = in / (double)cal->maximum;
-  double center_norm = cal->center[channel] / (double)cal->maximum;
-  *out = inverse_error_centering(0, cal->maximum, in_norm, center_norm, 2);
+  // If the detent interval is valid, use detent calibration
+  if (cal->detentlo[channel] < cal->detenthi[channel]) {
+
+    double in_norm = in / (double)cal->maximum;
+    double lo_norm = cal->detentlo[channel] / (double)cal->maximum;
+    double hi_norm = cal->detenthi[channel] / (double)cal->maximum;
+    *out = detent_center_deadzoning(0, cal->maximum, in_norm, lo_norm, hi_norm);
+
+  }
+  // Otherwise, use centering calibration
+  else {
+
+    double in_norm = in / (double)cal->maximum;
+    double center_norm = cal->center[channel] / (double)cal->maximum;
+    *out = inverse_error_centering(0, cal->maximum, in_norm, center_norm, 2);
+  }
 
   return 0;
 }
