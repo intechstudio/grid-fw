@@ -98,6 +98,25 @@ int grid_cal_pot_center_set(struct grid_cal_pot* cal, uint8_t channel, uint16_t 
   return 0;
 }
 
+int grid_cal_pot_detent_get(struct grid_cal_pot* cal, uint8_t channel, uint16_t* detent, bool high) {
+
+  if (!(channel < cal->length)) {
+    return 1;
+  }
+
+  if (cal->enable[channel]) {
+
+    uint16_t* target = high ? cal->detenthi : cal->detentlo;
+    *detent = target[channel];
+
+  } else {
+
+    *detent = 0;
+  }
+
+  return 0;
+}
+
 int grid_cal_pot_detent_set(struct grid_cal_pot* cal, uint8_t channel, uint16_t detent, bool high) {
 
   if (!(channel < cal->length)) {

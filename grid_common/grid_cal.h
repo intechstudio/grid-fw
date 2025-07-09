@@ -21,7 +21,8 @@ int grid_cal_pot_enable_range(struct grid_cal_pot* cal, uint8_t start, uint8_t l
 int grid_cal_pot_enable_get(struct grid_cal_pot* cal, uint8_t channel, uint8_t* enable);
 int grid_cal_pot_center_get(struct grid_cal_pot* cal, uint8_t channel, uint16_t* center);
 int grid_cal_pot_center_set(struct grid_cal_pot* cal, uint8_t channel, uint16_t center);
-int grid_cal_pot_detent_set(struct grid_cal_pot* cal, uint8_t channel, uint16_t center, bool high);
+int grid_cal_pot_detent_get(struct grid_cal_pot* cal, uint8_t channel, uint16_t* detent, bool high);
+int grid_cal_pot_detent_set(struct grid_cal_pot* cal, uint8_t channel, uint16_t detent, bool high);
 int grid_cal_pot_value_get(struct grid_cal_pot* cal, uint8_t channel, uint16_t* value);
 int grid_cal_pot_next(struct grid_cal_pot* cal, uint8_t channel, uint16_t in, uint16_t* out);
 
