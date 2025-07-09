@@ -40,7 +40,7 @@ int grid_gui_init(struct grid_gui_model* gui, void* screen_handle, uint8_t* buff
   gui->delta = 0;
   gui->swap = 0;
 
-  assert(grid_swsr_malloc(&gui->swsr, 1024) == 0);
+  assert(grid_swsr_malloc(&gui->swsr, 2048) == 0);
 
   return 0;
 }

@@ -46,6 +46,8 @@ void grid_platform_sync1_pulse_send() { sync1_state++; }
 extern void grid_platform_rtc_set_micros(uint64_t mic);
 extern uint64_t grid_platform_rtc_get_micros(void);
 
+void grid_platform_lcd_set_backlight(uint8_t backlight) {}
+
 static void nvm_task_inner() {
 
   if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {

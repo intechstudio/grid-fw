@@ -1224,7 +1224,7 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui) {
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
 
       // Automatically report elementname after config
-      if (ele->type != GRID_PARAMETER_ELEMENT_SYSTEM) {
+      if (ele->type != GRID_PARAMETER_ELEMENT_SYSTEM && ele->type != GRID_PARAMETER_ELEMENT_LCD) {
 
         char command[26] = {0};
 
