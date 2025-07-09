@@ -262,7 +262,6 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
     double deadzone = 0.02;
     double deadzoned = lerp(0 - deadzone, 1 + deadzone, normalized);
     int32_t new_value = clampi32(lerp(min, max, deadzoned), min, max);
-    int32_t new_state = clampi32(lerp(0, 127, deadzoned), 0, 127);
 
     if (tmin > tmax) {
       new_value = mirrori32(new_value, min, max);
@@ -270,6 +269,15 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 
     if (old_value == new_value) {
       return;
+    }
+
+    int32_t value_range = tmax - tmin;
+    int32_t state_range = 127 - 0 + 1;
+    int32_t new_state = 0;
+
+    if (value_range) {
+
+      new_state = clampi32(((new_value - tmin) * state_range) / value_range, 0, 127);
     }
 
     template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = new_value;
@@ -288,16 +296,15 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
     double derivate = grid_ui_button_state_derivate(state);
     int32_t velocity = clampi32(lerp(min, max, derivate), min + 1, max);
     int32_t new_value = new_dir ? velocity : min;
+    int32_t vel_norm = clampi32(lerp(0, 127, derivate), 1, 127);
+    int32_t new_state = new_dir ? vel_norm : 0;
 
     if (tmin > tmax) {
       new_value = mirrori32(new_value, min, max);
     }
 
     template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = new_value;
-
-    if (grid_ui_button_state_get_with_hysteresis(state, &hyst)) {
-      template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = hyst * 127;
-    }
+    template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = new_state;
 
   } else if (template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] == 0) {
 
@@ -340,8 +347,17 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
       new_value = max;
     }
 
+    int32_t value_range = tmax - tmin;
+    int32_t state_range = 127 - 0 + 1;
+    int32_t new_state = 0;
+
+    if (value_range) {
+
+      new_state = clampi32(((new_value - tmin) * state_range) / value_range, 0, 127);
+    }
+
     template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index] = new_value;
-    template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 127;
+    template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = new_state;
   }
 
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_BUTTON);
