@@ -11,7 +11,6 @@
 
 #include "rom/ets_sys.h" // For ets_printf
 
-#include "esp_chip_info.h"
 #include "esp_system.h"
 #include <sys/stat.h>
 #include <sys/unistd.h>
@@ -43,23 +42,6 @@
 static const char* TAG = "grid_esp32_nvm";
 
 struct grid_esp32_nvm_model grid_esp32_nvm_state;
-
-void grid_esp32_nvm_print_chip_info() {
-
-  /* Print chip information */
-  esp_chip_info_t chip_info;
-  esp_chip_info(&chip_info);
-  printf("This is %s chip with %d CPU cores, WiFi%s%s, ", CONFIG_IDF_TARGET, chip_info.cores, (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
-         (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
-
-  printf("silicon revision %d, ", chip_info.revision);
-
-  uint32_t size_flash_chip = 0;
-  esp_flash_get_size(NULL, &size_flash_chip);
-  printf("%uMB %s flash\n", (unsigned int)size_flash_chip >> 20, (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
-
-  printf("Free heap: %u\n", (unsigned int)esp_get_free_heap_size());
-}
 
 void grid_esp32_nvm_mount() {
 
@@ -149,8 +131,6 @@ void grid_esp32_nvm_read_write_test() {
 }
 
 void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm) {
-
-  // grid_esp32_nvm_print_chip_info();
 
   grid_esp32_nvm_mount();
 
