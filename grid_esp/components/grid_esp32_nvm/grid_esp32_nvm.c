@@ -52,8 +52,7 @@ void grid_esp32_nvm_mount() {
       .dont_mount = false,
   };
 
-  // Use settings defined above to initialize and mount LittleFS filesystem.
-  // Note: esp_vfs_littlefs_register is an all-in-one convenience function.
+  // Use an all-in-one convenience function to initialize and mount littlefs
   esp_err_t ret = esp_vfs_littlefs_register(&conf);
 
   if (ret != ESP_OK) {
@@ -76,69 +75,13 @@ void grid_esp32_nvm_mount() {
   }
 }
 
-void grid_esp32_nvm_read_write_test() {
-
-  grid_esp32_nvm_list_files(NULL, "/littlefs");
-
-  // Use POSIX and C standard library functions to work with files.
-  // First create a file.
-  ESP_LOGI(TAG, "Opening file");
-  FILE* f = fopen("/littlefs/hello.txt", "w");
-  if (f == NULL) {
-    ESP_LOGE(TAG, "Failed to open file for writing");
-    return;
-  }
-  fprintf(f, "LittleFS Rocks!\n");
-  fclose(f);
-  ESP_LOGI(TAG, "File written");
-
-  grid_esp32_nvm_list_files(NULL, "/littlefs");
-
-  // Check if destination file exists before renaming
-  struct stat st;
-  if (stat("/littlefs/foo.txt", &st) == 0) {
-    // Delete it if it exists
-    unlink("/littlefs/foo.txt");
-  }
-
-  // Rename original file
-  ESP_LOGI(TAG, "Renaming file");
-  if (rename("/littlefs/hello.txt", "/littlefs/foo.txt") != 0) {
-    ESP_LOGE(TAG, "Rename failed");
-    return;
-  }
-
-  grid_esp32_nvm_list_files(NULL, "/littlefs");
-
-  // Open renamed file for reading
-  ESP_LOGI(TAG, "Reading file");
-  f = fopen("/littlefs/foo.txt", "r");
-  if (f == NULL) {
-    ESP_LOGE(TAG, "Failed to open file for reading");
-    return;
-  }
-  char line[64];
-  fgets(line, sizeof(line), f);
-  fclose(f);
-  // strip newline
-  char* pos = strchr(line, '\n');
-  if (pos) {
-    *pos = '\0';
-  }
-  ESP_LOGI(TAG, "Read from file: '%s'", line);
-
-  grid_esp32_nvm_list_files(NULL, "/littlefs");
-}
-
 void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm) {
 
   grid_esp32_nvm_mount();
 
-  // esp_littlefs_format("ffat");
   grid_esp32_nvm_list_files(NULL, "/littlefs");
   grid_esp32_nvm_list_files(NULL, "/littlefs/00");
   grid_esp32_nvm_list_files(NULL, "/littlefs/00/00");
-  // grid_esp32_nvm_read_write_test();
 }
 
 void grid_esp32_nvm_list_files(struct grid_esp32_nvm_model* nvm, char* path) {
@@ -159,58 +102,6 @@ void grid_esp32_nvm_list_files(struct grid_esp32_nvm_model* nvm, char* path) {
   return;
 }
 
-void grid_esp32_nvm_save_config(struct grid_esp32_nvm_model* nvm, uint8_t page, uint8_t element, uint8_t event, char* actionstring) {
-
-  char fname[30] = {0};
-
-  sprintf(fname, "/littlefs/%02x", page);
-
-  if (mkdir(fname, 0777) == -1) {
-    // printf("Error creating directory.\n");
-  }
-
-  sprintf(fname, "/littlefs/%02x/%02x", page, element);
-
-  if (mkdir(fname, 0777) == -1) {
-    // printf("Error creating directory.\n");
-  }
-
-  sprintf(fname, "/littlefs/%02x/%02x/%02x.cfg", page, element, event);
-
-  ESP_LOGD(TAG, "%s : %s", fname, actionstring);
-
-  FILE* fp;
-
-  fp = fopen(fname, "w");
-
-  if (fp) {
-
-    printf("FILE OK\r\n");
-    fprintf(fp, "%s", actionstring);
-    fclose(fp);
-  } else {
-    printf("FILE ERROR\r\n");
-  }
-}
-
-int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle) {
-
-  sprintf(file_handle->fname, "/littlefs/%02x/%02x/%02x.cfg", page, element, event_type);
-
-  // check if file exists
-  FILE* fp;
-  fp = fopen(file_handle->fname, "r");
-
-  if (fp != NULL) {
-    fclose(fp);
-    return 0;
-  }
-
-  // clear file_handle value
-  memset(file_handle, 0, sizeof(union grid_ui_file_handle));
-  return 1;
-}
-
 void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm) {
 
   grid_esp32_nvm_clear_page(nvm, 0);
@@ -223,17 +114,17 @@ void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm) {
 
 void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page) {
 
-  for (uint8_t i = 0; i < 18 + 1 /* upkeep */; i++) { // elements
+  // upkeep: loop bound
+  for (uint8_t i = 0; i < 18 + 1; ++i) {
 
-    for (uint8_t j = 0; j < 10 /* upkeep */; j++) { // events
+    // upkeep: loop bound
+    for (uint8_t j = 0; j < 10; ++j) {
 
       union grid_ui_file_handle file_handle = {0};
       int status = grid_platform_find_actionstring_file(page, i, j, &file_handle);
 
       if (status == 0) {
-
-        unlink(file_handle.fname);
-        ets_printf("DELETE: %s\r\n", file_handle.fname);
+        grid_platform_delete_file(&file_handle);
       }
     }
   }
@@ -251,216 +142,211 @@ void grid_esp32_nvm_clear_conf(const char* path) {
   }
 }
 
-static int scandir2(const char* dirname, struct dirent*** namelist, int (*select)(struct dirent*), int (*dcomp)(const void*, const void*)) {
+static int scandir2(const char* dirp, struct dirent*** namelist, int (*filter)(struct dirent*), int (*compar)(const void*, const void*)) {
 
-  struct dirent *d, *p, **names = NULL;
-  size_t nitems = 0;
-  // struct stat stb;
-  long arraysz;
-  DIR* dirp;
+  struct dirent** names = NULL;
+  size_t items = 0;
+  DIR* dir = NULL;
 
-  if ((dirp = opendir(dirname)) == NULL) {
-
-    printf("OPENDIR FAILED\r\n");
-    return (-1);
+  // Allocate entry names, with an initial guess for size
+  size_t array_size = 20;
+  names = malloc(array_size * sizeof(struct dirent*));
+  if (!names) {
+    goto scandir_cleanup;
   }
 
-  /*
-   * estimate the array size by taking the size of the directory file
-   * and dividing it by a multiple of the minimum size entry.
-   */
+  dir = opendir(dirp);
+  if (!dir) {
+    goto scandir_cleanup;
+  }
 
-  arraysz = (20);
-  names = (struct dirent**)malloc(arraysz * sizeof(struct dirent*));
-  if (names == NULL)
-    goto fail;
+  struct dirent* entry = NULL;
 
-  while ((d = readdir(dirp)) != NULL) {
-    if (select != NULL && !(*select)(d))
-      continue; /* just selected names */
-    /*
-     * Make a minimum size copy of the data
-     */
-    p = (struct dirent*)malloc(sizeof(struct dirent));
-    if (p == NULL)
-      goto fail;
-    p->d_type = d->d_type;
+  while ((entry = readdir(dir)) != NULL) {
 
-    bcopy(d->d_name, p->d_name, 255 + 1);
-    /*
-     * Check to make sure the array has space left and
-     * realloc the maximum size.
-     */
-    if (nitems >= arraysz) {
-      const int inc = 10; /* increase by this much */
-      struct dirent** names2;
-
-      names2 = (struct dirent**)realloc((char*)names, (arraysz + inc) * sizeof(struct dirent*));
-      if (names2 == NULL) {
-        free(p);
-        goto fail;
-      }
-      names = names2;
-      arraysz += inc;
+    // If there is a filter function, skip non-matching entry
+    if (filter && !filter(entry)) {
+      continue;
     }
-    names[nitems++] = p;
-  }
-  closedir(dirp);
-  if (nitems && dcomp != NULL)
-    qsort(names, nitems, sizeof(struct dirent*), dcomp);
-  *namelist = names;
-  return (nitems);
 
-fail:
-  while (nitems > 0)
-    free(names[--nitems]);
-  free(names);
-  closedir(dirp);
+    // Allocate entry to be returned
+    struct dirent* entry_copy = malloc(sizeof(struct dirent));
+    if (!entry_copy) {
+      goto scandir_cleanup;
+    }
+
+    *entry_copy = *entry;
+    names[items++] = entry_copy;
+
+    // Reallocate the array if it becomes full
+    if (items >= array_size) {
+
+      array_size += 10;
+
+      struct dirent** new_names = realloc(names, array_size * sizeof(struct dirent*));
+      if (!new_names) {
+        goto scandir_cleanup;
+      }
+
+      names = new_names;
+    }
+  }
+
+  // Sort entries if a comparison function was provided
+  if (items && compar) {
+    qsort(names, items, sizeof(struct dirent*), compar);
+  }
+
+  closedir(dir);
+
+  *namelist = names;
+
+  return items;
+
+scandir_cleanup:
+
+  if (names) {
+
+    while (items > 0) {
+      free(names[--items]);
+    }
+    free(names);
+  }
+
+  if (dir) {
+    closedir(dir);
+  }
+
   return -1;
 }
 
-/*
- * Alphabetic order comparison routine for those who want it.
- */
 static int my_alphasort(const void* d1, const void* d2) { return (strcmp((*(struct dirent**)d1)->d_name, (*(struct dirent**)d2)->d_name)); }
 
-static int find_next_file(char* path, char* file_name_fmt, int* last_file_number) {
+static int find_next_file(char* path, int* last_file_number) {
 
-  uint8_t file_found_already = false;
+  // Must init to null to avoid freeing random memory
+  struct dirent** entries = NULL;
 
-  struct dirent** entries = NULL; // must init with null to avoid freeing random memory;
-  int entries_length;
-  entries_length = scandir2(path, &entries, NULL, my_alphasort);
+  // Scan directory entries with an alphabetical sort
+  int entries_length = scandir2(path, &entries, NULL, my_alphasort);
 
-  for (uint8_t i = 0; i < entries_length; i++) {
+  uint8_t i = 0;
+  while (i < entries_length) {
 
-    // printf("files: %s\r\n", entries[i]->d_name);
-
+    // Attempt to parse the entry name as two hexadecimal digits
     int element;
-    int element_match = sscanf(entries[i]->d_name, "%02x", &element);
-    free(entries[i]);
+    int matched = sscanf(entries[i]->d_name, "%02x", &element);
 
-    if (file_found_already) {
-      continue;
+    // Upon finding a larger index than the last file number, stop
+    if (matched == 1 && element > *last_file_number) {
+      break;
     }
 
-    if (element_match != 1) {
-      continue;
-    }
-
-    if (element <= *last_file_number) {
-      continue;
-    }
-
-    // MATCH
-    file_found_already = true;
-    *last_file_number = element;
+    ++i;
   }
 
-  if (entries != NULL) {
+  // Deallocate entries
+  if (entries) {
+
+    for (uint8_t i = 0; i < entries_length; ++i) {
+      free(entries[i]);
+    }
     free(entries);
   }
 
-  if (file_found_already) {
-    return 0;
-  }
+  int found = i < entries_length;
 
-  *last_file_number = -1; // indicating that search is completed and no more files are available
+  // Set last_file_number according to whether the next file was found
+  *last_file_number = found ? i : -1;
 
-  return 1;
+  return found ? 0 : 1;
 }
 
 int grid_esp32_nvm_find_next_file_from_page(struct grid_esp32_nvm_model* nvm, uint8_t page, int* last_element, int* last_event) {
+
+  char path[50] = {0};
 
   while (true) {
 
     if (*last_event == -1) {
 
-      // try to find valid element
-      char path[25] = {0};
+      // Try to find next valid element
       sprintf(path, "/littlefs/%02x", page);
-      find_next_file(path, "%02x", last_element);
+      find_next_file(path, last_element);
 
+      // If no element is found, the traversal is over
       if (*last_element == -1) {
-        // no more element is found, traversal is over
         return 1;
       }
     }
 
-    // try to find valid event
-    char path[25] = {0};
+    // Try to find next valid event
     sprintf(path, "/littlefs/%02x/%02x", page, *last_element);
-    find_next_file(path, "%02x.cfg", last_event);
+    find_next_file(path, last_event);
 
+    // If a valid event is found, return success
     if (*last_event != -1) {
-      // valid event is found, return success
       return 0;
     }
   }
 }
 
-void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle) {
-
-  unlink(file_handle->fname);
-  return;
-}
-
 int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle) {
 
-  if (0 == grid_esp32_nvm_find_next_file_from_page(&grid_esp32_nvm_state, page, last_element, last_event)) {
-
-    sprintf(file_handle->fname, "/littlefs/%02x/%02x/%02x.cfg", page, *last_element, *last_event);
-
-    return 0;
+  if (grid_esp32_nvm_find_next_file_from_page(&grid_esp32_nvm_state, page, last_element, last_event)) {
+    return 1;
   }
 
-  return 1;
-}
-
-uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle) {
-
-  FILE* fp = fopen(file_handle->fname, "r");
-
-  if (fp) {
-
-    fseek(fp, 0, SEEK_END);    // seek to end of file
-    uint32_t size = ftell(fp); // get current file pointer
-    fseek(fp, 0, SEEK_SET);    // seek back to beginning of file
-
-    fclose(fp);
-
-    return size;
-  }
-
-  ets_printf("INVALID FP\r\n");
-  return 0;
-}
-
-uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char* targetstring) {
-
-  // ets_printf("READ FILE \r\n");
-
-  FILE* fp = fopen(file_handle->fname, "r");
-
-  if (fp) {
-
-    fgets(targetstring, GRID_PARAMETER_ACTIONSTRING_maxlength, fp);
-    fclose(fp);
-  } else {
-
-    ESP_LOGD(TAG, "FREAD NO FILE \r\n");
-  }
+  sprintf(file_handle->fname, "/littlefs/%02x/%02x/%02x.cfg", page, *last_element, *last_event);
 
   return 0;
 }
 
-void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length) {
-  grid_esp32_nvm_save_config(&grid_esp32_nvm_state, page, element, event_type, buffer);
+int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event, union grid_ui_file_handle* file_handle) {
 
-  return;
+  char path[50] = {0};
+  sprintf(path, "%02x/%02x/%02x.cfg", page, element, event);
+
+  int status = grid_platform_find_file(path, file_handle);
+
+  // Clear file handle if not found
+  if (status) {
+    memset(file_handle, 0, sizeof(union grid_ui_file_handle));
+  }
+
+  return status;
 }
+
+void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle) { grid_platform_delete_file(file_handle); }
+
+uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle) { return grid_platform_get_file_size(file_handle); }
+
+uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char* targetstring, uint16_t size) {
+
+  return grid_platform_read_file(file_handle, (uint8_t*)targetstring, size);
+}
+
+void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event, char* buffer, uint16_t length) {
+
+  char path[50] = {0};
+
+  sprintf(&path[strlen(path)], "%02x", page);
+  grid_platform_make_directory(path);
+
+  sprintf(&path[strlen(path)], "/%02x", element);
+  grid_platform_make_directory(path);
+
+  sprintf(&path[strlen(path)], "/%02x.cfg", event);
+  int ret = grid_platform_write_file(path, (uint8_t*)buffer, length + 1);
+}
+
+void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) { grid_esp32_nvm_clear_page(&grid_esp32_nvm_state, page); };
+
+void grid_platform_delete_actionstring_files_all() { grid_esp32_nvm_erase(&grid_esp32_nvm_state); }
 
 int grid_esp32_nvm_build_path(const char* path, uint16_t out_size, char* out) {
+
+  assert(path != out);
 
   char prefix[] = "/littlefs/";
 
@@ -473,6 +359,18 @@ int grid_esp32_nvm_build_path(const char* path, uint16_t out_size, char* out) {
   return 0;
 }
 
+int grid_platform_make_directory(const char* pathname) {
+
+  char path[50] = {0};
+  grid_esp32_nvm_build_path(pathname, 50, path);
+
+  if (mkdir(path, 0777) == -1) {
+    return 1;
+  }
+
+  return 0;
+}
+
 int grid_platform_find_file(const char* path, union grid_ui_file_handle* file_handle) {
 
   grid_esp32_nvm_build_path(path, 50, file_handle->fname);
@@ -480,7 +378,7 @@ int grid_platform_find_file(const char* path, union grid_ui_file_handle* file_ha
   FILE* fp = fopen(file_handle->fname, "r");
 
   if (!fp) {
-    printf("FILE FIND ERROR\r\n");
+    // printf("FILE FIND ERROR\r\n");
     memset(file_handle, 0, sizeof(union grid_ui_file_handle));
     return 1;
   }
@@ -536,6 +434,7 @@ int grid_platform_write_file(char* path, uint8_t* buffer, uint16_t size) {
   FILE* fp = fopen(fname, "w");
 
   if (!fp) {
+    printf("FILE OPEN ERROR\r\n");
     return 1;
   }
 
@@ -553,41 +452,23 @@ int grid_platform_write_file(char* path, uint8_t* buffer, uint16_t size) {
 
 int grid_platform_delete_file(union grid_ui_file_handle* file_handle) { return unlink(file_handle->fname); }
 
-uint8_t grid_platform_get_nvm_state() {
-  return 1; // ready, always ready
-}
-
-void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
-
-  grid_esp32_nvm_clear_page(&grid_esp32_nvm_state, page);
-  return;
-};
-
-void grid_platform_delete_actionstring_files_all() {
-
-  grid_esp32_nvm_erase(&grid_esp32_nvm_state);
-
-  return;
-}
+uint8_t grid_platform_get_nvm_state() { return 1; }
 
 uint8_t grid_platform_erase_nvm_next() {
 
   ets_printf("ERASE WAS ALREADY DONE ON INIT!!!\r\n");
 
-  return 1; // done
+  return 1;
 }
 
 uint32_t grid_plaform_get_nvm_nextwriteoffset() {
 
   ets_printf("grid_plaform_get_nvm_nextwriteoffset NOT IMPLEMENTED!!!\r\n");
-  return 0; // done
+
+  return 0;
 }
 
 void grid_esp32_nvm_task(void* arg) {
-
-  // static uint32_t loopcounter = 0;
-
-  // gpio_set_direction(47, GPIO_MODE_OUTPUT);
 
   while (1) {
 
@@ -596,8 +477,6 @@ void grid_esp32_nvm_task(void* arg) {
       vTaskDelay(pdMS_TO_TICKS(15));
       continue;
     }
-
-    // gpio_set_level(47, 1);
 
     uint64_t time_max_duration = 150 * 1000; // in microseconds
     uint64_t time_start = grid_platform_rtc_get_micros();
@@ -628,8 +507,6 @@ void grid_esp32_nvm_task(void* arg) {
       }
 
     } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration && grid_ui_bulk_anything_is_in_progress(&grid_ui_state));
-
-    // gpio_set_level(47, 0);
 
     vTaskDelay(pdMS_TO_TICKS(15));
   }

@@ -5,29 +5,12 @@
 #include <string.h>
 
 #include "grid_config.h"
+#include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_transport.h"
 #include "grid_usb.h"
 
 extern void grid_platform_printf(char const* fmt, ...);
-extern int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle);
-extern uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle);
-extern uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char* targetstring);
-extern void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle);
-extern void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
-extern int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle);
-extern int grid_platform_find_file(char* path, union grid_ui_file_handle* file_handle);
-extern uint16_t grid_platform_get_file_size(union grid_ui_file_handle* file_handle);
-extern int grid_platform_read_file(union grid_ui_file_handle* file_handle, uint8_t* buffer, uint16_t size);
-extern int grid_platform_write_file(char* path, uint8_t* buffer, uint16_t size);
-extern int grid_platform_delete_file(union grid_ui_file_handle* file_handle);
-extern uint32_t grid_platform_get_cycles();
-extern uint32_t grid_platform_get_cycles_per_us();
-extern void grid_platform_clear_all_actionstring_files_from_page(uint8_t page);
-extern void grid_platform_delete_actionstring_files_all();
-extern uint8_t grid_platform_get_nvm_state();
-extern uint8_t grid_platform_erase_nvm_next();
-extern uint8_t grid_platform_get_adc_bit_depth();
 
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 
@@ -571,7 +554,8 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
     if (status == 0) {
 
-      grid_platform_read_actionstring_file_contents(&file_handle, targetstring);
+      uint16_t size = grid_platform_get_actionstring_file_size(&file_handle);
+      grid_platform_read_actionstring_file_contents(&file_handle, targetstring, size);
 
     } else {
 
@@ -794,9 +778,9 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
     uint16_t size = grid_platform_get_actionstring_file_size(&file_handle);
 
     if (size > 0) {
-      char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
-      grid_platform_read_actionstring_file_contents(&file_handle, temp);
+      char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
+      grid_platform_read_actionstring_file_contents(&file_handle, temp, size);
 
       grid_ui_event_register_actionstring(eve, temp);
       grid_platform_printf("Ele:%d Eve:%d\r\n", ui->bulk_last_element, ui->bulk_last_event);
