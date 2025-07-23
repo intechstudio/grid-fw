@@ -65,7 +65,7 @@ static void led_init(rmt_encoder_handle_t* led_encoder, rmt_channel_handle_t* le
       .clk_src = RMT_CLK_SRC_DEFAULT, // select source clock
       .gpio_num = led_gpio,
       .flags.with_dma = 1,
-      .mem_block_symbols = grid_led_get_led_count(&grid_led_state) * 24,
+      .mem_block_symbols = grid_led_get_framebuffer_size(&grid_led_state) * 8,
       .resolution_hz = RMT_LED_STRIP_RESOLUTION_HZ,
       .trans_queue_depth = 1,
   };
