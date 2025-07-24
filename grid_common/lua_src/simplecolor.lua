@@ -1,5 +1,18 @@
 function cp(c)
+  for i = 1, #c do
+    if c[i][1] == -1 then
+      c[i][1] = glr()
+    end
+    if c[i][2] == -1 then
+      c[i][2] = glg()
+    end
+    if c[i][3] == -1 then
+      c[i][3] = glb()
+    end
+  end
+
   local x, y, z = c[1], c[2], c[#c]
+
   if #c == 1 then
     x = { 0, 0, 0, 0 }
     y = {
@@ -141,24 +154,9 @@ init_element_color = function(self)
 
   self.glc = function(self, l, c)
     local up = table.unpack
-    local i, x, y, z = self:lix(), c[1], c[2], c[#c]
-    if #c == 1 then
-      x = { 0, 0, 0, 0 }
-      y = {
-        math.floor(z[1] / 2),
-        math.floor(z[2] / 2),
-        math.floor(z[3] / 2),
-        z[4] / 2,
-      }
-    elseif #c == 2 then
-      y = {
-        math.floor((x[1] + z[1]) / 2),
-        math.floor((x[2] + z[2]) / 2),
-        math.floor((x[3] + z[3]) / 2),
-        (x[4] + z[4]) / 2,
-      }
-    elseif #c == 3 then
-    end
+    local i = self:lix()
+    local x, y, z = cp(c)
+
     if l == -1 then
       l = event_handler_to_layer[event_function_name()]
       if l == nil then
