@@ -1136,32 +1136,14 @@ async function createWasm() {
   
         function pointerLockChange() {
           var canvas = Browser.getCanvas();
-          Browser.pointerLock = document['pointerLockElement'] === canvas ||
-                                document['mozPointerLockElement'] === canvas ||
-                                document['webkitPointerLockElement'] === canvas ||
-                                document['msPointerLockElement'] === canvas;
+          Browser.pointerLock = document.pointerLockElement === canvas;
         }
         var canvas = Browser.getCanvas();
         if (canvas) {
           // forced aspect ratio can be enabled by defining 'forcedAspectRatio' on Module
           // Module['forcedAspectRatio'] = 4 / 3;
   
-          canvas.requestPointerLock = canvas['requestPointerLock'] ||
-                                      canvas['mozRequestPointerLock'] ||
-                                      canvas['webkitRequestPointerLock'] ||
-                                      canvas['msRequestPointerLock'] ||
-                                      (() => {});
-          canvas.exitPointerLock = document['exitPointerLock'] ||
-                                   document['mozExitPointerLock'] ||
-                                   document['webkitExitPointerLock'] ||
-                                   document['msExitPointerLock'] ||
-                                   (() => {}); // no-op if function does not exist
-          canvas.exitPointerLock = canvas.exitPointerLock.bind(document);
-  
           document.addEventListener('pointerlockchange', pointerLockChange, false);
-          document.addEventListener('mozpointerlockchange', pointerLockChange, false);
-          document.addEventListener('webkitpointerlockchange', pointerLockChange, false);
-          document.addEventListener('mspointerlockchange', pointerLockChange, false);
   
           if (Module['elementPointerLock']) {
             canvas.addEventListener("click", (ev) => {
@@ -3098,12 +3080,10 @@ async function createWasm() {
         return Math.ceil(((value+1) * 32767.5) - 32768);
       },
   getGamepads() {
-        var fcn = navigator.getGamepads || navigator.webkitGamepads || navigator.mozGamepads || navigator.gamepads || navigator.webkitGetGamepads;
-        if (fcn !== undefined) {
-          // The function must be applied on the navigator object.
-          return fcn.apply(navigator);
+        if (!navigator.getGamepads) {
+          return [];
         }
-        return [];
+        return navigator.getGamepads();
       },
   getGamepad(deviceIndex) {
         var gamepads = SDL.getGamepads();
@@ -3265,6 +3245,17 @@ async function createWasm() {
   
   var UTF8Decoder = typeof TextDecoder != 'undefined' ? new TextDecoder() : undefined;
   
+  var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
+      var maxIdx = idx + maxBytesToRead;
+      if (ignoreNul) return maxIdx;
+      // TextDecoder needs to know the byte length in advance, it doesn't stop on
+      // null terminator by itself.
+      // As a tiny code save trick, compare idx against maxIdx using a negation,
+      // so that maxBytesToRead=undefined/NaN means Infinity.
+      while (heapOrArray[idx] && !(idx >= maxIdx)) ++idx;
+      return idx;
+    };
+  
     /**
      * Given a pointer 'idx' to a null-terminated UTF8-encoded string in the given
      * array that contains uint8 values, returns a copy of that string as a
@@ -3272,17 +3263,12 @@ async function createWasm() {
      * heapOrArray is either a regular array, or a JavaScript typed array view.
      * @param {number=} idx
      * @param {number=} maxBytesToRead
+     * @param {boolean=} ignoreNul - If true, the function will not stop on a NUL character.
      * @return {string}
      */
-  var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead = NaN) => {
-      var endIdx = idx + maxBytesToRead;
-      var endPtr = idx;
-      // TextDecoder needs to know the byte length in advance, it doesn't stop on
-      // null terminator by itself.  Also, use the length info to avoid running tiny
-      // strings through TextDecoder, since .subarray() allocates garbage.
-      // (As a tiny code save trick, compare endPtr against endIdx using a negation,
-      // so that undefined/NaN means Infinity)
-      while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
+  var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead, ignoreNul) => {
+  
+      var endPtr = findStringEnd(heapOrArray, idx, maxBytesToRead, ignoreNul);
   
       // When using conditional TextDecoder, skip it for short strings as the overhead of the native call is not worth it.
       if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
@@ -3327,15 +3313,13 @@ async function createWasm() {
      *   maximum number of bytes to read. You can omit this parameter to scan the
      *   string until the first 0 byte. If maxBytesToRead is passed, and the string
      *   at [ptr, ptr+maxBytesToReadr[ contains a null byte in the middle, then the
-     *   string will cut short at that byte index (i.e. maxBytesToRead will not
-     *   produce a string of exact length [ptr, ptr+maxBytesToRead[) N.B. mixing
-     *   frequent uses of UTF8ToString() with and without maxBytesToRead may throw
-     *   JS JIT optimizations off, so it is worth to consider consistently using one
+     *   string will cut short at that byte index.
+     * @param {boolean=} ignoreNul - If true, the function will not stop on a NUL character.
      * @return {string}
      */
-  var UTF8ToString = (ptr, maxBytesToRead) => {
+  var UTF8ToString = (ptr, maxBytesToRead, ignoreNul) => {
       assert(typeof ptr == 'number', `UTF8ToString expects a number (got ${typeof ptr})`);
-      return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : '';
+      return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead, ignoreNul) : '';
     };
   var GL = {
   counter:1,
@@ -4613,6 +4597,9 @@ async function createWasm() {
               current_path = PATH.dirname(current_path);
               if (FS.isRoot(current)) {
                 path = current_path + '/' + parts.slice(i + 1).join('/');
+                // We're making progress here, don't let many consecutive ..'s
+                // lead to ELOOP
+                nlinks--;
                 continue linkloop;
               } else {
                 current = current.parent;
@@ -6353,6 +6340,7 @@ async function createWasm() {
           if (!stream.tty) return -59;
           return -28; // not supported
         }
+        case 21537:
         case 21531: {
           var argp = syscallGetVarargP();
           return FS.ioctl(stream, op, argp);
@@ -6925,7 +6913,7 @@ async function createWasm() {
     /**
      * @param {string|null=} returnType
      * @param {Array=} argTypes
-     * @param {Arguments|Array=} args
+     * @param {Array=} args
      * @param {Object=} opts
      */
   var ccall = (ident, returnType, argTypes, args, opts) => {
@@ -7049,7 +7037,6 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'inetNtop6',
   'readSockaddr',
   'writeSockaddr',
-  'emscriptenLog',
   'readEmAsmArgs',
   'jstoi_q',
   'autoResumeAudioContext',
@@ -7070,20 +7057,12 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'POINTER_SIZE',
   'ASSERTIONS',
   'cwrap',
-  'uleb128Encode',
-  'sigToWasmTypes',
-  'generateFuncType',
   'convertJsFunctionToWasm',
   'getEmptyTableSlot',
   'updateTableMap',
   'getFunctionAddress',
   'addFunction',
   'removeFunction',
-  'reallyNegative',
-  'unSign',
-  'strLen',
-  'reSign',
-  'formatString',
   'intArrayToString',
   'AsciiToString',
   'stringToAscii',
@@ -7131,7 +7110,6 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   'registerGamepadEventCallback',
   'registerBeforeUnloadEventCallback',
   'fillBatteryEventData',
-  'battery',
   'registerBatteryEventCallback',
   'setCanvasElementSize',
   'getCanvasElementSize',
