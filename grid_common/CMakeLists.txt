@@ -8,6 +8,7 @@ idf_component_register(
         "grid_ain.c"
         "grid_asc.c"
         "grid_led.c"
+        "grid_littlefs.c"
         "grid_math.c"
         "grid_sys.c"
         "grid_swsr.c"
@@ -30,6 +31,9 @@ idf_component_register(
         "grid_transport.c"
         "grid_rollid.c"
         "grid_utask.c"
+
+        "littlefs/lfs.c"
+        "littlefs/lfs_util.c"
 
         "lua-5.4.3/src/lapi.c"
         "lua-5.4.3/src/lauxlib.c"
@@ -68,5 +72,6 @@ idf_component_register(
 
     INCLUDE_DIRS
         "."
-	    "lua-5.4.3/src"
+        "littlefs"
+        "lua-5.4.3/src"
 )

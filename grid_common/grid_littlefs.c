@@ -1,0 +1,305 @@
+#include "grid_littlefs.h"
+
+#include <limits.h>
+
+#include "grid_platform.h"
+
+int grid_littlefs_path_build(const char* path, uint16_t out_size, char* out) {
+
+  assert(path != out);
+
+  const char* prefix = grid_platform_get_base_path();
+
+  if (strlen(prefix) + strlen(path) + 1 > out_size) {
+    return 1;
+  }
+
+  sprintf(out, "%s/%s", prefix, path);
+
+  // printf("grid_littlefs_path_build: \"%s\"\n", out);
+
+  return 0;
+}
+
+int grid_littlefs_remove(lfs_t* lfs, const char* path) {
+
+  char fpath[LFS_NAME_MAX + 1] = {0};
+  grid_littlefs_path_build(path, LFS_NAME_MAX + 1, fpath);
+
+  int lfs_err = lfs_remove(lfs, fpath);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_remove error: %d\n", lfs_err);
+    return 1;
+  }
+
+  return 0;
+}
+
+int grid_littlefs_mkdir(lfs_t* lfs, const char* path) {
+
+  char fpath[LFS_NAME_MAX + 1] = {0};
+  grid_littlefs_path_build(path, LFS_NAME_MAX + 1, fpath);
+
+  int lfs_err = lfs_mkdir(lfs, fpath);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_mkdir error: %d\n", lfs_err);
+    return 1;
+  }
+
+  return 0;
+}
+
+int grid_littlefs_rmdir(lfs_t* lfs, const char* path) {
+
+  char fpath[LFS_NAME_MAX + 1] = {0};
+  grid_littlefs_path_build(path, LFS_NAME_MAX + 1, fpath);
+
+  lfs_dir_t dir;
+  int lfs_err = lfs_dir_open(lfs, &dir, fpath);
+  if (lfs_err != LFS_ERR_OK) {
+    // printf("grid_littlefs_rmdir open error: %d\n", lfs_err);
+    return 1;
+  }
+
+  printf("grid_littlefs_rmdir: \"%s\"\n", fpath);
+
+  struct lfs_info info;
+  while (lfs_dir_read(lfs, &dir, &info) > 0) {
+
+    // Ignore entry for current directory
+    if (info.name[0] == '.' && info.name[1] == '\0') {
+      continue;
+    }
+
+    // Ignore entry for parent directory
+    if (info.name[0] == '.' && info.name[1] == '.' && info.name[2] == '\0') {
+      continue;
+    }
+
+    char path2[LFS_NAME_MAX * 2 + 2] = {0};
+    sprintf(path2, "%s/%s", path, info.name);
+
+    char fpath2[LFS_NAME_MAX + 1] = {0};
+    if (grid_littlefs_path_build(path2, LFS_NAME_MAX + 1, fpath2)) {
+      continue;
+    }
+
+    int lfs_err = lfs_remove(lfs, fpath2);
+    if (lfs_err != LFS_ERR_OK) {
+      printf("grid_littlefs_rmdir remove entry error %d\n", lfs_err);
+    }
+  }
+
+  lfs_err = lfs_dir_close(lfs, &dir);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_rmdir close error: %d\n", lfs_err);
+    return 1;
+  }
+
+  lfs_err = lfs_remove(lfs, fpath);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_rmdir remove error %d\n", lfs_err);
+    return 1;
+  }
+
+  return 0;
+}
+
+int grid_littlefs_lsdir(lfs_t* lfs, const char* path) {
+
+  char fpath[LFS_NAME_MAX + 1] = {0};
+  grid_littlefs_path_build(path, LFS_NAME_MAX + 1, fpath);
+
+  printf("list directory: \"%s\"\n", fpath);
+
+  lfs_dir_t dir;
+  int lfs_err = lfs_dir_open(lfs, &dir, fpath);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_lsdir open error: %d\n", lfs_err);
+    return 1;
+  }
+
+  struct lfs_info info;
+  while (lfs_dir_read(lfs, &dir, &info) > 0) {
+    printf("type: %d, size: %8lu, name: %s\n", info.type, info.size, info.name);
+  }
+
+  lfs_err = lfs_dir_close(lfs, &dir);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_lsdir close error: %d\n", lfs_err);
+    return 1;
+  }
+
+  return 0;
+}
+
+int grid_littlefs_file_find(lfs_t* lfs, const char* path) {
+
+  char fpath[LFS_NAME_MAX + 1] = {0};
+  grid_littlefs_path_build(path, LFS_NAME_MAX + 1, fpath);
+
+  struct lfs_info info;
+  int lfs_err = lfs_stat(lfs, fpath, &info);
+  if (lfs_err != LFS_ERR_OK) {
+    // printf("grid_littlefs_file_find stat error: %d\n", lfs_err);
+    return 1;
+  }
+
+  return info.type == LFS_TYPE_REG ? 0 : 1;
+}
+
+size_t grid_littlefs_file_size(lfs_t* lfs, const char* path) {
+
+  char fpath[LFS_NAME_MAX + 1] = {0};
+  grid_littlefs_path_build(path, LFS_NAME_MAX + 1, fpath);
+
+  struct lfs_info info;
+  int lfs_err = lfs_stat(lfs, fpath, &info);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_file_size stat error: %d\n", lfs_err);
+    return 0;
+  }
+
+  return info.size;
+}
+
+int grid_littlefs_file_read(lfs_t* lfs, const char* path, uint8_t* buffer, uint16_t size) {
+
+  char fpath[LFS_NAME_MAX + 1] = {0};
+  grid_littlefs_path_build(path, LFS_NAME_MAX + 1, fpath);
+
+  lfs_file_t file;
+  int lfs_err = lfs_file_open(lfs, &file, fpath, LFS_O_RDONLY);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_file_read open error: %d\n", lfs_err);
+    return 1;
+  }
+
+  lfs_ssize_t read = lfs_file_read(lfs, &file, buffer, size);
+  if (read < 0) {
+    printf("grid_littlefs_file_read read error: %ld\n", read);
+    return 1;
+  }
+
+  lfs_err = lfs_file_close(lfs, &file);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_file_read close error: %d\n", lfs_err);
+    return 1;
+  }
+
+  return 0;
+}
+
+int grid_littlefs_file_write(lfs_t* lfs, const char* path, const uint8_t* buffer, uint16_t size) {
+
+  char fpath[LFS_NAME_MAX + 1] = {0};
+  grid_littlefs_path_build(path, LFS_NAME_MAX + 1, fpath);
+
+  lfs_file_t file;
+  int lfs_err = lfs_file_open(lfs, &file, fpath, LFS_O_WRONLY | LFS_O_CREAT);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_file_write open error: %d\n", lfs_err);
+    return 1;
+  }
+
+  lfs_ssize_t wrote = lfs_file_write(lfs, &file, buffer, size);
+  if (wrote < 0) {
+    printf("grid_littlefs_file_write write error: %ld\n", wrote);
+    return 1;
+  }
+
+  lfs_err = lfs_file_close(lfs, &file);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_file_write close error: %d\n", lfs_err);
+    return 1;
+  }
+
+  return 0;
+}
+
+size_t grid_littlefs_get_total_bytes(struct lfs_config* cfg) { return cfg->block_size * cfg->block_count; }
+
+size_t grid_littlefs_get_used_bytes(lfs_t* lfs, struct lfs_config* cfg) {
+
+  size_t fs_size = cfg->block_size * lfs_fs_size(lfs);
+
+  // lfs_fs_size may return a size larger than the actual filesystem size
+  size_t total = grid_littlefs_get_total_bytes(cfg);
+  return fs_size > total ? total : fs_size;
+}
+
+int grid_littlefs_find_least_of_larger(lfs_t* lfs, const char* path, int* last_num) {
+
+  char fpath[LFS_NAME_MAX + 1] = {0};
+  grid_littlefs_path_build(path, LFS_NAME_MAX + 1, fpath);
+
+  lfs_dir_t dir;
+  int lfs_err = lfs_dir_open(lfs, &dir, fpath);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_lsdir open error: %d\n", lfs_err);
+    return 1;
+  }
+
+  int min = INT_MAX;
+
+  struct lfs_info info;
+  while (lfs_dir_read(lfs, &dir, &info) > 0) {
+
+    // Attempt to parse the name as two hexadecimal digits
+    int index;
+    int matched = sscanf(info.name, "%02x", &index);
+    if (matched != 1) {
+      continue;
+    }
+
+    // Consider the index when it is larger than the last number
+    if (index > *last_num) {
+
+      // If the index is smaller than the previous smallest, store it
+      if (index < min) {
+        min = index;
+      }
+    }
+  }
+
+  lfs_err = lfs_dir_close(lfs, &dir);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_lsdir close error: %d\n", lfs_err);
+    return 1;
+  }
+
+  int found = min != INT_MAX;
+
+  *last_num = found ? min : -1;
+
+  return found ? 0 : 1;
+}
+
+int grid_littlefs_find_next_on_page(lfs_t* lfs, uint8_t page, int* last_ele, int* last_evt) {
+
+  char fpath[LFS_NAME_MAX + 1] = {0};
+
+  while (true) {
+
+    if (*last_evt < 0) {
+
+      // Try to find next valid element
+      sprintf(fpath, "%02x", page);
+      grid_littlefs_find_least_of_larger(lfs, fpath, last_ele);
+
+      // If no element is found, the traversal is over
+      if (*last_ele < 0) {
+        return 1;
+      }
+    }
+
+    // Try to find next valid event
+    sprintf(fpath, "%02x/%02x", page, *last_ele);
+    grid_littlefs_find_least_of_larger(lfs, fpath, last_evt);
+
+    // If a valid event is found, return success
+    if (*last_evt >= 0) {
+      return 0;
+    }
+  }
+}
