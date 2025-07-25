@@ -76,5 +76,5 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 
 #define GRID_ACTIONSTRING_BUTTON_INIT "<?lua --[[@cb]] --[[Button Init]] ?>"
 
-#define GRID_ACTIONSTRING_BUTTON_BUTTON "<?lua --[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"                                                                                                                                                               
+#define GRID_ACTIONSTRING_BUTTON_BUTTON "<?lua --[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
 #endif /* GRID_UI_BUTTON_H */

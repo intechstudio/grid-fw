@@ -70,8 +70,9 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
 
 #define GRID_ACTIONSTRING_ENDLESS_INIT "<?lua --[[@cb]] --[[Endless Init]] ?>"
 
-#define GRID_ACTIONSTRING_ENDLESS_ENDLESS "<?lua --[[@sen]] self:epmo(0) self:epv0(50) self:epmi(0) self:epma(127) self:epse(50)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+#define GRID_ACTIONSTRING_ENDLESS_ENDLESS                                                                                                                                                              \
+  "<?lua --[[@sen]] self:epmo(0) self:epv0(50) self:epmi(0) self:epma(127) self:epse(50)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
 
-#define GRID_ACTIONSTRING_ENDLESS_BUTTON "<?lua --[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"                                                                                                                                                               
+#define GRID_ACTIONSTRING_ENDLESS_BUTTON "<?lua --[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
 
 #endif /* GRID_UI_ENDLESS_H */

@@ -85,8 +85,9 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
   "}}"
 // clang-format on
 
-#define GRID_ACTIONSTRING_ENCODER_INIT "<?lua --[[@cb]] --[[Encoder Init]] ?>"                                                               
+#define GRID_ACTIONSTRING_ENCODER_INIT "<?lua --[[@cb]] --[[Encoder Init]] ?>"
 
-#define GRID_ACTIONSTRING_ENCODER_ENCODER "<?lua --[[@sec]] self:emo(0) self:ev0(50) self:emi(0) self:ema(127) self:ese(100)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+#define GRID_ACTIONSTRING_ENCODER_ENCODER                                                                                                                                                              \
+  "<?lua --[[@sec]] self:emo(0) self:ev0(50) self:emi(0) self:ema(127) self:ese(100)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
 
 #endif /* GRID_UI_ENCODER_H */
