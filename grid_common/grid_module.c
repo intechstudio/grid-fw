@@ -163,9 +163,10 @@ void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   grid_led_init(led, 18);    // TODO: 18 led for TEK2
 
   uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9};
-
-  grid_led_lookup_init(led, led_lookup); // initialize the optional led index
-                                         // lookup table for array remapping
+  grid_led_lookup_init(led, led_lookup);
+  grid_led_lookup_init_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
+  grid_led_lookup_init_multi(led, 9, 5, (uint8_t[5]){5, 6, 7, 8, 9});
+  grid_led_lookup_disable(led, 8, 10);
 
   grid_ui_model_init(ui, 10 + 1); // 10+1 for the system element on TEK2
 

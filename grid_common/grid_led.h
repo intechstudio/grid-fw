@@ -18,6 +18,9 @@
 #define GRID_LED_COLOR_WHITE 255, 255, 255
 #define GRID_LED_COLOR_WHITE_DIM 64, 64, 64
 
+enum { GRID_LED_MULTI_OFFSET = 32 };
+enum { GRID_LED_MULTI_STRIDE = 5 };
+
 struct LED_color {
   uint8_t r;
   uint8_t g;
@@ -40,6 +43,7 @@ struct grid_led_model {
   uint8_t led_pin;
   uint8_t led_count;
   uint8_t* led_lookup_table;
+  uint8_t* led_revert_table;
   uint8_t* led_frame_buffer; // The frame buffer is used to send data to the LEDs
   uint8_t* led_changed_flag_array;
   uint32_t tick_lastrealtime;
@@ -57,6 +61,8 @@ extern struct grid_led_model grid_led_state;
 
 void grid_led_init(struct grid_led_model* led, uint32_t length);
 void grid_led_lookup_init(struct grid_led_model* led, uint8_t* lookup_array);
+void grid_led_lookup_init_multi(struct grid_led_model* led, uint8_t index, uint8_t length, uint8_t* lookup_array);
+void grid_led_lookup_disable(struct grid_led_model* led, uint8_t index, uint8_t length);
 
 uint8_t grid_led_change_flag_reset(struct grid_led_model* led);
 uint8_t grid_led_change_flag_count(struct grid_led_model* led);
@@ -99,6 +105,19 @@ void grid_led_set_layer_phase(struct grid_led_model* led, uint8_t num, uint8_t l
 void grid_led_set_layer_frequency(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_layer_shape(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_layer_timeout(struct grid_led_model* led, uint8_t num, uint8_t layer, uint16_t val);
+
+void grid_led_set_layer_color_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
+
+void grid_led_set_layer_min_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
+void grid_led_set_layer_mid_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
+void grid_led_set_layer_max_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
+
+void grid_led_set_layer_phase_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
+uint8_t grid_led_get_layer_phase_raw(struct grid_led_model* led, uint8_t num, uint8_t layer);
+
+void grid_led_set_layer_frequency_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
+void grid_led_set_layer_shape_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
+void grid_led_set_layer_timeout_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
 
 uint32_t grid_led_get_led_count(struct grid_led_model* led);
 
