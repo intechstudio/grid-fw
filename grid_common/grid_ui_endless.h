@@ -68,17 +68,10 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   "}}"
 // clang-format on
 
-#define GRID_ACTIONSTRING_ENDLESS_INIT                                                                                                                                                                 \
-  "<?lua --[[@l]] local num,val,min,max,red,gre,blu=self:ind(),self:epva(),self:epmi(),self:epma(),glr(),glg(),glb()--[[@for]] for i=1,5,1 do--[[@l]] local "                                          \
-  "intensity,lednum=gsc(i-1,val,min,max),num+i*2-2--[[@glc]] glc(lednum,1,red,gre,blu,0)--[[@glc]] glc(lednum,2,red,gre,blu,1)--[[@glp]] glp(lednum,1,0)--[[@glp]] glp(lednum,2,intensity)--[[@enl]] " \
-  "end ?>"
+#define GRID_ACTIONSTRING_ENDLESS_INIT "<?lua --[[@cb]] --[[Endless Init]] ?>"
 
-#define GRID_ACTIONSTRING_ENDLESS_ENDLESS                                                                                                                                                              \
-  "<?lua --[[@l]] local num,val,min,max,ch,cc=self:ind(),self:epva(),self:epmi(),self:epma(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128--[[@gmsh]] gms(ch,176,cc,val//128) "                      \
-  "gms(ch,176,cc+32,val%128)--[[@for]] for i=1,5,1 do--[[@l]] local intensity,lednum=gsc(i-1,val,min,max),num+i*2-2--[[@glp]] glp(lednum,2,intensity)--[[@enl]] end ?>"
+#define GRID_ACTIONSTRING_ENDLESS_ENDLESS "<?lua --[[@sen]] self:epmo(0) self:epv0(50) self:epmi(0) self:epma(127) self:epse(50)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
 
-#define GRID_ACTIONSTRING_ENDLESS_BUTTON                                                                                                                                                               \
-  "<?lua --[[@l]] local num,val,ch,note=self:ind(),self:bva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128--[[@gms]] gms(ch,144,note,val)--[[@for]] for i=1,5,1 do--[[@l]] local "                  \
-  "lednum=num+i*2-2--[[@glp]] glp(lednum,1,val)--[[@enl]] end ?>"
+#define GRID_ACTIONSTRING_ENDLESS_BUTTON "<?lua --[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"                                                                                                                                                               
 
 #endif /* GRID_UI_ENDLESS_H */

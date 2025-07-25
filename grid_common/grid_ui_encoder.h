@@ -85,16 +85,8 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
   "}}"
 // clang-format on
 
-#define GRID_ACTIONSTRING_ENCODER_INIT                                                                                                                                                                 \
-  "<?lua --[[@l]] local "                                                                                                                                                                              \
-  "num,bval,eval,red,gre,blu=self:ind(),self:bva(),self:eva(),glr(),glg(),"                                                                                                                            \
-  "glb()--[[@glc]] glc(num,1,red,gre,blu)--[[@glc]] "                                                                                                                                                  \
-  "glc(num,2,red,gre,blu)--[[@glp]] glp(num,1,bval)--[[@glp]] "                                                                                                                                        \
-  "glp(num,2,eval) ?>"
+#define GRID_ACTIONSTRING_ENCODER_INIT "<?lua --[[@cb]] --[[Encoder Init]] ?>"                                                               
 
-#define GRID_ACTIONSTRING_ENCODER_ENCODER                                                                                                                                                              \
-  "<?lua --[[@l]] local "                                                                                                                                                                              \
-  "num,val,ch,cc=self:ind(),self:eva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:"                                                                                                                          \
-  "ind())%128--[[@gms]] gms(ch,176,cc,val)--[[@glp]] glp(num,2,val) ?>"
+#define GRID_ACTIONSTRING_ENCODER_ENCODER "<?lua --[[@sec]] self:emo(0) self:ev0(50) self:emi(0) self:ema(127) self:ese(100)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
 
 #endif /* GRID_UI_ENCODER_H */

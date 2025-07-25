@@ -47,15 +47,8 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
   "}}"
 // clang-format on
 
-#define GRID_ACTIONSTRING_POTMETER_INIT                                                                                                                                                                \
-  "<?lua --[[@l]] local "                                                                                                                                                                              \
-  "num,val,red,gre,blu=self:ind(),self:pva(),glr(),glg(),glb()--[[@glc]] "                                                                                                                             \
-  "glc(num,1,red,gre,blu)--[[@glp]] glp(num,1,val) ?>"
+#define GRID_ACTIONSTRING_POTMETER_INIT "<?lua --[[@cb]] --[[Potmeter Init]] ?>"
 
-// new dynamic midi based on x y and activepage
-#define GRID_ACTIONSTRING_POTMETER_POTMETER                                                                                                                                                            \
-  "<?lua --[[@l]] local "                                                                                                                                                                              \
-  "num,val,ch,cc=self:ind(),self:pva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:"                                                                                                                          \
-  "ind())%128--[[@gms]] gms(ch,176,cc,val)--[[@glp]] glp(num,1,val) ?>"
+#define GRID_ACTIONSTRING_POTMETER_POTMETER "<?lua --[[@spc]] self:pmo(7) self:pmi(0)  self:pma(127)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
 
 #endif /* GRID_UI_POTMETER_H */
