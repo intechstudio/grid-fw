@@ -58,14 +58,14 @@ init_endless_color = function(self)
       local ln = self:lix() + i * self:lof()
       if l == 1 then
         -- button
-        if v == nil then
+        if v == nil or v == -1 then
           int = math.floor(gmaps(self:bva(), self:bmi(), self:bma(), 0, 255))
         else
           int = v
         end
       else
         -- rotation
-        if v == nil then
+        if v == nil or v == -1 then
           int = gsc(i, self:epva(), self:epmi(), self:epma())
         else
           int = gsc(i, v, 0, 255)
@@ -106,12 +106,12 @@ init_endless_nosegment_color = function(self)
       local ln = self:lix() + i * self:lof()
       if l == 1 then
         -- button
-        if v == nil then
+        if v == nil or v == -1 then
           int = math.floor(gmaps(self:bva(), self:bmi(), self:bma(), 0, 255))
         end
       else
         -- rotation
-        if v == nil then
+        if v == nil or v == -1 then
           int = math.floor(gmaps(self:epva(), self:epmi(), self:epma(), 0, 255))
         end
       end
@@ -145,7 +145,7 @@ init_element_color = function(self)
         return
       end
     end
-    if v == nil then
+    if v == nil or v == -1 then
       glp(self:ind(), l, -1)
     else
       glp(self:ind(), l, v)
