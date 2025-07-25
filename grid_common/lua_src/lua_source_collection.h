@@ -40,4 +40,7 @@
 #include "simplecolor.h"
 #define GRID_LUA_FNC_G_SIMPLECOLOR_source grid_lua_src_simplecolor_lua
 
+#include "simplemidi.h"
+#define GRID_LUA_FNC_G_SIMPLEMIDI_source grid_lua_src_simplemidi_lua
+
 #endif
