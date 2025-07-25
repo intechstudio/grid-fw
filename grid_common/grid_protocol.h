@@ -410,6 +410,12 @@
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr l_grid_potmeter_calibration_set
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_usage "potmeter_calibration_set({ int c1, ... }) Sets potentiometer calibration centers from an array of integers."
 
+#define GRID_LUA_FNC_G_POTMETER_DETENT_SET_short "gpds"
+#define GRID_LUA_FNC_G_POTMETER_DETENT_SET_human "potmeter_detent_set"
+#define GRID_LUA_FNC_G_POTMETER_DETENT_SET_fnptr l_grid_potmeter_detent_set
+#define GRID_LUA_FNC_G_POTMETER_DETENT_SET_usage                                                                                                                                                       \
+  "potmeter_detent_set({ int c1, ... }, bool high) Sets potentiometer detent bounds from an array of integers, where high = true sets high bounds and high = false sets low bounds."
+
 #define GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_short "gbcg"
 #define GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_human "button_calibration_get"
 #define GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_fnptr l_grid_button_calibration_get

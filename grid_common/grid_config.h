@@ -7,6 +7,8 @@
 
 #define CAL_HEADER "calibration"
 #define CAL_POT_CENTERS_KEY "potmeter-centers"
+#define CAL_POT_DETENT_LOW_KEY "potmeter-detent-low"
+#define CAL_POT_DETENT_HIGH_KEY "potmeter-detent-high"
 #define CAL_BUT_MINIMA_KEY "button-minima"
 #define CAL_BUT_MAXIMA_KEY "button-maxima"
 
