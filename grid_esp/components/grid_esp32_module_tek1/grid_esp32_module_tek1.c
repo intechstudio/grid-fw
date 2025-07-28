@@ -373,6 +373,8 @@ void grid_esp32_module_tek1_task(void* arg) {
 #undef USE_SEMAPHORE
 #undef USE_FRAMELIMIT
 
+  GRID_MODULE_DRIVER_INIT_DONE = 1;
+
   while (1) {
 
     vTaskDelay(pdMS_TO_TICKS(1000));
