@@ -289,36 +289,51 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA) {
 
-    // TODO: update to correspond to the other branches
-    uint8_t led_lookup[18] = {5, 6, 7, 8, 9, 10, 11, 12, 0, 17, 1, 17, 2, 17, 3, 17, 4, 17};
-    grid_led_lookup_init(led, led_lookup);
+    /*
+// TODO: update to correspond to the other branches
+uint8_t led_lookup[18] = {5, 6, 7, 8, 9, 10, 11, 12, 0, 17, 1, 17, 2, 17, 3, 17, 4, 17};
+grid_led_lookup_init(led, led_lookup);
+    */
 
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
 
-    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 5, 0, 6, 1, 7, 2, 8, 3, 9, 4};
-    grid_led_lookup_init(led, led_lookup);
-    grid_led_lookup_init_multi(led, 8, 5, (uint8_t[5]){5, 6, 7, 8, 9});
-    grid_led_lookup_init_multi(led, 9, 5, (uint8_t[5]){0, 1, 2, 3, 4});
-    grid_led_lookup_disable(led, 8, 10);
+    /*
+uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 5, 0, 6, 1, 7, 2, 8, 3, 9, 4};
+grid_led_lookup_init(led, led_lookup);
+grid_led_lookup_init_multi(led, 8, 5, (uint8_t[5]){5, 6, 7, 8, 9});
+grid_led_lookup_init_multi(led, 9, 5, (uint8_t[5]){0, 1, 2, 3, 4});
+grid_led_lookup_disable(led, 8, 10);
+    */
 
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
 
-    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9};
-    grid_led_lookup_init(led, led_lookup);
-    grid_led_lookup_init_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
-    grid_led_lookup_init_multi(led, 9, 5, (uint8_t[5]){5, 6, 7, 8, 9});
-    grid_led_lookup_disable(led, 8, 10);
+    uint8_t led_report[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9};
+    grid_led_report_init(led, led_report);
+    for (uint8_t i = 0; i < 8; ++i) {
+      grid_led_lookup_alloc_single(led, i, i + 10);
+    }
+    grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
+
+    /*
+uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9};
+grid_led_lookup_init(led, led_lookup);
+grid_led_lookup_init_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
+grid_led_lookup_init_multi(led, 9, 5, (uint8_t[5]){5, 6, 7, 8, 9});
+grid_led_lookup_disable(led, 8, 10);
+    */
 
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
 
-    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9};
-    grid_led_lookup_init(led, led_lookup);
-    grid_led_lookup_init_multi(led, 0, 5, (uint8_t[5]){0, 1, 2, 3, 4});
-    grid_led_lookup_init_multi(led, 1, 5, (uint8_t[5]){5, 6, 7, 8, 9});
-    grid_led_lookup_disable(led, 8, 10);
+    /*
+uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9};
+grid_led_lookup_init(led, led_lookup);
+grid_led_lookup_init_multi(led, 0, 5, (uint8_t[5]){0, 1, 2, 3, 4});
+grid_led_lookup_init_multi(led, 1, 5, (uint8_t[5]){5, 6, 7, 8, 9});
+grid_led_lookup_disable(led, 8, 10);
+    */
   }
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
