@@ -6,7 +6,7 @@ RUN apt update && \
     apt install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential xxd && \
     mkdir -p pico && \
     cd pico && \
-    git clone https://github.com/raspberrypi/pico-sdk.git --branch master && \
+    git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.1 && \
     cd pico-sdk/ && \
     git submodule update --init && \
     cd ../.. && \
