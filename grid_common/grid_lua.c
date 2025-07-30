@@ -73,6 +73,7 @@ void grid_lua_deinit(struct grid_lua_model* lua) {}
 void grid_lua_post_init(struct grid_lua_model* lua) {
 
   grid_lua_dostring(lua, "init_simple_color() "
+                         "init_simple_midi() "
                          "ele[#ele]:post_init_cb() "
                          "for i = 0, #ele-1 do ele[i]:post_init_cb() end");
   grid_lua_clear_stdo(lua);
@@ -261,12 +262,14 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
   grid_lua_dostring(lua, GRID_LUA_FNC_G_LOOKUP_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_LIMIT_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_ELEMENTNAME_source);
+  grid_lua_dostring(lua, GRID_LUA_FNC_G_EVENTFNAME_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_MAPSAT_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SIGN_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SEGCALC_source);
   grid_lua_dostring(lua, "midi_fifo = {}");
   // grid_lua_dostring(lua, GRID_LUA_FNC_G_TOML_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SIMPLECOLOR_source);
+  grid_lua_dostring(lua, GRID_LUA_FNC_G_SIMPLEMIDI_source);
   grid_lua_dostring(lua, "midi_fifo_highwater = 0");
   grid_lua_dostring(lua, "midi_fifo_retriggercount = 0");
   grid_lua_dostring(lua, "midi = {}");

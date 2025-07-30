@@ -64,11 +64,10 @@ static void led_init(rmt_encoder_handle_t* led_encoder, rmt_channel_handle_t* le
   rmt_tx_channel_config_t tx_chan_config = {
       .clk_src = RMT_CLK_SRC_DEFAULT, // select source clock
       .gpio_num = led_gpio,
-      .mem_block_symbols = 200, // was 64,  increase the block size can make the
-                                // LED less flickering
+      .flags.with_dma = 1,
+      .mem_block_symbols = grid_led_get_framebuffer_size(&grid_led_state) * 8,
       .resolution_hz = RMT_LED_STRIP_RESOLUTION_HZ,
-      .trans_queue_depth = 4, // set the number of transactions that can be
-                              // pending in the background
+      .trans_queue_depth = 1,
   };
   ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_chan_config, led_chan));
 
