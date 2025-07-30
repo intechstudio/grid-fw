@@ -44,7 +44,6 @@ struct grid_led_model {
   uint8_t led_count;
   uint8_t* led_lookup_sizes;
   uint8_t** led_lookup_table;
-  uint8_t* led_report_table;
   uint8_t* led_frame_buffer; // The frame buffer is used to send data to the LEDs
   uint8_t* led_changed_flag_array;
   uint32_t tick_lastrealtime;
@@ -65,13 +64,7 @@ void grid_led_init(struct grid_led_model* led, uint32_t length);
 void grid_led_lookup_alloc_single(struct grid_led_model* led, uint8_t index, uint8_t value);
 void grid_led_lookup_alloc_multi(struct grid_led_model* led, uint8_t index, uint8_t length, uint8_t* values);
 void grid_led_lookup_alloc_identity(struct grid_led_model* led, uint8_t index, uint8_t length);
-void grid_led_report_init(struct grid_led_model* led, uint8_t* reports);
-
-/*
-void grid_led_lookup_init(struct grid_led_model* led, uint8_t* lookup_array);
-void grid_led_lookup_init_multi(struct grid_led_model* led, uint8_t index, uint8_t length, uint8_t* lookup_array);
-void grid_led_lookup_disable(struct grid_led_model* led, uint8_t index, uint8_t length);
-*/
+uint8_t* grid_led_lookup_get(struct grid_led_model* led, uint8_t element, uint8_t* length);
 
 uint8_t grid_led_change_flag_reset(struct grid_led_model* led);
 uint8_t grid_led_change_flag_count(struct grid_led_model* led);

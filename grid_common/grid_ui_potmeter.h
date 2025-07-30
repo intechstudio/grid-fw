@@ -45,17 +45,19 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
   GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) "," \
   \
   "}}"
+
+#define GRID_ACTIONSTRING_POTMETER_INIT \
+  "<?lua --[[@l]] local num,val,red,gre,blu=" \
+  "glag(self:ind(),0),self:pva(),glr(),glg(),glb()" \
+  "--[[@glc]] glc(num,1,red,gre,blu)" \
+  "--[[@glp]] glp(num,1,val) ?>"
+
+#define GRID_ACTIONSTRING_POTMETER_POTMETER \
+  "<?lua --[[@l]] local num,val,ch,cc=" \
+  "glag(self:ind(),0),self:pva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128" \
+  "--[[@gms]] gms(ch,176,cc,val)" \
+  "--[[@glp]] glp(num,1,val) ?>"
+
 // clang-format on
-
-#define GRID_ACTIONSTRING_POTMETER_INIT                                                                                                                                                                \
-  "<?lua --[[@l]] local "                                                                                                                                                                              \
-  "num,val,red,gre,blu=self:ind(),self:pva(),glr(),glg(),glb()--[[@glc]] "                                                                                                                             \
-  "glc(num,1,red,gre,blu)--[[@glp]] glp(num,1,val) ?>"
-
-// new dynamic midi based on x y and activepage
-#define GRID_ACTIONSTRING_POTMETER_POTMETER                                                                                                                                                            \
-  "<?lua --[[@l]] local "                                                                                                                                                                              \
-  "num,val,ch,cc=self:ind(),self:pva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:"                                                                                                                          \
-  "ind())%128--[[@gms]] gms(ch,176,cc,val)--[[@glp]] glp(num,1,val) ?>"
 
 #endif /* GRID_UI_POTMETER_H */

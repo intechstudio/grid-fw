@@ -83,18 +83,21 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
   GRID_LUA_FNC_G_LED_COLOR_short "(self:" GRID_LUA_FNC_E_ELEMENT_INDEX_short "(), ...) " \
   "end," \
   "}}"
+
+#define GRID_ACTIONSTRING_ENCODER_INIT \
+  "<?lua --[[@l]] local num,bval,eval,red,gre,blu=" \
+  "glag(self:ind(),0),self:bva(),self:eva(),glr(),glg(),glb()" \
+  "--[[@glc]] glc(num,1,red,gre,blu)" \
+  "--[[@glc]] glc(num,2,red,gre,blu)" \
+  "--[[@glp]] glp(num,1,bval)" \
+  "--[[@glp]] glp(num,2,eval) ?>"
+
+#define GRID_ACTIONSTRING_ENCODER_ENCODER \
+  "<?lua --[[@l]] local num,val,ch,cc=" \
+  "glag(self:ind(),0),self:eva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128" \
+  "--[[@gms]] gms(ch,176,cc,val)" \
+  "--[[@glp]] glp(num,2,val) ?>"
+
 // clang-format on
-
-#define GRID_ACTIONSTRING_ENCODER_INIT                                                                                                                                                                 \
-  "<?lua --[[@l]] local "                                                                                                                                                                              \
-  "num,bval,eval,red,gre,blu=self:ind(),self:bva(),self:eva(),glr(),glg(),"                                                                                                                            \
-  "glb()--[[@glc]] glc(num,1,red,gre,blu)--[[@glc]] "                                                                                                                                                  \
-  "glc(num,2,red,gre,blu)--[[@glp]] glp(num,1,bval)--[[@glp]] "                                                                                                                                        \
-  "glp(num,2,eval) ?>"
-
-#define GRID_ACTIONSTRING_ENCODER_ENCODER                                                                                                                                                              \
-  "<?lua --[[@l]] local "                                                                                                                                                                              \
-  "num,val,ch,cc=self:ind(),self:eva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:"                                                                                                                          \
-  "ind())%128--[[@gms]] gms(ch,176,cc,val)--[[@glp]] glp(num,2,val) ?>"
 
 #endif /* GRID_UI_ENCODER_H */
