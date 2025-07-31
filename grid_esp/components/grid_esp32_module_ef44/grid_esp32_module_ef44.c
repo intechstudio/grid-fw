@@ -59,7 +59,7 @@ void IRAM_ATTR ef44_process_analog(void* user) {
 
   } else if (mux_position < 8) {
 
-    grid_ui_potmeter_store_input(ele, mux_position - 4, &potmeter_last_real_time[mux_position - 4], result->value, 12);
+    grid_ui_potmeter_store_input(ele, mux_position, &potmeter_last_real_time[mux_position - 4], result->value, 12);
   }
 }
 
