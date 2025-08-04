@@ -265,6 +265,11 @@
 #define GRID_LUA_FNC_G_LED_PSF_human "led_animation_phase_rate_type"
 #define GRID_LUA_FNC_G_LED_PSF_fnptr l_grid_led_layer_pfs
 
+#define GRID_LUA_FNC_G_LED_ADDRESS_GET_short "glag"
+#define GRID_LUA_FNC_G_LED_ADDRESS_GET_human "led_address_get"
+#define GRID_LUA_FNC_G_LED_ADDRESS_GET_fnptr l_grid_led_address_get
+#define GRID_LUA_FNC_G_LED_ADDRESS_GET_usage "led_address_get(int element, int n) Returns the hardware index of an element's n-th led, or nil if either parameter is out of bounds."
+
 #define GRID_LUA_FNC_G_MIDI_SEND_short "gms"
 #define GRID_LUA_FNC_G_MIDI_SEND_human "midi_send"
 #define GRID_LUA_FNC_G_MIDI_SEND_usage "midi_send(int channel, int command, int parameter1, int parameter2) Sends standard MIDI message"

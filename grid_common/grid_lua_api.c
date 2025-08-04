@@ -930,6 +930,10 @@ int l_grid_cat(lua_State* L) {
     return 0;
   }
 
+  if (lua_isnil(L, 1)) {
+    return 0;
+  }
+
   uint8_t num, layer, red, green, blue;
 
   uint8_t* param[5] = {&num, &layer, &red, &green, &blue};
@@ -964,6 +968,10 @@ int l_grid_cat(lua_State* L) {
   if (nargs != 5 && nargs != 6) {
     // error
     strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (lua_isnil(L, 1)) {
     return 0;
   }
 
@@ -1004,6 +1012,10 @@ int l_grid_cat(lua_State* L) {
     return 0;
   }
 
+  if (lua_isnil(L, 1)) {
+    return 0;
+  }
+
   uint8_t num, layer, red, green, blue;
 
   uint8_t* param[5] = {&num, &layer, &red, &green, &blue};
@@ -1034,6 +1046,10 @@ int l_grid_cat(lua_State* L) {
 /*static*/ int l_grid_led_layer_color(lua_State* L) {
 
   int nargs = lua_gettop(L);
+
+  if (lua_isnil(L, 1)) {
+    return 0;
+  }
 
   if (nargs == 5) {
 
@@ -1079,6 +1095,10 @@ int l_grid_cat(lua_State* L) {
     return 0;
   }
 
+  if (lua_isnil(L, 1)) {
+    return 0;
+  }
+
   uint8_t param[3] = {0};
 
   for (int i = 1; i <= nargs; ++i) {
@@ -1096,6 +1116,10 @@ int l_grid_cat(lua_State* L) {
   if (nargs != 3) {
     // error
     strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (lua_isnil(L, 1)) {
     return 0;
   }
 
@@ -1120,6 +1144,10 @@ int l_grid_cat(lua_State* L) {
   if (nargs != 3) {
     // error
     strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (lua_isnil(L, 1)) {
     return 0;
   }
 
@@ -1250,6 +1278,43 @@ int l_grid_cat(lua_State* L) {
     int32_t var = param[0];
     grid_sys_set_bank_blu(&grid_sys_state, var);
   }
+
+  return 1;
+}
+
+/*static*/ int l_grid_led_address_get(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 2) {
+    // error
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (!lua_isinteger(L, 1)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  int32_t element = lua_tointeger(L, 1);
+
+  if (!lua_isinteger(L, 2)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  int32_t subidx = lua_tointeger(L, 2);
+
+  uint8_t length = 0;
+  uint8_t* lookup = grid_led_lookup_get(&grid_led_state, element, &length);
+
+  if (lookup == NULL || subidx >= length) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  lua_pushinteger(L, lookup[subidx]);
 
   return 1;
 }
@@ -1386,6 +1451,10 @@ int l_grid_cat(lua_State* L) {
     return 0;
   }
 
+  if (lua_isnil(L, 1)) {
+    return 0;
+  }
+
   int32_t param[3] = {0};
   // uint8_t isgetter = 0;
 
@@ -1471,6 +1540,10 @@ int l_grid_cat(lua_State* L) {
   if (nargs != 5) {
     // error
     strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (lua_isnil(L, 1)) {
     return 0;
   }
 
@@ -2113,6 +2186,7 @@ int l_grid_cat(lua_State* L) {
     {GRID_LUA_FNC_G_LED_SHAPE_short, GRID_LUA_FNC_G_LED_SHAPE_fnptr},
     {GRID_LUA_FNC_G_LED_TIMEOUT_short, GRID_LUA_FNC_G_LED_TIMEOUT_fnptr},
     {GRID_LUA_FNC_G_LED_PSF_short, GRID_LUA_FNC_G_LED_PSF_fnptr},
+    {GRID_LUA_FNC_G_LED_ADDRESS_GET_short, GRID_LUA_FNC_G_LED_ADDRESS_GET_fnptr},
 
     {GRID_LUA_FNC_G_MIDI_SEND_short, GRID_LUA_FNC_G_MIDI_SEND_fnptr},
     {GRID_LUA_FNC_G_MIDISYSEX_SEND_short, GRID_LUA_FNC_G_MIDISYSEX_SEND_fnptr},

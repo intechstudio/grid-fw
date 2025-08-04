@@ -55,7 +55,6 @@ init_endless_color = function(self)
     end
     for i = 0, 4, 1 do
       local int = 0
-      local ln = self:lix() + i * self:lof()
       if l == 1 then
         -- button
         if v == nil then
@@ -71,7 +70,8 @@ init_endless_color = function(self)
           int = gsc(i, v, 0, 255)
         end
       end
-      glp(ln, l, int)
+      local lix = glag(self:ind(), i)
+      glp(lix, l, int)
     end
   end
 
@@ -85,10 +85,10 @@ init_endless_color = function(self)
       end
     end
     for i = 0, 4, 1 do
-      local ln = self:ind() + i * self:lof()
-      gln(ln, l, up(x))
-      gld(ln, l, up(y))
-      glx(ln, l, up(z))
+      local lix = glag(self:ind(), i)
+      gln(lix, l, up(x))
+      gld(lix, l, up(y))
+      glx(lix, l, up(z))
     end
   end
 end
@@ -103,7 +103,6 @@ init_endless_nosegment_color = function(self)
     end
     for i = 0, 4, 1 do
       local int = v
-      local ln = self:lix() + i * self:lof()
       if l == 1 then
         -- button
         if v == nil then
@@ -115,7 +114,8 @@ init_endless_nosegment_color = function(self)
           int = math.floor(gmaps(self:epva(), self:epmi(), self:epma(), 0, 255))
         end
       end
-      glp(ln, l, int)
+      local lix = glag(self:ind(), i)
+      glp(lix, l, int)
     end
   end
 
@@ -129,10 +129,10 @@ init_endless_nosegment_color = function(self)
       end
     end
     for i = 0, 4, 1 do
-      local ln = self:ind() + i * self:lof()
-      gln(ln, l, up(x))
-      gld(ln, l, up(y))
-      glx(ln, l, up(z))
+      local lix = glag(self:ind(), i)
+      gln(lix, l, up(x))
+      gld(lix, l, up(y))
+      glx(lix, l, up(z))
     end
   end
 end
@@ -145,16 +145,16 @@ init_element_color = function(self)
         return
       end
     end
+    local lix = glag(self:ind(), 0)
     if v == nil then
-      glp(self:ind(), l, -1)
+      glp(lix, l, -1)
     else
-      glp(self:ind(), l, v)
+      glp(lix, l, v)
     end
   end
 
   self.glc = function(self, l, c)
     local up = table.unpack
-    local i = self:lix()
     local x, y, z = cp(c)
 
     if l == -1 then
@@ -163,9 +163,10 @@ init_element_color = function(self)
         return
       end
     end
-    gln(i, l, up(x))
-    gld(i, l, up(y))
-    glx(i, l, up(z))
+    local lix = glag(self:ind(), 0)
+    gln(lix, l, up(x))
+    gld(lix, l, up(y))
+    glx(lix, l, up(z))
   end
 end
 

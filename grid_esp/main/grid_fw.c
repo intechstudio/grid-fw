@@ -163,8 +163,8 @@ void grid_lua_ui_init_soft(struct grid_lua_model* lua) {
 void grid_module_soft_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   grid_ain_init(&grid_ain_state, 8, 4);
-
   grid_led_init(&grid_led_state, 8);
+  grid_led_lookup_alloc_identity(&grid_led_state, 0, 8);
 
   grid_ui_model_init(ui, 8 + 1); // +1 for the system element
 
@@ -289,27 +289,30 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA) {
 
-    uint8_t led_lookup[18] = {5, 6, 7, 8, 9, 10, 11, 12, 0, 17, 1, 17, 2, 17, 3, 17, 4, 17}; // set unused to -1
-    grid_led_lookup_init(led, led_lookup);
+    // TODO
 
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
 
-    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 5, 0, 6, 1, 7, 2, 8, 3, 9, 4}; // set unused to -1
-    grid_led_lookup_init(led, led_lookup);
+    for (uint8_t i = 0; i < 8; ++i) {
+      grid_led_lookup_alloc_single(led, i, i + 10);
+    }
+    grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){5, 6, 7, 8, 9});
 
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
 
-    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9}; // set unused to -1
-    grid_led_lookup_init(led, led_lookup);
+    for (uint8_t i = 0; i < 8; ++i) {
+      grid_led_lookup_alloc_single(led, i, i + 10);
+    }
+    grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
 
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
 
-    grid_platform_printf("VSN2\n");
-    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9}; // set unused to -1
-    grid_led_lookup_init(led, led_lookup);
+    for (uint8_t i = 0; i < 8; ++i) {
+      grid_led_lookup_alloc_single(led, i, i + 10);
+    }
   }
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||

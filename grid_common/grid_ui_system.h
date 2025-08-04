@@ -31,14 +31,17 @@ void grid_ui_element_system_template_parameter_init(struct grid_ui_template_buff
   GRID_LUA_FNC_ASSIGN_META_PAR1("get", GRID_LUA_FNC_G_EVENT_TRIGGER_short) "," \
   \
   "}}"
-// clang-format on
 
 #define GRID_ACTIONSTRING_SYSTEM_INIT "<?lua --[[@cb]] --[[page init]] ?>"
+
 #define GRID_ACTIONSTRING_SYSTEM_MAPMODE "<?lua --[[@cb]] gpl(gpn()) ?>"
-#define GRID_ACTIONSTRING_SYSTEM_MIDIRX                                                                                                                                                                \
-  "<?lua --[[@l]] local "                                                                                                                                                                              \
-  "ch,cmd,param1,param2=midi.ch,midi.cmd,midi.p1,midi.p2 ?>"
+
+#define GRID_ACTIONSTRING_SYSTEM_MIDIRX \
+  "<?lua --[[@l]] local ch,cmd,param1,param2=" \
+  "midi.ch,midi.cmd,midi.p1,midi.p2 ?>"
 
 #define GRID_ACTIONSTRING_SYSTEM_TIMER "<?lua --[[@cb]] print('tick') ?>"
+
+// clang-format on
 
 #endif /* GRID_UI_SYSTEM_H */
