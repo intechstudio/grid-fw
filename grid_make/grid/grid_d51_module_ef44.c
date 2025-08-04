@@ -108,11 +108,11 @@ static void adc_transfer_complete_cb(void) {
 
   struct grid_ui_element* ele_0 = &elements[adc_index_0 + 4];
 
-  grid_ui_potmeter_store_input(ele_0, adc_index_0, &potmeter_last_real_time[adc_index_0], adcresult_0, 16);
+  grid_ui_potmeter_store_input(ele_0, adc_index_0 + 4, &potmeter_last_real_time[adc_index_0], adcresult_0, 16);
 
   struct grid_ui_element* ele_1 = &elements[adc_index_1 + 4];
 
-  grid_ui_potmeter_store_input(ele_1, adc_index_1, &potmeter_last_real_time[adc_index_1], adcresult_1, 16);
+  grid_ui_potmeter_store_input(ele_1, adc_index_1 + 4, &potmeter_last_real_time[adc_index_1], adcresult_1, 16);
 
   adc_complete_count = 0;
   hardware_adc_start_transfer();
