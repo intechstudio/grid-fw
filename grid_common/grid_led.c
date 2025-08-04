@@ -125,6 +125,23 @@ void grid_led_init(struct grid_led_model* led, uint32_t length) {
   grid_led_reset(led);
 }
 
+void grid_led_reset(struct grid_led_model* led) {
+
+  for (size_t i = 0; i < led->led_count; ++i) {
+
+    for (size_t j = 0; j < GRID_LED_LAYER_COUNT; ++j) {
+
+      grid_led_set_layer_color(led, i, j, 0, 0, 0);
+      grid_led_set_layer_frequency(led, i, j, 0);
+      grid_led_set_layer_phase(led, i, j, 0);
+      grid_led_set_layer_shape(led, i, j, 0);
+      grid_led_set_layer_timeout(led, i, j, 0);
+    }
+  }
+}
+
+uint32_t grid_led_get_led_count(struct grid_led_model* led) { return led->led_count; }
+
 void grid_led_lookup_alloc_multi(struct grid_led_model* led, uint8_t index, uint8_t length, uint8_t* values) {
 
   assert(index < led->led_count);
@@ -161,23 +178,6 @@ uint8_t* grid_led_lookup_get(struct grid_led_model* led, uint8_t element, uint8_
 
   *length = led->led_lookup_sizes[element];
   return led->led_lookup_table[element];
-}
-
-uint32_t grid_led_get_led_count(struct grid_led_model* led) { return led->led_count; }
-
-void grid_led_reset(struct grid_led_model* led) {
-
-  for (size_t i = 0; i < led->led_count; ++i) {
-
-    for (size_t j = 0; j < GRID_LED_LAYER_COUNT; ++j) {
-
-      grid_led_set_layer_color(led, i, j, 0, 0, 0);
-      grid_led_set_layer_frequency(led, i, j, 0);
-      grid_led_set_layer_phase(led, i, j, 0);
-      grid_led_set_layer_shape(led, i, j, 0);
-      grid_led_set_layer_timeout(led, i, j, 0);
-    }
-  }
 }
 
 /** ================== ANIMATION ==================  */

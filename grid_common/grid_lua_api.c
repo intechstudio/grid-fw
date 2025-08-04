@@ -1292,12 +1292,18 @@ int l_grid_cat(lua_State* L) {
     return 0;
   }
 
-  if (!lua_isinteger(L, -1)) {
+  if (!lua_isinteger(L, 1)) {
     strcat(grid_lua_state.stde, "#invalidParams");
     return 0;
   }
 
   int32_t element = lua_tointeger(L, 1);
+
+  if (!lua_isinteger(L, 2)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
   int32_t subidx = lua_tointeger(L, 2);
 
   uint8_t length = 0;

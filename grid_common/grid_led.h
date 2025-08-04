@@ -18,9 +18,6 @@
 #define GRID_LED_COLOR_WHITE 255, 255, 255
 #define GRID_LED_COLOR_WHITE_DIM 64, 64, 64
 
-enum { GRID_LED_MULTI_OFFSET = 32 };
-enum { GRID_LED_MULTI_STRIDE = 5 };
-
 struct LED_color {
   uint8_t r;
   uint8_t g;
@@ -60,6 +57,8 @@ uint32_t grid_led_get_framebuffer_size(struct grid_led_model* led);
 extern struct grid_led_model grid_led_state;
 
 void grid_led_init(struct grid_led_model* led, uint32_t length);
+void grid_led_reset(struct grid_led_model* led);
+uint32_t grid_led_get_led_count(struct grid_led_model* led);
 
 void grid_led_lookup_alloc_single(struct grid_led_model* led, uint8_t index, uint8_t value);
 void grid_led_lookup_alloc_multi(struct grid_led_model* led, uint8_t index, uint8_t length, uint8_t* values);
@@ -91,9 +90,6 @@ void grid_alert_one_set_timeout_automatic(struct grid_led_model* led, uint8_t nu
 void grid_alert_one_set_frequency(struct grid_led_model* led, uint8_t num, uint8_t frequency);
 void grid_alert_one_set_phase(struct grid_led_model* led, uint8_t num, uint8_t phase);
 
-// reset the state of the led smartbuffer
-void grid_led_reset(struct grid_led_model* led);
-
 // WRITING THE SMART BUFFER
 void grid_led_set_layer_color(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
 
@@ -107,21 +103,6 @@ void grid_led_set_layer_phase(struct grid_led_model* led, uint8_t num, uint8_t l
 void grid_led_set_layer_frequency(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_layer_shape(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_layer_timeout(struct grid_led_model* led, uint8_t num, uint8_t layer, uint16_t val);
-
-void grid_led_set_layer_color_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
-
-void grid_led_set_layer_min_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
-void grid_led_set_layer_mid_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
-void grid_led_set_layer_max_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
-
-void grid_led_set_layer_phase_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
-uint8_t grid_led_get_layer_phase_raw(struct grid_led_model* led, uint8_t num, uint8_t layer);
-
-void grid_led_set_layer_frequency_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
-void grid_led_set_layer_shape_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
-void grid_led_set_layer_timeout_raw(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
-
-uint32_t grid_led_get_led_count(struct grid_led_model* led);
 
 /** ======================== SMART BUFFER  ========================== */
 
