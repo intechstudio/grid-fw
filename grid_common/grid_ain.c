@@ -7,171 +7,138 @@
 
 #include "grid_ain.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-void* grid_platform_allocate_volatile(size_t size);
+#include "grid_platform.h"
 
 struct grid_ain_model grid_ain_state;
 
-uint32_t grid_ain_abs(int32_t value) {
+void grid_ain_channel_reset(struct ain_chan_t* chan) { chan->size = chan->beg = chan->end = chan->sum = chan->output = chan->delta = 0; }
 
-  if (value > 0) {
-    return value;
-  } else {
-    return -value;
+void grid_ain_channel_init(struct ain_chan_t* chan, uint8_t capacity) {
+
+  assert(capacity > 0);
+  chan->capa = capacity;
+
+  chan->data = grid_platform_allocate_volatile(chan->capa * sizeof(uint16_t));
+  assert(chan->data);
+  memset(chan->data, 0, chan->capa * sizeof(uint16_t));
+
+  grid_ain_channel_reset(chan);
+}
+
+void grid_ain_init(struct grid_ain_model* ain, uint8_t channel_count, uint8_t capacity) {
+
+  assert(channel_count > 0);
+  ain->channel_count = channel_count;
+
+  ain->channels = grid_platform_allocate_volatile(ain->channel_count * sizeof(struct ain_chan_t));
+  assert(ain->channels);
+
+  for (uint8_t i = 0; i < ain->channel_count; ++i) {
+    grid_ain_channel_init(&ain->channels[i], capacity);
   }
 }
 
-uint8_t grid_ain_channel_init(struct grid_ain_model* ain, uint8_t channel, uint8_t buffer_depth) {
+void grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t src_res, uint8_t dst_res) {
 
-  ain->channel_buffer[channel].buffer_depth = buffer_depth;
+  assert(channel < ain->channel_count);
+  struct ain_chan_t* chan = &ain->channels[channel];
 
-  ain->channel_buffer[channel].buffer_samples = 0;
+  // Take to-be-overwritten value out of sum if there is one
+  chan->sum -= chan->data[chan->beg] * (chan->size == chan->capa);
 
-  ain->channel_buffer[channel].result_average = 0;
+  // Write value into the end position of the circular buffer
+  chan->data[chan->end] = value;
 
-  ain->channel_buffer[channel].buffer = grid_platform_allocate_volatile(ain->channel_buffer[channel].buffer_depth * sizeof(uint16_t));
+  // Update indices of the circular buffer
+  chan->end = (chan->end + 1) % chan->capa;
+  chan->beg = (chan->beg + (chan->size == chan->capa)) % chan->capa;
+  chan->size += chan->size != chan->capa;
 
-  // Init the whole buffer with zeros
-  for (uint8_t i = 0; i < ain->channel_buffer[channel].buffer_depth; i++) {
-    ain->channel_buffer[channel].buffer[i] = 0;
-  }
+  // Add new value to sum
+  chan->sum += value;
 
-  ain->channel_buffer[channel].result_changed = 0;
-  ain->channel_buffer[channel].result_value = 0;
+  assert(src_res >= dst_res);
+  uint8_t diff_res = src_res - dst_res;
 
-  return 0;
-}
+  // Quantize the average value
+  uint16_t average = chan->sum / chan->capa;
+  uint16_t quantized = (average >> diff_res) << diff_res;
 
-uint8_t grid_ain_channel_deinit(struct grid_ain_model* ain, uint8_t channel) {
+  // Figure out if the quantized value and old output value differ meaningfully
+  uint8_t delta;
+  switch (diff_res) {
+  case 0: {
 
-  while (1) {
-    // TRAP
-  }
-}
+    // If the resolutions match, any difference is a delta
+    delta = quantized != chan->output;
 
-/** Initialize ain buffer for a given number of analog channels */
-uint8_t grid_ain_init(struct grid_ain_model* ain, uint8_t length, uint8_t depth) {
+  } break;
+  default: {
 
-  // 2D buffer, example: 16 potentiometers, last 32 samples stored for each
-  ain->channel_buffer = grid_platform_allocate_volatile(length * sizeof(struct AIN_Channel));
-  ain->channel_buffer_length = length;
+    // Difference at the destination resolution
+    uint16_t diff_quant = (quantized - chan->output) >> diff_res;
 
-  for (uint8_t i = 0; i < length; i++) {
-    grid_ain_channel_init(ain, i, depth);
-  }
+    // The most significant bit lost at the destination resolution
+    uint8_t msb_lost = (average >> (diff_res - 1)) & 0x1;
 
-  return 0;
-}
-
-uint8_t grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t source_resolution, uint8_t result_resolution) {
-
-  struct AIN_Channel* instance = &ain->channel_buffer[channel];
-
-  instance->buffer_samples += (instance->buffer_samples < instance->buffer_depth * 2);
-
-  uint32_t sum = 0;
-  uint16_t minimum = -1; // -1 trick to get the largest possible number
-  uint16_t maximum = 0;
-
-  uint8_t minimum_index = 0;
-  uint8_t maximum_index = 0;
-
-  for (uint8_t i = 0; i < instance->buffer_depth; i++) {
-
-    uint16_t current = instance->buffer[i];
-
-    sum += current;
-
-    if (current > maximum) {
-      maximum = current;
-      maximum_index = i;
+    // Hysteresis logic against flicker
+    switch (diff_quant) {
+    case 1:
+      delta = msb_lost == 1;
+      break;
+    case UINT16_MAX:
+      delta = msb_lost == 0;
+      break;
+    default:
+      delta = diff_quant != 0;
     }
-
-    if (current < minimum) {
-      minimum = current;
-      minimum_index = i;
-    }
+  }
   }
 
-  uint16_t average = sum / instance->buffer_depth;
+  // Update output value and delta if necessary
+  if (delta) {
 
-  if (value > average) {
-    // Replace minimum in the buffer and recalculate sum
-    sum = sum - instance->buffer[minimum_index] + value;
-    instance->buffer[minimum_index] = value;
-  } else {
-    // Replace maximum in the buffer and recalculate sum
-    sum = sum - instance->buffer[maximum_index] + value;
-    instance->buffer[maximum_index] = value;
-  }
-
-  // Recalculate average
-  average = sum / instance->buffer_depth;
-
-  // up until here all looks good, everything is 16 bit
-
-  uint8_t downscale_factor = (source_resolution - result_resolution);
-  uint8_t upscale_factor = (source_resolution - result_resolution);
-
-  uint16_t downsampled = (average >> downscale_factor);
-  uint16_t upscaled = downsampled << upscale_factor;
-
-  uint8_t criteria_a = instance->result_value != upscaled;
-
-  uint8_t criteria_b = grid_ain_abs(instance->result_average - average) > (1 << downscale_factor);
-  uint8_t criteria_c = upscaled > ((1 << source_resolution) - (1 << upscale_factor) - 1);
-  uint8_t criteria_d = upscaled == 0;
-
-  if (criteria_a && (criteria_b || criteria_c || criteria_d)) {
-
-    // printf("%d: %d %d\r\n", channel, average, upscaled);
-    instance->result_average = average;
-    instance->result_value = upscaled;
-    instance->result_changed = 1;
-    return 1;
-  } else {
-    return 0;
+    chan->output = quantized;
+    chan->delta = delta;
   }
 }
 
-int grid_ain_stabilized(struct grid_ain_model* ain, uint8_t channel) {
+bool grid_ain_stabilized(struct grid_ain_model* ain, uint8_t channel) {
 
-  struct AIN_Channel* instance = &ain->channel_buffer[channel];
+  assert(channel < ain->channel_count);
+  struct ain_chan_t* chan = &ain->channels[channel];
 
-  return instance->buffer_samples >= instance->buffer_depth * 2;
+  return chan->size == chan->capa;
 }
 
-uint8_t grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel) {
+bool grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel) {
 
-  struct AIN_Channel* instance = &ain->channel_buffer[channel];
+  assert(channel < ain->channel_count);
+  struct ain_chan_t* chan = &ain->channels[channel];
 
-  return instance->result_changed != 0;
-}
-
-uint16_t grid_ain_get_average(struct grid_ain_model* ain, uint8_t channel) {
-
-  struct AIN_Channel* instance = &ain->channel_buffer[channel];
-
-  instance->result_changed = 0;
-
-  return instance->result_value;
+  return chan->delta;
 }
 
 static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }
 
-int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel, uint8_t source_resolution, uint8_t result_resolution, int32_t min, int32_t max) {
+int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel, uint8_t src_res, uint8_t dst_res, int32_t min, int32_t max) {
 
-  struct AIN_Channel* instance = &ain->channel_buffer[channel];
+  assert(channel < ain->channel_count);
+  struct ain_chan_t* chan = &ain->channels[channel];
 
-  instance->result_changed = 0;
+  chan->delta = 0;
 
-  int bits_diff = source_resolution - result_resolution;
+  assert(src_res >= dst_res);
+  int bits_diff = src_res - dst_res;
 
-  uint16_t value = instance->result_value >> bits_diff;
+  uint16_t value = chan->output >> bits_diff;
 
-  int32_t next = lerp(min, max + 1, value / (double)(1 << result_resolution));
+  int32_t next = lerp(min, max + 1, value / (double)(1 << dst_res));
 
   if (next > max) {
     next = max;

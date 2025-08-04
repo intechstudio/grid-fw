@@ -162,7 +162,7 @@ void grid_lua_ui_init_soft(struct grid_lua_model* lua) {
 }
 void grid_module_soft_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
-  grid_ain_init(&grid_ain_state, 4, 5);
+  grid_ain_init(&grid_ain_state, 8, 4);
 
   grid_led_init(&grid_led_state, 8);
 
@@ -284,7 +284,7 @@ void grid_ui_element_lcd_template_parameter_init_vsn_right(struct grid_ui_templa
 void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui, uint8_t hwcfg) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
-  grid_ain_init(ain, 16, 5);  // TODO: 12 ain for TEK2
+  grid_ain_init(ain, 16, 4);  // TODO: 12 ain for TEK2
   grid_led_init(led, 13 + 5); // TODO: 18 led for TEK2
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA) {
