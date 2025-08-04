@@ -1,4 +1,4 @@
-function sgn (x)
+function sgn(x)
   if x > 0 then
     return 1
   elseif x < 0 then

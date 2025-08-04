@@ -5,7 +5,9 @@
 
 #include "grid_cal.h"
 #include "grid_led.h"
+#include "grid_math.h"
 #include "grid_msg.h"
+#include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_sys.h"
 #include "grid_transport.h"
@@ -1870,6 +1872,74 @@ int l_grid_cat(lua_State* L) {
   return 0;
 }
 
+/*static*/ int l_grid_potmeter_detent_set(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 2) {
+    // error
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (!lua_istable(L, -2)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (!lua_isboolean(L, -1)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  bool high = lua_toboolean(L, -1);
+  lua_pop(L, 1);
+
+  struct grid_cal_pot* cal_pot = &grid_cal_state.potmeter;
+
+  for (uint8_t i = 0; i < grid_ui_state.element_list_length; ++i) {
+
+    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
+
+    uint8_t enabled = 0;
+    if (grid_cal_pot_enable_get(cal_pot, i, &enabled) != 0) {
+
+      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      return 0;
+    }
+
+    if (!enabled) {
+      continue;
+    }
+
+    lua_pushinteger(L, i + 1);
+    lua_gettable(L, -2);
+
+    if (!lua_isinteger(L, -1)) {
+      strcat(grid_lua_state.stde, "#invalidParams");
+      return 0;
+    }
+
+    int32_t value = 0;
+
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+      value = lua_tointeger(L, -1);
+    }
+
+    lua_pop(L, 1);
+
+    if (grid_cal_pot_detent_set(cal_pot, i, value, high) != 0) {
+
+      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      return 0;
+    }
+  }
+
+  grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFSTORE_PROGRESS, 0, NULL);
+
+  return 0;
+}
+
 /*static*/ int l_grid_button_calibration_get(lua_State* L) {
 
   int nargs = lua_gettop(L);
@@ -2001,6 +2071,31 @@ int l_grid_cat(lua_State* L) {
   return 0;
 }
 
+/*static*/ int l_grid_lcd_set_backlight(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 1) {
+    // error
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (!lua_isinteger(L, -1)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  int32_t backlight = lua_tointeger(L, -1);
+  lua_pop(L, 1);
+
+  backlight = clampi32(backlight, 0, 255);
+
+  grid_platform_lcd_set_backlight(backlight);
+
+  return 0;
+}
+
 /*static*/ const struct luaL_Reg grid_lua_api_generic_lib[] = {
     {"print", l_my_print},
     {"grid_send", l_grid_send},
@@ -2066,8 +2161,11 @@ int l_grid_cat(lua_State* L) {
 
     {GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_fnptr},
     {GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr},
+    {GRID_LUA_FNC_G_POTMETER_DETENT_SET_short, GRID_LUA_FNC_G_POTMETER_DETENT_SET_fnptr},
     {GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_short, GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_fnptr},
     {GRID_LUA_FNC_G_BUTTON_CALIBRATION_SET_short, GRID_LUA_FNC_G_BUTTON_CALIBRATION_SET_fnptr},
+
+    {GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_short, GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_fnptr},
 
     {GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_short, GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_fnptr},
     {GRID_LUA_FNC_G_FILESYSTEM_CAT_short, GRID_LUA_FNC_G_FILESYSTEM_CAT_fnptr},

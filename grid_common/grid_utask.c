@@ -14,3 +14,5 @@ bool grid_utask_timer_elapsed(struct grid_utask_timer* timer) {
 
   return ret;
 }
+
+void grid_utask_timer_realign(struct grid_utask_timer* timer) { timer->last = grid_platform_rtc_get_micros(); }

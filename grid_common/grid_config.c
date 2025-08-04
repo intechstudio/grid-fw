@@ -41,6 +41,30 @@ int grid_config_parse_cal_pot(struct grid_cal_pot* cal_pot, char* errbuf, toml_t
     }
   }
 
+  toml_array_t* detentlo = toml_array_in(calibration, CAL_POT_DETENT_LOW_KEY);
+  if (!detentlo) {
+    return 1;
+  }
+
+  for (int i = 0; i < cal_pot->length; ++i) {
+    toml_datum_t low = toml_int_at(detentlo, i);
+    if (low.ok) {
+      grid_cal_pot_detent_set(cal_pot, i, (uint16_t)low.u.i, false);
+    }
+  }
+
+  toml_array_t* detenthi = toml_array_in(calibration, CAL_POT_DETENT_HIGH_KEY);
+  if (!detenthi) {
+    return 1;
+  }
+
+  for (int i = 0; i < cal_pot->length; ++i) {
+    toml_datum_t high = toml_int_at(detenthi, i);
+    if (high.ok) {
+      grid_cal_pot_detent_set(cal_pot, i, (uint16_t)high.u.i, true);
+    }
+  }
+
   return 0;
 }
 
@@ -131,11 +155,11 @@ int grid_config_generate_cal_pot(struct grid_cal_pot* cal_pot, char* dest) {
     return 0;
   }
 
-  toml_cat_bare_key(dest, CAL_POT_CENTERS_KEY);
+  char potcal[GRID_CONFIG_MAX_UINT16_ARRAYELEM + 1] = {0};
 
+  toml_cat_bare_key(dest, CAL_POT_CENTERS_KEY);
   strcat(dest, "[ ");
 
-  char potcal[GRID_CONFIG_MAX_UINT16_ARRAYELEM + 1] = {0};
   for (int i = 0; i < cal_pot->length; ++i) {
 
     uint16_t center;
@@ -145,6 +169,40 @@ int grid_config_generate_cal_pot(struct grid_cal_pot* cal_pot, char* dest) {
     }
 
     snprintf(potcal, GRID_CONFIG_MAX_UINT16_ARRAYELEM + 1, "%hu, ", center);
+    strcat(dest, potcal);
+  }
+
+  strcat(dest, "]\n");
+
+  toml_cat_bare_key(dest, CAL_POT_DETENT_LOW_KEY);
+  strcat(dest, "[ ");
+
+  for (int i = 0; i < cal_pot->length; ++i) {
+
+    uint16_t low;
+    int status = grid_cal_pot_detent_get(cal_pot, i, &low, false);
+    if (status) {
+      return status;
+    }
+
+    snprintf(potcal, GRID_CONFIG_MAX_UINT16_ARRAYELEM + 1, "%hu, ", low);
+    strcat(dest, potcal);
+  }
+
+  strcat(dest, "]\n");
+
+  toml_cat_bare_key(dest, CAL_POT_DETENT_HIGH_KEY);
+  strcat(dest, "[ ");
+
+  for (int i = 0; i < cal_pot->length; ++i) {
+
+    uint16_t high;
+    int status = grid_cal_pot_detent_get(cal_pot, i, &high, true);
+    if (status) {
+      return status;
+    }
+
+    snprintf(potcal, GRID_CONFIG_MAX_UINT16_ARRAYELEM + 1, "%hu, ", high);
     strcat(dest, potcal);
   }
 
@@ -238,6 +296,16 @@ uint32_t grid_config_bytes_cal(struct grid_cal_model* cal) {
   bytes += strlen("[" CAL_HEADER "]\n");
 
   bytes += strlen(CAL_POT_CENTERS_KEY " = ");
+  bytes += strlen("[ ");
+  bytes += cal->potmeter.length * GRID_CONFIG_MAX_UINT16_ARRAYELEM;
+  bytes += strlen("]\n");
+
+  bytes += strlen(CAL_POT_DETENT_LOW_KEY " = ");
+  bytes += strlen("[ ");
+  bytes += cal->potmeter.length * GRID_CONFIG_MAX_UINT16_ARRAYELEM;
+  bytes += strlen("]\n");
+
+  bytes += strlen(CAL_POT_DETENT_HIGH_KEY " = ");
   bytes += strlen("[ ");
   bytes += cal->potmeter.length * GRID_CONFIG_MAX_UINT16_ARRAYELEM;
   bytes += strlen("]\n");

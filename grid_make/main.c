@@ -46,6 +46,8 @@ void grid_platform_sync1_pulse_send() { sync1_state++; }
 extern void grid_platform_rtc_set_micros(uint64_t mic);
 extern uint64_t grid_platform_rtc_get_micros(void);
 
+void grid_platform_lcd_set_backlight(uint8_t backlight) {}
+
 static void update_interrupt_mask_from_bulk_status() {
 
   uint32_t mask = grid_d51_nvic_get_interrupt_priority_mask() == 1;
