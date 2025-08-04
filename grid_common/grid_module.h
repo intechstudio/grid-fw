@@ -5,6 +5,8 @@
 #include "grid_led.h"
 #include "grid_ui.h"
 
+extern int GRID_MODULE_DRIVER_INIT_DONE;
+
 void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui);
 void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui);
 void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui);

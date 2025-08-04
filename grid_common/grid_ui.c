@@ -396,9 +396,6 @@ void grid_ui_page_load_success_callback(uint8_t lastheader) {
   grid_lua_post_init(&grid_lua_state);
 
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
-
-  // Phase out the animation
-  grid_alert_all_set_timeout_automatic(&grid_led_state);
 }
 
 void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t page) {
@@ -851,10 +848,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
     }
   }
 
-  // step 4: trigger all init events
-  grid_lua_post_init(&grid_lua_state);
-
-  // step 5: run the success callback if available
+  // step 4: run the success callback if available
 
   // Set ready before callback so callback can start new nvm operation
   ui->bulk_status = GRID_UI_BULK_READY;
