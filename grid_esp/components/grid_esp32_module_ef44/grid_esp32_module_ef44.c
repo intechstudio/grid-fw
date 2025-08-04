@@ -59,7 +59,7 @@ void IRAM_ATTR ef44_process_analog(void* user) {
 
   } else if (mux_position < 8) {
 
-    grid_ui_potmeter_store_input(ele, mux_position - 4, &potmeter_last_real_time[mux_position - 4], result->value, 12);
+    grid_ui_potmeter_store_input(ele, mux_position, &potmeter_last_real_time[mux_position - 4], result->value, 12);
   }
 }
 
@@ -114,6 +114,8 @@ void grid_esp32_module_ef44_task(void* arg) {
   grid_esp32_adc_mux_init(&grid_esp32_adc_state, 2);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(&grid_sys_state);
   grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
+
+  GRID_MODULE_DRIVER_INIT_DONE = 1;
 
   while (1) {
 

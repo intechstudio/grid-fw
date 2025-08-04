@@ -122,6 +122,8 @@ void grid_esp32_module_tek2_task(void* arg) {
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(&grid_sys_state);
   grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
 
+  GRID_MODULE_DRIVER_INIT_DONE = 1;
+
   while (1) {
 
     vTaskDelay(pdMS_TO_TICKS(1000));

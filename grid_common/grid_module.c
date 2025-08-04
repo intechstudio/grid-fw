@@ -13,6 +13,8 @@
 #include "grid_ui_potmeter.h"
 #include "grid_ui_system.h"
 
+int GRID_MODULE_DRIVER_INIT_DONE = 0;
+
 /* ====================  MODULE SPECIFIC INITIALIZERS  ====================*/
 
 void grid_lua_ui_init_po16(struct grid_lua_model* lua);
@@ -28,7 +30,7 @@ void grid_lua_ui_init_pb44(struct grid_lua_model* lua);
 void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
-  grid_ain_init(ain, 16, 5);
+  grid_ain_init(ain, 16, 4);
   grid_led_init(led, 16);
   grid_led_lookup_alloc_identity(led, 0, 16);
 
@@ -50,7 +52,7 @@ void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
-  grid_ain_init(ain, 16, 5);
+  grid_ain_init(ain, 16, 4);
   grid_led_init(led, 16);
   grid_led_lookup_alloc_identity(led, 0, 16);
 
@@ -76,7 +78,7 @@ void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
-  grid_ain_init(ain, 16, 5);
+  grid_ain_init(ain, 16, 4);
   grid_led_init(led, 12);
   grid_led_lookup_alloc_identity(led, 0, 12);
 
@@ -106,7 +108,7 @@ void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 void grid_module_pb44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
-  grid_ain_init(ain, 16, 5);
+  grid_ain_init(ain, 16, 4);
   grid_led_init(led, 16);
   grid_led_lookup_alloc_identity(led, 0, 16);
 
@@ -134,7 +136,8 @@ void grid_module_pb44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
-  grid_ain_init(&grid_ain_state, 4, 5);
+  // TODO should be 4 ain channels but indexing is bad in grid_ui_potmeter.c
+  grid_ain_init(&grid_ain_state, 8, 4);
   grid_led_init(&grid_led_state, 8);
   grid_led_lookup_alloc_identity(led, 0, 8);
 
@@ -163,7 +166,7 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
-  grid_ain_init(ain, 16, 5); // TODO: 12 ain for TEK2
+  grid_ain_init(ain, 16, 4); // TODO: 12 ain for TEK2
   grid_led_init(led, 18);    // TODO: 18 led for TEK2
 
   for (uint8_t i = 0; i < 8; ++i) {
