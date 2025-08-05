@@ -8,6 +8,7 @@
 #ifndef GRID_D51_NVM_H_
 #define GRID_D51_NVM_H_
 
+#include "grid_d51_littlefs.h"
 #include "grid_d51_module.h"
 
 #include "grid_ui.h"
@@ -26,6 +27,7 @@
 
 // 1024 page * 512byte/page = 0.5MB
 
+// TODO clean up this file
 struct grid_d51_nvm_toc_entry {
 
   uint8_t status;
@@ -41,16 +43,7 @@ struct grid_d51_nvm_toc_entry {
 };
 
 struct grid_d51_nvm_model {
-
-  struct flash_descriptor* flash;
-
-  uint8_t status;
-
-  uint32_t next_write_offset;
-  struct grid_d51_nvm_toc_entry* toc_head;
-  uint16_t toc_count;
-
-  uint32_t erase_bulk_address;
+  struct d51_littlefs_t dfs;
 };
 
 void grid_d51_nvm_toc_init(struct grid_d51_nvm_model* nvm);

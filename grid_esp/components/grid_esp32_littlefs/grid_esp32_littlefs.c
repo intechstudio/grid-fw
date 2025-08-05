@@ -13,6 +13,8 @@
 
 #include "rom/ets_sys.h"
 
+#include "grid_littlefs.h"
+
 enum { GRID_ESP32_LITTLEFS_PAGE_SIZE = 256 };
 enum { GRID_ESP32_LITTLEFS_BLOCK_SIZE = 4096 };
 
@@ -49,29 +51,6 @@ static esp_err_t grid_esp32_littlefs_init(struct esp_littlefs_t* efs, lfs_t* lfs
   }
 
   strcpy(efs->base_path, base_path);
-
-  return ESP_OK;
-}
-
-static esp_err_t grid_esp32_littlefs_mkdir_base(struct esp_littlefs_t* efs) {
-
-  assert(efs->base_path[0] != '\0');
-
-  // Attempt to stat the directory at the base path
-  struct lfs_info info;
-  int lfs_err = lfs_stat(efs->lfs, efs->base_path, &info);
-  if (lfs_err == LFS_ERR_OK) {
-    ESP_LOGI(TAG, "directory at base path already exists");
-    return ESP_OK;
-  }
-
-  // Attempt to make directory at the base path
-  ESP_LOGI(TAG, "creating directory at base path...");
-  lfs_err = lfs_mkdir(efs->lfs, efs->base_path);
-  if (lfs_err != LFS_ERR_OK) {
-    ESP_LOGW(TAG, "failed to make directory at base path");
-    return ESP_FAIL;
-  }
 
   return ESP_OK;
 }
@@ -116,34 +95,13 @@ esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs) {
 
   grid_esp32_littlefs_init(efs, lfs, part, "/littlefs", false);
 
-  // Mount littlefs
-  int lfs_err = lfs_mount(efs->lfs, &efs->cfg);
-  // int lfs_err = LFS_ERR_OK + 1; // for testing purposes
-
-  // If mounting failed, attempt a format and another mount
-  if (lfs_err != LFS_ERR_OK) {
-
-    ESP_LOGW(TAG, "littlefs mount failed (%d): %s. formatting...", lfs_err, littlefs_errno(lfs_err));
-
-    lfs_err = lfs_format(efs->lfs, &efs->cfg);
-    if (lfs_err != LFS_ERR_OK) {
-      free(lfs);
-      ESP_LOGE(TAG, "littlefs format failed");
-      return ESP_FAIL;
-    }
-
-    ESP_LOGW(TAG, "littlefs format successful. mounting...");
-
-    lfs_err = lfs_mount(efs->lfs, &efs->cfg);
-    if (lfs_err != LFS_ERR_OK) {
-      free(lfs);
-      ESP_LOGE(TAG, "littlefs mount failed (%d): %s. exiting...", lfs_err, littlefs_errno(lfs_err));
-      return ESP_FAIL;
-    }
+  if (grid_littlefs_mount_or_format(efs->lfs, &efs->cfg)) {
+    return ESP_FAIL;
   }
 
-  // Create directory at base path if it does not already exist
-  grid_esp32_littlefs_mkdir_base(efs);
+  if (grid_littlefs_mkdir_base(efs->lfs, efs->base_path)) {
+    return ESP_FAIL;
+  }
 
   return ESP_OK;
 }

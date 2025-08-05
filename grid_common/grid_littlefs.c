@@ -4,6 +4,98 @@
 
 #include "grid_platform.h"
 
+const char* littlefs_errno(enum lfs_error lfs_errno) {
+
+  switch (lfs_errno) {
+  case LFS_ERR_OK:
+    return "LFS_ERR_OK";
+  case LFS_ERR_IO:
+    return "LFS_ERR_IO";
+  case LFS_ERR_CORRUPT:
+    return "LFS_ERR_CORRUPT";
+  case LFS_ERR_NOENT:
+    return "LFS_ERR_NOENT";
+  case LFS_ERR_EXIST:
+    return "LFS_ERR_EXIST";
+  case LFS_ERR_NOTDIR:
+    return "LFS_ERR_NOTDIR";
+  case LFS_ERR_ISDIR:
+    return "LFS_ERR_ISDIR";
+  case LFS_ERR_NOTEMPTY:
+    return "LFS_ERR_NOTEMPTY";
+  case LFS_ERR_BADF:
+    return "LFS_ERR_BADF";
+  case LFS_ERR_FBIG:
+    return "LFS_ERR_FBIG";
+  case LFS_ERR_INVAL:
+    return "LFS_ERR_INVAL";
+  case LFS_ERR_NOSPC:
+    return "LFS_ERR_NOSPC";
+  case LFS_ERR_NOMEM:
+    return "LFS_ERR_NOMEM";
+  case LFS_ERR_NOATTR:
+    return "LFS_ERR_NOATTR";
+  case LFS_ERR_NAMETOOLONG:
+    return "LFS_ERR_NAMETOOLONG";
+  default:
+    return "LFS_ERR_UNDEFINED";
+  }
+
+  return "";
+}
+
+int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg) {
+
+  // Mount littlefs
+  int lfs_err = lfs_mount(lfs, cfg);
+  // int lfs_err = LFS_ERR_OK + 1; // for testing purposes
+
+  // If mounting failed, attempt a format and another mount
+  if (lfs_err != LFS_ERR_OK) {
+
+    printf("littlefs mount failed (%d): %s. formatting...", lfs_err, littlefs_errno(lfs_err));
+
+    lfs_err = lfs_format(lfs, cfg);
+    if (lfs_err != LFS_ERR_OK) {
+      printf("littlefs format failed");
+      return 1;
+    }
+
+    printf("littlefs format successful. mounting...");
+
+    lfs_err = lfs_mount(lfs, cfg);
+    if (lfs_err != LFS_ERR_OK) {
+      printf("littlefs mount failed (%d): %s. exiting...", lfs_err, littlefs_errno(lfs_err));
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+int grid_littlefs_mkdir_base(lfs_t* lfs, const char* path) {
+
+  assert(path[0] != '\0');
+
+  // Attempt to stat the directory at the base path
+  struct lfs_info info;
+  int lfs_err = lfs_stat(lfs, path, &info);
+  if (lfs_err == LFS_ERR_OK) {
+    printf("directory at base path already exists");
+    return 0;
+  }
+
+  // Attempt to make a directory at the base path
+  printf("creating directory at base path...");
+  lfs_err = lfs_mkdir(lfs, path);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("failed to make directory at base path");
+    return 1;
+  }
+
+  return 0;
+}
+
 int grid_littlefs_path_build(const char* path, uint16_t out_size, char* out) {
 
   assert(path != out);

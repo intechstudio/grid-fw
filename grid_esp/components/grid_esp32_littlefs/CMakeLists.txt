@@ -1,10 +1,10 @@
 idf_component_register(
     SRCS
         "grid_esp32_littlefs.c"
-				"littlefs_api.c"
+				"grid_esp32_littlefs_api.c"
     INCLUDE_DIRS
         "."
         "../../../grid_common/littlefs"
 		REQUIRES
-				"esp_partition"
+				"esp_partition" "grid_common"
 )

@@ -394,10 +394,6 @@ int main(void) {
 
   grid_d51_led_init(&grid_d51_led_state, &grid_led_state);
 
-  printf("Start TOC init\r\n");
-  grid_d51_nvm_toc_init(&grid_d51_nvm_state);
-  // grid_d51_nvm_toc_debug(&grid_d51_nvm_state);
-  printf("Done TOC init\r\n");
   grid_ui_page_load(&grid_ui_state, 0); // load page 0
 
   while (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {

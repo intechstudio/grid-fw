@@ -1,4 +1,4 @@
-#include "littlefs_api.h"
+#include "grid_esp32_littlefs_api.h"
 
 #include "esp_log.h"
 #include "esp_partition.h"
@@ -55,44 +55,4 @@ int littlefs_api_sync(const struct lfs_config* c) {
 
   // Unnecessary for esp-idf
   return 0;
-}
-
-const char* littlefs_errno(enum lfs_error lfs_errno) {
-
-  switch (lfs_errno) {
-  case LFS_ERR_OK:
-    return "LFS_ERR_OK";
-  case LFS_ERR_IO:
-    return "LFS_ERR_IO";
-  case LFS_ERR_CORRUPT:
-    return "LFS_ERR_CORRUPT";
-  case LFS_ERR_NOENT:
-    return "LFS_ERR_NOENT";
-  case LFS_ERR_EXIST:
-    return "LFS_ERR_EXIST";
-  case LFS_ERR_NOTDIR:
-    return "LFS_ERR_NOTDIR";
-  case LFS_ERR_ISDIR:
-    return "LFS_ERR_ISDIR";
-  case LFS_ERR_NOTEMPTY:
-    return "LFS_ERR_NOTEMPTY";
-  case LFS_ERR_BADF:
-    return "LFS_ERR_BADF";
-  case LFS_ERR_FBIG:
-    return "LFS_ERR_FBIG";
-  case LFS_ERR_INVAL:
-    return "LFS_ERR_INVAL";
-  case LFS_ERR_NOSPC:
-    return "LFS_ERR_NOSPC";
-  case LFS_ERR_NOMEM:
-    return "LFS_ERR_NOMEM";
-  case LFS_ERR_NOATTR:
-    return "LFS_ERR_NOATTR";
-  case LFS_ERR_NAMETOOLONG:
-    return "LFS_ERR_NAMETOOLONG";
-  default:
-    return "LFS_ERR_UNDEFINED";
-  }
-
-  return "";
 }

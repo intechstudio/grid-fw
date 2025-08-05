@@ -5,6 +5,11 @@
 
 typedef bool (*grid_littlefs_name_predicate)(const char* name, const void* user);
 
+const char* littlefs_errno(enum lfs_error lfs_errno);
+
+int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg);
+int grid_littlefs_mkdir_base(lfs_t* lfs, const char* path);
+
 int grid_littlefs_path_build(const char* path, uint16_t out_size, char* out);
 
 int grid_littlefs_remove(lfs_t* lfs, const char* path);

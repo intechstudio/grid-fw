@@ -11,6 +11,7 @@
 // must be last freertos relevant header to avoid #error
 #include "esp_freertos_hooks.h"
 
+#include "grid_platform.h"
 #include "grid_transport.h"
 
 #include "grid_ui.h"
@@ -541,13 +542,13 @@ void app_main(void) {
   // GRID MODULE INITIALIZATION SEQUENCE
 
   ESP_LOGI(TAG, "===== NVM START =====");
-  grid_esp32_nvm_init(&grid_esp32_nvm_state);
+  grid_esp32_nvm_mount(&grid_esp32_nvm_state);
 
   if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0) {
 
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
     grid_alert_all_set_frequency(&grid_led_state, 4);
-    grid_esp32_nvm_erase(&grid_esp32_nvm_state);
+    grid_platform_nvm_erase();
     vTaskDelay(pdMS_TO_TICKS(600));
   }
 

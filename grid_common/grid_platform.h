@@ -56,6 +56,8 @@ extern void grid_platform_clear_all_actionstring_files_from_page(uint8_t page);
 
 extern void grid_platform_delete_actionstring_files_all();
 
+extern void grid_platform_nvm_erase();
+
 extern const char* grid_platform_get_base_path();
 
 extern int grid_platform_make_directory(const char* path);

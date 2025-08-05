@@ -64,12 +64,6 @@ int littlefs_api_erase(const struct lfs_config* c, lfs_block_t block);
  */
 int littlefs_api_sync(const struct lfs_config* c);
 
-/**
- * @brief converts an enumerated lfs error into a string.
- * @param lfs_error The littlefs error.
- */
-const char* littlefs_errno(enum lfs_error lfs_errno);
-
 #ifdef __cplusplus
 }
 #endif

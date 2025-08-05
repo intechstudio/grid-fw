@@ -56,52 +56,9 @@ void grid_esp32_nvm_mount(struct grid_esp32_nvm_model* nvm) {
   size_t total = grid_littlefs_get_total_bytes(&nvm->efs.cfg);
   size_t used = grid_littlefs_get_used_bytes(nvm->efs.lfs, &nvm->efs.cfg);
   ESP_LOGI(TAG, "littlefs size: total: %d, used: %d", total, used);
-}
 
-void grid_esp32_nvm_init(struct grid_esp32_nvm_model* nvm) {
-
-  grid_esp32_nvm_mount(nvm);
-
+  // List the filesystem root
   grid_platform_list_directory("");
-}
-
-void grid_esp32_nvm_erase(struct grid_esp32_nvm_model* nvm) {
-
-  for (uint8_t i = 0; i < 4; ++i) {
-
-    grid_esp32_nvm_clear_page(nvm, i);
-  }
-
-  grid_esp32_nvm_clear_conf(GRID_UI_CONFIG_PATH);
-}
-
-void grid_esp32_nvm_clear_page(struct grid_esp32_nvm_model* nvm, uint8_t page) {
-
-  char path[50] = {0};
-
-  // upkeep: loop bound
-  for (uint8_t i = 0; i < 18 + 1; ++i) {
-
-    // Remove element directory
-    sprintf(path, "%02x/%02x", page, i);
-    grid_platform_remove_dir(path);
-  }
-
-  // Remove page directory
-  sprintf(path, "%02x", page);
-  grid_platform_remove_dir(path);
-}
-
-void grid_esp32_nvm_clear_conf(const char* path) {
-
-  int status;
-
-  union grid_ui_file_handle file_handle = {0};
-
-  status = grid_platform_find_file(path, &file_handle);
-  if (status == 0) {
-    grid_platform_delete_file(&file_handle);
-  }
 }
 
 int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle) {
@@ -154,9 +111,41 @@ void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_
   int ret = grid_platform_write_file(path, (uint8_t*)buffer, length + 1);
 }
 
-void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) { grid_esp32_nvm_clear_page(&grid_esp32_nvm_state, page); };
+void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
 
-void grid_platform_delete_actionstring_files_all() { grid_esp32_nvm_erase(&grid_esp32_nvm_state); }
+  char path[50] = {0};
+
+  // upkeep: loop bound
+  for (uint8_t i = 0; i < 18 + 1; ++i) {
+
+    // Remove element directory
+    sprintf(path, "%02x/%02x", page, i);
+    grid_platform_remove_dir(path);
+  }
+
+  // Remove page directory
+  sprintf(path, "%02x", page);
+  grid_platform_remove_dir(path);
+}
+
+void grid_platform_delete_actionstring_files_all() {
+
+  // upkeep: loop bound
+  for (uint8_t i = 0; i < 4; ++i) {
+
+    grid_platform_clear_all_actionstring_files_from_page(i);
+  }
+}
+
+void grid_platform_nvm_erase() {
+
+  grid_platform_delete_actionstring_files_all();
+
+  union grid_ui_file_handle file_handle = {0};
+  if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &file_handle) == 0) {
+    grid_platform_delete_file(&file_handle);
+  }
+}
 
 const char* grid_platform_get_base_path() { return grid_esp32_nvm_state.efs.base_path; }
 
@@ -202,6 +191,8 @@ uint32_t grid_plaform_get_nvm_nextwriteoffset() {
 
   return 0;
 }
+
+void grid_platform_nvm_defrag() { ets_printf("grid_platform_nvm_defrag NOT IMPLEMENTED!!!\r\n"); }
 
 void grid_esp32_nvm_task(void* arg) {
 
