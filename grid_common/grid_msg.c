@@ -530,3 +530,37 @@ int grid_str_verify_frame(char* message, uint16_t length) {
 
   return 0;
 }
+
+uint32_t grid_str_set_segment_char(char* dest, uint8_t head_hexes, uint32_t size, char* buffer) {
+
+  switch (head_hexes) {
+  case 2:
+    assert(size <= UINT8_MAX);
+    break;
+  case 4:
+    assert(size <= UINT16_MAX);
+    break;
+  case 8:
+    assert(size <= UINT32_MAX);
+    break;
+  default:
+    assert(0);
+  }
+
+  grid_str_write_hex_string_value(dest, head_hexes, size);
+  strcpy(dest + head_hexes, buffer);
+
+  return head_hexes + size;
+}
+
+uint32_t grid_str_get_segment_char(char* src, uint8_t head_hexes, uint32_t max_size, char* buffer) {
+
+  uint32_t size = grid_str_read_hex_string_value(src, head_hexes, NULL);
+
+  if (size < max_size) {
+    strncpy(buffer, src + head_hexes, size);
+    buffer[size] = '\0';
+  }
+
+  return head_hexes + size;
+}

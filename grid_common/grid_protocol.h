@@ -375,6 +375,14 @@
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_human "element_name_send"
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_fnptr l_grid_elementname_send
 
+#define GRID_LUA_FNC_G_ELEMENTNAME_SET_short "gsen"
+#define GRID_LUA_FNC_G_ELEMENTNAME_SET_human "element_name_set"
+#define GRID_LUA_FNC_G_ELEMENTNAME_SET_fnptr l_grid_elementname_set
+
+#define GRID_LUA_FNC_G_ELEMENTNAME_GET_short "ggen"
+#define GRID_LUA_FNC_G_ELEMENTNAME_GET_human "element_name_get"
+#define GRID_LUA_FNC_G_ELEMENTNAME_GET_fnptr l_grid_elementname_get
+
 #define GRID_LUA_FNC_G_STRING_GET_short "gsg"
 #define GRID_LUA_FNC_G_STRING_GET_human "string_get"
 #define GRID_LUA_FNC_G_STRING_GET_fnptr l_grid_string_get
@@ -991,6 +999,40 @@
 
 #define GRID_CLASS_ELEMENTNAME_NAME_offset 9
 #define GRID_CLASS_ELEMENTNAME_NAME_length 0
+
+// EVENT VIEW
+#define GRID_CLASS_EVENTVIEW_code 0x053
+#define GRID_CLASS_EVENTVIEW_frame_start "%c%03x_..............................", GRID_CONST_STX, GRID_CLASS_EVENTVIEW_code
+#define GRID_CLASS_EVENTVIEW_frame_end "%c", GRID_CONST_ETX
+
+#define GRID_CLASS_EVENTVIEW_PAGE_offset 5
+#define GRID_CLASS_EVENTVIEW_PAGE_length 2
+
+#define GRID_CLASS_EVENTVIEW_ELEMENT_offset 7
+#define GRID_CLASS_EVENTVIEW_ELEMENT_length 2
+
+#define GRID_CLASS_EVENTVIEW_EVENT_offset 9
+#define GRID_CLASS_EVENTVIEW_EVENT_length 2
+
+#define GRID_CLASS_EVENTVIEW_VALUE1_offset 11
+#define GRID_CLASS_EVENTVIEW_VALUE1_length 4
+
+#define GRID_CLASS_EVENTVIEW_MIN1_offset 15
+#define GRID_CLASS_EVENTVIEW_MIN1_length 4
+
+#define GRID_CLASS_EVENTVIEW_MAX1_offset 19
+#define GRID_CLASS_EVENTVIEW_MAX1_length 4
+
+#define GRID_CLASS_EVENTVIEW_VALUE2_offset 23
+#define GRID_CLASS_EVENTVIEW_VALUE2_length 4
+
+#define GRID_CLASS_EVENTVIEW_MIN2_offset 27
+#define GRID_CLASS_EVENTVIEW_MIN2_length 4
+
+#define GRID_CLASS_EVENTVIEW_MAX2_offset 31
+#define GRID_CLASS_EVENTVIEW_MAX2_length 4
+
+#define GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length 2
 
 // CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)
 #define GRID_CLASS_CONFIG_code 0x060
