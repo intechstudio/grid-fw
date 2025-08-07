@@ -16,8 +16,8 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
 
 // ========================= POTMETER =========================== //
 
-// Potmeter init function
 // clang-format off
+
 #define GRID_LUA_P_META_init                                                                                                                                                                           \
   "potmeter_meta = { __index = {" \
   \
@@ -46,17 +46,12 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
   \
   "}}"
 
-#define GRID_ACTIONSTRING_POTMETER_INIT \
-  "<?lua --[[@l]] local num,val,red,gre,blu=" \
-  "glag(self:ind(),0),self:pva(),glr(),glg(),glb()" \
-  "--[[@glc]] glc(num,1,red,gre,blu)" \
-  "--[[@glp]] glp(num,1,val) ?>"
+#define GRID_ACTIONSTRING_POTMETER_INIT "<?lua --[[@cb]] --[[Potmeter Init]] ?>"
 
 #define GRID_ACTIONSTRING_POTMETER_POTMETER \
-  "<?lua --[[@l]] local num,val,ch,cc=" \
-  "glag(self:ind(),0),self:pva(),(gmy()*4+gpc())%16,(32+gmx()*16+self:ind())%128" \
-  "--[[@gms]] gms(ch,176,cc,val)" \
-  "--[[@glp]] glp(num,1,val) ?>"
+  "<?lua --[[@spc]] self:pmo(7) self:pmi(0)  self:pma(127)" \
+  "--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)" \
+  "--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
 
 // clang-format on
 
