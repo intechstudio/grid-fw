@@ -122,6 +122,7 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
 
   ele->parent = parent;
   ele->index = index;
+  ele->name[0] = '\0';
 
   ele->template_parameter_list_length = 0;
   ele->template_parameter_list = NULL;
@@ -129,6 +130,11 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   ele->template_buffer_list_head = NULL;
   ele->template_parameter_element_position_index_1 = 0;
   ele->template_parameter_element_position_index_2 = 0;
+  for (int i = 0; i < 2; ++i) {
+    ele->template_parameter_index_value[i] = 0;
+    ele->template_parameter_index_min[i] = 0;
+    ele->template_parameter_index_max[i] = 0;
+  }
 
   ele->timer_event_helper = 0;
   ele->timer_source_is_midi = 0;
@@ -488,6 +494,50 @@ uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, char* target_stri
   grid_str_set_parameter(target_string, GRID_CLASS_EVENT_EVENTPARAM2_offset, GRID_CLASS_EVENT_EVENTPARAM2_length, param2, NULL);
 
   return strlen(target_string);
+}
+
+uint32_t grid_ui_event_render_event_view(struct grid_ui_event* eve, char* dest) {
+
+  struct grid_ui_element* ele = eve->parent;
+
+  if (!ele->template_parameter_list) {
+    return 0;
+  }
+
+  uint8_t page = ele->parent->page_activepage;
+  uint8_t element = ele->index;
+  uint8_t event = eve->type;
+  const char* name = ele->name;
+  uint32_t name_len = strlen(name);
+
+  // assign mapmode/system to element 255
+  if (event == GRID_PARAMETER_ELEMENT_SYSTEM) {
+    element = 255;
+  }
+
+  sprintf(dest, GRID_CLASS_EVENTVIEW_frame_start);
+
+  grid_str_set_parameter(dest, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_PAGE_offset, GRID_CLASS_EVENTVIEW_PAGE_length, page, NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_ELEMENT_offset, GRID_CLASS_EVENTVIEW_ELEMENT_length, element, NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_EVENT_offset, GRID_CLASS_EVENTVIEW_EVENT_length, event, NULL);
+
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_VALUE1_offset, GRID_CLASS_EVENTVIEW_VALUE1_length, ele->template_parameter_list[ele->template_parameter_index_value[0]], NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_MIN1_offset, GRID_CLASS_EVENTVIEW_MIN1_length, ele->template_parameter_list[ele->template_parameter_index_min[0]], NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_MAX1_offset, GRID_CLASS_EVENTVIEW_MAX1_length, ele->template_parameter_list[ele->template_parameter_index_max[0]], NULL);
+
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_VALUE2_offset, GRID_CLASS_EVENTVIEW_VALUE2_length, ele->template_parameter_list[ele->template_parameter_index_value[1]], NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_MIN2_offset, GRID_CLASS_EVENTVIEW_MIN2_length, ele->template_parameter_list[ele->template_parameter_index_min[1]], NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_MAX2_offset, GRID_CLASS_EVENTVIEW_MAX2_length, ele->template_parameter_list[ele->template_parameter_index_max[1]], NULL);
+
+  size_t size = strlen(dest);
+
+  size += grid_str_set_segment_char(&dest[size], GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length, name_len, name);
+
+  sprintf(&dest[size], GRID_CLASS_EVENTVIEW_frame_end);
+
+  return strlen(dest);
 }
 
 void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* targetstring) { strcpy(targetstring, eve->default_actionstring); }
@@ -1288,6 +1338,10 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
       offset = grid_msg_packet_body_get_length(&message);
 
       message.body_length += grid_ui_event_render_action(eve, &message.body[offset]);
+
+      offset = grid_msg_packet_body_get_length(&message);
+
+      message.body_length += grid_ui_event_render_event_view(eve, &message.body[offset]);
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }

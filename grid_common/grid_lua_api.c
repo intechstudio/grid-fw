@@ -452,6 +452,82 @@ int l_grid_cat(lua_State* L) {
   return 0;
 }
 
+/*static*/ int l_grid_elementname_set(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 2) {
+    // error
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (!lua_isinteger(L, 1)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  int32_t element = lua_tointeger(L, 1);
+
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, element);
+  if (!ele) {
+    strcat(grid_lua_state.stde, "Invalid element index!");
+    return 0;
+  }
+
+  if (!lua_isstring(L, 2)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  const char* name = lua_tostring(L, 2);
+
+  size_t name_len = strlen(name);
+  if (name_len > GRID_ELEMENT_NAME_MAX) {
+    strcat(grid_lua_state.stde, "Length of string exceeds maximum!");
+    return 0;
+  }
+
+  strcpy(ele->name, name);
+
+  return 0;
+}
+
+/*static*/ int l_grid_elementname_get(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 1) {
+    // error
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  if (!lua_isinteger(L, 1)) {
+    strcat(grid_lua_state.stde, "#invalidParams");
+    return 0;
+  }
+
+  int32_t element = lua_tointeger(L, 1);
+
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, element);
+
+  if (!ele) {
+    strcat(grid_lua_state.stde, "Invalid element index!");
+    return 0;
+  }
+
+  size_t name_len = strnlen(ele->name, GRID_ELEMENT_NAME_SIZE);
+  if (name_len > GRID_ELEMENT_NAME_MAX) {
+    strcat(grid_lua_state.stde, "Stored string has no null terminator!");
+    return 0;
+  }
+
+  lua_pushstring(L, ele->name);
+
+  return 1;
+}
+
 /*static*/ int l_grid_string_get(lua_State* L) {
 
   int nargs = lua_gettop(L);
@@ -2225,6 +2301,8 @@ int l_grid_cat(lua_State* L) {
 
     {GRID_LUA_FNC_G_RANDOM_short, GRID_LUA_FNC_G_RANDOM_fnptr},
     {GRID_LUA_FNC_G_ELEMENTNAME_SEND_short, GRID_LUA_FNC_G_ELEMENTNAME_SEND_fnptr},
+    {GRID_LUA_FNC_G_ELEMENTNAME_SET_short, GRID_LUA_FNC_G_ELEMENTNAME_SET_fnptr},
+    {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, GRID_LUA_FNC_G_ELEMENTNAME_GET_fnptr},
     {GRID_LUA_FNC_G_STRING_GET_short, GRID_LUA_FNC_G_STRING_GET_fnptr},
 
     {GRID_LUA_FNC_G_WEBSOCKET_SEND_short, GRID_LUA_FNC_G_WEBSOCKET_SEND_fnptr},

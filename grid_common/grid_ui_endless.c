@@ -31,6 +31,13 @@ void grid_ui_element_endless_init(struct grid_ui_element* ele) {
   ele->template_parameter_element_position_index_1 = GRID_LUA_FNC_EP_BUTTON_STATE_index;
   ele->template_parameter_element_position_index_2 = GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index;
 
+  ele->template_parameter_index_value[0] = GRID_LUA_FNC_EP_BUTTON_VALUE_index;
+  ele->template_parameter_index_min[0] = GRID_LUA_FNC_EP_BUTTON_MIN_index;
+  ele->template_parameter_index_max[0] = GRID_LUA_FNC_EP_BUTTON_MAX_index;
+  ele->template_parameter_index_value[1] = GRID_LUA_FNC_EP_ENDLESS_VALUE_index;
+  ele->template_parameter_index_min[1] = GRID_LUA_FNC_EP_ENDLESS_MIN_index;
+  ele->template_parameter_index_max[1] = GRID_LUA_FNC_EP_ENDLESS_MAX_index;
+
   ele->event_clear_cb = &grid_ui_element_endless_event_clear_cb;
   ele->page_change_cb = &grid_ui_element_endless_page_change_cb;
 }
