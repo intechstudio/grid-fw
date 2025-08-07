@@ -26,9 +26,9 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
 
 // ========================= ENDLESS POTEMETER =========================== //
 
-// Endless potentiometer init function
 // clang-format off
-#define GRID_LUA_EP_META_init                                                                                                                                                                          \
+
+#define GRID_LUA_EP_META_init \
   "endless_meta = { __index = {" \
   "type = 'endless', "\
   GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_EP_ELEMENT_INDEX_short, GRID_LUA_FNC_EP_ELEMENT_INDEX_index) "," \
@@ -66,13 +66,19 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) "," \
   \
   "}}"
-// clang-format on
 
 #define GRID_ACTIONSTRING_ENDLESS_INIT "<?lua --[[@cb]] --[[Endless Init]] ?>"
 
-#define GRID_ACTIONSTRING_ENDLESS_ENDLESS                                                                                                                                                              \
-  "<?lua --[[@sen]] self:epmo(0) self:epv0(50) self:epmi(0) self:epma(127) self:epse(50)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+#define GRID_ACTIONSTRING_ENDLESS_ENDLESS \
+  "<?lua --[[@sen]] self:epmo(0) self:epv0(50) self:epmi(0) self:epma(127) self:epse(50)" \
+  "--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)" \
+  "--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
 
-#define GRID_ACTIONSTRING_ENDLESS_BUTTON "<?lua --[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+#define GRID_ACTIONSTRING_ENDLESS_BUTTON \
+  "<?lua --[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)" \
+  "--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)" \
+  "--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+
+// clang-format on
 
 #endif /* GRID_UI_ENDLESS_H */

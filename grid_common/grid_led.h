@@ -39,7 +39,8 @@ struct grid_led_model {
 
   uint8_t led_pin;
   uint8_t led_count;
-  uint8_t* led_lookup_table;
+  uint8_t* led_lookup_sizes;
+  uint8_t** led_lookup_table;
   uint8_t* led_frame_buffer; // The frame buffer is used to send data to the LEDs
   uint8_t* led_changed_flag_array;
   uint32_t tick_lastrealtime;
@@ -56,7 +57,13 @@ uint32_t grid_led_get_framebuffer_size(struct grid_led_model* led);
 extern struct grid_led_model grid_led_state;
 
 void grid_led_init(struct grid_led_model* led, uint32_t length);
-void grid_led_lookup_init(struct grid_led_model* led, uint8_t* lookup_array);
+void grid_led_reset(struct grid_led_model* led);
+uint32_t grid_led_get_led_count(struct grid_led_model* led);
+
+void grid_led_lookup_alloc_single(struct grid_led_model* led, uint8_t index, uint8_t value);
+void grid_led_lookup_alloc_multi(struct grid_led_model* led, uint8_t index, uint8_t length, uint8_t* values);
+void grid_led_lookup_alloc_identity(struct grid_led_model* led, uint8_t index, uint8_t length);
+uint8_t* grid_led_lookup_get(struct grid_led_model* led, uint8_t element, uint8_t* length);
 
 uint8_t grid_led_change_flag_reset(struct grid_led_model* led);
 uint8_t grid_led_change_flag_count(struct grid_led_model* led);
@@ -83,9 +90,6 @@ void grid_alert_one_set_timeout_automatic(struct grid_led_model* led, uint8_t nu
 void grid_alert_one_set_frequency(struct grid_led_model* led, uint8_t num, uint8_t frequency);
 void grid_alert_one_set_phase(struct grid_led_model* led, uint8_t num, uint8_t phase);
 
-// reset the state of the led smartbuffer
-void grid_led_reset(struct grid_led_model* led);
-
 // WRITING THE SMART BUFFER
 void grid_led_set_layer_color(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t r, uint8_t g, uint8_t b);
 
@@ -99,8 +103,6 @@ void grid_led_set_layer_phase(struct grid_led_model* led, uint8_t num, uint8_t l
 void grid_led_set_layer_frequency(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_layer_shape(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_layer_timeout(struct grid_led_model* led, uint8_t num, uint8_t layer, uint16_t val);
-
-uint32_t grid_led_get_led_count(struct grid_led_model* led);
 
 /** ======================== SMART BUFFER  ========================== */
 

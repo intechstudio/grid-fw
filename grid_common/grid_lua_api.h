@@ -54,6 +54,8 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 /*static*/ int l_led_default_green(lua_State* L);
 /*static*/ int l_led_default_blue(lua_State* L);
 
+/*static*/ int l_grid_led_address_get(lua_State* L);
+
 /*static*/ int l_grid_version_major(lua_State* L);
 /*static*/ int l_grid_version_minor(lua_State* L);
 /*static*/ int l_grid_version_patch(lua_State* L);

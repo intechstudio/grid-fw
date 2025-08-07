@@ -33,9 +33,9 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
 
 // ========================= ENCODER =========================== //
 
-// Encoder init function
 // clang-format off
-#define GRID_LUA_E_META_init                                                                                                                                                                           \
+
+#define GRID_LUA_E_META_init \
   "encoder_meta = { __index = {" \
   \
   "type = 'encoder', "\
@@ -83,11 +83,14 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
   GRID_LUA_FNC_G_LED_COLOR_short "(self:" GRID_LUA_FNC_E_ELEMENT_INDEX_short "(), ...) " \
   "end," \
   "}}"
-// clang-format on
 
 #define GRID_ACTIONSTRING_ENCODER_INIT "<?lua --[[@cb]] --[[Encoder Init]] ?>"
 
-#define GRID_ACTIONSTRING_ENCODER_ENCODER                                                                                                                                                              \
-  "<?lua --[[@sec]] self:emo(0) self:ev0(50) self:emi(0) self:ema(127) self:ese(100)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+#define GRID_ACTIONSTRING_ENCODER_ENCODER \
+  "<?lua --[[@sec]] self:emo(0) self:ev0(50) self:emi(0) self:ema(127) self:ese(100)" \
+  "--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)" \
+  "--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+
+// clang-format on
 
 #endif /* GRID_UI_ENCODER_H */

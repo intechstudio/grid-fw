@@ -36,9 +36,9 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 
 // ========================= BUTTON =========================== //
 
-// Button init function
 // clang-format off
-#define GRID_LUA_B_META_init                                                                                                                                                                           \
+
+#define GRID_LUA_B_META_init \
   "button_meta = { __index = {" \
    \
   "type = 'button', "\
@@ -72,9 +72,14 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
   "end," \
   \
   "}}"
-// clang-format on
 
 #define GRID_ACTIONSTRING_BUTTON_INIT "<?lua --[[@cb]] --[[Button Init]] ?>"
 
-#define GRID_ACTIONSTRING_BUTTON_BUTTON "<?lua --[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+#define GRID_ACTIONSTRING_BUTTON_BUTTON \
+  "<?lua --[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)" \
+  "--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)" \
+  "--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+
+// clang-format on
+
 #endif /* GRID_UI_BUTTON_H */
