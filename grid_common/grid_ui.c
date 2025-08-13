@@ -385,6 +385,7 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
   // Invoke lua UI init callback
   grid_lua_ui_init(&grid_lua_state, grid_ui_state.lua_ui_init_callback);
 
+  grid_lua_post_init(&grid_lua_state);
   grid_ui_bulk_semaphore_release(ui);
   grid_ui_busy_semaphore_release(ui);
 

@@ -655,7 +655,7 @@ void app_main(void) {
   // Wait for analog values to stabilize
   vTaskDelay(pdMS_TO_TICKS(20));
 
-  grid_lua_post_init(&grid_lua_state);
+  // grid_lua_post_init(&grid_lua_state);
 
   ESP_LOGI(TAG, "===== INIT COMPLETE =====");
 
