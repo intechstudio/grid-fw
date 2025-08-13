@@ -49,6 +49,7 @@ extern struct grid_lua_model grid_lua_state;
 void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance);
 void grid_lua_deinit(struct grid_lua_model* lua);
 void grid_lua_post_init(struct grid_lua_model* lua);
+void grid_lua_pre_init(struct grid_lua_model* lua);
 
 void grid_lua_semaphore_init(struct grid_lua_model* lua, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
 void grid_lua_semaphore_lock(struct grid_lua_model* lua);
@@ -94,7 +95,7 @@ void grid_lua_stop_vm(struct grid_lua_model* lua);
   "return gtv(self.index, " XSTRINGIZE(index) ", a) end"
 
 #define GRID_LUA_FNC_ASSIGN_META_UNDEF(key) \
-  key " = function (self) print('undefined action') end"
+  key " = function (self) print('undefined action', self:ind()) end"
 
 #define GRID_LUA_FNC_ASSIGN_META_PAR0(key, val) \
   key " = function (self) " val "(self.index) end"

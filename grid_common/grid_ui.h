@@ -185,7 +185,7 @@ int grid_ui_bulk_anything_is_in_progress(struct grid_ui_model* ui);
 int grid_ui_bulk_is_in_progress(struct grid_ui_model* ui, enum grid_ui_bulk_status_t);
 uint8_t grid_ui_bulk_get_lastheader(struct grid_ui_model* ui);
 
-int grid_ui_bulk_page_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
+int grid_ui_bulk_operation_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 
 void grid_ui_bulk_pageread_next(struct grid_ui_model* ui);
 void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui);
