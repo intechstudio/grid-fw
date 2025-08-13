@@ -384,15 +384,15 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
 
   // Invoke lua UI init callback
   grid_lua_ui_init(&grid_lua_state, grid_ui_state.lua_ui_init_callback);
+  grid_lua_pre_init(&grid_lua_state);
 
-  grid_lua_post_init(&grid_lua_state);
   grid_ui_bulk_semaphore_release(ui);
   grid_ui_busy_semaphore_release(ui);
 
-  grid_ui_bulk_page_init(ui, GRID_UI_BULK_READ_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), 0, grid_ui_page_load_success_callback);
+  grid_ui_bulk_operation_init(ui, GRID_UI_BULK_READ_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), 0, NULL);
 }
 
-void grid_ui_page_load_success_callback(uint8_t lastheader) {
+void grid_ui_page_load_success_handler(void) {
 
   grid_lua_post_init(&grid_lua_state);
 
@@ -697,7 +697,7 @@ int grid_ui_bulk_is_in_progress(struct grid_ui_model* ui, enum grid_ui_bulk_stat
 
 uint8_t grid_ui_bulk_get_lastheader(struct grid_ui_model* ui) { return ui->bulk_lastheader_id; }
 
-int grid_ui_bulk_page_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
+int grid_ui_bulk_operation_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
   if (status != GRID_UI_BULK_READ_PROGRESS && status != GRID_UI_BULK_STORE_PROGRESS && status != GRID_UI_BULK_CLEAR_PROGRESS) {
     return 1;
@@ -705,6 +705,7 @@ int grid_ui_bulk_page_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t 
 
   grid_platform_printf("NVM: Page init\r\n");
   // update lastheader_id even if busy (during retry)
+
   ui->bulk_lastheader_id = lastheader_id;
 
   if (grid_ui_bulk_anything_is_in_progress(ui)) {
@@ -714,9 +715,7 @@ int grid_ui_bulk_page_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t 
   grid_ui_bulk_semaphore_lock(ui);
 
   ui->bulk_status = status;
-
   ui->bulk_success_callback = success_cb;
-
   ui->bulk_last_page = page;
   ui->bulk_last_element = -1;
   ui->bulk_last_event = -1;
@@ -858,10 +857,8 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
   grid_ui_busy_semaphore_release(ui);
   grid_platform_printf("NVM: Read done\r\n");
 
-  if (ui->bulk_success_callback != NULL) {
-    ui->bulk_success_callback(ui->bulk_lastheader_id);
-    ui->bulk_success_callback = NULL;
-  }
+  // No callback here, just mandatory handler
+  grid_ui_page_load_success_handler();
 
   return;
 }
