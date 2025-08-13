@@ -847,8 +847,6 @@ void grid_protocol_nvm_read_success_callback(uint8_t lastheader_id) {
   grid_msg_packet_close(&grid_msg_state, &pkt);
   grid_transport_send_msg_packet_to_all(&grid_transport_state, &pkt);
 
-  grid_usb_keyboard_enable(&grid_usb_keyboard_state);
-
   grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
   grid_alert_all_set_timeout_automatic(&grid_led_state);
 }
@@ -865,7 +863,7 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    if (!grid_ui_bulk_page_init(&grid_ui_state, GRID_UI_BULK_READ_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_read_success_callback)) {
+    if (!grid_ui_bulk_operation_init(&grid_ui_state, GRID_UI_BULK_READ_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_read_success_callback)) {
       return 1;
     }
 
@@ -907,8 +905,6 @@ void grid_protocol_nvm_store_success_callback(uint8_t lastheader_id) {
   grid_msg_packet_close(&grid_msg_state, &pkt);
   grid_transport_send_msg_packet_to_all(&grid_transport_state, &pkt);
 
-  grid_usb_keyboard_enable(&grid_usb_keyboard_state);
-
   grid_alert_all_set_timeout_automatic(&grid_led_state);
 
   grid_ui_page_clear_template_parameters(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
@@ -931,7 +927,7 @@ uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    if (!grid_ui_bulk_page_init(&grid_ui_state, GRID_UI_BULK_STORE_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_store_success_callback)) {
+    if (!grid_ui_bulk_operation_init(&grid_ui_state, GRID_UI_BULK_STORE_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_store_success_callback)) {
       return 1;
     }
 
@@ -993,7 +989,7 @@ uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
 
   if (msg_instr == GRID_INSTR_EXECUTE_code) {
 
-    if (!grid_ui_bulk_page_init(&grid_ui_state, GRID_UI_BULK_CLEAR_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_clear_success_callback)) {
+    if (!grid_ui_bulk_operation_init(&grid_ui_state, GRID_UI_BULK_CLEAR_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), id, &grid_protocol_nvm_clear_success_callback)) {
       return 1;
     }
 
@@ -1035,8 +1031,6 @@ void grid_protocol_nvm_erase_success_callback(uint8_t lastheader_id) {
 
   grid_msg_packet_close(&grid_msg_state, &pkt);
   grid_transport_send_msg_packet_to_all(&grid_transport_state, &pkt);
-
-  grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
   grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
 }
