@@ -153,7 +153,7 @@ init_element_color = function(self)
       elseif event_function_name() == "pc" then
         int = math.floor(gmaps(self:pva(), self:pmi(), self:pma(), 0, 255))
       elseif event_function_name() == "ec" then
-        int = math.floor(gmaps(self:pva(), self:pmi(), self:pma(), 0, 255))
+        int = math.floor(gmaps(self:eva(), self:emi(), self:ema(), 0, 255))
       end
     end
 
