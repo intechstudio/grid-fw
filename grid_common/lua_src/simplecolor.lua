@@ -146,11 +146,19 @@ init_element_color = function(self)
       end
     end
     local lix = glag(self:ind(), 0)
+    local int = v
     if v == nil or v == -1 then
-      glp(lix, l, -1)
-    else
-      glp(lix, l, v)
+      if event_function_name() == "bc" then
+        int = math.floor(gmaps(self:bva(), self:bmi(), self:bma(), 0, 255)) 
+      elseif event_function_name() == "pc" then
+        int = math.floor(gmaps(self:pva(), self:pmi(), self:pma(), 0, 255)) 
+      elseif event_function_name() == "ec" then
+        int = math.floor(gmaps(self:pva(), self:pmi(), self:pma(), 0, 255)) 
+      end
     end
+
+    glp(lix, l, int)
+    
   end
 
   self.glc = function(self, l, c)
