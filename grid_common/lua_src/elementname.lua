@@ -1,13 +1,14 @@
 -- elementname
 function gen(a, b)
   if b == nil then
-    if ele[a].sn == nil then
+    local name = ggen(a, b)
+    if name == nil then
       return ""
     else
-      return ele[a].sn
+      return name
     end
   else
-    ele[a].sn = b
+    gsen(a, b)
     gens(a, b)
   end
 end
