@@ -1,6 +1,9 @@
 #ifndef LUA_SOURCE_COLLECTION_H_INCLUDED
 #define LUA_SOURCE_COLLECTION_H_INCLUDED
 
+#include "timer.h"
+#define GRID_LUA_FNC_G_TIMER_source grid_lua_src_timer_lua
+
 #include "lookup.h"
 #define GRID_LUA_FNC_G_LOOKUP_source grid_lua_src_lookup_lua
 #define GRID_LUA_FNC_G_LOOKUP_short "glut"
