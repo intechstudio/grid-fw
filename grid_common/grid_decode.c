@@ -1114,11 +1114,7 @@ uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
   int16_t min1 = grid_str_get_parameter(chunk, GRID_CLASS_EVENTVIEW_MIN1_offset, GRID_CLASS_EVENTVIEW_MIN1_length, &error);
   int16_t max1 = grid_str_get_parameter(chunk, GRID_CLASS_EVENTVIEW_MAX1_offset, GRID_CLASS_EVENTVIEW_MAX1_length, &error);
 
-  int16_t value2 = grid_str_get_parameter(chunk, GRID_CLASS_EVENTVIEW_VALUE2_offset, GRID_CLASS_EVENTVIEW_VALUE2_length, &error);
-  int16_t min2 = grid_str_get_parameter(chunk, GRID_CLASS_EVENTVIEW_MIN2_offset, GRID_CLASS_EVENTVIEW_MIN2_length, &error);
-  int16_t max2 = grid_str_get_parameter(chunk, GRID_CLASS_EVENTVIEW_MAX2_offset, GRID_CLASS_EVENTVIEW_MAX2_length, &error);
-
-  size_t size = GRID_CLASS_EVENTVIEW_MAX2_offset + GRID_CLASS_EVENTVIEW_MAX2_length;
+  size_t size = GRID_CLASS_EVENTVIEW_MAX1_offset + GRID_CLASS_EVENTVIEW_MAX1_length;
 
   char name[GRID_ELEMENT_NAME_SIZE] = {0};
   size += grid_str_get_segment_char(&chunk[size], GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length, GRID_ELEMENT_NAME_SIZE, name);
@@ -1126,9 +1122,8 @@ uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
   grid_lua_clear_stdo(&grid_lua_state);
 
   char rx_cb_source[300] = {0};
-  sprintf(rx_cb_source,
-          "for i=0, #ele do local el = ele[i] if el.eventrx_cb and type(el.eventrx_cb) == 'function' then el:eventrx_cb({%d, %d, %d}, {%d, %d, %d}, {%d, %d, %d}, {%d, %d, %d}, \"%s\") end end",
-          msg_instr, sx, sy, page, element, event, value1, min1, max1, value2, min2, max2, name);
+  sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.eventrx_cb and type(el.eventrx_cb) == 'function' then el:eventrx_cb({%d, %d, %d}, {%d, %d, %d}, {%d, %d, %d}, \"%s\") end end",
+          msg_instr, sx, sy, page, element, event, value1, min1, max1, name);
   grid_lua_dostring(&grid_lua_state, rx_cb_source);
 
   char* stdo = grid_lua_get_output_string(&grid_lua_state);

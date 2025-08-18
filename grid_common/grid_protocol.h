@@ -26,6 +26,7 @@
 #define GRID_PARAMETER_ELEMENT_ENCODER 3
 #define GRID_PARAMETER_ELEMENT_ENDLESS 4
 #define GRID_PARAMETER_ELEMENT_LCD 5
+#define GRID_PARAMETER_ELEMENT_COUNT 6
 
 // must not change because it would break profiles
 #define GRID_PARAMETER_EVENT_INIT 0
@@ -37,6 +38,7 @@
 #define GRID_PARAMETER_EVENT_TIMER 6
 #define GRID_PARAMETER_EVENT_ENDLESS 7
 #define GRID_PARAMETER_EVENT_DRAW 8
+#define GRID_PARAMETER_EVENT_COUNT 9
 
 // Module HWCFG definitions
 
@@ -1002,7 +1004,7 @@
 
 // EVENT VIEW
 #define GRID_CLASS_EVENTVIEW_code 0x053
-#define GRID_CLASS_EVENTVIEW_frame_start "%c%03x_..............................", GRID_CONST_STX, GRID_CLASS_EVENTVIEW_code
+#define GRID_CLASS_EVENTVIEW_frame_start "%c%03x_..................", GRID_CONST_STX, GRID_CLASS_EVENTVIEW_code
 #define GRID_CLASS_EVENTVIEW_frame_end "%c", GRID_CONST_ETX
 
 #define GRID_CLASS_EVENTVIEW_PAGE_offset 5
@@ -1022,15 +1024,6 @@
 
 #define GRID_CLASS_EVENTVIEW_MAX1_offset 19
 #define GRID_CLASS_EVENTVIEW_MAX1_length 4
-
-#define GRID_CLASS_EVENTVIEW_VALUE2_offset 23
-#define GRID_CLASS_EVENTVIEW_VALUE2_length 4
-
-#define GRID_CLASS_EVENTVIEW_MIN2_offset 27
-#define GRID_CLASS_EVENTVIEW_MIN2_length 4
-
-#define GRID_CLASS_EVENTVIEW_MAX2_offset 31
-#define GRID_CLASS_EVENTVIEW_MAX2_length 4
 
 #define GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length 2
 
