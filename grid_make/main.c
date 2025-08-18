@@ -406,13 +406,6 @@ int main(void) {
     nvm_task_inner();
   }
 
-  update_interrupt_mask_from_bulk_status();
-
-  // Wait for analog values to stabilize
-  delay_ms(25);
-
-  grid_lua_post_init(&grid_lua_state);
-
   // grid_d51_nvm_toc_debug(&grid_d51_nvm_state);
 
   init_timer();
