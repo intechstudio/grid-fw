@@ -13,8 +13,6 @@
 #include "grid_ui_potmeter.h"
 #include "grid_ui_system.h"
 
-int GRID_MODULE_DRIVER_INIT_DONE = 0;
-
 /* ====================  MODULE SPECIFIC INITIALIZERS  ====================*/
 
 void grid_lua_ui_init_po16(struct grid_lua_model* lua);

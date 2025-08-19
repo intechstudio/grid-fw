@@ -648,15 +648,6 @@ void app_main(void) {
   ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
   ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 1000));
 
-  while (!GRID_MODULE_DRIVER_INIT_DONE) {
-    vTaskDelay(1);
-  }
-
-  // Wait for analog values to stabilize
-  vTaskDelay(pdMS_TO_TICKS(20));
-
-  // grid_lua_post_init(&grid_lua_state);
-
   ESP_LOGI(TAG, "===== INIT COMPLETE =====");
 
   // Register idle hook to force yield from idle task to lowest priority task
