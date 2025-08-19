@@ -127,10 +127,11 @@ bool idle_hook(void) {
   return 0;
 }
 
-static void check_heap(void) {
+static void log_checkpoint(const char* str) {
 
-  int freeRAM = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
-  ESP_LOGI(TAG, "free RAM is %d. Integrity: %d", freeRAM, heap_caps_check_integrity_all(true));
+  size_t free_size = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+  int integrity = heap_caps_check_integrity_all(true);
+  ESP_LOGI(TAG, "===== %s, free mem: %u (integrity: %d)", str, free_size, integrity);
 }
 
 #include "grid_lua_api_gui.h"
@@ -446,20 +447,20 @@ void app_main(void) {
 
   void grid_common_semaphore_release_fn(void* arg) { xSemaphoreGive((SemaphoreHandle_t)arg); }
 
-  ESP_LOGI(TAG, "===== MAIN START =====");
+  log_checkpoint("MAIN START");
 
   gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
   gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
 
-  ESP_LOGI(TAG, "===== SYS START =====");
+  log_checkpoint("SYS START");
   grid_sys_init(&grid_sys_state);
 
-  ESP_LOGI(TAG, "===== PSRAM INIT =====");
+  log_checkpoint("PSRAM INIT");
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
 
-    ESP_LOGI(TAG, "===== PSRAM SCREEN MODULE =====");
+    log_checkpoint("PSRAM SCREEN MODULE");
 
     ESP_ERROR_CHECK(esp_psram_init());
 
@@ -473,7 +474,7 @@ void app_main(void) {
   size_t psram_size = esp_psram_get_size();
   ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
 
-  ESP_LOGI(TAG, "===== UI INIT =====");
+  log_checkpoint("UI INIT");
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevH) {
     grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevH) {
@@ -517,7 +518,7 @@ void app_main(void) {
 
   // GRID MODULE INITIALIZATION SEQUENCE
 
-  ESP_LOGI(TAG, "===== NVM START =====");
+  log_checkpoint("NVM START");
   grid_esp32_nvm_init(&grid_esp32_nvm_state);
 
   if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0) {
@@ -528,10 +529,10 @@ void app_main(void) {
     vTaskDelay(pdMS_TO_TICKS(600));
   }
 
-  ESP_LOGI(TAG, "===== MSG START =====");
+  log_checkpoint("MSG START");
   grid_msg_init(&grid_msg_state); // setup session id, last message buffer init
 
-  ESP_LOGI(TAG, "===== LUA INIT =====");
+  log_checkpoint("LUA INIT");
   grid_lua_init(&grid_lua_state, NULL, NULL);
   grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
@@ -552,20 +553,17 @@ void app_main(void) {
   grid_port_init(&grid_transport_state.ports[4], GRID_PORT_UI, 0);
   grid_port_init(&grid_transport_state.ports[5], GRID_PORT_USB, 0);
 
-  ESP_LOGI(TAG, "===== BANK INIT =====");
+  log_checkpoint("BANK INIT");
   grid_sys_set_bank(&grid_sys_state, 0);
   ets_delay_us(2000);
 
-  check_heap();
   xSemaphoreGive(ui_busy_semaphore);
   xSemaphoreGive(ui_bulk_semaphore);
 
   grid_ui_page_load(&grid_ui_state, 0); // load page 0
   SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
-  ESP_LOGI(TAG, "===== UI TASK INIT =====");
-
-  check_heap();
+  log_checkpoint("UI TASK INIT");
 
   TaskHandle_t module_task_hdl;
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevH) {
@@ -602,7 +600,7 @@ void app_main(void) {
     ets_printf("Task Init failed: Unknown Module\r\n");
   }
 
-  ESP_LOGI(TAG, "===== UI TASK DONE =====");
+  log_checkpoint("UI TASK DONE");
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH ||
@@ -613,34 +611,28 @@ void app_main(void) {
 
     xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
 
-    ESP_LOGI(TAG, "===== LCD TASK DONE =====");
+    log_checkpoint("LCD TASK DONE");
   }
 
   // ================== FINISH: grid_module_pbf4_init() ================== //
 
   TaskHandle_t port_task_hdl;
 
-  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 4096 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
+  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 1024 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
 
-  ESP_LOGI(TAG, "===== PORT TASK DONE =====");
+  log_checkpoint("PORT TASK DONE");
 
   TaskHandle_t nvm_task_hdl;
 
   xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 10, NULL, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
 
-  ESP_LOGI(TAG, "===== NVM TASK DONE =====");
-
-  TaskHandle_t housekeeping_task_hdl;
-
-  xTaskCreatePinnedToCore(grid_esp32_housekeeping_task, "housekeeping", 1024 * 6, (void*)signaling_sem, 6, &housekeeping_task_hdl, 0);
+  log_checkpoint("NVM TASK DONE");
 
   TaskHandle_t grid_trace_report_task_hdl;
 
-  ESP_LOGI(TAG, "===== HOUSE TASK DONE =====");
-
   xTaskCreatePinnedToCore(grid_trace_report_task, "trace", 1024 * 4, (void*)signaling_sem, 6, &grid_trace_report_task_hdl, 1);
 
-  ESP_LOGI(TAG, "===== REPORT TASK DONE =====");
+  log_checkpoint("REPORT TASK DONE");
 
   esp_timer_create_args_t periodic_rtc_ms_args = {.callback = &periodic_rtc_ms_cb, .name = "rtc millisecond"};
 
@@ -657,13 +649,13 @@ void app_main(void) {
 
   // grid_lua_post_init(&grid_lua_state);
 
-  ESP_LOGI(TAG, "===== INIT COMPLETE =====");
+  log_checkpoint("INIT COMPLETE");
 
   // Register idle hook to force yield from idle task to lowest priority task
   esp_register_freertos_idle_hook_for_cpu(idle_hook, 0);
   esp_register_freertos_idle_hook_for_cpu(idle_hook, 1);
 
-  ESP_LOGI(TAG, "===== TRACE START =====");
+  log_checkpoint("TRACE START");
 
   // TRACE CONFIG GPIO 40, 41, 4Mbaud,
 
