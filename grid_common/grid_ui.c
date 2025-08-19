@@ -1,6 +1,7 @@
 #include "grid_ui.h"
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -64,6 +65,22 @@ void grid_ui_semaphore_release(struct grid_ui_semaphore* semaphore) {
   semaphore->release_fn(semaphore->handle);
 }
 
+uint8_t GRID_ELE_EVE_TO_VALUE_IDX[GRID_PARAMETER_ELEMENT_COUNT][GRID_PARAMETER_EVENT_COUNT] = {0};
+
+void grid_ele_eve_to_value_idx_init(uint8_t map[GRID_PARAMETER_ELEMENT_COUNT][GRID_PARAMETER_EVENT_COUNT]) {
+
+  // Initialize all indices to 255/-1, signifying an invalid value by default
+  memset(map, 255, GRID_PARAMETER_ELEMENT_COUNT * GRID_PARAMETER_EVENT_COUNT);
+
+  // Initialize valid indices
+  map[GRID_PARAMETER_ELEMENT_POTMETER][GRID_PARAMETER_EVENT_POTMETER] = GRID_LUA_FNC_P_POTMETER_VALUE_index;
+  map[GRID_PARAMETER_ELEMENT_BUTTON][GRID_PARAMETER_EVENT_BUTTON] = GRID_LUA_FNC_B_BUTTON_VALUE_index;
+  map[GRID_PARAMETER_ELEMENT_ENCODER][GRID_PARAMETER_EVENT_BUTTON] = GRID_LUA_FNC_E_BUTTON_VALUE_index;
+  map[GRID_PARAMETER_ELEMENT_ENCODER][GRID_PARAMETER_EVENT_ENCODER] = GRID_LUA_FNC_E_ENCODER_VALUE_index;
+  map[GRID_PARAMETER_ELEMENT_ENDLESS][GRID_PARAMETER_EVENT_BUTTON] = GRID_LUA_FNC_EP_BUTTON_VALUE_index;
+  map[GRID_PARAMETER_ELEMENT_ENDLESS][GRID_PARAMETER_EVENT_ENDLESS] = GRID_LUA_FNC_EP_ENDLESS_VALUE_index;
+}
+
 struct grid_ui_model grid_ui_state;
 
 void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
@@ -88,6 +105,8 @@ void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
   ui->bulk_last_page = -1;
   ui->bulk_last_element = -1;
   ui->bulk_last_event = -1;
+
+  grid_ele_eve_to_value_idx_init(GRID_ELE_EVE_TO_VALUE_IDX);
 }
 
 struct grid_ui_element* grid_ui_model_get_elements(struct grid_ui_model* ui) {
@@ -122,6 +141,7 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
 
   ele->parent = parent;
   ele->index = index;
+  ele->name[0] = '\0';
 
   ele->template_parameter_list_length = 0;
   ele->template_parameter_list = NULL;
@@ -129,6 +149,11 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   ele->template_buffer_list_head = NULL;
   ele->template_parameter_element_position_index_1 = 0;
   ele->template_parameter_element_position_index_2 = 0;
+  for (int i = 0; i < 2; ++i) {
+    ele->template_parameter_index_value[i] = 0;
+    ele->template_parameter_index_min[i] = 0;
+    ele->template_parameter_index_max[i] = 0;
+  }
 
   ele->timer_event_helper = 0;
   ele->timer_source_is_midi = 0;
@@ -489,6 +514,54 @@ uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, char* target_stri
   grid_str_set_parameter(target_string, GRID_CLASS_EVENT_EVENTPARAM2_offset, GRID_CLASS_EVENT_EVENTPARAM2_length, param2, NULL);
 
   return strlen(target_string);
+}
+
+uint32_t grid_ui_event_render_event_view(struct grid_ui_event* eve, char* dest) {
+
+  struct grid_ui_element* ele = eve->parent;
+
+  if (!ele->template_parameter_list) {
+    return 0;
+  }
+
+  uint8_t page = ele->parent->page_activepage;
+  uint8_t element = ele->index;
+  uint8_t event = eve->type;
+  const char* name = ele->name;
+  uint32_t name_len = strlen(name);
+
+  // assign mapmode/system to element 255
+  if (event == GRID_PARAMETER_ELEMENT_SYSTEM) {
+    element = 255;
+  }
+
+  sprintf(dest, GRID_CLASS_EVENTVIEW_frame_start);
+
+  grid_str_set_parameter(dest, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_PAGE_offset, GRID_CLASS_EVENTVIEW_PAGE_length, page, NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_ELEMENT_offset, GRID_CLASS_EVENTVIEW_ELEMENT_length, element, NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_EVENT_offset, GRID_CLASS_EVENTVIEW_EVENT_length, event, NULL);
+
+  uint8_t value_index_valid = GRID_ELE_EVE_TO_VALUE_IDX[ele->type][event] != 255;
+
+  // If the value index is valid, assume that min and max are the next two,
+  // for the sake of minimizing the memory footprint of the mapping
+  uint8_t index_value = value_index_valid ? GRID_ELE_EVE_TO_VALUE_IDX[ele->type][event] : 0;
+  uint8_t index_min = value_index_valid ? index_value + 1 : 0;
+  uint8_t index_max = value_index_valid ? index_value + 2 : 0;
+
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_VALUE1_offset, GRID_CLASS_EVENTVIEW_VALUE1_length, ele->template_parameter_list[index_value], NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_MIN1_offset, GRID_CLASS_EVENTVIEW_MIN1_length, ele->template_parameter_list[index_min], NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_MAX1_offset, GRID_CLASS_EVENTVIEW_MAX1_length, ele->template_parameter_list[index_max], NULL);
+
+  size_t size = strlen(dest);
+
+  size += grid_str_set_segment_char(&dest[size], GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length, name_len, name);
+
+  sprintf(&dest[size], GRID_CLASS_EVENTVIEW_frame_end);
+
+  return strlen(dest);
 }
 
 void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* targetstring) { strcpy(targetstring, eve->default_actionstring); }
@@ -1286,6 +1359,10 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
       offset = grid_msg_packet_body_get_length(&message);
 
       message.body_length += grid_ui_event_render_action(eve, &message.body[offset]);
+
+      offset = grid_msg_packet_body_get_length(&message);
+
+      message.body_length += grid_ui_event_render_event_view(eve, &message.body[offset]);
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }

@@ -91,8 +91,6 @@ void grid_esp32_module_soft_task(void* arg) {
 
   elements = grid_ui_model_get_elements(&grid_ui_state);
 
-  GRID_MODULE_DRIVER_INIT_DONE = 1;
-
   while (1) {
 
     vTaskDelay(pdMS_TO_TICKS(1000));

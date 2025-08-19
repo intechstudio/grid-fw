@@ -72,8 +72,6 @@ void grid_esp32_module_en16_task(void* arg) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
 
-  GRID_MODULE_DRIVER_INIT_DONE = 1;
-
   while (1) {
 
     vTaskDelay(pdMS_TO_TICKS(1000));
