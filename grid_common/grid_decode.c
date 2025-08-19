@@ -1097,6 +1097,53 @@ uint8_t grid_decode_nvmdefrag_to_ui(char* header, char* chunk) {
   return 0; // OK
 }
 
+uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
+
+  uint8_t error = 0;
+
+  uint8_t sx = grid_str_get_parameter(header, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
+  uint8_t sy = grid_str_get_parameter(header, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
+
+  uint8_t msg_instr = grid_str_get_parameter(chunk, GRID_INSTR_offset, GRID_INSTR_length, &error);
+
+  uint8_t page = grid_str_get_parameter(chunk, GRID_CLASS_EVENTVIEW_PAGE_offset, GRID_CLASS_EVENTVIEW_PAGE_length, &error);
+  uint8_t element = grid_str_get_parameter(chunk, GRID_CLASS_EVENTVIEW_ELEMENT_offset, GRID_CLASS_EVENTVIEW_ELEMENT_length, &error);
+  uint8_t event = grid_str_get_parameter(chunk, GRID_CLASS_EVENTVIEW_EVENT_offset, GRID_CLASS_EVENTVIEW_EVENT_length, &error);
+
+  int16_t value1 = grid_str_get_parameter(chunk, GRID_CLASS_EVENTVIEW_VALUE1_offset, GRID_CLASS_EVENTVIEW_VALUE1_length, &error);
+  int16_t min1 = grid_str_get_parameter(chunk, GRID_CLASS_EVENTVIEW_MIN1_offset, GRID_CLASS_EVENTVIEW_MIN1_length, &error);
+  int16_t max1 = grid_str_get_parameter(chunk, GRID_CLASS_EVENTVIEW_MAX1_offset, GRID_CLASS_EVENTVIEW_MAX1_length, &error);
+
+  size_t size = GRID_CLASS_EVENTVIEW_MAX1_offset + GRID_CLASS_EVENTVIEW_MAX1_length;
+
+  char name[GRID_ELEMENT_NAME_SIZE] = {0};
+  size += grid_str_get_segment_char(&chunk[size], GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length, GRID_ELEMENT_NAME_SIZE, name);
+
+  grid_lua_clear_stdo(&grid_lua_state);
+
+  char rx_cb_source[300] = {0};
+  sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.eventrx_cb and type(el.eventrx_cb) == 'function' then el:eventrx_cb({%d, %d, %d}, {%d, %d, %d}, {%d, %d, %d}, \"%s\") end end",
+          msg_instr, sx, sy, page, element, event, value1, min1, max1, name);
+  grid_lua_dostring(&grid_lua_state, rx_cb_source);
+
+  char* stdo = grid_lua_get_output_string(&grid_lua_state);
+
+  if (strlen(stdo) > 0) {
+
+    struct grid_msg_packet response;
+    grid_msg_packet_init(&grid_msg_state, &response, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+
+    response.body_length += sprintf(response.body, "%s", stdo);
+
+    grid_msg_packet_close(&grid_msg_state, &response);
+    grid_transport_send_msg_packet_to_all(&grid_transport_state, &response);
+
+    grid_lua_clear_stdo(&grid_lua_state);
+  }
+
+  return 0; // OK
+}
+
 uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
 
   if (grid_check_destination(header, GRID_DESTINATION_IS_ME | GRID_DESTINATION_IS_LOCAL) == false) {
@@ -1313,6 +1360,7 @@ struct grid_decoder_collection grid_decoder_to_ui[] = {
     {GRID_CLASS_PAGECLEAR_code, grid_decode_pageclear_to_ui},
     {GRID_CLASS_NVMERASE_code, grid_decode_nvmerase_to_ui},
     {GRID_CLASS_NVMDEFRAG_code, grid_decode_nvmdefrag_to_ui},
+    {GRID_CLASS_EVENTVIEW_code, grid_decode_eventview_to_ui},
     {GRID_CLASS_CONFIG_code, grid_decode_config_to_ui},
     {GRID_CLASS_HIDKEYSTATUS_code, grid_decode_hidkeystatus_to_ui},
     {0, NULL},

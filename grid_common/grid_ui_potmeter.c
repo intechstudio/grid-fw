@@ -32,6 +32,13 @@ void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
   ele->template_parameter_element_position_index_1 = GRID_LUA_FNC_P_POTMETER_STATE_index;
   ele->template_parameter_element_position_index_2 = GRID_LUA_FNC_P_POTMETER_STATE_index;
 
+  ele->template_parameter_index_value[0] = GRID_LUA_FNC_P_POTMETER_VALUE_index;
+  ele->template_parameter_index_min[0] = GRID_LUA_FNC_P_POTMETER_MIN_index;
+  ele->template_parameter_index_max[0] = GRID_LUA_FNC_P_POTMETER_MAX_index;
+  ele->template_parameter_index_value[1] = ele->template_parameter_index_value[0];
+  ele->template_parameter_index_min[1] = ele->template_parameter_index_min[0];
+  ele->template_parameter_index_max[1] = ele->template_parameter_index_max[0];
+
   ele->event_clear_cb = &grid_ui_element_potmeter_event_clear_cb;
   ele->page_change_cb = &grid_ui_element_potmeter_page_change_cb;
 }

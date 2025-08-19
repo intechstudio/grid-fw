@@ -100,6 +100,9 @@ void grid_lua_stop_vm(struct grid_lua_model* lua);
 #define GRID_LUA_FNC_ASSIGN_META_PAR0(key, val) \
   key " = function (self) " val "(self.index) end"
 
+#define GRID_LUA_FNC_ASSIGN_META_PAR0_RET(key, val) \
+  key " = function (self) return " val "(self.index) end"
+
 #define GRID_LUA_FNC_ASSIGN_META_PAR1(key, val) \
   key " = function (self, a) " val "(self.index, a) end"
 
