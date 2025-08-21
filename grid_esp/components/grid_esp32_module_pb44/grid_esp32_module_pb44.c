@@ -8,7 +8,6 @@
 
 #include <stdint.h>
 
-#include "grid_ain.h"
 #include "grid_module.h"
 #include "grid_platform.h"
 #include "grid_sys.h"
@@ -56,7 +55,7 @@ void IRAM_ATTR pb44_process_analog(void* user) {
   }
 }
 
-void grid_esp32_module_pb44_task(void* arg) {
+void grid_esp32_module_pb44_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc) {
 
   ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_PB44_BUT_NUM * sizeof(struct grid_ui_button_state));
   potmeter_last_real_time = grid_platform_allocate_volatile(GRID_MODULE_PB44_POT_NUM * sizeof(uint64_t));
@@ -67,12 +66,12 @@ void grid_esp32_module_pb44_task(void* arg) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
   }
 
-  grid_esp32_adc_init(&grid_esp32_adc_state, pb44_process_analog);
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
-  uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(&grid_sys_state);
-  grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
+  grid_esp32_adc_init(adc, pb44_process_analog);
+  grid_esp32_adc_mux_init(adc, 8);
+  uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
+  grid_esp32_adc_start(adc, mux_dependent);
 
-  elements = grid_ui_model_get_elements(&grid_ui_state);
+  elements = grid_ui_model_get_elements(ui);
 
   while (1) {
 

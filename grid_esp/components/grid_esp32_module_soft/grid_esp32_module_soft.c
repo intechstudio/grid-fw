@@ -8,7 +8,6 @@
 
 #include <stdint.h>
 
-#include "grid_ain.h"
 #include "grid_module.h"
 #include "grid_platform.h"
 
@@ -68,14 +67,14 @@ void IRAM_ATTR soft_process_encoder(void* dma_buf) {
   }
 }
 
-void grid_esp32_module_soft_task(void* arg) {
+void grid_esp32_module_soft_init(struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_esp32_encoder_model* enc) {
 
   ui_encoder_state = grid_platform_allocate_volatile(GRID_MODULE_SOFT_ENC_NUM * sizeof(struct grid_ui_encoder_state));
   potmeter_last_real_time = grid_platform_allocate_volatile(GRID_MODULE_SOFT_POT_NUM * sizeof(uint64_t));
   memset(ui_encoder_state, 0, GRID_MODULE_SOFT_ENC_NUM * sizeof(struct grid_ui_encoder_state));
   memset(potmeter_last_real_time, 0, GRID_MODULE_SOFT_POT_NUM * sizeof(uint64_t));
 
-  grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, soft_process_encoder);
+  grid_esp32_encoder_init(enc, 10, soft_process_encoder);
   uint8_t detent = true;
   int8_t direction = 1;
   for (uint8_t i = 0; i < GRID_MODULE_SOFT_ENC_NUM; i++) {
@@ -85,17 +84,9 @@ void grid_esp32_module_soft_task(void* arg) {
   // TODO
   uint8_t mux_dependent = 0;
 
-  grid_esp32_adc_init(&grid_esp32_adc_state, soft_process_analog);
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 2);
-  grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
+  grid_esp32_adc_init(adc, soft_process_analog);
+  grid_esp32_adc_mux_init(adc, 2);
+  grid_esp32_adc_start(adc, mux_dependent);
 
-  elements = grid_ui_model_get_elements(&grid_ui_state);
-
-  while (1) {
-
-    vTaskDelay(pdMS_TO_TICKS(1000));
-  }
-
-  // Wait to be deleted
-  vTaskSuspend(NULL);
+  elements = grid_ui_model_get_elements(ui);
 }

@@ -14,6 +14,7 @@
 #include <hpl_reset.h>
 #include <string.h>
 
+#include "grid_allocator.h"
 #include "grid_msg.h"
 #include "grid_port.h"
 #include "grid_utask.h"
