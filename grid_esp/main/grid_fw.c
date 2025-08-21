@@ -537,7 +537,7 @@ void app_main(void) {
   grid_lua_init(&grid_lua_state, NULL, NULL);
   grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
-  grid_lua_set_memory_target(&grid_lua_state, 80); // 80kb
+  grid_lua_set_memory_target(&grid_lua_state, 100);
 
   TaskHandle_t usb_task_hdl;
   xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6, &usb_task_hdl, 1);
