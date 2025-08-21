@@ -11,6 +11,7 @@
 // must be last freertos relevant header to avoid #error
 #include "esp_freertos_hooks.h"
 
+#include "grid_allocator.h"
 #include "grid_transport.h"
 
 #include "grid_ui.h"
