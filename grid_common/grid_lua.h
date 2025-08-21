@@ -70,7 +70,6 @@ char* grid_lua_get_error_string(struct grid_lua_model* lua);
 uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code);
 
 void grid_lua_gc_try_collect(struct grid_lua_model* lua);
-void grid_lua_gc_collect(struct grid_lua_model* lua);
 
 void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message);
 
