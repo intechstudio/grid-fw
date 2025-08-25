@@ -20,14 +20,14 @@ void grid_d51_nvm_mount(struct grid_d51_nvm_model* nvm) {
   int ret = grid_d51_littlefs_mount(&nvm->dfs);
 
   if (ret) {
-    printf("failed to initialize littlefs"); // TODO error string
+    printf("failed to initialize littlefs\n");
     return;
   }
 
   // Retrieve filesystem size information
   size_t total = grid_littlefs_get_total_bytes(&nvm->dfs.cfg);
   size_t used = grid_littlefs_get_used_bytes(nvm->dfs.lfs, &nvm->dfs.cfg);
-  printf("littlefs size: total: %d, used: %d", total, used);
+  printf("littlefs size: total: %d, used: %d\n", total, used);
 
   // List the filesystem root
   grid_platform_list_directory("");
@@ -150,11 +150,8 @@ int grid_platform_remove_dir(const char* path) { return grid_littlefs_rmdir(grid
 
 uint8_t grid_platform_get_nvm_state() { return hri_nvmctrl_get_STATUS_READY_bit(grid_d51_nvm_state.dfs.flash->dev.hw); }
 
-// TODO
+/*
 uint8_t grid_platform_erase_nvm_next() { return 1; }
-
-// TODO
 uint32_t grid_plaform_get_nvm_nextwriteoffset() { return 0; }
-
-// TODO
 void grid_platform_nvm_defrag() {}
+*/

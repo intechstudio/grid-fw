@@ -1118,13 +1118,13 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui) {
     return;
   }
 
-  // STEP 3: erase the flash pages
-  if (0 == grid_platform_erase_nvm_next()) {
+  // STEP 3: Delete page directories
+  // upkeep: loop bound
+  for (uint8_t i = 0; i < 4; ++i) {
 
-    // There is still stuff to be erased
-    grid_ui_bulk_semaphore_release(ui);
-    grid_ui_busy_semaphore_release(ui);
-    return;
+    char path[50] = {0};
+    sprintf(path, "%02x", i);
+    grid_platform_remove_dir(path);
   }
 
   // Set ready before callback so callback can start new nvm operation

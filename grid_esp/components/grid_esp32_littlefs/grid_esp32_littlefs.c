@@ -96,10 +96,12 @@ esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs) {
   grid_esp32_littlefs_init(efs, lfs, part, "/littlefs", false);
 
   if (grid_littlefs_mount_or_format(efs->lfs, &efs->cfg)) {
+    free(lfs);
     return ESP_FAIL;
   }
 
   if (grid_littlefs_mkdir_base(efs->lfs, efs->base_path)) {
+    free(lfs);
     return ESP_FAIL;
   }
 

@@ -53,19 +53,19 @@ int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg) {
   // If mounting failed, attempt a format and another mount
   if (lfs_err != LFS_ERR_OK) {
 
-    printf("littlefs mount failed (%d): %s. formatting...", lfs_err, littlefs_errno(lfs_err));
+    printf("littlefs mount failed (%d): %s. formatting...\n", lfs_err, littlefs_errno(lfs_err));
 
     lfs_err = lfs_format(lfs, cfg);
     if (lfs_err != LFS_ERR_OK) {
-      printf("littlefs format failed");
+      printf("littlefs format failed\n");
       return 1;
     }
 
-    printf("littlefs format successful. mounting...");
+    printf("littlefs format successful. mounting...\n");
 
     lfs_err = lfs_mount(lfs, cfg);
     if (lfs_err != LFS_ERR_OK) {
-      printf("littlefs mount failed (%d): %s. exiting...", lfs_err, littlefs_errno(lfs_err));
+      printf("littlefs mount failed (%d): %s. exiting...\n", lfs_err, littlefs_errno(lfs_err));
       return 1;
     }
   }
@@ -81,15 +81,15 @@ int grid_littlefs_mkdir_base(lfs_t* lfs, const char* path) {
   struct lfs_info info;
   int lfs_err = lfs_stat(lfs, path, &info);
   if (lfs_err == LFS_ERR_OK) {
-    printf("directory at base path already exists");
+    printf("directory at base path already exists\n");
     return 0;
   }
 
   // Attempt to make a directory at the base path
-  printf("creating directory at base path...");
+  printf("creating directory at base path...\n");
   lfs_err = lfs_mkdir(lfs, path);
   if (lfs_err != LFS_ERR_OK) {
-    printf("failed to make directory at base path");
+    printf("failed to make directory at base path\n");
     return 1;
   }
 
