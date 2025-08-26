@@ -150,8 +150,9 @@ int grid_platform_remove_dir(const char* path) { return grid_littlefs_rmdir(grid
 
 uint8_t grid_platform_get_nvm_state() { return hri_nvmctrl_get_STATUS_READY_bit(grid_d51_nvm_state.dfs.flash->dev.hw); }
 
-/*
 uint8_t grid_platform_erase_nvm_next() { return 1; }
+
 uint32_t grid_plaform_get_nvm_nextwriteoffset() { return 0; }
+
 void grid_platform_nvm_defrag() {}
-*/
+

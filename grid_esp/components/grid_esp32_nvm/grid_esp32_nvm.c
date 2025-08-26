@@ -178,21 +178,11 @@ int grid_platform_remove_dir(const char* path) { return grid_littlefs_rmdir(grid
 
 uint8_t grid_platform_get_nvm_state() { return 1; }
 
-uint8_t grid_platform_erase_nvm_next() {
+uint8_t grid_platform_erase_nvm_next() { return 1; }
 
-  ets_printf("ERASE WAS ALREADY DONE ON INIT!!!\r\n");
+uint32_t grid_plaform_get_nvm_nextwriteoffset() { return 0; }
 
-  return 1;
-}
-
-uint32_t grid_plaform_get_nvm_nextwriteoffset() {
-
-  ets_printf("grid_plaform_get_nvm_nextwriteoffset NOT IMPLEMENTED!!!\r\n");
-
-  return 0;
-}
-
-void grid_platform_nvm_defrag() { ets_printf("grid_platform_nvm_defrag NOT IMPLEMENTED!!!\r\n"); }
+void grid_platform_nvm_defrag() {}
 
 void grid_esp32_nvm_task(void* arg) {
 

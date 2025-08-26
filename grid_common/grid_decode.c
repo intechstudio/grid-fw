@@ -901,7 +901,7 @@ void grid_protocol_nvm_store_success_callback(uint8_t lastheader_id) {
 
   grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_DEBUGTEXT_frame_start);
   grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-  grid_msg_packet_body_append_printf(&pkt, "xxstore complete offset 0x%x", grid_plaform_get_nvm_nextwriteoffset());
+  grid_msg_packet_body_append_printf(&pkt, "nvm store success");
   grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_DEBUGTEXT_frame_end);
 
   grid_msg_packet_close(&grid_msg_state, &pkt);
