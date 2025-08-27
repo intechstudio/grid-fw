@@ -14,12 +14,17 @@ function cp(c)
   local x, y, z = c[1], c[2], c[#c]
 
   if #c == 1 then
-    x = { 0, 0, 0, 0 }
+    x = {
+      math.floor(z[1] / 20),
+      math.floor(z[2] / 20),
+      math.floor(z[3] / 20),
+      z[4],
+    }
     y = {
       math.floor(z[1] / 2),
       math.floor(z[2] / 2),
       math.floor(z[3] / 2),
-      z[4] / 2,
+      z[4],
     }
   elseif #c == 2 then
     y = {
