@@ -43,4 +43,7 @@
 #include "simplemidi.h"
 #define GRID_LUA_FNC_G_SIMPLEMIDI_source grid_lua_src_simplemidi_lua
 
+#include "autovalue.h"
+#define GRID_LUA_FNC_G_AUTOVALUE_source grid_lua_src_autovalue_lua
+
 #endif
