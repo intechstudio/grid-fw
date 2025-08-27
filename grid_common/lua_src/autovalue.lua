@@ -1,8 +1,7 @@
 init_element_value = function(self)
   self.get_auto_value = function(self)
-
     local event = event_function_name()
-    local value = 0;
+    local value = 0
 
     if event == "bc" then
       value = self:bva()
@@ -20,11 +19,9 @@ init_element_value = function(self)
     return value
   end
 
-
   self.get_auto_mode = function(self)
-
     local event = event_function_name()
-    local mode = 0;
+    local mode = 0
 
     if event == "bc" then
       mode = 0
