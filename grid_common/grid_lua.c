@@ -165,7 +165,7 @@ void grid_lua_gc_try_collect(struct grid_lua_model* lua) {
 
   if (lua_gc(lua->L, LUA_GCCOUNT) > target_kilobytes) {
 
-    lua_gc(lua->L, LUA_GCCOLLECT);
+    lua_gc(lua->L, LUA_GCSTEP, 10);
 
     // char message[10] = {0};
     // sprintf(message, "gc %dkb", target_kilobytes);
@@ -173,12 +173,6 @@ void grid_lua_gc_try_collect(struct grid_lua_model* lua) {
     lua->dostring_count = 0;
   }
 
-  grid_lua_semaphore_release(lua);
-}
-
-void grid_lua_gc_collect(struct grid_lua_model* lua) {
-  grid_lua_semaphore_lock(lua);
-  lua_gc(lua->L, LUA_GCCOLLECT);
   grid_lua_semaphore_release(lua);
 }
 

@@ -8,7 +8,6 @@
 
 #include <stdint.h>
 
-#include "grid_ain.h"
 #include "grid_module.h"
 #include "grid_ui.h"
 
@@ -52,7 +51,7 @@ void IRAM_ATTR en16_process_encoder(void* dma_buf) {
   }
 }
 
-void grid_esp32_module_en16_task(void* arg) {
+void grid_esp32_module_en16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_encoder_model* enc) {
 
   ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_EN16_BUT_NUM * sizeof(struct grid_ui_button_state));
   ui_encoder_state = grid_platform_allocate_volatile(GRID_MODULE_EN16_ENC_NUM * sizeof(struct grid_ui_encoder_state));
@@ -63,20 +62,12 @@ void grid_esp32_module_en16_task(void* arg) {
     grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
   }
 
-  elements = grid_ui_model_get_elements(&grid_ui_state);
+  elements = grid_ui_model_get_elements(ui);
 
-  grid_esp32_encoder_init(&grid_esp32_encoder_state, 1, en16_process_encoder);
-  uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD;
-  int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
+  grid_esp32_encoder_init(enc, 1, en16_process_encoder);
+  uint8_t detent = grid_sys_get_hwcfg(sys) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(sys) != GRID_MODULE_EN16_ND_RevD;
+  int8_t direction = grid_hwcfg_module_encoder_dir(sys);
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
-
-  while (1) {
-
-    vTaskDelay(pdMS_TO_TICKS(1000));
-  }
-
-  // Wait to be deleted
-  vTaskSuspend(NULL);
 }
