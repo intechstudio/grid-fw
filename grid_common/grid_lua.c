@@ -73,7 +73,8 @@ void grid_lua_deinit(struct grid_lua_model* lua) {}
 void grid_lua_pre_init(struct grid_lua_model* lua) {
 
   grid_lua_dostring(lua, "init_simple_color() "
-                         "init_simple_midi() ");
+                         "init_simple_midi() "
+                         "init_auto_value() ");
   grid_lua_clear_stdo(lua);
 }
 
@@ -269,6 +270,7 @@ void grid_lua_start_vm(struct grid_lua_model* lua) {
   // grid_lua_dostring(lua, GRID_LUA_FNC_G_TOML_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SIMPLECOLOR_source);
   grid_lua_dostring(lua, GRID_LUA_FNC_G_SIMPLEMIDI_source);
+  grid_lua_dostring(lua, GRID_LUA_FNC_G_AUTOVALUE_source);
   grid_lua_dostring(lua, "midi_fifo_highwater = 0");
   grid_lua_dostring(lua, "midi_fifo_retriggercount = 0");
   grid_lua_dostring(lua, "midi = {}");
