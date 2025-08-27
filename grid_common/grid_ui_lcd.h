@@ -117,17 +117,9 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   "}}"
 
 #define GRID_ACTIONSTRING_LCD_INIT \
-  "<?lua --[[@cb]] " \
-  "local x={0,0,38,64,64,65,104,130,130,131,170,183,183,145,119,119,118,79,53,53,52,13}" \
-  "local y={42,38,0,0,39,39,0,0,39,39,0,0,4,42,42,3,3,42,42,3,3,42}" \
-  "self:ldrf(0,0,320,240,{0,0,0})" \
-  "self:ldpof(x,y,{200,200,200})" \
-  "self:ldt('Intech Studio',2,55,34,{160,160,160})" \
-  "self:ldsw()" \
-  "glsb(255) ?>"
-
+  "<?lua --[[@cb]] glsb(255)lcd,pi,s,c,f,v,ids=ele[13],math.pi,64,{{0,0,0},{255,255,255},{glr(),glg(),glb()}},1,{27,0,100},'VSN1'd={[1]='Linear',[2]='Encoder',[3]='Button',[7]='Endless'}xc,yc,p=160,120,s*5/8;self.eventrx_cb=function(self,hdr,e,rxv,n)v=rxv;if#n==0 then n=d[e[3]]..e[2]end;ids=string.sub(n,1,(lcd:lsw()/(s/2)-1)//1)f=10 end;lcd:ldaf(0,0,319,239,c[1])lcd:ldrr(3,3,317,237,10,c[2]) ?>"
 #define GRID_ACTIONSTRING_LCD_DRAW \
-  "<?lua --[[@cb]] --[[draw]] ?>"
+  "<?lua --[[@cb]] if f>0 then f=f-1;local a,xo=gmaps(v[1],v[2],v[3],0.1,1),#tostring(v[1])/2*s/2-#tostring(v[1])-s//32,lcd:ldaf(10,10,310,230,c[1])lcd:ldrr(xc-p//1-1,yc-p//1-1,xc+p//1+1,yc+p//1+1,s,c[2])lcd:ldrrf(xc-p*a//1,yc-p*a//1,xc+p*a//1,yc+p*a//1,s,c[3])lcd:ldft(v[1],xc-xo,yc+s,s/2,c[2])local xn=(#ids*(s/2))/2-s//32;lcd:ldft(ids,xc-xn,yc-1.5*s,s/2,c[2])lcd:ldsw()end ?>"
 
 // clang-format on
 
