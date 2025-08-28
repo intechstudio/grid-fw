@@ -464,6 +464,7 @@ void grid_esp32_port_task(void* arg) {
     }
 
     struct grid_port* port_ui = grid_transport_get_port(xport, 4, GRID_PORT_UI, 0);
+
     struct grid_port* port_usb = grid_transport_get_port(xport, 5, GRID_PORT_USB, 0);
 
     // Broadcast inbound to outbound

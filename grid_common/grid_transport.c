@@ -32,11 +32,23 @@ void grid_transport_free(struct grid_transport* transport) {
   free(transport->ports);
 }
 
+#include "grid_platform.h"
+
 struct grid_port* grid_transport_get_port(struct grid_transport* transport, size_t idx, enum grid_port_type type, enum grid_port_dir dir) {
 
   assert(idx < transport->port_count);
 
   struct grid_port* port = &transport->ports[idx];
+
+  if (port->type == type && port->dir == dir) {
+
+  } else {
+
+    grid_platform_printf("trans: %x\n", transport);
+    grid_platform_printf("index: %d\n", idx);
+    grid_platform_printf("type: %d ==%d\n", port->type, type);
+    grid_platform_printf("dir: %d == %d\n", port->dir, dir);
+  }
 
   assert(port->type == type);
   assert(port->dir == dir);
