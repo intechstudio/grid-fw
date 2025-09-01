@@ -412,7 +412,7 @@ int l_grid_cat(lua_State* L) {
       strcpy(&frame[GRID_CLASS_ELEMENTNAME_NAME_offset], string);
       sprintf(&frame[strlen(frame)], GRID_CLASS_ELEMENTNAME_frame_end);
 
-      strcat(grid_lua_state.stdo, frame);
+      grid_lua_append_stdo(&grid_lua_state, frame);
 
       // MUST BE SENT OUT IMMEDIATELY (NOT THROUGH STDO) BECAUSE IT MUST BE SENT
       // OUT EVEN AFTER LOCAL TRIGGER (CONFIG) struct grid_msg_packet response;
@@ -458,12 +458,12 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
   if (!lua_isinteger(L, 1)) {
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -471,12 +471,12 @@ int l_grid_cat(lua_State* L) {
 
   struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, element);
   if (!ele) {
-    strcat(grid_lua_state.stde, "Invalid element index!");
+    grid_lua_append_stde(&grid_lua_state, "Invalid element index!");
     return 0;
   }
 
   if (!lua_isstring(L, 2)) {
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -484,7 +484,7 @@ int l_grid_cat(lua_State* L) {
 
   size_t name_len = strlen(name);
   if (name_len > GRID_ELEMENT_NAME_MAX) {
-    strcat(grid_lua_state.stde, "Length of string exceeds maximum!");
+    grid_lua_append_stde(&grid_lua_state, "Length of string exceeds maximum!");
     return 0;
   }
 
@@ -499,12 +499,12 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 1) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
   if (!lua_isinteger(L, 1)) {
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -513,13 +513,13 @@ int l_grid_cat(lua_State* L) {
   struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, element);
 
   if (!ele) {
-    strcat(grid_lua_state.stde, "Invalid element index!");
+    grid_lua_append_stde(&grid_lua_state, "Invalid element index!");
     return 0;
   }
 
   size_t name_len = strnlen(ele->name, GRID_ELEMENT_NAME_SIZE);
   if (name_len > GRID_ELEMENT_NAME_MAX) {
-    strcat(grid_lua_state.stde, "Stored string has no null terminator!");
+    grid_lua_append_stde(&grid_lua_state, "Stored string has no null terminator!");
     return 0;
   }
 
@@ -627,7 +627,7 @@ int l_grid_cat(lua_State* L) {
   temp[strlen(temp)] = GRID_CONST_ETX;
 
   if (cursor != 1) {
-    strcat(grid_lua_state.stdo, temp);
+    grid_lua_append_stdo(&grid_lua_state, temp);
     // grid_platform_printf("keyboard: %s\r\n", temp);
   } else {
     grid_platform_printf("invalid args!\r\n");
@@ -643,7 +643,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -661,19 +661,19 @@ int l_grid_cat(lua_State* L) {
 
   if (position_raw > 255) {
     position = 255;
-    strcat(grid_lua_state.stde, "#positionOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#positionOutOfRange");
   } else if (position_raw < 0) {
     position = 0;
-    strcat(grid_lua_state.stde, "#positionOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#positionOutOfRange");
   } else {
     position = position_raw;
   }
 
   if (axis_raw > 3) {
-    strcat(grid_lua_state.stde, "#axisOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#axisOutOfRange");
     axis = 3;
   } else if (axis_raw < 1) {
-    strcat(grid_lua_state.stde, "#axisOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#axisOutOfRange");
     axis = 1;
   } else {
     axis = axis_raw;
@@ -688,7 +688,7 @@ int l_grid_cat(lua_State* L) {
   grid_str_set_parameter(frame, GRID_CLASS_HIDMOUSEMOVE_POSITION_offset, GRID_CLASS_HIDMOUSEMOVE_POSITION_length, position, NULL);
   grid_str_set_parameter(frame, GRID_CLASS_HIDMOUSEMOVE_AXIS_offset, GRID_CLASS_HIDMOUSEMOVE_AXIS_length, axis, NULL);
 
-  strcat(grid_lua_state.stdo, frame);
+  grid_lua_append_stdo(&grid_lua_state, frame);
 
   return 1;
 }
@@ -699,7 +699,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -717,19 +717,19 @@ int l_grid_cat(lua_State* L) {
 
   if (state_raw > 1) {
     state = 1;
-    strcat(grid_lua_state.stde, "#stateOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#stateOutOfRange");
   } else if (state_raw < 0) {
     state = 0;
-    strcat(grid_lua_state.stde, "#stateOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#stateOutOfRange");
   } else {
     state = state_raw;
   }
 
   if (button_raw > 4) {
-    strcat(grid_lua_state.stde, "#buttonOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#buttonOutOfRange");
     button = 4;
   } else if (button_raw < 1) {
-    strcat(grid_lua_state.stde, "#buttonOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#buttonOutOfRange");
     button = 1;
   } else {
     button = button_raw;
@@ -744,7 +744,7 @@ int l_grid_cat(lua_State* L) {
   grid_str_set_parameter(frame, GRID_CLASS_HIDMOUSEBUTTON_STATE_offset, GRID_CLASS_HIDMOUSEBUTTON_STATE_length, state, NULL);
   grid_str_set_parameter(frame, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_offset, GRID_CLASS_HIDMOUSEBUTTON_BUTTON_length, button, NULL);
 
-  strcat(grid_lua_state.stdo, frame);
+  grid_lua_append_stdo(&grid_lua_state, frame);
 
   return 1;
 }
@@ -755,7 +755,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -773,16 +773,16 @@ int l_grid_cat(lua_State* L) {
 
   if (position_raw > 255) {
     position = 255;
-    strcat(grid_lua_state.stde, "#positionOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#positionOutOfRange");
   } else if (position_raw < 0) {
     position = 0;
-    strcat(grid_lua_state.stde, "#positionOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#positionOutOfRange");
   } else {
     position = position_raw;
   }
 
   if (axis_raw > 5) {
-    strcat(grid_lua_state.stde, "#axisOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#axisOutOfRange");
     axis = 5;
   } else {
     axis = axis_raw;
@@ -797,7 +797,7 @@ int l_grid_cat(lua_State* L) {
   grid_str_set_parameter(frame, GRID_CLASS_HIDGAMEPADMOVE_AXIS_offset, GRID_CLASS_HIDGAMEPADMOVE_AXIS_length, axis, NULL);
   grid_str_set_parameter(frame, GRID_CLASS_HIDGAMEPADMOVE_POSITION_offset, GRID_CLASS_HIDGAMEPADMOVE_POSITION_length, position, NULL);
 
-  strcat(grid_lua_state.stdo, frame);
+  grid_lua_append_stdo(&grid_lua_state, frame);
 
   return 1;
 }
@@ -808,7 +808,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -826,16 +826,16 @@ int l_grid_cat(lua_State* L) {
 
   if (state_raw > 1) {
     state = 1;
-    strcat(grid_lua_state.stde, "#stateOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#stateOutOfRange");
   } else if (state_raw < 0) {
     state = 0;
-    strcat(grid_lua_state.stde, "#stateOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#stateOutOfRange");
   } else {
     state = state_raw;
   }
 
   if (button_raw > 31) {
-    strcat(grid_lua_state.stde, "#buttonOutOfRange");
+    grid_lua_append_stde(&grid_lua_state, "#buttonOutOfRange");
     button = 31;
   } else {
     button = button_raw;
@@ -850,7 +850,7 @@ int l_grid_cat(lua_State* L) {
   grid_str_set_parameter(frame, GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_offset, GRID_CLASS_HIDGAMEPADBUTTON_BUTTON_length, button, NULL);
   grid_str_set_parameter(frame, GRID_CLASS_HIDGAMEPADBUTTON_STATE_offset, GRID_CLASS_HIDGAMEPADBUTTON_STATE_length, state, NULL);
 
-  strcat(grid_lua_state.stdo, frame);
+  grid_lua_append_stdo(&grid_lua_state, frame);
 
   return 1;
 }
@@ -861,15 +861,15 @@ int l_grid_cat(lua_State* L) {
 
   char start_of_text[2] = {GRID_CONST_STX, 0};
 
-  strcat(grid_lua_state.stdo, start_of_text);
+  grid_lua_append_stdo(&grid_lua_state, start_of_text);
 
   for (int i = 1; i <= nargs; ++i) {
-    strcat(grid_lua_state.stdo, lua_tostring(L, i));
+    grid_lua_append_stdo(&grid_lua_state, lua_tostring(L, i));
   }
 
   char end_of_text[2] = {GRID_CONST_ETX, 0};
 
-  strcat(grid_lua_state.stdo, end_of_text);
+  grid_lua_append_stdo(&grid_lua_state, end_of_text);
 
   return 0;
 }
@@ -880,7 +880,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 1) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -905,7 +905,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 1) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -930,7 +930,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 4) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -957,7 +957,7 @@ int l_grid_cat(lua_State* L) {
   grid_str_set_parameter(midiframe, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, param2, NULL);
 
   if (grid_lua_append_stdo(&grid_lua_state, midiframe)) {
-    strcat(grid_lua_state.stde, "#stdoFull");
+    grid_lua_append_stde(&grid_lua_state, "#stdoFull");
     return 0;
   }
 
@@ -970,7 +970,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs < 2) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -991,7 +991,7 @@ int l_grid_cat(lua_State* L) {
   sprintf(&midiframe[strlen(midiframe)], GRID_CLASS_MIDISYSEX_frame_end);
 
   // grid_platform_printf("MIDI: %s\r\n", midiframe);
-  strcat(grid_lua_state.stdo, midiframe);
+  grid_lua_append_stdo(&grid_lua_state, midiframe);
 
   return 1;
 }
@@ -1002,7 +1002,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 5 && nargs != 6) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1043,7 +1043,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 5 && nargs != 6) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1084,7 +1084,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 5 && nargs != 6) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1154,7 +1154,7 @@ int l_grid_cat(lua_State* L) {
     }
   } else {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1167,7 +1167,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 3) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1191,7 +1191,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 3) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1219,7 +1219,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 3) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1243,7 +1243,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0 && nargs != 1) {
     // error
-    strcat(grid_lua_state.stde, "#LED.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#LED.invalidParams");
     return 0;
   }
 
@@ -1283,7 +1283,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0 && nargs != 1) {
     // error
-    strcat(grid_lua_state.stde, "#LED.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#LED.invalidParams");
     return 0;
   }
 
@@ -1323,7 +1323,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0 && nargs != 1) {
     // error
-    strcat(grid_lua_state.stde, "#LED.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#LED.invalidParams");
     return 0;
   }
 
@@ -1364,19 +1364,19 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
   if (!lua_isinteger(L, 1)) {
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
   int32_t element = lua_tointeger(L, 1);
 
   if (!lua_isinteger(L, 2)) {
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1401,7 +1401,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1416,7 +1416,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1431,7 +1431,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1446,7 +1446,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1461,7 +1461,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1478,7 +1478,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1493,7 +1493,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1508,7 +1508,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1523,7 +1523,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2 && nargs != 3) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1592,7 +1592,7 @@ int l_grid_cat(lua_State* L) {
         val = grid_ui_element_get_template_parameter(ele, GRID_LUA_FNC_B_BUTTON_VALUE_index);
       } else {
 
-        strcat(grid_lua_state.stde, "#elementNotSupported");
+        grid_lua_append_stde(&grid_lua_state, "#elementNotSupported");
         return 0;
       }
 
@@ -1615,7 +1615,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 5) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1645,7 +1645,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2 && nargs != 3) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1693,7 +1693,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1709,7 +1709,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1725,7 +1725,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1740,7 +1740,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 1) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1761,7 +1761,7 @@ int l_grid_cat(lua_State* L) {
       sprintf(response, GRID_CLASS_PAGEACTIVE_frame);
       grid_str_set_parameter(response, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
       grid_str_set_parameter(response, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, page, NULL);
-      strcat(grid_lua_state.stdo, response);
+      grid_lua_append_stdo(&grid_lua_state, response);
     } else {
       // grid_platform_printf("page change in progress \r\n");
     }
@@ -1780,7 +1780,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1797,7 +1797,7 @@ int l_grid_cat(lua_State* L) {
     grid_ui_element_timer_set(ele, param[1]);
   } else {
 
-    strcat(grid_lua_state.stde, "#invalidRange");
+    grid_lua_append_stde(&grid_lua_state, "#invalidRange");
   }
 
   return 1;
@@ -1809,7 +1809,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 1) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1826,7 +1826,7 @@ int l_grid_cat(lua_State* L) {
     grid_ui_element_timer_set(ele, 0);
   } else {
 
-    strcat(grid_lua_state.stde, "#invalidRange");
+    grid_lua_append_stde(&grid_lua_state, "#invalidRange");
   }
 
   return 1;
@@ -1838,7 +1838,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1855,7 +1855,7 @@ int l_grid_cat(lua_State* L) {
     grid_ui_element_timer_source(ele, param[1]);
   } else {
 
-    strcat(grid_lua_state.stde, "#invalidRange");
+    grid_lua_append_stde(&grid_lua_state, "#invalidRange");
   }
 
   return 1;
@@ -1867,7 +1867,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1887,12 +1887,14 @@ int l_grid_cat(lua_State* L) {
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
     } else {
-      strcat(grid_lua_state.stde, "#invalidEvent");
-      sprintf(&grid_lua_state.stde[strlen(grid_lua_state.stde) - 1], "%ld %ld", param[0], param[1]);
+      grid_lua_append_stde(&grid_lua_state, "#invalidEvent");
+      char temp[50] = {0};
+      sprintf(temp, "%ld %ld", param[0], param[1]);
+      grid_lua_append_stde(&grid_lua_state, temp);
     }
   } else {
 
-    strcat(grid_lua_state.stde, "#invalidRange");
+    grid_lua_append_stde(&grid_lua_state, "#invalidRange");
   }
 
   return 1;
@@ -1904,7 +1906,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#GTV.invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
@@ -1921,7 +1923,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1936,7 +1938,7 @@ int l_grid_cat(lua_State* L) {
     uint8_t enabled = 0;
     if (grid_cal_pot_enable_get(cal_pot, i, &enabled) != 0) {
 
-      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
       lua_pop(L, 1);
       return 0;
     }
@@ -1947,7 +1949,7 @@ int l_grid_cat(lua_State* L) {
 
       if (grid_cal_pot_value_get(cal_pot, i, &value) != 0) {
 
-        strcat(grid_lua_state.stde, "#indexOutOfRange");
+        grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
         return 0;
       }
@@ -1967,12 +1969,12 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 1) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
   if (!lua_istable(L, -1)) {
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -1985,7 +1987,7 @@ int l_grid_cat(lua_State* L) {
     uint8_t enabled = 0;
     if (grid_cal_pot_enable_get(cal_pot, i, &enabled) != 0) {
 
-      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
       return 0;
     }
 
@@ -1997,7 +1999,7 @@ int l_grid_cat(lua_State* L) {
     lua_gettable(L, -2);
 
     if (!lua_isinteger(L, -1)) {
-      strcat(grid_lua_state.stde, "#invalidParams");
+      grid_lua_append_stde(&grid_lua_state, "#invalidParams");
       return 0;
     }
 
@@ -2011,7 +2013,7 @@ int l_grid_cat(lua_State* L) {
 
     if (grid_cal_pot_center_set(cal_pot, i, value) != 0) {
 
-      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
       return 0;
     }
   }
@@ -2027,17 +2029,17 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 2) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
   if (!lua_istable(L, -2)) {
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
   if (!lua_isboolean(L, -1)) {
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -2053,7 +2055,7 @@ int l_grid_cat(lua_State* L) {
     uint8_t enabled = 0;
     if (grid_cal_pot_enable_get(cal_pot, i, &enabled) != 0) {
 
-      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
       return 0;
     }
 
@@ -2065,7 +2067,7 @@ int l_grid_cat(lua_State* L) {
     lua_gettable(L, -2);
 
     if (!lua_isinteger(L, -1)) {
-      strcat(grid_lua_state.stde, "#invalidParams");
+      grid_lua_append_stde(&grid_lua_state, "#invalidParams");
       return 0;
     }
 
@@ -2079,7 +2081,7 @@ int l_grid_cat(lua_State* L) {
 
     if (grid_cal_pot_detent_set(cal_pot, i, value, high) != 0) {
 
-      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
       return 0;
     }
   }
@@ -2095,7 +2097,7 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 0) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -2110,7 +2112,7 @@ int l_grid_cat(lua_State* L) {
     uint8_t enabled = 0;
     if (grid_cal_but_enable_get(cal_but, i, &enabled) != 0) {
 
-      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
       lua_pop(L, 1);
       return 0;
     }
@@ -2122,7 +2124,7 @@ int l_grid_cat(lua_State* L) {
 
       if (grid_cal_but_minmax_get(cal_but, i, &min, &max) != 0) {
 
-        strcat(grid_lua_state.stde, "#indexOutOfRange");
+        grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
         return 0;
       }
@@ -2152,12 +2154,12 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 1) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
   if (!lua_istable(L, -1)) {
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
@@ -2170,7 +2172,7 @@ int l_grid_cat(lua_State* L) {
     uint8_t enabled = 0;
     if (grid_cal_but_enable_get(cal_but, i, &enabled) != 0) {
 
-      strcat(grid_lua_state.stde, "#indexOutOfRange");
+      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
       return 0;
     }
 
@@ -2182,7 +2184,7 @@ int l_grid_cat(lua_State* L) {
     lua_gettable(L, -2);
 
     if (!lua_istable(L, -1)) {
-      strcat(grid_lua_state.stde, "#invalidParams");
+      grid_lua_append_stde(&grid_lua_state, "#invalidParams");
       return 0;
     }
 
@@ -2190,7 +2192,7 @@ int l_grid_cat(lua_State* L) {
     lua_gettable(L, -2);
 
     if (!lua_isinteger(L, -1)) {
-      strcat(grid_lua_state.stde, "#invalidParams");
+      grid_lua_append_stde(&grid_lua_state, "#invalidParams");
       return 0;
     }
 
@@ -2203,7 +2205,7 @@ int l_grid_cat(lua_State* L) {
     lua_gettable(L, -2);
 
     if (!lua_isinteger(L, -1)) {
-      strcat(grid_lua_state.stde, "#invalidParams");
+      grid_lua_append_stde(&grid_lua_state, "#invalidParams");
       return 0;
     }
 
@@ -2226,12 +2228,12 @@ int l_grid_cat(lua_State* L) {
 
   if (nargs != 1) {
     // error
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
   if (!lua_isinteger(L, -1)) {
-    strcat(grid_lua_state.stde, "#invalidParams");
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
