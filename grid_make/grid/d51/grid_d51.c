@@ -443,6 +443,8 @@ void grid_d51_nvic_debug_priorities(void) {
 
   printf("Pri MASK    %d\r\n", grid_d51_nvic_get_interrupt_priority_mask());
 
+  printf("RTC         %d\r\n", grid_d51_nvic_get_interrupt_priority(RTC_IRQn));
+
   printf("USB_0       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_0_IRQn));
   printf("USB_1       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_1_IRQn));
   printf("USB_2       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_2_IRQn));

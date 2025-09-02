@@ -155,4 +155,3 @@ uint8_t grid_platform_erase_nvm_next() { return 1; }
 uint32_t grid_plaform_get_nvm_nextwriteoffset() { return 0; }
 
 void grid_platform_nvm_defrag() {}
-

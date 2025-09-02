@@ -10,9 +10,7 @@ int littlefs_api_read(const struct lfs_config* c, lfs_block_t block, lfs_off_t o
 
   int err;
 
-  CRITICAL_SECTION_ENTER();
   err = flash_read(dfs->flash, GRID_D51_NVM_BASE_ADDR + offset, buffer, size);
-  CRITICAL_SECTION_LEAVE();
   if (err) {
     printf("failed to read addr %08x, size %08x, err %d\n", offset, size, err);
     return err;
@@ -29,9 +27,7 @@ int littlefs_api_prog(const struct lfs_config* c, lfs_block_t block, lfs_off_t o
 
   int err;
 
-  CRITICAL_SECTION_ENTER();
   err = flash_write(dfs->flash, GRID_D51_NVM_BASE_ADDR + offset, buffer, size);
-  CRITICAL_SECTION_LEAVE();
   if (err) {
     printf("failed to write addr %08x, size %08x, err %d\n", offset, size, err);
     return err;
@@ -50,9 +46,7 @@ int littlefs_api_erase(const struct lfs_config* c, lfs_block_t block) {
 
   size_t pages_in_block = GRID_D51_LITTLEFS_BLOCK_SIZE / GRID_D51_LITTLEFS_PAGE_SIZE;
 
-  CRITICAL_SECTION_ENTER();
   err = flash_erase(dfs->flash, GRID_D51_NVM_BASE_ADDR + offset, pages_in_block);
-  CRITICAL_SECTION_LEAVE();
   if (err) {
     printf("failed to erase addr %08x, pages %08x, err %d\n", offset, pages_in_block, err);
     return err;
