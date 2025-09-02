@@ -926,6 +926,10 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui) {
     return;
   }
 
+  char path[50] = {0};
+  sprintf(path, "%02x", ui->bulk_last_page);
+  grid_platform_remove_dir(path);
+
   // Set ready before callback so callback can start new nvm operation
   ui->bulk_status = GRID_UI_BULK_READY;
 
