@@ -18,7 +18,6 @@ struct esp_littlefs_t {
 
   lfs_t* lfs;
   struct lfs_config cfg;
-  SemaphoreHandle_t lock; // remove if unused
   const esp_partition_t* partition;
   char base_path[ESP_LFS_PATH_MAX + 1];
   bool read_only;

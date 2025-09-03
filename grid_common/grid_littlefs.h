@@ -3,8 +3,6 @@
 
 #include "littlefs/lfs.h"
 
-typedef bool (*grid_littlefs_name_predicate)(const char* name, const void* user);
-
 const char* littlefs_errno(enum lfs_error lfs_errno);
 
 int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg);

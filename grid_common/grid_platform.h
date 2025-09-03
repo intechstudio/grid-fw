@@ -34,8 +34,6 @@ extern int32_t grid_platform_usb_serial_ready();
 
 extern int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
 
-extern uint32_t grid_plaform_get_nvm_nextwriteoffset();
-
 extern void* grid_platform_allocate_volatile(size_t size);
 
 union grid_ui_file_handle;

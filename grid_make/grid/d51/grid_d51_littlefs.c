@@ -1,9 +1,5 @@
 #include "grid_d51_littlefs.h"
 
-// #include "../atmel_start.h"
-// #include "../samd51a/include/samd51n20a.h"
-// #include "atmel_start_pins.h"
-
 #include "grid_littlefs.h"
 
 void grid_d51_littlefs_init(struct d51_littlefs_t* dfs, lfs_t* lfs, struct flash_descriptor* flash, const char* base_path, bool read_only) {
