@@ -930,8 +930,14 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
   grid_ui_busy_semaphore_release(ui);
   grid_platform_printf("NVM: Read done\r\n");
 
-  // No callback here, just mandatory handler
+  // Callback the mandatory handler
   grid_ui_page_load_success_handler();
+
+  // Must call callback for discard to work properly
+  if (ui->bulk_success_callback != NULL) {
+    ui->bulk_success_callback(ui->bulk_lastheader_id);
+    ui->bulk_success_callback = NULL;
+  }
 
   return;
 }
