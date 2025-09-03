@@ -14,6 +14,7 @@
 #include <hpl_reset.h>
 #include <string.h>
 
+#include "grid_allocator.h"
 #include "grid_msg.h"
 #include "grid_port.h"
 #include "grid_utask.h"
@@ -46,20 +47,22 @@ void grid_platform_sync1_pulse_send() { sync1_state++; }
 extern void grid_platform_rtc_set_micros(uint64_t mic);
 extern uint64_t grid_platform_rtc_get_micros(void);
 
+void grid_platform_lcd_set_backlight(uint8_t backlight) {}
+
+static void update_interrupt_mask_from_bulk_status() {
+
+  uint32_t mask = grid_d51_nvic_get_interrupt_priority_mask() == 1;
+  uint32_t next = grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
+
+  if (mask != next) {
+
+    grid_d51_nvic_set_interrupt_priority_mask(next);
+  }
+}
+
 static void nvm_task_inner() {
 
-  if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
-    grid_d51_nvic_set_interrupt_priority_mask(1);
-  } else {
-    if (grid_d51_nvic_get_interrupt_priority_mask() == 1) {
-      // nvm just entered ready state
-
-      // lets re-enable ui interrupts
-      grid_d51_nvic_set_interrupt_priority_mask(0);
-    }
-
-    return;
-  }
+  update_interrupt_mask_from_bulk_status();
 
   uint64_t time_max_duration = 5 * 1000; // in microseconds
   uint64_t time_start = grid_platform_rtc_get_micros();
@@ -395,7 +398,7 @@ int main(void) {
   grid_ui_page_load(&grid_ui_state, 0); // load page 0
 
   while (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
-    grid_ui_bulk_pageread_next(&grid_ui_state);
+    nvm_task_inner();
   }
 
   // grid_d51_nvm_toc_debug(&grid_d51_nvm_state);

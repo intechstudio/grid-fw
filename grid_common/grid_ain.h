@@ -1,43 +1,38 @@
 #ifndef GRID_AIN_H
 #define GRID_AIN_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
-struct AIN_Channel {
+struct ain_chan_t {
 
-  uint16_t* buffer;
-  uint8_t buffer_depth;
-  uint8_t buffer_samples;
+  uint16_t capa;
+  uint16_t size;
+  uint16_t beg;
+  uint16_t end;
+  uint16_t* data;
 
-  uint8_t result_format;
-  uint8_t result_resolution;
-  uint16_t result_value;
-  uint16_t result_average;
-  uint16_t result_changed;
+  uint32_t sum;
+  uint16_t output;
+  uint8_t delta;
 };
 
+void grid_ain_channel_reset(struct ain_chan_t* chan);
+void grid_ain_channel_init(struct ain_chan_t* chan, uint8_t capacity);
+
 struct grid_ain_model {
+
   uint8_t initialized;
-  struct AIN_Channel* channel_buffer;
-  uint8_t channel_buffer_length;
+  uint8_t channel_count;
+  struct ain_chan_t* channels;
 };
 
 extern struct grid_ain_model grid_ain_state;
 
-uint8_t grid_ain_channel_init(struct grid_ain_model* ain, uint8_t channel, uint8_t buffer_depth);
-
-uint8_t grid_ain_channel_deinit(struct grid_ain_model* ain, uint8_t channel);
-
-/** Initialize ain buffer for a given number of analog channels */
-uint8_t grid_ain_init(struct grid_ain_model* ain, uint8_t length, uint8_t depth);
-uint8_t grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t source_resolution, uint8_t result_resolution);
-int grid_ain_stabilized(struct grid_ain_model* ain, uint8_t channel);
-
-uint8_t grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel);
-uint16_t grid_ain_get_average(struct grid_ain_model* ain, uint8_t channel);
-
-int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel, uint8_t source_resolution, uint8_t result_resolution, int32_t min, int32_t max);
-
-uint32_t grid_ain_abs(int32_t value);
+void grid_ain_init(struct grid_ain_model* ain, uint8_t channel_count, uint8_t capacity);
+void grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t src_res, uint8_t dst_res);
+bool grid_ain_stabilized(struct grid_ain_model* ain, uint8_t channel);
+bool grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel);
+int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel, uint8_t src_res, uint8_t dst_res, int32_t min, int32_t max);
 
 #endif /* GRID_AIN_H */

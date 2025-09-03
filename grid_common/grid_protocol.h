@@ -16,8 +16,8 @@
 #define GRID_PROTOCOL_H
 
 #define GRID_PROTOCOL_VERSION_MAJOR 1
-#define GRID_PROTOCOL_VERSION_MINOR 3
-#define GRID_PROTOCOL_VERSION_PATCH 6
+#define GRID_PROTOCOL_VERSION_MINOR 4
+#define GRID_PROTOCOL_VERSION_PATCH 1
 
 // must not change because it would break profiles
 #define GRID_PARAMETER_ELEMENT_SYSTEM 0
@@ -26,6 +26,7 @@
 #define GRID_PARAMETER_ELEMENT_ENCODER 3
 #define GRID_PARAMETER_ELEMENT_ENDLESS 4
 #define GRID_PARAMETER_ELEMENT_LCD 5
+#define GRID_PARAMETER_ELEMENT_COUNT 6
 
 // must not change because it would break profiles
 #define GRID_PARAMETER_EVENT_INIT 0
@@ -37,6 +38,7 @@
 #define GRID_PARAMETER_EVENT_TIMER 6
 #define GRID_PARAMETER_EVENT_ENDLESS 7
 #define GRID_PARAMETER_EVENT_DRAW 8
+#define GRID_PARAMETER_EVENT_COUNT 9
 
 // Module HWCFG definitions
 
@@ -102,6 +104,8 @@
 #define GRID_PARAMETER_DISCONNECTTIMEOUT_us 500000
 
 #define GRID_PARAMETER_UICOOLDOWN_us 10000
+
+#define GRID_PARAMETER_DRAWTRIGGER_us 25000
 
 #define GRID_PARAMETER_UART_baudrate 2000000ul
 
@@ -263,6 +267,11 @@
 #define GRID_LUA_FNC_G_LED_PSF_human "led_animation_phase_rate_type"
 #define GRID_LUA_FNC_G_LED_PSF_fnptr l_grid_led_layer_pfs
 
+#define GRID_LUA_FNC_G_LED_ADDRESS_GET_short "glag"
+#define GRID_LUA_FNC_G_LED_ADDRESS_GET_human "led_address_get"
+#define GRID_LUA_FNC_G_LED_ADDRESS_GET_fnptr l_grid_led_address_get
+#define GRID_LUA_FNC_G_LED_ADDRESS_GET_usage "led_address_get(int element, int n) Returns the hardware index of an element's n-th led, or nil if either parameter is out of bounds."
+
 #define GRID_LUA_FNC_G_MIDI_SEND_short "gms"
 #define GRID_LUA_FNC_G_MIDI_SEND_human "midi_send"
 #define GRID_LUA_FNC_G_MIDI_SEND_usage "midi_send(int channel, int command, int parameter1, int parameter2) Sends standard MIDI message"
@@ -368,6 +377,14 @@
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_human "element_name_send"
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_fnptr l_grid_elementname_send
 
+#define GRID_LUA_FNC_G_ELEMENTNAME_SET_short "gsen"
+#define GRID_LUA_FNC_G_ELEMENTNAME_SET_human "element_name_set"
+#define GRID_LUA_FNC_G_ELEMENTNAME_SET_fnptr l_grid_elementname_set
+
+#define GRID_LUA_FNC_G_ELEMENTNAME_GET_short "ggen"
+#define GRID_LUA_FNC_G_ELEMENTNAME_GET_human "element_name_get"
+#define GRID_LUA_FNC_G_ELEMENTNAME_GET_fnptr l_grid_elementname_get
+
 #define GRID_LUA_FNC_G_STRING_GET_short "gsg"
 #define GRID_LUA_FNC_G_STRING_GET_human "string_get"
 #define GRID_LUA_FNC_G_STRING_GET_fnptr l_grid_string_get
@@ -407,6 +424,12 @@
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_human "potmeter_calibration_set"
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr l_grid_potmeter_calibration_set
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_usage "potmeter_calibration_set({ int c1, ... }) Sets potentiometer calibration centers from an array of integers."
+
+#define GRID_LUA_FNC_G_POTMETER_DETENT_SET_short "gpds"
+#define GRID_LUA_FNC_G_POTMETER_DETENT_SET_human "potmeter_detent_set"
+#define GRID_LUA_FNC_G_POTMETER_DETENT_SET_fnptr l_grid_potmeter_detent_set
+#define GRID_LUA_FNC_G_POTMETER_DETENT_SET_usage                                                                                                                                                       \
+  "potmeter_detent_set({ int c1, ... }, bool high) Sets potentiometer detent bounds from an array of integers, where high = true sets high bounds and high = false sets low bounds."
 
 #define GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_short "gbcg"
 #define GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_human "button_calibration_get"
@@ -493,6 +516,11 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_human "gui_draw_demo"
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr l_grid_gui_draw_demo
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_usage "gui_draw_demo(screen_index, n) Draws the n-th iteration of the demo."
+
+#define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_short "glsb"
+#define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_human "lcd_set_backlight"
+#define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_fnptr l_grid_lcd_set_backlight
+#define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_usage "lcd_set_backlight(strength) Sets the LCD backlight strength between 0 and 255."
 
 // ========================= UI ELEMENT VARIABLES =========================== //
 
@@ -973,6 +1001,31 @@
 
 #define GRID_CLASS_ELEMENTNAME_NAME_offset 9
 #define GRID_CLASS_ELEMENTNAME_NAME_length 0
+
+// EVENT VIEW
+#define GRID_CLASS_EVENTVIEW_code 0x053
+#define GRID_CLASS_EVENTVIEW_frame_start "%c%03x_..................", GRID_CONST_STX, GRID_CLASS_EVENTVIEW_code
+#define GRID_CLASS_EVENTVIEW_frame_end "%c", GRID_CONST_ETX
+
+#define GRID_CLASS_EVENTVIEW_PAGE_offset 5
+#define GRID_CLASS_EVENTVIEW_PAGE_length 2
+
+#define GRID_CLASS_EVENTVIEW_ELEMENT_offset 7
+#define GRID_CLASS_EVENTVIEW_ELEMENT_length 2
+
+#define GRID_CLASS_EVENTVIEW_EVENT_offset 9
+#define GRID_CLASS_EVENTVIEW_EVENT_length 2
+
+#define GRID_CLASS_EVENTVIEW_VALUE1_offset 11
+#define GRID_CLASS_EVENTVIEW_VALUE1_length 4
+
+#define GRID_CLASS_EVENTVIEW_MIN1_offset 15
+#define GRID_CLASS_EVENTVIEW_MIN1_length 4
+
+#define GRID_CLASS_EVENTVIEW_MAX1_offset 19
+#define GRID_CLASS_EVENTVIEW_MAX1_length 4
+
+#define GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length 2
 
 // CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)
 #define GRID_CLASS_CONFIG_code 0x060

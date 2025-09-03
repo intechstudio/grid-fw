@@ -11,6 +11,7 @@
 // must be last freertos relevant header to avoid #error
 #include "esp_freertos_hooks.h"
 
+#include "grid_allocator.h"
 #include "grid_platform.h"
 #include "grid_transport.h"
 
@@ -129,10 +130,11 @@ bool idle_hook(void) {
   return 0;
 }
 
-static void check_heap(void) {
+static void log_checkpoint(const char* str) {
 
-  int freeRAM = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
-  ESP_LOGI(TAG, "free RAM is %d. Integrity: %d", freeRAM, heap_caps_check_integrity_all(true));
+  size_t free_size = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+  int integrity = heap_caps_check_integrity_all(true);
+  ESP_LOGI(TAG, "===== %s, free mem: %u (integrity: %d)", str, free_size, integrity);
 }
 
 #include "grid_lua_api_gui.h"
@@ -164,9 +166,9 @@ void grid_lua_ui_init_soft(struct grid_lua_model* lua) {
 }
 void grid_module_soft_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
-  grid_ain_init(&grid_ain_state, 4, 5);
-
+  grid_ain_init(&grid_ain_state, 8, 4);
   grid_led_init(&grid_led_state, 8);
+  grid_led_lookup_alloc_identity(&grid_led_state, 0, 8);
 
   grid_ui_model_init(ui, 8 + 1); // +1 for the system element
 
@@ -286,32 +288,35 @@ void grid_ui_element_lcd_template_parameter_init_vsn_right(struct grid_ui_templa
 void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui, uint8_t hwcfg) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
-  grid_ain_init(ain, 16, 5);  // TODO: 12 ain for TEK2
+  grid_ain_init(ain, 16, 4);  // TODO: 12 ain for TEK2
   grid_led_init(led, 13 + 5); // TODO: 18 led for TEK2
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA) {
 
-    uint8_t led_lookup[18] = {5, 6, 7, 8, 9, 10, 11, 12, 0, 17, 1, 17, 2, 17, 3, 17, 4, 17}; // set unused to -1
-    grid_led_lookup_init(led, led_lookup);
+    // TODO
 
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH) {
 
-    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 5, 0, 6, 1, 7, 2, 8, 3, 9, 4}; // set unused to -1
-    grid_led_lookup_init(led, led_lookup);
+    for (uint8_t i = 0; i < 8; ++i) {
+      grid_led_lookup_alloc_single(led, i, i + 10);
+    }
+    grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){5, 6, 7, 8, 9});
 
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
 
-    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9}; // set unused to -1
-    grid_led_lookup_init(led, led_lookup);
+    for (uint8_t i = 0; i < 8; ++i) {
+      grid_led_lookup_alloc_single(led, i, i + 10);
+    }
+    grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
 
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
 
-    grid_platform_printf("VSN2\n");
-    uint8_t led_lookup[18] = {10, 11, 12, 13, 14, 15, 16, 17, 0, 5, 1, 6, 2, 7, 3, 8, 4, 9}; // set unused to -1
-    grid_led_lookup_init(led, led_lookup);
+    for (uint8_t i = 0; i < 8; ++i) {
+      grid_led_lookup_alloc_single(led, i, i + 10);
+    }
   }
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB ||
@@ -468,22 +473,22 @@ void app_main(void) {
 
   void grid_common_semaphore_release_fn(void* arg) { xSemaphoreGive((SemaphoreHandle_t)arg); }
 
-  ESP_LOGI(TAG, "===== MAIN START =====");
+  log_checkpoint("MAIN START");
 
   grid_esp32_print_chip_info();
 
   gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
   gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
 
-  ESP_LOGI(TAG, "===== SYS START =====");
+  log_checkpoint("SYS START");
   grid_sys_init(&grid_sys_state);
 
-  ESP_LOGI(TAG, "===== PSRAM INIT =====");
+  log_checkpoint("PSRAM INIT");
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
 
-    ESP_LOGI(TAG, "===== PSRAM SCREEN MODULE =====");
+    log_checkpoint("PSRAM SCREEN MODULE");
 
     ESP_ERROR_CHECK(esp_psram_init());
 
@@ -497,7 +502,7 @@ void app_main(void) {
   size_t psram_size = esp_psram_get_size();
   ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
 
-  ESP_LOGI(TAG, "===== UI INIT =====");
+  log_checkpoint("UI INIT");
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevH) {
     grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevH) {
@@ -541,7 +546,7 @@ void app_main(void) {
 
   // GRID MODULE INITIALIZATION SEQUENCE
 
-  ESP_LOGI(TAG, "===== NVM START =====");
+  log_checkpoint("NVM START");
   grid_esp32_nvm_mount(&grid_esp32_nvm_state);
 
   if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0) {
@@ -552,14 +557,14 @@ void app_main(void) {
     vTaskDelay(pdMS_TO_TICKS(600));
   }
 
-  ESP_LOGI(TAG, "===== MSG START =====");
+  log_checkpoint("MSG START");
   grid_msg_init(&grid_msg_state); // setup session id, last message buffer init
 
-  ESP_LOGI(TAG, "===== LUA INIT =====");
+  log_checkpoint("LUA INIT");
   grid_lua_init(&grid_lua_state, NULL, NULL);
   grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
-  grid_lua_set_memory_target(&grid_lua_state, 80); // 80kb
+  grid_lua_set_memory_target(&grid_lua_state, 100);
 
   TaskHandle_t usb_task_hdl;
   xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6, &usb_task_hdl, 1);
@@ -576,57 +581,91 @@ void app_main(void) {
   grid_port_init(&grid_transport_state.ports[4], GRID_PORT_UI, 0);
   grid_port_init(&grid_transport_state.ports[5], GRID_PORT_USB, 0);
 
-  ESP_LOGI(TAG, "===== BANK INIT =====");
+  log_checkpoint("BANK INIT");
   grid_sys_set_bank(&grid_sys_state, 0);
   ets_delay_us(2000);
 
-  check_heap();
   xSemaphoreGive(ui_busy_semaphore);
   xSemaphoreGive(ui_bulk_semaphore);
 
   grid_ui_page_load(&grid_ui_state, 0); // load page 0
   SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
-  ESP_LOGI(TAG, "===== UI TASK INIT =====");
+  log_checkpoint("GUI INIT");
 
-  check_heap();
+  uint32_t hwcfg = grid_sys_get_hwcfg(&grid_sys_state);
 
-  TaskHandle_t module_task_hdl;
+  // Initialize font
+  if (hwcfg == GRID_MODULE_TEK1_RevA || hwcfg == GRID_MODULE_VSN1L_RevA || hwcfg == GRID_MODULE_VSN1R_RevA || hwcfg == GRID_MODULE_VSN2_RevA || hwcfg == GRID_MODULE_VSN1L_RevB ||
+      hwcfg == GRID_MODULE_VSN1L_RevH || hwcfg == GRID_MODULE_VSN1R_RevB || hwcfg == GRID_MODULE_VSN1R_RevH || hwcfg == GRID_MODULE_VSN2_RevB || hwcfg == GRID_MODULE_VSN2_RevH) {
+    grid_font_init(&grid_font_state);
+  }
+
+  uint32_t width = LCD_HRES;
+  uint32_t height = LCD_VRES;
+  uint32_t size = width * height * GRID_GUI_BYTES_PPX;
+
+  struct grid_gui_model* guis = grid_gui_states;
+  struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
+
+  // Initialize GUI at index 0, if necessary
+  if (hwcfg == GRID_MODULE_TEK1_RevA || hwcfg == GRID_MODULE_VSN1L_RevA || hwcfg == GRID_MODULE_VSN1L_RevB || hwcfg == GRID_MODULE_VSN1L_RevH || hwcfg == GRID_MODULE_VSN2_RevA ||
+      hwcfg == GRID_MODULE_VSN2_RevB || hwcfg == GRID_MODULE_VSN2_RevH) {
+    uint8_t* buf = heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
+    grid_gui_init(&guis[0], &lcds[0], buf, size, width, height);
+    grid_gui_clear(&guis[0], grid_gui_color_from_rgb(0, 0, 0));
+    grid_gui_swap_set(&guis[0], true);
+  }
+
+  // Initialize GUI panel at index 1, if necessary
+  if (hwcfg == GRID_MODULE_VSN1R_RevA || hwcfg == GRID_MODULE_VSN1R_RevB || hwcfg == GRID_MODULE_VSN1R_RevH || hwcfg == GRID_MODULE_VSN2_RevA || hwcfg == GRID_MODULE_VSN2_RevB ||
+      hwcfg == GRID_MODULE_VSN2_RevH) {
+    uint8_t* buf = heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
+    grid_gui_init(&guis[1], &lcds[1], buf, size, width, height);
+    grid_gui_clear(&guis[1], grid_gui_color_from_rgb(0, 0, 0));
+    grid_gui_swap_set(&guis[1], true);
+  }
+
+  log_checkpoint("NVM TASK INIT");
+
+  TaskHandle_t nvm_task_hdl;
+
+  xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 10, NULL, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
+
+  log_checkpoint("MODULE INIT");
+
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevH) {
-    xTaskCreatePinnedToCore(grid_esp32_module_po16_task, "po16", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+    grid_esp32_module_po16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevH) {
-    xTaskCreatePinnedToCore(grid_esp32_module_bu16_task, "bu16", 1024 * 3, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+    grid_esp32_module_bu16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevH) {
-    xTaskCreatePinnedToCore(grid_esp32_module_pbf4_task, "pbf4", 1024 * 3, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+    grid_esp32_module_pbf4_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevH) {
-    xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+    grid_esp32_module_en16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_encoder_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevH) {
-    xTaskCreatePinnedToCore(grid_esp32_module_en16_task, "en16", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+    grid_esp32_module_en16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_encoder_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevH) {
-    xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+    grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_ND_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_ND_RevH) {
-    xTaskCreatePinnedToCore(grid_esp32_module_ef44_task, "ef44", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+    grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevH) {
-    xTaskCreatePinnedToCore(grid_esp32_module_tek2_task, "tek2", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+    grid_esp32_module_tek2_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
-    xTaskCreatePinnedToCore(grid_esp32_module_tek1_task, "tek1", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
-    while (!grid_esp32_lcd_get_ready()) {
-      vTaskDelay(1);
-    }
+    grid_esp32_module_tek1_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
-    xTaskCreatePinnedToCore(grid_esp32_module_pb44_task, "pb44", 1024 * 3, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+    grid_esp32_module_pb44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_SOFT_RevA) {
-    xTaskCreatePinnedToCore(grid_esp32_module_soft_task, "soft", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &module_task_hdl, 0);
+    grid_esp32_module_soft_init(&grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state);
   } else {
     ets_printf("Task Init failed: Unknown Module\r\n");
   }
 
-  ESP_LOGI(TAG, "===== UI TASK DONE =====");
+  log_checkpoint("UI TASK DONE");
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA ||
       grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1L_RevH ||
@@ -637,34 +676,20 @@ void app_main(void) {
 
     xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
 
-    ESP_LOGI(TAG, "===== LCD TASK DONE =====");
+    log_checkpoint("LCD TASK DONE");
   }
-
-  // ================== FINISH: grid_module_pbf4_init() ================== //
 
   TaskHandle_t port_task_hdl;
 
-  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 4096 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
+  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 1024 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
 
-  ESP_LOGI(TAG, "===== PORT TASK DONE =====");
-
-  TaskHandle_t nvm_task_hdl;
-
-  xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 10, NULL, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
-
-  ESP_LOGI(TAG, "===== NVM TASK DONE =====");
-
-  TaskHandle_t housekeeping_task_hdl;
-
-  xTaskCreatePinnedToCore(grid_esp32_housekeeping_task, "housekeeping", 1024 * 6, (void*)signaling_sem, 6, &housekeeping_task_hdl, 0);
+  log_checkpoint("PORT TASK DONE");
 
   TaskHandle_t grid_trace_report_task_hdl;
 
-  ESP_LOGI(TAG, "===== HOUSE TASK DONE =====");
-
   xTaskCreatePinnedToCore(grid_trace_report_task, "trace", 1024 * 4, (void*)signaling_sem, 6, &grid_trace_report_task_hdl, 1);
 
-  ESP_LOGI(TAG, "===== REPORT TASK DONE =====");
+  log_checkpoint("REPORT TASK DONE");
 
   esp_timer_create_args_t periodic_rtc_ms_args = {.callback = &periodic_rtc_ms_cb, .name = "rtc millisecond"};
 
@@ -672,15 +697,13 @@ void app_main(void) {
   ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
   ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 1000));
 
-  grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE_DIM, 100);
-
-  ESP_LOGI(TAG, "===== INIT COMPLETE =====");
+  log_checkpoint("INIT COMPLETE");
 
   // Register idle hook to force yield from idle task to lowest priority task
   esp_register_freertos_idle_hook_for_cpu(idle_hook, 0);
   esp_register_freertos_idle_hook_for_cpu(idle_hook, 1);
 
-  ESP_LOGI(TAG, "===== TRACE START =====");
+  log_checkpoint("TRACE START");
 
   // TRACE CONFIG GPIO 40, 41, 4Mbaud,
 

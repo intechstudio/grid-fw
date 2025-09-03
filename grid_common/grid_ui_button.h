@@ -36,9 +36,9 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 
 // ========================= BUTTON =========================== //
 
-// Button init function
 // clang-format off
-#define GRID_LUA_B_META_init                                                                                                                                                                           \
+
+#define GRID_LUA_B_META_init \
   "button_meta = { __index = {" \
    \
   "type = 'button', "\
@@ -63,6 +63,8 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
   GRID_LUA_FNC_ASSIGN_META_PAR0("gtp", GRID_LUA_FNC_G_TIMER_STOP_short) "," \
   GRID_LUA_FNC_ASSIGN_META_PAR1("get", GRID_LUA_FNC_G_EVENT_TRIGGER_short) "," \
   GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_PAR1("gsen", GRID_LUA_FNC_G_ELEMENTNAME_SET_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_PAR0_RET("ggen", GRID_LUA_FNC_G_ELEMENTNAME_GET_short) "," \
   \
   GRID_LUA_FNC_B_BUTTON_STEP_short " =function (self) " \
   "local steps, min, max, value = self:" GRID_LUA_FNC_B_BUTTON_MODE_short "(), self:" GRID_LUA_FNC_B_BUTTON_MIN_short "(), self:" GRID_LUA_FNC_B_BUTTON_MAX_short \
@@ -72,16 +74,14 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
   "end," \
   \
   "}}"
+
+#define GRID_ACTIONSTRING_BUTTON_INIT "<?lua --[[@cb]] --[[Button Init]] ?>"
+
+#define GRID_ACTIONSTRING_BUTTON_BUTTON \
+  "<?lua --[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)" \
+  "--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)" \
+  "--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+
 // clang-format on
-
-#define GRID_ACTIONSTRING_BUTTON_INIT                                                                                                                                                                  \
-  "<?lua --[[@l]] local "                                                                                                                                                                              \
-  "num,val,red,gre,blu=self:ind(),self:bva(),glr(),glg(),glb()--[[@glc]] "                                                                                                                             \
-  "glc(num,1,red,gre,blu)--[[@glp]] glp(num,1,val) ?>"
-
-#define GRID_ACTIONSTRING_BUTTON_BUTTON                                                                                                                                                                \
-  "<?lua --[[@l]] local "                                                                                                                                                                              \
-  "num,val,ch,note=self:ind(),self:bva(),(gmy()*4+gpc())%16,(32+gmx()*16+"                                                                                                                             \
-  "self:ind())%128--[[@gms]] gms(ch,144,note,val)--[[@glp]] glp(num,1,val) ?>"
 
 #endif /* GRID_UI_BUTTON_H */

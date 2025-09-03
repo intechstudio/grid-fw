@@ -49,6 +49,7 @@ extern struct grid_lua_model grid_lua_state;
 void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance);
 void grid_lua_deinit(struct grid_lua_model* lua);
 void grid_lua_post_init(struct grid_lua_model* lua);
+void grid_lua_pre_init(struct grid_lua_model* lua);
 
 void grid_lua_semaphore_init(struct grid_lua_model* lua, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
 void grid_lua_semaphore_lock(struct grid_lua_model* lua);
@@ -62,6 +63,7 @@ void grid_lua_clear_stdo(struct grid_lua_model* lua);
 void grid_lua_clear_stde(struct grid_lua_model* lua);
 
 int grid_lua_append_stdo(struct grid_lua_model* lua, char* str);
+int grid_lua_append_stde(struct grid_lua_model* lua, char* str);
 
 char* grid_lua_get_output_string(struct grid_lua_model* lua);
 char* grid_lua_get_error_string(struct grid_lua_model* lua);
@@ -69,7 +71,6 @@ char* grid_lua_get_error_string(struct grid_lua_model* lua);
 uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code);
 
 void grid_lua_gc_try_collect(struct grid_lua_model* lua);
-void grid_lua_gc_collect(struct grid_lua_model* lua);
 
 void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message);
 
@@ -94,10 +95,13 @@ void grid_lua_stop_vm(struct grid_lua_model* lua);
   "return gtv(self.index, " XSTRINGIZE(index) ", a) end"
 
 #define GRID_LUA_FNC_ASSIGN_META_UNDEF(key) \
-  key " = function (self) print('undefined action') end"
+  key " = function (self) print('undefined action', self:ind()) end"
 
 #define GRID_LUA_FNC_ASSIGN_META_PAR0(key, val) \
   key " = function (self) " val "(self.index) end"
+
+#define GRID_LUA_FNC_ASSIGN_META_PAR0_RET(key, val) \
+  key " = function (self) return " val "(self.index) end"
 
 #define GRID_LUA_FNC_ASSIGN_META_PAR1(key, val) \
   key " = function (self, a) " val "(self.index, a) end"

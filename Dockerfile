@@ -64,5 +64,9 @@ RUN pre-commit install-hooks
 # Add /project as a safe git repository
 RUN git config --global --add safe.directory /project
 
+# Patch esp_efuse_startup.c
+COPY ./patch_esp_efuse_startup.sh /
+RUN ./patch_esp_efuse_startup.sh
+
 # Define default command
 CMD ["bash"]

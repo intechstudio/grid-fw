@@ -80,4 +80,6 @@ extern uint8_t grid_platform_get_nvm_state();
 
 extern uint8_t grid_platform_erase_nvm_next();
 
+extern void grid_platform_lcd_set_backlight(uint8_t backlight);
+
 #endif /* GRID_PLATFORM_H */

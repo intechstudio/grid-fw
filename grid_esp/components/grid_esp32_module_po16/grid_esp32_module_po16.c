@@ -8,7 +8,6 @@
 
 #include <stdint.h>
 
-#include "grid_ain.h"
 #include "grid_asc.h"
 #include "grid_cal.h"
 #include "grid_config.h"
@@ -60,7 +59,7 @@ void IRAM_ATTR po16_process_analog(void* user) {
   }
 }
 
-void grid_esp32_module_po16_task(void* arg) {
+void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {
 
   potmeter_last_real_time = grid_platform_allocate_volatile(GRID_MODULE_PO16_POT_NUM * sizeof(uint64_t));
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
@@ -69,32 +68,24 @@ void grid_esp32_module_po16_task(void* arg) {
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
 
-  elements = grid_ui_model_get_elements(&grid_ui_state);
+  elements = grid_ui_model_get_elements(ui);
 
-  grid_config_init(&grid_config_state, &grid_cal_state);
+  grid_config_init(conf, cal);
 
-  struct grid_cal_pot* cal_pot = &grid_cal_state.potmeter;
-  grid_cal_pot_init(cal_pot, 12, grid_ui_state.element_list_length);
+  struct grid_cal_pot* cal_pot = &cal->potmeter;
+  grid_cal_pot_init(cal_pot, 12, ui->element_list_length);
   grid_cal_pot_enable_range(cal_pot, 0, 16);
 
-  while (grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
-    taskYIELD();
+  while (grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
+    vTaskDelay(1);
   }
 
-  while (grid_ui_bulk_is_in_progress(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS)) {
-    taskYIELD();
+  while (grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CONFREAD_PROGRESS)) {
+    vTaskDelay(1);
   }
 
-  grid_esp32_adc_init(&grid_esp32_adc_state, po16_process_analog);
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
-  uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(&grid_sys_state);
-  grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
-
-  while (1) {
-
-    vTaskDelay(pdMS_TO_TICKS(1000));
-  }
-
-  // Wait to be deleted
-  vTaskSuspend(NULL);
+  grid_esp32_adc_init(adc, po16_process_analog);
+  grid_esp32_adc_mux_init(adc, 8);
+  uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
+  grid_esp32_adc_start(adc, mux_dependent);
 }

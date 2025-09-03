@@ -20,6 +20,8 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 /*static*/ int l_grid_package_send(lua_State* L);
 /*static*/ int l_grid_immediate_send(lua_State* L);
 /*static*/ int l_grid_elementname_send(lua_State* L);
+/*static*/ int l_grid_elementname_set(lua_State* L);
+/*static*/ int l_grid_elementname_get(lua_State* L);
 /*static*/ int l_grid_string_get(lua_State* L);
 
 /*static*/ int l_grid_usb_keyboard_send(lua_State* L);
@@ -54,6 +56,8 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 /*static*/ int l_led_default_green(lua_State* L);
 /*static*/ int l_led_default_blue(lua_State* L);
 
+/*static*/ int l_grid_led_address_get(lua_State* L);
+
 /*static*/ int l_grid_version_major(lua_State* L);
 /*static*/ int l_grid_version_minor(lua_State* L);
 /*static*/ int l_grid_version_patch(lua_State* L);
@@ -78,8 +82,11 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 
 /*static*/ int l_grid_potmeter_calibration_get(lua_State* L);
 /*static*/ int l_grid_potmeter_calibration_set(lua_State* L);
+/*static*/ int l_grid_potmeter_detent_set(lua_State* L);
 /*static*/ int l_grid_button_calibration_get(lua_State* L);
 /*static*/ int l_grid_button_calibration_set(lua_State* L);
+
+/*static*/ int l_grid_lcd_set_backlight(lua_State* L);
 
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 

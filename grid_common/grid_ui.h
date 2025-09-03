@@ -55,6 +55,9 @@ struct grid_ui_template_buffer {
 
 typedef void (*template_init_t)(struct grid_ui_template_buffer*);
 
+enum { GRID_ELEMENT_NAME_MAX = 19 };
+enum { GRID_ELEMENT_NAME_SIZE = GRID_ELEMENT_NAME_MAX + 1 };
+
 struct grid_ui_element {
 
   uint8_t timer_source_is_midi;
@@ -63,6 +66,7 @@ struct grid_ui_element {
   struct grid_ui_model* parent;
   uint8_t index;
   uint8_t type;
+  char name[GRID_ELEMENT_NAME_SIZE];
 
   template_init_t template_initializer;
 
@@ -72,6 +76,9 @@ struct grid_ui_element {
 
   uint8_t template_parameter_element_position_index_1;
   uint8_t template_parameter_element_position_index_2;
+  uint8_t template_parameter_index_value[2];
+  uint8_t template_parameter_index_min[2];
+  uint8_t template_parameter_index_max[2];
 
   void (*page_change_cb)(struct grid_ui_element*, uint8_t, uint8_t);
   void (*event_clear_cb)(struct grid_ui_event*);
@@ -178,7 +185,7 @@ int grid_ui_bulk_anything_is_in_progress(struct grid_ui_model* ui);
 int grid_ui_bulk_is_in_progress(struct grid_ui_model* ui, enum grid_ui_bulk_status_t);
 uint8_t grid_ui_bulk_get_lastheader(struct grid_ui_model* ui);
 
-int grid_ui_bulk_page_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
+int grid_ui_bulk_operation_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 
 void grid_ui_bulk_pageread_next(struct grid_ui_model* ui);
 void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui);

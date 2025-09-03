@@ -1,6 +1,7 @@
 #include "grid_ui.h"
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -47,6 +48,22 @@ void grid_ui_semaphore_release(struct grid_ui_semaphore* semaphore) {
   semaphore->release_fn(semaphore->handle);
 }
 
+uint8_t GRID_ELE_EVE_TO_VALUE_IDX[GRID_PARAMETER_ELEMENT_COUNT][GRID_PARAMETER_EVENT_COUNT] = {0};
+
+void grid_ele_eve_to_value_idx_init(uint8_t map[GRID_PARAMETER_ELEMENT_COUNT][GRID_PARAMETER_EVENT_COUNT]) {
+
+  // Initialize all indices to 255/-1, signifying an invalid value by default
+  memset(map, 255, GRID_PARAMETER_ELEMENT_COUNT * GRID_PARAMETER_EVENT_COUNT);
+
+  // Initialize valid indices
+  map[GRID_PARAMETER_ELEMENT_POTMETER][GRID_PARAMETER_EVENT_POTMETER] = GRID_LUA_FNC_P_POTMETER_VALUE_index;
+  map[GRID_PARAMETER_ELEMENT_BUTTON][GRID_PARAMETER_EVENT_BUTTON] = GRID_LUA_FNC_B_BUTTON_VALUE_index;
+  map[GRID_PARAMETER_ELEMENT_ENCODER][GRID_PARAMETER_EVENT_BUTTON] = GRID_LUA_FNC_E_BUTTON_VALUE_index;
+  map[GRID_PARAMETER_ELEMENT_ENCODER][GRID_PARAMETER_EVENT_ENCODER] = GRID_LUA_FNC_E_ENCODER_VALUE_index;
+  map[GRID_PARAMETER_ELEMENT_ENDLESS][GRID_PARAMETER_EVENT_BUTTON] = GRID_LUA_FNC_EP_BUTTON_VALUE_index;
+  map[GRID_PARAMETER_ELEMENT_ENDLESS][GRID_PARAMETER_EVENT_ENDLESS] = GRID_LUA_FNC_EP_ENDLESS_VALUE_index;
+}
+
 struct grid_ui_model grid_ui_state;
 
 void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
@@ -71,6 +88,8 @@ void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
   ui->bulk_last_page = -1;
   ui->bulk_last_element = -1;
   ui->bulk_last_event = -1;
+
+  grid_ele_eve_to_value_idx_init(GRID_ELE_EVE_TO_VALUE_IDX);
 }
 
 struct grid_ui_element* grid_ui_model_get_elements(struct grid_ui_model* ui) {
@@ -105,6 +124,7 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
 
   ele->parent = parent;
   ele->index = index;
+  ele->name[0] = '\0';
 
   ele->template_parameter_list_length = 0;
   ele->template_parameter_list = NULL;
@@ -112,6 +132,11 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   ele->template_buffer_list_head = NULL;
   ele->template_parameter_element_position_index_1 = 0;
   ele->template_parameter_element_position_index_2 = 0;
+  for (int i = 0; i < 2; ++i) {
+    ele->template_parameter_index_value[i] = 0;
+    ele->template_parameter_index_min[i] = 0;
+    ele->template_parameter_index_max[i] = 0;
+  }
 
   ele->timer_event_helper = 0;
   ele->timer_source_is_midi = 0;
@@ -367,21 +392,19 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
 
   // Invoke lua UI init callback
   grid_lua_ui_init(&grid_lua_state, grid_ui_state.lua_ui_init_callback);
+  grid_lua_pre_init(&grid_lua_state);
 
   grid_ui_bulk_semaphore_release(ui);
   grid_ui_busy_semaphore_release(ui);
 
-  grid_ui_bulk_page_init(ui, GRID_UI_BULK_READ_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), 0, grid_ui_page_load_success_callback);
+  grid_ui_bulk_operation_init(ui, GRID_UI_BULK_READ_PROGRESS, grid_ui_page_get_activepage(&grid_ui_state), 0, NULL);
 }
 
-void grid_ui_page_load_success_callback(uint8_t lastheader) {
+void grid_ui_page_load_success_handler(void) {
 
   grid_lua_post_init(&grid_lua_state);
 
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
-
-  // Phase out the animation
-  grid_alert_all_set_timeout_automatic(&grid_led_state);
 }
 
 void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t page) {
@@ -401,6 +424,22 @@ uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui) { return ui->pa
 
 uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* action_string) { return strcmp(action_string, eve->default_actionstring) == 0; }
 
+void grid_ui_actionstring_header(uint8_t index, char* function_name, char* dest) {
+
+  char fn_push[] = "local _efn = EFN; EFN = ";
+
+  sprintf(dest, "ele[%d].%s = function (self) %s\"%s\"; ", index, function_name, fn_push, function_name);
+}
+
+void grid_ui_actionstring_center(char* actionstring, char* dest) { sprintf(dest, "%s ", &actionstring[6]); }
+
+void grid_ui_actionstring_footer(char* dest) {
+
+  char fn_pop[] = "EFN = _efn";
+
+  sprintf(dest, "end %s", fn_pop);
+}
+
 void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action_string) {
 
   struct grid_ui_element* ele = eve->parent;
@@ -415,7 +454,9 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action
   char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
   action_string[len - 3] = '\0';
-  sprintf(temp, "ele[%d].%s = function (self) %s end", ele->index, eve->function_name, &action_string[6]);
+  grid_ui_actionstring_header(ele->index, eve->function_name, temp);
+  grid_ui_actionstring_center(action_string, &temp[strlen(temp)]);
+  grid_ui_actionstring_footer(&temp[strlen(temp)]);
   action_string[len - 3] = ' ';
 
   eve->cfg_default_flag = grid_ui_event_isdefault_actionstring(eve, action_string);
@@ -458,6 +499,54 @@ uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, char* target_stri
   return strlen(target_string);
 }
 
+uint32_t grid_ui_event_render_event_view(struct grid_ui_event* eve, char* dest) {
+
+  struct grid_ui_element* ele = eve->parent;
+
+  if (!ele->template_parameter_list) {
+    return 0;
+  }
+
+  uint8_t page = ele->parent->page_activepage;
+  uint8_t element = ele->index;
+  uint8_t event = eve->type;
+  const char* name = ele->name;
+  uint32_t name_len = strlen(name);
+
+  // assign mapmode/system to element 255
+  if (event == GRID_PARAMETER_ELEMENT_SYSTEM) {
+    element = 255;
+  }
+
+  sprintf(dest, GRID_CLASS_EVENTVIEW_frame_start);
+
+  grid_str_set_parameter(dest, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code, NULL);
+
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_PAGE_offset, GRID_CLASS_EVENTVIEW_PAGE_length, page, NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_ELEMENT_offset, GRID_CLASS_EVENTVIEW_ELEMENT_length, element, NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_EVENT_offset, GRID_CLASS_EVENTVIEW_EVENT_length, event, NULL);
+
+  uint8_t value_index_valid = GRID_ELE_EVE_TO_VALUE_IDX[ele->type][event] != 255;
+
+  // If the value index is valid, assume that min and max are the next two,
+  // for the sake of minimizing the memory footprint of the mapping
+  uint8_t index_value = value_index_valid ? GRID_ELE_EVE_TO_VALUE_IDX[ele->type][event] : 0;
+  uint8_t index_min = value_index_valid ? index_value + 1 : 0;
+  uint8_t index_max = value_index_valid ? index_value + 2 : 0;
+
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_VALUE1_offset, GRID_CLASS_EVENTVIEW_VALUE1_length, ele->template_parameter_list[index_value], NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_MIN1_offset, GRID_CLASS_EVENTVIEW_MIN1_length, ele->template_parameter_list[index_min], NULL);
+  grid_str_set_parameter(dest, GRID_CLASS_EVENTVIEW_MAX1_offset, GRID_CLASS_EVENTVIEW_MAX1_length, ele->template_parameter_list[index_max], NULL);
+
+  size_t size = strlen(dest);
+
+  size += grid_str_set_segment_char(&dest[size], GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length, name_len, name);
+
+  sprintf(&dest[size], GRID_CLASS_EVENTVIEW_frame_end);
+
+  return strlen(dest);
+}
+
 void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* targetstring) { strcpy(targetstring, eve->default_actionstring); }
 
 void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstring) {
@@ -471,16 +560,22 @@ void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstrin
     grid_port_debug_printf("LUA not OK, Failed to retrieve action! EL: %d EV: %d", eve->parent->index, eve->type);
   };
 
-  sprintf(temp, "ele[%d].%s", eve->parent->index, eve->function_name);
+  char header[100] = {0};
+  char footer[100] = {0};
+
+  grid_ui_actionstring_header(eve->parent->index, eve->function_name, header);
+  grid_ui_actionstring_footer(footer);
+
+  size_t header_len = strlen(header);
+  size_t footer_len = strlen(footer);
 
   // Check if debug.getinfo is valid by checking for a known prefix
-  if (0 == strncmp(temp, result, strlen(temp))) {
+  if (0 == strncmp(header, result, header_len)) {
 
     // Transform result to an actionstring
-    sprintf(&result[strlen(result) - 4], " ?>");
-    uint8_t offset = 13 + strlen(temp);
-    sprintf(&result[offset], "<?lua");
-    result[offset + 5] = ' '; // replace '\0' with ' '
+    sprintf(&result[strlen(result) - footer_len], " ?>");
+    uint8_t offset = header_len - 6;
+    memcpy(&result[offset], "<?lua ", 6);
 
     strcpy(targetstring, &result[offset]);
 
@@ -659,7 +754,7 @@ int grid_ui_bulk_is_in_progress(struct grid_ui_model* ui, enum grid_ui_bulk_stat
 
 uint8_t grid_ui_bulk_get_lastheader(struct grid_ui_model* ui) { return ui->bulk_lastheader_id; }
 
-int grid_ui_bulk_page_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
+int grid_ui_bulk_operation_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
   if (status != GRID_UI_BULK_READ_PROGRESS && status != GRID_UI_BULK_STORE_PROGRESS && status != GRID_UI_BULK_CLEAR_PROGRESS) {
     return 1;
@@ -667,6 +762,7 @@ int grid_ui_bulk_page_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t 
 
   grid_platform_printf("NVM: Page init\r\n");
   // update lastheader_id even if busy (during retry)
+
   ui->bulk_lastheader_id = lastheader_id;
 
   if (grid_ui_bulk_anything_is_in_progress(ui)) {
@@ -676,9 +772,7 @@ int grid_ui_bulk_page_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t 
   grid_ui_bulk_semaphore_lock(ui);
 
   ui->bulk_status = status;
-
   ui->bulk_success_callback = success_cb;
-
   ui->bulk_last_page = page;
   ui->bulk_last_element = -1;
   ui->bulk_last_event = -1;
@@ -811,10 +905,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
     }
   }
 
-  // step 4: trigger all init events
-  grid_lua_post_init(&grid_lua_state);
-
-  // step 5: run the success callback if available
+  // step 4: run the success callback if available
 
   // Set ready before callback so callback can start new nvm operation
   ui->bulk_status = GRID_UI_BULK_READY;
@@ -823,6 +914,10 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
   grid_ui_busy_semaphore_release(ui);
   grid_platform_printf("NVM: Read done\r\n");
 
+  // Callback the mandatory handler
+  grid_ui_page_load_success_handler();
+
+  // Must call callback for discard to work properly
   if (ui->bulk_success_callback != NULL) {
     ui->bulk_success_callback(ui->bulk_lastheader_id);
     ui->bulk_success_callback = NULL;
@@ -1188,7 +1283,7 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui) {
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
 
       // Automatically report elementname after config
-      if (ele->type != GRID_PARAMETER_ELEMENT_SYSTEM) {
+      if (ele->type != GRID_PARAMETER_ELEMENT_SYSTEM && ele->type != GRID_PARAMETER_ELEMENT_LCD) {
 
         char command[26] = {0};
 
@@ -1258,6 +1353,10 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
       offset = grid_msg_packet_body_get_length(&message);
 
       message.body_length += grid_ui_event_render_action(eve, &message.body[offset]);
+
+      offset = grid_msg_packet_body_get_length(&message);
+
+      message.body_length += grid_ui_event_render_event_view(eve, &message.body[offset]);
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }

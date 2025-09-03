@@ -11,6 +11,9 @@
 #define GRID_LUA_FNC_G_ELEMENTNAME_short "gen"
 #define GRID_LUA_FNC_G_ELEMENTNAME_human "element_name"
 
+#include "eventfname.h"
+#define GRID_LUA_FNC_G_EVENTFNAME_source grid_lua_src_eventfname_lua
+
 #include "limit.h"
 #define GRID_LUA_FNC_G_LIMIT_source grid_lua_src_limit_lua
 #define GRID_LUA_FNC_G_LIMIT_short "glim"
@@ -36,5 +39,11 @@
 
 #include "simplecolor.h"
 #define GRID_LUA_FNC_G_SIMPLECOLOR_source grid_lua_src_simplecolor_lua
+
+#include "simplemidi.h"
+#define GRID_LUA_FNC_G_SIMPLEMIDI_source grid_lua_src_simplemidi_lua
+
+#include "autovalue.h"
+#define GRID_LUA_FNC_G_AUTOVALUE_source grid_lua_src_autovalue_lua
 
 #endif

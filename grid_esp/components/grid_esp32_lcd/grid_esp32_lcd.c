@@ -9,6 +9,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "grid_noflash.h"
+#include "grid_utask.h"
+
 extern uint64_t grid_platform_rtc_get_micros(void);
 
 extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
@@ -37,8 +40,6 @@ static const char* TAG = "LCD";
 #define LCD_SWAP_XY false
 #define LCD_FLUSH_CALLBACK lcd_flush_ready
 
-bool grid_esp32_lcd_ready = 0;
-
 struct grid_esp32_lcd_model grid_esp32_lcd_states[2] = {0};
 
 bool color_trans_done_0(struct esp_lcd_panel_io_t* panel_io, esp_lcd_panel_io_event_data_t* edata, void* user_ctx) {
@@ -55,9 +56,21 @@ bool color_trans_done_1(struct esp_lcd_panel_io_t* panel_io, esp_lcd_panel_io_ev
   return true;
 }
 
+bool grid_esp32_lcd_ready = 0;
+
 void grid_esp32_lcd_set_ready(bool ready) { grid_esp32_lcd_ready = ready; }
 
 bool grid_esp32_lcd_get_ready() { return grid_esp32_lcd_ready; }
+
+bool DRAM_ATTR grid_esp32_lcd_drawn;
+
+void grid_esp32_lcd_set_drawn(bool drawn) { grid_esp32_lcd_drawn = drawn; }
+
+bool grid_esp32_lcd_get_drawn() { return grid_esp32_lcd_drawn; }
+
+uint8_t DRAM_ATTR grid_esp32_lcd_backlight = 0;
+
+void grid_platform_lcd_set_backlight(uint8_t backlight) { grid_esp32_lcd_backlight = backlight; }
 
 void grid_esp32_lcd_spi_bus_init(size_t max_color_sz) {
 
@@ -76,7 +89,13 @@ void grid_esp32_lcd_spi_bus_init(size_t max_color_sz) {
 
 void grid_esp32_lcd_panel_chipsel(struct grid_esp32_lcd_model* lcd, uint8_t value) { gpio_set_level(lcd->cs_gpio_num, value != 0); }
 
-void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, uint8_t lcd_index, enum grid_lcd_clock_t clock) {
+void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, struct grid_ui_element* element, uint8_t lcd_index, enum grid_lcd_clock_t clock) {
+
+  assert(element);
+  assert(element->type == GRID_PARAMETER_ELEMENT_LCD);
+
+  // Store element pointer
+  lcd->element = element;
 
   assert(clock < GRID_LCD_CLK_COUNT);
 
@@ -364,7 +383,8 @@ void grid_esp32_module_vsn_lcd_push_trailing(struct grid_esp32_lcd_model* lcds, 
   }
 }
 
-void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf) {
+void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf,
+                                       struct grid_utask_timer* timers) {
 
   bool waiting[2] = {
       grid_esp32_lcd_panel_active(&lcds[0]) && grid_gui_swap_get(&guis[0]),
@@ -377,6 +397,15 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
 
     int lcd_index = grid_esp32_module_vsn_lcd_wait_scan_top(lcds, waiting, lines, tx_lines, ready_len, scans);
 
+    if (grid_swsr_size(&guis[lcd_index].swsr) == 0) {
+
+      struct grid_ui_event* eve = grid_ui_event_find(lcds[lcd_index].element, GRID_PARAMETER_EVENT_DRAW);
+
+      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
+
+      grid_utask_timer_realign(&timers[lcd_index]);
+    }
+
     grid_esp32_module_vsn_lcd_push_trailing(lcds, lcd_index, lines, columns, tx_lines, guis[lcd_index].buffer, xferbuf);
 
     waiting[lcd_index] = false;
@@ -385,9 +414,42 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
   }
 }
 
+struct grid_utask_timer timer_draw_trigger[2];
+
+void grid_utask_draw_trigger(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
+  struct grid_gui_model* guis = grid_gui_states;
+
+  int i = timer - timer_draw_trigger;
+
+  assert(grid_esp32_lcd_panel_active(&lcds[i]));
+
+  assert(lcds[i].element);
+
+  struct grid_ui_event* eve = grid_ui_event_find(lcds[i].element, GRID_PARAMETER_EVENT_DRAW);
+
+  if (eve->state == GRID_EVE_STATE_INIT && grid_swsr_size(&guis[i].swsr) == 0) {
+
+    grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
+  }
+}
+
 #undef USE_SEMAPHORE
 
 void grid_esp32_lcd_task(void* arg) {
+
+  // Configure task timers
+  for (int i = 0; i < 2; ++i) {
+    timer_draw_trigger[i] = (struct grid_utask_timer){
+        .last = grid_platform_rtc_get_micros(),
+        .period = GRID_PARAMETER_DRAWTRIGGER_us,
+    };
+  }
 
   uint32_t lcd_tx_lines = 16;
   uint32_t lcd_tx_bytes = LCD_VRES * lcd_tx_lines * COLMOD_RGB888_BYTES;
@@ -422,7 +484,26 @@ void grid_esp32_lcd_task(void* arg) {
     grid_lua_semaphore_lock(&grid_lua_state);
 #endif
 
-    grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf);
+    grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf, timer_draw_trigger);
+
+    if (!grid_esp32_lcd_get_drawn()) {
+
+      // Wait for at least one frame time, currently 25 ms at 40 Hz
+      vTaskDelay(pdMS_TO_TICKS(30));
+
+      // Set flag indicating that fresh pixels appeared at least once,
+      // this is only true here if a clear & swap was queued initially
+      grid_esp32_lcd_set_drawn(true);
+    }
+
+    // Run microtasks
+    for (int i = 0; i < 2; ++i) {
+
+      if (grid_esp32_lcd_panel_active(&lcds[i])) {
+
+        grid_utask_draw_trigger(&timer_draw_trigger[i]);
+      }
+    }
 
 #ifdef USE_SEMAPHORE
     grid_lua_semaphore_release(&grid_lua_state);
