@@ -15,11 +15,6 @@ void grid_ui_semaphore_init(struct grid_ui_semaphore* semaphore, void* handle, v
 void grid_ui_semaphore_lock(struct grid_ui_semaphore* semaphore);
 void grid_ui_semaphore_release(struct grid_ui_semaphore* semaphore);
 
-union grid_ui_file_handle {
-  char fname[50];
-  void* toc_ptr;
-};
-
 enum grid_eve_state_t {
   GRID_EVE_STATE_INIT = 0,
   GRID_EVE_STATE_TRIG,

@@ -36,19 +36,21 @@ extern int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
 
 extern void* grid_platform_allocate_volatile(size_t size);
 
-union grid_ui_file_handle;
+struct grid_file_t {
+  char path[50];
+};
 
-extern int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle);
+extern int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, struct grid_file_t* handle);
 
-extern int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle);
+extern int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, struct grid_file_t* handle);
 
-extern void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle);
+extern void grid_platform_delete_actionstring_file(struct grid_file_t* handle);
 
-extern uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle);
+extern uint16_t grid_platform_get_actionstring_file_size(struct grid_file_t* handle);
 
-extern uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char* targetstring, uint16_t size);
+extern uint32_t grid_platform_read_actionstring_file_contents(struct grid_file_t* handle, char* targetstring, uint16_t size);
 
-extern void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
+extern int grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
 
 extern void grid_platform_clear_all_actionstring_files_from_page(uint8_t page);
 
@@ -62,15 +64,15 @@ extern int grid_platform_make_directory(const char* path);
 
 extern int grid_platform_list_directory(const char* path);
 
-extern int grid_platform_find_file(const char* path, union grid_ui_file_handle* file_handle);
+extern int grid_platform_find_file(const char* path, struct grid_file_t* handle);
 
-extern uint16_t grid_platform_get_file_size(union grid_ui_file_handle* file_handle);
+extern uint16_t grid_platform_get_file_size(struct grid_file_t* handle);
 
-extern int grid_platform_read_file(union grid_ui_file_handle* file_handle, uint8_t* buffer, uint16_t size);
+extern int grid_platform_read_file(struct grid_file_t* handle, uint8_t* buffer, uint16_t size);
 
-extern int grid_platform_write_file(char* path, uint8_t* buffer, uint16_t size);
+extern int grid_platform_write_file(const char* path, uint8_t* buffer, uint16_t size);
 
-extern int grid_platform_delete_file(union grid_ui_file_handle* file_handle);
+extern int grid_platform_delete_file(struct grid_file_t* handle);
 
 extern int grid_platform_remove_path(const char* path);
 

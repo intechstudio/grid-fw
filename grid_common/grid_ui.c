@@ -644,13 +644,13 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
   } else {
 
-    union grid_ui_file_handle file_handle = {0};
-    int status = grid_platform_find_actionstring_file(page, element, event_type, &file_handle);
+    struct grid_file_t handle = {0};
+    int status = grid_platform_find_actionstring_file(page, element, event_type, &handle);
 
     if (status == 0) {
 
-      uint16_t size = grid_platform_get_actionstring_file_size(&file_handle);
-      grid_platform_read_actionstring_file_contents(&file_handle, targetstring, size);
+      uint16_t size = grid_platform_get_file_size(&handle);
+      grid_platform_read_file(&handle, (uint8_t*)targetstring, size);
 
     } else {
 
@@ -862,19 +862,19 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
     }
   }
 
-  // step 2: we register all custom actionstring files from FS or TOC
-  union grid_ui_file_handle file_handle = {0};
-  uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &file_handle);
+  // step 2: we register all custom actionstring files
+  struct grid_file_t handle = {0};
+  uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &handle);
 
   if (!was_last_one) {
 
     struct grid_ui_event* eve = grid_ui_event_find(&ui->element_list[ui->bulk_last_element], ui->bulk_last_event);
-    uint16_t size = grid_platform_get_actionstring_file_size(&file_handle);
+    uint16_t size = grid_platform_get_file_size(&handle);
 
     if (size > 0) {
 
       char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
-      grid_platform_read_actionstring_file_contents(&file_handle, temp, size);
+      grid_platform_read_file(&handle, (uint8_t*)temp, size);
 
       grid_ui_event_register_actionstring(eve, temp);
       grid_platform_printf("Ele:%d Eve:%d\r\n", ui->bulk_last_element, ui->bulk_last_event);
@@ -954,12 +954,12 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui) {
 
       if (eve->cfg_default_flag) {
 
-        union grid_ui_file_handle file_handle = {0};
-        int status = grid_platform_find_actionstring_file(ui->bulk_last_page, ele->index, eve->type, &file_handle);
+        struct grid_file_t handle = {0};
+        int status = grid_platform_find_actionstring_file(ui->bulk_last_page, ele->index, eve->type, &handle);
 
         // File found
         if (status == 0) {
-          grid_platform_delete_actionstring_file(&file_handle);
+          grid_platform_delete_file(&handle);
         }
 
       } else {
@@ -1010,12 +1010,12 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui) {
   grid_ui_busy_semaphore_lock(ui);
   grid_ui_bulk_semaphore_lock(ui);
 
-  union grid_ui_file_handle file_handle = {0};
-  uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &file_handle);
+  struct grid_file_t handle = {0};
+  uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &handle);
 
   if (!was_last_one) {
 
-    grid_platform_delete_actionstring_file(&file_handle);
+    grid_platform_delete_file(&handle);
     grid_ui_bulk_semaphore_release(ui);
     grid_ui_busy_semaphore_release(ui);
     return;
@@ -1044,15 +1044,15 @@ int confread_parse_from_file(struct grid_ui_model* ui) {
 
   int status;
 
-  union grid_ui_file_handle file_handle = {0};
+  struct grid_file_t handle = {0};
 
-  status = grid_platform_find_file(GRID_UI_CONFIG_PATH, &file_handle);
+  status = grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle);
   if (status) {
     grid_platform_printf("grid_platform_find_file returned %d\n", status);
     return 1;
   }
 
-  uint16_t file_size = grid_platform_get_file_size(&file_handle);
+  uint16_t file_size = grid_platform_get_file_size(&handle);
   if (file_size == 0) {
     grid_platform_printf("grid_platform_get_file_size returned %d\n", status);
     return 1;
@@ -1064,7 +1064,7 @@ int confread_parse_from_file(struct grid_ui_model* ui) {
     return 1;
   }
 
-  status = grid_platform_read_file(&file_handle, (uint8_t*)buffer, file_size);
+  status = grid_platform_read_file(&handle, (uint8_t*)buffer, file_size);
   if (status) {
     grid_platform_printf("grid_platform_read_file returned %d\n", status);
     free(buffer);
@@ -1187,11 +1187,11 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui) {
   // STEP 1: Delete all actionstring files
   if (ui->bulk_last_page < ui->page_count) {
 
-    union grid_ui_file_handle file_handle = {0};
-    uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &file_handle);
+    struct grid_file_t handle = {0};
+    uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &handle);
 
     if (!was_last_one) {
-      grid_platform_delete_actionstring_file(&file_handle);
+      grid_platform_delete_file(&handle);
     } else {
       ui->bulk_last_page++;
     }
@@ -1204,10 +1204,10 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui) {
   // STEP 2: Delete config file
   if (ui->bulk_last_page == ui->page_count) {
 
-    union grid_ui_file_handle file_handle = {0};
+    struct grid_file_t handle = {0};
 
-    if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &file_handle) == 0) {
-      grid_platform_delete_file(&file_handle);
+    if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle) == 0) {
+      grid_platform_delete_file(&handle);
     }
 
     ui->bulk_last_page++;
