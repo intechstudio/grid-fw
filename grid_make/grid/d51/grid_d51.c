@@ -443,6 +443,8 @@ void grid_d51_nvic_debug_priorities(void) {
 
   printf("Pri MASK    %d\r\n", grid_d51_nvic_get_interrupt_priority_mask());
 
+  printf("RTC         %d\r\n", grid_d51_nvic_get_interrupt_priority(RTC_IRQn));
+
   printf("USB_0       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_0_IRQn));
   printf("USB_1       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_1_IRQn));
   printf("USB_2       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_2_IRQn));
@@ -738,105 +740,7 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
   }
 }
 
-int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle) {
-
-  file_handle->toc_ptr = grid_d51_nvm_toc_entry_find_next_on_page(&grid_d51_nvm_state, page, last_element, last_event);
-
-  if (file_handle->toc_ptr != NULL) {
-
-    return 0; // success
-  }
-
-  file_handle->toc_ptr = NULL;
-  return 1; // not found
-}
-
-int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle) {
-
-  file_handle->toc_ptr = grid_d51_nvm_toc_entry_find(&grid_d51_nvm_state, page, element, event_type);
-  if (file_handle->toc_ptr != NULL) {
-    return 0; // success
-  }
-
-  return 1; // not found
-}
-
-uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle) {
-
-  struct grid_d51_nvm_toc_entry* entry = (struct grid_d51_nvm_toc_entry*)file_handle->toc_ptr;
-  return entry->config_string_length;
-}
-
-uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char* targetstring) {
-  return grid_d51_nvm_toc_generate_actionstring(&grid_d51_nvm_state, (struct grid_d51_nvm_toc_entry*)file_handle->toc_ptr, targetstring);
-}
-
-void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle) {
-
-  struct grid_d51_nvm_toc_entry* entry = (struct grid_d51_nvm_toc_entry*)file_handle->toc_ptr;
-  grid_d51_nvm_config_store(&grid_d51_nvm_state, entry->page_id, entry->element_id, entry->event_type, "");
-}
-
-void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length) {
-  grid_d51_nvm_config_store(&grid_d51_nvm_state, page, element, event_type, buffer);
-}
-
-int grid_platform_find_file(char* path, union grid_ui_file_handle* file_handle) { return 1; }
-uint16_t grid_platform_get_file_size(union grid_ui_file_handle* file_handle) { return 0; }
-int grid_platform_read_file(union grid_ui_file_handle* file_handle, uint8_t* buffer, uint16_t size) { return 1; }
-int grid_platform_write_file(char* path, uint8_t* buffer, uint16_t size) { return 1; }
-int grid_platform_delete_file(union grid_ui_file_handle* file_handle) { return 1; }
-
-uint8_t grid_platform_get_nvm_state() { return grid_d51_nvm_is_ready(&grid_d51_nvm_state); }
-
-uint32_t grid_plaform_get_nvm_nextwriteoffset() { return grid_d51_nvm_state.next_write_offset; }
-
-void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
-
-  struct grid_d51_nvm_toc_entry* current = grid_d51_nvm_state.toc_head;
-
-  while (current != NULL) {
-    if (current->page_id == page) {
-
-      grid_d51_nvm_toc_entry_destroy(&grid_d51_nvm_state, current);
-    }
-
-    current = current->next;
-  }
-}
-
-void grid_platform_delete_actionstring_files_all() {
-
-  grid_d51_nvm_state.erase_bulk_address = GRID_D51_NVM_LOCAL_BASE_ADDRESS;
-
-  struct grid_d51_nvm_toc_entry* current = grid_d51_nvm_state.toc_head;
-
-  while (current != NULL) {
-    grid_d51_nvm_toc_entry_destroy(&grid_d51_nvm_state, current);
-    current = current->next;
-  }
-}
-
-uint8_t grid_platform_erase_nvm_next() {
-
-  if (grid_d51_nvm_state.erase_bulk_address < GRID_D51_NVM_LOCAL_END_ADDRESS) { // erase is in progress
-
-    // CRITICAL_SECTION_ENTER()
-    flash_erase(grid_d51_nvm_state.flash, grid_d51_nvm_state.erase_bulk_address, GRID_D51_NVM_BLOCK_SIZE / GRID_D51_NVM_PAGE_SIZE);
-    // CRITICAL_SECTION_LEAVE()
-
-    grid_d51_nvm_state.erase_bulk_address += GRID_D51_NVM_BLOCK_SIZE;
-
-    return 0;
-  }
-
-  grid_d51_nvm_state.erase_bulk_address = GRID_D51_NVM_LOCAL_BASE_ADDRESS;
-  return 1;
-}
-
 void grid_platform_system_reset() { NVIC_SystemReset(); }
-
-void grid_platform_nvm_defrag() { grid_d51_nvm_toc_defragment(&grid_d51_nvm_state); }
 
 uint8_t grid_platform_get_adc_bit_depth() { return 16; }
 

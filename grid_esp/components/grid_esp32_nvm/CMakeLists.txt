@@ -4,5 +4,5 @@ idf_component_register(
     INCLUDE_DIRS
         "."
     REQUIRES
-        "driver" "littlefs" "grid_common" "spi_flash"
+        "driver" "grid_common" "grid_esp32_littlefs" "spi_flash"
 )

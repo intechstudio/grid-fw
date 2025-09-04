@@ -10,6 +10,7 @@ grid/d51 \
 grid/vmp \
 ../vmp \
 ../grid_common/lua-5.4.3/src \
+../grid_common/littlefs \
 \
 
 OBJS +=  \
@@ -44,10 +45,13 @@ usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_utask.o \
 grid/d51/grid_d51.o \
 grid/d51/grid_d51_led.o \
+grid/d51/grid_d51_littlefs.o \
+grid/d51/grid_d51_littlefs_api.o \
 grid/d51/grid_d51_uart.o \
 grid/d51/grid_d51_usb.o \
 grid/d51/grid_d51_nvm.o \
 ../grid_common/grid_led.o \
+../grid_common/grid_littlefs.o \
 grid/d51/grid_d51_module.o \
 grid/grid_d51_module_bu16.o \
 grid/grid_d51_module_en16.o \
@@ -88,6 +92,8 @@ grid/d51/grid_d51_lua.o \
 ../grid_common/lua-5.4.3/src/ldump.o \
 ../grid_common/lua-5.4.3/src/lstrlib.o \
 ../grid_common/lua-5.4.3/src/lcorolib.o \
+../grid_common/littlefs/lfs.o \
+../grid_common/littlefs/lfs_util.o \
 grid/vmp/vmp_def.o \
 ../vmp/vmp.o \
 
@@ -128,10 +134,13 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_utask.o" \
 "grid/d51/grid_d51.o" \
 "grid/d51/grid_d51_led.o" \
+"grid/d51/grid_d51_littlefs.o" \
+"grid/d51/grid_d51_littlefs_api.o" \
 "grid/d51/grid_d51_uart.o" \
 "grid/d51/grid_d51_usb.o" \
 "grid/d51/grid_d51_nvm.o" \
 "../grid_common/grid_led.o" \
+"../grid_common/grid_littlefs.o" \
 "grid/d51/grid_d51_module.o" \
 "grid/grid_d51_module_bu16.o" \
 "grid/grid_d51_module_en16.o" \
@@ -172,6 +181,8 @@ OBJS_AS_ARGS +=  \
 "../grid_common/lua-5.4.3/src/ldump.o" \
 "../grid_common/lua-5.4.3/src/lstrlib.o" \
 "../grid_common/lua-5.4.3/src/lcorolib.o" \
+"../grid_common/littlefs/lfs.o" \
+"../grid_common/littlefs/lfs_util.o" \
 "grid/vmp/vmp_def.o" \
 "../vmp/vmp.o" \
 
@@ -191,6 +202,7 @@ DIR_INCLUDES +=  \
 -I"../../grid_common" \
 -I"../../grid_common" \
 -I"../../grid_common/lua-5.4.3/src" \
+-I"../../grid_common/littlefs" \
 
 
 
@@ -226,10 +238,13 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_utask.d" \
 "grid/d51/grid_d51.d" \
 "grid/d51/grid_d51_led.d" \
+"grid/d51/grid_d51_littlefs.d" \
+"grid/d51/grid_d51_littlefs_api.d" \
 "grid/d51/grid_d51_uart.d" \
 "grid/d51/grid_d51_usb.d" \
 "grid/d51/grid_d51_nvm.d" \
 "../grid_common/grid_led.d" \
+"../grid_common/grid_littlefs.d" \
 "grid/d51/grid_d51_module.d" \
 "grid/grid_d51_module_bu16.d" \
 "grid/grid_d51_module_en16.d" \
@@ -270,6 +285,8 @@ DEPS_AS_ARGS +=  \
 "../grid_common/lua-5.4.3/src/ldump.d" \
 "../grid_common/lua-5.4.3/src/lstrlib.d" \
 "../grid_common/lua-5.4.3/src/lcorolib.d" \
+"../grid_common/littlefs/lfs.d" \
+"../grid_common/littlefs/lfs_util.d" \
 "grid/vmp/vmp_def.d" \
 "../vmp/vmp.d" \
 
