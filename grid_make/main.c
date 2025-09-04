@@ -64,24 +64,31 @@ static void nvm_task_inner() {
 
   update_interrupt_mask_from_bulk_status();
 
-  uint64_t time_max_duration = 5 * 1000; // in microseconds
+  uint64_t time_max_duration = 10 * 1000; // in microseconds
   uint64_t time_start = grid_platform_rtc_get_micros();
 
-  switch (grid_ui_get_bulk_status(&grid_ui_state)) {
-  case GRID_UI_BULK_READ_PROGRESS:
-    grid_ui_bulk_pageread_next(&grid_ui_state);
-    break;
-  case GRID_UI_BULK_STORE_PROGRESS:
-    grid_ui_bulk_pagestore_next(&grid_ui_state);
-    break;
-  case GRID_UI_BULK_CLEAR_PROGRESS:
-    grid_ui_bulk_pageclear_next(&grid_ui_state);
-    break;
-  case GRID_UI_BULK_ERASE_PROGRESS:
-    grid_ui_bulk_nvmerase_next(&grid_ui_state);
-    break;
-  default:
-    break;
+  bool proceed = grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
+  while (proceed) {
+
+    switch (grid_ui_get_bulk_status(&grid_ui_state)) {
+    case GRID_UI_BULK_READ_PROGRESS:
+      grid_ui_bulk_pageread_next(&grid_ui_state);
+      break;
+    case GRID_UI_BULK_STORE_PROGRESS:
+      grid_ui_bulk_pagestore_next(&grid_ui_state);
+      break;
+    case GRID_UI_BULK_CLEAR_PROGRESS:
+      grid_ui_bulk_pageclear_next(&grid_ui_state);
+      break;
+    case GRID_UI_BULK_ERASE_PROGRESS:
+      grid_ui_bulk_nvmerase_next(&grid_ui_state);
+      break;
+    default:
+      break;
+    }
+
+    proceed = grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration;
+    proceed = proceed && grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
   }
 }
 

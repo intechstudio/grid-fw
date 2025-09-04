@@ -170,16 +170,11 @@ void grid_esp32_nvm_task(void* arg) {
 
   while (1) {
 
-    if (false == grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
-
-      vTaskDelay(pdMS_TO_TICKS(15));
-      continue;
-    }
-
     uint64_t time_max_duration = 150 * 1000; // in microseconds
     uint64_t time_start = grid_platform_rtc_get_micros();
 
-    do {
+    bool proceed = grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
+    while (proceed) {
 
       switch (grid_ui_get_bulk_status(&grid_ui_state)) {
       case GRID_UI_BULK_READ_PROGRESS:
@@ -204,7 +199,9 @@ void grid_esp32_nvm_task(void* arg) {
         break;
       }
 
-    } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration && grid_ui_bulk_anything_is_in_progress(&grid_ui_state));
+      proceed = grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration;
+      proceed = proceed && grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
+    }
 
     vTaskDelay(pdMS_TO_TICKS(15));
   }
