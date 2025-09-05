@@ -131,7 +131,7 @@ void grid_str_write_hex_string_value(char* start_location, uint8_t size, uint32_
 
 int grid_str_verify_frame(char* message, uint16_t length);
 
-uint32_t grid_str_set_segment_char(char* dest, uint8_t head_bytes, uint32_t size, char* buffer);
+uint32_t grid_str_set_segment_char(char* dest, uint8_t head_bytes, uint32_t size, const char* buffer);
 uint32_t grid_str_get_segment_char(char* src, uint8_t head_hexes, uint32_t max_size, char* buffer);
 
 #endif /* GRID_MSG_H */

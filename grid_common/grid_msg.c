@@ -531,7 +531,7 @@ int grid_str_verify_frame(char* message, uint16_t length) {
   return 0;
 }
 
-uint32_t grid_str_set_segment_char(char* dest, uint8_t head_hexes, uint32_t size, char* buffer) {
+uint32_t grid_str_set_segment_char(char* dest, uint8_t head_hexes, uint32_t size, const char* buffer) {
 
   switch (head_hexes) {
   case 2:
