@@ -90,7 +90,7 @@ void grid_lua_clear_stdo(struct grid_lua_model* lua) { memset(lua->stdo, 0, lua-
 
 void grid_lua_clear_stde(struct grid_lua_model* lua) { memset(lua->stde, 0, lua->stde_len); }
 
-int grid_lua_append_stdo(struct grid_lua_model* lua, char* str) {
+int grid_lua_append_stdo(struct grid_lua_model* lua, const char* str) {
 
   int curr = strnlen(lua->stdo, lua->stdo_len);
 
@@ -107,7 +107,7 @@ int grid_lua_append_stdo(struct grid_lua_model* lua, char* str) {
   return 0;
 }
 
-int grid_lua_append_stde(struct grid_lua_model* lua, char* str) {
+int grid_lua_append_stde(struct grid_lua_model* lua, const char* str) {
 
   int curr = strnlen(lua->stde, lua->stde_len);
 

@@ -62,8 +62,8 @@ void grid_lua_clear_stdi(struct grid_lua_model* lua);
 void grid_lua_clear_stdo(struct grid_lua_model* lua);
 void grid_lua_clear_stde(struct grid_lua_model* lua);
 
-int grid_lua_append_stdo(struct grid_lua_model* lua, char* str);
-int grid_lua_append_stde(struct grid_lua_model* lua, char* str);
+int grid_lua_append_stdo(struct grid_lua_model* lua, const char* str);
+int grid_lua_append_stde(struct grid_lua_model* lua, const char* str);
 
 char* grid_lua_get_output_string(struct grid_lua_model* lua);
 char* grid_lua_get_error_string(struct grid_lua_model* lua);
