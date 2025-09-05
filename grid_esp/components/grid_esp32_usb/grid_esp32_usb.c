@@ -41,7 +41,6 @@ void tud_midi_rx_cb(uint8_t itf) {
   // regardless of these being used or not. Therefore incoming traffic should be
   // read (possibly just discarded) to avoid the sender blocking in IO
   uint8_t packet[4];
-  bool read = false;
 
   while (tud_midi_available()) {
 

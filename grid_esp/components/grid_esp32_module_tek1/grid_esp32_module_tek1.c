@@ -228,11 +228,9 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
                                  struct grid_esp32_lcd_model* lcds) {
 
   // Allocate transfer buffer
-  uint32_t width = LCD_HRES;
   uint32_t height = LCD_VRES;
   uint32_t lcd_tx_lines = 16;
   uint32_t lcd_tx_bytes = height * lcd_tx_lines * COLMOD_RGB888_BYTES;
-  // uint8_t* xferbuf = malloc(lcd_tx_bytes);
 
   // Initialize LCD
   grid_esp32_lcd_spi_bus_init(lcd_tx_bytes);

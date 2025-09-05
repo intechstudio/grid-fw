@@ -2196,7 +2196,12 @@ int l_grid_cat(lua_State* L) {
       return 0;
     }
 
-    int32_t min = lua_tointeger(L, -1);
+    int32_t min = 0;
+
+    if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+      min = lua_tointeger(L, -1);
+    }
+
     lua_pop(L, 1);
 
     grid_cal_but_min_set(cal_but, i, min);
@@ -2209,7 +2214,12 @@ int l_grid_cat(lua_State* L) {
       return 0;
     }
 
-    int32_t max = lua_tointeger(L, -1);
+    int32_t max = 0;
+
+    if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+      max = lua_tointeger(L, -1);
+    }
+
     lua_pop(L, 1);
 
     grid_cal_but_max_set(cal_but, i, max);
