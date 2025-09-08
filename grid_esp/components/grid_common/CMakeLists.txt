@@ -10,6 +10,7 @@ idf_component_register(
         "../../../grid_common/grid_ain.c"
         "../../../grid_common/grid_asc.c"
         "../../../grid_common/grid_led.c"
+        "../../../grid_common/grid_littlefs.c"
         "../../../grid_common/grid_math.c"
         "../../../grid_common/grid_sys.c"
         "../../../grid_common/grid_swsr.c"
@@ -33,6 +34,9 @@ idf_component_register(
         "../../../grid_common/grid_transport.c"
         "../../../grid_common/grid_rollid.c"
         "../../../grid_common/grid_utask.c"
+
+        "../../../grid_common/littlefs/lfs.c"
+        "../../../grid_common/littlefs/lfs_util.c"
 
         "../../../grid_common/lua-5.4.3/src/lapi.c"
         "../../../grid_common/lua-5.4.3/src/lctype.c"

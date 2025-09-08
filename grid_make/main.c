@@ -64,10 +64,11 @@ static void nvm_task_inner() {
 
   update_interrupt_mask_from_bulk_status();
 
-  uint64_t time_max_duration = 5 * 1000; // in microseconds
+  uint64_t time_max_duration = 10 * 1000; // in microseconds
   uint64_t time_start = grid_platform_rtc_get_micros();
 
-  do {
+  bool proceed = grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
+  while (proceed) {
 
     switch (grid_ui_get_bulk_status(&grid_ui_state)) {
     case GRID_UI_BULK_READ_PROGRESS:
@@ -86,7 +87,9 @@ static void nvm_task_inner() {
       break;
     }
 
-  } while (grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration && grid_ui_bulk_anything_is_in_progress(&grid_ui_state));
+    proceed = grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration;
+    proceed = proceed && grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
+  }
 }
 
 void handle_connection_effect() {
@@ -397,10 +400,8 @@ int main(void) {
 
   grid_d51_led_init(&grid_d51_led_state, &grid_led_state);
 
-  printf("Start TOC init\r\n");
-  grid_d51_nvm_toc_init(&grid_d51_nvm_state);
-  // grid_d51_nvm_toc_debug(&grid_d51_nvm_state);
-  printf("Done TOC init\r\n");
+  grid_d51_nvic_debug_priorities();
+
   grid_ui_page_load(&grid_ui_state, 0); // load page 0
 
   while (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
