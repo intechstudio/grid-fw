@@ -29,6 +29,7 @@ struct grid_port* grid_transport_get_port(struct grid_transport* transport, size
 void grid_transport_recv_usart(struct grid_transport* transport, uint8_t* msg, size_t size);
 void grid_transport_recv_usb(struct grid_transport* transport, uint8_t* msg, size_t size);
 void grid_transport_ping_all(struct grid_transport* transport);
+void grid_transport_sendfull(struct grid_transport* transport);
 void grid_transport_send_usart_cyclic_offset(struct grid_transport* transport);
 void grid_msg_packet_to_swsr(struct grid_msg_packet* pkt, struct grid_swsr_t* swsr);
 void grid_transport_send_msg_packet_to_all(struct grid_transport* transport, struct grid_msg_packet* pkt);

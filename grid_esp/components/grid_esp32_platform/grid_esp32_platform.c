@@ -42,3 +42,29 @@ uint64_t IRAM_ATTR grid_platform_rtc_get_elapsed_time(uint64_t told) { return gr
 uint32_t IRAM_ATTR grid_platform_get_cycles() { return esp_cpu_get_cycle_count(); }
 
 uint32_t IRAM_ATTR grid_platform_get_cycles_per_us() { return 240; }
+
+static char uint4_to_hex[16] = {
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
+};
+
+static void uint8_to_hex(uint8_t u, char h[2]) {
+  h[0] = uint4_to_hex[u >> 4];
+  h[1] = uint4_to_hex[u & 0xf];
+}
+
+void IRAM_ATTR grid_platform_printf_nonprint(const uint8_t* src, size_t size) {
+
+  for (size_t i = 0; i < size; ++i) {
+
+    if (src[i] < 32) {
+
+      char hex[2];
+      uint8_to_hex(src[i], hex);
+      ets_printf("[%c%c]", hex[0], hex[1]);
+
+    } else {
+
+      ets_printf("%c", src[i]);
+    }
+  }
+}
