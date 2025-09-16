@@ -11,6 +11,55 @@
 #include <stdio.h>
 #include <string.h>
 
+grid_fingerprint_t grid_fingerprint_calculate(const char* msg) {
+
+  uint8_t error = 0;
+
+  uint8_t recv_id = grid_str_get_parameter(msg, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
+  uint8_t recv_sess = grid_str_get_parameter(msg, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
+
+  int8_t updated_sx = grid_str_get_parameter(msg, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error);
+  updated_sx -= GRID_PARAMETER_DEFAULT_POSITION;
+  int8_t updated_sy = grid_str_get_parameter(msg, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error);
+  updated_sy -= GRID_PARAMETER_DEFAULT_POSITION;
+
+  return (recv_id << 24) + updated_sx * 256 * 256 + updated_sy * 256 + recv_sess;
+}
+
+void grid_fingerprint_buf_init(struct grid_fingerprint_buf* fpb, uint8_t capacity) {
+
+  assert(capacity % 8 == 0);
+
+  fpb->capa = capacity;
+  fpb->write = 0;
+
+  fpb->data = grid_platform_allocate_volatile(fpb->capa * sizeof(grid_fingerprint_t));
+  assert(fpb->data);
+
+  memset(fpb->data, 0, fpb->capa * sizeof(grid_fingerprint_t));
+}
+
+void grid_fingerprint_buf_store(struct grid_fingerprint_buf* fpb, grid_fingerprint_t f) {
+
+  fpb->data[fpb->write] = f;
+  fpb->write = (fpb->write + 1) % fpb->capa;
+}
+
+uint8_t grid_fingerprint_buf_find(struct grid_fingerprint_buf* fpb, grid_fingerprint_t f) {
+
+  for (uint8_t i = 0; i < fpb->capa; i += 8) {
+
+    int ret = fpb->data[i + 0] == f || fpb->data[i + 1] == f || fpb->data[i + 2] == f || fpb->data[i + 3] == f || fpb->data[i + 4] == f || fpb->data[i + 5] == f || fpb->data[i + 6] == f ||
+              fpb->data[i + 7] == f;
+
+    if (ret) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 struct grid_msg_model grid_msg_state;
 
 void grid_msg_init(struct grid_msg_model* msg) {
@@ -356,57 +405,6 @@ void grid_msg_packet_close(struct grid_msg_model* msg, struct grid_msg_packet* p
   packet->footer_length += strlen((char*)&packet->footer[packet->footer_length]);
 }
 
-// RECENT MESSAGES
-
-void grid_msg_recent_fingerprint_buffer_init(struct grid_msg_recent_buffer* rec, uint8_t length) {
-
-  assert(length % 8 == 0);
-
-  rec->fingerprint_array_length = length;
-  rec->fingerprint_array_index = 0;
-
-  rec->fingerprint_array = (grid_fingerprint_t*)grid_platform_allocate_volatile(rec->fingerprint_array_length * sizeof(grid_fingerprint_t));
-  memset(rec->fingerprint_array, 0, rec->fingerprint_array_length);
-}
-
-grid_fingerprint_t grid_msg_recent_fingerprint_calculate(char* message) {
-
-  uint8_t error = 0;
-
-  uint8_t received_id = grid_str_get_parameter(message, GRID_BRC_ID_offset, GRID_BRC_ID_length, &error);
-  uint8_t received_session = grid_str_get_parameter(message, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
-  int8_t updated_sx = grid_str_get_parameter(message, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-  int8_t updated_sy = grid_str_get_parameter(message, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-
-  grid_fingerprint_t fingerprint = received_id * 256 * 256 * 256 + updated_sx * 256 * 256 + updated_sy * 256 + received_session;
-
-  return fingerprint;
-}
-
-uint8_t grid_msg_recent_fingerprint_find(struct grid_msg_recent_buffer* rec, grid_fingerprint_t fingerprint) {
-
-  for (uint8_t i = 0; i < rec->fingerprint_array_length; i += 8) {
-
-    int ret = rec->fingerprint_array[i + 0] == fingerprint || rec->fingerprint_array[i + 1] == fingerprint || rec->fingerprint_array[i + 2] == fingerprint ||
-              rec->fingerprint_array[i + 3] == fingerprint || rec->fingerprint_array[i + 4] == fingerprint || rec->fingerprint_array[i + 5] == fingerprint ||
-              rec->fingerprint_array[i + 6] == fingerprint || rec->fingerprint_array[i + 7] == fingerprint;
-
-    if (ret) {
-      return 1;
-    }
-  }
-
-  return 0;
-}
-
-void grid_msg_recent_fingerprint_store(struct grid_msg_recent_buffer* rec, grid_fingerprint_t fingerprint) {
-
-  rec->fingerprint_array_index += 1;
-  rec->fingerprint_array_index %= rec->fingerprint_array_length;
-
-  rec->fingerprint_array[rec->fingerprint_array_index] = fingerprint;
-}
-
 uint8_t grid_str_calculate_checksum_of_packet_string(char* str, uint32_t length) {
 
   uint8_t checksum = 0;
@@ -446,7 +444,7 @@ void grid_str_checksum_write(char* message, uint32_t length, uint8_t checksum) {
 
 // MESSAGE PARAMETER FUNCTIONS
 
-uint32_t grid_str_get_parameter(char* message, uint16_t offset, uint8_t length, uint8_t* error) { return grid_str_read_hex_string_value(&message[offset], length, error); }
+uint32_t grid_str_get_parameter(const char* message, uint16_t offset, uint8_t length, uint8_t* error) { return grid_str_read_hex_string_value(&message[offset], length, error); }
 
 void grid_str_set_parameter(char* message, uint16_t offset, uint8_t length, uint32_t value, uint8_t* error) { grid_str_write_hex_string_value(&message[offset], length, value); }
 
@@ -468,7 +466,7 @@ uint8_t grid_str_read_hex_char_value(uint8_t ascii, uint8_t* error_flag) {
   return result;
 }
 
-uint32_t grid_str_read_hex_string_value(char* start_location, uint8_t length, uint8_t* error_flag) {
+uint32_t grid_str_read_hex_string_value(const char* start_location, uint8_t length, uint8_t* error_flag) {
 
   uint32_t result = 0;
 

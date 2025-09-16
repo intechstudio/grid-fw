@@ -324,7 +324,7 @@ static void button_on_SYNC1_pressed(void) { sync1_received++; }
 
 static void button_on_SYNC2_pressed(void) { sync2_received++; }
 
-void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_msg_recent_buffer* recent) {
+void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_fingerprint_buf* fpb) {
 
   if (grid_uwsr_overflow(uwsr)) {
 
@@ -358,15 +358,15 @@ void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, s
 
   grid_str_transform_brc_params(temp, port->dx, port->dy, port->partner.rot);
 
-  uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(temp);
+  uint32_t fingerprint = grid_fingerprint_calculate(temp);
 
   if (temp[1] == GRID_CONST_BRC) {
 
-    if (grid_msg_recent_fingerprint_find(recent, fingerprint)) {
+    if (grid_fingerprint_buf_find(fpb, fingerprint)) {
       return;
     }
 
-    grid_msg_recent_fingerprint_store(recent, fingerprint);
+    grid_fingerprint_buf_store(fpb, fingerprint);
   }
 
   grid_port_recv_msg(port, temp, ret + 1);
@@ -427,8 +427,8 @@ int main(void) {
   ext_irq_register(PIN_GRID_SYNC_1, button_on_SYNC1_pressed);
   ext_irq_register(PIN_GRID_SYNC_2, button_on_SYNC2_pressed);
 
-  struct grid_msg_recent_buffer recent;
-  grid_msg_recent_fingerprint_buffer_init(&recent, 64);
+  struct grid_fingerprint_buf recent;
+  grid_fingerprint_buf_init(&recent, 64);
 
   // Configure task timers
   timer_ping = (struct grid_utask_timer){

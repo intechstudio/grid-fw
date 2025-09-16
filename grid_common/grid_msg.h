@@ -5,10 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "grid_platform.h"
 #include "grid_protocol.h"
-
-extern void* grid_platform_allocate_volatile(size_t size);
-extern uint8_t grid_platform_get_random_8();
 
 #define grid_msg_packet_header_maxlength 26
 #define GRID_MSG_FOOTER_maxlength 5
@@ -17,18 +15,18 @@ extern uint8_t grid_platform_get_random_8();
 
 typedef uint32_t grid_fingerprint_t;
 
-struct grid_msg_recent_buffer {
-  grid_fingerprint_t* fingerprint_array;
-  uint8_t fingerprint_array_index;
-  uint8_t fingerprint_array_length;
+grid_fingerprint_t grid_fingerprint_calculate(const char* msg);
+
+struct grid_fingerprint_buf {
+
+  uint8_t capa;
+  uint8_t write;
+  grid_fingerprint_t* data;
 };
 
-// RECENT FINGERPRINT FUNCTIONS
-
-void grid_msg_recent_fingerprint_buffer_init(struct grid_msg_recent_buffer* rec, uint8_t length);
-grid_fingerprint_t grid_msg_recent_fingerprint_calculate(char* message);
-uint8_t grid_msg_recent_fingerprint_find(struct grid_msg_recent_buffer* rec, grid_fingerprint_t fingerprint);
-void grid_msg_recent_fingerprint_store(struct grid_msg_recent_buffer* rec, grid_fingerprint_t fingerprint);
+void grid_fingerprint_buf_init(struct grid_fingerprint_buf* fpb, uint8_t capacity);
+void grid_fingerprint_buf_store(struct grid_fingerprint_buf* fpb, grid_fingerprint_t f);
+uint8_t grid_fingerprint_buf_find(struct grid_fingerprint_buf* fpb, grid_fingerprint_t f);
 
 struct grid_msg_model {
 
@@ -116,7 +114,7 @@ void grid_msg_packet_close(struct grid_msg_model* msg, struct grid_msg_packet* p
 
 // STRING FUNCTIONS
 
-uint32_t grid_str_get_parameter(char* message, uint16_t offset, uint8_t length, uint8_t* error);
+uint32_t grid_str_get_parameter(const char* message, uint16_t offset, uint8_t length, uint8_t* error);
 void grid_str_set_parameter(char* message, uint16_t offset, uint8_t length, uint32_t value, uint8_t* error);
 
 uint8_t grid_str_calculate_checksum_of_packet_string(char* str, uint32_t length);
@@ -126,7 +124,7 @@ uint8_t grid_str_checksum_read(char* str, uint32_t length);
 void grid_str_checksum_write(char* message, uint32_t length, uint8_t checksum);
 
 uint8_t grid_str_read_hex_char_value(uint8_t ascii, uint8_t* error_flag);
-uint32_t grid_str_read_hex_string_value(char* start_location, uint8_t length, uint8_t* error_flag);
+uint32_t grid_str_read_hex_string_value(const char* start_location, uint8_t length, uint8_t* error_flag);
 void grid_str_write_hex_string_value(char* start_location, uint8_t size, uint32_t value);
 
 int grid_str_verify_frame(char* message, uint16_t length);
