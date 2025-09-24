@@ -71,8 +71,6 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction);
 
 uint8_t grid_platform_get_nvm_state();
 
-uint32_t grid_plaform_get_nvm_nextwriteoffset();
-
 void grid_platform_clear_all_actionstring_files_from_page(uint8_t page);
 void grid_platform_delete_actionstring_files_all();
 
@@ -81,8 +79,6 @@ uint16_t grid_platform_get_file_size(union grid_ui_file_handle* file_handle);
 int grid_platform_read_file(union grid_ui_file_handle* file_handle, uint8_t* buffer, uint16_t size);
 int grid_platform_write_file(char* path, uint8_t* buffer, uint16_t size);
 int grid_platform_delete_file(union grid_ui_file_handle* file_handle);
-
-uint8_t grid_platform_erase_nvm_next();
 
 void grid_platform_system_reset();
 void grid_platform_nvm_defrag();

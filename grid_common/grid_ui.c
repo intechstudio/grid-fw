@@ -6,29 +6,12 @@
 #include <string.h>
 
 #include "grid_config.h"
+#include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_transport.h"
 #include "grid_usb.h"
 
 extern void grid_platform_printf(char const* fmt, ...);
-extern int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, union grid_ui_file_handle* file_handle);
-extern uint16_t grid_platform_get_actionstring_file_size(union grid_ui_file_handle* file_handle);
-extern uint32_t grid_platform_read_actionstring_file_contents(union grid_ui_file_handle* file_handle, char* targetstring);
-extern void grid_platform_delete_actionstring_file(union grid_ui_file_handle* file_handle);
-extern void grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
-extern int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, union grid_ui_file_handle* file_handle);
-extern int grid_platform_find_file(char* path, union grid_ui_file_handle* file_handle);
-extern uint16_t grid_platform_get_file_size(union grid_ui_file_handle* file_handle);
-extern int grid_platform_read_file(union grid_ui_file_handle* file_handle, uint8_t* buffer, uint16_t size);
-extern int grid_platform_write_file(char* path, uint8_t* buffer, uint16_t size);
-extern int grid_platform_delete_file(union grid_ui_file_handle* file_handle);
-extern uint32_t grid_platform_get_cycles();
-extern uint32_t grid_platform_get_cycles_per_us();
-extern void grid_platform_clear_all_actionstring_files_from_page(uint8_t page);
-extern void grid_platform_delete_actionstring_files_all();
-extern uint8_t grid_platform_get_nvm_state();
-extern uint8_t grid_platform_erase_nvm_next();
-extern uint8_t grid_platform_get_adc_bit_depth();
 
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 
@@ -661,12 +644,13 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
   } else {
 
-    union grid_ui_file_handle file_handle = {0};
-    int status = grid_platform_find_actionstring_file(page, element, event_type, &file_handle);
+    struct grid_file_t handle = {0};
+    int status = grid_platform_find_actionstring_file(page, element, event_type, &handle);
 
     if (status == 0) {
 
-      grid_platform_read_actionstring_file_contents(&file_handle, targetstring);
+      uint16_t size = grid_platform_get_file_size(&handle);
+      grid_platform_read_file(&handle, (uint8_t*)targetstring, size);
 
     } else {
 
@@ -878,19 +862,19 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
     }
   }
 
-  // step 2: we register all custom actionstring files from FS or TOC
-  union grid_ui_file_handle file_handle = {0};
-  uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &file_handle);
+  // step 2: we register all custom actionstring files
+  struct grid_file_t handle = {0};
+  uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &handle);
 
   if (!was_last_one) {
 
     struct grid_ui_event* eve = grid_ui_event_find(&ui->element_list[ui->bulk_last_element], ui->bulk_last_event);
-    uint16_t size = grid_platform_get_actionstring_file_size(&file_handle);
+    uint16_t size = grid_platform_get_file_size(&handle);
 
     if (size > 0) {
-      char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
-      grid_platform_read_actionstring_file_contents(&file_handle, temp);
+      char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
+      grid_platform_read_file(&handle, (uint8_t*)temp, size);
 
       grid_ui_event_register_actionstring(eve, temp);
       grid_platform_printf("Ele:%d Eve:%d\r\n", ui->bulk_last_element, ui->bulk_last_event);
@@ -970,12 +954,12 @@ void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui) {
 
       if (eve->cfg_default_flag) {
 
-        union grid_ui_file_handle file_handle = {0};
-        int status = grid_platform_find_actionstring_file(ui->bulk_last_page, ele->index, eve->type, &file_handle);
+        struct grid_file_t handle = {0};
+        int status = grid_platform_find_actionstring_file(ui->bulk_last_page, ele->index, eve->type, &handle);
 
         // File found
         if (status == 0) {
-          grid_platform_delete_actionstring_file(&file_handle);
+          grid_platform_delete_file(&handle);
         }
 
       } else {
@@ -1026,16 +1010,20 @@ void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui) {
   grid_ui_busy_semaphore_lock(ui);
   grid_ui_bulk_semaphore_lock(ui);
 
-  union grid_ui_file_handle file_handle = {0};
-  uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &file_handle);
+  struct grid_file_t handle = {0};
+  uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &handle);
 
   if (!was_last_one) {
 
-    grid_platform_delete_actionstring_file(&file_handle);
+    grid_platform_delete_file(&handle);
     grid_ui_bulk_semaphore_release(ui);
     grid_ui_busy_semaphore_release(ui);
     return;
   }
+
+  char path[50] = {0};
+  sprintf(path, "%02x", ui->bulk_last_page);
+  grid_platform_remove_dir(path);
 
   // Set ready before callback so callback can start new nvm operation
   ui->bulk_status = GRID_UI_BULK_READY;
@@ -1056,15 +1044,15 @@ int confread_parse_from_file(struct grid_ui_model* ui) {
 
   int status;
 
-  union grid_ui_file_handle file_handle = {0};
+  struct grid_file_t handle = {0};
 
-  status = grid_platform_find_file(GRID_UI_CONFIG_PATH, &file_handle);
+  status = grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle);
   if (status) {
     grid_platform_printf("grid_platform_find_file returned %d\n", status);
     return 1;
   }
 
-  uint16_t file_size = grid_platform_get_file_size(&file_handle);
+  uint16_t file_size = grid_platform_get_file_size(&handle);
   if (file_size == 0) {
     grid_platform_printf("grid_platform_get_file_size returned %d\n", status);
     return 1;
@@ -1076,7 +1064,7 @@ int confread_parse_from_file(struct grid_ui_model* ui) {
     return 1;
   }
 
-  status = grid_platform_read_file(&file_handle, (uint8_t*)buffer, file_size);
+  status = grid_platform_read_file(&handle, (uint8_t*)buffer, file_size);
   if (status) {
     grid_platform_printf("grid_platform_read_file returned %d\n", status);
     free(buffer);
@@ -1199,11 +1187,11 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui) {
   // STEP 1: Delete all actionstring files
   if (ui->bulk_last_page < ui->page_count) {
 
-    union grid_ui_file_handle file_handle = {0};
-    uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &file_handle);
+    struct grid_file_t handle = {0};
+    uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &handle);
 
     if (!was_last_one) {
-      grid_platform_delete_actionstring_file(&file_handle);
+      grid_platform_delete_file(&handle);
     } else {
       ui->bulk_last_page++;
     }
@@ -1216,10 +1204,10 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui) {
   // STEP 2: Delete config file
   if (ui->bulk_last_page == ui->page_count) {
 
-    union grid_ui_file_handle file_handle = {0};
+    struct grid_file_t handle = {0};
 
-    if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &file_handle) == 0) {
-      grid_platform_delete_file(&file_handle);
+    if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle) == 0) {
+      grid_platform_delete_file(&handle);
     }
 
     ui->bulk_last_page++;
@@ -1229,13 +1217,13 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui) {
     return;
   }
 
-  // STEP 3: erase the flash pages
-  if (0 == grid_platform_erase_nvm_next()) {
+  // STEP 3: Delete page directories
+  // upkeep: loop bound
+  for (uint8_t i = 0; i < 4; ++i) {
 
-    // There is still stuff to be erased
-    grid_ui_bulk_semaphore_release(ui);
-    grid_ui_busy_semaphore_release(ui);
-    return;
+    char path[50] = {0};
+    sprintf(path, "%02x", i);
+    grid_platform_remove_dir(path);
   }
 
   // Set ready before callback so callback can start new nvm operation

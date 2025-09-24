@@ -12,6 +12,7 @@
 #include "esp_freertos_hooks.h"
 
 #include "grid_allocator.h"
+#include "grid_platform.h"
 #include "grid_transport.h"
 
 #include "grid_ui.h"
@@ -32,6 +33,7 @@
 #include "rom/ets_sys.h" // For ets_printf
 
 #include "driver/gpio.h"
+#include "esp_chip_info.h"
 #include "esp_flash.h"
 #include "esp_task_wdt.h"
 
@@ -415,6 +417,29 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   }
 }
 
+void grid_esp32_print_chip_info() {
+
+  esp_chip_info_t chip_info;
+  esp_chip_info(&chip_info);
+
+  ESP_LOGI(TAG, "This is %s chip, ", CONFIG_IDF_TARGET);
+
+  ESP_LOGI(TAG, "with %d cores, ", chip_info.cores);
+
+  char* has_bt = chip_info.features & CHIP_FEATURE_BT ? "/BT" : "";
+  char* has_ble = chip_info.features & CHIP_FEATURE_BLE ? "/BLE" : "";
+  ESP_LOGI(TAG, "WiFi%s%s, ", has_bt, has_ble);
+
+  ESP_LOGI(TAG, "silicon rev %d, ", chip_info.revision);
+
+  uint32_t size_flash_chip = 0;
+  esp_flash_get_size(NULL, &size_flash_chip);
+  char* flash_location = chip_info.features & CHIP_FEATURE_EMB_FLASH ? "embedded" : "external";
+  ESP_LOGI(TAG, "%uMB %s flash, ", (unsigned int)size_flash_chip >> 20, flash_location);
+
+  ESP_LOGI(TAG, "free heap: %u.", (unsigned int)esp_get_free_heap_size());
+}
+
 void app_main(void) {
 
   // set console baud rate
@@ -449,6 +474,8 @@ void app_main(void) {
   void grid_common_semaphore_release_fn(void* arg) { xSemaphoreGive((SemaphoreHandle_t)arg); }
 
   log_checkpoint("MAIN START");
+
+  grid_esp32_print_chip_info();
 
   gpio_set_direction(GRID_ESP32_PINS_MAPMODE, GPIO_MODE_INPUT);
   gpio_pullup_en(GRID_ESP32_PINS_MAPMODE);
@@ -520,13 +547,13 @@ void app_main(void) {
   // GRID MODULE INITIALIZATION SEQUENCE
 
   log_checkpoint("NVM START");
-  grid_esp32_nvm_init(&grid_esp32_nvm_state);
+  grid_esp32_nvm_mount(&grid_esp32_nvm_state);
 
   if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0) {
 
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
     grid_alert_all_set_frequency(&grid_led_state, 4);
-    grid_esp32_nvm_erase(&grid_esp32_nvm_state);
+    grid_platform_nvm_erase();
     vTaskDelay(pdMS_TO_TICKS(600));
   }
 
