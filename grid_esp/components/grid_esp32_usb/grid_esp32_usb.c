@@ -27,7 +27,8 @@
 
 #include "driver/gpio.h"
 #include "tinyusb.h"
-#include "tusb_cdc_acm.h"
+#include "tinyusb_cdc_acm.h"
+#include "tinyusb_default_config.h"
 
 static const char* TAG = "USB example";
 
@@ -277,7 +278,7 @@ static uint8_t s_cfg_desc[] = {
     TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESCRIPTOR_TOTAL_LEN, 0, 500),
 
 #if CFG_TUD_CDC
-    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_NOTIFY, 5, (0x80 | EPNUM_CDC_NOTIFY), 64, EPNUM_CDC_DATA, (0x80 | EPNUM_CDC_DATA), 64),
+    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_NOTIFY, 5, (0x80 | EPNUM_CDC_NOTIFY), 512, EPNUM_CDC_DATA, (0x80 | EPNUM_CDC_DATA), 512),
 #endif
 
 #if CFG_TUD_MIDI
@@ -295,25 +296,23 @@ static uint8_t s_cfg_desc[] = {
 
 void grid_esp32_usb_init() {
 
-  tinyusb_config_t tusb_cfg = {
-      .device_descriptor = NULL, // If device_descriptor is NULL,
-                                 // tinyusb_driver_install() will use Kconfig
-      .string_descriptor = s_str_desc,
-      .external_phy = false,
-      .configuration_descriptor = s_cfg_desc,
-  };
+  tinyusb_config_t config = TINYUSB_DEFAULT_CONFIG();
+  config.descriptor.device = NULL;
+  config.descriptor.string = s_str_desc;
+  config.phy.skip_setup = false;
+  config.descriptor.full_speed_config = s_cfg_desc;
 
-  ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
+  ESP_ERROR_CHECK(tinyusb_driver_install(&config));
 
-  tinyusb_config_cdcacm_t acm_cfg = {.usb_dev = TINYUSB_USBDEV_0,
+  tinyusb_config_cdcacm_t acm_cfg = {//.usb_dev = TINYUSB_USBDEV_0,
                                      .cdc_port = TINYUSB_CDC_ACM_0,
-                                     .rx_unread_buf_sz = 64,
+                                     //.rx_unread_buf_sz = 64,
                                      .callback_rx = &tinyusb_cdc_rx_callback, // the first way to register a callback
                                      .callback_rx_wanted_char = NULL,
                                      .callback_line_state_changed = NULL,
                                      .callback_line_coding_changed = NULL};
 
-  ESP_ERROR_CHECK(tusb_cdc_acm_init(&acm_cfg));
+  ESP_ERROR_CHECK(tinyusb_cdcacm_init(&acm_cfg));
   /* the second way to register a callback */
   ESP_ERROR_CHECK(tinyusb_cdcacm_register_callback(TINYUSB_CDC_ACM_0, CDC_EVENT_LINE_STATE_CHANGED, &tinyusb_cdc_line_state_changed_callback));
 
