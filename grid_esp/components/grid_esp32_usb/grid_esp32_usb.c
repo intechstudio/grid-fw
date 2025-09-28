@@ -256,15 +256,19 @@ enum usb_endpoints {
 /**
  * @brief String descriptor
  */
-static const char* s_str_desc[6] = {
-    // array of pointer to string descriptors
-    (char[]){0x09, 0x04},      // 0: is supported language is English (0x0409)
-    "Intech Studio",           // 1: Manufacturer
-    "Grid",                    // 2: Product
-    "123456",                  // 3: Serials, should use chip ID
-    "Intech Grid MIDI device", // 4: MIDI
-    "Intech Grid CDC device",  // 5: CDC
+// UTF-16LE language ID (0x0409 = English US)
+static const uint16_t _usb_lang_id[] = {0x0409};
+
+static const void* s_str_desc[6] = {
+    _usb_lang_id,              // index 0: valid UTF-16 buffer
+    "Intech Studio",           // 1
+    "Grid",                    // 2
+    "123456",                  // 3
+    "Intech Grid MIDI device", // 4
+    "Intech Grid CDC device",  // 5
 };
+
+static const uint8_t strcnt = 6;
 
 /**
  * @brief Configuration descriptor
@@ -299,6 +303,7 @@ void grid_esp32_usb_init() {
   tinyusb_config_t config = TINYUSB_DEFAULT_CONFIG();
   config.descriptor.device = NULL;
   config.descriptor.string = s_str_desc;
+  config.descriptor.string_count = strcnt;
   config.phy.skip_setup = false;
   config.descriptor.full_speed_config = s_cfg_desc;
 
