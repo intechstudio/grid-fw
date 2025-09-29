@@ -200,4 +200,6 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui);
 
 void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui);
 
+void grid_port_process_timer_UNSAFE(struct grid_ui_model* ui);
+
 #endif /* GRID_UI_H */
