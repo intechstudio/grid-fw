@@ -124,6 +124,17 @@ void handle_connection_effect() {
   }
 }
 
+struct grid_utask_timer timer_sendfull;
+
+void grid_utask_sendfull(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  grid_transport_sendfull(&grid_transport_state);
+}
+
 struct grid_utask_timer timer_ping;
 
 void grid_utask_ping(struct grid_utask_timer* timer) {
@@ -418,6 +429,10 @@ int main(void) {
   grid_fingerprint_buf_init(&recent, 64);
 
   // Configure task timers
+  timer_sendfull = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000000,
+  };
   timer_ping = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_PINGINTERVAL_us,
@@ -534,6 +549,7 @@ int main(void) {
     grid_transport_rx_broadcast_tx(xport, port_usb, NULL);
 
     // Run microtasks
+    grid_utask_sendfull(&timer_sendfull);
     grid_utask_ping(&timer_ping);
     grid_utask_heart(&timer_heart);
     grid_utask_midi_and_keyboard_tx(&timer_midi_and_keyboard_tx);

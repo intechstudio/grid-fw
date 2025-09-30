@@ -108,54 +108,22 @@ void grid_transport_ping_all(struct grid_transport* transport) {
 
 void grid_transport_sendfull(struct grid_transport* transport) {
 
-  // return;
+	return;
 
-  /*
-char data[GRID_PARAMETER_SPI_TRANSACTION_length * 2] = {0};
-sprintf(data,
-    "%c%c03f000%02x7f7f%02x%02x0000%c"
-    "345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "01234567890123456789012345678901234567890123456789"
-    "0123456"
-    "%c00\n",
-    GRID_CONST_SOH, GRID_CONST_BRC, 0, 0, 0, GRID_CONST_EOB, GRID_CONST_EOT);
+  struct grid_msg msg;
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-uint32_t size = strlen(data);
+  char pattern[11] = "0123456789";
+  int payload = GRID_PARAMETER_SPI_TRANSACTION_length - 12 - 4 - 1 - 23;
+  while (payload > 0) {
+    grid_msg_nprintf(&msg, "%.*s", payload > 10 ? 10 : payload, pattern);
+    payload -= 10;
+  }
 
-uint8_t chk = grid_str_calculate_checksum_of_packet_string(data, size);
-grid_str_checksum_write(data, size, chk);
-
-for (uint8_t i = 0; i < 4; ++i) {
-
-struct grid_port* port = grid_transport_get_port(transport, i, GRID_PORT_USART, i);
-
-struct grid_swsr_t* swsr = grid_port_get_tx(port);
-
-if (!grid_swsr_writable(swsr, size)) {
-continue;
-}
-
-grid_swsr_write(swsr, data, size);
-}
-  */
+  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+    grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+  }
 }
 
 void grid_transport_send_usart_cyclic_offset(struct grid_transport* transport) {
