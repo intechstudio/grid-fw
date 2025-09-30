@@ -252,7 +252,7 @@ enum pico_bkt_state_t grid_uart_rx_process_bkt(struct grid_pico_uart_port* port,
     return PICO_BKT_STATE_EMPTY;
   }
 
-  int status = grid_str_verify_frame(msg, len);
+  int status = grid_frame_verify(msg, len);
 
   if (status != 0) {
     return PICO_BKT_STATE_EMPTY;
@@ -278,7 +278,7 @@ enum pico_bkt_state_t grid_uart_rx_process_bkt(struct grid_pico_uart_port* port,
     return PICO_BKT_STATE_EMPTY;
   }
 
-  grid_str_transform_brc_params(msg, por->dx, por->dy, por->partner.rot);
+  grid_str_transform_brc_params((uint8_t*)msg, len, por->dx, por->dy, por->partner.rot);
 
   uint32_t fingerprint = grid_fingerprint_calculate(msg);
 

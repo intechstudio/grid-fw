@@ -24,7 +24,6 @@
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
-#include "grid_buf.h"
 #include "grid_esp32_lcd.h"
 #include "grid_esp32_pins.h"
 #include "grid_esp32_platform.h"

@@ -156,10 +156,8 @@ struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t ev
 
 uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* action_string);
 void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* targetstring);
-uint32_t grid_ui_event_render_event(struct grid_ui_event* eve, char* target_string);
 void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* targetstring);
 void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstring);
-uint32_t grid_ui_event_render_action(struct grid_ui_event* eve, char* target_string);
 int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, uint8_t event_type, char* targetstring);
 
 uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve);
@@ -176,6 +174,7 @@ void grid_ui_element_set_template_parameter(struct grid_ui_element* ele, uint8_t
 int32_t grid_ui_element_get_template_parameter(struct grid_ui_element* ele, uint8_t template_index);
 
 enum grid_ui_bulk_status_t grid_ui_get_bulk_status(struct grid_ui_model* ui);
+uint8_t grid_ui_bulk_get_response_code(struct grid_ui_model* ui, uint8_t id);
 int grid_ui_bulk_anything_is_in_progress(struct grid_ui_model* ui);
 int grid_ui_bulk_is_in_progress(struct grid_ui_model* ui, enum grid_ui_bulk_status_t);
 uint8_t grid_ui_bulk_get_lastheader(struct grid_ui_model* ui);

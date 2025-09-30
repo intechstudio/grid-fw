@@ -79,7 +79,7 @@ void grid_transport_recv_usb(struct grid_transport* transport, uint8_t* msg, siz
 
   struct grid_port* port = grid_transport_get_port(transport, 5, GRID_PORT_USB, 0);
 
-  grid_str_transform_brc_params((char*)msg, port->dx, port->dy, port->partner.rot);
+  grid_str_transform_brc_params(msg, size, port->dx, port->dy, port->partner.rot);
 
   struct grid_swsr_t* rx = grid_port_get_rx(port);
 
@@ -110,50 +110,52 @@ void grid_transport_sendfull(struct grid_transport* transport) {
 
   // return;
 
-  char data[GRID_PARAMETER_SPI_TRANSACTION_length * 2] = {0};
-  sprintf(data,
-          "%c%c03f000%02x7f7f%02x%02x0000%c"
-          "345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "01234567890123456789012345678901234567890123456789"
-          "0123456"
-          "%c00\n",
-          GRID_CONST_SOH, GRID_CONST_BRC, 0, 0, 0, GRID_CONST_EOB, GRID_CONST_EOT);
+  /*
+char data[GRID_PARAMETER_SPI_TRANSACTION_length * 2] = {0};
+sprintf(data,
+    "%c%c03f000%02x7f7f%02x%02x0000%c"
+    "345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "01234567890123456789012345678901234567890123456789"
+    "0123456"
+    "%c00\n",
+    GRID_CONST_SOH, GRID_CONST_BRC, 0, 0, 0, GRID_CONST_EOB, GRID_CONST_EOT);
 
-  uint32_t size = strlen(data);
+uint32_t size = strlen(data);
 
-  uint8_t chk = grid_str_calculate_checksum_of_packet_string(data, size);
-  grid_str_checksum_write(data, size, chk);
+uint8_t chk = grid_str_calculate_checksum_of_packet_string(data, size);
+grid_str_checksum_write(data, size, chk);
 
-  for (uint8_t i = 0; i < 4; ++i) {
+for (uint8_t i = 0; i < 4; ++i) {
 
-    struct grid_port* port = grid_transport_get_port(transport, i, GRID_PORT_USART, i);
+struct grid_port* port = grid_transport_get_port(transport, i, GRID_PORT_USART, i);
 
-    struct grid_swsr_t* swsr = grid_port_get_tx(port);
+struct grid_swsr_t* swsr = grid_port_get_tx(port);
 
-    if (!grid_swsr_writable(swsr, size)) {
-      continue;
-    }
+if (!grid_swsr_writable(swsr, size)) {
+continue;
+}
 
-    grid_swsr_write(swsr, data, size);
-  }
+grid_swsr_write(swsr, data, size);
+}
+  */
 }
 
 void grid_transport_send_usart_cyclic_offset(struct grid_transport* transport) {
@@ -170,26 +172,17 @@ void grid_transport_send_usart_cyclic_offset(struct grid_transport* transport) {
   transport->usart_send_offset = (transport->usart_send_offset + 1) % 4;
 }
 
-void grid_msg_packet_to_swsr(struct grid_msg_packet* pkt, struct grid_swsr_t* swsr) {
-
-  grid_swsr_write(swsr, pkt->header, pkt->header_length);
-  grid_swsr_write(swsr, pkt->body, pkt->body_length);
-  grid_swsr_write(swsr, pkt->footer, pkt->footer_length);
-}
-
-void grid_transport_send_msg_packet_to_all(struct grid_transport* transport, struct grid_msg_packet* pkt) {
+void grid_transport_send_msg_to_all(struct grid_transport* transport, struct grid_msg* msg) {
 
   struct grid_port* port = grid_transport_get_port(transport, 4, GRID_PORT_UI, 0);
 
-  uint32_t length = grid_msg_packet_get_length(pkt);
-
   struct grid_swsr_t* rx = grid_port_get_rx(port);
 
-  if (!grid_swsr_writable(rx, length)) {
+  if (!grid_swsr_writable(rx, msg->length)) {
     return;
   }
 
-  grid_msg_packet_to_swsr(pkt, rx);
+  grid_msg_to_swsr(msg, rx);
 }
 
 void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, uint32_t hwcfg, uint8_t activepage) {
@@ -203,29 +196,30 @@ void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, ui
     portstate |= grid_port_connected(port) << i;
   }
 
-  // Heartbeat packet
-  struct grid_msg_packet pkt;
+  // Heartbeat message
+  struct grid_msg msg;
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-  grid_msg_packet_init(&grid_msg_state, &pkt, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
-  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_HEARTBEAT_frame);
-  grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-  grid_msg_packet_body_append_parameter(&pkt, GRID_CLASS_HEARTBEAT_TYPE_offset, GRID_CLASS_HEARTBEAT_TYPE_length, type);
-  grid_msg_packet_body_append_parameter(&pkt, GRID_CLASS_HEARTBEAT_HWCFG_offset, GRID_CLASS_HEARTBEAT_HWCFG_length, hwcfg);
-  grid_msg_packet_body_append_parameter(&pkt, GRID_CLASS_HEARTBEAT_VMAJOR_offset, GRID_CLASS_HEARTBEAT_VMAJOR_length, GRID_PROTOCOL_VERSION_MAJOR);
-  grid_msg_packet_body_append_parameter(&pkt, GRID_CLASS_HEARTBEAT_VMINOR_offset, GRID_CLASS_HEARTBEAT_VMINOR_length, GRID_PROTOCOL_VERSION_MINOR);
-  grid_msg_packet_body_append_parameter(&pkt, GRID_CLASS_HEARTBEAT_VPATCH_offset, GRID_CLASS_HEARTBEAT_VPATCH_length, GRID_PROTOCOL_VERSION_PATCH);
-  grid_msg_packet_body_append_parameter(&pkt, GRID_CLASS_HEARTBEAT_PORTSTATE_offset, GRID_CLASS_HEARTBEAT_PORTSTATE_length, portstate);
+  grid_msg_add_frame(&msg, GRID_CLASS_HEARTBEAT_frame);
+  grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_EXECUTE_code);
+  grid_msg_set_parameter(&msg, CLASS_HEARTBEAT_TYPE, type);
+  grid_msg_set_parameter(&msg, CLASS_HEARTBEAT_HWCFG, hwcfg);
+  grid_msg_set_parameter(&msg, CLASS_HEARTBEAT_VMAJOR, GRID_PROTOCOL_VERSION_MAJOR);
+  grid_msg_set_parameter(&msg, CLASS_HEARTBEAT_VMINOR, GRID_PROTOCOL_VERSION_MINOR);
+  grid_msg_set_parameter(&msg, CLASS_HEARTBEAT_VPATCH, GRID_PROTOCOL_VERSION_PATCH);
+  grid_msg_set_parameter(&msg, CLASS_HEARTBEAT_PORTSTATE, portstate);
 
   if (type == 1) {
 
-    grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_PAGEACTIVE_frame);
-    grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-    grid_msg_packet_body_append_parameter(&pkt, GRID_CLASS_PAGEACTIVE_PAGENUMBER_offset, GRID_CLASS_PAGEACTIVE_PAGENUMBER_length, activepage);
+    grid_msg_add_frame(&msg, GRID_CLASS_PAGEACTIVE_frame);
+    grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
+    grid_msg_set_parameter(&msg, CLASS_PAGEACTIVE_PAGENUMBER, activepage);
   }
 
-  grid_msg_packet_close(&grid_msg_state, &pkt);
+  grid_msg_close_brc(&grid_msg_state, &msg);
 
-  grid_transport_send_msg_packet_to_all(transport, &pkt);
+  grid_transport_send_msg_to_all(transport, &msg);
 }
 
 void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct grid_port* port, grid_brc_between_t between) {
@@ -284,23 +278,23 @@ void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct gri
 
 void grid_port_debug_print_text(char* str) {
 
-  struct grid_msg_packet pkt;
+  struct grid_msg msg;
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-  grid_msg_packet_init(&grid_msg_state, &pkt, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+  grid_msg_add_frame(&msg, GRID_CLASS_DEBUGTEXT_frame_start);
+  grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_EXECUTE_code);
 
-  grid_msg_packet_body_append_printf(&pkt, GRID_CLASS_DEBUGTEXT_frame_start);
-  grid_msg_packet_body_append_parameter(&pkt, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-
-  if (grid_msg_packet_body_append_nprintf(&pkt, "%s", str) <= 0) {
+  if (grid_msg_nprintf(&msg, "%s", str) <= 0) {
     return;
   }
 
-  if (grid_msg_packet_body_append_nprintf(&pkt, GRID_CLASS_DEBUGTEXT_frame_end) <= 0) {
+  if (grid_msg_add_frame(&msg, GRID_CLASS_DEBUGTEXT_frame_end) <= 0) {
     return;
   }
 
-  grid_msg_packet_close(&grid_msg_state, &pkt);
-  grid_transport_send_msg_packet_to_all(&grid_transport_state, &pkt);
+  grid_msg_close_brc(&grid_msg_state, &msg);
+  grid_transport_send_msg_to_all(&grid_transport_state, &msg);
 }
 
 enum { PORT_PRINTF_MAX = 300 };
@@ -328,30 +322,42 @@ void grid_port_debug_printf(const char* fmt, ...) {
 
 void grid_port_websocket_print_text(char* str) {
 
-  struct grid_msg_packet message;
+  struct grid_msg msg;
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-  grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+  grid_msg_add_frame(&msg, GRID_CLASS_WEBSOCKET_frame_start);
+  grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_EXECUTE_code);
 
-  grid_msg_packet_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_start);
-  grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-  grid_msg_packet_body_append_printf(&message, str);
-  grid_msg_packet_body_append_printf(&message, GRID_CLASS_WEBSOCKET_frame_end);
+  if (grid_msg_nprintf(&msg, "%s", str) <= 0) {
+    return;
+  }
 
-  grid_msg_packet_close(&grid_msg_state, &message);
-  grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
+  if (grid_msg_add_frame(&msg, GRID_CLASS_WEBSOCKET_frame_end) <= 0) {
+    return;
+  }
+
+  grid_msg_close_brc(&grid_msg_state, &msg);
+  grid_transport_send_msg_to_all(&grid_transport_state, &msg);
 }
 
 void grid_port_package_print_text(char* str) {
 
-  struct grid_msg_packet message;
+  struct grid_msg msg;
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-  grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+  grid_msg_add_frame(&msg, GRID_CLASS_PACKAGE_frame_start);
+  grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_EXECUTE_code);
 
-  grid_msg_packet_body_append_printf(&message, GRID_CLASS_PACKAGE_frame_start);
-  grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_EXECUTE_code);
-  grid_msg_packet_body_append_printf(&message, str);
-  grid_msg_packet_body_append_printf(&message, GRID_CLASS_PACKAGE_frame_end);
+  if (grid_msg_nprintf(&msg, "%s", str) <= 0) {
+    return;
+  }
 
-  grid_msg_packet_close(&grid_msg_state, &message);
-  grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
+  if (grid_msg_add_frame(&msg, GRID_CLASS_PACKAGE_frame_end) <= 0) {
+    return;
+  }
+
+  grid_msg_close_brc(&grid_msg_state, &msg);
+  grid_transport_send_msg_to_all(&grid_transport_state, &msg);
 }

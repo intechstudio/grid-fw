@@ -30,3 +30,11 @@ void grid_platform_printf_nonprint(const uint8_t* src, size_t size) {
     printf(src[i] < 32 ? "[%02hhx]" : "%c", src[i]);
   }
 }
+
+void grid_platform_printf(const char* fmt, ...) {
+
+  va_list args;
+  va_start(args, fmt);
+  vprintf(fmt, args);
+  va_end(args);
+}

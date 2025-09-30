@@ -333,34 +333,21 @@ void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, s
     grid_platform_reset_grid_transmitter(grid_port_dir_to_code(port->dir));
   }
 
-  int ret = grid_uwsr_until_msg_end(uwsr);
+  struct grid_msg msg;
 
-  if (ret < 0) {
+  if (!grid_msg_from_uwsr(&msg, uwsr)) {
     return;
   }
 
-  if (ret >= GRID_PARAMETER_SPI_TRANSACTION_length) {
-
-    grid_uwsr_read(uwsr, NULL, ret + 1);
-
+  if (grid_frame_verify((uint8_t*)msg.data, msg.length) != 0) {
     return;
   }
 
-  uint8_t temp[GRID_PARAMETER_SPI_TRANSACTION_length + 1];
+  grid_str_transform_brc_params((uint8_t*)msg.data, msg.length, port->dx, port->dy, port->partner.rot);
 
-  grid_uwsr_read(uwsr, temp, ret + 1);
+  uint32_t fingerprint = grid_fingerprint_calculate(msg.data);
 
-  temp[ret + 1] = '\0';
-
-  if (grid_str_verify_frame(temp, ret + 1) != 0) {
-    return;
-  }
-
-  grid_str_transform_brc_params(temp, port->dx, port->dy, port->partner.rot);
-
-  uint32_t fingerprint = grid_fingerprint_calculate(temp);
-
-  if (temp[1] == GRID_CONST_BRC) {
+  if (msg.data[1] == GRID_CONST_BRC) {
 
     if (grid_fingerprint_buf_find(fpb, fingerprint)) {
       return;
@@ -369,7 +356,7 @@ void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, s
     grid_fingerprint_buf_store(fpb, fingerprint);
   }
 
-  grid_port_recv_msg(port, temp, ret + 1);
+  grid_port_recv_msg(port, (uint8_t*)msg.data, msg.length);
 }
 
 int main(void) {
@@ -381,7 +368,7 @@ int main(void) {
   grid_d51_init(); // Check User Row
 
   grid_sys_init(&grid_sys_state);
-  grid_msg_init(&grid_msg_state);
+  grid_msg_model_init(&grid_msg_state);
 
   // grid_d51_nvm_erase_all(&grid_d51_nvm_state);
 

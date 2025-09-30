@@ -109,9 +109,6 @@
 
 #define GRID_PARAMETER_UART_baudrate 2000000ul
 
-#define GRID_PARAMETER_PACKET_maxlength 500
-#define GRID_PARAMETER_PACKET_marign 300
-
 #define GRID_PARAMETER_ACTIONSTRING_maxlength 400
 
 #define GRID_PARAMETER_SPI_TRANSACTION_length 1024
@@ -122,6 +119,8 @@
 #define GRID_PARAMETER_SPI_ROLLING_ID_index 1016
 #define GRID_PARAMETER_SPI_BACKLIGHT_PWM_index 1017
 #define GRID_PARAMETER_SPI_ROLLING_ID_maximum 64
+
+#define GRID_PARAMETER_PACKET_margin 300
 
 #define GRID_PARAMETER_DOUBLE_BUFFER_MINIMUM_SIZE 512
 
@@ -200,6 +199,8 @@
 
 #define GRID_INSTR_length 1
 #define GRID_INSTR_offset 4
+
+#define GRID_FOOTER_frame "%c..\n", GRID_CONST_EOT
 
 // Save the following action to the given event & change instruction to execute
 #define GRID_INSTR_ACKNOWLEDGE_code 0xA
