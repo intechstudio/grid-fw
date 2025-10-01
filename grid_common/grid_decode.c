@@ -969,8 +969,8 @@ uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
   int16_t min1 = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_EVENTVIEW_MIN1);
   int16_t max1 = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_EVENTVIEW_MAX1);
 
-  uint16_t offset = GRID_CLASS_EVENTVIEW_MAX1_offset + GRID_CLASS_EVENTVIEW_MAX1_length;
-  uint8_t hexes = GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length;
+  uint16_t offset = GRID_CLASS_EVENTVIEW_LENGTH_offset;
+  uint8_t hexes = GRID_CLASS_EVENTVIEW_LENGTH_length;
   char name[GRID_ELEMENT_NAME_SIZE] = {0};
   if (grid_frame_get_segment_char((uint8_t*)chunk, offset, hexes, GRID_ELEMENT_NAME_SIZE, name) < 0) {
     return 1;

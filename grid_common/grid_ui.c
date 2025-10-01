@@ -1239,7 +1239,7 @@ void grid_ui_event_render_event_view(struct grid_ui_event* eve, struct grid_msg*
   grid_msg_set_parameter(msg, CLASS_EVENTVIEW_MIN1, ele->template_parameter_list[index_min]);
   grid_msg_set_parameter(msg, CLASS_EVENTVIEW_MAX1, ele->template_parameter_list[index_max]);
 
-  grid_msg_add_segment_char(msg, GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length, name_len, name);
+  grid_msg_add_segment_char(msg, GRID_CLASS_EVENTVIEW_LENGTH_length, name_len, name);
 
   grid_msg_add_frame(msg, GRID_CLASS_EVENTVIEW_frame_end);
 }

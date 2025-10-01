@@ -1026,7 +1026,11 @@
 #define GRID_CLASS_EVENTVIEW_MAX1_offset 19
 #define GRID_CLASS_EVENTVIEW_MAX1_length 4
 
-#define GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length 2
+#define GRID_CLASS_EVENTVIEW_LENGTH_offset 23
+#define GRID_CLASS_EVENTVIEW_LENGTH_length 2
+
+#define GRID_CLASS_EVENTVIEW_NAME_offset 25
+#define GRID_CLASS_EVENTVIEW_NAME_length 0
 
 // CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)
 #define GRID_CLASS_CONFIG_code 0x060

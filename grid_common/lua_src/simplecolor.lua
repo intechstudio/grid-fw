@@ -15,23 +15,23 @@ function cp(c)
 
   if #c == 1 then
     x = {
-      math.floor(z[1] / 20),
-      math.floor(z[2] / 20),
-      math.floor(z[3] / 20),
+      z[1] // 20,
+      z[2] // 20,
+      z[3] // 20,
       z[4],
     }
     y = {
-      math.floor(z[1] / 2),
-      math.floor(z[2] / 2),
-      math.floor(z[3] / 2),
+      z[1] // 2,
+      z[2] // 2,
+      z[3] // 2,
       z[4],
     }
   elseif #c == 2 then
     y = {
-      math.floor((x[1] + z[1]) / 2),
-      math.floor((x[2] + z[2]) / 2),
-      math.floor((x[3] + z[3]) / 2),
-      (x[4] + z[4]) / 2,
+      (x[1] + z[1]) // 2,
+      (x[2] + z[2]) // 2,
+      (x[3] + z[3]) // 2,
+      (x[4] + z[4]) // 2,
     }
   elseif #c == 3 then
   end
@@ -63,7 +63,7 @@ init_endless_color = function(self)
       if l == 1 then
         -- button
         if v == nil or v == -1 then
-          int = math.floor(gmaps(self:bva(), self:bmi(), self:bma(), 0, 255))
+          int = gmaps(self:bva(), self:bmi(), self:bma(), 0, 255) // 1
         else
           int = v
         end
@@ -111,12 +111,12 @@ init_endless_nosegment_color = function(self)
       if l == 1 then
         -- button
         if v == nil or v == -1 then
-          int = math.floor(gmaps(self:bva(), self:bmi(), self:bma(), 0, 255))
+          int = gmaps(self:bva(), self:bmi(), self:bma(), 0, 255) // 1
         end
       else
         -- rotation
         if v == nil or v == -1 then
-          int = math.floor(gmaps(self:epva(), self:epmi(), self:epma(), 0, 255))
+          int = gmaps(self:epva(), self:epmi(), self:epma(), 0, 255) // 1
         end
       end
       local lix = glag(self:ind(), i)
@@ -154,11 +154,11 @@ init_element_color = function(self)
     local int = v
     if v == nil or v == -1 then
       if event_function_name() == "bc" then
-        int = math.floor(gmaps(self:bva(), self:bmi(), self:bma(), 0, 255))
+        int = gmaps(self:bva(), self:bmi(), self:bma(), 0, 255) // 1
       elseif event_function_name() == "pc" then
-        int = math.floor(gmaps(self:pva(), self:pmi(), self:pma(), 0, 255))
+        int = gmaps(self:pva(), self:pmi(), self:pma(), 0, 255) // 1
       elseif event_function_name() == "ec" then
-        int = math.floor(gmaps(self:eva(), self:emi(), self:ema(), 0, 255))
+        int = gmaps(self:eva(), self:emi(), self:ema(), 0, 255) // 1
       end
     end
 
