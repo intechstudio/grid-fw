@@ -540,7 +540,7 @@ uint32_t grid_ui_event_render_event_view(struct grid_ui_event* eve, char* dest) 
 
   size_t size = strlen(dest);
 
-  size += grid_str_set_segment_char(&dest[size], GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length, name_len, name);
+  size += grid_str_set_segment_char(&dest[size], GRID_CLASS_EVENTVIEW_LENGTH_length, name_len, name);
 
   sprintf(&dest[size], GRID_CLASS_EVENTVIEW_frame_end);
 
