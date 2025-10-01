@@ -1117,7 +1117,7 @@ uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
   size_t size = GRID_CLASS_EVENTVIEW_MAX1_offset + GRID_CLASS_EVENTVIEW_MAX1_length;
 
   char name[GRID_ELEMENT_NAME_SIZE] = {0};
-  size += grid_str_get_segment_char(&chunk[size], GRID_CLASS_EVENTVIEW_SEGMENT_HEAD_length, GRID_ELEMENT_NAME_SIZE, name);
+  size += grid_str_get_segment_char(&chunk[size], GRID_CLASS_EVENTVIEW_LENGTH_length, GRID_ELEMENT_NAME_SIZE, name);
 
   grid_lua_clear_stdo(&grid_lua_state);
 
