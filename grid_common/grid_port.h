@@ -14,12 +14,7 @@ enum grid_port_type {
   GRID_PORT_UI,
   GRID_PORT_TYPE_COUNT,
 };
-/*
-enum grid_port_txrx {
-  GRID_PORT_TX = 0,
-  GRID_PORT_RX,
-};
-*/
+
 enum grid_port_dir {
   GRID_PORT_NORTH = 0,
   GRID_PORT_EAST,
@@ -51,7 +46,6 @@ void grid_partner_set_rot(struct grid_partner* partner, enum grid_port_dir rot);
 struct grid_port {
 
   enum grid_port_type type;
-  // enum grid_port_txrx txrx;
   enum grid_port_dir dir;
   struct grid_partner partner;
   struct grid_ping ping;
@@ -81,8 +75,6 @@ void grid_port_recv_msg_broadcast(struct grid_port* port, uint8_t* msg, size_t s
 void grid_port_send_usart(struct grid_port* port);
 void grid_port_send_usb(struct grid_port* port);
 void grid_port_send_ui(struct grid_port* port);
-
-void grid_str_transform_brc_params(char* msg, int8_t dx, int8_t dy, uint8_t partner_rot);
 
 void grid_port_debug_print_text(char* str);
 void grid_port_debug_printf(const char* fmt, ...);

@@ -80,7 +80,6 @@
 #include "rom/ets_sys.h" // For ets_printf
 
 #include "../../grid_common/grid_ain.h"
-#include "../../grid_common/grid_buf.h"
 #include "../../grid_common/grid_led.h"
 #include "../../grid_common/grid_module.h"
 #include "../../grid_common/grid_msg.h"
@@ -558,7 +557,7 @@ void app_main(void) {
   }
 
   log_checkpoint("MSG START");
-  grid_msg_init(&grid_msg_state); // setup session id, last message buffer init
+  grid_msg_model_init(&grid_msg_state);
 
   log_checkpoint("LUA INIT");
   grid_lua_init(&grid_lua_state, NULL, NULL);

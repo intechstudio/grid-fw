@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// #include "grid_decode.h"
 #include "grid_platform.h"
 #include "grid_protocol.h"
 
@@ -39,8 +38,8 @@ void grid_ping_init(struct grid_ping* ping, enum grid_port_dir dir) {
 
   ping->size = strlen(data);
 
-  uint8_t chk = grid_str_calculate_checksum_of_packet_string(data, ping->size);
-  grid_str_checksum_write(data, ping->size, chk);
+  uint8_t chksum = grid_frame_calculate_checksum_packet((uint8_t*)data, ping->size);
+  grid_str_checksum_set(data, ping->size, chksum);
 }
 
 void grid_partner_init(struct grid_partner* partner) {
@@ -243,41 +242,28 @@ void grid_port_send_usb(struct grid_port* port) {
 
   struct grid_swsr_t* tx = grid_port_get_tx(port);
 
-  int ret = grid_swsr_until_msg_end(tx);
+  // Allocated statically due to the implementation of usb serial writes
+  // sometimes requiring their buffer to live until the transfer completes
+  static struct grid_msg msg;
 
-  if (ret < 0) {
+  if (!grid_msg_from_swsr(&msg, tx)) {
     return;
   }
 
-  assert(ret < GRID_PARAMETER_SPI_TRANSACTION_length);
+  for (size_t i = 0; i < msg.length; ++i) {
 
-  // Allocated statically due to the implementation of usb serial writes
-  // sometimes requiring their buffer to live until the transfer completes
-  static char temp[GRID_PARAMETER_SPI_TRANSACTION_length + 1];
-
-  assert(grid_swsr_readable(tx, ret + 1));
-  grid_swsr_read(tx, temp, ret + 1);
-  temp[ret + 1] = '\0';
-
-  for (size_t i = 0; i < ret + 1; ++i) {
-
-    if (temp[i] != GRID_CONST_STX) {
+    if (msg.data[i] != GRID_CONST_STX) {
       continue;
     }
 
-    uint8_t error = 0;
-
-    uint16_t offset = GRID_PARAMETER_CLASSCODE_offset;
-    uint8_t length = GRID_PARAMETER_CLASSCODE_length;
-    uint32_t class = grid_str_get_parameter(&temp[i], offset, length, &error);
-
+    grid_msg_set_offset(&msg, i);
+    uint32_t class = grid_msg_get_parameter(&msg, PARAMETER_CLASSCODE);
     struct grid_decoder_collection* dec_coll = grid_decoder_to_usb_reference;
-    grid_port_decode_class(dec_coll, class, temp, &temp[i]);
+    grid_port_decode_class(dec_coll, class, msg.data, &msg.data[i]);
   }
 
   if (grid_platform_usb_serial_ready()) {
-
-    grid_platform_usb_serial_write(temp, ret + 1);
+    grid_platform_usb_serial_write(msg.data, msg.length);
   }
 }
 
@@ -287,109 +273,21 @@ void grid_port_send_ui(struct grid_port* port) {
 
   struct grid_swsr_t* tx = grid_port_get_tx(port);
 
-  int ret = grid_swsr_until_msg_end(tx);
+  struct grid_msg msg;
 
-  if (ret < 0) {
+  if (!grid_msg_from_swsr(&msg, tx)) {
     return;
   }
 
-  assert(ret < GRID_PARAMETER_SPI_TRANSACTION_length);
-  char temp[GRID_PARAMETER_SPI_TRANSACTION_length + 1];
+  for (size_t i = 0; i < msg.length; ++i) {
 
-  assert(grid_swsr_readable(tx, ret + 1));
-  grid_swsr_read(tx, temp, ret + 1);
-  temp[ret + 1] = '\0';
-
-  for (size_t i = 0; i < ret + 1; ++i) {
-
-    if (temp[i] != GRID_CONST_STX) {
+    if (msg.data[i] != GRID_CONST_STX) {
       continue;
     }
 
-    uint8_t error = 0;
-
-    uint16_t offset = GRID_PARAMETER_CLASSCODE_offset;
-    uint8_t length = GRID_PARAMETER_CLASSCODE_length;
-    uint32_t class = grid_str_get_parameter(&temp[i], offset, length, &error);
-
+    grid_msg_set_offset(&msg, i);
+    uint32_t class = grid_msg_get_parameter(&msg, PARAMETER_CLASSCODE);
     struct grid_decoder_collection* dec_coll = grid_decoder_to_ui_reference;
-    grid_port_decode_class(dec_coll, class, temp, &temp[i]);
+    grid_port_decode_class(dec_coll, class, msg.data, &msg.data[i]);
   }
-}
-
-bool grid_msg_pos_transformable(int8_t recv_x, int8_t recv_y) {
-
-  int8_t x = recv_x + GRID_PARAMETER_DEFAULT_POSITION;
-  int8_t y = recv_y + GRID_PARAMETER_DEFAULT_POSITION;
-
-  // Editor-generated global message
-  if (x == 0 && y == 0) {
-    return false;
-  }
-
-  // Grid-generated global message
-  if (x == -1 && y == -1) {
-    return false;
-  }
-
-  return true;
-}
-
-void grid_str_transform_brc_params(char* msg, int8_t dx, int8_t dy, uint8_t partner_rot) {
-
-  assert(partner_rot < GRID_PORT_DIR_COUNT);
-
-  if (msg[1] != GRID_CONST_BRC) {
-    return;
-  }
-
-  uint8_t error = 0;
-
-  // uint8_t recv_session = grid_str_get_parameter(msg, GRID_BRC_SESSION_offset, GRID_BRC_SESSION_length, &error);
-  uint8_t recv_age = grid_str_get_parameter(msg, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, &error);
-  uint8_t new_age = recv_age + 1;
-
-  int8_t recv_dx = grid_str_get_parameter(msg, GRID_BRC_DX_offset, GRID_BRC_DX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-  int8_t recv_dy = grid_str_get_parameter(msg, GRID_BRC_DY_offset, GRID_BRC_DY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-
-  int8_t recv_sx = grid_str_get_parameter(msg, GRID_BRC_SX_offset, GRID_BRC_SX_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-  int8_t recv_sy = grid_str_get_parameter(msg, GRID_BRC_SY_offset, GRID_BRC_SY_length, &error) - GRID_PARAMETER_DEFAULT_POSITION;
-
-  uint8_t recv_rot = grid_str_get_parameter(msg, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, &error);
-  uint8_t new_rot = (recv_rot + partner_rot) % 4;
-
-  int8_t sign_x[4] = {1, -1, -1, 1};
-  int8_t sign_y[4] = {1, 1, -1, -1};
-
-  uint8_t cross = partner_rot % 2;
-  int8_t rot_dx = sign_x[partner_rot] * (recv_dx * !cross + recv_dy * cross);
-  int8_t rot_dy = sign_y[partner_rot] * (recv_dy * !cross + recv_dx * cross);
-  int8_t rot_sx = sign_x[partner_rot] * (recv_sx * !cross + recv_sy * cross);
-  int8_t rot_sy = sign_y[partner_rot] * (recv_sy * !cross + recv_sx * cross);
-
-  uint8_t new_dx = rot_dx + GRID_PARAMETER_DEFAULT_POSITION + dx;
-  uint8_t new_dy = rot_dy + GRID_PARAMETER_DEFAULT_POSITION + dy;
-  uint8_t new_sx = rot_sx + GRID_PARAMETER_DEFAULT_POSITION + dx;
-  uint8_t new_sy = rot_sy + GRID_PARAMETER_DEFAULT_POSITION + dy;
-
-  if (grid_msg_pos_transformable(recv_dx, recv_dy)) {
-
-    grid_str_set_parameter(msg, GRID_BRC_DX_offset, GRID_BRC_DX_length, new_dx, &error);
-    grid_str_set_parameter(msg, GRID_BRC_DY_offset, GRID_BRC_DY_length, new_dy, &error);
-  }
-
-  if (grid_msg_pos_transformable(recv_sx, recv_sy)) {
-
-    grid_str_set_parameter(msg, GRID_BRC_SX_offset, GRID_BRC_SX_length, new_sx, &error);
-    grid_str_set_parameter(msg, GRID_BRC_SY_offset, GRID_BRC_SY_length, new_sy, &error);
-  }
-
-  grid_str_set_parameter(msg, GRID_BRC_MSGAGE_offset, GRID_BRC_MSGAGE_length, new_age, &error);
-  grid_str_set_parameter(msg, GRID_BRC_ROT_offset, GRID_BRC_ROT_length, new_rot, &error);
-  grid_str_set_parameter(msg, GRID_BRC_PORTROT_offset, GRID_BRC_PORTROT_length, partner_rot, &error);
-
-  // Recalculate and update checksum
-  uint16_t length = strlen(msg);
-  uint8_t chk = grid_str_calculate_checksum_of_packet_string(msg, length);
-  grid_str_checksum_write(msg, length, chk);
 }

@@ -595,6 +595,14 @@ void grid_platform_printf(char const* fmt, ...) {
   va_end(ap);
 }
 
+void grid_platform_printf_nonprint(const uint8_t* src, size_t size) {
+
+  for (size_t i = 0; i < size; ++i) {
+
+    printf(src[i] < 32 ? "[%02hhx]" : "%c", src[i]);
+  }
+}
+
 uint32_t grid_platform_get_id(uint32_t* return_array) {
 
   return_array[0] = *(uint32_t*)(GRID_D51_UNIQUE_ID_ADDRESS_0);
