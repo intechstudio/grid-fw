@@ -494,7 +494,8 @@ void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstrin
   if (0 == strncmp(header, result, header_len)) {
 
     // Transform result to an actionstring
-    sprintf(&result[strlen(result) - footer_len], " ?>");
+    // add 1 to footer to compensate for an added space
+    sprintf(&result[strlen(result) - (footer_len + 1)], " ?>");
     uint8_t offset = header_len - 6;
     memcpy(&result[offset], "<?lua ", 6);
 

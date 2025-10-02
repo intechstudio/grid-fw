@@ -465,7 +465,7 @@ uint8_t grid_decode_immediate_to_ui(char* header, char* chunk) {
 
   uint16_t length = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_IMMEDIATE_ACTIONLENGTH);
 
-  if (length >= GRID_PARAMETER_ACTIONSTRING_maxlength) {
+  if (length > GRID_PARAMETER_ACTIONSTRING_maxlength) {
     return 1;
   }
 
@@ -1032,7 +1032,7 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
     // By default, generate nacknowledge
     uint8_t respinstr = GRID_INSTR_NACKNOWLEDGE_code;
 
-    bool validlength = actionlength < GRID_PARAMETER_ACTIONSTRING_maxlength;
+    bool validlength = actionlength <= GRID_PARAMETER_ACTIONSTRING_maxlength;
     bool endswithetx = validlength ? action[actionlength] == GRID_CONST_ETX : false;
     bool currentpage = page == grid_ui_state.page_activepage;
     bool validelement = element < grid_ui_state.element_list_length;
@@ -1060,7 +1060,7 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
 
     } else {
 
-      grid_port_debug_printf("failed to set config, conditions: %d%d%d%d%d%d", validlength, endswithetx, currentpage, validelement, ele, eve);
+      grid_port_debug_printf("failed to set config, conditions: %d%d%d%d%d%d", validlength, endswithetx, currentpage, validelement, ele != NULL, eve != NULL);
     }
 
     uint8_t id = grid_msg_get_parameter_raw((uint8_t*)header, BRC_ID);

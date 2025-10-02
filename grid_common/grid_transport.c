@@ -108,7 +108,7 @@ void grid_transport_ping_all(struct grid_transport* transport) {
 
 void grid_transport_sendfull(struct grid_transport* transport) {
 
-	return;
+  return;
 
   struct grid_msg msg;
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
