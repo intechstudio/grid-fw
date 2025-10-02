@@ -843,8 +843,6 @@ uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
   uint8_t instr = grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR);
   uint8_t id = grid_msg_get_parameter_raw((uint8_t*)header, BRC_ID);
 
-  grid_platform_printf("grid_decode_pageclear_to_ui\n");
-
   switch (instr) {
 
   case GRID_INSTR_EXECUTE_code: {
