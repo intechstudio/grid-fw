@@ -1178,11 +1178,7 @@ void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg)
 
 void grid_ui_event_render_action(struct grid_ui_event* eve, struct grid_msg* msg) {
 
-  char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
-
-  sprintf(temp, "ele[%d]:%s(self)", eve->parent->index, eve->function_name);
-
-  if (0 == grid_lua_dostring(&grid_lua_state, temp)) {
+  if (!grid_lua_do_event(&grid_lua_state, eve->parent->index, eve->function_name)) {
 
     char* stde = grid_lua_get_error_string(&grid_lua_state);
     grid_port_debug_printf("LUA not OK! EL: %d EV: %d MSG: %s", eve->parent->index, eve->type, stde);

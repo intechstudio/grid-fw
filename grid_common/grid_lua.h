@@ -1,6 +1,7 @@
 #ifndef GRID_LUA_H
 #define GRID_LUA_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "lua-5.4.3/src/lauxlib.h"
@@ -69,6 +70,7 @@ char* grid_lua_get_output_string(struct grid_lua_model* lua);
 char* grid_lua_get_error_string(struct grid_lua_model* lua);
 
 uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code);
+bool grid_lua_do_event(struct grid_lua_model* lua, uint8_t index, const char* function_name);
 
 void grid_lua_gc_try_collect(struct grid_lua_model* lua);
 

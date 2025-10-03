@@ -84,6 +84,7 @@ void grid_lua_post_init(struct grid_lua_model* lua) {
                          "for i = 0, #ele-1 do ele[i]:post_init_cb() end");
   grid_lua_clear_stdo(lua);
 }
+
 void grid_lua_clear_stdi(struct grid_lua_model* lua) { memset(lua->stdi, 0, lua->stdi_len); }
 
 void grid_lua_clear_stdo(struct grid_lua_model* lua) { memset(lua->stdo, 0, lua->stdo_len); }
@@ -164,6 +165,56 @@ uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code) {
   grid_lua_gc_try_collect(lua);
 
   return is_ok;
+}
+
+bool grid_lua_do_event(struct grid_lua_model* lua, uint8_t index, const char* function_name) {
+
+  bool ret = false;
+
+  grid_lua_semaphore_lock(lua);
+
+  // Attempt to get element table
+  if (lua_getglobal(lua->L, "ele") != LUA_TTABLE) {
+    goto grid_lua_do_event_cleanup;
+  }
+
+  // Push element index
+  lua_pushinteger(lua->L, index);
+
+  // Attempt to index the element table
+  if (lua_gettable(lua->L, -2) != LUA_TTABLE) {
+    goto grid_lua_do_event_cleanup;
+  }
+
+  // Push event name
+  lua_pushstring(lua->L, function_name);
+
+  // Attempt to index the element
+  if (lua_gettable(lua->L, -2) != LUA_TFUNCTION) {
+    goto grid_lua_do_event_cleanup;
+  }
+
+  // Remove element table from stack
+  lua_remove(lua->L, -3);
+
+  // Move the event function below the element
+  lua_insert(lua->L, -2);
+
+  // Invoke event function, passing the element as self
+  if (lua_pcall(lua->L, 1, LUA_MULTRET, 0) != LUA_OK) {
+    grid_lua_clear_stde(lua);
+    grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
+    goto grid_lua_do_event_cleanup;
+  }
+
+  ret = true;
+
+grid_lua_do_event_cleanup:
+
+  lua_pop(lua->L, lua_gettop(lua->L));
+  grid_lua_semaphore_release(lua);
+  grid_lua_gc_try_collect(lua);
+  return ret;
 }
 
 void grid_lua_set_memory_target(struct grid_lua_model* lua, uint8_t target_kilobytes) { lua->target_memory_usage_kilobytes = target_kilobytes; }
