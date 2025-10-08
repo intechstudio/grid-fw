@@ -1,6 +1,11 @@
 #ifndef LUA_SOURCE_COLLECTION_H_INCLUDED
 #define LUA_SOURCE_COLLECTION_H_INCLUDED
 
+#include "decode.h"
+#define GRID_LUA_FNC_G_DECODE_source grid_lua_src_decode_lua
+#define GRID_LUA_FNC_G_DECODE_short "gdec"
+#define GRID_LUA_FNC_G_DECODE_human "decode"
+
 #include "lookup.h"
 #define GRID_LUA_FNC_G_LOOKUP_source grid_lua_src_lookup_lua
 #define GRID_LUA_FNC_G_LOOKUP_short "glut"

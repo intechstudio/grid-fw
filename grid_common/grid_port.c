@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "grid_decode.h"
 #include "grid_platform.h"
 #include "grid_protocol.h"
 
@@ -250,17 +251,7 @@ void grid_port_send_usb(struct grid_port* port) {
     return;
   }
 
-  for (size_t i = 0; i < msg.length; ++i) {
-
-    if (msg.data[i] != GRID_CONST_STX) {
-      continue;
-    }
-
-    grid_msg_set_offset(&msg, i);
-    uint32_t class = grid_msg_get_parameter(&msg, PARAMETER_CLASSCODE);
-    struct grid_decoder_collection* dec_coll = grid_decoder_to_usb_reference;
-    grid_port_decode_class(dec_coll, class, msg.data, &msg.data[i]);
-  }
+  grid_port_decode_msg(grid_decoder_to_usb_reference, &msg);
 
   if (grid_platform_usb_serial_ready()) {
     grid_platform_usb_serial_write(msg.data, msg.length);
@@ -279,15 +270,5 @@ void grid_port_send_ui(struct grid_port* port) {
     return;
   }
 
-  for (size_t i = 0; i < msg.length; ++i) {
-
-    if (msg.data[i] != GRID_CONST_STX) {
-      continue;
-    }
-
-    grid_msg_set_offset(&msg, i);
-    uint32_t class = grid_msg_get_parameter(&msg, PARAMETER_CLASSCODE);
-    struct grid_decoder_collection* dec_coll = grid_decoder_to_ui_reference;
-    grid_port_decode_class(dec_coll, class, msg.data, &msg.data[i]);
-  }
+  grid_port_decode_msg(grid_decoder_to_ui_reference, &msg);
 }

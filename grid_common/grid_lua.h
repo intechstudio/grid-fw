@@ -53,8 +53,8 @@ void grid_lua_post_init(struct grid_lua_model* lua);
 void grid_lua_pre_init(struct grid_lua_model* lua);
 
 void grid_lua_semaphore_init(struct grid_lua_model* lua, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
-void grid_lua_semaphore_lock(struct grid_lua_model* lua);
-void grid_lua_semaphore_release(struct grid_lua_model* lua);
+bool grid_lua_semaphore_lock(struct grid_lua_model* lua);
+bool grid_lua_semaphore_release(struct grid_lua_model* lua);
 
 void grid_lua_set_memory_target(struct grid_lua_model* lua, uint8_t target_kilobytes);
 uint8_t grid_lua_get_memory_target(struct grid_lua_model* lua);
@@ -69,21 +69,27 @@ int grid_lua_append_stde(struct grid_lua_model* lua, char* str);
 char* grid_lua_get_output_string(struct grid_lua_model* lua);
 char* grid_lua_get_error_string(struct grid_lua_model* lua);
 
+uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code);
 uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code);
 bool grid_lua_do_event(struct grid_lua_model* lua, uint8_t index, const char* function_name);
+void grid_lua_decode_clear_results(struct grid_lua_model* lua);
+void grid_lua_decode_process_results(struct grid_lua_model* lua);
 
-void grid_lua_gc_try_collect(struct grid_lua_model* lua);
+void grid_lua_broadcast_stdo(struct grid_lua_model* lua);
+void grid_lua_broadcast_stde(struct grid_lua_model* lua);
+
+void grid_lua_gc_full_unsafe(struct grid_lua_model* lua);
+void grid_lua_gc_step_unsafe(struct grid_lua_model* lua);
 
 void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message);
 
 /*static*/ int grid_lua_panic(lua_State* L);
 
-int grid_lua_vm_register_functions(struct grid_lua_model* lua, const struct luaL_Reg* lua_lib);
+int grid_lua_register_functions_unsafe(struct grid_lua_model* lua, const struct luaL_Reg* lua_lib);
 
-void grid_lua_ui_init(struct grid_lua_model* lua, lua_ui_init_callback_t callback);
+void grid_lua_ui_init_unsafe(struct grid_lua_model* lua, lua_ui_init_callback_t callback);
 
-void grid_lua_start_vm(struct grid_lua_model* lua);
-
+void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_lib, lua_ui_init_callback_t callback);
 void grid_lua_stop_vm(struct grid_lua_model* lua);
 
 // clang-format off
@@ -111,6 +117,19 @@ void grid_lua_stop_vm(struct grid_lua_model* lua);
 #define GRID_LUA_FNC_ASSIGN_META_PAR1_RET(key, val) \
   key " = function (self, a) return " val "(self.index, a) end"
 
+#define GRID_LUA_DECODE_PROCESSOR "_decode_process"
+#define GRID_LUA_DECODE_CLEARER "_decode_clear"
+#define GRID_LUA_DECODE_ORDER "_decoded_order"
+#define GRID_LUA_DECODE_RESULT_MIDI "_decoded_midi"
+#define GRID_LUA_DECODE_RESULT_SYSEX "_decoded_sysex"
+#define GRID_LUA_DECODE_RESULT_EVIEW "_decoded_eview"
+
 // clang-format on
+
+enum {
+  GRID_LUA_DECODE_ORDER_MIDI = 1,
+  GRID_LUA_DECODE_ORDER_SYSEX = 2,
+  GRID_LUA_DECODE_ORDER_EVIEW = 3,
+};
 
 #endif /* GRID_LUA_H */
