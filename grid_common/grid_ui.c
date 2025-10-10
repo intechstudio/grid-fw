@@ -64,7 +64,7 @@ void grid_ele_eve_to_value_idx_init(uint8_t map[GRID_PARAMETER_ELEMENT_COUNT][GR
   map[GRID_PARAMETER_ELEMENT_ENDLESS][GRID_PARAMETER_EVENT_ENDLESS] = GRID_LUA_FNC_EP_ENDLESS_VALUE_index;
 }
 
-struct grid_ui_model grid_ui_state;
+struct grid_ui_model grid_ui_state = {0};
 
 void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length) {
 
@@ -387,11 +387,8 @@ void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page) {
 
   // Restart VM, register functions
   grid_lua_stop_vm(&grid_lua_state);
-  grid_lua_start_vm(&grid_lua_state);
-  grid_lua_vm_register_functions(&grid_lua_state, grid_lua_api_generic_lib_reference);
+  grid_lua_start_vm(&grid_lua_state, grid_lua_api_generic_lib_reference, grid_ui_state.lua_ui_init_callback);
 
-  // Invoke lua UI init callback
-  grid_lua_ui_init(&grid_lua_state, grid_ui_state.lua_ui_init_callback);
   grid_lua_pre_init(&grid_lua_state);
 
   grid_ui_bulk_semaphore_release(ui);
@@ -1178,16 +1175,9 @@ void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg)
 
 void grid_ui_event_render_action(struct grid_ui_event* eve, struct grid_msg* msg) {
 
-  char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
+  if (!grid_lua_do_event(&grid_lua_state, eve->parent->index, eve->function_name)) {
 
-  sprintf(temp, "ele[%d]:%s(self)", eve->parent->index, eve->function_name);
-
-  if (0 == grid_lua_dostring(&grid_lua_state, temp)) {
-
-    char* stde = grid_lua_get_error_string(&grid_lua_state);
-    grid_port_debug_printf("LUA not OK! EL: %d EV: %d MSG: %s", eve->parent->index, eve->type, stde);
-    grid_platform_printf("LUA not OK! EL: %d EV: %d MSG: %s\r\n", eve->parent->index, eve->type, stde);
-    grid_lua_clear_stde(&grid_lua_state);
+    grid_lua_broadcast_stde(&grid_lua_state);
   }
 
   char* stdo = grid_lua_get_output_string(&grid_lua_state);

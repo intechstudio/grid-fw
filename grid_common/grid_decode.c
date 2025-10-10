@@ -361,45 +361,57 @@ uint8_t grid_decode_pagecount_to_ui(char* header, char* chunk) {
 
 uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
-  uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
-  uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);
+  int ret = 1;
 
-  uint8_t instr = grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR);
+  grid_lua_semaphore_lock(&grid_lua_state);
 
-  /*
-  if (instr == GRID_INSTR_EXECUTE_code) {
-          return 1;
-  }
-  */
+  lua_State* L = grid_lua_state.L;
 
-  uint8_t channel = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDI_CHANNEL);
-  uint8_t command = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDI_COMMAND);
-  uint8_t param1 = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDI_PARAM1);
-  uint8_t param2 = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDI_PARAM2);
-
-  grid_lua_clear_stdo(&grid_lua_state);
-
-  char rx_cb_source[200] = {0};
-  sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.midirx_cb and type(el.midirx_cb) == 'function' then el:midirx_cb({%d, %d, %d, %d}, {%d, %d, %d}) end end", channel, command, param1,
-          param2, instr, sx, sy);
-  grid_lua_dostring(&grid_lua_state, rx_cb_source);
-
-  char* stdo = grid_lua_get_output_string(&grid_lua_state);
-  if (stdo[0] != '\0') {
-
-    struct grid_msg msg;
-    uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-    grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-
-    grid_msg_nprintf(&msg, "%s", stdo);
-    grid_lua_clear_stdo(&grid_lua_state);
-
-    if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-    }
+  lua_getglobal(L, GRID_LUA_DECODE_ORDER);
+  if (lua_type(L, -1) != LUA_TTABLE) {
+    goto grid_decode_midi_to_ui_cleanup;
   }
 
-  return 0;
+  lua_getglobal(L, GRID_LUA_DECODE_RESULT_MIDI);
+  if (lua_type(L, -1) != LUA_TTABLE) {
+    goto grid_decode_midi_to_ui_cleanup;
+  }
+
+  size_t result_len = lua_rawlen(L, -1);
+
+  lua_newtable(L);
+
+  size_t idx = 0;
+
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDI_CHANNEL));
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDI_COMMAND));
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDI_PARAM1));
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDI_PARAM2));
+  lua_rawseti(L, -2, ++idx);
+
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR));
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX));
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY));
+  lua_rawseti(L, -2, ++idx);
+
+  lua_rawseti(L, -2, result_len + 1);
+
+  size_t order_len = lua_rawlen(L, -2);
+  lua_pushinteger(L, GRID_LUA_DECODE_ORDER_MIDI);
+  lua_rawseti(L, -3, order_len + 1);
+
+  ret = 0;
+
+grid_decode_midi_to_ui_cleanup:
+
+  lua_pop(L, lua_gettop(L));
+  grid_lua_semaphore_release(&grid_lua_state);
+  return ret;
 }
 
 uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
@@ -407,11 +419,11 @@ uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
   uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
   uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);
 
-  uint8_t instr = grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR);
-
   if (sx == GRID_PARAMETER_DEFAULT_POSITION && sy == GRID_PARAMETER_DEFAULT_POSITION) {
     return 1;
   }
+
+  uint8_t instr = grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR);
 
   uint16_t length = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDISYSEX_LENGTH);
 
@@ -421,33 +433,58 @@ uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
   uint8_t last = grid_frame_get_parameter((uint8_t*)chunk, off + (length - 1) * 2, len);
 
   if (first != 0xf0 || last != 0xf7) {
-    grid_port_debug_printf("sysex invalid: %d %d", first, last);
+    grid_port_debug_printf("sysex invalid: %02hhx %02hhx", first, last);
   }
 
   char sysex_string[100] = {0};
   size_t size = length * GRID_CLASS_MIDISYSEX_PAYLOAD_length;
   memcpy(sysex_string, &chunk[GRID_CLASS_MIDISYSEX_PAYLOAD_offset], size);
 
-  char rx_cb_source[300] = {0};
-  sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.sysexrx_cb and type(el.sysexrx_cb) == 'function' then el:sysexrx_cb('%s', {%d, %d, %d}) end end", sysex_string, instr, sx, sy);
-  grid_lua_dostring(&grid_lua_state, rx_cb_source);
+  int ret = 1;
 
-  char* stdo = grid_lua_get_output_string(&grid_lua_state);
-  if (stdo[0] != '\0') {
+  grid_lua_semaphore_lock(&grid_lua_state);
 
-    struct grid_msg msg;
-    uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-    grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+  lua_State* L = grid_lua_state.L;
 
-    grid_msg_nprintf(&msg, "%s", stdo);
-    grid_lua_clear_stdo(&grid_lua_state);
-
-    if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-    }
+  lua_getglobal(L, GRID_LUA_DECODE_ORDER);
+  if (lua_type(L, -1) != LUA_TTABLE) {
+    goto grid_decode_sysex_to_ui_cleanup;
   }
 
-  return 0;
+  lua_getglobal(L, GRID_LUA_DECODE_RESULT_SYSEX);
+  if (lua_type(L, -1) != LUA_TTABLE) {
+    goto grid_decode_sysex_to_ui_cleanup;
+  }
+
+  size_t result_len = lua_rawlen(L, -1);
+
+  lua_newtable(L);
+
+  size_t idx = 0;
+
+  lua_pushstring(L, sysex_string);
+  lua_rawseti(L, -2, ++idx);
+
+  lua_pushinteger(L, instr);
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, sx);
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, sy);
+  lua_rawseti(L, -2, ++idx);
+
+  lua_rawseti(L, -2, result_len + 1);
+
+  size_t order_len = lua_rawlen(L, -2);
+  lua_pushinteger(L, GRID_LUA_DECODE_ORDER_SYSEX);
+  lua_rawseti(L, -3, order_len + 1);
+
+  ret = 0;
+
+grid_decode_sysex_to_ui_cleanup:
+
+  lua_pop(L, lua_gettop(L));
+  grid_lua_semaphore_release(&grid_lua_state);
+  return ret;
 }
 
 uint8_t grid_decode_immediate_to_ui(char* header, char* chunk) {
@@ -955,10 +992,6 @@ uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
 
   uint8_t instr = grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR);
 
-  if (sx == GRID_PARAMETER_DEFAULT_POSITION && sy == GRID_PARAMETER_DEFAULT_POSITION) {
-    return 1;
-  }
-
   uint8_t page = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_EVENTVIEW_PAGE);
   uint8_t element = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_EVENTVIEW_ELEMENT);
   uint8_t event = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_EVENTVIEW_EVENT);
@@ -974,29 +1007,65 @@ uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
     return 1;
   }
 
-  grid_lua_clear_stdo(&grid_lua_state);
+  int ret = 1;
 
-  char rx_cb_source[200] = {0};
-  sprintf(rx_cb_source, "for i=0, #ele do local el = ele[i] if el.eventrx_cb and type(el.eventrx_cb) == 'function' then el:eventrx_cb({%d, %d, %d}, {%d, %d, %d}, {%d, %d, %d}, \"%s\") end end", instr,
-          sx, sy, page, element, event, value1, min1, max1, name);
-  grid_lua_dostring(&grid_lua_state, rx_cb_source);
+  grid_lua_semaphore_lock(&grid_lua_state);
 
-  char* stdo = grid_lua_get_output_string(&grid_lua_state);
-  if (stdo[0] != '\0') {
+  lua_State* L = grid_lua_state.L;
 
-    struct grid_msg msg;
-    uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-    grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-
-    grid_msg_nprintf(&msg, "%s", stdo);
-    grid_lua_clear_stdo(&grid_lua_state);
-
-    if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-    }
+  lua_getglobal(L, GRID_LUA_DECODE_ORDER);
+  if (lua_type(L, -1) != LUA_TTABLE) {
+    goto grid_decode_eventview_to_ui_cleanup;
   }
 
-  return 0;
+  lua_getglobal(L, GRID_LUA_DECODE_RESULT_EVIEW);
+  if (lua_type(L, -1) != LUA_TTABLE) {
+    goto grid_decode_eventview_to_ui_cleanup;
+  }
+
+  size_t result_len = lua_rawlen(L, -1);
+
+  lua_newtable(L);
+
+  size_t idx = 0;
+
+  lua_pushinteger(L, instr);
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, sx);
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, sy);
+  lua_rawseti(L, -2, ++idx);
+
+  lua_pushinteger(L, page);
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, element);
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, event);
+  lua_rawseti(L, -2, ++idx);
+
+  lua_pushinteger(L, value1);
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, min1);
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, max1);
+  lua_rawseti(L, -2, ++idx);
+
+  lua_pushstring(L, name);
+  lua_rawseti(L, -2, ++idx);
+
+  lua_rawseti(L, -2, result_len + 1);
+
+  size_t order_len = lua_rawlen(L, -2);
+  lua_pushinteger(L, GRID_LUA_DECODE_ORDER_EVIEW);
+  lua_rawseti(L, -3, order_len + 1);
+
+  ret = 0;
+
+grid_decode_eventview_to_ui_cleanup:
+
+  lua_pop(L, lua_gettop(L));
+  grid_lua_semaphore_release(&grid_lua_state);
+  return ret;
 }
 
 uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
@@ -1128,6 +1197,27 @@ int grid_port_decode_class(struct grid_decoder_collection* coll, uint16_t class,
   }
 
   return 1;
+}
+
+void grid_port_decode_msg(struct grid_decoder_collection* coll, struct grid_msg* msg) {
+
+  grid_lua_decode_clear_results(&grid_lua_state);
+
+  for (uint32_t i = 0; i < msg->length; ++i) {
+
+    if (msg->data[i] != GRID_CONST_STX) {
+      continue;
+    }
+
+    grid_msg_set_offset(msg, i);
+    uint32_t class = grid_msg_get_parameter(msg, PARAMETER_CLASSCODE);
+    grid_port_decode_class(coll, class, msg->data, &msg->data[i]);
+  }
+
+  grid_lua_decode_process_results(&grid_lua_state);
+
+  grid_lua_broadcast_stdo(&grid_lua_state);
+  grid_lua_broadcast_stde(&grid_lua_state);
 }
 
 struct grid_decoder_collection grid_decoder_to_ui[] = {

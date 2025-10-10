@@ -248,8 +248,7 @@ int main(int argc, char** argv) {
 
   grid_lua_init(&grid_lua_state, allocator, &inst);
 
-  grid_lua_start_vm(&grid_lua_state);
-  grid_lua_vm_register_functions(&grid_lua_state, grid_lua_api_gui_lib_reference);
+  grid_lua_start_vm(&grid_lua_state, grid_lua_api_gui_lib_reference, NULL);
 
   struct grid_gui_model* gui = &grid_gui_states[0];
   struct grid_vlcd_model* vlcd = &grid_vlcd_state;
