@@ -31,24 +31,17 @@ static bool grid_usb_serial_bulkout_cb(const uint8_t ep, const enum usb_xfer_cod
     grid_swsr_read(rx, NULL, grid_swsr_size(rx));
   }
 
-  int ret = grid_swsr_until_msg_end(rx);
+  struct grid_msg msg;
 
-  if (ret < 0) {
+  if (!grid_msg_from_swsr(&msg, rx)) {
     goto bulkout_cb_end;
   }
 
-  assert(ret < GRID_PARAMETER_SPI_TRANSACTION_length);
-  uint8_t temp[GRID_PARAMETER_SPI_TRANSACTION_length + 1];
-
-  assert(grid_swsr_readable(rx, ret + 1));
-  grid_swsr_read(rx, temp, ret + 1);
-  temp[ret + 1] = '\0';
-
-  if (grid_str_verify_frame((char*)temp, ret + 1)) {
+  if (grid_frame_verify((uint8_t*)msg.data, msg.length)) {
     goto bulkout_cb_end;
   }
 
-  grid_transport_recv_usb(&grid_transport_state, temp, ret + 1);
+  grid_transport_recv_usb(&grid_transport_state, (uint8_t*)msg.data, msg.length);
 
 bulkout_cb_end:
 

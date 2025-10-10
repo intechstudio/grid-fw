@@ -30,7 +30,7 @@ void spi_start_transfer(uint tx_channel, uint rx_channel, uint8_t* tx_buffer, ui
   dma_channel_configure(tx_channel, &c,
                         &spi_get_hw(spi_default)->dr,          // write address
                         tx_buffer,                             // read address
-                        GRID_PARAMETER_SPI_TRANSACTION_length, // element count (each element is of size transfer_data_size)
+                        GRID_PARAMETER_SPI_TRANSACTION_length, // elements (of transfer_data_size each)
                         false);                                // don't start yet
 
   c = dma_channel_get_default_config(rx_channel);
@@ -41,7 +41,7 @@ void spi_start_transfer(uint tx_channel, uint rx_channel, uint8_t* tx_buffer, ui
   dma_channel_configure(rx_channel, &c,
                         rx_buffer,                             // write address
                         &spi_get_hw(spi_default)->dr,          // read address
-                        GRID_PARAMETER_SPI_TRANSACTION_length, // element count (each element is of size transfer_data_size)
+                        GRID_PARAMETER_SPI_TRANSACTION_length, // elements (of transfer_data_size each)
                         false);                                // don't start yet
 
   if (callback != NULL) {

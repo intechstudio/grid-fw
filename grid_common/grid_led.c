@@ -362,75 +362,7 @@ void grid_led_set_layer_timeout(struct grid_led_model* led, uint8_t num, uint8_t
   }
 }
 
-void grid_led_render_framebuffer_one(struct grid_led_model* led, uint32_t num) {
-
-  uint32_t mix_r = 0;
-  uint32_t mix_g = 0;
-  uint32_t mix_b = 0;
-
-  // RENDER & SUM ALL LAYERS PER LED
-  for (uint8_t i = 0; i < GRID_LED_LAYER_COUNT; i++) {
-
-    uint8_t layer = i;
-
-    uint8_t phase = led->led_smart_buffer[num + (led->led_count * layer)].pha;
-
-    /* SHAPES
-
-    0:  ramp up
-    1:  ramp down
-    2:  square
-    3:  sine
-
-    */
-
-    uint8_t intensity = phase;
-
-    uint8_t shape = led->led_smart_buffer[num + (led->led_count * layer)].sha;
-
-    if (shape == 0) {
-      intensity = phase;
-    } else if (shape == 1) {
-      intensity = 255 - phase;
-    } else if (shape == 2) {
-      intensity = (phase < 128) * 255;
-    } else if (shape == 3) {
-      intensity = sine_lookup[phase];
-    }
-
-    uint8_t min_r = led->led_smart_buffer[num + (led->led_count * layer)].color_min.r;
-    uint8_t min_g = led->led_smart_buffer[num + (led->led_count * layer)].color_min.g;
-    uint8_t min_b = led->led_smart_buffer[num + (led->led_count * layer)].color_min.b;
-    uint8_t min_a = min_lookup[intensity];
-
-    uint8_t mid_r = led->led_smart_buffer[num + (led->led_count * layer)].color_mid.r;
-    uint8_t mid_g = led->led_smart_buffer[num + (led->led_count * layer)].color_mid.g;
-    uint8_t mid_b = led->led_smart_buffer[num + (led->led_count * layer)].color_mid.b;
-    uint8_t mid_a = mid_lookup[intensity];
-
-    uint8_t max_r = led->led_smart_buffer[num + (led->led_count * layer)].color_max.r;
-    uint8_t max_g = led->led_smart_buffer[num + (led->led_count * layer)].color_max.g;
-    uint8_t max_b = led->led_smart_buffer[num + (led->led_count * layer)].color_max.b;
-    uint8_t max_a = max_lookup[intensity];
-
-    mix_r += min_r * min_a + mid_r * mid_a + max_r * max_a;
-    mix_g += min_g * min_a + mid_g * mid_a + max_g * max_a;
-    mix_b += min_b * min_a + mid_b * mid_a + max_b * max_a;
-  }
-
-  //
-  // mix_r = (mix_r)/2/3/256;
-  // mix_g = (mix_g)/2/3/256;
-  // mix_b = (mix_b)/2/3/256;
-
-  mix_r = (mix_r) / 2 / 256;
-  mix_g = (mix_g) / 2 / 256;
-  mix_b = (mix_b) / 2 / 256;
-
-  grid_led_framebuffer_set_color(led, num, mix_r, mix_g, mix_b);
-}
-
-uint8_t grid_led_framebuffer_set_color(struct grid_led_model* led, uint32_t led_index, uint16_t led_r, uint16_t led_g, uint16_t led_b) {
+void grid_led_framebuffer_set_color(struct grid_led_model* led, uint32_t led_index, uint16_t led_r, uint16_t led_g, uint16_t led_b) {
 
   if (led_r > 255) {
     led_r = 255;
@@ -442,32 +374,80 @@ uint8_t grid_led_framebuffer_set_color(struct grid_led_model* led, uint32_t led_
     led_b = 255;
   }
 
-  // if index is valid
   if (led_index < led->led_count) {
 
-    // green
     if (led->led_frame_buffer[led_index * 3 + 0] != led_g) {
       led->led_changed_flag_array[led_index] = 1;
       led->led_frame_buffer[led_index * 3 + 0] = led_g;
     }
 
-    // red
     if (led->led_frame_buffer[led_index * 3 + 1] != led_r) {
       led->led_changed_flag_array[led_index] = 1;
       led->led_frame_buffer[led_index * 3 + 1] = led_r;
     }
 
-    // blue
     if (led->led_frame_buffer[led_index * 3 + 2] != led_b) {
       led->led_changed_flag_array[led_index] = 1;
       led->led_frame_buffer[led_index * 3 + 2] = led_b;
     }
-
-    return 0;
-  } else {
-
-    return -1;
   }
+}
+
+void grid_led_render_framebuffer_one(struct grid_led_model* led, uint32_t num) {
+
+  uint32_t mix_r = 0;
+  uint32_t mix_g = 0;
+  uint32_t mix_b = 0;
+
+  // Sum all layers for one LED
+  for (uint8_t i = 0; i < GRID_LED_LAYER_COUNT; ++i) {
+
+    uint8_t layer = i;
+
+    uint8_t phase = led->led_smart_buffer[num + (led->led_count * layer)].pha;
+
+    // SHAPES
+    // 0:  ramp up
+    // 1:  ramp down
+    // 2:  square
+    // 3:  sine
+    uint8_t shape = led->led_smart_buffer[num + (led->led_count * layer)].sha;
+
+    uint8_t intensity = phase;
+    switch (shape) {
+    case 0:
+      intensity = phase;
+      break;
+    case 1:
+      intensity = 255 - phase;
+      break;
+    case 2:
+      intensity = (phase < 128) * 255;
+      break;
+    case 3:
+      intensity = sine_lookup[phase];
+      break;
+    }
+
+    size_t offset = num + led->led_count * layer;
+    struct LED_color* min = &led->led_smart_buffer[offset].color_min;
+    struct LED_color* mid = &led->led_smart_buffer[offset].color_mid;
+    struct LED_color* max = &led->led_smart_buffer[offset].color_max;
+
+    uint8_t min_a = min_lookup[intensity];
+    uint8_t mid_a = mid_lookup[intensity];
+    uint8_t max_a = max_lookup[intensity];
+
+    mix_r += min->r * min_a + mid->r * mid_a + max->r * max_a;
+    mix_g += min->g * min_a + mid->g * mid_a + max->g * max_a;
+    mix_b += min->b * min_a + mid->b * mid_a + max->b * max_a;
+  }
+
+  mix_r = mix_r / 2 / 256;
+  mix_g = mix_g / 2 / 256;
+  mix_b = mix_b / 2 / 256;
+
+  grid_led_framebuffer_set_color(led, num, mix_r, mix_g, mix_b);
 }
 
 void grid_led_render_framebuffer(struct grid_led_model* led) {
@@ -516,10 +496,10 @@ uint16_t grid_protocol_led_change_report_generate(struct grid_led_model* led, ui
       break;
     }
 
-    grid_str_set_parameter(&output[length], 0, 2, i, NULL);
-    grid_str_set_parameter(&output[length], 2, 2, led->led_frame_buffer[i * 3 + 1], NULL);
-    grid_str_set_parameter(&output[length], 4, 2, led->led_frame_buffer[i * 3 + 0], NULL);
-    grid_str_set_parameter(&output[length], 6, 2, led->led_frame_buffer[i * 3 + 2], NULL);
+    grid_frame_set_parameter((uint8_t*)&output[length], 0, 2, i);
+    grid_frame_set_parameter((uint8_t*)&output[length], 2, 2, led->led_frame_buffer[i * 3 + 1]);
+    grid_frame_set_parameter((uint8_t*)&output[length], 4, 2, led->led_frame_buffer[i * 3 + 0]);
+    grid_frame_set_parameter((uint8_t*)&output[length], 6, 2, led->led_frame_buffer[i * 3 + 2]);
 
     led->led_changed_flag_array[i] = 0;
 

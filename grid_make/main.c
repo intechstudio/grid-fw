@@ -124,6 +124,17 @@ void handle_connection_effect() {
   }
 }
 
+struct grid_utask_timer timer_sendfull;
+
+void grid_utask_sendfull(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  grid_transport_sendfull(&grid_transport_state);
+}
+
 struct grid_utask_timer timer_ping;
 
 void grid_utask_ping(struct grid_utask_timer* timer) {
@@ -324,7 +335,7 @@ static void button_on_SYNC1_pressed(void) { sync1_received++; }
 
 static void button_on_SYNC2_pressed(void) { sync2_received++; }
 
-void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_msg_recent_buffer* recent) {
+void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, struct grid_fingerprint_buf* fpb) {
 
   if (grid_uwsr_overflow(uwsr)) {
 
@@ -333,43 +344,30 @@ void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, s
     grid_platform_reset_grid_transmitter(grid_port_dir_to_code(port->dir));
   }
 
-  int ret = grid_uwsr_until_msg_end(uwsr);
+  struct grid_msg msg;
 
-  if (ret < 0) {
+  if (!grid_msg_from_uwsr(&msg, uwsr)) {
     return;
   }
 
-  if (ret >= GRID_PARAMETER_SPI_TRANSACTION_length) {
-
-    grid_uwsr_read(uwsr, NULL, ret + 1);
-
+  if (grid_frame_verify((uint8_t*)msg.data, msg.length) != 0) {
     return;
   }
 
-  uint8_t temp[GRID_PARAMETER_SPI_TRANSACTION_length + 1];
+  grid_str_transform_brc_params((uint8_t*)msg.data, msg.length, port->dx, port->dy, port->partner.rot);
 
-  grid_uwsr_read(uwsr, temp, ret + 1);
+  uint32_t fingerprint = grid_fingerprint_calculate(msg.data);
 
-  temp[ret + 1] = '\0';
+  if (msg.data[1] == GRID_CONST_BRC) {
 
-  if (grid_str_verify_frame(temp, ret + 1) != 0) {
-    return;
-  }
-
-  grid_str_transform_brc_params(temp, port->dx, port->dy, port->partner.rot);
-
-  uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(temp);
-
-  if (temp[1] == GRID_CONST_BRC) {
-
-    if (grid_msg_recent_fingerprint_find(recent, fingerprint)) {
+    if (grid_fingerprint_buf_find(fpb, fingerprint)) {
       return;
     }
 
-    grid_msg_recent_fingerprint_store(recent, fingerprint);
+    grid_fingerprint_buf_store(fpb, fingerprint);
   }
 
-  grid_port_recv_msg(port, temp, ret + 1);
+  grid_port_recv_msg(port, (uint8_t*)msg.data, msg.length);
 }
 
 int main(void) {
@@ -381,7 +379,7 @@ int main(void) {
   grid_d51_init(); // Check User Row
 
   grid_sys_init(&grid_sys_state);
-  grid_msg_init(&grid_msg_state);
+  grid_msg_model_init(&grid_msg_state);
 
   // grid_d51_nvm_erase_all(&grid_d51_nvm_state);
 
@@ -394,9 +392,6 @@ int main(void) {
 
   grid_lua_init(&grid_lua_state, NULL, NULL);
   grid_lua_set_memory_target(&grid_lua_state, 80); // 80kb
-  grid_lua_start_vm(&grid_lua_state);
-  grid_lua_vm_register_functions(&grid_lua_state, grid_lua_api_generic_lib_reference);
-  grid_lua_ui_init(&grid_lua_state, grid_ui_state.lua_ui_init_callback);
 
   grid_d51_led_init(&grid_d51_led_state, &grid_led_state);
 
@@ -427,10 +422,14 @@ int main(void) {
   ext_irq_register(PIN_GRID_SYNC_1, button_on_SYNC1_pressed);
   ext_irq_register(PIN_GRID_SYNC_2, button_on_SYNC2_pressed);
 
-  struct grid_msg_recent_buffer recent;
-  grid_msg_recent_fingerprint_buffer_init(&recent, 64);
+  struct grid_fingerprint_buf recent;
+  grid_fingerprint_buf_init(&recent, 64);
 
   // Configure task timers
+  timer_sendfull = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000000,
+  };
   timer_ping = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_PINGINTERVAL_us,
@@ -506,6 +505,19 @@ int main(void) {
       grid_msg_set_heartbeat_type(&grid_msg_state, 1);
     }
 
+    // Editor timeout
+    if (grid_sys_get_editor_connected_state(&grid_sys_state)) {
+
+      uint32_t last = grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state);
+      if (grid_platform_rtc_get_elapsed_time(last) > 2000000) {
+
+        grid_platform_printf("EDITOR TIMEOUT\n");
+
+        grid_sys_set_editor_connected_state(&grid_sys_state, 0);
+        // grid_ui_state.page_change_enabled = 1;
+      }
+    }
+
     grid_d51_midi_bulkout_poll();
 
     // NVM task
@@ -534,6 +546,7 @@ int main(void) {
     grid_transport_rx_broadcast_tx(xport, port_usb, NULL);
 
     // Run microtasks
+    grid_utask_sendfull(&timer_sendfull);
     grid_utask_ping(&timer_ping);
     grid_utask_heart(&timer_heart);
     grid_utask_midi_and_keyboard_tx(&timer_midi_and_keyboard_tx);

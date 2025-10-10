@@ -6,6 +6,8 @@
 
 extern void grid_platform_printf(char const* fmt, ...);
 
+extern void grid_platform_printf_nonprint(const uint8_t* src, size_t size);
+
 extern uint32_t grid_platform_get_id(uint32_t* return_array);
 
 extern uint32_t grid_platform_get_hwcfg();

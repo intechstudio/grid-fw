@@ -439,8 +439,6 @@ void grid_utask_draw_trigger(struct grid_utask_timer* timer) {
   }
 }
 
-#undef USE_SEMAPHORE
-
 void grid_esp32_lcd_task(void* arg) {
 
   // Configure task timers
@@ -454,6 +452,7 @@ void grid_esp32_lcd_task(void* arg) {
   uint32_t lcd_tx_lines = 16;
   uint32_t lcd_tx_bytes = LCD_VRES * lcd_tx_lines * COLMOD_RGB888_BYTES;
   uint8_t* xferbuf = malloc(lcd_tx_bytes);
+  assert(xferbuf);
 
   uint8_t counter = 0;
 
@@ -480,10 +479,6 @@ void grid_esp32_lcd_task(void* arg) {
 
     ++counter;
 
-#ifdef USE_SEMAPHORE
-    grid_lua_semaphore_lock(&grid_lua_state);
-#endif
-
     grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf, timer_draw_trigger);
 
     if (!grid_esp32_lcd_get_drawn()) {
@@ -504,10 +499,6 @@ void grid_esp32_lcd_task(void* arg) {
         grid_utask_draw_trigger(&timer_draw_trigger[i]);
       }
     }
-
-#ifdef USE_SEMAPHORE
-    grid_lua_semaphore_release(&grid_lua_state);
-#endif
 
     taskYIELD();
     // vTaskDelay(1);

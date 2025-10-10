@@ -72,9 +72,6 @@ uint8_t grid_led_change_flag_count(struct grid_led_model* led);
 void grid_led_render_framebuffer_one(struct grid_led_model* led, uint32_t num);
 void grid_led_render_framebuffer(struct grid_led_model* led);
 
-// ACCESSING THE FRAME BUFFER (WRITE)
-uint8_t grid_led_framebuffer_set_color(struct grid_led_model* led, uint32_t led_index, uint16_t led_r, uint16_t led_g, uint16_t led_b);
-
 // TIME TICK FOR ANIMATIONS
 void grid_led_tick(struct grid_led_model* led);
 
