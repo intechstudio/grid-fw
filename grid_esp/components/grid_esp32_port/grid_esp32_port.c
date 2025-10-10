@@ -24,7 +24,6 @@
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
-#include "grid_buf.h"
 #include "grid_esp32_lcd.h"
 #include "grid_esp32_pins.h"
 #include "grid_esp32_platform.h"
@@ -42,9 +41,6 @@ static const char* TAG = "PORT";
 #define RCV_HOST SPI2_HOST
 
 volatile uint8_t DRAM_ATTR is_vsn_rev_a = 0;
-
-uint8_t DRAM_ATTR empty_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
-uint8_t DRAM_ATTR message_tx_buffer[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
 spi_slave_transaction_t DRAM_ATTR spitra_empty = {0};
 uint8_t DRAM_ATTR spitra_empty_tx_buf[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
@@ -187,6 +183,17 @@ static void IRAM_ATTR my_post_trans_cb(spi_slave_transaction_t* trans) {
     esp32_pico_spi_cooldown(&esp32_pico_spi);
   }
   portEXIT_CRITICAL(&spinlock);
+}
+
+struct grid_utask_timer timer_sendfull;
+
+void grid_utask_sendfull(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  grid_transport_sendfull(&grid_transport_state);
 }
 
 struct grid_utask_timer timer_ping;
@@ -408,6 +415,10 @@ void grid_esp32_port_task(void* arg) {
   spi_slave_queue_trans(RCV_HOST, &spitra_empty, 0);
 
   // Configure task timers
+  timer_sendfull = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000000,
+  };
   timer_ping = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_PINGINTERVAL_us,
@@ -463,6 +474,19 @@ void grid_esp32_port_task(void* arg) {
       grid_msg_set_heartbeat_type(&grid_msg_state, 1);
     }
 
+    // Editor timeout
+    if (grid_sys_get_editor_connected_state(&grid_sys_state)) {
+
+      uint32_t last = grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state);
+      if (grid_platform_rtc_get_elapsed_time(last) > 2000000) {
+
+        grid_platform_printf("EDITOR TIMEOUT\n");
+
+        grid_sys_set_editor_connected_state(&grid_sys_state, 0);
+        // grid_ui_state.page_change_enabled = 1;
+      }
+    }
+
     struct grid_port* port_ui = grid_transport_get_port(xport, 4, GRID_PORT_UI, 0);
     struct grid_port* port_usb = grid_transport_get_port(xport, 5, GRID_PORT_USB, 0);
 
@@ -477,6 +501,7 @@ void grid_esp32_port_task(void* arg) {
     grid_transport_rx_broadcast_tx(xport, port_usb, grid_esp32_broadcast_between);
 
     // Run microtasks
+    grid_utask_sendfull(&timer_sendfull);
     grid_utask_ping(&timer_ping);
     grid_utask_heart(&timer_heart);
     grid_utask_midi_and_keyboard_tx(&timer_midi_and_keyboard_tx);

@@ -94,24 +94,16 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
     grid_swsr_read(rx, NULL, grid_swsr_size(rx));
   }
 
-  int ret = grid_swsr_until_msg_end(rx);
+  struct grid_msg msg;
 
-  if (ret < 0) {
+  if (!grid_msg_from_swsr(&msg, rx)) {
     return;
   }
 
-  assert(ret < GRID_PARAMETER_SPI_TRANSACTION_length);
-  uint8_t temp[GRID_PARAMETER_SPI_TRANSACTION_length + 1];
+  if (grid_frame_verify((uint8_t*)msg.data, msg.length) == 0) {
 
-  assert(grid_swsr_readable(rx, ret + 1));
-  grid_swsr_read(rx, temp, ret + 1);
-  temp[ret + 1] = '\0';
-
-  if (grid_str_verify_frame((char*)temp, ret + 1)) {
-    return;
+    grid_transport_recv_usb(&grid_transport_state, (uint8_t*)msg.data, msg.length);
   }
-
-  grid_transport_recv_usb(&grid_transport_state, temp, ret + 1);
 }
 
 static uint8_t DRAM_ATTR usb_tx_ready = 0;

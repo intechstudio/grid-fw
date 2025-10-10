@@ -335,11 +335,11 @@ void grid_platform_printf(char const* fmt, ...) {
 
   va_list ap;
 
-  char temp[200] = {0};
+  char temp[1012] = {0};
 
   va_start(ap, fmt);
 
-  vsnprintf(temp, 199, fmt, ap);
+  vsnprintf(temp, 1012, fmt, ap);
 
   va_end(ap);
 

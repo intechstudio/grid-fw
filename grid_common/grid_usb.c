@@ -157,17 +157,17 @@ void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid
 
       grid_port_debug_print_text("KB IS DISABLED");
 
-      // Generate ACKNOWLEDGE RESPONSE
-      struct grid_msg_packet message;
+      struct grid_msg msg;
+      uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+      grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-      grid_msg_packet_init(&grid_msg_state, &message, GRID_PARAMETER_GLOBAL_POSITION, GRID_PARAMETER_GLOBAL_POSITION);
+      grid_msg_add_frame(&msg, GRID_CLASS_HIDKEYSTATUS_frame);
+      grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
+      grid_msg_set_parameter(&msg, CLASS_HIDKEYSTATUS_ISENABLED, kb->isenabled);
 
-      grid_msg_packet_body_append_printf(&message, GRID_CLASS_HIDKEYSTATUS_frame);
-      grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
-      grid_msg_packet_body_append_parameter(&message, GRID_CLASS_HIDKEYSTATUS_ISENABLED_offset, GRID_CLASS_HIDKEYSTATUS_ISENABLED_length, kb->isenabled);
-
-      grid_msg_packet_close(&grid_msg_state, &message);
-      grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
+      if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+        grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+      }
     }
 
     // USB SEND
@@ -251,14 +251,12 @@ void grid_midi_rx_pop() {
     return;
   }
 
-  uint8_t x = GRID_PARAMETER_GLOBAL_POSITION;
-  uint8_t y = GRID_PARAMETER_GLOBAL_POSITION;
+  struct grid_msg msg;
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-  struct grid_msg_packet message;
-  grid_msg_packet_init(&grid_msg_state, &message, x, y);
-
-  grid_msg_header_set_sx(&message, x);
-  grid_msg_header_set_sy(&message, y);
+  grid_msg_set_parameter(&msg, BRC_SX, xy);
+  grid_msg_set_parameter(&msg, BRC_SY, xy);
 
   // Combine up to 8 midi messages into a packet
   for (uint8_t i = 0; i < 8; ++i) {
@@ -270,17 +268,18 @@ void grid_midi_rx_pop() {
     struct grid_midi_event_desc event;
     grid_swsr_read(&grid_midi_rx, &event, sizeof(struct grid_midi_event_desc));
 
-    grid_msg_packet_body_append_printf(&message, GRID_CLASS_MIDI_frame);
-    grid_msg_packet_body_append_parameter(&message, GRID_INSTR_offset, GRID_INSTR_length, GRID_INSTR_REPORT_code);
+    grid_msg_add_frame(&msg, GRID_CLASS_MIDI_frame);
+    grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
 
-    grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_CHANNEL_offset, GRID_CLASS_MIDI_CHANNEL_length, event.byte0);
-    grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_COMMAND_offset, GRID_CLASS_MIDI_COMMAND_length, event.byte1);
-    grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM1_offset, GRID_CLASS_MIDI_PARAM1_length, event.byte2);
-    grid_msg_packet_body_append_parameter(&message, GRID_CLASS_MIDI_PARAM2_offset, GRID_CLASS_MIDI_PARAM2_length, event.byte3);
+    grid_msg_set_parameter(&msg, CLASS_MIDI_CHANNEL, event.byte0);
+    grid_msg_set_parameter(&msg, CLASS_MIDI_COMMAND, event.byte1);
+    grid_msg_set_parameter(&msg, CLASS_MIDI_PARAM1, event.byte2);
+    grid_msg_set_parameter(&msg, CLASS_MIDI_PARAM2, event.byte3);
   }
 
-  grid_msg_packet_close(&grid_msg_state, &message);
-  grid_transport_send_msg_packet_to_all(&grid_transport_state, &message);
+  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+    grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+  }
 }
 
 bool grid_midi_rx_writable() { return grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc)); }

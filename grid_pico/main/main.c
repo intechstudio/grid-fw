@@ -237,7 +237,7 @@ void grid_uart_rx_clone_tx(struct grid_pico_uart_port* dest_port, struct pico_bk
   pico_pool_change(&pool, bkt, state);
 }
 
-struct grid_msg_recent_buffer recent_msgs;
+struct grid_fingerprint_buf recent_msgs;
 
 enum pico_bkt_state_t grid_uart_rx_process_bkt(struct grid_pico_uart_port* port, struct pico_bkt_t* bkt) {
 
@@ -252,7 +252,7 @@ enum pico_bkt_state_t grid_uart_rx_process_bkt(struct grid_pico_uart_port* port,
     return PICO_BKT_STATE_EMPTY;
   }
 
-  int status = grid_str_verify_frame(msg, len);
+  int status = grid_frame_verify(msg, len);
 
   if (status != 0) {
     return PICO_BKT_STATE_EMPTY;
@@ -278,15 +278,15 @@ enum pico_bkt_state_t grid_uart_rx_process_bkt(struct grid_pico_uart_port* port,
     return PICO_BKT_STATE_EMPTY;
   }
 
-  grid_str_transform_brc_params(msg, por->dx, por->dy, por->partner.rot);
+  grid_str_transform_brc_params((uint8_t*)msg, len, por->dx, por->dy, por->partner.rot);
 
-  uint32_t fingerprint = grid_msg_recent_fingerprint_calculate(msg);
+  uint32_t fingerprint = grid_fingerprint_calculate(msg);
 
-  if (grid_msg_recent_fingerprint_find(&recent_msgs, fingerprint)) {
+  if (grid_fingerprint_buf_find(&recent_msgs, fingerprint)) {
     return PICO_BKT_STATE_EMPTY;
   }
 
-  grid_msg_recent_fingerprint_store(&recent_msgs, fingerprint);
+  grid_fingerprint_buf_store(&recent_msgs, fingerprint);
 
   for (int i = 0; i < 4; ++i) {
 
@@ -587,7 +587,7 @@ int main() {
   multicore_launch_core1(core_1_main_entry);
 
   // Initialize fingerprint buffer
-  grid_msg_recent_fingerprint_buffer_init(&recent_msgs, 64);
+  grid_fingerprint_buf_init(&recent_msgs, 64);
 
   // Initialize transport, used for some protocol mechanisms
   // such as keeping track of delta offsets and rotation
