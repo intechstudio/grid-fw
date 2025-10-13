@@ -23,7 +23,7 @@ REM BFCPEOPTIONEND
 set target_exe="esptool.exe"
 
 
-esptool.exe --chip esp32s3 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_size detect --flash_freq 80m 0x0 bootloader.bin 0x8000 partition-table.bin 0xe000 otadata_boot_from_ota0.bin 0x10000 grid_fw_1_3_6.bin 0x410000 tinyuf2.bin"
+esptool.exe --chip esp32s3 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_size detect --flash_freq 80m 0x8000 partition-table.bin 0xe000 otadata_boot_from_ota0.bin 0x10000 grid_fw_1_3_6.bin 0x410000 tinyuf2.bin 0x0 bootloader.bin"
 
 
 pause
