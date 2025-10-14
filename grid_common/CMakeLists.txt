@@ -14,7 +14,6 @@ idf_component_register(
         "grid_swsr.c"
         "grid_msg.c"
         "grid_noflash.c"
-        "grid_buf.c"
         "grid_decode.c"
         "grid_port.c"
         "grid_usb.c"
