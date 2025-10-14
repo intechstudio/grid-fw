@@ -670,12 +670,6 @@ void app_main(void) {
 
   log_checkpoint("PORT TASK DONE");
 
-  TaskHandle_t grid_trace_report_task_hdl;
-
-  xTaskCreatePinnedToCore(grid_trace_report_task, "trace", 1024 * 4, (void*)signaling_sem, 6, &grid_trace_report_task_hdl, 1);
-
-  log_checkpoint("REPORT TASK DONE");
-
   esp_timer_create_args_t periodic_rtc_ms_args = {.callback = &periodic_rtc_ms_cb, .name = "rtc millisecond"};
 
   esp_timer_handle_t periodic_rtc_ms_timer;
@@ -688,7 +682,7 @@ void app_main(void) {
   esp_register_freertos_idle_hook_for_cpu(idle_hook, 0);
   esp_register_freertos_idle_hook_for_cpu(idle_hook, 1);
 
-  log_checkpoint("TRACE START");
+  // log_checkpoint("TRACE START");
 
   // TRACE CONFIG GPIO 40, 41, 4Mbaud,
 
