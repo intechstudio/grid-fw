@@ -76,4 +76,5 @@ idf_component_register(
         "."
         "../../../grid_common"
         "../../../grid_common/lua-5.4.3/src"
+        "../../../grid_common/littlefs"
 )

@@ -4,7 +4,6 @@ idf_component_register(
 				"grid_esp32_littlefs_api.c"
     INCLUDE_DIRS
         "."
-        "../../../grid_common/littlefs"
 		REQUIRES
 				"esp_partition" "grid_common"
 )
