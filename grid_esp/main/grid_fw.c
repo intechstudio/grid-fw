@@ -526,12 +526,8 @@ void app_main(void) {
   grid_ui_semaphore_init(&grid_ui_state.busy_semaphore, (void*)ui_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
   grid_ui_semaphore_init(&grid_ui_state.bulk_semaphore, (void*)ui_bulk_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
-  uint8_t led_pin = 21;
-
-  grid_led_set_pin(&grid_led_state, led_pin);
-
-  TaskHandle_t led_task_hdl;
-  xTaskCreatePinnedToCore(grid_esp32_led_task, "led", 1024 * 3, NULL, LED_TASK_PRIORITY, &led_task_hdl, 0);
+  grid_led_set_pin(&grid_led_state, 21);
+  grid_esp32_led_start(grid_led_get_pin(&grid_led_state));
 
   // GRID MODULE INITIALIZATION SEQUENCE
 
@@ -716,6 +712,12 @@ void app_main(void) {
   };
   bool vmp_flushed = false;
 
+  // Configure task timers
+  struct grid_utask_timer timer_led = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 9500, // 10000 really, but FreeRTOS is currently 100 Hz
+  };
+
   while (1) {
 
     // Flush the profiler output if it becomes full
@@ -744,7 +746,10 @@ void app_main(void) {
       break;
     }
 
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    // Run microtasks
+    grid_esp32_utask_led(&timer_led);
+
+    vTaskDelay(1);
   }
 
   // Deallocate profiler
