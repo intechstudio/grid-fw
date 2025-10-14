@@ -103,7 +103,7 @@ static const char* TAG = "main";
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 
-static void periodic_rtc_ms_cb(void* arg) {
+static void periodic_rtc_ms_cb(void*, void*, void*) {
 
   grid_ui_rtc_ms_tick_time(&grid_ui_state);
 
@@ -112,6 +112,32 @@ static void periodic_rtc_ms_cb(void* arg) {
   } else {
     grid_ui_rtc_ms_mapmode_handler(&grid_ui_state, 1);
   }
+}
+
+static void periodic_rtc_ms_init() {
+
+  gptimer_handle_t tmr = NULL;
+  gptimer_config_t tmr_cfg = {
+      .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+      .direction = GPTIMER_COUNT_UP,
+      .resolution_hz = 1000000,
+  };
+  ESP_ERROR_CHECK(gptimer_new_timer(&tmr_cfg, &tmr));
+
+  gptimer_event_callbacks_t cbs = {
+      .on_alarm = periodic_rtc_ms_cb,
+  };
+  ESP_ERROR_CHECK(gptimer_register_event_callbacks(tmr, &cbs, NULL));
+
+  gptimer_alarm_config_t alarm_cfg = {
+      .reload_count = 0,
+      .alarm_count = 1000,
+      .flags.auto_reload_on_alarm = true,
+  };
+  ESP_ERROR_CHECK(gptimer_set_alarm_action(tmr, &alarm_cfg));
+
+  ESP_ERROR_CHECK(gptimer_enable(tmr));
+  ESP_ERROR_CHECK(gptimer_start(tmr));
 }
 
 void system_init_core_2_task(void* arg) {
@@ -670,11 +696,8 @@ void app_main(void) {
 
   log_checkpoint("PORT TASK DONE");
 
-  esp_timer_create_args_t periodic_rtc_ms_args = {.callback = &periodic_rtc_ms_cb, .name = "rtc millisecond"};
-
-  esp_timer_handle_t periodic_rtc_ms_timer;
-  ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
-  ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 1000));
+  // Initialize 1 kHz timer
+  periodic_rtc_ms_init();
 
   log_checkpoint("INIT COMPLETE");
 
