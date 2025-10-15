@@ -146,7 +146,7 @@ void system_init_core_2_task(void* arg) {
   grid_esp32_swd_pico_clock_init(LEDC_TIMER_0, LEDC_CHANNEL_0);
   grid_esp32_swd_pico_program_sram(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, pico_firmware, pico_firmware_len);
 
-  vTaskSuspend(NULL);
+  vTaskDelete(NULL);
 }
 
 bool idle_hook(void) {
