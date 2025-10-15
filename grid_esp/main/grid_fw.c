@@ -159,7 +159,11 @@ static void log_checkpoint(const char* str) {
 
   size_t free_size = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
   int integrity = heap_caps_check_integrity_all(true);
-  ESP_LOGI(TAG, "===== %s, free mem: %u (integrity: %d)", str, free_size, integrity);
+  size_t highwater = uxTaskGetStackHighWaterMark(NULL);
+  ESP_LOGI(TAG, "===== %s, free mem: %u (integrity: %d), highwater: %u", str, free_size, integrity, highwater);
+  if (highwater < 512) {
+    ESP_LOGE(TAG, "highwatermark low: %u < 512", highwater);
+  }
 }
 
 #include "grid_lua_api_gui.h"
@@ -457,6 +461,21 @@ void grid_esp32_print_chip_info() {
 
 void app_main(void) {
 
+  // Allocate profiler & assign its interface
+  vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
+  struct vmp_reg_t reg = {
+      .evt_serialized_size = vmp_evt_serialized_size,
+      .evt_serialize = vmp_evt_serialize,
+      .fwrite = vmp_fwrite,
+  };
+  bool vmp_flushed = false;
+
+  // Configure task timers
+  struct grid_utask_timer timer_led = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 9500, // 10000 really, but FreeRTOS is currently 100 Hz
+  };
+
   // set console baud rate
   ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
   vTaskDelay(1);
@@ -565,7 +584,9 @@ void app_main(void) {
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
     grid_alert_all_set_frequency(&grid_led_state, 4);
     grid_platform_nvm_erase();
+    grid_esp32_utask_led(&timer_led);
     vTaskDelay(pdMS_TO_TICKS(600));
+    grid_esp32_utask_led(&timer_led);
   }
 
   log_checkpoint("MSG START");
@@ -720,20 +741,7 @@ void app_main(void) {
   gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
   gpio_pullup_en(GPIO_NUM_0);
 
-  // Allocate profiler & assign its interface
-  vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
-  struct vmp_reg_t reg = {
-      .evt_serialized_size = vmp_evt_serialized_size,
-      .evt_serialize = vmp_evt_serialize,
-      .fwrite = vmp_fwrite,
-  };
-  bool vmp_flushed = false;
-
-  // Configure task timers
-  struct grid_utask_timer timer_led = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = 9500, // 10000 really, but FreeRTOS is currently 100 Hz
-  };
+  log_checkpoint("MAIN LOOP");
 
   while (1) {
 
