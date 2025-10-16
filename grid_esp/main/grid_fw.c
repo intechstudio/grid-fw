@@ -761,16 +761,6 @@ void app_main(void) {
       vmp_flushed = true;
     }
 
-    // esp_sysview_flush(ESP_APPTRACE_TMO_INFINITE);
-
-    if (gpio_get_level(GPIO_NUM_0) == 0) {
-
-      // SEGGER_SYSVIEW_Stop();
-
-      // esp_sysview_flush(ESP_APPTRACE_TMO_INFINITE);
-      break;
-    }
-
     // Run microtasks
     grid_esp32_utask_led(&timer_led);
 
