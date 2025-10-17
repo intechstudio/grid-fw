@@ -117,9 +117,10 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
   "}}"
 
 #define GRID_ACTIONSTRING_LCD_INIT \
-  "<?lua --[[@cb]] glsb(255)lcd,pi,s,c,f,v,ids=ele[13],math.pi,64,{{0,0,0},{255,255,255},{glr(),glg(),glb()}},1,{27,0,100},'VSN1'd={[1]='Linear',[2]='Encoder',[3]='Button',[7]='Endless'}xc,yc,p=160,120,s*5/8;self.eventrx_cb=function(self,hdr,e,rxv,n)v=rxv;if#n==0 then n=d[e[3]]..e[2]end;ids=string.sub(n,1,(lcd:lsw()/(s/2)-1)//1)f=10 end;lcd:ldaf(0,0,319,239,c[1])lcd:ldrr(3,3,317,237,10,c[2]) ?>"
+  "<?lua --[[@cb]] glsb(255)pi,s,c,self.f,self.v,self.id=math.pi,64,{{0,0,0},{255,255,255},{glr(),glg(),glb()}},1,{27,0,100},'VSN1'd={[1]='Linear',[2]='Encoder',[3]='Button',[7]='Endless'}xc,yc,p=160,120,s*5/8;self.eventrx_cb=function(self,hdr,e,v,n)self.v=v;if#n==0 then n=d[e[3]]..e[2]end;self.id=string.sub(n,1,(self:lsw()/(s/2)-1)//1)self.f=1 end;self:ldaf(0,0,319,239,c[1])self:ldrr(3,3,317,237,10,c[2]) ?>"
+
 #define GRID_ACTIONSTRING_LCD_DRAW \
-  "<?lua --[[@cb]] if f>0 then f=f-1;local a,xo=gmaps(v[1],v[2],v[3],0.1,1),#tostring(v[1])/2*s/2-#tostring(v[1])-s//32,lcd:ldaf(10,10,310,230,c[1])lcd:ldrr(xc-p//1-1,yc-p//1-1,xc+p//1+1,yc+p//1+1,s,c[2])lcd:ldrrf(xc-p*a//1,yc-p*a//1,xc+p*a//1,yc+p*a//1,s,c[3])lcd:ldft(v[1],xc-xo,yc+s,s/2,c[2])local xn=(#ids*(s/2))/2-s//32;lcd:ldft(ids,xc-xn,yc-1.5*s,s/2,c[2])lcd:ldsw()end ?>"
+  "<?lua --[[@cb]] if self.f>0 then self.f=self.f-1;local a,xo=gmaps(self.v[1],self.v[2],self.v[3],0.1,1),#tostring(self.v[1])/2*s/2-#tostring(self.v[1])-s//32;self:ldaf(10,10,310,230,c[1])self:ldrr(xc-p//1-1,yc-p//1-1,xc+p//1+1,yc+p//1+1,s,c[2])self:ldrrf(xc-p*a//1,yc-p*a//1,xc+p*a//1,yc+p*a//1,s,c[3])self:ldft(self.v[1],xc-xo,yc+s,s/2,c[2])local xn=(#self.id*(s/2))/2-s//32;self:ldft(self.id,xc-xn,yc-1.5*s,s/2,c[2])self:ldsw()end ?>"
 
 // clang-format on
 
