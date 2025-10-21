@@ -205,7 +205,7 @@ void IRAM_ATTR vsn2_process_analog(void* user) {
 
 void IRAM_ATTR vsn2_process_encoder(void* dma_buf) {
 
-  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_TEK1_SMOL_BUT_NUM] = {9, 10, 11, 12, 13, 14, 15, 16};
+  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_TEK1_SMOL_BUT_NUM] = {8, 9, 10, 11, 13, 14, 15, 16};
 
   // Skip hwcfg byte
   uint8_t* bytes = &((uint8_t*)dma_buf)[1];
@@ -217,7 +217,7 @@ void IRAM_ATTR vsn2_process_encoder(void* dma_buf) {
     uint8_t idx = encoder_lookup[i];
     struct grid_ui_element* ele = &elements[idx];
 
-    if (idx >= 9 && idx < 17) {
+    if ((idx >= 8 && idx < 12) || (idx >= 13 && idx < 17)) {
 
       grid_ui_button_store_input(ele, &ui_button_state[idx], value, 12);
     }
@@ -242,9 +242,8 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   uint32_t hwcfg = grid_sys_get_hwcfg(sys);
 
-  // Initialize LCD panel at index 0, if necessary
-  if (hwcfg == GRID_MODULE_TEK1_RevA || hwcfg == GRID_MODULE_VSN1L_RevA || hwcfg == GRID_MODULE_VSN1L_RevB || hwcfg == GRID_MODULE_VSN1L_RevH || hwcfg == GRID_MODULE_VSN2_RevA ||
-      hwcfg == GRID_MODULE_VSN2_RevB || hwcfg == GRID_MODULE_VSN2_RevH) {
+  // Initialize LCD panel at index 0 for VSN1L
+  if (hwcfg == GRID_MODULE_TEK1_RevA || hwcfg == GRID_MODULE_VSN1L_RevA || hwcfg == GRID_MODULE_VSN1L_RevB || hwcfg == GRID_MODULE_VSN1L_RevH) {
 
     struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[0];
     struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
@@ -255,9 +254,8 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
     grid_esp32_lcd_panel_set_frctrl2(lcd, LCD_FRCTRL_40HZ);
   }
 
-  // Initialize LCD panel at index 1, if necessary
-  if (hwcfg == GRID_MODULE_VSN1R_RevA || hwcfg == GRID_MODULE_VSN1R_RevB || hwcfg == GRID_MODULE_VSN1R_RevH || hwcfg == GRID_MODULE_VSN2_RevA || hwcfg == GRID_MODULE_VSN2_RevB ||
-      hwcfg == GRID_MODULE_VSN2_RevH) {
+  // Initialize LCD panel at index 1 for VSN1R
+  if (hwcfg == GRID_MODULE_VSN1R_RevA || hwcfg == GRID_MODULE_VSN1R_RevB || hwcfg == GRID_MODULE_VSN1R_RevH) {
 
     struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[1];
     struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
@@ -266,6 +264,23 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
     grid_esp32_lcd_panel_init(lcd, &elements[13], 1, GRID_LCD_CLK_FAST);
     grid_esp32_lcd_panel_reset(lcd);
     grid_esp32_lcd_panel_set_frctrl2(lcd, LCD_FRCTRL_40HZ);
+  }
+
+  // Initialize LCD panel at index 0 and 1 for VSN2
+  if (hwcfg == GRID_MODULE_VSN2_RevA || hwcfg == GRID_MODULE_VSN2_RevB || hwcfg == GRID_MODULE_VSN2_RevH) {
+
+    struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
+    struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
+
+    grid_esp32_lcd_panel_init(&lcds[0], &elements[12], 0, GRID_LCD_CLK_SLOW);
+    grid_esp32_lcd_panel_init(&lcds[0], &elements[12], 0, GRID_LCD_CLK_FAST);
+    grid_esp32_lcd_panel_reset(&lcds[0]);
+    grid_esp32_lcd_panel_set_frctrl2(&lcds[0], LCD_FRCTRL_40HZ);
+
+    grid_esp32_lcd_panel_init(&lcds[1], &elements[17], 1, GRID_LCD_CLK_SLOW);
+    grid_esp32_lcd_panel_init(&lcds[1], &elements[17], 1, GRID_LCD_CLK_FAST);
+    grid_esp32_lcd_panel_reset(&lcds[1]);
+    grid_esp32_lcd_panel_set_frctrl2(&lcds[1], LCD_FRCTRL_40HZ);
   }
 
   // Mark the LCD as ready
