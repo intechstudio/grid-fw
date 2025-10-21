@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include "grid_led.h"
+#include "grid_utask.h"
 
 #include "driver/gpio.h"
 
@@ -26,7 +27,8 @@
 extern "C" {
 #endif
 
-void grid_esp32_led_task(void* arg);
+void grid_esp32_led_start(uint8_t led_gpio);
+void grid_esp32_utask_led(struct grid_utask_timer* timer);
 
 #ifdef __cplusplus
 }

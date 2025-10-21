@@ -103,7 +103,7 @@ static const char* TAG = "main";
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 
-static void periodic_rtc_ms_cb(void* arg) {
+static void periodic_rtc_ms_cb(void*, void*, void*) {
 
   grid_ui_rtc_ms_tick_time(&grid_ui_state);
 
@@ -114,13 +114,39 @@ static void periodic_rtc_ms_cb(void* arg) {
   }
 }
 
+static void periodic_rtc_ms_init() {
+
+  gptimer_handle_t tmr = NULL;
+  gptimer_config_t tmr_cfg = {
+      .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+      .direction = GPTIMER_COUNT_UP,
+      .resolution_hz = 1000000,
+  };
+  ESP_ERROR_CHECK(gptimer_new_timer(&tmr_cfg, &tmr));
+
+  gptimer_event_callbacks_t cbs = {
+      .on_alarm = periodic_rtc_ms_cb,
+  };
+  ESP_ERROR_CHECK(gptimer_register_event_callbacks(tmr, &cbs, NULL));
+
+  gptimer_alarm_config_t alarm_cfg = {
+      .reload_count = 0,
+      .alarm_count = 1000,
+      .flags.auto_reload_on_alarm = true,
+  };
+  ESP_ERROR_CHECK(gptimer_set_alarm_action(tmr, &alarm_cfg));
+
+  ESP_ERROR_CHECK(gptimer_enable(tmr));
+  ESP_ERROR_CHECK(gptimer_start(tmr));
+}
+
 void system_init_core_2_task(void* arg) {
 
   grid_esp32_swd_pico_pins_init(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, GRID_ESP32_PINS_RP_CLOCK);
   grid_esp32_swd_pico_clock_init(LEDC_TIMER_0, LEDC_CHANNEL_0);
   grid_esp32_swd_pico_program_sram(GRID_ESP32_PINS_RP_SWCLK, GRID_ESP32_PINS_RP_SWDIO, pico_firmware, pico_firmware_len);
 
-  vTaskSuspend(NULL);
+  vTaskDelete(NULL);
 }
 
 bool idle_hook(void) {
@@ -133,7 +159,11 @@ static void log_checkpoint(const char* str) {
 
   size_t free_size = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
   int integrity = heap_caps_check_integrity_all(true);
-  ESP_LOGI(TAG, "===== %s, free mem: %u (integrity: %d)", str, free_size, integrity);
+  size_t highwater = uxTaskGetStackHighWaterMark(NULL);
+  ESP_LOGI(TAG, "===== %s, free mem: %u (integrity: %d), highwater: %u", str, free_size, integrity, highwater);
+  if (highwater < 512) {
+    ESP_LOGE(TAG, "highwatermark low: %u < 512", highwater);
+  }
 }
 
 #include "grid_lua_api_gui.h"
@@ -431,6 +461,21 @@ void grid_esp32_print_chip_info() {
 
 void app_main(void) {
 
+  // Allocate profiler & assign its interface
+  vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
+  struct vmp_reg_t reg = {
+      .evt_serialized_size = vmp_evt_serialized_size,
+      .evt_serialize = vmp_evt_serialize,
+      .fwrite = vmp_fwrite,
+  };
+  bool vmp_flushed = false;
+
+  // Configure task timers
+  struct grid_utask_timer timer_led = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 9500, // 10000 really, but FreeRTOS is currently 100 Hz
+  };
+
   // set console baud rate
   ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
   vTaskDelay(1);
@@ -526,12 +571,8 @@ void app_main(void) {
   grid_ui_semaphore_init(&grid_ui_state.busy_semaphore, (void*)ui_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
   grid_ui_semaphore_init(&grid_ui_state.bulk_semaphore, (void*)ui_bulk_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
-  uint8_t led_pin = 21;
-
-  grid_led_set_pin(&grid_led_state, led_pin);
-
-  TaskHandle_t led_task_hdl;
-  xTaskCreatePinnedToCore(grid_esp32_led_task, "led", 1024 * 3, NULL, LED_TASK_PRIORITY, &led_task_hdl, 0);
+  grid_led_set_pin(&grid_led_state, 21);
+  grid_esp32_led_start(grid_led_get_pin(&grid_led_state));
 
   // GRID MODULE INITIALIZATION SEQUENCE
 
@@ -543,7 +584,9 @@ void app_main(void) {
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
     grid_alert_all_set_frequency(&grid_led_state, 4);
     grid_platform_nvm_erase();
+    grid_esp32_utask_led(&timer_led);
     vTaskDelay(pdMS_TO_TICKS(600));
+    grid_esp32_utask_led(&timer_led);
   }
 
   log_checkpoint("MSG START");
@@ -674,17 +717,8 @@ void app_main(void) {
 
   log_checkpoint("PORT TASK DONE");
 
-  TaskHandle_t grid_trace_report_task_hdl;
-
-  xTaskCreatePinnedToCore(grid_trace_report_task, "trace", 1024 * 4, (void*)signaling_sem, 6, &grid_trace_report_task_hdl, 1);
-
-  log_checkpoint("REPORT TASK DONE");
-
-  esp_timer_create_args_t periodic_rtc_ms_args = {.callback = &periodic_rtc_ms_cb, .name = "rtc millisecond"};
-
-  esp_timer_handle_t periodic_rtc_ms_timer;
-  ESP_ERROR_CHECK(esp_timer_create(&periodic_rtc_ms_args, &periodic_rtc_ms_timer));
-  ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_rtc_ms_timer, 1000));
+  // Initialize 1 kHz timer
+  periodic_rtc_ms_init();
 
   log_checkpoint("INIT COMPLETE");
 
@@ -692,7 +726,7 @@ void app_main(void) {
   esp_register_freertos_idle_hook_for_cpu(idle_hook, 0);
   esp_register_freertos_idle_hook_for_cpu(idle_hook, 1);
 
-  log_checkpoint("TRACE START");
+  // log_checkpoint("TRACE START");
 
   // TRACE CONFIG GPIO 40, 41, 4Mbaud,
 
@@ -707,14 +741,7 @@ void app_main(void) {
   gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
   gpio_pullup_en(GPIO_NUM_0);
 
-  // Allocate profiler & assign its interface
-  vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
-  struct vmp_reg_t reg = {
-      .evt_serialized_size = vmp_evt_serialized_size,
-      .evt_serialize = vmp_evt_serialize,
-      .fwrite = vmp_fwrite,
-  };
-  bool vmp_flushed = false;
+  log_checkpoint("MAIN LOOP");
 
   while (1) {
 
@@ -734,17 +761,10 @@ void app_main(void) {
       vmp_flushed = true;
     }
 
-    // esp_sysview_flush(ESP_APPTRACE_TMO_INFINITE);
+    // Run microtasks
+    grid_esp32_utask_led(&timer_led);
 
-    if (gpio_get_level(GPIO_NUM_0) == 0) {
-
-      // SEGGER_SYSVIEW_Stop();
-
-      // esp_sysview_flush(ESP_APPTRACE_TMO_INFINITE);
-      break;
-    }
-
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(1);
   }
 
   // Deallocate profiler
