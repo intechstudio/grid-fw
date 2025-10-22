@@ -555,8 +555,9 @@ void app_main(void) {
 
   grid_lua_set_memory_target(&grid_lua_state, 100);
 
-  TaskHandle_t usb_task_hdl;
-  xTaskCreatePinnedToCore(grid_esp32_usb_task, "TinyUSB", 4096, NULL, 6, &usb_task_hdl, 1);
+  grid_esp32_usb_init();
+  grid_usb_midi_buffer_init();
+  grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
 
   // ================== START: grid_module_pbf4_init() ================== //
 
