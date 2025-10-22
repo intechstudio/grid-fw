@@ -226,7 +226,6 @@ bool grid_lua_do_event(struct grid_lua_model* lua, uint8_t index, const char* fu
 grid_lua_do_event_cleanup:
 
   lua_pop(lua->L, lua_gettop(lua->L));
-  grid_lua_gc_step_unsafe(lua);
   grid_lua_semaphore_release(lua);
   return ret;
 }
@@ -378,7 +377,7 @@ void grid_lua_gc_step_unsafe(struct grid_lua_model* lua) {
 
   if (lua_gc(lua->L, LUA_GCCOUNT) > target_kilobytes) {
 
-    lua_gc(lua->L, LUA_GCSTEP, 10);
+    lua_gc(lua->L, LUA_GCSTEP, 1);
 
     // char message[10] = {0};
     // sprintf(message, "gc %dkb", target_kilobytes);

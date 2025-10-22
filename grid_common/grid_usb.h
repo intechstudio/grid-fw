@@ -46,6 +46,7 @@ extern uint16_t grid_midi_tx_read_index;
 
 uint8_t grid_midi_tx_push(struct grid_midi_event_desc midi_event);
 void grid_midi_tx_pop();
+bool grid_midi_tx_readable();
 
 #define GRID_MIDI_RX_BUFFER_length 128
 
@@ -94,6 +95,7 @@ struct grid_usb_keyboard_model {
 
 uint8_t grid_usb_keyboard_tx_push(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc keyboard_event);
 void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb);
+bool grid_usb_keyboard_tx_readable(struct grid_usb_keyboard_model* kb);
 
 extern struct grid_usb_keyboard_model grid_usb_keyboard_state;
 
