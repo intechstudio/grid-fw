@@ -112,7 +112,7 @@ double grid_ui_button_state_derivate(struct grid_ui_button_state* state) {
 
   double rise = (state->curr_in - (int32_t)state->prev_in) / (double)state->full_range;
 
-  uint64_t elapsed = state->curr_time - state->prev_time;
+  uint64_t elapsed = grid_platform_rtc_get_diff(state->curr_time, state->prev_time);
 
   double run = elapsed / 1250.;
 
@@ -235,12 +235,8 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
   }
 
   // limit lastrealtime
-  uint32_t elapsed_time = now - state->last_real_time;
-  uint32_t limit = GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
-  if (elapsed_time > limit) {
-    state->last_real_time = now - limit;
-    elapsed_time = limit;
-  }
+  uint64_t elapsed_us = grid_platform_rtc_get_diff(now, state->last_real_time);
+  elapsed_us = MIN(elapsed_us, GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US);
 
   int32_t mode = template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index];
   if (!grid_ui_button_state_process(state, mode, value)) {
@@ -249,7 +245,7 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 
   // update lastrealtime
   state->last_real_time = now;
-  template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] = elapsed_time / MS_TO_US;
+  template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] = elapsed_us / MS_TO_US;
 
   // 1-bit output with hysteresis
   uint8_t hyst = 0;

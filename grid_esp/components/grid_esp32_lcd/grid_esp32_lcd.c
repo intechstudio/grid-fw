@@ -10,13 +10,8 @@
 #include "freertos/task.h"
 
 #include "grid_noflash.h"
+#include "grid_platform.h"
 #include "grid_utask.h"
-
-extern uint64_t grid_platform_rtc_get_micros(void);
-
-extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
-
-extern void grid_platform_printf(char const* fmt, ...);
 
 static const char* TAG = "LCD";
 

@@ -758,6 +758,8 @@ void grid_platform_rtc_set_micros(uint64_t mic) { micros = mic; }
 
 uint64_t grid_platform_rtc_get_micros(void) { return micros; }
 
+uint64_t grid_platform_rtc_get_diff(uint64_t t1, uint64_t t2) { return t1 - t2; }
+
 uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told) { return grid_platform_rtc_get_micros() - told; }
 
 uint32_t grid_platform_get_cycles() { return grid_d51_dwt_cycles_read(); }

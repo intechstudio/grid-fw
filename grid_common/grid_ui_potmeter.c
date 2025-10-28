@@ -104,17 +104,15 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
   grid_ain_add_sample(&grid_ain_state, input_channel, value, adc_bit_depth, (uint8_t)resolution);
 
   // limit lastrealtime
-  uint64_t elapsed_time = grid_platform_rtc_get_elapsed_time(*last_real_time);
-  if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(*last_real_time)) {
-    *last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
-    elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
-  }
+  uint64_t now = grid_platform_rtc_get_micros();
+  uint64_t elapsed_us = grid_platform_rtc_get_diff(now, *last_real_time);
+  elapsed_us = MIN(elapsed_us, GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US);
 
   if (grid_ain_get_changed(&grid_ain_state, input_channel)) {
 
     // update lastrealtime
-    *last_real_time = grid_platform_rtc_get_micros();
-    template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] = elapsed_time / MS_TO_US;
+    *last_real_time = now;
+    template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] = elapsed_us / MS_TO_US;
 
     grid_ui_element_potmeter_update_value(template_parameter_list, ele->index, adc_bit_depth);
 

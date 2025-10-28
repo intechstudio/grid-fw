@@ -538,7 +538,7 @@ void core_1_main_entry() {
   // Configure task timers
   for (int i = 0; i < 4; ++i) {
     timer_uart_rx_1[i] = (struct grid_pico_task_timer){
-        .last = grid_platform_rtc_get_micros(),
+        .last = grid_pico_time(),
         .period = 5,
     };
   }

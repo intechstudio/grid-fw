@@ -20,6 +20,8 @@ extern uint8_t grid_platform_get_reset_cause();
 
 extern uint64_t grid_platform_rtc_get_micros();
 
+extern uint64_t grid_platform_rtc_get_diff(uint64_t t1, uint64_t t2);
+
 extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
 
 extern void grid_platform_nvm_defrag();
