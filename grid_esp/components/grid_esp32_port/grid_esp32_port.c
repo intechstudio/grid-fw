@@ -225,15 +225,25 @@ struct grid_utask_timer timer_midi_and_keyboard_tx;
 
 void grid_utask_midi_and_keyboard_tx(struct grid_utask_timer* timer) {
 
-  if (!grid_utask_timer_elapsed(timer)) {
-    return;
+  if (grid_midi_tx_readable()) {
+
+    if (!grid_utask_timer_elapsed(timer)) {
+      return;
+    }
+
+    grid_midi_tx_pop();
+
+    ets_delay_us(20);
   }
 
-  grid_midi_tx_pop();
+  if (grid_usb_keyboard_tx_readable(&grid_usb_keyboard_state)) {
 
-  ets_delay_us(20);
+    if (!grid_utask_timer_elapsed(timer)) {
+      return;
+    }
 
-  grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
+    grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
+  }
 }
 
 struct grid_utask_timer timer_process_ui;
@@ -255,11 +265,11 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
     return;
   }
 
-  if (!grid_utask_timer_elapsed(timer)) {
-    return;
-  }
-
   if (grid_ui_event_count_istriggered(&grid_ui_state) > 0) {
+
+    if (!grid_utask_timer_elapsed(timer)) {
+      return;
+    }
 
     grid_port_process_ui_UNSAFE(&grid_ui_state);
   }
@@ -500,22 +510,36 @@ void grid_esp32_port_task(void* arg) {
     grid_transport_rx_broadcast_tx(xport, port_ui, grid_esp32_broadcast_between);
     grid_transport_rx_broadcast_tx(xport, port_usb, grid_esp32_broadcast_between);
 
-    // Run microtasks
+    // Run receiver-type microtasks
     grid_utask_sendfull(&timer_sendfull);
     grid_utask_ping(&timer_ping);
     grid_utask_heart(&timer_heart);
-    grid_utask_midi_and_keyboard_tx(&timer_midi_and_keyboard_tx);
-    grid_utask_process_ui(&timer_process_ui);
     grid_utask_midi_rx(&timer_midi_rx);
+    grid_utask_process_ui(&timer_process_ui);
 
-    // Outbound USB
+    // Decode for USB
     grid_port_send_usb(port_usb);
 
-    // Outbound UI
+    // Run transmitter-type microtasks
+    grid_utask_midi_and_keyboard_tx(&timer_midi_and_keyboard_tx);
+
+    // Service tinyusb
+    tud_task_ext(0, false);
+
+    // Duplicate midi rx callback used as a polling mechanism, as the
+    // actual callback may not necessarily process all available data
+    tud_midi_rx_cb(0);
+
+    // Decode for UI
     grid_port_send_ui(port_ui);
 
     // Outbound USART
     grid_transport_send_usart_cyclic_offset(xport);
+
+    // Garbage collection step for lua
+    grid_lua_semaphore_lock(&grid_lua_state);
+    grid_lua_gc_step_unsafe(&grid_lua_state);
+    grid_lua_semaphore_release(&grid_lua_state);
 
     // ets_delay_us(100);
 

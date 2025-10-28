@@ -320,25 +320,6 @@ void grid_esp32_usb_init() {
   // END OF USB
 }
 
-void grid_esp32_usb_task(void* arg) {
-
-  grid_esp32_usb_init();
-  grid_usb_midi_buffer_init();
-  grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
-
-  ESP_LOGD(TAG, "tinyusb task started");
-  while (1) { // RTOS forever loop
-
-    tud_task();
-
-    // Duplicate midi rx callback used as a polling mechanism, as the
-    // actual callback may not necessarily process all available data
-    tud_midi_rx_cb(0);
-
-    taskYIELD();
-  }
-}
-
 // ========================= PLATFORM =============================== //
 
 int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {

@@ -209,6 +209,8 @@ void grid_midi_tx_pop() {
   grid_platform_usb_midi_write(event.byte0, event.byte1, event.byte2, event.byte3);
 }
 
+bool grid_midi_tx_readable() { return grid_swsr_readable(&grid_midi_tx, sizeof(struct grid_midi_event_desc)); }
+
 void grid_midi_rx_push(struct grid_midi_event_desc event) {
 
   // Factored into here from calling contexts, even if part of a deprecated feature
@@ -356,6 +358,17 @@ void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb) {
       }
     }
   }
+}
+
+bool grid_usb_keyboard_tx_readable(struct grid_usb_keyboard_model* kb) {
+
+  if (kb->tx_read_index == kb->tx_write_index) {
+    return false;
+  }
+
+  uint32_t elapsed = grid_platform_rtc_get_elapsed_time(kb->tx_rtc_lasttimestamp);
+
+  return elapsed > kb->tx_buffer[kb->tx_read_index].delay * MS_TO_US;
 }
 
 void grid_usb_gamepad_axis_move(uint8_t axis, int32_t move) { grid_platform_usb_gamepad_axis_move(axis, move); }
