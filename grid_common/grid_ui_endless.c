@@ -103,25 +103,17 @@ void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t
   // }
 }
 
-uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint64_t* endless_last_real_time, double* delta_frac) {
+uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint64_t* last_real_time, double* delta_frac) {
 
-  uint32_t encoder_elapsed_time = grid_platform_rtc_get_elapsed_time(*endless_last_real_time);
-  if (GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US < grid_platform_rtc_get_elapsed_time(*endless_last_real_time)) {
-    *endless_last_real_time = grid_platform_rtc_get_micros() - GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
-    encoder_elapsed_time = GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US;
-  }
-
-  /*
-  if (delta == 0) {
-    // nothing left to do
-    return 0; // did not trigger
-  }
-  */
+  // limit lastrealtime
+  uint64_t now = grid_platform_rtc_get_micros();
+  uint64_t elapsed_us = grid_platform_rtc_get_diff(now, *last_real_time);
+  elapsed_us = MIN(elapsed_us, GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US);
 
   // update lastrealtime
-  *endless_last_real_time = grid_platform_rtc_get_micros();
+  *last_real_time = now;
   int32_t* template_parameter_list = ele->template_parameter_list;
-  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_ELAPSED_index] = encoder_elapsed_time / MS_TO_US;
+  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_ELAPSED_index] = elapsed_us / MS_TO_US;
 
   int32_t tmin = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index];
   int32_t tmax = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index];
@@ -133,8 +125,7 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
     delta = -delta;
   }
 
-  double elapsed_ms = encoder_elapsed_time / MS_TO_US;
-  elapsed_ms = clampf64(elapsed_ms, 1, 25);
+  double elapsed_ms = clampu32(elapsed_us, 1000, 25000) / MS_TO_US;
 
   double minmaxscale = (max - min) / 3600.0;
 
