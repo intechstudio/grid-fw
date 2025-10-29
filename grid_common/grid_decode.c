@@ -668,6 +668,8 @@ uint8_t grid_decode_namepreview_to_ui(char* header, char* chunk) {
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
   grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
+  grid_lua_semaphore_lock(&grid_lua_state);
+
   // -1 to exclude system element
   for (uint8_t j = 0; j < grid_ui_state.element_list_length - 1; ++j) {
 
@@ -679,6 +681,8 @@ uint8_t grid_decode_namepreview_to_ui(char* header, char* chunk) {
     grid_lua_clear_stdo(&grid_lua_state);
     lua_pop(L, lua_gettop(L));
   }
+
+  grid_lua_semaphore_release(&grid_lua_state);
 
   if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
     grid_transport_send_msg_to_all(&grid_transport_state, &msg);
