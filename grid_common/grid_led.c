@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "grid_msg.h"
+#include "grid_transport.h"
 
 #define GRID_LED_RESET_LENGTH 144
 
@@ -507,4 +507,24 @@ uint16_t grid_protocol_led_change_report_generate(struct grid_led_model* led, ui
   }
 
   return length;
+}
+
+void grid_protocol_led_preview_generate(struct grid_led_model* led) {
+
+  struct grid_msg msg;
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  char report[300] = {0};
+  uint16_t report_len = grid_protocol_led_change_report_generate(&grid_led_state, -1, report);
+
+  grid_msg_add_frame(&msg, GRID_CLASS_LEDPREVIEW_frame_start);
+  grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
+  grid_msg_set_parameter(&msg, CLASS_LEDPREVIEW_LENGTH, report_len);
+  grid_msg_nprintf(&msg, "%.*s", report_len, report);
+  grid_msg_add_frame(&msg, GRID_CLASS_LEDPREVIEW_frame_end);
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+    grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+  }
 }

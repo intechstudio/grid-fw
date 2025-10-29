@@ -101,9 +101,8 @@ void grid_led_set_layer_frequency(struct grid_led_model* led, uint8_t num, uint8
 void grid_led_set_layer_shape(struct grid_led_model* led, uint8_t num, uint8_t layer, uint8_t val);
 void grid_led_set_layer_timeout(struct grid_led_model* led, uint8_t num, uint8_t layer, uint16_t val);
 
-/** ======================== SMART BUFFER  ========================== */
-
 uint16_t grid_protocol_led_change_report_length(struct grid_led_model* led);
 uint16_t grid_protocol_led_change_report_generate(struct grid_led_model* led, uint16_t maxlength, char* output);
+void grid_protocol_led_preview_generate(struct grid_led_model* led);
 
 #endif /* GRID_LED_H */

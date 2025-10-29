@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "grid_led.h"
+#include "grid_lua_api.h"
 #include "grid_msg.h"
 #include "grid_platform.h"
 #include "grid_sys.h"
@@ -574,104 +575,117 @@ uint8_t grid_decode_heartbeat_to_ui(char* header, char* chunk) {
     grid_msg_set_editor_heartbeat_lastrealtime(&grid_msg_state, grid_platform_rtc_get_micros());
 
     // If previously unconnected, set as connected
-    bool editor_conn_now = false;
     if (grid_sys_get_editor_connected_state(&grid_sys_state) == 0) {
 
       grid_sys_set_editor_connected_state(&grid_sys_state, 1);
       grid_platform_printf("EDITOR CONNECT\n");
-      editor_conn_now = true;
-    }
-
-    // Event preview
-    if (editor_conn_now) {
-
-      struct grid_msg msg;
-      uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-      grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-
-      grid_msg_add_frame(&msg, GRID_CLASS_EVENTPREVIEW_frame_start);
-      grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
-
-      // -1 to exclude system element
-      for (uint8_t j = 0; j < grid_ui_state.element_list_length; ++j) {
-
-        struct grid_ui_element* ele = &grid_ui_state.element_list[j];
-
-        uint8_t value = 0;
-
-        if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-          value = ele->template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index];
-        } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-          value = ele->template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index];
-        } else if (ele->type == GRID_PARAMETER_ELEMENT_ENCODER) {
-          value = ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
-        } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
-          value = ele->template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index];
-        }
-
-        grid_msg_nprintf(&msg, "%02x%02x", ele->index, value);
-      }
-
-      size_t length = grid_ui_state.element_list_length * 4;
-      grid_msg_set_parameter(&msg, CLASS_EVENTPREVIEW_LENGTH, length);
-
-      grid_msg_add_frame(&msg, GRID_CLASS_EVENTPREVIEW_frame_end);
-
-      if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-        grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-      }
-    }
-
-    // Element names
-    if (editor_conn_now) {
-
-      struct grid_msg msg;
-      uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-      grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-
-      // -1 to exclude system element
-      for (uint8_t j = 0; j < grid_ui_state.element_list_length - 1; ++j) {
-
-        char command[26] = {0};
-        sprintf(command, "gens(%d,ele[%d]:gen())", j, j);
-        grid_lua_clear_stdo(&grid_lua_state);
-        grid_lua_dostring(&grid_lua_state, command);
-
-        grid_msg_nprintf(&msg, "%s", grid_lua_state.stdo);
-      }
-      grid_lua_clear_stdo(&grid_lua_state);
-
-      if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-        grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-      }
-    }
-
-    // Reset the change flags upon connection so that all LEDs will be reported
-    if (editor_conn_now) {
-      grid_led_change_flag_reset(&grid_led_state);
     }
 
     // LED preview
     if (grid_protocol_led_change_report_length(&grid_led_state)) {
-
-      struct grid_msg msg;
-      uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-      grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-
-      char report[300] = {0};
-      uint16_t report_len = grid_protocol_led_change_report_generate(&grid_led_state, -1, report);
-
-      grid_msg_add_frame(&msg, GRID_CLASS_LEDPREVIEW_frame_start);
-      grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
-      grid_msg_set_parameter(&msg, CLASS_LEDPREVIEW_LENGTH, report_len);
-      grid_msg_nprintf(&msg, "%.*s", report_len, report);
-      grid_msg_add_frame(&msg, GRID_CLASS_LEDPREVIEW_frame_end);
-
-      if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-        grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-      }
+      grid_protocol_led_preview_generate(&grid_led_state);
     }
   }
+  }
+
+  return 0;
+}
+
+uint8_t grid_decode_ledpreview_to_ui(char* header, char* chunk) {
+
+  if (grid_check_destination(header, GRID_DESTINATION_IS_ME | GRID_DESTINATION_IS_GLOBAL) == false) {
+    return 1;
+  }
+
+  uint8_t instr = grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR);
+
+  if (instr != GRID_INSTR_FETCH_code) {
+    return 1;
+  }
+
+  grid_led_change_flag_reset(&grid_led_state);
+
+  grid_protocol_led_preview_generate(&grid_led_state);
+
+  return 0;
+}
+
+uint8_t grid_decode_eventpreview_to_ui(char* header, char* chunk) {
+
+  if (grid_check_destination(header, GRID_DESTINATION_IS_ME | GRID_DESTINATION_IS_GLOBAL) == false) {
+    return 1;
+  }
+
+  uint8_t instr = grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR);
+
+  if (instr != GRID_INSTR_FETCH_code) {
+    return 1;
+  }
+
+  struct grid_msg msg;
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  grid_msg_add_frame(&msg, GRID_CLASS_EVENTPREVIEW_frame_start);
+  grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
+
+  // -1 to exclude system element
+  for (uint8_t j = 0; j < grid_ui_state.element_list_length - 1; ++j) {
+
+    struct grid_ui_element* ele = &grid_ui_state.element_list[j];
+
+    int32_t* params = ele->template_parameter_list;
+    uint8_t value1 = params[ele->template_parameter_element_position_index_1];
+    uint8_t value2 = params[ele->template_parameter_element_position_index_2];
+    grid_msg_nprintf(&msg, "%02x%02x%02x", ele->index, value1, value2);
+  }
+
+  size_t length = (grid_ui_state.element_list_length - 1) * 6;
+  grid_msg_set_parameter(&msg, CLASS_EVENTPREVIEW_LENGTH, length);
+
+  grid_msg_add_frame(&msg, GRID_CLASS_EVENTPREVIEW_frame_end);
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+    grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+  }
+
+  return 0;
+}
+
+uint8_t grid_decode_namepreview_to_ui(char* header, char* chunk) {
+
+  if (grid_check_destination(header, GRID_DESTINATION_IS_ME | GRID_DESTINATION_IS_GLOBAL) == false) {
+    return 1;
+  }
+
+  uint8_t instr = grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR);
+
+  if (instr != GRID_INSTR_FETCH_code) {
+    return 1;
+  }
+
+  struct grid_msg msg;
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  grid_lua_semaphore_lock(&grid_lua_state);
+
+  // -1 to exclude system element
+  for (uint8_t j = 0; j < grid_ui_state.element_list_length - 1; ++j) {
+
+    lua_State* L = grid_lua_state.L;
+    lua_pushinteger(L, j);
+    l_grid_elementname_get(L);
+    l_grid_elementname_send(L);
+    grid_msg_nprintf(&msg, "%s", grid_lua_state.stdo);
+    grid_lua_clear_stdo(&grid_lua_state);
+    lua_pop(L, lua_gettop(L));
+  }
+
+  grid_lua_semaphore_release(&grid_lua_state);
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+    grid_transport_send_msg_to_all(&grid_transport_state, &msg);
   }
 
   return 0;
@@ -1232,6 +1246,9 @@ struct grid_decoder_collection grid_decoder_to_ui[] = {
     {GRID_CLASS_PAGESTORE_code, grid_decode_pagestore_to_ui},
     {GRID_CLASS_PAGECLEAR_code, grid_decode_pageclear_to_ui},
     {GRID_CLASS_NVMERASE_code, grid_decode_nvmerase_to_ui},
+    {GRID_CLASS_LEDPREVIEW_code, grid_decode_ledpreview_to_ui},
+    {GRID_CLASS_EVENTPREVIEW_code, grid_decode_eventpreview_to_ui},
+    {GRID_CLASS_NAMEPREVIEW_code, grid_decode_namepreview_to_ui},
     {GRID_CLASS_EVENTVIEW_code, grid_decode_eventview_to_ui},
     {GRID_CLASS_CONFIG_code, grid_decode_config_to_ui},
     {0, NULL},
