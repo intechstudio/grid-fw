@@ -78,17 +78,27 @@ void grid_lua_deinit(struct grid_lua_model* lua) {}
 
 void grid_lua_pre_init(struct grid_lua_model* lua) {
 
-  grid_lua_dostring(lua, "init_simple_color() "
-                         "init_simple_midi() "
-                         "init_auto_value() ");
+  int ret = grid_lua_dostring(lua, "init_simple_color() "
+                                   "init_simple_midi() "
+                                   "init_auto_value() ");
   grid_lua_clear_stdo(lua);
+
+  if (!ret) {
+    grid_lua_broadcast_stde(lua);
+  }
+  grid_lua_clear_stde(lua);
 }
 
 void grid_lua_post_init(struct grid_lua_model* lua) {
 
-  grid_lua_dostring(lua, "ele[#ele]:post_init_cb() "
-                         "for i = 0, #ele-1 do ele[i]:post_init_cb() end");
+  int ret = grid_lua_dostring(lua, "ele[#ele]:post_init_cb() "
+                                   "for i = 0, #ele-1 do ele[i]:post_init_cb() end");
   grid_lua_clear_stdo(lua);
+
+  if (!ret) {
+    grid_lua_broadcast_stde(lua);
+  }
+  grid_lua_clear_stde(lua);
 }
 
 void grid_lua_clear_stdi(struct grid_lua_model* lua) { memset(lua->stdi, 0, lua->stdi_len); }
