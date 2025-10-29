@@ -649,7 +649,7 @@ uint8_t grid_decode_eventpreview_to_ui(char* header, char* chunk) {
     grid_msg_nprintf(&msg, "%02x%02x", ele->index, value);
   }
 
-  size_t length = grid_ui_state.element_list_length * 4;
+  size_t length = (grid_ui_state.element_list_length - 1) * 4;
   grid_msg_set_parameter(&msg, CLASS_EVENTPREVIEW_LENGTH, length);
 
   grid_msg_add_frame(&msg, GRID_CLASS_EVENTPREVIEW_frame_end);
