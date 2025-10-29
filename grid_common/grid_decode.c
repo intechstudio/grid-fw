@@ -630,7 +630,7 @@ uint8_t grid_decode_eventpreview_to_ui(char* header, char* chunk) {
   grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
 
   // -1 to exclude system element
-  for (uint8_t j = 0; j < grid_ui_state.element_list_length; ++j) {
+  for (uint8_t j = 0; j < grid_ui_state.element_list_length - 1; ++j) {
 
     struct grid_ui_element* ele = &grid_ui_state.element_list[j];
 
