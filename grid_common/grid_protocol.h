@@ -1030,6 +1030,9 @@
 #define GRID_CLASS_EVENTVIEW_NAME_offset 25
 #define GRID_CLASS_EVENTVIEW_NAME_length 0
 
+// NAME PREVIEW
+#define GRID_CLASS_NAMEPREVIEW_code 0x054
+
 // CONFIG STORE     Fetch(Read) Configure(Overwrite) Append(Write)
 #define GRID_CLASS_CONFIG_code 0x060
 #define GRID_CLASS_CONFIG_frame "%c%03x_................%c", GRID_CONST_STX, GRID_CLASS_CONFIG_code, GRID_CONST_ETX
