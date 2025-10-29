@@ -32,7 +32,7 @@ void grid_transport_ping_all(struct grid_transport* transport);
 void grid_transport_sendfull(struct grid_transport* transport);
 void grid_transport_send_usart_cyclic_offset(struct grid_transport* transport);
 void grid_transport_send_msg_to_all(struct grid_transport* transport, struct grid_msg* msg);
-void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, uint32_t hwcfg, uint8_t activepage);
+void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, uint32_t hwcfg, uint8_t activepage, uint8_t gccount);
 void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct grid_port* port, grid_brc_between_t between);
 
 #endif /* GRID_TRANSPORT_H */

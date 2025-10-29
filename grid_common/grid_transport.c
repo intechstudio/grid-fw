@@ -153,7 +153,7 @@ void grid_transport_send_msg_to_all(struct grid_transport* transport, struct gri
   grid_msg_to_swsr(msg, rx);
 }
 
-void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, uint32_t hwcfg, uint8_t activepage) {
+void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, uint32_t hwcfg, uint8_t activepage, uint8_t gccount) {
 
   // Port state bitfield
   uint8_t portstate = 0;
@@ -177,6 +177,7 @@ void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, ui
   grid_msg_set_parameter(&msg, CLASS_HEARTBEAT_VMINOR, GRID_PROTOCOL_VERSION_MINOR);
   grid_msg_set_parameter(&msg, CLASS_HEARTBEAT_VPATCH, GRID_PROTOCOL_VERSION_PATCH);
   grid_msg_set_parameter(&msg, CLASS_HEARTBEAT_PORTSTATE, portstate);
+  grid_msg_set_parameter(&msg, CLASS_HEARTBEAT_GCCOUNT, gccount);
 
   if (type == 1) {
 
