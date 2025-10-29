@@ -634,22 +634,13 @@ uint8_t grid_decode_eventpreview_to_ui(char* header, char* chunk) {
 
     struct grid_ui_element* ele = &grid_ui_state.element_list[j];
 
-    uint8_t value = 0;
-
-    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      value = ele->template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index];
-    } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-      value = ele->template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index];
-    } else if (ele->type == GRID_PARAMETER_ELEMENT_ENCODER) {
-      value = ele->template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
-    } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
-      value = ele->template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index];
-    }
-
-    grid_msg_nprintf(&msg, "%02x%02x", ele->index, value);
+    int32_t* params = ele->template_parameter_list;
+    uint8_t value1 = params[ele->template_parameter_element_position_index_1];
+    uint8_t value2 = params[ele->template_parameter_element_position_index_2];
+    grid_msg_nprintf(&msg, "%02x%02x%02x", ele->index, value1, value2);
   }
 
-  size_t length = (grid_ui_state.element_list_length - 1) * 4;
+  size_t length = (grid_ui_state.element_list_length - 1) * 6;
   grid_msg_set_parameter(&msg, CLASS_EVENTPREVIEW_LENGTH, length);
 
   grid_msg_add_frame(&msg, GRID_CLASS_EVENTPREVIEW_frame_end);
