@@ -154,7 +154,10 @@ void grid_utask_heart(struct grid_utask_timer* timer) {
   uint8_t type = grid_msg_get_heartbeat_type(&grid_msg_state);
   uint32_t hwcfg = grid_sys_get_hwcfg(&grid_sys_state);
   uint8_t activepage = grid_ui_state.page_activepage;
-  grid_transport_heartbeat(&grid_transport_state, type, hwcfg, activepage);
+  grid_lua_semaphore_lock(&grid_lua_state);
+  uint8_t gccount = grid_lua_gc_count_unsafe(&grid_lua_state);
+  grid_lua_semaphore_release(&grid_lua_state);
+  grid_transport_heartbeat(&grid_transport_state, type, hwcfg, activepage, gccount);
 }
 
 struct grid_utask_timer timer_midi_and_keyboard_tx;

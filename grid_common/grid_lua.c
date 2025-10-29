@@ -386,6 +386,8 @@ void grid_lua_gc_step_unsafe(struct grid_lua_model* lua) {
   }
 }
 
+uint8_t grid_lua_gc_count_unsafe(struct grid_lua_model* lua) { return lua_gc(lua->L, LUA_GCCOUNT); }
+
 void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message) {
 
   uint32_t memusage = lua_gc(grid_lua_state.L, LUA_GCCOUNT) * 1024 + lua_gc(grid_lua_state.L, LUA_GCCOUNTB);

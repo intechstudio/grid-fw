@@ -80,6 +80,7 @@ void grid_lua_broadcast_stde(struct grid_lua_model* lua);
 
 void grid_lua_gc_full_unsafe(struct grid_lua_model* lua);
 void grid_lua_gc_step_unsafe(struct grid_lua_model* lua);
+uint8_t grid_lua_gc_count_unsafe(struct grid_lua_model* lua);
 
 void grid_lua_debug_memory_stats(struct grid_lua_model* lua, char* message);
 
