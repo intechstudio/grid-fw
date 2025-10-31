@@ -517,12 +517,11 @@ int main(void) {
     // Editor timeout
     if (grid_sys_get_editor_connected_state(&grid_sys_state)) {
 
-      uint32_t last = grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state);
+      uint64_t last = grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state);
       if (grid_platform_rtc_get_elapsed_time(last) > 2000000) {
 
-        grid_platform_printf("EDITOR TIMEOUT\n");
-
         grid_sys_set_editor_connected_state(&grid_sys_state, 0);
+        grid_platform_printf("EDITOR TIMEOUT\n");
         // grid_ui_state.page_change_enabled = 1;
       }
     }
