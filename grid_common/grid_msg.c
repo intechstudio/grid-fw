@@ -73,7 +73,7 @@ uint8_t grid_msg_get_heartbeat_type(struct grid_msg_model* msg) { return msg->he
 
 void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* msg, uint64_t timestamp) { msg->editor_heartbeat_lastrealtime = timestamp; }
 
-uint32_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* msg) { return msg->editor_heartbeat_lastrealtime; }
+uint64_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* msg) { return msg->editor_heartbeat_lastrealtime; }
 
 void print_byte(uint8_t x) {
 

@@ -42,7 +42,7 @@ void grid_msg_set_heartbeat_type(struct grid_msg_model* msg, uint8_t type);
 uint8_t grid_msg_get_heartbeat_type(struct grid_msg_model* msg);
 
 void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* msg, uint64_t timestamp);
-uint32_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* msg);
+uint64_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* msg);
 
 uint8_t grid_frame_calculate_checksum_string(uint8_t* frame, size_t length);
 uint8_t grid_frame_calculate_checksum_packet(uint8_t* frame, size_t length);
