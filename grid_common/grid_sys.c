@@ -205,8 +205,10 @@ int grid_hwcfg_module_is_rev_h(struct grid_sys_model* sys) {
   // clang-format off
   switch (grid_sys_get_hwcfg(sys)) {
     case GRID_MODULE_PO16_RevH: return 1;
+    case GRID_MODULE_PO16_CD_RevH: return 1;
     case GRID_MODULE_BU16_RevH: return 1;
     case GRID_MODULE_PBF4_RevH: return 1;
+    case GRID_MODULE_PBF4_CD_RevH: return 1;
     case GRID_MODULE_EN16_RevH: return 1;
     case GRID_MODULE_EN16_ND_RevH: return 1;
     case GRID_MODULE_EF44_RevH: return 1;
