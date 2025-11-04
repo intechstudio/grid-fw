@@ -111,8 +111,8 @@ static void* custom_lua_allocator(void* ud, void* ptr, size_t osize, size_t nsiz
 }
 
 uint8_t config_changed = 0;
-char grid_lua_init_script[1024] = {0};
-char grid_lua_loop_script[1024] = {0};
+char grid_lua_init_script[2048] = {0};
+char grid_lua_loop_script[2048] = {0};
 
 #include <SDL/SDL.h>
 #include <stdio.h>
