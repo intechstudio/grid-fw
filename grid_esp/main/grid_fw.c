@@ -537,11 +537,12 @@ void app_main(void) {
   ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
 
   log_checkpoint("UI INIT");
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevH) {
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevH || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_CD_RevH) {
     grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevH) {
     grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevH) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevH ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_CD_RevH) {
     grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevH) {
     grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
@@ -666,11 +667,12 @@ void app_main(void) {
 
   log_checkpoint("MODULE INIT");
 
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevH) {
+  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevH || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_CD_RevH) {
     grid_esp32_module_po16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_BU16_RevH) {
     grid_esp32_module_bu16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevH) {
+  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_RevH ||
+             grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PBF4_CD_RevH) {
     grid_esp32_module_pbf4_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_RevH) {
     grid_esp32_module_en16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_encoder_state);
