@@ -14,22 +14,24 @@
 
   var TARGET_NOT_SUPPORTED = 2147483647;
 
-  var currentNodeVersion = typeof process !== 'undefined' && process?.versions?.node ? humanReadableVersionToPacked(process.versions.node) : TARGET_NOT_SUPPORTED;
+  // Note: We use a typeof check here instead of optional chaining using
+  // globalThis because older browsers might not have globalThis defined.
+  var currentNodeVersion = typeof process !== 'undefined' && process.versions?.node ? humanReadableVersionToPacked(process.versions.node) : TARGET_NOT_SUPPORTED;
   if (currentNodeVersion < 160000) {
     throw new Error(`This emscripten-generated code requires node v${ packedVersionToHumanReadable(160000) } (detected v${packedVersionToHumanReadable(currentNodeVersion)})`);
   }
 
-  var currentSafariVersion = typeof navigator !== 'undefined' && navigator?.userAgent?.includes("Safari/") && navigator.userAgent.match(/Version\/(\d+\.?\d*\.?\d*)/) ? humanReadableVersionToPacked(navigator.userAgent.match(/Version\/(\d+\.?\d*\.?\d*)/)[1]) : TARGET_NOT_SUPPORTED;
+  var currentSafariVersion = typeof navigator !== 'undefined' && navigator.userAgent?.includes("Safari/") && navigator.userAgent.match(/Version\/(\d+\.?\d*\.?\d*)/) ? humanReadableVersionToPacked(navigator.userAgent.match(/Version\/(\d+\.?\d*\.?\d*)/)[1]) : TARGET_NOT_SUPPORTED;
   if (currentSafariVersion < 150000) {
     throw new Error(`This emscripten-generated code requires Safari v${ packedVersionToHumanReadable(150000) } (detected v${currentSafariVersion})`);
   }
 
-  var currentFirefoxVersion = typeof navigator !== 'undefined' && navigator?.userAgent?.match(/Firefox\/(\d+(?:\.\d+)?)/) ? parseFloat(navigator.userAgent.match(/Firefox\/(\d+(?:\.\d+)?)/)[1]) : TARGET_NOT_SUPPORTED;
+  var currentFirefoxVersion = typeof navigator !== 'undefined' && navigator.userAgent?.match(/Firefox\/(\d+(?:\.\d+)?)/) ? parseFloat(navigator.userAgent.match(/Firefox\/(\d+(?:\.\d+)?)/)[1]) : TARGET_NOT_SUPPORTED;
   if (currentFirefoxVersion < 79) {
     throw new Error(`This emscripten-generated code requires Firefox v79 (detected v${currentFirefoxVersion})`);
   }
 
-  var currentChromeVersion = typeof navigator !== 'undefined' && navigator?.userAgent?.match(/Chrome\/(\d+(?:\.\d+)?)/) ? parseFloat(navigator.userAgent.match(/Chrome\/(\d+(?:\.\d+)?)/)[1]) : TARGET_NOT_SUPPORTED;
+  var currentChromeVersion = typeof navigator !== 'undefined' && navigator.userAgent?.match(/Chrome\/(\d+(?:\.\d+)?)/) ? parseFloat(navigator.userAgent.match(/Chrome\/(\d+(?:\.\d+)?)/)[1]) : TARGET_NOT_SUPPORTED;
   if (currentChromeVersion < 85) {
     throw new Error(`This emscripten-generated code requires Chrome v85 (detected v${currentChromeVersion})`);
   }
@@ -3491,14 +3493,14 @@ async function createWasm() {
           GLctx.disjointTimerQueryExt = GLctx.getExtension("EXT_disjoint_timer_query");
         }
   
-        getEmscriptenSupportedExtensions(GLctx).forEach((ext) => {
+        for (var ext of getEmscriptenSupportedExtensions(GLctx)) {
           // WEBGL_lose_context, WEBGL_debug_renderer_info and WEBGL_debug_shaders
           // are not enabled by default.
           if (!ext.includes('lose_context') && !ext.includes('debug')) {
             // Call .getExtension() to enable that extension permanently.
             GLctx.getExtension(ext);
           }
-        });
+        }
       },
   };
   
@@ -4943,12 +4945,13 @@ async function createWasm() {
         };
   
         // sync all mounts
-        mounts.forEach((mount) => {
-          if (!mount.type.syncfs) {
-            return done(null);
+        for (var mount of mounts) {
+          if (mount.type.syncfs) {
+            mount.type.syncfs(mount, populate, done);
+          } else {
+            done(null);
           }
-          mount.type.syncfs(mount, populate, done);
-        });
+        }
       },
   mount(type, opts, mountpoint) {
         if (typeof type == 'string') {
@@ -5015,9 +5018,7 @@ async function createWasm() {
         var mount = node.mounted;
         var mounts = FS.getMounts(mount);
   
-        Object.keys(FS.nameTable).forEach((hash) => {
-          var current = FS.nameTable[hash];
-  
+        for (var [hash, current] of Object.entries(FS.nameTable)) {
           while (current) {
             var next = current.name_next;
   
@@ -5027,7 +5028,7 @@ async function createWasm() {
   
             current = next;
           }
-        });
+        }
   
         // no longer a mountpoint
         node.mounted = null;
@@ -6071,14 +6072,12 @@ async function createWasm() {
         });
         // override each stream op with one that tries to force load the lazy file first
         var stream_ops = {};
-        var keys = Object.keys(node.stream_ops);
-        keys.forEach((key) => {
-          var fn = node.stream_ops[key];
+        for (const [key, fn] of Object.entries(node.stream_ops)) {
           stream_ops[key] = (...args) => {
             FS.forceLoadFile(node);
             return fn(...args);
           };
-        });
+        }
         function writeChunks(stream, buffer, offset, length, position) {
           var contents = stream.node.contents;
           if (position >= contents.length)
@@ -7611,10 +7610,10 @@ function callMain(args = []) {
   var argc = args.length;
   var argv = stackAlloc((argc + 1) * 4);
   var argv_ptr = argv;
-  args.forEach((arg) => {
+  for (var arg of args) {
     HEAPU32[((argv_ptr)>>2)] = stringToUTF8OnStack(arg);
     argv_ptr += 4;
-  });
+  }
   HEAPU32[((argv_ptr)>>2)] = 0;
 
   try {
@@ -7711,7 +7710,7 @@ function checkUnflushedContent() {
   try { // it doesn't matter if it fails
     _fflush(0);
     // also flush in the JS FS layer
-    ['stdout', 'stderr'].forEach((name) => {
+    for (var name of ['stdout', 'stderr']) {
       var info = FS.analyzePath('/dev/' + name);
       if (!info) return;
       var stream = info.object;
@@ -7720,7 +7719,7 @@ function checkUnflushedContent() {
       if (tty?.output?.length) {
         has = true;
       }
-    });
+    }
   } catch(e) {}
   out = oldOut;
   err = oldErr;
