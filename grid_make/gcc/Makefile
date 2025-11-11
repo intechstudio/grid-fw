@@ -11,6 +11,7 @@ grid/vmp \
 ../vmp \
 ../grid_common/lua-5.4.3/src \
 ../grid_common/littlefs \
+../grid_common/tomlc99 \
 \
 
 OBJS +=  \
@@ -93,6 +94,7 @@ grid/d51/grid_d51_lua.o \
 ../grid_common/lua-5.4.3/src/lcorolib.o \
 ../grid_common/littlefs/lfs.o \
 ../grid_common/littlefs/lfs_util.o \
+../grid_common/tomlc99/toml.o \
 grid/vmp/vmp_def.o \
 ../vmp/vmp.o \
 
@@ -181,6 +183,7 @@ OBJS_AS_ARGS +=  \
 "../grid_common/lua-5.4.3/src/lcorolib.o" \
 "../grid_common/littlefs/lfs.o" \
 "../grid_common/littlefs/lfs_util.o" \
+"../grid_common/tomlc99/toml.o" \
 "grid/vmp/vmp_def.o" \
 "../vmp/vmp.o" \
 
@@ -201,6 +204,7 @@ DIR_INCLUDES +=  \
 -I"../../grid_common" \
 -I"../../grid_common/lua-5.4.3/src" \
 -I"../../grid_common/littlefs" \
+-I"../../grid_common/tomlc99" \
 
 
 
@@ -284,6 +288,7 @@ DEPS_AS_ARGS +=  \
 "../grid_common/lua-5.4.3/src/lcorolib.d" \
 "../grid_common/littlefs/lfs.d" \
 "../grid_common/littlefs/lfs_util.d" \
+"../grid_common/tomlc99/toml.d" \
 "grid/vmp/vmp_def.d" \
 "../vmp/vmp.d" \
 

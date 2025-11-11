@@ -30,10 +30,10 @@ void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_b
 
   state->last_real_time = 0;
   state->full_range = 1 << adc_bit_depth;
-  state->min_value = UINT16_MAX;
-  state->max_value = 0;
-  state->trig_lo = state->min_value;
-  state->trig_hi = state->max_value;
+  grid_cal_limits_init_empty(&state->limits);
+  state->limits_prev = state->limits;
+  state->trig_lo = state->limits.min;
+  state->trig_hi = state->limits.max;
   state->min_range = (1 << min_range_depth);
   state->threshold = threshold;
   state->hysteresis = hysteresis;
@@ -44,15 +44,15 @@ void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_b
 
 bool grid_ui_button_state_range_valid(struct grid_ui_button_state* state) {
 
-  bool interval_valid = state->min_value < state->max_value;
+  bool interval_valid = state->limits.min < state->limits.max;
 
   uint16_t eighth_range = state->full_range >> 3;
 
   // The minimum observed value should be sufficiently low
   // (currently, this helps with making the first-press velocity meaningful)
-  bool three_eighths_less = state->min_value <= eighth_range * 3;
+  bool three_eighths_less = state->limits.min <= eighth_range * 3;
 
-  uint16_t curr_range = state->max_value - state->min_value;
+  uint16_t curr_range = state->limits.max - state->limits.min;
 
   bool range_valid = curr_range >= state->min_range;
 
@@ -67,7 +67,7 @@ uint16_t grid_ui_button_state_get_low_trigger(struct grid_ui_button_state* state
 
   assert(curr_threshold >= 0. && curr_threshold <= 1.);
 
-  return lerp(state->min_value, state->max_value, curr_threshold);
+  return lerp(state->limits.min, state->limits.max, curr_threshold);
 }
 
 uint16_t grid_ui_button_state_get_high_trigger(struct grid_ui_button_state* state) {
@@ -76,29 +76,21 @@ uint16_t grid_ui_button_state_get_high_trigger(struct grid_ui_button_state* stat
 
   assert(curr_threshold >= 0. && curr_threshold <= 1.);
 
-  return lerp(state->min_value, state->max_value, curr_threshold) + 1;
+  return lerp(state->limits.min, state->limits.max, curr_threshold) + 1;
 }
-
-uint16_t grid_ui_button_state_get_min(struct grid_ui_button_state* state) { return state->min_value; }
-
-uint16_t grid_ui_button_state_get_max(struct grid_ui_button_state* state) { return state->max_value; }
 
 void grid_ui_button_state_value_update(struct grid_ui_button_state* state, uint16_t value, uint64_t now) {
 
-  if (value < state->min_value) {
+  grid_cal_limits_value_update(&state->limits, value);
 
-    state->min_value = value;
-
-    state->trig_lo = grid_ui_button_state_get_low_trigger(state);
-    state->trig_hi = grid_ui_button_state_get_high_trigger(state);
-  }
-
-  if (value > state->max_value) {
-
-    state->max_value = value;
+  bool min_eq = state->limits.min == state->limits_prev.min;
+  bool max_eq = state->limits.max == state->limits_prev.max;
+  if (!min_eq || !max_eq) {
 
     state->trig_lo = grid_ui_button_state_get_low_trigger(state);
     state->trig_hi = grid_ui_button_state_get_high_trigger(state);
+
+    state->limits_prev = state->limits;
   }
 
   state->prev_time = state->curr_time;
@@ -259,10 +251,10 @@ void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_butt
 
     int32_t old_value = template_parameter_list[GRID_LUA_FNC_B_BUTTON_VALUE_index];
 
-    uint16_t curr_range = state->max_value - state->min_value;
-    int32_t reversed = curr_range - (state->curr_out - state->min_value);
+    uint16_t curr_range = state->limits.max - state->limits.min;
+    int32_t reversed = curr_range - (state->curr_out - state->limits.min);
     double normalized = reversed / (double)curr_range;
-    double deadzone = 0.02;
+    double deadzone = 0.04;
     double deadzoned = lerp(0 - deadzone, 1 + deadzone, normalized);
     int32_t new_value = clampi32(lerp(min, max, deadzoned), min, max);
 

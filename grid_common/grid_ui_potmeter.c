@@ -17,6 +17,21 @@ const char grid_ui_potmeter_init_actionstring[] = GRID_ACTIONSTRING_POTMETER_INI
 const char grid_ui_potmeter_potmeterchange_actionstring[] = GRID_ACTIONSTRING_POTMETER_POTMETER;
 const char grid_ui_potmeter_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
+void grid_ui_potmeter_state_init(struct grid_ui_potmeter_state* state, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center) {
+
+  state->last_real_time = 0;
+
+  assert(adc_bit_depth);
+  assert(deadzone < (1 << (adc_bit_depth - 1)));
+  state->limits.min = deadzone;
+  state->limits.max = (1 << adc_bit_depth) - deadzone;
+
+  assert(center < (1 << adc_bit_depth));
+  state->center.center = center;
+
+  grid_cal_detent_init_empty(&state->detent);
+}
+
 void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_POTMETER;
@@ -91,7 +106,7 @@ void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_
   grid_ui_element_potmeter_update_value(template_parameter_list, element_index, adc_bit_depth);
 }
 
-void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_channel, uint64_t* last_real_time, uint16_t value, uint8_t adc_bit_depth) {
+void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_channel, struct grid_ui_potmeter_state* state, uint16_t value, uint8_t adc_bit_depth) {
 
   assert(ele);
 
@@ -99,19 +114,30 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
 
   int32_t* template_parameter_list = ele->template_parameter_list;
 
+  grid_cal_limits_value_update(&state->limits, value);
+  if (!grid_cal_limits_range_valid(&state->limits)) {
+    return;
+  }
+
+  grid_cal_center_value_update(&state->center, value);
+
+  grid_cal_detent_value_update(&state->detent, value);
+
+  value = grid_cal_next(&grid_cal_state, input_channel, value);
+
   int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
 
   grid_ain_add_sample(&grid_ain_state, input_channel, value, adc_bit_depth, (uint8_t)resolution);
 
   // limit lastrealtime
   uint64_t now = grid_platform_rtc_get_micros();
-  uint64_t elapsed_us = grid_platform_rtc_get_diff(now, *last_real_time);
+  uint64_t elapsed_us = grid_platform_rtc_get_diff(now, state->last_real_time);
   elapsed_us = MIN(elapsed_us, GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US);
 
   if (grid_ain_get_changed(&grid_ain_state, input_channel)) {
 
     // update lastrealtime
-    *last_real_time = now;
+    state->last_real_time = now;
     template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] = elapsed_us / MS_TO_US;
 
     grid_ui_element_potmeter_update_value(template_parameter_list, ele->index, adc_bit_depth);

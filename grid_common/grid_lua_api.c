@@ -1877,7 +1877,9 @@ int l_grid_cat(lua_State* L) {
   return 1;
 }
 
-/*static*/ int l_grid_potmeter_calibration_get(lua_State* L) {
+int l_grid_calibration_get(lua_State* L, enum grid_cal_type type) {
+
+  assert(type < GRID_CAL_COUNT);
 
   int nargs = lua_gettop(L);
 
@@ -1887,300 +1889,216 @@ int l_grid_cat(lua_State* L) {
     return 0;
   }
 
-  struct grid_cal_pot* cal_pot = &grid_cal_state.potmeter;
+  struct grid_cal_model* cal = &grid_cal_state;
 
   lua_newtable(L);
 
   for (uint8_t i = 0; i < grid_ui_state.element_list_length; ++i) {
 
-    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
+    switch (type) {
+    case GRID_CAL_LIMITS: {
 
-    uint8_t enabled = 0;
-    if (grid_cal_pot_enable_get(cal_pot, i, &enabled) != 0) {
-
-      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
-      lua_pop(L, 1);
-      return 0;
-    }
-
-    uint16_t value = 0;
-
-    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER && enabled) {
-
-      if (grid_cal_pot_value_get(cal_pot, i, &value) != 0) {
+      struct grid_cal_limits* limits;
+      if (grid_cal_get(cal, i, GRID_CAL_LIMITS, &limits)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
         return 0;
       }
-    }
 
-    lua_pushinteger(L, i + 1);
-    lua_pushinteger(L, value);
-    lua_settable(L, -3);
-  }
+      uint16_t min = grid_cal_limits_min_get(limits);
+      uint16_t max = grid_cal_limits_max_get(limits);
 
-  return 1;
-}
+      lua_pushinteger(L, i + 1);
 
-/*static*/ int l_grid_potmeter_calibration_set(lua_State* L) {
+      lua_createtable(L, 2, 0);
 
-  int nargs = lua_gettop(L);
+      lua_pushinteger(L, 1);
+      lua_pushinteger(L, min);
+      lua_settable(L, -3);
 
-  if (nargs != 1) {
-    // error
-    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
-    return 0;
-  }
+      lua_pushinteger(L, 2);
+      lua_pushinteger(L, max);
+      lua_settable(L, -3);
 
-  if (!lua_istable(L, -1)) {
-    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
-    return 0;
-  }
+      lua_settable(L, -3);
 
-  struct grid_cal_pot* cal_pot = &grid_cal_state.potmeter;
+    } break;
+    case GRID_CAL_CENTER: {
 
-  for (uint8_t i = 0; i < grid_ui_state.element_list_length; ++i) {
-
-    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
-
-    uint8_t enabled = 0;
-    if (grid_cal_pot_enable_get(cal_pot, i, &enabled) != 0) {
-
-      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
-      return 0;
-    }
-
-    if (!enabled) {
-      continue;
-    }
-
-    lua_pushinteger(L, i + 1);
-    lua_gettable(L, -2);
-
-    if (!lua_isinteger(L, -1)) {
-      grid_lua_append_stde(&grid_lua_state, "#invalidParams");
-      return 0;
-    }
-
-    int32_t value = 0;
-
-    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      value = lua_tointeger(L, -1);
-    }
-
-    lua_pop(L, 1);
-
-    if (grid_cal_pot_center_set(cal_pot, i, value) != 0) {
-
-      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
-      return 0;
-    }
-  }
-
-  grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFSTORE_PROGRESS, 0, NULL);
-
-  return 0;
-}
-
-/*static*/ int l_grid_potmeter_detent_set(lua_State* L) {
-
-  int nargs = lua_gettop(L);
-
-  if (nargs != 2) {
-    // error
-    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
-    return 0;
-  }
-
-  if (!lua_istable(L, -2)) {
-    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
-    return 0;
-  }
-
-  if (!lua_isboolean(L, -1)) {
-    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
-    return 0;
-  }
-
-  bool high = lua_toboolean(L, -1);
-  lua_pop(L, 1);
-
-  struct grid_cal_pot* cal_pot = &grid_cal_state.potmeter;
-
-  for (uint8_t i = 0; i < grid_ui_state.element_list_length; ++i) {
-
-    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
-
-    uint8_t enabled = 0;
-    if (grid_cal_pot_enable_get(cal_pot, i, &enabled) != 0) {
-
-      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
-      return 0;
-    }
-
-    if (!enabled) {
-      continue;
-    }
-
-    lua_pushinteger(L, i + 1);
-    lua_gettable(L, -2);
-
-    if (!lua_isinteger(L, -1)) {
-      grid_lua_append_stde(&grid_lua_state, "#invalidParams");
-      return 0;
-    }
-
-    int32_t value = 0;
-
-    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      value = lua_tointeger(L, -1);
-    }
-
-    lua_pop(L, 1);
-
-    if (grid_cal_pot_detent_set(cal_pot, i, value, high) != 0) {
-
-      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
-      return 0;
-    }
-  }
-
-  grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFSTORE_PROGRESS, 0, NULL);
-
-  return 0;
-}
-
-/*static*/ int l_grid_button_calibration_get(lua_State* L) {
-
-  int nargs = lua_gettop(L);
-
-  if (nargs != 0) {
-    // error
-    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
-    return 0;
-  }
-
-  struct grid_cal_but* cal_but = &grid_cal_state.button;
-
-  lua_newtable(L);
-
-  for (uint8_t i = 0; i < grid_ui_state.element_list_length; ++i) {
-
-    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
-
-    uint8_t enabled = 0;
-    if (grid_cal_but_enable_get(cal_but, i, &enabled) != 0) {
-
-      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
-      lua_pop(L, 1);
-      return 0;
-    }
-
-    uint16_t min = 0;
-    uint16_t max = 0;
-
-    if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON && enabled) {
-
-      if (grid_cal_but_minmax_get(cal_but, i, &min, &max) != 0) {
+      struct grid_cal_center* center;
+      if (grid_cal_get(cal, i, GRID_CAL_CENTER, &center)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
         return 0;
       }
+
+      uint16_t value = grid_cal_center_value_get(center);
+
+      lua_pushinteger(L, i + 1);
+      lua_pushinteger(L, value);
+      lua_settable(L, -3);
+
+    } break;
+    default:
+      assert(0);
+      break;
     }
-
-    lua_pushinteger(L, i + 1);
-
-    lua_createtable(L, 2, 0);
-
-    lua_pushinteger(L, 1);
-    lua_pushinteger(L, min);
-    lua_settable(L, -3);
-
-    lua_pushinteger(L, 2);
-    lua_pushinteger(L, max);
-    lua_settable(L, -3);
-
-    lua_settable(L, -3);
   }
 
   return 1;
 }
 
-/*static*/ int l_grid_button_calibration_set(lua_State* L) {
+int l_grid_range_calibration_get(lua_State* L) { return l_grid_calibration_get(L, GRID_CAL_LIMITS); }
+
+int l_grid_potmeter_calibration_get(lua_State* L) { return l_grid_calibration_get(L, GRID_CAL_CENTER); }
+
+int l_grid_calibration_set(lua_State* L, enum grid_cal_type type) {
+
+  assert(type < GRID_CAL_COUNT);
 
   int nargs = lua_gettop(L);
 
-  if (nargs != 1) {
+  if (nargs != 1 && nargs != 2) {
     // error
     grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
-  if (!lua_istable(L, -1)) {
+  if (!lua_istable(L, 1)) {
     grid_lua_append_stde(&grid_lua_state, "#invalidParams");
     return 0;
   }
 
-  struct grid_cal_but* cal_but = &grid_cal_state.button;
+  struct grid_cal_model* cal = &grid_cal_state;
 
   for (uint8_t i = 0; i < grid_ui_state.element_list_length; ++i) {
 
-    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
+    switch (type) {
+    case GRID_CAL_LIMITS: {
 
-    uint8_t enabled = 0;
-    if (grid_cal_but_enable_get(cal_but, i, &enabled) != 0) {
+      struct grid_cal_limits* limits;
+      if (grid_cal_get(cal, i, GRID_CAL_LIMITS, &limits)) {
 
-      grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
-      return 0;
+        grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
+        lua_pop(L, 1);
+        return 0;
+      }
+
+      if (!limits) {
+        continue;
+      }
+
+      lua_pushinteger(L, i + 1);
+      lua_gettable(L, 1);
+      if (!lua_istable(L, -1)) {
+        grid_lua_append_stde(&grid_lua_state, "#invalidParams");
+        return 0;
+      }
+
+      lua_pushinteger(L, 1);
+      lua_gettable(L, -2);
+      if (!lua_isinteger(L, -1)) {
+        grid_lua_append_stde(&grid_lua_state, "#invalidParams");
+        return 0;
+      }
+      int32_t min = lua_tointeger(L, -1);
+      lua_pop(L, 1);
+
+      lua_pushinteger(L, 2);
+      lua_gettable(L, -2);
+      if (!lua_isinteger(L, -1)) {
+        grid_lua_append_stde(&grid_lua_state, "#invalidParams");
+        return 0;
+      }
+      int32_t max = lua_tointeger(L, -1);
+      lua_pop(L, 1);
+
+      limits->min = min;
+      limits->max = max;
+
+      lua_pop(L, 1);
+
+    } break;
+    case GRID_CAL_CENTER: {
+
+      struct grid_cal_center* center;
+      if (grid_cal_get(cal, i, GRID_CAL_CENTER, &center)) {
+
+        grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
+        lua_pop(L, 1);
+        return 0;
+      }
+
+      if (!center) {
+        continue;
+      }
+
+      lua_pushinteger(L, i + 1);
+      lua_gettable(L, 1);
+      if (!lua_isinteger(L, -1)) {
+        grid_lua_append_stde(&grid_lua_state, "#invalidParams");
+        return 0;
+      }
+      int32_t value = lua_tointeger(L, -1);
+      lua_pop(L, 1);
+
+      center->center = value;
+
+    } break;
+    case GRID_CAL_DETENT: {
+
+      struct grid_cal_detent* detent;
+      if (grid_cal_get(cal, i, GRID_CAL_DETENT, &detent)) {
+
+        grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
+        lua_pop(L, 1);
+        return 0;
+      }
+
+      if (!detent) {
+        continue;
+      }
+
+      if (!lua_isboolean(L, 2)) {
+        grid_lua_append_stde(&grid_lua_state, "#invalidParams");
+        return 0;
+      }
+      bool high = lua_toboolean(L, -1);
+
+      lua_pushinteger(L, i + 1);
+      lua_gettable(L, 1);
+      if (!lua_isinteger(L, -1)) {
+        grid_lua_append_stde(&grid_lua_state, "#invalidParams");
+        return 0;
+      }
+      int32_t value = lua_tointeger(L, -1);
+      lua_pop(L, 1);
+
+      if (high) {
+        detent->hi = value;
+      } else {
+        detent->lo = value;
+      }
+
+    } break;
+    default:
+      assert(0);
+      break;
     }
-
-    if (!enabled) {
-      continue;
-    }
-
-    lua_pushinteger(L, i + 1);
-    lua_gettable(L, -2);
-
-    if (!lua_istable(L, -1)) {
-      grid_lua_append_stde(&grid_lua_state, "#invalidParams");
-      return 0;
-    }
-
-    lua_pushinteger(L, 1);
-    lua_gettable(L, -2);
-
-    if (!lua_isinteger(L, -1)) {
-      grid_lua_append_stde(&grid_lua_state, "#invalidParams");
-      return 0;
-    }
-
-    int32_t min = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    grid_cal_but_min_set(cal_but, i, min);
-
-    lua_pushinteger(L, 2);
-    lua_gettable(L, -2);
-
-    if (!lua_isinteger(L, -1)) {
-      grid_lua_append_stde(&grid_lua_state, "#invalidParams");
-      return 0;
-    }
-
-    int32_t max = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    grid_cal_but_max_set(cal_but, i, max);
-
-    lua_pop(L, 1);
   }
 
   grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFSTORE_PROGRESS, 0, NULL);
 
   return 0;
 }
+
+int l_grid_range_calibration_set(lua_State* L) { return l_grid_calibration_set(L, GRID_CAL_LIMITS); }
+
+int l_grid_potmeter_center_set(lua_State* L) { return l_grid_calibration_set(L, GRID_CAL_CENTER); }
+
+int l_grid_potmeter_detent_set(lua_State* L) { return l_grid_calibration_set(L, GRID_CAL_DETENT); }
 
 /*static*/ int l_grid_lcd_set_backlight(lua_State* L) {
 
@@ -2274,10 +2192,10 @@ int l_grid_cat(lua_State* L) {
     {GRID_LUA_FNC_G_ELEMENT_COUNT_short, GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr},
 
     {GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_fnptr},
-    {GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr},
+    {GRID_LUA_FNC_G_POTMETER_CENTER_SET_short, GRID_LUA_FNC_G_POTMETER_CENTER_SET_fnptr},
     {GRID_LUA_FNC_G_POTMETER_DETENT_SET_short, GRID_LUA_FNC_G_POTMETER_DETENT_SET_fnptr},
-    {GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_short, GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_fnptr},
-    {GRID_LUA_FNC_G_BUTTON_CALIBRATION_SET_short, GRID_LUA_FNC_G_BUTTON_CALIBRATION_SET_fnptr},
+    {GRID_LUA_FNC_G_RANGE_CALIBRATION_GET_short, GRID_LUA_FNC_G_RANGE_CALIBRATION_GET_fnptr},
+    {GRID_LUA_FNC_G_RANGE_CALIBRATION_SET_short, GRID_LUA_FNC_G_RANGE_CALIBRATION_SET_fnptr},
 
     {GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_short, GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_fnptr},
 

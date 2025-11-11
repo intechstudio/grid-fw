@@ -39,6 +39,8 @@ void grid_module_common_init(void) {
   // disable ui interrupts
   grid_d51_nvic_set_interrupt_priority_mask(1);
 
+  grid_d51_nvm_mount(&grid_d51_nvm_state);
+
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevC) {
     printf("Init Module: PO16\r\n");
     grid_module_po16_init();
@@ -66,6 +68,4 @@ void grid_module_common_init(void) {
   grid_d51_uart_init(); // uart init after port and transport
 
   grid_sys_set_bank(&grid_sys_state, 0);
-
-  grid_d51_nvm_mount(&grid_d51_nvm_state);
 }

@@ -362,6 +362,8 @@ uint8_t grid_decode_pagecount_to_ui(char* header, char* chunk) {
 
 uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
+  // return 1;
+
   int ret = 1;
 
   grid_lua_semaphore_lock(&grid_lua_state);
@@ -1000,6 +1002,8 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
 }
 
 uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
+
+  // return 1;
 
   uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
   uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);

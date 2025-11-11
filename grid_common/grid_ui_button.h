@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "grid_cal.h"
 #include "grid_protocol.h"
 #include "grid_ui.h"
 
@@ -11,8 +12,8 @@ struct grid_ui_button_state {
   double threshold;
   double hysteresis;
   uint32_t full_range;
-  uint16_t min_value;
-  uint16_t max_value;
+  struct grid_cal_limits limits;
+  struct grid_cal_limits limits_prev;
   uint16_t trig_lo;
   uint16_t trig_hi;
   uint16_t min_range;

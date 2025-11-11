@@ -9,8 +9,8 @@
 #define CAL_POT_CENTERS_KEY "potmeter-centers"
 #define CAL_POT_DETENT_LOW_KEY "potmeter-detent-low"
 #define CAL_POT_DETENT_HIGH_KEY "potmeter-detent-high"
-#define CAL_BUT_MINIMA_KEY "button-minima"
-#define CAL_BUT_MAXIMA_KEY "button-maxima"
+#define CAL_RANGE_MINIMA_KEY "range-minima"
+#define CAL_RANGE_MAXIMA_KEY "range-maxima"
 
 enum {
   GRID_CONFIG_ERRBUF = 256,

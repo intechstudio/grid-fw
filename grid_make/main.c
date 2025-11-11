@@ -80,6 +80,12 @@ static void nvm_task_inner() {
     case GRID_UI_BULK_ERASE_PROGRESS:
       grid_ui_bulk_nvmerase_next(&grid_ui_state);
       break;
+    case GRID_UI_BULK_CONFREAD_PROGRESS:
+      grid_ui_bulk_confread_next(&grid_ui_state);
+      break;
+    case GRID_UI_BULK_CONFSTORE_PROGRESS:
+      grid_ui_bulk_confstore_next(&grid_ui_state);
+      break;
     default:
       break;
     }
@@ -479,21 +485,23 @@ int main(void) {
 
     // vmp_push(MAIN);
 
-    if (!vmp_flushed && vmp.size == vmp.capacity) {
+    /*
+if (!vmp_flushed && vmp.size == vmp.capacity) {
 
-      CRITICAL_SECTION_ENTER();
+CRITICAL_SECTION_ENTER();
 
-      vmp_serialize_start(&reg);
-      vmp_buf_serialize_and_write(&vmp, &reg);
-      vmp_uid_str_serialize_and_write(VMP_UID_COUNT, VMP_ASSOC, &reg);
-      vmp_serialize_close(&reg);
+vmp_serialize_start(&reg);
+vmp_buf_serialize_and_write(&vmp, &reg);
+vmp_uid_str_serialize_and_write(VMP_UID_COUNT, VMP_ASSOC, &reg);
+vmp_serialize_close(&reg);
 
-      CRITICAL_SECTION_LEAVE();
+CRITICAL_SECTION_LEAVE();
 
-      // vmp_buf_free(&vmp);
+// vmp_buf_free(&vmp);
 
-      vmp_flushed = true;
-    }
+vmp_flushed = true;
+}
+    */
 
     loopcounter++;
 

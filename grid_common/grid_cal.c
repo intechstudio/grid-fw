@@ -11,140 +11,111 @@
 
 struct grid_cal_model grid_cal_state = {0};
 
-int grid_cal_pot_init(struct grid_cal_pot* cal, uint8_t resolution, uint8_t length) {
+void grid_cal_limits_init_empty(struct grid_cal_limits* limits) {
 
-  cal->resolution = resolution;
+  limits->min = UINT16_MAX;
+  limits->max = 0;
+}
+
+bool grid_cal_limits_range_valid(struct grid_cal_limits* limits) { return limits->min < limits->max; }
+
+void grid_cal_limits_value_update(struct grid_cal_limits* limits, uint16_t value) {
+
+  if (value < limits->min) {
+    limits->min = value;
+  }
+
+  if (value > limits->max) {
+    limits->max = value;
+  }
+}
+
+uint16_t grid_cal_limits_min_get(struct grid_cal_limits* limits) { return limits ? limits->min : 0; }
+
+uint16_t grid_cal_limits_max_get(struct grid_cal_limits* limits) { return limits ? limits->max : 0; }
+
+void grid_cal_center_value_update(struct grid_cal_center* center, uint16_t value) { center->value = value; }
+
+uint16_t grid_cal_center_value_get(struct grid_cal_center* center) { return center ? center->value : 0; }
+
+uint16_t grid_cal_center_center_get(struct grid_cal_center* center) { return center ? center->center : 0; }
+
+void grid_cal_detent_init_empty(struct grid_cal_detent* detent) {
+
+  detent->value = 0;
+  detent->lo = UINT16_MAX;
+  detent->hi = 0;
+}
+
+void grid_cal_detent_value_update(struct grid_cal_detent* detent, uint16_t value) { detent->value = value; }
+
+uint16_t grid_cal_detent_lo_get(struct grid_cal_detent* detent) { return detent ? detent->lo : 0; }
+
+uint16_t grid_cal_detent_hi_get(struct grid_cal_detent* detent) { return detent ? detent->hi : 0; }
+
+int grid_cal_init(struct grid_cal_model* cal, uint8_t length, uint8_t resolution) {
+
+  assert(length);
+
   cal->length = length;
-
-  cal->maximum = 1 << cal->resolution;
-
-  cal->value = (uint16_t*)malloc(cal->length * sizeof(uint16_t));
-  cal->center = (uint16_t*)malloc(cal->length * sizeof(uint16_t));
-  cal->detentlo = (uint16_t*)malloc(cal->length * sizeof(uint16_t));
-  cal->detenthi = (uint16_t*)malloc(cal->length * sizeof(uint16_t));
-  cal->enable = (uint8_t*)malloc(cal->length * sizeof(uint8_t));
-
-  const uint16_t half_value = cal->maximum / 2;
-  const uint16_t default_offset = +32 * 4.5;
+  cal->resolution = resolution;
+  cal->limits = (struct grid_cal_limits**)malloc(cal->length * sizeof(struct grid_cal_limits*));
+  cal->center = (struct grid_cal_center**)malloc(cal->length * sizeof(struct grid_cal_center*));
+  cal->detent = (struct grid_cal_detent**)malloc(cal->length * sizeof(struct grid_cal_detent*));
 
   for (uint8_t i = 0; i < cal->length; ++i) {
-    cal->value[i] = half_value + default_offset;
-    cal->center[i] = cal->value[i];
-    cal->detentlo[i] = cal->maximum;
-    cal->detenthi[i] = 0;
-    cal->enable[i] = 0;
+    cal->limits[i] = NULL;
+    cal->center[i] = NULL;
+    cal->detent[i] = NULL;
   }
 
   return 0;
 }
 
-int grid_cal_pot_enable_range(struct grid_cal_pot* cal, uint8_t start, uint8_t length) {
-
-  if (!(start < cal->length)) {
-    return 1;
-  }
-
-  uint8_t end = start + length;
-
-  if (!(end < cal->length)) {
-    return 1;
-  }
-
-  for (uint8_t i = start; i < end; ++i) {
-    cal->enable[i] = 1;
-  }
-
-  return 0;
-}
-
-int grid_cal_pot_enable_get(struct grid_cal_pot* cal, uint8_t channel, uint8_t* enable) {
+int grid_cal_set(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void* src) {
 
   if (!(channel < cal->length)) {
     return 1;
   }
 
-  *enable = cal->enable[channel];
-
-  return 0;
-}
-
-int grid_cal_pot_center_get(struct grid_cal_pot* cal, uint8_t channel, uint16_t* center) {
-
-  if (!(channel < cal->length)) {
-    return 1;
-  }
-
-  if (cal->enable[channel]) {
-    *center = cal->center[channel];
-  } else {
-    *center = 0;
-  }
-
-  return 0;
-}
-
-int grid_cal_pot_center_set(struct grid_cal_pot* cal, uint8_t channel, uint16_t center) {
-
-  if (!(channel < cal->length)) {
-    return 1;
-  }
-
-  if (!cal->enable[channel]) {
-    return 1;
-  }
-
-  cal->center[channel] = center;
-
-  return 0;
-}
-
-int grid_cal_pot_detent_get(struct grid_cal_pot* cal, uint8_t channel, uint16_t* detent, bool high) {
-
-  if (!(channel < cal->length)) {
-    return 1;
-  }
-
-  if (cal->enable[channel]) {
-
-    uint16_t* target = high ? cal->detenthi : cal->detentlo;
-    *detent = target[channel];
-
-  } else {
-
-    *detent = 0;
+  switch (type) {
+  case GRID_CAL_LIMITS:
+    cal->limits[channel] = src;
+    break;
+  case GRID_CAL_CENTER:
+    cal->center[channel] = src;
+    break;
+  case GRID_CAL_DETENT:
+    cal->detent[channel] = src;
+    break;
+  default:
+    assert(0);
+    break;
   }
 
   return 0;
 }
 
-int grid_cal_pot_detent_set(struct grid_cal_pot* cal, uint8_t channel, uint16_t detent, bool high) {
+int grid_cal_get(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void** dest) {
 
   if (!(channel < cal->length)) {
     return 1;
   }
 
-  if (!cal->enable[channel]) {
-    return 1;
+  switch (type) {
+  case GRID_CAL_LIMITS: {
+    *(struct grid_cal_limits**)dest = cal->limits[channel];
+  } break;
+  case GRID_CAL_CENTER: {
+    *(struct grid_cal_center**)dest = cal->center[channel];
+  } break;
+  case GRID_CAL_DETENT: {
+    *(struct grid_cal_detent**)dest = cal->detent[channel];
+  } break;
+  default: {
+    assert(0);
+  } break;
   }
-
-  uint16_t* target = high ? cal->detenthi : cal->detentlo;
-
-  target[channel] = detent;
-
-  return 0;
-}
-
-int grid_cal_pot_value_get(struct grid_cal_pot* cal, uint8_t channel, uint16_t* value) {
-
-  if (!(channel < cal->length)) {
-    return 1;
-  }
-
-  if (!cal->enable[channel]) {
-    return 1;
-  }
-
-  *value = cal->value[channel];
 
   return 0;
 }
@@ -167,155 +138,51 @@ static int32_t inverse_error_centering(int32_t a, int32_t b, double x, double c,
   return lerp(a, b, x);
 }
 
-static int32_t detent_center_deadzoning(int32_t a, int32_t b, double x, double lo, double hi) {
+static uint16_t detent_center_deadzoning(struct grid_cal_limits* lim, struct grid_cal_detent* det, uint16_t x, uint16_t resolution) {
 
-  int32_t half_value = (a + b) / 2;
+  uint16_t half_value = 1 << (resolution - 1);
 
-  if (x < lo) {
-
-    return lerp(a, half_value, x / lo);
+  if (x < det->lo) {
+    return ((x - lim->min) << (resolution - 1)) / (det->lo - lim->min + 1);
   }
 
-  if (x > hi) {
-
-    // expand and simplify: lerp(half_value, b, (x - hi) / (1 - hi))
-    return (half_value * (x - 1) + b * (hi - x)) / (hi - 1);
+  if (x > det->hi) {
+    return ((x - det->hi) << (resolution - 1)) / (lim->max - det->hi + 1) + half_value;
   }
 
   return half_value;
 }
 
-int grid_cal_pot_next(struct grid_cal_pot* cal, uint8_t channel, uint16_t in, uint16_t* out) {
+uint16_t grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in) {
 
-  if (!(channel < cal->length)) {
-    return 1;
+  assert(channel < cal->length);
+
+  struct grid_cal_limits* lim = cal->limits[channel];
+  struct grid_cal_center* ctr = cal->center[channel];
+  struct grid_cal_detent* det = cal->detent[channel];
+
+  if (!lim && !ctr && !det) {
+    return in;
   }
 
-  if (!cal->enable[channel]) {
-    *out = in;
-    return 0;
+  if (lim && !ctr && !det) {
+
+    return ((in - lim->min) << cal->resolution) / (lim->max - lim->min + 1);
+
+  } else if (lim && ctr) {
+
+    if (det && det->lo < det->hi) {
+
+      return detent_center_deadzoning(lim, det, in, cal->resolution);
+
+    } else {
+
+      double in_norm = (in - lim->min) / (double)(lim->max - lim->min);
+      double center_norm = (ctr->center - lim->min) / (double)(lim->max - lim->min);
+      uint32_t maximum = (1 << cal->resolution) - 1;
+      return inverse_error_centering(0, maximum, in_norm, center_norm, 2);
+    }
   }
 
-  cal->value[channel] = in;
-
-  // If the detent interval is valid, use detent calibration
-  if (cal->detentlo[channel] < cal->detenthi[channel]) {
-
-    double in_norm = in / (double)cal->maximum;
-    double lo_norm = cal->detentlo[channel] / (double)cal->maximum;
-    double hi_norm = cal->detenthi[channel] / (double)cal->maximum;
-    *out = detent_center_deadzoning(0, cal->maximum, in_norm, lo_norm, hi_norm);
-
-  }
-  // Otherwise, use centering calibration
-  else {
-
-    double in_norm = in / (double)cal->maximum;
-    double center_norm = cal->center[channel] / (double)cal->maximum;
-    *out = inverse_error_centering(0, cal->maximum, in_norm, center_norm, 2);
-  }
-
-  return 0;
-}
-
-int grid_cal_but_init(struct grid_cal_but* cal, uint8_t length) {
-
-  cal->length = length;
-
-  cal->enable = (uint8_t*)malloc(cal->length * sizeof(uint8_t));
-  cal->states = (struct grid_ui_button_state**)malloc(cal->length * sizeof(struct grid_ui_button_state*));
-
-  for (uint8_t i = 0; i < cal->length; ++i) {
-    cal->enable[i] = 0;
-    cal->states[i] = NULL;
-  }
-
-  return 0;
-}
-
-int grid_cal_but_enable_get(struct grid_cal_but* cal, uint8_t channel, uint8_t* enable) {
-
-  if (!(channel < cal->length)) {
-    return 1;
-  }
-
-  *enable = cal->enable[channel];
-
-  return 0;
-}
-
-int grid_cal_but_enable_set(struct grid_cal_but* cal, uint8_t channel, struct grid_ui_button_state* state) {
-
-  if (!(channel < cal->length)) {
-    return 1;
-  }
-
-  cal->enable[channel] = 1;
-  cal->states[channel] = state;
-
-  return 0;
-}
-
-int grid_cal_but_minmax_get(struct grid_cal_but* cal, uint8_t channel, uint16_t* min, uint16_t* max) {
-
-  if (!(channel < cal->length)) {
-    return 1;
-  }
-
-  if (cal->enable[channel]) {
-
-    *min = grid_ui_button_state_get_min(cal->states[channel]);
-    *max = grid_ui_button_state_get_max(cal->states[channel]);
-  } else {
-
-    *min = 0;
-    *max = 0;
-  }
-
-  return 0;
-}
-
-int grid_cal_but_min_set(struct grid_cal_but* cal, uint8_t channel, uint16_t min) {
-
-  if (!(channel < cal->length)) {
-    return 1;
-  }
-
-  if (!cal->enable[channel]) {
-    return 1;
-  }
-
-  grid_ui_button_state_value_update(cal->states[channel], min, 0);
-
-  return 0;
-}
-
-int grid_cal_but_max_set(struct grid_cal_but* cal, uint8_t channel, uint16_t max) {
-
-  if (!(channel < cal->length)) {
-    return 1;
-  }
-
-  if (!cal->enable[channel]) {
-    return 1;
-  }
-
-  grid_ui_button_state_value_update(cal->states[channel], max, 0);
-
-  return 0;
-}
-
-struct grid_ui_button_state* grid_cal_but_state_get(struct grid_cal_but* cal, uint8_t channel) {
-
-  if (!(channel < cal->length)) {
-    return NULL;
-  }
-
-  if (!cal->enable[channel]) {
-    return NULL;
-  }
-
-  assert(cal->states[channel]);
-
-  return cal->states[channel];
+  assert(0);
 }

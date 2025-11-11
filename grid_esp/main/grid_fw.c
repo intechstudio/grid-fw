@@ -574,6 +574,10 @@ void app_main(void) {
   grid_led_set_pin(&grid_led_state, 21);
   grid_esp32_led_start(grid_led_get_pin(&grid_led_state));
 
+  grid_esp32_usb_init();
+  grid_usb_midi_buffer_init();
+  grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
+
   // GRID MODULE INITIALIZATION SEQUENCE
 
   log_checkpoint("NVM START");
@@ -585,7 +589,7 @@ void app_main(void) {
     grid_alert_all_set_frequency(&grid_led_state, 4);
     grid_platform_nvm_erase();
     grid_esp32_utask_led(&timer_led);
-    vTaskDelay(pdMS_TO_TICKS(600));
+    vTaskDelay(pdMS_TO_TICKS(500));
     grid_esp32_utask_led(&timer_led);
   }
 
@@ -597,10 +601,6 @@ void app_main(void) {
   grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
   grid_lua_set_memory_target(&grid_lua_state, 100);
-
-  grid_esp32_usb_init();
-  grid_usb_midi_buffer_init();
-  grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
 
   // ================== START: grid_module_pbf4_init() ================== //
 
@@ -678,9 +678,9 @@ void app_main(void) {
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EN16_ND_RevH) {
     grid_esp32_module_en16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_encoder_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_RevH) {
-    grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state);
+    grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_ND_RevD || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_EF44_ND_RevH) {
-    grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state);
+    grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK2_RevH) {
     grid_esp32_module_tek2_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
