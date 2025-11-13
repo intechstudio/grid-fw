@@ -1,0 +1,96 @@
+name: "Firmware Build and Test"
+
+on:
+  workflow_call:
+    outputs:
+      artifact_name:
+        description: "Name of the uploaded nightly artifact"
+        value: ${{ jobs.build.outputs.artifact_name }}
+      release_artifact_name:
+        description: "Name of the uploaded release artifact"
+        value: ${{ jobs.build.outputs.release_artifact_name }}
+      action_date:
+        description: "Build date timestamp"
+        value: ${{ jobs.build.outputs.action_date }}
+      release_version:
+        description: "Git tag version if exists"
+        value: ${{ jobs.build.outputs.release_version }}
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_name: nightly_firmware
+      release_artifact_name: release_firmware
+      action_date: ${{ steps.set_env.outputs.action_date }}
+      release_version: ${{ steps.set_env.outputs.release_version }}
+    steps:
+      - name: Checkout repo and submodules
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Build Docker image containing both IDF and PICOSDK
+        run: docker build -t my-image .
+
+      - name: Run script in Docker container
+        run: docker run -v $PWD:/project -w /project/ my-image sh -c "arm-none-eabi-gcc -v && ./lua_build.sh && ./d51_build_firmware.sh"
+
+      - name: Run script in Docker container
+        run: docker run -v $PWD:/project -w /project/ my-image sh -c "./lua_build.sh && ./pico_build_firmware.sh && ./esp_build_firmware.sh && ./gui_build.sh"
+
+      - name: Convert ESP firmware to UF2
+        run: |
+          cd ./grid_esp
+          mkdir ./output
+          python3 ./tools/uf2conv.py -f ESP32S3 ./build/grid_fw.bin -b 0x0 -c -o ./output/grid_fw.uf2
+
+      - name: Set env
+        id: set_env
+        shell: bash
+        run: |
+          ACTION_DATE=$(date +'%Y-%m-%d-%H%M')
+          RELEASE_VERSION=$(git tag --contains ${{ github.sha }})
+          echo "ACTION_DATE=$ACTION_DATE" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+          echo "action_date=$ACTION_DATE" >> $GITHUB_OUTPUT
+          echo "release_version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Copy and rename the artifacts
+        run: |
+          ls
+          cp grid_esp/build/grid_fw.bin grid_fw.bin
+          cp binary/grid_release.uf2 grid_d51_release_${{ env.ACTION_DATE }}.uf2
+          cp grid_esp/output/grid_fw.uf2 grid_esp32_release_${{ env.ACTION_DATE }}.uf2
+          cp binary/grid_release.uf2 grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
+          cp binary/grid_release.uf2 grid_d51_nightly.uf2
+          cp grid_esp/output/grid_fw.uf2 grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
+          cp grid_esp/output/grid_fw.uf2 grid_esp32_nightly.uf2
+          cp .github/workflows/INSTRUCTIONS.txt INSTRUCTIONS__USE_D51_VERSION_IF_UNSURE.txt
+          cp grid_gui/build/index.html index.html
+          cp grid_gui/build/index.js index.js
+          cp grid_gui/build/index.wasm index.wasm
+
+      - name: Upload nightly artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly_firmware
+          path: |
+            grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
+            grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
+            grid_esp32_nightly.uf2
+            grid_d51_nightly.uf2
+            grid_fw.bin
+            index.html
+            index.js
+            index.wasm
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release_firmware
+          path: |
+            grid_d51_release_${{ env.ACTION_DATE }}.uf2
+            grid_esp32_release_${{ env.ACTION_DATE }}.uf2
+            INSTRUCTIONS__USE_D51_VERSION_IF_UNSURE.txt
