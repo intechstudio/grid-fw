@@ -1,0 +1,76 @@
+name: "Firmware Workflow"
+
+on:
+  workflow_dispatch:
+  push:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Firmware
+    uses: ./.github/workflows/firmware_build_only.yml
+
+  publish-production:
+    name: Publish Production Release
+    if: needs.build.outputs.release_version != ''
+    needs: build
+    uses: ./.github/workflows/firmware_release_production.yml
+    with:
+      product_name: "grid"
+      release_version: ${{ needs.build.outputs.release_version }}
+      action_date: ${{ needs.build.outputs.action_date }}
+    secrets: inherit
+
+  publish-nightly:
+    name: Publish Nightly Release
+    # Run on master branch OR when a tag exists to ensure nightly is never behind production releases
+    if: github.ref == 'refs/heads/master' || needs.build.outputs.release_version != ''
+    needs: build
+    uses: ./.github/workflows/firmware_release_nightly.yml
+    with:
+      product_name: "grid"
+    secrets: inherit
+
+  deploy-preview:
+    name: Deploy to Preview Branch
+    # Run on master branch OR when a tag exists to ensure preview is never behind production releases
+    if: github.ref == 'refs/heads/master' || needs.build.outputs.release_version != ''
+    needs: build
+    uses: ./.github/workflows/firmware_deploy_preview.yml
+
+  deploy-simulator:
+    name: Deploy Simulator to GitHub Pages
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Download reports' artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: download
+
+      - name: Collecting files
+        run: |
+          cd download
+          ls
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './download/nightly_firmware/'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
