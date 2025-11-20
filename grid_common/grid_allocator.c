@@ -32,7 +32,7 @@ void find_max_allocatable(size_t blksize) {
 
     success = try_calloc(blocks, blksize) == blocks;
 
-    grid_platform_printf("blksize: %u, blocks: %u, success: %d\n", blksize, blocks, success);
+    grid_platform_printf("blksize: %u, blocks: %u, total: %u success: %d\n", blksize, blocks, blksize * blocks, success);
 
     ++blocks;
   }

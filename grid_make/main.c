@@ -499,6 +499,7 @@ int main(void) {
 
     if (loopcounter == 10000) {
 
+      // find_max_allocatable(1024);
       // grid_d51_nvic_debug_priorities();
     }
 

@@ -462,6 +462,10 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action
     grid_port_debug_printf("LUA not OK, Failed to register action! EL: %d EV: %d", ele->index, eve->type);
   };
 
+  grid_lua_semaphore_lock(&grid_lua_state);
+  grid_lua_gc_full_unsafe(&grid_lua_state);
+  grid_lua_semaphore_release(&grid_lua_state);
+
   eve->cfg_changed_flag = 1;
 }
 

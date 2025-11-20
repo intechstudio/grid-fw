@@ -5,15 +5,36 @@
 #include <string.h>
 
 #include "grid_ain.h"
+#include "grid_lua_api.h"
 #include "grid_math.h"
 #include "grid_platform.h"
 #include "grid_sys.h"
 #include "grid_ui_button.h"
 #include "grid_ui_system.h"
 
-extern uint8_t grid_platform_get_adc_bit_depth();
-
-extern void grid_platform_printf(char const* fmt, ...);
+const luaL_Reg GRID_LUA_E_INDEX_META[] = {{GRID_LUA_FNC_E_ELEMENT_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_ELEMENT_INDEX_index)},
+                                          {GRID_LUA_FNC_E_LED_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_LED_INDEX_index)},
+                                          {GRID_LUA_FNC_E_BUTTON_VALUE_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_BUTTON_VALUE_index)},
+                                          {GRID_LUA_FNC_E_BUTTON_MIN_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_BUTTON_MIN_index)},
+                                          {GRID_LUA_FNC_E_BUTTON_MAX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_BUTTON_MAX_index)},
+                                          {GRID_LUA_FNC_E_BUTTON_MODE_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_BUTTON_MODE_index)},
+                                          {GRID_LUA_FNC_E_BUTTON_ELAPSED_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_BUTTON_ELAPSED_index)},
+                                          {GRID_LUA_FNC_E_BUTTON_STATE_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_BUTTON_STATE_index)},
+                                          {GRID_LUA_FNC_E_ENCODER_NUMBER_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_ENCODER_NUMBER_index)},
+                                          {GRID_LUA_FNC_E_ENCODER_VALUE_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_ENCODER_VALUE_index)},
+                                          {GRID_LUA_FNC_E_ENCODER_MIN_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_ENCODER_MIN_index)},
+                                          {GRID_LUA_FNC_E_ENCODER_MAX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_ENCODER_MAX_index)},
+                                          {GRID_LUA_FNC_E_ENCODER_MODE_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_ENCODER_MODE_index)},
+                                          {GRID_LUA_FNC_E_ENCODER_ELAPSED_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_ENCODER_ELAPSED_index)},
+                                          {GRID_LUA_FNC_E_ENCODER_STATE_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_ENCODER_STATE_index)},
+                                          {GRID_LUA_FNC_E_ENCODER_VELOCITY_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_ENCODER_VELOCITY_index)},
+                                          {GRID_LUA_FNC_E_ENCODER_SENSITIVITY_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_E_ENCODER_SENSITIVITY_index)},
+                                          {GRID_LUA_FNC_G_TIMER_START_short, XAFTERX(GRID_LUA_FNC_META_PAR1_NAME, gtt)},
+                                          {GRID_LUA_FNC_G_TIMER_STOP_short, XAFTERX(GRID_LUA_FNC_META_PAR0_NAME, gtp)},
+                                          {GRID_LUA_FNC_G_EVENT_TRIGGER_short, XAFTERX(GRID_LUA_FNC_META_PAR0_NAME, get)},
+                                          {GRID_LUA_FNC_G_ELEMENTNAME_SET_short, XAFTERX(GRID_LUA_FNC_META_PAR1_NAME, gsen)},
+                                          {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, XAFTERX(GRID_LUA_FNC_META_PAR0_NAME, ggen)},
+                                          {NULL, NULL}};
 
 const char grid_ui_encoder_init_actionstring[] = GRID_ACTIONSTRING_ENCODER_INIT;
 const char grid_ui_encoder_encoderchange_actionstring[] = GRID_ACTIONSTRING_ENCODER_ENCODER;

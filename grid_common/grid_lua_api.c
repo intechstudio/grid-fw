@@ -2207,6 +2207,31 @@ int l_grid_cat(lua_State* L) {
   return 0;
 }
 
+GRID_LUA_FNC_GTV_DEFI(0)
+GRID_LUA_FNC_GTV_DEFI(1)
+GRID_LUA_FNC_GTV_DEFI(2)
+GRID_LUA_FNC_GTV_DEFI(3)
+GRID_LUA_FNC_GTV_DEFI(4)
+GRID_LUA_FNC_GTV_DEFI(5)
+GRID_LUA_FNC_GTV_DEFI(6)
+GRID_LUA_FNC_GTV_DEFI(7)
+GRID_LUA_FNC_GTV_DEFI(8)
+GRID_LUA_FNC_GTV_DEFI(9)
+GRID_LUA_FNC_GTV_DEFI(10)
+GRID_LUA_FNC_GTV_DEFI(11)
+GRID_LUA_FNC_GTV_DEFI(12)
+GRID_LUA_FNC_GTV_DEFI(13)
+GRID_LUA_FNC_GTV_DEFI(14)
+GRID_LUA_FNC_GTV_DEFI(15)
+GRID_LUA_FNC_GTV_DEFI(16)
+GRID_LUA_FNC_GTV_DEFI(17)
+
+GRID_LUA_FNC_META_PAR1_DEFI(gtt, l_grid_timer_start)
+GRID_LUA_FNC_META_PAR0_DEFI(gtp, l_grid_timer_stop)
+GRID_LUA_FNC_META_PAR1_DEFI(get, l_grid_event_trigger)
+GRID_LUA_FNC_META_PAR1_DEFI(gsen, l_grid_elementname_set)
+GRID_LUA_FNC_META_PAR0_DEFI(ggen, l_grid_elementname_get)
+
 /*static*/ const struct luaL_Reg grid_lua_api_generic_lib[] = {
     {"print", l_my_print},
     {"grid_send", l_grid_send},

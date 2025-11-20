@@ -4,10 +4,18 @@
 #include <string.h>
 
 #include "grid_ain.h"
+#include "grid_lua_api.h"
 
-extern uint8_t grid_platform_get_adc_bit_depth();
-
-extern void grid_platform_printf(char const* fmt, ...);
+const luaL_Reg GRID_LUA_L_INDEX_META[] = {{GRID_LUA_FNC_L_ELEMENT_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_L_ELEMENT_INDEX_index)},
+                                          {GRID_LUA_FNC_L_SCREEN_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_L_SCREEN_INDEX_index)},
+                                          {GRID_LUA_FNC_L_SCREEN_WIDTH_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_L_SCREEN_WIDTH_index)},
+                                          {GRID_LUA_FNC_L_SCREEN_HEIGHT_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_L_SCREEN_HEIGHT_index)},
+                                          {GRID_LUA_FNC_G_TIMER_START_short, XAFTERX(GRID_LUA_FNC_META_PAR1_NAME, gtt)},
+                                          {GRID_LUA_FNC_G_TIMER_STOP_short, XAFTERX(GRID_LUA_FNC_META_PAR0_NAME, gtp)},
+                                          {GRID_LUA_FNC_G_EVENT_TRIGGER_short, XAFTERX(GRID_LUA_FNC_META_PAR0_NAME, get)},
+                                          {GRID_LUA_FNC_G_ELEMENTNAME_SET_short, XAFTERX(GRID_LUA_FNC_META_PAR1_NAME, gsen)},
+                                          {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, XAFTERX(GRID_LUA_FNC_META_PAR0_NAME, ggen)},
+                                          {NULL, NULL}};
 
 const char grid_ui_lcd_init_actionstring[] = GRID_ACTIONSTRING_LCD_INIT;
 const char grid_ui_lcd_draw_actionstring[] = GRID_ACTIONSTRING_LCD_DRAW;

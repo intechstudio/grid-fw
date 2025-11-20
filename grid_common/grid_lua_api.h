@@ -88,6 +88,31 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 
 /*static*/ int l_grid_lcd_set_backlight(lua_State* L);
 
+int GRID_LUA_FNC_GTV_NAME(0)();
+int GRID_LUA_FNC_GTV_NAME(1)();
+int GRID_LUA_FNC_GTV_NAME(2)();
+int GRID_LUA_FNC_GTV_NAME(3)();
+int GRID_LUA_FNC_GTV_NAME(4)();
+int GRID_LUA_FNC_GTV_NAME(5)();
+int GRID_LUA_FNC_GTV_NAME(6)();
+int GRID_LUA_FNC_GTV_NAME(7)();
+int GRID_LUA_FNC_GTV_NAME(8)();
+int GRID_LUA_FNC_GTV_NAME(9)();
+int GRID_LUA_FNC_GTV_NAME(10)();
+int GRID_LUA_FNC_GTV_NAME(11)();
+int GRID_LUA_FNC_GTV_NAME(12)();
+int GRID_LUA_FNC_GTV_NAME(13)();
+int GRID_LUA_FNC_GTV_NAME(14)();
+int GRID_LUA_FNC_GTV_NAME(15)();
+int GRID_LUA_FNC_GTV_NAME(16)();
+int GRID_LUA_FNC_GTV_NAME(17)();
+
+int GRID_LUA_FNC_META_PAR1_NAME(gtt)();
+int GRID_LUA_FNC_META_PAR0_NAME(gtp)();
+int GRID_LUA_FNC_META_PAR1_NAME(get)();
+int GRID_LUA_FNC_META_PAR1_NAME(gsen)();
+int GRID_LUA_FNC_META_PAR0_NAME(ggen)();
+
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 
 #endif /* GRID_LUA_API_H */

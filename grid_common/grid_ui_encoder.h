@@ -35,44 +35,22 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
 
 // clang-format off
 
+#define GRID_LUA_E_TYPE "Encoder"
+
+extern const luaL_Reg GRID_LUA_E_INDEX_META[];
+
 #define GRID_LUA_E_META_init \
-  "encoder_meta = { __index = {" \
+  GRID_LUA_E_TYPE " = { __index = { " \
   \
   "type = 'encoder', "\
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_ELEMENT_INDEX_short, GRID_LUA_FNC_E_ELEMENT_INDEX_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_LED_INDEX_short, GRID_LUA_FNC_E_LED_INDEX_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_BUTTON_VALUE_short, GRID_LUA_FNC_E_BUTTON_VALUE_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_BUTTON_MIN_short, GRID_LUA_FNC_E_BUTTON_MIN_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_BUTTON_MAX_short, GRID_LUA_FNC_E_BUTTON_MAX_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_BUTTON_MODE_short, GRID_LUA_FNC_E_BUTTON_MODE_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_BUTTON_ELAPSED_short, GRID_LUA_FNC_E_BUTTON_ELAPSED_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_BUTTON_STATE_short, GRID_LUA_FNC_E_BUTTON_STATE_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_ENCODER_NUMBER_short, GRID_LUA_FNC_E_ENCODER_NUMBER_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_ENCODER_VALUE_short, GRID_LUA_FNC_E_ENCODER_VALUE_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_ENCODER_MIN_short, GRID_LUA_FNC_E_ENCODER_MIN_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_ENCODER_MAX_short, GRID_LUA_FNC_E_ENCODER_MAX_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_ENCODER_MODE_short, GRID_LUA_FNC_E_ENCODER_MODE_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_ENCODER_ELAPSED_short, GRID_LUA_FNC_E_ENCODER_ELAPSED_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_ENCODER_STATE_short, GRID_LUA_FNC_E_ENCODER_STATE_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_ENCODER_VELOCITY_short, GRID_LUA_FNC_E_ENCODER_VELOCITY_index) "," \
-  GRID_LUA_FNC_ASSIGN_META_GTV(GRID_LUA_FNC_E_ENCODER_SENSITIVITY_short, GRID_LUA_FNC_E_ENCODER_SENSITIVITY_index) "," \
   \
-  GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_INIT_short) "," \
-  GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_BUTTON_short) "," \
-  GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_TIMER_short) "," \
-  GRID_LUA_FNC_ASSIGN_META_UNDEF(GRID_LUA_FNC_A_ENCODER_short) "," \
   "post_init_cb = function (self) " \
   "self:"GRID_LUA_FNC_A_INIT_short"() " \
   "self:"GRID_LUA_FNC_A_BUTTON_short"() " \
   "self:"GRID_LUA_FNC_A_ENCODER_short"() " \
   "end," \
   \
-  GRID_LUA_FNC_ASSIGN_META_PAR1("gtt", GRID_LUA_FNC_G_TIMER_START_short) "," \
-  GRID_LUA_FNC_ASSIGN_META_PAR0("gtp", GRID_LUA_FNC_G_TIMER_STOP_short) "," \
-  GRID_LUA_FNC_ASSIGN_META_PAR1("get", GRID_LUA_FNC_G_EVENT_TRIGGER_short) "," \
   GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) "," \
-  GRID_LUA_FNC_ASSIGN_META_PAR1("gsen", GRID_LUA_FNC_G_ELEMENTNAME_SET_short) "," \
-  GRID_LUA_FNC_ASSIGN_META_PAR0_RET("ggen", GRID_LUA_FNC_G_ELEMENTNAME_GET_short) "," \
   \
   GRID_LUA_FNC_E_BUTTON_STEP_short " =function (self) " \
   "local steps, min, max, value = self:" GRID_LUA_FNC_B_BUTTON_MODE_short "(), self:" GRID_LUA_FNC_B_BUTTON_MIN_short "(), self:" GRID_LUA_FNC_B_BUTTON_MAX_short \
@@ -81,9 +59,6 @@ void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_enc
   "return value // ((max - min) // steps) " \
   "end," \
   \
-  GRID_LUA_FNC_E_LED_COLOR_short " =function (self, ...) " \
-  GRID_LUA_FNC_G_LED_COLOR_short "(self:" GRID_LUA_FNC_E_ELEMENT_INDEX_short "(), ...) " \
-  "end," \
   "}}"
 
 #define GRID_ACTIONSTRING_ENCODER_INIT "<?lua --[[@cb]] --[[Encoder Init]] ?>"
