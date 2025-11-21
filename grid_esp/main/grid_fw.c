@@ -166,27 +166,7 @@ static void log_checkpoint(const char* str) {
   }
 }
 
-#include "grid_lua_api_gui.h"
 #include "grid_ui_lcd.h"
-
-// initializer for special software defined module registered onto HWCFG 255
-void grid_lua_ui_init_soft(struct grid_lua_model* lua) {
-
-  grid_lua_create_element_array(lua->L, 9);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_E);
-  for (int i = 0; i < 4; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_E);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_P);
-  for (int i = 4; i < 8; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_P);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_S);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 8, GRID_LUA_S);
-}
 
 void grid_module_soft_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
@@ -213,59 +193,7 @@ void grid_module_soft_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_soft;
-}
-
-void grid_lua_ui_init_tek1(struct grid_lua_model* lua) {
-
-  grid_lua_register_functions_unsafe(lua, grid_lua_api_gui_lib_reference);
-
-  grid_lua_create_element_array(lua->L, 15);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_B);
-  for (int i = 0; i < 8; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_B);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_EP);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 8, GRID_LUA_EP);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_B);
-  for (int i = 9; i < 13; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_B);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_L);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 13, GRID_LUA_L);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_S);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 14, GRID_LUA_S);
-}
-
-void grid_lua_ui_init_vsn2(struct grid_lua_model* lua) {
-
-  grid_lua_register_functions_unsafe(lua, grid_lua_api_gui_lib_reference);
-
-  grid_lua_create_element_array(lua->L, 19);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_B);
-  for (int i = 0; i < 12; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_B);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_L);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 12, GRID_LUA_L);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_B);
-  for (int i = 13; i < 17; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_B);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_L);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 17, GRID_LUA_L);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_S);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 18, GRID_LUA_S);
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_ui_element_lcd_template_parameter_init_vsn_left(struct grid_ui_template_buffer* buf) {
@@ -353,8 +281,6 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
       }
     }
 
-    ui->lua_ui_init_callback = grid_lua_ui_init_tek1;
-
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH) {
 
@@ -383,8 +309,6 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
         grid_ui_element_system_init(ele);
       }
     }
-
-    ui->lua_ui_init_callback = grid_lua_ui_init_tek1;
 
   } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
@@ -417,9 +341,9 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
         grid_ui_element_system_init(ele);
       }
     }
-
-    ui->lua_ui_init_callback = grid_lua_ui_init_vsn2;
   }
+
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_esp32_print_chip_info() {

@@ -13,17 +13,76 @@
 #include "grid_ui_potmeter.h"
 #include "grid_ui_system.h"
 
-/* ====================  MODULE SPECIFIC INITIALIZERS  ====================*/
+extern struct luaL_Reg* grid_lua_api_gui_lib_reference;
 
-void grid_lua_ui_init_po16(struct grid_lua_model* lua);
-void grid_lua_ui_init_bu16(struct grid_lua_model* lua);
-void grid_lua_ui_init_pbf4(struct grid_lua_model* lua);
-void grid_lua_ui_init_en16(struct grid_lua_model* lua);
-void grid_lua_ui_init_ef44(struct grid_lua_model* lua);
-void grid_lua_ui_init_tek2(struct grid_lua_model* lua);
-void grid_lua_ui_init_tek1(struct grid_lua_model* lua);
-void grid_lua_ui_init_vsn2(struct grid_lua_model* lua);
-void grid_lua_ui_init_pb44(struct grid_lua_model* lua);
+void grid_lua_ui_init(struct grid_lua_model* lua) {
+
+  struct grid_ui_model* ui = &grid_ui_state;
+
+  // Create the element table in the lua state
+  grid_lua_create_element_array(lua->L, ui->element_list_length);
+
+  uint8_t countpertype[GRID_PARAMETER_ELEMENT_COUNT] = {0};
+
+  for (int i = 0; i < ui->element_list_length; ++i) {
+
+    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
+    assert(ele);
+
+    const char* type = NULL;
+    const char* metainit = NULL;
+    const luaL_Reg* indexmeta = NULL;
+
+    // clang-format off
+    #define GRID_LUA_UI_INIT_ASSIGN(t) \
+      type = t##_TYPE; \
+      metainit = t##_META_init; \
+      indexmeta = t##_INDEX_META;
+    // clang-format on
+
+    switch (ele->type) {
+    case GRID_PARAMETER_ELEMENT_SYSTEM: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_S);
+    } break;
+    case GRID_PARAMETER_ELEMENT_POTMETER: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_P);
+    } break;
+    case GRID_PARAMETER_ELEMENT_BUTTON: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_B);
+    } break;
+    case GRID_PARAMETER_ELEMENT_ENCODER: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_E);
+    } break;
+    case GRID_PARAMETER_ELEMENT_ENDLESS: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_EP);
+    } break;
+    case GRID_PARAMETER_ELEMENT_LCD: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_L);
+    } break;
+    default:
+      assert(0);
+      break;
+    }
+    assert(type);
+
+    if (countpertype[ele->type] == 0) {
+
+      // Initialize element type metatable and expand its __index
+      grid_lua_dostring_unsafe(lua, metainit);
+      grid_lua_register_index_meta_for_type(lua->L, type, indexmeta);
+
+      if (ele->type == GRID_PARAMETER_ELEMENT_LCD) {
+        grid_lua_register_functions_unsafe(lua, grid_lua_api_gui_lib_reference);
+      }
+    }
+
+    ++countpertype[ele->type];
+
+    // Initialize element entry and assign the metatable for its type
+    grid_lua_register_element(lua->L, i);
+    grid_lua_register_index_meta_for_element(lua->L, i, type);
+  }
+}
 
 void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
@@ -45,8 +104,9 @@ void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_po16;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
+
 void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
@@ -70,7 +130,7 @@ void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_bu16;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
@@ -100,7 +160,7 @@ void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_pbf4;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_module_pb44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
@@ -129,7 +189,7 @@ void grid_module_pb44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_pb44;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
@@ -158,7 +218,7 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_ef44;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
@@ -192,7 +252,7 @@ void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_tek2;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
@@ -215,116 +275,5 @@ void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_en16;
-}
-
-void grid_lua_ui_init_po16(struct grid_lua_model* lua) {
-
-  grid_lua_create_element_array(lua->L, 17);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_P);
-  for (int i = 0; i < 16; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_P);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_S);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 16, GRID_LUA_S);
-}
-
-void grid_lua_ui_init_bu16(struct grid_lua_model* lua) {
-
-  grid_lua_create_element_array(lua->L, 17);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_B);
-  for (int i = 0; i < 16; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_B);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_S);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 16, GRID_LUA_S);
-}
-
-void grid_lua_ui_init_pbf4(struct grid_lua_model* lua) {
-
-  grid_lua_create_element_array(lua->L, 13);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_P);
-  for (int i = 0; i < 8; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_P);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_B);
-  for (int i = 8; i < 12; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_B);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_S);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 12, GRID_LUA_S);
-}
-
-void grid_lua_ui_init_pb44(struct grid_lua_model* lua) {
-
-  grid_lua_create_element_array(lua->L, 17);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_P);
-  for (int i = 0; i < 8; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_P);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_B);
-  for (int i = 8; i < 16; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_B);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_S);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 16, GRID_LUA_S);
-}
-
-void grid_lua_ui_init_en16(struct grid_lua_model* lua) {
-
-  grid_lua_create_element_array(lua->L, 17);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_E);
-  for (int i = 0; i < 16; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_E);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_S);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 16, GRID_LUA_S);
-}
-
-void grid_lua_ui_init_ef44(struct grid_lua_model* lua) {
-
-  grid_lua_create_element_array(lua->L, 9);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_E);
-  for (int i = 0; i < 4; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_E);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_P);
-  for (int i = 4; i < 8; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_P);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_S);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 8, GRID_LUA_S);
-}
-
-void grid_lua_ui_init_tek2(struct grid_lua_model* lua) {
-
-  grid_lua_create_element_array(lua->L, 11);
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_B);
-  for (int i = 0; i < 8; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_B);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_EP);
-  for (int i = 8; i < 10; ++i) {
-    GRID_LUA_UI_INIT_ELEMENT(lua, i, GRID_LUA_EP);
-  }
-
-  GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, GRID_LUA_S);
-  GRID_LUA_UI_INIT_ELEMENT(lua, 10, GRID_LUA_S);
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }

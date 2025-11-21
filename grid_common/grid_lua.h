@@ -149,14 +149,6 @@ void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, con
 #define GRID_LUA_DECODE_RESULT_SYSEX "_decoded_sysex"
 #define GRID_LUA_DECODE_RESULT_EVIEW "_decoded_eview"
 
-#define GRID_LUA_UI_INIT_ELEMENTTYPE_META(lua, prefix) \
-  grid_lua_dostring_unsafe((lua), prefix ## _META_init); \
-  grid_lua_register_index_meta_for_type((lua)->L, prefix ## _TYPE, prefix ## _INDEX_META);
-
-#define GRID_LUA_UI_INIT_ELEMENT(lua, idx, prefix) \
-  grid_lua_register_element((lua)->L, (idx)); \
-  grid_lua_register_index_meta_for_element((lua)->L, (idx), prefix ## _TYPE);
-
 // clang-format on
 
 enum {
