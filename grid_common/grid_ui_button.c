@@ -30,7 +30,7 @@ void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_b
 
   state->last_real_time = 0;
   state->full_range = 1 << adc_bit_depth;
-  grid_cal_limits_init_empty(&state->limits);
+  grid_cal_limits_init(&state->limits, 0, adc_bit_depth);
   state->limits_prev = state->limits;
   state->trig_lo = state->limits.min;
   state->trig_hi = state->limits.max;

@@ -1877,6 +1877,15 @@ int l_grid_cat(lua_State* L) {
   return 1;
 }
 
+/*static*/ int l_grid_calibration_reset(lua_State* L) {
+
+  grid_cal_reset(&grid_cal_state);
+
+  grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFERASE_PROGRESS, 0, NULL);
+
+  return 0;
+}
+
 int l_grid_calibration_get(lua_State* L, enum grid_cal_type type) {
 
   assert(type < GRID_CAL_COUNT);
@@ -2191,6 +2200,7 @@ int l_grid_potmeter_detent_set(lua_State* L) { return l_grid_calibration_set(L, 
 
     {GRID_LUA_FNC_G_ELEMENT_COUNT_short, GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr},
 
+    {GRID_LUA_FNC_G_CALIBRATION_RESET_short, GRID_LUA_FNC_G_CALIBRATION_RESET_fnptr},
     {GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_fnptr},
     {GRID_LUA_FNC_G_POTMETER_CENTER_SET_short, GRID_LUA_FNC_G_POTMETER_CENTER_SET_fnptr},
     {GRID_LUA_FNC_G_POTMETER_DETENT_SET_short, GRID_LUA_FNC_G_POTMETER_DETENT_SET_fnptr},

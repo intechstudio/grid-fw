@@ -23,13 +23,12 @@ void grid_ui_potmeter_state_init(struct grid_ui_potmeter_state* state, uint8_t a
 
   assert(adc_bit_depth);
   assert(deadzone < (1 << (adc_bit_depth - 1)));
-  state->limits.min = deadzone;
-  state->limits.max = (1 << adc_bit_depth) - deadzone;
+  grid_cal_limits_init(&state->limits, deadzone, adc_bit_depth);
 
   assert(center < (1 << adc_bit_depth));
-  state->center.center = center;
+  grid_cal_center_init(&state->center, center);
 
-  grid_cal_detent_init_empty(&state->detent);
+  grid_cal_detent_init(&state->detent);
 }
 
 void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {

@@ -11,10 +11,21 @@
 
 struct grid_cal_model grid_cal_state = {0};
 
-void grid_cal_limits_init_empty(struct grid_cal_limits* limits) {
+void grid_cal_limits_init(struct grid_cal_limits* limits, uint16_t deadzone, uint8_t resolution) {
 
-  limits->min = UINT16_MAX;
-  limits->max = 0;
+  limits->deadzone = deadzone;
+  grid_cal_limits_reset(limits, resolution);
+}
+
+void grid_cal_limits_reset(struct grid_cal_limits* limits, uint8_t resolution) {
+
+  if (limits->deadzone) {
+    limits->min = limits->deadzone;
+    limits->max = (1 << resolution) - limits->deadzone;
+  } else {
+    limits->min = UINT16_MAX;
+    limits->max = 0;
+  }
 }
 
 bool grid_cal_limits_range_valid(struct grid_cal_limits* limits) { return limits->min < limits->max; }
@@ -34,13 +45,23 @@ uint16_t grid_cal_limits_min_get(struct grid_cal_limits* limits) { return limits
 
 uint16_t grid_cal_limits_max_get(struct grid_cal_limits* limits) { return limits ? limits->max : 0; }
 
+void grid_cal_center_init(struct grid_cal_center* center, uint16_t initial) {
+
+  center->initial = initial;
+  grid_cal_center_reset(center);
+}
+
+void grid_cal_center_reset(struct grid_cal_center* center) { center->center = center->initial; }
+
 void grid_cal_center_value_update(struct grid_cal_center* center, uint16_t value) { center->value = value; }
 
 uint16_t grid_cal_center_value_get(struct grid_cal_center* center) { return center ? center->value : 0; }
 
 uint16_t grid_cal_center_center_get(struct grid_cal_center* center) { return center ? center->center : 0; }
 
-void grid_cal_detent_init_empty(struct grid_cal_detent* detent) {
+void grid_cal_detent_init(struct grid_cal_detent* detent) { grid_cal_detent_reset(detent); }
+
+void grid_cal_detent_reset(struct grid_cal_detent* detent) {
 
   detent->value = 0;
   detent->lo = UINT16_MAX;
@@ -70,6 +91,24 @@ int grid_cal_init(struct grid_cal_model* cal, uint8_t length, uint8_t resolution
   }
 
   return 0;
+}
+
+void grid_cal_reset(struct grid_cal_model* cal) {
+
+  for (uint8_t i = 0; i < cal->length; ++i) {
+
+    if (cal->limits[i]) {
+      grid_cal_limits_reset(cal->limits[i], cal->resolution);
+    }
+
+    if (cal->center[i]) {
+      grid_cal_center_reset(cal->center[i]);
+    }
+
+    if (cal->detent[i]) {
+      grid_cal_detent_reset(cal->detent[i]);
+    }
+  }
 }
 
 int grid_cal_set(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void* src) {

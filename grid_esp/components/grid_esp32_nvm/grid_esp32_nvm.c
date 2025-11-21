@@ -192,6 +192,9 @@ void grid_esp32_nvm_task(void* arg) {
       case GRID_UI_BULK_CONFSTORE_PROGRESS:
         grid_ui_bulk_confstore_next(&grid_ui_state);
         break;
+      case GRID_UI_BULK_CONFERASE_PROGRESS:
+        grid_ui_bulk_conferase_next(&grid_ui_state);
+        break;
       case GRID_UI_BULK_ERASE_PROGRESS:
         grid_ui_bulk_nvmerase_next(&grid_ui_state);
         break;

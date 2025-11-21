@@ -83,6 +83,9 @@ static void nvm_task_inner() {
     case GRID_UI_BULK_CONFREAD_PROGRESS:
       grid_ui_bulk_confread_next(&grid_ui_state);
       break;
+    case GRID_UI_BULK_CONFERASE_PROGRESS:
+      grid_ui_bulk_conferase_next(&grid_ui_state);
+      break;
     case GRID_UI_BULK_CONFSTORE_PROGRESS:
       grid_ui_bulk_confstore_next(&grid_ui_state);
       break;

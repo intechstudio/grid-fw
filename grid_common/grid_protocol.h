@@ -414,6 +414,11 @@
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr l_grid_element_count
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_usage "element_count(void) Returns the number of elements on the current module."
 
+#define GRID_LUA_FNC_G_CALIBRATION_RESET_short "gcr"
+#define GRID_LUA_FNC_G_CALIBRATION_RESET_human "calibration_reset"
+#define GRID_LUA_FNC_G_CALIBRATION_RESET_fnptr l_grid_calibration_reset
+#define GRID_LUA_FNC_G_CALIBRATION_RESET_usage "calibration_reset() Deletes the calibration file and initializes all calibrations to their defaults."
+
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_short "gpcg"
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_human "potmeter_calibration_get"
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_fnptr l_grid_potmeter_calibration_get
