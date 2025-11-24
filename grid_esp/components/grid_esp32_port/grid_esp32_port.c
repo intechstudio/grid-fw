@@ -235,8 +235,6 @@ void grid_utask_midi_and_keyboard_tx(struct grid_utask_timer* timer) {
     }
 
     grid_midi_tx_pop();
-
-    ets_delay_us(20);
   }
 
   if (grid_usb_keyboard_tx_readable(&grid_usb_keyboard_state)) {

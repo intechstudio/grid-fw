@@ -370,9 +370,10 @@ int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type) {
   }
 
   // report_id, buttons, dx, dy, wheel, pan
-  tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, 0, 0, 0, 0);
+  bool success = tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, 0, 0, 0, 0);
 
-  return 1;
+  // Return 0 for success, 1 for failure (consistent with SAMD51)
+  return success ? 0 : 1;
 }
 
 int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis) {
@@ -389,13 +390,14 @@ int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis) {
   } else if (axis == SCROLL_MV) {
     wheel = position;
   } else {
-    return 0;
+    return 0; // Invalid axis
   }
 
   // report_id, buttons, dx, dy, wheel, pan
-  tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, delta_x, delta_y, wheel, pan);
+  bool success = tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, hid_mouse_button_state, delta_x, delta_y, wheel, pan);
 
-  return 1;
+  // Return 0 for success, 1 for failure (consistent with SAMD51)
+  return success ? 0 : 1;
 }
 
 int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value) {
@@ -424,9 +426,11 @@ int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value) {
     return 0;
   }
 
-  tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y, hid_gamepad_axis_z, hid_gamepad_axis_rz, hid_gamepad_axis_ry, hid_gamepad_axis_rx, hid_gamepad_hat, hid_gamepad_button_state);
+  bool success =
+      tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y, hid_gamepad_axis_z, hid_gamepad_axis_rz, hid_gamepad_axis_ry, hid_gamepad_axis_rx, hid_gamepad_hat, hid_gamepad_button_state);
 
-  return 1;
+  // Return 0 for success, 1 for failure (consistent with other USB functions)
+  return success ? 0 : 1;
 }
 
 int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value) {
@@ -437,9 +441,11 @@ int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value) {
     hid_gamepad_button_state &= ~(1 << button);
   }
 
-  tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y, hid_gamepad_axis_z, hid_gamepad_axis_rx, hid_gamepad_axis_ry, hid_gamepad_axis_rz, hid_gamepad_hat, hid_gamepad_button_state);
+  bool success =
+      tud_hid_gamepad_report(3, hid_gamepad_axis_x, hid_gamepad_axis_y, hid_gamepad_axis_z, hid_gamepad_axis_rx, hid_gamepad_axis_ry, hid_gamepad_axis_rz, hid_gamepad_hat, hid_gamepad_button_state);
 
-  return 1;
+  // Return 0 for success, 1 for failure (consistent with other USB functions)
+  return success ? 0 : 1;
 }
 
 int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_event_desc* active_key_list, uint8_t keys_count) {
@@ -475,7 +481,8 @@ int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_ev
   }
 
   // Report Id, modifier, keycodearray
-  tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, modifier, keycode);
+  bool success = tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, modifier, keycode);
 
-  return 0;
+  // Return 0 for success, 1 for failure (consistent with other USB functions)
+  return success ? 0 : 1;
 }

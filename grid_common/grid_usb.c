@@ -328,33 +328,50 @@ void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb) {
       key.ispressed = kb->tx_buffer[kb->tx_read_index].ispressed;
       key.delay = 0;
 
-      kb->tx_read_index = (kb->tx_read_index + 1) % kb->tx_buffer_length;
-
-      kb->tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
+      // Flag to track if we successfully processed the event
+      uint8_t event_processed = 0;
+      int32_t result = 0;
 
       // 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
 
       if (key.ismodifier == 0 || key.ismodifier == 1) {
 
         grid_usb_keyboard_keychange(&grid_usb_keyboard_state, &key);
+        event_processed = 1;            // Keyboard events always succeed
       } else if (key.ismodifier == 2) { // mousemove
 
         uint8_t axis = key.keycode;
         int8_t position = key.ispressed - 128;
-        grid_platform_usb_mouse_move(position, axis);
+        result = grid_platform_usb_mouse_move(position, axis);
 
-        // grid_port_debug_printf("MouseMove: %d %d", position, axis);
+        if (result != 0) {
+          event_processed = 0; // Keep in buffer to retry
+        } else {
+          event_processed = 1; // Success, remove from buffer
+        }
       } else if (key.ismodifier == 3) {
 
         uint8_t state = key.ispressed;
         uint8_t button = key.keycode;
-        grid_platform_usb_mouse_button_change(state, button);
+        result = grid_platform_usb_mouse_button_change(state, button);
 
-        // grid_port_debug_printf("MouseButton: %d %d", state, button);
+        if (result != 0) {
+          event_processed = 0; // Keep in buffer to retry
+        } else {
+          event_processed = 1; // Success, remove from buffer
+        }
       } else if (key.ismodifier == 0xf) {
         // delay, nothing to do here
+        event_processed = 1;
       } else {
         // printf("Keyboard Mouse Invalid\r\n");
+        event_processed = 1; // Invalid events should be discarded
+      }
+
+      // Only advance read pointer if event was successfully processed
+      if (event_processed) {
+        kb->tx_read_index = (kb->tx_read_index + 1) % kb->tx_buffer_length;
+        kb->tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
       }
     }
   }
