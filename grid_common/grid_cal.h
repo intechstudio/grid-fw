@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "grid_asc.h"
+#include "grid_math.h"
+
 enum grid_cal_type {
   GRID_CAL_LIMITS = 0,
   GRID_CAL_CENTER,
@@ -55,6 +58,7 @@ struct grid_cal_model {
   struct grid_cal_limits** limits;
   struct grid_cal_center** center;
   struct grid_cal_detent** detent;
+  struct grid_asc* sigcond;
 };
 
 int grid_cal_init(struct grid_cal_model* cal, uint8_t length, uint8_t resolution);

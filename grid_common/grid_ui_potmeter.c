@@ -113,14 +113,19 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
 
   int32_t* template_parameter_list = ele->template_parameter_list;
 
-  grid_cal_limits_value_update(&state->limits, value);
+  uint16_t value_asc;
+  if (grid_asc_process(&grid_cal_state.sigcond[input_channel], value, &value_asc)) {
+
+    grid_cal_limits_value_update(&state->limits, value_asc);
+
+    grid_cal_center_value_update(&state->center, value_asc);
+
+    grid_cal_detent_value_update(&state->detent, value_asc);
+  }
+
   if (!grid_cal_limits_range_valid(&state->limits)) {
     return;
   }
-
-  grid_cal_center_value_update(&state->center, value);
-
-  grid_cal_detent_value_update(&state->detent, value);
 
   value = grid_cal_next(&grid_cal_state, input_channel, value);
 

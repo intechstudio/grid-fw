@@ -83,12 +83,17 @@ int grid_cal_init(struct grid_cal_model* cal, uint8_t length, uint8_t resolution
   cal->limits = (struct grid_cal_limits**)malloc(cal->length * sizeof(struct grid_cal_limits*));
   cal->center = (struct grid_cal_center**)malloc(cal->length * sizeof(struct grid_cal_center*));
   cal->detent = (struct grid_cal_detent**)malloc(cal->length * sizeof(struct grid_cal_detent*));
+  cal->sigcond = (struct grid_asc*)malloc(cal->length * sizeof(struct grid_asc));
 
   for (uint8_t i = 0; i < cal->length; ++i) {
     cal->limits[i] = NULL;
     cal->center[i] = NULL;
     cal->detent[i] = NULL;
   }
+
+  memset(cal->sigcond, 0, cal->length * sizeof(struct grid_asc));
+
+  grid_asc_array_set_factors(cal->sigcond, cal->length, 0, cal->length, 64);
 
   return 0;
 }
@@ -206,9 +211,13 @@ uint16_t grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in)
 
   if (lim && !ctr && !det) {
 
+    in = clampu16(in, lim->min, lim->max);
+
     return ((in - lim->min) << cal->resolution) / (lim->max - lim->min + 1);
 
   } else if (lim && ctr) {
+
+    in = clampu16(in, lim->min, lim->max);
 
     if (det && det->lo < det->hi) {
 
