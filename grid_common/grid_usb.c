@@ -340,34 +340,19 @@ void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb) {
       if (key.ismodifier == 0 || key.ismodifier == 1) {
 
         result = grid_usb_keyboard_keychange(&grid_usb_keyboard_state, &key);
-
-        if (result != 0) {
-          event_processed = 0; // Keep in buffer to retry
-        } else {
-          event_processed = 1; // Success, remove from buffer
-        }
-      } else if (key.ismodifier == 2) { // mousemove
+        event_processed = (result == 0); // Success (0) removes from buffer, failure keeps it
+      } else if (key.ismodifier == 2) {  // mousemove
 
         uint8_t axis = key.keycode;
         int8_t position = key.ispressed - 128;
         result = grid_platform_usb_mouse_move(position, axis);
-
-        if (result != 0) {
-          event_processed = 0; // Keep in buffer to retry
-        } else {
-          event_processed = 1; // Success, remove from buffer
-        }
+        event_processed = (result == 0); // Success (0) removes from buffer, failure keeps it
       } else if (key.ismodifier == 3) {
 
         uint8_t state = key.ispressed;
         uint8_t button = key.keycode;
         result = grid_platform_usb_mouse_button_change(state, button);
-
-        if (result != 0) {
-          event_processed = 0; // Keep in buffer to retry
-        } else {
-          event_processed = 1; // Success, remove from buffer
-        }
+        event_processed = (result == 0); // Success (0) removes from buffer, failure keeps it
       } else if (key.ismodifier == 0xf) {
         // delay, nothing to do here
         event_processed = 1;
