@@ -318,56 +318,55 @@ uint8_t grid_usb_keyboard_tx_push(struct grid_usb_keyboard_model* kb, struct gri
 
 void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb) {
 
-  if (kb->tx_read_index != kb->tx_write_index) {
-
-    uint32_t elapsed = grid_platform_rtc_get_elapsed_time(kb->tx_rtc_lasttimestamp);
-
-    if (elapsed > kb->tx_buffer[kb->tx_read_index].delay * MS_TO_US) {
-
-      struct grid_usb_keyboard_event_desc key;
-
-      key.ismodifier = kb->tx_buffer[kb->tx_read_index].ismodifier;
-      key.keycode = kb->tx_buffer[kb->tx_read_index].keycode;
-      key.ispressed = kb->tx_buffer[kb->tx_read_index].ispressed;
-      key.delay = 0;
-
-      // Flag to track if we successfully processed the event
-      uint8_t event_processed = 0;
-      int32_t result = 0;
-
-      // 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
-
-      if (key.ismodifier == 0 || key.ismodifier == 1) {
-
-        result = grid_usb_keyboard_keychange(&grid_usb_keyboard_state, &key);
-        event_processed = (result == 0); // Success (0) removes from buffer, failure keeps it
-      } else if (key.ismodifier == 2) {  // mousemove
-
-        uint8_t axis = key.keycode;
-        int8_t position = key.ispressed - 128;
-        result = grid_platform_usb_mouse_move(position, axis);
-        event_processed = (result == 0); // Success (0) removes from buffer, failure keeps it
-      } else if (key.ismodifier == 3) {
-
-        uint8_t state = key.ispressed;
-        uint8_t button = key.keycode;
-        result = grid_platform_usb_mouse_button_change(state, button);
-        event_processed = (result == 0); // Success (0) removes from buffer, failure keeps it
-      } else if (key.ismodifier == 0xf) {
-        // delay, nothing to do here
-        event_processed = 1;
-      } else {
-        // printf("Keyboard Mouse Invalid\r\n");
-        event_processed = 1; // Invalid events should be discarded
-      }
-
-      // Only advance read pointer if event was successfully processed
-      if (event_processed) {
-        kb->tx_read_index = (kb->tx_read_index + 1) % kb->tx_buffer_length;
-        kb->tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
-      }
-    }
+  // Guard: return if buffer is empty
+  if (kb->tx_read_index == kb->tx_write_index) {
+    return;
   }
+
+  uint32_t elapsed = grid_platform_rtc_get_elapsed_time(kb->tx_rtc_lasttimestamp);
+
+  // Guard: wait if not enough time has elapsed
+  if (elapsed <= kb->tx_buffer[kb->tx_read_index].delay * MS_TO_US) {
+    return;
+  }
+
+  struct grid_usb_keyboard_event_desc key;
+
+  key.ismodifier = kb->tx_buffer[kb->tx_read_index].ismodifier;
+  key.keycode = kb->tx_buffer[kb->tx_read_index].keycode;
+  key.ispressed = kb->tx_buffer[kb->tx_read_index].ispressed;
+  key.delay = 0;
+
+  // 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
+
+  if (key.ismodifier == 0 || key.ismodifier == 1) {
+    // Keyboard event
+    if (0 != grid_usb_keyboard_keychange(&grid_usb_keyboard_state, &key)) {
+      return; // USB busy, keep event in buffer for retry
+    }
+  } else if (key.ismodifier == 2) {
+    // Mouse move
+    uint8_t axis = key.keycode;
+    int8_t position = key.ispressed - 128;
+    if (0 != grid_platform_usb_mouse_move(position, axis)) {
+      return; // USB busy, keep event in buffer for retry
+    }
+  } else if (key.ismodifier == 3) {
+    // Mouse button
+    uint8_t state = key.ispressed;
+    uint8_t button = key.keycode;
+    if (0 != grid_platform_usb_mouse_button_change(state, button)) {
+      return; // USB busy, keep event in buffer for retry
+    }
+  } else if (key.ismodifier == 0xf) {
+    // Delay event, nothing to do
+  } else {
+    // Invalid event type, discard
+  }
+
+  // Event successfully processed, advance read pointer
+  kb->tx_read_index = (kb->tx_read_index + 1) % kb->tx_buffer_length;
+  kb->tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
 }
 
 bool grid_usb_keyboard_tx_readable(struct grid_usb_keyboard_model* kb) {
