@@ -103,7 +103,7 @@ void grid_usb_keyboard_model_init(struct grid_usb_keyboard_model* kb, uint8_t bu
 
 uint8_t grid_usb_keyboard_cleanup(struct grid_usb_keyboard_model* kb);
 
-void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc* key);
+int32_t grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc* key);
 
 void grid_usb_gamepad_axis_move(uint8_t axis, int32_t move);
 void grid_usb_gamepad_button_change(uint8_t button, uint8_t value);

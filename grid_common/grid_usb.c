@@ -103,7 +103,7 @@ uint8_t grid_usb_keyboard_cleanup(struct grid_usb_keyboard_model* kb) {
 
 extern int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_event_desc* active_key_list, uint8_t keys_count);
 
-void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc* key) {
+int32_t grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc* key) {
 
   uint8_t item_index = 255;
   uint8_t changed_flag = 0;
@@ -152,7 +152,8 @@ void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid
 
     if (grid_usb_keyboard_isenabled(kb)) {
 
-      grid_platform_usb_keyboard_keys_state_change(kb->active_key_list, kb->active_key_count);
+      int32_t result = grid_platform_usb_keyboard_keys_state_change(kb->active_key_list, kb->active_key_count);
+      return result; // Return USB status (0=success, non-zero=busy/error)
     } else {
 
       grid_port_debug_print_text("KB IS DISABLED");
@@ -168,10 +169,12 @@ void grid_usb_keyboard_keychange(struct grid_usb_keyboard_model* kb, struct grid
       if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
         grid_transport_send_msg_to_all(&grid_transport_state, &msg);
       }
-    }
 
-    // USB SEND
+      return 0; // Keyboard disabled, but not an error
+    }
   }
+
+  return 0; // No change, nothing to send
 }
 
 uint8_t grid_midi_tx_push(struct grid_midi_event_desc event) {
@@ -336,8 +339,13 @@ void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb) {
 
       if (key.ismodifier == 0 || key.ismodifier == 1) {
 
-        grid_usb_keyboard_keychange(&grid_usb_keyboard_state, &key);
-        event_processed = 1;            // Keyboard events always succeed
+        result = grid_usb_keyboard_keychange(&grid_usb_keyboard_state, &key);
+
+        if (result != 0) {
+          event_processed = 0; // Keep in buffer to retry
+        } else {
+          event_processed = 1; // Success, remove from buffer
+        }
       } else if (key.ismodifier == 2) { // mousemove
 
         uint8_t axis = key.keycode;
