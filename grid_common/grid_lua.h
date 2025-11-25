@@ -93,27 +93,51 @@ void grid_lua_ui_init_unsafe(struct grid_lua_model* lua, lua_ui_init_callback_t 
 void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_lib, lua_ui_init_callback_t callback);
 void grid_lua_stop_vm(struct grid_lua_model* lua);
 
+void grid_lua_dumpstack(lua_State* L);
+
+void grid_lua_register_index_meta_for_type(lua_State* L, const char* type, const luaL_Reg* reg);
+void grid_lua_create_element_array(lua_State* L, uint8_t elements);
+void grid_lua_register_element(lua_State* L, uint8_t element);
+void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, const char* type);
+
 // clang-format off
 
-// Double stringize trick
-#define XSTRINGIZE(s) STRINGIZE(s)
-#define STRINGIZE(s) #s
+#define XAFTERX(macro, exp) macro(exp)
 
-#define GRID_LUA_FNC_ASSIGN_META_GTV(key, index) \
-  key " = function (self, a) " \
-  "return gtv(self.index, " XSTRINGIZE(index) ", a) end"
+#define GRID_LUA_FNC_GTV_NAME(idx) grid_lua_gtv_key_to_idx ## idx
 
-#define GRID_LUA_FNC_ASSIGN_META_UNDEF(key) \
-  key " = function (self) print('undefined action', self:ind()) end"
+#define GRID_LUA_FNC_GTV_DEFI(idx) \
+  int XAFTERX(GRID_LUA_FNC_GTV_NAME, idx)(lua_State* L) { \
+    if (lua_gettop(L) < 2) { lua_pushnil(L); } \
+    lua_pushstring(L, "index"); \
+    lua_gettable(L, 1); \
+    lua_insert(L, 2); \
+    lua_pushinteger(L, idx); \
+    lua_insert(L, 3); \
+    lua_remove(L, 1); \
+    return l_grid_template_variable(L); \
+  }
 
-#define GRID_LUA_FNC_ASSIGN_META_PAR0(key, val) \
-  key " = function (self) " val "(self.index) end"
+#define GRID_LUA_FNC_META_PAR0_NAME(shortname) grid_lua_meta_ ## shortname
 
-#define GRID_LUA_FNC_ASSIGN_META_PAR0_RET(key, val) \
-  key " = function (self) return " val "(self.index) end"
+#define GRID_LUA_FNC_META_PAR0_DEFI(idx, fun) \
+  int XAFTERX(GRID_LUA_FNC_META_PAR0_NAME, idx)(lua_State* L) { \
+    lua_pushstring(L, "index"); \
+    lua_gettable(L, 1); \
+    lua_remove(L, 1); \
+    return fun(L); \
+  }
 
-#define GRID_LUA_FNC_ASSIGN_META_PAR1(key, val) \
-  key " = function (self, a) " val "(self.index, a) end"
+#define GRID_LUA_FNC_META_PAR1_NAME(shortname) grid_lua_meta_ ## shortname
+
+#define GRID_LUA_FNC_META_PAR1_DEFI(idx, fun) \
+  int XAFTERX(GRID_LUA_FNC_META_PAR1_NAME, idx)(lua_State* L) { \
+    lua_pushstring(L, "index"); \
+    lua_gettable(L, 1); \
+    lua_insert(L, 2); \
+    lua_remove(L, 1); \
+    return fun(L); \
+  }
 
 #define GRID_LUA_FNC_ASSIGN_META_PAR1_RET(key, val) \
   key " = function (self, a) return " val "(self.index, a) end"

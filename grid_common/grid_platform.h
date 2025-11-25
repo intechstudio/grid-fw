@@ -88,4 +88,6 @@ extern uint8_t grid_platform_erase_nvm_next();
 
 extern void grid_platform_lcd_set_backlight(uint8_t backlight);
 
+extern uint8_t grid_platform_get_adc_bit_depth();
+
 #endif /* GRID_PLATFORM_H */

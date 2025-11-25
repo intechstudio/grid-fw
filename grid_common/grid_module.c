@@ -13,17 +13,76 @@
 #include "grid_ui_potmeter.h"
 #include "grid_ui_system.h"
 
-/* ====================  MODULE SPECIFIC INITIALIZERS  ====================*/
+extern struct luaL_Reg* grid_lua_api_gui_lib_reference;
 
-void grid_lua_ui_init_po16(struct grid_lua_model* lua);
-void grid_lua_ui_init_bu16(struct grid_lua_model* lua);
-void grid_lua_ui_init_pbf4(struct grid_lua_model* lua);
-void grid_lua_ui_init_en16(struct grid_lua_model* lua);
-void grid_lua_ui_init_ef44(struct grid_lua_model* lua);
-void grid_lua_ui_init_tek2(struct grid_lua_model* lua);
-void grid_lua_ui_init_tek1(struct grid_lua_model* lua);
-void grid_lua_ui_init_vsn2(struct grid_lua_model* lua);
-void grid_lua_ui_init_pb44(struct grid_lua_model* lua);
+void grid_lua_ui_init(struct grid_lua_model* lua) {
+
+  struct grid_ui_model* ui = &grid_ui_state;
+
+  // Create the element table in the lua state
+  grid_lua_create_element_array(lua->L, ui->element_list_length);
+
+  uint8_t countpertype[GRID_PARAMETER_ELEMENT_COUNT] = {0};
+
+  for (int i = 0; i < ui->element_list_length; ++i) {
+
+    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
+    assert(ele);
+
+    const char* type = NULL;
+    const char* metainit = NULL;
+    const luaL_Reg* indexmeta = NULL;
+
+    // clang-format off
+    #define GRID_LUA_UI_INIT_ASSIGN(t) \
+      type = t##_TYPE; \
+      metainit = t##_META_init; \
+      indexmeta = t##_INDEX_META;
+    // clang-format on
+
+    switch (ele->type) {
+    case GRID_PARAMETER_ELEMENT_SYSTEM: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_S);
+    } break;
+    case GRID_PARAMETER_ELEMENT_POTMETER: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_P);
+    } break;
+    case GRID_PARAMETER_ELEMENT_BUTTON: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_B);
+    } break;
+    case GRID_PARAMETER_ELEMENT_ENCODER: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_E);
+    } break;
+    case GRID_PARAMETER_ELEMENT_ENDLESS: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_EP);
+    } break;
+    case GRID_PARAMETER_ELEMENT_LCD: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_L);
+    } break;
+    default:
+      assert(0);
+      break;
+    }
+    assert(type);
+
+    if (countpertype[ele->type] == 0) {
+
+      // Initialize element type metatable and expand its __index
+      grid_lua_dostring_unsafe(lua, metainit);
+      grid_lua_register_index_meta_for_type(lua->L, type, indexmeta);
+
+      if (ele->type == GRID_PARAMETER_ELEMENT_LCD) {
+        grid_lua_register_functions_unsafe(lua, grid_lua_api_gui_lib_reference);
+      }
+    }
+
+    ++countpertype[ele->type];
+
+    // Initialize element entry and assign the metatable for its type
+    grid_lua_register_element(lua->L, i);
+    grid_lua_register_index_meta_for_element(lua->L, i, type);
+  }
+}
 
 void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
@@ -45,8 +104,9 @@ void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_po16;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
+
 void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
@@ -70,7 +130,7 @@ void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_bu16;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
@@ -100,7 +160,7 @@ void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_pbf4;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_module_pb44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
@@ -129,7 +189,7 @@ void grid_module_pb44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_pb44;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
@@ -158,7 +218,7 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_ef44;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
@@ -192,7 +252,7 @@ void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_tek2;
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
 void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
@@ -215,154 +275,5 @@ void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  ui->lua_ui_init_callback = grid_lua_ui_init_en16;
-}
-
-void grid_lua_ui_init_po16(struct grid_lua_model* lua) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring_unsafe(lua, GRID_LUA_P_META_init);
-
-  // create element array
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 16 potmeter
-  grid_lua_dostring_unsafe(lua, "for i=0, 15 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring_unsafe(lua, "for i=0, 15 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], potmeter_meta) end");
-
-  // initialize the system element
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "[16] = {index = 16}");
-  grid_lua_dostring_unsafe(lua, GRID_LUA_SYS_META_init);
-  grid_lua_dostring_unsafe(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[16], system_meta)");
-}
-
-void grid_lua_ui_init_bu16(struct grid_lua_model* lua) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring_unsafe(lua, GRID_LUA_B_META_init);
-
-  // create element array
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 16 buttons
-  grid_lua_dostring_unsafe(lua, "for i=0, 15 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring_unsafe(lua, "for i=0, 15 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
-
-  // initialize the system element
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "[16] = {index = 16}");
-  grid_lua_dostring_unsafe(lua, GRID_LUA_SYS_META_init);
-  grid_lua_dostring_unsafe(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[16], system_meta)");
-}
-
-void grid_lua_ui_init_pbf4(struct grid_lua_model* lua) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring_unsafe(lua, GRID_LUA_P_META_init);
-  grid_lua_dostring_unsafe(lua, GRID_LUA_B_META_init);
-
-  // create element array
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 8 potmeters and 8 buttons
-  grid_lua_dostring_unsafe(lua, "for i=0, 7  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring_unsafe(lua, "for i=0, 7  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], potmeter_meta)  end");
-
-  grid_lua_dostring_unsafe(lua, "for i=8, 11 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring_unsafe(lua, "for i=8, 11 do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta)  end");
-
-  // initialize the system element
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "[12] = {index = 12}");
-  grid_lua_dostring_unsafe(lua, GRID_LUA_SYS_META_init);
-  grid_lua_dostring_unsafe(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[12], system_meta)");
-}
-
-void grid_lua_ui_init_pb44(struct grid_lua_model* lua) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring_unsafe(lua, GRID_LUA_P_META_init);
-  grid_lua_dostring_unsafe(lua, GRID_LUA_B_META_init);
-
-  // create element array
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 8 potmeters and 8 buttons
-  grid_lua_dostring_unsafe(lua, "for i=0, 7  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring_unsafe(lua, "for i=0, 7  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], potmeter_meta)  end");
-
-  grid_lua_dostring_unsafe(lua, "for i=8, 15 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring_unsafe(lua, "for i=8, 15 do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta)  end");
-
-  // initialize the system element
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "[16] = {index = 16}");
-  grid_lua_dostring_unsafe(lua, GRID_LUA_SYS_META_init);
-  grid_lua_dostring_unsafe(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[16], system_meta)");
-}
-
-void grid_lua_ui_init_en16(struct grid_lua_model* lua) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring_unsafe(lua, GRID_LUA_E_META_init);
-
-  // create element array
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 16 encoders
-  grid_lua_dostring_unsafe(lua, "for i=0, 15 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring_unsafe(lua, "for i=0, 15 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], encoder_meta) end");
-
-  // initialize the system element
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "[16] = {index = 16}");
-  grid_lua_dostring_unsafe(lua, GRID_LUA_SYS_META_init);
-  grid_lua_dostring_unsafe(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[16], system_meta)");
-}
-
-void grid_lua_ui_init_ef44(struct grid_lua_model* lua) {
-  // define encoder_init_function
-
-  grid_lua_dostring_unsafe(lua, GRID_LUA_E_META_init);
-  grid_lua_dostring_unsafe(lua, GRID_LUA_P_META_init);
-
-  // create element array
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 4 encoders and 4 faders
-  grid_lua_dostring_unsafe(lua, "for i=0, 3  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring_unsafe(lua, "for i=0, 3  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], encoder_meta)  end");
-
-  grid_lua_dostring_unsafe(lua, "for i=4, 7 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring_unsafe(lua, "for i=4, 7 do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], potmeter_meta)  end");
-
-  // initialize the system element
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "[8] = {index = 8}");
-  grid_lua_dostring_unsafe(lua, GRID_LUA_SYS_META_init);
-  grid_lua_dostring_unsafe(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[8], system_meta)");
-}
-
-void grid_lua_ui_init_tek2(struct grid_lua_model* lua) {
-
-  // define encoder_init_function
-
-  grid_lua_dostring_unsafe(lua, GRID_LUA_B_META_init);
-  grid_lua_dostring_unsafe(lua, GRID_LUA_EP_META_init);
-
-  // create element array
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "= {} ");
-
-  // initialize 8 buttons
-  grid_lua_dostring_unsafe(lua, "for i=0, 7 do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring_unsafe(lua, "for i=0, 7 do setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], button_meta) end");
-
-  // initialize 2 endless potentiometers as encoders
-  grid_lua_dostring_unsafe(lua, "for i=8, 9  do " GRID_LUA_KW_ELEMENT_short "[i] = {index = i} end");
-  grid_lua_dostring_unsafe(lua, "for i=8, 9  do  setmetatable(" GRID_LUA_KW_ELEMENT_short "[i], endless_meta)  end");
-
-  // initialize the system element
-  grid_lua_dostring_unsafe(lua, GRID_LUA_KW_ELEMENT_short "[10] = {index = 10}");
-  grid_lua_dostring_unsafe(lua, GRID_LUA_SYS_META_init);
-  grid_lua_dostring_unsafe(lua, "setmetatable(" GRID_LUA_KW_ELEMENT_short "[10], system_meta)");
+  ui->lua_ui_init_callback = grid_lua_ui_init;
 }

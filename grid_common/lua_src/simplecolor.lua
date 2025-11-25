@@ -183,7 +183,7 @@ init_element_color = function(self)
 end
 
 init_simple_color = function()
-  for i = 0, #ele do
+  for i = 0, #ele - 1 do
     if ele[i].type == "endless" then
       init_endless_color(ele[i])
     else

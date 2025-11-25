@@ -92,7 +92,9 @@ void grid_lua_pre_init(struct grid_lua_model* lua) {
 void grid_lua_post_init(struct grid_lua_model* lua) {
 
   int ret = grid_lua_dostring(lua, "ele[#ele]:post_init_cb() "
-                                   "for i = 0, #ele-1 do ele[i]:post_init_cb() end");
+                                   "for i = 0, #ele-1 do "
+                                   "collectgarbage(\"collect\") "
+                                   "ele[i]:post_init_cb() end");
   grid_lua_clear_stdo(lua);
 
   if (!ret) {
@@ -492,26 +494,10 @@ void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_li
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_MAPSAT_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_SIGN_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_SEGCALC_source);
-  grid_lua_dostring_unsafe(lua, "midi_fifo = {}");
   // grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_TOML_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_SIMPLECOLOR_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_SIMPLEMIDI_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_AUTOVALUE_source);
-  grid_lua_dostring_unsafe(lua, "midi_fifo_highwater = 0");
-  grid_lua_dostring_unsafe(lua, "midi_fifo_retriggercount = 0");
-  grid_lua_dostring_unsafe(lua, "midi = {}");
-  grid_lua_dostring_unsafe(lua, "midi.send_packet = function "
-                                "(self,ch,cmd,p1,p2) " GRID_LUA_FNC_G_MIDI_SEND_short "(ch,cmd,p1,p2) end");
-
-  grid_lua_dostring_unsafe(lua, "mouse = {}");
-  grid_lua_dostring_unsafe(lua, "mouse.send_axis_move = function "
-                                "(self,p,a) " GRID_LUA_FNC_G_MOUSEMOVE_SEND_short "(p,a) end");
-  grid_lua_dostring_unsafe(lua, "mouse.send_button_change = function "
-                                "(self,s,b) " GRID_LUA_FNC_G_MOUSEBUTTON_SEND_short "(s,b) end");
-
-  grid_lua_dostring_unsafe(lua, "keyboard = {}");
-  grid_lua_dostring_unsafe(lua, "keyboard.send_macro = function "
-                                "(self,...) " GRID_LUA_FNC_G_KEYBOARD_SEND_short "(...) end");
 
   grid_lua_gc_full_unsafe(lua);
 
@@ -539,4 +525,94 @@ void grid_lua_stop_vm(struct grid_lua_model* lua) {
     lua_close(lua->L);
     lua->L = NULL;
   }
+}
+
+void grid_lua_dumpstack(lua_State* L) {
+
+  int top = lua_gettop(L);
+  for (int i = 1; i <= top; i++) {
+    printf("%d\t%s\t", i, luaL_typename(L, i));
+    switch (lua_type(L, i)) {
+    case LUA_TNUMBER:
+      printf("%g\n", lua_tonumber(L, i));
+      break;
+    case LUA_TSTRING:
+      printf("%s\n", lua_tostring(L, i));
+      break;
+    case LUA_TBOOLEAN:
+      printf("%s\n", (lua_toboolean(L, i) ? "true" : "false"));
+      break;
+    case LUA_TNIL:
+      printf("%s\n", "nil");
+      break;
+    default:
+      printf("%p\n", lua_topointer(L, i));
+      break;
+    }
+  }
+}
+
+void grid_lua_register_index_meta_for_type(lua_State* L, const char* type, const luaL_Reg* reg) {
+
+  // Get an existing table corresponding to the element type
+  lua_getglobal(L, type);
+  assert(lua_type(L, -1) == LUA_TTABLE);
+
+  // Get the index table for the element type
+  lua_pushstring(L, "__index");
+  lua_gettable(L, 1);
+  assert(lua_type(L, -1) == LUA_TTABLE);
+
+  // Register functions for the index event
+  luaL_setfuncs(L, reg, 0);
+
+  lua_pop(L, lua_gettop(L));
+}
+
+void grid_lua_create_element_array(lua_State* L, uint8_t elements) {
+
+  // Create element array, hinted with the number of entries
+  lua_createtable(L, elements, 0);
+  lua_setglobal(L, GRID_LUA_KW_ELEMENT_short);
+}
+
+void grid_lua_register_element(lua_State* L, uint8_t element) {
+
+  // Get element table
+  lua_getglobal(L, "ele");
+  assert(lua_type(L, -1) == LUA_TTABLE);
+
+  // Create the element
+  lua_pushinteger(L, element);
+  lua_createtable(L, 0, 1);
+
+  // Assign the element index for the element
+  lua_pushstring(L, "index");
+  lua_pushinteger(L, element);
+  lua_settable(L, 3);
+
+  // Assign the element to the element table
+  lua_settable(L, 1);
+
+  lua_pop(L, lua_gettop(L));
+}
+
+void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, const char* type) {
+
+  // Get element table
+  lua_getglobal(L, "ele");
+  assert(lua_type(L, -1) == LUA_TTABLE);
+
+  // Get the element
+  lua_pushinteger(L, element);
+  lua_gettable(L, 1);
+  assert(lua_type(L, -1) == LUA_TTABLE);
+
+  // Get the metatable for the element type
+  lua_getglobal(L, type);
+
+  // Assign metatable for the element
+  lua_setmetatable(L, 2);
+
+  lua_pop(L, lua_gettop(L));
 }
