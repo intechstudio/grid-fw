@@ -318,15 +318,7 @@ uint8_t grid_usb_keyboard_tx_push(struct grid_usb_keyboard_model* kb, struct gri
 
 void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb) {
 
-  // Guard: return if buffer is empty
-  if (kb->tx_read_index == kb->tx_write_index) {
-    return;
-  }
-
-  uint32_t elapsed = grid_platform_rtc_get_elapsed_time(kb->tx_rtc_lasttimestamp);
-
-  // Guard: wait if not enough time has elapsed
-  if (elapsed <= kb->tx_buffer[kb->tx_read_index].delay * MS_TO_US) {
+  if (!grid_usb_keyboard_tx_readable(kb)) {
     return;
   }
 
@@ -375,7 +367,7 @@ bool grid_usb_keyboard_tx_readable(struct grid_usb_keyboard_model* kb) {
     return false;
   }
 
-  uint32_t elapsed = grid_platform_rtc_get_elapsed_time(kb->tx_rtc_lasttimestamp);
+  uint64_t elapsed = grid_platform_rtc_get_elapsed_time(kb->tx_rtc_lasttimestamp);
 
   return elapsed > kb->tx_buffer[kb->tx_read_index].delay * MS_TO_US;
 }
