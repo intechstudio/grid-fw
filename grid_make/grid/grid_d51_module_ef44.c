@@ -5,6 +5,9 @@
 #include "grid_ui_potmeter.h"
 #include "grid_ui_system.h"
 
+#include "grid_cal.h"
+#include "grid_config.h"
+
 static volatile uint8_t adc_complete_count = 0;
 static volatile uint8_t multiplexer_index = 0;
 
@@ -21,7 +24,7 @@ static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 
 static struct grid_ui_button_state ui_button_state[GRID_MODULE_EF44_BUT_NUM] = {0};
 static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EF44_ENC_NUM] = {0};
-static uint64_t potmeter_last_real_time[GRID_MODULE_EF44_POT_NUM] = {0};
+static struct grid_ui_potmeter_state ui_potmeter_state[GRID_MODULE_EF44_POT_NUM] = {0};
 static struct grid_ui_element* elements = NULL;
 
 static void hardware_spi_start_transfer(void) {
@@ -93,26 +96,13 @@ static void adc_transfer_complete_cb(void) {
   gpio_set_pin_level(MUX_B, multiplexer_index / 2 % 2);
   gpio_set_pin_level(MUX_C, multiplexer_index / 4 % 2);
 
-  // FAKE CALIBRATION to compensate oversampling and decimation
-  uint32_t input_0 = adcresult_0 * 1.03; // 1.03
-  if (input_0 > (1 << 16) - 1) {
-    input_0 = (1 << 16) - 1;
-  }
-  adcresult_0 = input_0;
-
-  uint32_t input_1 = adcresult_1 * 1.03;
-  if (input_1 > (1 << 16) - 1) {
-    input_1 = (1 << 16) - 1;
-  }
-  adcresult_1 = input_1;
-
   struct grid_ui_element* ele_0 = &elements[adc_index_0 + 4];
 
-  grid_ui_potmeter_store_input(ele_0, adc_index_0 + 4, &potmeter_last_real_time[adc_index_0], adcresult_0, 16);
+  grid_ui_potmeter_store_input(ele_0, adc_index_0 + 4, &ui_potmeter_state[adc_index_0], adcresult_0 >> 4, 12);
 
   struct grid_ui_element* ele_1 = &elements[adc_index_1 + 4];
 
-  grid_ui_potmeter_store_input(ele_1, adc_index_1 + 4, &potmeter_last_real_time[adc_index_1], adcresult_1, 16);
+  grid_ui_potmeter_store_input(ele_1, adc_index_1 + 4, &ui_potmeter_state[adc_index_1], adcresult_1 >> 4, 12);
 
   adc_complete_count = 0;
   hardware_adc_start_transfer();
@@ -144,6 +134,10 @@ void grid_module_ef44_init() {
     grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
   }
 
+  for (int i = 0; i < GRID_MODULE_EF44_POT_NUM; ++i) {
+    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 32, 2048);
+  }
+
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EF44_ND_RevD;
   int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
@@ -151,6 +145,17 @@ void grid_module_ef44_init() {
   }
 
   elements = grid_ui_model_get_elements(&grid_ui_state);
+
+  grid_config_init(&grid_config_state, &grid_cal_state);
+
+  grid_cal_init(&grid_cal_state, grid_ui_state.element_list_length, 12);
+
+  for (int i = 4; i < 8; ++i) {
+    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &ui_potmeter_state[i - 4].limits) == 0);
+  }
+
+  assert(grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL) == 0);
+  grid_ui_bulk_confread_next(&grid_ui_state);
 
   hardware_init();
 

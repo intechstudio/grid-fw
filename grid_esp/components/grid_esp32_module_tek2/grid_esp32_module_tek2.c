@@ -99,12 +99,12 @@ void grid_esp32_module_tek2_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   grid_config_init(conf, cal);
 
+  grid_cal_init(cal, ui->element_list_length, 12);
+
   if (grid_hwcfg_module_is_rev_h(sys)) {
 
-    struct grid_cal_but* cal_but = &cal->button;
-    grid_cal_but_init(cal_but, ui->element_list_length);
     for (int i = 0; i < 8; ++i) {
-      grid_cal_but_enable_set(cal_but, i, &ui_button_state[i]);
+      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &ui_button_state[i].limits) == 0);
     }
 
     while (grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {

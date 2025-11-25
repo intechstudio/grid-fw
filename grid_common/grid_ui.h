@@ -89,6 +89,7 @@ enum grid_ui_bulk_status_t {
   GRID_UI_BULK_CLEAR_PROGRESS,
   GRID_UI_BULK_CONFREAD_PROGRESS,
   GRID_UI_BULK_CONFSTORE_PROGRESS,
+  GRID_UI_BULK_CONFERASE_PROGRESS,
   GRID_UI_BULK_ERASE_PROGRESS
 };
 
@@ -191,6 +192,7 @@ int grid_ui_bulk_conf_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t 
 
 void grid_ui_bulk_confread_next(struct grid_ui_model* ui);
 void grid_ui_bulk_confstore_next(struct grid_ui_model* ui);
+void grid_ui_bulk_conferase_next(struct grid_ui_model* ui);
 
 int grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui);

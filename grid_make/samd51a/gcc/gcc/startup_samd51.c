@@ -694,6 +694,8 @@ void Dummy_Handler_HardFault_Handler(void){
 	#pragma GCC diagnostic ignored "-Wunused-variable"
 	volatile uint32_t hfsr = *(uint32_t*)(0xE000ED2C);
 
+	printf("\nDummy_Handler_HardFault_Handler\n");
+
 	while (1) {}
 
 }

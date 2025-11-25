@@ -688,7 +688,7 @@ int grid_ui_bulk_operation_init(struct grid_ui_model* ui, enum grid_ui_bulk_stat
 
 int grid_ui_bulk_conf_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
-  if (status != GRID_UI_BULK_CONFREAD_PROGRESS && status != GRID_UI_BULK_CONFSTORE_PROGRESS) {
+  if (status != GRID_UI_BULK_CONFREAD_PROGRESS && status != GRID_UI_BULK_CONFSTORE_PROGRESS && status != GRID_UI_BULK_CONFERASE_PROGRESS) {
     return 1;
   }
 
@@ -1063,6 +1063,38 @@ void grid_ui_bulk_confstore_next(struct grid_ui_model* ui) {
   grid_ui_bulk_semaphore_release(ui);
   grid_ui_busy_semaphore_release(ui);
   grid_platform_printf("NVM: Store config done\r\n");
+
+  if (ui->bulk_success_callback != NULL) {
+    ui->bulk_success_callback(ui->bulk_lastheader_id);
+    ui->bulk_success_callback = NULL;
+  }
+}
+
+void grid_ui_bulk_conferase_next(struct grid_ui_model* ui) {
+
+  grid_platform_printf("NVM: Erase config next\r\n");
+  if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CONFERASE_PROGRESS)) {
+    return;
+  }
+
+  if (!grid_platform_get_nvm_state()) {
+    return;
+  }
+
+  grid_ui_busy_semaphore_lock(ui);
+  grid_ui_bulk_semaphore_lock(ui);
+
+  struct grid_file_t handle = {0};
+
+  if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle) == 0) {
+    grid_platform_delete_file(&handle);
+  }
+
+  ui->bulk_status = GRID_UI_BULK_READY;
+
+  grid_ui_bulk_semaphore_release(ui);
+  grid_ui_busy_semaphore_release(ui);
+  grid_platform_printf("NVM: Erase config done\r\n");
 
   if (ui->bulk_success_callback != NULL) {
     ui->bulk_success_callback(ui->bulk_lastheader_id);

@@ -3,6 +3,7 @@
 
 #include "../atmel_start.h"
 #include "../samd51a/include/samd51n20a.h"
+#include <assert.h>
 // #include "../thirdparty/RTOS/hal_rtos.h"
 
 #include <stdio.h>

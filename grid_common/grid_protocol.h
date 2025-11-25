@@ -418,15 +418,20 @@
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr l_grid_element_count
 #define GRID_LUA_FNC_G_ELEMENT_COUNT_usage "element_count(void) Returns the number of elements on the current module."
 
+#define GRID_LUA_FNC_G_CALIBRATION_RESET_short "gcr"
+#define GRID_LUA_FNC_G_CALIBRATION_RESET_human "calibration_reset"
+#define GRID_LUA_FNC_G_CALIBRATION_RESET_fnptr l_grid_calibration_reset
+#define GRID_LUA_FNC_G_CALIBRATION_RESET_usage "calibration_reset() Deletes the calibration file and initializes all calibrations to their defaults."
+
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_short "gpcg"
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_human "potmeter_calibration_get"
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_fnptr l_grid_potmeter_calibration_get
 #define GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_usage "potmeter_calibration_get() Returns raw potentiometer values as an array of integers."
 
-#define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_short "gpcs"
-#define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_human "potmeter_calibration_set"
-#define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_fnptr l_grid_potmeter_calibration_set
-#define GRID_LUA_FNC_G_POTMETER_CALIBRATION_SET_usage "potmeter_calibration_set({ int c1, ... }) Sets potentiometer calibration centers from an array of integers."
+#define GRID_LUA_FNC_G_POTMETER_CENTER_SET_short "gpcs"
+#define GRID_LUA_FNC_G_POTMETER_CENTER_SET_human "potmeter_center_set"
+#define GRID_LUA_FNC_G_POTMETER_CENTER_SET_fnptr l_grid_potmeter_center_set
+#define GRID_LUA_FNC_G_POTMETER_CENTER_SET_usage "potmeter_center_set({ int c1, ... }) Sets potentiometer calibration centers from an array of integers."
 
 #define GRID_LUA_FNC_G_POTMETER_DETENT_SET_short "gpds"
 #define GRID_LUA_FNC_G_POTMETER_DETENT_SET_human "potmeter_detent_set"
@@ -434,15 +439,15 @@
 #define GRID_LUA_FNC_G_POTMETER_DETENT_SET_usage                                                                                                                                                       \
   "potmeter_detent_set({ int c1, ... }, bool high) Sets potentiometer detent bounds from an array of integers, where high = true sets high bounds and high = false sets low bounds."
 
-#define GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_short "gbcg"
-#define GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_human "button_calibration_get"
-#define GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_fnptr l_grid_button_calibration_get
-#define GRID_LUA_FNC_G_BUTTON_CALIBRATION_GET_usage "button_calibration_get() Returns raw minimum and maximum values for buttons as an array of integer arrays."
+#define GRID_LUA_FNC_G_RANGE_CALIBRATION_GET_short "grcg"
+#define GRID_LUA_FNC_G_RANGE_CALIBRATION_GET_human "range_calibration_get"
+#define GRID_LUA_FNC_G_RANGE_CALIBRATION_GET_fnptr l_grid_range_calibration_get
+#define GRID_LUA_FNC_G_RANGE_CALIBRATION_GET_usage "range_calibration_get() Returns raw minimum and maximum values as an array of integer arrays."
 
-#define GRID_LUA_FNC_G_BUTTON_CALIBRATION_SET_short "gbcs"
-#define GRID_LUA_FNC_G_BUTTON_CALIBRATION_SET_human "button_calibration_set"
-#define GRID_LUA_FNC_G_BUTTON_CALIBRATION_SET_fnptr l_grid_button_calibration_set
-#define GRID_LUA_FNC_G_BUTTON_CALIBRATION_SET_usage "button_calibration_set({ { int min1, int max1 }, ... }) Sets minimum and maximum button values from an array of integer arrays."
+#define GRID_LUA_FNC_G_RANGE_CALIBRATION_SET_short "grcs"
+#define GRID_LUA_FNC_G_RANGE_CALIBRATION_SET_human "range_calibration_set"
+#define GRID_LUA_FNC_G_RANGE_CALIBRATION_SET_fnptr l_grid_range_calibration_set
+#define GRID_LUA_FNC_G_RANGE_CALIBRATION_SET_usage "range_calibration_set({ { int min1, int max1 }, ... }) Sets minimum and maximum values from an array of integer arrays."
 
 #define GRID_LUA_FNC_G_GUI_DRAW_SWAP_short "ggdsw"
 #define GRID_LUA_FNC_G_GUI_DRAW_SWAP_human "gui_draw_swap"

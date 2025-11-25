@@ -1,5 +1,11 @@
 #include "grid_math.h"
 
+uint16_t clampu16(uint16_t x, uint16_t a, uint16_t b) {
+
+  const uint16_t t = x < a ? a : x;
+  return t > b ? b : t;
+}
+
 uint32_t clampu32(uint32_t x, uint32_t a, uint32_t b) {
 
   const uint32_t t = x < a ? a : x;

@@ -389,7 +389,7 @@ void grid_lua_gc_step_unsafe(struct grid_lua_model* lua) {
 
   if (lua_gc(lua->L, LUA_GCCOUNT) > target_kilobytes) {
 
-    lua_gc(lua->L, LUA_GCSTEP, 1);
+    lua_gc(lua->L, LUA_GCSTEP, 10);
 
     // char message[10] = {0};
     // sprintf(message, "gc %dkb", target_kilobytes);
