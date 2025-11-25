@@ -341,21 +341,21 @@ void grid_usb_keyboard_tx_pop(struct grid_usb_keyboard_model* kb) {
 
   if (key.ismodifier == 0 || key.ismodifier == 1) {
     // Keyboard event
-    if (0 != grid_usb_keyboard_keychange(&grid_usb_keyboard_state, &key)) {
+    if (grid_usb_keyboard_keychange(&grid_usb_keyboard_state, &key)) {
       return; // USB busy, keep event in buffer for retry
     }
   } else if (key.ismodifier == 2) {
     // Mouse move
     uint8_t axis = key.keycode;
     int8_t position = key.ispressed - 128;
-    if (0 != grid_platform_usb_mouse_move(position, axis)) {
+    if (grid_platform_usb_mouse_move(position, axis)) {
       return; // USB busy, keep event in buffer for retry
     }
   } else if (key.ismodifier == 3) {
     // Mouse button
     uint8_t state = key.ispressed;
     uint8_t button = key.keycode;
-    if (0 != grid_platform_usb_mouse_button_change(state, button)) {
+    if (grid_platform_usb_mouse_button_change(state, button)) {
       return; // USB busy, keep event in buffer for retry
     }
   } else if (key.ismodifier == 0xf) {
