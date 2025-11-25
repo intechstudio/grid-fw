@@ -51,9 +51,9 @@ int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs) {
     return 1;
   }
 
-  grid_d51_littlefs_init(dfs, lfs, &FLASH_0, "/littlefs", false);
+  grid_d51_littlefs_init(dfs, lfs, &FLASH_0, "", false);
 
-  if (grid_littlefs_mount_or_format(dfs->lfs, &dfs->cfg)) {
+  if (grid_littlefs_mount_or_format(dfs->lfs, &dfs->cfg, false)) {
     free(lfs);
     return 1;
   }

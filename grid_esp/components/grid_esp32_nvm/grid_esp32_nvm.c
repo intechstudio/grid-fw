@@ -133,6 +133,14 @@ void grid_platform_nvm_erase() {
   }
 }
 
+void grid_platform_nvm_format_and_mount() {
+
+  struct esp_littlefs_t* efs = &grid_esp32_nvm_state.efs;
+
+  grid_littlefs_mount_or_format(efs->lfs, &efs->cfg, true);
+  grid_littlefs_mkdir_base(efs->lfs, efs->base_path);
+}
+
 const char* grid_platform_get_base_path() { return grid_esp32_nvm_state.efs.base_path; }
 
 int grid_platform_make_directory(const char* path) { return grid_littlefs_mkdir(LFS, path); }

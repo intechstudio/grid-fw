@@ -105,6 +105,14 @@ void grid_platform_nvm_erase() {
   }
 }
 
+void grid_platform_nvm_format_and_mount() {
+
+  struct d51_littlefs_t* dfs = &grid_d51_nvm_state.dfs;
+
+  grid_littlefs_mount_or_format(dfs->lfs, &dfs->cfg, true);
+  grid_littlefs_mkdir_base(dfs->lfs, dfs->base_path);
+}
+
 const char* grid_platform_get_base_path() { return grid_d51_nvm_state.dfs.base_path; }
 
 int grid_platform_make_directory(const char* path) { return grid_littlefs_mkdir(LFS, path); }

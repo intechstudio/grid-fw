@@ -1120,47 +1120,7 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui) {
     ui->bulk_last_page = 0;
   }
 
-  // STEP 1: Delete all actionstring files
-  if (ui->bulk_last_page < ui->page_count) {
-
-    struct grid_file_t handle = {0};
-    uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &handle);
-
-    if (!was_last_one) {
-      grid_platform_delete_file(&handle);
-    } else {
-      ui->bulk_last_page++;
-    }
-
-    grid_ui_bulk_semaphore_release(ui);
-    grid_ui_busy_semaphore_release(ui);
-    return;
-  }
-
-  // STEP 2: Delete config file
-  if (ui->bulk_last_page == ui->page_count) {
-
-    struct grid_file_t handle = {0};
-
-    if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle) == 0) {
-      grid_platform_delete_file(&handle);
-    }
-
-    ui->bulk_last_page++;
-
-    grid_ui_bulk_semaphore_release(ui);
-    grid_ui_busy_semaphore_release(ui);
-    return;
-  }
-
-  // STEP 3: Delete page directories
-  // upkeep: loop bound
-  for (uint8_t i = 0; i < 4; ++i) {
-
-    char path[50] = {0};
-    sprintf(path, "%02x", i);
-    grid_platform_remove_dir(path);
-  }
+  grid_platform_nvm_format_and_mount();
 
   // Set ready before callback so callback can start new nvm operation
   ui->bulk_status = GRID_UI_BULK_READY;

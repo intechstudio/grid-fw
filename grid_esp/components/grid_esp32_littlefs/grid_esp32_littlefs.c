@@ -93,9 +93,9 @@ esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  grid_esp32_littlefs_init(efs, lfs, part, "/littlefs", false);
+  grid_esp32_littlefs_init(efs, lfs, part, "", false);
 
-  if (grid_littlefs_mount_or_format(efs->lfs, &efs->cfg)) {
+  if (grid_littlefs_mount_or_format(efs->lfs, &efs->cfg, false)) {
     free(lfs);
     return ESP_FAIL;
   }
