@@ -27,6 +27,7 @@ jobs:
       product_name: "grid"
       release_version: ${{ needs.build.outputs.release_version }}
       action_date: ${{ needs.build.outputs.action_date }}
+      release_files: ${{ needs.build.outputs.release_files }}
     secrets: inherit
 
   publish-nightly:
