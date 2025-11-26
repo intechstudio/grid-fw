@@ -15,10 +15,6 @@ on:
         description: "Build date timestamp"
         required: true
         type: string
-      release_files:
-        description: "Space-separated list of files to include in release"
-        required: true
-        type: string
   workflow_dispatch:
     inputs:
       product_name:
@@ -31,10 +27,6 @@ on:
         type: string
       action_date:
         description: "Build date timestamp"
-        required: true
-        type: string
-      release_files:
-        description: "Space-separated list of files to include in release"
         required: true
         type: string
 
@@ -51,7 +43,7 @@ jobs:
       - name: Zip artifacts for Github Release
         uses: vimtor/action-zip@v1
         with:
-          files: ${{ inputs.release_files }}
+          files: release/
           dest: ${{ inputs.product_name }}_release.zip
 
       - name: Create Production Release
