@@ -83,7 +83,7 @@ void grid_module_po16_init() {
   grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 
   for (int i = 0; i < GRID_MODULE_PO16_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 32, 2048);
+    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 64, 2048);
   }
 
   elements = grid_ui_model_get_elements(&grid_ui_state);
