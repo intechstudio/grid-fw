@@ -20,6 +20,6 @@ struct grid_d51_nvm_model {
 
 extern struct grid_d51_nvm_model grid_d51_nvm_state;
 
-void grid_d51_nvm_mount(struct grid_d51_nvm_model* nvm);
+void grid_d51_nvm_mount(struct grid_d51_nvm_model* nvm, bool force_format);
 
 #endif /* GRID_D51_NVM_H_ */

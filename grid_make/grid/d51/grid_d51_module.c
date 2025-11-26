@@ -39,7 +39,7 @@ void grid_module_common_init(void) {
   // disable ui interrupts
   grid_d51_nvic_set_interrupt_priority_mask(1);
 
-  grid_d51_nvm_mount(&grid_d51_nvm_state);
+  grid_d51_nvm_mount(&grid_d51_nvm_state, false);
 
   if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevC) {
     printf("Init Module: PO16\r\n");

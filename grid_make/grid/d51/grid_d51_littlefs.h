@@ -8,6 +8,7 @@
 
 #include "lfs.h"
 
-int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs);
+int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs, bool force_format);
+int grid_d51_littlefs_unmount(struct d51_littlefs_t* dfs);
 
 #endif /* GRID_D51_LITTLEFS_H */

@@ -21,7 +21,7 @@ struct grid_esp32_nvm_model {
 
 extern struct grid_esp32_nvm_model grid_esp32_nvm_state;
 
-void grid_esp32_nvm_mount(struct grid_esp32_nvm_model* nvm);
+void grid_esp32_nvm_mount(struct grid_esp32_nvm_model* nvm, bool force_format);
 
 void grid_esp32_nvm_task(void* arg);
 

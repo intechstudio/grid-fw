@@ -26,6 +26,7 @@ void grid_d51_littlefs_init(struct d51_littlefs_t* dfs, lfs_t* lfs, struct flash
   };
 
   {
+    assert(!dfs->lfs);
     dfs->lfs = lfs;
     dfs->cfg = lfs_cfg;
     dfs->flash = flash;
@@ -35,7 +36,7 @@ void grid_d51_littlefs_init(struct d51_littlefs_t* dfs, lfs_t* lfs, struct flash
   strcpy(dfs->base_path, base_path);
 }
 
-int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs) {
+int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs, bool force_format) {
 
   // Allocate littlefs
   lfs_t* lfs = malloc(sizeof(lfs_t));
@@ -53,7 +54,7 @@ int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs) {
 
   grid_d51_littlefs_init(dfs, lfs, &FLASH_0, "", false);
 
-  if (grid_littlefs_mount_or_format(dfs->lfs, &dfs->cfg, false)) {
+  if (grid_littlefs_mount_or_format(dfs->lfs, &dfs->cfg, force_format)) {
     free(lfs);
     return 1;
   }
@@ -62,6 +63,24 @@ int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs) {
     free(lfs);
     return 1;
   }
+
+  return 0;
+}
+
+int grid_d51_littlefs_unmount(struct d51_littlefs_t* dfs) {
+
+  if (grid_littlefs_unmount(dfs->lfs)) {
+    return 1;
+  }
+
+  if (!dfs->lfs) {
+    printf("littlefs not allocated, cannot deallocate\n");
+    return 1;
+  }
+
+  // Deallocate littlefs
+  free(dfs->lfs);
+  dfs->lfs = NULL;
 
   return 0;
 }

@@ -76,6 +76,18 @@ int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg, bool force
   return 0;
 }
 
+int grid_littlefs_unmount(lfs_t* lfs) {
+
+  // Unmount littlefs
+  int lfs_err = lfs_unmount(lfs);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("littlefs unmount failed (%d): %s. exiting...\n", lfs_err, littlefs_errno(lfs_err));
+    return 1;
+  }
+
+  return 0;
+}
+
 int grid_littlefs_mkdir_base(lfs_t* lfs, const char* path) {
 
   if (path[0] == '\0') {

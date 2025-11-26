@@ -42,10 +42,10 @@ static const char* TAG = "grid_esp32_nvm";
 
 struct grid_esp32_nvm_model grid_esp32_nvm_state;
 
-void grid_esp32_nvm_mount(struct grid_esp32_nvm_model* nvm) {
+void grid_esp32_nvm_mount(struct grid_esp32_nvm_model* nvm, bool force_format) {
 
   // Initialize and mount littlefs
-  esp_err_t ret = grid_esp32_littlefs_mount(&nvm->efs);
+  esp_err_t ret = grid_esp32_littlefs_mount(&nvm->efs, force_format);
 
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "failed to initialize littlefs: %s", esp_err_to_name(ret));
@@ -59,6 +59,17 @@ void grid_esp32_nvm_mount(struct grid_esp32_nvm_model* nvm) {
 
   // List the filesystem root
   grid_platform_list_directory("");
+}
+
+void grid_esp32_nvm_unmount(struct grid_esp32_nvm_model* nvm) {
+
+  // Unmount littlefs
+  esp_err_t ret = grid_esp32_littlefs_unmount(&nvm->efs);
+
+  if (ret != ESP_OK) {
+    ESP_LOGE(TAG, "failed to deinitialize littlefs: %s", esp_err_to_name(ret));
+    return;
+  }
 }
 
 #define LFS grid_esp32_nvm_state.efs.lfs
@@ -135,10 +146,8 @@ void grid_platform_nvm_erase() {
 
 void grid_platform_nvm_format_and_mount() {
 
-  struct esp_littlefs_t* efs = &grid_esp32_nvm_state.efs;
-
-  grid_littlefs_mount_or_format(efs->lfs, &efs->cfg, true);
-  grid_littlefs_mkdir_base(efs->lfs, efs->base_path);
+  grid_esp32_nvm_unmount(&grid_esp32_nvm_state);
+  grid_esp32_nvm_mount(&grid_esp32_nvm_state, true);
 }
 
 const char* grid_platform_get_base_path() { return grid_esp32_nvm_state.efs.base_path; }

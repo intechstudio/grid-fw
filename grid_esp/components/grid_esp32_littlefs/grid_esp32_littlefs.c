@@ -44,6 +44,7 @@ static esp_err_t grid_esp32_littlefs_init(struct esp_littlefs_t* efs, lfs_t* lfs
   };
 
   {
+    assert(!efs->lfs);
     efs->lfs = lfs;
     efs->cfg = lfs_cfg;
     efs->partition = partition;
@@ -55,7 +56,7 @@ static esp_err_t grid_esp32_littlefs_init(struct esp_littlefs_t* efs, lfs_t* lfs
   return ESP_OK;
 }
 
-esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs) {
+esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs, bool force_format) {
 
   // Allocate littlefs
   lfs_t* lfs = malloc(sizeof(lfs_t));
@@ -76,15 +77,15 @@ esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs) {
     return ESP_ERR_NOT_FOUND;
   }
 
+  const esp_partition_t* part = esp_partition_get(iter);
+  ESP_LOGI(TAG, "partition address: %08x, size: %lu", (unsigned int)part->address, part->size);
+
   // There must be no more ffat partitions
   if (esp_partition_next(iter)) {
     free(lfs);
     ESP_LOGE(TAG, "unexpected data type partition with ffat label was found");
     return ESP_FAIL;
   }
-
-  const esp_partition_t* part = esp_partition_get(iter);
-  ESP_LOGI(TAG, "partition address: %08x, size: %lu", (unsigned int)part->address, part->size);
 
   // Check that the littlefs page size is evenly divisible by the flash chip page size
   if (GRID_ESP32_LITTLEFS_PAGE_SIZE % g_rom_flashchip.page_size != 0) {
@@ -95,7 +96,7 @@ esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs) {
 
   grid_esp32_littlefs_init(efs, lfs, part, "", false);
 
-  if (grid_littlefs_mount_or_format(efs->lfs, &efs->cfg, false)) {
+  if (grid_littlefs_mount_or_format(efs->lfs, &efs->cfg, force_format)) {
     free(lfs);
     return ESP_FAIL;
   }
@@ -104,6 +105,24 @@ esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs) {
     free(lfs);
     return ESP_FAIL;
   }
+
+  return ESP_OK;
+}
+
+esp_err_t grid_esp32_littlefs_unmount(struct esp_littlefs_t* efs) {
+
+  if (grid_littlefs_unmount(efs->lfs)) {
+    return ESP_FAIL;
+  }
+
+  if (!efs->lfs) {
+    ESP_LOGE(TAG, "littlefs not allocated, cannot deallocate");
+    return ESP_FAIL;
+  }
+
+  // Deallocate littlefs
+  free(efs->lfs);
+  efs->lfs = NULL;
 
   return ESP_OK;
 }
