@@ -135,7 +135,7 @@ void grid_module_ef44_init() {
   }
 
   for (int i = 0; i < GRID_MODULE_EF44_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 32, 2048);
+    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 64, 2048);
   }
 
   uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EF44_ND_RevD;

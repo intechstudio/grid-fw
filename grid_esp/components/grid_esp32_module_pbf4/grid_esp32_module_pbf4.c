@@ -79,7 +79,7 @@ void grid_esp32_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   for (int i = 0; i < GRID_MODULE_PBF4_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 64, 2192);
+    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 128, 2192);
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);

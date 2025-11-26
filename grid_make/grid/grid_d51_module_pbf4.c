@@ -109,7 +109,7 @@ void grid_module_pbf4_init() {
   }
 
   for (int i = 0; i < GRID_MODULE_PBF4_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 32, 2048);
+    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 64, 2048);
   }
 
   elements = grid_ui_model_get_elements(&grid_ui_state);
