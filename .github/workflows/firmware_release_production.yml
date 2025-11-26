@@ -40,6 +40,13 @@ jobs:
           name: release_firmware
           path: release/
 
+      - name: Debug - List downloaded files
+        run: |
+          echo "Contents of release/ directory:"
+          ls -la release/
+          echo "Looking for pattern: *_release_${{ inputs.action_date }}.uf2"
+          find release/ -name "*_release_${{ inputs.action_date }}.uf2" -type f
+
       - name: Zip artifacts for Github Release
         uses: vimtor/action-zip@v1
         with:
