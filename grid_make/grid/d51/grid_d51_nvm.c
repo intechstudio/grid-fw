@@ -14,10 +14,10 @@
 
 struct grid_d51_nvm_model grid_d51_nvm_state;
 
-void grid_d51_nvm_mount(struct grid_d51_nvm_model* nvm) {
+void grid_d51_nvm_mount(struct grid_d51_nvm_model* nvm, bool force_format) {
 
   // Initialize and mount littlefs
-  int ret = grid_d51_littlefs_mount(&nvm->dfs);
+  int ret = grid_d51_littlefs_mount(&nvm->dfs, force_format);
 
   if (ret) {
     printf("failed to initialize littlefs\n");
@@ -31,6 +31,17 @@ void grid_d51_nvm_mount(struct grid_d51_nvm_model* nvm) {
 
   // List the filesystem root
   grid_platform_list_directory("");
+}
+
+void grid_d51_nvm_unmount(struct grid_d51_nvm_model* nvm) {
+
+  // Unmount littlefs
+  int ret = grid_d51_littlefs_unmount(&nvm->dfs);
+
+  if (ret) {
+    printf("failed to deinitialize littlefs\n");
+    return;
+  }
 }
 
 #define LFS grid_d51_nvm_state.dfs.lfs
@@ -103,6 +114,12 @@ void grid_platform_nvm_erase() {
   if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle) == 0) {
     grid_platform_delete_file(&handle);
   }
+}
+
+void grid_platform_nvm_format_and_mount() {
+
+  grid_d51_nvm_unmount(&grid_d51_nvm_state);
+  grid_d51_nvm_mount(&grid_d51_nvm_state, true);
 }
 
 const char* grid_platform_get_base_path() { return grid_d51_nvm_state.dfs.base_path; }

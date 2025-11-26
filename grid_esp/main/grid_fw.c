@@ -492,13 +492,13 @@ void app_main(void) {
   // GRID MODULE INITIALIZATION SEQUENCE
 
   log_checkpoint("NVM START");
-  grid_esp32_nvm_mount(&grid_esp32_nvm_state);
+  grid_esp32_nvm_mount(&grid_esp32_nvm_state, false);
 
   if (gpio_get_level(GRID_ESP32_PINS_MAPMODE) == 0) {
 
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, 1000);
     grid_alert_all_set_frequency(&grid_led_state, 4);
-    grid_platform_nvm_erase();
+    grid_platform_nvm_format_and_mount();
     grid_esp32_utask_led(&timer_led);
     vTaskDelay(pdMS_TO_TICKS(500));
     grid_esp32_utask_led(&timer_led);

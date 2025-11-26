@@ -44,16 +44,19 @@ const char* littlefs_errno(enum lfs_error lfs_errno) {
   return "";
 }
 
-int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg) {
+int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg, bool force_format) {
 
   // Mount littlefs
-  int lfs_err = lfs_mount(lfs, cfg);
-  // int lfs_err = LFS_ERR_OK + 1; // for testing purposes
+  int lfs_err = force_format ? LFS_ERR_CORRUPT : lfs_mount(lfs, cfg);
 
-  // If mounting failed, attempt a format and another mount
+  // Attempt a format (then mount) if necessary
   if (lfs_err != LFS_ERR_OK) {
 
-    printf("littlefs mount failed (%d): %s. formatting...\n", lfs_err, littlefs_errno(lfs_err));
+    if (force_format) {
+      printf("littlefs force formatting...\n");
+    } else {
+      printf("littlefs mount failed (%d): %s. formatting...\n", lfs_err, littlefs_errno(lfs_err));
+    }
 
     lfs_err = lfs_format(lfs, cfg);
     if (lfs_err != LFS_ERR_OK) {
@@ -73,9 +76,23 @@ int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg) {
   return 0;
 }
 
+int grid_littlefs_unmount(lfs_t* lfs) {
+
+  // Unmount littlefs
+  int lfs_err = lfs_unmount(lfs);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("littlefs unmount failed (%d): %s. exiting...\n", lfs_err, littlefs_errno(lfs_err));
+    return 1;
+  }
+
+  return 0;
+}
+
 int grid_littlefs_mkdir_base(lfs_t* lfs, const char* path) {
 
-  assert(path[0] != '\0');
+  if (path[0] == '\0') {
+    return 0;
+  }
 
   // Attempt to stat the directory at the base path
   struct lfs_info info;

@@ -8,7 +8,8 @@
 extern "C" {
 #endif
 
-esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs);
+esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs, bool force_format);
+esp_err_t grid_esp32_littlefs_unmount(struct esp_littlefs_t* efs);
 
 #ifdef __cplusplus
 }
