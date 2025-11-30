@@ -12,6 +12,7 @@
 #include "grid_sys.h"
 #include "grid_transport.h"
 #include "grid_ui.h"
+#include "grid_usb.h"
 
 /*static*/ int32_t grid_utility_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max) { return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min; }
 
@@ -259,6 +260,11 @@ int l_grid_cat(lua_State* L) {
 }
 
 /*static*/ int l_grid_package_send(lua_State* L) {
+
+  if (false == grid_usb_keyboard_isenabled(&grid_usb_keyboard_state)) {
+    grid_lua_append_stde(&grid_lua_state, "PACKAGE is disabled");
+    return 0;
+  }
 
   char message[GRID_PARAMETER_SPI_TRANSACTION_length] = {0};
 
