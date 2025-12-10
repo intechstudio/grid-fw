@@ -43,10 +43,8 @@
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_ef44.h"
 #include "grid_esp32_module_en16.h"
-#include "grid_esp32_module_pb44.h"
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
-#include "grid_esp32_module_soft.h"
 #include "grid_esp32_module_tek1.h"
 #include "grid_esp32_module_tek2.h"
 #include "pico_firmware.h"
@@ -473,10 +471,6 @@ void app_main(void) {
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
     grid_module_tek1_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, grid_sys_get_hwcfg(&grid_sys_state));
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
-    grid_module_pb44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_SOFT_RevA) {
-    grid_module_soft_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else {
     ets_printf("UI Init failed: Unknown Module\r\n");
   }
@@ -604,10 +598,6 @@ void app_main(void) {
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
     grid_esp32_module_tek1_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
-    grid_esp32_module_pb44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_SOFT_RevA) {
-    grid_esp32_module_soft_init(&grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state);
   } else {
     ets_printf("Task Init failed: Unknown Module\r\n");
   }
