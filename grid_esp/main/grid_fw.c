@@ -168,34 +168,6 @@ static void log_checkpoint(const char* str) {
 
 #include "grid_ui_lcd.h"
 
-void grid_module_soft_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
-
-  grid_ain_init(&grid_ain_state, 8, 4);
-  grid_led_init(&grid_led_state, 8);
-  grid_led_lookup_alloc_identity(&grid_led_state, 0, 8);
-
-  grid_ui_model_init(ui, 8 + 1); // +1 for the system element
-
-  for (uint8_t j = 0; j < 8 + 1; j++) {
-
-    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
-
-    if (j < 4) {
-      grid_ui_element_encoder_init(ele);
-
-    } else if (j < 8) {
-      // fader
-      grid_ui_element_potmeter_init(ele);
-
-    } else {
-
-      grid_ui_element_system_init(ele);
-    }
-  }
-
-  ui->lua_ui_init_callback = grid_lua_ui_init;
-}
-
 void grid_ui_element_lcd_template_parameter_init_vsn_left(struct grid_ui_template_buffer* buf) {
 
   grid_ui_element_lcd_template_parameter_init(buf);
