@@ -50,7 +50,7 @@ static void adc_transfer_complete_cb(void) {
   gpio_set_pin_level(MUX_C, multiplexer_index / 4 % 2);
 
   // POT POLARITY IS REVERSED ON PO16_RevC
-  if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PO16_RevC) {
+  if (grid_hwcfg_module_is_po16_reverse_polarity(&grid_sys_state)) {
 
     // Reverse the 16bit result
     adcresult_0 = 65535 - adcresult_0;

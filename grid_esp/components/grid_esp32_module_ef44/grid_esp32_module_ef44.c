@@ -126,7 +126,7 @@ void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   grid_esp32_encoder_init(enc, 1, ef44_process_encoder);
-  uint8_t detent = grid_sys_get_hwcfg(sys) != GRID_MODULE_EF44_ND_RevD;
+  uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
   int8_t direction = grid_hwcfg_module_encoder_dir(sys);
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);

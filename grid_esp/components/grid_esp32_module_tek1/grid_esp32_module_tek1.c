@@ -240,10 +240,12 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
   // Wait for the coprocessor to pull the LCD reset pin high
   vTaskDelay(pdMS_TO_TICKS(500));
 
+  bool is_tek1_reva = grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA;
+
   uint32_t hwcfg = grid_sys_get_hwcfg(sys);
 
   // Initialize LCD panel at index 0 for VSN1L
-  if (hwcfg == GRID_MODULE_TEK1_RevA || hwcfg == GRID_MODULE_VSN1L_RevA || hwcfg == GRID_MODULE_VSN1L_RevB || hwcfg == GRID_MODULE_VSN1L_RevH) {
+  if (grid_hwcfg_module_is_vsnl(sys) || is_tek1_reva) {
 
     struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[0];
     struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
@@ -255,7 +257,7 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   // Initialize LCD panel at index 1 for VSN1R
-  if (hwcfg == GRID_MODULE_VSN1R_RevA || hwcfg == GRID_MODULE_VSN1R_RevB || hwcfg == GRID_MODULE_VSN1R_RevH) {
+  if (grid_hwcfg_module_is_vsnr(sys)) {
 
     struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[1];
     struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
@@ -267,7 +269,7 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   // Initialize LCD panel at index 0 and 1 for VSN2
-  if (hwcfg == GRID_MODULE_VSN2_RevA || hwcfg == GRID_MODULE_VSN2_RevB || hwcfg == GRID_MODULE_VSN2_RevH) {
+  if (grid_hwcfg_module_is_vsn2(sys)) {
 
     struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
     struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
@@ -327,14 +329,13 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   grid_process_encoder_t process_encoder = NULL;
 
-  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_TEK1_RevA || grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1L_RevA || grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1L_RevB ||
-      grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1L_RevH) {
+  if (grid_hwcfg_module_is_vsnl(sys) || is_tek1_reva) {
     process_encoder = vsn1l_process_encoder;
     grid_esp32_adc_init(adc, vsn1l_process_analog);
-  } else if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1R_RevA || grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1R_RevB || grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1R_RevH) {
+  } else if (grid_hwcfg_module_is_vsnr(sys)) {
     process_encoder = vsn1r_process_encoder;
     grid_esp32_adc_init(adc, vsn1r_process_analog);
-  } else if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN2_RevA || grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN2_RevB || grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN2_RevH) {
+  } else if (grid_hwcfg_module_is_vsn2(sys)) {
     process_encoder = vsn2_process_encoder;
     grid_esp32_adc_init(adc, vsn2_process_analog);
   }
