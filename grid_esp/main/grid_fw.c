@@ -43,10 +43,8 @@
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_ef44.h"
 #include "grid_esp32_module_en16.h"
-#include "grid_esp32_module_pb44.h"
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
-#include "grid_esp32_module_soft.h"
 #include "grid_esp32_module_tek1.h"
 #include "grid_esp32_module_tek2.h"
 #include "pico_firmware.h"
@@ -169,34 +167,6 @@ static void log_checkpoint(const char* str) {
 }
 
 #include "grid_ui_lcd.h"
-
-void grid_module_soft_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
-
-  grid_ain_init(&grid_ain_state, 8, 4);
-  grid_led_init(&grid_led_state, 8);
-  grid_led_lookup_alloc_identity(&grid_led_state, 0, 8);
-
-  grid_ui_model_init(ui, 8 + 1); // +1 for the system element
-
-  for (uint8_t j = 0; j < 8 + 1; j++) {
-
-    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
-
-    if (j < 4) {
-      grid_ui_element_encoder_init(ele);
-
-    } else if (j < 8) {
-      // fader
-      grid_ui_element_potmeter_init(ele);
-
-    } else {
-
-      grid_ui_element_system_init(ele);
-    }
-  }
-
-  ui->lua_ui_init_callback = grid_lua_ui_init;
-}
 
 void grid_ui_element_lcd_template_parameter_init_vsn_left(struct grid_ui_template_buffer* buf) {
 
@@ -473,10 +443,6 @@ void app_main(void) {
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
     grid_module_tek1_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, grid_sys_get_hwcfg(&grid_sys_state));
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
-    grid_module_pb44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_SOFT_RevA) {
-    grid_module_soft_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else {
     ets_printf("UI Init failed: Unknown Module\r\n");
   }
@@ -604,10 +570,6 @@ void app_main(void) {
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN1R_RevH ||
              grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevB || grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_VSN2_RevH) {
     grid_esp32_module_tek1_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_PB44_RevA) {
-    grid_esp32_module_pb44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state);
-  } else if (grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_SOFT_RevA) {
-    grid_esp32_module_soft_init(&grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state);
   } else {
     ets_printf("Task Init failed: Unknown Module\r\n");
   }

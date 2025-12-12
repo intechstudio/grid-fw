@@ -163,35 +163,6 @@ void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
-void grid_module_pb44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
-
-  // 16 pot, depth of 5, 14bit internal, 7bit result;
-  grid_ain_init(ain, 16, 4);
-  grid_led_init(led, 16);
-  grid_led_lookup_alloc_identity(led, 0, 16);
-
-  grid_ui_model_init(ui, 16 + 1); // +1 for the system element
-
-  for (uint8_t j = 0; j < 16 + 1; j++) {
-
-    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
-
-    if (j < 8) {
-
-      grid_ui_element_potmeter_init(ele);
-
-    } else if (j < 16) {
-
-      grid_ui_element_button_init(ele);
-
-    } else {
-      grid_ui_element_system_init(ele);
-    }
-  }
-
-  ui->lua_ui_init_callback = grid_lua_ui_init;
-}
-
 void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   // TODO should be 4 ain channels but indexing is bad in grid_ui_potmeter.c
