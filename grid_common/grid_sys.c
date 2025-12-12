@@ -182,44 +182,231 @@ uint32_t grid_sys_get_id(struct grid_sys_model* sys, uint32_t* return_array) {
   return 1;
 }
 
+int grid_hwcfg_module_is_bu16(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_BU16_RevB:
+  case GRID_MODULE_BU16_RevC:
+  case GRID_MODULE_BU16_RevD:
+  case GRID_MODULE_BU16_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int grid_hwcfg_module_is_ef44(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_EF44_RevA:
+  case GRID_MODULE_EF44_RevD:
+  case GRID_MODULE_EF44_RevH:
+  case GRID_MODULE_EF44_ND_RevD:
+  case GRID_MODULE_EF44_ND_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int grid_hwcfg_module_is_en16(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_EN16_RevA:
+  case GRID_MODULE_EN16_RevD:
+  case GRID_MODULE_EN16_RevH:
+  case GRID_MODULE_EN16_ND_RevA:
+  case GRID_MODULE_EN16_ND_RevD:
+  case GRID_MODULE_EN16_ND_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int grid_hwcfg_module_is_pbf4(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_PBF4_RevA:
+  case GRID_MODULE_PBF4_RevD:
+  case GRID_MODULE_PBF4_RevH:
+  case GRID_MODULE_PBF4_CD_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int grid_hwcfg_module_is_po16(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_PO16_RevB:
+  case GRID_MODULE_PO16_RevC:
+  case GRID_MODULE_PO16_RevD:
+  case GRID_MODULE_PO16_RevH:
+  case GRID_MODULE_PO16_CD_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int grid_hwcfg_module_is_tek2(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_TEK2_RevA:
+  case GRID_MODULE_TEK2_RevB:
+  case GRID_MODULE_TEK2_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int grid_hwcfg_module_is_vsnx(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_TEK1_RevA:
+  case GRID_MODULE_VSN1L_RevA:
+  case GRID_MODULE_VSN1L_RevB:
+  case GRID_MODULE_VSN1L_RevH:
+  case GRID_MODULE_VSN1R_RevA:
+  case GRID_MODULE_VSN1R_RevB:
+  case GRID_MODULE_VSN1R_RevH:
+  case GRID_MODULE_VSN2_RevA:
+  case GRID_MODULE_VSN2_RevB:
+  case GRID_MODULE_VSN2_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int grid_hwcfg_module_is_vsnl(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_VSN1L_RevA:
+  case GRID_MODULE_VSN1L_RevB:
+  case GRID_MODULE_VSN1L_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int grid_hwcfg_module_is_vsnr(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_VSN1R_RevA:
+  case GRID_MODULE_VSN1R_RevB:
+  case GRID_MODULE_VSN1R_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int grid_hwcfg_module_is_vsn2(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_VSN2_RevA:
+  case GRID_MODULE_VSN2_RevB:
+  case GRID_MODULE_VSN2_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
 int grid_hwcfg_module_is_vsnx_rev_a(struct grid_sys_model* sys) {
 
-  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_TEK1_RevA) {
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_TEK1_RevA:
+  case GRID_MODULE_VSN1L_RevA:
+  case GRID_MODULE_VSN1R_RevA:
+  case GRID_MODULE_VSN2_RevA:
     return 1;
+  default:
+    return 0;
   }
-  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1L_RevA) {
-    return 1;
-  }
-  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN1R_RevA) {
-    return 1;
-  }
-  if (grid_sys_get_hwcfg(sys) == GRID_MODULE_VSN2_RevA) {
-    return 1;
-  }
-
-  return 0;
 }
 
 int grid_hwcfg_module_is_rev_h(struct grid_sys_model* sys) {
 
-  // clang-format off
   switch (grid_sys_get_hwcfg(sys)) {
-    case GRID_MODULE_PO16_RevH: return 1;
-    case GRID_MODULE_PO16_CD_RevH: return 1;
-    case GRID_MODULE_BU16_RevH: return 1;
-    case GRID_MODULE_PBF4_RevH: return 1;
-    case GRID_MODULE_PBF4_CD_RevH: return 1;
-    case GRID_MODULE_EN16_RevH: return 1;
-    case GRID_MODULE_EN16_ND_RevH: return 1;
-    case GRID_MODULE_EF44_RevH: return 1;
-    case GRID_MODULE_EF44_ND_RevH: return 1;
-    case GRID_MODULE_TEK2_RevH: return 1;
-    case GRID_MODULE_VSN1L_RevH: return 1;
-    case GRID_MODULE_VSN1R_RevH: return 1;
-    case GRID_MODULE_VSN2_RevH: return 1;
-    default: return 0;
+  case GRID_MODULE_PO16_RevH:
+  case GRID_MODULE_PO16_CD_RevH:
+  case GRID_MODULE_BU16_RevH:
+  case GRID_MODULE_PBF4_RevH:
+  case GRID_MODULE_PBF4_CD_RevH:
+  case GRID_MODULE_EN16_RevH:
+  case GRID_MODULE_EN16_ND_RevH:
+  case GRID_MODULE_EF44_RevH:
+  case GRID_MODULE_EF44_ND_RevH:
+  case GRID_MODULE_TEK2_RevH:
+  case GRID_MODULE_VSN1L_RevH:
+  case GRID_MODULE_VSN1R_RevH:
+  case GRID_MODULE_VSN2_RevH:
+    return 1;
+  default:
+    return 0;
   }
-  // clang-format on
+}
+
+int grid_hwcfg_module_encoder_is_detent(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_EF44_RevA:
+  case GRID_MODULE_EF44_RevD:
+  case GRID_MODULE_EF44_RevH:
+  case GRID_MODULE_EN16_RevA:
+  case GRID_MODULE_EN16_RevD:
+  case GRID_MODULE_EN16_RevH:
+    return 1;
+  default:
+    return 0;
+  }
 }
 
 int grid_hwcfg_module_encoder_dir(struct grid_sys_model* sys) { return grid_hwcfg_module_is_rev_h(sys) ? -1 : 1; }
+
+int grid_hwcfg_module_has_lcd0(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_TEK1_RevA:
+  case GRID_MODULE_VSN1L_RevA:
+  case GRID_MODULE_VSN1L_RevB:
+  case GRID_MODULE_VSN1L_RevH:
+  case GRID_MODULE_VSN2_RevA:
+  case GRID_MODULE_VSN2_RevB:
+  case GRID_MODULE_VSN2_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int grid_hwcfg_module_has_lcd1(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_VSN1R_RevA:
+  case GRID_MODULE_VSN1R_RevB:
+  case GRID_MODULE_VSN1R_RevH:
+  case GRID_MODULE_VSN2_RevA:
+  case GRID_MODULE_VSN2_RevB:
+  case GRID_MODULE_VSN2_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int grid_hwcfg_module_is_po16_reverse_polarity(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_PO16_RevC:
+    return 1;
+  default:
+    return 0;
+  }
+}

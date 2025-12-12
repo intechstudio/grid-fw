@@ -86,8 +86,22 @@ void grid_sys_set_bank(struct grid_sys_model* sys, uint8_t value);
 uint32_t grid_sys_get_hwcfg(struct grid_sys_model* sys);
 uint32_t grid_sys_get_id(struct grid_sys_model* sys, uint32_t* return_array);
 
+int grid_hwcfg_module_is_bu16(struct grid_sys_model* sys);
+int grid_hwcfg_module_is_ef44(struct grid_sys_model* sys);
+int grid_hwcfg_module_is_en16(struct grid_sys_model* sys);
+int grid_hwcfg_module_is_pbf4(struct grid_sys_model* sys);
+int grid_hwcfg_module_is_po16(struct grid_sys_model* sys);
+int grid_hwcfg_module_is_tek2(struct grid_sys_model* sys);
+int grid_hwcfg_module_is_vsnx(struct grid_sys_model* sys);
+int grid_hwcfg_module_is_vsnl(struct grid_sys_model* sys);
+int grid_hwcfg_module_is_vsnr(struct grid_sys_model* sys);
+int grid_hwcfg_module_is_vsn2(struct grid_sys_model* sys);
 int grid_hwcfg_module_is_vsnx_rev_a(struct grid_sys_model* sys);
 int grid_hwcfg_module_is_rev_h(struct grid_sys_model* sys);
+int grid_hwcfg_module_encoder_is_detent(struct grid_sys_model* sys);
 int grid_hwcfg_module_encoder_dir(struct grid_sys_model* sys);
+int grid_hwcfg_module_has_lcd0(struct grid_sys_model* sys);
+int grid_hwcfg_module_has_lcd1(struct grid_sys_model* sys);
+int grid_hwcfg_module_is_po16_reverse_polarity(struct grid_sys_model* sys);
 
 #endif /* GRID_SYS_H */

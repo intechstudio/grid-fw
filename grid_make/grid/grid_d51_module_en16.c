@@ -73,7 +73,7 @@ void grid_module_en16_init() {
     grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
   }
 
-  uint8_t detent = grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevA && grid_sys_get_hwcfg(&grid_sys_state) != GRID_MODULE_EN16_ND_RevD;
+  uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
   int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
