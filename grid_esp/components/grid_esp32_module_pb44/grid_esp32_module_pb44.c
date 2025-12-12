@@ -48,7 +48,7 @@ void IRAM_ATTR pb44_process_analog(void* user) {
 
   if (mux_position < 8) {
 
-    grid_ui_potmeter_store_input(ele, mux_position, &potmeter_last_real_time[mux_position], result->value, 12);
+    // grid_ui_potmeter_store_input(ele, mux_position, &potmeter_last_real_time[mux_position], result->value, 12);
   } else if (mux_position < 16) {
 
     grid_ui_button_store_input(ele, &ui_button_state[mux_position - 8], result->value, 12);

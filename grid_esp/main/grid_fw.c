@@ -103,7 +103,7 @@ static const char* TAG = "main";
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 
-static void periodic_rtc_ms_cb(void*, void*, void*) {
+static bool periodic_rtc_ms_cb() {
 
   grid_ui_rtc_ms_tick_time(&grid_ui_state);
 
@@ -112,6 +112,8 @@ static void periodic_rtc_ms_cb(void*, void*, void*) {
   } else {
     grid_ui_rtc_ms_mapmode_handler(&grid_ui_state, 1);
   }
+
+  return false;
 }
 
 static void periodic_rtc_ms_init() {

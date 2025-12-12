@@ -1,5 +1,5 @@
 # Use the base image
-FROM docker.io/espressif/idf:v5.3.1
+FROM docker.io/espressif/idf:v5.5
 
 # Install pico sdk required dependencies
 RUN apt update && \
@@ -35,6 +35,7 @@ RUN make && cmake --install .
 WORKDIR /
 
 ENV EMSDK=/emsdk EM_CONFIG=/emsdk/.emscripten EMSDK_NODE=/emsdk/node/14.18.2_64bit/bin/node PATH=/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/14.18.2_64bit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 # Set up environment variables
 ENV CODEQL_HOME=/opt/codeql
 ENV PATH="${CODEQL_HOME}/codeql:${PATH}"
@@ -52,7 +53,7 @@ RUN apt update && \
     apt install -y socat
 
 # Install pre-commit from pip
-RUN python3 -m pip install pre-commit
+RUN apt install -y pre-commit
 RUN pre-commit --version
 
 # Copy pre-commit hooks and create a git directory,

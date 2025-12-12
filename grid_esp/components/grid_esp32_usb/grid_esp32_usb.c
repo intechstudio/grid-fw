@@ -294,7 +294,7 @@ void grid_esp32_usb_init() {
 
   tinyusb_config_t config = TINYUSB_DEFAULT_CONFIG();
   config.descriptor.device = NULL;
-  config.descriptor.string = s_str_desc;
+  config.descriptor.string = (const char**)s_str_desc;
   config.descriptor.string_count = strcnt;
   config.phy.skip_setup = false;
   config.descriptor.full_speed_config = s_cfg_desc;
