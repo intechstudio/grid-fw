@@ -6,40 +6,22 @@
 #pragma once
 
 #include <stdint.h>
-#include <stdio.h> // Include necessary headers if needed
+#include <stdio.h>
 
-#include "rom/ets_sys.h" // For ets_printf
+#include "rom/ets_sys.h"
 
-struct grid_trace_event {
+struct grid_esp32_trace_model {
 
-  uint32_t timestamp;
-  uint32_t event_type;
-  uint32_t event_context;
-  uint32_t event_value;
+  void* timed_task;
+  uint64_t timed_task_last;
+  uint64_t timed_task_micros;
 };
 
-struct grid_trace_model {
+extern struct grid_esp32_trace_model grid_esp32_trace_core0;
 
-  uint8_t core_id;
-  uint32_t switch_in_count;
-  uint32_t switch_out_count;
-  uint32_t last_active_handle;
-  uint32_t idle_handle;
-  void* ignored_task;
+void grid_esp32_trace_timed_task_set(struct grid_esp32_trace_model* trace, void* task);
+void grid_esp32_trace_timed_task_begin(struct grid_esp32_trace_model* trace);
+uint64_t grid_esp32_trace_timed_task_diff(struct grid_esp32_trace_model* trace);
 
-  uint32_t trace_buffer_write_ptr;
-  uint32_t trace_buffer_read_ptr;
-  struct grid_trace_event trace_buffer[1000];
-};
-
-extern struct grid_trace_model grid_trace_state_core0;
-extern struct grid_trace_model grid_trace_state_core1;
-
-void grid_trace_init(struct grid_trace_model* trace, uint8_t core_id);
-
-void grid_trace_ignore_task(struct grid_trace_model* trace, void* task_handle);
-
-void grid_trace_task_switched_in(void);
-void grid_trace_task_switched_out(void);
-
-void grid_trace_report_task(void* arg);
+void grid_esp32_trace_task_switched_in(void);
+void grid_esp32_trace_task_switched_out(void);

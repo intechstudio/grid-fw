@@ -69,5 +69,9 @@ RUN git config --global --add safe.directory /project
 COPY ./patch_esp_efuse_startup.sh /
 RUN ./patch_esp_efuse_startup.sh
 
+# Patch FreeRTOSConfig.h
+COPY ./patch_esp_trace_include.sh /
+RUN ./patch_esp_trace_include.sh
+
 # Define default command
 CMD ["bash"]

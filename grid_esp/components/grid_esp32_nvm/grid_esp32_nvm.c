@@ -223,7 +223,7 @@ void grid_esp32_nvm_task(void* arg) {
       proceed = proceed && grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
     }
 
-    vTaskDelay(pdMS_TO_TICKS(15));
+    vTaskDelay(pdMS_TO_TICKS(10));
   }
 
   ESP_LOGI(TAG, "Deinit NVM");
