@@ -1,4 +1,4 @@
-function cp(c)
+color_curve = function(c)
   for i = 1, #c do
     if c[i][1] == -1 then
       c[i][1] = glr()
@@ -50,30 +50,43 @@ event_handler_to_layer = {
   ["ld"] = nil,
 }
 
+color_auto_layer = function(self)
+  return event_handler_to_layer[event_function_name()]
+end
+
+color_auto_value = function(self, i)
+  local l = color_auto_layer(self)
+  if self.type == "endless" then
+    if l == 1 then
+      return gmaps(self:bva(), self:bmi(), self:bma(), 0, 255) // 1
+    else
+      return gsc(i, self:epva(), self:epmi(), self:epma())
+    end
+  else
+    if event_function_name() == "bc" then
+      return gmaps(self:bva(), self:bmi(), self:bma(), 0, 255) // 1
+    elseif event_function_name() == "pc" then
+      return gmaps(self:pva(), self:pmi(), self:pma(), 0, 255) // 1
+    elseif event_function_name() == "ec" then
+      return gmaps(self:eva(), self:emi(), self:ema(), 0, 255) // 1
+    end
+  end
+end
+
 init_endless_color = function(self)
   self.glp = function(self, l, v)
     if l == -1 then
-      l = event_handler_to_layer[event_function_name()]
+      l = color_auto_layer(self)
       if l == nil then
         return
       end
     end
     for i = 0, 4, 1 do
       local int = 0
-      if l == 1 then
-        -- button
-        if v == nil or v == -1 then
-          int = gmaps(self:bva(), self:bmi(), self:bma(), 0, 255) // 1
-        else
-          int = v
-        end
+      if v == nil or v == -1 then
+        int = color_auto_value(self, i)
       else
-        -- rotation
-        if v == nil or v == -1 then
-          int = gsc(i, self:epva(), self:epmi(), self:epma())
-        else
-          int = gsc(i, v, 0, 255)
-        end
+        int = v
       end
       local lix = glag(self:ind(), i)
       glp(lix, l, int)
@@ -82,53 +95,9 @@ init_endless_color = function(self)
 
   self.glc = function(self, l, c)
     local up = table.unpack
-    local x, y, z = cp(c)
+    local x, y, z = color_curve(c)
     if l == -1 then
-      l = event_handler_to_layer[event_function_name()]
-      if l == nil then
-        return
-      end
-    end
-    for i = 0, 4, 1 do
-      local lix = glag(self:ind(), i)
-      gln(lix, l, up(x))
-      gld(lix, l, up(y))
-      glx(lix, l, up(z))
-    end
-  end
-end
-
-init_endless_nosegment_color = function(self)
-  self.glp = function(self, l, v)
-    if l == -1 then
-      l = event_handler_to_layer[event_function_name()]
-      if l == nil then
-        return
-      end
-    end
-    for i = 0, 4, 1 do
-      local int = v
-      if l == 1 then
-        -- button
-        if v == nil or v == -1 then
-          int = gmaps(self:bva(), self:bmi(), self:bma(), 0, 255) // 1
-        end
-      else
-        -- rotation
-        if v == nil or v == -1 then
-          int = gmaps(self:epva(), self:epmi(), self:epma(), 0, 255) // 1
-        end
-      end
-      local lix = glag(self:ind(), i)
-      glp(lix, l, int)
-    end
-  end
-
-  self.glc = function(self, l, c)
-    local up = table.unpack
-    local x, y, z = cp(c)
-    if l == -1 then
-      l = event_handler_to_layer[event_function_name()]
+      l = color_auto_layer(self)
       if l == nil then
         return
       end
@@ -145,7 +114,7 @@ end
 init_element_color = function(self)
   self.glp = function(self, l, v)
     if l == -1 then
-      l = event_handler_to_layer[event_function_name()]
+      l = color_auto_layer(self)
       if l == nil then
         return
       end
@@ -153,13 +122,7 @@ init_element_color = function(self)
     local lix = glag(self:ind(), 0)
     local int = v
     if v == nil or v == -1 then
-      if event_function_name() == "bc" then
-        int = gmaps(self:bva(), self:bmi(), self:bma(), 0, 255) // 1
-      elseif event_function_name() == "pc" then
-        int = gmaps(self:pva(), self:pmi(), self:pma(), 0, 255) // 1
-      elseif event_function_name() == "ec" then
-        int = gmaps(self:eva(), self:emi(), self:ema(), 0, 255) // 1
-      end
+      int = color_auto_value(self, 0)
     end
 
     glp(lix, l, int)
@@ -167,10 +130,10 @@ init_element_color = function(self)
 
   self.glc = function(self, l, c)
     local up = table.unpack
-    local x, y, z = cp(c)
+    local x, y, z = color_curve(c)
 
     if l == -1 then
-      l = event_handler_to_layer[event_function_name()]
+      l = color_auto_layer(self)
       if l == nil then
         return
       end
