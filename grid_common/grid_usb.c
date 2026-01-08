@@ -380,8 +380,8 @@ void grid_midi_rx_pop() {
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
   grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-  grid_msg_set_parameter(&msg, BRC_SX, xy);
-  grid_msg_set_parameter(&msg, BRC_SY, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
 
   // Combine up to 8 midi messages into a packet
   for (uint8_t i = 0; i < 8; ++i) {
@@ -403,8 +403,6 @@ void grid_midi_rx_pop() {
   }
 
   if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-
-    grid_platform_printf_nonprint((uint8_t*)msg.data, msg.length);
     grid_transport_send_msg_to_all(&grid_transport_state, &msg);
   }
 }
@@ -424,8 +422,8 @@ static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t lengt
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
   grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-  grid_msg_set_parameter(&msg, BRC_SX, xy);
-  grid_msg_set_parameter(&msg, BRC_SY, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
 
   // Add MIDISYSEX frame
   grid_msg_add_frame(&msg, GRID_CLASS_MIDISYSEX_frame_start);
@@ -447,7 +445,6 @@ static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t lengt
 
   // Send to all connected modules
   if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-    grid_platform_printf_nonprint((uint8_t*)msg.data, msg.length);
     grid_transport_send_msg_to_all(&grid_transport_state, &msg);
   }
 }
