@@ -30,6 +30,44 @@ void grid_usb_midi_buffer_init();
 
 enum grid_usb_keyboard_key_state_t { GRID_USB_KEYBOARD_KEY_STATEUP, GRID_USB_KEYBOARD_KEY_STATEDOWN };
 
+// USB MIDI Code Index Number (CIN) values
+enum grid_midi_cin_type {
+  GRID_MIDI_CIN_MISC = 0x00,               // Miscellaneous function codes
+  GRID_MIDI_CIN_CABLE_EVENT = 0x01,        // Cable events
+  GRID_MIDI_CIN_SYSCOM_2BYTE = 0x02,       // Two-byte System Common (MTC, SongSelect)
+  GRID_MIDI_CIN_SYSCOM_3BYTE = 0x03,       // Three-byte System Common (SPP)
+  GRID_MIDI_CIN_SYSEX_START = 0x04,        // SysEx starts or continues (3 bytes)
+  GRID_MIDI_CIN_SYSEX_END_1BYTE = 0x05,    // SysEx ends with 1 byte or single-byte System Common
+  GRID_MIDI_CIN_SYSEX_END_2BYTE = 0x06,    // SysEx ends with 2 bytes
+  GRID_MIDI_CIN_SYSEX_END_3BYTE = 0x07,    // SysEx ends with 3 bytes
+  GRID_MIDI_CIN_NOTE_OFF = 0x08,           // Note-off
+  GRID_MIDI_CIN_NOTE_ON = 0x09,            // Note-on
+  GRID_MIDI_CIN_POLY_KEYPRESS = 0x0A,      // Poly-KeyPress
+  GRID_MIDI_CIN_CONTROL_CHANGE = 0x0B,     // Control Change
+  GRID_MIDI_CIN_PROGRAM_CHANGE = 0x0C,     // Program Change
+  GRID_MIDI_CIN_CHANNEL_PRESSURE = 0x0D,   // Channel Pressure
+  GRID_MIDI_CIN_PITCHBEND = 0x0E,          // PitchBend Change
+  GRID_MIDI_CIN_SINGLE_BYTE = 0x0F         // Single Byte (including Real-Time)
+};
+
+// MIDI System messages
+enum grid_midi_system_type {
+  GRID_MIDI_SYSEX_START = 0xF0,
+  GRID_MIDI_SYSEX_END = 0xF7
+};
+
+// MIDI Real-Time Message bytes
+enum grid_midi_rtm_type {
+  GRID_MIDI_RTM_TIMING_CLOCK = 0xF8,
+  GRID_MIDI_RTM_UNDEFINED_F9 = 0xF9,
+  GRID_MIDI_RTM_START = 0xFA,
+  GRID_MIDI_RTM_CONTINUE = 0xFB,
+  GRID_MIDI_RTM_STOP = 0xFC,
+  GRID_MIDI_RTM_UNDEFINED_FD = 0xFD,
+  GRID_MIDI_RTM_ACTIVE_SENSING = 0xFE,
+  GRID_MIDI_RTM_SYSTEM_RESET = 0xFF
+};
+
 struct grid_midi_event_desc {
 
   uint8_t byte0;
@@ -54,9 +92,15 @@ extern struct grid_midi_event_desc grid_midi_rx_buffer[GRID_MIDI_RX_BUFFER_lengt
 extern uint16_t grid_midi_rx_write_index;
 extern uint16_t grid_midi_rx_read_index;
 
-void grid_midi_rx_push(struct grid_midi_event_desc midi_event);
+void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
 void grid_midi_rx_pop();
 bool grid_midi_rx_writable();
+
+// MIDI SysEx RX buffer (raw bytes)
+#define GRID_MIDI_SYSEX_RX_BUFFER_length 256
+
+// MIDI Real-Time Message RX buffer (raw bytes)
+#define GRID_MIDI_RTM_RX_BUFFER_length 32
 
 struct grid_usb_keyboard_event_desc {
 

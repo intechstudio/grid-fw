@@ -79,7 +79,7 @@ uint8_t grid_decode_sysex_to_usb(char* header, char* chunk) {
   uint8_t first = grid_frame_get_parameter((uint8_t*)chunk, off, len);
   uint8_t last = grid_frame_get_parameter((uint8_t*)chunk, off + (length - 1) * 2, len);
 
-  if (first != 0xf0 || last != 0xf7) {
+  if (first != GRID_MIDI_SYSEX_START || last != GRID_MIDI_SYSEX_END) {
     grid_port_debug_printf("sysex invalid: %d %d", first, last);
   }
 
@@ -100,20 +100,20 @@ uint8_t grid_decode_sysex_to_usb(char* header, char* chunk) {
 
     if (length < 4) { // shortsysex
       if (length == 2) {
-        event.byte0 = 0 << 4 | 6;
+        event.byte0 = 0 << 4 | GRID_MIDI_CIN_SYSEX_END_2BYTE;
       }
       if (length == 3) {
-        event.byte0 = 0 << 4 | 7;
+        event.byte0 = 0 << 4 | GRID_MIDI_CIN_SYSEX_END_3BYTE;
       }
     } else if (i < 4) { // first eventpacket of longsysex
-      event.byte0 = 0 << 4 | 4;
+      event.byte0 = 0 << 4 | GRID_MIDI_CIN_SYSEX_START;
     } else {            // how many useful bytes are in this eventpacket
       if (i % 3 == 0) { // 3
-        event.byte0 = 0 << 4 | 7;
+        event.byte0 = 0 << 4 | GRID_MIDI_CIN_SYSEX_END_3BYTE;
       } else if (i % 3 == 1) { // 1
-        event.byte0 = 0 << 4 | 5;
+        event.byte0 = 0 << 4 | GRID_MIDI_CIN_SYSEX_END_1BYTE;
       } else if (i % 3 == 2) { // 2
-        event.byte0 = 0 << 4 | 6;
+        event.byte0 = 0 << 4 | GRID_MIDI_CIN_SYSEX_END_2BYTE;
       }
     }
 

@@ -16,6 +16,13 @@
 struct grid_swsr_t grid_midi_tx;
 struct grid_swsr_t grid_midi_rx;
 
+// New buffers for SysEx and RTM
+struct grid_swsr_t grid_midi_sysex_rx;
+struct grid_swsr_t grid_midi_rtm_rx;
+
+// State variable for SysEx mode
+static uint8_t midi_rx_state_is_sysex = 0;
+
 struct grid_usb_keyboard_model grid_usb_keyboard_state;
 
 void grid_usb_midi_buffer_init() {
@@ -24,6 +31,10 @@ void grid_usb_midi_buffer_init() {
 
   assert(grid_swsr_malloc(&grid_midi_tx, GRID_MIDI_TX_BUFFER_length * typesize) == 0);
   assert(grid_swsr_malloc(&grid_midi_rx, GRID_MIDI_RX_BUFFER_length * typesize) == 0);
+
+  // Initialize new buffers for SysEx and RTM (store raw bytes)
+  assert(grid_swsr_malloc(&grid_midi_sysex_rx, GRID_MIDI_SYSEX_RX_BUFFER_length) == 0);
+  assert(grid_swsr_malloc(&grid_midi_rtm_rx, GRID_MIDI_RTM_RX_BUFFER_length) == 0);
 }
 
 void grid_usb_keyboard_model_init(struct grid_usb_keyboard_model* kb, uint8_t buffer_length) {
@@ -214,10 +225,87 @@ void grid_midi_tx_pop() {
 
 bool grid_midi_tx_readable() { return grid_swsr_readable(&grid_midi_tx, sizeof(struct grid_midi_event_desc)); }
 
-void grid_midi_rx_push(struct grid_midi_event_desc event) {
+void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  uint8_t cin = byte0 & 0x0F;
+
+  // 1. REAL-TIME MESSAGES (highest priority, processed even during SysEx)
+  if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 >= GRID_MIDI_RTM_TIMING_CLOCK) {
+    if (grid_swsr_writable(&grid_midi_rtm_rx, 1)) {
+      grid_swsr_write(&grid_midi_rtm_rx, &byte1, 1);
+    }
+    return; // Don't affect SysEx state
+  }
+
+  // 2. SYSEX MODE
+  if (midi_rx_state_is_sysex) {
+
+    uint8_t bytes_to_write = 0;
+    uint8_t sysex_bytes[3];
+
+    if (cin == GRID_MIDI_CIN_SYSEX_START) {
+      // SysEx continues with 3 bytes
+      sysex_bytes[0] = byte1;
+      sysex_bytes[1] = byte2;
+      sysex_bytes[2] = byte3;
+      bytes_to_write = 3;
+      // Stay in SysEx mode
+
+    } else if (cin == GRID_MIDI_CIN_SYSEX_END_1BYTE) {
+      // SysEx ends with 1 byte
+      sysex_bytes[0] = byte1; // Should be 0xF7
+      bytes_to_write = 1;
+      midi_rx_state_is_sysex = 0; // Exit SysEx mode
+
+    } else if (cin == GRID_MIDI_CIN_SYSEX_END_2BYTE) {
+      // SysEx ends with 2 bytes
+      sysex_bytes[0] = byte1;
+      sysex_bytes[1] = byte2; // Should be 0xF7
+      bytes_to_write = 2;
+      midi_rx_state_is_sysex = 0; // Exit SysEx mode
+
+    } else if (cin == GRID_MIDI_CIN_SYSEX_END_3BYTE) {
+      // SysEx ends with 3 bytes
+      sysex_bytes[0] = byte1;
+      sysex_bytes[1] = byte2;
+      sysex_bytes[2] = byte3; // Should be 0xF7
+      bytes_to_write = 3;
+      midi_rx_state_is_sysex = 0; // Exit SysEx mode
+    }
+
+    // Guard clause
+    if (bytes_to_write == 0) {
+      return;
+    }
+
+    // Write directly to SysEx SWSR buffer
+    if (grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
+      grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
+    }
+
+    return;
+  }
+
+  // 3. NORMAL MODE
+
+  // Check if this is SysEx start
+  if (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START) {
+    // Enter SysEx mode
+    midi_rx_state_is_sysex = 1;
+
+    // Write SYSEX_START (0xF0) and following bytes to SysEx buffer
+    uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
+    if (grid_swsr_writable(&grid_midi_sysex_rx, 3)) {
+      grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, 3);
+    }
+    return;
+  }
+
+  // 4. NORMAL MIDI MESSAGES (notes, CC, etc.)
 
   // Factored into here from calling contexts, even if part of a deprecated feature
-  if ((event.byte0 == 8 || event.byte0 == 10 || event.byte0 == 12) && event.byte1 == 240) {
+  if ((cin == GRID_MIDI_CIN_SINGLE_BYTE) &&
+      (byte1 == GRID_MIDI_RTM_TIMING_CLOCK || byte1 == GRID_MIDI_RTM_START || byte1 == GRID_MIDI_RTM_STOP)) {
     grid_platform_sync1_pulse_send();
   }
 
@@ -228,20 +316,26 @@ void grid_midi_rx_push(struct grid_midi_event_desc event) {
   if (grid_sys_get_midirx_sync_state(&grid_sys_state) == 0) {
 
     // midi clock message
-    if (event.byte0 == 8 && event.byte1 == 240) {
+    if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 == GRID_MIDI_RTM_TIMING_CLOCK) {
       return;
     }
 
     // midi start message
-    if (event.byte0 == 10 && event.byte1 == 240) {
+    if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 == GRID_MIDI_RTM_START) {
       return;
     }
 
     // midi stop message
-    if (event.byte0 == 12 && event.byte1 == 240) {
+    if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 == GRID_MIDI_RTM_STOP) {
       return;
     }
   }
+
+  struct grid_midi_event_desc event;
+  event.byte0 = byte0;
+  event.byte1 = byte1;
+  event.byte2 = byte2;
+  event.byte3 = byte3;
 
   if (!grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
     return;
