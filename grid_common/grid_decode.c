@@ -386,6 +386,13 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
   size_t idx = 0;
 
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR));
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX));
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY));
+  lua_rawseti(L, -2, ++idx);
+
   lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDI_CHANNEL));
   lua_rawseti(L, -2, ++idx);
   lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDI_COMMAND));
@@ -394,14 +401,6 @@ uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
   lua_rawseti(L, -2, ++idx);
   lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDI_PARAM2));
   lua_rawseti(L, -2, ++idx);
-
-  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR));
-  lua_rawseti(L, -2, ++idx);
-  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX));
-  lua_rawseti(L, -2, ++idx);
-  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY));
-  lua_rawseti(L, -2, ++idx);
-
   lua_rawseti(L, -2, result_len + 1);
 
   size_t order_len = lua_rawlen(L, -2);
@@ -465,14 +464,14 @@ uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
 
   size_t idx = 0;
 
-  lua_pushstring(L, sysex_string);
-  lua_rawseti(L, -2, ++idx);
-
   lua_pushinteger(L, instr);
   lua_rawseti(L, -2, ++idx);
   lua_pushinteger(L, sx);
   lua_rawseti(L, -2, ++idx);
   lua_pushinteger(L, sy);
+  lua_rawseti(L, -2, ++idx);
+
+  lua_pushstring(L, sysex_string);
   lua_rawseti(L, -2, ++idx);
 
   lua_rawseti(L, -2, result_len + 1);

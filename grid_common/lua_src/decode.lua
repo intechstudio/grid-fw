@@ -15,13 +15,13 @@ end
 
 pass_midi = function(el, x)
   if el.midirx_cb then
-    el:midirx_cb({ x[5], x[6], x[7] }, { x[1], x[2], x[3], x[4] })
+    el:midirx_cb({ x[1], x[2], x[3] }, { x[4], x[5], x[6], x[7] })
   end
 end
 
 pass_sysex = function(el, x)
   if el.sysexrx_cb then
-    el:sysexrx_cb({ x[2], x[3], x[4] }, x[1])
+    el:sysexrx_cb({ x[1], x[2], x[3] }, x[4])
   end
 end
 
