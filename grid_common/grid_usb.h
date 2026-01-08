@@ -32,29 +32,26 @@ enum grid_usb_keyboard_key_state_t { GRID_USB_KEYBOARD_KEY_STATEUP, GRID_USB_KEY
 
 // USB MIDI Code Index Number (CIN) values
 enum grid_midi_cin_type {
-  GRID_MIDI_CIN_MISC = 0x00,               // Miscellaneous function codes
-  GRID_MIDI_CIN_CABLE_EVENT = 0x01,        // Cable events
-  GRID_MIDI_CIN_SYSCOM_2BYTE = 0x02,       // Two-byte System Common (MTC, SongSelect)
-  GRID_MIDI_CIN_SYSCOM_3BYTE = 0x03,       // Three-byte System Common (SPP)
-  GRID_MIDI_CIN_SYSEX_START = 0x04,        // SysEx starts or continues (3 bytes)
-  GRID_MIDI_CIN_SYSEX_END_1BYTE = 0x05,    // SysEx ends with 1 byte or single-byte System Common
-  GRID_MIDI_CIN_SYSEX_END_2BYTE = 0x06,    // SysEx ends with 2 bytes
-  GRID_MIDI_CIN_SYSEX_END_3BYTE = 0x07,    // SysEx ends with 3 bytes
-  GRID_MIDI_CIN_NOTE_OFF = 0x08,           // Note-off
-  GRID_MIDI_CIN_NOTE_ON = 0x09,            // Note-on
-  GRID_MIDI_CIN_POLY_KEYPRESS = 0x0A,      // Poly-KeyPress
-  GRID_MIDI_CIN_CONTROL_CHANGE = 0x0B,     // Control Change
-  GRID_MIDI_CIN_PROGRAM_CHANGE = 0x0C,     // Program Change
-  GRID_MIDI_CIN_CHANNEL_PRESSURE = 0x0D,   // Channel Pressure
-  GRID_MIDI_CIN_PITCHBEND = 0x0E,          // PitchBend Change
-  GRID_MIDI_CIN_SINGLE_BYTE = 0x0F         // Single Byte (including Real-Time)
+  GRID_MIDI_CIN_MISC = 0x00,             // Miscellaneous function codes
+  GRID_MIDI_CIN_CABLE_EVENT = 0x01,      // Cable events
+  GRID_MIDI_CIN_SYSCOM_2BYTE = 0x02,     // Two-byte System Common (MTC, SongSelect)
+  GRID_MIDI_CIN_SYSCOM_3BYTE = 0x03,     // Three-byte System Common (SPP)
+  GRID_MIDI_CIN_SYSEX_START = 0x04,      // SysEx starts or continues (3 bytes)
+  GRID_MIDI_CIN_SYSEX_END_1BYTE = 0x05,  // SysEx ends with 1 byte or single-byte System Common
+  GRID_MIDI_CIN_SYSEX_END_2BYTE = 0x06,  // SysEx ends with 2 bytes
+  GRID_MIDI_CIN_SYSEX_END_3BYTE = 0x07,  // SysEx ends with 3 bytes
+  GRID_MIDI_CIN_NOTE_OFF = 0x08,         // Note-off
+  GRID_MIDI_CIN_NOTE_ON = 0x09,          // Note-on
+  GRID_MIDI_CIN_POLY_KEYPRESS = 0x0A,    // Poly-KeyPress
+  GRID_MIDI_CIN_CONTROL_CHANGE = 0x0B,   // Control Change
+  GRID_MIDI_CIN_PROGRAM_CHANGE = 0x0C,   // Program Change
+  GRID_MIDI_CIN_CHANNEL_PRESSURE = 0x0D, // Channel Pressure
+  GRID_MIDI_CIN_PITCHBEND = 0x0E,        // PitchBend Change
+  GRID_MIDI_CIN_SINGLE_BYTE = 0x0F       // Single Byte (including Real-Time)
 };
 
 // MIDI System messages
-enum grid_midi_system_type {
-  GRID_MIDI_SYSEX_START = 0xF0,
-  GRID_MIDI_SYSEX_END = 0xF7
-};
+enum grid_midi_system_type { GRID_MIDI_SYSEX_START = 0xF0, GRID_MIDI_SYSEX_END = 0xF7 };
 
 // MIDI Real-Time Message bytes
 enum grid_midi_rtm_type {
