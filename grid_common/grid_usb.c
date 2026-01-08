@@ -225,123 +225,141 @@ void grid_midi_tx_pop() {
 
 bool grid_midi_tx_readable() { return grid_swsr_readable(&grid_midi_tx, sizeof(struct grid_midi_event_desc)); }
 
-void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+// Helper: Push Real-Time Message to RTM buffer
+static void grid_midi_rx_push_rtm(uint8_t rtm_byte) {
+  if (grid_swsr_writable(&grid_midi_rtm_rx, 1)) {
+    grid_swsr_write(&grid_midi_rtm_rx, &rtm_byte, 1);
+  }
+}
+
+// Helper: Push SysEx bytes and manage SysEx state
+static void grid_midi_rx_push_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  uint8_t bytes_to_write = 0;
+  uint8_t sysex_bytes[3];
+
+  switch (cin) {
+  case GRID_MIDI_CIN_SYSEX_START:
+    // SysEx starts or continues with 3 bytes
+    sysex_bytes[0] = byte1;
+    sysex_bytes[1] = byte2;
+    sysex_bytes[2] = byte3;
+    bytes_to_write = 3;
+    // Stay in SysEx mode
+    break;
+
+  case GRID_MIDI_CIN_SYSEX_END_1BYTE:
+    // SysEx ends with 1 byte
+    sysex_bytes[0] = byte1;
+    bytes_to_write = 1;
+    midi_rx_state_is_sysex = 0; // Exit SysEx mode
+    break;
+
+  case GRID_MIDI_CIN_SYSEX_END_2BYTE:
+    // SysEx ends with 2 bytes
+    sysex_bytes[0] = byte1;
+    sysex_bytes[1] = byte2;
+    bytes_to_write = 2;
+    midi_rx_state_is_sysex = 0; // Exit SysEx mode
+    break;
+
+  case GRID_MIDI_CIN_SYSEX_END_3BYTE:
+    // SysEx ends with 3 bytes
+    sysex_bytes[0] = byte1;
+    sysex_bytes[1] = byte2;
+    sysex_bytes[2] = byte3;
+    bytes_to_write = 3;
+    midi_rx_state_is_sysex = 0; // Exit SysEx mode
+    break;
+
+  default:
+    // Invalid CIN during SysEx
+    return;
+  }
+
+  // Write bytes to SysEx SWSR buffer
+  if (bytes_to_write > 0 && grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
+    grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
+  }
+}
+
+// Helper: Check if sync message should be filtered
+static bool grid_midi_should_filter_sync(uint8_t cin, uint8_t byte1) {
+
+  // Only filter if sync RX is disabled
+  if (grid_sys_get_midirx_sync_state(&grid_sys_state) != 0) {
+    return false;
+  }
+
+  // Only applies to single-byte messages
+  if (cin != GRID_MIDI_CIN_SINGLE_BYTE) {
+    return false;
+  }
+
+  // Filter clock, start, and stop messages
+  return (byte1 == GRID_MIDI_RTM_TIMING_CLOCK || byte1 == GRID_MIDI_RTM_START || byte1 == GRID_MIDI_RTM_STOP);
+}
+
+// Helper: Push normal MIDI message (notes, CC, etc.)
+static void grid_midi_rx_push_normal(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
   uint8_t cin = byte0 & 0x0F;
 
-  // 1. REAL-TIME MESSAGES (highest priority, processed even during SysEx)
-  if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 >= GRID_MIDI_RTM_TIMING_CLOCK) {
-    if (grid_swsr_writable(&grid_midi_rtm_rx, 1)) {
-      grid_swsr_write(&grid_midi_rtm_rx, &byte1, 1);
-    }
-    return; // Don't affect SysEx state
-  }
-
-  // 2. SYSEX MODE
-  if (midi_rx_state_is_sysex) {
-
-    uint8_t bytes_to_write = 0;
-    uint8_t sysex_bytes[3];
-
-    if (cin == GRID_MIDI_CIN_SYSEX_START) {
-      // SysEx continues with 3 bytes
-      sysex_bytes[0] = byte1;
-      sysex_bytes[1] = byte2;
-      sysex_bytes[2] = byte3;
-      bytes_to_write = 3;
-      // Stay in SysEx mode
-
-    } else if (cin == GRID_MIDI_CIN_SYSEX_END_1BYTE) {
-      // SysEx ends with 1 byte
-      sysex_bytes[0] = byte1; // Should be 0xF7
-      bytes_to_write = 1;
-      midi_rx_state_is_sysex = 0; // Exit SysEx mode
-
-    } else if (cin == GRID_MIDI_CIN_SYSEX_END_2BYTE) {
-      // SysEx ends with 2 bytes
-      sysex_bytes[0] = byte1;
-      sysex_bytes[1] = byte2; // Should be 0xF7
-      bytes_to_write = 2;
-      midi_rx_state_is_sysex = 0; // Exit SysEx mode
-
-    } else if (cin == GRID_MIDI_CIN_SYSEX_END_3BYTE) {
-      // SysEx ends with 3 bytes
-      sysex_bytes[0] = byte1;
-      sysex_bytes[1] = byte2;
-      sysex_bytes[2] = byte3; // Should be 0xF7
-      bytes_to_write = 3;
-      midi_rx_state_is_sysex = 0; // Exit SysEx mode
-    }
-
-    // Guard clause
-    if (bytes_to_write == 0) {
-      return;
-    }
-
-    // Write directly to SysEx SWSR buffer
-    if (grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
-      grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
-    }
-
-    return;
-  }
-
-  // 3. NORMAL MODE
-
-  // Check if this is SysEx start
-  if (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START) {
-    // Enter SysEx mode
-    midi_rx_state_is_sysex = 1;
-
-    // Write SYSEX_START (0xF0) and following bytes to SysEx buffer
-    uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
-    if (grid_swsr_writable(&grid_midi_sysex_rx, 3)) {
-      grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, 3);
-    }
-    return;
-  }
-
-  // 4. NORMAL MIDI MESSAGES (notes, CC, etc.)
-
-  // Factored into here from calling contexts, even if part of a deprecated feature
+  // Trigger sync pulse for certain RTM messages (deprecated feature)
   if ((cin == GRID_MIDI_CIN_SINGLE_BYTE) &&
       (byte1 == GRID_MIDI_RTM_TIMING_CLOCK || byte1 == GRID_MIDI_RTM_START || byte1 == GRID_MIDI_RTM_STOP)) {
     grid_platform_sync1_pulse_send();
   }
 
+  // Check if MIDI RX is globally enabled
   if (grid_sys_get_midirx_any_state(&grid_sys_state) == 0) {
     return;
   }
 
-  if (grid_sys_get_midirx_sync_state(&grid_sys_state) == 0) {
-
-    // midi clock message
-    if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 == GRID_MIDI_RTM_TIMING_CLOCK) {
-      return;
-    }
-
-    // midi start message
-    if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 == GRID_MIDI_RTM_START) {
-      return;
-    }
-
-    // midi stop message
-    if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 == GRID_MIDI_RTM_STOP) {
-      return;
-    }
+  // Filter sync messages if needed
+  if (grid_midi_should_filter_sync(cin, byte1)) {
+    return;
   }
 
+  // Push to normal MIDI RX buffer
   struct grid_midi_event_desc event;
   event.byte0 = byte0;
   event.byte1 = byte1;
   event.byte2 = byte2;
   event.byte3 = byte3;
 
-  if (!grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
+  if (grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
+    grid_swsr_write(&grid_midi_rx, &event, sizeof(struct grid_midi_event_desc));
+  }
+}
+
+void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  uint8_t cin = byte0 & 0x0F;
+
+  // 1. REAL-TIME MESSAGES (highest priority, processed even during SysEx)
+  if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 >= GRID_MIDI_RTM_TIMING_CLOCK) {
+    grid_midi_rx_push_rtm(byte1);
     return;
   }
 
-  grid_swsr_write(&grid_midi_rx, &event, sizeof(struct grid_midi_event_desc));
+  // 2. SYSEX MESSAGES
+  if (midi_rx_state_is_sysex) {
+    // Continue or end SysEx
+    grid_midi_rx_push_sysex(cin, byte1, byte2, byte3);
+    return;
+  }
+
+  // Check if this is SysEx start
+  if (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START) {
+    // Enter SysEx mode and write first packet
+    midi_rx_state_is_sysex = 1;
+    grid_midi_rx_push_sysex(cin, byte1, byte2, byte3);
+    return;
+  }
+
+  // 3. NORMAL MIDI MESSAGES
+  grid_midi_rx_push_normal(byte0, byte1, byte2, byte3);
 }
 
 void grid_midi_rx_pop() {
