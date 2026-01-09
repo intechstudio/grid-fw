@@ -701,6 +701,23 @@ int l_grid_gui_get_render_time(lua_State* L) {
   return 1;
 }
 
+#include "grid_lua_api.h"
+
+GRID_LUA_FNC_DRAW_DEFI(ldsw, l_grid_gui_draw_swap)
+GRID_LUA_FNC_DRAW_DEFI(ldpx, l_grid_gui_draw_pixel)
+GRID_LUA_FNC_DRAW_DEFI(ldl, l_grid_gui_draw_line)
+GRID_LUA_FNC_DRAW_DEFI(ldr, l_grid_gui_draw_rectangle)
+GRID_LUA_FNC_DRAW_DEFI(ldrf, l_grid_gui_draw_rectangle_filled)
+GRID_LUA_FNC_DRAW_DEFI(ldrr, l_grid_gui_draw_rectangle_rounded)
+GRID_LUA_FNC_DRAW_DEFI(ldrrf, l_grid_gui_draw_rectangle_rounded_filled)
+GRID_LUA_FNC_DRAW_DEFI(ldpo, l_grid_gui_draw_polygon)
+GRID_LUA_FNC_DRAW_DEFI(ldpof, l_grid_gui_draw_polygon_filled)
+GRID_LUA_FNC_DRAW_DEFI(ldt, l_grid_gui_draw_text)
+GRID_LUA_FNC_DRAW_DEFI(ldft, l_grid_gui_draw_text_fast)
+GRID_LUA_FNC_DRAW_DEFI(ldaf, l_grid_gui_draw_area_filled)
+GRID_LUA_FNC_DRAW_DEFI(ldd, l_grid_gui_draw_demo)
+GRID_LUA_FNC_DRAW_DEFI(lgrt, l_grid_gui_get_render_time)
+
 /*static*/ struct luaL_Reg grid_lua_api_gui_lib[] = {
     {GRID_LUA_FNC_G_GUI_DRAW_SWAP_short, GRID_LUA_FNC_G_GUI_DRAW_SWAP_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr},

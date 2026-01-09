@@ -108,34 +108,36 @@ void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, con
 
 #define GRID_LUA_FNC_GTV_DEFI(idx) \
   int XAFTERX(GRID_LUA_FNC_GTV_NAME, idx)(lua_State* L) { \
-    if (lua_gettop(L) < 2) { lua_pushnil(L); } \
-    lua_pushstring(L, "index"); \
-    lua_gettable(L, 1); \
-    lua_insert(L, 2); \
-    lua_pushinteger(L, idx); \
-    lua_insert(L, 3); \
-    lua_remove(L, 1); \
+    if (lua_gettop(L) < 2) { lua_pushnil(L); } /* ele val */ \
+    lua_pushstring(L, "index"); /* ele val key */ \
+    lua_rawget(L, 1); /* ele val eidx */ \
+    lua_pushinteger(L, idx); /* ele val eidx tidx */ \
+    lua_rotate(L, 1, -2); /* eidx tidx ele val */ \
+    lua_remove(L, -2); /* eidx tidx val */ \
     return l_grid_template_variable(L); \
   }
 
-#define GRID_LUA_FNC_META_PAR0_NAME(shortname) grid_lua_meta_ ## shortname
+#define GRID_LUA_FNC_META_NAME(shortname) grid_lua_meta_ ## shortname
 
-#define GRID_LUA_FNC_META_PAR0_DEFI(idx, fun) \
-  int XAFTERX(GRID_LUA_FNC_META_PAR0_NAME, idx)(lua_State* L) { \
-    lua_pushstring(L, "index"); \
-    lua_gettable(L, 1); \
-    lua_remove(L, 1); \
+#define GRID_LUA_FNC_META_DEFI(idx, fun) \
+  int XAFTERX(GRID_LUA_FNC_META_NAME, idx)(lua_State* L) { \
+    lua_pushstring(L, "index"); /* ele ... key */ \
+    lua_rawget(L, 1); /* ele ... eidx */ \
+    lua_replace(L, 1); /* eidx ... */ \
     return fun(L); \
   }
 
-#define GRID_LUA_FNC_META_PAR1_NAME(shortname) grid_lua_meta_ ## shortname
+#define GRID_LUA_FNC_DRAW_NAME(shortname) grid_lua_draw_ ## shortname
 
-#define GRID_LUA_FNC_META_PAR1_DEFI(idx, fun) \
-  int XAFTERX(GRID_LUA_FNC_META_PAR1_NAME, idx)(lua_State* L) { \
-    lua_pushstring(L, "index"); \
-    lua_gettable(L, 1); \
-    lua_insert(L, 2); \
-    lua_remove(L, 1); \
+#define GRID_LUA_FNC_DRAW_DEFI(idx, fun) \
+  int XAFTERX(GRID_LUA_FNC_DRAW_NAME, idx)(lua_State* L) { \
+    lua_pushstring(L, "index"); /* ele ... key */ \
+    lua_rawget(L, 1); /* ele ... eidx */ \
+    lua_pushinteger(L, GRID_LUA_FNC_L_SCREEN_INDEX_index); /* ele ... eidx tidx */ \
+    lua_pushnil(L); /* ele ... eidx tidx nil */ \
+    l_grid_template_variable(L); /* ele ... eidx tidx nil tvar */ \
+    lua_replace(L, 1); /* tvar ... eidx tidx nil */ \
+    lua_pop(L, 3); /* tvar ... */ \
     return fun(L); \
   }
 
