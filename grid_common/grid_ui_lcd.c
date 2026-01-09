@@ -6,6 +6,8 @@
 #include "grid_ain.h"
 #include "grid_lua_api.h"
 
+#ifdef ESP_PLATFORM
+
 const luaL_Reg GRID_LUA_L_INDEX_META[] = {{GRID_LUA_FNC_L_ELEMENT_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_L_ELEMENT_INDEX_index)},
                                           {GRID_LUA_FNC_L_SCREEN_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_L_SCREEN_INDEX_index)},
                                           {GRID_LUA_FNC_L_SCREEN_WIDTH_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_L_SCREEN_WIDTH_index)},
@@ -30,6 +32,12 @@ const luaL_Reg GRID_LUA_L_INDEX_META[] = {{GRID_LUA_FNC_L_ELEMENT_INDEX_short, X
                                           {GRID_LUA_FNC_L_DRAW_DEMO_short, XAFTERX(GRID_LUA_FNC_DRAW_NAME, ldd)},
                                           {GRID_LUA_FNC_L_GET_RENDER_TIME_short, XAFTERX(GRID_LUA_FNC_DRAW_NAME, lgrt)},
                                           {NULL, NULL}};
+
+#else
+
+const luaL_Reg GRID_LUA_L_INDEX_META[] = {{NULL, NULL}};
+
+#endif /* ESP_PLATFORM */
 
 const char grid_ui_lcd_init_actionstring[] = GRID_ACTIONSTRING_LCD_INIT;
 const char grid_ui_lcd_draw_actionstring[] = GRID_ACTIONSTRING_LCD_DRAW;
