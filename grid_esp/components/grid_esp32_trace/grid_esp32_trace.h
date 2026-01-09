@@ -17,7 +17,7 @@ struct grid_esp32_trace_model {
   uint64_t timed_task_micros;
 };
 
-extern struct grid_esp32_trace_model grid_esp32_trace_core0;
+extern struct grid_esp32_trace_model grid_esp32_trace_state;
 
 void grid_esp32_trace_timed_task_set(struct grid_esp32_trace_model* trace, void* task);
 void grid_esp32_trace_timed_task_begin(struct grid_esp32_trace_model* trace);
