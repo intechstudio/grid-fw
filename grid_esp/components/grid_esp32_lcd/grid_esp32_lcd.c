@@ -406,6 +406,10 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
     waiting[lcd_index] = false;
 
     grid_gui_swap_set(&guis[lcd_index], false);
+
+    // Store render time, reset accumulator
+    guis[lcd_index].render_time = guis[lcd_index].render_time_acc;
+    guis[lcd_index].render_time_acc = 0;
   }
 }
 
@@ -436,6 +440,9 @@ void grid_utask_draw_trigger(struct grid_utask_timer* timer) {
 
 void grid_esp32_lcd_task(void* arg) {
 
+  // Set this task as the timed task in the trace facility (to measure render time)
+  grid_esp32_trace_timed_task_set(&grid_esp32_trace_state, xTaskGetCurrentTaskHandle());
+
   // Configure task timers
   for (int i = 0; i < 2; ++i) {
     timer_draw_trigger[i] = (struct grid_utask_timer){
@@ -465,9 +472,18 @@ void grid_esp32_lcd_task(void* arg) {
 
       if (grid_esp32_lcd_panel_active(&lcds[i])) {
 
-        while (grid_swsr_size(&guis[i].swsr) && !grid_gui_swap_get(&guis[i])) {
+        bool anyrender = grid_swsr_size(&guis[i].swsr) && !grid_gui_swap_get(&guis[i]);
 
+        if (anyrender) {
+          grid_esp32_trace_timed_task_begin(&grid_esp32_trace_state);
+        }
+
+        while (grid_swsr_size(&guis[i].swsr) && !grid_gui_swap_get(&guis[i])) {
           grid_gui_queue_step(&guis[i]);
+        }
+
+        if (anyrender) {
+          guis[i].render_time_acc += grid_esp32_trace_timed_task_diff(&grid_esp32_trace_state);
         }
       }
     }

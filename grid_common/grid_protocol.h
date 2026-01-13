@@ -525,6 +525,11 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr l_grid_gui_draw_demo
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_usage "gui_draw_demo(screen_index, n) Draws the n-th iteration of the demo."
 
+#define GRID_LUA_FNC_G_GUI_GET_RENDER_TIME_short "gggrt"
+#define GRID_LUA_FNC_G_GUI_GET_RENDER_TIME_human "gui_get_render_time"
+#define GRID_LUA_FNC_G_GUI_GET_RENDER_TIME_fnptr l_grid_gui_get_render_time
+#define GRID_LUA_FNC_G_GUI_GET_RENDER_TIME_usage "gui_get_render_time(screen_index) Returns the time spent rendering between the last two swaps, in microseconds."
+
 #define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_short "glsb"
 #define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_human "lcd_set_backlight"
 #define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_fnptr l_grid_lcd_set_backlight

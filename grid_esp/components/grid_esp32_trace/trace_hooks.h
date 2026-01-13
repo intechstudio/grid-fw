@@ -31,20 +31,13 @@ sed -i '10s|.*|#include
 extern "C" {
 #endif
 
-/*
-
 #define gridUSE_TRACE 1
 
 #define configUSE_TRACE_FACILITY 1
 #define configUSE_STATS_FORMATTING_FUNCTIONS 1
 
-
-#define traceTASK_SWITCHED_IN() \ grid_trace_task_switched_in();
-
-#define traceTASK_SWITCHED_OUT() \ grid_trace_task_switched_out();
-
-
-*/
+#define traceTASK_SWITCHED_IN grid_esp32_trace_task_switched_in
+#define traceTASK_SWITCHED_OUT grid_esp32_trace_task_switched_out
 
 #ifdef __cplusplus
 }

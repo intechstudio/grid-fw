@@ -68,12 +68,21 @@ void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer*
 #define GRID_LUA_FNC_L_DRAW_DEMO_human "draw_demo"
 #define GRID_LUA_FNC_L_DRAW_DEMO_usage "lcd:draw_demo(n) Draws the n-th iteration of the demo."
 
+#define GRID_LUA_FNC_L_GET_RENDER_TIME_short "lgrt"
+#define GRID_LUA_FNC_L_GET_RENDER_TIME_human "get_render_time"
+#define GRID_LUA_FNC_L_GET_RENDER_TIME_usage "lcd:get_render_time() Returns the time spent rendering between the last two swaps, in microseconds."
+
 // clang-format off
 
 #define GRID_LUA_FNC_ASSIGN_META_DRAW(key, val) \
   key " = function (self, ...) " \
   "local screen_idx = self:" GRID_LUA_FNC_L_SCREEN_INDEX_short "(); " \
   val "(screen_idx, ...) end"
+
+#define GRID_LUA_FNC_ASSIGN_META_DRAW_RET(key, val) \
+  key " = function (self, ...) " \
+  "local screen_idx = self:" GRID_LUA_FNC_L_SCREEN_INDEX_short "(); " \
+  "return " val "(screen_idx, ...) end"
 
 // clang-format on
 
@@ -107,6 +116,7 @@ extern const luaL_Reg GRID_LUA_L_INDEX_META[];
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_FASTTEXT_short, GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_AREA_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_short) "," \
   GRID_LUA_FNC_ASSIGN_META_DRAW(GRID_LUA_FNC_L_DRAW_DEMO_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_short) "," \
+  GRID_LUA_FNC_ASSIGN_META_DRAW_RET(GRID_LUA_FNC_L_GET_RENDER_TIME_short, GRID_LUA_FNC_G_GUI_GET_RENDER_TIME_short) "," \
   \
   "}}"
 

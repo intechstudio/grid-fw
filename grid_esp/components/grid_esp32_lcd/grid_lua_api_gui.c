@@ -687,6 +687,20 @@ int l_grid_gui_draw_demo(lua_State* L) {
   return 0;
 }
 
+int l_grid_gui_get_render_time(lua_State* L) {
+
+  int screen_index = luaL_checknumber(L, 1);
+  if (!grid_gui_index_active(screen_index)) {
+    return 0;
+  }
+
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+
+  lua_pushinteger(L, gui->render_time);
+
+  return 1;
+}
+
 /*static*/ struct luaL_Reg grid_lua_api_gui_lib[] = {
     {GRID_LUA_FNC_G_GUI_DRAW_SWAP_short, GRID_LUA_FNC_G_GUI_DRAW_SWAP_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_PIXEL_short, GRID_LUA_FNC_G_GUI_DRAW_PIXEL_fnptr},
@@ -701,6 +715,7 @@ int l_grid_gui_draw_demo(lua_State* L) {
     {GRID_LUA_FNC_G_GUI_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_DEMO_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr},
+    {GRID_LUA_FNC_G_GUI_GET_RENDER_TIME_short, GRID_LUA_FNC_G_GUI_GET_RENDER_TIME_fnptr},
     {NULL, NULL} /* end of array */
 };
 

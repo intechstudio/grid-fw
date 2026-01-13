@@ -57,6 +57,8 @@ struct grid_gui_model {
   uint8_t delta;
   uint8_t swap;
   struct grid_swsr_t swsr;
+  uint32_t render_time_acc;
+  uint32_t render_time;
 };
 
 extern struct grid_gui_model grid_gui_states[2];
