@@ -133,10 +133,13 @@ void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, con
   int XAFTERX(GRID_LUA_FNC_DRAW_NAME, idx)(lua_State* L) { \
     lua_pushstring(L, "index"); /* ele ... key */ \
     lua_rawget(L, 1); /* ele ... eidx */ \
-    lua_pushinteger(L, GRID_LUA_FNC_L_SCREEN_INDEX_index); /* ele ... eidx tidx */ \
-    lua_pushnil(L); /* ele ... eidx tidx nil */ \
-    l_grid_template_variable(L); /* ele ... tvar */ \
-    lua_replace(L, 1); /* tvar ... */ \
+    int32_t screen_idx = grid_ui_element_get_template_parameter( \
+        grid_ui_element_find(&grid_ui_state, lua_tointeger(L, -1)), \
+        GRID_LUA_FNC_L_SCREEN_INDEX_index \
+    ); \
+    lua_pop(L, 1); /* ele ... */ \
+    lua_pushinteger(L, screen_idx); /* ele ... scr */ \
+    lua_replace(L, 1); /* scr ... */ \
     return fun(L); \
   }
 

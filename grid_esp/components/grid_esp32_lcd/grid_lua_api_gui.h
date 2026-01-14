@@ -16,6 +16,7 @@ struct grid_gui_model;
 #include "grid_lua.h"
 #include "grid_protocol.h"
 #include "grid_swsr.h"
+#include "grid_ui.h"
 
 int l_grid_gui_draw_swap(lua_State* L);
 int l_grid_gui_draw_pixel(lua_State* L);
