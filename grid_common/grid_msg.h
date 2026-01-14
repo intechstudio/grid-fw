@@ -73,6 +73,7 @@ void grid_msg_init_brc(struct grid_msg_model* model, struct grid_msg* msg, uint8
 int grid_msg_close_brc(struct grid_msg_model* model, struct grid_msg* msg);
 int grid_msg_nprintf(struct grid_msg* msg, const char* fmt, ...);
 int grid_msg_add_segment_char(struct grid_msg* msg, uint8_t head_hexes, uint32_t size, char* buffer);
+int grid_msg_add_hex_bytes(struct grid_msg* msg, uint8_t* data, uint16_t length);
 int grid_msg_add_debugtext(struct grid_msg* msg, const char* text);
 int grid_msg_move(struct grid_msg* dest, struct grid_msg* src);
 void grid_msg_to_swsr(struct grid_msg* msg, struct grid_swsr_t* swsr);

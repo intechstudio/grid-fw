@@ -389,14 +389,10 @@ static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t lengt
   // Set length parameter
   grid_msg_set_parameter(&msg, CLASS_MIDISYSEX_LENGTH, length);
 
-  // Encode each SysEx byte as 2-char hex in payload
-  for (uint16_t i = 0; i < length; i++) {
-    uint16_t offset = msg.offset + GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i * 2;
-    grid_frame_set_parameter((uint8_t*)msg.data, offset, 2, sysex_data[i]);
+  // Encode SysEx bytes as hex payload
+  if (grid_msg_add_hex_bytes(&msg, sysex_data, length) < 0) {
+    return;
   }
-
-  // Update msg.length to account for the payload we just wrote (2 hex chars per byte)
-  msg.length += length * 2;
 
   grid_msg_add_frame(&msg, GRID_CLASS_MIDISYSEX_frame_end);
 
