@@ -414,6 +414,13 @@ void grid_midi_sysex_rx_pop() {
     uint8_t byte;
     grid_swsr_read(&grid_midi_sysex_rx, &byte, 1);
 
+    // Buffer overflow protection
+    if (sysex_assembly_index >= GRID_MIDI_SYSEX_RX_BUFFER_length) {
+      // Message too large, discard
+      sysex_assembly_index = 0;
+      break;
+    }
+
     sysex_assembly_buffer[sysex_assembly_index++] = byte;
 
     // Check for SysEx end marker
@@ -425,13 +432,6 @@ void grid_midi_sysex_rx_pop() {
       sysex_assembly_index = 0;
 
       break; // Process only ONE message per call
-    }
-
-    // Buffer overflow protection
-    if (sysex_assembly_index >= GRID_MIDI_SYSEX_RX_BUFFER_length) {
-      // Message too large, discard
-      sysex_assembly_index = 0;
-      break;
     }
   }
 }
