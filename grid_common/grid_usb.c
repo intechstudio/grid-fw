@@ -284,40 +284,11 @@ static bool grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2
   return true;
 }
 
-// Helper: Check if sync message should be filtered
-static bool grid_midi_should_filter_sync(uint8_t cin, uint8_t byte1) {
-
-  // Only filter if sync RX is disabled
-  if (grid_sys_get_midirx_sync_state(&grid_sys_state) != 0) {
-    return false;
-  }
-
-  // Only applies to single-byte messages
-  if (cin != GRID_MIDI_CIN_SINGLE_BYTE) {
-    return false;
-  }
-
-  // Filter clock, start, and stop messages
-  return (byte1 == GRID_MIDI_RTM_TIMING_CLOCK || byte1 == GRID_MIDI_RTM_START || byte1 == GRID_MIDI_RTM_STOP);
-}
-
 // Helper: Push normal MIDI message (notes, CC, etc.)
 static void grid_midi_rx_push_normal(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
-  uint8_t cin = byte0 & 0x0F;
-
-  // Trigger sync pulse for certain RTM messages (deprecated feature)
-  if ((cin == GRID_MIDI_CIN_SINGLE_BYTE) && (byte1 == GRID_MIDI_RTM_TIMING_CLOCK || byte1 == GRID_MIDI_RTM_START || byte1 == GRID_MIDI_RTM_STOP)) {
-    grid_platform_sync1_pulse_send();
-  }
-
   // Check if MIDI RX is globally enabled
   if (grid_sys_get_midirx_any_state(&grid_sys_state) == 0) {
-    return;
-  }
-
-  // Filter sync messages if needed
-  if (grid_midi_should_filter_sync(cin, byte1)) {
     return;
   }
 
