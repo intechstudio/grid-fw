@@ -135,9 +135,8 @@ void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, con
     lua_rawget(L, 1); /* ele ... eidx */ \
     lua_pushinteger(L, GRID_LUA_FNC_L_SCREEN_INDEX_index); /* ele ... eidx tidx */ \
     lua_pushnil(L); /* ele ... eidx tidx nil */ \
-    l_grid_template_variable(L); /* ele ... eidx tidx nil tvar */ \
-    lua_replace(L, 1); /* tvar ... eidx tidx nil */ \
-    lua_pop(L, 3); /* tvar ... */ \
+    l_grid_template_variable(L); /* ele ... tvar */ \
+    lua_replace(L, 1); /* tvar ... */ \
     return fun(L); \
   }
 

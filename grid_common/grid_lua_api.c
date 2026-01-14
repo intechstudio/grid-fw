@@ -1597,45 +1597,39 @@ int l_grid_cat(lua_State* L) {
 
 /*static*/ int l_grid_template_variable(lua_State* L) {
 
-  int nargs = lua_gettop(L);
+  const int nargs = 3;
 
-  if (nargs < 2) {
-    // error
+  if (lua_gettop(L) < nargs) {
     grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
-  int32_t param[3] = {0};
+  int32_t ele_idx = lua_tointeger(L, -3);
 
-  uint8_t isgetter = lua_isnil(L, -1);
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, ele_idx);
 
-  int argc = nargs < 3 ? 2 : 3;
-  for (int i = 0; i < argc; ++i) {
-
-    if (lua_isinteger(L, i - argc)) {
-      param[i] = lua_tointeger(L, i - argc);
-    }
+  if (!ele) {
+    return 0;
   }
 
-  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, param[0]);
+  int32_t gtv_idx = lua_tointeger(L, -2);
 
-  if (ele != NULL) {
+  bool isgetter = lua_isnil(L, -1);
 
-    uint8_t template_index = param[1];
+  int32_t gtv_val = lua_tointeger(L, -1);
 
-    if (isgetter) {
+  lua_pop(L, nargs);
 
-      int32_t var = grid_ui_element_get_template_parameter(ele, template_index);
-      lua_pushinteger(L, var);
+  if (isgetter) {
 
-    } else {
+    lua_pushinteger(L, grid_ui_element_get_template_parameter(ele, gtv_idx));
 
-      int32_t var = param[2];
-      grid_ui_element_set_template_parameter(ele, template_index, var);
-    }
+  } else {
+
+    grid_ui_element_set_template_parameter(ele, gtv_idx, gtv_val);
   }
 
-  return 1;
+  return isgetter;
 }
 
 /*static*/ int l_grid_page_next(lua_State* L) {
