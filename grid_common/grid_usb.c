@@ -236,55 +236,52 @@ static void grid_midi_rx_push_rtm(uint8_t rtm_byte) {
   }
 }
 
-// Helper: Push SysEx bytes and manage SysEx state
-static void grid_midi_rx_push_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+// SysEx state machine: returns true if packet was SysEx (caller should early return)
+static bool grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
+  bool is_sysex_start = (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START);
+
+  // Guard: not SysEx if not in SysEx mode and not a SysEx start
+  if (!midi_rx_state_is_sysex && !is_sysex_start) {
+    return false;
+  }
+
+  // Enter SysEx mode on start
+  if (!midi_rx_state_is_sysex) {
+    midi_rx_state_is_sysex = 1;
+  }
+
+  // Copy parameters into buffer
+  uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
   uint8_t bytes_to_write = 0;
-  uint8_t sysex_bytes[3];
 
+  // Determine bytes to write based on CIN
   switch (cin) {
   case GRID_MIDI_CIN_SYSEX_START:
-    // SysEx starts or continues with 3 bytes
-    sysex_bytes[0] = byte1;
-    sysex_bytes[1] = byte2;
-    sysex_bytes[2] = byte3;
     bytes_to_write = 3;
-    // Stay in SysEx mode
     break;
-
   case GRID_MIDI_CIN_SYSEX_END_1BYTE:
-    // SysEx ends with 1 byte
-    sysex_bytes[0] = byte1;
     bytes_to_write = 1;
-    midi_rx_state_is_sysex = 0; // Exit SysEx mode
     break;
-
   case GRID_MIDI_CIN_SYSEX_END_2BYTE:
-    // SysEx ends with 2 bytes
-    sysex_bytes[0] = byte1;
-    sysex_bytes[1] = byte2;
     bytes_to_write = 2;
-    midi_rx_state_is_sysex = 0; // Exit SysEx mode
     break;
-
   case GRID_MIDI_CIN_SYSEX_END_3BYTE:
-    // SysEx ends with 3 bytes
-    sysex_bytes[0] = byte1;
-    sysex_bytes[1] = byte2;
-    sysex_bytes[2] = byte3;
     bytes_to_write = 3;
-    midi_rx_state_is_sysex = 0; // Exit SysEx mode
     break;
+  }
 
-  default:
-    // Invalid CIN during SysEx
-    return;
+  // Stay in SysEx mode only for start/continue packets (CIN 0x04)
+  if (cin != GRID_MIDI_CIN_SYSEX_START) {
+    midi_rx_state_is_sysex = 0;
   }
 
   // Write bytes to SysEx SWSR buffer
   if (bytes_to_write > 0 && grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
     grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
   }
+
+  return true;
 }
 
 // Helper: Check if sync message should be filtered
@@ -347,18 +344,7 @@ void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte
   }
 
   // 2. SYSEX MESSAGES
-  if (midi_rx_state_is_sysex) {
-    // Continue or end SysEx
-    grid_midi_rx_push_sysex(cin, byte1, byte2, byte3);
-    return;
-  }
-
-  // Check if this is SysEx start
-  if (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START) {
-    // Enter SysEx mode and write first packet
-
-    midi_rx_state_is_sysex = 1;
-    grid_midi_rx_push_sysex(cin, byte1, byte2, byte3);
+  if (grid_midi_rx_process_sysex(cin, byte1, byte2, byte3)) {
     return;
   }
 
