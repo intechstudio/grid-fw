@@ -30,8 +30,13 @@
 #include "tinyusb_cdc_acm.h"
 #include "tinyusb_default_config.h"
 
+#if CFG_TUD_NCM
+#include "class/net/net_device.h"
+#endif
+
 static const char* TAG = "USB example";
 
+#if CFG_TUD_MIDI
 void tud_midi_rx_cb(uint8_t itf) {
 
   (void)itf;
@@ -73,6 +78,7 @@ void tud_midi_rx_cb(uint8_t itf) {
     }
   }
 }
+#endif // CFG_TUD_MIDI
 
 struct grid_swsr_t cdc_rx;
 
@@ -168,6 +174,8 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) {
 
 // =========================== HID ======================== //
 
+#if CFG_TUD_HID
+
 /**
  * @brief HID report descriptor
  *
@@ -205,6 +213,8 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
 // received data on OUT endpoint ( Report ID = 0, Type = 0 )
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {}
 
+#endif // CFG_TUD_HID
+
 // Interface counter
 enum interface_count {
 #if CFG_TUD_CDC
@@ -217,6 +227,10 @@ enum interface_count {
 #endif
 #if CFG_TUD_HID
   ITF_NUM_HID,
+#endif
+#if CFG_TUD_NCM
+  ITF_NUM_NCM,
+  ITF_NUM_NCM_DATA,
 #endif
   ITF_COUNT
 };
@@ -235,6 +249,10 @@ enum usb_endpoints {
 #if CFG_TUD_HID
   EPNUM_HID,
 #endif
+#if CFG_TUD_NCM
+  EPNUM_NCM_DATA,    // EP5 - bidirectional for bulk data
+  EPNUM_NCM_NOTIFY,  // EP6 - IN only for notification
+#endif
   ENDPOINT_COUNT
 };
 
@@ -243,7 +261,7 @@ enum usb_endpoints {
 
 /** TinyUSB descriptors **/
 
-#define TUSB_DESCRIPTOR_TOTAL_LEN (TUD_CONFIG_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN + CFG_TUD_MIDI * TUD_MIDI_DESC_LEN + CFG_TUD_HID * TUD_HID_DESC_LEN)
+#define TUSB_DESCRIPTOR_TOTAL_LEN (TUD_CONFIG_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN + CFG_TUD_MIDI * TUD_MIDI_DESC_LEN + CFG_TUD_HID * TUD_HID_DESC_LEN + CFG_TUD_NCM * TUD_CDC_NCM_DESC_LEN)
 
 /**
  * @brief String descriptor
@@ -251,16 +269,18 @@ enum usb_endpoints {
 // UTF-16LE language ID (0x0409 = English US)
 static const uint16_t _usb_lang_id[] = {0x0409};
 
-static const void* s_str_desc[6] = {
+static const void* s_str_desc[8] = {
     _usb_lang_id,              // index 0: valid UTF-16 buffer
-    "Intech Studio",           // 1
-    "Grid",                    // 2
-    "123456",                  // 3
-    "Intech Grid MIDI device", // 4
-    "Intech Grid CDC device",  // 5
+    "Intech Studio",           // 1: Manufacturer
+    "Grid",                    // 2: Product
+    "123456",                  // 3: Serial
+    "Intech Grid MIDI device", // 4: MIDI interface
+    "Intech Grid CDC device",  // 5: CDC interface
+    "Intech Grid NCM device",  // 6: NCM interface
+    "02504F4E4554",            // 7: NCM MAC address (as hex string, will be parsed by host)
 };
 
-static const uint8_t strcnt = 6;
+static const uint8_t strcnt = 8;
 
 /**
  * @brief Configuration descriptor
@@ -274,7 +294,8 @@ static uint8_t s_cfg_desc[] = {
     TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESCRIPTOR_TOTAL_LEN, 0, 500),
 
 #if CFG_TUD_CDC
-    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_NOTIFY, 5, (0x80 | EPNUM_CDC_NOTIFY), 64, EPNUM_CDC_DATA, (0x80 | EPNUM_CDC_DATA), 64),
+    // CDC notify endpoint reduced from 64 to 8 bytes (notifications are small)
+    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_NOTIFY, 5, (0x80 | EPNUM_CDC_NOTIFY), 8, EPNUM_CDC_DATA, (0x80 | EPNUM_CDC_DATA), 64),
 #endif
 
 #if CFG_TUD_MIDI
@@ -286,6 +307,13 @@ static uint8_t s_cfg_desc[] = {
     // Interface number, string index, boot protocol, report descriptor len, EP
     // In address, size & polling interval
     TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, false, sizeof(hid_report_descriptor), (0x80 | EPNUM_HID), 16, 10),
+#endif
+
+#if CFG_TUD_NCM
+    // Interface number, string index, MAC string index, EP notification, EP notification size,
+    // EP data out, EP data in, EP data size, max segment size
+    // NCM notify endpoint reduced from 64 to 16 bytes to save FIFO space
+    TUD_CDC_NCM_DESCRIPTOR(ITF_NUM_NCM, 6, 7, (0x80 | EPNUM_NCM_NOTIFY), 16, EPNUM_NCM_DATA, (0x80 | EPNUM_NCM_DATA), 64, 1514),
 #endif
 
 };
@@ -320,7 +348,9 @@ void grid_esp32_usb_init() {
   // END OF USB
 }
 
-// ========================= PLATFORM =============================== //
+// ========================= MIDI PLATFORM =============================== //
+
+#if CFG_TUD_MIDI
 
 int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
@@ -344,6 +374,23 @@ int32_t grid_platform_usb_midi_write_status(void) {
   // ets_printf("grid_platform_usb_midi_write_status NOT IMPLEMENTED!!!");
   return 0;
 }
+
+#else // !CFG_TUD_MIDI - stub implementations
+
+int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+  (void)byte0; (void)byte1; (void)byte2; (void)byte3;
+  return 0;
+}
+
+int32_t grid_platform_usb_midi_write_status(void) {
+  return 0;
+}
+
+#endif // CFG_TUD_MIDI
+
+// ========================= HID PLATFORM =============================== //
+
+#if CFG_TUD_HID
 
 enum mouse_button_type { LEFT_BTN = 0x01, RIGHT_BTN = 0x02, MIDDLE_BTN = 0x04 };
 
@@ -471,3 +518,67 @@ int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_ev
   // Report Id, modifier, keycodearray
   return 0 == tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, modifier, keycode);
 }
+
+#else // !CFG_TUD_HID - stub implementations
+
+int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type) {
+  (void)b_state; (void)type;
+  return 0;
+}
+
+int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis) {
+  (void)position; (void)axis;
+  return 0;
+}
+
+int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value) {
+  (void)axis; (void)value;
+  return 0;
+}
+
+int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value) {
+  (void)button; (void)value;
+  return 0;
+}
+
+int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_event_desc* active_key_list, uint8_t keys_count) {
+  (void)active_key_list; (void)keys_count;
+  return 0;
+}
+
+#endif // CFG_TUD_HID
+
+// ========================= NCM CALLBACKS =============================== //
+
+#if CFG_TUD_NCM
+
+// MAC address for NCM device (first byte 0x02 indicates locally administered)
+uint8_t tud_network_mac_address[6] = {0x02, 0x50, 0x4F, 0x4E, 0x45, 0x54}; // "PONET" in hex
+
+// Called when network driver is initialized
+void tud_network_init_cb(void) {
+  ESP_LOGI(TAG, "NCM network initialized");
+}
+
+// Called when a packet is received from the host
+// Return true if packet was accepted, false to retry later
+bool tud_network_recv_cb(const uint8_t *src, uint16_t size) {
+  (void)src;
+  (void)size;
+  // For enumeration testing, just accept and discard packets
+  // NOTE: Do NOT call tud_network_recv_renew() here - it causes recursion!
+  // The driver handles buffer renewal after this callback returns true.
+  return true;
+}
+
+// Called to copy transmit data to the USB buffer
+// Return the number of bytes written
+uint16_t tud_network_xmit_cb(uint8_t *dst, void *ref, uint16_t arg) {
+  (void)dst;
+  (void)ref;
+  (void)arg;
+  // No transmission for now
+  return 0;
+}
+
+#endif // CFG_TUD_NCM

@@ -528,7 +528,9 @@ void grid_esp32_port_task(void* arg) {
 
     // Duplicate midi rx callback used as a polling mechanism, as the
     // actual callback may not necessarily process all available data
+#if CFG_TUD_MIDI
     tud_midi_rx_cb(0);
+#endif
 
     // Decode for UI
     grid_port_send_ui(port_ui);
