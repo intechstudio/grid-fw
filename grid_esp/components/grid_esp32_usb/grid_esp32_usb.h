@@ -11,6 +11,7 @@
 extern "C" {
 #endif
 
+// USB class configuration - define before including subsystem headers
 #undef CFG_TUD_CDC
 #undef CFG_TUD_HID
 #undef CFG_TUD_MIDI
@@ -23,33 +24,23 @@ extern "C" {
 #define CFG_TUD_MSC 0
 #define CFG_TUD_VENDOR 0
 
-/* HID Mouse Class Pointer Move Type */
-enum mouse_move_type { X_AXIS_MV = 0x01, Y_AXIS_MV = 0x02, SCROLL_MV = 0x03 };
+#ifdef __cplusplus
+}
+#endif
 
-enum gamepad_axis_t { GAMEPAD_AXIS_X = 0, GAMEPAD_AXIS_Y, GAMEPAD_AXIS_Z, GAMEPAD_AXIS_RX, GAMEPAD_AXIS_RY, GAMEPAD_AXIS_RZ };
+// Include all USB subsystem headers (after CFG_TUD_* are defined)
+#include "grid_esp32_usb_cdc.h"
+#include "grid_esp32_usb_hid.h"
+#include "grid_esp32_usb_midi.h"
+#include "grid_esp32_usb_ncm.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** Helper defines **/
 
 void grid_esp32_usb_init(void);
-void grid_esp32_usb_task(void* arg);
-
-extern void grid_platform_sync1_pulse_send();
-
-int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
-
-int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
-
-int32_t grid_platform_usb_midi_write_status(void);
-
-int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type);
-int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis);
-
-int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value);
-int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value);
-
-// NCM network interface functions
-void grid_platform_ncm_init(void);
-void grid_platform_ncm_service(void);
 
 #ifdef __cplusplus
 }
