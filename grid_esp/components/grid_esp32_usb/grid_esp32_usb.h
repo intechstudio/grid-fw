@@ -47,6 +47,10 @@ int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis);
 int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value);
 int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value);
 
+// NCM network interface functions
+void grid_platform_ncm_init(void);
+void grid_platform_ncm_service(void);
+
 #ifdef __cplusplus
 }
 #endif

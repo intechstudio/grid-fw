@@ -32,6 +32,13 @@
 
 #if CFG_TUD_NCM
 #include "class/net/net_device.h"
+#include "dhserver.h"
+#include "dnserver.h"
+#include "lwip/ethip6.h"
+#include "lwip/init.h"
+#include "lwip/netif.h"
+#include "lwip/timeouts.h"
+#include "netif/etharp.h"
 #endif
 
 static const char* TAG = "USB example";
@@ -250,8 +257,8 @@ enum usb_endpoints {
   EPNUM_HID,
 #endif
 #if CFG_TUD_NCM
-  EPNUM_NCM_DATA,    // EP5 - bidirectional for bulk data
-  EPNUM_NCM_NOTIFY,  // EP6 - IN only for notification
+  EPNUM_NCM_DATA,   // EP5 - bidirectional for bulk data
+  EPNUM_NCM_NOTIFY, // EP6 - IN only for notification
 #endif
   ENDPOINT_COUNT
 };
@@ -378,13 +385,14 @@ int32_t grid_platform_usb_midi_write_status(void) {
 #else // !CFG_TUD_MIDI - stub implementations
 
 int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
-  (void)byte0; (void)byte1; (void)byte2; (void)byte3;
+  (void)byte0;
+  (void)byte1;
+  (void)byte2;
+  (void)byte3;
   return 0;
 }
 
-int32_t grid_platform_usb_midi_write_status(void) {
-  return 0;
-}
+int32_t grid_platform_usb_midi_write_status(void) { return 0; }
 
 #endif // CFG_TUD_MIDI
 
@@ -522,63 +530,200 @@ int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_ev
 #else // !CFG_TUD_HID - stub implementations
 
 int32_t grid_platform_usb_mouse_button_change(uint8_t b_state, uint8_t type) {
-  (void)b_state; (void)type;
+  (void)b_state;
+  (void)type;
   return 0;
 }
 
 int32_t grid_platform_usb_mouse_move(int8_t position, uint8_t axis) {
-  (void)position; (void)axis;
+  (void)position;
+  (void)axis;
   return 0;
 }
 
 int32_t grid_platform_usb_gamepad_axis_move(uint8_t axis, int32_t value) {
-  (void)axis; (void)value;
+  (void)axis;
+  (void)value;
   return 0;
 }
 
 int32_t grid_platform_usb_gamepad_button_change(uint8_t button, uint8_t value) {
-  (void)button; (void)value;
+  (void)button;
+  (void)value;
   return 0;
 }
 
 int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_event_desc* active_key_list, uint8_t keys_count) {
-  (void)active_key_list; (void)keys_count;
+  (void)active_key_list;
+  (void)keys_count;
   return 0;
 }
 
 #endif // CFG_TUD_HID
 
-// ========================= NCM CALLBACKS =============================== //
+// ========================= NCM NETWORK STACK =============================== //
 
 #if CFG_TUD_NCM
 
 // MAC address for NCM device (first byte 0x02 indicates locally administered)
 uint8_t tud_network_mac_address[6] = {0x02, 0x50, 0x4F, 0x4E, 0x45, 0x54}; // "PONET" in hex
 
-// Called when network driver is initialized
+// lwIP netif for USB network
+static struct netif ncm_netif_data;
+static bool ncm_netif_initialized = false;
+
+// Network configuration - Device is 192.168.7.1, host gets 192.168.7.2
+#define INIT_IP4(a, b, c, d)                                                                                                                                                                           \
+  { PP_HTONL(LWIP_MAKEU32(a, b, c, d)) }
+
+static const ip4_addr_t ncm_ipaddr = INIT_IP4(192, 168, 7, 1);
+static const ip4_addr_t ncm_netmask = INIT_IP4(255, 255, 255, 0);
+static const ip4_addr_t ncm_gateway = INIT_IP4(0, 0, 0, 0);
+
+// DHCP entries - addresses that can be offered to the host
+static dhcp_entry_t dhcp_entries[] = {
+    {{0}, INIT_IP4(192, 168, 7, 2), 24 * 60 * 60},
+    {{0}, INIT_IP4(192, 168, 7, 3), 24 * 60 * 60},
+    {{0}, INIT_IP4(192, 168, 7, 4), 24 * 60 * 60},
+};
+
+static const dhcp_config_t dhcp_config = {
+    .router = INIT_IP4(0, 0, 0, 0), .port = 67, .dns = INIT_IP4(192, 168, 7, 1), .domain = "usb", .num_entry = sizeof(dhcp_entries) / sizeof(dhcp_entries[0]), .entries = dhcp_entries};
+
+// DNS query handler - resolve "grid.usb" to device IP
+static bool dns_query_proc(const char* name, ip4_addr_t* addr) {
+  if (strcmp(name, "grid.usb") == 0) {
+    *addr = ncm_ipaddr;
+    return true;
+  }
+  return false;
+}
+
+// lwIP linkoutput function - sends packets from lwIP to USB
+static err_t ncm_linkoutput_fn(struct netif* netif, struct pbuf* p) {
+  (void)netif;
+
+  for (;;) {
+    if (!tud_ready()) {
+      return ERR_USE;
+    }
+
+    if (tud_network_can_xmit(p->tot_len)) {
+      tud_network_xmit(p, 0);
+      return ERR_OK;
+    }
+
+    // Transfer execution to TinyUSB to finish pending transmissions
+    tud_task();
+  }
+}
+
+// lwIP IPv4 output function
+static err_t ncm_ip4_output_fn(struct netif* netif, struct pbuf* p, const ip4_addr_t* addr) { return etharp_output(netif, p, addr); }
+
+// lwIP netif init callback
+static err_t ncm_netif_init_cb(struct netif* netif) {
+  netif->mtu = CFG_TUD_NET_MTU;
+  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+  netif->state = NULL;
+  netif->name[0] = 'U';
+  netif->name[1] = 'S';
+  netif->linkoutput = ncm_linkoutput_fn;
+  netif->output = ncm_ip4_output_fn;
+  return ERR_OK;
+}
+
+// Initialize the NCM network interface
+static void ncm_netif_init(void) {
+  struct netif* netif = &ncm_netif_data;
+
+  // Set MAC address (toggle LSB to differ from host)
+  netif->hwaddr_len = sizeof(tud_network_mac_address);
+  memcpy(netif->hwaddr, tud_network_mac_address, sizeof(tud_network_mac_address));
+  netif->hwaddr[5] ^= 0x01;
+
+  // Add netif to lwIP
+  netif_add(netif, &ncm_ipaddr, &ncm_netmask, &ncm_gateway, NULL, ncm_netif_init_cb, ethernet_input);
+  netif_set_default(netif);
+  netif_set_link_up(netif);
+
+  // Initialize DHCP server
+  while (dhserv_init(&dhcp_config) != ERR_OK) {
+    ESP_LOGE(TAG, "DHCP server init failed, retrying...");
+    vTaskDelay(pdMS_TO_TICKS(100));
+  }
+  ESP_LOGI(TAG, "DHCP server started");
+
+  // Initialize DNS server
+  while (dnserv_init(IP_ADDR_ANY, 53, dns_query_proc) != ERR_OK) {
+    ESP_LOGE(TAG, "DNS server init failed, retrying...");
+    vTaskDelay(pdMS_TO_TICKS(100));
+  }
+  ESP_LOGI(TAG, "DNS server started");
+
+  ncm_netif_initialized = true;
+  ESP_LOGI(TAG, "NCM network interface ready at 192.168.7.1");
+}
+
+// ========================= NCM TinyUSB Callbacks =============================== //
+
+// Called when network driver is initialized by TinyUSB
 void tud_network_init_cb(void) {
-  ESP_LOGI(TAG, "NCM network initialized");
+  ESP_LOGI(TAG, "NCM network initialized by TinyUSB");
+  // Notify USB host that link is up
+  tud_network_link_state(0, true);
 }
 
 // Called when a packet is received from the host
-// Return true if packet was accepted, false to retry later
-bool tud_network_recv_cb(const uint8_t *src, uint16_t size) {
-  (void)src;
-  (void)size;
-  // For enumeration testing, just accept and discard packets
-  // NOTE: Do NOT call tud_network_recv_renew() here - it causes recursion!
-  // The driver handles buffer renewal after this callback returns true.
+bool tud_network_recv_cb(const uint8_t* src, uint16_t size) {
+  if (!ncm_netif_initialized || size == 0) {
+    return true; // Accept but discard if not ready
+  }
+
+  struct netif* netif = &ncm_netif_data;
+  struct pbuf* p = pbuf_alloc(PBUF_RAW, size, PBUF_POOL);
+
+  if (p == NULL) {
+    ESP_LOGW(TAG, "Failed to allocate pbuf for %d bytes", size);
+    return false; // Reject, try again later
+  }
+
+  // Copy received data to pbuf
+  pbuf_take(p, src, size);
+
+  // Pass to lwIP network stack
+  if (netif->input(p, netif) != ERR_OK) {
+    ESP_LOGW(TAG, "netif input failed");
+    pbuf_free(p);
+  }
+
+  // Signal TinyUSB to prepare for next packet
+  tud_network_recv_renew();
+
   return true;
 }
 
-// Called to copy transmit data to the USB buffer
-// Return the number of bytes written
-uint16_t tud_network_xmit_cb(uint8_t *dst, void *ref, uint16_t arg) {
-  (void)dst;
-  (void)ref;
+// Called by TinyUSB to copy transmit data to USB buffer
+uint16_t tud_network_xmit_cb(uint8_t* dst, void* ref, uint16_t arg) {
+  struct pbuf* p = (struct pbuf*)ref;
   (void)arg;
-  // No transmission for now
-  return 0;
+
+  return pbuf_copy_partial(p, dst, p->tot_len, 0);
 }
+
+// Service lwIP timers - call this periodically from main loop
+void grid_platform_ncm_service(void) {
+  if (ncm_netif_initialized) {
+    sys_check_timeouts();
+  }
+}
+
+// Initialize NCM networking - call after USB init
+void grid_platform_ncm_init(void) { ncm_netif_init(); }
+
+#else // !CFG_TUD_NCM - stub implementations
+
+void grid_platform_ncm_service(void) {}
+void grid_platform_ncm_init(void) {}
 
 #endif // CFG_TUD_NCM

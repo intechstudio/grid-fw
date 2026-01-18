@@ -438,6 +438,7 @@ void app_main(void) {
   grid_esp32_led_start(grid_led_get_pin(&grid_led_state));
 
   grid_esp32_usb_init();
+  grid_platform_ncm_init();
   grid_usb_midi_buffer_init();
   grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
 
@@ -608,6 +609,9 @@ void app_main(void) {
 
     // Run microtasks
     grid_esp32_utask_led(&timer_led);
+
+    // Service NCM network stack
+    grid_platform_ncm_service();
 
     vTaskDelay(1);
   }
