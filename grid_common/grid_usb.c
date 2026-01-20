@@ -7,6 +7,7 @@
 
 #include "grid_usb.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "grid_msg.h"
@@ -16,6 +17,17 @@
 struct grid_swsr_t grid_midi_tx;
 struct grid_swsr_t grid_midi_rx;
 
+// New buffers for SysEx and RTM
+struct grid_swsr_t grid_midi_sysex_rx;
+struct grid_swsr_t grid_midi_rtm_rx;
+
+// State variable for SysEx mode
+static uint8_t midi_rx_state_is_sysex = 0;
+
+// SysEx assembly buffer for accumulating bytes until complete message
+static uint8_t sysex_assembly_buffer[GRID_MIDI_SYSEX_RX_BUFFER_length];
+static uint16_t sysex_assembly_index = 0;
+
 struct grid_usb_keyboard_model grid_usb_keyboard_state;
 
 void grid_usb_midi_buffer_init() {
@@ -24,6 +36,10 @@ void grid_usb_midi_buffer_init() {
 
   assert(grid_swsr_malloc(&grid_midi_tx, GRID_MIDI_TX_BUFFER_length * typesize) == 0);
   assert(grid_swsr_malloc(&grid_midi_rx, GRID_MIDI_RX_BUFFER_length * typesize) == 0);
+
+  // Initialize new buffers for SysEx and RTM (store raw bytes)
+  assert(grid_swsr_malloc(&grid_midi_sysex_rx, GRID_MIDI_SYSEX_RX_BUFFER_length) == 0);
+  assert(grid_swsr_malloc(&grid_midi_rtm_rx, GRID_MIDI_RTM_RX_BUFFER_length) == 0);
 }
 
 void grid_usb_keyboard_model_init(struct grid_usb_keyboard_model* kb, uint8_t buffer_length) {
@@ -214,54 +230,106 @@ void grid_midi_tx_pop() {
 
 bool grid_midi_tx_readable() { return grid_swsr_readable(&grid_midi_tx, sizeof(struct grid_midi_event_desc)); }
 
-void grid_midi_rx_push(struct grid_midi_event_desc event) {
-
-  // Factored into here from calling contexts, even if part of a deprecated feature
-  if ((event.byte0 == 8 || event.byte0 == 10 || event.byte0 == 12) && event.byte1 == 240) {
-    grid_platform_sync1_pulse_send();
+// Helper: Push Real-Time Message to RTM buffer
+static void grid_midi_rx_push_rtm(uint8_t rtm_byte) {
+  if (grid_swsr_writable(&grid_midi_rtm_rx, 1)) {
+    grid_swsr_write(&grid_midi_rtm_rx, &rtm_byte, 1);
   }
+}
+
+static bool grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  bool is_sysex_start = (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START);
+
+  if (!midi_rx_state_is_sysex && !is_sysex_start) {
+    return false; // data was not consumed, further decoding needed
+  }
+
+  uint8_t bytes_to_write;
+
+  switch (cin) {
+  case GRID_MIDI_CIN_SYSEX_START:
+    bytes_to_write = 3;
+    midi_rx_state_is_sysex = 1;
+    break;
+  case GRID_MIDI_CIN_SYSEX_END_1BYTE:
+    bytes_to_write = 1;
+    midi_rx_state_is_sysex = 0;
+    break;
+  case GRID_MIDI_CIN_SYSEX_END_2BYTE:
+    bytes_to_write = 2;
+    midi_rx_state_is_sysex = 0;
+    break;
+  case GRID_MIDI_CIN_SYSEX_END_3BYTE:
+    bytes_to_write = 3;
+    midi_rx_state_is_sysex = 0;
+    break;
+  default:
+    // invalid received CIN code, exit decoding
+    midi_rx_state_is_sysex = 0;
+    return true; // data consumed
+  }
+
+  if (grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
+    uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
+    grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
+  }
+
+  return true; // data consumed
+}
+
+static void grid_midi_rx_push_normal(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
   if (grid_sys_get_midirx_any_state(&grid_sys_state) == 0) {
     return;
   }
 
-  if (grid_sys_get_midirx_sync_state(&grid_sys_state) == 0) {
+  struct grid_midi_event_desc event;
+  event.byte0 = byte0;
+  event.byte1 = byte1;
+  event.byte2 = byte2;
+  event.byte3 = byte3;
 
-    // midi clock message
-    if (event.byte0 == 8 && event.byte1 == 240) {
-      return;
-    }
-
-    // midi start message
-    if (event.byte0 == 10 && event.byte1 == 240) {
-      return;
-    }
-
-    // midi stop message
-    if (event.byte0 == 12 && event.byte1 == 240) {
-      return;
-    }
+  if (grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
+    grid_swsr_write(&grid_midi_rx, &event, sizeof(struct grid_midi_event_desc));
   }
+}
 
-  if (!grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
+void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  uint8_t cin = byte0 & 0x0F;
+
+  // 1. REAL-TIME MESSAGES (highest priority, processed even during SysEx)
+  if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 >= GRID_MIDI_RTM_TIMING_CLOCK) {
+    grid_midi_rx_push_rtm(byte1);
     return;
   }
 
-  grid_swsr_write(&grid_midi_rx, &event, sizeof(struct grid_midi_event_desc));
+  // 2. SYSEX MESSAGES
+  if (grid_midi_rx_process_sysex(cin, byte1, byte2, byte3)) {
+    return;
+  }
+
+  // 3. NORMAL MIDI MESSAGES
+  grid_midi_rx_push_normal(byte0, byte1, byte2, byte3);
 }
 
+void grid_midi_sysex_rx_pop();
+
 void grid_midi_rx_pop() {
+
+  grid_midi_sysex_rx_pop();
 
   if (!grid_swsr_readable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
     return;
   }
 
-  struct grid_msg msg;
+  struct grid_msg msg = {0};
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
   grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-  grid_msg_set_parameter(&msg, BRC_SX, xy);
-  grid_msg_set_parameter(&msg, BRC_SY, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
 
   // Combine up to 8 midi messages into a packet
   for (uint8_t i = 0; i < 8; ++i) {
@@ -288,6 +356,59 @@ void grid_midi_rx_pop() {
 }
 
 bool grid_midi_rx_writable() { return grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc)); }
+
+static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t length) {
+
+  if (length < 2 || sysex_data[0] != GRID_MIDI_SYSEX_START || sysex_data[length - 1] != GRID_MIDI_SYSEX_END) {
+    return; // Invalid SysEx message
+  }
+
+  struct grid_msg msg = {0};
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
+
+  grid_msg_add_frame(&msg, GRID_CLASS_MIDISYSEX_frame_start);
+  grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
+
+  grid_msg_set_parameter(&msg, CLASS_MIDISYSEX_LENGTH, length);
+
+  if (grid_msg_add_hex_bytes(&msg, sysex_data, length) < 0) {
+    return; // Data overrun, data loss occurred
+  }
+
+  grid_msg_add_frame(&msg, GRID_CLASS_MIDISYSEX_frame_end);
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+    grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+  }
+}
+
+void grid_midi_sysex_rx_pop() {
+
+  uint8_t byte = 0;
+  while (byte != GRID_MIDI_SYSEX_END) {
+
+    if (!grid_swsr_readable(&grid_midi_sysex_rx, 1)) {
+      return;
+    }
+
+    grid_swsr_read(&grid_midi_sysex_rx, &byte, 1);
+
+    if (sysex_assembly_index >= GRID_MIDI_SYSEX_RX_BUFFER_length) {
+      sysex_assembly_index = 0;
+    }
+
+    assert(sysex_assembly_index < GRID_MIDI_SYSEX_RX_BUFFER_length);
+    sysex_assembly_buffer[sysex_assembly_index++] = byte;
+  }
+
+  assert(byte == GRID_MIDI_SYSEX_END);
+  grid_midi_sysex_process_complete(sysex_assembly_buffer, sysex_assembly_index);
+  sysex_assembly_index = 0;
+}
 
 uint8_t grid_usb_keyboard_tx_push(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc keyboard_event) {
 

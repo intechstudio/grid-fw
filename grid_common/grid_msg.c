@@ -337,6 +337,23 @@ int grid_msg_add_segment_char(struct grid_msg* msg, uint8_t head_hexes, uint32_t
   return head_hexes + size;
 }
 
+int grid_msg_add_hex_bytes(struct grid_msg* msg, uint8_t* data, uint16_t length) {
+
+  uint32_t hex_length = length * 2;
+  uint32_t remain = GRID_MSG_BYTES - msg->length;
+
+  if (hex_length > remain) {
+    return -1;
+  }
+
+  for (uint16_t i = 0; i < length; i++) {
+    grid_frame_set_parameter((uint8_t*)msg->data, msg->length, 2, data[i]);
+    msg->length += 2;
+  }
+
+  return hex_length;
+}
+
 int grid_msg_add_debugtext(struct grid_msg* msg, const char* text) {
 
   uint32_t length_prev = msg->length;
