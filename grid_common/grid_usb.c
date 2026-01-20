@@ -270,13 +270,11 @@ static bool grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2
     return true; // data consumed
   }
 
-  if (!grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
-    // incoming data is valid, but cannot store it, data loss occurred
-    return true; // data consumed
+  if (grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
+    uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
+    grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
   }
 
-  uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
-  grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
   return true; // data consumed
 }
 
