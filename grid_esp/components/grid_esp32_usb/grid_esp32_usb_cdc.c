@@ -9,22 +9,38 @@
 #include "esp_log.h"
 #include "rom/ets_sys.h"
 #include "tinyusb.h"
-#include "tinyusb_cdc_acm.h"
 
-#include "grid_transport.h"
 #include "grid_protocol.h"
+#include "grid_transport.h"
+
+#if CFG_TUD_CDC
 
 static const char* TAG = "USB_CDC";
 
-struct grid_swsr_t cdc_rx;
+// CDC RX buffer size for reading from TinyUSB
+#define CDC_RX_BUFSIZE 512
 
-static void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
+// RX buffer for accumulating incoming data
+static struct grid_swsr_t cdc_rx;
+static bool cdc_initialized = false;
 
-  size_t rx_size = 0;
-  uint8_t buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE + 1];
-  esp_err_t err = tinyusb_cdcacm_read(itf, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
+// TX ready flag - set when we can transmit
+static uint8_t DRAM_ATTR usb_tx_ready = 0;
 
-  if (err != ESP_OK) {
+// ========================= TinyUSB CDC Callbacks =============================== //
+
+// Called when data is received from the host
+void tud_cdc_rx_cb(uint8_t itf) {
+  (void)itf;
+
+  if (!cdc_initialized) {
+    return;
+  }
+
+  uint8_t buf[CDC_RX_BUFSIZE];
+  uint32_t rx_size = tud_cdc_read(buf, sizeof(buf));
+
+  if (rx_size == 0) {
     return;
   }
 
@@ -33,6 +49,7 @@ static void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
   if (grid_swsr_writable(rx, rx_size)) {
     grid_swsr_write(rx, buf, rx_size);
   } else {
+    // Buffer full, discard old data
     grid_swsr_read(rx, NULL, grid_swsr_size(rx));
   }
 
@@ -47,67 +64,65 @@ static void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t* event) {
   }
 }
 
-static uint8_t DRAM_ATTR usb_tx_ready = 0;
+// Called when transmission is complete
+void tud_cdc_tx_complete_cb(uint8_t itf) {
+  (void)itf;
+  usb_tx_ready = 1;
+}
 
-static void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t* event) {
-  int dtr = event->line_state_changed_data.dtr;
-  int rts = event->line_state_changed_data.rts;
+// Called when line state changes (DTR/RTS)
+void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
   ESP_LOGI(TAG, "Line state changed on channel %d: DTR:%d, RTS:%d", itf, dtr, rts);
 
-  usb_tx_ready = 1;
+  // Ready to transmit when DTR is set (terminal connected)
+  if (dtr) {
+    usb_tx_ready = 1;
+  }
 }
 
-void tud_cdc_tx_complete_cb(uint8_t itf) {
-  tinyusb_cdcacm_write_flush(0, 0);
-  usb_tx_ready = 1;
-}
+// ========================= Platform API =============================== //
 
-int32_t grid_platform_usb_serial_ready(void) {
-  return usb_tx_ready;
-}
+int32_t grid_platform_usb_serial_ready(void) { return usb_tx_ready; }
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) {
 
-  esp_err_t status = 0;
-
   if (usb_tx_ready == 1) {
-
     usb_tx_ready = 0;
 
-    uint32_t queued = tinyusb_cdcacm_write_queue(0, (const uint8_t*)buffer, length);
+    uint32_t written = tud_cdc_write(buffer, length);
 
-    if (queued != length) {
-      ets_printf("CDC QUEUE ERROR: %d %d\r\n", queued, length);
-      tinyusb_cdcacm_write_flush(0, 0);
-    } else {
-      status = tinyusb_cdcacm_write_flush(0, 0);
+    if (written != length) {
+      ets_printf("CDC WRITE ERROR: %ld %ld\r\n", written, length);
     }
+
+    tud_cdc_write_flush();
   } else {
-
-    status = tinyusb_cdcacm_write_flush(0, 0);
-
-    if (status == ESP_OK) {
-      usb_tx_ready = 1;
-    }
+    // Try to flush any pending data
+    tud_cdc_write_flush();
   }
 
   return 1;
 }
 
 void grid_esp32_usb_cdc_init(void) {
-
-  tinyusb_config_cdcacm_t acm_cfg = {
-      .cdc_port = TINYUSB_CDC_ACM_0,
-      .callback_rx = &tinyusb_cdc_rx_callback,
-      .callback_rx_wanted_char = NULL,
-      .callback_line_state_changed = NULL,
-      .callback_line_coding_changed = NULL
-  };
-
-  ESP_ERROR_CHECK(tinyusb_cdcacm_init(&acm_cfg));
-  ESP_ERROR_CHECK(tinyusb_cdcacm_register_callback(TINYUSB_CDC_ACM_0, CDC_EVENT_LINE_STATE_CHANGED, &tinyusb_cdc_line_state_changed_callback));
-
   // Allocate CDC RX buffer
   int capacity = GRID_PARAMETER_SPI_TRANSACTION_length * 2;
   assert(grid_swsr_malloc(&cdc_rx, capacity) == 0);
+
+  cdc_initialized = true;
+  ESP_LOGI(TAG, "CDC initialized");
 }
+
+#else // !CFG_TUD_CDC - stub implementations
+
+int32_t grid_platform_usb_serial_ready(void) { return 0; }
+
+int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) {
+  (void)buffer;
+  (void)length;
+  return 0;
+}
+
+void grid_esp32_usb_cdc_init(void) {}
+
+#endif // CFG_TUD_CDC

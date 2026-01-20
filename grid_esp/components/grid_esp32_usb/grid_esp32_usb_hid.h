@@ -5,8 +5,8 @@
  */
 #pragma once
 
-#include <stdint.h>
 #include "tinyusb.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,10 +27,8 @@ enum gamepad_axis_t { GAMEPAD_AXIS_X = 0, GAMEPAD_AXIS_Y, GAMEPAD_AXIS_Z, GAMEPA
  * Keyboard + Mouse + Gamepad HID device
  * Defined as a macro so size can be computed at compile time
  */
-#define HID_REPORT_DESCRIPTOR_CONTENT \
-    TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(HID_ITF_PROTOCOL_KEYBOARD)), \
-    TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(HID_ITF_PROTOCOL_MOUSE)), \
-    TUD_HID_REPORT_DESC_GAMEPAD(HID_REPORT_ID(3))
+#define HID_REPORT_DESCRIPTOR_CONTENT                                                                                                                                                                  \
+  TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(HID_ITF_PROTOCOL_KEYBOARD)), TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(HID_ITF_PROTOCOL_MOUSE)), TUD_HID_REPORT_DESC_GAMEPAD(HID_REPORT_ID(3))
 
 extern const uint8_t hid_report_descriptor[];
 

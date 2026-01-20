@@ -6,8 +6,8 @@
 
 #include "grid_esp32_usb_midi.h"
 
-#include "tinyusb.h"
 #include "grid_usb.h"
+#include "tinyusb.h"
 
 #if CFG_TUD_MIDI
 
@@ -56,9 +56,7 @@ int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2
   return 0;
 }
 
-int32_t grid_platform_usb_midi_write_status(void) {
-  return 0;
-}
+int32_t grid_platform_usb_midi_write_status(void) { return 0; }
 
 #else // !CFG_TUD_MIDI - stub implementations
 
@@ -70,8 +68,6 @@ int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2
   return 0;
 }
 
-int32_t grid_platform_usb_midi_write_status(void) {
-  return 0;
-}
+int32_t grid_platform_usb_midi_write_status(void) { return 0; }
 
 #endif // CFG_TUD_MIDI

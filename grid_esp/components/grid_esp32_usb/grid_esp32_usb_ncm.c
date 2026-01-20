@@ -6,22 +6,24 @@
 
 #include "grid_esp32_usb_ncm.h"
 
-#include <string.h>
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "tinyusb.h"
+#include <string.h>
 
 #if CFG_TUD_NCM
 
 #include "class/net/net_device.h"
-#include "lwip/init.h"
-#include "lwip/timeouts.h"
-#include "lwip/ethip6.h"
-#include "lwip/netif.h"
-#include "netif/etharp.h"
 #include "dhserver.h"
 #include "dnserver.h"
+#include "freertos/semphr.h"
+#include "lwip/ethip6.h"
+#include "lwip/init.h"
+#include "lwip/netif.h"
+#include "lwip/tcpip.h"
+#include "lwip/timeouts.h"
+#include "netif/etharp.h"
 
 static const char* TAG = "USB_NCM";
 
@@ -33,9 +35,10 @@ static struct netif ncm_netif_data;
 static bool ncm_netif_initialized = false;
 
 // Network configuration - Device is 192.168.7.1, host gets 192.168.7.2
-#define INIT_IP4(a, b, c, d) { PP_HTONL(LWIP_MAKEU32(a, b, c, d)) }
+#define INIT_IP4(a, b, c, d)                                                                                                                                                                           \
+  { PP_HTONL(LWIP_MAKEU32(a, b, c, d)) }
 
-static const ip4_addr_t ncm_ipaddr  = INIT_IP4(192, 168, 7, 1);
+static const ip4_addr_t ncm_ipaddr = INIT_IP4(192, 168, 7, 1);
 static const ip4_addr_t ncm_netmask = INIT_IP4(255, 255, 255, 0);
 static const ip4_addr_t ncm_gateway = INIT_IP4(0, 0, 0, 0);
 
@@ -47,13 +50,7 @@ static dhcp_entry_t dhcp_entries[] = {
 };
 
 static const dhcp_config_t dhcp_config = {
-    .router = INIT_IP4(0, 0, 0, 0),
-    .port = 67,
-    .dns = INIT_IP4(192, 168, 7, 1),
-    .domain = "usb",
-    .num_entry = sizeof(dhcp_entries) / sizeof(dhcp_entries[0]),
-    .entries = dhcp_entries
-};
+    .router = INIT_IP4(0, 0, 0, 0), .port = 67, .dns = INIT_IP4(192, 168, 7, 1), .domain = "usb", .num_entry = sizeof(dhcp_entries) / sizeof(dhcp_entries[0]), .entries = dhcp_entries};
 
 // DNS query handler - resolve "grid.usb" to device IP
 static bool dns_query_proc(const char* name, ip4_addr_t* addr) {
@@ -84,9 +81,7 @@ static err_t ncm_linkoutput_fn(struct netif* netif, struct pbuf* p) {
 }
 
 // lwIP IPv4 output function
-static err_t ncm_ip4_output_fn(struct netif* netif, struct pbuf* p, const ip4_addr_t* addr) {
-  return etharp_output(netif, p, addr);
-}
+static err_t ncm_ip4_output_fn(struct netif* netif, struct pbuf* p, const ip4_addr_t* addr) { return etharp_output(netif, p, addr); }
 
 // lwIP netif init callback
 static err_t ncm_netif_init_cb(struct netif* netif) {
@@ -100,8 +95,21 @@ static err_t ncm_netif_init_cb(struct netif* netif) {
   return ERR_OK;
 }
 
+// Semaphore for tcpip_init synchronization
+static SemaphoreHandle_t tcpip_init_done;
+
+// Callback when tcpip thread is initialized
+static void tcpip_init_done_cb(void* arg) { xSemaphoreGive(tcpip_init_done); }
+
 // Initialize the NCM network interface
 static void ncm_netif_init(void) {
+  // Initialize lwIP TCPIP thread (ESP-IDF lwIP uses threaded mode)
+  tcpip_init_done = xSemaphoreCreateBinary();
+  tcpip_init(tcpip_init_done_cb, NULL);
+  xSemaphoreTake(tcpip_init_done, portMAX_DELAY);
+  vSemaphoreDelete(tcpip_init_done);
+  ESP_LOGI(TAG, "lwIP TCPIP thread initialized");
+
   struct netif* netif = &ncm_netif_data;
 
   // Set MAC address (toggle LSB to differ from host)
@@ -109,8 +117,8 @@ static void ncm_netif_init(void) {
   memcpy(netif->hwaddr, tud_network_mac_address, sizeof(tud_network_mac_address));
   netif->hwaddr[5] ^= 0x01;
 
-  // Add netif to lwIP
-  netif_add(netif, &ncm_ipaddr, &ncm_netmask, &ncm_gateway, NULL, ncm_netif_init_cb, ethernet_input);
+  // Add netif to lwIP (use tcpip_input for thread-safe input)
+  netif_add(netif, &ncm_ipaddr, &ncm_netmask, &ncm_gateway, NULL, ncm_netif_init_cb, tcpip_input);
   netif_set_default(netif);
   netif_set_link_up(netif);
 
@@ -178,17 +186,13 @@ uint16_t tud_network_xmit_cb(uint8_t* dst, void* ref, uint16_t arg) {
   return pbuf_copy_partial(p, dst, p->tot_len, 0);
 }
 
-// Service lwIP timers - call this periodically from main loop
+// Service function - in ESP-IDF threaded lwIP mode, timeouts are handled by TCPIP thread
 void grid_platform_ncm_service(void) {
-  if (ncm_netif_initialized) {
-    sys_check_timeouts();
-  }
+  // Nothing needed - TCPIP thread handles lwIP timers
 }
 
 // Initialize NCM networking - call after USB init
-void grid_platform_ncm_init(void) {
-  ncm_netif_init();
-}
+void grid_platform_ncm_init(void) { ncm_netif_init(); }
 
 #else // !CFG_TUD_NCM - stub implementations
 
