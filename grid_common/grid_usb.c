@@ -237,7 +237,6 @@ static void grid_midi_rx_push_rtm(uint8_t rtm_byte) {
   }
 }
 
-
 static bool grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
   bool is_sysex_start = (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START);
@@ -275,7 +274,7 @@ static bool grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2
     // incoming data is valid, but cannot store it, data loss occurred
     return true; // data consumed
   }
-    
+
   uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
   grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
   return true; // data consumed
