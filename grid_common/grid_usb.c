@@ -7,6 +7,7 @@
 
 #include "grid_usb.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "grid_msg.h"
@@ -236,63 +237,56 @@ static void grid_midi_rx_push_rtm(uint8_t rtm_byte) {
   }
 }
 
-// SysEx state machine: returns true if packet was SysEx (caller should early return)
+
 static bool grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
   bool is_sysex_start = (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START);
 
-  // Guard: not SysEx if not in SysEx mode and not a SysEx start
   if (!midi_rx_state_is_sysex && !is_sysex_start) {
-    return false;
+    return false; // data was not consumed, further decoding needed
   }
 
-  // Enter SysEx mode on start
-  if (!midi_rx_state_is_sysex) {
-    midi_rx_state_is_sysex = 1;
-  }
+  uint8_t bytes_to_write;
 
-  // Copy parameters into buffer
-  uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
-  uint8_t bytes_to_write = 0;
-
-  // Determine bytes to write based on CIN
   switch (cin) {
   case GRID_MIDI_CIN_SYSEX_START:
     bytes_to_write = 3;
+    midi_rx_state_is_sysex = 1;
     break;
   case GRID_MIDI_CIN_SYSEX_END_1BYTE:
     bytes_to_write = 1;
+    midi_rx_state_is_sysex = 0;
     break;
   case GRID_MIDI_CIN_SYSEX_END_2BYTE:
     bytes_to_write = 2;
+    midi_rx_state_is_sysex = 0;
     break;
   case GRID_MIDI_CIN_SYSEX_END_3BYTE:
     bytes_to_write = 3;
-    break;
-  }
-
-  // Stay in SysEx mode only for start/continue packets (CIN 0x04)
-  if (cin != GRID_MIDI_CIN_SYSEX_START) {
     midi_rx_state_is_sysex = 0;
+    break;
+  default:
+    // invalid received CIN code, exit decoding
+    midi_rx_state_is_sysex = 0;
+    return true; // data consumed
   }
 
-  // Write bytes to SysEx SWSR buffer
-  if (bytes_to_write > 0 && grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
-    grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
+  if (!grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
+    // incoming data is valid, but cannot store it, data loss occurred
+    return true; // data consumed
   }
-
-  return true;
+    
+  uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
+  grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
+  return true; // data consumed
 }
 
-// Helper: Push normal MIDI message (notes, CC, etc.)
 static void grid_midi_rx_push_normal(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
-  // Check if MIDI RX is globally enabled
   if (grid_sys_get_midirx_any_state(&grid_sys_state) == 0) {
     return;
   }
 
-  // Push to normal MIDI RX buffer
   struct grid_midi_event_desc event;
   event.byte0 = byte0;
   event.byte1 = byte1;
@@ -366,15 +360,12 @@ void grid_midi_rx_pop() {
 
 bool grid_midi_rx_writable() { return grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc)); }
 
-// Helper: Process complete SysEx message and forward to modules
 static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t length) {
 
-  // Validate SysEx boundaries
   if (length < 2 || sysex_data[0] != GRID_MIDI_SYSEX_START || sysex_data[length - 1] != GRID_MIDI_SYSEX_END) {
     return; // Invalid SysEx message
   }
 
-  // Initialize broadcast message
   struct grid_msg msg = {0};
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
   grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
@@ -382,21 +373,17 @@ static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t lengt
   grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
   grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
 
-  // Add MIDISYSEX frame
   grid_msg_add_frame(&msg, GRID_CLASS_MIDISYSEX_frame_start);
   grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
 
-  // Set length parameter
   grid_msg_set_parameter(&msg, CLASS_MIDISYSEX_LENGTH, length);
 
-  // Encode SysEx bytes as hex payload
   if (grid_msg_add_hex_bytes(&msg, sysex_data, length) < 0) {
-    return;
+    return; // Data overrun, data loss occurred
   }
 
   grid_msg_add_frame(&msg, GRID_CLASS_MIDISYSEX_frame_end);
 
-  // Send to all connected modules
   if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
     grid_transport_send_msg_to_all(&grid_transport_state, &msg);
   }
@@ -404,32 +391,26 @@ static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t lengt
 
 void grid_midi_sysex_rx_pop() {
 
-  // Read byte by byte from SWSR, accumulate until 0xF7
-  while (grid_swsr_readable(&grid_midi_sysex_rx, 1)) {
+  uint8_t byte = 0;
+  while (byte != GRID_MIDI_SYSEX_END) {
 
-    uint8_t byte;
+    if (!grid_swsr_readable(&grid_midi_sysex_rx, 1)) {
+      return;
+    }
+
     grid_swsr_read(&grid_midi_sysex_rx, &byte, 1);
 
-    // Buffer overflow protection
     if (sysex_assembly_index >= GRID_MIDI_SYSEX_RX_BUFFER_length) {
-      // Message too large, discard
       sysex_assembly_index = 0;
-      break;
     }
 
+    assert(sysex_assembly_index < GRID_MIDI_SYSEX_RX_BUFFER_length);
     sysex_assembly_buffer[sysex_assembly_index++] = byte;
-
-    // Check for SysEx end marker
-    if (byte == GRID_MIDI_SYSEX_END) {
-      // Complete message! Process it
-      grid_midi_sysex_process_complete(sysex_assembly_buffer, sysex_assembly_index);
-
-      // Reset for next message
-      sysex_assembly_index = 0;
-
-      break; // Process only ONE message per call
-    }
   }
+
+  assert(byte == GRID_MIDI_SYSEX_END);
+  grid_midi_sysex_process_complete(sysex_assembly_buffer, sysex_assembly_index);
+  sysex_assembly_index = 0;
 }
 
 uint8_t grid_usb_keyboard_tx_push(struct grid_usb_keyboard_model* kb, struct grid_usb_keyboard_event_desc keyboard_event) {
