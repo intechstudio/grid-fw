@@ -29,9 +29,10 @@ static const char index_html[] = "<!DOCTYPE html>"
                                  "<script>"
                                  "const log = document.getElementById('log');"
                                  "const ws = new WebSocket('ws://' + location.host + '/ws');"
+                                 "ws.binaryType = 'arraybuffer';"
                                  "ws.onopen = () => log.innerHTML += '[Connected]\\n';"
                                  "ws.onclose = () => log.innerHTML += '[Disconnected]\\n';"
-                                 "ws.onmessage = (e) => { log.innerHTML += e.data; log.scrollTop = log.scrollHeight; };"
+                                 "ws.onmessage = (e) => { const text = new TextDecoder().decode(e.data); log.innerHTML += text; log.scrollTop = log.scrollHeight; };"
                                  "</script>"
                                  "</body>"
                                  "</html>";
@@ -89,7 +90,7 @@ esp_err_t grid_esp32_ws_broadcast(const char* data, size_t len) {
   ws_busy = true;
 
   httpd_ws_frame_t ws_pkt = {
-      .type = HTTPD_WS_TYPE_TEXT,
+      .type = HTTPD_WS_TYPE_BINARY,
       .payload = (uint8_t*)data,
       .len = len,
   };
