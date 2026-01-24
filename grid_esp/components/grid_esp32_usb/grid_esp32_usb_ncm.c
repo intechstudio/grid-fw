@@ -65,19 +65,21 @@ static bool dns_query_proc(const char* name, ip4_addr_t* addr) {
 static err_t ncm_linkoutput_fn(struct netif* netif, struct pbuf* p) {
   (void)netif;
 
-  for (;;) {
-    if (!tud_ready()) {
-      return ERR_USE;
-    }
+  if (!tud_ready()) {
+    return ERR_USE;
+  }
 
+  // Try a few times with tud_task() calls in between
+  for (int i = 0; i < 10; i++) {
     if (tud_network_can_xmit(p->tot_len)) {
       tud_network_xmit(p, 0);
       return ERR_OK;
     }
-
-    // Transfer execution to TinyUSB to finish pending transmissions
     tud_task();
   }
+
+  // Can't transmit now, let lwIP retry later
+  return ERR_WOULDBLOCK;
 }
 
 // lwIP IPv4 output function
@@ -156,7 +158,7 @@ bool tud_network_recv_cb(const uint8_t* src, uint16_t size) {
   }
 
   struct netif* netif = &ncm_netif_data;
-  struct pbuf* p = pbuf_alloc(PBUF_RAW, size, PBUF_POOL);
+  struct pbuf* p = pbuf_alloc(PBUF_RAW, size, PBUF_RAM);
 
   if (p == NULL) {
     ESP_LOGW(TAG, "Failed to allocate pbuf for %d bytes", size);

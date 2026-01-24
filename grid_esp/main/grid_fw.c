@@ -70,6 +70,7 @@
 #include "esp_log.h"
 #include "esp_psram.h"
 #include "grid_esp32.h"
+#include "grid_esp32_http.h"
 #include "grid_esp32_lcd.h"
 #include "grid_esp32_nvm.h"
 #include "grid_esp32_port.h"
@@ -438,6 +439,7 @@ void app_main(void) {
 
   grid_esp32_usb_init();
   grid_platform_ncm_init();
+  grid_esp32_http_init();
   grid_usb_midi_buffer_init();
   grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
 
