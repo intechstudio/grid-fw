@@ -13,6 +13,9 @@
 #include "grid_protocol.h"
 #include "grid_transport.h"
 
+// Weak symbol for WebSocket broadcast - defined in grid_esp32_http if available
+extern esp_err_t grid_esp32_ws_broadcast(const char* data, size_t len) __attribute__((weak));
+
 #if CFG_TUD_CDC
 
 static const char* TAG = "USB_CDC";
@@ -85,6 +88,11 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
 int32_t grid_platform_usb_serial_ready(void) { return usb_tx_ready; }
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) {
+
+  // Mirror to WebSocket if available
+  if (grid_esp32_ws_broadcast) {
+    grid_esp32_ws_broadcast(buffer, length);
+  }
 
   if (usb_tx_ready == 1) {
     usb_tx_ready = 0;
