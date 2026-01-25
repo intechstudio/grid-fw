@@ -211,3 +211,12 @@ int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_ev
 
   return hiddf_keyboard_keys_state_change(hid_key_array, keys_count);
 }
+
+// Stub implementations for websocket (not supported on D51)
+int32_t grid_platform_websocket_ready(void) { return 0; }
+
+int32_t grid_platform_websocket_write(char* buffer, uint32_t length) {
+  (void)buffer;
+  (void)length;
+  return 0;
+}

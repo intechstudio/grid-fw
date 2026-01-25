@@ -135,9 +135,7 @@ esp_err_t grid_esp32_server_ws_broadcast(const char* data, size_t len) {
   return ESP_OK;
 }
 
-int32_t grid_platform_websocket_ready(void) {
-  return (ws_client_count > 0 && http_server != NULL && !ws_busy) ? 1 : 0;
-}
+int32_t grid_platform_websocket_ready(void) { return (ws_client_count > 0 && http_server != NULL && !ws_busy) ? 1 : 0; }
 
 int32_t grid_platform_websocket_write(char* buffer, uint32_t length) {
   if (ws_client_count == 0 || http_server == NULL || ws_busy) {
