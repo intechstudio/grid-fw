@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-esp_err_t grid_esp32_http_init(void);
-esp_err_t grid_esp32_ws_broadcast(const char* data, size_t len);
+esp_err_t grid_esp32_server_init(void);
+esp_err_t grid_esp32_server_ws_broadcast(const char* data, size_t len);
 
 #ifdef __cplusplus
 }

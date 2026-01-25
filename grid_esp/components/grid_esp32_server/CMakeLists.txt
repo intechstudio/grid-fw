@@ -1,6 +1,6 @@
 idf_component_register(
     SRCS
-        "grid_esp32_http.c"
+        "grid_esp32_server.c"
     INCLUDE_DIRS
         "."
     REQUIRES

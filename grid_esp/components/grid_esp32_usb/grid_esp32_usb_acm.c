@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "grid_esp32_usb_cdc.h"
+#include "grid_esp32_usb_acm.h"
 
 #include "esp_log.h"
 #include "rom/ets_sys.h"
@@ -13,19 +13,16 @@
 #include "grid_protocol.h"
 #include "grid_transport.h"
 
-// Weak symbol for WebSocket broadcast - defined in grid_esp32_http if available
-extern esp_err_t grid_esp32_ws_broadcast(const char* data, size_t len) __attribute__((weak));
-
 #if CFG_TUD_CDC
 
-static const char* TAG = "USB_CDC";
+static const char* TAG = "USB_ACM";
 
-// CDC RX buffer size for reading from TinyUSB
-#define CDC_RX_BUFSIZE 512
+// ACM RX buffer size for reading from TinyUSB
+#define ACM_RX_BUFSIZE 512
 
 // RX buffer for accumulating incoming data
-static struct grid_swsr_t cdc_rx;
-static bool cdc_initialized = false;
+static struct grid_swsr_t acm_rx;
+static bool acm_initialized = false;
 
 // TX ready flag - set when we can transmit
 static uint8_t DRAM_ATTR usb_tx_ready = 0;
@@ -36,18 +33,18 @@ static uint8_t DRAM_ATTR usb_tx_ready = 0;
 void tud_cdc_rx_cb(uint8_t itf) {
   (void)itf;
 
-  if (!cdc_initialized) {
+  if (!acm_initialized) {
     return;
   }
 
-  uint8_t buf[CDC_RX_BUFSIZE];
+  uint8_t buf[ACM_RX_BUFSIZE];
   uint32_t rx_size = tud_cdc_read(buf, sizeof(buf));
 
   if (rx_size == 0) {
     return;
   }
 
-  struct grid_swsr_t* rx = &cdc_rx;
+  struct grid_swsr_t* rx = &acm_rx;
 
   if (grid_swsr_writable(rx, rx_size)) {
     grid_swsr_write(rx, buf, rx_size);
@@ -89,11 +86,6 @@ int32_t grid_platform_usb_serial_ready(void) { return usb_tx_ready; }
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) {
 
-  // Mirror to WebSocket if available
-  if (grid_esp32_ws_broadcast) {
-    grid_esp32_ws_broadcast(buffer, length);
-  }
-
   if (usb_tx_ready == 1) {
     usb_tx_ready = 0;
 
@@ -112,13 +104,13 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) {
   return 1;
 }
 
-void grid_esp32_usb_cdc_init(void) {
-  // Allocate CDC RX buffer
+void grid_esp32_usb_acm_init(void) {
+  // Allocate ACM RX buffer
   int capacity = GRID_PARAMETER_SPI_TRANSACTION_length * 2;
-  assert(grid_swsr_malloc(&cdc_rx, capacity) == 0);
+  assert(grid_swsr_malloc(&acm_rx, capacity) == 0);
 
-  cdc_initialized = true;
-  ESP_LOGI(TAG, "CDC initialized");
+  acm_initialized = true;
+  ESP_LOGI(TAG, "ACM initialized");
 }
 
 #else // !CFG_TUD_CDC - stub implementations
@@ -131,6 +123,6 @@ int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) {
   return 0;
 }
 
-void grid_esp32_usb_cdc_init(void) {}
+void grid_esp32_usb_acm_init(void) {}
 
 #endif // CFG_TUD_CDC

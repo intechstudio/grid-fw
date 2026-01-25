@@ -3,7 +3,7 @@ set(TINYUSB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../managed_components/espressif
 idf_component_register(
     SRCS
         "grid_esp32_usb.c"
-        "grid_esp32_usb_cdc.c"
+        "grid_esp32_usb_acm.c"
         "grid_esp32_usb_midi.c"
         "grid_esp32_usb_hid.c"
         "grid_esp32_usb_ncm.c"

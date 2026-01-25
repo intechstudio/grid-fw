@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 // Include all USB subsystem headers (after CFG_TUD_* are defined)
-#include "grid_esp32_usb_cdc.h"
+#include "grid_esp32_usb_acm.h"
 #include "grid_esp32_usb_hid.h"
 #include "grid_esp32_usb_midi.h"
 #include "grid_esp32_usb_ncm.h"

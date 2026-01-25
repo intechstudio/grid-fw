@@ -5,7 +5,7 @@
  */
 
 #include "grid_esp32_usb.h"
-#include "grid_esp32_usb_cdc.h"
+#include "grid_esp32_usb_acm.h"
 #include "grid_esp32_usb_hid.h"
 #include "grid_esp32_usb_midi.h"
 #include "grid_esp32_usb_ncm.h"
@@ -122,8 +122,7 @@ static uint8_t s_cfg_desc[] = {
 #if CFG_TUD_NCM
     // Interface number, string index, MAC string index, EP notification, EP notification size,
     // EP data out, EP data in, EP data size, max segment size
-    // NCM notify endpoint reduced from 64 to 16 bytes to save FIFO space
-    TUD_CDC_NCM_DESCRIPTOR(ITF_NUM_NCM, 6, 7, (0x80 | EPNUM_NCM_NOTIFY), 16, EPNUM_NCM_DATA, (0x80 | EPNUM_NCM_DATA), 64, 1514),
+    TUD_CDC_NCM_DESCRIPTOR(ITF_NUM_NCM, 6, 7, (0x80 | EPNUM_NCM_NOTIFY), 64, EPNUM_NCM_DATA, (0x80 | EPNUM_NCM_DATA), 64, 1514),
 #endif
 
 };
@@ -141,8 +140,8 @@ void grid_esp32_usb_init(void) {
 
   ESP_ERROR_CHECK(tinyusb_driver_install(&config));
 
-  // Initialize CDC subsystem
-  grid_esp32_usb_cdc_init();
+  // Initialize ACM subsystem
+  grid_esp32_usb_acm_init();
 
   ESP_LOGI(TAG, "USB initialized");
 }
