@@ -4,5 +4,5 @@ idf_component_register(
     INCLUDE_DIRS
         "."
     REQUIRES
-        "esp_http_server"
+        "esp_http_server" "grid_common"
 )

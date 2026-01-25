@@ -4,7 +4,16 @@
 #include "esp_http_server.h"
 #include "esp_log.h"
 
+#include "grid_msg.h"
+#include "grid_protocol.h"
+#include "grid_swsr.h"
+#include "grid_transport.h"
+
 static const char* TAG = "SERVER";
+
+// RX buffer for accumulating incoming WebSocket data
+static struct grid_swsr_t ws_rx;
+static bool ws_rx_initialized = false;
 
 static httpd_handle_t http_server = NULL;
 static volatile bool ws_busy = false;
@@ -48,19 +57,23 @@ static const char index_html[] = "<!DOCTYPE html>"
                                  "body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }"
                                  "h1 { color: #333; }"
                                  "#log { background: #f0f0f0; padding: 10px; font-family: monospace; height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }"
+                                 "#cmd { width: 100%; padding: 8px; font-family: monospace; box-sizing: border-box; margin-top: 10px; }"
                                  "</style>"
                                  "</head>"
                                  "<body>"
                                  "<h1>Grid Device</h1>"
                                  "<p>WebSocket mirror of CDC-ACM output</p>"
                                  "<div id=\"log\"></div>"
+                                 "<input id=\"cmd\" placeholder=\"Enter command...\" />"
                                  "<script>"
                                  "const log = document.getElementById('log');"
+                                 "const cmd = document.getElementById('cmd');"
                                  "const ws = new WebSocket('ws://' + location.host + '/ws');"
                                  "ws.binaryType = 'arraybuffer';"
                                  "ws.onopen = () => log.innerHTML += '[Connected]\\n';"
                                  "ws.onclose = () => log.innerHTML += '[Disconnected]\\n';"
                                  "ws.onmessage = (e) => { const text = new TextDecoder().decode(e.data); log.innerHTML += text; log.scrollTop = log.scrollHeight; };"
+                                 "cmd.onkeydown = (e) => { if (e.key === 'Enter' && cmd.value) { ws.send(cmd.value); cmd.value = ''; } };"
                                  "</script>"
                                  "</body>"
                                  "</html>";
@@ -88,6 +101,10 @@ static esp_err_t ws_handler(httpd_req_t* req) {
     return ESP_OK;
   }
 
+  if (!ws_rx_initialized) {
+    return ESP_OK;
+  }
+
   httpd_ws_frame_t ws_pkt;
   memset(&ws_pkt, 0, sizeof(ws_pkt));
   ws_pkt.type = HTTPD_WS_TYPE_TEXT;
@@ -98,12 +115,33 @@ static esp_err_t ws_handler(httpd_req_t* req) {
   }
 
   if (ws_pkt.len > 0) {
-    uint8_t* buf = malloc(ws_pkt.len + 1);
+    uint8_t* buf = malloc(ws_pkt.len);
+    if (buf == NULL) {
+      return ESP_ERR_NO_MEM;
+    }
     ws_pkt.payload = buf;
     ret = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
     if (ret == ESP_OK) {
-      buf[ws_pkt.len] = '\0';
-      ESP_LOGI(TAG, "WS received: %s", buf);
+      ESP_LOGI(TAG, "WS received (%d bytes): %.*s", ws_pkt.len, ws_pkt.len, buf);
+
+      // Process received data same as ACM
+      struct grid_swsr_t* rx = &ws_rx;
+
+      if (grid_swsr_writable(rx, ws_pkt.len)) {
+        grid_swsr_write(rx, buf, ws_pkt.len);
+      } else {
+        // Buffer full, discard old data
+        grid_swsr_read(rx, NULL, grid_swsr_size(rx));
+        grid_swsr_write(rx, buf, ws_pkt.len);
+      }
+
+      struct grid_msg msg;
+
+      if (grid_msg_from_swsr(&msg, rx)) {
+        if (grid_frame_verify((uint8_t*)msg.data, msg.length) == 0) {
+          grid_transport_recv_usb(&grid_transport_state, (uint8_t*)msg.data, msg.length);
+        }
+      }
     }
     free(buf);
   }
@@ -163,6 +201,15 @@ int32_t grid_platform_websocket_write(char* buffer, uint32_t length) {
 
 esp_err_t grid_esp32_server_init(void) {
   esp_event_loop_create_default();
+
+  // Allocate WebSocket RX buffer
+  int capacity = GRID_PARAMETER_SPI_TRANSACTION_length * 2;
+  if (grid_swsr_malloc(&ws_rx, capacity) == 0) {
+    ws_rx_initialized = true;
+    ESP_LOGI(TAG, "WebSocket RX buffer initialized");
+  } else {
+    ESP_LOGE(TAG, "Failed to allocate WebSocket RX buffer");
+  }
 
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
   config.server_port = 80;
