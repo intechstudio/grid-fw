@@ -488,12 +488,15 @@ void grid_pico_uart_port_rx_char(struct grid_pico_uart_port* port, char ch) {
 
   if (ch == '\n') {
 
-    // End of message, requires null termination
-    pico_bkt_push(port->uart_rx_bucket, '\0');
+    if (pico_bkt_terminated(port->uart_rx_bucket)) {
 
-    grid_pico_uart_port_detach_rx(port);
+      // End of message, requires null termination
+      pico_bkt_push(port->uart_rx_bucket, '\0');
 
-    // vmp_push(UART_RX);
+      grid_pico_uart_port_detach_rx(port);
+
+      // vmp_push(UART_RX);
+    }
   }
 }
 
