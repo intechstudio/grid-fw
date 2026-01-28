@@ -107,11 +107,26 @@ int GRID_LUA_FNC_GTV_NAME(15)();
 int GRID_LUA_FNC_GTV_NAME(16)();
 int GRID_LUA_FNC_GTV_NAME(17)();
 
-int GRID_LUA_FNC_META_PAR1_NAME(gtt)();
-int GRID_LUA_FNC_META_PAR0_NAME(gtp)();
-int GRID_LUA_FNC_META_PAR1_NAME(get)();
-int GRID_LUA_FNC_META_PAR1_NAME(gsen)();
-int GRID_LUA_FNC_META_PAR0_NAME(ggen)();
+int GRID_LUA_FNC_META_NAME(gtt)();
+int GRID_LUA_FNC_META_NAME(gtp)();
+int GRID_LUA_FNC_META_NAME(get)();
+int GRID_LUA_FNC_META_NAME(gsen)();
+int GRID_LUA_FNC_META_NAME(ggen)();
+
+int GRID_LUA_FNC_DRAW_NAME(ldsw)();
+int GRID_LUA_FNC_DRAW_NAME(ldpx)();
+int GRID_LUA_FNC_DRAW_NAME(ldl)();
+int GRID_LUA_FNC_DRAW_NAME(ldr)();
+int GRID_LUA_FNC_DRAW_NAME(ldrf)();
+int GRID_LUA_FNC_DRAW_NAME(ldrr)();
+int GRID_LUA_FNC_DRAW_NAME(ldrrf)();
+int GRID_LUA_FNC_DRAW_NAME(ldpo)();
+int GRID_LUA_FNC_DRAW_NAME(ldpof)();
+int GRID_LUA_FNC_DRAW_NAME(ldt)();
+int GRID_LUA_FNC_DRAW_NAME(ldft)();
+int GRID_LUA_FNC_DRAW_NAME(ldaf)();
+int GRID_LUA_FNC_DRAW_NAME(ldd)();
+int GRID_LUA_FNC_DRAW_NAME(lgrt)();
 
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 

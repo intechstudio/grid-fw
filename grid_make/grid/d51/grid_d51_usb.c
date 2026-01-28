@@ -94,13 +94,8 @@ bool grid_d51_midi_bulkout_poll() {
     uint8_t event[4];
     grid_swsr_read(&midi_rx, event, 4);
 
-    struct grid_midi_event_desc midi_ev;
-    midi_ev.byte0 = event[1] & 0x0f; // channel
-    midi_ev.byte1 = event[1] & 0xf0; // command
-    midi_ev.byte2 = event[2];        // param1
-    midi_ev.byte3 = event[3];        // param2
-
-    grid_midi_rx_push(midi_ev);
+    // Pass raw USB MIDI packet bytes to state machine
+    grid_midi_rx_push(event[0], event[1], event[2], event[3]);
 
     if (!grid_swsr_readable(&midi_rx, 4)) {
 
