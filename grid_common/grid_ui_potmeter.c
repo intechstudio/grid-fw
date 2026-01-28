@@ -18,11 +18,11 @@ const luaL_Reg GRID_LUA_P_INDEX_META[] = {{GRID_LUA_FNC_P_ELEMENT_INDEX_short, X
                                           {GRID_LUA_FNC_P_POTMETER_MODE_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_P_POTMETER_MODE_index)},
                                           {GRID_LUA_FNC_P_POTMETER_ELAPSED_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_P_POTMETER_ELAPSED_index)},
                                           {GRID_LUA_FNC_P_POTMETER_STATE_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_P_POTMETER_STATE_index)},
-                                          {GRID_LUA_FNC_G_TIMER_START_short, XAFTERX(GRID_LUA_FNC_META_PAR1_NAME, gtt)},
-                                          {GRID_LUA_FNC_G_TIMER_STOP_short, XAFTERX(GRID_LUA_FNC_META_PAR0_NAME, gtp)},
-                                          {GRID_LUA_FNC_G_EVENT_TRIGGER_short, XAFTERX(GRID_LUA_FNC_META_PAR0_NAME, get)},
-                                          {GRID_LUA_FNC_G_ELEMENTNAME_SET_short, XAFTERX(GRID_LUA_FNC_META_PAR1_NAME, gsen)},
-                                          {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, XAFTERX(GRID_LUA_FNC_META_PAR0_NAME, ggen)},
+                                          {GRID_LUA_FNC_G_TIMER_START_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtt)},
+                                          {GRID_LUA_FNC_G_TIMER_STOP_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtp)},
+                                          {GRID_LUA_FNC_G_EVENT_TRIGGER_short, XAFTERX(GRID_LUA_FNC_META_NAME, get)},
+                                          {GRID_LUA_FNC_G_ELEMENTNAME_SET_short, XAFTERX(GRID_LUA_FNC_META_NAME, gsen)},
+                                          {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, XAFTERX(GRID_LUA_FNC_META_NAME, ggen)},
                                           {NULL, NULL}};
 
 const char grid_ui_potmeter_init_actionstring[] = GRID_ACTIONSTRING_POTMETER_INIT;
