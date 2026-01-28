@@ -522,7 +522,8 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
   if (eve == NULL) {
     grid_platform_printf("warning." __FILE__ ".event does not exist!\r\n");
-    return 1;
+    strcpy(targetstring, "<?lua --[[@cb]] --[[event deprecated]] ?>");
+    return 0;
   }
 
   if (ui->page_activepage == page) {
@@ -775,7 +776,7 @@ void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
     struct grid_ui_event* eve = grid_ui_event_find(&ui->element_list[ui->bulk_last_element], ui->bulk_last_event);
     uint16_t size = grid_platform_get_file_size(&handle);
 
-    if (size > 0) {
+    if (eve != NULL && size > 0) {
 
       char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
       grid_platform_read_file(&handle, (uint8_t*)temp, size);
