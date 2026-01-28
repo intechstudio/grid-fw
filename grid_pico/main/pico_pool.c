@@ -23,6 +23,19 @@ void pico_bkt_push(struct pico_bkt_t* bkt, uint8_t rx) {
   bkt->index = (bkt->index + 1) % PICO_BKT_SIZE;
 }
 
+bool pico_bkt_terminated(struct pico_bkt_t* bkt) {
+
+  if (bkt->index < 4) {
+    return false;
+  }
+
+  bool ends_with_newline = bkt->buf[bkt->index - 1] == '\n';
+
+  bool eot_before_checksum = bkt->buf[bkt->index - 4] == GRID_CONST_EOT;
+
+  return ends_with_newline && eot_before_checksum;
+}
+
 void pico_pool_init(struct pico_pool_t* pool) {
 
   if (PICO_BKT_COUNT > PICO_BKT_LIMIT) {
