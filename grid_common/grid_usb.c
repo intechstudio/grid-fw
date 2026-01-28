@@ -344,8 +344,8 @@ void grid_midi_rx_pop() {
     grid_msg_add_frame(&msg, GRID_CLASS_MIDI_frame);
     grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
 
-    grid_msg_set_parameter(&msg, CLASS_MIDI_CHANNEL, event.byte0);
-    grid_msg_set_parameter(&msg, CLASS_MIDI_COMMAND, event.byte1);
+    grid_msg_set_parameter(&msg, CLASS_MIDI_CHANNEL, event.byte1 & 0x0f);
+    grid_msg_set_parameter(&msg, CLASS_MIDI_COMMAND, event.byte1 & 0xf0);
     grid_msg_set_parameter(&msg, CLASS_MIDI_PARAM1, event.byte2);
     grid_msg_set_parameter(&msg, CLASS_MIDI_PARAM2, event.byte3);
   }
