@@ -359,6 +359,8 @@ void app_main(void) {
 
   esp_log_level_set("*", ESP_LOG_INFO);
 
+  grid_esp32_setup_rom_log_scheme();
+
   TaskHandle_t core2_task_hdl;
   xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024 * 3, NULL, 4, &core2_task_hdl, 1);
 

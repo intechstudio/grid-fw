@@ -70,6 +70,8 @@ void grid_platform_nvm_defrag();
 
 uint8_t grid_platform_get_adc_bit_depth();
 
+void grid_esp32_setup_rom_log_scheme(void);
+
 #ifdef __cplusplus
 }
 #endif
