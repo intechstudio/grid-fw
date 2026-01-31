@@ -48,8 +48,9 @@ static struct grid_ui_element* DRAM_ATTR elements = NULL;
  */
 void IRAM_ATTR octv_process_analog(void* user) {
 
-  // BU16 multiplexer lookup with +8 offset for OCTV button elements (8-23)
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {10, 8, 11, 9, 14, 12, 15, 13, 18, 16, 19, 17, 22, 20, 23, 21};
+  // OCTV multiplexer lookup for button elements 8-23
+  // Adjusted based on hardware testing
+  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {15, 8, 16, 9, 17, 10, 18, 11, 19, 12, 20, 13, 22, 14, 23, 21};
 
   assert(user);
 
