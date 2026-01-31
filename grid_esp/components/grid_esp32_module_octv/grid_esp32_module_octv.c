@@ -47,7 +47,7 @@ void IRAM_ATTR octv_process_analog(void* user) {
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
   uint8_t element_index = multiplexer_lookup[lookup_index];
 
-  if (element_index == -1) {
+  if (element_index == (uint8_t)-1) {
     return;
   }
 
@@ -128,5 +128,7 @@ void grid_esp32_module_octv_init(struct grid_sys_model* sys, struct grid_ui_mode
   grid_esp32_adc_init(adc, octv_process_analog);
   grid_esp32_adc_mux_init(adc, 7);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
+
+  grid_esp32_encoder_start(enc);
   grid_esp32_adc_start(adc, mux_dependent);
 }
