@@ -27,14 +27,14 @@
 
 // static const char* TAG = "module_octv";
 
-// 8 encoder push buttons + 16 analog buttons = 24 button states
-#define GRID_MODULE_OCTV_BUT_NUM 24
+// 8 encoder push buttons + 13 analog buttons = 21 button states
+#define GRID_MODULE_OCTV_BUT_NUM 21
 
 // 8 rotary encoders
 #define GRID_MODULE_OCTV_ENC_NUM 8
 
-// 16 pressure-sensitive buttons via ADC
-#define GRID_MODULE_OCTV_ANALOG_BUT_NUM 16
+// 13 pressure-sensitive buttons via ADC (elements 8-20)
+#define GRID_MODULE_OCTV_ANALOG_BUT_NUM 13
 
 static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
 static struct grid_ui_encoder_state* DRAM_ATTR ui_encoder_state = NULL;
@@ -43,14 +43,14 @@ static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 /*
  * ADC callback for processing pressure-sensitive buttons.
- * Maps ADC channels via multiplexer to UI button elements 8-23.
- * Uses the same multiplexer mapping as BU16, offset by 8 for element indices.
+ * Maps ADC channels via multiplexer to UI button elements 8-20.
+ * Unused mux indices are marked with -1.
  */
 void IRAM_ATTR octv_process_analog(void* user) {
 
-  // OCTV multiplexer lookup for button elements 8-23
-  // Adjusted based on hardware testing
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {15, 8, 16, 9, 17, 10, 18, 11, 19, 12, 20, 13, 22, 14, 23, 21};
+  // OCTV multiplexer lookup for button elements 8-20
+  // Indices 12, 14, 15 are unused (-1)
+  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {15, 8, 16, 9, 17, 10, 18, 11, 19, 12, 20, 13, -1, 14, -1, -1};
 
   assert(user);
 
@@ -58,6 +58,12 @@ void IRAM_ATTR octv_process_analog(void* user) {
 
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
   uint8_t element_index = multiplexer_lookup[lookup_index];
+
+  // Skip unused mux indices
+  if (element_index == (uint8_t)-1) {
+    return;
+  }
+
   struct grid_ui_element* ele = &elements[element_index];
 
   // Apply auto-scale correction filtering
@@ -65,7 +71,7 @@ void IRAM_ATTR octv_process_analog(void* user) {
     return;
   }
 
-  // Store input for analog buttons (elements 8-23)
+  // Store input for analog buttons (elements 8-20)
   grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
 }
 
@@ -119,7 +125,7 @@ void grid_esp32_module_octv_init(struct grid_sys_model* sys, struct grid_ui_mode
     grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
   }
 
-  // Initialize analog button states (elements 8-23)
+  // Initialize analog button states (elements 8-20)
   // These are 12-bit ADC with pressure sensitivity
   for (int i = GRID_MODULE_OCTV_ENC_NUM; i < GRID_MODULE_OCTV_BUT_NUM; ++i) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
@@ -136,8 +142,8 @@ void grid_esp32_module_octv_init(struct grid_sys_model* sys, struct grid_ui_mode
   grid_config_init(conf, cal);
   grid_cal_init(cal, ui->element_list_length, 12);
 
-  // Set up calibration limits for analog buttons (elements 8-23)
-  for (int i = 8; i < 24; ++i) {
+  // Set up calibration limits for analog buttons (elements 8-20)
+  for (int i = 8; i < 21; ++i) {
     assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &ui_button_state[i].limits) == 0);
   }
 
@@ -164,8 +170,8 @@ void grid_esp32_module_octv_init(struct grid_sys_model* sys, struct grid_ui_mode
   // Initialize ADC with callback
   grid_esp32_adc_init(adc, octv_process_analog);
 
-  // Initialize multiplexer with 8 positions (8 mux positions * 2 channels = 16 inputs)
-  grid_esp32_adc_mux_init(adc, 8);
+  // Initialize multiplexer with 7 positions (mux 7 unused, saves 2 samples per cycle)
+  grid_esp32_adc_mux_init(adc, 7);
 
   // RevH modules are NOT mux-dependent (ADC timing independent of mux settling)
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
