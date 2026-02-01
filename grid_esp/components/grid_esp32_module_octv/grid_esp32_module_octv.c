@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+#include "grid_ain.h"
 #include "grid_asc.h"
 #include "grid_cal.h"
 #include "grid_config.h"
@@ -38,7 +39,9 @@ static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR octv_process_analog(void* user) {
 
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {15, 8, 16, 9, 17, 10, 18, 11, 19, 12, 20, 13, -1, 14, -1, -1};
+#define X GRID_MUX_UNUSED
+  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {15, 8, 16, 9, 17, 10, 18, 11, 19, 12, 20, 13, X, 14, X, X};
+#undef X
 
   assert(user);
 
@@ -47,9 +50,11 @@ void IRAM_ATTR octv_process_analog(void* user) {
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
   uint8_t element_index = multiplexer_lookup[lookup_index];
 
-  if (element_index == (uint8_t)-1) {
+  if (element_index == GRID_MUX_UNUSED) {
     return;
   }
+
+  assert(element_index < GRID_MODULE_OCTV_BUT_NUM);
 
   struct grid_ui_element* ele = &elements[element_index];
 
