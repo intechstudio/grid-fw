@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+#include "grid_ain.h"
 #include "grid_asc.h"
 #include "grid_cal.h"
 #include "grid_config.h"
@@ -36,7 +37,9 @@ static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR pbf4_process_analog(void* user) {
 
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, -1, -1, -1, -1, 10, 8, 11, 9};
+#define X GRID_MUX_UNUSED
+  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, X, X, X, X, 10, 8, 11, 9};
+#undef X
   static DRAM_ATTR const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   assert(user);
@@ -44,8 +47,15 @@ void IRAM_ATTR pbf4_process_analog(void* user) {
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
 
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
-  uint8_t mux_position = multiplexer_lookup[lookup_index];
-  struct grid_ui_element* ele = &elements[mux_position];
+  uint8_t element_index = multiplexer_lookup[lookup_index];
+
+  if (element_index == GRID_MUX_UNUSED) {
+    return;
+  }
+
+  assert(element_index < GRID_MODULE_PBF4_POT_NUM + GRID_MODULE_PBF4_BUT_NUM);
+
+  struct grid_ui_element* ele = &elements[element_index];
 
   if (invert_result_lookup[lookup_index]) {
     result->value = 4095 - result->value;
@@ -55,13 +65,13 @@ void IRAM_ATTR pbf4_process_analog(void* user) {
     return;
   }
 
-  if (mux_position < 8) {
+  if (element_index < GRID_MODULE_PBF4_POT_NUM) {
 
-    grid_ui_potmeter_store_input(ele, mux_position, &ui_potmeter_state[mux_position], result->value, 12);
+    grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], result->value, 12);
 
-  } else if (mux_position < 12) {
+  } else {
 
-    grid_ui_button_store_input(ele, &ui_button_state[mux_position - 8], result->value, 12);
+    grid_ui_button_store_input(ele, &ui_button_state[element_index - GRID_MODULE_PBF4_POT_NUM], result->value, 12);
   }
 }
 

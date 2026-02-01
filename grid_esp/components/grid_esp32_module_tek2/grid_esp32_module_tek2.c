@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+#include "grid_ain.h"
 #include "grid_asc.h"
 #include "grid_cal.h"
 #include "grid_config.h"
@@ -36,25 +37,34 @@ static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR tek2_process_analog(void* user) {
 
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {9, 8, 9, 8, 9, 8, -1, -1, 2, 0, 3, 1, 6, 4, 7, 5};
+#define X GRID_MUX_UNUSED
+  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {9, 8, 9, 8, 9, 8, X, X, 2, 0, 3, 1, 6, 4, 7, 5};
+#undef X
 
   assert(user);
 
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
 
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
-  uint8_t mux_position = multiplexer_lookup[lookup_index];
-  struct grid_ui_element* ele = &elements[mux_position];
-  uint8_t endless_index = mux_position % 2;
+  uint8_t element_index = multiplexer_lookup[lookup_index];
+
+  if (element_index == GRID_MUX_UNUSED) {
+    return;
+  }
+
+  assert(element_index < GRID_MODULE_TEK2_BUT_NUM);
+
+  struct grid_ui_element* ele = &elements[element_index];
+  uint8_t endless_index = element_index % 2;
 
   if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
     return;
   }
 
-  if (mux_position < 8) {
+  if (element_index < GRID_MODULE_TEK2_BUT_NUM - GRID_MODULE_TEK2_POT_NUM) {
 
-    grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
-  } else if (mux_position < 10) {
+    grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
+  } else if (element_index < GRID_MODULE_TEK2_BUT_NUM) {
 
     switch (lookup_index) {
     case 0:
@@ -68,8 +78,8 @@ void IRAM_ATTR tek2_process_analog(void* user) {
     case 4:
     case 5: {
       new_endless_state[endless_index].button_value = result->value;
-      grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
-      grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[endless_index], &old_endless_state[endless_index]);
+      grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
+      grid_ui_endless_store_input(ele, element_index, 12, &new_endless_state[endless_index], &old_endless_state[endless_index]);
     } break;
     }
   }
