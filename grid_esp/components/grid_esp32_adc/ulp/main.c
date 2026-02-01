@@ -20,11 +20,19 @@ const uint32_t ADC_CHANNELS[2] = {ADC_CHANNEL_1, ADC_CHANNEL_0};
 
 // volatile, to avoid being optimized away
 volatile uint32_t mux_dependent = 0;
-volatile uint32_t mux_overflow = 0;
 volatile uint32_t mux_index = 0;
+volatile uint32_t mux_positions_bm = 0xFF;
 volatile uint32_t adc_result_ready = 0;
 volatile uint32_t adc_result_taken = 1;
 volatile uint32_t adc_value[8][2] = {0};
+
+static inline void grid_ulp_adc_mux_update() {
+  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_A, mux_index & 0x1);
+  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_B, mux_index & 0x2);
+  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_C, mux_index & 0x4);
+}
+
+static inline void grid_ulp_adc_mux_increment() { GRID_MUX_INCREMENT(mux_index, mux_positions_bm); }
 
 void grid_ulp_adc_mux_init(void) {
 
@@ -35,15 +43,9 @@ void grid_ulp_adc_mux_init(void) {
   ulp_riscv_gpio_output_enable(GRID_ESP32_PINS_MUX_1_A);
   ulp_riscv_gpio_output_enable(GRID_ESP32_PINS_MUX_1_B);
   ulp_riscv_gpio_output_enable(GRID_ESP32_PINS_MUX_1_C);
-}
 
-static inline void grid_ulp_adc_mux_increment() { mux_index = (mux_index + 1) % mux_overflow; }
-
-static inline void grid_ulp_adc_mux_update() {
-
-  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_A, mux_index & 0x1);
-  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_B, mux_index & 0x2);
-  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_C, mux_index & 0x4);
+  GRID_MUX_FIRST_VALID(mux_index, mux_positions_bm);
+  grid_ulp_adc_mux_update();
 }
 
 static inline uint32_t adc_read_with_mux(adc_unit_t adc_n, volatile uint32_t ret[2]) {
@@ -100,10 +102,11 @@ int main(void) {
 
     } else {
 
-      for (int i = 0; i < mux_overflow; ++i) {
-
-        adc_read_with_mux(ADC_UNIT_1, adc_value[i]);
-      }
+      uint32_t start_pos = mux_index;
+      do {
+        uint32_t pos = mux_index;
+        adc_read_with_mux(ADC_UNIT_1, adc_value[pos]);
+      } while (mux_index != start_pos);
     }
 
     while (adc_result_ready) {
