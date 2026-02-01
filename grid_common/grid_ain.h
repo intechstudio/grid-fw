@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define GRID_MUX_UNUSED ((uint8_t)-1)
+
 struct ain_chan_t {
 
   uint16_t capa;

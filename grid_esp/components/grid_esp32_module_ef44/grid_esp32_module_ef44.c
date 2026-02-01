@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+#include "grid_ain.h"
 #include "grid_asc.h"
 #include "grid_cal.h"
 #include "grid_config.h"
@@ -42,26 +43,27 @@ static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR ef44_process_analog(void* user) {
 
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {6, 4, 7, 5, -1, -1, -1, -1, -1, -1, -1, -1, 10, 8, 11, 9};
+#define X GRID_MUX_UNUSED
+  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {6, 4, 7, 5, X, X, X, X, X, X, X, X, X, X, X, X};
+#undef X
 
   assert(user);
 
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
 
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
-  uint8_t mux_position = multiplexer_lookup[lookup_index];
-  struct grid_ui_element* ele = &elements[mux_position];
+  uint8_t element_index = multiplexer_lookup[lookup_index];
+
+  assert(element_index != GRID_MUX_UNUSED);
+  assert(element_index >= GRID_MODULE_EF44_ENC_NUM && element_index < GRID_MODULE_EF44_ENC_NUM + GRID_MODULE_EF44_POT_NUM);
+
+  struct grid_ui_element* ele = &elements[element_index];
 
   if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
     return;
   }
 
-  if (mux_position < 4) {
-
-  } else if (mux_position < 8) {
-
-    grid_ui_potmeter_store_input(ele, mux_position, &ui_potmeter_state[mux_position - 4], result->value, 12);
-  }
+  grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index - GRID_MODULE_EF44_ENC_NUM], result->value, 12);
 }
 
 void IRAM_ATTR ef44_process_encoder(void* dma_buf) {
