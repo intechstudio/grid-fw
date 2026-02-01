@@ -48,10 +48,7 @@ void IRAM_ATTR tek2_process_analog(void* user) {
   uint8_t lookup_index = result->mux_state * 2 + result->channel;
   uint8_t element_index = multiplexer_lookup[lookup_index];
 
-  if (element_index == GRID_MUX_UNUSED) {
-    return;
-  }
-
+  assert(element_index != GRID_MUX_UNUSED);
   assert(element_index < GRID_MODULE_TEK2_BUT_NUM);
 
   struct grid_ui_element* ele = &elements[element_index];
@@ -127,7 +124,7 @@ void grid_esp32_module_tek2_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   grid_esp32_adc_init(&grid_esp32_adc_state, tek2_process_analog);
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 8);
+  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 0b11110111);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
   grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
 }

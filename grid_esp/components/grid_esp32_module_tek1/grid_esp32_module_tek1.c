@@ -372,7 +372,7 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
     grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, process_encoder);
   }
 
-  grid_esp32_adc_mux_init(adc, 8);
+  grid_esp32_adc_mux_init(adc, 0b11111111);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
   grid_esp32_adc_start(adc, mux_dependent);
 }
