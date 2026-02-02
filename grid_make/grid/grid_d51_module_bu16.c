@@ -40,13 +40,6 @@ static void adc_transfer_complete_cb(void) {
     uint8_t lookup_index = multiplexer_index * 2 + i;
     uint8_t element_index = multiplexer_lookup[lookup_index];
 
-    // Calibration to compensate oversampling and decimation
-    uint32_t calibrated = result * 1.03;
-    if (calibrated > GRID_ADC_MAX) {
-      calibrated = GRID_ADC_MAX;
-    }
-    result = calibrated;
-
     struct grid_ui_element* ele = &elements[element_index];
 
     grid_ui_button_store_input(ele, &ui_button_state[element_index], result >> 4, GRID_AIN_INTERNAL_RESOLUTION);
