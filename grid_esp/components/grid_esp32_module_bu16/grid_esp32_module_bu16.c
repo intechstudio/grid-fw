@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 
+#include "grid_ain.h"
 #include "grid_asc.h"
 #include "grid_cal.h"
 #include "grid_config.h"
@@ -47,7 +48,7 @@ void IRAM_ATTR bu16_process_analog(void* user) {
 
   if (mux_position < 16) {
 
-    grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
+    grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, GRID_AIN_INTERNAL_RESOLUTION);
   }
 }
 
@@ -59,7 +60,7 @@ void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_mode
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
   for (int i = 0; i < GRID_MODULE_BU16_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
+    grid_ui_button_state_init(&ui_button_state[i], GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 1);
@@ -68,7 +69,7 @@ void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   grid_config_init(conf, cal);
 
-  grid_cal_init(cal, ui->element_list_length, 12);
+  grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
   if (grid_hwcfg_module_is_rev_h(sys)) {
 

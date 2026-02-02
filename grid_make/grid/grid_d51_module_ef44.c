@@ -1,5 +1,6 @@
 #include "grid_d51_module_ef44.h"
 
+#include "grid_ain.h"
 #include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
 #include "grid_ui_potmeter.h"
@@ -10,6 +11,7 @@
 
 static volatile uint8_t adc_complete_count = 0;
 static volatile uint8_t multiplexer_index = 0;
+static const uint8_t mux_positions_bm = 0b00000011;
 
 static uint64_t last_real_time[4] = {0};
 
@@ -89,8 +91,7 @@ static void adc_transfer_complete_cb(void) {
 
   /* Update the multiplexer */
 
-  multiplexer_index++;
-  multiplexer_index %= 2;
+  GRID_MUX_INCREMENT(multiplexer_index, mux_positions_bm);
 
   gpio_set_pin_level(MUX_A, multiplexer_index / 1 % 2);
   gpio_set_pin_level(MUX_B, multiplexer_index / 2 % 2);
@@ -135,7 +136,7 @@ void grid_module_ef44_init() {
   }
 
   for (int i = 0; i < GRID_MODULE_EF44_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 64, 2048);
+    grid_ui_potmeter_state_init(&ui_potmeter_state[i], GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);

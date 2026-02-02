@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+#include "grid_ain.h"
 #include "grid_asc.h"
 #include "grid_cal.h"
 #include "grid_config.h"
@@ -44,7 +45,7 @@ void IRAM_ATTR po16_process_analog(void* user) {
   struct grid_ui_element* ele = &elements[mux_position];
 
   if (invert_result_lookup[lookup_index]) {
-    result->value = 4095 - result->value;
+    result->value = GRID_ADC_INVERT(result->value);
   }
 
   if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
@@ -65,7 +66,7 @@ void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_mode
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
   for (int i = 0; i < GRID_MODULE_PO16_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 128, 2192);
+    grid_ui_potmeter_state_init(&ui_potmeter_state[i], GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
