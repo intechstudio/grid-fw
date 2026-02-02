@@ -15,14 +15,18 @@ static volatile uint8_t adc_complete_count = 0;
 
 static uint8_t multiplexer_index = 0;
 static const uint8_t mux_positions_bm = 0b11001111;
-#define X GRID_MUX_UNUSED
-static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, X, X, X, X, 10, 8, 11, 9};
-#undef X
-static const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
 #define GRID_MODULE_PBF4_BUT_NUM 4
-
 #define GRID_MODULE_PBF4_POT_NUM 8
+
+#define X GRID_MUX_UNUSED
+static const uint8_t mux_element_lookup[2][8] = {
+    {0, 1, 4, 5, X, X, 8, 9},   // MUX_0 -> ADC_1
+    {2, 3, 6, 7, X, X, 10, 11}, // MUX_1 -> ADC_0
+};
+#undef X
+static uint16_t element_invert_bm = 0b0000000000001111;
+
+static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
 
 static struct grid_ui_button_state ui_button_state[GRID_MODULE_PBF4_BUT_NUM] = {0};
 static struct grid_ui_potmeter_state ui_potmeter_state[GRID_MODULE_PBF4_POT_NUM] = {0};
@@ -41,28 +45,24 @@ static void adc_transfer_complete_cb(void) {
     return;
   }
 
-  struct adc_async_descriptor* adcs[2] = {&ADC_0, &ADC_1};
-
   /* Read and process both channels */
 
-  for (int i = 0; i < 2; i++) {
-    uint16_t result = 0;
-    adc_async_read_channel(adcs[i], 0, &result, 2);
+  for (int channel = 0; channel < 2; channel++) {
+    uint16_t raw = 0;
+    adc_async_read_channel(adcs[channel], 0, &raw, 2);
 
-    uint8_t lookup_index = multiplexer_index * 2 + i;
-    uint8_t element_index = multiplexer_lookup[lookup_index];
+    uint8_t element_index = mux_element_lookup[channel][multiplexer_index];
     assert(element_index != GRID_MUX_UNUSED);
 
-    if (invert_result_lookup[lookup_index]) {
-      result = GRID_ADC_INVERT(result);
-    }
+    uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
+    uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
     struct grid_ui_element* ele = &elements[element_index];
 
     if (element_index >= GRID_MODULE_PBF4_POT_NUM) {
-      grid_ui_button_store_input(ele, &ui_button_state[element_index - GRID_MODULE_PBF4_POT_NUM], result >> 4, 12);
+      grid_ui_button_store_input(ele, &ui_button_state[element_index - GRID_MODULE_PBF4_POT_NUM], downsampled, GRID_AIN_INTERNAL_RESOLUTION);
     } else {
-      grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], result >> 4, 12);
+      grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], downsampled, GRID_AIN_INTERNAL_RESOLUTION);
     }
   }
 
@@ -89,7 +89,7 @@ void grid_module_pbf4_init() {
   grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 
   for (int i = 0; i < GRID_MODULE_PBF4_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
+    grid_ui_button_state_init(&ui_button_state[i], GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
 
   for (int i = 0; i < GRID_MODULE_PBF4_POT_NUM; ++i) {

@@ -13,17 +13,22 @@
 static volatile uint8_t adc_complete_count = 0;
 static volatile uint8_t multiplexer_index = 0;
 static const uint8_t mux_positions_bm = 0b00000011;
+#define GRID_MODULE_EF44_BUT_NUM 4
+#define GRID_MODULE_EF44_ENC_NUM 4
+#define GRID_MODULE_EF44_POT_NUM 4
+
+static const uint8_t mux_element_lookup[2][2] = {
+    {4, 5}, // MUX_0 -> ADC_1
+    {6, 7}, // MUX_1 -> ADC_0
+};
+static uint16_t element_invert_bm = 0;
+
+static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
 
 static uint64_t last_real_time[4] = {0};
 
 static uint8_t UI_SPI_TX_BUFFER[14] = {0};
 static uint8_t UI_SPI_RX_BUFFER[14] = {0};
-
-#define GRID_MODULE_EF44_BUT_NUM 4
-
-#define GRID_MODULE_EF44_ENC_NUM 4
-
-#define GRID_MODULE_EF44_POT_NUM 4
 
 static struct grid_ui_button_state ui_button_state[GRID_MODULE_EF44_BUT_NUM] = {0};
 static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EF44_ENC_NUM] = {0};
@@ -79,29 +84,25 @@ static void adc_transfer_complete_cb(void) {
     return;
   }
 
-  /* Read conversion results */
+  /* Read and process both channels */
 
-  uint16_t adcresult_0 = 0;
-  uint16_t adcresult_1 = 0;
+  for (int channel = 0; channel < 2; channel++) {
+    uint16_t raw = 0;
+    adc_async_read_channel(adcs[channel], 0, &raw, 2);
 
-  uint8_t adc_index_0 = multiplexer_index + 2;
-  uint8_t adc_index_1 = multiplexer_index;
+    uint8_t element_index = mux_element_lookup[channel][multiplexer_index];
+    uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
+    uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
-  adc_async_read_channel(&ADC_0, 0, &adcresult_0, 2);
-  adc_async_read_channel(&ADC_1, 0, &adcresult_1, 2);
+    struct grid_ui_element* ele = &elements[element_index];
 
-  /* Update the multiplexer */
+    grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index - GRID_MODULE_EF44_ENC_NUM], downsampled, GRID_AIN_INTERNAL_RESOLUTION);
+  }
+
+  /* Update the multiplexer for next iteration */
 
   GRID_MUX_INCREMENT(multiplexer_index, mux_positions_bm);
   grid_platform_mux_write(multiplexer_index);
-
-  struct grid_ui_element* ele_0 = &elements[adc_index_0 + 4];
-
-  grid_ui_potmeter_store_input(ele_0, adc_index_0 + 4, &ui_potmeter_state[adc_index_0], adcresult_0 >> 4, 12);
-
-  struct grid_ui_element* ele_1 = &elements[adc_index_1 + 4];
-
-  grid_ui_potmeter_store_input(ele_1, adc_index_1 + 4, &ui_potmeter_state[adc_index_1], adcresult_1 >> 4, 12);
 
   adc_complete_count = 0;
   hardware_adc_start_transfer();
