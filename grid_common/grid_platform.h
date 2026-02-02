@@ -92,4 +92,8 @@ extern void grid_platform_lcd_set_backlight(uint8_t backlight);
 
 extern uint8_t grid_platform_get_adc_bit_depth();
 
+extern void grid_platform_mux_init(uint8_t mux_positions_bm);
+
+extern void grid_platform_mux_write(uint8_t index);
+
 #endif /* GRID_PLATFORM_H */

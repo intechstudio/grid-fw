@@ -1,6 +1,7 @@
 #include "grid_d51_module_bu16.h"
 
 #include "grid_ain.h"
+#include "grid_platform.h"
 #include "grid_ui_button.h"
 #include "grid_ui_system.h"
 
@@ -54,10 +55,7 @@ static void adc_transfer_complete_cb(void) {
   /* Update the multiplexer for next iteration */
 
   GRID_MUX_INCREMENT(multiplexer_index, mux_positions_bm);
-
-  gpio_set_pin_level(MUX_A, multiplexer_index / 1 % 2);
-  gpio_set_pin_level(MUX_B, multiplexer_index / 2 % 2);
-  gpio_set_pin_level(MUX_C, multiplexer_index / 4 % 2);
+  grid_platform_mux_write(multiplexer_index);
 
   adc_complete_count = 0;
   hardware_start_transfer();

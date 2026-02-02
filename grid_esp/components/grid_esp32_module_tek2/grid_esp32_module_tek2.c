@@ -124,7 +124,7 @@ void grid_esp32_module_tek2_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   grid_esp32_adc_init(&grid_esp32_adc_state, tek2_process_analog);
-  grid_esp32_adc_mux_init(&grid_esp32_adc_state, 0b11110111);
+  grid_platform_mux_init(0b11110111);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
   grid_esp32_adc_start(&grid_esp32_adc_state, mux_dependent);
 }
