@@ -14,10 +14,15 @@ static volatile uint8_t adc_complete_count = 0;
 
 static uint8_t multiplexer_index = 0;
 static const uint8_t mux_positions_bm = 0b11111111;
-static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, 10, 8, 11, 9, 14, 12, 15, 13};
-static uint8_t invert_result_lookup[16] = {0};
-
 #define GRID_MODULE_PO16_POT_NUM 16
+
+static const uint8_t mux_element_lookup[2][8] = {
+    {0, 1, 4, 5, 8, 9, 12, 13},   // MUX_0 -> ADC_1
+    {2, 3, 6, 7, 10, 11, 14, 15}, // MUX_1 -> ADC_0
+};
+static uint16_t element_invert_bm = 0;
+
+static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
 
 static struct grid_ui_potmeter_state ui_potmeter_state[GRID_MODULE_PO16_POT_NUM] = {0};
 static struct grid_ui_element* elements = NULL;
@@ -35,24 +40,19 @@ static void adc_transfer_complete_cb(void) {
     return;
   }
 
-  struct adc_async_descriptor* adcs[2] = {&ADC_0, &ADC_1};
-
   /* Read and process both channels */
 
-  for (int i = 0; i < 2; i++) {
-    uint16_t result = 0;
-    adc_async_read_channel(adcs[i], 0, &result, 2);
+  for (int channel = 0; channel < 2; channel++) {
+    uint16_t raw = 0;
+    adc_async_read_channel(adcs[channel], 0, &raw, 2);
 
-    uint8_t lookup_index = multiplexer_index * 2 + i;
-    uint8_t element_index = multiplexer_lookup[lookup_index];
-
-    if (invert_result_lookup[lookup_index]) {
-      result = GRID_ADC_INVERT(result);
-    }
+    uint8_t element_index = mux_element_lookup[channel][multiplexer_index];
+    uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
+    uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
     struct grid_ui_element* ele = &elements[element_index];
 
-    grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], result >> 4, 12);
+    grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], downsampled, GRID_AIN_INTERNAL_RESOLUTION);
   }
 
   /* Update the multiplexer for next iteration */
@@ -77,9 +77,8 @@ void grid_module_po16_init() {
 
   grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 
-  uint8_t invert = grid_hwcfg_module_is_po16_reverse_polarity(&grid_sys_state);
-  for (int i = 0; i < 16; ++i) {
-    invert_result_lookup[i] = invert;
+  if (grid_hwcfg_module_is_po16_reverse_polarity(&grid_sys_state)) {
+    element_invert_bm = 0b1111111111111111;
   }
 
   for (int i = 0; i < GRID_MODULE_PO16_POT_NUM; ++i) {

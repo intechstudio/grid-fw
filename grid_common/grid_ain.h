@@ -10,15 +10,18 @@
 
 #ifdef ESP_PLATFORM
 #define GRID_ADC_MAX 4095
+#define GRID_ADC_DOWNSAMPLE(value) (value)
 #define GRID_POTMETER_DEADZONE 128
 #define GRID_POTMETER_CENTER 2192
 #else
 #define GRID_ADC_MAX 65535
+#define GRID_ADC_DOWNSAMPLE(value) ((value) >> 4)
 #define GRID_POTMETER_DEADZONE 64
 #define GRID_POTMETER_CENTER 2048
 #endif
 
 #define GRID_ADC_INVERT(value) (GRID_ADC_MAX - (value))
+#define GRID_ADC_INVERT_COND(value, element_index, invert_bm) ((value) ^ (GRID_ADC_MAX * (((invert_bm) >> (element_index)) & 1)))
 
 // Find first valid mux position based on bitmask
 #define GRID_MUX_FIRST_VALID(index, mask)                                                                                                                                                              \
