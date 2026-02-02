@@ -1,5 +1,6 @@
 #include "grid_d51_module_pbf4.h"
 
+#include "grid_ain.h"
 #include "grid_ui_button.h"
 #include "grid_ui_potmeter.h"
 #include "grid_ui_system.h"
@@ -7,10 +8,16 @@
 #include "grid_cal.h"
 #include "grid_config.h"
 
+#include <assert.h>
+
 static volatile uint8_t adc_complete_count = 0;
 
 static uint8_t multiplexer_index = 0;
-static const uint8_t multiplexer_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15};
+static const uint8_t mux_positions_bm = 0b11001111;
+#define X GRID_MUX_UNUSED
+static const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, X, X, X, X, 10, 8, 11, 9};
+#undef X
+static const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #define GRID_MODULE_PBF4_BUT_NUM 4
 
@@ -33,59 +40,38 @@ static void adc_transfer_complete_cb(void) {
     return;
   }
 
-  /* Read conversion results */
+  struct adc_async_descriptor* adcs[2] = {&ADC_0, &ADC_1};
 
-  uint16_t adcresult_0 = 0;
-  uint16_t adcresult_1 = 0;
+  /* Read and process both channels */
 
-  uint8_t adc_index_0 = multiplexer_lookup[multiplexer_index + 8];
-  uint8_t adc_index_1 = multiplexer_lookup[multiplexer_index + 0];
+  for (int i = 0; i < 2; i++) {
+    uint16_t result = 0;
+    adc_async_read_channel(adcs[i], 0, &result, 2);
 
-  adc_async_read_channel(&ADC_0, 0, &adcresult_0, 2);
-  adc_async_read_channel(&ADC_1, 0, &adcresult_1, 2);
+    uint8_t lookup_index = multiplexer_index * 2 + i;
+    uint8_t element_index = multiplexer_lookup[lookup_index];
+    assert(element_index != GRID_MUX_UNUSED);
 
-  /* Update the multiplexer */
+    if (invert_result_lookup[lookup_index]) {
+      result = GRID_ADC_INVERT(result);
+    }
 
-  multiplexer_index++;
-  multiplexer_index %= 8;
+    struct grid_ui_element* ele = &elements[element_index];
+
+    if (element_index >= GRID_MODULE_PBF4_POT_NUM) {
+      grid_ui_button_store_input(ele, &ui_button_state[element_index - GRID_MODULE_PBF4_POT_NUM], result >> 4, 12);
+    } else {
+      grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], result >> 4, 12);
+    }
+  }
+
+  /* Update the multiplexer for next iteration */
+
+  GRID_MUX_INCREMENT(multiplexer_index, mux_positions_bm);
 
   gpio_set_pin_level(MUX_A, multiplexer_index / 1 % 2);
   gpio_set_pin_level(MUX_B, multiplexer_index / 2 % 2);
   gpio_set_pin_level(MUX_C, multiplexer_index / 4 % 2);
-
-  if (adc_index_0 < 8 || adc_index_0 > 13) {
-    // mux position is valid
-
-    if (adc_index_0 > 13) {
-
-      // adjust button index
-      adc_index_0 -= 4;
-      adc_index_1 -= 4;
-    }
-
-    if (adc_index_0 < 4) {
-
-      // adjust potentiometer polarity
-      adcresult_0 = 65535 - adcresult_0;
-      adcresult_1 = 65535 - adcresult_1;
-    }
-
-    struct grid_ui_element* ele_0 = &elements[adc_index_0];
-
-    if (adc_index_0 > 7) {
-      grid_ui_button_store_input(ele_0, &ui_button_state[adc_index_0 - 8], adcresult_0 >> 4, 12);
-    } else {
-      grid_ui_potmeter_store_input(ele_0, adc_index_0, &ui_potmeter_state[adc_index_0], adcresult_0 >> 4, 12);
-    }
-
-    struct grid_ui_element* ele_1 = &elements[adc_index_1];
-
-    if (adc_index_1 > 7) {
-      grid_ui_button_store_input(ele_1, &ui_button_state[adc_index_1 - 8], adcresult_1 >> 4, 12);
-    } else {
-      grid_ui_potmeter_store_input(ele_1, adc_index_1, &ui_potmeter_state[adc_index_1], adcresult_1 >> 4, 12);
-    }
-  }
 
   adc_complete_count = 0;
   hardware_start_transfer();
@@ -109,7 +95,7 @@ void grid_module_pbf4_init() {
   }
 
   for (int i = 0; i < GRID_MODULE_PBF4_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 64, 2048);
+    grid_ui_potmeter_state_init(&ui_potmeter_state[i], GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   elements = grid_ui_model_get_elements(&grid_ui_state);

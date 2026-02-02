@@ -14,6 +14,7 @@
 
 #include "hal/adc_types.h"
 
+#include "grid_ain.h"
 #include "grid_esp32_pins.h"
 
 const uint32_t ADC_CHANNELS[2] = {ADC_CHANNEL_1, ADC_CHANNEL_0};

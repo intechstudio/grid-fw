@@ -19,6 +19,7 @@
 
 #include "rom/ets_sys.h"
 
+#include "grid_ain.h"
 #include "grid_esp32_pins.h"
 
 #include "esp_heap_caps.h"

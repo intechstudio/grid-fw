@@ -38,21 +38,6 @@ extern "C" {
 
 #define GRID_ESP32_PINS_MUX_1_Z 2
 
-// Find first valid mux position based on bitmask
-#define GRID_MUX_FIRST_VALID(index, mask)                                                                                                                                                              \
-  do {                                                                                                                                                                                                 \
-    (index) = 0;                                                                                                                                                                                       \
-    while (!((mask) & (1 << (index)))) {                                                                                                                                                               \
-      (index)++;                                                                                                                                                                                       \
-    }                                                                                                                                                                                                  \
-  } while (0)
-
-// Advance mux index to next valid position based on bitmask
-#define GRID_MUX_INCREMENT(index, mask)                                                                                                                                                                \
-  do {                                                                                                                                                                                                 \
-    (index) = ((index) + 1) % 8;                                                                                                                                                                       \
-  } while (!((mask) & (1 << (index))))
-
 #define GRID_ESP32_PINS_MAPMODE 38
 
 #ifdef __cplusplus
