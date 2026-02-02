@@ -82,7 +82,7 @@ void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   grid_esp32_adc_init(adc, bu16_process_analog);
-  grid_esp32_adc_mux_init(adc, 0b11111111);
+  grid_platform_mux_init(0b11111111);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
   grid_esp32_adc_start(adc, mux_dependent);
 }

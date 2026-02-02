@@ -119,7 +119,7 @@ void grid_esp32_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_mode
   grid_ui_bulk_flush(ui);
 
   grid_esp32_adc_init(adc, pbf4_process_analog);
-  grid_esp32_adc_mux_init(adc, 0b11001111);
+  grid_platform_mux_init(0b11001111);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
   grid_esp32_adc_start(adc, mux_dependent);
 }
