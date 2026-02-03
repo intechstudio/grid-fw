@@ -5,6 +5,7 @@
 #include "grid_ui_potmeter.h"
 #include "grid_ui_system.h"
 
+#include "grid_asc.h"
 #include "grid_cal.h"
 #include "grid_config.h"
 
@@ -25,6 +26,7 @@ static uint16_t element_invert_bm = 0;
 static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
 
 static struct grid_ui_potmeter_state ui_potmeter_state[GRID_MODULE_PO16_POT_NUM] = {0};
+static struct grid_asc asc_state[16] = {0};
 static struct grid_ui_element* elements = NULL;
 
 static void hardware_start_transfer(void) {
@@ -50,9 +52,14 @@ static void adc_transfer_complete_cb(void) {
     uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
     uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
+    uint16_t processed;
+    if (!grid_asc_process(asc_state, element_index, downsampled, &processed)) {
+      continue;
+    }
+
     struct grid_ui_element* ele = &elements[element_index];
 
-    grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], downsampled, GRID_AIN_INTERNAL_RESOLUTION);
+    grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
   }
 
   /* Update the multiplexer for next iteration */
@@ -84,6 +91,8 @@ void grid_module_po16_init() {
   for (int i = 0; i < GRID_MODULE_PO16_POT_NUM; ++i) {
     grid_ui_potmeter_state_init(&ui_potmeter_state[i], GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
+
+  grid_asc_array_set_factors(asc_state, 16, 0, 16, 1);
 
   elements = grid_ui_model_get_elements(&grid_ui_state);
 

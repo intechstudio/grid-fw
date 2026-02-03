@@ -54,7 +54,7 @@ void IRAM_ATTR tek2_process_analog(void* user) {
   struct grid_ui_element* ele = &elements[element_index];
   uint8_t endless_index = element_index % 2;
 
-  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+  if (!grid_asc_process(asc_state, lookup_index, result->value, &result->value)) {
     return;
   }
 

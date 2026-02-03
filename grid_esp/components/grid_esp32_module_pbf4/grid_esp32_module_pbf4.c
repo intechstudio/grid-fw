@@ -60,7 +60,7 @@ void IRAM_ATTR pbf4_process_analog(void* user) {
   uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
   uint16_t processed;
-  if (!grid_asc_process(&asc_state[result->mux_state * 2 + result->channel], downsampled, &processed)) {
+  if (!grid_asc_process(asc_state, element_index, downsampled, &processed)) {
     return;
   }
 
@@ -77,10 +77,10 @@ void grid_esp32_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_PBF4_BUT_NUM * sizeof(struct grid_ui_button_state));
   ui_potmeter_state = grid_platform_allocate_volatile(GRID_MODULE_PBF4_POT_NUM * sizeof(struct grid_ui_potmeter_state));
-  asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
+  asc_state = grid_platform_allocate_volatile(12 * sizeof(struct grid_asc));
   memset(ui_button_state, 0, GRID_MODULE_PBF4_BUT_NUM * sizeof(struct grid_ui_button_state));
   memset(ui_potmeter_state, 0, GRID_MODULE_PBF4_POT_NUM * sizeof(struct grid_ui_potmeter_state));
-  memset(asc_state, 0, 16 * sizeof(struct grid_asc));
+  memset(asc_state, 0, 12 * sizeof(struct grid_asc));
 
   for (int i = 0; i < GRID_MODULE_PBF4_BUT_NUM; ++i) {
     grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
@@ -90,9 +90,9 @@ void grid_esp32_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_mode
     grid_ui_potmeter_state_init(&ui_potmeter_state[i], GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
-  grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
+  grid_asc_array_set_factors(asc_state, 12, 0, 8, 8);
   if (grid_hwcfg_module_is_rev_h(sys)) {
-    grid_asc_array_set_factors(asc_state, 16, 12, 4, 1);
+    grid_asc_array_set_factors(asc_state, 12, 8, 4, 1);
   }
 
   elements = grid_ui_model_get_elements(ui);

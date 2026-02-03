@@ -50,7 +50,7 @@ void IRAM_ATTR po16_process_analog(void* user) {
   uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
   uint16_t processed;
-  if (!grid_asc_process(&asc_state[result->mux_state * 2 + result->channel], downsampled, &processed)) {
+  if (!grid_asc_process(asc_state, element_index, downsampled, &processed)) {
     return;
   }
 
