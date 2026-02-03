@@ -68,7 +68,7 @@ void IRAM_ATTR vsn1l_process_analog(void* user) {
 
   struct grid_ui_element* ele = &elements[element_index];
 
-  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+  if (!grid_asc_process(asc_state, lookup_index, result->value, &result->value)) {
     return;
   }
 
@@ -144,7 +144,7 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
 
   struct grid_ui_element* ele = &elements[element_index];
 
-  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+  if (!grid_asc_process(asc_state, lookup_index, result->value, &result->value)) {
     return;
   }
 
@@ -214,7 +214,7 @@ void IRAM_ATTR vsn2_process_analog(void* user) {
 
   struct grid_ui_element* ele = &elements[element_index];
 
-  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+  if (!grid_asc_process(asc_state, lookup_index, result->value, &result->value)) {
     return;
   }
 

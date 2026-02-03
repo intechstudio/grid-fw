@@ -126,7 +126,7 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
   int32_t* template_parameter_list = ele->template_parameter_list;
 
   uint16_t value_asc;
-  if (grid_asc_process(&grid_cal_state.sigcond[input_channel], value, &value_asc)) {
+  if (grid_asc_process(grid_cal_state.sigcond, input_channel, value, &value_asc)) {
 
     grid_cal_limits_value_update(&state->limits, value_asc);
 

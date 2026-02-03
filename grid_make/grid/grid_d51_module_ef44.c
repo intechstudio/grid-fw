@@ -1,6 +1,7 @@
 #include "grid_d51_module_ef44.h"
 
 #include "grid_ain.h"
+#include "grid_asc.h"
 #include "grid_platform.h"
 #include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
@@ -33,6 +34,7 @@ static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 static struct grid_ui_button_state ui_button_state[GRID_MODULE_EF44_BUT_NUM] = {0};
 static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EF44_ENC_NUM] = {0};
 static struct grid_ui_potmeter_state ui_potmeter_state[GRID_MODULE_EF44_POT_NUM] = {0};
+static struct grid_asc asc_state[8] = {0};
 static struct grid_ui_element* elements = NULL;
 
 static void hardware_spi_start_transfer(void) {
@@ -94,9 +96,14 @@ static void adc_transfer_complete_cb(void) {
     uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
     uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
+    uint16_t processed;
+    if (!grid_asc_process(asc_state, element_index, downsampled, &processed)) {
+      continue;
+    }
+
     struct grid_ui_element* ele = &elements[element_index];
 
-    grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index - GRID_MODULE_EF44_ENC_NUM], downsampled, GRID_AIN_INTERNAL_RESOLUTION);
+    grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index - GRID_MODULE_EF44_ENC_NUM], processed, GRID_AIN_INTERNAL_RESOLUTION);
   }
 
   /* Update the multiplexer for next iteration */
@@ -137,6 +144,8 @@ void grid_module_ef44_init() {
   for (int i = 0; i < GRID_MODULE_EF44_POT_NUM; ++i) {
     grid_ui_potmeter_state_init(&ui_potmeter_state[i], GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
+
+  grid_asc_array_set_factors(asc_state, 8, 4, 4, 1);
 
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
   int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);

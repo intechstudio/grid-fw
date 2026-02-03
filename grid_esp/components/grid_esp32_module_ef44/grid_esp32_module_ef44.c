@@ -60,7 +60,7 @@ void IRAM_ATTR ef44_process_analog(void* user) {
   uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
   uint16_t processed;
-  if (!grid_asc_process(&asc_state[result->mux_state * 2 + result->channel], downsampled, &processed)) {
+  if (!grid_asc_process(asc_state, element_index, downsampled, &processed)) {
     return;
   }
 
@@ -96,11 +96,11 @@ void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mode
   ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_EF44_BUT_NUM * sizeof(struct grid_ui_button_state));
   ui_encoder_state = grid_platform_allocate_volatile(GRID_MODULE_EF44_ENC_NUM * sizeof(struct grid_ui_encoder_state));
   ui_potmeter_state = grid_platform_allocate_volatile(GRID_MODULE_EF44_POT_NUM * sizeof(struct grid_ui_potmeter_state));
-  asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
+  asc_state = grid_platform_allocate_volatile(8 * sizeof(struct grid_asc));
   memset(ui_button_state, 0, GRID_MODULE_EF44_BUT_NUM * sizeof(struct grid_ui_button_state));
   memset(ui_encoder_state, 0, GRID_MODULE_EF44_ENC_NUM * sizeof(struct grid_ui_encoder_state));
   memset(ui_potmeter_state, 0, GRID_MODULE_EF44_POT_NUM * sizeof(struct grid_ui_potmeter_state));
-  memset(asc_state, 0, 16 * sizeof(struct grid_asc));
+  memset(asc_state, 0, 8 * sizeof(struct grid_asc));
 
   for (int i = 0; i < GRID_MODULE_EF44_BUT_NUM; ++i) {
     grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
@@ -110,7 +110,7 @@ void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mode
     grid_ui_potmeter_state_init(&ui_potmeter_state[i], GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
-  grid_asc_array_set_factors(asc_state, 16, 0, 16, 16);
+  grid_asc_array_set_factors(asc_state, 8, 4, 4, 16);
 
   elements = grid_ui_model_get_elements(ui);
 

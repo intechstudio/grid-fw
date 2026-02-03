@@ -12,15 +12,17 @@ void grid_asc_array_set_factors(struct grid_asc* asc, size_t capacity, uint8_t s
   }
 }
 
-bool grid_asc_process(struct grid_asc* asc, uint16_t rx, uint16_t* tx) {
+bool grid_asc_process(struct grid_asc* asc, uint8_t index, uint16_t rx, uint16_t* tx) {
 
-  asc->sum += rx;
+  struct grid_asc* entry = &asc[index];
 
-  *tx = asc->sum / (asc->count + 1);
+  entry->sum += rx;
 
-  asc->count = (asc->count + 1) % asc->factor;
+  *tx = entry->sum / (entry->count + 1);
 
-  asc->sum *= asc->count != 0;
+  entry->count = (entry->count + 1) % entry->factor;
 
-  return asc->count == 0;
+  entry->sum *= entry->count != 0;
+
+  return entry->count == 0;
 }
