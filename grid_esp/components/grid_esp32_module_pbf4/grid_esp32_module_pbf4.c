@@ -33,7 +33,6 @@
 static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
 static struct grid_ui_potmeter_state* DRAM_ATTR ui_potmeter_state = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
-static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 #define X GRID_MUX_UNUSED
 static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
@@ -92,8 +91,6 @@ void grid_esp32_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_mode
   if (grid_hwcfg_module_is_rev_h(sys)) {
     grid_asc_array_set_factors(asc_state, 12, 8, 4, 1);
   }
-
-  elements = grid_ui_model_get_elements(ui);
 
   grid_config_init(conf, cal);
 

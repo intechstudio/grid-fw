@@ -13,7 +13,6 @@ static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 
 static struct grid_ui_button_state ui_button_state[GRID_MODULE_EN16_BUT_NUM] = {0};
 static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EN16_ENC_NUM] = {0};
-static struct grid_ui_element* elements = NULL;
 
 static void hardware_start_transfer(void) {
 
@@ -76,8 +75,6 @@ void grid_module_en16_init() {
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
-
-  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   hardware_init();
 

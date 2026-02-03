@@ -35,7 +35,6 @@ static struct grid_ui_button_state ui_button_state[GRID_MODULE_EF44_BUT_NUM] = {
 static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EF44_ENC_NUM] = {0};
 static struct grid_ui_potmeter_state ui_potmeter_state[GRID_MODULE_EF44_POT_NUM] = {0};
 static struct grid_asc asc_state[8] = {0};
-static struct grid_ui_element* elements = NULL;
 
 static void hardware_spi_start_transfer(void) {
 
@@ -148,8 +147,6 @@ void grid_module_ef44_init() {
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
     grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
   }
-
-  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   grid_config_init(&grid_config_state, &grid_cal_state);
 

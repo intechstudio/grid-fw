@@ -28,7 +28,6 @@
 
 static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
 static struct grid_ui_encoder_state* DRAM_ATTR ui_encoder_state = NULL;
-static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR en16_process_encoder(void* dma_buf) {
 
@@ -60,8 +59,6 @@ void grid_esp32_module_en16_init(struct grid_sys_model* sys, struct grid_ui_mode
   for (int i = 0; i < GRID_MODULE_EN16_BUT_NUM; ++i) {
     grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
   }
-
-  elements = grid_ui_model_get_elements(ui);
 
   grid_esp32_encoder_init(enc, 1, en16_process_encoder);
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
