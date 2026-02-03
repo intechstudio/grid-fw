@@ -41,29 +41,32 @@ static struct grid_ui_potmeter_state* DRAM_ATTR ui_potmeter_state = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
-void IRAM_ATTR ef44_process_analog(void* user) {
+static DRAM_ATTR const uint8_t mux_element_lookup[2][2] = {
+    {6, 7},
+    {4, 5},
+};
+static DRAM_ATTR uint16_t element_invert_bm = 0;
 
-#define X GRID_MUX_UNUSED
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {6, 4, 7, 5, X, X, X, X, X, X, X, X, X, X, X, X};
-#undef X
+void IRAM_ATTR ef44_process_analog(void* user) {
 
   assert(user);
 
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
 
-  uint8_t lookup_index = result->mux_state * 2 + result->channel;
-  uint8_t element_index = multiplexer_lookup[lookup_index];
+  uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
 
-  assert(element_index != GRID_MUX_UNUSED);
-  assert(element_index >= GRID_MODULE_EF44_ENC_NUM && element_index < GRID_MODULE_EF44_ENC_NUM + GRID_MODULE_EF44_POT_NUM);
+  uint16_t raw = result->value;
+  uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
+  uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
-  struct grid_ui_element* ele = &elements[element_index];
-
-  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+  uint16_t processed;
+  if (!grid_asc_process(&asc_state[result->mux_state * 2 + result->channel], downsampled, &processed)) {
     return;
   }
 
-  grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index - GRID_MODULE_EF44_ENC_NUM], result->value, 12);
+  struct grid_ui_element* ele = &elements[element_index];
+
+  grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index - GRID_MODULE_EF44_ENC_NUM], processed, GRID_AIN_INTERNAL_RESOLUTION);
 }
 
 void IRAM_ATTR ef44_process_encoder(void* dma_buf) {
