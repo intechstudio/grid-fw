@@ -30,26 +30,32 @@ static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
-void IRAM_ATTR bu16_process_analog(void* user) {
+static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
+    {0, 1, 4, 5, 8, 9, 12, 13},
+    {2, 3, 6, 7, 10, 11, 14, 15},
+};
+static DRAM_ATTR uint16_t element_invert_bm = 0;
 
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, 10, 8, 11, 9, 14, 12, 15, 13};
+void IRAM_ATTR bu16_process_analog(void* user) {
 
   assert(user);
 
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
 
-  uint8_t lookup_index = result->mux_state * 2 + result->channel;
-  uint8_t mux_position = multiplexer_lookup[lookup_index];
-  struct grid_ui_element* ele = &elements[mux_position];
+  uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
 
-  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+  uint16_t raw = result->value;
+  uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
+  uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
+
+  uint16_t processed;
+  if (!grid_asc_process(&asc_state[result->mux_state * 2 + result->channel], downsampled, &processed)) {
     return;
   }
 
-  if (mux_position < 16) {
+  struct grid_ui_element* ele = &elements[element_index];
 
-    grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, GRID_AIN_INTERNAL_RESOLUTION);
-  }
+  grid_ui_button_store_input(ele, &ui_button_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
 }
 
 void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {

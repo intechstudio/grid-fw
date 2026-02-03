@@ -35,40 +35,41 @@ static struct grid_ui_potmeter_state* DRAM_ATTR ui_potmeter_state = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
-void IRAM_ATTR pbf4_process_analog(void* user) {
-
 #define X GRID_MUX_UNUSED
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {2, 0, 3, 1, 6, 4, 7, 5, X, X, X, X, 10, 8, 11, 9};
+static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
+    {0, 1, 4, 5, X, X, 8, 9},
+    {2, 3, 6, 7, X, X, 10, 11},
+};
 #undef X
-  static DRAM_ATTR const uint8_t invert_result_lookup[16] = {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static DRAM_ATTR uint16_t element_invert_bm = 0b0000000000001111;
+
+void IRAM_ATTR pbf4_process_analog(void* user) {
 
   assert(user);
 
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
 
-  uint8_t lookup_index = result->mux_state * 2 + result->channel;
-  uint8_t element_index = multiplexer_lookup[lookup_index];
+  uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
 
-  assert(element_index != GRID_MUX_UNUSED);
-  assert(element_index < GRID_MODULE_PBF4_POT_NUM + GRID_MODULE_PBF4_BUT_NUM);
-
-  struct grid_ui_element* ele = &elements[element_index];
-
-  if (invert_result_lookup[lookup_index]) {
-    result->value = GRID_ADC_INVERT(result->value);
-  }
-
-  if (!grid_asc_process(&asc_state[lookup_index], result->value, &result->value)) {
+  if (element_index == GRID_MUX_UNUSED) {
     return;
   }
 
+  uint16_t raw = result->value;
+  uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
+  uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
+
+  uint16_t processed;
+  if (!grid_asc_process(&asc_state[result->mux_state * 2 + result->channel], downsampled, &processed)) {
+    return;
+  }
+
+  struct grid_ui_element* ele = &elements[element_index];
+
   if (element_index < GRID_MODULE_PBF4_POT_NUM) {
-
-    grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], result->value, 12);
-
+    grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
   } else {
-
-    grid_ui_button_store_input(ele, &ui_button_state[element_index - GRID_MODULE_PBF4_POT_NUM], result->value, 12);
+    grid_ui_button_store_input(ele, &ui_button_state[element_index - GRID_MODULE_PBF4_POT_NUM], processed, GRID_AIN_INTERNAL_RESOLUTION);
   }
 }
 
