@@ -301,9 +301,12 @@ static uint16_t grid_ui_endless_calculate_angle(uint16_t phase_a, uint16_t phase
   return value_degrees;
 }
 
-void grid_ui_endless_store_input(struct grid_ui_element* ele, uint8_t input_channel, uint8_t adc_bit_depth, struct grid_ui_endless_state* new_value, struct grid_ui_endless_state* old_value) {
+void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index, uint8_t adc_bit_depth, struct grid_ui_endless_state* new_value, struct grid_ui_endless_state* old_value) {
 
-  assert(ele);
+  assert(ui);
+  assert(element_index < ui->element_list_length);
+
+  struct grid_ui_element* ele = &ui->element_list[element_index];
 
   if (!memcmp(old_value, new_value, sizeof(struct grid_ui_endless_state))) {
     // no change
@@ -312,7 +315,7 @@ void grid_ui_endless_store_input(struct grid_ui_element* ele, uint8_t input_chan
 
   int32_t* template_parameter_list = ele->template_parameter_list;
 
-  int stabilized = grid_ain_stabilized(&grid_ain_state, input_channel);
+  int stabilized = grid_ain_stabilized(&grid_ain_state, element_index);
 
   if (!stabilized) {
     memcpy(old_value, new_value, sizeof(struct grid_ui_endless_state));
@@ -329,9 +332,9 @@ void grid_ui_endless_store_input(struct grid_ui_element* ele, uint8_t input_chan
     resolution = 12;
   }
 
-  grid_ain_add_sample(&grid_ain_state, input_channel, value_degrees_new, 12, (uint8_t)resolution);
+  grid_ain_add_sample(&grid_ain_state, element_index, value_degrees_new, 12, (uint8_t)resolution);
 
-  if (grid_ain_get_changed(&grid_ain_state, input_channel)) {
+  if (grid_ain_get_changed(&grid_ain_state, element_index)) {
 
     int16_t delta = (value_degrees_new - value_degrees_old);
 

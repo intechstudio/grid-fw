@@ -52,9 +52,7 @@ static void adc_transfer_complete_cb(void) {
       continue;
     }
 
-    struct grid_ui_element* ele = &elements[element_index];
-
-    grid_ui_button_store_input(ele, &ui_button_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
+    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
   }
 
   /* Update the multiplexer for next iteration */

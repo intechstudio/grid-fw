@@ -75,7 +75,7 @@ void IRAM_ATTR vsn1l_process_analog(void* user) {
 
   if (element_index < 8) {
 
-    grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
 
   } else if (element_index < 9) {
 
@@ -91,13 +91,13 @@ void IRAM_ATTR vsn1l_process_analog(void* user) {
     case 4: {
 
       new_endless_state[0].button_value = result->value;
-      grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
-      grid_ui_endless_store_input(ele, element_index, 12, &new_endless_state[0], &old_endless_state[0]);
+      grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
+      grid_ui_endless_store_input(&grid_ui_state, element_index, 12, &new_endless_state[0], &old_endless_state[0]);
     } break;
     }
   } else if (element_index < 13 && is_vsn_rev_h_8bit_hwcfg) {
 
-    grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
   }
 }
 
@@ -119,7 +119,7 @@ void IRAM_ATTR vsn1l_process_encoder(void* dma_buf) {
 
     if (idx >= 9 && idx < 13) {
 
-      grid_ui_button_store_input(ele, &ui_button_state[idx], value, 12);
+      grid_ui_button_store_input(&grid_ui_state, idx, &ui_button_state[idx], value, 12);
     }
   }
 }
@@ -151,7 +151,7 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
 
   if (element_index < 8) {
 
-    grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
 
   } else if (element_index < 9) {
 
@@ -167,13 +167,13 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
     case 5: {
 
       new_endless_state[0].button_value = result->value;
-      grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
-      grid_ui_endless_store_input(ele, element_index, 12, &new_endless_state[0], &old_endless_state[0]);
+      grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
+      grid_ui_endless_store_input(&grid_ui_state, element_index, 12, &new_endless_state[0], &old_endless_state[0]);
     } break;
     }
   } else if (element_index < 13 && is_vsn_rev_h_8bit_hwcfg) {
 
-    grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
   }
 }
 
@@ -195,7 +195,7 @@ void IRAM_ATTR vsn1r_process_encoder(void* dma_buf) {
 
     if (idx >= 9 && idx < 13) {
 
-      grid_ui_button_store_input(ele, &ui_button_state[idx], value, 12);
+      grid_ui_button_store_input(&grid_ui_state, idx, &ui_button_state[idx], value, 12);
     }
   }
 }
@@ -221,11 +221,11 @@ void IRAM_ATTR vsn2_process_analog(void* user) {
 
   if (element_index < 8) {
 
-    grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
 
   } else if (is_vsn_rev_h_8bit_hwcfg) {
 
-    grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
   }
 }
 
@@ -245,7 +245,7 @@ void IRAM_ATTR vsn2_process_encoder(void* dma_buf) {
 
     if ((idx >= 8 && idx < 12) || (idx >= 13 && idx < 17)) {
 
-      grid_ui_button_store_input(ele, &ui_button_state[idx], value, 12);
+      grid_ui_button_store_input(&grid_ui_state, idx, &ui_button_state[idx], value, 12);
     }
   }
 }
