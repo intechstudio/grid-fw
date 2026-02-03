@@ -35,7 +35,6 @@ static DRAM_ATTR uint16_t element_invert_bm = 0b1111111111111111;
 
 static struct grid_ui_potmeter_state* DRAM_ATTR ui_potmeter_state = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
-static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 void IRAM_ATTR po16_process_analog(void* user) {
 
@@ -69,8 +68,6 @@ void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
-
-  elements = grid_ui_model_get_elements(ui);
 
   grid_config_init(conf, cal);
 

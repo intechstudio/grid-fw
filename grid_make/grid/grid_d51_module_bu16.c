@@ -22,7 +22,6 @@ static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
 
 static struct grid_ui_button_state ui_button_state[GRID_MODULE_BU16_BUT_NUM] = {0};
 static struct grid_asc asc_state[16] = {0};
-static struct grid_ui_element* elements = NULL;
 
 static void hardware_start_transfer(void) {
 
@@ -82,8 +81,6 @@ void grid_module_bu16_init() {
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 1);
-
-  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   hardware_init();
   hardware_start_transfer();

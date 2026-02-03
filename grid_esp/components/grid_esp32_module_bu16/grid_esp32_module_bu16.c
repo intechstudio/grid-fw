@@ -28,7 +28,6 @@
 
 static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
-static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
 static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
     {0, 1, 4, 5, 8, 9, 12, 13},
@@ -68,8 +67,6 @@ void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 1);
-
-  elements = grid_ui_model_get_elements(ui);
 
   grid_config_init(conf, cal);
 

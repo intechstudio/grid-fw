@@ -27,7 +27,6 @@ static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
 
 static struct grid_ui_potmeter_state ui_potmeter_state[GRID_MODULE_PO16_POT_NUM] = {0};
 static struct grid_asc asc_state[16] = {0};
-static struct grid_ui_element* elements = NULL;
 
 static void hardware_start_transfer(void) {
 
@@ -91,8 +90,6 @@ void grid_module_po16_init() {
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 1);
-
-  elements = grid_ui_model_get_elements(&grid_ui_state);
 
   grid_config_init(&grid_config_state, &grid_cal_state);
 
