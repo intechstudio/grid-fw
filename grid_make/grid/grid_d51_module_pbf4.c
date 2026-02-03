@@ -64,12 +64,10 @@ static void adc_transfer_complete_cb(void) {
       continue;
     }
 
-    struct grid_ui_element* ele = &elements[element_index];
-
     if (element_index >= GRID_MODULE_PBF4_POT_NUM) {
-      grid_ui_button_store_input(ele, &ui_button_state[element_index - GRID_MODULE_PBF4_POT_NUM], processed, GRID_AIN_INTERNAL_RESOLUTION);
+      grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index - GRID_MODULE_PBF4_POT_NUM], processed, GRID_AIN_INTERNAL_RESOLUTION);
     } else {
-      grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
+      grid_ui_potmeter_store_input(&grid_ui_state, element_index, &ui_potmeter_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
     }
   }
 

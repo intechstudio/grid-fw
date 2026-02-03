@@ -69,7 +69,7 @@ void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
   ele->page_change_cb = &grid_ui_element_potmeter_page_change_cb;
 }
 
-void grid_ui_element_potmeter_update_value(int32_t* template_parameter_list, uint8_t input_channel, uint8_t adc_bit_depth) {
+void grid_ui_element_potmeter_update_value(int32_t* template_parameter_list, uint8_t element_index, uint8_t adc_bit_depth) {
 
   int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
   resolution = clampi32(resolution, 1, 12);
@@ -79,7 +79,7 @@ void grid_ui_element_potmeter_update_value(int32_t* template_parameter_list, uin
   int32_t min = MIN(tmin, tmax);
   int32_t max = MAX(tmin, tmax);
 
-  int32_t new_value = grid_ain_get_average_scaled(&grid_ain_state, input_channel, adc_bit_depth, resolution, min, max);
+  int32_t new_value = grid_ain_get_average_scaled(&grid_ain_state, element_index, adc_bit_depth, resolution, min, max);
 
   if (tmin > tmax) {
     new_value = mirrori32(new_value, min, max);
@@ -117,16 +117,17 @@ void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_
   grid_ui_element_potmeter_update_value(template_parameter_list, element_index, adc_bit_depth);
 }
 
-void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_channel, struct grid_ui_potmeter_state* state, uint16_t value, uint8_t adc_bit_depth) {
+void grid_ui_potmeter_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_potmeter_state* state, uint16_t value, uint8_t adc_bit_depth) {
 
-  assert(ele);
+  assert(ui);
+  assert(element_index < ui->element_list_length);
 
-  // const uint16_t adc_max_value = (1 << adc_bit_depth) - 1;
+  struct grid_ui_element* ele = &ui->element_list[element_index];
 
   int32_t* template_parameter_list = ele->template_parameter_list;
 
   uint16_t value_asc;
-  if (grid_asc_process(grid_cal_state.sigcond, input_channel, value, &value_asc)) {
+  if (grid_asc_process(grid_cal_state.sigcond, element_index, value, &value_asc)) {
 
     grid_cal_limits_value_update(&state->limits, value_asc);
 
@@ -139,18 +140,18 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
     return;
   }
 
-  value = grid_cal_next(&grid_cal_state, input_channel, value);
+  value = grid_cal_next(&grid_cal_state, element_index, value);
 
   int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
 
-  grid_ain_add_sample(&grid_ain_state, input_channel, value, adc_bit_depth, (uint8_t)resolution);
+  grid_ain_add_sample(&grid_ain_state, element_index, value, adc_bit_depth, (uint8_t)resolution);
 
   // limit lastrealtime
   uint64_t now = grid_platform_rtc_get_micros();
   uint64_t elapsed_us = grid_platform_rtc_get_diff(now, state->last_real_time);
   elapsed_us = MIN(elapsed_us, GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US);
 
-  if (grid_ain_get_changed(&grid_ain_state, input_channel)) {
+  if (grid_ain_get_changed(&grid_ain_state, element_index)) {
 
     // update lastrealtime
     state->last_real_time = now;
@@ -159,12 +160,12 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint8_t input_cha
     grid_ui_element_potmeter_update_value(template_parameter_list, ele->index, adc_bit_depth);
 
     // for display in editor
-    int32_t state = grid_ain_get_average_scaled(&grid_ain_state, input_channel, adc_bit_depth, resolution, 0, 127);
+    int32_t state = grid_ain_get_average_scaled(&grid_ain_state, element_index, adc_bit_depth, resolution, 0, 127);
     template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
 
     struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_POTMETER);
 
-    if (grid_ain_stabilized(&grid_ain_state, input_channel)) {
+    if (grid_ain_stabilized(&grid_ain_state, element_index)) {
       grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
     }
   }

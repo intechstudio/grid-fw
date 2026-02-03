@@ -226,9 +226,12 @@ void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t 
   // }
 }
 
-void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_button_state* state, uint16_t value, uint8_t adc_bit_depth) {
+void grid_ui_button_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_button_state* state, uint16_t value, uint8_t adc_bit_depth) {
 
-  assert(ele);
+  assert(ui);
+  assert(element_index < ui->element_list_length);
+
+  struct grid_ui_element* ele = &ui->element_list[element_index];
 
   int32_t* template_parameter_list = ele->template_parameter_list;
 

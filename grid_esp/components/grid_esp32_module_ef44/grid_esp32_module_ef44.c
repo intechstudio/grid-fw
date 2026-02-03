@@ -64,9 +64,7 @@ void IRAM_ATTR ef44_process_analog(void* user) {
     return;
   }
 
-  struct grid_ui_element* ele = &elements[element_index];
-
-  grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index - GRID_MODULE_EF44_ENC_NUM], processed, GRID_AIN_INTERNAL_RESOLUTION);
+  grid_ui_potmeter_store_input(&grid_ui_state, element_index, &ui_potmeter_state[element_index - GRID_MODULE_EF44_ENC_NUM], processed, GRID_AIN_INTERNAL_RESOLUTION);
 }
 
 void IRAM_ATTR ef44_process_encoder(void* dma_buf) {
@@ -80,13 +78,12 @@ void IRAM_ATTR ef44_process_encoder(void* dma_buf) {
 
     uint8_t value = (bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
     uint8_t idx = encoder_lookup[j];
-    struct grid_ui_element* ele = &elements[idx];
 
-    grid_ui_encoder_store_input(ele, &ui_encoder_state[idx], value);
+    grid_ui_encoder_store_input(&grid_ui_state, idx, &ui_encoder_state[idx], value);
 
     uint8_t button_value = value & 0b00000100;
 
-    grid_ui_button_store_input(ele, &ui_button_state[idx], button_value, 1);
+    grid_ui_button_store_input(&grid_ui_state, idx, &ui_button_state[idx], button_value, 1);
   }
 }
 

@@ -54,9 +54,7 @@ void IRAM_ATTR po16_process_analog(void* user) {
     return;
   }
 
-  struct grid_ui_element* ele = &elements[element_index];
-
-  grid_ui_potmeter_store_input(ele, element_index, &ui_potmeter_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
+  grid_ui_potmeter_store_input(&grid_ui_state, element_index, &ui_potmeter_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
 }
 
 void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {

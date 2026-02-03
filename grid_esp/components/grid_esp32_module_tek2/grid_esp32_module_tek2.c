@@ -60,7 +60,7 @@ void IRAM_ATTR tek2_process_analog(void* user) {
 
   if (element_index < GRID_MODULE_TEK2_BUT_NUM - GRID_MODULE_TEK2_POT_NUM) {
 
-    grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
   } else if (element_index < GRID_MODULE_TEK2_BUT_NUM) {
 
     switch (lookup_index) {
@@ -75,8 +75,8 @@ void IRAM_ATTR tek2_process_analog(void* user) {
     case 4:
     case 5: {
       new_endless_state[endless_index].button_value = result->value;
-      grid_ui_button_store_input(ele, &ui_button_state[element_index], result->value, 12);
-      grid_ui_endless_store_input(ele, element_index, 12, &new_endless_state[endless_index], &old_endless_state[endless_index]);
+      grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
+      grid_ui_endless_store_input(&grid_ui_state, element_index, 12, &new_endless_state[endless_index], &old_endless_state[endless_index]);
     } break;
     }
   }

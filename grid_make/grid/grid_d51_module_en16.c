@@ -41,13 +41,11 @@ static void spi_transfer_complete_cb(void) {
 
     uint8_t i = encoder_position_lookup[j];
 
-    struct grid_ui_element* ele = &elements[i];
-
-    grid_ui_encoder_store_input(ele, &ui_encoder_state[i], new_value);
+    grid_ui_encoder_store_input(&grid_ui_state, i, &ui_encoder_state[i], new_value);
 
     uint8_t button_value = new_value & 0b00000100;
 
-    grid_ui_button_store_input(ele, &ui_button_state[i], button_value, 1);
+    grid_ui_button_store_input(&grid_ui_state, i, &ui_button_state[i], button_value, 1);
   }
 
   hardware_start_transfer();

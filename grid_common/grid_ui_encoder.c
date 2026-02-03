@@ -266,7 +266,12 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* la
   return 1; // did trigger
 }
 
-void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_encoder_state* state, uint8_t new_value) {
+void grid_ui_encoder_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_encoder_state* state, uint8_t new_value) {
+
+  assert(ui);
+  assert(element_index < ui->element_list_length);
+
+  struct grid_ui_element* ele = &ui->element_list[element_index];
 
   // extract old value from state, rewrite state with new
   uint8_t old_value = state->last_nibble;
