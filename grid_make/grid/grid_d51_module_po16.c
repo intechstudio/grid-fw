@@ -1,5 +1,7 @@
 #include "grid_d51_module_po16.h"
 
+#include <string.h>
+
 #include "grid_ain.h"
 #include "grid_platform.h"
 #include "grid_ui_potmeter.h"
@@ -25,8 +27,8 @@ static uint16_t element_invert_bm = 0;
 
 static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
 
-static struct grid_ui_potmeter_state ui_potmeter_state[GRID_MODULE_PO16_POT_NUM] = {0};
-static struct grid_asc asc_state[16] = {0};
+static struct grid_ui_potmeter_state* ui_potmeter_state = NULL;
+static struct grid_asc* asc_state = NULL;
 
 static void hardware_start_transfer(void) {
 
@@ -80,6 +82,11 @@ static void hardware_init(void) {
 void grid_module_po16_init() {
 
   grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+
+  ui_potmeter_state = grid_platform_allocate_volatile(GRID_MODULE_PO16_POT_NUM * sizeof(struct grid_ui_potmeter_state));
+  asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
+  memset(ui_potmeter_state, 0, GRID_MODULE_PO16_POT_NUM * sizeof(struct grid_ui_potmeter_state));
+  memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
   if (grid_hwcfg_module_is_po16_reverse_polarity(&grid_sys_state)) {
     element_invert_bm = 0b1111111111111111;

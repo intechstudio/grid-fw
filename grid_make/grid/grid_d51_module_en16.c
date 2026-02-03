@@ -1,5 +1,8 @@
 #include "grid_d51_module_en16.h"
 
+#include <string.h>
+
+#include "grid_platform.h"
 #include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
 #include "grid_ui_system.h"
@@ -11,8 +14,8 @@ static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 
 #define GRID_MODULE_EN16_ENC_NUM 16
 
-static struct grid_ui_button_state ui_button_state[GRID_MODULE_EN16_BUT_NUM] = {0};
-static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EN16_ENC_NUM] = {0};
+static struct grid_ui_button_state* ui_button_state = NULL;
+static struct grid_ui_encoder_state* ui_encoder_state = NULL;
 
 static void hardware_start_transfer(void) {
 
@@ -65,6 +68,11 @@ static void hardware_init(void) {
 void grid_module_en16_init() {
 
   grid_module_en16_ui_init(NULL, &grid_led_state, &grid_ui_state);
+
+  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_EN16_BUT_NUM * sizeof(struct grid_ui_button_state));
+  ui_encoder_state = grid_platform_allocate_volatile(GRID_MODULE_EN16_ENC_NUM * sizeof(struct grid_ui_encoder_state));
+  memset(ui_button_state, 0, GRID_MODULE_EN16_BUT_NUM * sizeof(struct grid_ui_button_state));
+  memset(ui_encoder_state, 0, GRID_MODULE_EN16_ENC_NUM * sizeof(struct grid_ui_encoder_state));
 
   for (int i = 0; i < GRID_MODULE_EN16_BUT_NUM; ++i) {
     grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
