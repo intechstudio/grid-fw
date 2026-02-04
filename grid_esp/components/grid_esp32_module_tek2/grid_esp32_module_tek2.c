@@ -29,9 +29,6 @@
 
 #define GRID_MODULE_TEK2_BUT_NUM 10
 
-static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
-static struct grid_ui_endless_state* DRAM_ATTR new_endless_state = NULL;
-static struct grid_ui_endless_state* DRAM_ATTR old_endless_state = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
@@ -60,23 +57,25 @@ void IRAM_ATTR tek2_process_analog(void* user) {
 
   if (element_index < GRID_MODULE_TEK2_BUT_NUM - GRID_MODULE_TEK2_POT_NUM) {
 
-    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
   } else if (element_index < GRID_MODULE_TEK2_BUT_NUM) {
+
+    struct grid_ui_endless_state* endless_state = (struct grid_ui_endless_state*)ele->primary_state;
 
     switch (lookup_index) {
     case 0:
     case 1: {
-      new_endless_state[endless_index].phase_a = result->value;
+      endless_state->phase_a = result->value;
     } break;
     case 2:
     case 3: {
-      new_endless_state[endless_index].phase_b = result->value;
+      endless_state->phase_b = result->value;
     } break;
     case 4:
     case 5: {
-      new_endless_state[endless_index].button_value = result->value;
-      grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
-      grid_ui_endless_store_input(&grid_ui_state, element_index, 12, &new_endless_state[endless_index], &old_endless_state[endless_index]);
+      endless_state->button_value = result->value;
+      grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
+      grid_ui_endless_store_input(&grid_ui_state, element_index, GRID_AIN_INTERNAL_RESOLUTION);
     } break;
     }
   }
@@ -84,17 +83,21 @@ void IRAM_ATTR tek2_process_analog(void* user) {
 
 void grid_esp32_module_tek2_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {
 
-  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_TEK2_BUT_NUM * sizeof(struct grid_ui_button_state));
-  new_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK2_POT_NUM * sizeof(struct grid_ui_endless_state));
-  old_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK2_POT_NUM * sizeof(struct grid_ui_endless_state));
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
-  memset(ui_button_state, 0, GRID_MODULE_TEK2_BUT_NUM * sizeof(struct grid_ui_button_state));
-  memset(new_endless_state, 0, GRID_MODULE_TEK2_POT_NUM * sizeof(struct grid_ui_endless_state));
-  memset(old_endless_state, 0, GRID_MODULE_TEK2_POT_NUM * sizeof(struct grid_ui_endless_state));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
-  for (int i = 0; i < GRID_MODULE_TEK2_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
+  // Buttons are elements 0-7
+  for (int i = 0; i < GRID_MODULE_TEK2_BUT_NUM - GRID_MODULE_TEK2_POT_NUM; ++i) {
+    struct grid_ui_element* ele = &ui->element_list[i];
+    struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
+    grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+  }
+
+  // Endless elements 8-9 have button state in secondary_state
+  for (int i = GRID_MODULE_TEK2_BUT_NUM - GRID_MODULE_TEK2_POT_NUM; i < GRID_MODULE_TEK2_BUT_NUM; ++i) {
+    struct grid_ui_element* ele = &ui->element_list[i];
+    struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->secondary_state;
+    grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
@@ -106,12 +109,14 @@ void grid_esp32_module_tek2_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   grid_config_init(conf, cal);
 
-  grid_cal_init(cal, ui->element_list_length, 12);
+  grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
   if (grid_hwcfg_module_is_rev_h(sys)) {
 
-    for (int i = 0; i < 8; ++i) {
-      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &ui_button_state[i].limits) == 0);
+    for (int i = 0; i < GRID_MODULE_TEK2_BUT_NUM - GRID_MODULE_TEK2_POT_NUM; ++i) {
+      struct grid_ui_element* ele = &ui->element_list[i];
+      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
+      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
     }
 
     while (grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {

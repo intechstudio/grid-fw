@@ -141,6 +141,9 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   ele->timer_event_helper = 0;
   ele->timer_source_is_midi = 0;
 
+  ele->primary_state = NULL;
+  ele->secondary_state = NULL;
+
   return ele;
 }
 

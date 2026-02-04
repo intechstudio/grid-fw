@@ -173,6 +173,9 @@ void grid_ui_element_button_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_BUTTON;
 
+  ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_button_state));
+  memset(ele->primary_state, 0, sizeof(struct grid_ui_button_state));
+
   grid_ui_element_malloc_events(ele, 3);
 
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_button_init_actionstring);       // Element Initialization Event
@@ -226,12 +229,21 @@ void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t 
   // }
 }
 
-void grid_ui_button_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_button_state* state, uint16_t value, uint8_t adc_bit_depth) {
+void grid_ui_button_store_input(struct grid_ui_model* ui, uint8_t element_index, uint16_t value, uint8_t adc_bit_depth) {
 
   assert(ui);
   assert(element_index < ui->element_list_length);
 
   struct grid_ui_element* ele = &ui->element_list[element_index];
+
+  // Get button state based on element type
+  struct grid_ui_button_state* state;
+  if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+    state = (struct grid_ui_button_state*)ele->primary_state;
+  } else {
+    // Encoder or Endless - button state is in secondary_state
+    state = (struct grid_ui_button_state*)ele->secondary_state;
+  }
 
   int32_t* template_parameter_list = ele->template_parameter_list;
 

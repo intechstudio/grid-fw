@@ -22,7 +22,6 @@ static uint16_t element_invert_bm = 0;
 
 static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
 
-static struct grid_ui_button_state* ui_button_state = NULL;
 static struct grid_asc* asc_state = NULL;
 
 static void hardware_start_transfer(void) {
@@ -53,7 +52,7 @@ static void adc_transfer_complete_cb(void) {
       continue;
     }
 
-    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
+    grid_ui_button_store_input(&grid_ui_state, element_index, processed, GRID_AIN_INTERNAL_RESOLUTION);
   }
 
   /* Update the multiplexer for next iteration */
@@ -78,13 +77,13 @@ void grid_module_bu16_init() {
 
   grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 
-  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_BU16_BUT_NUM * sizeof(struct grid_ui_button_state));
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
-  memset(ui_button_state, 0, GRID_MODULE_BU16_BUT_NUM * sizeof(struct grid_ui_button_state));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
   for (int i = 0; i < GRID_MODULE_BU16_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
+    grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 1);

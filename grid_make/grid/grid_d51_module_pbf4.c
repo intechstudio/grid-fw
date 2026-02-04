@@ -31,8 +31,6 @@ static uint16_t element_invert_bm = 0b0000000000001111;
 
 static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
 
-static struct grid_ui_button_state* ui_button_state = NULL;
-static struct grid_ui_potmeter_state* ui_potmeter_state = NULL;
 static struct grid_asc* asc_state = NULL;
 
 static void hardware_start_transfer(void) {
@@ -66,9 +64,9 @@ static void adc_transfer_complete_cb(void) {
     }
 
     if (element_index >= GRID_MODULE_PBF4_POT_NUM) {
-      grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index - GRID_MODULE_PBF4_POT_NUM], processed, GRID_AIN_INTERNAL_RESOLUTION);
+      grid_ui_button_store_input(&grid_ui_state, element_index, processed, GRID_AIN_INTERNAL_RESOLUTION);
     } else {
-      grid_ui_potmeter_store_input(&grid_ui_state, element_index, &ui_potmeter_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
+      grid_ui_potmeter_store_input(&grid_ui_state, element_index, processed, GRID_AIN_INTERNAL_RESOLUTION);
     }
   }
 
@@ -94,19 +92,21 @@ void grid_module_pbf4_init() {
 
   grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 
-  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_PBF4_BUT_NUM * sizeof(struct grid_ui_button_state));
-  ui_potmeter_state = grid_platform_allocate_volatile(GRID_MODULE_PBF4_POT_NUM * sizeof(struct grid_ui_potmeter_state));
   asc_state = grid_platform_allocate_volatile(12 * sizeof(struct grid_asc));
-  memset(ui_button_state, 0, GRID_MODULE_PBF4_BUT_NUM * sizeof(struct grid_ui_button_state));
-  memset(ui_potmeter_state, 0, GRID_MODULE_PBF4_POT_NUM * sizeof(struct grid_ui_potmeter_state));
   memset(asc_state, 0, 12 * sizeof(struct grid_asc));
 
+  // Buttons are elements 8-11
   for (int i = 0; i < GRID_MODULE_PBF4_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+    struct grid_ui_element* ele = &grid_ui_state.element_list[GRID_MODULE_PBF4_POT_NUM + i];
+    struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
+    grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
 
+  // Potmeters are elements 0-7
   for (int i = 0; i < GRID_MODULE_PBF4_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+    grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   grid_asc_array_set_factors(asc_state, 12, 0, 12, 1);
@@ -115,13 +115,15 @@ void grid_module_pbf4_init() {
 
   grid_cal_init(&grid_cal_state, grid_ui_state.element_list_length, 12);
 
-  for (int i = 0; i < 4; ++i) {
-    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_CENTER, &ui_potmeter_state[i].center) == 0);
-    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_DETENT, &ui_potmeter_state[i].detent) == 0);
-  }
-
-  for (int i = 0; i < 8; ++i) {
-    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &ui_potmeter_state[i].limits) == 0);
+  // Potmeter calibration (elements 0-7, first 4 have center detent)
+  for (int i = 0; i < GRID_MODULE_PBF4_POT_NUM; ++i) {
+    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &state->limits) == 0);
+    if (i < 4) {
+      assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_CENTER, &state->center) == 0);
+      assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_DETENT, &state->detent) == 0);
+    }
   }
 
   assert(grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL) == 0);

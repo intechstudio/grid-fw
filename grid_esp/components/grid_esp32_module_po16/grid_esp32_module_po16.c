@@ -33,7 +33,6 @@ static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
 };
 static DRAM_ATTR uint16_t element_invert_bm = 0b1111111111111111;
 
-static struct grid_ui_potmeter_state* DRAM_ATTR ui_potmeter_state = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 
 void IRAM_ATTR po16_process_analog(void* user) {
@@ -53,18 +52,18 @@ void IRAM_ATTR po16_process_analog(void* user) {
     return;
   }
 
-  grid_ui_potmeter_store_input(&grid_ui_state, element_index, &ui_potmeter_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
+  grid_ui_potmeter_store_input(&grid_ui_state, element_index, processed, GRID_AIN_INTERNAL_RESOLUTION);
 }
 
 void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {
 
-  ui_potmeter_state = grid_platform_allocate_volatile(GRID_MODULE_PO16_POT_NUM * sizeof(struct grid_ui_potmeter_state));
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
-  memset(ui_potmeter_state, 0, GRID_MODULE_PO16_POT_NUM * sizeof(struct grid_ui_potmeter_state));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
   for (int i = 0; i < GRID_MODULE_PO16_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+    struct grid_ui_element* ele = &ui->element_list[i];
+    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+    grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
@@ -73,10 +72,12 @@ void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
-  for (int i = 0; i < 16; ++i) {
-    assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &ui_potmeter_state[i].limits) == 0);
-    assert(grid_cal_set(cal, i, GRID_CAL_CENTER, &ui_potmeter_state[i].center) == 0);
-    assert(grid_cal_set(cal, i, GRID_CAL_DETENT, &ui_potmeter_state[i].detent) == 0);
+  for (int i = 0; i < GRID_MODULE_PO16_POT_NUM; ++i) {
+    struct grid_ui_element* ele = &ui->element_list[i];
+    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+    assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
+    assert(grid_cal_set(cal, i, GRID_CAL_CENTER, &state->center) == 0);
+    assert(grid_cal_set(cal, i, GRID_CAL_DETENT, &state->detent) == 0);
   }
 
   while (grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {

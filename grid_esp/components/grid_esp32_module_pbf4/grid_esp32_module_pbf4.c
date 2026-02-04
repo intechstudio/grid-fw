@@ -30,8 +30,6 @@
 
 #define GRID_MODULE_PBF4_POT_NUM 8
 
-static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
-static struct grid_ui_potmeter_state* DRAM_ATTR ui_potmeter_state = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 
 #define X GRID_MUX_UNUSED
@@ -64,27 +62,29 @@ void IRAM_ATTR pbf4_process_analog(void* user) {
   }
 
   if (element_index < GRID_MODULE_PBF4_POT_NUM) {
-    grid_ui_potmeter_store_input(&grid_ui_state, element_index, &ui_potmeter_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
+    grid_ui_potmeter_store_input(&grid_ui_state, element_index, processed, GRID_AIN_INTERNAL_RESOLUTION);
   } else {
-    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index - GRID_MODULE_PBF4_POT_NUM], processed, GRID_AIN_INTERNAL_RESOLUTION);
+    grid_ui_button_store_input(&grid_ui_state, element_index, processed, GRID_AIN_INTERNAL_RESOLUTION);
   }
 }
 
 void grid_esp32_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {
 
-  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_PBF4_BUT_NUM * sizeof(struct grid_ui_button_state));
-  ui_potmeter_state = grid_platform_allocate_volatile(GRID_MODULE_PBF4_POT_NUM * sizeof(struct grid_ui_potmeter_state));
   asc_state = grid_platform_allocate_volatile(12 * sizeof(struct grid_asc));
-  memset(ui_button_state, 0, GRID_MODULE_PBF4_BUT_NUM * sizeof(struct grid_ui_button_state));
-  memset(ui_potmeter_state, 0, GRID_MODULE_PBF4_POT_NUM * sizeof(struct grid_ui_potmeter_state));
   memset(asc_state, 0, 12 * sizeof(struct grid_asc));
 
+  // Buttons are elements 8-11
   for (int i = 0; i < GRID_MODULE_PBF4_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
+    struct grid_ui_element* ele = &ui->element_list[GRID_MODULE_PBF4_POT_NUM + i];
+    struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
+    grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
 
+  // Potmeters are elements 0-7
   for (int i = 0; i < GRID_MODULE_PBF4_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+    struct grid_ui_element* ele = &ui->element_list[i];
+    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+    grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   grid_asc_array_set_factors(asc_state, 12, 0, 8, 8);
@@ -96,18 +96,24 @@ void grid_esp32_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   grid_cal_init(cal, ui->element_list_length, 12);
 
-  for (int i = 0; i < 4; ++i) {
-    assert(grid_cal_set(cal, i, GRID_CAL_CENTER, &ui_potmeter_state[i].center) == 0);
-    assert(grid_cal_set(cal, i, GRID_CAL_DETENT, &ui_potmeter_state[i].detent) == 0);
+  // Potmeter calibration (elements 0-7, first 4 have center detent)
+  for (int i = 0; i < GRID_MODULE_PBF4_POT_NUM; ++i) {
+    struct grid_ui_element* ele = &ui->element_list[i];
+    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+    assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
+    if (i < 4) {
+      assert(grid_cal_set(cal, i, GRID_CAL_CENTER, &state->center) == 0);
+      assert(grid_cal_set(cal, i, GRID_CAL_DETENT, &state->detent) == 0);
+    }
   }
 
-  for (int i = 0; i < 8; ++i) {
-    assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &ui_potmeter_state[i].limits) == 0);
-  }
-
+  // Button calibration (elements 8-11, rev_h only)
   if (grid_hwcfg_module_is_rev_h(sys)) {
-    for (int i = 8; i < 12; ++i) {
-      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &ui_button_state[i - 8].limits) == 0);
+    for (int i = 0; i < GRID_MODULE_PBF4_BUT_NUM; ++i) {
+      uint8_t element_index = GRID_MODULE_PBF4_POT_NUM + i;
+      struct grid_ui_element* ele = &ui->element_list[element_index];
+      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
+      assert(grid_cal_set(cal, element_index, GRID_CAL_LIMITS, &state->limits) == 0);
     }
   }
 

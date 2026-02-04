@@ -28,14 +28,9 @@ static uint16_t element_invert_bm = 0;
 
 static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
 
-static uint64_t last_real_time[4] = {0};
-
 static uint8_t UI_SPI_TX_BUFFER[14] = {0};
 static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 
-static struct grid_ui_button_state* ui_button_state = NULL;
-static struct grid_ui_encoder_state* ui_encoder_state = NULL;
-static struct grid_ui_potmeter_state* ui_potmeter_state = NULL;
 static struct grid_asc* asc_state = NULL;
 
 static void hardware_spi_start_transfer(void) {
@@ -68,11 +63,11 @@ static void spi_transfer_complete_cb(void) {
 
     uint8_t i = encoder_position_lookup[j];
 
-    grid_ui_encoder_store_input(&grid_ui_state, i, &ui_encoder_state[i], new_value);
+    grid_ui_encoder_store_input(&grid_ui_state, i, new_value);
 
     uint8_t button_value = new_value & 0b00000100;
 
-    grid_ui_button_store_input(&grid_ui_state, i, &ui_button_state[i], button_value, 1);
+    grid_ui_button_store_input(&grid_ui_state, i, button_value, 1);
   }
 
   hardware_spi_start_transfer();
@@ -100,7 +95,7 @@ static void adc_transfer_complete_cb(void) {
       continue;
     }
 
-    grid_ui_potmeter_store_input(&grid_ui_state, element_index, &ui_potmeter_state[element_index - GRID_MODULE_EF44_ENC_NUM], processed, GRID_AIN_INTERNAL_RESOLUTION);
+    grid_ui_potmeter_store_input(&grid_ui_state, element_index, processed, GRID_AIN_INTERNAL_RESOLUTION);
   }
 
   /* Update the multiplexer for next iteration */
@@ -134,37 +129,43 @@ void grid_module_ef44_init() {
 
   grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
 
-  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_EF44_BUT_NUM * sizeof(struct grid_ui_button_state));
-  ui_encoder_state = grid_platform_allocate_volatile(GRID_MODULE_EF44_ENC_NUM * sizeof(struct grid_ui_encoder_state));
-  ui_potmeter_state = grid_platform_allocate_volatile(GRID_MODULE_EF44_POT_NUM * sizeof(struct grid_ui_potmeter_state));
   asc_state = grid_platform_allocate_volatile(8 * sizeof(struct grid_asc));
-  memset(ui_button_state, 0, GRID_MODULE_EF44_BUT_NUM * sizeof(struct grid_ui_button_state));
-  memset(ui_encoder_state, 0, GRID_MODULE_EF44_ENC_NUM * sizeof(struct grid_ui_encoder_state));
-  memset(ui_potmeter_state, 0, GRID_MODULE_EF44_POT_NUM * sizeof(struct grid_ui_potmeter_state));
   memset(asc_state, 0, 8 * sizeof(struct grid_asc));
 
+  // Encoders are elements 0-3 - button state is in secondary_state
   for (int i = 0; i < GRID_MODULE_EF44_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
+    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->secondary_state;
+    grid_ui_button_state_init(state, 1, 0.5, 0.2);
   }
 
+  // Potmeters are elements 4-7
   for (int i = 0; i < GRID_MODULE_EF44_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+    struct grid_ui_element* ele = &grid_ui_state.element_list[GRID_MODULE_EF44_ENC_NUM + i];
+    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+    grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   grid_asc_array_set_factors(asc_state, 8, 4, 4, 1);
 
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
   int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
+  // Encoders are elements 0-3
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
-    grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
+    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
+    grid_ui_encoder_state_init(state, detent, direction);
   }
 
   grid_config_init(&grid_config_state, &grid_cal_state);
 
-  grid_cal_init(&grid_cal_state, grid_ui_state.element_list_length, 12);
+  grid_cal_init(&grid_cal_state, grid_ui_state.element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
-  for (int i = 4; i < 8; ++i) {
-    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &ui_potmeter_state[i - 4].limits) == 0);
+  // Potmeters are elements 4-7
+  for (int i = GRID_MODULE_EF44_ENC_NUM; i < GRID_MODULE_EF44_ENC_NUM + GRID_MODULE_EF44_POT_NUM; ++i) {
+    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &state->limits) == 0);
   }
 
   assert(grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL) == 0);

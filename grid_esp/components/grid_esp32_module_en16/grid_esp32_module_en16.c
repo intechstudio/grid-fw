@@ -26,9 +26,6 @@
 
 #define GRID_MODULE_EN16_ENC_NUM 16
 
-static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
-static struct grid_ui_encoder_state* DRAM_ATTR ui_encoder_state = NULL;
-
 void IRAM_ATTR en16_process_encoder(void* dma_buf) {
 
   static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_EN16_ENC_NUM] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1};
@@ -41,29 +38,29 @@ void IRAM_ATTR en16_process_encoder(void* dma_buf) {
     uint8_t value = (bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
     uint8_t idx = encoder_lookup[j];
 
-    grid_ui_encoder_store_input(&grid_ui_state, idx, &ui_encoder_state[idx], value);
+    grid_ui_encoder_store_input(&grid_ui_state, idx, value);
 
     uint8_t button_value = value & 0b00000100;
 
-    grid_ui_button_store_input(&grid_ui_state, idx, &ui_button_state[idx], button_value, 1);
+    grid_ui_button_store_input(&grid_ui_state, idx, button_value, 1);
   }
 }
 
 void grid_esp32_module_en16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_encoder_model* enc) {
 
-  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_EN16_BUT_NUM * sizeof(struct grid_ui_button_state));
-  ui_encoder_state = grid_platform_allocate_volatile(GRID_MODULE_EN16_ENC_NUM * sizeof(struct grid_ui_encoder_state));
-  memset(ui_button_state, 0, GRID_MODULE_EN16_BUT_NUM * sizeof(struct grid_ui_button_state));
-  memset(ui_encoder_state, 0, GRID_MODULE_EN16_ENC_NUM * sizeof(struct grid_ui_encoder_state));
-
+  // Button state is in secondary_state for encoder elements
   for (int i = 0; i < GRID_MODULE_EN16_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
+    struct grid_ui_element* ele = &ui->element_list[i];
+    struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->secondary_state;
+    grid_ui_button_state_init(state, 1, 0.5, 0.2);
   }
 
   grid_esp32_encoder_init(enc, 1, en16_process_encoder);
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
   int8_t direction = grid_hwcfg_module_encoder_dir(sys);
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
-    grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
+    struct grid_ui_element* ele = &ui->element_list[i];
+    struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
+    grid_ui_encoder_state_init(state, detent, direction);
   }
 }
