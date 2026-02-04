@@ -14,9 +14,6 @@ static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 
 #define GRID_MODULE_EN16_ENC_NUM 16
 
-static struct grid_ui_button_state* ui_button_state = NULL;
-static struct grid_ui_encoder_state* ui_encoder_state = NULL;
-
 static void hardware_start_transfer(void) {
 
   gpio_set_pin_level(PIN_UI_SPI_CS0, true);
@@ -43,11 +40,11 @@ static void spi_transfer_complete_cb(void) {
 
     uint8_t i = encoder_position_lookup[j];
 
-    grid_ui_encoder_store_input(&grid_ui_state, i, &ui_encoder_state[i], new_value);
+    grid_ui_encoder_store_input(&grid_ui_state, i, new_value);
 
     uint8_t button_value = new_value & 0b00000100;
 
-    grid_ui_button_store_input(&grid_ui_state, i, &ui_button_state[i], button_value, 1);
+    grid_ui_button_store_input(&grid_ui_state, i, button_value, 1);
   }
 
   hardware_start_transfer();
@@ -69,19 +66,19 @@ void grid_module_en16_init() {
 
   grid_module_en16_ui_init(NULL, &grid_led_state, &grid_ui_state);
 
-  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_EN16_BUT_NUM * sizeof(struct grid_ui_button_state));
-  ui_encoder_state = grid_platform_allocate_volatile(GRID_MODULE_EN16_ENC_NUM * sizeof(struct grid_ui_encoder_state));
-  memset(ui_button_state, 0, GRID_MODULE_EN16_BUT_NUM * sizeof(struct grid_ui_button_state));
-  memset(ui_encoder_state, 0, GRID_MODULE_EN16_ENC_NUM * sizeof(struct grid_ui_encoder_state));
-
+  // Button state is in secondary_state for encoder elements
   for (int i = 0; i < GRID_MODULE_EN16_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
+    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->secondary_state;
+    grid_ui_button_state_init(state, 1, 0.5, 0.2);
   }
 
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
   int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
-    grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
+    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
+    grid_ui_encoder_state_init(state, detent, direction);
   }
 
   hardware_init();

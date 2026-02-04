@@ -58,6 +58,11 @@ void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_ENCODER;
 
+  ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_encoder_state));
+  ele->secondary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_button_state));
+  memset(ele->primary_state, 0, sizeof(struct grid_ui_encoder_state));
+  memset(ele->secondary_state, 0, sizeof(struct grid_ui_button_state));
+
   grid_ui_element_malloc_events(ele, 4);
 
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_encoder_init_actionstring);                // Element Initialization Event
@@ -266,12 +271,13 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* la
   return 1; // did trigger
 }
 
-void grid_ui_encoder_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_encoder_state* state, uint8_t new_value) {
+void grid_ui_encoder_store_input(struct grid_ui_model* ui, uint8_t element_index, uint8_t new_value) {
 
   assert(ui);
   assert(element_index < ui->element_list_length);
 
   struct grid_ui_element* ele = &ui->element_list[element_index];
+  struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
 
   // extract old value from state, rewrite state with new
   uint8_t old_value = state->last_nibble;

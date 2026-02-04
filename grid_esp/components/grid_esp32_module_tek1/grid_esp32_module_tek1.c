@@ -42,9 +42,6 @@ static DRAM_ATTR uint8_t is_vsn_rev_h_8bit_hwcfg = 0;
 
 #define GRID_MODULE_TEK1_SMOL_BUT_NUM 8
 
-static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
-static struct grid_ui_endless_state* DRAM_ATTR new_endless_state = NULL;
-static struct grid_ui_endless_state* DRAM_ATTR old_endless_state = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
 
@@ -75,29 +72,31 @@ void IRAM_ATTR vsn1l_process_analog(void* user) {
 
   if (element_index < 8) {
 
-    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
 
   } else if (element_index < 9) {
+
+    struct grid_ui_endless_state* endless_state = (struct grid_ui_endless_state*)ele->primary_state;
 
     switch (lookup_index) {
     case 0: {
 
-      new_endless_state[0].phase_a = result->value;
+      endless_state->phase_a = result->value;
     } break;
     case 2: {
 
-      new_endless_state[0].phase_b = result->value;
+      endless_state->phase_b = result->value;
     } break;
     case 4: {
 
-      new_endless_state[0].button_value = result->value;
-      grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
-      grid_ui_endless_store_input(&grid_ui_state, element_index, 12, &new_endless_state[0], &old_endless_state[0]);
+      endless_state->button_value = result->value;
+      grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
+      grid_ui_endless_store_input(&grid_ui_state, element_index, GRID_AIN_INTERNAL_RESOLUTION);
     } break;
     }
   } else if (element_index < 13 && is_vsn_rev_h_8bit_hwcfg) {
 
-    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
   }
 }
 
@@ -113,13 +112,13 @@ void IRAM_ATTR vsn1l_process_encoder(void* dma_buf) {
   for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
 
     uint8_t bit = bytes[i / 8] & (1 << i);
-    uint16_t value = bit * (1 << (12 - 1));
+    uint16_t value = bit * (1 << (GRID_AIN_INTERNAL_RESOLUTION - 1));
     uint8_t idx = encoder_lookup[i];
     struct grid_ui_element* ele = &elements[idx];
 
     if (idx >= 9 && idx < 13) {
 
-      grid_ui_button_store_input(&grid_ui_state, idx, &ui_button_state[idx], value, 12);
+      grid_ui_button_store_input(&grid_ui_state, idx, value, GRID_AIN_INTERNAL_RESOLUTION);
     }
   }
 }
@@ -151,29 +150,31 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
 
   if (element_index < 8) {
 
-    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
 
   } else if (element_index < 9) {
+
+    struct grid_ui_endless_state* endless_state = (struct grid_ui_endless_state*)ele->primary_state;
 
     switch (lookup_index) {
     case 1: {
 
-      new_endless_state[0].phase_a = result->value;
+      endless_state->phase_a = result->value;
     } break;
     case 3: {
 
-      new_endless_state[0].phase_b = result->value;
+      endless_state->phase_b = result->value;
     } break;
     case 5: {
 
-      new_endless_state[0].button_value = result->value;
-      grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
-      grid_ui_endless_store_input(&grid_ui_state, element_index, 12, &new_endless_state[0], &old_endless_state[0]);
+      endless_state->button_value = result->value;
+      grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
+      grid_ui_endless_store_input(&grid_ui_state, element_index, GRID_AIN_INTERNAL_RESOLUTION);
     } break;
     }
   } else if (element_index < 13 && is_vsn_rev_h_8bit_hwcfg) {
 
-    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
   }
 }
 
@@ -189,13 +190,13 @@ void IRAM_ATTR vsn1r_process_encoder(void* dma_buf) {
   for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
 
     uint8_t bit = bytes[i / 8] & (1 << i);
-    uint16_t value = (bit > 0) * (1 << (12 - 1));
+    uint16_t value = (bit > 0) * (1 << (GRID_AIN_INTERNAL_RESOLUTION - 1));
     uint8_t idx = encoder_lookup[i];
     struct grid_ui_element* ele = &elements[idx];
 
     if (idx >= 9 && idx < 13) {
 
-      grid_ui_button_store_input(&grid_ui_state, idx, &ui_button_state[idx], value, 12);
+      grid_ui_button_store_input(&grid_ui_state, idx, value, GRID_AIN_INTERNAL_RESOLUTION);
     }
   }
 }
@@ -221,11 +222,11 @@ void IRAM_ATTR vsn2_process_analog(void* user) {
 
   if (element_index < 8) {
 
-    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
 
   } else if (is_vsn_rev_h_8bit_hwcfg) {
 
-    grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], result->value, 12);
+    grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
   }
 }
 
@@ -239,13 +240,13 @@ void IRAM_ATTR vsn2_process_encoder(void* dma_buf) {
   for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
 
     uint8_t bit = bytes[i / 8] & (1 << i);
-    uint16_t value = (bit > 0) * (1 << (12 - 1));
+    uint16_t value = (bit > 0) * (1 << (GRID_AIN_INTERNAL_RESOLUTION - 1));
     uint8_t idx = encoder_lookup[i];
     struct grid_ui_element* ele = &elements[idx];
 
     if ((idx >= 8 && idx < 12) || (idx >= 13 && idx < 17)) {
 
-      grid_ui_button_store_input(&grid_ui_state, idx, &ui_button_state[idx], value, 12);
+      grid_ui_button_store_input(&grid_ui_state, idx, value, GRID_AIN_INTERNAL_RESOLUTION);
     }
   }
 }
@@ -316,17 +317,20 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
   // Mark the LCD as ready
   grid_esp32_lcd_set_ready(true);
 
-  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
-  new_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
-  old_endless_state = grid_platform_allocate_volatile(GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
-  memset(ui_button_state, 0, GRID_MODULE_TEK1_BUT_NUM * sizeof(struct grid_ui_button_state));
-  memset(new_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
-  memset(old_endless_state, 0, GRID_MODULE_TEK1_POT_NUM * sizeof(struct grid_ui_endless_state));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
-  for (int i = 0; i < GRID_MODULE_TEK1_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], 12, 0.5, 0.2);
+  // Initialize button states for all button and endless elements
+  for (int i = 0; i < ui->element_list_length - 1; ++i) { // -1 to skip system element
+    struct grid_ui_element* ele = &ui->element_list[i];
+
+    if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
+      grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+    } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
+      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->secondary_state;
+      grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+    }
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 8);
@@ -338,12 +342,14 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   grid_config_init(conf, cal);
 
-  grid_cal_init(cal, ui->element_list_length, 12);
+  grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
   if (grid_hwcfg_module_is_rev_h(sys)) {
 
-    for (int i = 0; i < 8; ++i) {
-      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &ui_button_state[i].limits) == 0);
+    for (int i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
+      struct grid_ui_element* ele = &ui->element_list[i];
+      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
+      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
     }
 
     assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));

@@ -26,7 +26,6 @@
 
 #define GRID_MODULE_BU16_BUT_NUM 16
 
-static struct grid_ui_button_state* DRAM_ATTR ui_button_state = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 
 static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
@@ -52,18 +51,18 @@ void IRAM_ATTR bu16_process_analog(void* user) {
     return;
   }
 
-  grid_ui_button_store_input(&grid_ui_state, element_index, &ui_button_state[element_index], processed, GRID_AIN_INTERNAL_RESOLUTION);
+  grid_ui_button_store_input(&grid_ui_state, element_index, processed, GRID_AIN_INTERNAL_RESOLUTION);
 }
 
 void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {
 
-  ui_button_state = grid_platform_allocate_volatile(GRID_MODULE_BU16_BUT_NUM * sizeof(struct grid_ui_button_state));
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
-  memset(ui_button_state, 0, GRID_MODULE_BU16_BUT_NUM * sizeof(struct grid_ui_button_state));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
   for (int i = 0; i < GRID_MODULE_BU16_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+    struct grid_ui_element* ele = &ui->element_list[i];
+    struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
+    grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 1);
@@ -74,8 +73,10 @@ void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   if (grid_hwcfg_module_is_rev_h(sys)) {
 
-    for (int i = 0; i < 16; ++i) {
-      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &ui_button_state[i].limits) == 0);
+    for (int i = 0; i < GRID_MODULE_BU16_BUT_NUM; ++i) {
+      struct grid_ui_element* ele = &ui->element_list[i];
+      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
+      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
     }
 
     assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));
