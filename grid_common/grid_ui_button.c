@@ -229,7 +229,7 @@ void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t 
   // }
 }
 
-void grid_ui_button_store_input(struct grid_ui_model* ui, uint8_t element_index, uint16_t value, uint8_t adc_bit_depth) {
+void grid_ui_button_store_input(struct grid_ui_model* ui, uint8_t element_index, uint16_t value) {
 
   assert(ui);
   assert(element_index < ui->element_list_length);

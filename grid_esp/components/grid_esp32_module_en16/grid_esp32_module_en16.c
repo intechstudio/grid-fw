@@ -33,16 +33,13 @@ void IRAM_ATTR en16_process_encoder(void* dma_buf) {
   // Skip hwcfg byte
   uint8_t* bytes = &((uint8_t*)dma_buf)[1];
 
-  for (uint8_t j = 0; j < GRID_MODULE_EN16_ENC_NUM; ++j) {
+  for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; ++i) {
 
-    uint8_t value = (bytes[j / 2] >> (4 * (j % 2))) & 0x0F;
-    uint8_t idx = encoder_lookup[j];
+    uint8_t nibble = GRID_UI_ENCODER_NIBBLE_FROM_BUFFER(bytes, i);
+    uint8_t element_index = encoder_lookup[i];
 
-    grid_ui_encoder_store_input(&grid_ui_state, idx, value);
-
-    uint8_t button_value = value & 0b00000100;
-
-    grid_ui_button_store_input(&grid_ui_state, idx, button_value, 1);
+    struct grid_ui_encoder_sample sample = GRID_UI_ENCODER_SAMPLE_FROM_NIBBLE(nibble);
+    grid_ui_encoder_store_input(&grid_ui_state, element_index, sample);
   }
 }
 

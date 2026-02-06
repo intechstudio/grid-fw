@@ -8,6 +8,17 @@
 
 #define GRID_UI_ENCODER_INIT_SAMPLES 2
 
+struct grid_ui_encoder_sample {
+  uint8_t phase_a;
+  uint8_t phase_b;
+  uint8_t button;
+};
+
+#define GRID_UI_ENCODER_NIBBLE_FROM_BUFFER(buf, idx) (((buf)[(idx) / 2] >> (4 * ((idx) % 2))) & 0x0F)
+
+#define GRID_UI_ENCODER_SAMPLE_FROM_NIBBLE(nibble)                                                                                                                                                     \
+  (struct grid_ui_encoder_sample) { .phase_a = (nibble) & 1, .phase_b = ((nibble) >> 1) & 1, .button = ((nibble) >> 2) & 1 }
+
 struct grid_ui_encoder_state {
   uint64_t encoder_last_real_time;
   uint64_t button_last_real_time;
@@ -29,7 +40,7 @@ void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t
 int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uint8_t detent, int8_t* dir_lock);
 uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta);
 
-void grid_ui_encoder_store_input(struct grid_ui_model* ui, uint8_t element_index, uint8_t new_value);
+void grid_ui_encoder_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_encoder_sample sample);
 
 // ========================= ENCODER =========================== //
 

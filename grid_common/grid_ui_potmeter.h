@@ -12,6 +12,7 @@ struct grid_ui_potmeter_state {
   struct grid_cal_limits limits;
   struct grid_cal_center center;
   struct grid_cal_detent detent;
+  uint8_t adc_bit_depth;
 };
 
 void grid_ui_potmeter_state_init(struct grid_ui_potmeter_state* state, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center);
@@ -22,7 +23,7 @@ void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_bu
 void grid_ui_element_potmeter_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
-void grid_ui_potmeter_store_input(struct grid_ui_model* ui, uint8_t element_index, uint16_t value, uint8_t adc_bit_depth);
+void grid_ui_potmeter_store_input(struct grid_ui_model* ui, uint8_t element_index, uint16_t value);
 
 // ========================= POTMETER =========================== //
 

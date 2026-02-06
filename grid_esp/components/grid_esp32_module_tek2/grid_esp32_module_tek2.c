@@ -31,6 +31,7 @@
 
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 static struct grid_ui_element* DRAM_ATTR elements = NULL;
+static struct grid_ui_endless_sample DRAM_ATTR endless_sample[GRID_MODULE_TEK2_POT_NUM] = {0};
 
 void IRAM_ATTR tek2_process_analog(void* user) {
 
@@ -57,25 +58,25 @@ void IRAM_ATTR tek2_process_analog(void* user) {
 
   if (element_index < GRID_MODULE_TEK2_BUT_NUM - GRID_MODULE_TEK2_POT_NUM) {
 
-    grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
+    grid_ui_button_store_input(&grid_ui_state, element_index, result->value);
   } else if (element_index < GRID_MODULE_TEK2_BUT_NUM) {
 
-    struct grid_ui_endless_state* endless_state = (struct grid_ui_endless_state*)ele->primary_state;
+    uint8_t endless_idx = element_index - (GRID_MODULE_TEK2_BUT_NUM - GRID_MODULE_TEK2_POT_NUM);
+    struct grid_ui_endless_sample* sample_ptr = &endless_sample[endless_idx];
 
     switch (lookup_index) {
     case 0:
     case 1: {
-      endless_state->phase_a = result->value;
+      sample_ptr->phase_a = result->value;
     } break;
     case 2:
     case 3: {
-      endless_state->phase_b = result->value;
+      sample_ptr->phase_b = result->value;
     } break;
     case 4:
     case 5: {
-      endless_state->button_value = result->value;
-      grid_ui_button_store_input(&grid_ui_state, element_index, result->value, GRID_AIN_INTERNAL_RESOLUTION);
-      grid_ui_endless_store_input(&grid_ui_state, element_index, GRID_AIN_INTERNAL_RESOLUTION);
+      sample_ptr->button_value = result->value;
+      grid_ui_endless_store_input(&grid_ui_state, element_index, *sample_ptr);
     } break;
     }
   }
@@ -96,6 +97,8 @@ void grid_esp32_module_tek2_init(struct grid_sys_model* sys, struct grid_ui_mode
   // Endless elements 8-9 have button state in secondary_state
   for (int i = GRID_MODULE_TEK2_BUT_NUM - GRID_MODULE_TEK2_POT_NUM; i < GRID_MODULE_TEK2_BUT_NUM; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
+    struct grid_ui_endless_state* endless_state = (struct grid_ui_endless_state*)ele->primary_state;
+    endless_state->adc_bit_depth = GRID_AIN_INTERNAL_RESOLUTION;
     struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->secondary_state;
     grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }

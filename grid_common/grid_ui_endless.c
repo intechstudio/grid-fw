@@ -307,16 +307,20 @@ static uint16_t grid_ui_endless_calculate_angle(uint16_t phase_a, uint16_t phase
   return value_degrees;
 }
 
-void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index, uint8_t adc_bit_depth) {
+void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_endless_sample sample) {
 
   assert(ui);
   assert(element_index < ui->element_list_length);
 
+  // Handle button input for the endless element
+  grid_ui_button_store_input(ui, element_index, sample.button_value);
+
   struct grid_ui_element* ele = &ui->element_list[element_index];
   struct grid_ui_endless_state* state = (struct grid_ui_endless_state*)ele->primary_state;
+  uint8_t adc_bit_depth = state->adc_bit_depth;
 
   // Check if current values differ from previous
-  if (state->phase_a == state->prev_phase_a && state->phase_b == state->prev_phase_b && state->button_value == state->prev_button_value) {
+  if (sample.phase_a == state->prev_phase_a && sample.phase_b == state->prev_phase_b && sample.button_value == state->prev_button_value) {
     // no change
     return;
   }
@@ -326,23 +330,23 @@ void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index
   int stabilized = grid_ain_stabilized(&grid_ain_state, element_index);
 
   if (!stabilized) {
-    state->prev_phase_a = state->phase_a;
-    state->prev_phase_b = state->phase_b;
-    state->prev_button_value = state->button_value;
+    state->prev_phase_a = sample.phase_a;
+    state->prev_phase_b = sample.phase_b;
+    state->prev_button_value = sample.button_value;
   }
 
-  uint16_t value_degrees_new = grid_ui_endless_calculate_angle(state->phase_a, state->phase_b, 12);
-  uint16_t value_degrees_old = grid_ui_endless_calculate_angle(state->prev_phase_a, state->prev_phase_b, 12);
+  uint16_t value_degrees_new = grid_ui_endless_calculate_angle(sample.phase_a, sample.phase_b, adc_bit_depth);
+  uint16_t value_degrees_old = grid_ui_endless_calculate_angle(state->prev_phase_a, state->prev_phase_b, adc_bit_depth);
 
   int32_t resolution = 9;
 
   if (resolution < 1) {
     resolution = 1;
-  } else if (resolution > 12) {
-    resolution = 12;
+  } else if (resolution > adc_bit_depth) {
+    resolution = adc_bit_depth;
   }
 
-  grid_ain_add_sample(&grid_ain_state, element_index, value_degrees_new, 12, (uint8_t)resolution);
+  grid_ain_add_sample(&grid_ain_state, element_index, value_degrees_new, adc_bit_depth, (uint8_t)resolution);
 
   if (grid_ain_get_changed(&grid_ain_state, element_index)) {
 
@@ -359,8 +363,8 @@ void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index
       template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = value_degrees_new / 20;
       grid_ui_endless_update_trigger(ele, stabilized, delta, &state->encoder_last_real_time, &state->delta_vel_frac);
 
-      state->prev_phase_a = state->phase_a;
-      state->prev_phase_b = state->phase_b;
+      state->prev_phase_a = sample.phase_a;
+      state->prev_phase_b = sample.phase_b;
     }
   }
 }
