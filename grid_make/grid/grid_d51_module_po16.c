@@ -17,7 +17,7 @@ static volatile uint8_t adc_complete_count = 0;
 
 static uint8_t multiplexer_index = 0;
 static const uint8_t mux_positions_bm = 0b11111111;
-#define GRID_MODULE_PO16_POT_NUM 16
+#define GRID_MODULE_PO16_POTMETER_COUNT 16
 
 static const uint8_t mux_element_lookup[2][8] = {
     {0, 1, 4, 5, 8, 9, 12, 13},   // MUX_0 -> ADC_1
@@ -89,7 +89,7 @@ void grid_module_po16_init() {
     element_invert_bm = 0b1111111111111111;
   }
 
-  for (int i = 0; i < GRID_MODULE_PO16_POT_NUM; ++i) {
+  for (int i = 0; i < GRID_MODULE_PO16_POTMETER_COUNT; ++i) {
     struct grid_ui_element* ele = &grid_ui_state.element_list[i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
     grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
@@ -101,7 +101,7 @@ void grid_module_po16_init() {
 
   grid_cal_init(&grid_cal_state, grid_ui_state.element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
-  for (int i = 0; i < GRID_MODULE_PO16_POT_NUM; ++i) {
+  for (int i = 0; i < GRID_MODULE_PO16_POTMETER_COUNT; ++i) {
     struct grid_ui_element* ele = &grid_ui_state.element_list[i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
     assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &state->limits) == 0);

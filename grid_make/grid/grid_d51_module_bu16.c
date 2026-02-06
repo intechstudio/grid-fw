@@ -12,7 +12,7 @@ static volatile uint8_t adc_complete_count = 0;
 
 static uint8_t multiplexer_index = 0;
 static const uint8_t mux_positions_bm = 0b11111111;
-#define GRID_MODULE_BU16_BUT_NUM 16
+#define GRID_MODULE_BU16_BUTTON_COUNT 16
 
 static const uint8_t mux_element_lookup[2][8] = {
     {0, 1, 4, 5, 8, 9, 12, 13},   // MUX_0 -> ADC_1
@@ -80,7 +80,7 @@ void grid_module_bu16_init() {
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
-  for (int i = 0; i < GRID_MODULE_BU16_BUT_NUM; ++i) {
+  for (int i = 0; i < GRID_MODULE_BU16_BUTTON_COUNT; ++i) {
     struct grid_ui_element* ele = &grid_ui_state.element_list[i];
     struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
     grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);

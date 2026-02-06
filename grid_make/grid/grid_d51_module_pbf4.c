@@ -18,8 +18,8 @@ static volatile uint8_t adc_complete_count = 0;
 
 static uint8_t multiplexer_index = 0;
 static const uint8_t mux_positions_bm = 0b11001111;
-#define GRID_MODULE_PBF4_BUT_NUM 4
-#define GRID_MODULE_PBF4_POT_NUM 8
+#define GRID_MODULE_PBF4_BUTTON_COUNT 4
+#define GRID_MODULE_PBF4_POTMETER_COUNT 8
 
 #define X GRID_MUX_UNUSED
 static const uint8_t mux_element_lookup[2][8] = {
@@ -63,7 +63,7 @@ static void adc_transfer_complete_cb(void) {
       continue;
     }
 
-    if (element_index >= GRID_MODULE_PBF4_POT_NUM) {
+    if (element_index >= GRID_MODULE_PBF4_POTMETER_COUNT) {
       grid_ui_button_store_input(&grid_ui_state, element_index, processed);
     } else {
       grid_ui_potmeter_store_input(&grid_ui_state, element_index, processed);
@@ -96,14 +96,14 @@ void grid_module_pbf4_init() {
   memset(asc_state, 0, 12 * sizeof(struct grid_asc));
 
   // Buttons are elements 8-11
-  for (int i = 0; i < GRID_MODULE_PBF4_BUT_NUM; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[GRID_MODULE_PBF4_POT_NUM + i];
+  for (int i = 0; i < GRID_MODULE_PBF4_BUTTON_COUNT; ++i) {
+    struct grid_ui_element* ele = &grid_ui_state.element_list[GRID_MODULE_PBF4_POTMETER_COUNT + i];
     struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
     grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
 
   // Potmeters are elements 0-7
-  for (int i = 0; i < GRID_MODULE_PBF4_POT_NUM; ++i) {
+  for (int i = 0; i < GRID_MODULE_PBF4_POTMETER_COUNT; ++i) {
     struct grid_ui_element* ele = &grid_ui_state.element_list[i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
     grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
@@ -116,7 +116,7 @@ void grid_module_pbf4_init() {
   grid_cal_init(&grid_cal_state, grid_ui_state.element_list_length, 12);
 
   // Potmeter calibration (elements 0-7, first 4 have center detent)
-  for (int i = 0; i < GRID_MODULE_PBF4_POT_NUM; ++i) {
+  for (int i = 0; i < GRID_MODULE_PBF4_POTMETER_COUNT; ++i) {
     struct grid_ui_element* ele = &grid_ui_state.element_list[i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
     assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &state->limits) == 0);

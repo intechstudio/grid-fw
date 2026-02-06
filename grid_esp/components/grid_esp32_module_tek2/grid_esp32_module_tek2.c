@@ -25,11 +25,11 @@
 
 // static const char* TAG = "module_tek2";
 
-#define GRID_MODULE_TEK2_BUTTON_NUM 8
-#define GRID_MODULE_TEK2_ENDLESS_NUM 2
+#define GRID_MODULE_TEK2_BUTTON_COUNT 8
+#define GRID_MODULE_TEK2_ENDLESS_COUNT 2
 
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
-static struct grid_ui_endless_sample DRAM_ATTR endless_sample[GRID_MODULE_TEK2_ENDLESS_NUM] = {0};
+static struct grid_ui_endless_sample DRAM_ATTR endless_sample[GRID_MODULE_TEK2_ENDLESS_COUNT] = {0};
 
 #define X GRID_MUX_UNUSED
 static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
@@ -47,18 +47,18 @@ void IRAM_ATTR tek2_process_analog(void* user) {
   uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
 
   assert(element_index != GRID_MUX_UNUSED);
-  assert(element_index < (GRID_MODULE_TEK2_BUTTON_NUM + GRID_MODULE_TEK2_ENDLESS_NUM));
+  assert(element_index < (GRID_MODULE_TEK2_BUTTON_COUNT + GRID_MODULE_TEK2_ENDLESS_COUNT));
 
   if (!grid_asc_process(asc_state, element_index, result->value, &result->value)) {
     return;
   }
 
-  if (element_index < GRID_MODULE_TEK2_BUTTON_NUM) {
+  if (element_index < GRID_MODULE_TEK2_BUTTON_COUNT) {
 
     grid_ui_button_store_input(&grid_ui_state, element_index, result->value);
   } else {
 
-    uint8_t endless_idx = element_index - GRID_MODULE_TEK2_BUTTON_NUM;
+    uint8_t endless_idx = element_index - GRID_MODULE_TEK2_BUTTON_COUNT;
     struct grid_ui_endless_sample* sample_ptr = &endless_sample[endless_idx];
 
     if (result->mux_state == 0) {
@@ -102,7 +102,7 @@ void grid_esp32_module_tek2_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   if (grid_hwcfg_module_is_rev_h(sys)) {
 
-    for (int i = 0; i < GRID_MODULE_TEK2_BUTTON_NUM; ++i) {
+    for (int i = 0; i < GRID_MODULE_TEK2_BUTTON_COUNT; ++i) {
       struct grid_ui_element* ele = &ui->element_list[i];
       struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
       assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);

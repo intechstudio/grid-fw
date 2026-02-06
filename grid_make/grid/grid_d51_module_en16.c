@@ -10,9 +10,9 @@
 static uint8_t UI_SPI_TX_BUFFER[14] = {0};
 static uint8_t UI_SPI_RX_BUFFER[14] = {0};
 
-#define GRID_MODULE_EN16_BUT_NUM 16
+#define GRID_MODULE_EN16_BUTTON_COUNT 16
 
-#define GRID_MODULE_EN16_ENC_NUM 16
+#define GRID_MODULE_EN16_ENCODER_COUNT 16
 
 static void hardware_start_transfer(void) {
 
@@ -31,10 +31,10 @@ static void spi_transfer_complete_cb(void) {
   // issued
   gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 
-  uint8_t encoder_position_lookup[GRID_MODULE_EN16_ENC_NUM] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1};
+  uint8_t encoder_position_lookup[GRID_MODULE_EN16_ENCODER_COUNT] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1};
 
   // Buffer is only 8 bytes but we check all 16 encoders separately
-  for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
+  for (uint8_t i = 0; i < GRID_MODULE_EN16_ENCODER_COUNT; i++) {
 
     uint8_t nibble = GRID_UI_ENCODER_NIBBLE_FROM_BUFFER(UI_SPI_RX_BUFFER, i);
     uint8_t element_index = encoder_position_lookup[i];
@@ -63,7 +63,7 @@ void grid_module_en16_init() {
   grid_module_en16_ui_init(NULL, &grid_led_state, &grid_ui_state);
 
   // Button state is in secondary_state for encoder elements
-  for (int i = 0; i < GRID_MODULE_EN16_BUT_NUM; ++i) {
+  for (int i = 0; i < GRID_MODULE_EN16_BUTTON_COUNT; ++i) {
     struct grid_ui_element* ele = &grid_ui_state.element_list[i];
     struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->secondary_state;
     grid_ui_button_state_init(state, 1, 0.5, 0.2);
@@ -71,7 +71,7 @@ void grid_module_en16_init() {
 
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
   int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
-  for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
+  for (uint8_t i = 0; i < GRID_MODULE_EN16_ENCODER_COUNT; i++) {
     struct grid_ui_element* ele = &grid_ui_state.element_list[i];
     struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
     grid_ui_encoder_state_init(state, detent, direction);
