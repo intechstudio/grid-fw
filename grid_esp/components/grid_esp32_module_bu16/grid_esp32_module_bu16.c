@@ -51,7 +51,7 @@ void IRAM_ATTR bu16_process_analog(void* user) {
     return;
   }
 
-  grid_ui_button_store_input(&grid_ui_state, element_index, processed, GRID_AIN_INTERNAL_RESOLUTION);
+  grid_ui_button_store_input(&grid_ui_state, element_index, processed);
 }
 
 void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {

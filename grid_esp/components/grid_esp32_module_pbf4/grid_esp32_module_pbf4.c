@@ -62,9 +62,9 @@ void IRAM_ATTR pbf4_process_analog(void* user) {
   }
 
   if (element_index < GRID_MODULE_PBF4_POT_NUM) {
-    grid_ui_potmeter_store_input(&grid_ui_state, element_index, processed, GRID_AIN_INTERNAL_RESOLUTION);
+    grid_ui_potmeter_store_input(&grid_ui_state, element_index, processed);
   } else {
-    grid_ui_button_store_input(&grid_ui_state, element_index, processed, GRID_AIN_INTERNAL_RESOLUTION);
+    grid_ui_button_store_input(&grid_ui_state, element_index, processed);
   }
 }
 

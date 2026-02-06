@@ -34,17 +34,13 @@ static void spi_transfer_complete_cb(void) {
   uint8_t encoder_position_lookup[GRID_MODULE_EN16_ENC_NUM] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1};
 
   // Buffer is only 8 bytes but we check all 16 encoders separately
-  for (uint8_t j = 0; j < GRID_MODULE_EN16_ENC_NUM; j++) {
+  for (uint8_t i = 0; i < GRID_MODULE_EN16_ENC_NUM; i++) {
 
-    uint8_t new_value = (UI_SPI_RX_BUFFER[j / 2] >> (4 * (j % 2))) & 0x0F;
+    uint8_t nibble = GRID_UI_ENCODER_NIBBLE_FROM_BUFFER(UI_SPI_RX_BUFFER, i);
+    uint8_t element_index = encoder_position_lookup[i];
 
-    uint8_t i = encoder_position_lookup[j];
-
-    grid_ui_encoder_store_input(&grid_ui_state, i, new_value);
-
-    uint8_t button_value = new_value & 0b00000100;
-
-    grid_ui_button_store_input(&grid_ui_state, i, button_value, 1);
+    struct grid_ui_encoder_sample sample = GRID_UI_ENCODER_SAMPLE_FROM_NIBBLE(nibble);
+    grid_ui_encoder_store_input(&grid_ui_state, element_index, sample);
   }
 
   hardware_start_transfer();

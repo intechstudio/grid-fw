@@ -6,16 +6,19 @@
 #include "grid_protocol.h"
 #include "grid_ui.h"
 
-struct grid_ui_endless_state {
+struct grid_ui_endless_sample {
   uint16_t phase_a;
   uint16_t phase_b;
   uint16_t button_value;
+};
+
+struct grid_ui_endless_state {
   uint64_t encoder_last_real_time;
   double delta_vel_frac;
-  // Previous values for delta calculation
   uint16_t prev_phase_a;
   uint16_t prev_phase_b;
   uint16_t prev_button_value;
+  uint8_t adc_bit_depth;
 };
 
 void grid_ui_element_endless_init(struct grid_ui_element* ele);
@@ -24,7 +27,7 @@ void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buf
 void grid_ui_element_endless_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
-void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index, uint8_t adc_bit_depth);
+void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_endless_sample sample);
 
 uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint64_t* endless_last_real_time, double* delta_frac);
 
