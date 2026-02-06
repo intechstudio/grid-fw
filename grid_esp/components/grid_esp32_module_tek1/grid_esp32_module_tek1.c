@@ -34,208 +34,82 @@
 
 // static const char* TAG = "module_tek1";
 
-static DRAM_ATTR uint8_t is_vsn_rev_h_8bit_hwcfg = 0;
-
-#define GRID_MODULE_TEK1_POT_NUM 2
-
-#define GRID_MODULE_TEK1_BUT_NUM 17
-
-#define GRID_MODULE_TEK1_SMOL_BUT_NUM 8
+#define GRID_MODULE_TEK1_BUTTON_COUNT 8
+#define GRID_MODULE_TEK1_MINIBUTTON_COUNT 8
 
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
-static struct grid_ui_element* DRAM_ATTR elements = NULL;
 static struct grid_ui_endless_sample DRAM_ATTR endless_sample = {0};
 
-void IRAM_ATTR vsn1l_process_analog(void* user) {
-
 #define X GRID_MUX_UNUSED
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {8, 9, 8, 10, 8, 11, X, 12, 2, 0, 3, 1, 6, 4, 7, 5};
+static DRAM_ATTR const uint8_t vsn1l_mux_element_lookup[2][8] = {
+    {8, 8, 8, X, 2, 3, 6, 7},
+    {X, X, X, X, 0, 1, 4, 5},
+};
+static DRAM_ATTR const uint8_t vsn1r_mux_element_lookup[2][8] = {
+    {X, X, X, X, 2, 3, 6, 7},
+    {8, 8, 8, X, 0, 1, 4, 5},
+};
+static DRAM_ATTR const uint8_t vsn2_mux_element_lookup[2][8] = {
+    {X, X, X, X, 2, 3, 6, 7},
+    {X, X, X, X, 0, 1, 4, 5},
+};
 #undef X
+
+// Pointer to 2D lookup table [2][8], indexed as [channel][mux_state]
+static DRAM_ATTR const uint8_t (*vsnx_mux_lookup)[8] = NULL;
+
+void IRAM_ATTR vsnx_process_analog(void* user) {
 
   assert(user);
 
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
 
-  uint8_t lookup_index = result->mux_state * 2 + result->channel;
-  uint8_t element_index = multiplexer_lookup[lookup_index];
+  uint8_t element_index = vsnx_mux_lookup[result->channel][result->mux_state];
 
   if (element_index == GRID_MUX_UNUSED) {
     return;
   }
 
-  assert(element_index < GRID_MODULE_TEK1_BUT_NUM);
-
-  struct grid_ui_element* ele = &elements[element_index];
-
-  if (!grid_asc_process(asc_state, lookup_index, result->value, &result->value)) {
+  if (!grid_asc_process(asc_state, element_index, result->value, &result->value)) {
     return;
   }
 
-  if (element_index < 8) {
+  if (element_index < GRID_MODULE_TEK1_BUTTON_COUNT) {
 
     grid_ui_button_store_input(&grid_ui_state, element_index, result->value);
 
-  } else if (element_index < 9) {
+  } else {
 
-    switch (lookup_index) {
-    case 0: {
+    if (result->mux_state == 0) {
       endless_sample.phase_a = result->value;
-    } break;
-    case 2: {
+    } else if (result->mux_state == 1) {
       endless_sample.phase_b = result->value;
-    } break;
-    case 4: {
+    } else if (result->mux_state == 2) {
       endless_sample.button_value = result->value;
       grid_ui_endless_store_input(&grid_ui_state, element_index, endless_sample);
-    } break;
     }
-  } else if (element_index < 13 && is_vsn_rev_h_8bit_hwcfg) {
-
-    grid_ui_button_store_input(&grid_ui_state, element_index, result->value);
   }
 }
-
-void IRAM_ATTR vsn1l_process_encoder(void* dma_buf) {
 
 #define X GRID_MUX_UNUSED
-  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_TEK1_SMOL_BUT_NUM] = {9, 10, 11, 12, X, X, X, X};
+static DRAM_ATTR const uint8_t vsn1l_minibutton_lookup[GRID_MODULE_TEK1_MINIBUTTON_COUNT] = {9, 10, 11, 12, X, X, X, X};
+static DRAM_ATTR const uint8_t vsn1r_minibutton_lookup[GRID_MODULE_TEK1_MINIBUTTON_COUNT] = {X, X, X, X, 9, 10, 11, 12};
+static DRAM_ATTR const uint8_t vsn2_minibutton_lookup[GRID_MODULE_TEK1_MINIBUTTON_COUNT] = {8, 9, 10, 11, 13, 14, 15, 16};
 #undef X
 
-  // Skip hwcfg byte
-  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
+static DRAM_ATTR const uint8_t* vsnx_minibutton_lookup = NULL;
 
-  for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
+void IRAM_ATTR vsnx_process_minibutton(void* dma_buf) {
 
-    uint8_t bit = bytes[i / 8] & (1 << i);
-    uint16_t value = bit * (1 << (GRID_AIN_INTERNAL_RESOLUTION - 1));
-    uint8_t idx = encoder_lookup[i];
-    struct grid_ui_element* ele = &elements[idx];
+  uint8_t minibutton_state_bm = ((uint8_t*)dma_buf)[1];
 
-    if (idx >= 9 && idx < 13) {
+  for (uint8_t i = 0; i < GRID_MODULE_TEK1_MINIBUTTON_COUNT; ++i) {
 
-      grid_ui_button_store_input(&grid_ui_state, idx, value);
-    }
-  }
-}
+    uint8_t element_index = vsnx_minibutton_lookup[i];
 
-void IRAM_ATTR vsn1r_process_analog(void* user) {
-
-#define X GRID_MUX_UNUSED
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {9, 8, 10, 8, 11, 8, 12, X, 2, 0, 3, 1, 6, 4, 7, 5};
-#undef X
-
-  assert(user);
-
-  struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
-
-  uint8_t lookup_index = result->mux_state * 2 + result->channel;
-  uint8_t element_index = multiplexer_lookup[lookup_index];
-
-  if (element_index == GRID_MUX_UNUSED) {
-    return;
-  }
-
-  assert(element_index < GRID_MODULE_TEK1_BUT_NUM);
-
-  struct grid_ui_element* ele = &elements[element_index];
-
-  if (!grid_asc_process(asc_state, lookup_index, result->value, &result->value)) {
-    return;
-  }
-
-  if (element_index < 8) {
-
-    grid_ui_button_store_input(&grid_ui_state, element_index, result->value);
-
-  } else if (element_index < 9) {
-
-    switch (lookup_index) {
-    case 1: {
-      endless_sample.phase_a = result->value;
-    } break;
-    case 3: {
-      endless_sample.phase_b = result->value;
-    } break;
-    case 5: {
-      endless_sample.button_value = result->value;
-      grid_ui_endless_store_input(&grid_ui_state, element_index, endless_sample);
-    } break;
-    }
-  } else if (element_index < 13 && is_vsn_rev_h_8bit_hwcfg) {
-
-    grid_ui_button_store_input(&grid_ui_state, element_index, result->value);
-  }
-}
-
-void IRAM_ATTR vsn1r_process_encoder(void* dma_buf) {
-
-#define X GRID_MUX_UNUSED
-  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_TEK1_SMOL_BUT_NUM] = {X, X, X, X, 9, 10, 11, 12};
-#undef X
-
-  // Skip hwcfg byte
-  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
-
-  for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
-
-    uint8_t bit = bytes[i / 8] & (1 << i);
-    uint16_t value = (bit > 0) * (1 << (GRID_AIN_INTERNAL_RESOLUTION - 1));
-    uint8_t idx = encoder_lookup[i];
-    struct grid_ui_element* ele = &elements[idx];
-
-    if (idx >= 9 && idx < 13) {
-
-      grid_ui_button_store_input(&grid_ui_state, idx, value);
-    }
-  }
-}
-
-void IRAM_ATTR vsn2_process_analog(void* user) {
-
-  static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {13, 8, 14, 9, 15, 10, 16, 11, 2, 0, 3, 1, 6, 4, 7, 5};
-
-  assert(user);
-
-  struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
-
-  uint8_t lookup_index = result->mux_state * 2 + result->channel;
-  uint8_t element_index = multiplexer_lookup[lookup_index];
-
-  assert(element_index < GRID_MODULE_TEK1_BUT_NUM);
-
-  struct grid_ui_element* ele = &elements[element_index];
-
-  if (!grid_asc_process(asc_state, lookup_index, result->value, &result->value)) {
-    return;
-  }
-
-  if (element_index < 8) {
-
-    grid_ui_button_store_input(&grid_ui_state, element_index, result->value);
-
-  } else if (is_vsn_rev_h_8bit_hwcfg) {
-
-    grid_ui_button_store_input(&grid_ui_state, element_index, result->value);
-  }
-}
-
-void IRAM_ATTR vsn2_process_encoder(void* dma_buf) {
-
-  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_TEK1_SMOL_BUT_NUM] = {8, 9, 10, 11, 13, 14, 15, 16};
-
-  // Skip hwcfg byte
-  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
-
-  for (uint8_t i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
-
-    uint8_t bit = bytes[i / 8] & (1 << i);
-    uint16_t value = (bit > 0) * (1 << (GRID_AIN_INTERNAL_RESOLUTION - 1));
-    uint8_t idx = encoder_lookup[i];
-    struct grid_ui_element* ele = &elements[idx];
-
-    if ((idx >= 8 && idx < 12) || (idx >= 13 && idx < 17)) {
-
-      grid_ui_button_store_input(&grid_ui_state, idx, value);
+    if (element_index != GRID_MUX_UNUSED) {
+      uint8_t bit = (minibutton_state_bm >> i) & 1;
+      grid_ui_button_store_input(&grid_ui_state, element_index, bit);
     }
   }
 }
@@ -259,8 +133,6 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   bool is_tek1_reva = grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA;
-
-  uint32_t hwcfg = grid_sys_get_hwcfg(sys);
 
   // Initialize LCD panel at index 0 for VSN1L
   if (grid_hwcfg_module_is_vsnl(sys) || is_tek1_reva) {
@@ -315,7 +187,8 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
 
     if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
       struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
-      grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+      uint8_t bit_depth = (i < 8) ? GRID_AIN_INTERNAL_RESOLUTION : 1;
+      grid_ui_button_state_init(state, bit_depth, 0.5, 0.2);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
       struct grid_ui_endless_state* endless_state = (struct grid_ui_endless_state*)ele->primary_state;
       endless_state->adc_bit_depth = GRID_AIN_INTERNAL_RESOLUTION;
@@ -329,15 +202,13 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
     grid_asc_array_set_factors(asc_state, 16, 8, 8, 1);
   }
 
-  elements = grid_ui_model_get_elements(ui);
-
   grid_config_init(conf, cal);
 
   grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
   if (grid_hwcfg_module_is_rev_h(sys)) {
 
-    for (int i = 0; i < GRID_MODULE_TEK1_SMOL_BUT_NUM; ++i) {
+    for (int i = 0; i < GRID_MODULE_TEK1_BUTTON_COUNT; ++i) {
       struct grid_ui_element* ele = &ui->element_list[i];
       struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
       assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
@@ -347,25 +218,21 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
     grid_ui_bulk_flush(ui);
   }
 
-  grid_process_encoder_t process_encoder = NULL;
-
   if (grid_hwcfg_module_is_vsnl(sys) || is_tek1_reva) {
-    process_encoder = vsn1l_process_encoder;
-    grid_esp32_adc_init(adc, vsn1l_process_analog);
+    vsnx_mux_lookup = vsn1l_mux_element_lookup;
+    vsnx_minibutton_lookup = vsn1l_minibutton_lookup;
   } else if (grid_hwcfg_module_is_vsnr(sys)) {
-    process_encoder = vsn1r_process_encoder;
-    grid_esp32_adc_init(adc, vsn1r_process_analog);
+    vsnx_mux_lookup = vsn1r_mux_element_lookup;
+    vsnx_minibutton_lookup = vsn1r_minibutton_lookup;
   } else if (grid_hwcfg_module_is_vsn2(sys)) {
-    process_encoder = vsn2_process_encoder;
-    grid_esp32_adc_init(adc, vsn2_process_analog);
+    vsnx_mux_lookup = vsn2_mux_element_lookup;
+    vsnx_minibutton_lookup = vsn2_minibutton_lookup;
   }
 
-  is_vsn_rev_h_8bit_hwcfg = 1 - grid_platform_get_hwcfg_bit(16);
+  grid_esp32_adc_init(adc, vsnx_process_analog);
 
-  if (!is_vsn_rev_h_8bit_hwcfg) {
-
-    grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, process_encoder);
-  }
+  // Encoder driver is used to read minibuttons via shift registers
+  grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, vsnx_process_minibutton);
 
   grid_platform_mux_init(0b11111111);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
