@@ -48,9 +48,7 @@ void IRAM_ATTR pbf4_process_analog(void* user) {
 
   uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
 
-  if (element_index == GRID_MUX_UNUSED) {
-    return;
-  }
+  assert(element_index != GRID_MUX_UNUSED);
 
   uint16_t raw = result->value;
   uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
