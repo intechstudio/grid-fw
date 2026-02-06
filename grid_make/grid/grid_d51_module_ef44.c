@@ -16,9 +16,9 @@
 static volatile uint8_t adc_complete_count = 0;
 static volatile uint8_t multiplexer_index = 0;
 static const uint8_t mux_positions_bm = 0b00000011;
-#define GRID_MODULE_EF44_BUT_NUM 4
-#define GRID_MODULE_EF44_ENC_NUM 4
-#define GRID_MODULE_EF44_POT_NUM 4
+#define GRID_MODULE_EF44_BUTTON_COUNT 4
+#define GRID_MODULE_EF44_ENCODER_COUNT 4
+#define GRID_MODULE_EF44_POTMETER_COUNT 4
 
 static const uint8_t mux_element_lookup[2][2] = {
     {4, 5}, // MUX_0 -> ADC_1
@@ -54,10 +54,10 @@ static void spi_transfer_complete_cb(void) {
   // issued
   gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 
-  uint8_t encoder_position_lookup[GRID_MODULE_EF44_ENC_NUM] = {2, 3, 0, 1};
+  uint8_t encoder_position_lookup[GRID_MODULE_EF44_ENCODER_COUNT] = {2, 3, 0, 1};
 
   // Buffer is only 8 bytes but we check all 16 encoders separately
-  for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
+  for (uint8_t i = 0; i < GRID_MODULE_EF44_ENCODER_COUNT; i++) {
 
     uint8_t nibble = GRID_UI_ENCODER_NIBBLE_FROM_BUFFER(UI_SPI_RX_BUFFER, i);
     uint8_t element_index = encoder_position_lookup[i];
@@ -129,15 +129,15 @@ void grid_module_ef44_init() {
   memset(asc_state, 0, 8 * sizeof(struct grid_asc));
 
   // Encoders are elements 0-3 - button state is in secondary_state
-  for (int i = 0; i < GRID_MODULE_EF44_BUT_NUM; ++i) {
+  for (int i = 0; i < GRID_MODULE_EF44_BUTTON_COUNT; ++i) {
     struct grid_ui_element* ele = &grid_ui_state.element_list[i];
     struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->secondary_state;
     grid_ui_button_state_init(state, 1, 0.5, 0.2);
   }
 
   // Potmeters are elements 4-7
-  for (int i = 0; i < GRID_MODULE_EF44_POT_NUM; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[GRID_MODULE_EF44_ENC_NUM + i];
+  for (int i = 0; i < GRID_MODULE_EF44_POTMETER_COUNT; ++i) {
+    struct grid_ui_element* ele = &grid_ui_state.element_list[GRID_MODULE_EF44_ENCODER_COUNT + i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
     grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
@@ -147,7 +147,7 @@ void grid_module_ef44_init() {
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
   int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
   // Encoders are elements 0-3
-  for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
+  for (uint8_t i = 0; i < GRID_MODULE_EF44_ENCODER_COUNT; i++) {
     struct grid_ui_element* ele = &grid_ui_state.element_list[i];
     struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
     grid_ui_encoder_state_init(state, detent, direction);
@@ -158,7 +158,7 @@ void grid_module_ef44_init() {
   grid_cal_init(&grid_cal_state, grid_ui_state.element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
   // Potmeters are elements 4-7
-  for (int i = GRID_MODULE_EF44_ENC_NUM; i < GRID_MODULE_EF44_ENC_NUM + GRID_MODULE_EF44_POT_NUM; ++i) {
+  for (int i = GRID_MODULE_EF44_ENCODER_COUNT; i < GRID_MODULE_EF44_ENCODER_COUNT + GRID_MODULE_EF44_POTMETER_COUNT; ++i) {
     struct grid_ui_element* ele = &grid_ui_state.element_list[i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
     assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &state->limits) == 0);

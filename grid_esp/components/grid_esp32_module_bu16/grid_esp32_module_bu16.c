@@ -24,7 +24,7 @@
 
 // static const char* TAG = "module_bu16";
 
-#define GRID_MODULE_BU16_BUT_NUM 16
+#define GRID_MODULE_BU16_BUTTON_COUNT 16
 
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 
@@ -59,7 +59,7 @@ void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_mode
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
-  for (int i = 0; i < GRID_MODULE_BU16_BUT_NUM; ++i) {
+  for (int i = 0; i < GRID_MODULE_BU16_BUTTON_COUNT; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
     grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
@@ -73,7 +73,7 @@ void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   if (grid_hwcfg_module_is_rev_h(sys)) {
 
-    for (int i = 0; i < GRID_MODULE_BU16_BUT_NUM; ++i) {
+    for (int i = 0; i < GRID_MODULE_BU16_BUTTON_COUNT; ++i) {
       struct grid_ui_element* ele = &ui->element_list[i];
       struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
       assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
