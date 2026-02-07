@@ -45,8 +45,7 @@
 #include "grid_esp32_module_en16.h"
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
-#include "grid_esp32_module_tek1.h"
-#include "grid_esp32_module_tek2.h"
+#include "grid_esp32_module_vsnx.h"
 #include "pico_firmware.h"
 
 #include "grid_esp32_trace.h"
@@ -190,19 +189,13 @@ void grid_ui_element_lcd_template_parameter_init_vsn_right(struct grid_ui_templa
   template_parameter_list[GRID_LUA_FNC_L_SCREEN_HEIGHT_index] = 240;
 }
 
-void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui, struct grid_sys_model* sys) {
-
-  bool is_tek1_reva = grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA;
+void grid_module_vsnx_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui, struct grid_sys_model* sys) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
   grid_ain_init(ain, 16, 4);  // TODO: 12 ain for TEK2
   grid_led_init(led, 13 + 5); // TODO: 18 led for TEK2
 
-  if (is_tek1_reva) {
-
-    // TODO
-
-  } else if (grid_hwcfg_module_is_vsnl(&grid_sys_state)) {
+  if (grid_hwcfg_module_is_vsnl(&grid_sys_state)) {
 
     for (uint8_t i = 0; i < 8; ++i) {
       grid_led_lookup_alloc_single(led, i, i + 10);
@@ -223,7 +216,7 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     }
   }
 
-  if (grid_hwcfg_module_is_vsnl(&grid_sys_state) || is_tek1_reva) {
+  if (grid_hwcfg_module_is_vsnl(&grid_sys_state)) {
 
     grid_ui_model_init(ui, 14 + 1);
 
@@ -426,7 +419,7 @@ void app_main(void) {
   } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
     grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
-    grid_module_tek1_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, &grid_sys_state);
+    grid_module_vsnx_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, &grid_sys_state);
   } else {
     ets_printf("UI Init failed: Unknown Module\r\n");
   }
@@ -537,10 +530,8 @@ void app_main(void) {
     grid_esp32_module_en16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_encoder_state);
   } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
     grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
-  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
-    grid_esp32_module_tek2_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
-  } else if (grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
-    grid_esp32_module_tek1_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
+  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
+    grid_esp32_module_vsnx_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
   } else {
     ets_printf("Task Init failed: Unknown Module\r\n");
   }
