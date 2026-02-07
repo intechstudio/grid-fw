@@ -123,13 +123,17 @@ void IRAM_ATTR vsnx_process_minibutton(void* dma_buf) {
   }
 }
 
+static void init_lcd_panel(struct grid_ui_element* element, uint8_t lcd_index, uint8_t cs_index) {
+  struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[lcd_index];
+  grid_esp32_lcd_panel_init(lcd, element, cs_index, GRID_LCD_CLK_SLOW);
+  grid_esp32_lcd_panel_init(lcd, element, cs_index, GRID_LCD_CLK_FAST);
+  grid_esp32_lcd_panel_reset(lcd);
+  grid_esp32_lcd_panel_set_frctrl2(lcd, LCD_FRCTRL_40HZ);
+}
+
 static void vsnx_lcd_init(struct grid_sys_model* sys, struct grid_ui_model* ui) {
 
-  // Allocate transfer buffer
-  uint32_t height = LCD_VRES;
-  uint32_t lcd_tx_lines = 16;
-  uint32_t lcd_tx_bytes = height * lcd_tx_lines * COLMOD_RGB888_BYTES;
-
+  uint32_t lcd_tx_bytes = LCD_VRES * 16 * COLMOD_RGB888_BYTES;
   grid_esp32_lcd_spi_bus_init(lcd_tx_bytes);
 
   // Wait for the coprocessor to pull the LCD reset pin high
@@ -137,45 +141,15 @@ static void vsnx_lcd_init(struct grid_sys_model* sys, struct grid_ui_model* ui) 
     vTaskDelay(1);
   }
 
-  // Initialize LCD panel at index 0 for VSN1L
+  struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
+
   if (grid_hwcfg_module_is_vsnl(sys)) {
-
-    struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[0];
-    struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
-
-    grid_esp32_lcd_panel_init(lcd, &elements[13], 0, GRID_LCD_CLK_SLOW);
-    grid_esp32_lcd_panel_init(lcd, &elements[13], 0, GRID_LCD_CLK_FAST);
-    grid_esp32_lcd_panel_reset(lcd);
-    grid_esp32_lcd_panel_set_frctrl2(lcd, LCD_FRCTRL_40HZ);
-  }
-
-  // Initialize LCD panel at index 1 for VSN1R
-  if (grid_hwcfg_module_is_vsnr(sys)) {
-
-    struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[1];
-    struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
-
-    grid_esp32_lcd_panel_init(lcd, &elements[13], 1, GRID_LCD_CLK_SLOW);
-    grid_esp32_lcd_panel_init(lcd, &elements[13], 1, GRID_LCD_CLK_FAST);
-    grid_esp32_lcd_panel_reset(lcd);
-    grid_esp32_lcd_panel_set_frctrl2(lcd, LCD_FRCTRL_40HZ);
-  }
-
-  // Initialize LCD panel at index 0 and 1 for VSN2
-  if (grid_hwcfg_module_is_vsn2(sys)) {
-
-    struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
-    struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
-
-    grid_esp32_lcd_panel_init(&lcds[0], &elements[12], 0, GRID_LCD_CLK_SLOW);
-    grid_esp32_lcd_panel_init(&lcds[0], &elements[12], 0, GRID_LCD_CLK_FAST);
-    grid_esp32_lcd_panel_reset(&lcds[0]);
-    grid_esp32_lcd_panel_set_frctrl2(&lcds[0], LCD_FRCTRL_40HZ);
-
-    grid_esp32_lcd_panel_init(&lcds[1], &elements[17], 1, GRID_LCD_CLK_SLOW);
-    grid_esp32_lcd_panel_init(&lcds[1], &elements[17], 1, GRID_LCD_CLK_FAST);
-    grid_esp32_lcd_panel_reset(&lcds[1]);
-    grid_esp32_lcd_panel_set_frctrl2(&lcds[1], LCD_FRCTRL_40HZ);
+    init_lcd_panel(&elements[13], 0, 0);
+  } else if (grid_hwcfg_module_is_vsnr(sys)) {
+    init_lcd_panel(&elements[13], 1, 1);
+  } else if (grid_hwcfg_module_is_vsn2(sys)) {
+    init_lcd_panel(&elements[12], 0, 0);
+    init_lcd_panel(&elements[17], 1, 1);
   }
 
   grid_esp32_lcd_set_ready(true);
