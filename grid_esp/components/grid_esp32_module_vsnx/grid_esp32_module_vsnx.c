@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "grid_esp32_module_tek1.h"
+#include "grid_esp32_module_vsnx.h"
 
 #include <stdint.h>
 
@@ -32,13 +32,14 @@
 #include "grid_esp32_adc.h"
 #include "grid_esp32_encoder.h"
 
-// static const char* TAG = "module_tek1";
+// static const char* TAG = "module_vsnx";
 
-#define GRID_MODULE_TEK1_BUTTON_COUNT 8
-#define GRID_MODULE_TEK1_MINIBUTTON_COUNT 8
+#define GRID_MODULE_VSNX_BUTTON_COUNT 8
+#define GRID_MODULE_VSNX_MINIBUTTON_COUNT 8
 
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
-static struct grid_ui_endless_sample DRAM_ATTR endless_sample = {0};
+#define GRID_MODULE_VSNX_ENDLESS_MAXCOUNT 2
+static struct grid_ui_endless_sample DRAM_ATTR endless_sample[GRID_MODULE_VSNX_ENDLESS_MAXCOUNT] = {0};
 
 #define X GRID_MUX_UNUSED
 static DRAM_ATTR const uint8_t vsn1l_mux_element_lookup[2][8] = {
@@ -52,6 +53,10 @@ static DRAM_ATTR const uint8_t vsn1r_mux_element_lookup[2][8] = {
 static DRAM_ATTR const uint8_t vsn2_mux_element_lookup[2][8] = {
     {X, X, X, X, 2, 3, 6, 7},
     {X, X, X, X, 0, 1, 4, 5},
+};
+static DRAM_ATTR const uint8_t tek2_mux_element_lookup[2][8] = {
+    {8, 8, 8, X, 0, 1, 4, 5},
+    {9, 9, 9, X, 2, 3, 6, 7},
 };
 #undef X
 
@@ -74,27 +79,31 @@ void IRAM_ATTR vsnx_process_analog(void* user) {
     return;
   }
 
-  if (element_index < GRID_MODULE_TEK1_BUTTON_COUNT) {
+  if (element_index < GRID_MODULE_VSNX_BUTTON_COUNT) {
 
     grid_ui_button_store_input(&grid_ui_state, element_index, result->value);
 
   } else {
 
+    uint8_t endless_idx = element_index - GRID_MODULE_VSNX_BUTTON_COUNT;
+    struct grid_ui_endless_sample* sample_ptr = &endless_sample[endless_idx];
+
     if (result->mux_state == 0) {
-      endless_sample.phase_a = result->value;
+      sample_ptr->phase_a = result->value;
     } else if (result->mux_state == 1) {
-      endless_sample.phase_b = result->value;
+      sample_ptr->phase_b = result->value;
     } else if (result->mux_state == 2) {
-      endless_sample.button_value = result->value;
-      grid_ui_endless_store_input(&grid_ui_state, element_index, endless_sample);
+      sample_ptr->button_value = result->value;
+      grid_ui_endless_store_input(&grid_ui_state, element_index, *sample_ptr);
     }
   }
 }
 
 #define X GRID_MUX_UNUSED
-static DRAM_ATTR const uint8_t vsn1l_minibutton_lookup[GRID_MODULE_TEK1_MINIBUTTON_COUNT] = {9, 10, 11, 12, X, X, X, X};
-static DRAM_ATTR const uint8_t vsn1r_minibutton_lookup[GRID_MODULE_TEK1_MINIBUTTON_COUNT] = {X, X, X, X, 9, 10, 11, 12};
-static DRAM_ATTR const uint8_t vsn2_minibutton_lookup[GRID_MODULE_TEK1_MINIBUTTON_COUNT] = {8, 9, 10, 11, 13, 14, 15, 16};
+static DRAM_ATTR const uint8_t vsn1l_minibutton_lookup[GRID_MODULE_VSNX_MINIBUTTON_COUNT] = {9, 10, 11, 12, X, X, X, X};
+static DRAM_ATTR const uint8_t vsn1r_minibutton_lookup[GRID_MODULE_VSNX_MINIBUTTON_COUNT] = {X, X, X, X, 9, 10, 11, 12};
+static DRAM_ATTR const uint8_t vsn2_minibutton_lookup[GRID_MODULE_VSNX_MINIBUTTON_COUNT] = {8, 9, 10, 11, 13, 14, 15, 16};
+static DRAM_ATTR const uint8_t tek2_minibutton_lookup[GRID_MODULE_VSNX_MINIBUTTON_COUNT] = {X, X, X, X, X, X, X, X};
 #undef X
 
 static DRAM_ATTR const uint8_t* vsnx_minibutton_lookup = NULL;
@@ -103,7 +112,7 @@ void IRAM_ATTR vsnx_process_minibutton(void* dma_buf) {
 
   uint8_t minibutton_state_bm = ((uint8_t*)dma_buf)[1];
 
-  for (uint8_t i = 0; i < GRID_MODULE_TEK1_MINIBUTTON_COUNT; ++i) {
+  for (uint8_t i = 0; i < GRID_MODULE_VSNX_MINIBUTTON_COUNT; ++i) {
 
     uint8_t element_index = vsnx_minibutton_lookup[i];
 
@@ -114,17 +123,13 @@ void IRAM_ATTR vsnx_process_minibutton(void* dma_buf) {
   }
 }
 
-void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal,
-                                 struct grid_esp32_lcd_model* lcds) {
+static void vsnx_lcd_init(struct grid_sys_model* sys, struct grid_ui_model* ui) {
 
   // Allocate transfer buffer
-  uint32_t width = LCD_HRES;
   uint32_t height = LCD_VRES;
   uint32_t lcd_tx_lines = 16;
   uint32_t lcd_tx_bytes = height * lcd_tx_lines * COLMOD_RGB888_BYTES;
-  // uint8_t* xferbuf = malloc(lcd_tx_bytes);
 
-  // Initialize LCD
   grid_esp32_lcd_spi_bus_init(lcd_tx_bytes);
 
   // Wait for the coprocessor to pull the LCD reset pin high
@@ -132,10 +137,8 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
     vTaskDelay(1);
   }
 
-  bool is_tek1_reva = grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA;
-
   // Initialize LCD panel at index 0 for VSN1L
-  if (grid_hwcfg_module_is_vsnl(sys) || is_tek1_reva) {
+  if (grid_hwcfg_module_is_vsnl(sys)) {
 
     struct grid_esp32_lcd_model* lcd = &grid_esp32_lcd_states[0];
     struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
@@ -175,8 +178,15 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
     grid_esp32_lcd_panel_set_frctrl2(&lcds[1], LCD_FRCTRL_40HZ);
   }
 
-  // Mark the LCD as ready
   grid_esp32_lcd_set_ready(true);
+}
+
+void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal,
+                                 struct grid_esp32_lcd_model* lcds) {
+
+  if (!grid_hwcfg_module_is_tek2(sys)) {
+    vsnx_lcd_init(sys, ui);
+  }
 
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
@@ -208,7 +218,7 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   if (grid_hwcfg_module_is_rev_h(sys)) {
 
-    for (int i = 0; i < GRID_MODULE_TEK1_BUTTON_COUNT; ++i) {
+    for (int i = 0; i < GRID_MODULE_VSNX_BUTTON_COUNT; ++i) {
       struct grid_ui_element* ele = &ui->element_list[i];
       struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
       assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
@@ -218,7 +228,7 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
     grid_ui_bulk_flush(ui);
   }
 
-  if (grid_hwcfg_module_is_vsnl(sys) || is_tek1_reva) {
+  if (grid_hwcfg_module_is_vsnl(sys)) {
     vsnx_mux_lookup = vsn1l_mux_element_lookup;
     vsnx_minibutton_lookup = vsn1l_minibutton_lookup;
   } else if (grid_hwcfg_module_is_vsnr(sys)) {
@@ -227,6 +237,9 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
   } else if (grid_hwcfg_module_is_vsn2(sys)) {
     vsnx_mux_lookup = vsn2_mux_element_lookup;
     vsnx_minibutton_lookup = vsn2_minibutton_lookup;
+  } else if (grid_hwcfg_module_is_tek2(sys)) {
+    vsnx_mux_lookup = tek2_mux_element_lookup;
+    vsnx_minibutton_lookup = tek2_minibutton_lookup;
   }
 
   grid_esp32_adc_init(adc, vsnx_process_analog);
@@ -234,7 +247,8 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
   // Encoder driver is used to read minibuttons via shift registers
   grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, vsnx_process_minibutton);
 
-  grid_platform_mux_init(0b11111111);
+  uint8_t mux_positions = grid_hwcfg_module_is_tek2(sys) ? 0b11110111 : 0b11111111;
+  grid_platform_mux_init(mux_positions);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
   grid_esp32_adc_start(adc, mux_dependent);
 }
