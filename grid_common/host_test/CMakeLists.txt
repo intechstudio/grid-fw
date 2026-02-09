@@ -17,4 +17,3 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -no-pie")
 # add the executable
 add_executable(${PROJECT_NAME} main.c unity.c ../grid_ui_encoder.c ../grid_ui.c ../grid_math.c ../grid_noflash.c ../grid_swsr.c)
 target_include_directories(${PROJECT_NAME} PRIVATE "../proto")
-
