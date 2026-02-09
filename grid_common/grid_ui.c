@@ -852,13 +852,13 @@ static bool grid_ui_bulk_queue_with_state(struct grid_ui_model* ui, fn_prthread_
 
 bool grid_ui_bulk_start_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
-	if (grid_ui_bulk_in_progress(ui)) {
-		return false;
-	}
+  if (grid_ui_bulk_in_progress(ui)) {
+    return false;
+  }
 
-	assert(grid_ui_bulk_queue_with_state(ui, next, page, lastheader_id, success_cb));
+  assert(grid_ui_bulk_queue_with_state(ui, next, page, lastheader_id, success_cb));
 
-	return true;
+  return true;
 }
 
 bool grid_ui_bulk_in_waiting(struct grid_ui_model* ui) { return grid_swsr_readable(&ui->bulk, sizeof(fn_prthread_bulk_t)); }
@@ -878,17 +878,17 @@ void grid_ui_bulk_handle_success_cb(struct grid_ui_model* ui) {
 
 void grid_ui_bulk_process(struct grid_ui_model* ui) {
 
-	// No currently executing protothread
+  // No currently executing protothread
   if (!ui->bulk_curr) {
 
-		// There are protothreads waiting to be executed
+    // There are protothreads waiting to be executed
     if (grid_ui_bulk_in_waiting(ui)) {
 
-			// Make the next waiting protothread the next one to be executed
+      // Make the next waiting protothread the next one to be executed
       assert(grid_swsr_readable(&ui->bulk, sizeof(fn_prthread_bulk_t)));
       grid_swsr_read(&ui->bulk, &ui->bulk_curr, sizeof(fn_prthread_bulk_t));
 
-			// Bulk processing is about to begin after a period of inactivity
+      // Bulk processing is about to begin after a period of inactivity
       if (!ui->bulk_active) {
 
         grid_ui_bulk_semaphore_lock(ui);
@@ -904,28 +904,28 @@ void grid_ui_bulk_process(struct grid_ui_model* ui) {
     }
   }
 
-	// Call protothread
+  // Call protothread
   assert(grid_ui_bulk_operation_known(ui->bulk_curr));
   char status = ui->bulk_curr(&ui->bulk_pt, ui);
 
-	// Protothread requires no further execution
+  // Protothread requires no further execution
   if (status >= PT_EXITED) {
 
-		// Protothread reached its end (instead of exiting early)
+    // Protothread reached its end (instead of exiting early)
     if (status == PT_ENDED) {
       grid_ui_bulk_handle_success_cb(ui);
     }
 
-		// Unset currently executing protothread
+    // Unset currently executing protothread
     ui->bulk_curr = NULL;
 
-		// There are no more protohreads waiting to be executed
+    // There are no more protohreads waiting to be executed
     if (!grid_ui_bulk_in_waiting(ui)) {
 
       assert(ui->bulk_active);
       ui->bulk_active = false;
 
-			// Bulk processing is about to end after a period of activity
+      // Bulk processing is about to end after a period of activity
       grid_ui_bulk_semaphore_release(ui);
     }
   }
@@ -1009,7 +1009,7 @@ PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui)) {
   uint8_t read_page = grid_ui_page_get_activepage(&grid_ui_state);
   grid_ui_bulk_queue_with_state(ui, grid_ui_bulk_page_read, read_page, 0, NULL);
 
-	return PT_ENDED;
+  return PT_ENDED;
 }
 
 PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {

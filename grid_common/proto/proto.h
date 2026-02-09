@@ -1,6 +1,8 @@
 #ifndef PT_PROTO_H
 #define PT_PROTO_H
 
+// clang-format off
+
 /*
 Copyright (c) 2004-2005, Swedish Institute of Computer Science.
 All rights reserved.
@@ -29,7 +31,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
-Author: Adam Dunkels 
+Author: Adam Dunkels
 */
 
 /*
@@ -40,7 +42,7 @@ include the license under which their protothread library was released under.
 */
 
 /** Local continuations
-    
+
     Local continuations form the basis for the protothread implementation.
     A local continuation can be set in a function to capture its state.
     After it has been set, a local continuation can be resumed in order to
@@ -195,5 +197,7 @@ do { \
     LC_SET((pt)->lc); \
     if(PT_YIELD_FLAG == 0 || !(condition)){ return PT_YIELDED; } \
 } while(0)
+
+// clang-format on
 
 #endif /* PT_PROTO_H */
