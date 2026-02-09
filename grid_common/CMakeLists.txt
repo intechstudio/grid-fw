@@ -73,4 +73,5 @@ idf_component_register(
         "."
         "littlefs"
         "lua-5.4.3/src"
+        "proto"
 )

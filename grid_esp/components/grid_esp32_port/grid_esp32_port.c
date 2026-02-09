@@ -255,7 +255,7 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
     return;
   }
 
-  if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
+  if (grid_ui_bulk_in_progress(&grid_ui_state)) {
     return;
   }
 

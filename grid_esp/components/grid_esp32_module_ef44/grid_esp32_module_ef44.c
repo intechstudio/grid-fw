@@ -117,13 +117,8 @@ void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mode
     assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &ui_potmeter_state[i - 4].limits) == 0);
   }
 
-  while (grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
-    vTaskDelay(1);
-  }
-
-  while (grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CONFREAD_PROGRESS)) {
-    vTaskDelay(1);
-  }
+  assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));
+  grid_ui_bulk_flush(ui);
 
   grid_esp32_encoder_init(enc, 1, ef44_process_encoder);
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);

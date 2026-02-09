@@ -206,6 +206,7 @@ DIR_INCLUDES +=  \
 -I"../../grid_common" \
 -I"../../grid_common/lua-5.4.3/src" \
 -I"../../grid_common/littlefs" \
+-I"../../grid_common/proto" \
 -I"../../grid_common/tomlc99" \
 
 

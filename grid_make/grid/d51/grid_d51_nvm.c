@@ -154,3 +154,77 @@ int grid_platform_remove_dir(const char* path) { return grid_littlefs_rmdir(LFS,
 uint8_t grid_platform_get_nvm_state() { return hri_nvmctrl_get_STATUS_READY_bit(grid_d51_nvm_state.dfs.flash->dev.hw); }
 
 void grid_platform_nvm_defrag() {}
+
+void* grid_platform_fopen(const char* pathname, const char* mode) { return grid_littlefs_fopen(LFS, pathname, mode); }
+
+int grid_platform_fclose(void* stream) { return grid_littlefs_fclose(LFS, stream); }
+
+size_t grid_platform_fwrite(const void* ptr, size_t size, size_t nmemb, void* stream) {
+
+  if (stream == stdin || stream == stderr) {
+    return 0;
+  }
+
+  if (stream == stdout) {
+    return fwrite(ptr, size, nmemb, stream);
+  }
+
+  return grid_littlefs_fwrite(LFS, ptr, size, nmemb, stream);
+}
+
+size_t grid_platform_fread(void* ptr, size_t size, size_t nmemb, void* stream) {
+
+  if (stream == stdin || stream == stdout || stream == stderr) {
+    return 0;
+  }
+
+  return grid_littlefs_fread(LFS, ptr, size, nmemb, stream);
+}
+
+long grid_platform_ftell(void* stream) { return grid_littlefs_ftell(LFS, stream); }
+
+int grid_platform_fseek(void* stream, long offset, int whence) { return grid_littlefs_fseek(LFS, stream, offset, whence); }
+
+void grid_platform_clearerr(void* stream) {}
+
+int grid_platform_ferror(void* stream) { return 0; }
+
+int grid_platform_getc(void* stream) {
+
+  if (stream == stdin || stream == stdout || stream == stderr) {
+    return EOF;
+  }
+
+  unsigned char c;
+
+  return grid_littlefs_fread(LFS, &c, 1, 1, stream) == 1 ? c : EOF;
+}
+
+int grid_platform_ungetc(int c, void* stream) {
+
+  if (stream == stdin || stream == stdout || stream == stderr) {
+    return EOF;
+  }
+
+  lfs_soff_t soff = grid_littlefs_fseek(LFS, stream, -1, SEEK_CUR);
+  if (soff < 0) {
+    return EOF;
+  }
+
+  return c;
+}
+
+int grid_platform_fflush(void* stream) {
+
+  if (stream == stdin || stream == stderr) {
+    return EOF;
+  }
+
+  if (stream == stdout) {
+    return fflush(stdout);
+  }
+
+  return grid_littlefs_fflush(LFS, stream);
+}
+
+int grid_platform_remove(const char* pathname) { return grid_littlefs_remove(LFS, pathname) == 0 ? 0 : -1; }

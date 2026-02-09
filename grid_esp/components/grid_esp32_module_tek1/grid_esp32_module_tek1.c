@@ -318,13 +318,8 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
       assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &ui_button_state[i].limits) == 0);
     }
 
-    while (grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
-      vTaskDelay(1);
-    }
-
-    while (grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CONFREAD_PROGRESS)) {
-      vTaskDelay(1);
-    }
+    assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));
+    grid_ui_bulk_flush(ui);
   }
 
   grid_process_encoder_t process_encoder = NULL;

@@ -3,17 +3,19 @@
 
 #include <stdint.h>
 
+#include "proto.h"
+
 #include "grid_lua.h"
+#include "grid_swsr.h"
 
 struct grid_ui_semaphore {
   void* handle;
   void (*lock_fn)(void*);
   void (*release_fn)(void*);
+  bool (*try_fn)(void*);
 };
 
-void grid_ui_semaphore_init(struct grid_ui_semaphore* semaphore, void* handle, void (*lock_fn)(void*), void (*release_fn)(void*));
-void grid_ui_semaphore_lock(struct grid_ui_semaphore* semaphore);
-void grid_ui_semaphore_release(struct grid_ui_semaphore* semaphore);
+void grid_ui_semaphore_init(struct grid_ui_semaphore* semaphore, void* handle, void (*lock_fn)(void*), void (*release_fn)(void*), bool (*try_fn)(void*));
 
 enum grid_eve_state_t {
   GRID_EVE_STATE_INIT = 0,
@@ -95,9 +97,10 @@ enum grid_ui_bulk_status_t {
 
 // struct grid_lua_model;
 
+typedef char (*fn_prthread_bulk_t)(proto_pt_t* pt, struct grid_ui_model* ui);
+
 struct grid_ui_model {
 
-  struct grid_ui_semaphore busy_semaphore;
   struct grid_ui_semaphore bulk_semaphore;
 
   uint8_t page_activepage;
@@ -111,25 +114,26 @@ struct grid_ui_model {
   uint8_t element_list_length;
   struct grid_ui_element* element_list;
 
-  enum grid_ui_bulk_status_t bulk_status;
   void (*bulk_success_callback)(uint8_t);
   uint8_t bulk_lastheader_id;
   int bulk_last_page;
-  int bulk_last_element;
-  int bulk_last_event;
+
+  struct grid_swsr_t bulk;
+  fn_prthread_bulk_t bulk_curr;
+  proto_pt_t bulk_pt;
+  bool bulk_active;
 
   lua_ui_init_callback_t lua_ui_init_callback;
 };
 
 extern struct grid_ui_model grid_ui_state;
 
-void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length);
-struct grid_ui_element* grid_ui_model_get_elements(struct grid_ui_model* ui);
-
-void grid_ui_busy_semaphore_lock(struct grid_ui_model* ui);
-void grid_ui_busy_semaphore_release(struct grid_ui_model* ui);
 void grid_ui_bulk_semaphore_lock(struct grid_ui_model* ui);
 void grid_ui_bulk_semaphore_release(struct grid_ui_model* ui);
+bool grid_ui_bulk_semaphore_try(struct grid_ui_model* ui);
+
+void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length);
+struct grid_ui_element* grid_ui_model_get_elements(struct grid_ui_model* ui);
 
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index);
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_actionstring);
@@ -146,9 +150,6 @@ struct grid_ui_template_buffer* grid_ui_template_buffer_find(struct grid_ui_elem
 uint8_t grid_ui_page_get_activepage(struct grid_ui_model* ui);
 uint8_t grid_ui_page_get_next(struct grid_ui_model* ui);
 uint8_t grid_ui_page_get_prev(struct grid_ui_model* ui);
-
-void grid_ui_page_load(struct grid_ui_model* ui, uint8_t page);
-void grid_ui_page_load_success_callback(uint8_t lastheader);
 
 void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t page);
 uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui);
@@ -200,5 +201,19 @@ void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui);
 void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui);
 
 void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui);
+
+bool grid_ui_bulk_start_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
+bool grid_ui_bulk_in_progress(struct grid_ui_model* ui);
+void grid_ui_bulk_process(struct grid_ui_model* ui);
+void grid_ui_bulk_flush(struct grid_ui_model* ui);
+
+PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui));
+PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui));
+PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui));
+PT_THREAD(grid_ui_bulk_page_clear(proto_pt_t* pt, struct grid_ui_model* ui));
+PT_THREAD(grid_ui_bulk_conf_read(proto_pt_t* pt, struct grid_ui_model* ui));
+PT_THREAD(grid_ui_bulk_conf_store(proto_pt_t* pt, struct grid_ui_model* ui));
+PT_THREAD(grid_ui_bulk_conf_erase(proto_pt_t* pt, struct grid_ui_model* ui));
+PT_THREAD(grid_ui_bulk_nvm_erase(proto_pt_t* pt, struct grid_ui_model* ui));
 
 #endif /* GRID_UI_H */
