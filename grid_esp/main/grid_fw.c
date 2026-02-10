@@ -56,9 +56,6 @@
 
 #define LED_TASK_PRIORITY 2
 
-// NVM must not be preemted by Port task
-#define NVM_TASK_PRIORITY configMAX_PRIORITIES - 1
-
 // module task priority must be the lowest to ma it run most of the time
 #define PORT_TASK_PRIORITY 0 // same as idle
 

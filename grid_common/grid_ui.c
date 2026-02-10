@@ -428,6 +428,16 @@ void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstrin
 
 int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, uint8_t event_type, char* targetstring) {
 
+  if (grid_ui_bulk_in_progress(ui)) {
+    grid_platform_printf("grid_ui_event_recall_configuration: nvm busy\n");
+    return 1;
+  }
+
+  if (ui->page_activepage != page) {
+    grid_platform_printf("grid_ui_event_recall_configuration: inactive page\n");
+    return 1;
+  }
+
   struct grid_ui_element* ele = grid_ui_element_find(ui, element);
 
   if (!ele) {
@@ -442,38 +452,13 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
     return 1;
   }
 
-  if (ui->page_activepage == page) {
+  if (eve->cfg_default_flag) {
 
-    if (eve->cfg_default_flag) {
-
-      grid_ui_event_generate_actionstring(eve, targetstring);
-
-    } else {
-
-      grid_ui_event_get_actionstring(eve, targetstring);
-    }
+    grid_ui_event_generate_actionstring(eve, targetstring);
 
   } else {
 
-    if (!grid_ui_bulk_semaphore_try(ui)) {
-      grid_platform_printf("grid_ui_event_recall_configuration: nvm busy\n");
-      return 1;
-    }
-
-    struct grid_file_t handle = {0};
-    int status = grid_platform_find_actionstring_file(page, element, event_type, &handle);
-
-    if (status == 0) {
-
-      uint16_t size = grid_platform_get_file_size(&handle);
-      grid_platform_read_file(&handle, (uint8_t*)targetstring, size);
-
-    } else {
-
-      grid_ui_event_generate_actionstring(eve, targetstring);
-    }
-
-    grid_ui_bulk_semaphore_release(ui);
+    grid_ui_event_get_actionstring(eve, targetstring);
   }
 
   return 0;

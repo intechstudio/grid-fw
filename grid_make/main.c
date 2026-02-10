@@ -377,6 +377,7 @@ int main(void) {
 
   // Load page zero
   assert(grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL));
+  update_interrupt_mask_from_bulk_status();
   grid_ui_bulk_flush(&grid_ui_state);
 
   // grid_d51_nvm_toc_debug(&grid_d51_nvm_state);
