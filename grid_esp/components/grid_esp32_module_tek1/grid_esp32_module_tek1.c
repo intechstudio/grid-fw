@@ -29,11 +29,13 @@
 #include "grid_lua_api.h"
 
 #include "grid_esp32_adc.h"
+#include "grid_esp32_codec.h"
 #include "grid_esp32_encoder.h"
 
 // static const char* TAG = "module_tek1";
 
 static DRAM_ATTR uint8_t is_vsn_rev_h_8bit_hwcfg = 0;
+static DRAM_ATTR uint32_t codec_loopcounter = 0;
 
 #define GRID_MODULE_TEK1_POT_NUM 2
 
@@ -50,6 +52,11 @@ static struct grid_ui_element* DRAM_ATTR elements = NULL;
 void IRAM_ATTR vsn1l_process_analog(void* user) {
 
   static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {8, 9, 8, 10, 8, 11, -1, 12, 2, 0, 3, 1, 6, 4, 7, 5};
+
+  codec_loopcounter++;
+  if (codec_loopcounter >= 250) {
+    grid_esp32_codec_disable();
+  }
 
   assert(user);
 
@@ -83,6 +90,12 @@ void IRAM_ATTR vsn1l_process_analog(void* user) {
       new_endless_state[0].button_value = result->value;
       grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
       grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
+
+      struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENDLESS);
+      if (grid_ui_event_istriggered(eve)) {
+        grid_esp32_codec_enable();
+        codec_loopcounter = 0;
+      }
     } break;
     }
   } else if (mux_position < 13 && is_vsn_rev_h_8bit_hwcfg) {
@@ -116,6 +129,11 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
 
   static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {9, 8, 10, 8, 11, 8, 12, -1, 2, 0, 3, 1, 6, 4, 7, 5};
 
+  codec_loopcounter++;
+  if (codec_loopcounter >= 250) {
+    grid_esp32_codec_disable();
+  }
+
   assert(user);
 
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
@@ -148,6 +166,12 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
       new_endless_state[0].button_value = result->value;
       grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
       grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
+
+      struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENDLESS);
+      if (grid_ui_event_istriggered(eve)) {
+        grid_esp32_codec_enable();
+        codec_loopcounter = 0;
+      }
     } break;
     }
   } else if (mux_position < 13 && is_vsn_rev_h_8bit_hwcfg) {
@@ -350,4 +374,6 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
   grid_esp32_adc_mux_init(adc, 8);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
   grid_esp32_adc_start(adc, mux_dependent);
+
+  grid_esp32_codec_init();
 }
