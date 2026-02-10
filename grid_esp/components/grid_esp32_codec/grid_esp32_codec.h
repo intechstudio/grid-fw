@@ -21,6 +21,8 @@
 
 #include "freertos/semphr.h"
 
+#include "stb_hexwave.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,7 +31,7 @@ extern struct grid_esp32_codec_model grid_esp32_codec_state;
 
 struct grid_esp32_codec_model {
 
-  uint8_t foo;
+  HexWave osc;
 };
 
 void grid_esp32_codec_init(void);

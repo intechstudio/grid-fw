@@ -35,7 +35,6 @@
 // static const char* TAG = "module_tek1";
 
 static DRAM_ATTR uint8_t is_vsn_rev_h_8bit_hwcfg = 0;
-static DRAM_ATTR uint32_t codec_loopcounter = 0;
 
 #define GRID_MODULE_TEK1_POT_NUM 2
 
@@ -52,11 +51,6 @@ static struct grid_ui_element* DRAM_ATTR elements = NULL;
 void IRAM_ATTR vsn1l_process_analog(void* user) {
 
   static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {8, 9, 8, 10, 8, 11, -1, 12, 2, 0, 3, 1, 6, 4, 7, 5};
-
-  codec_loopcounter++;
-  if (codec_loopcounter >= 250) {
-    grid_esp32_codec_disable();
-  }
 
   assert(user);
 
@@ -91,10 +85,10 @@ void IRAM_ATTR vsn1l_process_analog(void* user) {
       grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
       grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
 
-      struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENDLESS);
-      if (grid_ui_event_istriggered(eve)) {
+      if (ui_button_state[mux_position].curr_out) {
         grid_esp32_codec_enable();
-        codec_loopcounter = 0;
+      } else {
+        grid_esp32_codec_disable();
       }
     } break;
     }
@@ -129,11 +123,6 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
 
   static DRAM_ATTR const uint8_t multiplexer_lookup[16] = {9, 8, 10, 8, 11, 8, 12, -1, 2, 0, 3, 1, 6, 4, 7, 5};
 
-  codec_loopcounter++;
-  if (codec_loopcounter >= 250) {
-    grid_esp32_codec_disable();
-  }
-
   assert(user);
 
   struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
@@ -167,10 +156,10 @@ void IRAM_ATTR vsn1r_process_analog(void* user) {
       grid_ui_button_store_input(ele, &ui_button_state[mux_position], result->value, 12);
       grid_ui_endless_store_input(ele, mux_position, 12, &new_endless_state[0], &old_endless_state[0]);
 
-      struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENDLESS);
-      if (grid_ui_event_istriggered(eve)) {
+      if (ui_button_state[mux_position].curr_out) {
         grid_esp32_codec_enable();
-        codec_loopcounter = 0;
+      } else {
+        grid_esp32_codec_disable();
       }
     } break;
     }
