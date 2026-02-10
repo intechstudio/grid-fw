@@ -17,6 +17,7 @@ idf_component_register(
         "../../../grid_common/grid_allocator.c"
         "../../../grid_common/grid_msg.c"
         "../../../grid_common/grid_noflash.c"
+        "../../../grid_common/grid_platform.c"
         "../../../grid_common/grid_decode.c"
         "../../../grid_common/grid_port.c"
         "../../../grid_common/grid_usb.c"

@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+extern void grid_platform_set_lfs(void* lfs);
+
 extern void* grid_platform_fopen(const char* pathname, const char* mode);
 
 extern int grid_platform_fclose(void* stream);

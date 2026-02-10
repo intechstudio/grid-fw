@@ -28,6 +28,7 @@ usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_allocator.o \
 ../grid_common/grid_msg.o \
 ../grid_common/grid_noflash.o \
+../grid_common/grid_platform.o \
 ../grid_common/grid_decode.o \
 ../grid_common/grid_port.o \
 ../grid_common/grid_usb.o \
@@ -118,6 +119,7 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_allocator.o" \
 "../grid_common/grid_msg.o" \
 "../grid_common/grid_noflash.o" \
+"../grid_common/grid_platform.o" \
 "../grid_common/grid_decode.o" \
 "../grid_common/grid_port.o" \
 "../grid_common/grid_usb.o" \
@@ -225,6 +227,7 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_allocator.d" \
 "../grid_common/grid_msg.d" \
 "../grid_common/grid_noflash.d" \
+"../grid_common/grid_platform.d" \
 "../grid_common/grid_decode.d" \
 "../grid_common/grid_port.d" \
 "../grid_common/grid_usb.d" \
