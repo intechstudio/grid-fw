@@ -22,30 +22,37 @@ struct grid_esp32_codec_model grid_esp32_codec_state;
 #define MAX_FRAMES 512
 
 #define FREQ_START 220.0
-#define FREQ_INCREMENT 2.0
+#define FREQ_INCREMENT_PER_SAMPLE 0.01
 #define FREQ_MAX 4000.0
 
 static i2s_chan_handle_t tx_chan;
 static double* double_buf = NULL;
 static double current_freq = FREQ_START;
+static uint8_t enabled = false;
 
 static IRAM_ATTR bool i2s_tx_sent_callback(i2s_chan_handle_t handle, i2s_event_data_t* event, void* user_ctx) {
 
   int num_frames = event->size / (TDM_SLOTS * sizeof(int16_t));
-
-  hexwave_generate_samples(double_buf, num_frames, &grid_esp32_codec_state.osc, current_freq / SAMPLE_RATE);
-
   int16_t* dst = (int16_t*)event->dma_buf;
+
+  if (!enabled) {
+    memset(dst, 0, event->size);
+    return false;
+  }
+
   for (int i = 0; i < num_frames; i++) {
-    int16_t sample = (int16_t)(double_buf[i] * 0x7FFF);
+    double sample_val;
+    hexwave_generate_samples(&sample_val, 1, &grid_esp32_codec_state.osc, current_freq / SAMPLE_RATE);
+
+    int16_t sample = (int16_t)(sample_val * 0x7FFF);
     for (int s = 0; s < TDM_SLOTS; s++) {
       dst[i * TDM_SLOTS + s] = sample;
     }
-  }
 
-  current_freq += FREQ_INCREMENT;
-  if (current_freq > FREQ_MAX) {
-    current_freq = FREQ_START;
+    current_freq += FREQ_INCREMENT_PER_SAMPLE;
+    if (current_freq > FREQ_MAX) {
+      current_freq = FREQ_START;
+    }
   }
 
   return false;
@@ -121,23 +128,18 @@ void grid_esp32_codec_init(void) {
   }
 
   free(preload_buf);
-}
 
-uint8_t enabled = false;
+  ESP_ERROR_CHECK(i2s_channel_enable(tx_chan));
+}
 
 void grid_esp32_codec_enable(void) {
   if (enabled == true) {
     return;
   }
-  enabled = true;
   current_freq = FREQ_START;
-  ESP_ERROR_CHECK(i2s_channel_enable(tx_chan));
+  enabled = true;
 }
 
 void grid_esp32_codec_disable(void) {
-  if (enabled == false) {
-    return;
-  }
   enabled = false;
-  i2s_channel_disable(tx_chan);
 }
