@@ -214,7 +214,7 @@
 #define STB_INCLUDE_STB_HEXWAVE_H
 
 #ifndef STB_HEXWAVE_MAX_BLEP_LENGTH
-#define STB_HEXWAVE_MAX_BLEP_LENGTH   64 // good enough for anybody
+#define STB_HEXWAVE_MAX_BLEP_LENGTH 64 // good enough for anybody
 #endif
 
 #ifdef STB_HEXWAVE_STATIC
@@ -225,7 +225,7 @@
 
 typedef struct HexWave HexWave;
 
-STB_HEXWAVE_DEF void hexwave_init(int width, int oversample, double *user_buffer);
+STB_HEXWAVE_DEF void hexwave_init(int width, int oversample, double* user_buffer);
 //         width: size of BLEP, from 4..64, larger is slower & more memory but less aliasing
 //    oversample: 2+, number of subsample positions, larger uses more memory but less noise
 //   user_buffer: optional, if provided the library will perform no allocations.
@@ -235,10 +235,10 @@ STB_HEXWAVE_DEF void hexwave_init(int width, int oversample, double *user_buffer
 //
 // width can be larger than 64 if you define STB_HEXWAVE_MAX_BLEP_LENGTH to a larger value
 
-STB_HEXWAVE_DEF void hexwave_shutdown(double *user_buffer);
+STB_HEXWAVE_DEF void hexwave_shutdown(double* user_buffer);
 //       user_buffer: pass in same parameter as passed to hexwave_init
 
-STB_HEXWAVE_DEF void hexwave_create(HexWave *hex, int reflect, double peak_time, double half_height, double zero_wait);
+STB_HEXWAVE_DEF void hexwave_create(HexWave* hex, int reflect, double peak_time, double half_height, double zero_wait);
 // see docs above for description
 //
 //   reflect is tested as 0 or non-zero
@@ -246,31 +246,29 @@ STB_HEXWAVE_DEF void hexwave_create(HexWave *hex, int reflect, double peak_time,
 //   half_height is not clamped
 //   zero_wait is clamped to 0..1
 
-STB_HEXWAVE_DEF void hexwave_change(HexWave *hex, int reflect, double peak_time, double half_height, double zero_wait);
+STB_HEXWAVE_DEF void hexwave_change(HexWave* hex, int reflect, double peak_time, double half_height, double zero_wait);
 // see docs
 
-STB_HEXWAVE_DEF void hexwave_generate_samples(double *output, int num_samples, HexWave *hex, double freq);
+STB_HEXWAVE_DEF void hexwave_generate_samples(double* output, int num_samples, HexWave* hex, double freq);
 //            output: buffer where the library will store generated floating point audio samples
 // number_of_samples: the number of audio samples to generate
 //               osc: pointer to a Hexwave initialized with 'hexwave_create'
 //   oscillator_freq: frequency of the oscillator divided by the sample rate
 
 // private:
-typedef struct
-{
-   int   reflect;
-   double peak_time;
-   double zero_wait;
-   double half_height;
+typedef struct {
+  int reflect;
+  double peak_time;
+  double zero_wait;
+  double half_height;
 } HexWaveParameters;
 
-struct HexWave
-{
-   double t, prev_dt;
-   HexWaveParameters current, pending;
-   int have_pending;
-   double buffer[STB_HEXWAVE_MAX_BLEP_LENGTH];
-}; 
+struct HexWave {
+  double t, prev_dt;
+  HexWaveParameters current, pending;
+  int have_pending;
+  double buffer[STB_HEXWAVE_MAX_BLEP_LENGTH];
+};
 #endif
 
 #ifdef STB_HEXWAVE_IMPLEMENTATION
@@ -279,361 +277,345 @@ struct HexWave
 #include <stdlib.h> // malloc,free
 #endif
 
-#include <string.h> // memset,memcpy,memmove
 #include <math.h>   // sin,cos,fabs
+#include <string.h> // memset,memcpy,memmove
 
-#define hexwave_clamp(v,a,b)   ((v) < (a) ? (a) : (v) > (b) ? (b) : (v))
+#define hexwave_clamp(v, a, b) ((v) < (a) ? (a) : (v) > (b) ? (b) : (v))
 
-STB_HEXWAVE_DEF void hexwave_change(HexWave *hex, int reflect, double peak_time, double half_height, double zero_wait)
-{
-   hex->pending.reflect     = reflect;
-   hex->pending.peak_time   = hexwave_clamp(peak_time,0,1);
-   hex->pending.half_height = half_height;
-   hex->pending.zero_wait   = hexwave_clamp(zero_wait,0,1);
-   // put a barrier here to allow changing from a different thread than the generator
-   hex->have_pending        = 1;
+STB_HEXWAVE_DEF void hexwave_change(HexWave* hex, int reflect, double peak_time, double half_height, double zero_wait) {
+  hex->pending.reflect = reflect;
+  hex->pending.peak_time = hexwave_clamp(peak_time, 0, 1);
+  hex->pending.half_height = half_height;
+  hex->pending.zero_wait = hexwave_clamp(zero_wait, 0, 1);
+  // put a barrier here to allow changing from a different thread than the generator
+  hex->have_pending = 1;
 }
 
-STB_HEXWAVE_DEF void hexwave_create(HexWave *hex, int reflect, double peak_time, double half_height, double zero_wait)
-{
-   memset(hex, 0, sizeof(*hex));
-   hexwave_change(hex, reflect, peak_time, half_height, zero_wait);
-   hex->current = hex->pending;
-   hex->have_pending = 0;
-   hex->t = 0;
-   hex->prev_dt = 0;
+STB_HEXWAVE_DEF void hexwave_create(HexWave* hex, int reflect, double peak_time, double half_height, double zero_wait) {
+  memset(hex, 0, sizeof(*hex));
+  hexwave_change(hex, reflect, peak_time, half_height, zero_wait);
+  hex->current = hex->pending;
+  hex->have_pending = 0;
+  hex->t = 0;
+  hex->prev_dt = 0;
 }
 
-static struct
-{
-   int width;       // width of fixup in samples
-   int oversample;  // number of oversampled versions (there's actually one more to allow lerpign)
-   double *blep;
-   double *blamp;
+static struct {
+  int width;      // width of fixup in samples
+  int oversample; // number of oversampled versions (there's actually one more to allow lerpign)
+  double* blep;
+  double* blamp;
 } hexblep;
 
-static void hex_add_oversampled_bleplike(double *output, double time_since_transition, double scale, double *data)
-{
-   double *d1,*d2;
-   double lerpweight;
-   int i, bw = hexblep.width;
+static void hex_add_oversampled_bleplike(double* output, double time_since_transition, double scale, double* data) {
+  double *d1, *d2;
+  double lerpweight;
+  int i, bw = hexblep.width;
 
-   int slot = (int) (time_since_transition * hexblep.oversample);
-   if (slot >= hexblep.oversample)
-      slot = hexblep.oversample-1; // clamp in case the floats overshoot
+  int slot = (int)(time_since_transition * hexblep.oversample);
+  if (slot >= hexblep.oversample)
+    slot = hexblep.oversample - 1; // clamp in case the floats overshoot
 
-   d1 = &data[ slot   *bw];
-   d2 = &data[(slot+1)*bw];
+  d1 = &data[slot * bw];
+  d2 = &data[(slot + 1) * bw];
 
-   lerpweight = time_since_transition * hexblep.oversample - slot;
-   for (i=0; i < bw; ++i)
-      output[i] += scale * (d1[i] + (d2[i]-d1[i])*lerpweight);
+  lerpweight = time_since_transition * hexblep.oversample - slot;
+  for (i = 0; i < bw; ++i)
+    output[i] += scale * (d1[i] + (d2[i] - d1[i]) * lerpweight);
 }
 
-static void hex_blep (double *output, double time_since_transition, double scale)
-{
-   hex_add_oversampled_bleplike(output, time_since_transition, scale, hexblep.blep);
-}
+static void hex_blep(double* output, double time_since_transition, double scale) { hex_add_oversampled_bleplike(output, time_since_transition, scale, hexblep.blep); }
 
-static void hex_blamp(double *output, double time_since_transition, double scale)
-{
-   hex_add_oversampled_bleplike(output, time_since_transition, scale, hexblep.blamp);
-}
+static void hex_blamp(double* output, double time_since_transition, double scale) { hex_add_oversampled_bleplike(output, time_since_transition, scale, hexblep.blamp); }
 
-typedef struct
-{
-   double t,v,s; // time, value, slope
+typedef struct {
+  double t, v, s; // time, value, slope
 } hexvert;
 
 // each half of the waveform needs 4 vertices to represent 3 line
 // segments, plus 1 more for wraparound
-static void hexwave_generate_linesegs(hexvert vert[9], HexWave *hex, double dt)
-{
-   int j;
-   double min_len = dt / 256.0;
+static void hexwave_generate_linesegs(hexvert vert[9], HexWave* hex, double dt) {
+  int j;
+  double min_len = dt / 256.0;
 
-   vert[0].t = 0;
-   vert[0].v = 0;
-   vert[1].t = hex->current.zero_wait*0.5f;
-   vert[1].v = 0;
-   vert[2].t = 0.5f*hex->current.peak_time + vert[1].t*(1-hex->current.peak_time);
-   vert[2].v = 1;
-   vert[3].t = 0.5f;
-   vert[3].v = hex->current.half_height;
+  vert[0].t = 0;
+  vert[0].v = 0;
+  vert[1].t = hex->current.zero_wait * 0.5f;
+  vert[1].v = 0;
+  vert[2].t = 0.5f * hex->current.peak_time + vert[1].t * (1 - hex->current.peak_time);
+  vert[2].v = 1;
+  vert[3].t = 0.5f;
+  vert[3].v = hex->current.half_height;
 
-   if (hex->current.reflect) {
-      for (j=4; j <= 7; ++j) {
-         vert[j].t = 1 -  vert[7-j].t;
-         vert[j].v =    - vert[7-j].v;
-      }
-   } else {
-      for (j=4; j <= 7; ++j) {
-         vert[j].t =  0.5f +  vert[j-4].t;
-         vert[j].v =        - vert[j-4].v;
-      }
-   }
-   vert[8].t = 1;
-   vert[8].v = 0;
+  if (hex->current.reflect) {
+    for (j = 4; j <= 7; ++j) {
+      vert[j].t = 1 - vert[7 - j].t;
+      vert[j].v = -vert[7 - j].v;
+    }
+  } else {
+    for (j = 4; j <= 7; ++j) {
+      vert[j].t = 0.5f + vert[j - 4].t;
+      vert[j].v = -vert[j - 4].v;
+    }
+  }
+  vert[8].t = 1;
+  vert[8].v = 0;
 
-   for (j=0; j < 8; ++j) {
-      if (vert[j+1].t <= vert[j].t + min_len) {
-          // if change takes place over less than a fraction of a sample treat as discontinuity
-          //
-          // otherwise the slope computation can blow up to arbitrarily large and we
-          // try to generate a huge BLAMP and the result is wrong.
-          // 
-          // why does this happen if the math is right? i believe if done perfectly,
-          // the two BLAMPs on either side of the slope would cancel out, but our
-          // BLAMPs have only limited sub-sample precision and limited integration
-          // accuracy. or maybe it's just the math blowing up w/ floating point precision
-          // limits as we try to make x * (1/x) cancel out
-          //
-          // min_len verified artifact-free even near nyquist with only oversample=4
-         vert[j+1].t = vert[j].t;
-      }
-   }
+  for (j = 0; j < 8; ++j) {
+    if (vert[j + 1].t <= vert[j].t + min_len) {
+      // if change takes place over less than a fraction of a sample treat as discontinuity
+      //
+      // otherwise the slope computation can blow up to arbitrarily large and we
+      // try to generate a huge BLAMP and the result is wrong.
+      //
+      // why does this happen if the math is right? i believe if done perfectly,
+      // the two BLAMPs on either side of the slope would cancel out, but our
+      // BLAMPs have only limited sub-sample precision and limited integration
+      // accuracy. or maybe it's just the math blowing up w/ floating point precision
+      // limits as we try to make x * (1/x) cancel out
+      //
+      // min_len verified artifact-free even near nyquist with only oversample=4
+      vert[j + 1].t = vert[j].t;
+    }
+  }
 
-   if (vert[8].t != 1.0f) {
-      // if the above fixup moved the endpoint away from 1.0, move it back,
-      // along with any other vertices that got moved to the same time
-      double t = vert[8].t;
-      for (j=5; j <= 8; ++j)
-         if (vert[j].t == t)
-            vert[j].t = 1.0f;
-   }
+  if (vert[8].t != 1.0f) {
+    // if the above fixup moved the endpoint away from 1.0, move it back,
+    // along with any other vertices that got moved to the same time
+    double t = vert[8].t;
+    for (j = 5; j <= 8; ++j)
+      if (vert[j].t == t)
+        vert[j].t = 1.0f;
+  }
 
-   // compute the exact slopes from the final fixed-up positions
-   for (j=0; j < 8; ++j)
-      if (vert[j+1].t == vert[j].t)
-         vert[j].s = 0;
+  // compute the exact slopes from the final fixed-up positions
+  for (j = 0; j < 8; ++j)
+    if (vert[j + 1].t == vert[j].t)
+      vert[j].s = 0;
+    else
+      vert[j].s = (vert[j + 1].v - vert[j].v) / (vert[j + 1].t - vert[j].t);
+
+  // wraparound at end
+  vert[8].t = 1;
+  vert[8].v = vert[0].v;
+  vert[8].s = vert[0].s;
+}
+
+STB_HEXWAVE_DEF void hexwave_generate_samples(double* output, int num_samples, HexWave* hex, double freq) {
+  hexvert vert[9];
+  int pass, i, j;
+  double t = hex->t;
+  double temp_output[2 * STB_HEXWAVE_MAX_BLEP_LENGTH];
+  int buffered_length = sizeof(double) * hexblep.width;
+  double dt = fabs(freq);
+  double recip_dt = (dt == 0.0) ? 0.0 : 1.0 / dt;
+
+  int halfw = hexblep.width / 2;
+  // all sample times are biased by halfw to leave room for BLEP/BLAMP to go back in time
+
+  if (num_samples <= 0)
+    return;
+
+  // convert parameters to times and slopes
+  hexwave_generate_linesegs(vert, hex, dt);
+
+  if (hex->prev_dt != dt) {
+    // if frequency changes, add a fixup at the derivative discontinuity starting at now
+    double slope;
+    for (j = 1; j < 6; ++j)
+      if (t < vert[j].t)
+        break;
+    slope = vert[j].s;
+    if (slope != 0)
+      hex_blamp(output, 0, (dt - hex->prev_dt) * slope);
+    hex->prev_dt = dt;
+  }
+
+  // copy the buffered data from last call and clear the rest of the output array
+  memset(output, 0, sizeof(double) * num_samples);
+  memset(temp_output, 0, 2 * hexblep.width * sizeof(double));
+
+  if (num_samples >= hexblep.width) {
+    memcpy(output, hex->buffer, buffered_length);
+  } else {
+    // if the output is shorter than hexblep.width, we do all synthesis to temp_output
+    memcpy(temp_output, hex->buffer, buffered_length);
+  }
+
+  for (pass = 0; pass < 2; ++pass) {
+    int i0, i1;
+    double* out;
+
+    // we want to simulate having one buffer that is num_output + hexblep.width
+    // samples long, without putting that requirement on the user, and without
+    // allocating a temp buffer that's as long as the whole thing. so we use two
+    // overlapping buffers, one the user's buffer and one a fixed-length temp
+    // buffer.
+
+    if (pass == 0) {
+      if (num_samples < hexblep.width)
+        continue;
+      // run as far as we can without overwriting the end of the user's buffer
+      out = output;
+      i0 = 0;
+      i1 = num_samples - hexblep.width;
+    } else {
+      // generate the rest into a temp buffer
+      out = temp_output;
+      i0 = 0;
+      if (num_samples >= hexblep.width)
+        i1 = hexblep.width;
       else
-         vert[j].s = (vert[j+1].v - vert[j].v) / (vert[j+1].t - vert[j].t);
+        i1 = num_samples;
+    }
 
-   // wraparound at end
-   vert[8].t = 1;
-   vert[8].v = vert[0].v;
-   vert[8].s = vert[0].s;
+    // determine current segment
+    for (j = 0; j < 8; ++j)
+      if (t < vert[j + 1].t)
+        break;
+
+    i = i0;
+    for (;;) {
+      while (t < vert[j + 1].t) {
+        if (i == i1)
+          goto done;
+        out[i + halfw] += vert[j].v + vert[j].s * (t - vert[j].t);
+        t += dt;
+        ++i;
+      }
+      // transition from lineseg starting at j to lineseg starting at j+1
+
+      if (vert[j].t == vert[j + 1].t)
+        hex_blep(out + i, recip_dt * (t - vert[j + 1].t), (vert[j + 1].v - vert[j].v));
+      hex_blamp(out + i, recip_dt * (t - vert[j + 1].t), dt * (vert[j + 1].s - vert[j].s));
+      ++j;
+
+      if (j == 8) {
+        // change to different waveform if there's a change pending
+        j = 0;
+        t -= 1.0; // t was >= 1.f if j==8
+        if (hex->have_pending) {
+          double prev_s0 = vert[j].s;
+          double prev_v0 = vert[j].v;
+          hex->current = hex->pending;
+          hex->have_pending = 0;
+          hexwave_generate_linesegs(vert, hex, dt);
+          // the following never occurs with this oscillator, but it makes
+          // the code work in more general cases
+          if (vert[j].v != prev_v0)
+            hex_blep(out + i, recip_dt * t, (vert[j].v - prev_v0));
+          if (vert[j].s != prev_s0)
+            hex_blamp(out + i, recip_dt * t, dt * (vert[j].s - prev_s0));
+        }
+      }
+    }
+  done:;
+  }
+
+  // at this point, we've written output[] and temp_output[]
+  if (num_samples >= hexblep.width) {
+    // the first half of temp[] overlaps the end of output, the second half will be the new start overlap
+    for (i = 0; i < hexblep.width; ++i)
+      output[num_samples - hexblep.width + i] += temp_output[i];
+    memcpy(hex->buffer, temp_output + hexblep.width, buffered_length);
+  } else {
+    for (i = 0; i < num_samples; ++i)
+      output[i] = temp_output[i];
+    memcpy(hex->buffer, temp_output + num_samples, buffered_length);
+  }
+
+  hex->t = t;
 }
 
-STB_HEXWAVE_DEF void hexwave_generate_samples(double *output, int num_samples, HexWave *hex, double freq)
-{
-   hexvert vert[9];
-   int pass,i,j;
-   double t = hex->t;
-   double temp_output[2*STB_HEXWAVE_MAX_BLEP_LENGTH];
-   int buffered_length = sizeof(double)*hexblep.width;
-   double dt = fabs(freq);
-   double recip_dt = (dt == 0.0) ? 0.0 : 1.0 / dt;
-
-   int halfw = hexblep.width/2;
-   // all sample times are biased by halfw to leave room for BLEP/BLAMP to go back in time
-
-   if (num_samples <= 0)
-      return;
-
-   // convert parameters to times and slopes
-   hexwave_generate_linesegs(vert, hex, dt);
-
-   if (hex->prev_dt != dt) {
-      // if frequency changes, add a fixup at the derivative discontinuity starting at now
-      double slope;
-      for (j=1; j < 6; ++j)
-         if (t < vert[j].t)
-            break;
-      slope = vert[j].s;
-      if (slope != 0)
-         hex_blamp(output, 0, (dt - hex->prev_dt)*slope);
-      hex->prev_dt = dt;
-   }
-
-   // copy the buffered data from last call and clear the rest of the output array
-   memset(output, 0, sizeof(double)*num_samples);
-   memset(temp_output, 0, 2*hexblep.width*sizeof(double));
-
-   if (num_samples >= hexblep.width) {
-      memcpy(output, hex->buffer, buffered_length);
-   } else {
-      // if the output is shorter than hexblep.width, we do all synthesis to temp_output
-      memcpy(temp_output, hex->buffer, buffered_length);
-   }
-
-   for (pass=0; pass < 2; ++pass) {
-      int i0,i1;
-      double *out;
-
-      // we want to simulate having one buffer that is num_output + hexblep.width
-      // samples long, without putting that requirement on the user, and without
-      // allocating a temp buffer that's as long as the whole thing. so we use two
-      // overlapping buffers, one the user's buffer and one a fixed-length temp
-      // buffer.
-
-      if (pass == 0) {
-         if (num_samples < hexblep.width)
-            continue;
-         // run as far as we can without overwriting the end of the user's buffer 
-         out = output;
-         i0 = 0;
-         i1 = num_samples - hexblep.width;
-      } else {
-         // generate the rest into a temp buffer
-         out = temp_output;
-         i0 = 0;
-         if (num_samples >= hexblep.width)
-            i1 = hexblep.width;
-         else
-            i1 = num_samples;
-      }
-
-      // determine current segment
-      for (j=0; j < 8; ++j)
-         if (t < vert[j+1].t)                                  
-            break;
-
-      i = i0;
-      for(;;) {
-         while (t < vert[j+1].t) {
-            if (i == i1)
-               goto done;
-            out[i+halfw] += vert[j].v + vert[j].s*(t - vert[j].t);
-            t += dt;
-            ++i;
-         }
-         // transition from lineseg starting at j to lineseg starting at j+1
-
-         if (vert[j].t == vert[j+1].t)
-            hex_blep(out+i, recip_dt*(t-vert[j+1].t), (vert[j+1].v - vert[j].v));
-         hex_blamp(out+i, recip_dt*(t-vert[j+1].t), dt*(vert[j+1].s - vert[j].s));
-         ++j;
-
-         if (j == 8) {
-            // change to different waveform if there's a change pending
-            j = 0;
-            t -= 1.0; // t was >= 1.f if j==8
-            if (hex->have_pending) {
-               double prev_s0 = vert[j].s;
-               double prev_v0 = vert[j].v;
-               hex->current = hex->pending;
-               hex->have_pending = 0;
-               hexwave_generate_linesegs(vert, hex, dt);
-               // the following never occurs with this oscillator, but it makes
-               // the code work in more general cases
-               if (vert[j].v != prev_v0)
-                  hex_blep (out+i, recip_dt*t,    (vert[j].v - prev_v0));
-               if (vert[j].s != prev_s0)
-                  hex_blamp(out+i, recip_dt*t, dt*(vert[j].s - prev_s0));
-            }
-         }
-      }
-     done:
-      ;
-   }
-
-   // at this point, we've written output[] and temp_output[]
-   if (num_samples >= hexblep.width) {
-      // the first half of temp[] overlaps the end of output, the second half will be the new start overlap
-      for (i=0; i < hexblep.width; ++i)
-         output[num_samples-hexblep.width + i] += temp_output[i];
-      memcpy(hex->buffer, temp_output+hexblep.width, buffered_length);
-   } else {
-      for (i=0; i < num_samples; ++i)
-         output[i] = temp_output[i];
-      memcpy(hex->buffer, temp_output+num_samples, buffered_length);
-   }
-
-   hex->t = t;
-}
-
-STB_HEXWAVE_DEF void hexwave_shutdown(double *user_buffer)
-{
-   #ifndef STB_HEXWAVE_NO_ALLOCATION
-   if (user_buffer != 0) {
-      free(hexblep.blep);
-      free(hexblep.blamp);
-   }
-   #endif
+STB_HEXWAVE_DEF void hexwave_shutdown(double* user_buffer) {
+#ifndef STB_HEXWAVE_NO_ALLOCATION
+  if (user_buffer != 0) {
+    free(hexblep.blep);
+    free(hexblep.blamp);
+  }
+#endif
 }
 
 // buffer should be NULL or must be 4*(width*(oversample+1)*2 +
-STB_HEXWAVE_DEF void hexwave_init(int width, int oversample, double *user_buffer)
-{
-   int halfwidth = width/2;
-   int half = halfwidth*oversample;
-   int blep_buffer_count = width*(oversample+1);
-   int n = 2*half+1;
+STB_HEXWAVE_DEF void hexwave_init(int width, int oversample, double* user_buffer) {
+  int halfwidth = width / 2;
+  int half = halfwidth * oversample;
+  int blep_buffer_count = width * (oversample + 1);
+  int n = 2 * half + 1;
 #ifdef STB_HEXWAVE_NO_ALLOCATION
-   double *buffers = user_buffer;
+  double* buffers = user_buffer;
 #else
-   double *buffers = user_buffer ? user_buffer : (double *) malloc(sizeof(double) * n * 2);
+  double* buffers = user_buffer ? user_buffer : (double*)malloc(sizeof(double) * n * 2);
 #endif
-   double *step    = buffers+0*n;
-   double *ramp    = buffers+1*n;
-   double *blep_buffer, *blamp_buffer;
-   double integrate_impulse=0, integrate_step=0;
-   int i,j;
+  double* step = buffers + 0 * n;
+  double* ramp = buffers + 1 * n;
+  double *blep_buffer, *blamp_buffer;
+  double integrate_impulse = 0, integrate_step = 0;
+  int i, j;
 
-   if (width > STB_HEXWAVE_MAX_BLEP_LENGTH)
-      width = STB_HEXWAVE_MAX_BLEP_LENGTH;
+  if (width > STB_HEXWAVE_MAX_BLEP_LENGTH)
+    width = STB_HEXWAVE_MAX_BLEP_LENGTH;
 
-   if (user_buffer == 0) {
-      #ifndef STB_HEXWAVE_NO_ALLOCATION
-      blep_buffer  = (double *) malloc(sizeof(double)*blep_buffer_count);
-      blamp_buffer = (double *) malloc(sizeof(double)*blep_buffer_count);
-      #endif
-   } else {
-      blep_buffer  = ramp+n;
-      blamp_buffer = blep_buffer + blep_buffer_count;
-   }
+  if (user_buffer == 0) {
+#ifndef STB_HEXWAVE_NO_ALLOCATION
+    blep_buffer = (double*)malloc(sizeof(double) * blep_buffer_count);
+    blamp_buffer = (double*)malloc(sizeof(double) * blep_buffer_count);
+#endif
+  } else {
+    blep_buffer = ramp + n;
+    blamp_buffer = blep_buffer + blep_buffer_count;
+  }
 
-   // compute BLEP and BLAMP by integerating windowed sinc
-   for (i=0; i < n; ++i) {
-      for (j=0; j < 16; ++j) {
-         double sinc_t = 3.141592653589793 * (i-half) / oversample;
-         double sinc   = (i==half) ? 1.0 : sin(sinc_t) / (sinc_t);
-         double wt     = 2.0*3.141592653589793 * i / (n-1);
-         double window = 0.355768 - 0.487396*cos(wt) + 0.144232*cos(2*wt) - 0.012604*cos(3*wt); // Nuttall
-         double value       =         window * sinc;
-         integrate_impulse +=         value/16;
-         integrate_step    +=         integrate_impulse/16;
-      }
-      step[i]            = integrate_impulse;
-      ramp[i]            = integrate_step;
-   }
+  // compute BLEP and BLAMP by integerating windowed sinc
+  for (i = 0; i < n; ++i) {
+    for (j = 0; j < 16; ++j) {
+      double sinc_t = 3.141592653589793 * (i - half) / oversample;
+      double sinc = (i == half) ? 1.0 : sin(sinc_t) / (sinc_t);
+      double wt = 2.0 * 3.141592653589793 * i / (n - 1);
+      double window = 0.355768 - 0.487396 * cos(wt) + 0.144232 * cos(2 * wt) - 0.012604 * cos(3 * wt); // Nuttall
+      double value = window * sinc;
+      integrate_impulse += value / 16;
+      integrate_step += integrate_impulse / 16;
+    }
+    step[i] = integrate_impulse;
+    ramp[i] = integrate_step;
+  }
 
-   // renormalize
-   for (i=0; i < n; ++i) {
-      step[i] = step[i] * (1.0       / step[n-1]); // step needs to reach to 1.0
-      ramp[i] = ramp[i] * (halfwidth / ramp[n-1]); // ramp needs to become a slope of 1.0 after oversampling
-   }
+  // renormalize
+  for (i = 0; i < n; ++i) {
+    step[i] = step[i] * (1.0 / step[n - 1]);       // step needs to reach to 1.0
+    ramp[i] = ramp[i] * (halfwidth / ramp[n - 1]); // ramp needs to become a slope of 1.0 after oversampling
+  }
 
-   // deinterleave to allow efficient interpolation e.g. w/SIMD
-   for (j=0; j <= oversample; ++j) {
-      for (i=0; i < width; ++i) {
-         blep_buffer [j*width+i] = step[j+i*oversample];
-         blamp_buffer[j*width+i] = ramp[j+i*oversample];
-      }
-   }
+  // deinterleave to allow efficient interpolation e.g. w/SIMD
+  for (j = 0; j <= oversample; ++j) {
+    for (i = 0; i < width; ++i) {
+      blep_buffer[j * width + i] = step[j + i * oversample];
+      blamp_buffer[j * width + i] = ramp[j + i * oversample];
+    }
+  }
 
-   // subtract out the naive waveform; note we can't do this to the raw data
-   // above, because we want the discontinuity to be in a different locations
-   // for j=0 and j=oversample (which exists to provide something to interpolate against)
-   for (j=0; j <= oversample; ++j) {
-      // subtract step
-      for (i=halfwidth; i < width; ++i)
-         blep_buffer [j*width+i] -= 1.0f;
-      // subtract ramp
-      for (i=halfwidth; i < width; ++i)
-         blamp_buffer[j*width+i] -= (j+i*oversample-half)*(1.0f/oversample);
-   }
+  // subtract out the naive waveform; note we can't do this to the raw data
+  // above, because we want the discontinuity to be in a different locations
+  // for j=0 and j=oversample (which exists to provide something to interpolate against)
+  for (j = 0; j <= oversample; ++j) {
+    // subtract step
+    for (i = halfwidth; i < width; ++i)
+      blep_buffer[j * width + i] -= 1.0f;
+    // subtract ramp
+    for (i = halfwidth; i < width; ++i)
+      blamp_buffer[j * width + i] -= (j + i * oversample - half) * (1.0f / oversample);
+  }
 
-   hexblep.blep  = blep_buffer;
-   hexblep.blamp = blamp_buffer;
-   hexblep.width = width;
-   hexblep.oversample = oversample;
+  hexblep.blep = blep_buffer;
+  hexblep.blamp = blamp_buffer;
+  hexblep.width = width;
+  hexblep.oversample = oversample;
 
-   #ifndef STB_HEXWAVE_NO_ALLOCATION
-   if (user_buffer == 0)
-      free(buffers);
-   #endif
+#ifndef STB_HEXWAVE_NO_ALLOCATION
+  if (user_buffer == 0)
+    free(buffers);
+#endif
 }
 #endif // STB_HEXWAVE_IMPLEMENTATION
 

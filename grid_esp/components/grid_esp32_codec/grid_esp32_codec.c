@@ -8,6 +8,7 @@
 #include "grid_esp32_codec.h"
 
 #include "driver/gpio.h"
+#include "grid_esp32_platform.h"
 
 struct grid_esp32_codec_model grid_esp32_codec_state;
 
@@ -22,8 +23,12 @@ struct grid_esp32_codec_model grid_esp32_codec_state;
 #define MAX_FRAMES 512
 
 #define FREQ_START 220.0
-#define FREQ_INCREMENT_PER_SAMPLE 0.01
+#define FREQ_INCREMENT_PER_SAMPLE 0.04
 #define FREQ_MAX 4000.0
+
+uint32_t cycles_elapsed = 0;
+uint32_t us_elapsed = 0;
+int num_frames = 0;
 
 static i2s_chan_handle_t tx_chan;
 static double* double_buf = NULL;
@@ -32,13 +37,15 @@ static uint8_t enabled = false;
 
 static IRAM_ATTR bool i2s_tx_sent_callback(i2s_chan_handle_t handle, i2s_event_data_t* event, void* user_ctx) {
 
-  int num_frames = event->size / (TDM_SLOTS * sizeof(int16_t));
+  num_frames = event->size / (TDM_SLOTS * sizeof(int16_t));
   int16_t* dst = (int16_t*)event->dma_buf;
 
   if (!enabled) {
     memset(dst, 0, event->size);
     return false;
   }
+
+  uint32_t cycles_start = grid_platform_get_cycles();
 
   for (int i = 0; i < num_frames; i++) {
     double sample_val;
@@ -54,6 +61,9 @@ static IRAM_ATTR bool i2s_tx_sent_callback(i2s_chan_handle_t handle, i2s_event_d
       current_freq = FREQ_START;
     }
   }
+
+  cycles_elapsed = grid_platform_get_cycles() - cycles_start;
+  us_elapsed = cycles_elapsed / grid_platform_get_cycles_per_us();
 
   return false;
 }
@@ -140,6 +150,4 @@ void grid_esp32_codec_enable(void) {
   enabled = true;
 }
 
-void grid_esp32_codec_disable(void) {
-  enabled = false;
-}
+void grid_esp32_codec_disable(void) { enabled = false; }
