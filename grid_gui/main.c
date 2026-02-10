@@ -15,6 +15,19 @@
 #include "lua.h"
 #include "lualib.h"
 
+void* grid_platform_fopen(const char* pathname, const char* mode) { return NULL; }
+int grid_platform_fclose(void* stream) { return 0; }
+size_t grid_platform_fwrite(const void* ptr, size_t size, size_t nmemb, void* stream) { return 0; }
+size_t grid_platform_fread(void* ptr, size_t size, size_t nmemb, void* stream) { return 0; }
+long grid_platform_ftell(void* stream) { return 0; }
+int grid_platform_fseek(void* stream, long offset, int whence) { return 0; }
+void grid_platform_clearerr(void* stream) {}
+int grid_platform_ferror(void* stream) { return 0; }
+int grid_platform_getc(void* stream) { return 0; }
+int grid_platform_ungetc(int c, void* stream) { return 0; }
+int grid_platform_fflush(void* stream) { return 0; }
+int grid_platform_remove(const char* pathname) { return 0; }
+
 void grid_platform_delay_ms(uint32_t delay_milliseconds) { return; }
 void grid_platform_printf(char const* fmt, ...) {
 
