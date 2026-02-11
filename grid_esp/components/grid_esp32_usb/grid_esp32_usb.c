@@ -54,22 +54,8 @@ void tud_midi_rx_cb(uint8_t itf) {
 
       // ets_printf("Read, Data: %02x %02x %02x %02x\r\n", packet[0], packet[1], packet[2], packet[3]);
 
-      uint8_t channel = packet[1] & 0x0f;
-      uint8_t command = packet[1] & 0xf0;
-      uint8_t param1 = packet[2];
-      uint8_t param2 = packet[3];
-
-      // grid_port_debug_printf("decoded: %d %d %d %d", channel, command,
-      // param1, param2);
-
-      struct grid_midi_event_desc midi_ev;
-
-      midi_ev.byte0 = channel;
-      midi_ev.byte1 = command;
-      midi_ev.byte2 = param1;
-      midi_ev.byte3 = param2;
-
-      grid_midi_rx_push(midi_ev);
+      // Pass raw USB MIDI packet bytes to state machine
+      grid_midi_rx_push(packet[0], packet[1], packet[2], packet[3]);
     }
   }
 }

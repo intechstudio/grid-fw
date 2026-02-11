@@ -183,19 +183,6 @@ void grid_pico_uart_port_detach_tx(struct grid_pico_uart_port* port) {
   port->uart_tx_bucket = NULL;
 }
 
-bool pico_bkt_terminated(struct pico_bkt_t* bkt) {
-
-  if (bkt->index < 4) {
-    return false;
-  }
-
-  bool ends_with_newline = bkt->buf[bkt->index - 1] == '\n';
-
-  bool eot_before_checksum = bkt->buf[bkt->index - 4] == GRID_CONST_EOT;
-
-  return ends_with_newline && eot_before_checksum;
-}
-
 struct grid_pico_task_timer timer_uart_tx[4];
 
 void grid_pico_task_uart_tx(struct grid_pico_uart_port* port, struct grid_pico_task_timer* timer) {
@@ -212,12 +199,11 @@ void grid_pico_task_uart_tx(struct grid_pico_uart_port* port, struct grid_pico_t
   char c = pico_bkt_next(port->uart_tx_bucket);
   uart_tx_program_putc(GRID_TX_PIO, port->index, c);
 
-  if (c == '\n') {
+  if (pico_bkt_terminated(port->uart_tx_bucket)) {
 
-    if (pico_bkt_terminated(port->uart_tx_bucket)) {
+    assert(c == '\n');
 
-      grid_pico_uart_port_detach_tx(port);
-    }
+    grid_pico_uart_port_detach_tx(port);
   }
 }
 
@@ -486,7 +472,9 @@ void grid_pico_uart_port_rx_char(struct grid_pico_uart_port* port, char ch) {
 
   pico_bkt_push(port->uart_rx_bucket, ch);
 
-  if (ch == '\n') {
+  if (pico_bkt_terminated(port->uart_rx_bucket)) {
+
+    assert(ch == '\n');
 
     // End of message, requires null termination
     pico_bkt_push(port->uart_rx_bucket, '\0');

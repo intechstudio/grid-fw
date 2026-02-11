@@ -449,7 +449,8 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
   if (!eve) {
     grid_platform_printf("grid_ui_event_recall_configuration: invalid event\n");
-    return 1;
+    strcpy(targetstring, "<?lua --[[@cb]] --[[event deprecated]] ?>");
+    return 0;
   }
 
   if (eve->cfg_default_flag) {
@@ -549,6 +550,508 @@ int32_t grid_ui_element_get_template_parameter(struct grid_ui_element* ele, uint
   }
 }
 
+<<<<<<< HEAD
+=======
+enum grid_ui_bulk_status_t grid_ui_get_bulk_status(struct grid_ui_model* ui) { return ui->bulk_status; }
+
+uint8_t grid_ui_bulk_get_response_code(struct grid_ui_model* ui, uint8_t id) {
+
+  bool lastheadermatch = grid_ui_bulk_get_lastheader(&grid_ui_state) == id;
+  bool nothinginprogress = !grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
+
+  bool ack = lastheadermatch && nothinginprogress;
+
+  return ack ? GRID_INSTR_ACKNOWLEDGE_code : GRID_INSTR_NACKNOWLEDGE_code;
+}
+
+int grid_ui_bulk_anything_is_in_progress(struct grid_ui_model* ui) { return ui->bulk_status != GRID_UI_BULK_READY; }
+
+int grid_ui_bulk_is_in_progress(struct grid_ui_model* ui, enum grid_ui_bulk_status_t bulk_status) { return ui->bulk_status == bulk_status; }
+
+uint8_t grid_ui_bulk_get_lastheader(struct grid_ui_model* ui) { return ui->bulk_lastheader_id; }
+
+int grid_ui_bulk_operation_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
+
+  if (status != GRID_UI_BULK_READ_PROGRESS && status != GRID_UI_BULK_STORE_PROGRESS && status != GRID_UI_BULK_CLEAR_PROGRESS) {
+    return 1;
+  }
+
+  grid_platform_printf("NVM: Page init\r\n");
+  // update lastheader_id even if busy (during retry)
+
+  ui->bulk_lastheader_id = lastheader_id;
+
+  if (grid_ui_bulk_anything_is_in_progress(ui)) {
+    return 1;
+  }
+
+  grid_ui_bulk_semaphore_lock(ui);
+
+  ui->bulk_status = status;
+  ui->bulk_success_callback = success_cb;
+  ui->bulk_last_page = page;
+  ui->bulk_last_element = -1;
+  ui->bulk_last_event = -1;
+
+  grid_ui_bulk_semaphore_release(ui);
+
+  return 0;
+}
+
+int grid_ui_bulk_conf_init(struct grid_ui_model* ui, enum grid_ui_bulk_status_t status, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
+
+  if (status != GRID_UI_BULK_CONFREAD_PROGRESS && status != GRID_UI_BULK_CONFSTORE_PROGRESS && status != GRID_UI_BULK_CONFERASE_PROGRESS) {
+    return 1;
+  }
+
+  // update lastheader_id even if busy (during retry)
+  ui->bulk_lastheader_id = lastheader_id;
+
+  if (grid_ui_bulk_anything_is_in_progress(ui)) {
+    return 1;
+  }
+
+  grid_platform_printf("NVM: Config init\r\n");
+
+  grid_ui_bulk_semaphore_lock(ui);
+
+  ui->bulk_status = status;
+
+  ui->bulk_success_callback = success_cb;
+
+  grid_ui_bulk_semaphore_release(ui);
+
+  return 0;
+}
+
+int grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
+
+  grid_platform_printf("NVM: Erase init\r\n");
+  // update lastheader_id even if busy (during retry)
+  ui->bulk_lastheader_id = lastheader_id;
+
+  if (grid_ui_bulk_anything_is_in_progress(ui)) {
+    return 1;
+  }
+
+  grid_ui_bulk_semaphore_lock(ui);
+
+  ui->bulk_status = GRID_UI_BULK_ERASE_PROGRESS;
+
+  ui->bulk_success_callback = success_cb;
+  ui->bulk_last_page = -1;
+  ui->bulk_last_element = -1;
+  ui->bulk_last_event = -1;
+
+  grid_ui_bulk_semaphore_release(ui);
+
+  return 0;
+}
+
+void grid_ui_bulk_pageread_next(struct grid_ui_model* ui) {
+
+  grid_platform_printf("NVM: Read next\r\n");
+  if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_READ_PROGRESS)) {
+    return;
+  }
+
+  if (!grid_platform_get_nvm_state()) {
+    return;
+  }
+
+  grid_ui_busy_semaphore_lock(ui);
+  grid_ui_bulk_semaphore_lock(ui);
+
+  // step 1: mark all action strings as default
+  if (ui->bulk_last_element == -1 && ui->bulk_last_event == -1) {
+
+    for (uint8_t i = 0; i < ui->element_list_length; i++) {
+
+      struct grid_ui_element* ele = &ui->element_list[i];
+
+      for (uint8_t j = 0; j < ele->event_list_length; j++) {
+
+        struct grid_ui_event* eve = &ele->event_list[j];
+
+        eve->cfg_default_flag = 1;
+      }
+    }
+  }
+
+  // step 2: we register all custom actionstring files
+  struct grid_file_t handle = {0};
+  uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &handle);
+
+  if (!was_last_one) {
+
+    struct grid_ui_event* eve = grid_ui_event_find(&ui->element_list[ui->bulk_last_element], ui->bulk_last_event);
+    uint16_t size = grid_platform_get_file_size(&handle);
+
+    if (eve != NULL && size > 0) {
+
+      char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
+      grid_platform_read_file(&handle, (uint8_t*)temp, size);
+
+      grid_ui_event_register_actionstring(eve, temp);
+      grid_platform_printf("Ele:%d Eve:%d\r\n", ui->bulk_last_element, ui->bulk_last_event);
+      eve->cfg_changed_flag = 0; // clear changed flag
+    }
+
+    grid_ui_bulk_semaphore_release(ui);
+    grid_ui_busy_semaphore_release(ui);
+    return;
+  }
+
+  // step 3: fill all of the remaining default events with default actionstrings
+  for (uint8_t i = 0; i < ui->element_list_length; i++) {
+
+    struct grid_ui_element* ele = &ui->element_list[i];
+
+    for (uint8_t j = 0; j < ele->event_list_length; j++) {
+
+      struct grid_ui_event* eve = &ele->event_list[j];
+
+      if (eve->cfg_default_flag == 1) {
+
+        char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
+
+        grid_ui_event_generate_actionstring(eve, temp);
+        grid_ui_event_register_actionstring(eve, temp);
+      }
+    }
+  }
+
+  // step 4: run the success callback if available
+
+  // Set ready before callback so callback can start new nvm operation
+  ui->bulk_status = GRID_UI_BULK_READY;
+
+  grid_ui_bulk_semaphore_release(ui);
+  grid_ui_busy_semaphore_release(ui);
+  grid_platform_printf("NVM: Read done\r\n");
+
+  // Callback the mandatory handler
+  grid_ui_page_load_success_handler();
+
+  // Must call callback for discard to work properly
+  if (ui->bulk_success_callback != NULL) {
+    ui->bulk_success_callback(ui->bulk_lastheader_id);
+    ui->bulk_success_callback = NULL;
+  }
+
+  return;
+}
+
+void grid_ui_bulk_pagestore_next(struct grid_ui_model* ui) {
+
+  grid_platform_printf("NVM: Store next\r\n");
+  if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_STORE_PROGRESS)) {
+    return;
+  }
+
+  if (!grid_platform_get_nvm_state()) {
+    return;
+  }
+
+  grid_ui_busy_semaphore_lock(ui);
+  grid_ui_bulk_semaphore_lock(ui);
+
+  for (uint8_t i = 0; i < ui->element_list_length; i++) {
+
+    struct grid_ui_element* ele = &ui->element_list[i];
+
+    for (uint8_t j = 0; j < ele->event_list_length; j++) {
+
+      struct grid_ui_event* eve = &ele->event_list[j];
+
+      if (!eve->cfg_changed_flag) {
+        continue;
+      }
+
+      if (eve->cfg_default_flag) {
+
+        struct grid_file_t handle = {0};
+        int status = grid_platform_find_actionstring_file(ui->bulk_last_page, ele->index, eve->type, &handle);
+
+        // File found
+        if (status == 0) {
+          grid_platform_delete_file(&handle);
+        }
+
+      } else {
+
+        char buffer[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
+        grid_ui_event_get_actionstring(eve, buffer);
+
+        grid_platform_write_actionstring_file(ui->bulk_last_page, ele->index, eve->type, buffer, strlen(buffer));
+      }
+
+      // Clear changed flag
+      eve->cfg_changed_flag = 0;
+
+      // Return from this function after the first successful store
+      grid_ui_bulk_semaphore_release(ui);
+      grid_ui_busy_semaphore_release(ui);
+      return;
+    }
+  }
+
+  // Execution will reach this point once every change was stored
+
+  // Set ready before callback so callback can start new nvm operation
+  ui->bulk_status = GRID_UI_BULK_READY;
+
+  grid_ui_bulk_semaphore_release(ui);
+  grid_ui_busy_semaphore_release(ui);
+  grid_platform_printf("NVM: Store done\r\n");
+
+  if (ui->bulk_success_callback != NULL) {
+
+    ui->bulk_success_callback(ui->bulk_lastheader_id);
+    ui->bulk_success_callback = NULL;
+  }
+}
+
+void grid_ui_bulk_pageclear_next(struct grid_ui_model* ui) {
+
+  grid_platform_printf("NVM: Clear next\r\n");
+  if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CLEAR_PROGRESS)) {
+    return;
+  }
+
+  if (!grid_platform_get_nvm_state()) {
+    return;
+  }
+
+  grid_ui_busy_semaphore_lock(ui);
+  grid_ui_bulk_semaphore_lock(ui);
+
+  struct grid_file_t handle = {0};
+  uint8_t was_last_one = grid_platform_find_next_actionstring_file_on_page(ui->bulk_last_page, &ui->bulk_last_element, &ui->bulk_last_event, &handle);
+
+  if (!was_last_one) {
+
+    grid_platform_delete_file(&handle);
+    grid_ui_bulk_semaphore_release(ui);
+    grid_ui_busy_semaphore_release(ui);
+    return;
+  }
+
+  char path[50] = {0};
+  sprintf(path, "%02x", ui->bulk_last_page);
+  grid_platform_remove_dir(path);
+
+  // Set ready before callback so callback can start new nvm operation
+  ui->bulk_status = GRID_UI_BULK_READY;
+
+  grid_platform_printf("NVM: Clear done\r\n");
+
+  grid_ui_bulk_semaphore_release(ui);
+  grid_ui_busy_semaphore_release(ui);
+
+  if (ui->bulk_success_callback != NULL) {
+
+    ui->bulk_success_callback(ui->bulk_lastheader_id);
+    ui->bulk_success_callback = NULL;
+  }
+}
+
+int confread_parse_from_file(struct grid_ui_model* ui) {
+
+  int status;
+
+  struct grid_file_t handle = {0};
+
+  status = grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle);
+  if (status) {
+    grid_platform_printf("grid_platform_find_file returned %d\n", status);
+    return 1;
+  }
+
+  uint16_t file_size = grid_platform_get_file_size(&handle);
+  if (file_size == 0) {
+    grid_platform_printf("grid_platform_get_file_size returned %d\n", status);
+    return 1;
+  }
+
+  char* buffer = (char*)malloc(file_size);
+  if (buffer == NULL) {
+    grid_platform_printf("confread_parse_from_file malloc\n");
+    return 1;
+  }
+
+  status = grid_platform_read_file(&handle, (uint8_t*)buffer, file_size);
+  if (status) {
+    grid_platform_printf("grid_platform_read_file returned %d\n", status);
+    free(buffer);
+    return 1;
+  }
+
+  status = grid_config_parse(&grid_config_state, buffer);
+  if (status) {
+    grid_platform_printf("grid_config_parse returned %d\n", status);
+    free(buffer);
+    return 1;
+  }
+
+  free(buffer);
+  return 0;
+}
+
+void grid_ui_bulk_confread_next(struct grid_ui_model* ui) {
+
+  grid_platform_printf("NVM: Read config next\r\n");
+  if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CONFREAD_PROGRESS)) {
+    return;
+  }
+
+  if (!grid_platform_get_nvm_state()) {
+    return;
+  }
+
+  grid_ui_busy_semaphore_lock(ui);
+  grid_ui_bulk_semaphore_lock(ui);
+
+  /*int status = */ confread_parse_from_file(ui);
+
+  ui->bulk_status = GRID_UI_BULK_READY;
+
+  grid_ui_bulk_semaphore_release(ui);
+  grid_ui_busy_semaphore_release(ui);
+  grid_platform_printf("NVM: Read config done\r\n");
+
+  if (ui->bulk_success_callback != NULL) {
+    ui->bulk_success_callback(ui->bulk_lastheader_id);
+    ui->bulk_success_callback = NULL;
+  }
+}
+
+int confstore_generate_to_file(struct grid_ui_model* ui) {
+
+  char* config = (char*)malloc(grid_config_bytes(&grid_config_state));
+  if (config == NULL) {
+    grid_platform_printf("confstore_generate_to_file malloc\n");
+    return 1;
+  }
+
+  int status;
+
+  status = grid_config_generate(&grid_config_state, config);
+  if (status) {
+    grid_platform_printf("grid_config_generate returned %d\n", status);
+    free(config);
+    return 1;
+  }
+
+  status = grid_platform_write_file(GRID_UI_CONFIG_PATH, (uint8_t*)config, strlen(config) + 1);
+  if (status) {
+    grid_platform_printf("grid_platform_write_file returned %d\n", status);
+    free(config);
+    return 1;
+  }
+
+  free(config);
+  return 0;
+}
+
+void grid_ui_bulk_confstore_next(struct grid_ui_model* ui) {
+
+  grid_platform_printf("NVM: Store config next\r\n");
+  if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CONFSTORE_PROGRESS)) {
+    return;
+  }
+
+  if (!grid_platform_get_nvm_state()) {
+    return;
+  }
+
+  grid_ui_busy_semaphore_lock(ui);
+  grid_ui_bulk_semaphore_lock(ui);
+
+  /*int status = */ confstore_generate_to_file(ui);
+
+  ui->bulk_status = GRID_UI_BULK_READY;
+
+  grid_ui_bulk_semaphore_release(ui);
+  grid_ui_busy_semaphore_release(ui);
+  grid_platform_printf("NVM: Store config done\r\n");
+
+  if (ui->bulk_success_callback != NULL) {
+    ui->bulk_success_callback(ui->bulk_lastheader_id);
+    ui->bulk_success_callback = NULL;
+  }
+}
+
+void grid_ui_bulk_conferase_next(struct grid_ui_model* ui) {
+
+  grid_platform_printf("NVM: Erase config next\r\n");
+  if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CONFERASE_PROGRESS)) {
+    return;
+  }
+
+  if (!grid_platform_get_nvm_state()) {
+    return;
+  }
+
+  grid_ui_busy_semaphore_lock(ui);
+  grid_ui_bulk_semaphore_lock(ui);
+
+  struct grid_file_t handle = {0};
+
+  if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle) == 0) {
+    grid_platform_delete_file(&handle);
+  }
+
+  ui->bulk_status = GRID_UI_BULK_READY;
+
+  grid_ui_bulk_semaphore_release(ui);
+  grid_ui_busy_semaphore_release(ui);
+  grid_platform_printf("NVM: Erase config done\r\n");
+
+  if (ui->bulk_success_callback != NULL) {
+    ui->bulk_success_callback(ui->bulk_lastheader_id);
+    ui->bulk_success_callback = NULL;
+  }
+}
+
+void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui) {
+
+  grid_platform_printf("NVM: Erase next\r\n");
+  if (!grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_ERASE_PROGRESS)) {
+    return;
+  }
+
+  if (!grid_platform_get_nvm_state()) {
+    return;
+  }
+
+  grid_ui_busy_semaphore_lock(ui);
+  grid_ui_bulk_semaphore_lock(ui);
+
+  if (ui->bulk_last_page < 0) {
+    ui->bulk_last_page = 0;
+  }
+
+  grid_platform_nvm_format_and_mount();
+
+  // Set ready before callback so callback can start new nvm operation
+  ui->bulk_status = GRID_UI_BULK_READY;
+
+  grid_ui_bulk_semaphore_release(ui);
+  grid_ui_busy_semaphore_release(ui);
+  grid_platform_printf("NVM: Erase done\r\n");
+
+  // Call success callback
+  if (ui->bulk_success_callback != NULL) {
+
+    ui->bulk_success_callback(ui->bulk_lastheader_id);
+    ui->bulk_success_callback = NULL;
+  }
+
+  return;
+}
+
+>>>>>>> master
 void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg) {
 
   uint8_t page = eve->parent->parent->page_activepage;

@@ -1597,50 +1597,34 @@ int l_grid_cat(lua_State* L) {
 
 /*static*/ int l_grid_template_variable(lua_State* L) {
 
-  int nargs = lua_gettop(L);
-
-  if (nargs != 2 && nargs != 3) {
-    // error
+  if (lua_gettop(L) != 3) {
     grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
-  int32_t param[3] = {0};
+  int32_t ele_idx = lua_tointeger(L, 1);
 
-  uint8_t isgetter = 0;
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, ele_idx);
 
-  for (int i = 1; i <= nargs; ++i) {
-
-    if (lua_isinteger(L, i)) {
-    } else if (lua_isnil(L, i)) {
-      // grid_platform_printf(" %d : NIL ", i);
-      if (i == 3) {
-        isgetter = 1;
-      }
-    }
-
-    param[i - 1] = lua_tointeger(L, i);
-  }
-  // lua_pop(L, 2);
-
-  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, param[0]);
-
-  if (ele != NULL) {
-
-    uint8_t template_index = param[1];
-
-    if (isgetter) {
-
-      int32_t var = grid_ui_element_get_template_parameter(ele, template_index);
-      lua_pushinteger(L, var);
-    } else {
-
-      int32_t var = param[2];
-      grid_ui_element_set_template_parameter(ele, template_index, var);
-    }
+  if (!ele) {
+    return 0;
   }
 
-  return 1;
+  int32_t gtv_idx = lua_tointeger(L, 2);
+
+  bool isgetter = lua_isnil(L, 3);
+
+  if (isgetter) {
+
+    lua_pushinteger(L, grid_ui_element_get_template_parameter(ele, gtv_idx));
+
+  } else {
+
+    int32_t gtv_val = lua_tointeger(L, 3);
+    grid_ui_element_set_template_parameter(ele, gtv_idx, gtv_val);
+  }
+
+  return isgetter;
 }
 
 /*static*/ int l_grid_page_next(lua_State* L) {
@@ -2152,11 +2136,11 @@ GRID_LUA_FNC_GTV_DEFI(15)
 GRID_LUA_FNC_GTV_DEFI(16)
 GRID_LUA_FNC_GTV_DEFI(17)
 
-GRID_LUA_FNC_META_PAR1_DEFI(gtt, l_grid_timer_start)
-GRID_LUA_FNC_META_PAR0_DEFI(gtp, l_grid_timer_stop)
-GRID_LUA_FNC_META_PAR1_DEFI(get, l_grid_event_trigger)
-GRID_LUA_FNC_META_PAR1_DEFI(gsen, l_grid_elementname_set)
-GRID_LUA_FNC_META_PAR0_DEFI(ggen, l_grid_elementname_get)
+GRID_LUA_FNC_META_DEFI(gtt, l_grid_timer_start)
+GRID_LUA_FNC_META_DEFI(gtp, l_grid_timer_stop)
+GRID_LUA_FNC_META_DEFI(get, l_grid_event_trigger)
+GRID_LUA_FNC_META_DEFI(gsen, l_grid_elementname_set)
+GRID_LUA_FNC_META_DEFI(ggen, l_grid_elementname_get)
 
 /*static*/ const struct luaL_Reg grid_lua_api_generic_lib[] = {
     {"print", l_my_print},

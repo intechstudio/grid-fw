@@ -2,6 +2,7 @@
 #define PICO_POOL_H
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,6 +60,7 @@ void pico_bkt_init(struct pico_bkt_t* bkt, pico_bkt_idx_t bucket, struct pico_bk
 void pico_bkt_reset(struct pico_bkt_t* bkt);
 uint8_t pico_bkt_next(struct pico_bkt_t* bkt);
 void pico_bkt_push(struct pico_bkt_t* bkt, uint8_t rx);
+bool pico_bkt_terminated(struct pico_bkt_t* bkt);
 
 enum {
   PICO_BKT_COUNT = 50,
