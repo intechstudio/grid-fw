@@ -4,6 +4,7 @@ project(GridGUI)
 
 include_directories(${CMAKE_SOURCE_DIR}/../grid_esp/components/grid_esp32_lcd)
 include_directories(${CMAKE_SOURCE_DIR}/../grid_common/lua-5.4.3/src/)
+include_directories(${CMAKE_SOURCE_DIR}/../grid_common/proto)
 include_directories(${CMAKE_SOURCE_DIR}/../grid_common/)
 
 
