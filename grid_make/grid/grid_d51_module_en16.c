@@ -58,21 +58,19 @@ static void hardware_init(void) {
   spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, spi_transfer_complete_cb);
 }
 
-void grid_module_en16_init() {
-
-  grid_module_en16_ui_init(NULL, &grid_led_state, &grid_ui_state);
+void grid_d51_module_en16_init(struct grid_sys_model* sys, struct grid_ui_model* ui) {
 
   // Button state is in secondary_state for encoder elements
   for (int i = 0; i < GRID_MODULE_EN16_BUTTON_COUNT; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_element* ele = &ui->element_list[i];
     struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->secondary_state;
     grid_ui_button_state_init(state, 1, 0.5, 0.2);
   }
 
-  uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
-  int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
+  uint8_t detent = grid_hwcfg_module_encoder_is_detent(sys);
+  int8_t direction = grid_hwcfg_module_encoder_dir(sys);
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENCODER_COUNT; i++) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_element* ele = &ui->element_list[i];
     struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
     grid_ui_encoder_state_init(state, detent, direction);
   }
