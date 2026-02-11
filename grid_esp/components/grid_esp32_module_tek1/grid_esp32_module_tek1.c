@@ -23,6 +23,7 @@
 #include "grid_ui_system.h"
 
 #include "grid_esp32_lcd.h"
+#include "grid_esp32_port.h"
 #include "grid_font.h"
 #include "grid_gui.h"
 
@@ -238,7 +239,9 @@ void grid_esp32_module_tek1_init(struct grid_sys_model* sys, struct grid_ui_mode
   grid_esp32_lcd_spi_bus_init(lcd_tx_bytes);
 
   // Wait for the coprocessor to pull the LCD reset pin high
-  vTaskDelay(pdMS_TO_TICKS(500));
+  while (!rp2040_active) {
+    vTaskDelay(1);
+  }
 
   bool is_tek1_reva = grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA;
 
