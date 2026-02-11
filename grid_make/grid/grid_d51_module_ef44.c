@@ -121,47 +121,45 @@ static void hardware_init(void) {
   adc_async_enable_channel(&ADC_1, 0);
 }
 
-void grid_module_ef44_init() {
-
-  grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+void grid_d51_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_config_model* conf, struct grid_cal_model* cal) {
 
   asc_state = grid_platform_allocate_volatile(8 * sizeof(struct grid_asc));
   memset(asc_state, 0, 8 * sizeof(struct grid_asc));
 
   // Encoders are elements 0-3 - button state is in secondary_state
   for (int i = 0; i < GRID_MODULE_EF44_BUTTON_COUNT; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_element* ele = &ui->element_list[i];
     struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->secondary_state;
     grid_ui_button_state_init(state, 1, 0.5, 0.2);
   }
 
   // Potmeters are elements 4-7
   for (int i = 0; i < GRID_MODULE_EF44_POTMETER_COUNT; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[GRID_MODULE_EF44_ENCODER_COUNT + i];
+    struct grid_ui_element* ele = &ui->element_list[GRID_MODULE_EF44_ENCODER_COUNT + i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
     grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   grid_asc_array_set_factors(asc_state, 8, 4, 4, 1);
 
-  uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
-  int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
+  uint8_t detent = grid_hwcfg_module_encoder_is_detent(sys);
+  int8_t direction = grid_hwcfg_module_encoder_dir(sys);
   // Encoders are elements 0-3
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENCODER_COUNT; i++) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_element* ele = &ui->element_list[i];
     struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
     grid_ui_encoder_state_init(state, detent, direction);
   }
 
-  grid_config_init(&grid_config_state, &grid_cal_state);
+  grid_config_init(conf, cal);
 
-  grid_cal_init(&grid_cal_state, grid_ui_state.element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
+  grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
   // Potmeters are elements 4-7
   for (int i = GRID_MODULE_EF44_ENCODER_COUNT; i < GRID_MODULE_EF44_ENCODER_COUNT + GRID_MODULE_EF44_POTMETER_COUNT; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_element* ele = &ui->element_list[i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &state->limits) == 0);
+    assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
   }
 
   assert(grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_read, 0, 0, NULL));

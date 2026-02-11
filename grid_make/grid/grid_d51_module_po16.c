@@ -78,35 +78,33 @@ static void hardware_init(void) {
   adc_async_enable_channel(&ADC_1, 0);
 }
 
-void grid_module_po16_init() {
-
-  grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+void grid_d51_module_po16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_config_model* conf, struct grid_cal_model* cal) {
 
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
-  if (grid_hwcfg_module_is_po16_reverse_polarity(&grid_sys_state)) {
+  if (grid_hwcfg_module_is_po16_reverse_polarity(sys)) {
     element_invert_bm = 0b1111111111111111;
   }
 
   for (int i = 0; i < GRID_MODULE_PO16_POTMETER_COUNT; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_element* ele = &ui->element_list[i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
     grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 1);
 
-  grid_config_init(&grid_config_state, &grid_cal_state);
+  grid_config_init(conf, cal);
 
-  grid_cal_init(&grid_cal_state, grid_ui_state.element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
+  grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
   for (int i = 0; i < GRID_MODULE_PO16_POTMETER_COUNT; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_element* ele = &ui->element_list[i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &state->limits) == 0);
-    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_CENTER, &state->center) == 0);
-    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_DETENT, &state->detent) == 0);
+    assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
+    assert(grid_cal_set(cal, i, GRID_CAL_CENTER, &state->center) == 0);
+    assert(grid_cal_set(cal, i, GRID_CAL_DETENT, &state->detent) == 0);
   }
 
   assert(grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_read, 0, 0, NULL));

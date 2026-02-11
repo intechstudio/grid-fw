@@ -3,6 +3,9 @@
 
 #include "grid_d51_module.h"
 
-void grid_module_en16_init(void);
+struct grid_sys_model;
+struct grid_ui_model;
+
+void grid_d51_module_en16_init(struct grid_sys_model* sys, struct grid_ui_model* ui);
 
 #endif

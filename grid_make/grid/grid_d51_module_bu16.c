@@ -73,15 +73,13 @@ static void hardware_init(void) {
   adc_async_enable_channel(&ADC_1, 0);
 }
 
-void grid_module_bu16_init() {
-
-  grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+void grid_d51_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_config_model* conf, struct grid_cal_model* cal) {
 
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
   for (int i = 0; i < GRID_MODULE_BU16_BUTTON_COUNT; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_element* ele = &ui->element_list[i];
     struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
     grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
@@ -90,4 +88,4 @@ void grid_module_bu16_init() {
 
   hardware_init();
   hardware_start_transfer();
-};
+}

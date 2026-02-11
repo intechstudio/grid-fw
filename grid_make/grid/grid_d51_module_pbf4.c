@@ -88,41 +88,39 @@ static void hardware_init(void) {
   adc_async_enable_channel(&ADC_1, 0);
 }
 
-void grid_module_pbf4_init() {
-
-  grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+void grid_d51_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_config_model* conf, struct grid_cal_model* cal) {
 
   asc_state = grid_platform_allocate_volatile(12 * sizeof(struct grid_asc));
   memset(asc_state, 0, 12 * sizeof(struct grid_asc));
 
   // Buttons are elements 8-11
   for (int i = 0; i < GRID_MODULE_PBF4_BUTTON_COUNT; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[GRID_MODULE_PBF4_POTMETER_COUNT + i];
+    struct grid_ui_element* ele = &ui->element_list[GRID_MODULE_PBF4_POTMETER_COUNT + i];
     struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
     grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
 
   // Potmeters are elements 0-7
   for (int i = 0; i < GRID_MODULE_PBF4_POTMETER_COUNT; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_element* ele = &ui->element_list[i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
     grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   grid_asc_array_set_factors(asc_state, 12, 0, 12, 1);
 
-  grid_config_init(&grid_config_state, &grid_cal_state);
+  grid_config_init(conf, cal);
 
-  grid_cal_init(&grid_cal_state, grid_ui_state.element_list_length, 12);
+  grid_cal_init(cal, ui->element_list_length, 12);
 
   // Potmeter calibration (elements 0-7, first 4 have center detent)
   for (int i = 0; i < GRID_MODULE_PBF4_POTMETER_COUNT; ++i) {
-    struct grid_ui_element* ele = &grid_ui_state.element_list[i];
+    struct grid_ui_element* ele = &ui->element_list[i];
     struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &state->limits) == 0);
+    assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
     if (i < 4) {
-      assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_CENTER, &state->center) == 0);
-      assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_DETENT, &state->detent) == 0);
+      assert(grid_cal_set(cal, i, GRID_CAL_CENTER, &state->center) == 0);
+      assert(grid_cal_set(cal, i, GRID_CAL_DETENT, &state->detent) == 0);
     }
   }
 
