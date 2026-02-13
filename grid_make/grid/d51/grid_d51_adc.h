@@ -1,0 +1,27 @@
+#ifndef GRID_D51_ADC_H
+#define GRID_D51_ADC_H
+
+#include <stdint.h>
+
+struct grid_d51_adc_result {
+  uint8_t channel;
+  uint8_t mux_state;
+  uint16_t value;
+};
+
+typedef void (*grid_d51_process_analog_t)(void* user);
+
+struct grid_d51_adc_model {
+  uint8_t mux_index;
+  uint8_t mux_positions_bm;
+  volatile uint8_t adc_complete_count;
+  grid_d51_process_analog_t process_analog;
+};
+
+extern struct grid_d51_adc_model grid_d51_adc_state;
+
+void grid_d51_adc_init(struct grid_d51_adc_model* adc, uint8_t mux_positions_bm, grid_d51_process_analog_t process_analog);
+void grid_d51_adc_mux_init(struct grid_d51_adc_model* adc, uint8_t mux_positions_bm);
+void grid_d51_adc_start(struct grid_d51_adc_model* adc);
+
+#endif

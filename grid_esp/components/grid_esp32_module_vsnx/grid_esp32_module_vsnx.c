@@ -218,13 +218,11 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
     vsnx_minibutton_lookup = tek2_minibutton_lookup;
   }
 
-  grid_esp32_adc_init(adc, vsnx_process_analog);
-
   // Encoder driver is used to read minibuttons via shift registers
   grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, vsnx_process_minibutton);
 
   uint8_t mux_positions = grid_hwcfg_module_is_tek2(sys) ? 0b11110111 : 0b11111111;
-  grid_platform_mux_init(mux_positions);
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
-  grid_esp32_adc_start(adc, mux_dependent);
+  grid_esp32_adc_init(adc, mux_positions, mux_dependent, vsnx_process_analog);
+  grid_esp32_adc_start(adc);
 }
