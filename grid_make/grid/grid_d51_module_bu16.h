@@ -5,9 +5,10 @@
 
 struct grid_sys_model;
 struct grid_ui_model;
+struct grid_d51_adc_model;
 struct grid_config_model;
 struct grid_cal_model;
 
-void grid_d51_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_config_model* conf, struct grid_cal_model* cal);
+void grid_d51_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_d51_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal);
 
 #endif

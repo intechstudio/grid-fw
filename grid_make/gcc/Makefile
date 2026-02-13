@@ -55,6 +55,8 @@ grid/d51/grid_d51_nvm.o \
 ../grid_common/grid_led.o \
 ../grid_common/grid_littlefs.o \
 grid/d51/grid_d51_module.o \
+grid/d51/grid_d51_adc.o \
+grid/d51/grid_d51_encoder.o \
 grid/grid_d51_module_bu16.o \
 grid/grid_d51_module_en16.o \
 grid/grid_d51_module_pbf4.o \
@@ -147,6 +149,8 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_led.o" \
 "../grid_common/grid_littlefs.o" \
 "grid/d51/grid_d51_module.o" \
+"grid/d51/grid_d51_adc.o" \
+"grid/d51/grid_d51_encoder.o" \
 "grid/grid_d51_module_bu16.o" \
 "grid/grid_d51_module_en16.o" \
 "grid/grid_d51_module_pbf4.o" \
@@ -256,6 +260,8 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_led.d" \
 "../grid_common/grid_littlefs.d" \
 "grid/d51/grid_d51_module.d" \
+"grid/d51/grid_d51_adc.d" \
+"grid/d51/grid_d51_encoder.d" \
 "grid/grid_d51_module_bu16.d" \
 "grid/grid_d51_module_en16.d" \
 "grid/grid_d51_module_pbf4.d" \

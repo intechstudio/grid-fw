@@ -4,6 +4,7 @@
 
 #include "grid_ain.h"
 #include "grid_asc.h"
+#include "grid_d51_adc.h"
 #include "grid_platform.h"
 #include "grid_ui_button.h"
 #include "grid_ui_potmeter.h"
@@ -14,10 +15,6 @@
 
 #include <assert.h>
 
-static volatile uint8_t adc_complete_count = 0;
-
-static uint8_t multiplexer_index = 0;
-static const uint8_t mux_positions_bm = 0b11001111;
 #define GRID_MODULE_PBF4_BUTTON_COUNT 4
 #define GRID_MODULE_PBF4_POTMETER_COUNT 8
 
@@ -29,66 +26,31 @@ static const uint8_t mux_element_lookup[2][8] = {
 #undef X
 static uint16_t element_invert_bm = 0b0000000000001111;
 
-static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
-
 static struct grid_asc* asc_state = NULL;
 
-static void hardware_start_transfer(void) {
+static void pbf4_process_analog(void* user) {
 
-  adc_async_start_conversion(&ADC_0);
-  adc_async_start_conversion(&ADC_1);
-}
+  struct grid_d51_adc_result* result = (struct grid_d51_adc_result*)user;
 
-static void adc_transfer_complete_cb(void) {
+  uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
+  assert(element_index != GRID_MUX_UNUSED);
 
-  if (adc_complete_count == 0) {
-    adc_complete_count++;
+  uint16_t inverted = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
+  uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
+
+  uint16_t processed;
+  if (!grid_asc_process(asc_state, element_index, downsampled, &processed)) {
     return;
   }
 
-  /* Read and process both channels */
-
-  for (int channel = 0; channel < 2; channel++) {
-    uint16_t raw = 0;
-    adc_async_read_channel(adcs[channel], 0, &raw, 2);
-
-    uint8_t element_index = mux_element_lookup[channel][multiplexer_index];
-    assert(element_index != GRID_MUX_UNUSED);
-
-    uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
-    uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
-
-    uint16_t processed;
-    if (!grid_asc_process(asc_state, element_index, downsampled, &processed)) {
-      continue;
-    }
-
-    if (element_index >= GRID_MODULE_PBF4_POTMETER_COUNT) {
-      grid_ui_button_store_input(&grid_ui_state, element_index, processed);
-    } else {
-      grid_ui_potmeter_store_input(&grid_ui_state, element_index, processed);
-    }
+  if (element_index >= GRID_MODULE_PBF4_POTMETER_COUNT) {
+    grid_ui_button_store_input(&grid_ui_state, element_index, processed);
+  } else {
+    grid_ui_potmeter_store_input(&grid_ui_state, element_index, processed);
   }
-
-  /* Update the multiplexer for next iteration */
-
-  GRID_MUX_INCREMENT(multiplexer_index, mux_positions_bm);
-  grid_platform_mux_write(multiplexer_index);
-
-  adc_complete_count = 0;
-  hardware_start_transfer();
 }
 
-static void hardware_init(void) {
-
-  adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
-  adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
-
-  adc_async_enable_channel(&ADC_0, 0);
-  adc_async_enable_channel(&ADC_1, 0);
-}
-
-void grid_d51_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_config_model* conf, struct grid_cal_model* cal) {
+void grid_d51_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_d51_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {
 
   asc_state = grid_platform_allocate_volatile(12 * sizeof(struct grid_asc));
   memset(asc_state, 0, 12 * sizeof(struct grid_asc));
@@ -127,6 +89,6 @@ void grid_d51_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_model*
   assert(grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_read, 0, 0, NULL));
   grid_ui_bulk_flush(&grid_ui_state);
 
-  hardware_init();
-  hardware_start_transfer();
+  grid_d51_adc_init(adc, 0b11001111, pbf4_process_analog);
+  grid_d51_adc_start(adc);
 }

@@ -1,0 +1,43 @@
+#include "grid_d51_encoder.h"
+
+#include <string.h>
+
+#include "grid_d51_module.h"
+
+struct grid_d51_encoder_model grid_d51_encoder_state;
+
+static void spi_start_transfer(struct grid_d51_encoder_model* enc) {
+
+  gpio_set_pin_level(PIN_UI_SPI_CS0, true);
+  spi_m_async_enable(&UI_SPI);
+  spi_m_async_transfer(&UI_SPI, enc->tx_buffer, enc->rx_buffer, 8);
+}
+
+static void spi_transfer_complete_cb(void) {
+
+  struct grid_d51_encoder_model* enc = &grid_d51_encoder_state;
+
+  gpio_set_pin_level(PIN_UI_SPI_CS0, false);
+
+  enc->process_encoder(enc->rx_buffer);
+
+  spi_start_transfer(enc);
+}
+
+void grid_d51_encoder_init(struct grid_d51_encoder_model* enc, grid_d51_process_encoder_t process_encoder) {
+
+  memset(enc->tx_buffer, 0, sizeof(enc->tx_buffer));
+  memset(enc->rx_buffer, 0, sizeof(enc->rx_buffer));
+
+  enc->process_encoder = process_encoder;
+
+  gpio_set_pin_level(PIN_UI_SPI_CS0, false);
+  gpio_set_pin_direction(PIN_UI_SPI_CS0, GPIO_DIRECTION_OUT);
+
+  spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
+  spi_m_async_set_baudrate(&UI_SPI, 100000);
+
+  spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, spi_transfer_complete_cb);
+
+  spi_start_transfer(enc);
+}

@@ -21,6 +21,7 @@
 
 #include "grid_ain.h"
 #include "grid_esp32_pins.h"
+#include "grid_platform.h"
 
 #include "esp_heap_caps.h"
 #include "freertos/ringbuf.h"
@@ -105,13 +106,17 @@ static void adc_init_ulp(struct grid_esp32_adc_model* adc) {
   ESP_ERROR_CHECK(ulp_riscv_load_binary(binary, size));
 }
 
-void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog) {
+void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, uint8_t mux_positions_bm, uint8_t mux_dependent, grid_process_analog_t process_analog) {
 
   assert(process_analog);
 
   adc->process_analog = process_analog;
 
   adc_init_ulp(adc);
+
+  adc->mux_dependent = mux_dependent != 0;
+
+  grid_platform_mux_init(mux_positions_bm);
 }
 
 static void IRAM_ATTR ulp_isr(void* arg) {
@@ -125,10 +130,9 @@ static void IRAM_ATTR ulp_isr(void* arg) {
   }
 }
 
-void grid_esp32_adc_start(struct grid_esp32_adc_model* adc, uint8_t mux_dependent) {
+void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
-  // Set flag for both processors indicating which one does mux addressing
-  adc->mux_dependent = mux_dependent != 0;
+  // Set flag for ULP processor indicating which one does mux addressing
   ulp_mux_dependent = adc->mux_dependent;
 
   // Register ISR handler

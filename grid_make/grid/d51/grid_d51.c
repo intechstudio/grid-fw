@@ -754,11 +754,11 @@ uint8_t grid_platform_get_adc_bit_depth() { return 16; }
 
 void grid_platform_mux_init(uint8_t mux_positions_bm) {
 
-  (void)mux_positions_bm;
-
   gpio_set_pin_direction(MUX_A, GPIO_DIRECTION_OUT);
   gpio_set_pin_direction(MUX_B, GPIO_DIRECTION_OUT);
   gpio_set_pin_direction(MUX_C, GPIO_DIRECTION_OUT);
+
+  grid_d51_adc_mux_init(&grid_d51_adc_state, mux_positions_bm);
 }
 
 void grid_platform_mux_write(uint8_t index) {
