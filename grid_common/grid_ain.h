@@ -8,19 +8,18 @@
 
 #define GRID_AIN_INTERNAL_RESOLUTION 12
 
-#ifdef ESP_PLATFORM
 #define GRID_ADC_MAX 4095
-#define GRID_ADC_DOWNSAMPLE(value) (value)
 #define GRID_POTMETER_DEADZONE 128
 #define GRID_POTMETER_CENTER 2192
-#else
-#define GRID_ADC_MAX 65535
-#define GRID_ADC_DOWNSAMPLE(value) ((value) >> 4)
-#define GRID_POTMETER_DEADZONE 64
-#define GRID_POTMETER_CENTER 2048
-#endif
 
-#define GRID_ADC_INVERT(value) (GRID_ADC_MAX - (value))
+struct grid_adc_result {
+  uint8_t channel;
+  uint8_t mux_state;
+  uint16_t value;
+};
+
+typedef void (*grid_process_analog_t)(struct grid_adc_result* result);
+
 #define GRID_ADC_INVERT_COND(value, element_index, invert_bm) ((value) ^ (GRID_ADC_MAX * (((invert_bm) >> (element_index)) & 1)))
 
 // Find first valid mux position based on bitmask

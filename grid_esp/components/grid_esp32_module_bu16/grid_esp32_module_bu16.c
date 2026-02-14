@@ -34,20 +34,17 @@ static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
 };
 static DRAM_ATTR uint16_t element_invert_bm = 0;
 
-void IRAM_ATTR bu16_process_analog(void* user) {
+void IRAM_ATTR bu16_process_analog(struct grid_adc_result* result) {
 
-  assert(user);
-
-  struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
+  assert(result);
 
   uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
 
   uint16_t raw = result->value;
   uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
-  uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
   uint16_t processed;
-  if (!grid_asc_process(asc_state, element_index, downsampled, &processed)) {
+  if (!grid_asc_process(asc_state, element_index, inverted, &processed)) {
     return;
   }
 

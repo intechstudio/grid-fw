@@ -17,6 +17,8 @@
 
 #include "driver/gptimer.h"
 
+#include "grid_ain.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,8 +34,6 @@ extern "C" {
 
 #define ADC_TIMER_PERIOD_USEC 1000
 
-typedef void (*grid_process_analog_t)(void* user);
-
 struct grid_esp32_adc_model {
 
   uint8_t mux_index;
@@ -43,13 +43,6 @@ struct grid_esp32_adc_model {
   uint8_t mux_dependent;
 
   grid_process_analog_t process_analog;
-};
-
-struct grid_esp32_adc_result {
-
-  uint8_t channel;
-  uint8_t mux_state;
-  uint16_t value;
 };
 
 extern struct grid_esp32_adc_model grid_esp32_adc_state;

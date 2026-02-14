@@ -26,16 +26,13 @@
 
 #define GRID_MODULE_EN16_ENCODER_COUNT 16
 
-void IRAM_ATTR en16_process_encoder(void* dma_buf) {
+void IRAM_ATTR en16_process_encoder(struct grid_encoder_result* result) {
 
   static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_EN16_ENCODER_COUNT] = {14, 15, 10, 11, 6, 7, 2, 3, 12, 13, 8, 9, 4, 5, 0, 1};
 
-  // Skip hwcfg byte
-  uint8_t* bytes = &((uint8_t*)dma_buf)[1];
-
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENCODER_COUNT; ++i) {
 
-    uint8_t nibble = GRID_UI_ENCODER_NIBBLE_FROM_BUFFER(bytes, i);
+    uint8_t nibble = GRID_UI_ENCODER_NIBBLE_FROM_BUFFER(result->data, i);
     uint8_t element_index = encoder_lookup[i];
 
     struct grid_ui_encoder_sample sample = GRID_UI_ENCODER_SAMPLE_FROM_NIBBLE(nibble);
@@ -45,7 +42,7 @@ void IRAM_ATTR en16_process_encoder(void* dma_buf) {
 
 void grid_esp32_module_en16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_encoder_model* enc) {
 
-  grid_esp32_encoder_init(enc, 1, en16_process_encoder);
+  grid_esp32_encoder_init(enc, 1 + GRID_MODULE_EN16_ENCODER_COUNT / 2, 1, en16_process_encoder);
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
   int8_t direction = grid_hwcfg_module_encoder_dir(sys);
   for (uint8_t i = 0; i < GRID_MODULE_EN16_ENCODER_COUNT; i++) {

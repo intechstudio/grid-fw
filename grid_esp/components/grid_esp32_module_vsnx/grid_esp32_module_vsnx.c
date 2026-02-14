@@ -63,11 +63,9 @@ static DRAM_ATTR const uint8_t tek2_mux_element_lookup[2][8] = {
 // Pointer to 2D lookup table [2][8], indexed as [channel][mux_state]
 static DRAM_ATTR const uint8_t (*vsnx_mux_lookup)[8] = NULL;
 
-void IRAM_ATTR vsnx_process_analog(void* user) {
+void IRAM_ATTR vsnx_process_analog(struct grid_adc_result* result) {
 
-  assert(user);
-
-  struct grid_esp32_adc_result* result = (struct grid_esp32_adc_result*)user;
+  assert(result);
 
   uint8_t element_index = vsnx_mux_lookup[result->channel][result->mux_state];
 
@@ -108,9 +106,9 @@ static DRAM_ATTR const uint8_t tek2_minibutton_lookup[GRID_MODULE_VSNX_MINIBUTTO
 
 static DRAM_ATTR const uint8_t* vsnx_minibutton_lookup = NULL;
 
-void IRAM_ATTR vsnx_process_minibutton(void* dma_buf) {
+void IRAM_ATTR vsnx_process_minibutton(struct grid_encoder_result* result) {
 
-  uint8_t minibutton_state_bm = ((uint8_t*)dma_buf)[1];
+  uint8_t minibutton_state_bm = result->data[0];
 
   for (uint8_t i = 0; i < GRID_MODULE_VSNX_MINIBUTTON_COUNT; ++i) {
 
@@ -213,7 +211,7 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   // Encoder driver is used to read minibuttons via shift registers
-  grid_esp32_encoder_init(&grid_esp32_encoder_state, 10, vsnx_process_minibutton);
+  grid_esp32_encoder_init(&grid_esp32_encoder_state, 2, 10, vsnx_process_minibutton);
 
   uint8_t mux_positions = grid_hwcfg_module_is_tek2(sys) ? 0b11110111 : 0b11111111;
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);

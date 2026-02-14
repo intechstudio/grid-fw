@@ -28,18 +28,15 @@ static uint16_t element_invert_bm = 0b0000000000001111;
 
 static struct grid_asc* asc_state = NULL;
 
-static void pbf4_process_analog(void* user) {
-
-  struct grid_d51_adc_result* result = (struct grid_d51_adc_result*)user;
+static void pbf4_process_analog(struct grid_adc_result* result) {
 
   uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
   assert(element_index != GRID_MUX_UNUSED);
 
   uint16_t inverted = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
-  uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
   uint16_t processed;
-  if (!grid_asc_process(asc_state, element_index, downsampled, &processed)) {
+  if (!grid_asc_process(asc_state, element_index, inverted, &processed)) {
     return;
   }
 
