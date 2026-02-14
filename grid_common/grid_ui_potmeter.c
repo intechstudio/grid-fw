@@ -29,7 +29,13 @@ const char grid_ui_potmeter_init_actionstring[] = GRID_ACTIONSTRING_POTMETER_INI
 const char grid_ui_potmeter_potmeterchange_actionstring[] = GRID_ACTIONSTRING_POTMETER_POTMETER;
 const char grid_ui_potmeter_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
-void grid_ui_potmeter_state_init(struct grid_ui_potmeter_state* state, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center) {
+void grid_ui_potmeter_state_init(struct grid_ui_model* ui, uint8_t element_index, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center) {
+
+  assert(ui);
+  assert(element_index < ui->element_list_length);
+
+  struct grid_ui_element* ele = &ui->element_list[element_index];
+  struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
 
   state->last_real_time = 0;
   state->adc_bit_depth = adc_bit_depth;

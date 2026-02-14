@@ -57,16 +57,12 @@ void grid_d51_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_model*
 
   // Buttons are elements 8-11
   for (int i = 0; i < GRID_MODULE_PBF4_BUTTON_COUNT; ++i) {
-    struct grid_ui_element* ele = &ui->element_list[GRID_MODULE_PBF4_POTMETER_COUNT + i];
-    struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
-    grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+    grid_ui_button_state_init(ui, GRID_MODULE_PBF4_POTMETER_COUNT + i, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
 
   // Potmeters are elements 0-7
   for (int i = 0; i < GRID_MODULE_PBF4_POTMETER_COUNT; ++i) {
-    struct grid_ui_element* ele = &ui->element_list[i];
-    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-    grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+    grid_ui_potmeter_state_init(ui, i, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   grid_asc_array_set_factors(asc_state, 12, 0, 12, 1);

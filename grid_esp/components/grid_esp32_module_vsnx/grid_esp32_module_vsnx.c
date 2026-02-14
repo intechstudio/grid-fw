@@ -170,14 +170,10 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
     struct grid_ui_element* ele = &ui->element_list[i];
 
     if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
       uint8_t bit_depth = (i < 8) ? GRID_AIN_INTERNAL_RESOLUTION : 1;
-      grid_ui_button_state_init(state, bit_depth, 0.5, 0.2);
+      grid_ui_button_state_init(ui, i, bit_depth, 0.5, 0.2);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
-      struct grid_ui_endless_state* endless_state = (struct grid_ui_endless_state*)ele->primary_state;
-      endless_state->adc_bit_depth = GRID_AIN_INTERNAL_RESOLUTION;
-      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->secondary_state;
-      grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+      grid_ui_endless_state_init(ui, i, GRID_AIN_INTERNAL_RESOLUTION, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
     }
   }
 

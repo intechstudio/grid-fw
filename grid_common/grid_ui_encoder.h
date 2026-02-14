@@ -29,7 +29,7 @@ struct grid_ui_encoder_state {
   int8_t direction;
 };
 
-void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent, int8_t direction);
+void grid_ui_encoder_state_init(struct grid_ui_model* ui, uint8_t element_index, uint8_t detent, int8_t direction, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis);
 
 void grid_ui_element_encoder_init(struct grid_ui_element* ele);
 void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf);

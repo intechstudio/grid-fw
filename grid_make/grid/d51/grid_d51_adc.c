@@ -1,7 +1,7 @@
 #include "grid_d51_adc.h"
 
-#include "grid_d51_module.h"
 #include "grid_ain.h"
+#include "grid_d51_module.h"
 #include "grid_platform.h"
 
 struct grid_d51_adc_model grid_d51_adc_state;

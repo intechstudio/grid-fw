@@ -60,9 +60,7 @@ void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_mode
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
   for (int i = 0; i < GRID_MODULE_BU16_BUTTON_COUNT; ++i) {
-    struct grid_ui_element* ele = &ui->element_list[i];
-    struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
-    grid_ui_button_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+    grid_ui_button_state_init(ui, i, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 1);
