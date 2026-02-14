@@ -23,10 +23,10 @@ static void adc_transfer_complete_cb(void) {
     uint16_t raw = 0;
     adc_async_read_channel(adcs[channel], 0, &raw, 2);
 
-    struct grid_d51_adc_result result = {
+    struct grid_adc_result result = {
         .channel = channel,
         .mux_state = mux_state,
-        .value = raw,
+        .value = raw >> 4,
     };
 
     adc->process_analog(&result);
@@ -41,7 +41,7 @@ static void adc_transfer_complete_cb(void) {
   adc_async_start_conversion(&ADC_1);
 }
 
-void grid_d51_adc_init(struct grid_d51_adc_model* adc, uint8_t mux_positions_bm, grid_d51_process_analog_t process_analog) {
+void grid_d51_adc_init(struct grid_d51_adc_model* adc, uint8_t mux_positions_bm, grid_process_analog_t process_analog) {
 
   adc->process_analog = process_analog;
   adc->adc_complete_count = 0;

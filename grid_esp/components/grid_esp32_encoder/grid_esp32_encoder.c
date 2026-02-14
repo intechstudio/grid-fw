@@ -22,16 +22,18 @@ static IRAM_ATTR bool i2s_recv_callback(i2s_chan_handle_t handle, i2s_event_data
 
   encoder->dma_frame_count = 0;
 
-  encoder->process_encoder(event->dma_buf);
+  struct grid_encoder_result result = {.data = &((uint8_t*)event->dma_buf)[1], .length = encoder->transfer_length - 1};
+  encoder->process_encoder(&result);
 
   return true;
 }
 
-void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, uint32_t divider, grid_process_encoder_t process_encoder) {
+void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, uint8_t transfer_length, uint32_t divider, grid_process_encoder_t process_encoder) {
 
   assert(GRID_ESP32_ENCODER_I2S_SRATE % divider == 0);
   encoder->dma_frame_div = divider;
   encoder->dma_frame_count = 0;
+  encoder->transfer_length = transfer_length;
 
   assert(process_encoder);
   encoder->process_encoder = process_encoder;

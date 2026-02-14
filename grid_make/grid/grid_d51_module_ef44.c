@@ -29,15 +29,14 @@ static uint16_t element_invert_bm = 0;
 
 static struct grid_asc* asc_state = NULL;
 
-static void ef44_process_encoder(void* user) {
-
-  uint8_t* buffer = (uint8_t*)user;
+static void ef44_process_encoder(struct grid_encoder_result* result) {
 
   uint8_t encoder_position_lookup[GRID_MODULE_EF44_ENCODER_COUNT] = {2, 3, 0, 1};
 
   for (uint8_t i = 0; i < GRID_MODULE_EF44_ENCODER_COUNT; i++) {
 
-    uint8_t nibble = GRID_UI_ENCODER_NIBBLE_FROM_BUFFER(buffer, i);
+    assert(i / 2 < result->length);
+    uint8_t nibble = GRID_UI_ENCODER_NIBBLE_FROM_BUFFER(result->data, i);
     uint8_t element_index = encoder_position_lookup[i];
 
     struct grid_ui_encoder_sample sample = GRID_UI_ENCODER_SAMPLE_FROM_NIBBLE(nibble);
@@ -45,16 +44,13 @@ static void ef44_process_encoder(void* user) {
   }
 }
 
-static void ef44_process_analog(void* user) {
-
-  struct grid_d51_adc_result* result = (struct grid_d51_adc_result*)user;
+static void ef44_process_analog(struct grid_adc_result* result) {
 
   uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
   uint16_t inverted = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
-  uint16_t downsampled = GRID_ADC_DOWNSAMPLE(inverted);
 
   uint16_t processed;
-  if (!grid_asc_process(asc_state, element_index, downsampled, &processed)) {
+  if (!grid_asc_process(asc_state, element_index, inverted, &processed)) {
     return;
   }
 
@@ -95,7 +91,7 @@ void grid_d51_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_model*
   assert(grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL) == 0);
   grid_ui_bulk_confread_next(ui);
 
-  grid_d51_encoder_init(enc, ef44_process_encoder);
+  grid_d51_encoder_init(enc, 1 + GRID_MODULE_EF44_ENCODER_COUNT / 2, ef44_process_encoder);
   grid_d51_adc_init(adc, 0b00000011, ef44_process_analog);
   grid_d51_adc_start(adc);
 }

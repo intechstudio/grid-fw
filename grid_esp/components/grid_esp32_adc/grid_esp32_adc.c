@@ -163,7 +163,7 @@ void IRAM_ATTR grid_esp32_adc_conv_mux() {
 
   for (int i = 0; i < 2; ++i) {
 
-    struct grid_esp32_adc_result result;
+    struct grid_adc_result result;
     result.channel = i;
     result.mux_state = mux_state;
     result.value = adc_value[i];
@@ -196,7 +196,7 @@ void IRAM_ATTR grid_esp32_adc_conv_nomux() {
 
     for (int j = 0; j < 2; ++j) {
 
-      struct grid_esp32_adc_result result;
+      struct grid_adc_result result;
       result.channel = j;
       result.mux_state = i;
       result.value = adc_value[i][j];

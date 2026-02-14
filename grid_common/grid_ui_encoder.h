@@ -6,6 +6,13 @@
 #include "grid_protocol.h"
 #include "grid_ui.h"
 
+struct grid_encoder_result {
+  uint8_t* data;
+  uint8_t length;
+};
+
+typedef void (*grid_process_encoder_t)(struct grid_encoder_result* result);
+
 #define GRID_UI_ENCODER_INIT_SAMPLES 2
 
 struct grid_ui_encoder_sample {

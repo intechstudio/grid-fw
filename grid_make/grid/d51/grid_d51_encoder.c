@@ -10,7 +10,7 @@ static void spi_start_transfer(struct grid_d51_encoder_model* enc) {
 
   gpio_set_pin_level(PIN_UI_SPI_CS0, true);
   spi_m_async_enable(&UI_SPI);
-  spi_m_async_transfer(&UI_SPI, enc->tx_buffer, enc->rx_buffer, 8);
+  spi_m_async_transfer(&UI_SPI, enc->tx_buffer, enc->rx_buffer, enc->transfer_length);
 }
 
 static void spi_transfer_complete_cb(void) {
@@ -19,16 +19,20 @@ static void spi_transfer_complete_cb(void) {
 
   gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 
-  enc->process_encoder(enc->rx_buffer);
+  struct grid_encoder_result result = {.data = &enc->rx_buffer[1], .length = enc->transfer_length - 1};
+  enc->process_encoder(&result);
 
   spi_start_transfer(enc);
 }
 
-void grid_d51_encoder_init(struct grid_d51_encoder_model* enc, grid_d51_process_encoder_t process_encoder) {
+void grid_d51_encoder_init(struct grid_d51_encoder_model* enc, uint8_t transfer_length, grid_process_encoder_t process_encoder) {
+
+  assert(transfer_length <= sizeof(enc->tx_buffer));
 
   memset(enc->tx_buffer, 0, sizeof(enc->tx_buffer));
   memset(enc->rx_buffer, 0, sizeof(enc->rx_buffer));
 
+  enc->transfer_length = transfer_length;
   enc->process_encoder = process_encoder;
 
   gpio_set_pin_level(PIN_UI_SPI_CS0, false);
