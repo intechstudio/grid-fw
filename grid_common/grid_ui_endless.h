@@ -21,6 +21,8 @@ struct grid_ui_endless_state {
   uint8_t adc_bit_depth;
 };
 
+void grid_ui_endless_state_init(struct grid_ui_model* ui, uint8_t element_index, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis);
+
 void grid_ui_element_endless_init(struct grid_ui_element* ele);
 void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buffer* buf);
 

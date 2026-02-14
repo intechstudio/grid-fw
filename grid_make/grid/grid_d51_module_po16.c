@@ -50,9 +50,7 @@ void grid_d51_module_po16_init(struct grid_sys_model* sys, struct grid_ui_model*
   }
 
   for (int i = 0; i < GRID_MODULE_PO16_POTMETER_COUNT; ++i) {
-    struct grid_ui_element* ele = &ui->element_list[i];
-    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-    grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+    grid_ui_potmeter_state_init(ui, i, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
   }
 
   grid_asc_array_set_factors(asc_state, 16, 0, 16, 1);
