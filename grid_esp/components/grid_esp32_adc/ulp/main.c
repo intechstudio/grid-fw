@@ -29,9 +29,9 @@ volatile uint32_t adc_value[8][2] = {0};
 
 void grid_platform_mux_write(uint8_t index) {
   mux_index = index;
-  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_A, mux_index / 1 % 2);
-  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_B, mux_index / 2 % 2);
-  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_C, mux_index / 4 % 2);
+  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_A, (mux_index >> 0) & 1);
+  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_B, (mux_index >> 1) & 1);
+  ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_C, (mux_index >> 2) & 1);
 }
 
 void grid_platform_mux_init(uint8_t positions_bm) {

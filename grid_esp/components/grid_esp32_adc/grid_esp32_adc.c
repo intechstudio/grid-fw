@@ -70,13 +70,13 @@ void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc) { 
 
 void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc) {
 
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_A, adc->mux_index >> 0 & 0x1);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_B, adc->mux_index >> 1 & 0x1);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_C, adc->mux_index >> 2 & 0x1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_A, (adc->mux_index >> 0) & 1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_B, (adc->mux_index >> 1) & 1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_C, (adc->mux_index >> 2) & 1);
 
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_A, adc->mux_index >> 0 & 0x1);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_B, adc->mux_index >> 1 & 0x1);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_C, adc->mux_index >> 2 & 0x1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_A, (adc->mux_index >> 0) & 1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_B, (adc->mux_index >> 1) & 1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_C, (adc->mux_index >> 2) & 1);
 }
 
 #include "esp_private/adc_share_hw_ctrl.h"

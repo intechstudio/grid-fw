@@ -763,9 +763,9 @@ void grid_platform_mux_init(uint8_t mux_positions_bm) {
 
 void grid_platform_mux_write(uint8_t index) {
 
-  gpio_set_pin_level(MUX_A, index / 1 % 2);
-  gpio_set_pin_level(MUX_B, index / 2 % 2);
-  gpio_set_pin_level(MUX_C, index / 4 % 2);
+  gpio_set_pin_level(MUX_A, (index >> 0) & 1);
+  gpio_set_pin_level(MUX_B, (index >> 1) & 1);
+  gpio_set_pin_level(MUX_C, (index >> 2) & 1);
 }
 
 static uint64_t micros = 0;
