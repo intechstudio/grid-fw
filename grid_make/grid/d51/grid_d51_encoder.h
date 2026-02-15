@@ -6,8 +6,7 @@
 #include "grid_ui_encoder.h"
 
 struct grid_d51_encoder_model {
-  uint8_t tx_buffer[14];
-  uint8_t rx_buffer[14];
+  uint8_t* rx_buffer;
   uint8_t transfer_length;
   grid_process_encoder_t process_encoder;
 };

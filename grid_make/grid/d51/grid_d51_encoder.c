@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "grid_d51_module.h"
+#include "grid_platform.h"
 
 struct grid_d51_encoder_model grid_d51_encoder_state;
 
@@ -10,7 +11,7 @@ static void spi_start_transfer(struct grid_d51_encoder_model* enc) {
 
   gpio_set_pin_level(PIN_UI_SPI_CS0, true);
   spi_m_async_enable(&UI_SPI);
-  spi_m_async_transfer(&UI_SPI, enc->tx_buffer, enc->rx_buffer, enc->transfer_length);
+  spi_m_async_transfer(&UI_SPI, NULL, enc->rx_buffer, enc->transfer_length);
 }
 
 static void spi_transfer_complete_cb(void) {
@@ -27,10 +28,8 @@ static void spi_transfer_complete_cb(void) {
 
 void grid_d51_encoder_init(struct grid_d51_encoder_model* enc, uint8_t transfer_length, grid_process_encoder_t process_encoder) {
 
-  assert(transfer_length <= sizeof(enc->tx_buffer));
-
-  memset(enc->tx_buffer, 0, sizeof(enc->tx_buffer));
-  memset(enc->rx_buffer, 0, sizeof(enc->rx_buffer));
+  enc->rx_buffer = grid_platform_allocate_volatile(transfer_length);
+  memset(enc->rx_buffer, 0, transfer_length);
 
   enc->transfer_length = transfer_length;
   enc->process_encoder = process_encoder;
