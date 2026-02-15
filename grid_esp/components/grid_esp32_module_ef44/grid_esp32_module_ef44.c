@@ -102,7 +102,10 @@ void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mode
   assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));
   grid_ui_bulk_flush(ui);
 
-  grid_esp32_encoder_init(enc, 1 + GRID_MODULE_EF44_ENCODER_COUNT / 2, 1, ef44_process_encoder);
+  uint8_t transfer_length = 1 + GRID_MODULE_EF44_ENCODER_COUNT / 2;
+  // I2S clock rate chosen so callback fires at 2000 Hz: rate = 2000 * 32bit * 4slots
+  uint32_t clock_rate = 2000 * I2S_DATA_BIT_WIDTH_32BIT * 4;
+  grid_esp32_encoder_init(enc, transfer_length, clock_rate, ef44_process_encoder);
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
   int8_t direction = grid_hwcfg_module_encoder_dir(sys);
   // Encoders are elements 0-3
