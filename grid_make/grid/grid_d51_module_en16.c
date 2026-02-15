@@ -34,5 +34,8 @@ void grid_d51_module_en16_init(struct grid_sys_model* sys, struct grid_ui_model*
     grid_ui_encoder_state_init(ui, i, detent, direction, 1, 0.5, 0.2);
   }
 
-  grid_d51_encoder_init(enc, 1 + GRID_MODULE_EN16_ENCODER_COUNT / 2, en16_process_encoder);
+  uint8_t transfer_length = 1 + GRID_MODULE_EN16_ENCODER_COUNT / 2;
+  // SPI clock rate chosen so callback fires at 2000 Hz: rate = 2000 * transfer_length * 8
+  uint32_t clock_rate = 2000 * transfer_length * 8;
+  grid_d51_encoder_init(enc, transfer_length, clock_rate, en16_process_encoder);
 }

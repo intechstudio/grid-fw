@@ -213,7 +213,10 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   // Encoder driver is used to read minibuttons via shift registers
-  grid_esp32_encoder_init(&grid_esp32_encoder_state, 2, 10, vsnx_process_minibutton);
+  uint8_t transfer_length = 2;
+  // I2S clock rate chosen so callback fires at 200 Hz: rate = 200 * 32bit * 4slots
+  uint32_t clock_rate = 200 * I2S_DATA_BIT_WIDTH_32BIT * 4;
+  grid_esp32_encoder_init(&grid_esp32_encoder_state, transfer_length, clock_rate, vsnx_process_minibutton);
 
   uint8_t mux_positions = grid_hwcfg_module_is_tek2(sys) ? 0b11110111 : 0b11111111;
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);

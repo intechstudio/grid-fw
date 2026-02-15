@@ -26,7 +26,7 @@ static void spi_transfer_complete_cb(void) {
   spi_start_transfer(enc);
 }
 
-void grid_d51_encoder_init(struct grid_d51_encoder_model* enc, uint8_t transfer_length, grid_process_encoder_t process_encoder) {
+void grid_d51_encoder_init(struct grid_d51_encoder_model* enc, uint8_t transfer_length, uint32_t clock_rate, grid_process_encoder_t process_encoder) {
 
   enc->rx_buffer = grid_platform_allocate_volatile(transfer_length);
   memset(enc->rx_buffer, 0, transfer_length);
@@ -38,7 +38,7 @@ void grid_d51_encoder_init(struct grid_d51_encoder_model* enc, uint8_t transfer_
   gpio_set_pin_direction(PIN_UI_SPI_CS0, GPIO_DIRECTION_OUT);
 
   spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
-  spi_m_async_set_baudrate(&UI_SPI, 100000);
+  spi_m_async_set_baudrate(&UI_SPI, clock_rate);
 
   spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, spi_transfer_complete_cb);
 
