@@ -1,5 +1,20 @@
-# Use the base image
-FROM docker.io/espressif/idf:v5.5
+FROM debian:trixie
+
+RUN apt update
+
+# Dependencies of esp-idf
+RUN apt -y install git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+
+# Clone esp-idf
+RUN git clone -b v5.5 --recursive https://github.com/espressif/esp-idf.git
+
+# Install tools used by esp-idf for esp32s3
+WORKDIR /esp-idf
+RUN ./install.sh esp32s3 > install-sh.log 2>&1
+WORKDIR /
+
+ENV IDF_PATH=/esp-idf
+ENTRYPOINT ["/esp-idf/tools/docker/entrypoint.sh"]
 
 # Install pico sdk required dependencies
 RUN apt update && \
@@ -40,7 +55,7 @@ RUN apt update && \
     apt install -y socat
 
 # Install pre-commit from pip
-RUN apt install -y pre-commit
+RUN python3 -m pip install --break-system-packages pre-commit
 RUN pre-commit --version
 
 # Copy pre-commit hooks and create a git directory,
