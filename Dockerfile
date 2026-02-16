@@ -1,6 +1,6 @@
 FROM debian:trixie
 
-RUN apt update
+RUN apt-get update
 
 # Dependencies of esp-idf
 RUN apt -y install git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
@@ -17,8 +17,8 @@ ENV IDF_PATH=/esp-idf
 ENTRYPOINT ["/esp-idf/tools/docker/entrypoint.sh"]
 
 # Install pico sdk required dependencies
-RUN apt update && \
-    apt install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential xxd && \
+RUN apt-get update && \
+    apt-get install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential xxd && \
     mkdir -p pico && \
     cd pico && \
     git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.1 && \
@@ -39,7 +39,7 @@ WORKDIR /
 ENV PICO_SDK_PATH=/pico/pico-sdk
 
 # Install picotool
-RUN apt install -y libusb-1.0-0-dev
+RUN apt-get install -y libusb-1.0-0-dev
 RUN git clone --depth 1 --branch 2.1.1 https://github.com/raspberrypi/picotool.git
 RUN mkdir -p picotool/build
 WORKDIR /picotool
@@ -51,8 +51,8 @@ WORKDIR /
 
 ENV EMSDK=/emsdk EM_CONFIG=/emsdk/.emscripten EMSDK_NODE=/emsdk/node/14.18.2_64bit/bin/node PATH=/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/14.18.2_64bit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-RUN apt update && \
-    apt install -y socat
+RUN apt-get update && \
+    apt-get install -y socat
 
 # Install pre-commit from pip
 RUN python3 -m pip install --break-system-packages pre-commit
