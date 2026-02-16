@@ -16,23 +16,22 @@ WORKDIR /
 ENV IDF_PATH=/esp-idf
 ENTRYPOINT ["/esp-idf/tools/docker/entrypoint.sh"]
 
-# Install pico sdk required dependencies
+# Install pico sdk and build dependencies
 RUN apt-get update && \
-    apt-get install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential xxd && \
-    mkdir -p pico && \
+    apt-get install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential xxd
+
+# Clone pico sdk
+RUN mkdir -p pico && \
     cd pico && \
     git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.1 && \
     cd pico-sdk/ && \
-    git submodule update --init && \
-    cd ../.. && \
-    \
-    git clone https://github.com/emscripten-core/emsdk.git && \
+    git submodule update --init
+
+# Install emscripten sdk
+RUN git clone https://github.com/emscripten-core/emsdk.git && \
     cd emsdk && \
-    git pull && \
     ./emsdk install latest && \
-    ./emsdk activate latest && \
-    . ./emsdk_env.sh && \
-    cd ..
+    ./emsdk activate latest
 
 WORKDIR /
 
