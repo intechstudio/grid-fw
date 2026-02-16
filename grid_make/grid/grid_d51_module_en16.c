@@ -1,5 +1,6 @@
 #include "grid_d51_module_en16.h"
 
+#include "grid_module.h"
 #include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
 #include "grid_ui_system.h"
@@ -22,7 +23,7 @@ static void hardware_start_transfer(void) {
   spi_m_async_transfer(&UI_SPI, UI_SPI_TX_BUFFER, UI_SPI_RX_BUFFER, 8);
 }
 
-static void spi_transfer_complete_cb(void) {
+static void spi_transfer_complete_cb(struct spi_m_async_descriptor* descr) {
 
   /* Transfer completed */
 
@@ -62,7 +63,7 @@ static void hardware_init(void) {
   spi_m_async_set_baudrate(&UI_SPI,
                            100000); // was 400000 check clock div setting
 
-  spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, spi_transfer_complete_cb);
+  spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)spi_transfer_complete_cb);
 }
 
 void grid_module_en16_init() {

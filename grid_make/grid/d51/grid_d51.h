@@ -17,7 +17,7 @@
 #include "grid_d51_nvm.h"
 #include "grid_d51_uart.h"
 
-#define GRID_D51_USER_ROW_BASE 0x804000
+#define GRID_D51_USER_ROW_BASE ((void*)0x804000)
 
 #define GRID_D51_DEMCR (*(uint32_t*)0xE000EDFC)
 #define GRID_D51_DWT_CTRL (*(uint32_t*)0xE0001000)
