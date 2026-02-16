@@ -7,6 +7,7 @@
 
 #include "grid_cal.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 struct grid_cal_model grid_cal_state = {0};
@@ -233,4 +234,5 @@ uint16_t grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in)
   }
 
   assert(0);
+  return 0;
 }
