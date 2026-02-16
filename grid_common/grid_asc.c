@@ -1,5 +1,7 @@
 #include "grid_asc.h"
 
+#include <assert.h>
+
 void grid_asc_array_set_factors(struct grid_asc* asc, size_t capacity, uint8_t start, uint8_t length, uint8_t factor) {
 
   assert(start < capacity);

@@ -1,5 +1,6 @@
 #include "grid_ui_endless.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

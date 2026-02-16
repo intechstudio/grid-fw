@@ -1,5 +1,6 @@
 #include "grid_ui_potmeter.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
