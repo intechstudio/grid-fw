@@ -17,7 +17,7 @@
 #include "grid_ain.h"
 #include "grid_esp32_pins.h"
 
-const uint32_t ADC_CHANNELS[2] = {ADC_CHANNEL_1, ADC_CHANNEL_0};
+const uint32_t ADC_CHANNELS[2] = {ADC_CHANNEL_0, ADC_CHANNEL_1};
 
 // volatile, to avoid being optimized away
 volatile uint32_t mux_dependent = 0;

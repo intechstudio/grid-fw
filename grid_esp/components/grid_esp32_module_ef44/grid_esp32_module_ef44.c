@@ -38,8 +38,8 @@
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 
 static DRAM_ATTR const uint8_t mux_element_lookup[2][2] = {
-    {6, 7},
     {4, 5},
+    {6, 7},
 };
 static DRAM_ATTR uint16_t element_invert_bm = 0;
 

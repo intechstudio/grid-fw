@@ -56,7 +56,10 @@ void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, uint8_t t
 
   rx_tdm_cfg.slot_cfg.big_endian = true;
 
-  rx_tdm_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_512;
+  // Highest mclk_multiple to minimize the minimum sample rate:
+  // mclk_div = sclk / (sample_rate * mclk_multiple) must be < 256
+  // min_sample_rate = sclk / (255 * mclk_multiple)
+  rx_tdm_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_1152;
   ESP_ERROR_CHECK(i2s_channel_init_tdm_mode(encoder->rx_chan, &rx_tdm_cfg));
 
   i2s_event_callbacks_t cbs = {
