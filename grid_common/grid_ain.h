@@ -32,8 +32,8 @@ typedef void (*grid_process_analog_t)(struct grid_adc_result* result);
 // next set bit, and the result is masked back to 3 bits (0-7).
 #define GRID_MUX_INCREMENT(index, mask)                                                                                                                                                                \
   do {                                                                                                                                                                                                 \
-    uint16_t _rotated = ((uint16_t)(mask) | ((uint16_t)(mask) << 8)) >> ((index) + 1);                                                                                                                \
-    (index) = ((index) + 1 + __builtin_ctz(_rotated)) & 0b111;                                                                                                                                            \
+    uint16_t _rotated = ((uint16_t)(mask) | ((uint16_t)(mask) << 8)) >> ((index) + 1);                                                                                                                 \
+    (index) = ((index) + 1 + __builtin_ctz(_rotated)) & 0b111;                                                                                                                                         \
   } while (0)
 
 struct ain_chan_t {
