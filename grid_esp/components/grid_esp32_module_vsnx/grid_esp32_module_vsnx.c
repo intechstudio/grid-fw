@@ -43,16 +43,16 @@ static struct grid_ui_endless_sample DRAM_ATTR endless_sample[GRID_MODULE_VSNX_E
 
 #define X GRID_MUX_UNUSED
 static DRAM_ATTR const uint8_t vsn1l_mux_element_lookup[2][8] = {
-    {8, 8, 8, X, 2, 3, 6, 7},
     {X, X, X, X, 0, 1, 4, 5},
+    {8, 8, 8, X, 2, 3, 6, 7},
 };
 static DRAM_ATTR const uint8_t vsn1r_mux_element_lookup[2][8] = {
-    {X, X, X, X, 2, 3, 6, 7},
     {8, 8, 8, X, 0, 1, 4, 5},
+    {X, X, X, X, 2, 3, 6, 7},
 };
 static DRAM_ATTR const uint8_t vsn2_mux_element_lookup[2][8] = {
-    {X, X, X, X, 2, 3, 6, 7},
     {X, X, X, X, 0, 1, 4, 5},
+    {X, X, X, X, 2, 3, 6, 7},
 };
 static DRAM_ATTR const uint8_t tek2_mux_element_lookup[2][8] = {
     {8, 8, 8, X, 0, 1, 4, 5},
@@ -212,8 +212,9 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   // Encoder driver is used to read minibuttons via shift registers
   uint8_t transfer_length = 2;
-  // I2S clock rate chosen so callback fires at 200 Hz: rate = 200 * 32bit * 4slots
-  uint32_t clock_rate = 200 * I2S_DATA_BIT_WIDTH_32BIT * 4;
+  // Lowest possible I2S callback rate given 160 MHz CPU clock and I2S_MCLK_MULTIPLE_1152:
+  // min_rate = 160MHz / (255 * 1152) ≈ 543 Hz
+  uint32_t clock_rate = 543 * I2S_DATA_BIT_WIDTH_32BIT * 4;
   grid_esp32_encoder_init(&grid_esp32_encoder_state, transfer_length, clock_rate, vsnx_process_minibutton);
 
   uint8_t mux_positions = grid_hwcfg_module_is_tek2(sys) ? 0b11110111 : 0b11111111;
