@@ -27,7 +27,7 @@ volatile uint32_t adc_result_ready = 0;
 volatile uint32_t adc_result_taken = 1;
 volatile uint32_t adc_value[8][2] = {0};
 
-void grid_platform_mux_write(uint8_t index) {
+static inline void grid_platform_mux_write(uint8_t index) {
   mux_index = index;
   ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_A, (mux_index >> 0) & 1);
   ulp_riscv_gpio_output_level(GRID_ESP32_PINS_MUX_1_B, (mux_index >> 1) & 1);
