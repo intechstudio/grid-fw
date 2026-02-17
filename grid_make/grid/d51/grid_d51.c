@@ -514,7 +514,7 @@ uint8_t grid_fusb302_read_id(struct io_descriptor* i2c_io) {
     msg.buffer = buffer;
 
     /* start transfer then return */
-    ret = i2c_m_async_transfer(&i2c->device, &msg);
+    ret = i2c_m_async_transfer(i2c, &msg);
 
     if (ret != 0) {
       printf("I2C error\r\n");
@@ -527,7 +527,7 @@ uint8_t grid_fusb302_read_id(struct io_descriptor* i2c_io) {
     }
 
     msg.flags = I2C_M_RD | I2C_M_STOP;
-    ret = i2c_m_async_transfer(&i2c->device, &msg);
+    ret = i2c_m_async_transfer(i2c, &msg);
 
     if (ret != 0) {
       printf("I2C error\r\n");
@@ -561,7 +561,7 @@ uint8_t grid_mxt144u_read_id(struct io_descriptor* i2c_io) {
     msg.buffer = buffer;
 
     /* start transfer then return */
-    ret = i2c_m_async_transfer(&i2c->device, &msg);
+    ret = i2c_m_async_transfer(i2c, &msg);
 
     if (ret != 0) {
       printf("I2C error\r\n");
@@ -573,7 +573,7 @@ uint8_t grid_mxt144u_read_id(struct io_descriptor* i2c_io) {
 
     msg.len = 7;
     msg.flags = I2C_M_RD | I2C_M_STOP;
-    ret = i2c_m_async_transfer(&i2c->device, &msg);
+    ret = i2c_m_async_transfer(i2c, &msg);
 
     if (ret != 0) {
       printf("I2C error\r\n");

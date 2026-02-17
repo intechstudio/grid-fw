@@ -19,6 +19,9 @@ struct io_descriptor* grid_sys_east_io;
 struct io_descriptor* grid_sys_south_io;
 struct io_descriptor* grid_sys_west_io;
 
+static void dma_transfer_complete(struct grid_port* port);
+void tx_cb_USART_GRID(uint8_t dir);
+
 static void tx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(0); }
 static void tx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(1); }
 static void tx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr) { tx_cb_USART_GRID(2); }
@@ -31,7 +34,7 @@ static void rx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr)
 static void rx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr) {}
 static void rx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr) {}
 
-volatile dmatest = 0;
+volatile int dmatest = 0;
 
 static void dma_transfer_complete_n_cb(struct _dma_resource* resource) { dma_transfer_complete(usart_ports[0]); }
 static void dma_transfer_complete_e_cb(struct _dma_resource* resource) { dma_transfer_complete(usart_ports[1]); }
@@ -140,12 +143,12 @@ void grid_d51_uart_init() {
   grid_d51_uart_dma_rx_init();
 }
 
-void grid_d51_uart_dma_rx_init_one(struct usart_async_descriptor* usart, uint8_t channel, uint8_t* buffer, uint32_t length, void* transfer_done_cb()) {
+void grid_d51_uart_dma_rx_init_one(struct usart_async_descriptor* usart, uint8_t channel, uint8_t* buffer, uint32_t length, void (*transfer_done_cb)(struct _dma_resource*)) {
 
   uint8_t dma_rx_channel = channel;
 
-  _dma_set_source_address(dma_rx_channel, (uint32_t) & (((Sercom*)((*usart).device.hw))->USART.DATA.reg));
-  _dma_set_destination_address(dma_rx_channel, (uint32_t*)buffer);
+  _dma_set_source_address(dma_rx_channel, (const void*)&(((Sercom*)((*usart).device.hw))->USART.DATA.reg));
+  _dma_set_destination_address(dma_rx_channel, (const void*)buffer);
   _dma_set_data_amount(dma_rx_channel, (uint32_t)length);
 
   struct _dma_resource* resource_rx;

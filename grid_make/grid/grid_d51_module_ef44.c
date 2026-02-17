@@ -1,5 +1,6 @@
 #include "grid_d51_module_ef44.h"
 
+#include "grid_module.h"
 #include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
 #include "grid_ui_potmeter.h"
@@ -40,7 +41,7 @@ static void hardware_adc_start_transfer(void) {
   adc_async_start_conversion(&ADC_1);
 }
 
-static void spi_transfer_complete_cb(void) {
+static void spi_transfer_complete_cb(struct spi_m_async_descriptor* descr) {
 
   /* Transfer completed */
 
@@ -69,7 +70,7 @@ static void spi_transfer_complete_cb(void) {
   hardware_spi_start_transfer();
 }
 
-static void adc_transfer_complete_cb(void) {
+static void adc_transfer_complete_cb(const struct adc_async_descriptor* const descr, const uint8_t channel) {
 
   if (adc_complete_count == 0) {
     adc_complete_count++;
@@ -84,8 +85,8 @@ static void adc_transfer_complete_cb(void) {
   uint8_t adc_index_0 = multiplexer_index + 2;
   uint8_t adc_index_1 = multiplexer_index;
 
-  adc_async_read_channel(&ADC_0, 0, &adcresult_0, 2);
-  adc_async_read_channel(&ADC_1, 0, &adcresult_1, 2);
+  adc_async_read_channel(&ADC_0, 0, (uint8_t*)&adcresult_0, 2);
+  adc_async_read_channel(&ADC_1, 0, (uint8_t*)&adcresult_1, 2);
 
   /* Update the multiplexer */
 
@@ -117,7 +118,7 @@ static void hardware_init(void) {
   spi_m_async_set_baudrate(&UI_SPI,
                            100000); // was 400000 check clock div setting
 
-  spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, spi_transfer_complete_cb);
+  spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)spi_transfer_complete_cb);
 
   adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
   adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);

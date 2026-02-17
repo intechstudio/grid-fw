@@ -1,5 +1,6 @@
 #include "grid_d51_module_bu16.h"
 
+#include "grid_module.h"
 #include "grid_ui_button.h"
 #include "grid_ui_system.h"
 
@@ -19,7 +20,7 @@ static void hardware_start_transfer(void) {
   adc_async_start_conversion(&ADC_1);
 }
 
-static void adc_transfer_complete_cb(void) {
+static void adc_transfer_complete_cb(const struct adc_async_descriptor* const descr, const uint8_t channel) {
 
   if (adc_complete_count == 0) {
     adc_complete_count++;
@@ -34,8 +35,8 @@ static void adc_transfer_complete_cb(void) {
   uint8_t adc_index_0 = multiplexer_lookup[multiplexer_index + 8];
   uint8_t adc_index_1 = multiplexer_lookup[multiplexer_index + 0];
 
-  adc_async_read_channel(&ADC_0, 0, &adcresult_0, 2);
-  adc_async_read_channel(&ADC_1, 0, &adcresult_1, 2);
+  adc_async_read_channel(&ADC_0, 0, (uint8_t*)&adcresult_0, 2);
+  adc_async_read_channel(&ADC_1, 0, (uint8_t*)&adcresult_1, 2);
 
   /* Update the multiplexer */
 

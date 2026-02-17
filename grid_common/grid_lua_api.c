@@ -1,5 +1,6 @@
 #include "grid_lua_api.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
