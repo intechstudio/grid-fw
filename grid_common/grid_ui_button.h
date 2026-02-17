@@ -25,6 +25,7 @@ struct grid_ui_button_state {
   uint64_t curr_time;
 };
 
+void grid_ui_button_state_init_direct(struct grid_ui_button_state* state, uint8_t adc_bit_depth, double threshold, double hysteresis);
 void grid_ui_button_state_init(struct grid_ui_model* ui, uint8_t element_index, uint8_t adc_bit_depth, double threshold, double hysteresis);
 
 void grid_ui_element_button_init(struct grid_ui_element* ele);
@@ -33,6 +34,7 @@ void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buff
 void grid_ui_element_button_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
+void grid_ui_button_store_input_direct(struct grid_ui_element* ele, struct grid_ui_button_state* state, uint16_t value);
 void grid_ui_button_store_input(struct grid_ui_model* ui, uint8_t element_index, uint16_t value);
 
 // ========================= BUTTON =========================== //

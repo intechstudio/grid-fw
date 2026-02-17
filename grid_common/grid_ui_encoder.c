@@ -51,14 +51,13 @@ void grid_ui_encoder_state_init(struct grid_ui_model* ui, uint8_t element_index,
   struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
 
   state->encoder_last_real_time = 0;
-  state->button_last_real_time = 0;
   state->last_nibble = 0;
   state->detent = detent;
   state->encoder_last_leave_dir = 0;
   state->initial_samples = 0;
   state->direction = direction;
 
-  grid_ui_button_state_init(ui, element_index, button_adc_bit_depth, button_threshold, button_hysteresis);
+  grid_ui_button_state_init_direct(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
 }
 
 void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
@@ -66,9 +65,7 @@ void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
   ele->type = GRID_PARAMETER_ELEMENT_ENCODER;
 
   ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_encoder_state));
-  ele->secondary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_button_state));
   memset(ele->primary_state, 0, sizeof(struct grid_ui_encoder_state));
-  memset(ele->secondary_state, 0, sizeof(struct grid_ui_button_state));
 
   grid_ui_element_malloc_events(ele, 4);
 
@@ -283,11 +280,11 @@ void grid_ui_encoder_store_input(struct grid_ui_model* ui, uint8_t element_index
   assert(ui);
   assert(element_index < ui->element_list_length);
 
-  // Handle button input for the encoder element
-  grid_ui_button_store_input(ui, element_index, sample.button);
-
   struct grid_ui_element* ele = &ui->element_list[element_index];
   struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
+
+  // Handle button input using embedded button state
+  grid_ui_button_store_input_direct(ele, &state->button, sample.button);
 
   // Reconstruct rotation value from phases
   uint8_t new_value = sample.phase_a | (sample.phase_b << 1);

@@ -52,7 +52,7 @@ void grid_ui_endless_state_init(struct grid_ui_model* ui, uint8_t element_index,
 
   state->adc_bit_depth = adc_bit_depth;
 
-  grid_ui_button_state_init(ui, element_index, button_adc_bit_depth, button_threshold, button_hysteresis);
+  grid_ui_button_state_init_direct(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
 }
 
 void grid_ui_element_endless_init(struct grid_ui_element* ele) {
@@ -60,9 +60,7 @@ void grid_ui_element_endless_init(struct grid_ui_element* ele) {
   ele->type = GRID_PARAMETER_ELEMENT_ENDLESS;
 
   ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_endless_state));
-  ele->secondary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_button_state));
   memset(ele->primary_state, 0, sizeof(struct grid_ui_endless_state));
-  memset(ele->secondary_state, 0, sizeof(struct grid_ui_button_state));
 
   grid_ui_element_malloc_events(ele, 4);
 
@@ -325,11 +323,11 @@ void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index
   assert(ui);
   assert(element_index < ui->element_list_length);
 
-  // Handle button input for the endless element
-  grid_ui_button_store_input(ui, element_index, sample.button_value);
-
   struct grid_ui_element* ele = &ui->element_list[element_index];
   struct grid_ui_endless_state* state = (struct grid_ui_endless_state*)ele->primary_state;
+
+  // Handle button input using embedded button state
+  grid_ui_button_store_input_direct(ele, &state->button, sample.button_value);
   uint8_t adc_bit_depth = state->adc_bit_depth;
 
   // Check if current values differ from previous

@@ -5,6 +5,7 @@
 
 #include "grid_protocol.h"
 #include "grid_ui.h"
+#include "grid_ui_button.h"
 
 struct grid_ui_endless_sample {
   uint16_t phase_a;
@@ -19,6 +20,7 @@ struct grid_ui_endless_state {
   uint16_t prev_phase_b;
   uint16_t prev_button_value;
   uint8_t adc_bit_depth;
+  struct grid_ui_button_state button;
 };
 
 void grid_ui_endless_state_init(struct grid_ui_model* ui, uint8_t element_index, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis);
