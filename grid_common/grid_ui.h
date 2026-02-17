@@ -82,7 +82,6 @@ struct grid_ui_element {
   struct grid_ui_event* event_list;
 
   void* primary_state;
-  void* secondary_state;
 };
 
 enum grid_ui_bulk_status_t {

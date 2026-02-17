@@ -5,6 +5,7 @@
 
 #include "grid_protocol.h"
 #include "grid_ui.h"
+#include "grid_ui_button.h"
 
 struct grid_encoder_result {
   uint8_t* data;
@@ -28,12 +29,12 @@ struct grid_ui_encoder_sample {
 
 struct grid_ui_encoder_state {
   uint64_t encoder_last_real_time;
-  uint64_t button_last_real_time;
   uint8_t last_nibble;
   uint8_t detent;
   int8_t encoder_last_leave_dir;
   uint8_t initial_samples;
   int8_t direction;
+  struct grid_ui_button_state button;
 };
 
 void grid_ui_encoder_state_init(struct grid_ui_model* ui, uint8_t element_index, uint8_t detent, int8_t direction, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis);
