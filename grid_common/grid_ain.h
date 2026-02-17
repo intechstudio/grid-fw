@@ -22,20 +22,19 @@ typedef void (*grid_process_analog_t)(struct grid_adc_result* result);
 
 #define GRID_ADC_INVERT_COND(value, element_index, invert_bm) ((value) ^ (GRID_ADC_MAX * (((invert_bm) >> (element_index)) & 1)))
 
-// Find first valid mux position based on bitmask
-#define GRID_MUX_FIRST_VALID(index, mask)                                                                                                                                                              \
-  do {                                                                                                                                                                                                 \
-    (index) = 0;                                                                                                                                                                                       \
-    while (!((mask) & (1 << (index)))) {                                                                                                                                                               \
-      (index)++;                                                                                                                                                                                       \
-    }                                                                                                                                                                                                  \
-  } while (0)
+// Find first valid mux position in constant time using count-trailing-zeros
+// to locate the lowest set bit in the bitmask.
+#define GRID_MUX_FIRST_VALID(index, mask) ((index) = __builtin_ctz(mask))
 
-// Advance mux index to next valid position based on bitmask
+// Advance mux index to next valid position in constant time. The 8-bit mask
+// is duplicated into a 16-bit value so that shifting past the current position
+// wraps around naturally. Count-trailing-zeros then finds the distance to the
+// next set bit, and the result is masked back to 3 bits (0-7).
 #define GRID_MUX_INCREMENT(index, mask)                                                                                                                                                                \
   do {                                                                                                                                                                                                 \
-    (index) = ((index) + 1) % 8;                                                                                                                                                                       \
-  } while (!((mask) & (1 << (index))))
+    uint16_t _rotated = ((uint16_t)(mask) | ((uint16_t)(mask) << 8)) >> ((index) + 1);                                                                                                                \
+    (index) = ((index) + 1 + __builtin_ctz(_rotated)) & 0b111;                                                                                                                                            \
+  } while (0)
 
 struct ain_chan_t {
 
