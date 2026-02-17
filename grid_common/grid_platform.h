@@ -30,6 +30,12 @@ extern int grid_platform_fflush(void* stream);
 
 extern int grid_platform_remove(const char* pathname);
 
+extern void* grid_platform_opendir(const char* name);
+
+extern int grid_platform_closedir(void* dirp);
+
+extern void* grid_platform_readdir(void* dirp);
+
 extern void grid_platform_printf(char const* fmt, ...);
 
 extern void grid_platform_printf_nonprint(const uint8_t* src, size_t size);

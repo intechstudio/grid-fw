@@ -62,6 +62,7 @@ grid/grid_d51_module_po16.o \
 grid/grid_d51_module_ef44.o \
 ../grid_common/grid_protocol.o \
 grid/d51/grid_d51_lua.o \
+../grid_common/lua-5.4.3/src/dirent.o \
 ../grid_common/lua-5.4.3/src/lapi.o \
 ../grid_common/lua-5.4.3/src/lctype.o \
 ../grid_common/lua-5.4.3/src/lfunc.o \
@@ -153,6 +154,7 @@ OBJS_AS_ARGS +=  \
 "grid/grid_d51_module_ef44.o" \
 "../grid_common/grid_protocol.o" \
 "grid/d51/grid_d51_lua.o" \
+"../grid_common/lua-5.4.3/src/dirent.o" \
 "../grid_common/lua-5.4.3/src/lapi.o" \
 "../grid_common/lua-5.4.3/src/lctype.o" \
 "../grid_common/lua-5.4.3/src/lfunc.o" \
@@ -261,6 +263,7 @@ DEPS_AS_ARGS +=  \
 "grid/grid_d51_module_ef44.d" \
 "../grid_common/grid_protocol.d" \
 "grid/d51/grid_d51_lua.d" \
+"../grid_common/lua-5.4.3/src/dirent.d" \
 "../grid_common/lua-5.4.3/src/lapi.d" \
 "../grid_common/lua-5.4.3/src/lctype.d" \
 "../grid_common/lua-5.4.3/src/lfunc.d" \

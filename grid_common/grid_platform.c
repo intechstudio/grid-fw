@@ -251,3 +251,24 @@ int grid_platform_remove(const char* pathname) {
 
   return grid_littlefs_remove(LFS, pathname) == 0 ? 0 : -1;
 }
+
+void* grid_platform_opendir(const char* name) {
+
+  assert(LFS);
+
+  return grid_littlefs_opendir(LFS, name);
+}
+
+int grid_platform_closedir(void* dirp) {
+
+  assert(LFS);
+
+  return grid_littlefs_closedir(LFS, dirp);
+}
+
+void* grid_platform_readdir(void* dirp) {
+
+  assert(LFS);
+
+  return grid_littlefs_readdir(LFS, dirp);
+}

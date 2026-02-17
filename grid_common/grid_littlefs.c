@@ -447,12 +447,14 @@ lfs_file_t* grid_littlefs_fopen(lfs_t* lfs, const char* path, const char* mode) 
 
   if (flags == 0) {
     printf("grid_littlefs_fopen mode error: unsupported mode string\n");
+    free(file);
     return NULL;
   }
 
   int lfs_err = lfs_file_open(lfs, file, fpath, flags);
   if (lfs_err != LFS_ERR_OK) {
     printf("grid_littlefs_fopen open error: %d\n", lfs_err);
+    free(file);
     return NULL;
   }
 
@@ -527,3 +529,38 @@ ssize_t grid_littlefs_ftell(lfs_t* lfs, lfs_file_t* stream) {
 ssize_t grid_littlefs_fseek(lfs_t* lfs, lfs_file_t* stream, lfs_soff_t soff, int whence) { return lfs_file_seek(lfs, stream, soff, whence) >= 0 ? 0 : -1; }
 
 int grid_littlefs_fflush(lfs_t* lfs, lfs_file_t* stream) { return lfs_file_sync(lfs, stream) >= 0 ? 0 : EOF; }
+
+lfs_dir_t* grid_littlefs_opendir(lfs_t* lfs, const char* name) {
+
+  lfs_dir_t* dirp = malloc(sizeof(lfs_dir_t));
+  if (!dirp) {
+    printf("grid_littlefs_opendir malloc failed\n");
+    return NULL;
+  }
+
+  int lfs_err = lfs_dir_open(lfs, dirp, name);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_opendir open error: %d\n", lfs_err);
+    free(dirp);
+    return NULL;
+  }
+
+  return dirp;
+}
+
+int grid_littlefs_closedir(lfs_t* lfs, lfs_dir_t* dirp) {
+
+  int lfs_err = lfs_dir_close(lfs, dirp);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_closedir close error: %d\n", lfs_err);
+    return -1;
+  }
+
+  free(dirp);
+
+  return 0;
+}
+
+struct lfs_info READDIR = {0};
+
+const char* grid_littlefs_readdir(lfs_t* lfs, lfs_dir_t* dirp) { return lfs_dir_read(lfs, dirp, &READDIR) > 0 ? READDIR.name : NULL; }
