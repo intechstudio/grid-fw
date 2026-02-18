@@ -20,7 +20,7 @@ static void spi_transfer_complete_cb(void) {
 
   gpio_set_pin_level(PIN_UI_SPI_CS0, false);
 
-  struct grid_encoder_result result = {.data = &enc->rx_buffer[1], .length = enc->transfer_length - 1};
+  struct grid_encoder_result result = {.data = enc->rx_buffer, .length = enc->transfer_length};
   enc->process_encoder(&result);
 
   spi_start_transfer(enc);
