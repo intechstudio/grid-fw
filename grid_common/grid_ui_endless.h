@@ -23,7 +23,7 @@ struct grid_ui_endless_state {
   struct grid_ui_button_state button;
 };
 
-void grid_ui_endless_state_init(struct grid_ui_model* ui, uint8_t element_index, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis);
+void grid_ui_endless_configure(struct grid_ui_endless_state* state, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis);
 
 void grid_ui_element_endless_init(struct grid_ui_element* ele);
 void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buffer* buf);
@@ -31,7 +31,7 @@ void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buf
 void grid_ui_element_endless_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
-void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_endless_sample sample);
+void grid_ui_endless_store_input(struct grid_ui_element* ele, struct grid_ui_endless_sample sample);
 
 uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint64_t* endless_last_real_time, double* delta_frac);
 

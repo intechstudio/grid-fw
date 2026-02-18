@@ -1,22 +1,15 @@
 #include "grid_d51_module_pbf4.h"
 
-#include <string.h>
-
 #include "grid_ain.h"
-#include "grid_asc.h"
 #include "grid_d51_adc.h"
 #include "grid_platform.h"
 #include "grid_ui_button.h"
 #include "grid_ui_potmeter.h"
-#include "grid_ui_system.h"
 
 #include "grid_cal.h"
 #include "grid_config.h"
 
 #include <assert.h>
-
-#define GRID_MODULE_PBF4_BUTTON_COUNT 4
-#define GRID_MODULE_PBF4_POTMETER_COUNT 8
 
 #define X GRID_MUX_UNUSED
 static const uint8_t mux_element_lookup[2][8] = {
@@ -26,7 +19,7 @@ static const uint8_t mux_element_lookup[2][8] = {
 #undef X
 static uint16_t element_invert_bm = 0b0000000000001111;
 
-static struct grid_asc* asc_state = NULL;
+static struct grid_ui_model* ui_ptr = NULL;
 
 static void pbf4_process_analog(struct grid_adc_result* result) {
 
@@ -35,47 +28,43 @@ static void pbf4_process_analog(struct grid_adc_result* result) {
 
   uint16_t inverted = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
 
-  uint16_t processed;
-  if (!grid_asc_process(asc_state, element_index, inverted, &processed)) {
-    return;
-  }
-
-  if (element_index >= GRID_MODULE_PBF4_POTMETER_COUNT) {
-    grid_ui_button_store_input(&grid_ui_state, element_index, processed);
-  } else {
-    grid_ui_potmeter_store_input(&grid_ui_state, element_index, processed);
+  struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
+  if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+    grid_ui_potmeter_store_input(ele, inverted);
+  } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+    struct grid_ui_button_state* bstate = (struct grid_ui_button_state*)ele->primary_state;
+    grid_ui_button_store_input(ele, bstate, inverted);
   }
 }
 
 void grid_d51_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_d51_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {
 
-  asc_state = grid_platform_allocate_volatile(12 * sizeof(struct grid_asc));
-  memset(asc_state, 0, 12 * sizeof(struct grid_asc));
+  ui_ptr = ui;
 
-  // Buttons are elements 8-11
-  for (int i = 0; i < GRID_MODULE_PBF4_BUTTON_COUNT; ++i) {
-    grid_ui_button_state_init(ui, GRID_MODULE_PBF4_POTMETER_COUNT + i, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+  for (int i = 0; i < ui->element_list_length; ++i) {
+    struct grid_ui_element* ele = &ui->element_list[i];
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+      grid_ui_potmeter_configure(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+    } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
+      grid_ui_button_configure(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+    }
   }
-
-  // Potmeters are elements 0-7
-  for (int i = 0; i < GRID_MODULE_PBF4_POTMETER_COUNT; ++i) {
-    grid_ui_potmeter_state_init(ui, i, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
-  }
-
-  grid_asc_array_set_factors(asc_state, 12, 0, 12, 1);
 
   grid_config_init(conf, cal);
-
   grid_cal_init(cal, ui->element_list_length, 12);
 
-  // Potmeter calibration (elements 0-7, first 4 have center detent)
-  for (int i = 0; i < GRID_MODULE_PBF4_POTMETER_COUNT; ++i) {
+  for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
-    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-    assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
-    if (i < 4) {
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER && i < 4) {
+      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
       assert(grid_cal_set(cal, i, GRID_CAL_CENTER, &state->center) == 0);
       assert(grid_cal_set(cal, i, GRID_CAL_DETENT, &state->detent) == 0);
+    } else if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
     }
   }
 

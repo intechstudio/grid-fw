@@ -12,14 +12,12 @@
 #include "grid_asc.h"
 #include "grid_cal.h"
 #include "grid_config.h"
-#include "grid_module.h"
 
 #include "grid_ui.h"
 
 #include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
 #include "grid_ui_potmeter.h"
-#include "grid_ui_system.h"
 
 #include "grid_platform.h"
 #include "grid_sys.h"
@@ -29,12 +27,9 @@
 
 // static const char* TAG = "module_ef44";
 
-#define GRID_MODULE_EF44_BUTTON_COUNT 4
-
 #define GRID_MODULE_EF44_ENCODER_COUNT 4
 
-#define GRID_MODULE_EF44_POTMETER_COUNT 4
-
+static struct grid_ui_model* DRAM_ATTR ui_ptr = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
 
 static DRAM_ATTR const uint8_t mux_element_lookup[2][2] = {
@@ -57,7 +52,8 @@ void IRAM_ATTR ef44_process_analog(struct grid_adc_result* result) {
     return;
   }
 
-  grid_ui_potmeter_store_input(&grid_ui_state, element_index, processed);
+  struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
+  grid_ui_potmeter_store_input(ele, processed);
 }
 
 void IRAM_ATTR ef44_process_encoder(struct grid_encoder_result* result) {
@@ -71,32 +67,43 @@ void IRAM_ATTR ef44_process_encoder(struct grid_encoder_result* result) {
     uint8_t element_index = encoder_lookup[i];
 
     struct grid_ui_encoder_sample sample = GRID_UI_ENCODER_SAMPLE_FROM_NIBBLE(nibble);
-    grid_ui_encoder_store_input(&grid_ui_state, element_index, sample);
+    struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
+    grid_ui_encoder_store_input(ele, sample);
   }
 }
 
 void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_esp32_encoder_model* enc, struct grid_config_model* conf,
                                  struct grid_cal_model* cal) {
 
+  ui_ptr = ui;
+
+  uint8_t detent = grid_hwcfg_module_encoder_is_detent(sys);
+  int8_t direction = grid_hwcfg_module_encoder_dir(sys);
+
+  for (int i = 0; i < ui->element_list_length; ++i) {
+    struct grid_ui_element* ele = &ui->element_list[i];
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+      grid_ui_potmeter_configure(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+    } else if (ele->type == GRID_PARAMETER_ELEMENT_ENCODER) {
+      struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
+      grid_ui_encoder_configure(state, detent, direction, 1, 0.5, 0.2);
+    }
+  }
+
   asc_state = grid_platform_allocate_volatile(8 * sizeof(struct grid_asc));
   memset(asc_state, 0, 8 * sizeof(struct grid_asc));
 
-  // Potmeters are elements 4-7
-  for (int i = 0; i < GRID_MODULE_EF44_POTMETER_COUNT; ++i) {
-    grid_ui_potmeter_state_init(ui, GRID_MODULE_EF44_ENCODER_COUNT + i, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
-  }
-
-  grid_asc_array_set_factors(asc_state, 8, 4, 4, 16);
-
   grid_config_init(conf, cal);
-
   grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
-  // Potmeters are elements 4-7
-  for (int i = GRID_MODULE_EF44_ENCODER_COUNT; i < GRID_MODULE_EF44_ENCODER_COUNT + GRID_MODULE_EF44_POTMETER_COUNT; ++i) {
+  for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
-    struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-    assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+      grid_asc_set_factor(asc_state, i, 16);
+      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
+    }
   }
 
   while (grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
@@ -111,12 +118,6 @@ void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mode
   // I2S clock rate chosen so callback fires at 2000 Hz: rate = 2000 * 32bit * 4slots
   uint32_t clock_rate = 2000 * I2S_DATA_BIT_WIDTH_32BIT * 4;
   grid_esp32_encoder_init(enc, transfer_length, clock_rate, ef44_process_encoder);
-  uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
-  int8_t direction = grid_hwcfg_module_encoder_dir(sys);
-  // Encoders are elements 0-3
-  for (uint8_t i = 0; i < GRID_MODULE_EF44_ENCODER_COUNT; i++) {
-    grid_ui_encoder_state_init(ui, i, detent, direction, 1, 0.5, 0.2);
-  }
 
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
   grid_esp32_adc_init(adc, 0b00000011, mux_dependent, ef44_process_analog);

@@ -29,13 +29,7 @@ const char grid_ui_potmeter_init_actionstring[] = GRID_ACTIONSTRING_POTMETER_INI
 const char grid_ui_potmeter_potmeterchange_actionstring[] = GRID_ACTIONSTRING_POTMETER_POTMETER;
 const char grid_ui_potmeter_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
-void grid_ui_potmeter_state_init(struct grid_ui_model* ui, uint8_t element_index, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center) {
-
-  assert(ui);
-  assert(element_index < ui->element_list_length);
-
-  struct grid_ui_element* ele = &ui->element_list[element_index];
-  struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+void grid_ui_potmeter_configure(struct grid_ui_potmeter_state* state, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center) {
 
   state->last_real_time = 0;
   state->adc_bit_depth = adc_bit_depth;
@@ -127,13 +121,10 @@ void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_
   grid_ui_element_potmeter_update_value(template_parameter_list, element_index, adc_bit_depth);
 }
 
-void grid_ui_potmeter_store_input(struct grid_ui_model* ui, uint8_t element_index, uint16_t value) {
+void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint16_t value) {
 
-  assert(ui);
-  assert(element_index < ui->element_list_length);
-
-  struct grid_ui_element* ele = &ui->element_list[element_index];
   struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+  uint8_t element_index = ele->index;
   uint8_t adc_bit_depth = state->adc_bit_depth;
 
   int32_t* template_parameter_list = ele->template_parameter_list;

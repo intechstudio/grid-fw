@@ -41,14 +41,9 @@ const char grid_ui_encoder_encoderchange_actionstring[] = GRID_ACTIONSTRING_ENCO
 const char grid_ui_encoder_buttonchange_actionstring[] = GRID_ACTIONSTRING_BUTTON_BUTTON;
 const char grid_ui_encoder_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
-void grid_ui_encoder_state_init(struct grid_ui_model* ui, uint8_t element_index, uint8_t detent, int8_t direction, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis) {
+void grid_ui_encoder_configure(struct grid_ui_encoder_state* state, uint8_t detent, int8_t direction, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis) {
 
-  assert(ui);
-  assert(element_index < ui->element_list_length);
   assert(direction == 1 || direction == -1);
-
-  struct grid_ui_element* ele = &ui->element_list[element_index];
-  struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
 
   state->encoder_last_real_time = 0;
   state->last_nibble = 0;
@@ -57,7 +52,7 @@ void grid_ui_encoder_state_init(struct grid_ui_model* ui, uint8_t element_index,
   state->initial_samples = 0;
   state->direction = direction;
 
-  grid_ui_button_state_init_direct(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
+  grid_ui_button_configure(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
 }
 
 void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
@@ -275,16 +270,12 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* la
   return 1; // did trigger
 }
 
-void grid_ui_encoder_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_encoder_sample sample) {
+void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_encoder_sample sample) {
 
-  assert(ui);
-  assert(element_index < ui->element_list_length);
-
-  struct grid_ui_element* ele = &ui->element_list[element_index];
   struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
 
   // Handle button input using embedded button state
-  grid_ui_button_store_input_direct(ele, &state->button, sample.button);
+  grid_ui_button_store_input(ele, &state->button, sample.button);
 
   // Reconstruct rotation value from phases
   uint8_t new_value = sample.phase_a | (sample.phase_b << 1);

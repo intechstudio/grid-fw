@@ -93,7 +93,9 @@ int grid_cal_init(struct grid_cal_model* cal, uint8_t length, uint8_t resolution
 
   memset(cal->sigcond, 0, cal->length * sizeof(struct grid_asc));
 
-  grid_asc_array_set_factors(cal->sigcond, cal->length, 0, cal->length, 64);
+  for (uint8_t i = 0; i < cal->length; ++i) {
+    grid_asc_set_factor(cal->sigcond, i, 64);
+  }
 
   return 0;
 }

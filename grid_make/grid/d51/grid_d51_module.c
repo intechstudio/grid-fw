@@ -42,34 +42,27 @@ void grid_module_common_init(void) {
   // disable ui interrupts
   grid_d51_nvic_set_interrupt_priority_mask(1);
 
-  if (grid_hwcfg_module_is_po16(&grid_sys_state)) {
-    grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_bu16(&grid_sys_state)) {
-    grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_pbf4(&grid_sys_state)) {
-    grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_en16(&grid_sys_state)) {
-    grid_module_en16_ui_init(NULL, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
-    grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  }
-
   grid_d51_nvm_mount(&grid_d51_nvm_state, false);
 
   if (grid_hwcfg_module_is_po16(&grid_sys_state)) {
     printf("Init Module: PO16\r\n");
+    grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
     grid_d51_module_po16_init(&grid_sys_state, &grid_ui_state, &grid_d51_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_bu16(&grid_sys_state)) {
     printf("Init Module: BU16\r\n");
+    grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
     grid_d51_module_bu16_init(&grid_sys_state, &grid_ui_state, &grid_d51_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_pbf4(&grid_sys_state)) {
     printf("Init Module: PBF4\r\n");
+    grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
     grid_d51_module_pbf4_init(&grid_sys_state, &grid_ui_state, &grid_d51_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_en16(&grid_sys_state)) {
     printf("Init Module: EN16\r\n");
+    grid_module_en16_ui_init(NULL, &grid_led_state, &grid_ui_state);
     grid_d51_module_en16_init(&grid_sys_state, &grid_ui_state, &grid_d51_encoder_state);
   } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
     printf("Init Module: EF44\r\n");
+    grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
     grid_d51_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_d51_adc_state, &grid_d51_encoder_state, &grid_config_state, &grid_cal_state);
   } else {
     printf("Init Module: Unknown Module\r\n");
