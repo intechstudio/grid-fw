@@ -32,9 +32,7 @@ void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buf
 void grid_ui_element_endless_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
-static inline struct grid_ui_endless_state* grid_ui_endless_get_state(struct grid_ui_element* ele) {
-  return (struct grid_ui_endless_state*)ele->primary_state;
-}
+static inline struct grid_ui_endless_state* grid_ui_endless_get_state(struct grid_ui_element* ele) { return (struct grid_ui_endless_state*)ele->primary_state; }
 
 void grid_ui_endless_store_input(struct grid_ui_endless_state* state, struct grid_ui_endless_sample sample);
 

@@ -35,24 +35,17 @@ void grid_d51_module_po16_init(struct grid_sys_model* sys, struct grid_ui_model*
     element_invert_bm = 0b1111111111111111;
   }
 
-  for (int i = 0; i < ui->element_list_length; ++i) {
-    struct grid_ui_element* ele = &ui->element_list[i];
-    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-      grid_ui_potmeter_configure(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
-    }
-  }
-
   grid_config_init(conf, cal);
   grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
-      assert(grid_cal_set(cal, i, GRID_CAL_CENTER, &state->center) == 0);
-      assert(grid_cal_set(cal, i, GRID_CAL_DETENT, &state->detent) == 0);
+      struct grid_ui_potmeter_state* state = grid_ui_potmeter_get_state(ele);
+      grid_ui_potmeter_configure(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+      grid_cal_attach(cal, i, GRID_CAL_LIMITS, &state->limits);
+      grid_cal_attach(cal, i, GRID_CAL_CENTER, &state->center);
+      grid_cal_attach(cal, i, GRID_CAL_DETENT, &state->detent);
     }
   }
 

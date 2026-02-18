@@ -26,9 +26,7 @@ void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_
 
 uint8_t grid_ui_potmeter_update_trigger(struct grid_ui_element* ele, uint16_t value, uint8_t adc_bit_depth, uint64_t* last_real_time);
 
-static inline struct grid_ui_potmeter_state* grid_ui_potmeter_get_state(struct grid_ui_element* ele) {
-  return (struct grid_ui_potmeter_state*)ele->primary_state;
-}
+static inline struct grid_ui_potmeter_state* grid_ui_potmeter_get_state(struct grid_ui_element* ele) { return (struct grid_ui_potmeter_state*)ele->primary_state; }
 
 void grid_ui_potmeter_store_input(struct grid_ui_potmeter_state* state, uint16_t value);
 
