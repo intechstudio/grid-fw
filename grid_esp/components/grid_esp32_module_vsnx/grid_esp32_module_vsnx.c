@@ -192,7 +192,9 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
         grid_cal_attach(cal, i, GRID_CAL_LIMITS, &grid_ui_button_get_state(ele)->limits);
       }
     } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
-      grid_asc_set_factor(asc_state, i, rev_h ? 1 : GRID_MODULE_VSNX_ASC_FACTOR);
+      // ASC factor must be 1 for ENDLESS to pass through every sample!
+      // This limitation is due to asc not being able to process multidimensional samples!
+      grid_asc_set_factor(asc_state, i, 1);
     }
   }
 
