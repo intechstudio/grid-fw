@@ -78,8 +78,7 @@ void IRAM_ATTR vsnx_process_analog(struct grid_adc_result* result) {
   if (element_index < GRID_MODULE_VSNX_BUTTON_COUNT) {
 
     struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-    struct grid_ui_button_state* bstate = (struct grid_ui_button_state*)ele->primary_state;
-    grid_ui_button_store_input(ele, bstate, result->value);
+    grid_ui_button_store_input(grid_ui_button_get_state(ele), result->value);
 
   } else {
 
@@ -93,7 +92,7 @@ void IRAM_ATTR vsnx_process_analog(struct grid_adc_result* result) {
     } else if (result->mux_state == 2) {
       sample_ptr->button_value = result->value;
       struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-      grid_ui_endless_store_input(ele, *sample_ptr);
+      grid_ui_endless_store_input(grid_ui_endless_get_state(ele), *sample_ptr);
     }
   }
 }
@@ -118,8 +117,7 @@ void IRAM_ATTR vsnx_process_minibutton(struct grid_encoder_result* result) {
     if (element_index != GRID_MUX_UNUSED) {
       uint8_t bit = (minibutton_state_bm >> i) & 1;
       struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-      struct grid_ui_button_state* bstate = (struct grid_ui_button_state*)ele->primary_state;
-      grid_ui_button_store_input(ele, bstate, bit);
+      grid_ui_button_store_input(grid_ui_button_get_state(ele), bit);
     }
   }
 }

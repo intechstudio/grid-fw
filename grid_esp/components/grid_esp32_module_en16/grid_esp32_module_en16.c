@@ -35,7 +35,7 @@ void IRAM_ATTR en16_process_encoder(struct grid_encoder_result* result) {
 
     struct grid_ui_encoder_sample sample = GRID_UI_ENCODER_SAMPLE_FROM_NIBBLE(nibble);
     struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-    grid_ui_encoder_store_input(ele, sample);
+    grid_ui_encoder_store_input(grid_ui_encoder_get_state(ele), sample);
   }
 }
 

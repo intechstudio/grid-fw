@@ -30,10 +30,9 @@ static void pbf4_process_analog(struct grid_adc_result* result) {
 
   struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
   if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-    grid_ui_potmeter_store_input(ele, inverted);
+    grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), inverted);
   } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-    struct grid_ui_button_state* bstate = (struct grid_ui_button_state*)ele->primary_state;
-    grid_ui_button_store_input(ele, bstate, inverted);
+    grid_ui_button_store_input(grid_ui_button_get_state(ele), inverted);
   }
 }
 
