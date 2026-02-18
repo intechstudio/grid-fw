@@ -56,9 +56,11 @@ void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, uint8_t t
 
   rx_tdm_cfg.slot_cfg.big_endian = true;
 
-  // Highest mclk_multiple to minimize the minimum sample rate:
+  // Use XTAL (40 MHz) instead of PLL (160 MHz) to lower the minimum achievable sample rate.
+  // Highest mclk_multiple to further minimize the minimum sample rate:
   // mclk_div = sclk / (sample_rate * mclk_multiple) must be < 256
-  // min_sample_rate = sclk / (255 * mclk_multiple)
+  // min_sample_rate = 40MHz / (255 * 1152) ≈ 136 Hz
+  rx_tdm_cfg.clk_cfg.clk_src = I2S_CLK_SRC_XTAL;
   rx_tdm_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_1152;
   ESP_ERROR_CHECK(i2s_channel_init_tdm_mode(encoder->rx_chan, &rx_tdm_cfg));
 
