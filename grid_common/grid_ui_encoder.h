@@ -37,7 +37,7 @@ struct grid_ui_encoder_state {
   struct grid_ui_button_state button;
 };
 
-void grid_ui_encoder_state_init(struct grid_ui_model* ui, uint8_t element_index, uint8_t detent, int8_t direction, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis);
+void grid_ui_encoder_configure(struct grid_ui_encoder_state* state, uint8_t detent, int8_t direction, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis);
 
 void grid_ui_element_encoder_init(struct grid_ui_element* ele);
 void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf);
@@ -48,7 +48,7 @@ void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t
 int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uint8_t detent, int8_t* dir_lock);
 uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta);
 
-void grid_ui_encoder_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_encoder_sample sample);
+void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_encoder_sample sample);
 
 // ========================= ENCODER =========================== //
 

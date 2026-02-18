@@ -402,25 +402,6 @@ void app_main(void) {
   size_t psram_size = esp_psram_get_size();
   ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
 
-  log_checkpoint("UI INIT");
-  if (grid_hwcfg_module_is_po16(&grid_sys_state)) {
-    grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_bu16(&grid_sys_state)) {
-    grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_pbf4(&grid_sys_state)) {
-    grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_en16(&grid_sys_state)) {
-    grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
-    grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
-    grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
-    grid_module_vsnx_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, &grid_sys_state);
-  } else {
-    ets_printf("UI Init failed: Unknown Module\r\n");
-  }
-
   grid_ui_semaphore_init(&grid_ui_state.bulk_semaphore, (void*)ui_bulk_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn, grid_common_semaphore_try_fn);
 
   grid_led_set_pin(&grid_led_state, 21);
@@ -519,31 +500,34 @@ void app_main(void) {
   log_checkpoint("MODULE INIT");
 
   if (grid_hwcfg_module_is_po16(&grid_sys_state)) {
+    grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
     grid_esp32_module_po16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_bu16(&grid_sys_state)) {
+    grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
     grid_esp32_module_bu16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_pbf4(&grid_sys_state)) {
+    grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
     grid_esp32_module_pbf4_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_en16(&grid_sys_state)) {
+    grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
     grid_esp32_module_en16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_encoder_state);
   } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
+    grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
     grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
-  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
+  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
+    grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
     grid_esp32_module_vsnx_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
+  } else if (grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
+    grid_module_vsnx_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, &grid_sys_state);
+    grid_esp32_module_vsnx_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
+    TaskHandle_t lcd_task_hdl; // Start lcd task to handle periodic processing
+    xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
   } else {
     ets_printf("Task Init failed: Unknown Module\r\n");
   }
 
   log_checkpoint("UI TASK DONE");
 
-  if (grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
-
-    TaskHandle_t lcd_task_hdl;
-
-    xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
-
-    log_checkpoint("LCD TASK DONE");
-  }
 
   // Initialize 1 kHz timer
   periodic_rtc_ms_init();

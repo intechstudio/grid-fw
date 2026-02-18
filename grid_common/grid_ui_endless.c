@@ -42,17 +42,11 @@ const char grid_ui_endless_endlesschange_actionstring[] = GRID_ACTIONSTRING_ENDL
 const char grid_ui_endless_buttonchange_actionstring[] = GRID_ACTIONSTRING_ENDLESS_BUTTON;
 const char grid_ui_endless_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
-void grid_ui_endless_state_init(struct grid_ui_model* ui, uint8_t element_index, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis) {
-
-  assert(ui);
-  assert(element_index < ui->element_list_length);
-
-  struct grid_ui_element* ele = &ui->element_list[element_index];
-  struct grid_ui_endless_state* state = (struct grid_ui_endless_state*)ele->primary_state;
+void grid_ui_endless_configure(struct grid_ui_endless_state* state, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis) {
 
   state->adc_bit_depth = adc_bit_depth;
 
-  grid_ui_button_state_init_direct(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
+  grid_ui_button_configure(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
 }
 
 void grid_ui_element_endless_init(struct grid_ui_element* ele) {
@@ -318,16 +312,12 @@ static uint16_t grid_ui_endless_calculate_angle(uint16_t phase_a, uint16_t phase
   return value_degrees;
 }
 
-void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index, struct grid_ui_endless_sample sample) {
+void grid_ui_endless_store_input(struct grid_ui_element* ele, struct grid_ui_endless_sample sample) {
 
-  assert(ui);
-  assert(element_index < ui->element_list_length);
-
-  struct grid_ui_element* ele = &ui->element_list[element_index];
   struct grid_ui_endless_state* state = (struct grid_ui_endless_state*)ele->primary_state;
 
   // Handle button input using embedded button state
-  grid_ui_button_store_input_direct(ele, &state->button, sample.button_value);
+  grid_ui_button_store_input(ele, &state->button, sample.button_value);
   uint8_t adc_bit_depth = state->adc_bit_depth;
 
   // Check if current values differ from previous
@@ -338,7 +328,7 @@ void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index
 
   int32_t* template_parameter_list = ele->template_parameter_list;
 
-  int stabilized = grid_ain_stabilized(&grid_ain_state, element_index);
+  int stabilized = grid_ain_stabilized(&grid_ain_state, ele->index);
 
   if (!stabilized) {
     state->prev_phase_a = sample.phase_a;
@@ -357,9 +347,9 @@ void grid_ui_endless_store_input(struct grid_ui_model* ui, uint8_t element_index
     resolution = adc_bit_depth;
   }
 
-  grid_ain_add_sample(&grid_ain_state, element_index, value_degrees_new, adc_bit_depth, (uint8_t)resolution);
+  grid_ain_add_sample(&grid_ain_state, ele->index, value_degrees_new, adc_bit_depth, (uint8_t)resolution);
 
-  if (grid_ain_get_changed(&grid_ain_state, element_index)) {
+  if (grid_ain_get_changed(&grid_ain_state, ele->index)) {
 
     int16_t delta = (value_degrees_new - value_degrees_old);
 
