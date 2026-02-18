@@ -520,45 +520,14 @@ uint8_t grid_decode_immediate_to_ui(char* header, char* chunk) {
 
   grid_lua_clear_stdo(&grid_lua_state);
 
-  struct grid_msg msg;
-  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-
-  grid_msg_add_frame(&msg, GRID_CLASS_IMMEDIATE_frame_start);
-  grid_msg_set_parameter(&msg, CLASS_IMMEDIATE_ACTIONLENGTH, 0);
-
-  uint8_t respinstr;
-
   if (grid_ui_bulk_semaphore_try(&grid_ui_state)) {
 
     script[length - 3] = '\0';
-    bool status = grid_lua_dostring_begin(&grid_lua_state, &script[6]);
+    grid_lua_dostring_begin(&grid_lua_state, &script[6]);
+    grid_lua_dostring_end(&grid_lua_state);
     script[length - 3] = ' ';
 
-    respinstr = status ? GRID_INSTR_ACKNOWLEDGE_code : GRID_INSTR_NACKNOWLEDGE_code;
-
-    lua_State* L = grid_lua_state.L;
-
-    if (lua_gettop(L) > 0 && lua_type(L, -1) == LUA_TSTRING) {
-
-      char* str = lua_tostring(L, -1);
-      grid_msg_set_parameter(&msg, CLASS_IMMEDIATE_ACTIONLENGTH, strlen(str));
-      grid_msg_nprintf(&msg, "%s", str);
-    }
-
-    grid_lua_dostring_end(&grid_lua_state);
-
     grid_ui_bulk_semaphore_release(&grid_ui_state);
-
-  } else {
-    respinstr = GRID_INSTR_CHECK_code;
-  }
-
-  grid_msg_set_parameter(&msg, INSTR, respinstr);
-  grid_msg_add_frame(&msg, GRID_CLASS_IMMEDIATE_frame_end);
-
-  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-    grid_transport_send_msg_to_all(&grid_transport_state, &msg);
   }
 
   char* stdo = grid_lua_get_output_string(&grid_lua_state);
