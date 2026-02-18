@@ -50,6 +50,7 @@ void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
 
   ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_potmeter_state));
   memset(ele->primary_state, 0, sizeof(struct grid_ui_potmeter_state));
+  ((struct grid_ui_potmeter_state*)ele->primary_state)->parent = ele;
 
   grid_ui_element_malloc_events(ele, 3);
 
@@ -121,21 +122,54 @@ void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_
   grid_ui_element_potmeter_update_value(template_parameter_list, element_index, adc_bit_depth);
 }
 
-void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint16_t value) {
+uint8_t grid_ui_potmeter_update_trigger(struct grid_ui_element* ele, uint16_t value, uint8_t adc_bit_depth, uint64_t* last_real_time) {
 
-  struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
+  uint8_t element_index = ele->index;
+  int32_t* template_parameter_list = ele->template_parameter_list;
+
+  int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
+
+  grid_ain_add_sample(&grid_ain_state, element_index, value, adc_bit_depth, (uint8_t)resolution);
+
+  // limit lastrealtime
+  uint64_t now = grid_platform_rtc_get_micros();
+  uint64_t elapsed_us = grid_platform_rtc_get_diff(now, *last_real_time);
+  elapsed_us = MIN(elapsed_us, GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US);
+
+  if (!grid_ain_get_changed(&grid_ain_state, element_index)) {
+    return 0;
+  }
+
+  // update lastrealtime
+  *last_real_time = now;
+  template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] = elapsed_us / MS_TO_US;
+
+  grid_ui_element_potmeter_update_value(template_parameter_list, element_index, adc_bit_depth);
+
+  // for display in editor
+  int32_t scaled_state = grid_ain_get_average_scaled(&grid_ain_state, element_index, adc_bit_depth, resolution, 0, 127);
+  template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = scaled_state;
+
+  struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_POTMETER);
+
+  if (grid_ain_stabilized(&grid_ain_state, element_index)) {
+    grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
+    return 1;
+  }
+
+  return 0;
+}
+
+void grid_ui_potmeter_store_input(struct grid_ui_potmeter_state* state, uint16_t value) {
+
+  struct grid_ui_element* ele = state->parent;
   uint8_t element_index = ele->index;
   uint8_t adc_bit_depth = state->adc_bit_depth;
 
-  int32_t* template_parameter_list = ele->template_parameter_list;
-
   uint16_t value_asc;
   if (grid_asc_process(grid_cal_state.sigcond, element_index, value, &value_asc)) {
-
     grid_cal_limits_value_update(&state->limits, value_asc);
-
     grid_cal_center_value_update(&state->center, value_asc);
-
     grid_cal_detent_value_update(&state->detent, value_asc);
   }
 
@@ -145,31 +179,5 @@ void grid_ui_potmeter_store_input(struct grid_ui_element* ele, uint16_t value) {
 
   value = grid_cal_next(&grid_cal_state, element_index, value);
 
-  int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
-
-  grid_ain_add_sample(&grid_ain_state, element_index, value, adc_bit_depth, (uint8_t)resolution);
-
-  // limit lastrealtime
-  uint64_t now = grid_platform_rtc_get_micros();
-  uint64_t elapsed_us = grid_platform_rtc_get_diff(now, state->last_real_time);
-  elapsed_us = MIN(elapsed_us, GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US);
-
-  if (grid_ain_get_changed(&grid_ain_state, element_index)) {
-
-    // update lastrealtime
-    state->last_real_time = now;
-    template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] = elapsed_us / MS_TO_US;
-
-    grid_ui_element_potmeter_update_value(template_parameter_list, ele->index, adc_bit_depth);
-
-    // for display in editor
-    int32_t state = grid_ain_get_average_scaled(&grid_ain_state, element_index, adc_bit_depth, resolution, 0, 127);
-    template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = state;
-
-    struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_POTMETER);
-
-    if (grid_ain_stabilized(&grid_ain_state, element_index)) {
-      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
-    }
-  }
+  grid_ui_potmeter_update_trigger(ele, value, adc_bit_depth, &state->last_real_time);
 }

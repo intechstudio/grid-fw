@@ -35,7 +35,7 @@ static void ef44_process_encoder(struct grid_encoder_result* result) {
 
     struct grid_ui_encoder_sample sample = GRID_UI_ENCODER_SAMPLE_FROM_NIBBLE(nibble);
     struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-    grid_ui_encoder_store_input(ele, sample);
+    grid_ui_encoder_store_input(grid_ui_encoder_get_state(ele), sample);
   }
 }
 
@@ -45,7 +45,7 @@ static void ef44_process_analog(struct grid_adc_result* result) {
   uint16_t inverted = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
 
   struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-  grid_ui_potmeter_store_input(ele, inverted);
+  grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), inverted);
 }
 
 void grid_d51_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_d51_adc_model* adc, struct grid_d51_encoder_model* enc, struct grid_config_model* conf,

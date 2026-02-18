@@ -53,7 +53,7 @@ void IRAM_ATTR ef44_process_analog(struct grid_adc_result* result) {
   }
 
   struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-  grid_ui_potmeter_store_input(ele, processed);
+  grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), processed);
 }
 
 void IRAM_ATTR ef44_process_encoder(struct grid_encoder_result* result) {
@@ -68,7 +68,7 @@ void IRAM_ATTR ef44_process_encoder(struct grid_encoder_result* result) {
 
     struct grid_ui_encoder_sample sample = GRID_UI_ENCODER_SAMPLE_FROM_NIBBLE(nibble);
     struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-    grid_ui_encoder_store_input(ele, sample);
+    grid_ui_encoder_store_input(grid_ui_encoder_get_state(ele), sample);
   }
 }
 

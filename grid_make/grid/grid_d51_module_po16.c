@@ -24,7 +24,7 @@ static void po16_process_analog(struct grid_adc_result* result) {
   uint16_t inverted = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
 
   struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-  grid_ui_potmeter_store_input(ele, inverted);
+  grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), inverted);
 }
 
 void grid_d51_module_po16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_d51_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {

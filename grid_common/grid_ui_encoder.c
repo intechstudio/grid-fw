@@ -61,6 +61,9 @@ void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
 
   ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_encoder_state));
   memset(ele->primary_state, 0, sizeof(struct grid_ui_encoder_state));
+  struct grid_ui_encoder_state* enc_state = (struct grid_ui_encoder_state*)ele->primary_state;
+  enc_state->parent = ele;
+  enc_state->button.parent = ele;
 
   grid_ui_element_malloc_events(ele, 4);
 
@@ -270,12 +273,12 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* la
   return 1; // did trigger
 }
 
-void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_encoder_sample sample) {
+void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, struct grid_ui_encoder_sample sample) {
 
-  struct grid_ui_encoder_state* state = (struct grid_ui_encoder_state*)ele->primary_state;
+  struct grid_ui_element* ele = state->parent;
 
   // Handle button input using embedded button state
-  grid_ui_button_store_input(ele, &state->button, sample.button);
+  grid_ui_button_store_input(&state->button, sample.button);
 
   // Reconstruct rotation value from phases
   uint8_t new_value = sample.phase_a | (sample.phase_b << 1);

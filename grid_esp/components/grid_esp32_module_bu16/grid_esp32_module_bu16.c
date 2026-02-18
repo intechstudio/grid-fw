@@ -38,8 +38,7 @@ void IRAM_ATTR bu16_process_analog(struct grid_adc_result* result) {
   uint16_t inverted = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
 
   struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-  struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
-  grid_ui_button_store_input(ele, state, inverted);
+  grid_ui_button_store_input(grid_ui_button_get_state(ele), inverted);
 }
 
 void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {
