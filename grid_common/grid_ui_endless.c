@@ -322,7 +322,7 @@ void grid_ui_endless_store_input(struct grid_ui_endless_state* state, struct gri
 
   // Handle button input using embedded button state
   grid_ui_button_store_input(&state->button, sample.button_value);
- 
+
   uint8_t adc_bit_depth = state->adc_bit_depth;
 
   // Check if current values differ from previous

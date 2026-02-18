@@ -43,27 +43,24 @@ void grid_d51_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_model*
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-      grid_ui_potmeter_configure(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+      grid_ui_potmeter_configure(grid_ui_potmeter_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
-      grid_ui_button_configure(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+      grid_ui_button_configure(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
     }
   }
 
   grid_config_init(conf, cal);
-  grid_cal_init(cal, ui->element_list_length, 12);
+  grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER && i < 4) {
-      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
-      assert(grid_cal_set(cal, i, GRID_CAL_CENTER, &state->center) == 0);
-      assert(grid_cal_set(cal, i, GRID_CAL_DETENT, &state->detent) == 0);
+      struct grid_ui_potmeter_state* state = grid_ui_potmeter_get_state(ele);
+      grid_cal_attach(cal, i, GRID_CAL_LIMITS, &state->limits);
+      grid_cal_attach(cal, i, GRID_CAL_CENTER, &state->center);
+      grid_cal_attach(cal, i, GRID_CAL_DETENT, &state->detent);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
+      grid_cal_attach(cal, i, GRID_CAL_LIMITS, &grid_ui_potmeter_get_state(ele)->limits);
     }
   }
 

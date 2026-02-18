@@ -34,6 +34,7 @@
 
 #define GRID_MODULE_VSNX_BUTTON_COUNT 8
 #define GRID_MODULE_VSNX_MINIBUTTON_COUNT 8
+#define GRID_MODULE_VSNX_ASC_FACTOR 8
 
 static struct grid_ui_model* DRAM_ATTR ui_ptr = NULL;
 static struct grid_asc* DRAM_ATTR asc_state = NULL;
@@ -160,19 +161,20 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   ui_ptr = ui;
 
+  bool rev_h = grid_hwcfg_module_is_rev_h(sys);
+
   if (!grid_hwcfg_module_is_tek2(sys)) {
     vsnx_lcd_init(sys, ui);
   }
 
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
-    if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-      uint8_t bit_depth = (i < GRID_MODULE_VSNX_BUTTON_COUNT) ? GRID_AIN_INTERNAL_RESOLUTION : 1;
-      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
-      grid_ui_button_configure(state, bit_depth, 0.5, 0.2);
+    if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON && i < GRID_MODULE_VSNX_BUTTON_COUNT) {
+      grid_ui_button_configure(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
+    } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+      grid_ui_button_configure(grid_ui_button_get_state(ele), 1, GRID_BUTTON_THRESHOLD, 0.0);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
-      struct grid_ui_endless_state* state = (struct grid_ui_endless_state*)ele->primary_state;
-      grid_ui_endless_configure(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+      grid_ui_endless_configure(grid_ui_endless_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
     }
   }
 
@@ -185,17 +187,16 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON && i < GRID_MODULE_VSNX_BUTTON_COUNT) {
-      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
-      grid_asc_set_factor(asc_state, i, 8);
-      if (grid_hwcfg_module_is_rev_h(sys)) {
-        assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
+      grid_asc_set_factor(asc_state, i, GRID_MODULE_VSNX_ASC_FACTOR);
+      if (rev_h) {
+        grid_cal_attach(cal, i, GRID_CAL_LIMITS, &grid_ui_button_get_state(ele)->limits);
       }
     } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
-      grid_asc_set_factor(asc_state, i, grid_hwcfg_module_is_rev_h(sys) ? 1 : 8);
+      grid_asc_set_factor(asc_state, i, rev_h ? 1 : GRID_MODULE_VSNX_ASC_FACTOR);
     }
   }
 
-  if (grid_hwcfg_module_is_rev_h(sys)) {
+  if (rev_h) {
     assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));
     grid_ui_bulk_flush(ui);
   }
@@ -222,7 +223,7 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
   grid_esp32_encoder_init(&grid_esp32_encoder_state, transfer_length, clock_rate, vsnx_process_minibutton);
 
   uint8_t mux_positions = grid_hwcfg_module_is_tek2(sys) ? 0b11110111 : 0b11111111;
-  uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
+  uint8_t mux_dependent = !rev_h;
   grid_esp32_adc_init(adc, mux_positions, mux_dependent, vsnx_process_analog);
   grid_esp32_adc_start(adc);
 }

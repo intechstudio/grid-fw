@@ -23,6 +23,8 @@
 
 // static const char* TAG = "module_po16";
 
+#define GRID_MODULE_PO16_ASC_FACTOR 8
+
 static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
     {0, 1, 4, 5, 8, 9, 12, 13},
     {2, 3, 6, 7, 10, 11, 14, 15},
@@ -54,14 +56,6 @@ void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   ui_ptr = ui;
 
-  for (int i = 0; i < ui->element_list_length; ++i) {
-    struct grid_ui_element* ele = &ui->element_list[i];
-    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-      grid_ui_potmeter_configure(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
-    }
-  }
-
   asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
   memset(asc_state, 0, 16 * sizeof(struct grid_asc));
 
@@ -71,11 +65,12 @@ void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_mode
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      struct grid_ui_potmeter_state* state = (struct grid_ui_potmeter_state*)ele->primary_state;
-      grid_asc_set_factor(asc_state, i, 8);
-      assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
-      assert(grid_cal_set(cal, i, GRID_CAL_CENTER, &state->center) == 0);
-      assert(grid_cal_set(cal, i, GRID_CAL_DETENT, &state->detent) == 0);
+      struct grid_ui_potmeter_state* state = grid_ui_potmeter_get_state(ele);
+      grid_ui_potmeter_configure(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+      grid_asc_set_factor(asc_state, i, GRID_MODULE_PO16_ASC_FACTOR);
+      grid_cal_attach(cal, i, GRID_CAL_LIMITS, &state->limits);
+      grid_cal_attach(cal, i, GRID_CAL_CENTER, &state->center);
+      grid_cal_attach(cal, i, GRID_CAL_DETENT, &state->detent);
     }
   }
 

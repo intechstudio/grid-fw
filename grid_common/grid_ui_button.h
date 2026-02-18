@@ -7,6 +7,9 @@
 #include "grid_protocol.h"
 #include "grid_ui.h"
 
+#define GRID_BUTTON_THRESHOLD 0.5
+#define GRID_BUTTON_HYSTERESIS 0.2
+
 struct grid_ui_button_state {
   struct grid_ui_element* parent;
   uint64_t last_real_time;
@@ -34,9 +37,7 @@ void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buff
 void grid_ui_element_button_event_clear_cb(struct grid_ui_event* eve);
 void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new);
 
-static inline struct grid_ui_button_state* grid_ui_button_get_state(struct grid_ui_element* ele) {
-  return (struct grid_ui_button_state*)ele->primary_state;
-}
+static inline struct grid_ui_button_state* grid_ui_button_get_state(struct grid_ui_element* ele) { return (struct grid_ui_button_state*)ele->primary_state; }
 
 void grid_ui_button_store_input(struct grid_ui_button_state* state, uint16_t value);
 

@@ -63,7 +63,7 @@ struct grid_cal_model {
 
 int grid_cal_init(struct grid_cal_model* cal, uint8_t length, uint8_t resolution);
 void grid_cal_reset(struct grid_cal_model* cal);
-int grid_cal_set(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void* src);
+void grid_cal_attach(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void* src);
 int grid_cal_get(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void** dest);
 uint16_t grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in);
 

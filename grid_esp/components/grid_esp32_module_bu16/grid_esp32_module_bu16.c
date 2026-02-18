@@ -48,8 +48,7 @@ void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_mode
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-      struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
-      grid_ui_button_configure(state, GRID_AIN_INTERNAL_RESOLUTION, 0.5, 0.2);
+      grid_ui_button_configure(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
     }
   }
 
@@ -60,8 +59,7 @@ void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_mode
     for (int i = 0; i < ui->element_list_length; ++i) {
       struct grid_ui_element* ele = &ui->element_list[i];
       if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-        struct grid_ui_button_state* state = (struct grid_ui_button_state*)ele->primary_state;
-        assert(grid_cal_set(cal, i, GRID_CAL_LIMITS, &state->limits) == 0);
+        grid_cal_attach(cal, i, GRID_CAL_LIMITS, &grid_ui_button_get_state(ele)->limits);
       }
     }
 
