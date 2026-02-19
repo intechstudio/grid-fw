@@ -68,6 +68,7 @@ struct grid_msg {
 void grid_msg_reset_offset(struct grid_msg* msg);
 void grid_msg_store_offset(struct grid_msg* msg);
 void grid_msg_set_offset(struct grid_msg* msg, uint32_t offset);
+void grid_msg_rewind_to_offset(struct grid_msg* msg);
 int grid_msg_close(struct grid_msg* msg);
 void grid_msg_init_brc(struct grid_msg_model* model, struct grid_msg* msg, uint8_t dx, uint8_t dy);
 int grid_msg_close_brc(struct grid_msg_model* model, struct grid_msg* msg);
@@ -116,6 +117,12 @@ void grid_str_transform_brc_params(uint8_t* msg, uint16_t length, int8_t dx, int
 		GRID_ ## param ## _length, \
 		(value) \
 	); \
+}
+
+#define grid_msg_inc_parameter_raw(data, param) \
+{ \
+  uint32_t value = grid_msg_get_parameter_raw(data, param); \
+  grid_msg_set_parameter_raw(data, param, value + 1); \
 }
 
 #define grid_msg_add_frame(msg, frame) \

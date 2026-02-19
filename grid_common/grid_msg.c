@@ -243,6 +243,8 @@ void grid_msg_store_offset(struct grid_msg* msg) { msg->offset = msg->length; }
 
 void grid_msg_set_offset(struct grid_msg* msg, uint32_t offset) { msg->offset = offset; }
 
+void grid_msg_rewind_to_offset(struct grid_msg* msg) { msg->length = msg->offset; }
+
 int grid_msg_close(struct grid_msg* msg) {
 
   // As grid_msg_add_frame uses grid_msg_nprintf, which needs enough space for

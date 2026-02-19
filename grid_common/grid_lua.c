@@ -645,3 +645,58 @@ void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, con
 
   lua_pop(L, lua_gettop(L));
 }
+
+int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, uint8_t instr) {
+
+  if (grid_msg_add_frame(msg, GRID_CLASS_EVALUATE_frame_start) < 0) {
+    return -1;
+  }
+
+  grid_msg_set_parameter(msg, INSTR, instr);
+  grid_msg_set_parameter(msg, CLASS_EVALUATE_ELEMENTS, 0);
+
+  uint8_t* elements_out = (uint8_t*)&msg->data[msg->offset];
+  for (int i = 1; i <= lua_gettop(L); ++i) {
+
+    if (lua_type(L, i) != LUA_TSTRING) {
+      continue;
+    }
+
+    if (grid_msg_add_frame(msg, GRID_CLASS_EVALUATE_ELEMENT_frame) < 0) {
+      break;
+    }
+
+    grid_msg_set_parameter(msg, CLASS_EVALUATE_ELEMENT_TYPE, LUA_TSTRING);
+
+    const char* str = lua_tostring(L, i);
+    size_t len = strlen(str);
+
+    if (grid_msg_add_segment_char(msg, GRID_CLASS_EVALUATE_ELEMENT_SIZE_length, len, str) < 0) {
+      grid_msg_rewind_to_offset(msg);
+      break;
+    }
+
+    grid_msg_inc_parameter_raw(elements_out, CLASS_EVALUATE_ELEMENTS);
+  }
+
+  if (grid_msg_add_frame(msg, GRID_CLASS_EVALUATE_frame_end) < 0) {
+    return -1;
+  }
+
+  return 0;
+}
+
+bool grid_lua_strn_is_actionstring(const char* s, size_t maxlen) {
+
+  if (strncmp(s, "<?lua ", 6) != 0) {
+    return false;
+  }
+
+  size_t nlen = strnlen(s, maxlen);
+
+  if (strncmp(&s[nlen - 3], " ?>", 3) != 0) {
+    return false;
+  }
+
+  return true;
+}
