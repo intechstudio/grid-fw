@@ -82,13 +82,8 @@ void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_mode
     assert(grid_cal_set(cal, i, GRID_CAL_DETENT, &ui_potmeter_state[i].detent) == 0);
   }
 
-  while (grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
-    vTaskDelay(1);
-  }
-
-  while (grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CONFREAD_PROGRESS)) {
-    vTaskDelay(1);
-  }
+  assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));
+  grid_ui_bulk_flush(ui);
 
   grid_esp32_adc_init(adc, po16_process_analog);
   grid_esp32_adc_mux_init(adc, 8);

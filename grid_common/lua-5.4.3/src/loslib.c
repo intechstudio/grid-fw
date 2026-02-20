@@ -21,6 +21,8 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+#include "grid_platform.h"
+
 
 /*
 ** {==================================================================
@@ -137,6 +139,8 @@
 #endif				/* } */
 /* }================================================================== */
 
+#define l_remove(f) grid_platform_remove(f)
+
 
 
 static int os_execute (lua_State *L) {
@@ -155,7 +159,7 @@ static int os_execute (lua_State *L) {
 
 static int os_remove (lua_State *L) {
   const char *filename = luaL_checkstring(L, 1);
-  return luaL_fileresult(L, remove(filename) == 0, filename);
+  return luaL_fileresult(L, l_remove(filename) == 0, filename);
 }
 
 

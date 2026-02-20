@@ -98,8 +98,8 @@ void grid_module_po16_init() {
     assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_DETENT, &ui_potmeter_state[i].detent) == 0);
   }
 
-  assert(grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL) == 0);
-  grid_ui_bulk_confread_next(&grid_ui_state);
+  assert(grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_read, 0, 0, NULL));
+  grid_ui_bulk_flush(&grid_ui_state);
 
   hardware_init();
   hardware_start_transfer();

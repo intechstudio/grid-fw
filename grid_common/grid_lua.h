@@ -71,6 +71,8 @@ char* grid_lua_get_error_string(struct grid_lua_model* lua);
 
 uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code);
 uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code);
+bool grid_lua_dostring_begin(struct grid_lua_model* lua, const char* code);
+void grid_lua_dostring_end(struct grid_lua_model* lua);
 bool grid_lua_do_event(struct grid_lua_model* lua, uint8_t index, const char* function_name);
 void grid_lua_decode_clear_results(struct grid_lua_model* lua);
 void grid_lua_decode_process_results(struct grid_lua_model* lua);

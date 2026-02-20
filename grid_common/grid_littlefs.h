@@ -27,4 +27,15 @@ size_t grid_littlefs_get_used_bytes(lfs_t* lfs, struct lfs_config* cfg);
 
 int grid_littlefs_find_next_on_page(lfs_t* lfs, uint8_t page, int* last_ele, int* last_evt);
 
+lfs_file_t* grid_littlefs_fopen(lfs_t* lfs, const char* path, const char* mode);
+int grid_littlefs_fclose(lfs_t* lfs, lfs_file_t* stream);
+size_t grid_littlefs_fwrite(lfs_t* lfs, const void* ptr, size_t size, size_t nmemb, lfs_file_t* stream);
+size_t grid_littlefs_fread(lfs_t* lfs, void* ptr, size_t size, size_t nmemb, lfs_file_t* stream);
+ssize_t grid_littlefs_ftell(lfs_t* lfs, lfs_file_t* stream);
+ssize_t grid_littlefs_fseek(lfs_t* lfs, lfs_file_t* stream, lfs_soff_t soff, int whence);
+int grid_littlefs_fflush(lfs_t* lfs, lfs_file_t* stream);
+lfs_dir_t* grid_littlefs_opendir(lfs_t* lfs, const char* name);
+int grid_littlefs_closedir(lfs_t* lfs, lfs_dir_t* dirp);
+const char* grid_littlefs_readdir(lfs_t* lfs, lfs_dir_t* dirp);
+
 #endif /* GRID_LITTLEFS_H */
