@@ -40,6 +40,6 @@ void grid_d51_module_en16_init(struct grid_sys_model* sys, struct grid_ui_model*
   }
 
   uint8_t transfer_length = GRID_MODULE_EN16_ENCODER_COUNT / 2; // D51 encoder is on separate bus from HWCFG
-  uint32_t clock_rate = 1000 * transfer_length * 8;
+  uint32_t clock_rate = 500 * transfer_length * 8;
   grid_d51_encoder_init(enc, transfer_length, clock_rate, en16_process_encoder);
 }

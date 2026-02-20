@@ -103,8 +103,8 @@ void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mode
   grid_ui_bulk_flush(ui);
 
   uint8_t transfer_length = 1 + GRID_MODULE_EF44_ENCODER_COUNT / 2;
-  // I2S clock rate chosen so callback fires at 1000 Hz: rate = 1000 * 32bit * 4slots
-  uint32_t clock_rate = 1000 * I2S_DATA_BIT_WIDTH_32BIT * 4;
+  // I2S clock rate chosen so callback fires at 500 Hz: rate = 500 * 32bit * 4slots
+  uint32_t clock_rate = 500 * I2S_DATA_BIT_WIDTH_32BIT * 4;
   grid_esp32_encoder_init(enc, transfer_length, clock_rate, ef44_process_encoder);
 
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
