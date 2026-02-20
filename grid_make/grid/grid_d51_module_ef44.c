@@ -74,7 +74,7 @@ void grid_d51_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_model*
   grid_ui_bulk_confread_next(ui);
 
   uint8_t transfer_length = GRID_MODULE_EF44_ENCODER_COUNT / 2; // D51 encoder is on separate bus from HWCFG
-  uint32_t clock_rate = 1000 * transfer_length * 8;
+  uint32_t clock_rate = 500 * transfer_length * 8;
   grid_d51_encoder_init(enc, transfer_length, clock_rate, ef44_process_encoder);
   grid_d51_adc_init(adc, 0b00000011, ef44_process_analog);
   grid_d51_adc_start(adc);
