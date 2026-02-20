@@ -44,7 +44,7 @@ void IRAM_ATTR po16_process_analog(struct grid_adc_result* result) {
   uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
 
   uint16_t processed;
-  if (!grid_asc_process(asc_state, element_index, inverted, &processed)) {
+  if (!grid_asc_process(&asc_state[element_index], inverted, &processed)) {
     return;
   }
 
@@ -67,7 +67,7 @@ void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_mode
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
       struct grid_ui_potmeter_state* state = grid_ui_potmeter_get_state(ele);
       grid_ui_potmeter_configure(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
-      grid_asc_set_factor(asc_state, i, GRID_MODULE_PO16_ASC_FACTOR);
+      grid_asc_set_factor(&asc_state[i], GRID_MODULE_PO16_ASC_FACTOR);
       grid_cal_attach(cal, i, GRID_CAL_LIMITS, &state->limits);
       grid_cal_attach(cal, i, GRID_CAL_CENTER, &state->center);
       grid_cal_attach(cal, i, GRID_CAL_DETENT, &state->detent);
