@@ -4,6 +4,7 @@
 
 #include "grid_d51_module.h"
 #include "grid_platform.h"
+#include <peripheral_clk_config.h>
 
 struct grid_d51_encoder_model grid_d51_encoder_state;
 
@@ -38,7 +39,8 @@ void grid_d51_encoder_init(struct grid_d51_encoder_model* enc, uint8_t transfer_
   gpio_set_pin_direction(PIN_UI_SPI_CS0, GPIO_DIRECTION_OUT);
 
   spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
-  spi_m_async_set_baudrate(&UI_SPI, clock_rate);
+  uint32_t baud_reg = (CONF_GCLK_SERCOM3_CORE_FREQUENCY / (2 * clock_rate)) - 1;
+  spi_m_async_set_baudrate(&UI_SPI, baud_reg);
 
   spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, spi_transfer_complete_cb);
 
