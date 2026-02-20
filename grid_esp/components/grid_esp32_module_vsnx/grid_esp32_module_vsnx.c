@@ -21,6 +21,7 @@
 #include "grid_ui_lcd.h"
 
 #include "grid_esp32_lcd.h"
+#include "grid_esp32_port.h"
 #include "grid_font.h"
 #include "grid_gui.h"
 
@@ -137,7 +138,9 @@ static void vsnx_lcd_init(struct grid_sys_model* sys, struct grid_ui_model* ui) 
   grid_esp32_lcd_spi_bus_init(lcd_tx_bytes);
 
   // Wait for the coprocessor to pull the LCD reset pin high
-  vTaskDelay(pdMS_TO_TICKS(500));
+  while (!rp2040_active) {
+    vTaskDelay(1);
+  }
 
   struct grid_ui_element* elements = grid_ui_model_get_elements(ui);
 

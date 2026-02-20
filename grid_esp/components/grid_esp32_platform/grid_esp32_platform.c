@@ -43,7 +43,7 @@ uint64_t IRAM_ATTR grid_platform_rtc_get_elapsed_time(uint64_t told) { return gr
 
 uint32_t IRAM_ATTR grid_platform_get_cycles() { return esp_cpu_get_cycle_count(); }
 
-uint32_t IRAM_ATTR grid_platform_get_cycles_per_us() { return 240; }
+uint32_t IRAM_ATTR grid_platform_get_cycles_per_us() { return CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ; }
 
 static char uint4_to_hex[16] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',

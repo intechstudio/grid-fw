@@ -518,6 +518,12 @@ void app_main(void) {
 
   xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 10, NULL, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
 
+  log_checkpoint("PORT TASK INIT");
+
+  TaskHandle_t port_task_hdl;
+
+  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 1024 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
+
   log_checkpoint("MODULE INIT");
 
   if (grid_hwcfg_module_is_po16(&grid_sys_state)) {
@@ -546,12 +552,6 @@ void app_main(void) {
 
     log_checkpoint("LCD TASK DONE");
   }
-
-  TaskHandle_t port_task_hdl;
-
-  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 1024 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
-
-  log_checkpoint("PORT TASK DONE");
 
   // Initialize 1 kHz timer
   periodic_rtc_ms_init();
