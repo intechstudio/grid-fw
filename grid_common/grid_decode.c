@@ -570,6 +570,8 @@ uint8_t grid_decode_evaluate_to_ui(char* header, char* chunk) {
     return 1;
   }
 
+  uint8_t id = grid_msg_get_parameter_raw((uint8_t*)header, BRC_ID);
+
   struct grid_msg msg;
   uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
   uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);
@@ -579,6 +581,7 @@ uint8_t grid_decode_evaluate_to_ui(char* header, char* chunk) {
 
     grid_msg_add_frame(&msg, GRID_CLASS_EVALUATE_frame_start);
     grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_CHECK_code);
+    grid_msg_set_parameter(&msg, CLASS_EVALUATE_LASTHEADER, id);
     grid_msg_set_parameter(&msg, CLASS_EVALUATE_ELEMENTS, 0);
     grid_msg_add_frame(&msg, GRID_CLASS_EVALUATE_frame_end);
 
@@ -597,7 +600,7 @@ uint8_t grid_decode_evaluate_to_ui(char* header, char* chunk) {
 
   uint8_t respinstr = status ? GRID_INSTR_ACKNOWLEDGE_code : GRID_INSTR_NACKNOWLEDGE_code;
 
-  if (grid_lua_serialize_evaluation_results(grid_lua_state.L, &msg, respinstr) >= 0) {
+  if (grid_lua_serialize_evaluation_results(grid_lua_state.L, &msg, respinstr, id) >= 0) {
     if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
       grid_transport_send_msg_to_all(&grid_transport_state, &msg);
     }

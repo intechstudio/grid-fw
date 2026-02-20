@@ -646,13 +646,14 @@ void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, con
   lua_pop(L, lua_gettop(L));
 }
 
-int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, uint8_t instr) {
+int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, uint8_t instr, uint8_t id) {
 
   if (grid_msg_add_frame(msg, GRID_CLASS_EVALUATE_frame_start) < 0) {
     return -1;
   }
 
   grid_msg_set_parameter(msg, INSTR, instr);
+  grid_msg_set_parameter(msg, CLASS_EVALUATE_LASTHEADER, id);
   grid_msg_set_parameter(msg, CLASS_EVALUATE_ELEMENTS, 0);
 
   uint8_t* elements_out = (uint8_t*)&msg->data[msg->offset];
