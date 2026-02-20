@@ -30,7 +30,7 @@ const char grid_ui_button_init_actionstring[] = GRID_ACTIONSTRING_BUTTON_INIT;
 const char grid_ui_button_change_actionstring[] = GRID_ACTIONSTRING_BUTTON_BUTTON;
 const char grid_ui_button_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
-void grid_ui_button_configure(struct grid_ui_button_state* state, uint8_t adc_bit_depth, double threshold, double hysteresis) {
+void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_bit_depth, double threshold, double hysteresis) {
 
   assert(adc_bit_depth >= 1 && adc_bit_depth <= 16);
   assert(threshold >= 0. && threshold <= 1.);

@@ -35,7 +35,7 @@ void grid_d51_module_en16_init(struct grid_sys_model* sys, struct grid_ui_model*
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_ENCODER) {
-      grid_ui_encoder_configure(grid_ui_encoder_get_state(ele), detent, direction);
+      grid_ui_encoder_state_init(grid_ui_encoder_get_state(ele), detent, direction);
     }
   }
 

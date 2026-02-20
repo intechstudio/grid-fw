@@ -91,11 +91,11 @@ void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mode
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
       struct grid_ui_potmeter_state* state = grid_ui_potmeter_get_state(ele);
-      grid_ui_potmeter_configure(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+      grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
       grid_asc_set_factor(&asc_state[i], GRID_MODULE_EF44_ASC_FACTOR);
       grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &state->limits);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_ENCODER) {
-      grid_ui_encoder_configure(grid_ui_encoder_get_state(ele), detent, direction);
+      grid_ui_encoder_state_init(grid_ui_encoder_get_state(ele), detent, direction);
     }
   }
 
