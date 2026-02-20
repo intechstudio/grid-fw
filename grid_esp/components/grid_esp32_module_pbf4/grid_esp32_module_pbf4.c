@@ -87,16 +87,16 @@ void grid_esp32_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_mode
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER && i < 4) {
       struct grid_ui_potmeter_state* state = grid_ui_potmeter_get_state(ele);
       grid_asc_set_factor(&asc_state[i], GRID_MODULE_PBF4_ASC_FACTOR);
-      grid_cal_attach(cal, i, GRID_CAL_LIMITS, &state->limits);
-      grid_cal_attach(cal, i, GRID_CAL_CENTER, &state->center);
-      grid_cal_attach(cal, i, GRID_CAL_DETENT, &state->detent);
+      grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &state->limits);
+      grid_cal_channel_set(cal, i, GRID_CAL_CENTER, &state->center);
+      grid_cal_channel_set(cal, i, GRID_CAL_DETENT, &state->detent);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
       grid_asc_set_factor(&asc_state[i], GRID_MODULE_PBF4_ASC_FACTOR);
-      grid_cal_attach(cal, i, GRID_CAL_LIMITS, &grid_ui_potmeter_get_state(ele)->limits);
+      grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &grid_ui_potmeter_get_state(ele)->limits);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
       grid_asc_set_factor(&asc_state[i], rev_h ? 1 : GRID_MODULE_PBF4_ASC_FACTOR);
       if (rev_h) {
-        grid_cal_attach(cal, i, GRID_CAL_LIMITS, &grid_ui_button_get_state(ele)->limits);
+        grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &grid_ui_button_get_state(ele)->limits);
       }
     }
   }

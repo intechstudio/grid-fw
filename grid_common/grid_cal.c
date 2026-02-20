@@ -118,7 +118,7 @@ void grid_cal_reset(struct grid_cal_model* cal) {
   }
 }
 
-void grid_cal_attach(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void* src) {
+void grid_cal_channel_set(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void* src) {
 
   assert(channel < cal->length);
 
@@ -138,7 +138,7 @@ void grid_cal_attach(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_
   }
 }
 
-int grid_cal_get(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void** dest) {
+int grid_cal_channel_get(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void** dest) {
 
   if (!(channel < cal->length)) {
     return 1;
