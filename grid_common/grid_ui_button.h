@@ -29,7 +29,7 @@ struct grid_ui_button_state {
   uint64_t curr_time;
 };
 
-void grid_ui_button_configure(struct grid_ui_button_state* state, uint8_t adc_bit_depth, double threshold, double hysteresis);
+void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_bit_depth, double threshold, double hysteresis);
 
 void grid_ui_element_button_init(struct grid_ui_element* ele);
 void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buffer* buf);

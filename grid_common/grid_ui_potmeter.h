@@ -16,7 +16,7 @@ struct grid_ui_potmeter_state {
   uint8_t adc_bit_depth;
 };
 
-void grid_ui_potmeter_configure(struct grid_ui_potmeter_state* state, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center);
+void grid_ui_potmeter_state_init(struct grid_ui_potmeter_state* state, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center);
 
 void grid_ui_element_potmeter_init(struct grid_ui_element* ele);
 void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf);

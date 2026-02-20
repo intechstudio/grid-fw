@@ -43,9 +43,9 @@ void grid_d51_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_model*
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      grid_ui_potmeter_configure(grid_ui_potmeter_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+      grid_ui_potmeter_state_init(grid_ui_potmeter_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-      grid_ui_button_configure(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
+      grid_ui_button_state_init(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
     }
   }
 

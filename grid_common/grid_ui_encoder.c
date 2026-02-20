@@ -41,7 +41,7 @@ const char grid_ui_encoder_encoderchange_actionstring[] = GRID_ACTIONSTRING_ENCO
 const char grid_ui_encoder_buttonchange_actionstring[] = GRID_ACTIONSTRING_BUTTON_BUTTON;
 const char grid_ui_encoder_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
-void grid_ui_encoder_configure(struct grid_ui_encoder_state* state, uint8_t detent, int8_t direction) {
+void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent, int8_t direction) {
 
   assert(direction == 1 || direction == -1);
 
@@ -52,7 +52,7 @@ void grid_ui_encoder_configure(struct grid_ui_encoder_state* state, uint8_t dete
   state->initial_samples = 0;
   state->direction = direction;
 
-  grid_ui_button_configure(&state->button, 1, GRID_BUTTON_THRESHOLD, 0.0);
+  grid_ui_button_state_init(&state->button, 1, GRID_BUTTON_THRESHOLD, 0.0);
 }
 
 void grid_ui_element_encoder_init(struct grid_ui_element* ele) {

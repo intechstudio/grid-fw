@@ -170,11 +170,11 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON && i < GRID_MODULE_VSNX_BUTTON_COUNT) {
-      grid_ui_button_configure(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
+      grid_ui_button_state_init(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-      grid_ui_button_configure(grid_ui_button_get_state(ele), 1, GRID_BUTTON_THRESHOLD, 0.0);
+      grid_ui_button_state_init(grid_ui_button_get_state(ele), 1, GRID_BUTTON_THRESHOLD, 0.0);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
-      grid_ui_endless_configure(grid_ui_endless_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
+      grid_ui_endless_state_init(grid_ui_endless_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
     }
   }
 

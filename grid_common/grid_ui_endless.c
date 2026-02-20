@@ -42,11 +42,11 @@ const char grid_ui_endless_endlesschange_actionstring[] = GRID_ACTIONSTRING_ENDL
 const char grid_ui_endless_buttonchange_actionstring[] = GRID_ACTIONSTRING_ENDLESS_BUTTON;
 const char grid_ui_endless_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
-void grid_ui_endless_configure(struct grid_ui_endless_state* state, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis) {
+void grid_ui_endless_state_init(struct grid_ui_endless_state* state, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis) {
 
   state->adc_bit_depth = adc_bit_depth;
 
-  grid_ui_button_configure(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
+  grid_ui_button_state_init(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
 }
 
 void grid_ui_element_endless_init(struct grid_ui_element* ele) {
