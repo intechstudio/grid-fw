@@ -11,7 +11,7 @@ struct grid_asc {
   uint8_t factor;
 };
 
-void grid_asc_set_factor(struct grid_asc* asc, uint8_t index, uint8_t factor);
-bool grid_asc_process(struct grid_asc* asc, uint8_t index, uint16_t rx, uint16_t* tx);
+void grid_asc_set_factor(struct grid_asc* asc, uint8_t factor);
+bool grid_asc_process(struct grid_asc* asc, uint16_t rx, uint16_t* tx);
 
 #endif /* GRID_ASC_H */

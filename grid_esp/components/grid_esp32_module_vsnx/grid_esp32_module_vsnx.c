@@ -73,7 +73,7 @@ void IRAM_ATTR vsnx_process_analog(struct grid_adc_result* result) {
     return;
   }
 
-  if (!grid_asc_process(asc_state, element_index, result->value, &result->value)) {
+  if (!grid_asc_process(&asc_state[element_index], result->value, &result->value)) {
     return;
   }
 
@@ -187,14 +187,14 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON && i < GRID_MODULE_VSNX_BUTTON_COUNT) {
-      grid_asc_set_factor(asc_state, i, GRID_MODULE_VSNX_ASC_FACTOR);
+      grid_asc_set_factor(&asc_state[i], GRID_MODULE_VSNX_ASC_FACTOR);
       if (rev_h) {
         grid_cal_attach(cal, i, GRID_CAL_LIMITS, &grid_ui_button_get_state(ele)->limits);
       }
     } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
       // ASC factor must be 1 for ENDLESS to pass through every sample!
       // This limitation is due to asc not being able to process multidimensional samples!
-      grid_asc_set_factor(asc_state, i, 1);
+      grid_asc_set_factor(&asc_state[i], 1);
     }
   }
 
