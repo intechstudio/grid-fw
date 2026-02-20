@@ -56,11 +56,11 @@ void grid_d51_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_model*
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER && i < 4) {
       struct grid_ui_potmeter_state* state = grid_ui_potmeter_get_state(ele);
-      grid_cal_attach(cal, i, GRID_CAL_LIMITS, &state->limits);
-      grid_cal_attach(cal, i, GRID_CAL_CENTER, &state->center);
-      grid_cal_attach(cal, i, GRID_CAL_DETENT, &state->detent);
+      grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &state->limits);
+      grid_cal_channel_set(cal, i, GRID_CAL_CENTER, &state->center);
+      grid_cal_channel_set(cal, i, GRID_CAL_DETENT, &state->detent);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      grid_cal_attach(cal, i, GRID_CAL_LIMITS, &grid_ui_potmeter_get_state(ele)->limits);
+      grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &grid_ui_potmeter_get_state(ele)->limits);
     }
   }
 
