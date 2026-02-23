@@ -71,6 +71,6 @@ void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, uint8_t t
       .on_send_q_ovf = NULL,
   };
   ESP_ERROR_CHECK(i2s_channel_register_event_callback(encoder->rx_chan, &cbs, encoder));
-
-  ESP_ERROR_CHECK(i2s_channel_enable(encoder->rx_chan));
 }
+
+void grid_esp32_encoder_start(struct grid_esp32_encoder_model* encoder) { ESP_ERROR_CHECK(i2s_channel_enable(encoder->rx_chan)); }

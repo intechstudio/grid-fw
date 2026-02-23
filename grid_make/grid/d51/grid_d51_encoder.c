@@ -43,6 +43,6 @@ void grid_d51_encoder_init(struct grid_d51_encoder_model* enc, uint8_t transfer_
   spi_m_async_set_baudrate(&UI_SPI, baud_reg);
 
   spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, spi_transfer_complete_cb);
-
-  spi_start_transfer(enc);
 }
+
+void grid_d51_encoder_start(struct grid_d51_encoder_model* enc) { spi_start_transfer(enc); }
