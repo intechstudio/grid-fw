@@ -31,7 +31,8 @@
 #define GRID_MODULE_EF44_ASC_FACTOR 16
 
 static struct grid_ui_model* DRAM_ATTR ui_ptr = NULL;
-static struct grid_asc* DRAM_ATTR asc_state = NULL;
+static struct grid_asc* DRAM_ATTR asc_array = NULL;
+static uint8_t DRAM_ATTR asc_array_length = 0;
 
 static DRAM_ATTR const uint8_t mux_element_lookup[2][2] = {
     {4, 5},
@@ -45,16 +46,15 @@ void IRAM_ATTR ef44_process_analog(struct grid_adc_result* result) {
 
   uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
 
-  uint16_t raw = result->value;
-  uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
+  result->value = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
 
-  uint16_t processed;
-  if (!grid_asc_process(&asc_state[element_index], inverted, &processed)) {
+  assert(element_index < asc_array_length);
+  if (!grid_asc_process(&asc_array[element_index], result->value, &result->value)) {
     return;
   }
 
   struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-  grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), processed);
+  grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), result->value);
 }
 
 void IRAM_ATTR ef44_process_encoder(struct grid_encoder_result* result) {
@@ -81,8 +81,9 @@ void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mode
   uint8_t detent = grid_hwcfg_module_encoder_is_detent(sys);
   int8_t direction = grid_hwcfg_module_encoder_dir(sys);
 
-  asc_state = grid_platform_allocate_volatile(8 * sizeof(struct grid_asc));
-  memset(asc_state, 0, 8 * sizeof(struct grid_asc));
+  asc_array_length = ui->element_list_length - 1;
+  asc_array = grid_platform_allocate_volatile(asc_array_length * sizeof(struct grid_asc));
+  memset(asc_array, 0, asc_array_length * sizeof(struct grid_asc));
 
   grid_config_init(conf, cal);
   grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
@@ -92,7 +93,7 @@ void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mode
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
       struct grid_ui_potmeter_state* state = grid_ui_potmeter_get_state(ele);
       grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
-      grid_asc_set_factor(&asc_state[i], GRID_MODULE_EF44_ASC_FACTOR);
+      grid_asc_set_factor(&asc_array[i], GRID_MODULE_EF44_ASC_FACTOR);
       grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &state->limits);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_ENCODER) {
       grid_ui_encoder_state_init(grid_ui_encoder_get_state(ele), detent, direction);

@@ -16,10 +16,10 @@ static uint16_t element_invert_bm = 0;
 static void bu16_process_analog(struct grid_adc_result* result) {
 
   uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
-  uint16_t inverted = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
+  result->value = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
 
   struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
-  grid_ui_button_store_input(grid_ui_button_get_state(ele), inverted);
+  grid_ui_button_store_input(grid_ui_button_get_state(ele), result->value);
 }
 
 void grid_d51_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_d51_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {
