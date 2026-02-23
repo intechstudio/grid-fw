@@ -192,40 +192,6 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
-void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
-
-  // 16 pot, depth of 5, 14bit internal, 7bit result;
-  grid_ain_init(ain, 16, 4); // TODO: 12 ain for TEK2
-  grid_led_init(led, 18);    // TODO: 18 led for TEK2
-
-  for (uint8_t i = 0; i < 8; ++i) {
-    grid_led_lookup_alloc_single(led, i, i + 10);
-  }
-  grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
-  grid_led_lookup_alloc_multi(led, 9, 5, (uint8_t[5]){5, 6, 7, 8, 9});
-
-  grid_ui_model_init(ui, 10 + 1); // 10+1 for the system element on TEK2
-
-  for (uint8_t j = 0; j < 10 + 1; j++) {
-
-    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
-
-    if (j < 8) {
-
-      grid_ui_element_button_init(ele);
-
-    } else if (j < 10) {
-
-      grid_ui_element_endless_init(ele);
-
-    } else {
-      grid_ui_element_system_init(ele);
-    }
-  }
-
-  ui->lua_ui_init_callback = grid_lua_ui_init;
-}
-
 void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   grid_led_init(&grid_led_state, 16);

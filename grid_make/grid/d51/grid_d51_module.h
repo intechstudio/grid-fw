@@ -12,6 +12,9 @@
 #include "grid_protocol.h"
 #include "grid_transport.h"
 
+#include "grid_d51_adc.h"
+#include "grid_d51_encoder.h"
+
 #include "grid_d51_module_bu16.h"
 #include "grid_d51_module_ef44.h"
 #include "grid_d51_module_en16.h"

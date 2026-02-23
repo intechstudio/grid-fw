@@ -173,6 +173,10 @@ void grid_ui_element_button_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_BUTTON;
 
+  ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_button_state));
+  memset(ele->primary_state, 0, sizeof(struct grid_ui_button_state));
+  ((struct grid_ui_button_state*)ele->primary_state)->parent = ele;
+
   grid_ui_element_malloc_events(ele, 3);
 
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_button_init_actionstring);       // Element Initialization Event
@@ -226,10 +230,9 @@ void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t 
   // }
 }
 
-void grid_ui_button_store_input(struct grid_ui_element* ele, struct grid_ui_button_state* state, uint16_t value, uint8_t adc_bit_depth) {
+void grid_ui_button_store_input(struct grid_ui_button_state* state, uint16_t value) {
 
-  assert(ele);
-
+  struct grid_ui_element* ele = state->parent;
   int32_t* template_parameter_list = ele->template_parameter_list;
 
   uint64_t now = grid_platform_rtc_get_micros();
