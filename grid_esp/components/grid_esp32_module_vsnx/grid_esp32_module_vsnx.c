@@ -225,5 +225,6 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
   uint8_t mux_positions = grid_hwcfg_module_is_tek2(sys) ? 0b11110111 : 0b11111111;
   uint8_t mux_dependent = !rev_h;
   grid_esp32_adc_init(adc, mux_positions, mux_dependent, vsnx_process_analog);
+  grid_esp32_encoder_start(&grid_esp32_encoder_state);
   grid_esp32_adc_start(adc);
 }

@@ -57,4 +57,5 @@ void grid_esp32_module_en16_init(struct grid_sys_model* sys, struct grid_ui_mode
   // I2S clock rate chosen so callback fires at 500 Hz: rate = 500 * 32bit * 4slots
   uint32_t clock_rate = 500 * I2S_DATA_BIT_WIDTH_32BIT * 4;
   grid_esp32_encoder_init(enc, transfer_length, clock_rate, en16_process_encoder);
+  grid_esp32_encoder_start(enc);
 }

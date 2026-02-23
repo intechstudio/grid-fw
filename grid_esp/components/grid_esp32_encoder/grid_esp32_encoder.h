@@ -49,6 +49,7 @@ struct grid_esp32_encoder_model {
 extern struct grid_esp32_encoder_model grid_esp32_encoder_state;
 
 void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, uint8_t transfer_length, uint32_t clock_rate, grid_process_encoder_t process_encoder);
+void grid_esp32_encoder_start(struct grid_esp32_encoder_model* encoder);
 
 #ifdef __cplusplus
 }
