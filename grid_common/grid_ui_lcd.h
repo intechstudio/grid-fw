@@ -92,7 +92,7 @@ extern const luaL_Reg GRID_LUA_L_INDEX_META[];
   "}}"
 
 #define GRID_ACTIONSTRING_LCD_INIT \
-  "<?lua --[[@cb]] glsb(255)pi,s,c,self.f,self.v,self.id=math.pi,64,{{0,0,0},{255,255,255},{glr(),glg(),glb()}},1,{27,0,100},'VSN1'd={[1]='Linear',[2]='Encoder',[3]='Button',[7]='Endless'}xc,yc,p=160,120,s*5/8;self.eventrx_cb=function(self,hdr,e,v,n)self.v=v;if#n==0 then n=d[e[3]]..e[2]end;self.id=string.sub(n,1,(self:lsw()/(s/2)-1)//1)self.f=1 end;self:ldaf(0,0,319,239,c[1])self:ldrr(3,3,317,237,10,c[2]) ?>"
+  "<?lua --[[@cb]] glsb(255)pi,s,c,self.f,self.v,self.id=math.pi,64,{{0,0,0},{255,255,255},{glr(),glg(),glb()}},1,{27,0,100},'VSN1'd={[1]='Linear',[2]='Encoder',[3]='Button',[7]='Endless'}xc,yc,p=160,120,s*5/8;self.eventrx_cb=function(self,hdr,e,v,n)self.v=v;if#n==0 and d[e[3]] then n=d[e[3]]..e[2]end;self.id=string.sub(n,1,(self:lsw()/(s/2)-1)//1)self.f=1 end;self:ldaf(0,0,319,239,c[1])self:ldrr(3,3,317,237,10,c[2]) ?>"
 
 #define GRID_ACTIONSTRING_LCD_DRAW \
   "<?lua --[[@cb]] if self.f>0 then self.f=self.f-1;local a,xo=gmaps(self.v[1],self.v[2],self.v[3],0.1,1),#tostring(self.v[1])/2*s/2-#tostring(self.v[1])-s//32;self:ldaf(10,10,310,230,c[1])self:ldrr(xc-p//1-1,yc-p//1-1,xc+p//1+1,yc+p//1+1,s,c[2])self:ldrrf(xc-p*a//1,yc-p*a//1,xc+p*a//1,yc+p*a//1,s,c[3])self:ldft(self.v[1],xc-xo,yc+s,s/2,c[2])local xn=(#self.id*(s/2))/2-s//32;self:ldft(self.id,xc-xn,yc-1.5*s,s/2,c[2])self:ldsw()end ?>"

@@ -255,10 +255,6 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
     return;
   }
 
-  if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
-    return;
-  }
-
   // Service local triggers first and as fast as possible
   if (grid_ui_event_count_istriggered_local(&grid_ui_state) > 0) {
 

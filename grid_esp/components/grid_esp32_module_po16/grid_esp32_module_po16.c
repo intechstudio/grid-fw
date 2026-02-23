@@ -75,13 +75,8 @@ void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_mode
     }
   }
 
-  while (grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
-    vTaskDelay(1);
-  }
-
-  while (grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CONFREAD_PROGRESS)) {
-    vTaskDelay(1);
-  }
+  assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));
+  grid_ui_bulk_flush(ui);
 
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
   grid_esp32_adc_init(adc, 0b11111111, mux_dependent, po16_process_analog);

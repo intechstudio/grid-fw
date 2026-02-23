@@ -17,6 +17,7 @@ idf_component_register(
         "../../../grid_common/grid_allocator.c"
         "../../../grid_common/grid_msg.c"
         "../../../grid_common/grid_noflash.c"
+        "../../../grid_common/grid_platform.c"
         "../../../grid_common/grid_decode.c"
         "../../../grid_common/grid_port.c"
         "../../../grid_common/grid_usb.c"
@@ -37,6 +38,7 @@ idf_component_register(
         "../../../grid_common/littlefs/lfs.c"
         "../../../grid_common/littlefs/lfs_util.c"
 
+        "../../../grid_common/lua-5.4.3/src/dirent.c"
         "../../../grid_common/lua-5.4.3/src/lapi.c"
         "../../../grid_common/lua-5.4.3/src/lctype.c"
         "../../../grid_common/lua-5.4.3/src/lfunc.c"
@@ -77,4 +79,5 @@ idf_component_register(
         "../../../grid_common"
         "../../../grid_common/lua-5.4.3/src"
         "../../../grid_common/littlefs"
+        "../../../grid_common/proto"
 )

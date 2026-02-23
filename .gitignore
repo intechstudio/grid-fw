@@ -11,3 +11,6 @@ tags
 *~
 *.swp
 *.swo
+
+# Ignore compiler dependency files:
+*.d

@@ -200,13 +200,8 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
   }
 
   if (rev_h) {
-    while (grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
-      vTaskDelay(1);
-    }
-
-    while (grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CONFREAD_PROGRESS)) {
-      vTaskDelay(1);
-    }
+    assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));
+    grid_ui_bulk_flush(ui);
   }
 
   if (grid_hwcfg_module_is_vsnl(sys)) {
@@ -231,6 +226,7 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
   uint8_t mux_positions = grid_hwcfg_module_is_tek2(sys) ? 0b11110111 : 0b11111111;
   uint8_t mux_dependent = !rev_h;
   grid_esp32_adc_init(adc, mux_positions, mux_dependent, vsnx_process_analog);
+
   grid_esp32_encoder_start(&grid_esp32_encoder_state);
   grid_esp32_adc_start(adc);
 }
