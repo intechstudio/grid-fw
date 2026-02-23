@@ -211,6 +211,14 @@ void grid_module_vsnx_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     for (uint8_t i = 0; i < 8; ++i) {
       grid_led_lookup_alloc_single(led, i, i + 10);
     }
+
+  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
+
+    for (uint8_t i = 0; i < 8; ++i) {
+      grid_led_lookup_alloc_single(led, i, i + 10);
+    }
+    grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
+    grid_led_lookup_alloc_multi(led, 9, 5, (uint8_t[5]){5, 6, 7, 8, 9});
   }
 
   if (grid_hwcfg_module_is_vsnl(&grid_sys_state)) {
@@ -294,6 +302,27 @@ void grid_module_vsnx_ui_init(struct grid_ain_model* ain, struct grid_led_model*
       } else if (j < 18) {
 
         grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_right);
+      } else {
+        grid_ui_element_system_init(ele);
+      }
+    }
+
+  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
+
+    grid_ui_model_init(ui, 10 + 1);
+
+    for (uint8_t j = 0; j < 10 + 1; j++) {
+
+      struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+      if (j < 8) {
+
+        grid_ui_element_button_init(ele);
+
+      } else if (j < 10) {
+
+        grid_ui_element_endless_init(ele);
+
       } else {
         grid_ui_element_system_init(ele);
       }
@@ -401,6 +430,23 @@ void app_main(void) {
 
   size_t psram_size = esp_psram_get_size();
   ESP_LOGI(TAG, "PSRAM size: %d bytes\n", psram_size);
+
+  log_checkpoint("UI INIT");
+  if (grid_hwcfg_module_is_po16(&grid_sys_state)) {
+    grid_module_po16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_bu16(&grid_sys_state)) {
+    grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_pbf4(&grid_sys_state)) {
+    grid_module_pbf4_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_en16(&grid_sys_state)) {
+    grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
+    grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
+    grid_module_vsnx_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, &grid_sys_state);
+  } else {
+    ets_printf("UI Init failed: Unknown Module\r\n");
+  }
 
   grid_ui_semaphore_init(&grid_ui_state.bulk_semaphore, (void*)ui_bulk_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn, grid_common_semaphore_try_fn);
 
