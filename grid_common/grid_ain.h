@@ -36,7 +36,6 @@ typedef void (*grid_process_analog_t)(struct grid_adc_result* result);
     (index) = ((index) + 1 + __builtin_ctz(_rotated)) & 0b111;                                                                                                                                         \
   } while (0)
 
-
 struct ain_chan_t {
 
   uint16_t capa;
