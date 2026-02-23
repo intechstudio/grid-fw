@@ -1296,9 +1296,17 @@ void grid_port_decode_msg(struct grid_decoder_collection* coll, struct grid_msg*
       continue;
     }
 
-    grid_msg_set_offset(msg, i);
-    uint32_t class = grid_msg_get_parameter(msg, PARAMETER_CLASSCODE);
-    grid_port_decode_class(coll, class, msg->data, &msg->data[i]);
+    for (uint32_t j = i; j < msg->length; ++j) {
+
+      if (msg->data[j] != GRID_CONST_ETX) {
+        continue;
+      }
+
+      grid_msg_set_offset(msg, i);
+      uint32_t class = grid_msg_get_parameter(msg, PARAMETER_CLASSCODE);
+      char* chunk = grid_msg_get_slice_start(msg, msg->offset, j - i);
+      grid_port_decode_class(coll, class, msg->data, chunk);
+    }
   }
 
   if (grid_ui_bulk_semaphore_try(&grid_ui_state)) {

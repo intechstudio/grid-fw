@@ -241,9 +241,23 @@ void grid_msg_reset_offset(struct grid_msg* msg) { msg->offset = 0; }
 
 void grid_msg_store_offset(struct grid_msg* msg) { msg->offset = msg->length; }
 
-void grid_msg_set_offset(struct grid_msg* msg, uint32_t offset) { msg->offset = offset; }
+void grid_msg_set_offset(struct grid_msg* msg, uint32_t offset) {
+
+  assert(offset <= GRID_MSG_BYTES);
+  assert(offset <= msg->length);
+
+  msg->offset = offset;
+}
 
 void grid_msg_rewind_to_offset(struct grid_msg* msg) { msg->length = msg->offset; }
+
+char* grid_msg_get_slice_start(struct grid_msg* msg, uint32_t offset, uint32_t length) {
+
+  assert(offset >= msg->offset && offset < msg->length);
+  assert(length <= msg->length && offset + length <= msg->length);
+
+  return &msg->data[offset];
+}
 
 int grid_msg_close(struct grid_msg* msg) {
 

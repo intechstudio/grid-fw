@@ -646,6 +646,106 @@ void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, con
   lua_pop(L, lua_gettop(L));
 }
 
+int grid_lua_serialize_stack_element(lua_State* L, struct grid_msg* msg, int element) {
+
+  int type = lua_type(L, element);
+  if (type == LUA_TNIL) {
+  } else if (type == LUA_TBOOLEAN) {
+  } else if (type == LUA_TNUMBER) {
+  } else if (type == LUA_TSTRING) {
+  } else if (type == LUA_TTABLE) {
+  } else {
+    return -1;
+  }
+
+  if (grid_msg_add_frame(msg, GRID_CLASS_EVALUATE_ELEMENT_frame) < 0) {
+    return -1;
+  }
+
+  grid_msg_set_parameter(msg, CLASS_EVALUATE_ELEMENT_TYPE, type);
+
+  switch (type) {
+  case LUA_TNIL: {
+  } break;
+  case LUA_TBOOLEAN: {
+
+    const char* str = lua_toboolean(L, element) ? "01" : "00";
+    size_t len = strlen(str);
+
+    if (grid_msg_add_segment_char(msg, GRID_CLASS_EVALUATE_ELEMENT_SIZE_length, len, str) < 0) {
+      grid_msg_rewind_to_offset(msg);
+      return -1;
+    }
+
+  } break;
+  case LUA_TNUMBER: {
+
+    char str[50];
+    size_t len;
+
+    if (lua_isinteger(L, element)) {
+      len = snprintf(str, 50, LUA_INTEGER_FMT, (LUAI_UACINT)lua_tointeger(L, element));
+    } else {
+      len = snprintf(str, 50, "%.7f", (LUAI_UACNUMBER)lua_tonumber(L, element));
+    }
+
+    if (grid_msg_add_segment_char(msg, GRID_CLASS_EVALUATE_ELEMENT_SIZE_length, len, str) < 0) {
+      grid_msg_rewind_to_offset(msg);
+      return -1;
+    }
+
+  } break;
+  case LUA_TSTRING: {
+
+    const char* str = lua_tostring(L, element);
+    size_t len = strlen(str);
+
+    if (grid_msg_add_segment_char(msg, GRID_CLASS_EVALUATE_ELEMENT_SIZE_length, len, str) < 0) {
+      grid_msg_rewind_to_offset(msg);
+      return -1;
+    }
+
+  } break;
+  case LUA_TTABLE: {
+
+    if (grid_msg_add_segment_char(msg, GRID_CLASS_EVALUATE_ELEMENT_SIZE_length, 0, "\0") < 0) {
+      grid_msg_rewind_to_offset(msg);
+      return -1;
+    }
+
+    uint32_t offset_before = msg->offset;
+
+    uint32_t size_end = GRID_CLASS_EVALUATE_ELEMENT_SIZE_offset + GRID_CLASS_EVALUATE_ELEMENT_SIZE_length;
+    uint8_t* frame_start = (uint8_t*)grid_msg_get_slice_start(msg, msg->offset, size_end);
+
+    int len = lua_rawlen(L, element);
+    for (int i = 1; i <= len; ++i) {
+
+      lua_rawgeti(L, element, i);
+      int status = grid_lua_serialize_stack_element(L, msg, lua_gettop(L));
+      lua_pop(L, 1);
+
+      if (status < 0) {
+        break;
+      }
+
+      grid_msg_inc_parameter_raw(frame_start, CLASS_EVALUATE_ELEMENT_SIZE);
+    }
+
+    if (len != grid_msg_get_parameter_raw(frame_start, CLASS_EVALUATE_ELEMENT_SIZE)) {
+      grid_msg_set_offset(msg, offset_before);
+      grid_msg_rewind_to_offset(msg);
+      return -1;
+    }
+
+  } break;
+  default:
+    assert(0);
+  }
+
+  return 0;
+}
+
 int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, uint8_t instr, uint8_t id) {
 
   if (grid_msg_add_frame(msg, GRID_CLASS_EVALUATE_frame_start) < 0) {
@@ -656,28 +756,20 @@ int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, ui
   grid_msg_set_parameter(msg, CLASS_EVALUATE_LASTHEADER, id);
   grid_msg_set_parameter(msg, CLASS_EVALUATE_ELEMENTS, 0);
 
-  uint8_t* elements_out = (uint8_t*)&msg->data[msg->offset];
+  uint32_t offset_before = msg->offset;
+
+  uint32_t elements_end = GRID_CLASS_EVALUATE_ELEMENTS_offset + GRID_CLASS_EVALUATE_ELEMENTS_length;
+  uint8_t* frame_start = (uint8_t*)grid_msg_get_slice_start(msg, msg->offset, elements_end);
+
   for (int i = 1; i <= lua_gettop(L); ++i) {
 
-    if (lua_type(L, i) != LUA_TSTRING) {
-      continue;
-    }
-
-    if (grid_msg_add_frame(msg, GRID_CLASS_EVALUATE_ELEMENT_frame) < 0) {
-      break;
-    }
-
-    grid_msg_set_parameter(msg, CLASS_EVALUATE_ELEMENT_TYPE, LUA_TSTRING);
-
-    const char* str = lua_tostring(L, i);
-    size_t len = strlen(str);
-
-    if (grid_msg_add_segment_char(msg, GRID_CLASS_EVALUATE_ELEMENT_SIZE_length, len, str) < 0) {
+    if (grid_lua_serialize_stack_element(L, msg, i) < 0) {
+      grid_msg_set_offset(msg, offset_before);
       grid_msg_rewind_to_offset(msg);
-      break;
+      return -1;
     }
 
-    grid_msg_inc_parameter_raw(elements_out, CLASS_EVALUATE_ELEMENTS);
+    grid_msg_inc_parameter_raw(frame_start, CLASS_EVALUATE_ELEMENTS);
   }
 
   if (grid_msg_add_frame(msg, GRID_CLASS_EVALUATE_frame_end) < 0) {

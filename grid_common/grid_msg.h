@@ -69,6 +69,7 @@ void grid_msg_reset_offset(struct grid_msg* msg);
 void grid_msg_store_offset(struct grid_msg* msg);
 void grid_msg_set_offset(struct grid_msg* msg, uint32_t offset);
 void grid_msg_rewind_to_offset(struct grid_msg* msg);
+char* grid_msg_get_slice_start(struct grid_msg* msg, uint32_t offset, uint32_t length);
 int grid_msg_close(struct grid_msg* msg);
 void grid_msg_init_brc(struct grid_msg_model* model, struct grid_msg* msg, uint8_t dx, uint8_t dy);
 int grid_msg_close_brc(struct grid_msg_model* model, struct grid_msg* msg);
@@ -84,6 +85,14 @@ bool grid_msg_from_uwsr(struct grid_msg* msg, struct grid_uwsr_t* uwsr);
 void grid_str_transform_brc_params(uint8_t* msg, uint16_t length, int8_t dx, int8_t dy, uint8_t partner_rot);
 
 // clang-format off
+
+/*
+#define grid_frame_inc_parameter(frame, offset, length) \
+do { \
+  uint32_t value = grid_frame_get_parameter(frame, offset, length); \
+  grid_frame_set_parameter(frame, offset, length, value + 1); \
+while (0);
+*/
 
 #define grid_msg_get_parameter_raw(data, param) \
 	grid_frame_get_parameter( \
@@ -119,15 +128,15 @@ void grid_str_transform_brc_params(uint8_t* msg, uint16_t length, int8_t dx, int
 	); \
 }
 
-#define grid_msg_inc_parameter_raw(data, param) \
-{ \
-  uint32_t value = grid_msg_get_parameter_raw(data, param); \
-  grid_msg_set_parameter_raw(data, param, value + 1); \
-}
-
 #define grid_msg_add_frame(msg, frame) \
 	(grid_msg_store_offset((msg)), \
 	grid_msg_nprintf((msg), frame))
+
+#define grid_msg_inc_parameter_raw(data, param) \
+do { \
+  uint32_t value = grid_msg_get_parameter_raw(data, param); \
+  grid_msg_set_parameter_raw(data, param, value + 1); \
+} while(0);
 
 // clang-format on
 
