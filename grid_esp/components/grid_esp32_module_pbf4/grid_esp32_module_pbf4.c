@@ -27,7 +27,8 @@
 #define GRID_MODULE_PBF4_ASC_FACTOR 8
 
 static struct grid_ui_model* DRAM_ATTR ui_ptr = NULL;
-static struct grid_asc* DRAM_ATTR asc_state = NULL;
+static struct grid_asc* DRAM_ATTR asc_array = NULL;
+static uint8_t DRAM_ATTR asc_array_length = 0;
 
 #define X GRID_MUX_UNUSED
 static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
@@ -45,19 +46,18 @@ void IRAM_ATTR pbf4_process_analog(struct grid_adc_result* result) {
 
   assert(element_index != GRID_MUX_UNUSED);
 
-  uint16_t raw = result->value;
-  uint16_t inverted = GRID_ADC_INVERT_COND(raw, element_index, element_invert_bm);
+  result->value = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
 
-  uint16_t processed;
-  if (!grid_asc_process(&asc_state[element_index], inverted, &processed)) {
+  assert(element_index < asc_array_length);
+  if (!grid_asc_process(&asc_array[element_index], result->value, &result->value)) {
     return;
   }
 
   struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
   if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-    grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), processed);
+    grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), result->value);
   } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-    grid_ui_button_store_input(grid_ui_button_get_state(ele), processed);
+    grid_ui_button_store_input(grid_ui_button_get_state(ele), result->value);
   }
 }
 
@@ -76,8 +76,9 @@ void grid_esp32_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_mode
     }
   }
 
-  asc_state = grid_platform_allocate_volatile(12 * sizeof(struct grid_asc));
-  memset(asc_state, 0, 12 * sizeof(struct grid_asc));
+  asc_array_length = ui->element_list_length - 1;
+  asc_array = grid_platform_allocate_volatile(asc_array_length * sizeof(struct grid_asc));
+  memset(asc_array, 0, asc_array_length * sizeof(struct grid_asc));
 
   grid_config_init(conf, cal);
   grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
@@ -86,15 +87,15 @@ void grid_esp32_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_mode
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER && i < 4) {
       struct grid_ui_potmeter_state* state = grid_ui_potmeter_get_state(ele);
-      grid_asc_set_factor(&asc_state[i], GRID_MODULE_PBF4_ASC_FACTOR);
+      grid_asc_set_factor(&asc_array[i], GRID_MODULE_PBF4_ASC_FACTOR);
       grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &state->limits);
       grid_cal_channel_set(cal, i, GRID_CAL_CENTER, &state->center);
       grid_cal_channel_set(cal, i, GRID_CAL_DETENT, &state->detent);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-      grid_asc_set_factor(&asc_state[i], GRID_MODULE_PBF4_ASC_FACTOR);
+      grid_asc_set_factor(&asc_array[i], GRID_MODULE_PBF4_ASC_FACTOR);
       grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &grid_ui_potmeter_get_state(ele)->limits);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-      grid_asc_set_factor(&asc_state[i], rev_h ? 1 : GRID_MODULE_PBF4_ASC_FACTOR);
+      grid_asc_set_factor(&asc_array[i], rev_h ? 1 : GRID_MODULE_PBF4_ASC_FACTOR);
       if (rev_h) {
         grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &grid_ui_button_get_state(ele)->limits);
       }

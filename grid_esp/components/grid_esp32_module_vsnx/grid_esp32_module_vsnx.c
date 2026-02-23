@@ -37,7 +37,8 @@
 #define GRID_MODULE_VSNX_ASC_FACTOR 8
 
 static struct grid_ui_model* DRAM_ATTR ui_ptr = NULL;
-static struct grid_asc* DRAM_ATTR asc_state = NULL;
+static struct grid_asc* DRAM_ATTR asc_array = NULL;
+static uint8_t DRAM_ATTR asc_array_length = 0;
 #define GRID_MODULE_VSNX_ENDLESS_MAXCOUNT 2
 static struct grid_ui_endless_sample DRAM_ATTR endless_sample[GRID_MODULE_VSNX_ENDLESS_MAXCOUNT] = {0};
 
@@ -73,16 +74,18 @@ void IRAM_ATTR vsnx_process_analog(struct grid_adc_result* result) {
     return;
   }
 
-  if (!grid_asc_process(&asc_state[element_index], result->value, &result->value)) {
+  assert(element_index < asc_array_length);
+  if (!grid_asc_process(&asc_array[element_index], result->value, &result->value)) {
     return;
   }
 
-  if (element_index < GRID_MODULE_VSNX_BUTTON_COUNT) {
+  struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
 
-    struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
+  if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+
     grid_ui_button_store_input(grid_ui_button_get_state(ele), result->value);
 
-  } else {
+  } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
 
     uint8_t endless_idx = element_index - GRID_MODULE_VSNX_BUTTON_COUNT;
     struct grid_ui_endless_sample* sample_ptr = &endless_sample[endless_idx];
@@ -93,7 +96,6 @@ void IRAM_ATTR vsnx_process_analog(struct grid_adc_result* result) {
       sample_ptr->phase_b = result->value;
     } else if (result->mux_state == 2) {
       sample_ptr->button_value = result->value;
-      struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
       grid_ui_endless_store_input(grid_ui_endless_get_state(ele), *sample_ptr);
     }
   }
@@ -116,9 +118,14 @@ void IRAM_ATTR vsnx_process_minibutton(struct grid_encoder_result* result) {
 
     uint8_t element_index = vsnx_minibutton_lookup[i];
 
-    if (element_index != GRID_MUX_UNUSED) {
-      uint8_t bit = (minibutton_state_bm >> i) & 1;
-      struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
+    if (element_index == GRID_MUX_UNUSED) {
+      continue;
+    }
+
+    uint8_t bit = (minibutton_state_bm >> i) & 1;
+    struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
+
+    if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
       grid_ui_button_store_input(grid_ui_button_get_state(ele), bit);
     }
   }
@@ -167,19 +174,9 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
     vsnx_lcd_init(sys, ui);
   }
 
-  for (int i = 0; i < ui->element_list_length; ++i) {
-    struct grid_ui_element* ele = &ui->element_list[i];
-    if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON && i < GRID_MODULE_VSNX_BUTTON_COUNT) {
-      grid_ui_button_state_init(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
-    } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-      grid_ui_button_state_init(grid_ui_button_get_state(ele), 1, GRID_BUTTON_THRESHOLD, 0.0);
-    } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
-      grid_ui_endless_state_init(grid_ui_endless_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
-    }
-  }
-
-  asc_state = grid_platform_allocate_volatile(16 * sizeof(struct grid_asc));
-  memset(asc_state, 0, 16 * sizeof(struct grid_asc));
+  asc_array_length = ui->element_list_length - 1;
+  asc_array = grid_platform_allocate_volatile(asc_array_length * sizeof(struct grid_asc));
+  memset(asc_array, 0, asc_array_length * sizeof(struct grid_asc));
 
   grid_config_init(conf, cal);
   grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
@@ -187,14 +184,18 @@ void grid_esp32_module_vsnx_init(struct grid_sys_model* sys, struct grid_ui_mode
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
     if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON && i < GRID_MODULE_VSNX_BUTTON_COUNT) {
-      grid_asc_set_factor(&asc_state[i], GRID_MODULE_VSNX_ASC_FACTOR);
+      grid_ui_button_state_init(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
+      grid_asc_set_factor(&asc_array[i], GRID_MODULE_VSNX_ASC_FACTOR);
       if (rev_h) {
         grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &grid_ui_button_get_state(ele)->limits);
       }
+    } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+      grid_ui_button_state_init(grid_ui_button_get_state(ele), 1, GRID_BUTTON_THRESHOLD, 0.0);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_ENDLESS) {
+      grid_ui_endless_state_init(grid_ui_endless_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
       // ASC factor must be 1 for ENDLESS to pass through every sample!
       // This limitation is due to asc not being able to process multidimensional samples!
-      grid_asc_set_factor(&asc_state[i], 1);
+      grid_asc_set_factor(&asc_array[i], 1);
     }
   }
 

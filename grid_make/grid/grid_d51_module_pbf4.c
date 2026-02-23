@@ -26,13 +26,13 @@ static void pbf4_process_analog(struct grid_adc_result* result) {
   uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
   assert(element_index != GRID_MUX_UNUSED);
 
-  uint16_t inverted = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
+  result->value = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
 
   struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
   if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
-    grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), inverted);
+    grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), result->value);
   } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-    grid_ui_button_store_input(grid_ui_button_get_state(ele), inverted);
+    grid_ui_button_store_input(grid_ui_button_get_state(ele), result->value);
   }
 }
 
