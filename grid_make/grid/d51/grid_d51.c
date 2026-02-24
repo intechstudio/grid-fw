@@ -752,6 +752,22 @@ void grid_platform_system_reset() { NVIC_SystemReset(); }
 
 uint8_t grid_platform_get_adc_bit_depth() { return 16; }
 
+void grid_platform_mux_init(uint8_t mux_positions_bm) {
+
+  gpio_set_pin_direction(MUX_A, GPIO_DIRECTION_OUT);
+  gpio_set_pin_direction(MUX_B, GPIO_DIRECTION_OUT);
+  gpio_set_pin_direction(MUX_C, GPIO_DIRECTION_OUT);
+
+  grid_d51_adc_mux_init(&grid_d51_adc_state, mux_positions_bm);
+}
+
+void grid_platform_mux_write(uint8_t index) {
+
+  gpio_set_pin_level(MUX_A, (index >> 0) & 1);
+  gpio_set_pin_level(MUX_B, (index >> 1) & 1);
+  gpio_set_pin_level(MUX_C, (index >> 2) & 1);
+}
+
 static uint64_t micros = 0;
 
 void grid_platform_rtc_set_micros(uint64_t mic) { micros = mic; }

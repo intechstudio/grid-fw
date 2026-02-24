@@ -4,6 +4,38 @@
 #include <stddef.h>
 #include <stdint.h>
 
+extern void grid_platform_set_lfs(void* lfs);
+
+extern void* grid_platform_fopen(const char* pathname, const char* mode);
+
+extern int grid_platform_fclose(void* stream);
+
+extern size_t grid_platform_fwrite(const void* ptr, size_t size, size_t nmemb, void* stream);
+
+extern size_t grid_platform_fread(void* ptr, size_t size, size_t nmemb, void* stream);
+
+extern long grid_platform_ftell(void* stream);
+
+extern int grid_platform_fseek(void* stream, long offset, int whence);
+
+extern void grid_platform_clearerr(void* stream);
+
+extern int grid_platform_ferror(void* stream);
+
+extern int grid_platform_getc(void* stream);
+
+extern int grid_platform_ungetc(int c, void* stream);
+
+extern int grid_platform_fflush(void* stream);
+
+extern int grid_platform_remove(const char* pathname);
+
+extern void* grid_platform_opendir(const char* name);
+
+extern int grid_platform_closedir(void* dirp);
+
+extern void* grid_platform_readdir(void* dirp);
+
 extern void grid_platform_printf(char const* fmt, ...);
 
 extern void grid_platform_printf_nonprint(const uint8_t* src, size_t size);
@@ -91,5 +123,9 @@ extern uint8_t grid_platform_erase_nvm_next();
 extern void grid_platform_lcd_set_backlight(uint8_t backlight);
 
 extern uint8_t grid_platform_get_adc_bit_depth();
+
+extern void grid_platform_mux_init(uint8_t mux_positions_bm);
+
+extern void grid_platform_mux_write(uint8_t index);
 
 #endif /* GRID_PLATFORM_H */

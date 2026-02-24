@@ -6,6 +6,8 @@
 
 #include "grid_esp32.h"
 
+#include "grid_esp32_adc.h"
+
 static const char* TAG = "grid_esp32";
 
 void vTaskGetRunTimeStats2(char* pcWriteBuffer) {
@@ -367,3 +369,11 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
 void grid_platform_system_reset() { ets_printf("grid_platform_system_reset NOT IMPLEMENTED!!!\r\n"); }
 
 uint8_t IRAM_ATTR grid_platform_get_adc_bit_depth() { return 12; }
+
+void grid_platform_mux_init(uint8_t mux_positions_bm) { grid_esp32_adc_mux_init(&grid_esp32_adc_state, mux_positions_bm); }
+
+void IRAM_ATTR grid_platform_mux_write(uint8_t index) {
+
+  grid_esp32_adc_state.mux_index = index;
+  grid_esp32_adc_mux_update(&grid_esp32_adc_state);
+}

@@ -1,165 +1,83 @@
 #include "grid_d51_module_ef44.h"
 
-#include "grid_module.h"
+#include "grid_ain.h"
+#include "grid_d51_adc.h"
+#include "grid_d51_encoder.h"
+#include "grid_platform.h"
 #include "grid_ui_button.h"
 #include "grid_ui_encoder.h"
 #include "grid_ui_potmeter.h"
-#include "grid_ui_system.h"
 
 #include "grid_cal.h"
 #include "grid_config.h"
 
-static volatile uint8_t adc_complete_count = 0;
-static volatile uint8_t multiplexer_index = 0;
+#include <assert.h>
 
-static uint64_t last_real_time[4] = {0};
+#define GRID_MODULE_EF44_ENCODER_COUNT 4
 
-static uint8_t UI_SPI_TX_BUFFER[14] = {0};
-static uint8_t UI_SPI_RX_BUFFER[14] = {0};
+static const uint8_t mux_element_lookup[2][2] = {
+    {4, 5}, // MUX_0 -> ADC_1
+    {6, 7}, // MUX_1 -> ADC_0
+};
+static uint16_t element_invert_bm = 0;
 
-#define GRID_MODULE_EF44_BUT_NUM 4
+static struct grid_ui_model* ui_ptr = NULL;
 
-#define GRID_MODULE_EF44_ENC_NUM 4
+static void ef44_process_encoder(struct grid_encoder_result* result) {
 
-#define GRID_MODULE_EF44_POT_NUM 4
+  uint8_t encoder_position_lookup[GRID_MODULE_EF44_ENCODER_COUNT] = {2, 3, 0, 1};
 
-static struct grid_ui_button_state ui_button_state[GRID_MODULE_EF44_BUT_NUM] = {0};
-static struct grid_ui_encoder_state ui_encoder_state[GRID_MODULE_EF44_ENC_NUM] = {0};
-static struct grid_ui_potmeter_state ui_potmeter_state[GRID_MODULE_EF44_POT_NUM] = {0};
-static struct grid_ui_element* elements = NULL;
+  for (uint8_t i = 0; i < GRID_MODULE_EF44_ENCODER_COUNT; i++) {
 
-static void hardware_spi_start_transfer(void) {
+    assert(i / 2 < result->length);
+    uint8_t nibble = GRID_UI_ENCODER_NIBBLE_FROM_BUFFER(result->data, i);
+    uint8_t element_index = encoder_position_lookup[i];
 
-  gpio_set_pin_level(PIN_UI_SPI_CS0, true);
-  spi_m_async_enable(&UI_SPI);
-  spi_m_async_transfer(&UI_SPI, UI_SPI_TX_BUFFER, UI_SPI_RX_BUFFER, 8);
+    struct grid_ui_encoder_sample sample = GRID_UI_ENCODER_SAMPLE_FROM_NIBBLE(nibble);
+    struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
+    grid_ui_encoder_store_input(grid_ui_encoder_get_state(ele), sample);
+  }
 }
 
-static void hardware_adc_start_transfer(void) {
+static void ef44_process_analog(struct grid_adc_result* result) {
 
-  adc_async_start_conversion(&ADC_0);
-  adc_async_start_conversion(&ADC_1);
+  uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
+  result->value = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
+
+  struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
+  grid_ui_potmeter_store_input(grid_ui_potmeter_get_state(ele), result->value);
 }
 
-static void spi_transfer_complete_cb(struct spi_m_async_descriptor* descr) {
+void grid_d51_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_d51_adc_model* adc, struct grid_d51_encoder_model* enc, struct grid_config_model* conf,
+                               struct grid_cal_model* cal) {
 
-  /* Transfer completed */
+  ui_ptr = ui;
 
-  // Set the shift registers to continuously load data until new transaction is
-  // issued
-  gpio_set_pin_level(PIN_UI_SPI_CS0, false);
+  uint8_t detent = grid_hwcfg_module_encoder_is_detent(sys);
+  int8_t direction = grid_hwcfg_module_encoder_dir(sys);
 
-  uint8_t encoder_position_lookup[GRID_MODULE_EF44_ENC_NUM] = {2, 3, 0, 1};
+  grid_config_init(conf, cal);
+  grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
-  // Buffer is only 8 bytes but we check all 16 encoders separately
-  for (uint8_t j = 0; j < GRID_MODULE_EF44_ENC_NUM; j++) {
-
-    uint8_t new_value = (UI_SPI_RX_BUFFER[j / 2] >> (4 * (j % 2))) & 0x0F;
-
-    uint8_t i = encoder_position_lookup[j];
-
-    struct grid_ui_element* ele = &elements[i];
-
-    grid_ui_encoder_store_input(ele, &ui_encoder_state[i], new_value);
-
-    uint8_t button_value = new_value & 0b00000100;
-
-    grid_ui_button_store_input(ele, &ui_button_state[i], button_value, 1);
+  for (int i = 0; i < ui->element_list_length; ++i) {
+    struct grid_ui_element* ele = &ui->element_list[i];
+    if (ele->type == GRID_PARAMETER_ELEMENT_POTMETER) {
+      struct grid_ui_potmeter_state* state = grid_ui_potmeter_get_state(ele);
+      grid_ui_potmeter_state_init(state, GRID_AIN_INTERNAL_RESOLUTION, GRID_POTMETER_DEADZONE, GRID_POTMETER_CENTER);
+      grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &state->limits);
+    } else if (ele->type == GRID_PARAMETER_ELEMENT_ENCODER) {
+      grid_ui_encoder_state_init(grid_ui_encoder_get_state(ele), detent, direction);
+    }
   }
 
-  hardware_spi_start_transfer();
-}
+  assert(grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_read, 0, 0, NULL));
+  grid_ui_bulk_flush(&grid_ui_state);
 
-static void adc_transfer_complete_cb(const struct adc_async_descriptor* const descr, const uint8_t channel) {
+  uint8_t transfer_length = GRID_MODULE_EF44_ENCODER_COUNT / 2; // D51 encoder is on separate bus from HWCFG
+  uint32_t clock_rate = 500 * transfer_length * 8;
+  grid_d51_encoder_init(enc, transfer_length, clock_rate, ef44_process_encoder);
+  grid_d51_adc_init(adc, 0b00000011, ef44_process_analog);
 
-  if (adc_complete_count == 0) {
-    adc_complete_count++;
-    return;
-  }
-
-  /* Read conversion results */
-
-  uint16_t adcresult_0 = 0;
-  uint16_t adcresult_1 = 0;
-
-  uint8_t adc_index_0 = multiplexer_index + 2;
-  uint8_t adc_index_1 = multiplexer_index;
-
-  adc_async_read_channel(&ADC_0, 0, (uint8_t*)&adcresult_0, 2);
-  adc_async_read_channel(&ADC_1, 0, (uint8_t*)&adcresult_1, 2);
-
-  /* Update the multiplexer */
-
-  multiplexer_index++;
-  multiplexer_index %= 2;
-
-  gpio_set_pin_level(MUX_A, multiplexer_index / 1 % 2);
-  gpio_set_pin_level(MUX_B, multiplexer_index / 2 % 2);
-  gpio_set_pin_level(MUX_C, multiplexer_index / 4 % 2);
-
-  struct grid_ui_element* ele_0 = &elements[adc_index_0 + 4];
-
-  grid_ui_potmeter_store_input(ele_0, adc_index_0 + 4, &ui_potmeter_state[adc_index_0], adcresult_0 >> 4, 12);
-
-  struct grid_ui_element* ele_1 = &elements[adc_index_1 + 4];
-
-  grid_ui_potmeter_store_input(ele_1, adc_index_1 + 4, &ui_potmeter_state[adc_index_1], adcresult_1 >> 4, 12);
-
-  adc_complete_count = 0;
-  hardware_adc_start_transfer();
-}
-
-static void hardware_init(void) {
-
-  gpio_set_pin_level(PIN_UI_SPI_CS0, false);
-  gpio_set_pin_direction(PIN_UI_SPI_CS0, GPIO_DIRECTION_OUT);
-
-  spi_m_async_set_mode(&UI_SPI, SPI_MODE_3);
-  spi_m_async_set_baudrate(&UI_SPI,
-                           100000); // was 400000 check clock div setting
-
-  spi_m_async_register_callback(&UI_SPI, SPI_M_ASYNC_CB_XFER, (FUNC_PTR)spi_transfer_complete_cb);
-
-  adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
-  adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
-
-  adc_async_enable_channel(&ADC_0, 0);
-  adc_async_enable_channel(&ADC_1, 0);
-}
-
-void grid_module_ef44_init() {
-
-  grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-
-  for (int i = 0; i < GRID_MODULE_EF44_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], 1, 0.5, 0.2);
-  }
-
-  for (int i = 0; i < GRID_MODULE_EF44_POT_NUM; ++i) {
-    grid_ui_potmeter_state_init(&ui_potmeter_state[i], 12, 64, 2048);
-  }
-
-  uint8_t detent = grid_hwcfg_module_encoder_is_detent(&grid_sys_state);
-  int8_t direction = grid_hwcfg_module_encoder_dir(&grid_sys_state);
-  for (uint8_t i = 0; i < GRID_MODULE_EF44_ENC_NUM; i++) {
-    grid_ui_encoder_state_init(&ui_encoder_state[i], detent, direction);
-  }
-
-  elements = grid_ui_model_get_elements(&grid_ui_state);
-
-  grid_config_init(&grid_config_state, &grid_cal_state);
-
-  grid_cal_init(&grid_cal_state, grid_ui_state.element_list_length, 12);
-
-  for (int i = 4; i < 8; ++i) {
-    assert(grid_cal_set(&grid_cal_state, i, GRID_CAL_LIMITS, &ui_potmeter_state[i - 4].limits) == 0);
-  }
-
-  assert(grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL) == 0);
-  grid_ui_bulk_confread_next(&grid_ui_state);
-
-  hardware_init();
-
-  hardware_spi_start_transfer();
-  hardware_adc_start_transfer();
+  grid_d51_encoder_start(enc);
+  grid_d51_adc_start(adc);
 }

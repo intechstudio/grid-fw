@@ -10,6 +10,7 @@
 #include "grid_math.h"
 #include "grid_platform.h"
 #include "grid_sys.h"
+#include "grid_ui_button.h"
 #include "grid_ui_system.h"
 
 const luaL_Reg GRID_LUA_EP_INDEX_META[] = {{GRID_LUA_FNC_EP_ELEMENT_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_EP_ELEMENT_INDEX_index)},
@@ -42,9 +43,22 @@ const char grid_ui_endless_endlesschange_actionstring[] = GRID_ACTIONSTRING_ENDL
 const char grid_ui_endless_buttonchange_actionstring[] = GRID_ACTIONSTRING_ENDLESS_BUTTON;
 const char grid_ui_endless_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
 
+void grid_ui_endless_state_init(struct grid_ui_endless_state* state, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis) {
+
+  state->adc_bit_depth = adc_bit_depth;
+
+  grid_ui_button_state_init(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
+}
+
 void grid_ui_element_endless_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_ENDLESS;
+
+  ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_endless_state));
+  memset(ele->primary_state, 0, sizeof(struct grid_ui_endless_state));
+  struct grid_ui_endless_state* end_state = (struct grid_ui_endless_state*)ele->primary_state;
+  end_state->parent = ele;
+  end_state->button.parent = ele;
 
   grid_ui_element_malloc_events(ele, 4);
 
@@ -130,7 +144,7 @@ void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t
   // }
 }
 
-uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint64_t* last_real_time, double* delta_frac) {
+uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint16_t value_degrees, uint64_t* last_real_time, double* delta_frac) {
 
   // limit lastrealtime
   uint64_t now = grid_platform_rtc_get_micros();
@@ -141,6 +155,7 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   *last_real_time = now;
   int32_t* template_parameter_list = ele->template_parameter_list;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_ELAPSED_index] = elapsed_us / MS_TO_US;
+  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = value_degrees / 20;
 
   int32_t tmin = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index];
   int32_t tmax = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index];
@@ -302,37 +317,43 @@ static uint16_t grid_ui_endless_calculate_angle(uint16_t phase_a, uint16_t phase
   return value_degrees;
 }
 
-void grid_ui_endless_store_input(struct grid_ui_element* ele, uint8_t input_channel, uint8_t adc_bit_depth, struct grid_ui_endless_state* new_value, struct grid_ui_endless_state* old_value) {
+void grid_ui_endless_store_input(struct grid_ui_endless_state* state, struct grid_ui_endless_sample sample) {
 
-  assert(ele);
+  struct grid_ui_element* ele = state->parent;
 
-  if (!memcmp(old_value, new_value, sizeof(struct grid_ui_endless_state))) {
+  // Handle button input using embedded button state
+  grid_ui_button_store_input(&state->button, sample.button_value);
+
+  uint8_t adc_bit_depth = state->adc_bit_depth;
+
+  // Check if current values differ from previous
+  if (sample.phase_a == state->prev_phase_a && sample.phase_b == state->prev_phase_b && sample.button_value == state->prev_button_value) {
     // no change
     return;
   }
 
-  int32_t* template_parameter_list = ele->template_parameter_list;
-
-  int stabilized = grid_ain_stabilized(&grid_ain_state, input_channel);
+  int stabilized = grid_ain_stabilized(&grid_ain_state, ele->index);
 
   if (!stabilized) {
-    memcpy(old_value, new_value, sizeof(struct grid_ui_endless_state));
+    state->prev_phase_a = sample.phase_a;
+    state->prev_phase_b = sample.phase_b;
+    state->prev_button_value = sample.button_value;
   }
 
-  uint16_t value_degrees_new = grid_ui_endless_calculate_angle(new_value->phase_a, new_value->phase_b, 12);
-  uint16_t value_degrees_old = grid_ui_endless_calculate_angle(old_value->phase_a, old_value->phase_b, 12);
+  uint16_t value_degrees_new = grid_ui_endless_calculate_angle(sample.phase_a, sample.phase_b, adc_bit_depth);
+  uint16_t value_degrees_old = grid_ui_endless_calculate_angle(state->prev_phase_a, state->prev_phase_b, adc_bit_depth);
 
   int32_t resolution = 9;
 
   if (resolution < 1) {
     resolution = 1;
-  } else if (resolution > 12) {
-    resolution = 12;
+  } else if (resolution > adc_bit_depth) {
+    resolution = adc_bit_depth;
   }
 
-  grid_ain_add_sample(&grid_ain_state, input_channel, value_degrees_new, 12, (uint8_t)resolution);
+  grid_ain_add_sample(&grid_ain_state, ele->index, value_degrees_new, adc_bit_depth, (uint8_t)resolution);
 
-  if (grid_ain_get_changed(&grid_ain_state, input_channel)) {
+  if (grid_ain_get_changed(&grid_ain_state, ele->index)) {
 
     int16_t delta = (value_degrees_new - value_degrees_old);
 
@@ -344,11 +365,10 @@ void grid_ui_endless_store_input(struct grid_ui_element* ele, uint8_t input_chan
 
     if (abs(delta) > 10) {
 
-      template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = value_degrees_new / 20;
-      grid_ui_endless_update_trigger(ele, stabilized, delta, &old_value->encoder_last_real_time, &old_value->delta_vel_frac);
+      grid_ui_endless_update_trigger(ele, stabilized, delta, value_degrees_new, &state->encoder_last_real_time, &state->delta_vel_frac);
 
-      old_value->phase_a = new_value->phase_a;
-      old_value->phase_b = new_value->phase_b;
+      state->prev_phase_a = sample.phase_a;
+      state->prev_phase_b = sample.phase_b;
     }
   }
 }

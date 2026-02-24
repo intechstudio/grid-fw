@@ -224,6 +224,17 @@ int grid_hwcfg_module_is_en16(struct grid_sys_model* sys) {
   }
 }
 
+int grid_hwcfg_module_is_octv(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_OCTV_RevH:
+  case GRID_MODULE_OCTV_ND_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
 int grid_hwcfg_module_is_pbf4(struct grid_sys_model* sys) {
 
   switch (grid_sys_get_hwcfg(sys)) {
@@ -343,6 +354,8 @@ int grid_hwcfg_module_is_rev_h(struct grid_sys_model* sys) {
   case GRID_MODULE_EN16_ND_RevH:
   case GRID_MODULE_EF44_RevH:
   case GRID_MODULE_EF44_ND_RevH:
+  case GRID_MODULE_OCTV_RevH:
+  case GRID_MODULE_OCTV_ND_RevH:
   case GRID_MODULE_TEK2_RevH:
   case GRID_MODULE_VSN1L_RevH:
   case GRID_MODULE_VSN1R_RevH:
@@ -362,6 +375,7 @@ int grid_hwcfg_module_encoder_is_detent(struct grid_sys_model* sys) {
   case GRID_MODULE_EN16_RevA:
   case GRID_MODULE_EN16_RevD:
   case GRID_MODULE_EN16_RevH:
+  case GRID_MODULE_OCTV_RevH:
     return 1;
   default:
     return 0;

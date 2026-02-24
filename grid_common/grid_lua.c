@@ -193,6 +193,34 @@ uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code) {
   return ret;
 }
 
+bool grid_lua_dostring_begin(struct grid_lua_model* lua, const char* code) {
+
+  grid_lua_semaphore_lock(lua);
+
+  assert(lua->L);
+
+  if (luaL_loadstring(lua->L, code) != LUA_OK) {
+    return false;
+  }
+
+  if ((lua_pcall(lua->L, 0, LUA_MULTRET, 0)) != LUA_OK) {
+    return false;
+  }
+
+  return true;
+}
+
+void grid_lua_dostring_end(struct grid_lua_model* lua) {
+
+  grid_lua_clear_stde(lua);
+
+  lua_pop(lua->L, lua_gettop(lua->L));
+
+  grid_lua_gc_step_unsafe(lua);
+
+  grid_lua_semaphore_release(lua);
+}
+
 bool grid_lua_do_event(struct grid_lua_model* lua, uint8_t index, const char* function_name) {
 
   bool ret = false;
@@ -471,6 +499,7 @@ void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_li
                                         {LUA_TABLIBNAME, luaopen_table},
                                         {LUA_IOLIBNAME, luaopen_io},
                                         {LUA_OSLIBNAME, luaopen_os},
+                                        {LUA_DIRENTLIBNAME, luaopen_dirent},
                                         {LUA_STRLIBNAME, luaopen_string},
                                         {LUA_MATHLIBNAME, luaopen_math},
                                         //{LUA_UTF8LIBNAME, luaopen_utf8},

@@ -5,17 +5,37 @@
 
 #include "grid_protocol.h"
 #include "grid_ui.h"
+#include "grid_ui_button.h"
+
+struct grid_encoder_result {
+  uint8_t* data;
+  uint8_t length;
+};
+
+typedef void (*grid_process_encoder_t)(struct grid_encoder_result* result);
 
 #define GRID_UI_ENCODER_INIT_SAMPLES 2
 
+struct grid_ui_encoder_sample {
+  uint8_t phase_a;
+  uint8_t phase_b;
+  uint8_t button;
+};
+
+#define GRID_UI_ENCODER_NIBBLE_FROM_BUFFER(buf, idx) (((buf)[(idx) / 2] >> (4 * ((idx) % 2))) & 0x0F)
+
+#define GRID_UI_ENCODER_SAMPLE_FROM_NIBBLE(nibble)                                                                                                                                                     \
+  (struct grid_ui_encoder_sample) { .phase_a = (nibble) & 1, .phase_b = ((nibble) >> 1) & 1, .button = ((nibble) >> 2) & 1 }
+
 struct grid_ui_encoder_state {
+  struct grid_ui_element* parent;
   uint64_t encoder_last_real_time;
-  uint64_t button_last_real_time;
   uint8_t last_nibble;
   uint8_t detent;
   int8_t encoder_last_leave_dir;
   uint8_t initial_samples;
   int8_t direction;
+  struct grid_ui_button_state button;
 };
 
 void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent, int8_t direction);
@@ -29,7 +49,9 @@ void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t
 int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uint8_t detent, int8_t* dir_lock);
 uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta);
 
-void grid_ui_encoder_store_input(struct grid_ui_element* ele, struct grid_ui_encoder_state* state, uint8_t new_value);
+static inline struct grid_ui_encoder_state* grid_ui_encoder_get_state(struct grid_ui_element* ele) { return (struct grid_ui_encoder_state*)ele->primary_state; }
+
+void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, struct grid_ui_encoder_sample sample);
 
 // ========================= ENCODER =========================== //
 

@@ -48,7 +48,7 @@ int grid_config_parse_cal(struct grid_cal_model* cal, char* errbuf, toml_table_t
     toml_datum_t ctr = toml_int_at(centers, i);
     if (ctr.ok) {
       struct grid_cal_center* center;
-      int status = grid_cal_get(cal, i, GRID_CAL_CENTER, (void**)&center);
+      int status = grid_cal_channel_get(cal, i, GRID_CAL_CENTER, (void**)&center);
       if (status) {
         return status;
       }
@@ -67,7 +67,7 @@ int grid_config_parse_cal(struct grid_cal_model* cal, char* errbuf, toml_table_t
     toml_datum_t min = toml_int_at(minima, i);
     if (min.ok) {
       struct grid_cal_limits* limits;
-      int status = grid_cal_get(cal, i, GRID_CAL_LIMITS, (void**)&limits);
+      int status = grid_cal_channel_get(cal, i, GRID_CAL_LIMITS, (void**)&limits);
       if (status) {
         return status;
       }
@@ -86,7 +86,7 @@ int grid_config_parse_cal(struct grid_cal_model* cal, char* errbuf, toml_table_t
     toml_datum_t max = toml_int_at(maxima, i);
     if (max.ok) {
       struct grid_cal_limits* limits;
-      int status = grid_cal_get(cal, i, GRID_CAL_LIMITS, (void**)&limits);
+      int status = grid_cal_channel_get(cal, i, GRID_CAL_LIMITS, (void**)&limits);
       if (status) {
         return status;
       }
@@ -105,7 +105,7 @@ int grid_config_parse_cal(struct grid_cal_model* cal, char* errbuf, toml_table_t
     toml_datum_t det = toml_int_at(detentlo, i);
     if (det.ok) {
       struct grid_cal_detent* detent;
-      int status = grid_cal_get(cal, i, GRID_CAL_DETENT, (void**)&detent);
+      int status = grid_cal_channel_get(cal, i, GRID_CAL_DETENT, (void**)&detent);
       if (status) {
         return status;
       }
@@ -124,7 +124,7 @@ int grid_config_parse_cal(struct grid_cal_model* cal, char* errbuf, toml_table_t
     toml_datum_t det = toml_int_at(detenthi, i);
     if (det.ok) {
       struct grid_cal_detent* detent;
-      int status = grid_cal_get(cal, i, GRID_CAL_DETENT, (void**)&detent);
+      int status = grid_cal_channel_get(cal, i, GRID_CAL_DETENT, (void**)&detent);
       if (status) {
         return status;
       }
@@ -187,7 +187,7 @@ int grid_config_generate_cal(struct grid_cal_model* cal, char* dest) {
     }
 
     struct grid_cal_center* center;
-    int status = grid_cal_get(cal, i, GRID_CAL_CENTER, (void**)&center);
+    int status = grid_cal_channel_get(cal, i, GRID_CAL_CENTER, (void**)&center);
     if (status) {
       return status;
     }
@@ -209,7 +209,7 @@ int grid_config_generate_cal(struct grid_cal_model* cal, char* dest) {
     }
 
     struct grid_cal_limits* limits;
-    int status = grid_cal_get(cal, i, GRID_CAL_LIMITS, (void**)&limits);
+    int status = grid_cal_channel_get(cal, i, GRID_CAL_LIMITS, (void**)&limits);
     if (status) {
       return status;
     }
@@ -231,7 +231,7 @@ int grid_config_generate_cal(struct grid_cal_model* cal, char* dest) {
     }
 
     struct grid_cal_limits* limits;
-    int status = grid_cal_get(cal, i, GRID_CAL_LIMITS, (void**)&limits);
+    int status = grid_cal_channel_get(cal, i, GRID_CAL_LIMITS, (void**)&limits);
     if (status) {
       return status;
     }
@@ -253,7 +253,7 @@ int grid_config_generate_cal(struct grid_cal_model* cal, char* dest) {
     }
 
     struct grid_cal_detent* detent;
-    int status = grid_cal_get(cal, i, GRID_CAL_DETENT, (void**)&detent);
+    int status = grid_cal_channel_get(cal, i, GRID_CAL_DETENT, (void**)&detent);
     if (status) {
       return status;
     }
@@ -275,7 +275,7 @@ int grid_config_generate_cal(struct grid_cal_model* cal, char* dest) {
     }
 
     struct grid_cal_detent* detent;
-    int status = grid_cal_get(cal, i, GRID_CAL_DETENT, (void**)&detent);
+    int status = grid_cal_channel_get(cal, i, GRID_CAL_DETENT, (void**)&detent);
     if (status) {
       return status;
     }

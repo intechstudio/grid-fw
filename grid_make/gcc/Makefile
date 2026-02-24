@@ -28,6 +28,7 @@ usb/class/midi/usb_protocol_midi.o \
 ../grid_common/grid_allocator.o \
 ../grid_common/grid_msg.o \
 ../grid_common/grid_noflash.o \
+../grid_common/grid_platform.o \
 ../grid_common/grid_decode.o \
 ../grid_common/grid_port.o \
 ../grid_common/grid_usb.o \
@@ -54,6 +55,8 @@ grid/d51/grid_d51_nvm.o \
 ../grid_common/grid_led.o \
 ../grid_common/grid_littlefs.o \
 grid/d51/grid_d51_module.o \
+grid/d51/grid_d51_adc.o \
+grid/d51/grid_d51_encoder.o \
 grid/grid_d51_module_bu16.o \
 grid/grid_d51_module_en16.o \
 grid/grid_d51_module_pbf4.o \
@@ -61,6 +64,7 @@ grid/grid_d51_module_po16.o \
 grid/grid_d51_module_ef44.o \
 ../grid_common/grid_protocol.o \
 grid/d51/grid_d51_lua.o \
+../grid_common/lua-5.4.3/src/dirent.o \
 ../grid_common/lua-5.4.3/src/lapi.o \
 ../grid_common/lua-5.4.3/src/lctype.o \
 ../grid_common/lua-5.4.3/src/lfunc.o \
@@ -118,6 +122,7 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_allocator.o" \
 "../grid_common/grid_msg.o" \
 "../grid_common/grid_noflash.o" \
+"../grid_common/grid_platform.o" \
 "../grid_common/grid_decode.o" \
 "../grid_common/grid_port.o" \
 "../grid_common/grid_usb.o" \
@@ -144,6 +149,8 @@ OBJS_AS_ARGS +=  \
 "../grid_common/grid_led.o" \
 "../grid_common/grid_littlefs.o" \
 "grid/d51/grid_d51_module.o" \
+"grid/d51/grid_d51_adc.o" \
+"grid/d51/grid_d51_encoder.o" \
 "grid/grid_d51_module_bu16.o" \
 "grid/grid_d51_module_en16.o" \
 "grid/grid_d51_module_pbf4.o" \
@@ -151,6 +158,7 @@ OBJS_AS_ARGS +=  \
 "grid/grid_d51_module_ef44.o" \
 "../grid_common/grid_protocol.o" \
 "grid/d51/grid_d51_lua.o" \
+"../grid_common/lua-5.4.3/src/dirent.o" \
 "../grid_common/lua-5.4.3/src/lapi.o" \
 "../grid_common/lua-5.4.3/src/lctype.o" \
 "../grid_common/lua-5.4.3/src/lfunc.o" \
@@ -206,6 +214,7 @@ DIR_INCLUDES +=  \
 -I"../../grid_common" \
 -I"../../grid_common/lua-5.4.3/src" \
 -I"../../grid_common/littlefs" \
+-I"../../grid_common/proto" \
 -I"../../grid_common/tomlc99" \
 
 
@@ -224,6 +233,7 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_allocator.d" \
 "../grid_common/grid_msg.d" \
 "../grid_common/grid_noflash.d" \
+"../grid_common/grid_platform.d" \
 "../grid_common/grid_decode.d" \
 "../grid_common/grid_port.d" \
 "../grid_common/grid_usb.d" \
@@ -250,6 +260,8 @@ DEPS_AS_ARGS +=  \
 "../grid_common/grid_led.d" \
 "../grid_common/grid_littlefs.d" \
 "grid/d51/grid_d51_module.d" \
+"grid/d51/grid_d51_adc.d" \
+"grid/d51/grid_d51_encoder.d" \
 "grid/grid_d51_module_bu16.d" \
 "grid/grid_d51_module_en16.d" \
 "grid/grid_d51_module_pbf4.d" \
@@ -257,6 +269,7 @@ DEPS_AS_ARGS +=  \
 "grid/grid_d51_module_ef44.d" \
 "../grid_common/grid_protocol.d" \
 "grid/d51/grid_d51_lua.d" \
+"../grid_common/lua-5.4.3/src/dirent.d" \
 "../grid_common/lua-5.4.3/src/lapi.d" \
 "../grid_common/lua-5.4.3/src/lctype.d" \
 "../grid_common/lua-5.4.3/src/lfunc.d" \

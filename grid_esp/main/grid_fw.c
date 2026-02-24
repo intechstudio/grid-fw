@@ -43,10 +43,10 @@
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_ef44.h"
 #include "grid_esp32_module_en16.h"
+#include "grid_esp32_module_octv.h"
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
-#include "grid_esp32_module_tek1.h"
-#include "grid_esp32_module_tek2.h"
+#include "grid_esp32_module_vsnx.h"
 #include "pico_firmware.h"
 
 #include "grid_esp32_trace.h"
@@ -55,9 +55,6 @@
 #define MODULE_TASK_PRIORITY 0
 
 #define LED_TASK_PRIORITY 2
-
-// NVM must not be preemted by Port task
-#define NVM_TASK_PRIORITY configMAX_PRIORITIES - 1
 
 // module task priority must be the lowest to ma it run most of the time
 #define PORT_TASK_PRIORITY 0 // same as idle
@@ -190,19 +187,13 @@ void grid_ui_element_lcd_template_parameter_init_vsn_right(struct grid_ui_templa
   template_parameter_list[GRID_LUA_FNC_L_SCREEN_HEIGHT_index] = 240;
 }
 
-void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui, struct grid_sys_model* sys) {
-
-  bool is_tek1_reva = grid_sys_get_hwcfg(&grid_sys_state) == GRID_MODULE_TEK1_RevA;
+void grid_module_vsnx_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui, struct grid_sys_model* sys) {
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
   grid_ain_init(ain, 16, 4);  // TODO: 12 ain for TEK2
   grid_led_init(led, 13 + 5); // TODO: 18 led for TEK2
 
-  if (is_tek1_reva) {
-
-    // TODO
-
-  } else if (grid_hwcfg_module_is_vsnl(&grid_sys_state)) {
+  if (grid_hwcfg_module_is_vsnl(&grid_sys_state)) {
 
     for (uint8_t i = 0; i < 8; ++i) {
       grid_led_lookup_alloc_single(led, i, i + 10);
@@ -221,9 +212,17 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
     for (uint8_t i = 0; i < 8; ++i) {
       grid_led_lookup_alloc_single(led, i, i + 10);
     }
+
+  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
+
+    for (uint8_t i = 0; i < 8; ++i) {
+      grid_led_lookup_alloc_single(led, i, i + 10);
+    }
+    grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
+    grid_led_lookup_alloc_multi(led, 9, 5, (uint8_t[5]){5, 6, 7, 8, 9});
   }
 
-  if (grid_hwcfg_module_is_vsnl(&grid_sys_state) || is_tek1_reva) {
+  if (grid_hwcfg_module_is_vsnl(&grid_sys_state)) {
 
     grid_ui_model_init(ui, 14 + 1);
 
@@ -308,6 +307,27 @@ void grid_module_tek1_ui_init(struct grid_ain_model* ain, struct grid_led_model*
         grid_ui_element_system_init(ele);
       }
     }
+
+  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
+
+    grid_ui_model_init(ui, 10 + 1);
+
+    for (uint8_t j = 0; j < 10 + 1; j++) {
+
+      struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+      if (j < 8) {
+
+        grid_ui_element_button_init(ele);
+
+      } else if (j < 10) {
+
+        grid_ui_element_endless_init(ele);
+
+      } else {
+        grid_ui_element_system_init(ele);
+      }
+    }
   }
 
   ui->lua_ui_init_callback = grid_lua_ui_init;
@@ -371,18 +391,18 @@ void app_main(void) {
   esp_log_level_set("*", ESP_LOG_INFO);
 
   SemaphoreHandle_t lua_busy_semaphore = xSemaphoreCreateBinary();
-  SemaphoreHandle_t ui_busy_semaphore = xSemaphoreCreateBinary();
   SemaphoreHandle_t ui_bulk_semaphore = xSemaphoreCreateBinary();
 
   void grid_common_semaphore_lock_fn(void* arg) {
 
     while (xSemaphoreTake((SemaphoreHandle_t)arg, 0) != pdTRUE) {
-      // spin
       portYIELD();
     };
   }
 
   void grid_common_semaphore_release_fn(void* arg) { xSemaphoreGive((SemaphoreHandle_t)arg); }
+
+  bool grid_common_semaphore_try_fn(void* arg) { return xSemaphoreTake((SemaphoreHandle_t)arg, 0); }
 
   grid_platform_printf("");
   log_checkpoint("MAIN START");
@@ -423,16 +443,15 @@ void app_main(void) {
     grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
     grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
-    grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
+    grid_module_octv_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
-    grid_module_tek1_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, &grid_sys_state);
+    grid_module_vsnx_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, &grid_sys_state);
   } else {
     ets_printf("UI Init failed: Unknown Module\r\n");
   }
 
-  grid_ui_semaphore_init(&grid_ui_state.busy_semaphore, (void*)ui_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
-  grid_ui_semaphore_init(&grid_ui_state.bulk_semaphore, (void*)ui_bulk_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
+  grid_ui_semaphore_init(&grid_ui_state.bulk_semaphore, (void*)ui_bulk_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn, grid_common_semaphore_try_fn);
 
   grid_led_set_pin(&grid_led_state, 21);
   grid_esp32_led_start(grid_led_get_pin(&grid_led_state));
@@ -481,11 +500,7 @@ void app_main(void) {
   grid_sys_set_bank(&grid_sys_state, 0);
   ets_delay_us(2000);
 
-  xSemaphoreGive(ui_busy_semaphore);
   xSemaphoreGive(ui_bulk_semaphore);
-
-  grid_ui_page_load(&grid_ui_state, 0); // load page 0
-  SemaphoreHandle_t signaling_sem = xSemaphoreCreateBinary();
 
   log_checkpoint("GUI INIT");
 
@@ -519,11 +534,17 @@ void app_main(void) {
     grid_gui_swap_set(&guis[1], true);
   }
 
-  log_checkpoint("NVM TASK INIT");
+  log_checkpoint("LOAD PAGE ZERO");
 
-  TaskHandle_t nvm_task_hdl;
+  // Load page zero
+  assert(grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL));
+  grid_ui_bulk_flush(&grid_ui_state);
 
-  xTaskCreatePinnedToCore(grid_esp32_nvm_task, "nvm", 1024 * 10, NULL, NVM_TASK_PRIORITY, &nvm_task_hdl, 0);
+  log_checkpoint("PORT TASK INIT");
+
+  TaskHandle_t port_task_hdl;
+
+  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 1024 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
 
   log_checkpoint("MODULE INIT");
 
@@ -537,10 +558,10 @@ void app_main(void) {
     grid_esp32_module_en16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_encoder_state);
   } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
     grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
-  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
-    grid_esp32_module_tek2_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state);
-  } else if (grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
-    grid_esp32_module_tek1_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
+  } else if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
+    grid_esp32_module_octv_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
+  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
+    grid_esp32_module_vsnx_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
   } else {
     ets_printf("Task Init failed: Unknown Module\r\n");
   }
@@ -555,12 +576,6 @@ void app_main(void) {
 
     log_checkpoint("LCD TASK DONE");
   }
-
-  TaskHandle_t port_task_hdl;
-
-  xTaskCreatePinnedToCore(grid_esp32_port_task, "port", 1024 * 10, NULL, PORT_TASK_PRIORITY, &port_task_hdl, 1);
-
-  log_checkpoint("PORT TASK DONE");
 
   // Initialize 1 kHz timer
   periodic_rtc_ms_init();
@@ -608,6 +623,9 @@ void app_main(void) {
 
     // Run microtasks
     grid_esp32_utask_led(&timer_led);
+
+    // Run UI protothreads
+    grid_ui_bulk_process(&grid_ui_state);
 
     vTaskDelay(1);
   }

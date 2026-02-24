@@ -36,25 +36,20 @@ extern "C" {
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
-enum {
-  GRID_ESP32_ENCODER_I2S_SRATE = 2000,
-};
-
-typedef void (*grid_process_encoder_t)(void* user);
+#include "grid_ui_encoder.h"
 
 struct grid_esp32_encoder_model {
 
   i2s_chan_handle_t rx_chan;
-
-  uint32_t dma_frame_div;
-  uint32_t dma_frame_count;
+  uint8_t transfer_length;
 
   grid_process_encoder_t process_encoder;
 };
 
 extern struct grid_esp32_encoder_model grid_esp32_encoder_state;
 
-void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, uint32_t divider, grid_process_encoder_t process_encoder);
+void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, uint8_t transfer_length, uint32_t clock_rate, grid_process_encoder_t process_encoder);
+void grid_esp32_encoder_start(struct grid_esp32_encoder_model* encoder);
 
 #ifdef __cplusplus
 }
