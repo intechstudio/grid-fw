@@ -214,3 +214,36 @@ void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }
+
+void grid_module_octv_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  // 13 ADC channels for pressure-sensitive buttons (elements 8-20), depth of 4 for smoothing
+  grid_ain_init(ain, 13, 4);
+
+  // 21 LEDs: 8 for encoders + 13 for buttons
+  grid_led_init(led, 21);
+  grid_led_lookup_alloc_identity(led, 0, 21);
+
+  // 22 elements: 8 encoders + 13 buttons + 1 system
+  grid_ui_model_init(ui, 21 + 1);
+
+  for (uint8_t j = 0; j < 21 + 1; j++) {
+
+    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+    if (j < 8) {
+      // Elements 0-7: Encoders (with push buttons integrated)
+      grid_ui_element_encoder_init(ele);
+
+    } else if (j < 21) {
+      // Elements 8-20: Pressure-sensitive buttons
+      grid_ui_element_button_init(ele);
+
+    } else {
+      // Element 21: System element
+      grid_ui_element_system_init(ele);
+    }
+  }
+
+  ui->lua_ui_init_callback = grid_lua_ui_init;
+}

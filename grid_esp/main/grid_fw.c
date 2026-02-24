@@ -43,6 +43,7 @@
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_ef44.h"
 #include "grid_esp32_module_en16.h"
+#include "grid_esp32_module_octv.h"
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
 #include "grid_esp32_module_vsnx.h"
@@ -442,7 +443,9 @@ void app_main(void) {
     grid_module_en16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
     grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
+  } else if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
+    grid_module_octv_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
     grid_module_vsnx_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, &grid_sys_state);
   } else {
     ets_printf("UI Init failed: Unknown Module\r\n");
@@ -555,6 +558,8 @@ void app_main(void) {
     grid_esp32_module_en16_init(&grid_sys_state, &grid_ui_state, &grid_esp32_encoder_state);
   } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
     grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
+  } else if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
+    grid_esp32_module_octv_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
     grid_esp32_module_vsnx_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
   } else {
