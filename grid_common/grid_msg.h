@@ -86,14 +86,6 @@ void grid_str_transform_brc_params(uint8_t* msg, uint16_t length, int8_t dx, int
 
 // clang-format off
 
-/*
-#define grid_frame_inc_parameter(frame, offset, length) \
-do { \
-  uint32_t value = grid_frame_get_parameter(frame, offset, length); \
-  grid_frame_set_parameter(frame, offset, length, value + 1); \
-while (0);
-*/
-
 #define grid_msg_get_parameter_raw(data, param) \
 	grid_frame_get_parameter( \
 		(data), \
