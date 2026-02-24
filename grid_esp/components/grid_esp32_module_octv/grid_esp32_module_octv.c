@@ -86,13 +86,8 @@ void grid_esp32_module_octv_init(struct grid_sys_model* sys, struct grid_ui_mode
     }
   }
 
-  while (grid_ui_bulk_conf_init(ui, GRID_UI_BULK_CONFREAD_PROGRESS, 0, NULL)) {
-    vTaskDelay(1);
-  }
-
-  while (grid_ui_bulk_is_in_progress(ui, GRID_UI_BULK_CONFREAD_PROGRESS)) {
-    vTaskDelay(1);
-  }
+  assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));
+  grid_ui_bulk_flush(ui);
 
   uint8_t transfer_length = 1 + GRID_MODULE_OCTV_ENC_NUM / 2;
   // I2S clock rate chosen so callback fires at 500 Hz: rate = 500 * 32bit * 4slots
