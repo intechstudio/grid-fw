@@ -74,7 +74,7 @@ void grid_d51_led_init(struct grid_d51_led_model* d51_mod, struct grid_led_model
     grid_d51_led_set_color(d51_mod, i, 0, 0, 0);
   }
 
-  grid_led_startup_animation(&d51_mod);
+  grid_led_startup_animation(d51_mod);
 }
 
 void grid_d51_led_set_color(struct grid_d51_led_model* mod, uint32_t led_index, uint8_t r, uint8_t g, uint8_t b) {

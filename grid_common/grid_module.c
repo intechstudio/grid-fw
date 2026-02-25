@@ -1,5 +1,6 @@
 #include "grid_module.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -192,40 +193,6 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
-void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
-
-  // 16 pot, depth of 5, 14bit internal, 7bit result;
-  grid_ain_init(ain, 16, 4); // TODO: 12 ain for TEK2
-  grid_led_init(led, 18);    // TODO: 18 led for TEK2
-
-  for (uint8_t i = 0; i < 8; ++i) {
-    grid_led_lookup_alloc_single(led, i, i + 10);
-  }
-  grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
-  grid_led_lookup_alloc_multi(led, 9, 5, (uint8_t[5]){5, 6, 7, 8, 9});
-
-  grid_ui_model_init(ui, 10 + 1); // 10+1 for the system element on TEK2
-
-  for (uint8_t j = 0; j < 10 + 1; j++) {
-
-    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
-
-    if (j < 8) {
-
-      grid_ui_element_button_init(ele);
-
-    } else if (j < 10) {
-
-      grid_ui_element_endless_init(ele);
-
-    } else {
-      grid_ui_element_system_init(ele);
-    }
-  }
-
-  ui->lua_ui_init_callback = grid_lua_ui_init;
-}
-
 void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   grid_led_init(&grid_led_state, 16);
@@ -242,6 +209,39 @@ void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
       grid_ui_element_encoder_init(ele);
     } else {
 
+      grid_ui_element_system_init(ele);
+    }
+  }
+
+  ui->lua_ui_init_callback = grid_lua_ui_init;
+}
+
+void grid_module_octv_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  // 13 ADC channels for pressure-sensitive buttons (elements 8-20), depth of 4 for smoothing
+  grid_ain_init(ain, 13, 4);
+
+  // 21 LEDs: 8 for encoders + 13 for buttons
+  grid_led_init(led, 21);
+  grid_led_lookup_alloc_identity(led, 0, 21);
+
+  // 22 elements: 8 encoders + 13 buttons + 1 system
+  grid_ui_model_init(ui, 21 + 1);
+
+  for (uint8_t j = 0; j < 21 + 1; j++) {
+
+    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+    if (j < 8) {
+      // Elements 0-7: Encoders (with push buttons integrated)
+      grid_ui_element_encoder_init(ele);
+
+    } else if (j < 21) {
+      // Elements 8-20: Pressure-sensitive buttons
+      grid_ui_element_button_init(ele);
+
+    } else {
+      // Element 21: System element
       grid_ui_element_system_init(ele);
     }
   }

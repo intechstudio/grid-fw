@@ -55,7 +55,7 @@ static void dma_transfer_complete_s_cb(struct _dma_resource* resource);
 static void dma_transfer_complete_w_cb(struct _dma_resource* resource);
 static void dma_transfer_complete(struct grid_port* por);
 
-void grid_d51_uart_dma_rx_init_one(struct usart_async_descriptor* usart, uint8_t channel, uint8_t* buffer, uint32_t length, void* transfer_done_cb());
+void grid_d51_uart_dma_rx_init_one(struct usart_async_descriptor* usart, uint8_t channel, uint8_t* buffer, uint32_t length, void (*transfer_done_cb)(struct _dma_resource*));
 static void grid_d51_uart_dma_rx_init();
 
 #endif /* GRID_D51_UART_H_ */

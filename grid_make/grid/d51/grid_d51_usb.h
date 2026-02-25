@@ -16,6 +16,7 @@
 
 #include "config/usbd_config.h"
 
+#include "../../usb_start.h"
 #include "grid_port.h"
 #include "grid_usb.h"
 

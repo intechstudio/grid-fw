@@ -514,7 +514,7 @@ uint8_t grid_fusb302_read_id(struct io_descriptor* i2c_io) {
     msg.buffer = buffer;
 
     /* start transfer then return */
-    ret = i2c_m_async_transfer(&i2c->device, &msg);
+    ret = i2c_m_async_transfer(i2c, &msg);
 
     if (ret != 0) {
       printf("I2C error\r\n");
@@ -527,7 +527,7 @@ uint8_t grid_fusb302_read_id(struct io_descriptor* i2c_io) {
     }
 
     msg.flags = I2C_M_RD | I2C_M_STOP;
-    ret = i2c_m_async_transfer(&i2c->device, &msg);
+    ret = i2c_m_async_transfer(i2c, &msg);
 
     if (ret != 0) {
       printf("I2C error\r\n");
@@ -561,7 +561,7 @@ uint8_t grid_mxt144u_read_id(struct io_descriptor* i2c_io) {
     msg.buffer = buffer;
 
     /* start transfer then return */
-    ret = i2c_m_async_transfer(&i2c->device, &msg);
+    ret = i2c_m_async_transfer(i2c, &msg);
 
     if (ret != 0) {
       printf("I2C error\r\n");
@@ -573,7 +573,7 @@ uint8_t grid_mxt144u_read_id(struct io_descriptor* i2c_io) {
 
     msg.len = 7;
     msg.flags = I2C_M_RD | I2C_M_STOP;
-    ret = i2c_m_async_transfer(&i2c->device, &msg);
+    ret = i2c_m_async_transfer(i2c, &msg);
 
     if (ret != 0) {
       printf("I2C error\r\n");
@@ -751,6 +751,22 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
 void grid_platform_system_reset() { NVIC_SystemReset(); }
 
 uint8_t grid_platform_get_adc_bit_depth() { return 16; }
+
+void grid_platform_mux_init(uint8_t mux_positions_bm) {
+
+  gpio_set_pin_direction(MUX_A, GPIO_DIRECTION_OUT);
+  gpio_set_pin_direction(MUX_B, GPIO_DIRECTION_OUT);
+  gpio_set_pin_direction(MUX_C, GPIO_DIRECTION_OUT);
+
+  grid_d51_adc_mux_init(&grid_d51_adc_state, mux_positions_bm);
+}
+
+void grid_platform_mux_write(uint8_t index) {
+
+  gpio_set_pin_level(MUX_A, (index >> 0) & 1);
+  gpio_set_pin_level(MUX_B, (index >> 1) & 1);
+  gpio_set_pin_level(MUX_C, (index >> 2) & 1);
+}
 
 static uint64_t micros = 0;
 

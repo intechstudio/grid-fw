@@ -7,6 +7,7 @@
 
 #include "grid_cal.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 struct grid_cal_model grid_cal_state = {0};
@@ -93,7 +94,9 @@ int grid_cal_init(struct grid_cal_model* cal, uint8_t length, uint8_t resolution
 
   memset(cal->sigcond, 0, cal->length * sizeof(struct grid_asc));
 
-  grid_asc_array_set_factors(cal->sigcond, cal->length, 0, cal->length, 64);
+  for (uint8_t i = 0; i < cal->length; ++i) {
+    grid_asc_set_factor(&cal->sigcond[i], 64);
+  }
 
   return 0;
 }
@@ -116,11 +119,9 @@ void grid_cal_reset(struct grid_cal_model* cal) {
   }
 }
 
-int grid_cal_set(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void* src) {
+void grid_cal_channel_set(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void* src) {
 
-  if (!(channel < cal->length)) {
-    return 1;
-  }
+  assert(channel < cal->length);
 
   switch (type) {
   case GRID_CAL_LIMITS:
@@ -136,11 +137,9 @@ int grid_cal_set(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type
     assert(0);
     break;
   }
-
-  return 0;
 }
 
-int grid_cal_get(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void** dest) {
+int grid_cal_channel_get(struct grid_cal_model* cal, uint8_t channel, enum grid_cal_type type, void** dest) {
 
   if (!(channel < cal->length)) {
     return 1;
@@ -233,4 +232,5 @@ uint16_t grid_cal_next(struct grid_cal_model* cal, uint8_t channel, uint16_t in)
   }
 
   assert(0);
+  return 0;
 }

@@ -1,5 +1,6 @@
 #include "grid_lua_api.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1891,7 +1892,7 @@ int l_grid_calibration_get(lua_State* L, enum grid_cal_type type) {
     case GRID_CAL_LIMITS: {
 
       struct grid_cal_limits* limits;
-      if (grid_cal_get(cal, i, GRID_CAL_LIMITS, (void**)&limits)) {
+      if (grid_cal_channel_get(cal, i, GRID_CAL_LIMITS, (void**)&limits)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
@@ -1919,7 +1920,7 @@ int l_grid_calibration_get(lua_State* L, enum grid_cal_type type) {
     case GRID_CAL_CENTER: {
 
       struct grid_cal_center* center;
-      if (grid_cal_get(cal, i, GRID_CAL_CENTER, (void**)&center)) {
+      if (grid_cal_channel_get(cal, i, GRID_CAL_CENTER, (void**)&center)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
@@ -1971,7 +1972,7 @@ int l_grid_calibration_set(lua_State* L, enum grid_cal_type type) {
     case GRID_CAL_LIMITS: {
 
       struct grid_cal_limits* limits;
-      if (grid_cal_get(cal, i, GRID_CAL_LIMITS, (void**)&limits)) {
+      if (grid_cal_channel_get(cal, i, GRID_CAL_LIMITS, (void**)&limits)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
@@ -2016,7 +2017,7 @@ int l_grid_calibration_set(lua_State* L, enum grid_cal_type type) {
     case GRID_CAL_CENTER: {
 
       struct grid_cal_center* center;
-      if (grid_cal_get(cal, i, GRID_CAL_CENTER, (void**)&center)) {
+      if (grid_cal_channel_get(cal, i, GRID_CAL_CENTER, (void**)&center)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
@@ -2042,7 +2043,7 @@ int l_grid_calibration_set(lua_State* L, enum grid_cal_type type) {
     case GRID_CAL_DETENT: {
 
       struct grid_cal_detent* detent;
-      if (grid_cal_get(cal, i, GRID_CAL_DETENT, (void**)&detent)) {
+      if (grid_cal_channel_get(cal, i, GRID_CAL_DETENT, (void**)&detent)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);

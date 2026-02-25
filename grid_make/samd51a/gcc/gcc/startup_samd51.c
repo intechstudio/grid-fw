@@ -28,6 +28,7 @@
  */
 
 #include "samd51.h"
+#include <stdio.h>
 
 /* Initialize segments */
 extern uint32_t _sfixed;

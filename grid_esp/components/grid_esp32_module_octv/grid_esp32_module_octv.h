@@ -15,8 +15,10 @@ extern "C" {
 #include "grid_ui.h"
 
 #include "grid_esp32_adc.h"
+#include "grid_esp32_encoder.h"
 
-void grid_esp32_module_tek2_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal);
+void grid_esp32_module_octv_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_esp32_encoder_model* enc, struct grid_config_model* conf,
+                                 struct grid_cal_model* cal);
 
 #ifdef __cplusplus
 }
