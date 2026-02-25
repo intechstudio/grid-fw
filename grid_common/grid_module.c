@@ -1,5 +1,6 @@
 #include "grid_module.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>

@@ -8,7 +8,7 @@ struct grid_d51_adc_model grid_d51_adc_state;
 
 static struct adc_async_descriptor* adcs[2] = {&ADC_1, &ADC_0};
 
-static void adc_transfer_complete_cb(void) {
+static void adc_transfer_complete_cb(const struct adc_async_descriptor* const descr, const uint8_t channel) {
 
   struct grid_d51_adc_model* adc = &grid_d51_adc_state;
 
@@ -21,7 +21,7 @@ static void adc_transfer_complete_cb(void) {
 
   for (int channel = 0; channel < 2; channel++) {
     uint16_t raw = 0;
-    adc_async_read_channel(adcs[channel], 0, &raw, 2);
+    adc_async_read_channel(adcs[channel], 0, (uint8_t*)&raw, 2);
 
     struct grid_adc_result result = {
         .channel = channel,

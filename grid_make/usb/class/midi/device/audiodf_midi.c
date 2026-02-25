@@ -1,4 +1,5 @@
 #include "audiodf_midi.h"
+#include <stdio.h>
 
 #define AUDIODF_MIDI_VERSION 0x00000001u
 
@@ -125,8 +126,8 @@ static int32_t audio_midi_enable(struct usbdf_driver *drv, struct usbd_descripto
 
 	printf("MIDI TEST %d %d \r\n", _audiodf_midi_funcd.func_ep_in, _audiodf_midi_funcd.func_ep_out);
 
-	usb_d_ep_register_callback(_audiodf_midi_funcd.func_ep_in, USB_D_EP_CB_XFER, midi_in_cb);
-	usb_d_ep_register_callback(_audiodf_midi_funcd.func_ep_out, USB_D_EP_CB_XFER, midi_out_cb);
+	usb_d_ep_register_callback(_audiodf_midi_funcd.func_ep_in, USB_D_EP_CB_XFER, (FUNC_PTR)midi_in_cb);
+	usb_d_ep_register_callback(_audiodf_midi_funcd.func_ep_out, USB_D_EP_CB_XFER, (FUNC_PTR)midi_out_cb);
 
 	if (midi_installed_cb){
 		midi_installed_cb(0, 0, 0);
@@ -149,7 +150,6 @@ static int32_t audio_midi_disable(struct usbdf_driver *drv, struct usbd_descript
 	struct audiodf_midi_func_data *func_data = (struct audiodf_midi_func_data *)(drv->func_data);
 
 	usb_iface_desc_t ifc_desc;
-	uint8_t          i;
 
 	if (desc) {
 		ifc_desc.bInterfaceClass = desc->sod[5];
@@ -347,13 +347,13 @@ int32_t audiodf_midi_register_callback(enum audiodf_midi_cb_type cb_type, FUNC_P
 {
 	switch (cb_type) {
 		case AUDIODF_MIDI_CB_READ:
-		midi_in_cb = func;
+		midi_in_cb = (midi_xfer_cb_t)func;
 		break;
 		case AUDIODF_MIDI_CB_WRITE:
-		midi_out_cb = func;
+		midi_out_cb = (midi_xfer_cb_t)func;
 		break;
 		case AUDIODF_MIDI_CB_INSTALLED:
-		midi_installed_cb = func;
+		midi_installed_cb = (midi_xfer_cb_t)func;
 		break;
 		default:
 		return ERR_INVALID_ARG;

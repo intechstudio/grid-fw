@@ -2,7 +2,9 @@
 
 #include "grid_cal.h"
 #include "grid_config.h"
+#include "grid_d51.h"
 #include "grid_d51_nvm.h"
+#include "grid_d51_uart.h"
 #include "grid_module.h"
 
 // Define all of the peripheral interrupt callbacks

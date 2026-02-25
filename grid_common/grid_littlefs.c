@@ -1,5 +1,6 @@
 #include "grid_littlefs.h"
 
+#include <assert.h>
 #include <limits.h>
 
 #include "grid_platform.h"
