@@ -69,7 +69,7 @@ Download the latest stable release from the [releases page](https://github.com/i
 
 [grid_release.zip](https://github.com/intechstudio/grid-fw/releases/latest/download/grid_release.zip)
 
-Unzip the archive and use the `.uf2` file matching your module's MCU — if unsure, use the D51 version.
+Unzip the archive and use the `.uf2` file matching your module's MCU.
 
 ## Nightly Build
 Architecture specific nightly builds of the Grid firmware are available for those who wish to experiment with the latest features.
@@ -79,4 +79,4 @@ Download the latest nightly build from the [nightly release page](https://github
 
 [grid_nightly.zip](https://github.com/intechstudio/grid-fw/releases/download/nightly/grid_nightly.zip)
 
-Unzip the archive and use the `.uf2` file matching your module's MCU — if unsure, use the D51 version.
+Unzip the archive and use the `.uf2` file matching your module's MCU.
