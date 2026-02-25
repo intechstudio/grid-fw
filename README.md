@@ -65,12 +65,18 @@ Download the firmware image from the repository and unzip the archive. The firmw
 - Reconnect the module, it should work fine now.
 
 ## Stable Build
-Here you can download the latest stable release. Please visit the [releases](https://github.com/intechstudio/grid-fw/releases)
-page for more information.
+Download the latest stable release from the [releases page](https://github.com/intechstudio/grid-fw/releases/latest) or directly as a zip archive:
+
+[grid_release.zip](https://github.com/intechstudio/grid-fw/releases/latest/download/grid_release.zip)
+
+Unzip the archive and use the `.uf2` file matching your module's MCU — if unsure, use the D51 version.
 
 ## Nightly Build
 Architecture specific nightly builds of the Grid firmware are available for those who wish to experiment with the latest features.
 Please check the related commit messages to learn more about the current build.
 
-[ESP32 nightly](https://github.com/intechstudio/grid-fw/raw/preview/Preview/Firmware/grid_esp32_nightly.uf2)
-[D51 nightly](https://github.com/intechstudio/grid-fw/raw/preview/Preview/Firmware/grid_d51_nightly.uf2)
+Download the latest nightly build from the [nightly release page](https://github.com/intechstudio/grid-fw/releases/tag/nightly) or directly as a zip archive:
+
+[grid_nightly.zip](https://github.com/intechstudio/grid-fw/releases/download/nightly/grid_nightly.zip)
+
+Unzip the archive and use the `.uf2` file matching your module's MCU — if unsure, use the D51 version.
