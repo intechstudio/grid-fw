@@ -646,6 +646,15 @@ void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, con
   lua_pop(L, lua_gettop(L));
 }
 
+static char uint4_to_hex[16] = {
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
+};
+
+static void uint8_to_hex(uint8_t u, char h[2]) {
+  h[0] = uint4_to_hex[u >> 4];
+  h[1] = uint4_to_hex[u & 0xf];
+}
+
 int grid_lua_serialize_stack_element(lua_State* L, struct grid_msg* msg, int element) {
 
   int type = lua_type(L, element);
@@ -669,7 +678,7 @@ int grid_lua_serialize_stack_element(lua_State* L, struct grid_msg* msg, int ele
   } break;
   case LUA_TBOOLEAN: {
 
-    const char* str = lua_toboolean(L, element) ? "01" : "00";
+    const char* str = lua_toboolean(L, element) ? "ff" : "00";
     size_t len = strlen(str);
 
     if (grid_msg_add_segment_char(msg, GRID_CLASS_EVALUATE_ELEMENT_SIZE_length, len, str) < 0) {
@@ -695,12 +704,40 @@ int grid_lua_serialize_stack_element(lua_State* L, struct grid_msg* msg, int ele
   } break;
   case LUA_TSTRING: {
 
-    const char* str = lua_tostring(L, element);
-    size_t len = strlen(str);
-
-    if (grid_msg_add_segment_char(msg, GRID_CLASS_EVALUATE_ELEMENT_SIZE_length, len, str) < 0) {
+    if (grid_msg_add_segment_char(msg, GRID_CLASS_EVALUATE_ELEMENT_SIZE_length, 0, "\0") < 0) {
       return -1;
     }
+
+    uint32_t length_before = msg->length;
+
+    uint32_t size_end = GRID_CLASS_EVALUATE_ELEMENT_SIZE_offset + GRID_CLASS_EVALUATE_ELEMENT_SIZE_length;
+    uint8_t* frame_start = (uint8_t*)grid_msg_get_slice_start(msg, msg->offset, size_end);
+
+    size_t len;
+    const char* str = lua_tolstring(L, element, &len);
+
+    for (size_t i = 0; i < len; ++i) {
+
+      uint8_t c = str[i];
+
+      if (c >= 32 && c <= 126) {
+
+        if (grid_msg_nprintf(msg, "%c", c) < 0) {
+          return -1;
+        }
+
+      } else {
+
+        char h[2];
+        uint8_to_hex(c, h);
+
+        if (grid_msg_nprintf(msg, "\\x%c%c", h[0], h[1]) < 0) {
+          return -1;
+        }
+      }
+    }
+
+    grid_msg_set_parameter_raw(frame_start, CLASS_EVALUATE_ELEMENT_SIZE, msg->length - length_before);
 
   } break;
   case LUA_TTABLE: {
