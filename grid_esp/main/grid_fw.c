@@ -96,7 +96,7 @@
 static const char* TAG = "main";
 
 #include "tinyusb.h"
-#include "tusb_cdc_acm.h"
+#include "tinyusb_cdc_acm.h"
 
 static bool periodic_rtc_ms_cb() {
 
