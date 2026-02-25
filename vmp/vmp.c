@@ -1,5 +1,8 @@
 #include "vmp.h"
 
+void* (*VMP_ALLOC)(size_t) = malloc;
+void (*VMP_DEALLOC)(void*) = free;
+
 uint32_t htonl(uint32_t hostlong) { return hostlong; }
 uint16_t htons(uint16_t hostshort) { return hostshort; }
 uint32_t ntohl(uint32_t netlong) { return netlong; }

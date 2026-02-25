@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void* (*VMP_ALLOC)(size_t) = malloc;
-static void (*VMP_DEALLOC)(void*) = free;
+extern void* (*VMP_ALLOC)(size_t);
+extern void (*VMP_DEALLOC)(void*);
 
 #define vmp_alloc(a) VMP_ALLOC(a)
 #define vmp_dealloc(a) VMP_DEALLOC(a)
