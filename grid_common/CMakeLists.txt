@@ -35,6 +35,7 @@ idf_component_register(
         "littlefs/lfs.c"
         "littlefs/lfs_util.c"
 
+        "lua-5.4.3/src/dirent.c"
         "lua-5.4.3/src/lapi.c"
         "lua-5.4.3/src/lauxlib.c"
         "lua-5.4.3/src/lbaselib.c"
