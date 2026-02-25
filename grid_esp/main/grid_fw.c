@@ -504,8 +504,6 @@ void app_main(void) {
 
   log_checkpoint("GUI INIT");
 
-  uint32_t hwcfg = grid_sys_get_hwcfg(&grid_sys_state);
-
   // Initialize font
   if (grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
     grid_font_init(&grid_font_state);
