@@ -564,4 +564,4 @@ int grid_littlefs_closedir(lfs_t* lfs, lfs_dir_t* dirp) {
 
 struct lfs_info READDIR = {0};
 
-const char* grid_littlefs_readdir(lfs_t* lfs, lfs_dir_t* dirp) { return lfs_dir_read(lfs, dirp, &READDIR) > 0 ? READDIR.name : NULL; }
+char* grid_littlefs_readdir(lfs_t* lfs, lfs_dir_t* dirp) { return lfs_dir_read(lfs, dirp, &READDIR) > 0 ? READDIR.name : NULL; }
