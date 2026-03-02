@@ -14,6 +14,7 @@ idf_component_register(
         "grid_swsr.c"
         "grid_msg.c"
         "grid_noflash.c"
+        "grid_platform.c"
         "grid_decode.c"
         "grid_port.c"
         "grid_usb.c"
@@ -34,6 +35,7 @@ idf_component_register(
         "littlefs/lfs.c"
         "littlefs/lfs_util.c"
 
+        "lua-5.4.3/src/dirent.c"
         "lua-5.4.3/src/lapi.c"
         "lua-5.4.3/src/lauxlib.c"
         "lua-5.4.3/src/lbaselib.c"
@@ -73,4 +75,5 @@ idf_component_register(
         "."
         "littlefs"
         "lua-5.4.3/src"
+        "proto"
 )

@@ -1,4 +1,4 @@
-esptool.py --chip esp32s3 --before=default_reset \
+esptool.py --chip esp32s3 -b 2000000 --before=default_reset \
 --after=hard_reset write_flash --flash_mode dio --flash_size detect --flash_freq 80m \
 0x8000 partition-table.bin \
 0xe000 otadata_boot_from_ota0.bin \

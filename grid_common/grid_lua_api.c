@@ -1,5 +1,6 @@
 #include "grid_lua_api.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1698,8 +1699,7 @@ int l_grid_cat(lua_State* L) {
     return 0;
   }
 
-  if (grid_ui_bulk_is_in_progress(&grid_ui_state, GRID_UI_BULK_READ_PROGRESS) != 0) {
-    // grid_platform_printf("page change in progress \r\n");
+  if (grid_ui_bulk_in_progress(&grid_ui_state)) {
     return 0;
   }
 
@@ -1865,7 +1865,7 @@ int l_grid_cat(lua_State* L) {
 
   grid_cal_reset(&grid_cal_state);
 
-  grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFERASE_PROGRESS, 0, NULL);
+  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_erase, 0, 0, NULL);
 
   return 0;
 }
@@ -1892,7 +1892,7 @@ int l_grid_calibration_get(lua_State* L, enum grid_cal_type type) {
     case GRID_CAL_LIMITS: {
 
       struct grid_cal_limits* limits;
-      if (grid_cal_get(cal, i, GRID_CAL_LIMITS, (void**)&limits)) {
+      if (grid_cal_channel_get(cal, i, GRID_CAL_LIMITS, (void**)&limits)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
@@ -1920,7 +1920,7 @@ int l_grid_calibration_get(lua_State* L, enum grid_cal_type type) {
     case GRID_CAL_CENTER: {
 
       struct grid_cal_center* center;
-      if (grid_cal_get(cal, i, GRID_CAL_CENTER, (void**)&center)) {
+      if (grid_cal_channel_get(cal, i, GRID_CAL_CENTER, (void**)&center)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
@@ -1972,7 +1972,7 @@ int l_grid_calibration_set(lua_State* L, enum grid_cal_type type) {
     case GRID_CAL_LIMITS: {
 
       struct grid_cal_limits* limits;
-      if (grid_cal_get(cal, i, GRID_CAL_LIMITS, (void**)&limits)) {
+      if (grid_cal_channel_get(cal, i, GRID_CAL_LIMITS, (void**)&limits)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
@@ -2017,7 +2017,7 @@ int l_grid_calibration_set(lua_State* L, enum grid_cal_type type) {
     case GRID_CAL_CENTER: {
 
       struct grid_cal_center* center;
-      if (grid_cal_get(cal, i, GRID_CAL_CENTER, (void**)&center)) {
+      if (grid_cal_channel_get(cal, i, GRID_CAL_CENTER, (void**)&center)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
@@ -2043,7 +2043,7 @@ int l_grid_calibration_set(lua_State* L, enum grid_cal_type type) {
     case GRID_CAL_DETENT: {
 
       struct grid_cal_detent* detent;
-      if (grid_cal_get(cal, i, GRID_CAL_DETENT, (void**)&detent)) {
+      if (grid_cal_channel_get(cal, i, GRID_CAL_DETENT, (void**)&detent)) {
 
         grid_lua_append_stde(&grid_lua_state, "#indexOutOfRange");
         lua_pop(L, 1);
@@ -2082,7 +2082,7 @@ int l_grid_calibration_set(lua_State* L, enum grid_cal_type type) {
     }
   }
 
-  grid_ui_bulk_conf_init(&grid_ui_state, GRID_UI_BULK_CONFSTORE_PROGRESS, 0, NULL);
+  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_store, 0, 0, NULL);
 
   return 0;
 }

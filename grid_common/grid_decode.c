@@ -302,7 +302,7 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
       return 0;
     }
 
-    grid_ui_page_load(&grid_ui_state, page);
+    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, page, 0, NULL);
     grid_sys_set_bank(&grid_sys_state, page);
 
   } break;
@@ -324,7 +324,7 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
     // Page negotiated, disable feature from now on
     grid_ui_state.page_negotiated = true;
 
-    grid_ui_page_load(&grid_ui_state, page);
+    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, page, 0, NULL);
     grid_sys_set_bank(&grid_sys_state, page);
 
   } break;
@@ -510,34 +510,105 @@ uint8_t grid_decode_immediate_to_ui(char* header, char* chunk) {
 
   char* script = &chunk[GRID_CLASS_IMMEDIATE_ACTIONSTRING_offset];
 
-  if (strncmp(script, "<?lua ", 6) != 0) {
+  if (!grid_lua_strn_is_actionstring(script, length)) {
     return 1;
   }
 
-  if (strncmp(&script[length - 3], " ?>", 3) != 0) {
+  if (!grid_ui_bulk_semaphore_try(&grid_ui_state)) {
     return 1;
   }
 
   grid_lua_clear_stdo(&grid_lua_state);
-
   script[length - 3] = '\0';
-  grid_lua_dostring(&grid_lua_state, &script[6]);
+  grid_lua_dostring_begin(&grid_lua_state, &script[6]);
+  grid_lua_dostring_end(&grid_lua_state);
   script[length - 3] = ' ';
+  grid_lua_broadcast_stdo(&grid_lua_state);
 
-  char* stdo = grid_lua_get_output_string(&grid_lua_state);
-  if (stdo[0] != '\0') {
+  grid_ui_bulk_semaphore_release(&grid_ui_state);
 
-    struct grid_msg msg;
-    uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-    grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+  return 0;
+}
 
-    grid_msg_nprintf(&msg, "%s", stdo);
-    grid_lua_clear_stdo(&grid_lua_state);
+uint8_t grid_decode_evaluate_to_ui(char* header, char* chunk) {
+
+  uint8_t target = GRID_DESTINATION_IS_ME | GRID_DESTINATION_IS_GLOBAL | GRID_DESTINATION_IS_LOCAL;
+  if (grid_check_destination(header, target) == false) {
+    return 1;
+  }
+
+  uint8_t instr = grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR);
+
+  if (instr != GRID_INSTR_EXECUTE_code) {
+    return 1;
+  }
+
+  uint16_t elements_in = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_EVALUATE_ELEMENTS);
+
+  if (elements_in != 1) {
+    return 1;
+  }
+
+  uint8_t* first = (uint8_t*)chunk;
+  first += GRID_CLASS_EVALUATE_ELEMENTS_offset + GRID_CLASS_EVALUATE_ELEMENTS_length;
+
+  uint8_t type = grid_msg_get_parameter_raw((uint8_t*)first, CLASS_EVALUATE_ELEMENT_TYPE);
+
+  if (type != LUA_TSTRING) {
+    return 1;
+  }
+
+  uint16_t length = grid_msg_get_parameter_raw((uint8_t*)first, CLASS_EVALUATE_ELEMENT_SIZE);
+
+  if (length > GRID_PARAMETER_ACTIONSTRING_maxlength) {
+    return 1;
+  }
+
+  char* script = (char*)&first[GRID_CLASS_EVALUATE_ELEMENT_DATA_offset];
+
+  if (!grid_lua_strn_is_actionstring(script, length)) {
+    return 1;
+  }
+
+  uint8_t id = grid_msg_get_parameter_raw((uint8_t*)header, BRC_ID);
+
+  struct grid_msg msg;
+  uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
+  uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);
+  grid_msg_init_brc(&grid_msg_state, &msg, sx, sy);
+
+  if (!grid_ui_bulk_semaphore_try(&grid_ui_state)) {
+
+    grid_msg_add_frame(&msg, GRID_CLASS_EVALUATE_frame_start);
+    grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_CHECK_code);
+    grid_msg_set_parameter(&msg, CLASS_EVALUATE_LASTHEADER, id);
+    grid_msg_set_parameter(&msg, CLASS_EVALUATE_ELEMENTS, 0);
+    grid_msg_add_frame(&msg, GRID_CLASS_EVALUATE_frame_end);
 
     if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
       grid_transport_send_msg_to_all(&grid_transport_state, &msg);
     }
+
+    return 1;
   }
+
+  grid_lua_clear_stdo(&grid_lua_state);
+  script[length - 3] = '\0';
+  bool status = grid_lua_dostring_begin(&grid_lua_state, &script[6]);
+  script[length - 3] = ' ';
+  grid_lua_broadcast_stdo(&grid_lua_state);
+
+  uint8_t respinstr = status ? GRID_INSTR_ACKNOWLEDGE_code : GRID_INSTR_NACKNOWLEDGE_code;
+
+  if (grid_lua_serialize_evaluation_results(grid_lua_state.L, &msg, respinstr, id) >= 0) {
+    if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+    }
+  }
+
+  grid_lua_dostring_end(&grid_lua_state);
+
+  grid_ui_bulk_semaphore_release(&grid_ui_state);
 
   return 0;
 }
@@ -757,11 +828,10 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
 
   case GRID_INSTR_EXECUTE_code: {
 
-    enum grid_ui_bulk_status_t status = GRID_UI_BULK_READ_PROGRESS;
     uint8_t page = grid_ui_page_get_activepage(&grid_ui_state);
     void (*cb)(uint8_t) = &grid_protocol_nvm_read_success_callback;
 
-    if (grid_ui_bulk_operation_init(&grid_ui_state, status, page, id, cb)) {
+    if (grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_read, page, id, cb)) {
       return 1;
     }
 
@@ -812,7 +882,7 @@ void grid_protocol_nvm_store_success_callback(uint8_t lastheader_id) {
 
   grid_ui_page_clear_template_parameters(&grid_ui_state, activepage);
 
-  grid_ui_page_load(&grid_ui_state, activepage);
+  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, activepage, 0, NULL);
 }
 
 uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
@@ -828,11 +898,10 @@ uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
 
   case GRID_INSTR_EXECUTE_code: {
 
-    enum grid_ui_bulk_status_t status = GRID_UI_BULK_STORE_PROGRESS;
     uint8_t page = grid_ui_page_get_activepage(&grid_ui_state);
     void (*cb)(uint8_t) = &grid_protocol_nvm_store_success_callback;
 
-    if (grid_ui_bulk_operation_init(&grid_ui_state, status, page, id, cb)) {
+    if (grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_store, page, id, cb)) {
       return 1;
     }
 
@@ -883,7 +952,7 @@ void grid_protocol_nvm_clear_success_callback(uint8_t lastheader_id) {
 
   grid_ui_page_clear_template_parameters(&grid_ui_state, activepage);
 
-  grid_ui_page_load(&grid_ui_state, activepage);
+  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, activepage, 0, NULL);
 }
 
 uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
@@ -899,11 +968,10 @@ uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
 
   case GRID_INSTR_EXECUTE_code: {
 
-    enum grid_ui_bulk_status_t status = GRID_UI_BULK_CLEAR_PROGRESS;
     uint8_t page = grid_ui_page_get_activepage(&grid_ui_state);
     void (*cb)(uint8_t) = &grid_protocol_nvm_clear_success_callback;
 
-    if (grid_ui_bulk_operation_init(&grid_ui_state, status, page, id, cb)) {
+    if (grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_clear, page, id, cb)) {
       return 1;
     }
 
@@ -948,7 +1016,9 @@ void grid_protocol_nvm_erase_success_callback(uint8_t lastheader_id) {
     grid_transport_send_msg_to_all(&grid_transport_state, &msg);
   }
 
-  grid_ui_page_load(&grid_ui_state, grid_ui_page_get_activepage(&grid_ui_state));
+  uint8_t activepage = grid_ui_page_get_activepage(&grid_ui_state);
+
+  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, activepage, 0, NULL);
 }
 
 uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
@@ -966,7 +1036,7 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
 
     void (*cb)(uint8_t) = &grid_protocol_nvm_erase_success_callback;
 
-    if (grid_ui_bulk_nvmerase_init(&grid_ui_state, id, cb)) {
+    if (grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_nvm_erase, 0, id, cb)) {
       return 1;
     }
 
@@ -1226,15 +1296,27 @@ void grid_port_decode_msg(struct grid_decoder_collection* coll, struct grid_msg*
       continue;
     }
 
-    grid_msg_set_offset(msg, i);
-    uint32_t class = grid_msg_get_parameter(msg, PARAMETER_CLASSCODE);
-    grid_port_decode_class(coll, class, msg->data, &msg->data[i]);
+    for (uint32_t j = i; j < msg->length; ++j) {
+
+      if (msg->data[j] != GRID_CONST_ETX) {
+        continue;
+      }
+
+      grid_msg_set_offset(msg, i);
+      uint32_t class = grid_msg_get_parameter(msg, PARAMETER_CLASSCODE);
+      char* chunk = grid_msg_get_slice_start(msg, msg->offset, j - i);
+      grid_port_decode_class(coll, class, msg->data, chunk);
+    }
   }
 
-  grid_lua_decode_process_results(&grid_lua_state);
+  if (grid_ui_bulk_semaphore_try(&grid_ui_state)) {
 
-  grid_lua_broadcast_stdo(&grid_lua_state);
-  grid_lua_broadcast_stde(&grid_lua_state);
+    grid_lua_decode_process_results(&grid_lua_state);
+    grid_lua_broadcast_stdo(&grid_lua_state);
+    grid_lua_broadcast_stde(&grid_lua_state);
+
+    grid_ui_bulk_semaphore_release(&grid_ui_state);
+  }
 }
 
 struct grid_decoder_collection grid_decoder_to_ui[] = {
@@ -1243,6 +1325,7 @@ struct grid_decoder_collection grid_decoder_to_ui[] = {
     {GRID_CLASS_MIDI_code, grid_decode_midi_to_ui},
     {GRID_CLASS_MIDISYSEX_code, grid_decode_sysex_to_ui},
     {GRID_CLASS_IMMEDIATE_code, grid_decode_immediate_to_ui},
+    {GRID_CLASS_EVALUATE_code, grid_decode_evaluate_to_ui},
     {GRID_CLASS_HEARTBEAT_code, grid_decode_heartbeat_to_ui},
     {GRID_CLASS_SERIALNUMBER_code, grid_decode_serialnumber_to_ui},
     {GRID_CLASS_PAGEDISCARD_code, grid_decode_pagediscard_to_ui},

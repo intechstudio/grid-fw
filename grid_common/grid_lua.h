@@ -71,6 +71,8 @@ char* grid_lua_get_error_string(struct grid_lua_model* lua);
 
 uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code);
 uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code);
+bool grid_lua_dostring_begin(struct grid_lua_model* lua, const char* code);
+void grid_lua_dostring_end(struct grid_lua_model* lua);
 bool grid_lua_do_event(struct grid_lua_model* lua, uint8_t index, const char* function_name);
 void grid_lua_decode_clear_results(struct grid_lua_model* lua);
 void grid_lua_decode_process_results(struct grid_lua_model* lua);
@@ -99,6 +101,11 @@ void grid_lua_register_index_meta_for_type(lua_State* L, const char* type, const
 void grid_lua_create_element_array(lua_State* L, uint8_t elements);
 void grid_lua_register_element(lua_State* L, uint8_t element);
 void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, const char* type);
+
+struct grid_msg;
+int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, uint8_t instr, uint8_t id);
+
+bool grid_lua_strn_is_actionstring(const char* s, size_t maxlen);
 
 // clang-format off
 

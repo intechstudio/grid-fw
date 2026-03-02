@@ -1,1 +1,2 @@
-kill $(lsof -t /dev/ttyUSB0)
+PORT=${PORT:-/dev/ttyUSB0}
+kill $(lsof -t $PORT)

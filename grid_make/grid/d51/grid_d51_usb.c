@@ -8,6 +8,7 @@
 #include "grid_d51_usb.h"
 
 #include <assert.h>
+#include <stdio.h>
 
 volatile uint8_t grid_usb_serial_rx_buffer[CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ];
 
@@ -204,5 +205,5 @@ int32_t grid_platform_usb_keyboard_keys_state_change(struct grid_usb_keyboard_ev
     hid_key_array[i].state = active_key_list[i].ispressed;
   }
 
-  return hiddf_keyboard_keys_state_change(hid_key_array, keys_count);
+  return hiddf_keyboard_keys_state_change((struct hiddf_kb_key_descriptors*)hid_key_array, keys_count);
 }

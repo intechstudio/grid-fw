@@ -1,8 +1,10 @@
 #include "grid_d51_module.h"
 
+#include "grid_d51.h"
 #include "grid_d51_led.h"
 #include "grid_d51_nvm.h"
 #include "grid_d51_uart.h"
+#include "grid_d51_usb.h"
 
 #include "atmel_start_pins.h"
 #include <atmel_start.h>
@@ -25,7 +27,7 @@
 #include "usb/class/midi/device/audiodf_midi.h"
 
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
-const struct luaL_Reg grid_lua_api_gui_lib_reference[] = {NULL, NULL};
+const struct luaL_Reg grid_lua_api_gui_lib_reference[] = {{NULL, NULL}};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,52 +52,11 @@ void grid_platform_lcd_set_backlight(uint8_t backlight) {}
 static void update_interrupt_mask_from_bulk_status() {
 
   uint32_t mask = grid_d51_nvic_get_interrupt_priority_mask() == 1;
-  uint32_t next = grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
+  uint32_t next = grid_ui_bulk_in_progress(&grid_ui_state);
 
   if (mask != next) {
 
     grid_d51_nvic_set_interrupt_priority_mask(next);
-  }
-}
-
-static void nvm_task_inner() {
-
-  update_interrupt_mask_from_bulk_status();
-
-  uint64_t time_max_duration = 10 * 1000; // in microseconds
-  uint64_t time_start = grid_platform_rtc_get_micros();
-
-  bool proceed = grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
-  while (proceed) {
-
-    switch (grid_ui_get_bulk_status(&grid_ui_state)) {
-    case GRID_UI_BULK_READ_PROGRESS:
-      grid_ui_bulk_pageread_next(&grid_ui_state);
-      break;
-    case GRID_UI_BULK_STORE_PROGRESS:
-      grid_ui_bulk_pagestore_next(&grid_ui_state);
-      break;
-    case GRID_UI_BULK_CLEAR_PROGRESS:
-      grid_ui_bulk_pageclear_next(&grid_ui_state);
-      break;
-    case GRID_UI_BULK_ERASE_PROGRESS:
-      grid_ui_bulk_nvmerase_next(&grid_ui_state);
-      break;
-    case GRID_UI_BULK_CONFREAD_PROGRESS:
-      grid_ui_bulk_confread_next(&grid_ui_state);
-      break;
-    case GRID_UI_BULK_CONFERASE_PROGRESS:
-      grid_ui_bulk_conferase_next(&grid_ui_state);
-      break;
-    case GRID_UI_BULK_CONFSTORE_PROGRESS:
-      grid_ui_bulk_confstore_next(&grid_ui_state);
-      break;
-    default:
-      break;
-    }
-
-    proceed = grid_platform_rtc_get_elapsed_time(time_start) < time_max_duration;
-    proceed = proceed && grid_ui_bulk_anything_is_in_progress(&grid_ui_state);
   }
 }
 
@@ -203,7 +164,7 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
     return;
   }
 
-  if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
+  if (grid_ui_bulk_in_progress(&grid_ui_state)) {
     return;
   }
 
@@ -416,11 +377,10 @@ int main(void) {
 
   grid_d51_nvic_debug_priorities();
 
-  grid_ui_page_load(&grid_ui_state, 0); // load page 0
-
-  while (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
-    nvm_task_inner();
-  }
+  // Load page zero
+  assert(grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL));
+  update_interrupt_mask_from_bulk_status();
+  grid_ui_bulk_flush(&grid_ui_state);
 
   // grid_d51_nvm_toc_debug(&grid_d51_nvm_state);
 
@@ -541,8 +501,9 @@ vmp_flushed = true;
 
     grid_d51_midi_bulkout_poll();
 
-    // NVM task
-    nvm_task_inner();
+    // Run UI protothreads
+    update_interrupt_mask_from_bulk_status();
+    grid_ui_bulk_process(&grid_ui_state);
 
     // Receive USART
     for (uint8_t i = 0; i < 4; ++i) {

@@ -40,12 +40,6 @@ jobs:
       - name: Run script in Docker container
         run: docker run -v $PWD:/project -w /project/ my-image sh -c "./lua_build.sh && ./pico_build_firmware.sh && ./esp_build_firmware.sh && ./gui_build.sh"
 
-      - name: Convert ESP firmware to UF2
-        run: |
-          cd ./grid_esp
-          mkdir ./output
-          python3 ./tools/uf2conv.py -f ESP32S3 ./build/grid_fw.bin -b 0x0 -c -o ./output/grid_fw.uf2
-
       - name: Set env
         id: set_env
         shell: bash
@@ -62,11 +56,11 @@ jobs:
           ls
           cp grid_esp/build/grid_fw.bin grid_fw.bin
           cp binary/grid_release.uf2 grid_d51_release_${{ env.ACTION_DATE }}.uf2
-          cp grid_esp/output/grid_fw.uf2 grid_esp32_release_${{ env.ACTION_DATE }}.uf2
+          cp binary/grid_fw.uf2 grid_esp32_release_${{ env.ACTION_DATE }}.uf2
           cp binary/grid_release.uf2 grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
           cp binary/grid_release.uf2 grid_d51_nightly.uf2
-          cp grid_esp/output/grid_fw.uf2 grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
-          cp grid_esp/output/grid_fw.uf2 grid_esp32_nightly.uf2
+          cp binary/grid_fw.uf2 grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
+          cp binary/grid_fw.uf2 grid_esp32_nightly.uf2
           cp .github/workflows/INSTRUCTIONS.txt INSTRUCTIONS__USE_D51_VERSION_IF_UNSURE.txt
           cp grid_gui/build/index.html index.html
           cp grid_gui/build/index.js index.js

@@ -1,5 +1,6 @@
 #include "grid_littlefs.h"
 
+#include <assert.h>
 #include <limits.h>
 
 #include "grid_platform.h"
@@ -115,6 +116,7 @@ int grid_littlefs_mkdir_base(lfs_t* lfs, const char* path) {
 
 int grid_littlefs_path_build(const char* path, uint16_t out_size, char* out) {
 
+  assert(path);
   assert(path != out);
 
   const char* prefix = grid_platform_get_base_path();
@@ -412,3 +414,154 @@ int grid_littlefs_find_next_on_page(lfs_t* lfs, uint8_t page, int* last_ele, int
     }
   }
 }
+
+lfs_file_t* grid_littlefs_fopen(lfs_t* lfs, const char* path, const char* mode) {
+
+  char fpath[LFS_NAME_MAX + 1] = {0};
+  grid_littlefs_path_build(path, LFS_NAME_MAX + 1, fpath);
+
+  lfs_file_t* file = malloc(sizeof(lfs_file_t));
+  if (!file) {
+    printf("grid_littlefs_fopen malloc failed\n");
+    return NULL;
+  }
+
+  int flags = 0;
+  if (strcmp(mode, "r") == 0) {
+    flags = LFS_O_RDONLY;
+  }
+  if (strcmp(mode, "w") == 0) {
+    flags = LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC;
+  }
+  if (strcmp(mode, "a") == 0) {
+    flags = LFS_O_WRONLY | LFS_O_CREAT | LFS_O_APPEND;
+  }
+  if (strcmp(mode, "r+") == 0) {
+    flags = LFS_O_RDWR;
+  }
+  if (strcmp(mode, "w+") == 0) {
+    flags = LFS_O_RDWR | LFS_O_CREAT | LFS_O_TRUNC;
+  }
+  if (strcmp(mode, "a+") == 0) {
+    flags = LFS_O_RDWR | LFS_O_CREAT | LFS_O_APPEND;
+  }
+
+  if (flags == 0) {
+    printf("grid_littlefs_fopen mode error: unsupported mode string\n");
+    free(file);
+    return NULL;
+  }
+
+  int lfs_err = lfs_file_open(lfs, file, fpath, flags);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_fopen open error: %d\n", lfs_err);
+    free(file);
+    return NULL;
+  }
+
+  return file;
+}
+
+int grid_littlefs_fclose(lfs_t* lfs, lfs_file_t* stream) {
+
+  int lfs_err = lfs_file_close(lfs, stream);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_fclose close error: %d\n", lfs_err);
+    return EOF;
+  }
+
+  free(stream);
+
+  return 0;
+}
+
+size_t grid_littlefs_fwrite(lfs_t* lfs, const void* ptr, size_t size, size_t nmemb, lfs_file_t* stream) {
+
+  size_t i = 0;
+  while (i < nmemb) {
+
+    uint8_t* src = ((uint8_t*)ptr) + i * size;
+    lfs_ssize_t wrote = lfs_file_write(lfs, stream, src, size);
+
+    if (wrote < 0) {
+      printf("grid_littlefs_fwrite write error, wrote: %ld\n", wrote);
+      break;
+    }
+
+    if (size != (size_t)wrote) {
+      break;
+    }
+
+    ++i;
+  }
+
+  return i;
+}
+
+size_t grid_littlefs_fread(lfs_t* lfs, void* ptr, size_t size, size_t nmemb, lfs_file_t* stream) {
+
+  size_t i = 0;
+  while (i < nmemb) {
+
+    uint8_t* dest = ((uint8_t*)ptr) + i * size;
+    lfs_ssize_t read = lfs_file_read(lfs, stream, dest, size);
+
+    if (read < 0) {
+      printf("grid_littlefs_fread read error, read: %ld\n", read);
+      break;
+    }
+
+    if (size != (size_t)read) {
+      break;
+    }
+
+    ++i;
+  }
+
+  return i;
+}
+
+ssize_t grid_littlefs_ftell(lfs_t* lfs, lfs_file_t* stream) {
+
+  lfs_soff_t soff = lfs_file_tell(lfs, stream);
+  return soff >= 0 ? soff : -1;
+}
+
+ssize_t grid_littlefs_fseek(lfs_t* lfs, lfs_file_t* stream, lfs_soff_t soff, int whence) { return lfs_file_seek(lfs, stream, soff, whence) >= 0 ? 0 : -1; }
+
+int grid_littlefs_fflush(lfs_t* lfs, lfs_file_t* stream) { return lfs_file_sync(lfs, stream) >= 0 ? 0 : EOF; }
+
+lfs_dir_t* grid_littlefs_opendir(lfs_t* lfs, const char* name) {
+
+  lfs_dir_t* dirp = malloc(sizeof(lfs_dir_t));
+  if (!dirp) {
+    printf("grid_littlefs_opendir malloc failed\n");
+    return NULL;
+  }
+
+  int lfs_err = lfs_dir_open(lfs, dirp, name);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_opendir open error: %d\n", lfs_err);
+    free(dirp);
+    return NULL;
+  }
+
+  return dirp;
+}
+
+int grid_littlefs_closedir(lfs_t* lfs, lfs_dir_t* dirp) {
+
+  int lfs_err = lfs_dir_close(lfs, dirp);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_closedir close error: %d\n", lfs_err);
+    return -1;
+  }
+
+  free(dirp);
+
+  return 0;
+}
+
+struct lfs_info READDIR = {0};
+
+const char* grid_littlefs_readdir(lfs_t* lfs, lfs_dir_t* dirp) { return lfs_dir_read(lfs, dirp, &READDIR) > 0 ? READDIR.name : NULL; }

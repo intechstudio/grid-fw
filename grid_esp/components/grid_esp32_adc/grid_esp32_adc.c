@@ -19,7 +19,9 @@
 
 #include "rom/ets_sys.h"
 
+#include "grid_ain.h"
 #include "grid_esp32_pins.h"
+#include "grid_platform.h"
 
 #include "esp_heap_caps.h"
 #include "freertos/ringbuf.h"
@@ -45,7 +47,7 @@ extern const uint8_t ulp_grid_esp32_adc_bin_end[] asm("_binary_ulp_grid_esp32_ad
 
 struct grid_esp32_adc_model DRAM_ATTR grid_esp32_adc_state;
 
-void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overflow) {
+void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_positions_bm) {
 
   gpio_set_direction(GRID_ESP32_PINS_MUX_0_A, GPIO_MODE_OUTPUT);
   gpio_set_direction(GRID_ESP32_PINS_MUX_0_B, GPIO_MODE_OUTPUT);
@@ -55,25 +57,26 @@ void grid_esp32_adc_mux_init(struct grid_esp32_adc_model* adc, uint8_t mux_overf
   gpio_set_direction(GRID_ESP32_PINS_MUX_1_B, GPIO_MODE_OUTPUT);
   gpio_set_direction(GRID_ESP32_PINS_MUX_1_C, GPIO_MODE_OUTPUT);
 
-  adc->mux_index = 0;
+  adc->mux_positions_bm = mux_positions_bm;
+
+  GRID_MUX_FIRST_VALID(adc->mux_index, adc->mux_positions_bm);
 
   grid_esp32_adc_mux_update(adc);
 
-  adc->mux_overflow = mux_overflow;
-  ulp_mux_overflow = adc->mux_overflow;
+  ulp_mux_positions_bm = mux_positions_bm;
 }
 
-void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc) { adc->mux_index = (adc->mux_index + 1) % adc->mux_overflow; }
+void IRAM_ATTR grid_esp32_adc_mux_increment(struct grid_esp32_adc_model* adc) { GRID_MUX_INCREMENT(adc->mux_index, adc->mux_positions_bm); }
 
 void IRAM_ATTR grid_esp32_adc_mux_update(struct grid_esp32_adc_model* adc) {
 
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_A, adc->mux_index >> 0 & 0x1);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_B, adc->mux_index >> 1 & 0x1);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_C, adc->mux_index >> 2 & 0x1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_A, (adc->mux_index >> 0) & 1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_B, (adc->mux_index >> 1) & 1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_0_C, (adc->mux_index >> 2) & 1);
 
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_A, adc->mux_index >> 0 & 0x1);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_B, adc->mux_index >> 1 & 0x1);
-  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_C, adc->mux_index >> 2 & 0x1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_A, (adc->mux_index >> 0) & 1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_B, (adc->mux_index >> 1) & 1);
+  gpio_ll_set_level(&GPIO, GRID_ESP32_PINS_MUX_1_C, (adc->mux_index >> 2) & 1);
 }
 
 #include "esp_private/adc_share_hw_ctrl.h"
@@ -103,13 +106,17 @@ static void adc_init_ulp(struct grid_esp32_adc_model* adc) {
   ESP_ERROR_CHECK(ulp_riscv_load_binary(binary, size));
 }
 
-void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, grid_process_analog_t process_analog) {
+void grid_esp32_adc_init(struct grid_esp32_adc_model* adc, uint8_t mux_positions_bm, uint8_t mux_dependent, grid_process_analog_t process_analog) {
 
   assert(process_analog);
 
   adc->process_analog = process_analog;
 
   adc_init_ulp(adc);
+
+  adc->mux_dependent = mux_dependent != 0;
+
+  grid_platform_mux_init(mux_positions_bm);
 }
 
 static void IRAM_ATTR ulp_isr(void* arg) {
@@ -123,10 +130,9 @@ static void IRAM_ATTR ulp_isr(void* arg) {
   }
 }
 
-void grid_esp32_adc_start(struct grid_esp32_adc_model* adc, uint8_t mux_dependent) {
+void grid_esp32_adc_start(struct grid_esp32_adc_model* adc) {
 
-  // Set flag for both processors indicating which one does mux addressing
-  adc->mux_dependent = mux_dependent != 0;
+  // Set flag for ULP processor indicating which one does mux addressing
   ulp_mux_dependent = adc->mux_dependent;
 
   // Register ISR handler
@@ -157,7 +163,7 @@ void IRAM_ATTR grid_esp32_adc_conv_mux() {
 
   for (int i = 0; i < 2; ++i) {
 
-    struct grid_esp32_adc_result result;
+    struct grid_adc_result result;
     result.channel = i;
     result.mux_state = mux_state;
     result.value = adc_value[i];
@@ -183,9 +189,14 @@ void IRAM_ATTR grid_esp32_adc_conv_nomux() {
 
   for (int i = 0; i < 8; ++i) {
 
+    // Skip positions not in the valid mask
+    if (!(adc->mux_positions_bm & (1 << i))) {
+      continue;
+    }
+
     for (int j = 0; j < 2; ++j) {
 
-      struct grid_esp32_adc_result result;
+      struct grid_adc_result result;
       result.channel = j;
       result.mux_state = i;
       result.value = adc_value[i][j];

@@ -1,95 +1,38 @@
 #include "grid_d51_module_bu16.h"
 
+#include "grid_ain.h"
+#include "grid_d51_adc.h"
+#include "grid_platform.h"
 #include "grid_ui_button.h"
-#include "grid_ui_system.h"
 
-static volatile uint8_t adc_complete_count = 0;
+static struct grid_ui_model* ui_ptr = NULL;
 
-static volatile uint8_t multiplexer_index = 0;
-static volatile uint8_t multiplexer_lookup[16] = {0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15};
-
-#define GRID_MODULE_BU16_BUT_NUM 16
-
-static struct grid_ui_button_state ui_button_state[GRID_MODULE_BU16_BUT_NUM] = {0};
-static struct grid_ui_element* elements = NULL;
-
-static void hardware_start_transfer(void) {
-
-  adc_async_start_conversion(&ADC_0);
-  adc_async_start_conversion(&ADC_1);
-}
-
-static void adc_transfer_complete_cb(void) {
-
-  if (adc_complete_count == 0) {
-    adc_complete_count++;
-    return;
-  }
-
-  /* Read conversion results */
-
-  uint16_t adcresult_0 = 0;
-  uint16_t adcresult_1 = 0;
-
-  uint8_t adc_index_0 = multiplexer_lookup[multiplexer_index + 8];
-  uint8_t adc_index_1 = multiplexer_lookup[multiplexer_index + 0];
-
-  adc_async_read_channel(&ADC_0, 0, &adcresult_0, 2);
-  adc_async_read_channel(&ADC_1, 0, &adcresult_1, 2);
-
-  /* Update the multiplexer */
-
-  multiplexer_index++;
-  multiplexer_index %= 8;
-
-  gpio_set_pin_level(MUX_A, multiplexer_index / 1 % 2);
-  gpio_set_pin_level(MUX_B, multiplexer_index / 2 % 2);
-  gpio_set_pin_level(MUX_C, multiplexer_index / 4 % 2);
-
-  // FAKE CALIBRATION to compensate oversampling and decimation
-  uint32_t input_0 = adcresult_0 * 1.03;
-  if (input_0 > (1 << 16) - 1) {
-    input_0 = (1 << 16) - 1;
-  }
-  adcresult_0 = input_0;
-
-  uint32_t input_1 = adcresult_1 * 1.03;
-  if (input_1 > (1 << 16) - 1) {
-    input_1 = (1 << 16) - 1;
-  }
-  adcresult_1 = input_1;
-
-  struct grid_ui_element* ele_0 = &elements[adc_index_0];
-
-  grid_ui_button_store_input(ele_0, &ui_button_state[adc_index_0], adcresult_0, 16);
-
-  struct grid_ui_element* ele_1 = &elements[adc_index_1];
-
-  grid_ui_button_store_input(ele_1, &ui_button_state[adc_index_1], adcresult_1, 16);
-
-  adc_complete_count = 0;
-  hardware_start_transfer();
-}
-
-static void hardware_init(void) {
-
-  adc_async_register_callback(&ADC_0, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
-  adc_async_register_callback(&ADC_1, 0, ADC_ASYNC_CONVERT_CB, adc_transfer_complete_cb);
-
-  adc_async_enable_channel(&ADC_0, 0);
-  adc_async_enable_channel(&ADC_1, 0);
-}
-
-void grid_module_bu16_init() {
-
-  grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-
-  for (int i = 0; i < GRID_MODULE_BU16_BUT_NUM; ++i) {
-    grid_ui_button_state_init(&ui_button_state[i], 16, 0.5, 0.2);
-  }
-
-  elements = grid_ui_model_get_elements(&grid_ui_state);
-
-  hardware_init();
-  hardware_start_transfer();
+static const uint8_t mux_element_lookup[2][8] = {
+    {0, 1, 4, 5, 8, 9, 12, 13},   // MUX_0 -> ADC_1
+    {2, 3, 6, 7, 10, 11, 14, 15}, // MUX_1 -> ADC_0
 };
+static uint16_t element_invert_bm = 0;
+
+static void bu16_process_analog(struct grid_adc_result* result) {
+
+  uint8_t element_index = mux_element_lookup[result->channel][result->mux_state];
+  result->value = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
+
+  struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
+  grid_ui_button_store_input(grid_ui_button_get_state(ele), result->value);
+}
+
+void grid_d51_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_d51_adc_model* adc, struct grid_config_model* conf, struct grid_cal_model* cal) {
+
+  ui_ptr = ui;
+
+  for (int i = 0; i < ui->element_list_length; ++i) {
+    struct grid_ui_element* ele = &ui->element_list[i];
+    if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+      grid_ui_button_state_init(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
+    }
+  }
+
+  grid_d51_adc_init(adc, 0b11111111, bu16_process_analog);
+  grid_d51_adc_start(adc);
+}

@@ -6,18 +6,7 @@ name: Protocol converter workflow
 # or API.
 on:
   workflow_dispatch:
-    # Inputs the workflow accepts.
-    inputs:
-      name:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: 'Person to greet'
-        # Default value if no value is explicitly provided
-        default: 'World'
-        # Input has to be provided for the workflow to run
-        required: true
   push:
-    branches:
-      - master
     paths:
       - 'grid_common/grid_protocol.h'
       - 'grid_common/grid_ui_system.h'
@@ -51,42 +40,19 @@ jobs:
           python ./.github/workflows/protocol_converter.py ./grid_common/grid_protocol.h,./grid_common/lua_src/lua_source_collection.h,./grid_common/grid_ui_system.h,./grid_common/grid_ui_button.h,./grid_common/grid_ui_encoder.h,./grid_common/grid_ui_endless.h,./grid_common/grid_ui_potmeter.h,./grid_common/grid_ui_lcd.h grid-protocol/src/grid_protocol_bot.json grid-protocol/grid-protocol/lists.py
 
       - name: Check file
+        if: github.ref == 'refs/heads/master'
         run: |
           cd grid-protocol
           cat -v src/grid_protocol_bot.json
           if [[ `git status --porcelain` ]]; then
-            # Changes
             git add -A
             git commit -m "BOT protocol file synced from grid-fw repo"
             git push
-            echo "changed=true" >> $GITHUB_ENV
-          else
-            # No changes
-            echo "changed=false" >> $GITHUB_ENV
           fi
-          echo "CHANGED:  ${{ env.changed }}"
-
-      - uses: tsickert/discord-webhook@v4.0.0
-        if: env.changed == 'true'
-        with:
-          webhook-url: ${{ secrets.WEBHOOK_URL }}
-          content: "Hello, I just updated the GRID_PROTOCOL.json file! Please update the Submodules in the grid-editor repository!"
 
       - name: Clone documentation
+        if: github.ref == 'refs/heads/master'
         run: |
           git clone https://github.com/intechstudio/grid-documentation.git
           sh ./.github/workflows/documentation_validator.sh >> report.txt
-          { echo '{"content": "'; head -1 report.txt; echo '", "filename": "report.txt"}';} | tr "\n" " " > report.json
-          cat report.json
           cat report.txt
-
-      - uses: tsickert/discord-webhook@v4.0.0
-        with:
-          webhook-url: ${{ secrets.WEBHOOK_URL }}
-          content: Here is your Grid API Documentation report!
-          filename: report.txt
-
-      - uses: tsickert/discord-webhook@v4.0.0
-        with:
-          webhook-url: ${{ secrets.WEBHOOK_URL }}
-          raw-data: report.json

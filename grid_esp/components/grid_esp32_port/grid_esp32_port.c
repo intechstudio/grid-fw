@@ -255,10 +255,6 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
     return;
   }
 
-  if (grid_ui_bulk_anything_is_in_progress(&grid_ui_state)) {
-    return;
-  }
-
   // Service local triggers first and as fast as possible
   if (grid_ui_event_count_istriggered_local(&grid_ui_state) > 0) {
 
@@ -364,6 +360,8 @@ void handle_connection_effect() {
 
 bool grid_esp32_broadcast_between(enum grid_port_type t1, enum grid_port_type t2) { return !(t1 == GRID_PORT_USART && t2 == GRID_PORT_USART); }
 
+extern bool rp2040_active = false;
+
 void grid_esp32_port_task(void* arg) {
 
   // Set up "outbound usart" spi transactions
@@ -457,8 +455,11 @@ void grid_esp32_port_task(void* arg) {
 
     // When the rolling ID changes, reset watchdog
     if (rollid.last_recv != watchdog_rollid_last_recv) {
+
       watchdog_rollid_last_time = grid_platform_rtc_get_micros();
       watchdog_rollid_last_recv = rollid.last_recv;
+
+      rp2040_active = true;
     }
 
     // Rolling ID watchdog expiration
