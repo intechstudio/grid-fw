@@ -39,8 +39,6 @@ struct grid_esp32_codec_model {
 void grid_esp32_codec_init(void);
 void grid_esp32_codec_deinit(void);
 
-void grid_esp32_codec_enable(void);
-void grid_esp32_codec_disable(void);
 void grid_esp32_codec_configure(double freq, double volume, double peak_time, double half_height, double zero_wait);
 
 #ifdef __cplusplus

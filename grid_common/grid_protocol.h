@@ -551,7 +551,7 @@
 #define GRID_LUA_FNC_G_SOUND_CONFIGURE_short "gac"
 #define GRID_LUA_FNC_G_SOUND_CONFIGURE_human "sound_configure"
 #define GRID_LUA_FNC_G_SOUND_CONFIGURE_fnptr l_grid_sound_configure
-#define GRID_LUA_FNC_G_SOUND_CONFIGURE_usage "sound_configure(freq, vol, shape) Sets oscillator frequency (Hz), volume (0-127), and waveform shape table {peak_time, half_height, zero_wait}."
+#define GRID_LUA_FNC_G_SOUND_CONFIGURE_usage "sound_configure(freq, vol, shape) Sets oscillator frequency (Hz), volume (0.0-1.0), and waveform shape table {peak_time, half_height, zero_wait}."
 
 // ========================= UI ELEMENT VARIABLES =========================== //
 

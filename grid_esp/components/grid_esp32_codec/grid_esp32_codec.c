@@ -21,29 +21,23 @@ struct grid_esp32_codec_model grid_esp32_codec_state;
 #define SAMPLE_RATE 16000
 #define TDM_SLOTS 2
 #define FREQ_DEFAULT 440.0
-#define VOLUME_DEFAULT 64.0
+#define VOLUME_DEFAULT 0.5
 
 uint32_t cycles_elapsed = 0;
 uint32_t us_elapsed = 0;
 int num_frames = 0;
 
 static i2s_chan_handle_t tx_chan;
-static uint8_t enabled = false;
 
 static IRAM_ATTR bool i2s_tx_sent_callback(i2s_chan_handle_t handle, i2s_event_data_t* event, void* user_ctx) {
 
   num_frames = event->size / (TDM_SLOTS * sizeof(int16_t));
   int16_t* dst = (int16_t*)event->dma_buf;
 
-  if (!enabled) {
-    memset(dst, 0, event->size);
-    return false;
-  }
-
   uint32_t cycles_start = grid_platform_get_cycles();
 
   double freq_normalized = grid_esp32_codec_state.freq / SAMPLE_RATE;
-  double volume_scale = grid_esp32_codec_state.volume / 127.0;
+  double volume_scale = grid_esp32_codec_state.volume;
 
   for (int i = 0; i < num_frames; i++) {
     double sample_val;
@@ -95,9 +89,20 @@ static void i2s_example_init_tdm_simplex(void) {
   ESP_ERROR_CHECK(i2s_channel_register_event_callback(tx_chan, &cbs, NULL));
 }
 
-void grid_esp32_codec_deinit(void) { hexwave_shutdown(NULL); }
+void grid_esp32_codec_deinit(void) {
+  if (tx_chan == NULL) {
+    return;
+  }
+  ESP_ERROR_CHECK(i2s_channel_disable(tx_chan));
+  ESP_ERROR_CHECK(i2s_del_channel(tx_chan));
+  tx_chan = NULL;
+  hexwave_shutdown(NULL);
+}
 
 void grid_esp32_codec_init(void) {
+  if (tx_chan != NULL) {
+    return;
+  }
   i2s_example_init_tdm_simplex();
 
   hexwave_init(12, 4, NULL);
@@ -115,6 +120,3 @@ void grid_esp32_codec_configure(double freq, double volume, double peak_time, do
   hexwave_change(&grid_esp32_codec_state.osc, 0, peak_time, half_height, zero_wait);
 }
 
-void grid_esp32_codec_enable(void) { enabled = true; }
-
-void grid_esp32_codec_disable(void) { enabled = false; }

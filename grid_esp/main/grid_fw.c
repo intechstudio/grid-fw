@@ -39,7 +39,6 @@
 
 #include "esp_private/esp_psram_extram.h"
 
-#include "grid_esp32_codec.h"
 #include "grid_esp32_led.h"
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_ef44.h"
@@ -567,7 +566,6 @@ void app_main(void) {
     grid_esp32_module_octv_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
     grid_esp32_module_vsnx_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
-    grid_esp32_codec_init();
   } else {
     ets_printf("Task Init failed: Unknown Module\r\n");
   }

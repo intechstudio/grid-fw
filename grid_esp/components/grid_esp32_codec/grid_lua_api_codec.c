@@ -8,7 +8,7 @@ int l_grid_sound_enable(lua_State* L) {
   if (nargs != 0) {
     return 0;
   }
-  grid_esp32_codec_enable();
+  grid_esp32_codec_init();
   return 0;
 }
 
@@ -17,7 +17,7 @@ int l_grid_sound_disable(lua_State* L) {
   if (nargs != 0) {
     return 0;
   }
-  grid_esp32_codec_disable();
+  grid_esp32_codec_deinit();
   return 0;
 }
 
