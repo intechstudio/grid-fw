@@ -667,7 +667,7 @@ int grid_lua_serialize_stack_element(lua_State* L, struct grid_msg* msg, int ele
     return -1;
   }
 
-  if (grid_msg_add_frame(msg, GRID_CLASS_EVALUATE_ELEMENT_frame) < 0) {
+  if (grid_msg_add_frame(msg, GRID_CLASS_EVALUATE_frame_internal) < 0) {
     return -1;
   }
 
