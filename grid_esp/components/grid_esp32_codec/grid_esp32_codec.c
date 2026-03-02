@@ -119,4 +119,3 @@ void grid_esp32_codec_configure(double freq, double volume, double peak_time, do
   grid_esp32_codec_state.volume = volume;
   hexwave_change(&grid_esp32_codec_state.osc, 0, peak_time, half_height, zero_wait);
 }
-
