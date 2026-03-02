@@ -20,19 +20,14 @@ struct grid_esp32_codec_model grid_esp32_codec_state;
 
 #define SAMPLE_RATE 16000
 #define TDM_SLOTS 2
-#define MAX_FRAMES 512
-
-#define FREQ_START 220.0
-#define FREQ_INCREMENT_PER_SAMPLE 0.04
-#define FREQ_MAX 4000.0
+#define FREQ_DEFAULT 440.0
+#define VOLUME_DEFAULT 64.0
 
 uint32_t cycles_elapsed = 0;
 uint32_t us_elapsed = 0;
 int num_frames = 0;
 
 static i2s_chan_handle_t tx_chan;
-static double* double_buf = NULL;
-static double current_freq = FREQ_START;
 static uint8_t enabled = false;
 
 static IRAM_ATTR bool i2s_tx_sent_callback(i2s_chan_handle_t handle, i2s_event_data_t* event, void* user_ctx) {
@@ -47,18 +42,16 @@ static IRAM_ATTR bool i2s_tx_sent_callback(i2s_chan_handle_t handle, i2s_event_d
 
   uint32_t cycles_start = grid_platform_get_cycles();
 
+  double freq_normalized = grid_esp32_codec_state.freq / SAMPLE_RATE;
+  double volume_scale = grid_esp32_codec_state.volume / 127.0;
+
   for (int i = 0; i < num_frames; i++) {
     double sample_val;
-    hexwave_generate_samples(&sample_val, 1, &grid_esp32_codec_state.osc, current_freq / SAMPLE_RATE);
+    hexwave_generate_samples(&sample_val, 1, &grid_esp32_codec_state.osc, freq_normalized);
 
-    int16_t sample = (int16_t)(sample_val * 0x7FFF);
+    int16_t sample = (int16_t)(sample_val * volume_scale * 0x7FFF);
     for (int s = 0; s < TDM_SLOTS; s++) {
       dst[i * TDM_SLOTS + s] = sample;
-    }
-
-    current_freq += FREQ_INCREMENT_PER_SAMPLE;
-    if (current_freq > FREQ_MAX) {
-      current_freq = FREQ_START;
     }
   }
 
@@ -102,10 +95,7 @@ static void i2s_example_init_tdm_simplex(void) {
   ESP_ERROR_CHECK(i2s_channel_register_event_callback(tx_chan, &cbs, NULL));
 }
 
-void grid_esp32_codec_deinit(void) {
-  free(double_buf);
-  hexwave_shutdown(NULL);
-}
+void grid_esp32_codec_deinit(void) { hexwave_shutdown(NULL); }
 
 void grid_esp32_codec_init(void) {
   i2s_example_init_tdm_simplex();
@@ -113,41 +103,18 @@ void grid_esp32_codec_init(void) {
   hexwave_init(12, 4, NULL);
   hexwave_create(&grid_esp32_codec_state.osc, 0, 0.5, 0.0, 0.0);
 
-  double_buf = (double*)calloc(MAX_FRAMES, sizeof(double));
-  assert(double_buf);
-
-  // Preload initial data
-  int preload_frames = 240;
-  hexwave_generate_samples(double_buf, preload_frames, &grid_esp32_codec_state.osc, FREQ_START / SAMPLE_RATE);
-
-  int16_t* preload_buf = (int16_t*)calloc(preload_frames * TDM_SLOTS, sizeof(int16_t));
-  assert(preload_buf);
-
-  for (int i = 0; i < preload_frames; i++) {
-    int16_t sample = (int16_t)(double_buf[i] * 0x7FFF);
-    for (int s = 0; s < TDM_SLOTS; s++) {
-      preload_buf[i * TDM_SLOTS + s] = sample;
-    }
-  }
-
-  size_t preload_size = preload_frames * TDM_SLOTS * sizeof(int16_t);
-  size_t w_bytes = preload_size;
-
-  while (w_bytes == preload_size) {
-    ESP_ERROR_CHECK(i2s_channel_preload_data(tx_chan, preload_buf, preload_size, &w_bytes));
-  }
-
-  free(preload_buf);
+  grid_esp32_codec_state.freq = FREQ_DEFAULT;
+  grid_esp32_codec_state.volume = VOLUME_DEFAULT;
 
   ESP_ERROR_CHECK(i2s_channel_enable(tx_chan));
 }
 
-void grid_esp32_codec_enable(void) {
-  if (enabled == true) {
-    return;
-  }
-  current_freq = FREQ_START;
-  enabled = true;
+void grid_esp32_codec_configure(double freq, double volume, double peak_time, double half_height, double zero_wait) {
+  grid_esp32_codec_state.freq = freq;
+  grid_esp32_codec_state.volume = volume;
+  hexwave_change(&grid_esp32_codec_state.osc, 0, peak_time, half_height, zero_wait);
 }
+
+void grid_esp32_codec_enable(void) { enabled = true; }
 
 void grid_esp32_codec_disable(void) { enabled = false; }
