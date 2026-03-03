@@ -85,6 +85,8 @@ init_endless_color = function(self)
       local int = 0
       if v == nil or v == -1 then
         int = color_auto_value(self, i)
+      elseif l ~= 1 then
+        int = gsc(i, v, 0, 255)
       else
         int = v
       end
