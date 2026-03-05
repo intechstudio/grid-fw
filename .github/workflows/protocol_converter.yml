@@ -19,6 +19,7 @@ on:
       - '.github/workflows/protocol_converter.yml'
       - '.github/workflows/protocol_converter.py'
       - '.github/workflows/documentation_validator.sh'
+      - '.github/workflows/usage_coverage.sh'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -35,6 +36,10 @@ jobs:
           ls
 
       - uses: actions/setup-python@v2
+      - name: Usage coverage check
+        run: |
+          bash ./.github/workflows/usage_coverage.sh
+
       - name: Setup python
         run: |
           python ./.github/workflows/protocol_converter.py ./grid_common/grid_protocol.h,./grid_common/lua_src/lua_source_collection.h,./grid_common/grid_ui_system.h,./grid_common/grid_ui_button.h,./grid_common/grid_ui_encoder.h,./grid_common/grid_ui_endless.h,./grid_common/grid_ui_potmeter.h,./grid_common/grid_ui_lcd.h grid-protocol/src/grid_protocol_bot.json grid-protocol/grid-protocol/lists.py

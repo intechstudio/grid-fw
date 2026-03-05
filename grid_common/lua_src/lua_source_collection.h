@@ -30,6 +30,7 @@
 #define GRID_LUA_FNC_G_MAPSAT_source grid_lua_src_mapsat_lua
 #define GRID_LUA_FNC_G_MAPSAT_short "gmaps"
 #define GRID_LUA_FNC_G_MAPSAT_human "map_saturate"
+#define GRID_LUA_FNC_G_MAPSAT_usage "map_saturate(int x, int in_min, int in_max, int out_min, int out_max) Maps x from input range to output range, clamping the result to the output bounds."
 
 #include "sign.h"
 #define GRID_LUA_FNC_G_SIGN_source grid_lua_src_sign_lua
@@ -40,6 +41,7 @@
 #define GRID_LUA_FNC_G_SEGCALC_source grid_lua_src_segmentcalc_lua
 #define GRID_LUA_FNC_G_SEGCALC_short "gsc"
 #define GRID_LUA_FNC_G_SEGCALC_human "segment_calculate"
+#define GRID_LUA_FNC_G_SEGCALC_usage "segment_calculate(int segment, int encoder_value, int encoder_min, int encoder_max) Returns 0-255 intensity for the given segment of an encoder range, split into 5 equal segments."
 
 #include "toml.h"
 #define GRID_LUA_FNC_G_TOML_source grid_lua_src_toml_lua

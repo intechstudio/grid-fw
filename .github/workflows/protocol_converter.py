@@ -177,6 +177,59 @@ def read_input_files_to_string(input_files):
             input += '\n'
     return input
 
+
+def create_lua_docs(input_string):
+    """Groups GRID_LUA_FNC_ macros by prefix, merging _short, _human, _usage
+    into structured entries. Returns a dict keyed by prefix."""
+
+    docs = {}
+
+    for line in get_lines(input_string):
+        # Match _short, _human, _usage suffixes on GRID_LUA_FNC_ macros
+        m = re.search(
+            r'^#define\s+(?P<prefix>GRID_LUA_FNC_\w+?)_(?P<suffix>short|human|usage)\s+"(?P<value>.*?)"\s*$',
+            line
+        )
+        if m is None:
+            continue
+
+        prefix = m.group('prefix')
+        suffix = m.group('suffix')
+        value = m.group('value')
+
+        if prefix not in docs:
+            docs[prefix] = {}
+        docs[prefix][suffix] = value
+
+    # Only keep entries that have at least a _human name
+    result = {}
+    for prefix, attrs in docs.items():
+        if 'human' in attrs:
+            entry = {"human": attrs["human"]}
+            if 'short' in attrs:
+                entry["short"] = attrs["short"]
+            if 'usage' in attrs:
+                entry["usage"] = attrs["usage"]
+
+            # Extract category tag from the macro prefix itself:
+            # GRID_LUA_FNC_<TAG>_<REST> → TAG (e.g. G, B, E, EP, P, L, S, A, XY …)
+            # No hardcoded list — new element types are picked up automatically.
+            prefix_tag = prefix.replace("GRID_LUA_FNC_", "")
+            category = prefix_tag.split("_", 1)[0]
+            entry["category"] = category
+
+            result[prefix] = entry
+
+    print(bcolors.OKCYAN + f"create_lua_docs: {len(result)} entries grouped" + bcolors.ENDC)
+    return result
+
+
+def write_output_with_luadocs(data, lua_docs, file_name):
+    """Writes the main JSON data with an added 'luadocs' key."""
+    data["luadocs"] = lua_docs
+    with open(file_name, 'w+') as fp:
+        json.dump(data, fp, indent=4)
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('Provide input file(s) name as first argument')
@@ -192,7 +245,9 @@ if __name__ == '__main__':
     print('output:', output_file)
     input_string = read_input_files_to_string(input_files)
 
-    write_output(build_json(input_string), output_file)
+    json_data = build_json(input_string)
+    lua_docs = create_lua_docs(input_string)
+    write_output_with_luadocs(json_data, lua_docs, output_file)
 
     class_databse = create_class_database(input_string)
     # print(json.dumps(class_databse, indent=2))

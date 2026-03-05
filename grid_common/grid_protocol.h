@@ -551,6 +551,7 @@
 #define GRID_LUA_FNC_B_BUTTON_VALUE_index 2
 #define GRID_LUA_FNC_B_BUTTON_VALUE_short "bva"
 #define GRID_LUA_FNC_B_BUTTON_VALUE_human "button_value"
+#define GRID_LUA_FNC_B_BUTTON_VALUE_usage "button_value(int value) Gets or sets the current button value. Returns the current value when called without arguments."
 
 #define GRID_LUA_FNC_B_BUTTON_MIN_index 3
 #define GRID_LUA_FNC_B_BUTTON_MIN_short "bmi"
