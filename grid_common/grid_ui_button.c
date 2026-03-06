@@ -348,14 +348,18 @@ void grid_ui_button_store_input(struct grid_ui_button_state* state, uint16_t val
 
     last = clampi32(last, min, max);
 
-    int32_t new_value = last + (tmax - tmin) / steps;
+    int32_t step_size = (tmax - tmin) / steps;
+    int32_t new_value;
 
-    if (new_value > max) {
-      new_value = min;
+    if (step_size != 0) {
+      int32_t k = (last - tmin) / step_size;
+      new_value = tmin + (k + 1) * step_size;
+    } else {
+      new_value = last;
     }
 
-    if (new_value < min) {
-      new_value = max;
+    if (new_value > max || new_value < min) {
+      new_value = tmin;
     }
 
     int32_t value_range = tmax - tmin;
