@@ -445,10 +445,10 @@ void app_main(void) {
     grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
     grid_module_octv_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
+  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
     grid_module_vsnx_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, &grid_sys_state);
   } else {
-    ets_printf("UI Init failed: Unknown Module\r\n");
+    ets_printf("UI Init failed: Unknown Module %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
   }
 
   grid_ui_semaphore_init(&grid_ui_state.bulk_semaphore, (void*)ui_bulk_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn, grid_common_semaphore_try_fn);
@@ -563,7 +563,7 @@ void app_main(void) {
   } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
     grid_esp32_module_vsnx_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
   } else {
-    ets_printf("Task Init failed: Unknown Module\r\n");
+    ets_printf("Task Init failed: Unknown Module %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
   }
 
   log_checkpoint("UI TASK DONE");
