@@ -749,8 +749,9 @@ int grid_lua_serialize_stack_element(lua_State* L, struct grid_msg* msg, int ele
     uint32_t size_end = GRID_CLASS_EVALUATE_ELEMENT_SIZE_offset + GRID_CLASS_EVALUATE_ELEMENT_SIZE_length;
     uint8_t* frame_start = (uint8_t*)grid_msg_get_slice_start(msg, msg->offset, size_end);
 
+    int abs_element = lua_absindex(L, element);
     lua_pushnil(L);
-    while (lua_next(L, element) != 0) {
+    while (lua_next(L, abs_element) != 0) {
 
       if (grid_lua_serialize_stack_element(L, msg, -2) < 0) {
         return -1;
