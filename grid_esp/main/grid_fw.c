@@ -93,6 +93,10 @@
 #include "vmp_def.h"
 #include "vmp_tag.h"
 
+extern uint32_t us_elapsed;
+extern uint32_t cycles_elapsed;
+extern int num_frames;
+
 static const char* TAG = "main";
 
 #include "tinyusb.h"
@@ -601,7 +605,16 @@ void app_main(void) {
 
   log_checkpoint("MAIN LOOP");
 
+  uint32_t loopcounter = 0;
+
   while (1) {
+
+    loopcounter++;
+
+    if (loopcounter > 200) {
+      loopcounter = 0;
+      ets_printf("codec: %d frames, %lu cycles, %lu us\n", num_frames, cycles_elapsed, us_elapsed);
+    }
 
     // Flush the profiler output if it becomes full
     if (!vmp_flushed && vmp.size == vmp.capacity) {

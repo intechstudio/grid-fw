@@ -538,6 +538,21 @@
 #define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_fnptr l_grid_lcd_set_backlight
 #define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_usage "lcd_set_backlight(strength) Sets the LCD backlight strength between 0 and 255."
 
+#define GRID_LUA_FNC_G_SOUND_ENABLE_short "gaon"
+#define GRID_LUA_FNC_G_SOUND_ENABLE_human "sound_enable"
+#define GRID_LUA_FNC_G_SOUND_ENABLE_fnptr l_grid_sound_enable
+#define GRID_LUA_FNC_G_SOUND_ENABLE_usage "sound_enable() Enables audio output."
+
+#define GRID_LUA_FNC_G_SOUND_DISABLE_short "gaoff"
+#define GRID_LUA_FNC_G_SOUND_DISABLE_human "sound_disable"
+#define GRID_LUA_FNC_G_SOUND_DISABLE_fnptr l_grid_sound_disable
+#define GRID_LUA_FNC_G_SOUND_DISABLE_usage "sound_disable() Disables audio output (silence)."
+
+#define GRID_LUA_FNC_G_SOUND_CONFIGURE_short "gac"
+#define GRID_LUA_FNC_G_SOUND_CONFIGURE_human "sound_configure"
+#define GRID_LUA_FNC_G_SOUND_CONFIGURE_fnptr l_grid_sound_configure
+#define GRID_LUA_FNC_G_SOUND_CONFIGURE_usage "sound_configure(freq, vol, shape) Sets oscillator frequency (Hz), volume (0.0-1.0), and waveform shape table {peak_time, half_height, zero_wait}."
+
 // ========================= UI ELEMENT VARIABLES =========================== //
 
 #define GRID_LUA_FNC_B_ELEMENT_INDEX_index 0

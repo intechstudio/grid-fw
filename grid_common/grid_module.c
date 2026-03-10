@@ -15,6 +15,7 @@
 #include "grid_ui_system.h"
 
 extern struct luaL_Reg* grid_lua_api_gui_lib_reference;
+extern struct luaL_Reg* grid_lua_api_codec_lib_reference;
 
 void grid_lua_ui_init(struct grid_lua_model* lua) {
 
@@ -74,6 +75,7 @@ void grid_lua_ui_init(struct grid_lua_model* lua) {
 
       if (ele->type == GRID_PARAMETER_ELEMENT_LCD) {
         grid_lua_register_functions_unsafe(lua, grid_lua_api_gui_lib_reference);
+        grid_lua_register_functions_unsafe(lua, grid_lua_api_codec_lib_reference);
       }
     }
 
