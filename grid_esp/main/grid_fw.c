@@ -96,7 +96,7 @@
 static const char* TAG = "main";
 
 #include "tinyusb.h"
-#include "tusb_cdc_acm.h"
+#include "tinyusb_cdc_acm.h"
 
 static bool periodic_rtc_ms_cb() {
 
@@ -503,8 +503,6 @@ void app_main(void) {
   xSemaphoreGive(ui_bulk_semaphore);
 
   log_checkpoint("GUI INIT");
-
-  uint32_t hwcfg = grid_sys_get_hwcfg(&grid_sys_state);
 
   // Initialize font
   if (grid_hwcfg_module_is_vsnx(&grid_sys_state)) {

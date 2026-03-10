@@ -6,8 +6,6 @@
 
 #include "grid_esp32_led.h"
 
-static const char* TAG = "LED";
-
 static DRAM_ATTR rmt_channel_handle_t CHANNEL = NULL;
 static DRAM_ATTR rmt_encoder_handle_t ENCODER = NULL;
 

@@ -411,7 +411,7 @@ int l_grid_cat(lua_State* L) {
     return 0;
   }
 
-  char* name = lua_tostring(L, 2);
+  const char* name = lua_tostring(L, 2);
 
   if (strlen(name) > GRID_ELEMENT_NAME_MAX) {
     return 0;
@@ -937,7 +937,6 @@ int l_grid_cat(lua_State* L) {
 
     uint16_t offset = GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i * 2 - 2;
     uint8_t length = GRID_CLASS_MIDISYSEX_PAYLOAD_length;
-    uint8_t* dest = (uint8_t*)&frame[GRID_CLASS_MIDISYSEX_PAYLOAD_offset + i * 2 - 2];
     grid_frame_set_parameter((uint8_t*)frame, offset, length, lua_tointeger(L, i));
   }
 

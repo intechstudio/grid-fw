@@ -95,7 +95,7 @@ void print_u32(uint8_t x) {
   grid_platform_printf("\n");
 }
 
-uint8_t grid_frame_calculate_checksum_string(uint8_t* frame, size_t length) {
+uint8_t grid_frame_calculate_checksum_string(const uint8_t* frame, size_t length) {
 
   /*
   uint8_t u8 = 0;
@@ -131,7 +131,7 @@ uint8_t grid_frame_calculate_checksum_string(uint8_t* frame, size_t length) {
   return u8;
 }
 
-uint8_t grid_frame_calculate_checksum_packet(uint8_t* frame, size_t length) {
+uint8_t grid_frame_calculate_checksum_packet(const uint8_t* frame, size_t length) {
 
   assert(length > 3);
 
@@ -319,7 +319,7 @@ int grid_msg_nprintf(struct grid_msg* msg, const char* fmt, ...) {
   return n >= remain ? -1 : n;
 }
 
-int grid_msg_add_segment_char(struct grid_msg* msg, uint8_t head_hexes, uint32_t size, char* buffer) {
+int grid_msg_add_segment_char(struct grid_msg* msg, uint8_t head_hexes, uint32_t size, const char* buffer) {
 
   assert(msg->length <= GRID_MSG_BYTES);
 
@@ -373,8 +373,6 @@ int grid_msg_add_hex_bytes(struct grid_msg* msg, uint8_t* data, uint16_t length)
 int grid_msg_add_debugtext(struct grid_msg* msg, const char* text) {
 
   uint32_t length_prev = msg->length;
-
-  bool success = true;
 
   if (grid_msg_add_frame(msg, GRID_CLASS_DEBUGTEXT_frame_start) < 0) {
     goto grid_msg_add_debugtext_revert;

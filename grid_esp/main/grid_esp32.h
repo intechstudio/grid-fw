@@ -19,7 +19,7 @@
 #include "esp_random.h"
 
 #include "tinyusb.h"
-#include "tusb_cdc_acm.h"
+#include "tinyusb_cdc_acm.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"

@@ -590,7 +590,7 @@ void grid_ui_event_render_action(struct grid_ui_event* eve, struct grid_msg* msg
   }
 
   char* stdo = grid_lua_get_output_string(&grid_lua_state);
-  int ret = grid_msg_nprintf(msg, "%s", stdo);
+  grid_msg_nprintf(msg, "%s", stdo);
   grid_lua_clear_stdo(&grid_lua_state);
 
   grid_lua_clear_stde(&grid_lua_state);
@@ -925,6 +925,9 @@ void grid_ui_bulk_flush(struct grid_ui_model* ui) {
     grid_ui_bulk_process(ui);
   }
 }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 
 PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
@@ -1292,3 +1295,5 @@ PT_THREAD(grid_ui_bulk_nvm_erase(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
   PT_END(pt);
 }
+
+#pragma GCC diagnostic pop
