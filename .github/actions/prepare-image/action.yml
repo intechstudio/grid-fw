@@ -38,7 +38,7 @@ runs:
         fi
         if [ "$REBUILD" = "true" ] ; then
           docker build --label ${{ env.label }}=${{ github.sha }} -t ${{ env.image }} .
-          if [ "${{ github.ref_name }}" = "main" ] ; then
+          if [ "${{ github.ref_name }}" = "main" ] || [ "${{ github.ref_name }}" = "master" ] ; then
             docker push ${{ env.image }}
           fi
         fi
