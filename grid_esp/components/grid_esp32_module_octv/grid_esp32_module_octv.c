@@ -22,8 +22,19 @@
 
 #include "grid_esp32_adc.h"
 #include "grid_esp32_encoder.h"
+#include "grid_esp32_touch.h"
+
+#include "rom/ets_sys.h"
 
 // static const char* TAG = "module_octv";
+
+#define OCTV_I2C_PORT      I2C_NUM_0
+#define OCTV_I2C_SCL_GPIO  40
+#define OCTV_I2C_SDA_GPIO  41
+#define OCTV_I2C_FREQ_HZ   100000
+
+#define OCTV_SENSOR_RESET_GPIO  39
+#define OCTV_SENSOR_INT_GPIO    42
 
 #define GRID_MODULE_OCTV_ENC_NUM 8
 
@@ -35,6 +46,10 @@ static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
     {15, 16, 17, 18, 19, 20, X, X},
 };
 #undef X
+
+static void IRAM_ATTR octv_process_touch(void) {
+  ets_printf("OCTV sensor INT fired\r\n");
+}
 
 void IRAM_ATTR octv_process_analog(struct grid_adc_result* result) {
 
@@ -67,6 +82,9 @@ void IRAM_ATTR octv_process_encoder(struct grid_encoder_result* result) {
 
 void grid_esp32_module_octv_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_esp32_adc_model* adc, struct grid_esp32_encoder_model* enc, struct grid_config_model* conf,
                                  struct grid_cal_model* cal) {
+
+  grid_esp32_touch_init(&grid_esp32_touch_state, OCTV_I2C_PORT, OCTV_I2C_SCL_GPIO, OCTV_I2C_SDA_GPIO, OCTV_SENSOR_RESET_GPIO, OCTV_SENSOR_INT_GPIO, OCTV_I2C_FREQ_HZ, octv_process_touch);
+  grid_esp32_touch_scan(&grid_esp32_touch_state);
 
   ui_ptr = ui;
 
