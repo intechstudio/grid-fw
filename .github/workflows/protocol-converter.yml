@@ -1,0 +1,62 @@
+name: Protocol converter
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - 'common/src/c/grid_protocol.h'
+      - 'common/src/c/grid_ui_system.h'
+      - 'common/src/c/grid_ui_button.h'
+      - 'common/src/c/grid_ui_encoder.h'
+      - 'common/src/c/grid_ui_endless.h'
+      - 'common/src/c/grid_ui_potmeter.h'
+      - 'common/src/c/grid_ui_lcd.h'
+      - 'common/src/c/lua_source_collection.h'
+      - '.github/workflows/protocol-converter.yml'
+      - '.github/workflows/protocol_converter.py'
+      - '.github/workflows/documentation_validator.sh'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      protocol-repo: intechstudio/grid-protocol.git
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Clone protocol repository
+        run: git clone https://github.com/${{ env.protocol-repo }}
+
+      - name: Setup python
+        uses: actions/setup-python@v6
+
+      - name: Run protocol converter
+        run: "python ./.github/workflows/protocol_converter.py \
+          ./common/src/c/grid_protocol.h,\
+          ./common/src/c/grid_ui_system.h,\
+          ./common/src/c/grid_ui_button.h,\
+          ./common/src/c/grid_ui_encoder.h,\
+          ./common/src/c/grid_ui_endless.h,\
+          ./common/src/c/grid_ui_potmeter.h,\
+          ./common/src/c/grid_ui_lcd.h,\
+          ./common/src/c/lua_source_collection.h \
+          grid-protocol/src/grid_protocol_bot.json \
+          grid-protocol/grid-protocol/lists.py"
+
+      - name: Push file to protocol repository
+        run: |
+          cd grid-protocol
+          cat -v src/grid_protocol_bot.json
+          if [ -n "$(git status --porcelain)" ] ; then
+            git add --all
+            git config --global user.email "bot@intech.studio"
+            git config --global user.name "Intech Bot"
+            git commit -m "BOT protocol file synced from grid-fw repo"
+            git remote set-url origin \
+              https://${{ secrets.PERSONALACCESSTOKEN }}@github.com/${{ env.protocol-repo }}
+            git push
+          fi

@@ -1,0 +1,35 @@
+name: Publish firmware
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-firmware:
+    name: Build firmware
+    uses: ./.github/workflows/build-and-push-firmware.yml
+
+  publish-stable:
+    name: Publish stable release
+    needs: build-firmware
+    if: github.ref_type == 'tag'
+    uses: ./.github/workflows/publish-stable-firmware.yml
+    with:
+      product_name: "grid"
+      version_tag: ${{ github.ref_name }}
+      timestamp: ${{ needs.build-firmware.outputs.timestamp }}
+    secrets: inherit
+
+  publish-nightly:
+    name: Publish nightly release
+    needs: build-firmware
+    # Also run when the ref is a tag so nightly does not lag stable
+    if: github.ref_name == 'main' || github.ref_name == 'master' || github.ref_type == 'tag'
+    uses: ./.github/workflows/publish-nightly-firmware.yml
+    with:
+      product_name: "grid"
+    secrets: inherit

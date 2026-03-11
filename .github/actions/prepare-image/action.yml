@@ -1,0 +1,44 @@
+name: Prepare image
+
+inputs:
+  image-name:
+    description: Image name
+    required: true
+    type: string
+  dockerfile:
+    description: Path to the Dockerfile
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+
+    - name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Pull or rebuild image
+      env:
+        image: ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}:latest
+        label: org.opencontainers.image.revision
+      shell: bash
+      run: |
+        REBUILD=true
+        if docker pull ${{ env.image }} ; then
+          SHA=$(docker inspect ${{ env.image }} --format '{{ index .Config.Labels "${{ env.label }}" }}')
+          git fetch origin "$SHA"
+          git diff $SHA ${{ github.sha }} -- ${{ inputs.dockerfile }}
+          if [ -z "$(git diff $SHA ${{ github.sha }} -- ${{ inputs.dockerfile }})" ] ; then
+            REBUILD=false
+          fi
+        fi
+        if [ "$REBUILD" = "true" ] ; then
+          docker build --label ${{ env.label }}=${{ github.sha }} -t ${{ env.image }} .
+          if [ "${{ github.ref_name }}" = "main" ] ; then
+            docker push ${{ env.image }}
+          fi
+        fi

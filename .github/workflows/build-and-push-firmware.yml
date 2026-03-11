@@ -1,0 +1,79 @@
+name: Build and push firmware
+
+on:
+  workflow_call:
+    outputs:
+      timestamp:
+        description: "Build date timestamp"
+        value: ${{ jobs.build-and-push.outputs.timestamp }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      image: ghcr.io/${{ github.repository_owner }}/grid-firmware:latest
+      d51-path: d51n20a
+      esp-path: esp32s3
+    outputs:
+      timestamp: ${{ steps.set_out.outputs.timestamp }}
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Prepare image
+        uses: ./.github/actions/prepare-image
+        with:
+          image-name: "grid-fw"
+          dockerfile: "Dockerfile"
+
+      - name: Build ESP32 firmware
+        run: |
+          docker run -v $PWD:/project -w /project ${{ env.image }} \
+          sh -c "./lua_build.sh && ./pico_build.sh && ./esp_build.sh"
+
+      - name: Build D51 firmware
+        run: |
+          docker run -v $PWD:/project -w /project ${{ env.image }} \
+          sh -c "./lua_build.sh && ./d51_build.sh"
+
+      - name: Set environment variables
+        run: echo "ACTION_DATE=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
+
+      - name: Set output variables
+        id: set_out
+        run: echo "timestamp=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_OUTPUT
+
+      - name: Copy and rename artifacts
+        run: |
+          cp ${{ env.esp-path }}/build/grid_fw.uf2 grid_esp32_release_${{ env.ACTION_DATE }}.uf2
+          cp ${{ env.esp-path }}/build/grid_fw.uf2 grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
+          cp ${{ env.esp-path }}/build/grid_fw.uf2 grid_esp32_nightly.uf2
+          cp ${{ env.d51-path }}/gcc/grid_fw.uf2 grid_d51_release_${{ env.ACTION_DATE }}.uf2
+          cp ${{ env.d51-path }}/gcc/grid_fw.uf2 grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
+          cp ${{ env.d51-path }}/gcc/grid_fw.uf2 grid_d51_nightly.uf2
+          cp .github/workflows/INSTRUCTIONS.txt INSTRUCTIONS.txt
+
+      - name: Upload nightly artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: nightly_firmware
+          path: |
+            grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
+            grid_esp32_nightly.uf2
+            grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
+            grid_d51_nightly.uf2
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: release_firmware
+          path: |
+            grid_esp32_release_${{ env.ACTION_DATE }}.uf2
+            grid_d51_release_${{ env.ACTION_DATE }}.uf2
+            INSTRUCTIONS.txt

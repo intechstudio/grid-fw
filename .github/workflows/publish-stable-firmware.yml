@@ -1,4 +1,4 @@
-name: "Firmware Production Release"
+name: Publish stable release
 
 on:
   workflow_call:
@@ -7,11 +7,11 @@ on:
         description: "Product name for release naming"
         required: true
         type: string
-      release_version:
+      version_tag:
         description: "Git tag version for the release"
         required: true
         type: string
-      action_date:
+      timestamp:
         description: "Build date timestamp"
         required: true
         type: string
@@ -21,17 +21,17 @@ on:
         description: "Product name for release naming"
         required: true
         type: string
-      release_version:
+      version_tag:
         description: "Git tag version for the release"
         required: true
         type: string
-      action_date:
+      timestamp:
         description: "Build date timestamp"
         required: true
         type: string
 
 jobs:
-  create-production-release:
+  publish-stable:
     runs-on: ubuntu-latest
     steps:
       - name: Download release artifacts
@@ -40,17 +40,17 @@ jobs:
           name: release_firmware
           path: release/
 
-      - name: Zip artifacts for Github Release
+      - name: Zip artifacts for github release
         uses: vimtor/action-zip@v1
         with:
           files: release/
           dest: ${{ inputs.product_name }}_release.zip
 
-      - name: Create Production Release
+      - name: Create stable release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ inputs.release_version }}
-          name: ${{ inputs.product_name }} ${{ inputs.release_version }} (${{ inputs.action_date }})
+          tag_name: ${{ inputs.version_tag }}
+          name: ${{ inputs.product_name }} ${{ inputs.version_tag }} (${{ inputs.timestamp }})
           files: ${{ inputs.product_name }}_release.zip
           draft: true
         env:
