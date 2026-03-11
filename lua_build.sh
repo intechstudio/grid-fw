@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Get the directory from the argument
-directory="grid_common/lua_src/"
+directory="common/src/lua"
+output_dir="common/build/lua"
 
 # Check if the provided argument is a directory
 if [ ! -d "$directory" ]; then
@@ -9,8 +10,12 @@ if [ ! -d "$directory" ]; then
     exit 1
 fi
 
+# Create build directory
+mkdir -p $output_dir
+
 # Loop through all .lua files in the specified directory
 for lua_file in "$directory"/*.lua; do
+
     # Check if there are no .lua files
     if [ ! -e "$lua_file" ]; then
         echo "No .lua files found in the directory."
@@ -21,7 +26,7 @@ for lua_file in "$directory"/*.lua; do
     base_name=$(basename "$lua_file" .lua)
 
     # Create the corresponding .h file
-    header_file="$directory/$base_name.h"
+    header_file="$output_dir/$base_name.h"
 
     # Start writing to the header file
     {
@@ -29,8 +34,10 @@ for lua_file in "$directory"/*.lua; do
         echo "#define GRID_LUA_SRC_${base_name^^}_H"
         echo ""
     } > "$header_file"
-        # Use xxd to convert the .lua file to a C string literal and add a terminating zero byte
-        (xxd -i "$lua_file") >> "$header_file"
+
+		# Use xxd to convert the .lua file to a C string literal and add a terminating zero byte
+		(xxd -i "$lua_file") >> "$header_file"
+
     {
         # Close the header guard
         echo ""
