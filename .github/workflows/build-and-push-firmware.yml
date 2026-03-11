@@ -14,7 +14,7 @@ jobs:
       contents: read
       packages: write
     env:
-      image: ghcr.io/${{ github.repository_owner }}/grid-firmware:latest
+      image: ghcr.io/${{ github.repository }}:latest
       d51-path: d51n20a
       esp-path: esp32s3
     outputs:
