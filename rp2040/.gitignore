@@ -1,0 +1,16 @@
+!CMakeLists.txt
+!example_auto_set_url.cmake
+!pico_sdk_import.cmake
+!README.md
+
+!main
+!main/CMakeLists.txt
+!main/main.c
+
+!src
+!src/*.c
+!src/*.h
+!src/*.pio
+
+!vmp
+!vmp/**

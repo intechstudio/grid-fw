@@ -1,6 +1,0 @@
-[submodule "grid_pico/pico-sdk"]
-	path = grid_pico/pico-sdk
-	url = https://github.com/raspberrypi/pico-sdk
-[submodule "grid_esp/esp-idf"]
-	path = grid_esp/esp-idf
-	url = https://github.com/espressif/esp-idf.git

@@ -1,0 +1,54 @@
+name: Publish nightly release
+
+on:
+  workflow_call:
+    inputs:
+      product_name:
+        description: "Product name for release naming"
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      product_name:
+        description: "Product name for release naming"
+        required: true
+        type: string
+
+jobs:
+  publish-stable:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download nightly artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: nightly_firmware
+          path: nightly/
+
+      - name: Remove duplicate binary (the one without a timestamp)
+        run: rm nightly/*nightly.uf2
+
+      - name: Zip artifacts for github release
+        uses: vimtor/action-zip@v1
+        with:
+          files: nightly/
+          dest: ${{ inputs.product_name }}_nightly.zip
+
+      - name: Build changelog
+        id: release_changelog
+        uses: mikepenz/release-changelog-builder-action@v5
+        with:
+          toTag: ${{ github.ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update nightly release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ inputs.product_name }} nightly
+          tag_name: nightly
+          files: ${{ inputs.product_name }}_nightly.zip
+          draft: false
+          prerelease: true
+          body: ${{steps.github_release.outputs.changelog}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,77 +1,42 @@
-# SPDX-FileCopyrightText: 2020 Diego Elio Pettenò
-#
-# SPDX-License-Identifier: Unlicense
+exclude: |
+  (?x)^(
+    common/dep/|
+    d51n20a/armcc/|
+    d51n20a/CMSIS/|
+    d51n20a/config/|
+    d51n20a/examples/|
+    d51n20a/gcc/|
+    d51n20a/hal/|
+    d51n20a/hpl/|
+    d51n20a/hri/|
+    d51n20a/samd51a/|
+    d51n20a/stdio_redirect/|
+    d51n20a/thirdparty/|
+    d51n20a/usb/|
+    esp32s3/bootloader/|
+    tools/
+  )
 
 repos:
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
-  hooks:
-  - id: check-yaml
-  - id: trailing-whitespace
-    exclude: |
-      (?x)^(
-        grid_common/lua-5.4.3/|
-        grid_esp/bootloader/|
-        grid_make/thirdparty/|
-        grid_make/samd51a/|
-        grid_make/hal/|
-        grid_make/hpl/|
-        grid_make/hri/|
-        grid_make/stdio_redirect/|
-        grid_make/CMSIS/
-      )
-  - id: end-of-file-fixer
-    exclude: |
-      (?x)^(
-        grid_common/lua-5.4.3/|
-        grid_esp/bootloader/|
-        grid_make/thirdparty/|
-        grid_make/samd51a/|
-        grid_make/hal/|
-        grid_make/hpl/|
-        grid_make/hri/|
-        grid_make/stdio_redirect/|
-        grid_make/CMSIS/
-      )
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
 
-- repo: https://github.com/codespell-project/codespell
-  rev: v2.2.4
-  hooks:
-  - id: codespell
-    args: [-w]
-    exclude: |
-      (?x)^(
-        grid_common/lua-5.4.3/|
-        grid_esp/bootloader/|
-        grid_make/thirdparty/|
-        grid_make/samd51a/|
-        grid_make/hal/|
-        grid_make/hpl/|
-        grid_make/hri/|
-        grid_make/stdio_redirect/|
-        grid_make/CMSIS/
-      )
-- repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: v17.0.6
-  hooks:
-  - id: clang-format
-    exclude: |
-      (?x)^(
-        grid_common/lua-5.4.3/|
-        grid_esp/bootloader/|
-        grid_make/thirdparty/|
-        grid_make/samd51a/|
-        grid_make/hal/|
-        grid_make/hpl/|
-        grid_make/hri/|
-        grid_make/stdio_redirect/|
-        grid_make/CMSIS/|
-        grid_make/usb/|
-        grid_make/config/|
-        grid_make/examples/
-      )
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.4
+    hooks:
+      - id: codespell
+        args: [-w]
 
-- repo: https://github.com/JohnnyMorganz/StyLua
-  rev: v2.1.0
-  hooks:
-    - id: stylua-github # or stylua-system / stylua-github
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v17.0.6
+    hooks:
+      - id: clang-format
+
+  - repo: https://github.com/JohnnyMorganz/StyLua
+    rev: v2.1.0
+    hooks:
+      - id: stylua-github # or stylua-system for a local binary

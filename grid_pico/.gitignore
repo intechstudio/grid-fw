@@ -1,7 +1,0 @@
-/build
-CMakeCache.txt
-/CMakeFiles
-elf2uf2
-generated
-pioasm
-/main/vmp/build
