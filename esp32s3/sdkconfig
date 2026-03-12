@@ -593,13 +593,6 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# Example Configuration
-#
-# CONFIG_EXAMPLE_USE_FTDI is not set
-CONFIG_EXAMPLE_USE_CP210X=y
-# end of Example Configuration
-
-#
 # Compiler options
 #
 # CONFIG_COMPILER_OPTIMIZATION_DEBUG is not set
@@ -2305,6 +2298,13 @@ CONFIG_TINYUSB_MODE_DMA=y
 # end of TinyUSB DCD
 
 #
+# TinyUSB callbacks
+#
+# CONFIG_TINYUSB_SUSPEND_CALLBACK is not set
+# CONFIG_TINYUSB_RESUME_CALLBACK is not set
+# end of TinyUSB callbacks
+
+#
 # Descriptor configuration
 #
 
@@ -2323,10 +2323,10 @@ CONFIG_TINYUSB_DESC_CDC_STRING="Intech Grid CDC Device"
 # end of Descriptor configuration
 
 #
-# Massive Storage Class (MSC)
+# Mass Storage Class (MSC)
 #
 # CONFIG_TINYUSB_MSC_ENABLED is not set
-# end of Massive Storage Class (MSC)
+# end of Mass Storage Class (MSC)
 
 #
 # Communication Device Class (CDC)

@@ -1,0 +1,13 @@
+!CMakeLists.txt
+!sdkconfig
+
+!bootloader
+!bootloader/**
+
+!components
+!components/**
+
+!main
+!main/CMakeLists.txt
+!main/grid_fw.c
+!main/idf_component.yml
