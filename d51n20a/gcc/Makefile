@@ -1,315 +1,170 @@
+CC = arm-none-eabi-gcc
+
 GRID_DEFINES = -DGRID
 
-SUB_DIRS +=  \
-\
-usb/class/midi/device \
-usb/class/midi \
-grid/lua \
-grid \
-grid/d51 \
-grid/vmp \
-../vmp \
-../grid_common/lua-5.4.3/src \
-../grid_common/littlefs \
-../grid_common/tomlc99 \
-\
+###################################
+# Platform-specific code for GRID #
+###################################
 
-OBJS +=  \
-\
-usb/class/midi/device/audiodf_midi.o \
-usb/class/midi/usb_protocol_midi.o \
-../grid_common/grid_config.o \
-../grid_common/grid_cal.o \
-../grid_common/grid_ain.o \
-../grid_common/grid_asc.o \
-../grid_common/grid_math.o \
-../grid_common/grid_sys.o \
-../grid_common/grid_swsr.o \
-../grid_common/grid_allocator.o \
-../grid_common/grid_msg.o \
-../grid_common/grid_noflash.o \
-../grid_common/grid_platform.o \
-../grid_common/grid_decode.o \
-../grid_common/grid_port.o \
-../grid_common/grid_usb.o \
-../grid_common/grid_ui.o \
-../grid_common/grid_ui_button.o \
-../grid_common/grid_ui_encoder.o \
-../grid_common/grid_ui_endless.o \
-../grid_common/grid_ui_potmeter.o \
-../grid_common/grid_ui_system.o \
-../grid_common/grid_ui_lcd.o \
-../grid_common/grid_module.o \
-../grid_common/grid_lua.o \
-../grid_common/grid_lua_api.o \
-../grid_common/grid_transport.o \
-../grid_common/grid_rollid.o \
-../grid_common/grid_utask.o \
-grid/d51/grid_d51.o \
-grid/d51/grid_d51_led.o \
-grid/d51/grid_d51_littlefs.o \
-grid/d51/grid_d51_littlefs_api.o \
-grid/d51/grid_d51_uart.o \
-grid/d51/grid_d51_usb.o \
-grid/d51/grid_d51_nvm.o \
-../grid_common/grid_led.o \
-../grid_common/grid_littlefs.o \
-grid/d51/grid_d51_module.o \
-grid/d51/grid_d51_adc.o \
-grid/d51/grid_d51_encoder.o \
-grid/grid_d51_module_bu16.o \
-grid/grid_d51_module_en16.o \
-grid/grid_d51_module_pbf4.o \
-grid/grid_d51_module_po16.o \
-grid/grid_d51_module_ef44.o \
-../grid_common/grid_protocol.o \
-grid/d51/grid_d51_lua.o \
-../grid_common/lua-5.4.3/src/dirent.o \
-../grid_common/lua-5.4.3/src/lapi.o \
-../grid_common/lua-5.4.3/src/lctype.o \
-../grid_common/lua-5.4.3/src/lfunc.o \
-../grid_common/lua-5.4.3/src/lmathlib.o \
-../grid_common/lua-5.4.3/src/loslib.o \
-../grid_common/lua-5.4.3/src/ltable.o \
-../grid_common/lua-5.4.3/src/lundump.o \
-../grid_common/lua-5.4.3/src/lauxlib.o \
-../grid_common/lua-5.4.3/src/ldblib.o \
-../grid_common/lua-5.4.3/src/lgc.o \
-../grid_common/lua-5.4.3/src/lmem.o \
-../grid_common/lua-5.4.3/src/lparser.o \
-../grid_common/lua-5.4.3/src/ltablib.o \
-../grid_common/lua-5.4.3/src/lutf8lib.o \
-../grid_common/lua-5.4.3/src/lbaselib.o \
-../grid_common/lua-5.4.3/src/ldebug.o \
-../grid_common/lua-5.4.3/src/linit.o \
-../grid_common/lua-5.4.3/src/loadlib.o \
-../grid_common/lua-5.4.3/src/lstate.o \
-../grid_common/lua-5.4.3/src/ltm.o \
-../grid_common/lua-5.4.3/src/lvm.o \
-../grid_common/lua-5.4.3/src/lcode.o \
-../grid_common/lua-5.4.3/src/ldo.o \
-../grid_common/lua-5.4.3/src/liolib.o \
-../grid_common/lua-5.4.3/src/lobject.o \
-../grid_common/lua-5.4.3/src/lstring.o \
-../grid_common/lua-5.4.3/src/lzio.o \
-../grid_common/lua-5.4.3/src/llex.o \
-../grid_common/lua-5.4.3/src/lopcodes.o \
-../grid_common/lua-5.4.3/src/ldump.o \
-../grid_common/lua-5.4.3/src/lstrlib.o \
-../grid_common/lua-5.4.3/src/lcorolib.o \
-../grid_common/littlefs/lfs.o \
-../grid_common/littlefs/lfs_util.o \
-../grid_common/tomlc99/toml.o \
-grid/vmp/vmp_def.o \
-../vmp/vmp.o \
+D51_INC_DIR = \
+-I "../grid" \
+-I "../grid/d51" \
+-I "../grid/vmp" \
+-I "../grid/usb/class/midi" \
+-I "../grid/usb/class/midi/device" \
 
-# ../grid_common/lua-5.4.3/src/luac.o \
-# ../grid_common/lua-5.4.3/src/lua.o \
+D51_SRC_DIR = ../grid
+D51_SRCS = \
+d51/grid_d51.c \
+d51/grid_d51_adc.c \
+d51/grid_d51_encoder.c \
+d51/grid_d51_led.c \
+d51/grid_d51_littlefs.c \
+d51/grid_d51_littlefs_api.c \
+d51/grid_d51_lua.c \
+d51/grid_d51_module.c \
+d51/grid_d51_nvm.c \
+d51/grid_d51_uart.c \
+d51/grid_d51_usb.c \
+grid_d51_module_bu16.c \
+grid_d51_module_en16.c \
+grid_d51_module_pbf4.c \
+grid_d51_module_po16.c \
+grid_d51_module_ef44.c \
+vmp/vmp_def.c \
+usb/class/midi/usb_protocol_midi.c \
+usb/class/midi/device/audiodf_midi.c \
 
+D51_OBJ_DIRS = \
+build/grid/d51 \
+build/grid/vmp \
+build/grid/usb/class/midi \
+build/grid/usb/class/midi/device \
 
+$(D51_OBJ_DIRS): ; mkdir -p $@
 
-OBJS_AS_ARGS +=  \
-\
-"usb/class/midi/device/audiodf_midi.o" \
-"usb/class/midi/usb_protocol_midi.o" \
-"../grid_common/grid_config.o" \
-"../grid_common/grid_cal.o" \
-"../grid_common/grid_ain.o" \
-"../grid_common/grid_asc.o" \
-"../grid_common/grid_math.o" \
-"../grid_common/grid_sys.o" \
-"../grid_common/grid_swsr.o" \
-"../grid_common/grid_allocator.o" \
-"../grid_common/grid_msg.o" \
-"../grid_common/grid_noflash.o" \
-"../grid_common/grid_platform.o" \
-"../grid_common/grid_decode.o" \
-"../grid_common/grid_port.o" \
-"../grid_common/grid_usb.o" \
-"../grid_common/grid_ui.o" \
-"../grid_common/grid_ui_button.o" \
-"../grid_common/grid_ui_encoder.o" \
-"../grid_common/grid_ui_endless.o" \
-"../grid_common/grid_ui_potmeter.o" \
-"../grid_common/grid_ui_system.o" \
-"../grid_common/grid_ui_lcd.o" \
-"../grid_common/grid_module.o" \
-"../grid_common/grid_lua.o" \
-"../grid_common/grid_lua_api.o" \
-"../grid_common/grid_transport.o" \
-"../grid_common/grid_rollid.o" \
-"../grid_common/grid_utask.o" \
-"grid/d51/grid_d51.o" \
-"grid/d51/grid_d51_led.o" \
-"grid/d51/grid_d51_littlefs.o" \
-"grid/d51/grid_d51_littlefs_api.o" \
-"grid/d51/grid_d51_uart.o" \
-"grid/d51/grid_d51_usb.o" \
-"grid/d51/grid_d51_nvm.o" \
-"../grid_common/grid_led.o" \
-"../grid_common/grid_littlefs.o" \
-"grid/d51/grid_d51_module.o" \
-"grid/d51/grid_d51_adc.o" \
-"grid/d51/grid_d51_encoder.o" \
-"grid/grid_d51_module_bu16.o" \
-"grid/grid_d51_module_en16.o" \
-"grid/grid_d51_module_pbf4.o" \
-"grid/grid_d51_module_po16.o" \
-"grid/grid_d51_module_ef44.o" \
-"../grid_common/grid_protocol.o" \
-"grid/d51/grid_d51_lua.o" \
-"../grid_common/lua-5.4.3/src/dirent.o" \
-"../grid_common/lua-5.4.3/src/lapi.o" \
-"../grid_common/lua-5.4.3/src/lctype.o" \
-"../grid_common/lua-5.4.3/src/lfunc.o" \
-"../grid_common/lua-5.4.3/src/lmathlib.o" \
-"../grid_common/lua-5.4.3/src/loslib.o" \
-"../grid_common/lua-5.4.3/src/ltable.o" \
-"../grid_common/lua-5.4.3/src/lundump.o" \
-"../grid_common/lua-5.4.3/src/lauxlib.o" \
-"../grid_common/lua-5.4.3/src/ldblib.o" \
-"../grid_common/lua-5.4.3/src/lgc.o" \
-"../grid_common/lua-5.4.3/src/lmem.o" \
-"../grid_common/lua-5.4.3/src/lparser.o" \
-"../grid_common/lua-5.4.3/src/ltablib.o" \
-"../grid_common/lua-5.4.3/src/lutf8lib.o" \
-"../grid_common/lua-5.4.3/src/lbaselib.o" \
-"../grid_common/lua-5.4.3/src/ldebug.o" \
-"../grid_common/lua-5.4.3/src/linit.o" \
-"../grid_common/lua-5.4.3/src/loadlib.o" \
-"../grid_common/lua-5.4.3/src/lstate.o" \
-"../grid_common/lua-5.4.3/src/ltm.o" \
-"../grid_common/lua-5.4.3/src/lvm.o" \
-"../grid_common/lua-5.4.3/src/lcode.o" \
-"../grid_common/lua-5.4.3/src/ldo.o" \
-"../grid_common/lua-5.4.3/src/liolib.o" \
-"../grid_common/lua-5.4.3/src/lobject.o" \
-"../grid_common/lua-5.4.3/src/lstring.o" \
-"../grid_common/lua-5.4.3/src/lzio.o" \
-"../grid_common/lua-5.4.3/src/llex.o" \
-"../grid_common/lua-5.4.3/src/lopcodes.o" \
-"../grid_common/lua-5.4.3/src/ldump.o" \
-"../grid_common/lua-5.4.3/src/lstrlib.o" \
-"../grid_common/lua-5.4.3/src/lcorolib.o" \
-"../grid_common/littlefs/lfs.o" \
-"../grid_common/littlefs/lfs_util.o" \
-"../grid_common/tomlc99/toml.o" \
-"grid/vmp/vmp_def.o" \
-"../vmp/vmp.o" \
+D51_OBJ_DIR = build/grid
+$(D51_OBJ_DIR): $(D51_OBJ_DIRS)
+D51_OBJS = $(D51_SRCS:%.c=$(D51_OBJ_DIR)/%.o)
 
-# "../grid_common/lua-5.4.3/src/luac.o" \
-# "../grid_common/lua-5.4.3/src/lua.o" \
+$(D51_OBJ_DIR)/%.o: $(D51_SRC_DIR)/%.c | $(D51_OBJ_DIR)
+	$(CC) -x c -mthumb \
+	$(GRID_DEFINES) \
+	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
+	$(D51_INC_DIR) \
+	-MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -o "$@" "$<"
 
+OBJS_AS_ARGS += $(D51_SRCS:%.c=$(D51_OBJ_DIR)/%.o)
 
+COM_INC_DIR = \
+-I "../../common/src/c" \
+-I "../../common/dep" \
+-I "../../common/dep/littlefs" \
+-I "../../common/dep/lua-5.4.3" \
+-I "../../common/dep/proto" \
+-I "../../common/dep/tomlc99" \
+-I "../../common/dep/vmp" \
+-I "../../common/build/lua" \
 
-DIR_INCLUDES +=  \
--I"../" \
--I"../grid" \
--I"../grid/d51" \
--I"../grid/vmp" \
--I"../../vmp" \
--I"../usb/class/midi/" \
--I"../usb/class/midi/device" \
--I"../../grid_common" \
--I"../../grid_common" \
--I"../../grid_common/lua-5.4.3/src" \
--I"../../grid_common/littlefs" \
--I"../../grid_common/proto" \
--I"../../grid_common/tomlc99" \
+D51_INC_DIR += $(COM_INC_DIR)
 
+######################################
+# Platform-independent code for GRID #
+######################################
 
+COM_SRC_DIR = ../../common
+COM_SRCS = \
+src/c/grid_ain.c \
+src/c/grid_allocator.c \
+src/c/grid_asc.c \
+src/c/grid_cal.c \
+src/c/grid_config.c \
+src/c/grid_decode.c \
+src/c/grid_led.c \
+src/c/grid_littlefs.c \
+src/c/grid_lua.c \
+src/c/grid_lua_api.c \
+src/c/grid_math.c \
+src/c/grid_module.c \
+src/c/grid_msg.c \
+src/c/grid_noflash.c \
+src/c/grid_platform.c \
+src/c/grid_port.c \
+src/c/grid_protocol.c \
+src/c/grid_rollid.c \
+src/c/grid_swsr.c \
+src/c/grid_sys.c \
+src/c/grid_transport.c \
+src/c/grid_ui.c \
+src/c/grid_ui_button.c \
+src/c/grid_ui_encoder.c \
+src/c/grid_ui_endless.c \
+src/c/grid_ui_lcd.c \
+src/c/grid_ui_potmeter.c \
+src/c/grid_ui_system.c \
+src/c/grid_usb.c \
+src/c/grid_utask.c \
+dep/lua-5.4.3/src/dirent.c \
+dep/lua-5.4.3/src/lapi.c \
+dep/lua-5.4.3/src/lauxlib.c \
+dep/lua-5.4.3/src/lbaselib.c \
+dep/lua-5.4.3/src/lcode.c \
+dep/lua-5.4.3/src/lcorolib.c \
+dep/lua-5.4.3/src/lctype.c \
+dep/lua-5.4.3/src/ldblib.c \
+dep/lua-5.4.3/src/ldebug.c \
+dep/lua-5.4.3/src/ldo.c \
+dep/lua-5.4.3/src/ldump.c \
+dep/lua-5.4.3/src/lfunc.c \
+dep/lua-5.4.3/src/lgc.c \
+dep/lua-5.4.3/src/linit.c \
+dep/lua-5.4.3/src/liolib.c \
+dep/lua-5.4.3/src/llex.c \
+dep/lua-5.4.3/src/lmathlib.c \
+dep/lua-5.4.3/src/lmem.c \
+dep/lua-5.4.3/src/loadlib.c \
+dep/lua-5.4.3/src/lobject.c \
+dep/lua-5.4.3/src/lopcodes.c \
+dep/lua-5.4.3/src/loslib.c \
+dep/lua-5.4.3/src/lparser.c \
+dep/lua-5.4.3/src/lstate.c \
+dep/lua-5.4.3/src/lstring.c \
+dep/lua-5.4.3/src/lstrlib.c \
+dep/lua-5.4.3/src/ltable.c \
+dep/lua-5.4.3/src/ltablib.c \
+dep/lua-5.4.3/src/ltm.c \
+dep/lua-5.4.3/src/lundump.c \
+dep/lua-5.4.3/src/lutf8lib.c \
+dep/lua-5.4.3/src/lvm.c \
+dep/lua-5.4.3/src/lzio.c \
+dep/littlefs/lfs.c \
+dep/littlefs/lfs_util.c \
+dep/tomlc99/toml.c \
+dep/vmp/vmp.c \
 
-DEPS_AS_ARGS +=  \
-\
-"usb/class/midi/device/audiodf_midi.d" \
-"usb/class/midi/usb_protocol_midi.d" \
-"../grid_common/grid_config.d" \
-"../grid_common/grid_cal.d" \
-"../grid_common/grid_ain.d" \
-"../grid_common/grid_asc.d" \
-"../grid_common/grid_math.d" \
-"../grid_common/grid_sys.d" \
-"../grid_common/grid_swsr.d" \
-"../grid_common/grid_allocator.d" \
-"../grid_common/grid_msg.d" \
-"../grid_common/grid_noflash.d" \
-"../grid_common/grid_platform.d" \
-"../grid_common/grid_decode.d" \
-"../grid_common/grid_port.d" \
-"../grid_common/grid_usb.d" \
-"../grid_common/grid_ui.d" \
-"../grid_common/grid_ui_button.d" \
-"../grid_common/grid_ui_encoder.d" \
-"../grid_common/grid_ui_endless.d" \
-"../grid_common/grid_ui_potmeter.d" \
-"../grid_common/grid_ui_system.d" \
-"../grid_common/grid_ui_lcd.d" \
-"../grid_common/grid_module.d" \
-"../grid_common/grid_lua.d" \
-"../grid_common/grid_lua_api.d" \
-"../grid_common/grid_transport.d" \
-"../grid_common/grid_rollid.d" \
-"../grid_common/grid_utask.d" \
-"grid/d51/grid_d51.d" \
-"grid/d51/grid_d51_led.d" \
-"grid/d51/grid_d51_littlefs.d" \
-"grid/d51/grid_d51_littlefs_api.d" \
-"grid/d51/grid_d51_uart.d" \
-"grid/d51/grid_d51_usb.d" \
-"grid/d51/grid_d51_nvm.d" \
-"../grid_common/grid_led.d" \
-"../grid_common/grid_littlefs.d" \
-"grid/d51/grid_d51_module.d" \
-"grid/d51/grid_d51_adc.d" \
-"grid/d51/grid_d51_encoder.d" \
-"grid/grid_d51_module_bu16.d" \
-"grid/grid_d51_module_en16.d" \
-"grid/grid_d51_module_pbf4.d" \
-"grid/grid_d51_module_po16.d" \
-"grid/grid_d51_module_ef44.d" \
-"../grid_common/grid_protocol.d" \
-"grid/d51/grid_d51_lua.d" \
-"../grid_common/lua-5.4.3/src/dirent.d" \
-"../grid_common/lua-5.4.3/src/lapi.d" \
-"../grid_common/lua-5.4.3/src/lctype.d" \
-"../grid_common/lua-5.4.3/src/lfunc.d" \
-"../grid_common/lua-5.4.3/src/lmathlib.d" \
-"../grid_common/lua-5.4.3/src/loslib.d" \
-"../grid_common/lua-5.4.3/src/ltable.d" \
-"../grid_common/lua-5.4.3/src/lundump.d" \
-"../grid_common/lua-5.4.3/src/lauxlib.d" \
-"../grid_common/lua-5.4.3/src/ldblib.d" \
-"../grid_common/lua-5.4.3/src/lgc.d" \
-"../grid_common/lua-5.4.3/src/lmem.d" \
-"../grid_common/lua-5.4.3/src/lparser.d" \
-"../grid_common/lua-5.4.3/src/ltablib.d" \
-"../grid_common/lua-5.4.3/src/lutf8lib.d" \
-"../grid_common/lua-5.4.3/src/lbaselib.d" \
-"../grid_common/lua-5.4.3/src/ldebug.d" \
-"../grid_common/lua-5.4.3/src/linit.d" \
-"../grid_common/lua-5.4.3/src/loadlib.d" \
-"../grid_common/lua-5.4.3/src/lstate.d" \
-"../grid_common/lua-5.4.3/src/ltm.d" \
-"../grid_common/lua-5.4.3/src/lvm.d" \
-"../grid_common/lua-5.4.3/src/lcode.d" \
-"../grid_common/lua-5.4.3/src/ldo.d" \
-"../grid_common/lua-5.4.3/src/liolib.d" \
-"../grid_common/lua-5.4.3/src/lobject.d" \
-"../grid_common/lua-5.4.3/src/lstring.d" \
-"../grid_common/lua-5.4.3/src/lzio.d" \
-"../grid_common/lua-5.4.3/src/llex.d" \
-"../grid_common/lua-5.4.3/src/lopcodes.d" \
-"../grid_common/lua-5.4.3/src/ldump.d" \
-"../grid_common/lua-5.4.3/src/lstrlib.d" \
-"../grid_common/lua-5.4.3/src/lcorolib.d" \
-"../grid_common/littlefs/lfs.d" \
-"../grid_common/littlefs/lfs_util.d" \
-"../grid_common/tomlc99/toml.d" \
-"grid/vmp/vmp_def.d" \
-"../vmp/vmp.d" \
+COM_OBJ_DIRS = \
+build/common/src/c \
+build/common/dep/littlefs \
+build/common/dep/lua-5.4.3/src \
+build/common/dep/tomlc99 \
+build/common/dep/vmp \
 
-# "../grid_common/lua-5.4.3/src/luac.d" \
-# "../grid_common/lua-5.4.3/src/lua.d" \
+$(COM_OBJ_DIRS): ; mkdir -p $@
+
+COM_OBJ_DIR = build/common
+$(COM_OBJ_DIR): $(COM_OBJ_DIRS)
+COM_OBJS = $(COM_SRCS:%.c=$(COM_OBJ_DIR)/%.o)
+
+$(COM_OBJ_DIR)/%.o: $(COM_SRC_DIR)/%.c | $(COM_OBJ_DIR)
+	$(CC) -x c -mthumb \
+	$(GRID_DEFINES) \
+	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
+	$(COM_INC_DIR) \
+	-MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -o "$@" "$<"
+
+OBJS_AS_ARGS += $(COM_SRCS:%.c=$(COM_OBJ_DIR)/%.o)
 
 ################################################################################
 # Automatically-generated file. Do not edit!
@@ -342,7 +197,6 @@ endif
 
 # List the subdirectories for creating object files
 SUB_DIRS +=  \
- \
 hpl/adc \
 usb/class/cdc/device \
 hpl/ramecc \
@@ -607,6 +461,8 @@ DIR_INCLUDES +=  \
 -I"../CMSIS/Core/Include" \
 -I"../samd51a/include"
 
+D51_INC_DIR += $(DIR_INCLUDES)
+
 # List the dependency files
 DEPS := $(OBJS:%.o=%.d)
 
@@ -706,7 +562,7 @@ all: $(SUB_DIRS) $(OUTPUT_FILE_PATH)
 
 # Linker target
 
-$(OUTPUT_FILE_PATH): $(OBJS)
+$(OUTPUT_FILE_PATH): $(COM_OBJS) $(D51_OBJS) $(OBJS) | $(COM_OBJ_DIR) $(D51_OBJ_DIR)
 	@echo Building target: $@
 	@echo Invoking: ARM/GNU Linker
 	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -o $(OUTPUT_FILE_NAME).elf $(OBJS_AS_ARGS) -Wl,--start-group -lm -Wl,--end-group -mthumb \
@@ -730,15 +586,12 @@ $(OUTPUT_FILE_PATH): $(OBJS)
 
 # Compiler targets
 
-
-
-
 %.o: %.c
 	@echo Building file: $<
 	@echo ARM/GNU C Compiler
 	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb $(GRID_DEFINES) -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
-$(DIR_INCLUDES) \
+$(DIR_INCLUDES) $(COM_INC_DIR) $(D51_INC_DIR) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
 	@echo Finished building: $<
 
@@ -747,7 +600,7 @@ $(DIR_INCLUDES) \
 	@echo ARM/GNU Assembler
 	$(QUOTE)arm-none-eabi-as$(QUOTE) -x c -mthumb $(GRID_DEFINES) -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
-$(DIR_INCLUDES) \
+$(DIR_INCLUDES) $(COM_INC_DIR) $(D51_INC_DIR) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
 	@echo Finished building: $<
 
@@ -756,7 +609,7 @@ $(DIR_INCLUDES) \
 	@echo ARM/GNU Preprocessing Assembler
 	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb $(GRID_DEFINES) -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 -D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
-$(DIR_INCLUDES) \
+$(DIR_INCLUDES) $(COM_INC_DIR) $(D51_INC_DIR) \
 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
 	@echo Finished building: $<
 
@@ -789,5 +642,4 @@ debug_post:
 release: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
 release: GRID_DEFINES = -DGRID_BUILD_RELEASE
 release_post:
-	mkdir -p ./../../binary
-	python3 ./uf2conv.py -c -b 0x4000 -o ./../../binary/grid_release.uf2 ./$(OUTPUT_FILE_NAME).bin
+	python3 ../../tools/uf2conv/uf2conv.py -c -b 0x4000 -o ./grid_fw.uf2 ./$(OUTPUT_FILE_NAME).bin
