@@ -9,5 +9,5 @@ fi
 
 FILEPATH=$IDF_PATH/components/freertos/config/include/freertos/FreeRTOSConfig.h
 LINENO="10"
-DIRECTIVE="#include \"../../../../../../../../../project/grid_esp/components/grid_esp32_trace/trace_hooks.h\""
+DIRECTIVE="#include \"../../../../../../../../../project/esp32s3/components/grid_esp32_trace/trace_hooks.h\""
 sed -i "${LINENO}i ${DIRECTIVE}" "$FILEPATH"
