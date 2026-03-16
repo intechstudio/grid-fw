@@ -619,6 +619,11 @@ void app_main(void) {
       vmp_flushed = true;
     }
 
+    // Poll touch sensor if OCTV module
+    if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
+      grid_esp32_module_octv_poll_touch();
+    }
+
     // Run microtasks
     grid_esp32_utask_led(&timer_led);
 

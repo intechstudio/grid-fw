@@ -5,6 +5,7 @@
  */
 
 #include "grid_esp32_touch.h"
+#include "bb_captouch.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -14,13 +15,12 @@
 DRAM_ATTR struct grid_esp32_touch_model grid_esp32_touch_state;
 
 static struct grid_esp32_touch_model* touch_ptr = NULL;
+static BBCapTouch bbc;
 
 static void IRAM_ATTR grid_esp32_touch_int_handler(void* arg) {
   struct grid_esp32_touch_model* touch = (struct grid_esp32_touch_model*)arg;
-  ets_printf("OCTV touch INT\r\n");
-  if (touch->process_touch) {
-    touch->process_touch();
-  }
+  touch->int_pending = true;
+  ets_printf("INT\r\n");
 }
 
 void grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset_gpio, gpio_num_t int_gpio, uint32_t i2c_freq_hz,
@@ -35,37 +35,38 @@ void grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
   touch->i2c_freq_hz = i2c_freq_hz;
   touch->process_touch = process_touch;
 
-  // RESET: drive high before gpio_reset_pin to avoid floating the pin
-  gpio_set_direction(touch->reset_gpio, GPIO_MODE_OUTPUT);
-  gpio_set_level(touch->reset_gpio, 1);
+  // Apply pull-ups to all sensor pins before reset — no external resistors on this board.
+  // Must happen before the reset pulse so SDA/SCL are not floating during sensor boot.
+  gpio_reset_pin(touch->scl_gpio);
+  gpio_pullup_en(touch->scl_gpio);
+  gpio_reset_pin(touch->sda_gpio);
+  gpio_pullup_en(touch->sda_gpio);
+  gpio_reset_pin(touch->int_gpio);
+  gpio_pullup_en(touch->int_gpio);
+
+  // RESET: active-low reset pulse
   gpio_reset_pin(touch->reset_gpio);
   gpio_set_direction(touch->reset_gpio, GPIO_MODE_OUTPUT);
-  gpio_set_level(touch->reset_gpio, 1);
+  gpio_set_level(touch->reset_gpio, 0);  // assert reset
+  vTaskDelay(pdMS_TO_TICKS(10));
+  gpio_set_level(touch->reset_gpio, 1);  // deassert reset
+  vTaskDelay(pdMS_TO_TICKS(250));        // wait for sensor boot
 
-  vTaskDelay(pdMS_TO_TICKS(150));
-
-  // INT: input with pull-up, falling edge interrupt (active low)
-  gpio_reset_pin(touch->int_gpio);
+  // INT: falling edge interrupt (pull-up already set above)
   gpio_set_direction(touch->int_gpio, GPIO_MODE_INPUT);
-  gpio_set_pull_mode(touch->int_gpio, GPIO_PULLUP_ONLY);
   gpio_set_intr_type(touch->int_gpio, GPIO_INTR_NEGEDGE);
   gpio_install_isr_service(0);
   gpio_isr_handler_add(touch->int_gpio, grid_esp32_touch_int_handler, touch);
   gpio_intr_enable(touch->int_gpio);
 
-  // I2C master
-  gpio_reset_pin(touch->scl_gpio);
-  gpio_reset_pin(touch->sda_gpio);
-  i2c_config_t conf = {
-      .mode             = I2C_MODE_MASTER,
-      .sda_io_num       = touch->sda_gpio,
-      .scl_io_num       = touch->scl_gpio,
-      .sda_pullup_en    = GPIO_PULLUP_ENABLE,
-      .scl_pullup_en    = GPIO_PULLUP_ENABLE,
-      .master.clk_speed = touch->i2c_freq_hz,
-  };
-  i2c_param_config(touch->i2c_port, &conf);
-  i2c_driver_install(touch->i2c_port, I2C_MODE_MASTER, 0, 0, 0);
+  // I2C + MXT144 init — i2c_param_config will reconfigure SCL/SDA with pull-ups enabled
+  int rc = bbc.init(touch->sda_gpio, touch->scl_gpio, touch->i2c_freq_hz);
+  if (rc == CT_SUCCESS) {
+    ets_printf("MXT144 init OK\r\n");
+    touch->int_pending = true; // drain any messages queued during init
+  } else {
+    ets_printf("MXT144 init FAILED\r\n");
+  }
 }
 
 void grid_esp32_touch_scan(struct grid_esp32_touch_model* touch) {
@@ -87,4 +88,14 @@ void grid_esp32_touch_scan(struct grid_esp32_touch_model* touch) {
   if (found == 0) {
     ets_printf("  no devices found\r\n");
   }
+}
+
+int grid_esp32_touch_get_samples(struct grid_esp32_touch_model* touch, TOUCHINFO* pTI) {
+  (void)touch;
+  return bbc.getSamples(pTI);
+}
+
+void grid_esp32_touch_diagnostic(struct grid_esp32_touch_model* touch) {
+  (void)touch;
+  bbc.dumpDiagnostic();
 }
