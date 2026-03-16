@@ -23,15 +23,8 @@
 #else
 #define INPUT 0
 #define OUTPUT 1
-#define INPUT_PULLUP 2
-#define LOW 0
-#define HIGH 1
 #include "driver/gpio.h"
 #include "driver/i2c.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-static inline void delay(uint32_t ms) { vTaskDelay(pdMS_TO_TICKS(ms)); }
-static inline int digitalRead(uint8_t pin) { return (int)gpio_get_level((gpio_num_t)pin); }
 #endif // ARDUINO
 
 #ifndef __BB_CAPTOUCH__
@@ -215,11 +208,7 @@ class BBCapTouch
 public:
     BBCapTouch() { _iOrientation = 0; _iType = CT_TYPE_UNKNOWN;}
 //    ~BBCapTouch() { Wire.end(); }
-#ifdef ARDUINO
     ~BBCapTouch() { myWire->end(); }
-#else
-    ~BBCapTouch() {}
-#endif
 
 #ifdef ARDUINO
     int init(int iConfigName);

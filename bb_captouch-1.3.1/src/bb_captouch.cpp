@@ -14,9 +14,6 @@
 // limitations under the License.
 //===========================================================================
 #include "bb_captouch.h"
-#ifndef ARDUINO
-#include "rom/ets_sys.h"
-#endif
 
 static const BBCT_CONFIG _configs[] = {
        // sda, scl, irq, rst
@@ -55,8 +52,8 @@ void BBCapTouch::pinMode(uint8_t u8Pin, uint8_t u8Mode)
     io_conf.intr_type = GPIO_INTR_DISABLE; //disable interrupt
     //bit mask of the pins that you want to set,e.g.GPIO18/19
     io_conf.pin_bit_mask = (1 << u8Pin);
-    io_conf.pull_down_en = (gpio_pulldown_t)0; //disable pull-down mode
-    io_conf.pull_up_en = (gpio_pullup_t)0; //disable pull-up mode
+    io_conf.pull_down_en = 0; //disable pull-down mode
+    io_conf.pull_up_en = 0; //disable pull-up mode
     if (u8Mode == INPUT) {
         io_conf.mode = GPIO_MODE_INPUT;
     } else { // must be output
@@ -66,7 +63,7 @@ void BBCapTouch::pinMode(uint8_t u8Pin, uint8_t u8Mode)
 } /* pinMode() */
 void BBCapTouch::digitalWrite(uint8_t u8Pin, uint8_t u8State)
 {
-    gpio_set_level((gpio_num_t)u8Pin, u8State);
+    gpio_set_level(u8Pin, u8State);
 } /* digitalWrite() */
 #endif // !ARDUINO
 void BBCapTouch::reset(int iRST)
@@ -158,13 +155,14 @@ uint8_t ucTemp[4];
     myWire->setClock(u32Speed);
     myWire->setTimeout(1000);
 #else
-    i2c_config_t conf = {};
-    conf.mode = I2C_MODE_MASTER;
-    conf.sda_io_num = iSDA;
-    conf.scl_io_num = iSCL;
-    conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.master.clk_speed = u32Speed;
+    i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = iSDA,
+        .scl_io_num = iSCL,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = u32Speed,
+    };
     i2c_driver_delete(I2C_NUM_0); // remove driver (if installed)
     i2c_param_config(I2C_NUM_0, &conf); // configure I2C device 0
     i2c_driver_install(I2C_NUM_0, conf.mode, 0, 0, 0); // configure with no send or receive buffers
@@ -215,7 +213,7 @@ uint8_t ucTemp[4];
         delay(20);
         I2CRead(_iAddr, (uint8_t *)&bl_data, sizeof(bl_data));
        } while (bl_data.bl_status & 0x10 && tries++ < 10); // while bootloader mode
-       if (tries >= 10) ets_printf("bootloader mode timed out\r\n");
+       if (tries >= 10) Serial.println("bootloader mode timed out");
        // set OP mode
        ucTemp[0] = 0;
        ucTemp[1] = 0; // start op mode
@@ -297,7 +295,6 @@ uint8_t ucTemp[4];
 } /* init() */
 
 // Initialize the touch controller from a pre-defined configuration name
-#ifdef ARDUINO
 int BBCapTouch::init(int iConfigName)
 {
 const BBCT_CONFIG *pC = &_configs[iConfigName];
@@ -347,7 +344,6 @@ const BBCT_CONFIG *pC = &_configs[iConfigName];
                400000);
 #endif
 } /* init() */
-#endif // ARDUINO
 //
 // Test if an I2C device is monitoring an address
 // return true if it responds, false if no response
@@ -413,7 +409,7 @@ int BBCapTouch::I2CReadRegister16(uint8_t u8Addr, uint16_t u16Register, uint8_t 
         ucTemp[0] = (uint8_t)(u16Register>>8); // high byte
         ucTemp[1] = (uint8_t)u16Register; // low byte
     }
-    rc = i2c_master_write_read_device(I2C_NUM_0, u8Addr, ucTemp, 2, pData, iLen, 100);
+    i2c_master_write_read_device(I2C_NUM_0, u8Addr, ucTemp, 2, pData, iLen, 100);
     if (rc == ESP_OK) {
             i = iLen;
     }

@@ -37,7 +37,6 @@ struct grid_esp32_touch_model {
   gpio_num_t int_gpio;
   uint32_t i2c_freq_hz;
   grid_process_touch_t process_touch;
-  volatile bool int_pending;
 };
 
 extern struct grid_esp32_touch_model grid_esp32_touch_state;
@@ -48,7 +47,6 @@ void grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
 void grid_esp32_touch_scan(struct grid_esp32_touch_model* touch);
 
 int grid_esp32_touch_get_samples(struct grid_esp32_touch_model* touch, TOUCHINFO* pTI);
-void grid_esp32_touch_diagnostic(struct grid_esp32_touch_model* touch);
 
 #ifdef __cplusplus
 }

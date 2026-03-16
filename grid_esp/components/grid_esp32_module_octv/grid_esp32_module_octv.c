@@ -49,16 +49,10 @@ static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
 
 void grid_esp32_module_octv_poll_touch(void) {
   TOUCHINFO ti = {};
-  if (grid_esp32_touch_get_samples(&grid_esp32_touch_state, &ti) && ti.count > 0) {
-    for (int i = 0; i < ti.count; i++) {
-      ets_printf("touch[%d] x=%d y=%d area=%d\r\n", i, ti.x[i], ti.y[i], ti.area[i]);
-    }
-  }
-
-  static uint32_t diag_counter = 0;
-  if (++diag_counter >= 500) {
-    diag_counter = 0;
-    grid_esp32_touch_diagnostic(&grid_esp32_touch_state);
+  int rc = grid_esp32_touch_get_samples(&grid_esp32_touch_state, &ti);
+  ets_printf("touch rc=%d count=%d\r\n", rc, ti.count);
+  for (int i = 0; i < ti.count; i++) {
+    ets_printf("  [%d] x=%d y=%d area=%d\r\n", i, ti.x[i], ti.y[i], ti.area[i]);
   }
 }
 
@@ -95,7 +89,6 @@ void grid_esp32_module_octv_init(struct grid_sys_model* sys, struct grid_ui_mode
                                  struct grid_cal_model* cal) {
 
   grid_esp32_touch_init(&grid_esp32_touch_state, OCTV_I2C_PORT, OCTV_I2C_SCL_GPIO, OCTV_I2C_SDA_GPIO, OCTV_SENSOR_RESET_GPIO, OCTV_SENSOR_INT_GPIO, OCTV_I2C_FREQ_HZ, NULL);
-  grid_esp32_touch_scan(&grid_esp32_touch_state);
 
   ui_ptr = ui;
 
