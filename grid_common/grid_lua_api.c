@@ -68,6 +68,7 @@
   // If there is any content to encode
   if (msg_len > 0) {
 
+    grid_platform_printf("LUA: %s\r\n", message);
     grid_port_debug_print_text(message);
   }
 
