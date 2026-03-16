@@ -840,10 +840,7 @@ static bool grid_ui_bulk_queue_with_state(struct grid_ui_model* ui, fn_prthread_
 
 bool grid_ui_bulk_start_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
-  if (grid_ui_bulk_in_progress(ui)) {
-    return false;
-  }
-
+  assert(!grid_ui_bulk_in_progress(ui));
   assert(grid_ui_bulk_queue_with_state(ui, next, page, lastheader_id, success_cb));
 
   return true;
@@ -899,13 +896,14 @@ void grid_ui_bulk_process(struct grid_ui_model* ui) {
   // Protothread requires no further execution
   if (status >= PT_EXITED) {
 
+    // Unset currently executing protothread before calling success callback,
+    // so that the callback can queue a new bulk operation via bulk_start_with_state
+    ui->bulk_curr = NULL;
+
     // Protothread reached its end (instead of exiting early)
     if (status == PT_ENDED) {
       grid_ui_bulk_handle_success_cb(ui);
     }
-
-    // Unset currently executing protothread
-    ui->bulk_curr = NULL;
 
     // There are no more protohreads waiting to be executed
     if (!grid_ui_bulk_in_waiting(ui)) {
