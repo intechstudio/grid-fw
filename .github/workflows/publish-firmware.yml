@@ -1,7 +1,7 @@
 name: Publish firmware
 
 on:
-  #push:
+  push:
   workflow_dispatch:
 
 permissions:
