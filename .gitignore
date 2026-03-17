@@ -32,6 +32,7 @@
 !esp32s3
 !grid_gui
 !rp2040
+!test
 !tools
 
 !d51_build.sh
@@ -59,3 +60,4 @@
 !pre_commit.sh
 !README.md
 !stylua.toml
+!test.sh
