@@ -1,7 +1,7 @@
 name: Build and run unit tests
 
 on:
-  workflow-call:
+  workflow_call:
 
 jobs:
   unit-testing:
