@@ -1,0 +1,23 @@
+name: Build and run unit tests
+
+on:
+  workflow-call:
+
+jobs:
+  unit-testing:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Clang setup
+        uses: egor-tensin/setup-clang
+        with:
+          version: latest
+          platform: x64
+
+      - name: Run unit tests
+        run: ./lua_build.sh && ./test.sh

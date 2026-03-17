@@ -1,7 +1,7 @@
 name: Publish firmware
 
 on:
-  push:
+  #push:
   workflow_dispatch:
 
 permissions:
@@ -33,3 +33,7 @@ jobs:
     with:
       product_name: "grid"
     secrets: inherit
+
+  unit-testing:
+    name: Build and run unit tests
+    uses: ./.github/workflows/build-and-run-unit-tests.yml
