@@ -47,4 +47,4 @@ $(BUILD_DIR)/test: $(OBJS) $(DEPS) | $(BUILD_DIRS)
 .PHONY: all
 all: $(BUILD_DIR)/test
 
-#include $(DEPS)
+include $(DEPS)
