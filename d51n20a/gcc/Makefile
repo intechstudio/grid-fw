@@ -47,13 +47,21 @@ D51_OBJ_DIR = build/grid
 $(D51_OBJ_DIR): $(D51_OBJ_DIRS)
 D51_OBJS = $(D51_SRCS:%.c=$(D51_OBJ_DIR)/%.o)
 
-$(D51_OBJ_DIR)/%.o: $(D51_SRC_DIR)/%.c $(D51_OBJ_DIR)/%.d| $(D51_OBJ_DIR)
+$(D51_OBJ_DIR)/%.d: $(D51_SRC_DIR)/%.c | $(D51_OBJ_DIR)
 	$(CC) -x c -mthumb \
 	$(GRID_DEFINES) \
 	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 	$(D51_INC_DIR) \
-	-MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -o "$@" "$<"
+	-MD -MP -MF "$(@:%.c=%.d)" -MT"$(@:%.c=%.d)" -MT"$(@:%.c=%.o)" "$<"
+
+$(D51_OBJ_DIR)/%.o: $(D51_SRC_DIR)/%.c $(D51_OBJ_DIR)/%.d | $(D51_OBJ_DIR)
+	$(CC) -x c -mthumb \
+	$(GRID_DEFINES) \
+	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
+	$(D51_INC_DIR) \
+	-o "$@" "$<"
 
 OBJS += $(D51_SRCS:%.c=$(D51_OBJ_DIR)/%.o)
 OBJS_AS_ARGS += $(D51_SRCS:%.c=$(D51_OBJ_DIR)/%.o)
@@ -157,13 +165,21 @@ COM_OBJ_DIR = build/common
 $(COM_OBJ_DIR): $(COM_OBJ_DIRS)
 COM_OBJS = $(COM_SRCS:%.c=$(COM_OBJ_DIR)/%.o)
 
-$(COM_OBJ_DIR)/%.o: $(COM_SRC_DIR)/%.c $(COM_OBJ_DIR)/%.d| $(COM_OBJ_DIR)
+$(COM_OBJ_DIR)/%.d: $(COM_SRC_DIR)/%.c | $(COM_OBJ_DIR)
 	$(CC) -x c -mthumb \
 	$(GRID_DEFINES) \
 	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 	$(COM_INC_DIR) \
-	-MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -o "$@" "$<"
+	-MD -MP -MF "$(@:%.c=%.d)" -MT"$(@:%.c=%.d)" -MT"$(@:%.c=%.o)" "$<"
+
+$(COM_OBJ_DIR)/%.o: $(COM_SRC_DIR)/%.c $(COM_OBJ_DIR)/%.d | $(COM_OBJ_DIR)
+	$(CC) -x c -mthumb \
+	$(GRID_DEFINES) \
+	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
+	$(COM_INC_DIR) \
+	-o "$@" "$<"
 
 OBJS += $(COM_SRCS:%.c=$(COM_OBJ_DIR)/%.o)
 OBJS_AS_ARGS += $(COM_SRCS:%.c=$(COM_OBJ_DIR)/%.o)
@@ -641,7 +657,7 @@ debug_post:
 	arm-none-eabi-gdb -iex "target extended-remote localhost:3333" $(OUTPUT_FILE_NAME).elf
 
 # ================== RELEASE FOR AUTOMATION =================
-release: $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
+release: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
 release: GRID_DEFINES = -DGRID_BUILD_RELEASE
 release_post:
 	python3 ../../tools/uf2conv/uf2conv.py -c -b 0x4000 -o ./grid_fw.uf2 ./$(OUTPUT_FILE_NAME).bin
