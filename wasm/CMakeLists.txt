@@ -10,6 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}/../common/dep/tinyalloc)
 include_directories(${CMAKE_SOURCE_DIR}/../esp32s3/components/grid_esp32_lcd)
 
 list(APPEND SRC_FILES ${CMAKE_SOURCE_DIR}/main.c)
+list(APPEND SRC_FILES ${CMAKE_SOURCE_DIR}/platform.c)
 
 set(COMMON_SRC ${CMAKE_SOURCE_DIR}/../common/src/c)
 list(APPEND SRC_FILES ${COMMON_SRC}/grid_lua.c)
