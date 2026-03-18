@@ -537,7 +537,7 @@ void app_main(void) {
   log_checkpoint("LOAD PAGE ZERO");
 
   // Load page zero
-  assert(grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL));
+  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL);
   grid_ui_bulk_flush(&grid_ui_state);
 
   log_checkpoint("PORT TASK INIT");

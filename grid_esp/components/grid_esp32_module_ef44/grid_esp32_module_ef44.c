@@ -100,7 +100,7 @@ void grid_esp32_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_mode
     }
   }
 
-  assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));
+  grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL);
   grid_ui_bulk_flush(ui);
 
   uint8_t transfer_length = 1 + GRID_MODULE_EF44_ENCODER_COUNT / 2;

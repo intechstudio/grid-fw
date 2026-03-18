@@ -831,9 +831,11 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
     uint8_t page = grid_ui_page_get_activepage(&grid_ui_state);
     void (*cb)(uint8_t) = &grid_protocol_nvm_read_success_callback;
 
-    if (grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_read, page, id, cb)) {
+    if (grid_ui_bulk_in_progress(&grid_ui_state)) {
       return 1;
     }
+
+    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_read, page, id, cb);
 
     // Start animation (will be stopped in the callback function)
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);
@@ -901,9 +903,11 @@ uint8_t grid_decode_pagestore_to_ui(char* header, char* chunk) {
     uint8_t page = grid_ui_page_get_activepage(&grid_ui_state);
     void (*cb)(uint8_t) = &grid_protocol_nvm_store_success_callback;
 
-    if (grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_store, page, id, cb)) {
+    if (grid_ui_bulk_in_progress(&grid_ui_state)) {
       return 1;
     }
+
+    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_store, page, id, cb);
 
     // Start animation (will be stopped in the callback function)
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);
@@ -971,9 +975,11 @@ uint8_t grid_decode_pageclear_to_ui(char* header, char* chunk) {
     uint8_t page = grid_ui_page_get_activepage(&grid_ui_state);
     void (*cb)(uint8_t) = &grid_protocol_nvm_clear_success_callback;
 
-    if (grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_clear, page, id, cb)) {
+    if (grid_ui_bulk_in_progress(&grid_ui_state)) {
       return 1;
     }
+
+    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_clear, page, id, cb);
 
     // Start animation (will be stopped in the callback function)
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);
@@ -1036,9 +1042,11 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
 
     void (*cb)(uint8_t) = &grid_protocol_nvm_erase_success_callback;
 
-    if (grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_nvm_erase, 0, id, cb)) {
+    if (grid_ui_bulk_in_progress(&grid_ui_state)) {
       return 1;
     }
+
+    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_nvm_erase, 0, id, cb);
 
     // Start animation (will be stopped in the callback function)
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);

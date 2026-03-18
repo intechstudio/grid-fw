@@ -821,12 +821,9 @@ bool grid_ui_bulk_operation_known(fn_prthread_bulk_t fn) {
   return true;
 }
 
-static bool grid_ui_bulk_queue_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
+static void grid_ui_bulk_queue_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
-  if (!grid_swsr_writable(&ui->bulk, sizeof(fn_prthread_bulk_t))) {
-    return false;
-  }
-
+  assert(grid_swsr_writable(&ui->bulk, sizeof(fn_prthread_bulk_t)));
   assert(grid_ui_bulk_operation_known(next));
 
   ui->bulk_last_page = page;
@@ -834,16 +831,12 @@ static bool grid_ui_bulk_queue_with_state(struct grid_ui_model* ui, fn_prthread_
   ui->bulk_success_callback = success_cb;
 
   grid_swsr_write(&ui->bulk, &next, sizeof(fn_prthread_bulk_t));
-
-  return true;
 }
 
-bool grid_ui_bulk_start_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
+void grid_ui_bulk_start_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
   assert(!grid_ui_bulk_in_progress(ui));
-  assert(grid_ui_bulk_queue_with_state(ui, next, page, lastheader_id, success_cb));
-
-  return true;
+  grid_ui_bulk_queue_with_state(ui, next, page, lastheader_id, success_cb);
 }
 
 bool grid_ui_bulk_in_waiting(struct grid_ui_model* ui) { return grid_swsr_readable(&ui->bulk, sizeof(fn_prthread_bulk_t)); }

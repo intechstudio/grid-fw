@@ -204,7 +204,7 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui);
 
 void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui);
 
-bool grid_ui_bulk_start_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
+void grid_ui_bulk_start_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 bool grid_ui_bulk_in_progress(struct grid_ui_model* ui);
 void grid_ui_bulk_process(struct grid_ui_model* ui);
 void grid_ui_bulk_flush(struct grid_ui_model* ui);

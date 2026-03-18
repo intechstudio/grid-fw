@@ -70,7 +70,7 @@ void grid_d51_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_model*
     }
   }
 
-  assert(grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_read, 0, 0, NULL));
+  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_read, 0, 0, NULL);
   grid_ui_bulk_flush(&grid_ui_state);
 
   uint8_t transfer_length = GRID_MODULE_EF44_ENCODER_COUNT / 2; // D51 encoder is on separate bus from HWCFG

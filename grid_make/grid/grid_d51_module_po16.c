@@ -49,7 +49,7 @@ void grid_d51_module_po16_init(struct grid_sys_model* sys, struct grid_ui_model*
     }
   }
 
-  assert(grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_read, 0, 0, NULL));
+  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_read, 0, 0, NULL);
   grid_ui_bulk_flush(&grid_ui_state);
 
   grid_d51_adc_init(adc, 0b11111111, po16_process_analog);
