@@ -1866,7 +1866,9 @@ int l_grid_cat(lua_State* L) {
 
   grid_cal_reset(&grid_cal_state);
 
-  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_erase, 0, 0, NULL);
+  if (!grid_ui_bulk_in_progress(&grid_ui_state)) {
+    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_erase, 0, 0, NULL);
+  }
 
   return 0;
 }
@@ -2083,7 +2085,9 @@ int l_grid_calibration_set(lua_State* L, enum grid_cal_type type) {
     }
   }
 
-  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_store, 0, 0, NULL);
+  if (!grid_ui_bulk_in_progress(&grid_ui_state)) {
+    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_conf_store, 0, 0, NULL);
+  }
 
   return 0;
 }

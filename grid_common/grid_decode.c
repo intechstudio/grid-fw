@@ -302,6 +302,10 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
       return 0;
     }
 
+    if (grid_ui_bulk_in_progress(&grid_ui_state)) {
+      return 0;
+    }
+
     grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, page, 0, NULL);
     grid_sys_set_bank(&grid_sys_state, page);
 
@@ -323,6 +327,10 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
 
     // Page negotiated, disable feature from now on
     grid_ui_state.page_negotiated = true;
+
+    if (grid_ui_bulk_in_progress(&grid_ui_state)) {
+      return 0;
+    }
 
     grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, page, 0, NULL);
     grid_sys_set_bank(&grid_sys_state, page);
