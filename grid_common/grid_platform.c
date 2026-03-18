@@ -279,3 +279,8 @@ void* grid_platform_readdir(void* dirp) {
 
   return grid_littlefs_readdir(LFS, dirp);
 }
+
+int grid_platform_readdir_type(void) {
+
+  return grid_littlefs_readdir_type();
+}

@@ -36,6 +36,7 @@ extern void* grid_platform_opendir(const char* name);
 extern int grid_platform_closedir(void* dirp);
 
 extern void* grid_platform_readdir(void* dirp);
+extern int grid_platform_readdir_type(void);
 
 extern void grid_platform_printf(char const* fmt, ...);
 
