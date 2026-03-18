@@ -139,7 +139,8 @@
 #endif				/* } */
 /* }================================================================== */
 
-#define l_remove(f) grid_platform_remove(f)
+#define l_remove(f)        grid_platform_remove(f)
+#define l_rename(f, t)     grid_platform_rename(f, t)
 
 
 
@@ -166,7 +167,7 @@ static int os_remove (lua_State *L) {
 static int os_rename (lua_State *L) {
   const char *fromname = luaL_checkstring(L, 1);
   const char *toname = luaL_checkstring(L, 2);
-  return luaL_fileresult(L, rename(fromname, toname) == 0, NULL);
+  return luaL_fileresult(L, l_rename(fromname, toname) == 0, NULL);
 }
 
 

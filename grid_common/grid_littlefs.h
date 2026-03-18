@@ -12,6 +12,7 @@ int grid_littlefs_mkdir_base(lfs_t* lfs, const char* path);
 int grid_littlefs_path_build(const char* path, uint16_t out_size, char* out);
 
 int grid_littlefs_remove(lfs_t* lfs, const char* path);
+int grid_littlefs_rename(lfs_t* lfs, const char* oldpath, const char* newpath);
 
 int grid_littlefs_mkdir(lfs_t* lfs, const char* path);
 int grid_littlefs_rmdir(lfs_t* lfs, const char* path);

@@ -29,6 +29,7 @@ extern int grid_platform_ungetc(int c, void* stream);
 extern int grid_platform_fflush(void* stream);
 
 extern int grid_platform_remove(const char* pathname);
+extern int grid_platform_rename(const char* oldpath, const char* newpath);
 
 extern void* grid_platform_opendir(const char* name);
 

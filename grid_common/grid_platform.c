@@ -252,6 +252,13 @@ int grid_platform_remove(const char* pathname) {
   return grid_littlefs_remove(LFS, pathname) == 0 ? 0 : -1;
 }
 
+int grid_platform_rename(const char* oldpath, const char* newpath) {
+
+  assert(LFS);
+
+  return grid_littlefs_rename(LFS, oldpath, newpath) == 0 ? 0 : -1;
+}
+
 void* grid_platform_opendir(const char* name) {
 
   assert(LFS);

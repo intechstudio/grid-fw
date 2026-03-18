@@ -30,8 +30,24 @@ static int dirent_dir(lua_State* L) {
 	return 1;
 }
 
+static int dirent_mkdir(lua_State* L) {
+
+	const char* path = luaL_checkstring(L, 1);
+
+	int result = grid_platform_make_directory(path);
+	if (result != 0) {
+		lua_pushboolean(L, 0);
+		lua_pushstring(L, "failed to create directory");
+		return 2;
+	}
+
+	lua_pushboolean(L, 1);
+	return 1;
+}
+
 static const luaL_Reg direntlib[] = {
-	{"dir", dirent_dir},
+	{"dir",   dirent_dir},
+	{"mkdir", dirent_mkdir},
 	{NULL, NULL},
 };
 

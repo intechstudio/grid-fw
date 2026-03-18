@@ -137,9 +137,36 @@ int grid_littlefs_remove(lfs_t* lfs, const char* path) {
   char fpath[LFS_NAME_MAX + 1] = {0};
   grid_littlefs_path_build(path, LFS_NAME_MAX + 1, fpath);
 
-  int lfs_err = lfs_remove(lfs, fpath);
+  struct lfs_info info;
+  int lfs_err = lfs_stat(lfs, fpath, &info);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_remove stat error: %d\n", lfs_err);
+    return 1;
+  }
+
+  if (info.type == LFS_TYPE_DIR) {
+    return grid_littlefs_rmdir(lfs, path);
+  }
+
+  lfs_err = lfs_remove(lfs, fpath);
   if (lfs_err != LFS_ERR_OK) {
     printf("grid_littlefs_remove error: %d\n", lfs_err);
+    return 1;
+  }
+
+  return 0;
+}
+
+int grid_littlefs_rename(lfs_t* lfs, const char* oldpath, const char* newpath) {
+
+  char foldpath[LFS_NAME_MAX + 1] = {0};
+  char fnewpath[LFS_NAME_MAX + 1] = {0};
+  grid_littlefs_path_build(oldpath, LFS_NAME_MAX + 1, foldpath);
+  grid_littlefs_path_build(newpath, LFS_NAME_MAX + 1, fnewpath);
+
+  int lfs_err = lfs_rename(lfs, foldpath, fnewpath);
+  if (lfs_err != LFS_ERR_OK) {
+    printf("grid_littlefs_rename error: %d\n", lfs_err);
     return 1;
   }
 
@@ -190,14 +217,18 @@ int grid_littlefs_rmdir(lfs_t* lfs, const char* path) {
     char path2[LFS_NAME_MAX * 2 + 2] = {0};
     sprintf(path2, "%s/%s", path, info.name);
 
-    char fpath2[LFS_NAME_MAX + 1] = {0};
-    if (grid_littlefs_path_build(path2, LFS_NAME_MAX + 1, fpath2)) {
-      continue;
-    }
+    if (info.type == LFS_TYPE_DIR) {
+      grid_littlefs_rmdir(lfs, path2);
+    } else {
+      char fpath2[LFS_NAME_MAX + 1] = {0};
+      if (grid_littlefs_path_build(path2, LFS_NAME_MAX + 1, fpath2)) {
+        continue;
+      }
 
-    int lfs_err = lfs_remove(lfs, fpath2);
-    if (lfs_err != LFS_ERR_OK) {
-      printf("grid_littlefs_rmdir remove entry error %d\n", lfs_err);
+      int lfs_err = lfs_remove(lfs, fpath2);
+      if (lfs_err != LFS_ERR_OK) {
+        printf("grid_littlefs_rmdir remove entry error %d\n", lfs_err);
+      }
     }
   }
 
