@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import http.server
 import socketserver
 import sys
@@ -14,7 +16,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 try:
     with socketserver.TCPServer(("", PORT), MyHTTPRequestHandler) as httpd:
         print("serving at port", PORT)
-        print("http://localhost:8000/grid_gui/build/index.html")
+        print("http://localhost:8000/wasm/build/index.html")
         httpd.serve_forever()
 except KeyboardInterrupt:
     print("\nCtrl+C detected. Shutting down the server.")

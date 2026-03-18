@@ -27,12 +27,6 @@ RUN mkdir -p pico && \
     cd pico-sdk/ && \
     git submodule update --init
 
-# Install emscripten sdk
-RUN git clone https://github.com/emscripten-core/emsdk.git && \
-    cd emsdk && \
-    ./emsdk install latest && \
-    ./emsdk activate latest
-
 WORKDIR /
 
 ENV PICO_SDK_PATH=/pico/pico-sdk
@@ -47,8 +41,6 @@ WORKDIR /picotool/build
 RUN make && cmake --install .
 
 WORKDIR /
-
-ENV EMSDK=/emsdk EM_CONFIG=/emsdk/.emscripten EMSDK_NODE=/emsdk/node/14.18.2_64bit/bin/node PATH=/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/14.18.2_64bit/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 RUN apt-get update && \
     apt-get install -y socat
@@ -73,5 +65,12 @@ RUN ./patch_esp_efuse_startup.sh
 # Patch FreeRTOSConfig.h
 COPY ./patch_esp_trace_include.sh /
 RUN ./patch_esp_trace_include.sh
+
+# Install emscripten sdk
+RUN git clone --depth 1 https://github.com/emscripten-core/emsdk.git
+RUN cd emsdk && ./emsdk install latest && ./emsdk activate latest
+
+ENV EMSDK=/emsdk EM_CONFIG=/emsdk/.emscripten EMSDK_NODE=/emsdk/node/14.18.2_64bit/bin/node
+ENV PATH=/emsdk:/emsdk/upstream/emscripten:/emsdk/upstream/bin:/emsdk/node/14.18.2_64bit/bin:$PATH
 
 CMD ["bash"]
