@@ -8,6 +8,7 @@ permissions:
   contents: write
   packages: write
   id-token: write
+  pages: write
 
 jobs:
   check-formatting:
