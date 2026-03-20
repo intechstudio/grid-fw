@@ -42,3 +42,9 @@ jobs:
     with:
       product_name: "grid"
     secrets: inherit
+
+  publish-gui:
+    name: Publish wasm gui
+    needs: build-firmware
+    # if: github.ref_name == 'main' || github.ref_name == 'master'
+    uses: ./.github/workflows/publish-wasm-gui.yml
