@@ -18,6 +18,9 @@
 !dep/proto
 !dep/proto/**
 
+!dep/tinyalloc
+!dep/tinyalloc/**
+
 !dep/tomlc99
 !dep/tomlc99/**
 
