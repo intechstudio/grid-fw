@@ -63,9 +63,7 @@ jobs:
           name: nightly_firmware
           path: |
             grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
-            grid_esp32_nightly.uf2
             grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
-            grid_d51_nightly.uf2
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v6
