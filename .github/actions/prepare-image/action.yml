@@ -31,7 +31,6 @@ runs:
         if docker pull ${{ env.image }} ; then
           SHA=$(docker inspect ${{ env.image }} --format '{{ index .Config.Labels "${{ env.label }}" }}')
           git fetch origin "$SHA"
-          git diff $SHA ${{ github.sha }} -- ${{ inputs.dockerfile }}
           if [ -z "$(git diff $SHA ${{ github.sha }} -- ${{ inputs.dockerfile }})" ] ; then
             REBUILD=false
           fi
