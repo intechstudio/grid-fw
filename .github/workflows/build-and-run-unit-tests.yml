@@ -13,11 +13,5 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Clang setup
-        uses: egor-tensin/setup-clang@v1
-        with:
-          version: latest
-          platform: x64
-
       - name: Run unit tests
         run: ./lua_build.sh && ./test.sh
