@@ -42,12 +42,10 @@ jobs:
           docker run -v $PWD:/project -w /project ${{ env.image }} \
           sh -c "./lua_build.sh && ./d51_build.sh"
 
-      - name: Set environment variables
-        run: echo "ACTION_DATE=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
-
-      - name: Set output variables
-        id: set_out
-        run: echo "timestamp=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_OUTPUT
+      - name: Set timestamp in environment and output
+        run: |
+          echo "ACTION_DATE=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
+          echo "timestamp=$ACTION_DATE" >> $GITHUB_OUTPUT
 
       - name: Copy and rename artifacts
         run: |
