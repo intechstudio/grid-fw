@@ -15,20 +15,6 @@ on:
         description: "Build date timestamp"
         required: true
         type: string
-  workflow_dispatch:
-    inputs:
-      product_name:
-        description: "Product name for release naming"
-        required: true
-        type: string
-      version_tag:
-        description: "Git tag version for the release"
-        required: true
-        type: string
-      timestamp:
-        description: "Build date timestamp"
-        required: true
-        type: string
 
 jobs:
   publish-stable:

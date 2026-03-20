@@ -7,12 +7,6 @@ on:
         description: "Product name for release naming"
         required: true
         type: string
-  workflow_dispatch:
-    inputs:
-      product_name:
-        description: "Product name for release naming"
-        required: true
-        type: string
 
 jobs:
   publish-stable:
