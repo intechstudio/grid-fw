@@ -9,8 +9,17 @@ permissions:
   packages: write
 
 jobs:
+  check-formatting:
+    name: Check formatting
+    uses: ./.github/workflows/pre-commit.yml
+
+  unit-testing:
+    name: Build and run unit tests
+    uses: ./.github/workflows/build-and-run-unit-tests.yml
+
   build-firmware:
     name: Build firmware
+    needs: [check-formatting, unit-testing]
     uses: ./.github/workflows/build-and-push-firmware.yml
 
   publish-stable:
@@ -33,7 +42,3 @@ jobs:
     with:
       product_name: "grid"
     secrets: inherit
-
-  unit-testing:
-    name: Build and run unit tests
-    uses: ./.github/workflows/build-and-run-unit-tests.yml
