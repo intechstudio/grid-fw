@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      protocol-repo: benblaise-intech/grid-protocol.git
+      protocol-repo: intechstudio/grid-protocol.git
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -32,7 +32,7 @@ jobs:
           grid-protocol/grid-protocol/lists.py"
 
       - name: Push file to protocol repository
-        #if: github.ref_name == 'main' || github.ref_name == 'master'
+        if: github.ref_name == 'main' || github.ref_name == 'master'
         run: |
           cd grid-protocol
           cat -v src/grid_protocol_bot.json
