@@ -50,3 +50,8 @@ jobs:
     needs: build-firmware
     if: github.ref_name == 'main' || github.ref_name == 'master'
     uses: ./.github/workflows/publish-wasm-gui.yml
+
+  convert-protocol:
+    name: Protocol conversion
+    needs: build-firmware
+    uses: ./.github/workflows/protocol-converter.yml
