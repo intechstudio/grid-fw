@@ -677,6 +677,9 @@
 #define GRID_LUA_FNC_EP_BUTTON_MODE_short "bmo"
 #define GRID_LUA_FNC_EP_BUTTON_MODE_human "button_mode"
 
+#define GRID_LUA_FNC_EP_BUTTON_STEP_short "bstp"
+#define GRID_LUA_FNC_EP_BUTTON_STEP_human "button_step"
+
 #define GRID_LUA_FNC_EP_BUTTON_ELAPSED_index 6
 #define GRID_LUA_FNC_EP_BUTTON_ELAPSED_short "bel"
 #define GRID_LUA_FNC_EP_BUTTON_ELAPSED_human "button_elapsed_time"
