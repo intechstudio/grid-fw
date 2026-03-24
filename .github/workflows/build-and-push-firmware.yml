@@ -56,8 +56,8 @@ jobs:
         run: |
           cp ${{ env.esp-path }}/build/grid_fw.uf2 grid_esp32_release_${{ env.ACTION_DATE }}.uf2
           cp ${{ env.esp-path }}/build/grid_fw.uf2 grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
-          cp ${{ env.d51-path }}/gcc/grid_fw.uf2 grid_d51_release_${{ env.ACTION_DATE }}.uf2
-          cp ${{ env.d51-path }}/gcc/grid_fw.uf2 grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
+          cp ${{ env.d51-path }}/gcc/build/grid_fw.uf2 grid_d51_release_${{ env.ACTION_DATE }}.uf2
+          cp ${{ env.d51-path }}/gcc/build/grid_fw.uf2 grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
           cp .github/workflows/INSTRUCTIONS.txt INSTRUCTIONS.txt
           cp wasm/build/index.html index.html
           cp wasm/build/index.js index.js
