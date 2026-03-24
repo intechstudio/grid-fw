@@ -1,3 +1,3 @@
 #!/bin/sh
 
-make -C d51n20a/gcc release
+make -j2 -C d51n20a/gcc all

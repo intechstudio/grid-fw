@@ -1,593 +1,336 @@
-CC = arm-none-eabi-gcc
+# Do not use the built-in inference rules
+.SUFFIXES:
 
+CC = arm-none-eabi-gcc
 GRID_DEFINES = -DGRID
 
-###################################
-# Platform-specific code for GRID #
-###################################
+BUILD_DIR = build
+BUILD_DIRS = \
+	$(BUILD_DIR)/common/src/c \
+	$(BUILD_DIR)/common/dep/littlefs \
+	$(BUILD_DIR)/common/dep/lua-5.4.3/src \
+	$(BUILD_DIR)/common/dep/tomlc99 \
+	$(BUILD_DIR)/common/dep/vmp \
+	\
+	$(BUILD_DIR)/grid/d51 \
+	$(BUILD_DIR)/grid/vmp \
+	$(BUILD_DIR)/grid/usb/class/midi \
+	$(BUILD_DIR)/grid/usb/class/midi/device \
+	\
+	$(BUILD_DIR)/asf/hpl/adc \
+	$(BUILD_DIR)/asf/usb/class/cdc/device \
+	$(BUILD_DIR)/asf/hpl/ramecc \
+	$(BUILD_DIR)/asf/samd51a/gcc/gcc \
+	$(BUILD_DIR)/asf/hpl/evsys \
+	$(BUILD_DIR)/asf/hpl/qspi \
+	$(BUILD_DIR)/asf/examples \
+	$(BUILD_DIR)/asf/hpl/systick \
+	$(BUILD_DIR)/asf/hpl/oscctrl \
+	$(BUILD_DIR)/asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source \
+	$(BUILD_DIR)/asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0 \
+	$(BUILD_DIR)/asf/stdio_redirect \
+	$(BUILD_DIR)/asf/hpl/tc \
+	$(BUILD_DIR)/asf/hpl/osc32kctrl \
+	$(BUILD_DIR)/asf/usb \
+	$(BUILD_DIR)/asf/hpl/dmac \
+	$(BUILD_DIR)/asf/hal/src \
+	$(BUILD_DIR)/asf/stdio_redirect/gcc \
+	$(BUILD_DIR)/asf/samd51a/gcc \
+	$(BUILD_DIR)/asf/hal/utils/src \
+	$(BUILD_DIR)/asf/hpl/wdt \
+	$(BUILD_DIR)/asf/hpl/rtc \
+	$(BUILD_DIR)/asf/hpl/trng \
+	$(BUILD_DIR)/asf/usb/class/hid/device \
+	$(BUILD_DIR)/asf/hpl/usb \
+	$(BUILD_DIR)/asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F \
+	$(BUILD_DIR)/asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang \
+	$(BUILD_DIR)/asf/hpl/mclk \
+	$(BUILD_DIR)/asf/hpl/eic \
+	$(BUILD_DIR)/asf/hpl/cmcc \
+	$(BUILD_DIR)/asf/hpl/gclk \
+	$(BUILD_DIR)/asf/usb/device \
+	$(BUILD_DIR)/asf/hpl/pm \
+	$(BUILD_DIR)/asf/usb/class/msc/device \
+	$(BUILD_DIR)/asf/hpl/pac \
+	$(BUILD_DIR)/asf/hpl/sercom \
+	$(BUILD_DIR)/asf/hpl/core \
+	$(BUILD_DIR)/asf/hpl/nvmctrl \
+	$(BUILD_DIR)/asf/hpl/dsu
 
-D51_INC_DIR = \
--I "../grid" \
--I "../grid/d51" \
--I "../grid/vmp" \
--I "../grid/usb/class/midi" \
--I "../grid/usb/class/midi/device" \
+$(BUILD_DIRS): ; mkdir -p $@
 
-D51_SRC_DIR = ../grid
-D51_SRCS = \
-d51/grid_d51.c \
-d51/grid_d51_adc.c \
-d51/grid_d51_encoder.c \
-d51/grid_d51_led.c \
-d51/grid_d51_littlefs.c \
-d51/grid_d51_littlefs_api.c \
-d51/grid_d51_lua.c \
-d51/grid_d51_module.c \
-d51/grid_d51_nvm.c \
-d51/grid_d51_uart.c \
-d51/grid_d51_usb.c \
-grid_d51_module_bu16.c \
-grid_d51_module_en16.c \
-grid_d51_module_pbf4.c \
-grid_d51_module_po16.c \
-grid_d51_module_ef44.c \
-vmp/vmp_def.c \
-usb/class/midi/usb_protocol_midi.c \
-usb/class/midi/device/audiodf_midi.c \
+SRC_DIR = .
+SRCS = \
+	common/src/c/grid_ain.c \
+	common/src/c/grid_allocator.c \
+	common/src/c/grid_asc.c \
+	common/src/c/grid_cal.c \
+	common/src/c/grid_config.c \
+	common/src/c/grid_decode.c \
+	common/src/c/grid_led.c \
+	common/src/c/grid_littlefs.c \
+	common/src/c/grid_lua.c \
+	common/src/c/grid_lua_api.c \
+	common/src/c/grid_math.c \
+	common/src/c/grid_module.c \
+	common/src/c/grid_msg.c \
+	common/src/c/grid_noflash.c \
+	common/src/c/grid_platform.c \
+	common/src/c/grid_port.c \
+	common/src/c/grid_protocol.c \
+	common/src/c/grid_rollid.c \
+	common/src/c/grid_swsr.c \
+	common/src/c/grid_sys.c \
+	common/src/c/grid_transport.c \
+	common/src/c/grid_ui.c \
+	common/src/c/grid_ui_button.c \
+	common/src/c/grid_ui_encoder.c \
+	common/src/c/grid_ui_endless.c \
+	common/src/c/grid_ui_lcd.c \
+	common/src/c/grid_ui_potmeter.c \
+	common/src/c/grid_ui_system.c \
+	common/src/c/grid_usb.c \
+	common/src/c/grid_utask.c \
+	common/dep/lua-5.4.3/src/dirent.c \
+	common/dep/lua-5.4.3/src/lapi.c \
+	common/dep/lua-5.4.3/src/lauxlib.c \
+	common/dep/lua-5.4.3/src/lbaselib.c \
+	common/dep/lua-5.4.3/src/lcode.c \
+	common/dep/lua-5.4.3/src/lcorolib.c \
+	common/dep/lua-5.4.3/src/lctype.c \
+	common/dep/lua-5.4.3/src/ldblib.c \
+	common/dep/lua-5.4.3/src/ldebug.c \
+	common/dep/lua-5.4.3/src/ldo.c \
+	common/dep/lua-5.4.3/src/ldump.c \
+	common/dep/lua-5.4.3/src/lfunc.c \
+	common/dep/lua-5.4.3/src/lgc.c \
+	common/dep/lua-5.4.3/src/linit.c \
+	common/dep/lua-5.4.3/src/liolib.c \
+	common/dep/lua-5.4.3/src/llex.c \
+	common/dep/lua-5.4.3/src/lmathlib.c \
+	common/dep/lua-5.4.3/src/lmem.c \
+	common/dep/lua-5.4.3/src/loadlib.c \
+	common/dep/lua-5.4.3/src/lobject.c \
+	common/dep/lua-5.4.3/src/lopcodes.c \
+	common/dep/lua-5.4.3/src/loslib.c \
+	common/dep/lua-5.4.3/src/lparser.c \
+	common/dep/lua-5.4.3/src/lstate.c \
+	common/dep/lua-5.4.3/src/lstring.c \
+	common/dep/lua-5.4.3/src/lstrlib.c \
+	common/dep/lua-5.4.3/src/ltable.c \
+	common/dep/lua-5.4.3/src/ltablib.c \
+	common/dep/lua-5.4.3/src/ltm.c \
+	common/dep/lua-5.4.3/src/lundump.c \
+	common/dep/lua-5.4.3/src/lutf8lib.c \
+	common/dep/lua-5.4.3/src/lvm.c \
+	common/dep/lua-5.4.3/src/lzio.c \
+	common/dep/littlefs/lfs.c \
+	common/dep/littlefs/lfs_util.c \
+	common/dep/tomlc99/toml.c \
+	common/dep/vmp/vmp.c \
+	\
+	grid/d51/grid_d51.c \
+	grid/d51/grid_d51_adc.c \
+	grid/d51/grid_d51_encoder.c \
+	grid/d51/grid_d51_led.c \
+	grid/d51/grid_d51_littlefs.c \
+	grid/d51/grid_d51_littlefs_api.c \
+	grid/d51/grid_d51_lua.c \
+	grid/d51/grid_d51_module.c \
+	grid/d51/grid_d51_nvm.c \
+	grid/d51/grid_d51_uart.c \
+	grid/d51/grid_d51_usb.c \
+	grid/grid_d51_module_bu16.c \
+	grid/grid_d51_module_en16.c \
+	grid/grid_d51_module_pbf4.c \
+	grid/grid_d51_module_po16.c \
+	grid/grid_d51_module_ef44.c \
+	grid/vmp/vmp_def.c \
+	grid/usb/class/midi/usb_protocol_midi.c \
+	grid/usb/class/midi/device/audiodf_midi.c \
+	\
+	asf/hal/src/hal_io.c \
+	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.c \
+	asf/hpl/pac/hpl_pac.c \
+	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.c \
+	asf/hal/src/hal_i2c_m_async.c \
+	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/event_groups.c \
+	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_4.c \
+	asf/hpl/wdt/hpl_wdt.c \
+	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/croutine.c \
+	asf/usb/usb_protocol.c \
+	asf/stdio_redirect/stdio_io.c \
+	asf/hal/src/hal_spi_m_dma.c \
+	asf/stdio_redirect/gcc/write.c \
+	asf/samd51a/gcc/system_samd51.c \
+	asf/usb/class/hid/device/hiddf_generic.c \
+	asf/hal/src/hal_init.c \
+	asf/hpl/evsys/hpl_evsys.c \
+	asf/hpl/core/hpl_core_m4.c \
+	asf/hal/src/hal_cache.c \
+	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/stream_buffer.c \
+	asf/usb/class/cdc/device/cdcdf_acm.c \
+	asf/hal/utils/src/utils_syscalls.c \
+	asf/hpl/qspi/hpl_qspi.c \
+	asf/hpl/nvmctrl/hpl_nvmctrl.c \
+	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/queue.c \
+	asf/usb_start.c \
+	asf/hal/src/hal_timer.c \
+	asf/hpl/usb/hpl_usb.c \
+	asf/stdio_redirect/gcc/read.c \
+	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/timers.c \
+	asf/hal/src/hal_delay.c \
+	asf/hpl/pm/hpl_pm.c \
+	asf/hpl/core/hpl_init.c \
+	asf/hpl/ramecc/hpl_ramecc.c \
+	asf/hal/src/hal_wdt.c \
+	asf/usb/class/hid/device/hiddf_mouse.c \
+	asf/hal/utils/src/utils_assert.c \
+	asf/hpl/dmac/hpl_dmac.c \
+	asf/hal/src/hal_adc_async.c \
+	asf/hpl/oscctrl/hpl_oscctrl.c \
+	asf/hal/src/hal_rand_sync.c \
+	asf/hpl/trng/hpl_trng.c \
+	asf/usb/class/hid/device/hiddf_keyboard.c \
+	asf/hal/src/hal_usart_sync.c \
+	asf/hpl/mclk/hpl_mclk.c \
+	asf/hpl/gclk/hpl_gclk.c \
+	asf/stdio_start.c \
+	asf/hal/src/hal_flash.c \
+	asf/hal/src/hal_spi_m_async.c \
+	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/rtos_port.c \
+	asf/hal/src/hal_crc_sync.c \
+	asf/hal/src/hal_usb_device.c \
+	asf/rtos_start.c \
+	asf/hal/utils/src/utils_list.c \
+	asf/hpl/osc32kctrl/hpl_osc32kctrl.c \
+	asf/hpl/rtc/hpl_rtc.c \
+	asf/examples/driver_examples.c \
+	asf/driver_init.c \
+	asf/hal/src/hal_usart_async.c \
+	asf/usb/class/msc/device/mscdf.c \
+	asf/hpl/sercom/hpl_sercom.c \
+	asf/hal/utils/src/utils_ringbuffer.c \
+	asf/hal/src/hal_atomic.c \
+	asf/main.c \
+	asf/hal/src/hal_gpio.c \
+	asf/hal/src/hal_ext_irq.c \
+	asf/hpl/eic/hpl_eic.c \
+	asf/hal/src/hal_qspi_dma.c \
+	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.c \
+	asf/hal/src/hal_evsys.c \
+	asf/hal/utils/src/utils_event.c \
+	asf/hal/src/hal_sleep.c \
+	asf/hpl/adc/hpl_adc.c \
+	asf/samd51a/gcc/gcc/startup_samd51.c \
+	asf/atmel_start.c \
+	asf/usb/device/usbdc.c \
+	asf/hpl/tc/hpl_tc.c \
+	asf/hpl/cmcc/hpl_cmcc.c \
+	asf/hpl/systick/hpl_systick.c \
+	asf/hpl/dsu/hpl_dsu.c
 
-D51_OBJ_DIRS = \
-build/grid/d51 \
-build/grid/vmp \
-build/grid/usb/class/midi \
-build/grid/usb/class/midi/device \
+INCLUDES = \
+	-I"common/src/c" \
+	-I"common/dep" \
+	-I"common/dep/littlefs" \
+	-I"common/dep/lua-5.4.3" \
+	-I"common/dep/proto" \
+	-I"common/dep/tomlc99" \
+	-I"common/dep/vmp" \
+	-I"common/build/lua" \
+	\
+	-I"grid" \
+	-I"grid/d51" \
+	-I"grid/vmp" \
+	-I"grid/usb/class/midi" \
+	-I"grid/usb/class/midi/device" \
+	\
+	-I"asf/config" \
+	-I"asf/examples" \
+	-I"asf/hal/include" \
+	-I"asf/hal/utils/include" \
+	-I"asf/hpl/adc" \
+	-I"asf/hpl/cmcc" \
+	-I"asf/hpl/core" \
+	-I"asf/hpl/dmac" \
+	-I"asf/hpl/eic" \
+	-I"asf/hpl/dsu" \
+	-I"asf/hpl/evsys" \
+	-I"asf/hpl/gclk" \
+	-I"asf/hpl/mclk" \
+	-I"asf/hpl/nvmctrl" \
+	-I"asf/hpl/osc32kctrl" \
+	-I"asf/hpl/oscctrl" \
+	-I"asf/hpl/pac" \
+	-I"asf/hpl/pm" \
+	-I"asf/hpl/port" \
+	-I"asf/hpl/qspi" \
+	-I"asf/hpl/ramecc" \
+	-I"asf/hpl/rtc" \
+	-I"asf/hpl/sercom" \
+	-I"asf/hpl/systick" \
+	-I"asf/hpl/tc" \
+	-I"asf/hpl/trng" \
+	-I"asf/hpl/usb" \
+	-I"asf/hpl/wdt" \
+	-I"asf/hri" \
+	-I"asf/" \
+	-I"asf/config" \
+	-I"asf/thirdparty/RTOS" \
+	-I"asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0" \
+	-I"asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include" \
+	-I"asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F" \
+	-I"asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/module_config" \
+	-I"asf/" \
+	-I"asf/config" \
+	-I"asf/usb" \
+	-I"asf/usb/class/cdc" \
+	-I"asf/usb/class/cdc/device" \
+	-I"asf/usb/class/composite/device" \
+	-I"asf/usb/class/hid" \
+	-I"asf/usb/class/hid/device" \
+	-I"asf/usb/class/hub" \
+	-I"asf/usb/class/msc" \
+	-I"asf/usb/class/msc/device" \
+	-I"asf/usb/class/vendor" \
+	-I"asf/usb/device" \
+	-I"asf/" \
+	-I"asf/config" \
+	-I"asf/stdio_redirect" \
+	-I"asf/" \
+	-I"asf/CMSIS/Core/Include" \
+	-I"asf/samd51a/include"
 
-$(D51_OBJ_DIRS): ; mkdir -p $@
-
-D51_OBJ_DIR = build/grid
-$(D51_OBJ_DIR): $(D51_OBJ_DIRS)
-D51_OBJS = $(D51_SRCS:%.c=$(D51_OBJ_DIR)/%.o)
-
-$(D51_OBJ_DIR)/%.d: $(D51_SRC_DIR)/%.c | $(D51_OBJ_DIR)
+DEPS = $(SRCS:%.c=$(BUILD_DIR)/%.d)
+$(BUILD_DIR)/%.d: $(SRC_DIR)/%.c | $(BUILD_DIRS)
 	$(CC) -x c -mthumb \
 	$(GRID_DEFINES) \
 	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
-	$(D51_INC_DIR) \
-	-MD -MP -MF "$(@:%.c=%.d)" -MT"$(@:%.c=%.d)" -MT"$(@:%.c=%.o)" "$<"
+	$(INCLUDES) \
+	-MM -MF "$@" -MT "$@" "$<"
 
-$(D51_OBJ_DIR)/%.o: $(D51_SRC_DIR)/%.c $(D51_OBJ_DIR)/%.d | $(D51_OBJ_DIR)
+OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR)/%.d | $(BUILD_DIRS)
 	$(CC) -x c -mthumb \
 	$(GRID_DEFINES) \
 	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
-	$(D51_INC_DIR) \
+	$(INCLUDES) \
 	-o "$@" "$<"
 
-OBJS += $(D51_SRCS:%.c=$(D51_OBJ_DIR)/%.o)
-OBJS_AS_ARGS += $(D51_SRCS:%.c=$(D51_OBJ_DIR)/%.o)
+OUTPUT_FILE_NAME=AtmelStart
+OUTPUT_FILE_PATH=$(OUTPUT_FILE_NAME).bin
 
-COM_INC_DIR = \
--I "../../common/src/c" \
--I "../../common/dep" \
--I "../../common/dep/littlefs" \
--I "../../common/dep/lua-5.4.3" \
--I "../../common/dep/proto" \
--I "../../common/dep/tomlc99" \
--I "../../common/dep/vmp" \
--I "../../common/build/lua" \
-
-D51_INC_DIR += $(COM_INC_DIR)
-
-######################################
-# Platform-independent code for GRID #
-######################################
-
-COM_SRC_DIR = ../../common
-COM_SRCS = \
-src/c/grid_ain.c \
-src/c/grid_allocator.c \
-src/c/grid_asc.c \
-src/c/grid_cal.c \
-src/c/grid_config.c \
-src/c/grid_decode.c \
-src/c/grid_led.c \
-src/c/grid_littlefs.c \
-src/c/grid_lua.c \
-src/c/grid_lua_api.c \
-src/c/grid_math.c \
-src/c/grid_module.c \
-src/c/grid_msg.c \
-src/c/grid_noflash.c \
-src/c/grid_platform.c \
-src/c/grid_port.c \
-src/c/grid_protocol.c \
-src/c/grid_rollid.c \
-src/c/grid_swsr.c \
-src/c/grid_sys.c \
-src/c/grid_transport.c \
-src/c/grid_ui.c \
-src/c/grid_ui_button.c \
-src/c/grid_ui_encoder.c \
-src/c/grid_ui_endless.c \
-src/c/grid_ui_lcd.c \
-src/c/grid_ui_potmeter.c \
-src/c/grid_ui_system.c \
-src/c/grid_usb.c \
-src/c/grid_utask.c \
-dep/lua-5.4.3/src/dirent.c \
-dep/lua-5.4.3/src/lapi.c \
-dep/lua-5.4.3/src/lauxlib.c \
-dep/lua-5.4.3/src/lbaselib.c \
-dep/lua-5.4.3/src/lcode.c \
-dep/lua-5.4.3/src/lcorolib.c \
-dep/lua-5.4.3/src/lctype.c \
-dep/lua-5.4.3/src/ldblib.c \
-dep/lua-5.4.3/src/ldebug.c \
-dep/lua-5.4.3/src/ldo.c \
-dep/lua-5.4.3/src/ldump.c \
-dep/lua-5.4.3/src/lfunc.c \
-dep/lua-5.4.3/src/lgc.c \
-dep/lua-5.4.3/src/linit.c \
-dep/lua-5.4.3/src/liolib.c \
-dep/lua-5.4.3/src/llex.c \
-dep/lua-5.4.3/src/lmathlib.c \
-dep/lua-5.4.3/src/lmem.c \
-dep/lua-5.4.3/src/loadlib.c \
-dep/lua-5.4.3/src/lobject.c \
-dep/lua-5.4.3/src/lopcodes.c \
-dep/lua-5.4.3/src/loslib.c \
-dep/lua-5.4.3/src/lparser.c \
-dep/lua-5.4.3/src/lstate.c \
-dep/lua-5.4.3/src/lstring.c \
-dep/lua-5.4.3/src/lstrlib.c \
-dep/lua-5.4.3/src/ltable.c \
-dep/lua-5.4.3/src/ltablib.c \
-dep/lua-5.4.3/src/ltm.c \
-dep/lua-5.4.3/src/lundump.c \
-dep/lua-5.4.3/src/lutf8lib.c \
-dep/lua-5.4.3/src/lvm.c \
-dep/lua-5.4.3/src/lzio.c \
-dep/littlefs/lfs.c \
-dep/littlefs/lfs_util.c \
-dep/tomlc99/toml.c \
-dep/vmp/vmp.c \
-
-COM_OBJ_DIRS = \
-build/common/src/c \
-build/common/dep/littlefs \
-build/common/dep/lua-5.4.3/src \
-build/common/dep/tomlc99 \
-build/common/dep/vmp \
-
-$(COM_OBJ_DIRS): ; mkdir -p $@
-
-COM_OBJ_DIR = build/common
-$(COM_OBJ_DIR): $(COM_OBJ_DIRS)
-COM_OBJS = $(COM_SRCS:%.c=$(COM_OBJ_DIR)/%.o)
-
-$(COM_OBJ_DIR)/%.d: $(COM_SRC_DIR)/%.c | $(COM_OBJ_DIR)
-	$(CC) -x c -mthumb \
-	$(GRID_DEFINES) \
-	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
-	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
-	$(COM_INC_DIR) \
-	-MD -MP -MF "$(@:%.c=%.d)" -MT"$(@:%.c=%.d)" -MT"$(@:%.c=%.o)" "$<"
-
-$(COM_OBJ_DIR)/%.o: $(COM_SRC_DIR)/%.c $(COM_OBJ_DIR)/%.d | $(COM_OBJ_DIR)
-	$(CC) -x c -mthumb \
-	$(GRID_DEFINES) \
-	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
-	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
-	$(COM_INC_DIR) \
-	-o "$@" "$<"
-
-OBJS += $(COM_SRCS:%.c=$(COM_OBJ_DIR)/%.o)
-OBJS_AS_ARGS += $(COM_SRCS:%.c=$(COM_OBJ_DIR)/%.o)
-
-################################################################################
-# Automatically-generated file. Do not edit!
-################################################################################
-
-ifdef SystemRoot
-	SHELL = cmd.exe
-	MK_DIR = mkdir
-else
-	ifeq ($(shell uname), Linux)
-		MK_DIR = mkdir -p
-	endif
-
-	ifeq ($(shell uname | cut -d _ -f 1), CYGWIN)
-		MK_DIR = mkdir -p
-	endif
-
-	ifeq ($(shell uname | cut -d _ -f 1), MINGW32)
-		MK_DIR = mkdir -p
-	endif
-
-	ifeq ($(shell uname | cut -d _ -f 1), MINGW64)
-		MK_DIR = mkdir -p
-	endif
-
-	ifeq ($(shell uname | cut -d _ -f 1), DARWIN)
-		MK_DIR = mkdir -p
-	endif
-endif
-
-# List the subdirectories for creating object files
-SUB_DIRS +=  \
-hpl/adc \
-usb/class/cdc/device \
-hpl/ramecc \
-samd51a/gcc/gcc \
-hpl/evsys \
-hpl/qspi \
-examples \
-hpl/systick \
-hpl/oscctrl \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0 \
-stdio_redirect \
-hpl/tc \
-hpl/osc32kctrl \
-usb \
-hpl/dmac \
-hal/src \
-stdio_redirect/gcc \
-samd51a/gcc \
-hal/utils/src \
-hpl/wdt \
-hpl/rtc \
-hpl/trng \
-usb/class/hid/device \
-hpl/usb \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang \
-hpl/mclk \
-hpl/eic \
-hpl/cmcc \
-hpl/gclk \
-usb/device \
-hpl/pm \
-usb/class/msc/device \
-hpl/pac \
-hpl/sercom \
-hpl/core \
-hpl/nvmctrl \
-hpl/dsu
-
-# List the object files
-OBJS +=  \
-hal/src/hal_io.o \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o \
-hpl/pac/hpl_pac.o \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.o \
-hal/src/hal_i2c_m_async.o \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/event_groups.o \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_4.o \
-hpl/wdt/hpl_wdt.o \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/croutine.o \
-usb/usb_protocol.o \
-stdio_redirect/stdio_io.o \
-hal/src/hal_spi_m_dma.o \
-stdio_redirect/gcc/write.o \
-samd51a/gcc/system_samd51.o \
-usb/class/hid/device/hiddf_generic.o \
-hal/src/hal_init.o \
-hpl/evsys/hpl_evsys.o \
-hpl/core/hpl_core_m4.o \
-hal/src/hal_cache.o \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/stream_buffer.o \
-usb/class/cdc/device/cdcdf_acm.o \
-hal/utils/src/utils_syscalls.o \
-hpl/qspi/hpl_qspi.o \
-hpl/nvmctrl/hpl_nvmctrl.o \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/queue.o \
-usb_start.o \
-hal/src/hal_timer.o \
-hpl/usb/hpl_usb.o \
-stdio_redirect/gcc/read.o \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/timers.o \
-hal/src/hal_delay.o \
-hpl/pm/hpl_pm.o \
-hpl/core/hpl_init.o \
-hpl/ramecc/hpl_ramecc.o \
-hal/src/hal_wdt.o \
-usb/class/hid/device/hiddf_mouse.o \
-hal/utils/src/utils_assert.o \
-hpl/dmac/hpl_dmac.o \
-hal/src/hal_adc_async.o \
-hpl/oscctrl/hpl_oscctrl.o \
-hal/src/hal_rand_sync.o \
-hpl/trng/hpl_trng.o \
-usb/class/hid/device/hiddf_keyboard.o \
-hal/src/hal_usart_sync.o \
-hpl/mclk/hpl_mclk.o \
-hpl/gclk/hpl_gclk.o \
-stdio_start.o \
-hal/src/hal_flash.o \
-hal/src/hal_spi_m_async.o \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/rtos_port.o \
-hal/src/hal_crc_sync.o \
-hal/src/hal_usb_device.o \
-rtos_start.o \
-hal/utils/src/utils_list.o \
-hpl/osc32kctrl/hpl_osc32kctrl.o \
-hpl/rtc/hpl_rtc.o \
-examples/driver_examples.o \
-driver_init.o \
-hal/src/hal_usart_async.o \
-usb/class/msc/device/mscdf.o \
-hpl/sercom/hpl_sercom.o \
-hal/utils/src/utils_ringbuffer.o \
-hal/src/hal_atomic.o \
-main.o \
-hal/src/hal_gpio.o \
-hal/src/hal_ext_irq.o \
-hpl/eic/hpl_eic.o \
-hal/src/hal_qspi_dma.o \
-thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o \
-hal/src/hal_evsys.o \
-hal/utils/src/utils_event.o \
-hal/src/hal_sleep.o \
-hpl/adc/hpl_adc.o \
-samd51a/gcc/gcc/startup_samd51.o \
-atmel_start.o \
-usb/device/usbdc.o \
-hpl/tc/hpl_tc.o \
-hpl/cmcc/hpl_cmcc.o \
-hpl/systick/hpl_systick.o \
-hpl/dsu/hpl_dsu.o
-
-OBJS_AS_ARGS +=  \
-"hal/src/hal_io.o" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.o" \
-"hpl/pac/hpl_pac.o" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.o" \
-"hal/src/hal_i2c_m_async.o" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/event_groups.o" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_4.o" \
-"hpl/wdt/hpl_wdt.o" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/croutine.o" \
-"usb/usb_protocol.o" \
-"stdio_redirect/stdio_io.o" \
-"hal/src/hal_spi_m_dma.o" \
-"stdio_redirect/gcc/write.o" \
-"samd51a/gcc/system_samd51.o" \
-"usb/class/hid/device/hiddf_generic.o" \
-"hal/src/hal_init.o" \
-"hpl/evsys/hpl_evsys.o" \
-"hpl/core/hpl_core_m4.o" \
-"hal/src/hal_cache.o" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/stream_buffer.o" \
-"usb/class/cdc/device/cdcdf_acm.o" \
-"hal/utils/src/utils_syscalls.o" \
-"hpl/qspi/hpl_qspi.o" \
-"hpl/nvmctrl/hpl_nvmctrl.o" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/queue.o" \
-"usb_start.o" \
-"hal/src/hal_timer.o" \
-"hpl/usb/hpl_usb.o" \
-"stdio_redirect/gcc/read.o" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/timers.o" \
-"hal/src/hal_delay.o" \
-"hpl/pm/hpl_pm.o" \
-"hpl/core/hpl_init.o" \
-"hpl/ramecc/hpl_ramecc.o" \
-"hal/src/hal_wdt.o" \
-"usb/class/hid/device/hiddf_mouse.o" \
-"hal/utils/src/utils_assert.o" \
-"hpl/dmac/hpl_dmac.o" \
-"hal/src/hal_adc_async.o" \
-"hpl/oscctrl/hpl_oscctrl.o" \
-"hal/src/hal_rand_sync.o" \
-"hpl/trng/hpl_trng.o" \
-"usb/class/hid/device/hiddf_keyboard.o" \
-"hal/src/hal_usart_sync.o" \
-"hpl/mclk/hpl_mclk.o" \
-"hpl/gclk/hpl_gclk.o" \
-"stdio_start.o" \
-"hal/src/hal_flash.o" \
-"hal/src/hal_spi_m_async.o" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/rtos_port.o" \
-"hal/src/hal_crc_sync.o" \
-"hal/src/hal_usb_device.o" \
-"rtos_start.o" \
-"hal/utils/src/utils_list.o" \
-"hpl/osc32kctrl/hpl_osc32kctrl.o" \
-"hpl/rtc/hpl_rtc.o" \
-"examples/driver_examples.o" \
-"driver_init.o" \
-"hal/src/hal_usart_async.o" \
-"usb/class/msc/device/mscdf.o" \
-"hpl/sercom/hpl_sercom.o" \
-"hal/utils/src/utils_ringbuffer.o" \
-"hal/src/hal_atomic.o" \
-"main.o" \
-"hal/src/hal_gpio.o" \
-"hal/src/hal_ext_irq.o" \
-"hpl/eic/hpl_eic.o" \
-"hal/src/hal_qspi_dma.o" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.o" \
-"hal/src/hal_evsys.o" \
-"hal/utils/src/utils_event.o" \
-"hal/src/hal_sleep.o" \
-"hpl/adc/hpl_adc.o" \
-"samd51a/gcc/gcc/startup_samd51.o" \
-"atmel_start.o" \
-"usb/device/usbdc.o" \
-"hpl/tc/hpl_tc.o" \
-"hpl/cmcc/hpl_cmcc.o" \
-"hpl/systick/hpl_systick.o" \
-"hpl/dsu/hpl_dsu.o"
-
-# List the directories containing header files
-DIR_INCLUDES +=  \
--I"../" \
--I"../config" \
--I"../examples" \
--I"../hal/include" \
--I"../hal/utils/include" \
--I"../hpl/adc" \
--I"../hpl/cmcc" \
--I"../hpl/core" \
--I"../hpl/dmac" \
--I"../hpl/eic" \
--I"../hpl/dsu" \
--I"../hpl/evsys" \
--I"../hpl/gclk" \
--I"../hpl/mclk" \
--I"../hpl/nvmctrl" \
--I"../hpl/osc32kctrl" \
--I"../hpl/oscctrl" \
--I"../hpl/pac" \
--I"../hpl/pm" \
--I"../hpl/port" \
--I"../hpl/qspi" \
--I"../hpl/ramecc" \
--I"../hpl/rtc" \
--I"../hpl/sercom" \
--I"../hpl/systick" \
--I"../hpl/tc" \
--I"../hpl/trng" \
--I"../hpl/usb" \
--I"../hpl/wdt" \
--I"../hri" \
--I"../" \
--I"../config" \
--I"../thirdparty/RTOS" \
--I"../thirdparty/RTOS/freertos/FreeRTOSV10.0.0" \
--I"../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include" \
--I"../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F" \
--I"../thirdparty/RTOS/freertos/FreeRTOSV10.0.0/module_config" \
--I"../" \
--I"../config" \
--I"../usb" \
--I"../usb/class/cdc" \
--I"../usb/class/cdc/device" \
--I"../usb/class/composite/device" \
--I"../usb/class/hid" \
--I"../usb/class/hid/device" \
--I"../usb/class/hub" \
--I"../usb/class/msc" \
--I"../usb/class/msc/device" \
--I"../usb/class/vendor" \
--I"../usb/device" \
--I"../" \
--I"../config" \
--I"../stdio_redirect" \
--I"../" \
--I"../CMSIS/Core/Include" \
--I"../samd51a/include"
-
-D51_INC_DIR += $(DIR_INCLUDES)
-
-# List the dependency files
-DEPS := $(OBJS:%.o=%.d)
-
-DEPS_AS_ARGS +=  \
-"usb/usb_protocol.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/event_groups.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/croutine.d" \
-"hpl/wdt/hpl_wdt.d" \
-"stdio_redirect/stdio_io.d" \
-"hal/utils/src/utils_event.d" \
-"hal/src/hal_io.d" \
-"hpl/ramecc/hpl_ramecc.d" \
-"hpl/qspi/hpl_qspi.d" \
-"hpl/core/hpl_core_m4.d" \
-"hpl/evsys/hpl_evsys.d" \
-"hal/utils/src/utils_syscalls.d" \
-"usb/class/cdc/device/cdcdf_acm.d" \
-"samd51a/gcc/system_samd51.d" \
-"stdio_redirect/gcc/write.d" \
-"hal/src/hal_spi_m_dma.d" \
-"hpl/usb/hpl_usb.d" \
-"main.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/timers.d" \
-"stdio_redirect/gcc/read.d" \
-"usb/class/msc/device/mscdf.d" \
-"hpl/nvmctrl/hpl_nvmctrl.d" \
-"hal/src/hal_init.d" \
-"hal/src/hal_timer.d" \
-"usb/class/hid/device/hiddf_mouse.d" \
-"hal/src/hal_wdt.d" \
-"hpl/cmcc/hpl_cmcc.d" \
-"hal/src/hal_adc_async.d" \
-"hpl/dmac/hpl_dmac.d" \
-"hal/utils/src/utils_assert.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/stream_buffer.d" \
-"hal/src/hal_delay.d" \
-"hal/src/hal_crc_sync.d" \
-"hpl/core/hpl_init.d" \
-"hpl/pm/hpl_pm.d" \
-"hal/src/hal_flash.d" \
-"stdio_start.d" \
-"hpl/gclk/hpl_gclk.d" \
-"hal/src/hal_usb_device.d" \
-"hpl/pac/hpl_pac.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/rtos_port.d" \
-"hal/src/hal_spi_m_async.d" \
-"hal/src/hal_usart_sync.d" \
-"usb/class/hid/device/hiddf_keyboard.d" \
-"hpl/trng/hpl_trng.d" \
-"hal/src/hal_rand_sync.d" \
-"hpl/mclk/hpl_mclk.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.d" \
-"driver_init.d" \
-"usb_start.d" \
-"hpl/systick/hpl_systick.d" \
-"hal/src/hal_usart_async.d" \
-"hpl/osc32kctrl/hpl_osc32kctrl.d" \
-"rtos_start.d" \
-"examples/driver_examples.d" \
-"hpl/rtc/hpl_rtc.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_4.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/queue.d" \
-"hal/src/hal_qspi_dma.d" \
-"hal/src/hal_cache.d" \
-"hal/utils/src/utils_list.d" \
-"hal/src/hal_sleep.d" \
-"hal/utils/src/utils_ringbuffer.d" \
-"hpl/sercom/hpl_sercom.d" \
-"hal/src/hal_evsys.d" \
-"hal/src/hal_gpio.d" \
-"hal/src/hal_ext_irq.d" \
-"hpl/eic/hpl_eic.d" \
-"usb/class/hid/device/hiddf_generic.d" \
-"hal/src/hal_i2c_m_async.d" \
-"hal/src/hal_atomic.d" \
-"hpl/dsu/hpl_dsu.d" \
-"hpl/tc/hpl_tc.d" \
-"usb/device/usbdc.d" \
-"hpl/oscctrl/hpl_oscctrl.d" \
-"hpl/adc/hpl_adc.d" \
-"thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.d" \
-"samd51a/gcc/gcc/startup_samd51.d" \
-"atmel_start.d"
-
-OUTPUT_FILE_NAME :=AtmelStart
-QUOTE := "
-OUTPUT_FILE_PATH +=$(OUTPUT_FILE_NAME).elf
-OUTPUT_FILE_PATH_AS_ARGS +=$(OUTPUT_FILE_NAME).elf
-
-vpath %.c ../
-vpath %.s ../
-vpath %.S ../
-
-# All Target
-all: $(SUB_DIRS) $(OUTPUT_FILE_PATH)
-
-# Linker target
-
-$(OUTPUT_FILE_PATH): $(COM_OBJS) $(D51_OBJS) $(OBJS) | $(COM_OBJ_DIR) $(D51_OBJ_DIR)
-	@echo Building target: $@
-	@echo Invoking: ARM/GNU Linker
-	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -o $(OUTPUT_FILE_NAME).elf $(OBJS_AS_ARGS) -Wl,--start-group -lm -Wl,--end-group -mthumb \
--Wl,-Map="$(OUTPUT_FILE_NAME).map" --specs=nosys.specs -Wl,--gc-sections -Wl,--print-memory-usage -mcpu=cortex-m4 -u _printf_float\
- \
--T"../grid/samd51n20a_flash_bootloader.ld" \
--L"../samd51a/gcc/gcc" \
+$(OUTPUT_FILE_PATH): $(OBJS) $(DEPS) | $(BUILD_DIRS)
+	$(CC) -o $(OUTPUT_FILE_NAME).elf $(OBJS) \
+	-Wl,--start-group -lm -Wl,--end-group -mthumb \
+	-Wl,-Map="$(OUTPUT_FILE_NAME).map" --specs=nosys.specs \
+	-Wl,--gc-sections -Wl,--print-memory-usage -mcpu=cortex-m4 \
+	-u _printf_float \
+	-T"../grid/samd51n20a_flash_bootloader.ld" \
+	-L"../samd51a/gcc/gcc" \
 
 	@echo Finished building target: $@
 
@@ -600,64 +343,24 @@ $(OUTPUT_FILE_PATH): $(COM_OBJS) $(D51_OBJS) $(OBJS) | $(COM_OBJ_DIR) $(D51_OBJ_
 	"arm-none-eabi-objdump" -h -S "$(OUTPUT_FILE_NAME).elf" > "$(OUTPUT_FILE_NAME).lss"
 	"arm-none-eabi-size" "$(OUTPUT_FILE_NAME).elf"
 
+UF2_NAME=grid_fw.uf2
+$(BUILD_DIR)/$(UF2_NAME): $(OUTPUT_FILE_NAME).bin
+	python3 ../../tools/uf2conv/uf2conv.py -c -b 0x4000 -o "$@" "$<"
 
-
-# Compiler targets
-
-%.o: %.c
-	@echo Building file: $<
-	@echo ARM/GNU C Compiler
-	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb $(GRID_DEFINES) -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
--D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
-$(DIR_INCLUDES) $(COM_INC_DIR) $(D51_INC_DIR) \
--MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
-	@echo Finished building: $<
-
-%.o: %.s
-	@echo Building file: $<
-	@echo ARM/GNU Assembler
-	$(QUOTE)arm-none-eabi-as$(QUOTE) -x c -mthumb $(GRID_DEFINES) -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
--D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
-$(DIR_INCLUDES) $(COM_INC_DIR) $(D51_INC_DIR) \
--MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
-	@echo Finished building: $<
-
-%.o: %.S
-	@echo Building file: $<
-	@echo ARM/GNU Preprocessing Assembler
-	$(QUOTE)arm-none-eabi-gcc$(QUOTE) -x c -mthumb $(GRID_DEFINES) -DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
--D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
-$(DIR_INCLUDES) $(COM_INC_DIR) $(D51_INC_DIR) \
--MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"  -o "$@" "$<"
-	@echo Finished building: $<
-
-# Detect changes in the dependent files and recompile the respective object files.
-ifneq ($(MAKECMDGOALS),clean)
-ifneq ($(strip $(DEPS)),)
--include $(DEPS)
-endif
-endif
-
-
-$(SUB_DIRS):
-	$(MK_DIR) "$@"
-
+.PHONY: clean
 clean:
-	rm -f $(OBJS_AS_ARGS)
-	rm -f $(OUTPUT_FILE_PATH)
-	rm -f $(DEPS_AS_ARGS)
-	rm -f $(OUTPUT_FILE_NAME).a $(OUTPUT_FILE_NAME).hex $(OUTPUT_FILE_NAME).bin \
-        $(OUTPUT_FILE_NAME).lss $(OUTPUT_FILE_NAME).eep $(OUTPUT_FILE_NAME).map \
-        $(OUTPUT_FILE_NAME).srec
+	rm -rf build
+	rm -f $(OUTPUT_FILE_NAME).bin
+	rm -f $(OUTPUT_FILE_NAME).eep
+	rm -f $(OUTPUT_FILE_NAME).elf
+	rm -f $(OUTPUT_FILE_NAME).hex
+	rm -f $(OUTPUT_FILE_NAME).lss
+	rm -f $(OUTPUT_FILE_NAME).map
 
-# ================== DEBUG WITH AUTOGDB =================
-debug: GRID_DEFINES = -DGRID_BUILD_DEBUG
-debug: $(SUB_DIRS) $(OUTPUT_FILE_PATH) debug_post
-debug_post:
-	arm-none-eabi-gdb -iex "target extended-remote localhost:3333" $(OUTPUT_FILE_NAME).elf
+.PHONY: all
+all: $(BUILD_DIR)/$(UF2_NAME)
 
-# ================== RELEASE FOR AUTOMATION =================
-release: clean $(SUB_DIRS) $(OUTPUT_FILE_PATH) release_post
-release: GRID_DEFINES = -DGRID_BUILD_RELEASE
-release_post:
-	python3 ../../tools/uf2conv/uf2conv.py -c -b 0x4000 -o ./grid_fw.uf2 ./$(OUTPUT_FILE_NAME).bin
+include $(DEPS)
+
+# debug with autogdb
+# arm-none-eabi-gdb -iex "target extended-remote localhost:3333" $(OUTPUT_FILE_NAME).elf

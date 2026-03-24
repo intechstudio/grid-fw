@@ -388,16 +388,6 @@ int main(void) {
 
   uint32_t loopstart = 0;
 
-#ifdef GRID_BUILD_UNKNOWN
-  printf("\r\n##Build: Unknown##\r\n\r\n");
-#endif
-#ifdef GRID_BUILD_DEBUG
-  printf("\r\n##Build: Debug##\r\n\r\n");
-#endif
-#ifdef GRID_BUILD_RELEASE
-  printf("\r\n##Build: Release##\r\n\r\n");
-#endif
-
   ext_irq_register(PIN_GRID_SYNC_1, button_on_SYNC1_pressed);
   ext_irq_register(PIN_GRID_SYNC_2, button_on_SYNC2_pressed);
 
