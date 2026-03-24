@@ -821,12 +821,9 @@ bool grid_ui_bulk_operation_known(fn_prthread_bulk_t fn) {
   return true;
 }
 
-static bool grid_ui_bulk_queue_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
+static void grid_ui_bulk_queue_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
-  if (!grid_swsr_writable(&ui->bulk, sizeof(fn_prthread_bulk_t))) {
-    return false;
-  }
-
+  assert(grid_swsr_writable(&ui->bulk, sizeof(fn_prthread_bulk_t)));
   assert(grid_ui_bulk_operation_known(next));
 
   ui->bulk_last_page = page;
@@ -834,19 +831,12 @@ static bool grid_ui_bulk_queue_with_state(struct grid_ui_model* ui, fn_prthread_
   ui->bulk_success_callback = success_cb;
 
   grid_swsr_write(&ui->bulk, &next, sizeof(fn_prthread_bulk_t));
-
-  return true;
 }
 
-bool grid_ui_bulk_start_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
+void grid_ui_bulk_start_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t)) {
 
-  if (grid_ui_bulk_in_progress(ui)) {
-    return false;
-  }
-
-  assert(grid_ui_bulk_queue_with_state(ui, next, page, lastheader_id, success_cb));
-
-  return true;
+  assert(!grid_ui_bulk_in_progress(ui));
+  grid_ui_bulk_queue_with_state(ui, next, page, lastheader_id, success_cb);
 }
 
 bool grid_ui_bulk_in_waiting(struct grid_ui_model* ui) { return grid_swsr_readable(&ui->bulk, sizeof(fn_prthread_bulk_t)); }
@@ -899,13 +889,14 @@ void grid_ui_bulk_process(struct grid_ui_model* ui) {
   // Protothread requires no further execution
   if (status >= PT_EXITED) {
 
+    // Unset currently executing protothread before calling success callback,
+    // so that the callback can queue a new bulk operation via bulk_start_with_state
+    ui->bulk_curr = NULL;
+
     // Protothread reached its end (instead of exiting early)
     if (status == PT_ENDED) {
       grid_ui_bulk_handle_success_cb(ui);
     }
-
-    // Unset currently executing protothread
-    ui->bulk_curr = NULL;
 
     // There are no more protohreads waiting to be executed
     if (!grid_ui_bulk_in_waiting(ui)) {

@@ -75,8 +75,8 @@ extern const luaL_Reg GRID_LUA_E_INDEX_META[];
   GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) "," \
   \
   GRID_LUA_FNC_E_BUTTON_STEP_short " =function (self) " \
-  "local steps, min, max, value = self:" GRID_LUA_FNC_B_BUTTON_MODE_short "(), self:" GRID_LUA_FNC_B_BUTTON_MIN_short "(), self:" GRID_LUA_FNC_B_BUTTON_MAX_short \
-  "(), self:" GRID_LUA_FNC_B_BUTTON_VALUE_short "() " \
+  "local steps, min, max, value = self:" GRID_LUA_FNC_E_BUTTON_MODE_short "(), self:" GRID_LUA_FNC_E_BUTTON_MIN_short "(), self:" GRID_LUA_FNC_E_BUTTON_MAX_short \
+  "(), self:" GRID_LUA_FNC_E_BUTTON_VALUE_short "() " \
   "if steps == 0 then return false end " \
   "return value // ((max - min) // steps) " \
   "end," \

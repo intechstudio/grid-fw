@@ -75,7 +75,7 @@ void grid_esp32_module_po16_init(struct grid_sys_model* sys, struct grid_ui_mode
     }
   }
 
-  assert(grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL));
+  grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL);
   grid_ui_bulk_flush(ui);
 
   uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
