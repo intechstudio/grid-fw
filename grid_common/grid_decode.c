@@ -1312,18 +1312,21 @@ void grid_port_decode_msg(struct grid_decoder_collection* coll, struct grid_msg*
       continue;
     }
 
-    for (uint32_t j = i; j < msg->length; ++j) {
-
-      if (msg->data[j] != GRID_CONST_ETX) {
-        continue;
-      }
-
-      grid_msg_set_offset(msg, i);
-      uint32_t class = grid_msg_get_parameter(msg, PARAMETER_CLASSCODE);
-      char* chunk = grid_msg_get_slice_start(msg, msg->offset, j - i);
-      grid_port_decode_class(coll, class, msg->data, chunk);
-      break;
+    uint32_t j = i;
+    while (j < msg->length && msg->data[j] != GRID_CONST_ETX) {
+      ++j;
     }
+
+    // Ensure that an ETX follows an STX
+    if (j >= msg->length) {
+      continue;
+    }
+    assert(msg->data[j] == GRID_CONST_ETX);
+
+    grid_msg_set_offset(msg, i);
+    uint32_t class = grid_msg_get_parameter(msg, PARAMETER_CLASSCODE);
+    char* chunk = grid_msg_get_slice_start(msg, msg->offset, j - i);
+    grid_port_decode_class(coll, class, msg->data, chunk);
   }
 
   if (grid_ui_bulk_semaphore_try(&grid_ui_state)) {
