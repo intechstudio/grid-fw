@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #include "grid_ain.h"
+#include "grid_asc.h"
 #include "grid_cal.h"
 #include "grid_config.h"
 #include "grid_platform.h"
@@ -21,7 +22,12 @@
 
 // static const char* TAG = "module_bu16";
 
+#define GRID_MODULE_BU16_ASC_FACTOR 8
+#define GRID_MODULE_BU16_ASC_FACTOR_REVH 1
+
 static struct grid_ui_model* DRAM_ATTR ui_ptr = NULL;
+static struct grid_asc* DRAM_ATTR asc_array = NULL;
+static uint8_t DRAM_ATTR asc_array_length = 0;
 
 static DRAM_ATTR const uint8_t mux_element_lookup[2][8] = {
     {0, 1, 4, 5, 8, 9, 12, 13},
@@ -37,6 +43,11 @@ void IRAM_ATTR bu16_process_analog(struct grid_adc_result* result) {
 
   result->value = GRID_ADC_INVERT_COND(result->value, element_index, element_invert_bm);
 
+  assert(element_index < asc_array_length);
+  if (!grid_asc_process(&asc_array[element_index], result->value, &result->value)) {
+    return;
+  }
+
   struct grid_ui_element* ele = &ui_ptr->element_list[element_index];
   grid_ui_button_store_input(grid_ui_button_get_state(ele), result->value);
 }
@@ -45,29 +56,32 @@ void grid_esp32_module_bu16_init(struct grid_sys_model* sys, struct grid_ui_mode
 
   ui_ptr = ui;
 
-  for (int i = 0; i < ui->element_list_length; ++i) {
-    struct grid_ui_element* ele = &ui->element_list[i];
-    if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-      grid_ui_button_state_init(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
-    }
-  }
+  bool rev_h = grid_hwcfg_module_is_rev_h(sys);
+
+  asc_array_length = ui->element_list_length - 1;
+  asc_array = grid_platform_allocate_volatile(asc_array_length * sizeof(struct grid_asc));
+  memset(asc_array, 0, asc_array_length * sizeof(struct grid_asc));
 
   grid_config_init(conf, cal);
   grid_cal_init(cal, ui->element_list_length, GRID_AIN_INTERNAL_RESOLUTION);
 
-  if (grid_hwcfg_module_is_rev_h(sys)) {
-    for (int i = 0; i < ui->element_list_length; ++i) {
-      struct grid_ui_element* ele = &ui->element_list[i];
-      if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+  for (int i = 0; i < ui->element_list_length; ++i) {
+    struct grid_ui_element* ele = &ui->element_list[i];
+    if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
+      grid_ui_button_state_init(grid_ui_button_get_state(ele), GRID_AIN_INTERNAL_RESOLUTION, GRID_BUTTON_THRESHOLD, GRID_BUTTON_HYSTERESIS);
+      grid_asc_set_factor(&asc_array[i], rev_h ? GRID_MODULE_BU16_ASC_FACTOR_REVH : GRID_MODULE_BU16_ASC_FACTOR);
+      if (rev_h) {
         grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &grid_ui_button_get_state(ele)->limits);
       }
     }
+  }
 
+  if (rev_h) {
     grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL);
     grid_ui_bulk_flush(ui);
   }
 
-  uint8_t mux_dependent = !grid_hwcfg_module_is_rev_h(sys);
+  uint8_t mux_dependent = !rev_h;
   grid_esp32_adc_init(adc, 0b11111111, mux_dependent, bu16_process_analog);
   grid_esp32_adc_start(adc);
 }
