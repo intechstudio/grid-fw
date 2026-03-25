@@ -1322,6 +1322,7 @@ void grid_port_decode_msg(struct grid_decoder_collection* coll, struct grid_msg*
       uint32_t class = grid_msg_get_parameter(msg, PARAMETER_CLASSCODE);
       char* chunk = grid_msg_get_slice_start(msg, msg->offset, j - i);
       grid_port_decode_class(coll, class, msg->data, chunk);
+      break;
     }
   }
 
