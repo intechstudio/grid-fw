@@ -44,8 +44,8 @@ uint8_t grid_msg_get_heartbeat_type(struct grid_msg_model* msg);
 void grid_msg_set_editor_heartbeat_lastrealtime(struct grid_msg_model* msg, uint64_t timestamp);
 uint64_t grid_msg_get_editor_heartbeat_lastrealtime(struct grid_msg_model* msg);
 
-uint8_t grid_frame_calculate_checksum_string(uint8_t* frame, size_t length);
-uint8_t grid_frame_calculate_checksum_packet(uint8_t* frame, size_t length);
+uint8_t grid_frame_calculate_checksum_string(const uint8_t* frame, size_t length);
+uint8_t grid_frame_calculate_checksum_packet(const uint8_t* frame, size_t length);
 
 uint32_t grid_frame_get_parameter(const uint8_t* frame, uint16_t offset, uint8_t length);
 void grid_frame_set_parameter(uint8_t* frame, uint16_t offset, uint8_t length, uint32_t value);
@@ -74,7 +74,7 @@ int grid_msg_close(struct grid_msg* msg);
 void grid_msg_init_brc(struct grid_msg_model* model, struct grid_msg* msg, uint8_t dx, uint8_t dy);
 int grid_msg_close_brc(struct grid_msg_model* model, struct grid_msg* msg);
 int grid_msg_nprintf(struct grid_msg* msg, const char* fmt, ...);
-int grid_msg_add_segment_char(struct grid_msg* msg, uint8_t head_hexes, uint32_t size, char* buffer);
+int grid_msg_add_segment_char(struct grid_msg* msg, uint8_t head_hexes, uint32_t size, const char* buffer);
 int grid_msg_add_hex_bytes(struct grid_msg* msg, uint8_t* data, uint16_t length);
 int grid_msg_add_debugtext(struct grid_msg* msg, const char* text);
 int grid_msg_move(struct grid_msg* dest, struct grid_msg* src);

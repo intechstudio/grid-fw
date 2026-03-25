@@ -360,7 +360,7 @@ void handle_connection_effect() {
 
 bool grid_esp32_broadcast_between(enum grid_port_type t1, enum grid_port_type t2) { return !(t1 == GRID_PORT_USART && t2 == GRID_PORT_USART); }
 
-extern bool rp2040_active = false;
+bool rp2040_active = false;
 
 void grid_esp32_port_task(void* arg) {
 
