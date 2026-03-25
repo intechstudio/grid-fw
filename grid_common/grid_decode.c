@@ -1,5 +1,6 @@
 #include "grid_decode.h"
 
+#include <assert.h>
 #include <stdarg.h>
 #include <string.h>
 
