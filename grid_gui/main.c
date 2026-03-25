@@ -30,6 +30,9 @@ int grid_platform_remove(const char* pathname) { return 0; }
 void* grid_platform_opendir(const char* name) { return NULL; }
 int grid_platform_closedir(void* dirp) { return 0; }
 void* grid_platform_readdir(void* dirp) { return NULL; }
+int grid_platform_readdir_type(void) { return 0; }
+int grid_platform_make_directory(const char* path) { return 0; }
+int grid_platform_rename(const char* oldpath, const char* newpath) { return 0; }
 
 void grid_platform_delay_ms(uint32_t delay_milliseconds) { return; }
 void grid_platform_printf(char const* fmt, ...) {
