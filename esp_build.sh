@@ -6,4 +6,4 @@ if ! idf.py -C "$SRC_DIR" build ; then
 	exit 1
 fi
 
-python3 tools/uf2conv/uf2conv.py -f ESP32S3 "$SRC_DIR"/build/grid_fw.bin -b 0x0 -c -o "$SRC_DIR"/build/grid_fw.uf2
+python3 tools/uf2conv/uf2conv.py -f ESP32S3 "$SRC_DIR"/build/grid_"$SRC_DIR".bin -b 0x0 -c -o "$SRC_DIR"/build/grid_"$SRC_DIR".uf2

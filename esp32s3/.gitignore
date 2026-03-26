@@ -9,5 +9,5 @@
 
 !main
 !main/CMakeLists.txt
-!main/grid_fw.c
+!main/grid_esp32s3.c
 !main/idf_component.yml

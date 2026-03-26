@@ -1,6 +1,6 @@
 idf_component_register(
     SRCS
-        "grid_fw.c"
+        "grid_esp32s3.c"
 
     INCLUDE_DIRS
         "."
