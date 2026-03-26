@@ -25,6 +25,7 @@
 // static const char* TAG = "module_pbf4";
 
 #define GRID_MODULE_PBF4_ASC_FACTOR 8
+#define GRID_MODULE_PBF4_ASC_FACTOR_REVH 1
 
 static struct grid_ui_model* DRAM_ATTR ui_ptr = NULL;
 static struct grid_asc* DRAM_ATTR asc_array = NULL;
@@ -95,7 +96,7 @@ void grid_esp32_module_pbf4_init(struct grid_sys_model* sys, struct grid_ui_mode
       grid_asc_set_factor(&asc_array[i], GRID_MODULE_PBF4_ASC_FACTOR);
       grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &grid_ui_potmeter_get_state(ele)->limits);
     } else if (ele->type == GRID_PARAMETER_ELEMENT_BUTTON) {
-      grid_asc_set_factor(&asc_array[i], rev_h ? 1 : GRID_MODULE_PBF4_ASC_FACTOR);
+      grid_asc_set_factor(&asc_array[i], rev_h ? GRID_MODULE_PBF4_ASC_FACTOR_REVH : GRID_MODULE_PBF4_ASC_FACTOR);
       if (rev_h) {
         grid_cal_channel_set(cal, i, GRID_CAL_LIMITS, &grid_ui_button_get_state(ele)->limits);
       }
