@@ -212,7 +212,7 @@ SRCS = \
 	asf/hpl/sercom/hpl_sercom.c \
 	asf/hal/utils/src/utils_ringbuffer.c \
 	asf/hal/src/hal_atomic.c \
-	asf/main.c \
+	asf/grid_d51n20a.c \
 	asf/hal/src/hal_gpio.c \
 	asf/hal/src/hal_ext_irq.c \
 	asf/hpl/eic/hpl_eic.c \
@@ -320,13 +320,13 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR)/%.d | $(BUILD_DIRS)
 	$(INCLUDES) \
 	-o "$@" "$<"
 
-OUTPUT_FILE_NAME=AtmelStart
-OUTPUT_FILE_PATH=$(OUTPUT_FILE_NAME).bin
+OUTPUT_FILE_NAME=grid_d51n20a
+OUTPUT_FILE_PATH=$(BUILD_DIR)/$(OUTPUT_FILE_NAME)
 
-$(OUTPUT_FILE_PATH): $(OBJS) $(DEPS) | $(BUILD_DIRS)
-	$(CC) -o $(OUTPUT_FILE_NAME).elf $(OBJS) \
+$(OUTPUT_FILE_PATH).bin: $(OBJS) $(DEPS) | $(BUILD_DIRS)
+	$(CC) -o $(OUTPUT_FILE_PATH).elf $(OBJS) \
 	-Wl,--start-group -lm -Wl,--end-group -mthumb \
-	-Wl,-Map="$(OUTPUT_FILE_NAME).map" --specs=nosys.specs \
+	-Wl,-Map="$(OUTPUT_FILE_PATH).map" --specs=nosys.specs \
 	-Wl,--gc-sections -Wl,--print-memory-usage -mcpu=cortex-m4 \
 	-u _printf_float \
 	-T"../grid/samd51n20a_flash_bootloader.ld" \
@@ -334,28 +334,22 @@ $(OUTPUT_FILE_PATH): $(OBJS) $(DEPS) | $(BUILD_DIRS)
 
 	@echo Finished building target: $@
 
-	"arm-none-eabi-objcopy" -O binary "$(OUTPUT_FILE_NAME).elf" "$(OUTPUT_FILE_NAME).bin"
+	"arm-none-eabi-objcopy" -O binary "$(OUTPUT_FILE_PATH).elf" "$(OUTPUT_FILE_PATH).bin"
 	"arm-none-eabi-objcopy" -O ihex -R .eeprom -R .fuse -R .lock -R .signature  \
-        "$(OUTPUT_FILE_NAME).elf" "$(OUTPUT_FILE_NAME).hex"
+        "$(OUTPUT_FILE_PATH).elf" "$(OUTPUT_FILE_PATH).hex"
 	"arm-none-eabi-objcopy" -j .eeprom --set-section-flags=.eeprom=alloc,load --change-section-lma \
-        .eeprom=0 --no-change-warnings -O binary "$(OUTPUT_FILE_NAME).elf" \
-        "$(OUTPUT_FILE_NAME).eep" || exit 0
-	"arm-none-eabi-objdump" -h -S "$(OUTPUT_FILE_NAME).elf" > "$(OUTPUT_FILE_NAME).lss"
-	"arm-none-eabi-size" "$(OUTPUT_FILE_NAME).elf"
+        .eeprom=0 --no-change-warnings -O binary "$(OUTPUT_FILE_PATH).elf" \
+        "$(OUTPUT_FILE_PATH).eep" || exit 0
+	"arm-none-eabi-objdump" -h -S "$(OUTPUT_FILE_PATH).elf" > "$(OUTPUT_FILE_PATH).lss"
+	"arm-none-eabi-size" "$(OUTPUT_FILE_PATH).elf"
 
-UF2_NAME=grid_fw.uf2
-$(BUILD_DIR)/$(UF2_NAME): $(OUTPUT_FILE_NAME).bin
+UF2_NAME=grid_d51n20a.uf2
+$(BUILD_DIR)/$(UF2_NAME): $(OUTPUT_FILE_PATH).bin
 	python3 ../../tools/uf2conv/uf2conv.py -c -b 0x4000 -o "$@" "$<"
 
 .PHONY: clean
 clean:
-	rm -rf build
-	rm -f $(OUTPUT_FILE_NAME).bin
-	rm -f $(OUTPUT_FILE_NAME).eep
-	rm -f $(OUTPUT_FILE_NAME).elf
-	rm -f $(OUTPUT_FILE_NAME).hex
-	rm -f $(OUTPUT_FILE_NAME).lss
-	rm -f $(OUTPUT_FILE_NAME).map
+	rm -rf ./build
 
 .PHONY: all
 all: $(BUILD_DIR)/$(UF2_NAME)
