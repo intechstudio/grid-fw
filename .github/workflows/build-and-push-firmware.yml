@@ -29,6 +29,7 @@ jobs:
       - name: Prepare image
         uses: ./.github/actions/prepare-image
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           image-name: "grid-fw"
           dockerfile: "Dockerfile"
 
