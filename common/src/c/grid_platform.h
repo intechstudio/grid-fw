@@ -30,11 +30,17 @@ extern int grid_platform_fflush(void* stream);
 
 extern int grid_platform_remove(const char* pathname);
 
+extern int grid_platform_rename(const char* oldpath, const char* newpath);
+
 extern void* grid_platform_opendir(const char* name);
 
 extern int grid_platform_closedir(void* dirp);
 
 extern void* grid_platform_readdir(void* dirp);
+
+extern const char* grid_platform_readdir_name();
+
+extern uint8_t grid_platform_readdir_type();
 
 extern void grid_platform_printf(char const* fmt, ...);
 
@@ -111,10 +117,6 @@ extern int grid_platform_read_file(struct grid_file_t* handle, uint8_t* buffer, 
 extern int grid_platform_write_file(const char* path, uint8_t* buffer, uint16_t size);
 
 extern int grid_platform_delete_file(struct grid_file_t* handle);
-
-extern int grid_platform_remove_path(const char* path);
-
-extern int grid_platform_remove_dir(const char* path);
 
 extern uint8_t grid_platform_get_nvm_state();
 

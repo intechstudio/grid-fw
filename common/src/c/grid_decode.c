@@ -1256,8 +1256,21 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
     char temp[GRID_PARAMETER_ACTIONSTRING_maxlength] = {0};
     int status = grid_ui_event_recall_configuration(&grid_ui_state, page, element, event, temp);
 
-    if (status || temp[0] == '\0') {
-      break;
+    if (status) {
+
+      uint8_t id = grid_msg_get_parameter_raw((uint8_t*)header, BRC_ID);
+
+      struct grid_msg msg;
+      uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+      grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+      grid_msg_add_frame(&msg, GRID_CLASS_CONFIG_frame_check);
+      grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_NACKNOWLEDGE_code);
+      grid_msg_set_parameter(&msg, CLASS_CONFIG_LASTHEADER, id);
+
+      if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+        grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+      }
     }
 
     // Map system element back to 255

@@ -5,7 +5,7 @@
 
 #include "grid_platform.h"
 
-static int dirent_dir(lua_State* L) {
+static int dirent_list(lua_State* L) {
 
 	const char* path = luaL_optstring(L, 1, ".");
 
@@ -17,9 +17,15 @@ static int dirent_dir(lua_State* L) {
 	lua_newtable(L);
 
 	int i = 0;
-	void* dirent = NULL;
-	while ((dirent = grid_platform_readdir(dir))) {
-		lua_pushstring(L, dirent);
+	while (grid_platform_readdir(dir)) {
+
+		lua_newtable(L);
+
+		lua_pushstring(L, grid_platform_readdir_name());
+		lua_rawseti(L, -2, 1);
+		lua_pushinteger(L, grid_platform_readdir_type());
+		lua_rawseti(L, -2, 2);
+
 		lua_rawseti(L, -2, ++i);
 	}
 
@@ -30,8 +36,18 @@ static int dirent_dir(lua_State* L) {
 	return 1;
 }
 
+static int dirent_mkdir(lua_State* L) {
+
+	const char* path = luaL_checkstring(L, 1);
+
+	lua_pushboolean(L, grid_platform_make_directory(path) == 0);
+
+	return 1;
+}
+
 static const luaL_Reg direntlib[] = {
-	{"dir", dirent_dir},
+	{"list", dirent_list},
+	{"mkdir", dirent_mkdir},
 	{NULL, NULL},
 };
 

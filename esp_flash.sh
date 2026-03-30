@@ -3,6 +3,10 @@ SRC_DIR=esp32s3
 PORT=${PORT:-/dev/ttyUSB0}
 OTA=${OTA:-yes}
 
+if [ "$PORT" == "/dev/ttyACM" ] ; then
+	PORT=$(ls /dev/ttyACM*)
+fi
+
 esptool.py --chip esp32s3 -p "$PORT" -b 2000000 --before=default_reset --after=no_reset write_flash --flash_mode dio --flash_size detect --flash_freq 80m 0x10000 $SCRIPT_DIR/"$SRC_DIR"/build/grid_"$SRC_DIR".bin
 
 if [ "$OTA" = "yes" ]; then

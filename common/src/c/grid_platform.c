@@ -53,12 +53,12 @@ void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
 
     // Remove element directory
     sprintf(path, "%02x/%02x", page, i);
-    grid_platform_remove_dir(path);
+    grid_platform_remove(path);
   }
 
   // Remove page directory
   sprintf(path, "%02x", page);
-  grid_platform_remove_dir(path);
+  grid_platform_remove(path);
 }
 
 void grid_platform_delete_actionstring_files_all() {
@@ -123,20 +123,6 @@ int grid_platform_delete_file(struct grid_file_t* handle) {
   assert(LFS);
 
   return grid_littlefs_remove(LFS, handle->path);
-}
-
-int grid_platform_remove_path(const char* path) {
-
-  assert(LFS);
-
-  return grid_littlefs_remove(LFS, path);
-}
-
-int grid_platform_remove_dir(const char* path) {
-
-  assert(LFS);
-
-  return grid_littlefs_rmdir(LFS, path);
 }
 
 uint8_t grid_platform_get_nvm_state() { return LFS != NULL; }
@@ -249,7 +235,14 @@ int grid_platform_remove(const char* pathname) {
 
   assert(LFS);
 
-  return grid_littlefs_remove(LFS, pathname) == 0 ? 0 : -1;
+  return grid_littlefs_remove(LFS, pathname);
+}
+
+int grid_platform_rename(const char* oldpath, const char* newpath) {
+
+  assert(LFS);
+
+  return grid_littlefs_rename(LFS, oldpath, newpath);
 }
 
 void* grid_platform_opendir(const char* name) {
@@ -272,3 +265,7 @@ void* grid_platform_readdir(void* dirp) {
 
   return grid_littlefs_readdir(LFS, dirp);
 }
+
+const char* grid_platform_readdir_name() { return grid_littlefs_readdir_name(); }
+
+uint8_t grid_platform_readdir_type() { return grid_littlefs_readdir_type(); }
