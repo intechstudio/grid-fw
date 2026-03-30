@@ -1,15 +1,66 @@
-binary
-grid_esp/dependencies.lock
-lists.py
-out.json
-iperf
-vmp/build
-tags
+# block everything by default
+*
 
-# Ignore vim files:
+# ignore vim files
 *~
 *.swp
 *.swo
 
-# Ignore compiler dependency files:
+# ignore dependency files
 *.d
+
+!.archive
+!.archive/**
+
+!.github
+!.github/workflows
+!.github/workflows/*.yml
+!.github/workflows/*.py
+!.github/workflows/INSTRUCTIONS.txt
+!.github/actions
+!.github/actions/prepare-image
+!.github/actions/prepare-image/action.yml
+
+!.clang-format
+!.codespellrc
+!.gitignore
+!.pre-commit-config.yaml
+
+!common
+!d51n20a
+!d51n20a/**
+!esp32s3
+!grid_gui
+!rp2040
+!test
+!tools
+!wasm
+
+!d51_build.sh
+!docker_clean.sh
+!docker_build.sh
+!docker_start.sh
+!Dockerfile
+!esp_build.sh
+!esp_burn_bootloader.sh
+!esp_debug.sh
+!esp_flash.sh
+!esp_monitor.sh
+!exclude-file.txt
+!gui_build.sh
+!gui_server.py
+!gui_start.sh
+!host_test.sh
+!ignore-words.txt
+!LICENSE
+!lua_build.sh
+!merged_stream.sh
+!patch_esp_efuse_startup.sh
+!patch_esp_trace_include.sh
+!pico_build.sh
+!pre_commit.sh
+!README.md
+!stylua.toml
+!test.sh
+!wasm_build.sh
+!wasm_server.py

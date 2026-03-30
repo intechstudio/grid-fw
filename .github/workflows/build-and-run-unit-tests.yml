@@ -1,0 +1,17 @@
+name: Build and run unit tests
+
+on:
+  workflow_call:
+
+jobs:
+  unit-testing:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Run unit tests
+        run: ./lua_build.sh && ./test.sh
