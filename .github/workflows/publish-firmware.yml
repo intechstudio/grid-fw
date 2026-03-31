@@ -59,3 +59,5 @@ jobs:
     name: Protocol conversion
     needs: build-firmware
     uses: ./.github/workflows/protocol-converter.yml
+    secrets:
+      personal_access_token: ${{ secrets.PERSONALACCESSTOKEN }}

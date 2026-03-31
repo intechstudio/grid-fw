@@ -2,6 +2,9 @@ name: Convert the protocol definition
 
 on:
   workflow_call:
+    secrets:
+      personal_access_token:
+        required: true
 
 jobs:
   build:
@@ -42,6 +45,6 @@ jobs:
             git config --global user.name "Intech Bot"
             git commit -m "BOT protocol file synced from grid-fw repo"
             git remote set-url origin \
-              https://${{ secrets.PERSONALACCESSTOKEN }}@github.com/${{ env.protocol-repo }}
+              https://${{ secrets.personal_access_token }}@github.com/${{ env.protocol-repo }}
             git push
           fi
