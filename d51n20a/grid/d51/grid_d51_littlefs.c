@@ -34,6 +34,7 @@ void grid_d51_littlefs_init(struct d51_littlefs_t* dfs, lfs_t* lfs, struct flash
   }
 
   strcpy(dfs->base_path, base_path);
+  assert(base_path[0] == '\0');
 }
 
 int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs, bool force_format) {
@@ -55,11 +56,6 @@ int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs, bool force_format) {
   grid_d51_littlefs_init(dfs, lfs, &FLASH_0, "", false);
 
   if (grid_littlefs_mount_or_format(dfs->lfs, &dfs->cfg, force_format)) {
-    free(lfs);
-    return 1;
-  }
-
-  if (grid_littlefs_mkdir_base(dfs->lfs, dfs->base_path)) {
     free(lfs);
     return 1;
   }

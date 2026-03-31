@@ -7,11 +7,9 @@ const char* littlefs_errno(enum lfs_error lfs_errno);
 
 int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg, bool force_format);
 int grid_littlefs_unmount(lfs_t* lfs);
-int grid_littlefs_mkdir_base(lfs_t* lfs, const char* path);
-
-int grid_littlefs_path_build(const char* path, uint16_t out_size, char* out);
 
 int grid_littlefs_remove(lfs_t* lfs, const char* path);
+int grid_littlefs_rename(lfs_t* lfs, const char* oldpath, const char* newpath);
 
 int grid_littlefs_mkdir(lfs_t* lfs, const char* path);
 int grid_littlefs_rmdir(lfs_t* lfs, const char* path);
@@ -36,6 +34,8 @@ ssize_t grid_littlefs_fseek(lfs_t* lfs, lfs_file_t* stream, lfs_soff_t soff, int
 int grid_littlefs_fflush(lfs_t* lfs, lfs_file_t* stream);
 lfs_dir_t* grid_littlefs_opendir(lfs_t* lfs, const char* name);
 int grid_littlefs_closedir(lfs_t* lfs, lfs_dir_t* dirp);
-char* grid_littlefs_readdir(lfs_t* lfs, lfs_dir_t* dirp);
+void* grid_littlefs_readdir(lfs_t* lfs, lfs_dir_t* dirp);
+const char* grid_littlefs_readdir_name();
+uint8_t grid_littlefs_readdir_type();
 
 #endif /* GRID_LITTLEFS_H */

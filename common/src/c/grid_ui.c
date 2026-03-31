@@ -1147,7 +1147,7 @@ PT_THREAD(grid_ui_bulk_page_clear(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
   char path[50] = {0};
   sprintf(path, "%02x", ui->bulk_last_page);
-  grid_platform_remove_dir(path);
+  grid_platform_remove(path);
 
   PT_END(pt);
 }
