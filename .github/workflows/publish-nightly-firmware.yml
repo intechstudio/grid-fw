@@ -18,9 +18,6 @@ jobs:
           name: nightly_firmware
           path: nightly/
 
-      - name: Remove duplicate binary (the one without a timestamp)
-        run: rm nightly/*nightly.uf2
-
       - name: Zip artifacts for github release
         uses: vimtor/action-zip@v1
         with:
