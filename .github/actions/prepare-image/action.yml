@@ -1,6 +1,9 @@
 name: Prepare image
 
 inputs:
+  token:
+    description: GitHub PAT
+    required: true
   image-name:
     description: Image name
     required: true
@@ -19,7 +22,7 @@ runs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ inputs.token }}
 
     - name: Pull or rebuild image
       env:

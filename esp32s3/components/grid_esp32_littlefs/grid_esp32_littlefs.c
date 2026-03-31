@@ -52,6 +52,7 @@ static esp_err_t grid_esp32_littlefs_init(struct esp_littlefs_t* efs, lfs_t* lfs
   }
 
   strcpy(efs->base_path, base_path);
+  assert(base_path[0] == '\0');
 
   return ESP_OK;
 }
@@ -97,11 +98,6 @@ esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs, bool force_forma
   grid_esp32_littlefs_init(efs, lfs, part, "", false);
 
   if (grid_littlefs_mount_or_format(efs->lfs, &efs->cfg, force_format)) {
-    free(lfs);
-    return ESP_FAIL;
-  }
-
-  if (grid_littlefs_mkdir_base(efs->lfs, efs->base_path)) {
     free(lfs);
     return ESP_FAIL;
   }

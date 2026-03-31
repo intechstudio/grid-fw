@@ -494,7 +494,7 @@ void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_li
   // luaL_openlibs(lua->L);
 
   static const luaL_Reg loadedlibs[] = {{LUA_GNAME, luaopen_base},
-                                        //{LUA_LOADLIBNAME, luaopen_package},
+                                        {LUA_LOADLIBNAME, luaopen_package},
                                         //{LUA_COLIBNAME, luaopen_coroutine},
                                         {LUA_TABLIBNAME, luaopen_table},
                                         {LUA_IOLIBNAME, luaopen_io},
@@ -514,6 +514,8 @@ void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_li
   }
 
   // grid_lua_debug_memory_stats(lua, "Openlibs");
+
+  grid_lua_dostring_unsafe(lua, "package.path = '/?.lua;/?/init.lua'");
 
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_DECODE_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_LOOKUP_source);
