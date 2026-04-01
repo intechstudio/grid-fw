@@ -44,29 +44,16 @@ int grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t
   return grid_platform_write_file(path, (uint8_t*)buffer, length + 1);
 }
 
-void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
-
-  char path[50] = {0};
-
-  // upkeep: loop bound
-  for (uint8_t i = 0; i < 18 + 1; ++i) {
-
-    // Remove element directory
-    sprintf(path, "%02x/%02x", page, i);
-    grid_platform_remove(path);
-  }
-
-  // Remove page directory
-  sprintf(path, "%02x", page);
-  grid_platform_remove(path);
-}
-
 void grid_platform_delete_actionstring_files_all() {
 
   // upkeep: loop bound
   for (uint8_t i = 0; i < 4; ++i) {
 
-    grid_platform_clear_all_actionstring_files_from_page(i);
+    char path[3] = {0};
+    snprintf(path, 3, "%02x", i);
+
+    // Remove page directory, assuming remove is recursive
+    grid_platform_remove(path);
   }
 }
 
