@@ -29,7 +29,7 @@ struct grid_ui_event {
 
   enum grid_eve_state_t state;
 
-  const char* default_actionstring;
+  const char* default_script;
 
   uint8_t cfg_changed_flag;
   uint8_t cfg_default_flag;
@@ -138,7 +138,7 @@ void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length);
 struct grid_ui_element* grid_ui_model_get_elements(struct grid_ui_model* ui);
 
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index);
-void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_actionstring);
+void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_script);
 
 void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui);
 void grid_ui_midi_sync_tick_time(struct grid_ui_model* ui);
@@ -158,10 +158,10 @@ uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui);
 
 struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t event_type);
 
-uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* action_string);
-void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* targetstring);
-void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* targetstring);
-void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstring);
+uint8_t grid_ui_event_isdefault_script(struct grid_ui_event* eve, char* action_string);
+void grid_ui_event_register_script(struct grid_ui_event* eve, char* targetstring);
+void grid_ui_event_generate_script(struct grid_ui_event* eve, char* targetstring);
+void grid_ui_event_get_script(struct grid_ui_event* eve, char* targetstring);
 int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, uint8_t event_type, char* targetstring);
 
 uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve);

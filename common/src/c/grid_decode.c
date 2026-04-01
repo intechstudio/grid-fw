@@ -519,10 +519,6 @@ uint8_t grid_decode_immediate_to_ui(char* header, char* chunk) {
 
   char* script = &chunk[GRID_CLASS_IMMEDIATE_ACTIONSTRING_offset];
 
-  if (!grid_lua_strn_is_actionstring(script, length)) {
-    return 1;
-  }
-
   if (!grid_ui_bulk_semaphore_try(&grid_ui_state)) {
     return 1;
   }
@@ -572,10 +568,6 @@ uint8_t grid_decode_evaluate_to_ui(char* header, char* chunk) {
   }
 
   char* script = (char*)&first[GRID_CLASS_EVALUATE_ELEMENT_DATA_offset];
-
-  if (!grid_lua_strn_is_actionstring(script, length)) {
-    return 1;
-  }
 
   uint8_t id = grid_msg_get_parameter_raw((uint8_t*)header, BRC_ID);
 
@@ -1214,9 +1206,9 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
       // Set alert for feedback
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE, 64);
 
-      // Register actionstring for event
+      // Register script for event
       action[actionlength] = '\0';
-      grid_ui_event_register_actionstring(eve, action);
+      grid_ui_event_register_script(eve, action);
       action[actionlength] = GRID_CONST_ETX;
 
       // Local-trigger the event

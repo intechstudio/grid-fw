@@ -26,10 +26,6 @@ const luaL_Reg GRID_LUA_P_INDEX_META[] = {{GRID_LUA_FNC_P_ELEMENT_INDEX_short, X
                                           {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, XAFTERX(GRID_LUA_FNC_META_NAME, ggen)},
                                           {NULL, NULL}};
 
-const char grid_ui_potmeter_init_actionstring[] = GRID_ACTIONSTRING_POTMETER_INIT;
-const char grid_ui_potmeter_potmeterchange_actionstring[] = GRID_ACTIONSTRING_POTMETER_POTMETER;
-const char grid_ui_potmeter_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
-
 void grid_ui_potmeter_state_init(struct grid_ui_potmeter_state* state, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center) {
 
   state->last_real_time = 0;
@@ -55,9 +51,9 @@ void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
 
   grid_ui_element_malloc_events(ele, 3);
 
-  grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_potmeter_init_actionstring);                   // Element Initialization Event
-  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_POTMETER, GRID_LUA_FNC_A_POTMETER_short, grid_ui_potmeter_potmeterchange_actionstring); // Absolute Value Change (7bit)
-  grid_ui_event_init(ele, 2, GRID_PARAMETER_EVENT_TIMER, GRID_LUA_FNC_A_TIMER_short, grid_ui_potmeter_timer_actionstring);
+  grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, GRID_ACTIONSTRING_POTMETER_INIT);
+  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_POTMETER, GRID_LUA_FNC_A_POTMETER_short, GRID_ACTIONSTRING_POTMETER_POTMETER);
+  grid_ui_event_init(ele, 2, GRID_PARAMETER_EVENT_TIMER, GRID_LUA_FNC_A_TIMER_short, GRID_ACTIONSTRING_SYSTEM_TIMER);
 
   ele->template_initializer = &grid_ui_element_potmeter_template_parameter_init;
   ele->template_parameter_list_length = GRID_LUA_FNC_P_LIST_length;

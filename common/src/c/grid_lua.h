@@ -105,8 +105,6 @@ void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, con
 struct grid_msg;
 int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, uint8_t instr, uint8_t id);
 
-bool grid_lua_strn_is_actionstring(const char* s, size_t maxlen);
-
 // clang-format off
 
 #define XAFTERX(macro, exp) macro(exp)

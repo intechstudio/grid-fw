@@ -147,7 +147,7 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   return ele;
 }
 
-void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_actionstring) {
+void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_script) {
 
   assert(index < ele->event_list_length);
 
@@ -155,7 +155,7 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t even
 
   eve->parent = ele;
   eve->state = GRID_EVE_STATE_INIT;
-  eve->default_actionstring = default_actionstring;
+  eve->default_script = default_script;
   eve->cfg_changed_flag = 0;
   eve->cfg_default_flag = 1;
   eve->type = event_type;
@@ -338,29 +338,29 @@ void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t pa
 
 uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui) { return ui->page_change_enabled; }
 
-uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* action_string) { return strcmp(action_string, eve->default_actionstring) == 0; }
+uint8_t grid_ui_event_isdefault_script(struct grid_ui_event* eve, char* script) { return strcmp(script, eve->default_script) == 0; }
 
-void grid_ui_actionstring_header(uint8_t index, char* function_name, char* dest) {
+void grid_ui_script_header(uint8_t index, char* function_name, char* dest) {
 
   char fn_push[] = "local _efn = EFN; EFN = ";
 
   sprintf(dest, "ele[%d].%s = function (self) %s\"%s\"; ", index, function_name, fn_push, function_name);
 }
 
-void grid_ui_actionstring_center(char* actionstring, char* dest) { sprintf(dest, "%s ", actionstring); }
+void grid_ui_script_center(char* script, char* dest) { sprintf(dest, "%s ", script); }
 
-void grid_ui_actionstring_footer(char* dest) {
+void grid_ui_script_footer(char* dest) {
 
   char fn_pop[] = "EFN = _efn";
 
   sprintf(dest, "end %s", fn_pop);
 }
 
-void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action_string) {
+void grid_ui_event_register_script(struct grid_ui_event* eve, char* script) {
 
   struct grid_ui_element* ele = eve->parent;
 
-  uint32_t len = strlen(action_string);
+  uint32_t len = strlen(script);
 
   if (len == 0) {
     grid_platform_printf("NULLSTRING el:%d, elv:%d\r\n", ele->index, eve->type);
@@ -369,14 +369,14 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action
 
   char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
-  grid_ui_actionstring_header(ele->index, eve->function_name, temp);
-  grid_ui_actionstring_center(action_string, &temp[strlen(temp)]);
-  grid_ui_actionstring_footer(&temp[strlen(temp)]);
+  grid_ui_script_header(ele->index, eve->function_name, temp);
+  grid_ui_script_center(script, &temp[strlen(temp)]);
+  grid_ui_script_footer(&temp[strlen(temp)]);
 
-  eve->cfg_default_flag = grid_ui_event_isdefault_actionstring(eve, action_string);
+  eve->cfg_default_flag = grid_ui_event_isdefault_script(eve, script);
 
   if (0 == grid_lua_dostring(&grid_lua_state, temp)) {
-    grid_port_debug_printf("LUA not OK, Failed to register action! EL: %d EV: %d", ele->index, eve->type);
+    grid_port_debug_printf("LUA not OK, Failed to register script! EL: %d EV: %d", ele->index, eve->type);
   };
 
   grid_lua_semaphore_lock(&grid_lua_state);
@@ -386,9 +386,9 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action
   eve->cfg_changed_flag = 1;
 }
 
-void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* targetstring) { strcpy(targetstring, eve->default_actionstring); }
+void grid_ui_event_generate_script(struct grid_ui_event* eve, char* targetstring) { strcpy(targetstring, eve->default_script); }
 
-void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstring) {
+void grid_ui_event_get_script(struct grid_ui_event* eve, char* targetstring) {
 
   char temp[100] = {0};
   char result[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
@@ -396,14 +396,14 @@ void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstrin
   sprintf(temp, "gsg(%ld,debug.getinfo(ele[%d].%s,\"S\").source)", (uint32_t)result, eve->parent->index, eve->function_name);
 
   if (0 == grid_lua_dostring(&grid_lua_state, temp)) {
-    grid_port_debug_printf("LUA not OK, Failed to retrieve action! EL: %d EV: %d", eve->parent->index, eve->type);
+    grid_port_debug_printf("LUA not OK, Failed to retrieve script! EL: %d EV: %d", eve->parent->index, eve->type);
   };
 
   char header[100] = {0};
   char footer[100] = {0};
 
-  grid_ui_actionstring_header(eve->parent->index, eve->function_name, header);
-  grid_ui_actionstring_footer(footer);
+  grid_ui_script_header(eve->parent->index, eve->function_name, header);
+  grid_ui_script_footer(footer);
 
   size_t header_len = strlen(header);
   size_t footer_len = strlen(footer);
@@ -411,7 +411,7 @@ void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstrin
   // Check if debug.getinfo is valid by checking for a known prefix
   if (0 != strncmp(header, result, header_len)) {
 
-    grid_ui_event_generate_actionstring(eve, targetstring);
+    grid_ui_event_generate_script(eve, targetstring);
     grid_platform_printf("ERROR: invalid debug.getinfo\r\n");
     return;
   }
@@ -448,11 +448,11 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
   if (eve->cfg_default_flag) {
 
-    grid_ui_event_generate_actionstring(eve, targetstring);
+    grid_ui_event_generate_script(eve, targetstring);
 
   } else {
 
-    grid_ui_event_get_actionstring(eve, targetstring);
+    grid_ui_event_get_script(eve, targetstring);
   }
 
   return 0;
@@ -997,7 +997,7 @@ PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
     PT_EXIT(pt);
   }
 
-  // Mark all actionstrings as default
+  // Mark all scripts as default
   for (uint8_t i = 0; i < ui->element_list_length; ++i) {
 
     struct grid_ui_element* ele = &ui->element_list[i];
@@ -1012,7 +1012,7 @@ PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
   element = -1;
   event = -1;
 
-  // Register all custom actionstring files
+  // Register all custom script files
   struct grid_file_t handle;
   while (!grid_platform_find_next_actionstring_file_on_page(page, &element, &event, &handle)) {
 
@@ -1023,7 +1023,7 @@ PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
       grid_platform_read_file(&handle, (uint8_t*)temp, size);
 
       struct grid_ui_event* eve = grid_ui_event_find(&ui->element_list[element], event);
-      grid_ui_event_register_actionstring(eve, temp);
+      grid_ui_event_register_script(eve, temp);
       eve->cfg_changed_flag = 0; // clear changed flag
 
       grid_platform_printf("grid_ui_bulk_page_read, element: %d, event: %d\n", element, event);
@@ -1032,7 +1032,7 @@ PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
     PT_YIELD(pt);
   }
 
-  // Fill all of the remaining default events with default actionstrings
+  // Fill all of the remaining default events with default scripts
   for (uint8_t i = 0; i < ui->element_list_length; ++i) {
 
     struct grid_ui_element* ele = &ui->element_list[i];
@@ -1045,8 +1045,8 @@ PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
         char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
-        grid_ui_event_generate_actionstring(eve, temp);
-        grid_ui_event_register_actionstring(eve, temp);
+        grid_ui_event_generate_script(eve, temp);
+        grid_ui_event_register_script(eve, temp);
       }
     }
   }
@@ -1097,7 +1097,7 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
       } else {
 
         char buffer[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
-        grid_ui_event_get_actionstring(eve, buffer);
+        grid_ui_event_get_script(eve, buffer);
         grid_platform_write_actionstring_file(page, ele->index, eve->type, buffer, strlen(buffer));
         grid_platform_printf("grid_ui_bulk_page_store, element: %d, event: %d\n", i, j);
       }

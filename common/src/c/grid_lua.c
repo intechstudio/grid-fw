@@ -820,18 +820,3 @@ int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, ui
 
   return 0;
 }
-
-bool grid_lua_strn_is_actionstring(const char* s, size_t maxlen) {
-
-  if (strncmp(s, "<?lua ", 6) == 0) {
-    return false;
-  }
-
-  size_t nlen = strnlen(s, maxlen);
-
-  if (strncmp(&s[nlen - 3], " ?>", 3) == 0) {
-    return false;
-  }
-
-  return true;
-}

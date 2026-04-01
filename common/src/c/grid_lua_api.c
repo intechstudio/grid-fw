@@ -376,7 +376,7 @@ int l_grid_cat(lua_State* L) {
   grid_msg_set_parameter(&msg, CLASS_IMMEDIATE_ACTIONLENGTH, actionlength);
 
   if (grid_msg_nprintf(&msg, "%s", str) <= 0) {
-    grid_port_debug_printf("Length of actionstring exceeds message! %u", actionlength);
+    grid_port_debug_printf("Length of script exceeds message! %u", actionlength);
     return 0;
   }
 
