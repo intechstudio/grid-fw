@@ -573,7 +573,7 @@ void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg)
   grid_msg_set_parameter(msg, CLASS_EVENT_EVENTPARAM2, param2);
 }
 
-void grid_ui_event_render_action(struct grid_ui_event* eve, struct grid_msg* msg) {
+void grid_ui_event_render_script(struct grid_ui_event* eve, struct grid_msg* msg) {
 
   if (!grid_lua_do_event(&grid_lua_state, eve->parent->index, eve->function_name)) {
 
@@ -674,7 +674,7 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui) {
         continue;
       }
 
-      grid_ui_event_render_action(eve, &msg_local);
+      grid_ui_event_render_script(eve, &msg_local);
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
 
@@ -750,7 +750,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
 
       grid_ui_event_render_event(eve, &msg);
       grid_ui_event_render_event_view(eve, &msg);
-      grid_ui_event_render_action(eve, &msg);
+      grid_ui_event_render_script(eve, &msg);
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }

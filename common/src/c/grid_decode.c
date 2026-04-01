@@ -1184,15 +1184,15 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
     // Disable HID
     grid_usb_keyboard_disable(&grid_usb_keyboard_state);
 
-    uint16_t actionlength = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_CONFIG_ACTIONLENGTH);
+    uint16_t scriptlength = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_CONFIG_ACTIONLENGTH);
 
-    char* action = &chunk[GRID_CLASS_CONFIG_ACTIONSTRING_offset];
+    char* script = &chunk[GRID_CLASS_CONFIG_ACTIONSTRING_offset];
 
     // By default, generate nacknowledge
     uint8_t respinstr = GRID_INSTR_NACKNOWLEDGE_code;
 
-    bool validlength = actionlength <= GRID_PARAMETER_ACTIONSTRING_maxlength;
-    bool endswithetx = validlength ? action[actionlength] == GRID_CONST_ETX : false;
+    bool validlength = scriptlength <= GRID_PARAMETER_ACTIONSTRING_maxlength;
+    bool endswithetx = validlength ? script[scriptlength] == GRID_CONST_ETX : false;
     bool currentpage = page == grid_ui_state.page_activepage;
     bool validelement = element < grid_ui_state.element_list_length;
     struct grid_ui_element* ele = validelement ? &grid_ui_state.element_list[element] : NULL;
@@ -1207,9 +1207,9 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE, 64);
 
       // Register script for event
-      action[actionlength] = '\0';
-      grid_ui_event_register_script(eve, action);
-      action[actionlength] = GRID_CONST_ETX;
+      script[scriptlength] = '\0';
+      grid_ui_event_register_script(eve, script);
+      script[scriptlength] = GRID_CONST_ETX;
 
       // Local-trigger the event
       grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
