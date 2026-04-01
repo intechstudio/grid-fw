@@ -70,12 +70,12 @@ extern const luaL_Reg GRID_LUA_B_INDEX_META[];
   \
   "}}"
 
-#define GRID_ACTIONSTRING_BUTTON_INIT "<?lua --[[@cb]] --[[Button Init]] ?>"
+#define GRID_ACTIONSTRING_BUTTON_INIT "--[[@cb]] --[[Button Init]]"
 
 #define GRID_ACTIONSTRING_BUTTON_BUTTON \
-  "<?lua --[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)" \
+  "--[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)" \
   "--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)" \
-  "--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+  "--[[@gms]] self:gms(-1,-1,-1,-1)"
 
 // clang-format on
 

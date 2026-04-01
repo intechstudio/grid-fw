@@ -347,7 +347,7 @@ void grid_ui_actionstring_header(uint8_t index, char* function_name, char* dest)
   sprintf(dest, "ele[%d].%s = function (self) %s\"%s\"; ", index, function_name, fn_push, function_name);
 }
 
-void grid_ui_actionstring_center(char* actionstring, char* dest) { sprintf(dest, "%s ", &actionstring[6]); }
+void grid_ui_actionstring_center(char* actionstring, char* dest) { sprintf(dest, "%s ", actionstring); }
 
 void grid_ui_actionstring_footer(char* dest) {
 
@@ -369,11 +369,9 @@ void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action
 
   char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
-  action_string[len - 3] = '\0';
   grid_ui_actionstring_header(ele->index, eve->function_name, temp);
   grid_ui_actionstring_center(action_string, &temp[strlen(temp)]);
   grid_ui_actionstring_footer(&temp[strlen(temp)]);
-  action_string[len - 3] = ' ';
 
   eve->cfg_default_flag = grid_ui_event_isdefault_actionstring(eve, action_string);
 
@@ -411,21 +409,14 @@ void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstrin
   size_t footer_len = strlen(footer);
 
   // Check if debug.getinfo is valid by checking for a known prefix
-  if (0 == strncmp(header, result, header_len)) {
-
-    // Transform result to an actionstring
-    // add 1 to footer to compensate for an added space
-    sprintf(&result[strlen(result) - (footer_len + 1)], " ?>");
-    uint8_t offset = header_len - 6;
-    memcpy(&result[offset], "<?lua ", 6);
-
-    strcpy(targetstring, &result[offset]);
-
-  } else {
+  if (0 != strncmp(header, result, header_len)) {
 
     grid_ui_event_generate_actionstring(eve, targetstring);
     grid_platform_printf("ERROR: invalid debug.getinfo\r\n");
+    return;
   }
+
+  strcpy(targetstring, &result[header_len]);
 }
 
 int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, uint8_t event_type, char* targetstring) {
@@ -451,7 +442,7 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
   if (!eve) {
     grid_platform_printf("grid_ui_event_recall_configuration: invalid event\n");
-    strcpy(targetstring, "<?lua --[[@cb]] --[[event deprecated]] ?>");
+    strcpy(targetstring, "--[[@cb]] --[[event deprecated]]");
     return 0;
   }
 

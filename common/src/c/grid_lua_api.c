@@ -372,10 +372,10 @@ int l_grid_cat(lua_State* L) {
   grid_msg_add_frame(&msg, GRID_CLASS_IMMEDIATE_frame_start);
   grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_EXECUTE_code);
 
-  uint32_t actionlength = strlen(str) + strlen("<?lua ") + strlen(" ?>");
+  uint32_t actionlength = strlen(str);
   grid_msg_set_parameter(&msg, CLASS_IMMEDIATE_ACTIONLENGTH, actionlength);
 
-  if (grid_msg_nprintf(&msg, "<?lua %s ?>", str) <= 0) {
+  if (grid_msg_nprintf(&msg, "%s", str) <= 0) {
     grid_port_debug_printf("Length of actionstring exceeds message! %u", actionlength);
     return 0;
   }

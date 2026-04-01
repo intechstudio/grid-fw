@@ -52,12 +52,12 @@ extern const luaL_Reg GRID_LUA_P_INDEX_META[];
   \
   "}}"
 
-#define GRID_ACTIONSTRING_POTMETER_INIT "<?lua --[[@cb]] --[[Potmeter Init]] ?>"
+#define GRID_ACTIONSTRING_POTMETER_INIT "--[[@cb]] --[[Potmeter Init]]"
 
 #define GRID_ACTIONSTRING_POTMETER_POTMETER \
-  "<?lua --[[@spc]] self:pmo(7) self:pmi(0)  self:pma(127)" \
+  "--[[@spc]] self:pmo(7) self:pmi(0)  self:pma(127)" \
   "--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)" \
-  "--[[@gms]] self:gms(-1,-1,-1,-1) ?>"
+  "--[[@gms]] self:gms(-1,-1,-1,-1)"
 
 // clang-format on
 
