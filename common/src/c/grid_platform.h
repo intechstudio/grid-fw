@@ -82,13 +82,13 @@ struct grid_file_t {
   char path[50];
 };
 
-extern int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, struct grid_file_t* handle);
+extern int grid_platform_find_next_script_file_on_page(uint8_t page, int* last_element, int* last_event, struct grid_file_t* handle);
 
-extern int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, struct grid_file_t* handle);
+extern int grid_platform_find_script_file(uint8_t page, uint8_t element, uint8_t event_type, struct grid_file_t* handle);
 
-extern int grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
+extern int grid_platform_write_script_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
 
-extern void grid_platform_delete_actionstring_files_all();
+extern void grid_platform_delete_script_files_all();
 
 extern void grid_platform_nvm_erase();
 

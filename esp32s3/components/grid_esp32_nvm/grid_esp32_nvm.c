@@ -77,7 +77,7 @@ void grid_esp32_nvm_unmount(struct grid_esp32_nvm_model* nvm) {
 
 void grid_platform_nvm_erase() {
 
-  grid_platform_delete_actionstring_files_all();
+  grid_platform_delete_script_files_all();
 
   struct grid_file_t handle = {0};
   if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle) == 0) {

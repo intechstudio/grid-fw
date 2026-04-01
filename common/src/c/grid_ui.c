@@ -1014,7 +1014,7 @@ PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
   // Register all custom script files
   struct grid_file_t handle;
-  while (!grid_platform_find_next_actionstring_file_on_page(page, &element, &event, &handle)) {
+  while (!grid_platform_find_next_script_file_on_page(page, &element, &event, &handle)) {
 
     uint16_t size = grid_platform_get_file_size(&handle);
     if (size > 0) {
@@ -1089,7 +1089,7 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
       if (eve->cfg_default_flag) {
 
         struct grid_file_t handle;
-        if (grid_platform_find_actionstring_file(page, ele->index, eve->type, &handle) == 0) {
+        if (grid_platform_find_script_file(page, ele->index, eve->type, &handle) == 0) {
           grid_platform_delete_file(&handle);
           grid_platform_printf("grid_ui_bulk_page_store, delete: %s\n", handle.path);
         }
@@ -1098,7 +1098,7 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
         char buffer[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
         grid_ui_event_get_script(eve, buffer);
-        grid_platform_write_actionstring_file(page, ele->index, eve->type, buffer, strlen(buffer));
+        grid_platform_write_script_file(page, ele->index, eve->type, buffer, strlen(buffer));
         grid_platform_printf("grid_ui_bulk_page_store, element: %d, event: %d\n", i, j);
       }
 
@@ -1129,7 +1129,7 @@ PT_THREAD(grid_ui_bulk_page_clear(proto_pt_t* pt, struct grid_ui_model* ui)) {
   event = -1;
 
   struct grid_file_t handle;
-  while (!grid_platform_find_next_actionstring_file_on_page(page, &element, &event, &handle)) {
+  while (!grid_platform_find_next_script_file_on_page(page, &element, &event, &handle)) {
 
     grid_platform_delete_file(&handle);
 

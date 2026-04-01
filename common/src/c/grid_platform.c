@@ -8,7 +8,7 @@ static void* LFS = NULL;
 
 void grid_platform_set_lfs(void* lfs) { LFS = lfs; }
 
-int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, struct grid_file_t* handle) {
+int grid_platform_find_next_script_file_on_page(uint8_t page, int* last_element, int* last_event, struct grid_file_t* handle) {
 
   assert(LFS);
 
@@ -22,7 +22,7 @@ int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_el
   return ret;
 }
 
-int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event, struct grid_file_t* handle) {
+int grid_platform_find_script_file(uint8_t page, uint8_t element, uint8_t event, struct grid_file_t* handle) {
 
   char path[50] = {0};
   sprintf(path, "%02x/%02x/%02x.cfg", page, element, event);
@@ -30,7 +30,7 @@ int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t 
   return grid_platform_find_file(path, handle);
 }
 
-int grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event, char* buffer, uint16_t length) {
+int grid_platform_write_script_file(uint8_t page, uint8_t element, uint8_t event, char* buffer, uint16_t length) {
 
   char path[50] = {0};
 
@@ -44,7 +44,7 @@ int grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t
   return grid_platform_write_file(path, (uint8_t*)buffer, length + 1);
 }
 
-void grid_platform_delete_actionstring_files_all() {
+void grid_platform_delete_script_files_all() {
 
   // upkeep: loop bound
   for (uint8_t i = 0; i < 4; ++i) {
