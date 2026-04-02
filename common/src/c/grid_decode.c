@@ -524,7 +524,10 @@ uint8_t grid_decode_immediate_to_ui(char* header, char* chunk) {
   }
 
   grid_lua_clear_stdo(&grid_lua_state);
+  assert(script[length] == GRID_CONST_ETX);
+  script[length] = '\0';
   grid_lua_dostring_begin(&grid_lua_state, script);
+  script[length] = GRID_CONST_ETX;
   grid_lua_dostring_end(&grid_lua_state);
   grid_lua_broadcast_stdo(&grid_lua_state);
 
@@ -592,7 +595,10 @@ uint8_t grid_decode_evaluate_to_ui(char* header, char* chunk) {
   }
 
   grid_lua_clear_stdo(&grid_lua_state);
+  assert(script[length] == GRID_CONST_ETX);
+  script[length] = '\0';
   bool status = grid_lua_dostring_begin(&grid_lua_state, script);
+  script[length] = GRID_CONST_ETX;
   grid_lua_broadcast_stdo(&grid_lua_state);
 
   uint8_t respinstr = status ? GRID_INSTR_ACKNOWLEDGE_code : GRID_INSTR_NACKNOWLEDGE_code;
