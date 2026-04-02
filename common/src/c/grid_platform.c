@@ -16,7 +16,7 @@ int grid_platform_find_next_script_file_on_page(uint8_t page, int* last_element,
 
   if (ret == 0) {
 
-    sprintf(handle->path, "%02x/%02x/%02x.cfg", page, *last_element, *last_event);
+    sprintf(handle->path, "%02x/%02x/%02x.lua", page, *last_element, *last_event);
   }
 
   return ret;
@@ -25,7 +25,7 @@ int grid_platform_find_next_script_file_on_page(uint8_t page, int* last_element,
 int grid_platform_find_script_file(uint8_t page, uint8_t element, uint8_t event, struct grid_file_t* handle) {
 
   char path[50] = {0};
-  sprintf(path, "%02x/%02x/%02x.cfg", page, element, event);
+  sprintf(path, "%02x/%02x/%02x.lua", page, element, event);
 
   return grid_platform_find_file(path, handle);
 }
@@ -40,7 +40,7 @@ int grid_platform_write_script_file(uint8_t page, uint8_t element, uint8_t event
   sprintf(&path[strlen(path)], "/%02x", element);
   grid_platform_make_directory(path);
 
-  sprintf(&path[strlen(path)], "/%02x.cfg", event);
+  sprintf(&path[strlen(path)], "/%02x.lua", event);
   return grid_platform_write_file(path, (uint8_t*)buffer, length + 1);
 }
 
