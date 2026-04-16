@@ -158,8 +158,8 @@ uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui);
 
 struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t event_type);
 
-uint8_t grid_ui_event_isdefault_script(struct grid_ui_event* eve, char* script);
-void grid_ui_event_register_script(struct grid_ui_event* eve, char* targetstring);
+uint8_t grid_ui_event_isdefault_script(struct grid_ui_event* eve, const char* script);
+int grid_ui_register_script(struct grid_ui_model* ui, uint8_t element, uint8_t event, const char* script);
 void grid_ui_event_generate_script(struct grid_ui_event* eve, char* targetstring);
 void grid_ui_event_get_script(struct grid_ui_event* eve, char* targetstring);
 int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, uint8_t event_type, char* targetstring);

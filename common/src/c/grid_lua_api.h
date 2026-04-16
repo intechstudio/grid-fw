@@ -88,6 +88,8 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 
 /*static*/ int l_grid_lcd_set_backlight(lua_State* L);
 
+/*static*/ int l_grid_action_set(lua_State* L);
+
 int GRID_LUA_FNC_GTV_NAME(0)();
 int GRID_LUA_FNC_GTV_NAME(1)();
 int GRID_LUA_FNC_GTV_NAME(2)();

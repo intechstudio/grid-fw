@@ -2122,6 +2122,61 @@ int l_grid_potmeter_detent_set(lua_State* L) { return l_grid_calibration_set(L, 
   return 0;
 }
 
+int l_grid_action_set(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 3) {
+    // error
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
+    return 0;
+  }
+
+  if (!lua_isinteger(L, 1)) {
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
+    return 0;
+  }
+  int element = lua_tointeger(L, 1);
+
+  if (!lua_isinteger(L, 2)) {
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
+    return 0;
+  }
+  int event = lua_tointeger(L, 2);
+
+  if (!lua_isstring(L, 3)) {
+    grid_lua_append_stde(&grid_lua_state, "#invalidParams");
+    return 0;
+  }
+  const char* path = lua_tostring(L, 3);
+
+  if (path[0] != '\0') {
+
+    char* buf = grid_platform_read_file_contents(path);
+    if (!buf) {
+      grid_lua_append_stde(&grid_lua_state, "failed to read contents");
+      return 0;
+    }
+
+    if (grid_ui_register_script(&grid_ui_state, element, event, buf)) {
+      grid_lua_append_stde(&grid_lua_state, "failed to register script");
+      free(buf);
+      return 0;
+    }
+
+    free(buf);
+
+  } else {
+
+    if (grid_ui_register_script(&grid_ui_state, element, event, "")) {
+      grid_lua_append_stde(&grid_lua_state, "failed to register default");
+      return 0;
+    }
+  }
+
+  return 0;
+}
+
 GRID_LUA_FNC_GTV_DEFI(0)
 GRID_LUA_FNC_GTV_DEFI(1)
 GRID_LUA_FNC_GTV_DEFI(2)
@@ -2221,6 +2276,8 @@ GRID_LUA_FNC_META_DEFI(ggen, l_grid_elementname_get)
     {GRID_LUA_FNC_G_RANGE_CALIBRATION_SET_short, GRID_LUA_FNC_G_RANGE_CALIBRATION_SET_fnptr},
 
     {GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_short, GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_fnptr},
+
+    {GRID_LUA_FNC_G_ACTION_SET_short, GRID_LUA_FNC_G_ACTION_SET_fnptr},
 
     {GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_short, GRID_LUA_FNC_G_FILESYSTEM_LISTDIR_fnptr},
     {GRID_LUA_FNC_G_FILESYSTEM_CAT_short, GRID_LUA_FNC_G_FILESYSTEM_CAT_fnptr},

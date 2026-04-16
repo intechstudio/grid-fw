@@ -141,6 +141,7 @@
 
 #define l_remove(f) grid_platform_remove(f)
 #define l_rename(o, n) grid_platform_rename(o, n)
+#define l_stat(f, h) grid_platform_find_file(f, h)
 
 
 
@@ -168,6 +169,13 @@ static int os_rename (lua_State *L) {
   const char *fromname = luaL_checkstring(L, 1);
   const char *toname = luaL_checkstring(L, 2);
   return luaL_fileresult(L, l_rename(fromname, toname) == 0, NULL);
+}
+
+
+static int os_stat (lua_State *L) {
+  const char *filename = luaL_checkstring(L, 1);
+	struct grid_file_t handle = {0};
+  return luaL_fileresult(L, l_stat(filename, &handle) == 0, filename);
 }
 
 
@@ -418,6 +426,7 @@ static const luaL_Reg syslib[] = {
   {"getenv",    os_getenv},
   {"remove",    os_remove},
   {"rename",    os_rename},
+  {"stat",      os_stat},
   {"setlocale", os_setlocale},
   {"time",      os_time},
   {"tmpname",   os_tmpname},

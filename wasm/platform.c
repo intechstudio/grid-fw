@@ -42,6 +42,8 @@ void grid_platform_delay_ms(uint32_t delay_milliseconds) { return; }
 
 int grid_platform_make_directory(const char* path) { return 0; }
 
+int grid_platform_find_file(const char* path, struct grid_file_t* handle) { return 0; }
+
 void grid_platform_printf(char const* fmt, ...) {
 
   va_list ap;

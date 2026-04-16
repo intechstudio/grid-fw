@@ -76,31 +76,50 @@ bool grid_lua_semaphore_release(struct grid_lua_model* lua) {
 
 void grid_lua_deinit(struct grid_lua_model* lua) {}
 
-void grid_lua_pre_init(struct grid_lua_model* lua) {
+bool grid_lua_initialize(struct grid_lua_model* lua, const char* path) {
 
-  int ret = grid_lua_dostring(lua, "init_simple_color() "
-                                   "init_simple_midi() "
-                                   "init_auto_value() ");
-  grid_lua_clear_stdo(lua);
+  bool ret = false;
 
-  if (!ret) {
-    grid_lua_broadcast_stde(lua);
-  }
+  grid_lua_semaphore_lock(lua);
   grid_lua_clear_stde(lua);
-}
 
-void grid_lua_post_init(struct grid_lua_model* lua) {
-
-  int ret = grid_lua_dostring(lua, "ele[#ele]:post_init_cb() "
-                                   "for i = 0, #ele-1 do "
-                                   "collectgarbage(\"collect\") "
-                                   "ele[i]:post_init_cb() end");
-  grid_lua_clear_stdo(lua);
-
-  if (!ret) {
-    grid_lua_broadcast_stde(lua);
+  if (lua_getglobal(lua->L, "require") != LUA_TFUNCTION) {
+    grid_lua_append_stde(lua, "failed to get function: \"require\"");
+    goto grid_lua_initialize_cleanup;
   }
-  grid_lua_clear_stde(lua);
+
+  // Require the current page's init.lua
+  lua_pushstring(lua->L, path);
+  if (lua_pcall(lua->L, 1, 0, 0) != LUA_OK) {
+    grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
+    goto grid_lua_initialize_cleanup;
+  }
+
+  if (lua_getglobal(lua->L, "init") != LUA_TTABLE) {
+    grid_lua_append_stde(lua, "failed to get table: \"init\"");
+    goto grid_lua_initialize_cleanup;
+  }
+
+  // Get the init package's init function
+  lua_pushstring(lua->L, "init");
+  if (lua_gettable(lua->L, -2) != LUA_TFUNCTION) {
+    grid_lua_append_stde(lua, "failed to get function: \"init\"");
+    goto grid_lua_initialize_cleanup;
+  }
+
+  if (lua_pcall(lua->L, 0, 0, 0) != LUA_OK) {
+    grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
+    goto grid_lua_initialize_cleanup;
+  }
+
+  ret = true;
+
+grid_lua_initialize_cleanup:
+
+  lua_pop(lua->L, lua_gettop(lua->L));
+  grid_lua_gc_full_unsafe(lua);
+  grid_lua_semaphore_release(lua);
+  return ret;
 }
 
 void grid_lua_clear_stdi(struct grid_lua_model* lua) { memset(lua->stdi, 0, lua->stdi_len); }
@@ -644,6 +663,36 @@ void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, con
 
   // Assign metatable for the element
   lua_setmetatable(L, 2);
+
+  lua_pop(L, lua_gettop(L));
+}
+
+void grid_lua_create_event_array(lua_State* L, const char* type, uint8_t events) {
+
+  // Get the metatable for the element type
+  lua_getglobal(L, type);
+
+  // Create event array, hinted with the number of entries
+  lua_pushstring(L, "eve");
+  lua_createtable(L, events, 0);
+  lua_settable(L, 1);
+
+  lua_pop(L, lua_gettop(L));
+}
+
+void grid_lua_register_event(lua_State* L, const char* type, uint8_t event) {
+
+  // Get the metatable for the element type
+  lua_getglobal(L, type);
+
+  // Get event table
+  lua_pushstring(L, "eve");
+  lua_gettable(L, 1);
+
+  // Assign event index to next index
+  lua_pushinteger(L, lua_rawlen(L, 2) + 1);
+  lua_pushinteger(L, event);
+  lua_settable(L, 2);
 
   lua_pop(L, lua_gettop(L));
 }

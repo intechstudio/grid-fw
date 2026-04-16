@@ -49,8 +49,7 @@ extern struct grid_lua_model grid_lua_state;
 
 void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance);
 void grid_lua_deinit(struct grid_lua_model* lua);
-void grid_lua_post_init(struct grid_lua_model* lua);
-void grid_lua_pre_init(struct grid_lua_model* lua);
+bool grid_lua_initialize(struct grid_lua_model* lua, const char* path);
 
 void grid_lua_semaphore_init(struct grid_lua_model* lua, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
 bool grid_lua_semaphore_lock(struct grid_lua_model* lua);
@@ -101,6 +100,8 @@ void grid_lua_register_index_meta_for_type(lua_State* L, const char* type, const
 void grid_lua_create_element_array(lua_State* L, uint8_t elements);
 void grid_lua_register_element(lua_State* L, uint8_t element);
 void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, const char* type);
+void grid_lua_create_event_array(lua_State* L, const char* type, uint8_t events);
+void grid_lua_register_event(lua_State* L, const char* type, uint8_t event);
 
 struct grid_msg;
 int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, uint8_t instr, uint8_t id);

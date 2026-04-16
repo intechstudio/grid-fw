@@ -8,6 +8,34 @@ static void* LFS = NULL;
 
 void grid_platform_set_lfs(void* lfs) { LFS = lfs; }
 
+char* grid_platform_read_file_contents(const char* path) {
+
+  struct grid_file_t handle = {0};
+
+  int status = grid_platform_find_file(path, &handle);
+  if (status) {
+    return NULL;
+  }
+
+  uint16_t size = grid_platform_get_file_size(&handle);
+  if (size == 0) {
+    return NULL;
+  }
+
+  char* buf = malloc(size);
+  if (!buf) {
+    return NULL;
+  }
+
+  status = grid_platform_read_file(&handle, (uint8_t*)buf, size);
+  if (status) {
+    free(buf);
+    return NULL;
+  }
+
+  return buf;
+}
+
 int grid_platform_find_next_script_file_on_page(uint8_t page, int* last_element, int* last_event, struct grid_file_t* handle) {
 
   assert(LFS);
@@ -98,7 +126,7 @@ int grid_platform_read_file(struct grid_file_t* handle, uint8_t* buffer, uint16_
   return grid_littlefs_file_read(LFS, handle->path, buffer, size);
 }
 
-int grid_platform_write_file(const char* path, uint8_t* buffer, uint16_t size) {
+int grid_platform_write_file(const char* path, const uint8_t* buffer, uint16_t size) {
 
   assert(LFS);
 

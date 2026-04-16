@@ -1214,7 +1214,9 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
 
       // Register script for event
       script[scriptlength] = '\0';
-      grid_ui_event_register_script(eve, script);
+      grid_lua_semaphore_lock(&grid_lua_state);
+      grid_ui_register_script(&grid_ui_state, element, event, script);
+      grid_lua_semaphore_release(&grid_lua_state);
       script[scriptlength] = GRID_CONST_ETX;
 
       // Local-trigger the event

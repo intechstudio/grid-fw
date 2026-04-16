@@ -538,6 +538,13 @@
 #define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_fnptr l_grid_lcd_set_backlight
 #define GRID_LUA_FNC_G_LCD_SET_BACKLIGHT_usage "lcd_set_backlight(strength) Sets the LCD backlight strength between 0 and 255."
 
+#define GRID_LUA_FNC_G_ACTION_SET_short "gas"
+#define GRID_LUA_FNC_G_ACTION_SET_human "action_set"
+#define GRID_LUA_FNC_G_ACTION_SET_fnptr l_grid_action_set
+#define GRID_LUA_FNC_G_ACTION_SET_usage                                                                                                                                                                \
+  "action_set(element, event, path) Sets the script to be executed upon an event for the given element. The path argument should be a path to a file for a custom script, or an empty string for the " \
+  "default script."
+
 // ========================= UI ELEMENT VARIABLES =========================== //
 
 #define GRID_LUA_FNC_B_ELEMENT_INDEX_index 0
