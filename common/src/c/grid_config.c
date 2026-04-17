@@ -173,8 +173,6 @@ void toml_cat_bare_key(char* dest, char* name) {
 
 int grid_config_generate_cal(struct grid_cal_model* cal, char* dest) {
 
-  int status;
-
   toml_cat_table_header(dest, CAL_HEADER);
 
   char temp[GRID_CONFIG_MAX_UINT16_ARRAYELEM + 1] = {0};
