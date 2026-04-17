@@ -306,7 +306,7 @@ DEPS = $(SRCS:%.c=$(BUILD_DIR)/%.d)
 $(BUILD_DIR)/%.d: $(SRC_DIR)/%.c | $(BUILD_DIRS)
 	$(CC) -x c -mthumb \
 	$(GRID_DEFINES) \
-	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	-DDEBUG -O2 -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 	$(INCLUDES) \
 	-MM -MF "$@" -MT "$@" "$<"
@@ -315,7 +315,7 @@ OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR)/%.d | $(BUILD_DIRS)
 	$(CC) -x c -mthumb \
 	$(GRID_DEFINES) \
-	-DDEBUG -Os -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
+	-DDEBUG -O2 -ffunction-sections -mlong-calls -g3 -Wall -c -std=gnu99 \
 	-D__SAMD51N20A__ -mcpu=cortex-m4 -mfloat-abi=softfp -mfpu=fpv4-sp-d16 \
 	$(INCLUDES) \
 	-o "$@" "$<"
