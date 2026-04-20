@@ -30,7 +30,7 @@ midi_auto_p2 = function(self)
 end
 
 init_element_midi = function(self)
-  self.gms = function(self, ch, cmd, p1, p2)
+  self.gms = function(self, ch, cmd, p1, p2, rx_feat)
     if cmd == -1 then
       cmd = midi_auto_cmd(self)
     end
@@ -48,6 +48,11 @@ init_element_midi = function(self)
     end
 
     gms(ch, cmd, p1, p2)
+
+    if rx_feat == nil then
+      return
+    else
+      midi_rx_cb_register(self, event_function_name():sub(1, -2), rx_feat, {ch, cmd, p1})
   end
 end
 
@@ -56,3 +61,31 @@ init_simple_midi = function()
     init_element_midi(ele[i])
   end
 end
+
+midirx_cb_register = function(self, ev, features, match)
+  local rx_set_value, rx_set_led = table.unpack(features)
+  local ch, cmd, p1 = table.unpack(match)
+  self.midirx_cb = function(self, header, event)
+    for name, fn in pairs(self) do
+      if type(fn) == "function" and name:match("_midirx_cb") then
+        fn(self, header, event)
+      end
+    end
+  end
+  self[ev .. "_midirx_cb"] = function(self, header, event)
+    if event[2] == 128 then
+      event[2] = 144
+    end
+    local v = event[4]
+    if event[1] == ch and event[2] == cmd and event[3] == p1 and header[1] == 13 then
+      if rx_set_value then
+        self[ev .. "va"](self, v)
+      end
+      if rx_set_led then
+        local l = { ep = 2, e = 2, p = 1, b = 1 }
+        self:led_value(l[ev], map_saturate(v, self[ev .. "mi"](self), self[ev .. "ma"](self), 0, 255) // 1)
+      end
+    end
+  end
+end
+
