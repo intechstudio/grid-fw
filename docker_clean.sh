@@ -1,8 +1,8 @@
 #!/bin/sh
 
-if command -v docker 1> /dev/null; then
+if command -v docker >/dev/null 2>&1; then
 	CONTAINER_CMD="docker"
-elif command -v podman 1> /dev/null; then
+elif command -v podman >/dev/null 2>&1; then
 	CONTAINER_CMD="podman"
 else
 	echo "Neither docker nor podman found. Please install either to proceed."
