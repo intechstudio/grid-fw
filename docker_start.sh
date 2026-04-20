@@ -1,9 +1,9 @@
 #!/bin/sh
 
-if command -v docker &> /dev/null; then
+if command -v docker >/dev/null 2>&1; then
 	CONTAINER_CMD="docker"
 	ARGS="--privileged"
-elif command -v podman &> /dev/null; then
+elif command -v podman >/dev/null 2>&1; then
 	CONTAINER_CMD="podman"
 	ARGS="--group-add keep-groups --security-opt label=disable"
 else
