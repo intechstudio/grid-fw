@@ -14,7 +14,7 @@ jobs:
       contents: read
       packages: write
     env:
-      image: ghcr.io/${{ github.repository }}:latest
+      image: ghcr.io/${{ github.repository_owner }}/grid-fw-build:latest
       d51-path: d51n20a
       esp-path: esp32s3
     outputs:
@@ -30,7 +30,7 @@ jobs:
         uses: ./.github/actions/prepare-image
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-name: "grid-fw"
+          image-name: "grid-fw-build"
           dockerfile: "Dockerfile"
 
       - name: Build ESP32 firmware
