@@ -379,6 +379,12 @@
 #define GRID_LUA_FNC_G_MIDIRX_SYNC_human "midirx_sync"
 #define GRID_LUA_FNC_G_MIDIRX_SYNC_fnptr l_grid_midirx_sync
 
+#define GRID_LUA_FNC_G_MIDIRX_REGISTER_short "gmrr"
+#define GRID_LUA_FNC_G_MIDIRX_REGISTER_human "midirx_register"
+#define GRID_LUA_FNC_G_MIDIRX_REGISTER_usage                                                                                                                                                           \
+  "midi_rx_register(string event, int channel, int command, int parameter1, table features) Registers a MIDI RX callback on this element. Pass -1 for auto values. features = {bool set_value, bool "  \
+  "set_led}"
+
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_short "gens"
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_human "element_name_send"
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_fnptr l_grid_elementname_send

@@ -64,8 +64,8 @@ init_element_midi = function(self)
     end
   end
 
-  self.midirx_register = function(self, ev, ch, cmd, p1, features)
-    midirx_cb_register(self, ev, ch, cmd, p1, features)
+  self.gmrr = function(self, ev, ch, cmd, p1, features)
+    gmrr(self, ev, ch, cmd, p1, features)
   end
 end
 
@@ -75,7 +75,7 @@ init_simple_midi = function()
   end
 end
 
-midirx_cb_register = function(self, ev, ch, cmd, p1, features)
+gmrr = function(self, ev, ch, cmd, p1, features)
   if ev == -1 then
     ev = event_function_name():sub(1, -2)
   end
