@@ -30,7 +30,7 @@ midi_auto_p2 = function(self)
 end
 
 init_element_midi = function(self)
-  self.gms = function(self, ch, cmd, p1, p2)
+  self.gms = function(self, ch, cmd, p1, p2, mode)
     if cmd == -1 then
       cmd = midi_auto_cmd(self)
     end
@@ -47,7 +47,21 @@ init_element_midi = function(self)
       p2 = midi_auto_p2(self)
     end
 
-    gms(ch, cmd, p1, p2)
+    if mode == nil or mode == 0 then
+      gms(ch, cmd, p1, p2)
+    elseif mode == 1 then
+      gms(ch, 0xB0, p1, p2 // 128)
+      gms(ch, 0xB0, p1 + 32, p2 % 128)
+    elseif mode == 2 then
+      gms(ch, 0xB0, 99, p1 // 128)
+      gms(ch, 0xB0, 98, p1 % 128)
+      gms(ch, 0xB0, 6, p2)
+    elseif mode == 3 then
+      gms(ch, 0xB0, 99, p1 // 128)
+      gms(ch, 0xB0, 98, p1 % 128)
+      gms(ch, 0xB0, 6, p2 // 128)
+      gms(ch, 0xB0, 38, p2 % 128)
+    end
   end
 
   self.midirx_register = function(self, ev, ch, cmd, p1, features)
