@@ -103,6 +103,7 @@ static void adc_init_ulp(struct grid_esp32_adc_model* adc) {
   // Load ULP-RISC-V program binary into RTC memory
   const uint8_t* binary = ulp_grid_esp32_adc_bin_start;
   size_t size = ulp_grid_esp32_adc_bin_end - binary;
+  ulp_riscv_halt();
   ESP_ERROR_CHECK(ulp_riscv_load_binary(binary, size));
 }
 
