@@ -2,8 +2,8 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 SRC_DIR=esp32s3
 PORT=${PORT:-/dev/ttyUSB0}
 
-esptool.py --chip esp32s3 -p $PORT -b 2000000 --before=default_reset \
---after=no_reset write_flash --flash_mode dio --flash_size detect --flash_freq 80m \
+esptool --chip esp32s3 -p $PORT -b 2000000 --before=default-reset \
+--after=no-reset write-flash --flash-mode dio --flash-size detect --flash-freq 80m \
 0x0 $SCRIPT_DIR/"$SRC_DIR"/bootloader/bootloader.bin \
 0x8000 $SCRIPT_DIR/"$SRC_DIR"/bootloader/partition-table.bin \
 0xe000 $SCRIPT_DIR/"$SRC_DIR"/bootloader/ota_data_initial.bin \
