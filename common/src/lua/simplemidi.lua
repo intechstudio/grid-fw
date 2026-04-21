@@ -52,7 +52,13 @@ init_element_midi = function(self)
     if rx_feat == nil then
       return
     else
-      midi_rx_cb_register(self, event_function_name():sub(1, -2), rx_feat, {ch, cmd, p1})
+      midirx_cb_register(
+        self,
+        event_function_name():sub(1, -2),
+        rx_feat,
+        { ch, cmd, p1 }
+      )
+    end
   end
 end
 
@@ -77,15 +83,22 @@ midirx_cb_register = function(self, ev, features, match)
       event[2] = 144
     end
     local v = event[4]
-    if event[1] == ch and event[2] == cmd and event[3] == p1 and header[1] == 13 then
+    if
+      event[1] == ch
+      and event[2] == cmd
+      and event[3] == p1
+      and header[1] == 13
+    then
       if rx_set_value then
         self[ev .. "va"](self, v)
       end
       if rx_set_led then
         local l = { ep = 2, e = 2, p = 1, b = 1 }
-        self:led_value(l[ev], map_saturate(v, self[ev .. "mi"](self), self[ev .. "ma"](self), 0, 255) // 1)
+        self:glp(
+          l[ev],
+          gmaps(v, self[ev .. "mi"](self), self[ev .. "ma"](self), 0, 255) // 1
+        )
       end
     end
   end
 end
-
