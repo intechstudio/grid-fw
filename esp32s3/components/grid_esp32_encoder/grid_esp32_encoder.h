@@ -13,7 +13,6 @@
 #include <string.h>
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
 
 #include "driver/i2s_tdm.h"
 
@@ -22,12 +21,9 @@
 
 #include "rom/ets_sys.h"
 
-#include "driver/gptimer.h"
 #include "grid_esp32_pins.h"
 
 #include "esp_heap_caps.h"
-#include "freertos/ringbuf.h"
-#include "freertos/semphr.h"
 
 #ifdef __cplusplus
 extern "C" {

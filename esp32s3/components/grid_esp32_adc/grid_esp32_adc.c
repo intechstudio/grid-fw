@@ -9,9 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 #include "esp_adc/adc_continuous.h"
@@ -24,8 +21,6 @@
 #include "grid_platform.h"
 
 #include "esp_heap_caps.h"
-#include "freertos/ringbuf.h"
-#include "freertos/semphr.h"
 
 #include "esp_check.h"
 #include "esp_err.h"

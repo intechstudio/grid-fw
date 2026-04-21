@@ -35,7 +35,6 @@
 
 #include <dirent.h>
 
-#include "driver/gpio.h"
 #include "grid_ui.h"
 
 static const char* TAG = "grid_esp32_nvm";

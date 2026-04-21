@@ -4,5 +4,5 @@ idf_component_register(
     INCLUDE_DIRS
         "."
     REQUIRES
-        "driver"
+        "driver" "esp_driver_gpio" "esp_driver_ledc"
 )
