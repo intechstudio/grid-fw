@@ -30,7 +30,7 @@ midi_auto_p2 = function(self)
 end
 
 init_element_midi = function(self)
-  self.gms = function(self, ch, cmd, p1, p2, rx_feat)
+  self.gms = function(self, ch, cmd, p1, p2)
     if cmd == -1 then
       cmd = midi_auto_cmd(self)
     end
@@ -48,17 +48,10 @@ init_element_midi = function(self)
     end
 
     gms(ch, cmd, p1, p2)
+  end
 
-    if rx_feat == nil then
-      return
-    else
-      midirx_cb_register(
-        self,
-        event_function_name():sub(1, -2),
-        rx_feat,
-        { ch, cmd, p1 }
-      )
-    end
+  self.midirx_register = function(self, ev, ch, cmd, p1, features)
+    midirx_cb_register(self, ev, ch, cmd, p1, features)
   end
 end
 
@@ -68,9 +61,23 @@ init_simple_midi = function()
   end
 end
 
-midirx_cb_register = function(self, ev, features, match)
+midirx_cb_register = function(self, ev, ch, cmd, p1, features)
+  if ev == -1 then
+    ev = event_function_name():sub(1, -2)
+  end
+
+  if cmd == -1 then
+    cmd = midi_auto_cmd(self)
+  end
+  if ch == -1 then
+    ch = midi_auto_ch(self)
+  end
+  if p1 == -1 then
+    p1 = midi_auto_p1(self)
+  end
+
   local rx_set_value, rx_set_led = table.unpack(features)
-  local ch, cmd, p1 = table.unpack(match)
+
   self.midirx_cb = function(self, header, event)
     for name, fn in pairs(self) do
       if type(fn) == "function" and name:match("_midirx_cb") then
