@@ -102,6 +102,8 @@ extern int grid_platform_make_directory(const char* path);
 
 extern int grid_platform_list_directory(const char* path);
 
+extern int grid_platform_stat(const char* path, void** statbuf);
+
 extern int grid_platform_find_file(const char* path, struct grid_file_t* handle);
 
 extern uint16_t grid_platform_get_file_size(struct grid_file_t* handle);

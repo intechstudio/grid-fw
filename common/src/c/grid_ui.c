@@ -1005,7 +1005,6 @@ PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
     PT_EXIT(pt);
   }
 
-
   grid_lua_semaphore_lock(&grid_lua_state);
 
   char path[50] = {0};

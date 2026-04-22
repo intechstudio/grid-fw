@@ -220,6 +220,13 @@ int grid_littlefs_lsdir(lfs_t* lfs, const char* path) {
   return 0;
 }
 
+int grid_littlefs_stat(lfs_t* lfs, const char* path) {
+
+  struct lfs_info info;
+  int lfs_err = lfs_stat(lfs, path, &info);
+  return lfs_err == LFS_ERR_OK ? 0 : 1;
+}
+
 int grid_littlefs_file_find(lfs_t* lfs, const char* path) {
 
   struct lfs_info info;

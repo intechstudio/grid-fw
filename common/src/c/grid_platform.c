@@ -92,6 +92,16 @@ int grid_platform_list_directory(const char* path) {
   return grid_littlefs_lsdir(LFS, path);
 }
 
+int grid_platform_stat(const char* path, void** statbuf) {
+
+  assert(LFS);
+
+  assert(statbuf);
+  *statbuf = NULL;
+
+  return grid_littlefs_stat(LFS, path);
+}
+
 int grid_platform_find_file(const char* path, struct grid_file_t* handle) {
 
   assert(LFS);

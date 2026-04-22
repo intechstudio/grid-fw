@@ -141,7 +141,7 @@
 
 #define l_remove(f) grid_platform_remove(f)
 #define l_rename(o, n) grid_platform_rename(o, n)
-#define l_stat(f, h) grid_platform_find_file(f, h)
+#define l_stat(f, h) grid_platform_stat(f, h)
 
 
 
@@ -174,8 +174,8 @@ static int os_rename (lua_State *L) {
 
 static int os_stat (lua_State *L) {
   const char *filename = luaL_checkstring(L, 1);
-	struct grid_file_t handle = {0};
-  return luaL_fileresult(L, l_stat(filename, &handle) == 0, filename);
+  void* dummy;
+  return luaL_fileresult(L, l_stat(filename, &dummy) == 0, filename);
 }
 
 
