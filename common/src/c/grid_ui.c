@@ -1089,30 +1089,25 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
 PT_THREAD(grid_ui_bulk_page_clear(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
-  static int page;
-  static int element;
-  static int event;
-
   PT_BEGIN(pt);
 
   if (!grid_platform_get_nvm_state()) {
     PT_EXIT(pt);
   }
 
-  page = ui->bulk_last_page;
-  element = -1;
-  event = -1;
+  static char path[50] = {0};
+  sprintf(path, "%02x", ui->bulk_last_page);
 
-  struct grid_file_t handle;
-  while (!grid_platform_find_next_script_file_on_page(page, &element, &event, &handle)) {
+  void* info;
+  while ((info = grid_platform_dir_first(path))) {
 
-    grid_platform_delete_file(&handle);
+    char path2[101] = {0};
+    sprintf(path2, "%s/%s", path, grid_platform_file_info_name(info));
+    grid_platform_remove(path2);
 
     PT_YIELD(pt);
   }
 
-  char path[50] = {0};
-  sprintf(path, "%02x", ui->bulk_last_page);
   grid_platform_remove(path);
 
   PT_END(pt);

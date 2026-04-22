@@ -17,13 +17,14 @@ static int dirent_list(lua_State* L) {
 	lua_newtable(L);
 
 	int i = 0;
-	while (grid_platform_readdir(dir)) {
+	void* info;
+	while ((info = grid_platform_readdir(dir))) {
 
 		lua_newtable(L);
 
-		lua_pushstring(L, grid_platform_readdir_name());
+		lua_pushstring(L, grid_platform_file_info_name(info));
 		lua_rawseti(L, -2, 1);
-		lua_pushinteger(L, grid_platform_readdir_type());
+		lua_pushinteger(L, grid_platform_file_info_type(info));
 		lua_rawseti(L, -2, 2);
 
 		lua_rawseti(L, -2, ++i);

@@ -36,18 +36,11 @@ char* grid_platform_read_file_contents(const char* path) {
   return buf;
 }
 
-int grid_platform_find_next_script_file_on_page(uint8_t page, int* last_element, int* last_event, struct grid_file_t* handle) {
+void* grid_platform_dir_first(const char* path) {
 
   assert(LFS);
 
-  int ret = grid_littlefs_find_next_on_page(LFS, page, last_element, last_event);
-
-  if (ret == 0) {
-
-    sprintf(handle->path, "%02x/%02x/%02x.lua", page, *last_element, *last_event);
-  }
-
-  return ret;
+  return grid_littlefs_dir_first(LFS, path);
 }
 
 int grid_platform_find_script_file(uint8_t page, uint8_t element, uint8_t event, struct grid_file_t* handle) {
@@ -281,6 +274,6 @@ void* grid_platform_readdir(void* dirp) {
   return grid_littlefs_readdir(LFS, dirp);
 }
 
-const char* grid_platform_readdir_name() { return grid_littlefs_readdir_name(); }
+const char* grid_platform_file_info_name(void* info) { return grid_littlefs_file_info_name(info); }
 
-uint8_t grid_platform_readdir_type() { return grid_littlefs_readdir_type(); }
+uint8_t grid_platform_file_info_type(void* info) { return grid_littlefs_file_info_type(info); }

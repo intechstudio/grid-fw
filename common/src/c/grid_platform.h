@@ -38,9 +38,9 @@ extern int grid_platform_closedir(void* dirp);
 
 extern void* grid_platform_readdir(void* dirp);
 
-extern const char* grid_platform_readdir_name();
+extern const char* grid_platform_file_info_name(void* info);
 
-extern uint8_t grid_platform_readdir_type();
+extern uint8_t grid_platform_file_info_type(void* info);
 
 extern void grid_platform_printf(char const* fmt, ...);
 
@@ -84,7 +84,7 @@ struct grid_file_t {
 
 extern char* grid_platform_read_file_contents(const char* path);
 
-extern int grid_platform_find_next_script_file_on_page(uint8_t page, int* last_element, int* last_event, struct grid_file_t* handle);
+void* grid_platform_dir_first(const char* path);
 
 extern int grid_platform_find_script_file(uint8_t page, uint8_t element, uint8_t event_type, struct grid_file_t* handle);
 
