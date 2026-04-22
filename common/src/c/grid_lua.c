@@ -76,52 +76,6 @@ bool grid_lua_semaphore_release(struct grid_lua_model* lua) {
 
 void grid_lua_deinit(struct grid_lua_model* lua) {}
 
-bool grid_lua_initialize(struct grid_lua_model* lua, const char* path) {
-
-  bool ret = false;
-
-  grid_lua_semaphore_lock(lua);
-  grid_lua_clear_stde(lua);
-
-  if (lua_getglobal(lua->L, "require") != LUA_TFUNCTION) {
-    grid_lua_append_stde(lua, "failed to get function: \"require\"");
-    goto grid_lua_initialize_cleanup;
-  }
-
-  // Require the current page's init.lua
-  lua_pushstring(lua->L, path);
-  if (lua_pcall(lua->L, 1, 0, 0) != LUA_OK) {
-    grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
-    goto grid_lua_initialize_cleanup;
-  }
-
-  if (lua_getglobal(lua->L, "init") != LUA_TTABLE) {
-    grid_lua_append_stde(lua, "failed to get table: \"init\"");
-    goto grid_lua_initialize_cleanup;
-  }
-
-  // Get the init package's init function
-  lua_pushstring(lua->L, "init");
-  if (lua_gettable(lua->L, -2) != LUA_TFUNCTION) {
-    grid_lua_append_stde(lua, "failed to get function: \"init\"");
-    goto grid_lua_initialize_cleanup;
-  }
-
-  if (lua_pcall(lua->L, 0, 0, 0) != LUA_OK) {
-    grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
-    goto grid_lua_initialize_cleanup;
-  }
-
-  ret = true;
-
-grid_lua_initialize_cleanup:
-
-  lua_pop(lua->L, lua_gettop(lua->L));
-  grid_lua_gc_full_unsafe(lua);
-  grid_lua_semaphore_release(lua);
-  return ret;
-}
-
 void grid_lua_clear_stdi(struct grid_lua_model* lua) { memset(lua->stdi, 0, lua->stdi_len); }
 
 void grid_lua_clear_stdo(struct grid_lua_model* lua) { memset(lua->stdo, 0, lua->stdo_len); }
@@ -166,7 +120,9 @@ char* grid_lua_get_output_string(struct grid_lua_model* lua) { return lua->stdo;
 
 char* grid_lua_get_error_string(struct grid_lua_model* lua) { return lua->stde; }
 
-uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code) {
+typedef int (*lua_load_fn_t)(lua_State*, const char*);
+
+uint32_t grid_lua_do_unsafe(struct grid_lua_model* lua, const char* src, lua_load_fn_t fn) {
 
   assert(lua->L);
 
@@ -174,7 +130,7 @@ uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code) 
 
   uint32_t ret = 1;
 
-  if (luaL_loadstring(lua->L, code) == LUA_OK) {
+  if (fn(lua->L, src) == LUA_OK) {
 
     if ((lua_pcall(lua->L, 0, LUA_MULTRET, 0)) != LUA_OK) {
 
@@ -198,6 +154,12 @@ uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code) 
 
   return ret;
 }
+
+int luaL_loadfile2(lua_State* L, const char* f) { return luaL_loadfilex(L, f, NULL); }
+
+uint32_t grid_lua_dofile_unsafe(struct grid_lua_model* lua, const char* path) { return grid_lua_do_unsafe(lua, path, luaL_loadfile2); }
+
+uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code) { return grid_lua_do_unsafe(lua, code, luaL_loadstring); }
 
 uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code) {
 

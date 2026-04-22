@@ -1005,28 +1005,22 @@ PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
     PT_EXIT(pt);
   }
 
+
+  grid_lua_semaphore_lock(&grid_lua_state);
+
   char path[50] = {0};
-
-  // Make page directory (idempotent)
-  snprintf(path, 50, "%02x", ui->bulk_last_page);
-  grid_platform_make_directory(path);
-
-  // Attempt to find existing init.lua for page
   snprintf(path, 50, "%02x/init.lua", ui->bulk_last_page);
+
   struct grid_file_t handle = {0};
-  if (grid_platform_find_file(path, &handle)) {
-
-    // Create default init.lua for page if it could not be found
-    const char* src = GRID_LUA_FNC_G_INIT_source;
-    grid_platform_write_file(path, (const uint8_t*)src, strlen(src));
-    assert(grid_platform_find_file(path, &handle) == 0);
+  if (grid_platform_find_file(path, &handle) == 0) {
+    grid_lua_dofile_unsafe(&grid_lua_state, path);
+  } else {
+    grid_lua_dostring_unsafe(&grid_lua_state, GRID_LUA_FNC_G_INIT_source);
   }
 
-  // Attempt to call the init package's init function
-  snprintf(path, 50, "%02x/init", ui->bulk_last_page);
-  if (!grid_lua_initialize(&grid_lua_state, path)) {
-    grid_lua_broadcast_stde(&grid_lua_state);
-  }
+  lua_pop(grid_lua_state.L, lua_gettop(grid_lua_state.L));
+  grid_lua_gc_full_unsafe(&grid_lua_state);
+  grid_lua_semaphore_release(&grid_lua_state);
 
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
