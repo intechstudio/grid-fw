@@ -220,82 +220,16 @@ int grid_littlefs_lsdir(lfs_t* lfs, const char* path) {
   return 0;
 }
 
-int grid_littlefs_stat(lfs_t* lfs, const char* path) {
+struct lfs_info STATINFO = {0};
 
-  struct lfs_info info;
-  int lfs_err = lfs_stat(lfs, path, &info);
-  return lfs_err == LFS_ERR_OK ? 0 : 1;
-}
+int grid_littlefs_stat(lfs_t* lfs, const char* path, void** statbuf) {
 
-int grid_littlefs_file_find(lfs_t* lfs, const char* path) {
-
-  struct lfs_info info;
-  int lfs_err = lfs_stat(lfs, path, &info);
+  int lfs_err = lfs_stat(lfs, path, &STATINFO);
   if (lfs_err != LFS_ERR_OK) {
-    // printf("grid_littlefs_file_find stat error: %d\n", lfs_err);
     return 1;
   }
 
-  return info.type == LFS_TYPE_REG ? 0 : 1;
-}
-
-size_t grid_littlefs_file_size(lfs_t* lfs, const char* path) {
-
-  struct lfs_info info;
-  int lfs_err = lfs_stat(lfs, path, &info);
-  if (lfs_err != LFS_ERR_OK) {
-    printf("grid_littlefs_file_size stat error: %d\n", lfs_err);
-    return 0;
-  }
-
-  return info.size;
-}
-
-int grid_littlefs_file_read(lfs_t* lfs, const char* path, uint8_t* buffer, uint16_t size) {
-
-  lfs_file_t file;
-  int lfs_err = lfs_file_open(lfs, &file, path, LFS_O_RDONLY);
-  if (lfs_err != LFS_ERR_OK) {
-    printf("grid_littlefs_file_read open error: %d\n", lfs_err);
-    return 1;
-  }
-
-  lfs_ssize_t read = lfs_file_read(lfs, &file, buffer, size);
-  if (read < 0) {
-    printf("grid_littlefs_file_read read error: %ld\n", read);
-    return 1;
-  }
-
-  lfs_err = lfs_file_close(lfs, &file);
-  if (lfs_err != LFS_ERR_OK) {
-    printf("grid_littlefs_file_read close error: %d\n", lfs_err);
-    return 1;
-  }
-
-  return 0;
-}
-
-int grid_littlefs_file_write(lfs_t* lfs, const char* path, const uint8_t* buffer, uint16_t size) {
-
-  lfs_file_t file;
-  int lfs_err = lfs_file_open(lfs, &file, path, LFS_O_WRONLY | LFS_O_CREAT);
-  if (lfs_err != LFS_ERR_OK) {
-    printf("grid_littlefs_file_write open error: %d\n", lfs_err);
-    return 1;
-  }
-
-  lfs_ssize_t wrote = lfs_file_write(lfs, &file, buffer, size);
-  if (wrote < 0) {
-    printf("grid_littlefs_file_write write error: %ld\n", wrote);
-    return 1;
-  }
-
-  lfs_err = lfs_file_close(lfs, &file);
-  if (lfs_err != LFS_ERR_OK) {
-    printf("grid_littlefs_file_write close error: %d\n", lfs_err);
-    return 1;
-  }
-
+  *statbuf = &STATINFO;
   return 0;
 }
 
@@ -499,3 +433,5 @@ void* grid_littlefs_readdir(lfs_t* lfs, lfs_dir_t* dirp) { return lfs_dir_read(l
 const char* grid_littlefs_file_info_name(struct lfs_info* info) { return info->name; }
 
 uint8_t grid_littlefs_file_info_type(struct lfs_info* info) { return info->type; }
+
+uint32_t grid_littlefs_file_info_size(struct lfs_info* info) { return info->size; }

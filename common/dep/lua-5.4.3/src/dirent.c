@@ -41,7 +41,7 @@ static int dirent_mkdir(lua_State* L) {
 
 	const char* path = luaL_checkstring(L, 1);
 
-	lua_pushboolean(L, grid_platform_make_directory(path) == 0);
+	lua_pushboolean(L, grid_platform_mkdir(path) == 0);
 
 	return 1;
 }

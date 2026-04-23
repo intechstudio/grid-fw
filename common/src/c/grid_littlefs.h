@@ -15,11 +15,7 @@ int grid_littlefs_mkdir(lfs_t* lfs, const char* path);
 int grid_littlefs_rmdir(lfs_t* lfs, const char* path);
 int grid_littlefs_lsdir(lfs_t* lfs, const char* path);
 
-int grid_littlefs_stat(lfs_t* lfs, const char* path);
-int grid_littlefs_file_find(lfs_t* lfs, const char* path);
-size_t grid_littlefs_file_size(lfs_t* lfs, const char* path);
-int grid_littlefs_file_read(lfs_t* lfs, const char* path, uint8_t* buffer, uint16_t size);
-int grid_littlefs_file_write(lfs_t* lfs, const char* path, const uint8_t* buffer, uint16_t size);
+int grid_littlefs_stat(lfs_t* lfs, const char* path, void** statbuf);
 void* grid_littlefs_dir_first(lfs_t* lfs, const char* path);
 
 size_t grid_littlefs_get_total_bytes(struct lfs_config* cfg);
@@ -38,5 +34,6 @@ void* grid_littlefs_readdir(lfs_t* lfs, lfs_dir_t* dirp);
 
 const char* grid_littlefs_file_info_name(struct lfs_info* info);
 uint8_t grid_littlefs_file_info_type(struct lfs_info* info);
+uint32_t grid_littlefs_file_info_size(struct lfs_info* info);
 
 #endif /* GRID_LITTLEFS_H */

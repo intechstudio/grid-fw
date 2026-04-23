@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define GRID_UI_CONFIG_PATH "config.toml"
+
 extern void grid_platform_set_lfs(void* lfs);
 
 extern void* grid_platform_fopen(const char* pathname, const char* mode);
@@ -42,6 +44,8 @@ extern const char* grid_platform_file_info_name(void* info);
 
 extern uint8_t grid_platform_file_info_type(void* info);
 
+extern uint32_t grid_platform_file_info_size(void* info);
+
 extern void grid_platform_printf(char const* fmt, ...);
 
 extern void grid_platform_printf_nonprint(const uint8_t* src, size_t size);
@@ -78,17 +82,11 @@ extern int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
 
 extern void* grid_platform_allocate_volatile(size_t size);
 
-struct grid_file_t {
-  char path[50];
-};
-
 extern char* grid_platform_read_file_contents(const char* path);
 
-void* grid_platform_dir_first(const char* path);
+extern int grid_platform_write_file_contents(const char* buf, const char* path);
 
-extern int grid_platform_find_script_file(uint8_t page, uint8_t element, uint8_t event_type, struct grid_file_t* handle);
-
-extern int grid_platform_write_script_file(uint8_t page, uint8_t element, uint8_t event_type, char* buffer, uint16_t length);
+extern void* grid_platform_dir_first(const char* path);
 
 extern void grid_platform_delete_script_files_all();
 
@@ -98,21 +96,11 @@ extern void grid_platform_nvm_format_and_mount();
 
 extern const char* grid_platform_get_base_path();
 
-extern int grid_platform_make_directory(const char* path);
+extern int grid_platform_mkdir(const char* path);
 
-extern int grid_platform_list_directory(const char* path);
+extern int grid_platform_lsdir(const char* path);
 
 extern int grid_platform_stat(const char* path, void** statbuf);
-
-extern int grid_platform_find_file(const char* path, struct grid_file_t* handle);
-
-extern uint16_t grid_platform_get_file_size(struct grid_file_t* handle);
-
-extern int grid_platform_read_file(struct grid_file_t* handle, uint8_t* buffer, uint16_t size);
-
-extern int grid_platform_write_file(const char* path, const uint8_t* buffer, uint16_t size);
-
-extern int grid_platform_delete_file(struct grid_file_t* handle);
 
 extern uint8_t grid_platform_get_nvm_state();
 

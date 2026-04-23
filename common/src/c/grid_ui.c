@@ -1007,11 +1007,11 @@ PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
   grid_lua_semaphore_lock(&grid_lua_state);
 
-  char path[50] = {0};
-  snprintf(path, 50, "%02x/init.lua", ui->bulk_last_page);
+  char path[12] = {0};
+  assert(snprintf(path, 12, "%02x/init.lua", ui->bulk_last_page) == 11);
 
-  struct grid_file_t handle = {0};
-  if (grid_platform_find_file(path, &handle) == 0) {
+  void* dummy;
+  if (grid_platform_stat(path, &dummy) == 0) {
     grid_lua_dofile_unsafe(&grid_lua_state, path);
   } else {
     grid_lua_dostring_unsafe(&grid_lua_state, GRID_LUA_FNC_G_INIT_source);
@@ -1056,18 +1056,34 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
       if (eve->cfg_default_flag) {
 
-        struct grid_file_t handle;
-        if (grid_platform_find_script_file(page, ele->index, eve->type, &handle) == 0) {
-          grid_platform_delete_file(&handle);
-          grid_platform_printf("grid_ui_bulk_page_store, delete: %s\n", handle.path);
+        char path[13] = {0};
+        assert(snprintf(path, 13, "%02x/%02x/%02x.lua", page, ele->index, eve->type) == 12);
+
+        void* dummy;
+        if (grid_platform_stat(path, &dummy) == 0) {
+          grid_platform_remove(path);
+          grid_platform_printf("grid_ui_bulk_page_store, delete: %s\n", path);
         }
 
       } else {
 
         char buffer[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
         grid_ui_event_get_script(eve, buffer);
-        grid_platform_write_script_file(page, ele->index, eve->type, buffer, strlen(buffer));
-        grid_platform_printf("grid_ui_bulk_page_store, element: %d, event: %d\n", i, j);
+
+        char path[13] = {0};
+
+        assert(snprintf(path, 3, "%02x", page) == 2);
+        grid_platform_mkdir(path);
+
+        assert(snprintf(path, 6, "%02x/%02x", page, ele->index) == 5);
+        grid_platform_mkdir(path);
+
+        assert(snprintf(path, 13, "%02x/%02x/%02x.lua", page, ele->index, eve->type) == 12);
+        if (grid_platform_write_file_contents(buffer, path) == 0) {
+          grid_platform_printf("grid_ui_bulk_page_store, element: %d, event: %d\n", i, j);
+        } else {
+          grid_platform_printf("grid_ui_bulk_page_store, failed to write to %s\n", path);
+        }
       }
 
       // Clear changed flag
@@ -1082,20 +1098,26 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
 PT_THREAD(grid_ui_bulk_page_clear(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
+  static int page;
+
   PT_BEGIN(pt);
 
   if (!grid_platform_get_nvm_state()) {
     PT_EXIT(pt);
   }
 
-  static char path[50] = {0};
-  sprintf(path, "%02x", ui->bulk_last_page);
+  page = ui->bulk_last_page;
+
+  static char path[3] = {0};
+  assert(snprintf(path, 3, "%02x", page) == 2);
 
   void* info;
   while ((info = grid_platform_dir_first(path))) {
 
-    char path2[101] = {0};
-    sprintf(path2, "%s/%s", path, grid_platform_file_info_name(info));
+    char path2[6] = {0};
+    const char* name = grid_platform_file_info_name(info);
+    assert(snprintf(path2, 6, "%s/%s", path, name) == 5);
+
     grid_platform_remove(path2);
 
     PT_YIELD(pt);
@@ -1106,26 +1128,9 @@ PT_THREAD(grid_ui_bulk_page_clear(proto_pt_t* pt, struct grid_ui_model* ui)) {
   PT_END(pt);
 }
 
-int confread_parse_from_file(struct grid_ui_model* ui) {
-
-  char* buf = grid_platform_read_file_contents(GRID_UI_CONFIG_PATH);
-  if (!buf) {
-    return 1;
-  }
-
-  int status = grid_config_parse(&grid_config_state, buf);
-  if (status) {
-    grid_platform_printf("grid_config_parse returned %d\n", status);
-    free(buf);
-    return 1;
-  }
-
-  free(buf);
-
-  return 0;
-}
-
 PT_THREAD(grid_ui_bulk_conf_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
+
+  static char* config = NULL;
 
   PT_BEGIN(pt);
 
@@ -1133,42 +1138,29 @@ PT_THREAD(grid_ui_bulk_conf_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
     PT_EXIT(pt);
   }
 
-  int status = confread_parse_from_file(ui);
+  config = grid_platform_read_file_contents(GRID_UI_CONFIG_PATH);
+  if (!config) {
+    grid_platform_printf("grid_ui_bulk_conf_read: none\n");
+    PT_EXIT(pt);
+  }
+
+  int status = grid_config_parse(&grid_config_state, config);
+  if (status) {
+    grid_platform_printf("grid_ui_bulk_conf_read, parse status: %d\n", status);
+    free(config);
+    PT_EXIT(pt);
+  }
 
   grid_platform_printf("grid_ui_bulk_conf_read, status: %d\n", status);
+
+  free(config);
 
   PT_END(pt);
 }
 
-int confstore_generate_to_file(struct grid_ui_model* ui) {
-
-  char* config = (char*)malloc(grid_config_bytes(&grid_config_state));
-  if (config == NULL) {
-    grid_platform_printf("confstore_generate_to_file malloc\n");
-    return 1;
-  }
-
-  int status;
-
-  status = grid_config_generate(&grid_config_state, config);
-  if (status) {
-    grid_platform_printf("grid_config_generate returned %d\n", status);
-    free(config);
-    return 1;
-  }
-
-  status = grid_platform_write_file(GRID_UI_CONFIG_PATH, (uint8_t*)config, strlen(config) + 1);
-  if (status) {
-    grid_platform_printf("grid_platform_write_file returned %d\n", status);
-    free(config);
-    return 1;
-  }
-
-  free(config);
-  return 0;
-}
-
 PT_THREAD(grid_ui_bulk_conf_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
+
+  static char* config = NULL;
 
   PT_BEGIN(pt);
 
@@ -1176,9 +1168,23 @@ PT_THREAD(grid_ui_bulk_conf_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
     PT_EXIT(pt);
   }
 
-  int status = confstore_generate_to_file(ui);
+  config = (char*)malloc(grid_config_bytes(&grid_config_state));
+  if (config == NULL) {
+    grid_platform_printf("grid_ui_bulk_conf_store malloc failed\n");
+    PT_EXIT(pt);
+  }
 
+  int status = grid_config_generate(&grid_config_state, config);
+  if (status) {
+    grid_platform_printf("grid_config_generate returned %d\n", status);
+    free(config);
+    PT_EXIT(pt);
+  }
+
+  status = grid_platform_write_file_contents(config, GRID_UI_CONFIG_PATH);
   grid_platform_printf("grid_ui_bulk_conf_store, status: %d\n", status);
+
+  free(config);
 
   PT_END(pt);
 }
@@ -1191,11 +1197,10 @@ PT_THREAD(grid_ui_bulk_conf_erase(proto_pt_t* pt, struct grid_ui_model* ui)) {
     PT_EXIT(pt);
   }
 
-  struct grid_file_t handle = {0};
-
-  if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle) == 0) {
+  void* dummy;
+  if (grid_platform_stat(GRID_UI_CONFIG_PATH, &dummy) == 0) {
     grid_platform_printf("grid_ui_bulk_conf_erase\n");
-    grid_platform_delete_file(&handle);
+    grid_platform_remove(GRID_UI_CONFIG_PATH);
   }
 
   PT_END(pt);
