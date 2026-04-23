@@ -299,8 +299,9 @@ void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte
 
   uint8_t cin = byte0 & 0x0F;
 
-  // 1. REAL-TIME MESSAGES (highest priority, processed even during SysEx)
-  if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 >= GRID_MIDI_RTM_TIMING_CLOCK) {
+  // 1. REAL-TIME MESSAGES: identified by status byte >= 0xF8, not CIN.
+  // Per MIDI spec these are single-byte and may be interleaved within SysEx.
+  if (byte1 >= GRID_MIDI_RTM_TIMING_CLOCK) {
     grid_midi_rx_push_rtm(byte1);
     return;
   }
