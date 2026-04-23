@@ -357,6 +357,38 @@ void grid_midi_rx_pop() {
 
 bool grid_midi_rx_writable() { return grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc)); }
 
+void grid_midi_rtm_rx_pop(void) {
+
+  if (!grid_swsr_readable(&grid_midi_rtm_rx, 1)) {
+    return;
+  }
+
+  struct grid_msg msg = {0};
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
+
+  for (uint8_t i = 0; i < 16; ++i) {
+
+    if (!grid_swsr_readable(&grid_midi_rtm_rx, 1)) {
+      break;
+    }
+
+    uint8_t rtm_byte;
+    grid_swsr_read(&grid_midi_rtm_rx, &rtm_byte, 1);
+
+    grid_msg_add_frame(&msg, GRID_CLASS_MIDIRTM_frame);
+    grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
+    grid_msg_set_parameter(&msg, CLASS_MIDIRTM_BYTE, rtm_byte);
+  }
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+    grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+  }
+}
+
 static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t length) {
 
   if (length < 2 || sysex_data[0] != GRID_MIDI_SYSEX_START || sysex_data[length - 1] != GRID_MIDI_SYSEX_END) {

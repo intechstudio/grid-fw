@@ -99,6 +99,8 @@ bool grid_midi_rx_writable();
 // MIDI Real-Time Message RX buffer (raw bytes)
 #define GRID_MIDI_RTM_RX_BUFFER_length 32
 
+void grid_midi_rtm_rx_pop(void);
+
 struct grid_usb_keyboard_event_desc {
 
   uint8_t keycode;

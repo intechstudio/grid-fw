@@ -855,6 +855,12 @@
 #define GRID_CLASS_MIDISYSEX_PAYLOAD_offset 9
 #define GRID_CLASS_MIDISYSEX_PAYLOAD_length 2
 
+#define GRID_CLASS_MIDIRTM_code 0x002
+#define GRID_CLASS_MIDIRTM_frame "%c%03x...%c", GRID_CONST_STX, GRID_CLASS_MIDIRTM_code, GRID_CONST_ETX
+
+#define GRID_CLASS_MIDIRTM_BYTE_offset 5
+#define GRID_CLASS_MIDIRTM_BYTE_length 2
+
 // HEARTBEAT (type=0 grid, type=1 gridmaster, type=255 editor)
 #define GRID_CLASS_HEARTBEAT_code 0x010
 #define GRID_CLASS_HEARTBEAT_frame "%c%03x_..............%c", GRID_CONST_STX, GRID_CLASS_HEARTBEAT_code, GRID_CONST_ETX

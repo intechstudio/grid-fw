@@ -281,6 +281,7 @@ void grid_utask_midi_rx(struct grid_utask_timer* timer) {
   }
 
   grid_midi_rx_pop();
+  grid_midi_rtm_rx_pop();
 }
 
 // TODO direction should possibly remain in character-space, not [0, 4)

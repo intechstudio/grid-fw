@@ -11,6 +11,9 @@ _decode_clear = function()
   for i = 1, #_decoded_eview do
     _decoded_eview[i] = nil
   end
+  for i = 1, #_decoded_rtm do
+    _decoded_rtm[i] = nil
+  end
 end
 
 pass_midi = function(el, x)
@@ -36,12 +39,18 @@ pass_event = function(el, x)
   end
 end
 
-_decode_process = function(midi, sysex, event)
+pass_rtm = function(el, rtm_type)
+  if el.rtmrx_cb then
+    el:rtmrx_cb(rtm_type)
+  end
+end
+
+_decode_process = function(midi, sysex, event, rtm)
   local order = _decoded_order
 
-  local funs = { pass_midi, pass_sysex, pass_event }
-  local srcs = { midi, sysex, event }
-  local idxs = { 1, 1, 1 }
+  local funs = { pass_midi, pass_sysex, pass_event, pass_rtm }
+  local srcs = { midi, sysex, event, rtm }
+  local idxs = { 1, 1, 1, 1 }
 
   for i = 1, #order do
     local src = order[i]
