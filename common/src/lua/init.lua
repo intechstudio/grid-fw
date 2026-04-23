@@ -11,12 +11,12 @@ for i = 0, #ele do
     custom[j] = false
   end
 
-  local path = string.format("%02d/%02d", page, i)
+  local path = string.format("%02x/%02x", page, i)
   if os.stat(path) then
     for _, v in ipairs(dirent.list(path)) do
-      local caps = string.match(v[1], "(%d%d)%.lua")
-      if v[2] == 1 and caps and tonumber(caps) then
-        local idx = tonumber(caps)
+      local caps = string.match(v[1], "(%x%x)%.lua")
+      if v[2] == 1 and caps and tonumber("0x" .. caps) then
+        local idx = tonumber("0x" .. caps)
         for j = 1, #eve do
           if eve[j] == idx then
             gas(i, eve[j], path .. "/" .. v[1])
