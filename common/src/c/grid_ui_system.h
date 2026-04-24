@@ -29,11 +29,11 @@ extern const luaL_Reg GRID_LUA_S_INDEX_META[];
   \
   "}}"
 
-#define GRID_ACTIONSTRING_SYSTEM_INIT "--[[@cb]] --[[page init]]"
+#define GRID_ACTIONSTRING_SYSTEM_INIT "--[[@cb]]--[[page init]]"
 
-#define GRID_ACTIONSTRING_SYSTEM_MAPMODE "--[[@cb]] gpl(gpn())"
+#define GRID_ACTIONSTRING_SYSTEM_MAPMODE "--[[@cb]]gpl(gpn())"
 
-#define GRID_ACTIONSTRING_SYSTEM_TIMER "--[[@cb]] print('tick')"
+#define GRID_ACTIONSTRING_SYSTEM_TIMER "--[[@cb]]print(\"tick\")"
 
 // clang-format on
 
