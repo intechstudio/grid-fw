@@ -30,10 +30,6 @@ struct grid_lua_model {
   void (*busy_semaphore_lock_fn)(void*);
   void (*busy_semaphore_release_fn)(void*);
 
-  uint32_t stdo_len;
-  uint32_t stdi_len;
-  uint32_t stde_len;
-
   char stdo[GRID_LUA_STDO_LENGTH];
   char stdi[GRID_LUA_STDI_LENGTH];
   char stde[GRID_LUA_STDE_LENGTH];

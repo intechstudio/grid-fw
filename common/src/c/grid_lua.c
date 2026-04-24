@@ -11,10 +11,6 @@ struct grid_lua_model grid_lua_state;
 
 void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance) {
 
-  lua->stdo_len = GRID_LUA_STDO_LENGTH;
-  lua->stdi_len = GRID_LUA_STDI_LENGTH;
-  lua->stde_len = GRID_LUA_STDE_LENGTH;
-
   lua->custom_allocator = custom_allocator;
   lua->custom_allocator_instance = custom_allocator_instance;
 
@@ -76,19 +72,19 @@ bool grid_lua_semaphore_release(struct grid_lua_model* lua) {
 
 void grid_lua_deinit(struct grid_lua_model* lua) {}
 
-void grid_lua_clear_stdi(struct grid_lua_model* lua) { memset(lua->stdi, 0, lua->stdi_len); }
+void grid_lua_clear_stdi(struct grid_lua_model* lua) { memset(lua->stdi, 0, GRID_LUA_STDI_LENGTH); }
 
-void grid_lua_clear_stdo(struct grid_lua_model* lua) { memset(lua->stdo, 0, lua->stdo_len); }
+void grid_lua_clear_stdo(struct grid_lua_model* lua) { memset(lua->stdo, 0, GRID_LUA_STDO_LENGTH); }
 
-void grid_lua_clear_stde(struct grid_lua_model* lua) { memset(lua->stde, 0, lua->stde_len); }
+void grid_lua_clear_stde(struct grid_lua_model* lua) { memset(lua->stde, 0, GRID_LUA_STDE_LENGTH); }
 
 int grid_lua_append_stdo(struct grid_lua_model* lua, const char* str) {
 
-  int curr = strnlen(lua->stdo, lua->stdo_len);
+  int curr = strnlen(lua->stdo, GRID_LUA_STDO_LENGTH);
 
   int add = strlen(str);
 
-  int remain = lua->stdo_len - 1 - curr;
+  int remain = GRID_LUA_STDO_LENGTH - 1 - curr;
 
   if (add > remain) {
     return 1;
@@ -101,11 +97,11 @@ int grid_lua_append_stdo(struct grid_lua_model* lua, const char* str) {
 
 int grid_lua_append_stde(struct grid_lua_model* lua, const char* str) {
 
-  int curr = strnlen(lua->stde, lua->stde_len);
+  int curr = strnlen(lua->stde, GRID_LUA_STDE_LENGTH);
 
   int add = strlen(str);
 
-  int remain = lua->stde_len - 1 - curr;
+  int remain = GRID_LUA_STDE_LENGTH - 1 - curr;
 
   if (add > remain) {
     return 1;
@@ -135,7 +131,7 @@ uint32_t grid_lua_do_unsafe(struct grid_lua_model* lua, const char* src, lua_loa
     if ((lua_pcall(lua->L, 0, LUA_MULTRET, 0)) != LUA_OK) {
 
       grid_lua_clear_stde(lua);
-      stpncpy(lua->stde, lua_tostring(lua->L, -1), lua->stde_len - 1);
+      stpncpy(lua->stde, lua_tostring(lua->L, -1), GRID_LUA_STDE_LENGTH - 1);
       ret = 0;
     }
 
@@ -145,7 +141,7 @@ uint32_t grid_lua_do_unsafe(struct grid_lua_model* lua, const char* src, lua_loa
   } else {
 
     grid_lua_clear_stde(lua);
-    stpncpy(lua->stde, lua_tostring(lua->L, -1), lua->stde_len - 1);
+    stpncpy(lua->stde, lua_tostring(lua->L, -1), GRID_LUA_STDE_LENGTH - 1);
     ret = 0;
 
     // Pop error message from the stack
