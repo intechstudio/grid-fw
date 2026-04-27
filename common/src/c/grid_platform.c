@@ -8,121 +8,110 @@ static void* LFS = NULL;
 
 void grid_platform_set_lfs(void* lfs) { LFS = lfs; }
 
-int grid_platform_find_next_actionstring_file_on_page(uint8_t page, int* last_element, int* last_event, struct grid_file_t* handle) {
+char* grid_platform_read_file_contents(const char* path) {
+
+  void* statbuf;
+  int status = grid_platform_stat(path, &statbuf);
+  if (status) {
+    return NULL;
+  }
+
+  size_t size = grid_platform_file_info_size(statbuf);
+  if (size == 0) {
+    return NULL;
+  }
+
+  char* buf = malloc(size + 1);
+  if (!buf) {
+    return NULL;
+  }
+
+  void* file = grid_platform_fopen(path, "r");
+  if (!file) {
+    free(buf);
+    return NULL;
+  }
+
+  if (grid_platform_fread(buf, size, 1, file) != 1) {
+    free(buf);
+    grid_platform_fclose(file);
+    return NULL;
+  }
+
+  buf[size] = '\0';
+
+  if (grid_platform_fclose(file)) {
+    free(buf);
+    return NULL;
+  }
+
+  return buf;
+}
+
+int grid_platform_write_file_contents(const char* buf, const char* path) {
+
+  void* file = grid_platform_fopen(path, "w");
+  if (!file) {
+    return 1;
+  }
+
+  if (grid_platform_fwrite(buf, strlen(buf), 1, file) != 1) {
+    grid_platform_fclose(file);
+    return 1;
+  }
+
+  return grid_platform_fclose(file);
+}
+
+void* grid_platform_dir_first(const char* path) {
 
   assert(LFS);
 
-  int ret = grid_littlefs_find_next_on_page(LFS, page, last_element, last_event);
-
-  if (ret == 0) {
-
-    sprintf(handle->path, "%02x/%02x/%02x.cfg", page, *last_element, *last_event);
-  }
-
-  return ret;
+  return grid_littlefs_dir_first(LFS, path);
 }
 
-int grid_platform_find_actionstring_file(uint8_t page, uint8_t element, uint8_t event, struct grid_file_t* handle) {
-
-  char path[50] = {0};
-  sprintf(path, "%02x/%02x/%02x.cfg", page, element, event);
-
-  return grid_platform_find_file(path, handle);
-}
-
-int grid_platform_write_actionstring_file(uint8_t page, uint8_t element, uint8_t event, char* buffer, uint16_t length) {
-
-  char path[50] = {0};
-
-  sprintf(&path[strlen(path)], "%02x", page);
-  grid_platform_make_directory(path);
-
-  sprintf(&path[strlen(path)], "/%02x", element);
-  grid_platform_make_directory(path);
-
-  sprintf(&path[strlen(path)], "/%02x.cfg", event);
-  return grid_platform_write_file(path, (uint8_t*)buffer, length + 1);
-}
-
-void grid_platform_clear_all_actionstring_files_from_page(uint8_t page) {
-
-  char path[50] = {0};
-
-  // upkeep: loop bound
-  for (uint8_t i = 0; i < 18 + 1; ++i) {
-
-    // Remove element directory
-    sprintf(path, "%02x/%02x", page, i);
-    grid_platform_remove(path);
-  }
-
-  // Remove page directory
-  sprintf(path, "%02x", page);
-  grid_platform_remove(path);
-}
-
-void grid_platform_delete_actionstring_files_all() {
+void grid_platform_delete_script_files_all() {
 
   // upkeep: loop bound
   for (uint8_t i = 0; i < 4; ++i) {
 
-    grid_platform_clear_all_actionstring_files_from_page(i);
+    char path[3] = {0};
+    snprintf(path, 3, "%02x", i);
+
+    // Remove page directory, assuming remove is recursive
+    grid_platform_remove(path);
   }
 }
 
-int grid_platform_make_directory(const char* path) {
+void grid_platform_nvm_erase() {
+
+  grid_platform_delete_script_files_all();
+
+  void* dummy;
+  if (grid_platform_stat(GRID_UI_CONFIG_PATH, &dummy) == 0) {
+    grid_platform_remove(GRID_UI_CONFIG_PATH);
+  }
+}
+
+int grid_platform_mkdir(const char* path) {
 
   assert(LFS);
 
   return grid_littlefs_mkdir(LFS, path);
 }
 
-int grid_platform_list_directory(const char* path) {
+int grid_platform_lsdir(const char* path) {
 
   assert(LFS);
 
   return grid_littlefs_lsdir(LFS, path);
 }
 
-int grid_platform_find_file(const char* path, struct grid_file_t* handle) {
+int grid_platform_stat(const char* path, void** statbuf) {
 
   assert(LFS);
 
-  int status = grid_littlefs_file_find(LFS, path);
-
-  if (status == 0) {
-    strcpy(handle->path, path);
-  }
-
-  return status;
-}
-
-uint16_t grid_platform_get_file_size(struct grid_file_t* handle) {
-
-  assert(LFS);
-
-  return grid_littlefs_file_size(LFS, handle->path);
-}
-
-int grid_platform_read_file(struct grid_file_t* handle, uint8_t* buffer, uint16_t size) {
-
-  assert(LFS);
-
-  return grid_littlefs_file_read(LFS, handle->path, buffer, size);
-}
-
-int grid_platform_write_file(const char* path, uint8_t* buffer, uint16_t size) {
-
-  assert(LFS);
-
-  return grid_littlefs_file_write(LFS, path, buffer, size);
-}
-
-int grid_platform_delete_file(struct grid_file_t* handle) {
-
-  assert(LFS);
-
-  return grid_littlefs_remove(LFS, handle->path);
+  return grid_littlefs_stat(LFS, path, statbuf);
 }
 
 uint8_t grid_platform_get_nvm_state() { return LFS != NULL; }
@@ -266,6 +255,8 @@ void* grid_platform_readdir(void* dirp) {
   return grid_littlefs_readdir(LFS, dirp);
 }
 
-const char* grid_platform_readdir_name() { return grid_littlefs_readdir_name(); }
+const char* grid_platform_file_info_name(void* info) { return grid_littlefs_file_info_name(info); }
 
-uint8_t grid_platform_readdir_type() { return grid_littlefs_readdir_type(); }
+uint8_t grid_platform_file_info_type(void* info) { return grid_littlefs_file_info_type(info); }
+
+uint32_t grid_platform_file_info_size(void* info) { return grid_littlefs_file_info_size(info); }

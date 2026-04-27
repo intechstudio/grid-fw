@@ -38,11 +38,6 @@ const luaL_Reg GRID_LUA_EP_INDEX_META[] = {{GRID_LUA_FNC_EP_ELEMENT_INDEX_short,
                                            {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, XAFTERX(GRID_LUA_FNC_META_NAME, ggen)},
                                            {NULL, NULL}};
 
-const char grid_ui_endless_init_actionstring[] = GRID_ACTIONSTRING_ENDLESS_INIT;
-const char grid_ui_endless_endlesschange_actionstring[] = GRID_ACTIONSTRING_ENDLESS_ENDLESS;
-const char grid_ui_endless_buttonchange_actionstring[] = GRID_ACTIONSTRING_ENDLESS_BUTTON;
-const char grid_ui_endless_timer_actionstring[] = GRID_ACTIONSTRING_SYSTEM_TIMER;
-
 void grid_ui_endless_state_init(struct grid_ui_endless_state* state, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis) {
 
   state->adc_bit_depth = adc_bit_depth;
@@ -62,10 +57,10 @@ void grid_ui_element_endless_init(struct grid_ui_element* ele) {
 
   grid_ui_element_malloc_events(ele, 4);
 
-  grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, grid_ui_endless_init_actionstring);                // Element Initialization Event
-  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_ENDLESS, GRID_LUA_FNC_A_ENDLESS_short, grid_ui_endless_endlesschange_actionstring); // Endlesspot Change
-  grid_ui_event_init(ele, 2, GRID_PARAMETER_EVENT_BUTTON, GRID_LUA_FNC_A_BUTTON_short, grid_ui_endless_buttonchange_actionstring);    // Button Change
-  grid_ui_event_init(ele, 3, GRID_PARAMETER_EVENT_TIMER, GRID_LUA_FNC_A_TIMER_short, grid_ui_endless_timer_actionstring);
+  grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, GRID_ACTIONSTRING_ENDLESS_INIT);
+  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_ENDLESS, GRID_LUA_FNC_A_ENDLESS_short, GRID_ACTIONSTRING_ENDLESS_ENDLESS);
+  grid_ui_event_init(ele, 2, GRID_PARAMETER_EVENT_BUTTON, GRID_LUA_FNC_A_BUTTON_short, GRID_ACTIONSTRING_ENDLESS_BUTTON);
+  grid_ui_event_init(ele, 3, GRID_PARAMETER_EVENT_TIMER, GRID_LUA_FNC_A_TIMER_short, GRID_ACTIONSTRING_SYSTEM_TIMER);
 
   ele->template_initializer = &grid_ui_element_endless_template_parameter_init;
   ele->template_parameter_list_length = GRID_LUA_FNC_EP_LIST_length;

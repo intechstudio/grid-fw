@@ -147,7 +147,7 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   return ele;
 }
 
-void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_actionstring) {
+void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_script) {
 
   assert(index < ele->event_list_length);
 
@@ -155,7 +155,7 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t even
 
   eve->parent = ele;
   eve->state = GRID_EVE_STATE_INIT;
-  eve->default_actionstring = default_actionstring;
+  eve->default_script = default_script;
   eve->cfg_changed_flag = 0;
   eve->cfg_default_flag = 1;
   eve->type = event_type;
@@ -338,59 +338,60 @@ void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t pa
 
 uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui) { return ui->page_change_enabled; }
 
-uint8_t grid_ui_event_isdefault_actionstring(struct grid_ui_event* eve, char* action_string) { return strcmp(action_string, eve->default_actionstring) == 0; }
+uint8_t grid_ui_event_isdefault_script(struct grid_ui_event* eve, const char* script) { return strcmp(script, eve->default_script) == 0; }
 
-void grid_ui_actionstring_header(uint8_t index, char* function_name, char* dest) {
+void grid_ui_script_header(uint8_t index, char* function_name, char* dest) {
 
   char fn_push[] = "local _efn = EFN; EFN = ";
 
   sprintf(dest, "ele[%d].%s = function (self) %s\"%s\"; ", index, function_name, fn_push, function_name);
 }
 
-void grid_ui_actionstring_center(char* actionstring, char* dest) { sprintf(dest, "%s ", &actionstring[6]); }
+void grid_ui_script_center(const char* script, char* dest) { sprintf(dest, "%s ", script); }
 
-void grid_ui_actionstring_footer(char* dest) {
+void grid_ui_script_footer(char* dest) {
 
   char fn_pop[] = "EFN = _efn";
 
   sprintf(dest, "end %s", fn_pop);
 }
 
-void grid_ui_event_register_actionstring(struct grid_ui_event* eve, char* action_string) {
+int grid_ui_register_script(struct grid_ui_model* ui, uint8_t element, uint8_t event, const char* script) {
 
-  struct grid_ui_element* ele = eve->parent;
+  struct grid_ui_element* ele = grid_ui_element_find(ui, element);
 
-  uint32_t len = strlen(action_string);
+  if (!ele) {
+    grid_platform_printf("grid_ui_register_script: invalid element\n");
+    return 1;
+  }
 
-  if (len == 0) {
-    grid_platform_printf("NULLSTRING el:%d, elv:%d\r\n", ele->index, eve->type);
-    return;
+  struct grid_ui_event* eve = grid_ui_event_find(ele, event);
+
+  if (!eve) {
+    return 1;
   }
 
   char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
-  action_string[len - 3] = '\0';
-  grid_ui_actionstring_header(ele->index, eve->function_name, temp);
-  grid_ui_actionstring_center(action_string, &temp[strlen(temp)]);
-  grid_ui_actionstring_footer(&temp[strlen(temp)]);
-  action_string[len - 3] = ' ';
+  grid_ui_script_header(ele->index, eve->function_name, temp);
+  const char* body = script[0] != '\0' ? script : eve->default_script;
+  grid_ui_script_center(body, &temp[strlen(temp)]);
+  grid_ui_script_footer(&temp[strlen(temp)]);
 
-  eve->cfg_default_flag = grid_ui_event_isdefault_actionstring(eve, action_string);
+  eve->cfg_default_flag = grid_ui_event_isdefault_script(eve, body);
 
-  if (0 == grid_lua_dostring(&grid_lua_state, temp)) {
-    grid_port_debug_printf("LUA not OK, Failed to register action! EL: %d EV: %d", ele->index, eve->type);
+  if (0 == grid_lua_dostring_unsafe(&grid_lua_state, temp)) {
+    grid_port_debug_printf("grid_ui_register_script: dostring failed, ele: %d, eve: %d\n", element, event);
   };
 
-  grid_lua_semaphore_lock(&grid_lua_state);
-  grid_lua_gc_full_unsafe(&grid_lua_state);
-  grid_lua_semaphore_release(&grid_lua_state);
-
   eve->cfg_changed_flag = 1;
+
+  return 0;
 }
 
-void grid_ui_event_generate_actionstring(struct grid_ui_event* eve, char* targetstring) { strcpy(targetstring, eve->default_actionstring); }
+void grid_ui_event_generate_script(struct grid_ui_event* eve, char* targetstring) { strcpy(targetstring, eve->default_script); }
 
-void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstring) {
+void grid_ui_event_get_script(struct grid_ui_event* eve, char* targetstring) {
 
   char temp[100] = {0};
   char result[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
@@ -398,34 +399,38 @@ void grid_ui_event_get_actionstring(struct grid_ui_event* eve, char* targetstrin
   sprintf(temp, "gsg(%ld,debug.getinfo(ele[%d].%s,\"S\").source)", (uint32_t)result, eve->parent->index, eve->function_name);
 
   if (0 == grid_lua_dostring(&grid_lua_state, temp)) {
-    grid_port_debug_printf("LUA not OK, Failed to retrieve action! EL: %d EV: %d", eve->parent->index, eve->type);
+    grid_port_debug_printf("LUA not OK, Failed to retrieve script! EL: %d EV: %d", eve->parent->index, eve->type);
   };
 
   char header[100] = {0};
   char footer[100] = {0};
 
-  grid_ui_actionstring_header(eve->parent->index, eve->function_name, header);
-  grid_ui_actionstring_footer(footer);
+  grid_ui_script_header(eve->parent->index, eve->function_name, header);
+  grid_ui_script_footer(footer);
 
   size_t header_len = strlen(header);
-  size_t footer_len = strlen(footer);
 
   // Check if debug.getinfo is valid by checking for a known prefix
-  if (0 == strncmp(header, result, header_len)) {
+  if (0 != strncmp(header, result, header_len)) {
 
-    // Transform result to an actionstring
-    // add 1 to footer to compensate for an added space
-    sprintf(&result[strlen(result) - (footer_len + 1)], " ?>");
-    uint8_t offset = header_len - 6;
-    memcpy(&result[offset], "<?lua ", 6);
-
-    strcpy(targetstring, &result[offset]);
-
-  } else {
-
-    grid_ui_event_generate_actionstring(eve, targetstring);
+    grid_ui_event_generate_script(eve, targetstring);
     grid_platform_printf("ERROR: invalid debug.getinfo\r\n");
+    return;
   }
+
+  size_t result_len = strlen(result);
+  size_t footer_len = strlen(footer);
+
+  // Check if result can be terminated early to exclude footer
+  if (result_len < footer_len + 1) {
+
+    grid_ui_event_generate_script(eve, targetstring);
+    grid_platform_printf("ERROR: invalid debug.getinfo\r\n");
+    return;
+  }
+  result[result_len - footer_len - 1] = '\0';
+
+  strcpy(targetstring, &result[header_len]);
 }
 
 int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, uint8_t event_type, char* targetstring) {
@@ -451,17 +456,17 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
   if (!eve) {
     grid_platform_printf("grid_ui_event_recall_configuration: invalid event\n");
-    strcpy(targetstring, "<?lua --[[@cb]] --[[event deprecated]] ?>");
+    strcpy(targetstring, "--[[@cb]] --[[event deprecated]]");
     return 0;
   }
 
   if (eve->cfg_default_flag) {
 
-    grid_ui_event_generate_actionstring(eve, targetstring);
+    grid_ui_event_generate_script(eve, targetstring);
 
   } else {
 
-    grid_ui_event_get_actionstring(eve, targetstring);
+    grid_ui_event_get_script(eve, targetstring);
   }
 
   return 0;
@@ -582,7 +587,7 @@ void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg)
   grid_msg_set_parameter(msg, CLASS_EVENT_EVENTPARAM2, param2);
 }
 
-void grid_ui_event_render_action(struct grid_ui_event* eve, struct grid_msg* msg) {
+void grid_ui_event_render_script(struct grid_ui_event* eve, struct grid_msg* msg) {
 
   if (!grid_lua_do_event(&grid_lua_state, eve->parent->index, eve->function_name)) {
 
@@ -683,7 +688,7 @@ void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui) {
         continue;
       }
 
-      grid_ui_event_render_action(eve, &msg_local);
+      grid_ui_event_render_script(eve, &msg_local);
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
 
@@ -759,7 +764,7 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
 
       grid_ui_event_render_event(eve, &msg);
       grid_ui_event_render_event_view(eve, &msg);
-      grid_ui_event_render_action(eve, &msg);
+      grid_ui_event_render_script(eve, &msg);
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }
@@ -986,8 +991,6 @@ PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui)) {
   grid_lua_stop_vm(&grid_lua_state);
   grid_lua_start_vm(&grid_lua_state, grid_lua_api_generic_lib_reference, grid_ui_state.lua_ui_init_callback);
 
-  grid_lua_pre_init(&grid_lua_state);
-
   uint8_t read_page = grid_ui_page_get_activepage(&grid_ui_state);
   grid_ui_bulk_queue_with_state(ui, grid_ui_bulk_page_read, read_page, 0, NULL);
 
@@ -996,71 +999,27 @@ PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
 PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
-  static int page;
-  static int element;
-  static int event;
-
   PT_BEGIN(pt);
 
   if (!grid_platform_get_nvm_state()) {
     PT_EXIT(pt);
   }
 
-  // Mark all actionstrings as default
-  for (uint8_t i = 0; i < ui->element_list_length; ++i) {
+  grid_lua_semaphore_lock(&grid_lua_state);
 
-    struct grid_ui_element* ele = &ui->element_list[i];
+  char path[12] = {0};
+  assert(snprintf(path, 12, "%02x/init.lua", ui->bulk_last_page) == 11);
 
-    for (uint8_t j = 0; j < ele->event_list_length; ++j) {
-
-      ele->event_list[j].cfg_default_flag = 1;
-    }
+  void* dummy;
+  if (grid_platform_stat(path, &dummy) == 0) {
+    grid_lua_dofile_unsafe(&grid_lua_state, path);
+  } else {
+    grid_lua_dostring_unsafe(&grid_lua_state, GRID_LUA_FNC_G_INIT_source);
   }
 
-  page = ui->bulk_last_page;
-  element = -1;
-  event = -1;
-
-  // Register all custom actionstring files
-  struct grid_file_t handle;
-  while (!grid_platform_find_next_actionstring_file_on_page(page, &element, &event, &handle)) {
-
-    uint16_t size = grid_platform_get_file_size(&handle);
-    if (size > 0) {
-
-      char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
-      grid_platform_read_file(&handle, (uint8_t*)temp, size);
-
-      struct grid_ui_event* eve = grid_ui_event_find(&ui->element_list[element], event);
-      grid_ui_event_register_actionstring(eve, temp);
-      eve->cfg_changed_flag = 0; // clear changed flag
-
-      grid_platform_printf("grid_ui_bulk_page_read, element: %d, event: %d\n", element, event);
-    }
-
-    PT_YIELD(pt);
-  }
-
-  // Fill all of the remaining default events with default actionstrings
-  for (uint8_t i = 0; i < ui->element_list_length; ++i) {
-
-    struct grid_ui_element* ele = &ui->element_list[i];
-
-    for (uint8_t j = 0; j < ele->event_list_length; ++j) {
-
-      struct grid_ui_event* eve = &ele->event_list[j];
-
-      if (eve->cfg_default_flag == 1) {
-
-        char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
-
-        grid_ui_event_generate_actionstring(eve, temp);
-        grid_ui_event_register_actionstring(eve, temp);
-      }
-    }
-  }
-
-  grid_lua_post_init(&grid_lua_state);
+  lua_pop(grid_lua_state.L, lua_gettop(grid_lua_state.L));
+  grid_lua_gc_full_unsafe(&grid_lua_state);
+  grid_lua_semaphore_release(&grid_lua_state);
 
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
@@ -1097,18 +1056,34 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
       if (eve->cfg_default_flag) {
 
-        struct grid_file_t handle;
-        if (grid_platform_find_actionstring_file(page, ele->index, eve->type, &handle) == 0) {
-          grid_platform_delete_file(&handle);
-          grid_platform_printf("grid_ui_bulk_page_store, delete: %s\n", handle.path);
+        char path[13] = {0};
+        assert(snprintf(path, 13, "%02x/%02x/%02x.lua", page, ele->index, eve->type) == 12);
+
+        void* dummy;
+        if (grid_platform_stat(path, &dummy) == 0) {
+          grid_platform_remove(path);
+          grid_platform_printf("grid_ui_bulk_page_store, delete: %s\n", path);
         }
 
       } else {
 
         char buffer[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
-        grid_ui_event_get_actionstring(eve, buffer);
-        grid_platform_write_actionstring_file(page, ele->index, eve->type, buffer, strlen(buffer));
-        grid_platform_printf("grid_ui_bulk_page_store, element: %d, event: %d\n", i, j);
+        grid_ui_event_get_script(eve, buffer);
+
+        char path[13] = {0};
+
+        assert(snprintf(path, 3, "%02x", page) == 2);
+        grid_platform_mkdir(path);
+
+        assert(snprintf(path, 6, "%02x/%02x", page, ele->index) == 5);
+        grid_platform_mkdir(path);
+
+        assert(snprintf(path, 13, "%02x/%02x/%02x.lua", page, ele->index, eve->type) == 12);
+        if (grid_platform_write_file_contents(buffer, path) == 0) {
+          grid_platform_printf("grid_ui_bulk_page_store, element: %d, event: %d\n", i, j);
+        } else {
+          grid_platform_printf("grid_ui_bulk_page_store, failed to write to %s\n", path);
+        }
       }
 
       // Clear changed flag
@@ -1124,8 +1099,6 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
 PT_THREAD(grid_ui_bulk_page_clear(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
   static int page;
-  static int element;
-  static int event;
 
   PT_BEGIN(pt);
 
@@ -1134,67 +1107,30 @@ PT_THREAD(grid_ui_bulk_page_clear(proto_pt_t* pt, struct grid_ui_model* ui)) {
   }
 
   page = ui->bulk_last_page;
-  element = -1;
-  event = -1;
 
-  struct grid_file_t handle;
-  while (!grid_platform_find_next_actionstring_file_on_page(page, &element, &event, &handle)) {
+  static char path[3] = {0};
+  assert(snprintf(path, 3, "%02x", page) == 2);
 
-    grid_platform_delete_file(&handle);
+  void* info;
+  while ((info = grid_platform_dir_first(path))) {
+
+    char path2[6] = {0};
+    const char* name = grid_platform_file_info_name(info);
+    assert(snprintf(path2, 6, "%s/%s", path, name) == 5);
+
+    grid_platform_remove(path2);
 
     PT_YIELD(pt);
   }
 
-  char path[50] = {0};
-  sprintf(path, "%02x", ui->bulk_last_page);
   grid_platform_remove(path);
 
   PT_END(pt);
 }
 
-int confread_parse_from_file(struct grid_ui_model* ui) {
-
-  int status;
-
-  struct grid_file_t handle = {0};
-
-  status = grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle);
-  if (status) {
-    grid_platform_printf("grid_platform_find_file returned %d\n", status);
-    return 1;
-  }
-
-  uint16_t file_size = grid_platform_get_file_size(&handle);
-  if (file_size == 0) {
-    grid_platform_printf("grid_platform_get_file_size returned %d\n", status);
-    return 1;
-  }
-
-  char* buffer = (char*)malloc(file_size);
-  if (buffer == NULL) {
-    grid_platform_printf("confread_parse_from_file malloc\n");
-    return 1;
-  }
-
-  status = grid_platform_read_file(&handle, (uint8_t*)buffer, file_size);
-  if (status) {
-    grid_platform_printf("grid_platform_read_file returned %d\n", status);
-    free(buffer);
-    return 1;
-  }
-
-  status = grid_config_parse(&grid_config_state, buffer);
-  if (status) {
-    grid_platform_printf("grid_config_parse returned %d\n", status);
-    free(buffer);
-    return 1;
-  }
-
-  free(buffer);
-  return 0;
-}
-
 PT_THREAD(grid_ui_bulk_conf_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
+
+  static char* config = NULL;
 
   PT_BEGIN(pt);
 
@@ -1202,42 +1138,29 @@ PT_THREAD(grid_ui_bulk_conf_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
     PT_EXIT(pt);
   }
 
-  int status = confread_parse_from_file(ui);
+  config = grid_platform_read_file_contents(GRID_UI_CONFIG_PATH);
+  if (!config) {
+    grid_platform_printf("grid_ui_bulk_conf_read: none\n");
+    PT_EXIT(pt);
+  }
+
+  int status = grid_config_parse(&grid_config_state, config);
+  if (status) {
+    grid_platform_printf("grid_ui_bulk_conf_read, parse status: %d\n", status);
+    free(config);
+    PT_EXIT(pt);
+  }
 
   grid_platform_printf("grid_ui_bulk_conf_read, status: %d\n", status);
+
+  free(config);
 
   PT_END(pt);
 }
 
-int confstore_generate_to_file(struct grid_ui_model* ui) {
-
-  char* config = (char*)malloc(grid_config_bytes(&grid_config_state));
-  if (config == NULL) {
-    grid_platform_printf("confstore_generate_to_file malloc\n");
-    return 1;
-  }
-
-  int status;
-
-  status = grid_config_generate(&grid_config_state, config);
-  if (status) {
-    grid_platform_printf("grid_config_generate returned %d\n", status);
-    free(config);
-    return 1;
-  }
-
-  status = grid_platform_write_file(GRID_UI_CONFIG_PATH, (uint8_t*)config, strlen(config) + 1);
-  if (status) {
-    grid_platform_printf("grid_platform_write_file returned %d\n", status);
-    free(config);
-    return 1;
-  }
-
-  free(config);
-  return 0;
-}
-
 PT_THREAD(grid_ui_bulk_conf_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
+
+  static char* config = NULL;
 
   PT_BEGIN(pt);
 
@@ -1245,9 +1168,23 @@ PT_THREAD(grid_ui_bulk_conf_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
     PT_EXIT(pt);
   }
 
-  int status = confstore_generate_to_file(ui);
+  config = (char*)malloc(grid_config_bytes(&grid_config_state));
+  if (config == NULL) {
+    grid_platform_printf("grid_ui_bulk_conf_store malloc failed\n");
+    PT_EXIT(pt);
+  }
 
+  int status = grid_config_generate(&grid_config_state, config);
+  if (status) {
+    grid_platform_printf("grid_config_generate returned %d\n", status);
+    free(config);
+    PT_EXIT(pt);
+  }
+
+  status = grid_platform_write_file_contents(config, GRID_UI_CONFIG_PATH);
   grid_platform_printf("grid_ui_bulk_conf_store, status: %d\n", status);
+
+  free(config);
 
   PT_END(pt);
 }
@@ -1260,11 +1197,10 @@ PT_THREAD(grid_ui_bulk_conf_erase(proto_pt_t* pt, struct grid_ui_model* ui)) {
     PT_EXIT(pt);
   }
 
-  struct grid_file_t handle = {0};
-
-  if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle) == 0) {
+  void* dummy;
+  if (grid_platform_stat(GRID_UI_CONFIG_PATH, &dummy) == 0) {
     grid_platform_printf("grid_ui_bulk_conf_erase\n");
-    grid_platform_delete_file(&handle);
+    grid_platform_remove(GRID_UI_CONFIG_PATH);
   }
 
   PT_END(pt);

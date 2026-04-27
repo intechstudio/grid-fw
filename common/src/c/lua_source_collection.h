@@ -21,6 +21,9 @@
 #include "eventfname.h"
 #define GRID_LUA_FNC_G_EVENTFNAME_source common_src_lua_eventfname_lua
 
+#include "init.h"
+#define GRID_LUA_FNC_G_INIT_source common_src_lua_init_lua
+
 #include "limit.h"
 #define GRID_LUA_FNC_G_LIMIT_source common_src_lua_limit_lua
 #define GRID_LUA_FNC_G_LIMIT_short "glim"

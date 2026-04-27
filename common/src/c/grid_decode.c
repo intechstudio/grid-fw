@@ -519,19 +519,16 @@ uint8_t grid_decode_immediate_to_ui(char* header, char* chunk) {
 
   char* script = &chunk[GRID_CLASS_IMMEDIATE_ACTIONSTRING_offset];
 
-  if (!grid_lua_strn_is_actionstring(script, length)) {
-    return 1;
-  }
-
   if (!grid_ui_bulk_semaphore_try(&grid_ui_state)) {
     return 1;
   }
 
   grid_lua_clear_stdo(&grid_lua_state);
-  script[length - 3] = '\0';
-  grid_lua_dostring_begin(&grid_lua_state, &script[6]);
+  assert(script[length] == GRID_CONST_ETX);
+  script[length] = '\0';
+  grid_lua_dostring_begin(&grid_lua_state, script);
+  script[length] = GRID_CONST_ETX;
   grid_lua_dostring_end(&grid_lua_state);
-  script[length - 3] = ' ';
   grid_lua_broadcast_stdo(&grid_lua_state);
 
   grid_ui_bulk_semaphore_release(&grid_ui_state);
@@ -575,10 +572,6 @@ uint8_t grid_decode_evaluate_to_ui(char* header, char* chunk) {
 
   char* script = (char*)&first[GRID_CLASS_EVALUATE_ELEMENT_DATA_offset];
 
-  if (!grid_lua_strn_is_actionstring(script, length)) {
-    return 1;
-  }
-
   uint8_t id = grid_msg_get_parameter_raw((uint8_t*)header, BRC_ID);
 
   struct grid_msg msg;
@@ -602,9 +595,10 @@ uint8_t grid_decode_evaluate_to_ui(char* header, char* chunk) {
   }
 
   grid_lua_clear_stdo(&grid_lua_state);
-  script[length - 3] = '\0';
-  bool status = grid_lua_dostring_begin(&grid_lua_state, &script[6]);
-  script[length - 3] = ' ';
+  assert(script[length] == GRID_CONST_ETX);
+  script[length] = '\0';
+  bool status = grid_lua_dostring_begin(&grid_lua_state, script);
+  script[length] = GRID_CONST_ETX;
   grid_lua_broadcast_stdo(&grid_lua_state);
 
   uint8_t respinstr = status ? GRID_INSTR_ACKNOWLEDGE_code : GRID_INSTR_NACKNOWLEDGE_code;
@@ -1196,15 +1190,15 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
     // Disable HID
     grid_usb_keyboard_disable(&grid_usb_keyboard_state);
 
-    uint16_t actionlength = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_CONFIG_ACTIONLENGTH);
+    uint16_t scriptlength = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_CONFIG_ACTIONLENGTH);
 
-    char* action = &chunk[GRID_CLASS_CONFIG_ACTIONSTRING_offset];
+    char* script = &chunk[GRID_CLASS_CONFIG_ACTIONSTRING_offset];
 
     // By default, generate nacknowledge
     uint8_t respinstr = GRID_INSTR_NACKNOWLEDGE_code;
 
-    bool validlength = actionlength <= GRID_PARAMETER_ACTIONSTRING_maxlength;
-    bool endswithetx = validlength ? action[actionlength] == GRID_CONST_ETX : false;
+    bool validlength = scriptlength <= GRID_PARAMETER_ACTIONSTRING_maxlength;
+    bool endswithetx = validlength ? script[scriptlength] == GRID_CONST_ETX : false;
     bool currentpage = page == grid_ui_state.page_activepage;
     bool validelement = element < grid_ui_state.element_list_length;
     struct grid_ui_element* ele = validelement ? &grid_ui_state.element_list[element] : NULL;
@@ -1218,10 +1212,12 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
       // Set alert for feedback
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_WHITE, 64);
 
-      // Register actionstring for event
-      action[actionlength] = '\0';
-      grid_ui_event_register_actionstring(eve, action);
-      action[actionlength] = GRID_CONST_ETX;
+      // Register script for event
+      script[scriptlength] = '\0';
+      grid_lua_semaphore_lock(&grid_lua_state);
+      grid_ui_register_script(&grid_ui_state, element, event, script);
+      grid_lua_semaphore_release(&grid_lua_state);
+      script[scriptlength] = GRID_CONST_ETX;
 
       // Local-trigger the event
       grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);

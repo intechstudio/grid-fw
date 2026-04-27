@@ -75,6 +75,13 @@ void grid_lua_ui_init(struct grid_lua_model* lua) {
       if (ele->type == GRID_PARAMETER_ELEMENT_LCD) {
         grid_lua_register_functions_unsafe(lua, grid_lua_api_gui_lib_reference);
       }
+
+      // Create the event table for the element type
+      grid_lua_create_event_array(lua->L, type, ele->event_list_length);
+      for (int j = 0; j < ele->event_list_length; ++j) {
+        struct grid_ui_event* eve = &ele->event_list[j];
+        grid_lua_register_event(lua->L, type, eve->type);
+      }
     }
 
     ++countpertype[ele->type];

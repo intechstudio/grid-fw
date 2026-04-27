@@ -33,7 +33,7 @@ void grid_d51_nvm_mount(struct grid_d51_nvm_model* nvm, bool force_format) {
   printf("littlefs size: total: %d, used: %d\n", total, used);
 
   // List the filesystem root
-  grid_platform_list_directory("");
+  grid_platform_lsdir("");
 }
 
 void grid_d51_nvm_unmount(struct grid_d51_nvm_model* nvm) {
@@ -44,16 +44,6 @@ void grid_d51_nvm_unmount(struct grid_d51_nvm_model* nvm) {
   if (ret) {
     printf("failed to deinitialize littlefs\n");
     return;
-  }
-}
-
-void grid_platform_nvm_erase() {
-
-  grid_platform_delete_actionstring_files_all();
-
-  struct grid_file_t handle = {0};
-  if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle) == 0) {
-    grid_platform_delete_file(&handle);
   }
 }
 
