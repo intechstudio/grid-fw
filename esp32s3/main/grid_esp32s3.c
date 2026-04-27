@@ -25,7 +25,6 @@
 
 #include "esp_intr_alloc.h"
 #include "esp_log.h"
-#include "usb/usb_host.h"
 
 #include <string.h>
 
@@ -36,6 +35,8 @@
 #include "esp_chip_info.h"
 #include "esp_flash.h"
 #include "esp_task_wdt.h"
+
+#include "driver/gptimer.h"
 
 #include "esp_private/esp_psram_extram.h"
 
@@ -97,7 +98,7 @@ static const char* TAG = "main";
 #include "tinyusb.h"
 #include "tinyusb_cdc_acm.h"
 
-static bool periodic_rtc_ms_cb() {
+static bool periodic_rtc_ms_cb(struct gptimer_t*, const gptimer_alarm_event_data_t*, void*) {
 
   grid_ui_rtc_ms_tick_time(&grid_ui_state);
 

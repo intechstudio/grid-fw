@@ -4,5 +4,5 @@ idf_component_register(
     INCLUDE_DIRS
         "."
     REQUIRES
-        "driver" "grid_esp32_pins" "grid_common"
+        "driver" "esp_driver_i2s" "grid_esp32_pins" "grid_common"
 )

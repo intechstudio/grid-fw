@@ -9,4 +9,4 @@ else
 	exit 1
 fi
 
-$CONTAINER_CMD build --squash -t grid-fw-build .
+$CONTAINER_CMD build --squash -t grid-fw .
