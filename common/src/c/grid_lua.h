@@ -30,10 +30,6 @@ struct grid_lua_model {
   void (*busy_semaphore_lock_fn)(void*);
   void (*busy_semaphore_release_fn)(void*);
 
-  uint32_t stdo_len;
-  uint32_t stdi_len;
-  uint32_t stde_len;
-
   char stdo[GRID_LUA_STDO_LENGTH];
   char stdi[GRID_LUA_STDI_LENGTH];
   char stde[GRID_LUA_STDE_LENGTH];
@@ -49,7 +45,6 @@ extern struct grid_lua_model grid_lua_state;
 
 void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance);
 void grid_lua_deinit(struct grid_lua_model* lua);
-bool grid_lua_initialize(struct grid_lua_model* lua, const char* path);
 
 void grid_lua_semaphore_init(struct grid_lua_model* lua, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*));
 bool grid_lua_semaphore_lock(struct grid_lua_model* lua);
@@ -68,6 +63,7 @@ int grid_lua_append_stde(struct grid_lua_model* lua, const char* str);
 char* grid_lua_get_output_string(struct grid_lua_model* lua);
 char* grid_lua_get_error_string(struct grid_lua_model* lua);
 
+uint32_t grid_lua_dofile_unsafe(struct grid_lua_model* lua, const char* path);
 uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code);
 uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code);
 bool grid_lua_dostring_begin(struct grid_lua_model* lua, const char* code);

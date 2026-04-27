@@ -67,17 +67,17 @@ extern const luaL_Reg GRID_LUA_EP_INDEX_META[];
   \
   "}}"
 
-#define GRID_ACTIONSTRING_ENDLESS_INIT "--[[@cb]] --[[Endless Init]]"
+#define GRID_ACTIONSTRING_ENDLESS_INIT "--[[@cb]]--[[Endless Init]]"
 
 #define GRID_ACTIONSTRING_ENDLESS_ENDLESS \
-  "--[[@sen]] self:epmo(0) self:epv0(50) self:epmi(0) self:epma(127) self:epse(50)" \
-  "--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)" \
-  "--[[@gms]] self:gms(-1,-1,-1,-1)"
+  "--[[@sen]]self:epmo(0)self:epv0(50)self:epmi(0)self:epma(127)self:epse(50)" \
+  "--[[@sglc]]self:glc(-1,{{-1,-1,-1,1}})self:glp(-1,-1)" \
+  "--[[@gms]]self:gms(-1,-1,-1,-1)"
 
 #define GRID_ACTIONSTRING_ENDLESS_BUTTON \
-  "--[[@sbc]] self:bmo(0) self:bmi(0) self:bma(127)" \
-  "--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)" \
-  "--[[@gms]] self:gms(-1,-1,-1,-1)"
+  "--[[@sbc]]self:bmo(0)self:bmi(0)self:bma(127)" \
+  "--[[@sglc]]self:glc(-1,{{-1,-1,-1,1}})self:glp(-1,-1)" \
+  "--[[@gms]]self:gms(-1,-1,-1,-1)"
 
 // clang-format on
 

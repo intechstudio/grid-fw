@@ -35,7 +35,6 @@
 
 #include <dirent.h>
 
-#include "driver/gpio.h"
 #include "grid_ui.h"
 
 static const char* TAG = "grid_esp32_nvm";
@@ -61,7 +60,7 @@ void grid_esp32_nvm_mount(struct grid_esp32_nvm_model* nvm, bool force_format) {
   ESP_LOGI(TAG, "littlefs size: total: %d, used: %d", total, used);
 
   // List the filesystem root
-  grid_platform_list_directory("");
+  grid_platform_lsdir("");
 }
 
 void grid_esp32_nvm_unmount(struct grid_esp32_nvm_model* nvm) {
@@ -72,16 +71,6 @@ void grid_esp32_nvm_unmount(struct grid_esp32_nvm_model* nvm) {
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "failed to deinitialize littlefs: %s", esp_err_to_name(ret));
     return;
-  }
-}
-
-void grid_platform_nvm_erase() {
-
-  grid_platform_delete_script_files_all();
-
-  struct grid_file_t handle = {0};
-  if (grid_platform_find_file(GRID_UI_CONFIG_PATH, &handle) == 0) {
-    grid_platform_delete_file(&handle);
   }
 }
 

@@ -34,13 +34,17 @@ int grid_platform_closedir(void* dirp) { return 0; }
 
 void* grid_platform_readdir(void* dirp) { return NULL; }
 
-const char* grid_platform_readdir_name() { return NULL; }
+const char* grid_platform_file_info_name(void* info) { return NULL; }
 
-uint8_t grid_platform_readdir_type() { return 0; }
+uint8_t grid_platform_file_info_type(void* info) { return 0; }
+
+uint32_t grid_platform_file_info_size(void* info) { return 0; }
 
 void grid_platform_delay_ms(uint32_t delay_milliseconds) { return; }
 
-int grid_platform_make_directory(const char* path) { return 0; }
+int grid_platform_mkdir(const char* path) { return 0; }
+
+int grid_platform_stat(const char* path, void** statbuf) { return 0; }
 
 int grid_platform_find_file(const char* path, struct grid_file_t* handle) { return 0; }
 

@@ -1,25 +1,43 @@
-init = {}
+init_simple_color()
+init_simple_midi()
+init_auto_value()
 
-function init.init()
-  init_simple_color()
-  init_simple_midi()
-  init_auto_value()
+local page = gpn() == 0 and 3 or gpn() - 1
+for i = 0, #ele do
+  local eve = getmetatable(ele[i]).eve
 
-  local page = gpn() == 0 and 3 or gpn() - 1
-  for i = 0, #ele do
-    local eve = getmetatable(ele[i]).eve
-    for j = 1, #eve do
-      local path = string.format("%02d/%02d/%02d.lua", page, i, eve[j])
-      gas(i, eve[j], os.stat(path) and path or "")
-    end
-    collectgarbage("collect")
+  local custom = {}
+  for j = 1, #eve do
+    custom[j] = false
   end
 
-  ele[#ele]:post_init_cb()
-  for i = 0, #ele - 1 do
-    collectgarbage("collect")
-    ele[i]:post_init_cb()
+  local path = string.format("%02x/%02x", page, i)
+  if os.stat(path) then
+    for _, v in ipairs(dirent.list(path)) do
+      local caps = string.match(v[1], "(%x%x)%.lua")
+      if v[2] == 1 and caps and tonumber("0x" .. caps) then
+        local idx = tonumber("0x" .. caps)
+        for j = 1, #eve do
+          if eve[j] == idx then
+            gas(i, eve[j], path .. "/" .. v[1])
+            collectgarbage("collect")
+            custom[j] = true
+          end
+        end
+      end
+    end
+  end
+
+  for j = 1, #eve do
+    if custom[j] == false then
+      gas(i, eve[j], "")
+      collectgarbage("collect")
+    end
   end
 end
 
-return init
+ele[#ele]:post_init_cb()
+for i = 0, #ele - 1 do
+  collectgarbage("collect")
+  ele[i]:post_init_cb()
+end

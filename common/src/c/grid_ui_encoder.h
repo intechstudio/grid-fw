@@ -83,12 +83,12 @@ extern const luaL_Reg GRID_LUA_E_INDEX_META[];
   \
   "}}"
 
-#define GRID_ACTIONSTRING_ENCODER_INIT "--[[@cb]] --[[Encoder Init]]"
+#define GRID_ACTIONSTRING_ENCODER_INIT "--[[@cb]]--[[Encoder Init]]"
 
 #define GRID_ACTIONSTRING_ENCODER_ENCODER \
-  "--[[@sec]] self:emo(0) self:ev0(50) self:emi(0) self:ema(127) self:ese(100)" \
-  "--[[@sglc]] self:glc(-1,{{-1,-1,-1,1}}) self:glp(-1,-1)" \
-  "--[[@gms]] self:gms(-1,-1,-1,-1)"
+  "--[[@sec]]self:emo(0)self:ev0(50)self:emi(0)self:ema(127)self:ese(100)" \
+  "--[[@sglc]]self:glc(-1,{{-1,-1,-1,1}})self:glp(-1,-1)" \
+  "--[[@gms]]self:gms(-1,-1,-1,-1)"
 
 // clang-format on
 
