@@ -14,8 +14,10 @@ enum grid_rx_type {
   GRID_RX_TYPE_COUNT = 3,
 };
 
-#define GRID_RX_MODE_HANDLE 0x01
-#define GRID_RX_MODE_FORWARD 0x02
+enum grid_rx_features {
+  GRID_RX_MODE_HANDLE = 0x01,
+  GRID_RX_MODE_FORWARD = 0x02,
+};
 
 struct grid_sys_model {
 

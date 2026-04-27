@@ -230,9 +230,8 @@ void grid_midi_tx_pop() {
 
 bool grid_midi_tx_readable() { return grid_swsr_readable(&grid_midi_tx, sizeof(struct grid_midi_event_desc)); }
 
-// Helper: Push Real-Time Message to RTM buffer
 static void grid_midi_rx_push_rtm(uint8_t rtm_byte) {
-  if (!grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM)) {
+  if ((grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_FORWARD) == false) {
     return;
   }
   if (grid_swsr_writable(&grid_midi_rtm_rx, 1)) {
@@ -247,6 +246,8 @@ static bool grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2
   if (!midi_rx_state_is_sysex && !is_sysex_start) {
     return false; // data was not consumed, further decoding needed
   }
+
+  const bool ret = true; // data consumed 
 
   uint8_t bytes_to_write;
 
@@ -270,29 +271,30 @@ static bool grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2
   default:
     // invalid received CIN code, exit decoding
     midi_rx_state_is_sysex = 0;
-    return true; // data consumed
+    return ret; 
   }
 
-  if (grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) && grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
-    uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
-    grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
+  if ((grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_FORWARD) == false) {
+    return ret;
   }
 
-  return true; // data consumed
+  if (!grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
+    return ret;
+  }
+
+  uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
+  grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
+
+  return ret;
 }
 
 static void grid_midi_rx_push_normal(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
-  if (!grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE)) {
+  if ((grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE) & GRID_RX_MODE_FORWARD) == false) {
     return;
   }
 
-  struct grid_midi_event_desc event;
-  event.byte0 = byte0;
-  event.byte1 = byte1;
-  event.byte2 = byte2;
-  event.byte3 = byte3;
-
+  struct grid_midi_event_desc event = {byte0, byte1, byte2, byte3};
   if (grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
     grid_swsr_write(&grid_midi_rx, &event, sizeof(struct grid_midi_event_desc));
   }
@@ -357,7 +359,7 @@ void grid_midi_rx_pop() {
     if (mode & GRID_RX_MODE_FORWARD) {
       grid_transport_send_msg_to_all(&grid_transport_state, &msg);
     } else {
-      grid_transport_send_msg_local(&grid_transport_state, &msg);
+      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
     }
   }
 }
@@ -396,7 +398,7 @@ void grid_midi_rtm_rx_pop(void) {
     if (mode & GRID_RX_MODE_FORWARD) {
       grid_transport_send_msg_to_all(&grid_transport_state, &msg);
     } else {
-      grid_transport_send_msg_local(&grid_transport_state, &msg);
+      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
     }
   }
 }
@@ -430,7 +432,7 @@ static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t lengt
     if (mode & GRID_RX_MODE_FORWARD) {
       grid_transport_send_msg_to_all(&grid_transport_state, &msg);
     } else {
-      grid_transport_send_msg_local(&grid_transport_state, &msg);
+      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
     }
   }
 }
