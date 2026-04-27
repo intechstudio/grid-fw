@@ -322,8 +322,6 @@ void grid_midi_sysex_rx_pop();
 
 void grid_midi_rx_pop() {
 
-  grid_midi_sysex_rx_pop();
-
   if (!grid_swsr_readable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
     return;
   }

@@ -279,8 +279,8 @@ void grid_utask_midi_rx(struct grid_utask_timer* timer) {
   if (!grid_utask_timer_elapsed(timer)) {
     return;
   }
-
   grid_midi_rx_pop();
+  grid_midi_sysex_rx_pop();
   grid_midi_rtm_rx_pop();
 }
 
