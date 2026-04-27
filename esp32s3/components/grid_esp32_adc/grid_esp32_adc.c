@@ -9,9 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 #include "esp_adc/adc_continuous.h"
@@ -24,8 +21,6 @@
 #include "grid_platform.h"
 
 #include "esp_heap_caps.h"
-#include "freertos/ringbuf.h"
-#include "freertos/semphr.h"
 
 #include "esp_check.h"
 #include "esp_err.h"
@@ -103,6 +98,7 @@ static void adc_init_ulp(struct grid_esp32_adc_model* adc) {
   // Load ULP-RISC-V program binary into RTC memory
   const uint8_t* binary = ulp_grid_esp32_adc_bin_start;
   size_t size = ulp_grid_esp32_adc_bin_end - binary;
+  ulp_riscv_halt();
   ESP_ERROR_CHECK(ulp_riscv_load_binary(binary, size));
 }
 

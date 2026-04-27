@@ -1,9 +1,9 @@
 #!/bin/sh
 
-if command -v docker &> /dev/null; then
+if command -v docker >/dev/null 2>&1; then
 	CONTAINER_CMD="docker"
 	ARGS="--privileged"
-elif command -v podman &> /dev/null; then
+elif command -v podman >/dev/null 2>&1; then
 	CONTAINER_CMD="podman"
 	ARGS="--group-add keep-groups --security-opt label=disable"
 else
@@ -11,4 +11,4 @@ else
 	exit 1
 fi
 
-$CONTAINER_CMD run $ARGS --network=host -it -v /dev:/dev -v $PWD:/project -w /project/ grid-fw-build
+$CONTAINER_CMD run $ARGS --network=host -it -v /dev:/dev -v $PWD:/project -w /project/ grid-fw

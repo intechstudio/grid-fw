@@ -6,8 +6,6 @@
 
 #include "grid_esp32_encoder.h"
 
-#include "driver/gpio.h"
-
 struct grid_esp32_encoder_model DRAM_ATTR grid_esp32_encoder_state;
 
 static IRAM_ATTR bool i2s_recv_callback(i2s_chan_handle_t handle, i2s_event_data_t* event, void* user_ctx) {

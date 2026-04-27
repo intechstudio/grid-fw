@@ -5,14 +5,10 @@
  */
 
 #include "ulp_riscv.h"
-#include "ulp_riscv_print.h"
 #include "ulp_riscv_utils.h"
 
-#include "sdkconfig.h"
 #include "ulp_riscv_adc_ulp_core.h"
 #include "ulp_riscv_uart_ulp_core.h"
-
-#include "hal/adc_types.h"
 
 #include "grid_ain.h"
 #include "grid_esp32_pins.h"

@@ -5,6 +5,5 @@ idf_component_register(
     INCLUDE_DIRS
         "."
     REQUIRES
-        "driver"
-        "grid_common"
+        "driver" "esp_driver_rmt" "grid_common"
 )

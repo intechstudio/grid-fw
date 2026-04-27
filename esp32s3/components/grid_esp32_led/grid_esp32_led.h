@@ -8,17 +8,13 @@
 #include <stdint.h>
 
 #include "esp_check.h"
-
 #include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
+
 #include <stdlib.h>
 #include <string.h>
 
 #include "grid_led.h"
 #include "grid_utask.h"
-
-#include "driver/gpio.h"
 
 #include "driver/rmt_tx.h"
 #include "led_strip_encoder.h"
