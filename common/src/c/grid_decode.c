@@ -371,6 +371,10 @@ uint8_t grid_decode_pagecount_to_ui(char* header, char* chunk) {
 
 uint8_t grid_decode_midi_rtm_to_ui(char* header, char* chunk) {
 
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_HANDLE)) {
+    return 0;
+  }
+
   int ret = 1;
 
   grid_lua_semaphore_lock(&grid_lua_state);
@@ -407,7 +411,9 @@ grid_decode_midi_rtm_to_ui_cleanup:
 
 uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
-  // return 1;
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE) & GRID_RX_MODE_HANDLE)) {
+    return 0;
+  }
 
   int ret = 1;
 
@@ -462,6 +468,10 @@ grid_decode_midi_to_ui_cleanup:
 }
 
 uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
+
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_HANDLE)) {
+    return 0;
+  }
 
   uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
   uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);

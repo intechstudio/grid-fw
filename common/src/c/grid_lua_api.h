@@ -32,8 +32,7 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 
 // ==== MIDI ====
 
-/*static*/ int l_grid_midirx_enabled(lua_State* L);
-/*static*/ int l_grid_midirx_sync(lua_State* L);
+/*static*/ int l_grid_rx_mode(lua_State* L);
 
 /*static*/ int l_grid_midi_send(lua_State* L);
 /*static*/ int l_grid_midi_sysex_send(lua_State* L);

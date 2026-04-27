@@ -831,54 +831,39 @@ int l_grid_cat(lua_State* L) {
   return 0;
 }
 
-/*static*/ int l_grid_midirx_enabled(lua_State* L) {
+/*static*/ int l_grid_rx_mode(lua_State* L) {
 
   int nargs = lua_gettop(L);
 
-  if (nargs != 1) {
-    // error
+  if (nargs < 1 || nargs > 2 || !lua_isnumber(L, 1)) {
     grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
-  int32_t param[1] = {0};
-  // uint8_t isgetter = 0;
+  lua_Integer type_raw = lua_tointeger(L, 1);
+  if (type_raw < 0 || type_raw >= GRID_RX_TYPE_COUNT) {
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
+    return 0;
+  }
+  uint8_t type = (uint8_t)type_raw;
 
-  for (int i = 1; i <= nargs; ++i) {
-
-    if (lua_isnumber(L, i)) {
-      param[i - 1] = lua_tointeger(L, i);
-    }
+  if (nargs == 1) {
+    lua_pushinteger(L, grid_sys_get_rx_mode(&grid_sys_state, type));
+    return 1;
   }
 
-  grid_sys_set_midirx_any_state(&grid_sys_state, (uint8_t)param[0]);
-
-  return 1;
-}
-
-/*static*/ int l_grid_midirx_sync(lua_State* L) {
-
-  int nargs = lua_gettop(L);
-
-  if (nargs != 1) {
-    // error
+  if (!lua_isnumber(L, 2)) {
     grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
 
-  int32_t param[1] = {0};
-  // uint8_t isgetter = 0;
-
-  for (int i = 1; i <= nargs; ++i) {
-
-    if (lua_isnumber(L, i)) {
-      param[i - 1] = lua_tointeger(L, i);
-    }
+  lua_Integer mode_raw = lua_tointeger(L, 2);
+  if (mode_raw < 0 || mode_raw > (GRID_RX_MODE_HANDLE | GRID_RX_MODE_FORWARD)) {
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
+    return 0;
   }
-
-  grid_sys_set_midirx_sync_state(&grid_sys_state, (uint8_t)param[0]);
-
-  return 1;
+  grid_sys_set_rx_mode(&grid_sys_state, type, (uint8_t)mode_raw);
+  return 0;
 }
 
 /*static*/ int l_grid_midi_send(lua_State* L) {
@@ -2169,8 +2154,7 @@ GRID_LUA_FNC_META_DEFI(ggen, l_grid_elementname_get)
     {GRID_LUA_FNC_G_MIDI_SEND_short, GRID_LUA_FNC_G_MIDI_SEND_fnptr},
     {GRID_LUA_FNC_G_MIDISYSEX_SEND_short, GRID_LUA_FNC_G_MIDISYSEX_SEND_fnptr},
 
-    {GRID_LUA_FNC_G_MIDIRX_ENABLED_short, GRID_LUA_FNC_G_MIDIRX_ENABLED_fnptr},
-    {GRID_LUA_FNC_G_MIDIRX_SYNC_short, GRID_LUA_FNC_G_MIDIRX_SYNC_fnptr},
+    {GRID_LUA_FNC_G_RX_MODE_short, GRID_LUA_FNC_G_RX_MODE_fnptr},
 
     {GRID_LUA_FNC_G_KEYBOARD_SEND_short, GRID_LUA_FNC_G_KEYBOARD_SEND_fnptr},
 

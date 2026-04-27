@@ -545,6 +545,11 @@ void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_li
   grid_lua_gc_full_unsafe(lua);
 
   grid_lua_register_functions_unsafe(lua, lua_lib);
+
+  grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_RX_MODE_short "(0,3)"); // GRID_RX_TYPE_MIDIVOICE, GRID_RX_MODE_HANDLE|GRID_RX_MODE_FORWARD
+  grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_RX_MODE_short "(1,0)"); // GRID_RX_TYPE_MIDISYSEX
+  grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_RX_MODE_short "(2,0)"); // GRID_RX_TYPE_MIDIRTM
+
   grid_lua_ui_init_unsafe(&grid_lua_state, callback);
 
   lua_newtable(lua->L);

@@ -371,13 +371,10 @@
 #define GRID_LUA_FNC_G_EVENT_TRIGGER_human "event_trigger"
 #define GRID_LUA_FNC_G_EVENT_TRIGGER_fnptr l_grid_event_trigger
 
-#define GRID_LUA_FNC_G_MIDIRX_ENABLED_short "mre"
-#define GRID_LUA_FNC_G_MIDIRX_ENABLED_human "midirx_enabled"
-#define GRID_LUA_FNC_G_MIDIRX_ENABLED_fnptr l_grid_midirx_enabled
-
-#define GRID_LUA_FNC_G_MIDIRX_SYNC_short "mrs"
-#define GRID_LUA_FNC_G_MIDIRX_SYNC_human "midirx_sync"
-#define GRID_LUA_FNC_G_MIDIRX_SYNC_fnptr l_grid_midirx_sync
+#define GRID_LUA_FNC_G_RX_MODE_short "grxm"
+#define GRID_LUA_FNC_G_RX_MODE_human "rx_mode"
+#define GRID_LUA_FNC_G_RX_MODE_usage "rx_mode(int type [, int mode]) Get or set RX routing. type: 0=MIDIVOICE 1=MIDISYSEX 2=MIDIRTM. mode: bitmask 0x01=handle 0x02=forward"
+#define GRID_LUA_FNC_G_RX_MODE_fnptr l_grid_rx_mode
 
 #define GRID_LUA_FNC_G_MIDIRX_REGISTER_short "gmrr"
 #define GRID_LUA_FNC_G_MIDIRX_REGISTER_human "midirx_register"

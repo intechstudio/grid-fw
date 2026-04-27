@@ -154,6 +154,19 @@ void grid_transport_send_msg_to_all(struct grid_transport* transport, struct gri
   grid_msg_to_swsr(msg, rx);
 }
 
+void grid_transport_send_msg_local(struct grid_transport* transport, struct grid_msg* msg) {
+
+  struct grid_port* port = grid_transport_get_port(transport, 4, GRID_PORT_UI, 0);
+
+  struct grid_swsr_t* tx = grid_port_get_tx(port);
+
+  if (!grid_swsr_writable(tx, msg->length)) {
+    return;
+  }
+
+  grid_msg_to_swsr(msg, tx);
+}
+
 void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, uint32_t hwcfg, uint8_t activepage, uint8_t gccount) {
 
   // Port state bitfield
