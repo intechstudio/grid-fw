@@ -21,9 +21,6 @@ struct grid_swsr_t grid_midi_rx;
 struct grid_swsr_t grid_midi_sysex_rx;
 struct grid_swsr_t grid_midi_rtm_rx;
 
-// State variable for SysEx mode
-static uint8_t midi_rx_state_is_sysex = 0;
-
 // SysEx assembly buffer for accumulating bytes until complete message
 static uint8_t sysex_assembly_buffer[GRID_MIDI_SYSEX_RX_BUFFER_length];
 static uint16_t sysex_assembly_index = 0;
@@ -239,53 +236,30 @@ static void grid_midi_rx_push_rtm(uint8_t rtm_byte) {
   }
 }
 
-static bool grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+static int grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  static uint8_t MIDI_RX_STATE_IS_SYSEX = 0;
 
   bool is_sysex_start = (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START);
 
-  if (!midi_rx_state_is_sysex && !is_sysex_start) {
-    return false; // data was not consumed, further decoding needed
+  if (!MIDI_RX_STATE_IS_SYSEX && !is_sysex_start) {
+    return 0;
   }
 
-  const bool ret = true; // data consumed 
-
-  uint8_t bytes_to_write;
+  MIDI_RX_STATE_IS_SYSEX = (cin == GRID_MIDI_CIN_SYSEX_START);
 
   switch (cin) {
   case GRID_MIDI_CIN_SYSEX_START:
-    bytes_to_write = 3;
-    midi_rx_state_is_sysex = 1;
-    break;
+    return 3;
   case GRID_MIDI_CIN_SYSEX_END_1BYTE:
-    bytes_to_write = 1;
-    midi_rx_state_is_sysex = 0;
-    break;
+    return 1;
   case GRID_MIDI_CIN_SYSEX_END_2BYTE:
-    bytes_to_write = 2;
-    midi_rx_state_is_sysex = 0;
-    break;
+    return 2;
   case GRID_MIDI_CIN_SYSEX_END_3BYTE:
-    bytes_to_write = 3;
-    midi_rx_state_is_sysex = 0;
-    break;
-  default:
-    // invalid received CIN code, exit decoding
-    midi_rx_state_is_sysex = 0;
-    return ret; 
+    return 3;
   }
 
-  if ((grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_FORWARD) == false) {
-    return ret;
-  }
-
-  if (!grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
-    return ret;
-  }
-
-  uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
-  grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
-
-  return ret;
+  return 0;
 }
 
 static void grid_midi_rx_push_normal(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
@@ -300,6 +274,20 @@ static void grid_midi_rx_push_normal(uint8_t byte0, uint8_t byte1, uint8_t byte2
   }
 }
 
+void grid_midi_rx_push_sysex(uint8_t bytes_to_write, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  if ((grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_FORWARD) == false) {
+    return;
+  }
+
+  if (!grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
+    return;
+  }
+
+  uint8_t bytes[3] = {byte1, byte2, byte3};
+  grid_swsr_write(&grid_midi_sysex_rx, bytes, bytes_to_write);
+}
+
 void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
   uint8_t cin = byte0 & 0x0F;
@@ -312,7 +300,9 @@ void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte
   }
 
   // 2. SYSEX MESSAGES
-  if (grid_midi_rx_process_sysex(cin, byte1, byte2, byte3)) {
+  int sysex_bytes_to_write = grid_midi_rx_process_sysex(cin, byte1, byte2, byte3);
+  if (sysex_bytes_to_write) {
+    grid_midi_rx_push_sysex(sysex_bytes_to_write, byte1, byte2, byte3);
     return;
   }
 
