@@ -66,6 +66,10 @@ RUN ./patch_esp_efuse_startup.sh
 COPY ./patch_esp_trace_include.sh /
 RUN ./patch_esp_trace_include.sh
 
+# Patch spi_flash_hpm_enable.c
+COPY ./patch_esp_spi_flash_hpm.sh /
+RUN ./patch_esp_spi_flash_hpm.sh
+
 # Install emscripten sdk
 RUN git clone --depth 1 https://github.com/emscripten-core/emsdk.git
 RUN cd emsdk && ./emsdk install latest && ./emsdk activate latest
