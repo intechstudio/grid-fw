@@ -9,7 +9,7 @@ else
 	exit 1
 fi
 
-IMAGE=${IMAGE:-grid-fw-build}
+IMAGE=${IMAGE:-grid-fw}
 
 # Check that the image exists
 if [ -z "$($CONTAINER_CMD images -q "$IMAGE")" ] ; then
