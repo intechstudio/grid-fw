@@ -64,8 +64,8 @@ init_element_midi = function(self)
     end
   end
 
-  self.gmrr = function(self, ev, ch, cmd, p1, features)
-    gmrr(self, ev, ch, cmd, p1, features)
+  self.gmrr = function(self, ev, ch, cmd, p1, features, mode)
+    gmrr(self, ev, ch, cmd, p1, features, mode)
   end
 end
 
@@ -75,7 +75,7 @@ init_simple_midi = function()
   end
 end
 
-gmrr = function(self, ev, ch, cmd, p1, features)
+gmrr = function(self, ev, ch, cmd, p1, features, mode)
   if ev == -1 then
     ev = event_function_name():sub(1, -2)
   end
@@ -104,6 +104,9 @@ gmrr = function(self, ev, ch, cmd, p1, features)
       event[2] = 144
     end
     local v = event[4]
+    if mode == 1 then
+      v = 128 * v
+    end
     if
       event[1] == ch
       and event[2] == cmd
