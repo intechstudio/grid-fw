@@ -2,4 +2,4 @@
 
 DEVICE="/dev/ttyUSB1"
 
-../../../../vmp/build/recv -i "${DEVICE}" | ./build/proc
+../../../../common/dep/vmp/build/recv -i "${DEVICE}" | ./build/proc

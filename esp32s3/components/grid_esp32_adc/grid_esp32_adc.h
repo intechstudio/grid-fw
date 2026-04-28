@@ -12,10 +12,6 @@
 #include <string.h>
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/ringbuf.h"
-#include "freertos/semphr.h"
-
-#include "driver/gptimer.h"
 
 #include "grid_ain.h"
 

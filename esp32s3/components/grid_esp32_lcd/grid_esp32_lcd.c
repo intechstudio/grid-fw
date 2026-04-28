@@ -156,7 +156,7 @@ void grid_esp32_lcd_panel_init(struct grid_esp32_lcd_model* lcd, struct grid_ui_
   esp_lcd_panel_dev_config_t panel_config;
   memset(&panel_config, 0, sizeof(panel_config));
   panel_config.reset_gpio_num = PIN_NUM_RST;
-  panel_config.color_space = LCD_COLOR_SPACE;
+  panel_config.rgb_ele_order = LCD_COLOR_SPACE;
   panel_config.bits_per_pixel = 18;
 
   // Configure specific panel IO

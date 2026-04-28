@@ -11,10 +11,6 @@ struct grid_lua_model grid_lua_state;
 
 void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, void*, size_t, size_t), void* custom_allocator_instance) {
 
-  lua->stdo_len = GRID_LUA_STDO_LENGTH;
-  lua->stdi_len = GRID_LUA_STDI_LENGTH;
-  lua->stde_len = GRID_LUA_STDE_LENGTH;
-
   lua->custom_allocator = custom_allocator;
   lua->custom_allocator_instance = custom_allocator_instance;
 
@@ -76,46 +72,19 @@ bool grid_lua_semaphore_release(struct grid_lua_model* lua) {
 
 void grid_lua_deinit(struct grid_lua_model* lua) {}
 
-void grid_lua_pre_init(struct grid_lua_model* lua) {
+void grid_lua_clear_stdi(struct grid_lua_model* lua) { memset(lua->stdi, 0, GRID_LUA_STDI_LENGTH); }
 
-  int ret = grid_lua_dostring(lua, "init_simple_color() "
-                                   "init_simple_midi() "
-                                   "init_auto_value() ");
-  grid_lua_clear_stdo(lua);
+void grid_lua_clear_stdo(struct grid_lua_model* lua) { memset(lua->stdo, 0, GRID_LUA_STDO_LENGTH); }
 
-  if (!ret) {
-    grid_lua_broadcast_stde(lua);
-  }
-  grid_lua_clear_stde(lua);
-}
-
-void grid_lua_post_init(struct grid_lua_model* lua) {
-
-  int ret = grid_lua_dostring(lua, "ele[#ele]:post_init_cb() "
-                                   "for i = 0, #ele-1 do "
-                                   "collectgarbage(\"collect\") "
-                                   "ele[i]:post_init_cb() end");
-  grid_lua_clear_stdo(lua);
-
-  if (!ret) {
-    grid_lua_broadcast_stde(lua);
-  }
-  grid_lua_clear_stde(lua);
-}
-
-void grid_lua_clear_stdi(struct grid_lua_model* lua) { memset(lua->stdi, 0, lua->stdi_len); }
-
-void grid_lua_clear_stdo(struct grid_lua_model* lua) { memset(lua->stdo, 0, lua->stdo_len); }
-
-void grid_lua_clear_stde(struct grid_lua_model* lua) { memset(lua->stde, 0, lua->stde_len); }
+void grid_lua_clear_stde(struct grid_lua_model* lua) { memset(lua->stde, 0, GRID_LUA_STDE_LENGTH); }
 
 int grid_lua_append_stdo(struct grid_lua_model* lua, const char* str) {
 
-  int curr = strnlen(lua->stdo, lua->stdo_len);
+  int curr = strnlen(lua->stdo, GRID_LUA_STDO_LENGTH);
 
   int add = strlen(str);
 
-  int remain = lua->stdo_len - 1 - curr;
+  int remain = GRID_LUA_STDO_LENGTH - 1 - curr;
 
   if (add > remain) {
     return 1;
@@ -128,11 +97,11 @@ int grid_lua_append_stdo(struct grid_lua_model* lua, const char* str) {
 
 int grid_lua_append_stde(struct grid_lua_model* lua, const char* str) {
 
-  int curr = strnlen(lua->stde, lua->stde_len);
+  int curr = strnlen(lua->stde, GRID_LUA_STDE_LENGTH);
 
   int add = strlen(str);
 
-  int remain = lua->stde_len - 1 - curr;
+  int remain = GRID_LUA_STDE_LENGTH - 1 - curr;
 
   if (add > remain) {
     return 1;
@@ -147,7 +116,9 @@ char* grid_lua_get_output_string(struct grid_lua_model* lua) { return lua->stdo;
 
 char* grid_lua_get_error_string(struct grid_lua_model* lua) { return lua->stde; }
 
-uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code) {
+typedef int (*lua_load_fn_t)(lua_State*, const char*);
+
+uint32_t grid_lua_do_unsafe(struct grid_lua_model* lua, const char* src, lua_load_fn_t fn) {
 
   assert(lua->L);
 
@@ -155,12 +126,12 @@ uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code) 
 
   uint32_t ret = 1;
 
-  if (luaL_loadstring(lua->L, code) == LUA_OK) {
+  if (fn(lua->L, src) == LUA_OK) {
 
     if ((lua_pcall(lua->L, 0, LUA_MULTRET, 0)) != LUA_OK) {
 
       grid_lua_clear_stde(lua);
-      stpncpy(lua->stde, lua_tostring(lua->L, -1), lua->stde_len - 1);
+      stpncpy(lua->stde, lua_tostring(lua->L, -1), GRID_LUA_STDE_LENGTH - 1);
       ret = 0;
     }
 
@@ -170,7 +141,7 @@ uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code) 
   } else {
 
     grid_lua_clear_stde(lua);
-    stpncpy(lua->stde, lua_tostring(lua->L, -1), lua->stde_len - 1);
+    stpncpy(lua->stde, lua_tostring(lua->L, -1), GRID_LUA_STDE_LENGTH - 1);
     ret = 0;
 
     // Pop error message from the stack
@@ -179,6 +150,12 @@ uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code) 
 
   return ret;
 }
+
+int luaL_loadfile2(lua_State* L, const char* f) { return luaL_loadfilex(L, f, NULL); }
+
+uint32_t grid_lua_dofile_unsafe(struct grid_lua_model* lua, const char* path) { return grid_lua_do_unsafe(lua, path, luaL_loadfile2); }
+
+uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code) { return grid_lua_do_unsafe(lua, code, luaL_loadstring); }
 
 uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code) {
 
@@ -667,6 +644,36 @@ void grid_lua_register_index_meta_for_element(lua_State* L, uint8_t element, con
   lua_pop(L, lua_gettop(L));
 }
 
+void grid_lua_create_event_array(lua_State* L, const char* type, uint8_t events) {
+
+  // Get the metatable for the element type
+  lua_getglobal(L, type);
+
+  // Create event array, hinted with the number of entries
+  lua_pushstring(L, "eve");
+  lua_createtable(L, events, 0);
+  lua_settable(L, 1);
+
+  lua_pop(L, lua_gettop(L));
+}
+
+void grid_lua_register_event(lua_State* L, const char* type, uint8_t event) {
+
+  // Get the metatable for the element type
+  lua_getglobal(L, type);
+
+  // Get event table
+  lua_pushstring(L, "eve");
+  lua_gettable(L, 1);
+
+  // Assign event index to next index
+  lua_pushinteger(L, lua_rawlen(L, 2) + 1);
+  lua_pushinteger(L, event);
+  lua_settable(L, 2);
+
+  lua_pop(L, lua_gettop(L));
+}
+
 static char uint4_to_hex[16] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
 };
@@ -838,19 +845,4 @@ int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, ui
   }
 
   return 0;
-}
-
-bool grid_lua_strn_is_actionstring(const char* s, size_t maxlen) {
-
-  if (strncmp(s, "<?lua ", 6) != 0) {
-    return false;
-  }
-
-  size_t nlen = strnlen(s, maxlen);
-
-  if (strncmp(&s[nlen - 3], " ?>", 3) != 0) {
-    return false;
-  }
-
-  return true;
 }
