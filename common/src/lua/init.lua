@@ -1,8 +1,8 @@
-_decoded_order = {} -- GRID_LUA_DECODE_ORDER
-_decoded_midi = {} -- GRID_LUA_DECODE_RESULT_MIDI
-_decoded_sysex = {} -- GRID_LUA_DECODE_RESULT_SYSEX
-_decoded_eview = {} -- GRID_LUA_DECODE_RESULT_EVIEW
-_decoded_rtm = {} -- GRID_LUA_DECODE_RESULT_RTM
+_decoded_order = {}
+_decoded_midi = {}
+_decoded_sysex = {}
+_decoded_eview = {}
+_decoded_rtm = {}
 
 rx_type = { MIDIVOICE = 0, MIDISYSEX = 1, MIDIRTM = 2, EVENTVIEW = 3 }
 rx_feat = { HANDLE = 0x01, FORWARD = 0x02 }

@@ -228,7 +228,7 @@ void grid_midi_tx_pop() {
 bool grid_midi_tx_readable() { return grid_swsr_readable(&grid_midi_tx, sizeof(struct grid_midi_event_desc)); }
 
 static void grid_midi_rx_push_rtm(uint8_t rtm_byte) {
-  if ((grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_FORWARD) == false) {
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_FORWARD)) {
     return;
   }
   if (grid_swsr_writable(&grid_midi_rtm_rx, 1)) {
@@ -264,7 +264,7 @@ static int grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2,
 
 static void grid_midi_rx_push_normal(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
-  if ((grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE) & GRID_RX_MODE_FORWARD) == false) {
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE) & GRID_RX_MODE_FORWARD)) {
     return;
   }
 
@@ -274,18 +274,18 @@ static void grid_midi_rx_push_normal(uint8_t byte0, uint8_t byte1, uint8_t byte2
   }
 }
 
-void grid_midi_rx_push_sysex(uint8_t bytes_to_write, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+void grid_midi_rx_push_sysex(uint8_t sysex_length, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
-  if ((grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_FORWARD) == false) {
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_FORWARD)) {
     return;
   }
 
-  if (!grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
+  if (!grid_swsr_writable(&grid_midi_sysex_rx, sysex_length)) {
     return;
   }
 
   uint8_t bytes[3] = {byte1, byte2, byte3};
-  grid_swsr_write(&grid_midi_sysex_rx, bytes, bytes_to_write);
+  grid_swsr_write(&grid_midi_sysex_rx, bytes, sysex_length);
 }
 
 void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
@@ -300,9 +300,9 @@ void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte
   }
 
   // 2. SYSEX MESSAGES
-  int sysex_bytes_to_write = grid_midi_rx_process_sysex(cin, byte1, byte2, byte3);
-  if (sysex_bytes_to_write) {
-    grid_midi_rx_push_sysex(sysex_bytes_to_write, byte1, byte2, byte3);
+  int sysex_length = grid_midi_rx_process_sysex(cin, byte1, byte2, byte3);
+  if (sysex_length) {
+    grid_midi_rx_push_sysex(sysex_length, byte1, byte2, byte3);
     return;
   }
 
