@@ -270,8 +270,14 @@ void grid_lua_decode_clear_results(struct grid_lua_model* lua) {
   }
   size_t eview_len = lua_rawlen(lua->L, -1);
 
+  lua_getglobal(lua->L, GRID_LUA_DECODE_RESULT_RTM);
+  if (lua_type(lua->L, -1) != LUA_TTABLE) {
+    goto grid_lua_decode_clear_results_cleanup;
+  }
+  size_t rtm_len = lua_rawlen(lua->L, -1);
+
   // If the tables are empty, there are no results to be cleared
-  if (midi_len == 0 && sysex_len == 0 && eview_len == 0) {
+  if (midi_len == 0 && sysex_len == 0 && eview_len == 0 && rtm_len == 0) {
     goto grid_lua_decode_clear_results_cleanup;
   }
 
@@ -315,8 +321,14 @@ void grid_lua_decode_process_results(struct grid_lua_model* lua) {
   }
   size_t eview_len = lua_rawlen(lua->L, -1);
 
+  lua_getglobal(lua->L, GRID_LUA_DECODE_RESULT_RTM);
+  if (lua_type(lua->L, -1) != LUA_TTABLE) {
+    goto grid_lua_decode_process_results_cleanup;
+  }
+  size_t rtm_len = lua_rawlen(lua->L, -1);
+
   // If the tables are empty, there are no results to be processed
-  if (midi_len == 0 && sysex_len == 0 && eview_len == 0) {
+  if (midi_len == 0 && sysex_len == 0 && eview_len == 0 && rtm_len == 0) {
     goto grid_lua_decode_process_results_cleanup;
   }
 
@@ -325,10 +337,10 @@ void grid_lua_decode_process_results(struct grid_lua_model* lua) {
   }
 
   // Move the processor function below the result tables
-  lua_insert(lua->L, -4);
+  lua_insert(lua->L, -5);
 
   // Invoke decode result processor function
-  if (lua_pcall(lua->L, 3, 0, 0) != LUA_OK) {
+  if (lua_pcall(lua->L, 4, 0, 0) != LUA_OK) {
     grid_lua_clear_stde(lua);
     grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
     goto grid_lua_decode_process_results_cleanup;
@@ -510,16 +522,8 @@ void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_li
   grid_lua_gc_full_unsafe(lua);
 
   grid_lua_register_functions_unsafe(lua, lua_lib);
-  grid_lua_ui_init_unsafe(&grid_lua_state, callback);
 
-  lua_newtable(lua->L);
-  lua_setglobal(lua->L, GRID_LUA_DECODE_ORDER);
-  lua_newtable(lua->L);
-  lua_setglobal(lua->L, GRID_LUA_DECODE_RESULT_MIDI);
-  lua_newtable(lua->L);
-  lua_setglobal(lua->L, GRID_LUA_DECODE_RESULT_SYSEX);
-  lua_newtable(lua->L);
-  lua_setglobal(lua->L, GRID_LUA_DECODE_RESULT_EVIEW);
+  grid_lua_ui_init_unsafe(&grid_lua_state, callback);
 
   grid_lua_semaphore_release(lua);
 }

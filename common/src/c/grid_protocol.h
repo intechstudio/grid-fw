@@ -315,6 +315,10 @@
 #define GRID_LUA_FNC_G_HWCFG_human "hardware_configuration"
 #define GRID_LUA_FNC_G_HWCFG_fnptr l_grid_hwcfg
 
+#define GRID_LUA_FNC_G_HWCFG_HAS_LCD_short "ghaslcd"
+#define GRID_LUA_FNC_G_HWCFG_HAS_LCD_human "hardware_has_lcd"
+#define GRID_LUA_FNC_G_HWCFG_HAS_LCD_fnptr l_grid_hwcfg_has_lcd
+
 #define GRID_LUA_FNC_G_VERSION_MAJOR_short "gvmaj"
 #define GRID_LUA_FNC_G_VERSION_MAJOR_human "version_major"
 #define GRID_LUA_FNC_G_VERSION_MAJOR_fnptr l_grid_version_major
@@ -371,13 +375,16 @@
 #define GRID_LUA_FNC_G_EVENT_TRIGGER_human "event_trigger"
 #define GRID_LUA_FNC_G_EVENT_TRIGGER_fnptr l_grid_event_trigger
 
-#define GRID_LUA_FNC_G_MIDIRX_ENABLED_short "mre"
-#define GRID_LUA_FNC_G_MIDIRX_ENABLED_human "midirx_enabled"
-#define GRID_LUA_FNC_G_MIDIRX_ENABLED_fnptr l_grid_midirx_enabled
+#define GRID_LUA_FNC_G_RX_MODE_short "grxm"
+#define GRID_LUA_FNC_G_RX_MODE_human "rx_mode"
+#define GRID_LUA_FNC_G_RX_MODE_usage "rx_mode(int type [, int mode]) Get or set RX routing. type: 0=MIDIVOICE 1=MIDISYSEX 2=MIDIRTM. mode: bitmask 0x01=handle 0x02=forward"
+#define GRID_LUA_FNC_G_RX_MODE_fnptr l_grid_rx_mode
 
-#define GRID_LUA_FNC_G_MIDIRX_SYNC_short "mrs"
-#define GRID_LUA_FNC_G_MIDIRX_SYNC_human "midirx_sync"
-#define GRID_LUA_FNC_G_MIDIRX_SYNC_fnptr l_grid_midirx_sync
+#define GRID_LUA_FNC_G_MIDIRX_REGISTER_short "gmrr"
+#define GRID_LUA_FNC_G_MIDIRX_REGISTER_human "midirx_register"
+#define GRID_LUA_FNC_G_MIDIRX_REGISTER_usage                                                                                                                                                           \
+  "midi_rx_register(string event, int channel, int command, int parameter1, table features) Registers a MIDI RX callback on this element. Pass -1 for auto values. features = {bool set_value, bool "  \
+  "set_led}"
 
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_short "gens"
 #define GRID_LUA_FNC_G_ELEMENTNAME_SEND_human "element_name_send"
@@ -855,6 +862,12 @@
 
 #define GRID_CLASS_MIDISYSEX_PAYLOAD_offset 9
 #define GRID_CLASS_MIDISYSEX_PAYLOAD_length 2
+
+#define GRID_CLASS_MIDIRTM_code 0x002
+#define GRID_CLASS_MIDIRTM_frame "%c%03x...%c", GRID_CONST_STX, GRID_CLASS_MIDIRTM_code, GRID_CONST_ETX
+
+#define GRID_CLASS_MIDIRTM_BYTE_offset 5
+#define GRID_CLASS_MIDIRTM_BYTE_length 2
 
 // HEARTBEAT (type=0 grid, type=1 gridmaster, type=255 editor)
 #define GRID_CLASS_HEARTBEAT_code 0x010

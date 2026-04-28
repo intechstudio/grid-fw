@@ -154,6 +154,7 @@ int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, ui
 #define GRID_LUA_DECODE_RESULT_MIDI "_decoded_midi"
 #define GRID_LUA_DECODE_RESULT_SYSEX "_decoded_sysex"
 #define GRID_LUA_DECODE_RESULT_EVIEW "_decoded_eview"
+#define GRID_LUA_DECODE_RESULT_RTM "_decoded_rtm"
 
 // clang-format on
 
@@ -161,6 +162,7 @@ enum {
   GRID_LUA_DECODE_ORDER_MIDI = 1,
   GRID_LUA_DECODE_ORDER_SYSEX = 2,
   GRID_LUA_DECODE_ORDER_EVIEW = 3,
+  GRID_LUA_DECODE_ORDER_RTM = 4,
 };
 
 #endif /* GRID_LUA_H */
