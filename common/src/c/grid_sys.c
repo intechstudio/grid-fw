@@ -1,6 +1,7 @@
 #include "grid_sys.h"
 
 #include <assert.h>
+#include <string.h>
 
 #include "grid_platform.h"
 #include "grid_protocol.h"
@@ -24,9 +25,7 @@ void grid_sys_init(struct grid_sys_model* sys) {
 
   // LOCAL INITIALIZERS
 
-  sys->rx_mode[GRID_RX_TYPE_MIDIVOICE] = 0;
-  sys->rx_mode[GRID_RX_TYPE_MIDISYSEX] = 0;
-  sys->rx_mode[GRID_RX_TYPE_MIDIRTM] = 0;
+  memset(sys->rx_mode, 0, sizeof(sys->rx_mode));
 
   sys->module_x = 0; // 0 because this is signed int
   sys->module_y = 0; // 0 because this is signed int
@@ -420,6 +419,8 @@ int grid_hwcfg_module_has_lcd1(struct grid_sys_model* sys) {
     return 0;
   }
 }
+
+int grid_hwcfg_module_has_lcd(struct grid_sys_model* sys) { return grid_hwcfg_module_has_lcd0(sys) || grid_hwcfg_module_has_lcd1(sys); }
 
 int grid_hwcfg_module_is_po16_reverse_polarity(struct grid_sys_model* sys) {
 

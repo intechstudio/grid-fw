@@ -315,6 +315,10 @@
 #define GRID_LUA_FNC_G_HWCFG_human "hardware_configuration"
 #define GRID_LUA_FNC_G_HWCFG_fnptr l_grid_hwcfg
 
+#define GRID_LUA_FNC_G_HWCFG_HAS_LCD_short "ghaslcd"
+#define GRID_LUA_FNC_G_HWCFG_HAS_LCD_human "hardware_has_lcd"
+#define GRID_LUA_FNC_G_HWCFG_HAS_LCD_fnptr l_grid_hwcfg_has_lcd
+
 #define GRID_LUA_FNC_G_VERSION_MAJOR_short "gvmaj"
 #define GRID_LUA_FNC_G_VERSION_MAJOR_human "version_major"
 #define GRID_LUA_FNC_G_VERSION_MAJOR_fnptr l_grid_version_major

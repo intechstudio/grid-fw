@@ -1129,7 +1129,9 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
 
 uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
 
-  // return 1;
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_EVENTVIEW) & GRID_RX_MODE_HANDLE)) {
+    return 0;
+  }
 
   uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
   uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);

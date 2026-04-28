@@ -1397,6 +1397,20 @@ int l_grid_cat(lua_State* L) {
   return 1;
 }
 
+/*static*/ int l_grid_hwcfg_has_lcd(lua_State* L) {
+
+  int nargs = lua_gettop(L);
+
+  if (nargs != 0) {
+    grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
+    return 0;
+  }
+
+  lua_pushboolean(L, grid_hwcfg_module_has_lcd(&grid_sys_state));
+
+  return 1;
+}
+
 /*static*/ int l_grid_random8(lua_State* L) {
 
   int nargs = lua_gettop(L);
@@ -2239,6 +2253,7 @@ GRID_LUA_FNC_META_DEFI(ggen, l_grid_elementname_get)
     {GRID_LUA_FNC_G_EVENT_TRIGGER_short, GRID_LUA_FNC_G_EVENT_TRIGGER_fnptr},
 
     {GRID_LUA_FNC_G_HWCFG_short, GRID_LUA_FNC_G_HWCFG_fnptr},
+    {GRID_LUA_FNC_G_HWCFG_HAS_LCD_short, GRID_LUA_FNC_G_HWCFG_HAS_LCD_fnptr},
 
     {GRID_LUA_FNC_G_RANDOM_short, GRID_LUA_FNC_G_RANDOM_fnptr},
     {GRID_LUA_FNC_G_ELEMENTNAME_SEND_short, GRID_LUA_FNC_G_ELEMENTNAME_SEND_fnptr},

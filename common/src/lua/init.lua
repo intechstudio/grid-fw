@@ -1,3 +1,20 @@
+_decoded_order = {} -- GRID_LUA_DECODE_ORDER
+_decoded_midi = {} -- GRID_LUA_DECODE_RESULT_MIDI
+_decoded_sysex = {} -- GRID_LUA_DECODE_RESULT_SYSEX
+_decoded_eview = {} -- GRID_LUA_DECODE_RESULT_EVIEW
+_decoded_rtm = {} -- GRID_LUA_DECODE_RESULT_RTM
+
+rx_type = { MIDIVOICE = 0, MIDISYSEX = 1, MIDIRTM = 2, EVENTVIEW = 3 }
+rx_feat = { HANDLE = 0x01, FORWARD = 0x02 }
+
+grxm(rx_type.MIDIVOICE, rx_feat.HANDLE | rx_feat.FORWARD)
+grxm(rx_type.MIDISYSEX, 0)
+grxm(rx_type.MIDIRTM, 0)
+grxm(rx_type.EVENTVIEW, 0)
+if ghaslcd() then
+  grxm(rx_type.EVENTVIEW, rx_feat.HANDLE)
+end
+
 init_simple_color()
 init_simple_midi()
 init_auto_value()

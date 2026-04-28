@@ -11,7 +11,8 @@ enum grid_rx_type {
   GRID_RX_TYPE_MIDIVOICE = 0,
   GRID_RX_TYPE_MIDISYSEX = 1,
   GRID_RX_TYPE_MIDIRTM = 2,
-  GRID_RX_TYPE_COUNT = 3,
+  GRID_RX_TYPE_EVENTVIEW = 3,
+  GRID_RX_TYPE_COUNT = 4,
 };
 
 enum grid_rx_features {
@@ -111,6 +112,7 @@ int grid_hwcfg_module_encoder_is_detent(struct grid_sys_model* sys);
 int grid_hwcfg_module_encoder_dir(struct grid_sys_model* sys);
 int grid_hwcfg_module_has_lcd0(struct grid_sys_model* sys);
 int grid_hwcfg_module_has_lcd1(struct grid_sys_model* sys);
+int grid_hwcfg_module_has_lcd(struct grid_sys_model* sys);
 int grid_hwcfg_module_is_po16_reverse_polarity(struct grid_sys_model* sys);
 
 #endif /* GRID_SYS_H */
