@@ -1219,8 +1219,7 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
       grid_lua_semaphore_release(&grid_lua_state);
       script[scriptlength] = GRID_CONST_ETX;
 
-      // Local-trigger the event
-      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
+      // TODO event has to run after config change
 
       // Set acknowledge as response code
       respinstr = GRID_INSTR_ACKNOWLEDGE_code;

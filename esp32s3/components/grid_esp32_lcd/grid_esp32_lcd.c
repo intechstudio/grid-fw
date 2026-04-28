@@ -378,8 +378,57 @@ void grid_esp32_module_vsn_lcd_push_trailing(struct grid_esp32_lcd_model* lcds, 
   }
 }
 
-void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf,
-                                       struct grid_utask_timer* timers) {
+struct grid_utask_timer timer_draw_event[2] = {GRID_UTASK_DISABLED, GRID_UTASK_DISABLED};
+
+void grid_utask_draw_event(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
+
+  int i = timer - timer_draw_event;
+  assert(grid_esp32_lcd_panel_active(&lcds[i]));
+
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, lcds[i].element->index);
+  assert(ele);
+
+  struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_DRAW);
+  assert(eve);
+
+  grid_ui_event_render_script(eve, NULL);
+
+  grid_utask_timer_disable(timer);
+}
+
+struct grid_utask_timer timer_draw_trigger[2];
+
+void grid_utask_draw_trigger(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
+
+  int i = timer - timer_draw_trigger;
+  assert(grid_esp32_lcd_panel_active(&lcds[i]));
+
+  if (grid_utask_timer_enabled(&timer_draw_event[i])) {
+    return;
+  }
+
+  struct grid_gui_model* guis = grid_gui_states;
+
+  if (grid_swsr_size(&guis[i].swsr)) {
+    return;
+  }
+
+  grid_utask_timer_oneshot(&timer_draw_event[i]);
+}
+
+void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf) {
 
   bool waiting[2] = {
       grid_esp32_lcd_panel_active(&lcds[0]) && grid_gui_swap_get(&guis[0]),
@@ -394,11 +443,9 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
 
     if (grid_swsr_size(&guis[lcd_index].swsr) == 0) {
 
-      struct grid_ui_event* eve = grid_ui_event_find(lcds[lcd_index].element, GRID_PARAMETER_EVENT_DRAW);
+      grid_utask_timer_oneshot(&timer_draw_event[lcd_index]);
 
-      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
-
-      grid_utask_timer_realign(&timers[lcd_index]);
+      grid_utask_timer_realign(&timer_draw_trigger[lcd_index]);
     }
 
     grid_esp32_module_vsn_lcd_push_trailing(lcds, lcd_index, lines, columns, tx_lines, guis[lcd_index].buffer, xferbuf);
@@ -410,31 +457,6 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
     // Store render time, reset accumulator
     guis[lcd_index].render_time = guis[lcd_index].render_time_acc;
     guis[lcd_index].render_time_acc = 0;
-  }
-}
-
-struct grid_utask_timer timer_draw_trigger[2];
-
-void grid_utask_draw_trigger(struct grid_utask_timer* timer) {
-
-  if (!grid_utask_timer_elapsed(timer)) {
-    return;
-  }
-
-  struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
-  struct grid_gui_model* guis = grid_gui_states;
-
-  int i = timer - timer_draw_trigger;
-
-  assert(grid_esp32_lcd_panel_active(&lcds[i]));
-
-  assert(lcds[i].element);
-
-  struct grid_ui_event* eve = grid_ui_event_find(lcds[i].element, GRID_PARAMETER_EVENT_DRAW);
-
-  if (eve->state == GRID_EVE_STATE_INIT && grid_swsr_size(&guis[i].swsr) == 0) {
-
-    grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
   }
 }
 
@@ -490,7 +512,7 @@ void grid_esp32_lcd_task(void* arg) {
 
     ++counter;
 
-    grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf, timer_draw_trigger);
+    grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf);
 
     if (!grid_esp32_lcd_get_drawn()) {
 
