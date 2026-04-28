@@ -8,7 +8,7 @@ rx_type = { MIDIVOICE = 0, MIDISYSEX = 1, MIDIRTM = 2, EVENTVIEW = 3 }
 rx_feat = { HANDLE = 0x01, FORWARD = 0x02 }
 
 grxm(rx_type.MIDIVOICE, rx_feat.HANDLE | rx_feat.FORWARD)
-grxm(rx_type.MIDISYSEX, 0)
+grxm(rx_type.MIDISYSEX, rx_feat.HANDLE | rx_feat.FORWARD)
 grxm(rx_type.MIDIRTM, 0)
 grxm(rx_type.EVENTVIEW, 0)
 if ghaslcd() then
