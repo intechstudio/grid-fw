@@ -14,9 +14,6 @@ struct grid_utask_timer {
 };
 
 bool grid_utask_timer_elapsed(struct grid_utask_timer* timer);
-void grid_utask_timer_realign(struct grid_utask_timer* timer);
-bool grid_utask_timer_enabled(struct grid_utask_timer* timer);
-void grid_utask_timer_disable(struct grid_utask_timer* timer);
-void grid_utask_timer_oneshot(struct grid_utask_timer* timer);
+void grid_utask_timer_realign_to_elapse(struct grid_utask_timer* timer);
 
 #endif /* GRID_UTASK_H */
