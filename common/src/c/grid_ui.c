@@ -664,7 +664,9 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
 
       grid_ui_event_render_event(eve, &msg);
       grid_ui_event_render_event_view(eve, &msg);
+      grid_lua_semaphore_lock(&grid_lua_state);
       grid_ui_event_render_script(eve, &msg);
+      grid_lua_semaphore_release(&grid_lua_state);
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }
