@@ -50,6 +50,7 @@ init_element_midi = function(self)
     if mode == nil or mode == 0 then
       gms(ch, cmd, p1, p2)
     elseif mode == 1 then
+      p1 = p1 % 32
       gms(ch, 0xB0, p1, p2 // 128)
       gms(ch, 0xB0, p1 + 32, p2 % 128)
     elseif mode == 2 then
