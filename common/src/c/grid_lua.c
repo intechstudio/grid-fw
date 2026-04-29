@@ -198,11 +198,9 @@ void grid_lua_dostring_end(struct grid_lua_model* lua) {
   grid_lua_semaphore_release(lua);
 }
 
-bool grid_lua_do_event(struct grid_lua_model* lua, uint8_t index, const char* function_name) {
+bool grid_lua_do_event_unsafe(struct grid_lua_model* lua, uint8_t index, const char* function_name) {
 
   bool ret = false;
-
-  grid_lua_semaphore_lock(lua);
 
   // Attempt to get element table
   if (lua_getglobal(lua->L, "ele") != LUA_TTABLE) {
@@ -243,7 +241,6 @@ bool grid_lua_do_event(struct grid_lua_model* lua, uint8_t index, const char* fu
 grid_lua_do_event_cleanup:
 
   lua_pop(lua->L, lua_gettop(lua->L));
-  grid_lua_semaphore_release(lua);
   return ret;
 }
 

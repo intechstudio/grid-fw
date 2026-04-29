@@ -570,7 +570,7 @@ void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg)
 
 void grid_ui_event_render_script(struct grid_ui_event* eve, struct grid_msg* msg) {
 
-  if (!grid_lua_do_event(&grid_lua_state, eve->parent->index, eve->function_name)) {
+  if (!grid_lua_do_event_unsafe(&grid_lua_state, eve->parent->index, eve->function_name)) {
 
     grid_lua_broadcast_stde(&grid_lua_state);
   }
