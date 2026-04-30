@@ -1362,8 +1362,6 @@ int grid_port_decode_class(struct grid_decoder_collection* coll, uint16_t class,
 
 void grid_port_decode_msg(struct grid_decoder_collection* coll, struct grid_msg* msg) {
 
-  grid_lua_decode_clear_results(&grid_lua_state);
-
   for (uint32_t i = 0; i < msg->length; ++i) {
 
     if (msg->data[i] != GRID_CONST_STX) {
