@@ -1,6 +1,7 @@
 #include "grid_sys.h"
 
 #include <assert.h>
+#include <string.h>
 
 #include "grid_platform.h"
 #include "grid_protocol.h"
@@ -24,8 +25,7 @@ void grid_sys_init(struct grid_sys_model* sys) {
 
   // LOCAL INITIALIZERS
 
-  sys->midirx_any_enabled = 1;
-  sys->midirx_sync_enabled = 0;
+  memset(sys->rx_mode, 0, sizeof(sys->rx_mode));
 
   sys->module_x = 0; // 0 because this is signed int
   sys->module_y = 0; // 0 because this is signed int
@@ -73,11 +73,16 @@ uint8_t grid_sys_get_bank_num(struct grid_sys_model* sys) { return sys->bank_act
 uint8_t grid_sys_get_editor_connected_state(struct grid_sys_model* sys) { return sys->editor_connected; }
 void grid_sys_set_editor_connected_state(struct grid_sys_model* sys, uint8_t state) { sys->editor_connected = state; }
 
-uint8_t grid_sys_get_midirx_any_state(struct grid_sys_model* sys) { return sys->midirx_any_enabled; }
-uint8_t grid_sys_get_midirx_sync_state(struct grid_sys_model* sys) { return sys->midirx_sync_enabled; }
+uint8_t grid_sys_get_rx_mode(struct grid_sys_model* sys, uint8_t type) {
+  assert(type < GRID_RX_TYPE_COUNT);
+  return sys->rx_mode[type];
+}
 
-void grid_sys_set_midirx_any_state(struct grid_sys_model* sys, uint8_t state) { sys->midirx_any_enabled = state; }
-void grid_sys_set_midirx_sync_state(struct grid_sys_model* sys, uint8_t state) { sys->midirx_sync_enabled = state; }
+void grid_sys_set_rx_mode(struct grid_sys_model* sys, uint8_t type, uint8_t mode) {
+  assert(type < GRID_RX_TYPE_COUNT);
+  assert(mode <= (GRID_RX_MODE_HANDLE | GRID_RX_MODE_FORWARD));
+  sys->rx_mode[type] = mode;
+}
 
 int8_t grid_sys_get_module_x(struct grid_sys_model* sys) { return sys->module_x; }
 int8_t grid_sys_get_module_y(struct grid_sys_model* sys) { return sys->module_y; }
@@ -414,6 +419,8 @@ int grid_hwcfg_module_has_lcd1(struct grid_sys_model* sys) {
     return 0;
   }
 }
+
+int grid_hwcfg_module_has_lcd(struct grid_sys_model* sys) { return grid_hwcfg_module_has_lcd0(sys) || grid_hwcfg_module_has_lcd1(sys); }
 
 int grid_hwcfg_module_is_po16_reverse_polarity(struct grid_sys_model* sys) {
 

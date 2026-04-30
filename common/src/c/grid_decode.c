@@ -369,9 +369,51 @@ uint8_t grid_decode_pagecount_to_ui(char* header, char* chunk) {
   return 0;
 }
 
+uint8_t grid_decode_midi_rtm_to_ui(char* header, char* chunk) {
+
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_HANDLE)) {
+    return 0;
+  }
+
+  int ret = 1;
+
+  grid_lua_semaphore_lock(&grid_lua_state);
+
+  lua_State* L = grid_lua_state.L;
+
+  lua_getglobal(L, GRID_LUA_DECODE_ORDER);
+  if (lua_type(L, -1) != LUA_TTABLE) {
+    goto grid_decode_midi_rtm_to_ui_cleanup;
+  }
+
+  lua_getglobal(L, GRID_LUA_DECODE_RESULT_RTM);
+  if (lua_type(L, -1) != LUA_TTABLE) {
+    goto grid_decode_midi_rtm_to_ui_cleanup;
+  }
+
+  size_t result_len = lua_rawlen(L, -1);
+
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDIRTM_BYTE));
+  lua_rawseti(L, -2, result_len + 1);
+
+  size_t order_len = lua_rawlen(L, -2);
+  lua_pushinteger(L, GRID_LUA_DECODE_ORDER_RTM);
+  lua_rawseti(L, -3, order_len + 1);
+
+  ret = 0;
+
+grid_decode_midi_rtm_to_ui_cleanup:
+
+  lua_pop(L, lua_gettop(L));
+  grid_lua_semaphore_release(&grid_lua_state);
+  return ret;
+}
+
 uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
-  // return 1;
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE) & GRID_RX_MODE_HANDLE)) {
+    return 0;
+  }
 
   int ret = 1;
 
@@ -426,6 +468,10 @@ grid_decode_midi_to_ui_cleanup:
 }
 
 uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
+
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_HANDLE)) {
+    return 0;
+  }
 
   uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
   uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);
@@ -1083,7 +1129,9 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
 
 uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
 
-  // return 1;
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_EVENTVIEW) & GRID_RX_MODE_HANDLE)) {
+    return 0;
+  }
 
   uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
   uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);
@@ -1353,6 +1401,7 @@ struct grid_decoder_collection grid_decoder_to_ui[] = {
     {GRID_CLASS_PAGEACTIVE_code, grid_decode_pageactive_to_ui},
     {GRID_CLASS_PAGECOUNT_code, grid_decode_pagecount_to_ui},
     {GRID_CLASS_MIDI_code, grid_decode_midi_to_ui},
+    {GRID_CLASS_MIDIRTM_code, grid_decode_midi_rtm_to_ui},
     {GRID_CLASS_MIDISYSEX_code, grid_decode_sysex_to_ui},
     {GRID_CLASS_IMMEDIATE_code, grid_decode_immediate_to_ui},
     {GRID_CLASS_EVALUATE_code, grid_decode_evaluate_to_ui},

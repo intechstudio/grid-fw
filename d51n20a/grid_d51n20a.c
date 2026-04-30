@@ -212,6 +212,8 @@ void grid_utask_midi_rx(struct grid_utask_timer* timer) {
   }
 
   grid_midi_rx_pop();
+  grid_midi_sysex_rx_pop();
+  grid_midi_rtm_rx_pop();
 }
 
 volatile uint8_t rxtimeoutselector = 0;

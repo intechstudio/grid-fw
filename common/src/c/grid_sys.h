@@ -7,14 +7,26 @@
 
 #define GRID_SYS_BANK_MAXNUMBER 4
 
+enum grid_rx_type {
+  GRID_RX_TYPE_MIDIVOICE,
+  GRID_RX_TYPE_MIDISYSEX,
+  GRID_RX_TYPE_MIDIRTM,
+  GRID_RX_TYPE_EVENTVIEW,
+  GRID_RX_TYPE_COUNT,
+};
+
+enum grid_rx_features {
+  GRID_RX_MODE_HANDLE = 0x01,
+  GRID_RX_MODE_FORWARD = 0x02,
+};
+
 struct grid_sys_model {
 
   uint8_t reset_cause;
 
   uint8_t editor_connected;
 
-  uint8_t midirx_any_enabled;
-  uint8_t midirx_sync_enabled;
+  uint8_t rx_mode[GRID_RX_TYPE_COUNT];
 
   uint8_t bank_activebank_number;
 
@@ -57,11 +69,8 @@ uint8_t grid_sys_get_bank_next(struct grid_sys_model* sys);
 uint8_t grid_sys_get_editor_connected_state(struct grid_sys_model* sys);
 void grid_sys_set_editor_connected_state(struct grid_sys_model* sys, uint8_t state);
 
-uint8_t grid_sys_get_midirx_any_state(struct grid_sys_model* sys);
-uint8_t grid_sys_get_midirx_sync_state(struct grid_sys_model* sys);
-
-void grid_sys_set_midirx_any_state(struct grid_sys_model* sys, uint8_t state);
-void grid_sys_set_midirx_sync_state(struct grid_sys_model* sys, uint8_t state);
+uint8_t grid_sys_get_rx_mode(struct grid_sys_model* sys, uint8_t type);
+void grid_sys_set_rx_mode(struct grid_sys_model* sys, uint8_t type, uint8_t mode);
 
 int8_t grid_sys_get_module_x(struct grid_sys_model* sys);
 int8_t grid_sys_get_module_y(struct grid_sys_model* sys);
@@ -103,6 +112,7 @@ int grid_hwcfg_module_encoder_is_detent(struct grid_sys_model* sys);
 int grid_hwcfg_module_encoder_dir(struct grid_sys_model* sys);
 int grid_hwcfg_module_has_lcd0(struct grid_sys_model* sys);
 int grid_hwcfg_module_has_lcd1(struct grid_sys_model* sys);
+int grid_hwcfg_module_has_lcd(struct grid_sys_model* sys);
 int grid_hwcfg_module_is_po16_reverse_polarity(struct grid_sys_model* sys);
 
 #endif /* GRID_SYS_H */

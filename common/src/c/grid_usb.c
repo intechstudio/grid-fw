@@ -21,9 +21,6 @@ struct grid_swsr_t grid_midi_rx;
 struct grid_swsr_t grid_midi_sysex_rx;
 struct grid_swsr_t grid_midi_rtm_rx;
 
-// State variable for SysEx mode
-static uint8_t midi_rx_state_is_sysex = 0;
-
 // SysEx assembly buffer for accumulating bytes until complete message
 static uint8_t sysex_assembly_buffer[GRID_MIDI_SYSEX_RX_BUFFER_length];
 static uint16_t sysex_assembly_index = 0;
@@ -230,83 +227,82 @@ void grid_midi_tx_pop() {
 
 bool grid_midi_tx_readable() { return grid_swsr_readable(&grid_midi_tx, sizeof(struct grid_midi_event_desc)); }
 
-// Helper: Push Real-Time Message to RTM buffer
 static void grid_midi_rx_push_rtm(uint8_t rtm_byte) {
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_FORWARD)) {
+    return;
+  }
   if (grid_swsr_writable(&grid_midi_rtm_rx, 1)) {
     grid_swsr_write(&grid_midi_rtm_rx, &rtm_byte, 1);
   }
 }
 
-static bool grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+static int grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  static uint8_t MIDI_RX_STATE_IS_SYSEX = 0;
 
   bool is_sysex_start = (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START);
 
-  if (!midi_rx_state_is_sysex && !is_sysex_start) {
-    return false; // data was not consumed, further decoding needed
+  if (!MIDI_RX_STATE_IS_SYSEX && !is_sysex_start) {
+    return 0;
   }
 
-  uint8_t bytes_to_write;
+  MIDI_RX_STATE_IS_SYSEX = (cin == GRID_MIDI_CIN_SYSEX_START);
 
   switch (cin) {
   case GRID_MIDI_CIN_SYSEX_START:
-    bytes_to_write = 3;
-    midi_rx_state_is_sysex = 1;
-    break;
+    return 3;
   case GRID_MIDI_CIN_SYSEX_END_1BYTE:
-    bytes_to_write = 1;
-    midi_rx_state_is_sysex = 0;
-    break;
+    return 1;
   case GRID_MIDI_CIN_SYSEX_END_2BYTE:
-    bytes_to_write = 2;
-    midi_rx_state_is_sysex = 0;
-    break;
+    return 2;
   case GRID_MIDI_CIN_SYSEX_END_3BYTE:
-    bytes_to_write = 3;
-    midi_rx_state_is_sysex = 0;
-    break;
-  default:
-    // invalid received CIN code, exit decoding
-    midi_rx_state_is_sysex = 0;
-    return true; // data consumed
+    return 3;
   }
 
-  if (grid_swsr_writable(&grid_midi_sysex_rx, bytes_to_write)) {
-    uint8_t sysex_bytes[3] = {byte1, byte2, byte3};
-    grid_swsr_write(&grid_midi_sysex_rx, sysex_bytes, bytes_to_write);
-  }
-
-  return true; // data consumed
+  return 0;
 }
 
 static void grid_midi_rx_push_normal(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
-  if (grid_sys_get_midirx_any_state(&grid_sys_state) == 0) {
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE) & GRID_RX_MODE_FORWARD)) {
     return;
   }
 
-  struct grid_midi_event_desc event;
-  event.byte0 = byte0;
-  event.byte1 = byte1;
-  event.byte2 = byte2;
-  event.byte3 = byte3;
-
+  struct grid_midi_event_desc event = {byte0, byte1, byte2, byte3};
   if (grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
     grid_swsr_write(&grid_midi_rx, &event, sizeof(struct grid_midi_event_desc));
   }
+}
+
+void grid_midi_rx_push_sysex(uint8_t sysex_length, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+
+  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_FORWARD)) {
+    return;
+  }
+
+  if (!grid_swsr_writable(&grid_midi_sysex_rx, sysex_length)) {
+    return;
+  }
+
+  uint8_t bytes[3] = {byte1, byte2, byte3};
+  grid_swsr_write(&grid_midi_sysex_rx, bytes, sysex_length);
 }
 
 void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
   uint8_t cin = byte0 & 0x0F;
 
-  // 1. REAL-TIME MESSAGES (highest priority, processed even during SysEx)
-  if (cin == GRID_MIDI_CIN_SINGLE_BYTE && byte1 >= GRID_MIDI_RTM_TIMING_CLOCK) {
+  // 1. REAL-TIME MESSAGES: identified by status byte >= 0xF8, not CIN.
+  // Per MIDI spec these are single-byte and may be interleaved within SysEx.
+  if (byte1 >= GRID_MIDI_RTM_TIMING_CLOCK) {
     grid_midi_rx_push_rtm(byte1);
     return;
   }
 
   // 2. SYSEX MESSAGES
-  if (grid_midi_rx_process_sysex(cin, byte1, byte2, byte3)) {
+  int sysex_length = grid_midi_rx_process_sysex(cin, byte1, byte2, byte3);
+  if (sysex_length) {
+    grid_midi_rx_push_sysex(sysex_length, byte1, byte2, byte3);
     return;
   }
 
@@ -317,8 +313,6 @@ void grid_midi_rx_push(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte
 void grid_midi_sysex_rx_pop();
 
 void grid_midi_rx_pop() {
-
-  grid_midi_sysex_rx_pop();
 
   if (!grid_swsr_readable(&grid_midi_rx, sizeof(struct grid_midi_event_desc))) {
     return;
@@ -351,11 +345,53 @@ void grid_midi_rx_pop() {
   }
 
   if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-    grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+    uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE);
+    if (mode & GRID_RX_MODE_FORWARD) {
+      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+    } else {
+      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
+    }
   }
 }
 
 bool grid_midi_rx_writable() { return grid_swsr_writable(&grid_midi_rx, sizeof(struct grid_midi_event_desc)); }
+
+void grid_midi_rtm_rx_pop(void) {
+
+  if (!grid_swsr_readable(&grid_midi_rtm_rx, 1)) {
+    return;
+  }
+
+  struct grid_msg msg = {0};
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
+  grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
+
+  for (uint8_t i = 0; i < 16; ++i) {
+
+    if (!grid_swsr_readable(&grid_midi_rtm_rx, 1)) {
+      break;
+    }
+
+    uint8_t rtm_byte;
+    grid_swsr_read(&grid_midi_rtm_rx, &rtm_byte, 1);
+
+    grid_msg_add_frame(&msg, GRID_CLASS_MIDIRTM_frame);
+    grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
+    grid_msg_set_parameter(&msg, CLASS_MIDIRTM_BYTE, rtm_byte);
+  }
+
+  if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
+    uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM);
+    if (mode & GRID_RX_MODE_FORWARD) {
+      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+    } else {
+      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
+    }
+  }
+}
 
 static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t length) {
 
@@ -382,7 +418,12 @@ static void grid_midi_sysex_process_complete(uint8_t* sysex_data, uint16_t lengt
   grid_msg_add_frame(&msg, GRID_CLASS_MIDISYSEX_frame_end);
 
   if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-    grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+    uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX);
+    if (mode & GRID_RX_MODE_FORWARD) {
+      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+    } else {
+      grid_transport_send_msg_to_ui(&grid_transport_state, &msg);
+    }
   }
 }
 
