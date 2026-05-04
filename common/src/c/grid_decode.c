@@ -493,9 +493,10 @@ uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
     grid_port_debug_printf("sysex invalid: %02hhx %02hhx", first, last);
   }
 
-  char sysex_string[100] = {0};
   size_t size = length * GRID_CLASS_MIDISYSEX_PAYLOAD_length;
-  memcpy(sysex_string, &chunk[GRID_CLASS_MIDISYSEX_PAYLOAD_offset], size);
+  char* payload = &chunk[GRID_CLASS_MIDISYSEX_PAYLOAD_offset];
+  assert(payload[size] == GRID_CONST_ETX);
+  payload[size] = '\0';
 
   int ret = 1;
 
@@ -526,7 +527,7 @@ uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
   lua_pushinteger(L, sy);
   lua_rawseti(L, -2, ++idx);
 
-  lua_pushstring(L, sysex_string);
+  lua_pushstring(L, payload);
   lua_rawseti(L, -2, ++idx);
 
   lua_rawseti(L, -2, result_len + 1);
@@ -534,6 +535,8 @@ uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
   size_t order_len = lua_rawlen(L, -2);
   lua_pushinteger(L, GRID_LUA_DECODE_ORDER_SYSEX);
   lua_rawseti(L, -3, order_len + 1);
+
+  payload[size] = GRID_CONST_ETX;
 
   ret = 0;
 
@@ -1264,11 +1267,9 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
       script[scriptlength] = '\0';
       grid_lua_semaphore_lock(&grid_lua_state);
       grid_ui_register_script(&grid_ui_state, element, event, script);
+      grid_ui_event_render_script(eve, NULL);
       grid_lua_semaphore_release(&grid_lua_state);
       script[scriptlength] = GRID_CONST_ETX;
-
-      // Local-trigger the event
-      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
 
       // Set acknowledge as response code
       respinstr = GRID_INSTR_ACKNOWLEDGE_code;

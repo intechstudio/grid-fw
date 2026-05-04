@@ -51,8 +51,6 @@ void tud_midi_rx_cb(uint8_t itf) {
 
     if (tud_midi_packet_read(packet)) {
 
-      // ets_printf("Read, Data: %02x %02x %02x %02x\r\n", packet[0], packet[1], packet[2], packet[3]);
-
       // Pass raw USB MIDI packet bytes to state machine
       grid_midi_rx_push(packet[0], packet[1], packet[2], packet[3]);
     }

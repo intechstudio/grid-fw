@@ -27,7 +27,8 @@
 #include "usb/class/midi/device/audiodf_midi.h"
 
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
-const struct luaL_Reg grid_lua_api_gui_lib_reference[] = {{NULL, NULL}};
+const struct luaL_Reg gui_lib[] = {{NULL, NULL}};
+const struct luaL_Reg* grid_lua_api_gui_lib_reference = gui_lib;
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -161,17 +162,6 @@ struct grid_utask_timer timer_process_ui;
 void grid_utask_process_ui(struct grid_utask_timer* timer) {
 
   if (grid_lua_state.L == NULL) {
-    return;
-  }
-
-  if (grid_ui_bulk_in_progress(&grid_ui_state)) {
-    return;
-  }
-
-  // Service local triggers first and as fast as possible
-  if (grid_ui_event_count_istriggered_local(&grid_ui_state) > 0) {
-
-    grid_port_process_ui_local_UNSAFE(&grid_ui_state);
     return;
   }
 
@@ -354,6 +344,15 @@ void grid_d51_port_recv_uwsr(struct grid_port* port, struct grid_uwsr_t* uwsr, s
 
 int main(void) {
 
+  // Allocate profiler & assign its interface
+  vmp_buf_malloc(&vmp, 2, sizeof(struct vmp_evt_t));
+  struct vmp_reg_t reg = {
+      .evt_serialized_size = vmp_evt_serialized_size,
+      .evt_serialize = vmp_evt_serialize,
+      .fwrite = vmp_fwrite,
+  };
+  bool vmp_flushed = false;
+
   atmel_start_init(); // this sets up gpio and printf
 
   grid_platform_printf("Start Initialized %d %s\r\n", 123, "Cool!");
@@ -378,11 +377,6 @@ int main(void) {
   grid_d51_led_init(&grid_d51_led_state, &grid_led_state);
 
   grid_d51_nvic_debug_priorities();
-
-  // Load page zero
-  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL);
-  update_interrupt_mask_from_bulk_status();
-  grid_ui_bulk_flush(&grid_ui_state);
 
   // grid_d51_nvm_toc_debug(&grid_d51_nvm_state);
 
@@ -428,36 +422,30 @@ int main(void) {
 
   struct grid_transport* xport = &grid_transport_state;
 
-  // Allocate profiler & assign its interface
-  vmp_buf_malloc(&vmp, 100, sizeof(struct vmp_evt_t));
-  struct vmp_reg_t reg = {
-      .evt_serialized_size = vmp_evt_serialized_size,
-      .evt_serialize = vmp_evt_serialize,
-      .fwrite = vmp_fwrite,
-  };
-  bool vmp_flushed = false;
+  // Load page zero
+  grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL);
+  update_interrupt_mask_from_bulk_status();
+  grid_ui_bulk_flush(&grid_ui_state);
 
   while (1) {
 
     // vmp_push(MAIN);
 
-    /*
-if (!vmp_flushed && vmp.size == vmp.capacity) {
+    if (!vmp_flushed && vmp.size == vmp.capacity) {
 
-CRITICAL_SECTION_ENTER();
+      CRITICAL_SECTION_ENTER();
 
-vmp_serialize_start(&reg);
-vmp_buf_serialize_and_write(&vmp, &reg);
-vmp_uid_str_serialize_and_write(VMP_UID_COUNT, VMP_ASSOC, &reg);
-vmp_serialize_close(&reg);
+      vmp_serialize_start(&reg);
+      vmp_buf_serialize_and_write(&vmp, &reg);
+      vmp_uid_str_serialize_and_write(VMP_UID_COUNT, VMP_ASSOC, &reg);
+      vmp_serialize_close(&reg);
 
-CRITICAL_SECTION_LEAVE();
+      CRITICAL_SECTION_LEAVE();
 
-// vmp_buf_free(&vmp);
+      // vmp_buf_free(&vmp);
 
-vmp_flushed = true;
-}
-    */
+      vmp_flushed = true;
+    }
 
     loopcounter++;
 
