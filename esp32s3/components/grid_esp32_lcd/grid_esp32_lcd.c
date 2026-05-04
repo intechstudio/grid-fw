@@ -378,8 +378,36 @@ void grid_esp32_module_vsn_lcd_push_trailing(struct grid_esp32_lcd_model* lcds, 
   }
 }
 
-void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf,
-                                       struct grid_utask_timer* timers) {
+struct grid_utask_timer timer_draw_event[2] = {GRID_UTASK_DISABLED, GRID_UTASK_DISABLED};
+
+void grid_utask_draw_event(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  int i = timer - timer_draw_event;
+
+  struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
+
+  assert(grid_esp32_lcd_panel_active(&lcds[i]));
+
+  struct grid_gui_model* guis = grid_gui_states;
+
+  if (grid_swsr_size(&guis[i].swsr)) {
+    return;
+  }
+
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, lcds[i].element->index);
+  assert(ele);
+
+  struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_DRAW);
+  assert(eve);
+
+  grid_ui_event_render_script(eve, NULL);
+}
+
+void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf) {
 
   bool waiting[2] = {
       grid_esp32_lcd_panel_active(&lcds[0]) && grid_gui_swap_get(&guis[0]),
@@ -392,14 +420,7 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
 
     int lcd_index = grid_esp32_module_vsn_lcd_wait_scan_top(lcds, waiting, lines, tx_lines, ready_len, scans);
 
-    if (grid_swsr_size(&guis[lcd_index].swsr) == 0) {
-
-      struct grid_ui_event* eve = grid_ui_event_find(lcds[lcd_index].element, GRID_PARAMETER_EVENT_DRAW);
-
-      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
-
-      grid_utask_timer_realign(&timers[lcd_index]);
-    }
+    grid_utask_timer_realign_to_elapse(&timer_draw_event[lcd_index]);
 
     grid_esp32_module_vsn_lcd_push_trailing(lcds, lcd_index, lines, columns, tx_lines, guis[lcd_index].buffer, xferbuf);
 
@@ -413,31 +434,6 @@ void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct
   }
 }
 
-struct grid_utask_timer timer_draw_trigger[2];
-
-void grid_utask_draw_trigger(struct grid_utask_timer* timer) {
-
-  if (!grid_utask_timer_elapsed(timer)) {
-    return;
-  }
-
-  struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
-  struct grid_gui_model* guis = grid_gui_states;
-
-  int i = timer - timer_draw_trigger;
-
-  assert(grid_esp32_lcd_panel_active(&lcds[i]));
-
-  assert(lcds[i].element);
-
-  struct grid_ui_event* eve = grid_ui_event_find(lcds[i].element, GRID_PARAMETER_EVENT_DRAW);
-
-  if (eve->state == GRID_EVE_STATE_INIT && grid_swsr_size(&guis[i].swsr) == 0) {
-
-    grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
-  }
-}
-
 void grid_esp32_lcd_task(void* arg) {
 
   // Set this task as the timed task in the trace facility (to measure render time)
@@ -445,10 +441,16 @@ void grid_esp32_lcd_task(void* arg) {
 
   // Configure task timers
   for (int i = 0; i < 2; ++i) {
-    timer_draw_trigger[i] = (struct grid_utask_timer){
-        .last = grid_platform_rtc_get_micros(),
-        .period = GRID_PARAMETER_DRAWTRIGGER_us,
-    };
+
+    struct grid_esp32_lcd_model* lcds = grid_esp32_lcd_states;
+
+    if (grid_esp32_lcd_panel_active(&lcds[i])) {
+
+      timer_draw_event[i] = (struct grid_utask_timer){
+          .last = grid_platform_rtc_get_micros(),
+          .period = GRID_PARAMETER_DRAWTRIGGER_us,
+      };
+    }
   }
 
   uint32_t lcd_tx_lines = 16;
@@ -490,7 +492,7 @@ void grid_esp32_lcd_task(void* arg) {
 
     ++counter;
 
-    grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf, timer_draw_trigger);
+    grid_esp32_module_vsn_lcd_refresh(lcds, guis, LCD_LINES, LCD_COLUMNS, lcd_tx_lines, LCD_LINES / 16, xferbuf);
 
     if (!grid_esp32_lcd_get_drawn()) {
 
@@ -500,15 +502,6 @@ void grid_esp32_lcd_task(void* arg) {
       // Set flag indicating that fresh pixels appeared at least once,
       // this is only true here if a clear & swap was queued initially
       grid_esp32_lcd_set_drawn(true);
-    }
-
-    // Run microtasks
-    for (int i = 0; i < 2; ++i) {
-
-      if (grid_esp32_lcd_panel_active(&lcds[i])) {
-
-        grid_utask_draw_trigger(&timer_draw_trigger[i]);
-      }
     }
 
     taskYIELD();

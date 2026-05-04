@@ -474,8 +474,6 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
 
 uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve) { return eve != NULL && eve->state == GRID_EVE_STATE_TRIG; }
 
-uint8_t grid_ui_event_istriggered_local(struct grid_ui_event* eve) { return eve != NULL && eve->state == GRID_EVE_STATE_TRIG_LOCAL; }
-
 uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui) {
 
   uint16_t count = 0;
@@ -491,23 +489,6 @@ uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui) {
     }
   }
 
-  return count;
-}
-
-uint16_t grid_ui_event_count_istriggered_local(struct grid_ui_model* ui) {
-
-  uint16_t count = 0;
-
-  for (uint8_t j = 0; j < ui->element_list_length; ++j) {
-
-    for (uint8_t k = 0; k < ui->element_list[j].event_list_length; ++k) {
-
-      if (grid_ui_event_istriggered_local(&ui->element_list[j].event_list[k])) {
-
-        count++;
-      }
-    }
-  }
   return count;
 }
 
@@ -589,15 +570,17 @@ void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg)
 
 void grid_ui_event_render_script(struct grid_ui_event* eve, struct grid_msg* msg) {
 
-  if (!grid_lua_do_event(&grid_lua_state, eve->parent->index, eve->function_name)) {
+  if (!grid_lua_do_event_unsafe(&grid_lua_state, eve->parent->index, eve->function_name)) {
 
     grid_lua_broadcast_stde(&grid_lua_state);
   }
 
-  char* stdo = grid_lua_get_output_string(&grid_lua_state);
-  grid_msg_nprintf(msg, "%s", stdo);
-  grid_lua_clear_stdo(&grid_lua_state);
+  if (msg) {
+    char* stdo = grid_lua_get_output_string(&grid_lua_state);
+    grid_msg_nprintf(msg, "%s", stdo);
+  }
 
+  grid_lua_clear_stdo(&grid_lua_state);
   grid_lua_clear_stde(&grid_lua_state);
 
   // Call the event clear callback
@@ -649,89 +632,6 @@ void grid_ui_event_render_event_view(struct grid_ui_event* eve, struct grid_msg*
   grid_msg_add_frame(msg, GRID_CLASS_EVENTVIEW_frame_end);
 }
 
-void grid_port_process_ui_local_UNSAFE(struct grid_ui_model* ui) {
-
-  if (!grid_ui_bulk_semaphore_try(ui)) {
-    return;
-  }
-
-  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-
-  struct grid_msg msg_local;
-  grid_msg_init_brc(&grid_msg_state, &msg_local, xy, xy);
-  uint16_t local_start_length = msg_local.length;
-
-  struct grid_msg msg_global;
-  grid_msg_init_brc(&grid_msg_state, &msg_global, xy, xy);
-  uint16_t global_start_length = msg_global.length;
-
-  for (uint8_t j = 0; j < ui->element_list_length; j++) {
-
-    // Handle the system element first, then all the UI elements in ascending order
-    uint8_t element_index = (j == 0 ? ui->element_list_length - 1 : j - 1);
-
-    struct grid_ui_element* ele = &ui->element_list[element_index];
-
-    for (uint8_t k = 0; k < ele->event_list_length; k++) {
-
-      if (msg_local.length >= GRID_PARAMETER_PACKET_margin) {
-        break;
-      }
-
-      if (msg_global.length >= GRID_PARAMETER_PACKET_margin) {
-        break;
-      }
-
-      struct grid_ui_event* eve = &ele->event_list[k];
-
-      if (!grid_ui_event_istriggered_local(eve)) {
-        continue;
-      }
-
-      grid_ui_event_render_script(eve, &msg_local);
-
-      grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
-
-      // Automatically report elementname after config
-      if (ele->type != GRID_PARAMETER_ELEMENT_SYSTEM && ele->type != GRID_PARAMETER_ELEMENT_LCD) {
-
-        char command[26] = {0};
-
-        sprintf(command, "gens(%d,ele[%d]:gen())", ele->index, ele->index);
-
-        grid_lua_clear_stdo(&grid_lua_state);
-        grid_lua_dostring(&grid_lua_state, command);
-        grid_msg_nprintf(&msg_global, "%s", grid_lua_get_output_string(&grid_lua_state));
-        grid_lua_clear_stdo(&grid_lua_state);
-      }
-    }
-  }
-
-  if (msg_global.length > global_start_length) {
-
-    if (grid_msg_close_brc(&grid_msg_state, &msg_global) >= 0) {
-
-      grid_transport_send_msg_to_all(&grid_transport_state, &msg_global);
-    }
-  }
-
-  if (msg_local.length > local_start_length) {
-
-    if (grid_msg_close_brc(&grid_msg_state, &msg_local) >= 0) {
-
-      struct grid_port* port = grid_transport_get_port(&grid_transport_state, 4, GRID_PORT_UI, 0);
-
-      struct grid_swsr_t* tx = grid_port_get_tx(port);
-
-      if (grid_swsr_writable(tx, msg_local.length)) {
-        grid_msg_to_swsr(&msg_local, tx);
-      }
-    }
-  }
-
-  grid_ui_bulk_semaphore_release(ui);
-}
-
 void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
 
   if (!grid_ui_bulk_semaphore_try(ui)) {
@@ -764,7 +664,9 @@ void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui) {
 
       grid_ui_event_render_event(eve, &msg);
       grid_ui_event_render_event_view(eve, &msg);
+      grid_lua_semaphore_lock(&grid_lua_state);
       grid_ui_event_render_script(eve, &msg);
+      grid_lua_semaphore_release(&grid_lua_state);
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }

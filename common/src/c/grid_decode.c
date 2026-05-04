@@ -1264,11 +1264,9 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
       script[scriptlength] = '\0';
       grid_lua_semaphore_lock(&grid_lua_state);
       grid_ui_register_script(&grid_ui_state, element, event, script);
+      grid_ui_event_render_script(eve, NULL);
       grid_lua_semaphore_release(&grid_lua_state);
       script[scriptlength] = GRID_CONST_ETX;
-
-      // Local-trigger the event
-      grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG_LOCAL);
 
       // Set acknowledge as response code
       respinstr = GRID_INSTR_ACKNOWLEDGE_code;
