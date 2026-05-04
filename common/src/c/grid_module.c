@@ -255,3 +255,16 @@ void grid_module_octv_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }
+
+void grid_module_xy_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  grid_led_init(led, 25);
+  grid_led_lookup_alloc_identity(led, 0, 25);
+
+  grid_ui_model_init(ui, 1);
+
+  struct grid_ui_element* ele = grid_ui_element_model_init(ui, 0);
+  grid_ui_element_system_init(ele);
+
+  ui->lua_ui_init_callback = grid_lua_ui_init;
+}

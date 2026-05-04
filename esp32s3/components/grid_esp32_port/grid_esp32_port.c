@@ -462,8 +462,7 @@ void grid_esp32_port_task(void* arg) {
     }
 
     // Rolling ID watchdog expiration (only if RP2040 was ever seen)
-    if (rp2040_active &&
-        grid_platform_rtc_get_elapsed_time(watchdog_rollid_last_time) > 100000) {
+    if (rp2040_active && grid_platform_rtc_get_elapsed_time(watchdog_rollid_last_time) > 100000) {
 
       watchdog_rollid_last_time = grid_platform_rtc_get_micros();
     }
