@@ -255,13 +255,6 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
     return;
   }
 
-  // Service local triggers first and as fast as possible
-  if (grid_ui_event_count_istriggered_local(&grid_ui_state) > 0) {
-
-    grid_port_process_ui_local_UNSAFE(&grid_ui_state);
-    return;
-  }
-
   if (grid_ui_event_count_istriggered(&grid_ui_state) > 0) {
 
     if (!grid_utask_timer_elapsed(timer)) {
@@ -284,10 +277,9 @@ void grid_utask_midi_rx(struct grid_utask_timer* timer) {
   grid_midi_rtm_rx_pop();
 }
 
-// TODO direction should possibly remain in character-space, not [0, 4)
-// or rewrite d51 as well.
+extern struct grid_utask_timer timer_draw_event[2];
 
-// TODO thus, the dir param should be an enum
+extern void grid_utask_draw_event(struct grid_utask_timer* timer);
 
 uint32_t grid_platform_get_frame_len(uint8_t dir) {
 
@@ -519,6 +511,8 @@ void grid_esp32_port_task(void* arg) {
     grid_utask_heart(&timer_heart);
     grid_utask_midi_rx(&timer_midi_rx);
     grid_utask_process_ui(&timer_process_ui);
+    grid_utask_draw_event(&timer_draw_event[0]);
+    grid_utask_draw_event(&timer_draw_event[1]);
 
     // Decode for USB
     grid_port_send_usb(port_usb);

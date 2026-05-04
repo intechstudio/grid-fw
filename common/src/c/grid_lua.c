@@ -198,11 +198,9 @@ void grid_lua_dostring_end(struct grid_lua_model* lua) {
   grid_lua_semaphore_release(lua);
 }
 
-bool grid_lua_do_event(struct grid_lua_model* lua, uint8_t index, const char* function_name) {
+bool grid_lua_do_event_unsafe(struct grid_lua_model* lua, uint8_t index, const char* function_name) {
 
   bool ret = false;
-
-  grid_lua_semaphore_lock(lua);
 
   // Attempt to get element table
   if (lua_getglobal(lua->L, "ele") != LUA_TTABLE) {
@@ -243,92 +241,66 @@ bool grid_lua_do_event(struct grid_lua_model* lua, uint8_t index, const char* fu
 grid_lua_do_event_cleanup:
 
   lua_pop(lua->L, lua_gettop(lua->L));
-  grid_lua_semaphore_release(lua);
   return ret;
 }
 
-void grid_lua_decode_clear_results(struct grid_lua_model* lua) {
+bool grid_lua_decode_results_get_unsafe(struct grid_lua_model* lua) {
 
-  grid_lua_semaphore_lock(lua);
-
-  // Get lengths of decode result tables
   lua_getglobal(lua->L, GRID_LUA_DECODE_RESULT_MIDI);
   if (lua_type(lua->L, -1) != LUA_TTABLE) {
-    goto grid_lua_decode_clear_results_cleanup;
+    return false;
   }
-  size_t midi_len = lua_rawlen(lua->L, -1);
 
   lua_getglobal(lua->L, GRID_LUA_DECODE_RESULT_SYSEX);
   if (lua_type(lua->L, -1) != LUA_TTABLE) {
-    goto grid_lua_decode_clear_results_cleanup;
+    return false;
   }
-  size_t sysex_len = lua_rawlen(lua->L, -1);
 
   lua_getglobal(lua->L, GRID_LUA_DECODE_RESULT_EVIEW);
   if (lua_type(lua->L, -1) != LUA_TTABLE) {
-    goto grid_lua_decode_clear_results_cleanup;
+    return false;
   }
-  size_t eview_len = lua_rawlen(lua->L, -1);
 
   lua_getglobal(lua->L, GRID_LUA_DECODE_RESULT_RTM);
   if (lua_type(lua->L, -1) != LUA_TTABLE) {
-    goto grid_lua_decode_clear_results_cleanup;
+    return false;
   }
+
+  return true;
+}
+
+bool grid_lua_decode_results_check_unsafe(struct grid_lua_model* lua, bool* empty) {
+
+  int top = lua_gettop(lua->L);
+
+  if (!grid_lua_decode_results_get_unsafe(lua)) {
+    goto grid_lua_decode_results_check_unsafe_failure;
+  }
+
+  size_t midi_len = lua_rawlen(lua->L, -4);
+  size_t sysex_len = lua_rawlen(lua->L, -3);
+  size_t eview_len = lua_rawlen(lua->L, -2);
   size_t rtm_len = lua_rawlen(lua->L, -1);
 
-  // If the tables are empty, there are no results to be cleared
-  if (midi_len == 0 && sysex_len == 0 && eview_len == 0 && rtm_len == 0) {
-    goto grid_lua_decode_clear_results_cleanup;
-  }
+  *empty = !(midi_len || sysex_len || eview_len || rtm_len);
 
-  if (lua_getglobal(lua->L, GRID_LUA_DECODE_CLEARER) != LUA_TFUNCTION) {
-    goto grid_lua_decode_clear_results_cleanup;
-  }
+  goto grid_lua_decode_results_check_unsafe_success;
 
-  // Invoke decode result clearing function
-  if (lua_pcall(lua->L, 0, 0, 0) != LUA_OK) {
-    grid_lua_clear_stde(lua);
-    grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
-    goto grid_lua_decode_clear_results_cleanup;
-  }
-
-grid_lua_decode_clear_results_cleanup:
-
-  lua_pop(lua->L, lua_gettop(lua->L));
-  grid_lua_semaphore_release(lua);
+grid_lua_decode_results_check_unsafe_failure:
+  lua_pop(lua->L, lua_gettop(lua->L) - top);
+  return false;
+grid_lua_decode_results_check_unsafe_success:
+  // leave result tables on the lua stack
+  return true;
 }
 
 void grid_lua_decode_process_results(struct grid_lua_model* lua) {
 
   grid_lua_semaphore_lock(lua);
 
-  // Get lengths of decode result tables and leave them on the stack
-  lua_getglobal(lua->L, GRID_LUA_DECODE_RESULT_MIDI);
-  if (lua_type(lua->L, -1) != LUA_TTABLE) {
-    goto grid_lua_decode_process_results_cleanup;
-  }
-  size_t midi_len = lua_rawlen(lua->L, -1);
+  bool empty;
 
-  lua_getglobal(lua->L, GRID_LUA_DECODE_RESULT_SYSEX);
-  if (lua_type(lua->L, -1) != LUA_TTABLE) {
-    goto grid_lua_decode_process_results_cleanup;
-  }
-  size_t sysex_len = lua_rawlen(lua->L, -1);
-
-  lua_getglobal(lua->L, GRID_LUA_DECODE_RESULT_EVIEW);
-  if (lua_type(lua->L, -1) != LUA_TTABLE) {
-    goto grid_lua_decode_process_results_cleanup;
-  }
-  size_t eview_len = lua_rawlen(lua->L, -1);
-
-  lua_getglobal(lua->L, GRID_LUA_DECODE_RESULT_RTM);
-  if (lua_type(lua->L, -1) != LUA_TTABLE) {
-    goto grid_lua_decode_process_results_cleanup;
-  }
-  size_t rtm_len = lua_rawlen(lua->L, -1);
-
-  // If the tables are empty, there are no results to be processed
-  if (midi_len == 0 && sysex_len == 0 && eview_len == 0 && rtm_len == 0) {
+  if (!grid_lua_decode_results_check_unsafe(lua, &empty) || empty) {
     goto grid_lua_decode_process_results_cleanup;
   }
 
@@ -341,6 +313,21 @@ void grid_lua_decode_process_results(struct grid_lua_model* lua) {
 
   // Invoke decode result processor function
   if (lua_pcall(lua->L, 4, 0, 0) != LUA_OK) {
+    grid_lua_clear_stde(lua);
+    grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
+    goto grid_lua_decode_process_results_cleanup;
+  }
+
+  if (!grid_lua_decode_results_check_unsafe(lua, &empty) || empty) {
+    goto grid_lua_decode_process_results_cleanup;
+  }
+
+  if (lua_getglobal(lua->L, GRID_LUA_DECODE_CLEARER) != LUA_TFUNCTION) {
+    goto grid_lua_decode_process_results_cleanup;
+  }
+
+  // Invoke decode result clearing function
+  if (lua_pcall(lua->L, 0, 0, 0) != LUA_OK) {
     grid_lua_clear_stde(lua);
     grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
     goto grid_lua_decode_process_results_cleanup;

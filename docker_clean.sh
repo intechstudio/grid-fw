@@ -9,10 +9,10 @@ else
 	exit 1
 fi
 
-IMAGE=${IMAGE:-grid-fw-build}
+IMAGE=${IMAGE:-grid-fw}
 
 # Check that the image exists
-if [ -z "$(sudo docker images -q "$IMAGE")" ] ; then
+if [ -z "$($CONTAINER_CMD images -q "$IMAGE")" ] ; then
 	echo "Image does not seem to exist."
 	exit 1
 fi
