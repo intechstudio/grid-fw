@@ -1,0 +1,28 @@
+name: Publish wasm gui
+
+on:
+  workflow_call:
+
+jobs:
+  publish-wasm-gui:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Setup pages
+        uses: actions/configure-pages@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: download
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './download/nightly_gui/'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

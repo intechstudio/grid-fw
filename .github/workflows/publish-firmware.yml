@@ -1,0 +1,63 @@
+name: Publish firmware
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  pages: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  check-formatting:
+    name: Check formatting
+    uses: ./.github/workflows/pre-commit.yml
+
+  unit-testing:
+    name: Build and run unit tests
+    uses: ./.github/workflows/build-and-run-unit-tests.yml
+
+  build-firmware:
+    name: Build firmware
+    needs: [check-formatting, unit-testing]
+    uses: ./.github/workflows/build-and-push-firmware.yml
+
+  publish-stable:
+    name: Publish stable release
+    needs: build-firmware
+    if: github.ref_type == 'tag'
+    uses: ./.github/workflows/publish-stable-firmware.yml
+    with:
+      product_name: "grid"
+      version_tag: ${{ github.ref_name }}
+      timestamp: ${{ needs.build-firmware.outputs.timestamp }}
+    secrets: inherit
+
+  publish-nightly:
+    name: Publish nightly release
+    needs: build-firmware
+    # Also run when the ref is a tag so nightly does not lag stable
+    if: github.ref_name == 'main' || github.ref_name == 'master' || github.ref_type == 'tag'
+    uses: ./.github/workflows/publish-nightly-firmware.yml
+    with:
+      product_name: "grid"
+    secrets: inherit
+
+  publish-gui:
+    name: Publish wasm gui
+    needs: build-firmware
+    if: github.ref_name == 'main' || github.ref_name == 'master'
+    uses: ./.github/workflows/publish-wasm-gui.yml
+
+  convert-protocol:
+    name: Protocol conversion
+    needs: build-firmware
+    uses: ./.github/workflows/protocol-converter.yml
+    secrets:
+      personal_access_token: ${{ secrets.PERSONALACCESSTOKEN }}

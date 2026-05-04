@@ -1,0 +1,180 @@
+#include "grid_ui_potmeter.h"
+
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "grid_ain.h"
+#include "grid_lua_api.h"
+#include "grid_math.h"
+#include "grid_platform.h"
+#include "grid_sys.h"
+#include "grid_ui_system.h"
+
+const luaL_Reg GRID_LUA_P_INDEX_META[] = {{GRID_LUA_FNC_P_ELEMENT_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_P_ELEMENT_INDEX_index)},
+                                          {GRID_LUA_FNC_P_LED_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_P_LED_INDEX_index)},
+                                          {GRID_LUA_FNC_P_POTMETER_VALUE_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_P_POTMETER_VALUE_index)},
+                                          {GRID_LUA_FNC_P_POTMETER_MIN_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_P_POTMETER_MIN_index)},
+                                          {GRID_LUA_FNC_P_POTMETER_MAX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_P_POTMETER_MAX_index)},
+                                          {GRID_LUA_FNC_P_POTMETER_MODE_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_P_POTMETER_MODE_index)},
+                                          {GRID_LUA_FNC_P_POTMETER_ELAPSED_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_P_POTMETER_ELAPSED_index)},
+                                          {GRID_LUA_FNC_P_POTMETER_STATE_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_P_POTMETER_STATE_index)},
+                                          {GRID_LUA_FNC_G_TIMER_START_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtt)},
+                                          {GRID_LUA_FNC_G_TIMER_STOP_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtp)},
+                                          {GRID_LUA_FNC_G_EVENT_TRIGGER_short, XAFTERX(GRID_LUA_FNC_META_NAME, get)},
+                                          {GRID_LUA_FNC_G_ELEMENTNAME_SET_short, XAFTERX(GRID_LUA_FNC_META_NAME, gsen)},
+                                          {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, XAFTERX(GRID_LUA_FNC_META_NAME, ggen)},
+                                          {NULL, NULL}};
+
+void grid_ui_potmeter_state_init(struct grid_ui_potmeter_state* state, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center) {
+
+  state->last_real_time = 0;
+  state->adc_bit_depth = adc_bit_depth;
+
+  assert(adc_bit_depth);
+  assert(deadzone < (1 << (adc_bit_depth - 1)));
+  grid_cal_limits_init(&state->limits, deadzone, adc_bit_depth);
+
+  assert(center < (1 << adc_bit_depth));
+  grid_cal_center_init(&state->center, center);
+
+  grid_cal_detent_init(&state->detent);
+}
+
+void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
+
+  ele->type = GRID_PARAMETER_ELEMENT_POTMETER;
+
+  ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_potmeter_state));
+  memset(ele->primary_state, 0, sizeof(struct grid_ui_potmeter_state));
+  ((struct grid_ui_potmeter_state*)ele->primary_state)->parent = ele;
+
+  grid_ui_element_malloc_events(ele, 3);
+
+  grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, GRID_ACTIONSTRING_POTMETER_INIT);
+  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_POTMETER, GRID_LUA_FNC_A_POTMETER_short, GRID_ACTIONSTRING_POTMETER_POTMETER);
+  grid_ui_event_init(ele, 2, GRID_PARAMETER_EVENT_TIMER, GRID_LUA_FNC_A_TIMER_short, GRID_ACTIONSTRING_SYSTEM_TIMER);
+
+  ele->template_initializer = &grid_ui_element_potmeter_template_parameter_init;
+  ele->template_parameter_list_length = GRID_LUA_FNC_P_LIST_length;
+  ele->template_parameter_element_position_index_1 = GRID_LUA_FNC_P_POTMETER_STATE_index;
+  ele->template_parameter_element_position_index_2 = GRID_LUA_FNC_P_POTMETER_STATE_index;
+
+  ele->template_parameter_index_value[0] = GRID_LUA_FNC_P_POTMETER_VALUE_index;
+  ele->template_parameter_index_min[0] = GRID_LUA_FNC_P_POTMETER_MIN_index;
+  ele->template_parameter_index_max[0] = GRID_LUA_FNC_P_POTMETER_MAX_index;
+  ele->template_parameter_index_value[1] = ele->template_parameter_index_value[0];
+  ele->template_parameter_index_min[1] = ele->template_parameter_index_min[0];
+  ele->template_parameter_index_max[1] = ele->template_parameter_index_max[0];
+
+  ele->event_clear_cb = &grid_ui_element_potmeter_event_clear_cb;
+  ele->page_change_cb = &grid_ui_element_potmeter_page_change_cb;
+}
+
+void grid_ui_element_potmeter_update_value(int32_t* template_parameter_list, uint8_t element_index, uint8_t adc_bit_depth) {
+
+  int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
+  resolution = clampi32(resolution, 1, 12);
+
+  int32_t tmin = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index];
+  int32_t tmax = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index];
+  int32_t min = MIN(tmin, tmax);
+  int32_t max = MAX(tmin, tmax);
+
+  int32_t new_value = grid_ain_get_average_scaled(&grid_ain_state, element_index, adc_bit_depth, resolution, min, max);
+
+  if (tmin > tmax) {
+    new_value = mirrori32(new_value, min, max);
+  }
+
+  template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = new_value;
+}
+
+void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf) {
+
+  uint8_t element_index = buf->parent->index;
+  int32_t* template_parameter_list = buf->template_parameter_list;
+
+  template_parameter_list[GRID_LUA_FNC_P_ELEMENT_INDEX_index] = element_index;
+  template_parameter_list[GRID_LUA_FNC_P_LED_INDEX_index] = element_index;
+  template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = 0;
+  template_parameter_list[GRID_LUA_FNC_P_POTMETER_MIN_index] = 0;
+  template_parameter_list[GRID_LUA_FNC_P_POTMETER_MAX_index] = 127;
+  template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index] = 7;
+  template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] = 0;
+  template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = 0;
+
+  uint8_t adc_bit_depth = grid_platform_get_adc_bit_depth();
+  grid_ui_element_potmeter_update_value(template_parameter_list, element_index, adc_bit_depth);
+}
+
+void grid_ui_element_potmeter_event_clear_cb(struct grid_ui_event* eve) {}
+
+void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new) {
+
+  uint8_t element_index = ele->index;
+  int32_t* template_parameter_list = ele->template_parameter_list;
+
+  uint8_t adc_bit_depth = grid_platform_get_adc_bit_depth();
+  grid_ui_element_potmeter_update_value(template_parameter_list, element_index, adc_bit_depth);
+}
+
+uint8_t grid_ui_potmeter_update_trigger(struct grid_ui_element* ele, uint16_t value, uint8_t adc_bit_depth, uint64_t* last_real_time) {
+
+  uint8_t element_index = ele->index;
+  int32_t* template_parameter_list = ele->template_parameter_list;
+
+  int32_t resolution = template_parameter_list[GRID_LUA_FNC_P_POTMETER_MODE_index];
+
+  grid_ain_add_sample(&grid_ain_state, element_index, value, adc_bit_depth, (uint8_t)resolution);
+
+  // limit lastrealtime
+  uint64_t now = grid_platform_rtc_get_micros();
+  uint64_t elapsed_us = grid_platform_rtc_get_diff(now, *last_real_time);
+  elapsed_us = MIN(elapsed_us, GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US);
+
+  if (!grid_ain_get_changed(&grid_ain_state, element_index)) {
+    return 0;
+  }
+
+  // update lastrealtime
+  *last_real_time = now;
+  template_parameter_list[GRID_LUA_FNC_P_POTMETER_ELAPSED_index] = elapsed_us / MS_TO_US;
+
+  grid_ui_element_potmeter_update_value(template_parameter_list, element_index, adc_bit_depth);
+
+  // for display in editor
+  int32_t scaled_state = grid_ain_get_average_scaled(&grid_ain_state, element_index, adc_bit_depth, resolution, 0, 127);
+  template_parameter_list[GRID_LUA_FNC_P_POTMETER_STATE_index] = scaled_state;
+
+  struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_POTMETER);
+
+  if (grid_ain_stabilized(&grid_ain_state, element_index)) {
+    grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
+    return 1;
+  }
+
+  return 0;
+}
+
+void grid_ui_potmeter_store_input(struct grid_ui_potmeter_state* state, uint16_t value) {
+
+  struct grid_ui_element* ele = state->parent;
+  uint8_t element_index = ele->index;
+  uint8_t adc_bit_depth = state->adc_bit_depth;
+
+  uint16_t value_asc;
+  if (grid_asc_process(&grid_cal_state.sigcond[element_index], value, &value_asc)) {
+    grid_cal_limits_value_update(&state->limits, value_asc);
+    grid_cal_center_value_update(&state->center, value_asc);
+    grid_cal_detent_value_update(&state->detent, value_asc);
+  }
+
+  if (!grid_cal_limits_range_valid(&state->limits)) {
+    return;
+  }
+
+  value = grid_cal_next(&grid_cal_state, element_index, value);
+
+  grid_ui_potmeter_update_trigger(ele, value, adc_bit_depth, &state->last_real_time);
+}

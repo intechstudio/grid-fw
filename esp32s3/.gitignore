@@ -1,0 +1,13 @@
+!CMakeLists.txt
+!sdkconfig
+
+!bootloader
+!bootloader/**
+
+!components
+!components/**
+
+!main
+!main/CMakeLists.txt
+!main/grid_esp32s3.c
+!main/idf_component.yml

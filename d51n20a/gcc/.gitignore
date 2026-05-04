@@ -1,0 +1,9 @@
+# block everything by default
+*
+
+!.gitignore
+!Makefile
+
+!asf
+!common
+!grid
