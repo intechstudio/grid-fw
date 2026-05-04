@@ -493,9 +493,10 @@ uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
     grid_port_debug_printf("sysex invalid: %02hhx %02hhx", first, last);
   }
 
-  char sysex_string[100] = {0};
   size_t size = length * GRID_CLASS_MIDISYSEX_PAYLOAD_length;
-  memcpy(sysex_string, &chunk[GRID_CLASS_MIDISYSEX_PAYLOAD_offset], size);
+  char* payload = &chunk[GRID_CLASS_MIDISYSEX_PAYLOAD_offset];
+  assert(payload[size] == GRID_CONST_ETX);
+  payload[size] = '\0';
 
   int ret = 1;
 
@@ -526,7 +527,7 @@ uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
   lua_pushinteger(L, sy);
   lua_rawseti(L, -2, ++idx);
 
-  lua_pushstring(L, sysex_string);
+  lua_pushstring(L, payload);
   lua_rawseti(L, -2, ++idx);
 
   lua_rawseti(L, -2, result_len + 1);
@@ -534,6 +535,8 @@ uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
   size_t order_len = lua_rawlen(L, -2);
   lua_pushinteger(L, GRID_LUA_DECODE_ORDER_SYSEX);
   lua_rawseti(L, -3, order_len + 1);
+
+  payload[size] = GRID_CONST_ETX;
 
   ret = 0;
 
