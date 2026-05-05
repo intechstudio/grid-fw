@@ -23,12 +23,14 @@
 #define XY_SENSOR_RESET_GPIO 39
 #define XY_SENSOR_INT_GPIO 42
 
-void grid_esp32_module_xy_poll_touch(void) {
+void grid_esp32_module_xy_handle_touch(void) {
   TOUCHINFO ti = {};
   int rc = grid_esp32_touch_get_samples(&grid_esp32_touch_state, &ti);
-  ets_printf("touch rc=%d count=%d\r\n", rc, ti.count);
-  for (int i = 0; i < ti.count; i++) {
-    ets_printf("  [%d] x=%d y=%d area=%d\r\n", i, ti.x[i], ti.y[i], ti.area[i]);
+  if (rc) {
+    ets_printf("touch count=%d\r\n", ti.count);
+    for (int i = 0; i < ti.count; i++) {
+      ets_printf("  [%d] x=%d y=%d area=%d\r\n", i, ti.x[i], ti.y[i], ti.area[i]);
+    }
   }
 }
 

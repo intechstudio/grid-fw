@@ -13,7 +13,7 @@ extern "C" {
 #include "grid_ui.h"
 
 void grid_esp32_module_xy_init(struct grid_sys_model* sys, struct grid_ui_model* ui);
-void grid_esp32_module_xy_poll_touch(void);
+void grid_esp32_module_xy_handle_touch(void);
 
 #ifdef __cplusplus
 }

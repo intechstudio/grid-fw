@@ -49,6 +49,7 @@
 #include "grid_esp32_module_po16.h"
 #include "grid_esp32_module_vsnx.h"
 #include "grid_esp32_module_xy.h"
+#include "grid_esp32_touch.h"
 #include "pico_firmware.h"
 
 #include "grid_esp32_trace.h"
@@ -624,8 +625,8 @@ void app_main(void) {
       vmp_flushed = true;
     }
 
-    if (grid_hwcfg_module_is_xy(&grid_sys_state)) {
-      grid_esp32_module_xy_poll_touch();
+    if (grid_hwcfg_module_is_xy(&grid_sys_state) && grid_esp32_touch_state.pending) {
+      grid_esp32_module_xy_handle_touch();
     }
 
     // Run microtasks

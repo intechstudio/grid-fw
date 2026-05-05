@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "freertos/FreeRTOS.h"
@@ -37,6 +38,13 @@ struct grid_esp32_touch_model {
   gpio_num_t int_gpio;
   uint32_t i2c_freq_hz;
   grid_process_touch_t process_touch;
+
+  uint16_t t5_addr;
+  uint8_t t5_size;
+  uint16_t t44_addr;
+  uint8_t t100_first_report_id;
+
+  volatile bool pending;
 };
 
 extern struct grid_esp32_touch_model grid_esp32_touch_state;
