@@ -3,12 +3,12 @@
 
 struct grid_font_model grid_font_state = {0};
 
-#include "esp_heap_caps.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #ifndef EMSCRIPTEN
+#include "esp_heap_caps.h"
 #define STBTT_malloc(x, u) heap_caps_malloc(x, MALLOC_CAP_SPIRAM)
 #define STBTT_free(x, u) heap_caps_free(x)
 #endif
@@ -40,7 +40,11 @@ int grid_font_init(struct grid_font_model* font) {
   struct grid_font_table* selected_font = &font_list[1];
 
   printf("%s font size: %d\n", selected_font->name, *selected_font->size);
+#ifndef EMSCRIPTEN
   font->font_handle = heap_caps_malloc(sizeof(stbtt_fontinfo), MALLOC_CAP_SPIRAM);
+#else
+  font->font_handle = malloc(sizeof(stbtt_fontinfo));
+#endif
 
   stbtt_InitFont(font->font_handle, selected_font->data, stbtt_GetFontOffsetForIndex(selected_font->data, 0));
   printf("stbtt_InitFont\n");
