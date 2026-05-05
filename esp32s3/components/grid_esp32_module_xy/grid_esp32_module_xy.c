@@ -10,10 +10,9 @@
 
 #include "grid_sys.h"
 #include "grid_ui.h"
+#include "grid_ui_touch.h"
 
 #include "grid_esp32_touch.h"
-
-#include "rom/ets_sys.h"
 
 #define XY_I2C_PORT I2C_NUM_0
 #define XY_I2C_SCL_GPIO 40
@@ -25,11 +24,21 @@
 
 void grid_esp32_module_xy_handle_touch(void) {
   TOUCHINFO ti = {};
-  int rc = grid_esp32_touch_get_samples(&grid_esp32_touch_state, &ti);
-  if (rc) {
-    ets_printf("touch count=%d\r\n", ti.count);
-    for (int i = 0; i < ti.count; i++) {
-      ets_printf("  [%d] x=%d y=%d area=%d\r\n", i, ti.x[i], ti.y[i], ti.area[i]);
+  if (!grid_esp32_touch_get_samples(&grid_esp32_touch_state, &ti)) {
+    return;
+  }
+
+  for (uint8_t i = 0; i < 5; i++) {
+    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
+    if (!ele) {
+      continue;
+    }
+    struct grid_ui_touch_state* state = grid_ui_touch_get_state(ele);
+
+    if (i < ti.count) {
+      grid_ui_touch_store_input(state, ti.x[i], ti.y[i], ti.area[i]);
+    } else if (state->area > 0) {
+      grid_ui_touch_store_input(state, state->x, state->y, 0);
     }
   }
 }
