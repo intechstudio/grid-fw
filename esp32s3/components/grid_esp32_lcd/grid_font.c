@@ -3,21 +3,14 @@
 
 struct grid_font_model grid_font_state = {0};
 
-static char memory[57000] = {0};
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef EMSCRIPTEN
-#define STBTT_malloc(x, u)                                                                                                                                                                             \
-  (/*printf("Allocating %lu bytes to ", (unsigned long)(x)),*/ ({                                                                                                                                      \
-    void* ptr = (x > 50000 ? memory : malloc(x));                                                                                                                                                      \
-    /*printf(" %p\n", (void*)ptr);    */                                                                                                                                                               \
-    ptr;                                                                                                                                                                                               \
-  }))
-
-#define STBTT_free(x, u) (/*printf("Freeing %p\n", (void*)(x)), */ ((void*)x != (void*)memory ? free(x) : 0))
+#ifndef __EMSCRIPTEN__
+#include "esp_heap_caps.h"
+#define STBTT_malloc(x, u) heap_caps_malloc(x, MALLOC_CAP_SPIRAM)
+#define STBTT_free(x, u) heap_caps_free(x)
 #endif
 
 #define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
@@ -47,7 +40,11 @@ int grid_font_init(struct grid_font_model* font) {
   struct grid_font_table* selected_font = &font_list[1];
 
   printf("%s font size: %d\n", selected_font->name, *selected_font->size);
+#ifndef __EMSCRIPTEN__
+  font->font_handle = heap_caps_malloc(sizeof(stbtt_fontinfo), MALLOC_CAP_SPIRAM);
+#else
   font->font_handle = malloc(sizeof(stbtt_fontinfo));
+#endif
 
   stbtt_InitFont(font->font_handle, selected_font->data, stbtt_GetFontOffsetForIndex(selected_font->data, 0));
   printf("stbtt_InitFont\n");
@@ -58,7 +55,7 @@ int grid_font_init(struct grid_font_model* font) {
 
 int grid_font_draw_string(struct grid_font_model* font, struct grid_gui_model* gui, uint16_t x, uint16_t y, int size, char* string, int* cursor_jump, grid_color_t color) {
 
-  if (font == NULL) {
+  if (font == NULL || !font->initialized) {
     return 1;
   }
 
@@ -99,7 +96,7 @@ int grid_font_draw_string(struct grid_font_model* font, struct grid_gui_model* g
 
 int grid_font_draw_character(struct grid_font_model* font, struct grid_gui_model* gui, uint16_t x, uint16_t y, int size, int character, int* cursor_jump, grid_color_t color) {
 
-  if (font == NULL) {
+  if (font == NULL || !font->initialized) {
     return 1;
   }
 
