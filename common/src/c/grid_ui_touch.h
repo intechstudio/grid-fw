@@ -24,19 +24,17 @@ void grid_ui_touch_store_input(struct grid_ui_touch_state* state, uint16_t x, ui
 
 extern const luaL_Reg GRID_LUA_T_INDEX_META[];
 
-#define GRID_LUA_T_META_init \
-  GRID_LUA_T_TYPE " = { __index = {" \
-  "type = 'touch', " \
-  "post_init_cb = function (self) " \
-  "self:" GRID_LUA_FNC_A_INIT_short "() " \
-  "self:" GRID_LUA_FNC_A_TOUCH_short "() " \
-  "end," \
-  GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) "," \
-  "}}"
+#define GRID_LUA_T_META_init                                                                                                                                                                           \
+  GRID_LUA_T_TYPE " = { __index = {"                                                                                                                                                                   \
+                  "type = 'touch', "                                                                                                                                                                   \
+                  "post_init_cb = function (self) "                                                                                                                                                    \
+                  "self:" GRID_LUA_FNC_A_INIT_short "() "                                                                                                                                              \
+                  "self:" GRID_LUA_FNC_A_TOUCH_short "() "                                                                                                                                             \
+                  "end," GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) ","                                                                                                \
+                                                                                                    "}}"
 
 #define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]]--[[Touch Init]]"
 
-#define GRID_ACTIONSTRING_TOUCH_TOUCH \
-  "--[[@cb]]print(self:ind(),self:tsx(),self:tsy(),self:tar())"
+#define GRID_ACTIONSTRING_TOUCH_TOUCH "--[[@cb]]print(self:ind(),self:tsx(),self:tsy(),self:tar())"
 
 #endif /* GRID_UI_TOUCH_H */

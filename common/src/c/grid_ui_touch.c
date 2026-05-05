@@ -10,20 +10,20 @@
 #include "grid_ui_system.h"
 
 const luaL_Reg GRID_LUA_T_INDEX_META[] = {{GRID_LUA_FNC_T_ELEMENT_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_ELEMENT_INDEX_index)},
-                                           {GRID_LUA_FNC_T_LED_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_LED_INDEX_index)},
-                                           {GRID_LUA_FNC_T_TOUCH_X_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_X_index)},
-                                           {GRID_LUA_FNC_T_TOUCH_Y_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_Y_index)},
-                                           {GRID_LUA_FNC_T_TOUCH_AREA_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_AREA_index)},
-                                           {GRID_LUA_FNC_T_TOUCH_X_MIN_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_X_MIN_index)},
-                                           {GRID_LUA_FNC_T_TOUCH_X_MAX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_X_MAX_index)},
-                                           {GRID_LUA_FNC_T_TOUCH_Y_MIN_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_Y_MIN_index)},
-                                           {GRID_LUA_FNC_T_TOUCH_Y_MAX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_Y_MAX_index)},
-                                           {GRID_LUA_FNC_G_TIMER_START_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtt)},
-                                           {GRID_LUA_FNC_G_TIMER_STOP_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtp)},
-                                           {GRID_LUA_FNC_G_EVENT_TRIGGER_short, XAFTERX(GRID_LUA_FNC_META_NAME, get)},
-                                           {GRID_LUA_FNC_G_ELEMENTNAME_SET_short, XAFTERX(GRID_LUA_FNC_META_NAME, gsen)},
-                                           {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, XAFTERX(GRID_LUA_FNC_META_NAME, ggen)},
-                                           {NULL, NULL}};
+                                          {GRID_LUA_FNC_T_LED_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_LED_INDEX_index)},
+                                          {GRID_LUA_FNC_T_TOUCH_X_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_X_index)},
+                                          {GRID_LUA_FNC_T_TOUCH_Y_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_Y_index)},
+                                          {GRID_LUA_FNC_T_TOUCH_AREA_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_AREA_index)},
+                                          {GRID_LUA_FNC_T_TOUCH_X_MIN_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_X_MIN_index)},
+                                          {GRID_LUA_FNC_T_TOUCH_X_MAX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_X_MAX_index)},
+                                          {GRID_LUA_FNC_T_TOUCH_Y_MIN_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_Y_MIN_index)},
+                                          {GRID_LUA_FNC_T_TOUCH_Y_MAX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_T_TOUCH_Y_MAX_index)},
+                                          {GRID_LUA_FNC_G_TIMER_START_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtt)},
+                                          {GRID_LUA_FNC_G_TIMER_STOP_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtp)},
+                                          {GRID_LUA_FNC_G_EVENT_TRIGGER_short, XAFTERX(GRID_LUA_FNC_META_NAME, get)},
+                                          {GRID_LUA_FNC_G_ELEMENTNAME_SET_short, XAFTERX(GRID_LUA_FNC_META_NAME, gsen)},
+                                          {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, XAFTERX(GRID_LUA_FNC_META_NAME, ggen)},
+                                          {NULL, NULL}};
 
 void grid_ui_element_touch_init(struct grid_ui_element* ele) {
 
