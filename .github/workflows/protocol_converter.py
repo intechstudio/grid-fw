@@ -46,7 +46,8 @@ def get_macro_key_value(line):
         if m is None:
           return (None, None)
 
-    return (m.group('key'), m.group('value'));
+    value = m.group('value').replace('\\"', '"')
+    return (m.group('key'), value);
 
 def write_output(data, file_name):
     with open(file_name, 'w+') as fp:
