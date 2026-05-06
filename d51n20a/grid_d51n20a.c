@@ -171,7 +171,7 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
       return;
     }
 
-    grid_port_process_ui_UNSAFE(&grid_ui_state);
+    grid_ui_process_triggered(&grid_ui_state);
   }
 }
 

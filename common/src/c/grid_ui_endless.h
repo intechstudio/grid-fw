@@ -65,6 +65,10 @@ extern const luaL_Reg GRID_LUA_EP_INDEX_META[];
   "return value // ((max - min) // steps) " \
   "end," \
   \
+  GRID_LUA_FNC_ASSIGN_META_EVENT(INIT, ENDLESS_INIT) \
+  GRID_LUA_FNC_ASSIGN_META_EVENT(ENDLESS, ENDLESS_ENDLESS) \
+  GRID_LUA_FNC_ASSIGN_META_EVENT(BUTTON, ENDLESS_BUTTON) \
+  \
   "}}"
 
 #define GRID_ACTIONSTRING_ENDLESS_INIT "--[[@cb]]--[[Endless Init]]"

@@ -4,6 +4,9 @@ _decoded_sysex = {}
 _decoded_eview = {}
 _decoded_rtm = {}
 
+_events_eleidx = {}
+_events_evestr = {}
+
 rx_type = { MIDIVOICE = 0, MIDISYSEX = 1, MIDIRTM = 2, EVENTVIEW = 3 }
 rx_feat = { HANDLE = 0x01, FORWARD = 0x02 }
 
@@ -42,13 +45,6 @@ for i = 0, #ele do
           end
         end
       end
-    end
-  end
-
-  for j = 1, #eve do
-    if custom[j] == false then
-      gas(i, eve[j], "")
-      collectgarbage("collect")
     end
   end
 end
