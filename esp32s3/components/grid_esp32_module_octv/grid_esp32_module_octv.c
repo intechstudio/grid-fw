@@ -53,7 +53,7 @@ void IRAM_ATTR octv_process_analog(struct grid_adc_result* result) {
 
 void IRAM_ATTR octv_process_encoder(struct grid_encoder_result* result) {
 
-  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_OCTV_ENC_NUM] = {6, 7, 4, 5, 2, 3, 0, 1};
+  static DRAM_ATTR uint8_t encoder_lookup[GRID_MODULE_OCTV_ENC_NUM] = {6, 7, 2, 3, 4, 5, 0, 1};
 
   for (uint8_t j = 0; j < GRID_MODULE_OCTV_ENC_NUM; ++j) {
 
