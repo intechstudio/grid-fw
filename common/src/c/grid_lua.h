@@ -35,8 +35,6 @@ struct grid_lua_model {
   char stde[GRID_LUA_STDE_LENGTH];
 
   uint32_t dostring_count;
-
-  uint8_t target_memory_usage_kilobytes;
 };
 
 typedef void (*lua_ui_init_callback_t)(struct grid_lua_model*);

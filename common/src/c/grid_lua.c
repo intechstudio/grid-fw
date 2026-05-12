@@ -25,8 +25,6 @@ void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, 
   lua->dostring_count = 0;
 
   lua->L = NULL;
-
-  lua->target_memory_usage_kilobytes = 70; // 70kb
 }
 
 void grid_lua_semaphore_init(struct grid_lua_model* lua, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*)) {
@@ -432,10 +430,6 @@ void grid_lua_broadcast_stde(struct grid_lua_model* lua) {
   grid_lua_clear_stde(lua);
 }
 
-void grid_lua_set_memory_target(struct grid_lua_model* lua, uint8_t target_kilobytes) { lua->target_memory_usage_kilobytes = target_kilobytes; }
-
-uint8_t grid_lua_get_memory_target(struct grid_lua_model* lua) { return lua->target_memory_usage_kilobytes; }
-
 void grid_lua_gc_full_unsafe(struct grid_lua_model* lua) {
 
   assert(lua->L);
@@ -447,17 +441,12 @@ void grid_lua_gc_step_unsafe(struct grid_lua_model* lua) {
 
   assert(lua->L);
 
-  uint8_t target_kilobytes = grid_lua_get_memory_target(lua);
+  lua_gc(lua->L, LUA_GCSTEP, 10);
 
-  if (lua_gc(lua->L, LUA_GCCOUNT) > target_kilobytes) {
-
-    lua_gc(lua->L, LUA_GCSTEP, 10);
-
-    // char message[10] = {0};
-    // sprintf(message, "gc %dkb", target_kilobytes);
-    // grid_lua_debug_memory_stats(lua, message);
-    lua->dostring_count = 0;
-  }
+  // char message[10] = {0};
+  // sprintf(message, "gc %dkb", target_kilobytes);
+  // grid_lua_debug_memory_stats(lua, message);
+  lua->dostring_count = 0;
 }
 
 uint8_t grid_lua_gc_count_unsafe(struct grid_lua_model* lua) { return lua_gc(lua->L, LUA_GCCOUNT); }
