@@ -561,7 +561,7 @@ void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg)
     element = 255;
   }
 
-  if (grid_msg_add_frame(msg, GRID_CLASS_EVENT_frame) <= 0) {
+  if (grid_msg_add_frame(msg, GRID_CLASS_EVENT_frame) < 0) {
     return;
   }
 
@@ -592,7 +592,10 @@ void grid_ui_event_render_event_view(struct grid_ui_event* eve, struct grid_msg*
     element = 255;
   }
 
-  grid_msg_add_frame(msg, GRID_CLASS_EVENTVIEW_frame_start);
+  if (grid_msg_add_frame(msg, GRID_CLASS_EVENTVIEW_frame_start) < 0) {
+    return;
+  }
+
   grid_msg_set_parameter(msg, INSTR, GRID_INSTR_EXECUTE_code);
   grid_msg_set_parameter(msg, CLASS_EVENTVIEW_PAGE, page);
   grid_msg_set_parameter(msg, CLASS_EVENTVIEW_ELEMENT, element);
@@ -610,9 +613,13 @@ void grid_ui_event_render_event_view(struct grid_ui_event* eve, struct grid_msg*
   grid_msg_set_parameter(msg, CLASS_EVENTVIEW_MIN1, ele->template_parameter_list[index_min]);
   grid_msg_set_parameter(msg, CLASS_EVENTVIEW_MAX1, ele->template_parameter_list[index_max]);
 
-  grid_msg_add_segment_char(msg, GRID_CLASS_EVENTVIEW_LENGTH_length, name_len, name);
+  if (grid_msg_add_segment_char(msg, GRID_CLASS_EVENTVIEW_LENGTH_length, name_len, name) < 0) {
+    return;
+  }
 
-  grid_msg_add_frame(msg, GRID_CLASS_EVENTVIEW_frame_end);
+  if (grid_msg_add_frame(msg, GRID_CLASS_EVENTVIEW_frame_end) < 0) {
+    return;
+  }
 }
 
 void grid_ui_event_render_events(struct grid_ui_model* ui, struct grid_msg* msg) {
@@ -622,7 +629,7 @@ void grid_ui_event_render_events(struct grid_ui_model* ui, struct grid_msg* msg)
   }
 
   if (msg) {
-    grid_msg_nprintf(msg, "%s", grid_lua_get_output_string(&grid_lua_state));
+    assert(grid_msg_nprintf(msg, "%s", grid_lua_get_output_string(&grid_lua_state)) >= 0);
   }
 
   grid_lua_clear_stdo(&grid_lua_state);
@@ -646,6 +653,63 @@ void grid_ui_process_single(struct grid_ui_model* ui, struct grid_ui_element* el
   grid_ui_bulk_semaphore_release(ui);
 }
 
+static void grid_ui_clear_triggered(struct grid_ui_model* ui, struct grid_msg* msg) {
+
+  uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
+  grid_msg_init_brc(&grid_msg_state, msg, xy, xy);
+  uint32_t msg_start_length = msg->length;
+
+  for (uint8_t i = 0; i < ui->element_list_length; i++) {
+
+    // Handle system element first then all the ui elements in ascending order
+    uint8_t element_index = (i == 0 ? ui->element_list_length - 1 : i - 1);
+
+    struct grid_ui_element* ele = &ui->element_list[element_index];
+
+    for (uint8_t j = 0; j < ele->event_list_length; j++) {
+
+      struct grid_ui_event* eve = &ele->event_list[j];
+
+      if (!grid_ui_event_istriggered(eve)) {
+        continue;
+      }
+
+      grid_ui_event_render_event(eve, msg);
+      grid_ui_event_render_event_view(eve, msg);
+
+      if (ele->event_clear_cb) {
+        ele->event_clear_cb(eve);
+      }
+
+      grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
+    }
+  }
+
+  if (msg_start_length != msg->length) {
+
+    grid_led_render_framebuffer(&grid_led_state);
+
+    uint16_t change_length = grid_protocol_led_change_report_length(&grid_led_state);
+    uint8_t editor_connected = grid_sys_get_editor_connected_state(&grid_sys_state);
+
+    if (change_length && editor_connected) {
+
+      char report[300] = {0};
+      uint16_t report_len = grid_protocol_led_change_report_generate(&grid_led_state, -1, report);
+
+      grid_msg_add_frame(msg, GRID_CLASS_LEDPREVIEW_frame_start);
+      grid_msg_set_parameter(msg, INSTR, GRID_INSTR_EXECUTE_code);
+      grid_msg_set_parameter(msg, CLASS_LEDPREVIEW_LENGTH, report_len);
+      grid_msg_nprintf(msg, "%.*s", report_len, report);
+      grid_msg_add_frame(msg, GRID_CLASS_LEDPREVIEW_frame_end);
+    }
+
+    if (grid_msg_close_brc(&grid_msg_state, msg) >= 0) {
+      grid_transport_send_msg_to_all(&grid_transport_state, msg);
+    }
+  }
+}
+
 void grid_ui_process_triggered(struct grid_ui_model* ui) {
 
   if (!grid_ui_bulk_semaphore_try(ui)) {
@@ -655,7 +719,6 @@ void grid_ui_process_triggered(struct grid_ui_model* ui) {
   struct grid_msg msg;
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
   grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-  uint32_t msg_start_length = msg.length;
 
   grid_lua_semaphore_lock(&grid_lua_state);
 
@@ -674,15 +737,7 @@ void grid_ui_process_triggered(struct grid_ui_model* ui) {
         continue;
       }
 
-      grid_ui_event_render_event(eve, &msg);
-      grid_ui_event_render_event_view(eve, &msg);
       grid_lua_push_event_address(&grid_lua_state, element_index, eve->function_name);
-
-      if (ele->event_clear_cb) {
-        ele->event_clear_cb(eve);
-      }
-
-      grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }
   }
 
@@ -690,29 +745,10 @@ void grid_ui_process_triggered(struct grid_ui_model* ui) {
 
   grid_lua_semaphore_release(&grid_lua_state);
 
-  if (msg_start_length != msg.length) {
+  assert(grid_msg_close_brc(&grid_msg_state, &msg) >= 0);
+  grid_transport_send_msg_to_all(&grid_transport_state, &msg);
 
-    grid_led_render_framebuffer(&grid_led_state);
-
-    uint16_t change_length = grid_protocol_led_change_report_length(&grid_led_state);
-    uint8_t editor_connected = grid_sys_get_editor_connected_state(&grid_sys_state);
-
-    if (change_length && editor_connected) {
-
-      char report[300] = {0};
-      uint16_t report_len = grid_protocol_led_change_report_generate(&grid_led_state, -1, report);
-
-      grid_msg_add_frame(&msg, GRID_CLASS_LEDPREVIEW_frame_start);
-      grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_EXECUTE_code);
-      grid_msg_set_parameter(&msg, CLASS_LEDPREVIEW_LENGTH, report_len);
-      grid_msg_nprintf(&msg, "%.*s", report_len, report);
-      grid_msg_add_frame(&msg, GRID_CLASS_LEDPREVIEW_frame_end);
-    }
-
-    if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-      grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-    }
-  }
+  grid_ui_clear_triggered(ui, &msg);
 
   grid_ui_bulk_semaphore_release(ui);
 }
