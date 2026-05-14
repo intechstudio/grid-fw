@@ -40,6 +40,7 @@ const luaL_Reg GRID_LUA_EP_INDEX_META[] = {{GRID_LUA_FNC_EP_ELEMENT_INDEX_short,
 
 void grid_ui_endless_state_init(struct grid_ui_endless_state* state, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis) {
 
+  state->stabilized = 0;
   state->adc_bit_depth = adc_bit_depth;
 
   grid_ui_button_state_init(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
@@ -257,59 +258,27 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   return 1;
 }
 
-static uint16_t grid_ui_endless_calculate_angle(uint16_t phase_a, uint16_t phase_b, uint8_t adc_bit_depth) {
+static uint16_t endless_ab_to_norm(uint16_t phase_a, uint16_t phase_b, uint8_t adc_bit_depth) {
 
-  uint16_t value_degrees = 0;
+  assert(adc_bit_depth <= 16);
 
-  // calculate absolute angle based on phase_a and phase_b
-  // .....
+  uint16_t a_norm = phase_a << (16 - adc_bit_depth);
+  uint16_t b_norm = phase_b << (16 - adc_bit_depth);
 
-  double phase_a_norm = (double)phase_a / ((1 << adc_bit_depth) - 1);
-  double phase_b_norm = (double)phase_b / ((1 << adc_bit_depth) - 1);
+  uint16_t a_rot = b_norm > 0x8000 ? a_norm >> 1 : 0xffff - (a_norm >> 1);
+  uint16_t b_rot = a_norm > 0x8000 ? 0xffff - (b_norm >> 1) : b_norm >> 1;
+  b_rot += 0xc000;
 
-  uint16_t phase_a_degrees, phase_b_degrees;
+  uint16_t a_wei = (b_norm >= 0x8000 ? b_norm - 0x8000 : 0x7fff - b_norm) << 1;
+  uint16_t b_wei = 0xffff - a_wei;
 
-  // Calculate rotation based on phase A
-  if (phase_b_norm > 0.5) {
-    phase_a_degrees = phase_a_norm * 1800;
-  } else {
-    phase_a_degrees = (1800 - phase_a_norm * 1800) + 1800;
-  }
+  return 0xffff - ((a_rot * (uint32_t)a_wei + b_rot * (uint32_t)b_wei) >> 16);
+}
 
-  // Calculate rotation based on phase B
-  if (phase_a_norm < 0.5) {
-    phase_b_degrees = (uint16_t)(phase_b_norm * 1800 + 2700) % 3600;
-  } else {
-    phase_b_degrees = (uint16_t)((1800 - phase_b_norm * 1800) + 1800 + 2700) % 3600;
-  }
+static inline uint16_t endless_avg(uint16_t x, uint16_t y) {
 
-  // if one of the phasees are close to 0 and the other is close to 360 then
-  // averaging will not work directly
-  if (phase_b_degrees > 3000 && phase_a_degrees < 600) {
-    phase_a_degrees += 3600;
-  } else if (phase_a_degrees > 3000 && phase_b_degrees < 600) {
-    phase_b_degrees += 3600;
-  }
-
-  // Average the two to eliminate deadzones
-  double weight_a = (phase_b_norm - 0.5) * 2;
-
-  if (weight_a < 0) {
-    weight_a = -weight_a;
-  }
-
-  double weight_b = 1 - weight_a;
-  double range_calibration = 1 + (1 / 3600.0);
-
-  value_degrees = (phase_a_degrees * weight_a + phase_b_degrees * weight_b) * range_calibration;
-
-  if (value_degrees > 3599)
-    value_degrees = 3599;
-
-  value_degrees = 3600 - value_degrees;
-
-  // ENDLESS POT ROTATION
-  return value_degrees;
+  uint32_t cond = (x < 0x4000 && y > 0xc000) || (y < 0x4000 && x > 0xc000);
+  return (x + (uint32_t)y + 0x10000 * cond) >> 1;
 }
 
 void grid_ui_endless_store_input(struct grid_ui_endless_state* state, struct grid_ui_endless_sample sample) {
@@ -319,51 +288,37 @@ void grid_ui_endless_store_input(struct grid_ui_endless_state* state, struct gri
   // Handle button input using embedded button state
   grid_ui_button_store_input(&state->button, sample.button_value);
 
-  uint8_t adc_bit_depth = state->adc_bit_depth;
+  uint16_t phase = endless_ab_to_norm(sample.phase_a, sample.phase_b, state->adc_bit_depth);
 
-  // Check if current values differ from previous
-  if (sample.phase_a == state->prev_phase_a && sample.phase_b == state->prev_phase_b && sample.button_value == state->prev_button_value) {
-    // no change
+  uint16_t avg = endless_avg(phase, state->phase);
+
+  if (state->phase == avg) {
     return;
   }
 
-  int stabilized = grid_ain_stabilized(&grid_ain_state, ele->index);
-
-  if (!stabilized) {
-    state->prev_phase_a = sample.phase_a;
-    state->prev_phase_b = sample.phase_b;
-    state->prev_button_value = sample.button_value;
+  if (state->stabilized < 4) {
+    state->phase = phase;
+    state->angle = state->phase * (3600. / 0x10000);
+    ++state->stabilized;
+  } else {
+    state->phase = avg;
   }
 
-  uint16_t value_degrees_new = grid_ui_endless_calculate_angle(sample.phase_a, sample.phase_b, adc_bit_depth);
-  uint16_t value_degrees_old = grid_ui_endless_calculate_angle(state->prev_phase_a, state->prev_phase_b, adc_bit_depth);
+  int16_t angle = avg * (3600. / 0x10000);
 
-  int32_t resolution = 9;
+  int16_t delta = angle - state->angle;
 
-  if (resolution < 1) {
-    resolution = 1;
-  } else if (resolution > adc_bit_depth) {
-    resolution = adc_bit_depth;
+  if (delta < -1800) {
+    delta += 3600;
+  } else if (delta > 1800) {
+    delta -= 3600;
   }
 
-  grid_ain_add_sample(&grid_ain_state, ele->index, value_degrees_new, adc_bit_depth, (uint8_t)resolution);
-
-  if (grid_ain_get_changed(&grid_ain_state, ele->index)) {
-
-    int16_t delta = (value_degrees_new - value_degrees_old);
-
-    if (delta < -1800) {
-      delta += 3600;
-    } else if (delta > 1800) {
-      delta -= 3600;
-    }
-
-    if (abs(delta) > 10) {
-
-      grid_ui_endless_update_trigger(ele, stabilized, delta, value_degrees_new, &state->encoder_last_real_time, &state->delta_vel_frac);
-
-      state->prev_phase_a = sample.phase_a;
-      state->prev_phase_b = sample.phase_b;
-    }
+  if (abs(delta) < 10) {
+    return;
   }
+
+  grid_ui_endless_update_trigger(ele, state->stabilized == 4, delta, angle, &state->encoder_last_real_time, &state->delta_vel_frac);
+
+  state->angle = angle;
 }
