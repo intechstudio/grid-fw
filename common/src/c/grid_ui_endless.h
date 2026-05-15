@@ -17,9 +17,7 @@ struct grid_ui_endless_state {
   struct grid_ui_element* parent;
   uint64_t encoder_last_real_time;
   double delta_vel_frac;
-  uint16_t phase;
-  int16_t angle;
-  uint8_t stabilized;
+  uint16_t prev_norm;
   uint8_t adc_bit_depth;
   struct grid_ui_button_state button;
 };

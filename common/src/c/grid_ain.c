@@ -44,7 +44,7 @@ void grid_ain_init(struct grid_ain_model* ain, uint8_t channel_count, uint8_t ca
   }
 }
 
-void grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t src_res, uint8_t dst_res) {
+void grid_ain_add_sample_raw(struct grid_ain_model* ain, uint8_t channel, uint16_t value) {
 
   assert(channel < ain->channel_count);
   struct ain_chan_t* chan = &ain->channels[channel];
@@ -62,6 +62,14 @@ void grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t v
 
   // Add new value to sum
   chan->sum += value;
+}
+
+void grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t src_res, uint8_t dst_res) {
+
+  grid_ain_add_sample_raw(ain, channel, value);
+
+  assert(channel < ain->channel_count);
+  struct ain_chan_t* chan = &ain->channels[channel];
 
   assert(src_res >= dst_res);
   uint8_t diff_res = src_res - dst_res;
@@ -146,4 +154,22 @@ int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel,
   }
 
   return next;
+}
+
+static inline uint16_t endless_avg(uint16_t x, uint16_t y) {
+
+  uint32_t cond = (x < 0x4000 && y >= 0xc000) || (y < 0x4000 && x >= 0xc000);
+  return (x + (uint32_t)y + 0x10000 * cond) >> 1;
+}
+
+uint16_t grid_ain_endless_avg(struct grid_ain_model* ain, uint8_t channel) {
+
+  assert(channel < ain->channel_count);
+  struct ain_chan_t* chan = &ain->channels[channel];
+
+  assert(chan->capa == 4);
+
+  uint16_t avg0 = endless_avg(chan->data[0], chan->data[1]);
+  uint16_t avg1 = endless_avg(chan->data[2], chan->data[3]);
+  return endless_avg(avg0, avg1);
 }

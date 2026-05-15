@@ -40,7 +40,6 @@ const luaL_Reg GRID_LUA_EP_INDEX_META[] = {{GRID_LUA_FNC_EP_ELEMENT_INDEX_short,
 
 void grid_ui_endless_state_init(struct grid_ui_endless_state* state, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis) {
 
-  state->stabilized = 0;
   state->adc_bit_depth = adc_bit_depth;
 
   grid_ui_button_state_init(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
@@ -140,7 +139,7 @@ void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t
   // }
 }
 
-uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint16_t value_degrees, uint64_t* last_real_time, double* delta_frac) {
+uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta_norm, uint16_t value_degrees, uint64_t* last_real_time, double* delta_frac) {
 
   // limit lastrealtime
   uint64_t now = grid_platform_rtc_get_micros();
@@ -160,7 +159,7 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
 
   // invert delta if necessary
   if (tmin > tmax) {
-    delta = -delta;
+    delta_norm = -delta_norm;
   }
 
   double elapsed_ms = clampu32(elapsed_us, 1000, 25000) / MS_TO_US;
@@ -170,12 +169,12 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
   double vel_param = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] / 100.0;
   double sen_param = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] / 100.0;
 
-  double rate_of_change = abs(delta) / elapsed_ms;
+  double rate_of_change = abs(delta_norm) / elapsed_ms;
   double vel_comp = ((rate_of_change * rate_of_change * 28.125) / 2000.0) * vel_param;
   double sen_comp = sen_param;
   double factor = (vel_comp + sen_comp) * minmaxscale;
 
-  double delta_full = delta * factor + *delta_frac;
+  double delta_full = (delta_norm * factor) * (3600. / 0x10000) + *delta_frac;
 
   int32_t delta_velocity = ((delta_full > 0) * 2 - 1) * (int32_t)fabs(delta_full);
 
@@ -275,12 +274,6 @@ static uint16_t endless_ab_to_norm(uint16_t phase_a, uint16_t phase_b, uint8_t a
   return 0xffff - ((a_rot * (uint32_t)a_wei + b_rot * (uint32_t)b_wei) >> 16);
 }
 
-static inline uint16_t endless_avg(uint16_t x, uint16_t y) {
-
-  uint32_t cond = (x < 0x4000 && y > 0xc000) || (y < 0x4000 && x > 0xc000);
-  return (x + (uint32_t)y + 0x10000 * cond) >> 1;
-}
-
 void grid_ui_endless_store_input(struct grid_ui_endless_state* state, struct grid_ui_endless_sample sample) {
 
   struct grid_ui_element* ele = state->parent;
@@ -288,37 +281,28 @@ void grid_ui_endless_store_input(struct grid_ui_endless_state* state, struct gri
   // Handle button input using embedded button state
   grid_ui_button_store_input(&state->button, sample.button_value);
 
-  uint16_t phase = endless_ab_to_norm(sample.phase_a, sample.phase_b, state->adc_bit_depth);
+  uint16_t norm = endless_ab_to_norm(sample.phase_a, sample.phase_b, state->adc_bit_depth);
 
-  uint16_t avg = endless_avg(phase, state->phase);
+  grid_ain_add_sample_raw(&grid_ain_state, ele->index, norm);
 
-  if (state->phase == avg) {
+  bool stabilized = grid_ain_stabilized(&grid_ain_state, ele->index);
+
+  if (!stabilized) {
+    state->prev_norm = norm;
     return;
   }
 
-  if (state->stabilized < 4) {
-    state->phase = phase;
-    state->angle = state->phase * (3600. / 0x10000);
-    ++state->stabilized;
-  } else {
-    state->phase = avg;
-  }
+  norm = grid_ain_endless_avg(&grid_ain_state, ele->index);
 
-  int16_t angle = avg * (3600. / 0x10000);
+  int16_t diff = norm - state->prev_norm;
 
-  int16_t delta = angle - state->angle;
-
-  if (delta < -1800) {
-    delta += 3600;
-  } else if (delta > 1800) {
-    delta -= 3600;
-  }
-
-  if (abs(delta) < 10) {
+  if (diff < 182 && diff > -182) {
     return;
   }
 
-  grid_ui_endless_update_trigger(ele, state->stabilized == 4, delta, angle, &state->encoder_last_real_time, &state->delta_vel_frac);
+  int16_t angle = norm * (3600. / 0x10000);
+  uint64_t* last = &state->encoder_last_real_time;
+  grid_ui_endless_update_trigger(ele, true, diff, angle, last, &state->delta_vel_frac);
 
-  state->angle = angle;
+  state->prev_norm = norm;
 }
