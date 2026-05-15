@@ -518,3 +518,9 @@ void grid_str_transform_brc_params(uint8_t* msg, uint16_t length, int8_t dx, int
   uint8_t chksum = grid_frame_calculate_checksum_packet(msg, length);
   grid_str_checksum_set((char*)msg, length, chksum);
 }
+
+bool grid_msg_is_source_internal(const uint8_t* header) {
+  uint8_t sx = grid_msg_get_parameter_raw(header, BRC_SX);
+  uint8_t sy = grid_msg_get_parameter_raw(header, BRC_SY);
+  return sx == GRID_PARAMETER_DEFAULT_POSITION && sy == GRID_PARAMETER_DEFAULT_POSITION;
+}
