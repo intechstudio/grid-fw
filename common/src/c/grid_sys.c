@@ -80,7 +80,7 @@ uint8_t grid_sys_get_rx_mode(struct grid_sys_model* sys, uint8_t type) {
 
 void grid_sys_set_rx_mode(struct grid_sys_model* sys, uint8_t type, uint8_t mode) {
   assert(type < GRID_RX_TYPE_COUNT);
-  assert(mode <= (GRID_RX_MODE_HANDLE | GRID_RX_MODE_FORWARD));
+  assert(mode <= (GRID_RX_MODE_HANDLE_EXTERNAL | GRID_RX_MODE_HANDLE_INTERNAL | GRID_RX_MODE_FORWARD_FROM_USB));
   sys->rx_mode[type] = mode;
 }
 

@@ -132,4 +132,10 @@ do { \
 
 // clang-format on
 
+static inline bool grid_msg_is_source_local(const uint8_t* header) {
+  uint8_t sx = grid_msg_get_parameter_raw(header, BRC_SX);
+  uint8_t sy = grid_msg_get_parameter_raw(header, BRC_SY);
+  return sx == GRID_PARAMETER_DEFAULT_POSITION && sy == GRID_PARAMETER_DEFAULT_POSITION;
+}
+
 #endif /* GRID_MSG_H */
