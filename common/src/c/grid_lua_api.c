@@ -858,7 +858,7 @@ int l_grid_cat(lua_State* L) {
   }
 
   lua_Integer mode_raw = lua_tointeger(L, 2);
-  if (mode_raw < 0 || mode_raw > (GRID_RX_MODE_HANDLE | GRID_RX_MODE_FORWARD)) {
+  if (mode_raw < 0 || mode_raw > (GRID_RX_MODE_HANDLE_EXTERNAL | GRID_RX_MODE_HANDLE_INTERNAL | GRID_RX_MODE_FORWARD_FROM_USB)) {
     grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }

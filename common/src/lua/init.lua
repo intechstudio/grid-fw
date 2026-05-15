@@ -5,14 +5,14 @@ _decoded_eview = {}
 _decoded_rtm = {}
 
 rx_type = { MIDIVOICE = 0, MIDISYSEX = 1, MIDIRTM = 2, EVENTVIEW = 3 }
-rx_feat = { HANDLE = 0x01, FORWARD = 0x02 }
+rx_feat = { FORWARD = 0x01, HANDLE_EXTERNAL = 0x02, HANDLE_INTERNAL = 0x04 }
 
-grxm(rx_type.MIDIVOICE, rx_feat.HANDLE | rx_feat.FORWARD)
-grxm(rx_type.MIDISYSEX, rx_feat.HANDLE | rx_feat.FORWARD)
+grxm(rx_type.MIDIVOICE, rx_feat.FORWARD | rx_feat.HANDLE_EXTERNAL)
+grxm(rx_type.MIDISYSEX, rx_feat.FORWARD | rx_feat.HANDLE_EXTERNAL)
 grxm(rx_type.MIDIRTM, 0)
 grxm(rx_type.EVENTVIEW, 0)
 if ghaslcd() then
-  grxm(rx_type.EVENTVIEW, rx_feat.HANDLE)
+  grxm(rx_type.EVENTVIEW, rx_feat.HANDLE_EXTERNAL | rx_feat.HANDLE_INTERNAL)
 end
 
 init_simple_color()

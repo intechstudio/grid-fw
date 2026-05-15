@@ -16,8 +16,9 @@ enum grid_rx_type {
 };
 
 enum grid_rx_features {
-  GRID_RX_MODE_HANDLE = 0x01,
-  GRID_RX_MODE_FORWARD = 0x02,
+  GRID_RX_MODE_FORWARD_FROM_USB = 0x01,
+  GRID_RX_MODE_HANDLE_EXTERNAL = 0x02,
+  GRID_RX_MODE_HANDLE_INTERNAL = 0x04,
 };
 
 struct grid_sys_model {

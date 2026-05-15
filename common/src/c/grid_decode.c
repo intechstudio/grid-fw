@@ -15,6 +15,16 @@
 
 extern struct grid_transport grid_transport_state;
 
+static bool grid_rx_should_handle(uint8_t rx_type, const uint8_t* header) {
+  uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, rx_type);
+  bool is_internal = grid_msg_is_source_internal(header);
+
+  bool handle_because_internal = (mode & GRID_RX_MODE_HANDLE_INTERNAL) && is_internal;
+  bool handle_because_external = (mode & GRID_RX_MODE_HANDLE_EXTERNAL) && !is_internal;
+
+  return handle_because_internal || handle_because_external;
+}
+
 enum GRID_DESTINATION {
 
   GRID_DESTINATION_IS_ME = 1,
@@ -318,11 +328,8 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
       return 0;
     }
 
-    uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
-    uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);
-
     // The report originates from this module
-    if (sx == GRID_PARAMETER_DEFAULT_POSITION && sy == GRID_PARAMETER_DEFAULT_POSITION) {
+    if (grid_msg_is_source_internal((uint8_t*)header)) {
       return 0;
     }
 
@@ -371,7 +378,7 @@ uint8_t grid_decode_pagecount_to_ui(char* header, char* chunk) {
 
 uint8_t grid_decode_midi_rtm_to_ui(char* header, char* chunk) {
 
-  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_HANDLE)) {
+  if (!grid_rx_should_handle(GRID_RX_TYPE_MIDIRTM, (uint8_t*)header)) {
     return 0;
   }
 
@@ -411,7 +418,7 @@ grid_decode_midi_rtm_to_ui_cleanup:
 
 uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
-  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE) & GRID_RX_MODE_HANDLE)) {
+  if (!grid_rx_should_handle(GRID_RX_TYPE_MIDIVOICE, (uint8_t*)header)) {
     return 0;
   }
 
@@ -469,16 +476,12 @@ grid_decode_midi_to_ui_cleanup:
 
 uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
 
-  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_HANDLE)) {
+  if (!grid_rx_should_handle(GRID_RX_TYPE_MIDISYSEX, (uint8_t*)header)) {
     return 0;
   }
 
   uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
   uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);
-
-  if (sx == GRID_PARAMETER_DEFAULT_POSITION && sy == GRID_PARAMETER_DEFAULT_POSITION) {
-    return 1;
-  }
 
   uint8_t instr = grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR);
 
@@ -1132,7 +1135,7 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
 
 uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
 
-  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_EVENTVIEW) & GRID_RX_MODE_HANDLE)) {
+  if (!grid_rx_should_handle(GRID_RX_TYPE_EVENTVIEW, (uint8_t*)header)) {
     return 0;
   }
 
