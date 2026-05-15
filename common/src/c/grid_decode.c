@@ -17,7 +17,7 @@ extern struct grid_transport grid_transport_state;
 
 static bool grid_rx_should_handle(uint8_t rx_type, const uint8_t* header) {
   uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, rx_type);
-  bool is_internal = grid_msg_is_source_local(header);
+  bool is_internal = grid_msg_is_source_internal(header);
 
   bool handle_because_internal = (mode & GRID_RX_MODE_HANDLE_INTERNAL) && is_internal;
   bool handle_because_external = (mode & GRID_RX_MODE_HANDLE_EXTERNAL) && !is_internal;
@@ -329,7 +329,7 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
     }
 
     // The report originates from this module
-    if (grid_msg_is_source_local((uint8_t*)header)) {
+    if (grid_msg_is_source_internal((uint8_t*)header)) {
       return 0;
     }
 
