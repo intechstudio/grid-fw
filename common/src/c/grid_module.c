@@ -13,6 +13,7 @@
 #include "grid_ui_lcd.h"
 #include "grid_ui_potmeter.h"
 #include "grid_ui_system.h"
+#include "grid_ui_touch.h"
 
 extern struct luaL_Reg* grid_lua_api_gui_lib_reference;
 
@@ -59,6 +60,9 @@ void grid_lua_ui_init(struct grid_lua_model* lua) {
     } break;
     case GRID_PARAMETER_ELEMENT_LCD: {
       GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_L);
+    } break;
+    case GRID_PARAMETER_ELEMENT_TOUCH: {
+      GRID_LUA_UI_INIT_ASSIGN(GRID_LUA_T);
     } break;
     default:
       assert(0);
@@ -252,6 +256,21 @@ void grid_module_octv_ui_init(struct grid_ain_model* ain, struct grid_led_model*
       grid_ui_element_system_init(ele);
     }
   }
+
+  ui->lua_ui_init_callback = grid_lua_ui_init;
+}
+
+void grid_module_xy_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  grid_led_init(led, 25);
+  grid_led_lookup_alloc_identity(led, 0, 25);
+
+  grid_ui_model_init(ui, 6);
+
+  for (uint8_t i = 0; i < 5; i++) {
+    grid_ui_element_touch_init(grid_ui_element_model_init(ui, i));
+  }
+  grid_ui_element_system_init(grid_ui_element_model_init(ui, 5));
 
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }

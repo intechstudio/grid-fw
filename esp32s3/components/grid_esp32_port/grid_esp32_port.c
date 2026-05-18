@@ -407,6 +407,7 @@ void grid_esp32_port_task(void* arg) {
 
   // Watchdog-style tracking for the rolling ID
   uint8_t watchdog_rollid_last_recv = rollid.last_recv;
+  uint8_t watchdog_rollid_last_errors = rollid.errors;
   uint64_t watchdog_rollid_last_time = grid_platform_rtc_get_micros();
 
   // Allocate custom SPI transaction queue
@@ -446,25 +447,24 @@ void grid_esp32_port_task(void* arg) {
 
   while (1) {
 
-    // When the rolling ID changes, reset watchdog
+    // When the rolling ID changes without error, reset watchdog
     if (rollid.last_recv != watchdog_rollid_last_recv) {
 
       watchdog_rollid_last_time = grid_platform_rtc_get_micros();
-      watchdog_rollid_last_recv = rollid.last_recv;
 
-      rp2040_active = true;
+      // Only mark RP2040 active if the byte was the expected next value (no new error)
+      if (rollid.errors == watchdog_rollid_last_errors) {
+        rp2040_active = true;
+      }
+
+      watchdog_rollid_last_recv = rollid.last_recv;
+      watchdog_rollid_last_errors = rollid.errors;
     }
 
-    // Rolling ID watchdog expiration
-    if (grid_platform_rtc_get_elapsed_time(watchdog_rollid_last_time) > 100000) {
-
-      grid_platform_printf("ERROR: SPI frozen\n");
+    // Rolling ID watchdog expiration (only if RP2040 was ever seen)
+    if (rp2040_active && grid_platform_rtc_get_elapsed_time(watchdog_rollid_last_time) > 100000) {
 
       watchdog_rollid_last_time = grid_platform_rtc_get_micros();
-
-      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 50);
-      grid_alert_all_set_frequency(&grid_led_state, -4);
-      grid_alert_all_set_phase(&grid_led_state, 100);
     }
 
     // Check if USB is connected and start animation

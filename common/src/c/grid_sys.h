@@ -100,6 +100,7 @@ int grid_hwcfg_module_is_bu16(struct grid_sys_model* sys);
 int grid_hwcfg_module_is_ef44(struct grid_sys_model* sys);
 int grid_hwcfg_module_is_en16(struct grid_sys_model* sys);
 int grid_hwcfg_module_is_octv(struct grid_sys_model* sys);
+int grid_hwcfg_module_is_xy(struct grid_sys_model* sys);
 int grid_hwcfg_module_is_pbf4(struct grid_sys_model* sys);
 int grid_hwcfg_module_is_po16(struct grid_sys_model* sys);
 int grid_hwcfg_module_is_tek2(struct grid_sys_model* sys);
