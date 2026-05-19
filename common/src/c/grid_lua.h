@@ -33,8 +33,6 @@ struct grid_lua_model {
   char stdo[GRID_LUA_STDO_LENGTH];
   char stdi[GRID_LUA_STDI_LENGTH];
   char stde[GRID_LUA_STDE_LENGTH];
-
-  uint32_t dostring_count;
 };
 
 typedef void (*lua_ui_init_callback_t)(struct grid_lua_model*);
