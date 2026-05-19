@@ -719,6 +719,7 @@ void grid_ui_process_triggered(struct grid_ui_model* ui) {
   struct grid_msg msg;
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
   grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
+  uint32_t msg_start_length = msg.length;
 
   grid_lua_semaphore_lock(&grid_lua_state);
 
@@ -745,8 +746,11 @@ void grid_ui_process_triggered(struct grid_ui_model* ui) {
 
   grid_lua_semaphore_release(&grid_lua_state);
 
-  assert(grid_msg_close_brc(&grid_msg_state, &msg) >= 0);
-  grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+  if (msg_start_length != msg.length) {
+
+    assert(grid_msg_close_brc(&grid_msg_state, &msg) >= 0);
+    grid_transport_send_msg_to_all(&grid_transport_state, &msg);
+  }
 
   grid_ui_clear_triggered(ui, &msg);
 
