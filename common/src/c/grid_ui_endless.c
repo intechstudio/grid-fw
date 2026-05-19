@@ -139,7 +139,7 @@ void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t
   // }
 }
 
-uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta_norm, uint16_t value_degrees, uint64_t* last_real_time, double* delta_frac) {
+uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint16_t norm, int16_t delta, double* delta_frac, uint64_t* last_real_time) {
 
   // limit lastrealtime
   uint64_t now = grid_platform_rtc_get_micros();
@@ -148,9 +148,12 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
 
   // update lastrealtime
   *last_real_time = now;
+
   int32_t* template_parameter_list = ele->template_parameter_list;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_ELAPSED_index] = elapsed_us / MS_TO_US;
-  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = value_degrees / 20;
+
+  int16_t angle = norm * (3600. / 0x10000);
+  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = angle / 20;
 
   int32_t tmin = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index];
   int32_t tmax = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index];
@@ -159,22 +162,21 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
 
   // invert delta if necessary
   if (tmin > tmax) {
-    delta_norm = -delta_norm;
+    delta = -delta;
   }
 
   double elapsed_ms = clampu32(elapsed_us, 1000, 25000) / MS_TO_US;
 
-  double minmaxscale = (max - min) / 3600.0;
-
   double vel_param = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] / 100.0;
   double sen_param = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] / 100.0;
 
-  double rate_of_change = abs(delta_norm) / elapsed_ms;
-  double vel_comp = ((rate_of_change * rate_of_change * 28.125) / 2000.0) * vel_param;
+  double rate_of_change = abs(delta) / elapsed_ms;
+  double vel_comp = (rate_of_change * rate_of_change * 0.084866 / 2000.0) * vel_param;
   double sen_comp = sen_param;
+  double minmaxscale = (max - min) / (double)0xffff;
   double factor = (vel_comp + sen_comp) * minmaxscale;
 
-  double delta_full = (delta_norm * factor) * (3600. / 0x10000) + *delta_frac;
+  double delta_full = delta * factor + *delta_frac;
 
   int32_t delta_velocity = ((delta_full > 0) * 2 - 1) * (int32_t)fabs(delta_full);
 
@@ -250,9 +252,7 @@ uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabiliz
 
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENDLESS);
 
-  if (stabilized) {
-    grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
-  }
+  grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
 
   return 1;
 }
@@ -300,9 +300,8 @@ void grid_ui_endless_store_input(struct grid_ui_endless_state* state, struct gri
     return;
   }
 
-  int16_t angle = norm * (3600. / 0x10000);
   uint64_t* last = &state->encoder_last_real_time;
-  grid_ui_endless_update_trigger(ele, true, diff, angle, last, &state->delta_vel_frac);
+  grid_ui_endless_update_trigger(ele, norm, diff, &state->delta_vel_frac, last);
 
   state->prev_norm = norm;
 }
