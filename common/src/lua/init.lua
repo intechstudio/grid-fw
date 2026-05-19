@@ -26,11 +26,6 @@ local page = gpn() == 0 and 3 or gpn() - 1
 for i = 0, #ele do
   local eve = getmetatable(ele[i]).eve
 
-  local custom = {}
-  for j = 1, #eve do
-    custom[j] = false
-  end
-
   local path = string.format("%02x/%02x", page, i)
   if os.stat(path) then
     for _, v in ipairs(dirent.list(path)) do
@@ -41,7 +36,6 @@ for i = 0, #ele do
           if eve[j] == idx then
             gas(i, eve[j], path .. "/" .. v[1])
             collectgarbage("collect")
-            custom[j] = true
           end
         end
       end
