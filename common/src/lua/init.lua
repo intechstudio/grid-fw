@@ -4,6 +4,9 @@ _decoded_sysex = {}
 _decoded_eview = {}
 _decoded_rtm = {}
 
+_events_eleidx = {}
+_events_evestr = {}
+
 rx_type = { MIDIVOICE = 0, MIDISYSEX = 1, MIDIRTM = 2, EVENTVIEW = 3 }
 rx_feat = { FORWARD = 0x01, HANDLE_EXTERNAL = 0x02, HANDLE_INTERNAL = 0x04 }
 
@@ -23,11 +26,6 @@ local page = gpn() == 0 and 3 or gpn() - 1
 for i = 0, #ele do
   local eve = getmetatable(ele[i]).eve
 
-  local custom = {}
-  for j = 1, #eve do
-    custom[j] = false
-  end
-
   local path = string.format("%02x/%02x", page, i)
   if os.stat(path) then
     for _, v in ipairs(dirent.list(path)) do
@@ -38,17 +36,9 @@ for i = 0, #ele do
           if eve[j] == idx then
             gas(i, eve[j], path .. "/" .. v[1])
             collectgarbage("collect")
-            custom[j] = true
           end
         end
       end
-    end
-  end
-
-  for j = 1, #eve do
-    if custom[j] == false then
-      gas(i, eve[j], "")
-      collectgarbage("collect")
     end
   end
 end

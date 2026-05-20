@@ -554,8 +554,7 @@
 #define GRID_LUA_FNC_G_ACTION_SET_human "action_set"
 #define GRID_LUA_FNC_G_ACTION_SET_fnptr l_grid_action_set
 #define GRID_LUA_FNC_G_ACTION_SET_usage                                                                                                                                                                \
-  "action_set(element, event, path) Sets the script to be executed upon an event for the given element. The path argument should be a path to a file for a custom script, or an empty string for the " \
-  "default script."
+  "action_set(element, event, path) Sets the script to be executed upon an event for the given element. The path argument should be a path to a file for a custom script."
 
 // ========================= UI ELEMENT VARIABLES =========================== //
 

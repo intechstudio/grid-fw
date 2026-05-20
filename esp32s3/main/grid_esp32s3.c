@@ -482,8 +482,6 @@ void app_main(void) {
   grid_lua_init(&grid_lua_state, NULL, NULL);
   grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
 
-  grid_lua_set_memory_target(&grid_lua_state, 100);
-
   // ================== START: grid_module_pbf4_init() ================== //
 
   const int PORT_COUNT = 6;

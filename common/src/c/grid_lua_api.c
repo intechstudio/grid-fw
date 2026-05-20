@@ -2149,29 +2149,24 @@ int l_grid_action_set(lua_State* L) {
   }
   const char* path = lua_tostring(L, 3);
 
-  if (path[0] != '\0') {
-
-    char* buf = grid_platform_read_file_contents(path);
-    if (!buf) {
-      grid_lua_append_stde(&grid_lua_state, "failed to read contents");
-      return 0;
-    }
-
-    if (grid_ui_register_script(&grid_ui_state, element, event, buf)) {
-      grid_lua_append_stde(&grid_lua_state, "failed to register script");
-      free(buf);
-      return 0;
-    }
-
-    free(buf);
-
-  } else {
-
-    if (grid_ui_register_script(&grid_ui_state, element, event, "")) {
-      grid_lua_append_stde(&grid_lua_state, "failed to register default");
-      return 0;
-    }
+  if (!path[0]) {
+    grid_lua_append_stde(&grid_lua_state, "#emptyPath");
+    return 0;
   }
+
+  char* buf = grid_platform_read_file_contents(path);
+  if (!buf) {
+    grid_lua_append_stde(&grid_lua_state, "failed to read contents");
+    return 0;
+  }
+
+  if (grid_ui_register_script(&grid_ui_state, element, event, buf)) {
+    grid_lua_append_stde(&grid_lua_state, "failed to register script");
+    free(buf);
+    return 0;
+  }
+
+  free(buf);
 
   return 0;
 }
