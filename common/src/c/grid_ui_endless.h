@@ -17,9 +17,7 @@ struct grid_ui_endless_state {
   struct grid_ui_element* parent;
   uint64_t encoder_last_real_time;
   double delta_vel_frac;
-  uint16_t prev_phase_a;
-  uint16_t prev_phase_b;
-  uint16_t prev_button_value;
+  uint16_t prev_norm;
   uint8_t adc_bit_depth;
   struct grid_ui_button_state button;
 };
@@ -36,7 +34,7 @@ static inline struct grid_ui_endless_state* grid_ui_endless_get_state(struct gri
 
 void grid_ui_endless_store_input(struct grid_ui_endless_state* state, struct grid_ui_endless_sample sample);
 
-uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, int stabilized, int16_t delta, uint16_t value_degrees, uint64_t* endless_last_real_time, double* delta_frac);
+uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint16_t norm, int16_t delta, double* delta_frac, uint64_t* last_real_time);
 
 // ========================= ENDLESS POTEMETER =========================== //
 
