@@ -30,6 +30,7 @@ jobs:
           ./common/src/c/grid_ui_endless.h,\
           ./common/src/c/grid_ui_potmeter.h,\
           ./common/src/c/grid_ui_lcd.h,\
+          ./common/src/c/grid_ui_touch.h,\
           ./common/src/c/lua_source_collection.h \
           grid-protocol/src/grid_protocol_bot.json \
           grid-protocol/grid-protocol/lists.py"

@@ -21,6 +21,9 @@
 #include "eventfname.h"
 #define GRID_LUA_FNC_G_EVENTFNAME_source common_src_lua_eventfname_lua
 
+#include "events.h"
+#define GRID_LUA_FNC_G_EVENTS_source common_src_lua_events_lua
+
 #include "init.h"
 #define GRID_LUA_FNC_G_INIT_source common_src_lua_init_lua
 

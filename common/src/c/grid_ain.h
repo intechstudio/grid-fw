@@ -62,9 +62,11 @@ struct grid_ain_model {
 extern struct grid_ain_model grid_ain_state;
 
 void grid_ain_init(struct grid_ain_model* ain, uint8_t channel_count, uint8_t capacity);
+void grid_ain_add_sample_raw(struct grid_ain_model* ain, uint8_t channel, uint16_t value);
 void grid_ain_add_sample(struct grid_ain_model* ain, uint8_t channel, uint16_t value, uint8_t src_res, uint8_t dst_res);
 bool grid_ain_stabilized(struct grid_ain_model* ain, uint8_t channel);
 bool grid_ain_get_changed(struct grid_ain_model* ain, uint8_t channel);
 int32_t grid_ain_get_average_scaled(struct grid_ain_model* ain, uint8_t channel, uint8_t src_res, uint8_t dst_res, int32_t min, int32_t max);
+uint16_t grid_ain_endless_avg(struct grid_ain_model* ain, uint8_t channel);
 
 #endif /* GRID_AIN_H */

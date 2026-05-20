@@ -22,11 +22,7 @@ void grid_lua_init(struct grid_lua_model* lua, void* (*custom_allocator)(void*, 
   grid_lua_clear_stdi(lua);
   grid_lua_clear_stde(lua);
 
-  lua->dostring_count = 0;
-
   lua->L = NULL;
-
-  lua->target_memory_usage_kilobytes = 70; // 70kb
 }
 
 void grid_lua_semaphore_init(struct grid_lua_model* lua, void* lua_busy_semaphore, void (*lock_fn)(void*), void (*release_fn)(void*)) {
@@ -122,8 +118,6 @@ uint32_t grid_lua_do_unsafe(struct grid_lua_model* lua, const char* src, lua_loa
 
   assert(lua->L);
 
-  lua->dostring_count++;
-
   uint32_t ret = 1;
 
   if (fn(lua->L, src) == LUA_OK) {
@@ -198,52 +192,6 @@ void grid_lua_dostring_end(struct grid_lua_model* lua) {
   grid_lua_semaphore_release(lua);
 }
 
-bool grid_lua_do_event_unsafe(struct grid_lua_model* lua, uint8_t index, const char* function_name) {
-
-  bool ret = false;
-
-  // Attempt to get element table
-  if (lua_getglobal(lua->L, "ele") != LUA_TTABLE) {
-    goto grid_lua_do_event_cleanup;
-  }
-
-  // Push element index
-  lua_pushinteger(lua->L, index);
-
-  // Attempt to index the element table
-  if (lua_gettable(lua->L, -2) != LUA_TTABLE) {
-    goto grid_lua_do_event_cleanup;
-  }
-
-  // Push event name
-  lua_pushstring(lua->L, function_name);
-
-  // Attempt to index the element
-  if (lua_gettable(lua->L, -2) != LUA_TFUNCTION) {
-    goto grid_lua_do_event_cleanup;
-  }
-
-  // Remove element table from stack
-  lua_remove(lua->L, -3);
-
-  // Move the event function below the element
-  lua_insert(lua->L, -2);
-
-  // Invoke event function, passing the element as self
-  if (lua_pcall(lua->L, 1, LUA_MULTRET, 0) != LUA_OK) {
-    grid_lua_clear_stde(lua);
-    grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
-    goto grid_lua_do_event_cleanup;
-  }
-
-  ret = true;
-
-grid_lua_do_event_cleanup:
-
-  lua_pop(lua->L, lua_gettop(lua->L));
-  return ret;
-}
-
 bool grid_lua_decode_results_get_unsafe(struct grid_lua_model* lua) {
 
   lua_getglobal(lua->L, GRID_LUA_DECODE_RESULT_MIDI);
@@ -284,14 +232,12 @@ bool grid_lua_decode_results_check_unsafe(struct grid_lua_model* lua, bool* empt
 
   *empty = !(midi_len || sysex_len || eview_len || rtm_len);
 
-  goto grid_lua_decode_results_check_unsafe_success;
+  // leave result tables on the lua stack
+  return true;
 
 grid_lua_decode_results_check_unsafe_failure:
   lua_pop(lua->L, lua_gettop(lua->L) - top);
   return false;
-grid_lua_decode_results_check_unsafe_success:
-  // leave result tables on the lua stack
-  return true;
 }
 
 void grid_lua_decode_process_results(struct grid_lua_model* lua) {
@@ -336,8 +282,114 @@ void grid_lua_decode_process_results(struct grid_lua_model* lua) {
 grid_lua_decode_process_results_cleanup:
 
   lua_pop(lua->L, lua_gettop(lua->L));
-  grid_lua_gc_step_unsafe(lua);
+  grid_lua_gc_full_unsafe(lua);
   grid_lua_semaphore_release(lua);
+}
+
+void grid_lua_push_event_address(struct grid_lua_model* lua, uint8_t element, const char* event_name) {
+
+  lua_getglobal(lua->L, GRID_LUA_EVENTS_ELEIDX);
+  if (lua_type(lua->L, -1) != LUA_TTABLE) {
+    return;
+  }
+
+  lua_pushinteger(lua->L, element);
+  lua_rawseti(lua->L, -2, lua_rawlen(lua->L, -2) + 1);
+
+  lua_pop(lua->L, 1);
+
+  lua_getglobal(lua->L, GRID_LUA_EVENTS_EVESTR);
+  if (lua_type(lua->L, -1) != LUA_TTABLE) {
+    return;
+  }
+
+  lua_pushstring(lua->L, event_name);
+  lua_rawseti(lua->L, -2, lua_rawlen(lua->L, -2) + 1);
+
+  lua_pop(lua->L, 1);
+}
+
+bool grid_lua_events_addresses_get_unsafe(struct grid_lua_model* lua) {
+
+  lua_getglobal(lua->L, GRID_LUA_EVENTS_ELEIDX);
+  if (lua_type(lua->L, -1) != LUA_TTABLE) {
+    return false;
+  }
+
+  lua_getglobal(lua->L, GRID_LUA_EVENTS_EVESTR);
+  if (lua_type(lua->L, -1) != LUA_TTABLE) {
+    return false;
+  }
+
+  return true;
+}
+
+bool grid_lua_events_addresses_check_unsafe(struct grid_lua_model* lua, bool* empty) {
+
+  int top = lua_gettop(lua->L);
+
+  if (!grid_lua_events_addresses_get_unsafe(lua)) {
+    goto grid_lua_events_addresses_check_unsafe_failure;
+  }
+
+  size_t eleidx_len = lua_rawlen(lua->L, -2);
+  size_t evestr_len = lua_rawlen(lua->L, -1);
+
+  *empty = !(eleidx_len || evestr_len);
+
+  // leave result tables on the lua stack
+  return true;
+
+grid_lua_events_addresses_check_unsafe_failure:
+  lua_pop(lua->L, lua_gettop(lua->L) - top);
+  return false;
+}
+
+bool grid_lua_events_process_unsafe(struct grid_lua_model* lua) {
+
+  bool ret = false;
+
+  bool empty;
+
+  if (!grid_lua_events_addresses_check_unsafe(lua, &empty) || empty) {
+    goto grid_lua_events_process_cleanup;
+  }
+
+  if (lua_getglobal(lua->L, GRID_LUA_EVENTS_PROCESSOR) != LUA_TFUNCTION) {
+    goto grid_lua_events_process_cleanup;
+  }
+
+  // Move the processor function below the address table
+  lua_insert(lua->L, -3);
+
+  // Invoke event processor function
+  if (lua_pcall(lua->L, 2, 0, 0) != LUA_OK) {
+    grid_lua_clear_stde(lua);
+    grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
+    goto grid_lua_events_process_cleanup;
+  }
+
+  if (!grid_lua_events_addresses_check_unsafe(lua, &empty) || empty) {
+    goto grid_lua_events_process_cleanup;
+  }
+
+  if (lua_getglobal(lua->L, GRID_LUA_EVENTS_CLEARER) != LUA_TFUNCTION) {
+    goto grid_lua_events_process_cleanup;
+  }
+
+  // Invoke event clearing function
+  if (lua_pcall(lua->L, 0, 0, 0) != LUA_OK) {
+    grid_lua_clear_stde(lua);
+    grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
+    goto grid_lua_events_process_cleanup;
+  }
+
+  ret = true;
+
+grid_lua_events_process_cleanup:
+  lua_pop(lua->L, lua_gettop(lua->L));
+  grid_lua_gc_step_unsafe(lua);
+  return ret;
 }
 
 void grid_lua_broadcast_stdo(struct grid_lua_model* lua) {
@@ -374,10 +426,6 @@ void grid_lua_broadcast_stde(struct grid_lua_model* lua) {
   grid_lua_clear_stde(lua);
 }
 
-void grid_lua_set_memory_target(struct grid_lua_model* lua, uint8_t target_kilobytes) { lua->target_memory_usage_kilobytes = target_kilobytes; }
-
-uint8_t grid_lua_get_memory_target(struct grid_lua_model* lua) { return lua->target_memory_usage_kilobytes; }
-
 void grid_lua_gc_full_unsafe(struct grid_lua_model* lua) {
 
   assert(lua->L);
@@ -389,17 +437,7 @@ void grid_lua_gc_step_unsafe(struct grid_lua_model* lua) {
 
   assert(lua->L);
 
-  uint8_t target_kilobytes = grid_lua_get_memory_target(lua);
-
-  if (lua_gc(lua->L, LUA_GCCOUNT) > target_kilobytes) {
-
-    lua_gc(lua->L, LUA_GCSTEP, 10);
-
-    // char message[10] = {0};
-    // sprintf(message, "gc %dkb", target_kilobytes);
-    // grid_lua_debug_memory_stats(lua, message);
-    lua->dostring_count = 0;
-  }
+  lua_gc(lua->L, LUA_GCSTEP, 10);
 }
 
 uint8_t grid_lua_gc_count_unsafe(struct grid_lua_model* lua) { return lua_gc(lua->L, LUA_GCCOUNT); }
@@ -493,6 +531,7 @@ void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_li
 
   grid_lua_dostring_unsafe(lua, "package.path = '/?.lua;/?/init.lua'");
 
+  grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_EVENTS_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_DECODE_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_LOOKUP_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_LIMIT_source);

@@ -195,8 +195,9 @@ void grid_ui_bulk_conferase_next(struct grid_ui_model* ui);
 int grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui);
 
-void grid_ui_event_render_script(struct grid_ui_event* eve, struct grid_msg* msg);
-void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui);
+void grid_ui_event_render_events(struct grid_ui_model* ui, struct grid_msg* msg);
+void grid_ui_process_single(struct grid_ui_model* ui, struct grid_ui_element* ele, struct grid_ui_event* eve);
+void grid_ui_process_triggered(struct grid_ui_model* ui);
 
 void grid_ui_bulk_start_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 bool grid_ui_bulk_in_progress(struct grid_ui_model* ui);

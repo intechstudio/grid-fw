@@ -33,10 +33,6 @@ struct grid_lua_model {
   char stdo[GRID_LUA_STDO_LENGTH];
   char stdi[GRID_LUA_STDI_LENGTH];
   char stde[GRID_LUA_STDE_LENGTH];
-
-  uint32_t dostring_count;
-
-  uint8_t target_memory_usage_kilobytes;
 };
 
 typedef void (*lua_ui_init_callback_t)(struct grid_lua_model*);
@@ -68,9 +64,10 @@ uint32_t grid_lua_dostring_unsafe(struct grid_lua_model* lua, const char* code);
 uint32_t grid_lua_dostring(struct grid_lua_model* lua, const char* code);
 bool grid_lua_dostring_begin(struct grid_lua_model* lua, const char* code);
 void grid_lua_dostring_end(struct grid_lua_model* lua);
-bool grid_lua_do_event_unsafe(struct grid_lua_model* lua, uint8_t index, const char* function_name);
 void grid_lua_decode_clear_results(struct grid_lua_model* lua);
 void grid_lua_decode_process_results(struct grid_lua_model* lua);
+void grid_lua_push_event_address(struct grid_lua_model* lua, uint8_t element, const char* event_name);
+bool grid_lua_events_process_unsafe(struct grid_lua_model* lua);
 
 void grid_lua_broadcast_stdo(struct grid_lua_model* lua);
 void grid_lua_broadcast_stde(struct grid_lua_model* lua);
@@ -148,6 +145,13 @@ int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, ui
 #define GRID_LUA_FNC_ASSIGN_META_PAR1_RET(key, val) \
   key " = function (self, a) return " val "(self.index, a) end"
 
+#define GRID_LUA_FNC_ASSIGN_META_EVENT(key, body) \
+  GRID_LUA_FNC_A_ ## key ## _short " = function (self) " \
+  "local _efn = EFN; EFN = \"" \
+  GRID_LUA_FNC_A_ ## key ## _short "\"; " GRID_ACTIONSTRING_ ## body \
+  " EFN = _efn " \
+  "end,"
+
 #define GRID_LUA_DECODE_PROCESSOR "_decode_process"
 #define GRID_LUA_DECODE_CLEARER "_decode_clear"
 #define GRID_LUA_DECODE_ORDER "_decoded_order"
@@ -155,6 +159,11 @@ int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, ui
 #define GRID_LUA_DECODE_RESULT_SYSEX "_decoded_sysex"
 #define GRID_LUA_DECODE_RESULT_EVIEW "_decoded_eview"
 #define GRID_LUA_DECODE_RESULT_RTM "_decoded_rtm"
+
+#define GRID_LUA_EVENTS_PROCESSOR "_events_process"
+#define GRID_LUA_EVENTS_CLEARER "_events_clear"
+#define GRID_LUA_EVENTS_ELEIDX "_events_eleidx"
+#define GRID_LUA_EVENTS_EVESTR "_events_evestr"
 
 // clang-format on
 

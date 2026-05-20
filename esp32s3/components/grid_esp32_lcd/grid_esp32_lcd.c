@@ -404,7 +404,7 @@ void grid_utask_draw_event(struct grid_utask_timer* timer) {
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_DRAW);
   assert(eve);
 
-  grid_ui_event_render_script(eve, NULL);
+  grid_ui_process_single(&grid_ui_state, ele, eve);
 }
 
 void grid_esp32_module_vsn_lcd_refresh(struct grid_esp32_lcd_model* lcds, struct grid_gui_model* guis, int lines, int columns, int tx_lines, int ready_len, uint8_t* xferbuf) {
