@@ -29,7 +29,7 @@ for i = 0, #ele do
   local path = string.format("%02x/%02x", page, i)
   if os.stat(path) then
     for _, v in ipairs(dirent.list(path)) do
-      local caps = string.match(v[1], "(%x%x)%.lua")
+      local caps = string.match(v[1], "(%x%x)%.cfg")
       if v[2] == 1 and caps and tonumber("0x" .. caps) then
         local idx = tonumber("0x" .. caps)
         for j = 1, #eve do

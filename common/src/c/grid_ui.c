@@ -1017,7 +1017,7 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
       if (eve->cfg_default_flag) {
 
         char path[13] = {0};
-        assert(snprintf(path, 13, "%02x/%02x/%02x.lua", page, ele->index, eve->type) == 12);
+        assert(snprintf(path, 13, "%02x/%02x/%02x.cfg", page, ele->index, eve->type) == 12);
 
         void* dummy;
         if (grid_platform_stat(path, &dummy) == 0) {
@@ -1038,7 +1038,7 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
         assert(snprintf(path, 6, "%02x/%02x", page, ele->index) == 5);
         grid_platform_mkdir(path);
 
-        assert(snprintf(path, 13, "%02x/%02x/%02x.lua", page, ele->index, eve->type) == 12);
+        assert(snprintf(path, 13, "%02x/%02x/%02x.cfg", page, ele->index, eve->type) == 12);
         if (grid_platform_write_file_contents(buffer, path) == 0) {
           grid_platform_printf("grid_ui_bulk_page_store, element: %d, event: %d\n", i, j);
         } else {
