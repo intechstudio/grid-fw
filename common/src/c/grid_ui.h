@@ -20,6 +20,7 @@ void grid_ui_semaphore_init(struct grid_ui_semaphore* semaphore, void* handle, v
 enum grid_eve_state_t {
   GRID_EVE_STATE_INIT = 0,
   GRID_EVE_STATE_TRIG,
+  GRID_EVE_STATE_PROC,
 };
 
 struct grid_ui_event {
