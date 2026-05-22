@@ -477,6 +477,8 @@ int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, u
   return 0;
 }
 
+uint8_t grid_ui_event_isprocessed(struct grid_ui_event* eve) { return eve != NULL && eve->state == GRID_EVE_STATE_PROC; }
+
 uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve) { return eve != NULL && eve->state == GRID_EVE_STATE_TRIG; }
 
 uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui) {
@@ -670,7 +672,7 @@ static void grid_ui_clear_triggered(struct grid_ui_model* ui, struct grid_msg* m
 
       struct grid_ui_event* eve = &ele->event_list[j];
 
-      if (!grid_ui_event_istriggered(eve)) {
+      if (!grid_ui_event_isprocessed(eve)) {
         continue;
       }
 
@@ -739,6 +741,8 @@ void grid_ui_process_triggered(struct grid_ui_model* ui) {
       }
 
       grid_lua_push_event_address(&grid_lua_state, element_index, eve->function_name);
+
+      grid_ui_event_state_set(eve, GRID_EVE_STATE_PROC);
     }
   }
 
