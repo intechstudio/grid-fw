@@ -776,7 +776,6 @@ uint8_t grid_ui_bulk_get_response_code(struct grid_ui_model* ui, uint8_t id) {
 bool grid_ui_bulk_operation_known(fn_prthread_bulk_t fn) {
 
   if (fn == grid_ui_bulk_page_load) {
-  } else if (fn == grid_ui_bulk_page_read) {
   } else if (fn == grid_ui_bulk_page_store) {
   } else if (fn == grid_ui_bulk_page_clear) {
   } else if (fn == grid_ui_bulk_conf_read) {
@@ -886,10 +885,38 @@ void grid_ui_bulk_flush(struct grid_ui_model* ui) {
   }
 }
 
+static void grid_ui_page_read(struct grid_ui_model* ui, uint8_t page) {
+
+  char path[12] = {0};
+  assert(snprintf(path, 12, "%02x/init.lua", page) == 11);
+
+  grid_lua_semaphore_lock(&grid_lua_state);
+
+  void* dummy;
+  if (grid_platform_stat(path, &dummy) == 0) {
+    grid_lua_dofile_unsafe(&grid_lua_state, path);
+  } else {
+    grid_lua_dostring_unsafe(&grid_lua_state, GRID_LUA_FNC_G_INIT_source);
+  }
+
+  lua_pop(grid_lua_state.L, lua_gettop(grid_lua_state.L));
+  grid_lua_gc_full_unsafe(&grid_lua_state);
+
+  grid_lua_semaphore_release(&grid_lua_state);
+
+  grid_usb_keyboard_enable(&grid_usb_keyboard_state);
+}
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 
 PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui)) {
+
+  PT_BEGIN(pt);
+
+  if (!grid_platform_get_nvm_state()) {
+    PT_EXIT(pt);
+  }
 
   // Reset all state parameters of all leds
   grid_led_reset(&grid_led_state);
@@ -951,41 +978,15 @@ PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui)) {
     }
   }
 
+  PT_YIELD(pt);
+
   // Restart VM, register functions
   grid_lua_stop_vm(&grid_lua_state);
   grid_lua_start_vm(&grid_lua_state, grid_lua_api_generic_lib_reference, grid_ui_state.lua_ui_init_callback);
 
-  uint8_t read_page = grid_ui_page_get_activepage(&grid_ui_state);
-  grid_ui_bulk_queue_with_state(ui, grid_ui_bulk_page_read, read_page, 0, NULL);
+  PT_YIELD(pt);
 
-  return PT_ENDED;
-}
-
-PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
-
-  PT_BEGIN(pt);
-
-  if (!grid_platform_get_nvm_state()) {
-    PT_EXIT(pt);
-  }
-
-  grid_lua_semaphore_lock(&grid_lua_state);
-
-  char path[12] = {0};
-  assert(snprintf(path, 12, "%02x/init.lua", ui->bulk_last_page) == 11);
-
-  void* dummy;
-  if (grid_platform_stat(path, &dummy) == 0) {
-    grid_lua_dofile_unsafe(&grid_lua_state, path);
-  } else {
-    grid_lua_dostring_unsafe(&grid_lua_state, GRID_LUA_FNC_G_INIT_source);
-  }
-
-  lua_pop(grid_lua_state.L, lua_gettop(grid_lua_state.L));
-  grid_lua_gc_full_unsafe(&grid_lua_state);
-  grid_lua_semaphore_release(&grid_lua_state);
-
-  grid_usb_keyboard_enable(&grid_usb_keyboard_state);
+  grid_ui_page_read(ui, grid_ui_page_get_activepage(&grid_ui_state));
 
   PT_END(pt);
 }

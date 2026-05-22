@@ -851,7 +851,7 @@ uint8_t grid_decode_serialnumber_to_ui(char* header, char* chunk) {
   return 0;
 }
 
-void grid_protocol_nvm_read_success_callback(uint8_t lastheader_id) {
+void grid_protocol_nvm_load_success_callback(uint8_t lastheader_id) {
 
   struct grid_msg msg;
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
@@ -860,7 +860,7 @@ void grid_protocol_nvm_read_success_callback(uint8_t lastheader_id) {
   grid_msg_add_frame(&msg, GRID_CLASS_PAGEDISCARD_frame);
   grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_ACKNOWLEDGE_code);
   grid_msg_set_parameter(&msg, CLASS_PAGEDISCARD_LASTHEADER, lastheader_id);
-  grid_msg_add_debugtext(&msg, "nvm read complete");
+  grid_msg_add_debugtext(&msg, "page discard complete");
 
   if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
     grid_transport_send_msg_to_all(&grid_transport_state, &msg);
@@ -884,13 +884,13 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
   case GRID_INSTR_EXECUTE_code: {
 
     uint8_t page = grid_ui_page_get_activepage(&grid_ui_state);
-    void (*cb)(uint8_t) = &grid_protocol_nvm_read_success_callback;
+    void (*cb)(uint8_t) = &grid_protocol_nvm_load_success_callback;
 
     if (grid_ui_bulk_in_progress(&grid_ui_state)) {
       return 1;
     }
 
-    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_read, page, id, cb);
+    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, page, id, cb);
 
     // Start animation (will be stopped in the callback function)
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);
