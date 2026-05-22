@@ -990,6 +990,21 @@ PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
   PT_END(pt);
 }
 
+bool grid_lua_str_is_actionstring(const char* s) {
+
+  if (strncmp(s, GRID_ACTION_PREFIX, strlen(GRID_ACTION_PREFIX)) != 0) {
+    return false;
+  }
+
+  size_t len = strlen(s);
+
+  if (strcmp(&s[len - strlen(GRID_ACTION_SUFFIX)], GRID_ACTION_SUFFIX) != 0) {
+    return false;
+  }
+
+  return true;
+}
+
 PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
   static int page;
@@ -1021,7 +1036,7 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
       if (eve->cfg_default_flag) {
 
         char path[13] = {0};
-        assert(snprintf(path, 13, "%02x/%02x/%02x.lua", page, ele->index, eve->type) == 12);
+        assert(snprintf(path, 13, "%02x/%02x/%02x.cfg", page, ele->index, eve->type) == 12);
 
         void* dummy;
         if (grid_platform_stat(path, &dummy) == 0) {
@@ -1032,7 +1047,11 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
       } else {
 
         char buffer[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
-        grid_ui_event_get_script(eve, buffer);
+
+        sprintf(buffer, GRID_ACTION_PREFIX);
+        grid_ui_event_get_script(eve, &buffer[strlen(GRID_ACTION_PREFIX)]);
+        sprintf(&buffer[strlen(buffer)], GRID_ACTION_SUFFIX);
+        assert(grid_lua_str_is_actionstring(buffer));
 
         char path[13] = {0};
 
@@ -1042,7 +1061,7 @@ PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui)) {
         assert(snprintf(path, 6, "%02x/%02x", page, ele->index) == 5);
         grid_platform_mkdir(path);
 
-        assert(snprintf(path, 13, "%02x/%02x/%02x.lua", page, ele->index, eve->type) == 12);
+        assert(snprintf(path, 13, "%02x/%02x/%02x.cfg", page, ele->index, eve->type) == 12);
         if (grid_platform_write_file_contents(buffer, path) == 0) {
           grid_platform_printf("grid_ui_bulk_page_store, element: %d, event: %d\n", i, j);
         } else {

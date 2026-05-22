@@ -204,6 +204,11 @@ bool grid_ui_bulk_in_progress(struct grid_ui_model* ui);
 void grid_ui_bulk_process(struct grid_ui_model* ui);
 void grid_ui_bulk_flush(struct grid_ui_model* ui);
 
+#define GRID_ACTION_PREFIX "<?lua "
+#define GRID_ACTION_SUFFIX " ?>"
+
+bool grid_lua_str_is_actionstring(const char* s);
+
 PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui));
 PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui));
 PT_THREAD(grid_ui_bulk_page_store(proto_pt_t* pt, struct grid_ui_model* ui));

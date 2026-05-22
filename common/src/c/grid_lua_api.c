@@ -2160,7 +2160,11 @@ int l_grid_action_set(lua_State* L) {
     return 0;
   }
 
-  if (grid_ui_register_script(&grid_ui_state, element, event, buf)) {
+  assert(grid_lua_str_is_actionstring(buf));
+  char* script = &buf[strlen(GRID_ACTION_PREFIX)];
+  script[strlen(script) - strlen(GRID_ACTION_SUFFIX)] = '\0';
+
+  if (grid_ui_register_script(&grid_ui_state, element, event, script)) {
     grid_lua_append_stde(&grid_lua_state, "failed to register script");
     free(buf);
     return 0;
