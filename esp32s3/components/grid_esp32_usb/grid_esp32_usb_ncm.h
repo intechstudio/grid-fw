@@ -7,17 +7,15 @@
 
 #include <stdint.h>
 
-// Include all USB subsystem headers
-#include "grid_esp32_usb_acm.h"
-#include "grid_esp32_usb_hid.h"
-#include "grid_esp32_usb_midi.h"
-#include "grid_esp32_usb_ncm.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void grid_esp32_usb_init(void);
+// Initialize NCM networking - call after USB init
+void grid_platform_ncm_init(void);
+
+// Service lwIP timers - call this periodically from main loop
+void grid_platform_ncm_service(void);
 
 #ifdef __cplusplus
 }

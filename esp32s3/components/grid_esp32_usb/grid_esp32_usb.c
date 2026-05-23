@@ -51,6 +51,10 @@ enum interface_count {
 #if CFG_TUD_HID
   ITF_NUM_HID,
 #endif
+#if CFG_TUD_NCM
+  ITF_NUM_NCM,
+  ITF_NUM_NCM_DATA,
+#endif
   ITF_COUNT
 };
 
@@ -67,6 +71,10 @@ enum usb_endpoints {
 #if CFG_TUD_HID
   EPNUM_HID,
 #endif
+#if CFG_TUD_NCM
+  EPNUM_NCM_DATA,
+  EPNUM_NCM_NOTIFY,
+#endif
   ENDPOINT_COUNT
 };
 
@@ -76,21 +84,23 @@ enum usb_endpoints {
 #define HID_DESC_LEN 0
 #endif
 
-#define TUSB_DESCRIPTOR_TOTAL_LEN (TUD_CONFIG_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN + CFG_TUD_MIDI * TUD_MIDI_DESC_LEN + CFG_TUD_HID * HID_DESC_LEN)
+#define TUSB_DESCRIPTOR_TOTAL_LEN (TUD_CONFIG_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN + CFG_TUD_MIDI * TUD_MIDI_DESC_LEN + CFG_TUD_HID * HID_DESC_LEN + CFG_TUD_NCM * TUD_CDC_NCM_DESC_LEN)
 
 // String descriptors (index 0 = language ID as raw UTF-16LE bytes)
 static const uint16_t _usb_lang_id[] = {0x0409};
 
-static const void* s_str_desc[6] = {
+static const void* s_str_desc[8] = {
     _usb_lang_id,              // 0: language ID
     "Intech Studio",           // 1: Manufacturer
     "Grid",                    // 2: Product
     "123456",                  // 3: Serial
     "Intech Grid MIDI device", // 4: MIDI interface
     "Intech Grid CDC device",  // 5: CDC interface
+    "Intech Grid NCM device",  // 6: NCM interface
+    "02504F4E4554",            // 7: NCM MAC address (hex string parsed by host)
 };
 
-static const uint8_t strcnt = 6;
+static const uint8_t strcnt = 8;
 
 // Configuration descriptor
 static uint8_t s_cfg_desc[] = {
@@ -107,6 +117,12 @@ static uint8_t s_cfg_desc[] = {
 
 #if CFG_TUD_HID
     TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, false, HID_REPORT_DESCRIPTOR_SIZE, (0x80 | EPNUM_HID), 16, 10),
+#endif
+
+#if CFG_TUD_NCM
+    // Interface number, string index, MAC string index, notification EP, notification size,
+    // data EP out, data EP in, data EP size, max segment size
+    TUD_CDC_NCM_DESCRIPTOR(ITF_NUM_NCM, 6, 7, (0x80 | EPNUM_NCM_NOTIFY), 64, EPNUM_NCM_DATA, (0x80 | EPNUM_NCM_DATA), 64, 1514),
 #endif
 };
 
