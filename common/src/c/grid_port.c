@@ -257,6 +257,10 @@ void grid_port_send_usb(struct grid_port* port) {
   if (grid_platform_usb_serial_ready()) {
     grid_platform_usb_serial_write(msg.data, msg.length);
   }
+
+  if (grid_platform_websocket_ready()) {
+    grid_platform_websocket_write(msg.data, msg.length);
+  }
 }
 
 void grid_port_send_ui(struct grid_port* port) {

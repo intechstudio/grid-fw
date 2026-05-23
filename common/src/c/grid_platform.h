@@ -80,6 +80,10 @@ extern int32_t grid_platform_usb_serial_ready();
 
 extern int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
 
+extern int32_t grid_platform_websocket_ready(void);
+
+extern int32_t grid_platform_websocket_write(char* buffer, uint32_t length);
+
 extern void* grid_platform_allocate_volatile(size_t size);
 
 extern char* grid_platform_read_file_contents(const char* path);
