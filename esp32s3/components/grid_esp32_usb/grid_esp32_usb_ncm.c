@@ -35,7 +35,7 @@ static struct netif ncm_netif_data;
 static bool ncm_netif_initialized = false;
 
 // Network configuration: device = 192.168.7.1, host gets 192.168.7.2
-#define INIT_IP4(a, b, c, d) \
+#define INIT_IP4(a, b, c, d)                                                                                                                                                                           \
   { PP_HTONL(LWIP_MAKEU32(a, b, c, d)) }
 
 static const ip4_addr_t ncm_ipaddr = INIT_IP4(192, 168, 7, 1);
