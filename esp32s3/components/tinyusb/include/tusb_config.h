@@ -46,22 +46,24 @@
 #define CFG_TUD_CDC_TX_BUFSIZE 1024
 #define CFG_TUD_CDC_EP_BUFSIZE 512
 
-// MIDI — 1 instance
-#define CFG_TUD_MIDI 1
-#define CFG_TUD_MIDI_RX_BUFSIZE 64
-#define CFG_TUD_MIDI_TX_BUFSIZE 64
-#define CFG_TUD_MIDI_EP_BUFSIZE 64
-#define CFG_TUD_MIDI_EPSIZE CFG_TUD_MIDI_EP_BUFSIZE
+// MIDI — disabled to free endpoints for NCM
+#define CFG_TUD_MIDI 0
 
-// HID (keyboard + mouse + gamepad) — 1 instance
-#define CFG_TUD_HID 1
-#define CFG_TUD_HID_EP_BUFSIZE 64
+// HID — disabled to free endpoints for NCM
+#define CFG_TUD_HID 0
+
+// NCM (USB network) — 1 instance
+#define CFG_TUD_NCM 1
+#define CFG_TUD_NET_MTU 1514
+#define CFG_TUD_NCM_OUT_NTB_N 3
+#define CFG_TUD_NCM_IN_NTB_N 3
+#define CFG_TUD_NCM_OUT_NTB_MAX_SIZE 3200
+#define CFG_TUD_NCM_IN_NTB_MAX_SIZE 3200
 
 // Disabled classes
 #define CFG_TUD_MSC 0
 #define CFG_TUD_VENDOR 0
 #define CFG_TUD_ECM_RNDIS 0
-#define CFG_TUD_NCM 0
 #define CFG_TUD_AUDIO 0
 #define CFG_TUD_VIDEO 0
 #define CFG_TUD_DFU 0

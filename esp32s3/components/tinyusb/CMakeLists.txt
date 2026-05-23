@@ -26,6 +26,7 @@ set(tusb_srcs
     "${TUSB_ROOT}/src/class/cdc/cdc_device.c"
     "${TUSB_ROOT}/src/class/midi/midi_device.c"
     "${TUSB_ROOT}/src/class/hid/hid_device.c"
+    "${TUSB_ROOT}/src/class/net/ncm_device.c"
     "${TUSB_ROOT}/src/portable/synopsys/dwc2/dcd_dwc2.c"
     "${TUSB_ROOT}/src/portable/synopsys/dwc2/dwc2_common.c"
 )
