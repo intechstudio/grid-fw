@@ -7,16 +7,13 @@
 
 #include <stdint.h>
 
-// Include all USB subsystem headers
-#include "grid_esp32_usb_acm.h"
-#include "grid_esp32_usb_hid.h"
-#include "grid_esp32_usb_midi.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void grid_esp32_usb_init(void);
+// Platform API
+int32_t grid_platform_usb_midi_write(uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
+int32_t grid_platform_usb_midi_write_status(void);
 
 #ifdef __cplusplus
 }

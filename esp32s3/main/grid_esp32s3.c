@@ -96,7 +96,6 @@
 static const char* TAG = "main";
 
 #include "tinyusb.h"
-#include "tinyusb_cdc_acm.h"
 
 static bool periodic_rtc_ms_cb(struct gptimer_t*, const gptimer_alarm_event_data_t*, void*) {
 
