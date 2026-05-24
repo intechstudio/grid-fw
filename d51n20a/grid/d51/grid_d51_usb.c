@@ -82,6 +82,15 @@ int32_t grid_platform_usb_serial_ready() { return usb_tx_ready; }
 
 int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length) { return cdcdf_acm_write((uint8_t*)buffer, length); }
 
+// WebSocket is ESP32-only; provide no-op stubs for D51
+int32_t grid_platform_websocket_ready(void) { return 0; }
+
+int32_t grid_platform_websocket_write(char* buffer, uint32_t length) {
+  (void)buffer;
+  (void)length;
+  return 0;
+}
+
 enum { MIDI_RX_BUFFER_SIZE = 64 };
 
 static uint8_t midi_rx_buffer[MIDI_RX_BUFFER_SIZE] = {0};
