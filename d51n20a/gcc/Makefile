@@ -14,11 +14,15 @@ BUILD_DIRS = \
 	\
 	$(BUILD_DIR)/grid/d51 \
 	$(BUILD_DIR)/grid/vmp \
-	$(BUILD_DIR)/grid/usb/class/midi \
-	$(BUILD_DIR)/grid/usb/class/midi/device \
+	\
+	$(BUILD_DIR)/common/dep/tinyusb/src/common \
+	$(BUILD_DIR)/common/dep/tinyusb/src/device \
+	$(BUILD_DIR)/common/dep/tinyusb/src/class/cdc \
+	$(BUILD_DIR)/common/dep/tinyusb/src/class/hid \
+	$(BUILD_DIR)/common/dep/tinyusb/src/class/midi \
+	$(BUILD_DIR)/common/dep/tinyusb/src/portable/microchip/samd \
 	\
 	$(BUILD_DIR)/asf/hpl/adc \
-	$(BUILD_DIR)/asf/usb/class/cdc/device \
 	$(BUILD_DIR)/asf/hpl/ramecc \
 	$(BUILD_DIR)/asf/samd51a/gcc/gcc \
 	$(BUILD_DIR)/asf/hpl/evsys \
@@ -31,7 +35,6 @@ BUILD_DIRS = \
 	$(BUILD_DIR)/asf/stdio_redirect \
 	$(BUILD_DIR)/asf/hpl/tc \
 	$(BUILD_DIR)/asf/hpl/osc32kctrl \
-	$(BUILD_DIR)/asf/usb \
 	$(BUILD_DIR)/asf/hpl/dmac \
 	$(BUILD_DIR)/asf/hal/src \
 	$(BUILD_DIR)/asf/stdio_redirect/gcc \
@@ -40,7 +43,6 @@ BUILD_DIRS = \
 	$(BUILD_DIR)/asf/hpl/wdt \
 	$(BUILD_DIR)/asf/hpl/rtc \
 	$(BUILD_DIR)/asf/hpl/trng \
-	$(BUILD_DIR)/asf/usb/class/hid/device \
 	$(BUILD_DIR)/asf/hpl/usb \
 	$(BUILD_DIR)/asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F \
 	$(BUILD_DIR)/asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang \
@@ -48,9 +50,7 @@ BUILD_DIRS = \
 	$(BUILD_DIR)/asf/hpl/eic \
 	$(BUILD_DIR)/asf/hpl/cmcc \
 	$(BUILD_DIR)/asf/hpl/gclk \
-	$(BUILD_DIR)/asf/usb/device \
 	$(BUILD_DIR)/asf/hpl/pm \
-	$(BUILD_DIR)/asf/usb/class/msc/device \
 	$(BUILD_DIR)/asf/hpl/pac \
 	$(BUILD_DIR)/asf/hpl/sercom \
 	$(BUILD_DIR)/asf/hpl/core \
@@ -146,8 +146,15 @@ SRCS = \
 	grid/grid_d51_module_po16.c \
 	grid/grid_d51_module_ef44.c \
 	grid/vmp/vmp_def.c \
-	grid/usb/class/midi/usb_protocol_midi.c \
-	grid/usb/class/midi/device/audiodf_midi.c \
+	\
+	common/dep/tinyusb/src/tusb.c \
+	common/dep/tinyusb/src/common/tusb_fifo.c \
+	common/dep/tinyusb/src/device/usbd.c \
+	common/dep/tinyusb/src/device/usbd_control.c \
+	common/dep/tinyusb/src/class/cdc/cdc_device.c \
+	common/dep/tinyusb/src/class/midi/midi_device.c \
+	common/dep/tinyusb/src/class/hid/hid_device.c \
+	common/dep/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	\
 	asf/hal/src/hal_io.c \
 	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.c \
@@ -158,25 +165,20 @@ SRCS = \
 	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_4.c \
 	asf/hpl/wdt/hpl_wdt.c \
 	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/croutine.c \
-	asf/usb/usb_protocol.c \
 	asf/stdio_redirect/stdio_io.c \
 	asf/hal/src/hal_spi_m_dma.c \
 	asf/stdio_redirect/gcc/write.c \
 	asf/samd51a/gcc/system_samd51.c \
-	asf/usb/class/hid/device/hiddf_generic.c \
 	asf/hal/src/hal_init.c \
 	asf/hpl/evsys/hpl_evsys.c \
 	asf/hpl/core/hpl_core_m4.c \
 	asf/hal/src/hal_cache.c \
 	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/stream_buffer.c \
-	asf/usb/class/cdc/device/cdcdf_acm.c \
 	asf/hal/utils/src/utils_syscalls.c \
 	asf/hpl/qspi/hpl_qspi.c \
 	asf/hpl/nvmctrl/hpl_nvmctrl.c \
 	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/queue.c \
-	asf/usb_start.c \
 	asf/hal/src/hal_timer.c \
-	asf/hpl/usb/hpl_usb.c \
 	asf/stdio_redirect/gcc/read.c \
 	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/timers.c \
 	asf/hal/src/hal_delay.c \
@@ -184,14 +186,12 @@ SRCS = \
 	asf/hpl/core/hpl_init.c \
 	asf/hpl/ramecc/hpl_ramecc.c \
 	asf/hal/src/hal_wdt.c \
-	asf/usb/class/hid/device/hiddf_mouse.c \
 	asf/hal/utils/src/utils_assert.c \
 	asf/hpl/dmac/hpl_dmac.c \
 	asf/hal/src/hal_adc_async.c \
 	asf/hpl/oscctrl/hpl_oscctrl.c \
 	asf/hal/src/hal_rand_sync.c \
 	asf/hpl/trng/hpl_trng.c \
-	asf/usb/class/hid/device/hiddf_keyboard.c \
 	asf/hal/src/hal_usart_sync.c \
 	asf/hpl/mclk/hpl_mclk.c \
 	asf/hpl/gclk/hpl_gclk.c \
@@ -200,7 +200,6 @@ SRCS = \
 	asf/hal/src/hal_spi_m_async.c \
 	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/rtos_port.c \
 	asf/hal/src/hal_crc_sync.c \
-	asf/hal/src/hal_usb_device.c \
 	asf/rtos_start.c \
 	asf/hal/utils/src/utils_list.c \
 	asf/hpl/osc32kctrl/hpl_osc32kctrl.c \
@@ -208,7 +207,6 @@ SRCS = \
 	asf/examples/driver_examples.c \
 	asf/driver_init.c \
 	asf/hal/src/hal_usart_async.c \
-	asf/usb/class/msc/device/mscdf.c \
 	asf/hpl/sercom/hpl_sercom.c \
 	asf/hal/utils/src/utils_ringbuffer.c \
 	asf/hal/src/hal_atomic.c \
@@ -224,7 +222,6 @@ SRCS = \
 	asf/hpl/adc/hpl_adc.c \
 	asf/samd51a/gcc/gcc/startup_samd51.c \
 	asf/atmel_start.c \
-	asf/usb/device/usbdc.c \
 	asf/hpl/tc/hpl_tc.c \
 	asf/hpl/cmcc/hpl_cmcc.c \
 	asf/hpl/systick/hpl_systick.c \
@@ -243,8 +240,8 @@ INCLUDES = \
 	-I"grid" \
 	-I"grid/d51" \
 	-I"grid/vmp" \
-	-I"grid/usb/class/midi" \
-	-I"grid/usb/class/midi/device" \
+	\
+	-I"common/dep/tinyusb/src" \
 	\
 	-I"asf/config" \
 	-I"asf/examples" \
@@ -282,19 +279,6 @@ INCLUDES = \
 	-I"asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include" \
 	-I"asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F" \
 	-I"asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/module_config" \
-	-I"asf/" \
-	-I"asf/config" \
-	-I"asf/usb" \
-	-I"asf/usb/class/cdc" \
-	-I"asf/usb/class/cdc/device" \
-	-I"asf/usb/class/composite/device" \
-	-I"asf/usb/class/hid" \
-	-I"asf/usb/class/hid/device" \
-	-I"asf/usb/class/hub" \
-	-I"asf/usb/class/msc" \
-	-I"asf/usb/class/msc/device" \
-	-I"asf/usb/class/vendor" \
-	-I"asf/usb/device" \
 	-I"asf/" \
 	-I"asf/config" \
 	-I"asf/stdio_redirect" \

@@ -24,7 +24,7 @@
 #include "vmp_def.h"
 #include "vmp_tag.h"
 
-#include "usb/class/midi/device/audiodf_midi.h"
+#include "tusb.h"
 
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 const struct luaL_Reg gui_lib[] = {{NULL, NULL}};
@@ -454,8 +454,11 @@ int main(void) {
       // grid_d51_nvic_debug_priorities();
     }
 
+    // Drive TinyUSB stack (bare-metal, OPT_OS_NONE)
+    tud_task();
+
     // Check if USB is connected and start animation
-    if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && usb_d_get_frame_num()) {
+    if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_mounted()) {
 
       grid_platform_printf("USB CONNECTED\n");
 
@@ -478,7 +481,7 @@ int main(void) {
       }
     }
 
-    grid_d51_midi_bulkout_poll();
+    grid_d51_midi_rx_poll();
 
     // Run UI protothreads
     update_interrupt_mask_from_bulk_status();

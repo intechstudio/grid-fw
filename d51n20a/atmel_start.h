@@ -8,7 +8,7 @@ extern "C" {
 #include "driver_init.h"
 #include "rtos_start.h"
 #include "stdio_start.h"
-#include "usb_start.h"
+// usb_start.h removed: TinyUSB replaces the ASF4 USB stack
 
 /**
  * Initializes MCU, drivers and middleware in the project
