@@ -7,7 +7,7 @@
 #include "grid_esp32_usb_midi.h"
 
 #include "grid_usb.h"
-#include "tinyusb.h"
+#include "tusb.h"
 
 #if CFG_TUD_MIDI
 

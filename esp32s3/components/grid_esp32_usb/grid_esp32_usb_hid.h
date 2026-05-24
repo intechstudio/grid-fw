@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include "tinyusb.h"
+#include "tusb.h"
 #include <stdint.h>
 
 #ifdef __cplusplus

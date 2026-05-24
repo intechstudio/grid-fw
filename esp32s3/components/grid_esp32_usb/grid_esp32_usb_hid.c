@@ -8,7 +8,7 @@
 
 #include "esp_log.h"
 #include "rom/ets_sys.h"
-#include "tinyusb.h"
+#include "tusb.h"
 
 #include "grid_usb.h"
 

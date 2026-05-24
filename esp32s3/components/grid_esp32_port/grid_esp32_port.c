@@ -19,7 +19,7 @@
 #include "esp_freertos_hooks.h"
 
 #include "driver/gpio.h"
-#include "tinyusb.h"
+#include "tusb.h"
 
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
