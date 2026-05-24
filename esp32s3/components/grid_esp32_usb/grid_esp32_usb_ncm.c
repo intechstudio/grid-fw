@@ -9,7 +9,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "tinyusb.h"
+#include "tusb.h"
 #include <string.h>
 
 #if CFG_TUD_NCM
