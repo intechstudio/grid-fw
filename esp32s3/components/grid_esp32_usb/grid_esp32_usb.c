@@ -112,9 +112,7 @@ static uint8_t s_cfg_desc[] = {
 
 // ========================= TinyUSB Descriptor Callbacks =============================== //
 
-uint8_t const* tud_descriptor_device_cb(void) {
-  return (uint8_t const*)&s_device_desc;
-}
+uint8_t const* tud_descriptor_device_cb(void) { return (uint8_t const*)&s_device_desc; }
 
 uint8_t const* tud_descriptor_configuration_cb(uint8_t index) {
   (void)index; // Only one configuration supported
