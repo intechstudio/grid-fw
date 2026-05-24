@@ -26,8 +26,8 @@ set(tusb_srcs
     "${TUSB_ROOT}/src/class/cdc/cdc_device.c"
     "${TUSB_ROOT}/src/class/midi/midi_device.c"
     "${TUSB_ROOT}/src/class/hid/hid_device.c"
-    "${TUSB_ROOT}/src/portable/synopsis/dwc2/dcd_dwc2.c"
-    "${TUSB_ROOT}/src/portable/synopsis/dwc2/dwc2_common.c"
+    "${TUSB_ROOT}/src/portable/synopsys/dwc2/dcd_dwc2.c"
+    "${TUSB_ROOT}/src/portable/synopsys/dwc2/dwc2_common.c"
 )
 
 idf_component_register(
