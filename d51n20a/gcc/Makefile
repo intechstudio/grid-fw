@@ -140,6 +140,9 @@ SRCS = \
 	grid/d51/grid_d51_nvm.c \
 	grid/d51/grid_d51_uart.c \
 	grid/d51/grid_d51_usb.c \
+	grid/d51/grid_d51_usb_acm.c \
+	grid/d51/grid_d51_usb_midi.c \
+	grid/d51/grid_d51_usb_hid.c \
 	grid/grid_d51_module_bu16.c \
 	grid/grid_d51_module_en16.c \
 	grid/grid_d51_module_pbf4.c \
