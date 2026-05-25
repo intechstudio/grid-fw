@@ -5,9 +5,7 @@
 
 #include "grid_usb.h"
 
-#define HID_REPORT_DESC_CONTENT                                                                                        \
-  TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(HID_ITF_PROTOCOL_KEYBOARD)),                                             \
-      TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(HID_ITF_PROTOCOL_MOUSE))
+#define HID_REPORT_DESC_CONTENT TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(HID_ITF_PROTOCOL_KEYBOARD)), TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(HID_ITF_PROTOCOL_MOUSE))
 
 static const uint8_t s_hid_report_desc[] = {HID_REPORT_DESC_CONTENT};
 
