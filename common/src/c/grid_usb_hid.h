@@ -5,7 +5,7 @@
 
 #include "grid_swsr.h"
 
-enum mouse_move_type { X_AXIS_MV = 0x01, Y_AXIS_MV = 0x02, SCROLL_MV = 0x03, MOUSE_AXIS_COUNT = 0x04 };
+enum mouse_move_type { MOUSE_AXIS_X = 0x01, MOUSE_AXIS_Y = 0x02, MOUSE_AXIS_SCROLL = 0x03, MOUSE_AXIS_COUNT = 0x04 };
 
 enum gamepad_axis_t { GAMEPAD_AXIS_X = 0, GAMEPAD_AXIS_Y, GAMEPAD_AXIS_Z, GAMEPAD_AXIS_RX, GAMEPAD_AXIS_RY, GAMEPAD_AXIS_RZ, GAMEPAD_AXIS_COUNT };
 

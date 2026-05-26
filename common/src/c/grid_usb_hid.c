@@ -262,7 +262,7 @@ static int32_t grid_usb_mouse_button_change(struct grid_mouse_model* mouse, uint
 
 static int32_t grid_usb_mouse_move(struct grid_mouse_model* mouse, int8_t position, uint8_t axis) {
   int8_t delta[3] = {0};
-  if (axis < X_AXIS_MV || axis >= MOUSE_AXIS_COUNT) {
+  if (axis < MOUSE_AXIS_X || axis >= MOUSE_AXIS_COUNT) {
     return 0;
   }
   delta[axis - 1] = position;

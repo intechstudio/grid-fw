@@ -11,16 +11,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// Language-server-friendly defaults — overridden by platform tusb_config.h
-#ifndef CFG_TUD_CDC
-#define CFG_TUD_CDC 1
-#endif
-#ifndef CFG_TUD_MIDI
-#define CFG_TUD_MIDI 1
-#endif
-#ifndef CFG_TUD_HID
-#define CFG_TUD_HID 1
-#endif
+// Pull in CFG_TUD_CDC / CFG_TUD_MIDI / CFG_TUD_HID for the language server
+#include "tusb_config.h"
 
 #include "grid_sys.h"
 #include "grid_transport.h"
