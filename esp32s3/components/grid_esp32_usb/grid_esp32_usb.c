@@ -4,16 +4,16 @@
  * SPDX-License-Identifier: Unlicense OR CC0-1.0
  */
 
-#include "grid_esp32_usb.h"
-
 #include <string.h>
+
+#include "tusb.h"
 
 #include "esp_check.h"
 #include "esp_log.h"
+
 #include "esp_private/usb_phy.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "tusb.h"
+#include "grid_esp32_usb.h"
+#include "grid_usb.h"
 
 static const char* TAG = "USB";
 
@@ -106,7 +106,7 @@ static uint8_t s_cfg_desc[] = {
 #endif
 
 #if CFG_TUD_HID
-    TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, false, HID_REPORT_DESCRIPTOR_SIZE, (0x80 | EPNUM_HID), 16, 10),
+    TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, false, GRID_HID_REPORT_DESC_SIZE, (0x80 | EPNUM_HID), 16, 10),
 #endif
 };
 
@@ -147,24 +147,9 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
 
 // ========================= USB Initialization =============================== //
 
-static void usb_device_task(void* param) {
-  (void)param;
-  // Initialise the TinyUSB stack on rhport 0 (full-speed OTG)
-  tusb_rhport_init_t rh_init = {
-      .role = TUSB_ROLE_DEVICE,
-      .speed = TUSB_SPEED_FULL,
-  };
-  TU_ASSERT(tusb_rhport_init(0, &rh_init), );
-  while (1) {
-    tud_task(); // process USB events forever
-  }
-}
-
 void grid_esp32_usb_init(void) {
 
   // 1. Configure the on-chip USB PHY for full-speed OTG device mode.
-  //    For IDF 6.x the phy driver lives in esp_hw_support; the header is
-  //    always reachable via esp_private/usb_phy.h.
   usb_phy_handle_t phy_hdl;
   usb_phy_config_t phy_conf = {
       .controller = USB_PHY_CTRL_OTG,
@@ -174,11 +159,11 @@ void grid_esp32_usb_init(void) {
   };
   ESP_ERROR_CHECK(usb_new_phy(&phy_conf, &phy_hdl));
 
-  // 2. Start the TinyUSB device task (initialises the stack and runs tud_task)
-  xTaskCreatePinnedToCore(usb_device_task, "TinyUSB", 4096, NULL, 5, NULL, 0);
+  // 2. Initialise USB infrastructure (ACM, MIDI buffers, HID keyboard model)
+  grid_usb_infrastructure_init();
 
-  // 3. Initialise ACM subsystem (registers native tud_cdc_* callbacks)
-  grid_esp32_usb_acm_init();
+  // 3. Initialise TinyUSB device stack
+  tusb_init();
 
   ESP_LOGI(TAG, "USB initialized");
 }

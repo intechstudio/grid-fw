@@ -456,8 +456,6 @@ void app_main(void) {
   grid_esp32_led_start(grid_led_get_pin(&grid_led_state));
 
   grid_esp32_usb_init();
-  grid_usb_midi_buffer_init();
-  grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
 
   // GRID MODULE INITIALIZATION SEQUENCE
 

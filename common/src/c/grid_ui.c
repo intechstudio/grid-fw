@@ -985,7 +985,7 @@ PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui)) {
   grid_lua_gc_full_unsafe(&grid_lua_state);
   grid_lua_semaphore_release(&grid_lua_state);
 
-  grid_usb_keyboard_enable(&grid_usb_keyboard_state);
+  grid_usb_keyboard_enable(&grid_keyboard_state);
 
   PT_END(pt);
 }

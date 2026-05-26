@@ -17,4 +17,7 @@ idf_component_register(
         "common/dep/lua-5.4.3/src"
         "common/dep/proto"
         "common/build/lua"
+
+    REQUIRES
+        "tinyusb"
 )

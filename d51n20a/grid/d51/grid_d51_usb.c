@@ -1,10 +1,9 @@
-#include "grid_d51_usb.h"
-
 #include <string.h>
 
 #include "tusb.h"
 
-#include "grid_d51_usb_acm.h"
+#include "grid_d51_usb.h"
+
 #include "grid_usb.h"
 
 static const tusb_desc_device_t s_device_desc = {
@@ -34,17 +33,13 @@ enum {
   EPNUM_HID,
 };
 
-#define HID_REPORT_DESC_CONTENT TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(HID_ITF_PROTOCOL_KEYBOARD)), TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(HID_ITF_PROTOCOL_MOUSE))
-
-#define HID_REPORT_DESC_LEN sizeof((uint8_t[]){HID_REPORT_DESC_CONTENT})
-
 #define TUSB_DESC_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_MIDI_DESC_LEN + TUD_HID_DESC_LEN)
 
 static const uint8_t s_cfg_desc[] = {
     TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESC_TOTAL_LEN, 0, 250),
     TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_NOTIFY, 5, (0x80 | EPNUM_CDC_NOTIFY), 8, EPNUM_CDC_DATA, (0x80 | EPNUM_CDC_DATA), 64),
     TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 64),
-    TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, HID_ITF_PROTOCOL_NONE, HID_REPORT_DESC_LEN, (0x80 | EPNUM_HID), 16, 10),
+    TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, HID_ITF_PROTOCOL_NONE, GRID_HID_REPORT_DESC_SIZE, (0x80 | EPNUM_HID), 16, 10),
 };
 
 static const uint16_t s_lang_id[] = {0x0409};
@@ -94,8 +89,6 @@ void USB_3_Handler(void) { dcd_int_handler(0); }
 void usb_d_init(void) {}
 
 void grid_d51_usb_init(void) {
-  grid_d51_usb_acm_init();
-  grid_usb_midi_buffer_init();
-  grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
+  grid_usb_infrastructure_init();
   tusb_init();
 }

@@ -90,6 +90,9 @@ SRCS = \
 	common/src/c/grid_ui_potmeter.c \
 	common/src/c/grid_ui_system.c \
 	common/src/c/grid_usb.c \
+	common/src/c/grid_usb_acm.c \
+	common/src/c/grid_usb_midi.c \
+	common/src/c/grid_usb_hid.c \
 	common/src/c/grid_utask.c \
 	common/dep/lua-5.4.3/src/dirent.c \
 	common/dep/lua-5.4.3/src/lapi.c \
@@ -140,9 +143,6 @@ SRCS = \
 	grid/d51/grid_d51_nvm.c \
 	grid/d51/grid_d51_uart.c \
 	grid/d51/grid_d51_usb.c \
-	grid/d51/grid_d51_usb_acm.c \
-	grid/d51/grid_d51_usb_midi.c \
-	grid/d51/grid_d51_usb_hid.c \
 	grid/grid_d51_module_bu16.c \
 	grid/grid_d51_module_en16.c \
 	grid/grid_d51_module_pbf4.c \

@@ -28,6 +28,8 @@
 #include "grid_esp32_pins.h"
 #include "grid_esp32_platform.h"
 #include "grid_rollid.h"
+#include "grid_usb.h"
+
 #include "grid_sys.h"
 #include "grid_transport.h"
 #include "grid_ui.h"
@@ -224,26 +226,21 @@ void grid_utask_heart(struct grid_utask_timer* timer) {
   grid_transport_heartbeat(&grid_transport_state, type, hwcfg, activepage, gccount);
 }
 
-struct grid_utask_timer timer_midi_and_keyboard_tx;
+struct grid_utask_timer timer_midi_tx;
+struct grid_utask_timer timer_keyboard_tx;
 
-void grid_utask_midi_and_keyboard_tx(struct grid_utask_timer* timer) {
+void grid_utask_midi_and_keyboard_tx(void) {
 
-  if (grid_midi_tx_readable()) {
-
-    if (!grid_utask_timer_elapsed(timer)) {
-      return;
+  if (grid_usb_midi_tx_available(&grid_usb_midi_state)) {
+    if (grid_utask_timer_elapsed(&timer_midi_tx)) {
+      grid_usb_midi_tx_flush(&grid_usb_midi_state);
     }
-
-    grid_midi_tx_pop();
   }
 
-  if (grid_usb_keyboard_tx_readable(&grid_usb_keyboard_state)) {
-
-    if (!grid_utask_timer_elapsed(timer)) {
-      return;
+  if (grid_usb_macro_tx_available(&grid_macro_state)) {
+    if (grid_utask_timer_elapsed(&timer_keyboard_tx)) {
+      grid_usb_macro_tx_flush(&grid_macro_state);
     }
-
-    grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
   }
 }
 
@@ -272,9 +269,9 @@ void grid_utask_midi_rx(struct grid_utask_timer* timer) {
   if (!grid_utask_timer_elapsed(timer)) {
     return;
   }
-  grid_midi_rx_pop();
-  grid_midi_sysex_rx_pop();
-  grid_midi_rtm_rx_pop();
+  grid_usb_midi_rx_voice_process(&grid_usb_midi_state);
+  grid_usb_midi_rx_sysex_process(&grid_usb_midi_state);
+  grid_usb_midi_rx_rtm_process(&grid_usb_midi_state);
 }
 
 extern struct grid_utask_timer timer_draw_event[2];
@@ -429,7 +426,11 @@ void grid_esp32_port_task(void* arg) {
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_HEARTBEATINTERVAL_us,
   };
-  timer_midi_and_keyboard_tx = (struct grid_utask_timer){
+  timer_midi_tx = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 20,
+  };
+  timer_keyboard_tx = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
       .period = 20,
   };
@@ -517,7 +518,7 @@ void grid_esp32_port_task(void* arg) {
     grid_port_send_usb(port_usb);
 
     // Run transmitter-type microtasks
-    grid_utask_midi_and_keyboard_tx(&timer_midi_and_keyboard_tx);
+    grid_utask_midi_and_keyboard_tx();
 
     // Service tinyusb
     tud_task_ext(0, false);

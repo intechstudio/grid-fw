@@ -15,9 +15,11 @@
 // ---- Debug (0 = silent) ----
 #define CFG_TUSB_DEBUG 0
 
+// ---- Root-hub port (full-speed device) — enables no-arg tusb_init() ----
+#define CFG_TUSB_RHPORT0_MODE (OPT_MODE_DEVICE | OPT_MODE_FULL_SPEED)
+
 // ---- Device stack ----
 #define CFG_TUD_ENABLED 1
-#define CFG_TUD_MAX_SPEED OPT_MODE_FULL_SPEED
 
 // Use slave/IRQ mode (no DMA).  DMA requires cache-aligned buffers and
 // SOC_CACHE_INTERNAL_MEM_VIA_L1CACHE support; slave mode is simpler and
@@ -41,20 +43,26 @@
 // ============================================================
 
 // CDC (virtual serial) — 1 instance
+#ifndef CFG_TUD_CDC
 #define CFG_TUD_CDC 1
+#endif
 #define CFG_TUD_CDC_RX_BUFSIZE 512
 #define CFG_TUD_CDC_TX_BUFSIZE 1024
 #define CFG_TUD_CDC_EP_BUFSIZE 512
 
 // MIDI — 1 instance
+#ifndef CFG_TUD_MIDI
 #define CFG_TUD_MIDI 1
+#endif
 #define CFG_TUD_MIDI_RX_BUFSIZE 64
 #define CFG_TUD_MIDI_TX_BUFSIZE 64
 #define CFG_TUD_MIDI_EP_BUFSIZE 64
 #define CFG_TUD_MIDI_EPSIZE CFG_TUD_MIDI_EP_BUFSIZE
 
 // HID (keyboard + mouse + gamepad) — 1 instance
+#ifndef CFG_TUD_HID
 #define CFG_TUD_HID 1
+#endif
 #define CFG_TUD_HID_EP_BUFSIZE 64
 
 // Disabled classes

@@ -136,24 +136,26 @@ struct grid_utask_timer timer_midi_and_keyboard_tx;
 
 void grid_utask_midi_and_keyboard_tx(struct grid_utask_timer* timer) {
 
-  if (grid_midi_tx_readable()) {
+  if (grid_usb_midi_tx_available(&grid_usb_midi_state)) {
 
     if (!grid_utask_timer_elapsed(timer)) {
       return;
     }
 
     for (uint8_t i = 0; i < 4; ++i) {
-      grid_midi_tx_pop();
+      grid_usb_midi_tx_flush(&grid_usb_midi_state);
     }
   }
 
-  if (grid_usb_keyboard_tx_readable(&grid_usb_keyboard_state)) {
+  if (grid_usb_macro_tx_available(&grid_macro_state)) {
 
     if (!grid_utask_timer_elapsed(timer)) {
       return;
     }
 
-    grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
+    for (uint8_t i = 0; i < 4; ++i) {
+      grid_usb_macro_tx_flush(&grid_macro_state);
+    }
   }
 }
 
@@ -200,9 +202,9 @@ void grid_utask_midi_rx(struct grid_utask_timer* timer) {
     return;
   }
 
-  grid_midi_rx_pop();
-  grid_midi_sysex_rx_pop();
-  grid_midi_rtm_rx_pop();
+  grid_usb_midi_rx_voice_process(&grid_usb_midi_state);
+  grid_usb_midi_rx_sysex_process(&grid_usb_midi_state);
+  grid_usb_midi_rx_rtm_process(&grid_usb_midi_state);
 }
 
 volatile uint8_t rxtimeoutselector = 0;
@@ -481,7 +483,7 @@ int main(void) {
       }
     }
 
-    grid_d51_midi_rx_poll();
+    grid_usb_midi_rx_poll(&grid_usb_midi_state);
 
     // Run UI protothreads
     update_interrupt_mask_from_bulk_status();

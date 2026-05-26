@@ -8,6 +8,7 @@
 #include "grid_decode.h"
 #include "grid_platform.h"
 #include "grid_protocol.h"
+#include "grid_usb_acm.h"
 
 extern struct grid_decoder_collection* grid_decoder_to_ui_reference;
 extern struct grid_decoder_collection* grid_decoder_to_usb_reference;
@@ -254,8 +255,8 @@ void grid_port_send_usb(struct grid_port* port) {
 
   grid_port_decode_msg(grid_decoder_to_usb_reference, &msg);
 
-  if (grid_platform_usb_serial_ready()) {
-    grid_platform_usb_serial_write(msg.data, msg.length);
+  if (grid_usb_acm_ready(&grid_usb_acm_state)) {
+    grid_usb_acm_write(&grid_usb_acm_state, msg.data, msg.length);
   }
 }
 

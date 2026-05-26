@@ -37,21 +37,27 @@
 // ============================================================
 
 // CDC (virtual serial) — 1 instance
+#ifndef CFG_TUD_CDC
 #define CFG_TUD_CDC 1
+#endif
 #define CFG_TUD_CDC_RX_BUFSIZE 512
 #define CFG_TUD_CDC_TX_BUFSIZE 1024
 #define CFG_TUD_CDC_EP_BUFSIZE 64
 
 // MIDI — 1 instance
+#ifndef CFG_TUD_MIDI
 #define CFG_TUD_MIDI 1
+#endif
 #define CFG_TUD_MIDI_RX_BUFSIZE 64
 #define CFG_TUD_MIDI_TX_BUFSIZE 64
 #define CFG_TUD_MIDI_EP_BUFSIZE 64
 #define CFG_TUD_MIDI_EPSIZE CFG_TUD_MIDI_EP_BUFSIZE
 
-// HID (keyboard + mouse) — 1 instance with 2 report IDs
+// HID (keyboard + mouse + gamepad) — 3 report IDs
+#ifndef CFG_TUD_HID
 #define CFG_TUD_HID 1
-#define CFG_TUD_HID_EP_BUFSIZE 16
+#endif
+#define CFG_TUD_HID_EP_BUFSIZE 64
 
 // Disabled classes
 #define CFG_TUD_MSC 0
