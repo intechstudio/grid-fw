@@ -12,9 +12,6 @@
 
 struct grid_usb_midi_model grid_usb_midi_state;
 
-static uint8_t sysex_assembly_buffer[GRID_MIDI_SYSEX_BUFFER_SIZE];
-static uint16_t sysex_assembly_index = 0;
-
 void grid_usb_midi_init(struct grid_usb_midi_model* usb_midi, uint16_t tx_buffer_size, uint16_t rx_buffer_size, uint16_t sysex_buffer_size, uint16_t rtm_buffer_size) {
 
   usb_midi->has_next = false;
@@ -65,18 +62,7 @@ void grid_usb_midi_tx_flush(struct grid_usb_midi_model* usb_midi) {
   usb_midi->has_next = false;
 }
 
-bool grid_usb_midi_tx_available(struct grid_usb_midi_model* usb_midi) {
-
-  if (!usb_midi->has_next) {
-    if (!grid_swsr_readable(&usb_midi->tx, sizeof(struct grid_midi_event_desc))) {
-      return false;
-    }
-    grid_swsr_read(&usb_midi->tx, &usb_midi->next, sizeof(struct grid_midi_event_desc));
-    usb_midi->has_next = true;
-  }
-
-  return true;
-}
+bool grid_usb_midi_tx_available(struct grid_usb_midi_model* usb_midi) { return usb_midi->has_next || grid_swsr_readable(&usb_midi->tx, sizeof(struct grid_midi_event_desc)); }
 
 static void grid_usb_midi_rx_queue_rtm(struct grid_usb_midi_model* usb_midi, uint8_t rtm_byte) {
   if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_FORWARD_FROM_USB)) {
@@ -87,17 +73,15 @@ static void grid_usb_midi_rx_queue_rtm(struct grid_usb_midi_model* usb_midi, uin
   }
 }
 
-static int grid_midi_rx_process_sysex(uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
-
-  static uint8_t MIDI_RX_STATE_IS_SYSEX = 0;
+static int grid_midi_rx_process_sysex(struct grid_usb_midi_model* usb_midi, uint8_t cin, uint8_t byte1, uint8_t byte2, uint8_t byte3) {
 
   bool is_sysex_start = (cin == GRID_MIDI_CIN_SYSEX_START && byte1 == GRID_MIDI_SYSEX_START);
 
-  if (!MIDI_RX_STATE_IS_SYSEX && !is_sysex_start) {
+  if (!usb_midi->sysex_in_progress && !is_sysex_start) {
     return 0;
   }
 
-  MIDI_RX_STATE_IS_SYSEX = (cin == GRID_MIDI_CIN_SYSEX_START);
+  usb_midi->sysex_in_progress = (cin == GRID_MIDI_CIN_SYSEX_START);
 
   switch (cin) {
   case GRID_MIDI_CIN_SYSEX_START:
@@ -148,7 +132,7 @@ void grid_usb_midi_rx_queue(struct grid_usb_midi_model* usb_midi, uint8_t byte0,
     return;
   }
 
-  int sysex_length = grid_midi_rx_process_sysex(cin, byte1, byte2, byte3);
+  int sysex_length = grid_midi_rx_process_sysex(usb_midi, cin, byte1, byte2, byte3);
   if (sysex_length) {
     grid_usb_midi_rx_queue_sysex(usb_midi, sysex_length, byte1, byte2, byte3);
     return;
@@ -170,7 +154,7 @@ void grid_usb_midi_rx_voice_process(struct grid_usb_midi_model* usb_midi) {
   grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
   grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
 
-  for (uint8_t i = 0; i < 8; ++i) {
+  for (uint8_t i = 0; i < GRID_MIDI_VOICE_BATCH_MAX; ++i) {
 
     if (!grid_swsr_readable(&usb_midi->rx, sizeof(struct grid_midi_event_desc))) {
       break;
@@ -213,7 +197,7 @@ void grid_usb_midi_rx_rtm_process(struct grid_usb_midi_model* usb_midi) {
   grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SX, xy);
   grid_msg_set_parameter_raw((uint8_t*)msg.data, BRC_SY, xy);
 
-  for (uint8_t i = 0; i < 16; ++i) {
+  for (uint8_t i = 0; i < GRID_MIDI_RTM_BATCH_MAX; ++i) {
 
     if (!grid_swsr_readable(&usb_midi->rtm_rx, 1)) {
       break;
@@ -237,8 +221,10 @@ void grid_usb_midi_rx_rtm_process(struct grid_usb_midi_model* usb_midi) {
   }
 }
 
-static void grid_midi_sysex_process_complete(struct grid_usb_midi_model* usb_midi, uint8_t* sysex_data, uint16_t length) {
-  (void)usb_midi;
+static void grid_midi_sysex_process_complete(struct grid_usb_midi_model* usb_midi) {
+
+  uint8_t* sysex_data = usb_midi->sysex_assembly_buffer;
+  uint16_t length = usb_midi->sysex_assembly_index;
 
   if (length < 2 || sysex_data[0] != GRID_MIDI_SYSEX_START || sysex_data[length - 1] != GRID_MIDI_SYSEX_END) {
     return;
@@ -283,17 +269,17 @@ void grid_usb_midi_rx_sysex_process(struct grid_usb_midi_model* usb_midi) {
 
     grid_swsr_read(&usb_midi->sysex_rx, &byte, 1);
 
-    if (sysex_assembly_index >= GRID_MIDI_SYSEX_BUFFER_SIZE) {
-      sysex_assembly_index = 0;
+    if (usb_midi->sysex_assembly_index >= GRID_MIDI_SYSEX_BUFFER_SIZE) {
+      usb_midi->sysex_assembly_index = 0;
     }
 
-    assert(sysex_assembly_index < GRID_MIDI_SYSEX_BUFFER_SIZE);
-    sysex_assembly_buffer[sysex_assembly_index++] = byte;
+    assert(usb_midi->sysex_assembly_index < GRID_MIDI_SYSEX_BUFFER_SIZE);
+    usb_midi->sysex_assembly_buffer[usb_midi->sysex_assembly_index++] = byte;
   }
 
   assert(byte == GRID_MIDI_SYSEX_END);
-  grid_midi_sysex_process_complete(usb_midi, sysex_assembly_buffer, sysex_assembly_index);
-  sysex_assembly_index = 0;
+  grid_midi_sysex_process_complete(usb_midi);
+  usb_midi->sysex_assembly_index = 0;
 }
 
 #if CFG_TUD_MIDI

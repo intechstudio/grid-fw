@@ -22,7 +22,7 @@ void tud_cdc_rx_cb(uint8_t itf) {
     return;
   }
 
-  uint8_t buf[512];
+  static uint8_t buf[512];
   uint32_t rx_size = tud_cdc_read(buf, sizeof(buf));
 
   if (rx_size == 0) {
@@ -72,10 +72,11 @@ int32_t grid_usb_acm_write(struct grid_usb_acm_model* usb_acm, char* buffer, uin
       grid_platform_printf("CDC WRITE ERROR: %ld %ld\n", written, length);
     }
     tud_cdc_write_flush();
+    return (int32_t)written;
   } else {
     tud_cdc_write_flush();
+    return 0;
   }
-  return 1;
 }
 
 void grid_usb_acm_init(struct grid_usb_acm_model* usb_acm, uint16_t rx_buffer_size) {

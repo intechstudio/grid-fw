@@ -151,7 +151,7 @@ uint8_t grid_decode_mousebutton_to_usb(char* header, char* chunk) {
   uint8_t button = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_HIDMOUSEBUTTON_BUTTON);
 
   struct grid_macro_event_desc key = {
-      .ismodifier = 3, // 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
+      .type = GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON,
       .ispressed = state,
       .keycode = button,
       .delay = 1,
@@ -176,7 +176,7 @@ uint8_t grid_decode_mousemove_to_usb(char* header, char* chunk) {
   uint8_t axis = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_HIDMOUSEMOVE_AXIS);
 
   struct grid_macro_event_desc key = {
-      .ismodifier = 2, // 0: no, 1: yes, 2: mousemove, 3: mousebutton, f: delay
+      .type = GRID_MACRO_EVENT_TYPE_MOUSE_MOVE,
       .ispressed = position,
       .keycode = axis,
       .delay = 1,
@@ -247,7 +247,7 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk) {
 
       struct grid_macro_event_desc key = {
           key.keycode = key_code,
-          key.ismodifier = key_ismodifier,
+          key.type = key_ismodifier ? GRID_MACRO_EVENT_TYPE_MODIFIER : GRID_MACRO_EVENT_TYPE_KEY,
           key.ispressed = key_state,
           key.delay = default_delay,
       };
@@ -272,7 +272,7 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk) {
 
       // Special delay event
       struct grid_macro_event_desc key = {
-          key.ismodifier = key_ismodifier,
+          key.type = GRID_MACRO_EVENT_TYPE_DELAY,
           key.ispressed = 0,
           key.keycode = 0,
           key.delay = delay,

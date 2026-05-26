@@ -21,10 +21,18 @@ enum gamepad_axis_t { GAMEPAD_AXIS_X = 0, GAMEPAD_AXIS_Y, GAMEPAD_AXIS_Z, GAMEPA
 
 #define GRID_MACRO_TX_BUFFER_SIZE 800
 
+enum grid_macro_event_type {
+  GRID_MACRO_EVENT_TYPE_KEY = 0,          // regular (non-modifier) key press/release
+  GRID_MACRO_EVENT_TYPE_MODIFIER = 1,     // modifier key press/release (Ctrl, Shift, …)
+  GRID_MACRO_EVENT_TYPE_MOUSE_MOVE = 2,   // mouse axis movement
+  GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON = 3, // mouse button press/release
+  GRID_MACRO_EVENT_TYPE_DELAY = 0xf,      // timed delay between events
+};
+
 struct grid_macro_event_desc {
 
   uint8_t keycode;
-  uint8_t ismodifier;
+  enum grid_macro_event_type type;
   uint8_t ispressed;
   uint32_t delay;
 };
