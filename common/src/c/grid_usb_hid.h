@@ -46,6 +46,11 @@ struct grid_keyboard_model {
   uint8_t isenabled;
 };
 
+struct grid_keyboard_report {
+  uint8_t modifier_bm;
+  uint8_t keycode[6];
+};
+
 struct grid_mouse_model {
   uint8_t buttons;
 };
@@ -61,17 +66,17 @@ extern struct grid_keyboard_model grid_keyboard_state;
 extern struct grid_mouse_model grid_mouse_state;
 extern struct grid_gamepad_model grid_gamepad_state;
 
-int32_t grid_usb_gamepad_axis_move(struct grid_gamepad_model* gamepad, uint8_t axis, int32_t value);
-int32_t grid_usb_gamepad_button_change(struct grid_gamepad_model* gamepad, uint8_t button, uint8_t value);
+int32_t grid_usb_gamepad_axis_move(struct grid_gamepad_model* usb_gamepad, uint8_t axis, int32_t value);
+int32_t grid_usb_gamepad_button_change(struct grid_gamepad_model* usb_gamepad, uint8_t button, uint8_t value);
 
-uint8_t grid_usb_macro_tx_push(struct grid_macro_model* macro, struct grid_macro_event_desc event);
-void grid_usb_macro_tx_flush(struct grid_macro_model* macro);
-bool grid_usb_macro_tx_available(struct grid_macro_model* macro);
+uint8_t grid_usb_macro_tx_push(struct grid_macro_model* usb_macro, struct grid_macro_event_desc event);
+void grid_usb_macro_tx_flush(struct grid_macro_model* usb_macro);
+bool grid_usb_macro_tx_available(struct grid_macro_model* usb_macro);
 
-void grid_usb_macro_init(struct grid_macro_model* macro, uint16_t buffer_size, struct grid_keyboard_model* keyboard, struct grid_mouse_model* mouse);
-void grid_usb_keyboard_init(struct grid_keyboard_model* kb);
-void grid_usb_mouse_init(struct grid_mouse_model* mouse);
-void grid_usb_gamepad_init(struct grid_gamepad_model* gamepad);
+void grid_usb_macro_init(struct grid_macro_model* usb_macro, uint16_t buffer_size, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse);
+void grid_usb_keyboard_init(struct grid_keyboard_model* usb_keyboard);
+void grid_usb_mouse_init(struct grid_mouse_model* usb_mouse);
+void grid_usb_gamepad_init(struct grid_gamepad_model* usb_gamepad);
 
-void grid_usb_keyboard_enable(struct grid_keyboard_model* kb);
-void grid_usb_keyboard_disable(struct grid_keyboard_model* kb);
+void grid_usb_keyboard_enable(struct grid_keyboard_model* usb_keyboard);
+void grid_usb_keyboard_disable(struct grid_keyboard_model* usb_keyboard);

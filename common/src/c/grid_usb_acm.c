@@ -62,11 +62,11 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
   }
 }
 
-int32_t grid_usb_acm_ready(struct grid_usb_acm_model* model) { return model->tx_ready; }
+int32_t grid_usb_acm_ready(struct grid_usb_acm_model* usb_acm) { return usb_acm->tx_ready; }
 
-int32_t grid_usb_acm_write(struct grid_usb_acm_model* model, char* buffer, uint32_t length) {
-  if (model->tx_ready) {
-    model->tx_ready = 0;
+int32_t grid_usb_acm_write(struct grid_usb_acm_model* usb_acm, char* buffer, uint32_t length) {
+  if (usb_acm->tx_ready) {
+    usb_acm->tx_ready = 0;
     uint32_t written = tud_cdc_write(buffer, length);
     if (written != length) {
       grid_platform_printf("CDC WRITE ERROR: %ld %ld\n", written, length);
@@ -78,28 +78,28 @@ int32_t grid_usb_acm_write(struct grid_usb_acm_model* model, char* buffer, uint3
   return 1;
 }
 
-void grid_usb_acm_init(struct grid_usb_acm_model* model, uint16_t rx_buffer_size) {
-  assert(grid_swsr_malloc(&model->rx, rx_buffer_size) == 0);
-  model->initialized = true;
-  model->tx_ready = 1;
+void grid_usb_acm_init(struct grid_usb_acm_model* usb_acm, uint16_t rx_buffer_size) {
+  assert(grid_swsr_malloc(&usb_acm->rx, rx_buffer_size) == 0);
+  usb_acm->initialized = true;
+  usb_acm->tx_ready = 1;
 }
 
 #else // !CFG_TUD_CDC
 
-int32_t grid_usb_acm_ready(struct grid_usb_acm_model* model) {
-  (void)model;
+int32_t grid_usb_acm_ready(struct grid_usb_acm_model* usb_acm) {
+  (void)usb_acm;
   return 0;
 }
 
-int32_t grid_usb_acm_write(struct grid_usb_acm_model* model, char* buffer, uint32_t length) {
-  (void)model;
+int32_t grid_usb_acm_write(struct grid_usb_acm_model* usb_acm, char* buffer, uint32_t length) {
+  (void)usb_acm;
   (void)buffer;
   (void)length;
   return 0;
 }
 
-void grid_usb_acm_init(struct grid_usb_acm_model* model, uint16_t rx_buffer_size) {
-  (void)model;
+void grid_usb_acm_init(struct grid_usb_acm_model* usb_acm, uint16_t rx_buffer_size) {
+  (void)usb_acm;
   (void)rx_buffer_size;
 }
 
