@@ -2,3 +2,4 @@
 !platform.c
 !test.c
 !test.h
+!tusb_config.h
