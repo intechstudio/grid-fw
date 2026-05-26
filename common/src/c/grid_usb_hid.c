@@ -249,9 +249,7 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
   (void)bufsize;
 }
 
-static bool grid_usb_hid_ready(void) {
-  return tud_hid_ready();
-}
+static bool grid_usb_hid_ready(void) { return tud_hid_ready(); }
 
 static int32_t grid_usb_mouse_button_change(struct grid_mouse_model* mouse, uint8_t b_state, uint8_t type) {
   if (b_state) {
@@ -276,8 +274,7 @@ int32_t grid_usb_gamepad_axis_move(struct grid_gamepad_model* gamepad, uint8_t a
     return 0;
   }
   gamepad->axis[axis] = value;
-  return 0 == tud_hid_gamepad_report(3, gamepad->axis[0], gamepad->axis[1], gamepad->axis[2], gamepad->axis[5], gamepad->axis[4],
-                                     gamepad->axis[3], gamepad->hat, gamepad->buttons);
+  return 0 == tud_hid_gamepad_report(3, gamepad->axis[0], gamepad->axis[1], gamepad->axis[2], gamepad->axis[5], gamepad->axis[4], gamepad->axis[3], gamepad->hat, gamepad->buttons);
 }
 
 int32_t grid_usb_gamepad_button_change(struct grid_gamepad_model* gamepad, uint8_t button, uint8_t value) {
@@ -286,8 +283,7 @@ int32_t grid_usb_gamepad_button_change(struct grid_gamepad_model* gamepad, uint8
   } else {
     gamepad->buttons &= ~(1 << button);
   }
-  return 0 == tud_hid_gamepad_report(3, gamepad->axis[0], gamepad->axis[1], gamepad->axis[2], gamepad->axis[5], gamepad->axis[4],
-                                     gamepad->axis[3], gamepad->hat, gamepad->buttons);
+  return 0 == tud_hid_gamepad_report(3, gamepad->axis[0], gamepad->axis[1], gamepad->axis[2], gamepad->axis[5], gamepad->axis[4], gamepad->axis[3], gamepad->hat, gamepad->buttons);
 }
 
 static int32_t grid_keyboard_keys_state_change(struct grid_macro_event_desc* active_key_list, uint8_t keys_count) {
@@ -308,9 +304,7 @@ static int32_t grid_keyboard_keys_state_change(struct grid_macro_event_desc* act
 
 #else // !CFG_TUD_HID
 
-static bool grid_usb_hid_ready(void) {
-  return true;
-}
+static bool grid_usb_hid_ready(void) { return true; }
 
 static int32_t grid_usb_mouse_button_change(struct grid_mouse_model* mouse, uint8_t b_state, uint8_t type) {
   (void)mouse;

@@ -86,7 +86,10 @@ void grid_usb_acm_init(struct grid_usb_acm_model* model, uint16_t rx_buffer_size
 
 #else // !CFG_TUD_CDC
 
-int32_t grid_usb_acm_ready(struct grid_usb_acm_model* model) { (void)model; return 0; }
+int32_t grid_usb_acm_ready(struct grid_usb_acm_model* model) {
+  (void)model;
+  return 0;
+}
 
 int32_t grid_usb_acm_write(struct grid_usb_acm_model* model, char* buffer, uint32_t length) {
   (void)model;

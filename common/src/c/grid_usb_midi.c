@@ -313,7 +313,10 @@ void tud_midi_rx_cb(uint8_t itf) {
   }
 }
 
-void grid_usb_midi_rx_poll(struct grid_usb_midi_model* usb_midi) { tud_midi_rx_cb(0); (void)usb_midi; }
+void grid_usb_midi_rx_poll(struct grid_usb_midi_model* usb_midi) {
+  tud_midi_rx_cb(0);
+  (void)usb_midi;
+}
 
 #else // !CFG_TUD_MIDI
 
