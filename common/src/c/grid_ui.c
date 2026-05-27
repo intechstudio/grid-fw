@@ -147,6 +147,13 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   return ele;
 }
 
+void grid_ui_event_reset(struct grid_ui_event* eve) {
+
+  eve->state = GRID_EVE_STATE_INIT;
+  eve->cfg_changed_flag = 0;
+  eve->cfg_default_flag = 1;
+}
+
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_script) {
 
   assert(index < ele->event_list_length);
@@ -154,12 +161,11 @@ void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t even
   struct grid_ui_event* eve = &ele->event_list[index];
 
   eve->parent = ele;
-  eve->state = GRID_EVE_STATE_INIT;
   eve->default_script = default_script;
-  eve->cfg_changed_flag = 0;
-  eve->cfg_default_flag = 1;
   eve->type = event_type;
   strcpy(eve->function_name, function_name);
+
+  grid_ui_event_reset(eve);
 }
 
 void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui) {
@@ -930,17 +936,14 @@ PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui)) {
   for (uint8_t i = 0; i < ui->element_list_length; ++i) {
 
     struct grid_ui_element* ele = grid_ui_element_find(ui, i);
+    assert(ele);
 
-    if (ele == NULL) {
-      grid_platform_printf("grid_ui_page_load ele NULL\r\n");
-    }
-
-    // Stop the event's timer
+    // Stop the element's timer
     ele->timer_event_helper = 0;
 
-    // Clear all pending/triggered events for the element
-    for (uint8_t j = 0; j < ele->event_list_length; j++) {
-      grid_ui_event_state_set(&ele->event_list[j], GRID_EVE_STATE_INIT);
+    // Reset all events of the element
+    for (uint8_t j = 0; j < ele->event_list_length; ++j) {
+      grid_ui_event_reset(&ele->event_list[j]);
     }
 
     uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
