@@ -108,6 +108,13 @@ void grid_ui_bulk_semaphore_release(struct grid_ui_model* ui) { grid_ui_semaphor
 
 bool grid_ui_bulk_semaphore_try(struct grid_ui_model* ui) { return grid_ui_semaphore_try(&ui->bulk_semaphore); }
 
+void grid_ui_element_reset(struct grid_ui_element* ele) {
+
+  ele->timer_event_helper = 0;
+  ele->timer_source_is_midi = 0;
+  ele->name[0] = '\0';
+}
+
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index) {
 
   if (parent == NULL) {
@@ -125,7 +132,6 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
 
   ele->parent = parent;
   ele->index = index;
-  ele->name[0] = '\0';
 
   ele->template_parameter_list_length = 0;
   ele->template_parameter_list = NULL;
@@ -139,10 +145,9 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
     ele->template_parameter_index_max[i] = 0;
   }
 
-  ele->timer_event_helper = 0;
-  ele->timer_source_is_midi = 0;
-
   ele->primary_state = NULL;
+
+  grid_ui_element_reset(ele);
 
   return ele;
 }
@@ -940,6 +945,9 @@ PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui)) {
 
     // Stop the element's timer
     ele->timer_event_helper = 0;
+
+    // Reset element
+    grid_ui_element_reset(ele);
 
     // Reset all events of the element
     for (uint8_t j = 0; j < ele->event_list_length; ++j) {
