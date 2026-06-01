@@ -7,7 +7,6 @@
 
 struct grid_usb_acm_model {
   struct grid_swsr_t rx;
-  bool initialized;
   uint8_t tx_ready;
 };
 
@@ -17,3 +16,5 @@ void grid_usb_acm_init(struct grid_usb_acm_model* usb_acm, uint16_t rx_buffer_si
 
 int32_t grid_usb_acm_ready(struct grid_usb_acm_model* usb_acm);
 int32_t grid_usb_acm_write(struct grid_usb_acm_model* usb_acm, char* buffer, uint32_t length);
+void grid_usb_acm_rx_poll(struct grid_usb_acm_model* usb_acm);
+void grid_usb_acm_rx_process(struct grid_usb_acm_model* usb_acm);

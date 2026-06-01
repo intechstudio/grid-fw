@@ -27,6 +27,7 @@
 #include "grid_esp32_platform.h"
 #include "grid_rollid.h"
 #include "grid_usb.h"
+#include "grid_usb_acm.h"
 
 #include "grid_sys.h"
 #include "grid_transport.h"
@@ -253,17 +254,17 @@ void grid_utask_usb_tx(void) {
   if (grid_utask_timer_elapsed(&timer_tx_dropped)) {
 
     if (grid_usb_midi_state.tx_dropped > 0) {
-      grid_platform_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_midi_state.tx_dropped);
+      grid_port_debug_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_midi_state.tx_dropped);
       grid_usb_midi_state.tx_dropped = 0;
     }
 
     if (grid_macro_state.tx_dropped > 0) {
-      grid_platform_printf("HID macro TX dropped: %lu\n", (unsigned long)grid_macro_state.tx_dropped);
+      grid_port_debug_printf("HID macro TX dropped: %lu\n", (unsigned long)grid_macro_state.tx_dropped);
       grid_macro_state.tx_dropped = 0;
     }
 
     if (grid_gamepad_state.tx_dropped > 0) {
-      grid_platform_printf("HID gamepad TX dropped: %lu\n", (unsigned long)grid_gamepad_state.tx_dropped);
+      grid_port_debug_printf("HID gamepad TX dropped: %lu\n", (unsigned long)grid_gamepad_state.tx_dropped);
       grid_gamepad_state.tx_dropped = 0;
     }
   }
@@ -559,6 +560,8 @@ void grid_esp32_port_task(void* arg) {
     // Duplicate midi rx callback used as a polling mechanism, as the
     // actual callback may not necessarily process all available data
     grid_usb_midi_rx_poll(&grid_usb_midi_state);
+    grid_usb_acm_rx_poll(&grid_usb_acm_state);
+    grid_usb_acm_rx_process(&grid_usb_acm_state);
 
     // Decode for UI
     grid_port_send_ui(port_ui);

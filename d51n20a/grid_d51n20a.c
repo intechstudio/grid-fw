@@ -6,6 +6,7 @@
 #include "grid_d51_uart.h"
 #include "grid_d51_usb.h"
 #include "grid_usb.h"
+#include "grid_usb_acm.h"
 
 #include "atmel_start_pins.h"
 #include <atmel_start.h>
@@ -160,17 +161,17 @@ void grid_utask_usb_tx(void) {
   if (grid_utask_timer_elapsed(&timer_tx_dropped)) {
 
     if (grid_usb_midi_state.tx_dropped > 0) {
-      grid_platform_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_midi_state.tx_dropped);
+      grid_port_debug_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_midi_state.tx_dropped);
       grid_usb_midi_state.tx_dropped = 0;
     }
 
     if (grid_macro_state.tx_dropped > 0) {
-      grid_platform_printf("HID macro TX dropped: %lu\n", (unsigned long)grid_macro_state.tx_dropped);
+      grid_port_debug_printf("HID macro TX dropped: %lu\n", (unsigned long)grid_macro_state.tx_dropped);
       grid_macro_state.tx_dropped = 0;
     }
 
     if (grid_gamepad_state.tx_dropped > 0) {
-      grid_platform_printf("HID gamepad TX dropped: %lu\n", (unsigned long)grid_gamepad_state.tx_dropped);
+      grid_port_debug_printf("HID gamepad TX dropped: %lu\n", (unsigned long)grid_gamepad_state.tx_dropped);
       grid_gamepad_state.tx_dropped = 0;
     }
   }
@@ -513,6 +514,8 @@ int main(void) {
     }
 
     grid_usb_midi_rx_poll(&grid_usb_midi_state);
+    grid_usb_acm_rx_poll(&grid_usb_acm_state);
+    grid_usb_acm_rx_process(&grid_usb_acm_state);
 
     // Run UI protothreads
     update_interrupt_mask_from_bulk_status();
