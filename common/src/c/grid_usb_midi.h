@@ -46,7 +46,7 @@ struct grid_midi_event_desc {
 };
 
 #define GRID_MIDI_TX_BUFFER_SIZE 512
-#define GRID_MIDI_RX_BUFFER_SIZE 512
+#define GRID_MIDI_VOICE_RX_BUFFER_SIZE 512
 #define GRID_MIDI_SYSEX_BUFFER_SIZE 256
 #define GRID_MIDI_RTM_BUFFER_SIZE 32
 
@@ -55,7 +55,7 @@ struct grid_midi_event_desc {
 
 struct grid_usb_midi_model {
   struct grid_swsr_t tx;
-  struct grid_swsr_t rx;
+  struct grid_swsr_t voice_rx;
   struct grid_swsr_t sysex_rx;
   struct grid_swsr_t rtm_rx;
   uint8_t sysex_assembly_buffer[GRID_MIDI_SYSEX_BUFFER_SIZE];
