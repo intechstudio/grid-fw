@@ -182,7 +182,9 @@ void grid_usb_midi_rx_voice_process(struct grid_usb_midi_model* usb_midi) {
   }
 }
 
-bool grid_usb_midi_rx_writable(struct grid_usb_midi_model* usb_midi) { return grid_swsr_writable(&usb_midi->rx, sizeof(struct grid_midi_event_desc)); }
+bool grid_usb_midi_rx_writable(struct grid_usb_midi_model* usb_midi) {
+  return grid_swsr_writable(&usb_midi->rx, sizeof(struct grid_midi_event_desc)) && grid_swsr_writable(&usb_midi->sysex_rx, 3) && grid_swsr_writable(&usb_midi->rtm_rx, 1);
+}
 
 void grid_usb_midi_rx_rtm_process(struct grid_usb_midi_model* usb_midi) {
 
@@ -289,13 +291,8 @@ void tud_midi_rx_cb(uint8_t itf) {
 
   uint8_t packet[4];
 
-  while (tud_midi_available()) {
-    if (!grid_usb_midi_rx_writable(&grid_usb_midi_state)) {
-      break;
-    }
-    if (tud_midi_packet_read(packet)) {
-      grid_usb_midi_rx_queue(&grid_usb_midi_state, packet[0], packet[1], packet[2], packet[3]);
-    }
+  while (grid_usb_midi_rx_writable(&grid_usb_midi_state) && tud_midi_packet_read(packet)) {
+    grid_usb_midi_rx_queue(&grid_usb_midi_state, packet[0], packet[1], packet[2], packet[3]);
   }
 }
 
