@@ -18,6 +18,7 @@ static int32_t grid_usb_keyboard_report_send(struct grid_keyboard_report* report
 static bool grid_usb_hid_ready(void);
 static int32_t grid_usb_mouse_button_change(struct grid_mouse_model* usb_mouse, uint8_t b_state, uint8_t type);
 static int32_t grid_usb_mouse_move(struct grid_mouse_model* usb_mouse, int8_t position, uint8_t axis);
+static int32_t grid_usb_gamepad_report_send(struct grid_gamepad_model* usb_gamepad);
 
 void grid_usb_keyboard_init(struct grid_keyboard_model* usb_keyboard) {
 
@@ -42,12 +43,28 @@ void grid_usb_macro_init(struct grid_macro_model* usb_macro, uint16_t buffer_siz
 
 void grid_usb_mouse_init(struct grid_mouse_model* usb_mouse) { usb_mouse->buttons = 0; }
 
-void grid_usb_gamepad_init(struct grid_gamepad_model* usb_gamepad) {
+void grid_usb_gamepad_init(struct grid_gamepad_model* usb_gamepad, uint16_t buffer_size) {
   usb_gamepad->buttons = 0;
   usb_gamepad->hat = 0;
   for (uint8_t i = 0; i < GAMEPAD_AXIS_COUNT; i++) {
     usb_gamepad->axis[i] = 0;
   }
+  assert(grid_swsr_malloc(&usb_gamepad->tx, buffer_size) == 0);
+}
+
+int32_t grid_usb_gamepad_axis_move(struct grid_gamepad_model* usb_gamepad, uint8_t axis, int32_t value) {
+  (void)usb_gamepad;
+  if (axis >= GAMEPAD_AXIS_COUNT) {
+    return 0;
+  }
+  struct grid_gamepad_event_desc event = {.type = GRID_GAMEPAD_EVENT_AXIS, .index = axis, .value = (uint8_t)(value + 128)};
+  return grid_usb_gamepad_tx_push(&grid_gamepad_state, event);
+}
+
+int32_t grid_usb_gamepad_button_change(struct grid_gamepad_model* usb_gamepad, uint8_t button, uint8_t value) {
+  (void)usb_gamepad;
+  struct grid_gamepad_event_desc event = {.type = GRID_GAMEPAD_EVENT_BUTTON, .index = button, .value = value};
+  return grid_usb_gamepad_tx_push(&grid_gamepad_state, event);
 }
 
 static uint8_t grid_usb_keyboard_cleanup(struct grid_keyboard_model* usb_keyboard) {
@@ -161,12 +178,58 @@ uint8_t grid_usb_macro_tx_push(struct grid_macro_model* usb_macro, struct grid_m
 
   if (!grid_swsr_writable(&usb_macro->tx, sizeof(struct grid_macro_event_desc))) {
     grid_swsr_read(&usb_macro->tx, NULL, sizeof(struct grid_macro_event_desc));
+    usb_macro->tx_dropped++;
     dropped = 1;
   }
 
   grid_swsr_write(&usb_macro->tx, &event, sizeof(struct grid_macro_event_desc));
 
   return dropped;
+}
+
+uint8_t grid_usb_gamepad_tx_push(struct grid_gamepad_model* usb_gamepad, struct grid_gamepad_event_desc event) {
+
+  uint8_t dropped = 0;
+
+  if (!grid_swsr_writable(&usb_gamepad->tx, sizeof(struct grid_gamepad_event_desc))) {
+    grid_swsr_read(&usb_gamepad->tx, NULL, sizeof(struct grid_gamepad_event_desc));
+    usb_gamepad->tx_dropped++;
+    dropped = 1;
+  }
+
+  grid_swsr_write(&usb_gamepad->tx, &event, sizeof(struct grid_gamepad_event_desc));
+
+  return dropped;
+}
+
+bool grid_usb_gamepad_tx_available(struct grid_gamepad_model* usb_gamepad) { return grid_swsr_readable(&usb_gamepad->tx, sizeof(struct grid_gamepad_event_desc)); }
+
+void grid_usb_gamepad_tx_flush(struct grid_gamepad_model* usb_gamepad) {
+
+  if (!grid_swsr_readable(&usb_gamepad->tx, sizeof(struct grid_gamepad_event_desc))) {
+    return;
+  }
+
+  if (!grid_usb_hid_ready()) {
+    return;
+  }
+
+  struct grid_gamepad_event_desc event;
+  grid_swsr_read(&usb_gamepad->tx, &event, sizeof(struct grid_gamepad_event_desc));
+
+  if (event.type == GRID_GAMEPAD_EVENT_AXIS) {
+    if (event.index < GAMEPAD_AXIS_COUNT) {
+      usb_gamepad->axis[event.index] = (int8_t)(event.value - 128);
+    }
+  } else if (event.type == GRID_GAMEPAD_EVENT_BUTTON) {
+    if (event.value) {
+      usb_gamepad->buttons |= (1u << event.index);
+    } else {
+      usb_gamepad->buttons &= ~(1u << event.index);
+    }
+  }
+
+  grid_usb_gamepad_report_send(usb_gamepad);
 }
 
 void grid_usb_macro_tx_flush(struct grid_macro_model* usb_macro) {
@@ -192,12 +255,18 @@ void grid_usb_macro_tx_flush(struct grid_macro_model* usb_macro) {
       return;
     }
   } else if (usb_macro->next.type == GRID_MACRO_EVENT_TYPE_MOUSE_MOVE) {
+    if (!grid_usb_hid_ready()) {
+      return;
+    }
     uint8_t axis = usb_macro->next.keycode;
     int8_t position = usb_macro->next.ispressed - 128;
     if (grid_usb_mouse_move(usb_macro->mouse, position, axis)) {
       return;
     }
   } else if (usb_macro->next.type == GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON) {
+    if (!grid_usb_hid_ready()) {
+      return;
+    }
     uint8_t state = usb_macro->next.ispressed;
     uint8_t button = usb_macro->next.keycode;
     if (grid_usb_mouse_button_change(usb_macro->mouse, state, button)) {
@@ -263,23 +332,8 @@ static int32_t grid_usb_mouse_move(struct grid_mouse_model* usb_mouse, int8_t po
   return 0 == tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, usb_mouse->buttons, delta[0], delta[1], delta[2], 0);
 }
 
-int32_t grid_usb_gamepad_axis_move(struct grid_gamepad_model* usb_gamepad, uint8_t axis, int32_t value) {
-  if (axis >= GAMEPAD_AXIS_COUNT) {
-    return 0;
-  }
-  usb_gamepad->axis[axis] = value;
-  // Axes RX/RY/RZ (3,4,5) are passed in reverse order to match the HID descriptor layout.
-  return 0 == tud_hid_gamepad_report(3, usb_gamepad->axis[0], usb_gamepad->axis[1], usb_gamepad->axis[2], usb_gamepad->axis[5], usb_gamepad->axis[4], usb_gamepad->axis[3], usb_gamepad->hat,
-                                     usb_gamepad->buttons);
-}
-
-int32_t grid_usb_gamepad_button_change(struct grid_gamepad_model* usb_gamepad, uint8_t button, uint8_t value) {
-  if (value) {
-    usb_gamepad->buttons |= (1 << button);
-  } else {
-    usb_gamepad->buttons &= ~(1 << button);
-  }
-  // Axes RX/RY/RZ (3,4,5) are passed in reverse order to match the HID descriptor layout.
+// Axes RX/RY/RZ (3,4,5) are passed in reverse order to match the HID descriptor layout.
+static int32_t grid_usb_gamepad_report_send(struct grid_gamepad_model* usb_gamepad) {
   return 0 == tud_hid_gamepad_report(3, usb_gamepad->axis[0], usb_gamepad->axis[1], usb_gamepad->axis[2], usb_gamepad->axis[5], usb_gamepad->axis[4], usb_gamepad->axis[3], usb_gamepad->hat,
                                      usb_gamepad->buttons);
 }
@@ -304,17 +358,8 @@ static int32_t grid_usb_mouse_move(struct grid_mouse_model* usb_mouse, int8_t po
   return 0;
 }
 
-int32_t grid_usb_gamepad_axis_move(struct grid_gamepad_model* usb_gamepad, uint8_t axis, int32_t value) {
+static int32_t grid_usb_gamepad_report_send(struct grid_gamepad_model* usb_gamepad) {
   (void)usb_gamepad;
-  (void)axis;
-  (void)value;
-  return 0;
-}
-
-int32_t grid_usb_gamepad_button_change(struct grid_gamepad_model* usb_gamepad, uint8_t button, uint8_t value) {
-  (void)usb_gamepad;
-  (void)button;
-  (void)value;
   return 0;
 }
 

@@ -133,21 +133,11 @@ void grid_utask_heart(struct grid_utask_timer* timer) {
 
 struct grid_utask_timer timer_midi_tx;
 struct grid_utask_timer timer_keyboard_tx;
-struct grid_utask_timer timer_midi_tx_dropped;
+struct grid_utask_timer timer_gamepad_tx;
 
-void grid_utask_midi_tx_dropped(void) {
+struct grid_utask_timer timer_tx_dropped;
 
-  if (!grid_utask_timer_elapsed(&timer_midi_tx_dropped)) {
-    return;
-  }
-
-  if (grid_usb_midi_state.tx_dropped > 0) {
-    grid_platform_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_midi_state.tx_dropped);
-    grid_usb_midi_state.tx_dropped = 0;
-  }
-}
-
-void grid_utask_midi_and_keyboard_tx(void) {
+void grid_utask_usb_tx(void) {
 
   if (grid_usb_midi_tx_available(&grid_usb_midi_state)) {
     if (grid_utask_timer_elapsed(&timer_midi_tx)) {
@@ -158,6 +148,30 @@ void grid_utask_midi_and_keyboard_tx(void) {
   if (grid_usb_macro_tx_available(&grid_macro_state)) {
     if (grid_utask_timer_elapsed(&timer_keyboard_tx)) {
       grid_usb_macro_tx_flush(&grid_macro_state);
+    }
+  }
+
+  if (grid_usb_gamepad_tx_available(&grid_gamepad_state)) {
+    if (grid_utask_timer_elapsed(&timer_gamepad_tx)) {
+      grid_usb_gamepad_tx_flush(&grid_gamepad_state);
+    }
+  }
+
+  if (grid_utask_timer_elapsed(&timer_tx_dropped)) {
+
+    if (grid_usb_midi_state.tx_dropped > 0) {
+      grid_platform_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_midi_state.tx_dropped);
+      grid_usb_midi_state.tx_dropped = 0;
+    }
+
+    if (grid_macro_state.tx_dropped > 0) {
+      grid_platform_printf("HID macro TX dropped: %lu\n", (unsigned long)grid_macro_state.tx_dropped);
+      grid_macro_state.tx_dropped = 0;
+    }
+
+    if (grid_gamepad_state.tx_dropped > 0) {
+      grid_platform_printf("HID gamepad TX dropped: %lu\n", (unsigned long)grid_gamepad_state.tx_dropped);
+      grid_gamepad_state.tx_dropped = 0;
     }
   }
 }
@@ -415,7 +429,11 @@ int main(void) {
       .last = grid_platform_rtc_get_micros(),
       .period = 20,
   };
-  timer_midi_tx_dropped = (struct grid_utask_timer){
+  timer_gamepad_tx = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 20,
+  };
+  timer_tx_dropped = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
       .period = 1000000,
   };
@@ -534,8 +552,7 @@ int main(void) {
     grid_port_send_usb(port_usb);
 
     // Run transmitter-type microtasks
-    grid_utask_midi_and_keyboard_tx();
-    grid_utask_midi_tx_dropped();
+    grid_utask_usb_tx();
 
     // Decode for UI
     grid_port_send_ui(port_ui);

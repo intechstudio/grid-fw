@@ -24,5 +24,5 @@ void grid_usb_infrastructure_init(void) {
   grid_usb_keyboard_init(&grid_keyboard_state);
   grid_usb_mouse_init(&grid_mouse_state);
   grid_usb_macro_init(&grid_macro_state, GRID_MACRO_TX_BUFFER_SIZE, &grid_keyboard_state, &grid_mouse_state);
-  grid_usb_gamepad_init(&grid_gamepad_state);
+  grid_usb_gamepad_init(&grid_gamepad_state, GRID_GAMEPAD_TX_BUFFER_SIZE);
 }
