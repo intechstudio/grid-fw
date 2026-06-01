@@ -5,6 +5,7 @@
 #include "grid_d51_nvm.h"
 #include "grid_d51_uart.h"
 #include "grid_d51_usb.h"
+#include "grid_usb.h"
 
 #include "atmel_start_pins.h"
 #include <atmel_start.h>
@@ -23,8 +24,6 @@
 
 #include "vmp_def.h"
 #include "vmp_tag.h"
-
-#include "tusb.h"
 
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 const struct luaL_Reg gui_lib[] = {{NULL, NULL}};
@@ -457,10 +456,10 @@ int main(void) {
     }
 
     // Drive TinyUSB stack (bare-metal, OPT_OS_NONE)
-    tud_task();
+    grid_usb_task();
 
     // Check if USB is connected and start animation
-    if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_mounted()) {
+    if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && grid_usb_connected()) {
 
       grid_platform_printf("USB CONNECTED\n");
 

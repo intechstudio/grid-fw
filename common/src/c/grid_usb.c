@@ -12,6 +12,11 @@
 #include "grid_usb.h"
 #include "grid_protocol.h"
 #include "grid_usb_acm.h"
+#include "tusb.h"
+
+bool grid_usb_connected(void) { return tud_mounted(); }
+
+void grid_usb_task(void) { tud_task_ext(0, false); }
 
 void grid_usb_infrastructure_init(void) {
   grid_usb_acm_init(&grid_usb_acm_state, GRID_PARAMETER_SPI_TRANSACTION_length * 2);

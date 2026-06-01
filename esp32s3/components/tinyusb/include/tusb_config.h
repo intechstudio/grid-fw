@@ -9,6 +9,9 @@
  */
 #pragma once
 
+// ---- MCU ----
+#define CFG_TUSB_MCU OPT_MCU_ESP32S3
+
 // ---- OS abstraction ----
 #define CFG_TUSB_OS OPT_OS_FREERTOS
 
@@ -20,11 +23,6 @@
 
 // ---- Device stack ----
 #define CFG_TUD_ENABLED 1
-
-// Use slave/IRQ mode (no DMA).  DMA requires cache-aligned buffers and
-// SOC_CACHE_INTERNAL_MEM_VIA_L1CACHE support; slave mode is simpler and
-// fully sufficient for CDC + MIDI + HID at full-speed.
-#define CFG_TUD_DWC2_SLAVE_ENABLE 1
 
 // ---- Endpoint 0 packet size ----
 #define CFG_TUD_ENDPOINT0_SIZE 64

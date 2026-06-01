@@ -25,4 +25,7 @@ extern void grid_platform_sync1_pulse_send();
 
 void grid_usb_infrastructure_init(void);
 
+bool grid_usb_connected(void);
+void grid_usb_task(void);
+
 #endif /* GRID_USB_H */

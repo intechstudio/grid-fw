@@ -42,7 +42,7 @@
 #endif
 #define CFG_TUD_CDC_RX_BUFSIZE 512
 #define CFG_TUD_CDC_TX_BUFSIZE 1024
-#define CFG_TUD_CDC_EP_BUFSIZE 64
+#define CFG_TUD_CDC_EP_BUFSIZE 512
 
 // MIDI — 1 instance
 #ifndef CFG_TUD_MIDI

@@ -7,17 +7,6 @@
 # Path to the submodule relative to this CMakeLists.txt
 set(TUSB_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../common/dep/tinyusb")
 
-idf_build_get_property(target IDF_TARGET)
-
-if(${target} STREQUAL "esp32s3" OR ${target} STREQUAL "esp32s2")
-    set(tusb_mcu "OPT_MCU_ESP32S3")
-    if(${target} STREQUAL "esp32s2")
-        set(tusb_mcu "OPT_MCU_ESP32S2")
-    endif()
-else()
-    message(FATAL_ERROR "grid tinyusb component: unsupported IDF_TARGET '${target}'")
-endif()
-
 set(tusb_srcs
     "${TUSB_ROOT}/src/tusb.c"
     "${TUSB_ROOT}/src/common/tusb_fifo.c"
@@ -39,10 +28,6 @@ idf_component_register(
         "${TUSB_ROOT}/src/device"
     REQUIRES
         freertos
-)
-
-target_compile_options(${COMPONENT_LIB} PUBLIC
-    "-DCFG_TUSB_MCU=${tusb_mcu}"
 )
 
 # usbd.c compares uint8_t against BUILTIN_DRIVER_COUNT which may always be

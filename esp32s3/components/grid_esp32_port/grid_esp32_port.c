@@ -19,8 +19,6 @@
 #include "esp_freertos_hooks.h"
 
 #include "driver/gpio.h"
-#include "tusb.h"
-
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
@@ -469,7 +467,7 @@ void grid_esp32_port_task(void* arg) {
     }
 
     // Check if USB is connected and start animation
-    if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()) {
+    if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && grid_usb_connected()) {
 
       grid_platform_printf("USB CONNECTED\n");
 
@@ -521,11 +519,11 @@ void grid_esp32_port_task(void* arg) {
     grid_utask_midi_and_keyboard_tx();
 
     // Service tinyusb
-    tud_task_ext(0, false);
+    grid_usb_task();
 
     // Duplicate midi rx callback used as a polling mechanism, as the
     // actual callback may not necessarily process all available data
-    tud_midi_rx_cb(0);
+    grid_usb_midi_rx_poll(&grid_usb_midi_state);
 
     // Decode for UI
     grid_port_send_ui(port_ui);
