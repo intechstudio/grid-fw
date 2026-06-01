@@ -58,8 +58,6 @@ struct grid_usb_midi_model {
   struct grid_swsr_t rx;
   struct grid_swsr_t sysex_rx;
   struct grid_swsr_t rtm_rx;
-  struct grid_midi_event_desc next;
-  bool has_next;
   uint8_t sysex_assembly_buffer[GRID_MIDI_SYSEX_BUFFER_SIZE];
   uint16_t sysex_assembly_index;
   bool sysex_in_progress;

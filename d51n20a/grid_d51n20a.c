@@ -131,28 +131,19 @@ void grid_utask_heart(struct grid_utask_timer* timer) {
   grid_transport_heartbeat(&grid_transport_state, type, hwcfg, activepage, gccount);
 }
 
-struct grid_utask_timer timer_midi_and_keyboard_tx;
+struct grid_utask_timer timer_midi_tx;
+struct grid_utask_timer timer_keyboard_tx;
 
-void grid_utask_midi_and_keyboard_tx(struct grid_utask_timer* timer) {
+void grid_utask_midi_and_keyboard_tx(void) {
 
   if (grid_usb_midi_tx_available(&grid_usb_midi_state)) {
-
-    if (!grid_utask_timer_elapsed(timer)) {
-      return;
-    }
-
-    for (uint8_t i = 0; i < 4; ++i) {
+    if (grid_utask_timer_elapsed(&timer_midi_tx)) {
       grid_usb_midi_tx_flush(&grid_usb_midi_state);
     }
   }
 
   if (grid_usb_macro_tx_available(&grid_macro_state)) {
-
-    if (!grid_utask_timer_elapsed(timer)) {
-      return;
-    }
-
-    for (uint8_t i = 0; i < 4; ++i) {
+    if (grid_utask_timer_elapsed(&timer_keyboard_tx)) {
       grid_usb_macro_tx_flush(&grid_macro_state);
     }
   }
@@ -403,7 +394,11 @@ int main(void) {
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_HEARTBEATINTERVAL_us,
   };
-  timer_midi_and_keyboard_tx = (struct grid_utask_timer){
+  timer_midi_tx = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 20,
+  };
+  timer_keyboard_tx = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
       .period = 20,
   };
@@ -522,7 +517,7 @@ int main(void) {
     grid_port_send_usb(port_usb);
 
     // Run transmitter-type microtasks
-    grid_utask_midi_and_keyboard_tx(&timer_midi_and_keyboard_tx);
+    grid_utask_midi_and_keyboard_tx();
 
     // Decode for UI
     grid_port_send_ui(port_ui);

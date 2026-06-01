@@ -14,8 +14,6 @@ struct grid_usb_midi_model grid_usb_midi_state;
 
 void grid_usb_midi_init(struct grid_usb_midi_model* usb_midi, uint16_t tx_buffer_size, uint16_t rx_buffer_size, uint16_t sysex_buffer_size, uint16_t rtm_buffer_size) {
 
-  usb_midi->has_next = false;
-
   assert(grid_swsr_malloc(&usb_midi->tx, tx_buffer_size) == 0);
   assert(grid_swsr_malloc(&usb_midi->rx, rx_buffer_size) == 0);
 
@@ -41,28 +39,30 @@ uint8_t grid_usb_midi_tx_queue(struct grid_usb_midi_model* usb_midi, struct grid
 
 void grid_usb_midi_tx_flush(struct grid_usb_midi_model* usb_midi) {
 
-  if (!usb_midi->has_next) {
-    if (!grid_swsr_readable(&usb_midi->tx, sizeof(struct grid_midi_event_desc))) {
-      return;
-    }
-    grid_swsr_read(&usb_midi->tx, &usb_midi->next, sizeof(struct grid_midi_event_desc));
-    usb_midi->has_next = true;
-  }
-
   if (!tud_midi_mounted()) {
     return;
   }
 
-  const uint8_t buffer[] = {usb_midi->next.byte0, usb_midi->next.byte1, usb_midi->next.byte2, usb_midi->next.byte3};
-  if (!tud_midi_packet_write(buffer)) {
-    grid_port_debug_printf("MIDI TX FIFO full, retrying event %02x%02x%02x%02x", usb_midi->next.byte0, usb_midi->next.byte1, usb_midi->next.byte2, usb_midi->next.byte3);
+  uint32_t n_packets = tud_midi_tx_available() / 4;
+  if (n_packets == 0) {
     return;
   }
 
-  usb_midi->has_next = false;
+  uint32_t ring_packets = grid_swsr_size(&usb_midi->tx) / 4;
+  if (ring_packets == 0) {
+    return;
+  }
+
+  if (n_packets > ring_packets) {
+    n_packets = ring_packets;
+  }
+
+  uint8_t batch[CFG_TUD_MIDI_TX_BUFSIZE];
+  grid_swsr_read(&usb_midi->tx, batch, n_packets * 4);
+  tud_midi_packet_write_n(batch, n_packets);
 }
 
-bool grid_usb_midi_tx_available(struct grid_usb_midi_model* usb_midi) { return usb_midi->has_next || grid_swsr_readable(&usb_midi->tx, sizeof(struct grid_midi_event_desc)); }
+bool grid_usb_midi_tx_available(struct grid_usb_midi_model* usb_midi) { return grid_swsr_readable(&usb_midi->tx, 4); }
 
 static void grid_usb_midi_rx_queue_rtm(struct grid_usb_midi_model* usb_midi, uint8_t rtm_byte) {
   if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_FORWARD_FROM_USB)) {
