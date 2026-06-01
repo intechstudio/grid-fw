@@ -68,7 +68,7 @@ extern struct grid_usb_midi_model grid_usb_midi_state;
 
 void grid_usb_midi_init(struct grid_usb_midi_model* usb_midi, uint16_t tx_buffer_size, uint16_t rx_buffer_size, uint16_t sysex_buffer_size, uint16_t rtm_buffer_size);
 
-uint8_t grid_usb_midi_tx_queue(struct grid_usb_midi_model* usb_midi, struct grid_midi_event_desc midi_event);
+uint8_t grid_usb_midi_tx_push(struct grid_usb_midi_model* usb_midi, struct grid_midi_event_desc midi_event);
 void grid_usb_midi_tx_flush(struct grid_usb_midi_model* usb_midi);
 bool grid_usb_midi_tx_available(struct grid_usb_midi_model* usb_midi);
 

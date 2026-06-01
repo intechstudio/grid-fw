@@ -93,11 +93,11 @@ extern struct grid_gamepad_model grid_gamepad_state;
 int32_t grid_usb_gamepad_axis_move(struct grid_gamepad_model* usb_gamepad, uint8_t axis, int32_t value);
 int32_t grid_usb_gamepad_button_change(struct grid_gamepad_model* usb_gamepad, uint8_t button, uint8_t value);
 
-uint8_t grid_usb_gamepad_tx_queue(struct grid_gamepad_model* usb_gamepad, struct grid_gamepad_event_desc event);
+uint8_t grid_usb_gamepad_tx_push(struct grid_gamepad_model* usb_gamepad, struct grid_gamepad_event_desc event);
 void grid_usb_gamepad_tx_flush(struct grid_gamepad_model* usb_gamepad);
 bool grid_usb_gamepad_tx_available(struct grid_gamepad_model* usb_gamepad);
 
-uint8_t grid_usb_macro_tx_queue(struct grid_macro_model* usb_macro, struct grid_macro_event_desc event);
+uint8_t grid_usb_macro_tx_push(struct grid_macro_model* usb_macro, struct grid_macro_event_desc event);
 void grid_usb_macro_tx_flush(struct grid_macro_model* usb_macro);
 bool grid_usb_macro_tx_available(struct grid_macro_model* usb_macro);
 

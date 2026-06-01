@@ -58,13 +58,13 @@ int32_t grid_usb_gamepad_axis_move(struct grid_gamepad_model* usb_gamepad, uint8
     return 0;
   }
   struct grid_gamepad_event_desc event = {.type = GRID_GAMEPAD_EVENT_AXIS, .index = axis, .value = (uint8_t)(value + 128)};
-  return grid_usb_gamepad_tx_queue(&grid_gamepad_state, event);
+  return grid_usb_gamepad_tx_push(&grid_gamepad_state, event);
 }
 
 int32_t grid_usb_gamepad_button_change(struct grid_gamepad_model* usb_gamepad, uint8_t button, uint8_t value) {
   (void)usb_gamepad;
   struct grid_gamepad_event_desc event = {.type = GRID_GAMEPAD_EVENT_BUTTON, .index = button, .value = value};
-  return grid_usb_gamepad_tx_queue(&grid_gamepad_state, event);
+  return grid_usb_gamepad_tx_push(&grid_gamepad_state, event);
 }
 
 static uint8_t grid_usb_keyboard_cleanup(struct grid_keyboard_model* usb_keyboard) {
@@ -172,7 +172,12 @@ static struct grid_keyboard_report grid_usb_keyboard_report_build(struct grid_ke
   return report;
 }
 
-uint8_t grid_usb_macro_tx_queue(struct grid_macro_model* usb_macro, struct grid_macro_event_desc event) {
+uint8_t grid_usb_macro_tx_push(struct grid_macro_model* usb_macro, struct grid_macro_event_desc event) {
+
+  if (!grid_usb_connected()) {
+    usb_macro->tx_dropped++;
+    return 1;
+  }
 
   uint8_t dropped = 0;
 
@@ -187,7 +192,12 @@ uint8_t grid_usb_macro_tx_queue(struct grid_macro_model* usb_macro, struct grid_
   return dropped;
 }
 
-uint8_t grid_usb_gamepad_tx_queue(struct grid_gamepad_model* usb_gamepad, struct grid_gamepad_event_desc event) {
+uint8_t grid_usb_gamepad_tx_push(struct grid_gamepad_model* usb_gamepad, struct grid_gamepad_event_desc event) {
+
+  if (!grid_usb_connected()) {
+    usb_gamepad->tx_dropped++;
+    return 1;
+  }
 
   uint8_t dropped = 0;
 

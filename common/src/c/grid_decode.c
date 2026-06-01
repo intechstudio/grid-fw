@@ -70,7 +70,7 @@ uint8_t grid_decode_midi_to_usb(char* header, char* chunk) {
       .byte3 = param2,
   };
 
-  grid_usb_midi_tx_queue(&grid_usb_midi_state, event);
+  grid_usb_midi_tx_push(&grid_usb_midi_state, event);
 
   return 0;
 }
@@ -126,7 +126,7 @@ uint8_t grid_decode_sysex_to_usb(char* header, char* chunk) {
       }
     }
 
-    grid_usb_midi_tx_queue(&grid_usb_midi_state, event);
+    grid_usb_midi_tx_push(&grid_usb_midi_state, event);
   }
 
   return 0;
@@ -150,7 +150,7 @@ uint8_t grid_decode_mousebutton_to_usb(char* header, char* chunk) {
       .delay = 1,
   };
 
-  if (grid_usb_macro_tx_queue(&grid_macro_state, key)) {
+  if (grid_usb_macro_tx_push(&grid_macro_state, key)) {
     grid_port_debug_printf("mouse button: packet dropped");
   }
 
@@ -175,7 +175,7 @@ uint8_t grid_decode_mousemove_to_usb(char* header, char* chunk) {
       .delay = 1,
   };
 
-  if (grid_usb_macro_tx_queue(&grid_macro_state, key)) {
+  if (grid_usb_macro_tx_push(&grid_macro_state, key)) {
     grid_port_debug_printf("mouse move: packet dropped");
   }
 
@@ -249,14 +249,14 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk) {
       if (key_state == 2) {
 
         key.ispressed = 1;
-        packets_dropped += grid_usb_macro_tx_queue(&grid_macro_state, key);
+        packets_dropped += grid_usb_macro_tx_push(&grid_macro_state, key);
         key.ispressed = 0;
-        packets_dropped += grid_usb_macro_tx_queue(&grid_macro_state, key);
+        packets_dropped += grid_usb_macro_tx_push(&grid_macro_state, key);
       }
       // Single press or release
       else {
 
-        packets_dropped += grid_usb_macro_tx_queue(&grid_macro_state, key);
+        packets_dropped += grid_usb_macro_tx_push(&grid_macro_state, key);
       }
 
     } else if (key_ismodifier == 0xf) {
@@ -271,16 +271,12 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk) {
           key.delay = delay,
       };
 
-      packets_dropped += grid_usb_macro_tx_queue(&grid_macro_state, key);
+      packets_dropped += grid_usb_macro_tx_push(&grid_macro_state, key);
 
     } else {
 
       grid_platform_printf("invalid key_ismodifier parameter %d\n", key_ismodifier);
     }
-  }
-
-  if (packets_dropped) {
-    grid_port_debug_printf("keyboard: %d packets dropped", packets_dropped);
   }
 
   return 0;

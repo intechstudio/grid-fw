@@ -21,7 +21,12 @@ void grid_usb_midi_init(struct grid_usb_midi_model* usb_midi, uint16_t tx_buffer
   assert(grid_swsr_malloc(&usb_midi->rtm_rx, rtm_buffer_size) == 0);
 }
 
-uint8_t grid_usb_midi_tx_queue(struct grid_usb_midi_model* usb_midi, struct grid_midi_event_desc event) {
+uint8_t grid_usb_midi_tx_push(struct grid_usb_midi_model* usb_midi, struct grid_midi_event_desc event) {
+
+  if (!grid_usb_connected()) {
+    usb_midi->tx_dropped++;
+    return 1;
+  }
 
   uint8_t dropped = 0;
 

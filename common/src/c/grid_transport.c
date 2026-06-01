@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "grid_usb_acm.h"
+
 struct grid_transport grid_transport_state;
 
 void grid_transport_malloc(struct grid_transport* transport, size_t port_count) {
@@ -248,6 +250,10 @@ void grid_transport_rx_broadcast_tx(struct grid_transport* transport, struct gri
 
       if (type == GRID_PORT_USART) {
         grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_BLUE, 128);
+      }
+
+      if (type == GRID_PORT_USB) {
+        grid_usb_acm_state.tx_dropped++;
       }
 
       continue;

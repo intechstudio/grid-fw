@@ -158,7 +158,7 @@ void grid_utask_usb_tx(void) {
     }
   }
 
-  if (grid_utask_timer_elapsed(&timer_tx_dropped)) {
+  if (grid_usb_connected() && grid_usb_acm_dtr(&grid_usb_acm_state) && grid_utask_timer_elapsed(&timer_tx_dropped)) {
 
     if (grid_usb_midi_state.tx_dropped > 0) {
       grid_port_debug_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_midi_state.tx_dropped);
@@ -173,6 +173,11 @@ void grid_utask_usb_tx(void) {
     if (grid_gamepad_state.tx_dropped > 0) {
       grid_port_debug_printf("HID gamepad TX dropped: %lu\n", (unsigned long)grid_gamepad_state.tx_dropped);
       grid_gamepad_state.tx_dropped = 0;
+    }
+
+    if (grid_usb_acm_state.tx_dropped > 0) {
+      grid_port_debug_printf("CDC TX dropped: %lu\n", (unsigned long)grid_usb_acm_state.tx_dropped);
+      grid_usb_acm_state.tx_dropped = 0;
     }
   }
 }
