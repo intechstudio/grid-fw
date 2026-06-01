@@ -10,6 +10,8 @@
 #include "grid_protocol.h"
 #include "grid_usb_acm.h"
 
+extern bool grid_usb_connected(void);
+
 extern struct grid_decoder_collection* grid_decoder_to_ui_reference;
 extern struct grid_decoder_collection* grid_decoder_to_usb_reference;
 
@@ -243,7 +245,7 @@ void grid_port_send_usb(struct grid_port* port) {
 
   assert(port->type == GRID_PORT_USB);
 
-  if (!grid_usb_acm_tx_ready(&grid_usb_acm_state)) {
+  if (grid_usb_connected() && !grid_usb_acm_tx_ready(&grid_usb_acm_state)) {
     return;
   }
 
