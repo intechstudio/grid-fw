@@ -133,6 +133,19 @@ void grid_utask_heart(struct grid_utask_timer* timer) {
 
 struct grid_utask_timer timer_midi_tx;
 struct grid_utask_timer timer_keyboard_tx;
+struct grid_utask_timer timer_midi_tx_dropped;
+
+void grid_utask_midi_tx_dropped(void) {
+
+  if (!grid_utask_timer_elapsed(&timer_midi_tx_dropped)) {
+    return;
+  }
+
+  if (grid_usb_midi_state.tx_dropped > 0) {
+    grid_platform_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_midi_state.tx_dropped);
+    grid_usb_midi_state.tx_dropped = 0;
+  }
+}
 
 void grid_utask_midi_and_keyboard_tx(void) {
 
@@ -402,6 +415,10 @@ int main(void) {
       .last = grid_platform_rtc_get_micros(),
       .period = 20,
   };
+  timer_midi_tx_dropped = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000000,
+  };
   timer_led = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
       .period = 10000,
@@ -518,6 +535,7 @@ int main(void) {
 
     // Run transmitter-type microtasks
     grid_utask_midi_and_keyboard_tx();
+    grid_utask_midi_tx_dropped();
 
     // Decode for UI
     grid_port_send_ui(port_ui);

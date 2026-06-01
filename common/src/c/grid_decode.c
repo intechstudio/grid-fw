@@ -94,8 +94,6 @@ uint8_t grid_decode_sysex_to_usb(char* header, char* chunk) {
     grid_port_debug_printf("sysex invalid: %d %d", first, last);
   }
 
-  uint32_t packets_dropped = 0;
-
   struct grid_midi_event_desc event;
   for (uint16_t i = 0; i < length;) {
 
@@ -128,12 +126,7 @@ uint8_t grid_decode_sysex_to_usb(char* header, char* chunk) {
       }
     }
 
-    // grid_port_debug_printf("packet: %d %d %d %d", event.byte0, event.byte1, event.byte2, event.byte3);
-    packets_dropped += grid_usb_midi_tx_queue(&grid_usb_midi_state, event);
-  }
-
-  if (packets_dropped) {
-    grid_port_debug_printf("sysex_to_usb: %d packets dropped", packets_dropped);
+    grid_usb_midi_tx_queue(&grid_usb_midi_state, event);
   }
 
   return 0;

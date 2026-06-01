@@ -227,6 +227,20 @@ void grid_utask_heart(struct grid_utask_timer* timer) {
 struct grid_utask_timer timer_midi_tx;
 struct grid_utask_timer timer_keyboard_tx;
 
+struct grid_utask_timer timer_midi_tx_dropped;
+
+void grid_utask_midi_tx_dropped(void) {
+
+  if (!grid_utask_timer_elapsed(&timer_midi_tx_dropped)) {
+    return;
+  }
+
+  if (grid_usb_midi_state.tx_dropped > 0) {
+    grid_platform_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_midi_state.tx_dropped);
+    grid_usb_midi_state.tx_dropped = 0;
+  }
+}
+
 void grid_utask_midi_and_keyboard_tx(void) {
 
   if (grid_usb_midi_tx_available(&grid_usb_midi_state)) {
@@ -432,6 +446,10 @@ void grid_esp32_port_task(void* arg) {
       .last = grid_platform_rtc_get_micros(),
       .period = 20,
   };
+  timer_midi_tx_dropped = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000000,
+  };
   timer_process_ui = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_UICOOLDOWN_us,
@@ -517,6 +535,7 @@ void grid_esp32_port_task(void* arg) {
 
     // Run transmitter-type microtasks
     grid_utask_midi_and_keyboard_tx();
+    grid_utask_midi_tx_dropped();
 
     // Service tinyusb
     grid_usb_task();

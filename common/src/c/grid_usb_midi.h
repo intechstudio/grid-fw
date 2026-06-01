@@ -58,6 +58,7 @@ struct grid_usb_midi_model {
   struct grid_swsr_t voice_rx;
   struct grid_swsr_t sysex_rx;
   struct grid_swsr_t rtm_rx;
+  uint32_t tx_dropped;
   uint8_t sysex_assembly_buffer[GRID_MIDI_SYSEX_BUFFER_SIZE];
   uint16_t sysex_assembly_index;
   bool sysex_in_progress;
