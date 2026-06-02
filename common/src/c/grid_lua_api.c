@@ -593,13 +593,7 @@ int l_grid_cat(lua_State* L) {
 
   grid_msg_set_parameter_raw((uint8_t*)frame, CLASS_HIDKEYBOARD_LENGTH, off / 4);
 
-  // grid_port_decode_msg scans for STX...ETX pairs to dispatch frames.
-  // GRID_CLASS_HIDKEYBOARD_frame_start does not include ETX, so we must append
-  // it here before embedding the frame in the stdo string, otherwise the
-  // decoder silently skips the frame and keyboard events are lost.
-  size_t frame_len = strlen(frame);
-  frame[frame_len] = GRID_CONST_ETX;
-  frame[frame_len + 1] = '\0';
+  sprintf(&frame[strlen(frame)], GRID_CLASS_HIDKEYBOARD_frame_end);
 
   if (off != 1) {
     grid_lua_append_stdo(&grid_lua_state, frame);
