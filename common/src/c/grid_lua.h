@@ -4,9 +4,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "lua-5.4.3/src/lauxlib.h"
-#include "lua-5.4.3/src/lua.h"
-#include "lua-5.4.3/src/lualib.h"
+#include "lua-5.5.0/src/lauxlib.h"
+#include "lua-5.5.0/src/llimits.h"
+#include "lua-5.5.0/src/lua.h"
+#include "lua-5.5.0/src/lualib.h"
 
 #include "lua_source_collection.h"
 
@@ -17,6 +18,8 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 #define GRID_LUA_STDI_LENGTH 100
 
 #define GRID_LUA_STDE_LENGTH 400
+
+enum { GRID_LUA_STATE_SEED = 0x8badf00d };
 
 struct grid_lua_model {
 

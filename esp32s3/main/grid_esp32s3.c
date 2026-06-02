@@ -86,10 +86,6 @@
 #include "grid_lua_api.h"
 #include "grid_ui.h"
 
-#include "lua-5.4.3/src/lauxlib.h"
-#include "lua-5.4.3/src/lua.h"
-#include "lua-5.4.3/src/lualib.h"
-
 #include "vmp_def.h"
 #include "vmp_tag.h"
 

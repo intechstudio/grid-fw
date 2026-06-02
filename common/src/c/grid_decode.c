@@ -389,7 +389,18 @@ uint8_t grid_decode_midi_rtm_to_ui(char* header, char* chunk) {
 
   size_t result_len = lua_rawlen(L, -1);
 
+  lua_newtable(L);
+
+  size_t idx = 0;
+
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR));
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX));
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY));
+  lua_rawseti(L, -2, ++idx);
   lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDIRTM_BYTE));
+  lua_rawseti(L, -2, ++idx);
   lua_rawseti(L, -2, result_len + 1);
 
   size_t order_len = lua_rawlen(L, -2);

@@ -1,9 +1,9 @@
 #ifndef GRID_LUA_API_GUI_H
 #define GRID_LUA_API_GUI_H
 
-#include "lauxlib.h"
-#include "lua.h"
-#include "lualib.h"
+#include "lua-5.5.0/src/lauxlib.h"
+#include "lua-5.5.0/src/lua.h"
+#include "lua-5.5.0/src/lualib.h"
 
 #include <stdint.h>
 #include <stdlib.h>
