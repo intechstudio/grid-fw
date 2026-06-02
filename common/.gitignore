@@ -12,8 +12,8 @@
 !dep/littlefs
 !dep/littlefs/**
 
-!dep/lua-5.4.3
-!dep/lua-5.4.3/**
+!dep/lua-5.5.0
+!dep/lua-5.5.0/**
 
 !dep/proto
 !dep/proto/**

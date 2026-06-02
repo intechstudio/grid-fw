@@ -437,7 +437,7 @@ void grid_lua_gc_step_unsafe(struct grid_lua_model* lua) {
 
   assert(lua->L);
 
-  lua_gc(lua->L, LUA_GCSTEP, 10);
+  lua_gc(lua->L, LUA_GCSTEP, 256);
 }
 
 uint8_t grid_lua_gc_count_unsafe(struct grid_lua_model* lua) { return lua_gc(lua->L, LUA_GCCOUNT); }
@@ -498,7 +498,7 @@ void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_li
   if (lua->custom_allocator == NULL) {
     lua->L = luaL_newstate();
   } else {
-    lua->L = lua_newstate(lua->custom_allocator, lua->custom_allocator_instance);
+    lua->L = lua_newstate(lua->custom_allocator, lua->custom_allocator_instance, GRID_LUA_STATE_SEED);
   }
 
   lua_atpanic(lua->L, &grid_lua_panic);

@@ -8,7 +8,7 @@ BUILD_DIR = build
 BUILD_DIRS = \
 	$(BUILD_DIR)/common/src/c \
 	$(BUILD_DIR)/common/dep/littlefs \
-	$(BUILD_DIR)/common/dep/lua-5.4.3/src \
+	$(BUILD_DIR)/common/dep/lua-5.5.0/src \
 	$(BUILD_DIR)/common/dep/tomlc99 \
 	$(BUILD_DIR)/common/dep/vmp \
 	\
@@ -91,39 +91,39 @@ SRCS = \
 	common/src/c/grid_ui_system.c \
 	common/src/c/grid_usb.c \
 	common/src/c/grid_utask.c \
-	common/dep/lua-5.4.3/src/dirent.c \
-	common/dep/lua-5.4.3/src/lapi.c \
-	common/dep/lua-5.4.3/src/lauxlib.c \
-	common/dep/lua-5.4.3/src/lbaselib.c \
-	common/dep/lua-5.4.3/src/lcode.c \
-	common/dep/lua-5.4.3/src/lcorolib.c \
-	common/dep/lua-5.4.3/src/lctype.c \
-	common/dep/lua-5.4.3/src/ldblib.c \
-	common/dep/lua-5.4.3/src/ldebug.c \
-	common/dep/lua-5.4.3/src/ldo.c \
-	common/dep/lua-5.4.3/src/ldump.c \
-	common/dep/lua-5.4.3/src/lfunc.c \
-	common/dep/lua-5.4.3/src/lgc.c \
-	common/dep/lua-5.4.3/src/linit.c \
-	common/dep/lua-5.4.3/src/liolib.c \
-	common/dep/lua-5.4.3/src/llex.c \
-	common/dep/lua-5.4.3/src/lmathlib.c \
-	common/dep/lua-5.4.3/src/lmem.c \
-	common/dep/lua-5.4.3/src/loadlib.c \
-	common/dep/lua-5.4.3/src/lobject.c \
-	common/dep/lua-5.4.3/src/lopcodes.c \
-	common/dep/lua-5.4.3/src/loslib.c \
-	common/dep/lua-5.4.3/src/lparser.c \
-	common/dep/lua-5.4.3/src/lstate.c \
-	common/dep/lua-5.4.3/src/lstring.c \
-	common/dep/lua-5.4.3/src/lstrlib.c \
-	common/dep/lua-5.4.3/src/ltable.c \
-	common/dep/lua-5.4.3/src/ltablib.c \
-	common/dep/lua-5.4.3/src/ltm.c \
-	common/dep/lua-5.4.3/src/lundump.c \
-	common/dep/lua-5.4.3/src/lutf8lib.c \
-	common/dep/lua-5.4.3/src/lvm.c \
-	common/dep/lua-5.4.3/src/lzio.c \
+	common/dep/lua-5.5.0/src/dirent.c \
+	common/dep/lua-5.5.0/src/lapi.c \
+	common/dep/lua-5.5.0/src/lauxlib.c \
+	common/dep/lua-5.5.0/src/lbaselib.c \
+	common/dep/lua-5.5.0/src/lcode.c \
+	common/dep/lua-5.5.0/src/lcorolib.c \
+	common/dep/lua-5.5.0/src/lctype.c \
+	common/dep/lua-5.5.0/src/ldblib.c \
+	common/dep/lua-5.5.0/src/ldebug.c \
+	common/dep/lua-5.5.0/src/ldo.c \
+	common/dep/lua-5.5.0/src/ldump.c \
+	common/dep/lua-5.5.0/src/lfunc.c \
+	common/dep/lua-5.5.0/src/lgc.c \
+	common/dep/lua-5.5.0/src/linit.c \
+	common/dep/lua-5.5.0/src/liolib.c \
+	common/dep/lua-5.5.0/src/llex.c \
+	common/dep/lua-5.5.0/src/lmathlib.c \
+	common/dep/lua-5.5.0/src/lmem.c \
+	common/dep/lua-5.5.0/src/loadlib.c \
+	common/dep/lua-5.5.0/src/lobject.c \
+	common/dep/lua-5.5.0/src/lopcodes.c \
+	common/dep/lua-5.5.0/src/loslib.c \
+	common/dep/lua-5.5.0/src/lparser.c \
+	common/dep/lua-5.5.0/src/lstate.c \
+	common/dep/lua-5.5.0/src/lstring.c \
+	common/dep/lua-5.5.0/src/lstrlib.c \
+	common/dep/lua-5.5.0/src/ltable.c \
+	common/dep/lua-5.5.0/src/ltablib.c \
+	common/dep/lua-5.5.0/src/ltm.c \
+	common/dep/lua-5.5.0/src/lundump.c \
+	common/dep/lua-5.5.0/src/lutf8lib.c \
+	common/dep/lua-5.5.0/src/lvm.c \
+	common/dep/lua-5.5.0/src/lzio.c \
 	common/dep/littlefs/lfs.c \
 	common/dep/littlefs/lfs_util.c \
 	common/dep/tomlc99/toml.c \
@@ -234,7 +234,7 @@ INCLUDES = \
 	-I"common/src/c" \
 	-I"common/dep" \
 	-I"common/dep/littlefs" \
-	-I"common/dep/lua-5.4.3" \
+	-I"common/dep/lua-5.5.0" \
 	-I"common/dep/proto" \
 	-I"common/dep/tomlc99" \
 	-I"common/dep/vmp" \
