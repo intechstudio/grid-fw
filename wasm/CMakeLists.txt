@@ -4,7 +4,7 @@ project(grid_gui)
 include_directories(${CMAKE_SOURCE_DIR}/../common/build/lua)
 include_directories(${CMAKE_SOURCE_DIR}/../common/src/c)
 include_directories(${CMAKE_SOURCE_DIR}/../common/dep)
-include_directories(${CMAKE_SOURCE_DIR}/../common/dep/lua-5.4.3/src)
+include_directories(${CMAKE_SOURCE_DIR}/../common/dep/lua-5.5.0/src)
 include_directories(${CMAKE_SOURCE_DIR}/../common/dep/proto)
 include_directories(${CMAKE_SOURCE_DIR}/../common/dep/tinyalloc)
 include_directories(${CMAKE_SOURCE_DIR}/../esp32s3/components/grid_esp32_lcd)
@@ -31,7 +31,7 @@ list(APPEND SRC_FILES ${ESP_COMPONENTS}/grid_esp32_lcd/grid_lua_api_gui.c)
 add_executable(index ${SRC_FILES})
 
 # Add lua source files
-file(GLOB LUA_SOURCE_FILES ../common/dep/lua-5.4.3/src/*.c)
+file(GLOB LUA_SOURCE_FILES ../common/dep/lua-5.5.0/src/*.c)
 list(FILTER LUA_SOURCE_FILES EXCLUDE REGEX "lua.c|luac.c")
 target_sources(index PRIVATE ${LUA_SOURCE_FILES})
 
