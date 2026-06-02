@@ -282,7 +282,7 @@ void grid_lua_decode_process_results(struct grid_lua_model* lua) {
 grid_lua_decode_process_results_cleanup:
 
   lua_pop(lua->L, lua_gettop(lua->L));
-  grid_lua_gc_full_unsafe(lua);
+  grid_lua_gc_step_unsafe(lua);
   grid_lua_semaphore_release(lua);
 }
 
