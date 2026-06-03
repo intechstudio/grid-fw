@@ -91,6 +91,9 @@ gmrr = function(self, ev, ch, cmd, p1, features, mode)
   end
   if p1 == -1 then
     p1 = midi_auto_p1(self)
+    if mode == 1 then
+      p1 = p1 % 32
+    end
   end
 
   local rx_set_value, rx_set_led = table.unpack(features)
