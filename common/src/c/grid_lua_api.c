@@ -593,6 +593,8 @@ int l_grid_cat(lua_State* L) {
 
   grid_msg_set_parameter_raw((uint8_t*)frame, CLASS_HIDKEYBOARD_LENGTH, off / 4);
 
+  sprintf(&frame[strlen(frame)], GRID_CLASS_HIDKEYBOARD_frame_end);
+
   if (off != 1) {
     grid_lua_append_stdo(&grid_lua_state, frame);
   } else {
