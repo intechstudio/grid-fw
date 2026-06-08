@@ -13,6 +13,10 @@
 
 struct grid_usb_midi_model grid_usb_midi_state;
 
+void grid_usb_midi_on_connect(struct grid_usb_midi_model* usb_midi) { (void)usb_midi; }
+
+void grid_usb_midi_on_disconnect(struct grid_usb_midi_model* usb_midi) { grid_swsr_read(&usb_midi->tx, NULL, grid_swsr_size(&usb_midi->tx)); }
+
 void grid_usb_midi_init(struct grid_usb_midi_model* usb_midi, uint16_t tx_buffer_size, uint16_t rx_buffer_size, uint16_t sysex_buffer_size, uint16_t rtm_buffer_size) {
 
   assert(grid_swsr_malloc(&usb_midi->tx, tx_buffer_size) == 0);

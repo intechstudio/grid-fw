@@ -25,15 +25,16 @@ bool grid_usb_connected(void) { return tud_mounted(); }
 
 void grid_usb_task(void) { tud_task_ext(0, false); }
 
-void grid_usb_on_connect(void) {}
+void grid_usb_on_connect(void) {
+  grid_usb_midi_on_connect(&grid_usb_midi_state);
+  grid_usb_hid_on_connect(&grid_macro_state, &grid_gamepad_state);
+  grid_usb_acm_on_connect(&grid_usb_acm_state);
+}
 
 void grid_usb_on_disconnect(void) {
-  grid_swsr_read(&grid_usb_midi_state.tx, NULL, grid_swsr_size(&grid_usb_midi_state.tx));
-
-  grid_swsr_read(&grid_macro_state.tx, NULL, grid_swsr_size(&grid_macro_state.tx));
-  grid_macro_state.has_next = false;
-
-  grid_swsr_read(&grid_gamepad_state.tx, NULL, grid_swsr_size(&grid_gamepad_state.tx));
+  grid_usb_midi_on_disconnect(&grid_usb_midi_state);
+  grid_usb_hid_on_disconnect(&grid_macro_state, &grid_gamepad_state);
+  grid_usb_acm_on_disconnect(&grid_usb_acm_state);
 }
 
 void tud_mount_cb(void) { grid_usb_on_connect(); }

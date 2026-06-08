@@ -84,6 +84,10 @@ int32_t grid_usb_acm_write(struct grid_usb_acm_model* usb_acm, char* buffer, uin
 
 void grid_usb_acm_init(struct grid_usb_acm_model* usb_acm, uint16_t rx_buffer_size) { assert(grid_swsr_malloc(&usb_acm->rx, rx_buffer_size) == 0); }
 
+void grid_usb_acm_on_connect(struct grid_usb_acm_model* usb_acm) { (void)usb_acm; }
+
+void grid_usb_acm_on_disconnect(struct grid_usb_acm_model* usb_acm) { (void)usb_acm; }
+
 #else // !CFG_TUD_CDC
 
 bool grid_usb_acm_dtr(struct grid_usb_acm_model* usb_acm) {
@@ -107,6 +111,10 @@ void grid_usb_acm_init(struct grid_usb_acm_model* usb_acm, uint16_t rx_buffer_si
   (void)usb_acm;
   (void)rx_buffer_size;
 }
+
+void grid_usb_acm_on_connect(struct grid_usb_acm_model* usb_acm) { (void)usb_acm; }
+
+void grid_usb_acm_on_disconnect(struct grid_usb_acm_model* usb_acm) { (void)usb_acm; }
 
 void grid_usb_acm_rx_poll(struct grid_usb_acm_model* usb_acm) { (void)usb_acm; }
 

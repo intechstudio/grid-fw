@@ -34,6 +34,17 @@ void grid_usb_keyboard_init(struct grid_keyboard_model* usb_keyboard) {
   usb_keyboard->isenabled = 1;
 }
 
+void grid_usb_hid_on_connect(struct grid_macro_model* usb_macro, struct grid_gamepad_model* usb_gamepad) {
+  (void)usb_macro;
+  (void)usb_gamepad;
+}
+
+void grid_usb_hid_on_disconnect(struct grid_macro_model* usb_macro, struct grid_gamepad_model* usb_gamepad) {
+  grid_swsr_read(&usb_macro->tx, NULL, grid_swsr_size(&usb_macro->tx));
+  usb_macro->has_next = false;
+  grid_swsr_read(&usb_gamepad->tx, NULL, grid_swsr_size(&usb_gamepad->tx));
+}
+
 void grid_usb_macro_init(struct grid_macro_model* usb_macro, uint16_t buffer_size, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse) {
 
   usb_macro->tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
