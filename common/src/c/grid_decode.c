@@ -9,9 +9,12 @@
 #include "grid_msg.h"
 #include "grid_platform.h"
 #include "grid_sys.h"
+#include "grid_transport.h"
 #include "grid_ui_encoder.h"
 #include "grid_ui_potmeter.h"
 #include "grid_usb.h"
+#include "grid_usb_hid.h"
+#include "grid_usb_midi.h"
 
 extern struct grid_transport grid_transport_state;
 

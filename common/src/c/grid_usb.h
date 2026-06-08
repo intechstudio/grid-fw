@@ -11,14 +11,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// Pull in CFG_TUD_CDC / CFG_TUD_MIDI / CFG_TUD_HID for the language server
-#include "tusb_config.h"
-
-#include "grid_sys.h"
-#include "grid_transport.h"
-#include "grid_usb_hid.h"
-#include "grid_usb_midi.h"
-
 extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
 
 extern void grid_platform_sync1_pulse_send();

@@ -26,13 +26,13 @@
 #include "grid_esp32_pins.h"
 #include "grid_esp32_platform.h"
 #include "grid_rollid.h"
-#include "grid_usb.h"
-#include "grid_usb_acm.h"
-
 #include "grid_sys.h"
 #include "grid_transport.h"
 #include "grid_ui.h"
 #include "grid_usb.h"
+#include "grid_usb_acm.h"
+#include "grid_usb_hid.h"
+#include "grid_usb_midi.h"
 #include "grid_utask.h"
 
 #include "driver/spi_slave.h"

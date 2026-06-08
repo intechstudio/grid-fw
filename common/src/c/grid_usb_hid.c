@@ -6,6 +6,9 @@
 
 #include "grid_msg.h"
 #include "grid_platform.h"
+#include "grid_port.h"
+#include "grid_sys.h"
+#include "grid_transport.h"
 #include "grid_usb.h"
 
 struct grid_macro_model grid_macro_state = {0};

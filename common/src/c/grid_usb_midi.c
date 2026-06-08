@@ -7,6 +7,7 @@
 #include "grid_msg.h"
 #include "grid_platform.h"
 #include "grid_swsr.h"
+#include "grid_sys.h"
 #include "grid_transport.h"
 #include "grid_usb.h"
 

@@ -8,8 +8,10 @@
 #include "grid_config.h"
 #include "grid_platform.h"
 #include "grid_protocol.h"
+#include "grid_sys.h"
 #include "grid_transport.h"
 #include "grid_usb.h"
+#include "grid_usb_hid.h"
 
 extern void grid_platform_printf(char const* fmt, ...);
 
