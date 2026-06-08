@@ -15,7 +15,7 @@ extern uint64_t grid_platform_rtc_get_elapsed_time(uint64_t told);
 
 extern void grid_platform_sync1_pulse_send();
 
-void grid_usb_infrastructure_init(void);
+void grid_usb_init(uint16_t vid, uint16_t pid, const char* serial);
 
 bool grid_usb_connected(void);
 void grid_usb_task(void);
