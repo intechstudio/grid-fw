@@ -10,15 +10,8 @@
 
 #include "atmel_start_pins.h"
 #include <atmel_start.h>
-
-#include <hal_qspi_dma.h>
-
 #include <stdio.h>
 
-#include <hpl_reset.h>
-#include <string.h>
-
-#include "grid_allocator.h"
 #include "grid_msg.h"
 #include "grid_port.h"
 #include "grid_utask.h"
@@ -29,9 +22,6 @@
 extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 const struct luaL_Reg gui_lib[] = {{NULL, NULL}};
 const struct luaL_Reg* grid_lua_api_gui_lib_reference = gui_lib;
-
-#include <stdio.h>
-#include <stdlib.h>
 
 static volatile struct grid_port* uart_port_array[4] = {0};
 static volatile struct grid_port* host_port = NULL;
