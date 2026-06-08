@@ -5,12 +5,6 @@
  */
 #pragma once
 
-#include <stdint.h>
-
-#include "grid_usb_acm.h"
-#include "grid_usb_hid.h"
-#include "grid_usb_midi.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

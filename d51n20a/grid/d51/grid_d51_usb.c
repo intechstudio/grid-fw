@@ -5,6 +5,7 @@
 #include "grid_d51_usb.h"
 
 #include "grid_usb.h"
+#include "grid_usb_hid.h"
 
 static const tusb_desc_device_t s_device_desc = {
     .bLength = sizeof(tusb_desc_device_t),

@@ -14,6 +14,7 @@
 #include "esp_private/usb_phy.h"
 #include "grid_esp32_usb.h"
 #include "grid_usb.h"
+#include "grid_usb_hid.h"
 
 static const char* TAG = "USB";
 
