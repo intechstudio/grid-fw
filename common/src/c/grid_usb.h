@@ -19,7 +19,5 @@ void grid_usb_init(uint16_t vid, uint16_t pid, const char* serial);
 
 bool grid_usb_connected(void);
 void grid_usb_task(void);
-void grid_usb_on_connect(void);
-void grid_usb_on_disconnect(void);
 
 #endif /* GRID_USB_H */

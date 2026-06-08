@@ -25,21 +25,17 @@ bool grid_usb_connected(void) { return tud_mounted(); }
 
 void grid_usb_task(void) { tud_task_ext(0, false); }
 
-void grid_usb_on_connect(void) {
+void tud_mount_cb(void) {
   grid_usb_midi_on_connect(&grid_usb_midi_state);
   grid_usb_hid_on_connect(&grid_macro_state, &grid_gamepad_state, &grid_keyboard_state, &grid_mouse_state);
   grid_usb_acm_on_connect(&grid_usb_acm_state);
 }
 
-void grid_usb_on_disconnect(void) {
+void tud_umount_cb(void) {
   grid_usb_midi_on_disconnect(&grid_usb_midi_state);
   grid_usb_hid_on_disconnect(&grid_macro_state, &grid_gamepad_state, &grid_keyboard_state, &grid_mouse_state);
   grid_usb_acm_on_disconnect(&grid_usb_acm_state);
 }
-
-void tud_mount_cb(void) { grid_usb_on_connect(); }
-
-void tud_umount_cb(void) { grid_usb_on_disconnect(); }
 
 static tusb_desc_device_t s_device_desc = {
     .bLength = sizeof(tusb_desc_device_t),
