@@ -27,13 +27,13 @@ void grid_usb_task(void) { tud_task_ext(0, false); }
 
 void grid_usb_on_connect(void) {
   grid_usb_midi_on_connect(&grid_usb_midi_state);
-  grid_usb_hid_on_connect(&grid_macro_state, &grid_gamepad_state);
+  grid_usb_hid_on_connect(&grid_macro_state, &grid_gamepad_state, &grid_keyboard_state, &grid_mouse_state);
   grid_usb_acm_on_connect(&grid_usb_acm_state);
 }
 
 void grid_usb_on_disconnect(void) {
   grid_usb_midi_on_disconnect(&grid_usb_midi_state);
-  grid_usb_hid_on_disconnect(&grid_macro_state, &grid_gamepad_state);
+  grid_usb_hid_on_disconnect(&grid_macro_state, &grid_gamepad_state, &grid_keyboard_state, &grid_mouse_state);
   grid_usb_acm_on_disconnect(&grid_usb_acm_state);
 }
 

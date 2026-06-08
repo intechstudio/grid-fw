@@ -102,8 +102,8 @@ uint8_t grid_usb_macro_tx_push(struct grid_macro_model* usb_macro, struct grid_m
 void grid_usb_macro_tx_flush(struct grid_macro_model* usb_macro);
 bool grid_usb_macro_tx_available(struct grid_macro_model* usb_macro);
 
-void grid_usb_hid_on_connect(struct grid_macro_model* usb_macro, struct grid_gamepad_model* usb_gamepad);
-void grid_usb_hid_on_disconnect(struct grid_macro_model* usb_macro, struct grid_gamepad_model* usb_gamepad);
+void grid_usb_hid_on_connect(struct grid_macro_model* usb_macro, struct grid_gamepad_model* usb_gamepad, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse);
+void grid_usb_hid_on_disconnect(struct grid_macro_model* usb_macro, struct grid_gamepad_model* usb_gamepad, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse);
 
 void grid_usb_macro_init(struct grid_macro_model* usb_macro, uint16_t buffer_size, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse);
 void grid_usb_keyboard_init(struct grid_keyboard_model* usb_keyboard);
