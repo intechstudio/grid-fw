@@ -23,10 +23,6 @@ extern const struct luaL_Reg* grid_lua_api_generic_lib_reference;
 const struct luaL_Reg gui_lib[] = {{NULL, NULL}};
 const struct luaL_Reg* grid_lua_api_gui_lib_reference = gui_lib;
 
-static volatile struct grid_port* uart_port_array[4] = {0};
-static volatile struct grid_port* host_port = NULL;
-static volatile struct grid_port* ui_port = NULL;
-
 volatile uint32_t loopcounter = 1;
 volatile uint32_t loopcount = 0;
 
@@ -225,12 +221,9 @@ volatile uint8_t rxtimeoutselector = 0;
 volatile uint8_t pingflag = 0;
 volatile uint8_t reportflag = 0;
 
-static struct timer_task RTC_Scheduler_rx_task;
-static struct timer_task RTC_Scheduler_ping;
 static struct timer_task RTC_Scheduler_realtime;
 static struct timer_task RTC_Scheduler_realtime_ms;
 static struct timer_task RTC_Scheduler_grid_sync;
-static struct timer_task RTC_Scheduler_heartbeat;
 static struct timer_task RTC_Scheduler_report;
 
 #define RTC1SEC 16384
@@ -395,8 +388,6 @@ int main(void) {
   // grid_d51_nvm_toc_debug(&grid_d51_nvm_state);
 
   init_timer();
-
-  uint32_t loopstart = 0;
 
   ext_irq_register(PIN_GRID_SYNC_1, button_on_SYNC1_pressed);
   ext_irq_register(PIN_GRID_SYNC_2, button_on_SYNC2_pressed);
