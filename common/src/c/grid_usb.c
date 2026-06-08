@@ -28,9 +28,6 @@ void grid_usb_task(void) { tud_task_ext(0, false); }
 void grid_usb_on_connect(void) {}
 
 void grid_usb_on_disconnect(void) {
-  grid_usb_acm_state.dtr = false;
-  grid_usb_acm_state.tx_ready = 0;
-
   grid_swsr_read(&grid_usb_midi_state.tx, NULL, grid_swsr_size(&grid_usb_midi_state.tx));
 
   grid_swsr_read(&grid_macro_state.tx, NULL, grid_swsr_size(&grid_macro_state.tx));

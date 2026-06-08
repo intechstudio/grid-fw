@@ -245,10 +245,6 @@ void grid_port_send_usb(struct grid_port* port) {
 
   assert(port->type == GRID_PORT_USB);
 
-  if (grid_usb_connected() && !grid_usb_acm_tx_ready(&grid_usb_acm_state)) {
-    return;
-  }
-
   struct grid_swsr_t* tx = grid_port_get_tx(port);
 
   // Allocated statically due to the implementation of usb serial writes
