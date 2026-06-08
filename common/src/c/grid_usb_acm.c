@@ -64,6 +64,11 @@ bool grid_usb_acm_dtr(struct grid_usb_acm_model* usb_acm) {
   return tud_cdc_connected();
 }
 
+bool grid_usb_acm_tx_ready(struct grid_usb_acm_model* usb_acm) {
+  (void)usb_acm;
+  return tud_cdc_write_available() == CFG_TUD_CDC_TX_BUFSIZE;
+}
+
 int32_t grid_usb_acm_write(struct grid_usb_acm_model* usb_acm, char* buffer, uint32_t length) {
   if (!tud_cdc_connected() || tud_cdc_write_available() < length) {
     usb_acm->tx_dropped++;
@@ -82,6 +87,11 @@ void grid_usb_acm_init(struct grid_usb_acm_model* usb_acm, uint16_t rx_buffer_si
 #else // !CFG_TUD_CDC
 
 bool grid_usb_acm_dtr(struct grid_usb_acm_model* usb_acm) {
+  (void)usb_acm;
+  return false;
+}
+
+bool grid_usb_acm_tx_ready(struct grid_usb_acm_model* usb_acm) {
   (void)usb_acm;
   return false;
 }
