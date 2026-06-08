@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRID_USB_HID_H
+#define GRID_USB_HID_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -108,3 +109,5 @@ void grid_usb_gamepad_init(struct grid_gamepad_model* usb_gamepad, uint16_t buff
 
 void grid_usb_keyboard_enable(struct grid_keyboard_model* usb_keyboard);
 void grid_usb_keyboard_disable(struct grid_keyboard_model* usb_keyboard);
+
+#endif /* GRID_USB_HID_H */

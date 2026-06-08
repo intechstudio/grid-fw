@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRID_USB_MIDI_H
+#define GRID_USB_MIDI_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -79,3 +80,5 @@ void grid_usb_midi_rx_rtm_process(struct grid_usb_midi_model* usb_midi);
 void grid_usb_midi_rx_sysex_process(struct grid_usb_midi_model* usb_midi);
 
 void grid_usb_midi_rx_poll(struct grid_usb_midi_model* usb_midi);
+
+#endif /* GRID_USB_MIDI_H */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRID_USB_ACM_H
+#define GRID_USB_ACM_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -21,3 +22,5 @@ bool grid_usb_acm_dtr(struct grid_usb_acm_model* usb_acm);
 int32_t grid_usb_acm_write(struct grid_usb_acm_model* usb_acm, char* buffer, uint32_t length);
 void grid_usb_acm_rx_poll(struct grid_usb_acm_model* usb_acm);
 void grid_usb_acm_rx_process(struct grid_usb_acm_model* usb_acm);
+
+#endif /* GRID_USB_ACM_H */
