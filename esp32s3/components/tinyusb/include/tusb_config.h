@@ -13,7 +13,7 @@
 #define CFG_TUSB_MCU OPT_MCU_ESP32S3
 
 // ---- OS abstraction ----
-#define CFG_TUSB_OS OPT_OS_FREERTOS
+#define CFG_TUSB_OS OPT_OS_NONE
 
 // ---- Debug (0 = silent) ----
 #define CFG_TUSB_DEBUG 0
