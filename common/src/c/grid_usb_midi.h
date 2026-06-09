@@ -23,10 +23,13 @@ enum grid_midi_cin_type {
   GRID_MIDI_CIN_PROGRAM_CHANGE = 0x0C,
   GRID_MIDI_CIN_CHANNEL_PRESSURE = 0x0D,
   GRID_MIDI_CIN_PITCHBEND = 0x0E,
-  GRID_MIDI_CIN_SINGLE_BYTE = 0x0F
+  GRID_MIDI_CIN_SINGLE_BYTE = 0x0F,
 };
 
-enum grid_midi_system_type { GRID_MIDI_SYSEX_START = 0xF0, GRID_MIDI_SYSEX_END = 0xF7 };
+enum grid_midi_system_type {
+  GRID_MIDI_SYSEX_START = 0xF0,
+  GRID_MIDI_SYSEX_END = 0xF7,
+};
 
 enum grid_midi_rtm_type {
   GRID_MIDI_RTM_TIMING_CLOCK = 0xF8,
@@ -36,7 +39,7 @@ enum grid_midi_rtm_type {
   GRID_MIDI_RTM_STOP = 0xFC,
   GRID_MIDI_RTM_UNDEFINED_FD = 0xFD,
   GRID_MIDI_RTM_ACTIVE_SENSING = 0xFE,
-  GRID_MIDI_RTM_SYSTEM_RESET = 0xFF
+  GRID_MIDI_RTM_SYSTEM_RESET = 0xFF,
 };
 
 struct grid_midi_event_desc {
