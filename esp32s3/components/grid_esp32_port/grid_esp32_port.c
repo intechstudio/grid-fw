@@ -222,31 +222,9 @@ void grid_utask_heart(struct grid_utask_timer* timer) {
   grid_transport_heartbeat(&grid_transport_state, type, hwcfg, activepage, gccount);
 }
 
-struct grid_utask_timer timer_midi_tx;
-struct grid_utask_timer timer_keyboard_tx;
-struct grid_utask_timer timer_gamepad_tx;
-
 struct grid_utask_timer timer_tx_dropped;
 
 void grid_utask_usb_tx(void) {
-
-  if (grid_usb_midi_tx_available(&grid_usb_state.midi)) {
-    if (grid_utask_timer_elapsed(&timer_midi_tx)) {
-      grid_usb_midi_tx_flush(&grid_usb_state.midi);
-    }
-  }
-
-  if (grid_usb_macro_tx_available(&grid_usb_state.hid.macro)) {
-    if (grid_utask_timer_elapsed(&timer_keyboard_tx)) {
-      grid_usb_macro_tx_flush(&grid_usb_state.hid.macro);
-    }
-  }
-
-  if (grid_usb_gamepad_tx_available(&grid_usb_state.hid.gamepad)) {
-    if (grid_utask_timer_elapsed(&timer_gamepad_tx)) {
-      grid_usb_gamepad_tx_flush(&grid_usb_state.hid.gamepad);
-    }
-  }
 
   if (grid_usb_connected() && grid_usb_acm_dtr(&grid_usb_state.acm) && grid_utask_timer_elapsed(&timer_tx_dropped)) {
 
@@ -454,18 +432,6 @@ void grid_esp32_port_task(void* arg) {
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_HEARTBEATINTERVAL_us,
   };
-  timer_midi_tx = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = 20,
-  };
-  timer_keyboard_tx = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = 20,
-  };
-  timer_gamepad_tx = (struct grid_utask_timer){
-      .last = grid_platform_rtc_get_micros(),
-      .period = 20,
-  };
   timer_tx_dropped = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
       .period = 1000000,
@@ -553,7 +519,18 @@ void grid_esp32_port_task(void* arg) {
     // Decode for USB
     grid_port_send_usb(port_usb);
 
-    // Run transmitter-type microtasks
+    // USB TX flush
+    if (grid_usb_midi_tx_available(&grid_usb_state.midi)) {
+      grid_usb_midi_tx_flush(&grid_usb_state.midi);
+    }
+    if (grid_usb_macro_tx_available(&grid_usb_state.hid.macro)) {
+      grid_usb_macro_tx_flush(&grid_usb_state.hid.macro);
+    }
+    if (grid_usb_gamepad_tx_available(&grid_usb_state.hid.gamepad)) {
+      grid_usb_gamepad_tx_flush(&grid_usb_state.hid.gamepad);
+    }
+
+    // TX dropped reporting
     grid_utask_usb_tx();
 
     // Service tinyusb
