@@ -63,33 +63,36 @@ void grid_usb_macro_tx_flush(struct grid_macro_model* usb_macro) {
     return;
   }
 
-  if (usb_macro->next.type == GRID_MACRO_EVENT_TYPE_KEY || usb_macro->next.type == GRID_MACRO_EVENT_TYPE_MODIFIER) {
-    if (!grid_usb_hid_ready()) {
-      return;
-    }
-    if (grid_usb_keyboard_keychange(usb_macro->keyboard, &usb_macro->next)) {
-      return;
-    }
-  } else if (usb_macro->next.type == GRID_MACRO_EVENT_TYPE_MOUSE_MOVE) {
-    if (!grid_usb_hid_ready()) {
-      return;
-    }
+  if (!grid_usb_hid_ready()) {
+    return;
+  }
+
+  int32_t result = 0;
+
+  switch (usb_macro->next.type) {
+  case GRID_MACRO_EVENT_TYPE_KEY:
+  case GRID_MACRO_EVENT_TYPE_MODIFIER:
+    result = grid_usb_keyboard_keychange(usb_macro->keyboard, &usb_macro->next);
+    break;
+  case GRID_MACRO_EVENT_TYPE_MOUSE_MOVE: {
     uint8_t axis = usb_macro->next.keycode;
     int8_t position = usb_macro->next.ispressed - 128;
-    if (grid_usb_mouse_move(usb_macro->mouse, position, axis)) {
-      return;
-    }
-  } else if (usb_macro->next.type == GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON) {
-    if (!grid_usb_hid_ready()) {
-      return;
-    }
+    result = grid_usb_mouse_move(usb_macro->mouse, position, axis);
+    break;
+  }
+  case GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON: {
     uint8_t state = usb_macro->next.ispressed;
     uint8_t button = usb_macro->next.keycode;
-    if (grid_usb_mouse_button_change(usb_macro->mouse, state, button)) {
-      return;
-    }
-  } else if (usb_macro->next.type == GRID_MACRO_EVENT_TYPE_DELAY) {
-  } else {
+    result = grid_usb_mouse_button_change(usb_macro->mouse, state, button);
+    break;
+  }
+  case GRID_MACRO_EVENT_TYPE_DELAY:
+  default:
+    break;
+  }
+
+  if (result != 0) {
+    return;
   }
 
   usb_macro->has_next = false;
