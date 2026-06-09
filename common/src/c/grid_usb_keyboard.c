@@ -5,6 +5,8 @@
 
 #include "grid_usb_keyboard.h"
 
+#include "grid_usb.h"
+
 #include "grid_msg.h"
 #include "grid_platform.h"
 #include "grid_port.h"
@@ -67,6 +69,10 @@ static uint8_t grid_usb_keyboard_cleanup(struct grid_keyboard_model* usb_keyboar
 }
 
 int32_t grid_usb_keyboard_keychange(struct grid_keyboard_model* usb_keyboard, struct grid_macro_event_desc* key) {
+
+  if (!usb_keyboard->tx_interface_ready()) {
+    return 1;
+  }
 
   bool found = false;
   uint8_t changed_flag = 0;
@@ -132,7 +138,7 @@ int32_t grid_usb_keyboard_keychange(struct grid_keyboard_model* usb_keyboard, st
   return 0;
 }
 
-void grid_usb_keyboard_init(struct grid_keyboard_model* usb_keyboard) {
+void grid_usb_keyboard_init(struct grid_keyboard_model* usb_keyboard, bool (*tx_interface_ready)(void)) {
 
   for (uint8_t i = 0; i < GRID_KEYBOARD_KEY_maxcount; i++) {
     usb_keyboard->active_key_list[i].type = GRID_MACRO_EVENT_TYPE_KEY;
@@ -141,6 +147,7 @@ void grid_usb_keyboard_init(struct grid_keyboard_model* usb_keyboard) {
 
   usb_keyboard->active_key_count = 0;
   usb_keyboard->isenabled = 1;
+  usb_keyboard->tx_interface_ready = tx_interface_ready;
 }
 
 void grid_usb_keyboard_on_connect(struct grid_keyboard_model* usb_keyboard) { (void)usb_keyboard; }

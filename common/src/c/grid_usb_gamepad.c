@@ -15,8 +15,6 @@ static int32_t grid_usb_gamepad_report_send(struct grid_gamepad_model* usb_gamep
                                      usb_gamepad->buttons);
 }
 
-static bool grid_usb_gamepad_hid_ready(void) { return tud_hid_ready(); }
-
 #else // !CFG_TUD_HID
 
 static int32_t grid_usb_gamepad_report_send(struct grid_gamepad_model* usb_gamepad) {
@@ -24,16 +22,15 @@ static int32_t grid_usb_gamepad_report_send(struct grid_gamepad_model* usb_gamep
   return 0;
 }
 
-static bool grid_usb_gamepad_hid_ready(void) { return true; }
-
 #endif // CFG_TUD_HID
 
-void grid_usb_gamepad_init(struct grid_gamepad_model* usb_gamepad, uint16_t buffer_size) {
+void grid_usb_gamepad_init(struct grid_gamepad_model* usb_gamepad, uint16_t buffer_size, bool (*tx_interface_ready)(void)) {
   usb_gamepad->buttons = 0;
   usb_gamepad->hat = 0;
   for (uint8_t i = 0; i < GAMEPAD_AXIS_COUNT; i++) {
     usb_gamepad->axis[i] = 0;
   }
+  usb_gamepad->tx_interface_ready = tx_interface_ready;
   assert(grid_swsr_malloc(&usb_gamepad->tx, buffer_size) == 0);
 }
 
@@ -75,7 +72,7 @@ void grid_usb_gamepad_tx_flush(struct grid_gamepad_model* usb_gamepad) {
   if (!grid_swsr_readable(&usb_gamepad->tx, sizeof(struct grid_gamepad_event_desc))) {
     return;
   }
-  if (!grid_usb_gamepad_hid_ready()) {
+  if (!usb_gamepad->tx_interface_ready()) {
     return;
   }
   struct grid_gamepad_event_desc event;

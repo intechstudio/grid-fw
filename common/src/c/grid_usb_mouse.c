@@ -2,9 +2,14 @@
 
 #include "grid_usb_mouse.h"
 
+#include "grid_usb.h"
+
 #if CFG_TUD_HID
 
 int32_t grid_usb_mouse_button_change(struct grid_mouse_model* usb_mouse, uint8_t b_state, uint8_t type) {
+  if (!usb_mouse->tx_interface_ready()) {
+    return 1;
+  }
   if (b_state) {
     usb_mouse->buttons |= type;
   } else {
@@ -14,6 +19,9 @@ int32_t grid_usb_mouse_button_change(struct grid_mouse_model* usb_mouse, uint8_t
 }
 
 int32_t grid_usb_mouse_move(struct grid_mouse_model* usb_mouse, int8_t position, uint8_t axis) {
+  if (!usb_mouse->tx_interface_ready()) {
+    return 1;
+  }
   int8_t delta[3] = {0};
   if (axis < MOUSE_AXIS_X || axis >= MOUSE_AXIS_COUNT) {
     return 0;
@@ -40,7 +48,10 @@ int32_t grid_usb_mouse_move(struct grid_mouse_model* usb_mouse, int8_t position,
 
 #endif // CFG_TUD_HID
 
-void grid_usb_mouse_init(struct grid_mouse_model* usb_mouse) { usb_mouse->buttons = 0; }
+void grid_usb_mouse_init(struct grid_mouse_model* usb_mouse, bool (*tx_interface_ready)(void)) {
+  usb_mouse->buttons = 0;
+  usb_mouse->tx_interface_ready = tx_interface_ready;
+}
 
 void grid_usb_mouse_on_connect(struct grid_mouse_model* usb_mouse) { (void)usb_mouse; }
 

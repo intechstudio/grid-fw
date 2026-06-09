@@ -28,9 +28,10 @@ struct grid_gamepad_model {
   uint32_t buttons;
   int8_t axis[GAMEPAD_AXIS_COUNT];
   uint8_t hat;
+  bool (*tx_interface_ready)(void);
 };
 
-void grid_usb_gamepad_init(struct grid_gamepad_model* usb_gamepad, uint16_t buffer_size);
+void grid_usb_gamepad_init(struct grid_gamepad_model* usb_gamepad, uint16_t buffer_size, bool (*tx_interface_ready)(void));
 void grid_usb_gamepad_on_connect(struct grid_gamepad_model* usb_gamepad);
 void grid_usb_gamepad_on_disconnect(struct grid_gamepad_model* usb_gamepad);
 

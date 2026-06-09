@@ -11,6 +11,7 @@ struct grid_keyboard_model {
   struct grid_macro_event_desc active_key_list[GRID_KEYBOARD_KEY_maxcount];
   uint8_t active_key_count;
   uint8_t isenabled;
+  bool (*tx_interface_ready)(void);
 };
 
 struct grid_keyboard_report {
@@ -18,7 +19,7 @@ struct grid_keyboard_report {
   uint8_t keycode[6];
 };
 
-void grid_usb_keyboard_init(struct grid_keyboard_model* usb_keyboard);
+void grid_usb_keyboard_init(struct grid_keyboard_model* usb_keyboard, bool (*tx_interface_ready)(void));
 void grid_usb_keyboard_on_connect(struct grid_keyboard_model* usb_keyboard);
 void grid_usb_keyboard_on_disconnect(struct grid_keyboard_model* usb_keyboard);
 

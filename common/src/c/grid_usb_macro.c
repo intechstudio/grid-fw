@@ -1,7 +1,5 @@
 #include <assert.h>
 
-#include "tusb.h"
-
 #include "grid_usb_macro.h"
 
 #include "grid_platform.h"
@@ -10,17 +8,12 @@
 #include "grid_usb_keyboard.h"
 #include "grid_usb_mouse.h"
 
-#if CFG_TUD_HID
-static bool grid_usb_hid_ready(void) { return tud_hid_ready(); }
-#else
-static bool grid_usb_hid_ready(void) { return true; }
-#endif
-
-void grid_usb_macro_init(struct grid_macro_model* usb_macro, uint16_t buffer_size, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse) {
+void grid_usb_macro_init(struct grid_macro_model* usb_macro, uint16_t buffer_size, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse, bool (*tx_interface_ready)(void)) {
   usb_macro->tx_rtc_lasttimestamp = grid_platform_rtc_get_micros();
   usb_macro->has_next = false;
   usb_macro->keyboard = usb_keyboard;
   usb_macro->mouse = usb_mouse;
+  usb_macro->tx_interface_ready = tx_interface_ready;
   assert(grid_swsr_malloc(&usb_macro->tx, buffer_size) == 0);
 }
 
@@ -60,10 +53,6 @@ void grid_usb_macro_tx_flush(struct grid_macro_model* usb_macro) {
 
   uint64_t elapsed = grid_platform_rtc_get_elapsed_time(usb_macro->tx_rtc_lasttimestamp);
   if (elapsed <= usb_macro->next.delay * MS_TO_US) {
-    return;
-  }
-
-  if (!grid_usb_hid_ready()) {
     return;
   }
 

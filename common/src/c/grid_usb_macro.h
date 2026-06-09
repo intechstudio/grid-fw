@@ -34,9 +34,10 @@ struct grid_macro_model {
   uint32_t tx_dropped;
   struct grid_keyboard_model* keyboard;
   struct grid_mouse_model* mouse;
+  bool (*tx_interface_ready)(void);
 };
 
-void grid_usb_macro_init(struct grid_macro_model* usb_macro, uint16_t buffer_size, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse);
+void grid_usb_macro_init(struct grid_macro_model* usb_macro, uint16_t buffer_size, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse, bool (*tx_interface_ready)(void));
 void grid_usb_macro_on_connect(struct grid_macro_model* usb_macro);
 void grid_usb_macro_on_disconnect(struct grid_macro_model* usb_macro);
 
