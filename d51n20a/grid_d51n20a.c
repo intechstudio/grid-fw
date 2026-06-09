@@ -7,6 +7,7 @@
 #include "grid_d51_usb.h"
 #include "grid_usb.h"
 #include "grid_usb_acm.h"
+#include "grid_usb_gamepad.h"
 #include "grid_usb_hid.h"
 #include "grid_usb_midi.h"
 

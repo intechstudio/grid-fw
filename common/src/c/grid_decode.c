@@ -13,6 +13,7 @@
 #include "grid_ui_encoder.h"
 #include "grid_ui_potmeter.h"
 #include "grid_usb.h"
+#include "grid_usb_gamepad.h"
 #include "grid_usb_hid.h"
 #include "grid_usb_midi.h"
 

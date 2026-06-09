@@ -31,6 +31,7 @@
 #include "grid_ui.h"
 #include "grid_usb.h"
 #include "grid_usb_acm.h"
+#include "grid_usb_gamepad.h"
 #include "grid_usb_hid.h"
 #include "grid_usb_midi.h"
 #include "grid_utask.h"
