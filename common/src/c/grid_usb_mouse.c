@@ -4,8 +4,6 @@
 
 #include "grid_usb.h"
 
-#if CFG_TUD_HID
-
 int32_t grid_usb_mouse_button_change(struct grid_mouse_model* usb_mouse, uint8_t b_state, uint8_t type) {
   if (!usb_mouse->tx_interface_ready()) {
     return 1;
@@ -29,24 +27,6 @@ int32_t grid_usb_mouse_move(struct grid_mouse_model* usb_mouse, int8_t position,
   delta[axis - 1] = position;
   return 0 == tud_hid_mouse_report(HID_ITF_PROTOCOL_MOUSE, usb_mouse->buttons, delta[0], delta[1], delta[2], 0);
 }
-
-#else // !CFG_TUD_HID
-
-int32_t grid_usb_mouse_button_change(struct grid_mouse_model* usb_mouse, uint8_t b_state, uint8_t type) {
-  (void)usb_mouse;
-  (void)b_state;
-  (void)type;
-  return 0;
-}
-
-int32_t grid_usb_mouse_move(struct grid_mouse_model* usb_mouse, int8_t position, uint8_t axis) {
-  (void)usb_mouse;
-  (void)position;
-  (void)axis;
-  return 0;
-}
-
-#endif // CFG_TUD_HID
 
 void grid_usb_mouse_init(struct grid_mouse_model* usb_mouse, bool (*tx_interface_ready)(void)) {
   usb_mouse->buttons = 0;

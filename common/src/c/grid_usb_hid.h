@@ -5,15 +5,11 @@
 #include "grid_usb_keyboard.h"
 #include "grid_usb_mouse.h"
 
-#if CFG_TUD_HID
-
 #define GRID_HID_REPORT_DESC_EXTRA , TUD_HID_REPORT_DESC_GAMEPAD(HID_REPORT_ID(3))
 
 #define GRID_HID_REPORT_DESC_CONTENT TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(HID_ITF_PROTOCOL_KEYBOARD)), TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(HID_ITF_PROTOCOL_MOUSE)) GRID_HID_REPORT_DESC_EXTRA
 
 #define GRID_HID_REPORT_DESC_SIZE sizeof((uint8_t[]){GRID_HID_REPORT_DESC_CONTENT})
-
-#endif // CFG_TUD_HID
 
 struct grid_usb_hid_model {
   struct grid_macro_model macro;

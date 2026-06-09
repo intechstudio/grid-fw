@@ -288,8 +288,6 @@ void grid_usb_midi_rx_sysex_process(struct grid_usb_midi_model* usb_midi) {
   usb_midi->sysex_assembly_index = 0;
 }
 
-#if CFG_TUD_MIDI
-
 void tud_midi_rx_cb(uint8_t itf) {
   (void)itf;
 
@@ -304,9 +302,3 @@ void grid_usb_midi_rx_poll(struct grid_usb_midi_model* usb_midi) {
   tud_midi_rx_cb(0);
   (void)usb_midi;
 }
-
-#else // !CFG_TUD_MIDI
-
-void grid_usb_midi_rx_poll(struct grid_usb_midi_model* usb_midi) { (void)usb_midi; }
-
-#endif // CFG_TUD_MIDI

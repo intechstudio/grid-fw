@@ -13,8 +13,6 @@
 #include "grid_sys.h"
 #include "grid_transport.h"
 
-#if CFG_TUD_HID
-
 static struct grid_keyboard_report grid_usb_keyboard_report_build(struct grid_keyboard_model* usb_keyboard) {
   assert(usb_keyboard->active_key_count <= GRID_KEYBOARD_KEY_maxcount);
 
@@ -33,21 +31,6 @@ static struct grid_keyboard_report grid_usb_keyboard_report_build(struct grid_ke
 }
 
 static int32_t grid_usb_keyboard_report_send(struct grid_keyboard_report* report) { return 0 == tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, report->modifier_bm, report->keycode); }
-
-#else // !CFG_TUD_HID
-
-static struct grid_keyboard_report grid_usb_keyboard_report_build(struct grid_keyboard_model* usb_keyboard) {
-  (void)usb_keyboard;
-  struct grid_keyboard_report report = {0};
-  return report;
-}
-
-static int32_t grid_usb_keyboard_report_send(struct grid_keyboard_report* report) {
-  (void)report;
-  return 0;
-}
-
-#endif // CFG_TUD_HID
 
 static uint8_t grid_usb_keyboard_cleanup(struct grid_keyboard_model* usb_keyboard) {
 

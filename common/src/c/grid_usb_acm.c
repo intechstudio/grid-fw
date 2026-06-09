@@ -11,8 +11,6 @@
 #include "grid_transport.h"
 #include "grid_usb.h"
 
-#if CFG_TUD_CDC
-
 static uint8_t acm_rx_buf[512];
 
 void tud_cdc_rx_cb(uint8_t itf) {
@@ -85,37 +83,3 @@ void grid_usb_acm_init(struct grid_usb_acm_model* usb_acm, uint16_t rx_buffer_si
 void grid_usb_acm_on_connect(struct grid_usb_acm_model* usb_acm) { (void)usb_acm; }
 
 void grid_usb_acm_on_disconnect(struct grid_usb_acm_model* usb_acm) { (void)usb_acm; }
-
-#else // !CFG_TUD_CDC
-
-bool grid_usb_acm_dtr(struct grid_usb_acm_model* usb_acm) {
-  (void)usb_acm;
-  return false;
-}
-
-bool grid_usb_acm_tx_ready(struct grid_usb_acm_model* usb_acm) {
-  (void)usb_acm;
-  return false;
-}
-
-int32_t grid_usb_acm_write(struct grid_usb_acm_model* usb_acm, char* buffer, uint32_t length) {
-  (void)usb_acm;
-  (void)buffer;
-  (void)length;
-  return 0;
-}
-
-void grid_usb_acm_init(struct grid_usb_acm_model* usb_acm, uint16_t rx_buffer_size) {
-  (void)usb_acm;
-  (void)rx_buffer_size;
-}
-
-void grid_usb_acm_on_connect(struct grid_usb_acm_model* usb_acm) { (void)usb_acm; }
-
-void grid_usb_acm_on_disconnect(struct grid_usb_acm_model* usb_acm) { (void)usb_acm; }
-
-void grid_usb_acm_rx_poll(struct grid_usb_acm_model* usb_acm) { (void)usb_acm; }
-
-void grid_usb_acm_rx_process(struct grid_usb_acm_model* usb_acm) { (void)usb_acm; }
-
-#endif // CFG_TUD_CDC

@@ -2,11 +2,7 @@
 
 #include "grid_usb_hid.h"
 
-#if CFG_TUD_HID
 static bool tx_interface_ready_impl(void) { return tud_hid_ready(); }
-#else
-static bool tx_interface_ready_impl(void) { return true; }
-#endif
 
 void grid_usb_hid_init(struct grid_usb_hid_model* usb_hid) {
   grid_usb_keyboard_init(&usb_hid->keyboard, tx_interface_ready_impl);
@@ -28,8 +24,6 @@ void grid_usb_hid_on_disconnect(struct grid_usb_hid_model* usb_hid) {
   grid_usb_mouse_on_disconnect(&usb_hid->mouse);
   grid_usb_gamepad_on_disconnect(&usb_hid->gamepad);
 }
-
-#if CFG_TUD_HID
 
 static const uint8_t s_hid_report_desc[] = {GRID_HID_REPORT_DESC_CONTENT};
 
@@ -54,5 +48,3 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
   (void)buffer;
   (void)bufsize;
 }
-
-#endif // CFG_TUD_HID
