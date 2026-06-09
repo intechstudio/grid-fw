@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 
 #include "tusb.h"
 
@@ -55,11 +56,8 @@ static uint8_t grid_usb_keyboard_cleanup(struct grid_keyboard_model* usb_keyboar
     if (usb_keyboard->active_key_list[i].ispressed == false) {
 
       changed_flag = 1;
-
-      for (uint8_t j = i + 1; j < usb_keyboard->active_key_count; j++) {
-        usb_keyboard->active_key_list[j - 1] = usb_keyboard->active_key_list[j];
-      }
-
+      uint8_t count = usb_keyboard->active_key_count - i - 1;
+      memmove(&usb_keyboard->active_key_list[i], &usb_keyboard->active_key_list[i + 1], count * sizeof(struct grid_macro_event_desc));
       usb_keyboard->active_key_count--;
       i--;
     }
