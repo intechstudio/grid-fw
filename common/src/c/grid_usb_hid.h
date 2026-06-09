@@ -6,8 +6,6 @@
 
 #include "grid_swsr.h"
 
-enum mouse_move_type { MOUSE_AXIS_X = 0x01, MOUSE_AXIS_Y = 0x02, MOUSE_AXIS_SCROLL = 0x03, MOUSE_AXIS_COUNT = 0x04 };
-
 #if CFG_TUD_HID
 
 #define GRID_HID_REPORT_DESC_EXTRA , TUD_HID_REPORT_DESC_GAMEPAD(HID_REPORT_ID(3))
@@ -37,6 +35,8 @@ struct grid_macro_event_desc {
 
 #define GRID_KEYBOARD_KEY_maxcount 6
 
+struct grid_mouse_model; // defined in grid_usb_mouse.h
+
 struct grid_macro_model {
   struct grid_swsr_t tx;
   struct grid_macro_event_desc next;
@@ -58,24 +58,18 @@ struct grid_keyboard_report {
   uint8_t keycode[6];
 };
 
-struct grid_mouse_model {
-  uint8_t buttons;
-};
-
 extern struct grid_macro_model grid_macro_state;
 extern struct grid_keyboard_model grid_keyboard_state;
-extern struct grid_mouse_model grid_mouse_state;
 
 uint8_t grid_usb_macro_tx_push(struct grid_macro_model* usb_macro, struct grid_macro_event_desc event);
 void grid_usb_macro_tx_flush(struct grid_macro_model* usb_macro);
 bool grid_usb_macro_tx_available(struct grid_macro_model* usb_macro);
 
-void grid_usb_hid_on_connect(struct grid_macro_model* usb_macro, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse);
-void grid_usb_hid_on_disconnect(struct grid_macro_model* usb_macro, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse);
+void grid_usb_hid_on_connect(struct grid_macro_model* usb_macro, struct grid_keyboard_model* usb_keyboard);
+void grid_usb_hid_on_disconnect(struct grid_macro_model* usb_macro, struct grid_keyboard_model* usb_keyboard);
 
 void grid_usb_macro_init(struct grid_macro_model* usb_macro, uint16_t buffer_size, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse);
 void grid_usb_keyboard_init(struct grid_keyboard_model* usb_keyboard);
-void grid_usb_mouse_init(struct grid_mouse_model* usb_mouse);
 
 void grid_usb_keyboard_enable(struct grid_keyboard_model* usb_keyboard);
 void grid_usb_keyboard_disable(struct grid_keyboard_model* usb_keyboard);

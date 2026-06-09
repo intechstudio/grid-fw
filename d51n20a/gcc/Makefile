@@ -94,6 +94,7 @@ SRCS = \
 	common/src/c/grid_usb_midi.c \
 	common/src/c/grid_usb_gamepad.c \
 	common/src/c/grid_usb_hid.c \
+	common/src/c/grid_usb_mouse.c \
 	common/src/c/grid_utask.c \
 	common/dep/lua-5.5.0/src/dirent.c \
 	common/dep/lua-5.5.0/src/lapi.c \

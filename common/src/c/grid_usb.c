@@ -20,6 +20,7 @@
 #include "grid_usb_gamepad.h"
 #include "grid_usb_hid.h"
 #include "grid_usb_midi.h"
+#include "grid_usb_mouse.h"
 #include "tusb.h"
 
 bool grid_usb_connected(void) { return tud_mounted(); }
@@ -28,14 +29,16 @@ void grid_usb_task(void) { tud_task_ext(0, false); }
 
 void tud_mount_cb(void) {
   grid_usb_midi_on_connect(&grid_usb_midi_state);
-  grid_usb_hid_on_connect(&grid_macro_state, &grid_keyboard_state, &grid_mouse_state);
+  grid_usb_hid_on_connect(&grid_macro_state, &grid_keyboard_state);
+  grid_usb_mouse_on_connect(&grid_mouse_state);
   grid_usb_gamepad_on_connect(&grid_gamepad_state);
   grid_usb_acm_on_connect(&grid_usb_acm_state);
 }
 
 void tud_umount_cb(void) {
   grid_usb_midi_on_disconnect(&grid_usb_midi_state);
-  grid_usb_hid_on_disconnect(&grid_macro_state, &grid_keyboard_state, &grid_mouse_state);
+  grid_usb_hid_on_disconnect(&grid_macro_state, &grid_keyboard_state);
+  grid_usb_mouse_on_disconnect(&grid_mouse_state);
   grid_usb_gamepad_on_disconnect(&grid_gamepad_state);
   grid_usb_acm_on_disconnect(&grid_usb_acm_state);
 }
