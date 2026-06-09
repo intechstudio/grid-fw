@@ -88,7 +88,6 @@ int32_t grid_usb_keyboard_keychange(struct grid_keyboard_model* usb_keyboard, st
         usb_keyboard->active_key_count++;
         changed_flag = 1;
       }
-    } else {
     }
   }
 

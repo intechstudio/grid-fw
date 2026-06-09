@@ -239,10 +239,6 @@ void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmod
 
       struct grid_ui_event* eve = grid_ui_event_find(sys_ele, GRID_PARAMETER_EVENT_MAPMODE);
 
-      if (eve == NULL) {
-      } else {
-      }
-
       grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
     }
   }
