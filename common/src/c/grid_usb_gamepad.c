@@ -91,5 +91,5 @@ void grid_usb_gamepad_tx_flush(struct grid_gamepad_model* usb_gamepad) {
       usb_gamepad->buttons &= ~(1u << event.index);
     }
   }
-  assert(grid_usb_gamepad_report_send(usb_gamepad) == 0);
+  grid_usb_gamepad_report_send(usb_gamepad);
 }
