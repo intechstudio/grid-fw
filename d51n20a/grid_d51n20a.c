@@ -6,10 +6,6 @@
 #include "grid_d51_uart.h"
 #include "grid_d51_usb.h"
 #include "grid_usb.h"
-#include "grid_usb_acm.h"
-#include "grid_usb_gamepad.h"
-#include "grid_usb_hid.h"
-#include "grid_usb_midi.h"
 
 #include "atmel_start_pins.h"
 #include <atmel_start.h>
@@ -129,44 +125,44 @@ struct grid_utask_timer timer_tx_dropped;
 
 void grid_utask_usb_tx(void) {
 
-  if (grid_usb_midi_tx_available(&grid_usb_midi_state)) {
+  if (grid_usb_midi_tx_available(&grid_usb_state.midi)) {
     if (grid_utask_timer_elapsed(&timer_midi_tx)) {
-      grid_usb_midi_tx_flush(&grid_usb_midi_state);
+      grid_usb_midi_tx_flush(&grid_usb_state.midi);
     }
   }
 
-  if (grid_usb_macro_tx_available(&grid_macro_state)) {
+  if (grid_usb_macro_tx_available(&grid_usb_state.hid.macro)) {
     if (grid_utask_timer_elapsed(&timer_keyboard_tx)) {
-      grid_usb_macro_tx_flush(&grid_macro_state);
+      grid_usb_macro_tx_flush(&grid_usb_state.hid.macro);
     }
   }
 
-  if (grid_usb_gamepad_tx_available(&grid_gamepad_state)) {
+  if (grid_usb_gamepad_tx_available(&grid_usb_state.hid.gamepad)) {
     if (grid_utask_timer_elapsed(&timer_gamepad_tx)) {
-      grid_usb_gamepad_tx_flush(&grid_gamepad_state);
+      grid_usb_gamepad_tx_flush(&grid_usb_state.hid.gamepad);
     }
   }
 
-  if (grid_usb_connected() && grid_usb_acm_dtr(&grid_usb_acm_state) && grid_utask_timer_elapsed(&timer_tx_dropped)) {
+  if (grid_usb_connected() && grid_usb_acm_dtr(&grid_usb_state.acm) && grid_utask_timer_elapsed(&timer_tx_dropped)) {
 
-    if (grid_usb_midi_state.tx_dropped > 0) {
-      grid_port_debug_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_midi_state.tx_dropped);
-      grid_usb_midi_state.tx_dropped = 0;
+    if (grid_usb_state.midi.tx_dropped > 0) {
+      grid_port_debug_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_state.midi.tx_dropped);
+      grid_usb_state.midi.tx_dropped = 0;
     }
 
-    if (grid_macro_state.tx_dropped > 0) {
-      grid_port_debug_printf("HID macro TX dropped: %lu\n", (unsigned long)grid_macro_state.tx_dropped);
-      grid_macro_state.tx_dropped = 0;
+    if (grid_usb_state.hid.macro.tx_dropped > 0) {
+      grid_port_debug_printf("HID macro TX dropped: %lu\n", (unsigned long)grid_usb_state.hid.macro.tx_dropped);
+      grid_usb_state.hid.macro.tx_dropped = 0;
     }
 
-    if (grid_gamepad_state.tx_dropped > 0) {
-      grid_port_debug_printf("HID gamepad TX dropped: %lu\n", (unsigned long)grid_gamepad_state.tx_dropped);
-      grid_gamepad_state.tx_dropped = 0;
+    if (grid_usb_state.hid.gamepad.tx_dropped > 0) {
+      grid_port_debug_printf("HID gamepad TX dropped: %lu\n", (unsigned long)grid_usb_state.hid.gamepad.tx_dropped);
+      grid_usb_state.hid.gamepad.tx_dropped = 0;
     }
 
-    if (grid_usb_acm_state.tx_dropped > 0) {
-      grid_port_debug_printf("CDC TX dropped: %lu\n", (unsigned long)grid_usb_acm_state.tx_dropped);
-      grid_usb_acm_state.tx_dropped = 0;
+    if (grid_usb_state.acm.tx_dropped > 0) {
+      grid_port_debug_printf("CDC TX dropped: %lu\n", (unsigned long)grid_usb_state.acm.tx_dropped);
+      grid_usb_state.acm.tx_dropped = 0;
     }
   }
 }
@@ -214,9 +210,9 @@ void grid_utask_midi_rx(struct grid_utask_timer* timer) {
     return;
   }
 
-  grid_usb_midi_rx_voice_process(&grid_usb_midi_state);
-  grid_usb_midi_rx_sysex_process(&grid_usb_midi_state);
-  grid_usb_midi_rx_rtm_process(&grid_usb_midi_state);
+  grid_usb_midi_rx_voice_process(&grid_usb_state.midi);
+  grid_usb_midi_rx_sysex_process(&grid_usb_state.midi);
+  grid_usb_midi_rx_rtm_process(&grid_usb_state.midi);
 }
 
 volatile uint8_t rxtimeoutselector = 0;
@@ -502,9 +498,9 @@ int main(void) {
       }
     }
 
-    grid_usb_midi_rx_poll(&grid_usb_midi_state);
-    grid_usb_acm_rx_poll(&grid_usb_acm_state);
-    grid_usb_acm_rx_process(&grid_usb_acm_state);
+    grid_usb_midi_rx_poll(&grid_usb_state.midi);
+    grid_usb_acm_rx_poll(&grid_usb_state.acm);
+    grid_usb_acm_rx_process(&grid_usb_state.acm);
 
     // Run UI protothreads
     update_interrupt_mask_from_bulk_status();

@@ -13,8 +13,6 @@
 
 #if CFG_TUD_CDC
 
-struct grid_usb_acm_model grid_usb_acm_state;
-
 static uint8_t acm_rx_buf[512];
 
 void tud_cdc_rx_cb(uint8_t itf) {
@@ -25,7 +23,7 @@ void tud_cdc_rx_cb(uint8_t itf) {
     return;
   }
 
-  struct grid_swsr_t* rx = &grid_usb_acm_state.rx;
+  struct grid_swsr_t* rx = &grid_usb_state.acm.rx;
   uint32_t to_read = available < sizeof(acm_rx_buf) ? available : sizeof(acm_rx_buf);
 
   if (!grid_swsr_writable(rx, to_read)) {

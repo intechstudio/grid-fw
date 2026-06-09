@@ -7,8 +7,6 @@
 #include "grid_swsr.h"
 #include "grid_usb.h"
 
-struct grid_gamepad_model grid_gamepad_state = {0};
-
 #if CFG_TUD_HID
 
 // Axes RX/RY/RZ (3,4,5) are passed in reverse order to match the HID descriptor layout.
@@ -44,18 +42,16 @@ void grid_usb_gamepad_on_connect(struct grid_gamepad_model* usb_gamepad) { (void
 void grid_usb_gamepad_on_disconnect(struct grid_gamepad_model* usb_gamepad) { grid_swsr_read(&usb_gamepad->tx, NULL, grid_swsr_size(&usb_gamepad->tx)); }
 
 int32_t grid_usb_gamepad_axis_move(struct grid_gamepad_model* usb_gamepad, uint8_t axis, int32_t value) {
-  (void)usb_gamepad;
   if (axis >= GAMEPAD_AXIS_COUNT) {
     return 0;
   }
   struct grid_gamepad_event_desc event = {.type = GRID_GAMEPAD_EVENT_AXIS, .index = axis, .value = (uint8_t)(value + 128)};
-  return grid_usb_gamepad_tx_push(&grid_gamepad_state, event);
+  return grid_usb_gamepad_tx_push(usb_gamepad, event);
 }
 
 int32_t grid_usb_gamepad_button_change(struct grid_gamepad_model* usb_gamepad, uint8_t button, uint8_t value) {
-  (void)usb_gamepad;
   struct grid_gamepad_event_desc event = {.type = GRID_GAMEPAD_EVENT_BUTTON, .index = button, .value = value};
-  return grid_usb_gamepad_tx_push(&grid_gamepad_state, event);
+  return grid_usb_gamepad_tx_push(usb_gamepad, event);
 }
 
 uint8_t grid_usb_gamepad_tx_push(struct grid_gamepad_model* usb_gamepad, struct grid_gamepad_event_desc event) {

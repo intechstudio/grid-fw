@@ -9,8 +9,6 @@ struct grid_mouse_model {
   uint8_t buttons;
 };
 
-extern struct grid_mouse_model grid_mouse_state;
-
 void grid_usb_mouse_init(struct grid_mouse_model* usb_mouse);
 void grid_usb_mouse_on_connect(struct grid_mouse_model* usb_mouse);
 void grid_usb_mouse_on_disconnect(struct grid_mouse_model* usb_mouse);

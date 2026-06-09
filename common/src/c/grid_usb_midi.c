@@ -11,8 +11,6 @@
 #include "grid_transport.h"
 #include "grid_usb.h"
 
-struct grid_usb_midi_model grid_usb_midi_state;
-
 void grid_usb_midi_on_connect(struct grid_usb_midi_model* usb_midi) { (void)usb_midi; }
 
 void grid_usb_midi_on_disconnect(struct grid_usb_midi_model* usb_midi) { grid_swsr_read(&usb_midi->tx, NULL, grid_swsr_size(&usb_midi->tx)); }
@@ -297,8 +295,8 @@ void tud_midi_rx_cb(uint8_t itf) {
 
   uint8_t packet[4];
 
-  while (grid_usb_midi_rx_writable(&grid_usb_midi_state) && tud_midi_packet_read(packet)) {
-    grid_usb_midi_rx_queue(&grid_usb_midi_state, packet[0], packet[1], packet[2], packet[3]);
+  while (grid_usb_midi_rx_writable(&grid_usb_state.midi) && tud_midi_packet_read(packet)) {
+    grid_usb_midi_rx_queue(&grid_usb_state.midi, packet[0], packet[1], packet[2], packet[3]);
   }
 }
 

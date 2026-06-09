@@ -2,8 +2,6 @@
 
 #include "grid_usb_mouse.h"
 
-struct grid_mouse_model grid_mouse_state = {0};
-
 #if CFG_TUD_HID
 
 int32_t grid_usb_mouse_button_change(struct grid_mouse_model* usb_mouse, uint8_t b_state, uint8_t type) {

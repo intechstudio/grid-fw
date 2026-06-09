@@ -13,9 +13,6 @@
 #include "grid_ui_encoder.h"
 #include "grid_ui_potmeter.h"
 #include "grid_usb.h"
-#include "grid_usb_gamepad.h"
-#include "grid_usb_hid.h"
-#include "grid_usb_midi.h"
 
 extern struct grid_transport grid_transport_state;
 
@@ -74,7 +71,7 @@ uint8_t grid_decode_midi_to_usb(char* header, char* chunk) {
       .byte3 = param2,
   };
 
-  grid_usb_midi_tx_push(&grid_usb_midi_state, event);
+  grid_usb_midi_tx_push(&grid_usb_state.midi, event);
 
   return 0;
 }
@@ -130,7 +127,7 @@ uint8_t grid_decode_sysex_to_usb(char* header, char* chunk) {
       }
     }
 
-    grid_usb_midi_tx_push(&grid_usb_midi_state, event);
+    grid_usb_midi_tx_push(&grid_usb_state.midi, event);
   }
 
   return 0;
@@ -154,7 +151,7 @@ uint8_t grid_decode_mousebutton_to_usb(char* header, char* chunk) {
       .delay = 1,
   };
 
-  if (grid_usb_macro_tx_push(&grid_macro_state, key)) {
+  if (grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key)) {
     grid_port_debug_printf("mouse button: packet dropped");
   }
 
@@ -179,7 +176,7 @@ uint8_t grid_decode_mousemove_to_usb(char* header, char* chunk) {
       .delay = 1,
   };
 
-  if (grid_usb_macro_tx_push(&grid_macro_state, key)) {
+  if (grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key)) {
     grid_port_debug_printf("mouse move: packet dropped");
   }
 
@@ -199,7 +196,7 @@ uint8_t grid_decode_gamepadmove_to_usb(char* header, char* chunk) {
 
   int8_t position = position_raw - 128;
 
-  grid_usb_gamepad_axis_move(&grid_gamepad_state, axis, position);
+  grid_usb_gamepad_axis_move(&grid_usb_state.hid.gamepad, axis, position);
 
   return 0;
 }
@@ -215,7 +212,7 @@ uint8_t grid_decode_gamepadbutton_to_usb(char* header, char* chunk) {
   uint8_t button = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_HIDGAMEPADBUTTON_BUTTON);
   uint8_t state = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_HIDGAMEPADBUTTON_STATE);
 
-  grid_usb_gamepad_button_change(&grid_gamepad_state, button, state);
+  grid_usb_gamepad_button_change(&grid_usb_state.hid.gamepad, button, state);
 
   return 0;
 }
@@ -253,14 +250,14 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk) {
       if (key_state == 2) {
 
         key.ispressed = 1;
-        packets_dropped += grid_usb_macro_tx_push(&grid_macro_state, key);
+        packets_dropped += grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key);
         key.ispressed = 0;
-        packets_dropped += grid_usb_macro_tx_push(&grid_macro_state, key);
+        packets_dropped += grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key);
       }
       // Single press or release
       else {
 
-        packets_dropped += grid_usb_macro_tx_push(&grid_macro_state, key);
+        packets_dropped += grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key);
       }
 
     } else if (key_ismodifier == 0xf) {
@@ -275,7 +272,7 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk) {
           key.delay = delay,
       };
 
-      packets_dropped += grid_usb_macro_tx_push(&grid_macro_state, key);
+      packets_dropped += grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key);
 
     } else {
 
@@ -1246,7 +1243,7 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
   case GRID_INSTR_EXECUTE_code: {
 
     // Disable HID
-    grid_usb_keyboard_disable(&grid_keyboard_state);
+    grid_usb_keyboard_disable(&grid_usb_state.hid.keyboard);
 
     uint16_t scriptlength = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_CONFIG_ACTIONLENGTH);
 

@@ -30,8 +30,6 @@ struct grid_gamepad_model {
   uint8_t hat;
 };
 
-extern struct grid_gamepad_model grid_gamepad_state;
-
 void grid_usb_gamepad_init(struct grid_gamepad_model* usb_gamepad, uint16_t buffer_size);
 void grid_usb_gamepad_on_connect(struct grid_gamepad_model* usb_gamepad);
 void grid_usb_gamepad_on_disconnect(struct grid_gamepad_model* usb_gamepad);

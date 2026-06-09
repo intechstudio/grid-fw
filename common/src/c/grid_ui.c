@@ -11,7 +11,6 @@
 #include "grid_sys.h"
 #include "grid_transport.h"
 #include "grid_usb.h"
-#include "grid_usb_hid.h"
 
 extern void grid_platform_printf(char const* fmt, ...);
 
@@ -917,7 +916,7 @@ static void grid_ui_page_read(struct grid_ui_model* ui, uint8_t page) {
 
   grid_lua_semaphore_release(&grid_lua_state);
 
-  grid_usb_keyboard_enable(&grid_keyboard_state);
+  grid_usb_keyboard_enable(&grid_usb_state.hid.keyboard);
 }
 
 #pragma GCC diagnostic push

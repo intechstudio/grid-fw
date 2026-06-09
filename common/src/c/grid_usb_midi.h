@@ -65,8 +65,6 @@ struct grid_usb_midi_model {
   bool sysex_in_progress;
 };
 
-extern struct grid_usb_midi_model grid_usb_midi_state;
-
 void grid_usb_midi_init(struct grid_usb_midi_model* usb_midi, uint16_t tx_buffer_size, uint16_t rx_buffer_size, uint16_t sysex_buffer_size, uint16_t rtm_buffer_size);
 void grid_usb_midi_on_connect(struct grid_usb_midi_model* usb_midi);
 void grid_usb_midi_on_disconnect(struct grid_usb_midi_model* usb_midi);
