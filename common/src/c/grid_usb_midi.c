@@ -27,7 +27,6 @@ void grid_usb_midi_init(struct grid_usb_midi_model* usb_midi, uint16_t tx_buffer
 uint8_t grid_usb_midi_tx_push(struct grid_usb_midi_model* usb_midi, struct grid_midi_event_desc event) {
 
   if (!grid_usb_connected()) {
-    usb_midi->tx_dropped++;
     return 1;
   }
 
@@ -37,7 +36,6 @@ uint8_t grid_usb_midi_tx_push(struct grid_usb_midi_model* usb_midi, struct grid_
 
     grid_swsr_read(&usb_midi->tx, NULL, sizeof(struct grid_midi_event_desc));
 
-    usb_midi->tx_dropped++;
     dropped = 1;
   }
 

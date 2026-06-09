@@ -5,6 +5,7 @@
 #include "grid_d51_nvm.h"
 #include "grid_d51_uart.h"
 #include "grid_d51_usb.h"
+#include "grid_health.h"
 #include "grid_usb.h"
 
 #include "atmel_start_pins.h"
@@ -123,25 +124,7 @@ void grid_utask_usb_tx(void) {
 
   if (grid_usb_connected() && grid_usb_acm_dtr(&grid_usb_state.acm) && grid_utask_timer_elapsed(&timer_tx_dropped)) {
 
-    if (grid_usb_state.midi.tx_dropped > 0) {
-      grid_port_debug_printf("MIDI TX dropped: %lu\n", (unsigned long)grid_usb_state.midi.tx_dropped);
-      grid_usb_state.midi.tx_dropped = 0;
-    }
-
-    if (grid_usb_state.hid.macro.tx_dropped > 0) {
-      grid_port_debug_printf("HID macro TX dropped: %lu\n", (unsigned long)grid_usb_state.hid.macro.tx_dropped);
-      grid_usb_state.hid.macro.tx_dropped = 0;
-    }
-
-    if (grid_usb_state.hid.gamepad.tx_dropped > 0) {
-      grid_port_debug_printf("HID gamepad TX dropped: %lu\n", (unsigned long)grid_usb_state.hid.gamepad.tx_dropped);
-      grid_usb_state.hid.gamepad.tx_dropped = 0;
-    }
-
-    if (grid_usb_state.acm.tx_dropped > 0) {
-      grid_port_debug_printf("CDC TX dropped: %lu\n", (unsigned long)grid_usb_state.acm.tx_dropped);
-      grid_usb_state.acm.tx_dropped = 0;
-    }
+    grid_health_report(&grid_health_state);
   }
 }
 

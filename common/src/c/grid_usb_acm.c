@@ -67,13 +67,9 @@ bool grid_usb_acm_tx_ready(struct grid_usb_acm_model* usb_acm) {
 
 int32_t grid_usb_acm_write(struct grid_usb_acm_model* usb_acm, char* buffer, uint32_t length) {
   if (!tud_cdc_connected() || tud_cdc_write_available() < length) {
-    usb_acm->tx_dropped++;
     return 0;
   }
   uint32_t written = tud_cdc_write(buffer, length);
-  if (written != length) {
-    usb_acm->tx_dropped++;
-  }
   tud_cdc_write_flush();
   return (int32_t)written;
 }

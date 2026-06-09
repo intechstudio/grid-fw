@@ -5,14 +5,6 @@
 
 #include "grid_usb_keyboard.h"
 
-#include "grid_usb.h"
-
-#include "grid_msg.h"
-#include "grid_platform.h"
-#include "grid_port.h"
-#include "grid_sys.h"
-#include "grid_transport.h"
-
 static struct grid_keyboard_report grid_usb_keyboard_report_build(struct grid_keyboard_model* usb_keyboard) {
   assert(usb_keyboard->active_key_count <= GRID_KEYBOARD_KEY_maxcount);
 
@@ -93,28 +85,8 @@ int32_t grid_usb_keyboard_keychange(struct grid_keyboard_model* usb_keyboard, st
 
   if (changed_flag == 1) {
 
-    if (usb_keyboard->isenabled) {
-
-      struct grid_keyboard_report report = grid_usb_keyboard_report_build(usb_keyboard);
-      return grid_usb_keyboard_report_send(&report);
-    } else {
-
-      grid_port_debug_print_text("KB IS DISABLED");
-
-      struct grid_msg msg;
-      uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
-      grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
-
-      grid_msg_add_frame(&msg, GRID_CLASS_HIDKEYSTATUS_frame);
-      grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_REPORT_code);
-      grid_msg_set_parameter(&msg, CLASS_HIDKEYSTATUS_ISENABLED, usb_keyboard->isenabled);
-
-      if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
-        grid_transport_send_msg_to_all(&grid_transport_state, &msg);
-      }
-
-      return 0;
-    }
+    struct grid_keyboard_report report = grid_usb_keyboard_report_build(usb_keyboard);
+    return grid_usb_keyboard_report_send(&report);
   }
 
   return 0;

@@ -42,13 +42,11 @@ int32_t grid_usb_gamepad_button_change(struct grid_gamepad_model* usb_gamepad, u
 
 uint8_t grid_usb_gamepad_tx_push(struct grid_gamepad_model* usb_gamepad, struct grid_gamepad_event_desc event) {
   if (!grid_usb_connected()) {
-    usb_gamepad->tx_dropped++;
     return 1;
   }
   uint8_t dropped = 0;
   if (!grid_swsr_writable(&usb_gamepad->tx, sizeof(struct grid_gamepad_event_desc))) {
     grid_swsr_read(&usb_gamepad->tx, NULL, sizeof(struct grid_gamepad_event_desc));
-    usb_gamepad->tx_dropped++;
     dropped = 1;
   }
   grid_swsr_write(&usb_gamepad->tx, &event, sizeof(struct grid_gamepad_event_desc));

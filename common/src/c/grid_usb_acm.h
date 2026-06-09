@@ -8,7 +8,6 @@
 
 struct grid_usb_acm_model {
   struct grid_swsr_t rx;
-  uint32_t tx_dropped;
 };
 
 void grid_usb_acm_init(struct grid_usb_acm_model* usb_acm, uint16_t rx_buffer_size);

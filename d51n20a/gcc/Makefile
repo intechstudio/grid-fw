@@ -89,6 +89,7 @@ SRCS = \
 	common/src/c/grid_ui_lcd.c \
 	common/src/c/grid_ui_potmeter.c \
 	common/src/c/grid_ui_system.c \
+	common/src/c/grid_health.c \
 	common/src/c/grid_usb.c \
 	common/src/c/grid_usb_acm.c \
 	common/src/c/grid_usb_midi.c \

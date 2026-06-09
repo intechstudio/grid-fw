@@ -2,6 +2,7 @@
 
 #include "grid_usb_macro.h"
 
+#include "grid_health.h"
 #include "grid_platform.h"
 #include "grid_sys.h"
 #include "grid_usb.h"
@@ -26,13 +27,11 @@ void grid_usb_macro_on_disconnect(struct grid_macro_model* usb_macro) {
 
 uint8_t grid_usb_macro_tx_push(struct grid_macro_model* usb_macro, struct grid_macro_event_desc event) {
   if (!grid_usb_connected()) {
-    usb_macro->tx_dropped++;
     return 1;
   }
   uint8_t dropped = 0;
   if (!grid_swsr_writable(&usb_macro->tx, sizeof(struct grid_macro_event_desc))) {
     grid_swsr_read(&usb_macro->tx, NULL, sizeof(struct grid_macro_event_desc));
-    usb_macro->tx_dropped++;
     dropped = 1;
   }
   grid_swsr_write(&usb_macro->tx, &event, sizeof(struct grid_macro_event_desc));
@@ -61,18 +60,28 @@ void grid_usb_macro_tx_flush(struct grid_macro_model* usb_macro) {
   switch (usb_macro->next.type) {
   case GRID_MACRO_EVENT_TYPE_KEY:
   case GRID_MACRO_EVENT_TYPE_MODIFIER:
+    if (!usb_macro->keyboard->isenabled) {
+      grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_KEYBOARD);
+      break;
+    }
     result = grid_usb_keyboard_keychange(usb_macro->keyboard, &usb_macro->next);
     break;
   case GRID_MACRO_EVENT_TYPE_MOUSE_MOVE: {
     uint8_t axis = usb_macro->next.keycode;
     int8_t position = usb_macro->next.ispressed - 128;
     result = grid_usb_mouse_move(usb_macro->mouse, position, axis);
+    if (result != 0) {
+      grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MOUSE);
+    }
     break;
   }
   case GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON: {
     uint8_t state = usb_macro->next.ispressed;
     uint8_t button = usb_macro->next.keycode;
     result = grid_usb_mouse_button_change(usb_macro->mouse, state, button);
+    if (result != 0) {
+      grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MOUSE);
+    }
     break;
   }
   case GRID_MACRO_EVENT_TYPE_DELAY:

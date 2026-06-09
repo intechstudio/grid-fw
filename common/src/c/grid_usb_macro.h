@@ -31,7 +31,6 @@ struct grid_macro_model {
   struct grid_macro_event_desc next;
   bool has_next;
   uint64_t tx_rtc_lasttimestamp;
-  uint32_t tx_dropped;
   struct grid_keyboard_model* keyboard;
   struct grid_mouse_model* mouse;
   bool (*tx_interface_ready)(void);

@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "grid_decode.h"
+#include "grid_health.h"
 #include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_usb.h"
@@ -258,7 +259,9 @@ void grid_port_send_usb(struct grid_port* port) {
   }
 
   grid_port_decode_msg(grid_decoder_to_usb_reference, &msg);
-  grid_usb_acm_write(&grid_usb_state.acm, msg.data, msg.length);
+  if (grid_usb_acm_write(&grid_usb_state.acm, msg.data, msg.length) < (int32_t)msg.length) {
+    grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_CDC);
+  }
 }
 
 void grid_port_send_ui(struct grid_port* port) {

@@ -32,7 +32,6 @@ struct grid_gamepad_event_desc {
 
 struct grid_gamepad_model {
   struct grid_swsr_t tx;
-  uint32_t tx_dropped;
   uint32_t buttons;
   int8_t axis[GAMEPAD_AXIS_COUNT];
   uint8_t hat;

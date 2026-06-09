@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "grid_health.h"
 #include "grid_led.h"
 #include "grid_lua_api.h"
 #include "grid_msg.h"
@@ -71,7 +72,9 @@ uint8_t grid_decode_midi_to_usb(char* header, char* chunk) {
       .byte3 = param2,
   };
 
-  grid_usb_midi_tx_push(&grid_usb_state.midi, event);
+  if (grid_usb_midi_tx_push(&grid_usb_state.midi, event)) {
+    grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MIDI);
+  }
 
   return 0;
 }
@@ -127,7 +130,9 @@ uint8_t grid_decode_sysex_to_usb(char* header, char* chunk) {
       }
     }
 
-    grid_usb_midi_tx_push(&grid_usb_state.midi, event);
+    if (grid_usb_midi_tx_push(&grid_usb_state.midi, event)) {
+      grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MIDI);
+    }
   }
 
   return 0;
@@ -152,7 +157,7 @@ uint8_t grid_decode_mousebutton_to_usb(char* header, char* chunk) {
   };
 
   if (grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key)) {
-    grid_port_debug_printf("mouse button: packet dropped");
+    grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MACRO);
   }
 
   return 0;
@@ -177,7 +182,7 @@ uint8_t grid_decode_mousemove_to_usb(char* header, char* chunk) {
   };
 
   if (grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key)) {
-    grid_port_debug_printf("mouse move: packet dropped");
+    grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MACRO);
   }
 
   return 0;
@@ -196,7 +201,9 @@ uint8_t grid_decode_gamepadmove_to_usb(char* header, char* chunk) {
 
   int8_t position = position_raw - 128;
 
-  grid_usb_gamepad_axis_move(&grid_usb_state.hid.gamepad, axis, position);
+  if (grid_usb_gamepad_axis_move(&grid_usb_state.hid.gamepad, axis, position)) {
+    grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_GAMEPAD);
+  }
 
   return 0;
 }
@@ -212,7 +219,9 @@ uint8_t grid_decode_gamepadbutton_to_usb(char* header, char* chunk) {
   uint8_t button = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_HIDGAMEPADBUTTON_BUTTON);
   uint8_t state = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_HIDGAMEPADBUTTON_STATE);
 
-  grid_usb_gamepad_button_change(&grid_usb_state.hid.gamepad, button, state);
+  if (grid_usb_gamepad_button_change(&grid_usb_state.hid.gamepad, button, state)) {
+    grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_GAMEPAD);
+  }
 
   return 0;
 }
@@ -228,8 +237,6 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk) {
   uint8_t length = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_HIDKEYBOARD_LENGTH);
 
   uint8_t default_delay = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_HIDKEYBOARD_DEFAULTDELAY);
-
-  uint32_t packets_dropped = 0;
 
   for (uint16_t i = 0; i < length * 4; i += 4) {
 
@@ -250,14 +257,20 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk) {
       if (key_state == 2) {
 
         key.ispressed = 1;
-        packets_dropped += grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key);
+        if (grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key)) {
+          grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MACRO);
+        }
         key.ispressed = 0;
-        packets_dropped += grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key);
+        if (grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key)) {
+          grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MACRO);
+        }
       }
       // Single press or release
       else {
 
-        packets_dropped += grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key);
+        if (grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key)) {
+          grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MACRO);
+        }
       }
 
     } else if (key_ismodifier == 0xf) {
@@ -272,7 +285,9 @@ uint8_t grid_decode_keyboard_to_usb(char* header, char* chunk) {
           key.delay = delay,
       };
 
-      packets_dropped += grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key);
+      if (grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key)) {
+        grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MACRO);
+      }
 
     } else {
 
