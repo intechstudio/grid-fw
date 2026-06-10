@@ -905,6 +905,9 @@ static void grid_ui_page_read(struct grid_ui_model* ui, uint8_t page) {
   } else {
     grid_lua_dostring_unsafe(&grid_lua_state, GRID_LUA_FNC_G_INIT_source);
   }
+  grid_lua_clear_stdo(&grid_lua_state);
+  grid_lua_broadcast_stde(&grid_lua_state);
+  grid_lua_clear_stde(&grid_lua_state);
 
   lua_pop(grid_lua_state.L, lua_gettop(grid_lua_state.L));
   grid_lua_gc_full_unsafe(&grid_lua_state);
