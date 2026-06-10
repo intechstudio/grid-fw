@@ -384,10 +384,6 @@ int grid_ui_register_script(struct grid_ui_model* ui, uint8_t element, uint8_t e
 
   assert(script);
 
-  if (!script[0]) {
-    return 1;
-  }
-
   char temp[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
   grid_ui_script_header(ele->index, eve->function_name, temp);
