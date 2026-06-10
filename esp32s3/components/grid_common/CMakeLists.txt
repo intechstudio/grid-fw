@@ -6,7 +6,7 @@ idf_component_register(
     SRC_DIRS
         "common/src/c"
         "common/dep/littlefs"
-        "common/dep/lua-5.4.3/src"
+        "common/dep/lua-5.5.0/src"
         "common/dep/tomlc99"
 
     INCLUDE_DIRS
@@ -14,7 +14,7 @@ idf_component_register(
         "common/src/c"
         "common/dep"
         "common/dep/littlefs"
-        "common/dep/lua-5.4.3/src"
+        "common/dep/lua-5.5.0/src"
         "common/dep/proto"
         "common/build/lua"
 )

@@ -132,4 +132,6 @@ do { \
 
 // clang-format on
 
+bool grid_msg_is_source_internal(const uint8_t* header);
+
 #endif /* GRID_MSG_H */

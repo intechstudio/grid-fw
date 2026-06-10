@@ -81,6 +81,10 @@ extern const luaL_Reg GRID_LUA_E_INDEX_META[];
   "return value // ((max - min) // steps) " \
   "end," \
   \
+  GRID_LUA_FNC_ASSIGN_META_EVENT(INIT, ENCODER_INIT) \
+  GRID_LUA_FNC_ASSIGN_META_EVENT(BUTTON, BUTTON_BUTTON) \
+  GRID_LUA_FNC_ASSIGN_META_EVENT(ENCODER, ENCODER_ENCODER) \
+  \
   "}}"
 
 #define GRID_ACTIONSTRING_ENCODER_INIT "--[[@cb]]--[[Encoder Init]]"

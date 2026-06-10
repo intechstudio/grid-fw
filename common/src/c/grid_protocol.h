@@ -381,7 +381,8 @@
 
 #define GRID_LUA_FNC_G_RX_MODE_short "grxm"
 #define GRID_LUA_FNC_G_RX_MODE_human "rx_mode"
-#define GRID_LUA_FNC_G_RX_MODE_usage "rx_mode(int type [, int mode]) Get or set RX routing. type: 0=MIDIVOICE 1=MIDISYSEX 2=MIDIRTM. mode: bitmask 0x01=handle 0x02=forward"
+#define GRID_LUA_FNC_G_RX_MODE_usage                                                                                                                                                                   \
+  "rx_mode(int type [, int mode]) Get or set RX routing. type: 0=MIDIVOICE 1=MIDISYSEX 2=MIDIRTM 3=EVENTVIEW. mode: bitmask 0x01=forward_from_usb 0x02=handle_external 0x04=handle_internal"
 #define GRID_LUA_FNC_G_RX_MODE_fnptr l_grid_rx_mode
 
 #define GRID_LUA_FNC_G_MIDIRX_REGISTER_short "gmrr"
@@ -553,8 +554,7 @@
 #define GRID_LUA_FNC_G_ACTION_SET_human "action_set"
 #define GRID_LUA_FNC_G_ACTION_SET_fnptr l_grid_action_set
 #define GRID_LUA_FNC_G_ACTION_SET_usage                                                                                                                                                                \
-  "action_set(element, event, path) Sets the script to be executed upon an event for the given element. The path argument should be a path to a file for a custom script, or an empty string for the " \
-  "default script."
+  "action_set(element, event, path) Sets the script to be executed upon an event for the given element. The path argument should be a path to a file for a custom script."
 
 // ========================= UI ELEMENT VARIABLES =========================== //
 

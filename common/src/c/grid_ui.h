@@ -20,6 +20,7 @@ void grid_ui_semaphore_init(struct grid_ui_semaphore* semaphore, void* handle, v
 enum grid_eve_state_t {
   GRID_EVE_STATE_INIT = 0,
   GRID_EVE_STATE_TRIG,
+  GRID_EVE_STATE_PROC,
 };
 
 struct grid_ui_event {
@@ -163,7 +164,6 @@ void grid_ui_event_generate_script(struct grid_ui_event* eve, char* targetstring
 void grid_ui_event_get_script(struct grid_ui_event* eve, char* targetstring);
 int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, uint8_t event_type, char* targetstring);
 
-uint8_t grid_ui_event_istriggered(struct grid_ui_event* eve);
 uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui);
 
 struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t element_number);
@@ -195,13 +195,19 @@ void grid_ui_bulk_conferase_next(struct grid_ui_model* ui);
 int grid_ui_bulk_nvmerase_init(struct grid_ui_model* ui, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 void grid_ui_bulk_nvmerase_next(struct grid_ui_model* ui);
 
-void grid_ui_event_render_script(struct grid_ui_event* eve, struct grid_msg* msg);
-void grid_port_process_ui_UNSAFE(struct grid_ui_model* ui);
+void grid_ui_event_render_events(struct grid_ui_model* ui, struct grid_msg* msg);
+void grid_ui_process_single(struct grid_ui_model* ui, struct grid_ui_element* ele, struct grid_ui_event* eve);
+void grid_ui_process_triggered(struct grid_ui_model* ui);
 
 void grid_ui_bulk_start_with_state(struct grid_ui_model* ui, fn_prthread_bulk_t next, uint8_t page, uint8_t lastheader_id, void (*success_cb)(uint8_t));
 bool grid_ui_bulk_in_progress(struct grid_ui_model* ui);
 void grid_ui_bulk_process(struct grid_ui_model* ui);
 void grid_ui_bulk_flush(struct grid_ui_model* ui);
+
+#define GRID_ACTION_PREFIX "<?lua "
+#define GRID_ACTION_SUFFIX " ?>"
+
+bool grid_lua_str_is_actionstring(const char* s);
 
 PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui));
 PT_THREAD(grid_ui_bulk_page_read(proto_pt_t* pt, struct grid_ui_model* ui));

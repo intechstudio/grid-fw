@@ -15,6 +15,16 @@
 
 extern struct grid_transport grid_transport_state;
 
+static bool grid_rx_should_handle(uint8_t rx_type, const uint8_t* header) {
+  uint8_t mode = grid_sys_get_rx_mode(&grid_sys_state, rx_type);
+  bool is_internal = grid_msg_is_source_internal(header);
+
+  bool handle_because_internal = (mode & GRID_RX_MODE_HANDLE_INTERNAL) && is_internal;
+  bool handle_because_external = (mode & GRID_RX_MODE_HANDLE_EXTERNAL) && !is_internal;
+
+  return handle_because_internal || handle_because_external;
+}
+
 enum GRID_DESTINATION {
 
   GRID_DESTINATION_IS_ME = 1,
@@ -318,11 +328,8 @@ uint8_t grid_decode_pageactive_to_ui(char* header, char* chunk) {
       return 0;
     }
 
-    uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
-    uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);
-
     // The report originates from this module
-    if (sx == GRID_PARAMETER_DEFAULT_POSITION && sy == GRID_PARAMETER_DEFAULT_POSITION) {
+    if (grid_msg_is_source_internal((uint8_t*)header)) {
       return 0;
     }
 
@@ -371,7 +378,7 @@ uint8_t grid_decode_pagecount_to_ui(char* header, char* chunk) {
 
 uint8_t grid_decode_midi_rtm_to_ui(char* header, char* chunk) {
 
-  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIRTM) & GRID_RX_MODE_HANDLE)) {
+  if (!grid_rx_should_handle(GRID_RX_TYPE_MIDIRTM, (uint8_t*)header)) {
     return 0;
   }
 
@@ -393,7 +400,18 @@ uint8_t grid_decode_midi_rtm_to_ui(char* header, char* chunk) {
 
   size_t result_len = lua_rawlen(L, -1);
 
+  lua_newtable(L);
+
+  size_t idx = 0;
+
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR));
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX));
+  lua_rawseti(L, -2, ++idx);
+  lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY));
+  lua_rawseti(L, -2, ++idx);
   lua_pushinteger(L, grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_MIDIRTM_BYTE));
+  lua_rawseti(L, -2, ++idx);
   lua_rawseti(L, -2, result_len + 1);
 
   size_t order_len = lua_rawlen(L, -2);
@@ -411,7 +429,7 @@ grid_decode_midi_rtm_to_ui_cleanup:
 
 uint8_t grid_decode_midi_to_ui(char* header, char* chunk) {
 
-  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDIVOICE) & GRID_RX_MODE_HANDLE)) {
+  if (!grid_rx_should_handle(GRID_RX_TYPE_MIDIVOICE, (uint8_t*)header)) {
     return 0;
   }
 
@@ -469,16 +487,12 @@ grid_decode_midi_to_ui_cleanup:
 
 uint8_t grid_decode_sysex_to_ui(char* header, char* chunk) {
 
-  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_MIDISYSEX) & GRID_RX_MODE_HANDLE)) {
+  if (!grid_rx_should_handle(GRID_RX_TYPE_MIDISYSEX, (uint8_t*)header)) {
     return 0;
   }
 
   uint8_t sx = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SX);
   uint8_t sy = grid_msg_get_parameter_raw((uint8_t*)header, BRC_SY);
-
-  if (sx == GRID_PARAMETER_DEFAULT_POSITION && sy == GRID_PARAMETER_DEFAULT_POSITION) {
-    return 1;
-  }
 
   uint8_t instr = grid_msg_get_parameter_raw((uint8_t*)chunk, INSTR);
 
@@ -848,7 +862,7 @@ uint8_t grid_decode_serialnumber_to_ui(char* header, char* chunk) {
   return 0;
 }
 
-void grid_protocol_nvm_read_success_callback(uint8_t lastheader_id) {
+void grid_protocol_nvm_load_success_callback(uint8_t lastheader_id) {
 
   struct grid_msg msg;
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
@@ -857,7 +871,7 @@ void grid_protocol_nvm_read_success_callback(uint8_t lastheader_id) {
   grid_msg_add_frame(&msg, GRID_CLASS_PAGEDISCARD_frame);
   grid_msg_set_parameter(&msg, INSTR, GRID_INSTR_ACKNOWLEDGE_code);
   grid_msg_set_parameter(&msg, CLASS_PAGEDISCARD_LASTHEADER, lastheader_id);
-  grid_msg_add_debugtext(&msg, "nvm read complete");
+  grid_msg_add_debugtext(&msg, "page discard complete");
 
   if (grid_msg_close_brc(&grid_msg_state, &msg) >= 0) {
     grid_transport_send_msg_to_all(&grid_transport_state, &msg);
@@ -881,13 +895,13 @@ uint8_t grid_decode_pagediscard_to_ui(char* header, char* chunk) {
   case GRID_INSTR_EXECUTE_code: {
 
     uint8_t page = grid_ui_page_get_activepage(&grid_ui_state);
-    void (*cb)(uint8_t) = &grid_protocol_nvm_read_success_callback;
+    void (*cb)(uint8_t) = &grid_protocol_nvm_load_success_callback;
 
     if (grid_ui_bulk_in_progress(&grid_ui_state)) {
       return 1;
     }
 
-    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_read, page, id, cb);
+    grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, page, id, cb);
 
     // Start animation (will be stopped in the callback function)
     grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_YELLOW_DIM, -1);
@@ -1132,7 +1146,7 @@ uint8_t grid_decode_nvmerase_to_ui(char* header, char* chunk) {
 
 uint8_t grid_decode_eventview_to_ui(char* header, char* chunk) {
 
-  if (!(grid_sys_get_rx_mode(&grid_sys_state, GRID_RX_TYPE_EVENTVIEW) & GRID_RX_MODE_HANDLE)) {
+  if (!grid_rx_should_handle(GRID_RX_TYPE_EVENTVIEW, (uint8_t*)header)) {
     return 0;
   }
 
@@ -1265,10 +1279,8 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
 
       // Register script for event
       script[scriptlength] = '\0';
-      grid_lua_semaphore_lock(&grid_lua_state);
       grid_ui_register_script(&grid_ui_state, element, event, script);
-      grid_ui_event_render_script(eve, NULL);
-      grid_lua_semaphore_release(&grid_lua_state);
+      grid_ui_process_single(&grid_ui_state, ele, eve);
       script[scriptlength] = GRID_CONST_ETX;
 
       // Set acknowledge as response code

@@ -88,10 +88,6 @@
 #include "grid_lua_api.h"
 #include "grid_ui.h"
 
-#include "lua-5.4.3/src/lauxlib.h"
-#include "lua-5.4.3/src/lua.h"
-#include "lua-5.4.3/src/lualib.h"
-
 #include "vmp_def.h"
 #include "vmp_tag.h"
 
@@ -485,8 +481,6 @@ void app_main(void) {
   log_checkpoint("LUA INIT");
   grid_lua_init(&grid_lua_state, NULL, NULL);
   grid_lua_semaphore_init(&grid_lua_state, (void*)lua_busy_semaphore, grid_common_semaphore_lock_fn, grid_common_semaphore_release_fn);
-
-  grid_lua_set_memory_target(&grid_lua_state, 100);
 
   // ================== START: grid_module_pbf4_init() ================== //
 

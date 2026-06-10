@@ -39,9 +39,9 @@ pass_event = function(el, x)
   end
 end
 
-pass_rtm = function(el, rtm_type)
+pass_rtm = function(el, x)
   if el.rtmrx_cb then
-    el:rtmrx_cb(rtm_type)
+    el:rtmrx_cb({ x[1], x[2], x[3] }, x[4])
   end
 end
 

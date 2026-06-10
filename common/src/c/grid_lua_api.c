@@ -593,6 +593,8 @@ int l_grid_cat(lua_State* L) {
 
   grid_msg_set_parameter_raw((uint8_t*)frame, CLASS_HIDKEYBOARD_LENGTH, off / 4);
 
+  sprintf(&frame[strlen(frame)], GRID_CLASS_HIDKEYBOARD_frame_end);
+
   if (off != 1) {
     grid_lua_append_stdo(&grid_lua_state, frame);
   } else {
@@ -858,7 +860,7 @@ int l_grid_cat(lua_State* L) {
   }
 
   lua_Integer mode_raw = lua_tointeger(L, 2);
-  if (mode_raw < 0 || mode_raw > (GRID_RX_MODE_HANDLE | GRID_RX_MODE_FORWARD)) {
+  if (mode_raw < 0 || mode_raw > (GRID_RX_MODE_HANDLE_EXTERNAL | GRID_RX_MODE_HANDLE_INTERNAL | GRID_RX_MODE_FORWARD_FROM_USB)) {
     grid_lua_append_stde(&grid_lua_state, "#GTV.invalidParams");
     return 0;
   }
@@ -2149,29 +2151,28 @@ int l_grid_action_set(lua_State* L) {
   }
   const char* path = lua_tostring(L, 3);
 
-  if (path[0] != '\0') {
-
-    char* buf = grid_platform_read_file_contents(path);
-    if (!buf) {
-      grid_lua_append_stde(&grid_lua_state, "failed to read contents");
-      return 0;
-    }
-
-    if (grid_ui_register_script(&grid_ui_state, element, event, buf)) {
-      grid_lua_append_stde(&grid_lua_state, "failed to register script");
-      free(buf);
-      return 0;
-    }
-
-    free(buf);
-
-  } else {
-
-    if (grid_ui_register_script(&grid_ui_state, element, event, "")) {
-      grid_lua_append_stde(&grid_lua_state, "failed to register default");
-      return 0;
-    }
+  if (!path[0]) {
+    grid_lua_append_stde(&grid_lua_state, "#emptyPath");
+    return 0;
   }
+
+  char* buf = grid_platform_read_file_contents(path);
+  if (!buf) {
+    grid_lua_append_stde(&grid_lua_state, "failed to read contents");
+    return 0;
+  }
+
+  assert(grid_lua_str_is_actionstring(buf));
+  char* script = &buf[strlen(GRID_ACTION_PREFIX)];
+  script[strlen(script) - strlen(GRID_ACTION_SUFFIX)] = '\0';
+
+  if (grid_ui_register_script(&grid_ui_state, element, event, script)) {
+    grid_lua_append_stde(&grid_lua_state, "failed to register script");
+    free(buf);
+    return 0;
+  }
+
+  free(buf);
 
   return 0;
 }
