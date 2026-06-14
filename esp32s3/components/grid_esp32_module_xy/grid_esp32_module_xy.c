@@ -22,30 +22,27 @@
 #define XY_SENSOR_RESET_GPIO 39
 #define XY_SENSOR_INT_GPIO 42
 
-void grid_esp32_module_xy_handle_touch(void) {
-  TOUCHINFO ti = {};
-  if (!grid_esp32_touch_get_samples(&grid_esp32_touch_state, &ti)) {
+void grid_esp32_module_xy_process_touch(struct touchinfo_t* info) {
+
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, info->id);
+  if (!ele) {
     return;
   }
 
-  for (uint8_t i = 0; i < 5; i++) {
-    struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, i);
-    if (!ele) {
-      continue;
-    }
-    struct grid_ui_touch_state* state = grid_ui_touch_get_state(ele);
-
-    if (i < ti.count) {
-      grid_ui_touch_store_input(state, ti.x[i], ti.y[i], ti.area[i]);
-    } else if (state->area > 0) {
-      grid_ui_touch_store_input(state, state->x, state->y, 0);
-    }
-  }
+  grid_ui_touch_store_input(grid_ui_touch_get_state(ele), *info);
 }
 
-void grid_esp32_module_xy_init(struct grid_sys_model* sys, struct grid_ui_model* ui) {
+void grid_esp32_module_xy_init(struct grid_sys_model* sys, struct grid_ui_model* ui, TaskHandle_t touch_task) {
 
-  grid_esp32_touch_init(&grid_esp32_touch_state, XY_I2C_PORT, XY_I2C_SCL_GPIO, XY_I2C_SDA_GPIO, XY_SENSOR_RESET_GPIO, XY_SENSOR_INT_GPIO, XY_I2C_FREQ_HZ, NULL);
+  grid_esp32_touch_init(&grid_esp32_touch_state, XY_I2C_PORT, XY_I2C_SCL_GPIO, XY_I2C_SDA_GPIO, XY_SENSOR_RESET_GPIO, XY_SENSOR_INT_GPIO, XY_I2C_FREQ_HZ, grid_esp32_module_xy_process_touch,
+                        touch_task);
+
+  for (int i = 0; i < ui->element_list_length; ++i) {
+    struct grid_ui_element* ele = &ui->element_list[i];
+    if (ele->type == GRID_PARAMETER_ELEMENT_TOUCH) {
+      grid_ui_touch_state_init(grid_ui_touch_get_state(ele), 10);
+    }
+  }
 
   grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL);
   grid_ui_bulk_flush(ui);

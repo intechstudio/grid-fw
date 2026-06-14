@@ -6,245 +6,338 @@
 
 #include "grid_esp32_touch.h"
 
+#include <string.h>
+
 #include "driver/gpio.h"
-#include "driver/i2c.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "rom/ets_sys.h"
 
+#include "grid_platform.h"
+
 #define MXT_I2C_ADDR 0x4A
 
-#define MXT_ID_BLOCK_SIZE 7
-#define MXT_OBJ_ENTRY_SIZE 6
+#define MXT_OBJECT_START 0x07
+#define MXT_OBJECT_SIZE 6
 
-#define MXT_OBJ_T5 5
-#define MXT_OBJ_T44 44
-#define MXT_OBJ_T100 100
+#define MXT_GEN_MESSAGE_T5 5
+#define MXT_SPT_MESSAGECOUNT_T44 44
+#define MXT_TOUCH_MULTITOUCHSCREEN_T100 100
+
+#define MXT_RPTID_NOMSG 0xff
+
+#define MXT_T100_DETECT BIT(7)
+#define MXT_T100_TYPE_MASK 0x70
+
+enum t100_type {
+  MXT_T100_TYPE_FINGER = 1,
+  MXT_T100_TYPE_PASSIVE_STYLUS = 2,
+  MXT_T100_TYPE_HOVERING_FINGER = 4,
+  MXT_T100_TYPE_GLOVE = 5,
+  MXT_T100_TYPE_LARGE_TOUCH = 6,
+};
+
+struct mxt_info {
+  uint8_t family_id;
+  uint8_t variant_id;
+  uint8_t version;
+  uint8_t build;
+  uint8_t matrix_xsize;
+  uint8_t matrix_ysize;
+  uint8_t object_num;
+};
 
 DRAM_ATTR struct grid_esp32_touch_model grid_esp32_touch_state;
 
-static struct grid_esp32_touch_model* s_touch_ptr = NULL;
+static void IRAM_ATTR mxt_chg_isr(void* user) {
 
-static void IRAM_ATTR mxt_chg_isr(void* arg) { s_touch_ptr->pending = true; }
+  struct grid_esp32_touch_model* touch = (struct grid_esp32_touch_model*)user;
 
-static esp_err_t mxt_write_addr(i2c_port_t port, uint16_t addr) {
-  uint8_t buf[2] = {(uint8_t)(addr & 0xFF), (uint8_t)(addr >> 8)};
-  i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-  i2c_master_start(cmd);
-  i2c_master_write_byte(cmd, (MXT_I2C_ADDR << 1) | I2C_MASTER_WRITE, true);
-  i2c_master_write(cmd, buf, 2, true);
-  i2c_master_stop(cmd);
-  esp_err_t ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(100));
-  i2c_cmd_link_delete(cmd);
-  return ret;
+  xTaskNotifyFromISR(touch->task, 0, eNoAction, NULL);
 }
 
-static esp_err_t mxt_read_block(i2c_port_t port, uint16_t addr, uint8_t* dest, size_t len) {
-  esp_err_t ret = mxt_write_addr(port, addr);
-  if (ret != ESP_OK)
-    return ret;
+static size_t mxt_obj_size(const struct mxt_object* obj) { return obj->size_minus_one + 1; }
 
-  i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-  i2c_master_start(cmd);
-  i2c_master_write_byte(cmd, (MXT_I2C_ADDR << 1) | I2C_MASTER_READ, true);
-  if (len > 1) {
-    i2c_master_read(cmd, dest, len - 1, I2C_MASTER_ACK);
+static size_t mxt_obj_instances(const struct mxt_object* obj) { return obj->inst_minus_one + 1; }
+
+static esp_err_t mxt_read_reg(i2c_master_dev_handle_t dev, uint16_t addr, uint16_t size, uint8_t* dest) {
+
+  uint8_t tx[2] = {addr & 0xff, addr >> 8};
+  return i2c_master_transmit_receive(dev, tx, 2, dest, size, -1);
+}
+
+static void grid_esp32_touch_init_gpio(struct grid_esp32_touch_model* touch, gpio_num_t reset, gpio_num_t change) {
+
+  touch->rst = reset;
+
+  gpio_config_t rst_cfg = {
+      .pin_bit_mask = 1 << touch->rst,
+      .mode = GPIO_MODE_OUTPUT,
+      .pull_up_en = GPIO_PULLUP_DISABLE,
+      .pull_down_en = GPIO_PULLDOWN_DISABLE,
+      .intr_type = GPIO_INTR_DISABLE,
+  };
+  ESP_ERROR_CHECK(gpio_config(&rst_cfg));
+
+  touch->chg = change;
+
+  gpio_config_t chg_cfg = {
+      .pin_bit_mask = 1 << touch->chg,
+      .mode = GPIO_MODE_INPUT,
+      .pull_up_en = GPIO_PULLUP_ENABLE,
+      .pull_down_en = GPIO_PULLDOWN_DISABLE,
+      .intr_type = GPIO_INTR_DISABLE,
+  };
+  ESP_ERROR_CHECK(gpio_config(&chg_cfg));
+}
+
+static bool grid_esp32_touch_reset(struct grid_esp32_touch_model* touch) {
+
+  // Hold RST low for at least 90 ns
+  gpio_set_level(touch->rst, 0);
+  vTaskDelay(pdMS_TO_TICKS(10));
+
+  // Send RST high for more than 39 ms (typical hardware reset to CHG low time)
+  gpio_set_level(touch->rst, 1);
+  vTaskDelay(pdMS_TO_TICKS(400));
+
+  // CHG should be low at this point (if not, it is indicative of a problem)
+  return gpio_get_level(touch->chg) == 0; // TODO wait with timeout, then report
+}
+
+static void grid_esp32_touch_init_i2c(struct grid_esp32_touch_model* touch, i2c_port_t port, gpio_num_t sda, gpio_num_t scl, uint32_t scl_freq) {
+
+  touch->bus_conf = (i2c_master_bus_config_t){
+      .i2c_port = port,
+      .sda_io_num = sda,
+      .scl_io_num = scl,
+      .clk_source = I2C_CLK_SRC_DEFAULT,
+      .glitch_ignore_cnt = 7,
+      .flags.enable_internal_pullup = true,
+  };
+
+  ESP_ERROR_CHECK(i2c_new_master_bus(&touch->bus_conf, &touch->bus_hndl));
+
+  i2c_device_config_t dev_cfg = {
+      .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+      .device_address = 0x4A,
+      .scl_speed_hz = scl_freq,
+  };
+
+  ESP_ERROR_CHECK(i2c_master_bus_add_device(touch->bus_hndl, &dev_cfg, &touch->dev_hndl));
+}
+
+bool grid_esp32_touch_read_info_block(struct grid_esp32_touch_model* touch) {
+
+  esp_err_t err;
+
+  // Read the first 7 bytes of memory
+  struct mxt_info info = {0};
+  err = mxt_read_reg(touch->dev_hndl, 0, sizeof(struct mxt_info), (uint8_t*)&info);
+  if (err != ESP_OK) {
+    ets_printf("grid_esp32_touch_read_info_block: failed to read first 7 bytes\n");
+    return false;
   }
-  i2c_master_read_byte(cmd, dest + len - 1, I2C_MASTER_NACK);
-  i2c_master_stop(cmd);
-  ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(100));
-  i2c_cmd_link_delete(cmd);
-  return ret;
+
+  ets_printf("family %02X variant %02X firmware v%u.%u.%02X objects %u\n", info.family_id, info.variant_id, info.version >> 4, info.version & 0xf, info.build, info.object_num);
+
+  // TODO extract & calculate checksum, check for corruption
+
+  // Read & parse object table, one object at a time
+  uint16_t addr = MXT_OBJECT_START;
+  uint8_t reportid = 1;
+  uint8_t min_id = 0;
+  uint8_t max_id = 0;
+  for (uint8_t i = 0; i < info.object_num; ++i) {
+
+    struct mxt_object object;
+    err = mxt_read_reg(touch->dev_hndl, addr, MXT_OBJECT_SIZE, (uint8_t*)&object);
+    if (err != ESP_OK) {
+      ets_printf("grid_esp32_touch_read_info_block: failed to read entry at %04X\n", addr);
+      return false;
+    }
+
+    if (object.num_report_ids) {
+
+      min_id = reportid;
+      reportid += object.num_report_ids * mxt_obj_instances(&object);
+      max_id = reportid - 1;
+
+    } else {
+
+      min_id = max_id = 0;
+    }
+
+    switch (object.type) {
+    case MXT_GEN_MESSAGE_T5: {
+
+      touch->T5_start_addr = object.start_addr;
+      ets_printf("touch->T5_start_addr %d\n", touch->T5_start_addr);
+
+      if (info.family_id == 0x80 && info.version < 0x20) {
+        touch->T5_msg_size = mxt_obj_size(&object);
+      } else {
+        touch->T5_msg_size = mxt_obj_size(&object) - 1;
+      }
+      ets_printf("touch->T5_msg_size %d\n", touch->T5_msg_size);
+
+    } break;
+    case MXT_SPT_MESSAGECOUNT_T44: {
+
+      touch->T44_start_addr = object.start_addr;
+      ets_printf("touch->T44_start_addr %d\n", touch->T44_start_addr);
+
+    } break;
+    case MXT_TOUCH_MULTITOUCHSCREEN_T100: {
+
+      touch->T100_rid_min = min_id;
+      touch->T100_rid_max = max_id;
+
+      ets_printf("touch->T100_rid_min %d\n", touch->T100_rid_min);
+      ets_printf("touch->T100_rid_max %d\n", touch->T100_rid_max);
+
+      // The first two report IDs are reserved
+      touch->num_touchids = object.num_report_ids - 2;
+
+      ets_printf("touch->num_touchids %d\n", touch->num_touchids);
+
+    } break;
+    }
+
+    addr += MXT_OBJECT_SIZE;
+  }
+
+  // Store maximum reportid
+  touch->max_reportid = reportid;
+  ets_printf("touch->max_reportid %d\n", touch->max_reportid);
+
+  return true;
 }
 
-void grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset_gpio, gpio_num_t int_gpio, uint32_t i2c_freq_hz,
-                           grid_process_touch_t process_touch) {
+bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset, gpio_num_t change, uint32_t i2c_freq_hz,
+                           grid_process_touch_t process_touch, TaskHandle_t task) {
 
-  touch->i2c_port = i2c_port;
-  touch->scl_gpio = scl_gpio;
-  touch->sda_gpio = sda_gpio;
-  touch->reset_gpio = reset_gpio;
-  touch->int_gpio = int_gpio;
-  touch->i2c_freq_hz = i2c_freq_hz;
   touch->process_touch = process_touch;
-  touch->t5_addr = 0;
-  touch->t5_size = 0;
-  touch->t44_addr = 0;
-  touch->t100_first_report_id = 0;
+  touch->task = task;
 
-  // I2C master
-  i2c_config_t conf = {0};
-  conf.mode = I2C_MODE_MASTER;
-  conf.sda_io_num = sda_gpio;
-  conf.scl_io_num = scl_gpio;
-  conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
-  conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-  conf.master.clk_speed = i2c_freq_hz;
-  i2c_param_config(i2c_port, &conf);
-  esp_err_t ret = i2c_driver_install(i2c_port, I2C_MODE_MASTER, 0, 0, 0);
-  if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE) {
-    ets_printf("MXT i2c_driver_install failed: %d\r\n", ret);
+  esp_err_t err;
+
+  // Initialize I2C configuration
+  grid_esp32_touch_init_i2c(touch, i2c_port, sda_gpio, scl_gpio, i2c_freq_hz);
+
+  // Initialize RST and INT/CHG GPIOs
+  grid_esp32_touch_init_gpio(touch, reset, change);
+
+  // Perform reset sequence
+  if (!grid_esp32_touch_reset(touch)) {
+    ets_printf("grid_esp32_touch_init: CHG was high after reset\n");
+    return false;
+  }
+
+  // Read and parse the info block
+  if (!grid_esp32_touch_read_info_block(touch)) {
+    return false;
+  }
+
+  // Allocate message buffer
+  touch->msg_buf = grid_platform_allocate_volatile(touch->T5_msg_size * touch->max_reportid);
+  assert(touch->msg_buf);
+
+  // Set up per-pin interrupt for CHG
+  ESP_ERROR_CHECK(gpio_install_isr_service(0));
+  ESP_ERROR_CHECK(gpio_set_intr_type(change, GPIO_INTR_NEGEDGE));
+  ESP_ERROR_CHECK(gpio_isr_handler_add(change, mxt_chg_isr, touch));
+  ESP_ERROR_CHECK(gpio_intr_enable(change));
+
+  // Start communications with the device
+  mxt_chg_isr(touch);
+
+  return true;
+}
+
+static void grid_esp32_touch_proc_t100(struct grid_esp32_touch_model* touch, uint8_t* msg) {
+
+  int id = msg[0] - touch->T100_rid_min - 2;
+
+  // Ignore SCRSTATUS event
+  if (id < 0) {
     return;
   }
 
-  // RST as output, INT/CHG as input with pull-up
-  gpio_config_t io_conf = {0};
-  io_conf.pin_bit_mask = (1ULL << reset_gpio);
-  io_conf.mode = GPIO_MODE_OUTPUT;
-  io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-  io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-  io_conf.intr_type = GPIO_INTR_DISABLE;
-  gpio_config(&io_conf);
+  uint8_t status = msg[1];
+  uint16_t x = msg[2] + (msg[3] << 8);
+  uint16_t y = msg[4] + (msg[5] << 8);
+  uint8_t distance = 0;
 
-  io_conf.pin_bit_mask = (1ULL << int_gpio);
-  io_conf.mode = GPIO_MODE_INPUT;
-  io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
-  gpio_config(&io_conf);
+  uint8_t type = 0;
+  if (status & MXT_T100_DETECT) {
 
-  // Reset sequence — hold RST low 100ms, then wait 300ms for chip to initialise
-  gpio_set_level(reset_gpio, 0);
-  vTaskDelay(pdMS_TO_TICKS(100));
-  gpio_set_level(reset_gpio, 1);
-  vTaskDelay(pdMS_TO_TICKS(300));
+    type = (status & MXT_T100_TYPE_MASK) >> 4;
 
-  // Check CHG state as a diagnostic (not a hard gate)
-  ets_printf("MXT CHG after reset: %s\r\n", gpio_get_level(int_gpio) == 0 ? "LOW (ready)" : "HIGH");
+    switch (type) {
+    case MXT_T100_TYPE_FINGER:
+    case MXT_T100_TYPE_PASSIVE_STYLUS:
+    case MXT_T100_TYPE_HOVERING_FINGER:
+    case MXT_T100_TYPE_GLOVE: {
 
-  // Scan I2C bus to confirm device is visible
-  grid_esp32_touch_scan(touch);
+      struct touchinfo_t info = (struct touchinfo_t){
+          .id = id,
+          .type = type,
+          .x = x,
+          .y = y,
+      };
+      touch->process_touch(&info);
 
-  // Read ID block at address 0
-  uint8_t id[MXT_ID_BLOCK_SIZE];
-  ret = mxt_read_block(i2c_port, 0, id, MXT_ID_BLOCK_SIZE);
-  if (ret != ESP_OK) {
-    ets_printf("MXT ID block read failed: %d\r\n", ret);
-    return;
-  }
-  ets_printf("MXT family=0x%02X variant=0x%02X fw=%d.%d.%02X matrix=%dx%d objects=%d\r\n", id[0], id[1], id[2] >> 4, id[2] & 0x0F, id[3], id[4], id[5], id[6]);
-
-  // Parse object table to find T5, T44, T100
-  uint8_t num_objects = id[6];
-  uint16_t table_ptr = MXT_ID_BLOCK_SIZE;
-  uint8_t report_id = 1;
-
-  for (uint8_t i = 0; i < num_objects; i++) {
-    uint8_t entry[MXT_OBJ_ENTRY_SIZE];
-    ret = mxt_read_block(i2c_port, table_ptr, entry, MXT_OBJ_ENTRY_SIZE);
-    if (ret != ESP_OK) {
-      ets_printf("MXT object table read failed at entry %d\r\n", i);
+    } break;
+    case MXT_T100_TYPE_LARGE_TOUCH:
+      break;
+    default:
       return;
     }
-    table_ptr += MXT_OBJ_ENTRY_SIZE;
+  }
+}
 
-    uint8_t obj_type = entry[0];
-    uint16_t obj_addr = entry[1] | ((uint16_t)entry[2] << 8);
-    uint8_t num_inst = entry[4]; // stored as instances-1
-    uint8_t num_rids = entry[5];
+static int grid_esp32_touch_proc_message(struct grid_esp32_touch_model* touch, uint8_t* msg) {
 
-    if (obj_type == MXT_OBJ_T5) {
-      touch->t5_addr = obj_addr;
-      touch->t5_size = entry[3]; // read size-1 bytes, skipping trailing checksum
-    } else if (obj_type == MXT_OBJ_T44) {
-      touch->t44_addr = obj_addr;
-    } else if (obj_type == MXT_OBJ_T100) {
-      touch->t100_first_report_id = report_id;
-    }
+  uint8_t report_id = msg[0];
 
-    if (num_rids > 0) {
-      report_id += (num_inst + 1) * num_rids;
-    }
+  if (report_id == MXT_RPTID_NOMSG) {
+    return 0;
   }
 
-  if (touch->t5_addr && touch->t44_addr && touch->t100_first_report_id) {
-    ets_printf("MXT init OK: T5@0x%04X(sz=%d) T44@0x%04X T100 first_rid=%d\r\n", touch->t5_addr, touch->t5_size, touch->t44_addr, touch->t100_first_report_id);
+  if (report_id >= touch->T100_rid_min && report_id <= touch->T100_rid_max) {
+    grid_esp32_touch_proc_t100(touch, msg);
+  }
 
-  } else {
-    ets_printf("MXT init FAILED: T5=0x%04X T44=0x%04X T100_rid=%d\r\n", touch->t5_addr, touch->t44_addr, touch->t100_first_report_id);
+  return 1;
+}
+
+void grid_esp32_touch_process_msgs(struct grid_esp32_touch_model* touch) {
+
+  esp_err_t err;
+
+  uint32_t start = grid_platform_rtc_get_micros();
+  // Read the number of messages from T44
+  uint8_t count;
+  err = mxt_read_reg(touch->dev_hndl, touch->T44_start_addr, 1, &count);
+  if (err != ESP_OK) {
     return;
   }
 
-  // Interrupt on falling edge of CHG — sets pending flag, serviced in main loop
-  s_touch_ptr = touch;
-  esp_err_t isr_ret;
-  isr_ret = gpio_install_isr_service(0);
-  ets_printf("MXT gpio_install_isr_service: %d\r\n", isr_ret);
-  isr_ret = gpio_set_intr_type(int_gpio, GPIO_INTR_NEGEDGE);
-  ets_printf("MXT gpio_set_intr_type: %d\r\n", isr_ret);
-  isr_ret = gpio_isr_handler_add(int_gpio, mxt_chg_isr, NULL);
-  ets_printf("MXT gpio_isr_handler_add: %d\r\n", isr_ret);
-  isr_ret = gpio_intr_enable(int_gpio);
-  ets_printf("MXT gpio_intr_enable: %d\r\n", isr_ret);
-  touch->pending = true;
-}
-
-void grid_esp32_touch_scan(struct grid_esp32_touch_model* touch) {
-
-  ets_printf("I2C scan (SCL=GPIO%d SDA=GPIO%d):\r\n", touch->scl_gpio, touch->sda_gpio);
-  int found = 0;
-  for (uint8_t addr = 0x08; addr < 0x78; addr++) {
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_WRITE, true);
-    i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(touch->i2c_port, cmd, pdMS_TO_TICKS(10));
-    i2c_cmd_link_delete(cmd);
-    if (ret == ESP_OK) {
-      ets_printf("  found device at 0x%02X\r\n", addr);
-      found++;
-    }
-  }
-  if (found == 0) {
-    ets_printf("  no devices found\r\n");
-  }
-}
-
-int grid_esp32_touch_get_samples(struct grid_esp32_touch_model* touch, TOUCHINFO* pTI) {
-  if (!pTI)
-    return 0;
-  pTI->count = 0;
-
-  if (!touch->t44_addr || !touch->t5_addr || !touch->t100_first_report_id) {
-    return 0;
+  if (!count) {
+    return;
   }
 
-  if (!touch->pending) {
-    return 0;
-  }
-  touch->pending = false;
-
-  uint8_t msg_count = 0;
-  esp_err_t ret = mxt_read_block(touch->i2c_port, touch->t44_addr, &msg_count, 1);
-  if (ret != ESP_OK || msg_count == 0) {
-    return 0;
+  // Read messages from T5
+  err = mxt_read_reg(touch->dev_hndl, touch->T5_start_addr, touch->T5_msg_size * count, touch->msg_buf);
+  if (err != ESP_OK) {
+    return;
   }
 
-  uint8_t msg[10];
-  uint8_t finger_start = touch->t100_first_report_id + 2;
-
-  for (uint8_t i = 0; i < msg_count; i++) {
-    ret = mxt_read_block(touch->i2c_port, touch->t5_addr, msg, touch->t5_size);
-    if (ret != ESP_OK)
-      break;
-
-    uint8_t report_id = msg[0];
-
-    if (report_id >= finger_start && report_id < finger_start + 5) {
-      uint8_t finger_idx = report_id - finger_start;
-      uint8_t event = msg[1] & 0x0F;
-
-      if (finger_idx + 1 > pTI->count) {
-        pTI->count = finger_idx + 1;
-      }
-      pTI->x[finger_idx] = msg[2] | ((uint16_t)msg[3] << 8);
-      pTI->y[finger_idx] = msg[4] | ((uint16_t)msg[5] << 8);
-
-      if (event == 4 || event == 1) { // touch down or move
-        pTI->area[finger_idx] = 50;
-      } else if (event == 5) { // touch up
-        pTI->area[finger_idx] = 0;
-      }
-    }
+  // Process messages
+  for (uint8_t i = 0; i < count; ++i) {
+    grid_esp32_touch_proc_message(touch, touch->msg_buf + i * touch->T5_msg_size);
   }
 
-  return (pTI->count > 0);
+  return;
 }

@@ -12,49 +12,54 @@
 #include "freertos/semphr.h"
 
 #include "driver/gpio.h"
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
+
+#include "grid_ui_touch.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef __TOUCHINFO_STRUCT__
-#define __TOUCHINFO_STRUCT__
-typedef struct _fttouchinfo {
-  int count;          // number of pressed keys
-  uint32_t key_state; // T15 key bitmap (1 bit per key, up to 32 keys)
-  uint16_t x[5], y[5];
-  uint8_t pressure[5], area[5];
-} TOUCHINFO;
-#endif
+typedef void (*grid_process_touch_t)(struct touchinfo_t*);
 
-typedef void (*grid_process_touch_t)(void);
+struct mxt_object {
+  uint8_t type;
+  uint16_t start_addr;
+  uint8_t size_minus_one;
+  uint8_t inst_minus_one;
+  uint8_t num_report_ids;
+} __packed;
 
 struct grid_esp32_touch_model {
-  i2c_port_t i2c_port;
-  gpio_num_t scl_gpio;
-  gpio_num_t sda_gpio;
-  gpio_num_t reset_gpio;
-  gpio_num_t int_gpio;
-  uint32_t i2c_freq_hz;
+
+  gpio_num_t rst;
+  gpio_num_t chg;
+
+  i2c_master_bus_config_t bus_conf;
+  i2c_master_bus_handle_t bus_hndl;
+  i2c_master_dev_handle_t dev_hndl;
+
   grid_process_touch_t process_touch;
 
-  uint16_t t5_addr;
-  uint8_t t5_size;
-  uint16_t t44_addr;
-  uint8_t t100_first_report_id;
+  TaskHandle_t task;
 
-  volatile bool pending;
+  uint8_t max_reportid;
+  uint16_t T5_start_addr;
+  uint8_t T5_msg_size;
+  uint16_t T44_start_addr;
+  uint8_t T100_rid_min;
+  uint8_t T100_rid_max;
+  uint8_t num_touchids;
+
+  uint8_t* msg_buf;
 };
 
 extern struct grid_esp32_touch_model grid_esp32_touch_state;
 
-void grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset_gpio, gpio_num_t int_gpio, uint32_t i2c_freq_hz,
-                           grid_process_touch_t process_touch);
+bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset_gpio, gpio_num_t int_gpio, uint32_t i2c_freq_hz,
+                           grid_process_touch_t process_touch, TaskHandle_t task);
 
-void grid_esp32_touch_scan(struct grid_esp32_touch_model* touch);
-
-int grid_esp32_touch_get_samples(struct grid_esp32_touch_model* touch, TOUCHINFO* pTI);
+void grid_esp32_touch_process_msgs(struct grid_esp32_touch_model* touch);
 
 #ifdef __cplusplus
 }

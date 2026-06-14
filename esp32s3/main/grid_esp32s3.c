@@ -557,7 +557,7 @@ void app_main(void) {
   } else if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
     grid_esp32_module_octv_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_xy(&grid_sys_state)) {
-    grid_esp32_module_xy_init(&grid_sys_state, &grid_ui_state);
+    grid_esp32_module_xy_init(&grid_sys_state, &grid_ui_state, xTaskGetCurrentTaskHandle());
   } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
     grid_esp32_module_vsnx_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
   } else {
@@ -619,8 +619,9 @@ void app_main(void) {
       vmp_flushed = true;
     }
 
-    if (grid_hwcfg_module_is_xy(&grid_sys_state) && grid_esp32_touch_state.pending) {
-      grid_esp32_module_xy_handle_touch();
+    // Check with zero timeout for a touch
+    if (xTaskNotifyWait(0, (uint32_t)-1, NULL, 0)) {
+      grid_esp32_touch_process_msgs(&grid_esp32_touch_state);
     }
 
     // Run microtasks

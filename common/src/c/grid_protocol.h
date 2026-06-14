@@ -841,11 +841,19 @@
 #define GRID_LUA_FNC_T_TOUCH_Y_MAX_short "tyma"
 #define GRID_LUA_FNC_T_TOUCH_Y_MAX_human "touch_y_max"
 
-#define GRID_LUA_FNC_T_TOUCH_AREA_index 8
-#define GRID_LUA_FNC_T_TOUCH_AREA_short "tar"
-#define GRID_LUA_FNC_T_TOUCH_AREA_human "touch_area"
+#define GRID_LUA_FNC_T_TOUCH_X_STATE_index 8
+#define GRID_LUA_FNC_T_TOUCH_X_STATE_short "txst"
+#define GRID_LUA_FNC_T_TOUCH_X_STATE_human "touch_x_state"
 
-#define GRID_LUA_FNC_T_LIST_length 9
+#define GRID_LUA_FNC_T_TOUCH_Y_STATE_index 9
+#define GRID_LUA_FNC_T_TOUCH_Y_STATE_short "tyst"
+#define GRID_LUA_FNC_T_TOUCH_Y_STATE_human "touch_y_state"
+
+#define GRID_LUA_FNC_T_LED_WIDTH_index 10
+#define GRID_LUA_FNC_T_LED_WIDTH_short "lwi"
+#define GRID_LUA_FNC_T_LED_WIDTH_human "led_width"
+
+#define GRID_LUA_FNC_T_LIST_length 11
 
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 

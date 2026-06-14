@@ -114,4 +114,6 @@ extern void grid_platform_mux_init(uint8_t mux_positions_bm);
 
 extern void grid_platform_mux_write(uint8_t index);
 
+extern void* grid_platform_allocate_volatile(size_t size);
+
 #endif /* GRID_PLATFORM_H */
