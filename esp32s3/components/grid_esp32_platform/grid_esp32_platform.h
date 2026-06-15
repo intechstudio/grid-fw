@@ -1,14 +1,9 @@
-
-
-#pragma once
+#ifndef GRID_ESP32_PLATFORM_H
+#define GRID_ESP32_PLATFORM_H
 
 #include "esp_attr.h"
 #include <stddef.h>
 #include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void* grid_platform_allocate_volatile(size_t size);
 
@@ -20,6 +15,4 @@ uint32_t grid_platform_get_cycles();
 
 uint32_t grid_platform_get_cycles_per_us();
 
-#ifdef __cplusplus
-}
-#endif
+#endif /* GRID_ESP32_PLATFORM_H */

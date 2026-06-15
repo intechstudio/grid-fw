@@ -1,5 +1,5 @@
-
-#pragma once
+#ifndef GRID_GUI_H
+#define GRID_GUI_H
 
 #include <assert.h>
 #include <limits.h>
@@ -11,10 +11,6 @@
 
 #include "grid_lua_api_gui.h"
 #include "grid_swsr.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 extern void grid_platform_printf(char const* fmt, ...);
 
@@ -96,6 +92,4 @@ void grid_gui_draw_demo(struct grid_gui_model* gui, uint8_t counter);
 void grid_gui_draw_demo_matrix(struct grid_gui_model* gui, uint8_t counter, grid_color_t* matrix);
 void grid_gui_draw_demo_rgb(struct grid_gui_model* gui, uint8_t counter);
 
-#ifdef __cplusplus
-}
-#endif
+#endif /* GRID_GUI_H */
