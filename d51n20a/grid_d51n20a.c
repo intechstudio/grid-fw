@@ -420,10 +420,8 @@ int main(void) {
       // grid_d51_nvic_debug_priorities();
     }
 
-    // Drive TinyUSB stack (bare-metal, OPT_OS_NONE)
     grid_usb_task();
 
-    // Check if USB is connected and start animation
     if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && grid_usb_connected()) {
 
       grid_platform_printf("USB CONNECTED\n");
@@ -435,7 +433,6 @@ int main(void) {
       grid_msg_set_heartbeat_type(&grid_msg_state, 1);
     }
 
-    // Editor timeout
     if (grid_sys_get_editor_connected_state(&grid_sys_state)) {
 
       uint64_t last = grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state);
@@ -451,11 +448,9 @@ int main(void) {
     grid_usb_acm_rx_poll(&grid_usb_state.acm);
     grid_usb_acm_rx_process(&grid_usb_state.acm);
 
-    // Run UI protothreads
     update_interrupt_mask_from_bulk_status();
     grid_ui_bulk_process(&grid_ui_state);
 
-    // Receive USART
     for (uint8_t i = 0; i < 4; ++i) {
 
       struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
@@ -467,7 +462,6 @@ int main(void) {
     struct grid_port* port_ui = grid_transport_get_port(xport, 4, GRID_PORT_UI, 0);
     struct grid_port* port_usb = grid_transport_get_port(xport, 5, GRID_PORT_USB, 0);
 
-    // Broadcast inbound to outbound
     for (uint8_t i = 0; i < 4; ++i) {
 
       struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
@@ -477,7 +471,6 @@ int main(void) {
     grid_transport_rx_broadcast_tx(xport, port_ui, NULL);
     grid_transport_rx_broadcast_tx(xport, port_usb, NULL);
 
-    // Run receiver-type microtasks
     grid_utask_led(&timer_led);
     grid_utask_sendfull(&timer_sendfull);
     grid_utask_ping(&timer_ping);
@@ -485,10 +478,8 @@ int main(void) {
     grid_utask_midi_rx(&timer_midi_rx);
     grid_utask_process_ui(&timer_process_ui);
 
-    // Decode for USB
     grid_port_send_usb(port_usb);
 
-    // USB TX flush
     if (grid_usb_midi_tx_available(&grid_usb_state.midi)) {
       grid_usb_midi_tx_flush(&grid_usb_state.midi);
     }
@@ -499,22 +490,17 @@ int main(void) {
       grid_usb_gamepad_tx_flush(&grid_usb_state.hid.gamepad);
     }
 
-    // TX dropped reporting
     grid_utask_health_report();
 
-    // Decode for UI
     grid_port_send_ui(port_ui);
 
-    // Outbound USART
     grid_transport_send_usart_cyclic_offset(xport);
 
-    // Garbage collection step for lua
     grid_lua_semaphore_lock(&grid_lua_state);
     grid_lua_gc_step_unsafe(&grid_lua_state);
     grid_lua_semaphore_release(&grid_lua_state);
 
     handle_connection_effect();
 
-  } // WHILE
-
-} // MAIN
+  }
+}

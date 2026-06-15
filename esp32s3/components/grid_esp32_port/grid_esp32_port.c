@@ -453,7 +453,6 @@ void grid_esp32_port_task(void* arg) {
       grid_alert_all_set_phase(&grid_led_state, 100);
     }
 
-    // Check if USB is connected and start animation
     if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && grid_usb_connected()) {
 
       grid_platform_printf("USB CONNECTED\n");
@@ -465,7 +464,6 @@ void grid_esp32_port_task(void* arg) {
       grid_msg_set_heartbeat_type(&grid_msg_state, 1);
     }
 
-    // Editor timeout
     if (grid_sys_get_editor_connected_state(&grid_sys_state)) {
 
       uint64_t last = grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state);
@@ -480,7 +478,6 @@ void grid_esp32_port_task(void* arg) {
     struct grid_port* port_ui = grid_transport_get_port(xport, 4, GRID_PORT_UI, 0);
     struct grid_port* port_usb = grid_transport_get_port(xport, 5, GRID_PORT_USB, 0);
 
-    // Broadcast inbound to outbound
     for (uint8_t i = 0; i < 4; ++i) {
 
       struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
@@ -490,7 +487,6 @@ void grid_esp32_port_task(void* arg) {
     grid_transport_rx_broadcast_tx(xport, port_ui, grid_esp32_broadcast_between);
     grid_transport_rx_broadcast_tx(xport, port_usb, grid_esp32_broadcast_between);
 
-    // Run receiver-type microtasks
     grid_utask_sendfull(&timer_sendfull);
     grid_utask_ping(&timer_ping);
     grid_utask_heart(&timer_heart);
@@ -499,10 +495,8 @@ void grid_esp32_port_task(void* arg) {
     grid_utask_draw_event(&timer_draw_event[0]);
     grid_utask_draw_event(&timer_draw_event[1]);
 
-    // Decode for USB
     grid_port_send_usb(port_usb);
 
-    // USB TX flush
     if (grid_usb_midi_tx_available(&grid_usb_state.midi)) {
       grid_usb_midi_tx_flush(&grid_usb_state.midi);
     }
@@ -513,10 +507,8 @@ void grid_esp32_port_task(void* arg) {
       grid_usb_gamepad_tx_flush(&grid_usb_state.hid.gamepad);
     }
 
-    // TX dropped reporting
     grid_utask_health_report();
 
-    // Service tinyusb
     grid_usb_task();
 
     // Duplicate midi rx callback used as a polling mechanism, as the
@@ -525,18 +517,13 @@ void grid_esp32_port_task(void* arg) {
     grid_usb_acm_rx_poll(&grid_usb_state.acm);
     grid_usb_acm_rx_process(&grid_usb_state.acm);
 
-    // Decode for UI
     grid_port_send_ui(port_ui);
 
-    // Outbound USART
     grid_transport_send_usart_cyclic_offset(xport);
 
-    // Garbage collection step for lua
     grid_lua_semaphore_lock(&grid_lua_state);
     grid_lua_gc_step_unsafe(&grid_lua_state);
     grid_lua_semaphore_release(&grid_lua_state);
-
-    // ets_delay_us(100);
 
     handle_connection_effect();
 
