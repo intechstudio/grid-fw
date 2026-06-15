@@ -49,6 +49,7 @@ jobs:
           sh -c "./wasm_build.sh"
 
       - name: Set timestamp in environment and output
+        id: set_out
         run: |
           ACTION_DATE=$(date +'%Y-%m-%d-%H%M')
           echo "ACTION_DATE=$ACTION_DATE" >> $GITHUB_ENV
