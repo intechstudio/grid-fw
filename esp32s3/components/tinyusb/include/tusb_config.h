@@ -1,12 +1,3 @@
-/*
- * TinyUSB configuration for Grid firmware (ESP32-S3).
- *
- * This file is picked up by TinyUSB's tusb_option.h before any TinyUSB
- * macros are defined, so keep it to plain #defines only — no TU_* macros.
- *
- * CFG_TUSB_MCU is injected as a compiler flag from CMakeLists.txt so that
- * a single tusb_config.h works for both ESP32-S2 and ESP32-S3 targets.
- */
 #pragma once
 
 // ---- MCU ----

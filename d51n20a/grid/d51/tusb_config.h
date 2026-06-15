@@ -1,9 +1,3 @@
-/*
- * TinyUSB configuration for Grid firmware (SAMD51 / D51).
- *
- * OPT_OS_NONE: bare-metal — tud_task() is called from the main super-loop.
- * CFG_TUSB_MCU is defined here; the Makefile does not inject it.
- */
 #ifndef TUSB_CONFIG_H
 #define TUSB_CONFIG_H
 
