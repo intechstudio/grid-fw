@@ -7,12 +7,7 @@
 struct grid_health_model grid_health_state = {0};
 
 static const char* const s_counter_labels[GRID_HEALTH_COUNTER_COUNT] = {
-    "CDC TX dropped",
-    "MIDI TX dropped",
-    "HID macro TX dropped",
-    "HID gamepad TX dropped",
-    "keyboard TX dropped",
-    "mouse TX dropped",
+    "CDC TX dropped", "MIDI TX dropped", "HID macro TX dropped", "HID gamepad TX dropped", "keyboard TX dropped", "mouse TX dropped",
 };
 
 void grid_health_init(struct grid_health_model* health) { memset(health, 0, sizeof(*health)); }

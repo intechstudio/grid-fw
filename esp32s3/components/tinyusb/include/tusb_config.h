@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TUSB_CONFIG_H
+#define TUSB_CONFIG_H
 
 // ---- MCU ----
 #define CFG_TUSB_MCU OPT_MCU_ESP32S3
@@ -65,3 +66,5 @@
 #define CFG_TUD_DFU_RUNTIME 0
 #define CFG_TUD_BTH 0
 #define CFG_TUD_USBTMC 0
+
+#endif /* TUSB_CONFIG_H */
