@@ -223,11 +223,11 @@ void grid_utask_heart(struct grid_utask_timer* timer) {
   grid_transport_heartbeat(&grid_transport_state, type, hwcfg, activepage, gccount);
 }
 
-struct grid_utask_timer timer_tx_dropped;
+struct grid_utask_timer timer_health_report;
 
-void grid_utask_usb_tx(void) {
+void grid_utask_health_report(void) {
 
-  if (grid_usb_connected() && grid_usb_acm_dtr(&grid_usb_state.acm) && grid_utask_timer_elapsed(&timer_tx_dropped)) {
+  if (grid_usb_connected() && grid_usb_acm_dtr(&grid_usb_state.acm) && grid_utask_timer_elapsed(&timer_health_report)) {
 
     grid_health_report(&grid_health_state);
   }
@@ -415,7 +415,7 @@ void grid_esp32_port_task(void* arg) {
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_HEARTBEATINTERVAL_us,
   };
-  timer_tx_dropped = (struct grid_utask_timer){
+  timer_health_report = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
       .period = 1000000,
   };
@@ -514,7 +514,7 @@ void grid_esp32_port_task(void* arg) {
     }
 
     // TX dropped reporting
-    grid_utask_usb_tx();
+    grid_utask_health_report();
 
     // Service tinyusb
     grid_usb_task();
