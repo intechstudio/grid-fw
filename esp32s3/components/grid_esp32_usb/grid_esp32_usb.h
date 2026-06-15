@@ -1,16 +1,6 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-#pragma once
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef GRID_ESP32_USB_H
+#define GRID_ESP32_USB_H
 
 void grid_esp32_usb_init(void);
 
-#ifdef __cplusplus
-}
-#endif
+#endif /* GRID_ESP32_USB_H */
