@@ -99,10 +99,10 @@ static bool grid_esp32_touch_reset(struct grid_esp32_touch_model* touch) {
 
   // Send RST high for more than 39 ms (typical hardware reset to CHG low time)
   gpio_set_level(touch->rst, 1);
-  vTaskDelay(pdMS_TO_TICKS(400));
+  vTaskDelay(pdMS_TO_TICKS(100));
 
-  // CHG should be low at this point (if not, it is indicative of a problem)
-  return gpio_get_level(touch->chg) == 0; // TODO wait with timeout, then report
+  // CHG should be low at this point
+  return gpio_get_level(touch->chg) == 0;
 }
 
 static void grid_esp32_touch_init_i2c(struct grid_esp32_touch_model* touch, i2c_port_t port, gpio_num_t sda, gpio_num_t scl, uint32_t scl_freq) {
@@ -230,8 +230,10 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
 
   // Perform reset sequence
   if (!grid_esp32_touch_reset(touch)) {
+
+    // Ignore return status, as success cannot be reliably detected due to some
+    // bootloader versions not asserting the CHG line after bootloading
     ets_printf("grid_esp32_touch_init: CHG was high after reset\n");
-    return false;
   }
 
   // Read and parse the info block
