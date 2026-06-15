@@ -545,9 +545,6 @@ void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_li
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_SIMPLEMIDI_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_AUTOVALUE_source);
 
-  // Set garbage collection mode to generational
-  lua_gc(lua->L, LUA_GCGEN);
-
   grid_lua_gc_full_unsafe(lua);
 
   grid_lua_register_functions_unsafe(lua, lua_lib);
