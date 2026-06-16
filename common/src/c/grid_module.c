@@ -100,7 +100,7 @@ void grid_module_po16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
   grid_ain_init(ain, 16, 4);
-  grid_led_init(led, 16);
+  grid_led_init(led, 16, NULL);
   grid_led_lookup_alloc_identity(led, 0, 16);
 
   grid_ui_model_init(ui, 16 + 1); // +1 for the system element
@@ -123,7 +123,7 @@ void grid_module_bu16_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
   grid_ain_init(ain, 16, 4);
-  grid_led_init(led, 16);
+  grid_led_init(led, 16, NULL);
   grid_led_lookup_alloc_identity(led, 0, 16);
 
   grid_ui_model_init(ui, 16 + 1); // +1 for the system element
@@ -149,7 +149,7 @@ void grid_module_pbf4_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   // 16 pot, depth of 5, 14bit internal, 7bit result;
   grid_ain_init(ain, 16, 4);
-  grid_led_init(led, 12);
+  grid_led_init(led, 12, NULL);
   grid_led_lookup_alloc_identity(led, 0, 12);
 
   grid_ui_model_init(ui, 12 + 1); // +1 for the system element
@@ -179,7 +179,7 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
   // TODO should be 4 ain channels but indexing is bad in grid_ui_potmeter.c
   grid_ain_init(&grid_ain_state, 8, 4);
-  grid_led_init(&grid_led_state, 8);
+  grid_led_init(&grid_led_state, 8, NULL);
   grid_led_lookup_alloc_identity(led, 0, 8);
 
   grid_ui_model_init(ui, 8 + 1); // +1 for the system element
@@ -206,7 +206,7 @@ void grid_module_ef44_ui_init(struct grid_ain_model* ain, struct grid_led_model*
 
 void grid_module_en16_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
-  grid_led_init(&grid_led_state, 16);
+  grid_led_init(&grid_led_state, 16, NULL);
   grid_led_lookup_alloc_identity(led, 0, 16);
 
   grid_ui_model_init(ui, 16 + 1); // +1 for the system element
@@ -233,7 +233,7 @@ void grid_module_octv_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   grid_ain_init(ain, 13, 4);
 
   // 21 LEDs: 8 for encoders + 13 for buttons
-  grid_led_init(led, 21);
+  grid_led_init(led, 21, NULL);
   grid_led_lookup_alloc_identity(led, 0, 21);
 
   // 22 elements: 8 encoders + 13 buttons + 1 system
@@ -260,9 +260,17 @@ void grid_module_octv_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
+bool grid_module_xy_led_is_alert_all(uint8_t n) {
+
+  uint8_t x = n % 5;
+  uint8_t y = (5 - 1) - n / 5;
+
+  return x == 2 || y == 2;
+}
+
 void grid_module_xy_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
-  grid_led_init(led, 25);
+  grid_led_init(led, 25, grid_module_xy_led_is_alert_all);
   grid_led_lookup_alloc_identity(led, 0, 25);
 
   grid_ui_model_init(ui, 6);
