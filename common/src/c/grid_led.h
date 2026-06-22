@@ -1,6 +1,7 @@
 #ifndef GRID_LED_H
 #define GRID_LED_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #define GRID_LED_LAYER_ALERT 0

@@ -6,6 +6,7 @@
 
 #include "grid_esp32_touch.h"
 
+#include <errno.h>
 #include <string.h>
 
 #include "driver/gpio.h"
@@ -19,6 +20,7 @@
 
 #define MXT_OBJECT_START 0x07
 #define MXT_OBJECT_SIZE 6
+#define MXT_INFO_CHECKSUM_SIZE 3
 
 #define MXT_GEN_MESSAGE_T5 5
 #define MXT_SPT_MESSAGECOUNT_T44 44
@@ -127,40 +129,22 @@ static void grid_esp32_touch_init_i2c(struct grid_esp32_touch_model* touch, i2c_
   ESP_ERROR_CHECK(i2c_master_bus_add_device(touch->bus_hndl, &dev_cfg, &touch->dev_hndl));
 }
 
-bool grid_esp32_touch_read_info_block(struct grid_esp32_touch_model* touch) {
+static void grid_esp32_touch_parse_info_block(struct grid_esp32_touch_model* touch, uint8_t* iblk) {
 
-  esp_err_t err;
+  struct mxt_info* info = (struct mxt_info*)iblk;
 
-  // Read the first 7 bytes of memory
-  struct mxt_info info = {0};
-  err = mxt_read_reg(touch->dev_hndl, 0, sizeof(struct mxt_info), (uint8_t*)&info);
-  if (err != ESP_OK) {
-    ets_printf("grid_esp32_touch_read_info_block: failed to read first 7 bytes\n");
-    return false;
-  }
-
-  ets_printf("family %02X variant %02X firmware v%u.%u.%02X objects %u\n", info.family_id, info.variant_id, info.version >> 4, info.version & 0xf, info.build, info.object_num);
-
-  // TODO extract & calculate checksum, check for corruption
-
-  // Read & parse object table, one object at a time
-  uint16_t addr = MXT_OBJECT_START;
+  // Parse object table
   uint8_t reportid = 1;
   uint8_t min_id = 0;
   uint8_t max_id = 0;
-  for (uint8_t i = 0; i < info.object_num; ++i) {
+  for (uint8_t i = 0; i < info->object_num; ++i) {
 
-    struct mxt_object object;
-    err = mxt_read_reg(touch->dev_hndl, addr, MXT_OBJECT_SIZE, (uint8_t*)&object);
-    if (err != ESP_OK) {
-      ets_printf("grid_esp32_touch_read_info_block: failed to read entry at %04X\n", addr);
-      return false;
-    }
+    struct mxt_object* object = (struct mxt_object*)&iblk[MXT_OBJECT_START + i * MXT_OBJECT_SIZE];
 
-    if (object.num_report_ids) {
+    if (object->num_report_ids) {
 
       min_id = reportid;
-      reportid += object.num_report_ids * mxt_obj_instances(&object);
+      reportid += object->num_report_ids * mxt_obj_instances(object);
       max_id = reportid - 1;
 
     } else {
@@ -168,23 +152,23 @@ bool grid_esp32_touch_read_info_block(struct grid_esp32_touch_model* touch) {
       min_id = max_id = 0;
     }
 
-    switch (object.type) {
+    switch (object->type) {
     case MXT_GEN_MESSAGE_T5: {
 
-      touch->T5_start_addr = object.start_addr;
+      touch->T5_start_addr = object->start_addr;
       ets_printf("touch->T5_start_addr %d\n", touch->T5_start_addr);
 
-      if (info.family_id == 0x80 && info.version < 0x20) {
-        touch->T5_msg_size = mxt_obj_size(&object);
+      if (info->family_id == 0x80 && info->version < 0x20) {
+        touch->T5_msg_size = mxt_obj_size(object);
       } else {
-        touch->T5_msg_size = mxt_obj_size(&object) - 1;
+        touch->T5_msg_size = mxt_obj_size(object) - 1;
       }
       ets_printf("touch->T5_msg_size %d\n", touch->T5_msg_size);
 
     } break;
     case MXT_SPT_MESSAGECOUNT_T44: {
 
-      touch->T44_start_addr = object.start_addr;
+      touch->T44_start_addr = object->start_addr;
       ets_printf("touch->T44_start_addr %d\n", touch->T44_start_addr);
 
     } break;
@@ -197,21 +181,111 @@ bool grid_esp32_touch_read_info_block(struct grid_esp32_touch_model* touch) {
       ets_printf("touch->T100_rid_max %d\n", touch->T100_rid_max);
 
       // The first two report IDs are reserved
-      touch->num_touchids = object.num_report_ids - 2;
+      touch->num_touchids = object->num_report_ids - 2;
 
       ets_printf("touch->num_touchids %d\n", touch->num_touchids);
 
     } break;
     }
-
-    addr += MXT_OBJECT_SIZE;
   }
 
   // Store maximum reportid
   touch->max_reportid = reportid;
   ets_printf("touch->max_reportid %d\n", touch->max_reportid);
+}
 
-  return true;
+static void mxt_calc_crc24(uint32_t* crc, uint8_t firstbyte, uint8_t secondbyte) {
+
+  static const unsigned int crcpoly = 0x80001B;
+  uint32_t result;
+  uint32_t data_word;
+
+  data_word = (secondbyte << 8) | firstbyte;
+  result = ((*crc << 1) ^ data_word);
+
+  if (result & 0x1000000) {
+    result ^= crcpoly;
+  }
+
+  *crc = result;
+}
+
+static uint32_t mxt_calculate_crc(uint8_t* base, off_t start_off, off_t end_off) {
+
+  uint32_t crc = 0;
+  uint8_t* ptr = base + start_off;
+  uint8_t* last_val = base + end_off - 1;
+
+  if (end_off < start_off) {
+    return -EINVAL;
+  }
+
+  while (ptr < last_val) {
+    mxt_calc_crc24(&crc, *ptr, *(ptr + 1));
+    ptr += 2;
+  }
+
+  if (ptr == last_val) {
+    mxt_calc_crc24(&crc, *ptr, 0);
+  }
+
+  crc &= 0x00FFFFFF;
+
+  return crc;
+}
+
+bool grid_esp32_touch_read_info_block(struct grid_esp32_touch_model* touch) {
+
+  bool ret = false;
+
+  uint8_t* iblk = NULL;
+
+  esp_err_t err;
+
+  // Read ID information block
+  struct mxt_info info = {0};
+  err = mxt_read_reg(touch->dev_hndl, 0, sizeof(struct mxt_info), (uint8_t*)&info);
+  if (err != ESP_OK) {
+    ets_printf("grid_esp32_touch_read_info_block: failed to read first 7 bytes\n");
+    goto grid_esp32_touch_read_info_block_cleanup;
+  }
+
+  // Allocate information block
+  size_t info_size = MXT_OBJECT_START + sizeof(struct mxt_object) * info.object_num + MXT_INFO_CHECKSUM_SIZE;
+  iblk = malloc(info_size);
+  if (!iblk) {
+    ets_printf("grid_esp32_touch_read_info_block: failed allocate info block\n");
+    goto grid_esp32_touch_read_info_block_cleanup;
+  }
+
+  // Read information block
+  err = mxt_read_reg(touch->dev_hndl, 0, info_size, iblk);
+  if (err != ESP_OK) {
+    ets_printf("grid_esp32_touch_read_info_block: failed to read info block\n");
+    goto grid_esp32_touch_read_info_block_cleanup;
+  }
+
+  // Extract checksum
+  uint8_t* crc_ptr = &iblk[info_size - MXT_INFO_CHECKSUM_SIZE];
+  uint32_t info_crc = crc_ptr[0] | crc_ptr[1] << 8 | crc_ptr[2] << 16;
+  uint32_t calc_crc = mxt_calculate_crc(iblk, 0, info_size - MXT_INFO_CHECKSUM_SIZE);
+  if (info_crc == 0 || info_crc != calc_crc) {
+    ets_printf("grid_esp32_touch_read_info_block: crc mismatch\n");
+    goto grid_esp32_touch_read_info_block_cleanup;
+  }
+
+  ets_printf("family %02X variant %02X firmware v%u.%u.%02X objects %u\n", info.family_id, info.variant_id, info.version >> 4, info.version & 0xf, info.build, info.object_num);
+
+  // Parse information block
+  grid_esp32_touch_parse_info_block(touch, iblk);
+
+  ret = true;
+
+grid_esp32_touch_read_info_block_cleanup:
+  if (iblk) {
+    free(iblk);
+  }
+  return ret;
 }
 
 bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset, gpio_num_t change, uint32_t i2c_freq_hz,
@@ -219,8 +293,6 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
 
   touch->process_touch = process_touch;
   touch->task = task;
-
-  esp_err_t err;
 
   // Initialize I2C configuration
   grid_esp32_touch_init_i2c(touch, i2c_port, sda_gpio, scl_gpio, i2c_freq_hz);
@@ -236,7 +308,7 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
     ets_printf("grid_esp32_touch_init: CHG was high after reset\n");
   }
 
-  // Read and parse the info block
+  // Read information block
   if (!grid_esp32_touch_read_info_block(touch)) {
     return false;
   }
