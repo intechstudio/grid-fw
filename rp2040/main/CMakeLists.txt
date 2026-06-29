@@ -17,6 +17,8 @@ target_include_directories(main PRIVATE ../vmp ../../common/dep/vmp ../src ../..
 
 pico_generate_pio_header(main ${CMAKE_CURRENT_LIST_DIR}/../src/uart_tx.pio)
 pico_generate_pio_header(main ${CMAKE_CURRENT_LIST_DIR}/../src/uart_rx.pio)
+pico_generate_pio_header(main ${CMAKE_CURRENT_LIST_DIR}/../src/uart_coop.pio)
+pico_generate_pio_header(main ${CMAKE_CURRENT_LIST_DIR}/../src/uart_rx_3bin.pio)
 
 target_sources(main PRIVATE)
 
