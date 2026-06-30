@@ -159,6 +159,13 @@ void grid_ui_event_reset(struct grid_ui_event* eve) {
   eve->cfg_default_flag = 1;
 }
 
+void grid_ui_event_clear(struct grid_ui_event* eve) {
+
+  if (eve->parent && eve->parent->event_clear_cb) {
+    eve->parent->event_clear_cb(eve);
+  }
+}
+
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_script) {
 
   assert(index < ele->event_list_length);
@@ -686,10 +693,7 @@ static void grid_ui_clear_triggered(struct grid_ui_model* ui, struct grid_msg* m
       grid_ui_event_render_event(eve, msg);
       grid_ui_event_render_event_view(eve, msg);
 
-      if (ele->event_clear_cb) {
-        ele->event_clear_cb(eve);
-      }
-
+      grid_ui_event_clear(eve);
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }
   }
@@ -915,6 +919,20 @@ static void grid_ui_page_read(struct grid_ui_model* ui, uint8_t page) {
   grid_lua_semaphore_release(&grid_lua_state);
 
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
+
+  // Clear all events
+  for (uint8_t i = 0; i < ui->element_list_length; i++) {
+
+    // Handle system element first then all the ui elements in ascending order
+    uint8_t element_index = (i == 0 ? ui->element_list_length - 1 : i - 1);
+
+    struct grid_ui_element* ele = &ui->element_list[element_index];
+
+    for (uint8_t j = 0; j < ele->event_list_length; j++) {
+
+      grid_ui_event_clear(&ele->event_list[j]);
+    }
+  }
 }
 
 #pragma GCC diagnostic push
