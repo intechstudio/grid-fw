@@ -1,6 +1,7 @@
 #include "grid_ui_encoder.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -192,21 +193,16 @@ int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uin
   return delta;
 }
 
-uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* last_real_time, int16_t delta) {
+void grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* last_real_time, int16_t delta) {
 
   // limit lastrealtime
   uint64_t now = grid_platform_rtc_get_micros();
   uint64_t elapsed_us = grid_platform_rtc_get_diff(now, *last_real_time);
   elapsed_us = MIN(elapsed_us, GRID_PARAMETER_ELAPSED_LIMIT * MS_TO_US);
 
-  if (delta == 0) {
-    return 0; // did not trigger
-  }
-
-  // positive delta means we wish to move closer to max value, megative delta means we wish to move closer to min value
-
   // update lastrealtime
   *last_real_time = now;
+
   int32_t* template_parameter_list = ele->template_parameter_list;
   template_parameter_list[GRID_LUA_FNC_E_ENCODER_ELAPSED_index] = elapsed_us / MS_TO_US;
 
@@ -222,14 +218,15 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* la
 
   double elapsed_ms = clampu32(elapsed_us, 1000, 25000) / MS_TO_US;
 
+  double vel_param = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VELOCITY_index] / 100.0;
+  double sen_param = template_parameter_list[GRID_LUA_FNC_E_ENCODER_SENSITIVITY_index] / 100.0;
+
+  double vel_comp = (625.0 - elapsed_ms * elapsed_ms) / 75.0 * vel_param;
+  double sen_comp = sen_param;
   double minmaxscale = (max - min) / 128.0;
+  double factor = vel_comp * minmaxscale + sen_comp;
 
-  double velocityparam = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VELOCITY_index] / 100.0;
-
-  // implement configurable velocity parameters here
-  double velocityfactor = ((25 * 25 - elapsed_ms * elapsed_ms) / 75.0) * minmaxscale * velocityparam + (1.0 * template_parameter_list[GRID_LUA_FNC_E_ENCODER_SENSITIVITY_index] / 100.0);
-
-  int32_t delta_velocity = delta * velocityfactor;
+  int32_t delta_velocity = delta * factor;
 
   if (delta_velocity == 0) {
     return 0; // did not trigger
@@ -272,11 +269,15 @@ uint8_t grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* la
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENCODER);
 
   grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
-
-  return 1; // did trigger
 }
 
 void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, struct grid_ui_encoder_sample sample) {
+
+  state->initial_samples += (state->initial_samples <= GRID_UI_ENCODER_INIT_SAMPLES);
+
+  if (state->initial_samples <= GRID_UI_ENCODER_INIT_SAMPLES) {
+    return;
+  }
 
   struct grid_ui_element* ele = state->parent;
 
@@ -286,23 +287,17 @@ void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, struct gri
   // Reconstruct rotation value from phases
   uint8_t new_value = sample.phase_a | (sample.phase_b << 1);
 
-  // extract old value from state, rewrite state with new
+  // Extract old value from state, rewrite state with new
   uint8_t old_value = state->last_nibble;
   state->last_nibble = new_value;
 
-  state->initial_samples += (state->initial_samples <= GRID_UI_ENCODER_INIT_SAMPLES);
-
   if (old_value == new_value) {
-    // no change since the last time we read the shift register
     return;
   }
 
-  int16_t delta = grid_ui_encoder_rotation_delta(old_value, new_value, state->detent, &state->encoder_last_leave_dir); // delta can be -1, 0 or 1
+  int16_t delta = grid_ui_encoder_rotation_delta(old_value, new_value, state->detent, &state->encoder_last_leave_dir);
 
-  delta *= state->direction;
-
-  // Evaluate the results
-  if (state->initial_samples > GRID_UI_ENCODER_INIT_SAMPLES) {
-    grid_ui_encoder_update_trigger(ele, &state->encoder_last_real_time, delta);
+  if (delta) {
+    grid_ui_encoder_update_trigger(ele, &state->encoder_last_real_time, delta * state->direction);
   }
 }
