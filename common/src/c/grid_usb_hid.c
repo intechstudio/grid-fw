@@ -25,8 +25,24 @@ void grid_usb_hid_on_disconnect(struct grid_usb_hid_model* hid) {
 
 static const uint8_t s_hid_report_desc[] = {GRID_HID_REPORT_DESC_CONTENT};
 
-uint8_t const* tud_hid_descriptor_report_cb(uint8_t) { return s_hid_report_desc; }
+uint8_t const* tud_hid_descriptor_report_cb(uint8_t instance) {
+  (void)instance;
+  return s_hid_report_desc;
+}
 
-uint16_t tud_hid_get_report_cb(uint8_t, uint8_t, hid_report_type_t, uint8_t*, uint16_t) { return 0; }
+uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen) {
+  (void)instance;
+  (void)report_id;
+  (void)report_type;
+  (void)buffer;
+  (void)reqlen;
+  return 0;
+}
 
-void tud_hid_set_report_cb(uint8_t, uint8_t, hid_report_type_t, uint8_t const*, uint16_t) {}
+void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
+  (void)instance;
+  (void)report_id;
+  (void)report_type;
+  (void)buffer;
+  (void)bufsize;
+}
