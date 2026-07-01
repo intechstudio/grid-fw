@@ -229,7 +229,7 @@ void grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* last_
   int32_t delta_velocity = delta * factor;
 
   if (delta_velocity == 0) {
-    return 0; // did not trigger
+    return; // did not trigger
   }
 
   int32_t old_value = template_parameter_list[GRID_LUA_FNC_E_ENCODER_VALUE_index];
