@@ -67,20 +67,20 @@ struct grid_usb_midi_model {
   bool sysex_in_progress;
 };
 
-void grid_usb_midi_init(struct grid_usb_midi_model* usb_midi, uint16_t tx_buffer_size, uint16_t rx_buffer_size, uint16_t sysex_buffer_size, uint16_t rtm_buffer_size);
-void grid_usb_midi_on_connect(struct grid_usb_midi_model* usb_midi);
-void grid_usb_midi_on_disconnect(struct grid_usb_midi_model* usb_midi);
+void grid_usb_midi_init(struct grid_usb_midi_model* midi, uint16_t tx_buffer_size, uint16_t rx_buffer_size, uint16_t sysex_buffer_size, uint16_t rtm_buffer_size);
+void grid_usb_midi_on_connect(struct grid_usb_midi_model* midi);
+void grid_usb_midi_on_disconnect(struct grid_usb_midi_model* midi);
 
-uint8_t grid_usb_midi_tx_push(struct grid_usb_midi_model* usb_midi, struct grid_midi_event_desc midi_event);
-void grid_usb_midi_tx_flush(struct grid_usb_midi_model* usb_midi);
-bool grid_usb_midi_tx_available(struct grid_usb_midi_model* usb_midi);
+uint8_t grid_usb_midi_tx_push(struct grid_usb_midi_model* midi, struct grid_midi_event_desc midi_event);
+void grid_usb_midi_tx_flush(struct grid_usb_midi_model* midi);
+bool grid_usb_midi_tx_available(struct grid_usb_midi_model* midi);
 
-void grid_usb_midi_rx_queue(struct grid_usb_midi_model* usb_midi, uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
-void grid_usb_midi_rx_voice_process(struct grid_usb_midi_model* usb_midi);
+void grid_usb_midi_rx_queue(struct grid_usb_midi_model* midi, uint8_t byte0, uint8_t byte1, uint8_t byte2, uint8_t byte3);
+void grid_usb_midi_rx_voice_process(struct grid_usb_midi_model* midi);
 
-void grid_usb_midi_rx_rtm_process(struct grid_usb_midi_model* usb_midi);
-void grid_usb_midi_rx_sysex_process(struct grid_usb_midi_model* usb_midi);
+void grid_usb_midi_rx_rtm_process(struct grid_usb_midi_model* midi);
+void grid_usb_midi_rx_sysex_process(struct grid_usb_midi_model* midi);
 
-void grid_usb_midi_rx_poll(struct grid_usb_midi_model* usb_midi);
+void grid_usb_midi_rx_poll(struct grid_usb_midi_model* midi);
 
 #endif /* GRID_USB_MIDI_H */

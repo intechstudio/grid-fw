@@ -911,8 +911,6 @@ static void grid_ui_page_read(struct grid_ui_model* ui, uint8_t page) {
   grid_lua_gc_full_unsafe(&grid_lua_state);
 
   grid_lua_semaphore_release(&grid_lua_state);
-
-  grid_usb_keyboard_enable(&grid_usb_state.hid.keyboard);
 }
 
 #pragma GCC diagnostic push

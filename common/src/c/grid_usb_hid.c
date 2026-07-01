@@ -2,27 +2,25 @@
 
 #include "grid_usb_hid.h"
 
-static bool tx_interface_ready_impl(void) { return tud_hid_ready(); }
-
-void grid_usb_hid_init(struct grid_usb_hid_model* usb_hid) {
-  grid_usb_keyboard_init(&usb_hid->keyboard, tx_interface_ready_impl);
-  grid_usb_mouse_init(&usb_hid->mouse, tx_interface_ready_impl);
-  grid_usb_macro_init(&usb_hid->macro, GRID_MACRO_TX_BUFFER_SIZE, &usb_hid->keyboard, &usb_hid->mouse, tx_interface_ready_impl);
-  grid_usb_gamepad_init(&usb_hid->gamepad, GRID_GAMEPAD_TX_BUFFER_SIZE, tx_interface_ready_impl);
+void grid_usb_hid_init(struct grid_usb_hid_model* hid) {
+  grid_usb_keyboard_init(&hid->keyboard);
+  grid_usb_mouse_init(&hid->mouse);
+  grid_usb_macro_init(&hid->macro, GRID_MACRO_TX_BUFFER_SIZE, &hid->keyboard, &hid->mouse);
+  grid_usb_gamepad_init(&hid->gamepad, GRID_GAMEPAD_TX_BUFFER_SIZE);
 }
 
-void grid_usb_hid_on_connect(struct grid_usb_hid_model* usb_hid) {
-  grid_usb_macro_on_connect(&usb_hid->macro);
-  grid_usb_keyboard_on_connect(&usb_hid->keyboard);
-  grid_usb_mouse_on_connect(&usb_hid->mouse);
-  grid_usb_gamepad_on_connect(&usb_hid->gamepad);
+void grid_usb_hid_on_connect(struct grid_usb_hid_model* hid) {
+  grid_usb_macro_on_connect(&hid->macro);
+  grid_usb_keyboard_on_connect(&hid->keyboard);
+  grid_usb_mouse_on_connect(&hid->mouse);
+  grid_usb_gamepad_on_connect(&hid->gamepad);
 }
 
-void grid_usb_hid_on_disconnect(struct grid_usb_hid_model* usb_hid) {
-  grid_usb_macro_on_disconnect(&usb_hid->macro);
-  grid_usb_keyboard_on_disconnect(&usb_hid->keyboard);
-  grid_usb_mouse_on_disconnect(&usb_hid->mouse);
-  grid_usb_gamepad_on_disconnect(&usb_hid->gamepad);
+void grid_usb_hid_on_disconnect(struct grid_usb_hid_model* hid) {
+  grid_usb_macro_on_disconnect(&hid->macro);
+  grid_usb_keyboard_on_disconnect(&hid->keyboard);
+  grid_usb_mouse_on_disconnect(&hid->mouse);
+  grid_usb_gamepad_on_disconnect(&hid->gamepad);
 }
 
 static const uint8_t s_hid_report_desc[] = {GRID_HID_REPORT_DESC_CONTENT};

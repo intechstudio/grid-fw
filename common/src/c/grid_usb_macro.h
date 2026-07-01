@@ -33,15 +33,14 @@ struct grid_macro_model {
   uint64_t tx_rtc_lasttimestamp;
   struct grid_keyboard_model* keyboard;
   struct grid_mouse_model* mouse;
-  bool (*tx_interface_ready)(void);
 };
 
-void grid_usb_macro_init(struct grid_macro_model* usb_macro, uint16_t buffer_size, struct grid_keyboard_model* usb_keyboard, struct grid_mouse_model* usb_mouse, bool (*tx_interface_ready)(void));
-void grid_usb_macro_on_connect(struct grid_macro_model* usb_macro);
-void grid_usb_macro_on_disconnect(struct grid_macro_model* usb_macro);
+void grid_usb_macro_init(struct grid_macro_model* macro, uint16_t buffer_size, struct grid_keyboard_model* keyboard, struct grid_mouse_model* mouse);
+void grid_usb_macro_on_connect(struct grid_macro_model* macro);
+void grid_usb_macro_on_disconnect(struct grid_macro_model* macro);
 
-uint8_t grid_usb_macro_tx_push(struct grid_macro_model* usb_macro, struct grid_macro_event_desc event);
-void grid_usb_macro_tx_flush(struct grid_macro_model* usb_macro);
-bool grid_usb_macro_tx_available(struct grid_macro_model* usb_macro);
+uint8_t grid_usb_macro_tx_push(struct grid_macro_model* macro, struct grid_macro_event_desc event);
+void grid_usb_macro_tx_flush(struct grid_macro_model* macro);
+bool grid_usb_macro_tx_available(struct grid_macro_model* macro);
 
 #endif /* GRID_USB_MACRO_H */

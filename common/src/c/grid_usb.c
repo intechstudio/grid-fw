@@ -87,21 +87,29 @@ static uint8_t const* grid_usb_config_desc(void) { return s_cfg_desc; }
 #define GRID_USB_STR_DESC_MAX_LEN 33
 
 static uint16_t const* grid_usb_string_desc(const void** str_table, uint8_t count, uint8_t index) {
+
   static uint16_t desc_str[GRID_USB_STR_DESC_MAX_LEN];
   uint8_t chr_count;
+
   if (index == 0) {
+
     memcpy(&desc_str[1], str_table[0], 2);
     chr_count = 1;
   } else if (index < count && str_table[index] != NULL) {
+
     const char* str = (const char*)str_table[index];
     chr_count = (uint8_t)strnlen(str, GRID_USB_STR_DESC_MAX_LEN - 1);
+
     for (uint8_t i = 0; i < chr_count; i++) {
       desc_str[1 + i] = (uint16_t)str[i];
     }
   } else {
+
     return NULL;
   }
+
   desc_str[0] = (uint16_t)((TUSB_DESC_STRING << 8) | (2u * chr_count + 2u));
+
   return desc_str;
 }
 

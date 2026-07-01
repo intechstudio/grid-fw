@@ -1257,9 +1257,6 @@ uint8_t grid_decode_config_to_ui(char* header, char* chunk) {
 
   case GRID_INSTR_EXECUTE_code: {
 
-    // Disable HID
-    grid_usb_keyboard_disable(&grid_usb_state.hid.keyboard);
-
     uint16_t scriptlength = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_CONFIG_ACTIONLENGTH);
 
     char* script = &chunk[GRID_CLASS_CONFIG_ACTIONSTRING_offset];

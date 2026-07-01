@@ -18,8 +18,8 @@ struct grid_usb_hid_model {
   struct grid_gamepad_model gamepad;
 };
 
-void grid_usb_hid_init(struct grid_usb_hid_model* usb_hid);
-void grid_usb_hid_on_connect(struct grid_usb_hid_model* usb_hid);
-void grid_usb_hid_on_disconnect(struct grid_usb_hid_model* usb_hid);
+void grid_usb_hid_init(struct grid_usb_hid_model* hid);
+void grid_usb_hid_on_connect(struct grid_usb_hid_model* hid);
+void grid_usb_hid_on_disconnect(struct grid_usb_hid_model* hid);
 
 #endif /* GRID_USB_HID_H */

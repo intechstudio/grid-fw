@@ -501,6 +501,5 @@ int main(void) {
     grid_lua_semaphore_release(&grid_lua_state);
 
     handle_connection_effect();
-
   }
 }

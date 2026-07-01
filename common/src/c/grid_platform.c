@@ -118,6 +118,16 @@ uint8_t grid_platform_get_nvm_state() { return LFS != NULL; }
 
 void grid_platform_nvm_defrag() {}
 
+void grid_platform_id_to_hex(uint32_t* id, uint8_t byte_count, char* out) {
+  static const char hex[] = "0123456789abcdef";
+  uint8_t* b = (uint8_t*)id;
+  for (uint8_t i = 0; i < byte_count; i++) {
+    out[i * 2] = hex[(b[i] >> 4) & 0xf];
+    out[i * 2 + 1] = hex[b[i] & 0xf];
+  }
+  out[byte_count * 2] = '\0';
+}
+
 void* grid_platform_fopen(const char* pathname, const char* mode) {
 
   assert(LFS);
