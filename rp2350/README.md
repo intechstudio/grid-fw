@@ -19,14 +19,14 @@ cmake -S . -B build
 cmake --build build -j
 ```
 
-Output UF2: `build/main/main.uf2`.
+Output UF2: `build/main/grid_rp2350.uf2`.
 
 ## Flash
 
-- **BOOTSEL**: hold BOOTSEL, plug in, copy `build/main/main.uf2` to the mass-storage volume.
+- **BOOTSEL**: hold BOOTSEL, plug in, copy `build/main/grid_rp2350.uf2` to the mass-storage volume.
 - **OpenOCD/SWD** (see `rp2350-openocd.cfg` in this folder):
   ```sh
-  openocd -f rp2350-openocd.cfg -c "program build/main/main.elf verify reset exit"
+  openocd -f rp2350-openocd.cfg -c "program build/main/grid_rp2350.elf verify reset exit"
   ```
 
 ## Notes

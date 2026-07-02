@@ -8,4 +8,4 @@ OPENOCD="${OPENOCD:-$(command -v openocd-rp2350 || echo openocd)}"
 # Clear OPENOCD_SCRIPTS (set by esp-idf for the Espressif OpenOCD) so the RP2350
 # fork uses its OWN bundled scripts, not the Espressif rp2350.cfg (which expects
 # an `rp2xxx` flash driver this fork doesn't have). No-op on the host.
-env -u OPENOCD_SCRIPTS "$OPENOCD" -f rp2350/rp2350-openocd.cfg -c "program rp2350/build/main/main.elf verify reset exit"
+env -u OPENOCD_SCRIPTS "$OPENOCD" -f rp2350/rp2350-openocd.cfg -c "program rp2350/build/main/grid_rp2350.elf verify reset exit"
