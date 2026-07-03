@@ -14,19 +14,46 @@
 #include "freertos/task.h"
 #include "rom/ets_sys.h"
 
+#include "grid_math.h"
 #include "grid_platform.h"
 
+#include "mxt144u_cfg.h"
+
 #define MXT_I2C_ADDR 0x4A
+
+#define MXT_CFG_MAGIC "OBP_RAW V4\r\n"
+#define MXT_CFG_ENCRYPTION "ENCRYPTION 0\r\nMAX_ENCRYPTION_BLOCKS 0\r\n"
+#define MXT_CFG_NO_DEVICES "NO_DEVICES 1\r\n"
+#define MXT_CFG_DEVICE_0 "DEVICE_0\r\n"
 
 #define MXT_OBJECT_START 0x07
 #define MXT_OBJECT_SIZE 6
 #define MXT_INFO_CHECKSUM_SIZE 3
+#define MXT_MAX_BLOCK_WRITE 256
 
 #define MXT_GEN_MESSAGE_T5 5
+#define MXT_GEN_COMMAND_T6 6
+#define MXT_GEN_POWER_T7 7
 #define MXT_SPT_MESSAGECOUNT_T44 44
+#define MXT_GEN_DYNAMICCONFIGURATIONCONTAINER_T71 71
 #define MXT_TOUCH_MULTITOUCHSCREEN_T100 100
 
 #define MXT_RPTID_NOMSG 0xff
+
+#define MXT_COMMAND_RESET 0
+#define MXT_COMMAND_BACKUPNV 1
+#define MXT_COMMAND_CALIBRATE 2
+#define MXT_COMMAND_REPORTALL 3
+#define MXT_COMMAND_DIAGNOSTIC 5
+
+#define MXT_T6_STATUS_RESET BIT(7)
+#define MXT_T6_STATUS_OFL BIT(6)
+#define MXT_T6_STATUS_SIGERR BIT(5)
+#define MXT_T6_STATUS_CAL BIT(4)
+#define MXT_T6_STATUS_CFGERR BIT(3)
+#define MXT_T6_STATUS_COMSERR BIT(2)
+
+#define MXT_BACKUP_VALUE 0x55
 
 #define MXT_T100_DETECT BIT(7)
 #define MXT_T100_TYPE_MASK 0x70
@@ -37,16 +64,6 @@ enum t100_type {
   MXT_T100_TYPE_HOVERING_FINGER = 4,
   MXT_T100_TYPE_GLOVE = 5,
   MXT_T100_TYPE_LARGE_TOUCH = 6,
-};
-
-struct mxt_info {
-  uint8_t family_id;
-  uint8_t variant_id;
-  uint8_t version;
-  uint8_t build;
-  uint8_t matrix_xsize;
-  uint8_t matrix_ysize;
-  uint8_t object_num;
 };
 
 DRAM_ATTR struct grid_esp32_touch_model grid_esp32_touch_state;
@@ -68,130 +85,80 @@ static esp_err_t mxt_read_reg(i2c_master_dev_handle_t dev, uint16_t addr, uint16
   return i2c_master_transmit_receive(dev, tx, 2, dest, size, -1);
 }
 
-static void grid_esp32_touch_init_gpio(struct grid_esp32_touch_model* touch, gpio_num_t reset, gpio_num_t change) {
+static esp_err_t mxt_write_reg(i2c_master_dev_handle_t dev, uint16_t addr, uint16_t size, uint8_t* src) {
 
-  touch->rst = reset;
+  uint8_t* buf = malloc(size + 2);
+  buf[0] = addr & 0xff;
+  buf[1] = (addr >> 8) & 0xff;
+  memcpy(&buf[2], src, size);
 
-  gpio_config_t rst_cfg = {
-      .pin_bit_mask = 1 << touch->rst,
-      .mode = GPIO_MODE_OUTPUT,
-      .pull_up_en = GPIO_PULLUP_DISABLE,
-      .pull_down_en = GPIO_PULLDOWN_DISABLE,
-      .intr_type = GPIO_INTR_DISABLE,
-  };
-  ESP_ERROR_CHECK(gpio_config(&rst_cfg));
+  esp_err_t err = i2c_master_transmit(dev, buf, size + 2, -1);
 
-  touch->chg = change;
+  free(buf);
 
-  gpio_config_t chg_cfg = {
-      .pin_bit_mask = 1 << touch->chg,
-      .mode = GPIO_MODE_INPUT,
-      .pull_up_en = GPIO_PULLUP_ENABLE,
-      .pull_down_en = GPIO_PULLDOWN_DISABLE,
-      .intr_type = GPIO_INTR_DISABLE,
-  };
-  ESP_ERROR_CHECK(gpio_config(&chg_cfg));
+  return err;
 }
 
-static bool grid_esp32_touch_reset(struct grid_esp32_touch_model* touch) {
+static struct mxt_object* mxt_get_object(struct mxt_data* data, uint8_t type) {
 
-  // Hold RST low for at least 90 ns
-  gpio_set_level(touch->rst, 0);
-  vTaskDelay(pdMS_TO_TICKS(10));
+  for (int i = 0; i < data->info.object_num; ++i) {
 
-  // Send RST high for more than 39 ms (typical hardware reset to CHG low time)
-  gpio_set_level(touch->rst, 1);
-  vTaskDelay(pdMS_TO_TICKS(100));
+    struct mxt_object* object = &data->object_table[i];
 
-  // CHG should be low at this point
-  return gpio_get_level(touch->chg) == 0;
-}
-
-static void grid_esp32_touch_init_i2c(struct grid_esp32_touch_model* touch, i2c_port_t port, gpio_num_t sda, gpio_num_t scl, uint32_t scl_freq) {
-
-  touch->bus_conf = (i2c_master_bus_config_t){
-      .i2c_port = port,
-      .sda_io_num = sda,
-      .scl_io_num = scl,
-      .clk_source = I2C_CLK_SRC_DEFAULT,
-      .glitch_ignore_cnt = 7,
-      .flags.enable_internal_pullup = true,
-  };
-
-  ESP_ERROR_CHECK(i2c_new_master_bus(&touch->bus_conf, &touch->bus_hndl));
-
-  i2c_device_config_t dev_cfg = {
-      .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-      .device_address = 0x4A,
-      .scl_speed_hz = scl_freq,
-  };
-
-  ESP_ERROR_CHECK(i2c_master_bus_add_device(touch->bus_hndl, &dev_cfg, &touch->dev_hndl));
-}
-
-static void grid_esp32_touch_parse_info_block(struct grid_esp32_touch_model* touch, uint8_t* iblk) {
-
-  struct mxt_info* info = (struct mxt_info*)iblk;
-
-  // Parse object table
-  uint8_t reportid = 1;
-  uint8_t min_id = 0;
-  uint8_t max_id = 0;
-  for (uint8_t i = 0; i < info->object_num; ++i) {
-
-    struct mxt_object* object = (struct mxt_object*)&iblk[MXT_OBJECT_START + i * MXT_OBJECT_SIZE];
-
-    if (object->num_report_ids) {
-
-      min_id = reportid;
-      reportid += object->num_report_ids * mxt_obj_instances(object);
-      max_id = reportid - 1;
-
-    } else {
-
-      min_id = max_id = 0;
-    }
-
-    switch (object->type) {
-    case MXT_GEN_MESSAGE_T5: {
-
-      touch->T5_start_addr = object->start_addr;
-      ets_printf("touch->T5_start_addr %d\n", touch->T5_start_addr);
-
-      if (info->family_id == 0x80 && info->version < 0x20) {
-        touch->T5_msg_size = mxt_obj_size(object);
-      } else {
-        touch->T5_msg_size = mxt_obj_size(object) - 1;
-      }
-      ets_printf("touch->T5_msg_size %d\n", touch->T5_msg_size);
-
-    } break;
-    case MXT_SPT_MESSAGECOUNT_T44: {
-
-      touch->T44_start_addr = object->start_addr;
-      ets_printf("touch->T44_start_addr %d\n", touch->T44_start_addr);
-
-    } break;
-    case MXT_TOUCH_MULTITOUCHSCREEN_T100: {
-
-      touch->T100_rid_min = min_id;
-      touch->T100_rid_max = max_id;
-
-      ets_printf("touch->T100_rid_min %d\n", touch->T100_rid_min);
-      ets_printf("touch->T100_rid_max %d\n", touch->T100_rid_max);
-
-      // The first two report IDs are reserved
-      touch->num_touchids = object->num_report_ids - 2;
-
-      ets_printf("touch->num_touchids %d\n", touch->num_touchids);
-
-    } break;
+    if (object->type == type) {
+      return object;
     }
   }
 
-  // Store maximum reportid
-  touch->max_reportid = reportid;
-  ets_printf("touch->max_reportid %d\n", touch->max_reportid);
+  ets_printf("mxt_get_object: invalid type T%hhu\n", type);
+  return NULL;
+}
+
+static esp_err_t mxt_t6_command(struct mxt_data* data, uint8_t cmd_off, uint8_t val, bool wait) {
+
+  uint16_t reg = data->T6_address + cmd_off;
+
+  esp_err_t err = mxt_write_reg(data->dev_hndl, reg, 1, &val);
+  if (err != ESP_OK) {
+    return err;
+  }
+
+  if (!wait) {
+    return 0;
+  }
+
+  uint8_t cmd_reg;
+  int timeout_counter = 0;
+
+  do {
+
+    vTaskDelay(pdMS_TO_TICKS(20));
+    err = mxt_read_reg(data->dev_hndl, reg, 1, &cmd_reg);
+    if (err != ESP_OK) {
+      return err;
+    }
+
+  } while (cmd_reg && timeout_counter++ <= 100);
+
+  if (timeout_counter > 100) {
+    return ESP_FAIL;
+  }
+
+  return ESP_OK;
+}
+
+static void mxt_update_crc(struct mxt_data* data, uint8_t cmd, uint8_t val) {
+
+  data->config_crc = 0;
+  data->crc_completion = 0;
+
+  if (mxt_t6_command(data, cmd, val, true) != ESP_OK) {
+    return;
+  }
+
+  while (!data->crc_completion) {
+    vTaskDelay(1);
+  }
 }
 
 static void mxt_calc_crc24(uint32_t* crc, uint8_t firstbyte, uint8_t secondbyte) {
@@ -234,35 +201,463 @@ static uint32_t mxt_calculate_crc(uint8_t* base, off_t start_off, off_t end_off)
   return crc;
 }
 
+struct firmware {
+  size_t size;
+  uint8_t* data;
+};
+
+struct mxt_cfg {
+  uint8_t* raw;
+  size_t raw_size;
+  size_t raw_pos;
+  struct mxt_info info;
+  size_t start_ofs;
+  uint8_t* mem;
+  uint16_t mem_size;
+};
+
+static int mxt_prepare_cfg_mem(struct mxt_data* data, struct mxt_cfg* cfg) {
+
+  int ret;
+
+  unsigned int type, inst, size;
+  int offset;
+  while (cfg->raw_pos < cfg->raw_size) {
+
+    // Read type, instance, length
+    ret = sscanf((char*)&cfg->raw[cfg->raw_pos], "%x %x %x%n", &type, &inst, &size, &offset);
+
+    if (ret == 0) {
+      // EOF
+      break;
+    } else if (ret != 3) {
+      ets_printf("mxt_prepare_cfg_mem: bad format\n");
+      return -EINVAL;
+    }
+    cfg->raw_pos += offset;
+
+    struct mxt_object* object = mxt_get_object(data, type);
+    if (!object) {
+
+      // Skip object
+      uint8_t val;
+      for (int i = 0; i < size; ++i) {
+        ret = sscanf((char*)&cfg->raw[cfg->raw_pos], "%hhx %n", &val, &offset);
+        if (ret != 1) {
+          ets_printf("mxt_prepare_cfg_mem: bad format in T%d at %d\n", type, i);
+          return -EINVAL;
+        }
+        cfg->raw_pos += offset;
+      }
+      continue;
+    }
+
+    if (size > mxt_obj_size(object)) {
+
+      // Either we are in fallback mode due to a wrong config,
+      // or this is a configuration from a later fw version,
+      // or this is a corrupt or hand-edited configuration.
+      ets_printf("mxt_prepare_cfg_mem: discarding %u byte(s) in T%d\n", size - mxt_obj_size(object), type);
+
+    } else if (mxt_obj_size(object) > size) {
+
+      // An upgraded firmware may add new bytes to the end of objects.
+      // It is generally forward compatible to zero these bytes, and
+      // previous behaviour will be retained. However, this does invalidate
+      // the CRC and will force fallback mode until the config is updated.
+      ets_printf("mxt_prepare_cfg_mem: zeroing %u byte(s) in T%d\n", mxt_obj_size(object) - size, type);
+    }
+
+    if (inst >= mxt_obj_instances(object)) {
+      ets_printf("mxt_prepare_cfg_mem: too many instances\n");
+      return -EINVAL;
+    }
+
+    uint16_t reg = object->start_addr + mxt_obj_size(object) * inst;
+
+    uint8_t val;
+    for (int i = 0; i < size; ++i) {
+
+      ret = sscanf((char*)&cfg->raw[cfg->raw_pos], "%hhx %n", &val, &offset);
+      if (ret != 1) {
+        ets_printf("mxt_prepare_cfg_mem: bad format in T%d at %d\n", type, i);
+        return -EINVAL;
+      }
+      cfg->raw_pos += offset;
+
+      if (i >= mxt_obj_size(object)) {
+        continue;
+      }
+
+      unsigned int byte_off = reg + i - cfg->start_ofs;
+
+      if (byte_off >= cfg->mem_size) {
+        ets_printf("mxt_prepare_cfg_mem: bad object (reg %d) in T%d at %d\n", reg, object->type, byte_off);
+        return -EINVAL;
+      }
+
+      *(cfg->mem + byte_off) = val;
+    }
+  }
+
+  return 0;
+}
+
+static esp_err_t mxt_upload_cfg_mem(struct mxt_data* data, struct mxt_cfg* cfg) {
+
+  for (size_t off = 0; off < cfg->mem_size; off += MXT_MAX_BLOCK_WRITE) {
+
+    uint16_t size = MIN(cfg->mem_size - off, MXT_MAX_BLOCK_WRITE);
+
+    esp_err_t err = mxt_write_reg(data->dev_hndl, cfg->start_ofs + off, size, cfg->mem + off);
+    if (err != ESP_OK) {
+      return err;
+    }
+  }
+
+  return ESP_OK;
+}
+
+static esp_err_t mxt_update_cfg(struct mxt_data* data, struct firmware* fw) {
+
+  esp_err_t ret = ESP_OK;
+
+  mxt_update_crc(data, MXT_COMMAND_REPORTALL, 1);
+
+  // Initialize config update context
+  struct mxt_cfg cfg = (struct mxt_cfg){
+      .raw = NULL,
+      .raw_size = fw->size,
+  };
+
+  // Allocate zero terminated copy of the file
+  cfg.raw = malloc(cfg.raw_size + 1);
+  if (!cfg.raw) {
+    goto mxt_update_cfg_error;
+  }
+  memcpy(cfg.raw, fw->data, cfg.raw_size);
+  cfg.raw[cfg.raw_size] = '\0';
+
+  // Parse magic bytes
+  if (strncmp((char*)&cfg.raw[cfg.raw_pos], MXT_CFG_MAGIC, strlen(MXT_CFG_MAGIC))) {
+    goto mxt_update_cfg_error;
+  }
+  cfg.raw_pos += strlen(MXT_CFG_MAGIC);
+
+  // Parse encryption configuration
+  if (strncmp((char*)&cfg.raw[cfg.raw_pos], MXT_CFG_ENCRYPTION, strlen(MXT_CFG_ENCRYPTION))) {
+    goto mxt_update_cfg_error;
+  }
+  cfg.raw_pos += strlen(MXT_CFG_ENCRYPTION);
+
+  // Parse number of devices, expecting only one
+  if (strncmp((char*)&cfg.raw[cfg.raw_pos], MXT_CFG_NO_DEVICES, strlen(MXT_CFG_NO_DEVICES))) {
+    goto mxt_update_cfg_error;
+  }
+  cfg.raw_pos += strlen(MXT_CFG_NO_DEVICES);
+
+  // Parse information block
+  int offset;
+  for (size_t i = 0; i < sizeof(struct mxt_info); ++i) {
+
+    if (sscanf((char*)&cfg.raw[cfg.raw_pos], "%hhx %n", (uint8_t*)&cfg.info + i, &offset) != 1) {
+      goto mxt_update_cfg_error;
+    }
+    cfg.raw_pos += offset;
+  }
+
+  if (cfg.info.family_id != data->info.family_id) {
+    ets_printf("mxt_update_cfg: family ID mismatch\n");
+    goto mxt_update_cfg_error;
+  }
+
+  if (cfg.info.variant_id != data->info.variant_id) {
+    ets_printf("mxt_update_cfg: variant ID mismatch\n");
+    goto mxt_update_cfg_error;
+  }
+
+  // Parse info CRC
+  uint32_t info_crc;
+  if (sscanf((char*)&cfg.raw[cfg.raw_pos], "%x\r\n%n", (unsigned int*)&info_crc, &offset) != 1) {
+    goto mxt_update_cfg_error;
+  }
+  cfg.raw_pos += offset;
+
+  // Parse config CRC
+  uint32_t config_crc;
+  if (sscanf((char*)&cfg.raw[cfg.raw_pos], "%x\r\n%n", (unsigned int*)&config_crc, &offset) != 1) {
+    goto mxt_update_cfg_error;
+  }
+  cfg.raw_pos += offset;
+
+  // Check for CRC mismatches
+  if (info_crc == data->info_crc) {
+
+    if (config_crc == 0 || data->config_crc == 0) {
+
+      ets_printf("mxt_update_cfg: config CRC zero, attempting to apply config\n");
+
+    } else if (config_crc == data->config_crc) {
+
+      ets_printf("mxt_update_cfg: config CRC %06X OK\n", data->config_crc);
+      goto mxt_update_cfg_cleanup;
+
+    } else {
+
+      ets_printf("mxt_update_cfg: config CRC device %06X != file %06X\n", data->config_crc, config_crc);
+    }
+
+  } else {
+
+    ets_printf("mxt_update_cfg: info CRC device %06X != file %06X\n", data->info_crc, info_crc);
+  }
+
+  // The start address of objects on the device is right after the info block
+  uint16_t obj_table_size = sizeof(struct mxt_object) * data->info.object_num;
+  uint16_t info_size = MXT_OBJECT_START + obj_table_size + MXT_INFO_CHECKSUM_SIZE;
+  cfg.start_ofs = info_size;
+
+  if (data->mem_size <= cfg.start_ofs) {
+    ets_printf("mxt_update_cfg: mem_size too small, %hu < %hu\n", data->mem_size, cfg.start_ofs);
+    goto mxt_update_cfg_error;
+  }
+
+  // Allocate memory to store configuration
+  cfg.mem_size = data->mem_size - cfg.start_ofs;
+  cfg.mem = malloc(cfg.mem_size);
+  if (!cfg.mem) {
+    ets_printf("mxt_update_cfg: failed to allocate cfg.mem\n");
+    goto mxt_update_cfg_error;
+  }
+
+  // Parse the index of the first device, expect it to be zero
+  if (strncmp((char*)&cfg.raw[cfg.raw_pos], MXT_CFG_DEVICE_0, strlen(MXT_CFG_DEVICE_0))) {
+    goto mxt_update_cfg_error;
+  }
+  cfg.raw_pos += strlen(MXT_CFG_DEVICE_0);
+
+  int error = mxt_prepare_cfg_mem(data, &cfg);
+  if (error) {
+    goto mxt_update_cfg_error;
+  }
+
+  // Calculate CRC of the received configs (not the raw config file)
+  uint16_t crc_start = 0;
+  if (data->T71_address) {
+    crc_start = data->T71_address;
+  } else if (data->T7_address) {
+    crc_start = data->T7_address;
+  } else {
+    ets_printf("mxt_update_cfg: could not find CRC start\n");
+  }
+
+  if (crc_start > cfg.start_ofs) {
+
+    uint32_t calc_crc = mxt_calculate_crc(cfg.mem, crc_start - cfg.start_ofs, cfg.mem_size);
+
+    if (config_crc > 0 && config_crc != calc_crc) {
+      ets_printf("mxt_update_cfg: config CRC calculated %06X != file %06X", calc_crc, config_crc);
+    }
+  }
+
+  esp_err_t err = mxt_upload_cfg_mem(data, &cfg);
+  if (err != ESP_OK) {
+    ets_printf("mxt_update_cfg: config upload error\n");
+    goto mxt_update_cfg_error;
+  }
+
+  mxt_update_crc(data, MXT_COMMAND_BACKUPNV, MXT_BACKUP_VALUE);
+
+  // Note that there are more steps that are required for an update to take
+  // effect on the fly (with a soft reset). Currently, we rely on a hard reset.
+  goto mxt_update_cfg_cleanup;
+
+mxt_update_cfg_error:
+  ret = ESP_FAIL;
+mxt_update_cfg_cleanup:
+  if (cfg.raw) {
+    free(cfg.raw);
+  }
+  if (cfg.mem) {
+    free(cfg.mem);
+  }
+  return ret;
+}
+
+static void grid_esp32_touch_init_gpio(struct grid_esp32_touch_model* touch, gpio_num_t reset, gpio_num_t change) {
+
+  touch->rst = reset;
+
+  gpio_config_t rst_cfg = {
+      .pin_bit_mask = 1 << touch->rst,
+      .mode = GPIO_MODE_OUTPUT,
+      .pull_up_en = GPIO_PULLUP_DISABLE,
+      .pull_down_en = GPIO_PULLDOWN_DISABLE,
+      .intr_type = GPIO_INTR_DISABLE,
+  };
+  ESP_ERROR_CHECK(gpio_config(&rst_cfg));
+
+  touch->chg = change;
+
+  gpio_config_t chg_cfg = {
+      .pin_bit_mask = 1 << touch->chg,
+      .mode = GPIO_MODE_INPUT,
+      .pull_up_en = GPIO_PULLUP_ENABLE,
+      .pull_down_en = GPIO_PULLDOWN_DISABLE,
+      .intr_type = GPIO_INTR_DISABLE,
+  };
+  ESP_ERROR_CHECK(gpio_config(&chg_cfg));
+}
+
+static bool grid_esp32_touch_reset(struct grid_esp32_touch_model* touch) {
+
+  // Hold RST low for at least 90 ns
+  gpio_set_level(touch->rst, 0);
+  vTaskDelay(pdMS_TO_TICKS(10));
+
+  // Send RST high for more than 39 ms (typical hardware reset to CHG low time)
+  gpio_set_level(touch->rst, 1);
+  vTaskDelay(pdMS_TO_TICKS(500));
+
+  // CHG should be low at this point
+  return gpio_get_level(touch->chg) == 0;
+}
+
+static void grid_esp32_touch_init_i2c(struct grid_esp32_touch_model* touch, i2c_port_t port, gpio_num_t sda, gpio_num_t scl, uint32_t scl_freq) {
+
+  touch->bus_conf = (i2c_master_bus_config_t){
+      .i2c_port = port,
+      .sda_io_num = sda,
+      .scl_io_num = scl,
+      .clk_source = I2C_CLK_SRC_DEFAULT,
+      .glitch_ignore_cnt = 7,
+      .flags.enable_internal_pullup = true,
+  };
+
+  ESP_ERROR_CHECK(i2c_new_master_bus(&touch->bus_conf, &touch->bus_hndl));
+
+  i2c_device_config_t dev_cfg = {
+      .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+      .device_address = 0x4A,
+      .scl_speed_hz = scl_freq,
+  };
+
+  ESP_ERROR_CHECK(i2c_master_bus_add_device(touch->bus_hndl, &dev_cfg, &touch->data.dev_hndl));
+}
+
+static void grid_esp32_touch_parse_info_block(struct grid_esp32_touch_model* touch, uint8_t* iblk) {
+
+  struct mxt_info* info = (struct mxt_info*)iblk;
+
+  // Parse object table
+  uint8_t reportid = 1;
+  touch->data.mem_size = 0;
+  uint8_t min_id = 0;
+  uint8_t max_id = 0;
+  for (uint8_t i = 0; i < info->object_num; ++i) {
+
+    struct mxt_object* object = (struct mxt_object*)&iblk[MXT_OBJECT_START + i * MXT_OBJECT_SIZE];
+
+    if (object->num_report_ids) {
+
+      min_id = reportid;
+      reportid += object->num_report_ids * mxt_obj_instances(object);
+      max_id = reportid - 1;
+
+    } else {
+
+      min_id = max_id = 0;
+    }
+
+    switch (object->type) {
+    case MXT_GEN_MESSAGE_T5: {
+
+      touch->T5_start_addr = object->start_addr;
+      ets_printf("touch->T5_start_addr %d\n", touch->T5_start_addr);
+
+      if (info->family_id == 0x80 && info->version < 0x20) {
+        touch->T5_msg_size = mxt_obj_size(object);
+      } else {
+        touch->T5_msg_size = mxt_obj_size(object) - 1;
+      }
+      ets_printf("touch->T5_msg_size %d\n", touch->T5_msg_size);
+
+    } break;
+    case MXT_GEN_COMMAND_T6: {
+
+      touch->data.T6_address = object->start_addr;
+      touch->data.T6_reportid = min_id;
+
+    } break;
+    case MXT_GEN_POWER_T7: {
+
+      touch->data.T7_address = object->start_addr;
+
+    } break;
+    case MXT_SPT_MESSAGECOUNT_T44: {
+
+      touch->T44_start_addr = object->start_addr;
+      ets_printf("touch->T44_start_addr %d\n", touch->T44_start_addr);
+
+    } break;
+    case MXT_GEN_DYNAMICCONFIGURATIONCONTAINER_T71: {
+
+      touch->data.T71_address = object->start_addr;
+
+    } break;
+    case MXT_TOUCH_MULTITOUCHSCREEN_T100: {
+
+      touch->T100_rid_min = min_id;
+      touch->T100_rid_max = max_id;
+
+      ets_printf("touch->T100_rid_min %d\n", touch->T100_rid_min);
+      ets_printf("touch->T100_rid_max %d\n", touch->T100_rid_max);
+
+      // The first two report IDs are reserved
+      touch->num_touchids = object->num_report_ids - 2;
+
+      ets_printf("touch->num_touchids %d\n", touch->num_touchids);
+
+    } break;
+    }
+
+    // Update the maximum memory size based on the address following the object
+    uint16_t addr_after = object->start_addr + mxt_obj_size(object) * mxt_obj_instances(object);
+    if (addr_after >= touch->data.mem_size) {
+      touch->data.mem_size = addr_after;
+    }
+  }
+
+  // Store maximum reportid
+  touch->max_reportid = reportid;
+  ets_printf("touch->max_reportid %d\n", touch->max_reportid);
+}
+
 bool grid_esp32_touch_read_info_block(struct grid_esp32_touch_model* touch) {
-
-  bool ret = false;
-
-  uint8_t* iblk = NULL;
 
   esp_err_t err;
 
   // Read ID information block
-  struct mxt_info info = {0};
-  err = mxt_read_reg(touch->dev_hndl, 0, sizeof(struct mxt_info), (uint8_t*)&info);
+  struct mxt_info* info = &touch->data.info;
+  err = mxt_read_reg(touch->data.dev_hndl, 0, sizeof(struct mxt_info), (uint8_t*)info);
   if (err != ESP_OK) {
     ets_printf("grid_esp32_touch_read_info_block: failed to read first 7 bytes\n");
-    goto grid_esp32_touch_read_info_block_cleanup;
+    return false;
   }
 
   // Allocate information block
-  size_t info_size = MXT_OBJECT_START + sizeof(struct mxt_object) * info.object_num + MXT_INFO_CHECKSUM_SIZE;
-  iblk = malloc(info_size);
+  size_t info_size = MXT_OBJECT_START + sizeof(struct mxt_object) * info->object_num + MXT_INFO_CHECKSUM_SIZE;
+  uint8_t* iblk = touch->data.raw_info_block = malloc(info_size);
   if (!iblk) {
     ets_printf("grid_esp32_touch_read_info_block: failed allocate info block\n");
-    goto grid_esp32_touch_read_info_block_cleanup;
+    return false;
   }
 
   // Read information block
-  err = mxt_read_reg(touch->dev_hndl, 0, info_size, iblk);
+  err = mxt_read_reg(touch->data.dev_hndl, 0, info_size, iblk);
   if (err != ESP_OK) {
     ets_printf("grid_esp32_touch_read_info_block: failed to read info block\n");
-    goto grid_esp32_touch_read_info_block_cleanup;
+    return false;
   }
 
   // Extract checksum
@@ -271,21 +666,18 @@ bool grid_esp32_touch_read_info_block(struct grid_esp32_touch_model* touch) {
   uint32_t calc_crc = mxt_calculate_crc(iblk, 0, info_size - MXT_INFO_CHECKSUM_SIZE);
   if (info_crc == 0 || info_crc != calc_crc) {
     ets_printf("grid_esp32_touch_read_info_block: crc mismatch\n");
-    goto grid_esp32_touch_read_info_block_cleanup;
+    return false;
   }
+  touch->data.info_crc = info_crc;
 
-  ets_printf("family %02X variant %02X firmware v%u.%u.%02X objects %u\n", info.family_id, info.variant_id, info.version >> 4, info.version & 0xf, info.build, info.object_num);
+  ets_printf("family %02X variant %02X firmware v%u.%u.%02X objects %u\n", info->family_id, info->variant_id, info->version >> 4, info->version & 0xf, info->build, info->object_num);
 
   // Parse information block
   grid_esp32_touch_parse_info_block(touch, iblk);
 
-  ret = true;
+  touch->data.object_table = (struct mxt_object*)&touch->data.raw_info_block[MXT_OBJECT_START];
 
-grid_esp32_touch_read_info_block_cleanup:
-  if (iblk) {
-    free(iblk);
-  }
-  return ret;
+  return true;
 }
 
 bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset, gpio_num_t change, uint32_t i2c_freq_hz,
@@ -327,6 +719,39 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
   mxt_chg_isr(touch);
 
   return true;
+}
+
+void grid_esp32_touch_update(struct grid_esp32_touch_model* touch) {
+
+  struct firmware fw = (struct firmware){
+      .size = mxt144u_cfg_raw_len,
+      .data = mxt144u_cfg_raw,
+  };
+
+  mxt_update_cfg(&touch->data, &fw);
+}
+
+static void grid_esp32_touch_proc_t6(struct grid_esp32_touch_model* touch, uint8_t* msg) {
+
+  struct mxt_data* data = &touch->data;
+
+  uint8_t status = msg[1];
+  uint32_t crc = msg[2] | (msg[3] << 8) | (msg[4] << 16);
+
+  if (crc != data->config_crc) {
+    data->config_crc = crc;
+  }
+
+  data->crc_completion = 1;
+
+  if (status != data->T6_status) {
+
+    ets_printf("T6 status 0x%02X%s%s%s%s%s%s%s\n", status, status == 0 ? " OK" : "", status & MXT_T6_STATUS_RESET ? " RESET" : "", status & MXT_T6_STATUS_OFL ? " OFL" : "",
+               status & MXT_T6_STATUS_SIGERR ? " SIGERR" : "", status & MXT_T6_STATUS_CAL ? " CAL" : "", status & MXT_T6_STATUS_CFGERR ? " CFGERR" : "",
+               status & MXT_T6_STATUS_COMSERR ? " COMSERR" : "");
+  }
+
+  data->T6_status = status;
 }
 
 static void grid_esp32_touch_proc_t100(struct grid_esp32_touch_model* touch, uint8_t* msg) {
@@ -379,7 +804,11 @@ static int grid_esp32_touch_proc_message(struct grid_esp32_touch_model* touch, u
     return 0;
   }
 
-  if (report_id >= touch->T100_rid_min && report_id <= touch->T100_rid_max) {
+  struct mxt_data* data = &touch->data;
+
+  if (report_id == data->T6_reportid) {
+    grid_esp32_touch_proc_t6(touch, msg);
+  } else if (report_id >= touch->T100_rid_min && report_id <= touch->T100_rid_max) {
     grid_esp32_touch_proc_t100(touch, msg);
   }
 
@@ -393,7 +822,7 @@ void grid_esp32_touch_process_msgs(struct grid_esp32_touch_model* touch) {
   uint32_t start = grid_platform_rtc_get_micros();
   // Read the number of messages from T44
   uint8_t count;
-  err = mxt_read_reg(touch->dev_hndl, touch->T44_start_addr, 1, &count);
+  err = mxt_read_reg(touch->data.dev_hndl, touch->T44_start_addr, 1, &count);
   if (err != ESP_OK) {
     return;
   }
@@ -403,7 +832,7 @@ void grid_esp32_touch_process_msgs(struct grid_esp32_touch_model* touch) {
   }
 
   // Read messages from T5
-  err = mxt_read_reg(touch->dev_hndl, touch->T5_start_addr, touch->T5_msg_size * count, touch->msg_buf);
+  err = mxt_read_reg(touch->data.dev_hndl, touch->T5_start_addr, touch->T5_msg_size * count, touch->msg_buf);
   if (err != ESP_OK) {
     return;
   }

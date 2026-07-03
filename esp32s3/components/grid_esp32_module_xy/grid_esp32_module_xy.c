@@ -47,3 +47,10 @@ void grid_esp32_module_xy_init(struct grid_sys_model* sys, struct grid_ui_model*
   grid_ui_bulk_start_with_state(ui, grid_ui_bulk_conf_read, 0, 0, NULL);
   grid_ui_bulk_flush(ui);
 }
+
+void grid_esp32_module_xy_update_task(void* arg) {
+
+  grid_esp32_touch_update(&grid_esp32_touch_state);
+
+  vTaskDelete(NULL);
+}

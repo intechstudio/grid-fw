@@ -30,6 +30,40 @@ struct mxt_object {
   uint8_t num_report_ids;
 } __packed;
 
+struct mxt_info {
+  uint8_t family_id;
+  uint8_t variant_id;
+  uint8_t version;
+  uint8_t build;
+  uint8_t matrix_xsize;
+  uint8_t matrix_ysize;
+  uint8_t object_num;
+};
+
+struct mxt_data {
+
+  i2c_master_dev_handle_t dev_hndl;
+
+  uint8_t* raw_info_block;
+
+  struct mxt_info info;
+  uint32_t info_crc;
+
+  struct mxt_object* object_table;
+
+  uint16_t mem_size;
+
+  uint32_t config_crc;
+  uint8_t crc_completion;
+
+  uint8_t T6_reportid;
+  uint16_t T6_address;
+  uint16_t T7_address;
+  uint16_t T71_address;
+
+  uint8_t T6_status;
+};
+
 struct grid_esp32_touch_model {
 
   gpio_num_t rst;
@@ -37,15 +71,18 @@ struct grid_esp32_touch_model {
 
   i2c_master_bus_config_t bus_conf;
   i2c_master_bus_handle_t bus_hndl;
-  i2c_master_dev_handle_t dev_hndl;
 
   grid_process_touch_t process_touch;
 
   TaskHandle_t task;
 
+  struct mxt_data data;
+
   uint8_t max_reportid;
   uint16_t T5_start_addr;
   uint8_t T5_msg_size;
+  // uint16_t T6_start_addr;
+  // uint8_t T6_rid_min;
   uint16_t T44_start_addr;
   uint8_t T100_rid_min;
   uint8_t T100_rid_max;
@@ -58,6 +95,8 @@ extern struct grid_esp32_touch_model grid_esp32_touch_state;
 
 bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset_gpio, gpio_num_t int_gpio, uint32_t i2c_freq_hz,
                            grid_process_touch_t process_touch, TaskHandle_t task);
+
+void grid_esp32_touch_update(struct grid_esp32_touch_model* touch);
 
 void grid_esp32_touch_process_msgs(struct grid_esp32_touch_model* touch);
 
