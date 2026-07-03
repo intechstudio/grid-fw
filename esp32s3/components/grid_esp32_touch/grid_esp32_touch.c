@@ -549,6 +549,8 @@ static void grid_esp32_touch_parse_info_block(struct grid_esp32_touch_model* tou
 
   struct mxt_info* info = (struct mxt_info*)iblk;
 
+  struct mxt_data* data = &touch->data;
+
   // Parse object table
   uint8_t reportid = 1;
   touch->data.mem_size = 0;
@@ -572,15 +574,13 @@ static void grid_esp32_touch_parse_info_block(struct grid_esp32_touch_model* tou
     switch (object->type) {
     case MXT_GEN_MESSAGE_T5: {
 
-      touch->T5_start_addr = object->start_addr;
-      ets_printf("touch->T5_start_addr %d\n", touch->T5_start_addr);
+      data->T5_address = object->start_addr;
 
       if (info->family_id == 0x80 && info->version < 0x20) {
-        touch->T5_msg_size = mxt_obj_size(object);
+        data->T5_msg_size = mxt_obj_size(object);
       } else {
-        touch->T5_msg_size = mxt_obj_size(object) - 1;
+        data->T5_msg_size = mxt_obj_size(object) - 1;
       }
-      ets_printf("touch->T5_msg_size %d\n", touch->T5_msg_size);
 
     } break;
     case MXT_GEN_COMMAND_T6: {
@@ -596,27 +596,18 @@ static void grid_esp32_touch_parse_info_block(struct grid_esp32_touch_model* tou
     } break;
     case MXT_SPT_MESSAGECOUNT_T44: {
 
-      touch->T44_start_addr = object->start_addr;
-      ets_printf("touch->T44_start_addr %d\n", touch->T44_start_addr);
+      data->T44_address = object->start_addr;
 
     } break;
     case MXT_GEN_DYNAMICCONFIGURATIONCONTAINER_T71: {
 
-      touch->data.T71_address = object->start_addr;
+      data->T71_address = object->start_addr;
 
     } break;
     case MXT_TOUCH_MULTITOUCHSCREEN_T100: {
 
-      touch->T100_rid_min = min_id;
-      touch->T100_rid_max = max_id;
-
-      ets_printf("touch->T100_rid_min %d\n", touch->T100_rid_min);
-      ets_printf("touch->T100_rid_max %d\n", touch->T100_rid_max);
-
-      // The first two report IDs are reserved
-      touch->num_touchids = object->num_report_ids - 2;
-
-      ets_printf("touch->num_touchids %d\n", touch->num_touchids);
+      data->T100_rid_min = min_id;
+      data->T100_rid_max = max_id;
 
     } break;
     }
@@ -629,8 +620,7 @@ static void grid_esp32_touch_parse_info_block(struct grid_esp32_touch_model* tou
   }
 
   // Store maximum reportid
-  touch->max_reportid = reportid;
-  ets_printf("touch->max_reportid %d\n", touch->max_reportid);
+  data->max_reportid = reportid;
 }
 
 bool grid_esp32_touch_read_info_block(struct grid_esp32_touch_model* touch) {
@@ -706,7 +696,7 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
   }
 
   // Allocate message buffer
-  touch->msg_buf = grid_platform_allocate_volatile(touch->T5_msg_size * touch->max_reportid);
+  touch->msg_buf = grid_platform_allocate_volatile(touch->data.T5_msg_size * touch->data.max_reportid);
   assert(touch->msg_buf);
 
   // Set up per-pin interrupt for CHG
@@ -756,7 +746,7 @@ static void grid_esp32_touch_proc_t6(struct grid_esp32_touch_model* touch, uint8
 
 static void grid_esp32_touch_proc_t100(struct grid_esp32_touch_model* touch, uint8_t* msg) {
 
-  int id = msg[0] - touch->T100_rid_min - 2;
+  int id = msg[0] - touch->data.T100_rid_min - 2;
 
   // Ignore SCRSTATUS event
   if (id < 0) {
@@ -808,7 +798,7 @@ static int grid_esp32_touch_proc_message(struct grid_esp32_touch_model* touch, u
 
   if (report_id == data->T6_reportid) {
     grid_esp32_touch_proc_t6(touch, msg);
-  } else if (report_id >= touch->T100_rid_min && report_id <= touch->T100_rid_max) {
+  } else if (report_id >= data->T100_rid_min && report_id <= data->T100_rid_max) {
     grid_esp32_touch_proc_t100(touch, msg);
   }
 
@@ -819,10 +809,11 @@ void grid_esp32_touch_process_msgs(struct grid_esp32_touch_model* touch) {
 
   esp_err_t err;
 
-  uint32_t start = grid_platform_rtc_get_micros();
+  struct mxt_data* data = &touch->data;
+
   // Read the number of messages from T44
   uint8_t count;
-  err = mxt_read_reg(touch->data.dev_hndl, touch->T44_start_addr, 1, &count);
+  err = mxt_read_reg(touch->data.dev_hndl, data->T44_address, 1, &count);
   if (err != ESP_OK) {
     return;
   }
@@ -832,14 +823,14 @@ void grid_esp32_touch_process_msgs(struct grid_esp32_touch_model* touch) {
   }
 
   // Read messages from T5
-  err = mxt_read_reg(touch->data.dev_hndl, touch->T5_start_addr, touch->T5_msg_size * count, touch->msg_buf);
+  err = mxt_read_reg(touch->data.dev_hndl, data->T5_address, data->T5_msg_size * count, touch->msg_buf);
   if (err != ESP_OK) {
     return;
   }
 
   // Process messages
   for (uint8_t i = 0; i < count; ++i) {
-    grid_esp32_touch_proc_message(touch, touch->msg_buf + i * touch->T5_msg_size);
+    grid_esp32_touch_proc_message(touch, touch->msg_buf + i * data->T5_msg_size);
   }
 
   return;

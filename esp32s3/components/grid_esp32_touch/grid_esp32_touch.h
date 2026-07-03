@@ -56,10 +56,17 @@ struct mxt_data {
   uint32_t config_crc;
   uint8_t crc_completion;
 
+  uint8_t max_reportid;
+
+  uint16_t T5_address;
+  uint8_t T5_msg_size;
   uint8_t T6_reportid;
   uint16_t T6_address;
   uint16_t T7_address;
+  uint16_t T44_address;
   uint16_t T71_address;
+  uint8_t T100_rid_min;
+  uint8_t T100_rid_max;
 
   uint8_t T6_status;
 };
@@ -77,16 +84,6 @@ struct grid_esp32_touch_model {
   TaskHandle_t task;
 
   struct mxt_data data;
-
-  uint8_t max_reportid;
-  uint16_t T5_start_addr;
-  uint8_t T5_msg_size;
-  // uint16_t T6_start_addr;
-  // uint8_t T6_rid_min;
-  uint16_t T44_start_addr;
-  uint8_t T100_rid_min;
-  uint8_t T100_rid_max;
-  uint8_t num_touchids;
 
   uint8_t* msg_buf;
 };
