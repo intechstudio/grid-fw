@@ -148,6 +148,8 @@ void grid_ui_element_encoder_page_change_cb(struct grid_ui_element* ele, uint8_t
   // }
 }
 
+#define SIGN(x) (((x) > 0) - ((x) < 0))
+
 int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uint8_t detent, int8_t* last_leave_dir) {
 
   // lookup table indexed by a combination of old and new encoder output AB
@@ -158,17 +160,23 @@ int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uin
   // 4-bit state value holding old and new 2-bit encoder quadratures
   uint8_t combined_state = (old_value & 0b11) << 2 | (new_value & 0b11);
 
+  int16_t dir = encoder_heading[combined_state];
+
   int16_t delta = 0;
 
-  // non-detent encoders should produce deltas upon every quadrature change
+  // non-detent encoders should produce deltas upon every quadrature change,
+  // when that change agrees with the direction of the previous change
   if (!detent) {
-    delta = encoder_heading[combined_state];
+
+    if (SIGN(dir) == SIGN(*last_leave_dir)) {
+      delta = *last_leave_dir = dir;
+    } else {
+      *last_leave_dir = dir;
+    }
   }
   // detent encoders here should only a produce delta upon entering a detent,
   // and only if the would-be delta matches the direction lock
   else {
-
-    int16_t dir = encoder_heading[combined_state];
 
     // leaving a detent into either neighboring quadrature sets direction lock
     static uint8_t update_lock[] = {
