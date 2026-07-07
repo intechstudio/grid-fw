@@ -527,7 +527,7 @@ void grid_protocol_led_preview_generate(struct grid_led_model* led) {
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
   grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-  char report[300] = {0};
+  char report[led->led_count * 8];
   uint16_t report_len = grid_protocol_led_change_report_generate(&grid_led_state, -1, report);
 
   grid_msg_add_frame(&msg, GRID_CLASS_LEDPREVIEW_frame_start);
