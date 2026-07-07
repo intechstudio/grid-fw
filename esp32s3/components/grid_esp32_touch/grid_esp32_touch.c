@@ -489,7 +489,7 @@ static void grid_esp32_touch_init_gpio(struct grid_esp32_touch_model* touch, gpi
   touch->rst = reset;
 
   gpio_config_t rst_cfg = {
-      .pin_bit_mask = 1 << touch->rst,
+      .pin_bit_mask = 1ULL << touch->rst,
       .mode = GPIO_MODE_OUTPUT,
       .pull_up_en = GPIO_PULLUP_DISABLE,
       .pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -500,7 +500,7 @@ static void grid_esp32_touch_init_gpio(struct grid_esp32_touch_model* touch, gpi
   touch->chg = change;
 
   gpio_config_t chg_cfg = {
-      .pin_bit_mask = 1 << touch->chg,
+      .pin_bit_mask = 1ULL << touch->chg,
       .mode = GPIO_MODE_INPUT,
       .pull_up_en = GPIO_PULLUP_ENABLE,
       .pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -513,11 +513,11 @@ static bool grid_esp32_touch_reset(struct grid_esp32_touch_model* touch) {
 
   // Hold RST low for at least 90 ns
   gpio_set_level(touch->rst, 0);
-  vTaskDelay(pdMS_TO_TICKS(10));
+  vTaskDelay(pdMS_TO_TICKS(20));
 
   // Send RST high for more than 39 ms (typical hardware reset to CHG low time)
   gpio_set_level(touch->rst, 1);
-  vTaskDelay(pdMS_TO_TICKS(500));
+  vTaskDelay(pdMS_TO_TICKS(100));
 
   // CHG should be low at this point
   return gpio_get_level(touch->chg) == 0;
