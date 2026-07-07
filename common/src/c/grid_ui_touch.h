@@ -50,7 +50,7 @@ extern const luaL_Reg GRID_LUA_T_INDEX_META[];
   \
   "}}"
 
-#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]] function touch_dist(led,x,y)local lw=self:lwi()local lp={led%lw+0.0,(lw-1)-led//lw+0.0}local tp={x*(lw-1),y*(lw-1)}local d={tp[1]-lp[1],tp[2]-lp[2]}return math.sqrt(d[1]*d[1]+d[2]*d[2])end local leds=self:lwi()*self:lwi()for i=0,leds-1 do gln(i,1,0,0,0)gld(i,1,127,127,127)glx(i,1,255,255,255)glp(i,1,0)end"
+#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]] function touch_dist(led,x,y)local lw=self:lwi()local lp={led%lw+0.0,(lw-1)-led//lw+0.0}local tp={x*(lw-1),y*(lw-1)}local d={tp[1]-lp[1],tp[2]-lp[2]}return math.sqrt(d[1]*d[1]+d[2]*d[2])end local leds=self:lwi()*self:lwi()for i=0,leds-1 do gln(i,1,0,0,0)gld(i,1,16,16,16)glx(i,1,32,32,32)glp(i,1,0)end"
 
 #define GRID_ACTIONSTRING_TOUCH_TOUCH "--[[@cb]] local leds=self:lwi()*self:lwi()for i=0,leds-1 do local dist=touch_dist(i,self:tsx()/127,self:tsy()/127)local pha=255-dist*255 if dist>=1 then pha=0 end glp(i,1,pha//1)end"
 
