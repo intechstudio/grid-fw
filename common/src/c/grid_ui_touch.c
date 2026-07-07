@@ -67,7 +67,7 @@ void grid_ui_element_touch_template_parameter_init(struct grid_ui_template_buffe
   template_parameter_list[GRID_LUA_FNC_T_TOUCH_Y_MAX_index] = 127;
   template_parameter_list[GRID_LUA_FNC_T_TOUCH_X_STATE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_T_TOUCH_Y_STATE_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_T_LED_WIDTH_index] = 5; // TODO
+  template_parameter_list[GRID_LUA_FNC_T_LED_WIDTH_index] = 9;
 }
 
 static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }
