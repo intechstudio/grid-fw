@@ -286,14 +286,14 @@ void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, struct gri
     return;
   }
 
-  if (old_value == new_value) {
-    return;
-  }
-
   struct grid_ui_element* ele = state->parent;
 
   // Handle button input using embedded button state
   grid_ui_button_store_input(&state->button, sample.button);
+
+  if (old_value == new_value) {
+    return;
+  }
 
   int16_t delta = grid_ui_encoder_rotation_delta(old_value, new_value, state->detent, &state->encoder_last_leave_dir);
 
