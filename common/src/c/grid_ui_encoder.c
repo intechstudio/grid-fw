@@ -273,17 +273,6 @@ void grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* last_
 
 void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, struct grid_ui_encoder_sample sample) {
 
-  state->initial_samples += (state->initial_samples <= GRID_UI_ENCODER_INIT_SAMPLES);
-
-  if (state->initial_samples <= GRID_UI_ENCODER_INIT_SAMPLES) {
-    return;
-  }
-
-  struct grid_ui_element* ele = state->parent;
-
-  // Handle button input using embedded button state
-  grid_ui_button_store_input(&state->button, sample.button);
-
   // Reconstruct rotation value from phases
   uint8_t new_value = sample.phase_a | (sample.phase_b << 1);
 
@@ -291,9 +280,20 @@ void grid_ui_encoder_store_input(struct grid_ui_encoder_state* state, struct gri
   uint8_t old_value = state->last_nibble;
   state->last_nibble = new_value;
 
+  state->initial_samples += (state->initial_samples <= GRID_UI_ENCODER_INIT_SAMPLES);
+
+  if (state->initial_samples <= GRID_UI_ENCODER_INIT_SAMPLES) {
+    return;
+  }
+
   if (old_value == new_value) {
     return;
   }
+
+  struct grid_ui_element* ele = state->parent;
+
+  // Handle button input using embedded button state
+  grid_ui_button_store_input(&state->button, sample.button);
 
   int16_t delta = grid_ui_encoder_rotation_delta(old_value, new_value, state->detent, &state->encoder_last_leave_dir);
 
