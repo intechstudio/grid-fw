@@ -77,9 +77,6 @@ void grid_ui_touch_store_input(struct grid_ui_touch_state* state, struct touchin
   struct grid_ui_element* ele = state->parent;
   int32_t* tpl = ele->template_parameter_list;
 
-  // Invert x axis to place the origin at the bottom left
-  info.x = (1 << state->adc_bit_depth) - 1 - info.x;
-
   int32_t tmin[2] = {tpl[GRID_LUA_FNC_T_TOUCH_X_MIN_index], tpl[GRID_LUA_FNC_T_TOUCH_Y_MIN_index]};
   int32_t tmax[2] = {tpl[GRID_LUA_FNC_T_TOUCH_X_MAX_index], tpl[GRID_LUA_FNC_T_TOUCH_Y_MAX_index]};
   int32_t min[2] = {MIN(tmin[0], tmax[0]), MIN(tmin[1], tmax[1])};

@@ -456,7 +456,7 @@ static esp_err_t mxt_update_cfg(struct mxt_data* data, struct firmware* fw) {
     uint32_t calc_crc = mxt_calculate_crc(cfg.mem, crc_start - cfg.start_ofs, cfg.mem_size);
 
     if (config_crc > 0 && config_crc != calc_crc) {
-      ets_printf("mxt_update_cfg: config CRC calculated %06X != file %06X", calc_crc, config_crc);
+      ets_printf("mxt_update_cfg: config CRC calculated %06X != file %06X\n", calc_crc, config_crc);
     }
   }
 
