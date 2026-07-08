@@ -1126,11 +1126,20 @@ PT_THREAD(grid_ui_bulk_page_clear(proto_pt_t* pt, struct grid_ui_model* ui)) {
   void* info;
   while ((info = grid_platform_dir_first(path))) {
 
-    char path2[6] = {0};
     const char* name = grid_platform_file_info_name(info);
-    assert(snprintf(path2, 6, "%s/%s", path, name) == 5);
 
-    grid_platform_remove(path2);
+    size_t path2_bytes = 3 + strlen(name) + 1;
+
+    char* path2 = malloc(path2_bytes);
+    if (!path2) {
+      continue;
+    }
+
+    if (snprintf(path2, path2_bytes, "%s/%s", path, name) < path2_bytes) {
+      grid_platform_remove(path2);
+    }
+
+    free(path2);
 
     PT_YIELD(pt);
   }
