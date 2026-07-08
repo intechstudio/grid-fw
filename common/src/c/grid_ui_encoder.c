@@ -53,6 +53,10 @@ void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t det
 
 void grid_ui_element_encoder_event_clear_cb(struct grid_ui_event* eve) {
 
+  if (eve->type != GRID_PARAMETER_EVENT_ENCODER) {
+    return;
+  }
+
   int32_t* template_parameter_list = eve->parent->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_E_ENCODER_STATE_index] = 64;
