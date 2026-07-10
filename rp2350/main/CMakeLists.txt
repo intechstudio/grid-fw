@@ -1,6 +1,7 @@
 add_executable(grid_rp2350
     grid_rp2350.c
     grid_rp2350_led.c
+    grid_rp2350_adc.c
     ../../common/src/c/grid_led.c
 )
 
@@ -8,7 +9,7 @@ add_executable(grid_rp2350
 target_include_directories(grid_rp2350 PRIVATE ../../common/src/c)
 
 # Import pico_stdlib which imports commonly used features
-target_link_libraries(grid_rp2350 PRIVATE pico_stdlib hardware_uart hardware_dma)
+target_link_libraries(grid_rp2350 PRIVATE pico_stdlib hardware_uart hardware_dma hardware_adc hardware_irq)
 
 # Route stdio to USB CDC, UART0 (GPIO0 TX / GPIO1 RX, 115200 8N1), and RTT-over-SWD
 pico_enable_stdio_usb(grid_rp2350 1)
