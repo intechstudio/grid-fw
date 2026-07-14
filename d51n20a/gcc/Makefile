@@ -345,7 +345,7 @@ $(OUTPUT_FILE_PATH).bin: $(OBJS) $(DEPS) | $(BUILD_DIRS)
 
 UF2_NAME=grid_d51n20a.uf2
 $(BUILD_DIR)/$(UF2_NAME): $(OUTPUT_FILE_PATH).bin
-	python3 ../../tools/uf2conv/uf2conv.py -c -b 0x4000 -o "$@" "$<"
+	python3 ../../tools/uf2conv/uf2conv.py -c -b 0x4000 -f SAMD51 -o "$@" "$<"
 
 .PHONY: clean
 clean:
