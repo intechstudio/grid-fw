@@ -579,7 +579,7 @@ void app_main(void) {
 
     TaskHandle_t touch_task_hdl;
 
-    xTaskCreatePinnedToCore(grid_esp32_module_xy_update_task, "touch", 1024 * 2, NULL, MODULE_TASK_PRIORITY, &touch_task_hdl, 1);
+    xTaskCreatePinnedToCore(grid_esp32_module_xy_update_task, "touch", 1024 * 2, NULL, MODULE_TASK_PRIORITY, &touch_task_hdl, 0);
   }
 
   // Initialize 1 kHz timer

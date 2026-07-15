@@ -56,6 +56,8 @@ struct mxt_data {
   uint32_t config_crc;
   uint8_t crc_completion;
 
+  uint8_t reset_completion;
+
   uint8_t max_reportid;
 
   uint16_t T5_address;

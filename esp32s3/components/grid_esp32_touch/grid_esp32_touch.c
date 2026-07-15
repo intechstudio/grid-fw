@@ -53,6 +53,7 @@
 #define MXT_T6_STATUS_CFGERR BIT(3)
 #define MXT_T6_STATUS_COMSERR BIT(2)
 
+#define MXT_RESET_VALUE 0x01
 #define MXT_BACKUP_VALUE 0x55
 
 #define MXT_T100_DETECT BIT(7)
@@ -147,18 +148,21 @@ static esp_err_t mxt_t6_command(struct mxt_data* data, uint8_t cmd_off, uint8_t 
   return ESP_OK;
 }
 
-static void mxt_update_crc(struct mxt_data* data, uint8_t cmd, uint8_t val) {
+static esp_err_t mxt_update_crc(struct mxt_data* data, uint8_t cmd, uint8_t val) {
 
   data->config_crc = 0;
   data->crc_completion = 0;
 
-  if (mxt_t6_command(data, cmd, val, true) != ESP_OK) {
-    return;
+  esp_err_t err = mxt_t6_command(data, cmd, val, true);
+  if (err != ESP_OK) {
+    return err;
   }
 
   while (!data->crc_completion) {
     vTaskDelay(1);
   }
+
+  return ESP_OK;
 }
 
 static void mxt_calc_crc24(uint32_t* crc, uint8_t firstbyte, uint8_t secondbyte) {
@@ -318,6 +322,24 @@ static esp_err_t mxt_upload_cfg_mem(struct mxt_data* data, struct mxt_cfg* cfg) 
   return ESP_OK;
 }
 
+static esp_err_t mxt_soft_reset(struct mxt_data* data) {
+
+  data->reset_completion = 0;
+
+  esp_err_t err = mxt_t6_command(data, MXT_COMMAND_RESET, MXT_RESET_VALUE, false);
+  if (err != ESP_OK) {
+    return err;
+  }
+
+  vTaskDelay(pdMS_TO_TICKS(100));
+
+  while (!data->reset_completion) {
+    vTaskDelay(1);
+  }
+
+  return ESP_OK;
+}
+
 static esp_err_t mxt_update_cfg(struct mxt_data* data, struct firmware* fw) {
 
   esp_err_t ret = ESP_OK;
@@ -429,6 +451,7 @@ static esp_err_t mxt_update_cfg(struct mxt_data* data, struct firmware* fw) {
     ets_printf("mxt_update_cfg: failed to allocate cfg.mem\n");
     goto mxt_update_cfg_error;
   }
+  memset(cfg.mem, 0, cfg.mem_size);
 
   // Parse the index of the first device, expect it to be zero
   if (strncmp((char*)&cfg.raw[cfg.raw_pos], MXT_CFG_DEVICE_0, strlen(MXT_CFG_DEVICE_0))) {
@@ -466,7 +489,15 @@ static esp_err_t mxt_update_cfg(struct mxt_data* data, struct firmware* fw) {
     goto mxt_update_cfg_error;
   }
 
-  mxt_update_crc(data, MXT_COMMAND_BACKUPNV, MXT_BACKUP_VALUE);
+  err = mxt_update_crc(data, MXT_COMMAND_BACKUPNV, MXT_BACKUP_VALUE);
+  if (err != ESP_OK) {
+    ets_printf("mxt_update_cfg: backup error (%d)\n", err);
+  }
+
+  err = mxt_soft_reset(data);
+  if (err != ESP_OK) {
+    ets_printf("mxt_update_cfg: soft reset error (%d)\n", err);
+  }
 
   // Note that there are more steps that are required for an update to take
   // effect on the fly (with a soft reset). Currently, we rely on a hard reset.
@@ -733,6 +764,10 @@ static void grid_esp32_touch_proc_t6(struct grid_esp32_touch_model* touch, uint8
   }
 
   data->crc_completion = 1;
+
+  if (status & MXT_T6_STATUS_RESET) {
+    data->reset_completion = 1;
+  }
 
   if (status != data->T6_status) {
 
