@@ -8,7 +8,7 @@
 
 void grid_ui_element_system_init(struct grid_ui_element* ele);
 
-void grid_ui_element_system_template_parameter_init(struct grid_ui_template_buffer* buf);
+void grid_ui_element_system_template_parameter_init(struct grid_ui_element* ele);
 
 // clang-format off
 

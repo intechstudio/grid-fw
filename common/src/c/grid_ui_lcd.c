@@ -54,15 +54,14 @@ void grid_ui_element_lcd_init(struct grid_ui_element* ele, template_init_t initi
   ele->template_parameter_list_length = GRID_LUA_FNC_L_LIST_length;
 
   ele->event_clear_cb = NULL;
-  ele->page_change_cb = NULL;
 }
 
-void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer* buf) {
+void grid_ui_element_lcd_template_parameter_init(struct grid_ui_element* ele) {
 
   // printf("template parameter init\r\n");
 
-  uint8_t element_index = buf->parent->index;
-  int32_t* template_parameter_list = buf->template_parameter_list;
+  uint8_t element_index = ele->index;
+  int32_t* template_parameter_list = ele->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_L_ELEMENT_INDEX_index] = element_index;
   template_parameter_list[GRID_LUA_FNC_L_SCREEN_INDEX_index] = 0;

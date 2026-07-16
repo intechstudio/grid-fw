@@ -8,7 +8,7 @@
 
 void grid_ui_element_lcd_init(struct grid_ui_element* ele, template_init_t initializer);
 
-void grid_ui_element_lcd_template_parameter_init(struct grid_ui_template_buffer* buf);
+void grid_ui_element_lcd_template_parameter_init(struct grid_ui_element* ele);
 
 #define GRID_LUA_FNC_L_DRAW_SWAP_short "ldsw"
 #define GRID_LUA_FNC_L_DRAW_SWAP_human "draw_swap"

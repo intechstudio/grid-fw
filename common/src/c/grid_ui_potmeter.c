@@ -60,15 +60,6 @@ void grid_ui_element_potmeter_update_value(int32_t* template_parameter_list, uin
   template_parameter_list[GRID_LUA_FNC_P_POTMETER_VALUE_index] = new_value;
 }
 
-void grid_ui_element_potmeter_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new) {
-
-  uint8_t element_index = ele->index;
-  int32_t* template_parameter_list = ele->template_parameter_list;
-
-  uint8_t adc_bit_depth = grid_platform_get_adc_bit_depth();
-  grid_ui_element_potmeter_update_value(template_parameter_list, element_index, adc_bit_depth);
-}
-
 void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_POTMETER;
@@ -96,13 +87,12 @@ void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
   ele->template_parameter_index_max[1] = ele->template_parameter_index_max[0];
 
   ele->event_clear_cb = NULL;
-  ele->page_change_cb = &grid_ui_element_potmeter_page_change_cb;
 }
 
-void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf) {
+void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_element* ele) {
 
-  uint8_t element_index = buf->parent->index;
-  int32_t* template_parameter_list = buf->template_parameter_list;
+  uint8_t element_index = ele->index;
+  int32_t* template_parameter_list = ele->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_P_ELEMENT_INDEX_index] = element_index;
   template_parameter_list[GRID_LUA_FNC_P_LED_INDEX_index] = element_index;

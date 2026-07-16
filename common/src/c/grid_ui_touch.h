@@ -14,7 +14,7 @@ struct grid_ui_touch_state {
 };
 
 void grid_ui_element_touch_init(struct grid_ui_element* ele);
-void grid_ui_element_touch_template_parameter_init(struct grid_ui_template_buffer* buf);
+void grid_ui_element_touch_template_parameter_init(struct grid_ui_element* ele);
 
 static inline struct grid_ui_touch_state* grid_ui_touch_get_state(struct grid_ui_element* ele) { return (struct grid_ui_touch_state*)ele->primary_state; }
 

@@ -193,13 +193,12 @@ void grid_ui_element_button_init(struct grid_ui_element* ele) {
   ele->template_parameter_index_max[1] = ele->template_parameter_index_max[0];
 
   ele->event_clear_cb = NULL;
-  ele->page_change_cb = NULL;
 }
 
-void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buffer* buf) {
+void grid_ui_element_button_template_parameter_init(struct grid_ui_element* ele) {
 
-  uint8_t element_index = buf->parent->index;
-  int32_t* template_parameter_list = buf->template_parameter_list;
+  uint8_t element_index = ele->index;
+  int32_t* template_parameter_list = ele->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_B_ELEMENT_INDEX_index] = element_index;
   template_parameter_list[GRID_LUA_FNC_B_LED_INDEX_index] = element_index;

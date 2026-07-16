@@ -16,13 +16,7 @@ TEST_DECL(grid_ui_encoder_relative) {
   struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_ENCODER);
   TEST_ASSERT(eve);
 
-  TEST_ASSERT(grid_ui_template_buffer_create(ele));
-  grid_ui_page_clear_template_parameters(ui, 0);
-  ele->template_parameter_list = ele->template_buffer_list_head->template_parameter_list;
-
-  if (ele->page_change_cb) {
-    ele->page_change_cb(ele, 0, 0);
-  }
+  grid_ui_element_template_parameter_reset(ele);
 
   // Set encoder to relative mode
   grid_ui_element_set_template_parameter(ele, GRID_LUA_FNC_E_ENCODER_MODE_index, 1);
