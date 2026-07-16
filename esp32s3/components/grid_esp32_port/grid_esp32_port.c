@@ -197,16 +197,10 @@ void grid_utask_second(struct grid_utask_timer* timer) {
   int i = 0;
   struct LED_layer* layer = &led->led_smart_buffer[i * GRID_LED_LAYER_COUNT + 0];
   uint8_t pha = grid_led_get_layer_phase(led, i, 0);
-  grid_port_debug_printf("led[%d] min=(%d,%d,%d) mid=(%d,%d,%d) max=(%d,%d,%d) pha=%d\n",
-                        i,
-                        layer->color_min.r, layer->color_min.g, layer->color_min.b,
-                        layer->color_mid.r, layer->color_mid.g, layer->color_mid.b,
-                        layer->color_max.r, layer->color_max.g, layer->color_max.b, pha);
-  grid_platform_printf("led[%d] min=(%d,%d,%d) mid=(%d,%d,%d) max=(%d,%d,%d) pha=%d\n",
-                        i,
-                        layer->color_min.r, layer->color_min.g, layer->color_min.b,
-                        layer->color_mid.r, layer->color_mid.g, layer->color_mid.b,
-                        layer->color_max.r, layer->color_max.g, layer->color_max.b, pha);
+  grid_port_debug_printf("led[%d] min=(%d,%d,%d) mid=(%d,%d,%d) max=(%d,%d,%d) pha=%d\n", i, layer->color_min.r, layer->color_min.g, layer->color_min.b, layer->color_mid.r, layer->color_mid.g,
+                         layer->color_mid.b, layer->color_max.r, layer->color_max.g, layer->color_max.b, pha);
+  grid_platform_printf("led[%d] min=(%d,%d,%d) mid=(%d,%d,%d) max=(%d,%d,%d) pha=%d\n", i, layer->color_min.r, layer->color_min.g, layer->color_min.b, layer->color_mid.r, layer->color_mid.g,
+                       layer->color_mid.b, layer->color_max.r, layer->color_max.g, layer->color_max.b, pha);
 }
 
 struct grid_utask_timer timer_sendfull;
@@ -492,7 +486,7 @@ void grid_esp32_port_task(void* arg) {
 
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 50);
       grid_alert_all_set_frequency(&grid_led_state, -4);
-      grid_alert_all_set_phase(&grid_led_state, 100);
+      grid_alert_all_set_phase(&grid_led_state, 200); // phase must equal |frequency| * timeout (4 * 50) so the fade lands on 0
     }
 
     // Check if USB is connected and start animation
