@@ -31,6 +31,7 @@
 #define MXT_INFO_CHECKSUM_SIZE 3
 #define MXT_MAX_BLOCK_WRITE 256
 
+#define MXT_DEBUG_DIAGNOSTIC_T37 37
 #define MXT_GEN_MESSAGE_T5 5
 #define MXT_GEN_COMMAND_T6 6
 #define MXT_GEN_POWER_T7 7
@@ -58,6 +59,10 @@
 
 #define MXT_T100_DETECT BIT(7)
 #define MXT_T100_TYPE_MASK 0x70
+
+#define MXT_DIAGNOSTIC_PAGEUP 0x01
+#define MXT_DIAGNOSTIC_DELTAS 0x10
+#define MXT_DIAGNOSTIC_REFS 0x11
 
 enum t100_type {
   MXT_T100_TYPE_FINGER = 1,
@@ -701,6 +706,46 @@ bool grid_esp32_touch_read_info_block(struct grid_esp32_touch_model* touch) {
   return true;
 }
 
+static void mxt_debug_init(struct mxt_data* data) {
+
+  struct mxt_info* info = &data->info;
+  struct mxt_dbg* dbg = &data->dbg;
+  struct mxt_object* object;
+
+  object = mxt_get_object(data, MXT_GEN_COMMAND_T6);
+  if (!object) {
+    goto mxt_debug_init_error;
+  }
+
+  dbg->diag_cmd_address = object->start_addr + MXT_COMMAND_DIAGNOSTIC;
+
+  object = mxt_get_object(data, MXT_DEBUG_DIAGNOSTIC_T37);
+  if (!object) {
+    goto mxt_debug_init_error;
+  }
+
+  if (mxt_obj_size(object) != sizeof(struct t37_debug)) {
+    ets_printf("bad t37 size\n");
+    goto mxt_debug_init_error;
+  }
+
+  dbg->T37_address = object->start_addr;
+
+  dbg->t37_nodes = MXT_XYNODES;
+
+  dbg->t37_pages = (dbg->t37_nodes * sizeof(uint16_t)) / sizeof(dbg->t37_buf->data) + 1;
+
+  if (dbg->t37_pages != MXT_DBG_PAGES_MIN) {
+    ets_printf("wrong number of allocated debug pages\n");
+    goto mxt_debug_init_error;
+  }
+
+  return;
+
+mxt_debug_init_error:
+  ets_printf("mxt_debug_init: error initializing t37\n");
+}
+
 bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_port, gpio_num_t scl_gpio, gpio_num_t sda_gpio, gpio_num_t reset, gpio_num_t change, uint32_t i2c_freq_hz,
                            grid_process_touch_t process_touch, TaskHandle_t task) {
 
@@ -725,6 +770,9 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
   if (!grid_esp32_touch_read_info_block(touch)) {
     return false;
   }
+
+  // Initialize debug diagnostics
+  mxt_debug_init(&grid_esp32_touch_state.data);
 
   // Allocate message buffer
   touch->msg_buf = grid_platform_allocate_volatile(touch->data.T5_msg_size * touch->data.max_reportid);
@@ -810,6 +858,7 @@ static void grid_esp32_touch_proc_t100(struct grid_esp32_touch_model* touch, uin
           .x = x,
           .y = y,
       };
+      ets_printf("%4d %4d\n", x, y);
       touch->process_touch(&info);
 
     } break;
@@ -869,4 +918,99 @@ void grid_esp32_touch_process_msgs(struct grid_esp32_touch_model* touch) {
   }
 
   return;
+}
+
+static esp_err_t mxt_read_diagnostic_debug(struct mxt_data* data, uint8_t mode) {
+
+  esp_err_t err;
+
+  struct mxt_dbg* dbg = &data->dbg;
+  int retries = 0;
+  uint8_t cmd = mode;
+  uint8_t cmd_poll;
+
+  for (int page = 0; page < MXT_DBG_PAGES_MIN; ++page) {
+
+    struct t37_debug* p = &dbg->t37_buf[0] + page;
+
+    err = mxt_write_reg(data->dev_hndl, dbg->diag_cmd_address, 1, &cmd);
+    if (err != ESP_OK) {
+      return err;
+    }
+
+    int timeout_counter = 0;
+
+    do {
+
+      vTaskDelay(pdMS_TO_TICKS(20));
+      err = mxt_read_reg(data->dev_hndl, dbg->diag_cmd_address, 1, &cmd_poll);
+      if (err != ESP_OK) {
+        return err;
+      }
+
+    } while (cmd_poll && timeout_counter++ <= 100);
+
+    if (timeout_counter > 100) {
+      return ESP_FAIL;
+    }
+
+    err = mxt_read_reg(data->dev_hndl, dbg->T37_address, sizeof(struct t37_debug), (uint8_t*)p);
+    if (err != ESP_OK) {
+      return err;
+    }
+
+    if (p->mode != mode || p->page != page) {
+      ets_printf("T37 page mismatch\n");
+      return ESP_FAIL;
+    }
+
+    // For remaining pages, write PAGEUP rather than mode
+    cmd = MXT_DIAGNOSTIC_PAGEUP;
+  }
+
+  return ESP_OK;
+}
+
+static void mxt_display_debug_pages(struct mxt_dbg* dbg) {
+
+  assert(MXT_XLINES == MXT_YLINES);
+
+  int values = 0;
+
+  for (int page = 0; page < MXT_DBG_PAGES_MIN; ++page) {
+
+    struct t37_debug* p = &dbg->t37_buf[0] + page;
+
+    for (int j = 0; j < MXT_DIAGNOSTIC_SIZE; j += sizeof(uint16_t)) {
+
+      int16_t val = p->data[j + 1] << 8 | p->data[j];
+      ets_printf("%s%5d ", (val > 0) - (val < 0) ? "+" : "-", abs(val));
+      ets_delay_us(50);
+
+      if (++values >= dbg->t37_nodes) {
+        break;
+      }
+
+      if (values % MXT_XLINES == 0) {
+        ets_printf("\n");
+      }
+    }
+  }
+
+  ets_printf("\n");
+}
+
+void grid_esp32_utask_touch_t37(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  esp_err_t err = mxt_read_diagnostic_debug(&grid_esp32_touch_state.data, MXT_DIAGNOSTIC_REFS);
+  if (err != ESP_OK) {
+    ets_printf("mxt_read_diagnostic_debug returned %d\n", err);
+  }
+
+  mxt_display_debug_pages(&grid_esp32_touch_state.data.dbg);
+  ets_printf("\n");
 }

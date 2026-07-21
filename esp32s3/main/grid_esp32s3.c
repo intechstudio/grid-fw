@@ -370,6 +370,10 @@ void app_main(void) {
       .last = grid_platform_rtc_get_micros(),
       .period = 9500, // 10000 really, but FreeRTOS is currently 100 Hz
   };
+  struct grid_utask_timer timer_t37 = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000000,
+  };
 
   // set console baud rate
   ESP_ERROR_CHECK(uart_set_baudrate(UART_NUM_0, 2000000ul));
@@ -633,6 +637,7 @@ void app_main(void) {
 
     // Run microtasks
     grid_esp32_utask_led(&timer_led);
+    // grid_esp32_utask_touch_t37(&timer_t37);
 
     // Run UI protothreads
     grid_ui_bulk_process(&grid_ui_state);

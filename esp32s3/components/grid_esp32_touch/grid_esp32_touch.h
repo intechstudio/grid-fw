@@ -14,6 +14,8 @@
 #include "driver/gpio.h"
 #include "driver/i2c_master.h"
 
+#include "grid_utask.h"
+
 #include "grid_ui_touch.h"
 
 #ifdef __cplusplus
@@ -38,6 +40,28 @@ struct mxt_info {
   uint8_t matrix_xsize;
   uint8_t matrix_ysize;
   uint8_t object_num;
+};
+
+#define MXT_XLINES 12
+#define MXT_YLINES 12
+#define MXT_XYNODES (MXT_XLINES * MXT_YLINES)
+#define MXT_DIAGNOSTIC_SIZE 128
+
+struct t37_debug {
+  uint8_t mode;
+  uint8_t page;
+  uint8_t data[MXT_DIAGNOSTIC_SIZE];
+};
+
+// Minimum number of pages to accommodate reference and delta debug modes
+#define MXT_DBG_PAGES_MIN (((MXT_XYNODES * 2) / MXT_DIAGNOSTIC_SIZE) + 1)
+
+struct mxt_dbg {
+  uint16_t T37_address;
+  uint16_t diag_cmd_address;
+  struct t37_debug t37_buf[MXT_DBG_PAGES_MIN];
+  unsigned int t37_pages;
+  unsigned int t37_nodes;
 };
 
 struct mxt_data {
@@ -71,6 +95,8 @@ struct mxt_data {
   uint8_t T100_rid_max;
 
   uint8_t T6_status;
+
+  struct mxt_dbg dbg;
 };
 
 struct grid_esp32_touch_model {
@@ -98,6 +124,8 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
 void grid_esp32_touch_update(struct grid_esp32_touch_model* touch);
 
 void grid_esp32_touch_process_msgs(struct grid_esp32_touch_model* touch);
+
+void grid_esp32_utask_touch_t37(struct grid_utask_timer* timer);
 
 #ifdef __cplusplus
 }
