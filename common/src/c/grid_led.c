@@ -459,7 +459,8 @@ void grid_led_render_framebuffer_one(struct grid_led_model* led, uint32_t num) {
   mix_g = mix_g / 2 / 256;
   mix_b = mix_b / 2 / 256;
 
-  grid_led_framebuffer_set_color(led, num, mix_r, mix_g, mix_b);
+  // grid_led_framebuffer_set_color(led, num, mix_r, mix_g, mix_b);
+  grid_led_framebuffer_set_color(led, num, 0, 0, 0);
 }
 
 void grid_led_render_framebuffer(struct grid_led_model* led) {
@@ -527,7 +528,7 @@ void grid_protocol_led_preview_generate(struct grid_led_model* led) {
   uint8_t xy = GRID_PARAMETER_GLOBAL_POSITION;
   grid_msg_init_brc(&grid_msg_state, &msg, xy, xy);
 
-  char report[led->led_count * 8];
+  char report[grid_led_get_led_count(led) * 8];
   uint16_t report_len = grid_protocol_led_change_report_generate(&grid_led_state, -1, report);
 
   grid_msg_add_frame(&msg, GRID_CLASS_LEDPREVIEW_frame_start);
