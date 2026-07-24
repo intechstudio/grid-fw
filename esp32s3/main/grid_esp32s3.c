@@ -48,7 +48,7 @@
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
 #include "grid_esp32_module_vsnx.h"
-#include "grid_esp32_module_xy.h"
+#include "grid_esp32_module_zona.h"
 #include "grid_esp32_touch.h"
 #include "pico_firmware.h"
 
@@ -447,8 +447,8 @@ void app_main(void) {
     grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
     grid_module_octv_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_xy(&grid_sys_state)) {
-    grid_module_xy_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
+    grid_module_zona_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
     grid_module_vsnx_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, &grid_sys_state);
   } else {
@@ -560,8 +560,8 @@ void app_main(void) {
     grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
     grid_esp32_module_octv_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
-  } else if (grid_hwcfg_module_is_xy(&grid_sys_state)) {
-    grid_esp32_module_xy_init(&grid_sys_state, &grid_ui_state, xTaskGetCurrentTaskHandle());
+  } else if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
+    grid_esp32_module_zona_init(&grid_sys_state, &grid_ui_state, xTaskGetCurrentTaskHandle());
   } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
     grid_esp32_module_vsnx_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
   } else {
@@ -579,11 +579,11 @@ void app_main(void) {
     log_checkpoint("LCD TASK DONE");
   }
 
-  if (grid_hwcfg_module_is_xy(&grid_sys_state)) {
+  if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
 
     TaskHandle_t touch_task_hdl;
 
-    xTaskCreatePinnedToCore(grid_esp32_module_xy_update_task, "touch", 1024 * 2, NULL, MODULE_TASK_PRIORITY, &touch_task_hdl, 0);
+    xTaskCreatePinnedToCore(grid_esp32_module_zona_update_task, "touch", 1024 * 2, NULL, MODULE_TASK_PRIORITY, &touch_task_hdl, 0);
   }
 
   // Initialize 1 kHz timer

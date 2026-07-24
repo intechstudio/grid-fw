@@ -14,9 +14,9 @@ extern "C" {
 
 #include "freertos/FreeRTOS.h"
 
-void grid_esp32_module_xy_init(struct grid_sys_model* sys, struct grid_ui_model* ui, TaskHandle_t touch_task);
+void grid_esp32_module_zona_init(struct grid_sys_model* sys, struct grid_ui_model* ui, TaskHandle_t touch_task);
 
-void grid_esp32_module_xy_update_task(void* arg);
+void grid_esp32_module_zona_update_task(void* arg);
 
 #ifdef __cplusplus
 }

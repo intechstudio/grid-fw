@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "grid_esp32_module_xy.h"
+#include "grid_esp32_module_zona.h"
 
 #include <stdint.h>
 
@@ -14,15 +14,15 @@
 
 #include "grid_esp32_touch.h"
 
-#define XY_I2C_PORT I2C_NUM_0
-#define XY_I2C_SCL_GPIO 40
-#define XY_I2C_SDA_GPIO 41
-#define XY_I2C_FREQ_HZ 100000
+#define ZONA_I2C_PORT I2C_NUM_0
+#define ZONA_I2C_SCL_GPIO 40
+#define ZONA_I2C_SDA_GPIO 41
+#define ZONA_I2C_FREQ_HZ 100000
 
-#define XY_SENSOR_RESET_GPIO 39
-#define XY_SENSOR_INT_GPIO 42
+#define ZONA_SENSOR_RESET_GPIO 39
+#define ZONA_SENSOR_INT_GPIO 42
 
-void grid_esp32_module_xy_process_touch(struct touchinfo_t* info) {
+void grid_esp32_module_zona_process_touch(struct touchinfo_t* info) {
 
   struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, info->id);
   if (!ele) {
@@ -32,10 +32,10 @@ void grid_esp32_module_xy_process_touch(struct touchinfo_t* info) {
   grid_ui_touch_store_input(grid_ui_touch_get_state(ele), *info);
 }
 
-void grid_esp32_module_xy_init(struct grid_sys_model* sys, struct grid_ui_model* ui, TaskHandle_t touch_task) {
+void grid_esp32_module_zona_init(struct grid_sys_model* sys, struct grid_ui_model* ui, TaskHandle_t touch_task) {
 
-  grid_esp32_touch_init(&grid_esp32_touch_state, XY_I2C_PORT, XY_I2C_SCL_GPIO, XY_I2C_SDA_GPIO, XY_SENSOR_RESET_GPIO, XY_SENSOR_INT_GPIO, XY_I2C_FREQ_HZ, grid_esp32_module_xy_process_touch,
-                        touch_task);
+  grid_esp32_touch_init(&grid_esp32_touch_state, ZONA_I2C_PORT, ZONA_I2C_SCL_GPIO, ZONA_I2C_SDA_GPIO, ZONA_SENSOR_RESET_GPIO, ZONA_SENSOR_INT_GPIO, ZONA_I2C_FREQ_HZ,
+                        grid_esp32_module_zona_process_touch, touch_task);
 
   for (int i = 0; i < ui->element_list_length; ++i) {
     struct grid_ui_element* ele = &ui->element_list[i];
@@ -48,7 +48,7 @@ void grid_esp32_module_xy_init(struct grid_sys_model* sys, struct grid_ui_model*
   grid_ui_bulk_flush(ui);
 }
 
-void grid_esp32_module_xy_update_task(void* arg) {
+void grid_esp32_module_zona_update_task(void* arg) {
 
   grid_esp32_touch_update(&grid_esp32_touch_state);
 

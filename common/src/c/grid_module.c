@@ -260,7 +260,7 @@ void grid_module_octv_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
-bool grid_module_xy_led_is_alert_all(uint8_t n) {
+bool grid_module_zona_led_is_alert_all(uint8_t n) {
 
   uint8_t x = n % 9;
   uint8_t y = (9 - 1) - n / 9;
@@ -268,9 +268,9 @@ bool grid_module_xy_led_is_alert_all(uint8_t n) {
   return x == 0 || x == 9 - 1 || y == 0 || y == 9 - 1;
 }
 
-void grid_module_xy_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+void grid_module_zona_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
-  grid_led_init(led, 81, grid_module_xy_led_is_alert_all);
+  grid_led_init(led, 81, grid_module_zona_led_is_alert_all);
   grid_led_lookup_alloc_identity(led, 0, 81);
 
   grid_ui_model_init(ui, 6);
