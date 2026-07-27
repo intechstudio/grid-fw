@@ -59,6 +59,7 @@
 
 #define MXT_T100_DETECT BIT(7)
 #define MXT_T100_TYPE_MASK 0x70
+#define MXT_T100_EVENT_MASK 0x0f
 
 #define MXT_DIAGNOSTIC_PAGEUP 0x01
 #define MXT_DIAGNOSTIC_DELTAS 0x10
@@ -841,32 +842,28 @@ static void grid_esp32_touch_proc_t100(struct grid_esp32_touch_model* touch, uin
   uint16_t y = msg[4] + (msg[5] << 8);
   uint8_t distance = 0;
 
-  uint8_t type = 0;
-  if (status & MXT_T100_DETECT) {
+  uint8_t type = (status & MXT_T100_TYPE_MASK) >> 4;
 
-    type = (status & MXT_T100_TYPE_MASK) >> 4;
+  switch (type) {
+  case MXT_T100_TYPE_FINGER:
+  case MXT_T100_TYPE_PASSIVE_STYLUS:
+  case MXT_T100_TYPE_HOVERING_FINGER:
+  case MXT_T100_TYPE_GLOVE: {
 
-    switch (type) {
-    case MXT_T100_TYPE_FINGER:
-    case MXT_T100_TYPE_PASSIVE_STYLUS:
-    case MXT_T100_TYPE_HOVERING_FINGER:
-    case MXT_T100_TYPE_GLOVE: {
+    struct touchinfo_t info = (struct touchinfo_t){
+        .id = id,
+        .event = status & MXT_T100_EVENT_MASK,
+        .x = x,
+        .y = y,
+    };
+    ets_printf("i %d e %d x %4d y %4d\n", info.id, info.event, info.x, info.y);
+    touch->process_touch(&info);
 
-      struct touchinfo_t info = (struct touchinfo_t){
-          .id = id,
-          .type = type,
-          .x = x,
-          .y = y,
-      };
-      ets_printf("%4d %4d\n", x, y);
-      touch->process_touch(&info);
-
-    } break;
-    case MXT_T100_TYPE_LARGE_TOUCH:
-      break;
-    default:
-      return;
-    }
+  } break;
+  case MXT_T100_TYPE_LARGE_TOUCH:
+    break;
+  default:
+    return;
   }
 }
 

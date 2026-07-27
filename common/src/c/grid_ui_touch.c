@@ -94,8 +94,11 @@ void grid_ui_touch_store_input(struct grid_ui_touch_state* state, struct touchin
     }
   }
 
-  if (new[0] != tpl[GRID_LUA_FNC_T_TOUCH_X_index] || new[1] != tpl[GRID_LUA_FNC_T_TOUCH_Y_index]) {
+  bool x_delta = new[0] != tpl[GRID_LUA_FNC_T_TOUCH_X_index];
+  bool y_delta = new[1] != tpl[GRID_LUA_FNC_T_TOUCH_Y_index];
+  if (x_delta || y_delta || info.event != tpl[GRID_LUA_FNC_T_TOUCH_EVENT_index]) {
 
+    tpl[GRID_LUA_FNC_T_TOUCH_EVENT_index] = info.event;
     tpl[GRID_LUA_FNC_T_TOUCH_X_index] = new[0];
     tpl[GRID_LUA_FNC_T_TOUCH_Y_index] = new[1];
 

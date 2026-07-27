@@ -8,7 +8,7 @@
 
 struct touchinfo_t {
   uint8_t id;
-  uint8_t type;
+  uint8_t event;
   uint16_t x;
   uint16_t y;
 };

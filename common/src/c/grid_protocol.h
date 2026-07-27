@@ -817,43 +817,47 @@
 #define GRID_LUA_FNC_T_LED_INDEX_short "lix"
 #define GRID_LUA_FNC_T_LED_INDEX_human "led_index"
 
-#define GRID_LUA_FNC_T_TOUCH_X_index 2
+#define GRID_LUA_FNC_T_TOUCH_EVENT_index 2
+#define GRID_LUA_FNC_T_TOUCH_EVENT_short "tev"
+#define GRID_LUA_FNC_T_TOUCH_EVENT_human "touch_event"
+
+#define GRID_LUA_FNC_T_TOUCH_X_index 3
 #define GRID_LUA_FNC_T_TOUCH_X_short "tsx"
 #define GRID_LUA_FNC_T_TOUCH_X_human "touch_x"
 
-#define GRID_LUA_FNC_T_TOUCH_X_MIN_index 3
+#define GRID_LUA_FNC_T_TOUCH_X_MIN_index 4
 #define GRID_LUA_FNC_T_TOUCH_X_MIN_short "txmi"
 #define GRID_LUA_FNC_T_TOUCH_X_MIN_human "touch_x_min"
 
-#define GRID_LUA_FNC_T_TOUCH_X_MAX_index 4
+#define GRID_LUA_FNC_T_TOUCH_X_MAX_index 5
 #define GRID_LUA_FNC_T_TOUCH_X_MAX_short "txma"
 #define GRID_LUA_FNC_T_TOUCH_X_MAX_human "touch_x_max"
 
-#define GRID_LUA_FNC_T_TOUCH_Y_index 5
+#define GRID_LUA_FNC_T_TOUCH_Y_index 6
 #define GRID_LUA_FNC_T_TOUCH_Y_short "tsy"
 #define GRID_LUA_FNC_T_TOUCH_Y_human "touch_y"
 
-#define GRID_LUA_FNC_T_TOUCH_Y_MIN_index 6
+#define GRID_LUA_FNC_T_TOUCH_Y_MIN_index 7
 #define GRID_LUA_FNC_T_TOUCH_Y_MIN_short "tymi"
 #define GRID_LUA_FNC_T_TOUCH_Y_MIN_human "touch_y_min"
 
-#define GRID_LUA_FNC_T_TOUCH_Y_MAX_index 7
+#define GRID_LUA_FNC_T_TOUCH_Y_MAX_index 8
 #define GRID_LUA_FNC_T_TOUCH_Y_MAX_short "tyma"
 #define GRID_LUA_FNC_T_TOUCH_Y_MAX_human "touch_y_max"
 
-#define GRID_LUA_FNC_T_TOUCH_X_STATE_index 8
+#define GRID_LUA_FNC_T_TOUCH_X_STATE_index 9
 #define GRID_LUA_FNC_T_TOUCH_X_STATE_short "txst"
 #define GRID_LUA_FNC_T_TOUCH_X_STATE_human "touch_x_state"
 
-#define GRID_LUA_FNC_T_TOUCH_Y_STATE_index 9
+#define GRID_LUA_FNC_T_TOUCH_Y_STATE_index 10
 #define GRID_LUA_FNC_T_TOUCH_Y_STATE_short "tyst"
 #define GRID_LUA_FNC_T_TOUCH_Y_STATE_human "touch_y_state"
 
-#define GRID_LUA_FNC_T_LED_WIDTH_index 10
+#define GRID_LUA_FNC_T_LED_WIDTH_index 11
 #define GRID_LUA_FNC_T_LED_WIDTH_short "lwi"
 #define GRID_LUA_FNC_T_LED_WIDTH_human "led_width"
 
-#define GRID_LUA_FNC_T_LIST_length 11
+#define GRID_LUA_FNC_T_LIST_length 12
 
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 
