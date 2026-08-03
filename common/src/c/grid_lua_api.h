@@ -78,6 +78,7 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 /*static*/ int l_grid_event_trigger(lua_State* L);
 
 /*static*/ int l_grid_element_count(lua_State* L);
+/*static*/ int l_grid_element_state(lua_State* L);
 
 /*static*/ int l_grid_potmeter_calibration_get(lua_State* L);
 /*static*/ int l_grid_potmeter_calibration_set(lua_State* L);

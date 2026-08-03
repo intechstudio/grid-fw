@@ -102,6 +102,8 @@ void grid_lua_register_event(lua_State* L, const char* type, uint8_t event);
 struct grid_msg;
 int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, uint8_t instr, uint8_t id);
 
+void* luaL_checkludata(lua_State* L, int arg);
+
 // clang-format off
 
 #define XAFTERX(macro, exp) macro(exp)
@@ -167,6 +169,25 @@ int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, ui
 #define GRID_LUA_EVENTS_CLEARER "_events_clear"
 #define GRID_LUA_EVENTS_ELEIDX "_events_eleidx"
 #define GRID_LUA_EVENTS_EVESTR "_events_evestr"
+
+#define GRID_LUA_FNC_LUDATA_SWSR_READ(name, T, mem1, mem2) \
+  static int name(lua_State* L) { \
+    T* tmp = luaL_checkludata(L, 1); \
+    if (grid_swsr_readable(&tmp->mem1, sizeof(tmp->mem2))) { \
+      grid_swsr_read(&tmp->mem1, &tmp->mem2, sizeof(tmp->mem2)); \
+      lua_pushboolean(L, true); \
+    } else { \
+      lua_pushboolean(L, false); \
+    } \
+    return 1; \
+  }
+
+#define GRID_LUA_FNC_LUDATA_MEMBER_INT_GET(name, T, member) \
+  static int name(lua_State* L) { \
+    T* tmp = luaL_checkludata(L, 1); \
+    lua_pushinteger(L, tmp->member); \
+    return 1; \
+  }
 
 // clang-format on
 

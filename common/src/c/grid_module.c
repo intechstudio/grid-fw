@@ -72,6 +72,13 @@ void grid_lua_ui_init(struct grid_lua_model* lua) {
 
     if (countpertype[ele->type] == 0) {
 
+      switch (ele->type) {
+      case GRID_PARAMETER_ELEMENT_TOUCH: {
+        luaL_requiref(lua->L, "touch", luaopen_touch, 1);
+        lua_pop(lua->L, 1);
+      } break;
+      }
+
       // Initialize element type metatable and expand its __index
       grid_lua_dostring_unsafe(lua, metainit);
       grid_lua_register_index_meta_for_type(lua->L, type, indexmeta);
@@ -273,12 +280,10 @@ void grid_module_zona_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   grid_led_init(led, 81, grid_module_zona_led_is_alert_all);
   grid_led_lookup_alloc_identity(led, 0, 81);
 
-  grid_ui_model_init(ui, 6);
+  grid_ui_model_init(ui, 2);
 
-  for (uint8_t i = 0; i < 5; i++) {
-    grid_ui_element_touch_init(grid_ui_element_model_init(ui, i));
-  }
-  grid_ui_element_system_init(grid_ui_element_model_init(ui, 5));
+  grid_ui_element_touch_init(grid_ui_element_model_init(ui, 0));
+  grid_ui_element_system_init(grid_ui_element_model_init(ui, 1));
 
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }

@@ -24,7 +24,7 @@
 
 void grid_esp32_module_zona_process_touch(struct touchinfo_t* info) {
 
-  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, info->id);
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, 0);
   if (!ele) {
     return;
   }
