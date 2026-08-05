@@ -72,13 +72,6 @@ void grid_lua_ui_init(struct grid_lua_model* lua) {
 
     if (countpertype[ele->type] == 0) {
 
-      switch (ele->type) {
-      case GRID_PARAMETER_ELEMENT_TOUCH: {
-        luaL_requiref(lua->L, "touch", luaopen_touch, 1);
-        lua_pop(lua->L, 1);
-      } break;
-      }
-
       // Initialize element type metatable and expand its __index
       grid_lua_dostring_unsafe(lua, metainit);
       grid_lua_register_index_meta_for_type(lua->L, type, indexmeta);
@@ -280,10 +273,54 @@ void grid_module_zona_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   grid_led_init(led, 81, grid_module_zona_led_is_alert_all);
   grid_led_lookup_alloc_identity(led, 0, 81);
 
-  grid_ui_model_init(ui, 2);
+  grid_ui_model_init(ui, 6); // TODO 2 elements
 
   grid_ui_element_touch_init(grid_ui_element_model_init(ui, 0));
-  grid_ui_element_system_init(grid_ui_element_model_init(ui, 1));
+  grid_ui_element_touch_init(grid_ui_element_model_init(ui, 1));
+  grid_ui_element_touch_init(grid_ui_element_model_init(ui, 2));
+  grid_ui_element_touch_init(grid_ui_element_model_init(ui, 3));
+  grid_ui_element_touch_init(grid_ui_element_model_init(ui, 4));
+  grid_ui_element_system_init(grid_ui_element_model_init(ui, 5));
 
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }
+
+typedef int (*lua_api_t)(lua_State* L);
+
+static const lua_api_t getters[GRID_PARAMETER_ELEMENT_COUNT] = {
+    [GRID_PARAMETER_ELEMENT_TOUCH] = touch_get,
+};
+
+static const lua_api_t setters[GRID_PARAMETER_ELEMENT_COUNT] = {
+    [GRID_PARAMETER_ELEMENT_TOUCH] = touch_set,
+};
+
+static int getset(lua_State* L, const lua_api_t* funs) {
+
+  lua_api_t fun = funs[grid_ui_lua_element_address(L, 1)->type];
+
+  if (!fun) {
+    luaL_error(L, "element type has no getter/setter");
+  }
+
+  return fun(L);
+}
+
+GRID_LUA_FNC_GSV_DEFI(0)
+GRID_LUA_FNC_GSV_DEFI(1)
+GRID_LUA_FNC_GSV_DEFI(2)
+GRID_LUA_FNC_GSV_DEFI(3)
+GRID_LUA_FNC_GSV_DEFI(4)
+GRID_LUA_FNC_GSV_DEFI(5)
+GRID_LUA_FNC_GSV_DEFI(6)
+GRID_LUA_FNC_GSV_DEFI(7)
+GRID_LUA_FNC_GSV_DEFI(8)
+GRID_LUA_FNC_GSV_DEFI(9)
+GRID_LUA_FNC_GSV_DEFI(10)
+GRID_LUA_FNC_GSV_DEFI(11)
+GRID_LUA_FNC_GSV_DEFI(12)
+GRID_LUA_FNC_GSV_DEFI(13)
+GRID_LUA_FNC_GSV_DEFI(14)
+GRID_LUA_FNC_GSV_DEFI(15)
+GRID_LUA_FNC_GSV_DEFI(16)
+GRID_LUA_FNC_GSV_DEFI(17)

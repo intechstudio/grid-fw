@@ -135,6 +135,7 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   ele->parent = parent;
   ele->index = index;
 
+  ele->template_initializer = NULL;
   ele->template_parameter_list_length = 0;
   ele->template_parameter_list = NULL;
 
@@ -562,9 +563,10 @@ void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg)
   uint8_t param1 = 0;
   uint8_t param2 = 0;
 
+  // TODO something like a getter function for the two values?
   if (eve->parent->template_parameter_list != NULL) {
-    param1 = eve->parent->template_parameter_list[eve->parent->template_parameter_element_position_index_1];
-    param2 = eve->parent->template_parameter_list[eve->parent->template_parameter_element_position_index_2];
+    // param1 = eve->parent->template_parameter_list[eve->parent->template_parameter_element_position_index_1];
+    // param2 = eve->parent->template_parameter_list[eve->parent->template_parameter_element_position_index_2];
   }
 
   // map mapmode to element 255
@@ -768,6 +770,29 @@ void grid_ui_process_triggered(struct grid_ui_model* ui) {
   grid_ui_clear_triggered(ui, &msg);
 
   grid_ui_bulk_semaphore_release(ui);
+}
+
+struct grid_ui_element* grid_ui_lua_element_address(lua_State* L, int arg) {
+
+  if (!lua_istable(L, arg)) {
+    luaL_error(L, "expected table");
+  }
+
+  lua_pushstring(L, "index");
+
+  lua_rawget(L, arg);
+
+  int element = luaL_checkinteger(L, -1);
+
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, element);
+
+  if (!ele) {
+    luaL_error(L, "element index out of range");
+  }
+
+  lua_pop(L, 1);
+
+  return ele;
 }
 
 uint8_t grid_ui_bulk_get_lastheader(struct grid_ui_model* ui) { return ui->bulk_lastheader_id; }

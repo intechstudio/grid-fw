@@ -108,6 +108,19 @@ void* luaL_checkludata(lua_State* L, int arg);
 
 #define XAFTERX(macro, exp) macro(exp)
 
+#define GRID_LUA_FNC_GSV_NAME(idx) grid_lua_gsv_key_to_idx ## idx
+
+#define GRID_LUA_FNC_GSV_DEFI(idx) \
+  int XAFTERX(GRID_LUA_FNC_GSV_NAME, idx)(lua_State* L) { \
+    lua_pushinteger(L, idx); \
+    lua_insert(L, 2); \
+    if (lua_gettop(L) < 3) { \
+      return getset(L, getters); \
+    } else { \
+      return getset(L, setters); \
+    } \
+  }
+
 #define GRID_LUA_FNC_GTV_NAME(idx) grid_lua_gtv_key_to_idx ## idx
 
 #define GRID_LUA_FNC_GTV_DEFI(idx) \
@@ -170,9 +183,10 @@ void* luaL_checkludata(lua_State* L, int arg);
 #define GRID_LUA_EVENTS_ELEIDX "_events_eleidx"
 #define GRID_LUA_EVENTS_EVESTR "_events_evestr"
 
-#define GRID_LUA_FNC_LUDATA_SWSR_READ(name, T, mem1, mem2) \
+#define GRID_LUA_FNC_ELEMENT_POP(name, T, mem1, mem2) \
   static int name(lua_State* L) { \
-    T* tmp = luaL_checkludata(L, 1); \
+    T* tmp = grid_ui_lua_element_address(L, 1)->primary_state; \
+    assert(tmp); \
     if (grid_swsr_readable(&tmp->mem1, sizeof(tmp->mem2))) { \
       grid_swsr_read(&tmp->mem1, &tmp->mem2, sizeof(tmp->mem2)); \
       lua_pushboolean(L, true); \
@@ -182,12 +196,8 @@ void* luaL_checkludata(lua_State* L, int arg);
     return 1; \
   }
 
-#define GRID_LUA_FNC_LUDATA_MEMBER_INT_GET(name, T, member) \
-  static int name(lua_State* L) { \
-    T* tmp = luaL_checkludata(L, 1); \
-    lua_pushinteger(L, tmp->member); \
-    return 1; \
-  }
+#define GRID_LUA_GETV_CASE(n, x) case n: lua_pushinteger(L, (x)); break;
+#define GRID_LUA_SETV_CASE(n, x) case n: (x) = luaL_checkinteger(L, 3); break;
 
 // clang-format on
 

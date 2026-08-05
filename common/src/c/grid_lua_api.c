@@ -1862,26 +1862,6 @@ int l_grid_cat(lua_State* L) {
   return 1;
 }
 
-/*static*/ int l_grid_element_state(lua_State* L) {
-
-  luaL_argcheck(L, lua_istable(L, 1), 1, "table expected");
-
-  lua_pushstring(L, "index");
-  lua_rawget(L, 1);
-
-  int element = luaL_checkinteger(L, 2);
-
-  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, element);
-
-  if (!ele) {
-    luaL_error(L, "element index out of range");
-  }
-
-  lua_pushlightuserdata(L, ele->primary_state);
-
-  return 1;
-}
-
 /*static*/ int l_grid_calibration_reset(lua_State* L) {
 
   grid_cal_reset(&grid_cal_state);
@@ -2287,7 +2267,6 @@ GRID_LUA_FNC_META_DEFI(ggen, l_grid_elementname_get)
     {GRID_LUA_FNC_G_IMMEDIATE_SEND_short, GRID_LUA_FNC_G_IMMEDIATE_SEND_fnptr},
 
     {GRID_LUA_FNC_G_ELEMENT_COUNT_short, GRID_LUA_FNC_G_ELEMENT_COUNT_fnptr},
-    {GRID_LUA_FNC_G_ELEMENT_STATE_short, GRID_LUA_FNC_G_ELEMENT_STATE_fnptr},
 
     {GRID_LUA_FNC_G_CALIBRATION_RESET_short, GRID_LUA_FNC_G_CALIBRATION_RESET_fnptr},
     {GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_short, GRID_LUA_FNC_G_POTMETER_CALIBRATION_GET_fnptr},

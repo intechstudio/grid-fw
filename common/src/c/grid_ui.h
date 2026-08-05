@@ -174,6 +174,8 @@ void grid_ui_element_timer_source(struct grid_ui_element* ele, uint8_t source);
 void grid_ui_element_set_template_parameter(struct grid_ui_element* ele, uint8_t template_index, int32_t value);
 int32_t grid_ui_element_get_template_parameter(struct grid_ui_element* ele, uint8_t template_index);
 
+struct grid_ui_element* grid_ui_lua_element_address(lua_State* L, int arg);
+
 enum grid_ui_bulk_status_t grid_ui_get_bulk_status(struct grid_ui_model* ui);
 uint8_t grid_ui_bulk_get_response_code(struct grid_ui_model* ui, uint8_t id);
 int grid_ui_bulk_anything_is_in_progress(struct grid_ui_model* ui);
