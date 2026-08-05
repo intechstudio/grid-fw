@@ -82,10 +82,9 @@ void grid_ui_element_touch_init(struct grid_ui_element* ele) {
   grid_ui_touch_state_alloc(ele->primary_state);
   ((struct grid_ui_touch_state*)ele->primary_state)->parent = ele;
 
-  grid_ui_element_malloc_events(ele, 3);
+  grid_ui_element_malloc_events(ele, 2);
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, GRID_ACTIONSTRING_TOUCH_INIT);
-  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_TOUCH, GRID_LUA_FNC_A_TOUCH_short, GRID_ACTIONSTRING_TOUCH_TOUCH);
-  grid_ui_event_init(ele, 2, GRID_PARAMETER_EVENT_TIMER, GRID_LUA_FNC_A_TIMER_short, GRID_ACTIONSTRING_SYSTEM_TIMER);
+  grid_ui_event_init(ele, 1, GRID_PARAMETER_EVENT_TIMER, GRID_LUA_FNC_A_TIMER_short, GRID_ACTIONSTRING_SYSTEM_TIMER);
 }
 
 static double lerp(double a, double b, double x) { return a * (1.0 - x) + (b * x); }

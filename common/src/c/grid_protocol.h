@@ -39,8 +39,7 @@
 #define GRID_PARAMETER_EVENT_TIMER 6
 #define GRID_PARAMETER_EVENT_ENDLESS 7
 #define GRID_PARAMETER_EVENT_DRAW 8
-#define GRID_PARAMETER_EVENT_TOUCH 9
-#define GRID_PARAMETER_EVENT_COUNT 10
+#define GRID_PARAMETER_EVENT_COUNT 9
 
 // Module HWCFG definitions
 
@@ -883,9 +882,6 @@
 
 #define GRID_LUA_FNC_A_DRAW_short "ld"
 #define GRID_LUA_FNC_A_DRAW_human "draw_handler"
-
-#define GRID_LUA_FNC_A_TOUCH_short "tc"
-#define GRID_LUA_FNC_A_TOUCH_human "touch_handler"
 
 #define GRID_LUA_KW_ELEMENT_short "ele"
 #define GRID_LUA_KW_ELEMENT_human "element"

@@ -60,19 +60,15 @@ extern const luaL_Reg GRID_LUA_T_INDEX_META[];
   \
   "post_init_cb = function (self) " \
   "self:" GRID_LUA_FNC_A_INIT_short "() " \
-  "self:" GRID_LUA_FNC_A_TOUCH_short "() " \
   "end," \
   \
   GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) "," \
   \
   GRID_LUA_FNC_ASSIGN_META_EVENT(INIT, TOUCH_INIT) \
-  GRID_LUA_FNC_ASSIGN_META_EVENT(TOUCH, TOUCH_TOUCH) \
   \
   "}}"
 
 #define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]] self:txmi(0)self:txma(127)self:tymi(0)self:tyma(127)self.touch_cb=function(self,id,event,x,y)print(id,event,x,y)end"
-
-#define GRID_ACTIONSTRING_TOUCH_TOUCH "--[[@cb]] while self:touch_pop()do print(self:tid(),self:tev(),self:txv(),self:tyv())end"
 
 // clang-format on
 
