@@ -9,7 +9,7 @@
 #include "grid_platform.h"
 #include "grid_ui_system.h"
 
-GRID_LUA_FNC_ELEMENT_POP(pop, struct grid_ui_touch_state, swsr, value)
+GRID_LUA_FNC_ELEMENT_POP(touch_pop, struct grid_ui_touch_state, swsr, value)
 
 int touch_get(lua_State* L) {
 
@@ -62,7 +62,7 @@ const luaL_Reg GRID_LUA_T_INDEX_META[] = {{GRID_LUA_FNC_T_ELEMENT_INDEX_short, X
                                           {GRID_LUA_FNC_G_EVENT_TRIGGER_short, XAFTERX(GRID_LUA_FNC_META_NAME, get)},
                                           {GRID_LUA_FNC_G_ELEMENTNAME_SET_short, XAFTERX(GRID_LUA_FNC_META_NAME, gsen)},
                                           {GRID_LUA_FNC_G_ELEMENTNAME_GET_short, XAFTERX(GRID_LUA_FNC_META_NAME, ggen)},
-                                          {"pop", pop},
+                                          {"touch_pop", touch_pop},
                                           {"getv", touch_get},
                                           {"setv", touch_set},
                                           {NULL, NULL}};
@@ -70,6 +70,8 @@ const luaL_Reg GRID_LUA_T_INDEX_META[] = {{GRID_LUA_FNC_T_ELEMENT_INDEX_short, X
 void grid_ui_touch_state_alloc(struct grid_ui_touch_state* state) { assert(grid_swsr_malloc(&state->swsr, 10 * sizeof(struct touchvalue_t)) == 0); }
 
 void grid_ui_touch_state_init(struct grid_ui_touch_state* state, uint8_t adc_bit_depth) { state->adc_bit_depth = adc_bit_depth; }
+
+bool grid_ui_touch_state_any(struct grid_ui_touch_state* state) { return grid_swsr_readable(&state->swsr, sizeof(state->value)); }
 
 void grid_ui_element_touch_init(struct grid_ui_element* ele) {
 
@@ -129,8 +131,5 @@ void grid_ui_touch_store_input(struct grid_ui_touch_state* state, struct touchin
     if (grid_swsr_writable(&state->swsr, sizeof(struct touchvalue_t))) {
       grid_swsr_write(&state->swsr, &value, sizeof(struct touchvalue_t));
     }
-
-    struct grid_ui_event* eve = grid_ui_event_find(ele, GRID_PARAMETER_EVENT_TOUCH);
-    grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
   }
 }

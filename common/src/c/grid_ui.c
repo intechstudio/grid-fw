@@ -509,6 +509,33 @@ uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui) {
   return count;
 }
 
+extern bool grid_ui_touch_state_any(void* state);
+
+bool grid_ui_events_any(struct grid_ui_model* ui) {
+
+  if (grid_ui_event_count_istriggered(ui) > 0) {
+    return true;
+  }
+
+  for (uint8_t i = 0; i < ui->element_list_length; ++i) {
+
+    struct grid_ui_element* ele = &ui->element_list[i];
+
+    switch (ele->type) {
+    case GRID_PARAMETER_ELEMENT_TOUCH: {
+
+      assert(ele->primary_state);
+      if (grid_ui_touch_state_any(ele->primary_state)) {
+        return true;
+      }
+
+    } break;
+    }
+  }
+
+  return false;
+}
+
 struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t element_number) {
 
   if (element_number < ui->element_list_length) {

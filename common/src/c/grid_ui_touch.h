@@ -35,6 +35,7 @@ struct grid_ui_touch_state {
 };
 
 void grid_ui_touch_state_init(struct grid_ui_touch_state* state, uint8_t adc_bit_depth);
+bool grid_ui_touch_state_any(struct grid_ui_touch_state* state);
 
 int touch_get(lua_State* L);
 int touch_set(lua_State* L);
@@ -69,9 +70,9 @@ extern const luaL_Reg GRID_LUA_T_INDEX_META[];
   \
   "}}"
 
-#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]]--[[Touch Init]] self:txmi(0)self:txma(127)self:tymi(0)self:tyma(127)"
+#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]] self:txmi(0)self:txma(127)self:tymi(0)self:tyma(127)self.touch_cb=function(self,id,event,x,y)print(id,event,x,y)end"
 
-#define GRID_ACTIONSTRING_TOUCH_TOUCH "--[[@cb]] while self:pop()do print(self:tid(),self:tev(),self:txv(),self:tyv())end"
+#define GRID_ACTIONSTRING_TOUCH_TOUCH "--[[@cb]] while self:touch_pop()do print(self:tid(),self:tev(),self:txv(),self:tyv())end"
 
 // clang-format on
 

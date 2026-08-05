@@ -15,5 +15,12 @@ _events_process = function(eleidx, evestr)
       eve(element)
     end
   end
+  for i = 0, #ele do
+    if ele[i].type == "touch" then
+      if ele[i]:touch_pop() and ele[i].touch_cb then
+        ele[i]:touch_cb(ele[i]:tid(), ele[i]:tev(), ele[i]:txv(), ele[i]:tyv())
+      end
+    end
+  end
   _events_clear()
 end
