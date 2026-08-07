@@ -856,7 +856,7 @@ static void grid_esp32_touch_proc_t100(struct grid_esp32_touch_model* touch, uin
         .x = x,
         .y = y,
     };
-    ets_printf("i %d e %d x %4d y %4d\n", info.id, info.event, info.x, info.y);
+    // ets_printf("i %d e %d x %4d y %4d\n", info.id, info.event, info.x, info.y);
     touch->process_touch(&info);
 
   } break;
