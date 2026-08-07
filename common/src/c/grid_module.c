@@ -297,7 +297,9 @@ static const lua_api_t setters[GRID_PARAMETER_ELEMENT_COUNT] = {
 
 static int getset(lua_State* L, const lua_api_t* funs) {
 
-  lua_api_t fun = funs[grid_ui_lua_element_address(L, 1)->type];
+  struct grid_ui_element* ele = grid_ui_lua_element_address(L, 1);
+  assert(ele && ele->type < GRID_PARAMETER_ELEMENT_COUNT);
+  lua_api_t fun = funs[ele->type];
 
   if (!fun) {
     luaL_error(L, "element type has no getter/setter");
