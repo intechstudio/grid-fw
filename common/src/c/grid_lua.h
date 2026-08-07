@@ -114,11 +114,7 @@ void* luaL_checkludata(lua_State* L, int arg);
   int XAFTERX(GRID_LUA_FNC_GSV_NAME, idx)(lua_State* L) { \
     lua_pushinteger(L, idx); \
     lua_insert(L, 2); \
-    if (lua_gettop(L) < 3) { \
-      return getset(L, getters); \
-    } else { \
-      return getset(L, setters); \
-    } \
+    return getset(L, lua_gettop(L) < 3 ? getters : setters); \
   }
 
 #define GRID_LUA_FNC_GTV_NAME(idx) grid_lua_gtv_key_to_idx ## idx
