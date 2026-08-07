@@ -110,11 +110,26 @@ void grid_ui_bulk_semaphore_release(struct grid_ui_model* ui) { grid_ui_semaphor
 
 bool grid_ui_bulk_semaphore_try(struct grid_ui_model* ui) { return grid_ui_semaphore_try(&ui->bulk_semaphore); }
 
+typedef void (*grid_ui_element_state_reset_t)(void* state);
+
+extern void grid_ui_touch_state_reset(void* state);
+
 void grid_ui_element_reset(struct grid_ui_element* ele) {
 
   ele->timer_event_helper = 0;
   ele->timer_source_is_midi = 0;
   ele->name[0] = '\0';
+
+  static const grid_ui_element_state_reset_t resets[GRID_PARAMETER_ELEMENT_COUNT] = {
+      [GRID_PARAMETER_ELEMENT_TOUCH] = grid_ui_touch_state_reset,
+  };
+
+  if (ele->type < GRID_PARAMETER_ELEMENT_COUNT) {
+
+    if (resets[ele->type] && ele->primary_state) {
+      resets[ele->type](ele->primary_state);
+    }
+  }
 }
 
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index) {
@@ -509,6 +524,8 @@ uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui) {
   return count;
 }
 
+typedef bool (*grid_ui_element_state_any_t)(void* state);
+
 extern bool grid_ui_touch_state_any(void* state);
 
 bool grid_ui_events_any(struct grid_ui_model* ui) {
@@ -517,19 +534,21 @@ bool grid_ui_events_any(struct grid_ui_model* ui) {
     return true;
   }
 
+  static const grid_ui_element_state_any_t anys[GRID_PARAMETER_ELEMENT_COUNT] = {
+      [GRID_PARAMETER_ELEMENT_TOUCH] = grid_ui_touch_state_any,
+  };
+
   for (uint8_t i = 0; i < ui->element_list_length; ++i) {
 
     struct grid_ui_element* ele = &ui->element_list[i];
 
-    switch (ele->type) {
-    case GRID_PARAMETER_ELEMENT_TOUCH: {
+    assert(ele->type < GRID_PARAMETER_ELEMENT_COUNT);
 
-      assert(ele->primary_state);
-      if (grid_ui_touch_state_any(ele->primary_state)) {
+    if (anys[ele->type] && ele->primary_state) {
+
+      if (anys[ele->type](ele->primary_state)) {
         return true;
       }
-
-    } break;
     }
   }
 

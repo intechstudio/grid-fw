@@ -69,6 +69,14 @@ const luaL_Reg GRID_LUA_T_INDEX_META[] = {{GRID_LUA_FNC_T_ELEMENT_INDEX_short, X
 
 void grid_ui_touch_state_alloc(struct grid_ui_touch_state* state) { assert(grid_swsr_malloc(&state->swsr, 10 * sizeof(struct touchvalue_t)) == 0); }
 
+void grid_ui_touch_state_reset(struct grid_ui_touch_state* state) {
+
+  state->x_min = 0;
+  state->y_min = 0;
+  state->x_max = 127;
+  state->y_max = 127;
+}
+
 void grid_ui_touch_state_init(struct grid_ui_touch_state* state, uint8_t adc_bit_depth) { state->adc_bit_depth = adc_bit_depth; }
 
 bool grid_ui_touch_state_any(struct grid_ui_touch_state* state) { return grid_swsr_readable(&state->swsr, sizeof(state->value)); }
