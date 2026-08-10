@@ -102,8 +102,6 @@ void grid_lua_register_event(lua_State* L, const char* type, uint8_t event);
 struct grid_msg;
 int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, uint8_t instr, uint8_t id);
 
-void* luaL_checkludata(lua_State* L, int arg);
-
 // clang-format off
 
 #define XAFTERX(macro, exp) macro(exp)

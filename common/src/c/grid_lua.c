@@ -860,9 +860,3 @@ int grid_lua_serialize_evaluation_results(lua_State* L, struct grid_msg* msg, ui
 
   return 0;
 }
-
-void* luaL_checkludata(lua_State* L, int arg) {
-
-  luaL_argcheck(L, lua_type(L, arg) == LUA_TLIGHTUSERDATA, arg, "light userdata expected");
-  return lua_touserdata(L, arg);
-}
