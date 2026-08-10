@@ -35,7 +35,6 @@ struct grid_ui_touch_state {
 };
 
 void grid_ui_touch_state_init(struct grid_ui_touch_state* state, uint8_t adc_bit_depth);
-bool grid_ui_touch_state_any(struct grid_ui_touch_state* state);
 
 int touch_get(lua_State* L);
 int touch_set(lua_State* L);
