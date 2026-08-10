@@ -459,8 +459,7 @@ void grid_led_render_framebuffer_one(struct grid_led_model* led, uint32_t num) {
   mix_g = mix_g / 2 / 256;
   mix_b = mix_b / 2 / 256;
 
-  // grid_led_framebuffer_set_color(led, num, mix_r, mix_g, mix_b);
-  grid_led_framebuffer_set_color(led, num, 0, 0, 0);
+  grid_led_framebuffer_set_color(led, num, mix_r, mix_g, mix_b);
 }
 
 void grid_led_render_framebuffer(struct grid_led_model* led) {
