@@ -33,6 +33,7 @@
 
 #include "driver/gpio.h"
 #include "esp_chip_info.h"
+#include "esp_efuse.h"
 #include "esp_flash.h"
 #include "esp_task_wdt.h"
 
@@ -352,6 +353,34 @@ void grid_esp32_print_chip_info() {
   ESP_LOGI(TAG, "free heap: %u.", (unsigned int)esp_get_free_heap_size());
 }
 
+static void grid_esp32_setup_rom_log_scheme(void) {
+  // Configure ROM bootloader to only log when GPIO is high.
+  // This speeds up boot by suppressing ROM logs on normal boots.
+  // We handle this in firmware instead of via CONFIG_BOOT_ROM_LOG_ON_GPIO_HIGH
+  // to avoid ESP-IDF bug: https://github.com/espressif/esp-idf/issues/12894
+  // The fix was supposedly merged but never actually made it to the main branch.
+  // IMPORTANT: sdkconfig must have CONFIG_BOOT_ROM_LOG_ALWAYS_ON=y (the default).
+  // Do NOT set CONFIG_BOOT_ROM_LOG_ON_GPIO_HIGH in sdkconfig - it will crash.
+  esp_err_t err = esp_efuse_set_rom_log_scheme(ESP_EFUSE_ROM_LOG_ON_GPIO_HIGH);
+
+  switch (err) {
+  case ESP_OK:
+    ESP_LOGI(TAG, "ROM log scheme set to GPIO_HIGH");
+    break;
+  case ESP_ERR_INVALID_STATE:
+    // eFuse already burned - this is expected after first boot
+    ESP_LOGD(TAG, "ROM log eFuse already configured");
+    break;
+  case ESP_ERR_NOT_SUPPORTED:
+    // Chip doesn't support this feature (e.g., ESP32)
+    ESP_LOGD(TAG, "ROM log scheme not supported on this chip");
+    break;
+  default:
+    ESP_LOGW(TAG, "Unexpected error setting ROM log scheme: %s", esp_err_to_name(err));
+    break;
+  }
+}
+
 void app_main(void) {
 
   // Allocate profiler & assign its interface
@@ -374,6 +403,8 @@ void app_main(void) {
   vTaskDelay(1);
 
   esp_log_level_set("*", ESP_LOG_INFO);
+
+  grid_esp32_setup_rom_log_scheme();
 
   TaskHandle_t core2_task_hdl;
   xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024 * 3, NULL, 4, &core2_task_hdl, 1);
