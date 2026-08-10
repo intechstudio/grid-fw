@@ -164,6 +164,8 @@ void grid_ui_event_generate_script(struct grid_ui_event* eve, char* targetstring
 void grid_ui_event_get_script(struct grid_ui_event* eve, char* targetstring);
 int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, uint8_t event_type, char* targetstring);
 
+typedef void (*grid_ui_element_state_reset_t)(void* state);
+typedef bool (*grid_ui_element_state_any_t)(void* state);
 bool grid_ui_events_any(struct grid_ui_model* ui);
 
 struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t element_number);
