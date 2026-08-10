@@ -94,6 +94,8 @@ void grid_ui_element_endless_init(struct grid_ui_element* ele) {
   ele->template_parameter_index_max[1] = GRID_LUA_FNC_EP_ENDLESS_MAX_index;
 
   ele->event_clear_cb = &grid_ui_element_endless_event_clear_cb;
+
+  grid_ui_element_template_parameter_init(ele);
 }
 
 void grid_ui_element_endless_template_parameter_init(struct grid_ui_element* ele) {

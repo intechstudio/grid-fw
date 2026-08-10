@@ -42,6 +42,8 @@ void grid_ui_element_touch_init(struct grid_ui_element* ele) {
   ele->template_parameter_list_length = GRID_LUA_FNC_T_LIST_length;
 
   ele->event_clear_cb = NULL;
+
+  grid_ui_element_template_parameter_init(ele);
 }
 
 void grid_ui_element_touch_template_parameter_init(struct grid_ui_element* ele) {

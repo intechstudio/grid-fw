@@ -54,6 +54,8 @@ void grid_ui_element_lcd_init(struct grid_ui_element* ele, template_init_t initi
   ele->template_parameter_list_length = GRID_LUA_FNC_L_LIST_length;
 
   ele->event_clear_cb = NULL;
+
+  grid_ui_element_template_parameter_init(ele);
 }
 
 void grid_ui_element_lcd_template_parameter_init(struct grid_ui_element* ele) {

@@ -134,13 +134,12 @@ void grid_ui_midi_sync_tick_time(struct grid_ui_model* ui);
 
 void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmode_value);
 
-void grid_ui_element_template_parameter_reset(struct grid_ui_element* ele);
+void grid_ui_element_template_parameter_init(struct grid_ui_element* ele);
 
 uint8_t grid_ui_page_get_activepage(struct grid_ui_model* ui);
 uint8_t grid_ui_page_get_next(struct grid_ui_model* ui);
 uint8_t grid_ui_page_get_prev(struct grid_ui_model* ui);
 
-void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui);
 uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui);
 
 struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t event_type);

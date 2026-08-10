@@ -948,8 +948,6 @@ void grid_protocol_nvm_store_success_callback(uint8_t lastheader_id) {
 
   uint8_t activepage = grid_ui_page_get_activepage(&grid_ui_state);
 
-  grid_ui_page_clear_template_parameters(&grid_ui_state);
-
   grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, activepage, 0, NULL);
 }
 
@@ -1019,8 +1017,6 @@ void grid_protocol_nvm_clear_success_callback(uint8_t lastheader_id) {
   grid_alert_all_set_timeout_automatic(&grid_led_state);
 
   uint8_t activepage = grid_ui_page_get_activepage(&grid_ui_state);
-
-  grid_ui_page_clear_template_parameters(&grid_ui_state);
 
   grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, activepage, 0, NULL);
 }

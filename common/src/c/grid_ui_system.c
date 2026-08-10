@@ -29,6 +29,8 @@ void grid_ui_element_system_init(struct grid_ui_element* ele) {
   ele->template_parameter_list_length = GRID_LUA_FNC_S_LIST_length;
 
   ele->event_clear_cb = NULL;
+
+  grid_ui_element_template_parameter_init(ele);
 }
 
 void grid_ui_element_system_template_parameter_init(struct grid_ui_element* ele) {

@@ -113,6 +113,17 @@ void grid_ui_element_reset(struct grid_ui_element* ele) {
   ele->timer_event_helper = 0;
   ele->timer_source_is_midi = 0;
   ele->name[0] = '\0';
+
+  // Reset the template parameters to the element's default values.
+  if (ele->template_parameter_list == NULL) {
+    return;
+  }
+
+  if (ele->template_initializer == NULL) {
+    return;
+  }
+
+  ele->template_initializer(ele);
 }
 
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index) {
@@ -252,28 +263,25 @@ void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmod
   }
 }
 
-void grid_ui_element_template_parameter_reset(struct grid_ui_element* ele) {
+void grid_ui_element_template_parameter_init(struct grid_ui_element* ele) {
 
-  // Allocate the element's single template parameter buffer lazily on first use.
+  if (ele->template_parameter_list_length == 0) {
+    return;
+  }
+
+  ele->template_parameter_list = grid_platform_allocate_volatile(ele->template_parameter_list_length * sizeof(int32_t));
+
   if (ele->template_parameter_list == NULL) {
-
-    uint8_t alloc_len = ele->template_parameter_list_length;
-
-    // Always allocate at least one element
-    alloc_len = alloc_len ? alloc_len : 1;
-
-    ele->template_parameter_list = grid_platform_allocate_volatile(alloc_len * sizeof(int32_t));
-
-    if (ele->template_parameter_list == NULL) {
-      grid_platform_printf("grid_ui_element_template_parameter_reset malloc failed\r\n");
-      return;
-    }
+    grid_platform_printf("grid_ui_element_template_parameter_init malloc failed\r\n");
+    return;
   }
 
-  // Reinitialize the buffer with the element's default values.
-  if (ele->template_initializer) {
-    ele->template_initializer(ele);
+  // Seed the freshly allocated buffer with defaults.
+  if (ele->template_initializer == NULL) {
+    return;
   }
+
+  ele->template_initializer(ele);
 }
 
 uint8_t grid_ui_page_get_activepage(struct grid_ui_model* ui) { return ui->page_activepage; }
@@ -281,14 +289,6 @@ uint8_t grid_ui_page_get_activepage(struct grid_ui_model* ui) { return ui->page_
 uint8_t grid_ui_page_get_next(struct grid_ui_model* ui) { return (ui->page_activepage + 1) % ui->page_count; }
 
 uint8_t grid_ui_page_get_prev(struct grid_ui_model* ui) { return (ui->page_activepage + ui->page_count - 1) % ui->page_count; }
-
-void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui) {
-
-  for (uint8_t i = 0; i < ui->element_list_length; i++) {
-
-    grid_ui_element_template_parameter_reset(&ui->element_list[i]);
-  }
-}
 
 uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui) { return ui->page_change_enabled; }
 
@@ -893,19 +893,13 @@ PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui)) {
     struct grid_ui_element* ele = grid_ui_element_find(ui, i);
     assert(ele);
 
-    // Stop the element's timer
-    ele->timer_event_helper = 0;
-
-    // Reset element
+    // Reset element (timer, name, template parameters)
     grid_ui_element_reset(ele);
 
     // Reset all events of the element
     for (uint8_t j = 0; j < ele->event_list_length; ++j) {
       grid_ui_event_reset(&ele->event_list[j]);
     }
-
-    // Reinitialize the template parameters with the element's default values
-    grid_ui_element_template_parameter_reset(ele);
   }
 
   PT_YIELD(pt);
