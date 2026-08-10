@@ -794,8 +794,8 @@ bool grid_esp32_touch_init(struct grid_esp32_touch_model* touch, i2c_port_t i2c_
 void grid_esp32_touch_update(struct grid_esp32_touch_model* touch) {
 
   struct firmware fw = (struct firmware){
-      .size = mxt144u_cfg_raw_len,
-      .data = mxt144u_cfg_raw,
+      .size = __mxt144u_cfg_raw_len,
+      .data = __mxt144u_cfg_raw,
   };
 
   mxt_update_cfg(&touch->data, &fw);
