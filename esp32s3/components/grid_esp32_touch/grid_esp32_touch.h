@@ -3,7 +3,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#pragma once
+#ifndef GRID_ESP32_TOUCH_H
+#define GRID_ESP32_TOUCH_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -130,3 +131,5 @@ void grid_esp32_utask_touch_t37(struct grid_utask_timer* timer);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* GRID_ESP32_TOUCH_H */
