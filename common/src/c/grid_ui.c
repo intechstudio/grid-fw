@@ -64,8 +64,6 @@ void grid_ele_eve_to_value_idx_init(uint8_t map[GRID_PARAMETER_ELEMENT_COUNT][GR
   map[GRID_PARAMETER_ELEMENT_ENCODER][GRID_PARAMETER_EVENT_ENCODER] = GRID_LUA_FNC_E_ENCODER_VALUE_index;
   map[GRID_PARAMETER_ELEMENT_ENDLESS][GRID_PARAMETER_EVENT_BUTTON] = GRID_LUA_FNC_EP_BUTTON_VALUE_index;
   map[GRID_PARAMETER_ELEMENT_ENDLESS][GRID_PARAMETER_EVENT_ENDLESS] = GRID_LUA_FNC_EP_ENDLESS_VALUE_index;
-  // map[GRID_PARAMETER_ELEMENT_TOUCH][GRID_PARAMETER_EVENT_TOUCH] = GRID_LUA_FNC_T_TOUCH_X_index;
-  // TODO
 }
 
 struct grid_ui_model grid_ui_state = {0};
@@ -609,10 +607,13 @@ void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg)
   uint8_t param1 = 0;
   uint8_t param2 = 0;
 
-  // TODO something like a getter function for the two values?
+  if (eve->parent->type == GRID_PARAMETER_ELEMENT_TOUCH) {
+    return;
+  }
+
   if (eve->parent->template_parameter_list != NULL) {
-    // param1 = eve->parent->template_parameter_list[eve->parent->template_parameter_element_position_index_1];
-    // param2 = eve->parent->template_parameter_list[eve->parent->template_parameter_element_position_index_2];
+    param1 = eve->parent->template_parameter_list[eve->parent->template_parameter_element_position_index_1];
+    param2 = eve->parent->template_parameter_list[eve->parent->template_parameter_element_position_index_2];
   }
 
   // map mapmode to element 255
