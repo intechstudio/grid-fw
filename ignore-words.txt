@@ -15,4 +15,3 @@ buses
 linear
 nd
 extint
-ges
