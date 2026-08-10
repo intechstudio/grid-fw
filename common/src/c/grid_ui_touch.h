@@ -11,10 +11,11 @@ struct grid_ui_touch_state {
   uint16_t x;
   uint16_t y;
   uint8_t area; // 0 = not pressed
+  int32_t template_variables[GRID_LUA_FNC_T_LIST_length];
 };
 
 void grid_ui_element_touch_init(struct grid_ui_element* ele);
-void grid_ui_element_touch_template_parameter_init(struct grid_ui_template_buffer* buf);
+void grid_ui_element_touch_template_parameter_init(struct grid_ui_element* ele);
 
 static inline struct grid_ui_touch_state* grid_ui_touch_get_state(struct grid_ui_element* ele) { return (struct grid_ui_touch_state*)ele->primary_state; }
 

@@ -6,9 +6,14 @@
 #include "grid_protocol.h"
 #include "grid_ui.h"
 
+struct grid_ui_system_state {
+  struct grid_ui_element* parent;
+  int32_t template_variables[GRID_LUA_FNC_S_LIST_length];
+};
+
 void grid_ui_element_system_init(struct grid_ui_element* ele);
 
-void grid_ui_element_system_template_parameter_init(struct grid_ui_template_buffer* buf);
+void grid_ui_element_system_template_parameter_init(struct grid_ui_element* ele);
 
 // clang-format off
 

@@ -20,12 +20,13 @@ struct grid_ui_endless_state {
   uint16_t prev_norm;
   uint8_t adc_bit_depth;
   struct grid_ui_button_state button;
+  int32_t template_variables[GRID_LUA_FNC_EP_LIST_length];
 };
 
 void grid_ui_endless_state_init(struct grid_ui_endless_state* state, uint8_t adc_bit_depth, uint8_t button_adc_bit_depth, double button_threshold, double button_hysteresis);
 
 void grid_ui_element_endless_init(struct grid_ui_element* ele);
-void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buffer* buf);
+void grid_ui_element_endless_template_parameter_init(struct grid_ui_element* ele);
 
 static inline struct grid_ui_endless_state* grid_ui_endless_get_state(struct grid_ui_element* ele) { return (struct grid_ui_endless_state*)ele->primary_state; }
 

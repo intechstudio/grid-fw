@@ -113,6 +113,17 @@ void grid_ui_element_reset(struct grid_ui_element* ele) {
   ele->timer_event_helper = 0;
   ele->timer_source_is_midi = 0;
   ele->name[0] = '\0';
+
+  // Reset the template parameters to the element's default values.
+  if (ele->template_parameter_list == NULL) {
+    return;
+  }
+
+  if (ele->template_initializer == NULL) {
+    return;
+  }
+
+  ele->template_initializer(ele);
 }
 
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index) {
@@ -128,7 +139,6 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   struct grid_ui_element* ele = &parent->element_list[index];
 
   ele->event_clear_cb = NULL;
-  ele->page_change_cb = NULL;
 
   ele->parent = parent;
   ele->index = index;
@@ -136,7 +146,6 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   ele->template_parameter_list_length = 0;
   ele->template_parameter_list = NULL;
 
-  ele->template_buffer_list_head = NULL;
   ele->template_parameter_element_position_index_1 = 0;
   ele->template_parameter_element_position_index_2 = 0;
   for (int i = 0; i < 2; ++i) {
@@ -254,105 +263,11 @@ void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmod
   }
 }
 
-struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_element* ele) {
-
-  struct grid_ui_template_buffer* this = grid_platform_allocate_volatile(sizeof(struct grid_ui_template_buffer));
-
-  if (!this) {
-    grid_platform_printf("grid_ui_template_buffer_create malloc failed 1\r\n");
-    return NULL;
-  }
-
-  this->parent = ele;
-  this->next = NULL;
-
-  uint8_t alloc_len = ele->template_parameter_list_length;
-
-  // Always allocate at least one element
-  alloc_len = alloc_len ? alloc_len : 1;
-
-  this->template_parameter_list = grid_platform_allocate_volatile(alloc_len * sizeof(int32_t));
-
-  if (!this->template_parameter_list) {
-    grid_platform_printf("grid_ui_template_buffer_create malloc failed 2\r\n");
-    return NULL;
-  }
-
-  if (ele->template_initializer) {
-    ele->template_initializer(this);
-  }
-
-  struct grid_ui_template_buffer* prev = ele->template_buffer_list_head;
-
-  if (prev) {
-
-    while (prev->next) {
-
-      prev = prev->next;
-    }
-
-    prev->next = this;
-
-  } else {
-
-    this->parent->template_buffer_list_head = this;
-  }
-
-  return this;
-}
-
-uint8_t grid_ui_template_buffer_list_length(struct grid_ui_element* ele) {
-
-  uint8_t count = 0;
-
-  struct grid_ui_template_buffer* this = ele->template_buffer_list_head;
-
-  while (this != NULL) {
-
-    ++count;
-    this = this->next;
-  }
-
-  return count;
-}
-
-struct grid_ui_template_buffer* grid_ui_template_buffer_find(struct grid_ui_element* ele, uint8_t page) {
-
-  uint8_t count = 0;
-
-  struct grid_ui_template_buffer* this = ele->template_buffer_list_head;
-
-  while (this != NULL) {
-
-    if (count == page) {
-      return this;
-    }
-
-    count++;
-    this = this->next;
-  }
-
-  return NULL;
-}
-
 uint8_t grid_ui_page_get_activepage(struct grid_ui_model* ui) { return ui->page_activepage; }
 
 uint8_t grid_ui_page_get_next(struct grid_ui_model* ui) { return (ui->page_activepage + 1) % ui->page_count; }
 
 uint8_t grid_ui_page_get_prev(struct grid_ui_model* ui) { return (ui->page_activepage + ui->page_count - 1) % ui->page_count; }
-
-void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t page) {
-
-  for (uint8_t i = 0; i < ui->element_list_length; i++) {
-
-    struct grid_ui_element* ele = &ui->element_list[i];
-    struct grid_ui_template_buffer* buf = grid_ui_template_buffer_find(ele, page);
-
-    if (ele->template_initializer) {
-      ele->template_initializer(buf);
-    }
-  }
-}
 
 uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui) { return ui->page_change_enabled; }
 
@@ -415,7 +330,7 @@ void grid_ui_event_get_script(struct grid_ui_event* eve, char* targetstring) {
   char temp[100] = {0};
   char result[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
-  sprintf(temp, "gsg(%ld,debug.getinfo(ele[%d].%s,\"S\").source)", (uint32_t)result, eve->parent->index, eve->function_name);
+  sprintf(temp, "gsg(%llu,debug.getinfo(ele[%d].%s,\"S\").source)", (unsigned long long)(uintptr_t)result, eve->parent->index, eve->function_name);
 
   if (0 == grid_lua_dostring(&grid_lua_state, temp)) {
     grid_port_debug_printf("LUA not OK, Failed to retrieve script! EL: %d EV: %d", eve->parent->index, eve->type);
@@ -949,9 +864,6 @@ PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui)) {
   // Reset all state parameters of all leds
   grid_led_reset(&grid_led_state);
 
-  // Store old page index for the page change callback
-  uint8_t oldpage = ui->page_activepage;
-
   // Set active page
   ui->page_activepage = ui->bulk_last_page;
 
@@ -960,49 +872,12 @@ PT_THREAD(grid_ui_bulk_page_load(proto_pt_t* pt, struct grid_ui_model* ui)) {
     struct grid_ui_element* ele = grid_ui_element_find(ui, i);
     assert(ele);
 
-    // Stop the element's timer
-    ele->timer_event_helper = 0;
-
-    // Reset element
+    // Reset element (timer, name, template parameters)
     grid_ui_element_reset(ele);
 
     // Reset all events of the element
     for (uint8_t j = 0; j < ele->event_list_length; ++j) {
       grid_ui_event_reset(&ele->event_list[j]);
-    }
-
-    uint8_t template_buffer_length = grid_ui_template_buffer_list_length(ele);
-
-    // Create new template buffers until they cover the index of the loaded page
-    while (template_buffer_length < ui->page_activepage + 1) {
-
-      if (!grid_ui_template_buffer_create(ele)) {
-        grid_platform_printf("grid_ui_page_load failed to create template buffer\r\n");
-      }
-
-      template_buffer_length = grid_ui_template_buffer_list_length(ele);
-    }
-
-    struct grid_ui_template_buffer* buf = grid_ui_template_buffer_find(ele, ui->page_activepage);
-
-    if (buf) {
-
-      // Load the template parameter list
-      ele->template_parameter_list = buf->template_parameter_list;
-
-      if (!buf->template_parameter_list) {
-        grid_port_debug_print_text("grid_ui_page_load buf template param list NULL");
-      }
-
-    } else {
-
-      grid_platform_printf("grid_ui_page_load template buffer is invalid\r\n");
-      grid_port_debug_print_text("grid_ui_page_load template buffer is invalid");
-    }
-
-    // Invoke page change callback if necessary
-    if (ele->page_change_cb) {
-      ele->page_change_cb(ele, oldpage, ui->page_activepage);
     }
   }
 

@@ -41,16 +41,7 @@ struct grid_ui_event {
 
 void grid_ui_event_state_set(struct grid_ui_event* eve, enum grid_eve_state_t state);
 
-struct grid_ui_template_buffer {
-
-  struct grid_ui_element* parent;
-
-  struct grid_ui_template_buffer* next;
-
-  int32_t* template_parameter_list;
-};
-
-typedef void (*template_init_t)(struct grid_ui_template_buffer*);
+typedef void (*template_init_t)(struct grid_ui_element*);
 
 enum { GRID_ELEMENT_NAME_MAX = 19 };
 enum { GRID_ELEMENT_NAME_SIZE = GRID_ELEMENT_NAME_MAX + 1 };
@@ -67,7 +58,6 @@ struct grid_ui_element {
 
   template_init_t template_initializer;
 
-  struct grid_ui_template_buffer* template_buffer_list_head;
   uint8_t template_parameter_list_length;
   int32_t* template_parameter_list;
 
@@ -77,7 +67,6 @@ struct grid_ui_element {
   uint8_t template_parameter_index_min[2];
   uint8_t template_parameter_index_max[2];
 
-  void (*page_change_cb)(struct grid_ui_element*, uint8_t, uint8_t);
   void (*event_clear_cb)(struct grid_ui_event*);
 
   uint8_t event_list_length;
@@ -138,6 +127,7 @@ void grid_ui_model_init(struct grid_ui_model* ui, uint8_t element_list_length);
 struct grid_ui_element* grid_ui_model_get_elements(struct grid_ui_model* ui);
 
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index);
+void grid_ui_element_reset(struct grid_ui_element* ele);
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_script);
 
 void grid_ui_rtc_ms_tick_time(struct grid_ui_model* ui);
@@ -145,15 +135,10 @@ void grid_ui_midi_sync_tick_time(struct grid_ui_model* ui);
 
 void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmode_value);
 
-struct grid_ui_template_buffer* grid_ui_template_buffer_create(struct grid_ui_element* ele);
-uint8_t grid_ui_template_buffer_list_length(struct grid_ui_element* ele);
-struct grid_ui_template_buffer* grid_ui_template_buffer_find(struct grid_ui_element* ele, uint8_t page);
-
 uint8_t grid_ui_page_get_activepage(struct grid_ui_model* ui);
 uint8_t grid_ui_page_get_next(struct grid_ui_model* ui);
 uint8_t grid_ui_page_get_prev(struct grid_ui_model* ui);
 
-void grid_ui_page_clear_template_parameters(struct grid_ui_model* ui, uint8_t page);
 uint8_t grid_ui_page_change_is_enabled(struct grid_ui_model* ui);
 
 struct grid_ui_event* grid_ui_event_find(struct grid_ui_element* ele, uint8_t event_type);

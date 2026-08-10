@@ -84,9 +84,10 @@ void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
 
   ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_encoder_state));
   memset(ele->primary_state, 0, sizeof(struct grid_ui_encoder_state));
-  struct grid_ui_encoder_state* enc_state = (struct grid_ui_encoder_state*)ele->primary_state;
-  enc_state->parent = ele;
-  enc_state->button.parent = ele;
+  struct grid_ui_encoder_state* encoder_state = (struct grid_ui_encoder_state*)ele->primary_state;
+  encoder_state->parent = ele;
+  encoder_state->button.parent = ele;
+  ele->template_parameter_list = encoder_state->template_variables;
 
   grid_ui_element_malloc_events(ele, 4);
 
@@ -108,15 +109,16 @@ void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
   ele->template_parameter_index_max[1] = GRID_LUA_FNC_E_ENCODER_MAX_index;
 
   ele->event_clear_cb = &grid_ui_element_encoder_event_clear_cb;
-  ele->page_change_cb = NULL;
+
+  grid_ui_element_reset(ele);
 }
 
-void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf) {
+void grid_ui_element_encoder_template_parameter_init(struct grid_ui_element* ele) {
 
   // printf("template parameter init\r\n");
 
-  uint8_t element_index = buf->parent->index;
-  int32_t* template_parameter_list = buf->template_parameter_list;
+  uint8_t element_index = ele->index;
+  int32_t* template_parameter_list = ele->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_E_ELEMENT_INDEX_index] = element_index;
   template_parameter_list[GRID_LUA_FNC_E_LED_INDEX_index] = element_index;

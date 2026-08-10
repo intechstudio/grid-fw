@@ -14,12 +14,13 @@ struct grid_ui_potmeter_state {
   struct grid_cal_center center;
   struct grid_cal_detent detent;
   uint8_t adc_bit_depth;
+  int32_t template_variables[GRID_LUA_FNC_P_LIST_length];
 };
 
 void grid_ui_potmeter_state_init(struct grid_ui_potmeter_state* state, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center);
 
 void grid_ui_element_potmeter_init(struct grid_ui_element* ele);
-void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_template_buffer* buf);
+void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_element* ele);
 
 uint8_t grid_ui_potmeter_update_trigger(struct grid_ui_element* ele, uint16_t value, uint8_t adc_bit_depth, uint64_t* last_real_time);
 

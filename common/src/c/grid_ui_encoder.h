@@ -36,12 +36,13 @@ struct grid_ui_encoder_state {
   uint8_t initial_samples;
   int8_t direction;
   struct grid_ui_button_state button;
+  int32_t template_variables[GRID_LUA_FNC_E_LIST_length];
 };
 
 void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent, int8_t direction);
 
 void grid_ui_element_encoder_init(struct grid_ui_element* ele);
-void grid_ui_element_encoder_template_parameter_init(struct grid_ui_template_buffer* buf);
+void grid_ui_element_encoder_template_parameter_init(struct grid_ui_element* ele);
 
 int16_t grid_ui_encoder_rotation_delta(uint8_t old_value, uint8_t new_value, uint8_t detent, int8_t* dir_lock);
 void grid_ui_encoder_update_trigger(struct grid_ui_element* ele, uint64_t* encoder_last_real_time, int16_t delta);

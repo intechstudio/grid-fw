@@ -5,6 +5,7 @@
 
 #include "grid_ain.h"
 #include "grid_lua_api.h"
+#include "grid_platform.h"
 
 const luaL_Reg GRID_LUA_S_INDEX_META[] = {{GRID_LUA_FNC_S_ELEMENT_INDEX_short, XAFTERX(GRID_LUA_FNC_GTV_NAME, GRID_LUA_FNC_S_ELEMENT_INDEX_index)},
                                           {GRID_LUA_FNC_G_TIMER_START_short, XAFTERX(GRID_LUA_FNC_META_NAME, gtt)},
@@ -18,6 +19,12 @@ void grid_ui_element_system_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_SYSTEM;
 
+  ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_system_state));
+  memset(ele->primary_state, 0, sizeof(struct grid_ui_system_state));
+  struct grid_ui_system_state* state = ele->primary_state;
+  state->parent = ele;
+  ele->template_parameter_list = state->template_variables;
+
   ele->event_list_length = 3;
 
   ele->event_list = malloc(ele->event_list_length * sizeof(struct grid_ui_event));
@@ -29,15 +36,16 @@ void grid_ui_element_system_init(struct grid_ui_element* ele) {
   ele->template_parameter_list_length = GRID_LUA_FNC_S_LIST_length;
 
   ele->event_clear_cb = NULL;
-  ele->page_change_cb = NULL;
+
+  grid_ui_element_reset(ele);
 }
 
-void grid_ui_element_system_template_parameter_init(struct grid_ui_template_buffer* buf) {
+void grid_ui_element_system_template_parameter_init(struct grid_ui_element* ele) {
 
   // printf("template parameter init\r\n");
 
-  uint8_t element_index = buf->parent->index;
-  int32_t* template_parameter_list = buf->template_parameter_list;
+  uint8_t element_index = ele->index;
+  int32_t* template_parameter_list = ele->template_parameter_list;
 
   template_parameter_list[GRID_LUA_FNC_S_ELEMENT_INDEX_index] = element_index;
 }
