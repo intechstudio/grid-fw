@@ -260,6 +260,180 @@ void grid_module_octv_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }
 
+void grid_ui_element_lcd_template_parameter_init_vsn_left(struct grid_ui_template_buffer* buf) {
+
+  grid_ui_element_lcd_template_parameter_init(buf);
+
+  int32_t* template_parameter_list = buf->template_parameter_list;
+
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_INDEX_index] = 0;
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_WIDTH_index] = 320;
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_HEIGHT_index] = 240;
+}
+
+void grid_module_vsnl_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  grid_ain_init(ain, 16, 4);        // TODO: 12 ain for TEK2
+  grid_led_init(led, 13 + 5, NULL); // TODO: 18 led for TEK2
+
+  for (uint8_t i = 0; i < 8; ++i) {
+    grid_led_lookup_alloc_single(led, i, i + 10);
+  }
+  grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){5, 6, 7, 8, 9});
+
+  grid_ui_model_init(ui, 14 + 1);
+
+  for (uint8_t j = 0; j < 14 + 1; j++) {
+
+    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+    if (j < 8) {
+
+      grid_ui_element_button_init(ele);
+
+    } else if (j < 9) {
+
+      grid_ui_element_endless_init(ele);
+
+    } else if (j < 13) {
+
+      grid_ui_element_button_init(ele);
+
+    } else if (j < 14) {
+
+      grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_left);
+    } else {
+      grid_ui_element_system_init(ele);
+    }
+  }
+
+  ui->lua_ui_init_callback = grid_lua_ui_init;
+}
+
+void grid_ui_element_lcd_template_parameter_init_vsn_right(struct grid_ui_template_buffer* buf) {
+
+  grid_ui_element_lcd_template_parameter_init(buf);
+
+  int32_t* template_parameter_list = buf->template_parameter_list;
+
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_INDEX_index] = 1;
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_WIDTH_index] = 320;
+  template_parameter_list[GRID_LUA_FNC_L_SCREEN_HEIGHT_index] = 240;
+}
+
+void grid_module_vsnr_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  grid_ain_init(ain, 16, 4);        // TODO: 12 ain for TEK2
+  grid_led_init(led, 13 + 5, NULL); // TODO: 18 led for TEK2
+
+  for (uint8_t i = 0; i < 8; ++i) {
+    grid_led_lookup_alloc_single(led, i, i + 10);
+  }
+  grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
+
+  grid_ui_model_init(ui, 14 + 1);
+
+  for (uint8_t j = 0; j < 14 + 1; j++) {
+
+    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+    if (j < 8) {
+
+      grid_ui_element_button_init(ele);
+
+    } else if (j < 9) {
+
+      grid_ui_element_endless_init(ele);
+
+    } else if (j < 13) {
+
+      grid_ui_element_button_init(ele);
+
+    } else if (j < 14) {
+
+      grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_right);
+    } else {
+      grid_ui_element_system_init(ele);
+    }
+  }
+
+  ui->lua_ui_init_callback = grid_lua_ui_init;
+}
+
+void grid_module_vsn2_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  grid_ain_init(ain, 16, 4);        // TODO: 12 ain for TEK2
+  grid_led_init(led, 13 + 5, NULL); // TODO: 18 led for TEK2
+
+  for (uint8_t i = 0; i < 8; ++i) {
+    grid_led_lookup_alloc_single(led, i, i + 10);
+  }
+
+  grid_ui_model_init(ui, 18 + 1);
+
+  for (uint8_t j = 0; j < 18 + 1; j++) {
+
+    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+    if (j < 8) {
+
+      grid_ui_element_button_init(ele);
+
+    } else if (j < 12) {
+
+      grid_ui_element_button_init(ele);
+
+    } else if (j < 13) {
+
+      grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_left);
+    } else if (j < 17) {
+
+      grid_ui_element_button_init(ele);
+
+    } else if (j < 18) {
+
+      grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_right);
+    } else {
+      grid_ui_element_system_init(ele);
+    }
+  }
+
+  ui->lua_ui_init_callback = grid_lua_ui_init;
+}
+
+void grid_module_tek2_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
+
+  grid_ain_init(ain, 16, 4);        // TODO: 12 ain for TEK2
+  grid_led_init(led, 13 + 5, NULL); // TODO: 18 led for TEK2
+
+  for (uint8_t i = 0; i < 8; ++i) {
+    grid_led_lookup_alloc_single(led, i, i + 10);
+  }
+  grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
+  grid_led_lookup_alloc_multi(led, 9, 5, (uint8_t[5]){5, 6, 7, 8, 9});
+
+  grid_ui_model_init(ui, 10 + 1);
+
+  for (uint8_t j = 0; j < 10 + 1; j++) {
+
+    struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
+
+    if (j < 8) {
+
+      grid_ui_element_button_init(ele);
+
+    } else if (j < 10) {
+
+      grid_ui_element_endless_init(ele);
+
+    } else {
+      grid_ui_element_system_init(ele);
+    }
+  }
+
+  ui->lua_ui_init_callback = grid_lua_ui_init;
+}
+
 bool grid_module_zona_led_is_alert_all(uint8_t n) {
 
   uint8_t x = n % 9;
