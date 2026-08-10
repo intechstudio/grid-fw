@@ -29,12 +29,21 @@ struct grid_ui_button_state {
   uint64_t curr_time;
 };
 
+// Standalone button element storage: the behavior sub-state plus its template
+// variable buffer. When a button is embedded in an encoder/endless element, the
+// compound element owns the template buffer, so grid_ui_button_state itself
+// carries none.
+struct grid_ui_button_element_state {
+  struct grid_ui_button_state button;
+  int32_t template_variables[GRID_LUA_FNC_B_LIST_length];
+};
+
 void grid_ui_button_state_init(struct grid_ui_button_state* state, uint8_t adc_bit_depth, double threshold, double hysteresis);
 
 void grid_ui_element_button_init(struct grid_ui_element* ele);
 void grid_ui_element_button_template_parameter_init(struct grid_ui_element* ele);
 
-static inline struct grid_ui_button_state* grid_ui_button_get_state(struct grid_ui_element* ele) { return (struct grid_ui_button_state*)ele->primary_state; }
+static inline struct grid_ui_button_state* grid_ui_button_get_state(struct grid_ui_element* ele) { return &((struct grid_ui_button_element_state*)ele->primary_state)->button; }
 
 void grid_ui_button_store_input(struct grid_ui_button_state* state, uint16_t value);
 

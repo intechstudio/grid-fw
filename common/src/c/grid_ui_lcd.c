@@ -5,6 +5,7 @@
 
 #include "grid_ain.h"
 #include "grid_lua_api.h"
+#include "grid_platform.h"
 
 #ifdef ESP_PLATFORM
 
@@ -43,6 +44,12 @@ void grid_ui_element_lcd_init(struct grid_ui_element* ele, template_init_t initi
 
   ele->type = GRID_PARAMETER_ELEMENT_LCD;
 
+  ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_lcd_state));
+  memset(ele->primary_state, 0, sizeof(struct grid_ui_lcd_state));
+  struct grid_ui_lcd_state* state = ele->primary_state;
+  state->parent = ele;
+  ele->template_parameter_list = state->template_variables;
+
   grid_ui_element_malloc_events(ele, 2);
 
   grid_ui_event_init(ele, 0, GRID_PARAMETER_EVENT_INIT, GRID_LUA_FNC_A_INIT_short, GRID_ACTIONSTRING_LCD_INIT);
@@ -55,7 +62,7 @@ void grid_ui_element_lcd_init(struct grid_ui_element* ele, template_init_t initi
 
   ele->event_clear_cb = NULL;
 
-  grid_ui_element_template_parameter_init(ele);
+  grid_ui_element_reset(ele);
 }
 
 void grid_ui_element_lcd_template_parameter_init(struct grid_ui_element* ele) {

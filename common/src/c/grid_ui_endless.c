@@ -70,9 +70,10 @@ void grid_ui_element_endless_init(struct grid_ui_element* ele) {
 
   ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_endless_state));
   memset(ele->primary_state, 0, sizeof(struct grid_ui_endless_state));
-  struct grid_ui_endless_state* end_state = (struct grid_ui_endless_state*)ele->primary_state;
-  end_state->parent = ele;
-  end_state->button.parent = ele;
+  struct grid_ui_endless_state* endless_state = (struct grid_ui_endless_state*)ele->primary_state;
+  endless_state->parent = ele;
+  endless_state->button.parent = ele;
+  ele->template_parameter_list = endless_state->template_variables;
 
   grid_ui_element_malloc_events(ele, 4);
 
@@ -95,7 +96,7 @@ void grid_ui_element_endless_init(struct grid_ui_element* ele) {
 
   ele->event_clear_cb = &grid_ui_element_endless_event_clear_cb;
 
-  grid_ui_element_template_parameter_init(ele);
+  grid_ui_element_reset(ele);
 }
 
 void grid_ui_element_endless_template_parameter_init(struct grid_ui_element* ele) {

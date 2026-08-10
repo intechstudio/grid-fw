@@ -84,9 +84,10 @@ void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
 
   ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_encoder_state));
   memset(ele->primary_state, 0, sizeof(struct grid_ui_encoder_state));
-  struct grid_ui_encoder_state* enc_state = (struct grid_ui_encoder_state*)ele->primary_state;
-  enc_state->parent = ele;
-  enc_state->button.parent = ele;
+  struct grid_ui_encoder_state* encoder_state = (struct grid_ui_encoder_state*)ele->primary_state;
+  encoder_state->parent = ele;
+  encoder_state->button.parent = ele;
+  ele->template_parameter_list = encoder_state->template_variables;
 
   grid_ui_element_malloc_events(ele, 4);
 
@@ -109,7 +110,7 @@ void grid_ui_element_encoder_init(struct grid_ui_element* ele) {
 
   ele->event_clear_cb = &grid_ui_element_encoder_event_clear_cb;
 
-  grid_ui_element_template_parameter_init(ele);
+  grid_ui_element_reset(ele);
 }
 
 void grid_ui_element_encoder_template_parameter_init(struct grid_ui_element* ele) {

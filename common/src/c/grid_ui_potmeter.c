@@ -66,7 +66,9 @@ void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
 
   ele->primary_state = grid_platform_allocate_volatile(sizeof(struct grid_ui_potmeter_state));
   memset(ele->primary_state, 0, sizeof(struct grid_ui_potmeter_state));
-  ((struct grid_ui_potmeter_state*)ele->primary_state)->parent = ele;
+  struct grid_ui_potmeter_state* state = ele->primary_state;
+  state->parent = ele;
+  ele->template_parameter_list = state->template_variables;
 
   grid_ui_element_malloc_events(ele, 3);
 
@@ -88,7 +90,7 @@ void grid_ui_element_potmeter_init(struct grid_ui_element* ele) {
 
   ele->event_clear_cb = NULL;
 
-  grid_ui_element_template_parameter_init(ele);
+  grid_ui_element_reset(ele);
 }
 
 void grid_ui_element_potmeter_template_parameter_init(struct grid_ui_element* ele) {

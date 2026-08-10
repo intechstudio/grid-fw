@@ -36,6 +36,7 @@ struct grid_ui_encoder_state {
   uint8_t initial_samples;
   int8_t direction;
   struct grid_ui_button_state button;
+  int32_t template_variables[GRID_LUA_FNC_E_LIST_length];
 };
 
 void grid_ui_encoder_state_init(struct grid_ui_encoder_state* state, uint8_t detent, int8_t direction);

@@ -14,6 +14,7 @@ struct grid_ui_potmeter_state {
   struct grid_cal_center center;
   struct grid_cal_detent detent;
   uint8_t adc_bit_depth;
+  int32_t template_variables[GRID_LUA_FNC_P_LIST_length];
 };
 
 void grid_ui_potmeter_state_init(struct grid_ui_potmeter_state* state, uint8_t adc_bit_depth, uint16_t deadzone, uint16_t center);

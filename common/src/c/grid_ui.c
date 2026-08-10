@@ -263,27 +263,6 @@ void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmod
   }
 }
 
-void grid_ui_element_template_parameter_init(struct grid_ui_element* ele) {
-
-  if (ele->template_parameter_list_length == 0) {
-    return;
-  }
-
-  ele->template_parameter_list = grid_platform_allocate_volatile(ele->template_parameter_list_length * sizeof(int32_t));
-
-  if (ele->template_parameter_list == NULL) {
-    grid_platform_printf("grid_ui_element_template_parameter_init malloc failed\r\n");
-    return;
-  }
-
-  // Seed the freshly allocated buffer with defaults.
-  if (ele->template_initializer == NULL) {
-    return;
-  }
-
-  ele->template_initializer(ele);
-}
-
 uint8_t grid_ui_page_get_activepage(struct grid_ui_model* ui) { return ui->page_activepage; }
 
 uint8_t grid_ui_page_get_next(struct grid_ui_model* ui) { return (ui->page_activepage + 1) % ui->page_count; }

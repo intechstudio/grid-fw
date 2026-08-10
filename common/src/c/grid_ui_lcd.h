@@ -6,6 +6,11 @@
 #include "grid_protocol.h"
 #include "grid_ui.h"
 
+struct grid_ui_lcd_state {
+  struct grid_ui_element* parent;
+  int32_t template_variables[GRID_LUA_FNC_L_LIST_length];
+};
+
 void grid_ui_element_lcd_init(struct grid_ui_element* ele, template_init_t initializer);
 
 void grid_ui_element_lcd_template_parameter_init(struct grid_ui_element* ele);
