@@ -315,6 +315,10 @@
 #define GRID_LUA_FNC_G_RANDOM_human "random8"
 #define GRID_LUA_FNC_G_RANDOM_fnptr l_grid_random8
 
+#define GRID_LUA_FNC_G_MICROS_short "gmicros"
+#define GRID_LUA_FNC_G_MICROS_human "micros"
+#define GRID_LUA_FNC_G_MICROS_fnptr l_grid_rtc_get_micros
+
 #define GRID_LUA_FNC_G_HWCFG_short "ghwcfg"
 #define GRID_LUA_FNC_G_HWCFG_human "hardware_configuration"
 #define GRID_LUA_FNC_G_HWCFG_fnptr l_grid_hwcfg
