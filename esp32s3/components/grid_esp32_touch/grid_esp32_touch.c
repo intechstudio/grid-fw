@@ -213,7 +213,7 @@ static uint32_t mxt_calculate_crc(uint8_t* base, off_t start_off, off_t end_off)
 
 struct firmware {
   size_t size;
-  uint8_t* data;
+  const uint8_t* data;
 };
 
 struct mxt_cfg {

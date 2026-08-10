@@ -7,3 +7,5 @@ cd "$SRCDIR" || exit 1
 if ! xxd -i ./mxt144u_cfg.raw > ./mxt144u_cfg.h ; then
 	exit 1
 fi
+
+sed -i '1i\const \\' ./mxt144u_cfg.h
