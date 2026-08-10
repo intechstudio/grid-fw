@@ -517,7 +517,7 @@ int l_grid_cat(lua_State* L) {
 
     if (lua_type(L, 1) == LUA_TNUMBER && lua_type(L, 2) == LUA_TSTRING) {
 
-      uint32_t pointer = (uint32_t)lua_tointeger(L, 1);
+      uintptr_t pointer = (uintptr_t)lua_tointeger(L, 1);
 
       char* string = (char*)pointer;
 

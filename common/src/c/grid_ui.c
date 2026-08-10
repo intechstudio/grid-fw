@@ -351,7 +351,7 @@ void grid_ui_event_get_script(struct grid_ui_event* eve, char* targetstring) {
   char temp[100] = {0};
   char result[GRID_PARAMETER_ACTIONSTRING_maxlength + 100] = {0};
 
-  sprintf(temp, "gsg(%ld,debug.getinfo(ele[%d].%s,\"S\").source)", (uint32_t)result, eve->parent->index, eve->function_name);
+  sprintf(temp, "gsg(%llu,debug.getinfo(ele[%d].%s,\"S\").source)", (unsigned long long)(uintptr_t)result, eve->parent->index, eve->function_name);
 
   if (0 == grid_lua_dostring(&grid_lua_state, temp)) {
     grid_port_debug_printf("LUA not OK, Failed to retrieve script! EL: %d EV: %d", eve->parent->index, eve->type);
