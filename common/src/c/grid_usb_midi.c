@@ -4,6 +4,7 @@
 
 #include "tusb.h"
 
+#include "grid_math.h"
 #include "grid_msg.h"
 #include "grid_platform.h"
 #include "grid_swsr.h"
@@ -50,23 +51,17 @@ void grid_usb_midi_tx_flush(struct grid_usb_midi_model* midi) {
     return;
   }
 
-  uint32_t n_packets = tud_midi_tx_available() / 4;
-  if (n_packets == 0) {
+  uint32_t readable = grid_swsr_size(&midi->tx);
+  uint32_t writable = tud_midi_tx_available();
+
+  uint32_t packets = MIN(readable, writable) / 4;
+  if (!packets) {
     return;
   }
 
-  uint32_t ring_packets = grid_swsr_size(&midi->tx) / 4;
-  if (ring_packets == 0) {
-    return;
-  }
-
-  if (n_packets > ring_packets) {
-    n_packets = ring_packets;
-  }
-
-  uint8_t batch[CFG_TUD_MIDI_TX_BUFSIZE];
-  grid_swsr_read(&midi->tx, batch, n_packets * 4);
-  tud_midi_packet_write_n(batch, n_packets);
+  uint8_t buf[CFG_TUD_MIDI_TX_BUFSIZE];
+  grid_swsr_read(&midi->tx, buf, packets * 4);
+  tud_midi_packet_write_n(buf, packets);
 }
 
 bool grid_usb_midi_tx_available(struct grid_usb_midi_model* midi) { return grid_swsr_readable(&midi->tx, 4); }
