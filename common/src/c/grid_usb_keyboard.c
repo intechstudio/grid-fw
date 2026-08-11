@@ -44,6 +44,7 @@ static uint8_t grid_usb_keyboard_cleanup(struct grid_keyboard_model* keyboard) {
 }
 
 int32_t grid_usb_keyboard_keychange(struct grid_keyboard_model* keyboard, struct grid_macro_event_desc* key) {
+
   if (!tud_hid_ready()) {
     return 1;
   }
@@ -59,14 +60,15 @@ int32_t grid_usb_keyboard_keychange(struct grid_keyboard_model* keyboard, struct
     }
   }
 
-  if (idx == keyboard->active_key_count) { // not found in the list
-    if (idx >= GRID_KEYBOARD_KEY_maxcount) {
-      return 0;
-    }
+  assert(idx <= GRID_KEYBOARD_KEY_maxcount);
+  bool full = idx == GRID_KEYBOARD_KEY_maxcount;
+  bool found = idx != keyboard->active_key_count;
 
-    keyboard->active_key_count = idx + 1;
+  if (full && !found) {
+    return 0;
   }
 
+  keyboard->active_key_count = idx + !found;
   keyboard->active_key_list[idx] = *key;
 
   struct grid_keyboard_report report = grid_usb_keyboard_report_build(keyboard);
