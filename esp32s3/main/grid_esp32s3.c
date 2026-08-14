@@ -472,7 +472,7 @@ void app_main(void) {
     }
 
     // Run microtasks
-    // grid_esp32_utask_led(&timer_led);
+    grid_esp32_utask_led(&timer_led);
     // grid_esp32_utask_touch_t37(&timer_t37);
 
     // Run UI protothreads
