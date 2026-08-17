@@ -202,6 +202,7 @@ uint8_t grid_decode_gamepadmove_to_usb(char* header, char* chunk) {
   int8_t position = position_raw - 128;
 
   if (grid_usb_gamepad_axis_move(&grid_usb_state.hid.gamepad, axis, position)) {
+    grid_port_debug_printf("gamepad axis move dropped: axis=%d pos=%d\n", axis, position);
     grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_GAMEPAD);
   }
 
@@ -220,6 +221,7 @@ uint8_t grid_decode_gamepadbutton_to_usb(char* header, char* chunk) {
   uint8_t state = grid_msg_get_parameter_raw((uint8_t*)chunk, CLASS_HIDGAMEPADBUTTON_STATE);
 
   if (grid_usb_gamepad_button_change(&grid_usb_state.hid.gamepad, button, state)) {
+    grid_port_debug_printf("gamepad button dropped: btn=%d state=%d\n", button, state);
     grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_GAMEPAD);
   }
 

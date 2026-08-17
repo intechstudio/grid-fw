@@ -1,5 +1,7 @@
 #include <assert.h>
 
+#include "tusb.h"
+
 #include "grid_usb_macro.h"
 
 #include "grid_health.h"
@@ -59,12 +61,15 @@ void grid_usb_macro_tx_flush(struct grid_macro_model* macro) {
     return;
   }
 
+  if (!tud_hid_ready()) {
+    return;
+  }
+
   switch (macro->next.type) {
   case GRID_MACRO_EVENT_TYPE_KEY:
   case GRID_MACRO_EVENT_TYPE_MODIFIER: {
 
     if (grid_usb_keyboard_keychange(macro->keyboard, &macro->next) != 0) {
-      grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_KEYBOARD);
       return;
     }
   } break;
@@ -75,7 +80,6 @@ void grid_usb_macro_tx_flush(struct grid_macro_model* macro) {
     int8_t position = macro->next.ispressed - 128;
 
     if (grid_usb_mouse_move(macro->mouse, position, axis) != 0) {
-      grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MOUSE);
       return;
     }
   } break;
@@ -85,7 +89,6 @@ void grid_usb_macro_tx_flush(struct grid_macro_model* macro) {
     uint8_t button = macro->next.keycode;
 
     if (grid_usb_mouse_button_change(macro->mouse, state, button) != 0) {
-      grid_health_record(&grid_health_state, GRID_HEALTH_TX_DROPPED_MOUSE);
       return;
     }
   } break;
