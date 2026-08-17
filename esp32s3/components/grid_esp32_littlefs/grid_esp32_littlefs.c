@@ -99,6 +99,7 @@ esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs, bool force_forma
 
   if (grid_littlefs_mount_or_format(efs->lfs, &efs->cfg, force_format)) {
     free(lfs);
+    efs->lfs = NULL;
     return ESP_FAIL;
   }
 
@@ -107,12 +108,9 @@ esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs, bool force_forma
 
 esp_err_t grid_esp32_littlefs_unmount(struct esp_littlefs_t* efs) {
 
-  if (grid_littlefs_unmount(efs->lfs)) {
-    return ESP_FAIL;
-  }
+  assert(efs->lfs);
 
-  if (!efs->lfs) {
-    ESP_LOGE(TAG, "littlefs not allocated, cannot deallocate");
+  if (grid_littlefs_unmount(efs->lfs)) {
     return ESP_FAIL;
   }
 
