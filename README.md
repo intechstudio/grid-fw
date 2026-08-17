@@ -16,13 +16,33 @@ This tutorial will walk you through the following steps:
  - Update the bootloader if it is outdated
  - Upload the new application firmware
 
-## Building firmware (ESP32)
+## Building firmware
+
+Builds run inside the provided Docker container, which bundles the ESP-IDF and
+ARM toolchains. Start it from the repository root:
+
+```sh
+./docker_build.sh   # build the container image (first time only)
+./docker_start.sh   # open a shell inside the container
 ```
-cd grid_esp
-idf.py build
-./uf2convert.sh
-# uf2 file is generated (output/grid_fw.uf2)
+
+`lua_build.sh` converts the embedded Lua scripts to C headers and **must run
+before** any firmware build. From inside the container:
+
+```sh
+# ESP32-S3 (also builds the RP2040 coprocessor it embeds)
+./lua_build.sh && ./pico_build.sh && ./esp_build.sh
+# output: esp32s3/build/grid_esp32s3.{bin,elf,uf2}
+
+# SAMD51 (D51)
+./lua_build.sh && ./d51_build.sh
+# output: d51n20a/gcc/build/grid_d51n20a.{bin,elf,uf2}
+
+# WebAssembly GUI (independent)
+./wasm_build.sh
 ```
+
+Run the host unit tests with `./test.sh` (requires `lua_build.sh` first).
 
 ## Enumerating the bootloader
 

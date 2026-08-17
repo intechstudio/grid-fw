@@ -49,8 +49,10 @@ jobs:
           sh -c "./wasm_build.sh"
 
       - name: Set timestamp in environment and output
+        id: set_out
         run: |
-          echo "ACTION_DATE=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_ENV
+          ACTION_DATE=$(date +'%Y-%m-%d-%H%M')
+          echo "ACTION_DATE=$ACTION_DATE" >> $GITHUB_ENV
           echo "timestamp=$ACTION_DATE" >> $GITHUB_OUTPUT
 
       - name: Copy and rename artifacts
@@ -59,7 +61,9 @@ jobs:
           cp ${{ env.esp-path }}/build/grid_esp32s3.uf2 grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
           cp ${{ env.d51-path }}/gcc/build/grid_d51n20a.uf2 grid_d51_release_${{ env.ACTION_DATE }}.uf2
           cp ${{ env.d51-path }}/gcc/build/grid_d51n20a.uf2 grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
-          cp .github/workflows/INSTRUCTIONS.txt INSTRUCTIONS.txt
+          cat ${{ env.d51-path }}/gcc/build/grid_d51n20a.uf2 ${{ env.esp-path }}/build/grid_esp32s3.uf2 \
+            > grid_multiarch_nightly_${{ env.ACTION_DATE }}.uf2
+          cp grid_multiarch_nightly_${{ env.ACTION_DATE }}.uf2 grid_multiarch_release_${{ env.ACTION_DATE }}.uf2
           cp wasm/build/index.html index.html
           cp wasm/build/index.js index.js
           cp wasm/build/index.wasm index.wasm
@@ -71,6 +75,7 @@ jobs:
           path: |
             grid_esp32_nightly_${{ env.ACTION_DATE }}.uf2
             grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
+            grid_multiarch_nightly_${{ env.ACTION_DATE }}.uf2
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v6
@@ -79,7 +84,7 @@ jobs:
           path: |
             grid_esp32_release_${{ env.ACTION_DATE }}.uf2
             grid_d51_release_${{ env.ACTION_DATE }}.uf2
-            INSTRUCTIONS.txt
+            grid_multiarch_release_${{ env.ACTION_DATE }}.uf2
 
       - name: Upload gui artifacts
         uses: actions/upload-artifact@v6

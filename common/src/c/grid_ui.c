@@ -171,6 +171,13 @@ void grid_ui_event_reset(struct grid_ui_event* eve) {
   eve->cfg_default_flag = 1;
 }
 
+void grid_ui_event_clear(struct grid_ui_event* eve) {
+
+  if (eve->parent && eve->parent->event_clear_cb) {
+    eve->parent->event_clear_cb(eve);
+  }
+}
+
 void grid_ui_event_init(struct grid_ui_element* ele, uint8_t index, uint8_t event_type, char* function_name, const char* default_script) {
 
   assert(index < ele->event_list_length);
@@ -729,10 +736,7 @@ static void grid_ui_clear_triggered(struct grid_ui_model* ui, struct grid_msg* m
       grid_ui_event_render_event(eve, msg);
       grid_ui_event_render_event_view(eve, msg);
 
-      if (ele->event_clear_cb) {
-        ele->event_clear_cb(eve);
-      }
-
+      grid_ui_event_clear(eve);
       grid_ui_event_state_set(eve, GRID_EVE_STATE_INIT);
     }
   }
@@ -971,6 +975,9 @@ static void grid_ui_page_read(struct grid_ui_model* ui, uint8_t page) {
   } else {
     grid_lua_dostring_unsafe(&grid_lua_state, GRID_LUA_FNC_G_INIT_source);
   }
+  grid_lua_clear_stdo(&grid_lua_state);
+  grid_lua_broadcast_stde(&grid_lua_state);
+  grid_lua_clear_stde(&grid_lua_state);
 
   lua_pop(grid_lua_state.L, lua_gettop(grid_lua_state.L));
   grid_lua_gc_full_unsafe(&grid_lua_state);
@@ -978,6 +985,20 @@ static void grid_ui_page_read(struct grid_ui_model* ui, uint8_t page) {
   grid_lua_semaphore_release(&grid_lua_state);
 
   grid_usb_keyboard_enable(&grid_usb_keyboard_state);
+
+  // Clear all events
+  for (uint8_t i = 0; i < ui->element_list_length; i++) {
+
+    // Handle system element first then all the ui elements in ascending order
+    uint8_t element_index = (i == 0 ? ui->element_list_length - 1 : i - 1);
+
+    struct grid_ui_element* ele = &ui->element_list[element_index];
+
+    for (uint8_t j = 0; j < ele->event_list_length; j++) {
+
+      grid_ui_event_clear(&ele->event_list[j]);
+    }
+  }
 }
 
 #pragma GCC diagnostic push
@@ -1171,11 +1192,20 @@ PT_THREAD(grid_ui_bulk_page_clear(proto_pt_t* pt, struct grid_ui_model* ui)) {
   void* info;
   while ((info = grid_platform_dir_first(path))) {
 
-    char path2[6] = {0};
     const char* name = grid_platform_file_info_name(info);
-    assert(snprintf(path2, 6, "%s/%s", path, name) == 5);
 
-    grid_platform_remove(path2);
+    size_t path2_bytes = 3 + strlen(name) + 1;
+
+    char* path2 = malloc(path2_bytes);
+    if (!path2) {
+      continue;
+    }
+
+    if (snprintf(path2, path2_bytes, "%s/%s", path, name) < path2_bytes) {
+      grid_platform_remove(path2);
+    }
+
+    free(path2);
 
     PT_YIELD(pt);
   }
