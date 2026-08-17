@@ -57,6 +57,7 @@ int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs, bool force_format) {
 
   if (grid_littlefs_mount_or_format(dfs->lfs, &dfs->cfg, force_format)) {
     free(lfs);
+    dfs->lfs = NULL;
     return 1;
   }
 
@@ -65,12 +66,9 @@ int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs, bool force_format) {
 
 int grid_d51_littlefs_unmount(struct d51_littlefs_t* dfs) {
 
-  if (grid_littlefs_unmount(dfs->lfs)) {
-    return 1;
-  }
+  assert(dfs->lfs);
 
-  if (!dfs->lfs) {
-    printf("littlefs not allocated, cannot deallocate\n");
+  if (grid_littlefs_unmount(dfs->lfs)) {
     return 1;
   }
 
