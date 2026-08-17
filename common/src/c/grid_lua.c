@@ -251,7 +251,7 @@ void grid_lua_decode_process_results(struct grid_lua_model* lua) {
   }
 
   if (lua_getglobal(lua->L, GRID_LUA_DECODE_PROCESSOR) != LUA_TFUNCTION) {
-    goto grid_lua_decode_process_results_cleanup;
+    goto grid_lua_decode_process_results_clearer;
   }
 
   // Move the processor function below the result tables
@@ -261,8 +261,10 @@ void grid_lua_decode_process_results(struct grid_lua_model* lua) {
   if (lua_pcall(lua->L, 4, 0, 0) != LUA_OK) {
     grid_lua_clear_stde(lua);
     grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
-    goto grid_lua_decode_process_results_cleanup;
+    goto grid_lua_decode_process_results_clearer;
   }
+
+grid_lua_decode_process_results_clearer:
 
   if (!grid_lua_decode_results_check_unsafe(lua, &empty) || empty) {
     goto grid_lua_decode_process_results_cleanup;
@@ -356,7 +358,7 @@ bool grid_lua_events_process_unsafe(struct grid_lua_model* lua) {
   }
 
   if (lua_getglobal(lua->L, GRID_LUA_EVENTS_PROCESSOR) != LUA_TFUNCTION) {
-    goto grid_lua_events_process_cleanup;
+    goto grid_lua_events_process_clearer;
   }
 
   // Move the processor function below the address table
@@ -366,8 +368,12 @@ bool grid_lua_events_process_unsafe(struct grid_lua_model* lua) {
   if (lua_pcall(lua->L, 2, 0, 0) != LUA_OK) {
     grid_lua_clear_stde(lua);
     grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
-    goto grid_lua_events_process_cleanup;
+    goto grid_lua_events_process_clearer;
   }
+
+  ret = true;
+
+grid_lua_events_process_clearer:
 
   if (!grid_lua_events_addresses_check_unsafe(lua, &empty) || empty) {
     goto grid_lua_events_process_cleanup;
@@ -383,8 +389,6 @@ bool grid_lua_events_process_unsafe(struct grid_lua_model* lua) {
     grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
     goto grid_lua_events_process_cleanup;
   }
-
-  ret = true;
 
 grid_lua_events_process_cleanup:
   lua_pop(lua->L, lua_gettop(lua->L));
@@ -544,9 +548,6 @@ void grid_lua_start_vm(struct grid_lua_model* lua, const struct luaL_Reg* lua_li
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_SIMPLECOLOR_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_SIMPLEMIDI_source);
   grid_lua_dostring_unsafe(lua, GRID_LUA_FNC_G_AUTOVALUE_source);
-
-  // Set garbage collection mode to generational
-  lua_gc(lua->L, LUA_GCGEN);
 
   grid_lua_gc_full_unsafe(lua);
 

@@ -450,7 +450,7 @@ void grid_esp32_port_task(void* arg) {
 
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 50);
       grid_alert_all_set_frequency(&grid_led_state, -4);
-      grid_alert_all_set_phase(&grid_led_state, 100);
+      grid_alert_all_set_phase(&grid_led_state, 200); // phase must equal |frequency| * timeout (4 * 50) so the fade lands on 0
     }
 
     if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && grid_usb_connected()) {
