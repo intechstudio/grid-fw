@@ -1,10 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "pico/stdlib.h"
 
 #include "grid_led.h"
+#include "grid_platform.h"
 #include "grid_rp2350_adc.h"
 #include "grid_rp2350_led.h"
+#include "grid_rp2350_nvm.h"
 
 #define NUM_PIXELS 16
 #define BRIGHTNESS 40 // per-channel cap (0-255) for USB power budget
@@ -34,6 +37,36 @@ static const uint8_t mux_element_lookup[ADC_NUM_CHANNELS][MUX_POSITIONS] = {
 // (channel, mux position) to a logical element and stores the reading.
 static void adc_result_store(struct grid_adc_result* result) { adc_values[mux_element_lookup[result->channel][result->mux_state]] = result->value; }
 
+// Mounts the on-flash config store (the nvm layer prints size + lists root) and
+// runs a persistence smoke test through the grid_platform_* API: reads a boot
+// counter file, increments it, writes it back. The counter surviving a power
+// cycle proves the flash block device works end to end.
+static void grid_fs_bringup(void) {
+  grid_rp2350_nvm_mount(&grid_rp2350_nvm_state, false);
+  if (!grid_platform_get_nvm_state()) {
+    printf("littlefs: mount failed\n");
+    return;
+  }
+
+  // The counter is stored as decimal text, so the higher-level
+  // read/write_file_contents helpers (which operate on strings) apply.
+  uint32_t boot_count = 0;
+  char* contents = grid_platform_read_file_contents("/bootcount");
+  if (contents) {
+    boot_count = (uint32_t)strtoul(contents, NULL, 10);
+    free(contents);
+  }
+
+  boot_count++;
+
+  char buf[16];
+  snprintf(buf, sizeof(buf), "%lu", (unsigned long)boot_count);
+  grid_platform_write_file_contents(buf, "/bootcount");
+
+  printf("littlefs: boot count = %lu\n", (unsigned long)boot_count);
+  grid_platform_lsdir("");
+}
+
 static void wheel(uint8_t pos, uint8_t* r, uint8_t* g, uint8_t* b) {
   pos = 255 - pos;
   if (pos < 85) {
@@ -59,6 +92,11 @@ int main() {
 
   grid_led_init(&grid_led_state, NUM_PIXELS);
   grid_rp2350_led_init(&grid_rp2350_led_state, &grid_led_state);
+
+  // Mount the on-flash config store and prove persistence across resets. Done
+  // before the ADC ISR is armed so no flash-resident interrupt is pending, but
+  // the block device masks interrupts during writes regardless.
+  grid_fs_bringup();
 
   // Interrupt-driven ADC + mux scanner: fills adc_values[] in the background.
   grid_rp2350_adc_init(&grid_rp2350_adc_state, MUX_POSITIONS_BM, adc_result_store);
