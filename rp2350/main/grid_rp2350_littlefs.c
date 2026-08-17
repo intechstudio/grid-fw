@@ -62,10 +62,7 @@ int grid_rp2350_littlefs_mount(struct rp2350_littlefs_t* rfs, bool force_format)
 
 int grid_rp2350_littlefs_unmount(struct rp2350_littlefs_t* rfs) {
 
-  if (!rfs->lfs) {
-    printf("littlefs not allocated, cannot deallocate\n");
-    return 1;
-  }
+  assert(rfs->lfs);
 
   if (grid_littlefs_unmount(rfs->lfs)) {
     return 1;
