@@ -165,7 +165,7 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
     return;
   }
 
-  if (grid_ui_event_count_istriggered(&grid_ui_state) > 0) {
+  if (grid_ui_events_any(&grid_ui_state)) {
 
     if (!grid_utask_timer_elapsed(timer)) {
       return;

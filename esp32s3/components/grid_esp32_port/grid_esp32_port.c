@@ -255,7 +255,7 @@ void grid_utask_process_ui(struct grid_utask_timer* timer) {
     return;
   }
 
-  if (grid_ui_event_count_istriggered(&grid_ui_state) > 0) {
+  if (grid_ui_events_any(&grid_ui_state)) {
 
     if (!grid_utask_timer_elapsed(timer)) {
       return;
@@ -407,6 +407,7 @@ void grid_esp32_port_task(void* arg) {
 
   // Watchdog-style tracking for the rolling ID
   uint8_t watchdog_rollid_last_recv = rollid.last_recv;
+  uint8_t watchdog_rollid_last_errors = rollid.errors;
   uint64_t watchdog_rollid_last_time = grid_platform_rtc_get_micros();
 
   // Allocate custom SPI transaction queue
@@ -446,13 +447,18 @@ void grid_esp32_port_task(void* arg) {
 
   while (1) {
 
-    // When the rolling ID changes, reset watchdog
+    // When the rolling ID changes without error, reset watchdog
     if (rollid.last_recv != watchdog_rollid_last_recv) {
 
       watchdog_rollid_last_time = grid_platform_rtc_get_micros();
-      watchdog_rollid_last_recv = rollid.last_recv;
 
-      rp2040_active = true;
+      // Only mark RP2040 active if the byte was the expected next value (no new error)
+      if (rollid.errors == watchdog_rollid_last_errors) {
+        rp2040_active = true;
+      }
+
+      watchdog_rollid_last_recv = rollid.last_recv;
+      watchdog_rollid_last_errors = rollid.errors;
     }
 
     // Rolling ID watchdog expiration

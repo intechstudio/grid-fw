@@ -353,7 +353,7 @@ bool grid_lua_events_process_unsafe(struct grid_lua_model* lua) {
 
   bool empty;
 
-  if (!grid_lua_events_addresses_check_unsafe(lua, &empty) || empty) {
+  if (!grid_lua_events_addresses_check_unsafe(lua, &empty)) {
     goto grid_lua_events_process_cleanup;
   }
 

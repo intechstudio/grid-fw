@@ -36,7 +36,7 @@ jobs:
       - name: Build ESP32 firmware
         run: |
           docker run -v $PWD:/project -w /project ${{ env.image }} \
-          sh -c "./lua_build.sh && ./pico_build.sh && ./esp_build.sh"
+          sh -c "./lua_build.sh && ./pico_build.sh && ./mxt_config.sh && ./esp_build.sh"
 
       - name: Build D51 firmware
         run: |

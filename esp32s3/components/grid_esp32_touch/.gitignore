@@ -1,0 +1,6 @@
+*
+
+!CMakeLists.txt
+!grid_esp32_touch.c
+!grid_esp32_touch.h
+!mxt144u_cfg.raw

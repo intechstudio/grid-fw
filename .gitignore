@@ -1,14 +1,6 @@
 # block everything by default
 *
 
-# ignore vim files
-*~
-*.swp
-*.swo
-
-# ignore dependency files
-*.d
-
 !.archive
 !.archive/**
 
@@ -55,6 +47,7 @@
 !LICENSE
 !lua_build.sh
 !merged_stream.sh
+!mxt_config.sh
 !patch_esp_spi_flash_hpm.sh
 !patch_esp_trace_include.sh
 !pico_build.sh
@@ -64,3 +57,11 @@
 !test.sh
 !wasm_build.sh
 !wasm_server.py
+
+# ignore vim files
+*~
+*.swp
+*.swo
+
+# ignore dependency files
+*.d

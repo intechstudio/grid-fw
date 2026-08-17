@@ -24,6 +24,9 @@
 #include "grid_esp32_adc.h"
 #include "grid_esp32_pins.h"
 
+#include "grid_protocol.h"
+#include "grid_ui.h"
+
 static const char* TAG = "grid_esp32_platform";
 
 void* grid_platform_allocate_volatile(size_t size) {
@@ -240,3 +243,15 @@ void IRAM_ATTR grid_platform_mux_write(uint8_t index) {
   grid_esp32_adc_state.mux_index = index;
   grid_esp32_adc_mux_update(&grid_esp32_adc_state);
 }
+
+bool grid_ui_touch_state_any(void* state);
+
+const grid_ui_element_state_any_t grid_ui_element_state_anys[GRID_PARAMETER_ELEMENT_COUNT] = {
+    [GRID_PARAMETER_ELEMENT_TOUCH] = grid_ui_touch_state_any,
+};
+
+void grid_ui_touch_state_reset(void* state);
+
+const grid_ui_element_state_reset_t grid_ui_element_state_resets[GRID_PARAMETER_ELEMENT_COUNT] = {
+    [GRID_PARAMETER_ELEMENT_TOUCH] = grid_ui_touch_state_reset,
+};

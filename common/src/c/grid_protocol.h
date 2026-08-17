@@ -39,8 +39,7 @@
 #define GRID_PARAMETER_EVENT_TIMER 6
 #define GRID_PARAMETER_EVENT_ENDLESS 7
 #define GRID_PARAMETER_EVENT_DRAW 8
-#define GRID_PARAMETER_EVENT_TOUCH 9
-#define GRID_PARAMETER_EVENT_COUNT 10
+#define GRID_PARAMETER_EVENT_COUNT 9
 
 // Module HWCFG definitions
 
@@ -86,7 +85,7 @@
 #define GRID_MODULE_OCTV_RevH 211
 #define GRID_MODULE_OCTV_ND_RevH 219
 
-#define GRID_MODULE_XY_RevH 161
+#define GRID_MODULE_ZONA_RevH 161
 
 #define GRID_MODULE_TEK1_RevA 225
 #define GRID_MODULE_TEK2_RevA 17
@@ -817,35 +816,43 @@
 #define GRID_LUA_FNC_T_LED_INDEX_short "lix"
 #define GRID_LUA_FNC_T_LED_INDEX_human "led_index"
 
-#define GRID_LUA_FNC_T_TOUCH_X_index 2
-#define GRID_LUA_FNC_T_TOUCH_X_short "tsx"
-#define GRID_LUA_FNC_T_TOUCH_X_human "touch_x"
+#define GRID_LUA_FNC_T_LED_WIDTH_index 2
+#define GRID_LUA_FNC_T_LED_WIDTH_short "lwi"
+#define GRID_LUA_FNC_T_LED_WIDTH_human "led_width"
 
 #define GRID_LUA_FNC_T_TOUCH_X_MIN_index 3
 #define GRID_LUA_FNC_T_TOUCH_X_MIN_short "txmi"
 #define GRID_LUA_FNC_T_TOUCH_X_MIN_human "touch_x_min"
 
-#define GRID_LUA_FNC_T_TOUCH_X_MAX_index 4
-#define GRID_LUA_FNC_T_TOUCH_X_MAX_short "txma"
-#define GRID_LUA_FNC_T_TOUCH_X_MAX_human "touch_x_max"
-
-#define GRID_LUA_FNC_T_TOUCH_Y_index 5
-#define GRID_LUA_FNC_T_TOUCH_Y_short "tsy"
-#define GRID_LUA_FNC_T_TOUCH_Y_human "touch_y"
-
-#define GRID_LUA_FNC_T_TOUCH_Y_MIN_index 6
+#define GRID_LUA_FNC_T_TOUCH_Y_MIN_index 4
 #define GRID_LUA_FNC_T_TOUCH_Y_MIN_short "tymi"
 #define GRID_LUA_FNC_T_TOUCH_Y_MIN_human "touch_y_min"
 
-#define GRID_LUA_FNC_T_TOUCH_Y_MAX_index 7
+#define GRID_LUA_FNC_T_TOUCH_X_MAX_index 5
+#define GRID_LUA_FNC_T_TOUCH_X_MAX_short "txma"
+#define GRID_LUA_FNC_T_TOUCH_X_MAX_human "touch_x_max"
+
+#define GRID_LUA_FNC_T_TOUCH_Y_MAX_index 6
 #define GRID_LUA_FNC_T_TOUCH_Y_MAX_short "tyma"
 #define GRID_LUA_FNC_T_TOUCH_Y_MAX_human "touch_y_max"
 
-#define GRID_LUA_FNC_T_TOUCH_AREA_index 8
-#define GRID_LUA_FNC_T_TOUCH_AREA_short "tar"
-#define GRID_LUA_FNC_T_TOUCH_AREA_human "touch_area"
+#define GRID_LUA_FNC_T_TOUCH_ID_index 7
+#define GRID_LUA_FNC_T_TOUCH_ID_short "tid"
+#define GRID_LUA_FNC_T_TOUCH_ID_human "touch_id"
 
-#define GRID_LUA_FNC_T_LIST_length 9
+#define GRID_LUA_FNC_T_TOUCH_EVENT_index 8
+#define GRID_LUA_FNC_T_TOUCH_EVENT_short "tev"
+#define GRID_LUA_FNC_T_TOUCH_EVENT_human "touch_event"
+
+#define GRID_LUA_FNC_T_TOUCH_X_VALUE_index 9
+#define GRID_LUA_FNC_T_TOUCH_X_VALUE_short "txv"
+#define GRID_LUA_FNC_T_TOUCH_X_VALUE_human "touch_x_value"
+
+#define GRID_LUA_FNC_T_TOUCH_Y_VALUE_index 10
+#define GRID_LUA_FNC_T_TOUCH_Y_VALUE_short "tyv"
+#define GRID_LUA_FNC_T_TOUCH_Y_VALUE_human "touch_y_value"
+
+#define GRID_LUA_FNC_T_LIST_length 11
 
 // ========================= UI EVENT HANDLER FUNCTIONS =========================== //
 
@@ -875,9 +882,6 @@
 
 #define GRID_LUA_FNC_A_DRAW_short "ld"
 #define GRID_LUA_FNC_A_DRAW_human "draw_handler"
-
-#define GRID_LUA_FNC_A_TOUCH_short "tc"
-#define GRID_LUA_FNC_A_TOUCH_human "touch_handler"
 
 #define GRID_LUA_KW_ELEMENT_short "ele"
 #define GRID_LUA_KW_ELEMENT_human "element"
