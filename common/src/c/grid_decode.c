@@ -153,7 +153,7 @@ uint8_t grid_decode_mousebutton_to_usb(char* header, char* chunk) {
       .type = GRID_MACRO_EVENT_TYPE_MOUSE_BUTTON,
       .ispressed = state,
       .keycode = button,
-      .delay = 1,
+      .delay = 0,
   };
 
   if (grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key)) {
@@ -178,7 +178,7 @@ uint8_t grid_decode_mousemove_to_usb(char* header, char* chunk) {
       .type = GRID_MACRO_EVENT_TYPE_MOUSE_MOVE,
       .ispressed = position,
       .keycode = axis,
-      .delay = 1,
+      .delay = 0,
   };
 
   if (grid_usb_macro_tx_push(&grid_usb_state.hid.macro, key)) {
