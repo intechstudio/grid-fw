@@ -110,6 +110,8 @@ extern void grid_platform_mux_init(uint8_t mux_positions_bm);
 
 extern void grid_platform_mux_write(uint8_t index);
 
-extern void grid_platform_id_to_hex(uint32_t* id, uint8_t byte_count, char* out);
+extern void grid_platform_id_to_hex(const uint8_t* id, uint8_t byte_count, char* out);
+
+extern void grid_platform_byte_to_hex(uint8_t byte, char out[2]);
 
 #endif /* GRID_PLATFORM_H */

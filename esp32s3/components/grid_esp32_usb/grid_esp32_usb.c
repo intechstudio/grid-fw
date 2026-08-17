@@ -20,6 +20,6 @@ void grid_esp32_usb_init(void) {
   uint32_t id[4] = {0};
   grid_platform_get_id(id);
   static char serial[13];
-  grid_platform_id_to_hex(id, 6, serial);
+  grid_platform_id_to_hex((const uint8_t*)id, 6, serial);
   grid_usb_init(0x303a, 0x8123, serial);
 }
