@@ -6,7 +6,6 @@ extern "C" {
 #endif
 
 #include "driver_init.h"
-#include "rtos_start.h"
 #include "stdio_start.h"
 
 /**
