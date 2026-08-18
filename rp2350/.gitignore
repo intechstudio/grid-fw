@@ -1,0 +1,9 @@
+!CMakeLists.txt
+!pico_sdk_import.cmake
+!README.md
+!rp2350-openocd.cfg
+
+!main
+!main/CMakeLists.txt
+!main/*.c
+!main/*.h
