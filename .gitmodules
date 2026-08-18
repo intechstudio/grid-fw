@@ -4,3 +4,6 @@
 [submodule "common/dep/littlefs"]
 	path = common/dep/littlefs
 	url = https://github.com/littlefs-project/littlefs.git
+[submodule "common/dep/tomlc99"]
+	path = common/dep/tomlc99
+	url = https://github.com/cktan/tomlc99.git

@@ -6,7 +6,6 @@ idf_component_register(
     SRC_DIRS
         "common/src/c"
         "common/dep/lua-5.5.0/src"
-        "common/dep/tomlc99"
 
     INCLUDE_DIRS
         "."
@@ -19,4 +18,5 @@ idf_component_register(
     REQUIRES
         "tinyusb"
         "littlefs"
+        "tomlc99"
 )
