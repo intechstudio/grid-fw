@@ -70,7 +70,7 @@ jobs:
           cp ${{ env.d51-path }}/gcc/build/grid_d51n20a.uf2 grid_d51_nightly_${{ env.ACTION_DATE }}.uf2
           cp ${{ env.rp2350-path }}/build/main/grid_rp2350.uf2 grid_rp2350_release_${{ env.ACTION_DATE }}.uf2
           cp ${{ env.rp2350-path }}/build/main/grid_rp2350.uf2 grid_rp2350_nightly_${{ env.ACTION_DATE }}.uf2
-          cat ${{ env.d51-path }}/gcc/build/grid_d51n20a.uf2 ${{ env.esp-path }}/build/grid_esp32s3.uf2 \
+          cat ${{ env.d51-path }}/gcc/build/grid_d51n20a.uf2 ${{ env.esp-path }}/build/grid_esp32s3.uf2 ${{ env.rp2350-path }}/build/main/grid_rp2350.uf2 \
             > grid_multiarch_nightly_${{ env.ACTION_DATE }}.uf2
           cp grid_multiarch_nightly_${{ env.ACTION_DATE }}.uf2 grid_multiarch_release_${{ env.ACTION_DATE }}.uf2
           cp wasm/build/index.html index.html
