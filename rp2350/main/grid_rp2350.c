@@ -8,6 +8,8 @@
 #include "grid_rp2350_adc.h"
 #include "grid_rp2350_led.h"
 #include "grid_rp2350_nvm.h"
+#include "grid_rp2350_usb.h"
+#include "grid_usb.h"
 
 #define NUM_PIXELS 16
 #define BRIGHTNESS 40 // per-channel cap (0-255) for USB power budget
@@ -88,7 +90,11 @@ static void wheel(uint8_t pos, uint8_t* r, uint8_t* g, uint8_t* b) {
 
 int main() {
   stdio_init_all();
+  // stdio above is UART0 + RTT only (see rp2350/main/CMakeLists.txt) -- USB
+  // CDC is the framed grid_usb ACM channel below, not a printf console.
   printf("grid rp2350 ws2812-over-uart: %d pixels, UART1 TX=GPIO4\n", NUM_PIXELS);
+
+  grid_rp2350_usb_init();
 
   grid_led_init(&grid_led_state, NUM_PIXELS);
   grid_rp2350_led_init(&grid_rp2350_led_state, &grid_led_state);
@@ -105,6 +111,8 @@ int main() {
 
   uint8_t frame = 0;
   while (true) {
+    grid_usb_task();
+
     for (int i = 0; i < NUM_PIXELS; i++) {
       uint8_t r, g, b;
       wheel((uint8_t)(frame + i * 256 / NUM_PIXELS), &r, &g, &b);
