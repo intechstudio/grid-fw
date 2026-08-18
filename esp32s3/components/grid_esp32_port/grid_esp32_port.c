@@ -19,14 +19,13 @@
 #include "esp_freertos_hooks.h"
 
 #include "driver/gpio.h"
-#include "tinyusb.h"
-
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
 #include "grid_esp32_lcd.h"
 #include "grid_esp32_pins.h"
 #include "grid_esp32_platform.h"
+#include "grid_health.h"
 #include "grid_rollid.h"
 #include "grid_sys.h"
 #include "grid_transport.h"
@@ -224,26 +223,13 @@ void grid_utask_heart(struct grid_utask_timer* timer) {
   grid_transport_heartbeat(&grid_transport_state, type, hwcfg, activepage, gccount);
 }
 
-struct grid_utask_timer timer_midi_and_keyboard_tx;
+struct grid_utask_timer timer_health_report;
 
-void grid_utask_midi_and_keyboard_tx(struct grid_utask_timer* timer) {
+void grid_utask_health_report(void) {
 
-  if (grid_midi_tx_readable()) {
+  if (grid_usb_connected() && grid_usb_acm_dtr(&grid_usb_state.acm) && grid_utask_timer_elapsed(&timer_health_report)) {
 
-    if (!grid_utask_timer_elapsed(timer)) {
-      return;
-    }
-
-    grid_midi_tx_pop();
-  }
-
-  if (grid_usb_keyboard_tx_readable(&grid_usb_keyboard_state)) {
-
-    if (!grid_utask_timer_elapsed(timer)) {
-      return;
-    }
-
-    grid_usb_keyboard_tx_pop(&grid_usb_keyboard_state);
+    grid_health_report(&grid_health_state);
   }
 }
 
@@ -272,9 +258,9 @@ void grid_utask_midi_rx(struct grid_utask_timer* timer) {
   if (!grid_utask_timer_elapsed(timer)) {
     return;
   }
-  grid_midi_rx_pop();
-  grid_midi_sysex_rx_pop();
-  grid_midi_rtm_rx_pop();
+  grid_usb_midi_rx_voice_process(&grid_usb_state.midi);
+  grid_usb_midi_rx_sysex_process(&grid_usb_state.midi);
+  grid_usb_midi_rx_rtm_process(&grid_usb_state.midi);
 }
 
 extern struct grid_utask_timer timer_draw_event[2];
@@ -429,9 +415,9 @@ void grid_esp32_port_task(void* arg) {
       .last = grid_platform_rtc_get_micros(),
       .period = GRID_PARAMETER_HEARTBEATINTERVAL_us,
   };
-  timer_midi_and_keyboard_tx = (struct grid_utask_timer){
+  timer_health_report = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
-      .period = 20,
+      .period = 1000000,
   };
   timer_process_ui = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
@@ -464,11 +450,10 @@ void grid_esp32_port_task(void* arg) {
 
       grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_PURPLE, 50);
       grid_alert_all_set_frequency(&grid_led_state, -4);
-      grid_alert_all_set_phase(&grid_led_state, 100);
+      grid_alert_all_set_phase(&grid_led_state, 200); // phase must equal |frequency| * timeout (4 * 50) so the fade lands on 0
     }
 
-    // Check if USB is connected and start animation
-    if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && tud_connected()) {
+    if (grid_msg_get_heartbeat_type(&grid_msg_state) != 1 && grid_usb_connected()) {
 
       grid_platform_printf("USB CONNECTED\n");
 
@@ -479,7 +464,6 @@ void grid_esp32_port_task(void* arg) {
       grid_msg_set_heartbeat_type(&grid_msg_state, 1);
     }
 
-    // Editor timeout
     if (grid_sys_get_editor_connected_state(&grid_sys_state)) {
 
       uint64_t last = grid_msg_get_editor_heartbeat_lastrealtime(&grid_msg_state);
@@ -494,7 +478,6 @@ void grid_esp32_port_task(void* arg) {
     struct grid_port* port_ui = grid_transport_get_port(xport, 4, GRID_PORT_UI, 0);
     struct grid_port* port_usb = grid_transport_get_port(xport, 5, GRID_PORT_USB, 0);
 
-    // Broadcast inbound to outbound
     for (uint8_t i = 0; i < 4; ++i) {
 
       struct grid_port* port = grid_transport_get_port(xport, i, GRID_PORT_USART, i);
@@ -504,7 +487,6 @@ void grid_esp32_port_task(void* arg) {
     grid_transport_rx_broadcast_tx(xport, port_ui, grid_esp32_broadcast_between);
     grid_transport_rx_broadcast_tx(xport, port_usb, grid_esp32_broadcast_between);
 
-    // Run receiver-type microtasks
     grid_utask_sendfull(&timer_sendfull);
     grid_utask_ping(&timer_ping);
     grid_utask_heart(&timer_heart);
@@ -513,31 +495,35 @@ void grid_esp32_port_task(void* arg) {
     grid_utask_draw_event(&timer_draw_event[0]);
     grid_utask_draw_event(&timer_draw_event[1]);
 
-    // Decode for USB
     grid_port_send_usb(port_usb);
 
-    // Run transmitter-type microtasks
-    grid_utask_midi_and_keyboard_tx(&timer_midi_and_keyboard_tx);
+    if (grid_usb_midi_tx_available(&grid_usb_state.midi)) {
+      grid_usb_midi_tx_flush(&grid_usb_state.midi);
+    }
+    if (grid_usb_macro_tx_available(&grid_usb_state.hid.macro)) {
+      grid_usb_macro_tx_flush(&grid_usb_state.hid.macro);
+    }
+    if (grid_usb_gamepad_tx_available(&grid_usb_state.hid.gamepad)) {
+      grid_usb_gamepad_tx_flush(&grid_usb_state.hid.gamepad);
+    }
 
-    // Service tinyusb
-    tud_task_ext(0, false);
+    grid_utask_health_report();
+
+    grid_usb_task();
 
     // Duplicate midi rx callback used as a polling mechanism, as the
     // actual callback may not necessarily process all available data
-    tud_midi_rx_cb(0);
+    grid_usb_midi_rx_poll(&grid_usb_state.midi);
+    grid_usb_acm_rx_poll(&grid_usb_state.acm);
+    grid_usb_acm_rx_process(&grid_usb_state.acm);
 
-    // Decode for UI
     grid_port_send_ui(port_ui);
 
-    // Outbound USART
     grid_transport_send_usart_cyclic_offset(xport);
 
-    // Garbage collection step for lua
     grid_lua_semaphore_lock(&grid_lua_state);
     grid_lua_gc_step_unsafe(&grid_lua_state);
     grid_lua_semaphore_release(&grid_lua_state);
-
-    // ets_delay_us(100);
 
     handle_connection_effect();
 

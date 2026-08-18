@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_transport.h"
 
@@ -251,7 +252,7 @@ void grid_lua_decode_process_results(struct grid_lua_model* lua) {
   }
 
   if (lua_getglobal(lua->L, GRID_LUA_DECODE_PROCESSOR) != LUA_TFUNCTION) {
-    goto grid_lua_decode_process_results_cleanup;
+    goto grid_lua_decode_process_results_clearer;
   }
 
   // Move the processor function below the result tables
@@ -261,8 +262,10 @@ void grid_lua_decode_process_results(struct grid_lua_model* lua) {
   if (lua_pcall(lua->L, 4, 0, 0) != LUA_OK) {
     grid_lua_clear_stde(lua);
     grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
-    goto grid_lua_decode_process_results_cleanup;
+    goto grid_lua_decode_process_results_clearer;
   }
+
+grid_lua_decode_process_results_clearer:
 
   if (!grid_lua_decode_results_check_unsafe(lua, &empty) || empty) {
     goto grid_lua_decode_process_results_cleanup;
@@ -356,7 +359,7 @@ bool grid_lua_events_process_unsafe(struct grid_lua_model* lua) {
   }
 
   if (lua_getglobal(lua->L, GRID_LUA_EVENTS_PROCESSOR) != LUA_TFUNCTION) {
-    goto grid_lua_events_process_cleanup;
+    goto grid_lua_events_process_clearer;
   }
 
   // Move the processor function below the address table
@@ -366,8 +369,12 @@ bool grid_lua_events_process_unsafe(struct grid_lua_model* lua) {
   if (lua_pcall(lua->L, 2, 0, 0) != LUA_OK) {
     grid_lua_clear_stde(lua);
     grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
-    goto grid_lua_events_process_cleanup;
+    goto grid_lua_events_process_clearer;
   }
+
+  ret = true;
+
+grid_lua_events_process_clearer:
 
   if (!grid_lua_events_addresses_check_unsafe(lua, &empty) || empty) {
     goto grid_lua_events_process_cleanup;
@@ -383,8 +390,6 @@ bool grid_lua_events_process_unsafe(struct grid_lua_model* lua) {
     grid_lua_append_stde(lua, lua_tostring(lua->L, -1));
     goto grid_lua_events_process_cleanup;
   }
-
-  ret = true;
 
 grid_lua_events_process_cleanup:
   lua_pop(lua->L, lua_gettop(lua->L));
@@ -685,15 +690,6 @@ void grid_lua_register_event(lua_State* L, const char* type, uint8_t event) {
   lua_pop(L, lua_gettop(L));
 }
 
-static char uint4_to_hex[16] = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
-};
-
-static void uint8_to_hex(uint8_t u, char h[2]) {
-  h[0] = uint4_to_hex[u >> 4];
-  h[1] = uint4_to_hex[u & 0xf];
-}
-
 int grid_lua_serialize_stack_element(lua_State* L, struct grid_msg* msg, int element) {
 
   int type = lua_type(L, element);
@@ -768,7 +764,7 @@ int grid_lua_serialize_stack_element(lua_State* L, struct grid_msg* msg, int ele
       } else {
 
         char h[2];
-        uint8_to_hex(c, h);
+        grid_platform_byte_to_hex(c, h);
 
         if (grid_msg_nprintf(msg, "\\x%c%c", h[0], h[1]) < 0) {
           return -1;

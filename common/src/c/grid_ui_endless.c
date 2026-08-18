@@ -45,6 +45,25 @@ void grid_ui_endless_state_init(struct grid_ui_endless_state* state, uint8_t adc
   grid_ui_button_state_init(&state->button, button_adc_bit_depth, button_threshold, button_hysteresis);
 }
 
+void grid_ui_element_endless_event_clear_cb(struct grid_ui_event* eve) {
+
+  int32_t* template_parameter_list = eve->parent->template_parameter_list;
+
+  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_STATE_index] = 64;
+
+  if (template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MODE_index] == 1) { // relative
+
+    int32_t min = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index];
+    int32_t max = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index];
+
+    template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = ((max + 1) + min) / 2;
+
+  } else if (template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MODE_index] == 2) {
+
+    template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = 0;
+  }
+}
+
 void grid_ui_element_endless_init(struct grid_ui_element* ele) {
 
   ele->type = GRID_PARAMETER_ELEMENT_ENDLESS;
@@ -75,7 +94,7 @@ void grid_ui_element_endless_init(struct grid_ui_element* ele) {
   ele->template_parameter_index_max[1] = GRID_LUA_FNC_EP_ENDLESS_MAX_index;
 
   ele->event_clear_cb = &grid_ui_element_endless_event_clear_cb;
-  ele->page_change_cb = &grid_ui_element_endless_page_change_cb;
+  ele->page_change_cb = NULL;
 }
 
 void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buffer* buf) {
@@ -104,39 +123,6 @@ void grid_ui_element_endless_template_parameter_init(struct grid_ui_template_buf
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VELOCITY_index] = 50;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_DIRECTION_index] = -1;
   template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_SENSITIVITY_index] = 50;
-}
-
-void grid_ui_element_endless_event_clear_cb(struct grid_ui_event* eve) {
-
-  int32_t* template_parameter_list = eve->parent->template_parameter_list;
-
-  template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_STATE_index] = 64;
-
-  if (template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MODE_index] == 1) { // relative
-
-    int32_t min = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MIN_index];
-    int32_t max = template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MAX_index];
-
-    template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = ((max + 1) + min) / 2;
-  } else if (template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_MODE_index] == 2) {
-
-    template_parameter_list[GRID_LUA_FNC_EP_ENDLESS_VALUE_index] = 0;
-  }
-}
-
-void grid_ui_element_endless_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new) {
-
-  // for (uint8_t i = 0; i<16; i++)
-  // {
-
-  // 	struct grid_ui_event* eve = NULL;
-
-  // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_PARAMETER_EVENT_INIT); 	grid_ui_event_trigger_local(eve);
-
-  // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_PARAMETER_EVENT_ENCODER); 	grid_ui_event_trigger_local(eve);
-  // }
 }
 
 uint8_t grid_ui_endless_update_trigger(struct grid_ui_element* ele, uint16_t norm, int16_t delta, double* delta_frac, uint64_t* last_real_time) {

@@ -165,13 +165,7 @@ void grid_sys_set_bank(struct grid_sys_model* sys, uint8_t banknumber) {
       sys->bank_activebank_color_r = sys->bank_color_r[sys->bank_activebank_number];
       sys->bank_activebank_color_g = sys->bank_color_g[sys->bank_activebank_number];
       sys->bank_activebank_color_b = sys->bank_color_b[sys->bank_activebank_number];
-    } else {
-
-      // grid_debug_print_text("NOT ENABLED");
     }
-  } else {
-
-    // grid_debug_print_text("Invalid Bank Number");
   }
 }
 

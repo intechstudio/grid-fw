@@ -56,7 +56,6 @@
 !LICENSE
 !lua_build.sh
 !merged_stream.sh
-!patch_esp_efuse_startup.sh
 !patch_esp_spi_flash_hpm.sh
 !patch_esp_trace_include.sh
 !pico_build.sh

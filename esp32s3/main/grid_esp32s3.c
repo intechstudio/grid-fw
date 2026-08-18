@@ -16,30 +16,24 @@
 #include "grid_transport.h"
 
 #include "grid_ui.h"
-
 #include "grid_ui_button.h"
-#include "grid_ui_encoder.h"
 #include "grid_ui_endless.h"
-#include "grid_ui_potmeter.h"
 #include "grid_ui_system.h"
 
-#include "esp_intr_alloc.h"
 #include "esp_log.h"
-
-#include <string.h>
-
-#include "driver/spi_master.h"
-#include "rom/ets_sys.h" // For ets_printf
+#include "rom/ets_sys.h"
 
 #include "driver/gpio.h"
-#include "esp_chip_info.h"
-#include "esp_flash.h"
-#include "esp_task_wdt.h"
-
 #include "driver/gptimer.h"
-
+#include "driver/ledc.h"
+#include "driver/uart.h"
+#include "esp_chip_info.h"
+#include "esp_efuse.h"
+#include "esp_flash.h"
 #include "esp_private/esp_psram_extram.h"
+#include "esp_psram.h"
 
+#include "grid_esp32_lcd.h"
 #include "grid_esp32_led.h"
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_ef44.h"
@@ -48,34 +42,15 @@
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
 #include "grid_esp32_module_vsnx.h"
-#include "pico_firmware.h"
-
-#include "grid_esp32_trace.h"
-
-// module task priority must be the lowest to make it run most of the time
-#define MODULE_TASK_PRIORITY 0
-
-#define LED_TASK_PRIORITY 2
-
-// module task priority must be the lowest to ma it run most of the time
-#define PORT_TASK_PRIORITY 0 // same as idle
-
-#include "driver/ledc.h"
-#include <esp_timer.h>
-
-#include "driver/uart.h"
-#include "esp_check.h"
-#include "esp_log.h"
-#include "esp_psram.h"
-#include "grid_esp32_lcd.h"
 #include "grid_esp32_nvm.h"
 #include "grid_esp32_port.h"
 #include "grid_esp32_swd.h"
 #include "grid_esp32_usb.h"
-#include "rom/ets_sys.h" // For ets_printf
+#include "pico_firmware.h"
 
 #include "grid_ain.h"
 #include "grid_led.h"
+#include "grid_lua_api.h"
 #include "grid_module.h"
 #include "grid_msg.h"
 #include "grid_port.h"
@@ -83,16 +58,15 @@
 #include "grid_sys.h"
 #include "grid_usb.h"
 
-#include "grid_lua_api.h"
-#include "grid_ui.h"
-
 #include "vmp_def.h"
 #include "vmp_tag.h"
 
 static const char* TAG = "main";
 
-#include "tinyusb.h"
-#include "tinyusb_cdc_acm.h"
+// module task priority must be the lowest to make it run most of the time
+#define MODULE_TASK_PRIORITY 0
+#define LED_TASK_PRIORITY 2
+#define PORT_TASK_PRIORITY 0 // same as idle
 
 static bool periodic_rtc_ms_cb(struct gptimer_t*, const gptimer_alarm_event_data_t*, void*) {
 
@@ -352,6 +326,34 @@ void grid_esp32_print_chip_info() {
   ESP_LOGI(TAG, "free heap: %u.", (unsigned int)esp_get_free_heap_size());
 }
 
+static void grid_esp32_setup_rom_log_scheme(void) {
+  // Configure ROM bootloader to only log when GPIO is high.
+  // This speeds up boot by suppressing ROM logs on normal boots.
+  // We handle this in firmware instead of via CONFIG_BOOT_ROM_LOG_ON_GPIO_HIGH
+  // to avoid ESP-IDF bug: https://github.com/espressif/esp-idf/issues/12894
+  // The fix was supposedly merged but never actually made it to the main branch.
+  // IMPORTANT: sdkconfig must have CONFIG_BOOT_ROM_LOG_ALWAYS_ON=y (the default).
+  // Do NOT set CONFIG_BOOT_ROM_LOG_ON_GPIO_HIGH in sdkconfig - it will crash.
+  esp_err_t err = esp_efuse_set_rom_log_scheme(ESP_EFUSE_ROM_LOG_ON_GPIO_HIGH);
+
+  switch (err) {
+  case ESP_OK:
+    ESP_LOGI(TAG, "ROM log scheme set to GPIO_HIGH");
+    break;
+  case ESP_ERR_INVALID_STATE:
+    // eFuse already burned - this is expected after first boot
+    ESP_LOGD(TAG, "ROM log eFuse already configured");
+    break;
+  case ESP_ERR_NOT_SUPPORTED:
+    // Chip doesn't support this feature (e.g., ESP32)
+    ESP_LOGD(TAG, "ROM log scheme not supported on this chip");
+    break;
+  default:
+    ESP_LOGW(TAG, "Unexpected error setting ROM log scheme: %s", esp_err_to_name(err));
+    break;
+  }
+}
+
 void app_main(void) {
 
   // Allocate profiler & assign its interface
@@ -374,6 +376,8 @@ void app_main(void) {
   vTaskDelay(1);
 
   esp_log_level_set("*", ESP_LOG_INFO);
+
+  grid_esp32_setup_rom_log_scheme();
 
   TaskHandle_t core2_task_hdl;
   xTaskCreatePinnedToCore(system_init_core_2_task, "swd_init", 1024 * 3, NULL, 4, &core2_task_hdl, 1);
@@ -453,8 +457,6 @@ void app_main(void) {
   grid_esp32_led_start(grid_led_get_pin(&grid_led_state));
 
   grid_esp32_usb_init();
-  grid_usb_midi_buffer_init();
-  grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
 
   // GRID MODULE INITIALIZATION SEQUENCE
 

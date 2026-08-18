@@ -192,8 +192,8 @@ void grid_ui_element_button_init(struct grid_ui_element* ele) {
   ele->template_parameter_index_min[1] = ele->template_parameter_index_min[0];
   ele->template_parameter_index_max[1] = ele->template_parameter_index_max[0];
 
-  ele->event_clear_cb = &grid_ui_element_button_event_clear_cb;
-  ele->page_change_cb = &grid_ui_element_button_page_change_cb;
+  ele->event_clear_cb = NULL;
+  ele->page_change_cb = NULL;
 }
 
 void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buffer* buf) {
@@ -209,22 +209,6 @@ void grid_ui_element_button_template_parameter_init(struct grid_ui_template_buff
   template_parameter_list[GRID_LUA_FNC_B_BUTTON_MODE_index] = 0;
   template_parameter_list[GRID_LUA_FNC_B_BUTTON_ELAPSED_index] = 0;
   template_parameter_list[GRID_LUA_FNC_B_BUTTON_STATE_index] = 0;
-}
-
-void grid_ui_element_button_event_clear_cb(struct grid_ui_event* eve) {}
-
-void grid_ui_element_button_page_change_cb(struct grid_ui_element* ele, uint8_t page_old, uint8_t page_new) {
-
-  // for (uint8_t i=0; i<grid_ui_state.element_list_length; i++){
-
-  // 	struct grid_ui_event* eve = NULL;
-
-  // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_PARAMETER_EVENT_INIT); 	grid_ui_event_trigger_local(eve);
-
-  // 	eve = grid_ui_event_find(&grid_ui_state.element_list[i],
-  // GRID_PARAMETER_EVENT_BUTTON); 	grid_ui_event_trigger_local(eve);
-  // }
 }
 
 void grid_ui_button_store_input(struct grid_ui_button_state* state, uint16_t value) {

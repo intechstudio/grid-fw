@@ -1,5 +1,7 @@
 #include "vmp_def.h"
 
+#include "grid_platform.h"
+
 struct vmp_buf_t vmp;
 
 #define hex_to_uint8_range(h, min, max, add) (((h) >= (min) && (h) <= (max)) * ((h) - (min) + (add)))
@@ -9,15 +11,6 @@ uint8_t hex_to_uint8(char h[2]) {
   uint8_t lo = hex_to_uint8_range(h[1], '0', '9', 0) + hex_to_uint8_range(h[1], 'a', 'f', 10);
 
   return (hi << 4) + lo;
-}
-
-static char uint4_to_hex[16] = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
-};
-
-void uint8_to_hex(uint8_t u, char h[2]) {
-  h[0] = uint4_to_hex[u >> 4];
-  h[1] = uint4_to_hex[u & 0xf];
 }
 
 size_t vmp_evt_serialize(void* evt, uint8_t* dest) {
@@ -68,7 +61,7 @@ size_t vmp_fwrite(void* ptr, size_t size) {
 
   size_t s = 0;
   for (int i = 0; i < size; ++i) {
-    uint8_to_hex(u8[i], hex);
+    grid_platform_byte_to_hex(u8[i], hex);
     // s += printf("%c%c", hex[0], hex[1]);
     grid_platform_printf("%c%c", hex[0], hex[1]);
     grid_platform_delay_us(10);

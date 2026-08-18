@@ -4,5 +4,5 @@ idf_component_register(
     INCLUDE_DIRS
         "."
     REQUIRES
-        "driver" "efuse" "grid_esp32_adc" "grid_esp32_pins"
+        "driver" "efuse" "grid_common" "grid_esp32_adc" "grid_esp32_pins"
 )
