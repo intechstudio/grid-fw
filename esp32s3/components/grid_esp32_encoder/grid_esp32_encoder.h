@@ -1,9 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-#pragma once
+#ifndef GRID_ESP32_ENCODER_H
+#define GRID_ESP32_ENCODER_H
 
 #include <stdint.h>
 
@@ -25,10 +21,6 @@
 
 #include "esp_heap_caps.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "esp_rom_gpio.h"
 #include "hal/gpio_ll.h"
 
@@ -47,6 +39,4 @@ extern struct grid_esp32_encoder_model grid_esp32_encoder_state;
 void grid_esp32_encoder_init(struct grid_esp32_encoder_model* encoder, uint8_t transfer_length, uint32_t clock_rate, grid_process_encoder_t process_encoder);
 void grid_esp32_encoder_start(struct grid_esp32_encoder_model* encoder);
 
-#ifdef __cplusplus
-}
-#endif
+#endif /* GRID_ESP32_ENCODER_H */

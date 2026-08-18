@@ -16,31 +16,24 @@
 #include "grid_transport.h"
 
 #include "grid_ui.h"
-
 #include "grid_ui_button.h"
-#include "grid_ui_encoder.h"
 #include "grid_ui_endless.h"
-#include "grid_ui_potmeter.h"
 #include "grid_ui_system.h"
 
-#include "esp_intr_alloc.h"
 #include "esp_log.h"
-
-#include <string.h>
-
-#include "driver/spi_master.h"
-#include "rom/ets_sys.h" // For ets_printf
+#include "rom/ets_sys.h"
 
 #include "driver/gpio.h"
+#include "driver/gptimer.h"
+#include "driver/ledc.h"
+#include "driver/uart.h"
 #include "esp_chip_info.h"
 #include "esp_efuse.h"
 #include "esp_flash.h"
-#include "esp_task_wdt.h"
-
-#include "driver/gptimer.h"
-
 #include "esp_private/esp_psram_extram.h"
+#include "esp_psram.h"
 
+#include "grid_esp32_lcd.h"
 #include "grid_esp32_led.h"
 #include "grid_esp32_module_bu16.h"
 #include "grid_esp32_module_ef44.h"
@@ -49,34 +42,15 @@
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
 #include "grid_esp32_module_vsnx.h"
-#include "pico_firmware.h"
-
-#include "grid_esp32_trace.h"
-
-// module task priority must be the lowest to make it run most of the time
-#define MODULE_TASK_PRIORITY 0
-
-#define LED_TASK_PRIORITY 2
-
-// module task priority must be the lowest to ma it run most of the time
-#define PORT_TASK_PRIORITY 0 // same as idle
-
-#include "driver/ledc.h"
-#include <esp_timer.h>
-
-#include "driver/uart.h"
-#include "esp_check.h"
-#include "esp_log.h"
-#include "esp_psram.h"
-#include "grid_esp32_lcd.h"
 #include "grid_esp32_nvm.h"
 #include "grid_esp32_port.h"
 #include "grid_esp32_swd.h"
 #include "grid_esp32_usb.h"
-#include "rom/ets_sys.h" // For ets_printf
+#include "pico_firmware.h"
 
 #include "grid_ain.h"
 #include "grid_led.h"
+#include "grid_lua_api.h"
 #include "grid_module.h"
 #include "grid_msg.h"
 #include "grid_port.h"
@@ -84,16 +58,15 @@
 #include "grid_sys.h"
 #include "grid_usb.h"
 
-#include "grid_lua_api.h"
-#include "grid_ui.h"
-
 #include "vmp_def.h"
 #include "vmp_tag.h"
 
 static const char* TAG = "main";
 
-#include "tinyusb.h"
-#include "tinyusb_cdc_acm.h"
+// module task priority must be the lowest to make it run most of the time
+#define MODULE_TASK_PRIORITY 0
+#define LED_TASK_PRIORITY 2
+#define PORT_TASK_PRIORITY 0 // same as idle
 
 static bool periodic_rtc_ms_cb(struct gptimer_t*, const gptimer_alarm_event_data_t*, void*) {
 
@@ -484,8 +457,6 @@ void app_main(void) {
   grid_esp32_led_start(grid_led_get_pin(&grid_led_state));
 
   grid_esp32_usb_init();
-  grid_usb_midi_buffer_init();
-  grid_usb_keyboard_model_init(&grid_usb_keyboard_state, 100);
 
   // GRID MODULE INITIALIZATION SEQUENCE
 

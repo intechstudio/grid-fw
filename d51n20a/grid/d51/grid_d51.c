@@ -134,9 +134,6 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap) {
   uint8_t PIN_VDD = 253;
 
   uint8_t PIN_RST = 252;
-  uint8_t PIN_USB = 251;
-  uint8_t PIN_SWD = 250;
-  uint8_t PIN_DBG = 249;
 
   uint8_t PIN_CORE = 248;
   uint8_t PIN_VSW = 247;
@@ -396,17 +393,18 @@ uint8_t grid_d51_boundary_scan(uint32_t* result_bitmap) {
       }
     }
   }
+  return (uint8_t)error_count;
 }
 
 void grid_d51_boundary_scan_report(uint32_t* result_bitmap) {
 
   printf("test.mcu.ATSAMD51N20A\r\n");
-  printf("test.hwcfg.%d\r\n", grid_platform_get_hwcfg(&grid_sys_state));
+  printf("test.hwcfg.%ld\r\n", grid_platform_get_hwcfg(&grid_sys_state));
 
   uint32_t uniqueid[4] = {0};
   grid_platform_get_id(uniqueid);
 
-  printf("test.serialno.%08x %08x %08x %08x\r\n", uniqueid[0], uniqueid[1], uniqueid[2], uniqueid[3]);
+  printf("test.serialno.%08lx %08lx %08lx %08lx\r\n", uniqueid[0], uniqueid[1], uniqueid[2], uniqueid[3]);
 
   for (uint8_t i = 0; i < 4; i++) {
 
@@ -432,8 +430,10 @@ uint32_t grid_d51_dwt_enable() {
     GRID_D51_DEMCR |= 1 << 24;  // Set bit 24
     GRID_D51_DWT_CYCCNT = 0;
     GRID_D51_DWT_CTRL |= 1 << 0; // Set bit 0
+    return 1;
   } else {
     printf("Debug Watch and Trace not supported!\r\n");
+    return 0;
   }
 }
 
@@ -441,34 +441,34 @@ void grid_d51_nvic_debug_priorities(void) {
 
   // The default priority is 0 for every interrupt
 
-  printf("Pri MASK    %d\r\n", grid_d51_nvic_get_interrupt_priority_mask());
+  printf("Pri MASK    %ld\r\n", grid_d51_nvic_get_interrupt_priority_mask());
 
-  printf("RTC         %d\r\n", grid_d51_nvic_get_interrupt_priority(RTC_IRQn));
+  printf("RTC         %ld\r\n", grid_d51_nvic_get_interrupt_priority(RTC_IRQn));
 
-  printf("USB_0       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_0_IRQn));
-  printf("USB_1       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_1_IRQn));
-  printf("USB_2       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_2_IRQn));
-  printf("USB_3       %d\r\n", grid_d51_nvic_get_interrupt_priority(USB_3_IRQn));
+  printf("USB_0       %ld\r\n", grid_d51_nvic_get_interrupt_priority(USB_0_IRQn));
+  printf("USB_1       %ld\r\n", grid_d51_nvic_get_interrupt_priority(USB_1_IRQn));
+  printf("USB_2       %ld\r\n", grid_d51_nvic_get_interrupt_priority(USB_2_IRQn));
+  printf("USB_3       %ld\r\n", grid_d51_nvic_get_interrupt_priority(USB_3_IRQn));
 
-  printf("ADC0_0      %d\r\n", grid_d51_nvic_get_interrupt_priority(ADC0_0_IRQn));
-  printf("ADC0_1      %d\r\n", grid_d51_nvic_get_interrupt_priority(ADC0_1_IRQn));
+  printf("ADC0_0      %ld\r\n", grid_d51_nvic_get_interrupt_priority(ADC0_0_IRQn));
+  printf("ADC0_1      %ld\r\n", grid_d51_nvic_get_interrupt_priority(ADC0_1_IRQn));
 
-  printf("ADC1_0      %d\r\n", grid_d51_nvic_get_interrupt_priority(ADC1_0_IRQn));
-  printf("ADC1_1      %d\r\n", grid_d51_nvic_get_interrupt_priority(ADC1_1_IRQn));
+  printf("ADC1_0      %ld\r\n", grid_d51_nvic_get_interrupt_priority(ADC1_0_IRQn));
+  printf("ADC1_1      %ld\r\n", grid_d51_nvic_get_interrupt_priority(ADC1_1_IRQn));
 
-  printf("DMAC_0      %d\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_0_IRQn));
-  printf("DMAC_1      %d\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_1_IRQn));
-  printf("DMAC_2      %d\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_2_IRQn));
-  printf("DMAC_3      %d\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_3_IRQn));
-  printf("DMAC_4..31  %d\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_4_IRQn));
+  printf("DMAC_0      %ld\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_0_IRQn));
+  printf("DMAC_1      %ld\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_1_IRQn));
+  printf("DMAC_2      %ld\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_2_IRQn));
+  printf("DMAC_3      %ld\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_3_IRQn));
+  printf("DMAC_4..31  %ld\r\n", grid_d51_nvic_get_interrupt_priority(DMAC_4_IRQn));
 
-  printf("SERCOM3 2   %d\r\n", grid_d51_nvic_get_interrupt_priority(SERCOM3_2_IRQn)); // SPI_UI transfer complete
+  printf("SERCOM3 2   %ld\r\n", grid_d51_nvic_get_interrupt_priority(SERCOM3_2_IRQn)); // SPI_UI transfer complete
 
-  printf("EVSYS_0     %d\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_0_IRQn));
-  printf("EVSYS_1     %d\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_1_IRQn));
-  printf("EVSYS_2     %d\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_2_IRQn));
-  printf("EVSYS_3     %d\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_3_IRQn));
-  printf("EVSYS_4..11 %d\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_4_IRQn));
+  printf("EVSYS_0     %ld\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_0_IRQn));
+  printf("EVSYS_1     %ld\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_1_IRQn));
+  printf("EVSYS_2     %ld\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_2_IRQn));
+  printf("EVSYS_3     %ld\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_3_IRQn));
+  printf("EVSYS_4..11 %ld\r\n", grid_d51_nvic_get_interrupt_priority(EVSYS_4_IRQn));
 }
 
 void grid_d51_nvic_set_interrupt_priority(IRQn_Type irqn, uint32_t priority) {
@@ -491,101 +491,6 @@ void grid_d51_nvic_set_interrupt_priority_mask(uint32_t priority) { __set_BASEPR
 uint32_t grid_d51_nvic_get_interrupt_priority_mask(void) { return __get_BASEPRI() >> (8 - __NVIC_PRIO_BITS); }
 
 uint32_t grid_d51_dwt_cycles_read() { return GRID_D51_DWT_CYCCNT; }
-
-uint8_t grid_fusb302_read_id(struct io_descriptor* i2c_io) {
-
-  printf("fusb start\r\n");
-
-  uint8_t buffer[2] = {0x01, 0x00};
-
-  if (1) {
-
-    i2c_m_async_set_slaveaddr(&SYS_I2C, 0x22, I2C_M_SEVEN);
-
-    const uint16_t n = 1;
-
-    struct i2c_m_async_desc* i2c = &SYS_I2C;
-    struct _i2c_m_msg msg;
-    int32_t ret;
-
-    msg.addr = i2c->slave_addr;
-    msg.len = n;
-    msg.flags = 0;
-    msg.buffer = buffer;
-
-    /* start transfer then return */
-    ret = i2c_m_async_transfer(i2c, &msg);
-
-    if (ret != 0) {
-      printf("I2C error\r\n");
-    }
-
-    uint32_t cycles = grid_d51_dwt_cycles_read();
-
-    while (i2c->device.service.msg.flags & I2C_M_BUSY) {
-      ;
-    }
-
-    msg.flags = I2C_M_RD | I2C_M_STOP;
-    ret = i2c_m_async_transfer(i2c, &msg);
-
-    if (ret != 0) {
-      printf("I2C error\r\n");
-    }
-
-    while (i2c->device.service.msg.flags & I2C_M_BUSY) {
-      ;
-    }
-
-    printf("I2C: %d \r\n", buffer[0]);
-  }
-}
-
-uint8_t grid_mxt144u_read_id(struct io_descriptor* i2c_io) {
-
-  printf("mxt start\r\n");
-
-  uint8_t buffer[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-  if (1) {
-
-    i2c_m_async_set_slaveaddr(&SYS_I2C, 0x4a, I2C_M_SEVEN);
-
-    struct i2c_m_async_desc* i2c = &SYS_I2C;
-    struct _i2c_m_msg msg;
-    int32_t ret;
-
-    msg.addr = i2c->slave_addr;
-    msg.len = 2;
-    msg.flags = 0;
-    msg.buffer = buffer;
-
-    /* start transfer then return */
-    ret = i2c_m_async_transfer(i2c, &msg);
-
-    if (ret != 0) {
-      printf("I2C error\r\n");
-    }
-
-    while (i2c->device.service.msg.flags & I2C_M_BUSY) {
-      ;
-    }
-
-    msg.len = 7;
-    msg.flags = I2C_M_RD | I2C_M_STOP;
-    ret = i2c_m_async_transfer(i2c, &msg);
-
-    if (ret != 0) {
-      printf("I2C error\r\n");
-    }
-
-    while (i2c->device.service.msg.flags & I2C_M_BUSY) {
-      ;
-    }
-
-    printf("I2C: %d %d %d %d %d %d %d %d \r\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
-  }
-}
 
 void grid_platform_printf(char const* fmt, ...) {
 
@@ -718,6 +623,7 @@ uint8_t grid_platform_disable_grid_transmitter(uint8_t direction) {
     usart_async_disable(&USART_WEST);
   } else {
   }
+  return 0;
 }
 
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) {
@@ -732,6 +638,7 @@ uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) {
     grid_d51_uart_port_reset_dma(DMA_WEST_RX_CHANNEL);
   } else {
   }
+  return 0;
 }
 
 uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
@@ -746,6 +653,7 @@ uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
     usart_async_enable(&USART_WEST);
   } else {
   }
+  return 0;
 }
 
 void grid_platform_system_reset() { NVIC_SystemReset(); }

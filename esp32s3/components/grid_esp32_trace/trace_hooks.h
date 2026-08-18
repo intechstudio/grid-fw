@@ -1,9 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-#pragma once
+#ifndef TRACE_HOOKS_H
+#define TRACE_HOOKS_H
 
 #ifndef __ASSEMBLER__
 
@@ -27,10 +23,6 @@ sed -i '10s|.*|#include
 
 */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define gridUSE_TRACE 1
 
 #define configUSE_TRACE_FACILITY 1
@@ -39,6 +31,4 @@ extern "C" {
 #define traceTASK_SWITCHED_IN grid_esp32_trace_task_switched_in
 #define traceTASK_SWITCHED_OUT grid_esp32_trace_task_switched_out
 
-#ifdef __cplusplus
-}
-#endif
+#endif /* TRACE_HOOKS_H */

@@ -1,12 +1,7 @@
-
-
-#pragma once
+#ifndef GRID_ESP32_SWD_H
+#define GRID_ESP32_SWD_H
 
 #include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define SWD_CLOCK_PERIOD 0
 
@@ -66,6 +61,4 @@ void grid_esp32_swd_pico_pins_init(uint8_t swclk_pin, uint8_t swdio_pin, uint8_t
 void grid_esp32_swd_pico_clock_init(uint8_t timer_instance, uint8_t channel_instance);
 void grid_esp32_swd_pico_program_sram(uint8_t swclk_pin, uint8_t swdio_pin, const uint8_t* buffer, uint32_t length);
 
-#ifdef __cplusplus
-}
-#endif
+#endif /* GRID_ESP32_SWD_H */

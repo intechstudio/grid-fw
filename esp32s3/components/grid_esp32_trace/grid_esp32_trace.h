@@ -1,9 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-#pragma once
+#ifndef GRID_ESP32_TRACE_H
+#define GRID_ESP32_TRACE_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -25,3 +21,5 @@ uint64_t grid_esp32_trace_timed_task_diff(struct grid_esp32_trace_model* trace);
 
 void grid_esp32_trace_task_switched_in(void);
 void grid_esp32_trace_task_switched_out(void);
+
+#endif /* GRID_ESP32_TRACE_H */

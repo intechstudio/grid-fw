@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "grid_platform.h"
 #include "grid_protocol.h"
 #include "grid_transport.h"
 
@@ -689,15 +690,6 @@ void grid_lua_register_event(lua_State* L, const char* type, uint8_t event) {
   lua_pop(L, lua_gettop(L));
 }
 
-static char uint4_to_hex[16] = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
-};
-
-static void uint8_to_hex(uint8_t u, char h[2]) {
-  h[0] = uint4_to_hex[u >> 4];
-  h[1] = uint4_to_hex[u & 0xf];
-}
-
 int grid_lua_serialize_stack_element(lua_State* L, struct grid_msg* msg, int element) {
 
   int type = lua_type(L, element);
@@ -772,7 +764,7 @@ int grid_lua_serialize_stack_element(lua_State* L, struct grid_msg* msg, int ele
       } else {
 
         char h[2];
-        uint8_to_hex(c, h);
+        grid_platform_byte_to_hex(c, h);
 
         if (grid_msg_nprintf(msg, "\\x%c%c", h[0], h[1]) < 0) {
           return -1;

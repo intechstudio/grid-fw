@@ -8,6 +8,7 @@
 #include "grid_config.h"
 #include "grid_platform.h"
 #include "grid_protocol.h"
+#include "grid_sys.h"
 #include "grid_transport.h"
 #include "grid_usb.h"
 
@@ -244,10 +245,6 @@ void grid_ui_rtc_ms_mapmode_handler(struct grid_ui_model* ui, uint8_t new_mapmod
       struct grid_ui_element* sys_ele = &grid_ui_state.element_list[grid_ui_state.element_list_length - 1];
 
       struct grid_ui_event* eve = grid_ui_event_find(sys_ele, GRID_PARAMETER_EVENT_MAPMODE);
-
-      if (eve == NULL) {
-      } else {
-      }
 
       grid_ui_event_state_set(eve, GRID_EVE_STATE_TRIG);
     }
@@ -917,8 +914,6 @@ static void grid_ui_page_read(struct grid_ui_model* ui, uint8_t page) {
   grid_lua_gc_full_unsafe(&grid_lua_state);
 
   grid_lua_semaphore_release(&grid_lua_state);
-
-  grid_usb_keyboard_enable(&grid_usb_keyboard_state);
 
   // Clear all events
   for (uint8_t i = 0; i < ui->element_list_length; i++) {

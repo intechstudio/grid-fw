@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRID_PICO_SPI_H
+#define GRID_PICO_SPI_H
 
 #include "hardware/irq.h"
 
@@ -10,3 +11,5 @@ void grid_pico_spi_clear_rx_data_available_flag(void);
 void grid_pico_spi_init(void);
 void grid_pico_spi_transfer(uint8_t* tx_buffer, uint8_t* rx_buffer);
 void grid_pico_spi_dma_xfer_complete_cb(void);
+
+#endif /* GRID_PICO_SPI_H */
