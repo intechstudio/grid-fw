@@ -30,8 +30,6 @@ BUILD_DIRS = \
 	$(BUILD_DIR)/asf/examples \
 	$(BUILD_DIR)/asf/hpl/systick \
 	$(BUILD_DIR)/asf/hpl/oscctrl \
-	$(BUILD_DIR)/asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source \
-	$(BUILD_DIR)/asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0 \
 	$(BUILD_DIR)/asf/stdio_redirect \
 	$(BUILD_DIR)/asf/hpl/tc \
 	$(BUILD_DIR)/asf/hpl/osc32kctrl \
@@ -44,8 +42,6 @@ BUILD_DIRS = \
 	$(BUILD_DIR)/asf/hpl/rtc \
 	$(BUILD_DIR)/asf/hpl/trng \
 	$(BUILD_DIR)/asf/hpl/usb \
-	$(BUILD_DIR)/asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F \
-	$(BUILD_DIR)/asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang \
 	$(BUILD_DIR)/asf/hpl/mclk \
 	$(BUILD_DIR)/asf/hpl/eic \
 	$(BUILD_DIR)/asf/hpl/cmcc \
@@ -165,14 +161,9 @@ SRCS = \
 	common/dep/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	\
 	asf/hal/src/hal_io.c \
-	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/list.c \
 	asf/hpl/pac/hpl_pac.c \
-	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F/port.c \
 	asf/hal/src/hal_i2c_m_async.c \
-	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/event_groups.c \
-	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/MemMang/heap_4.c \
 	asf/hpl/wdt/hpl_wdt.c \
-	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/croutine.c \
 	asf/stdio_redirect/stdio_io.c \
 	asf/hal/src/hal_spi_m_dma.c \
 	asf/stdio_redirect/gcc/write.c \
@@ -181,14 +172,11 @@ SRCS = \
 	asf/hpl/evsys/hpl_evsys.c \
 	asf/hpl/core/hpl_core_m4.c \
 	asf/hal/src/hal_cache.c \
-	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/stream_buffer.c \
 	asf/hal/utils/src/utils_syscalls.c \
 	asf/hpl/qspi/hpl_qspi.c \
 	asf/hpl/nvmctrl/hpl_nvmctrl.c \
-	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/queue.c \
 	asf/hal/src/hal_timer.c \
 	asf/stdio_redirect/gcc/read.c \
-	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/timers.c \
 	asf/hal/src/hal_delay.c \
 	asf/hpl/pm/hpl_pm.c \
 	asf/hpl/core/hpl_init.c \
@@ -206,9 +194,7 @@ SRCS = \
 	asf/stdio_start.c \
 	asf/hal/src/hal_flash.c \
 	asf/hal/src/hal_spi_m_async.c \
-	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/rtos_port.c \
 	asf/hal/src/hal_crc_sync.c \
-	asf/rtos_start.c \
 	asf/hal/utils/src/utils_list.c \
 	asf/hpl/osc32kctrl/hpl_osc32kctrl.c \
 	asf/hpl/rtc/hpl_rtc.c \
@@ -223,7 +209,6 @@ SRCS = \
 	asf/hal/src/hal_ext_irq.c \
 	asf/hpl/eic/hpl_eic.c \
 	asf/hal/src/hal_qspi_dma.c \
-	asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/tasks.c \
 	asf/hal/src/hal_evsys.c \
 	asf/hal/utils/src/utils_event.c \
 	asf/hal/src/hal_sleep.c \
@@ -282,11 +267,6 @@ INCLUDES = \
 	-I"asf/hri" \
 	-I"asf/" \
 	-I"asf/config" \
-	-I"asf/thirdparty/RTOS" \
-	-I"asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0" \
-	-I"asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/include" \
-	-I"asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/Source/portable/GCC/ARM_CM4F" \
-	-I"asf/thirdparty/RTOS/freertos/FreeRTOSV10.0.0/module_config" \
 	-I"asf/" \
 	-I"asf/config" \
 	-I"asf/stdio_redirect" \
