@@ -1,0 +1,116 @@
+.program uart_coop
+; Fully-concurrent full-duplex UART — 3 RX-phase variants (independent TX/RX phase).
+; 125 MHz, ~62 cy/bit, 3 sub-ticks/bit (~21 cy). RX phase = WHICH variant runs.
+; TX drives at "slot 0" in every loop; rx_pK samples RX at slot K (~cy 0/21/42).
+;   X = rx_bits (8 samples)       Y = transient (TX-FIFO peek only)
+;   OSR = TX frame, autopull @11   ISR = RX data, autopush @8
+; Delays tagged "TUNE" in comments need a hardware pass. RX centred within ~±11 cy.
+; No stop-bit/framing check (autopush delivers the byte) — debug irq is gone.
+
+; ===== scan: RX idle. TX service @ slot0; poll RX at 3 sub-ticks. =====
+scan0:
+    jmp !osre c0drv             ; TX frame active -> drive next bit
+    mov y, status               ; OSR empty -> peek TX FIFO (Y free here)
+    jmp !y c0drv                ;   data queued -> start frame (OUT autopulls word)
+    jmp c0poll                  ;   nothing -> skip TX
+c0drv:
+    out pins, 1
+c0poll:
+    jmp pin scan1   [19]        ; RX high -> scan1 (+fill, TUNE); low -> rx_p0
+    jmp rx_p0       [31]        ; align to bit-0 centre (TUNE)
+scan1:
+    jmp pin scan2   [19]        ; RX high -> scan2 (TUNE); low -> rx_p1
+    jmp rx_p1       [13]        ; align (TUNE)
+scan2:
+    jmp pin scan0   [19]        ; RX high -> scan0 (TUNE); low -> fall through to rx_p2
+
+; ===== rx_p2: RX samples @ slot 2 (~cy 42) =====
+rx_p2:
+    set x, 7        [23]        ; 8 bits + align (TUNE: rx_p2, P+86)
+p2loop:
+    jmp !osre p2o
+    jmp p2s         [31]        ; idle: skip TX + delay toward slot 2
+p2o:
+    out pins, 1     [31]        ; drive  + delay toward slot 2
+p2s:
+    nop             [8]         ; remaining delay to slot 2 (TUNE)
+    in pins, 1      [9]         ; sample @ slot 2 + fill
+    jmp x-- p2loop  [9]         ; -> ~62 cy
+    jmp scan0
+
+; ===== rx_p0: RX samples @ slot 0 (~cy 2) =====
+rx_p0:
+    set x, 7        [31]        ; align (TUNE: rx_p0/rx_p1, keep linked)
+p0loop:
+    jmp !osre p0o
+    jmp p0s
+p0o:
+    out pins, 1
+p0s:
+    in pins, 1      [29]        ; sample @ slot 0 + fill
+    jmp x-- p0loop  [29]        ; -> ~62 cy
+    jmp scan0
+
+; ===== rx_p1: RX samples @ slot 1 (~cy 21) =====
+rx_p1:
+    set x, 7        [31]        ; align (TUNE: rx_p0/rx_p1, keep linked)
+p1loop:
+    jmp !osre p1o
+    jmp p1s         [18]        ; idle: skip TX + delay to slot 1
+p1o:
+    out pins, 1     [18]        ; drive  + delay to slot 1
+p1s:
+    in pins, 1      [20]        ; sample @ slot 1 + fill
+    jmp x-- p1loop  [20]        ; -> ~62 cy
+    jmp scan0
+
+% c-sdk {
+#include "hardware/clocks.h"
+#include "hardware/gpio.h"
+
+static inline void uart_coop_program_init(PIO pio, uint sm, uint offset, uint pin_rx, uint pin_tx) {
+    // RX pin: input with pull-up
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_rx, 1, false);
+    pio_gpio_init(pio, pin_rx);
+    gpio_pull_up(pin_rx);
+
+    // TX pin: output, idle high
+    pio_sm_set_pins_with_mask(pio, sm, 1u << pin_tx, 1u << pin_tx);
+    pio_sm_set_pindirs_with_mask(pio, sm, 1u << pin_tx, 1u << pin_tx);
+    pio_gpio_init(pio, pin_tx);
+
+    pio_sm_config c = uart_coop_program_get_default_config(offset);
+
+    sm_config_set_in_pins(&c, pin_rx);   // IN
+    sm_config_set_jmp_pin(&c, pin_rx);   // JMP pin
+    sm_config_set_out_pins(&c, pin_tx, 1);
+    sm_config_set_set_pins(&c, pin_tx, 1);
+
+    sm_config_set_in_shift(&c, true, true, 8);     // shift right, autopush, 8-bit byte
+    sm_config_set_out_shift(&c, true, true, 11);   // shift right, autopull, 11-bit frame
+
+    // mov y, status reflects TX FIFO < 1 (i.e. empty)
+    sm_config_set_mov_status(&c, STATUS_TX_LESSTHAN, 1);
+
+    // 125 MHz SM clock → ~62 cycles/bit at 2 Mbaud (clkdiv 1.0, default sysclk)
+    sm_config_set_clkdiv(&c, 1.0f);
+
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+static inline void uart_coop_tx_putc(PIO pio, uint sm, char c) {
+    // Bake the 8n1 framing into the word: start(0) + 8 data + dummy(0) + stop(1).
+    uint32_t frame = ((uint32_t)(uint8_t)c << 1) | (1u << 10);
+    pio_sm_put_blocking(pio, sm, frame);
+}
+
+static inline bool uart_coop_rx_available(PIO pio, uint sm) {
+    return !pio_sm_is_rx_fifo_empty(pio, sm);
+}
+
+static inline char uart_coop_rx_getc(PIO pio, uint sm) {
+    io_rw_8 *rxfifo_shift = (io_rw_8 *)&pio->rxf[sm] + 3;
+    return (char)*rxfifo_shift;
+}
+%}
