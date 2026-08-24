@@ -447,14 +447,10 @@ void grid_module_zona_ui_init(struct grid_ain_model* ain, struct grid_led_model*
   grid_led_init(led, 81, grid_module_zona_led_is_alert_all);
   grid_led_lookup_alloc_identity(led, 0, 81);
 
-  grid_ui_model_init(ui, 6); // TODO 2 elements
+  grid_ui_model_init(ui, 2);
 
   grid_ui_element_touch_init(grid_ui_element_model_init(ui, 0));
-  grid_ui_element_touch_init(grid_ui_element_model_init(ui, 1));
-  grid_ui_element_touch_init(grid_ui_element_model_init(ui, 2));
-  grid_ui_element_touch_init(grid_ui_element_model_init(ui, 3));
-  grid_ui_element_touch_init(grid_ui_element_model_init(ui, 4));
-  grid_ui_element_system_init(grid_ui_element_model_init(ui, 5));
+  grid_ui_element_system_init(grid_ui_element_model_init(ui, 1));
 
   ui->lua_ui_init_callback = grid_lua_ui_init;
 }
