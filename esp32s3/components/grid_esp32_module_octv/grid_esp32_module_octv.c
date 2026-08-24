@@ -22,6 +22,7 @@
 
 #include "grid_esp32_adc.h"
 #include "grid_esp32_encoder.h"
+#include "rom/ets_sys.h"
 
 // static const char* TAG = "module_octv";
 
