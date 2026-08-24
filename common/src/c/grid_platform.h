@@ -76,10 +76,6 @@ extern void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir);
 
 extern uint8_t grid_platform_reset_grid_transmitter(uint8_t direction);
 
-extern int32_t grid_platform_usb_serial_ready();
-
-extern int32_t grid_platform_usb_serial_write(char* buffer, uint32_t length);
-
 extern void* grid_platform_allocate_volatile(size_t size);
 
 extern char* grid_platform_read_file_contents(const char* path);
@@ -114,6 +110,8 @@ extern void grid_platform_mux_init(uint8_t mux_positions_bm);
 
 extern void grid_platform_mux_write(uint8_t index);
 
-extern void* grid_platform_allocate_volatile(size_t size);
+extern void grid_platform_id_to_hex(const uint8_t* id, uint8_t byte_count, char* out);
+
+extern void grid_platform_byte_to_hex(uint8_t byte, char out[2]);
 
 #endif /* GRID_PLATFORM_H */

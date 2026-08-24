@@ -1,9 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-#pragma once
+#ifndef GRID_ESP32_LED_H
+#define GRID_ESP32_LED_H
 
 #include <stdint.h>
 
@@ -19,13 +15,7 @@
 #include "driver/rmt_tx.h"
 #include "led_strip_encoder.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void grid_esp32_led_start(uint8_t led_gpio);
 void grid_esp32_utask_led(struct grid_utask_timer* timer);
 
-#ifdef __cplusplus
-}
-#endif
+#endif /* GRID_ESP32_LED_H */

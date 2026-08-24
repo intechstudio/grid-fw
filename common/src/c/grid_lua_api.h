@@ -24,7 +24,7 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 /*static*/ int l_grid_elementname_get(lua_State* L);
 /*static*/ int l_grid_string_get(lua_State* L);
 
-/*static*/ int l_grid_usb_keyboard_send(lua_State* L);
+/*static*/ int l_grid_keyboard_send(lua_State* L);
 /*static*/ int l_grid_mousemove_send(lua_State* L);
 /*static*/ int l_grid_mousebutton_send(lua_State* L);
 

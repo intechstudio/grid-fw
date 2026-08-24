@@ -1,17 +1,6 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-#pragma once
+#ifndef GRID_ESP32_PINS_H
+#define GRID_ESP32_PINS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**
- * @brief Type of led strip encoder configuration
- */
 #define GRID_ESP32_PINS_HWCFG_SHIFT 10
 #define GRID_ESP32_PINS_HWCFG_CLOCK 11
 #define GRID_ESP32_PINS_HWCFG_DATA 12
@@ -40,6 +29,4 @@ extern "C" {
 
 #define GRID_ESP32_PINS_MAPMODE 38
 
-#ifdef __cplusplus
-}
-#endif
+#endif /* GRID_ESP32_PINS_H */

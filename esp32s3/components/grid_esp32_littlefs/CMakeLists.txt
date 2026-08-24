@@ -5,5 +5,5 @@ idf_component_register(
     INCLUDE_DIRS
         "."
 		REQUIRES
-				"esp_partition" "grid_common"
+				"esp_partition" "grid_common" "littlefs"
 )

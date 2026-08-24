@@ -29,11 +29,6 @@ static void tx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr)
 
 void tx_cb_USART_GRID(uint8_t dir) { usart_tx_ready[dir] = 1; }
 
-static void rx_cb_USART_GRID_N(const struct usart_async_descriptor* const descr) {}
-static void rx_cb_USART_GRID_E(const struct usart_async_descriptor* const descr) {}
-static void rx_cb_USART_GRID_S(const struct usart_async_descriptor* const descr) {}
-static void rx_cb_USART_GRID_W(const struct usart_async_descriptor* const descr) {}
-
 volatile int dmatest = 0;
 
 static void dma_transfer_complete_n_cb(struct _dma_resource* resource) { dma_transfer_complete(usart_ports[0]); }
@@ -67,19 +62,34 @@ static void dma_transfer_complete(struct grid_port* port) {
   }
 }
 
-static void err_cb_USART_GRID_N(const struct usart_async_descriptor* const descr) {}
-static void err_cb_USART_GRID_E(const struct usart_async_descriptor* const descr) {}
-static void err_cb_USART_GRID_S(const struct usart_async_descriptor* const descr) {}
-static void err_cb_USART_GRID_W(const struct usart_async_descriptor* const descr) {}
+void grid_d51_uart_dma_rx_init_one(struct usart_async_descriptor* usart, uint8_t channel, char* buffer, uint32_t length, void (*transfer_done_cb)(struct _dma_resource*)) {
 
-static void err_cb_USART_GRID(struct grid_port* const por) {
+  uint8_t dma_rx_channel = channel;
 
-  // uint8_t character = (((Sercom
-  // *)((*por->usart).device.hw))->USART.DATA.reg);
+  _dma_set_source_address(dma_rx_channel, (const void*)&(((Sercom*)((*usart).device.hw))->USART.DATA.reg));
+  _dma_set_destination_address(dma_rx_channel, (const void*)buffer);
+  _dma_set_data_amount(dma_rx_channel, (uint32_t)length);
 
-  // printf("@%d\r\n", character);
+  struct _dma_resource* resource_rx;
+  _dma_get_channel_resource(&resource_rx, dma_rx_channel);
 
-  // usart_async_disable(por->usart);
+  resource_rx->dma_cb.transfer_done = transfer_done_cb;
+  _dma_set_irq_state(dma_rx_channel, DMA_TRANSFER_COMPLETE_CB, true);
+
+  _dma_enable_transaction(dma_rx_channel, false);
+}
+
+void grid_d51_uart_dma_rx_init() {
+
+  grid_d51_uart_dma_rx_init_one(&USART_NORTH, DMA_NORTH_RX_CHANNEL, usart_uwsr[0].data, usart_uwsr[0].capacity, dma_transfer_complete_n_cb);
+  grid_d51_uart_dma_rx_init_one(&USART_EAST, DMA_EAST_RX_CHANNEL, usart_uwsr[1].data, usart_uwsr[1].capacity, dma_transfer_complete_e_cb);
+  grid_d51_uart_dma_rx_init_one(&USART_SOUTH, DMA_SOUTH_RX_CHANNEL, usart_uwsr[2].data, usart_uwsr[2].capacity, dma_transfer_complete_s_cb);
+  grid_d51_uart_dma_rx_init_one(&USART_WEST, DMA_WEST_RX_CHANNEL, usart_uwsr[3].data, usart_uwsr[3].capacity, dma_transfer_complete_w_cb);
+
+  NVIC_SetPriority(DMAC_0_IRQn, 0);
+  NVIC_SetPriority(DMAC_1_IRQn, 0);
+  NVIC_SetPriority(DMAC_2_IRQn, 0);
+  NVIC_SetPriority(DMAC_3_IRQn, 0);
 }
 
 void grid_d51_uart_init() {
@@ -141,34 +151,4 @@ void grid_d51_uart_init() {
   usart_async_enable(&USART_WEST);
 
   grid_d51_uart_dma_rx_init();
-}
-
-void grid_d51_uart_dma_rx_init_one(struct usart_async_descriptor* usart, uint8_t channel, uint8_t* buffer, uint32_t length, void (*transfer_done_cb)(struct _dma_resource*)) {
-
-  uint8_t dma_rx_channel = channel;
-
-  _dma_set_source_address(dma_rx_channel, (const void*)&(((Sercom*)((*usart).device.hw))->USART.DATA.reg));
-  _dma_set_destination_address(dma_rx_channel, (const void*)buffer);
-  _dma_set_data_amount(dma_rx_channel, (uint32_t)length);
-
-  struct _dma_resource* resource_rx;
-  _dma_get_channel_resource(&resource_rx, dma_rx_channel);
-
-  resource_rx->dma_cb.transfer_done = transfer_done_cb;
-  _dma_set_irq_state(dma_rx_channel, DMA_TRANSFER_COMPLETE_CB, true);
-
-  _dma_enable_transaction(dma_rx_channel, false);
-}
-
-void grid_d51_uart_dma_rx_init() {
-
-  grid_d51_uart_dma_rx_init_one(&USART_NORTH, DMA_NORTH_RX_CHANNEL, usart_uwsr[0].data, usart_uwsr[0].capacity, dma_transfer_complete_n_cb);
-  grid_d51_uart_dma_rx_init_one(&USART_EAST, DMA_EAST_RX_CHANNEL, usart_uwsr[1].data, usart_uwsr[1].capacity, dma_transfer_complete_e_cb);
-  grid_d51_uart_dma_rx_init_one(&USART_SOUTH, DMA_SOUTH_RX_CHANNEL, usart_uwsr[2].data, usart_uwsr[2].capacity, dma_transfer_complete_s_cb);
-  grid_d51_uart_dma_rx_init_one(&USART_WEST, DMA_WEST_RX_CHANNEL, usart_uwsr[3].data, usart_uwsr[3].capacity, dma_transfer_complete_w_cb);
-
-  NVIC_SetPriority(DMAC_0_IRQn, 0);
-  NVIC_SetPriority(DMAC_1_IRQn, 0);
-  NVIC_SetPriority(DMAC_2_IRQn, 0);
-  NVIC_SetPriority(DMAC_3_IRQn, 0);
 }

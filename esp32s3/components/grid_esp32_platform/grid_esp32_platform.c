@@ -23,6 +23,7 @@
 
 #include "grid_esp32_adc.h"
 #include "grid_esp32_pins.h"
+#include "grid_platform.h"
 
 #include "grid_protocol.h"
 #include "grid_ui.h"
@@ -56,15 +57,6 @@ uint32_t IRAM_ATTR grid_platform_get_cycles() { return esp_cpu_get_cycle_count()
 
 uint32_t IRAM_ATTR grid_platform_get_cycles_per_us() { return CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ; }
 
-static char uint4_to_hex[16] = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
-};
-
-static void uint8_to_hex(uint8_t u, char h[2]) {
-  h[0] = uint4_to_hex[u >> 4];
-  h[1] = uint4_to_hex[u & 0xf];
-}
-
 void IRAM_ATTR grid_platform_printf_nonprint(const uint8_t* src, size_t size) {
 
   for (size_t i = 0; i < size; ++i) {
@@ -72,7 +64,7 @@ void IRAM_ATTR grid_platform_printf_nonprint(const uint8_t* src, size_t size) {
     if (src[i] < 32) {
 
       char hex[2];
-      uint8_to_hex(src[i], hex);
+      grid_platform_byte_to_hex(src[i], hex);
       ets_printf("[%c%c]", hex[0], hex[1]);
 
     } else {
