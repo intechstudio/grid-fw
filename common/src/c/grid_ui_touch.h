@@ -67,7 +67,7 @@ extern const luaL_Reg GRID_LUA_T_INDEX_META[];
   \
   "}}"
 
-#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]] self.touch_cb=function(self,id,evt,x,y)print(id,evt,x,y)end"
+#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]]self.touch_cb=function(self,id,evt,x,y)print(id,evt,x,y)end"
 
 // clang-format on
 
