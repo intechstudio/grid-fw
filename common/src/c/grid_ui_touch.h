@@ -67,7 +67,7 @@ extern const luaL_Reg GRID_LUA_T_INDEX_META[];
   \
   "}}"
 
-#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]]self.touch_cb=function(self,id,evt,x,y)print(id,evt,x,y)end"
+#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]] for i=0,self:lwi()*self:lwi()-1 do gln(i,1,0,0,0)gld(i,1,32,32,32)glx(i,1,64,64,64)glp(i,1,0)end function laddr2to1(x,y)return glag(0,x+y*9)end xp={0,0}yp={0,0}self.touch_cb=function(self,id,evt,x,y)local tp={(x/127)*(self:lwi()-1),(y/127)*(self:lwi()-1)}local xs={math.floor(tp[1]),math.ceil(tp[1])}local ys={math.floor(tp[2]),math.ceil(tp[2])}for i=xp[1],xp[2]do for j=yp[1],yp[2]do glp(laddr2to1(i,j),1,0)end end for i=xs[1],xs[2]do for j=ys[1],ys[2]do local d={tp[1]-i,tp[2]-j}local dist=math.sqrt(d[1]*d[1]+d[2]*d[2])if dist<1 then local pha=255-math.tointeger((dist*255)//1)glp(laddr2to1(i,j),1,pha)end end end xp=xs yp=ys end"
 
 // clang-format on
 

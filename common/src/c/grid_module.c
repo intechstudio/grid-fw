@@ -442,10 +442,20 @@ bool grid_module_zona_led_is_alert_all(uint8_t n) {
   return x == 0 || x == 9 - 1 || y == 0 || y == 9 - 1;
 }
 
+#define R0 8, 7, 6, 5, 4, 3, 2, 1, 0
+#define R1 9, 10, 11, 12, 13, 14, 15, 16, 17
+#define R2 26, 25, 24, 23, 22, 21, 20, 19, 18
+#define R3 27, 28, 29, 30, 31, 32, 33, 34, 35
+#define R4 44, 43, 42, 41, 40, 39, 38, 37, 36
+#define R5 45, 46, 47, 48, 49, 50, 51, 52, 53
+#define R6 62, 61, 60, 59, 58, 57, 56, 55, 54
+#define R7 63, 64, 65, 66, 67, 68, 69, 70, 71
+#define R8 80, 79, 78, 77, 76, 75, 74, 73, 72
+
 void grid_module_zona_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui) {
 
   grid_led_init(led, 81, grid_module_zona_led_is_alert_all);
-  grid_led_lookup_alloc_identity(led, 0, 81);
+  grid_led_lookup_alloc_multi(led, 0, 81, (uint8_t[81]){R0, R1, R2, R3, R4, R5, R6, R7, R8});
 
   grid_ui_model_init(ui, 2);
 
