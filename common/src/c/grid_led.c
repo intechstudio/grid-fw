@@ -196,16 +196,16 @@ void grid_led_tick(struct grid_led_model* led) {
 
       struct LED_layer* ledbuf = &led->led_smart_buffer[j + (led->led_count * i)];
 
-      if (ledbuf->timeout != 0) {
+      if (ledbuf->timeout) {
 
-        ledbuf->timeout--;
+        ledbuf->pha += ledbuf->fre;
 
-        if (ledbuf->timeout == 0) {
+        if (ledbuf->timeout == 1) {
           ledbuf->fre = 0;
         }
-      }
 
-      ledbuf->pha += ledbuf->fre; // PHASE + = FREQUENCY
+        --ledbuf->timeout;
+      }
     }
   }
 }
