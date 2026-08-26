@@ -12,6 +12,17 @@
 
 enum { GRID_PORT_SWSR_SIZE = GRID_PARAMETER_SPI_TRANSACTION_length * 2 };
 
+// D51/ESP32 use a fixed 6-port layout (USART x4, UI, USB) so these default to
+// that layout's indices. A platform with a different port_count/arrangement
+// (e.g. RP2350's UI+USB-only transport) overrides both via a compile
+// definition before this header is first included.
+#ifndef GRID_TRANSPORT_PORT_INDEX_UI
+#define GRID_TRANSPORT_PORT_INDEX_UI 4
+#endif
+#ifndef GRID_TRANSPORT_PORT_INDEX_USB
+#define GRID_TRANSPORT_PORT_INDEX_USB 5
+#endif
+
 typedef bool (*grid_brc_between_t)(enum grid_port_type t1, enum grid_port_type t2);
 
 extern struct grid_transport grid_transport_state;

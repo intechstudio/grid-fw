@@ -14,9 +14,7 @@ void grid_rp2350_usb_init(void) {
   static char serial[33];
   grid_platform_id_to_hex((const uint8_t*)id, 16, serial);
 
-  // VID 0x2E8A is Raspberry Pi Trading Ltd's (TinyUSB's own default for
-  // RP2040/RP2350 boards); PID 0x000A is a placeholder to revisit before
-  // production, matching D51 (0x03eb) and ESP32-S3 (0x303a) using their own
-  // chip vendor's VID as a placeholder.
-  grid_usb_init(0x2E8A, 0x000A, serial);
+  // VID 0x2E8A (Raspberry Pi Trading Ltd) / PID 0x1145 assigned to this
+  // product by the Raspberry Pi Foundation's PID program.
+  grid_usb_init(0x2E8A, 0x1145, serial);
 }

@@ -81,7 +81,7 @@ void grid_transport_recv_usart(struct grid_transport* transport, uint8_t* msg, s
 
 void grid_transport_recv_usb(struct grid_transport* transport, uint8_t* msg, size_t size) {
 
-  struct grid_port* port = grid_transport_get_port(transport, 5, GRID_PORT_USB, 0);
+  struct grid_port* port = grid_transport_get_port(transport, GRID_TRANSPORT_PORT_INDEX_USB, GRID_PORT_USB, 0);
 
   grid_str_transform_brc_params(msg, size, port->dx, port->dy, port->partner.rot);
 
@@ -146,7 +146,7 @@ void grid_transport_send_usart_cyclic_offset(struct grid_transport* transport) {
 
 void grid_transport_send_msg_to_all(struct grid_transport* transport, struct grid_msg* msg) {
 
-  struct grid_port* port = grid_transport_get_port(transport, 4, GRID_PORT_UI, 0);
+  struct grid_port* port = grid_transport_get_port(transport, GRID_TRANSPORT_PORT_INDEX_UI, GRID_PORT_UI, 0);
 
   struct grid_swsr_t* rx = grid_port_get_rx(port);
 
@@ -159,7 +159,7 @@ void grid_transport_send_msg_to_all(struct grid_transport* transport, struct gri
 
 void grid_transport_send_msg_to_ui(struct grid_transport* transport, struct grid_msg* msg) {
 
-  struct grid_port* port = grid_transport_get_port(transport, 4, GRID_PORT_UI, 0);
+  struct grid_port* port = grid_transport_get_port(transport, GRID_TRANSPORT_PORT_INDEX_UI, GRID_PORT_UI, 0);
 
   struct grid_swsr_t* tx = grid_port_get_tx(port);
 
@@ -172,13 +172,18 @@ void grid_transport_send_msg_to_ui(struct grid_transport* transport, struct grid
 
 void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, uint32_t hwcfg, uint8_t activepage, uint8_t gccount) {
 
-  // Port state bitfield
+  // Port state bitfield. Iterates port_count (not a fixed 4) so this stays
+  // safe on transports with no USART ports at all (e.g. RP2350's UI+USB-only
+  // layout); on D51/ESP32 the USART ports still occupy indices 0-3, so the
+  // resulting bitfield is unchanged.
   uint8_t portstate = 0;
-  for (uint8_t i = 0; i < 4; ++i) {
+  for (uint8_t i = 0; i < transport->port_count; ++i) {
 
-    struct grid_port* port = grid_transport_get_port(transport, i, GRID_PORT_USART, i);
+    if (transport->ports[i].type != GRID_PORT_USART) {
+      continue;
+    }
 
-    portstate |= grid_port_connected(port) << i;
+    portstate |= grid_port_connected(&transport->ports[i]) << i;
   }
 
   // Heartbeat message
