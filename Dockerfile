@@ -18,7 +18,7 @@ ENTRYPOINT ["/esp-idf/tools/docker/entrypoint.sh"]
 
 # Install pico sdk and build dependencies
 RUN apt-get update && \
-    apt-get install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential xxd
+    apt-get install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi gdb-arm-none-eabi build-essential xxd
 
 # Clone pico sdk
 RUN mkdir -p pico && \
