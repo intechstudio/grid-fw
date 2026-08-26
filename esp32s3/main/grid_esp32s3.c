@@ -42,9 +42,11 @@
 #include "grid_esp32_module_pbf4.h"
 #include "grid_esp32_module_po16.h"
 #include "grid_esp32_module_vsnx.h"
+#include "grid_esp32_module_zona.h"
 #include "grid_esp32_nvm.h"
 #include "grid_esp32_port.h"
 #include "grid_esp32_swd.h"
+#include "grid_esp32_touch.h"
 #include "grid_esp32_usb.h"
 #include "pico_firmware.h"
 
@@ -133,176 +135,6 @@ static void log_checkpoint(const char* str) {
   }
 }
 
-#include "grid_ui_lcd.h"
-
-void grid_ui_element_lcd_template_parameter_init_vsn_left(struct grid_ui_template_buffer* buf) {
-
-  grid_ui_element_lcd_template_parameter_init(buf);
-
-  int32_t* template_parameter_list = buf->template_parameter_list;
-
-  template_parameter_list[GRID_LUA_FNC_L_SCREEN_INDEX_index] = 0;
-  template_parameter_list[GRID_LUA_FNC_L_SCREEN_WIDTH_index] = 320;
-  template_parameter_list[GRID_LUA_FNC_L_SCREEN_HEIGHT_index] = 240;
-}
-
-void grid_ui_element_lcd_template_parameter_init_vsn_right(struct grid_ui_template_buffer* buf) {
-
-  grid_ui_element_lcd_template_parameter_init(buf);
-
-  int32_t* template_parameter_list = buf->template_parameter_list;
-
-  template_parameter_list[GRID_LUA_FNC_L_SCREEN_INDEX_index] = 1;
-  template_parameter_list[GRID_LUA_FNC_L_SCREEN_WIDTH_index] = 320;
-  template_parameter_list[GRID_LUA_FNC_L_SCREEN_HEIGHT_index] = 240;
-}
-
-void grid_module_vsnx_ui_init(struct grid_ain_model* ain, struct grid_led_model* led, struct grid_ui_model* ui, struct grid_sys_model* sys) {
-
-  // 16 pot, depth of 5, 14bit internal, 7bit result;
-  grid_ain_init(ain, 16, 4);  // TODO: 12 ain for TEK2
-  grid_led_init(led, 13 + 5); // TODO: 18 led for TEK2
-
-  if (grid_hwcfg_module_is_vsnl(&grid_sys_state)) {
-
-    for (uint8_t i = 0; i < 8; ++i) {
-      grid_led_lookup_alloc_single(led, i, i + 10);
-    }
-    grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){5, 6, 7, 8, 9});
-
-  } else if (grid_hwcfg_module_is_vsnr(&grid_sys_state)) {
-
-    for (uint8_t i = 0; i < 8; ++i) {
-      grid_led_lookup_alloc_single(led, i, i + 10);
-    }
-    grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
-
-  } else if (grid_hwcfg_module_is_vsn2(&grid_sys_state)) {
-
-    for (uint8_t i = 0; i < 8; ++i) {
-      grid_led_lookup_alloc_single(led, i, i + 10);
-    }
-
-  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
-
-    for (uint8_t i = 0; i < 8; ++i) {
-      grid_led_lookup_alloc_single(led, i, i + 10);
-    }
-    grid_led_lookup_alloc_multi(led, 8, 5, (uint8_t[5]){0, 1, 2, 3, 4});
-    grid_led_lookup_alloc_multi(led, 9, 5, (uint8_t[5]){5, 6, 7, 8, 9});
-  }
-
-  if (grid_hwcfg_module_is_vsnl(&grid_sys_state)) {
-
-    grid_ui_model_init(ui, 14 + 1);
-
-    for (uint8_t j = 0; j < 14 + 1; j++) {
-
-      struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
-
-      if (j < 8) {
-
-        grid_ui_element_button_init(ele);
-
-      } else if (j < 9) {
-
-        grid_ui_element_endless_init(ele);
-
-      } else if (j < 13) {
-
-        grid_ui_element_button_init(ele);
-
-      } else if (j < 14) {
-
-        grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_left);
-      } else {
-        grid_ui_element_system_init(ele);
-      }
-    }
-
-  } else if (grid_hwcfg_module_is_vsnr(&grid_sys_state)) {
-
-    grid_ui_model_init(ui, 14 + 1);
-
-    for (uint8_t j = 0; j < 14 + 1; j++) {
-
-      struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
-
-      if (j < 8) {
-
-        grid_ui_element_button_init(ele);
-
-      } else if (j < 9) {
-
-        grid_ui_element_endless_init(ele);
-
-      } else if (j < 13) {
-
-        grid_ui_element_button_init(ele);
-
-      } else if (j < 14) {
-
-        grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_right);
-      } else {
-        grid_ui_element_system_init(ele);
-      }
-    }
-
-  } else if (grid_hwcfg_module_is_vsn2(&grid_sys_state)) {
-
-    grid_ui_model_init(ui, 18 + 1);
-    for (uint8_t j = 0; j < 18 + 1; j++) {
-
-      struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
-
-      if (j < 8) {
-
-        grid_ui_element_button_init(ele);
-
-      } else if (j < 12) {
-
-        grid_ui_element_button_init(ele);
-
-      } else if (j < 13) {
-
-        grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_left);
-      } else if (j < 17) {
-
-        grid_ui_element_button_init(ele);
-
-      } else if (j < 18) {
-
-        grid_ui_element_lcd_init(ele, grid_ui_element_lcd_template_parameter_init_vsn_right);
-      } else {
-        grid_ui_element_system_init(ele);
-      }
-    }
-
-  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
-
-    grid_ui_model_init(ui, 10 + 1);
-
-    for (uint8_t j = 0; j < 10 + 1; j++) {
-
-      struct grid_ui_element* ele = grid_ui_element_model_init(ui, j);
-
-      if (j < 8) {
-
-        grid_ui_element_button_init(ele);
-
-      } else if (j < 10) {
-
-        grid_ui_element_endless_init(ele);
-
-      } else {
-        grid_ui_element_system_init(ele);
-      }
-    }
-  }
-
-  ui->lua_ui_init_callback = grid_lua_ui_init;
-}
-
 void grid_esp32_print_chip_info() {
 
   esp_chip_info_t chip_info;
@@ -369,6 +201,10 @@ void app_main(void) {
   struct grid_utask_timer timer_led = (struct grid_utask_timer){
       .last = grid_platform_rtc_get_micros(),
       .period = 9500, // 10000 really, but FreeRTOS is currently 100 Hz
+  };
+  struct grid_utask_timer timer_t37 = (struct grid_utask_timer){
+      .last = grid_platform_rtc_get_micros(),
+      .period = 1000000,
   };
 
   // set console baud rate
@@ -445,8 +281,16 @@ void app_main(void) {
     grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
     grid_module_octv_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
-  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
-    grid_module_vsnx_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state, &grid_sys_state);
+  } else if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
+    grid_module_zona_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_vsnl(&grid_sys_state)) {
+    grid_module_vsnl_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_vsnr(&grid_sys_state)) {
+    grid_module_vsnr_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_vsn2(&grid_sys_state)) {
+    grid_module_vsn2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+  } else if (grid_hwcfg_module_is_tek2(&grid_sys_state)) {
+    grid_module_tek2_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
   } else {
     ets_printf("UI Init failed: Unknown Module %d\r\n", grid_sys_get_hwcfg(&grid_sys_state));
   }
@@ -554,6 +398,8 @@ void app_main(void) {
     grid_esp32_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
   } else if (grid_hwcfg_module_is_octv(&grid_sys_state)) {
     grid_esp32_module_octv_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_esp32_encoder_state, &grid_config_state, &grid_cal_state);
+  } else if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
+    grid_esp32_module_zona_init(&grid_sys_state, &grid_ui_state, xTaskGetCurrentTaskHandle());
   } else if (grid_hwcfg_module_is_tek2(&grid_sys_state) || grid_hwcfg_module_is_vsnx(&grid_sys_state)) {
     grid_esp32_module_vsnx_init(&grid_sys_state, &grid_ui_state, &grid_esp32_adc_state, &grid_config_state, &grid_cal_state, grid_esp32_lcd_states);
   } else {
@@ -569,6 +415,13 @@ void app_main(void) {
     xTaskCreatePinnedToCore(grid_esp32_lcd_task, "lcd", 1024 * 4, NULL, MODULE_TASK_PRIORITY, &lcd_task_hdl, 0);
 
     log_checkpoint("LCD TASK DONE");
+  }
+
+  if (grid_hwcfg_module_is_zona(&grid_sys_state)) {
+
+    TaskHandle_t touch_task_hdl;
+
+    xTaskCreatePinnedToCore(grid_esp32_module_zona_update_task, "touch", 1024 * 2, NULL, MODULE_TASK_PRIORITY, &touch_task_hdl, 0);
   }
 
   // Initialize 1 kHz timer
@@ -615,8 +468,14 @@ void app_main(void) {
       vmp_flushed = true;
     }
 
+    // Check with zero timeout for a touch
+    if (xTaskNotifyWait(0, (uint32_t)-1, NULL, 0)) {
+      grid_esp32_touch_process_msgs(&grid_esp32_touch_state);
+    }
+
     // Run microtasks
     grid_esp32_utask_led(&timer_led);
+    // grid_esp32_utask_touch_t37(&timer_t37);
 
     // Run UI protothreads
     grid_ui_bulk_process(&grid_ui_state);

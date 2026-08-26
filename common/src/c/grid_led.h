@@ -1,6 +1,7 @@
 #ifndef GRID_LED_H
 #define GRID_LED_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #define GRID_LED_LAYER_ALERT 0
@@ -35,6 +36,8 @@ struct LED_layer {
   uint16_t timeout; // ANIMATION TIMEOUT
 };
 
+typedef bool (*grid_led_is_alert_all_t)(uint8_t num);
+
 struct grid_led_model {
 
   uint8_t led_pin;
@@ -44,6 +47,7 @@ struct grid_led_model {
   uint8_t* led_frame_buffer; // The frame buffer is used to send data to the LEDs
   uint8_t* led_changed_flag_array;
   uint32_t tick_lastrealtime;
+  grid_led_is_alert_all_t led_is_alert_all;
   struct LED_layer* led_smart_buffer; // 2D array if LED_Layers: Smart buffer contains the
                                       // usable data coming from the API
 };
@@ -56,7 +60,7 @@ uint32_t grid_led_get_framebuffer_size(struct grid_led_model* led);
 
 extern struct grid_led_model grid_led_state;
 
-void grid_led_init(struct grid_led_model* led, uint32_t length);
+void grid_led_init(struct grid_led_model* led, uint32_t length, grid_led_is_alert_all_t led_is_alert_all);
 void grid_led_reset(struct grid_led_model* led);
 uint32_t grid_led_get_led_count(struct grid_led_model* led);
 

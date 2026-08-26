@@ -109,11 +109,22 @@ void grid_ui_bulk_semaphore_release(struct grid_ui_model* ui) { grid_ui_semaphor
 
 bool grid_ui_bulk_semaphore_try(struct grid_ui_model* ui) { return grid_ui_semaphore_try(&ui->bulk_semaphore); }
 
+extern const grid_ui_element_state_reset_t grid_ui_element_state_resets[GRID_PARAMETER_ELEMENT_COUNT];
+
 void grid_ui_element_reset(struct grid_ui_element* ele) {
 
   ele->timer_event_helper = 0;
   ele->timer_source_is_midi = 0;
   ele->name[0] = '\0';
+
+  if (ele->type < GRID_PARAMETER_ELEMENT_COUNT) {
+
+    grid_ui_element_state_reset_t fun = grid_ui_element_state_resets[ele->type];
+
+    if (fun && ele->primary_state) {
+      fun(ele->primary_state);
+    }
+  }
 }
 
 struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent, uint8_t index) {
@@ -134,6 +145,7 @@ struct grid_ui_element* grid_ui_element_model_init(struct grid_ui_model* parent,
   ele->parent = parent;
   ele->index = index;
 
+  ele->template_initializer = NULL;
   ele->template_parameter_list_length = 0;
   ele->template_parameter_list = NULL;
 
@@ -510,6 +522,33 @@ uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui) {
   return count;
 }
 
+extern const grid_ui_element_state_any_t grid_ui_element_state_anys[GRID_PARAMETER_ELEMENT_COUNT];
+
+bool grid_ui_events_any(struct grid_ui_model* ui) {
+
+  if (grid_ui_event_count_istriggered(ui) > 0) {
+    return true;
+  }
+
+  for (uint8_t i = 0; i < ui->element_list_length; ++i) {
+
+    struct grid_ui_element* ele = &ui->element_list[i];
+
+    assert(ele->type < GRID_PARAMETER_ELEMENT_COUNT);
+
+    grid_ui_element_state_any_t fun = grid_ui_element_state_anys[ele->type];
+
+    if (fun && ele->primary_state) {
+
+      if (fun(ele->primary_state)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t element_number) {
 
   if (element_number < ui->element_list_length) {
@@ -563,6 +602,10 @@ void grid_ui_event_render_event(struct grid_ui_event* eve, struct grid_msg* msg)
   uint8_t event = eve->type;
   uint8_t param1 = 0;
   uint8_t param2 = 0;
+
+  if (eve->parent->type == GRID_PARAMETER_ELEMENT_TOUCH) {
+    return;
+  }
 
   if (eve->parent->template_parameter_list != NULL) {
     param1 = eve->parent->template_parameter_list[eve->parent->template_parameter_element_position_index_1];
@@ -704,7 +747,7 @@ static void grid_ui_clear_triggered(struct grid_ui_model* ui, struct grid_msg* m
 
     if (change_length && editor_connected) {
 
-      char report[300] = {0};
+      char report[grid_led_get_led_count(&grid_led_state) * 8];
       uint16_t report_len = grid_protocol_led_change_report_generate(&grid_led_state, -1, report);
 
       grid_msg_add_frame(msg, GRID_CLASS_LEDPREVIEW_frame_start);
@@ -767,6 +810,29 @@ void grid_ui_process_triggered(struct grid_ui_model* ui) {
   grid_ui_clear_triggered(ui, &msg);
 
   grid_ui_bulk_semaphore_release(ui);
+}
+
+struct grid_ui_element* grid_ui_lua_element_address(lua_State* L, int arg) {
+
+  if (!lua_istable(L, arg)) {
+    luaL_error(L, "expected table");
+  }
+
+  lua_pushstring(L, "index");
+
+  lua_rawget(L, arg);
+
+  int element = luaL_checkinteger(L, -1);
+
+  struct grid_ui_element* ele = grid_ui_element_find(&grid_ui_state, element);
+
+  if (!ele) {
+    luaL_error(L, "element index out of range");
+  }
+
+  lua_pop(L, 1);
+
+  return ele;
 }
 
 uint8_t grid_ui_bulk_get_lastheader(struct grid_ui_model* ui) { return ui->bulk_lastheader_id; }

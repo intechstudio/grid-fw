@@ -234,6 +234,16 @@ int grid_hwcfg_module_is_octv(struct grid_sys_model* sys) {
   }
 }
 
+int grid_hwcfg_module_is_zona(struct grid_sys_model* sys) {
+
+  switch (grid_sys_get_hwcfg(sys)) {
+  case GRID_MODULE_ZONA_RevH:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
 int grid_hwcfg_module_is_pbf4(struct grid_sys_model* sys) {
 
   switch (grid_sys_get_hwcfg(sys)) {

@@ -6,35 +6,69 @@
 #include "grid_protocol.h"
 #include "grid_ui.h"
 
-struct grid_ui_touch_state {
-  struct grid_ui_element* parent;
+struct touchinfo_t {
+  uint8_t id;
+  uint8_t event;
   uint16_t x;
   uint16_t y;
-  uint8_t area; // 0 = not pressed
 };
+
+struct touchvalue_t {
+  uint8_t id;
+  uint8_t event;
+  int32_t x;
+  int32_t y;
+};
+
+struct grid_ui_touch_state {
+  struct grid_ui_element* parent;
+  uint8_t adc_bit_depth;
+  int32_t prev_x[5];
+  int32_t prev_y[5];
+  uint8_t prev_event[5];
+  int32_t x_min;
+  int32_t y_min;
+  int32_t x_max;
+  int32_t y_max;
+  struct touchvalue_t value;
+  struct grid_swsr_t swsr;
+};
+
+void grid_ui_touch_state_init(struct grid_ui_touch_state* state, uint8_t adc_bit_depth);
+
+int touch_get(lua_State* L);
+int touch_set(lua_State* L);
 
 void grid_ui_element_touch_init(struct grid_ui_element* ele);
 void grid_ui_element_touch_template_parameter_init(struct grid_ui_template_buffer* buf);
 
 static inline struct grid_ui_touch_state* grid_ui_touch_get_state(struct grid_ui_element* ele) { return (struct grid_ui_touch_state*)ele->primary_state; }
 
-void grid_ui_touch_store_input(struct grid_ui_touch_state* state, uint16_t x, uint16_t y, uint8_t area);
+void grid_ui_touch_store_input(struct grid_ui_touch_state* state, struct touchinfo_t info);
+
+// clang-format off
 
 #define GRID_LUA_T_TYPE "Touch"
 
 extern const luaL_Reg GRID_LUA_T_INDEX_META[];
 
-#define GRID_LUA_T_META_init                                                                                                                                                                           \
-  GRID_LUA_T_TYPE " = { __index = {"                                                                                                                                                                   \
-                  "type = 'touch', "                                                                                                                                                                   \
-                  "post_init_cb = function (self) "                                                                                                                                                    \
-                  "self:" GRID_LUA_FNC_A_INIT_short "() "                                                                                                                                              \
-                  "self:" GRID_LUA_FNC_A_TOUCH_short "() "                                                                                                                                             \
-                  "end," GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) ","                                                                                                \
-                                                                                                    "}}"
+#define GRID_LUA_T_META_init \
+  GRID_LUA_T_TYPE " = { __index = {" \
+  \
+  "type = 'touch', " \
+  \
+  "post_init_cb = function (self) " \
+  "self:" GRID_LUA_FNC_A_INIT_short "() " \
+  "end," \
+  \
+  GRID_LUA_FNC_ASSIGN_META_PAR1_RET("gen", GRID_LUA_FNC_G_ELEMENTNAME_short) "," \
+  \
+  GRID_LUA_FNC_ASSIGN_META_EVENT(INIT, TOUCH_INIT) \
+  \
+  "}}"
 
-#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]]--[[Touch Init]]"
+#define GRID_ACTIONSTRING_TOUCH_INIT "--[[@cb]]for i=0,self:lwi()*self:lwi()-1 do gln(i,1,0,0,0)gld(i,1,32,32,32)glx(i,1,64,64,64)glp(i,1,0)end function laddr2to1(x,y)return glag(0,x+y*9)end xp={0,0}yp={0,0}self.touch_cb=function(self,id,evt,x,y)local tp={(x/127)*(self:lwi()-1),(y/127)*(self:lwi()-1)}local xs={math.floor(tp[1]),math.ceil(tp[1])}local ys={math.floor(tp[2]),math.ceil(tp[2])}for i=xp[1],xp[2]do for j=yp[1],yp[2]do glp(laddr2to1(i,j),1,0)end end for i=xs[1],xs[2]do for j=ys[1],ys[2]do local d={tp[1]-i,tp[2]-j}local dist=math.sqrt(d[1]*d[1]+d[2]*d[2])if dist<1 then local pha=255-math.tointeger((dist*255)//1)glp(laddr2to1(i,j),1,pha)end end end xp=xs yp=ys end"
 
-#define GRID_ACTIONSTRING_TOUCH_TOUCH "--[[@cb]]print(self:ind(),self:tsx(),self:tsy(),self:tar())"
+// clang-format on
 
 #endif /* GRID_UI_TOUCH_H */

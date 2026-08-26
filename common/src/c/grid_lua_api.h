@@ -78,6 +78,7 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 /*static*/ int l_grid_event_trigger(lua_State* L);
 
 /*static*/ int l_grid_element_count(lua_State* L);
+/*static*/ int l_grid_element_state(lua_State* L);
 
 /*static*/ int l_grid_potmeter_calibration_get(lua_State* L);
 /*static*/ int l_grid_potmeter_calibration_set(lua_State* L);
@@ -88,6 +89,25 @@ extern void grid_platform_delay_ms(uint32_t delay_milliseconds);
 /*static*/ int l_grid_lcd_set_backlight(lua_State* L);
 
 /*static*/ int l_grid_action_set(lua_State* L);
+
+int GRID_LUA_FNC_GSV_NAME(0)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(1)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(2)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(3)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(4)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(5)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(6)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(7)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(8)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(9)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(10)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(11)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(12)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(13)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(14)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(15)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(16)(lua_State*);
+int GRID_LUA_FNC_GSV_NAME(17)(lua_State*);
 
 int GRID_LUA_FNC_GTV_NAME(0)(lua_State*);
 int GRID_LUA_FNC_GTV_NAME(1)(lua_State*);

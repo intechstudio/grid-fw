@@ -164,7 +164,9 @@ void grid_ui_event_generate_script(struct grid_ui_event* eve, char* targetstring
 void grid_ui_event_get_script(struct grid_ui_event* eve, char* targetstring);
 int grid_ui_event_recall_configuration(struct grid_ui_model* ui, uint8_t page, uint8_t element, uint8_t event_type, char* targetstring);
 
-uint16_t grid_ui_event_count_istriggered(struct grid_ui_model* ui);
+typedef void (*grid_ui_element_state_reset_t)(void* state);
+typedef bool (*grid_ui_element_state_any_t)(void* state);
+bool grid_ui_events_any(struct grid_ui_model* ui);
 
 struct grid_ui_element* grid_ui_element_find(struct grid_ui_model* ui, uint8_t element_number);
 
@@ -173,6 +175,8 @@ void grid_ui_element_timer_set(struct grid_ui_element* ele, uint32_t duration);
 void grid_ui_element_timer_source(struct grid_ui_element* ele, uint8_t source);
 void grid_ui_element_set_template_parameter(struct grid_ui_element* ele, uint8_t template_index, int32_t value);
 int32_t grid_ui_element_get_template_parameter(struct grid_ui_element* ele, uint8_t template_index);
+
+struct grid_ui_element* grid_ui_lua_element_address(lua_State* L, int arg);
 
 enum grid_ui_bulk_status_t grid_ui_get_bulk_status(struct grid_ui_model* ui);
 uint8_t grid_ui_bulk_get_response_code(struct grid_ui_model* ui, uint8_t id);
