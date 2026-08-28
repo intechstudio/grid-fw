@@ -8,10 +8,11 @@
 #include "hardware/dma.h"
 #include "hardware/uart.h"
 
-// The D51 driver uses a fixed SPI instance (GRID_LED); we fix UART1 TX on GPIO4
-// the same way. UART runs at 3x the WS2812 symbol rate (3 UART bits/symbol).
+// The D51 driver uses a fixed SPI instance (GRID_LED); we fix UART1 the same
+// way, but the TX pin varies by board variant (see grid_rp2350_led.h) so it's
+// passed into grid_rp2350_led_init instead of hardcoded. UART runs at 3x the
+// WS2812 symbol rate (3 UART bits/symbol).
 #define GRID_LED_UART uart1
-#define GRID_LED_TX_PIN 4
 #define GRID_LED_BAUD 2400000
 
 #define GRID_RP2350_LED_BYTES_PER_LED 8 // 24 bits / 3 symbols-per-byte
@@ -45,7 +46,7 @@ static inline uint8_t grid_led_encode3(uint8_t d1, uint8_t d2, uint8_t d3) {
   return (uint8_t)~phys;
 }
 
-void grid_rp2350_led_init(struct grid_rp2350_led_model* rp_mod, struct grid_led_model* led_mod) {
+void grid_rp2350_led_init(struct grid_rp2350_led_model* rp_mod, struct grid_led_model* led_mod, uint8_t tx_pin, uint8_t tx_pin_func) {
 
   // Generate the lookup table for fast rendering.
   for (int v = 0; v < 64; v++) {
@@ -63,12 +64,15 @@ void grid_rp2350_led_init(struct grid_rp2350_led_model* rp_mod, struct grid_led_
     grid_rp2350_led_set_color(rp_mod, i, 0, 0, 0);
   }
 
-  // UART1 TX on GPIO4, inverted so idle/start/stop levels match WS2812.
+  // UART1 TX on tx_pin, inverted so idle/start/stop levels match WS2812.
+  // tx_pin_func is the raw mux function-select number for this specific pin
+  // (RP2350's expanded per-pin mux table means it isn't always the generic
+  // GPIO_FUNC_UART value -- see grid_rp2350_led.h).
   uart_init(GRID_LED_UART, GRID_LED_BAUD);
   uart_set_format(GRID_LED_UART, 8, 1, UART_PARITY_NONE);
   uart_set_fifo_enabled(GRID_LED_UART, true);
-  gpio_set_function(GRID_LED_TX_PIN, GPIO_FUNC_UART);
-  gpio_set_outover(GRID_LED_TX_PIN, GPIO_OVERRIDE_INVERT);
+  gpio_set_function(tx_pin, tx_pin_func);
+  gpio_set_outover(tx_pin, GPIO_OVERRIDE_INVERT);
 
   // DMA channel feeding the UART TX FIFO from the framebuffer.
   grid_led_dma_chan = dma_claim_unused_channel(true);

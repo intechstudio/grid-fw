@@ -8,6 +8,8 @@ add_executable(grid_rp2350
     grid_rp2350_usb.c
     grid_rp2350_platform.c
     grid_rp2350_module_bu16.c
+    grid_rp2350_encoder.c
+    grid_rp2350_module_ef44.c
     ../../common/src/c/grid_led.c
     # Shared LittleFS wrapper + portable FS platform API + the vendored
     # LittleFS engine (all from common/).
@@ -158,7 +160,7 @@ target_compile_options(grid_rp2350 PRIVATE -UNDEBUG)
 # pico_sync by its OPT_OS_PICO OSAL (osal_pico.h: pico/sem.h, pico/mutex.h,
 # pico/critical_section.h); pico_unique_id backs grid_rp2350_platform.c's
 # grid_platform_get_id().
-target_link_libraries(grid_rp2350 PRIVATE pico_stdlib hardware_uart hardware_dma hardware_adc hardware_irq hardware_flash hardware_sync hardware_resets hardware_watchdog pico_sync pico_unique_id pico_rand)
+target_link_libraries(grid_rp2350 PRIVATE pico_stdlib hardware_uart hardware_dma hardware_adc hardware_spi hardware_irq hardware_flash hardware_sync hardware_resets hardware_watchdog pico_sync pico_unique_id pico_rand)
 
 # Route stdio to UART0 (GPIO0 TX, 115200 8N1) and RTT-over-SWD. USB CDC is NOT
 # a stdio console here -- the composite grid_usb.c device stack owns the USB

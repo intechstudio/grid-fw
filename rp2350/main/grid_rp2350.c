@@ -22,8 +22,10 @@
 #include "grid_utask.h"
 
 #include "grid_rp2350_adc.h"
+#include "grid_rp2350_encoder.h"
 #include "grid_rp2350_led.h"
 #include "grid_rp2350_module_bu16.h"
+#include "grid_rp2350_module_ef44.h"
 #include "grid_rp2350_nvm.h"
 #include "grid_rp2350_usb.h"
 
@@ -34,16 +36,33 @@ const struct luaL_Reg* grid_lua_api_gui_lib_reference = gui_lib;
 
 enum { GRID_RP2350_PORT_COUNT = 2 };
 
+// GPIO6's mux entry for UART1 TX (see grid_rp2350_led.h for why the function
+// number isn't the generic GPIO_FUNC_UART here). BU16 is a temporary
+// exception on the current prototype hardware, using GPIO4 instead -- once
+// the newer fixed BU16 prototype lands, it moves to GPIO6/F11 like every
+// other variant and this whole per-variant pin selection goes away.
+#define GRID_RP2350_GPIO6_FUNC_UART1_TX 11
+
+// MAP_MODE button: external pull-up, active-low (pressed = 0). No internal
+// pull needed since the pull-up is already on the board.
+#define GRID_RP2350_MAPMODE_PIN 16
+
 // Mirrors ESP32's log_checkpoint (esp32s3/main/grid_esp32s3.c) so a boot hang
 // shows exactly which init step it stalled after.
 static void grid_rp2350_checkpoint(const char* label) { printf("[checkpoint] %s\n", label); }
 
 // Bulk processing mutates ui->element_list non-atomically, racing the ADC IRQ
-// (bu16_process_analog); D51 masks NVIC BASEPRI around bulk ops for the same
-// reason (grid_d51n20a.c's update_interrupt_mask_from_bulk_status). RP2350
-// only needs to gate DMA_IRQ_0 -- the LED driver's DMA transfer is polled, not
-// interrupt-driven, so it's exclusively the ADC's IRQ.
-static void grid_rp2350_update_interrupt_mask_from_bulk_status(void) { irq_set_enabled(DMA_IRQ_0, !grid_ui_bulk_in_progress(&grid_ui_state)); }
+// (bu16_process_analog) and, on EF44, the encoder IRQ (ef44_process_encoder)
+// too; D51 masks NVIC BASEPRI around bulk ops for the same reason
+// (grid_d51n20a.c's update_interrupt_mask_from_bulk_status). RP2350 gates
+// DMA_IRQ_0 (ADC) and DMA_IRQ_1 (encoder, grid_rp2350_encoder.c) -- the LED
+// driver's DMA transfer is polled, not interrupt-driven, so these two are the
+// only DMA IRQ sources touching UI state.
+static void grid_rp2350_update_interrupt_mask_from_bulk_status(void) {
+  bool enabled = !grid_ui_bulk_in_progress(&grid_ui_state);
+  irq_set_enabled(DMA_IRQ_0, enabled);
+  irq_set_enabled(DMA_IRQ_1, enabled);
+}
 
 // Boot-count survives resets iff the littlefs block device round-trips.
 static void grid_fs_bringup(void) {
@@ -71,11 +90,15 @@ static void grid_fs_bringup(void) {
 
 // Replaces D51's RTC_Scheduler_realtime_ms task: RP2350 already has a real
 // hardware microsecond clock, so only the UI ms-tick hook itself is needed,
-// driven by a hardware alarm instead of D51's software RTC emulation.
+// driven by a hardware alarm instead of D51's software RTC emulation. Also
+// drives the MAP_MODE button (D51/ESP32 poll it from their own 1ms tick the
+// same way) -- grid_ui_rtc_ms_mapmode_handler is a plain common/src/c edge
+// detector with no debounce, so this matches existing behavior exactly.
 static struct repeating_timer grid_rp2350_ms_timer;
 
 static bool grid_rp2350_ms_tick_cb(struct repeating_timer* t) {
   grid_ui_rtc_ms_tick_time(&grid_ui_state);
+  grid_ui_rtc_ms_mapmode_handler(&grid_ui_state, !gpio_get(GRID_RP2350_MAPMODE_PIN));
   return true;
 }
 
@@ -158,6 +181,9 @@ int main() {
   // framed grid_usb ACM channel below, not a printf console.
   printf("grid rp2350 bringup\n");
 
+  gpio_init(GRID_RP2350_MAPMODE_PIN);
+  gpio_set_dir(GRID_RP2350_MAPMODE_PIN, GPIO_IN);
+
   grid_rp2350_usb_init();
   grid_rp2350_checkpoint("USB INIT");
 
@@ -168,12 +194,22 @@ int main() {
   if (grid_hwcfg_module_is_bu16(&grid_sys_state)) {
     grid_module_bu16_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
     grid_rp2350_checkpoint("UI INIT (bu16)");
+  } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
+    grid_module_ef44_ui_init(&grid_ain_state, &grid_led_state, &grid_ui_state);
+    grid_rp2350_checkpoint("UI INIT (ef44)");
   } else {
     printf("UI Init failed: Unknown Module %lu\n", (unsigned long)grid_sys_get_hwcfg(&grid_sys_state));
   }
 
+  // BU16's current prototype hardware still uses GPIO4/GPIO_FUNC_UART instead
+  // of GPIO6/F11 like every other variant (GPIO4 is EF44's SPI0 MISO, so the
+  // two can't share a pin) -- temporary until the newer fixed BU16 prototype
+  // moves it to GPIO6/F11 too, at which point this ternary goes away.
   // Requires grid_led_state already populated by the UI-init dispatch above.
-  grid_rp2350_led_init(&grid_rp2350_led_state, &grid_led_state);
+  bool is_bu16 = grid_hwcfg_module_is_bu16(&grid_sys_state);
+  uint8_t led_tx_pin = is_bu16 ? 4 : 6;
+  uint8_t led_tx_pin_func = is_bu16 ? GPIO_FUNC_UART : GRID_RP2350_GPIO6_FUNC_UART1_TX;
+  grid_rp2350_led_init(&grid_rp2350_led_state, &grid_led_state, led_tx_pin, led_tx_pin_func);
   grid_rp2350_checkpoint("LED INIT");
 
   grid_fs_bringup();
@@ -196,13 +232,6 @@ int main() {
   grid_lua_init(&grid_lua_state, NULL, NULL);
   grid_rp2350_checkpoint("LUA INIT");
 
-  if (grid_hwcfg_module_is_bu16(&grid_sys_state)) {
-    grid_rp2350_module_bu16_init(&grid_sys_state, &grid_ui_state, &grid_rp2350_adc_state, &grid_config_state, &grid_cal_state);
-    grid_rp2350_checkpoint("MODULE INIT (bu16)");
-  } else {
-    printf("Module Init failed: Unknown Module %lu\n", (unsigned long)grid_sys_get_hwcfg(&grid_sys_state));
-  }
-
   add_repeating_timer_ms(-1, grid_rp2350_ms_tick_cb, NULL, &grid_rp2350_ms_timer);
   grid_rp2350_checkpoint("MS TICK TIMER ARMED");
 
@@ -214,11 +243,27 @@ int main() {
   timer_midi_rx = (struct grid_utask_timer){.last = now, .period = 1000};
   grid_rp2350_checkpoint("UTASK TIMERS SEEDED");
 
+  // Page 0 must be loaded (ui->element_list's template_parameter_list
+  // allocated/populated) before module init below starts the ADC/encoder --
+  // their ISRs read that array on literally the first sample, and hardware
+  // can complete a conversion in microseconds, faster than any interrupt
+  // mask toggled after the fact could reliably win the race. ESP32 orders
+  // its own bring-up the same way (page load before module init); D51
+  // instead starts its ADC first and masks interrupts around the page load,
+  // which turns out not to fully close this window (see project memory).
   grid_ui_bulk_start_with_state(&grid_ui_state, grid_ui_bulk_page_load, 0, 0, NULL);
-  grid_rp2350_update_interrupt_mask_from_bulk_status();
   grid_ui_bulk_flush(&grid_ui_state);
-  grid_rp2350_update_interrupt_mask_from_bulk_status();
   grid_rp2350_checkpoint("PAGE 0 BULK LOAD");
+
+  if (grid_hwcfg_module_is_bu16(&grid_sys_state)) {
+    grid_rp2350_module_bu16_init(&grid_sys_state, &grid_ui_state, &grid_rp2350_adc_state, &grid_config_state, &grid_cal_state);
+    grid_rp2350_checkpoint("MODULE INIT (bu16)");
+  } else if (grid_hwcfg_module_is_ef44(&grid_sys_state)) {
+    grid_rp2350_module_ef44_init(&grid_sys_state, &grid_ui_state, &grid_rp2350_adc_state, &grid_rp2350_encoder_state, &grid_config_state, &grid_cal_state);
+    grid_rp2350_checkpoint("MODULE INIT (ef44)");
+  } else {
+    printf("Module Init failed: Unknown Module %lu\n", (unsigned long)grid_sys_get_hwcfg(&grid_sys_state));
+  }
 
   struct grid_port* port_ui = grid_transport_get_port(&grid_transport_state, 0, GRID_PORT_UI, 0);
   struct grid_port* port_usb = grid_transport_get_port(&grid_transport_state, 1, GRID_PORT_USB, 0);

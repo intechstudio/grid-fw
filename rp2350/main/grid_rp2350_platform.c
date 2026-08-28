@@ -36,22 +36,33 @@ uint64_t grid_platform_rtc_get_diff(uint64_t t1, uint64_t t2) { return t1 - t2; 
 
 void grid_platform_delay_ms(uint32_t delay_milliseconds) { sleep_ms(delay_milliseconds); }
 
-// HWCFG strap read: GPIO1=SHIFT, GPIO2=CLOCK, GPIO3=DATA. Bit-bang protocol
-// ported directly from d51n20a/grid/d51/grid_d51.c:521-564 (a 74HC165-style
-// parallel-in-serial-out shift register, LSB first, 8 bits). GPIO1 is moved
-// off stdio UART0 RX (see rp2350/main/CMakeLists.txt) to make room for SHIFT.
+// HWCFG strap read: GPIO1=SHIFT, GPIO2=CLOCK, GPIO3=DATA, GPIO4=DATA2. Bit-bang
+// protocol ported directly from d51n20a/grid/d51/grid_d51.c:521-564 (a
+// 74HC165-style parallel-in-serial-out shift register, LSB first, 8 bits).
+// GPIO1 is moved off stdio UART0 RX (see rp2350/main/CMakeLists.txt) to make
+// room for SHIFT.
+//
+// Two board variants place the shift register on different DATA lines; only
+// one is ever actually populated. Both DATA pins are pulled up internally so
+// an unpopulated line floats high and reads back as 255 (all bits set) --
+// whichever line reads something other than 255 is the real hwcfg value.
 #define GRID_RP2350_HWCFG_SHIFT_PIN 1
 #define GRID_RP2350_HWCFG_CLOCK_PIN 2
 #define GRID_RP2350_HWCFG_DATA_PIN 3
+#define GRID_RP2350_HWCFG_DATA2_PIN 4
 
 uint32_t grid_platform_get_hwcfg() {
 
   gpio_init(GRID_RP2350_HWCFG_SHIFT_PIN);
   gpio_init(GRID_RP2350_HWCFG_CLOCK_PIN);
   gpio_init(GRID_RP2350_HWCFG_DATA_PIN);
+  gpio_init(GRID_RP2350_HWCFG_DATA2_PIN);
   gpio_set_dir(GRID_RP2350_HWCFG_SHIFT_PIN, GPIO_OUT);
   gpio_set_dir(GRID_RP2350_HWCFG_CLOCK_PIN, GPIO_OUT);
   gpio_set_dir(GRID_RP2350_HWCFG_DATA_PIN, GPIO_IN);
+  gpio_set_dir(GRID_RP2350_HWCFG_DATA2_PIN, GPIO_IN);
+  gpio_pull_up(GRID_RP2350_HWCFG_DATA_PIN);
+  gpio_pull_up(GRID_RP2350_HWCFG_DATA2_PIN);
 
   gpio_put(GRID_RP2350_HWCFG_SHIFT_PIN, 0);
   sleep_ms(1);
@@ -60,6 +71,7 @@ uint32_t grid_platform_get_hwcfg() {
   gpio_put(GRID_RP2350_HWCFG_SHIFT_PIN, 0);
 
   uint8_t hwcfg_value = 0;
+  uint8_t hwcfg_value2 = 0;
 
   for (uint8_t i = 0; i < 8; i++) {
 
@@ -68,6 +80,9 @@ uint32_t grid_platform_get_hwcfg() {
 
     if (gpio_get(GRID_RP2350_HWCFG_DATA_PIN)) {
       hwcfg_value |= (1 << i);
+    }
+    if (gpio_get(GRID_RP2350_HWCFG_DATA2_PIN)) {
+      hwcfg_value2 |= (1 << i);
     }
 
     if (i != 7) {
@@ -78,7 +93,7 @@ uint32_t grid_platform_get_hwcfg() {
     }
   }
 
-  return hwcfg_value;
+  return hwcfg_value != 255 ? hwcfg_value : hwcfg_value2;
 }
 
 uint8_t grid_platform_get_random_8() { return (uint8_t)(get_rand_32() & 0xFF); }
