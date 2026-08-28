@@ -188,6 +188,7 @@ int grid_hwcfg_module_is_bu16(struct grid_sys_model* sys) {
   case GRID_MODULE_BU16_RevC:
   case GRID_MODULE_BU16_RevD:
   case GRID_MODULE_BU16_RevH:
+  case GRID_MODULE_BU16_RevI:
     return 1;
   default:
     return 0;
