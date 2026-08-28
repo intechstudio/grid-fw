@@ -73,7 +73,7 @@ static void ef44_process_encoder(struct grid_encoder_result* result) {
 }
 
 void grid_rp2350_module_ef44_init(struct grid_sys_model* sys, struct grid_ui_model* ui, struct grid_rp2350_adc_model* adc, struct grid_rp2350_encoder_model* enc, struct grid_config_model* conf,
-                                   struct grid_cal_model* cal) {
+                                  struct grid_cal_model* cal) {
 
   ui_ptr = ui;
 
