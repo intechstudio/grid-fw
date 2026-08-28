@@ -188,6 +188,7 @@ int grid_hwcfg_module_is_bu16(struct grid_sys_model* sys) {
   case GRID_MODULE_BU16_RevC:
   case GRID_MODULE_BU16_RevD:
   case GRID_MODULE_BU16_RevH:
+  case GRID_MODULE_BU16_RevI:
     return 1;
   default:
     return 0;
@@ -200,8 +201,10 @@ int grid_hwcfg_module_is_ef44(struct grid_sys_model* sys) {
   case GRID_MODULE_EF44_RevA:
   case GRID_MODULE_EF44_RevD:
   case GRID_MODULE_EF44_RevH:
+  case GRID_MODULE_EF44_RevI:
   case GRID_MODULE_EF44_ND_RevD:
   case GRID_MODULE_EF44_ND_RevH:
+  case GRID_MODULE_EF44_ND_RevI:
     return 1;
   default:
     return 0;
@@ -381,6 +384,7 @@ int grid_hwcfg_module_encoder_is_detent(struct grid_sys_model* sys) {
   case GRID_MODULE_EF44_RevA:
   case GRID_MODULE_EF44_RevD:
   case GRID_MODULE_EF44_RevH:
+  case GRID_MODULE_EF44_RevI:
   case GRID_MODULE_EN16_RevA:
   case GRID_MODULE_EN16_RevD:
   case GRID_MODULE_EN16_RevH:
