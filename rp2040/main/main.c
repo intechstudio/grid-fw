@@ -13,10 +13,11 @@
 
 #include "grid_pico_spi.h"
 
-#include "uart_rx.pio.h"
-#include "uart_tx.pio.h"
+#include "uart_coop.pio.h"
+#include "uart_rx_3bin.pio.h"
 
-const PIO GRID_TX_PIO = pio0;
+// 3-bin RX + 2 MHz/50% square wave on the TX pin, one SM per direction on pio1.
+// There is no real UART TX here — the TX pin emits the square wave instead.
 const PIO GRID_RX_PIO = pio1;
 
 #include "grid_pico_pins.h"
@@ -31,6 +32,27 @@ const PIO GRID_RX_PIO = pio1;
 #include "pico_swsr.h"
 
 struct pico_pool_t pool;
+
+static int offset_rx = 0;
+
+// Debug: per-direction RX counters for tuning the coop PIO.
+//   dbg_rx_bytes = raw bytes autopushed (a start bit was detected & 8 bits sampled)
+//   dbg_rx_valid = frames that passed grid_frame_verify (RX actually correct)
+volatile uint32_t dbg_rx_bytes[4] = {0};
+volatile uint32_t dbg_rx_valid[4] = {0};
+// Frames rejected by the PIO framing check (start!=0 or stop!=1) — also tracks tuning.
+volatile uint32_t dbg_framing_err[4] = {0};
+// Overlap proxy: valid RX frames that arrived while a TX byte was in flight (residual).
+volatile uint32_t dbg_overlap[4] = {0};
+// Corrupt RX frames (failed grid_frame_verify): total, and those during active TX.
+// dbg_corrupt_tx is the overlap-corruption signal — should stay ~0 if cooperative
+// TX holds phase. (Without this, a frame corrupted by overlap is silently dropped.)
+volatile uint32_t dbg_rx_corrupt[4] = {0};
+volatile uint32_t dbg_corrupt_tx[4] = {0};
+
+// Debug: ring of the last 16 raw bytes received on East (port 1) for sampling diagnosis.
+volatile uint8_t dbg_east_buf[16] = {0};
+volatile uint32_t dbg_east_idx = 0;
 
 uint32_t grid_pico_time() { return time_us_32(); }
 uint32_t grid_pico_time_diff(uint32_t t1, uint32_t t2) { return t2 - t1; }
@@ -191,19 +213,25 @@ void grid_pico_task_uart_tx(struct grid_pico_uart_port* port, struct grid_pico_t
     return;
   }
 
-  if (!port->uart_tx_bucket) {
-    grid_pico_uart_port_attach_tx(port);
-    return;
-  }
+  // Keep the coop SM's TX FIFO topped up so `out` never stalls (a stall freezes
+  // RX). Push real 8N1 frames when a bucket is queued, idle (line high) otherwise.
+  while (!pio_sm_is_tx_fifo_full(GRID_RX_PIO, port->index)) {
 
-  char c = pico_bkt_next(port->uart_tx_bucket);
-  uart_tx_program_putc(GRID_TX_PIO, port->index, c);
+    if (!port->uart_tx_bucket) {
+      grid_pico_uart_port_attach_tx(port);
+    }
 
-  if (pico_bkt_terminated(port->uart_tx_bucket)) {
+    if (!port->uart_tx_bucket) {
+      pio_sm_put(GRID_RX_PIO, port->index, UART_RX_3BIN_TX_IDLE);
+      continue;
+    }
 
-    assert(c == '\n');
+    char c = pico_bkt_next(port->uart_tx_bucket);
+    pio_sm_put(GRID_RX_PIO, port->index, uart_rx_3bin_tx_frame(c));
 
-    grid_pico_uart_port_detach_tx(port);
+    if (pico_bkt_terminated(port->uart_tx_bucket)) {
+      grid_pico_uart_port_detach_tx(port);
+    }
   }
 }
 
@@ -241,7 +269,20 @@ enum pico_bkt_state_t grid_uart_rx_process_bkt(struct grid_pico_uart_port* port,
   int status = grid_frame_verify(msg, len);
 
   if (status != 0) {
+    if (port->index < 4) {
+      dbg_rx_corrupt[port->index]++;
+      if (port->uart_tx_bucket) {
+        dbg_corrupt_tx[port->index]++;
+      }
+    }
     return PICO_BKT_STATE_EMPTY;
+  }
+
+  if (port->index < 4) {
+    dbg_rx_valid[port->index]++;
+    if (port->uart_tx_bucket) {
+      dbg_overlap[port->index]++;
+    }
   }
 
   struct grid_transport* xport = &grid_transport_state;
@@ -430,12 +471,35 @@ void grid_pico_task_spi_tx(struct grid_pico_task_timer* timer) {
   // No full bucket received from UART yet
   if (!spi_tx_bucket) {
 
-    // Send empty packet with status flags,
-    // to convince the main processor of our presence
-    sprintf(spi_tx_buf, "DUMMY OK");
+    static uint32_t debug_counter = 0;
+    uint8_t source_flags = 0;
+
+    if (++debug_counter >= 2000) {
+      debug_counter = 0;
+      // b=bytes decoded (framing OK) f=framing-fails v=valid-msgs ov=valid-during-TX
+      // c=corrupt ct=corrupt-during-TX. Loopback: b climbing + v=0 -> frames decode but
+      // msg boundaries don't (self-interference); f climbing + b=0 -> frames don't decode.
+      snprintf((char*)spi_tx_buf, 220, "b %u,%u,%u,%u f %u,%u,%u,%u v %u,%u,%u,%u ov %u,%u,%u,%u c %u,%u,%u,%u ct %u,%u,%u,%u",
+               (unsigned)dbg_rx_bytes[0], (unsigned)dbg_rx_bytes[1],
+               (unsigned)dbg_rx_bytes[2], (unsigned)dbg_rx_bytes[3],
+               (unsigned)dbg_framing_err[0], (unsigned)dbg_framing_err[1],
+               (unsigned)dbg_framing_err[2], (unsigned)dbg_framing_err[3],
+               (unsigned)dbg_rx_valid[0], (unsigned)dbg_rx_valid[1],
+               (unsigned)dbg_rx_valid[2], (unsigned)dbg_rx_valid[3],
+               (unsigned)dbg_overlap[0], (unsigned)dbg_overlap[1],
+               (unsigned)dbg_overlap[2], (unsigned)dbg_overlap[3],
+               (unsigned)dbg_rx_corrupt[0], (unsigned)dbg_rx_corrupt[1],
+               (unsigned)dbg_rx_corrupt[2], (unsigned)dbg_rx_corrupt[3],
+               (unsigned)dbg_corrupt_tx[0], (unsigned)dbg_corrupt_tx[1],
+               (unsigned)dbg_corrupt_tx[2], (unsigned)dbg_corrupt_tx[3]);
+      source_flags = 0x80;
+    } else {
+      sprintf(spi_tx_buf, "DUMMY OK");
+    }
+
     spi_tx_buf[GRID_PARAMETER_SPI_ROLLING_ID_index] = rolling.last_send;
     spi_tx_buf[GRID_PARAMETER_SPI_STATUS_FLAGS_index] = tx_ready;
-    spi_tx_buf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = 0; // no origin port
+    spi_tx_buf[GRID_PARAMETER_SPI_SOURCE_FLAGS_index] = source_flags;
 
     grid_pico_spi_transfer(spi_tx_buf, spi_rx_buf);
   }
@@ -509,7 +573,7 @@ void grid_pico_task_uart_rx_1(struct grid_pico_uart_port* port, struct grid_pico
     return;
   }
 
-  if (!uart_rx_program_is_available(GRID_RX_PIO, port->index)) {
+  if (!uart_rx_3bin_available(GRID_RX_PIO, port->index)) {
     return;
   }
 
@@ -517,8 +581,18 @@ void grid_pico_task_uart_rx_1(struct grid_pico_uart_port* port, struct grid_pico
     return;
   }
 
-  char c = uart_rx_program_getc(GRID_RX_PIO, port->index);
+  uint32_t frame = uart_rx_3bin_get_frame(GRID_RX_PIO, port->index);
+  if (!uart_rx_3bin_frame_ok(frame)) {
+    dbg_framing_err[port->index]++;
+    return;
+  }
+  char c = uart_rx_3bin_frame_data(frame);
   pico_swsr_write(&port->swsr, c);
+  dbg_rx_bytes[port->index]++;
+  if (port->index == 1) {
+    dbg_east_buf[dbg_east_idx & 15] = (uint8_t)c;
+    dbg_east_idx++;
+  }
 }
 
 void core_1_main_entry() {
@@ -596,18 +670,13 @@ int main() {
   grid_pico_uart_port_init(&uart_ports[2], 2);
   grid_pico_uart_port_init(&uart_ports[3], 3);
 
-  int offset_tx = pio_add_program(GRID_TX_PIO, &uart_tx_program);
-  int offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_program);
-
-  uart_tx_program_init(GRID_TX_PIO, 0, offset_tx, GRID_PICO_PIN_NORTH_TX, GRID_PARAMETER_UART_baudrate);
-  uart_tx_program_init(GRID_TX_PIO, 1, offset_tx, GRID_PICO_PIN_EAST_TX, GRID_PARAMETER_UART_baudrate);
-  uart_tx_program_init(GRID_TX_PIO, 2, offset_tx, GRID_PICO_PIN_SOUTH_TX, GRID_PARAMETER_UART_baudrate);
-  uart_tx_program_init(GRID_TX_PIO, 3, offset_tx, GRID_PICO_PIN_WEST_TX, GRID_PARAMETER_UART_baudrate);
-
-  uart_rx_program_init(GRID_RX_PIO, 0, offset_rx, GRID_PICO_PIN_NORTH_RX, GRID_PARAMETER_UART_baudrate);
-  uart_rx_program_init(GRID_RX_PIO, 1, offset_rx, GRID_PICO_PIN_EAST_RX, GRID_PARAMETER_UART_baudrate);
-  uart_rx_program_init(GRID_RX_PIO, 2, offset_rx, GRID_PICO_PIN_SOUTH_RX, GRID_PARAMETER_UART_baudrate);
-  uart_rx_program_init(GRID_RX_PIO, 3, offset_rx, GRID_PICO_PIN_WEST_RX, GRID_PARAMETER_UART_baudrate);
+  // One SM per direction on pio1: 4-bin RX on the RX pin + cooperative TX (`out`)
+  // on the TX pin, fed 8N1 frames / idle by grid_pico_task_uart_tx.
+  offset_rx = pio_add_program(GRID_RX_PIO, &uart_rx_3bin_program);
+  uart_rx_3bin_program_init(GRID_RX_PIO, 0, offset_rx, GRID_PICO_PIN_NORTH_RX, GRID_PICO_PIN_NORTH_TX);
+  uart_rx_3bin_program_init(GRID_RX_PIO, 1, offset_rx, GRID_PICO_PIN_EAST_RX, GRID_PICO_PIN_EAST_TX);
+  uart_rx_3bin_program_init(GRID_RX_PIO, 2, offset_rx, GRID_PICO_PIN_SOUTH_RX, GRID_PICO_PIN_SOUTH_TX);
+  uart_rx_3bin_program_init(GRID_RX_PIO, 3, offset_rx, GRID_PICO_PIN_WEST_RX, GRID_PICO_PIN_WEST_TX);
 
   // Initialize bucket pool
   pico_pool_init(&pool);
