@@ -611,21 +611,6 @@ void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir) {
   io_write(io_descr, usart_tx_buf[dir], size);
 }
 
-uint8_t grid_platform_disable_grid_transmitter(uint8_t direction) {
-
-  if (direction == GRID_CONST_NORTH) {
-    usart_async_disable(&USART_NORTH);
-  } else if (direction == GRID_CONST_EAST) {
-    usart_async_disable(&USART_EAST);
-  } else if (direction == GRID_CONST_SOUTH) {
-    usart_async_disable(&USART_SOUTH);
-  } else if (direction == GRID_CONST_WEST) {
-    usart_async_disable(&USART_WEST);
-  } else {
-  }
-  return 0;
-}
-
 uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) {
 
   if (direction == GRID_CONST_NORTH) {
@@ -636,21 +621,6 @@ uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) {
     grid_d51_uart_port_reset_dma(DMA_SOUTH_RX_CHANNEL);
   } else if (direction == GRID_CONST_WEST) {
     grid_d51_uart_port_reset_dma(DMA_WEST_RX_CHANNEL);
-  } else {
-  }
-  return 0;
-}
-
-uint8_t grid_platform_enable_grid_transmitter(uint8_t direction) {
-
-  if (direction == GRID_CONST_NORTH) {
-    usart_async_enable(&USART_NORTH);
-  } else if (direction == GRID_CONST_EAST) {
-    usart_async_enable(&USART_EAST);
-  } else if (direction == GRID_CONST_SOUTH) {
-    usart_async_enable(&USART_SOUTH);
-  } else if (direction == GRID_CONST_WEST) {
-    usart_async_enable(&USART_WEST);
   } else {
   }
   return 0;
