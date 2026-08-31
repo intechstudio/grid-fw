@@ -173,9 +173,12 @@ void grid_transport_send_msg_to_ui(struct grid_transport* transport, struct grid
 void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, uint32_t hwcfg, uint8_t activepage, uint8_t gccount) {
 
   // Port state bitfield. Iterates port_count (not a fixed 4) so this stays
-  // safe on transports with no USART ports at all (e.g. RP2350's UI+USB-only
-  // layout); on D51/ESP32 the USART ports still occupy indices 0-3, so the
-  // resulting bitfield is unchanged.
+  // safe on any transport with fewer than 4 USART ports (a layout this
+  // codebase has actually shipped with -- RP2350 briefly ran UI+USB-only).
+  // Shifts by the port's own dir, not the loop index, and asserts they agree
+  // -- grid_transport_get_port(transport, i, GRID_PORT_USART, i)'s own
+  // assert(port->dir == dir) used to enforce this implicitly before this
+  // loop was rewritten to index transport->ports[] directly.
   uint8_t portstate = 0;
   for (uint8_t i = 0; i < transport->port_count; ++i) {
 
@@ -183,7 +186,8 @@ void grid_transport_heartbeat(struct grid_transport* transport, uint8_t type, ui
       continue;
     }
 
-    portstate |= grid_port_connected(&transport->ports[i]) << i;
+    assert(transport->ports[i].dir == i);
+    portstate |= grid_port_connected(&transport->ports[i]) << transport->ports[i].dir;
   }
 
   // Heartbeat message
