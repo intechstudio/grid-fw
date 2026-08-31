@@ -44,9 +44,11 @@ int littlefs_api_read(const struct lfs_config* c, lfs_block_t block, lfs_off_t o
 /**
  * @brief Program a region in a block.
  *
- * The block must have previously been erased. Interrupts are masked for the
- * duration because XIP is disabled while the flash is written, and any
- * flash-resident code that runs meanwhile (e.g. the ADC DMA ISR) would fault.
+ * The block must have previously been erased. Interrupts are masked (via a
+ * BASEPRI threshold, not a blanket disable) for the duration because XIP is
+ * disabled while the flash is written, and any flash-resident code that runs
+ * meanwhile would fault -- see the .c file's comment for which interrupt is
+ * deliberately left unmasked and why.
  *
  * @return errorcode. 0 on success.
  */

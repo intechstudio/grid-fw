@@ -50,7 +50,12 @@ static inline volatile uint8_t* grid_rp2350_uart_rxf_byte(uint sm) { return (vol
 // channel, safely touch its uwsr buffer's software state, and only then
 // rearm (see grid_rp2350_uart_port_recv's overflow handling, which needs
 // exactly that ordering to avoid a stale-DMA-offset race).
-void grid_rp2350_uart_port_stop_dma(uint8_t dir) {
+//
+// RAM-resident (see grid_rp2350_uart_init's DMA_IRQ_2 priority boost and
+// grid_rp2350_littlefs_api.c's BASEPRI masking): this function, and every
+// static inline it calls (all inlined here, so they go to RAM with it), must
+// be safe to execute with XIP disabled during a flash program/erase.
+void __not_in_flash_func(grid_rp2350_uart_port_stop_dma)(uint8_t dir) {
 
   assert(dir < GRID_RP2350_UART_DIR_COUNT);
 
@@ -85,7 +90,8 @@ void grid_rp2350_uart_port_stop_dma(uint8_t dir) {
   irq_set_enabled(DMA_IRQ_2, irq2_was_enabled);
 }
 
-void grid_rp2350_uart_port_reset_dma(uint8_t dir) {
+// RAM-resident -- see grid_rp2350_uart_port_stop_dma's comment.
+void __not_in_flash_func(grid_rp2350_uart_port_reset_dma)(uint8_t dir) {
 
   assert(dir < GRID_RP2350_UART_DIR_COUNT);
 
@@ -109,7 +115,11 @@ void grid_rp2350_uart_port_reset_dma(uint8_t dir) {
   dma_channel_set_trans_count(chan, grid_rp2350_uart_uwsr[dir].capacity, true);
 }
 
-static void grid_rp2350_uart_rx_dma_irq(void) {
+// RAM-resident and boosted above PICO_DEFAULT_IRQ_PRIORITY (see
+// grid_rp2350_uart_init) so this can keep servicing RX completions via
+// BASEPRI-based selective masking while grid_rp2350_littlefs_api.c holds a
+// flash program/erase in progress -- see that file's comment for why.
+static void __not_in_flash_func(grid_rp2350_uart_rx_dma_irq)(void) {
 
   for (uint8_t dir = 0; dir < GRID_RP2350_UART_DIR_COUNT; ++dir) {
 
@@ -192,6 +202,15 @@ void grid_rp2350_uart_init(void) {
   // directly instead.
   irq_set_exclusive_handler(DMA_IRQ_2, grid_rp2350_uart_rx_dma_irq);
   irq_set_enabled(DMA_IRQ_2, true);
+
+  // Every interrupt starts at PICO_DEFAULT_IRQ_PRIORITY (0x80) per the
+  // pico-sdk's own documented guarantee (hardware/irq.h) and nothing else in
+  // this firmware changes that -- boosting only this one lets
+  // grid_rp2350_littlefs_api.c mask every other interrupt source (ADC,
+  // encoder, USB, the ms tick timer) via a BASEPRI threshold between the two
+  // priorities during a flash program/erase, without having to enumerate
+  // those sources by name.
+  irq_set_priority(DMA_IRQ_2, PICO_HIGHEST_IRQ_PRIORITY);
 }
 
 // Ported from d51n20a/grid_d51n20a.c's grid_d51_port_recv_uwsr, built
