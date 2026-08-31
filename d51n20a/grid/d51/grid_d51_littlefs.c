@@ -2,7 +2,7 @@
 
 #include "grid_littlefs.h"
 
-void grid_d51_littlefs_init(struct d51_littlefs_t* dfs, lfs_t* lfs, struct flash_descriptor* flash, const char* base_path, bool read_only) {
+void grid_d51_littlefs_init(struct d51_littlefs_t* dfs, struct flash_descriptor* flash, const char* base_path, bool read_only) {
 
   struct lfs_config lfs_cfg = (struct lfs_config){
 
@@ -27,7 +27,6 @@ void grid_d51_littlefs_init(struct d51_littlefs_t* dfs, lfs_t* lfs, struct flash
 
   {
     assert(!dfs->lfs);
-    dfs->lfs = lfs;
     dfs->cfg = lfs_cfg;
     dfs->flash = flash;
     dfs->read_only = read_only;
@@ -39,42 +38,16 @@ void grid_d51_littlefs_init(struct d51_littlefs_t* dfs, lfs_t* lfs, struct flash
 
 int grid_d51_littlefs_mount(struct d51_littlefs_t* dfs, bool force_format) {
 
-  // Allocate littlefs
-  lfs_t* lfs = malloc(sizeof(lfs_t));
-  if (!lfs) {
-    printf("failed to allocate littlefs\n");
-    return 1;
-  }
-
   // Check that the littlefs page size is evenly divisible by the flash chip page size
   if (GRID_D51_LITTLEFS_PAGE_SIZE % flash_get_page_size(&FLASH_0)) {
-    free(lfs);
     printf("littlefs page size not evenly divisible by flash chip page size\n");
     return 1;
   }
 
-  grid_d51_littlefs_init(dfs, lfs, &FLASH_0, "", false);
+  grid_d51_littlefs_init(dfs, &FLASH_0, "", false);
 
-  if (grid_littlefs_mount_or_format(dfs->lfs, &dfs->cfg, force_format)) {
-    free(lfs);
-    dfs->lfs = NULL;
-    return 1;
-  }
-
-  return 0;
+  dfs->lfs = grid_littlefs_mount(&dfs->cfg, force_format);
+  return dfs->lfs ? 0 : 1;
 }
 
-int grid_d51_littlefs_unmount(struct d51_littlefs_t* dfs) {
-
-  assert(dfs->lfs);
-
-  if (grid_littlefs_unmount(dfs->lfs)) {
-    return 1;
-  }
-
-  // Deallocate littlefs
-  free(dfs->lfs);
-  dfs->lfs = NULL;
-
-  return 0;
-}
+int grid_d51_littlefs_unmount(struct d51_littlefs_t* dfs) { return grid_littlefs_unmount(&dfs->lfs); }

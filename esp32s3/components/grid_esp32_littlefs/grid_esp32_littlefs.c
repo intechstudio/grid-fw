@@ -20,7 +20,7 @@ enum { GRID_ESP32_LITTLEFS_BLOCK_SIZE = 4096 };
 
 static const char* TAG = "grid_esp32_littlefs";
 
-static esp_err_t grid_esp32_littlefs_init(struct esp_littlefs_t* efs, lfs_t* lfs, const esp_partition_t* partition, const char* base_path, bool read_only) {
+static void grid_esp32_littlefs_init(struct esp_littlefs_t* efs, const esp_partition_t* partition, const char* base_path, bool read_only) {
 
   struct lfs_config lfs_cfg = (struct lfs_config){
 
@@ -45,7 +45,6 @@ static esp_err_t grid_esp32_littlefs_init(struct esp_littlefs_t* efs, lfs_t* lfs
 
   {
     assert(!efs->lfs);
-    efs->lfs = lfs;
     efs->cfg = lfs_cfg;
     efs->partition = partition;
     efs->read_only = read_only;
@@ -53,18 +52,9 @@ static esp_err_t grid_esp32_littlefs_init(struct esp_littlefs_t* efs, lfs_t* lfs
 
   strcpy(efs->base_path, base_path);
   assert(base_path[0] == '\0');
-
-  return ESP_OK;
 }
 
 esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs, bool force_format) {
-
-  // Allocate littlefs
-  lfs_t* lfs = malloc(sizeof(lfs_t));
-  if (!lfs) {
-    ESP_LOGE(TAG, "failed to allocate littlefs");
-    return ESP_ERR_NO_MEM;
-  }
 
   size_t type = ESP_PARTITION_TYPE_DATA;
   size_t subtype = ESP_PARTITION_SUBTYPE_ANY;
@@ -73,7 +63,6 @@ esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs, bool force_forma
 
   // There must be at least one ffat partition
   if (!iter) {
-    free(lfs);
     ESP_LOGE(TAG, "no data type partition with ffat label was found");
     return ESP_ERR_NOT_FOUND;
   }
@@ -83,40 +72,20 @@ esp_err_t grid_esp32_littlefs_mount(struct esp_littlefs_t* efs, bool force_forma
 
   // There must be no more ffat partitions
   if (esp_partition_next(iter)) {
-    free(lfs);
     ESP_LOGE(TAG, "unexpected data type partition with ffat label was found");
     return ESP_FAIL;
   }
 
   // Check that the littlefs page size is evenly divisible by the flash chip page size
   if (GRID_ESP32_LITTLEFS_PAGE_SIZE % g_rom_flashchip.page_size != 0) {
-    free(lfs);
     ESP_LOGE(TAG, "littlefs page size not evenly divisble by flash chip page size");
     return ESP_ERR_INVALID_ARG;
   }
 
-  grid_esp32_littlefs_init(efs, lfs, part, "", false);
+  grid_esp32_littlefs_init(efs, part, "", false);
 
-  if (grid_littlefs_mount_or_format(efs->lfs, &efs->cfg, force_format)) {
-    free(lfs);
-    efs->lfs = NULL;
-    return ESP_FAIL;
-  }
-
-  return ESP_OK;
+  efs->lfs = grid_littlefs_mount(&efs->cfg, force_format);
+  return efs->lfs ? ESP_OK : ESP_FAIL;
 }
 
-esp_err_t grid_esp32_littlefs_unmount(struct esp_littlefs_t* efs) {
-
-  assert(efs->lfs);
-
-  if (grid_littlefs_unmount(efs->lfs)) {
-    return ESP_FAIL;
-  }
-
-  // Deallocate littlefs
-  free(efs->lfs);
-  efs->lfs = NULL;
-
-  return ESP_OK;
-}
+esp_err_t grid_esp32_littlefs_unmount(struct esp_littlefs_t* efs) { return grid_littlefs_unmount(&efs->lfs) ? ESP_FAIL : ESP_OK; }
