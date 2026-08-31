@@ -6,7 +6,21 @@
 const char* littlefs_errno(enum lfs_error lfs_errno);
 
 int grid_littlefs_mount_or_format(lfs_t* lfs, struct lfs_config* cfg, bool force_format);
-int grid_littlefs_unmount(lfs_t* lfs);
+
+// Allocates an lfs_t and mounts (or formats-then-mounts) it via
+// grid_littlefs_mount_or_format, returning the mounted lfs_t on success or
+// NULL on failure (freeing the allocation itself, never leaving a dangling
+// pointer for the caller to mishandle) -- owns the malloc/free bookkeeping
+// that D51, ESP32, and RP2350 each used to duplicate (and each independently
+// fix the same dangling-pointer bug in).
+lfs_t* grid_littlefs_mount(struct lfs_config* cfg, bool force_format);
+
+// Unmounts and frees *lfs (asserted non-NULL on entry), leaving it NULL only
+// on success -- mirrors grid_littlefs_mount's ownership (the caller cannot
+// end up with a dangling pointer), and folds in the same guard-ordering fix
+// (assert before, not after, the unmount call) each platform's copy needed
+// separately.
+int grid_littlefs_unmount(lfs_t** lfs);
 
 int grid_littlefs_remove(lfs_t* lfs, const char* path);
 int grid_littlefs_rename(lfs_t* lfs, const char* oldpath, const char* newpath);

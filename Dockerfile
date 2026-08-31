@@ -18,7 +18,8 @@ ENTRYPOINT ["/esp-idf/tools/docker/entrypoint.sh"]
 
 # Install pico sdk and build dependencies
 RUN apt-get update && \
-    apt-get install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential xxd
+    apt-get install -y git python3 python3-pip cmake gcc-arm-none-eabi libnewlib-arm-none-eabi gdb-multiarch build-essential xxd && \
+    ln -sf "$(command -v gdb-multiarch)" /usr/local/bin/arm-none-eabi-gdb
 
 # Clone pico sdk
 RUN mkdir -p pico && \
@@ -41,6 +42,23 @@ WORKDIR /picotool/build
 RUN make && cmake --install .
 
 WORKDIR /
+
+# Install the Raspberry Pi OpenOCD fork for RP2350 SWD flash/debug.
+# Built into its own prefix (/opt/openocd-rp2350) so it does NOT shadow the
+# Espressif OpenOCD that esp-idf puts on PATH as `openocd` for ESP32 targets.
+# The two installs are independent. Exposed as `openocd-rp2350`; the rp2350_*.sh
+# scripts clear OPENOCD_SCRIPTS so the fork uses its own bundled scripts.
+# `--disable-werror` is required (newer GCC errors on a warning in the angie driver).
+RUN apt-get update && \
+    apt-get install -y autoconf automake libtool pkg-config texinfo libhidapi-dev libusb-1.0-0-dev
+RUN git clone https://github.com/raspberrypi/openocd.git --branch sdk-2.0.0 --depth 1 /openocd-rp2350
+WORKDIR /openocd-rp2350
+RUN ./bootstrap && \
+    ./configure --prefix=/opt/openocd-rp2350 --enable-cmsis-dap --enable-picoprobe --disable-werror && \
+    make -j"$(nproc)" && \
+    make install
+WORKDIR /
+RUN ln -sf /opt/openocd-rp2350/bin/openocd /usr/local/bin/openocd-rp2350
 
 RUN apt-get update && \
     apt-get install -y socat
