@@ -96,6 +96,15 @@ void grid_rp2350_uart_port_reset_dma(uint8_t dir) {
   grid_rp2350_uart_port_stop_dma(dir);
 
   int chan = grid_rp2350_uart_rx_dma_chan[dir];
+
+  // stop_dma leaves the channel disabled (EN=0) as its contract, for callers
+  // that need it to stay stopped (grid_rp2350_uart_port_recv's overflow
+  // handling). But per DMA_CH0_CTRL_TRIG_EN's own register doc: "When 0, the
+  // channel will ignore triggers" -- so EN must be set back to 1 here before
+  // the retrigger below, or the trigger write is silently ignored and the
+  // channel never actually restarts.
+  hw_write_masked(&dma_hw->ch[chan].al1_ctrl, DMA_CH0_CTRL_TRIG_EN_BITS, DMA_CH0_CTRL_TRIG_EN_BITS);
+
   dma_channel_set_write_addr(chan, grid_rp2350_uart_uwsr[dir].data, false);
   dma_channel_set_trans_count(chan, grid_rp2350_uart_uwsr[dir].capacity, true);
 }
