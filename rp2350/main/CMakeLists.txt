@@ -10,6 +10,7 @@ add_executable(grid_rp2350
     grid_rp2350_module_bu16.c
     grid_rp2350_encoder.c
     grid_rp2350_module_ef44.c
+    grid_rp2350_uart.c
     ../../common/src/c/grid_led.c
     # Shared LittleFS wrapper + portable FS platform API + the vendored
     # LittleFS engine (all from common/).
@@ -119,13 +120,10 @@ add_executable(grid_rp2350
     ../../common/dep/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c
 )
 
-# RP2350's transport only has 2 ports (UI, USB -- no USART/daisy-chain), unlike
-# D51/ESP32-S3's fixed 6-port layout (USART x4, UI, USB) that
-# grid_transport.c's GRID_TRANSPORT_PORT_INDEX_UI/USB default to (4/5).
-target_compile_definitions(grid_rp2350 PRIVATE
-    GRID_TRANSPORT_PORT_INDEX_UI=0
-    GRID_TRANSPORT_PORT_INDEX_USB=1
-)
+# PIO programs for the 4-way USART daisy-chain (grid_rp2350_uart.c), copied
+# from rp2040/src/ -- see that file's header comment.
+pico_generate_pio_header(grid_rp2350 ${CMAKE_CURRENT_LIST_DIR}/uart_tx.pio)
+pico_generate_pio_header(grid_rp2350 ${CMAKE_CURRENT_LIST_DIR}/uart_rx.pio)
 
 # Access to the shared grid_led / grid_littlefs / grid_usb models (common/src/c),
 # the LittleFS public header via "littlefs/lfs.h" (common/dep), the engine's own
@@ -160,7 +158,7 @@ target_compile_options(grid_rp2350 PRIVATE -UNDEBUG)
 # pico_sync by its OPT_OS_PICO OSAL (osal_pico.h: pico/sem.h, pico/mutex.h,
 # pico/critical_section.h); pico_unique_id backs grid_rp2350_platform.c's
 # grid_platform_get_id().
-target_link_libraries(grid_rp2350 PRIVATE pico_stdlib hardware_uart hardware_dma hardware_adc hardware_spi hardware_irq hardware_flash hardware_sync hardware_resets hardware_watchdog pico_sync pico_unique_id pico_rand)
+target_link_libraries(grid_rp2350 PRIVATE pico_stdlib hardware_uart hardware_dma hardware_adc hardware_spi hardware_pio hardware_irq hardware_flash hardware_sync hardware_resets hardware_watchdog pico_sync pico_unique_id pico_rand)
 
 # Route stdio to UART0 (GPIO0 TX, 115200 8N1) and RTT-over-SWD. USB CDC is NOT
 # a stdio console here -- the composite grid_usb.c device stack owns the USB

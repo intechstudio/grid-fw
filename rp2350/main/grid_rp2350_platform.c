@@ -1,5 +1,6 @@
 #include "grid_rp2350_platform.h"
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +14,8 @@
 
 #include "grid_platform.h"
 #include "grid_protocol.h"
+#include "grid_rp2350_uart.h"
+#include "grid_swsr.h"
 #include "grid_ui.h"
 
 // RP2040/RP2350 only expose a 64-bit flash unique ID (vs. the 128-bit IDs D51
@@ -136,16 +139,52 @@ void grid_platform_lcd_set_backlight(uint8_t backlight) {}
 
 uint8_t grid_platform_get_adc_bit_depth() { return 12; }
 
-// RP2350 has no module-to-module USART transport (see grid_transport.c's
-// 2-port UI+USB layout). These are only ever reached from
-// grid_port_send_usart/grid_port_softreset (grid_port.c), which RP2350's
-// transport never calls at runtime -- but grid_port.c is one translation
-// unit, so the symbols still need to link.
-uint32_t grid_platform_get_frame_len(uint8_t dir) { return 0; }
+// RP2350's 4-way USART daisy-chain transport lives in grid_rp2350_uart.c
+// (PIO+DMA per direction, mirroring D51's real-DMA model -- see that file's
+// header comment for why PIO rather than a real UART peripheral). These 3
+// hooks are the entire grid_platform_* surface it needs.
+// grid_platform_enable/disable_grid_transmitter (present on D51) have no
+// callers anywhere in the shared codebase -- dead code there, skipped here.
+uint32_t grid_platform_get_frame_len(uint8_t dir) {
 
-void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir) {}
+  assert(dir < GRID_RP2350_UART_DIR_COUNT);
 
-uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) { return 1; }
+  return grid_rp2350_uart_tx_busy(dir);
+}
+
+void grid_platform_send_frame(void* swsr, uint32_t size, uint8_t dir) {
+
+  assert(swsr);
+  assert(size > 0);
+  assert(size <= GRID_PARAMETER_SPI_TRANSACTION_length - 1);
+  assert(dir < GRID_RP2350_UART_DIR_COUNT);
+  assert(grid_swsr_readable(swsr, size));
+  assert(!grid_rp2350_uart_tx_busy(dir));
+
+  struct grid_swsr_t* tx = (struct grid_swsr_t*)swsr;
+
+  grid_swsr_read(tx, grid_rp2350_uart_tx_buf[dir], size);
+
+  grid_rp2350_uart_tx_start(dir, size);
+}
+
+// direction arrives in either representation depending on the caller:
+// grid_port_softreset (grid_port.c) passes the raw enum grid_port_dir (0-3),
+// while grid_rp2350_uart_port_recv passes the same raw enum too -- but D51's
+// own grid_d51_port_recv_uwsr instead passes grid_port_dir_to_code's
+// GRID_CONST_NORTH.. range (0x11-0x14), which its own implementation expects
+// and grid_port_softreset's call does not actually match. Normalizing here
+// accepts either range so this hook is correct regardless of which
+// convention a given caller uses.
+uint8_t grid_platform_reset_grid_transmitter(uint8_t direction) {
+
+  uint8_t dir = direction >= GRID_CONST_NORTH ? direction - GRID_CONST_NORTH : direction;
+  assert(dir < GRID_RP2350_UART_DIR_COUNT);
+
+  grid_rp2350_uart_port_reset_dma(dir);
+
+  return 0;
+}
 
 // No touch element on BU16 -- both platform-provided element-state tables
 // (required by grid_ui.c) stay empty, matching D51

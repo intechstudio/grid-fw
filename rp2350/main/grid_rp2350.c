@@ -27,6 +27,7 @@
 #include "grid_rp2350_module_bu16.h"
 #include "grid_rp2350_module_ef44.h"
 #include "grid_rp2350_nvm.h"
+#include "grid_rp2350_uart.h"
 #include "grid_rp2350_usb.h"
 
 // RP2350 has no LCD/GUI element type yet, so the Lua GUI library is empty,
@@ -34,7 +35,10 @@
 const struct luaL_Reg gui_lib[] = {{NULL, NULL}};
 const struct luaL_Reg* grid_lua_api_gui_lib_reference = gui_lib;
 
-enum { GRID_RP2350_PORT_COUNT = 2 };
+// USART x4 (N/E/S/W), UI, USB -- the same fixed 6-port layout D51/ESP32 use
+// (grid_transport.h's GRID_TRANSPORT_PORT_INDEX_UI/USB default to 4/5), now
+// that grid_rp2350_uart.c provides the daisy-chain directions.
+enum { GRID_RP2350_PORT_COUNT = 6 };
 
 // GPIO6's mux entry for UART1 TX (see grid_rp2350_led.h for why the function
 // number isn't the generic GPIO_FUNC_UART here). BU16 is a temporary
@@ -114,6 +118,50 @@ static void grid_utask_led(struct grid_utask_timer* timer) {
   grid_led_render_framebuffer(&grid_led_state);
   grid_rp2350_led_generate_frame(&grid_rp2350_led_state, &grid_led_state);
   grid_rp2350_led_start_transfer(&grid_rp2350_led_state);
+}
+
+static struct grid_utask_timer timer_ping;
+
+static void grid_utask_ping(struct grid_utask_timer* timer) {
+
+  if (!grid_utask_timer_elapsed(timer)) {
+    return;
+  }
+
+  grid_transport_ping_all(&grid_transport_state);
+}
+
+// Flashes green/red on USART neighbor connect/disconnect and resets the
+// disconnected direction's transmitter -- ports d51n20a/grid_d51n20a.c's
+// handle_connection_effect verbatim.
+static void handle_connection_effect(void) {
+
+  for (uint8_t dir = 0; dir < GRID_RP2350_UART_DIR_COUNT; ++dir) {
+
+    struct grid_port* port = grid_transport_get_port(&grid_transport_state, dir, GRID_PORT_USART, dir);
+
+    if (!grid_port_connected_changed(port)) {
+      continue;
+    }
+
+    if (grid_port_connected(port)) {
+
+      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_GREEN, 50);
+      grid_alert_all_set_frequency(&grid_led_state, -2);
+      grid_alert_all_set_phase(&grid_led_state, 100);
+    }
+
+    if (grid_port_disconnected(port)) {
+
+      grid_alert_all_set(&grid_led_state, GRID_LED_COLOR_RED, 50);
+      grid_alert_all_set_frequency(&grid_led_state, -2);
+      grid_alert_all_set_phase(&grid_led_state, 100);
+
+      grid_port_softreset(port);
+    }
+
+    grid_port_connected_update(port);
+  }
 }
 
 static struct grid_utask_timer timer_heart;
@@ -219,9 +267,13 @@ int main() {
   grid_rp2350_checkpoint("MSG INIT");
 
   grid_transport_malloc(&grid_transport_state, GRID_RP2350_PORT_COUNT);
-  grid_port_init(&grid_transport_state.ports[0], GRID_PORT_UI, 0);
-  grid_port_init(&grid_transport_state.ports[1], GRID_PORT_USB, 0);
-  grid_rp2350_checkpoint("TRANSPORT/PORT INIT");
+  for (uint8_t dir = 0; dir < GRID_RP2350_UART_DIR_COUNT; ++dir) {
+    grid_port_init(&grid_transport_state.ports[dir], GRID_PORT_USART, dir);
+  }
+  grid_port_init(&grid_transport_state.ports[GRID_TRANSPORT_PORT_INDEX_UI], GRID_PORT_UI, 0);
+  grid_port_init(&grid_transport_state.ports[GRID_TRANSPORT_PORT_INDEX_USB], GRID_PORT_USB, 0);
+  grid_rp2350_uart_init();
+  grid_rp2350_checkpoint("TRANSPORT/PORT/UART INIT");
 
   // Without this, active-bank color stays at its zero-init default (black),
   // so an "auto" (-1) element LED color -- which derives from it -- resolves
@@ -237,6 +289,7 @@ int main() {
 
   uint64_t now = grid_platform_rtc_get_micros();
   timer_led = (struct grid_utask_timer){.last = now, .period = 10000};
+  timer_ping = (struct grid_utask_timer){.last = now, .period = GRID_PARAMETER_PINGINTERVAL_us};
   timer_heart = (struct grid_utask_timer){.last = now, .period = GRID_PARAMETER_HEARTBEATINTERVAL_us};
   timer_health_report = (struct grid_utask_timer){.last = now, .period = 1000000};
   timer_process_ui = (struct grid_utask_timer){.last = now, .period = GRID_PARAMETER_UICOOLDOWN_us};
@@ -265,8 +318,13 @@ int main() {
     printf("Module Init failed: Unknown Module %lu\n", (unsigned long)grid_sys_get_hwcfg(&grid_sys_state));
   }
 
-  struct grid_port* port_ui = grid_transport_get_port(&grid_transport_state, 0, GRID_PORT_UI, 0);
-  struct grid_port* port_usb = grid_transport_get_port(&grid_transport_state, 1, GRID_PORT_USB, 0);
+  struct grid_port* port_ui = grid_transport_get_port(&grid_transport_state, GRID_TRANSPORT_PORT_INDEX_UI, GRID_PORT_UI, 0);
+  struct grid_port* port_usb = grid_transport_get_port(&grid_transport_state, GRID_TRANSPORT_PORT_INDEX_USB, GRID_PORT_USB, 0);
+
+  // De-dupes broadcast messages relayed across the 4 daisy-chain directions;
+  // mirrors d51n20a/grid_d51n20a.c's `recent`.
+  struct grid_fingerprint_buf recent;
+  grid_fingerprint_buf_init(&recent, 64);
 
   grid_rp2350_checkpoint("ENTERING MAIN LOOP");
 
@@ -302,10 +360,24 @@ int main() {
     grid_rp2350_update_interrupt_mask_from_bulk_status();
     grid_ui_bulk_process(&grid_ui_state);
 
+    for (uint8_t dir = 0; dir < GRID_RP2350_UART_DIR_COUNT; ++dir) {
+
+      struct grid_port* port = grid_transport_get_port(&grid_transport_state, dir, GRID_PORT_USART, dir);
+
+      grid_rp2350_uart_port_recv(port, &grid_rp2350_uart_uwsr[dir], &recent);
+    }
+
+    for (uint8_t dir = 0; dir < GRID_RP2350_UART_DIR_COUNT; ++dir) {
+
+      struct grid_port* port = grid_transport_get_port(&grid_transport_state, dir, GRID_PORT_USART, dir);
+
+      grid_transport_rx_broadcast_tx(&grid_transport_state, port, NULL);
+    }
     grid_transport_rx_broadcast_tx(&grid_transport_state, port_ui, NULL);
     grid_transport_rx_broadcast_tx(&grid_transport_state, port_usb, NULL);
 
     grid_utask_led(&timer_led);
+    grid_utask_ping(&timer_ping);
     grid_utask_heart(&timer_heart);
     grid_utask_midi_rx(&timer_midi_rx);
     grid_utask_process_ui(&timer_process_ui);
@@ -326,8 +398,12 @@ int main() {
 
     grid_port_send_ui(port_ui);
 
+    grid_transport_send_usart_cyclic_offset(&grid_transport_state);
+
     grid_lua_semaphore_lock(&grid_lua_state);
     grid_lua_gc_step_unsafe(&grid_lua_state);
     grid_lua_semaphore_release(&grid_lua_state);
+
+    handle_connection_effect();
   }
 }
