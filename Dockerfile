@@ -49,6 +49,9 @@ RUN apt-get update && \
 RUN python3 -m pip install --break-system-packages pre-commit
 RUN pre-commit --version
 
+# Install Pillow, used by image_build.sh to generate the embedded test images
+RUN python3 -m pip install --break-system-packages Pillow
+
 # Copy pre-commit hooks and create a git directory,
 # to allow missing environments of hooks to be installed
 COPY ./.pre-commit-config.yaml /

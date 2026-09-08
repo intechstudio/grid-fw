@@ -13,6 +13,7 @@
 struct grid_gui_model;
 
 #include "grid_font.h"
+#include "grid_image.h"
 #include "grid_lua.h"
 #include "grid_protocol.h"
 #include "grid_swsr.h"
@@ -30,6 +31,7 @@ int l_grid_gui_draw_polygon_filled(lua_State* L);
 int l_grid_gui_draw_text_fast(lua_State* L);
 int l_grid_gui_draw_text(lua_State* L);
 int l_grid_gui_draw_area_filled(lua_State* L);
+int l_grid_gui_draw_image(lua_State* L);
 int l_grid_gui_draw_demo(lua_State* L);
 int l_grid_gui_get_render_time(lua_State* L);
 

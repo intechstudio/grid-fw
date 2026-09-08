@@ -37,7 +37,7 @@ jobs:
       - name: Build ESP32 firmware
         run: |
           docker run -v $PWD:/project -w /project ${{ env.image }} \
-          sh -c "./lua_build.sh && ./pico_build.sh && ./mxt_config.sh && ./esp_build.sh"
+          sh -c "./lua_build.sh && ./image_build.sh && ./pico_build.sh && ./mxt_config.sh && ./esp_build.sh"
 
       - name: Build D51 firmware
         run: |
@@ -47,7 +47,7 @@ jobs:
       - name: Build wasm gui
         run: |
           docker run -v $PWD:/project -w /project ${{ env.image }} \
-          sh -c "./wasm_build.sh"
+          sh -c "./lua_build.sh && ./image_build.sh && ./wasm_build.sh"
 
       - name: Set timestamp in environment and output
         id: set_out

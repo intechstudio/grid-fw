@@ -29,6 +29,7 @@ const luaL_Reg GRID_LUA_L_INDEX_META[] = {{GRID_LUA_FNC_L_ELEMENT_INDEX_short, X
                                           {GRID_LUA_FNC_L_DRAW_TEXT_short, XAFTERX(GRID_LUA_FNC_DRAW_NAME, ldt)},
                                           {GRID_LUA_FNC_L_DRAW_FASTTEXT_short, XAFTERX(GRID_LUA_FNC_DRAW_NAME, ldft)},
                                           {GRID_LUA_FNC_L_DRAW_AREA_FILLED_short, XAFTERX(GRID_LUA_FNC_DRAW_NAME, ldaf)},
+                                          {GRID_LUA_FNC_L_DRAW_IMAGE_short, XAFTERX(GRID_LUA_FNC_DRAW_NAME, ldim)},
                                           {GRID_LUA_FNC_L_DRAW_DEMO_short, XAFTERX(GRID_LUA_FNC_DRAW_NAME, ldd)},
                                           {GRID_LUA_FNC_L_GET_RENDER_TIME_short, XAFTERX(GRID_LUA_FNC_DRAW_NAME, lgrt)},
                                           {NULL, NULL}};

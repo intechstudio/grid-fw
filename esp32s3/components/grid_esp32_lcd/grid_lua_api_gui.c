@@ -648,6 +648,50 @@ int l_grid_gui_draw_area_filled(lua_State* L) {
   return 0;
 }
 
+size_t ggdim_size() { return GRID_GUI_CALL_HEADER_SIZE + sizeof(uint8_t) + sizeof(uint16_t) * 2; }
+
+void ggdim_formatter(struct grid_swsr_t* swsr, bool dir, uint8_t* image_id, uint16_t* x, uint16_t* y) {
+
+  void (*access)(struct grid_swsr_t*, void*, int) = dir ? grid_swsr_write : grid_swsr_read;
+
+  access(swsr, image_id, sizeof(uint8_t));
+  access(swsr, x, sizeof(uint16_t));
+  access(swsr, y, sizeof(uint16_t));
+}
+
+void ggdim_handler(struct grid_gui_model* gui, struct grid_swsr_t* swsr) {
+
+  uint8_t image_id;
+  uint16_t x, y;
+
+  ggdim_formatter(swsr, FORMATTER_READ, &image_id, &x, &y);
+
+  grid_image_draw(gui, image_id, x, y);
+}
+
+int l_grid_gui_draw_image(lua_State* L) {
+
+  int screen_index = luaL_checknumber(L, 1);
+  if (!grid_gui_index_active(screen_index)) {
+    return 1;
+  }
+
+  struct grid_gui_model* gui = &grid_gui_states[screen_index];
+
+  uint8_t image_id = luaL_checknumber(L, 2);
+  uint16_t x = luaL_checknumber(L, 3);
+  uint16_t y = luaL_checknumber(L, 4);
+
+  size_t bytes = ggdim_size();
+  if (grid_gui_queue_push(gui, ggdim_handler, bytes) != 0) {
+    return 1;
+  }
+
+  ggdim_formatter(&gui->swsr, FORMATTER_WRITE, &image_id, &x, &y);
+
+  return 0;
+}
+
 size_t ggdd_size() { return GRID_GUI_CALL_HEADER_SIZE + sizeof(uint8_t); }
 
 void ggdd_formatter(struct grid_swsr_t* swsr, bool dir, uint8_t* counter) {
@@ -715,6 +759,7 @@ GRID_LUA_FNC_DRAW_DEFI(ldpof, l_grid_gui_draw_polygon_filled)
 GRID_LUA_FNC_DRAW_DEFI(ldt, l_grid_gui_draw_text)
 GRID_LUA_FNC_DRAW_DEFI(ldft, l_grid_gui_draw_text_fast)
 GRID_LUA_FNC_DRAW_DEFI(ldaf, l_grid_gui_draw_area_filled)
+GRID_LUA_FNC_DRAW_DEFI(ldim, l_grid_gui_draw_image)
 GRID_LUA_FNC_DRAW_DEFI(ldd, l_grid_gui_draw_demo)
 GRID_LUA_FNC_DRAW_DEFI(lgrt, l_grid_gui_get_render_time)
 
@@ -731,6 +776,7 @@ GRID_LUA_FNC_DRAW_DEFI(lgrt, l_grid_gui_get_render_time)
     {GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_short, GRID_LUA_FNC_G_GUI_DRAW_FASTTEXT_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_TEXT_short, GRID_LUA_FNC_G_GUI_DRAW_TEXT_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_short, GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_fnptr},
+    {GRID_LUA_FNC_G_GUI_DRAW_IMAGE_short, GRID_LUA_FNC_G_GUI_DRAW_IMAGE_fnptr},
     {GRID_LUA_FNC_G_GUI_DRAW_DEMO_short, GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr},
     {GRID_LUA_FNC_G_GUI_GET_RENDER_TIME_short, GRID_LUA_FNC_G_GUI_GET_RENDER_TIME_fnptr},
     {NULL, NULL} /* end of array */

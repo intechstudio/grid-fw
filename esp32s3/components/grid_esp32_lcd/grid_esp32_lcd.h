@@ -10,6 +10,7 @@
 
 #include "grid_font.h"
 #include "grid_gui.h"
+#include "grid_image.h"
 #include "grid_lua.h"
 #include "grid_sys.h"
 

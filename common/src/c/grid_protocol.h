@@ -539,6 +539,11 @@
 #define GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_fnptr l_grid_gui_draw_area_filled
 #define GRID_LUA_FNC_G_GUI_DRAW_AREA_FILLED_usage "gui_draw_area_filled(screen_index, x1, y1, x2, y2, {r, g, b}) Fills an area with the specified color, without alpha blending."
 
+#define GRID_LUA_FNC_G_GUI_DRAW_IMAGE_short "ggdim"
+#define GRID_LUA_FNC_G_GUI_DRAW_IMAGE_human "gui_draw_image"
+#define GRID_LUA_FNC_G_GUI_DRAW_IMAGE_fnptr l_grid_gui_draw_image
+#define GRID_LUA_FNC_G_GUI_DRAW_IMAGE_usage "gui_draw_image(screen_index, image_id, x, y) Decodes the embedded image with the given id and draws it with its top-left corner at (x, y)."
+
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_short "ggdd"
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_human "gui_draw_demo"
 #define GRID_LUA_FNC_G_GUI_DRAW_DEMO_fnptr l_grid_gui_draw_demo

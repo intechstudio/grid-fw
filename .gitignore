@@ -44,6 +44,7 @@
 !gui_start.sh
 !host_test.sh
 !ignore-words.txt
+!image_build.sh
 !LICENSE
 !lua_build.sh
 !merged_stream.sh
